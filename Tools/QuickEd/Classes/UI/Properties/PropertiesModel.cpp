@@ -192,10 +192,10 @@ QVariant PropertiesModel::data(const QModelIndex &index, int role) const
             
         case Qt::FontRole:
             {
-                if (property->IsReplaced() || property->IsReadOnly())
+                if (property->IsOverriddenLocally() || property->IsReadOnly())
                 {
                     QFont myFont;
-                    myFont.setBold(property->IsReplaced());
+                    myFont.setBold(property->IsOverriddenLocally());
                     myFont.setItalic(property->IsReadOnly());
                     return myFont;
                 }

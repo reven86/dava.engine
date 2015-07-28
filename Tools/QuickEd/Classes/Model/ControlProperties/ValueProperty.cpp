@@ -36,8 +36,8 @@ using namespace DAVA;
 
 ValueProperty::ValueProperty(const DAVA::String &propName)
     : name(propName)
-    , replaced(false)
     , stylePropertyIndex(-1)
+    , overridden(false)
     , prototypeProperty(nullptr) // weak
 {
 
@@ -64,7 +64,7 @@ AbstractProperty *ValueProperty::GetProperty(int index) const
 
 void ValueProperty::Refresh(DAVA::int32 refreshFlags)
 {
-    if (prototypeProperty)
+    if ((refreshFlags & REFRESH_DEFAULT_VALUE) != 0 && prototypeProperty)
         SetDefaultValue(prototypeProperty->GetValue());
 
     for (SubValueProperty *prop : children)
@@ -105,11 +105,6 @@ AbstractProperty *ValueProperty::FindPropertyByPrototype(AbstractProperty *proto
     return prototype == prototypeProperty ? this : nullptr;
 }
 
-bool ValueProperty::HasChanges() const
-{
-    return replaced;
-}
-
 const DAVA::String &ValueProperty::GetName() const
 {
     return name;
@@ -127,7 +122,7 @@ VariantType ValueProperty::GetValue() const
 
 void ValueProperty::SetValue(const DAVA::VariantType &newValue)
 {
-    replaced = true;
+    overridden = true;
     ApplyValue(newValue);
 }
 
@@ -139,7 +134,7 @@ VariantType ValueProperty::GetDefaultValue() const
 void ValueProperty::SetDefaultValue(const DAVA::VariantType &newValue)
 {
     defaultValue = newValue;
-    if (!replaced)
+    if (!overridden)
         ApplyValue(newValue);
 }
 
@@ -150,13 +145,22 @@ const EnumMap *ValueProperty::GetEnumMap() const
 
 void ValueProperty::ResetValue()
 {
-    replaced = false;
+    overridden = false;
     ApplyValue(defaultValue);
 }
 
-bool ValueProperty::IsReplaced() const
+bool ValueProperty::IsOverridden() const
 {
-    return replaced;
+    bool ovverriddenLocally = IsOverriddenLocally();
+    if (ovverriddenLocally || prototypeProperty == nullptr)
+        return ovverriddenLocally;
+    
+    return prototypeProperty->IsOverridden();
+}
+
+bool ValueProperty::IsOverriddenLocally() const
+{
+    return overridden;
 }
 
 VariantType ValueProperty::GetSubValue(int index) const
@@ -186,6 +190,26 @@ int32 ValueProperty::GetStylePropertyIndex() const
 
 void ValueProperty::ApplyValue(const DAVA::VariantType &value)
 {
+}
+
+void ValueProperty::SetName(const DAVA::String &newName)
+{
+    name = newName;
+}
+
+void ValueProperty::SetOverridden(bool anOverridden)
+{
+    overridden = anOverridden;
+}
+
+void ValueProperty::SetStylePropertyIndex(int32 index)
+{
+    stylePropertyIndex = index;
+}
+
+void ValueProperty::AddSubValueProperty(SubValueProperty *prop)
+{
+    children.push_back(SafeRetain(prop));
 }
 
 VariantType ValueProperty::ChangeValueComponent(const VariantType &value, const VariantType &component, int32 index) const

@@ -404,7 +404,7 @@ void PackageSerializer::VisitClassProperty(ClassProperty *property)
 
 void PackageSerializer::VisitCustomClassProperty(CustomClassProperty *property)
 {
-    if (property->IsReplaced())
+    if (property->IsOverriddenLocally())
     {
         PutValue("customClass", property->GetCustomClassName());
     }
@@ -412,7 +412,7 @@ void PackageSerializer::VisitCustomClassProperty(CustomClassProperty *property)
 
 void PackageSerializer::VisitIntrospectionProperty(IntrospectionProperty *property)
 {
-    if (property->IsReplaced())
+    if (property->IsOverriddenLocally())
     {
         PutValueProperty(property->GetMember()->Name().c_str(), property);
     }

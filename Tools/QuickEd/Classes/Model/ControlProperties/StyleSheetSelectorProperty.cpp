@@ -42,7 +42,7 @@ StyleSheetSelectorProperty::StyleSheetSelectorProperty(const UIStyleSheetSelecto
     styleSheet = new UIStyleSheet();
     styleSheet->SetSelectorChain(chain);
 
-    replaced = true;
+    SetOverridden(true);
     value = chain.ToString();
 }
 

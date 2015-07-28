@@ -80,7 +80,7 @@ protected:
 protected:
     DAVA::BaseObject *object;
     const DAVA::InspMember *member;
-    bool canReset;
+    DAVA::int32 flags;
     
 private:
     DAVA::VariantType sourceValue;

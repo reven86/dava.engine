@@ -42,8 +42,8 @@ StyleSheetProperty::StyleSheetProperty(const DAVA::UIStyleSheetProperty &aProper
     , property(aProperty)
 {
     const UIStyleSheetPropertyDescriptor& descr = UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyByIndex(property.propertyIndex);
-    name = String(descr.name.c_str());
-    replaced = true;
+    SetName(String(descr.name.c_str()));
+    SetOverridden(true);
 
 
     VariantTypeProperty *prop = new VariantTypeProperty("Value", property.value);

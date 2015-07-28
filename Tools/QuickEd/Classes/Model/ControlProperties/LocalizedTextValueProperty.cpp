@@ -46,8 +46,8 @@ LocalizedTextValueProperty::~LocalizedTextValueProperty()
 
 void LocalizedTextValueProperty::Refresh(DAVA::int32 refreshFlags)
 {
-//    IntrospectionProperty::Refresh(refreshFlags);
-
+    IntrospectionProperty::Refresh(refreshFlags);
+    
     if (refreshFlags & REFRESH_LOCALIZATION)
         member->SetValue(GetBaseObject(), VariantType(LocalizedString(text)));
 }

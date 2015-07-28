@@ -60,8 +60,8 @@ void NameProperty::Refresh(DAVA::int32 refreshFlags)
 {
     ValueProperty::Refresh(refreshFlags);
     
-    if (GetPrototypeProperty())
-        ApplyValue(defaultValue);
+    if ((refreshFlags & REFRESH_DEFAULT_VALUE) != 0 && GetPrototypeProperty())
+        ApplyValue(GetDefaultValue());
 }
 
 void NameProperty::Accept(PropertyVisitor *visitor)
@@ -79,12 +79,17 @@ NameProperty::ePropertyType NameProperty::GetType() const
     return TYPE_VARIANT;
 }
 
+DAVA::uint32 NameProperty::GetFlags() const
+{
+    return EF_AFFECTS_STYLES;
+}
+
 VariantType NameProperty::GetValue() const
 {
     return VariantType(control->GetName());
 }
 
-bool NameProperty::IsReplaced() const
+bool NameProperty::IsOverriddenLocally() const
 {
     return control->GetCreationType() != ControlNode::CREATED_FROM_PROTOTYPE_CHILD;
 }

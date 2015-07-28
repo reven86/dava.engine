@@ -40,7 +40,7 @@ VariantTypeProperty::VariantTypeProperty(const String &name, VariantType &vt)
     : ValueProperty(name)
     , value(vt)
 {
-    replaced = true;
+    SetOverridden(true);
 }
 
 VariantTypeProperty::~VariantTypeProperty()

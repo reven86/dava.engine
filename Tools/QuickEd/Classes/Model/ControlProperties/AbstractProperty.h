@@ -57,10 +57,10 @@ public:
     
     enum eRefreshFlags
     {
-        REFRESH_LOCALIZATION = 0x01,
-        REFRESH_FONT = 0x02,
-        REFRESH_DEPENDED_ON_LAYOUT_PROPERTIES = 0x04,
-        REFRESH_ALL = 0x08
+        REFRESH_DEFAULT_VALUE = 0x01,
+        REFRESH_LOCALIZATION = 0x02,
+        REFRESH_FONT = 0x04,
+        REFRESH_DEPENDED_ON_LAYOUT_PROPERTIES = 0x08
     };
 
     enum eCloneType
@@ -91,7 +91,6 @@ public:
     virtual ePropertyType GetType() const = 0;
     virtual DAVA::uint32 GetFlags() const;
     virtual DAVA::int32 GetStylePropertyIndex() const;
-    
 
     virtual bool IsReadOnly() const;
 
@@ -101,7 +100,8 @@ public:
     virtual void SetDefaultValue(const DAVA::VariantType &newValue);
     virtual const EnumMap *GetEnumMap() const;
     virtual void ResetValue();
-    virtual bool IsReplaced() const;
+    virtual bool IsOverriddenLocally() const;
+    virtual bool IsOverridden() const;
 
     AbstractProperty *GetRootProperty();
     const AbstractProperty *GetRootProperty() const;

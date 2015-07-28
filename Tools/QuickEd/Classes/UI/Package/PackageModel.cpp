@@ -142,7 +142,7 @@ QVariant PackageModel::data(const QModelIndex &index, int role) const
                 return StringToQString(node->GetName());
                 
             case Qt::DecorationRole:
-                if (controlNode->GetRootProperty()->GetCustomClassProperty()->IsSet())
+                if (controlNode->GetRootProperty()->GetCustomClassProperty()->IsOverridden())
                 {
                     return QIcon(IconHelper::GetCustomIconPath());
                 }

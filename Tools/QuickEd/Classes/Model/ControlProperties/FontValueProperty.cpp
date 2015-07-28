@@ -54,7 +54,7 @@ AbstractProperty *FontValueProperty::GetProperty(int index) const
 
 void FontValueProperty::Refresh(DAVA::int32 refreshFlags)
 {
-//    IntrospectionProperty::Refresh(refreshFlags);
+    IntrospectionProperty::Refresh(refreshFlags);
     
     if (refreshFlags & REFRESH_FONT)
         member->SetValue(GetBaseObject(), VariantType(presetName));

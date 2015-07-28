@@ -130,7 +130,12 @@ void AbstractProperty::ResetValue()
     // Do nothing by default
 }
 
-bool AbstractProperty::IsReplaced() const
+bool AbstractProperty::IsOverridden() const
+{
+    return false; // false by default
+}
+
+bool AbstractProperty::IsOverriddenLocally() const
 {
     return false; // false by default
 }

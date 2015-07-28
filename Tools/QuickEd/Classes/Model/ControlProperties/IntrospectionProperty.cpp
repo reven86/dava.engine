@@ -46,36 +46,35 @@ namespace
     const FastName PROPERTY_NAME_POSITION("position");
     const FastName PROPERTY_NAME_TEXT("text");
     const FastName PROPERTY_NAME_FONT("font");
+    const FastName PROPERTY_NAME_CLASSES("classes");
 }
 
 IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject *anObject, const DAVA::InspMember *aMember, const IntrospectionProperty *sourceProperty, eCloneType copyType)
     : ValueProperty(aMember->Desc().text)
     , object(SafeRetain(anObject))
     , member(aMember)
-    , canReset(true)
+    , flags(EF_CAN_RESET)
 {
     if (UIStyleSheetPropertyDataBase::Instance()->IsValidStyleSheetProperty(member->Name()))
-        stylePropertyIndex = UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyIndex(member->Name());
+        SetStylePropertyIndex(UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyIndex(member->Name()));
     
     if (sourceProperty)
     {
-        if (sourceProperty->GetValue() != member->Value(object))
-            member->SetValue(object, sourceProperty->GetValue());
-
         if (copyType == CT_COPY)
         {
-            defaultValue = sourceProperty->GetDefaultValue();
-            replaced = sourceProperty->IsReplaced();
+            SetOverridden(sourceProperty->IsOverriddenLocally());
+            SetDefaultValue(sourceProperty->GetDefaultValue());
         }
         else
         {
             AttachPrototypeProperty(sourceProperty);
-            defaultValue = member->Value(object);
+            SetDefaultValue(member->Value(object));
         }
+        member->SetValue(object, sourceProperty->GetValue());
     }
     else
     {
-        defaultValue = member->Value(object);
+        SetDefaultValue(member->Value(object));
     }
 
     static std::vector<String> vector2ComponentNames = { "X", "Y" };
@@ -83,6 +82,8 @@ IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject *anObject, const D
     static std::vector<String> marginsComponentNames = { "Left", "Top", "Right", "Bottom" };
 
     std::vector<String> *componentNames = nullptr;
+    std::vector<SubValueProperty*> children;
+    VariantType defaultValue = GetDefaultValue();
     if (defaultValue.GetType() == VariantType::TYPE_VECTOR2)
     {
         componentNames = &vector2ComponentNames;
@@ -116,7 +117,10 @@ IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject *anObject, const D
     for (auto child : children)
     {
         child->SetParent(this);
+        AddSubValueProperty(child);
+        SafeRelease(child);
     }
+    children.clear();
     
     if (sourceProperty)
         sourceValue = sourceProperty->sourceValue;
@@ -141,15 +145,25 @@ IntrospectionProperty *IntrospectionProperty::Create(UIControl *control, const I
     }
     else
     {
-        // member->Name() == PROPERTY_NAME_SIZE || member->Name() == PROPERTY_NAME_POSITION
-        return new IntrospectionProperty(control, member, sourceProperty, cloneType);
+        IntrospectionProperty *result = new IntrospectionProperty(control, member, sourceProperty, cloneType);;
+        if (member->Name() == PROPERTY_NAME_SIZE || member->Name() == PROPERTY_NAME_POSITION)
+        {
+            result->flags |= EF_DEPENDS_ON_LAYOUTS;
+        }
+        if (member->Name() == PROPERTY_NAME_CLASSES)
+        {
+            result->flags |= EF_AFFECTS_STYLES;
+        }
+        return result;
     }
 
 }
 
 void IntrospectionProperty::Refresh(DAVA::int32 refreshFlags)
 {
-    if (refreshFlags & REFRESH_DEPENDED_ON_LAYOUT_PROPERTIES)
+    ValueProperty::Refresh(refreshFlags);
+    
+    if ((refreshFlags & REFRESH_DEPENDED_ON_LAYOUT_PROPERTIES) != 0 && (GetFlags() & EF_DEPENDS_ON_LAYOUTS) != 0)
         ApplyValue(sourceValue);
 }
 
@@ -171,12 +185,10 @@ IntrospectionProperty::ePropertyType IntrospectionProperty::GetType() const
 
 uint32 IntrospectionProperty::GetFlags() const
 {
-    uint32 flags = 0;
-    if (canReset)
-        flags |= EF_CAN_RESET;
-    if (GetPrototypeProperty() && !replaced)
-        flags |= EF_INHERITED;
-    return flags;
+    uint32 result = flags;
+    if (GetPrototypeProperty() && !IsOverriddenLocally() && IsOverridden())
+        result |= EF_INHERITED;
+    return result;
 }
 
 VariantType IntrospectionProperty::GetValue() const
@@ -202,7 +214,7 @@ const DAVA::InspMember *IntrospectionProperty::GetMember() const
 
 void IntrospectionProperty::DisableResetFeature()
 {
-    canReset = false;
+    flags &= ~EF_CAN_RESET;
 }
 
 void IntrospectionProperty::ApplyValue(const DAVA::VariantType &value)
