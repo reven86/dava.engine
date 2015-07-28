@@ -57,9 +57,4 @@ DAVA_TESTCLASS(Cpp14Test)
         Logger::Warning("Warning: Holy shit");
         TEST_VERIFY(1 == i);
     }
-
-    DAVA_TEST(test)
-    {
-        TEST_VERIFY_WITH_MESSAGE(0, "Failed: Your face, your ass - what's the difference");
-    }
 };
