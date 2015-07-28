@@ -85,6 +85,10 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
+    if (trayIcon)
+    {
+        trayIcon->hide();
+    }
     delete ui;
 }
 
