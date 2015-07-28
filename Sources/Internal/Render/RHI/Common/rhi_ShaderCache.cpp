@@ -787,7 +787,7 @@ static const char* _ShaderDefine_DX11 =
 "#define VP_TEXTURE2D(unit,uv)   tex2Dlod( VertexTexture##unit, float4(uv.x,uv.y,0,0) )\n"
 
 
-"#define FPROG_IN_BEGIN                        struct FP_Input {\n"
+"#define FPROG_IN_BEGIN                        struct FP_Input { float4 pos : SV_POSITION; \n"
 "#define FPROG_IN_TEXCOORD0(name,size)         float##size name : TEXCOORD0;\n"
 "#define FPROG_IN_TEXCOORD1(name,size)         float##size name : TEXCOORD1;\n"
 "#define FPROG_IN_TEXCOORD2(name,size)         float##size name : TEXCOORD2;\n"

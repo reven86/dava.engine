@@ -69,7 +69,7 @@ _CreateInputLayout( const VertexLayout& layout, const void* code, unsigned code_
 
             case VS_TEXCOORD : 
             {
-                elem[elemCount].SemanticName = "TEXCOORDS";
+                elem[elemCount].SemanticName = "TEXCOORD";
                 switch( layout.ElementSemanticsIndex(i) )
                 {
                     case 0  : elem[elemCount].InputSlot = VATTR_TEXCOORD_0; break;
@@ -606,6 +606,7 @@ dx11_PipelineState_Create( const PipelineState::Descriptor& desc )
 
     ps->_layout11 = _CreateInputLayout( desc.vertexLayout, vp_code->GetBufferPointer(), vp_code->GetBufferSize(), true );
     ps->_layout   = desc.vertexLayout;
+    DVASSERT(ps->_layout11);
 
     return handle;
 }
