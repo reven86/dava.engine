@@ -5,7 +5,6 @@
 #include <QAbstractListModel>
 #include <QFont>
 
-class QTimer;
 class ApplicationManager;
 
 class ListModel : public QAbstractListModel
@@ -25,8 +24,6 @@ public:
     void addItem(const QString &dataText, ListItemType type);
     QVariant data(const QModelIndex &index, int role) const override;
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
-private slots:
-    void updateRows();
 private:
     struct Item
     {
@@ -37,7 +34,6 @@ private:
 
     QList<Item> items;
     QFont fontFavorites;
-    QTimer *pushTimer;
     const ApplicationManager *appManager;
 };
 

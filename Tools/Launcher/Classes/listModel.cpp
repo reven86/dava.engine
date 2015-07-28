@@ -8,27 +8,27 @@
 ListModel::ListModel(const ApplicationManager *appManager_, QObject *parent)
     : QAbstractListModel(parent)
     , fontFavorites(QApplication::font())
-    , pushTimer(new QTimer(this))
     , appManager(appManager_)
-{
-    pushTimer->setInterval(0);
-    connect(pushTimer, &QTimer::timeout, this, &ListModel::updateRows, Qt::QueuedConnection);
-    
+{   
     fontFavorites.setPointSize(fontFavorites.pointSize() + 1);
     fontFavorites.setBold(true);
 }
 
 void ListModel::clearItems()
 {
-    beginRemoveRows(QModelIndex(), 0, rowCount());
-    items.clear();
-    endInsertRows();
+    if (!items.isEmpty())
+    {
+        beginRemoveRows(QModelIndex(), 0, rowCount() - 1);
+        items.clear();
+        endRemoveRows();
+    }
 }
 
 void ListModel::addItem(const QString &dataText, ListItemType type)
 {
+    beginInsertRows(QModelIndex(), rowCount(), rowCount());
     items.push_back({ appManager->GetString(dataText), dataText, type });
-    pushTimer->start();
+    endInsertRows();
 }
 
 QVariant ListModel::data(const QModelIndex &index, int role) const
@@ -78,16 +78,4 @@ QVariant ListModel::data(const QModelIndex &index, int role) const
 int ListModel::rowCount(const QModelIndex &parent) const
 {
     return items.size();
-}
-
-void ListModel::updateRows()
-{
-    static int registredCount;
-    const int count = rowCount();
-    if (count != registredCount)
-    {
-        beginInsertRows(QModelIndex(), registredCount, count - 1);
-        registredCount = rowCount();
-        endInsertRows();
-    }
 }
