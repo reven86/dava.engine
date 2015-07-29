@@ -366,6 +366,21 @@ void QtModelPackageCommandExecutor::MoveControls(const DAVA::Vector<ControlNode*
     }
 }
 
+ResultList QtModelPackageCommandExecutor::InsertStyle(StyleSheetNode *styleSheetNode, StyleSheetsNode *dest, DAVA::int32 destIndex)
+{
+    ResultList resultList;
+    if (dest->CanInsertStyle(styleSheetNode, destIndex))
+    {
+        PushCommand(new InsertRemoveStyleCommand(document->GetPackage(), styleSheetNode, dest, destIndex, true));
+    }
+    else
+    {
+        resultList.AddResult(Result::RESULT_ERROR, "Can not inster style sheet!");
+    }
+    
+    return resultList;
+}
+
 void QtModelPackageCommandExecutor::CopyStyles(const DAVA::Vector<StyleSheetNode*> &nodes, StyleSheetsNode *dest, DAVA::int32 destIndex)
 {
     Vector<StyleSheetNode*> nodesToCopy;

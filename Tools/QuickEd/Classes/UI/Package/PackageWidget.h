@@ -70,8 +70,13 @@ private:
     void CollectSelectedStyles(DAVA::Vector<StyleSheetNode*> &nodes, bool forCopy, bool forRemove);
     void CollectSelectedImportedPackages(DAVA::Vector<PackageNode*> &nodes, bool forCopy, bool forRemove);
     void CopyNodesToClipboard(const DAVA::Vector<ControlNode*> &controls, const DAVA::Vector<StyleSheetNode*> &styles);
+
+    template <typename NodeType>
+    void CollectSelectedNodes(const QItemSelection &selected, DAVA::Vector<NodeType*> &nodes, bool forCopy, bool forRemove);
+
     QList<QPersistentModelIndex> GetExpandedIndexes() const;
     
+
 private slots:
     void OnSelectionChanged(const QItemSelection &proxySelected, const QItemSelection &proxyDeselected);
     void filterTextChanged(const QString &);
@@ -81,6 +86,7 @@ private slots:
     void OnCut();
     void OnDelete();
     void OnRename();
+    void OnAddStyle();
 
 private:
     QAction *CreateSeparator();
@@ -93,6 +99,7 @@ private:
     QAction *cutAction;
     QAction *delAction;
     QAction *renameAction;
+    QAction *addStyleAction;
     
     QPointer<FilteredPackageModel> filteredPackageModel;
     QPointer<PackageModel> packageModel;

@@ -83,6 +83,7 @@ PropertiesTreeItemDelegate::PropertiesTreeItemDelegate(QObject *parent)
 
     propertyNameTypeItemDelegates["Sprite"] = new SpritePropertyDelegate(this);
     propertyNameTypeItemDelegates["Font"] = new FontPropertyDelegate(this);
+    propertyNameTypeItemDelegates["font"] = new FontPropertyDelegate(this);
 }
 
 PropertiesTreeItemDelegate::~PropertiesTreeItemDelegate()

@@ -38,9 +38,6 @@ public:
     FontValueProperty(DAVA::BaseObject *object, const DAVA::InspMember *member, const IntrospectionProperty *sourceProperty, eCloneType copyType);
     virtual ~FontValueProperty();
     
-    int GetCount() const override;
-    AbstractProperty *GetProperty(int index) const override;
-
     void Refresh(DAVA::int32 refreshFlags) override;
 
     DAVA::VariantType GetValue() const override;

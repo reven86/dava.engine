@@ -39,6 +39,8 @@
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
+#include "Model/PackageHierarchy/StyleSheetNode.h"
+#include "Model/PackageHierarchy/StyleSheetsNode.h"
 #include "Model/YamlPackageSerializer.h"
 #include "SharedData.h"
 #include "EditorCore.h"
@@ -67,33 +69,7 @@ namespace
         QString filterString;
     };
     
-    template <typename NodeType>
-    void CollectSelectedNodes(const QItemSelection &selected, Vector<NodeType*> &nodes, bool forCopy, bool forRemove)
-    {
-        QModelIndexList selectedIndexList = selected.indexes();
-        
-        if (!selectedIndexList.empty())
-        {
-            for (QModelIndex &index : selectedIndexList)
-            {
-                PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
-                NodeType *convertedNode = dynamic_cast<NodeType*>(node);
-                
-                if (convertedNode && node->GetParent() != nullptr)
-                {
-                    if ((!forCopy || convertedNode->CanCopy()) &&
-                        (!forRemove || convertedNode->CanRemove()))
-                    {
-                        nodes.push_back(convertedNode);
-                    }
-                }
-            }
-        }
-    }
-
 }
-
-
 
 PackageWidget::PackageWidget(QWidget *parent)
     : QDockWidget(parent)
@@ -106,11 +82,13 @@ PackageWidget::PackageWidget(QWidget *parent)
 
     connect(filterLine, &QLineEdit::textChanged, this, &PackageWidget::filterTextChanged);
 
+    addStyleAction = new QAction(tr("Add Style"), this);
+    connect(addStyleAction, &QAction::triggered, this, &PackageWidget::OnAddStyle);
+    
     importPackageAction = new QAction(tr("Import package"), this);
     importPackageAction->setShortcut(QKeySequence::New);
     importPackageAction->setShortcutContext(Qt::WidgetShortcut);
     connect(importPackageAction, &QAction::triggered, this, &PackageWidget::OnImport);
-
 
     cutAction = new QAction(tr("Cut"), this);
     cutAction->setShortcut(QKeySequence::Cut);
@@ -127,22 +105,27 @@ PackageWidget::PackageWidget(QWidget *parent)
     pasteAction->setShortcutContext(Qt::WidgetShortcut);
     connect(pasteAction, &QAction::triggered, this, &PackageWidget::OnPaste);
 
+    renameAction = new QAction(tr("Rename"), this);
+    connect(renameAction, &QAction::triggered, this, &PackageWidget::OnRename);
+    
     delAction = new QAction(tr("Delete"), this);
     delAction->setShortcut(QKeySequence::Delete);
     delAction->setShortcutContext(Qt::WidgetShortcut);
     connect(delAction, &QAction::triggered, this, &PackageWidget::OnDelete);
     
-    renameAction = new QAction(tr("Rename"), this);
-    connect(renameAction, &QAction::triggered, this, &PackageWidget::OnRename);
-    
     treeView->addAction(importPackageAction);
+    treeView->addAction(addStyleAction);
     treeView->addAction(CreateSeparator());
+
     treeView->addAction(cutAction);
     treeView->addAction(copyAction);
     treeView->addAction(pasteAction);
     treeView->addAction(CreateSeparator());
-    treeView->addAction(delAction);
+    
     treeView->addAction(renameAction);
+    treeView->addAction(CreateSeparator());
+    
+    treeView->addAction(delAction);
 }
 
 void PackageWidget::OnDocumentChanged(SharedData *context)
@@ -244,6 +227,7 @@ void PackageWidget::RefreshActions(const QList<PackageBaseNode*> &nodes)
     RefreshAction(delAction, canRemove, true);
 
     RefreshAction(importPackageAction, canInsertPackages, true);
+    RefreshAction(addStyleAction, canInsertStyles, true);
     RefreshAction(renameAction, canEdit, true);
 }
 
@@ -284,6 +268,32 @@ void PackageWidget::CopyNodesToClipboard(const Vector<ControlNode*> &controls, c
         clipboard->setMimeData(data);
     }
 }
+
+template <typename NodeType>
+void PackageWidget::CollectSelectedNodes(const QItemSelection &selected, Vector<NodeType*> &nodes, bool forCopy, bool forRemove)
+{
+    QModelIndexList selectedIndexList = selected.indexes();
+    
+    if (!selectedIndexList.empty())
+    {
+        for (QModelIndex &index : selectedIndexList)
+        {
+            PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
+            NodeType *convertedNode = dynamic_cast<NodeType*>(node);
+            
+            if (convertedNode && node->GetParent() != nullptr)
+            {
+                if ((!forCopy || convertedNode->CanCopy()) &&
+                    (!forRemove || convertedNode->CanRemove()))
+                {
+                    nodes.push_back(convertedNode);
+                }
+            }
+        }
+    }
+}
+
+
 
 void PackageWidget::OnSelectionChanged(const QItemSelection &proxySelected, const QItemSelection &proxyDeselected)
 {
@@ -402,6 +412,19 @@ void PackageWidget::OnRename()
     const auto &selected = treeView->selectionModel()->selectedIndexes();
     DVASSERT(selected.size() == 1);
     treeView->edit(selected.first());
+}
+
+void PackageWidget::OnAddStyle()
+{
+    DAVA::Vector<DAVA::UIStyleSheetSelectorChain> selectorChains;
+    selectorChains.push_back(UIStyleSheetSelectorChain("?"));
+    const DAVA::Vector<DAVA::UIStyleSheetProperty> properties;
+    
+    ScopedPtr<StyleSheetNode> style(new StyleSheetNode(selectorChains, properties));
+    Document *doc = sharedData->GetDocument();
+    StyleSheetsNode *styleSheets = doc->GetPackage()->GetStyleSheets();
+    doc->GetCommandExecutor()->InsertStyle(style, styleSheets, styleSheets->GetCount());
+   
 }
 
 void PackageWidget::filterTextChanged(const QString &filterText)

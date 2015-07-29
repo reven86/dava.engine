@@ -42,16 +42,6 @@ FontValueProperty::~FontValueProperty()
     
 }
 
-int FontValueProperty::GetCount() const
-{
-    return 0;
-}
-
-AbstractProperty *FontValueProperty::GetProperty(int index) const
-{
-    return nullptr;
-}
-
 void FontValueProperty::Refresh(DAVA::int32 refreshFlags)
 {
     IntrospectionProperty::Refresh(refreshFlags);
@@ -62,7 +52,8 @@ void FontValueProperty::Refresh(DAVA::int32 refreshFlags)
 
 VariantType FontValueProperty::GetValue() const
 {
-    return VariantType(presetName);
+    return member->Value(object);
+//    return VariantType(presetName);
 }
 
 void FontValueProperty::ApplyValue(const DAVA::VariantType &value)
