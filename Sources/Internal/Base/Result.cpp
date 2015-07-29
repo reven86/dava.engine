@@ -47,12 +47,8 @@ Result::Result(Result &&result)
 
 void Result::LogResult() const
 {
-    if (message.empty())
-    {
-        return;
-    }
     const Logger *logger = Logger::Instance();
-    if (nullptr == logger)
+    if (nullptr == logger || message.empty())
     {
         return;
     }
