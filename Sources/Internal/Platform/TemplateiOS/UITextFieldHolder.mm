@@ -163,15 +163,23 @@
         if (maxLength >= 0)
         {
             NSString* newString = [[textCtrl valueForKey:@"text"] stringByReplacingCharactersInRange:range withString:string]; // Get string after changing
-            NSUInteger newLength = [newString lengthOfBytesUsingEncoding:NSUTF32StringEncoding] / 4; // Length in UTF32 charactres
-            if (newLength > (NSUInteger)maxLength)
+            NSInteger newLength = [newString length]; // Length in UTF32 charactres
+            if (newLength > maxLength)
             {
                 NSUInteger charsToInsert = 0;
                 if (range.length == 0)
                 {
-                    NSUInteger curLength = [[textCtrl valueForKey:@"text"] lengthOfBytesUsingEncoding:NSUTF32StringEncoding] / 4; // Length in UTF32 charactres
+                    // charactres count independent from encoding and bytes per each charracter
+                    NSUInteger curLength = [[textCtrl valueForKey:@"text"] length];
                     // Inserting without replace.
-                    charsToInsert = (NSUInteger)maxLength - curLength;
+                    if (maxLength >= (NSInteger)curLength)
+                    {
+                        charsToInsert = maxLength - (NSInteger)curLength;
+                    }
+                    else
+                    {
+                        charsToInsert = 0;
+                    }
                 }
                 else
                 {
@@ -179,19 +187,27 @@
                     charsToInsert = range.length;
                 }
                 
-                // Convert NSString to UTF32 bytes array with length of charsToInsert*4 and
-                // back for decrease string length in UTF32 code points
-                NSUInteger byteCount = charsToInsert * 4; // 4 bytes per utf32 character
-                char buffer[byteCount];
-                NSUInteger usedBufferCount;
-                [string getBytes:buffer maxLength:byteCount usedLength:&usedBufferCount encoding:NSUTF32StringEncoding options:0 range:NSMakeRange(0, string.length) remainingRange:NULL];
-                string = [[NSString alloc] initWithBytes:buffer length:usedBufferCount encoding:NSUTF32LittleEndianStringEncoding];
-                DVASSERT(string && "Error on convert utf32 to NSString");
                 
-                NSString* currentText =[textCtrl valueForKey:@"text"];
-                NSString* newText = [currentText stringByReplacingCharactersInRange:range withString:string];
-                [textCtrl setValue:newText forKey:@"text"];
-                needIgnoreDelegateResult = TRUE;
+                if (0 < charsToInsert)
+                {
+                    // Convert NSString to UTF32 bytes array with length of charsToInsert*4 and
+                    // back for decrease string length in UTF32 code points
+                    NSUInteger byteCount = charsToInsert * 4; // 4 bytes per utf32 character
+                    char buffer[byteCount];
+                    NSUInteger usedBufferCount;
+                    [string getBytes:buffer maxLength:byteCount usedLength:&usedBufferCount encoding:NSUTF32StringEncoding options:0 range:NSMakeRange(0, string.length) remainingRange:NULL];
+                    string = [[NSString alloc] initWithBytes:buffer length:usedBufferCount encoding:NSUTF32LittleEndianStringEncoding];
+                    DVASSERT(string && "Error on convert utf32 to NSString");
+                    
+                    NSString* currentText =[textCtrl valueForKey:@"text"];
+                    NSString* newText = [currentText stringByReplacingCharactersInRange:range withString:string];
+                    [textCtrl setValue:newText forKey:@"text"];
+                    needIgnoreDelegateResult = TRUE;
+                }
+                else
+                {
+                    return FALSE;
+                }
             }
         }
 
