@@ -47,15 +47,19 @@ Result::Result(Result &&result)
 
 void Result::LogResult() const
 {
+    if (message.empty())
+    {
+        return;
+    }
     const Logger *logger = Logger::Instance();
     if (nullptr == logger)
     {
         return;
     }
-    Logger::eLogLevel ll = Logger::LEVEL_INFO;
+    Logger::eLogLevel ll = Logger::LEVEL_FRAMEWORK;
     switch (type)
     {
-    case Result::RESULT_SUCCESS: ll = Logger::LEVEL_INFO; break;
+    case Result::RESULT_SUCCESS: ll = Logger::LEVEL_FRAMEWORK; break;
     case Result::RESULT_FAILURE: ll = Logger::LEVEL_WARNING; break;
     case Result::RESULT_ERROR: ll = Logger::LEVEL_ERROR; break;
     }
