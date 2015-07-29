@@ -94,10 +94,11 @@ public:
     virtual void SetTextAlign(int32 _align);
     virtual int32 GetTextAlign() const;
 	virtual int32 GetTextVisualAlign() const;
-	virtual bool GetTextIsRtl() const;
+    virtual bool GetTextIsRtl() const;
 	virtual void SetTextUseRtlAlign(bool useRtlAlign);
     virtual bool GetTextUseRtlAlign() const;
 
+    virtual const WideString& GetVisualText() const;
     const Vector2 & GetTextSize();
 
     void PrepareSprite();
