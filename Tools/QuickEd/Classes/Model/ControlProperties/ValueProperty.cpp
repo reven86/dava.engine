@@ -105,6 +105,11 @@ AbstractProperty *ValueProperty::FindPropertyByPrototype(AbstractProperty *proto
     return prototype == prototypeProperty ? this : nullptr;
 }
 
+bool ValueProperty::HasChanges() const
+{
+    return IsOverriddenLocally();
+}
+
 const DAVA::String &ValueProperty::GetName() const
 {
     return name;

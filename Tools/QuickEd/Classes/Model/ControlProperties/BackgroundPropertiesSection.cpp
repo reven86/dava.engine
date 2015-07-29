@@ -95,7 +95,7 @@ void BackgroundPropertiesSection::CreateControlBackground()
 }
 bool BackgroundPropertiesSection::HasChanges() const
 {
-    return bg && SectionProperty::HasChanges();
+    return bg && SectionProperty<IntrospectionProperty>::HasChanges();
 }
 
 void BackgroundPropertiesSection::Accept(PropertyVisitor *visitor)

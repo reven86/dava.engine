@@ -53,6 +53,7 @@ public:
     const ValueProperty *GetPrototypeProperty() const;
     AbstractProperty *FindPropertyByPrototype(AbstractProperty *prototype) override;
 
+    bool HasChanges() const override;
     const DAVA::String &GetName() const override;
     ePropertyType GetType() const override;
     DAVA::int32 GetStylePropertyIndex() const override;
