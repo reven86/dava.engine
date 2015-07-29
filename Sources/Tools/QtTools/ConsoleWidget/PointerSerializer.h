@@ -40,29 +40,29 @@ public:
     PointerSerializer() = default;
     PointerSerializer(const PointerSerializer &converter) = default;
     PointerSerializer(PointerSerializer &&converter);
-    static PointerSerializer ParseString(const std::string &str);
-    static const char* GetRegex();
-    const std::string& GetText() const;
-    PointerSerializer& operator = (const PointerSerializer &result) = default;
-    PointerSerializer& operator = (PointerSerializer &&result);
-    
-    template <typename T>
-    std::vector<T> GetPointers() const;
     template <typename T>
     PointerSerializer(const T pointer_);
     template <typename Container>
     PointerSerializer(const Container &cont);
-
     PointerSerializer(const std::string &str);
 
+    static PointerSerializer ParseString(const std::string &str);
+    template <typename T>
+    bool CanConvert() const;
+    bool IsValid() const;
+
+    static const char* GetRegex();
+    const std::string& GetText() const;
+    template <typename T>
+    std::vector<T> GetPointers() const;
+
+    PointerSerializer& operator = (const PointerSerializer &result) = default;
+    PointerSerializer& operator = (PointerSerializer &&result);
+    
     template <typename T>
     static std::string FromPointer(const T pointer_);
     template <typename Container>
     static std::string FromPointerList(Container &&cont);
-    
-    template <typename T>
-    bool CanConvert() const;
-    bool IsValid() const;
 private:
     std::vector<void*> pointers;
 
