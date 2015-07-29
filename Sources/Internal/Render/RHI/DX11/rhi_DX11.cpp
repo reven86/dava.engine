@@ -142,7 +142,7 @@ _InitDX11()
     D3D_FEATURE_LEVEL       feature[]       = { D3D_FEATURE_LEVEL_9_1 };
     DXGI_SWAP_CHAIN_DESC    swapchain_desc  = {0};
 
-    #if 1
+    #if 0
     flags |= D3D11_CREATE_DEVICE_DEBUG;
     flags |= D3D11_CREATE_DEVICE_PREVENT_INTERNAL_THREADING_OPTIMIZATIONS;
     #endif
@@ -217,11 +217,11 @@ dx11_Initialize( const InitParam& param )
     VertexBufferDX11::SetupDispatch( &DispatchDX11 );
     IndexBufferDX11::SetupDispatch( &DispatchDX11 );
 //    QueryBufferDX11::SetupDispatch( &DispatchDX11 );
-//    TextureDX11::SetupDispatch( &DispatchDX11 );
+    TextureDX11::SetupDispatch( &DispatchDX11 );
     PipelineStateDX11::SetupDispatch( &DispatchDX11 );
     ConstBufferDX11::SetupDispatch( &DispatchDX11 );
-//    DepthStencilStateDX11::SetupDispatch( &DispatchDX11 );
-//    SamplerStateDX11::SetupDispatch( &DispatchDX11 );
+    DepthStencilStateDX11::SetupDispatch( &DispatchDX11 );
+    SamplerStateDX11::SetupDispatch( &DispatchDX11 );
     RenderPassDX11::SetupDispatch( &DispatchDX11 );
     CommandBufferDX11::SetupDispatch( &DispatchDX11 );
 
@@ -233,7 +233,7 @@ dx11_Initialize( const InitParam& param )
     SetDispatchTable( DispatchDX11 );
 
 
-//    ConstBufferDX11::InitializeRingBuffer( 4*1024*1024 ); // CRAP: hardcoded const ring-buf size
+    ConstBufferDX11::InitializeRingBuffer( 4*1024*1024 ); // CRAP: hardcoded const ring-buf size
 
 
     stat_DIP        = StatSet::AddStat( "rhi'dip", "dip" );

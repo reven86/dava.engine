@@ -2,6 +2,7 @@
 
     #include "../Common/rhi_Private.h"
     #include "../Common/rhi_Pool.h"
+    #include "../Common/rhi_RingBuffer.h"
     #include "../rhi_ShaderCache.h"
     #include "rhi_DX11.h"
 
@@ -40,6 +41,7 @@ _CreateInputLayout( const VertexLayout& layout, const void* code, unsigned code_
 
         elem[elemCount].AlignedByteOffset    = (UINT)(layout.ElementOffset( i ));
         elem[elemCount].SemanticIndex        = layout.ElementSemanticsIndex( i );
+        elem[elemCount].InputSlot            = 0;
         elem[elemCount].InputSlotClass       = D3D11_INPUT_PER_VERTEX_DATA;
         elem[elemCount].InstanceDataStepRate = 0;
 
@@ -48,63 +50,41 @@ _CreateInputLayout( const VertexLayout& layout, const void* code, unsigned code_
             case VS_POSITION : 
             {
                 elem[elemCount].SemanticName = "POSITION"; 
-                elem[elemCount].InputSlot    = VATTR_POSITION;
             }   break;
 
             case VS_NORMAL : 
             {
                 elem[elemCount].SemanticName = "NORMAL"; 
-                elem[elemCount].InputSlot    = VATTR_NORMAL;
             }   break;
 
             case VS_COLOR : 
             {
                 elem[elemCount].SemanticName = "COLOR";
-                switch( layout.ElementSemanticsIndex(i) )
-                {
-                    case 0  : elem[elemCount].InputSlot = VATTR_COLOR_0; break;
-                    case 1  : elem[elemCount].InputSlot = VATTR_COLOR_1; break;
-                }
             }   break;
 
             case VS_TEXCOORD : 
             {
                 elem[elemCount].SemanticName = "TEXCOORD";
-                switch( layout.ElementSemanticsIndex(i) )
-                {
-                    case 0  : elem[elemCount].InputSlot = VATTR_TEXCOORD_0; break;
-                    case 1  : elem[elemCount].InputSlot = VATTR_TEXCOORD_1; break;
-                    case 2  : elem[elemCount].InputSlot = VATTR_TEXCOORD_2; break;
-                    case 3  : elem[elemCount].InputSlot = VATTR_TEXCOORD_3; break;
-                    case 4  : elem[elemCount].InputSlot = VATTR_TEXCOORD_4; break;
-                    case 5  : elem[elemCount].InputSlot = VATTR_TEXCOORD_5; break;
-                    case 6  : elem[elemCount].InputSlot = VATTR_TEXCOORD_6; break;
-                    case 7  : elem[elemCount].InputSlot = VATTR_TEXCOORD_7; break;
-                }
             }   break;
 
             case VS_TANGENT :
             {
                 elem[elemCount].SemanticName = "TANGENT";
-                elem[elemCount].InputSlot    = VATTR_TANGENT;
             }   break;
 
             case VS_BINORMAL: 
             {
                 elem[elemCount].SemanticName = "BINORMAL";
-                elem[elemCount].InputSlot    = VATTR_BINORMAL;
             }   break;
 
             case VS_BLENDWEIGHT : 
             {
                 elem[elemCount].SemanticName = "BLENDWEIGHT";
-                elem[elemCount].InputSlot    = VATTR_BLENDWEIGHT;
             }   break;
                 
             case VS_BLENDINDEX :
             {
                 elem[elemCount].SemanticName = "BLENDINDEX";
-                elem[elemCount].InputSlot    = VATTR_BLENDINDEX;
             }   break;
         }
 
@@ -159,7 +139,7 @@ public:
 
     bool        SetConst( unsigned const_i, unsigned count, const float* data );
     bool        SetConst( unsigned const_i, unsigned const_sub_i, const float* data, unsigned dataCount );
-    void        SetToRHI() const;
+    void        SetToRHI( const void* inst_data ) const;
 
 
 private:
@@ -169,16 +149,20 @@ private:
     ProgType        progType;
     ID3D11Buffer*   buf;
     mutable float*  value;
+    mutable float*  inst;
     unsigned        buf_i;
     unsigned        regCount;
 };
 
-//------------------------------------------------------------------------------
+static RingBuffer   _DefConstRingBuf;
 
+
+//------------------------------------------------------------------------------
 
 ConstBufDX11::ConstBufDX11()
   : buf(nullptr),
     value(nullptr),
+    inst(nullptr),
     buf_i(InvalidIndex),
     regCount(0)
 {
@@ -206,8 +190,8 @@ ConstBufDX11::Construct( ProgType ptype, unsigned bufIndex, unsigned regCnt )
     DX11Command         cmd  = { DX11Command::CREATE_BUFFER, { uint64_t(&desc), NULL, uint64_t(&buf) } };
         
     desc.ByteWidth        = regCnt*4*sizeof(float);
-    desc.Usage            = D3D11_USAGE_DYNAMIC;
-    desc.CPUAccessFlags   = D3D11_CPU_ACCESS_WRITE;
+    desc.Usage            = D3D11_USAGE_DEFAULT;
+    desc.CPUAccessFlags   = 0;//D3D11_CPU_ACCESS_WRITE;
     desc.BindFlags        = D3D11_BIND_CONSTANT_BUFFER;
     desc.MiscFlags        = 0;
         
@@ -216,7 +200,8 @@ ConstBufDX11::Construct( ProgType ptype, unsigned bufIndex, unsigned regCnt )
     if( SUCCEEDED(cmd.retval) )
     {
         progType = ptype;
-        value    = nullptr;
+        value    = (float*)(malloc( regCnt*4*sizeof(float) ));
+        inst     = nullptr;
         buf_i    = bufIndex;
         regCount = regCnt;
     }
@@ -236,12 +221,15 @@ ConstBufDX11::Destroy()
     {
         DX11Command cmd[] = 
         { 
-            { DX11Command::UNMAP_RESOURCE, { uint64_t(static_cast<IUnknown*>(buf)), 0 } } ,
+//            { DX11Command::UNMAP_RESOURCE, { uint64_t(static_cast<IUnknown*>(buf)), 0 } } ,
             { DX11Command::RELEASE, { uint64_t(static_cast<IUnknown*>(buf)) } } 
         };
 
-        if( !value )
-            cmd[0].func = DX11Command::NOP;
+        if( value )
+        {
+            ::free( value );
+            value    = nullptr;
+        }
 
         ExecDX11( cmd, countof(cmd) );
         
@@ -264,17 +252,25 @@ ConstBufDX11::ConstCount() const
 
 //------------------------------------------------------------------------------
 
-void 
-ConstBufDX11::_EnsureMapped()
+const void*
+ConstBufDX11::InstData() const
 {
-    if( !value )
+    if( !inst )
     {
-        D3D11_MAPPED_SUBRESOURCE    rc  = {0};
-        DX11Command                 cmd = { DX11Command::MAP_RESOURCE, { uint64_t(buf), 0, D3D11_MAP_WRITE_DISCARD, 0, uint64_t(&rc) } };
-        
-        ExecDX11( &cmd, 1 );
-        value = (float*)rc.pData;
+        inst = _DefConstRingBuf.Alloc( 4*regCount );
+        memcpy( inst, value, regCount*4*sizeof(float) );
     }
+
+    return inst;    
+}
+
+
+//------------------------------------------------------------------------------
+
+void
+ConstBufDX11::InvalidateInst()
+{
+    inst = nullptr;
 }
 
 
@@ -287,8 +283,8 @@ ConstBufDX11::SetConst( unsigned const_i, unsigned const_count, const float* dat
 
     if( const_i + const_count <= regCount )
     {
-        _EnsureMapped();
         memcpy( value + const_i*4, data, const_count*4*sizeof(float) );
+        inst    = nullptr;
         success = true;
     }
     
@@ -305,8 +301,8 @@ ConstBufDX11::SetConst( unsigned const_i, unsigned const_sub_i, const float* dat
 
     if( const_i <= regCount  &&  const_sub_i < 4 )
     {
-        _EnsureMapped();
         memcpy( value + const_i*4 + const_sub_i, data, dataCount*sizeof(float) );
+        inst    = nullptr;
         success = true;
     }
     
@@ -317,14 +313,10 @@ ConstBufDX11::SetConst( unsigned const_i, unsigned const_sub_i, const float* dat
 //------------------------------------------------------------------------------
 
 void
-ConstBufDX11::SetToRHI() const
+ConstBufDX11::SetToRHI( const void* inst_data ) const
 {
-    if( value )
-    {
-        _D3D11_ImmediateContext->Unmap( buf, 0 );
-        value = nullptr;
-    }
-    
+    _D3D11_ImmediateContext->UpdateSubresource( buf, 0, NULL, inst_data, regCount*4*sizeof(float), 0 );
+
     ID3D11Buffer*   cb[1] = { buf };
 
     if( progType == PROG_VERTEX )
@@ -332,6 +324,7 @@ ConstBufDX11::SetToRHI() const
     else
         _D3D11_ImmediateContext->PSSetConstantBuffers( buf_i, 1, &buf );
 }
+
 
 //==============================================================================
 
@@ -727,11 +720,34 @@ SetupDispatch( Dispatch* dispatch )
 }
 
 void
-SetToRHI( Handle cb )
+SetToRHI( Handle cb, const void* inst_data )
 {
     ConstBufDX11*   cb11 = ConstBufDX11Pool::Get( cb );
     
-    cb11->SetToRHI();
+    cb11->SetToRHI( inst_data );
+}
+
+const void* 
+InstData( Handle cb )
+{
+    ConstBufDX11*   cb11 = ConstBufDX11Pool::Get( cb );
+    
+    return cb11->InstData();
+}
+
+void
+InvalidateAllConstBufferInstances()
+{
+    for( ConstBufDX11Pool::Iterator b=ConstBufDX11Pool::Begin(),b_end=ConstBufDX11Pool::End(); b!=b_end; ++b )
+    {
+        b->InvalidateInst();
+    }
+}
+
+void
+InitializeRingBuffer( uint32 size )
+{
+    _DefConstRingBuf.Initialize( size );
 }
 
 }

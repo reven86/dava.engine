@@ -321,7 +321,7 @@ dx11_CommandBuffer_SetVertexConstBuffer( Handle cmdBuf, uint32 bufIndex, Handle 
     DVASSERT(bufIndex < MAX_CONST_BUFFER_COUNT);
     
     if( buffer != InvalidIndex )
-        CommandBufferPool::Get(cmdBuf)->Command( DX11__SET_VERTEX_PROG_CONST_BUFFER, bufIndex, (uint64)(buffer) );
+        CommandBufferPool::Get(cmdBuf)->Command( DX11__SET_VERTEX_PROG_CONST_BUFFER, bufIndex, (uint64)(buffer), (uint64)(ConstBufferDX11::InstData(buffer)) );
 #endif
 }
 
@@ -381,7 +381,7 @@ dx11_CommandBuffer_SetFragmentConstBuffer( Handle cmdBuf, uint32 bufIndex, Handl
     DVASSERT(bufIndex < MAX_CONST_BUFFER_COUNT);
     
     if( buffer != InvalidIndex )
-        CommandBufferPool::Get(cmdBuf)->Command( DX11__SET_FRAGMENT_PROG_CONST_BUFFER, bufIndex, (uint64)(buffer) );
+        CommandBufferPool::Get(cmdBuf)->Command( DX11__SET_FRAGMENT_PROG_CONST_BUFFER, bufIndex, (uint64)(buffer), (uint64)(ConstBufferDX11::InstData(buffer)) );
 #endif
 }
 
@@ -393,6 +393,7 @@ dx11_CommandBuffer_SetFragmentTexture( Handle cmdBuf, uint32 unitIndex, Handle t
 {
 #if RHI__DX11_USE_DEFERRED_CONTEXT
 #else
+        CommandBufferPool::Get(cmdBuf)->Command( DX11__SET_TEXTURE, tex, unitIndex );
 #endif
 }
 
@@ -404,6 +405,7 @@ dx11_CommandBuffer_SetDepthStencilState( Handle cmdBuf, Handle depthStencilState
 {
 #if RHI__DX11_USE_DEFERRED_CONTEXT
 #else
+    CommandBufferPool::Get(cmdBuf)->Command( DX11__SET_DEPTHSTENCIL_STATE, depthStencilState );
 #endif
 }
 
@@ -415,6 +417,7 @@ dx11_CommandBuffer_SetSamplerState( Handle cmdBuf, const Handle samplerState )
 {
 #if RHI__DX11_USE_DEFERRED_CONTEXT
 #else
+    CommandBufferPool::Get(cmdBuf)->Command( DX11__SET_SAMPLER_STATE, samplerState );
 #endif
 }
 
@@ -426,6 +429,25 @@ dx11_CommandBuffer_DrawPrimitive( Handle cmdBuf, PrimitiveType type, uint32 coun
 {
 #if RHI__DX11_USE_DEFERRED_CONTEXT
 #else
+
+    unsigned                    v_cnt   = 0;
+    D3D11_PRIMITIVE_TOPOLOGY    topo    = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+
+    switch( type )
+    {
+        case PRIMITIVE_TRIANGLELIST :
+            v_cnt = count*3;
+            topo  = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+            break;
+
+        case PRIMITIVE_LINELIST :
+            v_cnt = count*2;
+            topo  = D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
+            break;
+    }
+
+    CommandBufferPool::Get(cmdBuf)->Command( DX11__DRAW_PRIMITIVE, topo, v_cnt, 0 );
+
 #endif
 }
 
@@ -649,7 +671,32 @@ Trace("exec %i\n",int(cmd->func));
         {
             case DX11Command::CREATE_BUFFER :
             {
-                cmd->retval = _D3D11_Device->CreateBuffer( (const D3D11_BUFFER_DESC*)(arg[0]), (const D3D11_SUBRESOURCE_DATA *)(arg[1]), (ID3D11Buffer**)(arg[2]) );
+                cmd->retval = _D3D11_Device->CreateBuffer( (const D3D11_BUFFER_DESC*)(arg[0]), (const D3D11_SUBRESOURCE_DATA*)(arg[1]), (ID3D11Buffer**)(arg[2]) );
+                CHECK_HR(cmd->retval);
+            }   break;
+            
+            case DX11Command::CREATE_TEXTURE2D :
+            {
+                cmd->retval = _D3D11_Device->CreateTexture2D( (const D3D11_TEXTURE2D_DESC*)(arg[0]), (const D3D11_SUBRESOURCE_DATA*)(arg[1]), (ID3D11Texture2D**)(arg[2]) );
+                CHECK_HR(cmd->retval);
+            }   break;
+            
+            case DX11Command::CREATE_SAMPLER :
+            {
+                cmd->retval = _D3D11_Device->CreateSamplerState( (const D3D11_SAMPLER_DESC*)(arg[0]), (ID3D11SamplerState**)(arg[1]) );
+                CHECK_HR(cmd->retval);
+            }   break;
+
+            
+            case DX11Command::CREATE_DEPTHSTENCIL_STATE :
+            {
+                cmd->retval = _D3D11_Device->CreateDepthStencilState( (const D3D11_DEPTH_STENCIL_DESC*)(arg[0]), (ID3D11DepthStencilState**)(arg[1]) );
+                CHECK_HR(cmd->retval);
+            }   break;
+            
+            case DX11Command::CREATE_SHADEER_RESOURCE_VIEW :
+            {
+                cmd->retval = _D3D11_Device->CreateShaderResourceView( (ID3D11Resource*)(arg[0]), (const D3D11_SHADER_RESOURCE_VIEW_DESC*)(arg[1]), (ID3D11ShaderResourceView**)(arg[2]) );
                 CHECK_HR(cmd->retval);
             }   break;
             
@@ -877,7 +924,7 @@ Trace("\n\n-------------------------------\nframe %u generated\n",_Frame.back().
 
 #endif
 
-//    ConstBufferDX11::InvalidateAllConstBufferInstances();
+    ConstBufferDX11::InvalidateAllConstBufferInstances();
 }
 
 
@@ -1074,8 +1121,8 @@ SCOPED_FUNCTION_TIMING();
 
                                 def_viewport.TopLeftX = 0;
                                 def_viewport.TopLeftY = 0;
-                                def_viewport.Width    = desc.Width;
-                                def_viewport.Height   = desc.Height;
+                                def_viewport.Width    = float(desc.Width);
+                                def_viewport.Height   = float(desc.Height);
                                 def_viewport.MinDepth = 0.0f;
                                 def_viewport.MaxDepth = 1.0f;
                                 
@@ -1092,10 +1139,9 @@ SCOPED_FUNCTION_TIMING();
                         _D3D11_ImmediateContext->ClearDepthStencilView( ds_view, D3D11_CLEAR_DEPTH, passCfg.depthStencilBuffer.clearDepth, 0 );
                         ds_view->Release();
                     }
-
-                    _D3D11_ImmediateContext->IASetPrimitiveTopology( cur_topo );
                 }
 
+                _D3D11_ImmediateContext->IASetPrimitiveTopology( cur_topo );
             }   break;
             
             case DX11__END :
@@ -1128,19 +1174,37 @@ SCOPED_FUNCTION_TIMING();
             case DX11__SET_VERTEX_PROG_CONST_BUFFER :
             {
 //                unsigned    buf_i = arg[0];
-                Handle      cb    = Handle(arg[1]);
+                Handle      cb   = Handle(arg[1]);
+                const void* inst = (const void*)(arg[2]);
 
-                ConstBufferDX11::SetToRHI( cb );
-                c += 2;
+                ConstBufferDX11::SetToRHI( cb, inst );
+                c += 3;
             }   break;
 
             case DX11__SET_FRAGMENT_PROG_CONST_BUFFER :
             {
 //                unsigned    buf_i = arg[0];
-                Handle      cb    = Handle(arg[1]);
+                Handle      cb   = Handle(arg[1]);
+                const void* inst = (const void*)(arg[2]);
 
-                ConstBufferDX11::SetToRHI( cb );
-                c += 2;
+                ConstBufferDX11::SetToRHI( cb, inst );
+                c += 3;
+            }   break;
+
+            case DX11__SET_DEPTHSTENCIL_STATE :
+            {
+                Handle  ds = Handle(arg[0]);
+
+                DepthStencilStateDX11::SetToRHI( ds );
+                c += 1;
+            }   break;
+
+            case DX11__SET_SAMPLER_STATE :
+            {
+                Handle  ss = Handle(arg[0]);
+
+                SamplerStateDX11::SetToRHI( ss );
+                c += 1;
             }   break;
 
             case DX11__SET_INDICES :
@@ -1159,6 +1223,34 @@ SCOPED_FUNCTION_TIMING();
                                 : PipelineStateDX11::VertexLayoutStride( cur_pipelinestate );
 
                 c += 2;
+            }   break;
+
+            case DX11__SET_TEXTURE :
+            {
+                Handle      tex    = Handle(arg[0]);
+                unsigned    unit_i = arg[1];
+
+                TextureDX11::SetToRHI( tex, unit_i );
+                c += 2;
+            }   break;
+
+            case DX11__DRAW_PRIMITIVE :
+            {
+                D3D11_PRIMITIVE_TOPOLOGY    topo        = (D3D11_PRIMITIVE_TOPOLOGY)(arg[0]);
+                UINT                        vertexCount = (UINT)(arg[1]);
+                INT                         baseVertex  = (UINT)(arg[2]);
+                
+                if( topo != cur_topo )
+                {
+                    _D3D11_ImmediateContext->IASetPrimitiveTopology( topo );
+                    cur_topo = topo;
+                }
+
+                VertexBufferDX11::SetToRHI( cur_vb, 0, 0, cur_vb_stride );
+
+                _D3D11_ImmediateContext->Draw( vertexCount, baseVertex );
+                
+                c += 3;
             }   break;
 
             case DX11__DRAW_INDEXED_PRIMITIVE :

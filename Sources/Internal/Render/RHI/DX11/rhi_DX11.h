@@ -72,7 +72,10 @@ void        SetToRHI( Handle ps, uint32 layoutUID );
 namespace ConstBufferDX11
 {
 void        SetupDispatch( Dispatch* dispatch );
-void        SetToRHI( Handle cb );
+void        InitializeRingBuffer( uint32 size );
+void        SetToRHI( Handle cb, const void* inst_data );
+const void* InstData( Handle cb );
+void        InvalidateAllConstBufferInstances();
 }
 
 namespace TextureDX11
@@ -113,16 +116,20 @@ DX11Command
     enum 
     Func
     {
-        NOP                      = 0,
+        NOP                             = 0,
         
-        CREATE_BUFFER            = 11,
+        CREATE_BUFFER                   = 11,
+        CREATE_TEXTURE2D                = 12,
+        CREATE_SAMPLER                  = 13,
+        CREATE_DEPTHSTENCIL_STATE       = 14,
+        CREATE_SHADEER_RESOURCE_VIEW    = 19,
 
-        MAP_RESOURCE             = 51,
-        UNMAP_RESOURCE           = 52,
-        UPDATE_RESOURCE          = 53,
+        MAP_RESOURCE                    = 51,
+        UNMAP_RESOURCE                  = 52,
+        UPDATE_RESOURCE                 = 53,
         
-        QUERY_INTERFACE          = 101,
-        RELEASE                  = 102
+        QUERY_INTERFACE                 = 101,
+        RELEASE                         = 102
     };
 
     Func    func;

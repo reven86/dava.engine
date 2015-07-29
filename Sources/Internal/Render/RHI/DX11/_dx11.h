@@ -24,7 +24,7 @@ namespace rhi
 struct InitParam;
 
 
-D3DFORMAT               DX11_TextureFormat( TextureFormat format );
+DXGI_FORMAT             DX11_TextureFormat( TextureFormat format );
 
 void                    InitializeRenderThreadDX11();
 void                    UninitializeRenderThreadDX11();
