@@ -6,6 +6,7 @@
 #include <array>
 #include <functional>
 #include <type_traits>
+#include "Base/Platform.h"
 
 #define FN_CALL_CONV /* __stdcall */
 
@@ -17,16 +18,16 @@ class Closure
 public:
     using Storage = std::array<void *, 4>;
 
-    Closure()
+    Closure() DAVA_NOEXCEPT
     { }
 
-    ~Closure()
+    ~Closure() DAVA_NOEXCEPT
     {
         Clear();
     }
 
     template<typename Hldr, typename Fn, typename... Prms>
-    void BindTrivial(const Fn& fn, Prms... params)
+    void BindTrivial(const Fn& fn, Prms... params) DAVA_NOEXCEPT
     {
         Clear();
         static_assert(sizeof(Hldr) <= sizeof(Storage), "Fn can't be trivially bind");
@@ -34,7 +35,7 @@ public:
     }
 
     template<typename Hldr, typename Fn, typename... Prms>
-    void BindShared(const Fn& fn, Prms... params)
+    void BindShared(const Fn& fn, Prms... params) DAVA_NOEXCEPT
     {
         Clear();
         Hldr *holder = new Hldr(fn, std::forward<Prms>(params)...);
@@ -43,24 +44,24 @@ public:
     }
 
     template<typename Hldr>
-    inline Hldr* GetShared() const
+    inline Hldr* GetShared() const DAVA_NOEXCEPT
     {
         return static_cast<Hldr*>(SharedPtr()->get());
     }
 
     template<typename Hldr>
-    inline Hldr* GetTrivial() const
+    inline Hldr* GetTrivial() const DAVA_NOEXCEPT
     {
         static_assert(sizeof(Hldr) <= sizeof(Storage), "Fn can't be trivially get");
         return reinterpret_cast<Hldr *>((void *)storage.data());
     }
 
-    Closure(const Closure& c)
+    Closure(const Closure& c) DAVA_NOEXCEPT
     {
         Copy(c);
     }
 
-    Closure(Closure&& c)
+    Closure(Closure&& c) DAVA_NOEXCEPT
     {
         Copy(c);
 
@@ -68,7 +69,7 @@ public:
         c.storage.fill(nullptr);
     }
 
-    Closure& operator=(const Closure &c)
+    Closure& operator=(const Closure &c) DAVA_NOEXCEPT
     {
         if (this != &c)
         {
@@ -79,7 +80,7 @@ public:
         return *this;
     }
 
-    Closure& operator=(Closure &&c)
+    Closure& operator=(Closure &&c) DAVA_NOEXCEPT
     {
         Clear();
         shared = c.shared;
@@ -91,7 +92,7 @@ public:
         return *this;
     }
 
-    Closure& operator=(std::nullptr_t)
+    Closure& operator=(std::nullptr_t) DAVA_NOEXCEPT
     {
         Clear();
         return *this;
@@ -101,12 +102,12 @@ protected:
     bool shared = false;
     Storage storage;
 
-    inline std::shared_ptr<void>* SharedPtr() const
+    inline std::shared_ptr<void>* SharedPtr() const DAVA_NOEXCEPT
     {
         return reinterpret_cast<std::shared_ptr<void>*>((void *)storage.data());
     }
 
-    void Clear()
+    void Clear() DAVA_NOEXCEPT
     {
         if (shared)
         {
@@ -116,7 +117,7 @@ protected:
         storage.fill(nullptr);
     }
 
-    void Copy(const Closure& c)
+    void Copy(const Closure& c) DAVA_NOEXCEPT
     {
         shared = c.shared;
         if (shared)
@@ -132,17 +133,17 @@ template<typename Fn, typename Ret, typename... Args>
 class HolderFree
 {
 public:
-    HolderFree(const Fn& _fn)
+    HolderFree(const Fn& _fn) DAVA_NOEXCEPT
         : fn(_fn)
     { }
 
-    static Ret FN_CALL_CONV invokeTrivial(const Closure& storage, Args&&... args)
+    static Ret FN_CALL_CONV invokeTrivial(const Closure& storage, Args&&... args) DAVA_NOEXCEPT
     {
         HolderFree *holder = storage.GetTrivial<HolderFree>();
         return (Ret)holder->fn(std::forward<Args>(args)...);
     }
 
-    static Ret FN_CALL_CONV invokeShared(const Closure& storage, Args&&... args)
+    static Ret FN_CALL_CONV invokeShared(const Closure& storage, Args&&... args) DAVA_NOEXCEPT
     {
         HolderFree *holder = storage.GetShared<HolderFree>();
         return (Ret)holder->fn(std::forward<Args>(args)...);
@@ -160,17 +161,17 @@ class HolderClass
 public:
     using Fn = Ret(Cls::*)(ClsArgs...);
 
-    HolderClass(const Fn& _fn)
+    HolderClass(const Fn& _fn) DAVA_NOEXCEPT
         : fn(_fn)
     { }
 
-    static Ret FN_CALL_CONV invokeTrivial(const Closure &storage, Obj*&& cls, ClsArgs&&... args)
+    static Ret FN_CALL_CONV invokeTrivial(const Closure &storage, Obj*&& cls, ClsArgs&&... args) DAVA_NOEXCEPT
     {
         HolderClass *holder = storage.GetTrivial<HolderClass>();
         return (Ret)(static_cast<Cls*>(cls)->*holder->fn)(std::forward<ClsArgs>(args)...);
     }
 
-    static Ret FN_CALL_CONV invokeShared(const Closure &storage, Obj*&& cls, ClsArgs&&... args)
+    static Ret FN_CALL_CONV invokeShared(const Closure &storage, Obj*&& cls, ClsArgs&&... args) DAVA_NOEXCEPT
     {
         HolderClass *holder = storage.GetShared<HolderClass>();
         return (Ret)(static_cast<Cls*>(cls)->*holder->fn)(std::forward<ClsArgs>(args)...);
@@ -188,18 +189,18 @@ class HolderObject
 public:
     using Fn = Ret(Cls::*)(ClsArgs...);
 
-    HolderObject(const Fn& _fn, Obj* _obj)
+    HolderObject(const Fn& _fn, Obj* _obj) DAVA_NOEXCEPT
         : fn(_fn)
         , obj(_obj)
     { }
 
-    static Ret FN_CALL_CONV invokeTrivial(const Closure &storage, ClsArgs&&... args)
+    static Ret FN_CALL_CONV invokeTrivial(const Closure &storage, ClsArgs&&... args) DAVA_NOEXCEPT
     {
         HolderObject *holder = storage.GetTrivial<HolderObject>();
         return (Ret)(static_cast<Cls *>(holder->obj)->*holder->fn)(std::forward<ClsArgs>(args)...);
     }
 
-    static Ret FN_CALL_CONV invokeShared(const Closure &storage, ClsArgs&&... args)
+    static Ret FN_CALL_CONV invokeShared(const Closure &storage, ClsArgs&&... args) DAVA_NOEXCEPT
     {
         HolderObject *holder = storage.GetShared<HolderObject>();
         return (Ret)(static_cast<Cls *>(holder->obj)->*holder->fn)(std::forward<ClsArgs>(args)...);
@@ -218,12 +219,12 @@ class HolderSharedObject
 public:
     using Fn = Ret(Cls::*)(ClsArgs...);
 
-    HolderSharedObject(const Fn& _fn, const std::shared_ptr<Obj> _obj)
+    HolderSharedObject(const Fn& _fn, const std::shared_ptr<Obj> _obj) DAVA_NOEXCEPT
         : fn(_fn)
         , obj(_obj)
     { }
 
-    static Ret FN_CALL_CONV invokeShared(const Closure &storage, ClsArgs&&... args)
+    static Ret FN_CALL_CONV invokeShared(const Closure &storage, ClsArgs&&... args) DAVA_NOEXCEPT
     {
         HolderSharedObject *holder = storage.GetShared<HolderSharedObject>();
         return (static_cast<Cls*>(holder->obj.get())->*holder->fn)(std::forward<ClsArgs>(args)...);
@@ -254,14 +255,14 @@ class Function<Ret(Args...)>
     friend class Function;
 
 public:
-    Function()
+    Function() DAVA_NOEXCEPT
     { }
 
-    Function(std::nullptr_t)
+    Function(std::nullptr_t) DAVA_NOEXCEPT
     { }
 
     template<typename Fn>
-    Function(const Fn& fn)
+    Function(const Fn& fn) DAVA_NOEXCEPT
     {
         static_assert(!std::is_member_function_pointer<Fn>::value, "There is no appropriate constructor for such Fn type.");
         using Holder = Fn11::HolderFree<Fn, Ret, Args...>;
@@ -269,7 +270,7 @@ public:
     }
 
     template<typename Cls, typename... ClsArgs>
-    Function(Ret(Cls::* const &fn)(ClsArgs...))
+    Function(Ret(Cls::* const &fn)(ClsArgs...)) DAVA_NOEXCEPT
     {
         using Holder = Fn11::HolderClass<Fn11::first_pointer_class_t<Args...>, Ret, Cls, ClsArgs...>;
         using Fn = Ret(Cls::*)(ClsArgs...);
@@ -277,7 +278,7 @@ public:
     }
 
     template<typename Cls, typename... ClsArgs>
-    Function(Ret(Cls::* const &fn)(ClsArgs...) const)
+    Function(Ret(Cls::* const &fn)(ClsArgs...) const) DAVA_NOEXCEPT
     {
         using Holder = Fn11::HolderClass<Fn11::first_pointer_class_t<Args...>, Ret, Cls, ClsArgs...>;
         using Fn = Ret(Cls::*)(ClsArgs...);
@@ -285,7 +286,7 @@ public:
     }
 
     template<typename Obj, typename Cls, typename... ClsArgs>
-    Function(Obj *obj, Ret(Cls::* const &fn)(ClsArgs...))
+    Function(Obj *obj, Ret(Cls::* const &fn)(ClsArgs...)) DAVA_NOEXCEPT
     {
         using Holder = Fn11::HolderObject<Obj, Ret, Cls, ClsArgs...>;
         using Fn = Ret(Cls::*)(ClsArgs...);
@@ -293,7 +294,7 @@ public:
     }
 
     template<typename Obj, typename Cls, typename... ClsArgs>
-    Function(Obj *obj, Ret(Cls::* const &fn)(ClsArgs...) const)
+    Function(Obj *obj, Ret(Cls::* const &fn)(ClsArgs...) const) DAVA_NOEXCEPT
     {
         using Holder = Fn11::HolderObject<Obj, Ret, Cls, ClsArgs...>;
         using Fn = Ret(Cls::*)(ClsArgs...);
@@ -301,7 +302,7 @@ public:
     }
 
     template<typename Obj, typename Cls, typename... ClsArgs>
-    Function(const std::shared_ptr<Obj> &obj, Ret(Cls::* const &fn)(ClsArgs...))
+    Function(const std::shared_ptr<Obj> &obj, Ret(Cls::* const &fn)(ClsArgs...)) DAVA_NOEXCEPT
     {
         using Holder = Fn11::HolderSharedObject<Obj, Ret, Cls, ClsArgs...>;
         using Fn = Ret(Cls::*)(ClsArgs...);
@@ -312,7 +313,7 @@ public:
     }
 
     template<typename Obj, typename Cls, typename... ClsArgs>
-    Function(const std::shared_ptr<Obj> &obj, Ret(Cls::* const &fn)(ClsArgs...) const)
+    Function(const std::shared_ptr<Obj> &obj, Ret(Cls::* const &fn)(ClsArgs...) const) DAVA_NOEXCEPT
     {
         using Holder = Fn11::HolderSharedObject<Obj, Ret, Cls, ClsArgs...>;
         using Fn = Ret(Cls::*)(ClsArgs...);
@@ -322,12 +323,12 @@ public:
         invoker = &Holder::invokeShared;
     }
 
-    Function(const Function& fn) throw()
+    Function(const Function& fn) DAVA_NOEXCEPT
         : invoker(fn.invoker)
         , closure(fn.closure)
     { }
 
-    Function(Function&& fn) throw()
+    Function(Function&& fn) DAVA_NOEXCEPT
         : invoker(fn.invoker)
         , closure(std::move(fn.closure))
     {
@@ -335,19 +336,19 @@ public:
     }
 
     template<typename AnotherRet>
-    Function(const Function<AnotherRet(Args...)> &fn)
+    Function(const Function<AnotherRet(Args...)> &fn) DAVA_NOEXCEPT
         : invoker(fn.invoker)
         , closure(fn.closure)
     { }
 
-    Function& operator=(std::nullptr_t) throw()
+    Function& operator=(std::nullptr_t) DAVA_NOEXCEPT
     {
         invoker = nullptr;
         closure = nullptr;
         return *this;
     }
 
-    Function& operator=(const Function &fn) throw()
+    Function& operator=(const Function &fn) DAVA_NOEXCEPT
     {
         if (this != &fn)
         {
@@ -357,7 +358,7 @@ public:
         return *this;
     }
 
-    Function& operator=(Function&& fn) throw()
+    Function& operator=(Function&& fn) DAVA_NOEXCEPT
     {
         closure = std::move(fn.closure);
         invoker = fn.invoker;
@@ -365,24 +366,23 @@ public:
         return *this;
     }
 
-    bool operator==(std::nullptr_t) const throw()
+    bool operator==(std::nullptr_t) const DAVA_NOEXCEPT
     {
         return (nullptr == invoker);
     }
 
-    bool operator!=(std::nullptr_t) const throw()
+    bool operator!=(std::nullptr_t) const DAVA_NOEXCEPT
     {
         return !operator==(nullptr);
     }
 
-    operator bool() const throw()
+    operator bool() const DAVA_NOEXCEPT
     {
         return !operator==(nullptr);
     }
 
-    inline Ret FN_CALL_CONV operator()(Args... args) const throw()
+    inline Ret FN_CALL_CONV operator()(Args... args) const DAVA_NOEXCEPT
     {
-        //return Fn11::HolderObject::invokeTrivial(*this, std::forward<Args>(args)...);
         return invoker(closure, std::forward<Args>(args)...);
     }
 
@@ -393,7 +393,7 @@ protected:
     Fn11::Closure closure;
 
     template<typename Hldr, typename Fn, typename... Prms, bool trivial = true>
-    void Init(const Fn& fn, Prms&&... params)
+    void Init(const Fn& fn, Prms&&... params) DAVA_NOEXCEPT
     {
         Detail<(trivial && sizeof(Hldr) <= sizeof(Fn11::Closure::Storage)
             && std::is_trivially_destructible<Fn>::value
@@ -410,7 +410,7 @@ private:
     template<typename Hldr, typename Fn, typename... Prms>
     struct Detail<true, Hldr, Fn, Prms...>
     {
-        static void Init(Function *that, const Fn& fn, Prms&&... params)
+        static void Init(Function *that, const Fn& fn, Prms&&... params) DAVA_NOEXCEPT
         {
             that->closure.template BindTrivial<Hldr, Fn>(fn, std::forward<Prms>(params)...);
             that->invoker = &Hldr::invokeTrivial;
@@ -421,7 +421,7 @@ private:
     template<typename Hldr, typename Fn, typename... Prms>
     struct Detail<false, Hldr, Fn, Prms...>
     {
-        static void Init(Function *that, const Fn& fn, Prms&&... params)
+        static void Init(Function *that, const Fn& fn, Prms&&... params) DAVA_NOEXCEPT
         {
             that->closure.template BindShared<Hldr, Fn>(fn, std::forward<Prms>(params)...);
             that->invoker = &Hldr::invokeShared;
