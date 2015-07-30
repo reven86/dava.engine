@@ -37,7 +37,6 @@
 #include "Render/Texture.h"
 #include "Render/2D/Sprite.h"
 #include "Render/2D/Font.h"
-#include "Platform/Mutex.h"
 
 namespace DAVA
 {

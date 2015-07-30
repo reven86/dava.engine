@@ -46,7 +46,7 @@ static const float32 MAX_ROTATION_ANGLE = 180.0f;
 
 void VegetationCustomGeometry::CustomMaterialTransformer::TransformMaterialOnCreate(NMaterial* mat)
 {
-    mat->AddNodeFlags(DataNode::NodeRuntimeFlag);
+    mat->SetRuntime(true);
     mat->SetRenderLayers(1 << RENDER_LAYER_VEGETATION_ID);
 }
 

@@ -84,7 +84,7 @@ namespace DAVA
 		typedef typename Select<IsPlaceholder<P5>::result, typename TL::TypeAtNonStrict<RealParamsFullList, PlaceholderIndex<P5>::value>::Result, NullType>::Result OutgoingOrderType5;
 		typedef typename Select<IsPlaceholder<P6>::result, typename TL::TypeAtNonStrict<RealParamsFullList, PlaceholderIndex<P6>::value>::Result, NullType>::Result OutgoingOrderType6;
 		typedef typename Select<IsPlaceholder<P7>::result, typename TL::TypeAtNonStrict<RealParamsFullList, PlaceholderIndex<P7>::value>::Result, NullType>::Result OutgoingOrderType7;
-		typedef typename Select<IsPlaceholder<P8>::result, typename TL::TypeAtNonStrict<RealParamsFullList, PlaceholderIndex<P7>::value>::Result, NullType>::Result OutgoingOrderType8;
+		typedef typename Select<IsPlaceholder<P8>::result, typename TL::TypeAtNonStrict<RealParamsFullList, PlaceholderIndex<P8>::value>::Result, NullType>::Result OutgoingOrderType8;
 
 		typedef Typelist<NullType, NullType> OutgoingFunctionParamsList0;
 		typedef typename TL::Append<OutgoingFunctionParamsList0, OutgoingOrderType1>::Result OutgoingFunctionParamsList1;

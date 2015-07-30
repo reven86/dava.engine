@@ -35,7 +35,7 @@
 #include <QSize>
 #include "DAVAEngine.h"
 
-#include "Result.h"
+#include "Base/Result.h"
 #include "ControlSelectionListener.h"
 
 class PackageCanvas;
@@ -62,8 +62,7 @@ public:
     DAVA::UIControl *GetViewControl() const;
 
     void SetRootControls(const QList<ControlNode*> &activatedControls);
-    void ControlsDeactivated(const QList<ControlNode*> &deactivatedControls);
-    void ControlsActivated(const QList<ControlNode *> &activatedControls);
+    void SetSelectedControls(const QList<ControlNode *> &selectedControls);
 
     // ControlSelectionListener
     virtual void OnControlSelected(const DAVA::List<std::pair<DAVA::UIControl *, DAVA::UIControl*> > &selectedPairs) override;
@@ -74,7 +73,7 @@ signals:
 
     void ControlNodeSelected(const QList<ControlNode *> &selectedNodes);
 
-    void ErrorOccurred(const Result &error);
+    void ErrorOccurred(const DAVA::ResultList &error);
 
 private:
     CheckeredCanvas *FindControlContainer(DAVA::UIControl *control);

@@ -44,6 +44,7 @@
 #include <stack>
 #include <queue>
 #include <array>
+#include <bitset>
 #include <unordered_map>
 #include <unordered_set>
 #include <sstream>
@@ -51,7 +52,7 @@
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
 #   include "MemoryManager/AllocPools.h"
-#   include "MemoryManager/MemoryManagerAllocator.h"
+#   include "MemoryManager/TrackingAllocator.h"
 #endif
 
 namespace DAVA
@@ -92,10 +93,10 @@ static_assert(sizeof(float32) == 4, "Invalid type size!");
 static_assert(sizeof(float64) == 8, "Invalid type size!");
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
-// FIX: replace DefaultSTLAllocator with MemoryManagerAllocator after fixing framework and game codebases
+// FIX: replace DefaultSTLAllocator with TrackingAllocator after fixing framework and game codebases
 template<typename T>
 using DefaultSTLAllocator = std::allocator<T>;
-//using DefaultSTLAllocator = MemoryManagerAllocator<T, ALLOC_POOL_APP>;
+//using DefaultSTLAllocator = TrackingAllocator<T, ALLOC_POOL_DEFAULT>;
 #else
 template<typename T>
 using DefaultSTLAllocator = std::allocator<T>;
@@ -112,8 +113,8 @@ using BasicStringStream = std::basic_stringstream<CharT, std::char_traits<CharT>
 
 using StringStream = BasicStringStream<char8>;
 
-template< class T, 
-          std::size_t N > 
+template<typename T,
+         std::size_t N>
 using Array = std::array<T, N>;
 
 template<typename T>
@@ -159,12 +160,30 @@ template<typename Key,
          typename KeyEqual = std::equal_to<Key>>
 using UnorderedMap = std::unordered_map<Key, T, Hash, KeyEqual, DefaultSTLAllocator<std::pair<const Key, T>>>;
 
+template<size_t Bits>
+using Bitset = std::bitset<Bits>;
+
 #ifdef min
 #   undef min
 #endif
 #ifdef max
 #   undef max
 #endif
+
+/*
+ Useful functions to offset pointer by specified number of bytes without long cast sequences.
+*/
+template<typename T>
+inline T* OffsetPointer(void* ptr, ptrdiff_t offset)
+{
+    return reinterpret_cast<T*>(static_cast<uint8*>(ptr) + offset);
+}
+
+template<typename T>
+inline const T* OffsetPointer(const void* ptr, ptrdiff_t offset)
+{
+    return reinterpret_cast<const T*>(static_cast<const uint8*>(ptr) + offset);
+}
 
 template <class T>
 inline T Min(T a, T b)
@@ -222,11 +241,11 @@ void SafeDeleteArray(TYPE * & d)
 }
 
 #ifndef SAFE_DELETE // for compatibility with FCollada
-#   define SAFE_DELETE(x) if (x) { delete x; x = nullptr; };
+#define SAFE_DELETE(x)  DAVA::SafeDelete(x)
 #endif 
 
 #ifndef SAFE_DELETE_ARRAY // for compatibility with FCollada
-#   define SAFE_DELETE_ARRAY(x) if (x) { delete [] x; x = nullptr; };
+#define SAFE_DELETE_ARRAY(x)    DAVA::SafeDeleteArray(x)
 #endif
 
 #ifndef OBJC_SAFE_RELEASE
@@ -267,6 +286,6 @@ enum class eErrorCode
     ERROR_WRITE_FAIL
 };
 
-};
+}   // namespace DAVA
 
 #endif  // __DAVAENGINE_BASETYPES_H__

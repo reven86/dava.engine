@@ -182,6 +182,12 @@ DV_LOCAL_CPPFLAGS += -Wno-mismatched-tags
 DV_LOCAL_CPPFLAGS += -Wno-missing-noreturn
 DV_LOCAL_CPPFLAGS += -Wno-consumed
 DV_LOCAL_CPPFLAGS += -Wno-sometimes-uninitialized
+DV_LOCAL_CPPFLAGS += -Wno-reserved-id-macro
+DV_LOCAL_CPPFLAGS += -Wno-old-style-cast
+DV_LOCAL_CPPFLAGS += -Wno-inconsistent-missing-override
+DV_LOCAL_CPPFLAGS += -Wno-unused-local-typedef
+DV_LOCAL_CPPFLAGS += -Wno-unreachable-code-return
+DV_LOCAL_CPPFLAGS += -Wno-unknown-warning-option
 
 DV_LOCAL_CPP_FEATURES += exceptions
 
@@ -257,6 +263,13 @@ include $(CLEAR_VARS)
 # set module name
 LOCAL_MODULE := libInternalPart1
 
+# On arm architectures add sysroot option to be able to use 
+# _Unwind_Backtrace and _Unwind_GetIP for collecting backtraces
+# TODO: review checking arm arch and $(ANDROID_NDK_ROOT) 
+ifeq ($(TARGET_ARCH_ABI), armeabi-v7a)
+       DV_LOCAL_CFLAGS += --sysroot=$(ANDROID_NDK_ROOT)/platforms/$(APP_PLATFORM)/arch-arm
+endif
+
 LOCAL_C_INCLUDES := $(DV_LOCAL_C_INCLUDES)
 LOCAL_EXPORT_C_INCLUDES := $(DV_LOCAL_EXPORT_C_INCLUDES)
 LOCAL_ARM_NEON := $(DV_LOCAL_ARM_NEON)
@@ -292,11 +305,13 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Network/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Network/Base/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Network/Services/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Network/Services/MMNet/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Network/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Particles/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Platform/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Platform/TemplateAndroid/*.cpp) \
-                     $(wildcard $(LOCAL_PATH)/Platform/TemplateAndroid/BacktraceAndroid/*.cpp))
+                     $(wildcard $(LOCAL_PATH)/Platform/TemplateAndroid/BacktraceAndroid/*.cpp) \
+	                 $(wildcard $(LOCAL_PATH)/Platform/TemplateAndroid/ExternC/*.cpp))
                      
 include $(BUILD_STATIC_LIBRARY)
 
@@ -341,9 +356,10 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Scene3D/Systems/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Scene3D/Systems/Controller/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Sound/*.cpp) \
-                     $(wildcard $(LOCAL_PATH)/Thread/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Concurrency/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/Components/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/UI/Styles/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UnitTests/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Utils/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Job/*.cpp) \

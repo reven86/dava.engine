@@ -121,7 +121,7 @@ namespace DAVA
 		String archiveName = Format("%s", auxArg.c_str());
 		if (!dbClient->FindObjectByKey(archiveName, dbUpdateObject))
 		{
-			autoSys->ForceQuit(Format("Couldn't find '%s' archive.", archiveName.c_str()));
+            return nullptr;
 		}
 		dbUpdateObject->LoadData();
 		return dbUpdateObject->GetData();
@@ -129,40 +129,18 @@ namespace DAVA
 
 	KeyedArchive *AutotestingDB::FindOrInsertBuildArchive(MongodbUpdateObject *dbUpdateObject, const String &auxArg)
 	{
-		String testsName;
-
-		if (auxArg.length() != 0)
+        if (auxArg.length() == 0)
+        {
+            autoSys->ForceQuit("Archive name is empty.");
+        }
+        String archiveName = Format("%s", auxArg.c_str());
+		if (!dbClient->FindObjectByKey(archiveName, dbUpdateObject))
 		{
-			testsName = Format("%s", auxArg.c_str());
+			dbUpdateObject->SetObjectName(archiveName);
+			Logger::Debug("AutotestingSystem::InsertNewArchive  %s", archiveName.c_str());
 		}
-		else
-		{
-			testsName = Format("%s_%s_%s", autoSys->buildDate.c_str(), autoSys->buildId.c_str(), autoSys->deviceName.c_str());
-		}
-
-		bool isFound = dbClient->FindObjectByKey(testsName, dbUpdateObject);
-
-		if (!isFound)
-		{
-			dbUpdateObject->SetObjectName(testsName);
-			dbUpdateObject->AddString("Platform", DeviceInfo::GetPlatformString());
-			dbUpdateObject->AddString("Date", autoSys->buildDate.c_str());
-			dbUpdateObject->AddString("RunId", autoSys->runId.c_str());
-			dbUpdateObject->AddString("Device", autoSys->deviceName.c_str());
-			dbUpdateObject->AddString("BuildId", autoSys->buildId.c_str());
-			dbUpdateObject->AddString("Branch", autoSys->branch.c_str());
-			dbUpdateObject->AddString("BranchRevision", autoSys->branchRev.c_str());
-			dbUpdateObject->AddString("Framework", autoSys->framework.c_str());
-			dbUpdateObject->AddString("FrameworkRevision", autoSys->frameworkRev.c_str());
-			// TODO: After realization GetOsVersion() DF-3940
-			dbUpdateObject->AddString("OSVersion", DeviceInfo::GetVersion());
-			dbUpdateObject->AddString("Model", DeviceInfo::GetModel());
-			Logger::FrameworkDebug("AutotestingSystem::InsertTestArchive new MongodbUpdateObject %s", testsName.c_str());
-		}
-
 		dbUpdateObject->LoadData();
 		KeyedArchive *dbUpdateData = dbUpdateObject->GetData();
-
 		return dbUpdateData;
 	}
 

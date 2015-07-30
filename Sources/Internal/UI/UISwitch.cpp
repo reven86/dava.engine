@@ -308,6 +308,7 @@ void UISwitch::ChangeVisualState()
 {
     buttonLeft->SetSelected(isLeftSelected);
     buttonRight->SetSelected(!isLeftSelected);
+    SetSelected(!isLeftSelected);
     BringChildBack(isLeftSelected ? buttonLeft.Get() : buttonRight.Get());
 }
 

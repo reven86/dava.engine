@@ -188,8 +188,9 @@ void UIControlBackground::SetAlign(int32 drawAlign)
 }
 void UIControlBackground::SetDrawType(UIControlBackground::eDrawType drawType)
 {
+    if (type != drawType)
+        ReleaseDrawData();
     type = drawType;
-    ReleaseDrawData();
 }
 
 void UIControlBackground::SetModification(int32 modification)

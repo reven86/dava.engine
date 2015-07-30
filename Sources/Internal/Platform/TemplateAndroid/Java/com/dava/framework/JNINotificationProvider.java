@@ -6,6 +6,8 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.support.v4.app.NotificationCompat;
 
 import java.util.Calendar;
@@ -61,40 +63,57 @@ public class JNINotificationProvider {
     	}
     }
     
-	static void NotifyProgress(String uid, String title, String text, int maxValue, int value) {
+	static void NotifyProgress(String uid, String title, String text, int maxValue, int value, boolean useSound) {
 		if (isInited) {
 			CleanBuilder();
+			
+			Uri uri = null;
+	        if (useSound)
+	        {
+	            uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);    
+	        }
+	        
 			builder.setContentTitle(title)
 				.setContentText(text)
-				.setProgress(maxValue, value, false);
+				.setProgress(maxValue, value, false)
+				.setSound(uri);
 			
 			notificationManager.notify(uid, 0, builder.build());
 		}
 	}
 	
-    static void NotifyText(String uid, String title, String text) {
+    static void NotifyText(String uid, String title, String text, boolean useSound) {
 		if (isInited) {
 			CleanBuilder();
+			
+			Uri uri = null;
+	        if (useSound)
+	        {
+	            uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);    
+	        }
+	        
 			builder.setContentTitle(title)
-					.setContentText(text);
+					.setContentText(text)
+					.setSound(uri);
 
+	        
 			notificationManager.notify(uid, 0, builder.build());
 		}
 	}
 
-    static void NotifyDelayed(String uid, String title, String text, int delaySeconds) {
+    static void NotifyDelayed(String uid, String title, String text, int delaySeconds, boolean useSound) {
         Context context = JNIApplication.GetApplication();
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(context, ScheduledNotificationReceiver.class);
         intent.putExtra("uid", uid);
-        //intent.putExtra("action", action);
         intent.putExtra("icon", icon);
         intent.putExtra("title", title);
         intent.putExtra("text", text);
+        intent.putExtra("useSound", useSound);
 		if(JNIActivity.GetActivity() != null) {
 			intent.putExtra("activityClassName", JNIActivity.GetActivity().getClass().getName());
 		}
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0 /*(int) System.currentTimeMillis()*/, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         alarmManager.set(AlarmManager.RTC_WAKEUP, Calendar.getInstance().getTimeInMillis() + delaySeconds * 1000, pendingIntent);
     }
 

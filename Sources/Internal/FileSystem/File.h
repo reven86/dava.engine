@@ -75,11 +75,12 @@ public:
 		SEEK_FROM_END		= 2, //! Seek from end of file
 		SEEK_FROM_CURRENT	= 3, //! Seek from current file position relatively
 	};
+
 protected:
-	virtual ~ File();
+    File() = default;
+    virtual ~ File();
+
 public:
-	File();
-	
 	/** 
 		\brief function to create a file instance with give attributes.
         Use framework notation for paths.
@@ -219,7 +220,13 @@ public:
         \param size A size, that file is going to be truncated to
     */
     bool Truncate(int32 size);
-	
+
+    /**
+        \brief Flushes file buffers to output device
+        \return true on success
+    */
+    virtual bool Flush();
+
     static String GetModificationDate(const FilePath & filePathname);
 
 private:
@@ -227,10 +234,11 @@ private:
     bool GetNextChar(uint8 *nextChar);
 
 private:
-	FILE	*	file;
-	uint32		size;
+    FILE* file = nullptr;
+    uint32 size = 0;
+
 protected:
-	FilePath	filename;
+    FilePath filename;
 };
     
     

@@ -37,7 +37,7 @@
 #include "Notification/LocalNotificationImpl.h"
 #include "Platform/TemplateAndroid/JniExtensions.h"
 #include "Base/Message.h"
-#include "Platform/Mutex.h"
+#include "Concurrency/Mutex.h"
 #include "Platform/TemplateAndroid/JniHelpers.h"
 
 namespace DAVA
@@ -49,20 +49,20 @@ public:
 	LocalNotificationAndroid(const String &_id);
 	virtual void SetAction(const WideString &action);
 	virtual void Hide();
-	virtual void ShowText(const WideString &title, const WideString text);
-	virtual void ShowProgress(const WideString &title, const WideString text, const uint32 total, const uint32 progress);
-    virtual void PostDelayedNotification(WideString const &title, WideString const &text, int delaySeconds);
+	virtual void ShowText(const WideString &title, const WideString &text, const bool useSound);
+	virtual void ShowProgress(const WideString &title, const WideString &text, const uint32 total, const uint32 progress, bool useSound);
+    virtual void PostDelayedNotification(WideString const &title, WideString const &text, int delaySeconds, bool useSound);
     virtual void RemoveAllDelayedNotifications();
 
 private:
 	Mutex javaCallMutex;
 	JNI::JavaClass notificationProvider;
 
-	Function<void (jstring, jstring, jstring)> setText;
-	Function<void (jstring, jstring, jstring, jint, jint)> setProgress;
+	Function<void (jstring, jstring, jstring, jboolean)> setText;
+	Function<void (jstring, jstring, jstring, jint, jint, jboolean)> setProgress;
 	Function<void (jstring)> hideNotification;
 	Function<void (jstring)> enableTapAction;
-	Function<void (jstring, jstring, jstring, jint)> notifyDelayed;
+	Function<void (jstring, jstring, jstring, jint, jboolean)> notifyDelayed;
 	Function<void ()> removeAllDelayedNotifications;
 };
 

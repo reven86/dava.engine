@@ -32,6 +32,7 @@
 #include "PackageVisitor.h"
 #include "PackageControlsNode.h"
 #include "ImportedPackagesNode.h"
+#include "StyleSheetsNode.h"
 #include "PackageListener.h"
 #include "../ControlProperties/RootProperty.h"
 
@@ -40,11 +41,10 @@ using namespace DAVA;
 PackageNode::PackageNode(const FilePath &aPath)
     : PackageBaseNode(nullptr)
     , path(aPath)
-    , importedPackagesNode(nullptr)
-    , packageControlsNode(nullptr)
 {
     importedPackagesNode = new ImportedPackagesNode(this);
     packageControlsNode = new PackageControlsNode(this);
+    styleSheets = new StyleSheetsNode(this);
     name = path.GetBasename();
 }
 
@@ -52,23 +52,35 @@ PackageNode::~PackageNode()
 {
     importedPackagesNode->SetParent(nullptr);
     SafeRelease(importedPackagesNode);
+    
     packageControlsNode->SetParent(nullptr);
     SafeRelease(packageControlsNode);
+
+    styleSheets->SetParent(nullptr);
+    SafeRelease(styleSheets);
 }
 
 int PackageNode::GetCount() const
 {
-    return 2;
+    return 3;
 }
 
 PackageBaseNode *PackageNode::Get(int index) const
 {
-    if (index == 0)
-        return importedPackagesNode;
-    else if (index == 1)
-        return packageControlsNode;
-    else
-        return nullptr;
+    switch (index)
+    {
+        case 0:
+            return importedPackagesNode;
+            
+        case 1:
+            return styleSheets;
+
+        case 2:
+            return packageControlsNode;
+            
+    }
+    DVASSERT(false);
+    return nullptr;
 }
 
 void PackageNode::Accept(PackageVisitor *visitor)
@@ -101,9 +113,14 @@ bool PackageNode::IsImported() const
     return GetParent() != nullptr;
 }
 
+bool PackageNode::CanRemove() const
+{
+    return GetParent() != nullptr && !GetParent()->IsReadOnly();
+}
+
 bool PackageNode::IsReadOnly() const
 {
-    return GetParent() != nullptr ? GetParent()->IsReadOnly() : false;
+    return GetParent() != nullptr;
 }
 
 ImportedPackagesNode *PackageNode::GetImportedPackagesNode() const
@@ -114,6 +131,11 @@ ImportedPackagesNode *PackageNode::GetImportedPackagesNode() const
 PackageControlsNode *PackageNode::GetPackageControlsNode() const
 {
     return packageControlsNode;
+}
+
+StyleSheetsNode *PackageNode::GetStyleSheets() const
+{
+    return styleSheets;
 }
 
 PackageNode *PackageNode::FindImportedPackage(const DAVA::FilePath &path) const

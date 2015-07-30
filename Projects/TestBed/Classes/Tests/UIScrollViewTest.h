@@ -29,27 +29,25 @@
 #ifndef __UISCROLL_VIEW_TEST__
 #define __UISCROLL_VIEW_TEST__
 
-#include "BaseScreen.h"
-
-using namespace DAVA;
+#include "Infrastructure/BaseScreen.h"
 
 class UIScrollViewTest: public BaseScreen
 {
 protected:
     ~UIScrollViewTest(){}
 public:
-	UIScrollViewTest();
+    UIScrollViewTest();
 
-	virtual void LoadResources();
-	virtual void UnloadResources();
-	
+    void LoadResources() override;
+    void UnloadResources() override;
+
 private:
-	void ButtonPressed(BaseObject *obj, void *data, void *callerData);
-	
+    void ButtonPressed(DAVA::BaseObject *obj, void *data, void *callerData);
+    
 private:
-	UIButton* 		finishTestBtn;
-	UIStaticText*	testMessageText;
-	UIScrollView*	scrollView;
+    DAVA::UIButton*         finishTestBtn;
+    DAVA::UIStaticText*    testMessageText;
+    DAVA::UIScrollView*    scrollView;
 };
 
 #endif /* defined(__UISCROLL_VIEW_TEST__) */
