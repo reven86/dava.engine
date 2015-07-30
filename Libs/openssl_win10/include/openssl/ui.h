@@ -60,7 +60,7 @@
 #ifndef HEADER_UI_H
 # define HEADER_UI_H
 
-# ifdef OPENSSL_USE_DEPRECATED
+# ifndef OPENSSL_NO_DEPRECATED
 #  include <openssl/crypto.h>
 # endif
 # include <openssl/safestack.h>

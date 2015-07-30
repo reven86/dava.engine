@@ -70,8 +70,14 @@ extern "C" {
 
 # define OPENSSL_SYS_UNIX
 
+/* ---------------------- Macintosh, before MacOS X ----------------------- */
+# if defined(__MWERKS__) && defined(macintosh) || defined(OPENSSL_SYSNAME_MAC)
+#  undef OPENSSL_SYS_UNIX
+#  define OPENSSL_SYS_MACINTOSH_CLASSIC
+# endif
+
 /* ---------------------- NetWare ----------------------------------------- */
-# if defined(NETWARE) && !defined(OPENSSL_SYS_NETWARE)
+# if defined(NETWARE) || defined(OPENSSL_SYSNAME_NETWARE)
 #  undef OPENSSL_SYS_UNIX
 #  define OPENSSL_SYS_NETWARE
 # endif
@@ -82,39 +88,46 @@ extern "C" {
  * Note that MSDOS actually denotes 32-bit environments running on top of
  * MS-DOS, such as DJGPP one.
  */
-# if defined(OPENSSL_SYS_MSDOS)
+# if defined(OPENSSL_SYSNAME_MSDOS)
 #  undef OPENSSL_SYS_UNIX
+#  define OPENSSL_SYS_MSDOS
 # endif
 
 /*
  * For 32 bit environment, there seems to be the CygWin environment and then
  * all the others that try to do the same thing Microsoft does...
  */
-# if defined(OPENSSL_SYS_UWIN)
+# if defined(OPENSSL_SYSNAME_UWIN)
 #  undef OPENSSL_SYS_UNIX
 #  define OPENSSL_SYS_WIN32_UWIN
 # else
-#  if defined(__CYGWIN__) || defined(OPENSSL_SYS_CYGWIN)
+#  if defined(__CYGWIN__) || defined(OPENSSL_SYSNAME_CYGWIN)
 #   undef OPENSSL_SYS_UNIX
 #   define OPENSSL_SYS_WIN32_CYGWIN
 #  else
-#   if defined(_WIN32) || defined(OPENSSL_SYS_WIN32)
+#   if defined(_WIN32) || defined(OPENSSL_SYSNAME_WIN32)
 #    undef OPENSSL_SYS_UNIX
-#    if !defined(OPENSSL_SYS_WIN32)
-#     define OPENSSL_SYS_WIN32
+#    define OPENSSL_SYS_WIN32
+#   endif
+#   if defined(_WIN64) || defined(OPENSSL_SYSNAME_WIN64)
+#    undef OPENSSL_SYS_UNIX
+#    if !defined(OPENSSL_SYS_WIN64)
+#     define OPENSSL_SYS_WIN64
 #    endif
 #   endif
-#   if defined(OPENSSL_SYS_WINNT)
+#   if defined(OPENSSL_SYSNAME_WINNT)
 #    undef OPENSSL_SYS_UNIX
+#    define OPENSSL_SYS_WINNT
 #   endif
-#   if defined(OPENSSL_SYS_WINCE)
+#   if defined(OPENSSL_SYSNAME_WINCE)
 #    undef OPENSSL_SYS_UNIX
+#    define OPENSSL_SYS_WINCE
 #   endif
 #  endif
 # endif
 
 /* Anything that tries to look like Microsoft is "Windows" */
-# if defined(OPENSSL_SYS_WIN32) || defined(OPENSSL_SYS_WINNT) || defined(OPENSSL_SYS_WINCE)
+# if defined(OPENSSL_SYS_WIN32) || defined(OPENSSL_SYS_WIN64) || defined(OPENSSL_SYS_WINNT) || defined(OPENSSL_SYS_WINCE)
 #  undef OPENSSL_SYS_UNIX
 #  define OPENSSL_SYS_WINDOWS
 #  ifndef OPENSSL_SYS_MSDOS
@@ -137,10 +150,8 @@ extern "C" {
 # endif
 
 /* ------------------------------- OpenVMS -------------------------------- */
-# if defined(__VMS) || defined(VMS) || defined(OPENSSL_SYS_VMS)
-#  if !defined(OPENSSL_SYS_VMS)
-#   undef OPENSSL_SYS_UNIX
-#  endif
+# if defined(__VMS) || defined(VMS) || defined(OPENSSL_SYSNAME_VMS)
+#  undef OPENSSL_SYS_UNIX
 #  define OPENSSL_SYS_VMS
 #  if defined(__DECC)
 #   define OPENSSL_SYS_VMS_DECC
@@ -160,22 +171,63 @@ extern "C" {
 
 /* -------------------------------- Unix ---------------------------------- */
 # ifdef OPENSSL_SYS_UNIX
-#  if defined(linux) || defined(__linux__) && !defined(OPENSSL_SYS_LINUX)
+#  if defined(linux) || defined(__linux__) || defined(OPENSSL_SYSNAME_LINUX)
 #   define OPENSSL_SYS_LINUX
 #  endif
-#  if defined(_AIX) && !defined(OPENSSL_SYS_AIX)
+#  ifdef OPENSSL_SYSNAME_MPE
+#   define OPENSSL_SYS_MPE
+#  endif
+#  ifdef OPENSSL_SYSNAME_SNI
+#   define OPENSSL_SYS_SNI
+#  endif
+#  ifdef OPENSSL_SYSNAME_ULTRASPARC
+#   define OPENSSL_SYS_ULTRASPARC
+#  endif
+#  ifdef OPENSSL_SYSNAME_NEWS4
+#   define OPENSSL_SYS_NEWS4
+#  endif
+#  ifdef OPENSSL_SYSNAME_MACOSX
+#   define OPENSSL_SYS_MACOSX
+#  endif
+#  ifdef OPENSSL_SYSNAME_MACOSX_RHAPSODY
+#   define OPENSSL_SYS_MACOSX_RHAPSODY
+#   define OPENSSL_SYS_MACOSX
+#  endif
+#  ifdef OPENSSL_SYSNAME_SUNOS
+#   define OPENSSL_SYS_SUNOS
+#  endif
+#  if defined(_CRAY) || defined(OPENSSL_SYSNAME_CRAY)
+#   define OPENSSL_SYS_CRAY
+#  endif
+#  if defined(_AIX) || defined(OPENSSL_SYSNAME_AIX)
 #   define OPENSSL_SYS_AIX
 #  endif
 # endif
 
 /* -------------------------------- VOS ----------------------------------- */
-# if defined(__VOS__) && !defined(OPENSSL_SYS_VOS)
+# if defined(__VOS__) || defined(OPENSSL_SYSNAME_VOS)
 #  define OPENSSL_SYS_VOS
 #  ifdef __HPPA__
 #   define OPENSSL_SYS_VOS_HPPA
 #  endif
 #  ifdef __IA32__
 #   define OPENSSL_SYS_VOS_IA32
+#  endif
+# endif
+
+/* ------------------------------ VxWorks --------------------------------- */
+# ifdef OPENSSL_SYSNAME_VXWORKS
+#  define OPENSSL_SYS_VXWORKS
+# endif
+
+/* -------------------------------- BeOS ---------------------------------- */
+# if defined(__BEOS__)
+#  define OPENSSL_SYS_BEOS
+#  include <sys/socket.h>
+#  if defined(BONE_VERSION)
+#   define OPENSSL_SYS_BEOS_BONE
+#  else
+#   define OPENSSL_SYS_BEOS_R5
 #  endif
 # endif
 
@@ -250,8 +302,16 @@ extern "C" {
 #  define OPENSSL_GLOBAL_REF(name) _shadow_##name
 # endif
 
+# if defined(OPENSSL_SYS_MACINTOSH_CLASSIC) && macintosh==1 && !defined(MAC_OS_GUSI_SOURCE)
+#  define ossl_ssize_t long
+# endif
+
 # ifdef OPENSSL_SYS_MSDOS
 #  define ossl_ssize_t long
+# endif
+
+# if defined(NeXT) || defined(OPENSSL_SYS_NEWS4) || defined(OPENSSL_SYS_SUNOS)
+#  define ssize_t int
 # endif
 
 # if defined(__ultrix) && !defined(ssize_t)
@@ -260,12 +320,6 @@ extern "C" {
 
 # ifndef ossl_ssize_t
 #  define ossl_ssize_t ssize_t
-# endif
-
-# ifdef DEBUG_UNUSED
-#  define __owur __attribute__((__warn_unused_result__))
-# else
-#  define __owur
 # endif
 
 #ifdef  __cplusplus

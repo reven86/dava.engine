@@ -120,7 +120,7 @@ int CONF_set_default_method(CONF_METHOD *meth);
 void CONF_set_nconf(CONF *conf, LHASH_OF(CONF_VALUE) *hash);
 LHASH_OF(CONF_VALUE) *CONF_load(LHASH_OF(CONF_VALUE) *conf, const char *file,
                                 long *eline);
-# ifndef OPENSSL_NO_STDIO
+# ifndef OPENSSL_NO_FP_API
 LHASH_OF(CONF_VALUE) *CONF_load_fp(LHASH_OF(CONF_VALUE) *conf, FILE *fp,
                                    long *eline);
 # endif
@@ -153,11 +153,15 @@ struct conf_st {
 CONF *NCONF_new(CONF_METHOD *meth);
 CONF_METHOD *NCONF_default(void);
 CONF_METHOD *NCONF_WIN32(void);
+# if 0                          /* Just to give you an idea of what I have in
+                                 * mind */
+CONF_METHOD *NCONF_XML(void);
+# endif
 void NCONF_free(CONF *conf);
 void NCONF_free_data(CONF *conf);
 
 int NCONF_load(CONF *conf, const char *file, long *eline);
-# ifndef OPENSSL_NO_STDIO
+# ifndef OPENSSL_NO_FP_API
 int NCONF_load_fp(CONF *conf, FILE *fp, long *eline);
 # endif
 int NCONF_load_bio(CONF *conf, BIO *bp, long *eline);
@@ -169,7 +173,12 @@ int NCONF_get_number_e(const CONF *conf, const char *group, const char *name,
 int NCONF_dump_fp(const CONF *conf, FILE *out);
 int NCONF_dump_bio(const CONF *conf, BIO *out);
 
-#define NCONF_get_number(c,g,n,r) NCONF_get_number_e(c,g,n,r)
+# if 0                          /* The following function has no error
+                                 * checking, and should therefore be avoided */
+long NCONF_get_number(CONF *conf, char *group, char *name);
+# else
+#  define NCONF_get_number(c,g,n,r) NCONF_get_number_e(c,g,n,r)
+# endif
 
 /* Module functions */
 

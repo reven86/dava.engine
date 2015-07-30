@@ -65,17 +65,17 @@
 #  error DH is disabled.
 # endif
 
-# include <openssl/bio.h>
+# ifndef OPENSSL_NO_BIO
+#  include <openssl/bio.h>
+# endif
 # include <openssl/ossl_typ.h>
-# ifdef OPENSSL_USE_DEPRECATED
+# ifndef OPENSSL_NO_DEPRECATED
 #  include <openssl/bn.h>
 # endif
 
 # ifndef OPENSSL_DH_MAX_MODULUS_BITS
 #  define OPENSSL_DH_MAX_MODULUS_BITS    10000
 # endif
-
-# define OPENSSL_DH_FIPS_MIN_MODULUS_BITS 1024
 
 # define DH_FLAG_CACHE_MONT_P     0x01
 
@@ -201,19 +201,16 @@ DH *DH_new(void);
 void DH_free(DH *dh);
 int DH_up_ref(DH *dh);
 int DH_size(const DH *dh);
-int DH_security_bits(const DH *dh);
 int DH_get_ex_new_index(long argl, void *argp, CRYPTO_EX_new *new_func,
                         CRYPTO_EX_dup *dup_func, CRYPTO_EX_free *free_func);
 int DH_set_ex_data(DH *d, int idx, void *arg);
 void *DH_get_ex_data(DH *d, int idx);
 
 /* Deprecated version */
-# ifdef OPENSSL_USE_DEPRECATED
-DECLARE_DEPRECATED(DH *DH_generate_parameters(int prime_len, int generator,
-                                              void (*callback) (int, int,
-                                                                void *),
-                                              void *cb_arg));
-# endif                         /* defined(OPENSSL_USE_DEPRECATED) */
+# ifndef OPENSSL_NO_DEPRECATED
+DH *DH_generate_parameters(int prime_len, int generator,
+                           void (*callback) (int, int, void *), void *cb_arg);
+# endif                         /* !defined(OPENSSL_NO_DEPRECATED) */
 
 /* New version */
 int DH_generate_parameters_ex(DH *dh, int prime_len, int generator,
@@ -228,10 +225,14 @@ DH *d2i_DHparams(DH **a, const unsigned char **pp, long length);
 int i2d_DHparams(const DH *a, unsigned char **pp);
 DH *d2i_DHxparams(DH **a, const unsigned char **pp, long length);
 int i2d_DHxparams(const DH *a, unsigned char **pp);
-# ifndef OPENSSL_NO_STDIO
+# ifndef OPENSSL_NO_FP_API
 int DHparams_print_fp(FILE *fp, const DH *x);
 # endif
+# ifndef OPENSSL_NO_BIO
 int DHparams_print(BIO *bp, const DH *x);
+# else
+int DHparams_print(char *bp, const DH *x);
+# endif
 
 /* RFC 5114 parameters */
 DH *DH_get_1024_160(void);
@@ -350,9 +351,12 @@ void ERR_load_DH_strings(void);
 # define DH_F_COMPUTE_KEY                                 102
 # define DH_F_DHPARAMS_PRINT_FP                           101
 # define DH_F_DH_BUILTIN_GENPARAMS                        106
-# define DH_F_DH_CMS_DECRYPT                              114
-# define DH_F_DH_CMS_SET_PEERKEY                          115
-# define DH_F_DH_CMS_SET_SHARED_INFO                      116
+# define DH_F_DH_CMS_DECRYPT                              117
+# define DH_F_DH_CMS_SET_PEERKEY                          118
+# define DH_F_DH_CMS_SET_SHARED_INFO                      119
+# define DH_F_DH_COMPUTE_KEY                              114
+# define DH_F_DH_GENERATE_KEY                             115
+# define DH_F_DH_GENERATE_PARAMETERS_EX                   116
 # define DH_F_DH_NEW_METHOD                               105
 # define DH_F_DH_PARAM_DECODE                             107
 # define DH_F_DH_PRIV_DECODE                              110
@@ -375,11 +379,12 @@ void ERR_load_DH_strings(void);
 # define DH_R_KEYS_NOT_SET                                108
 # define DH_R_KEY_SIZE_TOO_SMALL                          110
 # define DH_R_MODULUS_TOO_LARGE                           103
+# define DH_R_NON_FIPS_METHOD                             111
 # define DH_R_NO_PARAMETERS_SET                           107
 # define DH_R_NO_PRIVATE_VALUE                            100
 # define DH_R_PARAMETER_ENCODING_ERROR                    105
-# define DH_R_PEER_KEY_ERROR                              111
-# define DH_R_SHARED_INFO_ERROR                           113
+# define DH_R_PEER_KEY_ERROR                              113
+# define DH_R_SHARED_INFO_ERROR                           114
 
 #ifdef  __cplusplus
 }

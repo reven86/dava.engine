@@ -71,13 +71,13 @@
 
 # include <openssl/opensslconf.h>
 
-# ifdef OPENSSL_NO_EC
-#  error EC is disabled.
+# ifdef OPENSSL_NO_ECDH
+#  error ECDH is disabled.
 # endif
 
 # include <openssl/ec.h>
 # include <openssl/ossl_typ.h>
-# ifdef OPENSSL_USE_DEPRECATED
+# ifndef OPENSSL_NO_DEPRECATED
 #  include <openssl/bn.h>
 # endif
 
@@ -118,11 +118,13 @@ void ERR_load_ECDH_strings(void);
 /* Error codes for the ECDH functions. */
 
 /* Function codes. */
+# define ECDH_F_ECDH_CHECK                                102
 # define ECDH_F_ECDH_COMPUTE_KEY                          100
 # define ECDH_F_ECDH_DATA_NEW_METHOD                      101
 
 /* Reason codes. */
 # define ECDH_R_KDF_FAILED                                102
+# define ECDH_R_NON_FIPS_METHOD                           103
 # define ECDH_R_NO_PRIVATE_VALUE                          100
 # define ECDH_R_POINT_ARITHMETIC_FAILURE                  101
 

@@ -60,8 +60,12 @@
 # define HEADER_PEM_H
 
 # include <openssl/e_os2.h>
-# include <openssl/bio.h>
-# include <openssl/stack.h>
+# ifndef OPENSSL_NO_BIO
+#  include <openssl/bio.h>
+# endif
+# ifndef OPENSSL_NO_STACK
+#  include <openssl/stack.h>
+# endif
 # include <openssl/evp.h>
 # include <openssl/x509.h>
 # include <openssl/pem2.h>
@@ -109,6 +113,7 @@ extern "C" {
 
 # define PEM_STRING_X509_OLD     "X509 CERTIFICATE"
 # define PEM_STRING_X509         "CERTIFICATE"
+# define PEM_STRING_X509_PAIR    "CERTIFICATE PAIR"
 # define PEM_STRING_X509_TRUSTED "TRUSTED CERTIFICATE"
 # define PEM_STRING_X509_REQ_OLD "NEW CERTIFICATE REQUEST"
 # define PEM_STRING_X509_REQ     "CERTIFICATE REQUEST"
@@ -177,7 +182,6 @@ typedef struct pem_ctx_st {
 
     int num_recipient;
     PEM_USER **recipient;
-
 /*-
     XXX(ben): don#t think this is used!
         STACK *x509_chain;      / * certificate chain */
@@ -205,7 +209,7 @@ typedef struct pem_ctx_st {
  * IMPLEMENT_PEM_rw_cb(...)
  */
 
-# ifdef OPENSSL_NO_STDIO
+# ifdef OPENSSL_NO_FP_API
 
 #  define IMPLEMENT_PEM_read_fp(name, type, str, asn1) /**/
 #  define IMPLEMENT_PEM_write_fp(name, type, str, asn1) /**/
@@ -316,7 +320,7 @@ int PEM_write_bio_##name(BIO *bp, type *x, const EVP_CIPHER *enc, \
 
 /* These are the same except they are for the declarations */
 
-# if defined(OPENSSL_NO_STDIO)
+# if defined(OPENSSL_NO_FP_API)
 
 #  define DECLARE_PEM_read_fp(name, type) /**/
 #  define DECLARE_PEM_write_fp(name, type) /**/
@@ -338,6 +342,7 @@ int PEM_write_bio_##name(BIO *bp, type *x, const EVP_CIPHER *enc, \
 
 # endif
 
+# ifndef OPENSSL_NO_BIO
 #  define DECLARE_PEM_read_bio(name, type) \
         type *PEM_read_bio_##name(BIO *bp, type **x, pem_password_cb *cb, void *u);
 
@@ -351,6 +356,13 @@ int PEM_write_bio_##name(BIO *bp, type *x, const EVP_CIPHER *enc, \
         int PEM_write_bio_##name(BIO *bp, type *x, const EVP_CIPHER *enc, \
              unsigned char *kstr, int klen, pem_password_cb *cb, void *u);
 
+# else
+
+#  define DECLARE_PEM_read_bio(name, type) /**/
+#  define DECLARE_PEM_write_bio(name, type) /**/
+#  define DECLARE_PEM_write_bio_const(name, type) /**/
+#  define DECLARE_PEM_write_cb_bio(name, type) /**/
+# endif
 # define DECLARE_PEM_write(name, type) \
         DECLARE_PEM_write_bio(name, type) \
         DECLARE_PEM_write_fp(name, type)
@@ -372,12 +384,19 @@ int PEM_write_bio_##name(BIO *bp, type *x, const EVP_CIPHER *enc, \
 # define DECLARE_PEM_rw_cb(name, type) \
         DECLARE_PEM_read(name, type) \
         DECLARE_PEM_write_cb(name, type)
+# if 1
+/* "userdata": new with OpenSSL 0.9.4 */
 typedef int pem_password_cb (char *buf, int size, int rwflag, void *userdata);
+# else
+/* OpenSSL 0.9.3, 0.9.3a */
+typedef int pem_password_cb (char *buf, int size, int rwflag);
+# endif
 
 int PEM_get_EVP_CIPHER_INFO(char *header, EVP_CIPHER_INFO *cipher);
 int PEM_do_header(EVP_CIPHER_INFO *cipher, unsigned char *data, long *len,
                   pem_password_cb *callback, void *u);
 
+# ifndef OPENSSL_NO_BIO
 int PEM_read_bio(BIO *bp, char **name, char **header,
                  unsigned char **data, long *len);
 int PEM_write_bio(BIO *bp, const char *name, const char *hdr,
@@ -396,6 +415,7 @@ STACK_OF(X509_INFO) *PEM_X509_INFO_read_bio(BIO *bp, STACK_OF(X509_INFO) *sk,
 int PEM_X509_INFO_write_bio(BIO *bp, X509_INFO *xi, EVP_CIPHER *enc,
                             unsigned char *kstr, int klen,
                             pem_password_cb *cd, void *u);
+# endif
 
 int PEM_read(FILE *fp, char **name, char **header,
              unsigned char **data, long *len);
@@ -412,13 +432,13 @@ STACK_OF(X509_INFO) *PEM_X509_INFO_read(FILE *fp, STACK_OF(X509_INFO) *sk,
 int PEM_SealInit(PEM_ENCODE_SEAL_CTX *ctx, EVP_CIPHER *type,
                  EVP_MD *md_type, unsigned char **ek, int *ekl,
                  unsigned char *iv, EVP_PKEY **pubk, int npubk);
-int PEM_SealUpdate(PEM_ENCODE_SEAL_CTX *ctx, unsigned char *out, int *outl,
-                   unsigned char *in, int inl);
+void PEM_SealUpdate(PEM_ENCODE_SEAL_CTX *ctx, unsigned char *out, int *outl,
+                    unsigned char *in, int inl);
 int PEM_SealFinal(PEM_ENCODE_SEAL_CTX *ctx, unsigned char *sig, int *sigl,
                   unsigned char *out, int *outl, EVP_PKEY *priv);
 
-int PEM_SignInit(EVP_MD_CTX *ctx, EVP_MD *type);
-int PEM_SignUpdate(EVP_MD_CTX *ctx, unsigned char *d, unsigned int cnt);
+void PEM_SignInit(EVP_MD_CTX *ctx, EVP_MD *type);
+void PEM_SignUpdate(EVP_MD_CTX *ctx, unsigned char *d, unsigned int cnt);
 int PEM_SignFinal(EVP_MD_CTX *ctx, unsigned char *sigret,
                   unsigned int *siglen, EVP_PKEY *pkey);
 
@@ -430,6 +450,7 @@ void PEM_dek_info(char *buf, const char *type, int len, char *str);
 
 DECLARE_PEM_rw(X509, X509)
 DECLARE_PEM_rw(X509_AUX, X509)
+DECLARE_PEM_rw(X509_CERT_PAIR, X509_CERT_PAIR)
 DECLARE_PEM_rw(X509_REQ, X509_REQ)
 DECLARE_PEM_write(X509_REQ_NEW, X509_REQ)
 DECLARE_PEM_rw(X509_CRL, X509_CRL)

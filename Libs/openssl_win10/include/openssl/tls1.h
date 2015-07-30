@@ -157,10 +157,7 @@
 extern "C" {
 #endif
 
-/* Default security level if not overriden at config time */
-# ifndef OPENSSL_TLS_SECURITY_LEVEL
-#  define OPENSSL_TLS_SECURITY_LEVEL 1
-# endif
+# define TLS1_ALLOW_EXPERIMENTAL_CIPHERSUITES    0
 
 # define TLS1_VERSION                    0x0301
 # define TLS1_1_VERSION                  0x0302
@@ -243,20 +240,19 @@ extern "C" {
  * http://tools.ietf.org/html/draft-agl-tls-padding-03
  */
 # define TLSEXT_TYPE_padding     21
-/*
- * Extension type for Encrypt-then-MAC
- * http://www.ietf.org/id/draft-ietf-tls-encrypt-then-mac-02.txt
- */
-# define TLSEXT_TYPE_encrypt_then_mac    22
-/*
- * Extended master secret extension.
- * http://www.iana.org/assignments/tls-extensiontype-values/tls-extensiontype-values.xhtml
- * https://tools.ietf.org/id/draft-ietf-tls-session-hash-03.txt
- */
-# define TLSEXT_TYPE_extended_master_secret      23
 
 /* ExtensionType value from RFC4507 */
 # define TLSEXT_TYPE_session_ticket              35
+
+/* ExtensionType value from draft-rescorla-tls-opaque-prf-input-00.txt */
+# if 0
+/*
+ * will have to be provided externally for now ,
+ * i.e. build with -DTLSEXT_TYPE_opaque_prf_input=38183
+ * using whatever extension number you'd like to try
+ */
+#  define TLSEXT_TYPE_opaque_prf_input           ??
+# endif
 
 /* Temporary extension type */
 # define TLSEXT_TYPE_renegotiate                 0xff01
@@ -312,8 +308,8 @@ extern "C" {
 
 #  define TLSEXT_MAXLEN_host_name 255
 
-__owur const char *SSL_get_servername(const SSL *s, const int type);
-__owur int SSL_get_servername_type(const SSL *s);
+const char *SSL_get_servername(const SSL *s, const int type);
+int SSL_get_servername_type(const SSL *s);
 /*
  * SSL_export_keying_material exports a value derived from the master secret,
  * as specified in RFC 5705. It writes |olen| bytes to |out| given a label and
@@ -321,7 +317,7 @@ __owur int SSL_get_servername_type(const SSL *s);
  * flag controls whether a context is included.) It returns 1 on success and
  * zero otherwise.
  */
-__owur int SSL_export_keying_material(SSL *s, unsigned char *out, size_t olen,
+int SSL_export_keying_material(SSL *s, unsigned char *out, size_t olen,
                                const char *label, size_t llen,
                                const unsigned char *p, size_t plen,
                                int use_context);
@@ -334,7 +330,7 @@ int SSL_get_shared_sigalgs(SSL *s, int idx,
                            int *psign, int *phash, int *psignandhash,
                            unsigned char *rsig, unsigned char *rhash);
 
-__owur int SSL_check_chain(SSL *s, X509 *x, EVP_PKEY *pk, STACK_OF(X509) *chain);
+int SSL_check_chain(SSL *s, X509 *x, EVP_PKEY *pk, STACK_OF(X509) *chain);
 
 #  define SSL_set_tlsext_host_name(s,name) \
 SSL_ctrl(s,SSL_CTRL_SET_TLSEXT_HOSTNAME,TLSEXT_NAMETYPE_host_name,(char *)name)
@@ -388,6 +384,13 @@ SSL_CTX_callback_ctrl(ssl,SSL_CTRL_SET_TLSEXT_STATUS_REQ_CB,(void (*)(void))cb)
 #  define SSL_CTX_set_tlsext_status_arg(ssl, arg) \
 SSL_CTX_ctrl(ssl,SSL_CTRL_SET_TLSEXT_STATUS_REQ_CB_ARG,0, (void *)arg)
 
+#  define SSL_set_tlsext_opaque_prf_input(s, src, len) \
+SSL_ctrl(s,SSL_CTRL_SET_TLSEXT_OPAQUE_PRF_INPUT, len, src)
+#  define SSL_CTX_set_tlsext_opaque_prf_input_callback(ctx, cb) \
+SSL_CTX_callback_ctrl(ctx,SSL_CTRL_SET_TLSEXT_OPAQUE_PRF_INPUT_CB, (void (*)(void))cb)
+#  define SSL_CTX_set_tlsext_opaque_prf_input_callback_arg(ctx, arg) \
+SSL_CTX_ctrl(ctx,SSL_CTRL_SET_TLSEXT_OPAQUE_PRF_INPUT_CB_ARG, 0, arg)
+
 #  define SSL_CTX_set_tlsext_ticket_key_cb(ssl, cb) \
 SSL_CTX_callback_ctrl(ssl,SSL_CTRL_SET_TLSEXT_TICKET_KEY_CB,(void (*)(void))cb)
 
@@ -408,6 +411,23 @@ SSL_CTX_callback_ctrl(ssl,SSL_CTRL_SET_TLSEXT_TICKET_KEY_CB,(void (*)(void))cb)
 # define TLS1_CK_PSK_WITH_3DES_EDE_CBC_SHA               0x0300008B
 # define TLS1_CK_PSK_WITH_AES_128_CBC_SHA                0x0300008C
 # define TLS1_CK_PSK_WITH_AES_256_CBC_SHA                0x0300008D
+
+/*
+ * Additional TLS ciphersuites from expired Internet Draft
+ * draft-ietf-tls-56-bit-ciphersuites-01.txt (available if
+ * TLS1_ALLOW_EXPERIMENTAL_CIPHERSUITES is defined, see s3_lib.c).  We
+ * actually treat them like SSL 3.0 ciphers, which we probably shouldn't.
+ * Note that the first two are actually not in the IDs.
+ */
+# define TLS1_CK_RSA_EXPORT1024_WITH_RC4_56_MD5          0x03000060/* not in
+                                                                    * ID */
+# define TLS1_CK_RSA_EXPORT1024_WITH_RC2_CBC_56_MD5      0x03000061/* not in
+                                                                    * ID */
+# define TLS1_CK_RSA_EXPORT1024_WITH_DES_CBC_SHA         0x03000062
+# define TLS1_CK_DHE_DSS_EXPORT1024_WITH_DES_CBC_SHA     0x03000063
+# define TLS1_CK_RSA_EXPORT1024_WITH_RC4_56_SHA          0x03000064
+# define TLS1_CK_DHE_DSS_EXPORT1024_WITH_RC4_56_SHA      0x03000065
+# define TLS1_CK_DHE_DSS_WITH_RC4_128_SHA                0x03000066
 
 /* AES ciphersuites from RFC3268 */
 
@@ -480,21 +500,6 @@ SSL_CTX_callback_ctrl(ssl,SSL_CTRL_SET_TLSEXT_TICKET_KEY_CB,(void (*)(void))cb)
 # define TLS1_CK_ADH_WITH_AES_128_GCM_SHA256             0x030000A6
 # define TLS1_CK_ADH_WITH_AES_256_GCM_SHA384             0x030000A7
 
-/* TLS 1.2 Camellia SHA-256 ciphersuites from RFC5932 */
-# define TLS1_CK_RSA_WITH_CAMELLIA_128_CBC_SHA256                0x030000BA
-# define TLS1_CK_DH_DSS_WITH_CAMELLIA_128_CBC_SHA256             0x030000BB
-# define TLS1_CK_DH_RSA_WITH_CAMELLIA_128_CBC_SHA256             0x030000BC
-# define TLS1_CK_DHE_DSS_WITH_CAMELLIA_128_CBC_SHA256            0x030000BD
-# define TLS1_CK_DHE_RSA_WITH_CAMELLIA_128_CBC_SHA256            0x030000BE
-# define TLS1_CK_ADH_WITH_CAMELLIA_128_CBC_SHA256                0x030000BF
-
-# define TLS1_CK_RSA_WITH_CAMELLIA_256_CBC_SHA256                0x030000C0
-# define TLS1_CK_DH_DSS_WITH_CAMELLIA_256_CBC_SHA256             0x030000C1
-# define TLS1_CK_DH_RSA_WITH_CAMELLIA_256_CBC_SHA256             0x030000C2
-# define TLS1_CK_DHE_DSS_WITH_CAMELLIA_256_CBC_SHA256            0x030000C3
-# define TLS1_CK_DHE_RSA_WITH_CAMELLIA_256_CBC_SHA256            0x030000C4
-# define TLS1_CK_ADH_WITH_CAMELLIA_256_CBC_SHA256                0x030000C5
-
 /*
  * ECC ciphersuites from draft-ietf-tls-ecc-12.txt with changes soon to be in
  * draft 13
@@ -561,21 +566,11 @@ SSL_CTX_callback_ctrl(ssl,SSL_CTRL_SET_TLSEXT_TICKET_KEY_CB,(void (*)(void))cb)
 # define TLS1_CK_ECDH_RSA_WITH_AES_128_GCM_SHA256        0x0300C031
 # define TLS1_CK_ECDH_RSA_WITH_AES_256_GCM_SHA384        0x0300C032
 
-/* Camellia-CBC ciphersuites from RFC6367 */
-# define TLS1_CK_ECDHE_ECDSA_WITH_CAMELLIA_128_CBC_SHA256 0x0300C072
-# define TLS1_CK_ECDHE_ECDSA_WITH_CAMELLIA_256_CBC_SHA384 0x0300C073
-# define TLS1_CK_ECDH_ECDSA_WITH_CAMELLIA_128_CBC_SHA256  0x0300C074
-# define TLS1_CK_ECDH_ECDSA_WITH_CAMELLIA_256_CBC_SHA384  0x0300C075
-# define TLS1_CK_ECDHE_RSA_WITH_CAMELLIA_128_CBC_SHA256   0x0300C076
-# define TLS1_CK_ECDHE_RSA_WITH_CAMELLIA_256_CBC_SHA384   0x0300C077
-# define TLS1_CK_ECDH_RSA_WITH_CAMELLIA_128_CBC_SHA256    0x0300C078
-# define TLS1_CK_ECDH_RSA_WITH_CAMELLIA_256_CBC_SHA384    0x0300C079
-
 /*
- * XXX Backward compatibility alert: Older versions of OpenSSL gave some DHE
- * ciphers names with "EDH" instead of "DHE".  Going forward, we should be
- * using DHE everywhere, though we may indefinitely maintain aliases for
- * users or configurations that used "EDH"
+ * XXX * Backward compatibility alert: + * Older versions of OpenSSL gave
+ * some DHE ciphers names with "EDH" + * instead of "DHE".  Going forward, we
+ * should be using DHE + * everywhere, though we may indefinitely maintain
+ * aliases for users + * or configurations that used "EDH" +
  */
 # define TLS1_TXT_RSA_EXPORT1024_WITH_RC4_56_MD5         "EXP1024-RC4-MD5"
 # define TLS1_TXT_RSA_EXPORT1024_WITH_RC2_CBC_56_MD5     "EXP1024-RC2-CBC-MD5"
@@ -663,21 +658,6 @@ SSL_CTX_callback_ctrl(ssl,SSL_CTRL_SET_TLSEXT_TICKET_KEY_CB,(void (*)(void))cb)
 # define TLS1_TXT_DHE_RSA_WITH_CAMELLIA_256_CBC_SHA      "DHE-RSA-CAMELLIA256-SHA"
 # define TLS1_TXT_ADH_WITH_CAMELLIA_256_CBC_SHA          "ADH-CAMELLIA256-SHA"
 
-/* TLS 1.2 Camellia SHA-256 ciphersuites from RFC5932 */
-# define TLS1_TXT_RSA_WITH_CAMELLIA_128_CBC_SHA256               "CAMELLIA128-SHA256"
-# define TLS1_TXT_DH_DSS_WITH_CAMELLIA_128_CBC_SHA256            "DH-DSS-CAMELLIA128-SHA256"
-# define TLS1_TXT_DH_RSA_WITH_CAMELLIA_128_CBC_SHA256            "DH-RSA-CAMELLIA128-SHA256"
-# define TLS1_TXT_DHE_DSS_WITH_CAMELLIA_128_CBC_SHA256           "DHE-DSS-CAMELLIA128-SHA256"
-# define TLS1_TXT_DHE_RSA_WITH_CAMELLIA_128_CBC_SHA256           "DHE-RSA-CAMELLIA128-SHA256"
-# define TLS1_TXT_ADH_WITH_CAMELLIA_128_CBC_SHA256               "ADH-CAMELLIA128-SHA256"
-
-# define TLS1_TXT_RSA_WITH_CAMELLIA_256_CBC_SHA256               "CAMELLIA256-SHA256"
-# define TLS1_TXT_DH_DSS_WITH_CAMELLIA_256_CBC_SHA256            "DH-DSS-CAMELLIA256-SHA256"
-# define TLS1_TXT_DH_RSA_WITH_CAMELLIA_256_CBC_SHA256            "DH-RSA-CAMELLIA256-SHA256"
-# define TLS1_TXT_DHE_DSS_WITH_CAMELLIA_256_CBC_SHA256           "DHE-DSS-CAMELLIA256-SHA256"
-# define TLS1_TXT_DHE_RSA_WITH_CAMELLIA_256_CBC_SHA256           "DHE-RSA-CAMELLIA256-SHA256"
-# define TLS1_TXT_ADH_WITH_CAMELLIA_256_CBC_SHA256               "ADH-CAMELLIA256-SHA256"
-
 /* SEED ciphersuites from RFC4162 */
 # define TLS1_TXT_RSA_WITH_SEED_SHA                      "SEED-SHA"
 # define TLS1_TXT_DH_DSS_WITH_SEED_SHA                   "DH-DSS-SEED-SHA"
@@ -736,16 +716,6 @@ SSL_CTX_callback_ctrl(ssl,SSL_CTRL_SET_TLSEXT_TICKET_KEY_CB,(void (*)(void))cb)
 # define TLS1_TXT_ECDH_RSA_WITH_AES_128_GCM_SHA256       "ECDH-RSA-AES128-GCM-SHA256"
 # define TLS1_TXT_ECDH_RSA_WITH_AES_256_GCM_SHA384       "ECDH-RSA-AES256-GCM-SHA384"
 
-/* Camellia-CBC ciphersuites from RFC6367 */
-# define TLS1_TXT_ECDHE_ECDSA_WITH_CAMELLIA_128_CBC_SHA256 "ECDHE-ECDSA-CAMELLIA128-SHA256"
-# define TLS1_TXT_ECDHE_ECDSA_WITH_CAMELLIA_256_CBC_SHA384 "ECDHE-ECDSA-CAMELLIA256-SHA384"
-# define TLS1_TXT_ECDH_ECDSA_WITH_CAMELLIA_128_CBC_SHA256  "ECDH-ECDSA-CAMELLIA128-SHA256"
-# define TLS1_TXT_ECDH_ECDSA_WITH_CAMELLIA_256_CBC_SHA384  "ECDH-ECDSA-CAMELLIA256-SHA384"
-# define TLS1_TXT_ECDHE_RSA_WITH_CAMELLIA_128_CBC_SHA256   "ECDHE-RSA-CAMELLIA128-SHA256"
-# define TLS1_TXT_ECDHE_RSA_WITH_CAMELLIA_256_CBC_SHA384   "ECDHE-RSA-CAMELLIA256-SHA384"
-# define TLS1_TXT_ECDH_RSA_WITH_CAMELLIA_128_CBC_SHA256    "ECDH-RSA-CAMELLIA128-SHA256"
-# define TLS1_TXT_ECDH_RSA_WITH_CAMELLIA_256_CBC_SHA384    "ECDH-RSA-CAMELLIA256-SHA384"
-
 # define TLS_CT_RSA_SIGN                 1
 # define TLS_CT_DSS_SIGN                 2
 # define TLS_CT_RSA_FIXED_DH             3
@@ -763,11 +733,13 @@ SSL_CTX_callback_ctrl(ssl,SSL_CTRL_SET_TLSEXT_TICKET_KEY_CB,(void (*)(void))cb)
 
 # define TLS1_FINISH_MAC_LENGTH          12
 
-# define TLS_MD_MAX_CONST_SIZE                   22
+# define TLS_MD_MAX_CONST_SIZE                   20
 # define TLS_MD_CLIENT_FINISH_CONST              "client finished"
 # define TLS_MD_CLIENT_FINISH_CONST_SIZE         15
 # define TLS_MD_SERVER_FINISH_CONST              "server finished"
 # define TLS_MD_SERVER_FINISH_CONST_SIZE         15
+# define TLS_MD_SERVER_WRITE_KEY_CONST           "server write key"
+# define TLS_MD_SERVER_WRITE_KEY_CONST_SIZE      16
 # define TLS_MD_KEY_EXPANSION_CONST              "key expansion"
 # define TLS_MD_KEY_EXPANSION_CONST_SIZE         13
 # define TLS_MD_CLIENT_WRITE_KEY_CONST           "client write key"
@@ -778,8 +750,6 @@ SSL_CTX_callback_ctrl(ssl,SSL_CTRL_SET_TLSEXT_TICKET_KEY_CB,(void (*)(void))cb)
 # define TLS_MD_IV_BLOCK_CONST_SIZE              8
 # define TLS_MD_MASTER_SECRET_CONST              "master secret"
 # define TLS_MD_MASTER_SECRET_CONST_SIZE         13
-# define TLS_MD_EXTENDED_MASTER_SECRET_CONST     "extended master secret"
-# define TLS_MD_EXTENDED_MASTER_SECRET_CONST_SIZE        22
 
 # ifdef CHARSET_EBCDIC
 #  undef TLS_MD_CLIENT_FINISH_CONST
@@ -829,11 +799,6 @@ SSL_CTX_callback_ctrl(ssl,SSL_CTRL_SET_TLSEXT_TICKET_KEY_CB,(void (*)(void))cb)
  * master secret
  */
 #  define TLS_MD_MASTER_SECRET_CONST    "\x6d\x61\x73\x74\x65\x72\x20\x73\x65\x63\x72\x65\x74"
-#  undef TLS_MD_EXTENDED_MASTER_SECRET_CONST
-/*
- * extended master secret
- */
-#  define TLS_MD_EXTENDED_MASTER_SECRET_CONST    "\x65\x78\x74\x65\x63\x64\x65\x64\x20\x6d\x61\x73\x74\x65\x72\x20\x73\x65\x63\x72\x65\x74"
 # endif
 
 /* TLS Session Ticket extension struct */

@@ -70,6 +70,7 @@ extern "C" {
 # ifdef OPENSSL_SYS_WIN32
 /* Under Win32 these are defined in wincrypt.h */
 #  undef X509_NAME
+#  undef X509_CERT_PAIR
 #  undef X509_EXTENSIONS
 # endif
 
@@ -132,7 +133,6 @@ typedef struct X509V3_CONF_METHOD_st {
 /* Context specific info */
 struct v3_ext_ctx {
 # define CTX_TEST 0x1
-# define X509V3_CTX_REPLACE 0x2
     int flags;
     X509 *issuer_cert;
     X509 *subject_cert;
@@ -218,8 +218,10 @@ typedef STACK_OF(ACCESS_DESCRIPTION) AUTHORITY_INFO_ACCESS;
 typedef STACK_OF(ASN1_OBJECT) EXTENDED_KEY_USAGE;
 
 DECLARE_STACK_OF(GENERAL_NAME)
+DECLARE_ASN1_SET_OF(GENERAL_NAME)
 
 DECLARE_STACK_OF(ACCESS_DESCRIPTION)
+DECLARE_ASN1_SET_OF(ACCESS_DESCRIPTION)
 
 typedef struct DIST_POINT_NAME_st {
     int type;
@@ -255,6 +257,7 @@ struct DIST_POINT_st {
 typedef STACK_OF(DIST_POINT) CRL_DIST_POINTS;
 
 DECLARE_STACK_OF(DIST_POINT)
+DECLARE_ASN1_SET_OF(DIST_POINT)
 
 struct AUTHORITY_KEYID_st {
     ASN1_OCTET_STRING *keyid;
@@ -270,6 +273,7 @@ typedef struct SXNET_ID_st {
 } SXNETID;
 
 DECLARE_STACK_OF(SXNETID)
+DECLARE_ASN1_SET_OF(SXNETID)
 
 typedef struct SXNET_st {
     ASN1_INTEGER *version;
@@ -296,6 +300,7 @@ typedef struct POLICYQUALINFO_st {
 } POLICYQUALINFO;
 
 DECLARE_STACK_OF(POLICYQUALINFO)
+DECLARE_ASN1_SET_OF(POLICYQUALINFO)
 
 typedef struct POLICYINFO_st {
     ASN1_OBJECT *policyid;
@@ -305,6 +310,7 @@ typedef struct POLICYINFO_st {
 typedef STACK_OF(POLICYINFO) CERTIFICATEPOLICIES;
 
 DECLARE_STACK_OF(POLICYINFO)
+DECLARE_ASN1_SET_OF(POLICYINFO)
 
 typedef struct POLICY_MAPPING_st {
     ASN1_OBJECT *issuerDomainPolicy;
@@ -526,9 +532,6 @@ ASN1_BIT_STRING *v2i_ASN1_BIT_STRING(X509V3_EXT_METHOD *method,
 STACK_OF(CONF_VALUE) *i2v_ASN1_BIT_STRING(X509V3_EXT_METHOD *method,
                                           ASN1_BIT_STRING *bits,
                                           STACK_OF(CONF_VALUE) *extlist);
-char *i2s_ASN1_IA5STRING(X509V3_EXT_METHOD *method, ASN1_IA5STRING *ia5);
-ASN1_IA5STRING *s2i_ASN1_IA5STRING(X509V3_EXT_METHOD *method,
-                                   X509V3_CTX *ctx, char *str);
 
 STACK_OF(CONF_VALUE) *i2v_GENERAL_NAME(X509V3_EXT_METHOD *method,
                                        GENERAL_NAME *gen,
@@ -671,6 +674,7 @@ STACK_OF(CONF_VALUE) *X509V3_parse_list(const char *line);
 void *X509V3_EXT_d2i(X509_EXTENSION *ext);
 void *X509V3_get_d2i(STACK_OF(X509_EXTENSION) *x, int nid, int *crit,
                      int *idx);
+int X509V3_EXT_free(int nid, void *ext_data);
 
 X509_EXTENSION *X509V3_EXT_i2d(int ext_nid, int crit, void *ext_struc);
 int X509V3_add1_i2d(STACK_OF(X509_EXTENSION) **x, int nid, void *value,
@@ -751,12 +755,14 @@ int X509V3_NAME_from_section(X509_NAME *nm, STACK_OF(CONF_VALUE) *dn_sk,
 void X509_POLICY_NODE_print(BIO *out, X509_POLICY_NODE *node, int indent);
 DECLARE_STACK_OF(X509_POLICY_NODE)
 
+# ifndef OPENSSL_NO_RFC3779
+
 typedef struct ASRange_st {
     ASN1_INTEGER *min, *max;
 } ASRange;
 
-# define ASIdOrRange_id          0
-# define ASIdOrRange_range       1
+#  define ASIdOrRange_id          0
+#  define ASIdOrRange_range       1
 
 typedef struct ASIdOrRange_st {
     int type;
@@ -769,8 +775,8 @@ typedef struct ASIdOrRange_st {
 typedef STACK_OF(ASIdOrRange) ASIdOrRanges;
 DECLARE_STACK_OF(ASIdOrRange)
 
-# define ASIdentifierChoice_inherit              0
-# define ASIdentifierChoice_asIdsOrRanges        1
+#  define ASIdentifierChoice_inherit              0
+#  define ASIdentifierChoice_asIdsOrRanges        1
 
 typedef struct ASIdentifierChoice_st {
     int type;
@@ -793,8 +799,8 @@ typedef struct IPAddressRange_st {
     ASN1_BIT_STRING *min, *max;
 } IPAddressRange;
 
-# define IPAddressOrRange_addressPrefix  0
-# define IPAddressOrRange_addressRange   1
+#  define IPAddressOrRange_addressPrefix  0
+#  define IPAddressOrRange_addressRange   1
 
 typedef struct IPAddressOrRange_st {
     int type;
@@ -807,8 +813,8 @@ typedef struct IPAddressOrRange_st {
 typedef STACK_OF(IPAddressOrRange) IPAddressOrRanges;
 DECLARE_STACK_OF(IPAddressOrRange)
 
-# define IPAddressChoice_inherit                 0
-# define IPAddressChoice_addressesOrRanges       1
+#  define IPAddressChoice_inherit                 0
+#  define IPAddressChoice_addressesOrRanges       1
 
 typedef struct IPAddressChoice_st {
     int type;
@@ -834,8 +840,8 @@ DECLARE_ASN1_FUNCTIONS(IPAddressFamily)
 /*
  * API tag for elements of the ASIdentifer SEQUENCE.
  */
-# define V3_ASID_ASNUM   0
-# define V3_ASID_RDI     1
+#  define V3_ASID_ASNUM   0
+#  define V3_ASID_RDI     1
 
 /*
  * AFI values, assigned by IANA.  It'd be nice to make the AFI
@@ -843,8 +849,8 @@ DECLARE_ASN1_FUNCTIONS(IPAddressFamily)
  * that would need to be defined for other address families for it to
  * be worth the trouble.
  */
-# define IANA_AFI_IPV4   1
-# define IANA_AFI_IPV6   2
+#  define IANA_AFI_IPV4   1
+#  define IANA_AFI_IPV6   2
 
 /*
  * Utilities to construct and extract values from RFC3779 extensions,
@@ -892,6 +898,8 @@ int v3_asid_validate_resource_set(STACK_OF(X509) *chain,
                                   ASIdentifiers *ext, int allow_inheritance);
 int v3_addr_validate_resource_set(STACK_OF(X509) *chain,
                                   IPAddrBlocks *ext, int allow_inheritance);
+
+# endif                         /* OPENSSL_NO_RFC3779 */
 
 /* BEGIN ERROR CODES */
 /*
@@ -960,6 +968,7 @@ void ERR_load_X509V3_strings(void);
 # define X509V3_F_X509V3_EXT_ADD                          104
 # define X509V3_F_X509V3_EXT_ADD_ALIAS                    106
 # define X509V3_F_X509V3_EXT_CONF                         107
+# define X509V3_F_X509V3_EXT_FREE                         165
 # define X509V3_F_X509V3_EXT_I2D                          136
 # define X509V3_F_X509V3_EXT_NCONF                        152
 # define X509V3_F_X509V3_GET_SECTION                      142
@@ -974,6 +983,7 @@ void ERR_load_X509V3_strings(void);
 # define X509V3_R_BAD_OBJECT                              119
 # define X509V3_R_BN_DEC2BN_ERROR                         100
 # define X509V3_R_BN_TO_ASN1_INTEGER_ERROR                101
+# define X509V3_R_CANNOT_FIND_FREE_FUNCTION               168
 # define X509V3_R_DIRNAME_ERROR                           149
 # define X509V3_R_DISTPOINT_ALREADY_SET                   160
 # define X509V3_R_DUPLICATE_ZONE_ID                       133
@@ -989,13 +999,13 @@ void ERR_load_X509V3_strings(void);
 # define X509V3_R_ILLEGAL_EMPTY_EXTENSION                 151
 # define X509V3_R_ILLEGAL_HEX_DIGIT                       113
 # define X509V3_R_INCORRECT_POLICY_SYNTAX_TAG             152
-# define X509V3_R_INVALID_MULTIPLE_RDNS                   161
 # define X509V3_R_INVALID_ASNUMBER                        162
 # define X509V3_R_INVALID_ASRANGE                         163
 # define X509V3_R_INVALID_BOOLEAN_STRING                  104
 # define X509V3_R_INVALID_EXTENSION_STRING                105
 # define X509V3_R_INVALID_INHERITANCE                     165
 # define X509V3_R_INVALID_IPADDRESS                       166
+# define X509V3_R_INVALID_MULTIPLE_RDNS                   161
 # define X509V3_R_INVALID_NAME                            106
 # define X509V3_R_INVALID_NULL_ARGUMENT                   107
 # define X509V3_R_INVALID_NULL_NAME                       108

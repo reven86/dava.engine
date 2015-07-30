@@ -68,7 +68,9 @@
 # define HEADER_X509_VFY_H
 
 # include <openssl/opensslconf.h>
-# include <openssl/lhash.h>
+# ifndef OPENSSL_NO_LHASH
+#  include <openssl/lhash.h>
+# endif
 # include <openssl/bio.h>
 # include <openssl/crypto.h>
 # include <openssl/symhacks.h>
@@ -76,6 +78,16 @@
 #ifdef  __cplusplus
 extern "C" {
 #endif
+
+# if 0
+/* Outer object */
+typedef struct x509_hash_dir_st {
+    int num_dirs;
+    char **dirs;
+    int *dirs_type;
+    int num_dirs_alloced;
+} X509_HASH_DIR_CTX;
+# endif
 
 typedef struct x509_file_st {
     int num_paths;              /* number of paths to files or directories */
@@ -360,8 +372,7 @@ void X509_STORE_CTX_set_depth(X509_STORE_CTX *ctx, int depth);
 # define         X509_V_ERR_UNSUPPORTED_CONSTRAINT_SYNTAX        52
 # define         X509_V_ERR_UNSUPPORTED_NAME_SYNTAX              53
 # define         X509_V_ERR_CRL_PATH_VALIDATION_ERROR            54
-/* Another issuer check debug option */
-# define         X509_V_ERR_PATH_LOOP                            55
+
 /* Suite B mode algorithm violation */
 # define         X509_V_ERR_SUITE_B_INVALID_VERSION              56
 # define         X509_V_ERR_SUITE_B_INVALID_ALGORITHM            57
@@ -369,6 +380,7 @@ void X509_STORE_CTX_set_depth(X509_STORE_CTX *ctx, int depth);
 # define         X509_V_ERR_SUITE_B_INVALID_SIGNATURE_ALGORITHM  59
 # define         X509_V_ERR_SUITE_B_LOS_NOT_ALLOWED              60
 # define         X509_V_ERR_SUITE_B_CANNOT_SIGN_P_384_WITH_P_256 61
+
 /* Host, email and IP check errors */
 # define         X509_V_ERR_HOSTNAME_MISMATCH                    62
 # define         X509_V_ERR_EMAIL_MISMATCH                       63
@@ -417,11 +429,12 @@ void X509_STORE_CTX_set_depth(X509_STORE_CTX *ctx, int depth);
 # define X509_V_FLAG_SUITEB_192_LOS              0x20000
 /* Suite B 128 bit mode allowing 192 bit algorithms */
 # define X509_V_FLAG_SUITEB_128_LOS              0x30000
+
 /* Allow partial chains if at least one certificate is in trusted store */
 # define X509_V_FLAG_PARTIAL_CHAIN               0x80000
 /*
  * If the initial chain is not trusted, do not attempt to build an alternative
- * chain. Alternate chain checking was introduced in 1.1.0. Setting this flag
+ * chain. Alternate chain checking was introduced in 1.0.2b. Setting this flag
  * will force the behaviour to match that of previous versions.
  */
 # define X509_V_FLAG_NO_ALT_CHAINS               0x100000

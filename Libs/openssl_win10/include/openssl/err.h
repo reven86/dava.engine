@@ -114,14 +114,18 @@
 
 # include <openssl/e_os2.h>
 
-# ifndef OPENSSL_NO_STDIO
+# ifndef OPENSSL_NO_FP_API
 #  include <stdio.h>
 #  include <stdlib.h>
 # endif
 
 # include <openssl/ossl_typ.h>
-# include <openssl/bio.h>
-# include <openssl/lhash.h>
+# ifndef OPENSSL_NO_BIO
+#  include <openssl/bio.h>
+# endif
+# ifndef OPENSSL_NO_LHASH
+#  include <openssl/lhash.h>
+# endif
 
 #ifdef  __cplusplus
 extern "C" {
@@ -334,10 +338,12 @@ const char *ERR_func_error_string(unsigned long e);
 const char *ERR_reason_error_string(unsigned long e);
 void ERR_print_errors_cb(int (*cb) (const char *str, size_t len, void *u),
                          void *u);
-# ifndef OPENSSL_NO_STDIO
+# ifndef OPENSSL_NO_FP_API
 void ERR_print_errors_fp(FILE *fp);
 # endif
+# ifndef OPENSSL_NO_BIO
 void ERR_print_errors(BIO *bp);
+# endif
 void ERR_add_error_data(int num, ...);
 void ERR_add_error_vdata(int num, va_list args);
 void ERR_load_strings(int lib, ERR_STRING_DATA str[]);
@@ -347,15 +353,16 @@ void ERR_load_crypto_strings(void);
 void ERR_free_strings(void);
 
 void ERR_remove_thread_state(const CRYPTO_THREADID *tid);
-# ifdef OPENSSL_USE_DEPRECATED
-DECLARE_DEPRECATED(void ERR_remove_state(unsigned long pid)); /* if zero we
-                                                               * look it up */
+# ifndef OPENSSL_NO_DEPRECATED
+void ERR_remove_state(unsigned long pid); /* if zero we look it up */
 # endif
 ERR_STATE *ERR_get_state(void);
 
+# ifndef OPENSSL_NO_LHASH
 LHASH_OF(ERR_STRING_DATA) *ERR_get_string_table(void);
 LHASH_OF(ERR_STATE) *ERR_get_err_state_table(void);
 void ERR_release_err_state_table(LHASH_OF(ERR_STATE) **hash);
+# endif
 
 int ERR_get_next_error_library(void);
 

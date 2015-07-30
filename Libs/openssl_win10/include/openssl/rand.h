@@ -71,14 +71,18 @@
 extern "C" {
 #endif
 
+# if defined(OPENSSL_FIPS)
+#  define FIPS_RAND_SIZE_T size_t
+# endif
+
 /* Already defined in ossl_typ.h */
 /* typedef struct rand_meth_st RAND_METHOD; */
 
 struct rand_meth_st {
-    int (*seed) (const void *buf, int num);
+    void (*seed) (const void *buf, int num);
     int (*bytes) (unsigned char *buf, int num);
     void (*cleanup) (void);
-    int (*add) (const void *buf, int num, double entropy);
+    void (*add) (const void *buf, int num, double entropy);
     int (*pseudorand) (unsigned char *buf, int num);
     int (*status) (void);
 };
@@ -95,13 +99,8 @@ int RAND_set_rand_engine(ENGINE *engine);
 RAND_METHOD *RAND_SSLeay(void);
 void RAND_cleanup(void);
 int RAND_bytes(unsigned char *buf, int num);
-#ifdef OPENSSL_USE_DEPRECATED
-DECLARE_DEPRECATED(int RAND_pseudo_bytes(unsigned char *buf, int num));
-#endif
+int RAND_pseudo_bytes(unsigned char *buf, int num);
 void RAND_seed(const void *buf, int num);
-#if defined(__ANDROID__) && defined(__NDK_FPABI__)
-__NDK_FPABI__	/* __attribute__((pcs("aapcs"))) on ARM */
-#endif
 void RAND_add(const void *buf, int num, double entropy);
 int RAND_load_file(const char *file, long max_bytes);
 int RAND_write_file(const char *file);
@@ -120,6 +119,7 @@ int RAND_event(UINT, WPARAM, LPARAM);
 # endif
 
 # ifdef OPENSSL_FIPS
+void RAND_set_fips_drbg_type(int type, int flags);
 int RAND_init_fips(void);
 # endif
 
@@ -133,22 +133,16 @@ void ERR_load_RAND_strings(void);
 /* Error codes for the RAND functions. */
 
 /* Function codes. */
-# define RAND_F_FIPS_RAND                                 102
-# define RAND_F_FIPS_RAND_SET_DT                          103
-# define RAND_F_FIPS_SET_PRNG_SEED                        104
-# define RAND_F_FIPS_SET_TEST_MODE                        105
-# define RAND_F_FIPS_X931_SET_DT                          106
 # define RAND_F_RAND_GET_RAND_METHOD                      101
+# define RAND_F_RAND_INIT_FIPS                            102
 # define RAND_F_SSLEAY_RAND_BYTES                         100
 
 /* Reason codes. */
-# define RAND_R_NOT_IN_TEST_MODE                          101
-# define RAND_R_NO_KEY_SET                                102
-# define RAND_R_PRNG_ERROR                                103
-# define RAND_R_PRNG_KEYED                                104
+# define RAND_R_DUAL_EC_DRBG_DISABLED                     104
+# define RAND_R_ERROR_INITIALISING_DRBG                   102
+# define RAND_R_ERROR_INSTANTIATING_DRBG                  103
+# define RAND_R_NO_FIPS_RANDOM_METHOD_SET                 101
 # define RAND_R_PRNG_NOT_SEEDED                           100
-# define RAND_R_PRNG_SEED_MUST_NOT_MATCH_KEY              105
-# define RAND_R_PRNG_STUCK                                106
 
 #ifdef  __cplusplus
 }

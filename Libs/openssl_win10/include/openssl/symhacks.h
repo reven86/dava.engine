@@ -81,6 +81,33 @@
 #  undef ASN1_STRING_set_default_mask_asc
 #  define ASN1_STRING_set_default_mask_asc        ASN1_STRING_set_def_mask_asc
 
+#  if 0                         /* No longer needed, since safestack macro
+                                 * magic does the job */
+/* Hack the names created with DECLARE_ASN1_SET_OF(PKCS7_SIGNER_INFO) */
+#   undef i2d_ASN1_SET_OF_PKCS7_SIGNER_INFO
+#   define i2d_ASN1_SET_OF_PKCS7_SIGNER_INFO       i2d_ASN1_SET_OF_PKCS7_SIGINF
+#   undef d2i_ASN1_SET_OF_PKCS7_SIGNER_INFO
+#   define d2i_ASN1_SET_OF_PKCS7_SIGNER_INFO       d2i_ASN1_SET_OF_PKCS7_SIGINF
+#  endif
+
+#  if 0                         /* No longer needed, since safestack macro
+                                 * magic does the job */
+/* Hack the names created with DECLARE_ASN1_SET_OF(PKCS7_RECIP_INFO) */
+#   undef i2d_ASN1_SET_OF_PKCS7_RECIP_INFO
+#   define i2d_ASN1_SET_OF_PKCS7_RECIP_INFO        i2d_ASN1_SET_OF_PKCS7_RECINF
+#   undef d2i_ASN1_SET_OF_PKCS7_RECIP_INFO
+#   define d2i_ASN1_SET_OF_PKCS7_RECIP_INFO        d2i_ASN1_SET_OF_PKCS7_RECINF
+#  endif
+
+#  if 0                         /* No longer needed, since safestack macro
+                                 * magic does the job */
+/* Hack the names created with DECLARE_ASN1_SET_OF(ACCESS_DESCRIPTION) */
+#   undef i2d_ASN1_SET_OF_ACCESS_DESCRIPTION
+#   define i2d_ASN1_SET_OF_ACCESS_DESCRIPTION      i2d_ASN1_SET_OF_ACC_DESC
+#   undef d2i_ASN1_SET_OF_ACCESS_DESCRIPTION
+#   define d2i_ASN1_SET_OF_ACCESS_DESCRIPTION      d2i_ASN1_SET_OF_ACC_DESC
+#  endif
+
 /* Hack the names created with DECLARE_PEM_rw(NETSCAPE_CERT_SEQUENCE) */
 #  undef PEM_read_NETSCAPE_CERT_SEQUENCE
 #  define PEM_read_NETSCAPE_CERT_SEQUENCE         PEM_read_NS_CERT_SEQ
@@ -156,6 +183,10 @@
 #  define SSL_CTX_set_default_passwd_cb_userdata  SSL_CTX_set_def_passwd_cb_ud
 #  undef SSL_COMP_get_compression_methods
 #  define SSL_COMP_get_compression_methods        SSL_COMP_get_compress_methods
+#  undef SSL_COMP_set0_compression_methods
+#  define SSL_COMP_set0_compression_methods       SSL_COMP_set0_compress_methods
+#  undef SSL_COMP_free_compression_methods
+#  define SSL_COMP_free_compression_methods       SSL_COMP_free_compress_methods
 #  undef ssl_add_clienthello_renegotiate_ext
 #  define ssl_add_clienthello_renegotiate_ext     ssl_add_clienthello_reneg_ext
 #  undef ssl_add_serverhello_renegotiate_ext
@@ -184,21 +215,28 @@
 #  define SSL_CTX_set_next_protos_advertised_cb   SSL_CTX_set_next_protos_adv_cb
 #  undef SSL_CTX_set_next_proto_select_cb
 #  define SSL_CTX_set_next_proto_select_cb        SSL_CTX_set_next_proto_sel_cb
-#  undef SSL_CTX_set_not_resumable_session_callback
-#  define SSL_CTX_set_not_resumable_session_callback \
-                                                SSL_CTX_set_not_resumbl_sess_cb
-#  undef SSL_set_not_resumable_session_callback
-#  define SSL_set_not_resumable_session_callback  SSL_set_not_resumbl_sess_cb
-#  undef ssl_check_clienthello_tlsext_late
-#  define ssl_check_clienthello_tlsext_late       ssl_chk_clienthello_tlsext_late
-#  undef ssl3_cbc_record_digest_supported
-#  define ssl3_cbc_record_digest_supported        ssl3_cbc_rcd_digest_supported
-#  undef SSL_COMP_set0_compression_methods
-#  define SSL_COMP_set0_compression_methods       SSL_COMP_set0_compr_methods
-#  undef SSL_COMP_free_compression_methods
-#  define SSL_COMP_free_compression_methods       SSL_COMP_free_compr_methods
 
-/* Hack some long ENGINE names */
+#  undef tls1_send_server_supplemental_data
+#  define tls1_send_server_supplemental_data      tls1_send_server_suppl_data
+#  undef tls1_send_client_supplemental_data
+#  define tls1_send_client_supplemental_data      tls1_send_client_suppl_data
+#  undef tls1_get_server_supplemental_data
+#  define tls1_get_server_supplemental_data       tls1_get_server_suppl_data
+#  undef tls1_get_client_supplemental_data
+#  define tls1_get_client_supplemental_data       tls1_get_client_suppl_data
+
+#  undef ssl3_cbc_record_digest_supported
+#  define ssl3_cbc_record_digest_supported        ssl3_cbc_record_digest_support
+#  undef ssl_check_clienthello_tlsext_late
+#  define ssl_check_clienthello_tlsext_late       ssl_check_clihello_tlsext_late
+#  undef ssl_check_clienthello_tlsext_early
+#  define ssl_check_clienthello_tlsext_early      ssl_check_clihello_tlsext_early
+
+/* Hack some RSA long names */
+#  undef RSA_padding_check_PKCS1_OAEP_mgf1
+#  define RSA_padding_check_PKCS1_OAEP_mgf1       RSA_pad_check_PKCS1_OAEP_mgf1
+
+/* Hack some ENGINE long names */
 #  undef ENGINE_get_default_BN_mod_exp_crt
 #  define ENGINE_get_default_BN_mod_exp_crt       ENGINE_get_def_BN_mod_exp_crt
 #  undef ENGINE_set_default_BN_mod_exp_crt
@@ -228,6 +266,12 @@
 #  define OCSP_BASICRESP_get_ext_by_critical      OCSP_BASICRESP_get_ext_by_crit
 #  undef OCSP_SINGLERESP_get_ext_by_critical
 #  define OCSP_SINGLERESP_get_ext_by_critical     OCSP_SINGLERESP_get_ext_by_crit
+
+/* Hack some long DES names */
+#  undef _ossl_old_des_ede3_cfb64_encrypt
+#  define _ossl_old_des_ede3_cfb64_encrypt        _ossl_odes_ede3_cfb64_encrypt
+#  undef _ossl_old_des_ede3_ofb64_encrypt
+#  define _ossl_old_des_ede3_ofb64_encrypt        _ossl_odes_ede3_ofb64_encrypt
 
 /* Hack some long EVP names */
 #  undef OPENSSL_add_all_algorithms_noconf
@@ -405,14 +449,14 @@
 #  define CMS_RecipientInfo_kari_get0_orig_id     CMS_RecipInfo_kari_get0_orig_id
 #  undef CMS_RecipientInfo_kari_get0_reks
 #  define CMS_RecipientInfo_kari_get0_reks        CMS_RecipInfo_kari_get0_reks
-#  undef CMS_RecipientInfo_kari_set0_pkey
-#  define CMS_RecipientInfo_kari_set0_pkey        CMS_RecipInfo_kari_set0_pkey
-#  undef CMS_RecipientInfo_kari_orig_id_cmp
-#  define CMS_RecipientInfo_kari_orig_id_cmp      CMS_RecipInfo_kari_orig_id_cmp
 #  undef CMS_RecipientEncryptedKey_cert_cmp
 #  define CMS_RecipientEncryptedKey_cert_cmp      CMS_RecipEncryptedKey_cert_cmp
+#  undef CMS_RecipientInfo_kari_set0_pkey
+#  define CMS_RecipientInfo_kari_set0_pkey        CMS_RecipInfo_kari_set0_pkey
 #  undef CMS_RecipientEncryptedKey_get0_id
 #  define CMS_RecipientEncryptedKey_get0_id       CMS_RecipEncryptedKey_get0_id
+#  undef CMS_RecipientInfo_kari_orig_id_cmp
+#  define CMS_RecipientInfo_kari_orig_id_cmp      CMS_RecipInfo_kari_orig_id_cmp
 
 /* Hack some long DTLS1 names */
 #  undef dtls1_retransmit_buffered_messages
@@ -429,10 +473,6 @@
 #  define UI_method_get_prompt_constructor        UI_method_get_prompt_constructr
 #  undef UI_method_set_prompt_constructor
 #  define UI_method_set_prompt_constructor        UI_method_set_prompt_constructr
-
-/* Hack some long RSA names */
-#  undef RSA_padding_check_PKCS1_OAEP_mgf1
-#  define RSA_padding_check_PKCS1_OAEP_mgf1       RSA_padding_chk_PKCS1_OAEP_mgf1
 
 # endif                         /* defined OPENSSL_SYS_VMS */
 

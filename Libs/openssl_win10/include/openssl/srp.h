@@ -119,8 +119,7 @@ SRP_user_pwd *SRP_VBASE_get_by_user(SRP_VBASE *vb, char *username);
 char *SRP_create_verifier(const char *user, const char *pass, char **salt,
                           char **verifier, const char *N, const char *g);
 int SRP_create_verifier_BN(const char *user, const char *pass, BIGNUM **salt,
-                           BIGNUM **verifier, const BIGNUM *N,
-                           const BIGNUM *g);
+                           BIGNUM **verifier, BIGNUM *N, BIGNUM *g);
 
 #  define SRP_NO_ERROR 0
 #  define SRP_ERR_VBASE_INCOMPLETE_FILE 1

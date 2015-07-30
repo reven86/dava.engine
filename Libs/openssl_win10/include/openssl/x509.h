@@ -66,20 +66,32 @@
 
 # include <openssl/e_os2.h>
 # include <openssl/symhacks.h>
-# include <openssl/buffer.h>
-# include <openssl/evp.h>
-# include <openssl/bio.h>
+# ifndef OPENSSL_NO_BUFFER
+#  include <openssl/buffer.h>
+# endif
+# ifndef OPENSSL_NO_EVP
+#  include <openssl/evp.h>
+# endif
+# ifndef OPENSSL_NO_BIO
+#  include <openssl/bio.h>
+# endif
 # include <openssl/stack.h>
 # include <openssl/asn1.h>
 # include <openssl/safestack.h>
 
 # ifndef OPENSSL_NO_EC
 #  include <openssl/ec.h>
+# endif
+
+# ifndef OPENSSL_NO_ECDSA
 #  include <openssl/ecdsa.h>
+# endif
+
+# ifndef OPENSSL_NO_ECDH
 #  include <openssl/ecdh.h>
 # endif
 
-# ifdef OPENSSL_USE_DEPRECATED
+# ifndef OPENSSL_NO_DEPRECATED
 #  ifndef OPENSSL_NO_RSA
 #   include <openssl/rsa.h>
 #  endif
@@ -91,7 +103,9 @@
 #  endif
 # endif
 
-# include <openssl/sha.h>
+# ifndef OPENSSL_NO_SHA
+#  include <openssl/sha.h>
+# endif
 # include <openssl/ossl_typ.h>
 
 #ifdef  __cplusplus
@@ -101,6 +115,7 @@ extern "C" {
 # ifdef OPENSSL_SYS_WIN32
 /* Under Win32 these are defined in wincrypt.h */
 #  undef X509_NAME
+#  undef X509_CERT_PAIR
 #  undef X509_EXTENSIONS
 # endif
 
@@ -130,6 +145,8 @@ struct X509_algor_st {
     ASN1_TYPE *parameter;
 } /* X509_ALGOR */ ;
 
+DECLARE_ASN1_SET_OF(X509_ALGOR)
+
 typedef STACK_OF(X509_ALGOR) X509_ALGORS;
 
 typedef struct X509_val_st {
@@ -148,23 +165,63 @@ typedef struct X509_sig_st {
     ASN1_OCTET_STRING *digest;
 } X509_SIG;
 
-typedef struct X509_name_entry_st X509_NAME_ENTRY;
+typedef struct X509_name_entry_st {
+    ASN1_OBJECT *object;
+    ASN1_STRING *value;
+    int set;
+    int size;                   /* temp variable */
+} X509_NAME_ENTRY;
 
 DECLARE_STACK_OF(X509_NAME_ENTRY)
+DECLARE_ASN1_SET_OF(X509_NAME_ENTRY)
+
+/* we always keep X509_NAMEs in 2 forms. */
+struct X509_name_st {
+    STACK_OF(X509_NAME_ENTRY) *entries;
+    int modified;               /* true if 'bytes' needs to be built */
+# ifndef OPENSSL_NO_BUFFER
+    BUF_MEM *bytes;
+# else
+    char *bytes;
+# endif
+/*      unsigned long hash; Keep the hash around for lookups */
+    unsigned char *canon_enc;
+    int canon_enclen;
+} /* X509_NAME */ ;
 
 DECLARE_STACK_OF(X509_NAME)
 
 # define X509_EX_V_NETSCAPE_HACK         0x8000
 # define X509_EX_V_INIT                  0x0001
-typedef struct X509_extension_st X509_EXTENSION;
+typedef struct X509_extension_st {
+    ASN1_OBJECT *object;
+    ASN1_BOOLEAN critical;
+    ASN1_OCTET_STRING *value;
+} X509_EXTENSION;
 
 typedef STACK_OF(X509_EXTENSION) X509_EXTENSIONS;
 
 DECLARE_STACK_OF(X509_EXTENSION)
+DECLARE_ASN1_SET_OF(X509_EXTENSION)
 
-typedef struct x509_attributes_st X509_ATTRIBUTE;
+/* a sequence of these are used */
+typedef struct x509_attributes_st {
+    ASN1_OBJECT *object;
+    int single;                 /* 0 for a set, 1 for a single item (which is
+                                 * wrong) */
+    union {
+        char *ptr;
+        /*
+         * 0
+         */ STACK_OF(ASN1_TYPE) *set;
+        /*
+         * 1
+         */ ASN1_TYPE *single;
+    } value;
+} X509_ATTRIBUTE;
 
 DECLARE_STACK_OF(X509_ATTRIBUTE)
+DECLARE_ASN1_SET_OF(X509_ATTRIBUTE)
 
 typedef struct X509_req_info_st {
     ASN1_ENCODING enc;
@@ -231,13 +288,18 @@ struct x509_st {
     STACK_OF(DIST_POINT) *crldp;
     STACK_OF(GENERAL_NAME) *altname;
     NAME_CONSTRAINTS *nc;
+# ifndef OPENSSL_NO_RFC3779
     STACK_OF(IPAddressFamily) *rfc3779_addr;
     struct ASIdentifiers_st *rfc3779_asid;
+# endif
+# ifndef OPENSSL_NO_SHA
     unsigned char sha1_hash[SHA_DIGEST_LENGTH];
+# endif
     X509_CERT_AUX *aux;
 } /* X509 */ ;
 
 DECLARE_STACK_OF(X509)
+DECLARE_ASN1_SET_OF(X509)
 
 /* This is used for a table of trust checking functions */
 
@@ -251,6 +313,11 @@ typedef struct x509_trust_st {
 } X509_TRUST;
 
 DECLARE_STACK_OF(X509_TRUST)
+
+typedef struct x509_cert_pair_st {
+    X509 *forward;
+    X509 *reverse;
+} X509_CERT_PAIR;
 
 /* standard trust ids */
 
@@ -369,6 +436,7 @@ struct x509_revoked_st {
 };
 
 DECLARE_STACK_OF(X509_REVOKED)
+DECLARE_ASN1_SET_OF(X509_REVOKED)
 
 typedef struct X509_crl_info_st {
     ASN1_INTEGER *version;
@@ -397,13 +465,16 @@ struct X509_crl_st {
     /* CRL and base CRL numbers for delta processing */
     ASN1_INTEGER *crl_number;
     ASN1_INTEGER *base_crl_number;
+# ifndef OPENSSL_NO_SHA
     unsigned char sha1_hash[SHA_DIGEST_LENGTH];
+# endif
     STACK_OF(GENERAL_NAMES) *issuers;
     const X509_CRL_METHOD *meth;
     void *meth_data;
 } /* X509_CRL */ ;
 
 DECLARE_STACK_OF(X509_CRL)
+DECLARE_ASN1_SET_OF(X509_CRL)
 
 typedef struct private_key_st {
     int version;
@@ -421,6 +492,7 @@ typedef struct private_key_st {
     int references;
 } X509_PKEY;
 
+# ifndef OPENSSL_NO_EVP
 typedef struct X509_info_st {
     X509 *x509;
     X509_CRL *crl;
@@ -432,6 +504,7 @@ typedef struct X509_info_st {
 } X509_INFO;
 
 DECLARE_STACK_OF(X509_INFO)
+# endif
 
 /*
  * The next 2 structures and their 8 routines were sent to me by Pat Richard
@@ -554,6 +627,7 @@ void *X509_CRL_get_meth_data(X509_CRL *crl);
 
 const char *X509_verify_cert_error_string(long n);
 
+# ifndef OPENSSL_NO_EVP
 int X509_verify(X509 *a, EVP_PKEY *r);
 
 int X509_REQ_verify(X509_REQ *a, EVP_PKEY *r);
@@ -590,8 +664,9 @@ int X509_REQ_digest(const X509_REQ *data, const EVP_MD *type,
                     unsigned char *md, unsigned int *len);
 int X509_NAME_digest(const X509_NAME *data, const EVP_MD *type,
                      unsigned char *md, unsigned int *len);
+# endif
 
-# ifndef OPENSSL_NO_STDIO
+# ifndef OPENSSL_NO_FP_API
 X509 *d2i_X509_fp(FILE *fp, X509 **x509);
 int i2d_X509_fp(FILE *fp, X509 *x509);
 X509_CRL *d2i_X509_CRL_fp(FILE *fp, X509_CRL **crl);
@@ -630,6 +705,7 @@ int i2d_PUBKEY_fp(FILE *fp, EVP_PKEY *pkey);
 EVP_PKEY *d2i_PUBKEY_fp(FILE *fp, EVP_PKEY **a);
 # endif
 
+# ifndef OPENSSL_NO_BIO
 X509 *d2i_X509_bio(BIO *bp, X509 **x509);
 int i2d_X509_bio(BIO *bp, X509 *x509);
 X509_CRL *d2i_X509_CRL_bio(BIO *bp, X509_CRL **crl);
@@ -666,6 +742,7 @@ int i2d_PrivateKey_bio(BIO *bp, EVP_PKEY *pkey);
 EVP_PKEY *d2i_PrivateKey_bio(BIO *bp, EVP_PKEY **a);
 int i2d_PUBKEY_bio(BIO *bp, EVP_PKEY *pkey);
 EVP_PKEY *d2i_PUBKEY_bio(BIO *bp, EVP_PKEY **a);
+# endif
 
 X509 *X509_dup(X509 *x509);
 X509_ATTRIBUTE *X509_ATTRIBUTE_dup(X509_ATTRIBUTE *xa);
@@ -746,6 +823,8 @@ DECLARE_ASN1_FUNCTIONS(X509_CINF)
 DECLARE_ASN1_FUNCTIONS(X509)
 DECLARE_ASN1_FUNCTIONS(X509_CERT_AUX)
 
+DECLARE_ASN1_FUNCTIONS(X509_CERT_PAIR)
+
 int X509_get_ex_new_index(long argl, void *argp, CRYPTO_EX_new *new_func,
                           CRYPTO_EX_dup *dup_func, CRYPTO_EX_free *free_func);
 int X509_set_ex_data(X509 *r, int idx, void *arg);
@@ -782,11 +861,15 @@ int X509_CRL_get0_by_cert(X509_CRL *crl, X509_REVOKED **ret, X509 *x);
 
 X509_PKEY *X509_PKEY_new(void);
 void X509_PKEY_free(X509_PKEY *a);
+int i2d_X509_PKEY(X509_PKEY *a, unsigned char **pp);
+X509_PKEY *d2i_X509_PKEY(X509_PKEY **a, const unsigned char **pp,
+                         long length);
 
 DECLARE_ASN1_FUNCTIONS(NETSCAPE_SPKI)
 DECLARE_ASN1_FUNCTIONS(NETSCAPE_SPKAC)
 DECLARE_ASN1_FUNCTIONS(NETSCAPE_CERT_SEQUENCE)
 
+# ifndef OPENSSL_NO_EVP
 X509_INFO *X509_INFO_new(void);
 void X509_INFO_free(X509_INFO *a);
 char *X509_NAME_oneline(X509_NAME *a, char *buf, int size);
@@ -813,6 +896,7 @@ int ASN1_item_sign(const ASN1_ITEM *it, X509_ALGOR *algor1,
 int ASN1_item_sign_ctx(const ASN1_ITEM *it, X509_ALGOR *algor1,
                        X509_ALGOR *algor2, ASN1_BIT_STRING *signature,
                        void *asn, EVP_MD_CTX *ctx);
+# endif
 
 int X509_set_version(X509 *x, long version);
 int X509_set_serialNumber(X509 *x, ASN1_INTEGER *serial);
@@ -898,7 +982,7 @@ unsigned long X509_NAME_hash_old(X509_NAME *x);
 
 int X509_CRL_cmp(const X509_CRL *a, const X509_CRL *b);
 int X509_CRL_match(const X509_CRL *a, const X509_CRL *b);
-# ifndef OPENSSL_NO_STDIO
+# ifndef OPENSSL_NO_FP_API
 int X509_print_ex_fp(FILE *bp, X509 *x, unsigned long nmflag,
                      unsigned long cflag);
 int X509_print_fp(FILE *bp, X509 *x);
@@ -908,6 +992,7 @@ int X509_NAME_print_ex_fp(FILE *fp, X509_NAME *nm, int indent,
                           unsigned long flags);
 # endif
 
+# ifndef OPENSSL_NO_BIO
 int X509_NAME_print(BIO *bp, X509_NAME *name, int obase);
 int X509_NAME_print_ex(BIO *out, X509_NAME *nm, int indent,
                        unsigned long flags);
@@ -920,6 +1005,7 @@ int X509_CRL_print(BIO *bp, X509_CRL *x);
 int X509_REQ_print_ex(BIO *bp, X509_REQ *x, unsigned long nmflag,
                       unsigned long cflag);
 int X509_REQ_print(BIO *bp, X509_REQ *req);
+# endif
 
 int X509_NAME_entry_count(X509_NAME *name);
 int X509_NAME_get_text_by_NID(X509_NAME *name, int nid, char *buf, int len);
@@ -962,7 +1048,6 @@ int X509_NAME_ENTRY_set_data(X509_NAME_ENTRY *ne, int type,
                              const unsigned char *bytes, int len);
 ASN1_OBJECT *X509_NAME_ENTRY_get_object(X509_NAME_ENTRY *ne);
 ASN1_STRING *X509_NAME_ENTRY_get_data(X509_NAME_ENTRY *ne);
-int X509_NAME_ENTRY_set(const X509_NAME_ENTRY *ne);
 
 int X509v3_get_ext_count(const STACK_OF(X509_EXTENSION) *x);
 int X509v3_get_ext_by_NID(const STACK_OF(X509_EXTENSION) *x,
