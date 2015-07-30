@@ -215,6 +215,7 @@
 #include "Render/3D/EdgeAdjacency.h"
 #include "Render/3D/MeshUtils.h"
 
+#include "Render/RenderHelper.h"
 
 #include "Render/Material/NMaterialNames.h"
 

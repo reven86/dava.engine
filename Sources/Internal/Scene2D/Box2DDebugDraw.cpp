@@ -199,10 +199,9 @@ void Box2DDebugDraw::DrawTransform(const b2Transform& xf)
 
 void Box2DDebugDraw::DrawPoint(const b2Vec2& p, float32 size, const b2Color& color)
 {
-#if RHI_COMPLETE
-    RenderHelper::Instance()->DrawPoint(Vector2(p.x * ptdRatio + cameraPos.x, -p.y * ptdRatio + cameraPos.y), 
+    /*RenderHelper::Instance()->DrawPoint(Vector2(p.x * ptdRatio + cameraPos.x, -p.y * ptdRatio + cameraPos.y), 
         size * ptdRatio, RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL, Color(color.r, color.g, color.b, 1.0f));
-#endif
+        */
 	/*glPointSize(size);
 	glBegin(GL_POINTS);
 	glColor3f(color.r, color.g, color.b);

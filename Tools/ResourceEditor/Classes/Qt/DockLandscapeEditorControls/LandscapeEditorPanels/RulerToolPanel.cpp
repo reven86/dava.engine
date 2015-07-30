@@ -113,7 +113,6 @@ void RulerToolPanel::InitUI()
 
 	int32 lineWidthMin = 1;
 	int32 lineWidthMax = 1;
-	RenderHelper::Instance()->GetLineWidthRange(lineWidthMin, lineWidthMax);
 	sliderWidgetLineWidth->Init(false, lineWidthMax, lineWidthMin, lineWidthMin);
 	sliderWidgetLineWidth->SetRangeChangingBlocked(true);
 	labelLength->setNum(0);

@@ -210,17 +210,17 @@ void SceneSelectionSystem::Input(DAVA::UIEvent *event)
 
 void SceneSelectionSystem::Draw()
 {
-#if RHI_COMPLETE_EDITOR
 	if (IsLocked())
 	{
 		return;
 	}
 
 	if(curSelections.Size() > 0)
-	{
+    {
         DAVA::int32 drawMode = SettingsManager::GetValue(Settings::Scene_SelectionDrawMode).AsInt32();
-        DAVA::RenderManager::SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size) &Matrix4::IDENTITY);
-        UniqueHandle renderState = (!(drawMode & SS_DRAW_NO_DEEP_TEST)) ? selectionDepthDrawState : selectionNormalDrawState;
+
+        DAVA::RenderHelper::eDrawType wireDrawType = (!(drawMode & SS_DRAW_NO_DEEP_TEST)) ? DAVA::RenderHelper::DRAW_WIRE_DEPTH : DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH;
+        DAVA::RenderHelper::eDrawType solidDrawType = (!(drawMode & SS_DRAW_NO_DEEP_TEST)) ? DAVA::RenderHelper::DRAW_SOLID_DEPTH : DAVA::RenderHelper::DRAW_SOLID_NO_DEPTH;
 
 		for (DAVA::uint32 i = 0; i < curSelections.Size(); i++)
 		{
@@ -229,25 +229,21 @@ void SceneSelectionSystem::Draw()
 			// draw selection share
 			if(drawMode & SS_DRAW_SHAPE)
 			{
-				DAVA::RenderManager::Instance()->SetColor(DAVA::Color(1.0f, 1.0f, 1.0f, 1.0f));
-				DAVA::RenderHelper::Instance()->DrawBox(selectionBox, 1.0f, renderState);
+                GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABox(selectionBox, DAVA::Color(1.0f, 1.0f, 1.0f, 1.0f), wireDrawType);
 			}
 			// draw selection share
 			else if(drawMode & SS_DRAW_CORNERS)
 			{
-				DAVA::RenderManager::Instance()->SetColor(DAVA::Color(1.0f, 1.0f, 1.0f, 1.0f));
-				DAVA::RenderHelper::Instance()->DrawCornerBox(selectionBox, 1.0f, renderState);
+                GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawCornerAABox(selectionBox, DAVA::Color(1.0f, 1.0f, 1.0f, 1.0f), wireDrawType);
 			}
 
 			// fill selection shape
 			if(drawMode & SS_DRAW_BOX)
 			{
-				DAVA::RenderManager::Instance()->SetColor(DAVA::Color(1.0f, 1.0f, 1.0f, 0.15f));
-				DAVA::RenderHelper::Instance()->FillBox(selectionBox, renderState);
-			}
+                GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABox(selectionBox, DAVA::Color(1.0f, 1.0f, 1.0f, 0.15f), solidDrawType);
+            }
 		}
 	}
-#endif // RHI_COMPLETE_EDITOR
 }
 
 void SceneSelectionSystem::ProcessCommand(const Command2 *command, bool redo)

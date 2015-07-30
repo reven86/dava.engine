@@ -201,7 +201,7 @@ void UIScreenshoter::RenderToTexture(UIControl* control, Texture* texture)
     rhi::Viewport viewport;
     viewport.height = texture->GetHeight();
     viewport.width = texture->GetWidth();
-    RenderHelper::Instance()->CreateClearPass(texture->handle, PRIORITY_SCREENSHOT_CLEAR_PASS, Color::Clear, viewport);
+    RenderHelper::CreateClearPass(texture->handle, PRIORITY_SCREENSHOT_CLEAR_PASS, Color::Clear, viewport);
 
     List<Control3dInfo> controls3d;
     FindAll3dViews(control, controls3d);

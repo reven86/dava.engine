@@ -106,7 +106,7 @@ public:
     virtual void RecalcBoundingBox();
     
     void CollectMetrics(VegetationMetrics& metrics);
-    void DebugDrawVisibleNodes();
+    void DebugDrawVisibleNodes(RenderHelper * drawer);
     virtual void GetDataNodes(Set<DataNode*> & dataNodes);
     
     inline void SetHeightmap(Heightmap* _heightmap);

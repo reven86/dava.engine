@@ -369,7 +369,6 @@ void SceneCameraSystem::OnKeyboardInput( DAVA::UIEvent* event )
 
 void SceneCameraSystem::Draw()
 {
-#if RHI_COMPLETE_EDITOR
 	SceneEditor2 *sceneEditor = (SceneEditor2 *) GetScene();
 	if(nullptr != sceneEditor)
 	{
@@ -377,8 +376,6 @@ void SceneCameraSystem::Draw()
 
 		if(nullptr != collSystem)
 		{
-			DAVA::RenderManager::Instance()->SetColor(DAVA::Color(0, 1.0f, 0, 1.0f));		
-
 			DAVA::Set<DAVA::Entity *>::iterator it = sceneCameras.begin();
 			for(; it != sceneCameras.end(); ++it)
 			{
@@ -394,14 +391,11 @@ void SceneCameraSystem::Draw()
 					transform.Identity();
 					transform.SetTranslationVector(camera->GetPosition());
 					collBox.GetTransformedBox(transform, worldBox);	
-					DAVA::RenderHelper::Instance()->FillBox(worldBox, renderState);
+                    sceneEditor->GetRenderSystem()->GetDebugDrawer()->DrawAABox(worldBox, DAVA::Color(0, 1.0f, 0, 1.0f), RenderHelper::DRAW_SOLID_DEPTH);
 				}
 			}
-
-			DAVA::RenderManager::Instance()->ResetColor();
 		}
 	}
-#endif // RHI_COMPLETE_EDITOR
 }
 
 void SceneCameraSystem::ProcessCommand(const Command2 *command, bool redo)

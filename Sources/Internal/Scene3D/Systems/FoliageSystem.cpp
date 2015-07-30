@@ -216,7 +216,7 @@ void FoliageSystem::DebugDrawVegetation()
     VegetationRenderObject* vegetationRO = GetVegetation(foliageEntity);
     if(NULL != vegetationRO)
     {
-        vegetationRO->DebugDrawVisibleNodes();
+        vegetationRO->DebugDrawVisibleNodes(GetScene()->GetRenderSystem()->GetDebugDrawer());
     }
 }
 

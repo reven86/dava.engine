@@ -171,7 +171,7 @@ void UIScreenTransition::MakeScreenshot(Texture* target, UIScreen* screen)
     rhi::Viewport v;
     v.width = target->GetWidth();
     v.height = target->GetHeight();
-    RenderHelper::Instance()->CreateClearPass(target->handle, PRIORITY_SCREENSHOT_CLEAR_PASS, Color::Clear, v);
+    RenderHelper::CreateClearPass(target->handle, PRIORITY_SCREENSHOT_CLEAR_PASS, Color::Clear, v);
     
     if (screen)
     {

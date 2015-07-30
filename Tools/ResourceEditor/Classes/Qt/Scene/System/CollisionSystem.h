@@ -144,7 +144,7 @@ protected:
 class SceneCollisionDebugDrawer : public btIDebugDraw
 {
 public:
-	SceneCollisionDebugDrawer();
+    SceneCollisionDebugDrawer(DAVA::RenderHelper * _drawer);
     ~SceneCollisionDebugDrawer();
         
 
@@ -157,6 +157,7 @@ public:
 
 protected:
 	int dbgMode;		    
+    DAVA::RenderHelper * drawer;
 };
 
 #endif // __SCENE_COLLISION_SYSTEM_H__

@@ -129,7 +129,9 @@ void RenderPass::Draw(RenderSystem * renderSystem)
     
     PrepareVisibilityArrays(mainCamera, renderSystem);        
 
+    BeginRender();
     DrawLayers(mainCamera);
+    EndRender();
 }
 
 void RenderPass::PrepareVisibilityArrays(Camera *camera, RenderSystem * renderSystem)
@@ -183,22 +185,36 @@ void RenderPass::DrawLayers(Camera *camera)
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_RCP_VIEWPORT_SIZE, &rcpViewportSize, (pointer_size)&rcpViewportSize);
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_VIEWPORT_OFFSET, &viewportOffset, (pointer_size)&viewportOffset);
 
-    rhi::HPacketList pl;
-    rhi::HRenderPass pass = rhi::AllocateRenderPass(passConfig, 1, &pl);
-    rhi::BeginRenderPass(pass);
-    rhi::BeginPacketList(pl);
-    
     uint32 size = (uint32)renderLayers.size();
     for (uint32 k = 0; k < size; ++k)
     {
         RenderLayer * layer = renderLayers[k];
         RenderBatchArray & batchArray = layersBatchArrays[layer->GetRenderLayerID()];
         batchArray.Sort(camera);
-        layer->Draw(camera, batchArray, pl);
+        layer->Draw(camera, batchArray, packetList);
     }
+}
 
-    rhi::EndPacketList(pl);
-    rhi::EndRenderPass(pass);
+void RenderPass::DrawDebug(Camera *camera, RenderSystem * renderSystem)
+{
+    if (!renderSystem->GetDebugDrawer()->IsEmpty())
+    {
+        renderSystem->GetDebugDrawer()->Present(packetList, &camera->GetMatrix(), &camera->GetProjectionMatrix());
+        renderSystem->GetDebugDrawer()->Clear();
+    }
+}
+
+void RenderPass::BeginRender()
+{
+    renderPass = rhi::AllocateRenderPass(passConfig, 1, &packetList);
+    rhi::BeginRenderPass(renderPass);
+    rhi::BeginPacketList(packetList);
+}
+
+void RenderPass::EndRender()
+{
+    rhi::EndPacketList(packetList);
+    rhi::EndRenderPass(renderPass);
 }
 
 void RenderPass::ClearLayersArrays()
@@ -293,11 +309,16 @@ void MainForwardRenderPass::Draw(RenderSystem * renderSystem)
 	
     PrepareVisibilityArrays(mainCamera, renderSystem);        
 
-    DrawLayers(mainCamera);    
+    BeginRender();
+
+    DrawLayers(mainCamera);
 
     if (layersBatchArrays[RenderLayer::RENDER_LAYER_WATER_ID].GetRenderBatchCount() != 0)
         PrepareReflectionRefractionTextures(renderSystem);
-    	
+    
+    DrawDebug(mainCamera, renderSystem);
+
+    EndRender();
 }
 
 MainForwardRenderPass::~MainForwardRenderPass()
@@ -376,8 +397,9 @@ void WaterReflectionRenderPass::Draw(RenderSystem * renderSystem)
     ClearLayersArrays();
     PrepareLayersArrays(visibilityArray, currMainCamera);
     
-
+    BeginRender();
     DrawLayers(currMainCamera);
+    EndRender();
 }
 
 
@@ -427,8 +449,9 @@ void WaterRefractionRenderPass::Draw(RenderSystem * renderSystem)
     ClearLayersArrays();
     PrepareLayersArrays(visibilityArray, currMainCamera);    
 
+    BeginRender();
     DrawLayers(currMainCamera);       
-    
+    EndRender();
 }
 
 
