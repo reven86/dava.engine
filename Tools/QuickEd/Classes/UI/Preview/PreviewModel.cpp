@@ -250,7 +250,7 @@ void PreviewModel::OnControlSelected(const DAVA::List<std::pair<DAVA::UIControl 
     }
     if (!resultList)
     {
-        resultList.LogResults();
+        Logger::LogResult(resultList);
         emit ErrorOccurred(resultList);
     }
 }

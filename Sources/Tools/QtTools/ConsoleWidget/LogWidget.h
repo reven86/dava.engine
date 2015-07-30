@@ -24,7 +24,6 @@ public:
     explicit LogWidget(QWidget* parent = NULL);
     ~LogWidget();
     void SetConvertFunction(LogModel::ConvertFunc func); //provide mechanism to convert data string to string to be displayed
-    LogModel *Model() const;
     QByteArray Serialize() const;
     void Deserialize(const QByteArray &data);
     void AddMessage(DAVA::Logger::eLogLevel ll, const char* msg);
