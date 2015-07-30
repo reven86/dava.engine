@@ -717,10 +717,6 @@
     <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetPropertyTable.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetSelectorChain.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetStructs.h" />
-    <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UILinearLayoutComponent.h" />
-    <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UIAnchorComponent.h" />
-    <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UILayoutSystem.h" />
-    <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UISizePolicyComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\TheoraPlayer.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UI3DView.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIAggregatorControl.h" />
@@ -769,10 +765,6 @@
     <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheet.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetYamlLoader.h" />
-    <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UILinearLayoutComponent.h" />
-    <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UIAnchorComponent.h" />
-    <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UILayoutSystem.h" />
-    <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UISizePolicyComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\UnitTests\TestClass.h" />
     <ClInclude Include="..\..\Sources\Internal\UnitTests\TestClassFactory.h" />
     <ClInclude Include="..\..\Sources\Internal\UnitTests\TestCore.h" />
@@ -1231,10 +1223,6 @@
     <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetPropertyTable.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetSelectorChain.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetStructs.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UILinearLayoutComponent.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UIAnchorComponent.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UILayoutSystem.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UISizePolicyComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\TheoraPlayer.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UI3DView.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIAggregatorControl.cpp" />
@@ -1278,10 +1266,6 @@
     <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheet.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetYamlLoader.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UILinearLayoutComponent.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UIAnchorComponent.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UILayoutSystem.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UISizePolicyComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UnitTests\TestClass.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UnitTests\TestCore.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Utils\BiDiHelper.cpp" />
