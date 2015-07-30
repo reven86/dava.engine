@@ -214,15 +214,19 @@ void UITextField::Update(float32 timeElapsed)
     if (!needRedraw)
         return;
 
+    // Use NO_REQUIRED_SIZE to notify staticText->SetText that we don't want
+    // to enable of any kind of static text fitting
+    static const Vector2 NO_REQUIRED_SIZE = Vector2(-1, -1);
+
 	if(this == UIControlSystem::Instance()->GetFocusedControl())
 	{
         WideString txt = GetVisibleText();
         txt += showCursor ? L"_" : L" ";
-        staticText->SetText(txt);
+        staticText->SetText(txt, NO_REQUIRED_SIZE);
 	}
 	else
     {
-        staticText->SetText(GetVisibleText());
+        staticText->SetText(GetVisibleText(), NO_REQUIRED_SIZE);
     }
     needRedraw = false;
 #endif

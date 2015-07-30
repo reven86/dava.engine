@@ -137,6 +137,7 @@
 
 #include "QtTools/FileDialog/FileDialog.h"
 
+
 QtMainWindow::QtMainWindow(QWidget *parent)
 	: QMainWindow(parent)
 	, ui(new Ui::MainWindow)
