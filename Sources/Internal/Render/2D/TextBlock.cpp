@@ -587,7 +587,6 @@ void TextBlock::CalculateCacheParams()
         }
         else if(!((fittingType & FITTING_REDUCE) || (fittingType & FITTING_ENLARGE)) && (drawSize.x + 1 < textSize.width) && (requestedSize.x >= 0))
         {
-            Size2i textSizePoints;
             int32 length = (int32)visualText.length();
             if(ALIGN_RIGHT & align)
             {
@@ -605,23 +604,40 @@ void TextBlock::CalculateCacheParams()
             }
             else if(ALIGN_HCENTER & align)
             {
-                int32 endPos = length / 2;
-                int32 startPos = endPos - 1;
-                int32 count = endPos;
+                int32 left = 0;
+                int32 right = length;
+                bool cutFromBegin = false;
 
-                for(int32 i = 1; i < count; ++i)
+                while (left != right)
                 {
                     pointsStr.clear();
-                    pointsStr.append(visualText, startPos, endPos - startPos);
+                    pointsStr.append(visualText, left, right - left);
 
                     textSize = font->GetStringMetrics(pointsStr);
-                    if(drawSize.x <= textSize.width)
+                    if (textSize.width <= drawSize.x)
                     {
                         break;
                     }
 
-                    --startPos;
-                    ++endPos;
+                    if (cutFromBegin)
+                        left++;
+                    else
+                        right--;
+                    cutFromBegin = !cutFromBegin;
+                }
+            }
+            else if (ALIGN_LEFT & align)
+            {
+                for (int32 i = 0; i < length; ++i)
+                {
+                    pointsStr.clear();
+                    pointsStr.append(visualText, 0, length - i);
+
+                    textSize = font->GetStringMetrics(pointsStr);
+                    if (textSize.width <= drawSize.x)
+                    {
+                        break;
+                    }
                 }
             }
         }
