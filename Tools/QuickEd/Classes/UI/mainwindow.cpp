@@ -67,7 +67,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     actionLocalizationManager->setEnabled(false);
     InitLanguageBox();
-    
+    InitRtlBox();
+
     tabBar->setElideMode(Qt::ElideNone);
     setWindowTitle(ResourcesManageHelper::GetProjectTitle());
 
@@ -235,6 +236,22 @@ void MainWindow::InitLanguageBox()
     connect(comboboxLanguage, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), localizationEditorDialog->currentLocaleComboBox, &QComboBox::setCurrentIndex);
     connect(localizationEditorDialog->currentLocaleComboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), comboboxLanguage, &QComboBox::setCurrentIndex);
     comboboxLanguage->setCurrentIndex(localizationEditorDialog->currentLocaleComboBox->currentIndex());
+}
+
+void MainWindow::InitRtlBox()
+{
+    QCheckBox *rtlBox = new QCheckBox();
+    rtlBox->setCheckState(Qt::Unchecked);
+    QLabel *label = new QLabel(tr("Right-to-left"));
+    label->setBuddy(rtlBox);
+    QHBoxLayout *layout = new QHBoxLayout;
+    layout->setMargin(0);
+    layout->addWidget(label);
+    layout->addWidget(rtlBox);
+    QWidget *wrapper = new QWidget();
+    wrapper->setLayout(layout);
+    toolBarPlugins->addWidget(wrapper);
+    connect(rtlBox, &QCheckBox::stateChanged, this, &MainWindow::OnRtlChanged);
 }
 
 void MainWindow::InitMenu()
@@ -453,6 +470,11 @@ void MainWindow::OnPixelizationStateChanged()
     EditorSettings::Instance()->SetPixelized(isPixelized);
 
     Texture::SetPixelization(isPixelized);
+}
+
+void MainWindow::OnRtlChanged(int arg)
+{
+    emit RtlChanged(arg == Qt::Checked);
 }
 
 void MainWindow::SetBackgroundColorMenuTriggered(QAction* action)

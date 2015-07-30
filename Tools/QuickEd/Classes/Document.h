@@ -58,6 +58,9 @@ public:
     SharedData *GetContext() const;
     QUndoStack *GetUndoStack() const;
     QtModelPackageCommandExecutor *GetCommandExecutor() const;
+
+    void RefreshLayout();
+
 signals:
     void SharedDataChanged(const QByteArray &role);
 public slots:

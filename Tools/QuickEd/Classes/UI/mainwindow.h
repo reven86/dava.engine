@@ -85,6 +85,7 @@ signals:
     void SaveDocument(int index);
     void CurrentTabChanged(int index);
     void CloseRequested();
+    void RtlChanged(bool isRtl);
     void ReloadSprites(DAVA::eGPUFamily gpu);
 public slots:
     void OnProjectIsOpenChanged(bool arg);
@@ -103,9 +104,12 @@ private slots:
 
     // Pixelization.
     void OnPixelizationStateChanged();
+    
+    void OnRtlChanged(int arg);
 private:
     void InitLanguageBox();
-    void InitMenu();
+    void InitRtlBox();
+	void InitMenu();
     void SetupViewMenu();
     void DisableActions();
     void UpdateProjectSettings(const QString& filename);

@@ -59,10 +59,16 @@
 #include "QtTools/ConsoleWidget/PointerSerializer.h"
 #include "FileSystem/VariantType.h"
 
+#include "Tools/LazyUpdater/LazyUpdater.h"
+
+
 SceneTree::SceneTree(QWidget *parent /*= 0*/)
 	: QTreeView(parent)
 	, isInSync(false)
 {
+	Function<void()> fn(this, &SceneTree::UpdateTree);
+	treeUpdater = new LazyUpdater(fn, this);
+
 	CleanupParticleEditorSelectedItems();
 
 	treeModel = new SceneTreeModel();
@@ -80,31 +86,25 @@ SceneTree::SceneTree(QWidget *parent /*= 0*/)
 	setContextMenuPolicy(Qt::CustomContextMenu);
 
 	// scene signals
-	QObject::connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2 *)), this, SLOT(SceneActivated(SceneEditor2 *)));
-	QObject::connect(SceneSignals::Instance(), SIGNAL(Deactivated(SceneEditor2 *)), this, SLOT(SceneDeactivated(SceneEditor2 *)));
-	QObject::connect(SceneSignals::Instance(), SIGNAL(StructureChanged(SceneEditor2 *, DAVA::Entity *)), this, SLOT(SceneStructureChanged(SceneEditor2 *, DAVA::Entity *)));
-	QObject::connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2 *, const EntityGroup *, const EntityGroup *)), this, SLOT(SceneSelectionChanged(SceneEditor2 *, const EntityGroup *, const EntityGroup *)));
+	QObject::connect(SceneSignals::Instance(), &SceneSignals::Activated, this, &SceneTree::SceneActivated);
+	QObject::connect(SceneSignals::Instance(), &SceneSignals::Deactivated, this, &SceneTree::SceneDeactivated);
+	QObject::connect(SceneSignals::Instance(), &SceneSignals::StructureChanged, this, &SceneTree::SceneStructureChanged);
+	QObject::connect(SceneSignals::Instance(), &SceneSignals::SelectionChanged, this, &SceneTree::SceneSelectionChanged);
+	QObject::connect(SceneSignals::Instance(), &SceneSignals::CommandExecuted, this, &SceneTree::CommandExecuted);
 
 	// particles signals
-	QObject::connect(SceneSignals::Instance(), SIGNAL(ParticleLayerValueChanged(SceneEditor2*, DAVA::ParticleLayer*)), this, SLOT(ParticleLayerValueChanged(SceneEditor2*, DAVA::ParticleLayer*)));
+	QObject::connect(SceneSignals::Instance(), &SceneSignals::ParticleLayerValueChanged, this, &SceneTree::ParticleLayerValueChanged);
 
 	// this widget signals
-	QObject::connect(selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(TreeSelectionChanged(const QItemSelection &, const QItemSelection &)));
-	QObject::connect(this, SIGNAL(clicked(const QModelIndex &)), this, SLOT(TreeItemClicked(const QModelIndex &)));
-	QObject::connect(this, SIGNAL(doubleClicked(const QModelIndex &)), this, SLOT(TreeItemDoubleClicked(const QModelIndex &)));
-	QObject::connect(this, SIGNAL(collapsed(const QModelIndex &)), this, SLOT(TreeItemCollapsed(const QModelIndex &)));
-	QObject::connect(this, SIGNAL(expanded(const QModelIndex &)), this, SLOT(TreeItemExpanded(const QModelIndex &)));
-	QObject::connect(&refreshTimer, SIGNAL(timeout()), this, SLOT(OnRefreshTimeout()));
+	QObject::connect(selectionModel(), &QItemSelectionModel::selectionChanged, this, &SceneTree::TreeSelectionChanged);
+	QObject::connect(this, &QTreeView::clicked, this, &SceneTree::TreeItemClicked);
+	QObject::connect(this, &QTreeView::doubleClicked, this, &SceneTree::TreeItemDoubleClicked);
+	QObject::connect(this, &QTreeView::collapsed, this, &SceneTree::TreeItemCollapsed);
+	QObject::connect(this, &QTreeView::expanded, this, &SceneTree::TreeItemExpanded);
 
-	QObject::connect(this, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(ShowContextMenu(const QPoint&)));
-
-	refreshTimer.start(1500);
+	QObject::connect(this, &QTreeView::customContextMenuRequested, this, &SceneTree::ShowContextMenu);
 }
 
-SceneTree::~SceneTree()
-{
-
-}
 
 void SceneTree::SetFilter(const QString &filter)
 {
@@ -242,15 +242,55 @@ void SceneTree::SceneStructureChanged(SceneEditor2 *scene, DAVA::Entity *parent)
 {
 	if(scene == treeModel->GetScene())
 	{
-		treeModel->ResyncStructure(treeModel->invisibleRootItem(), treeModel->GetScene());
-        treeModel->ReloadFilter();
-        filteringProxyModel->invalidate();
-        SyncSelectionToTree();
+		auto selectionWasBlocked = selectionModel()->blockSignals(true);
 
-        if (treeModel->IsFilterSet())
+		treeModel->ResyncStructure(treeModel->invisibleRootItem(), treeModel->GetScene());
+
+		treeModel->ReloadFilter();
+        filteringProxyModel->invalidate();
+
+		SyncSelectionToTree();
+		
+		if (treeModel->IsFilterSet())
         {
             ExpandFilteredItems();
         }
+
+		selectionModel()->blockSignals(selectionWasBlocked);
+	}
+}
+
+void SceneTree::CommandExecuted(SceneEditor2 *scene, const Command2* command, bool redo)
+{	
+	auto commandID = command->GetId();
+
+	switch (commandID)
+	{
+	case CMDID_COMPONENT_ADD:
+	case CMDID_COMPONENT_REMOVE:
+	case CMDID_INSP_MEMBER_MODIFY:
+	case CMDID_INSP_DYNAMIC_MODIFY:
+	case CMDID_ENTITY_LOCK:
+	case CMDID_PARTICLE_EMITTER_ADD:
+	case CMDID_PARTICLE_EMITTER_MOVE:
+	case CMDID_PARTICLE_EMITTER_REMOVE:
+	case CMDID_PARTICLE_LAYER_REMOVE:
+	case CMDID_PARTICLE_LAYER_MOVE:
+	case CMDID_PARTICLE_FORCE_REMOVE:
+	case CMDID_PARTICLE_FORCE_MOVE:
+	case CMDID_META_OBJ_MODIFY:
+	case CMDID_PARTICLE_EMITTER_LAYER_ADD:
+	case CMDID_PARTICLE_EMITTER_LAYER_REMOVE:
+	case CMDID_PARTICLE_EMITTER_LAYER_CLONE:
+	case CMDID_PARTICLE_EMITTER_FORCE_ADD:
+	case CMDID_PARTICLE_EMITTER_FORCE_REMOVE:
+	{
+		treeUpdater->Update();
+	}
+	break;
+
+	default:
+		break;
 	}
 }
 
@@ -827,20 +867,21 @@ void SceneTree::SyncSelectionFromTree()
 		SceneEditor2* curScene = treeModel->GetScene();
 		if(NULL != curScene)
 		{
-			// remove from selection system all entities that are not selected in tree
-            curScene->selectionSystem->Clear();
-
 			// select items in scene
+			EntityGroup group;
+
 			QModelIndexList indexList = selectionModel()->selection().indexes();
 			for (int i = 0; i < indexList.size(); ++i)
 			{
 				DAVA::Entity *entity = SceneTreeItemEntity::GetEntity(treeModel->GetItem(filteringProxyModel->mapToSource(indexList[i])));
-                curScene->selectionSystem->AddSelection(entity);
+				group.Add(entity);
 			}
+
+			curScene->selectionSystem->SetSelection(group);
 
 			// force selection system emit signals about new selection
 			// this should be done until we are inSync mode, to prevent unnecessary updates
-			// when signals from selection system will be emited on next frame
+			// when signals from selection system will be emitted on next frame
 			curScene->selectionSystem->ForceEmitSignals();
 		}
 
@@ -1315,11 +1356,6 @@ void SceneTree::CleanupParticleEditorSelectedItems()
 	this->selectedEffect = NULL;
 }
 
-void SceneTree::OnRefreshTimeout()
-{
-	dataChanged(QModelIndex(), QModelIndex());
-}
-
 void SceneTree::SetEntityNameAsFilter()
 {
 	SceneEditor2 *scene = treeModel->GetScene();
@@ -1388,5 +1424,9 @@ void SceneTree::SetCustomDrawCamera()
 			sceneEditor->SetCustomDrawCamera(camera);
 		}
 	}
+}
 
+void SceneTree::UpdateTree()
+{
+	dataChanged(QModelIndex(), QModelIndex());
 }

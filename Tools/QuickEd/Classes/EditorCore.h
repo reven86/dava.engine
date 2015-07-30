@@ -70,6 +70,8 @@ protected slots:
     
     void UpdateLanguage();
    
+    void OnRtlChanged(bool isRtl);
+
 protected:
     void OpenProject(const QString &path);
     bool CloseProject();

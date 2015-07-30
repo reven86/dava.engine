@@ -31,8 +31,7 @@
 #define __UI_EDITOR_PROPERTIES_SECTION_H__
 
 #include "AbstractProperty.h"
-
-class ValueProperty;
+#include "ValueProperty.h"
 
 class SectionProperty : public AbstractProperty
 {
@@ -43,13 +42,13 @@ protected:
     
 public:
     void AddProperty(ValueProperty *section);
-    virtual int GetCount() const override;
-    virtual AbstractProperty *GetProperty(int index) const override;
+    int GetCount() const override;
+    ValueProperty *GetProperty(int index) const override;
     
-    virtual void Refresh() override;
-    virtual const DAVA::String &GetName() const;
+    void Refresh() override;
+    const DAVA::String &GetName() const override;
 
-    DAVA_DEPRECATED(virtual ValueProperty *FindProperty(const DAVA::InspMember *member) const);
+    virtual ValueProperty *FindProperty(const DAVA::InspMember *member) const;
 
     virtual ePropertyType GetType() const
     {
