@@ -49,8 +49,6 @@ namespace DAVA
 {
 
 class LoggerOutput;
-struct Result;
-class ResultList;
 
 class Logger: public Singleton<Logger>
 {
@@ -90,7 +88,7 @@ public:
     virtual void SetLogPathname(const FilePath & filepath);
 
     //! Returns the current set log level.
-    virtual eLogLevel GetLogLevel() const;
+    virtual eLogLevel GetLogLevel();
 
     //! Sets a new log level. With this value, texts which are sent to
     //! the logger are filtered out. For example setting this value to
@@ -108,16 +106,14 @@ public:
     //! is just an informational text, set it to ELL_INFORMATION. Texts are
     //! filtered with these levels. If you want to be a text displayed,
     //! independent on what level filter is set, use ELL_NONE.
-    virtual void Log(eLogLevel ll, const char8* text, ...) const;
-    virtual void Logv(eLogLevel ll, const char8* text, va_list li) const;
+    virtual void Log(eLogLevel ll, const char8* text, ...);
+    virtual void Logv(eLogLevel ll, const char8* text, va_list li);
 
     static void FrameworkDebug(const char8 * text, ...);
     static void Debug(const char8 * text, ...);
     static void Warning(const char8 * text, ...);
     static void Info(const char8 * text, ...);
     static void Error(const char8 * text, ...);
-    static void LogResult(const Result &result);
-    static void LogResult(const ResultList &resultList);
 
     static void AddCustomOutput(DAVA::LoggerOutput *lo);
     static void RemoveCustomOutput(DAVA::LoggerOutput *lo);
@@ -128,14 +124,14 @@ public:
 
     void EnableConsoleMode();
 
-    const char8 * GetLogLevelString(eLogLevel ll) const;
+    const char8 * GetLogLevelString(eLogLevel ll);
 
 private:
-    void PlatformLog(eLogLevel ll, const char8* text) const;
-    void FileLog(eLogLevel ll, const char8* text) const;
-    void CustomLog(eLogLevel ll, const char8* text) const;
-    void ConsoleLog(eLogLevel ll, const char8* text) const;
-    void Output(eLogLevel ll, const char8* formatedMsg) const;
+    void PlatformLog(eLogLevel ll, const char8* text);
+    void FileLog(eLogLevel ll, const char8* text);
+    void CustomLog(eLogLevel ll, const char8* text);
+    void ConsoleLog(eLogLevel ll, const char8* text);
+    void Output(eLogLevel ll, const char8* formatedMsg);
 
     eLogLevel logLevel;
     FilePath logFilename;

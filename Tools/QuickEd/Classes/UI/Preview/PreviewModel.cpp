@@ -250,7 +250,19 @@ void PreviewModel::OnControlSelected(const DAVA::List<std::pair<DAVA::UIControl 
     }
     if (!resultList)
     {
-        Logger::LogResult(resultList);
+        for (const auto &result : resultList.GetResults())
+        {
+            Logger::eLogLevel ll = Logger::LEVEL_FRAMEWORK;
+            if (!result.message.empty())
+            {
+                switch (result.type)
+                {
+                case Result::RESULT_SUCCESS: Logger::FrameworkDebug("%s", result.message.c_str()); break;
+                case Result::RESULT_FAILURE: Logger::Warning("%s", result.message.c_str());  break;
+                case Result::RESULT_ERROR: Logger::Error("%s", result.message.c_str()); break;
+                }
+            }
+        }
         emit ErrorOccurred(resultList);
     }
 }
