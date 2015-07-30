@@ -607,6 +607,33 @@ ReleaseSamplerState( HSamplerState ss )
 
 //------------------------------------------------------------------------------
 
+HSyncObject
+CreateSyncObject()
+{
+    return HSyncObject(SyncObject::Create());
+}
+
+
+//------------------------------------------------------------------------------
+
+void
+DeleteSyncObject( HSyncObject obj )
+{
+    SyncObject::Delete( obj );
+}
+
+
+//------------------------------------------------------------------------------
+
+bool
+SyncObjectSignaled( HSyncObject obj )
+{
+    return SyncObject::IsSygnaled( obj );
+}
+
+
+//------------------------------------------------------------------------------
+
 HRenderPass
 AllocateRenderPass( const RenderPassConfig& passDesc, uint32 packetListCount, HPacketList* packetList )
 {
