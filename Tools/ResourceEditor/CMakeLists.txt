@@ -3,7 +3,7 @@ cmake_minimum_required (VERSION 3.0)
 set                   ( CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebinfo" CACHE STRING "limited configs" FORCE )
 
 project               ( ResourceEditor )
-
+add_definitions(-DDAVA_FORCE_DISABLE_MEMORY_PROFILING)
 set                   ( DAVA_USE_QT_WIDGETS true )
 set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
 include               ( CMake-common )
