@@ -28,6 +28,7 @@
 
 
 #include "FileSystem/Logger.h"
+#include "Base/Result.h"
 #include "FileSystem/FileSystem.h"
 #include "Debug/DVAssert.h"
 #include <cstdarg>
@@ -214,6 +215,31 @@ void Logger::Error(const char8 * text, ...)
     if (nullptr != log)
         log->Logv(LEVEL_ERROR, text, vl);
     va_end(vl);
+}
+
+void Logger::LogResult(const Result &result)
+{
+    const Logger *logger = Logger::Instance();
+    if (nullptr == logger || result.message.empty())
+    {
+        return;
+    }
+    Logger::eLogLevel ll = Logger::LEVEL_FRAMEWORK;
+    switch (result.type)
+    {
+    case Result::RESULT_SUCCESS: ll = Logger::LEVEL_FRAMEWORK; break;
+    case Result::RESULT_FAILURE: ll = Logger::LEVEL_WARNING; break;
+    case Result::RESULT_ERROR: ll = Logger::LEVEL_ERROR; break;
+    }
+    logger->Log(ll, "%s", result.message.c_str());
+}
+
+void Logger::LogResult(const ResultList &resultList)
+{
+    for (const auto &result : resultList.GetResults())
+    {
+        LogResult(result);
+    }
 }
 
 void Logger::AddCustomOutput(DAVA::LoggerOutput *lo)

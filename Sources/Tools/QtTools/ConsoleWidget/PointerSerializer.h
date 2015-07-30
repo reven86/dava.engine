@@ -30,9 +30,7 @@
 #ifndef __QT_TOOLS_POINTER_SERIALIZER_H__
 #define __QT_TOOLS_POINTER_SERIALIZER_H__
 
-#include <string>
-#include <vector>
-#include <sstream>
+#include "Base/BaseTypes.h"
 
 class PointerSerializer
 {
@@ -44,42 +42,43 @@ public:
     PointerSerializer(const T pointer_);
     template <typename Container>
     PointerSerializer(const Container &cont);
-    PointerSerializer(const std::string &str);
+    PointerSerializer(const DAVA::String &str);
 
-    static PointerSerializer ParseString(const std::string &str);
+    static PointerSerializer ParseString(const DAVA::String &str);
     template <typename T>
     bool CanConvert() const;
     bool IsValid() const;
 
     static const char* GetRegex();
-    const std::string& GetText() const;
+    const DAVA::String& GetText() const;
     template <typename T>
-    std::vector<T> GetPointers() const;
+    DAVA::Vector<T> GetPointers() const;
 
     PointerSerializer& operator = (const PointerSerializer &result) = default;
     PointerSerializer& operator = (PointerSerializer &&result);
     
     template <typename T>
-    static std::string FromPointer(const T pointer_);
+    static DAVA::String FromPointer(const T pointer_);
     template <typename Container>
-    static std::string FromPointerList(Container &&cont);
+    static DAVA::String FromPointerList(Container &&cont);
 private:
-    std::vector<void*> pointers;
+    DAVA::Vector<void*> pointers;
 
-    std::string typeName;
-    std::string text;
+    DAVA::String typeName;
+    DAVA::String text;
 };
 
-inline const std::string& PointerSerializer::GetText() const
+inline const DAVA::String& PointerSerializer::GetText() const
 {
     return text;
 }
 
 template <typename T>
-std::vector<T> PointerSerializer::GetPointers() const
+DAVA::Vector<T> PointerSerializer::GetPointers() const
 {
     static_assert(std::is_pointer<T>::value, "works only for vector of pointers");
-    std::vector<T>  returnVec(pointers.size());
+    DAVA::Vector<T>  returnVec;
+    returnVec.reserve(pointers.size());
     for (auto ptr : pointers)
     {
         returnVec.push_back(static_cast<T>(ptr));
@@ -110,9 +109,9 @@ PointerSerializer::PointerSerializer(const Container &cont)
 }
 
 template <typename T>
-std::string PointerSerializer::FromPointer(const T pointer_)
+DAVA::String PointerSerializer::FromPointer(const T pointer_)
 {
-    std::stringstream ss;
+    DAVA::StringStream ss;
     ss << "{"
         << typeid(pointer_).name()
         << " : "
@@ -123,11 +122,11 @@ std::string PointerSerializer::FromPointer(const T pointer_)
 }
 
 template <typename Container>
-std::string PointerSerializer::FromPointerList(Container &&cont)
+DAVA::String PointerSerializer::FromPointerList(Container &&cont)
 {
     using T = typename std::remove_reference<Container>::type::value_type;
     static_assert(std::is_pointer<T>::value, "works only for vector of pointers");
-    std::stringstream ss;
+    DAVA::StringStream ss;
     ss << "{"
         << typeid(T).name()
         << " : "

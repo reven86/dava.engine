@@ -3111,7 +3111,7 @@ void QtMainWindow::OnConsoleItemClicked(const QString &data)
     if (conv.CanConvert<Entity*>())
     {
         auto vec = conv.GetPointers<Entity*>();
-        if (vec.empty())
+        if (!vec.empty())
         {
             EntityGroup entityGroup;
             DAVA::Vector<Entity *> allEntities;

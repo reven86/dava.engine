@@ -49,6 +49,8 @@ namespace DAVA
 {
 
 class LoggerOutput;
+struct Result;
+class ResultList;
 
 class Logger: public Singleton<Logger>
 {
@@ -114,6 +116,8 @@ public:
     static void Warning(const char8 * text, ...);
     static void Info(const char8 * text, ...);
     static void Error(const char8 * text, ...);
+    static void LogResult(const Result &result);
+    static void LogResult(const ResultList &resultList);
 
     static void AddCustomOutput(DAVA::LoggerOutput *lo);
     static void RemoveCustomOutput(DAVA::LoggerOutput *lo);

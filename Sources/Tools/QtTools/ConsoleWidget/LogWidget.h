@@ -27,6 +27,7 @@ public:
     LogModel *Model() const;
     QByteArray Serialize() const;
     void Deserialize(const QByteArray &data);
+    void AddMessage(DAVA::Logger::eLogLevel ll, const char* msg);
 signals:
     void ItemClicked(const QString &data);
 public slots:

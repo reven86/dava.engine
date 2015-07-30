@@ -40,31 +40,31 @@ PointerSerializer::PointerSerializer(PointerSerializer&& converter)
 
 }
 
-PointerSerializer::PointerSerializer(const std::string &str)
+PointerSerializer::PointerSerializer(const DAVA::String &str)
     : PointerSerializer(ParseString(str))
 {
 }
 
-PointerSerializer PointerSerializer::ParseString(const std::string &str)
+PointerSerializer PointerSerializer::ParseString(const DAVA::String &str)
 {
     std::regex rgx(GetRegex());
     std::smatch sm;
-    std::string::const_iterator cit = str.cbegin();
+    DAVA::String::const_iterator cit = str.cbegin();
 
     while (std::regex_search(cit, str.cend(), sm, rgx)) 
     {
         if (sm.size() == 3) // original text, left and righ
         {
-            std::string data = sm[2];
+            DAVA::String data = sm[2];
             std::smatch sm2;
-            std::string::const_iterator cit2 = data.begin();
+            DAVA::String::const_iterator cit2 = data.begin();
             std::regex rgx2("0?[xX]?[0-9a-fA-F]+");
-            std::vector<void*> pointers;
+            DAVA::Vector<void*> pointers;
             while (regex_search(cit2, data.cend(), sm2, rgx2))
             {
                 for (auto m : sm2)
                 {
-                    std::stringstream ssout(m);
+                    DAVA::StringStream ssout(m);
                     void *ptr;
                     ssout >> ptr;
                     pointers.push_back(ptr);
@@ -75,7 +75,7 @@ PointerSerializer PointerSerializer::ParseString(const std::string &str)
             {
                 PointerSerializer converter;
                 converter.text = sm[0];
-                std::string type = sm[1];
+                DAVA::String type = sm[1];
                 while (!type.empty() && ::isspace(type.back()))
                 {
                     type.pop_back();

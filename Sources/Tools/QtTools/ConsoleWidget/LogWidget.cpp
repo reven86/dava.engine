@@ -49,11 +49,6 @@ void LogWidget::SetConvertFunction(LogModel::ConvertFunc func)
     logModel->SetConvertFunction(func);
 }
 
-LogModel* LogWidget::Model() const
-{
-    return logModel;
-}
-
 QByteArray LogWidget::Serialize() const
 {
     QByteArray retData;
@@ -82,6 +77,11 @@ void LogWidget::Deserialize(const QByteArray& data)
     logFilterModel->SetFilterString(filterString);
     logFilterModel->SetFilters(logLevels);
     ui->filter->selectUserData(logLevels);
+}
+
+void LogWidget::AddMessage(DAVA::Logger::eLogLevel ll, const char* msg)
+{
+    logModel->AddMessage(ll, msg);
 }
 
 void LogWidget::AddResultList(const DAVA::ResultList &resultList)
