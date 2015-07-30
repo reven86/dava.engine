@@ -83,6 +83,7 @@ namespace TextureDX9
 void        SetupDispatch( Dispatch* dispatch );
 void        SetToRHI( Handle tex, unsigned unitIndex );
 void        SetAsRenderTarget( Handle tex );
+void        SetAsDepthStencil( Handle tex );
 }
 
 

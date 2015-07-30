@@ -25,6 +25,7 @@ IDirect3D9*         _D3D9           = nullptr;
 IDirect3DDevice9*   _D3D9_Device    = nullptr;
 unsigned            _D3D9_Adapter   = 0;
 IDirect3DSurface9*  _D3D9_BackBuf   = nullptr;
+IDirect3DSurface9*  _D3D9_DepthBuf  = nullptr;
 
 InitParam           _DX9_InitParam;
 
