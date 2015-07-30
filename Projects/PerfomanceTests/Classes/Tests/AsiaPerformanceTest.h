@@ -49,12 +49,7 @@ private:
 
     static const FastName CAMERA_PATH;
     static const FastName TANK_STUB;
-
-    static const FastName CENTURION;
-    static const FastName CONQUEROR;
-    static const FastName VALENTINE;
-    static const FastName T150;
-    static const FastName T110E5;
+    static const FastName TANKS;
 
     static const float32 TANK_ROTATION_ANGLE;
 

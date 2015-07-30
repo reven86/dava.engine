@@ -36,17 +36,10 @@
 #include "Base/Message.h"
 #include "Base/BaseObject.h"
 #include "Concurrency/Atomic.h"
+#include "Concurrency/ConcurrentObject.h"
 #include "Concurrency/Mutex.h"
 
-#if defined(__DAVAENGINE_APPLE__) || defined(__DAVAENGINE_ANDROID__)
-#   if !defined __DAVAENGINE_PTHREAD__
-#       define __DAVAENGINE_PTHREAD__
-#   endif
-#endif
-
-#if defined (__DAVAENGINE_WINDOWS__) && defined(USE_CPP11_CONCURRENCY)
-#   include <thread>
-#elif defined(__DAVAENGINE_PTHREAD__)
+#if !defined(__DAVAENGINE_WINDOWS__)
 #   include <pthread.h>
 #endif
 
@@ -56,36 +49,48 @@ namespace DAVA
 	\defgroup threads Thread wrappers
 */
 
-class Thread : public BaseObject
-{
-#if defined(__DAVAENGINE_PTHREAD__)
-private:
-    using Handle = pthread_t;
-    friend void	*PthreadMain(void *param);
-public:
-    using Id = pthread_t;
-#elif defined(__DAVAENGINE_WINDOWS__)
-private:
-    friend unsigned __stdcall ThreadFunc(void *param);
+#if defined(__DAVAENGINE_WINDOWS__)
 
-#   if defined(USE_CPP11_CONCURRENCY)
-private:
-    using Handle = std::thread;
-public:
-    using Id = std::thread::id;
-#   else 
-private:
-    using Handle = HANDLE;
+class ThreadTraits
+{
 public:
     using Id = DWORD;
-#   endif
+protected:
+    using Handle = HANDLE;
+};
+
+#else
+
+class ThreadTraits
+{
+public: 
+    using Id = pthread_t;
+protected:
+    using Handle = pthread_t;
+
+#ifdef __DAVAENGINE_ANDROID__
+    pid_t system_handle = 0;
 #endif
-#if defined(__DAVAENGINE_ANDROID__)
-    static void thread_exit_handler(int sig);
+};
+
 #endif
 
+class Thread : public ThreadTraits, public BaseObject
+{
+#if defined(__DAVAENGINE_WINDOWS__)
+    friend unsigned __stdcall ThreadFunc(void *param);
+#else
+    friend void	*PthreadMain(void *param);
+#endif
 public:
     using Procedure = std::function<void()>;
+
+    enum eThreadPriority
+    {
+        PRIORITY_LOW = 0,
+        PRIORITY_NORMAL,
+        PRIORITY_HIGH
+    };
 
     enum eThreadState
 	{
@@ -134,6 +139,9 @@ public:
 		This function return state of the thread. It can be STATE_CREATED, STATE_RUNNING, STATE_ENDED.
 	*/
     inline eThreadState GetState() const;
+    
+    void SetPriority(eThreadPriority priority);
+    inline eThreadPriority GetPriority() const;
 
     /** Wait until thread's finished.
     */
@@ -176,10 +184,20 @@ public:
     inline Id GetId() const;
 
     /**
+    \brief sets stack size of the thread. Stack size cannot be set to running thread
+    */
+    inline void SetStackSize(size_t size);
+
+    /**
      \brief register current native thread handle and remember it's Id as Id of MainThread.
      */
     static void	InitMainThread();
     static void InitGLThread();
+
+    /**
+    \brief bind current thread to specified processor. Thread cannot be run on other processors.
+    */
+    bool BindToProcessor(unsigned proc_n);
 
 private:
     Thread();
@@ -200,9 +218,11 @@ private:
     */
     static void ThreadFunction(void *param);
 
-    Procedure thread_func;
+    Procedure threadFunc;
     Atomic<eThreadState> state;
     Atomic<bool> isCancelling;
+    size_t stackSize;
+    eThreadPriority threadPriority;
 
     /**
     \brief Native thread handle - variable which used to thread manipulations
@@ -212,21 +232,19 @@ private:
     \brief Some value which is unique for any thread in current OS. Could be used only for equals comparision.
     */
 	Id id;
-	static Id mainThreadId;
-	static Id glThreadId;
+
+    /**
+    \brief Name of the thread.
+    */
+    String name;
 
     /**
     \brief Full list of created DAVA::Thread's. Main thread is not DAVA::Thread, so it is not there.
     */
-    static Set<Thread *> threadList;
-    static Mutex threadListMutex;
-    
-    /**
-     \brief Full list of created DAVA::Thread's. Main thread is not DAVA::Thread, so it is not there.
-     */
-    String name;
+    static ConcurrentObject<Set<Thread *>> threadList;
+    static Id mainThreadId;
+    static Id glThreadId;
 };
-
 
 inline void Thread::SetName(const String &_name)
 {
@@ -258,6 +276,17 @@ inline bool Thread::IsCancelling() const
 inline Thread::Id Thread::GetId() const
 {
     return id;
+}
+
+inline void Thread::SetStackSize(size_t size)
+{
+    DVASSERT(STATE_CREATED == state);
+    stackSize = size;
+}
+    
+inline Thread::eThreadPriority Thread::GetPriority() const
+{
+    return threadPriority;
 }
 
 };
