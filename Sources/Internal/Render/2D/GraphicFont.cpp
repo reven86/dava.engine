@@ -332,6 +332,7 @@ Font::StringMetrics GraphicFont::DrawStringToBuffer(const WideString & str,
 	metrics.drawRect = Rect2i(0x7fffffff, 0x7fffffff, 0, 0);
     
 	float32 ascent = fontInternal->lineHeight * GetSizeScale();
+    float32 fontHeight = GetFontHeight();
 
     for (uint32 charPos = 0; charPos < strLength; ++charPos)
     {
@@ -426,7 +427,7 @@ Font::StringMetrics GraphicFont::DrawStringToBuffer(const WideString & str,
         
         charDrawed++;
     }
-    lastY += yOffset + GetFontHeight();
+    lastY += yOffset + fontHeight;
 
 	metrics.drawRect.dy += (int32)(ascent);
 
