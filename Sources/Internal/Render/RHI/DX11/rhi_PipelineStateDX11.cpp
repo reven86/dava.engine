@@ -186,8 +186,6 @@ ConstBufDX11::Construct( ProgType ptype, unsigned bufIndex, unsigned regCnt )
     DVASSERT(regCnt);
 
     D3D11_BUFFER_DESC   desc = {0};
-//-    ID3D11Buffer*       buf  = nullptr;
-    DX11Command         cmd  = { DX11Command::CREATE_BUFFER, { uint64_t(&desc), NULL, uint64_t(&buf) } };
         
     desc.ByteWidth        = regCnt*4*sizeof(float);
     desc.Usage            = D3D11_USAGE_DEFAULT;
@@ -195,9 +193,9 @@ ConstBufDX11::Construct( ProgType ptype, unsigned bufIndex, unsigned regCnt )
     desc.BindFlags        = D3D11_BIND_CONSTANT_BUFFER;
     desc.MiscFlags        = 0;
         
-    ExecDX11( &cmd, 1 );
+    HRESULT hr = _D3D11_Device->CreateBuffer( &desc, NULL, &buf );
 
-    if( SUCCEEDED(cmd.retval) )
+    if( SUCCEEDED(hr) )
     {
         progType = ptype;
         value    = (float*)(malloc( regCnt*4*sizeof(float) ));
@@ -207,7 +205,7 @@ ConstBufDX11::Construct( ProgType ptype, unsigned bufIndex, unsigned regCnt )
     }
     else
     {
-        Logger::Error( "FAILED to create index-buffer:\n%s\n", D3D11ErrorText(cmd.retval) );
+        Logger::Error( "FAILED to create index-buffer:\n%s\n", D3D11ErrorText(hr) );
     }
 }
 
@@ -219,21 +217,15 @@ ConstBufDX11::Destroy()
 {
     if( buf )
     {
-        DX11Command cmd[] = 
-        { 
-//            { DX11Command::UNMAP_RESOURCE, { uint64_t(static_cast<IUnknown*>(buf)), 0 } } ,
-            { DX11Command::RELEASE, { uint64_t(static_cast<IUnknown*>(buf)) } } 
-        };
+        buf->Release();
+        buf = nullptr;
 
         if( value )
         {
             ::free( value );
             value    = nullptr;
         }
-
-        ExecDX11( cmd, countof(cmd) );
         
-        buf      = nullptr;
         value    = nullptr;
         buf_i    = InvalidIndex;
         regCount = 0;

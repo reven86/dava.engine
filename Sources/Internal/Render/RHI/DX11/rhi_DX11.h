@@ -110,34 +110,6 @@ namespace CommandBufferDX11
 void        SetupDispatch( Dispatch* dispatch );
 }
 
-struct
-DX11Command
-{
-    enum 
-    Func
-    {
-        NOP                             = 0,
-        
-        CREATE_BUFFER                   = 11,
-        CREATE_TEXTURE2D                = 12,
-        CREATE_SAMPLER                  = 13,
-        CREATE_DEPTHSTENCIL_STATE       = 14,
-        CREATE_SHADEER_RESOURCE_VIEW    = 19,
-
-        MAP_RESOURCE                    = 51,
-        UNMAP_RESOURCE                  = 52,
-        UPDATE_RESOURCE                 = 53,
-        
-        QUERY_INTERFACE                 = 101,
-        RELEASE                         = 102
-    };
-
-    Func    func;
-    uint64  arg[12];
-    long    retval;
-};
-
-void     ExecDX11( DX11Command* cmd, uint32 cmdCount, bool force_immediate=false );
 
 
 //==============================================================================

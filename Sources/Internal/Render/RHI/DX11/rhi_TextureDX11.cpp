@@ -30,6 +30,9 @@ public:
     ID3D11Texture2D*            tex2d;
     ID3D11ShaderResourceView*   tex2d_srv;
 
+    void*                       mappedData;
+    unsigned                    mappedLevel;
+
     unsigned                    isMapped:1;
 };
 
@@ -56,6 +59,7 @@ dx11_Texture_Create( const Texture::Descriptor& desc )
     Handle                  handle = InvalidHandle;
     D3D11_TEXTURE2D_DESC    desc2d = {0};
     ID3D11Texture2D*        tex2d  = nullptr;
+    HRESULT                 hr;
 
     desc2d.Width                = desc.width;
     desc2d.Height               = desc.height;
@@ -64,18 +68,17 @@ dx11_Texture_Create( const Texture::Descriptor& desc )
     desc2d.Format               = DX11_TextureFormat( desc.format );
     desc2d.SampleDesc.Count     = 1;
     desc2d.SampleDesc.Quality   = 0;
-    desc2d.Usage                = D3D11_USAGE_DYNAMIC;
+    desc2d.Usage                = D3D11_USAGE_DEFAULT;
     desc2d.BindFlags            = D3D11_BIND_SHADER_RESOURCE;
-    desc2d.CPUAccessFlags       = D3D11_CPU_ACCESS_WRITE;
+    desc2d.CPUAccessFlags       = 0;//D3D11_CPU_ACCESS_WRITE;
     desc2d.MiscFlags            = 0;
     
     if( desc.autoGenMipmaps )
         desc2d.MiscFlags |= D3D11_RESOURCE_MISC_GENERATE_MIPS;
 
-    DX11Command cmd1 = { DX11Command::CREATE_TEXTURE2D, { (uint64)(&desc2d), 0, (uint64)(&tex2d) } };
+    hr = _D3D11_Device->CreateTexture2D( &desc2d, NULL, &tex2d );
 
-    ExecDX11( &cmd1, 1 );
-    if( SUCCEEDED(cmd1.retval) )
+    if( SUCCEEDED(hr) )
     {
         D3D11_SHADER_RESOURCE_VIEW_DESC view;
         ID3D11ShaderResourceView*       srv = nullptr;
@@ -85,16 +88,19 @@ dx11_Texture_Create( const Texture::Descriptor& desc )
         view.Texture2D.MipLevels        = desc2d.MipLevels;
         view.Texture2D.MostDetailedMip  = 0;
 
-        DX11Command cmd2 = { DX11Command::CREATE_SHADEER_RESOURCE_VIEW, { (uint64)(tex2d), (uint64)(&view), (uint64)(&srv) } };
+        hr = _D3D11_Device->CreateShaderResourceView( tex2d, &view, &srv );
 
-        ExecDX11( &cmd2, 1 );
-        if( SUCCEEDED(cmd2.retval) )
+        if( SUCCEEDED(hr) )
         {
             handle  = TextureDX11Pool::Alloc();
             TextureDX11_t*  tex = TextureDX11Pool::Get( handle );
 
             tex->tex2d      = tex2d;
             tex->tex2d_srv  = srv;
+            tex->format     = desc.format;
+            tex->width      = desc.width;
+            tex->height     = desc.height;
+            tex->mappedData = nullptr;
             tex->isMapped   = false;
         }
     }
@@ -111,13 +117,18 @@ dx11_Texture_Delete( Handle tex )
     if( tex != InvalidHandle )
     {
         TextureDX11_t*  self = TextureDX11Pool::Get( tex );
-        DX11Command     cmd[] = 
+        
+        self->tex2d_srv->Release();
+        self->tex2d_srv = nullptr;
+        
+        self->tex2d->Release();
+        self->tex2d = nullptr;
+
+        if( self->mappedData )
         {
-            { DX11Command::RELEASE, { uint64_t(static_cast<IUnknown*>(self->tex2d)) } }
-        };
-
-        ExecDX11( cmd, countof(cmd) );
-
+            ::free( self->mappedData );
+            self->mappedData = nullptr;
+        }
 
         TextureDX11Pool::Free( tex );
     }
@@ -129,21 +140,14 @@ dx11_Texture_Delete( Handle tex )
 static void*
 dx11_Texture_Map( Handle tex, unsigned level, TextureFace face )
 {
-    TextureDX11_t*              self = TextureDX11Pool::Get( tex );
-    void*                       mem  = nullptr;
-    D3D11_MAPPED_SUBRESOURCE    rc   = {0};
-    DX11Command                 cmd  = { DX11Command::MAP_RESOURCE, { uint64_t(self->tex2d), 0, D3D11_MAP_WRITE_DISCARD, 0, uint64_t(&rc) } };
+    TextureDX11_t*  self = TextureDX11Pool::Get( tex );
 
     DVASSERT(!self->isMapped);
-    ExecDX11( &cmd, 1 );
+    self->mappedData  = ::realloc( self->mappedData, TextureSize(self->format,self->width,self->height,level) );
+    self->mappedLevel = level;
+    self->isMapped    = true;
 
-    if( SUCCEEDED(cmd.retval) )
-    {
-        mem            = rc.pData;
-        self->isMapped = true;
-    }
-
-    return mem;
+    return self->mappedData;
 }
 
 
@@ -153,15 +157,18 @@ static void
 dx11_Texture_Unmap( Handle tex )
 {
     TextureDX11_t*  self = TextureDX11Pool::Get( tex );
-    DX11Command     cmd  = { DX11Command::UNMAP_RESOURCE, { uint64_t(self->tex2d), 0 } };
-    
-    DVASSERT(self->isMapped);
-    ExecDX11( &cmd, 1 );
 
-    if( SUCCEEDED(cmd.retval) )
-    {
-        self->isMapped = false;
-    }
+    DVASSERT(self->isMapped);
+    _D3D11_ImmediateContext->UpdateSubresource
+    (
+        self->tex2d,
+        self->mappedLevel,
+        NULL,
+        self->mappedData,
+        TextureStride(self->format,Size2i(self->width,self->height),self->mappedLevel),
+        0
+    );
+    self->isMapped = false;
 }
 
 

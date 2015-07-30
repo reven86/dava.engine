@@ -83,7 +83,6 @@ dx11_DepthStencilState_Create( const DepthStencilState::Descriptor& desc )
     Handle                   handle = DepthStencilStateDX11Pool::Alloc();
     DepthStencilStateDX11_t* state  = DepthStencilStateDX11Pool::Get( handle );
     D3D11_DEPTH_STENCIL_DESC ds_desc;
-    DX11Command              cmd    = { DX11Command::CREATE_DEPTHSTENCIL_STATE, { uint64(&ds_desc), uint64(&(state->_ds11)) } };
 
     ds_desc.DepthEnable                  = desc.depthTestEnabled;
     ds_desc.DepthWriteMask               = (desc.depthWriteEnabled) ? D3D11_DEPTH_WRITE_MASK_ALL : D3D11_DEPTH_WRITE_MASK_ZERO;
@@ -101,9 +100,9 @@ dx11_DepthStencilState_Create( const DepthStencilState::Descriptor& desc )
     ds_desc.BackFace.StencilFunc         = _CmpFuncDX11( CmpFunc(desc.stencilBack.func) );
 
 
-    ExecDX11( &cmd, 1 );
+    HRESULT hr = _D3D11_Device->CreateDepthStencilState( &ds_desc, &(state->_ds11) );
 
-    if( SUCCEEDED(cmd.retval) )
+    if( SUCCEEDED(hr) )
     {
         state->_stencilRef = 0;
     }
@@ -127,9 +126,7 @@ dx11_DepthStencilState_Delete( Handle hstate )
     
     if( state )
     {
-        DX11Command cmd = { DX11Command::RELEASE, { uint64(&(state->_ds11)) } };
-        
-        ExecDX11( &cmd, 1 );
+        state->_ds11->Release();
         state->_ds11 = nullptr;
     }
 

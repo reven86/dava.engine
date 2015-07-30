@@ -113,20 +113,14 @@ dx11_SamplerState_Delete( Handle hstate )
 
     if( state )
     {
-        DX11Command cmd[MAX_FRAGMENT_TEXTURE_SAMPLER_COUNT];
-        uint32      cmdCount = 0;
-
         for( unsigned s=0; s!=state->fragmentSamplerCount; ++s )    
         {
             if( state->fragmentSampler[s] )
             {
-                cmd[cmdCount].func   = DX11Command::RELEASE;
-                cmd[cmdCount].arg[0] = uint64(state->fragmentSampler);
-                ++cmdCount;
+                state->fragmentSampler[s]->Release();
             }
         }
 
-        ExecDX11( cmd, cmdCount );
         SamplerStateDX11Pool::Free( hstate );
     }    
 }
@@ -137,38 +131,30 @@ dx11_SamplerState_Delete( Handle hstate )
 static Handle
 dx11_SamplerState_Create( const SamplerState::Descriptor& desc )
 {
-    Handle              handle = SamplerStateDX11Pool::Alloc();
-    SamplerStateDX11_t* state  = SamplerStateDX11Pool::Get( handle );
+    Handle              handle  = SamplerStateDX11Pool::Alloc();
+    SamplerStateDX11_t* state   = SamplerStateDX11Pool::Get( handle );
+    bool                success = true;
     
-    D3D11_SAMPLER_DESC  s_desc[MAX_FRAGMENT_TEXTURE_SAMPLER_COUNT];
-    DX11Command         cmd[MAX_FRAGMENT_TEXTURE_SAMPLER_COUNT];
-
     memset( state->fragmentSampler, 0, sizeof(state->fragmentSampler) );
     
     state->fragmentSamplerCount = desc.fragmentSamplerCount;
     for( unsigned s=0; s!=desc.fragmentSamplerCount; ++s )    
     {        
-        s_desc[s].Filter        = _TextureFilterDX11( TextureFilter(desc.fragmentSampler[s].minFilter), TextureFilter(desc.fragmentSampler[s].magFilter), TextureMipFilter(desc.fragmentSampler[s].mipFilter) );
-        s_desc[s].AddressU      = _TextureAddrModeDX11( TextureAddrMode(desc.fragmentSampler[s].addrU) );
-        s_desc[s].AddressV      = _TextureAddrModeDX11( TextureAddrMode(desc.fragmentSampler[s].addrV) );
-        s_desc[s].AddressW      = _TextureAddrModeDX11( TextureAddrMode(desc.fragmentSampler[s].addrW) );
-        s_desc[s].MipLODBias    = 0;
-        s_desc[s].MaxAnisotropy = 0;
-        s_desc[s].MinLOD        = -D3D11_FLOAT32_MAX;
-        s_desc[s].MaxLOD        = D3D11_FLOAT32_MAX;
-
-        cmd[s].func = DX11Command::CREATE_SAMPLER;
-        cmd[s].arg[0] = (uint64)(s_desc+s);
-        cmd[s].arg[1] = (uint64)(state->fragmentSampler+s);
-    }
-
-    ExecDX11( cmd, desc.fragmentSamplerCount );
-
-    bool    success = true;
-
-    for( unsigned s=0; s!=desc.fragmentSamplerCount; ++s )    
-    {
-        if( FAILED(cmd[s].retval) )
+        D3D11_SAMPLER_DESC  s_desc;
+        HRESULT             hr;
+        
+        s_desc.Filter        = _TextureFilterDX11( TextureFilter(desc.fragmentSampler[s].minFilter), TextureFilter(desc.fragmentSampler[s].magFilter), TextureMipFilter(desc.fragmentSampler[s].mipFilter) );
+        s_desc.AddressU      = _TextureAddrModeDX11( TextureAddrMode(desc.fragmentSampler[s].addrU) );
+        s_desc.AddressV      = _TextureAddrModeDX11( TextureAddrMode(desc.fragmentSampler[s].addrV) );
+        s_desc.AddressW      = _TextureAddrModeDX11( TextureAddrMode(desc.fragmentSampler[s].addrW) );
+        s_desc.MipLODBias    = 0;
+        s_desc.MaxAnisotropy = 0;
+        s_desc.MinLOD        = -D3D11_FLOAT32_MAX;
+        s_desc.MaxLOD        = D3D11_FLOAT32_MAX;
+        
+        hr = _D3D11_Device->CreateSamplerState( &s_desc, state->fragmentSampler+s );
+        
+        if( FAILED(hr) )
         {
             state->fragmentSampler[s] = nullptr;
             success = false;

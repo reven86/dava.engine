@@ -56,14 +56,13 @@ IndexBufferDX11_t::~IndexBufferDX11_t()
 static Handle
 dx11_IndexBuffer_Create( const IndexBuffer::Descriptor& desc )
 {
-    Handle              handle = InvalidHandle;
+    Handle  handle = InvalidHandle;
 
     DVASSERT(desc.size);
     if( desc.size )
     {
         D3D11_BUFFER_DESC   desc11 = {0};
         ID3D11Buffer*       buf    = nullptr;
-        DX11Command         cmd    = { DX11Command::CREATE_BUFFER, { uint64_t(&desc11), NULL, uint64_t(&buf) } };
         
         desc11.ByteWidth        = desc.size;        
         desc11.Usage            = D3D11_USAGE_DYNAMIC;
@@ -71,20 +70,20 @@ dx11_IndexBuffer_Create( const IndexBuffer::Descriptor& desc )
         desc11.BindFlags        = D3D11_BIND_INDEX_BUFFER;                
         desc11.MiscFlags        = 0;
         
-        ExecDX11( &cmd, 1 );
+        HRESULT hr = _D3D11_Device->CreateBuffer( &desc11, NULL, &buf );
 
-        if( SUCCEEDED(cmd.retval) )
+        if( SUCCEEDED(hr) )
         {
             handle = IndexBufferDX11Pool::Alloc();
-            IndexBufferDX11_t*  ib = IndexBufferDX11Pool::Get( handle );
+            IndexBufferDX11_t*    vb = IndexBufferDX11Pool::Get( handle );
 
-            ib->_size     = desc.size;
-            ib->_ib11     = buf;
-            ib->_mapped   = false;
+            vb->_size   = desc.size;
+            vb->_ib11   = buf;
+            vb->_mapped = false;
         }
         else
         {
-            Logger::Error( "FAILED to create index-buffer:\n%s\n", D3D11ErrorText(cmd.retval) );
+            Logger::Error( "FAILED to create index-buffer:\n%s\n", D3D11ErrorText(hr) );
         }
     }
 
@@ -95,23 +94,21 @@ dx11_IndexBuffer_Create( const IndexBuffer::Descriptor& desc )
 //------------------------------------------------------------------------------
 
 static void            
-dx11_IndexBuffer_Delete( Handle vb )
+dx11_IndexBuffer_Delete( Handle ib )
 {
-    IndexBufferDX11_t*  self = IndexBufferDX11Pool::Get( vb );
+    IndexBufferDX11_t*  self = IndexBufferDX11Pool::Get( ib );
 
     if( self )
     {
         if( self->_ib11 )
         {
-            DX11Command cmd[] = { DX11Command::RELEASE, { uint64_t(static_cast<IUnknown*>(self->_ib11)) } };
-
-            ExecDX11( cmd, countof(cmd) );
+            self->_ib11->Release();
             self->_ib11 = nullptr;
         }
 
         self->_size = 0;
 
-        IndexBufferDX11Pool::Free( vb );
+        IndexBufferDX11Pool::Free( ib );
     }
 }
 
@@ -128,69 +125,35 @@ dx11_IndexBuffer_Update( Handle vb, const void* data, unsigned offset, unsigned 
 
     if( offset+size <= self->_size )
     {
-        D3D11_MAPPED_SUBRESOURCE    rc   = {0};
-        DX11Command                 cmd1 = { DX11Command::MAP_RESOURCE, { uint64_t(self->_ib11), 0, D3D11_MAP_WRITE_DISCARD, 0, uint64_t(&rc) } };
+        D3D11_MAPPED_SUBRESOURCE    rc = {0};
         
-        ExecDX11( &cmd1, 1 );
-
+        _D3D11_ImmediateContext->Map( self->_ib11, 0, D3D11_MAP_WRITE_DISCARD, 0, &rc );
+        
         if( rc.pData )
         {            
-            DX11Command cmd2  = { DX11Command::UNMAP_RESOURCE, { uint64_t(self->_ib11), 0 } };
-
             memcpy( ((uint8*)(rc.pData))+offset, data, size );            
-            
-            ExecDX11( &cmd2, 1 );
+            _D3D11_ImmediateContext->Unmap( self->_ib11, 0 );
             success = true;
         }
     }
     
     return success;
-/*
-    bool                success = false;
-    IndexBufferDX11_t*  self    = IndexBufferDX11Pool::Get( vb );
-
-    DVASSERT(!self->_mapped);
-
-    if( offset+size <= self->_size )
-    {
-        void*       ptr  = nullptr;
-        D3D11_BOX   dst;
-        DX11Command cmd1 = { DX11Command::UPDATE_RESOURCE, { uint64_t(self->_ib11), 0, (uint64_t)(&dst), uint64(data), size, 0 } };
-        
-        dst.left   = offset;
-        dst.right  = size;
-        dst.top    = 0;
-        dst.bottom = 1;
-        dst.front  = 0;
-        dst.back   = 1;
-
-        ExecDX11( &cmd1, 1 );
-
-        if( SUCCEEDED(cmd1.retval) )
-        {
-            success = true;
-        }
-    }
-
-    return success;
-*/
 }
 
 
 //------------------------------------------------------------------------------
 
 static void*
-dx11_IndexBuffer_Map( Handle vb, unsigned offset, unsigned size )
+dx11_IndexBuffer_Map( Handle ib, unsigned offset, unsigned size )
 {
     void*                       ptr  = nullptr;
-    IndexBufferDX11_t*          self = IndexBufferDX11Pool::Get( vb );
+    IndexBufferDX11_t*          self = IndexBufferDX11Pool::Get( ib );
     D3D11_MAPPED_SUBRESOURCE    rc   = {0};
-    DX11Command                 cmd  = { DX11Command::MAP_RESOURCE, { uint64_t(self->_ib11), 0, D3D11_MAP_WRITE_DISCARD, 0, uint64_t(&rc) } };
 
     DVASSERT(!self->_mapped);
-    ExecDX11( &cmd, 1 );
+    _D3D11_ImmediateContext->Map( self->_ib11, 0, D3D11_MAP_WRITE_DISCARD, 0, &rc );
 
-    if( SUCCEEDED(cmd.retval) )
+    if( rc.pData )
     {
         ptr           = rc.pData;
         self->_mapped = true;
@@ -203,18 +166,13 @@ dx11_IndexBuffer_Map( Handle vb, unsigned offset, unsigned size )
 //------------------------------------------------------------------------------
 
 static void
-dx11_IndexBuffer_Unmap( Handle vb )
+dx11_IndexBuffer_Unmap( Handle ib )
 {
-    IndexBufferDX11_t*  self = IndexBufferDX11Pool::Get( vb );
-    DX11Command         cmd  = { DX11Command::UNMAP_RESOURCE, { uint64_t(self->_ib11), 0 } };
+    IndexBufferDX11_t*  self = IndexBufferDX11Pool::Get( ib );
     
     DVASSERT(self->_mapped);
-    ExecDX11( &cmd, 1 );
-
-    if( SUCCEEDED(cmd.retval) )
-    {
-        self->_mapped = false;
-    }
+    _D3D11_ImmediateContext->Unmap( self->_ib11, 0 );
+    self->_mapped = false;
 }
 
 
