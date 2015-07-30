@@ -696,6 +696,150 @@ static const char* _ShaderDefine_DX9 =
 ;
 
 
+static const char* _ShaderHeader_DX11 =
+"#define float1                 float\n"
+"#define half1                  half\n"
+
+"#define FP_DISCARD_FRAGMENT discard\n"
+;
+
+static const char* _ShaderDefine_DX11 =
+"#define VPROG_IN_BEGIN                 struct VP_Input {\n"
+"#define VPROG_IN_POSITION              float3 position : POSITION;\n"
+"#define VPROG_IN_NORMAL                float3 normal : NORMAL;\n"
+"#define VPROG_IN_TEXCOORD              float2 texcoord0 : TEXCOORD0;\n"
+"#define VPROG_IN_TEXCOORD0(sz)         float##sz texcoord0 : TEXCOORD0;\n"
+"#define VPROG_IN_TEXCOORD1(sz)         float##sz texcoord1 : TEXCOORD1;\n"
+"#define VPROG_IN_TEXCOORD2(sz)         float##sz texcoord2 : TEXCOORD2;\n"
+"#define VPROG_IN_TEXCOORD3(sz)         float##sz texcoord3 : TEXCOORD3;\n"
+"#define VPROG_IN_TEXCOORD4(sz)         float##sz texcoord4 : TEXCOORD4;\n"
+"#define VPROG_IN_TEXCOORD5(sz)         float##sz texcoord5 : TEXCOORD5;\n"
+"#define VPROG_IN_TEXCOORD6(sz)         float##sz texcoord6 : TEXCOORD6;\n"
+"#define VPROG_IN_TEXCOORD7(sz)         float##sz texcoord7 : TEXCOORD7;\n"
+"#define VPROG_IN_COLOR                 float4 color0 : COLOR0;\n"
+"#define VPROG_IN_COLOR0                float4 color0 : COLOR0;\n"
+"#define VPROG_IN_COLOR1                float4 color1 : COLOR1;\n"
+"#define VPROG_IN_TANGENT               float3 tangent : TANGENT;\n"
+"#define VPROG_IN_BINORMAL              float3 binormal : BINORMAL;\n"
+"#define VPROG_IN_BLENDWEIGHT           float3 blendweight : BLENDWEIGHT;\n"
+"#define VPROG_IN_BLENDINDEX(sz)        float##sz blendindex : BLENDINDICES;\n"
+"#define VPROG_IN_END                   };\n"
+
+"#define VPROG_OUT_BEGIN                        struct VP_Output {\n"
+"#define VPROG_OUT_POSITION                     float4 position : SV_POSITION;\n"
+"#define VPROG_OUT_TEXCOORD0(name,size)         float##size name : TEXCOORD0;\n"
+"#define VPROG_OUT_TEXCOORD1(name,size)         float##size name : TEXCOORD1;\n"
+"#define VPROG_OUT_TEXCOORD2(name,size)         float##size name : TEXCOORD2;\n"
+"#define VPROG_OUT_TEXCOORD3(name,size)         float##size name : TEXCOORD3;\n"
+"#define VPROG_OUT_TEXCOORD4(name,size)         float##size name : TEXCOORD4;\n"
+"#define VPROG_OUT_TEXCOORD5(name,size)         float##size name : TEXCOORD5;\n"
+"#define VPROG_OUT_TEXCOORD6(name,size)         float##size name : TEXCOORD6;\n"
+"#define VPROG_OUT_TEXCOORD7(name,size)         float##size name : TEXCOORD7;\n"
+"#define VPROG_OUT_TEXCOORD0_HALF(name,size)    half##size name : TEXCOORD0;\n"
+"#define VPROG_OUT_TEXCOORD1_HALF(name,size)    half##size name : TEXCOORD1;\n"
+"#define VPROG_OUT_TEXCOORD2_HALF(name,size)    half##size name : TEXCOORD2;\n"
+"#define VPROG_OUT_TEXCOORD3_HALF(name,size)    half##size name : TEXCOORD3;\n"
+"#define VPROG_OUT_TEXCOORD4_HALF(name,size)    half##size name : TEXCOORD4;\n"
+"#define VPROG_OUT_TEXCOORD5_HALF(name,size)    half##size name : TEXCOORD5;\n"
+"#define VPROG_OUT_TEXCOORD6_HALF(name,size)    half##size name : TEXCOORD6;\n"
+"#define VPROG_OUT_TEXCOORD7_HALF(name,size)    half##size name : TEXCOORD7;\n"
+"#define VPROG_OUT_TEXCOORD0_LOW(name,size)     half##size name : TEXCOORD0;\n"
+"#define VPROG_OUT_TEXCOORD1_LOW(name,size)     half##size name : TEXCOORD1;\n"
+"#define VPROG_OUT_TEXCOORD2_LOW(name,size)     half##size name : TEXCOORD2;\n"
+"#define VPROG_OUT_TEXCOORD3_LOW(name,size)     half##size name : TEXCOORD3;\n"
+"#define VPROG_OUT_TEXCOORD4_LOW(name,size)     half##size name : TEXCOORD4;\n"
+"#define VPROG_OUT_TEXCOORD5_LOW(name,size)     half##size name : TEXCOORD5;\n"
+"#define VPROG_OUT_TEXCOORD6_LOW(name,size)     half##size name : TEXCOORD6;\n"
+"#define VPROG_OUT_TEXCOORD7_LOW(name,size)     half##size name : TEXCOORD7;\n"
+"#define VPROG_OUT_COLOR0(name,size)            float##size name : COLOR0;\n"
+"#define VPROG_OUT_COLOR1(name,size)            float##size name : COLOR1;\n"
+"#define VPROG_OUT_END                          };\n"
+
+//"#define DECL_VPROG_BUFFER(idx,sz) uniform float4 VP_Buffer##idx[sz];\n"
+"#define DECL_VPROG_BUFFER(idx,sz) cbuffer VP_Buffer##idx##_t : register(cb##idx) { float4 VP_Buffer##idx[sz]; };\n"
+"#define VP_BUF_FLOAT3X3(buf,reg)  float3x3( (float3)(float4(VP_Buffer##buf[reg+0])), (float3)(float4(VP_Buffer##buf[reg+1])), (float3)(float4(VP_Buffer##buf[reg+2])) );\n"
+
+"#define VPROG_BEGIN             VP_Output vp_main( VP_Input IN ) { VP_Output OUT;\n"
+"#define VPROG_END               return OUT; }\n"
+
+"#define VP_IN_POSITION          IN.position\n"
+"#define VP_IN_NORMAL            IN.normal\n"
+"#define VP_IN_TEXCOORD          IN.texcoord0\n"
+"#define VP_IN_TEXCOORD0         IN.texcoord0\n"
+"#define VP_IN_TEXCOORD1         IN.texcoord1\n"
+"#define VP_IN_TEXCOORD2         IN.texcoord2\n"
+"#define VP_IN_TEXCOORD3         IN.texcoord3\n"
+"#define VP_IN_TEXCOORD4         IN.texcoord4\n"
+"#define VP_IN_TEXCOORD5         IN.texcoord5\n"
+"#define VP_IN_TEXCOORD6         IN.texcoord6\n"
+"#define VP_IN_TEXCOORD7         IN.texcoord7\n"
+"#define VP_IN_COLOR             IN.color0\n"
+"#define VP_IN_COLOR0            IN.color0\n"
+"#define VP_IN_COLOR1            IN.color1\n"
+"#define VP_IN_TANGENT           IN.tangent\n"
+"#define VP_IN_BINORMAL          IN.binormal\n"
+"#define VP_IN_BLENDWEIGHT       IN.blendweight\n"
+"#define VP_IN_BLENDINDEX        IN.blendindex\n"
+
+"#define VP_OUT_POSITION         OUT.position\n"
+"#define VP_OUT(name)            OUT.##name\n"
+
+"#define VP_TEXTURE2D(unit,uv)   tex2Dlod( VertexTexture##unit, float4(uv.x,uv.y,0,0) )\n"
+
+
+"#define FPROG_IN_BEGIN                        struct FP_Input { float4 pos : SV_POSITION; \n"
+"#define FPROG_IN_TEXCOORD0(name,size)         float##size name : TEXCOORD0;\n"
+"#define FPROG_IN_TEXCOORD1(name,size)         float##size name : TEXCOORD1;\n"
+"#define FPROG_IN_TEXCOORD2(name,size)         float##size name : TEXCOORD2;\n"
+"#define FPROG_IN_TEXCOORD3(name,size)         float##size name : TEXCOORD3;\n"
+"#define FPROG_IN_TEXCOORD4(name,size)         float##size name : TEXCOORD4;\n"
+"#define FPROG_IN_TEXCOORD5(name,size)         float##size name : TEXCOORD5;\n"
+"#define FPROG_IN_TEXCOORD6(name,size)         float##size name : TEXCOORD6;\n"
+"#define FPROG_IN_TEXCOORD7(name,size)         float##size name : TEXCOORD7;\n"
+"#define FPROG_IN_TEXCOORD0_HALF(name,size)    half##size name : TEXCOORD0;\n"
+"#define FPROG_IN_TEXCOORD1_HALF(name,size)    half##size name : TEXCOORD1;\n"
+"#define FPROG_IN_TEXCOORD2_HALF(name,size)    half##size name : TEXCOORD2;\n"
+"#define FPROG_IN_TEXCOORD3_HALF(name,size)    half##size name : TEXCOORD3;\n"
+"#define FPROG_IN_TEXCOORD4_HALF(name,size)    half##size name : TEXCOORD4;\n"
+"#define FPROG_IN_TEXCOORD5_HALF(name,size)    half##size name : TEXCOORD5;\n"
+"#define FPROG_IN_TEXCOORD6_HALF(name,size)    half##size name : TEXCOORD6;\n"
+"#define FPROG_IN_TEXCOORD7_HALF(name,size)    half##size name : TEXCOORD7;\n"
+"#define FPROG_IN_TEXCOORD0_LOW(name,size)     half##size name : TEXCOORD0;\n"
+"#define FPROG_IN_TEXCOORD1_LOW(name,size)     half##size name : TEXCOORD1;\n"
+"#define FPROG_IN_TEXCOORD2_LOW(name,size)     half##size name : TEXCOORD2;\n"
+"#define FPROG_IN_TEXCOORD3_LOW(name,size)     half##size name : TEXCOORD3;\n"
+"#define FPROG_IN_TEXCOORD4_LOW(name,size)     half##size name : TEXCOORD4;\n"
+"#define FPROG_IN_TEXCOORD5_LOW(name,size)     half##size name : TEXCOORD5;\n"
+"#define FPROG_IN_TEXCOORD6_LOW(name,size)     half##size name : TEXCOORD6;\n"
+"#define FPROG_IN_TEXCOORD7_LOW(name,size)     half##size name : TEXCOORD7;\n"
+"#define FPROG_IN_COLOR0(name,size)            float##size name : COLOR0;\n"
+"#define FPROG_IN_COLOR1(name,size)            float##size name : COLOR1;\n"
+"#define FPROG_IN_END                          };\n"
+
+"#define FPROG_OUT_BEGIN         struct FP_Output {\n"
+"#define FPROG_OUT_COLOR         float4 color : SV_TARGET0;\n"
+"#define FPROG_OUT_END           };\n"
+
+//"#define DECL_FP_SAMPLER2D(unit)    uniform sampler2D FragmentTexture##unit : TEXUNIT##unit;\n"
+"#define DECL_FP_SAMPLER2D(unit)    Texture2D FragmentTexture##unit : register(t##unit); SamplerState FragmentTexture##unit##_Sampler : register(s##unit);\n"
+"#define DECL_FP_SAMPLERCUBE(unit)  uniform samplerCUBE FragmentTexture##unit : TEXUNIT##unit;\n"
+"#define DECL_VP_SAMPLER2D(unit)    uniform sampler2D VertexTexture##unit : TEXUNIT##unit;\n"
+
+//"#define FP_TEXTURE2D(unit,uv)   tex2D( FragmentTexture##unit, uv )\n"
+"#define FP_TEXTURE2D(unit,uv)   FragmentTexture##unit.Sample( FragmentTexture##unit##_Sampler, uv )\n"
+"#define FP_TEXTURECUBE(unit,uv) texCUBE( FragmentTexture##unit, uv )\n"
+"#define FP_IN(name)             IN.##name\n"
+
+"#define FP_OUT_COLOR            OUT.color\n"
+
+"#define DECL_FPROG_BUFFER(idx,sz) cbuffer FP_Buffer##idx##_t : register(cb##idx) { float4 FP_Buffer##idx[sz]; };\n"
+
+"#define FPROG_BEGIN             FP_Output fp_main( FP_Input IN ) { FP_Output OUT;\n"
+"#define FPROG_END               return OUT; }\n"
+
+;
+
+
 
 static void
 PreProcessSource( Api targetApi, const char* srcText, std::string* preprocessedText )
@@ -736,11 +880,14 @@ PreProcessSource( Api targetApi, const char* srcText, std::string* preprocessedT
 
     switch( targetApi )
     {
-        case RHI_DX11   : break;
-
         case RHI_DX9 : 
         {
             strcat( src, _ShaderDefine_DX9 );
+        }   break;
+        
+        case RHI_DX11 : 
+        {
+            strcat( src, _ShaderDefine_DX11 );
         }   break;
 
         case RHI_GLES2 : 

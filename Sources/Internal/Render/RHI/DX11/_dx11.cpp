@@ -147,58 +147,58 @@ namespace rhi
 
 //------------------------------------------------------------------------------
 
-D3DFORMAT
+DXGI_FORMAT
 DX11_TextureFormat( TextureFormat format )
 {
     switch( format )
     {
-        case TEXTURE_FORMAT_R8G8B8A8        : return D3DFMT_A8R8G8B8;
-        case TEXTURE_FORMAT_R8G8B8X8        : return D3DFMT_X8R8G8B8;
-        case TEXTURE_FORMAT_R8G8B8          : return D3DFMT_R8G8B8;
+        case TEXTURE_FORMAT_R8G8B8A8        : return DXGI_FORMAT_B8G8R8A8_UNORM;
+        case TEXTURE_FORMAT_R8G8B8X8        : return DXGI_FORMAT_B8G8R8X8_UNORM;
+//        case TEXTURE_FORMAT_R8G8B8          : return DXGI_FORMAT_R8G8B8_UNORM;
 
-        case TEXTURE_FORMAT_R5G5B5A1        : return D3DFMT_A1R5G5B5;
-        case TEXTURE_FORMAT_R5G6B5          : return D3DFMT_R5G6B5;
+        case TEXTURE_FORMAT_R5G5B5A1        : return DXGI_FORMAT_B5G5R5A1_UNORM;
+        case TEXTURE_FORMAT_R5G6B5          : return DXGI_FORMAT_B5G6R5_UNORM;
 
-        case TEXTURE_FORMAT_R4G4B4A4        : return D3DFMT_A4R4G4B4;
+//        case TEXTURE_FORMAT_R4G4B4A4        : return DXGI_FORMAT_B4G4R4A4_UNORM;
 
-        case TEXTURE_FORMAT_A16R16G16B16    : return D3DFMT_A16B16G16R16F;
-        case TEXTURE_FORMAT_A32R32G32B32    : return D3DFMT_A32B32G32R32F;
+//        case TEXTURE_FORMAT_A16R16G16B16    : return D3DFMT_A16B16G16R16F;
+//        case TEXTURE_FORMAT_A32R32G32B32    : return D3DFMT_A32B32G32R32F;
 
-        case TEXTURE_FORMAT_R8              : return D3DFMT_A8;
-        case TEXTURE_FORMAT_R16             : return D3DFMT_R16F;
+        case TEXTURE_FORMAT_R8              : return DXGI_FORMAT_A8_UNORM;
+        case TEXTURE_FORMAT_R16             : return DXGI_FORMAT_R16_FLOAT;
 
-        case TEXTURE_FORMAT_DXT1            : return D3DFMT_DXT1;
-        case TEXTURE_FORMAT_DXT3            : return D3DFMT_DXT3;
-        case TEXTURE_FORMAT_DXT5            : return D3DFMT_DXT5;
+        case TEXTURE_FORMAT_DXT1            : return DXGI_FORMAT_BC1_UNORM;
+        case TEXTURE_FORMAT_DXT3            : return DXGI_FORMAT_BC4_UNORM;
+        case TEXTURE_FORMAT_DXT5            : return DXGI_FORMAT_BC2_UNORM;
 
         case TEXTURE_FORMAT_PVRTC2_4BPP_RGB :
         case TEXTURE_FORMAT_PVRTC2_4BPP_RGBA :
         case TEXTURE_FORMAT_PVRTC2_2BPP_RGB :
         case TEXTURE_FORMAT_PVRTC2_2BPP_RGBA :
-            return D3DFMT_UNKNOWN;
+            return DXGI_FORMAT_UNKNOWN;
 
         case TEXTURE_FORMAT_ATC_RGB :
         case TEXTURE_FORMAT_ATC_RGBA_EXPLICIT :
         case TEXTURE_FORMAT_ATC_RGBA_INTERPOLATED :
-            return D3DFMT_UNKNOWN;
+            return DXGI_FORMAT_UNKNOWN;
 
         case TEXTURE_FORMAT_ETC1 :
         case TEXTURE_FORMAT_ETC2_R8G8B8 :
         case TEXTURE_FORMAT_ETC2_R8G8B8A8 :
         case TEXTURE_FORMAT_ETC2_R8G8B8A1 :
-            return D3DFMT_UNKNOWN;
+            return DXGI_FORMAT_UNKNOWN;
 
         case TEXTURE_FORMAT_EAC_R11_UNSIGNED :
         case TEXTURE_FORMAT_EAC_R11_SIGNED :
         case TEXTURE_FORMAT_EAC_R11G11_UNSIGNED :
         case TEXTURE_FORMAT_EAC_R11G11_SIGNED :
-            return D3DFMT_UNKNOWN;
+            return DXGI_FORMAT_UNKNOWN;
 
-        case TEXTURE_FORMAT_D16             : return D3DFMT_D16;
-        case TEXTURE_FORMAT_D24S8           : return D3DFMT_D24S8;
+        case TEXTURE_FORMAT_D16             : return DXGI_FORMAT_D16_UNORM;
+        case TEXTURE_FORMAT_D24S8           : return DXGI_FORMAT_D24_UNORM_S8_UINT;
     }
 
-    return D3DFMT_UNKNOWN;
+    return DXGI_FORMAT_UNKNOWN;
 }
 
 
