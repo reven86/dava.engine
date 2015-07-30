@@ -1365,9 +1365,6 @@
     <ClInclude Include="..\..\Sources\Internal\UI\UIParticles.h">
       <Filter>Internal\UI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Base\Atomic.h">
-      <Filter>Internal\Base\Radix</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\FoliageSystem.h">
       <Filter>Internal\Scene3D\Systems</Filter>
     </ClInclude>
@@ -2995,7 +2992,7 @@
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibPngHelper.cpp">
       <Filter>Internal\Render\Image</Filter>
     </ClCompile>
-	<ClCompile Include="..\..\Sources\Internal\Render\Image\LibWebPHelper.cpp">
+    <ClCompile Include="..\..\Sources\Internal\Render\Image\LibWebPHelper.cpp">
       <Filter>Internal\Render\Image</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibJpegHelper.cpp">

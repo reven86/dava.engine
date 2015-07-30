@@ -257,7 +257,6 @@
     <ClInclude Include="..\..\Sources\Internal\Autotesting\GameAPI.h" />
     <ClInclude Include="..\..\Sources\Internal\Autotesting\MongodbUpdateObject.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\AllocatorFactory.h" />
-    <ClInclude Include="..\..\Sources\Internal\Base\Atomic.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Bind.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Data.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\EnumMap.h" />
