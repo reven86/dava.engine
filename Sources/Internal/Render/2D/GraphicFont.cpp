@@ -76,7 +76,7 @@ protected:
     float32 lineHeight;
     float32 baselineHeight;
     float32 spread;
-    bool isDistanceFont;
+    bool isDistanceFieldFont;
 
     FilePath configPath;
 
@@ -94,7 +94,7 @@ GraphicInternalFont::GraphicInternalFont()
     lineHeight = 0;
 	baselineHeight = 0;
     spread = 1.f;
-    isDistanceFont = false;
+    isDistanceFieldFont = false;
 }
     
 GraphicInternalFont::~GraphicInternalFont()
@@ -105,22 +105,26 @@ GraphicInternalFont::~GraphicInternalFont()
     
 GraphicInternalFont * GraphicInternalFont::Create(const FilePath & descriptorPath)
 {
-    LockGuard<Mutex> guard(dataMapMutex);
-    
-    FontMap::iterator iter = dataMap.find(descriptorPath);
-    if (iter != dataMap.end())
     {
-        return SafeRetain(iter->second);
+        LockGuard<Mutex> guard(dataMapMutex);
+        FontMap::iterator iter = dataMap.find(descriptorPath);
+        if (iter != dataMap.end())
+        {
+            return SafeRetain(iter->second);
+        }
     }
     
     GraphicInternalFont * fontData = new GraphicInternalFont();
     if (!fontData->InitFromConfig(descriptorPath))
     {
-        fontData->Release();
+        fontData->Release(); // Used mutex lock
         return nullptr;
     }
     
-    dataMap[descriptorPath] = fontData;
+    {
+        LockGuard<Mutex> guard(dataMapMutex);
+        dataMap[descriptorPath] = fontData;
+    }
     return fontData;
 }
     
@@ -168,9 +172,9 @@ bool GraphicInternalFont::InitFromConfig(const DAVA::FilePath &path)
     const YamlNode* spread = configNode->Get("spread");
     if (spread)
         this->spread = spread->AsFloat();
-    const YamlNode* df = configNode->Get("df");
-    if (df)
-        this->isDistanceFont = df->AsBool();
+    const YamlNode* distanceFieldFont = configNode->Get("distanceFieldFont");
+    if (distanceFieldFont)
+        this->isDistanceFieldFont = distanceFieldFont->AsBool();
         
     const MultiMap<String, YamlNode*> charsMap = charsNode->AsMap();
     MultiMap<String, YamlNode*>::const_iterator charsMapEnd = charsMap.end();
@@ -244,7 +248,7 @@ GraphicFont* GraphicFont::Create(const FilePath & descriptorPath, const FilePath
         return nullptr;
     }
 
-    if (font->fontInternal->isDistanceFont)
+    if (font->fontInternal->isDistanceFieldFont)
     {
         font->fontType = Font::TYPE_DISTANCE;
     }
@@ -332,7 +336,7 @@ Font::StringMetrics GraphicFont::DrawStringToBuffer(const WideString & str,
 	metrics.drawRect = Rect2i(0x7fffffff, 0x7fffffff, 0, 0);
     
 	float32 ascent = fontInternal->lineHeight * GetSizeScale();
-    float32 fontHeight = GetFontHeight();
+    uint32 fontHeight = GetFontHeight();
 
     for (uint32 charPos = 0; charPos < strLength; ++charPos)
     {

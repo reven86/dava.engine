@@ -93,11 +93,11 @@ FontConvertor::eModes FontConvertor::ModeFromString(const String& str)
 
 FontConvertor::eOutputType FontConvertor::TypeFromString(const String& str)
 {
-    if (str == "graphic")
+    if (str == "gf")
     {
         return FontConvertor::TYPE_GRAPHIC;
     }
-    else if (str == "df")
+    else if (str == "dff")
     {
         return FontConvertor::TYPE_DISTANCE_FIELD;
     }

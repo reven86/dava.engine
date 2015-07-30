@@ -45,6 +45,7 @@ public:
 
 private:
     FTFont * ftFont;
+    GraphicFont * dfFont;
     GraphicFont * graphicFont;
 
     void OnFontSelectClick(BaseObject* sender, void* data, void* callerData);

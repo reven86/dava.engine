@@ -55,7 +55,7 @@ void Usage()
     cout << endl;
     cout << "Params:" << endl;
     cout << endl;
-    cout << "charlist=file_name - file in utf8 which contains set of characters to convert" << endll;
+    cout << "charlist=file_name - file in utf8 which contains set of characters to convert" << endl;
     cout << endl;
     cout << "maxchar=N - specifies maximum character code" << endl;
     cout << "            Will generate all available characters from 0 to N" << endl;
@@ -83,9 +83,9 @@ void Usage()
     cout << endl;
     cout << "charmap=N - char map from TTF file. Values are 0..charmapCount-1. Default: 0" << endl;
     cout << endl;
-    cout << "output=(df | graphic) - specifies output file format. Default: df" << endl;
-    cout << "         df - distance field font" << endl;
-    cout << "         graphic - anti-aliasing graphic font" << endl;
+    cout << "output=(dff | gf) - specifies output file format. Default: dff" << endl;
+    cout << "         dff - distance field font" << endl;
+    cout << "         gf - anti-aliasing graphic font" << endl;
     cout << endl;
     cout << endl;
 }

@@ -71,7 +71,8 @@ void FontTest::LoadResources()
     BaseScreen::LoadResources();
 
     ftFont = FTFont::Create("~res:/Fonts/korinna.ttf");
-    graphicFont = GraphicFont::Create("~res:/DFFont/testFont.df", "~res:/DFFont/testFont.tex");
+    dfFont = GraphicFont::Create("~res:/Fonts/korinna_df.fnt", "~res:/Fonts/korinna_df.tex");
+    graphicFont = GraphicFont::Create("~res:/Fonts/korinna_graphic.fnt", "~res:/Fonts/korinna_graphic.tex");
 
     ScopedPtr<Font> uiFont(FTFont::Create("~res:/Fonts/korinna.ttf"));
 
@@ -129,6 +130,14 @@ void FontTest::LoadResources()
     button->SetTag(Font::TYPE_DISTANCE); 
     AddControl(button);
 
+    button = new UIButton(Rect(640, 40, 100, 20));
+    button->SetStateFont(0xFF, uiFont);
+    button->SetStateText(0xFF, L"Graphic");
+    button->SetDebugDraw(true);
+    button->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FontTest::OnFontSelectClick));
+    button->SetTag(Font::TYPE_GRAPHIC);
+    AddControl(button);
+
     label = new UIStaticText(Rect(420, 70, 200, 20));
     label->SetFont(uiFont);
     label->SetTextColor(Color::White);
@@ -136,7 +145,7 @@ void FontTest::LoadResources()
     label->SetTextAlign(ALIGN_TOP | ALIGN_LEFT);
     AddControl(label);
 
-    button = new UIButton(Rect(420, 110, 100, 20));
+    button = new UIButton(Rect(420, 100, 100, 20));
     button->SetStateFont(0xFF, uiFont);
     button->SetStateText(0xFF, L"Increase");
     button->SetDebugDraw(true);
@@ -144,7 +153,7 @@ void FontTest::LoadResources()
     button->SetTag(INCREASE_SIZE_TAG);
     AddControl(button);
 
-    button = new UIButton(Rect(530, 110, 100, 20));
+    button = new UIButton(Rect(530, 100, 100, 20));
     button->SetStateFont(0xFF, uiFont);
     button->SetStateText(0xFF, L"Decrease");
     button->SetDebugDraw(true);
@@ -158,6 +167,7 @@ void FontTest::UnloadResources()
 {
     BaseScreen::UnloadResources();
     SafeRelease(ftFont);
+    SafeRelease(dfFont);
     SafeRelease(graphicFont);
     SafeDelete(inputDelegate);
     SafeRelease(inputText);
@@ -174,6 +184,10 @@ void FontTest::OnFontSelectClick(BaseObject* sender, void* data, void* callerDat
         inputText->SetFont(ftFont);
         break;
     case Font::TYPE_DISTANCE:
+        previewText->SetFont(dfFont);
+        inputText->SetFont(dfFont);
+        break;
+    case Font::TYPE_GRAPHIC:
         previewText->SetFont(graphicFont);
         inputText->SetFont(graphicFont);
         break;
