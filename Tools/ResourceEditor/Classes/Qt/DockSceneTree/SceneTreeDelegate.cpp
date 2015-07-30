@@ -33,6 +33,7 @@
 #include "DockSceneTree/SceneTreeModel.h"
 #include "DockSceneTree/SceneTreeItem.h"
 
+
 SceneTreeDelegate::SceneTreeDelegate(QWidget *parent /* = 0 */)
 	: QStyledItemDelegate(parent)
 { }
@@ -48,14 +49,9 @@ void SceneTreeDelegate::paint(QPainter *painter, const QStyleOptionViewItem &opt
 	QStyledItemDelegate::paint(painter, opt, index);
 }
 
-QSize SceneTreeDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
-{
-    return QStyledItemDelegate::sizeHint(option, index);
-}
-
 void SceneTreeDelegate::customDraw(QPainter *painter, QStyleOptionViewItem *option, const QModelIndex &index) const
 {
-	QSortFilterProxyModel *proxyModel = (QSortFilterProxyModel *) index.model();
+	QSortFilterProxyModel *proxyModel = (QSortFilterProxyModel *)index.model();
 	if(NULL != proxyModel)
 	{
 		SceneTreeModel *model = (SceneTreeModel *) proxyModel->sourceModel();

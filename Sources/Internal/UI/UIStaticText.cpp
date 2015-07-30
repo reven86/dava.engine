@@ -203,6 +203,11 @@ int32 UIStaticText::GetTextVisualAlign() const
 	return textBlock->GetVisualAlign();
 }
 
+const WideString& UIStaticText::GetVisualText() const
+{
+    return textBlock->GetVisualText();
+}
+
 bool UIStaticText::GetTextIsRtl() const
 {
     return textBlock->IsRtl();

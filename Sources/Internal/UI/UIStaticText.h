@@ -104,6 +104,7 @@ public:
     virtual void SetTextUseRtlAlignFromInt(int32 value);
     virtual int32 GetTextUseRtlAlignAsInt() const;
 
+    virtual const WideString& GetVisualText() const;
     const Vector2 & GetTextSize();
 
     Vector2 GetContentPreferredSize() const override;

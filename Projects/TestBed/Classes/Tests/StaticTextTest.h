@@ -27,22 +27,42 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
 
-#ifndef __$UNITTEST_GUARD_IFDEF$_TEST_H__
-#define __$UNITTEST_GUARD_IFDEF$_TEST_H__
+#ifndef __TEXT_ALIGH_TEST_H__
+#define __TEXT_ALIGH_TEST_H__
 
-#include "DAVAEngine.h"
 #include "Infrastructure/BaseScreen.h"
 
-using namespace DAVA;
-
-class $UNITTEST_CLASSNAME$ : public BaseScreen
+class StaticTextTest : public BaseScreen
 {
 public:
-    $UNITTEST_CLASSNAME$();
+    StaticTextTest();
 
-protected:
     void LoadResources() override;
     void UnloadResources() override;
+    
+    void SetPreviewText(const DAVA::WideString& text);
+    void SetPreviewAlign(DAVA::int32 align);
+    void SetPreviewFitting(DAVA::int32 fitting);
+    void SetPreviewRequiredTextSize(bool enable);
+    void SetPreviewMultiline(DAVA::int32 multilineType);
+    
+private:
+    DAVA::UIButton* CreateButton(const DAVA::WideString& caption, const DAVA::Rect& rect, DAVA::int32 tag, DAVA::Font* font, const DAVA::Message& msg);
+    
+    void OnAlignButtonClick(BaseObject* sender, void * data, void * callerData);
+    void OnFittingButtonClick(BaseObject* sender, void * data, void * callerData);
+    void OnRequireTextSizeButtonClick(BaseObject* sender, void * data, void * callerData);
+    void OnMultilineButtonClick(BaseObject* sender, void * data, void * callerData);
+
+    DAVA::UIStaticText* previewText = nullptr;
+    DAVA::UITextField* inputText = nullptr;
+    DAVA::UITextFieldDelegate* inputDelegate = nullptr;
+    DAVA::UIButton* requireTextSizeButton = nullptr;
+    DAVA::List<DAVA::UIButton*> alignButtons;
+    DAVA::List<DAVA::UIButton*> fittingButtons;
+    DAVA::List<DAVA::UIButton*> multilineButtons;
+    
+    bool needRequiredSize = false;
 };
 
-#endif //__$UNITTEST_GUARD_IFDEF$_TEST_H__
+#endif //__MULTILINETEST_TEST_H__
