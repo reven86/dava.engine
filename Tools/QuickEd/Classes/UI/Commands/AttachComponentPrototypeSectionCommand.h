@@ -27,55 +27,29 @@
  =====================================================================================*/
 
 
-#include "StyleSheetNode.h"
-#include "PackageVisitor.h"
+#ifndef __QUICKED_ATTACH_PROTOTYPE_COMPONENT_SECTION_COMMAND_H__
+#define __QUICKED_ATTACH_PROTOTYPE_COMPONENT_SECTION_COMMAND_H__
 
-#include "Model/ControlProperties/StyleSheetRootProperty.h"
+#include <QUndoCommand>
 
-#include "UI/Styles/UIStyleSheet.h"
+class PackageNode;
+class ControlNode;
+class ComponentPropertiesSection;
 
-using namespace DAVA;
-
-StyleSheetNode::StyleSheetNode(UIStyleSheet *aStyleSheet)
-    : PackageBaseNode(nullptr)
-    , styleSheet(SafeRetain(aStyleSheet))
-    , rootProperty(new StyleSheetRootProperty(this))
+class AttachComponentPrototypeSectionCommand : public QUndoCommand
 {
+public:
+    AttachComponentPrototypeSectionCommand(PackageNode *root, ControlNode *node, ComponentPropertiesSection *destSection, ComponentPropertiesSection *prototypeSection, QUndoCommand *parent = nullptr);
+    virtual ~AttachComponentPrototypeSectionCommand();
     
-}
+    void redo() override;
+    void undo() override;
+    
+private:
+    PackageNode *root;
+    ControlNode *node;
+    ComponentPropertiesSection *destSection;
+    ComponentPropertiesSection *prototypeSection;
+};
 
-StyleSheetNode::~StyleSheetNode()
-{
-    SafeRelease(styleSheet);
-    SafeRelease(rootProperty);
-}
-
-int StyleSheetNode::GetCount() const
-{
-    return 0;
-}
-
-PackageBaseNode *StyleSheetNode::Get(int index) const
-{
-    return nullptr;
-}
-
-void StyleSheetNode::Accept(PackageVisitor *visitor)
-{
-    visitor->VisitStyleSheet(this);
-}
-
-String StyleSheetNode::GetName() const
-{
-    return styleSheet->GetSelectorChain().ToString();
-}
-
-StyleSheetRootProperty *StyleSheetNode::GetRootProperty() const
-{
-    return rootProperty;
-}
-
-UIStyleSheet *StyleSheetNode::GetStyleSheet() const
-{
-    return styleSheet;
-}
+#endif // __QUICKED_ATTACH_PROTOTYPE_COMPONENT_SECTION_COMMAND_H__
