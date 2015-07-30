@@ -47,6 +47,9 @@
 #include "fribidi/fribidi-unicode.h"
 #include "TextLayout.h"
 
+
+#include "UI/UIControlSystem.h"
+
 namespace DAVA 
 {
 
@@ -106,8 +109,7 @@ TextBlock::TextBlock()
 {
     font = NULL;
     isMultilineEnabled = false;
-    isRtl = false;
-    useRtlAlign = false;
+    useRtlAlign = RTL_DONT_USE;
     fittingType = FITTING_DISABLED;
 
 	originalFontSize = 0.1f;
@@ -116,6 +118,7 @@ TextBlock::TextBlock()
 
 	isMultilineBySymbolEnabled = false;
     treatMultilineAsSingleLine = false;
+    isRtl = false;
     
 	textBlockRender = NULL;
 	needPrepareInternal = false;
@@ -267,6 +270,43 @@ void TextBlock::SetFittingOption(int32 _fittingType)
     mutex.Unlock();
 }
 
+Vector2 TextBlock::GetPreferredSize()
+{
+    if(!font)
+        return Vector2();
+
+    Vector2 result;
+    
+    mutex.Lock();
+    
+    if (requestedSize.dx < 0.0f && requestedSize.dy < 0.0f && fittingType == FITTING_DISABLED)
+    {
+        result = cacheTextSize;
+        mutex.Unlock();
+    }
+    else
+    {
+        Vector2 oldRequestedSize = requestedSize;
+        int32 oldFitting = fittingType;
+        
+        requestedSize = Vector2(-1.0f, -1.0f);
+        fittingType = FITTING_DISABLED;
+        
+        mutex.Unlock();
+        
+        CalculateCacheParams();
+
+        mutex.Lock();
+        result = cacheTextSize;
+        requestedSize = oldRequestedSize;
+        fittingType = oldFitting;
+        mutex.Unlock();
+        
+        CalculateCacheParams();
+    }
+
+    return result;
+}
 
 Font * TextBlock::GetFont()
 {
@@ -358,7 +398,7 @@ void TextBlock::SetAlign(int32 _align)
     mutex.Unlock();
 }
 
-void TextBlock::SetUseRtlAlign(bool const& useRtlAlign)
+void TextBlock::SetUseRtlAlign(eUseRtlAlign useRtlAlign)
 {
     mutex.Lock();
 	if(this->useRtlAlign != useRtlAlign)
@@ -371,12 +411,12 @@ void TextBlock::SetUseRtlAlign(bool const& useRtlAlign)
     mutex.Unlock();
 }
 
-bool TextBlock::GetUseRtlAlign()
+TextBlock::eUseRtlAlign TextBlock::GetUseRtlAlign()
 {
     LockGuard<Mutex> guard(mutex);
     return useRtlAlign;
 }
-
+    
 bool TextBlock::IsRtl()
 {
     LockGuard<Mutex> guard(mutex);
@@ -397,7 +437,9 @@ int32 TextBlock::GetVisualAlign()
 	
 int32 TextBlock::GetVisualAlignNoMutexLock() const
 {
-	if(useRtlAlign && isRtl && (align & ALIGN_LEFT || align & ALIGN_RIGHT))
+	if (((align & (ALIGN_LEFT | ALIGN_RIGHT)) != 0) &&
+        ((useRtlAlign == RTL_USE_BY_CONTENT && isRtl) ||
+         (useRtlAlign == RTL_USE_BY_SYSTEM && UIControlSystem::Instance()->IsRtl())))
     {
         // Mirror left/right align
         return align ^ (ALIGN_LEFT | ALIGN_RIGHT);
@@ -487,7 +529,7 @@ void TextBlock::CalculateCacheParams()
     
     textLayout.Reset(logicalText, *font);
     isRtl = textLayout.IsRtlText();
-
+    
     visualText = textLayout.GetVisualText(false);
 
     bool useJustify = ((align & ALIGN_HJUSTIFY) != 0);

@@ -27,55 +27,38 @@
  =====================================================================================*/
 
 
-#include "StyleSheetNode.h"
-#include "PackageVisitor.h"
+#include "AttachComponentPrototypeSectionCommand.h"
 
-#include "Model/ControlProperties/StyleSheetRootProperty.h"
-
-#include "UI/Styles/UIStyleSheet.h"
+#include "Model/PackageHierarchy/PackageNode.h"
+#include "Model/PackageHierarchy/ControlNode.h"
+#include "Model/ControlProperties/ComponentPropertiesSection.h"
+#include "UI/Components/UIComponent.h"
 
 using namespace DAVA;
 
-StyleSheetNode::StyleSheetNode(UIStyleSheet *aStyleSheet)
-    : PackageBaseNode(nullptr)
-    , styleSheet(SafeRetain(aStyleSheet))
-    , rootProperty(new StyleSheetRootProperty(this))
+AttachComponentPrototypeSectionCommand::AttachComponentPrototypeSectionCommand(PackageNode *aRoot, ControlNode *aNode, ComponentPropertiesSection *aDestSection, ComponentPropertiesSection *aPrototypeSection, QUndoCommand *parent)
+    : QUndoCommand(parent)
+    , root(SafeRetain(aRoot))
+    , node(SafeRetain(aNode))
+    , destSection(SafeRetain(aDestSection))
+    , prototypeSection(SafeRetain(aPrototypeSection))
 {
-    
 }
 
-StyleSheetNode::~StyleSheetNode()
+AttachComponentPrototypeSectionCommand::~AttachComponentPrototypeSectionCommand()
 {
-    SafeRelease(styleSheet);
-    SafeRelease(rootProperty);
+    SafeRelease(root);
+    SafeRelease(node);
+    SafeRelease(destSection);
+    SafeRelease(prototypeSection);
 }
 
-int StyleSheetNode::GetCount() const
+void AttachComponentPrototypeSectionCommand::redo()
 {
-    return 0;
+    root->AttachPrototypeComponent(node, destSection, prototypeSection);
 }
 
-PackageBaseNode *StyleSheetNode::Get(int index) const
+void AttachComponentPrototypeSectionCommand::undo()
 {
-    return nullptr;
-}
-
-void StyleSheetNode::Accept(PackageVisitor *visitor)
-{
-    visitor->VisitStyleSheet(this);
-}
-
-String StyleSheetNode::GetName() const
-{
-    return styleSheet->GetSelectorChain().ToString();
-}
-
-StyleSheetRootProperty *StyleSheetNode::GetRootProperty() const
-{
-    return rootProperty;
-}
-
-UIStyleSheet *StyleSheetNode::GetStyleSheet() const
-{
-    return styleSheet;
+    root->DetachPrototypeComponent(node, destSection, prototypeSection);
 }

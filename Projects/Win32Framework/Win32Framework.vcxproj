@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="DebugQt|Win32">
@@ -707,14 +707,20 @@
     <ClInclude Include="..\..\Sources\Internal\UI\AbstractUIPackageBuilder.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\Components\UIComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\Components\UIControlFamily.h" />
-    <ClInclude Include="..\..\Sources\Internal\UI\Components\UIFakeComponent.h" />
-    <ClInclude Include="..\..\Sources\Internal\UI\Components\UIFakeMultiComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\DefaultUIPackageBuilder.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UIAnchorComponent.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UILayoutSystem.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UILinearLayoutComponent.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UISizePolicyComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\ScrollHelper.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetPropertyDataBase.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetPropertyTable.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetSelectorChain.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetStructs.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UILinearLayoutComponent.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UIAnchorComponent.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UILayoutSystem.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UISizePolicyComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\TheoraPlayer.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UI3DView.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIAggregatorControl.h" />
@@ -763,6 +769,10 @@
     <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheet.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetYamlLoader.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UILinearLayoutComponent.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UIAnchorComponent.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UILayoutSystem.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UISizePolicyComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\UnitTests\TestClass.h" />
     <ClInclude Include="..\..\Sources\Internal\UnitTests\TestClassFactory.h" />
     <ClInclude Include="..\..\Sources\Internal\UnitTests\TestCore.h" />
@@ -1211,14 +1221,20 @@
     <ClCompile Include="..\..\Sources\Internal\UI\AbstractUIPackageBuilder.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\Components\UIComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\Components\UIControlFamily.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\UI\Components\UIFakeComponent.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\UI\Components\UIFakeMultiComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\DefaultUIPackageBuilder.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UIAnchorComponent.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UILayoutSystem.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UILinearLayoutComponent.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UISizePolicyComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\ScrollHelper.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetPropertyDataBase.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetPropertyTable.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetSelectorChain.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetStructs.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UILinearLayoutComponent.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UIAnchorComponent.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UILayoutSystem.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UISizePolicyComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\TheoraPlayer.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UI3DView.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIAggregatorControl.cpp" />
@@ -1262,6 +1278,10 @@
     <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheet.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetYamlLoader.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UILinearLayoutComponent.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UIAnchorComponent.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UILayoutSystem.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UISizePolicyComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UnitTests\TestClass.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UnitTests\TestCore.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Utils\BiDiHelper.cpp" />
