@@ -59,7 +59,7 @@ void GlobalPerformanceTest::LoadResources()
 
     GetScene()->SetCurrentCamera(camera);
 
-    waypointInterpolator = new WaypointsInterpolator(pathComponent->GetPoints(), GetTargetTestTime());
+    waypointInterpolator = new WaypointsInterpolator(pathComponent->GetPoints(), GetParams().targetTime / 1000.0f);
 }
 
 void GlobalPerformanceTest::UnloadResources()

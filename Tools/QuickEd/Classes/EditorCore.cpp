@@ -28,14 +28,18 @@
 
 
 #include "Platform/Qt5/QtLayer.h"
-
 #include "UI/mainwindow.h"
-#include "QtTools/ReloadSprites/DialogReloadSprites.h"
 #include "DocumentGroup.h"
 #include "Document.h"
 #include "EditorCore.h"
 #include "Model/PackageHierarchy/PackageNode.h"
+#include "QtTools/ReloadSprites/DialogReloadSprites.h"
+
 #include "SharedData.h"
+#include <QSettings>
+#include <QVariant>
+#include <QByteArray>
+
 
 using namespace DAVA;
 
@@ -45,7 +49,6 @@ EditorCore::EditorCore(QObject *parent)
     , project(new Project(this))
     , documentGroup(new DocumentGroup(this))
     , mainWindow(new MainWindow())
-    , dialogReloadSprites(new DialogReloadSprites(mainWindow))
 {
     mainWindow->setWindowIcon(QIcon(":/icon.ico"));
     mainWindow->CreateUndoRedoActions(documentGroup->GetUndoGroup());
@@ -58,11 +61,7 @@ EditorCore::EditorCore(QObject *parent)
             EditorSettings::Instance()->GetAssetCacheTimeoutSec());
     }
 
-    QAction* actionReloadSprites = dialogReloadSprites->GetActionReloadSprites();
-    mainWindow->menuTools->addAction(actionReloadSprites);
-    mainWindow->toolBarPlugins->addAction(actionReloadSprites);
-    connect(dialogReloadSprites, &DialogReloadSprites::StarPackProcess, this, &EditorCore::CloseAllDocuments);
-    
+    connect(mainWindow->GetDialogReloadSprites(), &DialogReloadSprites::StarPackProcess, this, &EditorCore::CloseAllDocuments);
     connect(project, &Project::ProjectPathChanged, this, &EditorCore::OnProjectPathChanged);
     connect(mainWindow, &MainWindow::TabClosed, this, &EditorCore::CloseOneDocument);
     connect(mainWindow, &MainWindow::CurrentTabChanged, this, &EditorCore::OnCurrentTabChanged);
@@ -132,7 +131,8 @@ void EditorCore::OnOpenPackageFile(const QString &path)
 void EditorCore::OnProjectPathChanged(const QString &projectPath)
 {
     QRegularExpression searchOption("gfx\\d*$", QRegularExpression::CaseInsensitiveOption);
-    dialogReloadSprites->GetSpritesPacker()->ClearTasks();
+    auto spritesPacker = mainWindow->GetDialogReloadSprites()->GetSpritesPacker();
+    spritesPacker->ClearTasks();
     QDirIterator it(projectPath + "/DataSource");
     while (it.hasNext())
     {
@@ -147,7 +147,7 @@ void EditorCore::OnProjectPathChanged(const QString &projectPath)
             }
             outputPath.replace(outputPath.lastIndexOf("DataSource"), QString("DataSource").size(), "Data");
             QDir outputDir(outputPath);
-            dialogReloadSprites->GetSpritesPacker()->AddTask(fileInfo.absoluteFilePath(), outputDir);
+            spritesPacker->AddTask(fileInfo.absoluteFilePath(), outputDir);
         }
     }
 }

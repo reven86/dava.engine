@@ -73,14 +73,17 @@
 #include "Deprecated/SceneValidator.h"
 
 #include "Tools/PathDescriptor/PathDescriptor.h"
+#include "Tools/LazyUpdater/LazyUpdater.h"
 
 PropertyEditor::PropertyEditor(QWidget *parent /* = 0 */, bool connectToSceneSignals /*= true*/)
 	: QtPropertyEditor(parent)
 	, viewMode(VIEW_NORMAL)
 	, treeStateHelper(this, curModel)
 	, favoriteGroup(NULL)
-    , resetRequests(0)
 {
+	Function<void()> fn(this, &PropertyEditor::ResetProperties);
+	propertiesUpdater = new LazyUpdater(fn, this);
+
 	if(connectToSceneSignals)
 	{
 		QObject::connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2 *)), this, SLOT(sceneActivated(SceneEditor2 *)));
@@ -181,14 +184,6 @@ void PropertyEditor::ClearCurrentNodes()
 
 void PropertyEditor::ResetProperties()
 {
-    if (resetRequests > 1)
-    {
-        resetRequests--;
-        return;
-    }
-
-    resetRequests = 0;
-
     // Store the current Property Editor Tree state before switching to the new node.
 	// Do not clear the current states map - we are using one storage to share opened
 	// Property Editor nodes between the different Scene Nodes.
@@ -738,12 +733,6 @@ void PropertyEditor::sceneSelectionChanged(SceneEditor2 *scene, const EntityGrou
     SetEntities(selected);
 }
 
-void PropertyEditor::QueueResetProperties()
-{
-    resetRequests++;
-    QTimer::singleShot(0, this, SLOT(ResetProperties()));
-}
-
 void PropertyEditor::CommandExecuted(SceneEditor2 *scene, const Command2* command, bool redo)
 {
 	int cmdId = command->GetId();
@@ -771,7 +760,7 @@ void PropertyEditor::CommandExecuted(SceneEditor2 *scene, const Command2* comman
             }
             if (doReset)
             {
-                QueueResetProperties();
+				propertiesUpdater->Update();
             }
             break;
         }

@@ -1,11 +1,14 @@
 cmake_minimum_required (VERSION 3.0)
 
-add_definitions( -DDAVA_MEMORY_PROFILING_ENABLE )
+project      ( PerformanceTests )
+
+if ( ENABLE_MEM_PROFILING )
+    add_definitions( -DDAVA_MEMORY_PROFILING_ENABLE )
+endif()
+
 set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
 include      ( CMake-common )
 include      ( FindDavaFramework )
-
-project      ( PerformanceTests )
 
 include_directories   ( "iOSSpecific" )
 include_directories   ( "Classes" )
@@ -44,7 +47,10 @@ generate_source_groups_project( )
 add_subdirectory( ${DAVA_TOOLS_DIR} ${CMAKE_CURRENT_BINARY_DIR}/TextureTools )
 
 set( APP_DATA             ${CMAKE_CURRENT_LIST_DIR}/Data )
-set( PERFORMANCE_TEST_DATA_SVN ${DAVA_ROOT_DIR}/../performance.test)
+
+if (NOT PERFORMANCE_TEST_DATA_SVN)
+    set( PERFORMANCE_TEST_DATA_SVN ${DAVA_ROOT_DIR}/../performance.test)
+endif()
 
 set( MACOS_XIB            ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/MainMenu.xib )
 set( MACOS_PLIST          ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/Info.plist )
@@ -71,6 +77,8 @@ else()
 endif()
 
 set (RES_EDITOR_DATA ${DAVA_ROOT_DIR}/Tools/ResourceEditor/Data)
+
+message( "--Performance test data folder: " ${PERFORMANCE_TEST_DATA_SVN} )
 
 if( NOT EXISTS ${PERFORMANCE_TEST_DATA_SVN})
     message( "Error !!!: Please checkout performance.test"  )

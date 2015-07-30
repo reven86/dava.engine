@@ -709,6 +709,17 @@ LibDdsHelper::LibDdsHelper()
 {
     name.assign("DDS");
     supportedExtensions.push_back(".dds");
+    supportedFormats = { { 
+            FORMAT_ATC_RGB, 
+            FORMAT_ATC_RGBA_EXPLICIT_ALPHA, 
+            FORMAT_ATC_RGBA_INTERPOLATED_ALPHA,
+            FORMAT_DXT1,
+            FORMAT_REMOVED_DXT_1N,
+            FORMAT_DXT1A,
+            FORMAT_DXT3,
+            FORMAT_DXT5,
+            FORMAT_DXT5NM,
+            FORMAT_RGBA8888 } };
 }
 
 bool LibDdsHelper::IsMyImage(File *infile) const
@@ -725,7 +736,7 @@ eErrorCode LibDdsHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int32
     return ReadFile(infile, imageSet, baseMipMap, false);
 }
 
-eErrorCode LibDdsHelper::WriteFile(const FilePath & outFileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const
+eErrorCode LibDdsHelper::WriteFile(const FilePath & outFileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat, ImageQuality quality) const
 {
     //creating tmp dds file, nvtt accept only filename.dds as input, because of this the last letter befor "." should be changed to "_".
     if(!outFileName.IsEqualToExtension(".dds"))
@@ -748,7 +759,7 @@ eErrorCode LibDdsHelper::WriteFile(const FilePath & outFileName, const Vector<Im
     }
 }
 
-eErrorCode LibDdsHelper::WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat) const
+eErrorCode LibDdsHelper::WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat, ImageQuality quality) const
 {
     if(imageSet.size() != Texture::CUBE_FACE_COUNT)
     {

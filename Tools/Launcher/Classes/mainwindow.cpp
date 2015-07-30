@@ -41,7 +41,10 @@
 #include <QInputDialog>
 #include <QMessageBox>
 #include <QMenu>
+#include <QVariant>
 #include <QComboBox>
+#include <QSortFilterProxyModel>
+#include "listModel.h"
 
 class BranchListComparator
 {
@@ -95,14 +98,12 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     ui->tableWidget->setStyleSheet(TABLE_STYLESHEET);
 
-    listFontFav.setPointSize(listFontFav.pointSize() + 1);
-    listFontFav.setBold(true);
 
     setWindowTitle(QString("DAVA Launcher %1").arg(LAUNCHER_VER));
 
     connect(ui->textBrowser, SIGNAL(anchorClicked(QUrl)), this, SLOT(OnlinkClicked(QUrl)));
     connect(ui->refreshButton, SIGNAL(clicked()), this, SLOT(OnRefreshClicked()));
-    connect(ui->listWidget, SIGNAL(clicked(QModelIndex)), this, SLOT(OnListItemClicked(QModelIndex)));
+    connect(ui->listView, SIGNAL(clicked(QModelIndex)), this, SLOT(OnListItemClicked(QModelIndex)));
     connect(ui->setUrlButton, SIGNAL(clicked()), this, SLOT(OnURLClicked()));
     connect(ui->tableWidget, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(OnCellDoubleClicked(QModelIndex)));
 
@@ -113,6 +114,12 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(appManager, SIGNAL(Refresh()), this, SLOT(RefreshApps()));
     connect(newsDownloader, SIGNAL(Finished(QByteArray, QList< QPair<QByteArray, QByteArray> >, int, QString)),
             this, SLOT(NewsDownloadFinished(QByteArray, QList< QPair<QByteArray, QByteArray> >, int, QString)));
+    listModel = new ListModel(appManager, this);
+    filterModel = new QSortFilterProxyModel(this);
+    filterModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
+    connect(ui->lineEdit_search, &QLineEdit::textChanged, filterModel, &QSortFilterProxyModel::setFilterFixedString);
+    filterModel->setSourceModel(listModel);
+    ui->listView->setModel(filterModel);
 
     UpdateURLValue();
 
@@ -219,18 +226,19 @@ void MainWindow::RefreshApps()
     if(appManager->ShouldShowNews())
         selectedBranchID = CONFIG_LAUNCHER_WEBPAGE_KEY;
     else
-        ui->listWidget->setCurrentIndex(selectedListItem);
+        ui->listView->setCurrentIndex(selectedListItem);
 
     ShowTable(selectedBranchID);
 }
 
 void MainWindow::OnListItemClicked(QModelIndex qindex)
 {
-    QString dataRole = ui->listWidget->item(qindex.row())->data(DAVA_WIDGET_ROLE).toString();
+    QVariant var = ui->listView->model()->data(qindex, ListModel::DAVA_WIDGET_ROLE);
+    QString dataRole = var.toString();
     if(!dataRole.isEmpty())
     {
         selectedBranchID = dataRole;
-        selectedListItem = ui->listWidget->currentIndex();
+        selectedListItem = ui->listView->currentIndex();
         ShowTable(selectedBranchID);
     }
 }
@@ -404,13 +412,12 @@ void MainWindow::RefreshBranchesList()
 {
     ConfigParser * localConfig = appManager->GetLocalConfig();
     ConfigParser * remoteConfig = appManager->GetRemoteConfig();
-
-    ui->listWidget->clear();
+    listModel->clearItems();
 
     if(!localConfig->GetWebpageURL().isEmpty())
     {
-        ui->listWidget->addItem(CreateListItem(CONFIG_LAUNCHER_WEBPAGE_KEY, LIST_ITEM_NEWS));
-        ui->listWidget->addItem(CreateSeparatorItem());
+        listModel->addItem(CONFIG_LAUNCHER_WEBPAGE_KEY, ListModel::LIST_ITEM_NEWS);
+        listModel->addItem("", ListModel::LIST_ITEM_SEPARATOR);
     }
 
     QVector<QString> favs;
@@ -438,43 +445,20 @@ void MainWindow::RefreshBranchesList()
         const QString & branchID = favs[i];
         if (branchesList.contains(branchID))
         {
-            ui->listWidget->addItem(CreateListItem(branchID, LIST_ITEM_FAVORITES));
+            listModel->addItem(branchID, ListModel::LIST_ITEM_FAVORITES);
             hasFavorite = true;
         }
     }
     if (hasFavorite)
-        ui->listWidget->addItem(CreateSeparatorItem());
+        listModel->addItem("", ListModel::LIST_ITEM_SEPARATOR);
 
     //Add Others
     for(int i = 0; i < branchesCount; i++)
     {
         const QString & branchID = branchesList[i];
         if(!favs.contains(branchID))
-            ui->listWidget->addItem(CreateListItem(branchID, LIST_ITEM_BRANCH));
+            listModel->addItem(branchID, ListModel::LIST_ITEM_BRANCH);
     }
-}
-
-QListWidgetItem * MainWindow::CreateListItem(const QString &stringID, ListItemType type)
-{
-    QListWidgetItem * item = new QListWidgetItem(appManager->GetString(stringID));
-    item->setSizeHint(QSize(-1, 34));
-    if(type == LIST_ITEM_FAVORITES)
-        item->setFont(listFontFav);
-    else
-        item->setFont(listFont);
-    if(type == LIST_ITEM_BRANCH)
-        item->setTextColor(QColor(100, 100, 100));
-    item->setData(DAVA_WIDGET_ROLE, stringID);
-    return item;
-}
-
-QListWidgetItem * MainWindow::CreateSeparatorItem()
-{
-    QListWidgetItem * item = new QListWidgetItem();
-    item->setFlags(Qt::NoItemFlags);
-    item->setBackground(QBrush(QColor(180, 180, 180), Qt::HorPattern));
-    item->setSizeHint(QSize(0, 7));
-    return item;
 }
 
 QWidget * MainWindow::CreateAppNameTableItem(const QString & stringID)
