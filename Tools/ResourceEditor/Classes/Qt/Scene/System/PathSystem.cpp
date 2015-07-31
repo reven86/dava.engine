@@ -237,8 +237,8 @@ void PathSystem::DrawInViewOnlyMode()
             const DAVA::AABBox3 wpBoundingBox(startPosition, boxScale);
             bool isStarting = waypoint->IsStarting();
             
-            GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawOBox(wpBoundingBox, path->GetWorldTransform(), DAVA::Color(0.3f, 0.3f, isStarting ? 1.0f : 0.0f, 0.3f), RenderHelper::DRAW_SOLID_DEPTH);
-            GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawOBox(wpBoundingBox, path->GetWorldTransform(), DAVA::Color(0.7f, 0.7f, isStarting ? 0.7f : 0.0f, 1.0f), RenderHelper::DRAW_WIRE_DEPTH);
+            GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABoxTransformed(wpBoundingBox, path->GetWorldTransform(), DAVA::Color(0.3f, 0.3f, isStarting ? 1.0f : 0.0f, 0.3f), RenderHelper::DRAW_SOLID_DEPTH);
+            GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABoxTransformed(wpBoundingBox, path->GetWorldTransform(), DAVA::Color(0.7f, 0.7f, isStarting ? 0.7f : 0.0f, 1.0f), RenderHelper::DRAW_WIRE_DEPTH);
         
             //draw edges
             if (!waypoint->edges.empty())

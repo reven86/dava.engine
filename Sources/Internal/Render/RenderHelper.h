@@ -33,11 +33,8 @@
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
 #include "Render/RenderBase.h"
-
+#include "Render/RHI/rhi_Public.h"
 #include "Animation/Interpolation.h"
-#include "Render/Renderer.h"
-#include "Render/Material/NMaterial.h"
-#include "Render/Highlevel/Camera.h"
 
 namespace DAVA
 {	
@@ -48,7 +45,7 @@ namespace DAVA
     Keep in mind that output of all line-drawing functions can depend on hardware and look differently on different systems
  */
 
-
+    class NMaterial;
     class RenderHelper
     {
         enum eDrawFlags
@@ -78,11 +75,12 @@ namespace DAVA
         void DrawLine(const Vector3 & pt1, const Vector3 & pt2, const Color & color, eDrawType drawType = DRAW_WIRE_DEPTH);
         void DrawPolygon(const Polygon3 & polygon, const Color & color, eDrawType drawType);
         void DrawAABox(const AABBox3 & box, const Color & color, eDrawType drawType);
-        void DrawOBox(const AABBox3 & box, const Matrix4 & matrix, const Color & color, eDrawType drawType);
+        void DrawAABoxTransformed(const AABBox3 & box, const Matrix4 & matrix, const Color & color, eDrawType drawType);
+        void DrawAABoxCorners(const AABBox3 & box, const Color & color, eDrawType drawType);
+        void DrawAABoxCornersTransformed(const AABBox3 & box, const Matrix4 & matrix, const Color & color, eDrawType drawType);
         void DrawIcosahedron(const Vector3 & position, float32 radius, const Color & color, eDrawType drawType);
         void DrawArrow(const Vector3 & from, const Vector3 & to, float32 arrowLength, const Color & color, eDrawType drawType);
-        void DrawCornerAABox(const AABBox3 & box, const Color & color, eDrawType drawType);
-        void DrawCircle(const Vector3 & center, const Vector3 &directionVector, float32 radius, const Color & color, eDrawType drawType);
+        void DrawCircle(const Vector3 & center, const Vector3 &direction, float32 radius, uint32 segmentCount, const Color & color, eDrawType drawType);
         void DrawBSpline(BezierSpline3 * bSpline, int segments, float ts, float te, const Color & color, eDrawType drawType);
         void DrawInterpolationFunc(Interpolation::Func func, const Rect & destRect, const Color & color, eDrawType drawType);
 
@@ -94,6 +92,8 @@ namespace DAVA
             COMMAND_DRAW_LINE = 0,
             COMMAND_DRAW_POLYGON,
             COMMAND_DRAW_BOX,
+            COMMAND_DRAW_BOX_CORNERS,
+            COMMAND_DRAW_CIRCLE,
             COMMAND_DRAW_ICOSA,
             COMMAND_DRAW_ARROW,
 
@@ -119,9 +119,15 @@ namespace DAVA
         void GetRequestedVertexCount(const DrawCommand & command, uint32 & vertexCount, uint32 & indexCount);
         void PreparePacket(rhi::Packet & packet, NMaterial * material, const std::pair<uint32, uint32> & buffersCount, ColoredVertex ** vBufferDataPtr, uint16 ** iBufferDataPtr);
 
-        template <size_t size> 
-        uint32 FillIndeciesFromArray(uint16 * buffer, uint16 baseIndex, const std::array<uint16, size> & indecies);
-        void MakeCirclePolygon(Polygon3 & outPolygon, const Vector3 & center, const Vector3 &directionVector, float32 radius);
+        void QueueDrawBoxCommand(eDrawCommandID commandID, const AABBox3 & box, const Matrix4 * matrix, const Color & color, eDrawType drawType);
+
+        void FillIndeciesFromArray(uint16 * buffer, uint16 baseIndex, uint16 * indexArray, uint32 indexCount);
+        void FillPolygonIndecies(uint16 * buffer, uint16 baseIndex, uint32 indexCount, uint32 vertexCount, bool isWire);
+
+        void FillBoxVBuffer(ColoredVertex * buffer, const Vector3 & basePoint, const Vector3 & xAxis, const Vector3 & yAxis, const Vector3 & zAxis, uint32 nativeColor);
+        void FillBoxCornersVBuffer(ColoredVertex * buffer, const Vector3 & basePoint, const Vector3 & xAxis, const Vector3 & yAxis, const Vector3 & zAxis, uint32 nativeColor);
+        void FillCircleVBuffer(ColoredVertex * buffer, const Vector3 & center, const Vector3 & direction, float32 radius, uint32 pointCount, uint32 nativeColor);
+        void FillArrowVBuffer(ColoredVertex * buffer, const Vector3 & from, const Vector3 & to, uint32 nativeColor);
 
         uint32 coloredVertexLayoutUID;
 
@@ -129,18 +135,6 @@ namespace DAVA
         std::array< std::pair<uint32, uint32>, DRAW_TYPE_COUNT> buffersElemCount; //first - VertexBuffer, second - IndexBuffer
         NMaterial * materials[DRAW_TYPE_COUNT];
     };
-
-    template <size_t size>
-    uint32 RenderHelper::FillIndeciesFromArray(uint16 * buffer, uint16 baseIndex, const std::array<uint16, size> & indecies)
-    {
-        uint16 * bufferPtr = buffer;
-        for (const uint16 & index : indecies)
-        {
-            *bufferPtr = baseIndex + index;
-            ++bufferPtr;
-        }
-        return indecies.size();
-    }
 }
 
 #endif // __DAVAENGINE_OBJC_FRAMEWORK_RENDER_HELPER_H__

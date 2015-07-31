@@ -234,13 +234,10 @@ property float2 texture0Shift : static,a : ;
 property float2 tex0ShiftPerSecond : static,a : ;
 #endif
 
-
+#if VERTEX_FOG 
 property float3 cameraPosition : dynamic,a : ;
 property float4x4 worldMatrix : dynamic,a : ;
-
-
-
-
+#endif
 
 #if WAVE_ANIMATION || TEXTURE0_ANIMATION_SHIFT
 property float globalTime : dynamic,a : ;

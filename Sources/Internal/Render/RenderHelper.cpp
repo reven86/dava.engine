@@ -29,10 +29,8 @@
 #include "Render/Renderer.h"
 #include "Render/RenderHelper.h"
 #include "Render/Highlevel/RenderPassNames.h"
-#include "Utils/Utils.h"
 #include "Render/DynamicBufferAllocator.h"
-
-const DAVA::float32 CIRCLE_SEGMENT_LENGTH = 15.0f;
+#include "Material/NMaterial.h"
 
 const DAVA::float32 ISO_X = 0.525731f;
 const DAVA::float32 ISO_Z = 0.850650f;
@@ -77,6 +75,20 @@ std::array<DAVA::uint16, 36> gSolidBoxIndexes = {
     3, 7, 5,   3, 6, 7,   1, 2, 0,   1, 4, 2,
 };
 
+std::array<DAVA::uint16, 48> gWireBoxCornersIndexes = {
+    0,  8,   0,  9,   0, 10,   1, 11,   1, 12,   1, 13,
+    2, 14,   2, 15,   2, 16,   3, 17,   3, 18,   3, 19,
+    4, 20,   4, 21,   4, 22,   5, 23,   5, 24,   5, 25,
+    6, 26,   6, 27,   6, 28,   7, 29,   7, 30,   7, 31,
+};
+
+std::array<DAVA::uint16, 72> gSolidBoxCornersIndexes = {
+    0,  8, 10,   0, 10,  9,  0,  9,  8,  1, 12, 13,   1, 11, 12,  1, 13, 11,
+    2, 14, 16,   2, 16, 15,  2, 15, 14,  3, 19, 17,   3, 17, 18,  3, 18, 19,
+    4, 22, 21,   4, 20, 22,  4, 21, 20,  5, 23, 25,   5, 24, 23,  5, 25, 24,
+    6, 27, 26,   6, 26, 28,  6, 28, 27,  7, 29, 30,   7, 30, 31,  7, 31, 29,
+};
+
 std::array<DAVA::uint16, 16> gWireArrowIndexes = {
     0, 1,   0, 2,   0, 3,   0, 4,
     1, 2,   2, 3,   3, 4,   4, 1,
@@ -89,7 +101,6 @@ std::array<DAVA::uint16, 18> gSolidArrowIndexes = {
 
 namespace DAVA
 {
-
     RenderHelper::RenderHelper()
     {
         rhi::VertexLayout layout;
@@ -160,156 +171,108 @@ namespace DAVA
 
         for (const DrawCommand & command : commandQueue)
         {
-            ColoredVertex * & commandVBufferPtr = vBufferPtr[command.drawType];
-            uint16 * & commandIBufferPtr = iBufferPtr[command.drawType];
-            rhi::Packet & commandPacket = packet[command.drawType];
-            uint32 & commandVBufferOffset = vBufferOffset[command.drawType];
+            ColoredVertex * const commandVBufferPtr = vBufferPtr[command.drawType];
+            uint16 * const commandIBufferPtr = iBufferPtr[command.drawType];
+            const uint32 commandVBufferOffset = vBufferOffset[command.drawType];
+
+            const bool isWireDraw = (command.drawType & FLAG_DRAW_SOLID) == 0;
+
+            uint32 nativePrimitiveColor = rhi::NativeColorRGBA(command.params[0], command.params[1], command.params[2], command.params[3]);
+            uint32 vertexCount = 0, indexCount = 0;
+            GetRequestedVertexCount(command, vertexCount, indexCount);
 
             switch (command.id)
             {
                 case COMMAND_DRAW_LINE:
                 {
-                    uint32 lineColor = rhi::NativeColorRGBA(command.params[6], command.params[7], command.params[8], command.params[9]);
+                    commandVBufferPtr[0].position = Vector3(command.params[4], command.params[5], command.params[6]);
+                    commandVBufferPtr[0].color = nativePrimitiveColor;
 
-                    commandVBufferPtr->position = Vector3(command.params[0], command.params[1], command.params[2]);
-                    commandVBufferPtr->color = lineColor;
-                    ++commandVBufferPtr;
+                    commandVBufferPtr[1].position = Vector3(command.params[7], command.params[8], command.params[9]);
+                    commandVBufferPtr[1].color = nativePrimitiveColor;
 
-                    commandVBufferPtr->position = Vector3(command.params[3], command.params[4], command.params[5]);
-                    commandVBufferPtr->color = lineColor;
-                    ++commandVBufferPtr;
+                    commandIBufferPtr[0] = commandVBufferOffset;
+                    commandIBufferPtr[1] = commandVBufferOffset + 1;
 
-                    *commandIBufferPtr = commandVBufferOffset;        ++commandIBufferPtr;
-                    *commandIBufferPtr = commandVBufferOffset + 1;    ++commandIBufferPtr;
-
-                    ++commandPacket.primitiveCount;
-                    commandVBufferOffset += 2;
                 } break;
 
                 case COMMAND_DRAW_POLYGON:
                 {
-                    const uint32 primitiveColor = rhi::NativeColorRGBA(command.params[0], command.params[1], command.params[2], command.params[3]);
                     const uint32 pointCount = (command.params.size() - 4) / 3;
 
-                    const Vector3 * const polygonPoints = reinterpret_cast<const Vector3 *>(&command.params[4]);
+                    const Vector3 * const polygonPoints = reinterpret_cast<const Vector3 *>(command.params.data() + 4);
                     for (uint32 i = 0; i < pointCount; ++i)
                     {
-                        (*commandVBufferPtr).position = polygonPoints[i];
-                        (*commandVBufferPtr).color = primitiveColor;
-                        ++commandVBufferPtr;
+                        commandVBufferPtr[i].position = polygonPoints[i];
+                        commandVBufferPtr[i].color = nativePrimitiveColor;
                     }
 
-                    if (command.drawType & FLAG_DRAW_SOLID)
-                    {
-                        const uint32 triangleCount = pointCount - 2;
-                        for (uint32 i = 0; i < triangleCount; ++i)
-                        {
-                            *commandIBufferPtr = commandVBufferOffset + i + 2;  ++commandIBufferPtr;
-                            *commandIBufferPtr = commandVBufferOffset + i + 1;  ++commandIBufferPtr;
-                            *commandIBufferPtr = commandVBufferOffset;          ++commandIBufferPtr;
-                        }
-                        commandPacket.primitiveCount += triangleCount;
-                    }
-                    else
-                    {
-                        const uint32 linesCount = pointCount - 1;
-                        for (uint32 i = 0; i < linesCount; ++i)
-                        {
-                            *commandIBufferPtr = commandVBufferOffset + i;        ++commandIBufferPtr;
-                            *commandIBufferPtr = commandVBufferOffset + i + 1;    ++commandIBufferPtr;
-                        }
-                        commandPacket.primitiveCount += linesCount;
-                    }
-                    commandVBufferOffset += pointCount;
+                    FillPolygonIndecies(commandIBufferPtr, commandVBufferOffset, indexCount, vertexCount, isWireDraw);
+
                 } break;
 
                 case COMMAND_DRAW_BOX:
                 {
-                    const uint32 primitiveColor = rhi::NativeColorRGBA(command.params[12], command.params[13], command.params[14], command.params[15]);
-                    const Vector3 basePoint(command.params.data()), xAxis(command.params.data() + 3), yAxis(command.params.data() + 6), zAxis(command.params.data() + 9);
+                    const Vector3 basePoint(command.params.data() + 4), xAxis(command.params.data() + 7), yAxis(command.params.data() + 10), zAxis(command.params.data() + 13);
+                    FillBoxVBuffer(commandVBufferPtr, basePoint, xAxis, yAxis, zAxis, nativePrimitiveColor);
+                    FillIndeciesFromArray(commandIBufferPtr, vBufferOffset[command.drawType], isWireDraw ? gWireBoxIndexes.data() : gSolidBoxIndexes.data(), indexCount);
 
-                    (*commandVBufferPtr).position = basePoint;                          (*commandVBufferPtr).color = primitiveColor;    ++commandVBufferPtr;
-                    (*commandVBufferPtr).position = basePoint + xAxis;                  (*commandVBufferPtr).color = primitiveColor;    ++commandVBufferPtr;
-                    (*commandVBufferPtr).position = basePoint + yAxis;                  (*commandVBufferPtr).color = primitiveColor;    ++commandVBufferPtr;
-                    (*commandVBufferPtr).position = basePoint + zAxis;                  (*commandVBufferPtr).color = primitiveColor;    ++commandVBufferPtr;
+                } break;
 
-                    (*commandVBufferPtr).position = basePoint + xAxis + yAxis;          (*commandVBufferPtr).color = primitiveColor;    ++commandVBufferPtr;
-                    (*commandVBufferPtr).position = basePoint + xAxis + zAxis;          (*commandVBufferPtr).color = primitiveColor;    ++commandVBufferPtr;
-                    (*commandVBufferPtr).position = basePoint + yAxis + zAxis;          (*commandVBufferPtr).color = primitiveColor;    ++commandVBufferPtr;
-                    (*commandVBufferPtr).position = basePoint + xAxis + yAxis + zAxis;  (*commandVBufferPtr).color = primitiveColor;    ++commandVBufferPtr;
+                case COMMAND_DRAW_BOX_CORNERS:
+                {
+                    const Vector3 basePoint(command.params.data() + 4), xAxis(command.params.data() + 7), yAxis(command.params.data() + 10), zAxis(command.params.data() + 13);
+                    FillBoxCornersVBuffer(commandVBufferPtr, basePoint, xAxis, yAxis, zAxis, nativePrimitiveColor);
+                    FillIndeciesFromArray(commandIBufferPtr, vBufferOffset[command.drawType], isWireDraw ? gWireBoxCornersIndexes.data() : gSolidBoxCornersIndexes.data(), indexCount);
 
-                    if (command.drawType & FLAG_DRAW_SOLID)
+                } break;
+
+                case COMMAND_DRAW_CIRCLE:
+                { 
+                    const uint32 pointCount = *reinterpret_cast<const uint32 *>(command.params.data() + 11);
+                    const Vector3 center(command.params.data() + 4), direction(command.params.data() + 7);
+                    const float32 radius = command.params[10];
+                    FillCircleVBuffer(commandVBufferPtr, center, direction, radius, pointCount, nativePrimitiveColor);
+
+                    FillPolygonIndecies(commandIBufferPtr, commandVBufferOffset, indexCount, vertexCount, isWireDraw);
+                    if (isWireDraw)
                     {
-                        commandIBufferPtr += FillIndeciesFromArray(commandIBufferPtr, commandVBufferOffset, gSolidBoxIndexes);
-                        commandPacket.primitiveCount += gSolidBoxIndexes.size() / 3;
+                        commandIBufferPtr[vertexCount * 2 - 2] = commandVBufferOffset + vertexCount - 1;
+                        commandIBufferPtr[vertexCount * 2 - 1] = commandVBufferOffset;
                     }
-                    else
-                    {
-                        commandIBufferPtr += FillIndeciesFromArray(commandIBufferPtr, commandVBufferOffset, gWireBoxIndexes);
-                        commandPacket.primitiveCount += gWireBoxIndexes.size() / 2;
-                    }
-                    commandVBufferOffset += 8;
+
                 } break;
 
                 case COMMAND_DRAW_ICOSA:
                 {
-                    const uint32 primitiveColor = rhi::NativeColorRGBA(command.params[4], command.params[5], command.params[6], command.params[7]);
-                    const Vector3 icosaPosition(command.params[0], command.params[1], command.params[2]);
-                    const float32 icosaSize = command.params[3];
-                    for (const Vector3 & vPosition : gIcosaVertexes)
+                    const Vector3 icosaPosition(command.params[4], command.params[5], command.params[6]);
+                    const float32 icosaSize = command.params[7];
+                    for (size_t i = 0; i < gIcosaVertexes.size(); ++i)
                     {
-                        (*commandVBufferPtr).position = vPosition * icosaSize + icosaPosition;
-                        (*commandVBufferPtr).color = primitiveColor;
-                        ++commandVBufferPtr;
+                        commandVBufferPtr[i].position = gIcosaVertexes[i] * icosaSize + icosaPosition;
+                        commandVBufferPtr[i].color = nativePrimitiveColor;
                     }
+                    FillIndeciesFromArray(commandIBufferPtr, vBufferOffset[command.drawType], isWireDraw ? gWireIcosaIndexes.data() : gSolidIcosaIndexes.data(), indexCount);
 
-                    if (command.drawType & FLAG_DRAW_SOLID)
-                    {
-                        commandPacket.primitiveCount += gSolidIcosaIndexes.size() / 3;
-                        commandIBufferPtr += FillIndeciesFromArray(commandIBufferPtr, commandVBufferOffset, gSolidIcosaIndexes);
-                    }
-                    else
-                    {
-                        commandPacket.primitiveCount += gWireIcosaIndexes.size() / 2;
-                        commandIBufferPtr += FillIndeciesFromArray(commandIBufferPtr, commandVBufferOffset, gWireIcosaIndexes);
-                    }
-                    commandVBufferOffset += gIcosaVertexes.size();
                 } break;
             
                 case COMMAND_DRAW_ARROW:
                 {
-                    uint32 arrowColor = rhi::NativeColorRGBA(command.params[6], command.params[7], command.params[8], command.params[9]);
-                    const Vector3 from(command.params.data());
-                    const Vector3 to(command.params.data() + 3);
+                    const Vector3 from(command.params.data() + 4);
+                    const Vector3 to(command.params.data() + 7);
+                    FillArrowVBuffer(commandVBufferPtr, from, to, nativePrimitiveColor);
+                    FillIndeciesFromArray(commandIBufferPtr, vBufferOffset[command.drawType], isWireDraw ? gWireArrowIndexes.data() : gSolidArrowIndexes.data(), indexCount);
 
-                    Vector3 direction = to - from;
-                    float32 arrowlength = direction.Normalize();
-                    float32 arrowWidth = arrowlength / 4.f;
-
-                    const Vector3 ortho1 = Abs(direction.x) < Abs(direction.y) ? direction.CrossProduct(Vector3(1.f, 0.f, 0.f)) : direction.CrossProduct(Vector3(0.f, 1.f, 0.f));
-                    const Vector3 ortho2 = ortho1.CrossProduct(direction);
-
-                    (*commandVBufferPtr).position = to;                           (*commandVBufferPtr).color = arrowColor;     ++commandVBufferPtr;
-                    (*commandVBufferPtr).position = from + ortho1 * arrowWidth;   (*commandVBufferPtr).color = arrowColor;     ++commandVBufferPtr;
-                    (*commandVBufferPtr).position = from + ortho2 * arrowWidth;   (*commandVBufferPtr).color = arrowColor;     ++commandVBufferPtr;
-                    (*commandVBufferPtr).position = from - ortho1 * arrowWidth;   (*commandVBufferPtr).color = arrowColor;     ++commandVBufferPtr;
-                    (*commandVBufferPtr).position = from - ortho2 * arrowWidth;   (*commandVBufferPtr).color = arrowColor;     ++commandVBufferPtr;
-
-                    if (command.drawType & FLAG_DRAW_SOLID)
-                    {
-                        commandPacket.primitiveCount += gSolidArrowIndexes.size() / 3;
-                        commandIBufferPtr += FillIndeciesFromArray(commandIBufferPtr, commandVBufferOffset, gSolidArrowIndexes);
-                    }
-                    else
-                    {
-                        commandPacket.primitiveCount += gWireArrowIndexes.size() / 2;
-                        commandIBufferPtr += FillIndeciesFromArray(commandIBufferPtr, commandVBufferOffset, gWireArrowIndexes);
-                    }
-                    commandVBufferOffset += 5;
                 } break;
 
             default: break;
             }
+
+            vBufferPtr[command.drawType] += vertexCount;
+            iBufferPtr[command.drawType] += indexCount;
+
+            vBufferOffset[command.drawType] += vertexCount;
+            packet[command.drawType].primitiveCount += isWireDraw ? indexCount / 2 : indexCount / 3;
         }
 
         for (int32 i = 0; i < DRAW_TYPE_COUNT; ++i)
@@ -344,6 +307,8 @@ namespace DAVA
 
     void RenderHelper::GetRequestedVertexCount(const DrawCommand & command, uint32 & vertexCount, uint32 & indexCount)
     {
+        bool isSolidDraw = (command.drawType & FLAG_DRAW_SOLID) != 0;
+
         switch (command.id)
         {
             case COMMAND_DRAW_LINE:
@@ -355,25 +320,37 @@ namespace DAVA
             case COMMAND_DRAW_POLYGON:
             {
                 vertexCount = (command.params.size() - 4) / 3;
-                indexCount = (command.drawType & FLAG_DRAW_SOLID) ? (vertexCount - 2) * 3 : (vertexCount - 1) * 2;
+                indexCount = isSolidDraw ? (vertexCount - 2) * 3 : (vertexCount - 1) * 2;
             } break;
 
             case COMMAND_DRAW_BOX:
             {
                 vertexCount = 8;
-                indexCount = (command.drawType & FLAG_DRAW_SOLID) ? gSolidBoxIndexes.size() : gWireBoxIndexes.size();
+                indexCount = isSolidDraw ? gSolidBoxIndexes.size() : gWireBoxIndexes.size();
+            } break;
+
+            case COMMAND_DRAW_BOX_CORNERS:
+            {
+                vertexCount = 32;
+                indexCount = isSolidDraw ? gSolidBoxCornersIndexes.size() : gWireBoxCornersIndexes.size();
+            } break;
+
+            case COMMAND_DRAW_CIRCLE:
+            {
+                vertexCount = *(reinterpret_cast<const uint32*>(&command.params[11]));
+                indexCount = isSolidDraw ? (vertexCount - 2) * 3 : vertexCount * 2;
             } break;
 
             case COMMAND_DRAW_ICOSA:
             {
                 vertexCount = gIcosaVertexes.size();
-                indexCount = (command.drawType & FLAG_DRAW_SOLID) ? gSolidIcosaIndexes.size() : gWireIcosaIndexes.size();
+                indexCount = isSolidDraw ? gSolidIcosaIndexes.size() : gWireIcosaIndexes.size();
             } break;
             
             case COMMAND_DRAW_ARROW:
             {
                 vertexCount = 5;
-                indexCount = (command.drawType & FLAG_DRAW_SOLID) ? gSolidArrowIndexes.size() : gWireArrowIndexes.size();
+                indexCount = isSolidDraw ? gSolidArrowIndexes.size() : gWireArrowIndexes.size();
             } break;
 
             default:
@@ -386,7 +363,7 @@ namespace DAVA
     void RenderHelper::DrawLine(const Vector3 & pt1, const Vector3 & pt2, const Color & color, eDrawType drawType /*  = DRAW_WIRE_DEPTH */)
     {
         DVASSERT((drawType & FLAG_DRAW_SOLID) == 0);
-        QueueCommand(DrawCommand{ COMMAND_DRAW_LINE, drawType, { pt1.x, pt1.y, pt1.z, pt2.x, pt2.y, pt2.z, color.r, color.g, color.b, color.a } });
+        QueueCommand(DrawCommand{ COMMAND_DRAW_LINE, drawType, { color.r, color.g, color.b, color.a, pt1.x, pt1.y, pt1.z, pt2.x, pt2.y, pt2.z} });
     }
     void RenderHelper::DrawPolygon(const Polygon3 & polygon, const Color & color, eDrawType drawType)
     {
@@ -397,163 +374,38 @@ namespace DAVA
     }
     void RenderHelper::DrawAABox(const AABBox3 & box, const Color & color, eDrawType drawType)
     {
-        QueueCommand(DrawCommand{ COMMAND_DRAW_BOX, drawType, { box.min.x, box.min.y, box.min.z,      //basePoint
-                                                                box.max.x - box.min.x, 0.f, 0.f,      //xAxis
-                                                                0.f, box.max.y - box.min.y, 0.f,      //yAxis
-                                                                0.f, 0.f, box.max.z - box.min.z,      //zAxis
-                                                                color.r, color.g, color.b, color.a } });
+        QueueDrawBoxCommand(COMMAND_DRAW_BOX, box, nullptr, color, drawType);
     }
-    void RenderHelper::DrawOBox(const AABBox3 & box, const Matrix4 & matrix, const Color & color, eDrawType drawType)
+    void RenderHelper::DrawAABoxTransformed(const AABBox3 & box, const Matrix4 & matrix, const Color & color, eDrawType drawType)
     {
-        Vector3 minPt = box.min * matrix;
-        Vector3 xAxis = MultiplyVectorMat3x3(Vector3(box.max.x - box.min.x, 0.f, 0.f), matrix);
-        Vector3 yAxis = MultiplyVectorMat3x3(Vector3(0.f, box.max.y - box.min.y, 0.f), matrix);
-        Vector3 zAxis = MultiplyVectorMat3x3(Vector3(0.f, 0.f, box.max.z - box.min.z), matrix);
-        QueueCommand(DrawCommand{ COMMAND_DRAW_BOX, drawType, { minPt.x, minPt.y, minPt.z,
-                                                                xAxis.x, xAxis.y, xAxis.z,
-                                                                yAxis.x, yAxis.y, yAxis.z,
-                                                                zAxis.x, zAxis.y, zAxis.z,
-                                                                color.r, color.g, color.b, color.a } });
+        QueueDrawBoxCommand(COMMAND_DRAW_BOX, box, &matrix, color, drawType);
     }
-    void RenderHelper::DrawCornerAABox(const AABBox3 & box, const Color & color, eDrawType drawType)
+    void RenderHelper::DrawAABoxCorners(const AABBox3 & box, const Color & color, eDrawType drawType)
     {
-        float32 offs = ((box.max - box.min).Length()) * 0.1f + 0.1f;
-
-        //1
-        Vector3 point = box.min;
-        DrawLine(point, point + Vector3(0, 0, offs), color, drawType);
-        DrawLine(point, point + Vector3(0, offs, 0), color, drawType);
-        DrawLine(point, point + Vector3(offs, 0, 0), color, drawType);
-
-        //2
-        point = box.max;
-        DrawLine(point, point - Vector3(0, 0, offs), color, drawType);
-        DrawLine(point, point - Vector3(0, offs, 0), color, drawType);
-        DrawLine(point, point - Vector3(offs, 0, 0), color, drawType);
-
-        //3
-        point = Vector3(box.min.x, box.max.y, box.min.z);
-        DrawLine(point, point + Vector3(0, 0, offs), color, drawType);
-        DrawLine(point, point - Vector3(0, offs, 0), color, drawType);
-        DrawLine(point, point + Vector3(offs, 0, 0), color, drawType);
-
-        //4
-        point = Vector3(box.max.x, box.max.y, box.min.z);
-        DrawLine(point, point + Vector3(0, 0, offs), color, drawType);
-        DrawLine(point, point - Vector3(0, offs, 0), color, drawType);
-        DrawLine(point, point - Vector3(offs, 0, 0), color, drawType);
-
-        //5
-        point = Vector3(box.max.x, box.min.y, box.min.z);
-        DrawLine(point, point + Vector3(0, 0, offs), color, drawType);
-        DrawLine(point, point + Vector3(0, offs, 0), color, drawType);
-        DrawLine(point, point - Vector3(offs, 0, 0), color, drawType);
-
-        //6
-        point = Vector3(box.min.x, box.max.y, box.max.z);
-        DrawLine(point, point - Vector3(0, 0, offs), color, drawType);
-        DrawLine(point, point - Vector3(0, offs, 0), color, drawType);
-        DrawLine(point, point + Vector3(offs, 0, 0), color, drawType);
-
-        //7
-        point = Vector3(box.min.x, box.min.y, box.max.z);
-        DrawLine(point, point - Vector3(0, 0, offs), color, drawType);
-        DrawLine(point, point + Vector3(0, offs, 0), color, drawType);
-        DrawLine(point, point + Vector3(offs, 0, 0), color, drawType);
-
-        //8
-        point = Vector3(box.max.x, box.min.y, box.max.z);
-        DrawLine(point, point - Vector3(0, 0, offs), color, drawType);
-        DrawLine(point, point + Vector3(0, offs, 0), color, drawType);
-        DrawLine(point, point - Vector3(offs, 0, 0), color, drawType);
+        QueueDrawBoxCommand(COMMAND_DRAW_BOX_CORNERS, box, nullptr, color, drawType);
+    }
+    void RenderHelper::DrawAABoxCornersTransformed(const AABBox3 & box, const Matrix4 & matrix, const Color & color, eDrawType drawType)
+    {
+        QueueDrawBoxCommand(COMMAND_DRAW_BOX_CORNERS, box, &matrix, color, drawType);
     }
     void RenderHelper::DrawArrow(const Vector3 & from, const Vector3 & to, float32 arrowLength, const Color & color, eDrawType drawType)
     {
         Vector3 direction = to - from;
         Vector3 lineEnd = to - (direction * arrowLength / direction.Length());
 
-        QueueCommand(DrawCommand{ COMMAND_DRAW_ARROW, drawType, { lineEnd.x, lineEnd.y, lineEnd.z, to.x, to.y, to.z, color.r, color.g, color.b, color.a } });
+        QueueCommand(DrawCommand{ COMMAND_DRAW_ARROW, drawType, { color.r, color.g, color.b, color.a, lineEnd.x, lineEnd.y, lineEnd.z, to.x, to.y, to.z } });
         DrawLine(from, lineEnd, color, eDrawType(drawType & FLAG_DRAW_NO_DEPTH));
-
-        /*
-        Vector3 d = to - from;
-        Vector3 c = to - (d * arrowLength / d.Length());
-
-        DAVA::float32 k = arrowLength / 4;
-
-        Vector3 n = c.CrossProduct(to);
-
-        if (n.IsZero())
-        {
-            if (0 == to.x) n = Vector3(1, 0, 0);
-            else if (0 == to.y) n = Vector3(0, 1, 0);
-            else if (0 == to.z) n = Vector3(0, 0, 1);
-        }
-
-        n.Normalize();
-        n *= k;
-
-        Vector3 p1 = c + n;
-        Vector3 p2 = c - n;
-
-        Vector3 nd = d.CrossProduct(n);
-        nd.Normalize();
-        nd *= k;
-
-        Vector3 p3 = c + nd;
-        Vector3 p4 = c - nd;
-
-        Polygon3 poly;
-        poly.points.reserve(3);
-
-        poly.AddPoint(p1);
-        poly.AddPoint(p3);
-        poly.AddPoint(p2);
-        DrawPolygon(poly, color, drawType);
-
-        poly.Clear();
-        poly.AddPoint(p1);
-        poly.AddPoint(p4);
-        poly.AddPoint(p2);
-        DrawPolygon(poly, color, drawType);
-
-        poly.Clear();
-        poly.AddPoint(p1);
-        poly.AddPoint(p3);
-        poly.AddPoint(to);
-        DrawPolygon(poly, color, drawType);
-
-        poly.Clear();
-        poly.AddPoint(p1);
-        poly.AddPoint(p4);
-        poly.AddPoint(to);
-        DrawPolygon(poly, color, drawType);
-
-        poly.Clear();
-        poly.AddPoint(p2);
-        poly.AddPoint(p3);
-        poly.AddPoint(to);
-        DrawPolygon(poly, color, drawType);
-
-        poly.Clear();
-        poly.AddPoint(p2);
-        poly.AddPoint(p4);
-        poly.AddPoint(to);
-        DrawPolygon(poly, color, drawType);
-
-        DrawLine(from, c, color);
-
-        */
     }
     void RenderHelper::DrawIcosahedron(const Vector3 & position, float32 radius, const Color & color, eDrawType drawType)
     {
-        QueueCommand(DrawCommand{ COMMAND_DRAW_ICOSA, drawType, { position.x, position.y, position.z, radius, color.r, color.g, color.b, color.a } });
+        QueueCommand(DrawCommand{ COMMAND_DRAW_ICOSA, drawType, { color.r, color.g, color.b, color.a, position.x, position.y, position.z, radius } });
     }
-    void RenderHelper::DrawCircle(const Vector3 & center, const Vector3 &directionVector, float32 radius, const Color & color, eDrawType drawType)
+    void RenderHelper::DrawCircle(const Vector3 & center, const Vector3 &direction, float32 radius, uint32 segmentCount, const Color & color, eDrawType drawType)
     {
-        Polygon3 pts;
-        MakeCirclePolygon(pts, center, directionVector, radius);
-        DrawPolygon(pts, color, drawType);
+        QueueCommand(DrawCommand{ COMMAND_DRAW_CIRCLE, drawType, { color.r, color.g, color.b, color.a,
+                                                                   center.x, center.y, center.z,
+                                                                   direction.x, direction.y, direction.z,
+                                                                   radius, *(reinterpret_cast<float32*>(&segmentCount)) } });
     }
     void RenderHelper::DrawBSpline(BezierSpline3 * bSpline, int segments, float ts, float te, const Color & color, eDrawType drawType)
     {
@@ -580,53 +432,144 @@ namespace DAVA
         }
         DrawPolygon(pts, color, drawType);
     }
-    
-    void RenderHelper::MakeCirclePolygon(Polygon3 & outPolygon, const Vector3 & center, const Vector3 &directionVector, float32 radius)
+
+    void RenderHelper::QueueDrawBoxCommand(eDrawCommandID commandID, const AABBox3 & box, const Matrix4 * matrix, const Color & color, eDrawType drawType)
     {
-        float32 angle = Min(PI / 6.0f, CIRCLE_SEGMENT_LENGTH / radius);// maximum angle 30 degrees
-        int ptsCount = (int)(PI_2 / (DegToRad(angle))) + 1;
+        Vector3 minPt = box.min;
+        Vector3 xAxis(box.max.x - box.min.x, 0.f, 0.f);
+        Vector3 yAxis(0.f, box.max.y - box.min.y, 0.f);
+        Vector3 zAxis(0.f, 0.f, box.max.z - box.min.z);
 
-        outPolygon.points.reserve(ptsCount);
-        for (int k = 0; k < ptsCount; ++k)
+        if (matrix)
         {
-            float32 angleA = ((float)k / (ptsCount - 1)) * PI_2;
-            float sinAngle = 0.0f;
-            float cosAngle = 0.0f;
-            SinCosFast(angleA, sinAngle, cosAngle);
+            minPt = minPt * (*matrix);
+            xAxis = MultiplyVectorMat3x3(xAxis, *matrix);
+            yAxis = MultiplyVectorMat3x3(yAxis, *matrix);
+            zAxis = MultiplyVectorMat3x3(zAxis, *matrix);
+        }
 
-            Vector3 directionVector(radius * cosAngle,
-                radius * sinAngle,
-                0.0f);
+        QueueCommand(DrawCommand{ commandID, drawType, { color.r, color.g, color.b, color.a,
+                                                         minPt.x, minPt.y, minPt.z,
+                                                         xAxis.x, xAxis.y, xAxis.z,
+                                                         yAxis.x, yAxis.y, yAxis.z,
+                                                         zAxis.x, zAxis.y, zAxis.z,
+                                                        } });
+    }
 
-            // Rotate the direction vector according to the current emission vector value.
-            Vector3 zNormalVector(0.0f, 0.0f, 1.0f);
-            Vector3 curEmissionVector = directionVector;
-            if (FLOAT_EQUAL(curEmissionVector.Length(), 0.f) == false)
+    void RenderHelper::FillBoxVBuffer(ColoredVertex * buffer, const Vector3 & basePoint, const Vector3 & xAxis, const Vector3 & yAxis, const Vector3 & zAxis, uint32 nativeColor)
+    {
+        buffer[0].position = basePoint;                          buffer[0].color = nativeColor;
+        buffer[1].position = basePoint + xAxis;                  buffer[1].color = nativeColor;
+        buffer[2].position = basePoint + yAxis;                  buffer[2].color = nativeColor;
+        buffer[3].position = basePoint + zAxis;                  buffer[3].color = nativeColor;
+
+        buffer[4].position = basePoint + xAxis + yAxis;          buffer[4].color = nativeColor;
+        buffer[5].position = basePoint + xAxis + zAxis;          buffer[5].color = nativeColor;
+        buffer[6].position = basePoint + yAxis + zAxis;          buffer[6].color = nativeColor;
+        buffer[7].position = basePoint + xAxis + yAxis + zAxis;  buffer[7].color = nativeColor;
+    }
+
+    void RenderHelper::FillBoxCornersVBuffer(ColoredVertex * buffer, const Vector3 & basePoint, const Vector3 & xAxis, const Vector3 & yAxis, const Vector3 & zAxis, uint32 nativeColor)
+    {
+        FillBoxVBuffer(buffer, basePoint, xAxis, yAxis, zAxis, nativeColor);
+
+        const float32 cornerLength = ((buffer[0].position - buffer[7].position).Length()) * 0.1f + 0.1f;
+
+        const Vector3 xCorner = Normalize(xAxis) * cornerLength;
+        const Vector3 yCorner = Normalize(yAxis) * cornerLength;
+        const Vector3 zCorner = Normalize(zAxis) * cornerLength;
+
+        buffer[8 + 0 * 3 + 0].position = buffer[0].position + xCorner;
+        buffer[8 + 0 * 3 + 1].position = buffer[0].position + yCorner;
+        buffer[8 + 0 * 3 + 2].position = buffer[0].position + zCorner;
+
+        buffer[8 + 1 * 3 + 0].position = buffer[1].position - xCorner;
+        buffer[8 + 1 * 3 + 1].position = buffer[1].position + yCorner;
+        buffer[8 + 1 * 3 + 2].position = buffer[1].position + zCorner;
+
+        buffer[8 + 2 * 3 + 0].position = buffer[2].position + xCorner;
+        buffer[8 + 2 * 3 + 1].position = buffer[2].position - yCorner;
+        buffer[8 + 2 * 3 + 2].position = buffer[2].position + zCorner;
+
+        buffer[8 + 3 * 3 + 0].position = buffer[3].position + xCorner;
+        buffer[8 + 3 * 3 + 1].position = buffer[3].position + yCorner;
+        buffer[8 + 3 * 3 + 2].position = buffer[3].position - zCorner;
+
+        buffer[8 + 4 * 3 + 0].position = buffer[4].position - xCorner;
+        buffer[8 + 4 * 3 + 1].position = buffer[4].position - yCorner;
+        buffer[8 + 4 * 3 + 2].position = buffer[4].position + zCorner;
+
+        buffer[8 + 5 * 3 + 0].position = buffer[5].position - xCorner;
+        buffer[8 + 5 * 3 + 1].position = buffer[5].position + yCorner;
+        buffer[8 + 5 * 3 + 2].position = buffer[5].position - zCorner;
+
+        buffer[8 + 6 * 3 + 0].position = buffer[6].position + xCorner;
+        buffer[8 + 6 * 3 + 1].position = buffer[6].position - yCorner;
+        buffer[8 + 6 * 3 + 2].position = buffer[6].position - zCorner;
+
+        buffer[8 + 7 * 3 + 0].position = buffer[7].position - xCorner;
+        buffer[8 + 7 * 3 + 1].position = buffer[7].position - yCorner;
+        buffer[8 + 7 * 3 + 2].position = buffer[7].position - zCorner;
+
+        for (int32 i = 8; i < 32; ++i)
+            buffer[i].color = nativeColor;
+    }
+    void RenderHelper::FillCircleVBuffer(ColoredVertex * buffer, const Vector3 & center, const Vector3 & dir, float32 radius, uint32 pointCount, uint32 nativeColor)
+    {
+        const Vector3 direction = Normalize(dir);
+        const Vector3 ortho = Abs(direction.x) < Abs(direction.y) ? direction.CrossProduct(Vector3(1.f, 0.f, 0.f)) : direction.CrossProduct(Vector3(0.f, 1.f, 0.f));
+
+        Matrix4 rotationMx;
+        float32 angleDelta = PI_2 / (float32)pointCount;
+        for (uint32 i = 0; i < pointCount; ++i)
+        {
+            rotationMx.CreateRotation(direction, angleDelta * i);
+            buffer[i].position = center + (ortho * radius) * rotationMx;
+            buffer[i].color = nativeColor;
+        }
+    }
+    void RenderHelper::FillArrowVBuffer(ColoredVertex * buffer, const Vector3 & from, const Vector3 & to, uint32 nativeColor)
+    {
+        Vector3 direction = to - from;
+        float32 arrowlength = direction.Normalize();
+        float32 arrowWidth = arrowlength / 4.f;
+
+        const Vector3 ortho1 = Abs(direction.x) < Abs(direction.y) ? direction.CrossProduct(Vector3(1.f, 0.f, 0.f)) : direction.CrossProduct(Vector3(0.f, 1.f, 0.f));
+        const Vector3 ortho2 = ortho1.CrossProduct(direction);
+
+        buffer[0].position = to;                           buffer[0].color = nativeColor;
+        buffer[1].position = from + ortho1 * arrowWidth;   buffer[1].color = nativeColor;
+        buffer[2].position = from + ortho2 * arrowWidth;   buffer[2].color = nativeColor;
+        buffer[3].position = from - ortho1 * arrowWidth;   buffer[3].color = nativeColor;
+        buffer[4].position = from - ortho2 * arrowWidth;   buffer[4].color = nativeColor;
+    }
+    void RenderHelper::FillIndeciesFromArray(uint16 * buffer, uint16 baseIndex, uint16 * indexArray, uint32 indexCount)
+    {
+        for (uint32 i = 0; i < indexCount; ++i)
+        {
+            buffer[i] = baseIndex + indexArray[i];
+        }
+    }
+    void RenderHelper::FillPolygonIndecies(uint16 * buffer, uint16 baseIndex, uint32 indexCount, uint32 vertexCount, bool isWire)
+    {
+        if (isWire)
+        {
+            const uint32 linesCount = vertexCount - 1;
+            for (uint32 i = 0; i < linesCount; ++i)
             {
-                curEmissionVector.Normalize();
+                buffer[i * 2 + 0] = baseIndex + i;
+                buffer[i * 2 + 1] = baseIndex + i + 1;
             }
-
-            // This code rotates the (XY) plane with the particles to the direction vector.
-            // Taking into account that a normal vector to the (XY) plane is (0,0,1) this
-            // code is very simplified version of the generic "plane rotation" code.
-            float32 length = curEmissionVector.Length();
-            if (FLOAT_EQUAL(length, 0.0f) == false)
+        }
+        else
+        {
+            const uint32 triangleCount = vertexCount - 2;
+            for (uint32 i = 0; i < triangleCount; ++i)
             {
-                float32 cosAngleRot = curEmissionVector.z / length;
-                float32 angleRot = acos(cosAngleRot);
-                Vector3 axisRot(curEmissionVector.y, -curEmissionVector.x, 0);
-                if (FLOAT_EQUAL(axisRot.Length(), 0.f) == false)
-                {
-                    axisRot.Normalize();
-                }
-                Matrix3 planeRotMatrix;
-                planeRotMatrix.CreateRotation(axisRot, angleRot);
-                Vector3 rotatedVector = directionVector * planeRotMatrix;
-                directionVector = rotatedVector;
+                buffer[i * 3 + 0] = baseIndex + i + 2;
+                buffer[i * 3 + 1] = baseIndex + i + 1;
+                buffer[i * 3 + 2] = baseIndex;
             }
-
-            Vector3 pos = center - directionVector;
-            outPolygon.AddPoint(pos);
         }
     }
 

@@ -136,7 +136,7 @@ void EditorParticlesSystem::DrawSizeCircleShockWave(DAVA::Entity *effectEntity, 
     if (emitter->emissionVector)
         emissionVector = emitter->emissionVector->GetValue(time);
 
-    GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawCircle(center, emissionVector, emitterRadius, Color::White, RenderHelper::DRAW_SOLID_DEPTH);
+    GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawCircle(center, emissionVector, emitterRadius, 12, DAVA::Color(0.7f, 0.0f, 0.0f, 0.25f), RenderHelper::DRAW_SOLID_DEPTH);
 }
 
 void EditorParticlesSystem::DrawSizeCircle(DAVA::Entity *effectEntity, DAVA::ParticleEmitter *emitter, DAVA::Vector3 center)
@@ -159,7 +159,7 @@ void EditorParticlesSystem::DrawSizeCircle(DAVA::Entity *effectEntity, DAVA::Par
 		emitterVector = emitterVector * wMat;
 	}
 
-    GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawCircle(center, emitterVector, emitterRadius, Color::White, RenderHelper::DRAW_SOLID_DEPTH);
+    GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawCircle(center, emitterVector, emitterRadius, 12, DAVA::Color(0.7f, 0.0f, 0.0f, 0.25f), RenderHelper::DRAW_SOLID_DEPTH);
 }
 
 void EditorParticlesSystem::DrawSizeBox(DAVA::Entity *effectEntity, DAVA::ParticleEmitter *emitter, DAVA::Vector3 center)
@@ -175,73 +175,11 @@ void EditorParticlesSystem::DrawSizeBox(DAVA::Entity *effectEntity, DAVA::Partic
 		emitterSize = emitter->size->GetValue(time);
 	}
 	
-	float halfSizeX = emitterSize.x / 2;
-	float halfSizeY = emitterSize.y / 2;
-	float halfSizeZ = emitterSize.z / 2;
-	
-	// Calculate box min and max values
-	p[0] = DAVA::Vector3(halfSizeX, halfSizeY, -halfSizeZ);
-	p[1] = DAVA::Vector3(halfSizeX, halfSizeY, halfSizeZ);
-	p[2] = DAVA::Vector3(-halfSizeX, halfSizeY, halfSizeZ);
-	p[3] = DAVA::Vector3(-halfSizeX, halfSizeY, -halfSizeZ);
-
-	p[4] = DAVA::Vector3(halfSizeX, -halfSizeY, -halfSizeZ);
-	p[5] = DAVA::Vector3(halfSizeX, -halfSizeY, halfSizeZ);
-	p[6] = DAVA::Vector3(-halfSizeX, -halfSizeY, halfSizeZ);
-	p[7] = DAVA::Vector3(-halfSizeX, -halfSizeY, -halfSizeZ);
-
 	DAVA::Matrix4 wMat = effectEntity->GetWorldTransform();
 	wMat.SetTranslationVector(DAVA::Vector3(0, 0, 0));
 
-	for(int i = 0; i < 8; ++i)
-	{
-		p[i] = p[i] * wMat;
-        p[i] += center;
-	}
-
     RenderHelper * drawer = GetScene()->GetRenderSystem()->GetDebugDrawer();
-
-	DAVA::Polygon3 poly;
-	poly.AddPoint(p[0]);
-	poly.AddPoint(p[1]);
-	poly.AddPoint(p[2]);
-	poly.AddPoint(p[3]);
-    drawer->DrawPolygon(poly, Color::White, RenderHelper::DRAW_SOLID_DEPTH);
-
-	poly.Clear();
-	poly.AddPoint(p[0]);
-	poly.AddPoint(p[1]);
-	poly.AddPoint(p[5]);
-	poly.AddPoint(p[4]);
-    drawer->DrawPolygon(poly, Color::White, RenderHelper::DRAW_SOLID_DEPTH);
-
-	poly.Clear();
-	poly.AddPoint(p[1]);
-	poly.AddPoint(p[2]);
-	poly.AddPoint(p[6]);
-	poly.AddPoint(p[5]);
-    drawer->DrawPolygon(poly, Color::White, RenderHelper::DRAW_SOLID_DEPTH);
-
-	poly.Clear();
-	poly.AddPoint(p[2]);
-	poly.AddPoint(p[3]);
-	poly.AddPoint(p[7]);
-	poly.AddPoint(p[6]);
-    drawer->DrawPolygon(poly, Color::White, RenderHelper::DRAW_SOLID_DEPTH);
-
-	poly.Clear();
-	poly.AddPoint(p[0]);
-	poly.AddPoint(p[3]);
-	poly.AddPoint(p[7]);
-	poly.AddPoint(p[4]);
-    drawer->DrawPolygon(poly, Color::White, RenderHelper::DRAW_SOLID_DEPTH);
-
-	poly.Clear();
-	poly.AddPoint(p[4]);
-	poly.AddPoint(p[5]);
-	poly.AddPoint(p[6]);
-	poly.AddPoint(p[7]);
-    drawer->DrawPolygon(poly, Color::White, RenderHelper::DRAW_SOLID_DEPTH);
+    drawer->DrawAABoxTransformed(AABBox3(center - emitterSize / 2, center + emitterSize / 2), wMat, DAVA::Color(0.7f, 0.0f, 0.0f, 0.25f), RenderHelper::DRAW_SOLID_DEPTH);
 }
 
 void EditorParticlesSystem::DrawVectorArrow(DAVA::Entity *effectEntity, DAVA::ParticleEmitter *emitter, DAVA::Vector3 center)
@@ -272,7 +210,7 @@ void EditorParticlesSystem::DrawVectorArrow(DAVA::Entity *effectEntity, DAVA::Pa
 	wMat.SetTranslationVector(DAVA::Vector3(0, 0, 0));
 	emitterVector = emitterVector * wMat;
 
-    GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawArrow(center, emitterVector, arrowSize, Color::White, RenderHelper::DRAW_SOLID_DEPTH);
+    GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawArrow(center, emitterVector, arrowSize, DAVA::Color(0.7f, 0.0f, 0.0f, 0.25f), RenderHelper::DRAW_SOLID_DEPTH);
 }
 
 void EditorParticlesSystem::AddEntity(DAVA::Entity * entity)

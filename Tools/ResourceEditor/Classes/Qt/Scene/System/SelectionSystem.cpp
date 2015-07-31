@@ -234,7 +234,7 @@ void SceneSelectionSystem::Draw()
 			// draw selection share
 			else if(drawMode & SS_DRAW_CORNERS)
 			{
-                GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawCornerAABox(selectionBox, DAVA::Color(1.0f, 1.0f, 1.0f, 1.0f), wireDrawType);
+                GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABoxCorners(selectionBox, DAVA::Color(1.0f, 1.0f, 1.0f, 1.0f), wireDrawType);
 			}
 
 			// fill selection shape

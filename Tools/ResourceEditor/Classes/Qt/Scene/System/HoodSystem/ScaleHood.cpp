@@ -68,26 +68,26 @@ void ScaleHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderHe
 {
 	// x
 	if(mouseOverAxis) 
-        drawer->DrawLine(axisX->curFrom, axisX->curTo, colorS);
+        drawer->DrawLine(axisX->curFrom, axisX->curTo, colorS, DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH);
 	else 
-        drawer->DrawLine(axisX->curFrom, axisX->curTo, colorX);
+        drawer->DrawLine(axisX->curFrom, axisX->curTo, colorX, DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH);
 
 	// y
 	if(mouseOverAxis) 
-        drawer->DrawLine(axisY->curFrom, axisY->curTo, colorS);
+        drawer->DrawLine(axisY->curFrom, axisY->curTo, colorS, DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH);
 	else 
-        drawer->DrawLine(axisY->curFrom, axisY->curTo, colorY);
+        drawer->DrawLine(axisY->curFrom, axisY->curTo, colorY, DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH);
 
 	// z
 	if(mouseOverAxis) 
-        drawer->DrawLine(axisZ->curFrom, axisZ->curTo, colorS);
+        drawer->DrawLine(axisZ->curFrom, axisZ->curTo, colorS, DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH);
 	else 
-        drawer->DrawLine(axisZ->curFrom, axisZ->curTo, colorZ);
+        drawer->DrawLine(axisZ->curFrom, axisZ->curTo, colorZ, DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH);
 
 	// xy xz yz axis
-    drawer->DrawLine(axisXY->curFrom, axisXY->curTo, colorS);
-    drawer->DrawLine(axisXZ->curFrom, axisXZ->curTo, colorS);
-    drawer->DrawLine(axisYZ->curFrom, axisYZ->curTo, colorS);
+    drawer->DrawLine(axisXY->curFrom, axisXY->curTo, colorS, DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH);
+    drawer->DrawLine(axisXZ->curFrom, axisXZ->curTo, colorS, DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH);
+    drawer->DrawLine(axisYZ->curFrom, axisYZ->curTo, colorS, DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH);
 
 	// xy xz yz plane
 	if(mouseOverAxis)
