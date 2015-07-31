@@ -343,7 +343,7 @@ void VegetationCustomSLGeometry::OnVegetationPropertiesChanged(Vector<Vegetation
             mat->SetPropertyValue(VegetationPropertyNames::UNIFORM_HEIGHTMAP_SCALE,
                                   Shader::UT_FLOAT_VEC2,
                                   1,
-                                  heightmapScale.data);
+                                  heightmapScale.data.data());
         }
         
         String densityMapPathKey = VegetationPropertyNames::UNIFORM_SAMPLER_DENSITYMAP.c_str();

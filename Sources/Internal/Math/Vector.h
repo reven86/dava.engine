@@ -56,7 +56,7 @@ public:
 		{
 			float32 dx, dy;
 		};
-		float32 data[2];
+		Array<float32, 2> data;
 	};
 	
 	//! Basic
@@ -144,7 +144,7 @@ public:
 		{
 			float32 x, y, z;
 		};
-		float32 data[3];
+		Array<float32, 3> data;
 	};
 
 	inline Vector3();
@@ -230,7 +230,7 @@ public:
 		{
 			float32 x, y, z, w;
 		};
-		float32 data[4];
+        Array<float32, 4> data;
 	};
 
 	inline Vector4();

@@ -288,7 +288,7 @@ Frustum::eFrustumResult Frustum::Classify(const AABBox3 & box) const
 
 Frustum::eFrustumResult Frustum::Classify(const AABBox3 & box, uint8 &planeMask, uint8 &startId) const
 {
-	const float32* verts[2] = {box.min.data, box.max.data};
+    const float32* verts[2] = { box.min.data.data(), box.max.data.data() };
 	Frustum::eFrustumResult result = EFR_INSIDE;	
 	uint8 k;
 	const Plane *plane, *startPlane;
@@ -328,7 +328,7 @@ Frustum::eFrustumResult Frustum::Classify(const AABBox3 & box, uint8 &planeMask,
 
 bool Frustum::IsInside(const AABBox3 & box, uint8 planeMask, uint8& startClippingPlane)const
 {
-	const float32* verts[2] = {box.min.data, box.max.data};
+    const float32* verts[2] = { box.min.data.data(), box.max.data.data() };
 	uint8 k;
 	const Plane *plane, *startPlane;
 	startPlane = planeArray+startClippingPlane;

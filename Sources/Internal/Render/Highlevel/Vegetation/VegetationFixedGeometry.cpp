@@ -613,7 +613,7 @@ void VegetationFixedGeometry::OnVegetationPropertiesChanged(Vector<VegetationRen
             mat->SetPropertyValue(VegetationPropertyNames::UNIFORM_HEIGHTMAP_SCALE,
                                   Shader::UT_FLOAT_VEC2,
                                   1,
-                                  heightmapScale.data);
+                                  heightmapScale.data.data());
         }
         
         String perturbationForceKeyName = VegetationPropertyNames::UNIFORM_PERTURBATION_FORCE.c_str();
@@ -623,7 +623,7 @@ void VegetationFixedGeometry::OnVegetationPropertiesChanged(Vector<VegetationRen
             mat->SetPropertyValue(VegetationPropertyNames::UNIFORM_PERTURBATION_FORCE,
                                   Shader::UT_FLOAT_VEC3,
                                   1,
-                                  perturbationForce.data);
+                                  perturbationForce.data.data());
         }
         
         String perturbationForceDistanceKeyName = VegetationPropertyNames::UNIFORM_PERTURBATION_FORCE_DISTANCE.c_str();
@@ -643,7 +643,7 @@ void VegetationFixedGeometry::OnVegetationPropertiesChanged(Vector<VegetationRen
             mat->SetPropertyValue(VegetationPropertyNames::UNIFORM_PERTURBATION_POINT,
                                   Shader::UT_FLOAT_VEC3,
                                   1,
-                                  perturbationPoint.data);
+                                  perturbationPoint.data.data());
         }
 
     }

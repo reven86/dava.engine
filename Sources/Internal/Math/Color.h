@@ -51,7 +51,7 @@ public:
 
 	union
 	{
-		float32	color[4];
+		Array<float32, 4> color;
 		struct  
 		{
 			float32 r, g, b, a;

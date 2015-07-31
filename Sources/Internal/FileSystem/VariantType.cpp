@@ -809,7 +809,7 @@ bool VariantType::Write(File * fp) const
             break;
     case TYPE_COLOR:
 		{
-            written = fp->Write(colorValue->color, sizeof(float32) * 4);
+            written = fp->Write(colorValue->color.data(), sizeof(float32) * 4);
             if (written != sizeof(float32) * 4)
             {
                 return false;
@@ -1079,7 +1079,7 @@ bool VariantType::Read(File * fp)
         case TYPE_COLOR:
 			{
 				colorValue = new Color;
-				read = fp->Read(colorValue->color, sizeof(float32) * 4);
+                read = fp->Read(colorValue->color.data(), sizeof(float32) * 4);
                 if (read != sizeof(float32) * 4)
                 {
                     return false;
