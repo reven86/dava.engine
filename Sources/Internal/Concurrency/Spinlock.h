@@ -44,60 +44,25 @@ namespace DAVA
 class Spinlock
 {
 public:
-    Spinlock() DAVA_NOEXCEPT;
+    Spinlock() = default;
 
     void Lock() DAVA_NOEXCEPT;
     bool TryLock() DAVA_NOEXCEPT;
     void Unlock() DAVA_NOEXCEPT;
 
 private:
-
-#ifdef USE_CPP11_CONCURRENCY
-    std::atomic_flag flag;// = ATOMIC_FLAG_INIT;
-#else
     Atomic<int32> flag;
-#endif
 };
 
-#ifdef USE_CPP11_CONCURRENCY
-
 //-----------------------------------------------------------------------------
-//Realization of SpinLock using C++11 concurrency (std::atomic_flag)
-//TODO: after migration on MSVS 2015 uncomment initialization of member 
-//and remove flag clearing in construct
-//List initialization inside member initializer list or
-//non-static data member initializer is not implemented in MSVS 2013 :'(
+//Realization
 //-----------------------------------------------------------------------------
-inline Spinlock::Spinlock() DAVA_NOEXCEPT
-{ 
-    flag.clear(); 
-}
-
 inline void Spinlock::Lock() DAVA_NOEXCEPT
 {
-    while (flag.test_and_set());
-}
-
-inline bool Spinlock::TryLock() DAVA_NOEXCEPT
-{
-    return !flag.test_and_set();
-}
-
-inline void Spinlock::Unlock() DAVA_NOEXCEPT
-{
-    flag.clear();
-}
-
-#else
-
-//-----------------------------------------------------------------------------
-//Realization of Spinlock using DAVA::Atomic class
-//-----------------------------------------------------------------------------
-inline Spinlock::Spinlock() DAVA_NOEXCEPT {}
-
-inline void Spinlock::Lock() DAVA_NOEXCEPT
-{
-    while (!flag.CompareAndSwap(0, 1)) {}
+    while (!flag.CompareAndSwap(0, 1)) 
+    {
+        while (0 != flag.GetRelaxed()) {}
+    }
 }
 
 inline bool Spinlock::TryLock() DAVA_NOEXCEPT
@@ -109,8 +74,6 @@ inline void Spinlock::Unlock() DAVA_NOEXCEPT
 {
     flag.Set(0);
 }
-
-#endif //  USE_CPP11_CONCURRENCY
 
 }
 

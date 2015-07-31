@@ -150,7 +150,7 @@ void ApplicationManager::OnAppInstalled(const QString & branchID, const QString 
     localConfig->SaveToYamlFile(localConfigFilePath);
 }
 
-QString ApplicationManager::GetString(const QString & stringID)
+QString ApplicationManager::GetString(const QString & stringID) const
 {
     QString string = stringID;
     if(remoteConfig)
