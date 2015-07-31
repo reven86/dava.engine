@@ -16,7 +16,7 @@
 
     #include "_gl.h"
 
-    #define USE_RENDER_THREAD               1
+    #define USE_RENDER_THREAD               0
     #define RHI_MAX_PREPARED_FRAME_COUNT    1
 
 
@@ -135,9 +135,10 @@ static DAVA::Thread*        _GLES2_RenderThread             = nullptr;
 struct
 Frame
 {
-    unsigned            number;
-    std::vector<Handle> pass;
-    uint32              readyToExecute:1;
+    unsigned            number;  
+    Handle              sync;
+    std::vector<Handle> pass;        
+    uint32              readyToExecute:1;        
 };
 
 static std::vector<Frame>   _Frame;
@@ -187,7 +188,7 @@ gles2_RenderPass_Begin( Handle pass )
     _FrameSync.Lock();
 
     if( !_FrameStarted )
-    {
+    {        
         _Frame.push_back( Frame() );
         _Frame.back().number         = _FrameNumber;
         _Frame.back().readyToExecute = false;
@@ -1158,6 +1159,13 @@ Trace("rhi-gl.exec-queued-cmd\n");
     {
         do_exit = true;
     }
+    if (_Frame.begin()->sync != InvalidHandle)
+    {
+        SyncObjectGLES2_t*  sync = SyncObjectPool::Get(_Frame.begin()->sync);
+
+        sync->frame = frame_n;
+        sync->is_signaled = false;
+    }
     _FrameSync.Unlock();
 
     if( do_exit )
@@ -1298,7 +1306,7 @@ Trace("rhi-gl.swap-buffers done\n");
 //------------------------------------------------------------------------------
 
 static void
-gles2_Present()
+gles2_Present(Handle sync)
 {    
 #if USE_RENDER_THREAD
 
@@ -1309,6 +1317,7 @@ Trace("rhi-gl.present\n");
         if( _Frame.size() )
         {
             _Frame.back().readyToExecute = true;
+            _Frame.back().sync = sync;
             _FrameStarted = false;
 Trace("\n\n-------------------------------\nframe %u generated\n",_Frame.back().number);
         }
@@ -1333,6 +1342,7 @@ Trace("\n\n-------------------------------\nframe %u generated\n",_Frame.back().
     if( _Frame.size() )
     {
         _Frame.back().readyToExecute = true;
+        _Frame.back().sync = sync;
         _FrameStarted = false;
     }
 
