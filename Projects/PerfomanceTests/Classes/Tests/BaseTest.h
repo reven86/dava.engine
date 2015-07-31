@@ -105,6 +105,7 @@ public:
     bool IsFinished() const override;
     
     void SetParams(const TestParams& testParams);
+    void MergeParams(const TestParams& otherParams);
     const TestParams& GetParams() const;
     
     float32 GetOverallTestTime() const;
@@ -226,6 +227,17 @@ inline void BaseTest::ShowUI(bool visible)
 inline bool BaseTest::IsUIVisible() const
 {
     return uiRoot->GetVisible();
+}
+
+inline void BaseTest::MergeParams(const TestParams& otherParams)
+{
+    testParams.targetTime = otherParams.targetTime;
+    testParams.startTime = otherParams.startTime;
+    testParams.endTime = otherParams.endTime;
+    testParams.targetFramesCount = otherParams.targetFramesCount;
+    testParams.targetFrameDelta = otherParams.targetFrameDelta;
+    testParams.frameForDebug = otherParams.frameForDebug;
+    testParams.maxDelta = otherParams.maxDelta;
 }
 
 #endif
