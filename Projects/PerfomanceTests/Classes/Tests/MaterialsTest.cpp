@@ -45,14 +45,11 @@ MaterialsTest::MaterialsTest(const TestParams& testParams)
     ,   currentTestStartFrame(0)
     ,   currentTestStartTime(0)
     ,   currentMaterialIndex(0)
-    ,   camera(nullptr)
 {
 }
 
 MaterialsTest::~MaterialsTest()
 {
-    SafeRelease(camera);
-    
     for(NMaterial* material : materials)
     {
         SafeRelease(material);
@@ -83,7 +80,7 @@ void MaterialsTest::LoadResources()
 {
     BaseTest::LoadResources();
     
-    Scene* materialsScene = new Scene();
+    ScopedPtr<Scene> materialsScene(new Scene());
     
     SceneFileV2::eError error = materialsScene->LoadScene(FilePath("~res:/3d/Maps/" + GetParams().scenePath));
     DVASSERT_MSG(error == SceneFileV2::eError::ERROR_NO_ERROR, ("can't load scene " + GetParams().scenePath).c_str());
@@ -119,18 +116,6 @@ void MaterialsTest::LoadResources()
     Entity* camera = materialsScene->FindByName(CAMERA_ENTITY);
     CameraComponent* cameraComponent = static_cast<CameraComponent*>(camera->GetComponent(Component::CAMERA_COMPONENT));
     GetScene()->SetCurrentCamera(cameraComponent->GetCamera());
-    
-    SafeRelease(materialsScene);
-}
-
-void MaterialsTest::UnloadResources()
-{
-    BaseTest::UnloadResources();
-}
-
-void MaterialsTest::PerformTestLogic(float32 timeElapsed)
-{
-    
 }
 
 void MaterialsTest::BeginFrame()
@@ -196,7 +181,7 @@ void MaterialsTest::BeginFrame()
 
 bool MaterialsTest::IsFinished() const
 {
-    return GetTestFrameNumber() == materials.size() * FRAMES_PER_MATERIAL_TEST;
+    return GetTestFrameNumber() > materials.size() * FRAMES_PER_MATERIAL_TEST;
 }
 
 void MaterialsTest::PrintStatistic(const Vector<BaseTest::FrameInfo>& frames)
@@ -235,20 +220,24 @@ Entity* MaterialsTest::CreateSpeedTreeEntity(Entity* entity)
     Entity* spoEntity = entity->Clone();
     RenderComponent* spoRenderComponent = static_cast<RenderComponent*>(spoEntity->GetComponent(Component::RENDER_COMPONENT));
     RenderObject* renderObject = spoRenderComponent->GetRenderObject();
-    
-    PolygonGroup* spoPolygonGroup = new PolygonGroup();
     PolygonGroup* polygonGroup = renderObject->GetRenderBatch(0)->GetPolygonGroup();
+    
+    ScopedPtr<RenderBatch> spoRenderBatch(new RenderBatch());
+    ScopedPtr<PolygonGroup> spoPolygonGroup(new PolygonGroup());
+    ScopedPtr<SpeedTreeObject> spoRenderObject(new SpeedTreeObject());
     
     int32 vertexCount = polygonGroup->GetVertexCount();
     int32 indexCount = polygonGroup->GetIndexCount();
     
     spoPolygonGroup->AllocateData(EVF_VERTEX | EVF_COLOR | EVF_TEXCOORD0 | EVF_NORMAL , vertexCount, indexCount);
     
+    Vector3 v;
+    Vector2 t;
+    
+    int32 index;
+    
     for(int32 i = 0; i < vertexCount; i++)
     {
-        Vector3 v;
-        Vector2 t;
-        
         polygonGroup->GetCoord(i, v);
         spoPolygonGroup->SetCoord(i, v);
         
@@ -263,7 +252,6 @@ Entity* MaterialsTest::CreateSpeedTreeEntity(Entity* entity)
     
     for(int32 i = 0; i < indexCount; i++)
     {
-        int32 index;
         polygonGroup->GetIndex(i, index);
         spoPolygonGroup->SetIndex(i, index);
     }
@@ -274,13 +262,10 @@ Entity* MaterialsTest::CreateSpeedTreeEntity(Entity* entity)
     // fix for calculate normals in ShpericalLit shader
     spoPolygonGroup->aabbox.max.z = 1.0f;
     
-    RenderBatch* spoRenderBatch = new RenderBatch();
     spoRenderBatch->SetPolygonGroup(spoPolygonGroup);
-    spoRenderBatch->SetMaterial(renderObject->GetRenderBatch(0)->GetMaterial()->Clone());
-    
-    SpeedTreeObject* spoRenderObject = new SpeedTreeObject();
-    spoRenderComponent->SetRenderObject(spoRenderObject);
+    spoRenderBatch->SetMaterial(ScopedPtr<NMaterial>(renderObject->GetRenderBatch(0)->GetMaterial()->Clone()));
     spoRenderObject->AddRenderBatch(spoRenderBatch);
+    spoRenderComponent->SetRenderObject(spoRenderObject);
     
     Vector<Vector3> fakeSH(9, Vector3());
     fakeSH[0].x = fakeSH[0].y = fakeSH[0].z = 1.f/0.564188f; //fake SH value to make original object color
@@ -293,22 +278,19 @@ Entity* MaterialsTest::CreateSkinnedEntity(Entity* sourceEntity)
 {
     Entity* skinnedEntity = sourceEntity->Clone();
     
-    Entity* entityHierarhy = new Entity();
-    entityHierarhy->AddNode(sourceEntity->Clone());
+    ScopedPtr<Entity> entityHierarhy(new Entity());
+    entityHierarhy->AddNode(ScopedPtr<Entity>(sourceEntity->Clone()));
     
     Vector<SkeletonComponent::JointConfig> joints;
-    RenderObject * skinnedRo = MeshUtils::CreateSkinnedMesh(entityHierarhy, joints);
     
     RenderComponent* renderComponent = static_cast<RenderComponent*>(skinnedEntity->GetComponent(Component::RENDER_COMPONENT));
-    renderComponent->SetRenderObject(skinnedRo);
+    renderComponent->SetRenderObject(ScopedPtr<RenderObject>(MeshUtils::CreateSkinnedMesh(entityHierarhy, joints)));
     
     SkeletonComponent* skeleton = new SkeletonComponent();
     skinnedEntity->AddComponent(skeleton);
     
     skeleton->SetConfigJoints(joints);
     skeleton->RebuildFromConfig();
-    
-    SafeRelease(entityHierarhy);
 
     return skinnedEntity;
 }
@@ -318,22 +300,22 @@ Entity* MaterialsTest::CreateEntityForLightmapMaterial(DAVA::Entity *entity)
     Entity* lightmapEntity = entity->Clone();
     RenderComponent* lightmapRenderComponent = static_cast<RenderComponent*>(lightmapEntity->GetComponent(Component::RENDER_COMPONENT));
     RenderObject* renderObject = lightmapRenderComponent->GetRenderObject();
-    
-    PolygonGroup* lightmapPolygonGroup = new PolygonGroup();
     PolygonGroup* polygonGroup = renderObject->GetRenderBatch(0)->GetPolygonGroup();
+    
+    ScopedPtr<PolygonGroup> lightmapPolygonGroup(new PolygonGroup());
     
     int32 vertexCount = polygonGroup->GetVertexCount();
     int32 indexCount = polygonGroup->GetIndexCount();
     
-    int32 format = polygonGroup->GetFormat() | EVF_TEXCOORD1;
+    lightmapPolygonGroup->AllocateData(EVF_VERTEX | EVF_NORMAL | EVF_TEXCOORD0 | EVF_TEXCOORD1 , vertexCount, indexCount);
     
-    lightmapPolygonGroup->AllocateData(format, vertexCount, indexCount);
+    Vector3 v;
+    Vector2 t;
+    
+    int32 index;
     
     for(int32 i = 0; i < vertexCount; i++)
     {
-        Vector3 v;
-        Vector2 t;
-        
         polygonGroup->GetCoord(i, v);
         lightmapPolygonGroup->SetCoord(i, v);
         
@@ -347,7 +329,6 @@ Entity* MaterialsTest::CreateEntityForLightmapMaterial(DAVA::Entity *entity)
     
     for(int32 i = 0; i < indexCount; i++)
     {
-        int32 index;
         polygonGroup->GetIndex(i, index);
         lightmapPolygonGroup->SetIndex(i, index);
     }
@@ -365,12 +346,12 @@ void MaterialsTest::ReplacePlanes(const Vector<Entity*>& planes)
     List<Entity*> children;
     GetScene()->FindNodesByNamePart(PLANE_ENTITY.c_str(), children);
     
-    for(Entity* child : children)
+    for(auto *child : children)
     {
         GetScene()->RemoveNode(child);
     }
     
-    for(Entity* child : planes)
+    for(auto *child : planes)
     {
         GetScene()->AddNode(child);
     }
@@ -378,6 +359,6 @@ void MaterialsTest::ReplacePlanes(const Vector<Entity*>& planes)
 
 const String& MaterialsTest::GetSceneName() const
 {
-    return GetName();
+    return GetTestName();
 }
 

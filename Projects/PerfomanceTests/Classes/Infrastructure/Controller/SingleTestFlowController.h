@@ -51,7 +51,7 @@ private:
     
     BaseTest::TestParams testParams;
     BaseTest* testForRun;
-    TestChooserScreen* testChooserScreen;
+    ScopedPtr<TestChooserScreen> testChooserScreen;
     
     BaseScreen* currentScreen;
 };

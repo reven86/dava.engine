@@ -39,19 +39,9 @@ const float32 UniversalTest::TANK_ROTATION_ANGLE = 45.0f;
 
 UniversalTest::UniversalTest(const TestParams& params)
     :   BaseTest(TEST_NAME, params)
-    ,   waypointInterpolator(nullptr)
-    ,   tankAnimator(nullptr)
-    ,   camera(nullptr)
+    ,   camera(new Camera())
     ,   time(0.0f)
 {
-}
-
-UniversalTest::~UniversalTest()
-{
-    SafeDelete(waypointInterpolator);
-    SafeDelete(tankAnimator);
-    
-    SafeRelease(camera);
 }
 
 void UniversalTest::LoadResources()
@@ -78,7 +68,6 @@ void UniversalTest::LoadResources()
         const Vector3& startPosition = pathComponent->GetStartWaypoint()->position;
         const Vector3& destinationPoint = pathComponent->GetStartWaypoint()->edges[0]->destination->position;
         
-        camera = new Camera();
         camera->SetPosition(startPosition);
         camera->SetTarget(destinationPoint);
         camera->SetUp(Vector3::UnitZ);
@@ -86,7 +75,7 @@ void UniversalTest::LoadResources()
         
         GetScene()->SetCurrentCamera(camera);
         
-        waypointInterpolator = new WaypointsInterpolator(pathComponent->GetPoints(), GetParams().targetTime / 1000.0f);
+        waypointInterpolator = std::make_unique<WaypointsInterpolator>(pathComponent->GetPoints(), GetParams().targetTime / 1000.0f);
     }
     
     Entity* tanksEntity = GetScene()->FindByName(TANKS);
@@ -94,7 +83,6 @@ void UniversalTest::LoadResources()
     if(tanksEntity != nullptr)
     {
         Vector<Entity*> tanks;
-        tankAnimator = new TankAnimator();
         
         uint32 childrenCount = tanksEntity->GetChildrenCount();
         
@@ -103,11 +91,11 @@ void UniversalTest::LoadResources()
             tanks.push_back(tanksEntity->GetChild(i));
         }
         
-        for (Entity* tank : tanks)
+        for (auto *tank : tanks)
         {
             Vector<uint16> jointsInfo;
             
-            tankAnimator->MakeSkinnedTank(tank, jointsInfo);
+            TankUtils::MakeSkinnedTank(tank, jointsInfo);
             skinnedTankData.insert(std::pair<FastName, std::pair<Entity*, Vector<uint16>>>(tank->GetName(), std::pair<Entity*, Vector<uint16>>(tank, jointsInfo)));
         }
         
@@ -116,12 +104,11 @@ void UniversalTest::LoadResources()
         auto tankIt = skinnedTankData.cbegin();
         auto tankEnd = skinnedTankData.cend();
         
-        for (Entity* tankStub : tankStubs)
+        for (auto *tankStub : tankStubs)
         {
             Entity* tank = tankIt->second.first;
-            Entity* newTank = tank->Clone();
             
-            tankStub->AddNode(newTank);
+            tankStub->AddNode(ScopedPtr<Entity>(tank->Clone()));
             
             tankIt++;
             if (tankIt == tankEnd)
@@ -136,7 +123,7 @@ void UniversalTest::PerformTestLogic(float32 timeElapsed)
 {
     time += timeElapsed;
     
-    if(waypointInterpolator != nullptr)
+    if(waypointInterpolator)
     {
         waypointInterpolator->NextPosition(camPos, camDst, timeElapsed);
         
@@ -144,10 +131,10 @@ void UniversalTest::PerformTestLogic(float32 timeElapsed)
         camera->SetTarget(camDst);
     }
     
-    for (Entity* tank : tankStubs)
+    for (auto *tank : tankStubs)
     {
         const Vector<uint16>& jointIndexes = skinnedTankData.at(tank->GetChild(0)->GetName()).second;
-        tankAnimator->Animate(tank, jointIndexes, DegToRad(time * TANK_ROTATION_ANGLE));
+        TankUtils::Animate(tank, jointIndexes, DegToRad(time * TANK_ROTATION_ANGLE));
     }
 }
 

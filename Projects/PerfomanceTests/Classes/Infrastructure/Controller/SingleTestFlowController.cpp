@@ -31,7 +31,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 SingleTestFlowController::SingleTestFlowController(bool _showUI)
     :   showUI(_showUI)
     ,   testForRun(nullptr)
-    ,   testChooserScreen(nullptr)
+    ,   testChooserScreen(new TestChooserScreen())
     ,   currentScreen(nullptr)
 
 {
@@ -42,9 +42,8 @@ SingleTestFlowController::SingleTestFlowController(const String& _testName, cons
     ,   testForRunName(_testName)
     ,   testParams(_testParams)
     ,   testForRun(nullptr)
-    ,   testChooserScreen(nullptr)
+    ,   testChooserScreen(new TestChooserScreen())
     ,   currentScreen(nullptr)
-
 {
 }
 
@@ -54,12 +53,12 @@ void SingleTestFlowController::Init(const Vector<BaseTest*>& _testChain)
     
     if (testForRunName.empty())
     {
-        testChooserScreen = new TestChooserScreen(testChain);
+        testChooserScreen->SetTestChain(testChain);
         currentScreen = testChooserScreen;
     }
     else
     {
-        for (BaseTest* test : _testChain)
+        for (auto *test : _testChain)
         {
             if (test->GetParams().sceneName == testForRunName)
             {
@@ -76,7 +75,7 @@ void SingleTestFlowController::Init(const Vector<BaseTest*>& _testChain)
 
         currentScreen = testForRun;
 
-        if (currentScreen == nullptr)
+        if (nullptr == currentScreen)
         {
             Logger::Error(DAVA::Format("Test with name: %s not found", testForRunName.c_str()).c_str());
             Core::Instance()->Quit();
@@ -97,7 +96,9 @@ void SingleTestFlowController::BeginFrame()
 }
 
 void SingleTestFlowController::EndFrame()
-{ 
+{
+    currentScreen->EndFrame();
+    
     if (nullptr == testForRun)
     {
         if (testChooserScreen->IsFinished())
@@ -114,6 +115,4 @@ void SingleTestFlowController::EndFrame()
         Logger::Info("Finish all tests.");
         Core::Instance()->Quit();
     }
-
-    currentScreen->EndFrame();
 }

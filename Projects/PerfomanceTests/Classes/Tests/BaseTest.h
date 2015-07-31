@@ -99,7 +99,8 @@ public:
     void ShowUI(bool visible);
     bool IsUIVisible() const;
     
-    const String& GetName() const;
+    const String& GetTestName() const;
+    virtual const String& GetSceneName() const;
     
     bool IsFinished() const override;
     
@@ -124,16 +125,12 @@ protected:
     void LoadResources() override;
     void UnloadResources() override;
     
-    virtual void PrintStatistic(const Vector<BaseTest::FrameInfo>& frames);
+    virtual void PrintStatistic(const Vector<FrameInfo>& frames);
 
     virtual void CreateUI();
     virtual void UpdateUI();
     
     size_t GetAllocatedMemory();
-    DAVA::UIControl* GetUIRoot() const;
-    const Vector<FrameInfo>& GetFrames() const;
-    
-    virtual const String& GetSceneName() const;
 
     virtual void PerformTestLogic(float32 timeElapsed) = 0;
     
@@ -146,7 +143,7 @@ private:
     
     TestParams testParams;
     
-    int32 frameNumber;
+    uint32 frameNumber;
     
     uint64 startTime;
     uint64 elapsedTime;
@@ -160,7 +157,7 @@ private:
     Scene* scene;
     UI3DView* sceneView;
     
-    DAVA::UIControl* uiRoot;
+    ScopedPtr<DAVA::UIControl> uiRoot;
     
     UIStaticText* testNameText;
     UIStaticText* maxFPSText;
@@ -183,7 +180,7 @@ inline Scene* BaseTest::GetScene() const
     return scene;
 }
 
-inline const String& BaseTest::GetName() const
+inline const String& BaseTest::GetTestName() const
 {
     return testName;
 }
@@ -211,7 +208,7 @@ inline int32 BaseTest::GetTestFrameNumber() const
 
 inline void BaseTest::SetParams(const TestParams& _testParams)
 {
-    DVASSERT_MSG(frameNumber >= 1, "Can't set params after test started");
+    DVASSERT_MSG(frameNumber == 1, "Can't set params after test started");
     
     this->testParams = _testParams;
 }
@@ -221,19 +218,14 @@ inline const BaseTest::TestParams& BaseTest::GetParams() const
     return testParams;
 }
 
-inline DAVA::UIControl* BaseTest::GetUIRoot() const
-{
-    return uiRoot;
-}
-
 inline void BaseTest::ShowUI(bool visible)
 {
-    GetUIRoot()->SetVisible(visible);
+    uiRoot->SetVisible(visible);
 }
 
 inline bool BaseTest::IsUIVisible() const
 {
-    return GetUIRoot()->GetVisible();
+    return uiRoot->GetVisible();
 }
 
 #endif

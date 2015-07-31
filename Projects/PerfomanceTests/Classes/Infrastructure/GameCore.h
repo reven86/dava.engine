@@ -74,7 +74,7 @@ private:
     String GetDeviceName();
 
 	Vector<BaseTest*> testChain;
-	TestFlowController* testFlowController;
+    std::unique_ptr<TestFlowController> testFlowController;
 
     TeamcityTestsOutput teamCityOutput;
     BaseTest::TestParams defaultTestParams;

@@ -39,9 +39,9 @@ BaseTest::BaseTest(const String& _testName, const TestParams& _testParams)
     ,   minDelta(FLT_MAX)
     ,   maxDelta(FLT_MIN)
     ,   currentFrameDelta(0.0f)
+    ,   uiRoot(new DAVA::UIControl())
     ,   maxAllocatedMemory(0)
 {
-    uiRoot = new DAVA::UIControl();
     sceneName = testName + ": " + GetParams().sceneName;
 }
 
@@ -68,11 +68,12 @@ void BaseTest::LoadResources()
 void BaseTest::UnloadResources()
 {
     SafeRelease(scene);
+    SafeRelease(sceneView);
 }
 
 void BaseTest::CreateUI()
 {
-    DAVA::UIControl* reportItem = new DAVA::UIControl();
+    ScopedPtr<DAVA::UIControl> reportItem(new DAVA::UIControl());
     
     UIYamlLoader::LoadFonts("~res:/UI/Fonts/fonts.yaml");
     UIYamlLoader::Load(reportItem, ControlHelpers::GetPathToUIYaml("ReportItem.yaml"));
@@ -116,8 +117,6 @@ void BaseTest::CreateUI()
 
 void BaseTest::UpdateUI()
 {
-    elapsedTime = SystemTimer::Instance()->FrameStampTimeMS() - startTime;
-    
     float32 fps = currentFrameDelta > 0.001f ? 1.0f / currentFrameDelta : 0.0f;
     
     maxFPSText->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("%f", 1.0f / minDelta)));
@@ -149,52 +148,52 @@ void BaseTest::OnFinish()
     Logger::Info(TeamcityTestsOutput::FormatTestFinished(GetSceneName()).c_str());
 }
 
-void BaseTest::PrintStatistic(const Vector<BaseTest::FrameInfo>& frames)
+void BaseTest::PrintStatistic(const Vector<FrameInfo>& frames)
 {
     size_t framesCount = GetFramesInfo().size();
     
-    for (const BaseTest::FrameInfo& frameInfo : frames)
+    for (const auto& frameInfo : frames)
     {
         Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
-                                                               TeamcityTestsOutput::FRAME_DELTA,
-                                                               DAVA::Format("%f", frameInfo.delta)).c_str());
+            TeamcityTestsOutput::FRAME_DELTA,
+            DAVA::Format("%f", frameInfo.delta)).c_str());
     }
     
     Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
-                                                           TeamcityTestsOutput::MIN_DELTA,
-                                                           DAVA::Format("%f", minDelta)).c_str());
+            TeamcityTestsOutput::MIN_DELTA,
+            DAVA::Format("%f", minDelta)).c_str());
     
     Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
-                                                           TeamcityTestsOutput::MAX_DELTA,
-                                                           DAVA::Format("%f", maxDelta)).c_str());
+            TeamcityTestsOutput::MAX_DELTA,
+            DAVA::Format("%f", maxDelta)).c_str());
     
     Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
-                                                           TeamcityTestsOutput::AVERAGE_DELTA,
-                                                           DAVA::Format("%f", overallTestTime / framesCount)).c_str());
+            TeamcityTestsOutput::AVERAGE_DELTA,
+            DAVA::Format("%f", overallTestTime / framesCount)).c_str());
     
     Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
-                                                           TeamcityTestsOutput::MAX_FPS,
-                                                           DAVA::Format("%f", 1.0f / minDelta)).c_str());
+            TeamcityTestsOutput::MAX_FPS,
+            DAVA::Format("%f", 1.0f / minDelta)).c_str());
     
     Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
-                                                           TeamcityTestsOutput::MIN_FPS,
-                                                           DAVA::Format("%f", 1.0f / maxDelta)).c_str());
+            TeamcityTestsOutput::MIN_FPS,
+            DAVA::Format("%f", 1.0f / maxDelta)).c_str());
     
     Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
-                                                           TeamcityTestsOutput::AVERAGE_FPS,
-                                                           DAVA::Format("%f", 1.0f / (overallTestTime / framesCount))).c_str());
+            TeamcityTestsOutput::AVERAGE_FPS,
+            DAVA::Format("%f", 1.0f / (overallTestTime / framesCount))).c_str());
     
     Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
-                                                           TeamcityTestsOutput::TEST_TIME,
-                                                           DAVA::Format("%f", overallTestTime)).c_str());
+            TeamcityTestsOutput::TEST_TIME,
+            DAVA::Format("%f", overallTestTime)).c_str());
     
     Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
-                                                           TeamcityTestsOutput::TIME_ELAPSED,
-                                                           DAVA::Format("%f", elapsedTime / 1000.0f)).c_str());
+            TeamcityTestsOutput::TIME_ELAPSED,
+            DAVA::Format("%f", elapsedTime / 1000.0f)).c_str());
     
     Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
-                                                           TeamcityTestsOutput::MAX_MEM_USAGE,
-                                                           DAVA::Format("%d", maxAllocatedMemory)).c_str());
+            TeamcityTestsOutput::MAX_MEM_USAGE,
+            DAVA::Format("%d", maxAllocatedMemory)).c_str());
 }
 
 void BaseTest::SystemUpdate(float32 timeElapsed)
@@ -205,8 +204,8 @@ void BaseTest::SystemUpdate(float32 timeElapsed)
         maxAllocatedMemory = allocatedMem;
     }
 
-    bool frameForDebug = testParams.frameForDebug > 0 && GetTestFrameNumber() >= testParams.frameForDebug;
-    bool greaterMaxDelta = testParams.maxDelta > 0.001f && timeElapsed >= testParams.maxDelta;
+    bool isFrameForDebug = testParams.frameForDebug > 0 && GetTestFrameNumber() >= testParams.frameForDebug;
+    bool isGreaterMaxDelta = testParams.maxDelta > 0.001f && timeElapsed >= testParams.maxDelta;
     
     float32 delta = 0.0f;
     float32 currentTimeMs = overallTestTime * 1000;
@@ -215,11 +214,11 @@ void BaseTest::SystemUpdate(float32 timeElapsed)
     {
         if (currentTimeMs >= testParams.startTime && currentTimeMs <= testParams.endTime)
         {
-            if (greaterMaxDelta)
+            if (isGreaterMaxDelta)
             {
                 Logger::Info(DAVA::Format("Time delta: %f \nMaxDelta: %f \nFrame : %d", timeElapsed, testParams.maxDelta, frameNumber).c_str());
             }
-            if (frameForDebug)
+            if (isFrameForDebug)
             {
                 Logger::Info(DAVA::Format("Frame for debug: %d", frameNumber - BaseTest::FRAME_OFFSET).c_str());
             }
@@ -227,9 +226,9 @@ void BaseTest::SystemUpdate(float32 timeElapsed)
             frames.push_back(FrameInfo(timeElapsed));
         }
         
-        if (!(frameForDebug || greaterMaxDelta))
+        if (!isFrameForDebug && !isGreaterMaxDelta)
         {
-            delta = testParams.targetFrameDelta > 0.0f ? testParams.targetFrameDelta : timeElapsed;
+            delta = testParams.targetFrameDelta > 0.001f ? testParams.targetFrameDelta : timeElapsed;
         }
         
         overallTestTime += delta;
@@ -257,29 +256,29 @@ void BaseTest::SystemUpdate(float32 timeElapsed)
 
 void BaseTest::BeginFrame()
 {
-    if (startTime == 0 && frameNumber >= FRAME_OFFSET)
+    if (0 == startTime && frameNumber >= FRAME_OFFSET)
     {
         startTime = SystemTimer::Instance()->FrameStampTimeMS();
-    }
-    
-    if(IsFinished())
-    {
-        elapsedTime = SystemTimer::Instance()->FrameStampTimeMS() - startTime;
     }
 }
 
 void BaseTest::EndFrame()
 {
     frameNumber++;
+    
+    elapsedTime = SystemTimer::Instance()->FrameStampTimeMS() - startTime;
 }
 
 bool BaseTest::IsFinished() const
 {
-    if (testParams.targetFramesCount > 0 && GetTestFrameNumber() == testParams.targetFramesCount)
+    if (testParams.targetFramesCount > 0)
     {
-        return true;
+        if (GetTestFrameNumber() > testParams.targetFramesCount)
+        {
+            return true;
+        }
     }
-    if (testParams.targetTime > 0 && (overallTestTime * 1000) >= testParams.targetTime)
+    else if (testParams.targetTime > 0 && (overallTestTime * 1000) >= testParams.targetTime)
     {
         return true;
     }

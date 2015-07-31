@@ -32,26 +32,22 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "DAVAEngine.h"
 #include "Infrastructure/Settings/GraphicsDetect.h"
 
-using namespace DAVA;
-
-class TankAnimator
+namespace DAVA
 {
-public:
-    TankAnimator();
-    ~TankAnimator();
-
-    static void Animate(Entity* skinnedTank, const Vector<uint16>& jointIndexes, float32 angle);
-    static void MakeSkinnedTank(Entity* entity, Vector<uint16>& jointsInfo);
-
-private:
-
-    static void SetReflectionRefractionVisibility(Entity *node, DAVA::uint32 visibility);
-
-    const static FastName TURRET;
-    const static FastName L_WHEELS;
-    const static FastName R_WHEELS;
-    const static FastName GUN_SHOT;
-    const static FastName SKINNED_TANK;
-};
+namespace TankUtils
+{
+    struct TankNode
+    {
+        const static FastName TURRET;
+        const static FastName L_WHEELS;
+        const static FastName R_WHEELS;
+        const static FastName GUN_SHOT;
+        const static FastName SKINNED_TANK;
+    };
+    
+    void Animate(Entity* skinnedTank, const Vector<uint16>& jointIndexes, float32 angle);
+    void MakeSkinnedTank(Entity* entity, Vector<uint16>& jointsInfo);
+}
+}
 
 #endif

@@ -42,8 +42,6 @@
 using namespace DAVA;
 
 GameCore::GameCore()
-    :   testFlowController(nullptr)
-    
 {
 }
 
@@ -70,10 +68,8 @@ void GameCore::OnAppFinished()
 {
 	testFlowController->Finish();
     GraphicsDetect::Instance()->Release();
-    SafeRelease(testFlowController);
-    
 
-    for(BaseTest* test : testChain)
+    for(auto *test : testChain)
 	{
 		SafeRelease(test);
 	}
@@ -129,7 +125,7 @@ void GameCore::RegisterTests()
     Vector<std::pair<String, String> > scenes;
     LoadMaps(MaterialsTest::TEST_NAME, scenes);
     
-    for(std::pair<String, String> scene : scenes)
+    for(const auto& scene : scenes)
     {
         BaseTest::TestParams params = defaultTestParams;
         params.sceneName = scene.first;
@@ -143,7 +139,7 @@ void GameCore::RegisterTests()
     // load universal test
     LoadMaps(UniversalTest::TEST_NAME, scenes);
     
-    for(std::pair<String, String> scene : scenes)
+    for(const auto& scene : scenes)
     {
         BaseTest::TestParams params = defaultTestParams;
         params.sceneName = scene.first;
@@ -164,12 +160,12 @@ void GameCore::LoadMaps(const String& testName, Vector<std::pair<String, String>
     YamlNode* testsRootNode = testsParser->GetRootNode();
     YamlNode* mapsRootNode = mapsParser->GetRootNode();
 
-    const Vector<YamlNode*> maps = testsRootNode->Get(testName)->AsVector();
+    const auto& maps = testsRootNode->Get(testName)->AsVector();
     
-    for(YamlNode* mapNameNode: maps)
+    for(auto mapNameNode: maps)
     {
-        String mapName = mapNameNode->AsString();
-        String mapPath = mapsRootNode->Get(mapName)->AsString();
+        const String& mapName = mapNameNode->AsString();
+        const String& mapPath = mapsRootNode->Get(mapName)->AsString();
         
         mapsVector.push_back(std::pair<String, String>(mapName, mapPath));
     }
@@ -225,7 +221,7 @@ void GameCore::InitScreenController()
     
 	if (chooserFound)
 	{
-        testFlowController = new SingleTestFlowController(!withoutUIFound);
+        testFlowController = std::make_unique<SingleTestFlowController>(!withoutUIFound);
 	}
     else if (!testForRun.empty())
     {
@@ -266,24 +262,9 @@ void GameCore::InitScreenController()
         
         if (testFramesFound)
         {
-            if(!frameDeltaFound)
-            {
-                Logger::Error("Incorrect params. Set debug frame number");
-                Core::Instance()->Quit();
-            }
-            
             String testFramesParam = CommandLineParser::Instance()->GetCommandParamAdditional("-test-frames", 0);
-            String frameDeltaParam = CommandLineParser::Instance()->GetCommandParamAdditional("-frame-delta", 0);
-
             singleTestParams.targetFramesCount = std::atoi(testFramesParam.c_str());
-            singleTestParams.targetFrameDelta = std::atof(frameDeltaParam.c_str());
-            
-            if(singleTestParams.targetFrameDelta < 0.0f)
-            {
-                Logger::Error("Incorrect params. TargetFrameDelta < 0");
-                Core::Instance()->Quit();
-            }
-            
+
             if(singleTestParams.targetFramesCount < 0)
             {
                 Logger::Error("Incorrect params. TargetFramesCount < 0");
@@ -327,7 +308,7 @@ void GameCore::InitScreenController()
             }
         }
 
-        testFlowController = new SingleTestFlowController(testForRun, singleTestParams, !withoutUIFound);
+        testFlowController = std::make_unique<SingleTestFlowController>(testForRun, singleTestParams, !withoutUIFound);
         
         Logger::Instance()->Info(DAVA::Format("Test %s params ", testForRun.c_str()).c_str());
         Logger::Instance()->Info(DAVA::Format("Target time : %d", singleTestParams.targetTime).c_str());
@@ -340,11 +321,11 @@ void GameCore::InitScreenController()
     }
 	else if (withoutUIFound)
 	{
-        testFlowController = new TestChainFlowController(false);
+        testFlowController = std::make_unique<TestChainFlowController>(false);
 	} 
 	else
 	{
-		testFlowController = new TestChainFlowController(true);
+		testFlowController = std::make_unique<TestChainFlowController>(true);
 	}
 
     testFlowController->Init(testChain);

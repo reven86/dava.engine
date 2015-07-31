@@ -91,7 +91,6 @@ if args['test'] and args['test'] != "All":
 
     if args['test-frames']:
         TEST_PARAMS += " -test-frames " + args['test-frames']
-        TEST_PARAMS += " -frame-delta " + args['frame-delta']   
 
     if args['frame-delta']:
         TEST_PARAMS += " -frame-delta " + args['frame-delta']   
@@ -260,8 +259,12 @@ while continue_process_stdout:
 
                     frame_delta_file.close()
                     statistic_file.close()
-                    material_test_file.close()
-                    subtest_delta_file.close()
+
+                    if "material_test_file" in locals():
+                        material_test_file.close()
+
+                    if "subtest_delta_file" in locals():    
+                        subtest_delta_file.close()
 
                     if start_on_android:
                         # we want to exit from logcat process because sub_process.stdout.readline() will block

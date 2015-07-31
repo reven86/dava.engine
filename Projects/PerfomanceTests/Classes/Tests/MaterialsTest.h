@@ -46,9 +46,8 @@ public:
 protected:
   
     void LoadResources() override;
-    void UnloadResources() override;
+    void PerformTestLogic(float32 timeElapsed) override {};
     
-    void PerformTestLogic(float32 timeElapsed) override;
     void PrintStatistic(const Vector<BaseTest::FrameInfo>& frames) override;
     
     const String& GetSceneName() const override;
@@ -83,8 +82,6 @@ private:
     
     Vector<NMaterial*> materials;
     Vector<float32> materialTestsElapsedTime;
-
-    Camera* camera;
 };
 
 #endif

@@ -35,7 +35,7 @@ using namespace DAVA;
 #define GET_STRING(prop) ReadString(prop, #prop, archive, node) 
 
 GraphicsLevel::GraphicsLevel(const DAVA::String & fileName, YamlNode * node)
-    :archive(NULL)
+    :   archive(new DAVA::KeyedArchive)
 {
     vegetationAnimation = false;
     stencilShadows = true;
@@ -45,7 +45,6 @@ GraphicsLevel::GraphicsLevel(const DAVA::String & fileName, YamlNode * node)
 
 GraphicsLevel::~GraphicsLevel()
 {
-    SafeRelease(archive);
 }
 
 void ReadString(String & var, const String & key, KeyedArchive * arch, DAVA::YamlNode * node)
@@ -84,8 +83,7 @@ void ReadBool(bool & var, const String & key, KeyedArchive * arch, DAVA::YamlNod
 
 void GraphicsLevel::ReadSettings(const DAVA::String & fileName, DAVA::YamlNode * node)
 {
-    SafeRelease(archive);
-    archive = new KeyedArchive();
+    archive->DeleteAllKeys();
 
     String path = "~res:/GraphicSettings/" + fileName;
     archive->LoadFromYamlFile(path);
