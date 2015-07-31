@@ -133,16 +133,16 @@ public:
     TestEchoClient()
     {
         // Prepare data of various length
-        Parcel a[] = {
-            {malloc(1), 1, 0},
-            {malloc(1000), 1000, 0},
-            {malloc(10000), 10000, 0},
-            {malloc(100000), 100000, 0},
-            {malloc(1000000), 1000000, 0},
-            {malloc(10000000), 10000000, 0}
-        };
+        Vector<Parcel> a = {
+            { malloc(1), 1, 0 },
+            { malloc(1000), 1000, 0 },
+            { malloc(10000), 10000, 0 },
+            { malloc(100000), 100000, 0 },
+            { malloc(1000000), 1000000, 0 },
+            { malloc(10000000), 10000000, 0 }
+            };
         uint8 v = 'A';
-        for (size_t i = 0;i < COUNT_OF(a);++i, ++v)
+        for (size_t i = 0;i < a.size();++i, ++v)
         {
             Memset(a[i].outbuf, v, a[i].length);
             parcels.push_back(a[i]);
