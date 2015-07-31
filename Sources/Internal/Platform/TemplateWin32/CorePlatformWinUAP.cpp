@@ -122,7 +122,7 @@ DeviceInfo::HIDCallBackFunc MainThreadRedirector(DeviceInfo::HIDCallBackFunc fun
 {
     return [=](DeviceInfo::eHIDType hid, bool b) {
         CorePlatformWinUAP* core = static_cast<CorePlatformWinUAP*>(Core::Instance());
-        DVASSERT(nullptr == core);
+        DVASSERT(nullptr != core && "In MainThreadRedirector() function CorePlatformWinUAP* = nullptr");
         core->RunOnMainThread([=]() { func(hid, b); });
 
     };

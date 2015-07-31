@@ -358,7 +358,7 @@ int32 DeviceInfo::GetCpuCount()
 bool DeviceInfo::IsHIDConnect(eHIDType hid)
 {
         DVASSERT(false && "Not Implement");
-        return HID_UNKNOWN_TYPE;
+        return false;
 }
 
 void DeviceInfo::SubscribeHID(eHIDType hid, HIDCallBackFunc&& func)

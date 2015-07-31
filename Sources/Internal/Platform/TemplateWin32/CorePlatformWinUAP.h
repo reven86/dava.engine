@@ -181,7 +181,7 @@ void CorePlatformWinUAP::RunOnMainThreadBlocked(F fn)
 }
 
 // temporary decision, need delete when signal will be enabled
-extern DeviceInfo::HIDCallBackFunc MainThreadRedirector(DeviceInfo::HIDCallBackFunc func);
+DeviceInfo::HIDCallBackFunc MainThreadRedirector(DeviceInfo::HIDCallBackFunc func);
 
 }   // namespace DAVA
 
