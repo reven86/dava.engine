@@ -324,15 +324,6 @@ void SceneSelectionSystem::SetSelection(DAVA::Entity *entity)
 	}
 }
 
-void SceneSelectionSystem::SetSelection(const EntityGroup &entities)
-{
-    if (!IsLocked())
-    {
-        Clear();
-        AddSelection(entities);
-    }
-}
-
 void SceneSelectionSystem::AddSelection(DAVA::Entity *entity)
 {
     if(IsEntitySelectable(entity) && !curSelections.ContainsEntity(entity))
