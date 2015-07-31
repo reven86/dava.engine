@@ -70,7 +70,7 @@ void ResourcePacker2D::SetRunning(bool arg)
 {
     if (arg != running)
     {
-        Logger::FrameworkDebug(arg ? "ResourcePacker2D was started" : "ResourcePacker2D was stopped");
+        Logger::Info(arg ? "ResourcePacker2D was started" : "ResourcePacker2D was stopped");
     }
     running = arg;
 }
@@ -434,7 +434,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
         {
             FileSystem::Instance()->DeleteDirectoryFiles(outputPath, false);
         }
-    	for (int fi = 0; fi < fileList->GetCount() && running; ++fi)
+    	for (int fi = 0; fi < fileList->GetCount(); ++fi)
     	{
     		if (!fileList->IsDirectory(fi))
     		{
@@ -527,7 +527,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
     }
     definitionFileList.clear();
     
-    for (int fi = 0; fi < fileList->GetCount() && running; ++fi)
+    for (int fi = 0; fi < fileList->GetCount(); ++fi)
     {
     	if (fileList->IsDirectory(fi))
     	{

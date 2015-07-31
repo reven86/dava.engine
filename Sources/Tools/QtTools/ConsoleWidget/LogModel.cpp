@@ -65,8 +65,7 @@ QVariant LogModel::data(const QModelIndex &index, int role) const
 
 int LogModel::rowCount(const QModelIndex &parent) const
 {
-    QMutexLocker locker(&mutex);
-    return items.size();
+    return registerCount;
 }
 
 void LogModel::AddMessage(DAVA::Logger::eLogLevel ll, const QString& text)
@@ -82,10 +81,15 @@ void LogModel::AddMessage(DAVA::Logger::eLogLevel ll, const QString& text)
 
 void LogModel::OnTimeout()
 {
-    if (rowCount() != registerCount)
+    int newSize;
     {
-        emit beginInsertRows(QModelIndex(), registerCount, rowCount() - 1);
-        registerCount = rowCount();
+        QMutexLocker locker(&mutex);
+        newSize = items.size();
+    }
+    if (newSize != registerCount)
+    {
+        emit beginInsertRows(QModelIndex(), registerCount, newSize - 1);
+        registerCount = newSize;
         emit endInsertRows();
     }
 }
