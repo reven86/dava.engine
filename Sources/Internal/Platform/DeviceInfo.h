@@ -30,6 +30,8 @@
 #ifndef __FRAMEWORK__DEVICEINFO__
 #define __FRAMEWORK__DEVICEINFO__
 
+#include <functional>
+
 #include "Base/BaseTypes.h"
 #include "Render/RenderBase.h"
 
