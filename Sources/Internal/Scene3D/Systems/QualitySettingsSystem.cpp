@@ -45,7 +45,7 @@ const FastName QualitySettingsSystem::QUALITY_OPTION_WATER_DECORATIONS("Water De
 QualitySettingsSystem::QualitySettingsSystem()
     : curTextureQuality(0)
     , curSoundQuality(0)
-    , prerequiredVertexFromat(EVF_FORCE_DWORD) //default format set to keep all streams
+    , cutUnusedVertexStreams(false) //default set to keep all streams
     , keepUnusedQualityEntities(false)
 {
     Load("~res:/quality.yaml");
@@ -334,13 +334,13 @@ FilePath QualitySettingsSystem::GetSFXQualityConfigPath(size_t index) const
 }
 
 
-int32 QualitySettingsSystem::GetPrerequiredVertexFormat()
+bool QualitySettingsSystem::GetAllowCutUnusedVertexStreams()
 {
-    return prerequiredVertexFromat;
+    return cutUnusedVertexStreams;
 }
-void QualitySettingsSystem::SetPrerequiredVertexFormat(int32 format)
+void QualitySettingsSystem::SetAllowCutUnusedVertexStreams(bool cut)
 {
-    prerequiredVertexFromat = format;
+    cutUnusedVertexStreams = cut;
 }
 
 size_t QualitySettingsSystem::GetMaterialQualityGroupCount() const

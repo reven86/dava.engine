@@ -27,9 +27,10 @@
 =====================================================================================*/
 
 
-#ifndef __RHI_GLES2_H__
-#define __RHI_GLES2_H__
+#ifndef __RHI_DX11_H__
+#define __RHI_DX11_H__
 
+#include "../rhi_Public.h"
 #include "../Common/rhi_Private.h"
 #include "../Common/rhi_Impl.h"
 
@@ -37,24 +38,22 @@
 namespace rhi
 {
 
-struct InitParam;
-
-void        gles2_Initialize( const InitParam& param );
+void        dx11_Initialize( const InitParam& param );
 
 
-namespace VertexBufferGLES2
+namespace VertexBufferDX11
 {
 void        SetupDispatch( Dispatch* dispatch );
-void        SetToRHI( Handle vb );
+void        SetToRHI( Handle vb, unsigned stream_i, unsigned offset, unsigned stride );
 }
 
-namespace IndexBufferGLES2
+namespace IndexBufferDX11
 {
 void        SetupDispatch( Dispatch* dispatch );
-void        SetToRHI( Handle vb );
+void        SetToRHI( Handle vb, unsigned offset );
 }
 
-namespace QueryBufferGLES2
+namespace QueryBufferDX11
 {
 void        SetupDispatch( Dispatch* dispatch );
 
@@ -62,120 +61,58 @@ void        BeginQuery( Handle buf, uint32 objectIndex );
 void        EndQuery( Handle buf, uint32 objectIndex );
 }
 
-namespace TextureGLES2
-{ 
-void        SetupDispatch( Dispatch* dispatch );
-void        SetToRHI( Handle tex, unsigned unit_i, uint32 base_i=InvalidIndex  );
-void        SetAsRenderTarget( Handle tex, Handle depth );
-Size2i      Size( Handle tex );
-}
 
-namespace SamplerStateGLES2
+namespace PipelineStateDX11
 {
 void        SetupDispatch( Dispatch* dispatch );
-void        SetToRHI( Handle hstate );
+unsigned    VertexLayoutStride( Handle ps );
+void        SetToRHI( Handle ps, uint32 layoutUID );
 }
 
-
-namespace PipelineStateGLES2
-{
-void        SetupDispatch( Dispatch* dispatch );
-void        SetToRHI( Handle ps, uint32 vdeclUID );
-void        SetVertexDeclToRHI( Handle ps, uint32 vdeclUID, uint32 firstVertex=0 );
-uint32      VertexSamplerCount( Handle ps );
-}
-
-namespace DepthStencilStateGLES2
-{
-void        SetupDispatch( Dispatch* dispatch );
-void        SetToRHI( Handle hstate );
-}
-namespace ConstBufferGLES2
+namespace ConstBufferDX11
 {
 void        SetupDispatch( Dispatch* dispatch );
 void        InitializeRingBuffer( uint32 size );
-
-void        SetToRHI( Handle ps, const void* instData );
-const void* Instance( Handle ps );
+void        SetToRHI( Handle cb, const void* inst_data );
+const void* InstData( Handle cb );
+void        InvalidateAllConstBufferInstances();
 }
 
-namespace RenderPassGLES2
+namespace TextureDX11
+{
+void        SetupDispatch( Dispatch* dispatch );
+void        SetToRHI( Handle tex, unsigned unitIndex );
+void        SetAsRenderTarget( Handle tex );
+void        SetAsDepthStencil( Handle tex );
+}
+
+
+namespace DepthStencilStateDX11
+{
+void        SetupDispatch( Dispatch* dispatch );
+void        SetToRHI( Handle state );
+}
+
+namespace SamplerStateDX11
+{
+void        SetupDispatch( Dispatch* dispatch );
+void        SetToRHI( Handle state );
+}
+
+
+namespace RenderPassDX11
 {
 void        SetupDispatch( Dispatch* dispatch );
 }
 
-namespace CommandBufferGLES2
+namespace CommandBufferDX11
 {
 void        SetupDispatch( Dispatch* dispatch );
 }
 
 
-void        InitializeRenderThread();
-void        UninitializeRenderThread();
-
-struct
-GLCommand
-{
-    enum 
-    Func
-    {
-        NOP,
-        
-        GEN_BUFFERS, 
-        BIND_BUFFER, 
-        RESTORE_VERTEX_BUFFER, 
-        RESTORE_INDEX_BUFFER,
-        DELETE_BUFFERS, 
-        BUFFER_DATA,
-        BUFFER_SUBDATA,
-
-        GEN_FRAMEBUFFERS,
-        GEN_RENDERBUFFERS,
-        BIND_FRAMEBUFFER,
-        FRAMEBUFFER_TEXTURE,
-        FRAMEBUFFER_STATUS,
-        BIND_RENDERBUFFER,
-        RENDERBUFFER_STORAGE,
-        DELETE_RENDERBUFFERS,
-        FRAMEBUFFER_RENDERBUFFER,
-        DRAWBUFFERS,
-        DELETE_FRAMEBUFFERS,
-
-        GEN_TEXTURES,
-        SET_ACTIVE_TEXTURE,
-        BIND_TEXTURE,
-        RESTORE_TEXTURE0,
-        DELETE_TEXTURES,
-        TEX_PARAMETER_I,
-        TEX_IMAGE2D,
-        GENERATE_MIPMAP,
-        READ_PIXELS,
-        
-        CREATE_PROGRAM,
-        CREATE_SHADER,
-        SHADER_SOURCE,
-        COMPILE_SHADER,
-        ATTACH_SHADER,
-        LINK_PROGRAM,
-        GET_SHADER_IV,
-        GET_SHADER_INFO_LOG,
-        GET_PROGRAM_IV,
-        GET_ATTRIB_LOCATION,
-        GET_ACTIVE_UNIFORM,
-        GET_UNIFORM_LOCATION,
-
-        SET_UNIFORM_1I
-    };
-
-    Func    func;
-    uint64  arg[12];
-    int     retval;
-    int     status;
-};
-
-void     ExecGL( GLCommand* cmd, uint32 cmdCount, bool force_immediate=false );
 
 //==============================================================================
 }
-#endif // __RHI_GLES2_H__
+#endif // __RHI_DX11_H__
 

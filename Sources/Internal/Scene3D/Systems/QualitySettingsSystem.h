@@ -105,8 +105,8 @@ public:
     
 	void UpdateEntityAfterLoad(Entity *entity);
 
-    int32 GetPrerequiredVertexFormat();
-    void SetPrerequiredVertexFormat(int32 format);
+    bool GetAllowCutUnusedVertexStreams();
+    void SetAllowCutUnusedVertexStreams(bool cut);
 
     void SetKeepUnusedEntities(bool keep);
     bool GetKeepUnusedEntities();
@@ -148,7 +148,7 @@ protected:
 
 	FastNameMap<bool> qualityOptions;
 
-    int32 prerequiredVertexFromat;
+    bool cutUnusedVertexStreams;
 
     bool keepUnusedQualityEntities; //for editor to prevent cutting entities with unused quality
 };

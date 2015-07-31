@@ -51,6 +51,7 @@ public:
         TEXTURE_STATIC = 0,
         TEXTURE_DYNAMIC_REFLECTION,
         TEXTURE_DYNAMIC_REFRACTION,
+        TEXTURE_DYNAMIC_RR_DEPTHBUFFER,           //depth buffer for reflection and refraction
         //later add here shadow maps, environment probes etc.
 
         DYNAMIC_TEXTURES_END,

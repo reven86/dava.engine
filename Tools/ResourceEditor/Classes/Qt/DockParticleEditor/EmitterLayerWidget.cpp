@@ -56,14 +56,10 @@ const EmitterLayerWidget::LayerTypeMap EmitterLayerWidget::layerTypeMap[] =
 
 const EmitterLayerWidget::BlendPreset EmitterLayerWidget::blendPresetsMap[]=
 {
-#if RHI_COMPLETE_EDITOR
-	{BLEND_SRC_ALPHA, BLEND_ONE_MINUS_SRC_ALPHA, "Alpha blend"},
-	{BLEND_ONE, BLEND_ONE, "Additive"},
-	{BLEND_SRC_ALPHA, BLEND_ONE, "Alpha additive"},
-	{BLEND_ONE_MINUS_DST_COLOR, BLEND_ONE, "Soft additive"}
-#endif // RHI_COMPLETE_EDITOR
     {BLENDING_ALPHABLEND, "Alpha blend"},
-    {BLENDING_ADDITIVE, "Additive" }
+    {BLENDING_ADDITIVE, "Additive" },
+    {BLENDING_ALPHA_ADDITIVE, "Alpha additive"},
+    {BLENDING_SOFT_ADDITIVE, "Soft additive"},
 	/*{BLEND_DST_COLOR, BLEND_ZERO, "Multiplicative"},
 	{BLEND_DST_COLOR, BLEND_SRC_COLOR, "2x Multiplicative"}*/
 };
@@ -262,35 +258,26 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
 	mainBox->addWidget(blendOptionsLabel);	
 	
 	presetLabel = new QLabel("Preset");
-	srcFactorLabel = new QLabel("SRC Factor");
-	dstFactorLabel = new QLabel("DST Factor");	
-	presetComboBox = new QComboBox();
-	srcFactorComboBox = new QComboBox();
-	dstFactorComboBox = new QComboBox();
-	srcFactorComboBox->setEnabled(false);
-	dstFactorComboBox->setEnabled(false);
-	FillBlendCombos();
+	
+	presetComboBox = new QComboBox();		
+    int32 presetsCount = sizeof(blendPresetsMap) / sizeof(BlendPreset);
+    for (int32 i = 0; i < presetsCount; i++)
+    {
+        presetComboBox->addItem(blendPresetsMap[i].presetName);
+    }
 	
 	QHBoxLayout *blendLayout = new QHBoxLayout();
 	QVBoxLayout *presetLayout = new QVBoxLayout();
-	QVBoxLayout *srcLayout = new QVBoxLayout();
-	QVBoxLayout *dstLayout = new QVBoxLayout();
+	
 
 	presetLayout->addWidget(presetLabel);
 	presetLayout->addWidget(presetComboBox);
-	srcLayout->addWidget(srcFactorLabel);
-	srcLayout->addWidget(srcFactorComboBox);
-	dstLayout->addWidget(dstFactorLabel);
-	dstLayout->addWidget(dstFactorComboBox);
 	
-	blendLayout->addLayout(presetLayout);
-	blendLayout->addLayout(srcLayout);
-	blendLayout->addLayout(dstLayout);
+	
+	blendLayout->addLayout(presetLayout);	
 	mainBox->addLayout(blendLayout);
 	
-	connect(presetComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnPresetChanged()));
-	connect(srcFactorComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnValueChanged()));
-	connect(dstFactorComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnValueChanged()));
+    connect(presetComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnValueChanged()));	
 
 	
 	fogCheckBox = new QCheckBox("Enable fog");	
@@ -565,9 +552,7 @@ EmitterLayerWidget::~EmitterLayerWidget()
 		this,
 		SLOT(OnLodsChanged()));		
 
-	disconnect(presetComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnPresetChanged()));
-	disconnect(srcFactorComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnValueChanged()));
-	disconnect(dstFactorComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnValueChanged()));
+    disconnect(presetComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnValueChanged()));	
 	disconnect(fogCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnValueChanged()));
 	disconnect(frameBlendingCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnValueChanged()));
 
@@ -710,24 +695,6 @@ void EmitterLayerWidget::OnSpriteBtn()
 	OnValueChanged();
 }
 
-void EmitterLayerWidget::OnPresetChanged()
-{
-	if (blockSignals)
-		return;	
-#if RHI_COMPLETE_EDITOR
-	int32 presetsCount = sizeof(blendPresetsMap)/sizeof(BlendPreset);
-	int32 presetId = presetComboBox->currentIndex();
-	if (presetId>=presetsCount) //custom was selected
-		return;
-	blockSignals = true;
-	//-1 is because we don't even show blend none
-	srcFactorComboBox->setCurrentIndex(blendPresetsMap[presetId].srcFactor-1);
-	dstFactorComboBox->setCurrentIndex(blendPresetsMap[presetId].dstFactor-1);
-	blockSignals = false;
-#endif // RHI_COMPLETE_EDITOR
-	OnValueChanged();
-}
-
 void EmitterLayerWidget::OnValueChanged()
 {
 	if (blockSignals)
@@ -787,11 +754,7 @@ void EmitterLayerWidget::OnValueChanged()
 
 	ParticleLayer::eType propLayerType = layerTypeMap[layerTypeComboBox->currentIndex()].layerType;
 
-	//+1 is because we dont even show blend none
-#if RHI_COMPLETE_EDITOR
-	eBlendMode srcFactor = (eBlendMode)(srcFactorComboBox->currentIndex()+1);
-	eBlendMode dstFactor = (eBlendMode)(dstFactorComboBox->currentIndex()+1);
-#endif // RHI_COMPLETE_EDITOR
+    eBlending blending = blendPresetsMap[presetComboBox->currentIndex()].blending;
 
 	int32 particleOrientation = 0;
 	if (cameraFacingCheckBox->isChecked())
@@ -819,7 +782,7 @@ void EmitterLayerWidget::OnValueChanged()
 						 scaleVelocityFactorSpinBox->value(),
 						 isLoopedCheckBox->isChecked(),
 						 sprite,
-                         BLENDING_NONE, //RHI_COMPLETE_EDITOR
+                         blending,
 						 fogCheckBox->isChecked(),
 						 frameBlendingCheckBox->isChecked(),
 						 particleOrientation,
@@ -955,23 +918,16 @@ void EmitterLayerWidget::Update(bool updateMinimized)
     worldAlignCheckBox->setChecked(layer->particleOrientation&ParticleLayer::PARTICLE_ORIENTATION_WORLD_ALIGN);
 
     //blend and fog
-#if RHI_COMPLETE_EDITOR
-    eBlendMode sFactor = layer->srcBlendFactor;
-    eBlendMode dFactor = layer->dstBlendFactor;
-
-    //-1 as we don't have BLEND_NONE
-    srcFactorComboBox->setCurrentIndex(sFactor-1);
-    dstFactorComboBox->setCurrentIndex(dFactor-1);
 
     int32 presetsCount = sizeof(blendPresetsMap)/sizeof(BlendPreset);
     int32 presetId;
     for (presetId=0; presetId<presetsCount; presetId++)
     {
-        if ((blendPresetsMap[presetId].srcFactor == sFactor)&&(blendPresetsMap[presetId].dstFactor == dFactor))
+        if (blendPresetsMap[presetId].blending == layer->blending)
             break;
     }
     presetComboBox->setCurrentIndex(presetId);
-#endif // RHI_COMPLETE_EDITOR
+
 
     fogCheckBox->setChecked(layer->enableFog);
 
@@ -1151,24 +1107,6 @@ void EmitterLayerWidget::FillLayerTypes()
 	}
 }
 
-void EmitterLayerWidget::FillBlendCombos()
-{
-#if RHI_COMPLETE_EDITOR
-	int32 presetsCount = sizeof(blendPresetsMap)/sizeof(BlendPreset);
-	for (int32 i=0; i<presetsCount; i++)
-	{
-		presetComboBox->addItem(blendPresetsMap[i].presetName);
-	}
-	presetComboBox->addItem("Custom");
-
-	for (int32 i = 1; i<BLEND_MODE_COUNT; i++) //start from 1 to avoid none
-	{
-		srcFactorComboBox->addItem(BLEND_MODE_NAMES[i].c_str());
-		dstFactorComboBox->addItem(BLEND_MODE_NAMES[i].c_str());
-	}
-#endif // RHI_COMPLETE_EDITOR
-}
-
 int32 EmitterLayerWidget::LayerTypeToIndex(ParticleLayer::eType layerType)
 {
 	int32 layerTypes = sizeof(layerTypeMap) / sizeof(*layerTypeMap);
@@ -1221,11 +1159,7 @@ void EmitterLayerWidget::SetSuperemitterMode(bool isSuperemitter)
 	//blend and fog settings are set in inner emitter layers
 	blendOptionsLabel->setVisible(!isSuperemitter);
 	presetLabel->setVisible(!isSuperemitter);
-	presetComboBox->setVisible(!isSuperemitter);
-	srcFactorLabel->setVisible(!isSuperemitter);
-	srcFactorComboBox->setVisible(!isSuperemitter);
-	dstFactorLabel->setVisible(!isSuperemitter);
-	dstFactorComboBox->setVisible(!isSuperemitter);
+	presetComboBox->setVisible(!isSuperemitter);	
 	fogCheckBox->setVisible(!isSuperemitter);
 	frameBlendingCheckBox->setVisible(!isSuperemitter);
 

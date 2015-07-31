@@ -3,6 +3,7 @@
 
     #if defined(__DAVAENGINE_WIN32__)
         #include "../DX9/rhi_DX9.h"
+        #include "../DX11/rhi_DX11.h"
         #include "../GLES2/rhi_GLES2.h"
     #elif defined(__DAVAENGINE_MACOS__)
         #include "../GLES2/rhi_GLES2.h"
@@ -45,7 +46,7 @@ Initialize( Api api, const InitParam& param )
             break;
 
         case RHI_DX11 :
-//            dx11_Initialize();
+            dx11_Initialize( param );
             break;
 #endif
             
@@ -429,6 +430,31 @@ End( Handle pass )
 }
 
 
+//////////////////////////////////////////////////////////////////////////
+
+namespace SyncObject
+{
+
+Handle
+Create()
+{
+    return (*_Impl.impl_SyncObject_Create)();
+}
+
+void
+Delete( Handle obj )
+{
+    (*_Impl.impl_SyncObject_Delete)( obj );
+}
+
+bool
+IsSygnaled( Handle obj )
+{
+    return (*_Impl.impl_SyncObject_IsSignaled)( obj );
+}
+
+}
+
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -442,9 +468,9 @@ Begin( Handle cmdBuf )
 }
 
 void
-End( Handle cmdBuf )
+End( Handle cmdBuf, Handle syncObject )
 {
-    (*_Impl.impl_CommandBuffer_End)( cmdBuf );
+    (*_Impl.impl_CommandBuffer_End)( cmdBuf, syncObject );
 }
 
 void
@@ -559,13 +585,13 @@ uint32
 TextureStride( TextureFormat format, Size2i size, uint32 level )
 {
     uint32  stride  = 0;
-    Size2i  ext     = TextureExtents( size, level );
+    uint32  width   = TextureExtents( size, level ).dx;
 
     switch( format )
     {
         case TEXTURE_FORMAT_R8G8B8A8 :
         {
-            stride = ext.dx * sizeof(uint32);
+            stride = width * sizeof(uint32);
         }   break;
         
         case TEXTURE_FORMAT_R4G4B4A4 :
@@ -574,17 +600,28 @@ TextureStride( TextureFormat format, Size2i size, uint32 level )
         case TEXTURE_FORMAT_R16 :
         case TEXTURE_FORMAT_D16 :
         {
-            stride = ext.dx * sizeof(uint16);
+            stride = width * sizeof(uint16);
         }   break;
         
         case TEXTURE_FORMAT_R8 :
         {
-            stride = ext.dx * sizeof(uint8);
+            stride = width * sizeof(uint8);
         }   break;
             
         case TEXTURE_FORMAT_D24S8 :
         {
-            stride = ext.dx * sizeof(uint32);
+            stride = width * sizeof(uint32);
+        }   break;
+        
+        case TEXTURE_FORMAT_DXT1 :
+        {
+            stride = (width*8)/4;
+        }   break;
+        
+        case TEXTURE_FORMAT_DXT3 :
+        case TEXTURE_FORMAT_DXT5 :
+        {
+            stride = (width*16)/4;
         }   break;
         
         default :

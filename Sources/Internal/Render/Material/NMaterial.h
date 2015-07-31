@@ -120,6 +120,9 @@ public:
     const FastName& GetLocalFXName() const;
     const FastName& GetEffectiveFXName() const;
 
+    const FastName& GetQualityGroup();
+    void SetQualityGroup(const FastName& quality);
+
     inline void SetMaterialName(const FastName & name);
     inline const FastName& GetMaterialName() const;
 
@@ -180,10 +183,7 @@ private:
     /*the following functions will collect data recursively*/
     MaterialBufferBinding* GetConstBufferBinding(UniquePropertyLayout propertyLayout);
     NMaterialProperty* GetMaterialProperty(const FastName& propName);    
-    void CollectMaterialFlags(HashMap<FastName, int32>& target);
-    
-    const FastName& GetQualityGroup();
-    void SetQualityGroup(const FastName& quality);
+    void CollectMaterialFlags(HashMap<FastName, int32>& target);        
 
     void AddChildMaterial(NMaterial *material);
     void RemoveChildMaterial(NMaterial *material);    
