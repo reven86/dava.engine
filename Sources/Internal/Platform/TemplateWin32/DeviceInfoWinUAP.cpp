@@ -36,7 +36,7 @@
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 
-#include "DeviceDetectorWinUAP.h"
+#include "Platform/TemplateWin32/DeviceDetectorWinUAP.h"
 
 #include "Iphlpapi.h"
 #include "winsock2.h"
@@ -187,7 +187,7 @@ List<DeviceInfo::StorageInfo> DeviceInfo::GetStoragesList()
 
 bool DeviceInfo::IsHIDConnect(eHIDType hid)
 {
-    return GetDeviceDetector()->IsHIDConnect(static_cast<int32>(hid));
+    return DeviceDetector::GetDeviceDetector()->IsHIDConnected(hid);
 }
 
 // warning!!! notification occur in DeviceWatcher's thread
@@ -196,7 +196,7 @@ bool DeviceInfo::IsHIDConnect(eHIDType hid)
 // for example DeviceInfo::SubscribeHID(DeviceInfo::eHIDType::HID_MOUSE_TYPE, MainThreadRedirector([this](int32 a, bool b) { OnMouseAdd(a, b);}));
 void DeviceInfo::SubscribeHID(eHIDType hid, HIDCallBackFunc&& func)
 {
-    GetDeviceDetector()->AddCallBack(hid, std::move(func));
+    DeviceDetector::GetDeviceDetector()->AddCallBack(hid, std::forward<DeviceInfo::HIDCallBackFunc>(func));
 }
 
 bool DeviceInfo::IsMobileMode()

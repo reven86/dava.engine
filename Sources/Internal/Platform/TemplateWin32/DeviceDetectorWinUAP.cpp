@@ -30,42 +30,42 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 
-#include "DeviceDetectorWinUAP.h"
-#include "Platform/DeviceInfo.h"
 #include "Utils/Utils.h"
+#include "DeviceDetectorWinUAP.h"
 
 namespace DAVA
 {
-using namespace ::Windows::Devices;
 using namespace ::Windows::Devices::Input;
 using namespace ::Windows::UI::ViewManagement;
 using namespace ::Windows::Foundation;
+using namespace ::Windows::Devices;
+using namespace ::Windows::Devices::Enumeration;
+using namespace ::Windows::Devices::HumanInterfaceDevice;
 
-DeviceDetector::AQSyntax DeviceDetector::GetAQS(int32 hid)
+DeviceDetector::AQSyntax DeviceDetector::ConvertHIDToAQS(DeviceInfo::eHIDType hid)
 {
-    DeviceInfo::eHIDType hidType = static_cast<DeviceInfo::eHIDType>(hid);
     AQSyntax aqsType(AQS_UNKNOWN);
-    switch (hidType)
+    switch (hid)
     {
-    case DAVA::DeviceInfo::HID_POINTER_TYPE:
+    case DeviceInfo::HID_POINTER_TYPE:
         aqsType = AQS_POINTER;
         break;
-    case DAVA::DeviceInfo::HID_MOUSE_TYPE:
+    case DeviceInfo::HID_MOUSE_TYPE:
         aqsType = AQS_MOUSE;
         break;
-    case DAVA::DeviceInfo::HID_JOYSTICK_TYPE:
+    case DeviceInfo::HID_JOYSTICK_TYPE:
         aqsType = AQS_JOYSTICK;
         break;
-    case DAVA::DeviceInfo::HID_GAMEPAD_TYPE:
+    case DeviceInfo::HID_GAMEPAD_TYPE:
         aqsType = AQS_GAMEPAD;
         break;
-    case DAVA::DeviceInfo::HID_KEYBOARD_TYPE:
+    case DeviceInfo::HID_KEYBOARD_TYPE:
         aqsType = AQS_KEYBOARD;
         break;
-    case DAVA::DeviceInfo::HID_KEYPAD_TYPE:
+    case DeviceInfo::HID_KEYPAD_TYPE:
         aqsType = AQS_KEYPAD;
         break;
-    case DAVA::DeviceInfo::HID_SYSTEM_CONTROL_TYPE:
+    case DeviceInfo::HID_SYSTEM_CONTROL_TYPE:
         aqsType = AQS_SYSTEM_CONTROL;
         break;
     default:
@@ -74,10 +74,10 @@ DeviceDetector::AQSyntax DeviceDetector::GetAQS(int32 hid)
     return aqsType;
 }
 
-int32 DeviceDetector::ConvertAQSToInt(DeviceDetector::AQSyntax aqsType)
+DeviceInfo::eHIDType DeviceDetector::ConvertAQSToHID(AQSyntax aqs)
 {
     DeviceInfo::eHIDType hid(DeviceInfo::HID_UNKNOWN_TYPE);
-    switch (aqsType)
+    switch (aqs)
     {
     case AQS_POINTER:
         hid = DeviceInfo::HID_POINTER_TYPE;
@@ -103,25 +103,30 @@ int32 DeviceDetector::ConvertAQSToInt(DeviceDetector::AQSyntax aqsType)
     default:
         DVASSERT(false && "DeviceDetector ( HID_AQS_TYPE )");
     }
-    return static_cast<int32>(hid);
+    return hid;
 }
 
 void DeviceDetector::NotifyAllClients(AQSyntax usageId, bool connectState)
 {
-    for (auto iter : connections[usageId])
+    MapForTypeAndConnections::iterator itForTypes = connections.find(usageId);
+    if (itForTypes == connections.end())
     {
-        (iter)(ConvertAQSToInt(usageId), connectState);
+        return;
+    }
+    for (auto iter : (itForTypes->second))
+    {
+        (iter)(ConvertAQSToHID(usageId), connectState);
     }
 }
 
-void DeviceDetector::AddCallBack(int32 hid, DeviceInfo::HIDCallBackFunc&& func)
+void DeviceDetector::AddCallBack(DeviceInfo::eHIDType hid, DeviceInfo::HIDCallBackFunc&& func)
 {
-    connections[GetAQS(hid)].push_back(std::move(func));
+    connections[ConvertHIDToAQS(hid)].emplace_back(std::forward<DeviceInfo::HIDCallBackFunc>(func));
 }
 
-bool DeviceDetector::IsHIDConnect(int32 hid)
+bool DeviceDetector::IsHIDConnected(DeviceInfo::eHIDType hid)
 {
-    return IsEnabled(GetAQS(static_cast<DeviceInfo::eHIDType>(hid)));
+    return IsEnabled(ConvertHIDToAQS(hid));
 }
 
 DeviceDetector::DeviceDetector()
@@ -129,22 +134,22 @@ DeviceDetector::DeviceDetector()
     TouchCapabilities touchCapabilities;
     isTouchPresent = (1 == touchCapabilities.TouchPresent); //  Touch is always present in MSVS simulator
     //add watchers
-    mapWatchers.insert(MapDeviceWatchersPair(WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_POINTER), AQS_POINTER));
-    mapWatchers.insert(MapDeviceWatchersPair(WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_MOUSE), AQS_MOUSE));
-    mapWatchers.insert(MapDeviceWatchersPair(WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_JOYSTICK), AQS_JOYSTICK));
-    mapWatchers.insert(MapDeviceWatchersPair(WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_GAMEPAD), AQS_GAMEPAD));
-    mapWatchers.insert(MapDeviceWatchersPair(WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_KEYBOARD), AQS_KEYBOARD));
-    mapWatchers.insert(MapDeviceWatchersPair(WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_KEYPAD), AQS_KEYPAD));
-    mapWatchers.insert(MapDeviceWatchersPair(WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_SYSTEM_CONTROL), AQS_SYSTEM_CONTROL));
+    mapWatchers.insert(PairForWatchersAndType(WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_POINTER), AQS_POINTER));
+    mapWatchers.insert(PairForWatchersAndType(WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_MOUSE), AQS_MOUSE));
+    mapWatchers.insert(PairForWatchersAndType(WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_JOYSTICK), AQS_JOYSTICK));
+    mapWatchers.insert(PairForWatchersAndType(WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_GAMEPAD), AQS_GAMEPAD));
+    mapWatchers.insert(PairForWatchersAndType(WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_KEYBOARD), AQS_KEYBOARD));
+    mapWatchers.insert(PairForWatchersAndType(WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_KEYPAD), AQS_KEYPAD));
+    mapWatchers.insert(PairForWatchersAndType(WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_SYSTEM_CONTROL), AQS_SYSTEM_CONTROL));
 }
 
-Windows::Devices::Enumeration::DeviceWatcher^ DeviceDetector::WatcherForDeviceEvents(uint16 usagePage, uint16 usageId)
+DeviceWatcher^ DeviceDetector::WatcherForDeviceEvents(uint16 usagePage, uint16 usageId)
 {
-    Windows::Devices::Enumeration::DeviceWatcher^ watcher = Enumeration::DeviceInformation::CreateWatcher(HumanInterfaceDevice::HidDevice::GetDeviceSelector(usagePage, usageId));
-    auto added = ref new TypedEventHandler<Enumeration::DeviceWatcher^, Enumeration::DeviceInformation^>([this](Enumeration::DeviceWatcher^ watcher, Enumeration::DeviceInformation^ information) {
+    Windows::Devices::Enumeration::DeviceWatcher^ watcher = Enumeration::DeviceInformation::CreateWatcher(HidDevice::GetDeviceSelector(usagePage, usageId));
+    auto added = ref new TypedEventHandler<DeviceWatcher^, DeviceInformation^>([this](DeviceWatcher^ watcher, DeviceInformation^ information) {
         OnDeviceAdded(watcher, information);
     });
-    auto removed = ref new TypedEventHandler<Enumeration::DeviceWatcher^ , Enumeration::DeviceInformationUpdate^>([this](Enumeration::DeviceWatcher^ watcher, Enumeration::DeviceInformationUpdate^ information) {
+    auto removed = ref new TypedEventHandler<DeviceWatcher^ , DeviceInformationUpdate^>([this](DeviceWatcher^ watcher, DeviceInformationUpdate^ information) {
         OnDeviceRemoved(watcher, information);
     });
 
@@ -154,22 +159,21 @@ Windows::Devices::Enumeration::DeviceWatcher^ DeviceDetector::WatcherForDeviceEv
     return watcher;
 }
 
-void DeviceDetector::OnDeviceAdded(Windows::Devices::Enumeration::DeviceWatcher^ watcher, Windows::Devices::Enumeration::DeviceInformation^ information)
+void DeviceDetector::OnDeviceAdded(DeviceWatcher^ watcher, DeviceInformation^ information)
 {
-    Logger::FrameworkDebug("[DeviceDetector] Detect device added with name \"%s\", id = \"%s\", isEnabled = %d", String(WStringToString(information->Name->Data())).c_str(), String(WStringToString(information->Id->Data())).c_str(), static_cast<int32>(information->IsEnabled));
+    Logger::FrameworkDebug("[DeviceDetector] device added with name \"%s\", id = \"%s\", isEnabled = %d", String(WStringToString(information->Name->Data())).c_str(), String(WStringToString(information->Id->Data())).c_str(), static_cast<int32>(information->IsEnabled));
     auto iter = mapWatchers.find(watcher);
     if (iter != mapWatchers.end())
     {
-        Platform::String^ ownId = ref new Platform::String(information->Id->Data());
-        devices[iter->second][ownId] = ref new Platform::String(information->Name->Data());
+        devices[iter->second][information->Id] = information->Name;
         NotifyAllClients(iter->second, true);
     }
 }
 
-void DeviceDetector::OnDeviceRemoved(Windows::Devices::Enumeration::DeviceWatcher^ watcher, Windows::Devices::Enumeration::DeviceInformationUpdate^ information)
+void DeviceDetector::OnDeviceRemoved(DeviceWatcher^ watcher, DeviceInformationUpdate^ information)
 {
-    Logger::FrameworkDebug("[DeviceDetector] Detect device removed with id = \"%s\".", String(WStringToString(information->Id->Data())).c_str());
-    MapDeviceWatchers::iterator iter = mapWatchers.find(watcher);
+    Logger::FrameworkDebug("[DeviceDetector] device removed with id = \"%s\".", String(WStringToString(information->Id->Data())).c_str());
+    MapForWatchers::iterator iter = mapWatchers.find(watcher);
     if (iter != mapWatchers.end())
     {
         devices[iter->second].erase(information->Id);
@@ -182,10 +186,10 @@ bool DeviceDetector::IsEnabled(AQSyntax usageId)
     return (devices[usageId].size() > 0);
 }
 
-DeviceDetector* GetDeviceDetector()
+DeviceDetector* DeviceDetector::GetDeviceDetector()
 {
-    static DeviceDetector* instance = new DeviceDetector();
-    return instance;
+    static DeviceDetector instance;
+    return &instance;
 }
 
 } //  namespace DAVA

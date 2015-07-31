@@ -40,6 +40,7 @@
 #include "Concurrency/LockGuard.h"
 
 #include "Platform/TemplateWin32/WinUAPXamlApp.h"
+#include "Platform/DeviceInfo.h"
 
 #include <ppltasks.h>
 
@@ -178,6 +179,9 @@ void CorePlatformWinUAP::RunOnMainThreadBlocked(F fn)
     xamlApp->MainThreadDispatcher()->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler(wrapper));
     cv.Wait(lock, [&jobDone]() -> bool { return jobDone; });
 }
+
+// temporary decision, need delete when signal will be enabled
+extern DeviceInfo::HIDCallBackFunc MainThreadRedirector(DeviceInfo::HIDCallBackFunc func);
 
 }   // namespace DAVA
 

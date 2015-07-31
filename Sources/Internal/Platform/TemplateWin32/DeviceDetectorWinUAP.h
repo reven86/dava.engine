@@ -37,15 +37,17 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace DAVA
 {
 
-class DeviceDetector : public Singleton<DeviceDetector>
+class DeviceDetector
 {
 public:
-    DeviceDetector();
 
-    void AddCallBack(int32 hid, DeviceInfo::HIDCallBackFunc&& func);
-    bool IsHIDConnect(int32 hid);
+    static DeviceDetector* GetDeviceDetector();
+ 
+    void AddCallBack(DeviceInfo::eHIDType hid, DeviceInfo::HIDCallBackFunc&& func);
+    bool IsHIDConnected(DeviceInfo::eHIDType hid);
 
 private:
+    DeviceDetector();
 
     enum AQSyntax
     {
@@ -64,27 +66,25 @@ private:
             return a->GetHashCode() < b->GetHashCode();
         }
     };
-    typedef std::pair<Windows::Devices::Enumeration::DeviceWatcher^, AQSyntax> MapDeviceWatchersPair;
-    typedef Map<MapDeviceWatchersPair::first_type, MapDeviceWatchersPair::second_type, cmpDeviceWatcher> MapDeviceWatchers;
-    typedef Map<Platform::String^, Platform::String^> MapIdName;
-    typedef Map<AQSyntax, MapIdName> MapTypesDevice;
-    typedef Map<AQSyntax, Vector<DeviceInfo::HIDCallBackFunc > > MapTypesConnections;
+    using PairForWatchersAndType = std::pair<Windows::Devices::Enumeration::DeviceWatcher^, AQSyntax>;
+    using MapForWatchers = Map<PairForWatchersAndType::first_type, PairForWatchersAndType::second_type, cmpDeviceWatcher>;
+    using MapForIdAndName = Map<Platform::String^, Platform::String^>;
+    using MapForTypeAndDeviceInfo = Map<AQSyntax, MapForIdAndName>;
+    using MapForTypeAndConnections = Map<AQSyntax, Vector<DeviceInfo::HIDCallBackFunc > >;
 
     Windows::Devices::Enumeration::DeviceWatcher^ WatcherForDeviceEvents(uint16 usagePage, uint16 usageId);
     void OnDeviceAdded(Windows::Devices::Enumeration::DeviceWatcher^, Windows::Devices::Enumeration::DeviceInformation^);
     void OnDeviceRemoved(Windows::Devices::Enumeration::DeviceWatcher^, Windows::Devices::Enumeration::DeviceInformationUpdate^);
     bool IsEnabled(AQSyntax usageId);
-    AQSyntax GetAQS(int32 hid);
-    int ConvertAQSToInt(DeviceDetector::AQSyntax aqsType);
+    AQSyntax ConvertHIDToAQS(DeviceInfo::eHIDType hid);
+    DeviceInfo::eHIDType ConvertAQSToHID(AQSyntax aqs);
     void NotifyAllClients(AQSyntax usageId, bool connectState);
 
     bool isTouchPresent = false;
-    MapDeviceWatchers mapWatchers;
-    MapTypesDevice devices;
-    MapTypesConnections connections;
+    MapForWatchers mapWatchers;
+    MapForTypeAndDeviceInfo devices;
+    MapForTypeAndConnections connections;
 };
-
-DeviceDetector* GetDeviceDetector();
 
 } //  namespace DAVA
 

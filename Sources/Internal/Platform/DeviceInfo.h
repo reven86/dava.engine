@@ -168,15 +168,19 @@ public:
         HID_SYSTEM_CONTROL_TYPE,
         HID_COUNT_TYPE,
     };
+    
     // true, if device connected
     static bool IsHIDConnect(eHIDType hid);
+    
     // for notify, if you need know, when "human interface device" connection is changed
     // int value - type "human interface device"
     // bool value - device has been connected(true), or disconnected(false)
-    typedef std::function<void(int32, bool)> HIDCallBackFunc;
+    using HIDCallBackFunc = std::function<void(eHIDType, bool)>;
     static void SubscribeHID(eHIDType hid, HIDCallBackFunc&& func);
+    
     // true, if App started on mobile device(Surface desktop device)
     static bool IsMobileMode();
+    
     // true, if App started on emulator
     static bool IsRunningOnEmulator();
 
