@@ -40,6 +40,8 @@
 #include "DockSceneTree/SceneTreeModel.h"
 #include "DockSceneTree/SceneTreeDelegate.h"
 
+
+class LazyUpdater;
 class SceneTree
     : public QTreeView
 {
@@ -47,7 +49,7 @@ class SceneTree
 
 public:
 	explicit SceneTree(QWidget *parent = 0);
-	~SceneTree();
+	~SceneTree() = default;
 
 public slots:
 	void ShowContextMenu(const QPoint &pos);
@@ -99,6 +101,7 @@ private slots:
 	void SceneDeactivated(SceneEditor2 *scene);
 	void SceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected);
 	void SceneStructureChanged(SceneEditor2 *scene, DAVA::Entity *parent);
+	void CommandExecuted(SceneEditor2 *scene, const Command2* command, bool redo);
 
 	void ParticleLayerValueChanged(SceneEditor2* scene, DAVA::ParticleLayer* layer);
 
@@ -110,8 +113,6 @@ private slots:
 
 	void SyncSelectionToTree();
 	void SyncSelectionFromTree();
-
-	void OnRefreshTimeout();
 
 private:
 	void ShowContextMenuEntity(DAVA::Entity *entity, int entityCustomFlags, const QPoint &pos);
@@ -145,6 +146,8 @@ private:
     void ExpandFilteredItems();
     void BuildExpandItemsSet(QSet<QModelIndex>& indexSet, const QModelIndex& parent = QModelIndex());
 	
+	void UpdateTree();
+
 	ParticleEffectComponent *selectedEffect;
 	ParticleEmitter *selectedEmitter;
 	ParticleLayer* selectedLayer;
@@ -153,9 +156,10 @@ private:
 	QPointer< SceneTreeModel > treeModel;
 	QPointer< SceneTreeFilteringModel > filteringProxyModel;
 	SceneTreeDelegate *treeDelegate;
-	QTimer refreshTimer;
 
 	bool isInSync;
+
+	LazyUpdater *treeUpdater;
 };
 
 #endif // __QT_SCENE_TREE_H__

@@ -105,16 +105,16 @@ void PackageSerializer::SerializePackageNodes(PackageNode *package, const DAVA::
 void PackageSerializer::VisitPackage(PackageNode *node)
 {
     BeginMap("Header");
-    PutValue("version", String("0"));
+    PutValue("version", Format("%d", CURRENT_VERSION));
     EndMap();
-    
-    node->GetStyleSheets()->Accept(this);
     
     BeginArray("ImportedPackages");
     for (PackageNode *package : importedPackages)
         PutValue(package->GetPath().GetFrameworkPath());
     EndArray();
 
+    node->GetStyleSheets()->Accept(this);
+    
     BeginArray("Controls");
     for (ControlNode *control : controls)
         control->Accept(this);

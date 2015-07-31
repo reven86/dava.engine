@@ -48,10 +48,14 @@ parser.add_argument('--without-ui', dest='without-ui', nargs='?', const=True)
 
 parser.add_argument('--chooser', nargs='?', const=True)
 parser.add_argument('--test')
+parser.add_argument('--universal-test', dest='universal-test')
 
 parser.add_argument('--test-time', dest='test-time')
 parser.add_argument('--test-frames', dest='test-frames')
 parser.add_argument('--frame-delta', dest='frame-delta')
+
+parser.add_argument('--statistic-start-time', dest='statistic-start-time')
+parser.add_argument('--statistic-end-time', dest='statistic-end-time')
 
 parser.add_argument('--debug-frame', dest='debug-frame')
 parser.add_argument('--max-delta', dest='max-delta')
@@ -65,10 +69,22 @@ if args['chooser']:
     TEST_PARAMS += "-chooser"
 
 if args['without-ui']:
-    TEST_PARAMS += "-without-ui "
+    TEST_PARAMS += " -without-ui "
+
+if args['statistic-start-time']:
+    TEST_PARAMS += " -statistic-start-time " + args['statistic-start-time']
+
+    if args['statistic-end-time']:
+        TEST_PARAMS += " -statistic-end-time " + args['statistic-end-time']
+
+if args['universal-test']:
+    TEST_PARAMS += " -universal-test ";
+
+    if args['universal-test'] != "All":
+        TEST_PARAMS += args['universal-test'];
 
 if args['test'] and args['test'] != "All":    
-    TEST_PARAMS += "-test " + args['test']
+    TEST_PARAMS += " -test " + args['test']
 
     if args['test-time']:
         TEST_PARAMS += " -test-time " + args['test-time']
@@ -77,6 +93,9 @@ if args['test'] and args['test'] != "All":
         TEST_PARAMS += " -test-frames " + args['test-frames']
         TEST_PARAMS += " -frame-delta " + args['frame-delta']   
 
+    if args['frame-delta']:
+        TEST_PARAMS += " -frame-delta " + args['frame-delta']   
+        
     if args['debug-frame']:
         TEST_PARAMS += " -debug-frame " + args['debug-frame']
 

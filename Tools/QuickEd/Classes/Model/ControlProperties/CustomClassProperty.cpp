@@ -39,7 +39,6 @@ using namespace DAVA;
 CustomClassProperty::CustomClassProperty(ControlNode *aControl, const CustomClassProperty *sourceProperty, eCloneType cloneType)
     : ValueProperty("Custom Class")
     , control(aControl) // weak
-    , prototypeProperty(nullptr)
 {
     defaultValue = VariantType(String(""));
     
@@ -54,7 +53,7 @@ CustomClassProperty::CustomClassProperty(ControlNode *aControl, const CustomClas
         }
         else
         {
-            prototypeProperty = sourceProperty;
+            AttachPrototypeProperty(sourceProperty);
             defaultValue = sourceProperty->GetValue();
         }
     }
@@ -63,20 +62,6 @@ CustomClassProperty::CustomClassProperty(ControlNode *aControl, const CustomClas
 CustomClassProperty::~CustomClassProperty()
 {
     control = nullptr; //weak
-}
-
-void CustomClassProperty::Refresh()
-{
-    if (prototypeProperty)
-    {
-        SetDefaultValue(prototypeProperty->GetValue());
-    }
-    ValueProperty::Refresh();
-}
-
-AbstractProperty *CustomClassProperty::FindPropertyByPrototype(AbstractProperty *prototype)
-{
-    return prototypeProperty == prototype ? this : nullptr;
 }
 
 void CustomClassProperty::Accept(PropertyVisitor *visitor)
@@ -113,8 +98,8 @@ bool CustomClassProperty::IsSet() const
 {
     if (IsReplaced())
         return true;
-    if (prototypeProperty)
-        return prototypeProperty->IsReplaced();
+    if (GetPrototypeProperty())
+        return GetPrototypeProperty()->IsReplaced();
     return false;
 }
 

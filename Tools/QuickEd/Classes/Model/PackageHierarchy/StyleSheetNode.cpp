@@ -30,7 +30,7 @@
 #include "StyleSheetNode.h"
 #include "PackageVisitor.h"
 
-#include "../ControlProperties/StyleSheetRootProperty.h"
+#include "Model/ControlProperties/StyleSheetRootProperty.h"
 
 #include "UI/Styles/UIStyleSheet.h"
 
