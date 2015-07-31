@@ -56,18 +56,18 @@ ReleaseDevice()
 
 //- static std::vector<Handle>  _CmdQueue;
 struct
-Frame
+FrameDX9
 {
     unsigned            number;
     std::vector<Handle> pass;
     uint32              readyToExecute:1;
 };
 
-static std::vector<Frame>   _Frame;
-static bool                 _FrameStarted   = false;
-static unsigned             _FrameNumber    = 1;
+static std::vector<FrameDX9>    _Frame;
+static bool                     _FrameStarted   = false;
+static unsigned                 _FrameNumber    = 1;
 //static DAVA::Spinlock       _FrameSync;
-static DAVA::Mutex          _FrameSync;
+static DAVA::Mutex              _FrameSync;
 
 static void _ExecuteQueuedCommands();
 
@@ -220,7 +220,7 @@ dx9_RenderPass_Begin( Handle pass )
 
     if( !_FrameStarted )
     {
-        _Frame.push_back( Frame() );
+        _Frame.push_back( FrameDX9() );
         _Frame.back().number         = _FrameNumber;
         _Frame.back().readyToExecute = false;
 
