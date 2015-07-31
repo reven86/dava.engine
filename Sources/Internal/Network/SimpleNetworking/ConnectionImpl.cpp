@@ -29,6 +29,9 @@
 
 #include "Network/SimpleNetworking/ConnectionImpl.h"
 
+#include <libuv/uv.h>
+
+#include "Concurrency/LockGuard.h"
 #include "Debug/DVAssert.h"
 #include "Network/SimpleNetworking/SimpleAbstractSocket.h"
 
@@ -45,24 +48,32 @@ ConnectionImpl::ConnectionImpl(ISimpleAbstractSocketPtr&& abstractSocket)
     
 IReadOnlyConnection::ChannelState ConnectionImpl::GetChannelState()
 {
+    LockGuard<Mutex> lock(mutex);
+
     bool connectionEstablished = socket->IsConnectionEstablished();
     return connectionEstablished ? ChannelState::kConnected : ChannelState::kDisconnected;
 }
 
 size_t ConnectionImpl::ReadSome(char* buffer, size_t bufSize)
 {
+    LockGuard<Mutex> lock(mutex);
+
     size_t read = socket->Recv(buffer, bufSize, false);
     return read > 0;
 }
 
 bool ConnectionImpl::ReadAll(char* buffer, size_t bufSize)
 {
+    LockGuard<Mutex> lock(mutex);
+
     size_t read = socket->Recv(buffer, bufSize, true);
     return read > 0;
 }
 
 size_t ConnectionImpl::Write(const char* buffer, size_t bufSize)
 {
+    LockGuard<Mutex> lock(mutex);
+
     size_t wrote = socket->Send(buffer, bufSize);
     return wrote;
 }

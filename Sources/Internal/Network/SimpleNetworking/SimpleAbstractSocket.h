@@ -48,7 +48,7 @@ struct ISimpleAbstractSocket
     virtual bool IsConnectionEstablished() = 0;
 };
 using ISimpleAbstractSocketPtr = std::unique_ptr<ISimpleAbstractSocket>;
-    
+
 }  // namespace Net
 }  // namespace DAVA
 

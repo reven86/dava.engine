@@ -28,6 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Network/SimpleNetworking/SimpleNetworking.h"
 
+#include "Debug/DVAssert.h"
 #include "Network/SimpleNetworking/ConnectionImpl.h"
 #include "Network/SimpleNetworking/SimpleTcpServer.h"
 
@@ -35,6 +36,20 @@ namespace DAVA
 {
 namespace Net
 {
+
+void LogNetworkError(const String& str)
+{
+    int error_num = 0;
+#ifdef __DAVAENGINE_WINDOWS__
+    error_num = WSAGetLastError();
+#else
+    error = errno;
+#endif
+
+    String error = std::to_string(error_num);
+    String message = str + " (error " + error + ")";
+    DVASSERT_MSG(false, message);
+}
     
 namespace TCP
 {

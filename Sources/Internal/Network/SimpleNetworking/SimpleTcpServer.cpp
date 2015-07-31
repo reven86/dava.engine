@@ -31,6 +31,7 @@
 
 #include <libuv/uv.h>
 #include "Debug/DVAssert.h"
+#include "Network/SimpleNetworking/SimpleNetworking.h"
 
 namespace DAVA
 {
@@ -47,9 +48,7 @@ SimpleTcpServer::SimpleTcpServer()
     
     if (socket_id == INVALID_SOCKET)
     {
-        String error = std::to_string(WSAGetLastError());
-        String message = "Failed to create socket (error " + error + ")";
-        DVASSERT_MSG(false, message);
+        LogNetworkError("Failed to create socket");
     }
     else
     {
@@ -76,10 +75,7 @@ void SimpleTcpServer::Listen(const Endpoint& endPoint)
     int listenRes = ::listen(socket_id, 1);
     if (listenRes == SOCKET_ERROR)
     {   
-        String error = std::to_string(WSAGetLastError());
-        String message = "Failed to listen socket (error " + error + ")";
-        DVASSERT_MSG(false, message);
-        
+        LogNetworkError("Failed to listen socket");
         Close();
     }
 }
@@ -88,16 +84,14 @@ void SimpleTcpServer::Accept()
 {
     if (socket_id == INVALID_SOCKET)
     {
-        DVASSERT_MSG(false, "Unable to listen server - it is invalid");
+        DVASSERT_MSG(false, "Unable to accept server - it is invalid");
         return;
     }
     
     SOCKET acceptSocket = ::accept(socket_id, nullptr, nullptr);
     if (acceptSocket == INVALID_SOCKET)
     {
-        String error = std::to_string(WSAGetLastError());
-        String message = "Failed to accept socket (error " + error + ")";
-        DVASSERT_MSG(false, message);
+        LogNetworkError("Failed to accept socket");
         return;
     }
     
@@ -113,16 +107,14 @@ void SimpleTcpServer::Shutdown()
 
     if (socket_id == INVALID_SOCKET)
     {
-        DVASSERT_MSG(false, "Unable to listen server - it is invalid");
+        DVASSERT_MSG(false, "Unable to shutdown server - it is invalid");
         return;
     }
     
     int res = ::shutdown(socket_id, SD_BOTH);
     if (res == SOCKET_ERROR)
     {
-        String error = std::to_string(WSAGetLastError());
-        String message = "Failed to shutdown connection (error " + error + ")";
-        DVASSERT_MSG(false, message);
+        LogNetworkError("Failed to shutdown connection");
     }
 }
 
@@ -132,11 +124,9 @@ size_t SimpleTcpServer::Send(const char* buf, size_t bufSize)
     
     if (size == SOCKET_ERROR)
     {
-        String error = std::to_string(WSAGetLastError());
-        String message = "Failed to send data (error " + error + ")";
-        DVASSERT_MSG(false, message);
-        
+        LogNetworkError("Failed to send data");
         Close();
+
         return 0;
     }
     
@@ -150,11 +140,9 @@ size_t SimpleTcpServer::Recv(char* buf, size_t bufSize, bool recvAll)
     
     if (size == SOCKET_ERROR)
     {
-        String error = std::to_string(WSAGetLastError());
-        String message = "Failed to receive data (error " + error + ")";
-        DVASSERT_MSG(false, message);
-        
+        LogNetworkError("Failed to receive data");
         Close();
+
         return 0;
     }
     
@@ -168,10 +156,7 @@ void SimpleTcpServer::Bind(const Endpoint& endPoint)
     int bindRes = ::bind(socket_id, addr, endPoint.Size());
     if (bindRes == SOCKET_ERROR)
     {
-        String error = std::to_string(WSAGetLastError());
-        String message = "Failed to bind socket (error " + error + ")";
-        DVASSERT_MSG(false, message);
-        
+        LogNetworkError("Failed to bind socket");
         Close();
     }
 }

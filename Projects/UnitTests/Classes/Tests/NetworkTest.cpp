@@ -36,10 +36,12 @@
 #include "Network/NetService.h"
 #include "Network/NetCore.h"
 
-#ifndef __DAVAENGINE_WIN_UAP__
+#include "Network/SimpleNetworking/SimpleNetworking.h"
 
 using namespace DAVA;
 using namespace DAVA::Net;
+
+#ifndef __DAVAENGINE_WIN_UAP__
 
 struct Parcel
 {
@@ -391,6 +393,20 @@ DAVA_TESTCLASS(NetworkTest)
 };
 
 #else
+
+DAVA_TESTCLASS(SimpleNetworkTest)
+{
+    DAVA_TEST(TestNetConfig)
+    {
+        Net::Endpoint endPoint("127.0.0.1", 1911);
+        Net::IConnectionPtr conn = Net::TCP::WaitIncomingConnection(endPoint);
+
+        Array<char, 256> in = {};
+        conn->ReadSome(in.data(), in.size());
+
+        int d = 42;
+    }
+};
 
 __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
 

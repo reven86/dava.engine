@@ -38,6 +38,8 @@ namespace DAVA
 namespace Net
 {
 
+void LogNetworkError(const String& str);
+
 namespace TCP
 {
     
