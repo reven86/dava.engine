@@ -6,7 +6,7 @@
     #include "Debug/DVAssert.h"
     #include "FileSystem/Logger.h"
     using DAVA::Logger;
-
+    
     #include "_dx11.h"
 
 
@@ -27,24 +27,6 @@ SamplerStateDX11_t
 
 typedef ResourcePool<SamplerStateDX11_t,RESOURCE_SAMPLER_STATE>  SamplerStateDX11Pool;
 RHI_IMPL_POOL(SamplerStateDX11_t,RESOURCE_SAMPLER_STATE);
-
-
-//------------------------------------------------------------------------------
-
-static DWORD
-_AddrMode( TextureAddrMode mode )
-{
-    DWORD   m = D3DTADDRESS_WRAP;
-
-    switch( mode )
-    {
-        case TEXADDR_WRAP   : m = D3DTADDRESS_WRAP; break;
-        case TEXADDR_CLAMP  : m = D3DTADDRESS_CLAMP; break;
-        case TEXADDR_MIRROR : m = D3DTADDRESS_MIRROR; break;
-    }
-
-    return m;
-}
 
 
 //------------------------------------------------------------------------------

@@ -72,6 +72,8 @@ dx11_Texture_Create( const Texture::Descriptor& desc )
     desc2d.BindFlags            = D3D11_BIND_SHADER_RESOURCE;
     desc2d.CPUAccessFlags       = 0;//D3D11_CPU_ACCESS_WRITE;
     desc2d.MiscFlags            = 0;
+
+    DVASSERT(desc2d.Format!=DXGI_FORMAT_UNKNOWN);
     
     if( desc.autoGenMipmaps )
         desc2d.MiscFlags |= D3D11_RESOURCE_MISC_GENERATE_MIPS;
