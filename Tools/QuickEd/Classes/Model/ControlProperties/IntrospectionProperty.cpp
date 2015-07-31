@@ -38,7 +38,6 @@ using namespace DAVA;
 IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject *anObject, const DAVA::InspMember *aMember, const IntrospectionProperty *sourceProperty, eCloneType copyType)
     : ValueProperty(aMember->Desc().text)
     , object(SafeRetain(anObject))
-    , prototypeProperty(nullptr)
     , member(aMember)
 {
     if (sourceProperty)
@@ -53,7 +52,7 @@ IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject *anObject, const D
         }
         else
         {
-            prototypeProperty = sourceProperty;
+            AttachPrototypeProperty(sourceProperty);
             defaultValue = member->Value(object);
         }
     }
@@ -106,21 +105,6 @@ IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject *anObject, const D
 IntrospectionProperty::~IntrospectionProperty()
 {
     SafeRelease(object);
-    prototypeProperty = nullptr;
-}
-
-void IntrospectionProperty::Refresh()
-{
-    if (prototypeProperty)
-    {
-        SetDefaultValue(prototypeProperty->GetValue());
-    }
-    ValueProperty::Refresh();
-}
-
-AbstractProperty *IntrospectionProperty::FindPropertyByPrototype(AbstractProperty *prototype)
-{
-    return prototype == prototypeProperty ? this : nullptr;
 }
 
 void IntrospectionProperty::Accept(PropertyVisitor *visitor)
@@ -142,7 +126,7 @@ IntrospectionProperty::ePropertyType IntrospectionProperty::GetType() const
 uint32 IntrospectionProperty::GetFlags() const
 {
     uint32 flags = EF_CAN_RESET;
-    if (prototypeProperty && !replaced)
+    if (GetPrototypeProperty() && !replaced)
         flags |= EF_INHERITED;
     return flags;
 }

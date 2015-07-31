@@ -1,4 +1,4 @@
-cmake_minimum_required( VERSION 3.0 )
+cmake_minimum_required (VERSION 3.0)
 
 set                   ( CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebinfo" CACHE STRING "limited configs" FORCE )
 
@@ -14,7 +14,6 @@ find_package          ( DavaTools     REQUIRED )
 
 
 include_directories   ( ${CMAKE_CURRENT_BINARY_DIR} )
-include_directories   ( ${CMAKE_CURRENT_BINARY_DIR}/DavaTools/QtTools )
 include_directories   (.)
 include_directories   ( "Classes" )
 include_directories   ( "Classes/Helpers" )
