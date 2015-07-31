@@ -36,7 +36,6 @@
 
 #include "Base/ObjectFactory.h"
 #include "UI/UIControl.h"
-#include "UI/UIControlPackageContext.h"
 #include "UI/UIControlHelpers.h"
 #include "UI/Components/UIComponent.h"
 #include "FileSystem/LocalizationSystem.h"
@@ -116,20 +115,22 @@ void DefaultUIPackageBuilder::BeginPackage(const FilePath &packagePath)
 
 void DefaultUIPackageBuilder::EndPackage()
 {
-    Vector<UIStyleSheet*> importedStyleSheets;
     for (UIPackage* importedPackage : importedPackages)
     {
-        Vector<UIStyleSheet*> packageStyleSheets = importedPackage->GetControlPackageContext()->GetSortedStyleSheets();
-        for (UIStyleSheet* packageStyleSheet : packageStyleSheets)
+        const Vector<UIControlPackageContext::StyleSheetWithPenalty>& packageStyleSheets = importedPackage->GetControlPackageContext()->GetSortedStyleSheets();
+        for (const UIControlPackageContext::StyleSheetWithPenalty& packageStyleSheet : packageStyleSheets)
         {
-            importedStyleSheets.push_back(packageStyleSheet);
+            styleSheets.push_back(UIControlPackageContext::StyleSheetWithPenalty(packageStyleSheet.styleSheet, packageStyleSheet.penalty + 1));
         }
     }
-    std::sort(importedStyleSheets.begin(), importedStyleSheets.end());
-    auto last = std::unique(importedStyleSheets.begin(), importedStyleSheets.end());
-    importedStyleSheets.erase(last, importedStyleSheets.end());
 
-    AddStyleSheets(importedStyleSheets);
+    AddStyleSheets(styleSheets);
+    
+    for (UIControlPackageContext::StyleSheetWithPenalty& styleSheet : styleSheets)
+    {
+        SafeRelease(styleSheet.styleSheet);
+    }
+    styleSheets.clear();
 }
 
 bool DefaultUIPackageBuilder::ProcessImportedPackage(const String &packagePath, AbstractUIPackageLoader *loader)
@@ -162,13 +163,11 @@ void DefaultUIPackageBuilder::ProcessStyleSheets(const YamlNode *styleSheetsNode
 {
     UIStyleSheetYamlLoader styleSheetLoader;
 
-    Vector< UIStyleSheet* > styleSheets;
-    styleSheetLoader.LoadFromYaml(styleSheetsNode, &styleSheets);
+    Vector<UIStyleSheet*> localStyleSheets;
+    styleSheetLoader.LoadFromYaml(styleSheetsNode, &localStyleSheets);
 
-    AddStyleSheets(styleSheets);
-
-    for (UIStyleSheet* styleSheet : styleSheets)
-        SafeRelease(styleSheet);
+    for (UIStyleSheet* styleSheet : localStyleSheets)
+        styleSheets.push_back(UIControlPackageContext::StyleSheetWithPenalty(styleSheet, 0));
 }
 
 UIControl *DefaultUIPackageBuilder::BeginControlWithClass(const String &className)
@@ -397,9 +396,15 @@ UIPackage *DefaultUIPackageBuilder::FindImportedPackageByName(const String &name
     return nullptr;
 }
 
-void DefaultUIPackageBuilder::AddStyleSheets(const DAVA::Vector<UIStyleSheet*>& styleSheets)
+void DefaultUIPackageBuilder::AddStyleSheets(const DAVA::Vector<UIStyleSheet*> &styleSheets)
 {
-    for (UIStyleSheet* styleSheet : styleSheets)
+    for (UIStyleSheet *styleSheet : styleSheets)
+        package->GetControlPackageContext()->AddStyleSheet(UIControlPackageContext::StyleSheetWithPenalty(styleSheet, 0));
+}
+    
+void DefaultUIPackageBuilder::AddStyleSheets(const DAVA::Vector<UIControlPackageContext::StyleSheetWithPenalty> &styleSheets)
+{
+    for (const UIControlPackageContext::StyleSheetWithPenalty &styleSheet : styleSheets)
         package->GetControlPackageContext()->AddStyleSheet(styleSheet);
 }
 

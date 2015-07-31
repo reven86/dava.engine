@@ -32,6 +32,7 @@
 
 #include "AbstractUIPackageBuilder.h"
 #include "UIPackage.h"
+#include "UI/UIControlPackageContext.h"
 
 namespace DAVA
 {
@@ -77,7 +78,8 @@ private:
     void PutImportredPackage(const FilePath &path, UIPackage *package);
     UIPackage *FindImportedPackageByName(const String &name) const;
 
-    void AddStyleSheets(const DAVA::Vector<UIStyleSheet*>& styleSheets);
+    void AddStyleSheets(const DAVA::Vector<UIStyleSheet*> &styleSheets);
+    void AddStyleSheets(const DAVA::Vector<UIControlPackageContext::StyleSheetWithPenalty> &styleSheets);
 
 private:
     //class PackageDescr;
@@ -92,6 +94,7 @@ private:
     RefPtr<UIPackage> package;
 
     Vector<UIPackage*> importedPackages;
+    Vector<UIControlPackageContext::StyleSheetWithPenalty> styleSheets;
     Map<FilePath, int32> packsByPaths;
     Map<String, int32> packsByNames;
 

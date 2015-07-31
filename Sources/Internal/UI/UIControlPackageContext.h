@@ -44,13 +44,26 @@ class UIControlPackageContext :
 protected:
     virtual ~UIControlPackageContext();
 public:
+    struct StyleSheetWithPenalty
+    {
+        StyleSheetWithPenalty(UIStyleSheet* aStyleSheet, int32 aPenalty)
+            : styleSheet(aStyleSheet)
+            , penalty(aPenalty)
+        {
+            
+        }
+        
+        UIStyleSheet* styleSheet;
+        int32 penalty;
+    };
+    
     UIControlPackageContext();
 
-    void AddStyleSheet(UIStyleSheet* styleSheet);
+    void AddStyleSheet(const StyleSheetWithPenalty &styleSheet);
 
-    const Vector<UIStyleSheet*>& GetSortedStyleSheets();
+    const Vector<StyleSheetWithPenalty>& GetSortedStyleSheets();
 private:
-    Vector<UIStyleSheet*> styleSheets;
+    Vector<StyleSheetWithPenalty> styleSheets;
     bool styleSheetsSorted;
 };
 
