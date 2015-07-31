@@ -421,6 +421,29 @@ int32 DeviceInfo::GetCpuCount()
 	return sysconf(_SC_NPROCESSORS_CONF);
 }
 
+bool DeviceInfo::IsHIDConnect(eHIDType hid)
+{
+        DVASSERT(false && "Not Implement");
+        return HID_UNKNOWN_TYPE;
+}
+
+void DeviceInfo::SubscribeHID(eHIDType hid, HIDCallBackFunc&& func)
+{
+        DVASSERT(false && "Not Implement");
+}
+
+bool DeviceInfo::IsMobileMode()
+{
+        DVASSERT(false && "Not Implement");
+        return false;
+}
+
+bool DeviceInfo::IsRunningOnEmulator()
+{
+        DVASSERT(false && "Not Implement");
+        return false;
+}
+
 }
 
 #endif

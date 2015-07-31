@@ -155,6 +155,31 @@ public:
     static List<StorageInfo> GetStoragesList();
     static int32 GetCpuCount();
 
+    //human interface device(HID)
+    enum eHIDType
+    {
+        HID_UNKNOWN_TYPE = -1,
+        HID_POINTER_TYPE,
+        HID_MOUSE_TYPE,
+        HID_JOYSTICK_TYPE,
+        HID_GAMEPAD_TYPE,
+        HID_KEYBOARD_TYPE,
+        HID_KEYPAD_TYPE,
+        HID_SYSTEM_CONTROL_TYPE,
+        HID_COUNT_TYPE,
+    };
+    // true, if device connected
+    static bool IsHIDConnect(eHIDType hid);
+    // for notify, if you need know, when "human interface device" connection is changed
+    // int value - type "human interface device"
+    // bool value - device has been connected(true), or disconnected(false)
+    typedef std::function<void(int32, bool)> HIDCallBackFunc;
+    static void SubscribeHID(eHIDType hid, HIDCallBackFunc&& func);
+    // true, if App started on mobile device(Surface desktop device)
+    static bool IsMobileMode();
+    // true, if App started on emulator
+    static bool IsRunningOnEmulator();
+
 #if defined (__DAVAENGINE_WIN_UAP__)
     // it's a temporary decision
     static void InitializeScreenInfo(int32 width, int32 height);
@@ -164,10 +189,6 @@ public:
 
 private:
     static ScreenInfo screenInfo;
-
-#if defined (__DAVAENGINE_WIN_UAP__)
-    static bool IsRunningOnEmulator();
-#endif //  (__DAVAENGINE_WIN_UAP__)
 };
 
 };
