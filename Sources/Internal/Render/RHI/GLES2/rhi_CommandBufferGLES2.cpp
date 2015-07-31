@@ -16,7 +16,7 @@
 
     #include "_gl.h"
 
-    #define USE_RENDER_THREAD               0
+    #define USE_RENDER_THREAD               1
     #define RHI_MAX_PREPARED_FRAME_COUNT    1
 
 
