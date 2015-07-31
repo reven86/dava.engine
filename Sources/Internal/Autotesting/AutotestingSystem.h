@@ -76,6 +76,7 @@ public:
 	void FetchParametersFromDB();
 	void FetchParametersFromIdYaml();
 	void SetUpConnectionToDB();
+	RefPtr<KeyedArchive> GetIdYamlOptions();
 
 	void InitializeDevice(const String & device);
 
