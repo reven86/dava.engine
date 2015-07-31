@@ -39,11 +39,11 @@ class KeyedArchive;
     
     
 class TCPChannel;
-class TCPChannelDelegate
+class TCPChannelListener
 {
 public:
     
-    virtual void ChannelOpen(TCPChannel *tcpChannel) {};
+    virtual void ChannelOpened(TCPChannel *tcpChannel) {};
     virtual void ChannelClosed(TCPChannel *tcpChannel, const char8* message) {};
     virtual void PacketReceived(TCPChannel *tcpChannel, const void* packet, size_t length) = 0;
     virtual void PacketSent(TCPChannel *tcpChannel) {};
@@ -59,7 +59,7 @@ public:
 
     
     uint32 SendData(const uint8 * data, const size_t dataSize);
-    void SetDelegate(TCPChannelDelegate * delegate);
+    void SetListener(TCPChannelListener * delegate);
     
     //IChannelListener
     void OnPacketSent(Net::IChannel* channel, const void* buffer, size_t length) override;
@@ -77,13 +77,13 @@ public:
 
 protected:
     
-    TCPChannelDelegate *delegate = nullptr;
+    TCPChannelListener *listener = nullptr;
 };
 
 
-inline void TCPChannel::SetDelegate(TCPChannelDelegate * _delegate)
+inline void TCPChannel::SetListener(TCPChannelListener * _listener)
 {
-    delegate = _delegate;
+    listener = _listener;
 }
 
 inline bool TCPChannel::IsConnected() const

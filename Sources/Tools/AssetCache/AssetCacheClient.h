@@ -53,7 +53,7 @@ public:
     virtual void OnReceivedFromCache(const CacheItemKey &key, const CachedFiles &files) {};
 };
 
-class Client: public DAVA::TCPChannelDelegate
+class Client: public DAVA::TCPChannelListener
 {
 public:
     
@@ -71,7 +71,7 @@ public:
     bool GetFromCache(const CacheItemKey &key);
     
     //TCPChannelDelegate
-    void ChannelOpen(TCPChannel *tcpChannel) override;
+    void ChannelOpened(TCPChannel *tcpChannel) override;
     void ChannelClosed(TCPChannel *tcpChannel, const char8* message) override;
     void PacketReceived(DAVA::TCPChannel *tcpChannel, const void* packet, size_t length) override;
     //END of TCPChannelDelegate

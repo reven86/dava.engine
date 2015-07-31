@@ -143,7 +143,7 @@ void Client::OnGetFromCache(KeyedArchive * archieve)
     }
 }
 
-void Client::ChannelOpen(TCPChannel *tcpChannel)
+void Client::ChannelOpened(TCPChannel *tcpChannel)
 {
     DVASSERT(openedChannel == nullptr);
     openedChannel = tcpChannel;

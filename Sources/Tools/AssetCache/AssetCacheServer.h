@@ -59,7 +59,7 @@ public:
 };
     
     
-class Server: public DAVA::TCPChannelDelegate
+class Server: public DAVA::TCPChannelListener
 {
 public:
     

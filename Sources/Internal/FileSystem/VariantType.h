@@ -142,6 +142,7 @@ public:
         TYPES_COUNT // every new type should be always added to the end for compatibility with old archives
 	};
 	uint8 type;
+
 	union  
 	{
 		bool    boolValue;
@@ -150,9 +151,9 @@ public:
 		float32 floatValue;
         float64 float64Value;
         
-        int64*   int64Value;
-        uint64*  uint64Value;
-        
+        int64    int64Value;
+        uint64   uint64Value;
+
         Vector2* vector2Value;
         Vector3* vector3Value;
         Vector4* vector4Value;

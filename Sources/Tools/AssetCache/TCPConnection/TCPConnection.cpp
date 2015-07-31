@@ -154,7 +154,7 @@ TCPChannel * TCPConnection::CreateChannel()
     LockGuard<Mutex> guard(channelMutex);
 
     auto newChannel = new TCPChannel();
-    newChannel->SetDelegate(delegate);
+    newChannel->SetListener(delegate);
 
     channels.push_back(newChannel);
     return newChannel;
@@ -173,7 +173,7 @@ void TCPConnection::DestroyChannel(TCPChannel *channel)
     delete channel;
 }
 
-void TCPConnection::SetDelegate(TCPChannelDelegate * _delegate)
+void TCPConnection::SetDelegate(TCPChannelListener * _delegate)
 {
     delegate = _delegate;
     

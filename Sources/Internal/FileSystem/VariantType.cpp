@@ -297,14 +297,14 @@ void VariantType::SetInt64(const int64 & value)
 {
     ReleasePointer();
     type = TYPE_INT64;
-    int64Value = new int64(value);
+    int64Value = value;
 }
 
 void VariantType::SetUInt64(const uint64 & value)
 {
     ReleasePointer();
     type = TYPE_UINT64;
-    uint64Value = new uint64(value);
+    uint64Value = value;
 }
 
 void VariantType::SetVector2(const Vector2 & value)
@@ -568,13 +568,13 @@ KeyedArchive *VariantType::AsKeyedArchive() const
 int64 VariantType::AsInt64() const
 {
     DVASSERT(type == TYPE_INT64);
-    return *int64Value;
+    return int64Value;
 }
 
 uint64 VariantType::AsUInt64() const
 {
     DVASSERT(type == TYPE_UINT64);
-    return *uint64Value;
+    return uint64Value;
 }
     
 const Vector2 & VariantType::AsVector2() const
@@ -771,7 +771,7 @@ bool VariantType::Write(File * fp) const
         break;
     case TYPE_INT64:
 		{
-            written = fp->Write(int64Value, sizeof(int64));
+            written = fp->Write(&int64Value, sizeof(int64));
             if (written != sizeof(int64))
             {
                 return false;
@@ -780,7 +780,7 @@ bool VariantType::Write(File * fp) const
             break;
     case TYPE_UINT64:
 		{
-            written = fp->Write(uint64Value, sizeof(uint64));
+            written = fp->Write(&uint64Value, sizeof(uint64));
             if (written != sizeof(uint64))
             {
                 return false;
@@ -1041,8 +1041,7 @@ bool VariantType::Read(File * fp)
         break;
         case TYPE_INT64:
 		{
-            int64Value = new int64;
-            read = fp->Read(int64Value, sizeof(int64));
+            read = fp->Read(&int64Value, sizeof(int64));
             if (read != sizeof(int64))
             {
                 return false;
@@ -1051,8 +1050,7 @@ bool VariantType::Read(File * fp)
             break;
         case TYPE_UINT64:
 		{
-            uint64Value = new uint64;
-            read = fp->Read(uint64Value, sizeof(uint64));
+            read = fp->Read(&uint64Value, sizeof(uint64));
             if (read != sizeof(uint64))
             {
                 return false;
@@ -1204,16 +1202,6 @@ void VariantType::ReleasePointer()
             case TYPE_KEYED_ARCHIVE:
             {
                 ((KeyedArchive *)pointerValue)->Release();
-            }
-                break;
-            case TYPE_INT64:
-            {
-                delete int64Value;
-            }
-                break;
-            case TYPE_UINT64:
-            {
-                delete uint64Value;
             }
                 break;
             case TYPE_VECTOR2:
@@ -1469,6 +1457,12 @@ void* VariantType::MetaObject()
 	case TYPE_UINT32:
 		ret = &uint32Value;
 		break;	
+    case TYPE_INT64:
+        ret = &int64Value;
+        break;
+    case TYPE_UINT64:
+        ret = &uint64Value;
+        break;
 	case TYPE_FLOAT:
 		ret = &floatValue;
 		break;	
@@ -1481,8 +1475,6 @@ void* VariantType::MetaObject()
 	case TYPE_WIDE_STRING:
 		ret = wideStringValue;
 		break;
-	case TYPE_INT64:
-	case TYPE_UINT64:
 	case TYPE_VECTOR2:
 	case TYPE_BYTE_ARRAY:
 	case TYPE_VECTOR3:

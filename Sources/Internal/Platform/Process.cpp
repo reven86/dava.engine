@@ -86,7 +86,7 @@ const Vector<String>& Process::GetArgs() const
     return runArgs;
 }
 
-long Process::GetExitCode() const
+int Process::GetExitCode() const
 {
     return exitCode;
 }
@@ -278,7 +278,7 @@ void Process::Wait()
     
     DWORD code;
     bool res = ::GetExitCodeProcess((HANDLE)pid, &code);
-    exitCode = static_cast<long>(code);
+    exitCode = static_cast<int>(code);
     if (!res)
     {
         exitCode = -1;

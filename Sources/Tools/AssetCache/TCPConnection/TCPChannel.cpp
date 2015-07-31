@@ -45,14 +45,14 @@ namespace DAVA
     
 TCPChannel::TCPChannel()
     : Net::NetService()
-    , delegate(nullptr)
+    , listener(nullptr)
 {
 }
     
     
 TCPChannel::~TCPChannel()
 {
-    delegate = nullptr;
+    listener = nullptr;
 }
     
 void TCPChannel::OnPacketSent(Net::IChannel* channel, const void* buffer, size_t length)
@@ -92,51 +92,42 @@ uint32 TCPChannel::SendData(const uint8 * data, const size_t dataSize)
     
 void TCPChannel::ChannelOpen()
 {
-    Net::NetService::ChannelOpen();
-    if(delegate)
+    if(listener)
     {
-        delegate->ChannelOpen(this);
+        listener->ChannelOpened(this);
     }
 }
 
 void TCPChannel::ChannelClosed(const char8* message)
 {
-    if(delegate)
+    if (listener)
     {
-        delegate->ChannelClosed(this, message);
+        listener->ChannelClosed(this, message);
     }
-    
-    Net::NetService::ChannelClosed(message);
 }
 
 void TCPChannel::PacketReceived(const void* packet, size_t length)
 {
-    if(delegate)
+    if (listener)
     {
-        delegate->PacketReceived(this, packet, length);
+        listener->PacketReceived(this, packet, length);
     }
-    
-    Net::NetService::PacketReceived(packet, length);
 }
 
 void TCPChannel::PacketSent()
 {
-    if(delegate)
+    if (listener)
     {
-        delegate->PacketSent(this);
+        listener->PacketSent(this);
     }
-    
-    Net::NetService::PacketSent();
 }
 
 void TCPChannel::PacketDelivered()
 {
-    if(delegate)
+    if (listener)
     {
-        delegate->PacketDelivered(this);
+        listener->PacketDelivered(this);
     }
-    
-    Net::NetService::PacketDelivered();
 }
     
 

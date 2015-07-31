@@ -53,7 +53,7 @@ public:
     void Disconnect();
     bool IsConnected() const;
 
-    void SetDelegate(TCPChannelDelegate * delegate);
+    void SetDelegate(TCPChannelListener * delegate);
     
     const Net::Endpoint & GetEndpoint() const;
     
@@ -84,7 +84,7 @@ protected:
     List<TCPChannel *> channels;
     Mutex channelMutex;
     
-    TCPChannelDelegate *delegate;
+    TCPChannelListener *delegate;
 };
 
 inline bool TCPConnection::IsConnected() const
