@@ -102,12 +102,20 @@ void FunctionSignalTest::UnloadResources()
     SafeRelease(runButton);
 }
 
+DAVA_NOINLINE int viewDavaFnCall(Function<int(int, int, int)> &fn)
+{
+    return fn(10, 20, 30);
+}
+
 void DoFunctionSignalTest(FunctionSignalTest *fst)
 {
     TestStruct ts;
     
     std::function<int(int, int, int)> stdStatic(&test);
     Function<int(int, int, int)> davaStatic(&test);
+    
+    int rrr = viewDavaFnCall(davaStatic);
+    printf("%d\n", rrr);
     
     JobManager::Instance()->CreateMainJob([fst]{
         fst->runResult->SetText(L"Started...");
@@ -168,8 +176,8 @@ void DoFunctionSignalTest(FunctionSignalTest *fst)
     
     resStr += "\nBinded function:\n";
     resStr += BENCH_TEST("  native", nativeBind);
-    resStr += BENCH_TEST("  std", stdBind);
-    resStr += BENCH_TEST("  dava", davaBind);
+    resStr += BENCH_TEST("  std   ", stdBind);
+    resStr += BENCH_TEST("  dava  ", davaBind);
     
     resStr += "\n\nDone!";
     
