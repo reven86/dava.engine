@@ -36,7 +36,6 @@
 #include "Platform/TemplateAndroid/ExternC/AndroidLayer.h"
 #include "Debug/DVAssert.h"
 #include "Base/Function.h"
-#include "Base/Bind.h"
 #include "Math/Rect.h"
 
 #define DAVA_JNI_EXCEPTION_CHECK \
@@ -677,7 +676,7 @@ Function<Ret(jobject)> JavaClass::GetMethod(String name) const
     jmethodID javaMethod = GetEnv()->GetMethodID(javaClass, name.c_str(),
             parametersString.c_str());
     DAVA_JNI_EXCEPTION_CHECK
-    return Bind(&MethodCaller<Ret>::Call, _1, javaMethod);
+    return std::bind(&MethodCaller<Ret>::Call, std::placeholders::_1, javaMethod);
 }
 
 template<class Ret>
@@ -687,7 +686,7 @@ Function<Ret(void)> JavaClass::GetStaticMethod(String name) const
     jmethodID javaMethod = GetEnv()->GetStaticMethodID(javaClass, name.c_str(),
             parametersString.c_str());
     DAVA_JNI_EXCEPTION_CHECK
-    return Bind(&MethodCaller<Ret>::CallStatic, javaClass, javaMethod);
+    return std::bind(&MethodCaller<Ret>::CallStatic, javaClass, javaMethod);
 }
 
 template<class Ret, class P1>
@@ -697,7 +696,7 @@ Function<Ret(jobject, P1)> JavaClass::GetMethod(String name) const
     jmethodID javaMethod = GetEnv()->GetMethodID(javaClass, name.c_str(),
             parametersString.c_str());
     DAVA_JNI_EXCEPTION_CHECK
-    return Bind(&MethodCaller<Ret, P1>::Call, _1, javaMethod, _2);
+    return std::bind(&MethodCaller<Ret, P1>::Call, std::placeholders::_1, javaMethod, std::placeholders::_2);
 }
 
 template<class Ret, class P1>
@@ -707,7 +706,7 @@ Function<Ret(P1)> JavaClass::GetStaticMethod(String name) const
     jmethodID javaMethod = GetEnv()->GetStaticMethodID(javaClass, name.c_str(),
             parametersString.c_str());
     DAVA_JNI_EXCEPTION_CHECK
-    return Bind(&MethodCaller<Ret, P1>::CallStatic, javaClass, javaMethod, _1);
+    return std::bind(&MethodCaller<Ret, P1>::CallStatic, javaClass, javaMethod, std::placeholders::_1);
 }
 
 template<class Ret, class P1, class P2>
@@ -717,7 +716,7 @@ Function<Ret(jobject, P1, P2)> JavaClass::GetMethod(String name) const
     jmethodID javaMethod = GetEnv()->GetMethodID(javaClass, name.c_str(),
             parametersString.c_str());
     DAVA_JNI_EXCEPTION_CHECK
-    return Bind(&MethodCaller<Ret, P1, P2>::Call, _1, javaMethod, _2, _3);
+    return std::bind(&MethodCaller<Ret, P1, P2>::Call, std::placeholders::_1, javaMethod, std::placeholders::_2, std::placeholders::_3);
 }
 
 template<class Ret, class P1, class P2>
@@ -727,8 +726,8 @@ Function<Ret(P1, P2)> JavaClass::GetStaticMethod(String name) const
     jmethodID javaMethod = GetEnv()->GetStaticMethodID(javaClass, name.c_str(),
             parametersString.c_str());
     DAVA_JNI_EXCEPTION_CHECK
-    return Bind(&MethodCaller<Ret, P1, P2>::CallStatic, javaClass, javaMethod,
-            _1, _2);
+    return std::bind(&MethodCaller<Ret, P1, P2>::CallStatic, javaClass, javaMethod,
+            std::placeholders::_1, std::placeholders::_2);
 }
 
 template<class Ret, class P1, class P2, class P3>
@@ -738,8 +737,8 @@ Function<Ret(jobject, P1, P2, P3)> JavaClass::GetMethod(String name) const
     jmethodID javaMethod = GetEnv()->GetMethodID(javaClass, name.c_str(),
             parametersString.c_str());
     DAVA_JNI_EXCEPTION_CHECK
-    return Bind(&MethodCaller<Ret, P1, P2, P3>::Call, _1, javaMethod, _2, _3,
-            _4);
+    return std::bind(&MethodCaller<Ret, P1, P2, P3>::Call, std::placeholders::_1, javaMethod, std::placeholders::_2, std::placeholders::_3,
+            std::placeholders::_4);
 }
 
 template<class Ret, class P1, class P2, class P3>
@@ -749,8 +748,8 @@ Function<Ret(P1, P2, P3)> JavaClass::GetStaticMethod(String name) const
     jmethodID javaMethod = GetEnv()->GetStaticMethodID(javaClass, name.c_str(),
             parametersString.c_str());
     DAVA_JNI_EXCEPTION_CHECK
-    return Bind(&MethodCaller<Ret, P1, P2, P3>::CallStatic, javaClass,
-            javaMethod, _1, _2, _3);
+    return std::bind(&MethodCaller<Ret, P1, P2, P3>::CallStatic, javaClass,
+            javaMethod, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 }
 
 template<class Ret, class P1, class P2, class P3, class P4>
@@ -760,8 +759,8 @@ Function<Ret(jobject, P1, P2, P3, P4)> JavaClass::GetMethod(String name) const
     jmethodID javaMethod = GetEnv()->GetMethodID(javaClass, name.c_str(),
             parametersString.c_str());
     DAVA_JNI_EXCEPTION_CHECK
-    return Bind(&MethodCaller<Ret, P1, P2, P3, P4>::Call, _1, javaMethod, _2,
-            _3, _4, _5);
+    return std::bind(&MethodCaller<Ret, P1, P2, P3, P4>::Call, std::placeholders::_1, javaMethod, std::placeholders::_2,
+            std::placeholders::_3, std::placeholders::_4, std::placeholders::_5);
 }
 
 template<class Ret, class P1, class P2, class P3, class P4>
@@ -771,8 +770,8 @@ Function<Ret(P1, P2, P3, P4)> JavaClass::GetStaticMethod(String name) const
     jmethodID javaMethod = GetEnv()->GetStaticMethodID(javaClass, name.c_str(),
             parametersString.c_str());
     DAVA_JNI_EXCEPTION_CHECK
-    return Bind(&MethodCaller<Ret, P1, P2, P3, P4>::CallStatic, javaClass,
-            javaMethod, _1, _2, _3, _4);
+    return std::bind(&MethodCaller<Ret, P1, P2, P3, P4>::CallStatic, javaClass,
+            javaMethod, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
 }
 
 template<class Ret, class P1, class P2, class P3, class P4, class P5>
@@ -784,8 +783,8 @@ Function<Ret(jobject, P1, P2, P3, P4, P5)> JavaClass::GetMethod(
     jmethodID javaMethod = GetEnv()->GetMethodID(javaClass, name.c_str(),
             parametersString.c_str());
     DAVA_JNI_EXCEPTION_CHECK
-    return Bind(&MethodCaller<Ret, P1, P2, P3, P4, P5>::Call, _1, javaMethod,
-            _2, _3, _4, _5, _6);
+    return std::bind(&MethodCaller<Ret, P1, P2, P3, P4, P5>::Call, std::placeholders::_1, javaMethod,
+            std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5, std::placeholders::_6);
 }
 
 template<class Ret, class P1, class P2, class P3, class P4, class P5>
@@ -796,8 +795,8 @@ Function<Ret(P1, P2, P3, P4, P5)> JavaClass::GetStaticMethod(String name) const
     jmethodID javaMethod = GetEnv()->GetStaticMethodID(javaClass, name.c_str(),
             parametersString.c_str());
     DAVA_JNI_EXCEPTION_CHECK
-    return Bind(&MethodCaller<Ret, P1, P2, P3, P4, P5>::CallStatic, javaClass,
-            javaMethod, _1, _2, _3, _4, _5);
+    return std::bind(&MethodCaller<Ret, P1, P2, P3, P4, P5>::CallStatic, javaClass,
+            javaMethod, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5);
 }
 
 template<class Ret, class P1, class P2, class P3, class P4, class P5, class P6>
@@ -808,8 +807,8 @@ Function<Ret(jobject, P1, P2, P3, P4, P5, P6)> JavaClass::GetMethod(String name)
     jmethodID javaMethod = GetEnv()->GetMethodID(javaClass, name.c_str(),
             parametersString.c_str());
     DAVA_JNI_EXCEPTION_CHECK
-    return Bind(&MethodCaller<Ret, P1, P2, P3, P4, P5, P6>::Call, _1,
-            javaMethod, _1, _2, _3, _4, _5, _6);
+    return std::bind(&MethodCaller<Ret, P1, P2, P3, P4, P5, P6>::Call, std::placeholders::_1,
+            javaMethod, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5, std::placeholders::_6);
 }
 template<class Ret, class P1, class P2, class P3, class P4, class P5, class P6>
 Function<Ret(P1, P2, P3, P4, P5, P6)> JavaClass::GetStaticMethod(String name) const
@@ -819,8 +818,8 @@ Function<Ret(P1, P2, P3, P4, P5, P6)> JavaClass::GetStaticMethod(String name) co
     jmethodID javaMethod = GetEnv()->GetStaticMethodID(javaClass, name.c_str(),
             parametersString.c_str());
     DAVA_JNI_EXCEPTION_CHECK
-    return Bind(&MethodCaller<Ret, P1, P2, P3, P4, P5, P6>::CallStatic, javaClass,
-            javaMethod, _1, _2, _3, _4, _5, _6);
+    return std::bind(&MethodCaller<Ret, P1, P2, P3, P4, P5, P6>::CallStatic, javaClass,
+            javaMethod, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5, std::placeholders::_6);
 }
 
 } // end namespace JNI

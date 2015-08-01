@@ -155,7 +155,7 @@ JavaClass::JavaClass(const String &className)
     name = className;
 
     Function<void (String)> findJClass (this, &JavaClass::FindJavaClass);
-    auto findJClassName = Bind(findJClass, name);
+    auto findJClassName = std::bind(findJClass, name);
     uint32 jobId = JobManager::Instance()->CreateMainJob(findJClassName);
     JobManager::Instance()->WaitMainJobID(jobId);
 }

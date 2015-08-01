@@ -40,10 +40,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #   define DAVA_NOINLINE    __attribute__((noinline))
 #   define DAVA_FORCEINLINE __attribute__((always_inline))
 #   define DAVA_ALIGNOF(x)  alignof(x)
-#   define DAVA_NOEXCEPT    __attribute__((nothrow))
 #   define DAVA_CONSTEXPR   constexpr
 #   define DAVA_DEPRECATED(func) func __attribute__ ((deprecated))
 #   define DAVA_ALIGNED(Var, Len) Var __attribute__((aligned(Len)))
+#   ifdef TARGET_OS_IPHONE
+#       define DAVA_NOEXCEPT    __attribute__((nothrow))
+#   else
+#       define DAVA_NOEXCEPT    noexcept
+#   endif
 
 //Microsoft Visual C++
 #elif defined(_MSC_VER)

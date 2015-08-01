@@ -395,10 +395,20 @@ protected:
     template<typename Hldr, typename Fn, typename... Prms, bool trivial = true>
     void Init(const Fn& fn, Prms&&... params) DAVA_NOEXCEPT
     {
-        Detail<(trivial && sizeof(Hldr) <= sizeof(Fn11::Closure::Storage)
-            && std::is_trivially_destructible<Fn>::value
-            && std::is_trivially_copy_constructible<Fn>::value
-            && std::is_trivially_copy_assignable<Fn>::value),
+        Detail<
+            (
+                trivial && sizeof(Hldr) <= sizeof(Fn11::Closure::Storage)
+                && std::is_trivially_destructible<Fn>::value
+#ifdef __DAVAENGINE_ANDROID__
+                // android old-style way
+                && std::has_trivial_copy_constructor<Fn>::value
+                && std::has_trivial_copy_assign<Fn>::value
+#else
+                // standard c++14 way
+                && std::is_trivially_copy_constructible<Fn>::value
+                && std::is_trivially_copy_assignable<Fn>::value
+#endif
+            ),
             Hldr, Fn, Prms... >::Init(this, fn, std::forward<Prms>(params)...);
     }
 

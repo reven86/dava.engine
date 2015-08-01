@@ -45,26 +45,26 @@ SharedPreferences::SharedPreferences()
     env->DeleteLocalRef(tmp);
 
     auto tempPutString = jniSharedPreferences.GetMethod<void, jstring, jstring>("PutString");
-    putString = Bind(tempPutString, preferencesObject, _1, _2);
+    putString = std::bind(tempPutString, preferencesObject, std::placeholders::_1, std::placeholders::_2);
 
     auto tempGetString = jniSharedPreferences.GetMethod<jstring, jstring, jstring>("GetString");
-    getString = Bind(tempGetString, preferencesObject, _1, _2);
+    getString = std::bind(tempGetString, preferencesObject, std::placeholders::_1, std::placeholders::_2);
 
 
     auto tempPutLong = jniSharedPreferences.GetMethod<void, jstring, jlong>("PutLong");
-    putLong = Bind(tempPutLong, preferencesObject, _1, _2);
+    putLong = std::bind(tempPutLong, preferencesObject, std::placeholders::_1, std::placeholders::_2);
 
     auto tempGetLong = jniSharedPreferences.GetMethod<jlong, jstring, jlong>("GetLong");
-    getLong = Bind(tempGetLong, preferencesObject, _1, _2);
+    getLong = std::bind(tempGetLong, preferencesObject, std::placeholders::_1, std::placeholders::_2);
 
     auto tempRemove = jniSharedPreferences.GetMethod<void, jstring>("Remove");
-    remove = Bind(tempRemove, preferencesObject, _1);
+    remove = std::bind(tempRemove, preferencesObject, std::placeholders::_1);
 
     auto tempClear = jniSharedPreferences.GetMethod<void>("Clear");
-    clear = Bind(tempClear, preferencesObject);
+    clear = std::bind(tempClear, preferencesObject);
 
     auto tempPush = jniSharedPreferences.GetMethod<void>("Push");
-    push = Bind(tempPush, preferencesObject);
+    push = std::bind(tempPush, preferencesObject);
 
 }
 

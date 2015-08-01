@@ -40,10 +40,10 @@ public:
     void LoadResources() override;
     void UnloadResources() override;
 
-protected:
     UIButton *runButton;
     UIStaticText *runResult;
 
+protected:
     void OnButtonPress(BaseObject *obj, void *data, void *callerData);
 };
 
