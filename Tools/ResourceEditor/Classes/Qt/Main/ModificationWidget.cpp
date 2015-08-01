@@ -37,6 +37,7 @@
 #include <QHBoxLayout>
 #include <QStyleOptionSpinBox>
 
+
 ModificationWidget::ModificationWidget(QWidget* parent)
 	: QWidget(parent)
 	, curScene(nullptr)

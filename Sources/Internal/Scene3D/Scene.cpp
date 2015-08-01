@@ -799,7 +799,7 @@ void Scene::SetupTestLighting()
 void Scene::Update(float timeElapsed)
 {
     TIME_PROFILE("Scene::Update");
-    
+
     uint64 time = SystemTimer::Instance()->AbsoluteMS();
 
     uint32 size = (uint32)systemsToProcess.size();
@@ -854,7 +854,7 @@ void Scene::Update(float timeElapsed)
 
 void Scene::Draw()
 {
-    TIME_PROFILE("Scene::Draw");
+	TIME_PROFILE("Scene::Draw");
 
 	//float timeElapsed = SystemTimer::Instance()->FrameDelta();
 

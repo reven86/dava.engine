@@ -218,44 +218,29 @@ bool FileSystem::MoveFile(const FilePath & existingFile, const FilePath & newFil
 {
     DVASSERT(newFile.GetType() != FilePath::PATH_IN_RESOURCES);
 
-#if defined(__DAVAENGINE_WINDOWS__)
+    String toFile = newFile.GetAbsolutePathname();
+    String fromFile = existingFile.GetAbsolutePathname();
 
-	DWORD flags = (overwriteExisting) ? MOVEFILE_REPLACE_EXISTING : 0;
-	// Add flag MOVEFILE_COPY_ALLOWED to allow file moving between different volumes
-    // Without this flags MoveFileEx fails and GetLastError return ERROR_NOT_SAME_DEVICE
-    // see https://msdn.microsoft.com/en-us/library/windows/desktop/aa365240%28v=vs.85%29.aspx?f=255&MSPPError=-2147217396
-    flags |= MOVEFILE_COPY_ALLOWED;
-
-#if defined(__DAVAENGINE_WIN32__)
-
-    BOOL ret = ::MoveFileExA(existingFile.GetAbsolutePathname().c_str(), newFile.GetAbsolutePathname().c_str(), flags);
-
-#elif defined(__DAVAENGINE_WIN_UAP__)
-
-    WideString existingFileWide = StringToWString(existingFile.GetAbsolutePathname());
-    WideString newFileWide = StringToWString(newFile.GetAbsolutePathname());
-    BOOL ret = ::MoveFileExW(existingFileWide.c_str(), newFileWide.c_str(), flags);
-
-#endif
-
-	return	ret != 0;
-
-#elif defined(__DAVAENGINE_ANDROID__)
-	if (!overwriteExisting && access(newFile.GetAbsolutePathname().c_str(), 0) != -1)
-	{
-		return false;
-	}
-	remove(newFile.GetAbsolutePathname().c_str());
-	int ret = rename(existingFile.GetAbsolutePathname().c_str(), newFile.GetAbsolutePathname().c_str());
-	return ret == 0;
-#else //iphone & macos
-	int flags = COPYFILE_ALL | COPYFILE_MOVE;
-	if(!overwriteExisting)
-		flags |= COPYFILE_EXCL;
-	
-	int ret = copyfile(existingFile.GetAbsolutePathname().c_str(), newFile.GetAbsolutePathname().c_str(), NULL, flags);
-	return ret==0;
-#endif //PLATFORMS
+    if (overwriteExisting)
+    {
+        std::remove(toFile.c_str());
+    }
+    else
+    {
+        if (IsFile(toFile))
+        {
+            return false;
+        }
+    }
+    int result = std::rename(fromFile.c_str(), toFile.c_str());
+    bool error = (0 != result);
+    if (error)
+    {
+        const char* errorReason = std::strerror(errno);
+        Logger::Error("rename failed (\"%s\" -> \"%s\") with error: %s",
+            fromFile.c_str(), toFile.c_str(), errorReason);
+    }
+    return !error;
 }
 
 

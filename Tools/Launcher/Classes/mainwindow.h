@@ -39,6 +39,9 @@
 #include <QSet>
 #include <QDebug>
 
+class ListModel;
+class QSortFilterProxyModel;
+
 namespace Ui {
 class MainWindow;
 }
@@ -48,16 +51,6 @@ class MainWindow : public QMainWindow
     Q_OBJECT
     
 public:
-
-    enum ListItemType
-    {
-        LIST_ITEM_NEWS = 0,
-        LIST_ITEM_FAVORITES,
-        LIST_ITEM_BRANCH,
-
-        LIST_ITEM_COUNT
-    };
-
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
@@ -90,8 +83,6 @@ private:
 
     void GetTableApplicationIDs(int rowNumber, QString & appID, QString & installedVersionID, QString & avalibleVersionID);
 
-    QListWidgetItem * CreateListItem(const QString & stringID, ListItemType type);
-    QListWidgetItem * CreateSeparatorItem();
     QWidget * CreateAppNameTableItem(const QString & stringID);
     QWidget * CreateAppInstalledTableItem(const QString & stringID);
     QWidget * CreateAppAvalibleTableItem(Application * app);
@@ -102,12 +93,12 @@ private:
     QNetworkAccessManager * networkManager;
     FileDownloader * newsDownloader;
     
-    QModelIndex selectedListItem;
+    QPersistentModelIndex selectedListItem;
     QString selectedBranchID;
 
-    QFont listFont;
-    QFont listFontFav;
     QFont tableFont;
+    ListModel *listModel;
+    QSortFilterProxyModel *filterModel;
 };
 
 #endif // MAINWINDOW_H
