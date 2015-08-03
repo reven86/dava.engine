@@ -78,21 +78,29 @@ public:
     void RemoveListener(PackageListener *listener);
     
     void SetControlProperty(ControlNode *node, AbstractProperty *property, const DAVA::VariantType &newValue);
-    void SetControlDefaultProperty(ControlNode *node, AbstractProperty *property, const DAVA::VariantType &newValue);
     void ResetControlProperty(ControlNode *node, AbstractProperty *property);
     void RefreshProperty(ControlNode *node, AbstractProperty *property);
 
     void AddComponent(ControlNode *node, ComponentPropertiesSection *section);
     void RemoveComponent(ControlNode *node, ComponentPropertiesSection *section);
+    void AttachPrototypeComponent(ControlNode *node, ComponentPropertiesSection *destSection, ComponentPropertiesSection *prototypeSection);
+    void DetachPrototypeComponent(ControlNode *node, ComponentPropertiesSection *destSection, ComponentPropertiesSection *prototypeSection);
     
     void InsertControl(ControlNode *node, ControlsContainerNode *dest, DAVA::int32 index);
     void RemoveControl(ControlNode *node, ControlsContainerNode *from);
 
     void InsertImportedPackage(PackageNode *node, DAVA::int32 index);
     void RemoveImportedPackage(PackageNode *node);
+    
+    void RefreshLayout();
 
 private:
     void RefreshPropertiesInInstances(ControlNode *node, AbstractProperty *property);
+
+    void RefreshLayout(ControlNode *control);
+    void CollectRootControlsToRefreshLayout(ControlNode *node, DAVA::Vector<ControlNode*> &roots);
+    void RestoreProperties(ControlNode *control);
+    void NotifyPropertyChanged(ControlNode *control);
     
 private:
     DAVA::FilePath path;
