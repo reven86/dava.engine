@@ -166,39 +166,54 @@ void StringDiff(const WideString& originalString, const WideString& newString, S
 
 }   // unnamed namespace
 
+std::shared_ptr<PrivateTextFieldWinUAP> PrivateTextFieldWinUAP::Create(UITextField* uiTextField)
+{
+    // It is highly not recommended to call shared_from_this() from constructor so introduce static Create method 
+    std::shared_ptr<PrivateTextFieldWinUAP> obj = std::make_shared<PrivateTextFieldWinUAP>(uiTextField);
+    obj->Init();
+    return obj;
+}
+
+void PrivateTextFieldWinUAP::Init()
+{
+    core->RunOnUIThreadBlocked([this]()
+    {
+        CreateNativeText();
+
+        std::weak_ptr<PrivateTextFieldWinUAP> self_weak(shared_from_this());
+        auto keyboardHiding = ref new TypedEventHandler<InputPane^, InputPaneVisibilityEventArgs^>([this, self_weak](InputPane^, InputPaneVisibilityEventArgs^) {
+            if (auto self = self_weak.lock())
+                OnKeyboardHiding();
+        });
+        auto keyboardShowing = ref new TypedEventHandler<InputPane^, InputPaneVisibilityEventArgs^>([this, self_weak](InputPane^, InputPaneVisibilityEventArgs^) {
+            if (auto self = self_weak.lock())
+                OnKeyboardShowing();
+        });
+        InputPane::GetForCurrentView()->Showing += keyboardShowing;
+        InputPane::GetForCurrentView()->Hiding += keyboardHiding;
+    });
+}
+
 PrivateTextFieldWinUAP::PrivateTextFieldWinUAP(UITextField* uiTextField_)
     : core(static_cast<CorePlatformWinUAP*>(Core::Instance()))
     , uiTextField(uiTextField_)
-{
-    core->RunOnUIThreadBlocked([this]() {
-        nativeControl = ref new TextBox();
-        nativeControl->TextAlignment = TextAlignment::Left;
-        nativeControl->FlowDirection = FlowDirection::LeftToRight;
-
-        nativeControl->Background = ref new SolidColorBrush(Colors::Transparent);
-        nativeControl->BorderBrush = ref new SolidColorBrush(Colors::Transparent);
-
-        core->XamlApplication()->AddUIElement(nativeControl);
-        PositionNative(originalRect, true);
-
-        InstallEventHandlers();
-    });
-}
+{}
 
 PrivateTextFieldWinUAP::~PrivateTextFieldWinUAP()
 {
     if (nativeControl != nullptr)
     {
-        // Compiler complains of capturing nativeWebView data member in lambda
-        TextBox^ p = nativeControl;
-        core->RunOnUIThread([p]() { // We don't need blocking call here
+        Control^ p = nativeControl;
+        core->RunOnUIThreadBlocked([p]() { // We don't need blocking call here
             static_cast<CorePlatformWinUAP*>(Core::Instance())->XamlApplication()->RemoveUIElement(p);
         });
         nativeControl = nullptr;
+        nativeText = nullptr;
+        nativePassword = nullptr;
     }
 }
 
-void PrivateTextFieldWinUAP::FlyToSunIcarus()
+void PrivateTextFieldWinUAP::OwnerAtPremortem()
 {
     uiTextField = nullptr;
     textFieldDelegate = nullptr;
@@ -221,9 +236,25 @@ void PrivateTextFieldWinUAP::SetVisible(bool isVisible)
     }
 }
 
-void PrivateTextFieldWinUAP::SetIsPassword(bool isPassword_)
+void PrivateTextFieldWinUAP::SetIsPassword(bool isPassword)
 {
-
+    // Do not allow multiline password fields
+    DVASSERT((!isPassword || !multiline) && "Password multiline text fields are not allowed");
+    if (isPassword != password)
+    {
+        password = isPassword;
+        auto self{shared_from_this()};
+        core->RunOnUIThreadBlocked([this, self]()
+        {
+            curText.clear();
+            DeleteNativeControl();
+            if (password)
+                CreateNativePassword();
+            else
+                CreateNativeText();
+            pendingTextureUpdate = true;
+        });
+    }
 }
 
 void PrivateTextFieldWinUAP::SetMaxLength(int32 value)
@@ -231,8 +262,12 @@ void PrivateTextFieldWinUAP::SetMaxLength(int32 value)
     auto self{shared_from_this()};
     core->RunOnUIThread([this, self, value]()
     {
-        // Native control expects zero for unlimited input length
-        nativeControl->MaxLength = std::max(0, value);
+        // Native controls expect zero for unlimited input length
+        int length = std::max(0, value);
+        if (nativeText != nullptr)
+            nativeText->MaxLength = length;
+        else // if (nativePassword != nullptr)
+            nativePassword->MaxLength = length;
     });
 }
 
@@ -267,7 +302,7 @@ void PrivateTextFieldWinUAP::UpdateRect(const Rect& rect)
         sizeChanged = true;
     }
 
-    if (multiline || pendingTextureUpdate)
+    if (pendingTextureUpdate)
     {
         auto self{shared_from_this()};
         core->RunOnUIThread([this, self, sizeChanged]()
@@ -288,7 +323,10 @@ void PrivateTextFieldWinUAP::SetText(const WideString& text)
     core->RunOnUIThread([this, self, str]()
     {
         curText = str->Data();
-        nativeControl->Text = str;
+        if (nativeText != nullptr)
+            nativeText->Text = str;
+        else if (nativePassword != nullptr)
+            nativePassword->Password = str;
         pendingTextureUpdate = true;
     });
 }
@@ -297,7 +335,10 @@ void PrivateTextFieldWinUAP::GetText(WideString& text) const
 {
     core->RunOnUIThreadBlocked([this, &text]()
     {
-        text = nativeControl->Text->Data();
+        if (nativeText != nullptr)
+            text = nativeText->Text->Data();
+        else if (nativePassword != nullptr)
+            text = nativePassword->Password->Data();
     });
 }
 
@@ -318,29 +359,32 @@ void PrivateTextFieldWinUAP::SetTextColor(const Color& color)
 
 void PrivateTextFieldWinUAP::SetTextAlign(int32 align)
 {
-    textAlignment = 0;
-    if (align & ALIGN_LEFT)
-        textAlignment |= ALIGN_LEFT;
-    else if (align & ALIGN_HCENTER)
-        textAlignment |= ALIGN_HCENTER;
-    else if (align & ALIGN_RIGHT)
-        textAlignment |= ALIGN_RIGHT;
-
-    if (0 == textAlignment)
-        textAlignment = ALIGN_LEFT;
-    textAlignment |= ALIGN_TOP; // Native text field doesn't support vertical text alignment
-
-    auto self{shared_from_this()};
-    core->RunOnUIThread([this, self]()
+    if (!password)
     {
-        if (textAlignment & ALIGN_LEFT)
-            nativeControl->TextAlignment = TextAlignment::Left;
-        else if (textAlignment & ALIGN_HCENTER)
-            nativeControl->TextAlignment = TextAlignment::Center;
-        else if (textAlignment & ALIGN_RIGHT)
-            nativeControl->TextAlignment = TextAlignment::Right;
-        pendingTextureUpdate = true;
-    });
+        textAlignment = 0;
+        if (align & ALIGN_LEFT)
+            textAlignment |= ALIGN_LEFT;
+        else if (align & ALIGN_HCENTER)
+            textAlignment |= ALIGN_HCENTER;
+        else if (align & ALIGN_RIGHT)
+            textAlignment |= ALIGN_RIGHT;
+
+        if (0 == textAlignment)
+            textAlignment = ALIGN_LEFT;
+        textAlignment |= ALIGN_TOP; // Native TextBox doesn't support vertical text alignment
+
+        auto self{shared_from_this()};
+        core->RunOnUIThread([this, self]()
+        {
+            if (textAlignment & ALIGN_LEFT)
+                nativeText->TextAlignment = TextAlignment::Left;
+            else if (textAlignment & ALIGN_HCENTER)
+                nativeText->TextAlignment = TextAlignment::Center;
+            else if (textAlignment & ALIGN_RIGHT)
+                nativeText->TextAlignment = TextAlignment::Right;
+            pendingTextureUpdate = true;
+        });
+    }
 }
 
 void PrivateTextFieldWinUAP::SetTextUseRtlAlign(bool useRtlAlign)
@@ -351,7 +395,11 @@ void PrivateTextFieldWinUAP::SetTextUseRtlAlign(bool useRtlAlign)
         auto self{shared_from_this()};
         core->RunOnUIThread([this, self]()
         {
-            nativeControl->FlowDirection = flowDirectionRTL ? FlowDirection::RightToLeft : FlowDirection::LeftToRight;
+            FlowDirection flowDir = flowDirectionRTL ? FlowDirection::RightToLeft : FlowDirection::LeftToRight;
+            if (nativeText != nullptr)
+                nativeText->FlowDirection = flowDir;
+            else if (nativePassword != nullptr)
+                nativePassword->FlowDirection = flowDir;
             pendingTextureUpdate = true;
         });
     }
@@ -362,7 +410,10 @@ void PrivateTextFieldWinUAP::SetFontSize(float32 size)
     auto self{shared_from_this()};
     core->RunOnUIThread([this, self, size]()
     {
-        nativeControl->FontSize = size;
+        if (nativeText != nullptr)
+            nativeText->FontSize = size;
+        else if (nativePassword != nullptr)
+            nativePassword->FontSize = size;
         pendingTextureUpdate = true;
     });
 }
@@ -374,13 +425,15 @@ void PrivateTextFieldWinUAP::SetDelegate(UITextFieldDelegate* textFieldDelegate_
 
 void PrivateTextFieldWinUAP::SetMultiline(bool enable)
 {
+    // Do not allow multiline password fields
+    DVASSERT((!enable || !password) && "Password multiline text fields are not allowed");
     if (multiline != enable)
     {
         multiline = enable;
         auto self{shared_from_this()};
         core->RunOnUIThread([this, self]()
         {
-            nativeControl->AcceptsReturn = multiline;
+            nativeText->AcceptsReturn = multiline;
             PositionNative(originalRect, !multiline);
         });
     }
@@ -388,33 +441,45 @@ void PrivateTextFieldWinUAP::SetMultiline(bool enable)
 
 void PrivateTextFieldWinUAP::SetInputEnabled(bool enable)
 {
-    auto self{shared_from_this()};
-    core->RunOnUIThread([this, self, enable]()
+    if (!password)
     {
-        nativeControl->IsReadOnly = enable;
-        pendingTextureUpdate = true;
-    });
+        auto self{shared_from_this()};
+        core->RunOnUIThread([this, self, enable]()
+        {
+            nativeText->IsReadOnly = enable;
+            pendingTextureUpdate = true;
+        });
+    }
 }
 
 void PrivateTextFieldWinUAP::SetSpellCheckingType(int32 value)
 {
-    bool enabled = UITextField::SPELL_CHECKING_TYPE_YES == value;
-    auto self{shared_from_this()};
-    core->RunOnUIThread([this, self, enabled]()
+    if (!password)
     {
-        nativeControl->IsSpellCheckEnabled = enabled;
-        pendingTextureUpdate = true;
-    });
+        bool enabled = UITextField::SPELL_CHECKING_TYPE_YES == value;
+        auto self{shared_from_this()};
+        core->RunOnUIThread([this, self, enabled]()
+        {
+            nativeText->IsSpellCheckEnabled = enabled;
+            pendingTextureUpdate = true;
+        });
+    }
 }
 
 void PrivateTextFieldWinUAP::SetAutoCapitalizationType(int32 value)
-{}
+{
+    // I didn't found this property in native TextBox
+}
 
 void PrivateTextFieldWinUAP::SetAutoCorrectionType(int32 value)
-{}
+{
+    // I didn't found this property in native TextBox
+}
 
 void PrivateTextFieldWinUAP::SetKeyboardAppearanceType(int32 value)
-{}
+{
+    // I didn't found this property in native TextBox
+}
 
 void PrivateTextFieldWinUAP::SetKeyboardType(int32 value)
 {
@@ -442,60 +507,134 @@ void PrivateTextFieldWinUAP::SetKeyboardType(int32 value)
         nativeValue = InputScopeNameValue::Default;
         break;
     }
+
+    // PasswordBox supports only Password and NumericPin from InputScopeNameValue enum
+    if (password)
+        nativeValue = InputScopeNameValue::Password;
     
     auto self{shared_from_this()};
     core->RunOnUIThread([this, self, nativeValue]() {
         InputScope^ inputScope = ref new InputScope();
         inputScope->Names->Append(ref new InputScopeName(nativeValue));
-        nativeControl->InputScope = inputScope;
+        if (nativeText != nullptr)
+            nativeText->InputScope = inputScope;
+        else if (nativePassword != nullptr)
+            nativePassword->InputScope = inputScope;
     });
 }
 
 void PrivateTextFieldWinUAP::SetReturnKeyType(int32 /*value*/)
-{}
+{
+    // I didn't found this property in native TextBox
+}
 
 void PrivateTextFieldWinUAP::SetEnableReturnKeyAutomatically(bool /*value*/)
-{}
+{
+    // I didn't found this property in native TextBox
+}
 
 void PrivateTextFieldWinUAP::SetCursorPos(uint32 pos)
 {
-    if (static_cast<int32>(pos) >= 0)
+    if (!password && static_cast<int32>(pos) >= 0)
     {
         auto self{shared_from_this()};
         core->RunOnUIThread([this, self, pos]()
         {
-            nativeControl->SelectionStart = pos;
+            nativeText->SelectionStart = pos;
         });
     }
 }
 
-void PrivateTextFieldWinUAP::InstallEventHandlers()
+void PrivateTextFieldWinUAP::CreateNativeText()
 {
-    auto keyDown = ref new KeyEventHandler([this](Platform::Object^ sender, Windows::UI::Xaml::Input::KeyRoutedEventArgs^ args) {
-        OnKeyDown(sender, args);
-    });
-    auto selectionChanged = ref new RoutedEventHandler([this](Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ args) {
-        OnSelectionChanged(sender, args);
-    });
-    auto textChanged = ref new TextChangedEventHandler([this](Platform::Object^ sender, TextChangedEventArgs^ args) {
-        OnTextChanged(sender, args);
-    });
-    auto lostFocus = ref new RoutedEventHandler([this](Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ args) {
-        OnLostFocus(sender, args);
-    });
-    nativeControl->KeyDown += keyDown;
-    nativeControl->SelectionChanged += selectionChanged;
-    nativeControl->TextChanged += textChanged;
-    nativeControl->LostFocus += lostFocus;
+    nativeText = ref new TextBox();
+    nativeText->TextAlignment = TextAlignment::Left;
+    nativeText->FlowDirection = FlowDirection::LeftToRight;
 
-    auto keyboardHiding = ref new TypedEventHandler<InputPane^, InputPaneVisibilityEventArgs^>([this](InputPane^ sender, InputPaneVisibilityEventArgs^ args) {
-        OnKeyboardHiding(sender, args);
+    nativeText->Background = ref new SolidColorBrush(Colors::Transparent);
+    nativeText->BorderBrush = ref new SolidColorBrush(Colors::Transparent);
+
+    nativeControl = nativeText;
+    core->XamlApplication()->AddUIElement(nativeControl);
+    PositionNative(originalRect, true);
+
+    InstallTextEventHandlers();
+}
+
+void PrivateTextFieldWinUAP::CreateNativePassword()
+{
+    nativePassword = ref new PasswordBox();
+    nativePassword->FlowDirection = FlowDirection::LeftToRight;
+
+    nativePassword->Background = ref new SolidColorBrush(Colors::Transparent);
+    nativePassword->BorderBrush = ref new SolidColorBrush(Colors::Transparent);
+
+    nativeControl = nativePassword;
+    core->XamlApplication()->AddUIElement(nativeControl);
+    PositionNative(originalRect, true);
+
+    InstallPasswordEventHandlers();
+}
+
+void PrivateTextFieldWinUAP::DeleteNativeControl()
+{
+    static_cast<CorePlatformWinUAP*>(Core::Instance())->XamlApplication()->RemoveUIElement(nativeControl);
+    nativeControl = nullptr;
+    nativeText = nullptr;
+    nativePassword = nullptr;
+}
+
+void PrivateTextFieldWinUAP::InstallTextEventHandlers()
+{
+    using namespace Platform;
+
+    std::weak_ptr<PrivateTextFieldWinUAP> self_weak(shared_from_this());
+    auto keyDown = ref new KeyEventHandler([this, self_weak](Object^, KeyRoutedEventArgs^ args) {
+        if (auto self = self_weak.lock())
+            OnKeyDown(args->Key);
     });
-    auto keyboardShowing = ref new TypedEventHandler<InputPane^, InputPaneVisibilityEventArgs^>([this](InputPane^ sender, InputPaneVisibilityEventArgs^ args) {
-        OnKeyboardShowing(sender, args);
+    auto gotFocus = ref new RoutedEventHandler([this, self_weak](Object^, RoutedEventArgs^) {
+        if (auto self = self_weak.lock())
+            OnGotFocus();
     });
-    InputPane::GetForCurrentView()->Showing += keyboardShowing;
-    InputPane::GetForCurrentView()->Hiding += keyboardHiding;
+    auto lostFocus = ref new RoutedEventHandler([this, self_weak](Object^, RoutedEventArgs^) {
+        if (auto self = self_weak.lock())
+            OnLostFocus();
+    });
+    auto selectionChanged = ref new RoutedEventHandler([this, self_weak](Object^, RoutedEventArgs^) {
+        if (auto self = self_weak.lock())
+            OnSelectionChanged();
+    });
+    auto textChanged = ref new TextChangedEventHandler([this, self_weak](Object^, TextChangedEventArgs^) {
+        if (auto self = self_weak.lock())
+            OnTextChanged();
+    });
+    nativeText->KeyDown += keyDown;
+    nativeText->GotFocus += gotFocus;
+    nativeText->LostFocus += lostFocus;
+    nativeText->SelectionChanged += selectionChanged;
+    nativeText->TextChanged += textChanged;
+}
+
+void PrivateTextFieldWinUAP::InstallPasswordEventHandlers()
+{
+    using namespace Platform;
+    std::weak_ptr<PrivateTextFieldWinUAP> self_weak(shared_from_this());
+    auto keyDown = ref new KeyEventHandler([this, self_weak](Object^, KeyRoutedEventArgs^ args) {
+        if (auto self = self_weak.lock())
+            OnKeyDown(args->Key);
+    });
+    auto lostFocus = ref new RoutedEventHandler([this, self_weak](Object^, RoutedEventArgs^) {
+        if (auto self = self_weak.lock())
+            OnLostFocus();
+    });
+    auto passwordChanged = ref new RoutedEventHandler([this, self_weak](Object^, RoutedEventArgs^) {
+        if (auto self = self_weak.lock())
+            OnPasswordChanged();
+    });
+    nativePassword->KeyDown += keyDown;
+    nativePassword->LostFocus += lostFocus;
+    nativePassword->PasswordChanged += passwordChanged;
 }
 
 void PrivateTextFieldWinUAP::SetVisibilityNative(bool show)
@@ -523,12 +662,12 @@ void PrivateTextFieldWinUAP::PositionNative(const Rect& rect, bool offScreen)
     core->XamlApplication()->PositionUIElement(nativeControl, physRect.x, physRect.y);
 }
 
-void PrivateTextFieldWinUAP::OnKeyDown(Platform::Object^ sender, Windows::UI::Xaml::Input::KeyRoutedEventArgs^ args)
+void PrivateTextFieldWinUAP::OnKeyDown(Windows::System::VirtualKey virtualKey)
 {
-    savedCaretPosition = nativeControl->SelectionStart;
+    if (nativeText != nullptr)
+        savedCaretPosition = nativeText->SelectionStart;
 
-    VirtualKey vk = args->Key;
-    switch (vk)
+    switch (virtualKey)
     {
     case VirtualKey::Back:
         savedCaretPosition += 1;
@@ -559,47 +698,81 @@ void PrivateTextFieldWinUAP::OnKeyDown(Platform::Object^ sender, Windows::UI::Xa
     }
 }
 
-void PrivateTextFieldWinUAP::OnSelectionChanged(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ args)
+void PrivateTextFieldWinUAP::OnGotFocus()
 {
-    caretPosition = nativeControl->SelectionStart;
+    nativeText->SelectionStart = nativeText->Text->Length();
 }
 
-void PrivateTextFieldWinUAP::OnTextChanged(Platform::Object^ sender, TextChangedEventArgs^ args)
+void PrivateTextFieldWinUAP::OnLostFocus()
 {
-    if (ignoreTextChange)
+    if (!multiline)
+    {
+        PositionNative(originalRect, true);
+        RenderToTexture();
+    }
+}
+
+void PrivateTextFieldWinUAP::OnSelectionChanged()
+{
+    caretPosition = nativeText->SelectionStart;
+}
+
+void PrivateTextFieldWinUAP::OnTextChanged()
+{
+    if (ignoreTextChange || nullptr == nativeText)
     {
         ignoreTextChange = false;
         return;
     }
 
+    WideString newText(nativeText->Text->Data());
+    if (ProcessTextChanged(newText))
+    {
+        nativeText->Text = ref new Platform::String(curText.c_str());
+        // Restore caret position to position before text has been changed
+        nativeText->SelectionStart = savedCaretPosition;
+        ignoreTextChange = true;
+    }
+}
+
+void PrivateTextFieldWinUAP::OnPasswordChanged()
+{
+    if (ignoreTextChange || nullptr == nativePassword)
+    {
+        ignoreTextChange = false;
+        return;
+    }
+
+    WideString newText(nativePassword->Password->Data());
+    if (ProcessTextChanged(newText))
+    {
+        nativePassword->Password = ref new Platform::String(curText.c_str());
+        ignoreTextChange = true;
+    }
+}
+
+bool PrivateTextFieldWinUAP::ProcessTextChanged(const WideString& newText)
+{
     StringDiffResult diffR;
-    WideString newText(nativeControl->Text->Data());
     StringDiff(curText, newText, diffR);
     if (StringDiffResult::NO_CHANGE == diffR.diffType)
-        return;
+        return false;
 
     // Ask delegate whether to accept changes
-    bool decline = false;
+    bool accept = true;
     auto self{shared_from_this()};
-    core->RunOnMainThreadBlocked([this, self, &diffR, &decline]()
+    core->RunOnMainThreadBlocked([this, self, &diffR, &accept]()
     {
         if (uiTextField != nullptr && textFieldDelegate != nullptr)
         {
-            decline = !textFieldDelegate->TextFieldKeyPressed(uiTextField,
-                                                              diffR.originalStringDiffPosition,
-                                                              static_cast<int32>(diffR.originalStringDiff.length()),
-                                                              diffR.newStringDiff);
+            accept = textFieldDelegate->TextFieldKeyPressed(uiTextField,
+                                                            diffR.originalStringDiffPosition,
+                                                            static_cast<int32>(diffR.originalStringDiff.length()),
+                                                            diffR.newStringDiff);
         }
     });
 
-    if (decline)
-    {
-        nativeControl->Text = ref new Platform::String(curText.c_str());
-        // Restore caret position to position before text has been changed
-        nativeControl->SelectionStart = savedCaretPosition;
-        ignoreTextChange = true;
-    }
-    else
+    if (accept)
     {
         WideString curTextCopy = curText;
         WideString newTextCopy = newText;
@@ -610,18 +783,10 @@ void PrivateTextFieldWinUAP::OnTextChanged(Platform::Object^ sender, TextChanged
         });
         curText = newText;
     }
+    return !accept;
 }
 
-void PrivateTextFieldWinUAP::OnLostFocus(Platform::Object^ sender, RoutedEventArgs^ args)
-{
-    if (!multiline)
-    {
-        PositionNative(originalRect, true);
-        RenderToTexture();
-    }
-}
-
-void PrivateTextFieldWinUAP::OnKeyboardHiding(InputPane^ sender, InputPaneVisibilityEventArgs^ args)
+void PrivateTextFieldWinUAP::OnKeyboardHiding()
 {
     if (nativeControl->FocusState != FocusState::Unfocused)
     {
@@ -634,7 +799,7 @@ void PrivateTextFieldWinUAP::OnKeyboardHiding(InputPane^ sender, InputPaneVisibi
     }
 }
 
-void PrivateTextFieldWinUAP::OnKeyboardShowing(InputPane^ sender, InputPaneVisibilityEventArgs^ args)
+void PrivateTextFieldWinUAP::OnKeyboardShowing()
 {
     if (nativeControl->FocusState != FocusState::Unfocused)
     {
@@ -681,7 +846,7 @@ void PrivateTextFieldWinUAP::RenderToTexture()
         RefPtr<Sprite> sprite(CreateSpriteFromPreviewData(buf.data(), imageWidth, imageHeight));
         if (sprite.Valid())
         {
-            core->RunOnMainThread([this, sprite]() {
+            core->RunOnMainThread([this, self, sprite]() {
                 if (uiTextField != nullptr)
                 {
                     uiTextField->SetSprite(sprite.Get(), 0);

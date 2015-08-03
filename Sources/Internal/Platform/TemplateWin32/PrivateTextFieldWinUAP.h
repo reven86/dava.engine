@@ -48,12 +48,16 @@ class CorePlatformWinUAP;
 class PrivateTextFieldWinUAP : public std::enable_shared_from_this<PrivateTextFieldWinUAP>
 {
 public:
+    static std::shared_ptr<PrivateTextFieldWinUAP> Create(UITextField* uiTextField);
+
+    // Though static Create is used to create instance constructor is declared public to
+    // use std::make_shared without tricks
     PrivateTextFieldWinUAP(UITextField* uiTextField);
     ~PrivateTextFieldWinUAP();
 
     // UITextFieldWinUAP should invoke it in its destructor to tell this class instance
     // to fly away on its own (finish pending jobs if any, and delete when all references are lost)
-    void FlyToSunIcarus();
+    void OwnerAtPremortem();
 
     void SetVisible(bool isVisible);
     void SetIsPassword(bool isPassword);
@@ -96,7 +100,12 @@ public:
     void SetCursorPos(uint32 pos);
 
 private:
-    void InstallEventHandlers();
+    void Init();
+    void CreateNativeText();
+    void CreateNativePassword();
+    void DeleteNativeControl();
+    void InstallTextEventHandlers();
+    void InstallPasswordEventHandlers();
     void SetVisibilityNative(bool show);
     void PositionNative(const Rect& rect, bool offScreen);
 
@@ -104,24 +113,34 @@ private:
     Sprite* CreateSpriteFromPreviewData(const uint8* imageData, int32 width, int32 height) const;
 
 private:    // Event handlers
-    void OnKeyDown(Platform::Object^ sender, Windows::UI::Xaml::Input::KeyRoutedEventArgs^ args);
+    void OnKeyDown(Windows::System::VirtualKey virtualKey);
+    void OnGotFocus();
+    void OnLostFocus();
 
-    void OnSelectionChanged(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ args);
-    void OnTextChanged(Platform::Object^ sender, Windows::UI::Xaml::Controls::TextChangedEventArgs^ args);
+    // TextBox specific events
+    void OnSelectionChanged();
+    void OnTextChanged();
+    // PasswordBox specific events
+    void OnPasswordChanged();
 
-    void OnLostFocus(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ args);
+    bool ProcessTextChanged(const WideString& newText);
 
-    void OnKeyboardHiding(Windows::UI::ViewManagement::InputPane^ sender, Windows::UI::ViewManagement::InputPaneVisibilityEventArgs^ args);
-    void OnKeyboardShowing(Windows::UI::ViewManagement::InputPane^ sender, Windows::UI::ViewManagement::InputPaneVisibilityEventArgs^ args);
+    void OnKeyboardHiding();
+    void OnKeyboardShowing();
 
 private:
     CorePlatformWinUAP* core;
     UITextField* uiTextField = nullptr;
     UITextFieldDelegate* textFieldDelegate = nullptr;
-    Windows::UI::Xaml::Controls::TextBox^ nativeControl = nullptr;
+    // Windows UAP has two different controls for text input and password input
+    // So we should switch internal implementation depending on user's wishes
+    Windows::UI::Xaml::Controls::TextBox^ nativeText = nullptr;
+    Windows::UI::Xaml::Controls::PasswordBox^ nativePassword = nullptr;
+    Windows::UI::Xaml::Controls::Control^ nativeControl = nullptr;      // Points either to nativeText or nativePassword
     Rect originalRect = Rect(0.0f, 0.0f, 100.0f, 20.0f);
     bool visible = false;
     int32 textAlignment = ALIGN_LEFT | ALIGN_TOP;
+    bool password = false;
     bool multiline = false;
     bool flowDirectionRTL = false;
     bool pendingTextureUpdate = false;      // Flag indicating that texture image should be recreated

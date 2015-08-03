@@ -36,13 +36,13 @@ namespace DAVA
 {
 
 UITextFieldWinUAP::UITextFieldWinUAP(UITextField* uiTextField)
-    : privateImpl(std::make_shared<PrivateTextFieldWinUAP>(uiTextField))
+    : privateImpl(PrivateTextFieldWinUAP::Create(uiTextField))
 {}
 
 UITextFieldWinUAP::~UITextFieldWinUAP()
 {
     // Tell private implementation that owner is sentenced to death
-    privateImpl->FlyToSunIcarus();
+    privateImpl->OwnerAtPremortem();
 }
 
 void UITextFieldWinUAP::SetVisible(bool isVisible)
