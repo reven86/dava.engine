@@ -96,11 +96,11 @@ public:
 
     // Schedule task to run on dispatcher's thread and return immediatly
     template<typename T>
-    void Post(T&& task);
+    void RunAsync(T&& task);
 
     // Schedule task to run on dispatcher's thread and block calling thread waiting for task completion
     template<typename T>
-    void Send(T&& task);
+    void RunAsyncAndWait(T&& task);
 
     template<typename T>
     BlockingTaskWrapper GetBlockingTaskWrapper(T&& task);
@@ -121,13 +121,13 @@ private:
 
 //////////////////////////////////////////////////////////////////////////
 template<typename T>
-void DispatcherWinUAP::Post(T&& task)
+void DispatcherWinUAP::RunAsync(T&& task)
 {
     ScheduleTask(std::function<void()>(std::forward<T>(task)));
 }
 
 template<typename T>
-void DispatcherWinUAP::Send(T&& task)
+void DispatcherWinUAP::RunAsyncAndWait(T&& task)
 {
     ScheduleTaskAndWait(std::function<void()>(std::forward<T>(task)));
 }

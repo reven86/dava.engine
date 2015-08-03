@@ -143,11 +143,11 @@ void CorePlatformWinUAP::RunOnMainThread(std::function<void()>&& fn, bool blocke
 {
     if (!blocked)
     {
-        xamlApp->MainThreadDispatcher()->Post(std::forward<std::function<void()>>(fn));
+        xamlApp->MainThreadDispatcher()->RunAsync(std::forward<std::function<void()>>(fn));
     }
     else
     {
-        xamlApp->MainThreadDispatcher()->Send(std::forward<std::function<void()>>(fn));
+        xamlApp->MainThreadDispatcher()->RunAsyncAndWait(std::forward<std::function<void()>>(fn));
     }
 }
 
