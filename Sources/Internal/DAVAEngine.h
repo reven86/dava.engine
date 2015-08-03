@@ -224,6 +224,8 @@
 #include "Scene3D/Scene.h"
 #include "Scene3D/Entity.h"
 #include "Scene3D/MeshInstanceNode.h"
+#include "Render/Highlevel/RenderPass.h"
+#include "Render/Highlevel/RenderPassNames.h"
 #include "Render/Highlevel/Landscape.h"
 #include "Render/Highlevel/Heightmap.h"
 #include "Render/Highlevel/Light.h"

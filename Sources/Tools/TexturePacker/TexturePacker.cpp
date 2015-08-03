@@ -858,11 +858,11 @@ void TexturePacker::ExportImage(PngImageExt *image, const ImageExportKeys& keys,
 
     descriptor->drawSettings.wrapModeS = descriptor->drawSettings.wrapModeT = GetDescriptorWrapMode();
     descriptor->SetGenerateMipmaps(CommandLineParser::Instance()->IsFlagSet(String("--generateMipMaps")));
-    descriptor->drawSettings.mipFilter = ftItem.mipFilter;
 
     TexturePacker::FilterItem ftItem = GetDescriptorFilter(descriptor->GetGenerateMipMaps());
     descriptor->drawSettings.minFilter = ftItem.minFilter;
     descriptor->drawSettings.magFilter = ftItem.magFilter;
+    descriptor->drawSettings.mipFilter = ftItem.mipFilter;
 
     if (keys.toComressForGPU)
     {
