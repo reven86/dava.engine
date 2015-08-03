@@ -70,7 +70,7 @@ PrivateMovieViewWinUAP::~PrivateMovieViewWinUAP()
     }
 }
 
-void PrivateMovieViewWinUAP::FlyToSunIcarus()
+void PrivateMovieViewWinUAP::OwnerAtPremortem()
 {
     // For now do nothing here
 }
@@ -202,15 +202,19 @@ void PrivateMovieViewWinUAP::Resume()
 
 void PrivateMovieViewWinUAP::InstallEventHandlers()
 {
+    std::weak_ptr<PrivateMovieViewWinUAP> self_weak(shared_from_this());
     // Install event handlers through lambdas as it seems only ref class's member functions can be event handlers directly
-    auto mediaOpened = ref new RoutedEventHandler([this](Platform::Object^, RoutedEventArgs^) {
-        OnMediaOpened();
+    auto mediaOpened = ref new RoutedEventHandler([this, self_weak](Platform::Object^, RoutedEventArgs^) {
+        if (auto self = self_weak.lock())
+            OnMediaOpened();
     });
-    auto mediaEnded = ref new RoutedEventHandler([this](Platform::Object^, RoutedEventArgs^) {
-        OnMediaEnded();
+    auto mediaEnded = ref new RoutedEventHandler([this, self_weak](Platform::Object^, RoutedEventArgs^) {
+        if (auto self = self_weak.lock())
+            OnMediaEnded();
     });
-    auto mediaFailed = ref new ExceptionRoutedEventHandler([this](Platform::Object^, ExceptionRoutedEventArgs^ args) {
-        OnMediaFailed(args);
+    auto mediaFailed = ref new ExceptionRoutedEventHandler([this, self_weak](Platform::Object^, ExceptionRoutedEventArgs^ args) {
+        if (auto self = self_weak.lock())
+            OnMediaFailed(args);
     });
     nativeMovieView->MediaOpened += mediaOpened;
     nativeMovieView->MediaEnded += mediaEnded;

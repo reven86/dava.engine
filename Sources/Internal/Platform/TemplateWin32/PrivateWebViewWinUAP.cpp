@@ -240,7 +240,7 @@ PrivateWebViewWinUAP::~PrivateWebViewWinUAP()
     }
 }
 
-void PrivateWebViewWinUAP::FlyToSunIcarus()
+void PrivateWebViewWinUAP::OwnerAtPremortem()
 {
     uiWebView = nullptr;
     webViewDelegate = nullptr;
@@ -387,12 +387,15 @@ bool PrivateWebViewWinUAP::IsRenderToTexture() const
 
 void PrivateWebViewWinUAP::InstallEventHandlers()
 {
+    std::weak_ptr<PrivateWebViewWinUAP> self_weak(shared_from_this());
     // Install event handlers through lambdas as it seems only ref class's member functions can be event handlers directly
-    auto navigationStarting = ref new TypedEventHandler<WebView^, WebViewNavigationStartingEventArgs^>([this](WebView^ sender, WebViewNavigationStartingEventArgs^ args) {
-        OnNavigationStarting(sender, args);
+    auto navigationStarting = ref new TypedEventHandler<WebView^, WebViewNavigationStartingEventArgs^>([this, self_weak](WebView^ sender, WebViewNavigationStartingEventArgs^ args) {
+        if (auto self = self_weak.lock())
+            OnNavigationStarting(sender, args);
     });
-    auto navigationCompleted = ref new TypedEventHandler<WebView^, WebViewNavigationCompletedEventArgs^>([this](WebView^ sender, WebViewNavigationCompletedEventArgs^ args) {
-        OnNavigationCompleted(sender, args);
+    auto navigationCompleted = ref new TypedEventHandler<WebView^, WebViewNavigationCompletedEventArgs^>([this, self_weak](WebView^ sender, WebViewNavigationCompletedEventArgs^ args) {
+        if (auto self = self_weak.lock())
+            OnNavigationCompleted(sender, args);
     });
     nativeWebView->NavigationStarting += navigationStarting;
     nativeWebView->NavigationCompleted += navigationCompleted;

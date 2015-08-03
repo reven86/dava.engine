@@ -117,6 +117,7 @@ void StringDiff(const WideString& originalString, const WideString& newString, S
 
     int32 origDiffBegin = 0;
     int32 newDiffBegin = 0;
+    // Skip same characters from the beginning of both strings
     while (origDiffBegin < origLength && newDiffBegin < newLength && originalString[origDiffBegin] == newString[newDiffBegin])
     {
         origDiffBegin += 1;
@@ -132,6 +133,7 @@ void StringDiff(const WideString& originalString, const WideString& newString, S
 
     int32 origDiffEnd = origLength - 1;
     int32 newDiffEnd = newLength - 1;
+    // Skip same characters from the end of both strings
     while (origDiffEnd >= origDiffBegin && newDiffEnd >= newDiffBegin && originalString[origDiffEnd] == newString[newDiffEnd])
     {
         origDiffEnd -= 1;
