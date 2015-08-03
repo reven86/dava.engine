@@ -27,55 +27,28 @@
  =====================================================================================*/
 
 
-#include "StyleSheetNode.h"
-#include "PackageVisitor.h"
+#ifndef __QUICKED_DEPENDED_ON_LAYOUT_PROPERTY_H__
+#define __QUICKED_DEPENDED_ON_LAYOUT_PROPERTY_H__
 
-#include "Model/ControlProperties/StyleSheetRootProperty.h"
+#include "IntrospectionProperty.h"
 
-#include "UI/Styles/UIStyleSheet.h"
-
-using namespace DAVA;
-
-StyleSheetNode::StyleSheetNode(UIStyleSheet *aStyleSheet)
-    : PackageBaseNode(nullptr)
-    , styleSheet(SafeRetain(aStyleSheet))
-    , rootProperty(new StyleSheetRootProperty(this))
+class DependedOnLayoutProperty : public IntrospectionProperty
 {
+public:
+    DependedOnLayoutProperty(DAVA::BaseObject *object, const DAVA::InspMember *member, const DependedOnLayoutProperty *sourceProperty, eCloneType cloneType);
     
-}
+protected:
+    virtual ~DependedOnLayoutProperty();
+    
+public:
+    void RestoreSourceValue();
+    
+    DAVA::VariantType GetValue() const override;
+protected:
+    void ApplyValue(const DAVA::VariantType &value) override;
+    
+protected:
+    DAVA::VariantType sourceValue;
+};
 
-StyleSheetNode::~StyleSheetNode()
-{
-    SafeRelease(styleSheet);
-    SafeRelease(rootProperty);
-}
-
-int StyleSheetNode::GetCount() const
-{
-    return 0;
-}
-
-PackageBaseNode *StyleSheetNode::Get(int index) const
-{
-    return nullptr;
-}
-
-void StyleSheetNode::Accept(PackageVisitor *visitor)
-{
-    visitor->VisitStyleSheet(this);
-}
-
-String StyleSheetNode::GetName() const
-{
-    return styleSheet->GetSelectorChain().ToString();
-}
-
-StyleSheetRootProperty *StyleSheetNode::GetRootProperty() const
-{
-    return rootProperty;
-}
-
-UIStyleSheet *StyleSheetNode::GetStyleSheet() const
-{
-    return styleSheet;
-}
+#endif // __QUICKED_DEPENDED_ON_LAYOUT_PROPERTY_H__

@@ -27,10 +27,9 @@
 =====================================================================================*/
 
 
-#ifndef __PROPERTIESTREEQVARIANTITEMDELEGATE_H__
-#define __PROPERTIESTREEQVARIANTITEMDELEGATE_H__
+#ifndef __QUICKED_VECTOR2_PROPERTY_DELEGATE_H__
+#define __QUICKED_VECTOR2_PROPERTY_DELEGATE_H__
 
-#include <QWidget>
 #include "BasePropertyDelegate.h"
 
 class Vector2PropertyDelegate: public BasePropertyDelegate
@@ -48,4 +47,4 @@ private slots:
     void OnEditingFinished();
 };
 
-#endif // __PROPERTIESTREEQVARIANTITEMDELEGATE_H__
+#endif // __QUICKED_VECTOR2_PROPERTY_DELEGATE_H__

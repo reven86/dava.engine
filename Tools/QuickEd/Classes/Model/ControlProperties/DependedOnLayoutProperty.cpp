@@ -27,55 +27,42 @@
  =====================================================================================*/
 
 
-#include "StyleSheetNode.h"
-#include "PackageVisitor.h"
+#include "DependedOnLayoutProperty.h"
 
-#include "Model/ControlProperties/StyleSheetRootProperty.h"
-
-#include "UI/Styles/UIStyleSheet.h"
+#include "FileSystem/LocalizationSystem.h"
 
 using namespace DAVA;
 
-StyleSheetNode::StyleSheetNode(UIStyleSheet *aStyleSheet)
-    : PackageBaseNode(nullptr)
-    , styleSheet(SafeRetain(aStyleSheet))
-    , rootProperty(new StyleSheetRootProperty(this))
+DependedOnLayoutProperty::DependedOnLayoutProperty(DAVA::BaseObject *anObject, const DAVA::InspMember *aMmember, const DependedOnLayoutProperty *sourceProperty, eCloneType cloneType)
+    : IntrospectionProperty(anObject, aMmember, sourceProperty, cloneType)
+{
+    ApplyValue(member->Value(object));
+    if (sourceProperty)
+        sourceValue = sourceProperty->sourceValue;
+}
+
+DependedOnLayoutProperty::~DependedOnLayoutProperty()
 {
     
 }
 
-StyleSheetNode::~StyleSheetNode()
+void DependedOnLayoutProperty::RestoreSourceValue()
 {
-    SafeRelease(styleSheet);
-    SafeRelease(rootProperty);
+    ApplyValue(sourceValue);
 }
 
-int StyleSheetNode::GetCount() const
+VariantType DependedOnLayoutProperty::GetValue() const
 {
-    return 0;
+    return member->Value(GetBaseObject());
 }
 
-PackageBaseNode *StyleSheetNode::Get(int index) const
+void DependedOnLayoutProperty::ApplyValue(const DAVA::VariantType &value)
 {
-    return nullptr;
-}
-
-void StyleSheetNode::Accept(PackageVisitor *visitor)
-{
-    visitor->VisitStyleSheet(this);
-}
-
-String StyleSheetNode::GetName() const
-{
-    return styleSheet->GetSelectorChain().ToString();
-}
-
-StyleSheetRootProperty *StyleSheetNode::GetRootProperty() const
-{
-    return rootProperty;
-}
-
-UIStyleSheet *StyleSheetNode::GetStyleSheet() const
-{
-    return styleSheet;
+    if (value.GetType() == VariantType::TYPE_NONE)
+    {
+        return;
+    }
+    if (sourceValue != value)
+        sourceValue = value;
+    member->SetValue(GetBaseObject(), value);
 }

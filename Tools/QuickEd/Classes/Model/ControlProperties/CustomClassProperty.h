@@ -43,8 +43,6 @@ protected:
     virtual ~CustomClassProperty();
     
 public:
-    void Refresh() override;
-    AbstractProperty *FindPropertyByPrototype(AbstractProperty *prototype) override;
     void Accept(PropertyVisitor *visitor) override;
     
     bool IsReadOnly() const override;
@@ -59,10 +57,9 @@ public:
 protected:
     virtual void ApplyValue(const DAVA::VariantType &value) override;
     
-protected:
+private:
     ControlNode *control; // weak
     DAVA::String customClass;
-    const CustomClassProperty *prototypeProperty;
 };
 
 #endif // __QUICKED_CUSTOM_CLASS_PROPERTY_H__
