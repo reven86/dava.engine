@@ -326,38 +326,44 @@ void SceneSelectionSystem::SetSelection(DAVA::Entity *entity)
 
 void SceneSelectionSystem::AddSelection(DAVA::Entity *entity)
 {
-    if(IsEntitySelectable(entity) && !curSelections.ContainsEntity(entity))
+    if(!IsLocked())
     {
-        EntityGroupItem selectableItem;
-        
-        selectableItem.entity = entity;
-        selectableItem.bbox = GetSelectionAABox(entity);
-        curSelections.Add(selectableItem);
-        
-        selectionHasChanges = true;
-        UpdateHoodPos();
-        
-        invalidSelectionBoxes = true;
+        if(IsEntitySelectable(entity) && !curSelections.ContainsEntity(entity))
+        {
+            EntityGroupItem selectableItem;
+            
+            selectableItem.entity = entity;
+            selectableItem.bbox = GetSelectionAABox(entity);
+            curSelections.Add(selectableItem);
+            
+            selectionHasChanges = true;
+            UpdateHoodPos();
+            
+            invalidSelectionBoxes = true;
+        }
     }
 }
 
 void SceneSelectionSystem::AddSelection(const EntityGroup &entities)
 {
-    for (size_t i = 0; i < entities.Size(); ++i)
+    if(!IsLocked())
     {
-        const auto entity = entities.GetEntity(i);
-        if (IsEntitySelectable(entity) && !curSelections.ContainsEntity(entity))
+        for (size_t i = 0; i < entities.Size(); ++i)
         {
-            EntityGroupItem selectableItem;
+            const auto entity = entities.GetEntity(i);
+            if (IsEntitySelectable(entity) && !curSelections.ContainsEntity(entity))
+            {
+                EntityGroupItem selectableItem;
 
-            selectableItem.entity = entity;
-            selectableItem.bbox = GetSelectionAABox(entity);
-            curSelections.Add(selectableItem);
-            selectionHasChanges = true;
-            invalidSelectionBoxes = true;
+                selectableItem.entity = entity;
+                selectableItem.bbox = GetSelectionAABox(entity);
+                curSelections.Add(selectableItem);
+                selectionHasChanges = true;
+                invalidSelectionBoxes = true;
+            }
         }
+        UpdateHoodPos();
     }
-    UpdateHoodPos();
 }
 
 bool SceneSelectionSystem::IsEntitySelectable(DAVA::Entity *entity) const
