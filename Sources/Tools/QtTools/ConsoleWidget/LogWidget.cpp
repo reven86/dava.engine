@@ -33,8 +33,10 @@ LogWidget::LogWidget(QWidget* parent)
     connect(ui->filter, &CheckableComboBox::selectedUserDataChanged, logFilterModel, &LogFilterModel::SetFilters);
     connect(ui->search, &LineEditEx::textUpdated, logFilterModel, &LogFilterModel::setFilterFixedString);
     connect(ui->log->model(), &QAbstractItemModel::rowsAboutToBeInserted, this, &LogWidget::OnBeforeAdded);
-    connect(ui->log->model(), &QAbstractItemModel::rowsInserted, this, &LogWidget::OnRowAdded);
     connect(ui->log, &QListView::clicked, this, &LogWidget::OnItemClicked);
+    scrollTimer = new QTimer(this);
+    scrollTimer->setInterval(0);
+    connect(scrollTimer, &QTimer::timeout, this, &LogWidget::UpdateScroll, Qt::QueuedConnection);
 }
 
 LogWidget::~LogWidget()
@@ -189,9 +191,10 @@ void LogWidget::OnClear()
 void LogWidget::OnBeforeAdded()
 {
     onBottom = ui->log->verticalScrollBar()->value() == ui->log->verticalScrollBar()->maximum();
+    scrollTimer->start();
 }
 
-void LogWidget::OnRowAdded()
+void LogWidget::UpdateScroll()
 {
     if (onBottom)
     {

@@ -35,7 +35,7 @@ private slots:
     void OnCopy();
     void OnClear();
     void OnBeforeAdded();
-    void OnRowAdded();
+    void UpdateScroll();
     void OnItemClicked(const QModelIndex &index);
 private:
     void FillFiltersCombo();
@@ -45,6 +45,7 @@ private:
     QPointer<LogFilterModel> logFilterModel;
     bool onBottom;
     Ui::LogWidget *ui;
+    QTimer *scrollTimer;
 };
 
 
