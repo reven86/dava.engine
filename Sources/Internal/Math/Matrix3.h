@@ -44,10 +44,15 @@ namespace DAVA
  */
 struct Matrix3
 {
+private:
+    static const size_t dataSize = 9;
+    static const size_t dimensionSize = 3;
+    
+public:
 	union
 	{
-		float32 data[9];
-		float32	_data[3][3];
+		float32 data[dataSize];
+		float32	_data[dimensionSize][dimensionSize];
 		struct {
 			float32 _00, _01, _02;
             float32 _10, _11, _12;
@@ -431,7 +436,7 @@ inline void Matrix3::Decomposition(Matrix3 &kQ, Vector3 &kD, Vector3 &kU) const
 	
 inline bool Matrix3::operator == (const Matrix3 & _m) const
 {
-    for (uint8 k = 0; k < COUNT_OF(data); ++k)
+    for (uint8 k = 0; k < dataSize; ++k)
         if (!FLOAT_EQUAL(data[k], _m.data[k]))return false;
     return true;
 }

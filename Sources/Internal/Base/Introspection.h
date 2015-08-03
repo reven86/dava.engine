@@ -269,7 +269,7 @@ namespace DAVA
 
 // Определение обычного члена интроспекции. Доступ к нему осуществляется непосредственно.
 #define MEMBER(_name, _desc, _flags) \
-	new DAVA::InspMember(#_name, _desc, offsetof(ObjectT, _name), DAVA::MetaInfo::Instance(&ObjectT::_name), _flags),
+	new DAVA::InspMember(#_name, _desc, (ptrdiff_t) ((intptr_t) &((ObjectT *) 0)->_name), DAVA::MetaInfo::Instance(&ObjectT::_name), _flags),
 
 // Определение члена интроспекции, как свойства. Доступ к нему осуществляется через функци Get/Set. 
 #define PROPERTY(_name, _desc, _getter, _setter, _flags) \
@@ -277,10 +277,10 @@ namespace DAVA
 
 // Определение члена интроспекции, как коллекции. Доступ - см. IntrospectionCollection
 #define COLLECTION(_name, _desc, _flags) \
-	DAVA::CreateInspColl(&((ObjectT *) 0)->_name, #_name, _desc, offsetof(ObjectT, _name), DAVA::MetaInfo::Instance(&ObjectT::_name), _flags),
+	DAVA::CreateInspColl(&((ObjectT *) 0)->_name, #_name, _desc, (ptrdiff_t) ((intptr_t) &((ObjectT *) 0)->_name), DAVA::MetaInfo::Instance(&ObjectT::_name), _flags),
 
 // Определение члена интроспекции с динамической структурой. Структуру определяет _dynamic, импементирующая интерфейс InspDynamicInfo
 #define DYNAMIC(_name, _desc, _dynamic, _flags) \
-	new DAVA::InspMemberDynamic(#_name, _desc, offsetof(ObjectT, _name), DAVA::MetaInfo::Instance(&ObjectT::_name), _flags, _dynamic),
+	new DAVA::InspMemberDynamic(#_name, _desc, (ptrdiff_t) ((intptr_t) &((ObjectT *) 0)->_name), DAVA::MetaInfo::Instance(&ObjectT::_name), _flags, _dynamic),
 
 #endif // __DAVAENGINE_INTROSPECTION_H__

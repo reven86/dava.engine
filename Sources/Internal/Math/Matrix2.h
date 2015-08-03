@@ -46,10 +46,15 @@ namespace DAVA
  */
 struct Matrix2
 {
+private:
+    static const size_t dataSize = 4;
+    static const size_t dimensionSize = 2;
+
+public:
 	union
 	{
-		float32 data[4];
-        float32 _data[2][2];
+		float32 data[dataSize];
+        float32 _data[dimensionSize][dimensionSize];
 		struct {
 			float32 _00, _01;
             float32 _10, _11;
@@ -162,7 +167,7 @@ inline Matrix2& Matrix2::operator -= (const Matrix2 & m)
     //! Comparison operators
 inline bool Matrix2::operator == (const Matrix2 & _m) const
 {
-    for (uint8 k = 0; k < COUNT_OF(data); ++k)
+    for (uint8 k = 0; k < dataSize; ++k)
         if (!FLOAT_EQUAL(data[k], _m.data[k]))
             return false;
     return true;

@@ -49,7 +49,7 @@
 namespace DAVA 
 {
 //TODO: move it to DateTimeWin32 or remove
-const LocalizationSystem::LanguageLocalePair LocalizationSystem::languageLocaleMap[] =
+const Vector<LocalizationSystem::LanguageLocalePair> LocalizationSystem::languageLocaleMap =
 {
     { "en", "en_US" },
     { "ru", "ru_RU" },
@@ -446,7 +446,7 @@ bool LocalizationSystem::GetStringsForCurrentLocale(Map<WideString, WideString>&
     
 String LocalizationSystem::GetCountryCode() const
 {
-    size_t knownLocalesNumber = COUNT_OF(languageLocaleMap);
+    size_t knownLocalesNumber = languageLocaleMap.size();
 	for (size_t i = 0; i < knownLocalesNumber; i ++)
 	{
 		if (languageLocaleMap[i].languageCode == langId)
@@ -454,6 +454,7 @@ String LocalizationSystem::GetCountryCode() const
 			return languageLocaleMap[i].localeCode;
 		}
 	}
+
     return "en_US";
 }
 	
