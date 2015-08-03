@@ -124,30 +124,32 @@ namespace DAVA
 	{
 	    if(renderIsActive)
 	    {
+	        auto sysTimer = SystemTimer::Instance();
+	        auto sysRender = RenderManager::Instance();
 	        //  Control FPS
 	        {
 	            // we count full frame time once per cycle
 	            // C++->Java->C++(frame ended)
-	            static uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
+	            static uint64 startTime = sysTimer->AbsoluteMS();
 
-	            uint64 elapsedTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
-	            int32 fps = RenderManager::Instance()->GetFPS();
-	            int32 averageFrameTime = (1000 / fps);
-	            if(fps > 0 &&
-	                    elapsedTime < static_cast<uint64>(averageFrameTime))
+	            uint64 elapsedTime = sysTimer->AbsoluteMS() - startTime;
+	            int32 fps = sysRender->GetFPS();
+	            if (fps > 0)
 	            {
-	                int64 sleepMs = averageFrameTime - elapsedTime;
-	                if(sleepMs > 0)
+	                int32 averageFrameTime = 1000 / fps;
+	                if(elapsedTime < static_cast<uint64>(averageFrameTime))
 	                {
+	                    uint32 sleepMs = static_cast<uint32>(averageFrameTime -
+	                            static_cast<int32>(elapsedTime));
 	                    Thread::Sleep(sleepMs);
 	                }
 	            }
-	            startTime = SystemTimer::Instance()->AbsoluteMS();
+	            startTime = sysTimer->AbsoluteMS();
 	        }
 
-	        DAVA::RenderManager::Instance()->Lock();
+	        sysRender->Lock();
 	        Core::SystemProcessFrame();
-	        DAVA::RenderManager::Instance()->Unlock();
+	        sysRender->Unlock();
 	    }
 	}
 
