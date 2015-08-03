@@ -218,6 +218,7 @@ void    SetMarker( Handle cmdBuf, const char* text );
 
 } // namespace CommandBuffer
 
+void PresentImpl(Handle sync);
 
 // debug
 

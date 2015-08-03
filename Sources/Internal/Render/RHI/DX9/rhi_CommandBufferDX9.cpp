@@ -59,6 +59,7 @@ struct
 Frame
 {
     unsigned            number;
+    Handle              sync;
     std::vector<Handle> pass;
     uint32              readyToExecute:1;
 };
@@ -970,7 +971,7 @@ SCOPED_FUNCTION_TIMING();
 //------------------------------------------------------------------------------
 
 static void
-dx9_Present()
+dx9_Present(Handle sync)
 {
 #if RHI__USE_DX9_RENDER_THREAD
 
@@ -981,6 +982,7 @@ Trace("rhi-dx9.present\n");
         if( _Frame.size() )
         {
             _Frame.back().readyToExecute = true;
+            _Frame.back().sync = sync;
             _FrameStarted = false;
 Trace("\n\n-------------------------------\nframe %u generated\n",_Frame.back().number);
         }
@@ -1005,6 +1007,7 @@ Trace("\n\n-------------------------------\nframe %u generated\n",_Frame.back().
     if( _Frame.size() )
     {
         _Frame.back().readyToExecute = true;
+        _Frame.back().sync = sync;
         _FrameStarted = false;
     }
 
@@ -1056,6 +1059,13 @@ Trace("rhi-dx9.exec-queued-cmd\n");
     else
     {
         do_exit = true;
+    }
+    if (_Frame.begin()->sync != InvalidHandle)
+    {
+        SyncObjectDX9_t*  sync = SyncObjectPool::Get(_Frame.begin()->sync);
+
+        sync->frame = frame_n;
+        sync->is_signaled = false;
     }
     _FrameSync.Unlock();
 

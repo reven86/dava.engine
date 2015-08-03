@@ -101,7 +101,7 @@ private:
 typedef ResourceHandle<RESOURCE_VERTEX_BUFFER> HVertexBuffer;
 
 HVertexBuffer   CreateVertexBuffer( const VertexBuffer::Descriptor& desc );
-void            DeleteVertexBuffer( HVertexBuffer vb );
+void            DeleteVertexBuffer(HVertexBuffer vb, bool forceImmediate = false);
 
 void*           MapVertexBuffer( HVertexBuffer vb, uint32 offset, uint32 size );
 void            UnmapVertexBuffer( HVertexBuffer vb );
@@ -115,7 +115,7 @@ void            UpdateVertexBuffer( HVertexBuffer vb, const void* data, uint32 o
 typedef ResourceHandle<RESOURCE_INDEX_BUFFER> HIndexBuffer;
 
 HIndexBuffer    CreateIndexBuffer( const IndexBuffer::Descriptor& desc );
-void            DeleteIndexBuffer( HIndexBuffer ib );
+void            DeleteIndexBuffer(HIndexBuffer ib, bool forceImmediate = false);
 
 void*           MapIndexBuffer( HIndexBuffer ib, uint32 offset, uint32 size );
 void            UnmapIndexBuffer( HIndexBuffer ib );
@@ -130,7 +130,7 @@ typedef ResourceHandle<RESOURCE_QUERY_BUFFER> HQueryBuffer;
 
 HQueryBuffer    CreateQueryBuffer( unsigned maxObjectCount );
 void            ResetQueryBuffer( HQueryBuffer buf );
-void            DeleteQueryBuffer( HQueryBuffer buf );
+void            DeleteQueryBuffer(HQueryBuffer buf, bool forceImmediate = false);
 
 bool            QueryIsReady( HQueryBuffer buf, uint32 objectIndex );
 int             QueryValue( HQueryBuffer buf, uint32 objectIndex );
@@ -144,7 +144,7 @@ typedef ResourceHandle<RESOURCE_CONST_BUFFER>   HConstBuffer;
 
 
 HPipelineState  AcquireRenderPipelineState( const PipelineState::Descriptor& desc );
-void            ReleaseRenderPipelineState( HPipelineState rps );
+void            ReleaseRenderPipelineState(HPipelineState rps, bool forceImmediate = false);
 
 HConstBuffer    CreateVertexConstBuffer( HPipelineState rps, uint32 bufIndex );
 bool            CreateVertexConstBuffers( HPipelineState rps, uint32 maxCount, HConstBuffer* constBuf );
@@ -154,7 +154,7 @@ bool            CreateFragmentConstBuffers( HPipelineState rps, uint32 maxCount,
 
 bool            UpdateConstBuffer4fv( HConstBuffer constBuf, uint32 constIndex, const float* data, uint32 constCount );
 bool            UpdateConstBuffer1fv( HConstBuffer constBuf, uint32 constIndex, uint32 constSubIndex, const float* data, uint32 dataCount );
-void            DeleteConstBuffer( HConstBuffer constBuf );
+void            DeleteConstBuffer(HConstBuffer constBuf, bool forceImmediate = false);
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -164,7 +164,7 @@ typedef ResourceHandle<RESOURCE_TEXTURE> HTexture;
 typedef ResourceHandle<RESOURCE_TEXTURE_SET> HTextureSet;
 
 HTexture        CreateTexture( const Texture::Descriptor& desc );
-void            DeleteTexture( HTexture tex );
+void            DeleteTexture(HTexture tex, bool forceImmediate = false);
 
 void*           MapTexture( HTexture tex, uint32 level=0 );
 void            UnmapTexture( HTexture tex );
@@ -188,7 +188,7 @@ TextureSetDescriptor
 
 HTextureSet     AcquireTextureSet( const TextureSetDescriptor& desc );
 HTextureSet     CopyTextureSet( HTextureSet ts );
-void            ReleaseTextureSet( HTextureSet ts );
+void            ReleaseTextureSet(HTextureSet ts, bool forceImmediate = false);
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -198,7 +198,7 @@ typedef ResourceHandle<RESOURCE_DEPTHSTENCIL_STATE> HDepthStencilState;
 
 HDepthStencilState  AcquireDepthStencilState( const DepthStencilState::Descriptor& desc );
 HDepthStencilState  CopyDepthStencilState( HDepthStencilState ds );
-void                ReleaseDepthStencilState( HDepthStencilState ds );
+void                ReleaseDepthStencilState(HDepthStencilState ds, bool forceImmediate = false);
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -208,7 +208,7 @@ typedef ResourceHandle<RESOURCE_SAMPLER_STATE> HSamplerState;
 
 HSamplerState       AcquireSamplerState( const SamplerState::Descriptor& desc );
 HSamplerState       CopySamplerState( HSamplerState ss );
-void                ReleaseSamplerState( HSamplerState ss );
+void                ReleaseSamplerState(HSamplerState ss, bool forceImmediate = false);
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -220,6 +220,8 @@ HSyncObject         CreateSyncObject();
 void                DeleteSyncObject( HSyncObject obj );
 bool                SyncObjectSignaled( HSyncObject obj );
 
+
+HSyncObject GetCurrentFrameSyncObject();
 
 ////////////////////////////////////////////////////////////////////////////////
 // render-pass

@@ -45,7 +45,7 @@ Dispatch
 //    void    (*impl_Initialize)();
     void    (*impl_Reset)( const ResetParam& );
     void    (*impl_Uninitialize)();
-    void    (*impl_Present)();
+    void    (*impl_Present)( Handle );
     Api     (*impl_HostApi)();
     bool    (*impl_TextureFormatSupported)( TextureFormat );
 
