@@ -44,7 +44,7 @@ namespace DAVA
 {
 
 class CorePlatformWinUAP;
-class Dispatcher;
+class DispatcherWinUAP;
 
 /************************************************************************
  Class WinUAPXamlApp represents WinRT XAML application with embedded framework's render loop
@@ -73,7 +73,7 @@ public:
     Windows::UI::Core::CoreDispatcher^ UIThreadDispatcher();
 
 internal:   // Only internal methods of ref class can return pointers to non-ref objects
-    Dispatcher* MainThreadDispatcher();
+    DispatcherWinUAP* MainThreadDispatcher();
 
 public:
     void SetQuitFlag();
@@ -138,7 +138,7 @@ private:
 private:
     CorePlatformWinUAP* core;
     Windows::UI::Core::CoreDispatcher^ uiThreadDispatcher = nullptr;
-    std::unique_ptr<Dispatcher> dispatcher = nullptr;
+    std::unique_ptr<DispatcherWinUAP> dispatcher = nullptr;
 
     Windows::UI::Xaml::Controls::SwapChainPanel^ swapChainPanel = nullptr;
     Windows::UI::Xaml::Controls::Canvas^ canvas = nullptr;
@@ -182,7 +182,7 @@ inline Windows::UI::Core::CoreDispatcher^ WinUAPXamlApp::UIThreadDispatcher()
     return uiThreadDispatcher;
 }
 
-inline Dispatcher* WinUAPXamlApp::MainThreadDispatcher()
+inline DispatcherWinUAP* WinUAPXamlApp::MainThreadDispatcher()
 {
     return dispatcher.get();
 }

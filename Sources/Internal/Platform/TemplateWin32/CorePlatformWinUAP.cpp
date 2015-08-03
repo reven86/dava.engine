@@ -34,7 +34,7 @@
 
 #include "Platform/TemplateWin32/CorePlatformWinUAP.h"
 #include "Platform/TemplateWin32/WinUAPXamlApp.h"
-#include "Platform/TemplateWin32/Dispatcher.h"
+#include "Platform/TemplateWin32/DispatcherWinUAP.h"
 
 using namespace Windows::UI::Core;
 using namespace Windows::UI::Xaml;
@@ -133,7 +133,7 @@ void CorePlatformWinUAP::RunOnUIThread(std::function<void()>&& fn, bool blocked)
     }
     else
     {
-        Dispatcher::BlockingTaskWrapper wrapper = xamlApp->MainThreadDispatcher()->GetBlockingTaskWrapper(std::forward<std::function<void()>>(fn));
+        DispatcherWinUAP::BlockingTaskWrapper wrapper = xamlApp->MainThreadDispatcher()->GetBlockingTaskWrapper(std::forward<std::function<void()>>(fn));
         RunOnUIThread([&wrapper]() { wrapper.RunTask(); });
         wrapper.WaitTaskComplete();
     }

@@ -46,8 +46,6 @@
 #include "UI/UIWebView.h"
 #include "Platform/TemplateWin32/PrivateWebViewWinUAP.h"
 
-#include "Platform/TemplateWin32/Dispatcher.h"
-
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/File.h"
 #include "FileSystem/Logger.h"

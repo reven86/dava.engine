@@ -69,7 +69,7 @@ bool DVAssertMessage::InnerShow(eModalType modalType, const char* content)
 
 #include "Platform/TemplateWin32/CorePlatformWinUAP.h"
 #include "Platform/TemplateWin32/WinUAPXamlApp.h"
-#include "Platform/TemplateWin32/Dispatcher.h"
+#include "Platform/TemplateWin32/DispatcherWinUAP.h"
 
 namespace DAVA
 {

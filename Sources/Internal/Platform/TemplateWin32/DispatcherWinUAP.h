@@ -44,15 +44,15 @@
 namespace DAVA
 {
 
-class Dispatcher final
+class DispatcherWinUAP final
 {
 public:
     // Wrapper to prepare task for running in UI thread context and waiting task completion
-    // While waiting task completion wrapper also processes tasks scheduled to Dispatcher
+    // While waiting task completion wrapper also processes tasks scheduled to DispatcherWinUAP
     //
     // Example:
     //      get wrapper for task
-    //  Dispatcher::BlockingTaskWrapper wrapper = dispatcher->GetBlockingTaskWrapper([](){});
+    //  DispatcherWinUAP::BlockingTaskWrapper wrapper = dispatcher->GetBlockingTaskWrapper([](){});
     //
     //      run wrapped task on UI thread
     //  core->RunOnUIThread([&wrapper](){wrapper.RunTask();});      !!! non blocking call
@@ -61,15 +61,15 @@ public:
     //  wrapper.WaitTaskComplete();
     class BlockingTaskWrapper final
     {
-        friend class Dispatcher;
+        friend class DispatcherWinUAP;
 
     private:
         template<typename T>
-        BlockingTaskWrapper(Dispatcher* disp, T&& task_);
+        BlockingTaskWrapper(DispatcherWinUAP* disp, T&& task_);
 
     public:
         // Permit only public move ctor to allow creating BlockingTaskWrapper
-        // on stack through Dispatcher::GetBlockingTaskWrapper
+        // on stack through DispatcherWinUAP::GetBlockingTaskWrapper
         BlockingTaskWrapper(BlockingTaskWrapper&& other);
         ~BlockingTaskWrapper() = default;
 
@@ -80,14 +80,14 @@ public:
         void WaitTaskComplete();
 
     private:
-        Dispatcher* dispatcher = nullptr;
+        DispatcherWinUAP* dispatcher = nullptr;
         std::function<void()> task;
         bool taskDone = false;
     };
 
 public:
-    Dispatcher();
-    ~Dispatcher() = default;
+    DispatcherWinUAP();
+    ~DispatcherWinUAP() = default;
 
     void BindToCurrentThread();
 
@@ -121,26 +121,26 @@ private:
 
 //////////////////////////////////////////////////////////////////////////
 template<typename T>
-void Dispatcher::Post(T&& task)
+void DispatcherWinUAP::Post(T&& task)
 {
     ScheduleTask(std::function<void()>(std::forward<T>(task)));
 }
 
 template<typename T>
-void Dispatcher::Send(T&& task)
+void DispatcherWinUAP::Send(T&& task)
 {
     ScheduleTaskAndWait(std::function<void()>(std::forward<T>(task)));
 }
 
 template<typename T>
-Dispatcher::BlockingTaskWrapper Dispatcher::GetBlockingTaskWrapper(T&& task)
+DispatcherWinUAP::BlockingTaskWrapper DispatcherWinUAP::GetBlockingTaskWrapper(T&& task)
 {
     return BlockingTaskWrapper(this, std::forward<T>(task));
 }
 
 //////////////////////////////////////////////////////////////////////////
 template<typename T>
-Dispatcher::BlockingTaskWrapper::BlockingTaskWrapper(Dispatcher* disp, T&& task_)
+DispatcherWinUAP::BlockingTaskWrapper::BlockingTaskWrapper(DispatcherWinUAP* disp, T&& task_)
     : dispatcher(disp)
     , task(std::move(task_))
 {}

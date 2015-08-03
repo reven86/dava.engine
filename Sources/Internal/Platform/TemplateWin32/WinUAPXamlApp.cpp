@@ -39,7 +39,7 @@
 #include "Platform/SystemTimer.h"
 #include "Platform/TemplateWin32/CorePlatformWinUAP.h"
 #include "Platform/TemplateWin32/WinUAPXamlApp.h"
-#include "Platform/TemplateWin32/Dispatcher.h"
+#include "Platform/TemplateWin32/DispatcherWinUAP.h"
 #include "Platform/DeviceInfo.h"
 
 #include "FileSystem/Logger.h"
@@ -181,7 +181,7 @@ void WinUAPXamlApp::UnfocusUIElement()
 
 void WinUAPXamlApp::Run()
 {
-    dispatcher = std::make_unique<Dispatcher>();
+    dispatcher = std::make_unique<DispatcherWinUAP>();
 
     Core::Instance()->CreateSingletons();
     

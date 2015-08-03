@@ -26,7 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "Platform/TemplateWin32/Dispatcher.h"
+#include "Platform/TemplateWin32/DispatcherWinUAP.h"
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 
@@ -43,7 +43,7 @@ namespace DAVA
 namespace
 {
 
-// Wrapper to prepare task for running in Dispatcher's thread context and waiting task completion
+// Wrapper to prepare task for running in DispatcherWinUAP's thread context and waiting task completion
 class TaskWrapper final
 {
 public:
@@ -77,7 +77,7 @@ private:
 
 }   // unnamed namespace
 
-Dispatcher::BlockingTaskWrapper::BlockingTaskWrapper(BlockingTaskWrapper&& other)
+DispatcherWinUAP::BlockingTaskWrapper::BlockingTaskWrapper(BlockingTaskWrapper&& other)
     : dispatcher(std::move(other.dispatcher))
     , task(std::move(other.task))
     , taskDone(std::move(taskDone))
@@ -86,7 +86,7 @@ Dispatcher::BlockingTaskWrapper::BlockingTaskWrapper(BlockingTaskWrapper&& other
     other.taskDone = false;
 }
 
-void Dispatcher::BlockingTaskWrapper::RunTask()
+void DispatcherWinUAP::BlockingTaskWrapper::RunTask()
 {
     task();
     {
@@ -96,7 +96,7 @@ void Dispatcher::BlockingTaskWrapper::RunTask()
     dispatcher->cv.NotifyAll();
 }
 
-void Dispatcher::BlockingTaskWrapper::WaitTaskComplete()
+void DispatcherWinUAP::BlockingTaskWrapper::WaitTaskComplete()
 {
     DVASSERT(dispatcher->boundThreadId == Thread::GetCurrentId());
 
@@ -117,16 +117,16 @@ void Dispatcher::BlockingTaskWrapper::WaitTaskComplete()
     }
 }
 
-Dispatcher::Dispatcher()
+DispatcherWinUAP::DispatcherWinUAP()
     : boundThreadId(Thread::GetCurrentId())
 {}
 
-void Dispatcher::BindToCurrentThread()
+void DispatcherWinUAP::BindToCurrentThread()
 {
     boundThreadId = Thread::GetCurrentId();
 }
 
-bool Dispatcher::InBlockingCall() const
+bool DispatcherWinUAP::InBlockingCall() const
 {
     if (blockingCall.test_and_set() == false)
     {
@@ -136,7 +136,7 @@ bool Dispatcher::InBlockingCall() const
     return true;
 }
 
-void Dispatcher::ProcessTasks()
+void DispatcherWinUAP::ProcessTasks()
 {
     DVASSERT(boundThreadId == Thread::GetCurrentId());
 
@@ -152,7 +152,7 @@ void Dispatcher::ProcessTasks()
     }
 }
 
-void Dispatcher::ScheduleTask(std::function<void()>&& task)
+void DispatcherWinUAP::ScheduleTask(std::function<void()>&& task)
 {
     {
         LockGuard<Mutex> guard(mutex);
@@ -161,7 +161,7 @@ void Dispatcher::ScheduleTask(std::function<void()>&& task)
     cv.NotifyAll();
 }
 
-void Dispatcher::ScheduleTaskAndWait(std::function<void()>&& task)
+void DispatcherWinUAP::ScheduleTaskAndWait(std::function<void()>&& task)
 {
     // TODO: maybe call task as subroutine without scheduling
     DVASSERT(boundThreadId != Thread::GetCurrentId());
