@@ -31,7 +31,7 @@ LogWidget::LogWidget(QWidget* parent)
     FillFiltersCombo();
     connect(ui->toolButton_clearFilter, &QToolButton::clicked, ui->search, &LineEditEx::clear);
     connect(ui->filter, &CheckableComboBox::selectedUserDataChanged, logFilterModel, &LogFilterModel::SetFilters);
-    connect(ui->search, &LineEditEx::textUpdated, this, &LogWidget::OnTextFilterChanged);
+    connect(ui->search, &LineEditEx::textUpdated, logFilterModel, &LogFilterModel::setFilterFixedString);
     connect(logFilterModel, &LogFilterModel::filterStringChanged, ui->search, &LineEditEx::setText);
     connect(ui->log->model(), &QAbstractItemModel::rowsAboutToBeInserted, this, &LogWidget::OnBeforeAdded);
     connect(ui->log->model(), &QAbstractItemModel::rowsInserted, this, &LogWidget::OnRowAdded);
@@ -53,7 +53,7 @@ QByteArray LogWidget::Serialize() const
 {
     QByteArray retData;
     QDataStream stream(&retData, QIODevice::WriteOnly);
-    stream << logFilterModel->GetFilterString();
+    stream << logFilterModel->filterRegExp().pattern();
     stream << logFilterModel->GetFilters();
     return retData;
 }
@@ -74,8 +74,7 @@ void LogWidget::Deserialize(const QByteArray& data)
     {
         return;
     }
-    logFilterModel->SetFilterString(filterString);
-    logFilterModel->SetFilters(logLevels);
+    ui->search->setText(filterString);
     ui->filter->selectUserData(logLevels);
 }
 
@@ -103,11 +102,6 @@ void LogWidget::AddResultList(const DAVA::ResultList &resultList)
         }
         logModel->AddMessage(level, QString::fromStdString(result.message));
     }
-}
-
-void LogWidget::OnTextFilterChanged(const QString& text)
-{
-    logFilterModel->SetFilterString(text);
 }
 
 void LogWidget::FillFiltersCombo()

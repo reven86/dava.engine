@@ -32,7 +32,6 @@ signals:
 public slots:
     void AddResultList(const DAVA::ResultList &resultList);
 private slots:
-    void OnTextFilterChanged(const QString& text);
     void OnCopy();
     void OnClear();
     void OnBeforeAdded();
