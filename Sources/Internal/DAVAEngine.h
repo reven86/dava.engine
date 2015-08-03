@@ -216,6 +216,7 @@
 #include "Render/3D/MeshUtils.h"
 
 #include "Render/RenderHelper.h"
+#include "Render/DynamicBufferAllocator.h"
 
 #include "Render/Material/NMaterialNames.h"
 
