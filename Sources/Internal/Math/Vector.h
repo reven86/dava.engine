@@ -44,6 +44,13 @@ namespace DAVA
 class Vector2
 {
 public:
+    enum eAxis
+    {
+        AXIS_X = 0,
+        AXIS_Y = 1,
+        AXIS_COUNT = 2
+    };
+
     static const Vector2 UnitX;
     static const Vector2 UnitY;
 
@@ -134,6 +141,13 @@ class Vector4;
 class Vector3
 {
 public:
+    enum eAxis
+    {
+        AXIS_X = 0,
+        AXIS_Y = 1,
+        AXIS_Z = 2,
+        AXIS_COUNT = 3
+    };
 
     static const Vector3 UnitX;
     static const Vector3 UnitY;

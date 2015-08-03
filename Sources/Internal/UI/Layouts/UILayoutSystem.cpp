@@ -107,7 +107,7 @@ void UILayoutSystem::MeasureControl(UIControl *control, UISizePolicyComponent *s
     bool skipInvisible = layout ? layout->IsSkipInvisibleControls() : false;
     
 
-    for (int32 axis = 0; axis < AXIS_COUNT; axis++)
+    for (int32 axis = 0; axis < Vector2::AXIS_COUNT; axis++)
     {
         UISizePolicyComponent::eSizePolicy policy = sizeHint->GetPolicyByAxis(axis);
         float32 hintValue = sizeHint->GetValueByAxis(axis);
@@ -277,6 +277,8 @@ void UILayoutSystem::ApplyLinearLayout(UIControl *control, UILinearLayoutCompone
                 }
                 else
                     size = child->GetSize().data[axis];
+                
+                size = Clamp(size, sizeHint->GetMinValueByAxis(axis), sizeHint->GetMaxValueByAxis(axis));
             }
             else
             {
@@ -284,7 +286,7 @@ void UILayoutSystem::ApplyLinearLayout(UIControl *control, UILinearLayoutCompone
             }
             
             size = Max(size, 0.0f);
-            if (axis == AXIS_X)
+            if (axis == Vector2::AXIS_X)
             {
                 if (inverse)
                     child->SetPosition(Vector2(position - size, child->GetPosition().y));
@@ -321,16 +323,24 @@ void UILayoutSystem::ApplyAnchorLayout(UIControl *control, bool allowHorizontal,
         const UISizePolicyComponent *sizeHint = child->GetComponent<UISizePolicyComponent>();
         if (sizeHint)
         {
-            if (allowHorizontal && sizeHint->GetHorizontalPolicy() == UISizePolicyComponent::PERCENT_OF_PARENT)
+            Vector2 newSize = child->GetSize();
+            for (int32 axis = 0; axis < Vector2::AXIS_COUNT; axis++)
             {
-                float32 size = control->GetSize().dx * sizeHint->GetHorizontalValue() / 100.0f;
-                child->SetSize(Vector2(size, child->GetSize().dy));
-                changedControls.push_back(child);
+                bool allow = (axis == Vector2::AXIS_X && allowHorizontal) || (axis == Vector2::AXIS_Y && allowVertical);
+                if (allow)
+                {
+                    float32 s = newSize.data[axis];
+                    if (sizeHint->GetPolicyByAxis(axis) == UISizePolicyComponent::PERCENT_OF_PARENT)
+                    {
+                        s = control->GetSize().data[axis] * sizeHint->GetValueByAxis(axis) / 100.0f;
+                    }
+                    s = Clamp(s, sizeHint->GetMinValueByAxis(axis), sizeHint->GetMaxValueByAxis(axis));
+                    newSize.data[axis] = s;
+                }
             }
-            if (allowVertical && sizeHint->GetVerticalPolicy() == UISizePolicyComponent::PERCENT_OF_PARENT)
+            if (newSize != child->GetSize())
             {
-                float32 size = control->GetSize().dy * sizeHint->GetVerticalValue() / 100.0f;
-                child->SetSize(Vector2(child->GetSize().dx, size));
+                child->SetSize(newSize);
                 changedControls.push_back(child);
             }
         }

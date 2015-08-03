@@ -40,11 +40,6 @@ class UISizePolicyComponent;
 class UILayoutSystem
 {
 public:
-    static const int32 AXIS_X = 0;
-    static const int32 AXIS_Y = 1;
-    static const int32 AXIS_COUNT = 2;
-    
-public:
     UILayoutSystem();
     virtual ~UILayoutSystem();
     
