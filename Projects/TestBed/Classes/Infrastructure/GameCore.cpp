@@ -36,6 +36,7 @@
 #include "Tests/NotificationTest.h"
 #include "Tests/UIScrollViewTest.h"
 #include "Tests/MultilineTest.h"
+#include "Tests/FontTest.h"
 //$UNITTEST_INCLUDE
 
 void GameCore::RunOnlyThisTest()
@@ -53,6 +54,8 @@ void GameCore::RegisterTests()
     new UIScrollViewTest();
     new NotificationScreen();
     new MultilineTest();
+    new FontTest();
+//$UNITTEST_CTOR
 }
 
 #include <fstream>
@@ -127,7 +130,6 @@ void GameCore::OnAppFinished()
 void GameCore::BeginFrame()
 {
     ApplicationCore::BeginFrame();
-    RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
 }
 
 void GameCore::RunTests()
