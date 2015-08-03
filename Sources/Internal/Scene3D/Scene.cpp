@@ -692,7 +692,7 @@ void Scene::SetupTestLighting()
 void Scene::Update(float timeElapsed)
 {
     TIME_PROFILE("Scene::Update");
-    
+
     uint64 time = SystemTimer::Instance()->AbsoluteMS();
 
     uint32 size = (uint32)systemsToProcess.size();
@@ -742,7 +742,7 @@ void Scene::Update(float timeElapsed)
 
 void Scene::Draw()
 {
-    TIME_PROFILE("Scene::Draw");
+	TIME_PROFILE("Scene::Draw");
 
     //TODO: remove this crap with shadow color
     if (sceneGlobalMaterial && sceneGlobalMaterial->HasLocalProperty(DAVA::NMaterialParamName::DEPRECATED_SHADOW_COLOR_PARAM))

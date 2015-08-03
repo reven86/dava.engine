@@ -12,7 +12,6 @@
 #set( WIN32_RESOURCES )
 #
 #set( ANDROID_USE_STANDART_TEMLATE )
-#set( ANDROID_DATA_FOLDER          )
 #set( ANDROID_PACKAGE              )
 #set( ANDROID_APP_NAME             )
 #set( ANDROID_ACTIVITY_APP_NAME    )
@@ -40,7 +39,7 @@ macro( setup_main_executable )
 
 include      ( PlatformSettings )
 
-if( MSVC )
+if( WIN32 )
     add_definitions ( -D_CRT_SECURE_NO_DEPRECATE )
 endif()
 
@@ -131,21 +130,20 @@ elseif ( WINDOWS_UAP )
 	set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 	set(PACKAGE_GUID "${WINDOWS_UAP_APPLICATION_GUID}")
 	
-	set ( WIN_UAP_CONF_DIR      "${CMAKE_MODULE_PATH}../Resources/WindowsStore" )
+	set ( WIN_UAP_CONF_DIR      "${DAVA_ROOT_DIR}/Sources/CMake/Resources/WindowsStore" )
 	set ( WIN_UAP_MANIFESTS_DIR "${WIN_UAP_CONF_DIR}/Manifests" )
 	set ( WIN_UAP_ASSETS_DIR    "${WIN_UAP_CONF_DIR}/Assets" )
 	file( GLOB ASSET_FILES      "${WIN_UAP_ASSETS_DIR}/*.png" )
+	source_group ("Content\\Assets" FILES ${ASSET_FILES})
 	
 	if (NOT "${PLATFORM}" STREQUAL "DESKTOP")
 		configure_file(
 			${WIN_UAP_MANIFESTS_DIR}/Package_vc${COMPILER_VERSION}.${PLATFORM}.appxmanifest.in
 			${CMAKE_CURRENT_BINARY_DIR}/${APP_MANIFEST_NAME}
 			@ONLY)
-			
-		configure_file(
-			${WIN_UAP_CONF_DIR}/TemporaryKey.pfx
-			${CMAKE_CURRENT_BINARY_DIR}/${APP_TEMPKEY_NAME}
-			@ONLY)
+
+        file ( COPY ${WIN_UAP_CONF_DIR}/TemporaryKey.pfx DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+        file ( RENAME ${CMAKE_CURRENT_BINARY_DIR}/TemporaryKey.pfx ${CMAKE_CURRENT_BINARY_DIR}/${APP_TEMPKEY_NAME} )
 	endif()
 	
 	if (WINDOWS_PHONE8)
@@ -165,10 +163,27 @@ elseif ( WINDOWS_UAP )
 		)
 	endif()
 	
-	set(RESOURCE_FILES
-		${CONTENT_FILES} ${DEBUG_CONTENT_FILES} ${RELEASE_CONTENT_FILES} ${ASSET_FILES} ${STRING_FILES} )
+    set(RESOURCE_FILES ${CONTENT_FILES} ${DEBUG_CONTENT_FILES} ${RELEASE_CONTENT_FILES} 
+        ${ASSET_FILES} ${STRING_FILES} ${CMAKE_CURRENT_BINARY_DIR}/${APP_TEMPKEY_NAME} )
+    list( APPEND RESOURCES_LIST ${RESOURCE_FILES} )
 	
-	list( APPEND RESOURCES_LIST ${RESOURCE_FILES} )
+	#add dll's to project and package
+	file ( GLOB DAVA_DEBUG_DLL_LIST   "${DAVA_WIN_UAP_LIBRARIES_PATH_DEBUG}/*.dll" )
+	file ( GLOB DAVA_RELEASE_DLL_LIST "${DAVA_WIN_UAP_LIBRARIES_PATH_RELEASE}/*.dll" )
+	
+	if ( DAVA_DEBUG_DLL_LIST )
+	    source_group ("Binaries\\Debug"   FILES ${DAVA_DEBUG_DLL_LIST})
+		set_property(SOURCE ${DAVA_DEBUG_DLL_LIST} PROPERTY VS_DEPLOYMENT_CONTENT $<CONFIG:Debug>)
+	endif ()
+	
+	if ( DAVA_RELEASE_DLL_LIST )
+	    source_group ("Binaries\\Release" FILES ${DAVA_RELEASE_DLL_LIST})
+        set_property(SOURCE ${DAVA_RELEASE_DLL_LIST} PROPERTY
+		    VS_DEPLOYMENT_CONTENT $<OR:$<CONFIG:Release>,$<CONFIG:RelWithDebInfo>,$<CONFIG:MinSizeRel>>)
+	endif ()
+	
+    list( APPEND ADDED_SRC "${DAVA_DEBUG_DLL_LIST}"
+                           "${DAVA_RELEASE_DLL_LIST}" )
 
 	set_property(SOURCE ${CONTENT_FILES} PROPERTY VS_DEPLOYMENT_CONTENT 1)
 	set_property(SOURCE ${ASSET_FILES} PROPERTY VS_DEPLOYMENT_CONTENT 1)
@@ -176,9 +191,14 @@ elseif ( WINDOWS_UAP )
 	set_property(SOURCE ${STRING_FILES} PROPERTY VS_TOOL_OVERRIDE "PRIResource")
 	set_property(SOURCE ${DEBUG_CONTENT_FILES} PROPERTY VS_DEPLOYMENT_CONTENT $<CONFIG:Debug>)
 	set_property(SOURCE ${RELEASE_CONTENT_FILES} PROPERTY
-		VS_DEPLOYMENT_CONTENT $<OR:$<CONFIG:Release>,$<CONFIG:RelWithDebInfo>,$<CONFIG:MinSizeRel>>)
+		VS_DEPLOYMENT_CONTENT $<OR:$<CONFIG:Release>,$<CONFIG:RelWithDebInfo>,$<CONFIG:MinSizeRel>>)	
+		
+	set ( UAP_DEPLOYMENT_CONTENT ${APP_DATA} )
+	list ( APPEND UAP_DEPLOYMENT_CONTENT ${ADDITIONAL_CONTENT} )
+	add_content_win_uap ( "${UAP_DEPLOYMENT_CONTENT}" )
+	list( APPEND ADDED_SRC ${ADDED_CONTENT_SRC} )
 
-elseif( WIN32 AND MSVC )
+elseif( WIN32 )
     list( APPEND RESOURCES_LIST  ${WIN32_RESOURCES} )
 endif()
 
@@ -197,6 +217,10 @@ if( DAVA_FOUND )
         include_directories   ( ${DAVA_ENGINE_DIR}/Platform/TemplateAndroid )
         list( APPEND PATTERNS_CPP    ${DAVA_ENGINE_DIR}/Platform/TemplateAndroid/*.cpp )
         list( APPEND PATTERNS_H      ${DAVA_ENGINE_DIR}/Platform/TemplateAndroid/*.h   )
+
+        list( APPEND PATTERNS_CPP    ${ANDROID_NDK}/sources/android/cpufeatures/*.c )
+        list( APPEND PATTERNS_H      ${ANDROID_NDK}/sources/android/cpufeatures/*.h )
+
     endif()
 
     if( QT_PREFIX )
@@ -215,7 +239,7 @@ if( DAVA_FOUND )
         include_directories( ${PLATFORM_INCLUDES_DIR} )
 
     else()
-        if( MSVC )
+        if( WIN32 )
             add_definitions        ( -D_UNICODE 
                                      -DUNICODE )
             list( APPEND ADDED_SRC  ${DAVA_PLATFORM_SRC}/TemplateWin32/CorePlatformWin32.cpp 
@@ -279,7 +303,7 @@ if( ANDROID )
 
     add_library( ${PROJECT_NAME} SHARED ${PLATFORM_ADDED_SRC} ${ADDED_SRC} ${REMAINING_LIST} )
 
-else()                             
+else()                     
     add_executable( ${PROJECT_NAME} MACOSX_BUNDLE ${EXECUTABLE_FLAG}
         ${ADDED_SRC}
         ${PLATFORM_ADDED_SRC}
@@ -289,7 +313,7 @@ else()
 
 endif()
 
-if( NOT IGNORE_FILE_TREE_CHECK )
+if( TARGET_FILE_TREE_FOUND )
     add_dependencies(  ${PROJECT_NAME} FILE_TREE )
     
 endif()
@@ -352,16 +376,10 @@ if( ANDROID AND NOT ANDROID_CUSTOM_BUILD )
         execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${ANDROID_JAVA_RES} ${CMAKE_BINARY_DIR}/res )
     endif()
 
-
-    if( ANDROID_DATA_FOLDER )
-        set( ASSETS_FOLDER "${ANDROID_JAVA_ASSET_FOLDER}" )    
-
-    else()
+    if( APP_DATA )
         get_filename_component( ASSETS_FOLDER ${APP_DATA} NAME )
-          
+        execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${APP_DATA} ${CMAKE_BINARY_DIR}/assets/${ASSETS_FOLDER} )
     endif()
-
-    execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${APP_DATA} ${CMAKE_BINARY_DIR}/assets/${ASSETS_FOLDER} )
 
     if( ANDROID_ICO )
         execute_process(COMMAND ${CMAKE_COMMAND} -E copy ${ANDROID_ICO}  ${CMAKE_BINARY_DIR} )     
@@ -440,7 +458,7 @@ elseif( MACOS )
 
     endif()
 
-elseif ( MSVC )       
+elseif ( WIN32 )       
     if( "${EXECUTABLE_FLAG}" STREQUAL "WIN32" )
         set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "/ENTRY: /NODEFAULTLIB:libcmt.lib /NODEFAULTLIB:libcmtd.lib" ) 
 
@@ -457,7 +475,14 @@ elseif ( MSVC )
     endif()
 
     list( APPEND DAVA_BINARY_WIN32_DIR "${ADDED_BINARY_DIR}" )
-    configure_file( ${DAVA_CONFIGURE_FILES_PATH}/DavaVcxprojUserTemplate.in
+
+    if ( WINDOWS_UAP )
+        set ( DAVA_VCPROJ_USER_TEMPLATE "DavaWinUAPVcxprojUserTemplate.in" )               
+    else ()
+        set ( DAVA_VCPROJ_USER_TEMPLATE "DavaVcxprojUserTemplate.in" )
+    endif ()
+
+    configure_file( ${DAVA_CONFIGURE_FILES_PATH}/${DAVA_VCPROJ_USER_TEMPLATE}
                     ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.vcxproj.user @ONLY )
 
     if( OUTPUT_TO_BUILD_DIR )

@@ -29,12 +29,18 @@
 #include "Base/Platform.h"
 #if defined(__DAVAENGINE_WIN32__)
 
-#include "Platform/TemplateWin32/CorePlatformWin32.h"
-#include "Concurrency/Thread.h"
-#include "Platform/DeviceInfo.h"
-#include "Utils/Utils.h"
-
 #include <shellapi.h>
+
+#include "Concurrency/Thread.h"
+#include "Input/KeyboardDevice.h"
+#include "Input/InputSystem.h"
+#include "Platform/DeviceInfo.h"
+#include "Platform/TemplateWin32/CorePlatformWin32.h"
+#include "Platform/SystemTimer.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "UI/UIControlSystem.h"
+#include "Utils/Utils.h"
 
 extern void FrameworkDidLaunched();
 extern void FrameworkWillTerminate();

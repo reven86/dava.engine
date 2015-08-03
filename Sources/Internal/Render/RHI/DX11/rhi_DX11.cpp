@@ -138,11 +138,11 @@ _InitDX11()
 {
     HRESULT                 hr;
     DWORD                   flags           = 0;
-//    D3D_FEATURE_LEVEL       feature[]       = { D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_9_1 };
-    D3D_FEATURE_LEVEL       feature[]       = { D3D_FEATURE_LEVEL_9_1 };
+    D3D_FEATURE_LEVEL       feature[]       = { D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_9_1 };
+//    D3D_FEATURE_LEVEL       feature[]       = { D3D_FEATURE_LEVEL_9_1 };
     DXGI_SWAP_CHAIN_DESC    swapchain_desc  = {0};
 
-    #if 0
+    #if 1
     flags |= D3D11_CREATE_DEVICE_DEBUG;
     flags |= D3D11_CREATE_DEVICE_PREVENT_INTERNAL_THREADING_OPTIMIZATIONS;
     #endif

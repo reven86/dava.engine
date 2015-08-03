@@ -39,7 +39,7 @@ elseif ( MACOS )
     set( CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++14" )
     set( CMAKE_XCODE_ATTRIBUTE_GCC_GENERATE_DEBUGGING_SYMBOLS YES )
 
-elseif ( MSVC )
+elseif ( WIN32 )
     #dynamic runtime on windows store
     if ( WINDOWS_UAP )
 	    set ( CRT_TYPE_DEBUG "/MDd" )
@@ -50,10 +50,15 @@ elseif ( MSVC )
 	    set ( CRT_TYPE_DEBUG "/MTd" )
 		set ( CRT_TYPE_RELEASE "/MT" )
 	endif ()
-	
+    
+    # ignorance of linker warnings
+    set ( CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /IGNORE:4099,4221,4264" )
+    set ( CMAKE_STATIC_LINKER_FLAGS "${CMAKE_STATIC_LINKER_FLAGS} /IGNORE:4099,4221,4264" )
+    set ( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /IGNORE:4099" )
+
     set ( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${CRT_TYPE_DEBUG} ${ADDITIONAL_CXX_FLAGS} /MP /EHsc /Zi /Od" ) 
     set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${CRT_TYPE_RELEASE} ${ADDITIONAL_CXX_FLAGS} /MP /EHsc" ) 
-    set ( CMAKE_EXE_LINKER_FLAGS_RELEASE "/ENTRY:mainCRTStartup /INCREMENTAL:NO" )
+    set ( CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /ENTRY:mainCRTStartup /INCREMENTAL:NO" )
 
     # undef macros min and max defined in windows.h
     add_definitions ( -DNOMINMAX )
@@ -143,7 +148,7 @@ if( WARNINGS_AS_ERRORS )
 -Wno-import-preprocessor-directive-pedantic" )
 
         set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${LOCAL_DISABLED_WARNINGS}" ) # warnings as errors
-    elseif( MSVC )
+    elseif( WIN32 )
         set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /WX" )
     endif()
 

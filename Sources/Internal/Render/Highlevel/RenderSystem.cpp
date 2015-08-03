@@ -59,6 +59,8 @@ RenderSystem::RenderSystem()
     renderHierarchy = new QuadTree(10);
 	hierarchyInitialized = false;   
 	markedObjects.reserve(100);
+
+    debugDrawer = new RenderHelper();
 }
 
 RenderSystem::~RenderSystem()
@@ -70,6 +72,8 @@ RenderSystem::~RenderSystem()
     
     SafeDelete(renderHierarchy);	
     SafeDelete(mainRenderPass);
+
+    SafeDelete(debugDrawer);
 }
     
 

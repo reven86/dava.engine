@@ -25,7 +25,7 @@
     namespace rhi { extern void _InitDX9(); }
     #include <vector>
 
-    #define RHI__USE_DX9_RENDER_THREAD          1
+    #define RHI__USE_DX9_RENDER_THREAD          0
     #define RHI__DX9_MAX_PREPARED_FRAME_COUNT   2
 
 
@@ -56,7 +56,7 @@ ReleaseDevice()
 
 //- static std::vector<Handle>  _CmdQueue;
 struct
-Frame
+FrameDX9
 {
     unsigned            number;
     Handle              sync;
@@ -64,11 +64,11 @@ Frame
     uint32              readyToExecute:1;
 };
 
-static std::vector<Frame>   _Frame;
-static bool                 _FrameStarted   = false;
-static unsigned             _FrameNumber    = 1;
+static std::vector<FrameDX9>    _Frame;
+static bool                     _FrameStarted   = false;
+static unsigned                 _FrameNumber    = 1;
 //static DAVA::Spinlock       _FrameSync;
-static DAVA::Mutex          _FrameSync;
+static DAVA::Mutex              _FrameSync;
 
 static void _ExecuteQueuedCommands();
 
@@ -221,7 +221,7 @@ dx9_RenderPass_Begin( Handle pass )
 
     if( !_FrameStarted )
     {
-        _Frame.push_back( Frame() );
+        _Frame.push_back( FrameDX9() );
         _Frame.back().number         = _FrameNumber;
         _Frame.back().readyToExecute = false;
 
@@ -772,6 +772,8 @@ SCOPED_FUNCTION_TIMING();
                         _D3D9_DepthBuf = nullptr;
                     }
                 }
+
+                c += 1;
             }   break;
             
             case DX9__SET_VERTEX_DATA :

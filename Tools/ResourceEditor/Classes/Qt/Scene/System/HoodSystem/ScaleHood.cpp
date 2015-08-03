@@ -64,63 +64,51 @@ ScaleHood::~ScaleHood()
 
 }
 
-void ScaleHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, TextDrawSystem *textDrawSystem)
+void ScaleHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderHelper * drawer, TextDrawSystem *textDrawSystem)
 {
-#if RHI_COMPLETE_EDITOR
 	// x
 	if(mouseOverAxis) 
-		DAVA::RenderManager::Instance()->SetColor(colorS);
+        drawer->DrawLine(axisX->curFrom, axisX->curTo, colorS, DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH);
 	else 
-		DAVA::RenderManager::Instance()->SetColor(colorX);
-
-	DAVA::RenderHelper::Instance()->DrawLine(axisX->curFrom, axisX->curTo, 1.0f, hoodDrawState);
+        drawer->DrawLine(axisX->curFrom, axisX->curTo, colorX, DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH);
 
 	// y
 	if(mouseOverAxis) 
-		DAVA::RenderManager::Instance()->SetColor(colorS);
+        drawer->DrawLine(axisY->curFrom, axisY->curTo, colorS, DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH);
 	else 
-		DAVA::RenderManager::Instance()->SetColor(colorY);
-
-	DAVA::RenderHelper::Instance()->DrawLine(axisY->curFrom, axisY->curTo, 1.0f, hoodDrawState);
+        drawer->DrawLine(axisY->curFrom, axisY->curTo, colorY, DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH);
 
 	// z
 	if(mouseOverAxis) 
-		DAVA::RenderManager::Instance()->SetColor(colorS);
+        drawer->DrawLine(axisZ->curFrom, axisZ->curTo, colorS, DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH);
 	else 
-		DAVA::RenderManager::Instance()->SetColor(colorZ);
-
-	DAVA::RenderHelper::Instance()->DrawLine(axisZ->curFrom, axisZ->curTo, 1.0f, hoodDrawState);
+        drawer->DrawLine(axisZ->curFrom, axisZ->curTo, colorZ, DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH);
 
 	// xy xz yz axis
-	DAVA::RenderManager::Instance()->SetColor(colorS);
-	DAVA::RenderHelper::Instance()->DrawLine(axisXY->curFrom, axisXY->curTo, 1.0f, hoodDrawState);
-	DAVA::RenderHelper::Instance()->DrawLine(axisXZ->curFrom, axisXZ->curTo, 1.0f, hoodDrawState);
-	DAVA::RenderHelper::Instance()->DrawLine(axisYZ->curFrom, axisYZ->curTo, 1.0f, hoodDrawState);
+    drawer->DrawLine(axisXY->curFrom, axisXY->curTo, colorS, DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH);
+    drawer->DrawLine(axisXZ->curFrom, axisXZ->curTo, colorS, DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH);
+    drawer->DrawLine(axisYZ->curFrom, axisYZ->curTo, colorS, DAVA::RenderHelper::DRAW_WIRE_NO_DEPTH);
 
 	// xy xz yz plane
 	if(mouseOverAxis)
 	{
 		DAVA::Color colorSBlend(colorS.r, colorS.g, colorS.b, 0.3f);
-		DAVA::RenderManager::Instance()->SetColor(colorSBlend);
 
 		DAVA::Polygon3 poly;
 		poly.AddPoint(axisXY->curFrom);
 		poly.AddPoint(axisXY->curTo);
 		poly.AddPoint(axisYZ->curTo);
-		DAVA::RenderHelper::Instance()->FillPolygon(poly, hoodDrawState);
+        drawer->DrawPolygon(poly, colorSBlend, DAVA::RenderHelper::DRAW_SOLID_NO_DEPTH);
 	}
 
 	// draw axis spheres
 	DAVA::float32 boxSize = axisX->curScale * baseSize / 12;
 
-	DAVA::RenderManager::Instance()->SetColor(colorX);
-	DAVA::RenderHelper::Instance()->FillBox(DAVA::AABBox3(axisX->curTo, boxSize), hoodDrawState);
+    drawer->DrawAABox(DAVA::AABBox3(axisX->curTo, boxSize), colorX, DAVA::RenderHelper::DRAW_SOLID_NO_DEPTH);
 
-	DAVA::RenderManager::Instance()->SetColor(colorY);
-	DAVA::RenderHelper::Instance()->FillBox(DAVA::AABBox3(axisY->curTo, boxSize), hoodDrawState);
+    drawer->DrawAABox(DAVA::AABBox3(axisY->curTo, boxSize), colorY, DAVA::RenderHelper::DRAW_SOLID_NO_DEPTH);
 
-	DAVA::RenderManager::Instance()->SetColor(colorZ);
-	DAVA::RenderHelper::Instance()->FillBox(DAVA::AABBox3(axisZ->curTo, boxSize), hoodDrawState);
+    drawer->DrawAABox(DAVA::AABBox3(axisZ->curTo, boxSize), colorZ, DAVA::RenderHelper::DRAW_SOLID_NO_DEPTH);
 
 	DAVA::Rect r = DrawAxisText(textDrawSystem, axisX, axisY, axisZ);
 
@@ -132,5 +120,4 @@ void ScaleHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, TextDrawSystem
 		sprintf(tmp, "[%.2f, %.2f, %.2f]", modifScale, modifScale, modifScale);
 		textDrawSystem->DrawText(topPos, tmp, DAVA::Color(255, 255, 0, 255));
 	}
-#endif // RHI_COMPLETE_EDITOR
 }

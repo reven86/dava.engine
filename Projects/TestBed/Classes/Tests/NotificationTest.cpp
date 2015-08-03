@@ -28,7 +28,7 @@
 
 
 #include "Tests/NotificationTest.h"
-#include <Base/Message.h>
+#include "Base/Message.h"
 
 using namespace DAVA;
 
@@ -136,7 +136,6 @@ void NotificationScreen::Update(float32 timeElapsed)
 
 void NotificationScreen::Draw(const UIGeometricData &geometricData)
 {
-	RenderManager::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
 void NotificationScreen::UpdateNotification()

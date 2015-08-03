@@ -133,7 +133,7 @@ static DAVA::Thread*        _GLES2_RenderThread             = nullptr;
 #endif
 
 struct
-Frame
+FrameGLES2
 {
     unsigned            number;  
     Handle              sync;
@@ -141,11 +141,11 @@ Frame
     uint32              readyToExecute:1;        
 };
 
-static std::vector<Frame>   _Frame;
-static bool                 _FrameStarted   = false;
-static unsigned             _FrameNumber    = 1;
+static std::vector<FrameGLES2>  _Frame;
+static bool                     _FrameStarted   = false;
+static unsigned                 _FrameNumber    = 1;
 //static DAVA::Spinlock       _FrameSync;
-static DAVA::Mutex          _FrameSync;
+static DAVA::Mutex              _FrameSync;
 
 
 static void _ExecGL( GLCommand* command, uint32 cmdCount );
@@ -189,7 +189,7 @@ gles2_RenderPass_Begin( Handle pass )
 
     if( !_FrameStarted )
     {        
-        _Frame.push_back( Frame() );
+        _Frame.push_back( FrameGLES2() );
         _Frame.back().number         = _FrameNumber;
         _Frame.back().readyToExecute = false;
 
@@ -810,6 +810,8 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
                         _GLES2_Binded_FrameBuffer = _GLES2_Default_FrameBuffer;
                     }
                 }
+
+                c += 1;
             }   break;
             
             case GLES2__SET_VERTEX_DATA :

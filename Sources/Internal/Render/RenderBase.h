@@ -130,6 +130,13 @@ enum eBlending
     BLENDING_STRONG_MULTIPLICATIVE
 };
 
+enum ImageQuality : uint8
+{
+    MIN_IMAGE_QUALITY = 0,
+    MAX_IMAGE_QUALITY = 100,
+    DEFAULT_IMAGE_QUALITY = MAX_IMAGE_QUALITY
+};
+
 enum ImageFormat : uint8
 {
     IMAGE_FORMAT_PNG = 0,
@@ -137,6 +144,7 @@ enum ImageFormat : uint8
     IMAGE_FORMAT_PVR,
     IMAGE_FORMAT_JPEG,
     IMAGE_FORMAT_TGA,
+    IMAGE_FORMAT_WEBP,
     IMAGE_FORMAT_COUNT,
     IMAGE_FORMAT_UNKNOWN = 127
 };

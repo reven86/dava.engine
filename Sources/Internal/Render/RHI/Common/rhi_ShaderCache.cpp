@@ -784,7 +784,8 @@ static const char* _ShaderDefine_DX11 =
 "#define VP_OUT_POSITION         OUT.position\n"
 "#define VP_OUT(name)            OUT.##name\n"
 
-"#define VP_TEXTURE2D(unit,uv)   tex2Dlod( VertexTexture##unit, float4(uv.x,uv.y,0,0) )\n"
+//"#define VP_TEXTURE2D(unit,uv)   tex2Dlod( VertexTexture##unit, float4(uv.x,uv.y,0,0) )\n"
+"#define VP_TEXTURE2D(unit,uv)   VertexTexture##unit.SampleLevel( VertexTexture##unit##_Sampler, uv, 0 )\n"
 
 
 "#define FPROG_IN_BEGIN                        struct FP_Input { float4 pos : SV_POSITION; \n"
@@ -820,12 +821,10 @@ static const char* _ShaderDefine_DX11 =
 "#define FPROG_OUT_COLOR         float4 color : SV_TARGET0;\n"
 "#define FPROG_OUT_END           };\n"
 
-//"#define DECL_FP_SAMPLER2D(unit)    uniform sampler2D FragmentTexture##unit : TEXUNIT##unit;\n"
 "#define DECL_FP_SAMPLER2D(unit)    Texture2D FragmentTexture##unit : register(t##unit); SamplerState FragmentTexture##unit##_Sampler : register(s##unit);\n"
 "#define DECL_FP_SAMPLERCUBE(unit)  uniform samplerCUBE FragmentTexture##unit : TEXUNIT##unit;\n"
-"#define DECL_VP_SAMPLER2D(unit)    uniform sampler2D VertexTexture##unit : TEXUNIT##unit;\n"
+"#define DECL_VP_SAMPLER2D(unit)    Texture2D VertexTexture##unit : register(t##unit); SamplerState VertexTexture##unit##_Sampler : register(s##unit);\n"
 
-//"#define FP_TEXTURE2D(unit,uv)   tex2D( FragmentTexture##unit, uv )\n"
 "#define FP_TEXTURE2D(unit,uv)   FragmentTexture##unit.Sample( FragmentTexture##unit##_Sampler, uv )\n"
 "#define FP_TEXTURECUBE(unit,uv) texCUBE( FragmentTexture##unit, uv )\n"
 "#define FP_IN(name)             IN.##name\n"
@@ -1014,6 +1013,7 @@ PreProcessSource( Api targetApi, const char* srcText, std::string* preprocessedT
     switch( targetApi )
     {
         case RHI_DX11 :
+            preprocessedText->insert( 0, _ShaderHeader_DX11 );
             break;
             
         case RHI_DX9 :
