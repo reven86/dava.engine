@@ -595,8 +595,12 @@ void WinUAPXamlApp::CreateBaseXamlUI()
     swapChainPanel->Children->Append(canvas);
     Window::Current->Content = swapChainPanel;
 
+    // Windows UAP doesn't allow to unfocus UI control programmatically
+    // It only permits to set focus at another control
+    // So create dummy offscreen button that steals focus when there is
+    // a need to unfocus native control, especially useful for text fields
     controlThatTakesFocus = ref new Button();
-    controlThatTakesFocus->Content = L"";
+    controlThatTakesFocus->Content = L"I steal your focus";
     controlThatTakesFocus->Width = 30;
     controlThatTakesFocus->Height = 20;
     AddUIElement(controlThatTakesFocus);

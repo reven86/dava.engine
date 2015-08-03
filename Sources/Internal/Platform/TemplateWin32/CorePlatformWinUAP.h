@@ -35,18 +35,11 @@
 
 #include "Base/BaseTypes.h"
 #include "Core/Core.h"
-#include "Concurrency/Mutex.h"
-#include "Concurrency/ConditionVariable.h"
-#include "Concurrency/LockGuard.h"
-
-//#include "Platform/TemplateWin32/WinUAPXamlApp.h"
-//#include "Platform/TemplateWin32/Dispatcher.h"
 
 namespace DAVA
 {
 
 ref class WinUAPXamlApp;
-class Dispatcher;
 
 class CorePlatformWinUAP : public Core
 {

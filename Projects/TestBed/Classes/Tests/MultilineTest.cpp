@@ -95,7 +95,6 @@ void MultilineTest::LoadResources()
 
     textField1 = new UITextField(Rect(5, 10, 400, 60));
     textField1->SetFont(font);
-    textField1->SetIsPassword(true);
     textField1->SetText(L"Hello World");
     textField1->SetDebugDraw(true);
     textField1->SetTextColor(Color(0.0, 1.0, 0.0, 1.0));
@@ -103,6 +102,7 @@ void MultilineTest::LoadResources()
     textField1->SetTextAlign(ALIGN_LEFT | ALIGN_TOP);
 
     textField2 = new UITextField(Rect(5, 80, 400, 60));
+    textField2->SetIsPassword(true);
     textField2->SetFont(font);
     textField2->SetText(L"Die my darling");
     textField2->SetDebugDraw(true);

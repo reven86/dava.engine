@@ -105,6 +105,10 @@ void Dispatcher::BlockingTaskWrapper::WaitTaskComplete()
     {
         if (!dispatcher->taskQueue.empty())
         {
+            // While waiting task completion process other scheduled tasks to avoid deadlocks
+            // Deadlock can occur in the following circumstances:
+            //  from main (dispatcher's) thread start blocking call to UI thread
+            //  from UI thread start blocking call to main thread (e.g. ask delegate of some action that should be taken)
             lock.Unlock();
             dispatcher->ProcessTasks();
             lock.Lock();
