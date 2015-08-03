@@ -401,8 +401,8 @@ void SceneSelectionSystem::RemSelection(const EntityGroup& entities)
                 selectionHasChanges = true;
             }
         }
+        UpdateHoodPos();
     }
-    UpdateHoodPos();
 }
 
 void SceneSelectionSystem::Clear()
