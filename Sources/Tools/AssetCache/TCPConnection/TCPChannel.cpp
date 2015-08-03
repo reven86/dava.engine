@@ -110,7 +110,7 @@ void TCPChannel::PacketReceived(const void* packet, size_t length)
 {
     if (listener)
     {
-        listener->PacketReceived(this, packet, length);
+        listener->PacketReceived(this, static_cast<const uint8*>(packet), length);
     }
 }
 

@@ -45,7 +45,7 @@ public:
     
     virtual void ChannelOpened(TCPChannel *tcpChannel) {};
     virtual void ChannelClosed(TCPChannel *tcpChannel, const char8* message) {};
-    virtual void PacketReceived(TCPChannel *tcpChannel, const void* packet, size_t length) = 0;
+    virtual void PacketReceived(TCPChannel *tcpChannel, const uint8* packet, size_t length) = 0;
     virtual void PacketSent(TCPChannel *tcpChannel) {};
     virtual void PacketDelivered(TCPChannel *tcpChannel) {};
 };

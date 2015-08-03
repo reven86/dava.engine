@@ -54,7 +54,7 @@ bool Client::Connect(const String &ip, uint16 port)
     DVASSERT(nullptr == openedChannel);
     
     netClient = TCPConnection::CreateClient(NET_SERVICE_ID, Net::Endpoint(ip.c_str(), port));
-    netClient->SetDelegate(this);
+    netClient->SetListener(this);
     
     return (nullptr != netClient);
 }
@@ -64,7 +64,7 @@ void Client::Disconnect()
     if(netClient)
     {
         netClient->Disconnect();
-        netClient->SetDelegate(nullptr);
+        netClient->SetListener(nullptr);
         netClient = nullptr;
         openedChannel = nullptr;
     }
@@ -155,7 +155,7 @@ void Client::ChannelClosed(TCPChannel *tcpChannel, const char8* message)
     openedChannel = nullptr;
 }
 
-void Client::PacketReceived(DAVA::TCPChannel *tcpChannel, const void* packet, size_t length)
+void Client::PacketReceived(DAVA::TCPChannel *tcpChannel, const uint8* packet, size_t length)
 {
     DVASSERT(openedChannel == tcpChannel);
     if(length && openedChannel == tcpChannel)

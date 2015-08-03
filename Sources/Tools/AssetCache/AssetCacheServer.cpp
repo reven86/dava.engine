@@ -53,7 +53,7 @@ bool Server::Listen(uint16 port)
     DVASSERT(!netServer);
     
     netServer.reset(TCPConnection::CreateServer(NET_SERVICE_ID, Net::Endpoint(listenPort)));
-    netServer->SetDelegate(this);
+    netServer->SetListener(this);
 
     return netServer->IsConnected();
 }
@@ -73,7 +73,7 @@ void Server::Disconnect()
     if(netServer)
     {
         netServer->Disconnect();
-        netServer->SetDelegate(nullptr);
+        netServer->SetListener(nullptr);
         netServer.reset();
     }
 }

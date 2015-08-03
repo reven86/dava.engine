@@ -81,20 +81,22 @@ TCPConnection::~TCPConnection()
 bool TCPConnection::Connect()
 {
     isConnected = false;
-    bool registered = RegisterService(service);
-    if(registered)
+    bool isRegistered = RegisterService(service);
+    if(isRegistered)
     {
         Net::NetConfig config(role);
         config.AddTransport(Net::TRANSPORT_TCP, endpoint);
         config.AddService(service);
         
         controllerId = Net::NetCore::Instance()->CreateController(config, this);
-        if(Net::NetCore::INVALID_TRACK_ID == controllerId)
+        if(Net::NetCore::INVALID_TRACK_ID != controllerId)
+        {
+            isConnected = true;
+        }
+        else
         {
             Logger::Error("[TCPConnection::%s] Cannot create controller", __FUNCTION__);
         }
-        
-        isConnected = (Net::NetCore::INVALID_TRACK_ID != controllerId);
     }
     else
     {
@@ -115,24 +117,24 @@ void TCPConnection::Disconnect()
     controllerId = Net::NetCore::INVALID_TRACK_ID;
 }
     
-bool TCPConnection::RegisterService(uint32 service)
+bool TCPConnection::RegisterService(uint32 serviceId)
 {
     LockGuard<Mutex> guard(serviceMutex);
     
-    auto registered = registeredServices.count(service) > 0;
-    if(!registered)
+    auto isRegistered = registeredServices.find(serviceId) != registeredServices.end();
+    if(!isRegistered)
     {
-        registered = Net::NetCore::Instance()->RegisterService(service,
+        isRegistered = Net::NetCore::Instance()->RegisterService(serviceId,
                                                                MakeFunction(&TCPConnection::Create),
                                                                MakeFunction(&TCPConnection::Delete));
 
-        if(registered)
+        if(isRegistered)
         {
-            registeredServices.insert(service);
+            registeredServices.insert(serviceId);
         }
     }
     
-    return registered;
+    return isRegistered;
 }
     
     
@@ -154,7 +156,7 @@ TCPChannel * TCPConnection::CreateChannel()
     LockGuard<Mutex> guard(channelMutex);
 
     auto newChannel = new TCPChannel();
-    newChannel->SetListener(delegate);
+    newChannel->SetListener(listener);
 
     channels.push_back(newChannel);
     return newChannel;
@@ -173,14 +175,14 @@ void TCPConnection::DestroyChannel(TCPChannel *channel)
     delete channel;
 }
 
-void TCPConnection::SetDelegate(TCPChannelListener * _delegate)
+void TCPConnection::SetListener(TCPChannelListener * _listener)
 {
-    delegate = _delegate;
+    listener = _listener;
     
     LockGuard<Mutex> guard(channelMutex);
     for(auto ch: channels)
     {
-        ch->SetDelegate(delegate);
+        ch->SetListener(listener);
     }
 }
     

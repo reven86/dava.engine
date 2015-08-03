@@ -73,7 +73,7 @@ public:
     //TCPChannelDelegate
     void ChannelOpened(TCPChannel *tcpChannel) override;
     void ChannelClosed(TCPChannel *tcpChannel, const char8* message) override;
-    void PacketReceived(DAVA::TCPChannel *tcpChannel, const void* packet, size_t length) override;
+    void PacketReceived(DAVA::TCPChannel *tcpChannel, const uint8* packet, size_t length) override;
     //END of TCPChannelDelegate
     
     TCPConnection * GetConnection() const;
