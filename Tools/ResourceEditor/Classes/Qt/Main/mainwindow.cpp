@@ -3111,22 +3111,25 @@ void QtMainWindow::OnConsoleItemClicked(const QString &data)
     PointerSerializer conv(data.toStdString());
     if (conv.CanConvert<Entity*>())
     {
-        auto vec = conv.GetPointers<Entity*>();
-        if (!vec.empty())
+        if (nullptr != GetCurrentScene())
         {
-            EntityGroup entityGroup;
-            DAVA::Vector<Entity *> allEntities;
-            GetCurrentScene()->GetChildNodes(allEntities);
-            for (auto entity : vec)
+            auto vec = conv.GetPointers<Entity*>();
+            if (!vec.empty())
             {
-                if (std::find(allEntities.begin(), allEntities.end(), entity) != allEntities.end())
+                EntityGroup entityGroup;
+                DAVA::Vector<Entity *> allEntities;
+                GetCurrentScene()->GetChildNodes(allEntities);
+                for (auto entity : vec)
                 {
-                    entityGroup.Add(entity);
+                    if (std::find(allEntities.begin(), allEntities.end(), entity) != allEntities.end())
+                    {
+                        entityGroup.Add(entity);
+                    }
                 }
-            }
-            if (entityGroup.Size() != 0)
-            {
-                GetCurrentScene()->selectionSystem->SetSelection(entityGroup);
+                if (entityGroup.Size() != 0)
+                {
+                    GetCurrentScene()->selectionSystem->SetSelection(entityGroup);
+                }
             }
         }
     }
