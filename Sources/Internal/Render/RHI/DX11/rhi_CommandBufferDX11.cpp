@@ -25,6 +25,10 @@
     namespace rhi { extern void _InitDX11(); }
     #include <vector>
 
+    
+    #include <d3d9.h>
+
+
     #define RHI__USE_DX11_RENDER_THREAD         0
     #define RHI__DX11_MAX_PREPARED_FRAME_COUNT  2
     #define RHI__DX11_USE_DEFERRED_CONTEXT      0
@@ -61,6 +65,8 @@ public:
     uint32              isLastInPass:1;
     
     std::vector<uint64> _cmd;
+    
+    RingBuffer*         text;
 
     Handle              sync;
 };
@@ -146,8 +152,91 @@ static DAVA::Spinlock       _DX11_RenderThreadExitSync;
 static DAVA::Semaphore      _DX11_RenderThreadStartedSync   (0);
 #endif
 
+//==============================================================================
+
+struct
+RasterizerParamDX11
+{
+    uint32  cullMode:3;
+    uint32  scissorEnabled:1;
+
+    bool    operator==( const RasterizerParamDX11& b ) const
+            {
+                return this->cullMode == b.cullMode  &&  this->scissorEnabled == b.scissorEnabled;
+            }
+};
+
+struct
+RasterizerStateDX11
+{
+    RasterizerParamDX11     param;
+    ID3D11RasterizerState*  state;
+};
+
 
 //------------------------------------------------------------------------------
+
+static std::vector<RasterizerStateDX11> _RasterizerStateDX11;
+
+static ID3D11RasterizerState*
+_GetRasterizerState( RasterizerParamDX11 param )
+{
+    ID3D11RasterizerState*  state = nullptr;
+    
+    for( std::vector<RasterizerStateDX11>::iterator s=_RasterizerStateDX11.begin(),s_end=_RasterizerStateDX11.end(); s!=s_end; ++s )
+    {
+        if( s->param == param )
+        {
+            state = s->state;
+            break;
+        }
+    }
+
+    if( !state )
+    {
+        D3D11_RASTERIZER_DESC   desc;
+        HRESULT                 hr;
+
+        desc.FillMode               = D3D11_FILL_SOLID;
+        desc.FrontCounterClockwise  = FALSE;
+
+        switch( CullMode(param.cullMode) )
+        {
+            case CULL_NONE  : desc.CullMode = D3D11_CULL_NONE; break;
+            case CULL_CCW   : desc.CullMode = D3D11_CULL_BACK; break;
+            case CULL_CW    : desc.CullMode = D3D11_CULL_FRONT; break;
+        }
+
+        desc.DepthBias              = 0;
+        desc.DepthBiasClamp         = 0;
+        desc.SlopeScaledDepthBias   = 0.0f;
+        desc.DepthClipEnable        = FALSE;
+        desc.ScissorEnable          = param.scissorEnabled;
+        desc.MultisampleEnable      = FALSE;
+        desc.AntialiasedLineEnable  = FALSE;
+            
+        
+        hr = _D3D11_Device->CreateRasterizerState( &desc, &state );
+        if( SUCCEEDED(hr) )
+        {
+            RasterizerStateDX11 s;
+
+            s.param = param;
+            s.state = state;
+            _RasterizerStateDX11.push_back( s );
+        }
+        else
+        {
+            state = nullptr;
+        }
+    }
+
+    return state;
+}
+
+
+//------------------------------------------------------------------------------
+
 static Handle
 dx11_RenderPass_Allocate( const RenderPassConfig& passDesc, uint32 cmdBufCount, Handle* cmdBuf )
 {
@@ -269,6 +358,7 @@ dx11_CommandBuffer_SetCullMode( Handle cmdBuf, CullMode mode )
 {
 #if RHI__DX11_USE_DEFERRED_CONTEXT
 #else
+    CommandBufferPool::Get(cmdBuf)->Command( DX11__SET_CULL_MODE, mode );
 #endif
 }
 
@@ -485,6 +575,21 @@ dx11_CommandBuffer_SetMarker( Handle cmdBuf, const char* text )
 {
 #if RHI__DX11_USE_DEFERRED_CONTEXT
 #else
+    CommandBufferDX11_t* cb = CommandBufferPool::Get(cmdBuf);
+
+    if( !cb->text )
+    {
+        cb->text = new RingBuffer();
+        cb->text->Initialize( 64*1024 );
+    }
+    
+    int     len = strlen( text );
+    char*   txt = (char*)cb->text->Alloc( len/sizeof(float)+1 );
+
+    memcpy( txt, text, len );
+    txt[len] = '\0';
+
+    cb->Command( DX11__DEBUG_MARKER, (uint64)(txt) );
 #endif
 }
 
@@ -610,7 +715,7 @@ Trace("\n\n-------------------------------\nframe %u executed(submitted to GPU)\
     
     // do flip, reset/restore device if necessary
 
-    HRESULT hr;
+//    HRESULT hr;
 /*
     if( _ResetPending )
     {
@@ -786,6 +891,7 @@ Trace("\n\n-------------------------------\nframe %u generated\n",_Frame.back().
 //------------------------------------------------------------------------------
 
 CommandBufferDX11_t::CommandBufferDX11_t()
+  : text(nullptr)
 {
 }
 
@@ -936,6 +1042,11 @@ SCOPED_FUNCTION_TIMING();
     Handle                      cur_query_buf       = InvalidHandle;
     uint32                      cur_query_i         = InvalidIndex;
     D3D11_VIEWPORT              def_viewport;
+    RasterizerParamDX11         rs_param;
+    ID3D11RasterizerState*      cur_rs              = nullptr;
+
+    rs_param.cullMode       = CULL_NONE;
+    rs_param.scissorEnabled = false;
 
     sync = InvalidHandle;
 
@@ -953,7 +1064,9 @@ SCOPED_FUNCTION_TIMING();
             {
                 if( isFirstInPass )
                 {
-                    ID3D11RenderTargetView* rt[1] = { _D3D11_RenderTargetView };
+                    bool                    clear_color = passCfg.colorBuffer[0].loadAction == LOADACTION_CLEAR;
+                    bool                    clear_depth = passCfg.depthStencilBuffer.loadAction == LOADACTION_CLEAR;
+                    ID3D11RenderTargetView* rt[1]       = { _D3D11_RenderTargetView };
 
                     _D3D11_ImmediateContext->OMSetRenderTargets( 1, rt, _D3D11_DepthStencilView );
 
@@ -983,15 +1096,19 @@ SCOPED_FUNCTION_TIMING();
                                 
                                 _D3D11_ImmediateContext->RSSetViewports( 1, &def_viewport );
                             }
-
-                            _D3D11_ImmediateContext->ClearRenderTargetView( rt_view[i], passCfg.colorBuffer[0].clearColor );
+                            
+                            if( clear_color )
+                                _D3D11_ImmediateContext->ClearRenderTargetView( rt_view[i], passCfg.colorBuffer[0].clearColor );
+                            
                             rt_view[i]->Release();
                         }
                     }
 
                     if( ds_view )
                     {
-                        _D3D11_ImmediateContext->ClearDepthStencilView( ds_view, D3D11_CLEAR_DEPTH, passCfg.depthStencilBuffer.clearDepth, 0 );
+                        if( clear_depth )
+                            _D3D11_ImmediateContext->ClearDepthStencilView( ds_view, D3D11_CLEAR_DEPTH, passCfg.depthStencilBuffer.clearDepth, 0 );
+                        
                         ds_view->Release();
                     }
                 }
@@ -1024,6 +1141,13 @@ SCOPED_FUNCTION_TIMING();
 
                 StatSet::IncStat( stat_SET_PS, 1 );
                 c += 2;
+            }   break;
+
+            case DX11__SET_CULL_MODE :
+            {
+                rs_param.cullMode = CullMode(arg[0]);
+                cur_rs = nullptr;
+                c += 1;
             }   break;
             
             case DX11__SET_VERTEX_PROG_CONST_BUFFER :
@@ -1083,7 +1207,7 @@ SCOPED_FUNCTION_TIMING();
             case DX11__SET_TEXTURE :
             {
                 Handle      tex    = Handle(arg[0]);
-                unsigned    unit_i = arg[1];
+                unsigned    unit_i = unsigned(arg[1]);
 
                 TextureDX11::SetToRHI( tex, unit_i );
                 c += 2;
@@ -1099,6 +1223,12 @@ SCOPED_FUNCTION_TIMING();
                 {
                     _D3D11_ImmediateContext->IASetPrimitiveTopology( topo );
                     cur_topo = topo;
+                }
+
+                if( !cur_rs )
+                {
+                    cur_rs = _GetRasterizerState( rs_param );
+                    _D3D11_ImmediateContext->RSSetState( cur_rs );
                 }
 
                 VertexBufferDX11::SetToRHI( cur_vb, 0, 0, cur_vb_stride );
@@ -1121,13 +1251,25 @@ SCOPED_FUNCTION_TIMING();
                     cur_topo = topo;
                 }
 
-                IndexBufferDX11::SetToRHI( cur_ib, startIndex*sizeof(uint16) );
+                if( !cur_rs )
+                {
+                    cur_rs = _GetRasterizerState( rs_param );
+                    _D3D11_ImmediateContext->RSSetState( cur_rs );
+                }
 
+                IndexBufferDX11::SetToRHI( cur_ib, 0 );
                 VertexBufferDX11::SetToRHI( cur_vb, 0, 0, cur_vb_stride );
-
                 _D3D11_ImmediateContext->DrawIndexed( indexCount, startIndex, baseVertex );    
                 
                 c += 4;
+            }   break;
+
+            case DX11__DEBUG_MARKER :
+            {
+                wchar_t txt[128];
+
+                ::MultiByteToWideChar( CP_ACP, 0, (const char*)(arg[0]), -1, txt, countof(txt));
+                ::D3DPERF_SetMarker( D3DCOLOR_ARGB(0xFF,0x40,0x40,0x80), txt );
             }   break;
 
             default:
