@@ -184,10 +184,12 @@ property float2 trunkOscillationParams : dynamic,a : ;
 #endif
 
 #if SPEED_TREE_LEAF
-property float3 worldViewTranslate : static,a : ;
 property float3 worldScale : dynamic,a : ;
 property float4x4 projMatrix : dynamic,a : ;
-property float cutDistance : static,a : ;
+
+    #if CUT_LEAF
+        property float cutDistance : static,a : ;
+    #endif
 
     #if !SPHERICAL_LIT  //legacy for old tree lighting
         property float4 treeLeafColorMul : static,a : def_value=0.5,0.5,0.5,0.5 ;
@@ -210,11 +212,11 @@ property float4x4 invViewMatrix : dynamic,a : ;
 property float3 boundingBoxSize : dynamic,a : ;
 
     #if SPHERICAL_HARMONICS_9
-        property float3 sphericalHarmonics[9] : dynamic,a : ;
+        property float4 sphericalHarmonics[7] : dynamic,a : ;
     #elif SPHERICAL_HARMONICS_4
-        property float3 sphericalHarmonics[4] : dynamic,a : ;
+        property float4 sphericalHarmonics[3] : dynamic,a : ;
     #else
-        property float3 sphericalHarmonics[1] : dynamic,a : ;
+        property float4 sphericalHarmonics : dynamic,a : ;
     #endif
     
 #endif
@@ -612,7 +614,11 @@ VPROG_BEGIN
     #define Y21(n)  (0.273136 * (n.z * n.x))                                // (1.0 / 2.0) * sqrt(15.0 / PI) * ((n.z * n.x)) * 0.785398 / PI
     #define Y22(n)  (0.136568 * (n.x * n.x - n.y * n.y))                    // (1.0 / 4.0) * sqrt(15.0 / PI) * ((n.x * n.x - n.y * n.y)) * 0.785398 / PI
 
-    float3 sphericalLightFactor = A0 * sphericalHarmonics[0];
+    #if SPHERICAL_HARMONICS_4 || SPHERICAL_HARMONICS_9
+        float3 sphericalLightFactor = A0 * sphericalHarmonics[0].xyz;
+    #else
+        float3 sphericalLightFactor = A0 * sphericalHarmonics.xyz;
+    #endif
     
     #if SPEED_TREE_LEAF
         float3 localSphericalLightFactor = sphericalLightFactor;
@@ -622,12 +628,14 @@ VPROG_BEGIN
 
         #if SPHERICAL_HARMONICS_4 || SPHERICAL_HARMONICS_9
 
-            float3x3 invViewMatrix3 = float3x3(float3(invViewMatrix[0]), float3(invViewMatrix[1]), float3(invViewMatrix[2]));
+            float3x3 invViewMatrix3 = float3x3(float3(invViewMatrix[0].xyz), float3(invViewMatrix[1].xyz), float3(invViewMatrix[2].xyz));
             float3 normal = invViewMatrix3 * (eyeCoordsPosition - worldViewObjectCenter);
             normal /= boundingBoxSize;
             float3 n = normalize(normal);
 
-            float3x3 shMatrix = float3x3(sphericalHarmonics[1], sphericalHarmonics[2], sphericalHarmonics[3]);
+            float3x3 shMatrix = float3x3(float3(sphericalHarmonics[0].w,  sphericalHarmonics[1].xy),
+                                         float3(sphericalHarmonics[1].zw, sphericalHarmonics[2].x),
+                                         float3(sphericalHarmonics[2].yzw));
             sphericalLightFactor += A1 * shMatrix * float3(n.y, n.z, n.x);
         
             #if SPEED_TREE_LEAF
@@ -637,11 +645,11 @@ VPROG_BEGIN
             #endif
 
             #if SPHERICAL_HARMONICS_9
-                sphericalLightFactor += Y2_2(n) * sphericalHarmonics[4];
-                sphericalLightFactor += Y2_1(n) * sphericalHarmonics[5];
-                sphericalLightFactor += Y20(n) * sphericalHarmonics[6];
-                sphericalLightFactor += Y21(n) * sphericalHarmonics[7];
-                sphericalLightFactor += Y22(n) * sphericalHarmonics[8];
+                sphericalLightFactor += Y2_2(n) * float3(sphericalHarmonics[3].xyz);
+                sphericalLightFactor += Y2_1(n) * float3(sphericalHarmonics[3].w,  sphericalHarmonics[4].xy);
+                sphericalLightFactor += Y20(n)  * float3(sphericalHarmonics[4].zw, sphericalHarmonics[5].x);
+                sphericalLightFactor += Y21(n)  * float3(sphericalHarmonics[5].yzw);
+                sphericalLightFactor += Y22(n)  * float3(sphericalHarmonics[6].xyz);
             #endif
 
             #if SPEED_TREE_LEAF
