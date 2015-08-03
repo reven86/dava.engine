@@ -312,6 +312,8 @@ TextBlock::eUseRtlAlign UITextField::GetTextUseRtlAlign() const
     return (textFieldiPhone && textFieldiPhone->GetTextUseRtlAlign()) ? TextBlock::RTL_USE_BY_CONTENT : TextBlock::RTL_DONT_USE;
 #elif defined(__DAVAENGINE_ANDROID__)
     return (textFieldAndroid && textFieldAndroid->GetTextUseRtlAlign()) ? TextBlock::RTL_USE_BY_CONTENT : TextBlock::RTL_DONT_USE;
+#elif defined(__DAVAENGINE_WIN_UAP__)
+    return textFieldWinUAP->GetTextUseRtlAlign() ? TextBlock::RTL_USE_BY_CONTENT : TextBlock::RTL_DONT_USE;
 #else
     return staticText ? staticText->GetTextUseRtlAlign() : TextBlock::RTL_DONT_USE;
 #endif
@@ -323,6 +325,8 @@ void UITextField::SetTextUseRtlAlign(TextBlock::eUseRtlAlign useRtlAlign)
     textFieldiPhone->SetTextUseRtlAlign(useRtlAlign == TextBlock::RTL_USE_BY_CONTENT);
 #elif defined(__DAVAENGINE_ANDROID__)
     textFieldAndroid->SetTextUseRtlAlign(useRtlAlign == TextBlock::RTL_USE_BY_CONTENT);
+#elif defined(__DAVAENGINE_WIN_UAP__)
+    textFieldWinUAP->SetTextUseRtlAlign(useRtlAlign == TextBlock::RTL_USE_BY_CONTENT);
 #else
     staticText->SetTextUseRtlAlign(useRtlAlign);
 #endif

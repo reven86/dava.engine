@@ -107,6 +107,8 @@ private:
     void InstallTextEventHandlers();
     void InstallPasswordEventHandlers();
     void SetVisibilityNative(bool show);
+    void SetAlignmentNative(int32 alignment);
+    void InvertTextAlignmentDependingOnRtlAlignment();
     void PositionNative(const Rect& rect, bool offScreen);
 
     void RenderToTexture();
@@ -140,9 +142,9 @@ private:
     Rect originalRect = Rect(0.0f, 0.0f, 100.0f, 20.0f);
     bool visible = false;
     int32 textAlignment = ALIGN_LEFT | ALIGN_TOP;
+    bool rtlTextAlignment = false;
     bool password = false;
     bool multiline = false;
-    bool flowDirectionRTL = false;
     bool pendingTextureUpdate = false;      // Flag indicating that texture image should be recreated
 
     WideString curText;
@@ -159,7 +161,7 @@ inline int32 PrivateTextFieldWinUAP::GetTextAlign() const
 
 inline bool PrivateTextFieldWinUAP::GetTextUseRtlAlign() const
 {
-    return flowDirectionRTL;
+    return rtlTextAlignment;
 }
 
 inline void PrivateTextFieldWinUAP::SetRenderToTexture(bool /*value*/)

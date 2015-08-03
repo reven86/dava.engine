@@ -374,16 +374,12 @@ void PrivateTextFieldWinUAP::SetTextAlign(int32 align)
         if (0 == textAlignment)
             textAlignment = ALIGN_LEFT;
         textAlignment |= ALIGN_TOP; // Native TextBox doesn't support vertical text alignment
+        InvertTextAlignmentDependingOnRtlAlignment();
 
         auto self{shared_from_this()};
         core->RunOnUIThread([this, self]()
         {
-            if (textAlignment & ALIGN_LEFT)
-                nativeText->TextAlignment = TextAlignment::Left;
-            else if (textAlignment & ALIGN_HCENTER)
-                nativeText->TextAlignment = TextAlignment::Center;
-            else if (textAlignment & ALIGN_RIGHT)
-                nativeText->TextAlignment = TextAlignment::Right;
+            SetAlignmentNative(textAlignment);
             pendingTextureUpdate = true;
         });
     }
@@ -391,17 +387,15 @@ void PrivateTextFieldWinUAP::SetTextAlign(int32 align)
 
 void PrivateTextFieldWinUAP::SetTextUseRtlAlign(bool useRtlAlign)
 {
-    if (flowDirectionRTL != useRtlAlign)
+    if (rtlTextAlignment != useRtlAlign)
     {
-        flowDirectionRTL = useRtlAlign;
+        rtlTextAlignment = useRtlAlign;
+        InvertTextAlignmentDependingOnRtlAlignment();
+
         auto self{shared_from_this()};
         core->RunOnUIThread([this, self]()
         {
-            FlowDirection flowDir = flowDirectionRTL ? FlowDirection::RightToLeft : FlowDirection::LeftToRight;
-            if (nativeText != nullptr)
-                nativeText->FlowDirection = flowDir;
-            else if (nativePassword != nullptr)
-                nativePassword->FlowDirection = flowDir;
+            SetAlignmentNative(textAlignment);
             pendingTextureUpdate = true;
         });
     }
@@ -551,7 +545,6 @@ void PrivateTextFieldWinUAP::CreateNativeText()
 {
     nativeText = ref new TextBox();
     nativeText->TextAlignment = TextAlignment::Left;
-    nativeText->FlowDirection = FlowDirection::LeftToRight;
 
     nativeText->Background = ref new SolidColorBrush(Colors::Transparent);
     nativeText->BorderBrush = ref new SolidColorBrush(Colors::Transparent);
@@ -566,7 +559,6 @@ void PrivateTextFieldWinUAP::CreateNativeText()
 void PrivateTextFieldWinUAP::CreateNativePassword()
 {
     nativePassword = ref new PasswordBox();
-    nativePassword->FlowDirection = FlowDirection::LeftToRight;
 
     nativePassword->Background = ref new SolidColorBrush(Colors::Transparent);
     nativePassword->BorderBrush = ref new SolidColorBrush(Colors::Transparent);
@@ -642,6 +634,40 @@ void PrivateTextFieldWinUAP::InstallPasswordEventHandlers()
 void PrivateTextFieldWinUAP::SetVisibilityNative(bool show)
 {
     nativeControl->Visibility = show ? Visibility::Visible : Visibility::Collapsed;
+}
+
+void PrivateTextFieldWinUAP::SetAlignmentNative(int32 alignment)
+{
+    TextAlignment nativeAlignment = TextAlignment::Left;
+    if (textAlignment & ALIGN_LEFT)
+        nativeAlignment = TextAlignment::Left;
+    else if (textAlignment & ALIGN_HCENTER)
+        nativeAlignment = TextAlignment::Center;
+    else if (textAlignment & ALIGN_RIGHT)
+        nativeAlignment = TextAlignment::Right;
+
+    // Only TextBox has TextAlignment property, not PasswordBox
+    if (nativeText != nullptr)
+        nativeText->TextAlignment = nativeAlignment;
+}
+
+void PrivateTextFieldWinUAP::InvertTextAlignmentDependingOnRtlAlignment()
+{
+    // As far as I understood RTL text alignment affects only text alignment inside control rect
+    // If RTL text alignment flag is set then invert text alignment from left to right and vice versa
+    if (rtlTextAlignment)
+    {
+        if (textAlignment & ALIGN_LEFT)
+        {
+            textAlignment &= ~ALIGN_LEFT;
+            textAlignment |= ALIGN_RIGHT;
+        }
+        else if (textAlignment & ALIGN_RIGHT)
+        {
+            textAlignment &= ~ALIGN_RIGHT;
+            textAlignment |= ALIGN_LEFT;
+        }
+    }
 }
 
 void PrivateTextFieldWinUAP::PositionNative(const Rect& rect, bool offScreen)
