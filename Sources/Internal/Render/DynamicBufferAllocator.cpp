@@ -36,8 +36,6 @@ namespace //for private members
 {
 uint32 defaultPageSize = 131072; //128kb
 
-const uint32 DEF_FRAMES_COUNT = 3;
-
 
 template <class HBuffer> class BufferProxy
 {
@@ -75,8 +73,7 @@ template <class HBuffer> struct BufferAllocator
     {
         HBuffer buffer;
         uint32 allocatedSize;
-        uint32 dirtyTimeout;
-        bool shouldBeEvicted;
+        rhi::HSyncObject readySync;
     };
 
     struct BufferAllocateResult
@@ -99,8 +96,7 @@ template <class HBuffer> struct BufferAllocator
         {
             if (currentlyMappedBuffer) //unmap it
             {
-                BufferProxy<HBuffer>::UnmapBuffer(currentlyMappedBuffer->buffer);
-                currentlyMappedBuffer->dirtyTimeout = DEF_FRAMES_COUNT;
+                BufferProxy<HBuffer>::UnmapBuffer(currentlyMappedBuffer->buffer);                
                 usedBuffers.push_back(currentlyMappedBuffer);
             }
             if (freeBuffers.size())
@@ -112,10 +108,10 @@ template <class HBuffer> struct BufferAllocator
             {
                 currentlyMappedBuffer = new BufferInfo();
                 currentlyMappedBuffer->allocatedSize = defaultPageSize;
-                currentlyMappedBuffer->buffer = BufferProxy<HBuffer>::CreateBuffer(defaultPageSize); 
-                currentlyMappedBuffer->shouldBeEvicted = false;
+                currentlyMappedBuffer->buffer = BufferProxy<HBuffer>::CreateBuffer(defaultPageSize);                 
             }
             currentlyMappedData = BufferProxy<HBuffer>::MapBuffer(currentlyMappedBuffer->buffer, 0, currentlyMappedBuffer->allocatedSize); 
+            currentlyMappedBuffer->readySync = rhi::GetCurrentFrameSyncObject();
             offset = 0;
             base = 0;
         }
@@ -140,7 +136,10 @@ template <class HBuffer> struct BufferAllocator
             SafeDelete(b);
         }
         for (auto b : usedBuffers)
-            b->shouldBeEvicted = true;       
+        {
+            BufferProxy<HBuffer>::DeleteBuffer(b->buffer);
+            SafeDelete(b);
+        }            
     }
 
     void BeginFrame()
@@ -148,19 +147,10 @@ template <class HBuffer> struct BufferAllocator
         //update used buffers ttl
         auto it = usedBuffers.begin();
         while (it != usedBuffers.end())
-        {
-            (*it)->dirtyTimeout--;
-            if ((*it)->dirtyTimeout == 0)
-            {
-                if ((*it)->shouldBeEvicted)
-                {
-                    BufferProxy<HBuffer>::DeleteBuffer((*it)->buffer);
-                    SafeDelete(*it);
-                }
-                else
-                {
-                    freeBuffers.push_back(*it);
-                }
+        {            
+            if (rhi::SyncObjectSignaled((*it)->readySync))
+            {                                
+                freeBuffers.push_back(*it);                
                 it = usedBuffers.erase(it);
             }
             else
@@ -175,22 +165,12 @@ template <class HBuffer> struct BufferAllocator
         if (currentlyMappedBuffer)
         {
             BufferProxy<HBuffer>::UnmapBuffer(currentlyMappedBuffer->buffer);
-            usedBuffers.push_back(currentlyMappedBuffer);
-            currentlyMappedBuffer->dirtyTimeout = DEF_FRAMES_COUNT;
+            usedBuffers.push_back(currentlyMappedBuffer);            
             currentlyMappedData = nullptr;
             currentlyMappedBuffer = nullptr;
             currentlyUsedSize = 0;
         }
-    }
-
-    void InsertEvictingBuffer(HBuffer buffer)
-    {        
-        BufferInfo *target = new BufferInfo();
-        target->buffer = buffer;
-        target->dirtyTimeout = DEF_FRAMES_COUNT;
-        target->shouldBeEvicted = true;
-        usedBuffers.push_back(target);
-    }
+    }    
 
 private:
     BufferInfo* currentlyMappedBuffer = nullptr;
@@ -228,17 +208,16 @@ rhi::HIndexBuffer AllocateQuadListIndexBuffer(uint32 quadCount)
     if (quadCount > currMaxQuadCount)
     {        
         if (currQuadList.IsValid())
-            indexBufferAllocator.InsertEvictingBuffer(currQuadList);
-
+            rhi::DeleteIndexBuffer(currQuadList);            
 
         const uint32 VERTICES_PER_QUAD = 4;
         const uint32 INDICES_PER_QUAD = 6;
 
-        currMaxQuadCount = quadCount;
-        uint32 bufferSize = quadCount * INDICES_PER_QUAD * 2; //uint16 = 2 bytes per index
+        currMaxQuadCount = Max(currMaxQuadCount * 2, quadCount);
+        uint32 bufferSize = currMaxQuadCount * INDICES_PER_QUAD * 2; //uint16 = 2 bytes per index
         currQuadList = rhi::CreateIndexBuffer(bufferSize);
         uint16 * indices = (uint16*)rhi::MapIndexBuffer(currQuadList, 0, bufferSize);        
-        for (uint32 i = 0; i < quadCount; ++i)
+        for (uint32 i = 0; i < currMaxQuadCount; ++i)
         {
             indices[i*INDICES_PER_QUAD + 0] = i*VERTICES_PER_QUAD + 0;
             indices[i*INDICES_PER_QUAD + 1] = i*VERTICES_PER_QUAD + 1;
@@ -269,17 +248,18 @@ void Clear()
 {
     if (currQuadList.IsValid())
     {
-        indexBufferAllocator.InsertEvictingBuffer(currQuadList);
+        rhi::DeleteIndexBuffer(currQuadList);
         currQuadList = rhi::HIndexBuffer();
-    }
-    
+        currMaxQuadCount = 0;
+    }        
     vertexBufferAllocator.Clear();
-    indexBufferAllocator.Clear();    
+    indexBufferAllocator.Clear();
 }
 void SetDefaultPageSize(uint32 size)
 {
     defaultPageSize = size;
-    Clear();
+    vertexBufferAllocator.Clear();
+    indexBufferAllocator.Clear();
 }
 
 
