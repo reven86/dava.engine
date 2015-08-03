@@ -133,11 +133,11 @@ namespace DAVA
 	            static uint64 startTime = sysTimer->AbsoluteMS();
 
 	            uint64 elapsedTime = sysTimer->AbsoluteMS() - startTime;
-	            int32 fps = sysRender->GetFPS();
-	            if (fps > 0)
+	            int32 fpsLimit = sysRender->GetFPS();
+	            if (fpsLimit > 0)
 	            {
-	                uint64 averageFrameTime = 1000UL / static_cast<uint64>(fps);
-	                if(elapsedTime < averageFrameTime)
+	                uint64 averageFrameTime = 1000UL / static_cast<uint64>(fpsLimit);
+	                if(averageFrameTime > elapsedTime)
 	                {
 	                    uint64 sleepMs = averageFrameTime - elapsedTime;
 	                    Thread::Sleep(static_cast<uint32>(sleepMs));
