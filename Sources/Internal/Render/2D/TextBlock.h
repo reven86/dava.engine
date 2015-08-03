@@ -62,6 +62,13 @@ public:
         ,   FITTING_POINTS = 4
     };
     
+    enum eUseRtlAlign
+    {
+        RTL_DONT_USE,
+        RTL_USE_BY_CONTENT,
+        RTL_USE_BY_SYSTEM
+    };
+    
     static void ScreenResolutionChanged();
     
     static TextBlock * Create(const Vector2 & size);
@@ -73,8 +80,8 @@ public:
     virtual void SetAlign(int32 align);
     virtual int32 GetAlign();
 	virtual int32 GetVisualAlign(); // Return align for displaying BiDi-text (w/ mutex lock)
-    virtual void SetUseRtlAlign(const bool& useRtlAlign);
-    virtual bool GetUseRtlAlign();
+    virtual void SetUseRtlAlign(eUseRtlAlign useRtlAlign);
+    virtual eUseRtlAlign GetUseRtlAlign();
     virtual bool IsRtl();
 
     
@@ -85,6 +92,8 @@ public:
     virtual void SetMultiline(bool isMultilineEnabled, bool bySymbol = false);
     virtual void SetFittingOption(int32 fittingType);//may be FITTING_DISABLED, FITTING_ENLARGE, FITTING_REDUCE, FITTING_ENLARGE | FITTING_REDUCE, FITTING_POINTS
 
+    Vector2 GetPreferredSize();
+    
     virtual Font * GetFont();
     virtual const WideString & GetText();
     virtual const WideString & GetVisualText();
@@ -174,7 +183,7 @@ protected:
     bool visualTextCroped;
 #endif //LOCALIZATION_DEBUG
     int32 align;
-    bool useRtlAlign;
+    eUseRtlAlign useRtlAlign;
     bool isRtl;
 
     Font * font;

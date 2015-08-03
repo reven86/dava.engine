@@ -45,6 +45,8 @@
 #include "UI/DefaultUIPackageBuilder.h"
 #include "UI/UIPackageLoader.h"
 #include "UI/UIControlHelpers.h"
+#include "UI/Layouts/UILayoutSystem.h"
+#include "UI/UIControlSystem.h"
 
 namespace DAVA
 {
@@ -468,7 +470,7 @@ void UIYamlLoader::ProcessLoad(UIControl * rootControl, const FilePath & yamlPat
 	
 	// After the scene is fully loaded, apply the align settings
 	// to position child controls correctly.
-    rootControl->UpdateChildrenLayout();
+    UIControlSystem::Instance()->GetLayoutSystem()->ApplyLayout(rootControl);
     
     PostLoad(rootControl);
     

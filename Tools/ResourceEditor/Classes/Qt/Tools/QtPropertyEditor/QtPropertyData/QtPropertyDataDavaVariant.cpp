@@ -160,7 +160,7 @@ void QtPropertyDataDavaVariant::AddAllowedValue(const DAVA::VariantType& realVal
 		allowedButton->eventsPassThrought = true;
 		allowedButton->overlayed = true;
 
-		QObject::connect(allowedButton, SIGNAL(released()), this, SLOT(AllowedOWPressed()));
+		QObject::connect(allowedButton, &QtPropertyToolButton::released, this, &QtPropertyDataDavaVariant::AllowedOWPressed);
 	}
 
 	av.realValue = realValue;
@@ -465,7 +465,7 @@ void QtPropertyDataDavaVariant::ChildsCreate()
 			colorBtn->setIconSize(QSize(12, 12));
 			colorBtn->setAutoRaise(true);
             colorBtn->setObjectName("colorButton");
-			QObject::connect(colorBtn, SIGNAL(released()), this, SLOT(ColorOWPressed()));
+            QObject::connect(colorBtn, &QToolButton::clicked, this, &QtPropertyDataDavaVariant::ColorOWPressed);
 
             DAVA::Color color = curVariantValue.AsColor();
             SubValueAdd("R", DAVA::VariantType(color.r));

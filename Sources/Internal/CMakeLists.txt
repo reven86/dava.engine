@@ -1,5 +1,4 @@
-cmake_minimum_required( VERSION 3.0 )
-
+cmake_minimum_required (VERSION 3.0)
 project( DavaFramework )
 
 set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../CMake/Modules/" ) 
@@ -49,6 +48,7 @@ if( ANDROID )
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libuv_android.a"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libiconv_android.so"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/liblua_android.a"
+         "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libwebp_android.a"
          )
 
     list ( APPEND LIST_LIBRARIES
@@ -57,7 +57,7 @@ if( ANDROID )
          "-llog"
          "-landroid"
          "-lGLESv2"
-         "-lstdc++" 
+         "-lstdc++"
          )
 
     list ( APPEND LIST_SHARED_LIBRARIES ${LIST_LIBRARIES} )
@@ -131,31 +131,10 @@ elseif( IOS )
     set ( IGNORED_RHI_FOLDER "DX9" )
 
 elseif ( WINDOWS_UAP )
-
-    set( DAVA_THIRD_PARTY_INCLUDES_PATH "${DAVA_THIRD_PARTY_INCLUDES_PATH}" 
-                                        "${DAVA_THIRD_PARTY_ROOT_PATH}/angle-ms-master/include" )
-    set ( DAVA_WIN_STORE_LIBRARIES_PATH "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win10" ) 
-
-    #file ( GLOB SHARED_LIB_LIST "${DAVA_WIN_STORE_LIBRARIES_PATH}/*.lib" )
-    #list ( APPEND LIST_SHARED_LIBRARIES ${SHARED_LIB_LIST}  )
-    #list ( APPEND LIST_SHARED_LIBRARIES_RELEASE  "" )
-    #list ( APPEND LIST_SHARED_LIBRARIES_DEBUG   "" )
-
-    list ( APPEND LIST_SHARED_LIBRARIES    "Wininet.lib" "ws2_32.lib" "winmm.lib" "wldap32.lib" "iphlpapi.lib" "Gdi32.lib" "dbghelp.lib" "d2d1.lib" "d3d11.lib" "d3dx11.lib" "d3dcompiler.lib" "dxgi.lib" "windowscodecs.lib" "dwrite.lib" )
-    
-    #choose target architecture libraries
-    if( "${CMAKE_GENERATOR_PLATFORM}" STREQUAL "ARM" )
-        set ( LIBS_ARCH_SELECTOR "arm" )
-    elseif ( "${CMAKE_GENERATOR_PLATFORM}" STREQUAL "x64" )
-        set ( LIBS_ARCH_SELECTOR "x64" )
-    else ()
-        set ( LIBS_ARCH_SELECTOR "x86" )
-    endif ()
-
-    file ( GLOB DEBUG_LIB_LIST "${DAVA_WIN_STORE_LIBRARIES_PATH}/${LIBS_ARCH_SELECTOR}/Debug/*.lib" )
+    file ( GLOB DEBUG_LIB_LIST "${DAVA_WIN_UAP_LIBRARIES_PATH_DEBUG}/*.lib" )
     list ( APPEND LIST_SHARED_LIBRARIES_DEBUG ${DEBUG_LIB_LIST}  )
 
-    file ( GLOB RELEASE_LIB_LIST "${DAVA_WIN_STORE_LIBRARIES_PATH}/${LIBS_ARCH_SELECTOR}/Release/*.lib" )
+    file ( GLOB RELEASE_LIB_LIST "${DAVA_WIN_UAP_LIBRARIES_PATH_RELEASE}/*.lib" )
     list ( APPEND LIST_SHARED_LIBRARIES_RELEASE ${RELEASE_LIB_LIST}  )
 
 elseif( WIN32 ) 
@@ -176,7 +155,6 @@ elseif( WIN32 )
 
     list ( APPEND LIST_SHARED_LIBRARIES_RELEASE "msvcrt.lib"  )
     list ( APPEND LIST_SHARED_LIBRARIES_DEBUG   "msvcrtd.lib" )
-
     set ( IGNORED_RHI_FOLDER "Metal" )
 
 endif()
@@ -224,5 +202,9 @@ foreach ( FILE ${LIST_SHARED_LIBRARIES_RELEASE} )
 endforeach ()
 
 install_libraries( ${PROJECT_NAME} )
+
+if ( WINDOWS_UAP )
+    set_property(TARGET ${PROJECT_NAME} PROPERTY VS_MOBILE_EXTENSIONS_VERSION "10.0.0.1")
+endif()
 
 

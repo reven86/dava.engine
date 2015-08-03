@@ -110,10 +110,20 @@ public:
 	const Set<String>& GetErrors() const;
 	
 private:
+
+    struct ImageExportKeys
+    {
+        eGPUFamily forGPU = GPU_ORIGIN;
+        ImageFormat imageFormat = IMAGE_FORMAT_UNKNOWN;
+        PixelFormat pixelFormat = FORMAT_INVALID;
+        ImageQuality imageQuality = DEFAULT_IMAGE_QUALITY;
+        bool toConvertOrigin = false;
+        bool toComressForGPU = false;
+    };
     
-    void ExportImage(PngImageExt *image, const FilePath &exportedPathname, eGPUFamily forGPU);
-    TextureDescriptor * CreateDescriptor(eGPUFamily forGPU);
-	
+    ImageExportKeys GetExportKeys(eGPUFamily forGPU);
+    void ExportImage(PngImageExt *image, const ImageExportKeys& exportKeys, FilePath exportedPathname);
+
 	rhi::TextureAddrMode GetDescriptorWrapMode();
 	FilterItem GetDescriptorFilter(bool generateMipMaps = false);
     
@@ -130,7 +140,7 @@ private:
 	uint32 maxTextureSize;
 
 	bool onlySquareTextures;
-    bool NeedSquareTextureForCompression(eGPUFamily forGPU);
+    bool NeedSquareTextureForCompression(ImageExportKeys keys);
 	
     TextureConverter::eConvertQuality quality;
 
