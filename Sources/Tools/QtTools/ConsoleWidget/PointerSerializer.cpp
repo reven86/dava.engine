@@ -65,7 +65,7 @@ PointerSerializer PointerSerializer::ParseString(const DAVA::String &str)
                 for (auto m : sm2)
                 {
                     DAVA::StringStream ssout(m);
-                    uintptr_t px;
+                    DAVA::pointer_size px;
                     ssout >> std::hex >> px; // on MAC std::stringstream >> void* truncate address to 3 bytes, even if this sstream created from valid void*;
                     void *ptr;
                     ptr = reinterpret_cast<void*>(px);

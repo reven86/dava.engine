@@ -1,32 +1,29 @@
 #include "LogFilterModel.h"
 
 #include "LogModel.h"
+#include "Debug/DVAssert.h"
 
 
 LogFilterModel::LogFilterModel(QObject* parent)
     : QSortFilterProxyModel(parent)
 {
-    filters << DAVA::Logger::LEVEL_FRAMEWORK
-        << DAVA::Logger::LEVEL_DEBUG 
-        << DAVA::Logger::LEVEL_INFO
-        << DAVA::Logger::LEVEL_WARNING
-        << DAVA::Logger::LEVEL_ERROR;
 }
 
 LogFilterModel::~LogFilterModel()
 {
 }
 
-const QVariantList &LogFilterModel::GetFilters() const
-{
-    return filters;
-}
-
 void LogFilterModel::SetFilters(const QVariantList & _filters)
 {
-    if (filters != _filters)
+    quint64 tmpFilters = 0;
+    for(const auto &filter : _filters)
     {
-        filters = _filters;
+        DVASSERT(filter.canConvert<int>());
+        tmpFilters |= (1 << filter.value<int>());
+    }
+    if(filters != tmpFilters)
+    {
+        filters = tmpFilters;
         invalidateFilter();
     }
 }
@@ -36,5 +33,7 @@ bool LogFilterModel::filterAcceptsRow(int source_row, const QModelIndex& source_
     const QModelIndex source = sourceModel()->index(source_row, 0, source_parent);
     bool wasSet = false;
     const int level = source.data(LogModel::LEVEL_ROLE).toInt(&wasSet);
-    return QSortFilterProxyModel::filterAcceptsRow(source_row, source_parent) && wasSet && filters.contains(QVariant( level ));
+    DVASSERT(wasSet);
+    bool filterAccepted = wasSet && (filters & 1 << level );
+    return  filterAccepted && QSortFilterProxyModel::filterAcceptsRow(source_row, source_parent);
 }

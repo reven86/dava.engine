@@ -32,11 +32,9 @@ LogWidget::LogWidget(QWidget* parent)
     connect(ui->toolButton_clearFilter, &QToolButton::clicked, ui->search, &LineEditEx::clear);
     connect(ui->filter, &CheckableComboBox::selectedUserDataChanged, logFilterModel, &LogFilterModel::SetFilters);
     connect(ui->search, &LineEditEx::textUpdated, logFilterModel, &LogFilterModel::setFilterFixedString);
-    connect(logFilterModel, &LogFilterModel::filterStringChanged, ui->search, &LineEditEx::setText);
     connect(ui->log->model(), &QAbstractItemModel::rowsAboutToBeInserted, this, &LogWidget::OnBeforeAdded);
     connect(ui->log->model(), &QAbstractItemModel::rowsInserted, this, &LogWidget::OnRowAdded);
     connect(ui->log, &QListView::clicked, this, &LogWidget::OnItemClicked);
-    ui->filter->selectUserData(logFilterModel->GetFilters());
 }
 
 LogWidget::~LogWidget()
@@ -53,8 +51,8 @@ QByteArray LogWidget::Serialize() const
 {
     QByteArray retData;
     QDataStream stream(&retData, QIODevice::WriteOnly);
-    stream << logFilterModel->filterRegExp().pattern();
-    stream << logFilterModel->GetFilters();
+    stream << ui->search->text();
+    stream << ui->filter->selectedUserData();
     return retData;
 }
 
@@ -203,5 +201,5 @@ void LogWidget::OnRowAdded()
 
 void LogWidget::OnItemClicked(const QModelIndex &index)
 {
-    emit ItemClicked(logModel->data(index, LogModel::INTERNAL_DATA_ROLE).toString());
+   emit ItemClicked(logFilterModel->data(index, LogModel::INTERNAL_DATA_ROLE).toString());
 };
