@@ -235,7 +235,7 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath & filename, DAVA::Scen
             // because we don't change scene pointer in datanode->scene.
             // This should be discussed and fixed in the future.
             serializableNodesCount++;
-            if (node->GetScene() != scene || node->GetNodeID() == 0)
+            if (node->GetScene() != scene || node->GetNodeID() == DataNode::INVALID_ID)
             {
                 node->SetNodeID(++maxDataNodeID);
             }
@@ -255,6 +255,10 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath & filename, DAVA::Scen
     // save global material on top of datanodes
     if (nullptr != globalMaterial)
     {
+        if(globalMaterial->GetNodeID() == DataNode::INVALID_ID)
+        {
+            globalMaterial->SetNodeID(++maxDataNodeID);
+        }
         SaveDataNode(globalMaterial, file);
     }
 
@@ -445,7 +449,7 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * sc
     }
 
 	serializationContext.SetRootNodePath(filename);
-	serializationContext.SetScenePath(FilePath(filename.GetDirectory()));
+	serializationContext.SetScenePath(filename.GetDirectory());
 	serializationContext.SetVersion(header.version);
 	serializationContext.SetScene(scene);
 	serializationContext.SetDefaultMaterialQuality(NMaterial::DEFAULT_QUALITY_NAME);

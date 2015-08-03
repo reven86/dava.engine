@@ -60,10 +60,6 @@ void DockProperties::Init()
 	QObject::connect(ui->actionFavoritesEdit, SIGNAL(triggered()), this, SLOT(ActionFavoritesEdit()));
 	ui->propertyEditor->SetFavoritesEditMode(ui->actionFavoritesEdit->isChecked());
 
-	// filter
-	QObject::connect(ui->propertiesFilterClear, SIGNAL(pressed()), ui->propertiesFilterEdit, SLOT(clear()));
-	QObject::connect(ui->propertiesFilterEdit, SIGNAL(textChanged(const QString &)), ui->propertyEditor, SLOT(SetFilter(const QString &)));
-
     // Add components
     addComponentMenu->addAction(ui->actionAddActionComponent);
     addComponentMenu->addAction(ui->actionAddQualitySettingsComponent);

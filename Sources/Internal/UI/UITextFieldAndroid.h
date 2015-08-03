@@ -69,6 +69,7 @@ public:
 	uint32 GetCursorPos();
 	void SetCursorPos(uint32 pos);
 	void SetMaxLength(int32_t value);
+	void SetMultiline(bool value);
 
 private:
 	uint32_t id;
@@ -98,6 +99,7 @@ private:
 	Function<jint (jint)> getCursorPos;
 	Function<void (jint, jint)> setCursorPos;
 	Function<void (jint, jint)> setMaxLength;
+	Function<void (jint, jboolean)> setMultiline;
 };
 
 class UITextFieldAndroid
@@ -141,6 +143,7 @@ public:
 	uint32 GetCursorPos();
 	void SetCursorPos(uint32 pos);
 	void SetMaxLength(DAVA::int32 value);
+	void SetMultiline(bool value);
 
 	bool TextFieldKeyPressed(int32 replacementLocation, int32 replacementLength, WideString &text);
 	void TextFieldOnTextChanged(const WideString& newText, const WideString& oldText);
@@ -164,7 +167,8 @@ protected:
     WideString TruncateText(const WideString& text, int32 maxLength);
 
 private:
-	UITextField* textField;
+    std::shared_ptr<JniTextField> jniTextField;
+	UITextField* textField = nullptr;
 	static uint32_t sId;
 	static Map<uint32_t, UITextFieldAndroid*> controls;
 	uint32_t id;

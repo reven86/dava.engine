@@ -76,7 +76,6 @@ inline Document* SharedData::GetDocument() const
 Q_DECLARE_METATYPE(SharedData*);
 Q_DECLARE_METATYPE(QAbstractItemModel*)
 Q_DECLARE_METATYPE(QPointer<QAbstractItemModel>)
-Q_DECLARE_METATYPE(QItemSelection);
 Q_DECLARE_METATYPE(ControlNode*);
 Q_DECLARE_METATYPE(StyleSheetNode*);
 Q_DECLARE_METATYPE(QList<ControlNode*>);

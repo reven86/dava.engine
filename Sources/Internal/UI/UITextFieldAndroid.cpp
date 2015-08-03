@@ -64,6 +64,7 @@ JniTextField::JniTextField(uint32_t id)
     getCursorPos = jniTextField.GetStaticMethod<jint, jint>("GetCursorPos");
     setCursorPos = jniTextField.GetStaticMethod<void, jint, jint>("SetCursorPos");
     setMaxLength = jniTextField.GetStaticMethod<void, jint, jint>("SetMaxLength");
+    setMultiline = jniTextField.GetStaticMethod<void, jint, jboolean>("SetMultiline");
 }
 
 void JniTextField::Create(Rect controlRect)
@@ -196,6 +197,12 @@ void JniTextField::SetMaxLength(int32_t value)
     setMaxLength(id, value);
 }
 
+void JniTextField::SetMultiline(bool value)
+{
+    jboolean isMulti = static_cast<jboolean>(value);
+    setMultiline(id, isMulti);
+}
+
 uint32_t UITextFieldAndroid::sId = 0;
 DAVA::Map<uint32_t, UITextFieldAndroid*> UITextFieldAndroid::controls;
 
@@ -204,8 +211,8 @@ UITextFieldAndroid::UITextFieldAndroid(UITextField* textField)
     this->textField = textField;
     id = sId++;
     rect = textField->GetRect();
-    JniTextField jniTextField(id);
-    jniTextField.Create(rect);
+    jniTextField = std::make_shared<JniTextField>(id);
+    jniTextField->Create(rect);
 
     controls[id] = this;
 }
@@ -213,21 +220,17 @@ UITextFieldAndroid::UITextFieldAndroid(UITextField* textField)
 UITextFieldAndroid::~UITextFieldAndroid()
 {
     controls.erase(id);
-
-    JniTextField jniTextField(id);
-    jniTextField.Destroy();
+    jniTextField->Destroy();
 }
 
 void UITextFieldAndroid::OpenKeyboard()
 {
-    JniTextField jniTextField(id);
-    jniTextField.OpenKeyboard();
+    jniTextField->OpenKeyboard();
 }
 
 void UITextFieldAndroid::CloseKeyboard()
 {
-    JniTextField jniTextField(id);
-    jniTextField.CloseKeyboard();
+    jniTextField->CloseKeyboard();
 }
 
 void UITextFieldAndroid::GetText(WideString & string) const
@@ -241,9 +244,8 @@ void UITextFieldAndroid::SetText(const WideString & string)
     {
         text = TruncateText(string, textField->GetMaxLength());
 
-        JniTextField jniTextField(id);
         String utfText = UTF8Utils::EncodeToUTF8(text);
-        jniTextField.SetText(utfText.c_str());
+        jniTextField->SetText(utfText.c_str());
     }
 }
 
@@ -252,28 +254,24 @@ void UITextFieldAndroid::UpdateRect(const Rect & rect)
     if (rect != this->rect)
     {
         this->rect = rect;
-        JniTextField jniTextField(id);
-        jniTextField.UpdateRect(rect);
+        jniTextField->UpdateRect(rect);
     }
 }
 
 void UITextFieldAndroid::SetTextColor(const DAVA::Color &color)
 {
-    JniTextField jniTextField(id);
-    jniTextField.SetTextColor(color.r, color.g, color.b, color.a);
+    jniTextField->SetTextColor(color.r, color.g, color.b, color.a);
 }
 
 void UITextFieldAndroid::SetFontSize(float size)
 {
-    JniTextField jniTextField(id);
-    jniTextField.SetFontSize(size);
+    jniTextField->SetFontSize(size);
 }
 
 void UITextFieldAndroid::SetTextAlign(DAVA::int32 align)
 {
     this->align = align;
-    JniTextField jniTextField(id);
-    jniTextField.SetTextAlign(align);
+    jniTextField->SetTextAlign(align);
 }
 
 DAVA::int32 UITextFieldAndroid::GetTextAlign()
@@ -284,8 +282,7 @@ DAVA::int32 UITextFieldAndroid::GetTextAlign()
 void UITextFieldAndroid::SetTextUseRtlAlign(bool useRtlAlign)
 {
     this->useRtlAlign = useRtlAlign;
-    JniTextField jniTextField(id);
-    jniTextField.SetTextUseRtlAlign(useRtlAlign);
+    jniTextField->SetTextUseRtlAlign(useRtlAlign);
 }
 
 bool UITextFieldAndroid::GetTextUseRtlAlign() const
@@ -295,100 +292,89 @@ bool UITextFieldAndroid::GetTextUseRtlAlign() const
 
 void UITextFieldAndroid::SetVisible(bool isVisible)
 {
-    JniTextField jniTextField(id);
-    jniTextField.SetVisible(isVisible);
+    jniTextField->SetVisible(isVisible);
 }
 
 void UITextFieldAndroid::SetIsPassword(bool isPassword)
 {
-    JniTextField jniTextField(id);
-    jniTextField.SetIsPassword(isPassword);
+    jniTextField->SetIsPassword(isPassword);
 }
 
 void UITextFieldAndroid::SetInputEnabled(bool value)
 {
-    JniTextField jniTextField(id);
-    jniTextField.SetInputEnabled(value);
+    jniTextField->SetInputEnabled(value);
 }
 
 void UITextFieldAndroid::SetRenderToTexture(bool value)
 {
-    JniTextField  jniTextField(id);
-    jniTextField.SetRenderToTexture(value);
+    jniTextField->SetRenderToTexture(value);
 }
 
 bool UITextFieldAndroid::IsRenderToTexture() const
 {
-    JniTextField jniTextField(id);
-    return jniTextField.IsRenderToTexture();
+    return jniTextField->IsRenderToTexture();
 }
 
 // Keyboard traits.
 void UITextFieldAndroid::SetAutoCapitalizationType(DAVA::int32 value)
 {
-    JniTextField jniTextField(id);
-    jniTextField.SetAutoCapitalizationType(value);
+    jniTextField->SetAutoCapitalizationType(value);
 }
 
 void UITextFieldAndroid::SetAutoCorrectionType(DAVA::int32 value)
 {
-    JniTextField jniTextField(id);
-    jniTextField.SetAutoCorrectionType(value);
+    jniTextField->SetAutoCorrectionType(value);
 }
 
 void UITextFieldAndroid::SetSpellCheckingType(DAVA::int32 value)
 {
-    JniTextField jniTextField(id);
-    jniTextField.SetSpellCheckingType(value);
+    jniTextField->SetSpellCheckingType(value);
 }
 
 void UITextFieldAndroid::SetKeyboardAppearanceType(DAVA::int32 value)
 {
-    JniTextField jniTextField(id);
-    jniTextField.SetKeyboardAppearanceType(value);
+    jniTextField->SetKeyboardAppearanceType(value);
 }
 
 void UITextFieldAndroid::SetKeyboardType(DAVA::int32 value)
 {
-    JniTextField jniTextField(id);
-    jniTextField.SetKeyboardType(value);
+    jniTextField->SetKeyboardType(value);
 }
 
 void UITextFieldAndroid::SetReturnKeyType(DAVA::int32 value)
 {
-    JniTextField jniTextField(id);
-    jniTextField.SetReturnKeyType(value);
+    jniTextField->SetReturnKeyType(value);
 }
 
 void UITextFieldAndroid::SetEnableReturnKeyAutomatically(bool value)
 {
-    JniTextField jniTextField(id);
-    jniTextField.SetEnableReturnKeyAutomatically(value);
+    jniTextField->SetEnableReturnKeyAutomatically(value);
 }
 
 uint32 UITextFieldAndroid::GetCursorPos()
 {
-    JniTextField jniTextField(id);
-    return jniTextField.GetCursorPos();
+    return jniTextField->GetCursorPos();
 }
 
 void UITextFieldAndroid::SetCursorPos(uint32 pos)
 {
-    JniTextField jniTextField(id);
-    jniTextField.SetCursorPos(pos);
+    jniTextField->SetCursorPos(pos);
 }
 
 void UITextFieldAndroid::SetMaxLength(DAVA::int32 value)
 {
-    JniTextField jniTextField(id);
-
     WideString truncated = TruncateText(text, value);
     if (truncated != text)
     {
         SetText(truncated);
     }
 
-    return jniTextField.SetMaxLength(value);
+    return jniTextField->SetMaxLength(value);
+}
+
+void UITextFieldAndroid::SetMultiline(bool value)
+{
+	jniTextField->SetMultiline(value);
 }
 
 WideString UITextFieldAndroid::TruncateText(const WideString& text, int32 maxLength)

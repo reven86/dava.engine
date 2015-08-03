@@ -29,8 +29,6 @@
 
 #include "SectionProperty.h"
 
-#include "Model/ControlProperties/ValueProperty.h"
-
 using namespace DAVA;
 
 SectionProperty::SectionProperty(const DAVA::String &sectionName)
@@ -62,7 +60,7 @@ int SectionProperty::GetCount() const
     return static_cast<int>(children.size());
 }
 
-AbstractProperty *SectionProperty::GetProperty(int index) const
+ValueProperty *SectionProperty::GetProperty(int index) const
 {
     if (0 <= index && index < children.size())
         return children[index];

@@ -101,7 +101,7 @@ EntityCache::~EntityCache()
 
 void EntityCache::Preload(const FilePath &path)
 {
-    Scene *scene = new Scene();
+    Scene *scene = new Scene(0);
     if(SceneFileV2::ERROR_NO_ERROR == scene->LoadScene(path))
     {
         Entity *srcRootEntity = scene;
@@ -276,7 +276,9 @@ void Scene::SetGlobalMaterial(NMaterial *globalMaterial)
     InitGlobalMaterial();
 
     renderSystem->SetGlobalMaterial(sceneGlobalMaterial);
-    particleEffectSystem->SetGlobalMaterial(sceneGlobalMaterial);
+    
+    if (nullptr != particleEffectSystem)
+        particleEffectSystem->SetGlobalMaterial(sceneGlobalMaterial);
     
     ImportShadowColor(this);
 }
@@ -397,6 +399,7 @@ void Scene::CreateSystems()
     if(SCENE_SYSTEM_PARTICLE_EFFECT_FLAG & systemsMask)
     {
         particleEffectSystem = new ParticleEffectSystem(this);
+        particleEffectSystem->SetGlobalMaterial(GetGlobalMaterial());
         AddSystem(particleEffectSystem, MAKE_COMPONENT_MASK(Component::PARTICLE_EFFECT_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
     }
 
@@ -796,7 +799,7 @@ void Scene::SetupTestLighting()
 void Scene::Update(float timeElapsed)
 {
     TIME_PROFILE("Scene::Update");
-    
+
     uint64 time = SystemTimer::Instance()->AbsoluteMS();
 
     uint32 size = (uint32)systemsToProcess.size();
@@ -851,7 +854,7 @@ void Scene::Update(float timeElapsed)
 
 void Scene::Draw()
 {
-    TIME_PROFILE("Scene::Draw");
+	TIME_PROFILE("Scene::Draw");
 
 	//float timeElapsed = SystemTimer::Instance()->FrameDelta();
 
