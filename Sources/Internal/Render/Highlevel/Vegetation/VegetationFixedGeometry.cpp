@@ -121,41 +121,22 @@ VegetationFixedGeometry::VegetationFixedGeometry(uint32 _maxClusters,
                                                  uint32 _maxLayerTypes,
                                                  Vector2 _unitSize,
                                                  const FilePath& textureSheetPath,
-                                                 uint32* _resolutionCellSquare,
-                                                 uint32 resolutionCellSquareCount,
-                                                 float32* _resolutionScale,
-                                                 uint32 resolutionScaleCount,
-                                                 const Vector<Vector2>& _resolutionRanges,
-                                                 uint32* _resolutionTilesPerRow,
-                                                 uint32 resolutionTilesPerRowCount,
+                                                 const Vector<uint32> & _resolutionCellSquare,
+                                                 const Vector<float32> & _resolutionScale,
+                                                 const Vector<Vector2> & _resolutionRanges,
+                                                 const Vector<uint32> & _resolutionTilesPerRow,
                                                  Vector3 _worldSize)
+    : maxClusters(_maxClusters)
+    , maxDensityLevels(_maxDensityLevels)
+    , maxLayerTypes(_maxLayerTypes)
+    , resolutionCellSquare(_resolutionCellSquare)
+    , resolutionScale(_resolutionScale)
+    , resolutionRanges(_resolutionRanges)
+    , resolutionTilesPerRow(_resolutionTilesPerRow)
+    , unitSize(_unitSize)
+    , worldSize(_worldSize)
 {
-    maxClusters = _maxClusters;
-    maxDensityLevels = _maxDensityLevels;
-    maxLayerTypes = _maxLayerTypes;
-    unitSize = _unitSize;
-    worldSize = _worldSize;
     textureSheet.Load(textureSheetPath);
-    
-    for(uint32 i = 0; i < resolutionCellSquareCount; ++i)
-    {
-        resolutionCellSquare.push_back(_resolutionCellSquare[i]);
-    }
-    
-    for(uint32 i = 0; i < resolutionScaleCount; ++i)
-    {
-        resolutionScale.push_back(_resolutionScale[i]);
-    }
-    
-    for(size_t i = 0; i < _resolutionRanges.size(); ++i)
-    {
-        resolutionRanges.push_back(_resolutionRanges[i]);
-    }
-    
-    for(uint32 i = 0; i < resolutionTilesPerRowCount; ++i)
-    {
-        resolutionTilesPerRow.push_back(_resolutionTilesPerRow[i]);
-    }
     
     materialTransform = new FixedMaterialTransformer();
 }
