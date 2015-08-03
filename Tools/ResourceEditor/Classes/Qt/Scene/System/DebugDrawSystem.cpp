@@ -232,7 +232,7 @@ void DebugDrawSystem::DrawSelectedSoundNode(DAVA::Entity *entity)
         Vector3 position = entity->GetWorldTransform().GetTranslationVector();
 
         uint32 fontHeight = 0;
-        GraphicsFont * debugTextFont = sceneEditor->textDrawSystem->GetFont();
+        GraphicFont * debugTextFont = sceneEditor->textDrawSystem->GetFont();
         if(debugTextFont)
             fontHeight = debugTextFont->GetFontHeight();
 
