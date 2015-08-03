@@ -809,6 +809,8 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
                         _GLES2_Binded_FrameBuffer = _GLES2_Default_FrameBuffer;
                     }
                 }
+
+                c += 1;
             }   break;
             
             case GLES2__SET_VERTEX_DATA :

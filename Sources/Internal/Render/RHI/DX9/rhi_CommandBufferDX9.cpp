@@ -25,7 +25,7 @@
     namespace rhi { extern void _InitDX9(); }
     #include <vector>
 
-    #define RHI__USE_DX9_RENDER_THREAD          1
+    #define RHI__USE_DX9_RENDER_THREAD          0
     #define RHI__DX9_MAX_PREPARED_FRAME_COUNT   2
 
 
@@ -771,6 +771,8 @@ SCOPED_FUNCTION_TIMING();
                         _D3D9_DepthBuf = nullptr;
                     }
                 }
+
+                c += 1;
             }   break;
             
             case DX9__SET_VERTEX_DATA :
