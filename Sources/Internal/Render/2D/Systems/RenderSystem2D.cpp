@@ -399,6 +399,7 @@ void RenderSystem2D::Flush()
 
     vertexIndex = 0;
     indexIndex = 0;
+    lastMaterial = nullptr;
 }
 
 void RenderSystem2D::DrawPacket(rhi::Packet& packet)
