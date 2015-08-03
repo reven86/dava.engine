@@ -70,7 +70,7 @@ void ResourcePacker2D::SetRunning(bool arg)
 {
     if (arg != running)
     {
-        Logger::Info(arg ? "ResourcePacker2D was started" : "ResourcePacker2D was stopped");
+        Logger::FrameworkDebug(arg ? "ResourcePacker2D was started" : "ResourcePacker2D was stopped");
     }
     running = arg;
 }
