@@ -26,7 +26,7 @@ namespace rhi
 
 
 ID3D11InputLayout*
-_CreateInputLayout( const VertexLayout& layout, const void* code, unsigned code_sz, bool force_immediate )
+_CreateInputLayout( const VertexLayout& layout, const void* code, unsigned code_sz )
 {
     ID3D11InputLayout*          vdecl     = nullptr;
     D3D11_INPUT_ELEMENT_DESC    elem[32];
@@ -117,7 +117,6 @@ _CreateInputLayout( const VertexLayout& layout, const void* code, unsigned code_
 
     return vdecl;
 }
-
 
 
 //==============================================================================
@@ -383,7 +382,7 @@ public:
 
     Handle  CreateConstBuffer( ProgType type, unsigned buf_i );
 
-
+    ID3D10Blob*         _vp_code;
     ID3D11VertexShader* _vs11;
     unsigned            _vp_buf_count;
     unsigned            _vp_buf_reg_count[16];
@@ -394,6 +393,19 @@ public:
 
     VertexLayout        _layout;
     ID3D11InputLayout*  _layout11;
+
+
+    struct
+    LayoutInfo
+    {
+        ID3D11InputLayout*  inputLayout;
+        uint32              layoutUID;
+    };
+    
+    std::vector<LayoutInfo> altLayout;
+
+    std::vector<uint8>      dbgVertexSrc;
+    std::vector<uint8>      dbgPixelSrc;
 };
 
 typedef ResourcePool<PipelineStateDX11_t,RESOURCE_PIPELINE_STATE>   PipelineStateDX11Pool;
@@ -587,10 +599,13 @@ desc.vertexLayout.Dump();
 
 
     // create input-layout
-
-    ps->_layout11 = _CreateInputLayout( desc.vertexLayout, vp_code->GetBufferPointer(), vp_code->GetBufferSize(), true );
+    ps->_vp_code  = vp_code;
+    ps->_layout11 = _CreateInputLayout( desc.vertexLayout, vp_code->GetBufferPointer(), vp_code->GetBufferSize() );
     ps->_layout   = desc.vertexLayout;
     DVASSERT(ps->_layout11);
+
+    ps->dbgVertexSrc = vprog_bin;
+    ps->dbgPixelSrc  = fprog_bin;
 
     return handle;
 }
@@ -680,9 +695,38 @@ SetupDispatch( Dispatch* dispatch )
 void
 SetToRHI( Handle ps, uint32 layoutUID )
 {
-    PipelineStateDX11_t* ps11 = PipelineStateDX11Pool::Get( ps );
-    
-    _D3D11_ImmediateContext->IASetInputLayout( ps11->_layout11 );
+    PipelineStateDX11_t* ps11     = PipelineStateDX11Pool::Get( ps );
+    ID3D11InputLayout*   layout11 = nullptr;
+
+    if( layoutUID == VertexLayout::InvalidUID )
+    {
+        layout11 = ps11->_layout11;
+    }
+    else
+    {
+        for( std::vector<PipelineStateDX11_t::LayoutInfo>::iterator l=ps11->altLayout.begin(),l_end=ps11->altLayout.end(); l!=l_end; ++l )
+        {
+            if( l->layoutUID == layoutUID )
+            {
+                layout11 = l->inputLayout;
+                break;
+            }
+        }
+        
+        if( !layout11 )
+        {
+            const VertexLayout*             layout = VertexLayout::Get( layoutUID );
+            PipelineStateDX11_t::LayoutInfo info;
+
+            layout11 = _CreateInputLayout( *layout, ps11->_vp_code->GetBufferPointer(), ps11->_vp_code->GetBufferSize() );
+            
+            info.inputLayout = layout11;
+            info.layoutUID   = layoutUID;
+            ps11->altLayout.push_back( info );
+        }
+    }
+
+    _D3D11_ImmediateContext->IASetInputLayout( layout11 );
     _D3D11_ImmediateContext->VSSetShader( ps11->_vs11, NULL, 0 );
     _D3D11_ImmediateContext->PSSetShader( ps11->_ps11, NULL, 0 );
 }
