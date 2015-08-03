@@ -33,6 +33,7 @@
 #include "UI/UIControl.h"
 #include "UI/UIStaticText.h"
 #include "UI/UIControlSystem.h"
+#include "Render/2D/TextBlock.h"
 
 namespace DAVA
 {
@@ -230,12 +231,6 @@ public:
 
     int32 GetTextAlign() const;
 
-    /**
-     \brief Returns using RTL align flag
-     \returns Using RTL align flag
-     */
-    bool GetTextUseRtlAlign() const;
-
     void SetFocused();
     
     void ReleaseFocus();
@@ -270,11 +265,21 @@ public:
 
     void SetTextAlign(int32 align);
 
+    
+    /**
+     \brief Returns using RTL align flag
+     \returns Using RTL align flag
+     */
+    TextBlock::eUseRtlAlign GetTextUseRtlAlign() const;
+
     /**
      \brief Sets using mirror align for RTL texts
      \param[in] useRrlAlign flag of support RTL align
      */
-    void SetTextUseRtlAlign(bool useRtlAlign);
+    void SetTextUseRtlAlign(TextBlock::eUseRtlAlign useRtlAlign);
+    
+    void SetTextUseRtlAlignFromInt(int32 value);
+    int32 GetTextUseRtlAlignAsInt() const;
 
     void SetSize(const DAVA::Vector2 &newSize) override;
     void SetPosition(const Vector2 &position) override;
@@ -412,7 +417,7 @@ public:
         PROPERTY("shadowoffset", "Shadow Offset", GetShadowOffset, SetShadowOffset, I_SAVE | I_VIEW | I_EDIT)
         PROPERTY("shadowcolor", "Shadow Color", GetShadowColor, SetShadowColor, I_SAVE | I_VIEW | I_EDIT)
         PROPERTY("textalign", InspDesc("Text Align", GlobalEnumMap<eAlign>::Instance(), InspDesc::T_FLAGS), GetTextAlign, SetTextAlign, I_SAVE | I_VIEW | I_EDIT)
-        PROPERTY("textUseRtlAlign", "Use Rtl Align", GetTextUseRtlAlign, SetTextUseRtlAlign, I_SAVE | I_VIEW | I_EDIT)
+        PROPERTY("textUseRtlAlign", InspDesc("Use Rtl Align", GlobalEnumMap<TextBlock::eUseRtlAlign>::Instance(), InspDesc::T_ENUM), GetTextUseRtlAlignAsInt, SetTextUseRtlAlignFromInt, I_SAVE | I_VIEW | I_EDIT)
         PROPERTY("maxLength", "Max text lenght", GetMaxLength, SetMaxLength, I_SAVE | I_VIEW | I_EDIT)
         PROPERTY("isPassword", "Is password", IsPassword, SetIsPassword, I_SAVE | I_VIEW | I_EDIT)
         PROPERTY("isMultiline", "Is Multiline, default (false) - single line", IsMultiline, SetMultiline, I_SAVE | I_VIEW | I_EDIT)

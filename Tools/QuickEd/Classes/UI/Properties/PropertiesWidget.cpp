@@ -142,11 +142,17 @@ ControlNode *PropertiesWidget::GetSelectedControlNode() const
     if (!sharedData)
         return nullptr;
     
-    const QList<ControlNode*> &activatedControls = sharedData->GetData("activeControls").value<QList<ControlNode*> >();
-    if (activatedControls.empty())
+    const QList<PackageBaseNode*> &selection = sharedData->GetSelection();
+    if (selection.empty())
         return nullptr;
     
-    return activatedControls.first();
+    for (PackageBaseNode *node : selection)
+    {
+        ControlNode *control = dynamic_cast<ControlNode*>(node);
+        if (control)
+            return control;
+    }
+    return nullptr;
 }
 
 StyleSheetNode *PropertiesWidget::GetSelectedStyleSheetNode() const
@@ -154,11 +160,19 @@ StyleSheetNode *PropertiesWidget::GetSelectedStyleSheetNode() const
     if (!sharedData)
         return nullptr;
     
-    const QList<StyleSheetNode*> &activeStyleSheets = sharedData->GetData("activeStyleSheets").value<QList<StyleSheetNode*> >();
-    if (activeStyleSheets.empty())
+    const QList<PackageBaseNode*> &selection = sharedData->GetSelection();
+    if (selection.empty())
         return nullptr;
     
-    return activeStyleSheets.first();
+    for (PackageBaseNode *node : selection)
+    {
+        StyleSheetNode *styleSheet = dynamic_cast<StyleSheetNode*>(node);
+        if (styleSheet)
+        {
+            return styleSheet;
+        }
+    }
+    return nullptr;
 }
 
 void PropertiesWidget::UpdateSelection()

@@ -56,6 +56,12 @@ T Atomic<T>::Get() const DAVA_NOEXCEPT
 }
 
 template <typename T>
+T Atomic<T>::GetRelaxed() const DAVA_NOEXCEPT
+{
+    return __atomic_load_n(&value, __ATOMIC_RELAXED);
+}
+
+template <typename T>
 T Atomic<T>::Increment() DAVA_NOEXCEPT
 {
     return __sync_add_and_fetch(&value, 1);

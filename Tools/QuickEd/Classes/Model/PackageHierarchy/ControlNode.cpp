@@ -34,7 +34,7 @@
 
 #include "PackageNode.h"
 #include "PackageVisitor.h"
-#include "../ControlProperties/RootProperty.h"
+#include "Model/ControlProperties/RootProperty.h"
 
 using namespace DAVA;
 
@@ -266,12 +266,16 @@ void ControlNode::MarkAsRemoved()
 {
     if (prototype)
         prototype->RemoveControlFromInstances(this);
+    for (ControlNode *node : nodes)
+        node->MarkAsRemoved();
 }
 
 void ControlNode::MarkAsAlive()
 {
     if (prototype)
         prototype->AddControlToInstances(this);
+    for (ControlNode *node : nodes)
+        node->MarkAsAlive();
 }
 
 String ControlNode::GetPathToPrototypeChild() const
