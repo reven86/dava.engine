@@ -384,10 +384,9 @@ const FilePath & FileSystem::GetCurrentWorkingDirectory()
     String path;
 
 #if defined(__DAVAENGINE_WIN_UAP__)
-
-    const DWORD stringSize = MAX_PATH;
-    Array<wchar_t, stringSize> tempDir;
-    ::GetCurrentDirectoryW(stringSize, tempDir.data());
+    
+    Array<wchar_t, MAX_PATH> tempDir;
+    ::GetCurrentDirectoryW(MAX_PATH, tempDir.data());
     path = WStringToString(tempDir.data());
 
 #elif defined(__DAVAENGINE_WIN32__)
