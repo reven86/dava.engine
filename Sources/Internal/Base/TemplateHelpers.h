@@ -36,7 +36,7 @@
 #include <typeinfo>
 #include <type_traits>
 #include <utility>
-#include <assert.h>
+#include <cassert>
 
 namespace DAVA
 {

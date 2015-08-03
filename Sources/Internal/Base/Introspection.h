@@ -40,8 +40,6 @@
 #include "Base/IntrospectionFlags.h"
 #include "Base/IntrospectionDynamic.h"
 #include "Base/BaseTypes.h"
-#include <stddef.h>
-
 
 namespace DAVA
 {
