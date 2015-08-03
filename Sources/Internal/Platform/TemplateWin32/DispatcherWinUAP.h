@@ -90,6 +90,7 @@ public:
     ~DispatcherWinUAP() = default;
 
     void BindToCurrentThread();
+    Thread::Id BoundThreadId() const;
 
     // Process all currently scheduled tasks
     void ProcessTasks();
@@ -120,6 +121,11 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
+inline Thread::Id DispatcherWinUAP::BoundThreadId() const
+{
+    return boundThreadId;
+}
+
 template<typename T>
 void DispatcherWinUAP::RunAsync(T&& task)
 {
