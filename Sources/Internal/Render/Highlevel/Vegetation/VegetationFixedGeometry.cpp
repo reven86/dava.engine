@@ -40,7 +40,9 @@
 namespace DAVA
 {
 
-static const Vector3 CLUSTER_TYPE_0[] =
+using CLUSTER_TYPE_ARRAY = Array<Vector3, 4>;
+
+static const CLUSTER_TYPE_ARRAY CLUSTER_TYPE_0 =
 {
     Vector3(-0.5f, 0.0f, 1.0f),
     Vector3(0.5f, 0.0f, 1.0f),
@@ -49,7 +51,7 @@ static const Vector3 CLUSTER_TYPE_0[] =
 };
 
 
-static const Vector3 CLUSTER_TYPE_1[] =
+static const CLUSTER_TYPE_ARRAY CLUSTER_TYPE_1 =
 {
     Vector3(-0.5f, 0.1f, 1.0f),
     Vector3(0.5f, 0.1f, 1.0f),
@@ -57,7 +59,7 @@ static const Vector3 CLUSTER_TYPE_1[] =
     Vector3(-0.5f, 0.1f, 0.0f),
 };
 
-static const Vector3 CLUSTER_TYPE_0_NORMALS[] =
+static const CLUSTER_TYPE_ARRAY CLUSTER_TYPE_0_NORMALS =
 {
     Vector3(0.0f, 0.0f, 1.0f),
     Vector3(0.0f, 0.0f, -1.0f),
@@ -65,7 +67,7 @@ static const Vector3 CLUSTER_TYPE_0_NORMALS[] =
     Vector3(0.0f, 0.0f, 1.0f),
 };
 
-static const Vector3 CLUSTER_TYPE_1_NORMALS[] =
+static const CLUSTER_TYPE_ARRAY CLUSTER_TYPE_1_NORMALS =
 {
     Vector3(0.0f, 0.0f, 1.0f),
     Vector3(0.0f, 0.0f, -1.0f),
@@ -73,25 +75,25 @@ static const Vector3 CLUSTER_TYPE_1_NORMALS[] =
     Vector3(0.0f, 0.0f, 1.0f),
 };
 
-
-static const VegetationIndex CLUSTER_INDICES[] =
+using CLUSTER_INDICES_ARRAY = Array<VegetationIndex, 6>;
+static const CLUSTER_INDICES_ARRAY CLUSTER_INDICES =
 {
     0, 3,  1, 1, 3,  2
 };
 
-static const Vector3* VEGETATION_CLUSTER[] =
+static const Array<CLUSTER_TYPE_ARRAY, 2> VEGETATION_CLUSTER =
 {
     CLUSTER_TYPE_0,
     CLUSTER_TYPE_1
 };
 
-static const VegetationIndex* VEGETATION_CLUSTER_INDICES[] =
+static const Array<CLUSTER_INDICES_ARRAY, 2> VEGETATION_CLUSTER_INDICES =
 {
     CLUSTER_INDICES,
     CLUSTER_INDICES
 };
 
-static const Vector3* VEGETATION_CLUSTER_NORMALS[] =
+static const Array<CLUSTER_TYPE_ARRAY, 2> VEGETATION_CLUSTER_NORMALS =
 {
     CLUSTER_TYPE_0_NORMALS,
     CLUSTER_TYPE_1_NORMALS
@@ -99,14 +101,14 @@ static const Vector3* VEGETATION_CLUSTER_NORMALS[] =
 
 static const uint32 VEGETATION_CLUSTER_SIZE[] =
 {
-    COUNT_OF(CLUSTER_TYPE_0),
-    COUNT_OF(CLUSTER_TYPE_1)
+    CLUSTER_TYPE_0.size(),
+    CLUSTER_TYPE_1.size()
 };
 
-static const uint32 VEGETATION_CLUSTER_INDEX_SIZE[] =
+static const size_t VEGETATION_CLUSTER_INDEX_SIZE[] =
 {
-    static_cast<uint32>(COUNT_OF(CLUSTER_INDICES)),
-    static_cast<uint32>(COUNT_OF(CLUSTER_INDICES))
+    CLUSTER_INDICES.size(),
+    CLUSTER_INDICES.size()
 };
 
 int32 VegetationFixedGeometry::RandomShuffleFunc(int32 limit)
@@ -198,8 +200,8 @@ void VegetationFixedGeometry::Build(Vector<VegetationRenderData*>& renderDataArr
     uint32 maxClusterRowSize = (tilesPerRow * maxClusters);
     size_t maxTotalClusters = maxClusterRowSize * maxClusterRowSize;
     
-    uint32 layerDataCount = 0;
-    uint32 indexDataCount = 0;
+    size_t layerDataCount = 0;
+    size_t indexDataCount = 0;
     for(uint32 layerIndex = 0; layerIndex < maxLayerTypes; ++layerIndex)
     {
         TextureSheetCell& cellData = textureSheet.cells[layerIndex];
@@ -274,8 +276,8 @@ void VegetationFixedGeometry::GenerateVertices(uint32 maxClusters,
         
         TextureSheetCell& cellData = textureSheet.cells[layerIndex];
         
-        const Vector3* clusterVertices = VEGETATION_CLUSTER[cellData.geometryId];
-        const Vector3* clusterNormals = VEGETATION_CLUSTER_NORMALS[cellData.geometryId];
+        const auto clusterVertices = VEGETATION_CLUSTER[cellData.geometryId];
+        const auto clusterNormals = VEGETATION_CLUSTER_NORMALS[cellData.geometryId];
         uint32 clusterVertexCount = VEGETATION_CLUSTER_SIZE[cellData.geometryId];
         
         uint32 clusterCounter = 0;
@@ -358,10 +360,10 @@ void VegetationFixedGeometry::GenerateIndices(uint32 maxClusters,
 {
     Vector<PolygonSortData> sortingArray(1);
     Vector<VegetationIndex> preparedIndices;
-    size_t polygonElementCount = COUNT_OF(sortingArray[0].indices);
+    const size_t polygonElementCount = sortingArray[0].indices.size();
     
     //generate indices
-    size_t totalResolutionCount = resolutionRanges.size();
+    const size_t totalResolutionCount = resolutionRanges.size();
     size_t currentIndexIndex = 0;
     
     Vector<Vector<Vector<VegetationSortedBufferItem> > >& indexRenderDataObject = renderData.GetIndexBuffers();
@@ -429,9 +431,9 @@ void VegetationFixedGeometry::PrepareIndexBufferData(uint32 indexBufferIndex,
     {
         TextureSheetCell& cellData = textureSheet.cells[layerIndex];
         
-        const VegetationIndex* clusterIndices = VEGETATION_CLUSTER_INDICES[cellData.geometryId];
-        uint32 clusterIndexCount = VEGETATION_CLUSTER_INDEX_SIZE[cellData.geometryId];
-        uint32 clusterVertexCount = VEGETATION_CLUSTER_SIZE[cellData.geometryId];
+        const auto clusterIndices = VEGETATION_CLUSTER_INDICES[cellData.geometryId];
+        const uint32 clusterIndexCount = VEGETATION_CLUSTER_INDEX_SIZE[cellData.geometryId];
+        const uint32 clusterVertexCount = VEGETATION_CLUSTER_SIZE[cellData.geometryId];
         
         for(uint32 y = startY; y < endY; y += resolutionOffset)
         {
