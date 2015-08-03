@@ -250,9 +250,9 @@ void PreviewModel::OnControlSelected(const DAVA::List<std::pair<DAVA::UIControl 
     }
     if (!resultList)
     {
+        emit ErrorOccurred(resultList);
         for (const auto &result : resultList.GetResults())
         {
-            Logger::eLogLevel ll = Logger::LEVEL_FRAMEWORK;
             if (!result.message.empty())
             {
                 switch (result.type)
@@ -263,7 +263,6 @@ void PreviewModel::OnControlSelected(const DAVA::List<std::pair<DAVA::UIControl 
                 }
             }
         }
-        emit ErrorOccurred(resultList);
     }
 }
 
