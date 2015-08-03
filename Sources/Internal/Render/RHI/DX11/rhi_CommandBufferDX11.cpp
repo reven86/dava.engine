@@ -123,7 +123,7 @@ RHI_IMPL_POOL(SyncObjectDX11_t,RESOURCE_SYNC_OBJECT);
 
 
 struct
-Frame
+FrameDX11
 {
     unsigned            number;
     Handle              sync;
@@ -131,11 +131,11 @@ Frame
     uint32              readyToExecute:1;
 };
 
-static std::vector<Frame>   _Frame;
-static bool                 _FrameStarted   = false;
-static unsigned             _FrameNumber    = 1;
+static std::vector<FrameDX11>   _Frame;
+static bool                     _FrameStarted   = false;
+static unsigned                 _FrameNumber    = 1;
 //static DAVA::Spinlock       _FrameSync;
-static DAVA::Mutex          _FrameSync;
+static DAVA::Mutex              _FrameSync;
 
 static void _ExecuteQueuedCommands();
 
@@ -186,7 +186,7 @@ dx11_RenderPass_Begin( Handle pass )
 
     if( !_FrameStarted )
     {
-        _Frame.push_back( Frame() );
+        _Frame.push_back( FrameDX11() );
         _Frame.back().number         = _FrameNumber;
         _Frame.back().readyToExecute = false;
 

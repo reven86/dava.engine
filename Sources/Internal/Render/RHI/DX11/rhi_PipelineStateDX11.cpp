@@ -14,7 +14,6 @@
     using DAVA::uint8;
 
     #include "_dx11.h"
-    #include <D3DX11async.h>
     #include <D3D11Shader.h>
     #include <D3Dcompiler.h>
 
@@ -104,7 +103,7 @@ _CreateInputLayout( const VertexLayout& layout, const void* code, unsigned code_
 
         if( layout.ElementSemantics(i) == VS_COLOR )
         {
-            elem[elemCount].Format = DXGI_FORMAT_R8G8B8A8_UNORM ; break;
+            elem[elemCount].Format = DXGI_FORMAT_R8G8B8A8_UNORM;
         }
 
         ++elemCount;
@@ -433,31 +432,32 @@ dx11_PipelineState_Create( const PipelineState::Descriptor& desc )
     ID3D10Blob*                 fp_code     = nullptr;
     ID3D10Blob*                 fp_err      = nullptr;
 
-//Logger::Info("create PS");
-//Logger::Info("  vprog= %s",desc.vprogUid.c_str());
-//Logger::Info("  fprog= %s",desc.vprogUid.c_str());
-//desc.vertexLayout.Dump();
+Logger::Info("create PS");
+Logger::Info("  vprog= %s",desc.vprogUid.c_str());
+Logger::Info("  fprog= %s",desc.vprogUid.c_str());
+desc.vertexLayout.Dump();
     rhi::ShaderCache::GetProg( desc.vprogUid, &vprog_bin );
     rhi::ShaderCache::GetProg( desc.fprogUid, &fprog_bin );
 
 
     // create vertex-shader
 
-    hr = D3DX11CompileFromMemory
+
+    hr = D3DCompile
     (
         (const char*)(&vprog_bin[0]), vprog_bin.size(),
         "vprog",
         NULL, // no macros
         NULL, // no includes
         "vp_main",
-        "vs_4_0_level_9_1",
+//        "vs_4_0_level_9_1",
+        "vs_4_0",
         D3D10_SHADER_OPTIMIZATION_LEVEL2,
         0, // no effect compile flags
-        NULL, // synchronous execution
         &vp_code,
-        &vp_err,
-        NULL // no async-result needed
+        &vp_err
     );
+
     
     if( SUCCEEDED(hr) )
     {
@@ -516,20 +516,19 @@ dx11_PipelineState_Create( const PipelineState::Descriptor& desc )
 
     // create fragment-shader
 
-    hr = D3DX11CompileFromMemory
+    hr = D3DCompile
     (
         (const char*)(&fprog_bin[0]), fprog_bin.size(),
         "fprog",
         NULL, // no macros
         NULL, // no includes
         "fp_main",
-        "ps_4_0_level_9_1",
+//        "ps_4_0_level_9_1",
+        "ps_4_0",
         D3D10_SHADER_OPTIMIZATION_LEVEL2,
         0, // no effect compile flags
-        NULL, // synchronous execution
         &fp_code,
-        &fp_err,
-        NULL // no async-result needed
+        &fp_err
     );
     
     if( SUCCEEDED(hr) )

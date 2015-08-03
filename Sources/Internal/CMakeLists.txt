@@ -160,7 +160,10 @@ elseif ( WINDOWS_UAP )
 
 elseif( MSVC ) 
 
-    link_directories       ( $ENV{DXSDK_DIR}/lib/x86 )
+    include( FindWindowsSDK )
+
+#    link_directories       ( $ENV{DXSDK_DIR}/lib/x86 )
+    link_directories       ( ${WINDOWSSDK_LATEST_DIR}/lib/x86 )
 
     file ( GLOB LIB_LIST "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/D/*" )
     list ( APPEND LIST_SHARED_LIBRARIES_DEBUG ${LIB_LIST}  )
@@ -168,7 +171,8 @@ elseif( MSVC )
     file ( GLOB LIB_LIST "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/*.lib" )
     list ( APPEND LIST_SHARED_LIBRARIES_RELEASE ${LIB_LIST}  )
 
-    list ( APPEND LIST_SHARED_LIBRARIES         "Wininet.lib" "opengl32.lib" "ws2_32.lib" "winmm.lib" "wldap32.lib" "iphlpapi.lib" "Gdi32.lib" "glu32.lib" "psapi.lib" "dbghelp.lib" "$ENV{DXSDK_DIR}/lib/x86/d3d9.lib" "$ENV{DXSDK_DIR}/lib/x86/d3dx9.lib" "$ENV{DXSDK_DIR}/lib/x86/d3d11.lib" "$ENV{DXSDK_DIR}/lib/x86/d3dx11.lib" "$ENV{DXSDK_DIR}/lib/x86/d3dcompiler.lib" "$ENV{DXSDK_DIR}/lib/x86/dxguid.lib" )
+#    list ( APPEND LIST_SHARED_LIBRARIES         "Wininet.lib" "opengl32.lib" "ws2_32.lib" "winmm.lib" "wldap32.lib" "iphlpapi.lib" "Gdi32.lib" "glu32.lib" "psapi.lib" "dbghelp.lib" "$ENV{DXSDK_DIR}/lib/x86/d3d9.lib" "$ENV{DXSDK_DIR}/lib/x86/d3dx9.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/d3d11.lib" "$ENV{DXSDK_DIR}/lib/x86/d3dx11.lib" "$ENV{DXSDK_DIR}/lib/x86/d3dcompiler.lib" "$ENV{DXSDK_DIR}/lib/x86/dxguid.lib" )
+    list ( APPEND LIST_SHARED_LIBRARIES         "Wininet.lib" "opengl32.lib" "ws2_32.lib" "winmm.lib" "wldap32.lib" "iphlpapi.lib" "Gdi32.lib" "glu32.lib" "psapi.lib" "dbghelp.lib" "$ENV{DXSDK_DIR}/lib/x86/d3d9.lib" "$ENV{DXSDK_DIR}/lib/x86/d3dx9.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3d11.lib" "$ENV{DXSDK_DIR}/lib/x86/d3dcompiler.lib" "$ENV{DXSDK_DIR}/lib/x86/dxguid.lib" )
 
     list ( APPEND LIST_SHARED_LIBRARIES_RELEASE "msvcrt.lib"  )
     list ( APPEND LIST_SHARED_LIBRARIES_DEBUG   "msvcrtd.lib" )
@@ -194,7 +198,8 @@ include_directories    (.)
 include_directories    ( ${DAVA_INCLUDE_DIR} )
 include_directories    ( ${ADD_ENGINE_INCLUDES_DIR} ) 
 include_directories    ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} ) 
-include_directories    ( $ENV{DXSDK_DIR}/include ) 
+include_directories   ( ${WINDOWSSDK_LATEST_DIR}/include/shared ) 
+include_directories   ( $ENV{DXSDK_DIR}/include ) 
 
 
 set                    ( DAVA_INCLUDE_DIR ${DAVA_INCLUDE_DIR} ${ADD_ENGINE_INCLUDES_DIR} PARENT_SCOPE )
