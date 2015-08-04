@@ -149,6 +149,19 @@ dx11_Texture_Map( Handle tex, unsigned level, TextureFace face )
     self->mappedLevel = level;
     self->isMapped    = true;
 
+    if( self->format == TEXTURE_FORMAT_R8G8B8A8 )
+    {
+        _SwapRB8( self->mappedData, TextureSize(self->format, self->width, self->height, self->mappedLevel) );
+    }
+    else if( self->format == TEXTURE_FORMAT_R4G4B4A4 )
+    {
+        _SwapRB4( self->mappedData, TextureSize(self->format, self->width, self->height, self->mappedLevel) );
+    }
+    else if (self->format == TEXTURE_FORMAT_R5G5B5A1)
+    {
+        _SwapRB5551( self->mappedData, TextureSize(self->format, self->width, self->height, self->mappedLevel) );
+    }
+
     return self->mappedData;
 }
 
@@ -161,6 +174,20 @@ dx11_Texture_Unmap( Handle tex )
     TextureDX11_t*  self = TextureDX11Pool::Get( tex );
 
     DVASSERT(self->isMapped);
+
+    if (self->format == TEXTURE_FORMAT_R8G8B8A8)
+    {
+        _SwapRB8(self->mappedData, TextureSize(self->format, self->width, self->height, self->mappedLevel));
+    }
+    else if (self->format == TEXTURE_FORMAT_R4G4B4A4)
+    {
+        _SwapRB4(self->mappedData, TextureSize(self->format, self->width, self->height, self->mappedLevel));
+    }
+    else if (self->format == TEXTURE_FORMAT_R5G5B5A1)
+    {
+        _SwapRB5551(self->mappedData, TextureSize(self->format, self->width, self->height, self->mappedLevel));
+    }
+
     _D3D11_ImmediateContext->UpdateSubresource
     (
         self->tex2d,
