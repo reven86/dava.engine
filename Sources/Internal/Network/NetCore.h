@@ -67,6 +67,7 @@ public:
     TrackId CreateAnnouncer(const Endpoint& endpoint, uint32 sendPeriod, Function<size_t (size_t, void*)> needDataCallback);
     TrackId CreateDiscoverer(const Endpoint& endpoint, Function<void (size_t, const void*, const Endpoint&)> dataReadyCallback);
     void DestroyController(TrackId id);
+    void DestroyControllerBlocked(TrackId id);
     void DestroyAllControllers(Function<void ()> callback);
     void DestroyAllControllersBlocked();
 
@@ -81,11 +82,11 @@ public:
 private:
     void DoStart(IController* ctrl);
     void DoRestart();
-    void DoDestroy(TrackId id);
+    void DoDestroy(TrackId id, volatile bool* stoppedFlag);
     void DoDestroyAll();
     void AllDestroyed();
     IController* GetTrackedObject(TrackId id) const;
-    void TrackedObjectStopped(IController* obj);
+    void TrackedObjectStopped(IController* obj, volatile bool* stoppedFlag);
 
     TrackId ObjectToTrackId(const IController* obj) const;
     IController* TrackIdToObject(TrackId id) const;
