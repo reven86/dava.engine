@@ -32,6 +32,7 @@
 
 #include "AbstractUIPackageBuilder.h"
 #include "UIPackage.h"
+#include "UI/UIControlPackageContext.h"
 
 namespace DAVA
 {
@@ -90,6 +91,7 @@ private:
     RefPtr<UIPackage> package;
 
     Vector<UIPackage*> importedPackages;
+    Vector<UIPriorityStyleSheet> styleSheets;
     Map<FilePath, int32> packsByPaths;
     Map<String, int32> packsByNames;
 

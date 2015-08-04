@@ -36,7 +36,6 @@
 
 #include "Base/ObjectFactory.h"
 #include "UI/UIControl.h"
-#include "UI/UIControlPackageContext.h"
 #include "UI/UIControlHelpers.h"
 #include "UI/Components/UIComponent.h"
 #include "FileSystem/LocalizationSystem.h"
@@ -115,23 +114,21 @@ void DefaultUIPackageBuilder::BeginPackage(const FilePath &packagePath)
 
 void DefaultUIPackageBuilder::EndPackage()
 {
-    Vector<UIStyleSheet*> importedStyleSheets;
     for (UIPackage* importedPackage : importedPackages)
     {
-        Vector<UIStyleSheet*> packageStyleSheets = importedPackage->GetControlPackageContext()->GetSortedStyleSheets();
-        for (UIStyleSheet* packageStyleSheet : packageStyleSheets)
+        const Vector<UIPriorityStyleSheet>& packageStyleSheets = importedPackage->GetControlPackageContext()->GetSortedStyleSheets();
+        for (const UIPriorityStyleSheet& packageStyleSheet : packageStyleSheets)
         {
-            importedStyleSheets.push_back(packageStyleSheet);
+            styleSheets.push_back(UIPriorityStyleSheet(packageStyleSheet.GetStyleSheet(), packageStyleSheet.GetPriority() + 1));
         }
     }
-    std::sort(importedStyleSheets.begin(), importedStyleSheets.end());
-    auto last = std::unique(importedStyleSheets.begin(), importedStyleSheets.end());
-    importedStyleSheets.erase(last, importedStyleSheets.end());
 
-    for (UIStyleSheet *styleSheet : importedStyleSheets)
+    for (UIPriorityStyleSheet &styleSheet : styleSheets)
     {
         package->GetControlPackageContext()->AddStyleSheet(styleSheet);
     }
+
+    styleSheets.clear();
 }
 
 bool DefaultUIPackageBuilder::ProcessImportedPackage(const String &packagePath, AbstractUIPackageLoader *loader)
@@ -170,7 +167,7 @@ void DefaultUIPackageBuilder::ProcessStyleSheet(const Vector<UIStyleSheetSelecto
         propertiesTable->SetProperties(properties);
         styleSheet->SetPropertyTable(propertiesTable);
 
-        package->GetControlPackageContext()->AddStyleSheet(styleSheet);
+        package->GetControlPackageContext()->AddStyleSheet(UIPriorityStyleSheet(styleSheet));
     }
 }
 
@@ -399,5 +396,5 @@ UIPackage *DefaultUIPackageBuilder::FindImportedPackageByName(const String &name
     
     return nullptr;
 }
-
+    
 }
