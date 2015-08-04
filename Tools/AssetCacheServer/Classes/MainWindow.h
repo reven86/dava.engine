@@ -30,21 +30,23 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <memory>
 #include <QMainWindow>
 #include <QSystemTrayIcon>
 
-#include "ApplicationSettings.h"
 #include "ServerCore.h"
 
 class QMenu;
 class QVBoxLayout;
 
+class RemoteAssetCacheServer;
+class ApplicationSettings;
+struct ServerData;
+
 namespace Ui
 {
     class MainWindow;
 }
-
-class RemoteAssetCacheServer;
 
 
 class MainWindow : public QMainWindow
@@ -52,15 +54,13 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = nullptr);
+    explicit MainWindow(ServerCore& core, QWidget *parent = nullptr);
     ~MainWindow() override;
-
-    void SetServerCore(ServerCore* serverCore);
 
 protected:
     void closeEvent(QCloseEvent *e) override;
 
-    void LoadSettings(ApplicationSettings *settings);
+    void LoadSettings();
     void SaveSettings();
 
 private slots:
@@ -112,9 +112,8 @@ private:
 
     QVBoxLayout *serversBoxLayout;
     QList<RemoteAssetCacheServer *> remoteServers;
-    
-    ApplicationSettings *settings;
-    ServerCore* serverCore;
+
+    ServerCore& serverCore;
 
     SettingsState settingsState = NOT_EDITED;
 };

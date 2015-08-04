@@ -124,13 +124,8 @@ void ProcessRecourcePacker()
     
     
     auto toolFolderPath = resourcePacker->excludeDirectory + (commandLine[2] + "/");
-#if defined (__DAVAENGINE_MACOS__)
-	String pvrTexToolName = String("PVRTexToolCLI");
+    String pvrTexToolName = String("PVRTexToolCLI");
     String cacheToolName = "AssetCacheClient";
-#elif defined (__DAVAENGINE_WIN32__)
-	String pvrTexToolName = String("PVRTexToolCLI.exe");
-    String cacheToolName = "AssetCacheClient.exe";
-#endif
     
     PVRConverter::Instance()->SetPVRTexTool(toolFolderPath + pvrTexToolName);
     
@@ -147,7 +142,7 @@ void ProcessRecourcePacker()
     eGPUFamily exportForGPU = GPU_ORIGIN;
     if(CommandLineParser::CommandIsFound(String("-gpu")))
     {
-        String gpuName = CommandLineParser::GetCommandParam(String("-gpu"));
+        String gpuName = CommandLineParser::GetCommandParam("-gpu");
         exportForGPU = GPUFamilyDescriptor::GetGPUByName(gpuName);
 		if (GPU_INVALID == exportForGPU)
 		{
@@ -158,9 +153,9 @@ void ProcessRecourcePacker()
     if (CommandLineParser::CommandIsFound(String("-useCache")))
     {
         Logger::FrameworkDebug("Using asset cache");
-        String ip = CommandLineParser::GetCommandParam(String("-ip"));
-        String port = CommandLineParser::GetCommandParam(String("-p"));
-        String timeout = CommandLineParser::GetCommandParam(String("-t"));
+        String ip = CommandLineParser::GetCommandParam("-ip");
+        String port = CommandLineParser::GetCommandParam("-p");
+        String timeout = CommandLineParser::GetCommandParam("-t");
         resourcePacker->SetCacheClientTool(toolFolderPath + cacheToolName, ip, port, timeout);
     }
     else

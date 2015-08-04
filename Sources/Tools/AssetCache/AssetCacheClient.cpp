@@ -44,8 +44,7 @@ namespace AssetCache
     
 Client::~Client()
 {
-    delegate = nullptr;
-    SafeDelete(netClient);
+    listener = nullptr;
 }
 
 bool Client::Connect(const String &ip, uint16 port)
@@ -53,10 +52,10 @@ bool Client::Connect(const String &ip, uint16 port)
     DVASSERT(nullptr == netClient);
     DVASSERT(nullptr == openedChannel);
     
-    netClient = TCPConnection::CreateClient(NET_SERVICE_ID, Net::Endpoint(ip.c_str(), port));
+    netClient.reset(TCPConnection::CreateClient(NET_SERVICE_ID, Net::Endpoint(ip.c_str(), port)));
     netClient->SetListener(this);
     
-    return (nullptr != netClient);
+    return true;
 }
     
 void Client::Disconnect()
@@ -94,7 +93,7 @@ bool Client::AddToCache(const CacheItemKey &key, const CachedFiles &files)
     
 void Client::OnAddedToCache(KeyedArchive * archieve)
 {
-    if(delegate)
+    if(listener)
     {
         KeyedArchive *keyArchieve = archieve->GetArchive("key");
         DVASSERT(keyArchieve);
@@ -103,12 +102,12 @@ void Client::OnAddedToCache(KeyedArchive * archieve)
         
         bool added = archieve->GetBool("added");
         
-        delegate->OnAddedToCache(key, added);
+        listener->OnAddedToCache(key, added);
     }
 }
     
 
-bool Client::GetFromCache(const CacheItemKey &key)
+bool Client::RequestFromCache(const CacheItemKey &key)
 {
     if(openedChannel)
     {
@@ -125,9 +124,9 @@ bool Client::GetFromCache(const CacheItemKey &key)
     return false;
 }
 
-void Client::OnGetFromCache(KeyedArchive * archieve)
+void Client::OnGotFromCache(KeyedArchive * archieve)
 {
-    if(delegate)
+    if(listener)
     {
         KeyedArchive *keyArchieve = archieve->GetArchive("key");
         DVASSERT(keyArchieve);
@@ -139,7 +138,7 @@ void Client::OnGetFromCache(KeyedArchive * archieve)
         CachedFiles files;
         files.Deserialize(filesArchieve);
         
-        delegate->OnReceivedFromCache(key, files);
+        listener->OnReceivedFromCache(key, files);
     }
 }
 
@@ -161,10 +160,7 @@ void Client::PacketReceived(DAVA::TCPChannel *tcpChannel, const uint8* packet, s
     if(length && openedChannel == tcpChannel)
     {
         ScopedPtr<KeyedArchive> archieve(new KeyedArchive());
-
-        const uint8 *packetData = reinterpret_cast<const uint8 *>(packet);
-        
-        archieve->Deserialize(packetData, length);
+        archieve->Deserialize(packet, length);
         
         auto packetID = archieve->GetUInt32("PacketID", PACKET_UNKNOWN);
         
@@ -175,7 +171,7 @@ void Client::PacketReceived(DAVA::TCPChannel *tcpChannel, const uint8* packet, s
                 break;
 
             case PACKET_GET_FILES_RESPONCE:
-                OnGetFromCache(archieve);
+                OnGotFromCache(archieve);
                 break;
 
             default:

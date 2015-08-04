@@ -63,7 +63,7 @@ void CacheItemKey::Deserialize(KeyedArchive * archieve)
 {
     DVASSERT(nullptr != archieve);
     
-    auto hashArray = archieve->GetByteArray("keyData");
+    const uint8* hashArray = archieve->GetByteArray("keyData");
     if(hashArray)
     {
         Memcpy(keyData.internalData, hashArray, INTERNAL_DATA_SIZE);
@@ -80,11 +80,6 @@ bool CacheItemKey::operator < (const CacheItemKey& right) const
     return (Memcmp(keyData.internalData, right.keyData.internalData, INTERNAL_DATA_SIZE) < 0);
 }
 
-bool CacheItemKey::operator() (const CacheItemKey &left, const CacheItemKey &right) const
-{
-    return (Memcmp(keyData.internalData, right.keyData.internalData, INTERNAL_DATA_SIZE) < 0);
-}
-    
 String CacheItemKey::ToString() const
 {
     const auto HASH_STRING_SIZE = INTERNAL_DATA_SIZE * 2 + 1;

@@ -74,9 +74,9 @@ void SpritePackerHelper::Pack(DAVA::eGPUFamily gpu)
 		return;
 	}
 
-	std::unique_ptr<ResourcePacker2D> resourcePacker(new ResourcePacker2D());
+	ResourcePacker2D resourcePacker;
 
-    bool isSrcChanged = resourcePacker->RecalculateDirMD5(inputDir, projectPath + "DataSource/Gfx/particles.md5", true);
+    bool isSrcChanged = resourcePacker.RecalculateDirMD5(inputDir, projectPath + "DataSource/Gfx/particles.md5", true);
     if (isSrcChanged)
     {
         SpritesPacker packer;

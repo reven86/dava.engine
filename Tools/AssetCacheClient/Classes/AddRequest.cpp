@@ -53,7 +53,6 @@ int AddRequest::SendRequest()
     }
     
     files.LoadFiles();
-    files.InvalidateFileSize();
     
     auto requestSent = client.AddToCache(key, files);
     if (!requestSent)

@@ -39,7 +39,7 @@ struct RequestResult
 };
 
 
-class CacheRequest: public DAVA::AssetCache::ClientDelegate
+class CacheRequest : public DAVA::AssetCache::ClientListener
 {
 public:
 

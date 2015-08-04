@@ -44,7 +44,7 @@ CacheRequest::CacheRequest(const String & commandLineOptionName)
     options.AddOption("-v", VariantType(false), "Verbose output.");
     options.AddOption("-t", VariantType(static_cast<uint64>(1)), "Connection timeout seconds.");
     
-    client.SetDelegate(this);
+    client.SetListener(this);
 }
 
 int CacheRequest::Process()

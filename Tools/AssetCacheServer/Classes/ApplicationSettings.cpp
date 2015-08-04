@@ -34,12 +34,15 @@
 
 using namespace DAVA;
 
-String DEFAULT_FOLDER = "";
-float64 DEFAULT_CACHE_SIZE_GB = 5;
-uint32 DEFAULT_FILES_COUNT = 5;
-uint32 DEFAULT_AUTO_SAVE_TIMEOUT_MIN = 1;
-uint16 DEFAULT_PORT = DAVA::AssetCache::ASSET_SERVER_PORT;
-bool DEFAULT_AUTO_START = true;
+namespace {
+    String DEFAULT_FOLDER = "";
+    float64 DEFAULT_CACHE_SIZE_GB = 5;
+    uint32 DEFAULT_FILES_COUNT = 5;
+    uint32 DEFAULT_AUTO_SAVE_TIMEOUT_MIN = 1;
+    uint16 DEFAULT_PORT = DAVA::AssetCache::ASSET_SERVER_PORT;
+    bool DEFAULT_AUTO_START = true;
+}
+
 
 void ApplicationSettings::Save() const
 {

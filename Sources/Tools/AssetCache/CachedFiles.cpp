@@ -83,6 +83,11 @@ void CachedFiles::AddFile(const FilePath &path)
     if(filesAreLoaded)
     {
         fileData = LoadFile(path);
+        filesSize += fileData->GetSize();
+    }
+    else
+    {
+        filesSize += FileSystem::Instance()->GetFileSize(path);
     }
 
     files[path] = fileData;
@@ -117,7 +122,7 @@ void CachedFiles::Serialize(KeyedArchive * archieve, bool serializeData) const
 void CachedFiles::Deserialize(KeyedArchive * archieve)
 {
     DVASSERT(nullptr != archieve);
-    DVASSERT(files.size() == 0);
+    DVASSERT(files.empty());
     DVASSERT(filesAreLoaded == false);
     
     filesSize = archieve->GetUInt64("files_size");
@@ -150,16 +155,19 @@ bool CachedFiles::operator == (const CachedFiles &right) const
 
 CachedFiles & CachedFiles::operator=(const CachedFiles &right)
 {
-    if(filesAreLoaded)
-        UnloadFiles();
-    
-    filesAreLoaded = right.filesAreLoaded;
-    filesSize = right.filesSize;
-    
-    files = right.files;
-    for(auto & f: files)
+    if (this != &right)
     {
-        SafeRetain(f.second);
+        if (filesAreLoaded)
+            UnloadFiles();
+
+        filesAreLoaded = right.filesAreLoaded;
+        filesSize = right.filesSize;
+
+        files = right.files;
+        for (auto & f : files)
+        {
+            SafeRetain(f.second);
+        }
     }
 
     return (*this);
@@ -168,7 +176,7 @@ CachedFiles & CachedFiles::operator=(const CachedFiles &right)
     
 uint64 CachedFiles::GetFilesSize() const
 {
-    DVASSERT((files.size() == 0 && filesSize == 0) || (files.size() > 0 && filesSize > 0));
+    DVASSERT((files.empty() && filesSize == 0) || (!files.empty() && filesSize > 0));
     return filesSize;
 }
 
@@ -214,7 +222,7 @@ void CachedFiles::Save(const FilePath & folder) const
         auto savedPath = folder + f.first.GetFilename();
         
         ScopedPtr<File> file(File::Create(savedPath, File::CREATE | File::WRITE));
-        if(static_cast<File *>(file) != nullptr)
+        if(file)
         {
             auto written = file->Write(f.second->GetPtr(), f.second->GetSize());
             DVVERIFY(written == f.second->GetSize());
@@ -231,7 +239,7 @@ Data * CachedFiles::LoadFile(const FilePath & pathname)
     Data * fileData = nullptr;
     
     ScopedPtr<File> file(File::Create(pathname, File::OPEN | File::READ));
-    if(static_cast<File *>(file) != nullptr)
+    if(file)
     {
         auto dataSize = file->GetSize();
         fileData = new Data(dataSize);
@@ -247,37 +255,6 @@ Data * CachedFiles::LoadFile(const FilePath & pathname)
     return fileData;
 }
 
-void CachedFiles::InvalidateFileSize()
-{
-    filesSize = 0;
-    
-    if(filesAreLoaded)
-    {
-        for(auto & f : files)
-        {
-            DVASSERT(f.second != nullptr);
-            filesSize += f.second->GetSize();
-        }
-    }
-    else
-    {
-        for(auto & f : files)
-        {
-            DVASSERT(f.second == nullptr);
-            
-            ScopedPtr<File> file(File::Create(f.first, File::OPEN | File::READ));
-            if(static_cast<File *>(file) != nullptr)
-            {
-                filesSize += file->GetSize();
-            }
-            else
-            {
-                Logger::Error("[CachedFiles::%s] Cannot read file %s", __FUNCTION__, f.first.GetStringValue().c_str());
-            }
-        }
-    }
-}
-    
 CachedFiles CachedFiles::Copy(const FilePath & folder) const
 {
     DVASSERT(folder.IsDirectoryPathname());
@@ -295,9 +272,7 @@ CachedFiles CachedFiles::Copy(const FilePath & folder) const
     
     return copyFiles;
 }
-    
-    
-    
-}; // end of namespace AssetCache
-}; // end of namespace DAVA
+
+} // end of namespace AssetCache
+} // end of namespace DAVA
 

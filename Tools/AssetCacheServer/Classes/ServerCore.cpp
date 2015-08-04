@@ -34,23 +34,21 @@
 ServerCore::ServerCore()
 	: state(State::STOPPED)
 {
-    settings = new ApplicationSettings();
-    QObject::connect(settings, &ApplicationSettings::SettingsUpdated, this, &ServerCore::OnSettingsUpdated);
+    QObject::connect(&settings, &ApplicationSettings::SettingsUpdated, this, &ServerCore::OnSettingsUpdated);
     
     server.SetDelegate(&serverLogics);
-	client.SetDelegate(&serverLogics);
+	client.SetListener(&serverLogics);
     serverLogics.Init(&server, &client, &dataBase);
 
     updateTimer = new QTimer(this);
-    QObject::connect(updateTimer, &QTimer::timeout, this, &ServerCore::UpdateByTimer);
+    QObject::connect(updateTimer, &QTimer::timeout, this, &ServerCore::OnTimerUpdate);
 
-    settings->Load();
+    settings.Load();
 }
 
 ServerCore::~ServerCore()
 {
     Stop();
-    delete settings;
 }
 
 
@@ -58,10 +56,10 @@ void ServerCore::Start()
 {
     if (state != State::STARTED)
     {
-        auto established = server.Listen(settings->GetPort());
+        auto established = server.Listen(settings.GetPort());
         if (established)
         {
-            const auto remoteServer = settings->GetCurrentServer();
+            const auto remoteServer = settings.GetCurrentServer();
             if (!remoteServer.ip.empty())
             {
                 client.Connect(remoteServer.ip, remoteServer.port);
@@ -91,15 +89,14 @@ void ServerCore::Stop()
 
 
 
-void ServerCore::Update()
+void ServerCore::OnTimerUpdate()
 {
     serverLogics.Update();
     
     auto netSystem = DAVA::Net::NetCore::Instance();
-    if(netSystem)
-    {
-        netSystem->Poll();
-    }
+    DVASSERT(netSystem);
+
+    netSystem->Poll();
 }
 
 ServerCore::State ServerCore::GetState() const
@@ -107,81 +104,65 @@ ServerCore::State ServerCore::GetState() const
     return state;
 }
 
-void ServerCore::UpdateByTimer()
-{
-    Update();
-}
-
 
 void ServerCore::OnSettingsUpdated(const ApplicationSettings *_settings)
 {
-    if(settings == _settings)
-    {
-        auto & folder = settings->GetFolder();
-        auto sizeGb = settings->GetCacheSizeGb();
-        auto count = settings->GetFilesCount();
-        auto autoSaveTimeoutMin = settings->GetAutoSaveTimeoutMin();
-        const auto remoteServer = settings->GetCurrentServer();
+    DVASSERT(&settings == _settings);
 
-        bool needServerRestart = false; //TODO: why we need different places for disconnect and listen???
-        bool needClientRestart = false;
+    auto & folder = settings.GetFolder();
+    auto sizeGb = settings.GetCacheSizeGb();
+    auto count = settings.GetFilesCount();
+    auto autoSaveTimeoutMin = settings.GetAutoSaveTimeoutMin();
+    const auto remoteServer = settings.GetCurrentServer();
 
-        if(state == State::STARTED)
-        {   // disconnect network if settings changed
-            if (server.GetListenPort() != settings->GetPort())
-            {
-                needServerRestart = true;
-                server.Disconnect();
-            }
-            
-            auto clientConnection = client.GetConnection();
-            if ((clientConnection && remoteServer != clientConnection->GetEndpoint()) || 
-                (!clientConnection && !remoteServer.ip.empty()))
-            {
-                needClientRestart = true;
-                client.Disconnect();
-            }
+    bool needServerRestart = false; //TODO: why we need different places for disconnect and listen???
+    bool needClientRestart = false;
+
+    if(state == State::STARTED)
+    {   // disconnect network if settings changed
+        if (server.GetListenPort() != settings.GetPort())
+        {
+            needServerRestart = true;
+            server.Disconnect();
         }
+            
+        auto clientConnection = client.GetConnection();
+        if ((clientConnection && !remoteServer.EquivalentTo(clientConnection->GetEndpoint())) || 
+            (!clientConnection && !remoteServer.ip.empty()))
+        {
+            needClientRestart = true;
+            client.Disconnect();
+        }
+    }
         
-        {   //updated DB settings
-            if(sizeGb && !folder.IsEmpty())
+    {   //updated DB settings
+        if(sizeGb && !folder.IsEmpty())
+        {
+            dataBase.UpdateSettings(folder, sizeGb * 1024 * 1024 * 1024, count, autoSaveTimeoutMin * 60 * 1000);
+        }
+        else
+        {
+            DAVA::Logger::Warning("[ServerCore::%s] Empty settings", __FUNCTION__);
+        }
+    }
+
+    if(state == State::STARTED)
+    {   // restart network connections after changing of settings
+        if (needServerRestart)
+        {
+            auto established = server.Listen(settings.GetPort());
+            if (!established)
             {
-                dataBase.UpdateSettings(folder, sizeGb * 1024 * 1024 * 1024, count, autoSaveTimeoutMin * 60 * 1000);
-            }
-            else
-            {
-                DAVA::Logger::Warning("[ServerCore::%s] Empty settings", __FUNCTION__);
+                state = State::STOPPED;
+                emit ServerStateChanged(this);
+                return;
             }
         }
-
-        if(state == State::STARTED)
-        {   // restart network connections after changing of settings
-            if (needServerRestart)
-            {
-                auto established = server.Listen(settings->GetPort());
-                if (!established)
-                {
-                    state = State::STOPPED;
-                    emit ServerStateChanged(this);
-                    return;
-                }
-            }
             
-            if(needClientRestart && !remoteServer.ip.empty())
-            {
-                client.Connect(remoteServer.ip, remoteServer.port);
-            }
+        if(needClientRestart && !remoteServer.ip.empty())
+        {
+            client.Connect(remoteServer.ip, remoteServer.port);
         }
     }
-    else
-    {
-        DAVA::Logger::Error("[ServerCore::%s] Wrong settings", __FUNCTION__);
-    }
-}
-
-
-ApplicationSettings * ServerCore::GetSettings() const
-{
-    return settings;
 }
 

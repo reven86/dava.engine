@@ -52,14 +52,9 @@ struct ServerData
         return (ip == right.ip) && (port == right.port);
     }
     
-    bool operator == (const DAVA::Net::Endpoint & right) const
+    bool EquivalentTo(const DAVA::Net::Endpoint & right) const
     {
         return (ip == right.Address().ToString()) && (port == right.Port());
-    }
-
-    bool operator != (const DAVA::Net::Endpoint & right) const
-    {
-        return !(operator==(right));
     }
 
     bool operator < (const ServerData & right) const

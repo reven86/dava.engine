@@ -32,16 +32,14 @@
 
 #include "Base/BaseTypes.h"
 
-#include "AssetCache/CacheItemKey.h"
 #include "AssetCache/CachedFiles.h"
 
 
-namespace DAVA
-{
+namespace DAVA {
+
 class KeyedArchive;
 
-namespace AssetCache
-{
+namespace AssetCache {
 
 class ServerCacheEntry
 {
@@ -90,8 +88,8 @@ inline const CachedFiles & ServerCacheEntry::GetFiles() const
 }
 
     
-}; // end of namespace AssetCache
-}; // end of namespace DAVA
+} // end of namespace AssetCache
+} // end of namespace DAVA
 
 #endif // __DAVAENGINE_ASSET_CACHE_SERVER_CACHE_ENTRY_H__
 

@@ -63,23 +63,19 @@ void SpritesPacker::PerformPack(bool isLightmapPacking, DAVA::eGPUFamily gpu)
 {
 	FileSystem::Instance()->CreateDirectory(outputDir, true);
 
-	std::unique_ptr<ResourcePacker2D> resourcePacker(new ResourcePacker2D());
+	ResourcePacker2D resourcePacker;
 
-	resourcePacker->clearProcessDirectory = true;
-    resourcePacker->InitFolders(inputDir, outputDir);
-	resourcePacker->isLightmapsPacking = isLightmapPacking;
+	resourcePacker.forceRepack = true;
+    resourcePacker.InitFolders(inputDir, outputDir);
+	resourcePacker.isLightmapsPacking = isLightmapPacking;
 
     if (SettingsManager::GetValue(Settings::General_AssetCache_UseCache).AsBool())
     {
         auto ip = SettingsManager::GetValue(Settings::General_AssetCache_Ip).AsString();
         auto port = SettingsManager::GetValue(Settings::General_AssetCache_Port).AsString();
         auto timeout = SettingsManager::GetValue(Settings::General_AssetCache_Timeout).AsString();
-#if defined __DAVAENGINE_MACOS__
-        resourcePacker->SetCacheClientTool("~res:/AssetCacheClient", ip, port, timeout);
-#elif defined __DAVAENGINE_WINDOWS__
-        resourcePacker->SetCacheClientTool("~res:/AssetCacheClient.exe", ip, port, timeout);
-#endif
+        resourcePacker.SetCacheClientTool("~res:/AssetCacheClient", ip, port, timeout);
     }
 
-    resourcePacker->PackResources(gpu);
+    resourcePacker.PackResources(gpu);
 }

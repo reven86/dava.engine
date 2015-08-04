@@ -39,7 +39,7 @@ class AssetCacheClient
 public:
     
     AssetCacheClient();
-    virtual ~AssetCacheClient();
+    ~AssetCacheClient();
     
     bool ParseCommandLine(int argc, char * argv[]);
     

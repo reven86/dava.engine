@@ -42,14 +42,14 @@ public:
     {
     }
     
-    void AddOption(const char *optionName, const DAVA::VariantType &defaultValue, const char *description = NULL, bool canBeMultiple = false)
+    void AddOption(const char *optionName, const DAVA::VariantType &defaultValue, const char *description = nullptr, bool canBeMultiple = false)
     {
         Option op;
         op.name = optionName;
         op.multipleValuesSuported = canBeMultiple;
         op.defaultValue = defaultValue;
         
-        if(NULL != description)
+        if(nullptr != description)
         {
             op.descr = description;
         }
@@ -104,7 +104,6 @@ public:
             {
                 printf("Error - required argument not specified: %s\n", arg.name.c_str());
                 ret = false;
-                break;
             }
         }
 

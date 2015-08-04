@@ -71,13 +71,12 @@ public:
     
     void Save(const FilePath & folder) const;
     
-    void InvalidateFileSize();
     uint64 GetFilesSize() const;
     
     CachedFiles Copy(const FilePath & folder) const;
     
 private:
-    
+    void RecalculateFileSize();
     Data * LoadFile(const FilePath & pathname);
     
 private:
@@ -91,7 +90,7 @@ private:
 
 inline bool CachedFiles::IsEmtpy() const
 {
-    return (files.size() == 0);
+    return files.empty();
 }
 
 inline bool CachedFiles::FilesAreLoaded() const

@@ -78,15 +78,12 @@ void Server::Disconnect()
     }
 }
     
-void Server::PacketReceived(DAVA::TCPChannel *tcpChannel, const void* packet, size_t length)
+void Server::PacketReceived(DAVA::TCPChannel *tcpChannel, const uint8* packet, size_t length)
 {
     if(length)
     {
         ScopedPtr<KeyedArchive> archieve(new KeyedArchive());
-        
-        const uint8 *packetData = reinterpret_cast<const uint8 *>(packet);
-        
-        archieve->Deserialize(packetData, length);
+        archieve->Deserialize(packet, length);
         
         const auto packetID = archieve->GetUInt32("PacketID", PACKET_UNKNOWN);
         switch (packetID)

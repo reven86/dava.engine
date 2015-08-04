@@ -50,6 +50,7 @@ namespace AssetCache
 {
     
 const String CacheDB::DB_FILE_NAME = "cache.dat";
+const uint32 CacheDB::VERSION = 1;
     
 CacheDB::CacheDB()
     : dbStateChanged(false)
@@ -62,7 +63,7 @@ CacheDB::~CacheDB()
     Unload();
 }
 
-void CacheDB::UpdateSettings(const FilePath &folderPath, const uint64 size, const uint32 _itemsInMemory, const uint64 _autoSaveTimeout)
+void CacheDB::UpdateSettings(const FilePath &folderPath, const uint64 size, const uint32 newMaxItemsInMemory, const uint64 _autoSaveTimeout)
 {
     if(cacheRootFolder != folderPath)
     {
@@ -85,12 +86,16 @@ void CacheDB::UpdateSettings(const FilePath &folderPath, const uint64 size, cons
         storageSize = size;
     }
 
-    if(itemsInMemory != _itemsInMemory)
+    if(maxItemsInMemory != newMaxItemsInMemory)
     {
-        ReduceFastCacheByCount(_itemsInMemory);
+        int32 reducedByCount = maxItemsInMemory - newMaxItemsInMemory;
+        if (reducedByCount > 0)
+        {
+            ReduceFastCacheByCount(reducedByCount);
+        }
         
-        itemsInMemory = _itemsInMemory;
-        fastCache.reserve(itemsInMemory);
+        maxItemsInMemory = newMaxItemsInMemory;
+        fastCache.reserve(maxItemsInMemory);
     }
     
     autoSaveTimeout = _autoSaveTimeout;
@@ -100,11 +105,11 @@ void CacheDB::UpdateSettings(const FilePath &folderPath, const uint64 size, cons
 
 void CacheDB::Load()
 {
-    DVASSERT(fastCache.size() == 0);
-    DVASSERT(fullCache.size() == 0);
+    DVASSERT(fastCache.empty());
+    DVASSERT(fullCache.empty());
     
     ScopedPtr<File> file(File::Create(cacheSettings, File::OPEN | File::READ));
-    if(static_cast<File*>(file) == nullptr)
+    if(!file)
     {
         return;
     }
@@ -118,9 +123,9 @@ void CacheDB::Load()
         return;
     }
 
-    if(header->GetInt32("version") != 1)
+    if(header->GetUInt32("version") != VERSION)
     {
-        Logger::Error("[CacheDB::%s] Wrong version %d", __FUNCTION__, header->GetInt32("version"));
+        Logger::Error("[CacheDB::%s] Wrong version %d", __FUNCTION__, header->GetUInt32("version"));
         return;
     }
     
@@ -167,7 +172,7 @@ void CacheDB::Save()
     FileSystem::Instance()->CreateDirectory(cacheRootFolder, true);
     
     ScopedPtr<File> file(File::Create(cacheSettings, File::CREATE | File::WRITE));
-    if(static_cast<File*>(file) == nullptr)
+    if(!file)
     {
         Logger::Error("[CacheDB::%s] Cannot create file %s", __FUNCTION__, cacheSettings.GetStringValue().c_str());
         return;
@@ -175,7 +180,7 @@ void CacheDB::Save()
     
     ScopedPtr<KeyedArchive> header(new KeyedArchive());
     header->SetString("signature", "cache");
-    header->SetInt32("version", 1);
+    header->SetUInt32("version", VERSION);
     header->SetUInt64("usedSize", usedSize);
     header->SetUInt64("itemsCount", fullCache.size());
     header->Save(file);
@@ -196,23 +201,12 @@ void CacheDB::Save()
     dbStateChanged = false;
     lastSaveTime = SystemTimer::Instance()->AbsoluteMS();
 }
-    
-    
-    
-void CacheDB::ReduceFastCacheByCount(uint32 toCount)
-{
-    while(toCount < fastCache.size())
-    {
-        RemoveOldestFromFastCache();
-    }
-}
-
 
 void CacheDB::ReduceFullCacheBySize(uint64 toSize)
 {
     while (usedSize > toSize)
     {
-        const auto & found = std::min_element(fullCache.begin(), fullCache.end(), [] (const CACHE::value_type &left, const CACHE::value_type & right) -> bool
+        const auto & found = std::min_element(fullCache.begin(), fullCache.end(), [](const CacheMap::value_type &left, const CacheMap::value_type & right) -> bool
                                               {
                                                   return left.second.GetAccesID() < right.second.GetAccesID();
                                               });
@@ -223,15 +217,23 @@ void CacheDB::ReduceFullCacheBySize(uint64 toSize)
     }
 }
 
-void CacheDB::RemoveOldestFromFastCache()
+void CacheDB::ReduceFastCacheByCount(uint32 countToRemove)
 {
-    const auto & found = std::min_element(fastCache.begin(), fastCache.end(), [] (const FASTCACHE::value_type &left, const FASTCACHE::value_type & right) -> bool
-                                          {
-                                              return left.second->GetAccesID() < right.second->GetAccesID();
-                                          });
-    if(found != fastCache.end())
+    for (; countToRemove; --countToRemove)
     {
-        RemoveFromFastCache(found);
+        const auto & oldestFound = std::min_element(fastCache.begin(), fastCache.end(), [](const FastCacheMap::value_type &left, const FastCacheMap::value_type & right) -> bool
+        {
+            return left.second->GetAccesID() < right.second->GetAccesID();
+        });
+
+        if (oldestFound != fastCache.end())
+        {
+            RemoveFromFastCache(oldestFound);
+        }
+        else
+        {
+            return;
+        }
     }
 }
     
@@ -335,9 +337,9 @@ void CacheDB::InsertInFastCache(const CacheItemKey &key, ServerCacheEntry * entr
         return;
     }
     
-    if (itemsInMemory == fastCache.size() && itemsInMemory > 0)
+    if (maxItemsInMemory == fastCache.size() && maxItemsInMemory > 0)
     {
-        RemoveOldestFromFastCache();
+        ReduceFastCacheByCount(1);
     }
     
     DVASSERT(entry->GetFiles().FilesAreLoaded() == true);
@@ -380,7 +382,7 @@ void CacheDB::Remove(const CacheItemKey &key)
     }
 }
     
-void CacheDB::Remove(const CACHE::iterator &it)
+void CacheDB::Remove(const CacheMap::iterator &it)
 {
     auto found = fastCache.find(it->first);
     if(found != fastCache.end())
@@ -392,7 +394,7 @@ void CacheDB::Remove(const CACHE::iterator &it)
     dbStateChanged = true;
 }
     
-void CacheDB::RemoveFromFullCache(const CACHE::iterator &it)
+void CacheDB::RemoveFromFullCache(const CacheMap::iterator &it)
 {
     DVASSERT(it != fullCache.end());
     
@@ -401,7 +403,7 @@ void CacheDB::RemoveFromFullCache(const CACHE::iterator &it)
 }
     
     
-void CacheDB::RemoveFromFastCache(const FASTCACHE::iterator &it)
+void CacheDB::RemoveFromFastCache(const FastCacheMap::iterator &it)
 {
     DVASSERT(it != fastCache.end());
 

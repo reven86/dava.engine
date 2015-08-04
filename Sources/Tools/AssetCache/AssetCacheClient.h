@@ -44,7 +44,7 @@ namespace AssetCache
 class CacheItemKey;
 class CachedFiles;
     
-class ClientDelegate
+class ClientListener
 {
 public:
     
@@ -60,7 +60,7 @@ public:
     Client() = default;
     virtual ~Client();
     
-    void SetDelegate(ClientDelegate * delegate);
+    void SetListener(ClientListener * delegate);
     
     bool Connect(const String &ip, uint16 port);
     void Disconnect();
@@ -68,7 +68,7 @@ public:
     bool IsConnected();
     
     bool AddToCache(const CacheItemKey &key, const CachedFiles &files);
-    bool GetFromCache(const CacheItemKey &key);
+    bool RequestFromCache(const CacheItemKey &key);
     
     //TCPChannelDelegate
     void ChannelOpened(TCPChannel *tcpChannel) override;
@@ -81,26 +81,23 @@ public:
 private:
     
     void OnAddedToCache(KeyedArchive * archieve);
-    void OnGetFromCache(KeyedArchive * archieve);
+    void OnGotFromCache(KeyedArchive * archieve);
     
 private:
-    TCPConnection * netClient = nullptr;
+    std::unique_ptr<TCPConnection> netClient;
     TCPChannel * openedChannel = nullptr;
     
-    ClientDelegate * delegate = nullptr;
+    ClientListener * listener = nullptr;
 };
 
-inline void Client::SetDelegate(ClientDelegate * _delegate)
+inline void Client::SetListener(ClientListener * _listener)
 {
-    if(delegate != _delegate)
-    {
-        delegate = _delegate;
-    }
+    listener = _listener;
 }
 
 inline TCPConnection * Client::GetConnection() const
 {
-    return netClient;
+    return netClient.get();
 }
    
 inline bool Client::IsConnected()

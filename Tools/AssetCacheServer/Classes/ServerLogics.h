@@ -32,7 +32,7 @@
 
 #include "AssetCache/AssetCache.h"
 
-class ServerLogics: public DAVA::AssetCache::ServerDelegate, public DAVA::AssetCache::ClientDelegate
+class ServerLogics: public DAVA::AssetCache::ServerDelegate, public DAVA::AssetCache::ClientListener
 {
 public:
     void Init(DAVA::AssetCache::Server *server, DAVA::AssetCache::Client *client, DAVA::AssetCache::CacheDB *dataBase);
@@ -43,7 +43,7 @@ public:
     void OnWarmingUp(DAVA::TCPChannel *tcpChannel, const DAVA::AssetCache::CacheItemKey &key) override;
     void OnChannelClosed(DAVA::TCPChannel *tcpChannel, const DAVA::char8* message) override;
     
-    //ClientDelegate
+    //ClientListener
     void OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey &key, const DAVA::AssetCache::CachedFiles &files) override;
     
     void Update();

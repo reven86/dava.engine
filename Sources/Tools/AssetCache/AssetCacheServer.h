@@ -76,7 +76,7 @@ public:
     uint16 GetListenPort() const;
     
     //TCPChannelDelegate
-    void PacketReceived(DAVA::TCPChannel *tcpChannel, const void* packet, size_t length) override;
+    void PacketReceived(DAVA::TCPChannel *tcpChannel, const uint8* packet, size_t length) override;
     void ChannelClosed(TCPChannel *tcpChannel, const char8* message) override;
     //END of TCPChannelDelegate
     

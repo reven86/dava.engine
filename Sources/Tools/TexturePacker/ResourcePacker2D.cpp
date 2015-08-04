@@ -160,13 +160,11 @@ void ResourcePacker2D::RecalculateMD5ForOutputDir()
 
 bool ResourcePacker2D::RecalculateDirMD5(const FilePath& pathname, const FilePath& md5file, bool isRecursive) const
 {
-    FilePath md5FileName = FilePath::CreateWithNewExtension(md5file, ".md5");
-
     std::array<uint8, 16> oldMD5Digest;
     std::array<uint8, 16> newMD5Digest;
     bool isChanged = false;
 
-    ScopedPtr<File> file(File::Create(md5FileName, File::OPEN | File::READ));
+    ScopedPtr<File> file(File::Create(md5file, File::OPEN | File::READ));
     if (!file)
     {
         isChanged = true;
@@ -179,7 +177,7 @@ bool ResourcePacker2D::RecalculateDirMD5(const FilePath& pathname, const FilePat
 
     MD5::ForDirectory(pathname, newMD5Digest.data(), isRecursive, /*includeHidden=*/false);
 
-    file = File::Create(md5FileName, File::CREATE | File::WRITE);
+    file = File::Create(md5file, File::CREATE | File::WRITE);
     DVASSERT(file && "Can't create md5 file");
     
     auto bytesWritten = file->Write(newMD5Digest.data(), MD5::DIGEST_SIZE);

@@ -67,10 +67,8 @@ void ServerLogics::OnRequestedFromCache(DAVA::TCPChannel *tcpChannel, const DAVA
         {   // Found in db.
             server->SendFiles(tcpChannel, key, entry->GetFiles());
         }
-        else if(client->IsConnected())
+        else if (client->RequestFromCache(key))
         {   // Not found in db. Ask from remote cache.
-            client->GetFromCache(key);
-            
             RequestDescription description;
             description.request = DAVA::AssetCache::PACKET_GET_FILES_REQUEST;
             description.key = key;
@@ -94,7 +92,7 @@ void ServerLogics::OnWarmingUp(DAVA::TCPChannel *tcpChannel, const DAVA::AssetCa
     }
 }
 
-void ServerLogics::OnChannelClosed(DAVA::TCPChannel *tcpChannel, const DAVA::char8* message)
+void ServerLogics::OnChannelClosed(DAVA::TCPChannel *tcpChannel, const DAVA::char8*)
 {
     if(waitedRequests.size())
     {

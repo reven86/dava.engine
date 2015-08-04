@@ -45,7 +45,7 @@ namespace std
         size_t operator()(const DAVA::AssetCache::CacheItemKey & key) const
         {
             size_t value = 0;
-            for(auto i = 0; i < DAVA::AssetCache::CacheItemKey::INTERNAL_DATA_SIZE; ++i)
+            for(DAVA::uint32 i = 0; i < DAVA::AssetCache::CacheItemKey::INTERNAL_DATA_SIZE; ++i)
             {
                 auto byte = key.keyData.internalData[i];
                 
@@ -77,9 +77,10 @@ class ServerCacheEntry;
 class CacheDB
 {
     static const String DB_FILE_NAME;
+    static const uint32 VERSION;
     
-    using CACHE = UnorderedMap<CacheItemKey, ServerCacheEntry>;
-    using FASTCACHE = UnorderedMap<CacheItemKey, ServerCacheEntry *>;
+    using CacheMap = UnorderedMap<CacheItemKey, ServerCacheEntry>;
+    using FastCacheMap = UnorderedMap<CacheItemKey, ServerCacheEntry *>;
 
     
 public:
@@ -124,14 +125,13 @@ private:
     
     void InvalidateAccessToken(ServerCacheEntry * entry);
     
-    void ReduceFastCacheByCount(uint32 toCount);
     void ReduceFullCacheBySize(uint64 toSize);
-    void RemoveOldestFromFastCache();
+    void ReduceFastCacheByCount(uint32 countToRemove);
     
-    void RemoveFromFastCache(const FASTCACHE::iterator &it);
-    void RemoveFromFullCache(const CACHE::iterator &it);
+    void RemoveFromFastCache(const FastCacheMap::iterator &it);
+    void RemoveFromFullCache(const CacheMap::iterator &it);
 
-    void Remove(const CACHE::iterator &it);
+    void Remove(const CacheMap::iterator &it);
 
     
 private:
@@ -140,7 +140,7 @@ private:
     FilePath cacheSettings;             //path to settings
 
     uint64 storageSize = 0;             //maximum cache size
-    uint32 itemsInMemory = 0;           //count of items in memory, to use for fast access
+    uint32 maxItemsInMemory = 0;           //count of items in memory, to use for fast access
 
     uint64 usedSize = 0;                //used by files
     uint64 nextItemID = 0;              //item counter, used as last access time token
@@ -148,8 +148,8 @@ private:
     uint64 autoSaveTimeout = 0;
     uint64 lastSaveTime = 0;
     
-    FASTCACHE fastCache;                //runtime, week storage
-    CACHE fullCache;                    //stored on disk, strong storage
+    FastCacheMap fastCache;             //runtime, week storage
+    CacheMap fullCache;                 //stored on disk, strong storage
     
 	std::atomic<bool> dbStateChanged;    //flag about changes in db
 };

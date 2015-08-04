@@ -49,14 +49,15 @@
 #include <QDoubleSpinBox>
 #include <QSpinBox>
 
-String DEFAULT_REMOTE_IP = "127.0.0.1";
-uint16 DEFAULT_REMOTE_PORT = DAVA::AssetCache::ASSET_SERVER_PORT;
+namespace {
+    String DEFAULT_REMOTE_IP = "127.0.0.1";
+    uint16 DEFAULT_REMOTE_PORT = DAVA::AssetCache::ASSET_SERVER_PORT;
+}
 
-MainWindow::MainWindow(QWidget *parent)
+MainWindow::MainWindow(ServerCore& core, QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
-    , settings(nullptr)
-    , serverCore(nullptr)
+    , serverCore(core)
 {
     ui->setupUi(this);
 
@@ -81,6 +82,10 @@ MainWindow::MainWindow(QWidget *parent)
     CreateTrayIcon();
 
     ChangeSettingsState(NOT_EDITED);
+
+    connect(&serverCore, &ServerCore::ServerStateChanged, this, &MainWindow::OnServerStateChanged);
+    LoadSettings();
+    OnServerStateChanged(&serverCore);
 }
 
 MainWindow::~MainWindow()
@@ -132,18 +137,7 @@ void MainWindow::closeEvent(QCloseEvent *e)
 
     if (settingsState != NOT_EDITED)
     {
-        LoadSettings(settings);
-    }
-}
-
-void MainWindow::SetServerCore(ServerCore* server)
-{
-    serverCore = server;
-    if (serverCore)
-    {
-        connect(serverCore, &ServerCore::ServerStateChanged, this, &MainWindow::OnServerStateChanged);
-        LoadSettings(serverCore->GetSettings());
-        OnServerStateChanged(serverCore);
+        LoadSettings();
     }
 }
 
@@ -232,24 +226,18 @@ void MainWindow::OnRemoteServerEdited()
 
 void MainWindow::OnEditAction()
 {
-    this->show();
-    this->raise();
+    show();
+    raise();
 }
 
 void MainWindow::OnStartAction()
 {
-    if (serverCore)
-    {
-        serverCore->Start();
-    }
+    serverCore.Start();
 }
 
 void MainWindow::OnStopAction()
 {
-    if (serverCore)
-    {
-        serverCore->Stop();
-    }
+    serverCore.Stop();
 }
 
 void MainWindow::AddRemoteServer(const ServerData & newServer)
@@ -295,66 +283,61 @@ void MainWindow::OnApplyButtonClicked()
 
 void MainWindow::OnCloseButtonClicked()
 {
-    this->hide();
+    hide();
 
     if (settingsState != NOT_EDITED)
     {
-        LoadSettings(settings);
+        LoadSettings();
     }
 }
 
 void MainWindow::SaveSettings()
 {
-    settings->SetFolder(ui->cacheFolderLineEdit->text().toStdString());
-    settings->SetCacheSizeGb(ui->cacheSizeSpinBox->value());
-    settings->SetFilesCount(ui->numberOfFilesSpinBox->value());
-    settings->SetAutoSaveTimeoutMin(ui->autoSaveTimeoutSpinBox->value());
-    settings->SetPort(ui->portSpinBox->value());
-    settings->SetAutoStart(ui->autoStartCheckBox->isChecked());
+    serverCore.Settings().SetFolder(ui->cacheFolderLineEdit->text().toStdString());
+    serverCore.Settings().SetCacheSizeGb(ui->cacheSizeSpinBox->value());
+    serverCore.Settings().SetFilesCount(ui->numberOfFilesSpinBox->value());
+    serverCore.Settings().SetAutoSaveTimeoutMin(ui->autoSaveTimeoutSpinBox->value());
+    serverCore.Settings().SetPort(ui->portSpinBox->value());
+    serverCore.Settings().SetAutoStart(ui->autoStartCheckBox->isChecked());
 
-    settings->ResetServers();
+    serverCore.Settings().ResetServers();
     for (auto &server : remoteServers)
     {
-        settings->AddServer(server->GetServerData());
+        serverCore.Settings().AddServer(server->GetServerData());
     }
 
-    settings->Save();
+    serverCore.Settings().Save();
     ChangeSettingsState(NOT_EDITED);
 }
 
-void MainWindow::LoadSettings(ApplicationSettings *_settings)
+void MainWindow::LoadSettings()
 {
-    settings = _settings;
-    if(settings == nullptr)
-        return;
-    
-    bool blocked = this->blockSignals(true);
+    bool blocked = blockSignals(true);
 
-    ui->cacheFolderLineEdit->setText(settings->GetFolder().GetAbsolutePathname().c_str());
-    ui->cacheSizeSpinBox->setValue(settings->GetCacheSizeGb());
-    ui->numberOfFilesSpinBox->setValue(settings->GetFilesCount());
-    ui->autoSaveTimeoutSpinBox->setValue(settings->GetAutoSaveTimeoutMin());
-    ui->portSpinBox->setValue(settings->GetPort());
-    ui->autoStartCheckBox->setChecked(settings->IsAutoStart());
+    ui->cacheFolderLineEdit->setText(serverCore.Settings().GetFolder().GetAbsolutePathname().c_str());
+    ui->cacheSizeSpinBox->setValue(serverCore.Settings().GetCacheSizeGb());
+    ui->numberOfFilesSpinBox->setValue(serverCore.Settings().GetFilesCount());
+    ui->autoSaveTimeoutSpinBox->setValue(serverCore.Settings().GetAutoSaveTimeoutMin());
+    ui->portSpinBox->setValue(serverCore.Settings().GetPort());
+    ui->autoStartCheckBox->setChecked(serverCore.Settings().IsAutoStart());
     
     RemoveServers();
-    auto& servers = settings->GetServers();
+    auto& servers = serverCore.Settings().GetServers();
     for (auto& sd: servers)
     {
         AddRemoteServer(sd);
     }
     
-    this->blockSignals(blocked);
+    blockSignals(blocked);
 
     ChangeSettingsState(NOT_EDITED);
 }
 
 void MainWindow::OnServerStateChanged(const ServerCore* server)
 {
-    DVASSERT(serverCore);
-    DVASSERT(serverCore == server && "Notification from alien server core");
+    DVASSERT(&serverCore == server);
 
-    switch(serverCore->GetState())
+    switch(serverCore.GetState())
     {
     case ServerCore::State::STARTED:
     {

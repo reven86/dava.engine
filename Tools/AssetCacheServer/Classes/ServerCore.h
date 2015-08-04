@@ -32,12 +32,12 @@
 
 #include "AssetCache/AssetCache.h"
 #include "ServerLogics.h"
+#include "ApplicationSettings.h"
 
 #include <atomic>
 
 #include <QObject>
 
-class ApplicationSettings;
 class QTimer;
 
 class ServerCore: public QObject
@@ -52,7 +52,7 @@ public:
     ServerCore();
     ~ServerCore() override;
     
-    ApplicationSettings* GetSettings() const;
+    ApplicationSettings& Settings();
     
     void Start();
     void Stop();
@@ -66,26 +66,27 @@ public slots:
     void OnSettingsUpdated(const ApplicationSettings * settings);
 
 private slots:
-    void UpdateByTimer();
+    void OnTimerUpdate();
 
 private:
-    void Update();
-    
-private:
-    
     DAVA::AssetCache::Server server;
     DAVA::AssetCache::Client client;
     DAVA::AssetCache::CacheDB dataBase;
 
 	ServerLogics serverLogics;
-    
-    ApplicationSettings* settings;
+    ApplicationSettings settings;
+
     std::atomic<State> state;
 
     QTimer* updateTimer;
 };
 
 
+
+inline ApplicationSettings& ServerCore::Settings()
+{
+    return settings;
+}
 
 
 #endif // __SERVER_CORE_H__
