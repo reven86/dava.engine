@@ -163,17 +163,13 @@ public:
     {
         // Send all parcell at a time
         for (auto& x : parcels)
-        {
-            Logger::Debug("TestEchoClient: sending %u", static_cast<uint32>(x.length));
             SendParcel(&x);
-        }
     }
     void OnPacketReceived(IChannel* aChannel, const void* buffer, size_t length) override
     {
         if (pendingRead < parcels.size())
         {
             Parcel& p = parcels[pendingRead];
-            Logger::Debug("TestEchoClient: recieved %u", static_cast<uint32>(p.length));
             if (p.length == length && 0 == Memcmp(p.outbuf, buffer, length))
             {
                 bytesRecieved += length;
@@ -192,7 +188,6 @@ public:
         {
             // Check that send operation is sequential
             Parcel& p = parcels[pendingSent];
-            Logger::Debug("TestEchoClient: send complete %u", static_cast<uint32>(p.length));
             if (p.length == length && 0 == Memcmp(p.outbuf, buffer, length))
             {
                 bytesSent += length;
@@ -206,7 +201,6 @@ public:
         {
             // Check that delivery notification is sequential
             Parcel& p = parcels[pendingDelivered];
-            Logger::Debug("TestEchoClient: deliver ack %u", static_cast<uint32>(p.length));
             if (p.packetId == packetId)
             {
                 bytesDelivered += p.length;
