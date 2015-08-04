@@ -370,6 +370,7 @@ dx11_CommandBuffer_SetScissorRect( Handle cmdBuf, ScissorRect rect )
 {
 #if RHI__DX11_USE_DEFERRED_CONTEXT
 #else
+    CommandBufferPool::Get(cmdBuf)->Command( DX11__SET_SCISSOR_RECT, rect.x, rect.y, rect.width, rect.height );
 #endif
 }
 
@@ -381,6 +382,7 @@ dx11_CommandBuffer_SetViewport( Handle cmdBuf, Viewport vp )
 {
 #if RHI__DX11_USE_DEFERRED_CONTEXT
 #else
+    CommandBufferPool::Get(cmdBuf)->Command( DX11__SET_VIEWPORT, vp.x, vp.y, vp.width, vp.height );
 #endif
 }
 
@@ -1168,6 +1170,58 @@ SCOPED_FUNCTION_TIMING();
 
                 ConstBufferDX11::SetToRHI( cb, inst );
                 c += 3;
+            }   break;
+            
+            case DX11__SET_SCISSOR_RECT :
+            {
+                int x = int(arg[0]);
+                int y = int(arg[1]);
+                int w = int(arg[2]);
+                int h = int(arg[3]);
+
+                if( !(x==0  &&  y==0  &&  w==0  &&  h==0) )
+                {
+                    D3D11_RECT  rect = { x, y, x+w-1, y+h-1 };
+
+                    rs_param.scissorEnabled = true;
+                    cur_rs                  = nullptr;
+                    _D3D11_ImmediateContext->RSSetScissorRects( 1, &rect );
+                }
+                else
+                {
+                    rs_param.scissorEnabled = false;
+                    cur_rs = nullptr;
+                }
+
+                c += 4;
+            }   break;
+
+            case DX11__SET_VIEWPORT :
+            {
+                int x = int(arg[0]);
+                int y = int(arg[1]);
+                int w = int(arg[2]);
+                int h = int(arg[3]);
+
+                if( !(x==0  &&  y==0  &&  w==0  &&  h==0) )
+                {
+                    D3D11_VIEWPORT  vp;
+
+                    vp.TopLeftX = float(x);
+                    vp.TopLeftY = float(y);
+                    vp.Width    = float(w);
+                    vp.Height   = float(h);
+                    vp.MinDepth = 0.0f;
+                    vp.MaxDepth = 1.0f;
+                    
+                    _D3D11_ImmediateContext->RSSetViewports( 1, &vp );
+                }
+                else
+                {
+                    _D3D11_ImmediateContext->RSSetViewports( 1, &def_viewport );
+                }
+
+                c += 4;
             }   break;
 
             case DX11__SET_DEPTHSTENCIL_STATE :
