@@ -60,6 +60,7 @@ public:
 
     bool RegisterService(uint32 serviceId, ServiceCreator creator, ServiceDeleter deleter, const char8* serviceName = NULL);
     void UnregisterAllServices();
+    bool IsServiceRegistered(uint32 serviceId) const;
     const char8* ServiceName(uint32 serviceId) const;
 
     TrackId CreateController(const NetConfig& config, void* context = NULL);
@@ -108,6 +109,11 @@ inline bool NetCore::RegisterService(uint32 serviceId, ServiceCreator creator, S
 inline void NetCore::UnregisterAllServices()
 {
     registrar.UnregisterAll();
+}
+
+inline bool NetCore::IsServiceRegistered(uint32 serviceId) const
+{
+    return registrar.IsRegistered(serviceId);
 }
 
 inline const char8* NetCore::ServiceName(uint32 serviceId) const
