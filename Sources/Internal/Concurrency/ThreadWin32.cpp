@@ -72,7 +72,7 @@ void Thread::Start()
     auto hdl = _beginthreadex
         (
         0, // Security attributes
-        stackSize,
+        static_cast<DWORD>(stackSize),
         ThreadFunc,
         this,
         0,

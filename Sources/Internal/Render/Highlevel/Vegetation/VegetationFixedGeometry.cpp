@@ -99,7 +99,7 @@ static const Array<CLUSTER_TYPE_ARRAY, 2> VEGETATION_CLUSTER_NORMALS =
     CLUSTER_TYPE_1_NORMALS
 };
 
-static const uint32 VEGETATION_CLUSTER_SIZE[] =
+static const size_t VEGETATION_CLUSTER_SIZE[] =
 {
     CLUSTER_TYPE_0.size(),
     CLUSTER_TYPE_1.size()
@@ -259,7 +259,7 @@ void VegetationFixedGeometry::GenerateVertices(uint32 maxClusters,
         
         const auto clusterVertices = VEGETATION_CLUSTER[cellData.geometryId];
         const auto clusterNormals = VEGETATION_CLUSTER_NORMALS[cellData.geometryId];
-        uint32 clusterVertexCount = VEGETATION_CLUSTER_SIZE[cellData.geometryId];
+        size_t clusterVertexCount = VEGETATION_CLUSTER_SIZE[cellData.geometryId];
         
         uint32 clusterCounter = 0;
         for(uint32 i = 0; i < totalTiles; ++i)
@@ -413,14 +413,14 @@ void VegetationFixedGeometry::PrepareIndexBufferData(uint32 indexBufferIndex,
         TextureSheetCell& cellData = textureSheet.cells[layerIndex];
         
         const auto clusterIndices = VEGETATION_CLUSTER_INDICES[cellData.geometryId];
-        const uint32 clusterIndexCount = VEGETATION_CLUSTER_INDEX_SIZE[cellData.geometryId];
-        const uint32 clusterVertexCount = VEGETATION_CLUSTER_SIZE[cellData.geometryId];
+        const size_t clusterIndexCount = VEGETATION_CLUSTER_INDEX_SIZE[cellData.geometryId];
+        const size_t clusterVertexCount = VEGETATION_CLUSTER_SIZE[cellData.geometryId];
         
         for(uint32 y = startY; y < endY; y += resolutionOffset)
         {
             for(uint32 x = startX; x < endX; x += resolutionOffset)
             {
-                uint32 baseIndex = layerOffsets[layerIndex] + (y * maxClusterRowSize + x) * clusterVertexCount;
+                size_t baseIndex = layerOffsets[layerIndex] + (y * maxClusterRowSize + x) * clusterVertexCount;
                 
                 for(uint32 clusterIndexIndex = 0; clusterIndexIndex < clusterIndexCount; ++clusterIndexIndex)
                 {

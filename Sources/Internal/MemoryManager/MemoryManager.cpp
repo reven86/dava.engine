@@ -352,7 +352,7 @@ void MemoryManager::Deallocate(void* ptr)
         {
             LockType lock(statMutex);
             statGeneral.ghostBlockCount += 1;
-            statGeneral.ghostSize += MallocHook::MallocSize(ptr);
+            statGeneral.ghostSize += static_cast<uint32>(MallocHook::MallocSize(ptr));
             ptrToFree = ptr;
         }
         MallocHook::Free(ptrToFree);
@@ -732,7 +732,7 @@ DAVA_NOINLINE void MemoryManager::CollectBacktrace(Backtrace* backtrace, size_t 
     {
         backtrace->frames[idst] = frames[isrc];
     }
-    backtrace->hash = HashValue_N(reinterpret_cast<const char*>(backtrace->frames.data()), backtrace->frames.size());
+    backtrace->hash = HashValue_N(reinterpret_cast<const char*>(backtrace->frames.data()), static_cast<uint32>(backtrace->frames.size()));
     backtrace->nref = 1;
     backtrace->symbolsCollected = false;
 }

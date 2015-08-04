@@ -1586,7 +1586,7 @@ uint32 VegetationRenderObject::MapCellSquareToResolutionIndex(uint32 cellSquare)
 {
     uint32 index = 0;
     size_t resolutionCount = RESOLUTION_CELL_SQUARE.size();
-    for(size_t i = 0; i < resolutionCount; ++i)
+    for(uint32 i = 0; i < resolutionCount; ++i)
     {
         if(cellSquare == RESOLUTION_CELL_SQUARE[i])
         {

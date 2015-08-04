@@ -862,7 +862,7 @@ bool YamlNode::InitArrayFromVariantType(const VariantType &varType)
     case VariantType::TYPE_COLOR:
         {
             const Color& color = varType.AsColor();
-            InternalSetVector(color.color.data(), color.color.size());
+            InternalSetVector(color.color.data(), static_cast<uint32>(color.color.size()));
         }
         break;
     default:

@@ -392,13 +392,13 @@ const FilePath & FileSystem::GetCurrentWorkingDirectory()
 #elif defined(__DAVAENGINE_WIN32__)
 
     Array<char, MAX_PATH> tempDir;
-    ::GetCurrentDirectoryA(tempDir.size(), tempDir.data());
+    ::GetCurrentDirectoryA(MAX_PATH, tempDir.data());
     path = tempDir.data();
 
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
 
     Array<char, PATH_MAX> tempDir;
-    getcwd(tempDir.data(), tempDir.size());
+    getcwd(tempDir.data(), PATH_MAX);
     path = tempDir.data();
 
 #endif //PLATFORMS
@@ -413,7 +413,7 @@ FilePath FileSystem::GetCurrentExecutableDirectory()
 
 #if defined(__DAVAENGINE_WIN32__)
     std::array<char, MAX_PATH> tempDir;
-    ::GetModuleFileNameA( NULL, tempDir.data(), tempDir.size() );
+    ::GetModuleFileNameA( nullptr, tempDir.data(),static_cast<uint32>(tempDir.size()) );
     currentExecuteDirectory = FilePath(tempDir.data()).GetDirectory();
 #elif defined(__DAVAENGINE_MACOS__)
     std::array<char, PATH_MAX> tempDir;
@@ -638,8 +638,8 @@ const FilePath FileSystem::GetUserDocumentsPath()
 #if defined(__DAVAENGINE_WIN32__)
 
     char szPath[MAX_PATH + 1];
-    SHGetFolderPathA(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, szPath);
-    int32 n = strlen(szPath);
+    SHGetFolderPathA(nullptr, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, szPath);
+    size_t n = strlen(szPath);
     szPath[n] = '\\';
     szPath[n+1] = 0;
     String str(szPath);
@@ -662,7 +662,7 @@ const FilePath FileSystem::GetPublicDocumentsPath()
 
     char szPath[MAX_PATH + 1];
     SHGetFolderPathA(NULL, CSIDL_COMMON_DOCUMENTS, NULL, SHGFP_TYPE_CURRENT, szPath);
-    int32 n = strlen(szPath);
+    size_t n = strlen(szPath);
     szPath[n] = '\\';
     szPath[n+1] = 0;
     String str(szPath);

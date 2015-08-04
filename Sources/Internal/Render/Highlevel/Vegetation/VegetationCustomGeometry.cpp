@@ -109,7 +109,7 @@ VegetationCustomGeometry::VegetationCustomGeometry(const Vector<uint32> & _maxCl
     , resolutionClusterStride(_resolutionClusterStride)
     , worldSize(_worldSize)
 {
-    resolutionCount = resolutionClusterStride.size();
+    resolutionCount = static_cast<uint32>(resolutionClusterStride.size());
     
     materialTransform = new CustomMaterialTransformer();
     
