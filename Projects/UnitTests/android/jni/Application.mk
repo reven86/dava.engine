@@ -31,4 +31,4 @@ APP_ABI := armeabi-v7a x86
 APP_PLATFORM := android-14
 
 # we have to use last ndk10e with clang3.6, clang - point to clang3.6 in ndk10e
-NDK_TOOLCHAIN_VERSION=clang3.6
+NDK_TOOLCHAIN_VERSION=clang
