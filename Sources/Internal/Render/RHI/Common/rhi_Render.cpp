@@ -955,7 +955,7 @@ void ProcessScheduledDelete()
     {
         if (frameSyncObjects[i].IsValid() && SyncObjectSignaled(frameSyncObjects[i]))
         {
-            for (std::vector<ScheduledDeleteResource>::iterator it = scheduledDeleteResources[i].begin(), e = scheduledDeleteResources[i].begin(); it != e; ++it)            
+            for (std::vector<ScheduledDeleteResource>::iterator it = scheduledDeleteResources[i].begin(), e = scheduledDeleteResources[i].end(); it != e; ++it)            
             {
                 ScheduledDeleteResource& res = *it;
                 switch (res.resourceType)
