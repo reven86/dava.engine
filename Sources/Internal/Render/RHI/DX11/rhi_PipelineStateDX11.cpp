@@ -403,17 +403,17 @@ public:
 
     Handle  CreateConstBuffer( ProgType type, unsigned buf_i );
 
-    ID3D10Blob*         _vp_code;
-    ID3D11VertexShader* _vs11;
-    unsigned            _vp_buf_count;
-    unsigned            _vp_buf_reg_count[16];
+    ID3D10Blob*         vpCode;
+    ID3D11VertexShader* vertexShader;
+    unsigned            vertexBufCount;
+    unsigned            vertexBufRegCount[16];
 
-    ID3D11PixelShader*  _ps11;
-    unsigned            _fp_buf_count;
-    unsigned            _fp_buf_reg_count[16];
+    ID3D11PixelShader*  pixelShader;
+    unsigned            fragmentBufCount;
+    unsigned            fragmentBufRegCount[16];
 
-    VertexLayout        _layout;
-    ID3D11InputLayout*  _layout11;
+    VertexLayout        vertexLayout;
+    ID3D11InputLayout*  inputLayout;
 
     ID3D11BlendState*   _blend_state;
 
@@ -446,7 +446,7 @@ PipelineStateDX11_t::CreateConstBuffer( ProgType type, unsigned buf_i )
     Handle          handle = ConstBufDX11Pool::Alloc();
     ConstBufDX11*   cb     = ConstBufDX11Pool::Get( handle );
 
-    cb->Construct( type, buf_i, (type==PROG_VERTEX) ? _vp_buf_reg_count[buf_i] : _fp_buf_reg_count[buf_i] );
+    cb->Construct( type, buf_i, (type==PROG_VERTEX) ? vertexBufRegCount[buf_i] : fragmentBufRegCount[buf_i] );
 
     return handle;
 }
@@ -496,7 +496,7 @@ desc.vertexLayout.Dump();
     
     if( SUCCEEDED(hr) )
     {
-        hr = _D3D11_Device->CreateVertexShader( vp_code->GetBufferPointer(), vp_code->GetBufferSize(), NULL, &(ps->_vs11) );
+        hr = _D3D11_Device->CreateVertexShader( vp_code->GetBufferPointer(), vp_code->GetBufferSize(), NULL, &(ps->vertexShader) );
         
         if( SUCCEEDED(hr) )
         {
@@ -511,7 +511,7 @@ desc.vertexLayout.Dump();
 
                 if( SUCCEEDED(hr) )
                 {
-                    ps->_vp_buf_count = desc.ConstantBuffers;
+                    ps->vertexBufCount = desc.ConstantBuffers;
                     
                     for( unsigned b=0; b!=desc.ConstantBuffers; ++b )
                     {
@@ -524,7 +524,7 @@ desc.vertexLayout.Dump();
                             hr = cb->GetDesc( &cb_desc );
                             if( SUCCEEDED(hr) )
                             {
-                                ps->_vp_buf_reg_count[b] = cb_desc.Size/(4*sizeof(float));
+                                ps->vertexBufRegCount[b] = cb_desc.Size/(4*sizeof(float));
                             }
                         }
                     }
@@ -568,7 +568,7 @@ desc.vertexLayout.Dump();
     
     if( SUCCEEDED(hr) )
     {
-        hr = _D3D11_Device->CreatePixelShader( fp_code->GetBufferPointer(), fp_code->GetBufferSize(), NULL, &(ps->_ps11) );
+        hr = _D3D11_Device->CreatePixelShader( fp_code->GetBufferPointer(), fp_code->GetBufferSize(), NULL, &(ps->pixelShader) );
         
         if( SUCCEEDED(hr) )
         {
@@ -583,7 +583,7 @@ desc.vertexLayout.Dump();
 
                 if( SUCCEEDED(hr) )
                 {
-                    ps->_fp_buf_count = desc.ConstantBuffers;
+                    ps->fragmentBufCount = desc.ConstantBuffers;
 
                     for( unsigned b=0; b!=desc.ConstantBuffers; ++b )
                     {
@@ -596,7 +596,7 @@ desc.vertexLayout.Dump();
                             hr = cb->GetDesc( &cb_desc );
                             if( SUCCEEDED(hr) )
                             {
-                                ps->_fp_buf_reg_count[b] = cb_desc.Size/(4*sizeof(float));
+                                ps->fragmentBufRegCount[b] = cb_desc.Size/(4*sizeof(float));
                             }
                         }
                     }
@@ -622,10 +622,10 @@ desc.vertexLayout.Dump();
 
 
     // create input-layout
-    ps->_vp_code  = vp_code;
-    ps->_layout11 = _CreateInputLayout( desc.vertexLayout, vp_code->GetBufferPointer(), vp_code->GetBufferSize() );
-    ps->_layout   = desc.vertexLayout;
-    DVASSERT(ps->_layout11);
+    ps->vpCode       = vp_code;
+    ps->inputLayout  = _CreateInputLayout( desc.vertexLayout, vp_code->GetBufferPointer(), vp_code->GetBufferSize() );
+    ps->vertexLayout = desc.vertexLayout;
+    DVASSERT(ps->inputLayout);
 
     ps->dbgVertexSrc = vprog_bin;
     ps->dbgPixelSrc  = fprog_bin;
@@ -741,7 +741,7 @@ SetToRHI( Handle ps, uint32 layoutUID )
 
     if( layoutUID == VertexLayout::InvalidUID )
     {
-        layout11 = ps11->_layout11;
+        layout11 = ps11->inputLayout;
     }
     else
     {
@@ -759,17 +759,17 @@ SetToRHI( Handle ps, uint32 layoutUID )
             const VertexLayout*             layout = VertexLayout::Get( layoutUID );
             PipelineStateDX11_t::LayoutInfo info;
 
-            layout11 = _CreateInputLayout( *layout, ps11->_vp_code->GetBufferPointer(), ps11->_vp_code->GetBufferSize() );
+            layout11 = _CreateInputLayout( *layout, ps11->vpCode->GetBufferPointer(), ps11->vpCode->GetBufferSize() );
             
-            info.inputLayout = layout11;
+            info.inputLayout = layout11;                    ;
             info.layoutUID   = layoutUID;
             ps11->altLayout.push_back( info );
         }
     }
 
     _D3D11_ImmediateContext->IASetInputLayout( layout11 );
-    _D3D11_ImmediateContext->VSSetShader( ps11->_vs11, NULL, 0 );
-    _D3D11_ImmediateContext->PSSetShader( ps11->_ps11, NULL, 0 );
+    _D3D11_ImmediateContext->VSSetShader( ps11->vertexShader, NULL, 0 );
+    _D3D11_ImmediateContext->PSSetShader( ps11->pixelShader, NULL, 0 );
     _D3D11_ImmediateContext->OMSetBlendState( ps11->_blend_state, NULL, 0xFFFFFFFF );
 }
 
@@ -778,7 +778,7 @@ VertexLayoutStride( Handle ps )
 {
     PipelineStateDX11_t* ps11 = PipelineStateDX11Pool::Get( ps );
     
-    return ps11->_layout.Stride();
+    return ps11->vertexLayout.Stride();
 }
 
 } // namespace PipelineStateDX9
