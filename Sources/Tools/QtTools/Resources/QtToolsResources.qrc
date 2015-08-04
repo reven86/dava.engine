@@ -2,6 +2,7 @@
     <qresource prefix="/QtTools">
         <file>Icons/wand.png</file>
         <file>Icons/reload.png</file>
+        <file>Icons/reset.png</file>
         <file>Icons/clear.png</file>
     </qresource>
 </RCC>

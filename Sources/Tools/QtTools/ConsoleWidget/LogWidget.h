@@ -33,7 +33,6 @@ public slots:
     void AddResultList(const DAVA::ResultList &resultList);
 private slots:
     void OnCopy();
-    void OnClear();
     void OnBeforeAdded();
     void OnRowAdded();
     void OnItemClicked(const QModelIndex &index);

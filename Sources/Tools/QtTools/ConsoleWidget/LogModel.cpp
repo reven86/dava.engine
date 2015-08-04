@@ -79,6 +79,14 @@ void LogModel::AddMessage(DAVA::Logger::eLogLevel ll, const QString& text)
     QMetaObject::invokeMethod(timer, "start", Qt::QueuedConnection);
 }
 
+void LogModel::Clear()
+{
+    beginRemoveRows(QModelIndex(), 0, rowCount() - 1);
+    registerCount = 0;
+    items.clear();
+    endRemoveRows();
+}
+
 void LogModel::OnTimeout()
 {
     int newSize;

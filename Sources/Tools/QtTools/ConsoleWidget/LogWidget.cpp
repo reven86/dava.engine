@@ -19,7 +19,8 @@ LogWidget::LogWidget(QWidget* parent)
     , ui(new Ui::LogWidget)
 {
     ui->setupUi(this);
-    ui->toolButton_clearFilter->setIcon(QIcon(":/QtTools/Icons/clear.png"));
+    ui->toolButton_clearFilter->setIcon(QIcon(":/QtTools/Icons/reset.png"));
+    ui->toolButton_clearConsole->setIcon(QIcon(":/QtTools/Icons/clear.png"));
 
     logModel = new LogModel(this);
     logFilterModel = new LogFilterModel(this);
@@ -27,9 +28,12 @@ LogWidget::LogWidget(QWidget* parent)
     logFilterModel->setSourceModel(logModel);
     ui->log->setModel(logFilterModel);
     ui->log->installEventFilter(this);
-
+    LogDelegate *logDelegate = new LogDelegate(ui->log);
     FillFiltersCombo();
+    connect(logDelegate, &LogDelegate::copyRequest, this, &LogWidget::OnCopy);
+    connect(logDelegate, &LogDelegate::clearRequest, logModel, &LogModel::Clear);
     connect(ui->toolButton_clearFilter, &QToolButton::clicked, ui->search, &LineEditEx::clear);
+    connect(ui->toolButton_clearConsole, &QToolButton::clicked, logModel, &LogModel::Clear);
     connect(ui->filter, &CheckableComboBox::selectedUserDataChanged, logFilterModel, &LogFilterModel::SetFilters);
     connect(ui->search, &LineEditEx::textUpdated, logFilterModel, &LogFilterModel::setFilterFixedString);
     connect(logFilterModel, &LogFilterModel::filterStringChanged, ui->search, &LineEditEx::setText);
@@ -181,11 +185,6 @@ void LogWidget::OnCopy()
 
     QClipboard* clipboard = QApplication::clipboard();
     clipboard->setText(text);
-}
-
-void LogWidget::OnClear()
-{
-    logModel->removeRows(0, logModel->rowCount());
 }
 
 void LogWidget::OnBeforeAdded()

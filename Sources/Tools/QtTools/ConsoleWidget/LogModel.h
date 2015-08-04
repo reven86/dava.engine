@@ -38,6 +38,7 @@ public:
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
 public slots:
     void AddMessage(DAVA::Logger::eLogLevel ll, const QString &text);
+    void Clear();
 private slots:
     void OnTimeout();
 private:
