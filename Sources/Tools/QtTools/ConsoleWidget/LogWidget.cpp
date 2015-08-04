@@ -36,11 +36,11 @@ LogWidget::LogWidget(QWidget* parent)
     connect(ui->toolButton_clearConsole, &QToolButton::clicked, logModel, &LogModel::Clear);
     connect(ui->filter, &CheckableComboBox::selectedUserDataChanged, logFilterModel, &LogFilterModel::SetFilters);
     connect(ui->search, &LineEditEx::textUpdated, logFilterModel, &LogFilterModel::setFilterFixedString);
-    connect(logFilterModel, &LogFilterModel::filterStringChanged, ui->search, &LineEditEx::setText);
     connect(ui->log->model(), &QAbstractItemModel::rowsAboutToBeInserted, this, &LogWidget::OnBeforeAdded);
-    connect(ui->log->model(), &QAbstractItemModel::rowsInserted, this, &LogWidget::OnRowAdded);
     connect(ui->log, &QListView::clicked, this, &LogWidget::OnItemClicked);
-    ui->filter->selectUserData(logFilterModel->GetFilters());
+    scrollTimer = new QTimer(this);
+    scrollTimer->setInterval(0);
+    connect(scrollTimer, &QTimer::timeout, this, &LogWidget::UpdateScroll, Qt::QueuedConnection);
 }
 
 LogWidget::~LogWidget()
@@ -57,8 +57,8 @@ QByteArray LogWidget::Serialize() const
 {
     QByteArray retData;
     QDataStream stream(&retData, QIODevice::WriteOnly);
-    stream << logFilterModel->filterRegExp().pattern();
-    stream << logFilterModel->GetFilters();
+    stream << ui->search->text();
+    stream << ui->filter->selectedUserData();
     return retData;
 }
 
@@ -190,9 +190,10 @@ void LogWidget::OnCopy()
 void LogWidget::OnBeforeAdded()
 {
     onBottom = ui->log->verticalScrollBar()->value() == ui->log->verticalScrollBar()->maximum();
+    scrollTimer->start();
 }
 
-void LogWidget::OnRowAdded()
+void LogWidget::UpdateScroll()
 {
     if (onBottom)
     {
@@ -202,5 +203,5 @@ void LogWidget::OnRowAdded()
 
 void LogWidget::OnItemClicked(const QModelIndex &index)
 {
-    emit ItemClicked(logModel->data(index, LogModel::INTERNAL_DATA_ROLE).toString());
+   emit ItemClicked(logFilterModel->data(index, LogModel::INTERNAL_DATA_ROLE).toString());
 };
