@@ -14,8 +14,7 @@ include $(CLEAR_VARS)
 LOCAL_MODULE := TestBed
 
 # set path for includes
-LOCAL_C_INCLUDES := $(LOCAL_PATH)
-LOCAL_C_INCLUDES += $(DV_PROJECT_ROOT)/Classes
+LOCAL_C_INCLUDES := $(DV_PROJECT_ROOT)/Classes
 
 # set exported includes
 LOCAL_EXPORT_C_INCLUDES := $(LOCAL_C_INCLUDES)

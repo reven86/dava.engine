@@ -89,13 +89,12 @@ DAVA_TESTCLASS(Utf8Test)
 };
 
 #else
-using namespace std::literals;
 
 DAVA_TESTCLASS(Utf8Test)
 {
     DAVA_TEST(TestUtf8ToUtf32Function)
     {
-        auto utf8String = u8"это текст на русском внутри в utf8 в исходном файле тоже в utf8"s;
+        String utf8String = "это текст на русском внутри в utf8 в исходном файле тоже в utf8";
         WideString result = UTF8Utils::EncodeToWideString(utf8String);
 
         TEST_VERIFY(result.size() < utf8String.size());
@@ -117,7 +116,7 @@ DAVA_TESTCLASS(Utf8Test)
         static_assert(sizeof(wchar_t) == 4, "is it unix?");
         static_assert(sizeof(wchar_t) == sizeof(uint32_t), "std c++ 14 use uint32_t for unicode");
 
-        auto str32bit = U"это текст на русском в utf32 в исходном файле в utf8"s;
+        std::u32string str32bit = U"это текст на русском в utf32 в исходном файле в utf8";
         const wchar_t* wideCStr = reinterpret_cast<const wchar_t*>(str32bit.c_str());
 
         WideString wideString(wideCStr);

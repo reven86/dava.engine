@@ -29,9 +29,7 @@
 #ifndef __SPEED_LOAD_IMAGES_TEST__
 #define __SPEED_LOAD_IMAGES_TEST__
 
-#include "BaseScreen.h"
-
-using namespace DAVA;
+#include "Infrastructure/BaseScreen.h"
 
 class SpeedLoadImagesTest : public BaseScreen
 {
@@ -49,12 +47,12 @@ private:
     void OnTestTga(BaseObject *obj, void *data, void *callerData);
     void OnTestWebP(BaseObject *obj, void *data, void *callerData);
 
-    void TestAndDisplayFormat(String extension, const Vector<String> &qualities);
-    void CreatePaths(String extension, const Vector<String> &qualities, Vector<FilePath> &outPaths);
-    uint64 GetLoadTime(const FilePath &path);
+    void TestAndDisplayFormat(DAVA::String extension, const DAVA::Vector<DAVA::String> &qualities);
+    void CreatePaths(DAVA::String extension, const DAVA::Vector<DAVA::String> &qualities, DAVA::Vector<DAVA::FilePath> &outPaths);
+    DAVA::uint64 GetLoadTime(const DAVA::FilePath &path);
 
 private:
-    UIStaticText *resultText;
+    DAVA::UIStaticText *resultText;
 };
 
 #endif /* defined(__SPEED_LOAD_IMAGES_TEST__) */

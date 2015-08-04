@@ -32,6 +32,8 @@
 #include "Render/Image/ImageSystem.h"
 #include "Utils/UTF8Utils.h"
 
+using namespace DAVA;
+
 SpeedLoadImagesTest::SpeedLoadImagesTest()
     : BaseScreen("SpeedLoadImagesTest")
     , resultText(nullptr)

@@ -32,6 +32,8 @@
 
 #include <memory>
 
+#if __cplusplus >= 201406L
+
 using namespace DAVA;
 
 auto f() -> int;
@@ -69,3 +71,5 @@ DAVA_TESTCLASS(Cpp14Test)
     	delete raw_ptr;
     }
 };
+
+#endif
