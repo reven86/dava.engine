@@ -8,10 +8,20 @@
 #include <type_traits>
 #include "Base/Platform.h"
 
-#define FN_CALL_CONV /* __stdcall */
-
 namespace DAVA {
 namespace Fn11 {
+
+template<typename T, typename... Other>
+struct first_pointer_class {
+    typedef typename std::remove_pointer<T>::type type;
+};
+
+template<typename... Args>
+using first_pointer_class_t = typename first_pointer_class<Args...>::type;
+
+template<typename T>
+struct is_best_argument : std::integral_constant < bool, std::is_fundamental<T>::value || std::is_pointer<T>::value >
+{ };
 
 class Closure
 {
@@ -137,13 +147,13 @@ public:
         : fn(_fn)
     { }
 
-    static Ret FN_CALL_CONV invokeTrivial(const Closure& storage, Args&&... args) DAVA_NOEXCEPT
+    static Ret invokeTrivial(const Closure& storage, typename std::conditional<is_best_argument<Args>::value, Args, Args&&>::type... args) DAVA_NOEXCEPT
     {
         HolderFree *holder = storage.GetTrivial<HolderFree>();
         return (Ret)holder->fn(std::forward<Args>(args)...);
     }
 
-    static Ret FN_CALL_CONV invokeShared(const Closure& storage, Args&&... args) DAVA_NOEXCEPT
+    static Ret invokeShared(const Closure& storage, typename std::conditional<is_best_argument<Args>::value, Args, Args&&>::type... args) DAVA_NOEXCEPT
     {
         HolderFree *holder = storage.GetShared<HolderFree>();
         return (Ret)holder->fn(std::forward<Args>(args)...);
@@ -165,13 +175,13 @@ public:
         : fn(_fn)
     { }
 
-    static Ret FN_CALL_CONV invokeTrivial(const Closure &storage, Obj*&& cls, ClsArgs&&... args) DAVA_NOEXCEPT
+    static Ret invokeTrivial(const Closure &storage, Obj* cls, typename std::conditional<is_best_argument<ClsArgs>::value, ClsArgs, ClsArgs&&>::type... args) DAVA_NOEXCEPT
     {
         HolderClass *holder = storage.GetTrivial<HolderClass>();
         return (Ret)(static_cast<Cls*>(cls)->*holder->fn)(std::forward<ClsArgs>(args)...);
     }
 
-    static Ret FN_CALL_CONV invokeShared(const Closure &storage, Obj*&& cls, ClsArgs&&... args) DAVA_NOEXCEPT
+    static Ret invokeShared(const Closure &storage, Obj* cls, typename std::conditional<is_best_argument<ClsArgs>::value, ClsArgs, ClsArgs&&>::type... args) DAVA_NOEXCEPT
     {
         HolderClass *holder = storage.GetShared<HolderClass>();
         return (Ret)(static_cast<Cls*>(cls)->*holder->fn)(std::forward<ClsArgs>(args)...);
@@ -194,13 +204,13 @@ public:
         , obj(_obj)
     { }
 
-    static Ret FN_CALL_CONV invokeTrivial(const Closure &storage, ClsArgs&&... args) DAVA_NOEXCEPT
+    static Ret invokeTrivial(const Closure &storage, typename std::conditional<is_best_argument<ClsArgs>::value, ClsArgs, ClsArgs&&>::type... args) DAVA_NOEXCEPT
     {
         HolderObject *holder = storage.GetTrivial<HolderObject>();
         return (Ret)(static_cast<Cls *>(holder->obj)->*holder->fn)(std::forward<ClsArgs>(args)...);
     }
 
-    static Ret FN_CALL_CONV invokeShared(const Closure &storage, ClsArgs&&... args) DAVA_NOEXCEPT
+    static Ret invokeShared(const Closure &storage, typename std::conditional<is_best_argument<ClsArgs>::value, ClsArgs, ClsArgs&&>::type... args) DAVA_NOEXCEPT
     {
         HolderObject *holder = storage.GetShared<HolderObject>();
         return (Ret)(static_cast<Cls *>(holder->obj)->*holder->fn)(std::forward<ClsArgs>(args)...);
@@ -224,7 +234,7 @@ public:
         , obj(_obj)
     { }
 
-    static Ret FN_CALL_CONV invokeShared(const Closure &storage, ClsArgs&&... args) DAVA_NOEXCEPT
+    static Ret invokeShared(const Closure &storage, typename std::conditional<is_best_argument<ClsArgs>::value, ClsArgs, ClsArgs&&>::type... args) DAVA_NOEXCEPT
     {
         HolderSharedObject *holder = storage.GetShared<HolderSharedObject>();
         return (static_cast<Cls*>(holder->obj.get())->*holder->fn)(std::forward<ClsArgs>(args)...);
@@ -234,14 +244,6 @@ protected:
     Fn fn;
     std::shared_ptr<Obj> obj;
 };
-
-template<typename T, typename... Other>
-struct first_pointer_class {
-    typedef typename std::remove_pointer<T>::type type;
-};
-
-template<typename... Args>
-using first_pointer_class_t = typename first_pointer_class<Args...>::type;
 
 } // namespace Fn11
 
@@ -381,13 +383,13 @@ public:
         return !operator==(nullptr);
     }
 
-    inline Ret FN_CALL_CONV operator()(Args... args) const DAVA_NOEXCEPT
+    inline Ret operator()(Args... args) const DAVA_NOEXCEPT
     {
         return invoker(closure, std::forward<Args>(args)...);
     }
 
 protected:
-    using Invoker = Ret(FN_CALL_CONV *)(const Fn11::Closure &, Args&&...);
+    using Invoker = Ret(*)(const Fn11::Closure &, typename std::conditional<Fn11::is_best_argument<Args>::value, Args, Args&&>::type...);
 
     Invoker invoker = nullptr;
     Fn11::Closure closure;

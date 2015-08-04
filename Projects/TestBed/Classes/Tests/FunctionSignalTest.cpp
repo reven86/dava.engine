@@ -102,6 +102,11 @@ void FunctionSignalTest::UnloadResources()
     SafeRelease(runButton);
 }
 
+DAVA_NOINLINE int viewStdFnCall(std::function<int(int, int, int)> &fn)
+{
+    return fn(10, 20, 30);
+}
+
 DAVA_NOINLINE int viewDavaFnCall(Function<int(int, int, int)> &fn)
 {
     return fn(10, 20, 30);
@@ -110,13 +115,20 @@ DAVA_NOINLINE int viewDavaFnCall(Function<int(int, int, int)> &fn)
 void DoFunctionSignalTest(FunctionSignalTest *fst)
 {
     TestStruct ts;
-    
+
     std::function<int(int, int, int)> stdStatic(&test);
     Function<int(int, int, int)> davaStatic(&test);
-    
-    int rrr = viewDavaFnCall(davaStatic);
-    printf("%d\n", rrr);
-    
+
+    // this code is using to be able to see what assembly code is
+    // genered for std::function and DAVA::Function
+    {
+        int rrr = viewStdFnCall(stdStatic);
+        rrr += viewDavaFnCall(davaStatic);
+
+        // printf to make sure rrr variable isn't erased by c++ compiler|linker
+        printf("%d\n", rrr); 
+    }
+
     JobManager::Instance()->CreateMainJob([fst]{
         fst->runResult->SetText(L"Started...");
     });
