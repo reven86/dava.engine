@@ -262,6 +262,7 @@ private:
 
     Matrix4 virtualToPhysicalMatrix;
     Matrix4 projMatrix;
+    uint32 projMatrixSemantic;
     std::stack<Rect> clipStack;
 	Rect currentClip;
 

@@ -221,6 +221,9 @@ void RenderSystem2D::EndRenderTargetPass()
 
     renderTargetWidth = 0;
     renderTargetHeight = 0;
+
+    ShaderDescriptorCache::ClearDynamicBindigs();
+    Setup2DMatrices();
 }
 
 void RenderSystem2D::Setup2DMatrices()
@@ -255,6 +258,10 @@ void RenderSystem2D::Setup2DMatrices()
     {
         projMatrix = virtualToPhysicalMatrix * projMatrix;
     }
+
+    projMatrixSemantic += 8; //cause eight is beautiful
+    //actually, is not +=1 cause DynamicParams for UPADATE_ALWAYS_SEMANTIC increment by one last binded value.
+    //TODO: need to rethink semantic for projection matrix in RenderSystem2D, or maybe need to rethink semantics for DynamicParams
 }
 
 void RenderSystem2D::ScreenSizeChanged()
@@ -585,7 +592,7 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
         {
             Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, &Matrix4::IDENTITY, reinterpret_cast<pointer_size>(&Matrix4::IDENTITY));
         }
-        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_PROJ, &projMatrix, reinterpret_cast<pointer_size>(&projMatrix));
+        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_PROJ, &projMatrix, static_cast<pointer_size>(projMatrixSemantic));
         Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_VIEW, &Matrix4::IDENTITY, reinterpret_cast<pointer_size>(&Matrix4::IDENTITY));
 
         if (currentClip.dx > 0.f && currentClip.dy > 0.f)
