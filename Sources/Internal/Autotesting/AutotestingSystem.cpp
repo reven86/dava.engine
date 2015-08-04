@@ -1,18 +1,32 @@
 /*==================================================================================
-Copyright (c) 2008, DAVA, INC
-All rights reserved.
+    Copyright (c) 2008, binaryzebra
+    All rights reserved.
 
-Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-* Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-* Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-* Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 #include "Autotesting/AutotestingSystem.h"
 
 #ifdef __DAVAENGINE_AUTOTESTING__
@@ -55,7 +69,7 @@ namespace DAVA
         , framework("framework")
         , branchRev("0")
         , frameworkRev("0")
-        , isDB(false)
+        , isDB(true)
         , needClearGroupInDB(false)
         , isMaster(true)
         , requestedHelpers(0)
@@ -70,7 +84,7 @@ namespace DAVA
         , waitCheckTimeLeft(0.0f)
         , luaSystem(nullptr)
 	{
-
+		new AutotestingDB();
 	}
 
 	AutotestingSystem::~AutotestingSystem()
@@ -98,19 +112,21 @@ namespace DAVA
 			Logger::Error("AutotestingSystem::OnAppStarted App already initialized.");
 			return;
 		}
+		deviceName = AutotestingSystemLua::Instance()->GetDeviceName();
+		FetchParametersFromIdYaml();
 
-		SetUpConnectionToDB();
-
-		FetchParametersFromDB();
+		if (isDB)
+		{
+			SetUpConnectionToDB();
+			FetchParametersFromDB();
+		}
 
 		String testFilePath = Format("~res:/Autotesting/Tests/%s/%s.lua", groupName.c_str(), testFileName.c_str());
 		if (!FileSystem::Instance()->IsFile(FilePath(testFilePath)))
 		{
-			Logger::Error("AutotestingSystemLua::LoadScriptFromFile: couldn't open %s", testFilePath.c_str());
+			Logger::Error("AutotestingSystemLua::OnAppStarted: couldn't open %s", testFilePath.c_str());
 			return;
 		}
-
-		FetchParametersFromIdYaml();
 
 		AutotestingDB::Instance()->WriteLogHeader();
 
@@ -142,14 +158,8 @@ namespace DAVA
 	// Get test parameters from id.yaml
 	void AutotestingSystem::FetchParametersFromIdYaml()
 	{
-		FilePath file = "~res:/Autotesting/id.yaml";
-		Logger::Info("AutotestingSystem::FetchParametersFromIdYaml %s", file.GetAbsolutePathname().c_str());
-		KeyedArchive *option = new KeyedArchive();
-		bool res = option->LoadFromYamlFile(file);
-		if (!res)
-		{
-			ForceQuit("Couldn't open file " + file.GetAbsolutePathname());
-		}
+		Logger::Info("AutotestingSystem::FetchParametersFromIdYaml");
+		RefPtr<KeyedArchive> option = GetIdYamlOptions();
 
 		buildId = option->GetString("BuildId");
 		buildDate = option->GetString("Date");
@@ -158,34 +168,54 @@ namespace DAVA
 		branchRev = option->GetString("BranchRev");
 		frameworkRev = option->GetString("FrameworkRev");
 
-		SafeRelease(option);
+		// Check is build fol local debugging.  By default: use DB.
+		bool isLocalBuild = option->GetBool("LocalBuild", false);
+		if (isLocalBuild)
+		{
+			groupName = option->GetString("Group", AutotestingDB::DB_ERROR_STR_VALUE);
+			testFileName = option->GetString("Filename", AutotestingDB::DB_ERROR_STR_VALUE);
+			isDB = false;
+		}
+	}
+
+	RefPtr<KeyedArchive> AutotestingSystem::GetIdYamlOptions()
+	{
+		static const FilePath file = "~res:/Autotesting/id.yaml";
+		RefPtr<KeyedArchive> option(new KeyedArchive());
+		bool res = option->LoadFromYamlFile(file);
+		if (!res)
+		{
+			ForceQuit("Couldn't open file " + file.GetAbsolutePathname());
+		}
+
+		return option;
 	}
 
 	// Get test parameters from autotesting db
 	void AutotestingSystem::FetchParametersFromDB()
 	{
-        deviceName = AutotestingSystemLua::Instance()->GetDeviceName();
-        Logger::Info("AutotestingSystem::FetchParametersFromDB");
-        groupName = AutotestingDB::Instance()->GetStringTestParameter(deviceName, "Group");
+		Logger::Info("AutotestingSystem::FetchParametersFromDB");
+		AutotestingDB *db = AutotestingDB::Instance();
+		groupName = db->GetStringTestParameter(deviceName, "Group");
 		if (groupName == AutotestingDB::DB_ERROR_STR_VALUE)
-        {
-            ForceQuit("Couldn't get 'Group' parameter from DB.");
-        }
-        testFileName = AutotestingDB::Instance()->GetStringTestParameter(deviceName, "Filename");
+		{
+			ForceQuit("Couldn't get 'Group' parameter from DB.");
+		}
+		testFileName = db->GetStringTestParameter(deviceName, "Filename");
 		if (groupName == AutotestingDB::DB_ERROR_STR_VALUE)
-        {
-            ForceQuit("Couldn't get 'Filename' parameter from DB.");
-        }
-        runId = AutotestingDB::Instance()->GetStringTestParameter(deviceName, "RunId");
+		{
+			ForceQuit("Couldn't get 'Filename' parameter from DB.");
+		}
+		runId = db->GetStringTestParameter(deviceName, "RunId");
 		if (runId == AutotestingDB::DB_ERROR_STR_VALUE)
-        {
-            ForceQuit("Couldn't get 'RunId' parameter from DB.");
-        }
-        testIndex = AutotestingDB::Instance()->GetIntTestParameter(deviceName, "TestIndex");
+		{
+			ForceQuit("Couldn't get 'RunId' parameter from DB.");
+		}
+		testIndex = db->GetIntTestParameter(deviceName, "TestIndex");
 		if (testIndex == AutotestingDB::DB_ERROR_INT_VALUE)
-        {
-            ForceQuit("Couldn't get TestIndex parameter from DB.");
-        }
+		{
+			ForceQuit("Couldn't get TestIndex parameter from DB.");
+		}
 	}
 
 	// Read DB parameters from config file and set connection to it
@@ -204,13 +234,11 @@ namespace DAVA
 		int32 dbPort = option->GetInt32("port");
 		Logger::Info("AutotestingSystem::SetUpConnectionToDB %s -> %s[%s:%d]", collection.c_str(), dbName.c_str(), dbAddress.c_str(), dbPort);
 
-		new AutotestingDB();
 		if (!AutotestingDB::Instance()->ConnectToDB(collection, dbName, dbAddress, dbPort))
 		{
 			ForceQuit("Couldn't connect to Test DB");
 		}
-		
-		isDB = true;
+
 		SafeRelease(option);
 	}
 
@@ -231,7 +259,8 @@ namespace DAVA
 	{
 		Logger::Info("AutotestingSystem::OnTestStart %s", testDescription.c_str());
 		AutotestingDB::Instance()->Log("DEBUG", Format("OnTestStart %s", testDescription.c_str()));
-		AutotestingDB::Instance()->SetTestStarted();
+		if (isDB)
+			AutotestingDB::Instance()->SetTestStarted();
 	}
 
 	void AutotestingSystem::OnStepStart(const String &stepName)
@@ -262,7 +291,12 @@ namespace DAVA
 			if (timeBeforeExit <= 0.0f)
 			{
 				needExitApp = false;
-				JobManager::Instance()->WaitWorkerJobs();
+                String server = AutotestingDB::Instance()->GetStringTestParameter(deviceName, "Server");
+                if (server != AutotestingDB::DB_ERROR_STR_VALUE)
+                {
+                    AutotestingSystemLua::Instance()->SetServerQueueState(server, 0);
+                }
+                JobManager::Instance()->WaitWorkerJobs();
 				Core::Instance()->Quit();
 			}
 			return;
@@ -318,9 +352,8 @@ namespace DAVA
 
 	void AutotestingSystem::ForceQuit(const String &errorMessage)
 	{
-		Logger::Error("AutotestingSystem::ForceQuit %s", errorMessage.c_str());
-
-		ExitApp();
+		DVASSERT_MSG(false, errorMessage.c_str())
+		Core::Instance()->Quit();
 	}
 
 	void AutotestingSystem::MakeScreenShot()
@@ -328,7 +361,7 @@ namespace DAVA
 		Logger::Info("AutotestingSystem::MakeScreenShot");
 		String currentDateTime = GetCurrentTimeString();
 		screenShotName = Format("%s_%s_%s_%d_%s", groupName.c_str(), testFileName.c_str(), runId.c_str(), testIndex, currentDateTime.c_str());
-		Logger::FrameworkDebug("AutotestingSystem::ScreenShotName %s", screenShotName.c_str());
+		Logger::Debug("AutotestingSystem::ScreenShotName %s", screenShotName.c_str());
 		RenderManager::Instance()->RequestGLScreenShot(this);
 	}
 
@@ -377,7 +410,11 @@ namespace DAVA
 
 	void AutotestingSystem::OnInput(const UIEvent &input)
 	{
-		Logger::Info("AutotestingSystem::OnInput %d phase=%d count=%d point=(%f, %f) physPoint=(%f,%f) key=%c", input.tid, input.phase, input.tapCount, input.point.x, input.point.y, input.physPoint.x, input.physPoint.y, input.keyChar);
+		if (UIScreenManager::Instance())
+		{
+			String screenName = (UIScreenManager::Instance()->GetScreen()) ? UIScreenManager::Instance()->GetScreen()->GetName() : "noname";
+			Logger::Info("AutotestingSystem::OnInput screen is %s (%d)", screenName.c_str(), UIScreenManager::Instance()->GetScreenId());
+		}
 
 		int32 id = input.tid;
 		switch (input.phase)

@@ -10,7 +10,7 @@ public class SceneViewerApp extends JNIApplication {
 	}
 	
 	static {
-		System.loadLibrary("SceneViewerLib");
+		System.loadLibrary("SceneViewer");
 		
 		/*try {
 			Thread.sleep(10000);

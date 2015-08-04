@@ -30,24 +30,21 @@
 #ifndef __GAMECORE_H__
 #define __GAMECORE_H__
 
-#include "DAVAEngine.h"
-#include "TeamCityTestsOutput.h"
-
-#include <fstream>
-
-using namespace DAVA;
+#include "Core/ApplicationCore.h"
+#include "Core/Core.h"
 
 class TestData;
 class BaseScreen;
-class GameCore : public ApplicationCore
+class TestListScreen;
+class GameCore : public DAVA::ApplicationCore
 {
     struct ErrorData
     {
-        int32 line;
-        String command;
-        String filename;
-        String testName;
-        String testMessage;
+        DAVA::int32 line;
+        DAVA::String command;
+        DAVA::String filename;
+        DAVA::String testName;
+        DAVA::String testMessage;
     };
 
 protected:
@@ -60,64 +57,40 @@ public:
         return (GameCore*) DAVA::Core::GetApplicationCore();
     };
     
-    virtual void OnAppStarted() override;
-    virtual void OnAppFinished() override;
-    
-    virtual void OnSuspend() override;
-    virtual void OnResume() override;
+    void OnAppStarted() override;
+    void OnAppFinished() override;
 
-#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
-    virtual void OnBackground();
-    virtual void OnForeground();
-    virtual void OnDeviceLocked();
-#endif //#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
-
-    virtual void BeginFrame() override;
-    virtual void Update(DAVA::float32 update) override;
-    virtual void Draw() override;
+    void BeginFrame() override;
 
     void RegisterScreen(BaseScreen *screen);
-    
-    void RegisterError(const String &command, const String &fileName, int32 line, TestData *testData);
-
-    void LogMessage(const String &message);
+    void ShowStartScreen();
     
 protected:
+#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+    virtual void OnBackground() {};
     
+    virtual void OnForeground() {};
+    
+    virtual void OnDeviceLocked() {};
+#endif //#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+
     void RegisterTests();
     void RunTests();
-    void ProcessTests();
-    void FinishTests();
-
-    String CreateOutputLogFile();
-    String ReadLogFile();
-
-
-    int32 TestCount();
     
     void CreateDocumentsFolder();
-    File * CreateDocumentsFile(const String &filePathname);
+    DAVA::File * CreateDocumentsFile(const DAVA::String &filePathname);
     
 private:
-    void InitLogging();
-
     void RunOnlyThisTest();
     void OnError();
     bool IsNeedSkipTest(const BaseScreen& screen) const;
 
-    String runOnlyThisTest;
-
-    String logFilePath;
-    std::ofstream logFile;
+    DAVA::String runOnlyThisTest;
 
     BaseScreen *currentScreen;
-
-    int32 currentScreenIndex;
-    Vector<BaseScreen *> screens;
+    TestListScreen *testListScreen;
     
-    int32 currentTestIndex;
-
-    TeamcityTestsOutput teamCityOutput;
+    DAVA::Vector<BaseScreen *> screens;
 };
 
 

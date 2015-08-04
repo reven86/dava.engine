@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_UI_HIERARCHY_NODE_H__
 #define __DAVAENGINE_UI_HIERARCHY_NODE_H__
 

@@ -27,8 +27,6 @@
 =====================================================================================*/
 
 
-
-
 #ifndef __DAVAENGINE_CORE_PLATFORM_ANDROID_H__
 #define __DAVAENGINE_CORE_PLATFORM_ANDROID_H__
 
@@ -45,6 +43,7 @@ class AndroidSystemDelegate
 {
 public:
 	AndroidSystemDelegate(JavaVM *vm);
+	virtual ~AndroidSystemDelegate() = default;
 
 	virtual bool DownloadHttpFile(const String & url, const String & documentsPathname) = 0;
     

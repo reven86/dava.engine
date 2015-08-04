@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #include "Notification/LocalNotificationProgress.h"
 
 namespace DAVA
@@ -64,7 +65,7 @@ void LocalNotificationProgress::SetProgressTotal(const uint32 _total)
 
 void LocalNotificationProgress::ImplShow()
 {
-	impl->ShowProgress(title, text, total, progress);
+	impl->ShowProgress(title, text, total, progress, useSound);
 }
 
 }

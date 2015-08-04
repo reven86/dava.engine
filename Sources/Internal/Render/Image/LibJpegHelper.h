@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_JPEG_HELPER_H__
 #define __DAVAENGINE_JPEG_HELPER_H__
 
@@ -39,27 +38,30 @@
 namespace DAVA 
 {
 
-class LibJpegWrapper: public ImageFormatInterface
+class LibJpegHelper: public ImageFormatInterface
 {
 public:
-    
-    LibJpegWrapper();
-    
-    virtual bool IsImage(File *file) const;
-    
-    virtual eErrorCode ReadFile(File *infile, Vector<Image *> &imageSet, int32 baseMipMap = 0) const;
+    LibJpegHelper();
+
+    ImageFormat GetImageFormat() const override;
+
+    bool IsMyImage(File *file) const override;
+
+    eErrorCode ReadFile(File *infile, Vector<Image *> &imageSet, int32 baseMipMap = 0) const override;
 
     //only RGB888 or A8
-    virtual eErrorCode WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const;
-    
+    eErrorCode WriteFile(const FilePath &fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
+
     //only RGB888 or A8
-    virtual eErrorCode WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat) const;
-    
-    virtual uint32 GetDataSize(File *infile) const;
+    eErrorCode WriteFileAsCubeMap(const FilePath &fileName, const Vector<Vector<Image *>> &imageSet, PixelFormat compressionFormat, ImageQuality quality) const override;
 
-	virtual Size2i GetImageSize(File *infile) const;
-
+    ImageInfo GetImageInfo(File *infile) const override;
 };
+
+inline ImageFormat LibJpegHelper::GetImageFormat() const
+{
+    return IMAGE_FORMAT_JPEG;
+}
 
 };
 

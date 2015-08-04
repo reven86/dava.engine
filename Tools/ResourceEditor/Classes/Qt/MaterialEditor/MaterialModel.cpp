@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "MaterialModel.h"
 #include "MaterialItem.h"
 
@@ -237,7 +236,7 @@ bool MaterialModel::SetItemSelection( MaterialItem *item, const EntityGroup *gro
 	DAVA::Entity *entity = curScene->materialSystem->GetEntity(material);
 
 	entity = curScene->selectionSystem->GetSelectableEntity(entity);
-    const bool select = group->HasEntity(entity);
+    const bool select = group->ContainsEntity(entity);
 	item->SetFlag( MaterialItem::IS_PART_OF_SELECTION, select );
     
     return select;

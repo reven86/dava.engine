@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Commands2/CustomColorsCommands2.h"
 #include "../Qt/Scene/System/LandscapeEditorDrawSystem/CustomColorsProxy.h"
 

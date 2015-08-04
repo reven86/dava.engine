@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __COMMAND_BATCH_H__
 #define __COMMAND_BATCH_H__
 
@@ -49,6 +48,8 @@ public:
 	Command2 *GetCommand(int index) const;
 
 	void Clear(int commandId);
+    
+    bool ContainsCommand(int commandId) const;
 
 protected:
 	std::vector<Command2 *> commandList;

@@ -26,16 +26,22 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#include "Platform/TemplateWin32/CorePlatformWin32.h"
-#include "Platform/TemplateWin32/WindowsSpecifics.h"
-#include "Platform/Thread.h"
-#include "Platform/DeviceInfo.h"
-#include "Utils/Utils.h"
-
+#include "Base/Platform.h"
 #if defined(__DAVAENGINE_WIN32__)
 
 #include <shellapi.h>
+
+#include "Concurrency/Thread.h"
+#include "Input/KeyboardDevice.h"
+#include "Input/InputSystem.h"
+#include "Platform/DeviceInfo.h"
+#include "Platform/TemplateWin32/CorePlatformWin32.h"
+#include "Platform/SystemTimer.h"
+#include "Render/RenderManager.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "UI/UIControlSystem.h"
+#include "Utils/Utils.h"
 
 extern void FrameworkDidLaunched();
 extern void FrameworkWillTerminate();
@@ -44,9 +50,9 @@ namespace DAVA
 {
 	int Core::Run(int argc, char * argv[], AppHandle handle)
 	{
-		CoreWin32Platform * core = new CoreWin32Platform();
-		core->CreateSingletons();
+		CoreWin32Platform* core = new CoreWin32Platform();
         core->InitArgs();
+        core->CreateSingletons();
 
         bool windowCreated = core->CreateWin32Window(handle);
 		if(windowCreated)
@@ -54,50 +60,26 @@ namespace DAVA
 			core->Run();
 			core->ReleaseSingletons();
 			
-#ifdef ENABLE_MEMORY_MANAGER
-			if (DAVA::MemoryManager::Instance() != 0)
-			{
-				DAVA::MemoryManager::Instance()->FinalLog();
-			}
-#endif
 		}
 
-		//CloseHandle(core->hMutex);
 		return 0;
 	
 	}
 
-	/*const Vector2 & Core::GetMouseLocation();
-	{
-		POINT pt;
-		GetCursorPos(&pt);
-		
-	}*/
-    
 	int Core::RunCmdTool(int argc, char * argv[], AppHandle handle)
 	{
 		CoreWin32Platform * core = new CoreWin32Platform();
+        core->InitArgs();
 
-		//core->CreateWin32Window(handle);
-		//core->Run();
 		core->EnableConsoleMode();
 		core->CreateSingletons();
 
-		core->InitArgs();
-
-		Logger::Instance()->EnableConsoleMode();
+        Logger::Instance()->EnableConsoleMode();
 		
 		FrameworkDidLaunched();
 		FrameworkWillTerminate();
 		core->ReleaseSingletons();
-#ifdef ENABLE_MEMORY_MANAGER
-		if (DAVA::MemoryManager::Instance() != 0)
-		{
-			DAVA::MemoryManager::Instance()->FinalLog();
-		}
-#endif
 		return 0;
-
 	}
 
 	bool CoreWin32Platform::CreateWin32Window(HINSTANCE hInstance)
@@ -746,11 +728,7 @@ namespace DAVA
 
                 if(InputSystem::Instance()->IsCursorPining())
                 {
-                    RECT wndRect;
-                    GetWindowRect(hWnd, &wndRect);
-                    int centerX = (int)((wndRect.left + wndRect.right) >> 1);
-                    int centerY = (int)((wndRect.bottom + wndRect.top) >> 1);
-                    SetCursorPos(centerX, centerY);
+                    SetCursorPosCenterInternal(hWnd);
                 }
                 else
                 {

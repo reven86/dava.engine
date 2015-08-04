@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_INTROSPECTION_PROPERTY_H__
 #define __DAVAENGINE_INTROSPECTION_PROPERTY_H__
 
@@ -71,8 +70,8 @@ namespace DAVA
 	class InspProp : public InspMember
 	{
 	public:
-		typedef V	 (T::*GetterPtr)() const;
-		typedef void (T::*SetterPtr)(const V &);
+        using GetterPtr = V (T::*)() const;
+        using SetterPtr = void (T::*)(const V &);
 
 		InspProp(const char *_name, const InspDesc &_desc, const MetaInfo *_type, GetterPtr _g, SetterPtr _s, int _flags)
 			: InspMember(_name, _desc, 0, _type, _flags), getter(_g), setter(_s)
@@ -93,6 +92,12 @@ namespace DAVA
 			(realObj->*setter)(realValue);
 		}
 
+		virtual void SetValueRaw(void *object, void* val) const
+		{
+			T* realObj = (T *)object;
+			(realObj->*setter)(*static_cast<V*>(val));
+		}
+
 		virtual void* Pointer(void *object) const { return NULL; };
 		virtual void* Data(void *object) const { return NULL; };
 
@@ -107,8 +112,8 @@ namespace DAVA
 	class InspPropReturnRef : public InspMember
 	{
 	public:
-		typedef V&	 (T::*GetterPtr)() const;
-		typedef void (T::*SetterPtr)(const V &);
+        using GetterPtr = V& (T::*)() const;
+        using SetterPtr = void (T::*)(const V &);
 
 		InspPropReturnRef(const char *_name, const InspDesc &_desc, const MetaInfo *_type, GetterPtr _g, SetterPtr _s, int _flags)
 			: InspMember(_name, _desc, 0, _type, _flags), getter(_g), setter(_s)
@@ -129,6 +134,12 @@ namespace DAVA
 			(realObj->*setter)(realValue);
 		}
 
+		virtual void SetValueRaw(void *object, void* val) const
+		{
+			T* realObj = (T *)object;
+			(realObj->*setter)(*static_cast<V*>(val));
+		}
+
 		virtual void* Pointer(void *object) const { return NULL; };
 		virtual void* Data(void *object) const { return NULL; };
 
@@ -143,8 +154,8 @@ namespace DAVA
 	class InspPropParamRef : public InspMember
 	{
 	public:
-		typedef V*	 (T::*GetterPtr)();
-		typedef void (T::*SetterPtr)(V*);
+        using GetterPtr = V* (T::*)();
+        using SetterPtr = void (T::*)(V*);
 
 		InspPropParamRef(const char *_name, const InspDesc &_desc, const MetaInfo *_type, GetterPtr _g, SetterPtr _s, int _flags)
 			: InspMember(_name, _desc, 0, _type, _flags), getter(_g), setter(_s)
@@ -163,6 +174,12 @@ namespace DAVA
 			V* realValue;
 			VariantType::SaveData(&realValue, DAVA::MetaInfo::Instance<V>(), val);
 			(realObj->*setter)(realValue);
+		}
+
+		virtual void SetValueRaw(void *object, void* val) const
+		{
+			T* realObj = (T *)object;
+			(realObj->*setter)(static_cast<V*>(val));
 		}
 
 		virtual void* Pointer(void *object) const { return NULL; };
@@ -188,8 +205,8 @@ namespace DAVA
 	class InspPropParamSimple : public InspMember
 	{
 	public:
-		typedef V	 (T::*GetterPtr)() const;
-		typedef void (T::*SetterPtr)(V);
+        using GetterPtr = V (T::*)() const;
+        using SetterPtr = void (T::*)(V);
 
 		InspPropParamSimple(const char *_name, const InspDesc &_desc, const MetaInfo *_type, GetterPtr _g, SetterPtr _s, int _flags)
 			: InspMember(_name, _desc, 0, _type, _flags), getter(_g), setter(_s)
@@ -208,6 +225,12 @@ namespace DAVA
 			V realValue;
 			VariantType::SaveData(&realValue, DAVA::MetaInfo::Instance<V>(), val);
 			(realObj->*setter)(realValue);
+		}
+
+		virtual void SetValueRaw(void *object, void* val) const
+		{
+			T* realObj = (T *)object;
+			(realObj->*setter)(*static_cast<V*>(val));
 		}
 
 		virtual void* Pointer(void *object) const { return NULL; };

@@ -33,6 +33,8 @@
 #include "Base/BaseTypes.h"
 #include "Render/RenderBase.h"
 #include "FileSystem/FilePath.h"
+#include "TextureCompression/TextureConverter.h"
+#include <atomic>
 
 namespace DAVA
 {
@@ -43,49 +45,53 @@ class YamlNode;
 class ResourcePacker2D
 {
 public:
-	typedef std::map<String, String> FILESMAP;
-	ResourcePacker2D();
-
-	// Packing of resources section
-	void InitFolders(const FilePath & inputPath,const FilePath & outputPath);
-	void PackResources(eGPUFamily forGPU);
+    using FILESMAP = std::map<String, String>;
+    ResourcePacker2D();
+    // Packing of resources section
+    void InitFolders(const FilePath & inputPath,const FilePath & outputPath);
+    void PackResources(eGPUFamily forGPU);
     void RecalculateMD5ForOutputDir();
+    bool IsMD5ChangedDir(const FilePath & processDirectoryPath, const FilePath & pathname, const String & psdName, bool isRecursive) const;
+    bool IsMD5ChangedFile(const FilePath & processDirectoryPath, const FilePath & pathname, const String & psdName) const;
     
-	void RecursiveTreeWalk(const FilePath & inputPath,const FilePath & outputPath, const Vector<String> & flags = Vector<String>());
-	bool IsModifyDateChagedDir(const FilePath & processDirectoryPath, const FilePath & pathname);
-	bool IsMD5ChangedDir(const FilePath & processDirectoryPath, const FilePath & pathname, const String & psdName, bool isRecursive);
-	bool IsMD5ChangedFile(const FilePath & processDirectoryPath, const FilePath & pathname, const String & psdName);
-	
     DefinitionFile * ProcessPSD(const FilePath & processDirectoryPath, const FilePath & psdPathname, const String & psdName, bool twoSideMargin, uint32 texturesMargin);
-	Vector<String> ProcessFlags(const FilePath & flagsPathname);
+    Vector<String> FetchFlags(const FilePath & flagsPathname);
 
-	static String GetProcessFolderName();
-	bool SaveFileListToYaml(const FilePath & yamlFilePath);
-	bool CheckSpriteFilesDates(YamlNode *rootNode);
-	void FillSpriteFilesMap(const FilePath & inputPathName);
+    static String GetProcessFolderName();
+    void SetConvertQuality(const TextureConverter::eConvertQuality quality);
+    void SetRunning(bool arg);
+    bool IsRunning() const;
 public:
     
-	FilePath inputGfxDirectory;
-	FilePath outputGfxDirectory;
-	FilePath excludeDirectory;
-	String gfxDirName;
-	String currentFlags;
+    FilePath inputGfxDirectory;
+    FilePath outputGfxDirectory;
+    FilePath excludeDirectory;
+    String gfxDirName;
     
-	bool isGfxModified;
+    bool isGfxModified;
     
-	bool isLightmapsPacking;
-	bool clearProcessDirectory;
+    bool isLightmapsPacking;
+    bool clearProcessDirectory;
+    bool clearOutputDirectory;
     eGPUFamily requestedGPUFamily;
- 	FILESMAP spriteFiles;
+    TextureConverter::eConvertQuality quality;
+    FILESMAP spriteFiles;
 
-	const Set<String>& GetErrors() const;
-	
+    const Set<String>& GetErrors() const;
 protected:
-	bool isRecursiveFlagSet(const Vector<String> & flags);
-	Set<String> errors;
+    Set<String> errors;
 
-	void AddError(const String& errorMsg);
+    void AddError(const String& errorMsg);
+    void RecursiveTreeWalk(const FilePath & inputPath, const FilePath & outputPath, const Vector<String> & flags = Vector<String>());
+private:
+    std::atomic<bool> running;
 };
+
+inline bool ResourcePacker2D::IsRunning() const
+{
+    return running;
+}
+
 };
 
 

@@ -27,95 +27,14 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_TYPES_H__
-#define __DAVAENGINE_TYPES_H__
+#ifndef __DAVAENGINE_BASETYPES_H__
+#define __DAVAENGINE_BASETYPES_H__
 
-#include "DAVAConfig.h"
+#include "Base/Platform.h"
 #include "Base/TemplateHelpers.h"
 
-// Platform detection:
-
-#if defined(__GNUC__) && ( defined(__APPLE_CPP__) || defined(__APPLE_CC__) || defined(__MACOS_CLASSIC__) )
-//#if !defined(_WIN32) // fix for mac os platforms
-#include <TargetConditionals.h>
-#endif
-
-
-#if defined(TARGET_OS_IPHONE)
-#if TARGET_OS_IPHONE
-	#if !defined(__DAVAENGINE_IPHONE__) // for old projects we check if users defined it
-		#define __DAVAENGINE_IPHONE__
-	#endif
-#endif
-#endif
-
-
-#ifndef __DAVAENGINE_IPHONE__
-#if defined(_WIN32)
-#define __DAVAENGINE_WIN32__
-//#elif defined(__APPLE__) || defined(MACOSX)
-#elif defined(__GNUC__) && ( defined(__APPLE_CPP__) || defined(__APPLE_CC__) || defined(__MACOS_CLASSIC__) )
-#define __DAVAENGINE_MACOS__
-
-#if MAC_OS_X_VERSION_10_6 <= MAC_OS_X_VERSION_MAX_ALLOWED
-#define __DAVAENGINE_MACOS_VERSION_10_6__
-#endif //#if MAC_OS_X_VERSION_10_6 <= MAC_OS_X_VERSION_MAX_ALLOWED
-
-#endif
-#endif
-
-
-// add some other platform detection here...
-#if !defined (__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_WIN32__) && !defined(__DAVAENGINE_MACOS__)
-#if defined(__ANDROID__) || defined(ANDROID) 
-	#define __DAVAENGINE_ANDROID__
-#endif //#if defined(__ANDROID__) || defined(ANDROID) 
-#endif //#if !defined (__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_WIN32__) && !defined(__DAVAENGINE_MACOS__)
-
-
-/////////
-// Default headers per platform:
-
-
-#if defined(__DAVAENGINE_WIN32__)
-#define __DAVASOUND_AL__
-#define WIN32_LEAN_AND_MEAN
-//#include <windef.h>
-#include <windows.h>
-#include <windowsx.h>
-#undef DrawState
-#undef GetCommandLine
-#undef GetClassName
-#undef Yield
-
-#elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) // Mac & iPhone
-#define __DAVASOUND_AL__
-
-#include <mach/mach.h>
-#include <mach/mach_time.h>
-#include <unistd.h>
-
-#elif defined(__DAVAENGINE_ANDROID__)
-//TODO: specific includes
-//#define __DAVASOUND_AL__
-#undef __DAVASOUND_AL__
-
-#else
-// some other platform...
-
-#endif 
-
-
-//#define _HAS_ITERATOR_DEBUGGING 0
-//#define _SECURE_SCL 0
-
-// MSVS: conversion from type1 to type2, possible loss of data
-
-#if defined(__DAVAENGINE_WIN32__)
-#pragma warning( push )
-#pragma warning( disable : 4244)
-#endif 
-
+#include <array>
+#include <memory>
 #include <string>
 #include <list>
 #include <map>
@@ -125,235 +44,240 @@
 #include <stack>
 #include <queue>
 #include <array>
+#include <bitset>
+#include <unordered_map>
+#include <unordered_set>
+#include <sstream>
+#include <cerrno>
 
-#if defined(__DAVAENGINE_WIN32__)
-#pragma warning( pop )
-#endif 
-
-//#if TARGET_OS_IPHONE_SIMULATOR //) || defined(TARGET_IPHONE)
-//#if defined(__APPLE__) || defined(MACOSX)
-//#define __IPHONE__
-//#endif 
-//#define __DAVAENGINE_IPHONE__
-
-
+#if defined(DAVA_MEMORY_PROFILING_ENABLE)
+#   include "MemoryManager/AllocPools.h"
+#   include "MemoryManager/TrackingAllocator.h"
+#endif
 
 namespace DAVA
 {
 
-typedef unsigned char	uint8;
-typedef unsigned short	uint16;
-typedef unsigned int	uint32;
+//Platform-independent signed and unsigned integer type
+using uint8 = uint8_t;
+using uint16 = uint16_t;
+using uint32 = uint32_t;
+using uint64 = uint64_t;
 
-typedef signed char		int8;
-typedef signed short	int16;
-typedef signed int		int32;
+using int8 = int8_t;
+using int16 = int16_t;
+using int32 = int32_t;
+using int64 = int64_t;
 
-#if defined(_WIN32)
-	typedef unsigned __int64 uint64;
-	typedef signed __int64	int64;
+//Always has a size equal to pointer size (4 bytes in x86, 8 in x64)
+using pointer_size = uintptr_t;
+
+using char8 = char;
+using char16 = wchar_t;
+
+using float32 = float;
+using float64 = double;
+
+//Compile-time checks for size of types
+static_assert(sizeof(int8)   == 1, "Invalid type size!");
+static_assert(sizeof(uint8)  == 1, "Invalid type size!");
+static_assert(sizeof(int16)  == 2, "Invalid type size!");
+static_assert(sizeof(uint16) == 2, "Invalid type size!");
+static_assert(sizeof(int32)  == 4, "Invalid type size!");
+static_assert(sizeof(uint32) == 4, "Invalid type size!");
+static_assert(sizeof(int64)  == 8, "Invalid type size!");
+static_assert(sizeof(uint64) == 8, "Invalid type size!");
+static_assert(sizeof(pointer_size) == sizeof(void*), "Invalid type size!");
+static_assert(sizeof(char8)  == 1, "Invalid type size!");
+static_assert(sizeof(float32) == 4, "Invalid type size!");
+static_assert(sizeof(float64) == 8, "Invalid type size!");
+
+#if defined(DAVA_MEMORY_PROFILING_ENABLE)
+// FIX: replace DefaultSTLAllocator with TrackingAllocator after fixing framework and game codebases
+template<typename T>
+using DefaultSTLAllocator = std::allocator<T>;
+//using DefaultSTLAllocator = TrackingAllocator<T, ALLOC_POOL_DEFAULT>;
 #else
-	typedef unsigned long long uint64;
-	typedef signed long long int64;
-#endif 
-    
-typedef Select<sizeof(void*) == 4, uint32, uint64>::Result pointer_size;
-    
-//#if (sizeof(void*) == 4)
-//typedef uint32 pointer_size
-//#elif (sizeof(void*) == 8)
-//typedef uint64 pointer_size;
-//#else
-//#error(Pointer type size is invalid);
-//#endif
-	
-#ifndef TRUE
-#define TRUE	1
-#endif
-	
-#ifndef FALSE
-#define	FALSE	0
+template<typename T>
+using DefaultSTLAllocator = std::allocator<T>;
 #endif
 
-typedef char		char8;
-typedef wchar_t		char16;
+template<typename CharT>
+using BasicString = std::basic_string<CharT, std::char_traits<CharT>, DefaultSTLAllocator<CharT>>;
 
-typedef float			float32;
-typedef double			float64;
+using String = BasicString<char8>;
+using WideString = BasicString<wchar_t>;
 
-typedef std::string		String;
-#if defined(__DAVAENGINE_ANDROID__)
-	typedef std::basic_string<wchar_t>	WideString;
-#else //#if defined(__DAVAENGINE_ANDROID__)
-	typedef std::wstring	WideString;
-#endif //#if defined(__DAVAENGINE_ANDROID__)
+template<typename CharT>
+using BasicStringStream = std::basic_stringstream<CharT, std::char_traits<CharT>, DefaultSTLAllocator<CharT>>;
 
-	
+using StringStream = BasicStringStream<char8>;
 
-//template <typename _Ty, typename _Ax = std::allocator(_Ty)> 
-//class List : public std::list<_Ty, _Ax>  {};
+template<typename T,
+         std::size_t N>
+using Array = std::array<T, N>;
 
+template<typename T>
+using List = std::list<T, DefaultSTLAllocator<T>>;
 
-//#define List std::list
-//#define Vector std::vector
-template < typename E > class List : public std::list< E > {};
-template < typename E > class Vector : public std::vector< E >
-{
-public:
-    typedef E	   value_type;
-    typedef size_t size_type;
-    explicit Vector(size_type n, const value_type & value = value_type()) : std::vector< E >(n, value) {}
-    Vector() : std::vector< E >() {}
-};
-template < class E > class Set : public std::set< E > {};
-template < class E > class Deque : public std::deque< E > {};
+template<typename T>
+using Vector = std::vector<T, DefaultSTLAllocator<T>>;
 
-template<	class _Kty,
-			class _Ty,
-			class _Pr = std::less<_Kty>,
-			class _Alloc = std::allocator<std::pair<const _Kty, _Ty> > >
-class Map : public std::map<_Kty, _Ty, _Pr, _Alloc> {};
+template<typename T>
+using Deque = std::deque<T, DefaultSTLAllocator<T>>;
 
-template<	class _Kty,
-			class _Ty,
-			class _Pr = std::less<_Kty>,
-			class _Alloc = std::allocator<std::pair<const _Kty, _Ty> > >
-class MultiMap : public std::multimap<_Kty, _Ty, _Pr, _Alloc> {};
+template <class _Key,
+          class _Compare = std::less<_Key>>
+using Set = std::set< _Key, _Compare, DefaultSTLAllocator<_Key>>;
+    
+template<class _Kty,
+         class _Ty,
+         class _Pr = std::less<_Kty>>
+using Map = std::map<_Kty, _Ty, _Pr, DefaultSTLAllocator<std::pair<const _Kty, _Ty>>>;
 
-template < class T, class Container = std::deque<T> > class Stack : public std::stack< T, Container > {};
+template<class _Kty,
+         class _Ty,
+         class _Pr = std::less<_Kty>>
+using MultiMap = std::multimap<_Kty, _Ty, _Pr, DefaultSTLAllocator<std::pair<const _Kty, _Ty>>>;
 
-template < class T, class Container = std::vector<T>, class Compare = std::less<typename Container::value_type> > 
-class PriorityQueue : public std::priority_queue< T, Container, Compare > {};
+template<class T,
+         class Container = Deque<T>>
+using Stack = std::stack<T, Container>;
+
+template<class T,
+         class Container = Vector<T>,
+         class Compare = std::less<typename Container::value_type>>
+using PriorityQueue = std::priority_queue<T, Container, Compare>;
+
+template<typename Key,
+         typename Hash = std::hash<Key>,
+         typename KeyEqual = std::equal_to<Key>>
+using UnorderedSet = std::unordered_set<Key, Hash, KeyEqual, DefaultSTLAllocator<Key>>;
+
+template<typename Key,
+         typename T,
+         typename Hash = std::hash<Key>,
+         typename KeyEqual = std::equal_to<Key>>
+using UnorderedMap = std::unordered_map<Key, T, Hash, KeyEqual, DefaultSTLAllocator<std::pair<const Key, T>>>;
+
+template<size_t Bits>
+using Bitset = std::bitset<Bits>;
 
 #ifdef min
-#undef min
+#   undef min
 #endif
 #ifdef max
-#undef max
+#   undef max
 #endif
+
+/*
+ Useful functions to offset pointer by specified number of bytes without long cast sequences.
+*/
+template<typename T>
+inline T* OffsetPointer(void* ptr, ptrdiff_t offset)
+{
+    return reinterpret_cast<T*>(static_cast<uint8*>(ptr) + offset);
+}
+
+template<typename T>
+inline const T* OffsetPointer(const void* ptr, ptrdiff_t offset)
+{
+    return reinterpret_cast<const T*>(static_cast<const uint8*>(ptr) + offset);
+}
 
 template <class T>
 inline T Min(T a, T b)
 {
-	return (a < b) ? (a) : (b);
+    return (a < b) ? (a) : (b);
 }
 
 template <class T>
 inline T Max(T a, T b)
 {
-	return (a > b) ? (a) : (b);
+    return (a > b) ? (a) : (b);
 }
-	
+
 template <class T>
 inline T Abs(T a)
 {
-	return (a >= 0) ? (a) : (-a);
+    return (a >= 0) ? (a) : (-a);
 }
 
 template <class T>
 inline T Clamp(T val, T a, T b)
 {
-	return Min(b, Max(val, a));
+    return Min(b, Max(val, a));
 }
-	
 
-#if defined(__DAVAENGINE_WIN32__)
-#define Snprinf	    _snprintf
-#define Snprintf    _snprintf
-#else //#if defined(__DAVAENGINE_WIN32__)
-#define Snprinf	    snprintf
-#define Snprintf    snprintf
-#endif //#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WINDOWS__)
+#   define Snprintf    _snprintf
+#else
+#   define Snprintf    snprintf
+#endif
 
 #define Memcmp memcmp
 #define Memcpy memcpy
 #define Memset memset
 #define Memmove memmove
-#define Alloc malloc
-#define Free free
-#define Realloc realloc
 
 template <class TYPE>
 void SafeDelete(TYPE * &d)
 {
-	if (d)
-	{
-		delete d;
-		d = 0;
-	}
+    if (d != nullptr)
+    {
+        delete d;
+        d = nullptr;
+    }
 }
 
 template <class TYPE>
 void SafeDeleteArray(TYPE * & d)
 {
-	if (d)
-	{
-		delete [] d;
-		d = 0;
-	}
+    if (d != nullptr)
+    {
+        delete [] d;
+        d = nullptr;
+    }
 }
 
 #ifndef SAFE_DELETE // for compatibility with FCollada
-#define SAFE_DELETE(x) if (x) { delete x; x = 0; };
+#define SAFE_DELETE(x)  DAVA::SafeDelete(x)
 #endif 
-	
+
 #ifndef SAFE_DELETE_ARRAY // for compatibility with FCollada
-#define SAFE_DELETE_ARRAY(x) if (x) { delete [] x; x = 0; };
+#define SAFE_DELETE_ARRAY(x)    DAVA::SafeDeleteArray(x)
 #endif
-	
+
 #ifndef OBJC_SAFE_RELEASE
-#define OBJC_SAFE_RELEASE(x) [x release];x = nil;
+#   define OBJC_SAFE_RELEASE(x) [x release];x = nil;
 #endif 
-	
-	/**
-	 \enum Graphical object aligment.
-	 */
+
+/**
+ \enum Graphical object aligment.
+*/
 enum eAlign 
 {
-	ALIGN_LEFT		= 0x01,	//!<Align graphical object by the left side.
-	ALIGN_HCENTER	= 0x02,	//!<Align graphical object by the horizontal center.
-	ALIGN_RIGHT		= 0x04,	//!<Align graphical object by the right side.
-	ALIGN_TOP		= 0x08,	//!<Align graphical object by the top side.
-	ALIGN_VCENTER	= 0x10,	//!<Align graphical object by the vertical center.
-	ALIGN_BOTTOM	= 0x20,	//!<Align graphical object by the bottom side.
-	ALIGN_HJUSTIFY	= 0x40	//!<Used only for the fonts. Stretch font string over all horizontal size of the area.
+    ALIGN_LEFT      = 0x01, //!<Align graphical object by the left side.
+    ALIGN_HCENTER   = 0x02, //!<Align graphical object by the horizontal center.
+    ALIGN_RIGHT     = 0x04, //!<Align graphical object by the right side.
+    ALIGN_TOP       = 0x08, //!<Align graphical object by the top side.
+    ALIGN_VCENTER   = 0x10, //!<Align graphical object by the vertical center.
+    ALIGN_BOTTOM    = 0x20, //!<Align graphical object by the bottom side.
+    ALIGN_HJUSTIFY  = 0x40  //!<Used only for the fonts. Stretch font string over all horizontal size of the area.
 };
 
-#ifndef COUNT_OF
-#define COUNT_OF(x) (sizeof(x)/sizeof(*x))
-#endif
+template <typename T, size_t N>
+DAVA_CONSTEXPR size_t COUNT_OF(T(&)[N]) DAVA_NOEXCEPT{ return N; }
     
 #ifndef REMOVE_IN_RELEASE
-    #if defined(__DAVAENGINE_DEBUG__)
-        #define REMOVE_IN_RELEASE (x) x
-    #else
-        #define REMOVE_IN_RELEASE (x) 
-    #endif
+#   if defined(__DAVAENGINE_DEBUG__)
+#       define REMOVE_IN_RELEASE (x) x
+#   else
+#       define REMOVE_IN_RELEASE (x) 
+#   endif
 #endif
 
-    
-//#if defined(__DAVAENGINE_IPHONE__)
-#ifdef __thumb__
-//#error "This file should be compiled in ARM mode only."
-    // Note in Xcode, right click file, Get Info->Build, Other compiler flags = "-marm"
-#endif
-//#endif//#if !defined(__DAVAENGINE_ANDROID__)
-
-
-#ifndef DAVAENGINE_HIDE_DEPRECATED
-#ifdef __GNUC__
-#define DAVA_DEPRECATED(func) func __attribute__ ((deprecated))
-#elif defined(_MSC_VER)
-#define DAVA_DEPRECATED(func) __declspec(deprecated) func
-#else
-#pragma message("WARNING: You need to implement DAVA_DEPRECATED for this compiler")
-#define DAVA_DEPRECATED(func) func
-#endif
-#else
-#define DAVA_DEPRECATED(func) func
-#endif //DAVAENGINE_HIDE_DEPRECATED
-    
-enum eErrorCode
+enum class eErrorCode
 {
     SUCCESS,
     ERROR_FILE_FORMAT_INCORRECT,
@@ -362,7 +286,6 @@ enum eErrorCode
     ERROR_WRITE_FAIL
 };
 
-};
+}   // namespace DAVA
 
-#endif
-
+#endif  // __DAVAENGINE_BASETYPES_H__

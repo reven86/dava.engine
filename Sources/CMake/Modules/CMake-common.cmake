@@ -1,24 +1,37 @@
 include ( GlobalVariables      )
 
-if( ANDROID AND NOT CMAKE_TOOLCHAIN_FILE )
-    set( CMAKE_TOOLCHAIN_FILE ${DAVA_ROOT_DIR}/Sources/CMake/Toolchains/android.toolchain.cmake )
+if ( DAVA_MEMORY_PROFILER )
+    add_definitions( -DDAVA_MEMORY_PROFILING_ENABLE )
+    if ( NOT DAVA_MEMORY_PROFILER )
+        set ( DAVA_MEMORY_PROFILER 1 )
+    endif()
+endif()
+
+if( ANDROID )
     find_package( AndroidTools REQUIRED )
 
     if( WIN32 )
         set( MAKE_PROGRAM ${ANDROID_NDK}/prebuilt/windows-x86_64/bin/make.exe ) 
-
     elseif( APPLE )
        set( MAKE_PROGRAM ${ANDROID_NDK}/prebuilt/darwin-x86_64/bin/make ) 
-
     endif()
 
     file( TO_CMAKE_PATH "${MAKE_PROGRAM}" MAKE_PROGRAM )
     set (CMAKE_MAKE_PROGRAM "${MAKE_PROGRAM}" CACHE STRING   "Program used to build from makefiles.")
     mark_as_advanced(CMAKE_MAKE_PROGRAM)
 
-elseif( IOS AND NOT CMAKE_TOOLCHAIN_FILE )
-    set( CMAKE_TOOLCHAIN_FILE ${DAVA_ROOT_DIR}/Sources/CMake/Toolchains/ios.toolchain.cmake )
- 
+elseif ( WINDOWS_UAP )
+
+    if ( DAVA_MEMORY_PROFILER )
+        message(WARNING "Windows Store platform detected. Memory profiling is disabled")
+        remove_definitions( -DDAVA_MEMORY_PROFILING_ENABLE )
+        unset ( DAVA_MEMORY_PROFILER )
+    endif ()
+    
+    #no fmod on Win10
+    set ( DISABLE_SOUNDS true )
+    message(WARNING "Windows Store platform detected. FMOD is disabled")
+    
 endif()
 
 include ( PlatformSettings     )
@@ -31,9 +44,16 @@ include ( CMakeParseArguments  )
 
 set( CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebinfo" CACHE STRING "limited configs" FORCE )
 
+#
+macro ( set_project_files_properties FILES_LIST )
+    if( APPLE )
+        set_source_files_properties( ${FILES_LIST} PROPERTIES COMPILE_FLAGS "-x objective-c++" )
+    endif()
+endmacro ()
+
 # Macro for precompiled headers
 macro (enable_pch)
-    if (MSVC)
+    if (WIN32)
         foreach (FILE ${SOURCE_FILES})
             if (FILE MATCHES \\.cpp$)
                 if (FILE MATCHES Precompiled\\.cpp$)
@@ -192,9 +212,17 @@ macro (define_source_folders )
             IF( ${NOT_FIND_ERASE_ITEM} )
                 FILE(GLOB FIND_CMAKELIST "${FOLDER_ITEM}/CMakeLists.txt")
                 IF( FIND_CMAKELIST )
+                    if( ${${FOLDER_NAME}_CPP_FILES} )
+                        set( ${${FOLDER_NAME}_CPP_FILES} )
+                    endif()
+
+                    if( ${${FOLDER_NAME}_H_FILES} )
+                        set( ${${FOLDER_NAME}_H_FILES} )
+                    endif()
+
                     add_subdirectory ( ${FOLDER_ITEM} )
                     list ( APPEND PROJECT_SOURCE_FILES ${${FOLDER_NAME}_CPP_FILES} ${${FOLDER_NAME}_H_FILES} )    
-    		        list ( APPEND PROJECT_SOURCE_FILES_CPP  ${${FOLDER_NAME}_CPP_FILES} ) 
+                    list ( APPEND PROJECT_SOURCE_FILES_CPP  ${${FOLDER_NAME}_CPP_FILES} ) 
                     list ( APPEND PROJECT_SOURCE_FILES_HPP  ${${FOLDER_NAME}_H_FILES}   ) 
                 ELSE()
                     list (APPEND PROJECT_SOURCE_FILES ${CPP_FILES} ${H_FILES})
@@ -203,7 +231,7 @@ macro (define_source_folders )
             ENDIF()
         ENDIF()
     ENDFOREACH()
-
+    
 endmacro ()
 
 #
@@ -311,11 +339,51 @@ ENDIF()
 
 endmacro ()
 
+macro ( add_content_win_uap_single CONTENT_DIR )
 
+	#get all files from it and add to SRC
+	file ( GLOB_RECURSE CONTENT_LIST "${CONTENT_DIR}/*")
+	list ( APPEND ADDED_CONTENT_SRC ${CONTENT_LIST} )
+    set ( GROUP_PREFIX "Content\\" )
+	get_filename_component ( CONTENT_DIR_ABS ${CONTENT_DIR} ABSOLUTE )
+	get_filename_component ( CONTENT_DIR_PATH ${CONTENT_DIR_ABS} PATH )
+	
+	#process all content files
+	FOREACH( ITEM ${CONTENT_LIST} )
+		get_filename_component ( ITEM ${ITEM} ABSOLUTE )
+	    #message("Item: ${ITEM}")
+		
+		#add item to project source group "Content"
+		get_filename_component ( ITEM_PATH ${ITEM} PATH )
+		STRING( REGEX REPLACE "${CONTENT_DIR_PATH}" "" ITEM_GROUP ${ITEM_PATH} )
+		
+		#remove the first '/' symbol
+		STRING ( SUBSTRING ${ITEM_GROUP} 0 1 FIRST_SYMBOL )
+		if (FIRST_SYMBOL STREQUAL "/")
+		    STRING ( SUBSTRING ${ITEM_GROUP} 1 -1 ITEM_GROUP )
+		endif ()
+		
+		#reverse the slashes
+		STRING( REGEX REPLACE "/" "\\\\" ITEM_GROUP ${ITEM_GROUP} )
+		#message( "Item group: ${GROUP_PREFIX}${ITEM_GROUP}" )
+		source_group( ${GROUP_PREFIX}${ITEM_GROUP} FILES ${ITEM} )
+		
+		#set deployment properties to item
+		set_property( SOURCE ${ITEM} PROPERTY VS_DEPLOYMENT_CONTENT 1 )
+		set_property( SOURCE ${ITEM} PROPERTY VS_DEPLOYMENT_LOCATION ${ITEM_GROUP} )
+		
+	ENDFOREACH()
+	
+endmacro ()
 
-
-
-
+macro ( add_content_win_uap DEPLOYMENT_CONTENT_LIST )
+	
+	#process all content files
+	FOREACH( ITEM ${DEPLOYMENT_CONTENT_LIST} )
+		add_content_win_uap_single ( ${ITEM} )
+	ENDFOREACH()
+	
+endmacro ()
 
 
 

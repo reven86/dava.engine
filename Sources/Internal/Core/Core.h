@@ -44,16 +44,14 @@
 */
 namespace DAVA 
 {
-	
-	
 #if defined(__DAVAENGINE_WIN32__)
-	typedef HINSTANCE AppHandle;
+    using AppHandle = HINSTANCE;
 #elif defined(__DAVAENGINE_ANDROID__)
-    typedef struct android_app* AppHandle;
+    using AppHandle = struct android_app*;
 #else
-	typedef uint32 AppHandle;
+    using AppHandle = uint32;
 #endif 
-	
+
 /**
 	\ingroup core
 	\brief	Core is a main singleton that initialize everything under all of platforms. 
@@ -93,17 +91,17 @@ namespace DAVA
 class Core : public Singleton<Core>
 {
 public:
-	
-	enum eScreenOrientation
-	{
-			SCREEN_ORIENTATION_TEXTURE = -1// uses only for the draw to texture purposes
-		,	SCREEN_ORIENTATION_LANDSCAPE_RIGHT = 0
-		,	SCREEN_ORIENTATION_LANDSCAPE_LEFT
-		,	SCREEN_ORIENTATION_PORTRAIT
-		,	SCREEN_ORIENTATION_PORTRAIT_UPSIDE_DOWN
-        ,   SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE
-        ,   SCREEN_ORIENTATION_PORTRAIT_AUTOROTATE
-	};
+
+    enum eScreenOrientation
+    {
+        SCREEN_ORIENTATION_TEXTURE = -1,     // Use only for texture purpose drawings
+        SCREEN_ORIENTATION_LANDSCAPE_RIGHT = 0,
+        SCREEN_ORIENTATION_LANDSCAPE_LEFT,
+        SCREEN_ORIENTATION_PORTRAIT,
+        SCREEN_ORIENTATION_PORTRAIT_UPSIDE_DOWN,
+        SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE,
+        SCREEN_ORIENTATION_PORTRAIT_AUTOROTATE
+    };
     
     enum eRenderer
     {
@@ -116,17 +114,17 @@ public:
 //        RENDERER_DIRECTX11,   // written for self-motivation
     };
     
-	
-	Core();
-	virtual ~Core();
-	
-	enum eScreenMode
-	{
-		MODE_UNSUPPORTED = 0,	// for all devices that do not support 
-		MODE_FULLSCREEN, 
-		MODE_WINDOWED,
-	};
-	
+
+    Core();
+    virtual ~Core();
+
+    enum eScreenMode
+    {
+        MODE_UNSUPPORTED = 0,   // for all devices that do not support 
+        MODE_FULLSCREEN, 
+        MODE_WINDOWED,
+    };
+
     enum eDeviceFamily
     {
         DEVICE_UNKNOWN = -1,
@@ -135,22 +133,22 @@ public:
         DEVICE_DESKTOP
     };
     
-	static int Run(int argc, char *argv[], AppHandle handle = 0);
-	static int RunCmdTool(int argc, char *argv[], AppHandle handle = 0);
+    static int Run(int argc, char *argv[], AppHandle handle = 0);
+    static int RunCmdTool(int argc, char *argv[], AppHandle handle = 0);
 
-	// Should be called in platform initialization before FrameworkDidLaunched
-	void CreateSingletons();
+    // Should be called in platform initialization before FrameworkDidLaunched
+    void CreateSingletons();
     // Should be called after framework did launched to initialize proper render manager
     void CreateRenderManager();
     // Should be called after full release
-	void ReleaseSingletons();
+    void ReleaseSingletons();
 
-	Vector<String> & GetCommandLine(); 
-	bool IsConsoleMode();
-	
+    const Vector<String> & GetCommandLine(); 
+    bool IsConsoleMode();
+
 public:
-	void SetOptions(KeyedArchive * archiveOfOptions);
-	KeyedArchive * GetOptions();
+    void SetOptions(KeyedArchive * archiveOfOptions);
+    KeyedArchive * GetOptions();
 
 	
 	static void SetApplicationCore(ApplicationCore * core);
@@ -201,10 +199,8 @@ public:
 	 */
 	virtual void SetIcon(int32 iconId);
 	
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-	static bool IsAutodetectContentScaleFactor();
-#endif //#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-
+    inline float32 GetScreenScaleFactor() const;
+    
 	virtual Core::eScreenOrientation GetScreenOrientation();
 	
     virtual uint32 GetScreenDPI();
@@ -292,18 +288,20 @@ private:
 	
 	Vector<String> commandLine;
 	bool isConsoleMode;
-    
-    void CheckDataTypeSizes();
-    template <class T> void CheckType(T t, int32 expectedSize, const char * typeString);
+
+    float32 screenScaleFactor;
 };
     
 inline bool Core::IsActive()
 {
     return isActive;
 }
+    
+inline float32 Core::GetScreenScaleFactor() const
+{
+    return screenScaleFactor;
+}
 
 };
-
-
 
 #endif // __DAVAENGINE_CORE_H__

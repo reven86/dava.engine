@@ -30,23 +30,24 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QMainWindow>
-#include <QCloseEvent>
+#include "Base/Result.h"
+#include "ui_mainwindow.h"
 
 #include "EditorSettings.h"
-#include <QLineEdit>
-#include <QUndoGroup>
+#include <QtGui>
+#include <QtWidgets>
 
-#include "Result.h"
-
-namespace Ui {
-class MainWindow;
-}
 
 class PackageWidget;
-class Document;
+class PropertiesWidget;
+class LibraryWidget;
+class PreviewWidget;
+
 class DavaGLWidget;
-class MainWindow : public QMainWindow
+class LocalizationEditorDialog;
+class DialogReloadSprites;
+
+class MainWindow : public QMainWindow, public Ui::MainWindow
 {
     Q_OBJECT
     
@@ -61,18 +62,16 @@ public:
         bool isModified;
     };
     explicit MainWindow(QWidget *parent = 0);
+
     ~MainWindow();
-    void CreateUndoRedoActions(const QUndoGroup &undoGroup);
-    void OnCurrentIndexChanged(int arg);
-    PackageWidget *GetPackageWidget() const;
-    bool ConfirmClose();
+    void CreateUndoRedoActions(const QUndoGroup *undoGroup);
     int CloseTab(int index);
     void SetCurrentTab(int index);
-    int GetTabIndexByPath(const QString &fileName) const;
-    void OnProjectOpened(Result result, QString projectPath);
-    int AddTab(const QString &tabText);
-    void SetDocumentToWidgets(Document *document);
+    void OnProjectOpened(const DAVA::ResultList &resultList, QString projectPath);
+    int AddTab(const DAVA::FilePath &scenePath);
     void OnCleanChanged(int index, bool val);
+    DavaGLWidget *GetGLWidget() const;
+    DialogReloadSprites *GetDialogReloadSprites() const;
 protected:
     void closeEvent(QCloseEvent *event) override;
 signals:
@@ -86,47 +85,47 @@ signals:
     void SaveDocument(int index);
     void CurrentTabChanged(int index);
     void CloseRequested();
-
+    void RtlChanged(bool isRtl);
+    void ReloadSprites(DAVA::eGPUFamily gpu);
 public slots:
-    DavaGLWidget *GetGLWidget() const;
-
     void OnProjectIsOpenChanged(bool arg);
     void OnCountChanged(int count);
 private slots:
+    void OnCurrentIndexChanged(int arg);
     void OnSaveDocument();
     void OnOpenFontManager();
-    void OnOpenLocalizationManager();
     void OnShowHelp();
-	
+    
     void OnOpenProject();
-	
-	void RebuildRecentMenu();
+    
+    void RebuildRecentMenu();
 
     void SetBackgroundColorMenuTriggered(QAction* action);
-    
+
     // Pixelization.
     void OnPixelizationStateChanged();
     
+    void OnRtlChanged(int arg);
 private:
+    void InitLanguageBox();
+    void InitRtlBox();
 	void InitMenu();
     void SetupViewMenu();
     void DisableActions();
-	void UpdateProjectSettings(const QString& filename);
+    void UpdateProjectSettings(const QString& filename);
 
-	// Save/restore positions of DockWidgets and main window geometry
-	void SaveMainWindowState();
-	void RestoreMainWindowState();
-
+    // Save/restore positions of DockWidgets and main window geometry
+    void SaveMainWindowState();
+    void RestoreMainWindowState();
 private:
-    Ui::MainWindow *ui;
-
     // Background Frame Color menu actions.
     QList<QAction*> backgroundFramePredefinedColorActions;
     QAction* backgroundFrameUseCustomColorAction;
     QAction* backgroundFrameSelectCustomColorAction;
+    LocalizationEditorDialog *localizationEditorDialog;
+    DialogReloadSprites *dialogReloadSprites;
 };
 
 Q_DECLARE_METATYPE(MainWindow::TabState*);
-
 
 #endif // MAINWINDOW_H

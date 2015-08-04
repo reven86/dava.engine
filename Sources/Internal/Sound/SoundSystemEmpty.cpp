@@ -26,7 +26,10 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #include "Sound/SoundSystem.h"
+
+#ifndef DAVA_FMOD
 
 namespace DAVA
 {
@@ -106,3 +109,5 @@ namespace DAVA
     }
     
 }//DAVA
+
+#endif //DAVA_FMOD

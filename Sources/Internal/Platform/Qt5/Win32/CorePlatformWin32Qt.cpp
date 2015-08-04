@@ -26,8 +26,8 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #include "CorePlatformWin32Qt.h"
-#include "Platform/Thread.h"
 #include "Utils/Utils.h"
 
 #if defined(__DAVAENGINE_WIN32__)
@@ -63,12 +63,6 @@ int Core::RunCmdTool(int argc, char * argv[], AppHandle handle)
 	FrameworkDidLaunched();
 	FrameworkWillTerminate();
 	core->ReleaseSingletons();
-#ifdef ENABLE_MEMORY_MANAGER
-	if (DAVA::MemoryManager::Instance() != 0)
-	{
-		DAVA::MemoryManager::Instance()->FinalLog();
-	}
-#endif
 	return 0;
 }
 

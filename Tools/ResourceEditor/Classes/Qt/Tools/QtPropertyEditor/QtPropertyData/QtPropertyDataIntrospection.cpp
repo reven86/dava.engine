@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "DAVAEngine.h"
 #include "QtPropertyDataIntrospection.h"
 #include "QtPropertyDataDavaKeyedArchive.h"
@@ -168,7 +167,7 @@ void QtPropertyDataIntrospection::AddMember(const DAVA::InspMember *member)
 		const DAVA::MetaInfo *memberMetaInfo = member->Type();
 		const DAVA::InspInfo *memberIntrospection = memberMetaInfo->GetIntrospection(memberObject);
 	
-		ChildAdd(member->Name(), data);
+		ChildAdd(member->Name().c_str(), data);
 		//condition for variant
 		if((!memberMetaInfo->IsPointer()) && (!member->Collection()) && 
 			(NULL == memberIntrospection || (memberIntrospection->Type() != DAVA::MetaInfo::Instance<DAVA::KeyedArchive>())))
@@ -184,6 +183,6 @@ void QtPropertyDataIntrospection::AddMember(const DAVA::InspMember *member)
 
 QVariant QtPropertyDataIntrospection::GetValueInternal() const
 {
-	return QVariant(info->Name());
+	return QVariant(info->Name().c_str());
 }
 

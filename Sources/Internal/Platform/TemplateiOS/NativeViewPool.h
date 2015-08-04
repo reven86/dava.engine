@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #ifndef __DAVAENGINE_NATIVE_VIEW_POOL_H__
 #define __DAVAENGINE_NATIVE_VIEW_POOL_H__
 
@@ -34,8 +35,8 @@
 
 #if defined(__DAVAENGINE_IPHONE__)
 
-#include "Platform/Mutex.h"
-#include "Thread/LockGuard.h"
+#include "Concurrency/Mutex.h"
+#include "Concurrency/LockGuard.h"
 
 #import <UIKit/UIKit.h>
 

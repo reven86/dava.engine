@@ -34,7 +34,7 @@
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
 #include "Render/2D/Font.h"
-#include "Platform/Mutex.h"
+#include "Concurrency/Mutex.h"
 #include "FileSystem/FilePath.h"
 
 namespace DAVA
@@ -120,6 +120,11 @@ public:
 	// Put font properties into YamlNode
 	virtual YamlNode * SaveToYamlNode() const;
 
+    void SetAscendScale(float32 ascend) override;
+    float32 GetAscendScale() const override;
+    void SetDescendScale(float32 ascend) override;
+    float32 GetDescendScale() const override;
+
 protected:
 	// Get the raw hash string (identical for identical fonts).
 	virtual String GetRawHashString();
@@ -127,6 +132,9 @@ protected:
 private:
 	FTFont(FTInternalFont* internalFont);
 	FTInternalFont	* internalFont;
+
+    float32 ascendScale;
+    float32 descendScale;
 	
 	FilePath fontPath;
 };

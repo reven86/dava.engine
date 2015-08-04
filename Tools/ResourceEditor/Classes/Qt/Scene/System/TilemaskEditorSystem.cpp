@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "TilemaskEditorSystem.h"
 #include "CollisionSystem.h"
 #include "SelectionSystem.h"
@@ -500,7 +499,7 @@ void TilemaskEditorSystem::SetTileColor(int32 index, const Color& color)
 MetaObjModifyCommand* TilemaskEditorSystem::CreateTileColorCommand(Landscape::eTextureLevel level, const Color& color)
 {
 	Landscape* landscape = drawSystem->GetBaseLandscape();
-	const InspMember* inspMember = landscape->GetTypeInfo()->Member("tileColor");
+	const InspMember* inspMember = landscape->GetTypeInfo()->Member(FastName("tileColor"));
 	const InspColl* inspColl = inspMember->Collection();
 	void* object = inspMember->Data(landscape);
 

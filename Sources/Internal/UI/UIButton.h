@@ -32,6 +32,7 @@
 
 #include "Base/BaseTypes.h"
 #include "UI/UIControl.h"
+#include "Render/2D/TextBlock.h"
 
 namespace DAVA
 {
@@ -252,7 +253,7 @@ public:
      \param[in] state state text bit mask to set value for.
      \param[in] value using RTL align flag.
      */
-    virtual void SetStateTextUseRtlAlign(int32 state, bool value);
+    virtual void SetStateTextUseRtlAlign(int32 state, TextBlock::eUseRtlAlign value);
     /**
     \brief Sets text multiline what will be shown for the requested states.
     \param[in] state state text bit mask to set value for.
@@ -365,6 +366,9 @@ public:
     virtual String GetInternalControlName(int32 index) const;
     virtual String GetInternalControlDescriptions() const;
 
+    INTROSPECTION_EXTEND(UIButton, UIControl,
+        nullptr
+        );
 };
 };
 

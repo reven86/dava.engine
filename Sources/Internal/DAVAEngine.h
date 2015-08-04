@@ -32,9 +32,9 @@
 
 #include "DAVAVersion.h"
 #include "DAVAConfig.h"
-#include "Debug/MemoryManager.h"
+#include "Base/Platform.h"
 #include "Debug/Stats.h"
-#include "Debug/Backtrace.h"
+#include "MemoryManager/MemoryProfiler.h"
 
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
@@ -47,6 +47,7 @@
 #include "FileSystem/Logger.h"
 #include "Platform/SystemTimer.h"
 #include "Platform/DateTime.h"
+#include "Platform/DeviceInfo.h"
 
 // system stuff
 #include "Utils/Utils.h"
@@ -70,8 +71,7 @@
 #include "Base/ScopedPtr.h"
 
 // threads
-#include "Platform/Thread.h"
-#include "Platform/Mutex.h"
+#include "Concurrency/Concurrency.h"
 
 // Accelerometer
 #include "Input/Accelerometer.h"
@@ -84,7 +84,7 @@
 #include "FileSystem/LocalizationSystem.h"
 
 // Image formats stuff (PNG & JPG & other formats)
-#include "Render/Image/LibPngHelpers.h"
+#include "Render/Image/LibPngHelper.h"
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageSystem.h"
 #include "Render/Image/LibDdsHelper.h"
@@ -254,7 +254,6 @@
 #include "Scene3D/Systems/EventSystem.h"
 #include "Scene3D/BillboardNode.h"
 #include "Scene3D/BoneNode.h"
-#include "Scene3D/ProxyNode.h"
 #include "Scene3D/SkeletonNode.h"
 #include "Scene3D/Systems/GlobalEventSystem.h"
 #include "Scene3D/Systems/SpeedTreeUpdateSystem.h"

@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_UI_JOYPAD__
 #define __DAVAENGINE_UI_JOYPAD__
 
@@ -51,7 +50,7 @@ class UIJoypad : public UIControl
 protected:
     virtual ~UIJoypad();
 public:
-	UIJoypad(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = FALSE);
+	UIJoypad(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
 	
 	const Vector2 & GetDigitalPosition();
 	const Vector2 & GetAnalogPosition();
@@ -79,6 +78,8 @@ public:
 
     virtual List<UIControl* >& GetRealChildren();
 
+    FilePath GetStickSpritePath() const;
+    void SetStickSpritePath(const FilePath &path);
 protected:
 	void RecalcDigitalPosition();
 	void RecalcAnalogPosition();
@@ -97,6 +98,15 @@ private:
 	
 	Vector2 digitalVector;
 	Vector2 analogVector;
+public:
+    INTROSPECTION_EXTEND(UIJoypad, UIControl,
+        PROPERTY("stickSprite", "Stick Sprite", GetStickSpritePath, SetStickSpritePath, I_SAVE | I_VIEW | I_EDIT)
+        PROPERTY("stickFrame", "Stick Frame", GetStickSpriteFrame, SetStickSpriteFrame, I_SAVE | I_VIEW | I_EDIT)
+
+        PROPERTY("deadAreaSize", "Dead Area Size", GetDeadAreaSize, SetDeadAreaSize, I_SAVE | I_VIEW | I_EDIT)
+        PROPERTY("digitalSense", "Digital Sense", GetDigitalSense, SetDigitalSense, I_SAVE | I_VIEW | I_EDIT)
+        );
+
 };
 	
 };

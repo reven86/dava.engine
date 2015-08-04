@@ -27,12 +27,14 @@
 =====================================================================================*/
 
 
-#include "DAVAEngine.h"
+#include "Core/Core.h"
+
+#if defined(__DAVAENGINE_WIN32__)
 
 int APIENTRY WinMain(HINSTANCE hInstance,
-                    HINSTANCE hPrevInstance,
-                    LPSTR    lpCmdLine,
-                    int       nCmdShow)
+                     HINSTANCE hPrevInstance,
+                     LPSTR    lpCmdLine,
+                     int       nCmdShow)
 {
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
@@ -40,13 +42,12 @@ int APIENTRY WinMain(HINSTANCE hInstance,
     return DAVA::Core::Run(0, 0, hInstance);
 }
 
+#elif defined(__DAVAENGINE_WIN_UAP__)
 
-/*int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR    lpCmdLine, int       nCmdShow)
+[Platform::MTAThread]
+int main(Platform::Array<Platform::String^>^ args)
 {
-    // find leaks mega-string: {,,msvcr71d.dll}_crtBreakAlloc
-    //
-    // POSSIBLE LEAKS LIST:
-    // remember -- always clear all allocated data for static STL containers
-    // 
-    return 0;
-}*/
+    return DAVA::Core::Run(0, 0, 0);
+}
+
+#endif // defined(__DAVAENGINE_WIN32__)

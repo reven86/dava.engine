@@ -26,42 +26,113 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#include "GameCore.h"
-
-#include "Platform/DateTime.h"
+#include "Base/BaseTypes.h"
+#include "UI/UIScreenManager.h"
 #include "TexturePacker/CommandLineParser.h"
 #include "Utils/Utils.h"
+#include "UnitTests/UnitTests.h"
 
-#include "Tests/MathTest.h"
-#include "Tests/FunctionBindSingalTest.h"
-#include "Tests/ImageSizeTest.h"
-#include "Tests/SaveImageTest.h"
-#include "Tests/StringFormatTest.h"
-#include "Tests/ComponentsTest.h"
-#include "Tests/FileListTest.h"
-#include "Tests/FileSystemTest.h"
-#include "Tests/DateTimeTest.h"
-#include "Tests/LocalizationTest.h"
-#include "Tests/MemoryAllocatorsTest.h"
-#include "Tests/HashMapTest.h"
-#include "Tests/SplitTest.h"
-#include "Tests/TextSizeTest.h"
-#include "Tests/KeyedArchiveYamlTest.h"
-#include "Tests/JobManagerTest.h"
-#include "Tests/Cpp14.h"
-#include "Tests/NetworkTest.h"
-#include "Tests/JNITest.h"
-#include "Tests/FormatsTest.h"
-#include "Tests/DataVaultTest.h"
-#include "Tests/UnlimitedLogOutputTest.h"
-#include "Tests/SpinLockTest.h"
-#include "Tests/ThreadSyncTest.h"
-//$UNITTEST_INCLUDE
+#include "Infrastructure/GameCore.h"
 
-void GameCore::RunOnlyThisTest()
+using namespace DAVA;
+
+namespace
 {
-    //runOnlyThisTest = "TestClassName";
+
+// List of semicolon separated names specifying which test classes should run
+String runOnlyTheseTestClasses = "";
+// List of semicolon separated names specifying which test classes shouldn't run. This list takes precedence over runOnlyTheseTests
+String disableTheseTestClasses = "";
+
+bool teamcityOutputEnabled = true;      // Flag whether to enable TeamCity output
+bool teamcityCaptureStdout = false;     // Flag whether to set TeamCity option 'captureStandardOutput=true'
+
+}
+
+void GameCore::ProcessCommandLine()
+{
+    CommandLineParser* cmdline = CommandLineParser::Instance();
+    if (cmdline->CommandIsFound("-only_test"))
+    {
+        runOnlyTheseTestClasses = cmdline->GetCommandParam("-only_test");
+    }
+    if (cmdline->CommandIsFound("-disable_test"))
+    {
+        disableTheseTestClasses = cmdline->GetCommandParam("-disable_test");
+    }
+    if (cmdline->CommandIsFound("-noteamcity"))
+    {
+        teamcityOutputEnabled = false;
+    }
+    if (cmdline->CommandIsFound("-teamcity_capture_stdout"))
+    {
+        teamcityCaptureStdout = true;
+    }
+}
+
+void GameCore::OnAppStarted()
+{
+    ProcessCommandLine();
+
+    if (teamcityOutputEnabled)
+    {
+        teamCityOutput.SetCaptureStdoutFlag(teamcityCaptureStdout);
+        Logger::Instance()->AddCustomOutput(&teamCityOutput);
+    }
+
+    UnitTests::TestCore::Instance()->Init(MakeFunction(this, &GameCore::OnTestClassStarted),
+                                          MakeFunction(this, &GameCore::OnTestClassFinished),
+                                          MakeFunction(this, &GameCore::OnTestStarted),
+                                          MakeFunction(this, &GameCore::OnTestFinished),
+                                          MakeFunction(this, &GameCore::OnTestFailed),
+                                          MakeFunction(this, &GameCore::OnTestClassDisabled));
+    if (!runOnlyTheseTestClasses.empty())
+    {
+        UnitTests::TestCore::Instance()->RunOnlyTheseTestClasses(runOnlyTheseTestClasses);
+    }
+    if (!disableTheseTestClasses.empty())
+    {
+        UnitTests::TestCore::Instance()->DisableTheseTestClasses(disableTheseTestClasses);
+    }
+
+    if (!UnitTests::TestCore::Instance()->HasTestClasses())
+    {
+        Logger::Error("%s", "There are no test classes");
+        Core::Instance()->Quit();
+    }
+}
+
+void GameCore::OnAppFinished()
+{
+    if (teamcityOutputEnabled)
+    {
+        DAVA::Logger::Instance()->RemoveCustomOutput(&teamCityOutput);
+    }
+}
+
+void GameCore::OnSuspend()
+{
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+    ApplicationCore::OnSuspend();
+#endif
+}
+
+void GameCore::OnResume()
+{
+    ApplicationCore::OnResume();
+}
+
+#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+void GameCore::OnForeground()
+{
+    ApplicationCore::OnForeground();
+}
+#endif //#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+
+void GameCore::Update(float32 timeElapsed)
+{
+    ProcessTests(timeElapsed);
+    ApplicationCore::Update(timeElapsed);
 }
 
 void GameCore::OnError()
@@ -69,315 +140,70 @@ void GameCore::OnError()
     DavaDebugBreak();
 }
 
-void GameCore::RegisterTests()
+void GameCore::OnTestClassStarted(const DAVA::String& testClassName)
 {
-    new ThreadSyncTest();
-    new DataVaultTest();
-#if defined(__DAVAENGINE_ANDROID__)
-    new JNITest();
-#endif
-    new MathTest();
-    new FunctionBindSignalTest();
-    new ImageSizeTest();
-    new SaveImageTest();
-    new StringFormatTest();
-    new ComponentsTest();
-    new FileListTest();
-    new FileSystemTest();
-    new DateTimeTest();
-    new LocalizationTest();
-    new MemoryAllocatorsTest();
-    new HashMapTest();
-    new SplitTest();
-    new TextSizeTest();
-    new KeyedArchiveYamlTest();
-    new JobManagerTest();
-    new Cpp14Test();
-    new FormatsTest();
-    new NetworkTest();
-    new UnlimitedLogOutputTest();
-    new SpinLockTest();
-//  $UNITTEST_CTOR
+    Logger::Info("%s", TeamcityTestsOutput::FormatTestClassStarted(testClassName).c_str());
 }
 
-#include <fstream>
-#include <algorithm>
-
-using namespace DAVA;
-
-void GameCore::OnAppStarted()
+void GameCore::OnTestClassFinished(const DAVA::String& testClassName)
 {
-    InitLogging();
-    RunOnlyThisTest();
-    RegisterTests();
-    RunTests();
+    Logger::Info("%s", TeamcityTestsOutput::FormatTestClassFinished(testClassName).c_str());
 }
 
-GameCore::GameCore() 
-: currentScreen(NULL),
-currentScreenIndex(0),
-currentTestIndex(0)
+void GameCore::OnTestClassDisabled(const DAVA::String& testClassName)
 {
+    Logger::Info("%s", TeamcityTestsOutput::FormatTestClassDisabled(testClassName).c_str());
 }
 
-GameCore::~GameCore()
+void GameCore::OnTestStarted(const DAVA::String& testClassName, const DAVA::String& testName)
 {
+    Logger::Info("%s", TeamcityTestsOutput::FormatTestStarted(testClassName, testName).c_str());
 }
 
-void GameCore::RegisterScreen(BaseScreen *screen)
+void GameCore::OnTestFinished(const DAVA::String& testClassName, const DAVA::String& testName)
 {
-    UIScreenManager::Instance()->RegisterScreen(screen->GetScreenId(), screen);
-    screens.push_back(screen);
+    Logger::Info("%s", TeamcityTestsOutput::FormatTestFinished(testClassName, testName).c_str());
 }
 
-
-void GameCore::CreateDocumentsFolder()
-{
-    FilePath documentsPath = FileSystem::Instance()->GetUserDocumentsPath() + "UnitTests/";
-    
-    FileSystem::Instance()->CreateDirectory(documentsPath, true);
-    FileSystem::Instance()->SetCurrentDocumentsDirectory(documentsPath);
-}
-
-
-File * GameCore::CreateDocumentsFile(const String &filePathname)
-{
-    FilePath workingFilepathname = FilePath::FilepathInDocuments(filePathname);
-
-    FileSystem::Instance()->CreateDirectory(workingFilepathname.GetDirectory(), true);
-    
-    File *retFile = File::Create(workingFilepathname, File::CREATE | File::WRITE);
-    return retFile;
-}
-
-void GameCore::OnAppFinished()
-{
-    DAVA::Logger::Instance()->RemoveCustomOutput(&teamCityOutput);
-
-    for(auto& screen : screens)
-    {
-        SafeRelease(screen);
-    }
-    screens.clear();
-}
-
-void GameCore::OnSuspend()
-{
-//    Logger::Debug("GameCore::OnSuspend");
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-    ApplicationCore::OnSuspend();
-#endif
-
-}
-
-void GameCore::OnResume()
-{
-    Logger::Debug("GameCore::OnResume");
-    ApplicationCore::OnResume();
-}
-
-
-#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
-void GameCore::OnDeviceLocked()
-{
-//    Logger::Debug("GameCore::OnDeviceLocked");
-    //Core::Instance()->Quit();
-}
-
-void GameCore::OnBackground()
-{
-    Logger::Debug("GameCore::OnBackground");
-}
-
-void GameCore::OnForeground()
-{
-    Logger::Debug("GameCore::OnForeground");
-    ApplicationCore::OnForeground();
-}
-
-#endif //#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
-
-
-void GameCore::BeginFrame()
-{
-    ApplicationCore::BeginFrame();
-    RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
-}
-
-void GameCore::Update(float32 timeElapsed)
-{
-    ProcessTests();
-    ApplicationCore::Update(timeElapsed);
-}
-
-void GameCore::Draw()
-{
-    ApplicationCore::Draw();
-}
-
-void GameCore::RunTests()
-{
-    currentTestIndex = 0;
-    auto screensSize = screens.size();
-    for(size_t iScr = 0; iScr < screensSize; ++iScr)
-    {
-        BaseScreen& screen = *screens[iScr];
-        if (IsNeedSkipTest(screen))
-        {
-            continue;
-        }
-        int32 count = screen.GetTestCount();
-        if(0 < count)
-        {
-            currentScreen = screens[iScr];
-            currentScreenIndex = static_cast<int32>(iScr);
-            break;
-        }
-    }
-    
-    if(currentScreen)
-    {
-        Logger::Info(TeamcityTestsOutput::FormatTestStarted(currentScreen->GetTestName()).c_str());
-
-        UIScreenManager::Instance()->SetFirst(currentScreen->GetScreenId());
-    }
-    else 
-    {
-        LogMessage(String("There are no tests."));
-        Core::Instance()->Quit();
-    }
-}
-
-
-void GameCore::FinishTests()
-{
-    // inform teamcity script we just finished all tests
-    // useful on ios devices (run with lldb)
-    teamCityOutput.Output(DAVA::Logger::LEVEL_DEBUG, "Finish all tests.");
-    Core::Instance()->Quit();
-}
-
-void GameCore::LogMessage(const String &message)
-{
-    DAVA::Logger::Error(message.c_str());
-}
-
-int32 GameCore::TestCount()
-{
-    int32 count = 0;
-    int32 screensSize = static_cast<int32>(screens.size());
-    for(int32 i = 0; i < screensSize; ++i)
-    {
-        count += screens[i]->GetTestCount();
-    }
-    
-    return count;
-}
-
-void GameCore::ProcessTests()
-{
-    if(currentScreen && currentScreen->ReadyForTests())
-    {
-        bool ret = currentScreen->RunTest(currentTestIndex);
-        if(ret)
-        {
-            ++currentTestIndex;
-            if(currentScreen->GetTestCount() == currentTestIndex)
-            {
-                ++currentScreenIndex;
-                if(currentScreenIndex == screens.size())
-                {
-                    Logger::Info(TeamcityTestsOutput::FormatTestFinished(currentScreen->GetTestName()).c_str());
-                    FinishTests();
-                }
-                else 
-                {
-                    Logger::Info(TeamcityTestsOutput::FormatTestFinished(currentScreen->GetTestName()).c_str());
-
-                    currentScreen = screens[currentScreenIndex];
-
-                    while (IsNeedSkipTest(*currentScreen))
-                    {
-                        ++currentScreenIndex;
-                        if (currentScreenIndex == screens.size())
-                        {
-                            FinishTests();
-                            return;
-                        }
-                        currentScreen = screens[currentScreenIndex];
-                    }
-
-                    currentTestIndex = 0;
-
-                    Logger::Info(TeamcityTestsOutput::FormatTestStarted(currentScreen->GetTestName()).c_str());
-
-                    UIScreenManager::Instance()->SetScreen(currentScreen->GetScreenId());
-                }
-            }
-        }
-    }
-}
-
-void GameCore::RegisterError(const String &command, const String &fileName, int32 line, TestData *testData)
+void GameCore::OnTestFailed(const String& testClassName, const String& testName, const String& condition, const char* filename, int lineno, const String& userMessage)
 {
     OnError();
 
-    const char* testName = currentScreen->GetTestName().c_str();
-
-    String errorString = String(Format("%s(%d): ",
-        fileName.c_str(), line));
-
-    if (testData)
+    String errorString;
+    if (userMessage.empty())
     {
-        if(!testData->name.empty())
+        errorString = Format("%s:%d: %s", filename, lineno, testName.c_str());
+    }
+    else
+    {
+        errorString = Format("%s:%d: %s (%s)", filename, lineno, testName.c_str(), userMessage.c_str());
+    }
+    Logger::Error("%s", TeamcityTestsOutput::FormatTestFailed(testClassName, testName, condition, errorString).c_str());
+}
+
+void GameCore::ProcessTests(float32 timeElapsed)
+{
+    if (!UnitTests::TestCore::Instance()->ProcessTests(timeElapsed))
+    {
+        // Output test coverage for sample
+        Map<String, Vector<String>> map = UnitTests::TestCore::Instance()->GetTestCoverage();
+        Logger::Info("Test coverage");
+        for (const auto& x : map)
         {
-            errorString += String(Format(" %s", testData->name.c_str())); // test function name
+            Logger::Info("  %s:", x.first.c_str());
+            const Vector<String>& v = x.second;
+            for (const auto& s : v)
+            {
+                Logger::Info("        %s", s.c_str());
+            }
         }
-
-        if(!testData->message.empty())
-        {
-            errorString += String(Format(" %s", testData->message.c_str()));
-        }
+        FinishTests();
     }
-    LogMessage(TeamcityTestsOutput::FormatTestFailed(testName, command, errorString));
 }
 
-DAVA::String GameCore::CreateOutputLogFile()
+void GameCore::FinishTests()
 {
-    time_t logStartTime = time(0);
-    const String logFileName = Format("Reports/%lld.errorlog", logStartTime);
-    File* logFile = CreateDocumentsFile(logFileName);
-    DVASSERT(logFile);
-    SafeRelease(logFile);
-
-    FilePath workingFilepathname = FilePath::FilepathInDocuments(logFileName);
-    return workingFilepathname.GetAbsolutePathname();
+    // Inform teamcity script we just finished all tests
+    Logger::Debug("Finish all tests.");
+    Core::Instance()->Quit();
 }
-
-void GameCore::InitLogging()
-{
-    if (CommandLineParser::Instance()->CommandIsFound("-only_test"))
-    {
-        runOnlyThisTest = CommandLineParser::Instance()->GetCommandParam("-only_test");
-    }
-
-    Logger::Instance()->AddCustomOutput(&teamCityOutput);
-}
-
-bool GameCore::IsNeedSkipTest(const BaseScreen& screen) const
-{
-    if (runOnlyThisTest.empty())
-    {
-        return false;
-    }
-
-    const String& name = screen.GetTestName();
-
-    return 0 != CompareCaseInsensitive(runOnlyThisTest, name);
-}
-
-
-
-
-
-

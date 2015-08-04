@@ -26,71 +26,114 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "DAVAEngine.h"
+#include "UnitTests/UnitTests.h"
 
-#include "LocalizationTest.h"
+#include "Utils/BiDiHelper.h"
+#include "Render/2D/TextLayout.h"
+
+using namespace DAVA;
 
 static const String files[] = {
-	"weird_characters",
-	"de",
-	"en",
-	"es",
-	"it",
-	"ru"
+    "weird_characters",
+    "de",
+    "en",
+    "es",
+    "it",
+    "ru"
 };
 
-LocalizationTest::LocalizationTest()
-:	TestTemplate<LocalizationTest>("LocalizationTest")
+DAVA_TESTCLASS(LocalizationTest)
 {
-	currentTest = FIRST_TEST;
+    FilePath srcDir;
+    FilePath cpyDir;
 
-	for (int32 i = FIRST_TEST; i < FIRST_TEST + TEST_COUNT; ++i)
-	{
-		RegisterFunction(this, &LocalizationTest::TestFunction, Format("Localization test of %s", files[i].c_str()), NULL);
-	}
+    LocalizationTest()
+    {
+        srcDir = "~res:/TestData/LocalizationTest/";
+        cpyDir = FileSystem::Instance()->GetCurrentDocumentsDirectory() + "LocalizationTest/";
 
-	srcDir = "~res:/TestData/LocalizationTest/";
-	cpyDir = FileSystem::Instance()->GetCurrentDocumentsDirectory() + "LocalizationTest/";
+        FileSystem::Instance()->DeleteDirectory(cpyDir);
+        FileSystem::Instance()->CreateDirectory(cpyDir);
+    }
 
-	FileSystem::Instance()->DeleteDirectory(cpyDir);
-	FileSystem::Instance()->CreateDirectory(cpyDir);
-}
+    ~LocalizationTest()
+    {
+        FileSystem::Instance()->DeleteDirectory(cpyDir);
+    }
 
-void LocalizationTest::LoadResources()
-{
-}
+    DAVA_TEST(LocaleTest)
+    {
+        for (size_t i = 0;i < COUNT_OF(files);++i)
+        {
+            FilePath srcFile = srcDir + (files[i] + ".yaml");
+            FilePath cpyFile = cpyDir + (files[i] + ".yaml");
 
-void LocalizationTest::UnloadResources()
-{
-    FileSystem::Instance()->DeleteDirectory(cpyDir);
-}
+            FileSystem::Instance()->CopyFile(srcFile, cpyFile);
 
-void LocalizationTest::Draw(const DAVA::UIGeometricData &geometricData)
-{
-}
+            LocalizationSystem* localizationSystem = LocalizationSystem::Instance();
 
-void LocalizationTest::TestFunction(TestTemplate<LocalizationTest>::PerfFuncData *data)
-{
-	FilePath srcFile = srcDir + (files[currentTest] + ".yaml");
-	FilePath cpyFile = cpyDir + (files[currentTest] + ".yaml");
+            localizationSystem->SetCurrentLocale(files[i]);
+            localizationSystem->InitWithDirectory(cpyDir);
 
-	FileSystem::Instance()->CopyFile(srcFile, cpyFile);
+            localizationSystem->SaveLocalizedStrings();
 
-	LocalizationSystem* localizationSystem = LocalizationSystem::Instance();
+            localizationSystem->Cleanup();
+            TEST_VERIFY_WITH_MESSAGE(FileSystem::Instance()->CompareTextFiles(srcFile, cpyFile), Format("Localization test: %s", files[i].c_str()));
+        }
+    }
 
-	localizationSystem->SetCurrentLocale(files[currentTest]);
-	localizationSystem->InitWithDirectory(cpyDir);
+    DAVA_TEST(BiDiTest)
+    {
+        BiDiHelper helper;
+        TextLayout layout(true);
 
-	localizationSystem->SaveLocalizedStrings();
+        Font* font = FTFont::Create("~res:/Fonts/korinna.ttf");
 
-	localizationSystem->Cleanup();
+        FilePath filePath("~res:/TestData/LocalizationTest/bidi_test.yaml");
+        YamlParser* parser = YamlParser::Create(filePath);
+        SCOPE_EXIT {
+            SafeRelease(parser);
+            SafeRelease(font);
+        };
 
-    bool res = FileSystem::Instance()->CompareTextFiles(srcFile, cpyFile);
+        TEST_VERIFY_WITH_MESSAGE(parser != nullptr, Format("Failed to open yaml file: %s", filePath.GetAbsolutePathname().c_str()));
+        if (parser == nullptr)
+            return;
 
-	String s = Format("Localization test %d: %s - %s", currentTest, files[currentTest].c_str(), (res ? "passed" : "fail"));
-	Logger::Debug(s.c_str());
+        YamlNode* rootNode = parser->GetRootNode();
+        TEST_VERIFY_WITH_MESSAGE(rootNode != nullptr, Format("Empty YAML file: %s", filePath.GetAbsolutePathname().c_str()));
+        if (rootNode == nullptr)
+            return;
 
-	data->testData.message = s;
-	TEST_VERIFY(res);
+        uint32 cnt = rootNode->GetCount();
+        for (uint32 k = 0; k < cnt; ++k)
+        {
+            const YamlNode* node = rootNode->Get(k);
+            const YamlNode* inputNode = node->Get("input");
+            const YamlNode* visualNode = node->Get("visual");
 
-	++currentTest;
-}
+            TEST_VERIFY_WITH_MESSAGE(inputNode != nullptr, Format("YamlNode %d: input node is empty", k));
+            TEST_VERIFY_WITH_MESSAGE(visualNode != nullptr, Format("YamlNode %d: visual node is empty", k));
+            if (inputNode == nullptr || visualNode == nullptr)
+                break;
+
+            WideString input = inputNode->AsWString();
+            WideString visual = visualNode->AsWString();
+            WideString visual_work;
+
+            layout.Reset(input, *font);
+            while (!layout.IsEndOfText())
+            {
+                layout.NextByWords(FLT_MAX);
+                visual_work += layout.GetVisualLine(!layout.IsEndOfText());
+                if (!layout.IsEndOfText())
+                {
+                    // Paste linebreak for comparing splinted strings and string from config
+                    visual_work += L"\n";
+                }
+            }
+            TEST_VERIFY_WITH_MESSAGE(visual == visual_work, Format("YamlNode index: %d", k));
+        }
+    }
+};

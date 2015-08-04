@@ -27,14 +27,12 @@
 =====================================================================================*/
 
 
-
 #ifndef __TEXTURE_CONVERTOR_H__
 #define __TEXTURE_CONVERTOR_H__
 
 #include "Base/BaseTypes.h"
 
 #include <QObject>
-#include <QImage>
 #include <QFutureWatcher>
 #include <QProgressDialog>
 
@@ -58,8 +56,6 @@ public:
 	TextureConvertor();
 	~TextureConvertor();
 
-	static QImage FromDavaImage(DAVA::Image *image);
-
 	static DAVA::Vector<DAVA::Image*> ConvertFormat(DAVA::TextureDescriptor *descriptor, DAVA::eGPUFamily gpu,
                                                     eTextureConvertMode convertMode);
 	
@@ -69,7 +65,7 @@ public:
                      eTextureConvertMode convertMode = CONVERT_NOT_EXISTENT);
 	int Reconvert(DAVA::Scene *scene, eTextureConvertMode convertMode);
 	
-	void WaitConvertedAll(QWidget *parent = NULL);
+	void WaitConvertedAll(QWidget *parent = nullptr);
 	void CancelConvert();
 
 signals:

@@ -26,13 +26,13 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "Base/Platform.h"
+#if defined(__DAVAENGINE_WIN32__)
 
 #include "Platform/TemplateWin32/CorePlatformWin32.h"
-#include "Platform/TemplateWin32/WindowsSpecifics.h"
-#include "Platform/Thread.h"
+#include "Concurrency/Thread.h"
 #include "Utils/Utils.h"
-
-#if defined(__DAVAENGINE_WIN32__)
+#include "Utils/UTF8Utils.h"
 
 #include <shellapi.h>
 
@@ -57,33 +57,39 @@ HWND CoreWin32PlatformBase::GetWindow() const
 
 void CoreWin32PlatformBase::InitArgs()
 {
-    LPWSTR *szArglist;
-    int nArgs;
-    int i;
-    szArglist = ::CommandLineToArgvW(::GetCommandLineW(), &nArgs);
-    if( NULL == szArglist )
-    {
-        Logger::Error("CommandLineToArgvW failed\n");
-        return;
-    }
-    else
-    {
-        Vector<String> & cl = GetCommandLine();
-        for( i=0; i<nArgs; i++)
-        {
-            WideString w = szArglist[i];
-            String nonWide = WStringToString(w);
-            cl.push_back(nonWide);
-            Logger::FrameworkDebug("%d: %s\n", i, nonWide.c_str());
-        }
-    }
-    // Free memory allocated for CommandLineToArgvW arguments.
-    LocalFree(szArglist);
+    SetCommandLine(WStringToString(::GetCommandLineW()));
 }
 
 void CoreWin32PlatformBase::Quit()
 {
     PostQuitMessage(0);
+	exit(0);
+}
+
+void CoreWin32PlatformBase::SetCursorPosCenterInternal(HWND hWnd)
+{
+    RECT wndRect;
+    GetWindowRect(hWnd, &wndRect);
+    int centerX = (int)((wndRect.left + wndRect.right) >> 1);
+    int centerY = (int)((wndRect.bottom + wndRect.top) >> 1);
+    SetCursorPos(centerX, centerY);
+}
+
+void CoreWin32PlatformBase::SetCursorPositionCenter()
+{
+    SetCursorPosCenterInternal(hWindow);
+}
+
+void CoreWin32PlatformBase::SetCursorPosition(Point2i position)
+{
+    SetCursorPos(position.x, position.y);
+}
+
+Point2i CoreWin32PlatformBase::GetCursorPosition()
+{
+    POINT p;
+    GetCursorPos(&p);
+    return Point2i(p.x, p.y);
 }
 
 }

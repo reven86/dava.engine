@@ -66,7 +66,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Sources\nvcore\poshlib\posh.c" />
+    <ClCompile Include="..\..\Sources\nvcore\poshlib\posh.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\nvcore\poshlib\posh.h" />

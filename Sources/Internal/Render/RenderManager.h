@@ -33,8 +33,7 @@
 #include "Render/RenderBase.h"
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
-#include "Platform/Mutex.h"
-#include "Platform/Thread.h"
+#include "Concurrency/Thread.h"
 #include "Render/RenderEffect.h"
 #include "Core/DisplayMode.h"
 #include "Core/Core.h"
@@ -173,17 +172,26 @@ public:
 	LPDIRECT3DSURFACE9 depthStencilSurface;
 
 #endif 
-
-#ifdef __DAVAENGINE_WIN32__
-	bool Create(HINSTANCE hInstance, HWND hWnd);
+#if defined __DAVAENGINE_WIN_UAP__
+private:
+    EGLDisplay eglDisplay = EGL_NO_DISPLAY;
+    EGLContext eglContext = EGL_NO_CONTEXT;
+    EGLSurface eglSurface = EGL_NO_SURFACE;
+    EGLConfig  eglConfig = nullptr;
+public:
+    // These methods throw Platform::Exception on failure
+    void Create(Windows::UI::Xaml::Controls::SwapChainPanel^ swapChainPanel);
+    void BindToCurrentThread();
+#elif defined __DAVAENGINE_WIN32__
+    bool Create(HINSTANCE hInstance, HWND hWnd);
 #else
-	bool Create();
+    bool Create();
 #endif 
-	bool ChangeDisplayMode(DisplayMode mode, bool isFullscreen);
-	
+    bool ChangeDisplayMode(DisplayMode mode, bool isFullscreen);
+
 #if defined(__DAVAENGINE_ANDROID__)
-	void Lost();
-	void Invalidate();
+    void Lost();
+    void Invalidate();
 #endif
 
 	void Release();

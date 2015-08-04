@@ -28,17 +28,17 @@
 
 
 
-#include "BaseScreen.h"
-#include "GameCore.h"
+#include "Infrastructure/BaseScreen.h"
+#include "Infrastructure/GameCore.h"
+
+using namespace DAVA;
 
 int32 BaseScreen::globalScreenId = 1;
 
 BaseScreen::BaseScreen(const String & _screenName, int32 skipBeforeTests)
-    :   UIScreen(),
-    skipCount(skipBeforeTests),
-    skipCounter(0),
-    readyForTests(false),
-    currentScreenId(globalScreenId++)
+    : UIScreen()
+    , currentScreenId(globalScreenId++)
+    , exitButton(nullptr)
 {
     SetName(_screenName);
     
@@ -46,49 +46,47 @@ BaseScreen::BaseScreen(const String & _screenName, int32 skipBeforeTests)
 }
 
 BaseScreen::BaseScreen()
-    :   UIScreen(), 
-    skipCount(10), 
-    skipCounter(0),
-    readyForTests(false),
-    currentScreenId(globalScreenId++)
+    : UIScreen()
+    , currentScreenId(globalScreenId++)
 {
     SetName("BaseScreen");
     GameCore::Instance()->RegisterScreen(this);
 }
 
-int32 BaseScreen::GetScreenId()
+void BaseScreen::SystemScreenSizeDidChanged(const Rect &newFullScreenSize)
 {
-    return currentScreenId;
+    UIScreen::SystemScreenSizeDidChanged(newFullScreenSize);
+    UnloadResources();
+    LoadResources();
 }
 
-void BaseScreen::WillAppear()
+void BaseScreen::LoadResources()
 {
-    skipCounter = 0;
-    readyForTests = (skipCounter == skipCount);
+    ScopedPtr<FTFont> font (FTFont::Create("~res:/Fonts/korinna.ttf"));
+
+    font->SetSize(30);
+
+    Size2i screenSize = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize();
+    exitButton = new UIButton(Rect(static_cast<DAVA::float32>(screenSize.dx-300), static_cast<DAVA::float32>(screenSize.dy-30), 300.0, 30.0));
+    exitButton->SetStateFont(0xFF, font);
+    exitButton->SetStateFontColor(0xFF, Color::White);
+    exitButton->SetStateText(0xFF, L"Exit From Screen");
+
+    exitButton->SetDebugDraw(true);
+    exitButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &BaseScreen::OnExitButton));
+    AddControl(exitButton);
 }
 
-
-void BaseScreen::DidAppear()
+void BaseScreen::UnloadResources()
 {
-    skipCounter = 0;
-    readyForTests = (skipCounter == skipCount);
-}
+    RemoveAllControls();
 
-bool BaseScreen::ReadyForTests()
-{
-    return readyForTests;
-}
-
-void BaseScreen::Update(float32 timeElapsed)
-{
-    if(!readyForTests)
-    {
-        ++skipCounter;
-        if(skipCount == skipCounter)
-        {
-            readyForTests = true;
-        }
-    }
+    SafeRelease(exitButton);
     
-    UIScreen::Update(timeElapsed);
+    UIScreen::UnloadResources();
+}
+
+void BaseScreen::OnExitButton(BaseObject *obj, void *data, void *callerData)
+{
+    GameCore::Instance()->ShowStartScreen();
 }

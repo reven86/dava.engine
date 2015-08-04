@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #include "BaseAddEntityDialog.h"
 #include "ui_BaseAddEntityDialog.h"
 #include "Qt/Main/QtUtils.h"
@@ -99,7 +100,7 @@ void BaseAddEntityDialog::PerformResize()
 QtPropertyData* BaseAddEntityDialog::AddInspMemberToEditor(void *object, const DAVA::InspMember * member)
 {
 	QtPropertyData* propData = QtPropertyDataIntrospection::CreateMemberData(object, member);
-	propEditor->AppendProperty(member->Name(), propData);
+	propEditor->AppendProperty(member->Name().c_str(), propData);
 	return propData;
 }
 

@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "UI/UIControlBackground.h"
 #include "Debug/DVAssert.h"
 #include "UI/UIControl.h"
@@ -168,8 +167,9 @@ void UIControlBackground::SetSprite(Sprite* drawSprite, int32 drawFrame)
 }
 void UIControlBackground::SetFrame(int32 drawFrame)
 {
-    DVASSERT(spr);
-    frame = drawFrame;
+    DVASSERT(spr != nullptr || drawFrame == 0);
+    int32 maxFrame = (spr != nullptr) ? (spr->GetFrameCount() - 1) : (0);
+    frame = Clamp(drawFrame, 0, maxFrame);
 }
 
 void UIControlBackground::SetFrame(const FastName& frameName)
@@ -188,8 +188,9 @@ void UIControlBackground::SetAlign(int32 drawAlign)
 }
 void UIControlBackground::SetDrawType(UIControlBackground::eDrawType drawType)
 {
+    if (type != drawType)
+        ReleaseDrawData();
     type = drawType;
-    ReleaseDrawData();
 }
 
 void UIControlBackground::SetModification(int32 modification)
@@ -588,6 +589,17 @@ void UIControlBackground::SetMargins(const UIMargins* uiMargins)
     }
 
     *margins = *uiMargins;
+}
+
+Vector4 UIControlBackground::GetMarginsAsVector4() const
+{
+    return (margins != nullptr) ? margins->AsVector4() : Vector4();
+}
+
+void UIControlBackground::SetMarginsAsVector4(const Vector4 &m)
+{
+    UIControlBackground::UIMargins newMargins(m);
+    SetMargins(&newMargins);
 }
 
 };

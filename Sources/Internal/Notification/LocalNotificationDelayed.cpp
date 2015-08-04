@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #include "Notification/LocalNotificationDelayed.h"
 
 namespace DAVA
@@ -33,7 +34,7 @@ namespace DAVA
 
 void LocalNotificationDelayed::ImplShow()
 {
-	impl->PostDelayedNotification(title, text, delaySeconds);
+	impl->PostDelayedNotification(title, text, delaySeconds, useSound);
 }
 
 void LocalNotificationDelayed::RemoveAllDelayedNotifications()
@@ -43,7 +44,7 @@ void LocalNotificationDelayed::RemoveAllDelayedNotifications()
 
 void LocalNotificationDelayed::Post()
 {
-    impl->PostDelayedNotification(title, text, delaySeconds);
+    impl->PostDelayedNotification(title, text, delaySeconds, useSound);
 }
 
 }

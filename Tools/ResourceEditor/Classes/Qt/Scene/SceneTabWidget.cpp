@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #include "Scene/SceneTabWidget.h"
 
 #include "Main/Request.h"
@@ -44,6 +45,7 @@
 #include <QResizeEvent>
 #include <QFileInfo>
 #include <QMessageBox>
+#include <QShortcut>
 #include <QDebug>
 
 
@@ -95,6 +97,34 @@ SceneTabWidget::SceneTabWidget(QWidget *parent)
 	QObject::connect(SceneSignals::Instance(), SIGNAL(ModifyStatusChanged(SceneEditor2 *, bool)), this, SLOT(SceneModifyStatusChanged(SceneEditor2 *, bool)));
 
 	SetCurrentTab(0);
+
+    auto mouseWheelHandler = [&]( int ofs )
+    {
+        if ( curScene == nullptr )
+            return;
+        const auto moveCamera = SettingsManager::GetValue( Settings::General_Mouse_WheelMoveCamera ).AsBool();
+        if ( !moveCamera )
+            return;
+
+        const auto reverse = SettingsManager::GetValue( Settings::General_Mouse_InvertWheel ).AsBool() ? -1 : 1;
+#ifdef Q_OS_MAC
+        ofs *= reverse * -1;
+#else
+        ofs *= reverse;
+#endif
+
+        curScene->cameraSystem->MoveToStep( ofs );
+    };
+    connect( davaWidget->GetGLWindow(), &OpenGLWindow::mouseScrolled, mouseWheelHandler );
+
+    auto moveToSelectionHandler = [&]
+    {
+        if ( curScene == nullptr )
+            return;
+        curScene->cameraSystem->MoveToSelection();
+    };
+    auto moveToSelectionHandlerHotkey = new QShortcut( QKeySequence( Qt::CTRL + Qt::Key_D ), this );
+    connect( moveToSelectionHandlerHotkey, &QShortcut::activated, moveToSelectionHandler );
 }
 
 SceneTabWidget::~SceneTabWidget()
@@ -269,8 +299,7 @@ void SceneTabWidget::SetCurrentTab(int index)
 
 		if(NULL != oldScene)
 		{
-			oldScene->selectionSystem->SetLocked(true);
-			SceneSignals::Instance()->EmitDeactivated(oldScene);
+            oldScene->Deactivate();
 		}
 
 		tabBar->blockSignals(true);
@@ -282,8 +311,7 @@ void SceneTabWidget::SetCurrentTab(int index)
 			dava3DView->SetScene(curScene);
 			curScene->SetViewportRect(dava3DView->GetRect());
 
-			SceneSignals::Instance()->EmitActivated(curScene);
-			curScene->selectionSystem->SetLocked(false);
+            curScene->Activate();
 
 			davaWidget->setEnabled(true);
 		}

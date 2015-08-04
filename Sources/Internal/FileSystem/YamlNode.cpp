@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #include "YamlNode.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/KeyedArchive.h"
@@ -463,6 +464,63 @@ VariantType YamlNode::AsVariantType() const
     }
 
     return retValue;
+}
+
+VariantType YamlNode::AsVariantType(const InspMember* insp) const
+{
+    if (insp->Desc().type == InspDesc::T_ENUM)
+    {
+        int32 val = 0;
+        if (insp->Desc().enumMap->ToValue(AsString().c_str(), val))
+        {
+            return VariantType(val);
+        }
+        else
+        {
+            DVASSERT(false);
+        }
+    }
+    else if (insp->Desc().type == InspDesc::T_FLAGS)
+    {
+        int32 val = 0;
+        for (uint32 i = 0; i < GetCount(); i++)
+        {
+            const YamlNode *flagNode = Get(i);
+            int32 flag = 0;
+            if (insp->Desc().enumMap->ToValue(flagNode->AsString().c_str(), flag))
+            {
+                val |= flag;
+            }
+            else
+            {
+                DVASSERT(false);
+            }
+        }
+        return VariantType(val);
+    }
+    else if (insp->Type() == MetaInfo::Instance<bool>())
+        return VariantType(AsBool());
+    else if (insp->Type() == MetaInfo::Instance<int32>())
+        return VariantType(AsInt32());
+    else if (insp->Type() == MetaInfo::Instance<uint32>())
+        return VariantType(AsUInt32());
+    else if (insp->Type() == MetaInfo::Instance<String>())
+        return VariantType(AsString());
+    else if (insp->Type() == MetaInfo::Instance<WideString>())
+        return VariantType(AsWString());
+    else if (insp->Type() == MetaInfo::Instance<float32>())
+        return VariantType(AsFloat());
+    else if (insp->Type() == MetaInfo::Instance<Vector2>())
+        return VariantType(AsVector2());
+    else if (insp->Type() == MetaInfo::Instance<Color>())
+        return VariantType(AsColor());
+    else if (insp->Type() == MetaInfo::Instance<Vector4>())
+        return VariantType(AsVector4());
+    else if (insp->Type() == MetaInfo::Instance<FilePath>())
+        return VariantType(FilePath(AsString()));
+        
+    DVASSERT(false);
+    return VariantType();
 }
 
 const Vector<YamlNode*> & YamlNode::AsVector() const

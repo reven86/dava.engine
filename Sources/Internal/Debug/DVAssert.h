@@ -83,7 +83,7 @@
 
 inline void DavaDebugBreak()
 {
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WINDOWS__)
 
     __debugbreak();
 
@@ -92,7 +92,7 @@ inline void DavaDebugBreak()
     raise(SIGTRAP);
 
 #else //PLATFORMS
-    //other platforms
+#   error "DavaDebugBreak: undefined platform"
 #endif //PLATFORMS
 }
 
@@ -127,11 +127,11 @@ inline void DavaDebugBreak()
 #if !defined(__DAVAENGINE_DEBUG__) && !defined(ENABLE_ASSERT_MESSAGE) && !defined(ENABLE_ASSERT_LOGGING) && !defined(ENABLE_ASSERT_BREAK)
 
 	// no assert functions in release builds
-	#define DVASSERT(expr)
-	#define DVASSERT_MSG(expr, msg)
-	#define DVWARNING(expr, msg)
+	#define DVASSERT(expr) {}
+	#define DVASSERT_MSG(expr, msg) {}
+	#define DVWARNING(expr, msg) {}
 
-	#define DVVERIFY(expr) (expr)
+	#define DVVERIFY(expr) do {(void)(expr);} while(false);
 
 #else
 

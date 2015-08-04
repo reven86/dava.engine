@@ -26,13 +26,14 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #include "Base/BaseTypes.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Commands2/ConvertPathCommands.h"
 
 ExpandPathCommand::ExpandPathCommand(DAVA::PathComponent* pathComponent)
     : Command2(CMDID_EXPAND_PATH, "Expand entity path")
-    , pathEntity(NULL)
+    , pathEntity(nullptr)
 {
     DVASSERT(pathComponent);
     pathEntity = pathComponent->GetEntity();
@@ -153,11 +154,11 @@ DAVA::PathComponent::Waypoint* NewWaypoint()
 
 CollapsePathCommand::CollapsePathCommand(DAVA::PathComponent* pathComponent)
     : Command2(CMDID_COLLAPSE_PATH, "Collapse path entities")
-    , pathEntity(NULL)
+    , pathEntity(nullptr)
     , origPathComponent(pathComponent)
-    , destPathComponent(NULL)
-    , addNextComponent(NULL)
-    , removePrevComponent(NULL)
+    , destPathComponent(nullptr)
+    , addNextComponent(nullptr)
+    , removePrevComponent(nullptr)
 {
     DVASSERT(origPathComponent);
     pathEntity = origPathComponent->GetEntity();
@@ -171,11 +172,11 @@ CollapsePathCommand::CollapsePathCommand(DAVA::PathComponent* pathComponent)
     destPathComponent->SetName(pathName);
     destPathComponent->SetColor(origPathComponent->GetColor());
 
-    addNextComponent = new AddComponentCommand(pathEntity,destPathComponent);
-    removePrevComponent = new RemoveComponentCommand(pathEntity,origPathComponent);
+    addNextComponent = new AddComponentCommand(pathEntity, destPathComponent);
+    removePrevComponent = new RemoveComponentCommand(pathEntity, origPathComponent);
 
     // define the list of entities to collapse
-    DAVA::uint32 entityCount=0;
+    DAVA::uint32 entityCount = 0;
     MapEntity2uint mapEntity2uint;
     EntityList entitiesToCollapse;
     pathEntity->GetChildEntitiesWithComponent(entitiesToCollapse, DAVA::Component::WAYPOINT_COMPONENT);

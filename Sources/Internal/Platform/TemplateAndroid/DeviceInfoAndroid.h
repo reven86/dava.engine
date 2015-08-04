@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __FRAMEWORK__DEVICEINFOANDROID__
 #define __FRAMEWORK__DEVICEINFOANDROID__
 
@@ -74,14 +73,14 @@ protected:
 
 private:
 	JNI::JavaClass jniDeviceInfo;
-	Function<void ()> getVersion;
-	Function<void ()> getManufacturer;
-	Function<void ()> getModel;
-	Function<void ()> getLocale;
-	Function<void ()> getRegion;
-	Function<void ()> getTimeZone;
-	Function<void ()> getUDID;
-	Function<void ()> getName;
+	Function<jstring ()> getVersion;
+	Function<jstring ()> getManufacturer;
+	Function<jstring ()> getModel;
+	Function<jstring ()> getLocale;
+	Function<jstring ()> getRegion;
+	Function<jstring ()> getTimeZone;
+	Function<jstring ()> getUDID;
+	Function<jstring ()> getName;
 	Function<jint ()> getZBufferSize;
 	Function<jstring ()> getHTTPProxyHost;
 	Function<jstring ()> getHTTPNonProxyHosts;

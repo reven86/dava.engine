@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #ifndef __QUALITY_SWITCHER_H__
 #define __QUALITY_SWITCHER_H__
 
@@ -40,9 +41,12 @@ public:
     static void Show();
     static void ShowModal();
 
+signals:
+    void QualityChanged();
+
 protected:
-    QualitySwitcher(QWidget *parent = NULL);
-    ~QualitySwitcher();
+    QualitySwitcher(QWidget *parent = nullptr);
+    ~QualitySwitcher() = default;
 
     void ApplyTx();
     void ApplyMa();

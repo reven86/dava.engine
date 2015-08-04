@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #ifndef __DAVAENGINE_YAML_NODE_H__
 #define __DAVAENGINE_YAML_NODE_H__
 
@@ -103,6 +104,8 @@ public:
     //These functions work only if type of node is map
     const MultiMap<String, YamlNode*> &AsMap() const;
     VariantType     AsVariantType() const;
+
+    VariantType     AsVariantType(const InspMember* insp) const;
 
     //These functions work only if type of node is array or map
     uint32          GetCount() const;

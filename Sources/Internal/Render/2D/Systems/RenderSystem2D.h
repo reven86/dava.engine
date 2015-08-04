@@ -46,6 +46,7 @@ class TextBlock;
 class RenderDataObject;
 class RenderDataStream;
 class UIGeometricData;
+class VboPool;
 
 struct RenderBatch2D
 {
@@ -107,32 +108,6 @@ struct StretchDrawData
     Matrix3 transformMatr;
 };
 
-class VboPool
-{
-public:
-    VboPool(uint32 verticesCount, uint32 format, uint32 indicesCount, uint8 buffersCount);
-    ~VboPool();
-
-    void Next();
-    void SetVertexData(uint32 offset, uint32 count, float32 * data);
-    void SetIndexData(uint32 offset, uint32 count, uint8 * data);
-
-    RenderDataObject* GetRenderDataObject() const;
-    uint32 GetVerticesLimit() const;
-    uint32 GetIndicesLimit() const;
-    uint32 GetVertexFormat() const;
-    uint32 GetVertexStride() const;
-
-private:
-    RenderDataObject * currentDataObject;
-    Vector<RenderDataObject*> dataObjects;
-    uint8 currentDataObjectIndex;
-    uint32 vertexStride;
-    uint32 vertexFormat;
-    uint32 verticesLimit;
-    uint32 indicesLimit;
-};
-
 class RenderSystem2D : public Singleton<RenderSystem2D>
 {
 public:
@@ -163,12 +138,28 @@ public:
     void DrawStretched(Sprite * sprite, Sprite::DrawState * drawState, Vector2 streatchCap, UIControlBackground::eDrawType type, const UIGeometricData &gd, StretchDrawData ** pStreachData);
     void DrawTiled(Sprite * sprite, Sprite::DrawState * drawState, const Vector2& streatchCap, const UIGeometricData &gd, TiledDrawData ** pTiledData);
 
+    /**
+     * Destroy current buffers and create new.
+     * @param verticesCount vertices count per buffer (size of buffer equals verticesCount*GetVertexSize(vertexFormat))
+     * @param indicesCount indices count per buffer (size of buffer equals indicesCount*sizeof(uint16))
+     * @param buffersCount buffers count
+     */
+    void HardResetBatchingBuffers(uint32 verticesCount, uint32 indicesCount, uint8 buffersCount);
+
     void PushBatch(UniqueHandle state, UniqueHandle texture, Shader * shader, const Rect& clip,
         uint32 vertexCount, const float32* vertexPointer, const float32* texCoordPointer,
         uint32 indexCount, const uint16* indexPointer,
         const Color& color);
     
-    void Reset();
+    /*!
+     * Highlight controls which has vertices count bigger than verticesCount.
+     * Work only with RenderOptions::HIGHLIGHT_BIG_CONTROLS option enabled.
+     * @param verticesCount vertices limit
+     */
+    void SetHightlightControlsVerticesLimit(uint32 verticesCount);
+
+    void BeginFrame();
+    void EndFrame();
     void Flush();
     
     void SetClip(const Rect &rect);
@@ -207,8 +198,8 @@ private:
 
     Sprite::DrawState defaultSpriteDrawState;
 
-    float32* vboTemp;
-    uint16* iboTemp;
+    Vector<float32> vboTemp;
+    Vector<uint16> iboTemp;
 
     bool spriteClipping;
     bool clipChanged;
@@ -220,35 +211,22 @@ private:
 
     VboPool* pool;
 
+    // Batching errors handling
+    uint32 prevFrameErrorsFlags;
+    uint32 currFrameErrorsFlags;
+    enum ErrorFlag {
+        NO_ERRORS = 0,
+        BUFFER_OVERFLOW_ERROR = 1,
+    };
+    uint32 highlightControlsVerticesLimit;
+
 };
 
-//Inline implementations
-    
-inline RenderDataObject* VboPool::GetRenderDataObject() const
+inline void RenderSystem2D::SetHightlightControlsVerticesLimit(uint32 verticesCount)
 {
-    return currentDataObject;
+    highlightControlsVerticesLimit = verticesCount;
 }
 
-inline uint32 VboPool::GetVerticesLimit() const
-{
-    return verticesLimit;
-}
-
-inline uint32 VboPool::GetIndicesLimit() const
-{
-    return indicesLimit;
-}
-
-inline uint32 VboPool::GetVertexFormat() const
-{
-    return vertexFormat;
-}
-
-inline uint32 VboPool::GetVertexStride() const
-{
-    return vertexStride;
-}
-    
 } // ns
 
 #endif	/* __DAVAENGINE_RENDER_RENDERSYSTEM_2D_H__ */

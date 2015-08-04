@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "TextureListModel.h"
 #include <QPainter>
 #include <QFileInfo>

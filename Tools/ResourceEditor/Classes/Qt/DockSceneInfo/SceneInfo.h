@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __SCENE_INFO_H__
 #define __SCENE_INFO_H__
 
@@ -85,7 +84,8 @@ public slots:
     void UpdateInfoByTimer();
     void TexturesReloaded();
     void SpritesReloaded();
-
+    void OnQualityChanged();
+    
 
 protected slots:
     void SceneActivated(SceneEditor2 *scene);

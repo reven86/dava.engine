@@ -80,12 +80,14 @@ public:
 
 	static void StackDump(lua_State* L);
 	const char *Pushnexttemplate (lua_State* L, const char* path);
-	const char *Findfile (lua_State* L, const char* name, const char* pname);
+	const FilePath Findfile (lua_State* L, const char* name, const char* pname);
 #endif //SWIG
     
     // autotesting system api   
     void OnError(const String &errorMessage);
     void OnTestFinished();
+    
+    size_t GetUsedMemory() const;
     
     float32 GetTimeElapsed();
     
@@ -106,7 +108,8 @@ public:
 	UIControl* FindControl(UIList* srcList, int32 index);
 
 	bool IsCenterInside(UIControl* parent, UIControl* child);
-	
+	bool IsSelected(UIControl* control) const;
+
 	bool IsListHorisontal(UIControl* control);
 	float32 GetListScrollPosition(UIControl* control);
 	float32 GetMaxListOffsetSize(UIControl* control);
@@ -114,7 +117,7 @@ public:
 	Vector2 GetContainerScrollPosition(UIControl* control);
 	Vector2 GetMaxContainerOffsetSize(UIControl* control);
 
-    void TouchDown(const Vector2 &point, int32 touchId);
+	void TouchDown(const Vector2 &point, int32 touchId, int32 tapCount);
     void TouchMove(const Vector2 &point, int32 touchId);
     void TouchUp(int32 touchId);
     
@@ -132,6 +135,9 @@ public:
 	// multiplayer api
 	void WriteState(const String &device, const String &state);
 	void WriteCommand(const String &device, const String &state);
+    int32 GetServerQueueState(const String &serverName);
+    bool SetServerQueueState(const String &serverName, int32 state);
+
 
 	String ReadState(const String &device);
 	String ReadCommand(const String &device);
@@ -173,6 +179,10 @@ protected:
     LocalizationSystem* autotestingLocalizationSystem;
     
 #endif //SWIG
+private:
+    void* memoryPool;
+    void* memorySpace;
+    int resumeTestFunctionRef;
 };
 
 };

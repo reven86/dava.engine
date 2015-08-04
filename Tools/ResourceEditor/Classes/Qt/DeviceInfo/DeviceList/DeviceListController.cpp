@@ -1,3 +1,32 @@
+/*==================================================================================
+    Copyright (c) 2008, binaryzebra
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+=====================================================================================*/
+
+
 #include "DeviceListController.h"
 
 
@@ -10,6 +39,7 @@
 #include "DeviceListWidget.h"
 
 #include "Classes/Qt/DeviceInfo/DeviceInfo/DeviceLogController.h"
+#include "Classes/Qt/DeviceInfo/DeviceInfo/MemProfController.h"
 #include <Base/FunctionTraits.h>
 
 #include <Network/PeerDesription.h>
@@ -27,6 +57,7 @@ DeviceListController::DeviceListController(QObject* parent)
 
     // Register network service for recieving logs from device
     NetCore::Instance()->RegisterService(SERVICE_LOG, MakeFunction(this, &DeviceListController::CreateLogger), MakeFunction(this, &DeviceListController::DeleteLogger), "Logger");
+    NetCore::Instance()->RegisterService(SERVICE_MEMPROF, MakeFunction(this, &DeviceListController::CreateMemProfiler), MakeFunction(this, &DeviceListController::DeleteMemProfiler), "Memory profiler");
 
     // Create controller for discovering remote devices
     DAVA::Net::Endpoint endpoint(announceMulticastGroup, ANNOUNCE_PORT);
@@ -53,10 +84,10 @@ void DeviceListController::SetView(DeviceListWidget* _view)
 
 void DeviceListController::ShowView()
 {
-    if (view)
+    if (!view.isNull())
     {
         // Here code to show view if hidden or restore view if minimized or hidden by main window
-        view->showNormal();
+        view->show();
         view->activateWindow();
         view->raise();
     }
@@ -102,6 +133,38 @@ void DeviceListController::DeleteLogger(IChannelListener*, void* context)
     }
 }
 
+IChannelListener* DeviceListController::CreateMemProfiler(uint32 serviceId, void* context)
+{
+    int row = static_cast<int>(reinterpret_cast<intptr_t>(context));
+    if (model != NULL && 0 <= row && row < model->rowCount())
+    {
+        QModelIndex index = model->index(row, 0);
+        DeviceServices services = index.data(ROLE_PEER_SERVICES).value<DeviceServices>();
+        return services.memprof->NetObject();
+    }
+    return NULL;
+}
+
+void DeviceListController::DeleteMemProfiler(IChannelListener* obj, void* context)
+{
+    int row = static_cast<int>(reinterpret_cast<intptr_t>(context));
+    if (model != NULL && 0 <= row && row < model->rowCount())
+    {
+        QModelIndex index = model->index(row, 0);
+        
+        QStandardItem* item = model->itemFromIndex(index);
+        if (item != NULL)
+        {
+            DeviceServices services = index.data(ROLE_PEER_SERVICES).value<DeviceServices>();
+            SafeDelete(services.memprof);
+            
+            QVariant v;
+            v.setValue(services);
+            item->setData(v, ROLE_PEER_SERVICES);
+        }
+    }
+}
+
 void DeviceListController::ConnectDeviceInternal(QModelIndex& index, size_t ifIndex)
 {
     // Check whether we have connection with device
@@ -133,7 +196,18 @@ void DeviceListController::ConnectDeviceInternal(QModelIndex& index, size_t ifIn
             item->setData(QVariant(static_cast<qulonglong>(trackId)), ROLE_CONNECTION_ID);
             {
                 DeviceServices services = index.data(ROLE_PEER_SERVICES).value<DeviceServices>();
-                services.log = new DeviceLogController(peer, view, this);
+                // Check whether remote device has corresponding services
+                const Vector<uint32>& servIds = config.Services();
+                auto iterService = std::find(servIds.begin(), servIds.end(), SERVICE_LOG);
+                if (iterService != servIds.end())
+                {
+                    services.log = new DeviceLogController(peer, view, this);
+                }
+                iterService = std::find(servIds.begin(), servIds.end(), SERVICE_MEMPROF);
+                if (iterService != servIds.end())
+                {
+                    services.memprof = new MemProfController(peer, view, this);
+                }
 
                 QVariant v;
                 v.setValue(services);
@@ -208,7 +282,14 @@ void DeviceListController::OnShowLogButtonPressed()
         if (trackId != NetCore::INVALID_TRACK_ID)
         {
             DeviceServices services = index.data(ROLE_PEER_SERVICES).value<DeviceServices>();
-            services.log->ShowView();
+            if (services.log != nullptr)
+            {
+                services.log->ShowView();
+            }
+            if (services.memprof != nullptr)
+            {
+                services.memprof->ShowView();
+            }
         }
     }
 }

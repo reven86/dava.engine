@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #ifdef DAVA_FMOD
 
 #include "Sound/FMODFileSoundEvent.h"
@@ -132,7 +133,7 @@ int32 FMODFileSoundEvent::Release()
 
 bool FMODFileSoundEvent::Trigger()
 {
-    if (SoundSystem::Instance()->fmodSystem == nullptr)
+    if (nullptr == SoundSystem::Instance()->fmodSystem)
         return false;
 
     FMOD::Channel * fmodInstance = nullptr;

@@ -28,9 +28,6 @@
 
 
 #include "UI/UITextField.h"
-#include "Base/ObjectFactory.h"
-#include "Utils/StringFormat.h"
-#include "Utils/Utils.h"
 #include "Input/KeyboardDevice.h"
 #include "UI/UIYamlLoader.h"
 #include "UI/UIControlSystem.h"
@@ -38,12 +35,14 @@
 #include "FileSystem/YamlNode.h"
 #ifdef __DAVAENGINE_ANDROID__
 #include "UITextFieldAndroid.h"
-#endif
+#include "Utils/UTF8Utils.h"
 
 extern void CreateTextField(DAVA::UITextField *);
 extern void ReleaseTextField();
 extern void OpenKeyboard();
 extern void CloseKeyboard();
+
+#endif
 
 namespace DAVA 
 {
@@ -91,7 +90,8 @@ UITextField::UITextField(const Rect &rect, bool rectInAbsoluteCoordinates/*= fal
 :	UIControl(rect, rectInAbsoluteCoordinates)
 ,	text()
 ,	delegate(0)
-,	cursorBlinkingTime(0.0f)
+,	cursorBlinkingTime{0.0f}
+,   maxLength(-1)
 #if !defined (__DAVAENGINE_ANDROID__) && !defined (__DAVAENGINE_IPHONE__)
 ,   staticText(NULL)
 ,   textFont(NULL)
@@ -101,7 +101,7 @@ UITextField::UITextField(const Rect &rect, bool rectInAbsoluteCoordinates/*= fal
 	textFieldAndroid = new UITextFieldAndroid(this);
     textFieldAndroid->SetVisible(false);
 #elif defined(__DAVAENGINE_IPHONE__)
-	textFieldiPhone = new UITextFieldiPhone(this);
+	textFieldiPhone = new UITextFieldiPhone(*this);
     textFieldiPhone->SetVisible(false);
 #else
     staticText = new UIStaticText(Rect(0,0,GetRect().dx, GetRect().dy));
@@ -127,7 +127,7 @@ void UITextField::SetupDefaults()
     SetKeyboardType(KEYBOARD_TYPE_DEFAULT);
     SetReturnKeyType(RETURN_KEY_DEFAULT);
     SetEnableReturnKeyAutomatically(false);
-    SetTextUseRtlAlign(false);
+    SetTextUseRtlAlign(TextBlock::RTL_DONT_USE);
     
     SetMaxLength(-1);
     
@@ -139,6 +139,7 @@ void UITextField::SetupDefaults()
     SetFontSize(26); //12 is default size for IOS
     
     SetText(L"");
+    SetRenderToTexture(true);
 }
 
 //void UITextField::InitAfterYaml()
@@ -193,8 +194,8 @@ void UITextField::CloseKeyboard()
 void UITextField::Update(float32 timeElapsed)
 {
 #ifdef __DAVAENGINE_IPHONE__
-	Rect rect = GetGeometricData().GetUnrotatedRect();//GetRect(true);
-	textFieldiPhone->UpdateRect(rect);
+    // Calling UpdateRect with allowNativeControlMove set to true
+	textFieldiPhone->UpdateRect(GetGeometricData().GetUnrotatedRect());
 #elif defined(__DAVAENGINE_ANDROID__)
     textFieldAndroid->UpdateRect(GetGeometricData().GetUnrotatedRect());
 #else
@@ -213,15 +214,19 @@ void UITextField::Update(float32 timeElapsed)
     if (!needRedraw)
         return;
 
+    // Use NO_REQUIRED_SIZE to notify staticText->SetText that we don't want
+    // to enable of any kind of static text fitting
+    static const Vector2 NO_REQUIRED_SIZE = Vector2(-1, -1);
+
 	if(this == UIControlSystem::Instance()->GetFocusedControl())
 	{
         WideString txt = GetVisibleText();
         txt += showCursor ? L"_" : L" ";
-        staticText->SetText(txt);
+        staticText->SetText(txt, NO_REQUIRED_SIZE);
 	}
 	else
     {
-        staticText->SetText(GetVisibleText());
+        staticText->SetText(GetVisibleText(), NO_REQUIRED_SIZE);
     }
     needRedraw = false;
 #endif
@@ -253,6 +258,7 @@ void UITextField::WillDisappear()
     
 void UITextField::OnFocused()
 {
+    SetRenderToTexture(false);
 #ifdef __DAVAENGINE_IPHONE__
 	textFieldiPhone->OpenKeyboard();
 #elif defined(__DAVAENGINE_ANDROID__)
@@ -262,6 +268,7 @@ void UITextField::OnFocused()
     
 void UITextField::OnFocusLost(UIControl *newFocus)
 {
+    SetRenderToTexture(true);
 #ifdef __DAVAENGINE_IPHONE__
 	textFieldiPhone->CloseKeyboard();
 #elif defined(__DAVAENGINE_ANDROID__)
@@ -338,18 +345,39 @@ void UITextField::SetTextAlign(int32 align)
     textFieldAndroid->SetTextAlign(align);
 #else
     staticText->SetTextAlign(align);
-#endif	
+#endif
 }
 
-void UITextField::SetTextUseRtlAlign(bool useRtlAlign)
+TextBlock::eUseRtlAlign UITextField::GetTextUseRtlAlign() const
 {
 #ifdef __DAVAENGINE_IPHONE__
-    textFieldiPhone->SetTextUseRtlAlign(useRtlAlign);
+    return (textFieldiPhone && textFieldiPhone->GetTextUseRtlAlign()) ? TextBlock::RTL_USE_BY_CONTENT : TextBlock::RTL_DONT_USE;
 #elif defined(__DAVAENGINE_ANDROID__)
-    textFieldAndroid->SetTextUseRtlAlign(useRtlAlign);
+    return (textFieldAndroid && textFieldAndroid->GetTextUseRtlAlign()) ? TextBlock::RTL_USE_BY_CONTENT : TextBlock::RTL_DONT_USE;
+#else
+    return staticText ? staticText->GetTextUseRtlAlign() : TextBlock::RTL_DONT_USE;
+#endif
+}
+
+void UITextField::SetTextUseRtlAlign(TextBlock::eUseRtlAlign useRtlAlign)
+{
+#ifdef __DAVAENGINE_IPHONE__
+    textFieldiPhone->SetTextUseRtlAlign(useRtlAlign == TextBlock::RTL_USE_BY_CONTENT);
+#elif defined(__DAVAENGINE_ANDROID__)
+    textFieldAndroid->SetTextUseRtlAlign(useRtlAlign == TextBlock::RTL_USE_BY_CONTENT);
 #else
     staticText->SetTextUseRtlAlign(useRtlAlign);
 #endif
+}
+
+void UITextField::SetTextUseRtlAlignFromInt(int32 value)
+{
+    SetTextUseRtlAlign(static_cast<TextBlock::eUseRtlAlign>(value));
+}
+    
+int32 UITextField::GetTextUseRtlAlignAsInt() const
+{
+    return static_cast<TextBlock::eUseRtlAlign>(GetTextUseRtlAlign());
 }
 
 void UITextField::SetFontSize(float32 size)
@@ -382,6 +410,32 @@ void UITextField::SetSize(const DAVA::Vector2 &newSize)
 #if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
     staticText->SetSize(newSize);
 #endif
+}
+    
+void UITextField::SetPosition(const DAVA::Vector2 &position)
+{
+    UIControl::SetPosition(position);
+}
+
+void UITextField::SetMultiline(bool value)
+{
+    if (value != isMultiline_)
+    {
+        isMultiline_ = value;
+        
+#ifdef __DAVAENGINE_IPHONE__
+        textFieldiPhone->SetMultiline(isMultiline_);
+#elif defined(__DAVAENGINE_ANDROID__)
+        textFieldAndroid->SetMultiline(isMultiline_);
+#else 
+        staticText->SetMultiline(isMultiline_);
+#endif
+    }
+}
+
+bool UITextField::IsMultiline() const
+{
+    return isMultiline_;
 }
     
 void UITextField::SetText(const WideString & _text)
@@ -457,17 +511,6 @@ int32 UITextField::GetTextAlign() const
     return textFieldAndroid ? textFieldAndroid->GetTextAlign() : ALIGN_HCENTER|ALIGN_VCENTER;
 #else
     return staticText ? staticText->GetTextAlign() : ALIGN_HCENTER|ALIGN_VCENTER;
-#endif
-}
-
-bool UITextField::GetTextUseRtlAlign() const
-{
-#ifdef __DAVAENGINE_IPHONE__
-    return textFieldiPhone ? textFieldiPhone->GetTextUseRtlAlign() : false;
-#elif defined(__DAVAENGINE_ANDROID__)
-    return textFieldAndroid ? textFieldAndroid->GetTextUseRtlAlign() : false;
-#else
-    return staticText ? staticText->GetTextUseRtlAlign() : false;
 #endif
 }
 
@@ -689,7 +732,7 @@ void UITextField::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
 	const YamlNode * textUseRtlAlign = node->Get("textUseRtlAlign");
 	if(textUseRtlAlign)
 	{
-		SetTextUseRtlAlign(textUseRtlAlign->AsBool());
+        SetTextUseRtlAlign(static_cast<TextBlock::eUseRtlAlign>(textUseRtlAlign->AsInt32()));
 	}
     //InitAfterYaml();
 
@@ -847,6 +890,7 @@ void UITextField::CopyDataFrom(UIControl *srcControl)
 	
 	cursorBlinkingTime = t->cursorBlinkingTime;
 #if !defined (__DAVAENGINE_ANDROID__) && !defined (__DAVAENGINE_IPHONE__)
+    SafeRelease(staticText);
 	if (t->staticText)
 	{
 		staticText = (UIStaticText*)t->staticText->Clone();
@@ -864,6 +908,7 @@ void UITextField::CopyDataFrom(UIControl *srcControl)
 	SetReturnKeyType(t->GetReturnKeyType());
 	SetEnableReturnKeyAutomatically(t->IsEnableReturnKeyAutomatically());
 	SetTextUseRtlAlign(t->GetTextUseRtlAlign());
+    SetMaxLength(t->GetMaxLength());
 }
     
 void UITextField::SetIsPassword(bool isPassword)
@@ -888,9 +933,7 @@ WideString UITextField::GetVisibleText() const
     if (!isPassword)
         return text;
     
-    WideString text = this->text;
-    text.replace(0, text.length(), text.length(), L'*');
-    return text;
+    return WideString(text.length(), L'*');
 }
 	
 int32 UITextField::GetAutoCapitalizationType() const
@@ -1008,6 +1051,42 @@ void UITextField::SetInputEnabled(bool isEnabled, bool hierarchic)
 #endif
 }
 
+void UITextField::SetRenderToTexture(bool value)
+{
+    // Workaround! Users need scroll on large text in
+    // multiline mode so we have to disable render into texture
+    if (isMultiline_)
+    {
+        value = false;
+    }
+#ifdef __DAVAENGINE_WINDOWS__
+    // do nothing
+#elif defined(__DAVAENGINE_MACOS__)
+    // do nothing
+#elif defined(__DAVAENGINE_ANDROID__)
+    textFieldAndroid->SetRenderToTexture(value);
+#elif defined(__DAVAENGINE_IPHONE__)
+    textFieldiPhone->SetRenderToTexture(value);
+#else
+#error "implement new platform"
+#endif
+}
+    
+bool UITextField::IsRenderToTexture() const
+{
+#ifdef __DAVAENGINE_WINDOWS__
+    return false;
+#elif defined(__DAVAENGINE_MACOS__)
+    return false;
+#elif defined(__DAVAENGINE_ANDROID__)
+    return textFieldAndroid->IsRenderToTexture();
+#elif defined(__DAVAENGINE_IPHONE__)
+    return textFieldiPhone->IsRenderToTexture();
+#else
+    static_assert(false, "implement new platform");
+#endif
+}
+
 uint32 UITextField::GetCursorPos()
 {
 #ifdef __DAVAENGINE_IPHONE__
@@ -1029,9 +1108,9 @@ void UITextField::SetCursorPos(uint32 pos)
     // TODO! implement for other OS!
 }
 
-void UITextField::SetMaxLength(int32 maxLength)
+void UITextField::SetMaxLength(int32 newMaxLength)
 {
-    this->maxLength = maxLength;
+    maxLength = Max(-1, newMaxLength); //-1 valid value
 #ifdef __DAVAENGINE_IPHONE__
     textFieldiPhone->SetMaxLength(maxLength);
 #elif defined(__DAVAENGINE_ANDROID__)

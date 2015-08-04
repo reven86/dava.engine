@@ -34,7 +34,8 @@
 #include <dirent.h>
 #include <stdio.h>
 #include <stdlib.h>
-#elif defined(__DAVAENGINE_WIN32__)
+#include <sys/stat.h>
+#elif defined(__DAVAENGINE_WINDOWS__)
 #include <stdlib.h>
 #include <stdio.h>
 #include <io.h>
@@ -46,50 +47,49 @@
 namespace DAVA
 {
 
-FileList::FileList(const FilePath & filepath)
+FileList::FileList(const FilePath & filepath, bool includeHidden)
 {
     DVASSERT(filepath.IsDirectoryPathname());
     
 	path = filepath;
 
-// Windows version
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WINDOWS__)
 
-	//char tmp[_MAX_PATH];
-	//_getcwd(tmp, _MAX_PATH);
-	//Path = tmp;
-	FilePath prevDir = FileSystem::Instance()->GetCurrentWorkingDirectory();
-	BOOL res = SetCurrentDirectoryA(path.GetAbsolutePathname().c_str());
+	struct _finddata_t c_file;
+	intptr_t hFile;
+	FileEntry entry;
 
-	if (res)
+    String searchPath = path.GetAbsolutePathname();
+    if (searchPath.back() == '\\' || searchPath.back() == '/')
+        searchPath += '*';
+    else
+        searchPath += "/*";
+
+	if( (hFile = _findfirst(searchPath.c_str(), &c_file)) != -1L )
 	{
-		struct _finddata_t c_file;
-		intptr_t hFile;
-		FileEntry entry;
-
-		if( (hFile = _findfirst( "*", &c_file )) != -1L )
+		do
 		{
-			do
+            //TODO: need to check for Win32
+			entry.path = filepath + c_file.name;
+			entry.name = c_file.name;
+			entry.size = c_file.size;
+			entry.isHidden = (_A_HIDDEN & c_file.attrib) != 0;
+			entry.isDirectory = (_A_SUBDIR & c_file.attrib) != 0;
+			if(entry.isDirectory)
 			{
-                //TODO: need to check for Win32
-				entry.path = filepath + c_file.name;
-				entry.name = c_file.name;
-				entry.size = c_file.size;
-				entry.isDirectory = (_A_SUBDIR & c_file.attrib) != 0;
-				if(entry.isDirectory)
-				{
-					entry.path.MakeDirectoryPathname();
-				}
-
-				fileList.push_back(entry);
-				//Logger::FrameworkDebug("filelist: %s %s", filepath.c_str(), entry.name.c_str());
+				entry.path.MakeDirectoryPathname();
 			}
-			while( _findnext( hFile, &c_file ) == 0 );
 
-			_findclose( hFile );
+            if (!entry.isHidden || includeHidden)
+            {
+                fileList.push_back(entry);
+            }
+			//Logger::FrameworkDebug("filelist: %s %s", filepath.c_str(), entry.name.c_str());
 		}
+		while( _findnext( hFile, &c_file ) == 0 );
+
+		_findclose( hFile );
 	}
-	FileSystem::Instance()->SetCurrentWorkingDirectory(prevDir);
 
 	//TODO add drives
 	//entry.Name = "E:\\";
@@ -108,12 +108,32 @@ FileList::FileList(const FilePath & filepath)
 			entry.path = path + namelist[n]->d_name;
 			entry.name = namelist[n]->d_name;
 			entry.size = 0;
-			entry.isDirectory = namelist[n]->d_type == DT_DIR;
+
+#if defined(__DAVAENGINE_MACOS__)
+            if(DT_LNK == namelist[n]->d_type)
+            {
+                struct stat link_stat;
+                if (0 == stat(entry.path.GetAbsolutePathname().c_str(), &link_stat))
+                {
+                    entry.isDirectory = (S_IFDIR == ((link_stat.st_mode) & S_IFMT));
+                }
+            }
+            else
+#endif
+            {
+                entry.isDirectory = (DT_DIR == namelist[n]->d_type);
+            }
+			entry.isHidden = (!entry.name.empty() && entry.name[0] == '.');
             if(entry.isDirectory)
             {
                 entry.path.MakeDirectoryPathname();
             }
-			fileList.push_back(entry);
+
+            if (!entry.isHidden || includeHidden)
+            {
+                fileList.push_back(entry);
+            }
+
 			free(namelist[n]);
 		}
 		free(namelist);
@@ -130,12 +150,17 @@ FileList::FileList(const FilePath & filepath)
 		entry.name = jniEntry.name;
 		entry.size = jniEntry.size;
 		entry.isDirectory = jniEntry.isDirectory;
+        entry.isHidden = (!entry.name.empty() && entry.name[0] == '.');
 
 		if(entry.isDirectory)
 		{
 			entry.path.MakeDirectoryPathname();
 		}
-		fileList.push_back(entry);
+
+        if (!entry.isHidden || includeHidden)
+        {
+            fileList.push_back(entry);
+        }
 	}
 #endif //PLATFORMS
 
@@ -204,6 +229,11 @@ bool FileList::IsNavigationDirectory(int32 index) const
 	return false;
 }
 
+bool FileList::IsHidden(int32 index)  const
+{
+    DVASSERT((index >= 0) && (index < (int32)fileList.size()));
+    return fileList[index].isHidden;
+}
 
 //bool FileList::FileEntry::operator< (const FileList::FileEntry &other)
 //{

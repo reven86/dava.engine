@@ -26,36 +26,55 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #ifndef __DAVAENGINE_UI_COMPONENT_H__
 #define __DAVAENGINE_UI_COMPONENT_H__
 
-#include "Entity/Component.h"
+#include "Base/BaseObject.h"
 
 namespace DAVA
 {
 class UIControl;
 
-class UIComponent : public Component
+class UIComponent : public BaseObject
 {
+public:
+    enum eType
+    {
+        LINEAR_LAYOUT_COMPONENT,
+        SIZE_POLICY_COMPONENT,
+        ANCHOR_COMPONENT,
+        
+        COMPONENT_COUNT
+    };
+    
 public:
     UIComponent();
     virtual ~UIComponent();
 
+    static UIComponent * CreateByType(uint32 componentType);
+    static bool IsMultiple(uint32 componentType);
+
+    virtual uint32 GetType() const = 0;
+
     void SetControl(UIControl* _control);
     UIControl* GetControl() const;
 
-    virtual Component* Clone(Entity* toEntity);
-    virtual Component* Clone(UIControl * toControl) = 0;
+    virtual UIComponent* Clone() const = 0;
 
 private:
     UIControl* control;
 
 public:
-    INTROSPECTION_EXTEND(UIComponent, Component,
-        MEMBER(control, "control", I_SAVE)
-        );
+    INTROSPECTION_EXTEND(UIComponent, BaseObject, 
+        nullptr
+    );
 
 };
+
+#define IMPLEMENT_COMPONENT_TYPE(TYPE) \
+    virtual uint32 GetType() const { return TYPE; }; \
+    static const uint32 C_TYPE = TYPE;
 
 inline void UIComponent::SetControl(UIControl* _control)
 {
@@ -66,6 +85,7 @@ inline UIControl* UIComponent::GetControl() const
 {
     return control;
 }
+    
 
 }
 

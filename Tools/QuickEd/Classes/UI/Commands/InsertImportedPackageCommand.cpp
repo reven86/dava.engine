@@ -1,34 +1,61 @@
+/*==================================================================================
+    Copyright (c) 2008, binaryzebra
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+=====================================================================================*/
+
+
 #include "InsertImportedPackageCommand.h"
 
-#include "UI/Package/PackageModel.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
 
 using namespace DAVA;
 
-InsertImportedPackageCommand::InsertImportedPackageCommand(PackageModel *_model, PackageControlsNode *_importedPackageControls, PackageNode *_dest, int _index, QUndoCommand *parent)
+InsertImportedPackageCommand::InsertImportedPackageCommand(PackageNode *aRoot, PackageNode *anImportedPackage, int anIndex, QUndoCommand *parent)
     : QUndoCommand(parent)
-    , model(_model)
-    , importedPackageControls(SafeRetain(_importedPackageControls))
-    , dest(SafeRetain(_dest))
-    , index(_index)
+    , root(SafeRetain(aRoot))
+    , importedPackage(SafeRetain(anImportedPackage))
+    , index(anIndex)
 {
     
 }
 
 InsertImportedPackageCommand::~InsertImportedPackageCommand()
 {
-    SafeRelease(importedPackageControls);
-    SafeRelease(dest);
-    model = nullptr;
-}
-
-void InsertImportedPackageCommand::undo()
-{
-    model->RemoveImportedPackage(importedPackageControls, dest);
+    SafeRelease(importedPackage);
+    SafeRelease(root);
 }
 
 void InsertImportedPackageCommand::redo()
 {
-    model->InsertImportedPackage(importedPackageControls, dest, index);
+    root->InsertImportedPackage(importedPackage, index);
 }
+
+void InsertImportedPackageCommand::undo()
+{
+    root->RemoveImportedPackage(importedPackage);
+}
+

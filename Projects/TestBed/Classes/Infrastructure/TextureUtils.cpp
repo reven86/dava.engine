@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "TextureUtils.h"
 #include "Render/PixelFormatDescriptor.h"
 
@@ -113,19 +112,20 @@ TextureUtils::CompareResult TextureUtils::CompareImages(Image *first, Image *sec
 
 Image * TextureUtils::CreateImageAsRGBA8888(Sprite *sprite)
 {
-    Sprite *renderTarget = Sprite::CreateAsRenderTarget(sprite->GetWidth(), sprite->GetHeight(), FORMAT_RGBA8888);
-    RenderManager::Instance()->SetRenderTarget(renderTarget);
+    Rect oldViewport = RenderManager::Instance()->GetViewport();
+    Vector2 targetSize = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(sprite->GetSize());
+    Texture * fbo = Texture::CreateFBO((uint32)targetSize.dx, (uint32)targetSize.dy, FORMAT_RGBA8888, Texture::DEPTH_NONE);
     
+    RenderManager::Instance()->SetRenderTarget(fbo);
+    RenderManager::Instance()->SetViewport(Rect(Vector2(), targetSize));
+    RenderSystem2D::Instance()->Draw(sprite);
     
-    Sprite::DrawState drawState;
-    RenderSystem2D::Instance()->Draw(sprite, &drawState);
+    RenderManager::Instance()->SetRenderTarget(0);
+    RenderManager::Instance()->SetViewport(oldViewport);
     
-    RenderManager::Instance()->RestoreRenderTarget();
+    Image *resultImage = fbo->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND);
     
-    Texture *renderTargetTexture = renderTarget->GetTexture();
-    Image *resultImage = renderTargetTexture->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND);
-    
-    SafeRelease(renderTarget);
+    SafeRelease(fbo);
     return resultImage;
 }
 

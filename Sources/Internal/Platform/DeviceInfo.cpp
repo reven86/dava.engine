@@ -27,8 +27,8 @@
 =====================================================================================*/
 
 
-
 #include "DeviceInfo.h"
+#include "Base/GlobalEnum.h"
 
 #if defined(__DAVAENGINE_IPHONE__)
 #include "TargetConditionals.h"
@@ -55,6 +55,9 @@ DeviceInfo::ePlatform DeviceInfo::GetPlatform()
 #elif defined(__DAVAENGINE_ANDROID__)
 	platform = PLATFORM_ANDROID;
 
+#elif defined(__DAVAENGINE_WIN_UAP__)
+    platform = PLATFORM_WIN_UAP;
+
 #elif defined(__DAVAENGINE_WIN32__)
 	platform = PLATFORM_WIN32;
 #endif
@@ -73,21 +76,22 @@ DeviceInfo::ScreenInfo & DeviceInfo::GetScreenInfo()
 	return screenInfo;
 }
 
-#ifndef __DAVAENGINE_ANDROID__
+#if !defined(__DAVAENGINE_ANDROID__)
 int DeviceInfo::GetZBufferSize()
 {
 	return 24;
 }
+#endif
 
+#if !defined(__DAVAENGINE_ANDROID__) && !defined(__DAVAENGINE_WIN_UAP__)
 List<DeviceInfo::StorageInfo> DeviceInfo::GetStoragesList()
 {
     List<DeviceInfo::StorageInfo> l;
     return l;
 }
-    
-#endif
+#endif   
 
-#ifdef __DAVAENGINE_WIN32__
+#ifdef __DAVAENGINE_WINDOWS__
 
 int32 DeviceInfo::GetCpuCount()
 {

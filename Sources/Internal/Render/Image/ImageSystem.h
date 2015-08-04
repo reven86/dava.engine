@@ -33,62 +33,60 @@
 #include "Base/BaseTypes.h"
 #include "Base/BaseObject.h"
 #include "FileSystem/FilePath.h"
-#include "Render/Image/ImageFormatInterface.h"
-#include "Render/Image/LibJpegHelper.h"
-#include "Render/Image/LibDdsHelper.h"
-#include "Render/Image/LibPngHelpers.h"
-#include "Render/Image/LibPVRHelper.h"
 #include "FileSystem/File.h"
-
+#include "ImageFormatInterface.h"
 
 namespace DAVA 
 {
 class Image;
 
-    
 class ImageSystem: public Singleton<ImageSystem>
 {
 public:
-    enum eSupportedImageFileFormats
-    {
-        FILE_FORMAT_PNG = 0,
-        FILE_FORMAT_DDS,
-        FILE_FORMAT_PVR,
-        FILE_FORMAT_JPEG,
-        FILE_FORMAT_COUNT
-    };
-
     ImageSystem();
-    
     virtual ~ImageSystem();
-    
-    eErrorCode Load(const FilePath & pathname, Vector<Image *> & imageSet, int32 baseMipmap = 0) const;
-    
+
+    eErrorCode Load(const FilePath &pathname, Vector<Image *> & imageSet, int32 baseMipmap = 0) const;
     eErrorCode Load(File *file, Vector<Image *> & imageSet, int32 baseMipmap = 0) const;
-    Image* EnsurePowerOf2Image(Image* image) const;
+
+    Image* EnsurePowerOf2Image(Image *image) const;
     void EnsurePowerOf2Images(Vector<Image*>& images) const;
+
+    eErrorCode Save(const FilePath &fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat = FORMAT_RGBA8888, ImageQuality quality = DEFAULT_IMAGE_QUALITY) const;
+    eErrorCode SaveAsCubeMap(const FilePath &fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat = FORMAT_RGBA8888, ImageQuality quality = DEFAULT_IMAGE_QUALITY) const;
+    eErrorCode Save(const FilePath &fileName, Image *image, PixelFormat compressionFormat = FORMAT_RGBA8888, ImageQuality quality = DEFAULT_IMAGE_QUALITY) const;
+
+    inline ImageFormatInterface* GetImageFormatInterface(ImageFormat fileFormat) const;
+    ImageFormatInterface* GetImageFormatInterface(const FilePath &pathName) const;
+    ImageFormatInterface* GetImageFormatInterface(File *file) const;
+
+    ImageInfo GetImageInfo(const FilePath &pathName) const;
+    ImageInfo GetImageInfo(File *infile) const;
+
+    inline const Vector<String>& GetExtensionsFor(ImageFormat format) const;
     
-    eErrorCode Save(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat = FORMAT_RGBA8888) const;
-    
-    eErrorCode SaveAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat = FORMAT_RGBA8888) const;
-    
-    eErrorCode Save(const FilePath & fileName, Image *image, PixelFormat compressionFormat = FORMAT_RGBA8888) const;
-    
-    inline ImageFormatInterface* GetImageFormatInterface(eSupportedImageFileFormats fileFormat) const;
-	ImageFormatInterface* GetImageFormatInterface(const FilePath & pathname) const;
-	ImageFormatInterface* GetImageFormatInterface(File *file) const;
+    ImageFormat GetImageFormatForExtension(const String &extension) const;
+    ImageFormat GetImageFormatForExtension(const FilePath &pathname) const;
+
+    ImageFormat GetImageFormatByName(const String& name) const;
     
 protected:
-    
-       
-    ImageFormatInterface* wrappers[FILE_FORMAT_COUNT];
-};
-   
+    ImageFormatInterface* wrappers[IMAGE_FORMAT_COUNT];
 };
 
-inline DAVA::ImageFormatInterface* DAVA::ImageSystem::GetImageFormatInterface(ImageSystem::eSupportedImageFileFormats fileFormat) const
+inline ImageFormatInterface* ImageSystem::GetImageFormatInterface(ImageFormat fileFormat) const
 {
+    DVASSERT(fileFormat >= 0 && fileFormat < IMAGE_FORMAT_COUNT);
     return wrappers[fileFormat];
 }
+
+inline const Vector<String>& ImageSystem::GetExtensionsFor(ImageFormat format) const
+{
+    return GetImageFormatInterface(format)->Extensions();
+}
+
+};
+
+
 
 #endif // __DAVAENGINE_IMAGE_SYSTEM_H__

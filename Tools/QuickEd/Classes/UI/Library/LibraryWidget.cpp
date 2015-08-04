@@ -1,39 +1,80 @@
-#include "LibraryWidget.h"
-#include "ui_LibraryWidget.h"
+/*==================================================================================
+    Copyright (c) 2008, binaryzebra
+    All rights reserved.
 
-#include "UI/Document.h"
-#include "UI/LibraryContext.h"
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+=====================================================================================*/
+
+
+#include "LibraryWidget.h"
+#include "SharedData.h"
+#include "Document.h"
+#include "LibraryModel.h"
+
+#include "UI/UIControl.h"
+
+namespace
+{
+    struct LibraryContext : public WidgetContext
+    {
+        LibraryContext(Document *document)
+        {
+            DVASSERT(nullptr != document);
+            libraryModel = new LibraryModel(document->GetPackage(), document);
+        }
+        LibraryModel *libraryModel;
+    };
+}
 
 LibraryWidget::LibraryWidget(QWidget *parent)
     : QDockWidget(parent)
-    , ui(new Ui::LibraryWidget())
-    , document(NULL)
+    , sharedData(nullptr)
 {
-    ui->setupUi(this);
+    setupUi(this);
 }
 
-LibraryWidget::~LibraryWidget()
+void LibraryWidget::OnDocumentChanged(SharedData *arg)
 {
-    delete ui;
+    sharedData = arg;
+    LoadContext();
 }
 
-void LibraryWidget::SetDocument(Document *newDocument)
+void LibraryWidget::LoadContext()
 {
-    if (document)
+    if (nullptr == sharedData)
     {
-//        disconnect(ui->treeView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(OnSelectionChanged(const QItemSelection &, const QItemSelection &)));
-        ui->treeView->setModel(NULL);
+        treeView->setModel(nullptr);
     }
-    
-    document = newDocument;
-    
-    if (document)
+    else
     {
-        ui->treeView->setModel(document->GetLibraryContext()->GetModel());
-        ui->treeView->expandToDepth(0);
-        ui->treeView->setColumnWidth(0, ui->treeView->size().width());
-        
-//        connect(ui->treeView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(OnSelectionChanged(const QItemSelection &, const QItemSelection &)));
+        LibraryContext *context = reinterpret_cast<LibraryContext*>(sharedData->GetContext(this));
+        if (nullptr == context)
+        {
+            context = new LibraryContext(qobject_cast<Document*>(sharedData->parent())); //TODO this is arch. fail
+            sharedData->SetContext(this, context);
+        }
+        treeView->setModel(context->libraryModel);
+        treeView->expandToDepth(0);
     }
-
 }

@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Commands2/EntityParentChangeCommand.h"
 
 EntityParentChangeCommand::EntityParentChangeCommand(DAVA::Entity* _entity, DAVA::Entity *_newParent, DAVA::Entity *_newBefore /* = NULL */)

@@ -55,15 +55,12 @@ LightUpdateSystem::~LightUpdateSystem()
 {
 }
 
-void LightUpdateSystem::ImmediateEvent(Entity * entity, uint32 event)
+void LightUpdateSystem::ImmediateEvent(Component * component, uint32 event)
 {
     if (event == EventSystem::WORLD_TRANSFORM_CHANGED)
     {
-        // Update new transform pointer, and mark that transform is changed
-        Matrix4 * worldTransformPointer = ((TransformComponent*)entity->GetComponent(Component::TRANSFORM_COMPONENT))->GetWorldTransformPtr();
-		Light * light = ((LightComponent*)entity->GetComponent(Component::LIGHT_COMPONENT))->GetLightObject();
-        light->SetPositionDirectionFromMatrix(*worldTransformPointer);
-		entity->GetScene()->renderSystem->MarkForUpdate(light);
+        Entity * entity = component->GetEntity();
+        RecalcLight(entity);
     }
     
     //if (event == EventSystem::ACTIVE_CAMERA_CHANGED)
@@ -71,6 +68,15 @@ void LightUpdateSystem::ImmediateEvent(Entity * entity, uint32 event)
         // entity->GetCameraComponent();
         // RenderSystem::
     }
+}
+
+void LightUpdateSystem::RecalcLight(Entity *entity)
+{
+    // Update new transform pointer, and mark that transform is changed
+    Matrix4 * worldTransformPointer = ((TransformComponent*)entity->GetComponent(Component::TRANSFORM_COMPONENT))->GetWorldTransformPtr();
+    Light * light = ((LightComponent*)entity->GetComponent(Component::LIGHT_COMPONENT))->GetLightObject();
+    light->SetPositionDirectionFromMatrix(*worldTransformPointer);
+    entity->GetScene()->renderSystem->MarkForUpdate(light);
 }
     
 void LightUpdateSystem::AddEntity(Entity * entity)
@@ -80,6 +86,8 @@ void LightUpdateSystem::AddEntity(Entity * entity)
 
     entityObjectMap.insert(entity, lightObject);
     GetScene()->GetRenderSystem()->AddLight(lightObject);
+
+    RecalcLight(entity);
 }
 
 void LightUpdateSystem::RemoveEntity(Entity * entity)

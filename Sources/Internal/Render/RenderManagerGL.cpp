@@ -40,16 +40,134 @@
 #include "Utils/StringFormat.h"
 #include "Render/PixelFormatDescriptor.h"
 
-#if defined( __DAVAENGINE_WIN32__ )
-#include <Windows.h>
-#endif
-
 #ifdef __DAVAENGINE_OPENGL__
 
 namespace DAVA
 {
-	
-#if defined(__DAVAENGINE_WIN32__)
+
+#if defined(__DAVAENGINE_WIN_UAP__)
+
+
+
+void RenderManager::Create(Windows::UI::Xaml::Controls::SwapChainPanel^ swapChainPanel)
+{
+    using namespace Platform;
+    using namespace Windows::Foundation::Collections;
+
+    //
+    // This code has been taken from MSVS project generated from 'XAML App for OpenGL ES' template project
+    //
+
+    const EGLint configAttributes[] = {
+        EGL_RED_SIZE, 8,
+        EGL_GREEN_SIZE, 8,
+        EGL_BLUE_SIZE, 8,
+        EGL_ALPHA_SIZE, 8,
+        EGL_DEPTH_SIZE, 8,
+        EGL_STENCIL_SIZE, 8,
+        EGL_NONE
+    };
+    const EGLint contextAttributes[] = {
+        EGL_CONTEXT_CLIENT_VERSION, 2,
+        EGL_NONE
+    };
+    const EGLint defaultDisplayAttributes[] = {
+        EGL_PLATFORM_ANGLE_TYPE_ANGLE, EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE,
+        EGL_ANGLE_DISPLAY_ALLOW_RENDER_TO_BACK_BUFFER, EGL_TRUE,
+        EGL_PLATFORM_ANGLE_ENABLE_AUTOMATIC_TRIM_ANGLE, EGL_TRUE,
+        EGL_NONE,
+    };
+    const EGLint fl9_3DisplayAttributes[] = {
+        EGL_PLATFORM_ANGLE_TYPE_ANGLE, EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE,
+        EGL_PLATFORM_ANGLE_MAX_VERSION_MAJOR_ANGLE, 9,
+        EGL_PLATFORM_ANGLE_MAX_VERSION_MINOR_ANGLE, 3,
+        EGL_ANGLE_DISPLAY_ALLOW_RENDER_TO_BACK_BUFFER, EGL_TRUE,
+        EGL_PLATFORM_ANGLE_ENABLE_AUTOMATIC_TRIM_ANGLE, EGL_TRUE,
+        EGL_NONE,
+    };
+    const EGLint warpDisplayAttributes[] = {
+        EGL_PLATFORM_ANGLE_TYPE_ANGLE, EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE,
+        EGL_PLATFORM_ANGLE_DEVICE_TYPE_ANGLE, EGL_PLATFORM_ANGLE_DEVICE_TYPE_WARP_ANGLE,
+        EGL_ANGLE_DISPLAY_ALLOW_RENDER_TO_BACK_BUFFER, EGL_TRUE,
+        EGL_PLATFORM_ANGLE_ENABLE_AUTOMATIC_TRIM_ANGLE, EGL_TRUE,
+        EGL_NONE,
+    };
+
+    EGLConfig config = nullptr;
+    PFNEGLGETPLATFORMDISPLAYEXTPROC eglGetPlatformDisplayEXT = reinterpret_cast<PFNEGLGETPLATFORMDISPLAYEXTPROC>(eglGetProcAddress("eglGetPlatformDisplayEXT"));
+    if (!eglGetPlatformDisplayEXT)
+        throw Exception::CreateException(E_FAIL, L"Failed to get function eglGetPlatformDisplayEXT");
+
+    eglDisplay = eglGetPlatformDisplayEXT(EGL_PLATFORM_ANGLE_ANGLE, EGL_DEFAULT_DISPLAY, defaultDisplayAttributes);
+    if (eglDisplay == EGL_NO_DISPLAY)
+        throw Exception::CreateException(E_FAIL, L"Failed to get EGL display");
+
+    if (eglInitialize(eglDisplay, NULL, NULL) == EGL_FALSE)
+    {
+        eglDisplay = eglGetPlatformDisplayEXT(EGL_PLATFORM_ANGLE_ANGLE, EGL_DEFAULT_DISPLAY, fl9_3DisplayAttributes);
+        if (eglDisplay == EGL_NO_DISPLAY)
+            throw Exception::CreateException(E_FAIL, L"Failed to get EGL display");
+
+        if (eglInitialize(eglDisplay, NULL, NULL) == EGL_FALSE)
+        {
+            eglDisplay = eglGetPlatformDisplayEXT(EGL_PLATFORM_ANGLE_ANGLE, EGL_DEFAULT_DISPLAY, warpDisplayAttributes);
+            if (eglDisplay == EGL_NO_DISPLAY)
+                throw Exception::CreateException(E_FAIL, L"Failed to get EGL display");
+
+            if (eglInitialize(eglDisplay, NULL, NULL) == EGL_FALSE)
+                throw Exception::CreateException(E_FAIL, L"Failed to initialize EGL");
+        }
+    }
+
+    EGLint numConfigs = 0;
+    if ((eglChooseConfig(eglDisplay, configAttributes, &eglConfig, 1, &numConfigs) == EGL_FALSE) || (numConfigs == 0))
+        throw Exception::CreateException(E_FAIL, L"Failed to choose first EGLConfig");
+
+    eglContext = eglCreateContext(eglDisplay, eglConfig, EGL_NO_CONTEXT, contextAttributes);
+    if (eglContext == EGL_NO_CONTEXT)
+        throw Exception::CreateException(E_FAIL, L"Failed to create EGL context");
+
+    const EGLint surfaceAttributes[] =
+    {
+        EGL_ANGLE_SURFACE_RENDER_TO_BACK_BUFFER, EGL_TRUE,
+        EGL_NONE
+    };
+
+    PropertySet^ surfaceCreationProperties = ref new PropertySet();
+    surfaceCreationProperties->Insert(ref new Platform::String(EGLNativeWindowTypeProperty), swapChainPanel);
+
+    eglSurface = eglCreateWindowSurface(eglDisplay, eglConfig, reinterpret_cast<IInspectable*>(surfaceCreationProperties), surfaceAttributes);
+    if (eglSurface == EGL_NO_SURFACE)
+        throw Exception::CreateException(E_FAIL, L"Failed to create EGL surface");
+}
+
+void RenderManager::BindToCurrentThread()
+{
+    if (eglMakeCurrent(eglDisplay, eglSurface, eglSurface, eglContext) == EGL_FALSE)
+        throw Platform::Exception::CreateException(E_FAIL, L"Failed to make EGLSurface current");
+}
+
+void RenderManager::Release()
+{
+    if (eglDisplay != EGL_NO_DISPLAY)
+    {
+        if (eglSurface != EGL_NO_SURFACE)
+        {
+            eglDestroySurface(eglDisplay, eglSurface);
+            eglSurface = EGL_NO_SURFACE;
+        }
+        if (eglContext != EGL_NO_CONTEXT)
+        {
+            eglDestroyContext(eglDisplay, eglContext);
+            eglContext = EGL_NO_CONTEXT;
+        }
+        eglTerminate(eglDisplay);
+        eglDisplay = EGL_NO_DISPLAY;
+    }
+    Singleton<RenderManager>::Release();
+}
+
+#elif defined(__DAVAENGINE_WIN32__)
 
 static HDC hDC = nullptr;
 static HGLRC hRC = nullptr;
@@ -89,14 +207,11 @@ bool RenderManager::Create(HINSTANCE _hInstance, HWND _hWnd)
 
 void RenderManager::Release()
 {
-    Singleton<RenderManager>::Release();
+	Singleton<RenderManager>::Release();
 
-    if ( IsWindow( hWnd ) )
-    {
-        wglMakeCurrent( 0, 0 );
-        wglDeleteContext( hRC );
-        ReleaseDC( hWnd, hDC );
-    }
+	wglMakeCurrent(0, 0);
+	wglDeleteContext(hRC);
+	ReleaseDC(hWnd, hDC);	
 }
 
 bool RenderManager::ChangeDisplayMode(DisplayMode mode, bool isFullscreen)
@@ -135,7 +250,14 @@ bool IsGLExtensionSupported(const String &extension)
         return false;
     }
     
-    String extensions((const char8 *)glGetString(GL_EXTENSIONS));
+    auto extString = glGetString(GL_EXTENSIONS);
+    if(nullptr == extString)
+    {
+        DVASSERT(false && "GL not initialized");
+        return false;
+    }
+
+    String extensions((const char8 *)extString);
     String::size_type extPosition = extensions.find(extension);
     return (String::npos != extPosition);
 }
@@ -145,7 +267,7 @@ void RenderManager::DetectRenderingCapabilities()
 {
 #if defined(__DAVAENGINE_MACOS__)
 	caps.isHardwareCursorSupported = true;
-#elif defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+#elif defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_WIN_UAP__)
 	caps.isHardwareCursorSupported = false;
 #endif
 
@@ -159,6 +281,8 @@ void RenderManager::DetectRenderingCapabilities()
     caps.isFloat16Supported = IsGLExtensionSupported("GL_OES_texture_half_float");
     caps.isFloat32Supported = IsGLExtensionSupported("GL_OES_texture_float");
 	caps.isATCSupported = IsGLExtensionSupported("GL_AMD_compressed_ATC_texture");
+#elif defined(__DAVAENGINE_WIN_UAP__)
+    caps.isDXTSupported = IsGLExtensionSupported("GL_ANGLE_texture_compression_dxt5");
 #elif defined(__DAVAENGINE_ANDROID__)
     //TODO: added correct
     caps.isPVRTCSupported = IsGLExtensionSupported("GL_IMG_texture_compression_pvrtc");
@@ -180,7 +304,7 @@ void RenderManager::DetectRenderingCapabilities()
     InitFakeOcclusion();
 #   endif
 
-#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
+#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WINDOWS__)
 
 	caps.isPVRTCSupported = false;
 
@@ -219,26 +343,28 @@ void RenderManager::DetectRenderingCapabilities()
 
 bool RenderManager::IsDeviceLost()
 {
-	return false;
+    return false;
 }
 
 void RenderManager::BeginFrame()
 {
     stats.Clear();
     SetViewport(Rect(0, 0, (float32)frameBufferWidth, (float32)frameBufferHeight));
-	
-	Reset();
-	isInsideDraw = true;
+
+    Reset();
+    isInsideDraw = true;
 }
 
 void RenderManager::EndFrame()
 {
-	isInsideDraw = false;
+    isInsideDraw = false;
 #if defined(__DAVAENGINE_WIN32__)
-	::SwapBuffers(hDC);
-#endif //#if defined(__DAVAENGINE_WIN32__)
-	
-	RENDER_VERIFY(;);	// verify at the end of the frame
+    ::SwapBuffers(hDC);
+#elif defined(__DAVAENGINE_WIN_UAP__)
+    eglSwapBuffers(eglDisplay, eglSurface);
+#endif
+
+    RENDER_VERIFY(;);   // verify at the end of the frame
     
     if(needGLScreenShot)
     {
@@ -416,11 +542,11 @@ void RenderManager::ClearWithColor(float32 r, float32 g, float32 b, float32 a)
 
 void RenderManager::ClearDepthBuffer(float32 depth)
 {
-#if defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_WIN_UAP__)
     RENDER_VERIFY(glClearDepthf(depth));
-#else //#if defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+#else
     RENDER_VERIFY(glClearDepth(depth));
-#endif //#if defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+#endif
     RENDER_VERIFY(glClear(GL_DEPTH_BUFFER_BIT));
 }
 
@@ -433,11 +559,11 @@ void RenderManager::ClearStencilBuffer(int32 stencil)
 void RenderManager::Clear(const Color & color, float32 depth, int32 stencil)
 {
     RENDER_VERIFY(glClearColor(color.r, color.g, color.b, color.a));
-#if defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_WIN_UAP__)
     RENDER_VERIFY(glClearDepthf(depth));
-#else //#if defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+#else
     RENDER_VERIFY(glClearDepth(depth));
-#endif //#if defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+#endif
     RENDER_VERIFY(glClearStencil(stencil));
 
     
@@ -553,7 +679,7 @@ void RenderManager::AttachRenderData()
     
     attachedRenderData = currentRenderData;
     
-    const int DEBUG = 0;
+    const int isDEBUG = 0;
     
     {
         if(iboChanged)
@@ -591,12 +717,12 @@ void RenderManager::AttachRenderData()
                         normalized = GL_TRUE;
                     }
                     RENDER_VERIFY(glVertexAttribPointer(attribIndex, stream->size, VERTEX_DATA_TYPE_TO_GL[stream->type], normalized, stream->stride, stream->pointer));
-                    if (DEBUG)Logger::FrameworkDebug("shader glVertexAttribPointer: %d", attribIndex);
+                    if(isDEBUG)Logger::FrameworkDebug("shader glVertexAttribPointer: %d", attribIndex);
                     
                     if (!(cachedEnabledStreams & attribIndexBitPos))  // enable only if it was not enabled on previous step
                     {
                         RENDER_VERIFY(glEnableVertexAttribArray(attribIndex));
-                        if (DEBUG)Logger::FrameworkDebug("shader glEnableVertexAttribArray: %d", attribIndex);
+                        if(isDEBUG)Logger::FrameworkDebug("shader glEnableVertexAttribArray: %d", attribIndex);
                     }
                     
                     currentEnabledStreams |= attribIndexBitPos;
@@ -612,7 +738,7 @@ void RenderManager::AttachRenderData()
                 {
                     if(streamsToDisable & 0x1)
                     {
-                        if(DEBUG)Logger::FrameworkDebug("shader glDisableVertexAttribArray: %d", attribIndex);
+                        if(isDEBUG)Logger::FrameworkDebug("shader glDisableVertexAttribArray: %d", attribIndex);
                         RENDER_VERIFY(glDisableVertexAttribArray(attribIndex));
                     }
                     

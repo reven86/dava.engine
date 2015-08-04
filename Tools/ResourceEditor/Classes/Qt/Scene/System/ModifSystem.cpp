@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Qt/Scene/System/ModifSystem.h"
 #include "Qt/Scene/System/HoodSystem.h"
 #include "Qt/Scene/System/CameraSystem.h"
@@ -309,6 +308,16 @@ void EntityModificationSystem::Input(DAVA::UIEvent *event)
 			}
 		}
 	}
+}
+
+void EntityModificationSystem::AddDelegate(EntityModificationSystemDelegate *delegate)
+{
+    delegates.push_back(delegate);
+}
+
+void EntityModificationSystem::RemoveDelegate(EntityModificationSystemDelegate *delegate)
+{
+    delegates.remove(delegate);
 }
 
 void EntityModificationSystem::Draw()
@@ -797,13 +806,44 @@ bool EntityModificationSystem::IsEntityContainRecursive(const DAVA::Entity *enti
 
 void EntityModificationSystem::CloneBegin()
 {
+    // remove modif entities that are children for other modif entities
+    for (uint32 i = 0; i < modifEntities.size(); ++i)
+    {
+        auto checkedEntity = modifEntities[i].entity;
+        for (uint32 j = 0; j < modifEntities.size(); ++j)
+        {
+            if (i == j)
+                continue;
+
+            if (modifEntities[j].entity->IsMyChildRecursive(checkedEntity))
+            {
+                RemoveExchangingWithLast(modifEntities, i);
+                --i;
+                break;
+            }
+        }
+        
+    }
+
 	if(modifEntities.size() > 0)
 	{
         clonedEntities.reserve(modifEntities.size());
 		for(size_t i = 0; i < modifEntities.size(); ++i)
 		{
-			DAVA::Entity *origEntity = modifEntities[i].entity;
+            DAVA::Entity *origEntity = modifEntities[i].entity;
+            
+            for (auto delegate : delegates)
+            {
+                delegate->WillClone(origEntity);
+            }
+
 			DAVA::Entity *newEntity = origEntity->Clone();
+
+            for (auto delegate : delegates)
+            {
+                delegate->DidCloned(origEntity, newEntity);
+            }
+
             newEntity->SetLocalTransform(modifEntities[i].originalTransform);
 
             Scene *scene = origEntity->GetScene();
@@ -829,8 +869,6 @@ void EntityModificationSystem::CloneEnd()
 		SceneEditor2 *sceneEditor = ((SceneEditor2 *) GetScene());
 		SceneSelectionSystem *selectionSystem = sceneEditor->selectionSystem;
 
-		selectionSystem->Clear();
-
 		sceneEditor->BeginBatch("Clone");
 
 		// we just moved original objects. Now we should return them back
@@ -849,13 +887,16 @@ void EntityModificationSystem::CloneEnd()
 
 			// remove entity from scene
 			DAVA::Entity *cloneParent = clonedEntities[i]->GetParent();
-			cloneParent->RemoveNode(clonedEntities[i]);
 
-			// and add it once again with command
-			sceneEditor->Exec(new EntityAddCommand(clonedEntities[i], cloneParent));
+            if (cloneParent)
+            {
+                cloneParent->RemoveNode(clonedEntities[i]);
+
+                // and add it once again with command
+                sceneEditor->Exec(new EntityAddCommand(clonedEntities[i], cloneParent));
+            }
 
 			// make cloned entiti selected
-			selectionSystem->AddSelection(clonedEntities[i]);
 			SafeRelease(clonedEntities[i]);
 		}
 

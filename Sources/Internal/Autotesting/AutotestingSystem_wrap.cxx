@@ -1480,7 +1480,7 @@ SWIGINTERN int SWIG_Lua_iterate_bases(lua_State *L, swig_type_info * SWIGUNUSED 
       for(i=0;i<bases_count;i++) {
         /* Iteration through class bases */
 #if (SWIG_LUA_TARGET == SWIG_LUA_FLAVOR_LUA)
-        lua_rawgeti(L,bases_table,static_cast<int>(i+1));
+        lua_rawgeti(L,bases_table,i+1);
         base_swig_type = 0;
         if(lua_isnil(L,-1)) {
           valid = 0;
@@ -4986,6 +4986,30 @@ fail:
 }
 
 
+static int _wrap_AutotestingSystemLua_GetUsedMemory(lua_State* L) {
+  int SWIG_arg = 0;
+  DAVA::AutotestingSystemLua *arg1 = (DAVA::AutotestingSystemLua *) 0 ;
+  size_t result;
+  
+  SWIG_check_num_args("DAVA::AutotestingSystemLua::GetUsedMemory",1,1)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::AutotestingSystemLua::GetUsedMemory",1,"DAVA::AutotestingSystemLua const *");
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__AutotestingSystemLua,0))){
+    SWIG_fail_ptr("AutotestingSystemLua_GetUsedMemory",1,SWIGTYPE_p_DAVA__AutotestingSystemLua);
+  }
+  
+  result = ((DAVA::AutotestingSystemLua const *)arg1)->GetUsedMemory();
+  lua_pushnumber(L, (lua_Number) result); SWIG_arg++;
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
 static int _wrap_AutotestingSystemLua_GetTimeElapsed(lua_State* L) {
   int SWIG_arg = 0;
   DAVA::AutotestingSystemLua *arg1 = (DAVA::AutotestingSystemLua *) 0 ;
@@ -5505,6 +5529,37 @@ fail:
 }
 
 
+static int _wrap_AutotestingSystemLua_IsSelected(lua_State* L) {
+  int SWIG_arg = 0;
+  DAVA::AutotestingSystemLua *arg1 = (DAVA::AutotestingSystemLua *) 0 ;
+  DAVA::UIControl *arg2 = (DAVA::UIControl *) 0 ;
+  bool result;
+  
+  SWIG_check_num_args("DAVA::AutotestingSystemLua::IsSelected",2,2)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::AutotestingSystemLua::IsSelected",1,"DAVA::AutotestingSystemLua const *");
+  if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("DAVA::AutotestingSystemLua::IsSelected",2,"DAVA::UIControl *");
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__AutotestingSystemLua,0))){
+    SWIG_fail_ptr("AutotestingSystemLua_IsSelected",1,SWIGTYPE_p_DAVA__AutotestingSystemLua);
+  }
+  
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,2,(void**)&arg2,SWIGTYPE_p_DAVA__UIControl,0))){
+    SWIG_fail_ptr("AutotestingSystemLua_IsSelected",2,SWIGTYPE_p_DAVA__UIControl);
+  }
+  
+  result = (bool)((DAVA::AutotestingSystemLua const *)arg1)->IsSelected(arg2);
+  lua_pushboolean(L,(int)(result!=0)); SWIG_arg++;
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
 static int _wrap_AutotestingSystemLua_IsListHorisontal(lua_State* L) {
   int SWIG_arg = 0;
   DAVA::AutotestingSystemLua *arg1 = (DAVA::AutotestingSystemLua *) 0 ;
@@ -5671,11 +5726,13 @@ static int _wrap_AutotestingSystemLua_TouchDown(lua_State* L) {
   DAVA::AutotestingSystemLua *arg1 = (DAVA::AutotestingSystemLua *) 0 ;
   DAVA::Vector2 *arg2 = 0 ;
   DAVA::int32 arg3 ;
+  DAVA::int32 arg4 ;
   
-  SWIG_check_num_args("DAVA::AutotestingSystemLua::TouchDown",3,3)
+  SWIG_check_num_args("DAVA::AutotestingSystemLua::TouchDown",4,4)
   if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::AutotestingSystemLua::TouchDown",1,"DAVA::AutotestingSystemLua *");
   if(!lua_isuserdata(L,2)) SWIG_fail_arg("DAVA::AutotestingSystemLua::TouchDown",2,"DAVA::Vector2 const &");
   if(!lua_isnumber(L,3)) SWIG_fail_arg("DAVA::AutotestingSystemLua::TouchDown",3,"DAVA::int32");
+  if(!lua_isnumber(L,4)) SWIG_fail_arg("DAVA::AutotestingSystemLua::TouchDown",4,"DAVA::int32");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__AutotestingSystemLua,0))){
     SWIG_fail_ptr("AutotestingSystemLua_TouchDown",1,SWIGTYPE_p_DAVA__AutotestingSystemLua);
@@ -5687,7 +5744,8 @@ static int _wrap_AutotestingSystemLua_TouchDown(lua_State* L) {
   }
   
   arg3 = (DAVA::int32)lua_tonumber(L, 3);
-  (arg1)->TouchDown((DAVA::Vector2 const &)*arg2,arg3);
+  arg4 = (DAVA::int32)lua_tonumber(L, 4);
+  (arg1)->TouchDown((DAVA::Vector2 const &)*arg2,arg3,arg4);
   
   return SWIG_arg;
   
@@ -5999,6 +6057,65 @@ static int _wrap_AutotestingSystemLua_WriteCommand(lua_State* L) {
   temp3.assign(lua_tostring(L,3),lua_rawlen(L,3)); arg3=&temp3;
   (arg1)->WriteCommand((DAVA::String const &)*arg2,(DAVA::String const &)*arg3);
   
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
+static int _wrap_AutotestingSystemLua_GetServerQueueState(lua_State* L) {
+  int SWIG_arg = 0;
+  DAVA::AutotestingSystemLua *arg1 = (DAVA::AutotestingSystemLua *) 0 ;
+  DAVA::String *arg2 = 0 ;
+  DAVA::String temp2 ;
+  DAVA::int32 result;
+  
+  SWIG_check_num_args("DAVA::AutotestingSystemLua::GetServerQueueState",2,2)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::AutotestingSystemLua::GetServerQueueState",1,"DAVA::AutotestingSystemLua *");
+  if(!lua_isstring(L,2)) SWIG_fail_arg("DAVA::AutotestingSystemLua::GetServerQueueState",2,"DAVA::String const &");
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__AutotestingSystemLua,0))){
+    SWIG_fail_ptr("AutotestingSystemLua_GetServerQueueState",1,SWIGTYPE_p_DAVA__AutotestingSystemLua);
+  }
+  
+  temp2.assign(lua_tostring(L,2),lua_rawlen(L,2)); arg2=&temp2;
+  result = (DAVA::int32)(arg1)->GetServerQueueState((DAVA::String const &)*arg2);
+  lua_pushnumber(L, (lua_Number) result); SWIG_arg++;
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
+static int _wrap_AutotestingSystemLua_SetServerQueueState(lua_State* L) {
+  int SWIG_arg = 0;
+  DAVA::AutotestingSystemLua *arg1 = (DAVA::AutotestingSystemLua *) 0 ;
+  DAVA::String *arg2 = 0 ;
+  DAVA::int32 arg3 ;
+  DAVA::String temp2 ;
+  bool result;
+  
+  SWIG_check_num_args("DAVA::AutotestingSystemLua::SetServerQueueState",3,3)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::AutotestingSystemLua::SetServerQueueState",1,"DAVA::AutotestingSystemLua *");
+  if(!lua_isstring(L,2)) SWIG_fail_arg("DAVA::AutotestingSystemLua::SetServerQueueState",2,"DAVA::String const &");
+  if(!lua_isnumber(L,3)) SWIG_fail_arg("DAVA::AutotestingSystemLua::SetServerQueueState",3,"DAVA::int32");
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__AutotestingSystemLua,0))){
+    SWIG_fail_ptr("AutotestingSystemLua_SetServerQueueState",1,SWIGTYPE_p_DAVA__AutotestingSystemLua);
+  }
+  
+  temp2.assign(lua_tostring(L,2),lua_rawlen(L,2)); arg2=&temp2;
+  arg3 = (DAVA::int32)lua_tonumber(L, 3);
+  result = (bool)(arg1)->SetServerQueueState((DAVA::String const &)*arg2,arg3);
+  lua_pushboolean(L,(int)(result!=0)); SWIG_arg++;
   return SWIG_arg;
   
   if(0) SWIG_fail;
@@ -6328,6 +6445,7 @@ static swig_lua_attribute swig_AutotestingSystemLua_attributes[] = {
 static swig_lua_method swig_AutotestingSystemLua_methods[]= {
     { "OnError", _wrap_AutotestingSystemLua_OnError},
     { "OnTestFinished", _wrap_AutotestingSystemLua_OnTestFinished},
+    { "GetUsedMemory", _wrap_AutotestingSystemLua_GetUsedMemory},
     { "GetTimeElapsed", _wrap_AutotestingSystemLua_GetTimeElapsed},
     { "OnTestStart", _wrap_AutotestingSystemLua_OnTestStart},
     { "OnStepStart", _wrap_AutotestingSystemLua_OnStepStart},
@@ -6336,6 +6454,7 @@ static swig_lua_method swig_AutotestingSystemLua_methods[]= {
     { "FindControlOnPopUp", _wrap_AutotestingSystemLua_FindControlOnPopUp},
     { "FindControl", _wrap_AutotestingSystemLua_FindControl},
     { "IsCenterInside", _wrap_AutotestingSystemLua_IsCenterInside},
+    { "IsSelected", _wrap_AutotestingSystemLua_IsSelected},
     { "IsListHorisontal", _wrap_AutotestingSystemLua_IsListHorisontal},
     { "GetListScrollPosition", _wrap_AutotestingSystemLua_GetListScrollPosition},
     { "GetMaxListOffsetSize", _wrap_AutotestingSystemLua_GetMaxListOffsetSize},
@@ -6352,6 +6471,8 @@ static swig_lua_method swig_AutotestingSystemLua_methods[]= {
     { "GetText", _wrap_AutotestingSystemLua_GetText},
     { "WriteState", _wrap_AutotestingSystemLua_WriteState},
     { "WriteCommand", _wrap_AutotestingSystemLua_WriteCommand},
+    { "GetServerQueueState", _wrap_AutotestingSystemLua_GetServerQueueState},
+    { "SetServerQueueState", _wrap_AutotestingSystemLua_SetServerQueueState},
     { "ReadState", _wrap_AutotestingSystemLua_ReadState},
     { "ReadCommand", _wrap_AutotestingSystemLua_ReadCommand},
     { "InitializeDevice", _wrap_AutotestingSystemLua_InitializeDevice},

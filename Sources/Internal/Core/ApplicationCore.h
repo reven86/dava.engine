@@ -164,6 +164,16 @@ public:
 		Resumes main loop.
 	 */
 	virtual void OnResume();
+    
+    /**
+     \brief Called after entering fullscreen.
+     */
+    virtual void OnEnterFullscreen();
+    
+    /**
+     \brief Called after exiting fullscreen.
+     */
+    virtual void OnExitFullscreen();
 
 	/**
 		\brief Called time to time from separate thread (not main) when application is Suspended.
@@ -217,8 +227,7 @@ protected:
 		Our recommendation to perform in-game progress saves during the game immediately after changes that are important. 
 	 */
 	virtual void OnAppFinished() = 0;
-
-	
+    
 #if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__) 
 	/**
 		\brief Called when application goes to background on mobile platforms
@@ -281,7 +290,7 @@ private:
 #if defined(__DAVAENGINE_ANDROID__)
 private:
 	Thread *backgroundTicker;
-	bool backgroundTickerFinishing;
+	volatile bool backgroundTickerFinishing;
 	uint32 backgroundTickTimeMs;
 #endif
 };

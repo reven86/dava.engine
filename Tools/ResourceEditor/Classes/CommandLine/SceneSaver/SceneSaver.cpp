@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "SceneSaver.h"
 #include "Deprecated/SceneValidator.h"
 
@@ -75,21 +74,8 @@ void SceneSaver::SaveFile(const String &fileName, Set<String> &errorLog)
 
     //Load scene with *.sc2
     Scene *scene = new Scene();
-    Entity *rootNode = scene->GetRootNode(filePath);
-    if(rootNode)
+    if(SceneFileV2::ERROR_NO_ERROR == scene->LoadScene(filePath))
     {
-        int32 count = rootNode->GetChildrenCount();
-		Vector<Entity*> tempV;
-		tempV.reserve((count));
-        for(int32 i = 0; i < count; ++i)
-        {
-			tempV.push_back(rootNode->GetChild(i));
-        }
-		for(int32 i = 0; i < count; ++i)
-		{
-			scene->AddNode(tempV[i]);
-		}
-		
 		SaveScene(scene, filePath, errorLog);
     }
 	else
@@ -107,24 +93,9 @@ void SceneSaver::ResaveFile(const String &fileName, Set<String> &errorLog)
 	FilePath sc2Filename = sceneUtils.dataSourceFolder + fileName;
 
 	//Load scene with *.sc2
-	Scene *scene = new Scene();
-	Entity *rootNode = scene->GetRootNode(sc2Filename);
-	if(rootNode)
-	{
-		int32 count = rootNode->GetChildrenCount();
-
-		Vector<Entity*> tempV;
-		tempV.reserve((count));
-		for(int32 i = 0; i < count; ++i)
-		{
-			tempV.push_back(rootNode->GetChild(i));
-		}
-		for(int32 i = 0; i < count; ++i)
-		{
-			scene->AddNode(tempV[i]);
-		}
-
-		//scene->Update(0.f);
+    Scene *scene = new Scene();
+    if(SceneFileV2::ERROR_NO_ERROR == scene->LoadScene(sc2Filename))
+    {
         scene->SaveScene(sc2Filename, false);
 	}
 	else
@@ -238,18 +209,16 @@ void SceneSaver::CopyTexture(const FilePath &texturePathname)
 	{
 		Vector<FilePath> faceNames;
 
-		Texture::GenerateCubeFaceNames(descriptorPathname.GetAbsolutePathname().c_str(), faceNames);
-		for(Vector<FilePath>::iterator it = faceNames.begin();
-			it != faceNames.end();
-			++it)
+		desc->GetFacePathnames(faceNames);
+		for(auto& faceName : faceNames)
 		{
-			sceneUtils.AddFile(*it);
+            if (!faceName.IsEmpty())
+			    sceneUtils.AddFile(faceName);
 		}
 	}
 	else
 	{
-		FilePath pngPathname = GPUFamilyDescriptor::CreatePathnameForGPU(texturePathname, GPU_PNG, FORMAT_RGBA8888);
-		sceneUtils.AddFile(pngPathname);
+        sceneUtils.AddFile(desc->GetSourceTexturePathname());
 	}
 	
 
@@ -260,13 +229,13 @@ void SceneSaver::CopyTexture(const FilePath &texturePathname)
         {
             eGPUFamily gpu = (eGPUFamily)i;
             
-            PixelFormat format = desc->GetPixelFormatForCompression(gpu);
+            PixelFormat format = desc->GetPixelFormatForGPU(gpu);
             if(format == FORMAT_INVALID)
             {
                 continue;
             }
             
-            FilePath imagePathname = GPUFamilyDescriptor::CreatePathnameForGPU(desc, gpu);
+            FilePath imagePathname = desc->CreatePathnameForGPU(gpu);
             sceneUtils.AddFile(imagePathname);
         }
     }

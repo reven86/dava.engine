@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #include "SoundComponent.h"
 #include "TransformComponent.h"
 #include "Sound/SoundSystem.h"
@@ -42,6 +43,8 @@
 namespace DAVA
 {
 
+#ifdef DAVA_FMOD
+
 SoundComponent::SoundComponent()
 {}
 
@@ -57,7 +60,7 @@ void SoundComponent::AddSoundEvent(SoundEvent * _event, uint32 flags /*= 0*/, co
     SafeRetain(_event);
     events.push_back(SoundComponentElement(_event, flags, direction));
 
-    GlobalEventSystem::Instance()->Event(entity, EventSystem::SOUND_COMPONENT_CHANGED);
+    GlobalEventSystem::Instance()->Event(this, EventSystem::SOUND_COMPONENT_CHANGED);
 }
 
 void SoundComponent::RemoveSoundEvent(SoundEvent * event)
@@ -70,8 +73,6 @@ void SoundComponent::RemoveSoundEvent(SoundEvent * event)
             events[i].soundEvent->Stop(true);
             SafeRelease(events[i].soundEvent);
             RemoveExchangingWithLast(events, i);
-
-            GlobalEventSystem::Instance()->Event(entity, EventSystem::SOUND_COMPONENT_CHANGED);
 
             return;
         }
@@ -88,8 +89,6 @@ void SoundComponent::RemoveAllEvents()
     }
 
     events.clear();
-
-    GlobalEventSystem::Instance()->Event(entity, EventSystem::SOUND_COMPONENT_CHANGED);
 }
 
 void SoundComponent::Trigger()
@@ -141,7 +140,7 @@ void SoundComponent::SetSoundEventFlags(uint32 index, uint32 flags)
         Stop(index);
         events[index].flags = flags;
 
-        GlobalEventSystem::Instance()->Event(entity, EventSystem::SOUND_COMPONENT_CHANGED);
+        GlobalEventSystem::Instance()->Event(this, EventSystem::SOUND_COMPONENT_CHANGED);
     }
 }
 
@@ -215,5 +214,32 @@ void SoundComponent::Deserialize(KeyedArchive *archive, SerializationContext *se
 
     Component::Deserialize(archive, serializationContext);
 }
+
+#else
+
+//no FMOD, no sound component
+SoundComponent::SoundComponent() {}
+SoundComponent::~SoundComponent() {}
+
+Component * SoundComponent::Clone(Entity * toEntity) { return nullptr; }
+
+void SoundComponent::Serialize(KeyedArchive *archive, SerializationContext *serializationContext) {}
+void SoundComponent::Deserialize(KeyedArchive *archive, SerializationContext *serializationContext) {}
+
+void SoundComponent::Trigger() {}
+void SoundComponent::Stop() {}
+void SoundComponent::Trigger(uint32 index) {}
+void SoundComponent::Stop(uint32 index) {}
+
+void SoundComponent::SetSoundEventFlags(uint32 eventIndex, uint32 flags) {}
+
+void SoundComponent::AddSoundEvent(SoundEvent * _event, uint32 flags, const Vector3 & direction) {}
+void SoundComponent::RemoveSoundEvent(SoundEvent * event) {}
+void SoundComponent::RemoveAllEvents() {}
+
+void SoundComponent::SetLocalDirection(uint32 eventIndex, const Vector3 & direction) {}
+void SoundComponent::SetLocalDirection(const DAVA::Vector3 &direction) {}
+
+#endif // !DAVA_FMOD
 
 };

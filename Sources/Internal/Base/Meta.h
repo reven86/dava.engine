@@ -37,7 +37,7 @@ namespace DAVA
 	// Класс мета-информации типов.
 	struct MetaInfo
 	{
-		typedef const InspInfo* (*IntrospectionInfoFnPtr)(void *);
+        using IntrospectionInfoFnPtr = const InspInfo* (*)(void *);
 
 		// MetaInfo::Instance<Т>() - возвращает постоянный для типа Т указатель на мета-информацию.
 		template <typename MetaT>

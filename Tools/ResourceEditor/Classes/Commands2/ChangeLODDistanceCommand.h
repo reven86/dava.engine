@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __CHANGE_LOD_DISTANCE_COMMAND_H__
 #define __CHANGE_LOD_DISTANCE_COMMAND_H__
 

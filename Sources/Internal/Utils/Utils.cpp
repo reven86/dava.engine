@@ -27,10 +27,8 @@
 =====================================================================================*/
 
 
-
 #include "Utils/Utils.h"
 #include "Utils/StringFormat.h"
-#include "Platform/Thread.h"
 #include "Render/RenderManager.h"
 #include "FileSystem/YamlParser.h"
 
@@ -79,7 +77,7 @@ bool IsEqual(const WideString& s1, const WideString& s2)
 	return (*p1 == *p2);
 }
     
-void Split(const String & inputString, const String & delims, Vector<String> & tokens, bool skipDuplicated/* = false*/, bool trimNotEmpty/* = false*/)
+void Split(const String & inputString, const String & delims, Vector<String> & tokens, bool skipDuplicated/* = false*/, bool addEmptyTokens/* = false*/)
 {
     std::string::size_type pos, lastPos = 0;
     bool needAddToken = true;
@@ -94,7 +92,7 @@ void Split(const String & inputString, const String & delims, Vector<String> & t
             pos = inputString.length();
             exit = true;
         }
-        if(pos != lastPos || trimNotEmpty)
+        if(pos != lastPos || addEmptyTokens)
              needAddToken = true;
         
         token = String(inputString.data()+lastPos,pos-lastPos );
@@ -117,6 +115,24 @@ void Split(const String & inputString, const String & delims, Vector<String> & t
     }
 }
 
+void Merge(const Vector<String> & tokens, const char delim, String & outString)
+{
+    outString.clear();
+
+    auto tokensSize = tokens.size();
+    if (tokensSize > 0)
+    {
+        outString.append(tokens[0]);
+        if (tokensSize > 1)
+        {
+            for (decltype(tokensSize) i = 1; i < tokensSize; ++i)
+            {
+                outString += delim;
+                outString += tokens[i];
+            }
+        }
+    }
+}
 
 /* Set a generic reader. */
 int read_handler(void *ext, unsigned char *buffer, size_t size, size_t *length)

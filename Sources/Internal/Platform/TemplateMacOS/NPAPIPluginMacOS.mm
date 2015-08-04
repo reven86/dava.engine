@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #import  <AppKit/AppKit.h>
 #import "NPAPIPluginMacOS.h"
 
@@ -323,12 +324,6 @@ extern void FrameworkWillTerminate();
 
 	DAVA::UIControlSystem::Instance()->OnInput(touchPhase, touches, allTouches);
 	touches.clear();
-	
-	if ((touchPhase == DAVA::UIEvent::PHASE_MOVE || touchPhase == DAVA::UIEvent::PHASE_DRAG)
-		&& DAVA::InputSystem::Instance()->IsCursorPining())
-	{
-		DAVA::Cursor::MoveToCenterOfWindow();
-	}
 }
 
 -(void) keyDown:(NPCocoaEvent*)event

@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "UI/ScrollHelper.h"
 #include "FileSystem/Logger.h"
 #include "Math/Math2D.h"
@@ -54,6 +53,23 @@ namespace DAVA
 		slowDown = 0.25f;
 		backward = 0.3f;
 	}
+
+    void ScrollHelper::CopyDataFrom(const ScrollHelper *src)
+    {
+        position = src->position;
+        elementSize = src->elementSize;
+        viewSize = src->viewSize;
+        virtualViewSize = src->virtualViewSize;
+        
+        slowDown = src->slowDown;
+        backward = src->backward;
+        
+        speed = src->speed;
+        
+        scrollToPos = src->scrollToPos;
+        scrollToAcc = src->scrollToAcc;
+        scrollToTopSpeed = src->scrollToTopSpeed;
+    }
 
 	void ScrollHelper::SetPosition(float32 pos)
 	{

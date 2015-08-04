@@ -14,14 +14,22 @@ public class JNIBackupAgent extends BackupAgentHelper {
 	public static void Backup()
 	{
 		BackupManager bm = new BackupManager(JNIApplication.GetApplication().getApplicationContext());
-	    bm.dataChanged();
+        try {
+            bm.dataChanged();
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
 	}
 	
 	// You should to put observer if you want to restore settings menually
 	public static void Restore(RestoreObserver observer)
 	{
 		BackupManager bm = new BackupManager(JNIApplication.GetApplication().getApplicationContext());
-	    bm.requestRestore(observer);
+        try {
+            bm.requestRestore(observer);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
 	}
 
 }

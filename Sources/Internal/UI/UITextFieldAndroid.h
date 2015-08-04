@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_UI_TEXT_FIELD_ANDROID_H__
 #define __DAVAENGINE_UI_TEXT_FIELD_ANDROID_H__
 
@@ -63,11 +62,14 @@ public:
 	void SetReturnKeyType(int32_t value);
 	void SetEnableReturnKeyAutomatically(bool value);
 	void SetVisible(bool isVisible);
+	void SetRenderToTexture(bool value);
+	bool IsRenderToTexture() const;
 	void OpenKeyboard();
 	void CloseKeyboard();
 	uint32 GetCursorPos();
 	void SetCursorPos(uint32 pos);
 	void SetMaxLength(int32_t value);
+	void SetMultiline(bool value);
 
 private:
 	uint32_t id;
@@ -90,11 +92,14 @@ private:
 	Function<void (jint, jint)> setReturnKeyType;
 	Function<void (jint, jboolean)> setEnableReturnKeyAutomatically;
 	Function<void (jint, jboolean)> setVisible;
+	Function<void (jint, jboolean)> setRenderToTexture;
+	Function<jboolean (jint)> isRenderToTexture;
 	Function<void (jint)> openKeyboard;
 	Function<void (jint)> closeKeyboard;
 	Function<jint (jint)> getCursorPos;
 	Function<void (jint, jint)> setCursorPos;
 	Function<void (jint, jint)> setMaxLength;
+	Function<void (jint, jboolean)> setMultiline;
 };
 
 class UITextFieldAndroid
@@ -124,6 +129,9 @@ public:
 
 	void SetInputEnabled(bool value);
 
+	void SetRenderToTexture(bool value);
+	bool IsRenderToTexture() const;
+
 	// Keyboard traits.
 	void SetAutoCapitalizationType(DAVA::int32 value);
 	void SetAutoCorrectionType(DAVA::int32 value);
@@ -135,6 +143,7 @@ public:
 	uint32 GetCursorPos();
 	void SetCursorPos(uint32 pos);
 	void SetMaxLength(DAVA::int32 value);
+	void SetMultiline(bool value);
 
 	bool TextFieldKeyPressed(int32 replacementLocation, int32 replacementLength, WideString &text);
 	void TextFieldOnTextChanged(const WideString& newText, const WideString& oldText);
@@ -148,6 +157,7 @@ public:
 	static void TextFieldKeyboardShown(uint32_t id, const Rect& rect);
 	static void TextFieldKeyboardHidden(uint32_t id);
 	static void TextFieldFocusChanged(uint32_t id, bool hasFocus);
+	static void TextFieldUpdateTexture(uint32_t id, int32* pixels, int width, int height);
 
 private:
 	static UITextFieldAndroid* GetUITextFieldAndroid(uint32_t id);
@@ -157,9 +167,10 @@ protected:
     WideString TruncateText(const WideString& text, int32 maxLength);
 
 private:
-	UITextField* textField;
+    std::shared_ptr<JniTextField> jniTextField;
+	UITextField* textField = nullptr;
 	static uint32_t sId;
-	static DAVA::Map<uint32_t, UITextFieldAndroid*> controls;
+	static Map<uint32_t, UITextFieldAndroid*> controls;
 	uint32_t id;
 	Rect rect;
 	WideString text;

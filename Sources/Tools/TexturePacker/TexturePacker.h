@@ -35,6 +35,7 @@
 #include "Render/Texture.h"
 #include "Math/Math2D.h"
 #include "TextureCompression/TextureConverter.h"
+#include "TexturePacker/ImagePacker.h"
 
 namespace DAVA
 {
@@ -75,13 +76,13 @@ public:
 
 public:
 	TexturePacker();
-	
+    ~TexturePacker();
 	// pack textures to single texture
 	void PackToTextures(const FilePath & excludeFolder, const FilePath & outputPath, List<DefinitionFile*> & defsList, eGPUFamily forGPU);
 	// page each PSD file to separate texture
 	void PackToTexturesSeparate(const FilePath & excludeFolder, const FilePath & outputPath, List<DefinitionFile*> & defsList, eGPUFamily forGPU);
 	// pack one sprite and use several textures if more than one needed
-	void PackToMultipleTextures(const FilePath & excludeFolder, const FilePath & outputPath, List<DefinitionFile*> & remainingList, eGPUFamily forGPU);
+	void PackToMultipleTextures(const FilePath & excludeFolder, const FilePath & outputPath, const char* basename, List<DefinitionFile*> & remainingList, eGPUFamily forGPU);
 
 	bool TryToPack(const Rect2i & textureRect, List<DefinitionFile*> & defsList);
 	bool WriteDefinition(const FilePath & excludeFolder, const FilePath & outputPath, const String & textureName, DefinitionFile * defFile);
@@ -90,7 +91,7 @@ public:
 	int TryToPackFromSortVector(ImagePacker * packer, Vector<SizeSortItem> & tempSortVector);
 	float TryToPackFromSortVectorWeight(ImagePacker * packer, Vector<SizeSortItem> & tempSortVector);
 
-	Rect2i ReduceRectToOriginalSize(const Rect2i & _input, uint32 rmargin, uint32 bmargin);
+    Rect2i GetOriginalSizeRect(const PackedInfo& _input);
 
 	void UseOnlySquareTextures();
 
@@ -107,17 +108,27 @@ public:
 	const Set<String>& GetErrors() const;
 	
 private:
+
+    struct ImageExportKeys
+    {
+        eGPUFamily forGPU = GPU_ORIGIN;
+        ImageFormat imageFormat = IMAGE_FORMAT_UNKNOWN;
+        PixelFormat pixelFormat = FORMAT_INVALID;
+        ImageQuality imageQuality = DEFAULT_IMAGE_QUALITY;
+        bool toConvertOrigin = false;
+        bool toComressForGPU = false;
+    };
     
-    void ExportImage(PngImageExt *image, const FilePath &exportedPathname, eGPUFamily forGPU);
-    TextureDescriptor * CreateDescriptor(eGPUFamily forGPU);
-	
+    ImageExportKeys GetExportKeys(eGPUFamily forGPU);
+    void ExportImage(PngImageExt *image, const ImageExportKeys& exportKeys, FilePath exportedPathname);
+
 	Texture::TextureWrap GetDescriptorWrapMode();
 	FilterItem GetDescriptorFilter(bool generateMipMaps = false);
     
     bool CheckFrameSize(const Size2i &spriteSize, const Size2i &frameSize);
     
 	void WriteDefinitionString(FILE *fp, const Rect2i & writeRect, const Rect2i &originRect, int textureIndex, const String& frameName);
-	void DrawToFinalImage(PngImageExt & finalImage, PngImageExt & drawedImage, const Rect2i & drawRect, const Rect2i &frameRect);
+	void DrawToFinalImage(PngImageExt & finalImage, PngImageExt & drawedImage, const PackedInfo & drawRect, const Rect2i &frameRect);
 
     
 	ImagePacker *			lastPackedPacker;
@@ -127,8 +138,7 @@ private:
 	uint32 maxTextureSize;
 
 	bool onlySquareTextures;
-    bool NeedSquareTextureForCompression(eGPUFamily forGPU);
-	bool IsFormatSupportedForGPU(PixelFormat format, eGPUFamily forGPU);
+    bool NeedSquareTextureForCompression(ImageExportKeys keys);
 	
     TextureConverter::eConvertQuality quality;
 

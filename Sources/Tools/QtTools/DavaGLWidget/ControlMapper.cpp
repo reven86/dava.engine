@@ -1,3 +1,32 @@
+/*==================================================================================
+    Copyright (c) 2008, binaryzebra
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+=====================================================================================*/
+
+
 #include "ControlMapper.h"
 
 #include "DAVAEngine.h"
@@ -87,42 +116,17 @@ void ControlMapper::keyReleaseEvent(QKeyEvent *e)
 
 void ControlMapper::mouseMoveEvent(QMouseEvent * event)
 {
-    const Qt::MouseButtons buttons = event->buttons();
-    DAVA::UIEvent davaEvent = MapMouseEventToDAVA(event);
-    bool dragWasApplied = false;
-    
-    davaEvent.phase = DAVA::UIEvent::PHASE_DRAG;
-    
-    if(buttons & Qt::LeftButton)
-    {
-        dragWasApplied = true;
-        davaEvent.tid = MapQtButtonToDAVA(Qt::LeftButton);
-        DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
-    }
-    if(buttons & Qt::RightButton)
-    {
-        dragWasApplied = true;
-        davaEvent.tid = MapQtButtonToDAVA(Qt::RightButton);
-        DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
-    }
-    if(buttons & Qt::MiddleButton)
-    {
-        dragWasApplied = true;
-        davaEvent.tid = MapQtButtonToDAVA(Qt::MiddleButton);
-        DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
-    }
-    
-    if(!dragWasApplied)
-    {
-        davaEvent.phase = DAVA::UIEvent::PHASE_MOVE;
-        davaEvent.tid = MapQtButtonToDAVA(Qt::LeftButton);
-        DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
-    }
+    auto davaEvent = MapMouseEventToDAVA(event->pos(), event->button(), event->timestamp());
+    const auto dragWasApplied = event->buttons() != Qt::NoButton;
+
+    davaEvent.phase = dragWasApplied ? DAVA::UIEvent::PHASE_DRAG : DAVA::UIEvent::PHASE_MOVE;
+
+    DAVA::QtLayer::Instance()->MouseEvent( davaEvent );
 }
 
 void ControlMapper::mousePressEvent(QMouseEvent * event)
 {
-    DAVA::UIEvent davaEvent = MapMouseEventToDAVA(event);
+    auto davaEvent = MapMouseEventToDAVA(event->pos(), event->button(), event->timestamp());
     davaEvent.phase = DAVA::UIEvent::PHASE_BEGAN;
     
     DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
@@ -130,7 +134,7 @@ void ControlMapper::mousePressEvent(QMouseEvent * event)
 
 void ControlMapper::mouseReleaseEvent(QMouseEvent * event)
 {
-    DAVA::UIEvent davaEvent = MapMouseEventToDAVA(event);
+    auto davaEvent = MapMouseEventToDAVA(event->pos(), event->button(), event->timestamp());
     davaEvent.phase = DAVA::UIEvent::PHASE_ENDED;
     
     DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
@@ -150,19 +154,18 @@ void ControlMapper::mouseDoubleClickEvent(QMouseEvent *event)
 
 void ControlMapper::wheelEvent(QWheelEvent *event)
 {
+    // In future, OS X may support extended scroll event handling
+    //if ( event->phase() != QScrollEvent::ScrollUpdated )
+    //    return;
+
+    const auto currentDPR = static_cast<int>( window->devicePixelRatio() );
+
     DAVA::UIEvent davaEvent;
-    
-    int numDegrees = event->delta() / 8;
-    int numSteps = numDegrees / 15;
-    
-    davaEvent.point = davaEvent.physPoint = DAVA::Vector2(numSteps, numSteps);
-    davaEvent.tid = DAVA::UIEvent::PHASE_WHEEL;
+    davaEvent.point = DAVA::Vector2( event->pixelDelta().x(), event->pixelDelta().y() );
+    davaEvent.timestamp = 0;
     davaEvent.phase = DAVA::UIEvent::PHASE_WHEEL;
-    
-    davaEvent.timestamp = event->timestamp();
-    davaEvent.tapCount = 1;
-    
-    DAVA::QtLayer::Instance()->MouseEvent(davaEvent);
+
+    DAVA::QtLayer::Instance()->MouseEvent( davaEvent );
 }
 
 void ControlMapper::dragMoveEvent(QDragMoveEvent * event)
@@ -170,7 +173,7 @@ void ControlMapper::dragMoveEvent(QDragMoveEvent * event)
     DAVA::UIEvent davaEvent;
     auto pos = event->pos();
     const auto currentDPR = static_cast<int>( window->devicePixelRatio() );
-    
+
     davaEvent.point = davaEvent.physPoint = DAVA::Vector2(pos.x() * currentDPR, pos.y() * currentDPR);
     davaEvent.tid = MapQtButtonToDAVA(Qt::LeftButton);
     davaEvent.timestamp = 0;
@@ -180,20 +183,20 @@ void ControlMapper::dragMoveEvent(QDragMoveEvent * event)
     DAVA::QtLayer::Instance()->MouseEvent( davaEvent );
 }
 
-void ControlMapper::ClearAllKeys()
+void ControlMapper::releaseKeyboard()
 {
     DAVA::InputSystem::Instance()->GetKeyboard().ClearAllKeys();
 }
 
-DAVA::UIEvent ControlMapper::MapMouseEventToDAVA(QMouseEvent *event) const
+DAVA::UIEvent ControlMapper::MapMouseEventToDAVA( const QPoint& pos, const Qt::MouseButton button, ulong timestamp )
 {
     DAVA::UIEvent davaEvent;
-    QPoint pos = event->pos();
+    auto davaButton = MapQtButtonToDAVA( button );
     
     int currentDPR = window->devicePixelRatio();
     davaEvent.point = davaEvent.physPoint = DAVA::Vector2(pos.x() * currentDPR, pos.y() * currentDPR);
-    davaEvent.tid = MapQtButtonToDAVA(event->button());
-    davaEvent.timestamp = event->timestamp();
+    davaEvent.tid = davaButton;
+    davaEvent.timestamp = timestamp;
     davaEvent.tapCount = 1;
     
     return davaEvent;

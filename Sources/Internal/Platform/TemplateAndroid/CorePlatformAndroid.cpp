@@ -36,13 +36,13 @@
 extern void FrameworkDidLaunched();
 extern void FrameworkWillTerminate();
 
-#include "Platform/Thread.h"
 #include "Platform/DeviceInfo.h"
 #include "Input/InputSystem.h"
 #include "FileSystem/FileSystem.h"
 #include "Scene3D/SceneCache.h"
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
+#include "Platform/TemplateAndroid/JniHelpers.h"
 
 namespace DAVA
 {
@@ -92,21 +92,18 @@ namespace DAVA
 // 		core->CreateWin32Window(handle);
 		// 		core->Run();
 // 		core->ReleaseSingletons();
-// #ifdef ENABLE_MEMORY_MANAGER
-// 		if (DAVA::MemoryManager::Instance() != 0)
-// 		{
-// 			DAVA::MemoryManager::Instance()->FinalLog();
-// 		}
-// #endif
 		return 0;
-
 	}
 
 	void CorePlatformAndroid::Quit()
 	{
 		Logger::Debug("[CorePlatformAndroid::Quit]");
 		QuitAction();
-		Core::Quit();
+
+		// finish java activity, never return back
+		JNI::JavaClass javaClass("com/dava/framework/JNIActivity");
+		Function<void()> finishActivity = javaClass.GetStaticMethod<void>("finishActivity");
+		finishActivity();
 	}
 
 	void CorePlatformAndroid::QuitAction()
@@ -120,13 +117,6 @@ namespace DAVA
 
 		FrameworkWillTerminate();
 
-#ifdef ENABLE_MEMORY_MANAGER
-		if (DAVA::MemoryManager::Instance() != 0)
-		{
-			DAVA::MemoryManager::Instance()->FinalLog();
-		}
-#endif
-
 		Logger::Debug("[CorePlatformAndroid::QuitAction] done");
 	}
 
@@ -134,24 +124,27 @@ namespace DAVA
 	{
 		if(renderIsActive)
 		{
-			uint64 startTime = DAVA::SystemTimer::Instance()->AbsoluteMS();
+			//  Control FPS
+			{
+				//Because we shouldn't sleep more than 1 frame at 60 FPS
+				static uint32 MAX_FRAME_SLEEP_TIME = 1000 / 60;
+				static uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
+				uint64 elapsedTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
+				int32 fps = RenderManager::Instance()->GetFPS();
+				if(fps > 0)
+				{
+					int64 sleepMs = (1000 / fps) - elapsedTime;
+					if(sleepMs > 0 && sleepMs <= MAX_FRAME_SLEEP_TIME)
+					{
+						Thread::Sleep(sleepMs);
+					}
+				}
+				startTime = SystemTimer::Instance()->AbsoluteMS();
+			}
 		
 			DAVA::RenderManager::Instance()->Lock();
 			Core::SystemProcessFrame();
 			DAVA::RenderManager::Instance()->Unlock();
-
-			uint32 elapsedTime = (uint32) (SystemTimer::Instance()->AbsoluteMS() - startTime);
-            int32 sleepMs = 1;
-
-            int32 fps = RenderManager::Instance()->GetFPS();
-            if(fps > 0)
-            {
-                sleepMs = (1000 / fps) - elapsedTime;
-                if(sleepMs > 0)
-                {
-                	Thread::Sleep(sleepMs);
-                }
-            }
 		}
 	}
 

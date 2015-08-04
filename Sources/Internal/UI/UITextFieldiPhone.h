@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_UI_TEXT_FIELD_IPHONE_H__
 #define __DAVAENGINE_UI_TEXT_FIELD_IPHONE_H__
 
@@ -35,10 +34,12 @@
 
 namespace DAVA 
 {
+class UITextField;
+    
 class UITextFieldiPhone
 {
 public:
-	UITextFieldiPhone(void  * tf);
+    UITextFieldiPhone(UITextField& tf);
 	virtual ~UITextFieldiPhone();
 	
 	void OpenKeyboard();
@@ -78,13 +79,24 @@ public:
 
     // Max text length.
     void SetMaxLength(int maxLength);
-
-protected:
+    
+    void SetMultiline(bool multiline);
+    
+    void SetRenderToTexture(bool value);
+    bool IsRenderToTexture() const;
+private:
     // Truncate the text to maxLength characters.
     void* TruncateText(void* text, int maxLength);
-
-private:
+    void UpdateStaticTexture();
+    void UpdateNativeRect(const Rect & virtualRect, int xOffset);
+    
+    Rect prevRect;
+    UITextField& davaTextField;
 	void * objcClassPtr;
+    bool renderToTexture;
+    bool isSingleLine = true;
+    int deltaMoveControl = 0;
+    bool isNeedToUpdateTexture = false;
 };
 };
 

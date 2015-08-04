@@ -30,11 +30,13 @@
 #include "UIPackage.h"
 
 #include "UI/UIControl.h"
+#include "UI/UIControlPackageContext.h"
 
 namespace DAVA
 {
 
-UIPackage::UIPackage()
+UIPackage::UIPackage() : 
+    controlPackageContext(new UIControlPackageContext())
 {
 }
 
@@ -44,6 +46,8 @@ UIPackage::~UIPackage()
         control->Release();
     
     controls.clear();
+
+    SafeRelease(controlPackageContext);
 }
 
 DAVA::int32 UIPackage::GetControlsCount() const
@@ -70,26 +74,8 @@ UIControl * UIPackage::GetControl(int32 index) const
 
 void UIPackage::AddControl(UIControl *control)
 {
+    control->SetPackageContext(controlPackageContext);
     controls.push_back(SafeRetain(control));
-}
-    
-void UIPackage::InsertControlAtIndex(DAVA::int32 index, UIControl *control)
-{
-    controls.insert(controls.begin() + index, SafeRetain(control));
-}
-
-void UIPackage::InsertControlBelow(UIControl *control, const UIControl *belowThis)
-{
-    auto it = find(controls.begin(), controls.end(), belowThis);
-    if (it != controls.end())
-    {
-        ++it;
-        controls.insert(it, SafeRetain(control));
-    }
-    else
-    {
-        DVASSERT(false);
-    }
 }
     
 void UIPackage::RemoveControl(UIControl *control)
@@ -100,6 +86,11 @@ void UIPackage::RemoveControl(UIControl *control)
         SafeRelease(*iter);
         controls.erase(iter);
     }
+}
+
+UIControlPackageContext* UIPackage::GetControlPackageContext()
+{
+    return controlPackageContext;
 }
 
 RefPtr<UIPackage> UIPackage::Clone() const

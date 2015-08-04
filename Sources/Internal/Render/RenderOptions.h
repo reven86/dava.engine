@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_RENDEROPTIONS_H__
 #define __DAVAENGINE_RENDEROPTIONS_H__
 
@@ -75,11 +74,15 @@ public:
         UPDATE_PARTICLE_EMMITERS,
         PARTICLES_DRAW,
         PARTICLES_PREPARE_BUFFERS,
+        REPLACE_ALBEDO_MIPMAPS,
+        REPLACE_LIGHTMAP_MIPMAPS,
 #if defined(LOCALIZATION_DEBUG)
         DRAW_LOCALIZATION_WARINGS,
         DRAW_LOCALIZATION_ERRORS,
         DRAW_LINEBREAK_ERRORS,
 #endif
+        DRAW_NONDEF_GLYPH,
+        HIGHLIGHT_HARD_CONTROLS,
 		OPTIONS_COUNT
 	};
 

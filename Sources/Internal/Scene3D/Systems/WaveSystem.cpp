@@ -75,14 +75,15 @@ WaveSystem::~WaveSystem()
     ClearWaves();
 }
 
-void WaveSystem::ImmediateEvent(Entity * entity, uint32 event)
+void WaveSystem::ImmediateEvent(Component * component, uint32 event)
 {
     if(event == EventSystem::WAVE_TRIGGERED)
     {
         if(!isWavesEnabled || !isVegetationAnimationEnabled)
             return;
 
-        waves.push_back(new WaveInfo(GetWaveComponent(entity)));
+        WaveComponent * waveComponent = DynamicTypeCheck<WaveComponent*>(component);
+        waves.push_back(new WaveInfo(waveComponent));
     }
 }
 
@@ -129,7 +130,7 @@ Vector3 WaveSystem::GetWaveDisturbance(const Vector3 & inPosition) const
 
             float32 distance = sqrtf(distanceSq);
             direction /= distance;
-            float32 dt = abs(info->currentWaveRadius - distance);
+            float32 dt = Abs(info->currentWaveRadius - distance);
             float32 value = Max(1 - dt / component->GetWaveLenght(), 0.f) * component->GetWaveAmplitude() * component->GetWaveSpeed() * damping; // wave function: A = (1 - x/L) * A0
 
             DVASSERT(value >= 0.f);

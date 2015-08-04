@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_SCROLL_HELPER__
 #define __DAVAENGINE_SCROLL_HELPER__
 
@@ -61,6 +60,8 @@ public:
 	 */
 	ScrollHelper();
 	
+    void CopyDataFrom(const ScrollHelper *src);
+
 	/**
 	 \brief Sets new scrolling position.
 	 \param[in] pos new scrolling position.

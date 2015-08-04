@@ -37,9 +37,10 @@
 #include "Base/FastName.h"
 #include "Render/RenderResource.h"
 #include "FileSystem/FilePath.h"
-#include "Platform/Mutex.h"
 
 #include "Render/UniqueStateSet.h"
+
+#include "MemoryManager/MemoryProfiler.h"
 
 namespace DAVA
 {
@@ -64,14 +65,16 @@ public:
 };
 	
 #ifdef USE_FILEPATH_IN_MAP
-	typedef Map<FilePath, Texture *> TexturesMap;
+    using TexturesMap = Map<FilePath, Texture *>;
 #else //#ifdef USE_FILEPATH_IN_MAP
-	typedef Map<String, Texture *> TexturesMap;
+    using TexturesMap = Map<String, Texture *>;
 #endif //#ifdef USE_FILEPATH_IN_MAP
 
 
 class Texture : public RenderResource
 {
+    DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_TEXTURE)
+
 public:
     
     enum TextureWrap
@@ -98,7 +101,7 @@ public:
 	};
 	
 	//VI: each face is optional
-	enum CubemapFace
+	enum CubemapFace : uint32
 	{
 		CUBE_FACE_POSITIVE_X = 0,
 		CUBE_FACE_NEGATIVE_X = 1,
@@ -106,9 +109,11 @@ public:
 		CUBE_FACE_NEGATIVE_Y = 3,
 		CUBE_FACE_POSITIVE_Z = 4,
 		CUBE_FACE_NEGATIVE_Z = 5,
-		CUBE_FACE_MAX_COUNT = 6,
+		CUBE_FACE_COUNT = 6,
 		CUBE_FACE_INVALID = 0xFFFFFFFF
 	};
+
+    static Array<String, CUBE_FACE_COUNT> FACE_NAME_SUFFIX;
 	
 	enum TextureType
 	{
@@ -123,7 +128,7 @@ public:
 		STATE_DATA_LOADED,
 		STATE_VALID
 	};
-	
+
 	// Main constructors
     /**
         \brief Create texture from data arrray
@@ -184,6 +189,14 @@ public:
 	
 	static Texture * CreatePink(TextureType requestedType = Texture::TEXTURE_2D, bool checkers = true);
 
+    
+    /**
+        \brief Get texture from cache.
+        If texture isn't in cache, returns 0
+        \param[in] name path of TextureDescriptor
+     */
+    static Texture * Get(const FilePath & name);
+
 
 	virtual int32 Release();
 
@@ -218,9 +231,6 @@ public:
     Image * CreateImageFromMemory(UniqueHandle renderState);
 
 	bool IsPinkPlaceholder();
-    
-	static void GenerateCubeFaceNames(const FilePath & baseName, Vector<FilePath>& faceNames);
-	static void GenerateCubeFaceNames(const FilePath & baseName, const Vector<String>& faceNameSuffixes, Vector<FilePath>& faceNames);
 
     void Reload();
     void ReloadAs(eGPUFamily gpuFamily);
@@ -259,12 +269,14 @@ public:
 	PixelFormat GetFormat() const;
 
     static void SetPixelization(bool value);
+    
+    int32 GetBaseMipMap() const;
+
 protected:
     
     void ReleaseTextureData();
     void GenerateID();
 
-	static Texture * Get(const FilePath & name);
 	static void AddToMap(Texture *tex);
     
 	static Texture * CreateFromImage(TextureDescriptor *descriptor, eGPUFamily gpu);
@@ -295,7 +307,6 @@ protected:
 #endif //#if defined(__DAVAENGINE_OPENGL__)
     
     bool IsLoadAvailable(const eGPUFamily gpuFamily) const;
-	int32 GetBaseMipMap() const;
 
 	static eGPUFamily GetGPUForLoading(const eGPUFamily requestedGPU, const TextureDescriptor *descriptor);
 

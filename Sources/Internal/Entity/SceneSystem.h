@@ -113,7 +113,7 @@ public:
         \param[in] entity entity fired an event.
         \param[in] event event id for this event.
      */
-    virtual void ImmediateEvent(Entity * entity, uint32 event);
+    virtual void ImmediateEvent(Component * component, uint32 event);
     /**
         \brief This function should be overloaded and perform all processing for this system.
         \param[in] timeElapsed time elapsed from previous frame.
@@ -126,6 +126,14 @@ public:
     
 	virtual void SetLocked(bool locked);
 	bool IsLocked() const;
+    
+    
+    /**
+         \brief This functions should be overloaded if system need to do specific actions on scene activation or deactivation 
+     */
+    virtual void Activate() {};
+    virtual void Deactivate() {};
+    
 	
 protected:
 	inline Scene * GetScene() const;

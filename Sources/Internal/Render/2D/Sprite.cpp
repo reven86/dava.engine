@@ -42,7 +42,7 @@
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageSystem.h"
 #include "FileSystem/DynamicMemoryFile.h"
-#include "Render/Texturedescriptor.h"
+#include "Render/TextureDescriptor.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
@@ -51,11 +51,11 @@
 namespace DAVA
 {
 #ifdef USE_FILEPATH_IN_MAP
-	typedef Map<FilePath, Sprite *> SpriteMap;
+    using SpriteMap = Map<FilePath, Sprite *>;
 #else //#ifdef USE_FILEPATH_IN_MAP
-	typedef Map<String, Sprite *> SpriteMap;
+    using SpriteMap = Map<String, Sprite *>;
 #endif //#ifdef USE_FILEPATH_IN_MAP
-	SpriteMap spriteMap;
+    SpriteMap spriteMap;
 
 static int32 fboCounter = 0;
 

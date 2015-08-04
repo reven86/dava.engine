@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Scene3D/Systems/AnimationSystem.h"
 #include "Scene3D/Components/AnimationComponent.h"
 #include "Scene3D/Entity.h"
@@ -87,14 +86,14 @@ void AnimationSystem::Process(float32 timeElapsed)
         Matrix4 animTransform;
         comp->animation->Interpolate(comp->time, comp->frameIndex).GetMatrix(animTransform);
         comp->animationTransform = comp->animation->invPose * animTransform;
-        GlobalEventSystem::Instance()->Event(comp->GetEntity(), EventSystem::ANIMATION_TRANSFORM_CHANGED);
+        GlobalEventSystem::Instance()->Event(comp, EventSystem::ANIMATION_TRANSFORM_CHANGED);
     }
 }
 
-void AnimationSystem::ImmediateEvent(Entity * entity, uint32 event)
+void AnimationSystem::ImmediateEvent(Component * component, uint32 event)
 {
-    AnimationComponent *comp = GetAnimationComponent(entity);
-    if (!comp) return;
+    DVASSERT(component->GetType() == Component::ANIMATION_COMPONENT);
+    AnimationComponent * comp = static_cast<AnimationComponent*>(component);
     if (event == EventSystem::START_ANIMATION)
     {
         if (comp->state == AnimationComponent::STATE_STOPPED)
@@ -120,6 +119,15 @@ void AnimationSystem::RemoveFromActive( AnimationComponent *comp )
     DVASSERT(it!=activeComponents.end());
     activeComponents.erase(it);
     comp->state = AnimationComponent::STATE_STOPPED;
+}
+
+void AnimationSystem::RemoveEntity(Entity * entity)
+{
+    AnimationComponent *comp = GetAnimationComponent(entity);
+    if (comp->state != AnimationComponent::STATE_STOPPED)
+    {
+        RemoveFromActive(comp);
+    }
 }
 
 };

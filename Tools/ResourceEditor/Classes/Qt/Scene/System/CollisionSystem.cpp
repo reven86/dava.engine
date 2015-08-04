@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Scene/System/CollisionSystem.h"
 #include "Scene/System/CollisionSystem/CollisionRenderObject.h"
 #include "Scene/System/CollisionSystem/CollisionLandscape.h"
@@ -170,7 +169,7 @@ const EntityGroup* SceneCollisionSystem::ObjectsRayTest(const DAVA::Vector3 &fro
 						btCollisionObject *btObj = btCallback.m_collisionObjects[j];
 						DAVA::Entity *entity = collisionToEntity.value(btObj, NULL);
 
-						if(!rayIntersectedEntities.HasEntity(entity))
+						if(!rayIntersectedEntities.ContainsEntity(entity))
 						{
 							lowestFraction = btCallback.m_hitFractions[j];
 							lowestEntity = entity;
@@ -446,7 +445,7 @@ void SceneCollisionSystem::ProcessCommand(const Command2 *command, bool redo)
         case CMDID_INSP_MEMBER_MODIFY:
             {
                 const InspMemberModifyCommand* cmd = static_cast<const InspMemberModifyCommand*>(command);
-                if (String("heightmapPath") == cmd->member->Name())
+                if (String("heightmapPath") == cmd->member->Name().c_str())
                 {
                     UpdateCollisionObject(curLandscapeEntity);
                 }

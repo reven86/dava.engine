@@ -35,7 +35,11 @@
 #include "Main/QtUtils.h"
 #include "Settings/SettingsManager.h"
 
-#include <QFileDialog>
+#include "Tools/PathDescriptor/PathDescriptor.h"
+#include "ImageTools/ImageTools.h"
+
+#include "QtTools/FileDialog/FileDialog.h"
+
 #include <QDragEnterEvent>
 #include <QDropEvent>
 #include <QUrl>
@@ -47,6 +51,7 @@ ImageArea::ImageArea(QWidget *parent /*= 0*/)
     , image(NULL)
     , acceptableSize(0, 0)
     , imagePath(SettingsManager::Instance()->GetValue(Settings::Internal_ImageSplitterPathSpecular).AsString())
+    , requestedFormat(DAVA::FORMAT_A8)
 {
     setFrameStyle(QFrame::Sunken | QFrame::StyledPanel);
     setAcceptDrops(true);
@@ -106,7 +111,10 @@ void ImageArea::mousePressEvent (QMouseEvent * ev)
             }
         }
 
-		DAVA::String retString = QFileDialog::getOpenFileName(this, "Select png", defaultPath.GetAbsolutePathname().c_str(),"PNG(*.png)").toStdString();
+		DAVA::String retString = FileDialog::getOpenFileName(this, "Select image",
+                                                              defaultPath.GetAbsolutePathname().c_str(),
+                                                              PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter
+                                                              ).toStdString();
         if(!retString.empty())
         {
             SetImage(retString);
@@ -142,7 +150,8 @@ void ImageArea::SetImage(const DAVA::FilePath& filePath)
         QMessageBox::warning(this, "File error", "Cann't load image.", QMessageBox::Ok);
         return;
     }
-    if(selectedImage->GetPixelFormat() == DAVA::FORMAT_A8)
+
+    if((DAVA::FORMAT_INVALID == requestedFormat) || (selectedImage->GetPixelFormat() == requestedFormat))
     {
         const DAVA::FilePath path = filePath;
         SettingsManager::Instance()->SetValue(Settings::Internal_ImageSplitterPathSpecular, DAVA::VariantType(path.GetAbsolutePathname()));
@@ -151,7 +160,7 @@ void ImageArea::SetImage(const DAVA::FilePath& filePath)
     }
     else
     {
-        QMessageBox::warning(this, "Format error", "Selected image must be in A8 format.", QMessageBox::Ok);
+        QMessageBox::warning(this, "Format error", QString("Selected image must be in %1 format.").arg(DAVA::PixelFormatDescriptor::GetPixelFormatString(requestedFormat)), QMessageBox::Ok);
     }
     DAVA::SafeRelease(selectedImage);
 }
@@ -173,7 +182,7 @@ void ImageArea::UpdatePreviewPicture()
     }
     DAVA::Image* scaledImage = DAVA::Image::CopyImageRegion(image, image->GetWidth(), image->GetHeight());
     scaledImage->ResizeImage(this->width(), this->height());
-    QPixmap scaledPixmap = QPixmap::fromImage(TextureConvertor::FromDavaImage(scaledImage));
+    QPixmap scaledPixmap = QPixmap::fromImage(ImageTools::FromDavaImage(scaledImage));
     DAVA::SafeRelease(scaledImage);
     setPixmap(scaledPixmap);
 }
@@ -191,4 +200,14 @@ DAVA::Vector2 ImageArea::GetAcceptableSize() const
 DAVA::FilePath const& ImageArea::GetImagePath() const
 {
     return imagePath;
+}
+
+void ImageArea::SetRequestedImageFormat(const DAVA::PixelFormat format)
+{
+    requestedFormat = format;
+}
+
+DAVA::PixelFormat ImageArea::GetRequestedImageFormat() const
+{
+    return requestedFormat;
 }

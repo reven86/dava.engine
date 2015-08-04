@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __TEXTURE_LIST_DELEGATE_H__
 #define __TEXTURE_LIST_DELEGATE_H__
 
@@ -58,6 +57,12 @@ public:
 	QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const;
 
 	void setDrawRule(DrawRule rule);
+    
+    bool helpEvent(QHelpEvent *event,
+                           QAbstractItemView *view,
+                           const QStyleOptionViewItem &option,
+                           const QModelIndex &index) override;
+
 
 protected:
     bool editorEvent(QEvent * event, QAbstractItemModel * model, const QStyleOptionViewItem & option, const QModelIndex & index);
@@ -78,6 +83,8 @@ private:
 	void drawPreviewSmall(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
 
 	int drawFormatInfo(QPainter *painter, QRect rect, const DAVA::Texture *texture, const DAVA::TextureDescriptor *descriptor) const;
+    
+    QString CreateInfoString(const QModelIndex & index) const;
 };
 
 #endif // __TEXTURE_LIST_DELEGATE_H__

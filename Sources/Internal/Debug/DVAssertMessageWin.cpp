@@ -26,20 +26,21 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "Base/Platform.h"
 
+#if defined (__DAVAENGINE_WIN32__)
 
 #include "Debug/DVAssertMessage.h"
 #include "FileSystem/Logger.h"
 
-#if defined (__DAVAENGINE_WIN32__)
-
 namespace DAVA
 {
 
-bool DVAssertMessage::InnerShow(eModalType /*modalType*/, const char* content)
+bool DVAssertMessage::InnerShow(eModalType modalType, const char* content)
 {
-	// Modal Type is ignored by Win32.
-	int buttonId = MessageBoxA(HWND_DESKTOP, content, "Assert", MB_OKCANCEL | MB_ICONEXCLAMATION);
+    // Modal Type is ignored by Win32.
+    const int flags = MB_OKCANCEL | MB_ICONEXCLAMATION | MB_SETFOREGROUND | MB_TOPMOST | (modalType == TRY_NONMODAL ? MB_APPLMODAL : MB_TASKMODAL);
+    int buttonId = ::MessageBoxA(HWND_DESKTOP, content, "Assert", flags);
     switch (buttonId)
     {
     case IDCANCEL:
@@ -48,13 +49,92 @@ bool DVAssertMessage::InnerShow(eModalType /*modalType*/, const char* content)
         return false; // continue execution
     default:
         // should never happen!
-        DAVA::Logger::Instance()->Error(
+        Logger::Instance()->Error(
             "Return button id(%d) unknown! Error during handle assert message",
             buttonId);
         return true;
     }
 }
 
-};
+}   // namespace DAVA
 
-#endif //#if defined (__DAVAENGINE_WIN32__)
+#elif defined (__DAVAENGINE_WIN_UAP__)
+
+#include "Debug/DVAssertMessage.h"
+#include "Utils/Utils.h"
+
+#include "Platform/TemplateWin32/CorePlatformWinUAP.h"
+
+namespace DAVA
+{
+
+bool DVAssertMessage::InnerShow(eModalType /*modalType*/, const char* content)
+{
+    using namespace Windows::UI::Popups;
+
+    enum eUserChoice
+    {
+        USER_HASNT_CHOOSE_YET,
+        USER_CHOOSE_CONTINUE,
+        USER_CHOOSE_BREAK
+    } userChoice = USER_HASNT_CHOOSE_YET;
+
+    CorePlatformWinUAP* core = static_cast<CorePlatformWinUAP*>(Core::Instance());
+    // Depending on what thread assertion has occured we should take different actions:
+    //  - for UI thread
+    //      MessageDialog always run asynchronously so breaking has no sense so dialog has only one button for continuation
+    //      As we asserting on UI thread we can simply show dialog
+    //  - for main and other threads
+    //      MessageDialog must be run only on UI thread, so RunOnUIThread is used
+    //      Also we block asserting thread to be able to retrieve user response: continue or break
+    Platform::String^ text = ref new Platform::String(StringToWString(content).c_str());
+    if (!core->IsUIThread())
+    {
+        Mutex mutex;
+        ConditionVariable cv;
+
+        auto f = [text, &userChoice, &cv, &mutex]()
+        {
+            auto cmdHandler = [&cv, &mutex, &userChoice](IUICommand^ uiCmd)
+            {
+                {
+                    LockGuard<Mutex> lock(mutex);
+                    userChoice = (0 == Platform::String::CompareOrdinal(uiCmd->Label, L"break")) ? USER_CHOOSE_BREAK : USER_CHOOSE_CONTINUE;
+                }
+                cv.NotifyOne();
+            };
+
+            UICommand^ continueCommand = ref new UICommand("Continue", ref new UICommandInvokedHandler(cmdHandler));
+            UICommand^ breakCommand = ref new UICommand("Break", ref new UICommandInvokedHandler(cmdHandler));
+            breakCommand->Label = "break";
+
+            MessageDialog^ msg = ref new MessageDialog(text);
+            msg->Commands->Append(continueCommand);
+            msg->Commands->Append(breakCommand);
+            msg->DefaultCommandIndex = 0;
+            msg->CancelCommandIndex = 0;
+
+            msg->ShowAsync();   // This is always async call
+        };
+
+        UniqueLock<Mutex> lock(mutex);
+        core->RunOnUIThread(f);
+        cv.Wait(lock, [&userChoice]() { return userChoice != USER_HASNT_CHOOSE_YET; });
+    }
+    else
+    {
+        UICommand^ continueCommand = ref new UICommand("Continue", ref new UICommandInvokedHandler([](IUICommand^) {}));
+
+        MessageDialog^ msg = ref new MessageDialog(text);
+        msg->Commands->Append(continueCommand);
+        msg->DefaultCommandIndex = 0;
+
+        userChoice = USER_CHOOSE_CONTINUE;
+        msg->ShowAsync();   // This is always async call
+    }
+    return USER_CHOOSE_BREAK == userChoice;
+}
+
+}   // namespace DAVA
+
+#endif // defined (__DAVAENGINE_WIN_UAP__)

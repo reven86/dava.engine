@@ -78,18 +78,7 @@
 namespace DAVA
 {
 
-//typedef uint32 uint32;
-
 /* Data structure for MD5 (Message Digest) computation */
-/*
-typedef struct {
-} MD5_CTX;
-
-void MD5Init (MD5_CTX *mdContext);
-void MD5Update (MD5_CTX *mdContext, unsigned char *inBuf, unsigned int inLen);
-void MD5Final (MD5_CTX *mdContext);
-*/
-
 class MD5
 {
 public:
@@ -97,7 +86,7 @@ public:
     static const int32 DIGEST_SIZE = 16;
     
 	static void ForFile(const FilePath & pathName, uint8 * buffer);
-	static void ForDirectory(const FilePath & pathName, uint8 * buffer, bool isRecursive);
+	static void ForDirectory(const FilePath & pathName, uint8 * buffer, bool isRecursive, bool includeHidden);
 
     static void HashToChar(const uint8 * hash, char8 *buffer, uint32 bufferSize);
 	static void CharToHash(const char8 *buffer, uint8 * hash);
@@ -110,15 +99,15 @@ public:
 
 	uint8 * GetDigest() { return digest; };
 private:
-	static void RecursiveDirectoryMD5(const FilePath & pathName, MD5 & md5, bool isRecursive);
+	static void RecursiveDirectoryMD5(const FilePath & pathName, MD5 & md5, bool isRecursive, bool includeHidden);
     
     static uint8 GetNumberFromCharacter(char8 character);
     static char8 GetCharacterFromNumber(uint8 number);
 
 
 	uint32 i[2];                   /* number of _bits_ handled mod 2^64 */
-	uint32 buf[4];                                    /* scratch buffer */
-	uint8 in[64];                              /* input buffer */
+	uint32 buf[4];                 /* scratch buffer */
+	uint8 in[64];                  /* input buffer */
 	uint8 digest[DIGEST_SIZE];     /* actual digest after MD5Final call */
 };
 

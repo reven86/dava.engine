@@ -30,10 +30,10 @@
 #ifndef __DAVAENGINE_CORE_WIN32_PLATFORM_BASE_H__
 #define __DAVAENGINE_CORE_WIN32_PLATFORM_BASE_H__
 
-#include "DAVAEngine.h"
+#include "Base/Platform.h"
 #if defined(__DAVAENGINE_WIN32__)
 
-#include "WindowsSpecifics.h"
+#include "Core/Core.h"
 
 namespace DAVA
 {
@@ -49,7 +49,13 @@ public:
     HINSTANCE GetInstance() const;
     HWND GetWindow() const;
 
+    void SetCursorPositionCenter();
+    void SetCursorPosition(Point2i position);
+    Point2i GetCursorPosition();
+
 protected:
+    static void SetCursorPosCenterInternal(HWND hWnd);
+
     HINSTANCE hInstance;
     HWND hWindow;
 };

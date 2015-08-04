@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Commands2/EntityRemoveCommand.h"
 
 EntityRemoveCommand::EntityRemoveCommand(DAVA::Entity* _entity)

@@ -27,8 +27,6 @@
 =====================================================================================*/
 
 
-
-
 #ifndef __DAVAENGINE_UI_LIST_H__
 #define __DAVAENGINE_UI_LIST_H__
 
@@ -275,6 +273,7 @@ protected:
 public:
     INTROSPECTION_EXTEND(UIList, UIControl,
         PROPERTY("orientation",  InspDesc("List orientation", GlobalEnumMap<UIList::eListOrientation>::Instance()), GetOrientation, SetOrientation, I_SAVE | I_VIEW | I_EDIT)
+        PROPERTY("aggregatorPath", "Aggregator Path", GetAggregatorPath, SetAggregatorPath, I_SAVE | I_VIEW | I_EDIT)
         );
 };
 };

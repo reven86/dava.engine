@@ -26,10 +26,15 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #include "UI/UIControl.h"
 #include "UI/UIControlSystem.h"
+#include "UI/UIControlPackageContext.h"
 #include "UI/UIYamlLoader.h"
 #include "UI/UIControlHelpers.h"
+#include "UI/Layouts/UIAnchorComponent.h"
+#include "UI/Layouts/UILayoutSystem.h"
+#include "UI/Styles/UIStyleSheetSystem.h"
 #include "Animation/LinearAnimation.h"
 #include "Animation/AnimationManager.h"
 #include "Debug/DVAssert.h"
@@ -42,16 +47,43 @@
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
 #include "Components/UIComponent.h"
+#include "Components/UIControlFamily.h"
+#include "Concurrency/LockGuard.h"
 
 namespace DAVA
 {
+    const char* UIControl::STATE_NAMES[] = { "normal", "pressed_outside", "pressed_inside", "disabled", "selected", "hover" };
 
-    UIControl::UIControl(const Rect &rect, bool rectInAbsoluteCoordinates/* = false*/)
+    static Mutex controlsListMutex;
+    static Vector<const UIControl *> controlsList;//weak pointers
+
+    static void StartControlTracking(const UIControl *control)
     {
+#if defined(__DAVAENGINE_DEBUG__)
+        LockGuard<Mutex> lock(controlsListMutex);
+        controlsList.push_back(control);
+#endif
+    }
+
+    static void StopControlTracking(const UIControl *control)
+    {
+#if defined(__DAVAENGINE_DEBUG__)
+        LockGuard<Mutex> lock(controlsListMutex);
+        controlsList.erase(find(controlsList.begin(), controlsList.end(), control));
+#endif
+    }
+
+    UIControl::UIControl(const Rect &rect, bool rectInAbsoluteCoordinates/* = false*/) :
+        styleSheetRebuildNeeded(true),
+        styleSheetInitialized(false),
+        family(nullptr),
+        parentWithContext(nullptr)
+    {
+        StartControlTracking(this);
         UpdateFamily();
 
         parent = NULL;
-        controlState = STATE_NORMAL;
+        prevControlState = controlState = STATE_NORMAL;
         visible = true;
         visibleForUIEditor = true;
         /*
@@ -76,20 +108,6 @@ namespace DAVA
         scale = Vector2(1.0f, 1.0f);
         angle = 0;
 
-        leftAlign = 0;
-        hcenterAlign = 0;
-        rightAlign = 0;
-        topAlign = 0;
-        vcenterAlign = 0;
-        bottomAlign = 0;
-
-        leftAlignEnabled = false;
-        hcenterAlignEnabled = false;
-        rightAlignEnabled = false;
-        topAlignEnabled = false;
-        vcenterAlignEnabled = false;
-        bottomAlignEnabled = false;
-
         tag = 0;
 
         multiInput = false;
@@ -110,6 +128,9 @@ namespace DAVA
         SafeRelease(background);
         SafeRelease(eventDispatcher);
         RemoveAllControls();
+        RemoveAllComponents();
+        UIControlFamily::Release(family);
+        StopControlTracking(this);
     }
 
     void UIControl::SetParent(UIControl *newParent)
@@ -121,7 +142,13 @@ namespace DAVA
         parent = newParent;
         if (parent)
         {
+            PropagateParentWithContext(newParent->packageContext ? newParent : newParent->parentWithContext);
+
             parent->RegisterInputProcessors(inputProcessorsCount);
+        }
+        else
+        {
+            PropagateParentWithContext(nullptr);
         }
     }
     UIControl *UIControl::GetParent() const
@@ -252,7 +279,12 @@ namespace DAVA
 
     void UIControl::SetName(const String & _name)
     {
+        FastName newFastName(_name);
+        if (fastName != newFastName)
+            styleSheetRebuildNeeded = true;
+
         name = _name;
+        fastName = newFastName;
     }
 
     void UIControl::SetTag(int32 _tag)
@@ -331,186 +363,136 @@ namespace DAVA
         background->SetAlign(align);
     }
 
-    void UIControl::SetLeftAlign(float32 align, bool applyAlign/* = true*/)
+    void UIControl::SetLeftAlign(float32 align)
     {
-        // Set a property value
-        leftAlign = align;
-
-        if (leftAlignEnabled && applyAlign)
-        {
-            ApplyAlignSettings();
-        }
+        GetOrCreateComponent<UIAnchorComponent>()->SetLeftAnchor(align);
     }
 
     float32 UIControl::GetLeftAlign() const
     {
-        return leftAlign;
+        UIAnchorComponent *anchor = GetComponent<UIAnchorComponent>();
+        return anchor != nullptr ? anchor->GetLeftAnchor() : 0.0f;
     }
 
-    void UIControl::SetHCenterAlign(float32 align, bool applyAlign/* = true*/)
+    void UIControl::SetHCenterAlign(float32 align)
     {
-        hcenterAlign = align;
-
-        if (hcenterAlignEnabled && applyAlign)
-        {
-            ApplyAlignSettings();
-        }
+        GetOrCreateComponent<UIAnchorComponent>()->SetHCenterAnchor(align);
     }
 
     float32 UIControl::GetHCenterAlign() const
     {
-        return hcenterAlign;
+        UIAnchorComponent *anchor = GetComponent<UIAnchorComponent>();
+        return anchor != nullptr ? anchor->GetHCenterAnchor() : 0.0f;
     }
 
-    void UIControl::SetRightAlign(float32 align, bool applyAlign/* = true*/)
+    void UIControl::SetRightAlign(float32 align)
     {
-        rightAlign = align;
-
-        if (rightAlignEnabled && applyAlign)
-        {
-            ApplyAlignSettings();
-        }
+        GetOrCreateComponent<UIAnchorComponent>()->SetRightAnchor(align);
     }
 
     float32 UIControl::GetRightAlign() const
     {
-        return rightAlign;
+        UIAnchorComponent *anchor = GetComponent<UIAnchorComponent>();
+        return anchor != nullptr ? anchor->GetRightAnchor() : 0.0f;
     }
 
-    void UIControl::SetTopAlign(float32 align, bool applyAlign/* = true*/)
+    void UIControl::SetTopAlign(float32 align)
     {
-        topAlign = align;
-
-        if (topAlignEnabled && applyAlign)
-        {
-            ApplyAlignSettings();
-        }
+        GetOrCreateComponent<UIAnchorComponent>()->SetTopAnchor(align);
     }
 
     float32 UIControl::GetTopAlign() const
     {
-        return topAlign;
+        UIAnchorComponent *anchor = GetComponent<UIAnchorComponent>();
+        return anchor != nullptr ? anchor->GetTopAnchor() : 0.0f;
     }
 
-    void UIControl::SetVCenterAlign(float32 align, bool applyAlign/* = true*/)
+    void UIControl::SetVCenterAlign(float32 align)
     {
-        vcenterAlign = align;
-
-        if (vcenterAlignEnabled && applyAlign)
-        {
-            ApplyAlignSettings();
-        }
+        GetOrCreateComponent<UIAnchorComponent>()->SetVCenterAnchor(align);
     }
 
     float32 UIControl::GetVCenterAlign() const
     {
-        return vcenterAlign;
+        UIAnchorComponent *anchor = GetComponent<UIAnchorComponent>();
+        return anchor != nullptr ? anchor->GetVCenterAnchor() : 0.0f;
     }
 
-    void UIControl::SetBottomAlign(float32 align, bool applyAlign/* = true*/)
+    void UIControl::SetBottomAlign(float32 align)
     {
-        bottomAlign = align;
-
-        if (bottomAlignEnabled && applyAlign)
-        {
-            ApplyAlignSettings();
-        }
+        GetOrCreateComponent<UIAnchorComponent>()->SetBottomAnchor(align);
     }
 
     float32 UIControl::GetBottomAlign() const
     {
-        return bottomAlign;
+        UIAnchorComponent *anchor = GetComponent<UIAnchorComponent>();
+        return anchor != nullptr ? anchor->GetBottomAnchor() : 0.0f;
     }
 
-    // Enable align options methods
-    void UIControl::SetLeftAlignEnabled(bool isEnabled, bool applyAlign/* = true*/)
+    void UIControl::SetLeftAlignEnabled(bool isEnabled)
     {
-        leftAlignEnabled = isEnabled;
-
-        if (applyAlign)
-        {
-            ApplyAlignSettings();
-        }
+        GetOrCreateComponent<UIAnchorComponent>()->SetLeftAnchorEnabled(isEnabled);
     }
 
     bool UIControl::GetLeftAlignEnabled() const
     {
-        return leftAlignEnabled;
+        UIAnchorComponent *anchor = GetComponent<UIAnchorComponent>();
+        return anchor != nullptr ? anchor->IsLeftAnchorEnabled() : false;
     }
 
-    void UIControl::SetHCenterAlignEnabled(bool isEnabled, bool applyAlign/* = true*/)
+    void UIControl::SetHCenterAlignEnabled(bool isEnabled)
     {
-        hcenterAlignEnabled = isEnabled;
-
-        if (applyAlign)
-        {
-            ApplyAlignSettings();
-        }
+        GetOrCreateComponent<UIAnchorComponent>()->SetHCenterAnchorEnabled(isEnabled);
     }
 
     bool UIControl::GetHCenterAlignEnabled() const
     {
-        return hcenterAlignEnabled;
+        UIAnchorComponent *anchor = GetComponent<UIAnchorComponent>();
+        return anchor != nullptr ? anchor->IsHCenterAnchorEnabled() : false;
     }
 
-    void UIControl::SetRightAlignEnabled(bool isEnabled, bool applyAlign/* = true*/)
+    void UIControl::SetRightAlignEnabled(bool isEnabled)
     {
-        rightAlignEnabled = isEnabled;
-
-        if (applyAlign)
-        {
-            ApplyAlignSettings();
-        }
+        GetOrCreateComponent<UIAnchorComponent>()->SetRightAnchorEnabled(isEnabled);
     }
 
     bool UIControl::GetRightAlignEnabled() const
     {
-        return rightAlignEnabled;
+        UIAnchorComponent *anchor = GetComponent<UIAnchorComponent>();
+        return anchor != nullptr ? anchor->IsRightAnchorEnabled() : false;
     }
 
-    void UIControl::SetTopAlignEnabled(bool isEnabled, bool applyAlign/* = true*/)
+    void UIControl::SetTopAlignEnabled(bool isEnabled)
     {
-        topAlignEnabled = isEnabled;
-
-        if (applyAlign)
-        {
-            ApplyAlignSettings();
-        }
+        GetOrCreateComponent<UIAnchorComponent>()->SetTopAnchorEnabled(isEnabled);
     }
 
     bool UIControl::GetTopAlignEnabled() const
     {
-        return topAlignEnabled;
+        UIAnchorComponent *anchor = GetComponent<UIAnchorComponent>();
+        return anchor != nullptr ? anchor->IsTopAnchorEnabled() : false;
     }
 
-    void UIControl::SetVCenterAlignEnabled(bool isEnabled, bool applyAlign/* = true*/)
+    void UIControl::SetVCenterAlignEnabled(bool isEnabled)
     {
-        vcenterAlignEnabled = isEnabled;
-
-        if (applyAlign)
-        {
-            ApplyAlignSettings();
-        }
+        GetOrCreateComponent<UIAnchorComponent>()->SetVCenterAnchorEnabled(isEnabled);
     }
 
     bool UIControl::GetVCenterAlignEnabled() const
     {
-        return vcenterAlignEnabled;
+        UIAnchorComponent *anchor = GetComponent<UIAnchorComponent>();
+        return anchor != nullptr ? anchor->IsVCenterAnchorEnabled() : false;
     }
 
-    void UIControl::SetBottomAlignEnabled(bool isEnabled, bool applyAlign/* = true*/)
+    void UIControl::SetBottomAlignEnabled(bool isEnabled)
     {
-        bottomAlignEnabled = isEnabled;
-
-        if (applyAlign)
-        {
-            ApplyAlignSettings();
-        }
+        GetOrCreateComponent<UIAnchorComponent>()->SetBottomAnchorEnabled(isEnabled);
     }
 
     bool UIControl::GetBottomAlignEnabled() const
     {
-        return bottomAlignEnabled;
+        UIAnchorComponent *anchor = GetComponent<UIAnchorComponent>();
+        return anchor != nullptr ? anchor->IsBottomAnchorEnabled() : false;
     }
 
     void UIControl::SetBackground(UIControlBackground *newBg)
@@ -611,15 +593,13 @@ namespace DAVA
         Vector2 oldPivot = GetPivot();
         size = newSize;
         SetPivot(oldPivot);
-        // Update size and align of childs
-        UpdateChildrenLayout();
     }
 
     void UIControl::SetAngle(float32 angleInRad)
     {
         angle = angleInRad;
     }
-    
+
     void UIControl::SetAngleInDegrees(float32 angleInDeg)
     {
         SetAngle(DegToRad(angleInDeg));
@@ -642,9 +622,6 @@ namespace DAVA
     {
         SetSize(rect.GetSize());
         SetPosition(rect.GetPosition() + GetPivotPoint());
-
-        // Update aligns if control was resized manually
-        CalculateAlignSettings();
     }
 
     void UIControl::SetAbsoluteRect(const Rect &rect)
@@ -688,6 +665,15 @@ namespace DAVA
             scale.y = rect.dy / (size.y * gd.scale.y);
             SetPosition(Vector2(rect.x + pivotPoint.x * scale.x, rect.y + pivotPoint.y * scale.y), rectInAbsoluteCoordinates);
         }
+    }
+
+    Vector2 UIControl::GetContentPreferredSize() const
+    {
+        if (background != nullptr && background->GetSprite() != nullptr)
+        {
+            return background->GetSprite()->GetSize();
+        }
+        return Vector2(0.0f, 0.0f);
     }
 
     void UIControl::SetVisible(bool isVisible)
@@ -856,7 +842,7 @@ namespace DAVA
 
         isIteratorCorrupted = true;
     }
-    
+
     void UIControl::RemoveControl(UIControl *control)
     {
         if (NULL == control)
@@ -1076,22 +1062,9 @@ namespace DAVA
         SafeRelease(background);
         background = srcControl->background->Clone();
 
-        leftAlign = srcControl->leftAlign;
-        hcenterAlign = srcControl->hcenterAlign;
-        rightAlign = srcControl->rightAlign;
-        topAlign = srcControl->topAlign;
-        vcenterAlign = srcControl->vcenterAlign;
-        bottomAlign = srcControl->bottomAlign;
-
-        leftAlignEnabled = srcControl->leftAlignEnabled;
-        hcenterAlignEnabled = srcControl->hcenterAlignEnabled;
-        rightAlignEnabled = srcControl->rightAlignEnabled;
-        topAlignEnabled = srcControl->topAlignEnabled;
-        vcenterAlignEnabled = srcControl->vcenterAlignEnabled;
-        bottomAlignEnabled = srcControl->bottomAlignEnabled;
-
         tag = srcControl->GetTag();
         name = srcControl->name;
+        fastName = srcControl->fastName;
 
         controlState = srcControl->controlState;
         visible = srcControl->visible;
@@ -1099,19 +1072,28 @@ namespace DAVA
         inputEnabled = srcControl->inputEnabled;
         clipContents = srcControl->clipContents;
 
-        customControlType = srcControl->GetCustomControlClassName();
         initialState = srcControl->GetInitialState();
         drawPivotPointMode = srcControl->drawPivotPointMode;
         debugDrawColor = srcControl->debugDrawColor;
         debugDrawEnabled = srcControl->debugDrawEnabled;
 
+        classes = srcControl->classes;
+        styleSheetRebuildNeeded = srcControl->styleSheetRebuildNeeded;
+        styleSheetInitialized = false;
+
         SafeRelease(eventDispatcher);
-        if(srcControl->eventDispatcher)
+        if (srcControl->eventDispatcher != nullptr && srcControl->eventDispatcher->GetEventsCount() != 0)
         {
-            eventDispatcher = new EventDispatcher();
-            eventDispatcher->CopyDataFrom(srcControl->eventDispatcher);
+            Logger::FrameworkDebug("[UIControl::CopyDataFrom] Source control \"%s:%s\" have events."
+                                   "Event copying is forbidden."
+                                   , srcControl->GetClassName().c_str()
+                                   , srcControl->GetName().c_str());
         }
 
+        RemoveAllComponents();
+        for (UIComponent *srcComponent : srcControl->components)
+            AddComponent(srcComponent->Clone());
+        
         RemoveAllControls();
         if (inputEnabled)
         {
@@ -1121,7 +1103,7 @@ namespace DAVA
         {
             inputProcessorsCount = 0;
         }
-
+        
         // Yuri Coder, 2012/11/30. Use Real Children List to avoid copying
         // unnecessary children we have on the for example UIButton.
         const List<UIControl*>& realChildren = srcControl->GetRealChildren();
@@ -1134,7 +1116,6 @@ namespace DAVA
             c->Release();
         }
     }
-
 
     bool UIControl::InViewHierarchy() const
     {
@@ -1168,6 +1149,8 @@ namespace DAVA
 
     void UIControl::SystemWillAppear()
     {
+        styleSheetInitialized = false;
+
         WillAppear();
 
         List<UIControl*>::iterator it = childs.begin();
@@ -1306,6 +1289,12 @@ namespace DAVA
         for(; it != childs.end(); ++it)
         {
             (*it)->isUpdated = false;
+        }
+
+        if (styleSheetRebuildNeeded || prevControlState != controlState)
+        {
+            UIControlSystem::Instance()->GetStyleSheetSystem()->ProcessControl(this);
+            prevControlState = controlState;
         }
 
         it = childs.begin();
@@ -1869,7 +1858,7 @@ namespace DAVA
         ScopedPtr<UIControl> baseControl(new UIControl());
 
         // Control name
-        SetPreferredNodeType(node, GetControlClassName());
+        SetPreferredNodeType(node, GetClassName());
 
         // Transform data
         // Position
@@ -2096,48 +2085,48 @@ namespace DAVA
         if (leftAlignNode)
         {
             float32 leftAlign = leftAlignNode->AsFloat();
-            SetLeftAlignEnabled(true, false);
-            SetLeftAlign(leftAlign, false);
+            SetLeftAlignEnabled(true);
+            SetLeftAlign(leftAlign);
         }
 
         const YamlNode * hcenterAlignNode = node->Get("hcenterAlign");
         if (hcenterAlignNode)
         {
             float32 hcenterAlign = hcenterAlignNode->AsFloat();
-            SetHCenterAlignEnabled(true, false);
-            SetHCenterAlign(hcenterAlign, false);
+            SetHCenterAlignEnabled(true);
+            SetHCenterAlign(hcenterAlign);
         }
 
         const YamlNode * rightAlignNode = node->Get("rightAlign");
         if (rightAlignNode)
         {
             float32 rightAlign = rightAlignNode->AsFloat();
-            SetRightAlignEnabled(true, false);
-            SetRightAlign(rightAlign, false);
+            SetRightAlignEnabled(true);
+            SetRightAlign(rightAlign);
         }
 
         const YamlNode * topAlignNode = node->Get("topAlign");
         if (topAlignNode)
         {
             float32 topAlign = topAlignNode->AsFloat();
-            SetTopAlignEnabled(true, false);
-            SetTopAlign(topAlign, false);
+            SetTopAlignEnabled(true);
+            SetTopAlign(topAlign);
         }
 
         const YamlNode * vcenterAlignNode = node->Get("vcenterAlign");
         if (vcenterAlignNode)
         {
             float32 vcenterAlign = vcenterAlignNode->AsFloat();
-            SetVCenterAlignEnabled(true, false);
-            SetVCenterAlign(vcenterAlign, false);
+            SetVCenterAlignEnabled(true);
+            SetVCenterAlign(vcenterAlign);
         }
 
         const YamlNode * bottomAlignNode = node->Get("bottomAlign");
         if (bottomAlignNode)
         {
             float32 bottomAlign = bottomAlignNode->AsFloat();
-            SetBottomAlignEnabled(true, false);
-            SetBottomAlign(bottomAlign, false);
+            SetBottomAlignEnabled(true);
+            SetBottomAlign(bottomAlign);
         }
 
         const YamlNode * visibleNode = node->Get("visible");
@@ -2213,7 +2202,7 @@ namespace DAVA
         {
             GetBackground()->SetModification(spriteModificationNode->AsInt32());
         }
-        
+
         const YamlNode * marginsNode = node->Get("margins");
         if (marginsNode)
         {
@@ -2366,7 +2355,7 @@ namespace DAVA
     {
         PerformEvent(UIControl::EVENT_ALL_ANIMATIONS_FINISHED);
     }
-	
+
     void UIControl::SetDebugDraw(bool _debugDrawEnabled, bool hierarchic/* = false*/)
     {
         debugDrawEnabled = _debugDrawEnabled;
@@ -2438,182 +2427,9 @@ namespace DAVA
         }
     }
 
-    void UIControl::CalculateAlignSettings()
-    {
-        if (!parent)
-            return;
-
-        const Rect &rect = GetRect();
-        const Vector2 &parentSize = parent->GetSize();
-
-        if (GetLeftAlignEnabled() || GetHCenterAlignEnabled() || GetRightAlignEnabled())
-        {
-            GetAlignDataByAxisData(rect.dx, rect.x, parentSize.x,
-                GetLeftAlignEnabled(), GetHCenterAlignEnabled(), GetRightAlignEnabled(),
-                leftAlign, hcenterAlign, rightAlign);
-
-            SetLeftAlign(leftAlign);
-            SetHCenterAlign(hcenterAlign);
-            SetRightAlign(rightAlign);
-        }
-
-        if (GetTopAlignEnabled() || GetVCenterAlignEnabled() || GetBottomAlignEnabled())
-        {
-            GetAlignDataByAxisData(rect.dy, rect.y, parentSize.y,
-                GetTopAlignEnabled(), GetVCenterAlignEnabled(), GetBottomAlignEnabled(),
-                topAlign, vcenterAlign, bottomAlign);
-
-            SetTopAlign(topAlign);
-            SetVCenterAlign(vcenterAlign);
-            SetBottomAlign(bottomAlign);
-        }
-    }
-
-    void UIControl::ApplyAlignSettings()
-    {
-        if (!parent)
-            return;
-
-        const Rect &rect = GetRect();
-        const Vector2 &parentSize = parent->GetSize();
-
-        Rect newRect = rect;
-
-        if (GetLeftAlignEnabled() || GetHCenterAlignEnabled() || GetRightAlignEnabled())
-        {
-            GetAxisDataByAlignData(rect.dx, parentSize.x,
-                GetLeftAlignEnabled(), leftAlign,
-                GetHCenterAlignEnabled(), hcenterAlign,
-                GetRightAlignEnabled(), rightAlign,
-                newRect.x, newRect.dx);
-
-        }
-        if (GetTopAlignEnabled() || GetVCenterAlignEnabled() || GetBottomAlignEnabled())
-        {
-            GetAxisDataByAlignData(rect.dy, parentSize.y,
-                GetTopAlignEnabled(), topAlign,
-                GetVCenterAlignEnabled(), vcenterAlign,
-                GetBottomAlignEnabled(), bottomAlign,
-                newRect.y, newRect.dy);
-        }
-
-        if (rect == newRect)
-            return;
-
-        SetSize(newRect.GetSize());
-
-        SetPosition(newRect.GetPosition() + GetPivotPoint());
-    }
-
-    void UIControl::GetAxisDataByAlignData(float32 size, float32 parentSize,
-        bool firstSideAlignEnabled, float32 firstSideAlign,
-        bool centerAlignEnabled, float32 centerAlign,
-        bool secondSideAlignEnabled, float32 secondSideAlign,
-        float32 &newPos, float32 &newSize)
-    {
-        if (firstSideAlignEnabled && secondSideAlignEnabled)
-        {
-            newPos = firstSideAlign;
-            newSize = parentSize - (firstSideAlign + secondSideAlign);
-        }
-        else if (firstSideAlignEnabled && centerAlignEnabled)
-        {
-            newPos = firstSideAlign;
-            newSize = parentSize / 2.0f - (firstSideAlign - centerAlign);
-        }
-        else if (centerAlignEnabled && secondSideAlignEnabled)
-        {
-            newPos = parentSize / 2.0f + centerAlign;
-            newSize = parentSize / 2.0f - (centerAlign + secondSideAlign);
-        }
-        else if (firstSideAlignEnabled)
-        {
-            newPos = firstSideAlign;
-            newSize = size;
-        }
-        else if (secondSideAlignEnabled)
-        {
-            newPos = parentSize - (size + secondSideAlign);
-            newSize = size;
-        }
-        else if (centerAlignEnabled)
-        {
-            newPos = (parentSize - size) / 2.0f + centerAlign;
-            newSize = size;
-        }
-    }
-
-    void UIControl::GetAlignDataByAxisData(float32 size, float32 pos, float32 parentSize, bool firstSideAlignEnabled, bool centerAlignEnabled, bool secondSideAlignEnabled, float32 &firstSideAlign, float32 &centerAlign, float32 &secondSideAlign)
-    {
-        if (firstSideAlignEnabled && secondSideAlignEnabled)
-        {
-            firstSideAlign = pos;
-            secondSideAlign = parentSize - (pos + size);
-        }
-        else if (firstSideAlignEnabled && centerAlignEnabled)
-        {
-            firstSideAlign = pos;
-            centerAlign = pos + size - parentSize / 2.0f;
-        }
-        else if (centerAlignEnabled && secondSideAlignEnabled)
-        {
-            centerAlign = pos - parentSize / 2.0f;
-            secondSideAlign = parentSize - (pos + size);
-        }
-        else if (firstSideAlignEnabled)
-        {
-            firstSideAlign = pos;
-        }
-        else if (secondSideAlignEnabled)
-        {
-            secondSideAlign = parentSize - (pos + size);
-        }
-        else if (centerAlignEnabled)
-        {
-            centerAlign = pos - parentSize / 2.0f + size / 2.0f;
-        }
-    }
-
-    void UIControl::ApplyAlignSettingsForChildren()
-    {
-        UpdateChildrenLayout();
-    }
-
-    const String & UIControl::GetControlClassName() const
-    {
-        return GetClassName();
-    }
-
-    const String &UIControl::GetCustomControlClassName() const
-    {
-        return customControlType;
-    }
-
-    void UIControl::SetCustomControlClassName(const String& value)
-    {
-        customControlType = value;
-    }
-
-    void UIControl::ResetCustomControlClassName()
-    {
-        customControlType = String();
-    }
-
     void UIControl::SetPreferredNodeType(YamlNode* node, const String& nodeTypeName)
     {
-        // Do we have Custom Control name? If yes, use it as type and passed one
-        // as the "Base Type"
-        bool hasCustomControl = !GetCustomControlClassName().empty();
-        if (hasCustomControl)
-        {
-            node->Set("type", GetCustomControlClassName());
-            node->Set("baseType", nodeTypeName);
-        }
-        else
-        {
-            // The type coincides with the node type name passed, no base type exists.
-            node->Set("type", nodeTypeName);
-        }
+        node->Set("type", nodeTypeName);
     }
 
     int32 UIControl::GetInitialState() const
@@ -2688,54 +2504,70 @@ namespace DAVA
         {
             (*it)->DumpInputs(depthLevel + 1);
         }
-    }    
+    }
+
+    void UIControl::DumpControls(bool onlyOrphans)
+    {
+        LockGuard<Mutex> lock(controlsListMutex);
+        Logger::FrameworkDebug("============================================================");
+        Logger::FrameworkDebug("--------------- Currently allocated controls ----------------");
+
+        for (auto control : controlsList)
+        {
+            if (onlyOrphans && control->GetParent() != nullptr)
+                continue;
+            Logger::FrameworkDebug("class:\"%s\" name:\"%s\" count:%d", control->GetClassName().c_str(), control->GetName().c_str(), control->GetRetainCount());
+        }
+
+        Logger::FrameworkDebug("============================================================");
+    }
 
     int32 UIControl::GetBackgroundComponentsCount() const
     {
         return 1;
     }
-    
+
     UIControlBackground *UIControl::GetBackgroundComponent(int32 index) const
     {
         DVASSERT(index == 0);
         return background;
     }
-    
+
     UIControlBackground *UIControl::CreateBackgroundComponent(int32 index) const
     {
         DVASSERT(index == 0);
         return new UIControlBackground();
     }
-    
+
     void UIControl::SetBackgroundComponent(int32 index, UIControlBackground *bg)
     {
         DVASSERT(index == 0);
         SetBackground(bg);
     }
-    
+
     String UIControl::GetBackgroundComponentName(int32 index) const
     {
         DVASSERT(index == 0);
         return "Background";
     }
-    
+
     int32 UIControl::GetInternalControlsCount() const
     {
         return 0;
     }
-    
+
     UIControl *UIControl::GetInternalControl(int32 index) const
     {
         DVASSERT(false);
         return NULL;
     }
-    
+
     UIControl *UIControl::CreateInternalControl(int32 index) const
     {
         DVASSERT(false);
         return NULL;
     }
-    
+
     void UIControl::SetInternalControl(int32 index, UIControl *control)
     {
         DVASSERT(false);
@@ -2755,73 +2587,91 @@ namespace DAVA
 
     void UIControl::UpdateLayout()
     {
-        ApplyAlignSettings();
+        UIControlSystem::Instance()->GetLayoutSystem()->ApplyLayout(this);
     }
-
-    void UIControl::UpdateChildrenLayout()
+    
+    void UIControl::OnSizeChanged()
     {
-        const List<UIControl*>& realChildren = this->GetChildren();//YZ recalculate size for all controls
-        for(List<UIControl*>::const_iterator iter = realChildren.begin(); iter != realChildren.end(); ++iter)
-        {
-            UIControl* child = (*iter);
-            if (child)
-            {
-                child->UpdateLayout();
-            }
-        }
     }
 
     /* Components */
-    bool CotrolComponentLessPredicate(Component * left, Component * right)
-    {
-        return left->GetType() < right->GetType();
-    }
 
-    void UIControl::AddComponent(Component * component)
+    void UIControl::AddComponent(UIComponent * component)
     {
-        DynamicTypeCheck<UIComponent*>(component)->SetControl(this);
-        components.push_back(component);
-        std::stable_sort(components.begin(), components.end(), CotrolComponentLessPredicate);
+        DVASSERT(component->GetControl() == nullptr);
+        component->SetControl(this);
+        components.push_back(SafeRetain(component));
+        std::stable_sort(components.begin(), components.end(), [](UIComponent * left, UIComponent * right) {
+            return left->GetType() < right->GetType();
+        });
         UpdateFamily();
     }
 
-    void UIControl::DetachComponent(const Vector<Component *>::iterator & it)
+    void UIControl::InsertComponentAt(UIComponent * component, uint32 index)
     {
-        UIComponent * c = DynamicTypeCheck<UIComponent*>(*it);
-        components.erase(it);
-        UpdateFamily();
-        c->SetControl(0);
+        uint32 count = family->GetComponentsCount(component->GetType());
+        if (count == 0 || index >= count)
+        {
+            AddComponent(component);
+        }
+        else
+        {
+            DVASSERT(component->GetControl() == nullptr);
+            component->SetControl(this);
+
+            uint32 insertIndex = family->GetComponentIndex(component->GetType(), index);
+            components.insert(components.begin() + insertIndex, SafeRetain(component));
+
+            UpdateFamily();
+        }
     }
 
-    Component * UIControl::GetComponent(uint32 componentType, uint32 index) const
+    UIComponent * UIControl::GetComponent(uint32 componentType, uint32 index) const
     {
-        Component * ret = 0;
         uint32 maxCount = family->GetComponentsCount(componentType);
         if (index < maxCount)
         {
-            ret = components[family->GetComponentIndex(componentType, index)];
+            return components[family->GetComponentIndex(componentType, index)];
         }
-        return ret;
+        return nullptr;
     }
 
-    Component * UIControl::GetOrCreateComponent(uint32 componentType, uint32 index)
+    int32 UIControl::GetComponentIndex(const UIComponent *component) const
     {
-        Component * ret = GetComponent(componentType, index);
+        uint32 count = family->GetComponentsCount(component->GetType());
+        uint32 index = family->GetComponentIndex(component->GetType(), 0);
+        for (uint32 i = 0; i < count; i++)
+        {
+            if (components[index + i] == component)
+                return i;
+        }
+        return -1;
+    }
+
+    UIComponent * UIControl::GetOrCreateComponent(uint32 componentType, uint32 index)
+    {
+        UIComponent * ret = GetComponent(componentType, index);
         if (!ret)
         {
-            ret = Component::CreateByType(componentType);
-            AddComponent(ret);
+            DVASSERT(index == 0);
+            ret = UIComponent::CreateByType(componentType);
+            if (ret)
+            {
+                AddComponent(ret);
+                ret->Release(); // refCount was increased in AddComponent
+            }
         }
 
         return ret;
     }
 
-    inline void UIControl::UpdateFamily()
+    void UIControl::UpdateFamily()
     {
-        family = EntityFamily::GetOrCreate(components);
+        UIControlFamily::Release(family);
+        family = UIControlFamily::GetOrCreate(components);
     }
 
-    inline void UIControl::RemoveAllComponents()
+    void UIControl::RemoveAllComponents()
     {
         while (!components.empty())
         {
@@ -2829,37 +2679,178 @@ namespace DAVA
         }
     }
 
-    void UIControl::RemoveComponent(const Vector<Component *>::iterator & it)
+    void UIControl::RemoveComponent(const Vector<UIComponent *>::iterator & it)
     {
         if (it != components.end())
         {
-            UIComponent * c = DynamicTypeCheck<UIComponent*>(*it);
-            DetachComponent(it);
-            SafeDelete(c);
+            UIComponent * c = *it;
+            components.erase(it);
+            UpdateFamily();
+            c->SetControl(nullptr);
+            SafeRelease(c);
         }
     }
 
     void UIControl::RemoveComponent(uint32 componentType, uint32 index)
     {
-        Component * c = GetComponent(componentType, index);
+        UIComponent * c = GetComponent(componentType, index);
         if (c)
         {
             RemoveComponent(c);
         }
     }
 
-    void UIControl::RemoveComponent(Component * component)
-    {
-        DetachComponent(component);
-        SafeDelete(component);
-    }
-
-    void UIControl::DetachComponent(Component * component)
+    void UIControl::RemoveComponent(UIComponent * component)
     {
         DVASSERT(component);
         auto it = std::find(components.begin(), components.end(), component);
-        DetachComponent(it);
+        RemoveComponent(it);
     }
+
+    uint32 UIControl::GetComponentCount() const
+    {
+        return static_cast<uint32>(components.size());
+    }
+
+    uint32 UIControl::GetComponentCount(uint32 componentType) const
+    {
+        return family->GetComponentsCount(componentType);
+    }
+
+    uint64 UIControl::GetAvailableComponentFlags() const
+    {
+        return family->GetComponentsFlags();
+    }
+
+    const Vector<UIComponent *>& UIControl::GetComponents()
+    {
+        return components;
+    }
+
     /* Components */
 
+    /* Styles */
+
+    void UIControl::AddClass(const FastName& clazz)
+    {
+        if (std::find(classes.begin(), classes.end(), clazz) == classes.end())
+        {
+            classes.push_back(clazz);
+            styleSheetRebuildNeeded = true;
+        }
+    }
+
+    void UIControl::RemoveClass(const FastName& clazz)
+    {
+        auto iter = find(classes.begin(), classes.end(), clazz);
+
+        if (iter != classes.end())
+        {
+            *iter = classes.back();
+            classes.pop_back();
+
+            styleSheetRebuildNeeded = true;
+        }
+    }
+
+    bool UIControl::HasClass(const FastName& clazz)
+    {
+        return find(classes.begin(), classes.end(), clazz) != classes.end();
+    }
+
+    String UIControl::GetClassesAsString()
+    {
+        String result;
+        for (size_t i = 0; i < classes.size(); i++)
+        {
+            if (i != 0)
+                result += " ";
+            result += classes[i].c_str();
+        }
+        return result;
+    }
+
+    void UIControl::SetClassesFromString(const String &classesStr)
+    {
+        Vector<String> tokens;
+        Split(classesStr, " ", tokens);
+
+        classes.clear();
+        for (String &token : tokens)
+            classes.push_back(FastName(token));
+
+        styleSheetRebuildNeeded = true;
+    }
+
+    const UIStyleSheetPropertySet& UIControl::GetLocalPropertySet() const
+    {
+        return localProperties;
+    }
+
+    void UIControl::SetPropertyLocalFlag(uint32 propertyIndex, bool value)
+    {
+        localProperties.set(propertyIndex, value);
+        styleSheetRebuildNeeded = true;
+    }
+
+    const UIStyleSheetPropertySet& UIControl::GetStyledPropertySet() const
+    {
+        return styledProperties;
+    }
+
+    void UIControl::SetStyledPropertySet(const UIStyleSheetPropertySet &set)
+    {
+        styledProperties = set;
+    }
+
+    bool UIControl::GetStyleSheetInitialized() const
+    {
+        return styleSheetInitialized;
+    }
+
+    void UIControl::MarkStyleSheetAsUpdated()
+    {
+        styleSheetRebuildNeeded = false;
+        styleSheetInitialized = true;
+    }
+
+    void UIControl::SetPackageContext(UIControlPackageContext* newPackageContext)
+    {
+        if (packageContext != newPackageContext)
+        {
+            styleSheetRebuildNeeded = true;
+        }
+
+        packageContext = newPackageContext;
+        for (UIControl* child : childs)
+            child->PropagateParentWithContext(packageContext ? this : parentWithContext);
+    }
+
+    void UIControl::PropagateParentWithContext(UIControl* newParentWithContext)
+    {
+        styleSheetRebuildNeeded = true;
+
+        parentWithContext = newParentWithContext;
+        if (packageContext == nullptr)
+        {
+            for (UIControl* child : childs)
+            {
+                child->PropagateParentWithContext(newParentWithContext);
+            }
+        }
+    }
+
+    UIControlPackageContext* UIControl::GetPackageContext() const
+    {
+        return packageContext.Valid() ?
+            packageContext.Get() :
+            (parentWithContext ? parentWithContext->GetLocalPackageContext() : nullptr);
+    }
+
+    UIControlPackageContext* UIControl::GetLocalPackageContext() const
+    {
+        return packageContext.Get();
+    }
+
+    /* Styles */
 }

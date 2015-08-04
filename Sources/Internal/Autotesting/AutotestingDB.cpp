@@ -1,18 +1,32 @@
 /*==================================================================================
-	Copyright (c) 2008, DAVA, INC
-	All rights reserved.
+    Copyright (c) 2008, binaryzebra
+    All rights reserved.
 
-	Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-	* Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-	* Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-	* Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-	THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-	WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-	DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-	LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-	(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-	=====================================================================================*/
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+=====================================================================================*/
+
+
 #include "Autotesting/AutotestingDB.h"
 
 #ifdef __DAVAENGINE_AUTOTESTING__
@@ -68,32 +82,51 @@ namespace DAVA
 	String AutotestingDB::GetStringTestParameter(const String &deviceName, const String &parameter)
 	{
 		Logger::Info("AutotestingDB::GetStringTestParameter deviceName=%s, parameter=%s", deviceName.c_str(), parameter.c_str());
-		MongodbUpdateObject *dbUpdateObject = new MongodbUpdateObject();
-		KeyedArchive *currentRunArchive = FindBuildArchive(dbUpdateObject, "autotesting_system");
-		KeyedArchive *deviceArchive = currentRunArchive->GetArchive(deviceName.c_str());
-		if (!deviceArchive)
+		String result = DB_ERROR_STR_VALUE;
+		if (nullptr != dbClient)
 		{
-			autoSys->ForceQuit(Format("Couldn't find archive for %s device", deviceName.c_str()));
+			RefPtr<MongodbUpdateObject> dbUpdateObject(new MongodbUpdateObject);
+			KeyedArchive *currentRunArchive = FindBuildArchive(dbUpdateObject.Get(), "autotesting_system");
+
+			DVASSERT(currentRunArchive != nullptr);
+			KeyedArchive* deviceArchive = currentRunArchive->GetArchive(deviceName, nullptr);
+			if (nullptr == deviceArchive)
+			{
+				autoSys->ForceQuit(Format("Couldn't find archive for %s device", deviceName.c_str()));
+			}
+			result = deviceArchive->GetString(parameter, DB_ERROR_STR_VALUE);
 		}
-		String result = deviceArchive->GetString(parameter.c_str(), DB_ERROR_STR_VALUE);
-		SafeRelease(dbUpdateObject);
-		Logger::Info("AutotestingDB::GetStringTestParameter return deviceName=%s value: %s", deviceName.c_str(), result.c_str());
+		else
+		{
+			RefPtr<KeyedArchive> deviceArchive = AutotestingSystem::Instance()->GetIdYamlOptions();
+			result = deviceArchive->GetString(parameter, DB_ERROR_STR_VALUE);
+		}
+		Logger::Info("AutotestingDB::GetStringTestParameter return value: %s", result.c_str());
 		return result;
 	}
 
 	int32 AutotestingDB::GetIntTestParameter(const String &deviceName, const String &parameter)
 	{
 		Logger::Info("AutotestingDB::GetIntTestParameter deviceName=%s, parameter=%s", deviceName.c_str(), parameter.c_str());
-		MongodbUpdateObject *dbUpdateObject = new MongodbUpdateObject();
-		KeyedArchive *currentRunArchive = FindBuildArchive(dbUpdateObject, "autotesting_system");
-		KeyedArchive *deviceArchive = currentRunArchive->GetArchive(deviceName.c_str());
-		if (!deviceArchive)
+		KeyedArchive *deviceArchive = nullptr;
+		int32 result = DB_ERROR_INT_VALUE;
+		if (nullptr != dbClient)
 		{
-			autoSys->ForceQuit(Format("Couldn't find archive for %s device", deviceName.c_str()));
+			RefPtr<MongodbUpdateObject> dbUpdateObject(new MongodbUpdateObject);
+			KeyedArchive *currentRunArchive = FindBuildArchive(dbUpdateObject.Get(), "autotesting_system");
+			deviceArchive = currentRunArchive->GetArchive(deviceName, nullptr);
+			if (nullptr == deviceArchive)
+			{
+				autoSys->ForceQuit(Format("Couldn't find archive for %s device", deviceName.c_str()));
+			}
+			result = deviceArchive->GetInt32(parameter, DB_ERROR_INT_VALUE);
 		}
-		int32 result = deviceArchive->GetInt32(parameter.c_str(), DB_ERROR_INT_VALUE);
-		SafeRelease(dbUpdateObject);
-		Logger::Info("AutotestingDB::GetIntTestParameter return deviceName=%s value: %d", deviceName.c_str(), result);
+		else
+		{
+			deviceArchive = AutotestingSystem::Instance()->GetIdYamlOptions().Get();
+			result = deviceArchive->GetInt32(parameter, DB_ERROR_INT_VALUE);
+		}
+		Logger::Info("AutotestingDB::GetIntTestParameter return value: %d", result);
 		return result;
 	}
 
@@ -107,7 +140,7 @@ namespace DAVA
 		String archiveName = Format("%s", auxArg.c_str());
 		if (!dbClient->FindObjectByKey(archiveName, dbUpdateObject))
 		{
-			autoSys->ForceQuit(Format("Couldn't find '%s' archive.", archiveName.c_str()));
+            return nullptr;
 		}
 		dbUpdateObject->LoadData();
 		return dbUpdateObject->GetData();
@@ -115,40 +148,18 @@ namespace DAVA
 
 	KeyedArchive *AutotestingDB::FindOrInsertBuildArchive(MongodbUpdateObject *dbUpdateObject, const String &auxArg)
 	{
-		String testsName;
-
-		if (auxArg.length() != 0)
+        if (auxArg.length() == 0)
+        {
+            autoSys->ForceQuit("Archive name is empty.");
+        }
+        String archiveName = Format("%s", auxArg.c_str());
+		if (!dbClient->FindObjectByKey(archiveName, dbUpdateObject))
 		{
-			testsName = Format("%s", auxArg.c_str());
+			dbUpdateObject->SetObjectName(archiveName);
+			Logger::Debug("AutotestingSystem::InsertNewArchive  %s", archiveName.c_str());
 		}
-		else
-		{
-			testsName = Format("%s_%s_%s", autoSys->buildDate.c_str(), autoSys->buildId.c_str(), autoSys->deviceName.c_str());
-		}
-
-		bool isFound = dbClient->FindObjectByKey(testsName, dbUpdateObject);
-
-		if (!isFound)
-		{
-			dbUpdateObject->SetObjectName(testsName);
-			dbUpdateObject->AddString("Platform", DeviceInfo::GetPlatformString());
-			dbUpdateObject->AddString("Date", autoSys->buildDate.c_str());
-			dbUpdateObject->AddString("RunId", autoSys->runId.c_str());
-			dbUpdateObject->AddString("Device", autoSys->deviceName.c_str());
-			dbUpdateObject->AddString("BuildId", autoSys->buildId.c_str());
-			dbUpdateObject->AddString("Branch", autoSys->branch.c_str());
-			dbUpdateObject->AddString("BranchRevision", autoSys->branchRev.c_str());
-			dbUpdateObject->AddString("Framework", autoSys->framework.c_str());
-			dbUpdateObject->AddString("FrameworkRevision", autoSys->frameworkRev.c_str());
-			// TODO: After realization GetOsVersion() DF-3940
-			dbUpdateObject->AddString("OSVersion", DeviceInfo::GetVersion());
-			dbUpdateObject->AddString("Model", DeviceInfo::GetModel());
-			Logger::FrameworkDebug("AutotestingSystem::InsertTestArchive new MongodbUpdateObject %s", testsName.c_str());
-		}
-
 		dbUpdateObject->LoadData();
 		KeyedArchive *dbUpdateData = dbUpdateObject->GetData();
-
 		return dbUpdateData;
 	}
 
@@ -198,7 +209,7 @@ namespace DAVA
 		va_start(vl, text);
 		char tmp[4096] = { 0 };
 		vsnprintf(tmp, sizeof(tmp) - 2, text, vl);
-		file->Write(text, sizeof(char) *strlen(tmp));
+		file->Write(text, static_cast<uint32>(sizeof(char)*strlen(tmp)));
 		file->Release();
 		va_end(vl);
 	}
@@ -206,6 +217,7 @@ namespace DAVA
     void AutotestingDB::Log(const String &level, const String &message)
 	{
 		String textLog = Format("[%s:%s] %s\n", autoSys->GetCurrentTimeString().c_str(), level.c_str(), message.c_str());
+		Logger::Debug("AutotestingDB::Log: [%s:%s] %s", autoSys->GetCurrentTimeString().c_str(), level.c_str(), message.c_str());
 		WriteLog(textLog.c_str());
 	}
 
@@ -345,7 +357,7 @@ namespace DAVA
 		{
 			autoSys->ForceQuit(Format("Couldn't find archive autotesting_system device"));
 		}
-		KeyedArchive *deviceArchive = currentRunArchive->GetArchive(autoSys->deviceName.c_str(), NULL);
+		KeyedArchive *deviceArchive = currentRunArchive->GetArchive(autoSys->deviceName, nullptr);
 
 		if (!deviceArchive)
 		{

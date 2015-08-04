@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1440</width>
-    <height>795</height>
+    <width>1024</width>
+    <height>929</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -126,27 +126,6 @@
         <property name="bottomMargin">
          <number>0</number>
         </property>
-        <item>
-         <widget class="QLineEdit" name="propertiesFilterEdit">
-          <property name="placeholderText">
-           <string>Type here to search</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QToolButton" name="propertiesFilterClear">
-          <property name="text">
-           <string/>
-          </property>
-          <property name="icon">
-           <iconset resource="QtIcons.qrc">
-            <normaloff>:/QtIconsTextureDialog/editclear.png</normaloff>:/QtIconsTextureDialog/editclear.png</iconset>
-          </property>
-          <property name="autoRaise">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
        </layout>
       </widget>
      </item>
@@ -233,14 +212,19 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1440</width>
-     <height>22</height>
+     <width>1024</width>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
     <property name="title">
      <string>File</string>
     </property>
+    <widget class="QMenu" name="menuRecentProjects">
+     <property name="title">
+      <string>Recent Projects</string>
+     </property>
+    </widget>
     <widget class="QMenu" name="menuExport">
      <property name="title">
       <string>Export</string>
@@ -259,7 +243,15 @@
      </property>
      <addaction name="actionImportSpeedTreeXML"/>
     </widget>
+    <widget class="QMenu" name="menuSave_To_Folder_With_Children">
+     <property name="title">
+      <string>Save To Folder With Children</string>
+     </property>
+     <addaction name="actionOnlyOriginalTextures"/>
+     <addaction name="actionWithCompressedTextures"/>
+    </widget>
     <addaction name="actionOpenProject"/>
+    <addaction name="menuRecentProjects"/>
     <addaction name="actionCloseProject"/>
     <addaction name="separator"/>
     <addaction name="actionNewScene"/>
@@ -267,7 +259,7 @@
     <addaction name="actionSaveScene"/>
     <addaction name="actionSaveSceneAs"/>
     <addaction name="separator"/>
-    <addaction name="actionSaveToFolder"/>
+    <addaction name="menuSave_To_Folder_With_Children"/>
     <addaction name="separator"/>
     <addaction name="menuExport"/>
     <addaction name="menuImport"/>
@@ -467,6 +459,8 @@
     <addaction name="actionBatchProcess"/>
     <addaction name="actionCreateTestSkinnedObject"/>
     <addaction name="actionDeviceList"/>
+    <addaction name="actionImageSplitterForNormals"/>
+    <addaction name="actionReplaceTextureMipmap"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -740,7 +734,7 @@
           <x>0</x>
           <y>0</y>
           <width>256</width>
-          <height>101</height>
+          <height>88</height>
          </rect>
         </property>
        </widget>
@@ -772,15 +766,6 @@
    <addaction name="actionCustomColorsEditor"/>
    <addaction name="actionVisibilityCheckTool"/>
    <addaction name="actionWayEditor"/>
-  </widget>
-  <widget class="QDockWidget" name="dockLandscapeEditorControls">
-   <property name="windowTitle">
-    <string>Landscape Editor Tools</string>
-   </property>
-   <attribute name="dockWidgetArea">
-    <number>1</number>
-   </attribute>
-   <widget class="LandscapeEditorControlsPlaceholder" name="landscapeEditorControlsPlaceholder"/>
   </widget>
   <widget class="QToolBar" name="sceneToolBar">
    <property name="windowTitle">
@@ -847,6 +832,47 @@
    </attribute>
    <addaction name="actionSnapCameraToLandscape"/>
   </widget>
+  <widget class="QDockWidget" name="dockLandscapeEditorControls">
+   <property name="windowTitle">
+    <string>Landscape Editor Tools</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="QWidget" name="dockLandscapeEditorControlsContent">
+    <layout class="QVBoxLayout" name="verticalLayout_3">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
+      <number>0</number>
+     </property>
+     <item>
+      <widget class="QScrollArea" name="landscapeScrollArea">
+       <property name="widgetResizable">
+        <bool>true</bool>
+       </property>
+       <widget class="LandscapeEditorControlsPlaceholder" name="landscapeEditorControlsPlaceholder">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>256</width>
+          <height>89</height>
+         </rect>
+        </property>
+       </widget>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
   <action name="actionNewScene">
    <property name="checkable">
     <bool>false</bool>
@@ -893,15 +919,6 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+S</string>
-   </property>
-  </action>
-  <action name="actionSaveToFolder">
-   <property name="icon">
-    <iconset resource="QtIcons.qrc">
-     <normaloff>:/QtIcons/savescenetofolder.png</normaloff>:/QtIcons/savescenetofolder.png</iconset>
-   </property>
-   <property name="text">
-    <string>Save To Folder With Children</string>
    </property>
   </action>
   <action name="actionOpenProject">
@@ -1371,7 +1388,7 @@
   </action>
   <action name="actionExportPNG">
    <property name="text">
-    <string>PNG</string>
+    <string>Original</string>
    </property>
   </action>
   <action name="actionReloadPNG">
@@ -1379,7 +1396,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>PNG</string>
+    <string>Original</string>
    </property>
   </action>
   <action name="actionEnableCameraLight">
@@ -1512,7 +1529,7 @@
   </action>
   <action name="actionSaveHeightmapToPNG">
    <property name="text">
-    <string>Save Heightmap to PNG</string>
+    <string>Save Heightmap as Image</string>
    </property>
   </action>
   <action name="actionSaveTiledTexture">
@@ -1769,7 +1786,7 @@
      <normaloff>:/QtIconsTextureDialog/convert.png</normaloff>:/QtIconsTextureDialog/convert.png</iconset>
    </property>
    <property name="text">
-    <string>Convert Modified texture's PNGs</string>
+    <string>Convert modified textures sources</string>
    </property>
   </action>
   <action name="actionAlbedo">
@@ -2154,6 +2171,43 @@
    </property>
    <property name="toolTip">
     <string>Snap Camera To Landscape</string>
+   </property>
+  </action>
+  <action name="actionImageSplitterForNormals">
+   <property name="text">
+    <string>ImageSplitter for Normals</string>
+   </property>
+  </action>
+  <action name="actionReplaceTextureMipmap">
+   <property name="text">
+    <string>Replace Textures mipmaps</string>
+   </property>
+  </action>
+  <action name="action22">
+   <property name="text">
+    <string>22</string>
+   </property>
+  </action>
+  <action name="actionEnableDisableShadows">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="QtIcons.qrc">
+     <normaloff>:/QtIcons/shadow.png</normaloff>:/QtIcons/shadow.png</iconset>
+   </property>
+   <property name="text">
+    <string>Change Shadows Drawing </string>
+   </property>
+  </action>
+  <action name="actionOnlyOriginalTextures">
+   <property name="text">
+    <string>Only Original Textures</string>
+   </property>
+  </action>
+  <action name="actionWithCompressedTextures">
+   <property name="text">
+    <string>With Compressed Textures</string>
    </property>
   </action>
  </widget>

@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #include "QtPropertyData.h"
 #include "QtPropertyDataValidator.h"
 
@@ -332,9 +333,20 @@ QString QtPropertyData::GetPath() const
 	return path;
 }
 
+void QtPropertyData::SetColorButtonIcon(const QIcon &icon)
+{
+    auto it = std::find_if(optionalButtons.begin(), optionalButtons.end(), [](const QtPropertyToolButton* btn){
+        return btn->objectName() == "colorButton";
+    });
+    if(it != optionalButtons.end())
+    {
+        (*it)->setIcon(icon);
+    }
+}
+
 void QtPropertyData::SetIcon(const QIcon &icon)
 {
-	setData(QVariant(icon), Qt::DecorationRole);
+    setData(QVariant(icon), Qt::DecorationRole);
 }
 
 QIcon QtPropertyData::GetIcon() const

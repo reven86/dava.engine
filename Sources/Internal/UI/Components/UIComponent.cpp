@@ -26,8 +26,13 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #include "UIComponent.h"
 #include "UI/UIControl.h"
+
+#include "UI/Layouts/UILinearLayoutComponent.h"
+#include "UI/Layouts/UISizePolicyComponent.h"
+#include "UI/Layouts/UIAnchorComponent.h"
 
 namespace DAVA
 {
@@ -41,10 +46,45 @@ UIComponent::~UIComponent()
 {
 }
 
-Component* UIComponent::Clone(Entity* toEntity)
+UIComponent * UIComponent::CreateByType(uint32 componentType)
 {
-    // Empty stub
-    return NULL;
+    switch (componentType)
+    {
+        case LINEAR_LAYOUT_COMPONENT:
+            return new UILinearLayoutComponent();
+            
+        case SIZE_POLICY_COMPONENT:
+            return new UISizePolicyComponent();
+            
+        case ANCHOR_COMPONENT:
+            return new UIAnchorComponent();
+            
+        default:
+            DVASSERT(false);
+            return nullptr;
+    }
+    
 }
+    
+bool UIComponent::IsMultiple(uint32 componentType)
+{
+    switch (componentType)
+    {
+        case LINEAR_LAYOUT_COMPONENT:
+            return false;
+            
+        case SIZE_POLICY_COMPONENT:
+            return false;
+            
+        case ANCHOR_COMPONENT:
+            return false;
+            
+        default:
+            DVASSERT(false);
+            return false;
+    }
+    
+}
+
 
 }

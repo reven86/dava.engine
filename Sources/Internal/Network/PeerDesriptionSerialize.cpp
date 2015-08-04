@@ -1,10 +1,10 @@
 /*==================================================================================
     Copyright (c) 2008, binaryzebra
     All rights reserved.
- 
+
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are met:
- 
+
     * Redistributions of source code must retain the above copyright
     notice, this list of conditions and the following disclaimer.
     * Redistributions in binary form must reproduce the above copyright
@@ -13,7 +13,7 @@
     * Neither the name of the binaryzebra nor the
     names of its contributors may be used to endorse or promote products
     derived from this software without specific prior written permission.
- 
+
     THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
     ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,6 +25,7 @@
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
 
 #include <Debug/DVAssert.h>
 
@@ -150,7 +151,7 @@ size_t PeerDescription::Serialize(void* dstBuffer, size_t buflen) const
     general->gpuFamily = static_cast<uint32>(gpuFamily);
     general->screenWidth = screenInfo.width;
     general->screenHeight = screenInfo.height;
-    general->screenScale = screenInfo.scale;
+    general->screenScale = static_cast<int32>(screenInfo.scale);
     strncpy(general->platform, platform.c_str(), COUNT_OF(general->platform));
     general->platform[COUNT_OF(general->platform) - 1] = '\0';
     strncpy(general->version, version.c_str(), COUNT_OF(general->version));
@@ -210,7 +211,7 @@ size_t PeerDescription::Deserialize(const void* srcBuffer, size_t buflen)
     const SerializedGeneralInfo* general = reinterpret_cast<const SerializedGeneralInfo*>(header + 1);
     temp.platformType = IntToPlatform(general->platfromType);
     temp.gpuFamily = IntToGPUFamily(general->gpuFamily);
-    temp.screenInfo = DeviceInfo::ScreenInfo(general->screenWidth, general->screenHeight, general->screenScale);
+    temp.screenInfo = DeviceInfo::ScreenInfo(general->screenWidth, general->screenHeight, static_cast<float32>(general->screenScale));
     temp.platform = general->platform;
     temp.version = general->version;
     temp.manufacturer = general->manufacturer;

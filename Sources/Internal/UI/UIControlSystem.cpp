@@ -27,9 +27,9 @@
 =====================================================================================*/
 
 
-
 #include "UI/UIControlSystem.h"
 #include "UI/UIScreen.h"
+#include "UI/Styles/UIStyleSheetSystem.h"
 #include "FileSystem/Logger.h"
 #include "Render/RenderManager.h"
 #include "Render/OcclusionQuery.h"
@@ -38,6 +38,7 @@
 #include "Debug/Replay.h"
 #include "Debug/Stats.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "UI/Layouts/UILayoutSystem.h"
 
 namespace DAVA 
 {
@@ -48,9 +49,12 @@ UIControlSystem::~UIControlSystem()
 {
 	SafeRelease(currentScreen); 
 	SafeRelease(popupContainer);
+    SafeDelete(styleSheetSystem);
+    SafeDelete(layoutSystem);
 }
 	
 UIControlSystem::UIControlSystem()
+    : layoutSystem(nullptr)
 {
 	screenLockCount = 0;
 	frameSkip = 0;
@@ -79,6 +83,9 @@ UIControlSystem::UIControlSystem()
 	baseGeometricData.angle = 0;
 
     ui3DViewCount = 0;
+
+    layoutSystem = new UILayoutSystem();
+    styleSheetSystem = new UIStyleSheetSystem();
 }
 	
 void UIControlSystem::SetScreen(UIScreen *_nextScreen, UIScreenTransition * _transition)
@@ -118,6 +125,8 @@ void UIControlSystem::ReplaceScreen(UIScreen *newMainControl)
 	prevScreen = currentScreen;
 	currentScreen = newMainControl;
     NotifyListenersDidSwitch(currentScreen);
+    
+    layoutSystem->SetDirty();
 }
 
 	
@@ -197,9 +206,9 @@ void UIControlSystem::ProcessScreenLogic()
 		LockInput();
 		
 		CancelAllInputs();
-		
-        NotifyListenersWillSwitch(nextScreenProcessed);
 
+        NotifyListenersWillSwitch(nextScreenProcessed);
+        
 		// If we have transition set
 		if (transitionProcessed)
 		{
@@ -470,12 +479,12 @@ void UIControlSystem::OnInput(int32 touchType, const Vector<UIEvent> &activeInpu
 		//add new touches
 		for (Vector<UIEvent>::const_iterator wit = activeInputs.begin(); wit != activeInputs.end(); wit++) 
 		{
-			bool isFind = FALSE;
+			bool isFind = false;
 			for (Vector<UIEvent>::iterator it = totalInputs.begin(); it != totalInputs.end(); it++) 
 			{
 				if((*it).tid == (*wit).tid)
 				{
-					isFind = TRUE;
+					isFind = true;
                     break;
 				}
 			}
@@ -491,12 +500,12 @@ void UIControlSystem::OnInput(int32 touchType, const Vector<UIEvent> &activeInpu
 		}
 		for (Vector<UIEvent>::const_iterator wit = allInputs.begin(); wit != allInputs.end(); wit++) 
 		{
-			bool isFind = FALSE;
+			bool isFind = false;
 			for (Vector<UIEvent>::iterator it = totalInputs.begin(); it != totalInputs.end(); it++) 
 			{
 				if((*it).tid == (*wit).tid)
 				{
-					isFind = TRUE;
+					isFind = true;
                     break;
 				}
 			}
@@ -681,6 +690,7 @@ UIControl *UIControlSystem::GetExclusiveInputLocker()
 void UIControlSystem::ScreenSizeChanged()
 {
     popupContainer->SystemScreenSizeDidChanged(VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect());
+    layoutSystem->SetDirty();
 }
 
 void UIControlSystem::SetHoveredControl(UIControl *newHovered)
@@ -826,6 +836,26 @@ void UIControlSystem::UI3DViewRemoved()
 {
     DVASSERT(ui3DViewCount);
     ui3DViewCount--;
+}
+
+bool UIControlSystem::IsRtl() const
+{
+    return layoutSystem->IsRtl();
+}
+
+void UIControlSystem::SetRtl(bool rtl)
+{
+    layoutSystem->SetRtl(rtl);
+}
+
+UILayoutSystem *UIControlSystem::GetLayoutSystem() const
+{
+    return layoutSystem;
+}
+
+UIStyleSheetSystem* UIControlSystem::GetStyleSheetSystem() const
+{
+    return styleSheetSystem;
 }
 
 };

@@ -27,11 +27,10 @@
 =====================================================================================*/
 
 
-
-
 #include "UI/UIScreenManager.h"
 #include "Base/BaseObject.h"
 
+#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WINDOWS__)
 
 namespace DAVA 
 {
@@ -64,7 +63,12 @@ UIScreenManager::~UIScreenManager()
 	
 void UIScreenManager::ScreenSizeChanged()
 {
-    GetScreen()->SystemScreenSizeDidChanged(VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect());
+    UIScreen *screen = GetScreen();
+    if(nullptr != screen)
+    {
+        Rect fullscreenRect = VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect();
+        screen->SystemScreenSizeDidChanged(fullscreenRect);
+    }
 }
     
 void UIScreenManager::SetFirst(int screenId)
@@ -137,4 +141,6 @@ void ScreenManager::StartGLAnimation()
 }*/
 	
 }
+
+#endif // defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WINDOWS__)
 

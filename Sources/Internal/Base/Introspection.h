@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_INTROSPECTION_H__
 #define __DAVAENGINE_INTROSPECTION_H__
 
@@ -108,7 +107,7 @@ namespace DAVA
 			MembersRelease();
 		}
 
-		const char* Name() const
+		const FastName& Name() const
 		{
 			return name;
 		}
@@ -136,7 +135,7 @@ namespace DAVA
 		}
 
 		// Возвращает указатель на член интроспекции по заданному имени, или NULL если такой не найден.
-		const InspMember* Member(const char* name) const
+		const InspMember* Member(const FastName& name) const
 		{
 			for(int i = 0; i < members_count; ++i)
 			{
@@ -148,21 +147,6 @@ namespace DAVA
 					}
 				}
 			}
-
-            //Второй проход с strcpm необходим, т.к. под дебагом и строковые литералы могут иметь разные указатели.
-            //Под релизом же, строковые литералы лучше сначала проверить по указателям, т.к. имеет место быть оптимизация компилятором.
-            //Очевидно, что первый проход в принципе не будет работать для runtime строк. 
-            //Поэтому, TODO-ка: переделаь интроспекцию на FastName, будет работать во всех случаях и, к тому же, иногда быстрее.
-            for(int i = 0; i < members_count; ++i)
-            {
-                if(NULL != members[i])
-                {
-                    if(strcmp(members[i]->name, name) == 0)
-                    {
-                        return members[i];
-                    }
-                }
-            }
 
 			return NULL;
 		}
@@ -186,7 +170,7 @@ namespace DAVA
         }
         
 	protected:
-		const char* name;
+		FastName name;
 		const MetaInfo* meta;
 
 		const InspInfo *base_info;
@@ -256,7 +240,7 @@ namespace DAVA
 #define INTROSPECTION(_type, _members) \
 	static const DAVA::InspInfo* TypeInfo() \
 	{ \
-		typedef _type ObjectT; \
+		using ObjectT = _type; \
 		static const DAVA::InspMember* data[] = { _members }; \
 		static DAVA::InspInfo info = DAVA::InspInfo(#_type, data, sizeof(data)/sizeof(data[0])); \
 		info.OneTimeMetaSafeSet<_type>(); \
@@ -271,7 +255,7 @@ namespace DAVA
 #define  INTROSPECTION_EXTEND(_type, _base_type, _members) \
 	static const DAVA::InspInfo* TypeInfo() \
 	{ \
-		typedef _type ObjectT; \
+		using ObjectT = _type; \
 		static const DAVA::InspMember* data[] = { _members }; \
 		static DAVA::InspInfo info = DAVA::InspInfo(_base_type::TypeInfo(), #_type, data, sizeof(data)/sizeof(data[0])); \
 		info.OneTimeMetaSafeSet<_type>(); \

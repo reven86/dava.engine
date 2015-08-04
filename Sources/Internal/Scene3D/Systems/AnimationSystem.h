@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_ANIMATION_SYSTEM_H__
 #define __DAVAENGINE_ANIMATION_SYSTEM_H__
 
@@ -49,9 +48,11 @@ public:
 	AnimationSystem(Scene * scene);
 	~AnimationSystem();
 
+    void RemoveEntity(Entity * entity) override;
+
     virtual void Process(float32 timeElapsed);
 
-    virtual void ImmediateEvent(Entity * entity, uint32 event);
+    void ImmediateEvent(Component * component, uint32 event) override;
     
 private:
     Vector<AnimationComponent*> activeComponents;

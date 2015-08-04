@@ -28,6 +28,7 @@
 
 
 #include "Base/BaseTypes.h"
+#include "Core/Core.h"
 
 #if defined(__DAVAENGINE_IPHONE__)
 
@@ -38,36 +39,40 @@
 #include "Core/Core.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
-#import <Platform/TemplateiOS/HelperAppDelegate.h>
+#include "Platform/TemplateiOS/WebViewControliOS.h"
 
-void CreateTextField(DAVA::UITextField  * tf)
-{
-	///[textFieldHolder->textField becomeFirstResponder];
-}
+#import "Platform/TemplateiOS/HelperAppDelegate.h"
 
-void ReleaseTextField()
+namespace
 {
-}
-
-void OpenKeyboard()
-{
-}
-
-void CloseKeyboard()
-{
+    const int MOVE_TO_OFFSCREEN_STEP = 20000;
 }
 
 namespace DAVA 
 {
-    UITextFieldiPhone::UITextFieldiPhone(void  * tf)
+    UITextFieldiPhone::UITextFieldiPhone(DAVA::UITextField& tf):
+    davaTextField(tf),
+    renderToTexture(false)
     {
+        DVASSERT(isSingleLine);
         HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
         BackgroundView* backgroundView = [appDelegate glController].backgroundView;
         
         UITextFieldHolder * textFieldHolder= [backgroundView CreateTextField];
-        [textFieldHolder setTextField:(DAVA::UITextField *)tf];
+        DVASSERT(textFieldHolder->textCtrl != nullptr);
+        
+        [textFieldHolder setTextField:&davaTextField];
 
         objcClassPtr = textFieldHolder;
+        
+        prevRect = tf.GetRect();
+        if (renderToTexture)
+        {
+            UpdateNativeRect(prevRect, MOVE_TO_OFFSCREEN_STEP);
+        } else
+        {
+            UpdateNativeRect(prevRect, 0);
+        }
     }
     UITextFieldiPhone::~UITextFieldiPhone()
     {
@@ -77,6 +82,14 @@ namespace DAVA
         HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
         BackgroundView* backgroundView = [appDelegate glController].backgroundView;
 
+        if (!isSingleLine)
+        {
+            // destroy UITextView and restore textFild back
+            [textFieldHolder->textCtrl removeFromSuperview];
+            textFieldHolder->textCtrl = textFieldHolder->textField;
+            
+        }
+        
         [backgroundView ReleaseTextField:textFieldHolder];
         
         objcClassPtr = 0;
@@ -85,57 +98,72 @@ namespace DAVA
     void UITextFieldiPhone::SetTextColor(const DAVA::Color &color)
     {
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
-        textFieldHolder->textField.textColor = [UIColor colorWithRed:color.r green:color.g blue:color.b alpha:color.a];
+        UIColor* col = [UIColor colorWithRed:color.r green:color.g blue:color.b alpha:color.a];
+        UIView* view = textFieldHolder->textCtrl;
+        [view setValue:col forKey:@"textColor"];
+        
+        isNeedToUpdateTexture = true;
     }
     void UITextFieldiPhone::SetFontSize(float size)
     {
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         float scaledSize = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(size);
+        scaledSize /= Core::Instance()->GetScreenScaleFactor();
         
-        if( [[::UIScreen mainScreen] respondsToSelector:@selector(displayLinkWithTarget:selector:)])
-        {
-            scaledSize /= [::UIScreen mainScreen].scale;
-        }
-        textFieldHolder->textField.font = [UIFont systemFontOfSize:scaledSize];
+        UIView* view = textFieldHolder->textCtrl;
+        UIFont* font = [UIFont systemFontOfSize:scaledSize];
+        [view setValue:font forKey:@"font"];
+        
+        isNeedToUpdateTexture = true;
     }
     
     void UITextFieldiPhone::SetTextAlign(DAVA::int32 align)
     {
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
-        if (align & ALIGN_LEFT)
-		{
-            textFieldHolder->textField.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
-		}
-        else if (align & ALIGN_HCENTER)
-		{
-            textFieldHolder->textField.contentHorizontalAlignment = UIControlContentHorizontalAlignmentCenter;
-		}
-        else if (align & ALIGN_RIGHT)
-		{
-            textFieldHolder->textField.contentHorizontalAlignment = UIControlContentHorizontalAlignmentRight;
-		}
-		
-        if (align & ALIGN_TOP)
-            textFieldHolder->textField.contentVerticalAlignment = UIControlContentVerticalAlignmentTop;
-        else if (align & ALIGN_VCENTER)
-            textFieldHolder->textField.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;
-        else if (align & ALIGN_BOTTOM)
-            textFieldHolder->textField.contentVerticalAlignment = UIControlContentVerticalAlignmentBottom;
-		
-		// Set natural alignment if need
-		switch (textFieldHolder->textField.contentHorizontalAlignment) {
-			case UIControlContentHorizontalAlignmentLeft:
-				textFieldHolder->textField.textAlignment = textFieldHolder->useRtlAlign ? NSTextAlignmentNatural : NSTextAlignmentLeft;
-				break;
-			case UIControlContentVerticalAlignmentCenter:
-				textFieldHolder->textField.textAlignment = NSTextAlignmentCenter;
-				break;
-			case UIControlContentHorizontalAlignmentRight:
-				textFieldHolder->textField.textAlignment = textFieldHolder->useRtlAlign ? NSTextAlignmentNatural : NSTextAlignmentRight;
-				break;
-            default:
-                break;
-		}
+        UIView* view = textFieldHolder->textCtrl;
+        if (isSingleLine)
+        {
+            ::UITextField* field = (::UITextField*)view;
+            if (align & ALIGN_LEFT)
+            {
+                field.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
+            }
+            else if (align & ALIGN_HCENTER)
+            {
+                field.contentHorizontalAlignment = UIControlContentHorizontalAlignmentCenter;
+            }
+            else if (align & ALIGN_RIGHT)
+            {
+                field.contentHorizontalAlignment = UIControlContentHorizontalAlignmentRight;
+            }
+            
+            if (align & ALIGN_TOP)
+                field.contentVerticalAlignment = UIControlContentVerticalAlignmentTop;
+            else if (align & ALIGN_VCENTER)
+                field.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;
+            else if (align & ALIGN_BOTTOM)
+                field.contentVerticalAlignment = UIControlContentVerticalAlignmentBottom;
+            
+            // Set natural alignment if need
+            switch (field.contentHorizontalAlignment) {
+                case UIControlContentHorizontalAlignmentLeft:
+                    field.textAlignment = textFieldHolder->useRtlAlign ? NSTextAlignmentNatural : NSTextAlignmentLeft;
+                    break;
+                case UIControlContentVerticalAlignmentCenter:
+                    field.textAlignment = NSTextAlignmentCenter;
+                    break;
+                case UIControlContentHorizontalAlignmentRight:
+                    field.textAlignment = textFieldHolder->useRtlAlign ? NSTextAlignmentNatural : NSTextAlignmentRight;
+                    break;
+                default:
+                    break;
+            }
+
+            isNeedToUpdateTexture = true;
+        } else
+        {
+            DAVA::Logger::Error("UITextField::SetTextAlign not supported in multiline");
+        }
     }
 	
     DAVA::int32 UITextFieldiPhone::GetTextAlign()
@@ -143,47 +171,52 @@ namespace DAVA
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         
         DAVA::int32 retValue = 0;
-        
-        
-        UIControlContentHorizontalAlignment horAligment = textFieldHolder->textField.contentHorizontalAlignment;
-        UIControlContentVerticalAlignment   verAligment = textFieldHolder->textField.contentVerticalAlignment;
-        
-        switch (horAligment)
+        UIView* view = textFieldHolder->textCtrl;
+        if (isSingleLine)
         {
-            case UIControlContentHorizontalAlignmentLeft:
-                retValue |= ALIGN_LEFT;
-                break;
-            case UIControlContentHorizontalAlignmentCenter:
-                retValue |= ALIGN_HCENTER;
-                break;
-            case UIControlContentHorizontalAlignmentRight:
-                retValue |= ALIGN_RIGHT;
-                break;
-                
-            default: break;
+            ::UITextField* field = (::UITextField*)view;
+        
+            UIControlContentHorizontalAlignment horAligment = field.contentHorizontalAlignment;
+            UIControlContentVerticalAlignment   verAligment = field.contentVerticalAlignment;
+            
+            switch (horAligment)
+            {
+                case UIControlContentHorizontalAlignmentLeft:
+                    retValue |= ALIGN_LEFT;
+                    break;
+                case UIControlContentHorizontalAlignmentCenter:
+                    retValue |= ALIGN_HCENTER;
+                    break;
+                case UIControlContentHorizontalAlignmentRight:
+                    retValue |= ALIGN_RIGHT;
+                    break;
+                    
+                default: break;
+            }
+            
+            switch (verAligment)
+            {
+                case UIControlContentVerticalAlignmentTop:
+                    retValue |= ALIGN_TOP;
+                    break;
+                case UIControlContentVerticalAlignmentCenter:
+                    retValue |= ALIGN_VCENTER;
+                    break;
+                case UIControlContentVerticalAlignmentBottom:
+                    retValue |= ALIGN_BOTTOM;
+                    break;
+                default: break;
+            }
         }
         
-        switch (verAligment)
-        {
-            case UIControlContentVerticalAlignmentTop:
-                retValue |= ALIGN_TOP;
-                break;
-            case UIControlContentVerticalAlignmentCenter:
-                retValue |= ALIGN_VCENTER;
-                break;
-            case UIControlContentVerticalAlignmentBottom:
-                retValue |= ALIGN_BOTTOM;
-                break;
-            default: break;
-        }
-        
-    return retValue;
+        return retValue;
     }
 	
 	void UITextFieldiPhone::SetTextUseRtlAlign(bool useRtlAlign)
 	{
 		UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         [textFieldHolder setUseRtlAlign:useRtlAlign];
+        isNeedToUpdateTexture = true;
 	}
 	
 	bool UITextFieldiPhone::GetTextUseRtlAlign() const
@@ -195,15 +228,17 @@ namespace DAVA
     void UITextFieldiPhone::OpenKeyboard()
     {
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
-        textFieldHolder->textField.userInteractionEnabled = YES;
-        [textFieldHolder->textField becomeFirstResponder];
+        textFieldHolder->textCtrl.userInteractionEnabled = YES;
+        [textFieldHolder->textCtrl becomeFirstResponder];
     }
     
     void UITextFieldiPhone::CloseKeyboard()
     {
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
-        textFieldHolder->textField.userInteractionEnabled = NO;
-        [textFieldHolder->textField resignFirstResponder];
+        if (isSingleLine) {
+            textFieldHolder->textCtrl.userInteractionEnabled = NO;
+        }
+        [textFieldHolder->textCtrl resignFirstResponder];
     }
     
     void UITextFieldiPhone::ShowField()
@@ -221,6 +256,42 @@ namespace DAVA
 					   name:UIKeyboardWillHideNotification object:nil];
 		[center addObserver:textFieldHolder selector:@selector(keyboardFrameDidChange:)
 					   name:UIKeyboardDidChangeFrameNotification object:nil];
+        
+        auto OnKeyboardFrameChange = [](CFNotificationCenterRef center, void *observer,
+                           CFStringRef name, const void *object, CFDictionaryRef userInfo)
+        {
+            NSDictionary* userInfoDic = (__bridge NSDictionary*)userInfo;
+            
+            CGRect keyboardEndFrame = [[userInfoDic objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
+            CGRect screenRect = [[::UIScreen mainScreen] bounds];
+            
+            UITextFieldiPhone* tf = (static_cast<UITextFieldiPhone *>(observer));
+            
+            if (CGRectIntersectsRect(keyboardEndFrame, screenRect))
+            {
+                // Keyboard did show or move
+                tf->deltaMoveControl = 0;
+                tf->UpdateStaticTexture();
+            }
+            else
+            {
+                // Keyboard did hide
+                if(!tf->renderToTexture)
+                {
+                    // workaround if user click hide softkeyboard but we don't lose
+                    // focus on current control just leave native control on screen
+                } else
+                {
+                    tf->deltaMoveControl = MOVE_TO_OFFSCREEN_STEP;
+                }
+                tf->UpdateStaticTexture();
+            }
+        };
+        
+        CFNotificationCenterAddObserver(CFNotificationCenterGetLocalCenter(), this,
+            OnKeyboardFrameChange,
+            (__bridge CFStringRef) UIKeyboardDidChangeFrameNotification, nil,
+            CFNotificationSuspensionBehaviorDeliverImmediately);
     }
     
     void UITextFieldiPhone::HideField()
@@ -233,61 +304,86 @@ namespace DAVA
 		[center removeObserver:textFieldHolder name:UIKeyboardDidShowNotification object:nil];
 		[center removeObserver:textFieldHolder name:UIKeyboardWillHideNotification object:nil];
         [center removeObserver:textFieldHolder name:UIKeyboardDidChangeFrameNotification object:nil];
+        
+        CFNotificationCenterRemoveObserver(CFNotificationCenterGetLocalCenter(), this,
+           (__bridge CFStringRef) UIKeyboardDidChangeFrameNotification, nil);
     }
     
-    void UITextFieldiPhone::UpdateRect(const Rect & rect)
+    void UITextFieldiPhone::UpdateNativeRect(const Rect & virtualRect, int xOffset)
     {
-        float divider = [HelperAppDelegate GetScale];
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         
-        DAVA::Rect physicalRect = DAVA::VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(rect);
+        DAVA::float32 divider = DAVA::Core::Instance()->GetScreenScaleFactor();
+        DAVA::Rect physicalRect = DAVA::VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(virtualRect);
         DAVA::Vector2 physicalOffset = DAVA::VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset();
         CGRect nativeRect = CGRectMake(  (physicalRect.x + physicalOffset.x) / divider
                                        , (physicalRect.y + physicalOffset.y) / divider
                                        , physicalRect.dx / divider
                                        , physicalRect.dy / divider);
-        
-        textFieldHolder->textField.frame = nativeRect;
+
+        nativeRect = CGRectIntegral(nativeRect);
+        nativeRect.origin.x += xOffset;
+        textFieldHolder->textCtrl.frame = nativeRect;
+    }
+    
+    void UITextFieldiPhone::UpdateRect(const Rect & rect)
+    {
+        UpdateNativeRect(rect, deltaMoveControl);
+        if (rect.dx != prevRect.dx || rect.dy != prevRect.dy || isNeedToUpdateTexture)
+        {
+            UpdateStaticTexture();
+        }
+        prevRect = rect;
     }
 	
     void UITextFieldiPhone::SetText(const WideString & string)
     {
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+        
         NSString* text = [[ [ NSString alloc ] initWithBytes : (char*)string.data()
                                                          length : string.size() * sizeof(wchar_t)
                                                        encoding : CFStringConvertEncodingToNSStringEncoding ( kCFStringEncodingUTF32LE ) ] autorelease];
-
-        textFieldHolder->textField.text = (NSString*)TruncateText(text, textFieldHolder->cppTextField->GetMaxLength());
-        [textFieldHolder->textField.undoManager removeAllActions];
+        NSString* truncatedText = (NSString*)TruncateText(text, textFieldHolder->cppTextField->GetMaxLength());
+        
+        UIView* view = textFieldHolder->textCtrl;
+        NSString* textInField = [view valueForKey:@"text"];
+        DVASSERT(nullptr != textInField);
+        bool textChanged = ![textInField isEqualToString:truncatedText];
+        
+        [view setValue:truncatedText forKey:@"text"];
+        
+        [textFieldHolder->textCtrl.undoManager removeAllActions];
 
         // Notify UITextFieldDelegate::TextFieldOnTextChanged event
-        [textFieldHolder->textField sendActionsForControlEvents:UIControlEventEditingChanged];
+        if ([view respondsToSelector:@selector(sendActionsForControlEvents)])
+        {
+            [(id)view sendActionsForControlEvents:UIControlEventEditingChanged];
+        }
+        
+        if(textChanged || string.empty())
+        {
+            isNeedToUpdateTexture = true;
+        }
     }
 	
     void UITextFieldiPhone::GetText(WideString & string) const
     {
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         
-        const char * cstr = [textFieldHolder->textField.text cStringUsingEncoding:NSUTF8StringEncoding];
-        DAVA::UTF8Utils::EncodeToWideString((DAVA::uint8*)cstr, strlen(cstr), string);
+        UIView* view = textFieldHolder->textCtrl;
+        NSString* textInField = [view valueForKey:@"text"];
         
-        /*
-        int length = [textFieldHolder->textField.text length];
-		
-
-        string.resize(length); 
-        for (int i = 0; i < length; i++) 
-        {
-            unichar uchar = [textFieldHolder->textField.text characterAtIndex:i];
-            string[i] = (wchar_t)uchar;
-        }
-         */
+        DVASSERT(nullptr != textInField);
+        
+        const char * cstr = [textInField cStringUsingEncoding:NSUTF8StringEncoding];
+        DAVA::UTF8Utils::EncodeToWideString((DAVA::uint8*)cstr, strlen(cstr), string);
     }
 
 	void UITextFieldiPhone::SetIsPassword(bool isPassword)
 	{
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
 		[textFieldHolder setIsPassword: isPassword];
+        isNeedToUpdateTexture = true;
 	}
 
 	void UITextFieldiPhone::SetInputEnabled(bool value)
@@ -299,51 +395,123 @@ namespace DAVA
 	void UITextFieldiPhone::SetAutoCapitalizationType(DAVA::int32 value)
 	{
 		UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
-		textFieldHolder->textField.autocapitalizationType = [textFieldHolder convertAutoCapitalizationType:
-															 (DAVA::UITextField::eAutoCapitalizationType)value];
+        UIView* view = textFieldHolder->textCtrl;
+        
+        UITextAutocapitalizationType type_ = [textFieldHolder convertAutoCapitalizationType:
+                                             (DAVA::UITextField::eAutoCapitalizationType)value];
+        if (isSingleLine)
+        {
+            ::UITextField* field = (::UITextField*)view;
+            field.autocapitalizationType = type_;
+        } else
+        {
+            ::UITextView* textView = (::UITextView*)view;
+            textView.autocapitalizationType = type_;
+        }
 	}
 
 	void UITextFieldiPhone::SetAutoCorrectionType(DAVA::int32 value)
 	{
 		UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
-		textFieldHolder->textField.autocorrectionType = [textFieldHolder convertAutoCorrectionType:
-														 (DAVA::UITextField::eAutoCorrectionType)value];
+        
+        UIView* view = textFieldHolder->textCtrl;
+        UITextAutocorrectionType type_ = [textFieldHolder convertAutoCorrectionType:
+                                          (DAVA::UITextField::eAutoCorrectionType)value];
+        if (isSingleLine)
+        {
+            ::UITextField* field = (::UITextField*)view;
+            field.autocorrectionType = type_;
+        } else
+        {
+            ::UITextView* textView = (::UITextView*)view;
+            textView.autocorrectionType = type_;
+        }
 	}
 
 	void UITextFieldiPhone::SetSpellCheckingType(DAVA::int32 value)
 	{
 #if __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_5_0
 		UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
-		textFieldHolder->textField.spellCheckingType = [textFieldHolder convertSpellCheckingType:
-														 (DAVA::UITextField::eSpellCheckingType)value];
+        UITextSpellCheckingType type_ = [textFieldHolder convertSpellCheckingType:
+                                         (DAVA::UITextField::eSpellCheckingType)value];
+        
+        UIView* view = textFieldHolder->textCtrl;
+        if (isSingleLine)
+        {
+            ::UITextField* field = (::UITextField*)view;
+            field.spellCheckingType = type_;
+        } else
+        {
+            ::UITextView* textView = (::UITextView*)view;
+            textView.spellCheckingType = type_;
+        }
 #endif
 	}
 
 	void UITextFieldiPhone::SetKeyboardAppearanceType(DAVA::int32 value)
 	{
 		UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
-		textFieldHolder->textField.keyboardAppearance = [textFieldHolder convertKeyboardAppearanceType:
-														(DAVA::UITextField::eKeyboardAppearanceType)value];
+        UIView* view = textFieldHolder->textCtrl;
+        UIKeyboardAppearance type_ = [textFieldHolder convertKeyboardAppearanceType:
+                                      (DAVA::UITextField::eKeyboardAppearanceType)value];
+        if (isSingleLine)
+        {
+            ::UITextField* textField = (::UITextField*)view;
+		    textField.keyboardAppearance = type_;
+        } else
+        {
+            ::UITextView* textView = (::UITextView*)view;
+            textView.keyboardAppearance = type_;
+        }
 	}
 
 	void UITextFieldiPhone::SetKeyboardType(DAVA::int32 value)
 	{
-		UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
-		textFieldHolder->textField.keyboardType = [textFieldHolder convertKeyboardType:
-														 (DAVA::UITextField::eKeyboardType)value];
+        UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+        UIView* view = textFieldHolder->textCtrl;
+        UIKeyboardType type_ = [textFieldHolder convertKeyboardType:
+                                (DAVA::UITextField::eKeyboardType)value];
+        if (isSingleLine)
+        {
+            ::UITextField* textField = (::UITextField*)view;
+		    textField.keyboardType = type_;
+        } else
+        {
+            ::UITextView* textView = (::UITextView*)view;
+            textView.keyboardType = type_;
+        }
 	}
 
 	void UITextFieldiPhone::SetReturnKeyType(DAVA::int32 value)
 	{
 		UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
-		textFieldHolder->textField.returnKeyType = [textFieldHolder convertReturnKeyType:
-												   (DAVA::UITextField::eReturnKeyType)value];
+        UIReturnKeyType type_ = [textFieldHolder convertReturnKeyType:
+                                 (DAVA::UITextField::eReturnKeyType)value];
+        UIView* view = textFieldHolder->textCtrl;
+        if (isSingleLine)
+        {
+            ::UITextField* textField = (::UITextField*)view;
+            textField.returnKeyType = type_;
+        } else
+        {
+            ::UITextView* textView = (::UITextView*)view;
+            textView.returnKeyType = type_;
+        }
 	}
 	
 	void UITextFieldiPhone::SetEnableReturnKeyAutomatically(bool value)
 	{
 		UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
-		textFieldHolder->textField.enablesReturnKeyAutomatically = [textFieldHolder convertEnablesReturnKeyAutomatically:value];
+        BOOL type_ = [textFieldHolder convertEnablesReturnKeyAutomatically:value];
+        UIView* view = textFieldHolder->textCtrl;
+        if (isSingleLine)
+        {
+            ::UITextField* textField = (::UITextField*)view;
+            textField.enablesReturnKeyAutomatically = type_;
+        } else {
+            ::UITextView* textView = (::UITextView*)view;
+            textView.enablesReturnKeyAutomatically = type_;
+        }
 	}
 
     uint32 UITextFieldiPhone::GetCursorPos()
@@ -354,9 +522,19 @@ namespace DAVA
             return 0;
         }
 
-        ::UITextField* textField = textFieldHolder->textField;
-        int32 pos = static_cast<int32>([textField offsetFromPosition: textField.beginningOfDocument
+        UIView* view = textFieldHolder->textCtrl;
+        int32 pos = 0;
+        if (isSingleLine)
+        {
+            ::UITextField* textField = (::UITextField*)view;
+            pos = static_cast<int32>([textField offsetFromPosition: textField.beginningOfDocument
                                      toPosition: textField.selectedTextRange.start]);
+        } else
+        {
+            ::UITextView* textView = (::UITextView*)view;
+            pos = static_cast<int32>([textView offsetFromPosition: textView.beginningOfDocument
+                                     toPosition: textView.selectedTextRange.start]);
+        }
         return pos;
     }
 
@@ -368,8 +546,9 @@ namespace DAVA
             return;
         }
 
-        ::UITextField* textField = textFieldHolder->textField;
-        NSUInteger textLength = [textField.text length];
+        UIView* view = textFieldHolder->textCtrl;
+        NSString* text = [view valueForKey:@"text"];
+        NSUInteger textLength = [text length];
         if (textLength == 0)
         {
             return;
@@ -379,9 +558,19 @@ namespace DAVA
             pos = static_cast<uint32>(textLength - 1);
         }
 
-        UITextPosition *start = [textField positionFromPosition:[textField beginningOfDocument] offset:pos];
-        UITextPosition *end = [textField positionFromPosition:start offset:0];
-        [textField setSelectedTextRange:[textField textRangeFromPosition:start toPosition:end]];
+        if (isSingleLine)
+        {
+            ::UITextField* textField = (::UITextField*)view;
+            UITextPosition *start = [textField positionFromPosition:[textField beginningOfDocument] offset:pos];
+            UITextPosition *end = [textField positionFromPosition:start offset:0];
+            [textField setSelectedTextRange:[textField textRangeFromPosition:start toPosition:end]];
+        } else
+        {
+            ::UITextView* textView = (::UITextView*)view;
+            UITextPosition *start = [textView positionFromPosition:[textView beginningOfDocument] offset:pos];
+            UITextPosition *end = [textView positionFromPosition:start offset:0];
+            [textView setSelectedTextRange:[textView textRangeFromPosition:start toPosition:end]];
+        }
     }
     
     void UITextFieldiPhone::SetVisible(bool value)
@@ -395,9 +584,150 @@ namespace DAVA
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         if (textFieldHolder)
         {
-            ::UITextField* textField = textFieldHolder->textField;
-            [textField setText: (NSString*)TruncateText([textField text], maxLength)];
+            UIView* view = textFieldHolder->textCtrl;
+            NSString* currentText = [view valueForKey:@"text"];
+            DVASSERT(currentText);
+            NSString* newText = (NSString*)TruncateText(currentText, maxLength);
+            DVASSERT(newText);
+            [view setValue:newText forKey:@"text" ];
         }
+    }
+    
+    void UITextFieldiPhone::UpdateStaticTexture()
+    {
+        UITextFieldHolder * textFieldHolder = static_cast<UITextFieldHolder*>(objcClassPtr);
+        DVASSERT(textFieldHolder);
+        
+        ::UIView* textView = textFieldHolder->textCtrl;
+        DVASSERT(textView);
+        NSString* text = [textView valueForKey:@"text"];
+        
+        if (renderToTexture && deltaMoveControl != 0
+            && text.length > 0)
+        {
+            void* imgPtr = DAVA::WebViewControl::RenderIOSUIViewToImage(textView);
+            ::UIImage* image = static_cast<::UIImage*>(imgPtr);
+            if (nullptr != image) // can't render to empty rect so skip
+            {
+                // set backgroud image into davaTextField control
+                WebViewControl::SetImageAsSpriteToControl(image, davaTextField);
+            }
+            isNeedToUpdateTexture = false;
+        }
+        else
+        {
+            // set null background
+            davaTextField.GetBackground()->SetSprite(nullptr, 0);
+        }
+    }
+    
+    void UITextFieldiPhone::SetMultiline(bool multiline)
+    {
+        UITextFieldHolder * textFieldHolder = static_cast<UITextFieldHolder*>(objcClassPtr);
+        DVASSERT(textFieldHolder);
+        
+        if(isSingleLine && multiline)
+        {
+            // store current properties, font, size, text etc.
+            
+            DAVA::int32 cursorPos = GetCursorPos();
+            DAVA::WideString wstring;
+            GetText(wstring);
+            // font, textColor, frameRect
+            ::UITextField* textField = (::UITextField*)textFieldHolder->textCtrl;
+            UIFont* font = textField.font;
+            UIColor* color = textField.textColor;
+            CGRect rect = textField.frame;
+            BOOL isHidden = textField.isHidden;
+            
+            // now hide textField and store it for future restore
+            [textFieldHolder->textCtrl removeFromSuperview];
+            [textFieldHolder->textCtrl setHidden:YES];
+            textFieldHolder->textField = (::UITextField*)textFieldHolder->textCtrl;
+
+            // replace textField with new textView and apply current properties
+            ::UITextView* textView = [[UITextView alloc] initWithFrame:rect textContainer:nil];
+            [textFieldHolder addSubview:textView];
+            
+            textFieldHolder->textCtrl = textView;
+            
+            textView.textColor = color;
+            textView.font = font;
+            // Workaround! in multiline mode use need ability to scroll
+            // text without open keyboard
+            textView.userInteractionEnabled = YES;
+            [textView setHidden:isHidden];
+            textView.delegate = textFieldHolder;
+           
+            isSingleLine = false;
+            
+            SetText(wstring);
+            SetCursorPos(cursorPos);
+            
+            [textFieldHolder setupTraits];
+            
+            [textView setBackgroundColor:[UIColor clearColor]];
+            
+            textView.scrollEnabled = YES;
+            
+            // Workaround! in multiline mode always listen for user
+            // touches
+            SetRenderToTexture(false);
+            
+        } else if (!isSingleLine && !multiline)
+        {
+            // revert back single line native control
+            // TODO in future completely remove UITextField native control
+            //
+            // store current properties, font, size, text etc.
+            DAVA::int32 cursorPos = GetCursorPos();
+            DAVA::WideString wstring;
+            GetText(wstring);
+            // font, textColor, frameRect
+            ::UITextView* textView = (::UITextView*)textFieldHolder->textCtrl;
+            UIFont* font = textView.font;
+            UIColor* color = textView.textColor;
+            CGRect rect = textView.frame;
+            BOOL isHidden = textView.isHidden;
+            
+            // now hide textField and store it for future restore
+            [textView removeFromSuperview];
+            [textView setHidden:YES];
+            
+            // replace textField with old textField and apply current properties
+            ::UITextField* textField = textFieldHolder->textField;
+            textFieldHolder->textField = nullptr;
+            [textFieldHolder addSubview:textField];
+            [textView setHidden:isHidden];
+            [textView release];
+            textView = nullptr;
+            
+            textFieldHolder->textCtrl = textField;
+            
+            textField.textColor = color;
+            textField.font = font;
+            textField.userInteractionEnabled = YES;
+            [textField setHidden:isHidden];
+            
+            isSingleLine = true;
+            
+            SetText(wstring);
+            SetCursorPos(cursorPos);
+            
+            [textFieldHolder setupTraits];
+            
+            [textField setBackgroundColor:[UIColor clearColor]];
+        }
+    }
+    
+    void UITextFieldiPhone::SetRenderToTexture(bool value)
+    {
+        renderToTexture = value;
+    }
+    
+    bool UITextFieldiPhone::IsRenderToTexture() const
+    {
+        return renderToTexture;
     }
 
     void* UITextFieldiPhone::TruncateText(void* text, int maxLength)

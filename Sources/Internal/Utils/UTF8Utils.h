@@ -49,7 +49,7 @@ public:
 		\param[in] size size of buffer allocated for this string
 		\param[out] resultString result unicode string
 	 */
-	static void  EncodeToWideString(const uint8 * string, size_t size, WideString & resultString);
+	static void EncodeToWideString(const uint8 * string, size_t size, WideString & resultString);
 
     /**
         \brief convert UTF8 string to WideString
@@ -63,8 +63,11 @@ public:
 	 \param[in] wstring string in WideString format
 	 \returns string in UTF8 format, contained in DAVA::String
 	 */
-	static String EncodeToUTF8(const WideString& wstring);
+    static String EncodeToUTF8(const WideString& wstring);
+    static String EncodeToUTF8(const wchar_t* wideString);
 };
+
+//////////////////////////////////////////////////////////////////////////
 
 inline WideString UTF8Utils::EncodeToWideString(const String & utf8String)
 {
@@ -72,7 +75,6 @@ inline WideString UTF8Utils::EncodeToWideString(const String & utf8String)
     EncodeToWideString((const uint8 *)utf8String.c_str(), utf8String.length(), str);
     return str;
 }
-
 
 };
 

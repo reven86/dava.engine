@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #include "DAVAClassRegistrator.h"
 
 #include "FileSystem/FileSystem.h"
@@ -35,7 +36,6 @@
 #include "Core/PerformanceSettings.h"
 #include "Render/RenderManager.h"
 #include "Platform/SystemTimer.h"
-#include "Platform/Thread.h"
 #include "UI/UIScreenManager.h"
 #include "UI/UIControlSystem.h"
 #include "Input/InputSystem.h"
@@ -60,6 +60,7 @@
 #include "Platform/DeviceInfo.h"
 
 #include "Network/NetCore.h"
+#include "MemoryManager/MemoryProfiler.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
@@ -83,10 +84,6 @@
 namespace DAVA 
 {
 
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-	static bool useAutodetectContentScaleFactor = false;
-#endif //#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-    
 static ApplicationCore * core = nullptr;
 
 Core::Core()
@@ -96,6 +93,7 @@ Core::Core()
     firstRun = true;
 	isConsoleMode = false;
 	options = new KeyedArchive();
+    screenScaleFactor = 1.f;
 }
 
 Core::~Core()
@@ -165,16 +163,20 @@ void Core::CreateSingletons()
     
     new LocalNotificationController();
 
+#if !defined (__DAVAENGINE_WIN_UAP__)
     DeviceInfo::InitializeScreenInfo();
+#endif
     
     RegisterDAVAClasses();
-    CheckDataTypeSizes();
 
     new Net::NetCore();
 
 #ifdef __DAVAENGINE_AUTOTESTING__
-	new AutotestingSystem();
+    new AutotestingSystem();
 #endif
+    
+    // Init default screen scale factor from screen info
+    screenScaleFactor = DeviceInfo::GetScreenInfo().scale;
 }
 
 // We do not create RenderManager until we know which version of render manager we want to create
@@ -182,7 +184,7 @@ void Core::CreateRenderManager()
 {
     eRenderer renderer = (eRenderer)options->GetInt32("renderer");
     
-    RenderManager::Create(renderer);	
+    RenderManager::Create(renderer);
 }
         
 void Core::ReleaseSingletons()
@@ -238,48 +240,26 @@ void Core::SetOptions(KeyedArchive * archiveOfOptions)
 	SafeRelease(options);
 
 	options = SafeRetain(archiveOfOptions);
-#if defined(__DAVAENGINE_IPHONE__)
-		useAutodetectContentScaleFactor = options->GetBool("iPhone_autodetectScreenScaleFactor", false);
-#elif defined(__DAVAENGINE_ANDROID__)
-		useAutodetectContentScaleFactor = options->GetBool("Android_autodetectScreenScaleFactor", false);
-#endif //#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-
-#if !defined(__DAVAENGINE_ANDROID__)
-	//YZ android platform always use SCREEN_ORIENTATION_PORTRAIT and rotate system view and don't rotate GL view  
+    
+    screenScaleFactor = options->GetFloat("screenScaleFactor", screenScaleFactor);
+    if (screenScaleFactor <= 0.f)
+    {
+        screenScaleFactor = DeviceInfo::GetScreenInfo().scale;
+    }
+    
+#if defined(__DAVAENGINE_WIN_UAP__)
+    screenOrientation = options->GetInt32("orientation", SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE);
+#elif !defined(__DAVAENGINE_ANDROID__) // defined(__DAVAENGINE_WIN_UAP__)
+    //YZ android platform always use SCREEN_ORIENTATION_PORTRAIT and rotate system view and don't rotate GL view  
 	screenOrientation = options->GetInt32("orientation", SCREEN_ORIENTATION_PORTRAIT);
 #endif
 }
     
-void Core::CheckDataTypeSizes()
-{
-    CheckType(int8(), 8, "int8");
-    CheckType(uint8(), 8, "uint8");
-    CheckType(int16(), 16, "int16");
-    CheckType(uint16(), 16, "uint16");
-    CheckType(int32(), 32, "int32");
-    CheckType(uint32(), 32, "uint32");
-}
-
-template <class T> void Core::CheckType(T t, int32 expectedSize, const char * typeString)
-{
-    if ((sizeof(t) * 8) != expectedSize)
-    {
-        Logger::Error("Size of %s is incorrect. Expected size: %d. Platform size: %d", typeString, expectedSize, sizeof(t));
-    }
-}
-
 KeyedArchive * Core::GetOptions()
 {
 	return options;
 }
 	
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-bool Core::IsAutodetectContentScaleFactor()
-{
-	return useAutodetectContentScaleFactor;
-}
-#endif //#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-
 Core::eScreenOrientation Core::GetScreenOrientation()
 {
 	return (Core::eScreenOrientation)screenOrientation;
@@ -474,6 +454,15 @@ void Core::SystemProcessFrame()
     Stats::Instance()->BeginFrame();
     TIME_PROFILE("Core::SystemProcessFrame");
     
+#ifndef __DAVAENGINE_WIN_UAP__
+    // Poll for network I/O events here, not depending on Core active flag
+    Net::NetCore::Instance()->Poll();
+    // Give memory profiler chance to notify its subscribers about new frame
+    DAVA_MEMORY_PROFILER_UPDATE();
+#else
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
+#endif
+    
 	if (!core) return;
 	if (!isActive)return;
 	
@@ -527,9 +516,6 @@ void Core::SystemProcessFrame()
 		LocalNotificationController::Instance()->Update();
         DownloadManager::Instance()->Update();
 		JobManager::Instance()->Update();
-
-        // Poll for network I/O events here
-        Net::NetCore::Instance()->Poll();
 
 		core->Update(frameDelta);
         InputSystem::Instance()->OnAfterUpdate();
@@ -592,9 +578,19 @@ void Core::SetCommandLine(const DAVA::String& cmdLine)
 {
     commandLine.clear();
     Split(cmdLine, " ", commandLine);
+
+    //remove "quotes"
+    for (auto& arg : commandLine)
+    {
+        const char quote = '\"';
+        if (arg.front() == quote && arg.back() == quote)
+        {
+            arg = arg.substr(1, arg.size() - 2);
+        }
+    }
 }
 
-Vector<String> & Core::GetCommandLine()
+const Vector<String> & Core::GetCommandLine()
 {
 	return commandLine;
 }
@@ -614,16 +610,16 @@ void Core::SetIsActive(bool _isActive)
 	isActive = _isActive;
 }
 
-#if defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WIN32__)    
+#if defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WINDOWS__)    
 Core::eDeviceFamily Core::GetDeviceFamily()
 {
     return DEVICE_DESKTOP;
 }
-#endif //#if defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WIN32__)
+#endif //#if defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WINDOWS__)
     
 uint32 Core::GetScreenDPI()
 {
-	return DPIHelper::GetScreenDPI();
+    return DPIHelper::GetScreenDPI();
 }
 
 void Core::SetIcon(int32 /*iconId*/)

@@ -1,10 +1,10 @@
 /*==================================================================================
     Copyright (c) 2008, binaryzebra
     All rights reserved.
- 
+
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are met:
- 
+
     * Redistributions of source code must retain the above copyright
     notice, this list of conditions and the following disclaimer.
     * Redistributions in binary form must reproduce the above copyright
@@ -13,7 +13,7 @@
     * Neither the name of the binaryzebra nor the
     names of its contributors may be used to endorse or promote products
     derived from this software without specific prior written permission.
- 
+
     THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
     ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -24,7 +24,8 @@
     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- =====================================================================================*/
+=====================================================================================*/
+
 
 #include "Render/Material/NMaterialNames.h"
 
@@ -36,9 +37,11 @@ namespace DAVA
     const FastName NMaterialName::DECAL_ALPHATEST = FastName("~res:/Materials/Decal.Alphatest.material");
     const FastName NMaterialName::PIXELLIT_SPECULARMAP_OPAQUE = FastName("~res:/Materials/PixelLit.SpecularMap.Opaque.material");
     const FastName NMaterialName::TEXTURED_ALPHATEST = FastName("~res:/Materials/Textured.Alphatest.material");
+    const FastName NMaterialName::TEXTURED_VERTEXCOLOR_ALPHATEST = FastName("~res:/Materials/Textured.VertexColor.Alphatest.material");
     const FastName NMaterialName::DECAL_OPAQUE = FastName("~res:/Materials/Decal.Opaque.material");
     const FastName NMaterialName::SHADOWRECT_ALPHA = FastName("~res:/Materials/ShadowRectAlpha.material");
     const FastName NMaterialName::TEXTURED_OPAQUE = FastName("~res:/Materials/Textured.Opaque.material");
+    const FastName NMaterialName::TEXTURED_VERTEXCOLOR_OPAQUE = FastName("~res:/Materials/Textured.VertexColor.Opaque.material");
     const FastName NMaterialName::DETAIL_ALPHABLEND = FastName("~res:/Materials/Detail.Alphablend.material");
     const FastName NMaterialName::SHADOWRECT_MULTIPLY = FastName("~res:/Materials/ShadowRectMultiply.material");
     const FastName NMaterialName::TILE_MASK = FastName("~res:/Materials/TileMaskAllQualities.material");
@@ -54,6 +57,10 @@ namespace DAVA
     const FastName NMaterialName::PIXELLIT_ALPHATEST = FastName("~res:/Materials/PixelLit.Alphatest.material");
     const FastName NMaterialName::SPEEDTREE_LEAF = FastName("~res:/Materials/SpeedTreeLeaf.material");
     const FastName NMaterialName::SPHERICLIT_SPEEDTREE_LEAF = FastName("~res:/Materials/SphericalLitAllQualities.SpeedTreeLeaf.material");
+    const FastName NMaterialName::SPHERICLIT_TEXTURED_OPAQUE = FastName("~res:/Materials/SphericalLitAllQualities.Textured.Opaque.material");
+    const FastName NMaterialName::SPHERICLIT_TEXTURED_ALPHATEST = FastName("~res:/Materials/SphericalLitAllQualities.Textured.Alphatest.material");
+    const FastName NMaterialName::SPHERICLIT_TEXTURED_VERTEXCOLOR_OPAQUE = FastName("~res:/Materials/SphericalLitAllQualities.Textured.VertexColor.Opaque.material");
+    const FastName NMaterialName::SPHERICLIT_TEXTURED_VERTEXCOLOR_ALPHATEST = FastName("~res:/Materials/SphericalLitAllQualities.Textured.VertexColor.Alphatest.material");
     const FastName NMaterialName::VERTEXCOLOR_OPAQUE = FastName("~res:/Materials/VertexColor.Opaque.material");
     const FastName NMaterialName::PIXELLIT_OPAQUE = FastName("~res:/Materials/PixelLit.Opaque.material");
     const FastName NMaterialName::TEXTURE_LIGHTMAP_ALPHABLEND = FastName("~res:/Materials/TextureLightmap.Alphablend.material");

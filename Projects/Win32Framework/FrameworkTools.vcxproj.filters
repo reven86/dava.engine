@@ -66,6 +66,9 @@
     <ClInclude Include="..\..\Sources\Tools\TeamcityOutput\TeamcityOutput.h">
       <Filter>TeamcityOutput</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Tools\TeamcityOutput\TeamCityTestsOutput.h">
+      <Filter>TeamcityOutput</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\Tools\TexturePacker\CommandLineParser.cpp">
@@ -99,6 +102,9 @@
       <Filter>Source Files\TextureCompression</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Tools\TeamcityOutput\TeamcityOutput.cpp">
+      <Filter>TeamcityOutput</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Tools\TeamcityOutput\TeamCityTestsOutput.cpp">
       <Filter>TeamcityOutput</Filter>
     </ClCompile>
   </ItemGroup>

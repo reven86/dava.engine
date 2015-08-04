@@ -27,12 +27,12 @@
 =====================================================================================*/
 
 
-
 #ifndef __MIMEDATA_HELPER2_H__
 #define __MIMEDATA_HELPER2_H__
 
 #include "DAVAEngine.h"
 #include <QMimeData>
+#include <QDataStream>
 
 template <class T>
 class MimeDataHelper2

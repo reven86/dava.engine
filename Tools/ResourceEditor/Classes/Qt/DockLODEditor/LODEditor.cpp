@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "LODEditor.h"
 #include "ui_LODEditor.h"
 
@@ -43,11 +42,15 @@
 #include <QWidget>
 #include <QLineEdit>
 #include <QInputDialog>
+#include <QFrame>
+#include <QPushButton>
 
 
 LODEditor::LODEditor(QWidget* parent)
-:   QWidget(parent),
-    ui(new Ui::LODEditor)
+    : QWidget(parent)
+    , ui(new Ui::LODEditor)
+    , frameViewVisible(true)
+    , frameEditVisible(true)
 {
     ui->setupUi(this);
 
@@ -56,8 +59,8 @@ LODEditor::LODEditor(QWidget* parent)
 
     SetupInternalUI();
     SetupSceneSignals();
-       
-    posSaver.Attach(this);
+      
+    new QtPosSaver( this );
 }
 
 LODEditor::~LODEditor()
@@ -175,11 +178,9 @@ void LODEditor::SceneActivated(SceneEditor2 *scene)
     ui->checkBoxLodEditorMode->setChecked(sceneEditorLodSystem->GetAllSceneModeEnabled());
     ui->enableForceDistance->setChecked(sceneEditorLodSystem->GetForceDistanceEnabled());
     ui->forceSlider->setValue(sceneEditorLodSystem->GetForceDistance());
-    int index = ui->forceLayer->findData(sceneEditorLodSystem->GetForceLayer());
-    if (-1 != index)
-    {
-        ui->forceLayer->setCurrentIndex(index);
-    }
+
+    UpdateForceLayer(sceneEditorLodSystem);
+    UpdateForceDistance(sceneEditorLodSystem);
     LODDataChanged(scene);
 }
 
@@ -224,6 +225,9 @@ void LODEditor::LODDataChanged(SceneEditor2 *scene /* = nullptr */)
     UpdateWidgetVisibility(currentLODSystem);
 
     UpdateLODButtons(currentLODSystem);
+
+    UpdateForceLayer(currentLODSystem);
+    UpdateForceDistance(currentLODSystem);
 }
 
 void LODEditor::LODDistanceChangedBySlider(const QVector<int> &changedLayers, bool continious)
@@ -322,7 +326,8 @@ void LODEditor::ViewLODButtonReleased()
 {
     InvertFrameVisibility(ui->frameViewLOD, ui->viewLODButton);
     
-    if(ui->frameViewLOD->isVisible() == false)
+    frameViewVisible = ui->frameViewLOD->isVisible();
+    if (!frameViewVisible)
     {
         GetCurrentEditorLODSystem()->SetForceDistance(DAVA::LodComponent::INVALID_DISTANCE);
         GetCurrentEditorLODSystem()->SetForceLayer(DAVA::LodComponent::INVALID_LOD_LAYER);
@@ -335,6 +340,7 @@ void LODEditor::ViewLODButtonReleased()
 void LODEditor::EditLODButtonReleased()
 {
     InvertFrameVisibility(ui->frameEditLOD, ui->editLODButton);
+    frameEditVisible = ui->frameEditLOD->isVisible();
 }
 
 void LODEditor::InvertFrameVisibility(QFrame *frame, QPushButton *frameButton)
@@ -351,9 +357,23 @@ void LODEditor::UpdateWidgetVisibility(const EditorLODSystem *editorLODSystem)
     bool visible = nullptr != editorLODSystem && (editorLODSystem->GetCurrentLodsLayersCount() != 0);
     
     ui->viewLODButton->setVisible(visible);
-    ui->frameViewLOD->setVisible(visible);
     ui->editLODButton->setVisible(visible);
-    ui->frameEditLOD->setVisible(visible);
+    
+    if (!visible)
+    {
+        ui->frameViewLOD->setVisible(visible);
+        ui->frameEditLOD->setVisible(visible);
+    }
+    else
+    {
+        QIcon viewIcon = (frameViewVisible) ? QIcon(":/QtIcons/advanced.png") : QIcon(":/QtIcons/play.png");
+        ui->viewLODButton->setIcon(viewIcon);
+        ui->frameViewLOD->setVisible(frameViewVisible);
+
+        QIcon editIcon = (frameEditVisible) ? QIcon(":/QtIcons/advanced.png") : QIcon(":/QtIcons/play.png");
+        ui->editLODButton->setIcon(editIcon);
+        ui->frameEditLOD->setVisible(frameEditVisible);
+    }
 }
 
 //TODO: refactor this function
@@ -375,6 +395,28 @@ void LODEditor::UpdateLODButtons(const EditorLODSystem *editorLODSystem)
     bool canCreatePlaneLOD = editorLODSystem->CanCreatePlaneLOD();
     ui->lastLodToFrontButton->setEnabled(canCreatePlaneLOD);
     ui->createPlaneLodButton->setEnabled(canCreatePlaneLOD);
+}
+
+void LODEditor::UpdateForceLayer(const EditorLODSystem *editorLODSystem)
+{
+    int32 forceLayer = editorLODSystem->GetCurrentForceLayer();
+    if (forceLayer + 1 >= ui->forceLayer->count())
+    {
+        ui->forceLayer->setCurrentIndex(-1);
+        return;
+    }
+
+    auto index = ui->forceLayer->findData(forceLayer);
+    if (-1 != index)
+    {
+        ui->forceLayer->setCurrentIndex(index);
+    }
+}
+
+void LODEditor::UpdateForceDistance(const EditorLODSystem *editorLODSystem)
+{
+    float32 forceDistance = editorLODSystem->GetCurrentDistance();
+    ui->forceSlider->setValue(forceDistance);
 }
 
 void LODEditor::CopyLODToLod0Clicked()
@@ -462,8 +504,11 @@ void LODEditor::SolidChanged(SceneEditor2 *scene, const Entity *entity, bool val
 {
     DVASSERT(scene);
     DVASSERT(entity);
-    scene->editorLODSystem->SolidChanged(entity, value);
-    LODDataChanged(scene);
+    if (SettingsManager::GetValue(Settings::Scene_RefreshLodForNonSolid).AsBool())
+    {
+        scene->editorLODSystem->SolidChanged(entity, value);
+        LODDataChanged(scene);
+    }
 }
 
 void LODEditor::DistanceWidget::SetVisible(bool visible)

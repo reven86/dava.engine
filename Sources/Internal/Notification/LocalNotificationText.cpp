@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #include "Notification/LocalNotificationText.h"
 
 namespace DAVA
@@ -33,7 +34,7 @@ namespace DAVA
 
 void LocalNotificationText::ImplShow()
 {
-	impl->ShowText(title, text);
+	impl->ShowText(title, text, useSound);
 }
 
 }

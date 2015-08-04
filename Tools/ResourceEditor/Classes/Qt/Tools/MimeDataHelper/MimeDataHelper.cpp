@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "MimeDataHelper.h"
 #include "Scene/SceneEditor2.h"
 
@@ -35,9 +34,7 @@
 #include <QUrl>
 #include <QFileInfo>
 #include <QStringList>
-
-namespace DAVA
-{
+#include <QDataStream>
 
 #define BEGIM_MIME_HANDLER_MAP const MimeDataHelper::MimeHandler MimeDataHelper::mimeHandlerMap[] = {
 
@@ -176,5 +173,3 @@ void MimeDataHelper::GetItemNamesFromFilePathMime(const QMimeData* mimeData, Lis
 		nameList.push_back(url.toLocalFile().toStdString());
 	}
 }
-
-}//namespace DAVA

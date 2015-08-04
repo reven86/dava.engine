@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Render/Image/Image.h"
 #include "Render/Image/LibJpegHelper.h"
 #include "Render/Image/ImageConvert.h"
@@ -42,18 +41,18 @@
 #include <stdio.h>
 
 #include "libjpeg/jpeglib.h"
+#include "libjpeg/jerror.h"
 #include <setjmp.h>
-
-#define QUALITY 100 //0..100
 
 namespace DAVA
 {
-//
+
 struct jpegErrorManager
 {
-    /* "public" fields */
+    // "public" fields 
     struct jpeg_error_mgr pub;
-    /* for return to caller */
+
+    // for return to caller 
     jmp_buf setjmp_buffer;
 };
     
@@ -61,141 +60,114 @@ char jpegLastErrorMsg[JMSG_LENGTH_MAX];
     
 void jpegErrorExit (j_common_ptr cinfo)
 {
-    /* cinfo->err actually points to a jpegErrorManager struct */
+    // cinfo->err actually points to a jpegErrorManager struct
     jpegErrorManager* myerr = (jpegErrorManager*) cinfo->err;
-    /* note : *(cinfo->err) is now equivalent to myerr->pub */
+    // note : *(cinfo->err) is now equivalent to myerr->pub
     
-    /* output_message is a method to print an error message */
-    /*(* (cinfo->err->output_message) ) (cinfo);*/
+    // output_message is a method to print an error message
+    //(* (cinfo->err->output_message) ) (cinfo);
     
-    /* Create the message */
+    // Create the message
     ( *(cinfo->err->format_message) ) (cinfo, jpegLastErrorMsg);
     
-    /* Jump to the setjmp point */
+    // Jump to the setjmp point
     longjmp(myerr->setjmp_buffer, 1);
 }
     
-LibJpegWrapper::LibJpegWrapper()
+LibJpegHelper::LibJpegHelper()
 {
-    supportedExtensions.push_back(".jpeg");
-    supportedExtensions.push_back(".jpg");
+    name.assign("JPG");
+    supportedExtensions.emplace_back(".jpg");
+    supportedExtensions.emplace_back(".jpeg");
+    supportedFormats = { { FORMAT_RGB888, FORMAT_A8 } };
 }
     
-bool LibJpegWrapper::IsImage(File *infile) const
+bool LibJpegHelper::IsMyImage(File *infile) const
 {
-    return GetDataSize(infile) != 0;
+    return GetImageInfo(infile).dataSize != 0;
 }
     
-uint32 LibJpegWrapper::GetDataSize(File *infile) const
+eErrorCode LibJpegHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int32 baseMipMap) const
 {
-    jpeg_decompress_struct cinfo;
-    jpegErrorManager jerr;
-
-    infile->Seek(0, File::SEEK_FROM_START);
-	uint32 fileSize = infile->GetSize();
-	uint8* fileBuffer= new uint8[fileSize];
-	infile->Read(fileBuffer, fileSize);
-    cinfo.err = jpeg_std_error( &jerr.pub );
-    
-    jerr.pub.error_exit = jpegErrorExit;
-    if (setjmp(jerr.setjmp_buffer))
+#if defined (__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_IOS__)
+    // Magic. Allow LibJpeg to use large memory buffer to prevent using temp file.
+    setenv("JPEGMEM", "10M", TRUE);
+    SCOPE_EXIT
     {
-        jpeg_destroy_decompress(&cinfo);
-        SafeDeleteArray(fileBuffer);
-        infile->Seek(0,  File::SEEK_FROM_START);
-        Logger::Error("[LibJpegWrapper::GetDataSize] File %s has wrong jpeg header", infile->GetFilename().GetAbsolutePathname().c_str());
-        return 0;
-    }
-    jpeg_create_decompress( &cinfo );
-    jpeg_mem_src( &cinfo, fileBuffer,fileSize);
-    jpeg_read_header( &cinfo, true );
-    infile->Seek(0,  File::SEEK_FROM_START);
-    uint32 dataSize = static_cast<uint32>(cinfo.src->bytes_in_buffer);
-    jpeg_destroy_decompress( &cinfo );
-    SafeDeleteArray(fileBuffer);
-    return dataSize;
-}
-  
-
-Size2i LibJpegWrapper::GetImageSize(File *infile) const
-{
-	Size2i imageSize;
-
-	jpeg_decompress_struct cinfo;
-	jpegErrorManager jerr;
-
-	infile->Seek(0, File::SEEK_FROM_START);
-	uint32 fileSize = infile->GetSize();
-	uint8* fileBuffer= new uint8[fileSize];
-	infile->Read(fileBuffer, fileSize);
-	cinfo.err = jpeg_std_error( &jerr.pub );
-
-	jerr.pub.error_exit = jpegErrorExit;
-	if (setjmp(jerr.setjmp_buffer))
-	{
-		jpeg_destroy_decompress(&cinfo);
-		SafeDeleteArray(fileBuffer);
-		infile->Seek(0,  File::SEEK_FROM_START);
-		Logger::Error("[LibJpegWrapper::GetDataSize] File %s has wrong jpeg header", infile->GetFilename().GetAbsolutePathname().c_str());
-		return imageSize;
-	}
-
-	jpeg_create_decompress( &cinfo );
-	jpeg_mem_src( &cinfo, fileBuffer,fileSize);
-	jpeg_read_header( &cinfo, true );
-	infile->Seek(0,  File::SEEK_FROM_START);
-
-
-	imageSize.dx = cinfo.image_width;
-	imageSize.dy = cinfo.image_height;
-
-	jpeg_destroy_decompress( &cinfo );
-	SafeDeleteArray(fileBuffer);
-
-	return imageSize;
-}
-
-
-eErrorCode LibJpegWrapper::ReadFile(File *infile, Vector<Image *> &imageSet, int32 baseMipMap) const
-{
+        unsetenv("JPEGMEM");
+    };
+#endif
+    
     jpeg_decompress_struct cinfo;
     jpegErrorManager jerr;
-
+    
     infile->Seek(0, File::SEEK_FROM_START);
-	uint32 fileSize = infile->GetSize();
-	uint8* fileBuffer= new uint8[fileSize];
-	infile->Read(fileBuffer, fileSize);
-	infile->Seek(0, File::SEEK_FROM_START);
+    uint32 fileSize = infile->GetSize();
+    uint8* fileBuffer = new uint8[fileSize];
+    infile->Read(fileBuffer, fileSize);
+    infile->Seek(0, File::SEEK_FROM_START);
     
     cinfo.err = jpeg_std_error( &jerr.pub );
     jerr.pub.error_exit = jpegErrorExit;
     
-    Image* image = new Image();
-    
+    ScopedPtr<Image> image(new Image());
+
     //set error handling block, which will be called in case of fail of jpeg_start_decompress,jpeg_read_scanlines...
     if (setjmp(jerr.setjmp_buffer))
     {
         jpeg_destroy_decompress(&cinfo);
         SafeDeleteArray(fileBuffer);
-        SafeRelease(image);
-        Logger::Error("[LibJpegWrapper::ReadFile] File %s has wrong jpeg header", infile->GetFilename() .GetAbsolutePathname().c_str());
-        return ERROR_FILE_FORMAT_INCORRECT;
+
+        Logger::Error("[LibJpegHelper::ReadFile] File %s has wrong jpeg header", infile->GetFilename() .GetAbsolutePathname().c_str());
+        Logger::Error("[LibJpegHelper::ReadFile] Internal Error %d. Look it in jerror.h", cinfo.err->msg_code);
+        
+        if (J_MESSAGE_CODE::JERR_TFILE_CREATE == cinfo.err->msg_code)
+        {
+            Logger::Error("Unable to create temporary file. Seems you need more JPEGMEM");
+        }
+        
+        return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
     }
     
     jpeg_create_decompress(&cinfo);
     jpeg_mem_src(&cinfo, fileBuffer, fileSize);
     jpeg_read_header( &cinfo, TRUE );
     jpeg_start_decompress(&cinfo);
+            
+    PixelFormat format = FORMAT_INVALID;
+    if (cinfo.jpeg_color_space == JCS_GRAYSCALE)
+    {
+        switch (cinfo.output_components)
+        {
+            case 1: format = FORMAT_A8; break;
+            case 2: format = FORMAT_A16; break;
+            default: break;
+        }
+    }
+    else
+    {
+        if (cinfo.output_components == 3)
+            format = FORMAT_RGB888;
+    }
+    
+    if (format == FORMAT_INVALID)
+    {
+        Logger::Error("[%s] Unable to detect format for %s", infile->GetFilename().GetAbsolutePathname().c_str());
+        return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
+    }
     
     image->width = cinfo.image_width;
     image->height = cinfo.image_height;
+    image->format = format;
+    DVASSERT(cinfo.num_components == PixelFormatDescriptor::GetPixelFormatSizeInBytes(format));
+    
     //as image->data will be rewrited, need to erase present buffer
     SafeDeleteArray(image->data);
-    image->data = new uint8 [cinfo.output_width * cinfo.output_height * cinfo.num_components];
-    
+    image->dataSize = cinfo.output_width * cinfo.output_height * cinfo.num_components;
+    image->data = new uint8[image->dataSize];
+
     JSAMPROW output_data;
     unsigned int scanline_len = cinfo.output_width * cinfo.output_components;
-    
     unsigned int scanline_count = 0;
     while (cinfo.output_scanline < cinfo.output_height)
     {
@@ -204,25 +176,20 @@ eErrorCode LibJpegWrapper::ReadFile(File *infile, Vector<Image *> &imageSet, int
         scanline_count++;
     }
     
-    image->format = FORMAT_RGB888;
-    if(cinfo.jpeg_color_space == JCS_GRAYSCALE)
-    {
-        image->format = FORMAT_A8;
-    }
     jpeg_finish_decompress(&cinfo);
     jpeg_destroy_decompress(&cinfo);
-	SafeDeleteArray(fileBuffer);
-    imageSet.push_back(image);
-    return SUCCESS;
+    SafeDeleteArray(fileBuffer);
+    imageSet.push_back(SafeRetain(image.get()));
+    return eErrorCode::SUCCESS;
 }
 
-eErrorCode LibJpegWrapper::WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat) const
+eErrorCode LibJpegHelper::WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat, ImageQuality quality) const
 {
-    Logger::Error("[LibJpegWrapper::WriteFileAsCubeMap] For jpeg cubeMaps are not supported");
-    return ERROR_WRITE_FAIL;
+    Logger::Error("[LibJpegHelper::WriteFileAsCubeMap] For jpeg cubeMaps are not supported");
+    return eErrorCode::ERROR_WRITE_FAIL;
 }
     
-eErrorCode LibJpegWrapper::WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const
+eErrorCode LibJpegHelper::WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat, ImageQuality quality) const
 {
     DVASSERT(imageSet.size());
     const Image* original = imageSet[0];
@@ -256,11 +223,11 @@ eErrorCode LibJpegWrapper::WriteFile(const FilePath & fileName, const Vector<Ima
     JSAMPROW row_pointer[1];
 	FILE *outfile = fopen(fileName.GetAbsolutePathname().c_str(), "wb");
     
-    if ( !outfile )
+    if (nullptr == outfile)
     {
-		Logger::Error("[LibJpegWrapper::WriteJpegFile] File %s could not be opened for writing", fileName.GetAbsolutePathname().c_str());
+		Logger::Error("[LibJpegHelper::WriteJpegFile] File %s could not be opened for writing", fileName.GetAbsolutePathname().c_str());
         SafeRelease(convertedImage);
-        return ERROR_FILE_NOTFOUND;
+        return eErrorCode::ERROR_FILE_NOTFOUND;
     }
     cinfo.err = jpeg_std_error( &jerr.pub );
     
@@ -270,9 +237,9 @@ eErrorCode LibJpegWrapper::WriteFile(const FilePath & fileName, const Vector<Ima
     {
         jpeg_destroy_compress( &cinfo );
         fclose(outfile);
-		Logger::Error("[LibJpegWrapper::WriteJpegFile] Error during compression of jpeg into file %s.", fileName.GetAbsolutePathname().c_str());
+		Logger::Error("[LibJpegHelper::WriteJpegFile] Error during compression of jpeg into file %s.", fileName.GetAbsolutePathname().c_str());
         SafeRelease(convertedImage);
-        return ERROR_WRITE_FAIL;
+        return eErrorCode::ERROR_WRITE_FAIL;
     }
     jpeg_create_compress(&cinfo);
     jpeg_stdio_dest(&cinfo, outfile);
@@ -297,7 +264,7 @@ eErrorCode LibJpegWrapper::WriteFile(const FilePath & fileName, const Vector<Ima
     cinfo.dct_method = JDCT_FLOAT;
     
     //The quality value ranges from 0..100. If "force_baseline" is TRUE, the computed quantization table entries are limited to 1..255 for JPEG baseline compatibility.
-    jpeg_set_quality(&cinfo, QUALITY, TRUE);
+    jpeg_set_quality(&cinfo, quality, TRUE);
 
     jpeg_start_compress( &cinfo, TRUE );
     while( cinfo.next_scanline < cinfo.image_height )
@@ -309,8 +276,55 @@ eErrorCode LibJpegWrapper::WriteFile(const FilePath & fileName, const Vector<Ima
     jpeg_destroy_compress( &cinfo );
     fclose( outfile );
     SafeRelease(convertedImage);
-    return SUCCESS;
+    return eErrorCode::SUCCESS;
 }
    
-    
+DAVA::ImageInfo LibJpegHelper::GetImageInfo(File *infile) const
+{
+    jpeg_decompress_struct cinfo;
+    jpegErrorManager jerr;
+
+    infile->Seek(0, File::SEEK_FROM_START);
+    uint32 fileSize = infile->GetSize();
+    uint8* fileBuffer = new uint8[fileSize];
+    infile->Read(fileBuffer, fileSize);
+    cinfo.err = jpeg_std_error(&jerr.pub);
+
+    jerr.pub.error_exit = jpegErrorExit;
+    if (setjmp(jerr.setjmp_buffer))
+    {
+        jpeg_destroy_decompress(&cinfo);
+        SafeDeleteArray(fileBuffer);
+        infile->Seek(0, File::SEEK_FROM_START);
+        return ImageInfo();
+    }
+
+    jpeg_create_decompress(&cinfo);
+    jpeg_mem_src(&cinfo, fileBuffer, fileSize);
+    jpeg_read_header(&cinfo, TRUE);
+    infile->Seek(0, File::SEEK_FROM_START);
+
+    ImageInfo info;
+    info.width = cinfo.image_width;
+    info.height = cinfo.image_height;
+    switch (cinfo.out_color_space)
+    {
+        case JCS_RGB:
+            info.format = FORMAT_RGB888;
+            break;
+        case JCS_GRAYSCALE:
+            info.format = FORMAT_A8;
+            break;
+        default:
+            info.format = FORMAT_INVALID;
+    }
+    info.dataSize = static_cast<uint32>(cinfo.src->bytes_in_buffer);
+    info.mipmapsCount = 1;
+
+    jpeg_destroy_decompress(&cinfo);
+    SafeDeleteArray(fileBuffer);
+
+    return info;
+}
+
 };

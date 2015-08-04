@@ -1,37 +1,37 @@
 /*==================================================================================
-Copyright (c) 2008, binaryzebra
-All rights reserved.
+    Copyright (c) 2008, binaryzebra
+    All rights reserved.
 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-* Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-* Redistributions in binary form must reproduce the above copyright
-notice, this list of conditions and the following disclaimer in the
-documentation and/or other materials provided with the distribution.
-* Neither the name of the binaryzebra nor the
-names of its contributors may be used to endorse or promote products
-derived from this software without specific prior written permission.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
 
-THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
 
 #include <QFile>
 #include <QFileInfo>
 #include <QTextStream>
 #include <QAction>
 #include <QVariant>
-#include <QFileDialog>
 #include <QGroupBox>
 #include <QDialogButtonBox>
 #include <QDebug>
@@ -56,6 +56,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 
 #include "CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
+#include "Tools/PathDescriptor/PathDescriptor.h"
+
+
+#include "QtTools/FileDialog/FileDialog.h"
+
 
 #define MATERIAL_NAME_LABEL "Name"
 #define MATERIAL_GROUP_LABEL "Group"
@@ -123,7 +128,7 @@ MaterialEditor::MaterialEditor(QWidget *parent /* = 0 */)
     QObject::connect(ui->actionLoadMaterialPreset, SIGNAL(triggered(bool)), this, SLOT(OnMaterialLoad(bool)));
 
     posSaver.Attach(this);
-    posSaver.LoadState(ui->splitter);
+    new QtPosSaver(ui->splitter);
     treeStateHelper = new PropertyEditorStateHelper(ui->materialProperty, (QtPropertyModel *) ui->materialProperty->model());
 
     DAVA::VariantType v1 = posSaver.LoadValue("splitPosProperties");
@@ -153,7 +158,6 @@ MaterialEditor::~MaterialEditor()
     posSaver.SaveValue("splitPosPreview", v2);
     posSaver.SaveValue("lastSavePath", DAVA::VariantType(lastSavePath));
     posSaver.SaveValue("lastLoadState", DAVA::VariantType(lastCheckState));
-    posSaver.SaveState(ui->splitter);
 }
 
 void MaterialEditor::initActions()
@@ -250,9 +254,9 @@ void MaterialEditor::SetCurMaterial(const QList< DAVA::NMaterial *>& materials)
     treeStateHelper->SaveTreeViewState(false);
     
     FillBase();
-    FillDynamic(flagsRoot, "materialSetFlags");
-    FillDynamic(propertiesRoot, "materialProperties");
-    FillDynamic(texturesRoot, "textures");
+	FillDynamic(flagsRoot, DAVA::FastName("materialSetFlags"));
+	FillDynamic(propertiesRoot, DAVA::FastName("materialProperties"));
+	FillDynamic(texturesRoot, DAVA::FastName("textures"));
     FillTemplates(materials);
 
     // Restore back the tree view state from the shared storage.
@@ -328,7 +332,7 @@ void MaterialEditor::commandExecuted(SceneEditor2 *scene, const Command2 *comman
             {
                 InspMemberModifyCommand *inspCommand = (InspMemberModifyCommand *) command;
 
-                const QString memberName = inspCommand->member->Name();
+                const QString memberName = inspCommand->member->Name().c_str();
                 if (memberName == "materialGroup" || memberName == "materialTemplate")
                 {
                     for (int i = 0; i < curMaterials.size(); i++)
@@ -336,7 +340,7 @@ void MaterialEditor::commandExecuted(SceneEditor2 *scene, const Command2 *comman
                         curMaterials[i]->ReloadQuality();
                     }
 
-                    FillDynamic(texturesRoot, "textures");
+					FillDynamic(texturesRoot, DAVA::FastName("textures"));
                     UpdateAllAddRemoveButtons(ui->materialProperty->GetRootProperty());
                 }
             }
@@ -347,11 +351,11 @@ void MaterialEditor::commandExecuted(SceneEditor2 *scene, const Command2 *comman
 
                 // if material flag was changed we should rebuild list of all properties
                 // because their set can be changed
-                const QString memberName = inspCommand->dynamicInfo->GetMember()->Name(); // Do not compare raw pointers
+                const QString memberName = inspCommand->dynamicInfo->GetMember()->Name().c_str(); // Do not compare raw pointers
                 if (memberName == "materialSetFlags")
                 {
-                    FillDynamic(propertiesRoot, "materialProperties");
-                    FillDynamic(texturesRoot, "textures");
+					FillDynamic(propertiesRoot, DAVA::FastName("materialProperties"));
+					FillDynamic(texturesRoot, DAVA::FastName("textures"));
                 }
 
                 UpdateAllAddRemoveButtons(ui->materialProperty->GetRootProperty());
@@ -367,6 +371,11 @@ void MaterialEditor::commandExecuted(SceneEditor2 *scene, const Command2 *comman
             break;
         }
     }
+}
+
+void MaterialEditor::OnQualityChanged()
+{
+    SetCurMaterial(curMaterials);
 }
 
 void MaterialEditor::onCurrentExpandModeChange( bool mode )
@@ -403,7 +412,7 @@ void MaterialEditor::FillBase()
         const DAVA::InspInfo *info = material->GetTypeInfo();
 
         // fill material name
-        const DAVA::InspMember *nameMember = info->Member("materialName");
+        const DAVA::InspMember *nameMember = info->Member(FastName("materialName"));
         if(NULL != nameMember)
         {
             QtPropertyDataInspMember *name = new QtPropertyDataInspMember(material, nameMember);
@@ -413,7 +422,7 @@ void MaterialEditor::FillBase()
         // fill material group, only for material type
         if(material->GetMaterialType() == DAVA::NMaterial::MATERIALTYPE_MATERIAL)
         {
-            const DAVA::InspMember *groupMember = info->Member("materialGroup");
+			const DAVA::InspMember *groupMember = info->Member(FastName("materialGroup"));
             if(NULL != groupMember)
             {
                 QtPropertyDataInspMember *group = new QtPropertyDataInspMember(material, groupMember);
@@ -432,7 +441,7 @@ void MaterialEditor::FillBase()
         }
 
         // fill illumination params
-        const DAVA::InspMember *materialIllumination = info->Member("illuminationParams");
+		const DAVA::InspMember *materialIllumination = info->Member(FastName("illuminationParams"));
         if(NULL != materialIllumination)
         {
             QtPropertyData *illumParams = QtPropertyDataIntrospection::CreateMemberData(material, materialIllumination);
@@ -450,7 +459,7 @@ void MaterialEditor::FillBase()
     }
 }
 
-void MaterialEditor::FillDynamic(QtPropertyData *root, const char* dynamicName)
+void MaterialEditor::FillDynamic(QtPropertyData *root, const FastName& dynamicName)
 {
     root->ChildRemoveAll();
 
@@ -518,7 +527,8 @@ void MaterialEditor::ApplyTextureValidator(QtPropertyDataInspDynamic *data)
 
     // create validator
     data->SetDefaultOpenDialogPath(defaultPath);
-    data->SetOpenDialogFilter("All (*.tex *.png);;PNG (*.png);;TEX (*.tex)");
+    
+    data->SetOpenDialogFilter(PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_TEXTURE).fileFilter);
     QStringList path;
     path.append(dataSourcePath.GetAbsolutePathname().c_str());
     data->SetValidator(new TexturePathValidator(path));
@@ -628,7 +638,7 @@ void MaterialEditor::FillTemplates(const QList<DAVA::NMaterial *>& materials)
             }
             // Test material flags
             if( material->GetMaterialType() != DAVA::NMaterial::MATERIALTYPE_MATERIAL ||
-                (material->GetNodeGlags() & DAVA::DataNode::NodeRuntimeFlag) )
+                (material->IsRuntime()) )
             {
                 enableTemplate = false;
             }
@@ -690,7 +700,7 @@ void MaterialEditor::OnTemplateChanged(int index)
         QString newTemplatePath = GetTemplatePath(index);
         if(!newTemplatePath.isEmpty())
         {
-            const DAVA::InspMember *templateMember = material->GetTypeInfo()->Member("materialTemplate");
+			const DAVA::InspMember *templateMember = material->GetTypeInfo()->Member(FastName("materialTemplate"));
 
             if(NULL != templateMember)
             {
@@ -866,7 +876,7 @@ void MaterialEditor::OnMaterialSave(bool checked)
 {
     if(curMaterials.size() == 1)
     {
-        QString outputFile = QFileDialog::getSaveFileName(this, "Save Material Preset", lastSavePath.GetAbsolutePathname().c_str(), "Material Preset (*.mpreset)");
+        QString outputFile = FileDialog::getSaveFileName(this, "Save Material Preset", lastSavePath.GetAbsolutePathname().c_str(), "Material Preset (*.mpreset)");
         SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
 
         if(!outputFile.isEmpty() && NULL != curScene)
@@ -895,7 +905,7 @@ void MaterialEditor::OnMaterialLoad(bool checked)
 {
     if(curMaterials.size() > 0)
     {
-        QString inputFile = QFileDialog::getOpenFileName(this, "Load Material Preset", lastSavePath.GetAbsolutePathname().c_str(), "Material Preset (*.mpreset)");
+        QString inputFile = FileDialog::getOpenFileName(this, "Load Material Preset", lastSavePath.GetAbsolutePathname().c_str(), "Material Preset (*.mpreset)");
         SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
         DAVA::NMaterial *material = curMaterials[0];
 
@@ -910,9 +920,9 @@ void MaterialEditor::OnMaterialLoad(bool checked)
             if(0 != userChoiseWhatToLoad)
             {
                 const DAVA::InspInfo *info = material->GetTypeInfo();
-                const DAVA::InspMember *materialProperties = info->Member("materialProperties");
-                const DAVA::InspMember *materialFlags = info->Member("materialSetFlags");
-                const DAVA::InspMember *materialTextures = info->Member("textures");
+                const DAVA::InspMember *materialProperties = info->Member(FastName("materialProperties"));
+				const DAVA::InspMember *materialFlags = info->Member(FastName("materialSetFlags"));
+				const DAVA::InspMember *materialTextures = info->Member(FastName("textures"));
 
                 lastCheckState = userChoiseWhatToLoad;
 
@@ -951,6 +961,7 @@ void MaterialEditor::OnMaterialLoad(bool checked)
                 materialArchive->DeleteKey("#index");
                 materialArchive->DeleteKey("materialName");
                 materialArchive->DeleteKey("materialType");
+                materialArchive->DeleteKey("materialKey");
                 materialArchive->DeleteKey("parentMaterialKey");
 
                 DAVA::SerializationContext materialContext;

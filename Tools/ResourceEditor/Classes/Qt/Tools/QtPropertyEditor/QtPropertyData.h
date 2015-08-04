@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __QT_PROPERTY_DATA_H__
 #define __QT_PROPERTY_DATA_H__
 
@@ -225,6 +224,8 @@ protected:
     QVariant tooltipValue;
 
 	void SetModel(QtPropertyModel *model);
+    void SetColorButtonIcon(const QIcon &icon);
+
     void BuildCurrentValue();
     void SetTempValue(const QVariant &value);
 

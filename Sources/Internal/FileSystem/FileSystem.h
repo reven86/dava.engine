@@ -145,7 +145,7 @@ public:
          \brief Function to retrieve user's documents path
          \returns user's documents path
      */
-	virtual const FilePath GetUserDocumentsPath();
+	static const FilePath GetUserDocumentsPath();
     
     /**
          \brief Function to retrieve public documents path
@@ -153,7 +153,7 @@ public:
      */
 	virtual const FilePath GetPublicDocumentsPath();
 
-#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)  
+#if defined(__DAVAENGINE_APPLE__)  
     /**
         \brief Function to retrieve user’s home path
         \returns user’s home path

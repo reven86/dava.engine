@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_INTROSPECTION_COLLECTION_H__
 #define __DAVAENGINE_INTROSPECTION_COLLECTION_H__
 
@@ -37,11 +36,11 @@ namespace DAVA
 {
 	// Класс представляет расширение базового класса IntrospectionMember и описывает члена интроспекции, как коллекцию
 	// Поддерживаемые коллекци - контейнеры с одним шаблонным параметром: Vector, List, Set
-	template<template <typename> class C, typename T>
+	template<template <typename, typename> class C, typename T, typename A>
 	class InspCollImpl : public InspColl
 	{
 	public:
-		typedef C<T> CollectionT;
+        using CollectionT = C<T, A>;
 
 		InspCollImpl(const char *_name, const InspDesc &_desc, const int _offset, const MetaInfo *_type, int _flags = 0)
 			: InspColl(_name, _desc, _offset, _type, _flags)
@@ -193,11 +192,11 @@ namespace DAVA
 		};
 	};
 
-	template<template <typename, typename> class C, typename K, typename V>
+	template<template <typename, typename, typename> class C, typename K, typename V, typename A>
 	class InspKeyedCollImpl : public InspColl
 	{
 	public:
-		typedef C<K, V> CollectionT;
+        using CollectionT = C<K, V, A>;
 
 		InspKeyedCollImpl(const char *_name, const InspDesc &_desc, const int _offset, const MetaInfo *_type, int _flags = 0)
 			: InspColl(_name, _desc, _offset, _type, _flags)
@@ -370,16 +369,16 @@ namespace DAVA
 	};
 
 	// Функция создает IntrospectionCollection, типы выводятся автоматически
-	template<template <typename> class Container, class T>
-	static InspColl* CreateInspColl(Container<T> *t, const char *_name, const InspDesc &_desc, const int _offset, const MetaInfo *_type, int _flags)
+	template<template <typename, typename> class Container, class T, class A>
+	static InspColl* CreateInspColl(Container<T, A> *t, const char *_name, const InspDesc &_desc, const int _offset, const MetaInfo *_type, int _flags)
 	{
-		return new InspCollImpl<Container, T>(_name, _desc, _offset, _type, _flags);
+		return new InspCollImpl<Container, T, A>(_name, _desc, _offset, _type, _flags);
 	}
 
-	template<template <typename, typename> class Container, class K, class V>
-	static InspColl* CreateInspColl(Container<K, V> *t, const char *_name, const InspDesc &_desc, const int _offset, const MetaInfo *_type, int _flags)
+	template<template <typename, typename, typename> class Container, class K, class V, class A>
+	static InspColl* CreateInspColl(Container<K, V, A> *t, const char *_name, const InspDesc &_desc, const int _offset, const MetaInfo *_type, int _flags)
 	{
-		return new InspKeyedCollImpl<Container, K, V>(_name, _desc, _offset, _type, _flags);
+		return new InspKeyedCollImpl<Container, K, V, A>(_name, _desc, _offset, _type, _flags);
 	}
 };
 

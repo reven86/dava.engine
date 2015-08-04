@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __FRAMEWORK__DEVICEINFO__
 #define __FRAMEWORK__DEVICEINFO__
 
@@ -44,7 +43,7 @@ public:
 	{
 		int32 width;
 		int32 height;
-		int32 scale;
+		float32 scale;
 		
 		ScreenInfo()
 		{
@@ -53,7 +52,7 @@ public:
 			scale = 1;
 		}
 		
-		ScreenInfo(int32 w, int32 h, int32 _scale)
+		ScreenInfo(int32 w, int32 h, float32 _scale)
 		{
 			width = w;
 			height = h;
@@ -70,7 +69,8 @@ public:
 		PLATFORM_IOS_SIMULATOR,
 		PLATFORM_ANDROID,
 		PLATFORM_WIN32,
-		PLATFORM_UNKNOWN,
+        PLATFORM_WIN_UAP,
+        PLATFORM_UNKNOWN,
 		PLATFORMS_COUNT
 	};
 
@@ -117,6 +117,7 @@ public:
         int64 freeSpace;
 
         bool readOnly;
+        bool removable;
         bool emulated;
 
         FilePath path;
@@ -126,6 +127,7 @@ public:
             , totalSpace(0)
             , freeSpace(0)
             , readOnly(false)
+            , removable(false)
             , emulated(false)
         {}
     };
@@ -153,11 +155,19 @@ public:
     static List<StorageInfo> GetStoragesList();
     static int32 GetCpuCount();
 
-
+#if defined (__DAVAENGINE_WIN_UAP__)
+    // it's a temporary decision
+    static void InitializeScreenInfo(int32 width, int32 height);
+#else 
     static void InitializeScreenInfo();
+#endif
 
 private:
     static ScreenInfo screenInfo;
+
+#if defined (__DAVAENGINE_WIN_UAP__)
+    static bool IsRunningOnEmulator();
+#endif //  (__DAVAENGINE_WIN_UAP__)
 };
 
 };

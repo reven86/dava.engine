@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Scene/System/DebugDrawSystem.h"
 #include "Scene/SceneEditor2.h"
 #include "Scene/System/LandscapeEditorDrawSystem/LandscapeProxy.h"
@@ -100,7 +99,7 @@ void DebugDrawSystem::Draw(DAVA::Entity *entity)
 {
 	if(NULL != entity)
 	{
-        bool isSelected = selSystem->GetSelection().HasEntity(entity);
+        bool isSelected = selSystem->GetSelection().ContainsEntity(entity);
 
 		DrawObjectBoxesByType(entity);
 		DrawUserNode(entity);

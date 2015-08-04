@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Platform/Qt5/QtLayer.h"
 
 #include "Render/RenderManager.h"
@@ -77,10 +76,10 @@ void QtLayer::SetDelegate(QtLayerDelegate *delegate)
     
 void QtLayer::AppStarted()
 {
-    Core::Instance()->SystemAppStarted();
-    
     RenderManager::Create(Core::RENDERER_OPENGL);
     FrameworkDidLaunched();
+
+    Core::Instance()->SystemAppStarted();
 }
 
 void QtLayer::AppFinished()
@@ -88,12 +87,6 @@ void QtLayer::AppFinished()
     Core::Instance()->SystemAppFinished();
     FrameworkWillTerminate();
     Core::Instance()->ReleaseSingletons();
-#ifdef ENABLE_MEMORY_MANAGER
-    if (MemoryManager::Instance() != 0)
-    {
-        MemoryManager::Instance()->FinalLog();
-    }
-#endif
 }
 
     
@@ -165,7 +158,7 @@ void QtLayer::KeyPressed(char16 key, int32 count, uint64 timestamp)
     UIEvent ev;
     ev.keyChar = 0;
     ev.phase = UIEvent::PHASE_KEYCHAR;
-    ev.timestamp = timestamp;
+    ev.timestamp = static_cast<float64>(timestamp);
     ev.tapCount = 1;
     ev.tid = key;
     
@@ -252,14 +245,17 @@ void QtLayer::MouseEvent(const UIEvent & event)
 
     
 #if defined (__DAVAENGINE_WIN32__)
+
 void* QtLayer::CreateAutoreleasePool()
 {
     return nullptr;
 }
+
 void QtLayer::ReleaseAutoreleasePool(void *pool)
 {
     (void)pool;
 }
+    
 #endif
 
 };

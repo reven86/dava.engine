@@ -1,3 +1,31 @@
+/*==================================================================================
+    Copyright (c) 2008, binaryzebra
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+=====================================================================================*/
+
 
 #include "PropertiesModel.h"
 
@@ -5,48 +33,53 @@
 #include <QColor>
 #include <QFont>
 #include <QVector2D>
+#include <QVector4D>
 #include <QUndoStack>
 
-#include "Model/ControlProperties/BaseProperty.h"
+#include "Document.h"
+#include "Ui/QtModelPackageCommandExecutor.h"
+
+#include "Model/ControlProperties/AbstractProperty.h"
+#include "Model/ControlProperties/RootProperty.h"
+#include "Model/ControlProperties/StyleSheetRootProperty.h"
 #include "Model/PackageHierarchy/ControlNode.h"
+#include "Model/PackageHierarchy/StyleSheetNode.h"
 #include "Utils/QtDavaConvertion.h"
 #include "UI/Commands/ChangePropertyValueCommand.h"
-#include "UI/Document.h"
 #include "UI/QtModelPackageCommandExecutor.h"
-#include "UI/PropertiesContext.h"
 
 using namespace DAVA;
 
-PropertiesModel::PropertiesModel(ControlNode *_controlNode, PropertiesContext *context)
-    : QAbstractItemModel(context)
-    , controlNode(nullptr)
-    , propertiesContext(context)
+PropertiesModel::PropertiesModel(ControlNode *_controlNode, QtModelPackageCommandExecutor *_commandExecutor, QObject *parent)
+: QAbstractItemModel(parent)
+, commandExecutor(SafeRetain(_commandExecutor))
 {
     controlNode = SafeRetain(_controlNode);
+    controlNode->GetRootProperty()->AddListener(this);
+    rootProperty = SafeRetain(controlNode->GetRootProperty());
+}
+
+PropertiesModel::PropertiesModel(StyleSheetNode *aStyleSheet, QtModelPackageCommandExecutor *_commandExecutor, QObject *parent)
+    : QAbstractItemModel(parent)
+    , commandExecutor(SafeRetain(_commandExecutor))
+{
+    styleSheet = SafeRetain(aStyleSheet);
+    styleSheet->GetRootProperty()->AddListener(this);
+    rootProperty = SafeRetain(styleSheet->GetRootProperty());
 }
 
 PropertiesModel::~PropertiesModel()
 {
-    SafeRelease(controlNode);
-}
-
-void PropertiesModel::emitPropertyChanged(BaseProperty *property)
-{
-    QModelIndex nameIndex = indexByProperty(property, 0);
-    QModelIndex valueIndex = nameIndex.sibling(nameIndex.row(), 1);
-    emit dataChanged(nameIndex, valueIndex);
-}
-
-QModelIndex PropertiesModel::indexByProperty(BaseProperty *property, int column)
-{
-    BaseProperty *parent = property->GetParent();
-    if (parent == NULL)
-        return QModelIndex();
+    if (controlNode)
+        controlNode->GetRootProperty()->RemoveListener(this);
     
-    if (parent)
-        return createIndex(parent->GetIndex(property), column, property);
-    else
-        return createIndex(0, column, parent);
+    if (styleSheet)
+        styleSheet->GetRootProperty()->RemoveListener(this);
+    
+    SafeRelease(commandExecutor);
+    SafeRelease(controlNode);
+    SafeRelease(rootProperty);
+    SafeRelease(styleSheet);
 }
 
 QModelIndex PropertiesModel::index(int row, int column, const QModelIndex &parent) const
@@ -55,9 +88,9 @@ QModelIndex PropertiesModel::index(int row, int column, const QModelIndex &paren
         return QModelIndex();
     
     if (!parent.isValid())
-        return createIndex(row, column, controlNode->GetPropertiesRoot()->GetProperty(row));
+        return createIndex(row, column, rootProperty->GetProperty(row));
     
-    BaseProperty *property = static_cast<BaseProperty*>(parent.internalPointer());
+    AbstractProperty *property = static_cast<AbstractProperty*>(parent.internalPointer());
     return createIndex(row, column, property->GetProperty(row));
 }
 
@@ -66,10 +99,10 @@ QModelIndex PropertiesModel::parent(const QModelIndex &child) const
     if (!child.isValid())
         return QModelIndex();
     
-    BaseProperty *property = static_cast<BaseProperty*>(child.internalPointer());
-    BaseProperty *parent = property->GetParent();
+    AbstractProperty *property = static_cast<AbstractProperty*>(child.internalPointer());
+    AbstractProperty *parent = property->GetParent();
     
-    if (parent == NULL || parent == controlNode->GetPropertiesRoot())
+    if (parent == nullptr || parent == rootProperty)
         return QModelIndex();
 
     if (parent->GetParent())
@@ -84,16 +117,13 @@ int PropertiesModel::rowCount(const QModelIndex &parent) const
         return 0;
     
     if (!parent.isValid())
-        return controlNode->GetPropertiesRoot() ? controlNode->GetPropertiesRoot()->GetCount() : 0;
+        return rootProperty ? rootProperty->GetCount() : 0;
     
-    return static_cast<BaseProperty*>(parent.internalPointer())->GetCount();
+    return static_cast<AbstractProperty*>(parent.internalPointer())->GetCount();
 }
 
 int PropertiesModel::columnCount(const QModelIndex &parent) const
 {
-    if (!parent.isValid() || parent.internalPointer() == controlNode->GetPropertiesRoot())
-        return 2;
-    
     return 2;
 }
 
@@ -102,7 +132,9 @@ QVariant PropertiesModel::data(const QModelIndex &index, int role) const
     if (!index.isValid())
         return QVariant();
     
-    BaseProperty *property = static_cast<BaseProperty*>(index.internalPointer());
+    AbstractProperty *property = static_cast<AbstractProperty*>(index.internalPointer());
+    uint32 flags = property->GetFlags();
+    
     switch (role)
     {
         case Qt::CheckStateRole:
@@ -140,17 +172,9 @@ QVariant PropertiesModel::data(const QModelIndex &index, int role) const
                 return var;
             }
             break;
-        case Qt::DecorationRole:
-            {
-                // TODO: fix
-                return QVariant();
-//                if (property->GetType() == VariantType::TYPE_COLOR)
-//                    return ColorToQColor(property->GetValue().AsColor());
-            }
-            break;
 
         case Qt::BackgroundRole:
-            return property->GetType() == BaseProperty::TYPE_HEADER ? QColor(Qt::lightGray) : QColor(Qt::white);
+            return property->GetType() == AbstractProperty::TYPE_HEADER ? QColor(Qt::lightGray) : QColor(Qt::white);
             
         case Qt::FontRole:
             {
@@ -163,6 +187,10 @@ QVariant PropertiesModel::data(const QModelIndex &index, int role) const
                 }
             }
             break;
+            
+        case Qt::TextColorRole:
+            return (flags & AbstractProperty::EF_INHERITED) != 0 ? QColor(Qt::blue) : QColor(Qt::black);
+
     }
 
     return QVariant();
@@ -173,7 +201,7 @@ bool PropertiesModel::setData(const QModelIndex &index, const QVariant &value, i
     if (!index.isValid())
         return false;
 
-    BaseProperty *property = static_cast<BaseProperty*>(index.internalPointer());
+    AbstractProperty *property = static_cast<AbstractProperty*>(index.internalPointer());
     if (property->IsReadOnly())
         return false;
     
@@ -184,7 +212,7 @@ bool PropertiesModel::setData(const QModelIndex &index, const QVariant &value, i
             if (property->GetValue().GetType() == VariantType::TYPE_BOOLEAN)
             {
                 VariantType newVal(value != Qt::Unchecked);
-                propertiesContext->GetDocument()->GetCommandExecutor()->ChangeProperty(controlNode, property, newVal);
+                ChangeProperty(property, newVal);
                 return true;
             }
         }
@@ -203,14 +231,14 @@ bool PropertiesModel::setData(const QModelIndex &index, const QVariant &value, i
                 initVariantType(newVal, value);
             }
 
-            propertiesContext->GetDocument()->GetCommandExecutor()->ChangeProperty(controlNode, property, newVal);
+            ChangeProperty(property, newVal);
             return true;
         }
         break;
 
     case DAVA::ResetRole:
         {
-            propertiesContext->GetDocument()->GetCommandExecutor()->ResetProperty(controlNode, property);
+            ResetProperty(property);
             return true;
         }
         break;
@@ -223,9 +251,9 @@ Qt::ItemFlags PropertiesModel::flags(const QModelIndex &index) const
     if (index.column() != 1)
         return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
     
-    BaseProperty* prop = static_cast<BaseProperty*>(index.internalPointer());
+    AbstractProperty* prop = static_cast<AbstractProperty*>(index.internalPointer());
     Qt::ItemFlags flags = Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled;
-    if (!prop->IsReadOnly() && (prop->GetType() == BaseProperty::TYPE_ENUM || prop->GetType() == BaseProperty::TYPE_FLAGS || prop->GetType() == BaseProperty::TYPE_VARIANT))
+    if (!prop->IsReadOnly() && (prop->GetType() == AbstractProperty::TYPE_ENUM || prop->GetType() == AbstractProperty::TYPE_FLAGS || prop->GetType() == AbstractProperty::TYPE_VARIANT))
         flags |= Qt::ItemIsEditable;
     return flags;
 }
@@ -242,7 +270,79 @@ QVariant PropertiesModel::headerData(int section, Qt::Orientation /*orientation*
     return QVariant();
 }
 
-QVariant PropertiesModel::makeQVariant(const BaseProperty *property) const
+void PropertiesModel::PropertyChanged(AbstractProperty *property)
+{
+    QModelIndex nameIndex = indexByProperty(property, 0);
+    QModelIndex valueIndex = nameIndex.sibling(nameIndex.row(), 1);
+    emit dataChanged(nameIndex, valueIndex);
+}
+
+void PropertiesModel::ComponentPropertiesWillBeAdded(RootProperty *root, ComponentPropertiesSection *section, int index)
+{
+    int32 sectionRow = root->GetIndexOfCompoentPropertiesSection(section);
+    QModelIndex parentIndex = indexByProperty(root, 0);
+    beginInsertRows(parentIndex, sectionRow, sectionRow);
+}
+
+void PropertiesModel::ComponentPropertiesWasAdded(RootProperty *root, ComponentPropertiesSection *section, int index)
+{
+    endInsertRows();
+}
+
+void PropertiesModel::ComponentPropertiesWillBeRemoved(RootProperty *root, ComponentPropertiesSection *section, int index)
+{
+    int32 sectionRow = root->GetIndexOfCompoentPropertiesSection(section);
+    QModelIndex parentIndex = indexByProperty(root, 0);
+    beginRemoveRows(parentIndex, sectionRow, sectionRow);
+}
+
+void PropertiesModel::ComponentPropertiesWasRemoved(RootProperty *root, ComponentPropertiesSection *section, int index)
+{
+    endRemoveRows();
+}
+
+void PropertiesModel::ChangeProperty(AbstractProperty *property, const DAVA::VariantType &value)
+{
+    if (controlNode)
+    {
+        commandExecutor->ChangeProperty(controlNode, property, value);
+    }
+    else if (styleSheet)
+    {
+        commandExecutor->ChangeProperty(styleSheet, property, value);
+    }
+    else
+    {
+        DVASSERT(false);
+    }
+}
+
+void PropertiesModel::ResetProperty(AbstractProperty *property)
+{
+    if (controlNode)
+    {
+        commandExecutor->ResetProperty(controlNode, property);
+    }
+    else if (styleSheet)
+    {
+        commandExecutor->ResetProperty(styleSheet, property);
+    }
+    else
+    {
+        DVASSERT(false);
+    }
+}
+
+QModelIndex PropertiesModel::indexByProperty(AbstractProperty *property, int column)
+{
+    AbstractProperty *parent = property->GetParent();
+    if (parent == nullptr)
+        return QModelIndex();
+    
+    return createIndex(parent->GetIndex(property), column, property);
+}
+
+QVariant PropertiesModel::makeQVariant(const AbstractProperty *property) const
 {
     const VariantType &val = property->GetValue();
     switch (val.GetType())
@@ -254,12 +354,12 @@ QVariant PropertiesModel::makeQVariant(const BaseProperty *property) const
             return QString();
 
         case VariantType::TYPE_INT32:
-            if (property->GetType() == BaseProperty::TYPE_ENUM)
+            if (property->GetType() == AbstractProperty::TYPE_ENUM)
             {
                 int32 e = val.AsInt32();
                 return QString::fromStdString(property->GetEnumMap()->ToString(e));
             }
-            else if (property->GetType() == BaseProperty::TYPE_FLAGS)
+            else if (property->GetType() == AbstractProperty::TYPE_FLAGS)
             {
                 int32 e = val.AsInt32();
                 QString res = "";
@@ -304,18 +404,21 @@ QVariant PropertiesModel::makeQVariant(const BaseProperty *property) const
 //            return val.AsUInt64();
             
         case VariantType::TYPE_VECTOR2:
-            return StringToQString(Format("[%g, %g]", val.AsVector2().x, val.AsVector2().y));
+            return StringToQString(Format("%g; %g", val.AsVector2().x, val.AsVector2().y));
             
         case VariantType::TYPE_COLOR:
             return QColorToHex(ColorToQColor(val.AsColor()));
 
+        case VariantType::TYPE_VECTOR4:
+            return StringToQString(Format("%g; %g; %g; %g", val.AsVector4().x, val.AsVector4().y, val.AsVector4().z, val.AsVector4().w));
+            
         case VariantType::TYPE_FILEPATH:
             return StringToQString(val.AsFilePath().GetStringValue());
             
         case VariantType::TYPE_BYTE_ARRAY:
         case VariantType::TYPE_KEYED_ARCHIVE:
         case VariantType::TYPE_VECTOR3:
-        case VariantType::TYPE_VECTOR4:
+            
         case VariantType::TYPE_MATRIX2:
         case VariantType::TYPE_MATRIX3:
         case VariantType::TYPE_MATRIX4:
@@ -378,7 +481,13 @@ void PropertiesModel::initVariantType(DAVA::VariantType &var, const QVariant &va
 //        case VariantType::TYPE_BYTE_ARRAY:
 //        case VariantType::TYPE_KEYED_ARCHIVE:
 //        case VariantType::TYPE_VECTOR3:
-//        case VariantType::TYPE_VECTOR4:
+        case VariantType::TYPE_VECTOR4:
+        {
+            QVector4D vector = val.value<QVector4D>();
+            var.SetVector4(DAVA::Vector4(vector.x(), vector.y(), vector.z(), vector.w()));
+        }
+            break;
+
 //        case VariantType::TYPE_MATRIX2:
 //        case VariantType::TYPE_MATRIX3:
 //        case VariantType::TYPE_MATRIX4:

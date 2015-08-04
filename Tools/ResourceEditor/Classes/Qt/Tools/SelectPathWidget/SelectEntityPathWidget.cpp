@@ -26,13 +26,13 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #include "SelectEntityPathWidget.h"
 #include "Tools/MimeDataHelper/MimeDataHelper.h"
 #include "Scene/SceneEditor2.h"
 #include <QFileInfo>
 #include <QKeyEvent>
 #include <QUrl>
-#include <QFileDialog>
 #include <QStyle>
 
 #define MIME_ENTITY_NAME "application/dava.entity"
@@ -132,7 +132,7 @@ void SelectEntityPathWidget::ConvertQMimeDataFromFilePath(const QMimeData* mimeD
 			continue;
 		}
 		
-		DAVA::Entity * entity = sceneEditor->structureSystem->Load(filePath,true);
+		DAVA::Entity * entity = sceneEditor->structureSystem->Load(filePath);
 		
 		if(NULL != entity)
 		{

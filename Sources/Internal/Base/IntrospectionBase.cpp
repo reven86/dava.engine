@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Base/IntrospectionBase.h"
 #include "Base/Meta.h"
 
@@ -38,9 +37,9 @@ InspMember::InspMember(const char *_name, const InspDesc &_desc, const long int 
 : name(_name), desc(_desc), offset(_offset), type(_type), flags(_flags), parentInsp(NULL)
 { }
 
-const char* InspMember::Name() const
+const FastName& InspMember::Name() const
 {
-	return name;
+    return name;
 }
 
 const InspDesc& InspMember::Desc() const
@@ -78,6 +77,11 @@ VariantType InspMember::Value(void *object) const
 void InspMember::SetValue(void *object, const VariantType &val) const
 {
 	VariantType::SaveData(Pointer(object), type, val);
+}
+
+void InspMember::SetValueRaw(void *object, void* val) const
+{
+	DVASSERT(false);
 }
 
 const InspColl* InspMember::Collection() const

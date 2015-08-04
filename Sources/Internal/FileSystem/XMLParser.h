@@ -36,7 +36,7 @@
 
 #include "FileSystem/FileSystem.h"
 
-typedef unsigned char xmlChar;
+using xmlChar = unsigned char;
 
 namespace DAVA 
 {

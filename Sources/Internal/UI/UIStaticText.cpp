@@ -42,6 +42,7 @@
 #include "Render/2D/TextBlockSoftwareRender.h"
 #include "Render/RenderHelper.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+
 namespace DAVA
 {
 #if defined(LOCALIZATION_DEBUG)
@@ -54,7 +55,7 @@ namespace DAVA
                                                     DAVA::Color(0.0f,1.0f,0.0f,0.4f)};
 #endif
 UIStaticText::UIStaticText(const Rect &rect, bool rectInAbsoluteCoordinates/* = FALSE*/)
-:	UIControl(rect, rectInAbsoluteCoordinates)
+    : UIControl(rect, rectInAbsoluteCoordinates)
     , shadowOffset(0, 0)
 {
     SetInputEnabled(false, false);
@@ -117,6 +118,11 @@ void UIStaticText::SetText(const WideString& _string, const Vector2 &requestedTe
     PrepareSprite();
 }
 
+void UIStaticText::SetTextWithoutRect(const WideString &text)
+{
+    SetText(text, Vector2(0.0f, 0.0f));
+}
+
 void UIStaticText::SetFittingOption(int32 fittingType)
 {
     textBlock->SetRectSize(size);
@@ -131,9 +137,12 @@ int32 UIStaticText::GetFittingOption() const
 
 void UIStaticText::SetFont(Font * _font)
 {
-    textBlock->SetRectSize(size);
-    textBlock->SetFont(_font);
-    PrepareSprite();
+    if (textBlock->GetFont() != _font)
+    {
+        textBlock->SetRectSize(size);
+        textBlock->SetFont(_font);
+        PrepareSprite();
+    }
 }
 
 void UIStaticText::SetTextColor(const Color& color)
@@ -194,25 +203,45 @@ int32 UIStaticText::GetTextVisualAlign() const
 	return textBlock->GetVisualAlign();
 }
 
-bool UIStaticText::GetTextIsRtl() const
+const WideString& UIStaticText::GetVisualText() const
 {
-	return textBlock->IsRtl();
+    return textBlock->GetVisualText();
 }
 
-void UIStaticText::SetTextUseRtlAlign(bool useRtlAlign)
+bool UIStaticText::GetTextIsRtl() const
+{
+    return textBlock->IsRtl();
+}
+
+void UIStaticText::SetTextUseRtlAlign(TextBlock::eUseRtlAlign useRtlAlign)
 {
     textBlock->SetUseRtlAlign(useRtlAlign);
 	textBg->SetAlign(textBlock->GetVisualAlign());
 }
 
-bool UIStaticText::GetTextUseRtlAlign() const
+TextBlock::eUseRtlAlign UIStaticText::GetTextUseRtlAlign() const
 {
     return textBlock->GetUseRtlAlign();
+}
+
+void UIStaticText::SetTextUseRtlAlignFromInt(int32 value)
+{
+    SetTextUseRtlAlign(static_cast<TextBlock::eUseRtlAlign>(value));
+}
+    
+int32 UIStaticText::GetTextUseRtlAlignAsInt() const
+{
+    return GetTextUseRtlAlign();
 }
 
 const Vector2 & UIStaticText::GetTextSize()
 {
     return textBlock->GetTextSize();
+}
+
+Vector2 UIStaticText::GetContentPreferredSize() const
+{
+    return textBlock->GetPreferredSize();
 }
 
 const Color &UIStaticText::GetTextColor() const
@@ -389,7 +418,7 @@ void UIStaticText::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader
 	
 	if (textUseRtlAlignNode)
 	{
-		SetTextUseRtlAlign(textUseRtlAlignNode->AsBool());
+        SetTextUseRtlAlign(textUseRtlAlignNode->AsBool() ? TextBlock::RTL_USE_BY_CONTENT : TextBlock::RTL_DONT_USE);
 	}
 
     if (textNode)
@@ -552,7 +581,7 @@ const Vector<int32> & UIStaticText::GetStringSizes() const
 {
     return textBlock->GetStringSizes();
 }
-
+    
 void UIStaticText::PrepareSprite()
 {
 	JobManager::Instance()->CreateMainJob(MakeFunction(PointerWrapper<UIStaticText>::WrapRetainRelease(this), &UIStaticText::PrepareSpriteInternal));
@@ -670,6 +699,19 @@ void UIStaticText::SetMultilineType(int32 multilineType)
             break;
     }
 }
+
+DAVA::Vector4 UIStaticText::GetMarginsAsVector4() const
+{
+    auto *margins = GetMargins();
+    return (margins != nullptr) ? margins->AsVector4() : Vector4();
+}
+
+void UIStaticText::SetMarginsAsVector4(const Vector4 &vMargins)
+{
+    UIControlBackground::UIMargins newMargins(vMargins);
+    SetMargins(&newMargins);
+}
+
 #if defined(LOCALIZATION_DEBUG)
 void  UIStaticText::DrawLocalizationErrors(const UIGeometricData & geometricData, const UIGeometricData & elementGeomData) const
 {
@@ -785,8 +827,7 @@ void UIStaticText::RecalculateDebugColoring()
         
         if (!text.empty())
         {
-            WideString textNoSpaces(text);
-            TextBlock::CleanLine(textNoSpaces);
+            WideString textNoSpaces = StringUtils::RemoveNonPrintable(text, 1);
             auto res = remove_if(textNoSpaces.begin(), textNoSpaces.end(), StringUtils::IsWhitespace);
             textNoSpaces.erase(res, textNoSpaces.end());
 

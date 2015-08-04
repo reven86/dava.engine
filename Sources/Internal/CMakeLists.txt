@@ -1,5 +1,4 @@
-cmake_minimum_required( VERSION 3.0 )
-
+cmake_minimum_required (VERSION 3.0)
 project( DavaFramework )
 
 set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../CMake/Modules/" ) 
@@ -47,6 +46,7 @@ if( ANDROID )
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libuv_android.a"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libiconv_android.so"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/liblua_android.a"
+         "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libwebp_android.a"
          )
 
     list ( APPEND LIST_LIBRARIES
@@ -55,7 +55,7 @@ if( ANDROID )
          "-llog"
          "-landroid"
          "-lGLESv2"
-         "-lstdc++" 
+         "-lstdc++"
          )
 
     list ( APPEND LIST_SHARED_LIBRARIES ${LIST_LIBRARIES} )
@@ -89,12 +89,10 @@ elseif( MACOS )
     file ( GLOB LIB_LIST "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/*.a" )
     list ( APPEND LIST_SHARED_LIBRARIES ${LIB_LIST}  )   
 
-    set_source_files_properties( ${CMAKE_CURRENT_LIST_DIR}/Platform/ThreadPosix.cpp PROPERTIES COMPILE_FLAGS "-x objective-c++" )  
-
 elseif( IOS )  
     find_package( ZLIB )
 
-    add_definitions( -DDDARWIN_NO_CARBON ) 
+    add_definitions( -DDARWIN_NO_CARBON ) 
     
     INCLUDE_DIRECTORIES ( /System/Library/Frameworks )
     foreach( NAME  CoreGraphics 
@@ -121,15 +119,17 @@ elseif( IOS )
     endforeach()
 
     file ( GLOB RESOURCE "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/*.a" )
-    list ( APPEND LIST_SHARED_LIBRARIES ${RESOURCE}  )   
+    list ( APPEND LIST_SHARED_LIBRARIES ${RESOURCE}  )    
 
-    set_source_files_properties( ${CMAKE_CURRENT_LIST_DIR}/Platform/ThreadPosix.cpp 
-                                 ${CMAKE_CURRENT_LIST_DIR}/Notification/LocalNotificationIOS.cpp
-                                 ${CMAKE_CURRENT_LIST_DIR}/DataStorage/iOS/ICloudKeyValue.cpp                                 
-                                 PROPERTIES COMPILE_FLAGS "-x objective-c++" )  
+elseif ( WINDOWS_UAP )
+    file ( GLOB DEBUG_LIB_LIST "${DAVA_WIN_UAP_LIBRARIES_PATH_DEBUG}/*.lib" )
+    list ( APPEND LIST_SHARED_LIBRARIES_DEBUG ${DEBUG_LIB_LIST}  )
 
+    file ( GLOB RELEASE_LIB_LIST "${DAVA_WIN_UAP_LIBRARIES_PATH_RELEASE}/*.lib" )
+    list ( APPEND LIST_SHARED_LIBRARIES_RELEASE ${RELEASE_LIB_LIST}  )
 
 elseif( WIN32 ) 
+
 
     file ( GLOB LIB_LIST "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/D/*" )
     list ( APPEND LIST_SHARED_LIBRARIES_DEBUG ${LIB_LIST}  )
@@ -137,10 +137,9 @@ elseif( WIN32 )
     file ( GLOB LIB_LIST "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/*.lib" )
     list ( APPEND LIST_SHARED_LIBRARIES_RELEASE ${LIB_LIST}  )
 
-    list ( APPEND LIST_SHARED_LIBRARIES         "Wininet.lib" "opengl32.lib" "ws2_32.lib" "winmm.lib" "wldap32.lib" "iphlpapi.lib" "Gdi32.lib" "glu32.lib" "psapi.lib" )
+    list ( APPEND LIST_SHARED_LIBRARIES         "Wininet.lib" "opengl32.lib" "ws2_32.lib" "winmm.lib" "wldap32.lib" "iphlpapi.lib" "Gdi32.lib" "glu32.lib" "psapi.lib" "dbghelp.lib" )
     list ( APPEND LIST_SHARED_LIBRARIES_RELEASE "msvcrt.lib"  )
     list ( APPEND LIST_SHARED_LIBRARIES_DEBUG   "msvcrtd.lib" )
-
 endif()
 
 if( ZLIB_FOUND )
@@ -149,8 +148,10 @@ if( ZLIB_FOUND )
 endif()
 
 # Define source 
-define_source_folders  ()
+define_source_folders  ( SRC_ROOT "." )
 generate_source_groups_project ()
+
+set_project_files_properties( "${PROJECT_SOURCE_FILES_CPP}" )
 
 include_directories    (.)
 include_directories    ( ${DAVA_INCLUDE_DIR} )
@@ -178,5 +179,9 @@ foreach ( FILE ${LIST_SHARED_LIBRARIES_RELEASE} )
 endforeach ()
 
 install_libraries( ${PROJECT_NAME} )
+
+if ( WINDOWS_UAP )
+    set_property(TARGET ${PROJECT_NAME} PROPERTY VS_MOBILE_EXTENSIONS_VERSION "10.0.0.1")
+endif()
 
 

@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __SCENE_SELECTION_SYSTEM_H__
 #define __SCENE_SELECTION_SYSTEM_H__
 
@@ -69,6 +68,8 @@ public:
     SceneSelectionSystem(DAVA::Scene * scene, SceneCollisionSystem *collSys, HoodSystem *hoodSys);
 	~SceneSelectionSystem();
 
+	void SetSelection(const EntityGroup &newSelection);
+	
 	void SetSelection(DAVA::Entity *entity);
 	void AddSelection(DAVA::Entity *entity);
 	void RemSelection(DAVA::Entity *entity);
@@ -102,9 +103,13 @@ public:
 
     DAVA::Entity* GetSelectableEntity(DAVA::Entity* entity);
 
-	virtual void Process(DAVA::float32 timeElapsed);
-    virtual void Input(DAVA::UIEvent *event);
+	void Process(DAVA::float32 timeElapsed) override;
+    void Input(DAVA::UIEvent *event) override;
 
+    void Activate() override;
+    void Deactivate() override;
+    
+    
     bool IsEntitySelected(DAVA::Entity *entity);
     bool IsEntitySelectedHierarchically(DAVA::Entity *entity);
 
