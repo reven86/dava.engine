@@ -134,12 +134,12 @@ public:
     {
         // Prepare data of various length
         Parcel a[] = {
-            {malloc(1), 1, 0},
-            {malloc(1000), 1000, 0},
-            {malloc(10000), 10000, 0},
-            {malloc(100000), 100000, 0},
-            {malloc(1000000), 1000000, 0},
-            {malloc(10000000), 10000000, 0}
+            {::operator new(1), 1, 0},
+            {::operator new(1000), 1000, 0},
+            {::operator new(10000), 10000, 0},
+            {::operator new(100000), 100000, 0},
+            {::operator new(1000000), 1000000, 0},
+            {::operator new(10000000), 10000000, 0}
         };
         uint8 v = 'A';
         for (size_t i = 0;i < COUNT_OF(a);++i, ++v)
@@ -149,27 +149,31 @@ public:
         }
 
         // Prepare end marker
-        Parcel end = {malloc(3), 3, 0};
+        Parcel end = {::operator new(3), 3, 0};
         Memcpy(end.outbuf, "END", 3);
         parcels.push_back(end);
     }
     virtual ~TestEchoClient()
     {
         for (auto& x : parcels)
-            free(x.outbuf);
+            ::operator delete(x.outbuf);
     }
 
     void ChannelOpen() override
     {
         // Send all parcell at a time
         for (auto& x : parcels)
+        {
+            Logger::Debug("TestEchoClient: sending %u", static_cast<uint32>(x.length));
             SendParcel(&x);
+        }
     }
     void OnPacketReceived(IChannel* aChannel, const void* buffer, size_t length) override
     {
         if (pendingRead < parcels.size())
         {
             Parcel& p = parcels[pendingRead];
+            Logger::Debug("TestEchoClient: recieved %u", static_cast<uint32>(p.length));
             if (p.length == length && 0 == Memcmp(p.outbuf, buffer, length))
             {
                 bytesRecieved += length;
@@ -188,6 +192,7 @@ public:
         {
             // Check that send operation is sequential
             Parcel& p = parcels[pendingSent];
+            Logger::Debug("TestEchoClient: send complete %u", static_cast<uint32>(p.length));
             if (p.length == length && 0 == Memcmp(p.outbuf, buffer, length))
             {
                 bytesSent += length;
@@ -201,6 +206,7 @@ public:
         {
             // Check that delivery notification is sequential
             Parcel& p = parcels[pendingDelivered];
+            Logger::Debug("TestEchoClient: deliver ack %u", static_cast<uint32>(p.length));
             if (p.packetId == packetId)
             {
                 bytesDelivered += p.length;
@@ -259,6 +265,9 @@ DAVA_TESTCLASS(NetworkTest)
     TestEchoServer echoServer;
     TestEchoClient echoClient;
 
+    NetCore::TrackId serverId = NetCore::INVALID_TRACK_ID;
+    NetCore::TrackId clientId = NetCore::INVALID_TRACK_ID;
+
     void SetUp(const String& testName) override
     {
         if (testName == "TestEcho")
@@ -272,8 +281,8 @@ DAVA_TESTCLASS(NetworkTest)
             NetConfig clientConfig = serverConfig.Mirror(IPAddress("127.0.0.1"));
 
             // Server config must be recreated first due to restrictions of service management
-            NetCore::Instance()->CreateController(serverConfig, reinterpret_cast<void*>(ECHO_SERVER_CONTEXT));
-            NetCore::Instance()->CreateController(clientConfig, reinterpret_cast<void*>(ECHO_CLIENT_CONTEXT));
+            serverId = NetCore::Instance()->CreateController(serverConfig, reinterpret_cast<void*>(ECHO_SERVER_CONTEXT));
+            clientId = NetCore::Instance()->CreateController(clientConfig, reinterpret_cast<void*>(ECHO_CLIENT_CONTEXT));
         }
     }
 
@@ -281,7 +290,14 @@ DAVA_TESTCLASS(NetworkTest)
     {
         if (testName == "TestEcho")
         {
-            NetCore::Instance()->DestroyAllControllersBlocked();
+            // Check whether DestroyControllerBlocked() really blocks until controller is destroyed
+            size_t nactive = NetCore::Instance()->ActiveControllersCount();
+            NetCore::Instance()->DestroyControllerBlocked(serverId);
+            TEST_VERIFY(NetCore::Instance()->ActiveControllersCount() == nactive - 1);
+            NetCore::Instance()->DestroyControllerBlocked(clientId);
+            TEST_VERIFY(NetCore::Instance()->ActiveControllersCount() == nactive - 2);
+            serverId = NetCore::INVALID_TRACK_ID;
+            clientId = NetCore::INVALID_TRACK_ID;
         }
     }
 
@@ -294,7 +310,7 @@ DAVA_TESTCLASS(NetworkTest)
         return true;
     }
 
-    DAVA_TEST(TestIPAddress)
+    /*DAVA_TEST(TestIPAddress)
     {
         // Test empty address
         TEST_VERIFY(true == IPAddress().IsUnspecified());
@@ -320,9 +336,9 @@ DAVA_TESTCLASS(NetworkTest)
         TEST_VERIFY(IPAddress("192.168.0.4").ToString() == IPAddress::FromString("192.168.0.4").ToString());
         TEST_VERIFY(false == IPAddress("192.168.0.4").IsUnspecified());
         TEST_VERIFY(false == IPAddress("255.255.255.255").IsUnspecified());
-    }
+    }*/
 
-    DAVA_TEST(TestEndpoint)
+    /*DAVA_TEST(TestEndpoint)
     {
         TEST_VERIFY(0 == Endpoint().Port());
         TEST_VERIFY(String("0.0.0.0:0") == Endpoint().ToString());
@@ -334,9 +350,9 @@ DAVA_TESTCLASS(NetworkTest)
         TEST_VERIFY(Endpoint("192.168.1.45", 1234) == Endpoint("192.168.1.45", 1234));
         TEST_VERIFY(false == (Endpoint("192.168.1.45", 1234) == Endpoint("192.168.1.45", 1235)));  // Different ports
         TEST_VERIFY(false == (Endpoint("192.168.1.45", 1234) == Endpoint("192.168.1.46", 1234)));  // Different addressess
-    }
+    }*/
 
-    DAVA_TEST(TestNetConfig)
+    /*DAVA_TEST(TestNetConfig)
     {
         TEST_VERIFY(SERVER_ROLE == NetConfig(SERVER_ROLE).Role());
         TEST_VERIFY(false == NetConfig(SERVER_ROLE).Validate());
@@ -358,7 +374,7 @@ DAVA_TESTCLASS(NetworkTest)
         TEST_VERIFY(true == config2.Validate());
         TEST_VERIFY(2 == config2.Transports().size());
         TEST_VERIFY(3 == config2.Services().size());
-    }
+    }*/
 
     DAVA_TEST(TestEcho)
     {
