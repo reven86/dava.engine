@@ -1001,9 +1001,7 @@ void Present()
     if (scheduledDeleteResources[currFrameSyncId].size()&&!frameSyncObjects[currFrameSyncId].IsValid())
         frameSyncObjects[currFrameSyncId] = CreateSyncObject();
 
-    PresentImpl(frameSyncObjects[currFrameSyncId]);        
-    
-    ProcessScheduledDelete();
+    PresentImpl(frameSyncObjects[currFrameSyncId]);                
 
     currFrameSyncId = (currFrameSyncId + 1) % frameSyncObjectsCount;
     DVASSERT(scheduledDeleteResources[currFrameSyncId].empty()); //we are not going to mix new resources for deletion with existing once still waiting    
@@ -1012,6 +1010,8 @@ void Present()
         DeleteSyncObject(frameSyncObjects[currFrameSyncId]);
         frameSyncObjects[currFrameSyncId] = HSyncObject();
     }
+
+    ProcessScheduledDelete();
     
 }
 
