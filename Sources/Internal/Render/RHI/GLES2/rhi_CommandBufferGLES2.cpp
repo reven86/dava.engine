@@ -780,6 +780,7 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
                         glClearDepthf( passCfg.depthStencilBuffer.clearDepth );
                         #else
                         glClearDepth( passCfg.depthStencilBuffer.clearDepth );
+                        glStencilMask( 0xFFFFFFFF );
                         glClearStencil( 0 );
                         #endif
 
