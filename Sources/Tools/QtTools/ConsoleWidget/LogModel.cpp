@@ -19,7 +19,8 @@ LogModel::LogModel(QObject* parent)
     qRegisterMetaType<DAVA::Logger::eLogLevel>("DAVA::Logger::eLogLevel");
     DAVA::Logger::AddCustomOutput(this);
     timer = new QTimer(this);
-    timer->setInterval(1);
+    timer->setSingleShot(true);
+    timer->setInterval(0);
     connect(timer, &QTimer::timeout, this, &LogModel::OnTimeout, Qt::QueuedConnection);
 }
 

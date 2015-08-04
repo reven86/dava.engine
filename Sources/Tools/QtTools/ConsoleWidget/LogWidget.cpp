@@ -39,6 +39,7 @@ LogWidget::LogWidget(QWidget* parent)
     connect(ui->log->model(), &QAbstractItemModel::rowsAboutToBeInserted, this, &LogWidget::OnBeforeAdded);
     connect(ui->log, &QListView::clicked, this, &LogWidget::OnItemClicked);
     scrollTimer = new QTimer(this);
+    scrollTimer->setSingleShot(true);
     scrollTimer->setInterval(0);
     connect(scrollTimer, &QTimer::timeout, this, &LogWidget::UpdateScroll, Qt::QueuedConnection);
 }
