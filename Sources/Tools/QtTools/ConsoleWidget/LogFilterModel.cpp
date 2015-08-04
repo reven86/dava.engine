@@ -7,6 +7,7 @@
 LogFilterModel::LogFilterModel(QObject* parent)
     : QSortFilterProxyModel(parent)
 {
+    setFilterCaseSensitivity(Qt::CaseInsensitive);
 }
 
 LogFilterModel::~LogFilterModel()

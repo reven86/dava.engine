@@ -175,14 +175,12 @@ void LogWidget::OnCopy()
         sortedSelection[realIdx] = index;
     }
 
-    QString text;
-    QTextStream ss(&text);
+    QStringList strList;
     for (auto it = sortedSelection.constBegin(); it != sortedSelection.constEnd(); ++it)
     {
-        ss << it.value().data(Qt::DisplayRole).toString() << "\n";
+        strList << it.value().data(Qt::DisplayRole).toString();
     }
-    ss.flush();
-
+    QString text = strList.join('\n');
     QClipboard* clipboard = QApplication::clipboard();
     clipboard->setText(text);
 }
