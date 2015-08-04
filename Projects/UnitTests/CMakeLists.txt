@@ -3,7 +3,7 @@ project ( UnitTests )
 
 # Enable MemoryManagerTest in UnitTests
 # this variable should be defined in all dependant projects (dava framework, etc)
-if( NOT DAVA_MEGASOLUTION )
+if( NOT DAVA_MEGASOLUTION AND NOT ANDROID )
     set ( DAVA_MEMORY_PROFILER 1 )
 endif()
 
