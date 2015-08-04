@@ -15,7 +15,6 @@
 
 LogWidget::LogWidget(QWidget* parent)
     : QWidget(parent)
-    , onBottom(true)
     , ui(new Ui::LogWidget)
 {
     ui->setupUi(this);
