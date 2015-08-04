@@ -42,7 +42,6 @@ private:
 
     QPointer<LogModel> logModel;
     QPointer<LogFilterModel> logFilterModel;
-    bool onBottom;
     Ui::LogWidget *ui;
     QTimer *scrollTimer;
 };

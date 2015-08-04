@@ -190,16 +190,16 @@ void LogWidget::OnCopy()
 
 void LogWidget::OnBeforeAdded()
 {
-    onBottom = ui->log->verticalScrollBar()->value() == ui->log->verticalScrollBar()->maximum();
-    scrollTimer->start();
+    bool onBottom = ui->log->verticalScrollBar()->value() == ui->log->verticalScrollBar()->maximum();
+    if (onBottom)
+    {
+        scrollTimer->start();
+    }
 }
 
 void LogWidget::UpdateScroll()
 {
-    if (onBottom)
-    {
-        ui->log->scrollToBottom();
-    }
+    ui->log->scrollToBottom();
 }
 
 void LogWidget::OnItemClicked(const QModelIndex &index)
