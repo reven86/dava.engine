@@ -125,11 +125,11 @@ void UIStyleSheetSystem::ProcessControl(UIControl* control)
         UIStyleSheetPropertySet appliedProperties;
         const UIStyleSheetPropertySet& localControlProperties = control->GetLocalPropertySet();
         const auto& styleSheets = packageContext->GetSortedStyleSheets();
-        for (const UIControlPackageContext::StyleSheetWithPenalty& styleSheet : styleSheets)
+        for (const UIPriorityStyleSheet& styleSheet : styleSheets)
         {
-            if (StyleSheetMatchesControl(styleSheet.styleSheet, control))
+            if (StyleSheetMatchesControl(styleSheet.GetStyleSheet(), control))
             {
-                const auto& propertyTable = styleSheet.styleSheet->GetPropertyTable()->GetProperties();
+                const auto& propertyTable = styleSheet.GetStyleSheet()->GetPropertyTable()->GetProperties();
                 for (const auto& iter : propertyTable)
                 {
                     if (!appliedProperties.test(iter.propertyIndex) && !localControlProperties.test(iter.propertyIndex))

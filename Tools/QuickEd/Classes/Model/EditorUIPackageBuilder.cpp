@@ -342,7 +342,7 @@ RefPtr<PackageNode> EditorUIPackageBuilder::BuildPackage() const
 
             for (int32 styleSheetIndex = 0; styleSheetIndex < importedPackage->GetStyleSheets()->GetCount(); ++styleSheetIndex)
             {
-                packageContext->AddStyleSheet(importedPackage->GetStyleSheets()->Get(styleSheetIndex)->GetStyleSheet());
+                packageContext->AddStyleSheet(UIPriorityStyleSheet(importedPackage->GetStyleSheets()->Get(styleSheetIndex)->GetStyleSheet(), 0));
             }
         }
         else
@@ -354,7 +354,7 @@ RefPtr<PackageNode> EditorUIPackageBuilder::BuildPackage() const
     for (StyleSheetNode *styleSheet : styleSheets)
     {
         package->GetStyleSheets()->Add(styleSheet);
-        packageContext->AddStyleSheet(styleSheet->GetStyleSheet());
+        packageContext->AddStyleSheet(UIPriorityStyleSheet(styleSheet->GetStyleSheet(), 0));
     }
     
     for (ControlNode *control : rootControls)

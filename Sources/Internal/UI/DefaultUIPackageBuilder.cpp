@@ -117,19 +117,15 @@ void DefaultUIPackageBuilder::EndPackage()
 {
     for (UIPackage* importedPackage : importedPackages)
     {
-        const Vector<UIControlPackageContext::StyleSheetWithPenalty>& packageStyleSheets = importedPackage->GetControlPackageContext()->GetSortedStyleSheets();
-        for (const UIControlPackageContext::StyleSheetWithPenalty& packageStyleSheet : packageStyleSheets)
+        const Vector<UIPriorityStyleSheet>& packageStyleSheets = importedPackage->GetControlPackageContext()->GetSortedStyleSheets();
+        for (const UIPriorityStyleSheet& packageStyleSheet : packageStyleSheets)
         {
-            styleSheets.push_back(UIControlPackageContext::StyleSheetWithPenalty(packageStyleSheet.styleSheet, packageStyleSheet.penalty + 1));
+            styleSheets.push_back(UIPriorityStyleSheet(packageStyleSheet.GetStyleSheet(), packageStyleSheet.GetPriority() + 1));
         }
     }
 
     AddStyleSheets(styleSheets);
-    
-    for (UIControlPackageContext::StyleSheetWithPenalty& styleSheet : styleSheets)
-    {
-        SafeRelease(styleSheet.styleSheet);
-    }
+
     styleSheets.clear();
 }
 
@@ -167,7 +163,11 @@ void DefaultUIPackageBuilder::ProcessStyleSheets(const YamlNode *styleSheetsNode
     styleSheetLoader.LoadFromYaml(styleSheetsNode, &localStyleSheets);
 
     for (UIStyleSheet* styleSheet : localStyleSheets)
-        styleSheets.push_back(UIControlPackageContext::StyleSheetWithPenalty(styleSheet, 0));
+        styleSheets.push_back(UIPriorityStyleSheet(styleSheet, 0));
+    
+    for (UIStyleSheet *ss : localStyleSheets)
+        ss->Release();
+    localStyleSheets.clear();
 }
 
 UIControl *DefaultUIPackageBuilder::BeginControlWithClass(const String &className)
@@ -399,12 +399,12 @@ UIPackage *DefaultUIPackageBuilder::FindImportedPackageByName(const String &name
 void DefaultUIPackageBuilder::AddStyleSheets(const DAVA::Vector<UIStyleSheet*> &styleSheets)
 {
     for (UIStyleSheet *styleSheet : styleSheets)
-        package->GetControlPackageContext()->AddStyleSheet(UIControlPackageContext::StyleSheetWithPenalty(styleSheet, 0));
+        package->GetControlPackageContext()->AddStyleSheet(UIPriorityStyleSheet(styleSheet));
 }
     
-void DefaultUIPackageBuilder::AddStyleSheets(const DAVA::Vector<UIControlPackageContext::StyleSheetWithPenalty> &styleSheets)
+void DefaultUIPackageBuilder::AddStyleSheets(const DAVA::Vector<UIPriorityStyleSheet> &styleSheets)
 {
-    for (const UIControlPackageContext::StyleSheetWithPenalty &styleSheet : styleSheets)
+    for (const UIPriorityStyleSheet &styleSheet : styleSheets)
         package->GetControlPackageContext()->AddStyleSheet(styleSheet);
 }
 

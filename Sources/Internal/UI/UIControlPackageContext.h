@@ -32,6 +32,7 @@
 
 #include "Base/BaseObject.h"
 #include "Base/BaseTypes.h"
+#include "UI/Styles/UIPriorityStyleSheet.h"
 
 namespace DAVA
 {
@@ -44,26 +45,15 @@ class UIControlPackageContext :
 protected:
     virtual ~UIControlPackageContext();
 public:
-    struct StyleSheetWithPenalty
-    {
-        StyleSheetWithPenalty(UIStyleSheet* aStyleSheet, int32 aPenalty)
-            : styleSheet(aStyleSheet)
-            , penalty(aPenalty)
-        {
-            
-        }
-        
-        UIStyleSheet* styleSheet;
-        int32 penalty;
-    };
     
     UIControlPackageContext();
 
-    void AddStyleSheet(const StyleSheetWithPenalty &styleSheet);
+    void AddStyleSheet(const UIPriorityStyleSheet &styleSheet);
 
-    const Vector<StyleSheetWithPenalty>& GetSortedStyleSheets();
+    const Vector<UIPriorityStyleSheet>& GetSortedStyleSheets();
+    
 private:
-    Vector<StyleSheetWithPenalty> styleSheets;
+    Vector<UIPriorityStyleSheet> styleSheets;
     bool styleSheetsSorted;
 };
 

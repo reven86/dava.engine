@@ -79,7 +79,7 @@ private:
     UIPackage *FindImportedPackageByName(const String &name) const;
 
     void AddStyleSheets(const DAVA::Vector<UIStyleSheet*> &styleSheets);
-    void AddStyleSheets(const DAVA::Vector<UIControlPackageContext::StyleSheetWithPenalty> &styleSheets);
+    void AddStyleSheets(const DAVA::Vector<UIPriorityStyleSheet> &styleSheets);
 
 private:
     //class PackageDescr;
@@ -94,7 +94,7 @@ private:
     RefPtr<UIPackage> package;
 
     Vector<UIPackage*> importedPackages;
-    Vector<UIControlPackageContext::StyleSheetWithPenalty> styleSheets;
+    Vector<UIPriorityStyleSheet> styleSheets;
     Map<FilePath, int32> packsByPaths;
     Map<String, int32> packsByNames;
 

@@ -34,10 +34,6 @@ namespace DAVA
 
 UIControlPackageContext::~UIControlPackageContext()
 {
-    for (StyleSheetWithPenalty &styleSheet : styleSheets)
-    {
-        SafeRelease(styleSheet.styleSheet);
-    }
 }
 
 UIControlPackageContext::UIControlPackageContext() :
@@ -46,25 +42,17 @@ UIControlPackageContext::UIControlPackageContext() :
 
 }
 
-void UIControlPackageContext::AddStyleSheet(const StyleSheetWithPenalty &styleSheet)
+void UIControlPackageContext::AddStyleSheet(const UIPriorityStyleSheet &styleSheet)
 {
     styleSheetsSorted = false;
-    styleSheets.push_back(StyleSheetWithPenalty(SafeRetain(styleSheet.styleSheet), styleSheet.penalty));
+    styleSheets.push_back(styleSheet);
 }
 
-const Vector<UIControlPackageContext::StyleSheetWithPenalty>& UIControlPackageContext::GetSortedStyleSheets()
+const Vector<UIPriorityStyleSheet>& UIControlPackageContext::GetSortedStyleSheets()
 {
     if (!styleSheetsSorted)
     {
-        std::sort(styleSheets.begin(), styleSheets.end(),
-            [](const UIControlPackageContext::StyleSheetWithPenalty &first, const UIControlPackageContext::StyleSheetWithPenalty &second) {
-            const int32 score1 = first.styleSheet->GetScore();
-            const int32 score2 = second.styleSheet->GetScore();
-            return
-                (score1 == score2) ?
-                first.penalty < second.penalty :
-                score1 > score2;
-        });
+        std::sort(styleSheets.begin(), styleSheets.end());
         styleSheetsSorted = true;
     }
 
