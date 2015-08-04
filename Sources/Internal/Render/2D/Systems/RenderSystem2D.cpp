@@ -36,6 +36,8 @@
 #include "Render/Renderer.h"
 #include "Render/DynamicBufferAllocator.h"
 
+#include "Render/ShaderCache.h"
+
 namespace DAVA
 {
 
@@ -158,6 +160,7 @@ void RenderSystem2D::BeginFrame()
     rhi::BeginRenderPass(pass2DHandle);
     rhi::BeginPacketList(currentPacketListHandle);
 
+    ShaderDescriptorCache::ClearDynamicBindigs();
     Setup2DMatrices();
 }
 
@@ -201,6 +204,7 @@ void RenderSystem2D::BeginRenderTargetPass(Texture * target, bool needClear /* =
     renderTargetWidth = target->GetWidth();
     renderTargetHeight = target->GetHeight();
 
+    ShaderDescriptorCache::ClearDynamicBindigs();
     Setup2DMatrices();
 }
 
@@ -251,8 +255,6 @@ void RenderSystem2D::Setup2DMatrices()
     {
         projMatrix = virtualToPhysicalMatrix * projMatrix;
     }
-
-    projMatrixSemantic++;
 }
 
 void RenderSystem2D::ScreenSizeChanged()
@@ -583,12 +585,12 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
         {
             Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, &Matrix4::IDENTITY, reinterpret_cast<pointer_size>(&Matrix4::IDENTITY));
         }
-        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_PROJ, &projMatrix, static_cast<pointer_size>(projMatrixSemantic));
-        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_VIEW, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
+        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_PROJ, &projMatrix, reinterpret_cast<pointer_size>(&projMatrix));
+        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_VIEW, &Matrix4::IDENTITY, reinterpret_cast<pointer_size>(&Matrix4::IDENTITY));
 
         if (currentClip.dx > 0.f && currentClip.dy > 0.f)
         {
-            const Rect& transformedClipRect = TransformClipRect(currentClip, Matrix4::IDENTITY * virtualToPhysicalMatrix); // VIEW matrix equals Matrix4::IDENTITY
+            const Rect& transformedClipRect = TransformClipRect(currentClip, virtualToPhysicalMatrix);
             currentPacket.scissorRect.x = (int16)transformedClipRect.x;
             currentPacket.scissorRect.y = (int16)transformedClipRect.y;
             currentPacket.scissorRect.width = (int16)ceilf(transformedClipRect.dx);
