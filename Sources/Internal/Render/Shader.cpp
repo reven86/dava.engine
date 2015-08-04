@@ -1433,7 +1433,7 @@ bool Shader::Uniform::ValidateCache(const Vector2 & value)
     if(!result)
     {
         DVASSERT(sizeof(value) == cacheValueSize);
-        memcpy(cacheValue, value.data.data(), cacheValueSize);
+        memcpy(cacheValue, value.data, cacheValueSize);
     }
     
     return result;
@@ -1451,7 +1451,7 @@ bool Shader::Uniform::ValidateCache(const Vector3 & value)
     if(!result)
     {
         DVASSERT(sizeof(value) == cacheValueSize);
-        memcpy(cacheValue, value.data.data(), cacheValueSize);
+        memcpy(cacheValue, value.data, cacheValueSize);
     }
     
     return result;
@@ -1510,7 +1510,7 @@ bool Shader::Uniform::ValidateCache(const Vector4 & value)
     if(!result)
     {
         DVASSERT(sizeof(value) == cacheValueSize);
-        memcpy(cacheValue, value.data.data(), cacheValueSize);
+        memcpy(cacheValue, value.data, cacheValueSize);
     }
     
     return result;

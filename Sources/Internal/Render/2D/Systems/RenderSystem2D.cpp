@@ -535,7 +535,7 @@ void RenderSystem2D::UpdateClip()
             clipTopLeftCorner = clipTopLeftCorner * transformMx;
             clipBottomRightCorner = clipBottomRightCorner * transformMx;
 
-            Rect transformedClip(Vector2(clipTopLeftCorner.data.data()), Vector2((clipBottomRightCorner - clipTopLeftCorner).data.data()));
+            Rect transformedClip(Vector2(clipTopLeftCorner.data), Vector2((clipBottomRightCorner - clipTopLeftCorner).data));
             RenderManager::Instance()->SetClip(transformedClip);
         }
         clipChanged = false;

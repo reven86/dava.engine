@@ -504,12 +504,12 @@ void VegetationRenderObject::PrepareToRenderMultipleMaterials(Camera *camera)
             mat->SetPropertyValue(VegetationPropertyNames::UNIFORM_SWITCH_LOD_SCALE,
                                   Shader::UT_FLOAT_VEC2,
                                   1,
-                                  switchLodScale.data.data());
+                                  switchLodScale.data);
             
             mat->SetPropertyValue(VegetationPropertyNames::UNIFORM_TILEPOS,
                                   Shader::UT_FLOAT_VEC3,
                                   1,
-                                  posScale.data.data());
+                                  posScale.data);
             
             mat->SetPropertyValue(VegetationPropertyNames::UNIFORM_VEGWAVEOFFSET,
                                   Shader::UT_FLOAT,
@@ -608,12 +608,12 @@ void VegetationRenderObject::PrepareToRenderSingleMaterial(Camera *camera)
         mat->SetPropertyValue(VegetationPropertyNames::UNIFORM_SWITCH_LOD_SCALE,
                               Shader::UT_FLOAT_VEC2,
                               1,
-                              switchLodScale.data.data());
+                              switchLodScale.data);
         
         mat->SetPropertyValue(VegetationPropertyNames::UNIFORM_TILEPOS,
                               Shader::UT_FLOAT_VEC3,
                               1,
-                              posScale.data.data());
+                              posScale.data);
         
         mat->SetPropertyValue(VegetationPropertyNames::UNIFORM_VEGWAVEOFFSET,
                               Shader::UT_FLOAT,
