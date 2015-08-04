@@ -15,7 +15,7 @@ LogFilterModel::~LogFilterModel()
 
 void LogFilterModel::SetFilters(const QVariantList & _filters)
 {
-    quint64 tmpFilters = 0;
+    int tmpFilters = 0;
     for(const auto &filter : _filters)
     {
         DVASSERT(filter.canConvert<int>());

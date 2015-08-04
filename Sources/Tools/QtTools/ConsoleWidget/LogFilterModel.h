@@ -20,6 +20,6 @@ public slots:
 private:
     bool filterAcceptsRow(int source_row, const QModelIndex& source_parent) const override;
 
-    quint64 filters = ~0;
+    int filters = ~0;
 };
 #endif // __LOGFILTERMODEL_H__
