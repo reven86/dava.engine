@@ -21,7 +21,7 @@ LogModel::LogModel(QObject* parent)
     timer = new QTimer(this);
     timer->setSingleShot(true);
     timer->setInterval(0);
-    connect(timer, &QTimer::timeout, this, &LogModel::OnTimeout, Qt::QueuedConnection);
+    connect(timer, &QTimer::timeout, this, &LogModel::OnTimeout);
 }
 
 LogModel::~LogModel()

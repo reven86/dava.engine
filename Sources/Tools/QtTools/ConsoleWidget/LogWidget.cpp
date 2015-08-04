@@ -40,7 +40,7 @@ LogWidget::LogWidget(QWidget* parent)
     scrollTimer = new QTimer(this);
     scrollTimer->setSingleShot(true);
     scrollTimer->setInterval(0);
-    connect(scrollTimer, &QTimer::timeout, this, &LogWidget::UpdateScroll, Qt::QueuedConnection);
+    connect(scrollTimer, &QTimer::timeout, this, &LogWidget::UpdateScroll);
 }
 
 LogWidget::~LogWidget()
