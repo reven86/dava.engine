@@ -60,6 +60,8 @@
 #include "Platform/DeviceInfo.h"
 
 #include "Network/NetCore.h"
+#include "Network/Services/NetLogger.h"
+#include "Network/SimpleNetworking/SimpleNetCore.h"
 #include "MemoryManager/MemoryProfiler.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
@@ -168,8 +170,7 @@ void Core::CreateSingletons()
 #endif
     
     RegisterDAVAClasses();
-
-    new Net::NetCore();
+    InitializeNetwork();
 
 #ifdef __DAVAENGINE_AUTOTESTING__
     new AutotestingSystem();
@@ -625,6 +626,37 @@ uint32 Core::GetScreenDPI()
 void Core::SetIcon(int32 /*iconId*/)
 {
 };
+
+void Core::InitializeNetwork()
+{
+    new Net::NetCore();
+
+#ifdef __DAVAENGINE_WIN_UAP__
+
+    //Initialize a simple net core and start NetLogger service
+    Net::SimpleNetCore* simpleNetCore = new Net::SimpleNetCore();
+
+    //TODO: recognize if current machine is phone and make a normal end point!
+    Net::Endpoint endPoint("127.0.0.1", 1911);
+    auto netLoggerService = std::make_unique<Net::NetLogger>();
+
+    //TODO: make a normal service id
+    bool result =
+        simpleNetCore->RegisterService(777, std::move(netLoggerService), endPoint);
+
+    DVASSERT_MSG(result, "Failed to create a NetLogger service");
+    
+#endif  // __DAVAENGINE_WIN_UAP__
+}
+
+void Core::DeInitializeNetwork()
+{
+    Net::NetCore::Instance()->Release();
+
+#ifdef __DAVAENGINE_WIN_UAP__
+    Net::SimpleNetCore::Instance()->Release();
+#endif  // __DAVAENGINE_WIN_UAP__
+}
 
 };
 

@@ -35,6 +35,7 @@
 #include <type_traits>
 
 #include "Base/BaseTypes.h"
+#include "Network/Base/Endpoint.h"
 
 namespace DAVA
 {
@@ -54,6 +55,7 @@ struct IReadOnlyConnection
         kConnected
     };
     virtual ChannelState GetChannelState() = 0;
+    virtual const Endpoint& GetEndpoint() = 0;
 
     virtual size_t ReadSome(char* buffer, size_t bufSize) = 0;
     virtual bool ReadAll(char* buffer, size_t bufSize) = 0;

@@ -42,7 +42,6 @@ namespace TCP
 {
     
 SimpleTcpServer::SimpleTcpServer()
-    : connectionEstablished(false)
 {
     socket_id = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     
@@ -98,6 +97,11 @@ void SimpleTcpServer::Accept()
     ::closesocket(socket_id);
     socket_id = acceptSocket;
     connectionEstablished = true;
+}
+
+const Endpoint& SimpleTcpServer::GetEndpoint()
+{
+    return socketEndPoint;
 }
 
 void SimpleTcpServer::Shutdown()
@@ -158,7 +162,11 @@ void SimpleTcpServer::Bind(const Endpoint& endPoint)
     {
         LogNetworkError("Failed to bind socket");
         Close();
+
+        return;
     }
+
+    socketEndPoint = endPoint;
 }
 
 void SimpleTcpServer::Close()
@@ -168,6 +176,7 @@ void SimpleTcpServer::Close()
         ::closesocket(socket_id);
         socket_id = INVALID_SOCKET;
         connectionEstablished = false;
+        socketEndPoint = Endpoint();
     }
 }
     

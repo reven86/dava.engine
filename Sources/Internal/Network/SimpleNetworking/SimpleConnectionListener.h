@@ -27,11 +27,10 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_CONNECTION_IMPL_H__
-#define __DAVAENGINE_CONNECTION_IMPL_H__
+#ifndef __DAVAENGINE_SIMPLE_CONNECTION_LISTENER_H__
+#define __DAVAENGINE_SIMPLE_CONNECTION_LISTENER_H__
 
-#include "Concurrency/Mutex.h"
-#include "Network/SimpleNetworking/SimpleAbstractSocket.h"
+#include <functional>
 #include "Network/SimpleNetworking/IConnection.h"
 
 namespace DAVA
@@ -39,23 +38,50 @@ namespace DAVA
 namespace Net
 {
     
-class ConnectionImpl : public IConnection
+using DataBuffer             = Vector<char>;
+using ConnectionWaitFunction = std::function<IConnectionPtr(const Endpoint&)>;
+using ConnectionCallback     = std::function<void(IConnectionPtr)>;
+using DataReceiveCallback    = std::function<void(const DataBuffer&)>;
+
+class ConnectionListener
 {
 public:
-    ConnectionImpl(ISimpleAbstractSocketPtr&& abstractSocket);
-    
-    ChannelState GetChannelState() override;
+    enum class State
+    {
+        kConnectionEstablishing,
+        kConnectionListening
+    };
 
-    size_t ReadSome(char* buffer, size_t bufSize) override;
-    bool ReadAll(char* buffer, size_t bufSize) override;
-    size_t Write(const char* buffer, size_t bufSize) override;
+    enum class NotificationType
+    {
+        kMainThread,
+        kAnyThread
+    };
+
+    ConnectionListener(const ConnectionWaitFunction& connWaiter,
+                       const Endpoint& endPoint,
+                       NotificationType notifType = NotificationType::kAnyThread);
+
+    ConnectionListener(IConnectionPtr& conn,
+                       NotificationType notifType = NotificationType::kAnyThread);
+
+    IConnectionPtr GetConnection() const;
+    void AddConnectionCallback(const ConnectionCallback& cb);
+    void AddDataReceiveCallback(const DataReceiveCallback& cb);
 
 private:
-    ISimpleAbstractSocketPtr socket;
-    Mutex mutex;
+    void Start(const ConnectionWaitFunction& connectionWaiter, const Endpoint& endPoint);
+    void Start(IConnectionPtr& conn);
+
+    std::unique_ptr<class ConnectionListenerPrivate> pimpl;
+
+    /*RefPtr<Thread> thread;
+    IConnectionPtr connection;
+    List<ConnectionCallback> onConnectCallbacks;
+    List<DataReceiveCallback> onDataReceiveCallbacks;*/
 };
 
 }  // namespace Net
 }  // namespace DAVA
 
-#endif  // __DAVAENGINE_CONNECTION_IMPL_H__
+#endif  // __DAVAENGINE_SIMPLE_CONNECTION_LISTENER_H__

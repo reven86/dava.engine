@@ -27,56 +27,51 @@
 =====================================================================================*/
 
 
-#include "Network/SimpleNetworking/ConnectionImpl.h"
+#include "Network/SimpleNetworking/Private/SimpleNetServicePrivate.h"
 
-#include <libuv/uv.h>
-
-#include "Concurrency/LockGuard.h"
+#include "Concurrency/Thread.h"
+#include <functional>
 #include "Debug/DVAssert.h"
-#include "Network/SimpleNetworking/SimpleAbstractSocket.h"
 
 namespace DAVA
 {
 namespace Net
 {
-    
-ConnectionImpl::ConnectionImpl(ISimpleAbstractSocketPtr&& abstractSocket)
-    : socket(std::move(abstractSocket)) 
+
+class ChannelBridge : public IChannel
 {
-    DVASSERT_MSG(socket, "Socket cannot be empty");
-}
-    
-IReadOnlyConnection::ChannelState ConnectionImpl::GetChannelState()
+public:
+    ChannelBridge(IConnectionPtr& conn, IChannelListener* listener);
+
+    bool Send(const void* data, size_t length, uint32 flags, uint32* packetId) override;
+    const Endpoint& RemoteEndpoint() const override;
+
+private:
+    IConnectionPtr connection;
+    IChannelListener* channelListener;
+};
+
+ChannelBridge::ChannelBridge(IConnectionPtr& conn, IChannelListener* listener)
+    : connection(conn)
+    , channelListener(listener)
 {
-    LockGuard<Mutex> lock(mutex);
+    DVASSERT_MSG(connection,      "Connection cannot be empty");
+    DVASSERT_MSG(channelListener, "Channel listener cannot be empty");
 
-    bool connectionEstablished = socket->IsConnectionEstablished();
-    return connectionEstablished ? ChannelState::kConnected : ChannelState::kDisconnected;
-}
-
-size_t ConnectionImpl::ReadSome(char* buffer, size_t bufSize)
-{
-    LockGuard<Mutex> lock(mutex);
-
-    size_t read = socket->Recv(buffer, bufSize, false);
-    return read > 0;
-}
-
-bool ConnectionImpl::ReadAll(char* buffer, size_t bufSize)
-{
-    LockGuard<Mutex> lock(mutex);
-
-    size_t read = socket->Recv(buffer, bufSize, true);
-    return read > 0;
+    channelListener->OnChannelOpen(this);
 }
 
-size_t ConnectionImpl::Write(const char* buffer, size_t bufSize)
+bool ChannelBridge::Send(const void* data, size_t length, uint32 /*flags*/, uint32* /*packetId*/)
 {
-    LockGuard<Mutex> lock(mutex);
-
-    size_t wrote = socket->Send(buffer, bufSize);
-    return wrote;
+    const char* buf = reinterpret_cast<const char*>(data);
+    size_t wrote = connection->Write(buf, length);
+    return wrote == length;
 }
-    
+
+const Endpoint& ChannelBridge::RemoteEndpoint() const
+{
+    return connection->GetEndpoint();
+}
+
 }  // namespace Net
 }  // namespace DAVA

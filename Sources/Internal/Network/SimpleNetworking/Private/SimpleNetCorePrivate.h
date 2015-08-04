@@ -27,48 +27,36 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_SIMPLE_TCP_SERVER_H__
-#define __DAVAENGINE_SIMPLE_TCP_SERVER_H__
+#ifndef __DAVAENGINE_SIMPLE_NET_CORE_PRIVATE_H__
+#define __DAVAENGINE_SIMPLE_NET_CORE_PRIVATE_H__
 
-#include "Network/Base/Endpoint.h"
-#include "Network/SimpleNetworking/SimpleAbstractSocket.h"
+#include "Network/SimpleNetworking/SimpleNetCore.h"
+#include "Network/SimpleNetworking/SimpleNetService.h"
+#include "Network/SimpleNetworking/Private/SimpleNetServicePrivate.h"
 
 namespace DAVA
 {
 namespace Net
 {
 
-namespace TCP
-{
-
-class SimpleTcpServer : public ISimpleAbstractSocket
+class SimpleNetCorePrivate
 {
 public:
-    SimpleTcpServer();
-    ~SimpleTcpServer();
-    
-    void Listen(const class Endpoint& endPoint);
-    void Accept();
+    bool RegisterService(size_t serviceId, 
+                         std::unique_ptr<NetService>&& service,
+                         const Endpoint& endPoint,
+                         const String& serviceName);
+    void UnregisterAllServices();
 
-    const Endpoint& GetEndpoint() override;
-    void Shutdown() override;
-    
-    size_t Send(const char* buf, size_t bufSize) override;
-    size_t Recv(char* buf, size_t bufSize, bool recvAll = false) override;
-    bool IsConnectionEstablished() override { return connectionEstablished; }
-    
+    String GetServiceName(size_t serviceId) const;
+    size_t GetServiceId(const String& serviceName) const;
+    Endpoint GetServiceEndpoint(size_t serviceId) const;
+
 private:
-    void Bind(const class Endpoint& endPoint);
-    void Close();
-    
-    bool connectionEstablished = false;
-    Endpoint socketEndPoint;
-    SOCKET socket_id;
+    Map<size_t, SimpleNetService> services;
 };
-
-}  // namespace TCP
 
 }  // namespace Net
 }  // namespace DAVA
 
-#endif  // __DAVAENGINE_SIMPLE_TCP_SERVER_H__
+#endif  // __DAVAENGINE_SIMPLE_NET_CORE_PRIVATE_H__

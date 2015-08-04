@@ -29,7 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Network/SimpleNetworking/SimpleNetworking.h"
 
 #include "Debug/DVAssert.h"
-#include "Network/SimpleNetworking/ConnectionImpl.h"
+#include "Network/SimpleNetworking/Connection.h"
 #include "Network/SimpleNetworking/SimpleTcpServer.h"
 
 namespace DAVA
@@ -61,7 +61,7 @@ IConnectionPtr WaitIncomingConnection(const Endpoint& endPoint)
     socket->Listen(endPoint);
     socket->Accept();
     
-    return std::make_shared<ConnectionImpl>(std::move(socket));
+    return std::make_shared<Connection>(std::move(socket));
 }
 
 IConnectionPtr CreateConnection(const Endpoint& endPoint) 

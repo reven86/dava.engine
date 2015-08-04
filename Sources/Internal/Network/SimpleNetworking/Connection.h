@@ -27,48 +27,36 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_SIMPLE_TCP_SERVER_H__
-#define __DAVAENGINE_SIMPLE_TCP_SERVER_H__
+#ifndef __DAVAENGINE_CONNECTION_H__
+#define __DAVAENGINE_CONNECTION_H__
 
-#include "Network/Base/Endpoint.h"
+#include "Concurrency/Mutex.h"
 #include "Network/SimpleNetworking/SimpleAbstractSocket.h"
+#include "Network/SimpleNetworking/IConnection.h"
 
 namespace DAVA
 {
 namespace Net
 {
-
-namespace TCP
-{
-
-class SimpleTcpServer : public ISimpleAbstractSocket
+    
+class Connection : public IConnection
 {
 public:
-    SimpleTcpServer();
-    ~SimpleTcpServer();
+    Connection(ISimpleAbstractSocketPtr&& abstractSocket);
     
-    void Listen(const class Endpoint& endPoint);
-    void Accept();
-
+    ChannelState GetChannelState() override;
     const Endpoint& GetEndpoint() override;
-    void Shutdown() override;
-    
-    size_t Send(const char* buf, size_t bufSize) override;
-    size_t Recv(char* buf, size_t bufSize, bool recvAll = false) override;
-    bool IsConnectionEstablished() override { return connectionEstablished; }
-    
-private:
-    void Bind(const class Endpoint& endPoint);
-    void Close();
-    
-    bool connectionEstablished = false;
-    Endpoint socketEndPoint;
-    SOCKET socket_id;
-};
 
-}  // namespace TCP
+    size_t ReadSome(char* buffer, size_t bufSize) override;
+    bool ReadAll(char* buffer, size_t bufSize) override;
+    size_t Write(const char* buffer, size_t bufSize) override;
+
+private:
+    ISimpleAbstractSocketPtr socket;
+    Mutex mutex;
+};
 
 }  // namespace Net
 }  // namespace DAVA
 
-#endif  // __DAVAENGINE_SIMPLE_TCP_SERVER_H__
+#endif  // __DAVAENGINE_CONNECTION_H__

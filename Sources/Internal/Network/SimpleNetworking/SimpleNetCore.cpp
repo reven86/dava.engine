@@ -27,48 +27,43 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_SIMPLE_TCP_SERVER_H__
-#define __DAVAENGINE_SIMPLE_TCP_SERVER_H__
-
-#include "Network/Base/Endpoint.h"
-#include "Network/SimpleNetworking/SimpleAbstractSocket.h"
+#include "Network/SimpleNetworking/Private/SimpleNetCorePrivate.h"
 
 namespace DAVA
 {
 namespace Net
 {
 
-namespace TCP
+SimpleNetCore::SimpleNetCore() : pimpl(new SimpleNetCorePrivate) {}
+
+bool SimpleNetCore::RegisterService(size_t serviceId,
+                                    std::unique_ptr<NetService>&& service,
+                                    const Endpoint& endPoint,
+                                    const String& serviceName)
 {
+    return pimpl->RegisterService(serviceId, std::move(service), endPoint, serviceName);
+}
 
-class SimpleTcpServer : public ISimpleAbstractSocket
+void SimpleNetCore::UnregisterAllServices()
 {
-public:
-    SimpleTcpServer();
-    ~SimpleTcpServer();
-    
-    void Listen(const class Endpoint& endPoint);
-    void Accept();
+    pimpl->UnregisterAllServices();
+}
 
-    const Endpoint& GetEndpoint() override;
-    void Shutdown() override;
-    
-    size_t Send(const char* buf, size_t bufSize) override;
-    size_t Recv(char* buf, size_t bufSize, bool recvAll = false) override;
-    bool IsConnectionEstablished() override { return connectionEstablished; }
-    
-private:
-    void Bind(const class Endpoint& endPoint);
-    void Close();
-    
-    bool connectionEstablished = false;
-    Endpoint socketEndPoint;
-    SOCKET socket_id;
-};
+String SimpleNetCore::GetServiceName(size_t serviceId) const
+{
+    return pimpl->GetServiceName(serviceId);
+}
 
-}  // namespace TCP
+size_t SimpleNetCore::GetServiceId(const String& serviceName) const
+{
+    return pimpl->GetServiceId(serviceName);
+}
+
+Endpoint SimpleNetCore::GetServiceEndpoint(size_t serviceId) const
+{
+    return pimpl->GetServiceEndpoint(serviceId);
+}
+
 
 }  // namespace Net
 }  // namespace DAVA
-
-#endif  // __DAVAENGINE_SIMPLE_TCP_SERVER_H__

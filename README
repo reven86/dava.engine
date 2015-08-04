@@ -7,6 +7,7 @@ Cross platform game development framework
    - iOS
    - Android 
    - Windows
+   - Universal Windows Platform (experimental)
    - Mac OS X
 
 Enhancing dava framework

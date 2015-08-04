@@ -27,48 +27,61 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_SIMPLE_TCP_SERVER_H__
-#define __DAVAENGINE_SIMPLE_TCP_SERVER_H__
+#include "Network/SimpleNetworking/Connection.h"
 
-#include "Network/Base/Endpoint.h"
+#include <libuv/uv.h>
+
+#include "Concurrency/LockGuard.h"
+#include "Debug/DVAssert.h"
 #include "Network/SimpleNetworking/SimpleAbstractSocket.h"
 
 namespace DAVA
 {
 namespace Net
 {
-
-namespace TCP
+    
+Connection::Connection(ISimpleAbstractSocketPtr&& abstractSocket)
+    : socket(std::move(abstractSocket)) 
 {
-
-class SimpleTcpServer : public ISimpleAbstractSocket
+    DVASSERT_MSG(socket, "Socket cannot be empty");
+}
+    
+IReadOnlyConnection::ChannelState Connection::GetChannelState()
 {
-public:
-    SimpleTcpServer();
-    ~SimpleTcpServer();
-    
-    void Listen(const class Endpoint& endPoint);
-    void Accept();
+    LockGuard<Mutex> lock(mutex);
 
-    const Endpoint& GetEndpoint() override;
-    void Shutdown() override;
-    
-    size_t Send(const char* buf, size_t bufSize) override;
-    size_t Recv(char* buf, size_t bufSize, bool recvAll = false) override;
-    bool IsConnectionEstablished() override { return connectionEstablished; }
-    
-private:
-    void Bind(const class Endpoint& endPoint);
-    void Close();
-    
-    bool connectionEstablished = false;
-    Endpoint socketEndPoint;
-    SOCKET socket_id;
-};
+    bool connectionEstablished = socket->IsConnectionEstablished();
+    return connectionEstablished ? ChannelState::kConnected : ChannelState::kDisconnected;
+}
 
-}  // namespace TCP
+const Endpoint& Connection::GetEndpoint()
+{
+    return socket->GetEndpoint();
+}
 
+size_t Connection::ReadSome(char* buffer, size_t bufSize)
+{
+    LockGuard<Mutex> lock(mutex);
+
+    size_t read = socket->Recv(buffer, bufSize, false);
+    return read > 0;
+}
+
+bool Connection::ReadAll(char* buffer, size_t bufSize)
+{
+    LockGuard<Mutex> lock(mutex);
+
+    size_t read = socket->Recv(buffer, bufSize, true);
+    return read > 0;
+}
+
+size_t Connection::Write(const char* buffer, size_t bufSize)
+{
+    LockGuard<Mutex> lock(mutex);
+
+    size_t wrote = socket->Send(buffer, bufSize);
+    return wrote;
+}
+    
 }  // namespace Net
 }  // namespace DAVA
-
-#endif  // __DAVAENGINE_SIMPLE_TCP_SERVER_H__

@@ -31,6 +31,7 @@
 #define __DAVAENGINE_SIMPLE_ABSTRACT_SOCKET_H__
 
 #include <memory>
+#include "Network/Base/Endpoint.h"
 
 namespace DAVA
 {
@@ -41,6 +42,7 @@ struct ISimpleAbstractSocket
 {
     virtual ~ISimpleAbstractSocket() {}
     
+    virtual const Endpoint& GetEndpoint() = 0;
     virtual void Shutdown() = 0;
     
     virtual size_t Send(const char* buf, size_t bufSize) = 0;

@@ -27,48 +27,65 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_SIMPLE_TCP_SERVER_H__
-#define __DAVAENGINE_SIMPLE_TCP_SERVER_H__
+#include "Network/SimpleNetworking/Private/SimpleNetCorePrivate.h"
 
-#include "Network/Base/Endpoint.h"
-#include "Network/SimpleNetworking/SimpleAbstractSocket.h"
+#include "Network/SimpleNetworking/SimpleConnectionListener.h"
 
 namespace DAVA
 {
 namespace Net
 {
 
-namespace TCP
+bool SimpleNetCorePrivate::RegisterService(size_t serviceId,
+                                           std::unique_ptr<NetService>&& service,
+                                           const Endpoint& endPoint,
+                                           const String& serviceName)
 {
+    auto iter = services.find(serviceId);
+    if (iter != services.end())
+        return false;
 
-class SimpleTcpServer : public ISimpleAbstractSocket
+    return false;
+}
+
+void SimpleNetCorePrivate::UnregisterAllServices()
 {
-public:
-    SimpleTcpServer();
-    ~SimpleTcpServer();
-    
-    void Listen(const class Endpoint& endPoint);
-    void Accept();
+    services.clear();
+}
 
-    const Endpoint& GetEndpoint() override;
-    void Shutdown() override;
-    
-    size_t Send(const char* buf, size_t bufSize) override;
-    size_t Recv(char* buf, size_t bufSize, bool recvAll = false) override;
-    bool IsConnectionEstablished() override { return connectionEstablished; }
-    
-private:
-    void Bind(const class Endpoint& endPoint);
-    void Close();
-    
-    bool connectionEstablished = false;
-    Endpoint socketEndPoint;
-    SOCKET socket_id;
-};
+String SimpleNetCorePrivate::GetServiceName(size_t serviceId) const
+{
+    auto iter = services.find(serviceId);
 
-}  // namespace TCP
+    if (iter != services.end())
+        return iter->second.GetServiceName();
+    return "";
+}
+
+size_t SimpleNetCorePrivate::GetServiceId(const String& serviceName) const
+{
+    if (serviceName.empty())
+        return 0;
+
+    for (const auto& iter : services)
+    {
+        if (iter.second.GetServiceName() == serviceName)
+        {
+            return iter.second.GetServiceId();
+        }
+    }
+
+    return 0;
+}
+
+Endpoint SimpleNetCorePrivate::GetServiceEndpoint(size_t serviceId) const
+{
+    auto iter = services.find(serviceId);
+
+    if (iter != services.end())
+        return iter->second.GetServiceEndpoint();
+    return Endpoint();
+}
 
 }  // namespace Net
 }  // namespace DAVA
-
-#endif  // __DAVAENGINE_SIMPLE_TCP_SERVER_H__

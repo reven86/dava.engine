@@ -27,48 +27,43 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_SIMPLE_TCP_SERVER_H__
-#define __DAVAENGINE_SIMPLE_TCP_SERVER_H__
-
-#include "Network/Base/Endpoint.h"
-#include "Network/SimpleNetworking/SimpleAbstractSocket.h"
+#include "Network/SimpleNetworking/SimpleNetService.h"
+#include "Network/SimpleNetworking/Private/SimpleNetServicePrivate.h"
 
 namespace DAVA
 {
 namespace Net
 {
 
-namespace TCP
+SimpleNetService::SimpleNetService(size_t serviceId,
+                                   std::unique_ptr<NetService>&& service,
+                                   const Endpoint& endPoint,
+                                   const String& serviceName,
+                                   ConnectionListener&& connectionListener)
 {
+    pimpl = std::make_unique<SimpleNetServicePrivate>(
+        serviceId, std::move(service), endPoint, serviceName, std::move(connectionListener));
+}
 
-class SimpleTcpServer : public ISimpleAbstractSocket
+NetService* SimpleNetService::GetNetService()
 {
-public:
-    SimpleTcpServer();
-    ~SimpleTcpServer();
-    
-    void Listen(const class Endpoint& endPoint);
-    void Accept();
+    return pimpl->GetNetService();
+}
 
-    const Endpoint& GetEndpoint() override;
-    void Shutdown() override;
-    
-    size_t Send(const char* buf, size_t bufSize) override;
-    size_t Recv(char* buf, size_t bufSize, bool recvAll = false) override;
-    bool IsConnectionEstablished() override { return connectionEstablished; }
-    
-private:
-    void Bind(const class Endpoint& endPoint);
-    void Close();
-    
-    bool connectionEstablished = false;
-    Endpoint socketEndPoint;
-    SOCKET socket_id;
-};
+String SimpleNetService::GetServiceName() const
+{
+    return pimpl->GetServiceName();
+}
 
-}  // namespace TCP
+size_t SimpleNetService::GetServiceId() const
+{
+    return pimpl->GetServiceId();
+}
+
+Endpoint SimpleNetService::GetServiceEndpoint() const
+{
+    return pimpl->GetServiceEndpoint();
+}
 
 }  // namespace Net
 }  // namespace DAVA
-
-#endif  // __DAVAENGINE_SIMPLE_TCP_SERVER_H__

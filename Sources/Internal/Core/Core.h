@@ -262,7 +262,7 @@ public:
 	virtual void GoForeground();
     
 	/**
-     \brief Get device familty
+     \brief Get device family
      */
     eDeviceFamily GetDeviceFamily();
 	
@@ -278,6 +278,9 @@ protected:
 	void SetCommandLine(const DAVA::String& cmdLine);
 
 private:
+    void InitializeNetwork();
+    void DeInitializeNetwork();
+
     KeyedArchive * options;
 
 	bool isActive;
