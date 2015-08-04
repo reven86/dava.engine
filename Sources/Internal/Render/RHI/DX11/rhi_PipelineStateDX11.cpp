@@ -176,6 +176,27 @@ ConstBufDX11::~ConstBufDX11()
 
 //------------------------------------------------------------------------------
 
+static D3D11_BLEND
+_BlendOpDX11( BlendOp op )
+{
+    D3D11_BLEND b = D3D11_BLEND_ONE;
+
+    switch( op )
+    {
+        case BLENDOP_ZERO           : b = D3D11_BLEND_ZERO; break;
+        case BLENDOP_ONE            : b = D3D11_BLEND_ONE; break;
+        case BLENDOP_SRC_ALPHA      : b = D3D11_BLEND_SRC_ALPHA; break;
+        case BLENDOP_INV_SRC_ALPHA  : b = D3D11_BLEND_INV_SRC_ALPHA; break;
+        case BLENDOP_SRC_COLOR      : b = D3D11_BLEND_SRC_COLOR; break;
+        case BLENDOP_DST_COLOR      : b = D3D11_BLEND_DEST_COLOR; break;
+    }
+    
+    return b;
+}
+
+
+//------------------------------------------------------------------------------
+
 void
 ConstBufDX11::Construct( ProgType ptype, unsigned bufIndex, unsigned regCnt )
 {
@@ -394,6 +415,8 @@ public:
     VertexLayout        _layout;
     ID3D11InputLayout*  _layout11;
 
+    ID3D11BlendState*   _blend_state;
+
 
     struct
     LayoutInfo
@@ -607,6 +630,24 @@ desc.vertexLayout.Dump();
     ps->dbgVertexSrc = vprog_bin;
     ps->dbgPixelSrc  = fprog_bin;
 
+
+    // create blend-state
+    
+    D3D11_BLEND_DESC    bs_desc;
+
+    bs_desc.AlphaToCoverageEnable                   = FALSE;
+    bs_desc.IndependentBlendEnable                  = FALSE;
+    bs_desc.RenderTarget[0].BlendEnable             = desc.blending.rtBlend[0].blendEnabled;
+    bs_desc.RenderTarget[0].RenderTargetWriteMask   = D3D11_COLOR_WRITE_ENABLE_ALL;
+    bs_desc.RenderTarget[0].SrcBlend                = _BlendOpDX11( BlendOp(desc.blending.rtBlend[0].colorSrc) );
+    bs_desc.RenderTarget[0].DestBlend               = _BlendOpDX11( BlendOp(desc.blending.rtBlend[0].colorDst) );
+    bs_desc.RenderTarget[0].BlendOp                 = D3D11_BLEND_OP_ADD;
+    bs_desc.RenderTarget[0].SrcBlendAlpha           = _BlendOpDX11( BlendOp(desc.blending.rtBlend[0].alphaSrc) );
+    bs_desc.RenderTarget[0].DestBlendAlpha          = _BlendOpDX11( BlendOp(desc.blending.rtBlend[0].alphaDst) );
+    bs_desc.RenderTarget[0].BlendOpAlpha            = D3D11_BLEND_OP_ADD;
+
+    hr = _D3D11_Device->CreateBlendState( &bs_desc, &(ps->_blend_state) );
+
     return handle;
 }
 
@@ -729,6 +770,7 @@ SetToRHI( Handle ps, uint32 layoutUID )
     _D3D11_ImmediateContext->IASetInputLayout( layout11 );
     _D3D11_ImmediateContext->VSSetShader( ps11->_vs11, NULL, 0 );
     _D3D11_ImmediateContext->PSSetShader( ps11->_ps11, NULL, 0 );
+    _D3D11_ImmediateContext->OMSetBlendState( ps11->_blend_state, NULL, 0xFFFFFFFF );
 }
 
 unsigned
