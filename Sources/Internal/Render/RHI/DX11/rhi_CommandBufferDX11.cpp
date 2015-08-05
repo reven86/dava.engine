@@ -601,7 +601,10 @@ dx11_CommandBuffer_SetMarker( Handle cmdBuf, const char* text )
 static Handle
 dx11_SyncObject_Create()
 {
-    Handle  handle = SyncObjectPool::Alloc();
+    Handle              handle = SyncObjectPool::Alloc();
+    SyncObjectDX11_t*   sync   = SyncObjectPool::Get( handle );
+
+    sync->is_signaled = false;
 
     return handle;
 }
@@ -629,7 +632,6 @@ dx11_SyncObject_IsSignaled( Handle obj )
 
     return signaled;
 }
-
 
 
 //------------------------------------------------------------------------------

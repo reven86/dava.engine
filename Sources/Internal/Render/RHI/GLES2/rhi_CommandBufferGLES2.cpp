@@ -475,7 +475,10 @@ gles2_CommandBuffer_SetMarker( Handle cmdBuf, const char* text )
 static Handle
 gles2_SyncObject_Create()
 {
-    Handle  handle = SyncObjectPool::Alloc();
+    Handle              handle = SyncObjectPool::Alloc();
+    SyncObjectGLES2_t*  sync   = SyncObjectPool::Get( handle );
+
+    sync->is_signaled = false;
 
     return handle;
 }

@@ -486,7 +486,10 @@ dx9_CommandBuffer_SetMarker( Handle cmdBuf, const char* text )
 static Handle
 dx9_SyncObject_Create()
 {
-    Handle  handle = SyncObjectPool::Alloc();
+    Handle              handle = SyncObjectPool::Alloc();
+    SyncObjectDX9_t*    sync   = SyncObjectPool::Get( handle );
+
+    sync->is_signaled = false;
 
     return handle;
 }
