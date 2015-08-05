@@ -15,18 +15,11 @@ class LogFilterModel
 public:
     explicit LogFilterModel(QObject* parent = nullptr);
     ~LogFilterModel();
-    
-    const QVariantList &GetFilters() const;
-    const QString &GetFilterString() const;
 public slots:
     void SetFilters(const QVariantList &filters);
-    void SetFilterString(const QString& filter);
-signals:
-    void filterStringChanged(const QString filter);
 private:
     bool filterAcceptsRow(int source_row, const QModelIndex& source_parent) const override;
 
-    QVariantList filters;
-    QString filterText;
+    int filters = ~0;
 };
 #endif // __LOGFILTERMODEL_H__
