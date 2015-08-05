@@ -87,7 +87,12 @@ void CachedFiles::AddFile(const FilePath &path)
     }
     else
     {
-        filesSize += FileSystem::Instance()->GetFileSize(path);
+        uint32 filesize = 0;
+        FileSystem::Instance()->GetFileSize(path, filesize);
+        if (filesize > 0)
+        {
+            filesSize += filesize;
+        }
     }
 
     files[path] = fileData;

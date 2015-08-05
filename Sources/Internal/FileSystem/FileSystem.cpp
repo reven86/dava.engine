@@ -955,17 +955,18 @@ bool FileSystem::CompareBinaryFiles(const FilePath &filePath1, const FilePath &f
     return res;
 }
 
-uint64 FileSystem::GetFileSize(const FilePath& path)
+bool FileSystem::GetFileSize(const FilePath& path, uint32& size)
 {
     ScopedPtr<File> file(File::Create(path, File::OPEN | File::READ));
     if (file)
     {
-        return file->GetSize();
+        size = file->GetSize();
+        return true;
     }
     else
     {
         Logger::Error("Cannot read file %s to get file size", path.GetStringValue().c_str());
-        return 0;
+        return false;
     }
 }
 

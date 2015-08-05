@@ -670,14 +670,14 @@ const char* KeyedArchive::GenKeyFromIndex(uint32 index)
 
 uint32 KeyedArchive::Serialize(uint8 *data, uint32 size) const
 {
-    ScopedPtr<DynamicMemoryFile> file(DynamicMemoryFile::Create(File::CREATE | File::WRITE));
+    ScopedPtr<DynamicMemoryFile> buffer(DynamicMemoryFile::Create(File::CREATE | File::WRITE));
 
-    Save(file);
+    Save(buffer);
     
-    auto archieveSize = file->GetSize();
+    auto archieveSize = buffer->GetSize();
     if(data && size >= archieveSize)
     {
-        Memcpy(data, file->GetData(), archieveSize);
+        Memcpy(data, buffer->GetData(), archieveSize);
     }
     return archieveSize;
 }
@@ -689,13 +689,13 @@ void KeyedArchive::Deserialize(const uint8 *data, uint32 size)
         return;
     }
     
-    ScopedPtr<DynamicMemoryFile> file(DynamicMemoryFile::Create(File::CREATE | File::WRITE | File::READ));
-    auto written = file->Write(data, size);
+    ScopedPtr<DynamicMemoryFile> buffer(DynamicMemoryFile::Create(File::CREATE | File::WRITE | File::READ));
+    auto written = buffer->Write(data, size);
     DVASSERT(written == size);
     
-    file->Seek(0, File::SEEK_FROM_START);
+    buffer->Seek(0, File::SEEK_FROM_START);
     
-    Load(file);
+    Load(buffer);
 }
 	
 };
