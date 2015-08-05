@@ -82,8 +82,8 @@ namespace TextureDX11
 {
 void        SetupDispatch( Dispatch* dispatch );
 void        SetToRHI( Handle tex, unsigned unitIndex );
-void        SetAsRenderTarget( Handle tex );
-void        SetAsDepthStencil( Handle tex );
+void        SetRenderTarget( Handle color, Handle depthstencil );
+Size2i      Size( Handle tex );
 }
 
 

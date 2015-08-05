@@ -476,7 +476,10 @@ gles2_CommandBuffer_SetMarker( Handle cmdBuf, const char* text )
 static Handle
 gles2_SyncObject_Create()
 {
-    Handle  handle = SyncObjectPool::Alloc();
+    Handle              handle = SyncObjectPool::Alloc();
+    SyncObjectGLES2_t*  sync   = SyncObjectPool::Get( handle );
+
+    sync->is_signaled = false;
 
     return handle;
 }
@@ -781,6 +784,7 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
                         glClearDepthf( passCfg.depthStencilBuffer.clearDepth );
                         #else
                         glClearDepth( passCfg.depthStencilBuffer.clearDepth );
+                        glStencilMask( 0xFFFFFFFF );
                         glClearStencil( 0 );
                         #endif
 

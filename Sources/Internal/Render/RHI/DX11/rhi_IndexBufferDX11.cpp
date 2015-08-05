@@ -159,7 +159,7 @@ dx11_IndexBuffer_Map( Handle ib, unsigned offset, unsigned size )
         self->_mapped = true;
     }
 
-    return ptr;
+    return ((uint8*)ptr)+offset;
 }
 
 

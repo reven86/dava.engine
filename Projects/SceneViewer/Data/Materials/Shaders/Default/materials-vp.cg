@@ -117,6 +117,12 @@ kkk
         varying lowp float varLightmapSize;
     #endif
     
+    #if VERTEX_FOG
+        VPROG_OUT_TEXCOORD5(varFog,4)
+//        varying lowp float varFogAmoung;
+//        varying lowp vec3 varFogColor;
+    #endif
+
     #if VERTEX_COLOR || SPHERICAL_LIT
         VPROG_OUT_COLOR1(varVertexColor,4)
     #endif
@@ -125,11 +131,6 @@ kkk
         VPROG_OUT_TEXCOORD3(varTime,1)        
     #endif
 
-    #if VERTEX_FOG
-        VPROG_OUT_TEXCOORD5(varFog,4)
-//        varying lowp float varFogAmoung;
-//        varying lowp vec3 varFogColor;
-    #endif
 
 
 
@@ -168,8 +169,8 @@ property float3 metalFresnelReflectance : static,a : ;
 #endif
 
 #if SKINNING
-property float4 jointPositions[MAX_JOINTS] : dynamic,skin : ; // (x, y, z, scale)
-property float4 jointQuaternions[MAX_JOINTS] : dynamic,skin : ;
+property float4 jointPositions[MAX_JOINTS] : dynamic,skin1 : bigarray ; // (x, y, z, scale)
+property float4 jointQuaternions[MAX_JOINTS] : dynamic,skin2 : bigarray ;
 #endif
 
 #include "vp-fog-props.cgh"
