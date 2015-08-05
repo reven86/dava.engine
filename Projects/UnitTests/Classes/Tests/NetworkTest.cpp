@@ -304,7 +304,7 @@ DAVA_TESTCLASS(NetworkTest)
         return true;
     }
 
-    /*DAVA_TEST(TestIPAddress)
+    DAVA_TEST(TestIPAddress)
     {
         // Test empty address
         TEST_VERIFY(true == IPAddress().IsUnspecified());
@@ -330,9 +330,9 @@ DAVA_TESTCLASS(NetworkTest)
         TEST_VERIFY(IPAddress("192.168.0.4").ToString() == IPAddress::FromString("192.168.0.4").ToString());
         TEST_VERIFY(false == IPAddress("192.168.0.4").IsUnspecified());
         TEST_VERIFY(false == IPAddress("255.255.255.255").IsUnspecified());
-    }*/
+    }
 
-    /*DAVA_TEST(TestEndpoint)
+    DAVA_TEST(TestEndpoint)
     {
         TEST_VERIFY(0 == Endpoint().Port());
         TEST_VERIFY(String("0.0.0.0:0") == Endpoint().ToString());
@@ -344,9 +344,9 @@ DAVA_TESTCLASS(NetworkTest)
         TEST_VERIFY(Endpoint("192.168.1.45", 1234) == Endpoint("192.168.1.45", 1234));
         TEST_VERIFY(false == (Endpoint("192.168.1.45", 1234) == Endpoint("192.168.1.45", 1235)));  // Different ports
         TEST_VERIFY(false == (Endpoint("192.168.1.45", 1234) == Endpoint("192.168.1.46", 1234)));  // Different addressess
-    }*/
+    }
 
-    /*DAVA_TEST(TestNetConfig)
+    DAVA_TEST(TestNetConfig)
     {
         TEST_VERIFY(SERVER_ROLE == NetConfig(SERVER_ROLE).Role());
         TEST_VERIFY(false == NetConfig(SERVER_ROLE).Validate());
@@ -368,7 +368,7 @@ DAVA_TESTCLASS(NetworkTest)
         TEST_VERIFY(true == config2.Validate());
         TEST_VERIFY(2 == config2.Transports().size());
         TEST_VERIFY(3 == config2.Services().size());
-    }*/
+    }
 
     DAVA_TEST(TestEcho)
     {
