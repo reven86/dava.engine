@@ -698,14 +698,22 @@ StaticOcclusionDebugDrawSystem::StaticOcclusionDebugDrawSystem(Scene *scene):Sce
     scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::WORLD_TRANSFORM_CHANGED);
     scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::STATIC_OCCLUSION_COMPONENT_CHANGED);
 
+    Color gridColor(0.0f, 0.3f, 0.1f, 0.2f);
+    Color coverColor(0.1f, 0.5f, 0.1f, 0.3f);
 
-    debugOpaqueMaterial = new NMaterial();
-    debugOpaqueMaterial->SetMaterialName(FastName("Debug_Opaque_Material"));
-    debugOpaqueMaterial->SetFXName(NMaterialName::DEBUG_DRAW_OPAQUE);
-    debugAlphablendMaterial = new NMaterial();
-    debugAlphablendMaterial->SetMaterialName(FastName("Debug_Alphablend_Material"));
-    debugAlphablendMaterial->SetFXName(NMaterialName::DEBUG_DRAW_ALPHABLEND);
+    gridMaterial = new NMaterial();
+    gridMaterial->SetMaterialName(FastName("DebugQcclusionGridMaterial"));
+    gridMaterial->SetFXName(NMaterialName::DEBUG_DRAW_OPAQUE);        
+    gridMaterial->AddProperty(FastName("color"), gridColor.color, rhi::ShaderProp::TYPE_FLOAT4);
 
+    coverMaterial = new NMaterial();
+    coverMaterial->SetMaterialName(FastName("DebugQcclusionCoverMaterial"));
+    coverMaterial->SetFXName(NMaterialName::DEBUG_DRAW_ALPHABLEND);    
+    coverMaterial->AddProperty(FastName("color"), coverColor.color, rhi::ShaderProp::TYPE_FLOAT4);
+
+    rhi::VertexLayout vertexLayout;
+    vertexLayout.AddElement(rhi::VS_POSITION, 0, rhi::VDT_FLOAT, 3);
+    vertexLayoutId = rhi::VertexLayout::UniqueId(vertexLayout);
 }
 
 StaticOcclusionDebugDrawSystem::~StaticOcclusionDebugDrawSystem()
@@ -713,49 +721,36 @@ StaticOcclusionDebugDrawSystem::~StaticOcclusionDebugDrawSystem()
     GetScene()->GetEventSystem()->UnregisterSystemForEvent(this, EventSystem::WORLD_TRANSFORM_CHANGED);
     GetScene()->GetEventSystem()->UnregisterSystemForEvent(this, EventSystem::STATIC_OCCLUSION_COMPONENT_CHANGED);
 
-    SafeRelease(debugOpaqueMaterial);
-    SafeRelease(debugAlphablendMaterial);
+    SafeRelease(gridMaterial);
+    SafeRelease(coverMaterial);
 
 }
 
 void StaticOcclusionDebugDrawSystem::AddEntity(Entity * entity)
 {
-#if RHI_COMPLETE
+
     StaticOcclusionComponent *staticOcclusionComponent = static_cast<StaticOcclusionComponent*>(entity->GetComponent(Component::STATIC_OCCLUSION_COMPONENT));
     Matrix4 * worldTransformPointer = GetTransformComponent(entity)->GetWorldTransformPtr();
     //create render object
     ScopedPtr<RenderObject> debugRenderObject(new RenderObject());
+    debugRenderObject->SetWorldTransformPtr(worldTransformPointer);
     ScopedPtr<RenderBatch> gridBatch(new RenderBatch());
-    ScopedPtr<PolygonGroup> gridPolygonGroup(CreateStaticOcclusionDebugDrawGrid(staticOcclusionComponent->GetBoundingBox(), staticOcclusionComponent->GetSubdivisionsX(), staticOcclusionComponent->GetSubdivisionsY(), staticOcclusionComponent->GetSubdivisionsZ(), staticOcclusionComponent->GetCellHeightOffsets()));
-    ScopedPtr<NMaterial> gridMaterialInstance(NMaterial::CreateMaterialInstance());
-    gridMaterialInstance->SetParent(debugAlphablendMaterial);
-    Color col(0.0f, 0.3f, 0.1f, 0.2f);
-    gridMaterialInstance->SetPropertyValue(NMaterialParamName::PARAM_FLAT_COLOR, Shader::UT_FLOAT_VEC4, 1, &col);
-    gridBatch->SetPolygonGroup(gridPolygonGroup);
-    gridBatch->SetMaterial(gridMaterialInstance);
-    
-
-
     ScopedPtr<RenderBatch> coverBatch(new RenderBatch());
-    ScopedPtr<PolygonGroup> coverPolygonGroup(CreateStaticOcclusionDebugDrawCover(staticOcclusionComponent->GetBoundingBox(), staticOcclusionComponent->GetSubdivisionsX(), staticOcclusionComponent->GetSubdivisionsY(), staticOcclusionComponent->GetSubdivisionsZ(), gridPolygonGroup));
-        
-    ScopedPtr<NMaterial> coverMaterialInstance(NMaterial::CreateMaterialInstance());
-    coverMaterialInstance->SetParent(debugAlphablendMaterial);
-    Color colCover(0.1f, 0.5f, 0.1f, 0.3f);
-    coverMaterialInstance->SetPropertyValue(NMaterialParamName::PARAM_FLAT_COLOR, Shader::UT_FLOAT_VEC4, 1, &colCover);
-    coverBatch->SetPolygonGroup(coverPolygonGroup);
-    coverBatch->SetMaterial(coverMaterialInstance);
-    
-    
+    gridBatch->SetMaterial(gridMaterial);
+    gridBatch->vertexLayoutId = vertexLayoutId;
+    gridBatch->primitiveType = rhi::PRIMITIVE_LINELIST;
+    coverBatch->SetMaterial(coverMaterial);
+    coverBatch->vertexLayoutId = vertexLayoutId;                
+
     debugRenderObject->AddRenderBatch(coverBatch);
     debugRenderObject->AddRenderBatch(gridBatch);
+    StaticOcclusionDebugDrawComponent *debugDrawComponent = new StaticOcclusionDebugDrawComponent(debugRenderObject);
+    entity->AddComponent(debugDrawComponent);
     
-    debugRenderObject->SetWorldTransformPtr(worldTransformPointer);
-    GetScene()->renderSystem->MarkForUpdate(debugRenderObject);
-
-    entity->AddComponent(new StaticOcclusionDebugDrawComponent(debugRenderObject));    
+    UpdateGeometry(debugDrawComponent);        
+                            
     GetScene()->GetRenderSystem()->RenderPermanent(debugRenderObject);        
-#endif RHI_COMPLETE
+
 }
 
 void StaticOcclusionDebugDrawSystem::RemoveEntity(Entity * entity)
@@ -765,6 +760,8 @@ void StaticOcclusionDebugDrawSystem::RemoveEntity(Entity * entity)
     GetScene()->GetRenderSystem()->RemoveFromRender(debugDrawComponent->GetRenderObject());
     entity->RemoveComponent(Component::STATIC_OCCLUSION_DEBUG_DRAW_COMPONENT);    
 }
+
+
 void StaticOcclusionDebugDrawSystem::ImmediateEvent(Component * component, uint32 event)
 {
     Entity * entity = component->GetEntity();
@@ -783,20 +780,261 @@ void StaticOcclusionDebugDrawSystem::ImmediateEvent(Component * component, uint3
     }
 
     if ((event == EventSystem::STATIC_OCCLUSION_COMPONENT_CHANGED) || (staticOcclusionComponent->GetPlaceOnLandscape()))
-    {                
-        ScopedPtr<PolygonGroup> gridPolygonGroup(CreateStaticOcclusionDebugDrawGrid(staticOcclusionComponent->GetBoundingBox(), staticOcclusionComponent->GetSubdivisionsX(), staticOcclusionComponent->GetSubdivisionsY(), staticOcclusionComponent->GetSubdivisionsZ(), staticOcclusionComponent->GetCellHeightOffsets()));
+    {   
+        UpdateGeometry(debugDrawComponent);        
+                
+        /*ScopedPtr<PolygonGroup> gridPolygonGroup(CreateStaticOcclusionDebugDrawGrid(staticOcclusionComponent->GetBoundingBox(), staticOcclusionComponent->GetSubdivisionsX(), staticOcclusionComponent->GetSubdivisionsY(), staticOcclusionComponent->GetSubdivisionsZ(), staticOcclusionComponent->GetCellHeightOffsets()));
         ScopedPtr<PolygonGroup> coverPolygonGroup(CreateStaticOcclusionDebugDrawCover(staticOcclusionComponent->GetBoundingBox(), staticOcclusionComponent->GetSubdivisionsX(), staticOcclusionComponent->GetSubdivisionsY(), staticOcclusionComponent->GetSubdivisionsZ(), gridPolygonGroup));
         RenderObject *debugRenderObject = debugDrawComponent->GetRenderObject();        
         debugRenderObject->GetRenderBatch(0)->SetPolygonGroup(coverPolygonGroup);
         debugRenderObject->GetRenderBatch(1)->SetPolygonGroup(gridPolygonGroup);
         debugRenderObject->RecalcBoundingBox();
-        entity->GetScene()->renderSystem->MarkForUpdate(debugRenderObject);
+        entity->GetScene()->renderSystem->MarkForUpdate(debugRenderObject);*/
     }
 }
 
 #define IDX_BY_POS(xc, yc, zc) ((zc) + (zSubdivisions+1)*((yc) + (xc) * ySubdivisions))*4
 
-PolygonGroup* StaticOcclusionDebugDrawSystem::CreateStaticOcclusionDebugDrawGrid(const AABBox3& boundingBox, uint32 xSubdivisions, uint32 ySubdivisions, uint32 zSubdivisions, const float32 *cellHeightOffset)
+
+void StaticOcclusionDebugDrawSystem::UpdateGeometry(StaticOcclusionDebugDrawComponent * component)
+{
+    Entity * entity = component->GetEntity();
+    StaticOcclusionComponent *staticOcclusionComponent = static_cast<StaticOcclusionComponent*>(entity->GetComponent(Component::STATIC_OCCLUSION_COMPONENT));
+    DVASSERT(staticOcclusionComponent);        
+
+    CreateStaticOcclusionDebugDrawVertices(component, staticOcclusionComponent);
+    CreateStaticOcclusionDebugDrawGridIndice(component, staticOcclusionComponent);
+    CreateStaticOcclusionDebugDrawCoverIndice(component, staticOcclusionComponent);
+
+    RenderObject *debugRenderObject = component->renderObject;
+    debugRenderObject->GetRenderBatch(0)->vertexBuffer = component->vertices;
+    debugRenderObject->GetRenderBatch(0)->vertexCount = component->vertexCount;
+    debugRenderObject->GetRenderBatch(0)->indexBuffer = component->coverIndices;
+    debugRenderObject->GetRenderBatch(0)->indexCount = component->coverIndexCount;
+
+    debugRenderObject->GetRenderBatch(1)->vertexBuffer = component->vertices;
+    debugRenderObject->GetRenderBatch(1)->vertexCount = component->vertexCount;
+    debugRenderObject->GetRenderBatch(1)->indexBuffer = component->gridIndices;
+    debugRenderObject->GetRenderBatch(1)->indexCount = component->gridIndexCount;
+
+    debugRenderObject->SetAABBox(component->bbox);
+    entity->GetScene()->renderSystem->MarkForUpdate(debugRenderObject);
+}
+
+void StaticOcclusionDebugDrawSystem::CreateStaticOcclusionDebugDrawVertices(StaticOcclusionDebugDrawComponent *target, StaticOcclusionComponent *source)
+{
+    rhi::DeleteVertexBuffer(target->vertices);
+    uint32 xSubdivisions = source->GetSubdivisionsX();
+    uint32 ySubdivisions = source->GetSubdivisionsY();
+    uint32 zSubdivisions = source->GetSubdivisionsZ();
+    
+    int32 vertexCount = xSubdivisions * ySubdivisions * 4 * (zSubdivisions + 1);    
+    target->vertexCount = vertexCount;
+    target->vertices = rhi::CreateVertexBuffer(vertexCount * 4 * 3);
+
+    const AABBox3& srcBBox = source->GetBoundingBox();
+    Vector3 boxSize = srcBBox.GetSize();
+    boxSize.x /= xSubdivisions;
+    boxSize.y /= ySubdivisions;
+    boxSize.z /= zSubdivisions;
+
+    const float32* cellHeightOffset = source->GetCellHeightOffsets();
+
+    std::unique_ptr<Vector3[]> mesh(new Vector3[vertexCount]);
+    AABBox3 resBBox;
+    //vertices
+    //as we are going to place blocks on landscape we are to treat each column as independent - not sharing vertices between columns. we can still share vertices within 1 column
+    for (uint32 xs = 0; xs < xSubdivisions; ++xs)
+        for (uint32 ys = 0; ys < ySubdivisions; ++ys)
+            for (uint32 zs = 0; zs < (zSubdivisions + 1); ++zs)
+            {
+                int32 vBase = IDX_BY_POS(xs, ys, zs);
+                float32 hOffset = cellHeightOffset ? cellHeightOffset[xs + ys*xSubdivisions] : 0;
+                mesh[vBase + 0] = srcBBox.min + Vector3(boxSize.x * xs, boxSize.y * ys, boxSize.z * zs + hOffset);              resBBox.AddPoint(mesh[vBase + 0]);
+                mesh[vBase + 1] = srcBBox.min + Vector3(boxSize.x * (xs + 1), boxSize.y * ys, boxSize.z * zs + hOffset);        resBBox.AddPoint(mesh[vBase + 1]);
+                mesh[vBase + 2] = srcBBox.min + Vector3(boxSize.x * (xs + 1), boxSize.y * (ys + 1), boxSize.z * zs + hOffset);  resBBox.AddPoint(mesh[vBase + 2]);
+                mesh[vBase + 3] = srcBBox.min + Vector3(boxSize.x * xs, boxSize.y * (ys + 1), boxSize.z * zs + hOffset);        resBBox.AddPoint(mesh[vBase + 3]);                
+            }
+    rhi::UpdateVertexBuffer(target->vertices, mesh.get(), 0, vertexCount * 4 * 3);
+    target->bbox = resBBox;
+}
+
+void StaticOcclusionDebugDrawSystem::CreateStaticOcclusionDebugDrawGridIndice(StaticOcclusionDebugDrawComponent *target, StaticOcclusionComponent *source)
+{
+    rhi::DeleteIndexBuffer(target->gridIndices);
+    uint32 xSubdivisions = source->GetSubdivisionsX();
+    uint32 ySubdivisions = source->GetSubdivisionsY();
+    uint32 zSubdivisions = source->GetSubdivisionsZ();
+    uint32 indexCount = xSubdivisions * ySubdivisions * zSubdivisions * 12 * 2; //12 lines per box 2 indices per line
+    target->gridIndexCount = indexCount;
+
+    target->gridIndices = rhi::CreateIndexBuffer(indexCount * 2);
+    std::unique_ptr<uint16[]> meshIndices(new uint16[indexCount]);
+    //in pair indexOffset, z
+    const static int32 indexOffsets[]={0,0, 1,0, 1,0, 2,0, 2,0, 3,0, 3,0, 0,0,  //bot
+                                       0,0, 0,1, 1,0, 1,1, 2,0, 2,1, 3,0, 3,1,  //mid
+                                       0,1, 1,1, 1,1, 2,1, 2,1, 3,1, 3,1, 0,1}; //top
+
+    for (uint32 xs = 0; xs < xSubdivisions; ++xs)
+        for (uint32 ys = 0; ys < ySubdivisions; ++ys)
+            for (uint32 zs = 0; zs < zSubdivisions; ++zs)
+            {
+                int32 iBase = (zs + zSubdivisions*(ys + xs * ySubdivisions)) * 24;
+                int32 vBase[2] = { static_cast<int32>(IDX_BY_POS(xs, ys, zs)), static_cast<int32>(IDX_BY_POS(xs, ys, zs + 1)) };
+                for (int32 i = 0; i < 24; i++)
+                    meshIndices[iBase + i] = indexOffsets[i * 2] + vBase[indexOffsets[i * 2 + 1]];
+
+            }
+
+    rhi::UpdateIndexBuffer(target->gridIndices, meshIndices.get(), 0, indexCount * 2);
+}
+
+void StaticOcclusionDebugDrawSystem::CreateStaticOcclusionDebugDrawCoverIndice(StaticOcclusionDebugDrawComponent *target, StaticOcclusionComponent *source)
+{
+    rhi::DeleteIndexBuffer(target->coverIndices);
+
+    uint32 xSubdivisions = source->GetSubdivisionsX();
+    uint32 ySubdivisions = source->GetSubdivisionsY();
+    uint32 zSubdivisions = source->GetSubdivisionsZ();
+
+    int32 xSideIndexCount = xSubdivisions * 6 * 2;
+    int32 ySideIndexCount = ySubdivisions * 6 * 2;
+    int32 xySideIndexCount = xSideIndexCount + ySideIndexCount;
+    int32 zSideIndexCount = xSubdivisions * ySubdivisions * 6 * 2;
+    int32 totalSideIndexCount = xySideIndexCount + zSideIndexCount;
+    int32 xExtraIndexCount = (xSubdivisions - 1) * (ySubdivisions)* 6 * 2;
+    int32 yExtraIndexCount = (ySubdivisions - 1) * (xSubdivisions)* 6 * 2;
+    int32 indexCount = totalSideIndexCount + xExtraIndexCount + yExtraIndexCount;
+
+    target->coverIndexCount = indexCount;
+
+    target->coverIndices = rhi::CreateIndexBuffer(indexCount * 2);
+    std::unique_ptr<uint16[]> meshIndices(new uint16[indexCount]);
+
+    //left and right
+    for (uint32 xs = 0; xs < xSubdivisions; ++xs)
+    {
+        int32 iBase = xs * 6 * 2;
+
+        meshIndices[iBase + 0] = IDX_BY_POS(xs, 0, 0);        
+        meshIndices[iBase + 1] = IDX_BY_POS(xs, 0, 0) + 1;
+        meshIndices[iBase + 2] = IDX_BY_POS(xs, 0, zSubdivisions) + 1;
+        meshIndices[iBase + 3] = IDX_BY_POS(xs, 0, 0);
+        meshIndices[iBase + 4] = IDX_BY_POS(xs, 0, zSubdivisions) + 1;
+        meshIndices[iBase + 5] = IDX_BY_POS(xs, 0, zSubdivisions);
+
+        iBase = xs * 6 * 2 + 6;
+
+        meshIndices[iBase + 0] = IDX_BY_POS(xs, ySubdivisions - 1, 0) + 3;
+        meshIndices[iBase + 1] = IDX_BY_POS(xs, ySubdivisions - 1, 0) + 2;
+        meshIndices[iBase + 2] = IDX_BY_POS(xs, ySubdivisions - 1, zSubdivisions) + 2;
+        meshIndices[iBase + 3] = IDX_BY_POS(xs, ySubdivisions - 1, 0) + 3;
+        meshIndices[iBase + 4] = IDX_BY_POS(xs, ySubdivisions - 1, zSubdivisions) + 2;
+        meshIndices[iBase + 5] = IDX_BY_POS(xs, ySubdivisions - 1, zSubdivisions) + 3;
+    }
+
+    //front and back
+    for (uint32 ys = 0; ys < ySubdivisions; ++ys)
+    {
+        int32 iBase = xSideIndexCount + ys * 6 * 2;
+
+        meshIndices[iBase + 0] = IDX_BY_POS(0, ys, 0);
+        meshIndices[iBase + 1] = IDX_BY_POS(0, ys, 0) + 3;
+        meshIndices[iBase + 2] = IDX_BY_POS(0, ys, zSubdivisions) + 3;
+        meshIndices[iBase + 3] = IDX_BY_POS(0, ys, 0);
+        meshIndices[iBase + 4] = IDX_BY_POS(0, ys, zSubdivisions) + 3;
+        meshIndices[iBase + 5] = IDX_BY_POS(0, ys, zSubdivisions);
+
+        iBase = xSideIndexCount + ys * 6 * 2 + 6;
+
+        meshIndices[iBase + 0] = IDX_BY_POS(xSubdivisions - 1, ys, 0) + 1;
+        meshIndices[iBase + 1] = IDX_BY_POS(xSubdivisions - 1, ys, 0) + 2;
+        meshIndices[iBase + 2] = IDX_BY_POS(xSubdivisions - 1, ys, zSubdivisions) + 2;
+        meshIndices[iBase + 3] = IDX_BY_POS(xSubdivisions - 1, ys, 0) + 1;
+        meshIndices[iBase + 4] = IDX_BY_POS(xSubdivisions - 1, ys, zSubdivisions) + 2;
+        meshIndices[iBase + 5] = IDX_BY_POS(xSubdivisions - 1, ys, zSubdivisions) + 1;
+    }
+
+    //bot and top
+    for (uint32 xs = 0; xs < xSubdivisions; ++xs)
+        for (uint32 ys = 0; ys < ySubdivisions; ++ys)
+        {
+            int32 iBase = xySideIndexCount + (ys*xSubdivisions + xs) * 6 * 2;
+            int32 vBase = IDX_BY_POS(xs, ys, 0);
+            meshIndices[iBase + 0] = vBase + 0;
+            meshIndices[iBase + 1] = vBase + 1;
+            meshIndices[iBase + 2] = vBase + 2;
+            meshIndices[iBase + 3] = vBase + 0;
+            meshIndices[iBase + 4] = vBase + 2;
+            meshIndices[iBase + 5] = vBase + 3;
+
+            iBase = xySideIndexCount + (ys*xSubdivisions + xs) * 6 * 2 + 6;
+            vBase = IDX_BY_POS(xs, ys, zSubdivisions);
+            meshIndices[iBase + 0] = vBase + 0;
+            meshIndices[iBase + 1] = vBase + 1;
+            meshIndices[iBase + 2] = vBase + 2;
+            meshIndices[iBase + 3] = vBase + 0;
+            meshIndices[iBase + 4] = vBase + 2;
+            meshIndices[iBase + 5] = vBase + 3;
+        }
+
+    //extras across x axis
+    for (uint32 xs = 0; xs < (xSubdivisions - 1); ++xs)
+        for (uint32 ys = 0; ys < ySubdivisions; ++ys)
+        {
+            int32 iBase = totalSideIndexCount + (xs*ySubdivisions + ys) * 6 * 2;
+            int32 vBase1 = IDX_BY_POS(xs, ys, 0);
+            int32 vBase2 = IDX_BY_POS(xs + 1, ys, 0);
+            meshIndices[iBase + 0] = vBase1 + 1;
+            meshIndices[iBase + 1] = vBase1 + 2;
+            meshIndices[iBase + 2] = vBase2 + 3;
+            meshIndices[iBase + 3] = vBase1 + 1;
+            meshIndices[iBase + 4] = vBase2 + 3;
+            meshIndices[iBase + 5] = vBase2 + 0;
+
+            iBase += 6;
+            vBase1 = IDX_BY_POS(xs, ys, zSubdivisions);
+            vBase2 = IDX_BY_POS(xs + 1, ys, zSubdivisions);
+            meshIndices[iBase + 0] = vBase1 + 1;
+            meshIndices[iBase + 1] = vBase1 + 2;
+            meshIndices[iBase + 2] = vBase2 + 3;
+            meshIndices[iBase + 3] = vBase1 + 1;
+            meshIndices[iBase + 4] = vBase2 + 3;
+            meshIndices[iBase + 5] = vBase2 + 0;
+        }
+
+    //extras across y axis
+    for (uint32 xs = 0; xs < xSubdivisions; ++xs)
+        for (uint32 ys = 0; ys < (ySubdivisions - 1); ++ys)
+        {
+            int32 iBase = totalSideIndexCount + xExtraIndexCount + (ys*xSubdivisions + xs) * 6 * 2;
+            int32 vBase1 = IDX_BY_POS(xs, ys, 0);
+            int32 vBase2 = IDX_BY_POS(xs, ys + 1, 0);
+            meshIndices[iBase + 0] = vBase1 + 2;
+            meshIndices[iBase + 1] = vBase1 + 3;
+            meshIndices[iBase + 2] = vBase2 + 0;
+            meshIndices[iBase + 3] = vBase1 + 2;
+            meshIndices[iBase + 4] = vBase2 + 0;
+            meshIndices[iBase + 5] = vBase2 + 1;
+
+            iBase += 6;
+            vBase1 = IDX_BY_POS(xs, ys, zSubdivisions);
+            vBase2 = IDX_BY_POS(xs, ys + 1, zSubdivisions);
+            meshIndices[iBase + 0] = vBase1 + 2;
+            meshIndices[iBase + 1] = vBase1 + 3;
+            meshIndices[iBase + 2] = vBase2 + 0;
+            meshIndices[iBase + 3] = vBase1 + 2;
+            meshIndices[iBase + 4] = vBase2 + 0;
+            meshIndices[iBase + 5] = vBase2 + 1;
+        }
+
+    rhi::UpdateIndexBuffer(target->coverIndices, meshIndices.get(), 0, indexCount * 2);
+}
+
+#undef IDX_BY_POS
+
+
+/*PolygonGroup* StaticOcclusionDebugDrawSystem::CreateStaticOcclusionDebugDrawGrid(const AABBox3& boundingBox, uint32 xSubdivisions, uint32 ySubdivisions, uint32 zSubdivisions, const float32 *cellHeightOffset)
 {
     int32 vertexCount = xSubdivisions * ySubdivisions * 4 * (zSubdivisions + 1);
     int32 indexCount = xSubdivisions * ySubdivisions * zSubdivisions * 12 * 2; //12 lines per box 2 indices per line
@@ -823,6 +1061,8 @@ PolygonGroup* StaticOcclusionDebugDrawSystem::CreateStaticOcclusionDebugDrawGrid
                 res->SetCoord(vBase + 2, boundingBox.min + Vector3(boxSize.x * (xs+1), boxSize.y * (ys+1), boxSize.z * zs + hOffset));
                 res->SetCoord(vBase + 3, boundingBox.min + Vector3(boxSize.x * xs, boxSize.y * (ys+1), boxSize.z * zs + hOffset));
             }        
+
+
     //indices     
     //in pair indexOffset, z
     const static int32 indexOffsets[]={0,0, 1,0, 1,0, 2,0, 2,0, 3,0, 3,0, 0,0,  //bot
@@ -990,9 +1230,7 @@ PolygonGroup* StaticOcclusionDebugDrawSystem::CreateStaticOcclusionDebugDrawCove
 #endif // RHI_COMPLETE
     res->aabbox=gridPolygonGroup->aabbox;
     return res;
-}
-
-#undef IDX_BY_POS
+}*/
 
     
 };

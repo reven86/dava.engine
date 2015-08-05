@@ -434,7 +434,7 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
                         {
                             bool isRebuildTsEnabled = true;
                             const int32 requiredVertexFormat = (EVF_TEXCOORD0 | EVF_NORMAL);
-                            isRebuildTsEnabled &= (group->GetPrimitiveType() == PRIMITIVETYPE_TRIANGLELIST);
+                            isRebuildTsEnabled &= (group->GetPrimitiveType() ==  rhi::PRIMITIVE_TRIANGLELIST);
                             isRebuildTsEnabled &= ((group->GetFormat() & requiredVertexFormat) == requiredVertexFormat);
 
                             if (isRebuildTsEnabled)

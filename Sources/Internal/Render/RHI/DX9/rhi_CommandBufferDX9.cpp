@@ -170,6 +170,7 @@ SyncObjectDX9_t
 {
     uint32  frame;
     uint32  is_signaled:1;
+    uint32  is_used:1;
 };
 
 typedef ResourcePool<CommandBufferDX9_t,RESOURCE_COMMAND_BUFFER>    CommandBufferPool;
@@ -491,6 +492,7 @@ dx9_SyncObject_Create()
     SyncObjectDX9_t*    sync   = SyncObjectPool::Get( handle );
 
     sync->is_signaled = false;
+    sync->is_used = false;
 
     return handle;
 }
@@ -1071,6 +1073,7 @@ Trace("rhi-dx9.exec-queued-cmd\n");
 
         sync->frame = frame_n;
         sync->is_signaled = false;
+        sync->is_used = true;
     }
     _FrameSync.Unlock();
 
@@ -1095,6 +1098,7 @@ Trace("\n\n-------------------------------\nexecuting frame %u\n",frame_n);
 
                 sync->frame       = frame_n;
                 sync->is_signaled = false;
+                sync->is_used = true;
             }
 
             CommandBufferPool::Free( cb_h );
@@ -1149,7 +1153,7 @@ Trace("\n\n-------------------------------\nframe %u executed(submitted to GPU)\
 
     for( SyncObjectPool::Iterator s=SyncObjectPool::Begin(),s_end=SyncObjectPool::End(); s!=s_end; ++s )
     {
-        if( frame_n - s->frame > 3 )
+        if (s->is_used && ( frame_n - s->frame > 3 ))
             s->is_signaled = true;
     }
 }
