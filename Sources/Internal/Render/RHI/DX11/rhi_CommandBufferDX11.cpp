@@ -1054,6 +1054,11 @@ SCOPED_FUNCTION_TIMING();
 
     sync = InvalidHandle;
 
+    def_viewport.TopLeftX = 0;
+    def_viewport.TopLeftY = 0;
+    def_viewport.MinDepth = 0.0f;
+    def_viewport.MaxDepth = 1.0f;
+
     for( std::vector<uint64>::const_iterator c=_cmd.begin(),c_end=_cmd.end(); c!=c_end; ++c )
     {
         const uint64                        cmd = *c;
@@ -1072,8 +1077,19 @@ SCOPED_FUNCTION_TIMING();
                     bool                    clear_depth = passCfg.depthStencilBuffer.loadAction == LOADACTION_CLEAR;
                     ID3D11RenderTargetView* rt[1]       = { _D3D11_RenderTargetView };
 
-                    _D3D11_ImmediateContext->OMSetRenderTargets( 1, rt, _D3D11_DepthStencilView );
+                    if( passCfg.colorBuffer[0].texture != rhi::InvalidHandle )
+                    {
+                        Size2i  sz = TextureDX11::Size( passCfg.colorBuffer[0].texture );
+                        
+                        def_viewport.Width  = float(sz.dx);
+                        def_viewport.Height = float(sz.dy);
 
+                        TextureDX11::SetRenderTarget( passCfg.colorBuffer[0].texture, passCfg.depthStencilBuffer.texture );
+                    }
+                    else
+                    {
+                        _D3D11_ImmediateContext->OMSetRenderTargets( 1, rt, _D3D11_DepthStencilView );
+                    }
 
 
                     ID3D11RenderTargetView* rt_view[D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT] = { NULL };
@@ -1087,17 +1103,16 @@ SCOPED_FUNCTION_TIMING();
                         {
                             if( i == 0 )
                             {
-                                D3D11_TEXTURE2D_DESC    desc;
+                                if( passCfg.colorBuffer[0].texture == rhi::InvalidHandle )
+                                {
+                                    D3D11_TEXTURE2D_DESC    desc;
 
-                                _D3D11_SwapChainBuffer->GetDesc( &desc );
+                                    _D3D11_SwapChainBuffer->GetDesc( &desc );
 
-                                def_viewport.TopLeftX = 0;
-                                def_viewport.TopLeftY = 0;
-                                def_viewport.Width    = float(desc.Width);
-                                def_viewport.Height   = float(desc.Height);
-                                def_viewport.MinDepth = 0.0f;
-                                def_viewport.MaxDepth = 1.0f;
-                                
+                                    def_viewport.Width  = float(desc.Width);
+                                    def_viewport.Height = float(desc.Height);                                
+                                }
+                                                                
                                 _D3D11_ImmediateContext->RSSetViewports( 1, &def_viewport );
                             }
                             
