@@ -373,6 +373,8 @@ RefPtr<PackageNode> EditorUIPackageBuilder::BuildPackage() const
         }
     }
     
+    package->RefreshLayout();
+    
     DVASSERT(declinedPackages.empty());
     
     return package;

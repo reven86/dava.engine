@@ -35,6 +35,7 @@
 #include "Tools/QtPropertyEditor/QtPropertyEditor.h"
 #include "Scene/SceneSignals.h"
 
+class LazyUpdater;
 struct PropEditorUserData : public QtPropertyData::UserData 
 {
 	enum PropertyType
@@ -137,8 +138,6 @@ protected:
 	QtPropertyData* CreateInspCollection(void *object, const DAVA::InspColl *collection);
 	QtPropertyData* CreateClone(QtPropertyData *original);
 
-    void QueueResetProperties();
-
     void ClearCurrentNodes();
 	void ApplyModeFilter(QtPropertyData *parent);
 	void ApplyFavorite(QtPropertyData *data);
@@ -165,7 +164,7 @@ protected:
 	QString GetDefaultFilePath(); 
 
 private:
-    int resetRequests;
+	LazyUpdater *propertiesUpdater;
 };
 
 #endif // __QT_PROPERTY_WIDGET_H__

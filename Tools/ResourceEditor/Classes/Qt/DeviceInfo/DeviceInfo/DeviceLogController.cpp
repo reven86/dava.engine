@@ -29,8 +29,9 @@
 
 #include <Utils/UTF8Utils.h>
 
-#include "DeviceLogWidget.h"
+#include "QtTools/ConsoleWidget/LogWidget.h"
 #include "DeviceLogController.h"
+#include "QtTools/ConsoleWidget/LogModel.h"
 
 using namespace DAVA;
 using namespace DAVA::Net;
@@ -54,7 +55,7 @@ void DeviceLogController::ShowView()
             .arg(peer.GetPlatformString().c_str())
             .arg(peer.GetVersion().c_str());
 
-        view = new DeviceLogWidget(parentWidget);
+        view = new LogWidget(parentWidget);
         view->setWindowFlags(Qt::Window);
         view->setWindowTitle(title);
 
@@ -102,5 +103,5 @@ void DeviceLogController::Output(const String& msg)
         else if (list[2] == "error")
             ll = Logger::LEVEL_ERROR;
     }
-    view->AppendText(msg.c_str(), ll);
+    view->AddMessage(ll, msg.c_str());
 }

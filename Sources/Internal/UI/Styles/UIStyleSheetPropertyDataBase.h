@@ -54,7 +54,7 @@ public:
 private:
     UnorderedMap<FastName, uint32> propertyNameToIndexMap;
     Array<UIStyleSheetPropertyDescriptor, STYLE_SHEET_PROPERTY_COUNT> properties;
-
+    
     struct ComponentPropertyRegistrator
     {
         UIStyleSheetPropertyTargetMember operator () (uint32 index, const InspInfo* typeInfo, const InspMember* member) const;

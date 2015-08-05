@@ -32,6 +32,7 @@
 #include "Platform/Qt5/QtLayer.h"
 #include "Render/RenderManager.h"
 
+
 #include <QWindow>
 #include <QApplication>
 #include <QOpenGLContext>
@@ -69,7 +70,7 @@ void FrameworkLoop::SetOpenGLWindow( DavaGLWidget* w )
 
 QOpenGLContext* FrameworkLoop::Context()
 {
-    if ( context.isNull() )
+	if (context.isNull())
     {
         context = new QOpenGLContext( glWidget );
 

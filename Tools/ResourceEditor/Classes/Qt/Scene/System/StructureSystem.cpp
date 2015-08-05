@@ -565,7 +565,7 @@ DAVA::Entity* StructureSystem::LoadInternal(const DAVA::FilePath& sc2path, bool 
                 Entity* tmpEntity = loadedEntity;
 
                 tmpParent->AddNode(tmpEntity);
-                tmpSceneFile->OptimizeScene(tmpEntity);
+                tmpSceneFile->RemoveEmptyHierarchy(tmpEntity);
 
                 loadedEntity = SafeRetain(tmpParent->GetChild(0));
 
@@ -574,13 +574,10 @@ DAVA::Entity* StructureSystem::LoadInternal(const DAVA::FilePath& sc2path, bool 
                 SafeRelease(tmpSceneFile);
             }
 
-            if(loadedEntity->GetChildrenCount() > 0)
-            {
-                KeyedArchive *props = GetOrCreateCustomProperties(loadedEntity)->GetArchive();
-                props->SetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER, sc2path.GetAbsolutePathname());
-
-                CheckAndMarkSolid(loadedEntity);
-            }
+            KeyedArchive *props = GetOrCreateCustomProperties(loadedEntity)->GetArchive();
+            props->SetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER, sc2path.GetAbsolutePathname());
+            
+            CheckAndMarkSolid(loadedEntity);
         }
 	}
     else

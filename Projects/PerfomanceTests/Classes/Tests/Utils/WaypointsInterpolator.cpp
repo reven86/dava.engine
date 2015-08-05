@@ -32,12 +32,12 @@ float32 WaypointsInterpolator::SPLINE_DELTA_TIME = 0.00001f;
 
 WaypointsInterpolator::WaypointsInterpolator(const Vector<PathComponent::Waypoint*>& _waypoints, float32 _time)
     :   waypoints(_waypoints)
-    ,   spline(nullptr)
     ,   segment(0)
-    ,   splineTime(_time)
-    ,   splineLength(0.0f)
     ,   segmentTime(0.0f)
     ,   targetSegmentTime(0.0f)
+    ,   splineTime(_time)
+    ,   splineLength(0.0f)
+    ,   spline(nullptr)
 {
     spline = new BasicSpline3();
 

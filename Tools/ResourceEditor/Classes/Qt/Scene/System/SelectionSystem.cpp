@@ -129,7 +129,7 @@ void SceneSelectionSystem::Process(DAVA::float32 timeElapsed)
 
 void SceneSelectionSystem::ForceEmitSignals()
 {
-	if(selectionHasChanges)
+	if (selectionHasChanges)
 	{
 		// emit signals
 		SceneSignals::Instance()->EmitSelectionChanged((SceneEditor2 *) GetScene(), &curSelections, &curDeselections);
@@ -282,6 +282,32 @@ void SceneSelectionSystem::ProcessCommand(const Command2 *command, bool redo)
     }
 }
 
+void SceneSelectionSystem::SetSelection(const EntityGroup &newSelection)
+{
+	if (!IsLocked())
+	{
+		Clear();
+
+		auto count = newSelection.Size();
+		for (decltype(count) i = 0; i < count; ++i)
+		{
+			auto entity = newSelection.GetEntity(i);
+			if (IsEntitySelectable(entity) && !curSelections.ContainsEntity(entity))
+			{
+				curSelections.Add(entity, GetSelectionAABox(entity));
+				selectionHasChanges = true;
+			}
+		}
+
+		if (selectionHasChanges)
+		{
+			invalidSelectionBoxes = true;
+			UpdateHoodPos();
+		}
+	}
+}
+
+
 void SceneSelectionSystem::SetSelection(DAVA::Entity *entity)
 {
 	if(!IsLocked())
@@ -300,18 +326,43 @@ void SceneSelectionSystem::SetSelection(DAVA::Entity *entity)
 
 void SceneSelectionSystem::AddSelection(DAVA::Entity *entity)
 {
-    if(IsEntitySelectable(entity) && !curSelections.ContainsEntity(entity))
+    if(!IsLocked())
     {
-        EntityGroupItem selectableItem;
-        
-        selectableItem.entity = entity;
-        selectableItem.bbox = GetSelectionAABox(entity);
-        curSelections.Add(selectableItem);
-        
-        selectionHasChanges = true;
+        if(IsEntitySelectable(entity) && !curSelections.ContainsEntity(entity))
+        {
+            EntityGroupItem selectableItem;
+            
+            selectableItem.entity = entity;
+            selectableItem.bbox = GetSelectionAABox(entity);
+            curSelections.Add(selectableItem);
+            
+            selectionHasChanges = true;
+            UpdateHoodPos();
+            
+            invalidSelectionBoxes = true;
+        }
+    }
+}
+
+void SceneSelectionSystem::AddSelection(const EntityGroup &entities)
+{
+    if(!IsLocked())
+    {
+        for (size_t i = 0; i < entities.Size(); ++i)
+        {
+            const auto entity = entities.GetEntity(i);
+            if (IsEntitySelectable(entity) && !curSelections.ContainsEntity(entity))
+            {
+                EntityGroupItem selectableItem;
+
+                selectableItem.entity = entity;
+                selectableItem.bbox = GetSelectionAABox(entity);
+                curSelections.Add(selectableItem);
+                selectionHasChanges = true;
+                invalidSelectionBoxes = true;
+            }
+        }
         UpdateHoodPos();
-        
-        invalidSelectionBoxes = true;
     }
 }
 
@@ -339,6 +390,25 @@ void SceneSelectionSystem::RemSelection(DAVA::Entity *entity)
 
 		UpdateHoodPos();
 	}
+}
+
+void SceneSelectionSystem::RemSelection(const EntityGroup& entities)
+{
+    if (!IsLocked())
+    {
+        for (size_t i = 0; i < entities.Size(); ++i)
+        {
+            auto entity = entities.GetEntity(i);
+            if (curSelections.ContainsEntity(entity))
+            {
+                curSelections.Rem(entity);
+                curDeselections.Add(entity);
+
+                selectionHasChanges = true;
+            }
+        }
+        UpdateHoodPos();
+    }
 }
 
 void SceneSelectionSystem::Clear()

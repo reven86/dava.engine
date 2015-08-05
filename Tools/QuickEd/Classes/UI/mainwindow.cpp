@@ -39,12 +39,14 @@
 #include "Utils/QtDavaConvertion.h"
 
 #include "QtTools/FileDialog/FileDialog.h"
+#include "QtTools/ReloadSprites/DialogReloadSprites.h"
 
 namespace
 {
     const QString APP_GEOMETRY = "geometry";
     const QString APP_STATE = "windowstate";
     const char* COLOR_PROPERTY_ID = "color";
+    const QString CONSOLE_STATE = "console state";
 }
 
 using namespace DAVA;
@@ -54,10 +56,19 @@ MainWindow::MainWindow(QWidget *parent)
     , backgroundFrameUseCustomColorAction(nullptr)
     , backgroundFrameSelectCustomColorAction(nullptr)
     , localizationEditorDialog(new LocalizationEditorDialog(this))
+    , dialogReloadSprites(new DialogReloadSprites(this))
 {
     setupUi(this);
+
+    // Relod Sprites
+    QAction* actionReloadSprites = dialogReloadSprites->GetActionReloadSprites();
+    menuTools->addAction(actionReloadSprites);
+    toolBarPlugins->addAction(actionReloadSprites);
+
     actionLocalizationManager->setEnabled(false);
     InitLanguageBox();
+    InitRtlBox();
+
     tabBar->setElideMode(Qt::ElideNone);
     setWindowTitle(ResourcesManageHelper::GetProjectTitle());
 
@@ -132,25 +143,37 @@ void MainWindow::SaveMainWindowState()
     QSettings settings(QApplication::organizationName(), QApplication::applicationName());
     settings.setValue(APP_GEOMETRY, saveGeometry());
     settings.setValue(APP_STATE, saveState());
+    settings.setValue(CONSOLE_STATE, logWidget->Serialize());
 }
 
 void MainWindow::RestoreMainWindowState()
 {
     QSettings settings(QApplication::organizationName(), QApplication::applicationName());
-    // Check settings befor applying it
-    if (settings.value(APP_GEOMETRY).isValid())
+    auto val = settings.value(APP_GEOMETRY);
+    if (val.canConvert<QByteArray>())
+	{
+    	restoreGeometry(settings.value(APP_GEOMETRY).toByteArray());
+	}
+    val = settings.value(APP_STATE);
+    if (val.canConvert<QByteArray>())
     {
-        restoreGeometry(settings.value(APP_GEOMETRY).toByteArray());
-    }
-    if (settings.value(APP_STATE).isValid())
+    	restoreState(settings.value(APP_STATE).toByteArray());
+	}
+    val = settings.value(CONSOLE_STATE);
+    if (val.canConvert<QByteArray>())
     {
-        restoreState(settings.value(APP_STATE).toByteArray());
+        logWidget->Deserialize(val.toByteArray());
     }
 }
 
 DavaGLWidget* MainWindow::GetGLWidget() const
 {
     return previewWidget->GetDavaGLWidget();
+}
+
+DialogReloadSprites* MainWindow::GetDialogReloadSprites() const
+{
+    return dialogReloadSprites;
 }
 
 void MainWindow::OnCurrentIndexChanged(int arg)
@@ -213,6 +236,22 @@ void MainWindow::InitLanguageBox()
     connect(comboboxLanguage, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), localizationEditorDialog->currentLocaleComboBox, &QComboBox::setCurrentIndex);
     connect(localizationEditorDialog->currentLocaleComboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), comboboxLanguage, &QComboBox::setCurrentIndex);
     comboboxLanguage->setCurrentIndex(localizationEditorDialog->currentLocaleComboBox->currentIndex());
+}
+
+void MainWindow::InitRtlBox()
+{
+    QCheckBox *rtlBox = new QCheckBox();
+    rtlBox->setCheckState(Qt::Unchecked);
+    QLabel *label = new QLabel(tr("Right-to-left"));
+    label->setBuddy(rtlBox);
+    QHBoxLayout *layout = new QHBoxLayout;
+    layout->setMargin(0);
+    layout->addWidget(label);
+    layout->addWidget(rtlBox);
+    QWidget *wrapper = new QWidget();
+    wrapper->setLayout(layout);
+    toolBarPlugins->addWidget(wrapper);
+    connect(rtlBox, &QCheckBox::stateChanged, this, &MainWindow::OnRtlChanged);
 }
 
 void MainWindow::InitMenu()
@@ -418,8 +457,8 @@ void MainWindow::UpdateProjectSettings(const QString& projectPath)
     QString projectDir = fileInfo.absoluteDir().absolutePath();
     EditorSettings::Instance()->SetProjectPath(projectDir.toStdString());
 
-    // Update window title
-    this->setWindowTitle(ResourcesManageHelper::GetProjectTitle(projectPath));
+	// Update window title
+	this->setWindowTitle(ResourcesManageHelper::GetProjectTitle(projectPath));
     
     // Apply the pixelization value.
     Texture::SetPixelization(EditorSettings::Instance()->IsPixelized());
@@ -431,6 +470,11 @@ void MainWindow::OnPixelizationStateChanged()
     EditorSettings::Instance()->SetPixelized(isPixelized);
 
     Texture::SetPixelization(isPixelized);
+}
+
+void MainWindow::OnRtlChanged(int arg)
+{
+    emit RtlChanged(arg == Qt::Checked);
 }
 
 void MainWindow::SetBackgroundColorMenuTriggered(QAction* action)

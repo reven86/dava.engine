@@ -39,7 +39,6 @@ using namespace DAVA;
 NameProperty::NameProperty(ControlNode *anControl, const NameProperty *sourceProperty, eCloneType cloneType)
     : ValueProperty("Name")
     , control(anControl) // weak ptr
-    , prototypeProperty(nullptr)
 {
     if (sourceProperty)
     {
@@ -47,7 +46,7 @@ NameProperty::NameProperty(ControlNode *anControl, const NameProperty *sourcePro
 
         if (cloneType == CT_INHERIT && control->GetCreationType() == ControlNode::CREATED_FROM_PROTOTYPE_CHILD)
         {
-            prototypeProperty = sourceProperty;
+            AttachPrototypeProperty(sourceProperty);
         }
     }
 }
@@ -55,22 +54,14 @@ NameProperty::NameProperty(ControlNode *anControl, const NameProperty *sourcePro
 NameProperty::~NameProperty()
 {
     control = nullptr; // weak ptr
-    prototypeProperty = nullptr; // weak ptr
 }
 
 void NameProperty::Refresh()
 {
-    if (prototypeProperty)
-    {
-        SetDefaultValue(prototypeProperty->GetValue());
-        ApplyValue(defaultValue);
-    }
     ValueProperty::Refresh();
-}
-
-AbstractProperty *NameProperty::FindPropertyByPrototype(AbstractProperty *prototype)
-{
-    return prototypeProperty == prototype ? this : nullptr;
+    
+    if (GetPrototypeProperty())
+        ApplyValue(defaultValue);
 }
 
 void NameProperty::Accept(PropertyVisitor *visitor)
