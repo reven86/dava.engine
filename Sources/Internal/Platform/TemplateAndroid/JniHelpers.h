@@ -39,9 +39,6 @@
 #include "Base/Bind.h"
 #include "Math/Rect.h"
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wclass-varargs"
-
 #define DAVA_JNI_EXCEPTION_CHECK \
 {\
     JNIEnv *env = JNI::GetEnv();\
@@ -828,8 +825,6 @@ Function<Ret(P1, P2, P3, P4, P5, P6)> JavaClass::GetStaticMethod(String name) co
 
 } // end namespace JNI
 } // end namespace DAVA
-
-#pragma clang diagnostic pop
 
 #endif
 
