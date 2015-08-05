@@ -30,9 +30,6 @@
 #ifndef __DAVAENGINE_H__
 #define __DAVAENGINE_H__
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Winconsistent-missing-override"
-
 #include "DAVAVersion.h"
 #include "DAVAConfig.h"
 #include "Base/Platform.h"
@@ -302,8 +299,6 @@
 #include "Notification/LocalNotificationProgress.h"
 #include "Notification/LocalNotificationDelayed.h"
 #include "Notification/LocalNotificationController.h"
-
-#pragma clang diagnostic pop
 
 #endif // __DAVAENGINE_H__
 
