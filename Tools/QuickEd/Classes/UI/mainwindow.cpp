@@ -271,6 +271,7 @@ void MainWindow::InitGlobalClasses()
     QWidget *wrapper = new QWidget();
     wrapper->setLayout(layout);
     toolBarPlugins->addWidget(wrapper);
+    connect(classesEdit, &QLineEdit::textChanged, this, &MainWindow::OnGlobalClassesChanged);
 }
 
 void MainWindow::InitMenu()
@@ -494,6 +495,11 @@ void MainWindow::OnPixelizationStateChanged()
 void MainWindow::OnRtlChanged(int arg)
 {
     emit RtlChanged(arg == Qt::Checked);
+}
+
+void MainWindow::OnGlobalClassesChanged(const QString &str)
+{
+    emit GlobalStyleClassesChanged(str);
 }
 
 void MainWindow::SetBackgroundColorMenuTriggered(QAction* action)

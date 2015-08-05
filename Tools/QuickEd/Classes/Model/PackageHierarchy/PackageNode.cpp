@@ -383,6 +383,7 @@ void PackageNode::RemoveImportedPackage(PackageNode *node)
 
 void PackageNode::RebuildStyleSheets()
 {
+    Logger::Debug("--- styles ---");
     Vector<UIPriorityStyleSheet> importedStyleSheets;
     for (int32 i = 0; i < importedPackagesNode->GetCount(); i++)
     {
@@ -390,26 +391,15 @@ void PackageNode::RebuildStyleSheets()
         const Vector<UIPriorityStyleSheet> &styleSheets = node->GetContext()->GetSortedStyleSheets();
         for (const UIPriorityStyleSheet &ss : styleSheets)
         {
-            bool found = false;
-            for (UIPriorityStyleSheet &importedSs : importedStyleSheets)
-            {
-                if (importedSs.GetStyleSheet() == ss.GetStyleSheet())
-                {
-                    if (ss.GetPriority() < importedSs.GetPriority())
-                        importedSs = ss;
-                    found = true;
-                    break;
-                }
-            }
-            if (!found)
-                importedStyleSheets.push_back(ss);
+            importedStyleSheets.push_back(UIPriorityStyleSheet(ss.GetStyleSheet(), ss.GetPriority() + 1));
         }
     }
-    
+
     packageContext->RemoveAllStyleSheets();
     for (const UIPriorityStyleSheet &styleSheet : importedStyleSheets)
     {
         packageContext->AddStyleSheet(styleSheet);
+        Logger::Debug("  SS: %s (%d)", styleSheet.GetStyleSheet()->GetSelectorChain().ToString().c_str(), styleSheet.GetPriority());
     }
     
     for (int32 i = 0; i < styleSheets->GetCount(); i++)
@@ -417,8 +407,19 @@ void PackageNode::RebuildStyleSheets()
         StyleSheetNode *node = styleSheets->Get(i);
         Vector<UIStyleSheet*> styleSheets = node->GetRootProperty()->CollectStyleSheets();
         for (UIStyleSheet *styleSheet : styleSheets)
+        {
             packageContext->AddStyleSheet(UIPriorityStyleSheet(styleSheet));
+            Logger::Debug("  SS: %s", styleSheet->GetSelectorChain().ToString().c_str());
+        }
     }
+    Logger::Debug("--- res ---");
+
+    const Vector<UIPriorityStyleSheet> &res = packageContext->GetSortedStyleSheets();
+    for (const UIPriorityStyleSheet &styleSheet : res)
+    {
+        Logger::Debug("  Res: %s (%d)", styleSheet.GetStyleSheet()->GetSelectorChain().ToString().c_str(), styleSheet.GetPriority());
+    }
+
 }
 
 void PackageNode::RefreshPackageStylesAndLayout()
