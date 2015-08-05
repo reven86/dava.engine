@@ -383,20 +383,31 @@ void PackageNode::RemoveImportedPackage(PackageNode *node)
 
 void PackageNode::RebuildStyleSheets()
 {
-    Vector<UIStyleSheet*> importedStyleSheets;
+    Vector<UIPriorityStyleSheet> importedStyleSheets;
     for (int32 i = 0; i < importedPackagesNode->GetCount(); i++)
     {
         PackageNode *node = importedPackagesNode->GetImportedPackage(i);
-        const Vector<UIStyleSheet*> &styleSheets = node->GetContext()->GetSortedStyleSheets();
-        importedStyleSheets.insert(importedStyleSheets.end(), styleSheets.begin(), styleSheets.end());
+        const Vector<UIPriorityStyleSheet> &styleSheets = node->GetContext()->GetSortedStyleSheets();
+        for (const UIPriorityStyleSheet &ss : styleSheets)
+        {
+            bool found = false;
+            for (UIPriorityStyleSheet &importedSs : importedStyleSheets)
+            {
+                if (importedSs.GetStyleSheet() == ss.GetStyleSheet())
+                {
+                    if (ss.GetPriority() < importedSs.GetPriority())
+                        importedSs = ss;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found)
+                importedStyleSheets.push_back(ss);
+        }
     }
     
-    std::sort(importedStyleSheets.begin(), importedStyleSheets.end());
-    auto last = std::unique(importedStyleSheets.begin(), importedStyleSheets.end());
-    importedStyleSheets.erase(last, importedStyleSheets.end());
-    
     packageContext->RemoveAllStyleSheets();
-    for (UIStyleSheet *styleSheet : importedStyleSheets)
+    for (const UIPriorityStyleSheet &styleSheet : importedStyleSheets)
     {
         packageContext->AddStyleSheet(styleSheet);
     }
@@ -406,7 +417,7 @@ void PackageNode::RebuildStyleSheets()
         StyleSheetNode *node = styleSheets->Get(i);
         Vector<UIStyleSheet*> styleSheets = node->GetRootProperty()->CollectStyleSheets();
         for (UIStyleSheet *styleSheet : styleSheets)
-            packageContext->AddStyleSheet(styleSheet);
+            packageContext->AddStyleSheet(UIPriorityStyleSheet(styleSheet));
     }
 }
 
