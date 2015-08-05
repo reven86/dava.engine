@@ -269,7 +269,7 @@ private:
     float32 spriteTempVertices[8];
     Vector<Vector2> spriteClippedTexCoords;
     Vector<Vector2> spriteClippedVertices;
-    ePrimitiveType spritePrimitiveToDraw;
+    
     int32 spriteVertexCount;
     int32 spriteIndexCount;
 
