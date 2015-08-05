@@ -38,62 +38,64 @@
 namespace DAVA
 {
 
+class DeviceInfoPrivate;
+
 class DeviceInfo
 {
 public:
-	struct ScreenInfo
-	{
-		int32 width;
-		int32 height;
-		float32 scale;
-		
-		ScreenInfo()
-		{
-			width = 0;
-			height = 0;
-			scale = 1;
-		}
-		
-		ScreenInfo(int32 w, int32 h, float32 _scale)
-		{
-			width = w;
-			height = h;
-			scale = _scale;
-		}
-	};
-
-	
-public:
-	enum ePlatform
-	{
-		PLATFORM_MACOS = 0,
-		PLATFORM_IOS,
-		PLATFORM_IOS_SIMULATOR,
-		PLATFORM_ANDROID,
-		PLATFORM_WIN32,
-        PLATFORM_WIN_UAP,
-        PLATFORM_UNKNOWN,
-		PLATFORMS_COUNT
-	};
-
-    enum eNetworkType
-	{
-		NETWORK_TYPE_NOT_CONNECTED = 0,
-		NETWORK_TYPE_UNKNOWN,
-		NETWORK_TYPE_CELLULAR,
-		NETWORK_TYPE_WIFI,
-		NETWORK_TYPE_WIMAX,
-		NETWORK_TYPE_ETHERNET,
-		NETWORK_TYPE_BLUETOOTH,
-        NETWORK_TYPES_COUNT
-	};
 
     static const int32 SIGNAL_STRENGTH_UNKNOWN = -1;
+
+    struct ScreenInfo
+    {
+        int32 width;
+        int32 height;
+        float32 scale;
+
+        ScreenInfo()
+        {
+            width = 0;
+            height = 0;
+            scale = 1;
+        }
+
+        ScreenInfo(int32 w, int32 h, float32 _scale)
+        {
+            width = w;
+            height = h;
+            scale = _scale;
+        }
+    };
+
+    enum ePlatform
+    {
+        PLATFORM_MACOS = 0,
+        PLATFORM_IOS,
+        PLATFORM_IOS_SIMULATOR,
+        PLATFORM_ANDROID,
+        PLATFORM_WIN32,
+        PLATFORM_WIN_UAP,
+        PLATFORM_UNKNOWN,
+        PLATFORMS_COUNT
+    };
+
+    enum eNetworkType
+    {
+        NETWORK_TYPE_NOT_CONNECTED = 0,
+        NETWORK_TYPE_UNKNOWN,
+        NETWORK_TYPE_CELLULAR,
+        NETWORK_TYPE_WIFI,
+        NETWORK_TYPE_WIMAX,
+        NETWORK_TYPE_ETHERNET,
+        NETWORK_TYPE_BLUETOOTH,
+        NETWORK_TYPES_COUNT
+    };
+
     struct NetworkInfo
     {
         eNetworkType networkType;
         int32 signalStrength; //(0-no signal, 100 - max signal)
-        
+
         NetworkInfo()
         {
             networkType = NETWORK_TYPE_UNKNOWN;
@@ -103,12 +105,12 @@ public:
 
     enum eStorageType
     {
-    	STORAGE_TYPE_UNKNOWN = -1,
-    	STORAGE_TYPE_INTERNAL = 0,
-    	STORAGE_TYPE_PRIMARY_EXTERNAL,
-    	STORAGE_TYPE_SECONDARY_EXTERNAL,
+        STORAGE_TYPE_UNKNOWN = -1,
+        STORAGE_TYPE_INTERNAL = 0,
+        STORAGE_TYPE_PRIMARY_EXTERNAL,
+        STORAGE_TYPE_SECONDARY_EXTERNAL,
 
-    	STORAGE_TYPES_COUNT
+        STORAGE_TYPES_COUNT
     };
 
     struct StorageInfo
@@ -133,30 +135,6 @@ public:
             , emulated(false)
         {}
     };
-
-	static ePlatform GetPlatform();
-	static String GetPlatformString();
-	static String GetVersion();
-	static String GetManufacturer();
-	static String GetModel();
-	static String GetLocale();
-	static String GetRegion();
-	static String GetTimeZone();
-    static String GetUDID();
-    static WideString GetName();
-        static String GetHTTPProxyHost();
-	static String GetHTTPNonProxyHosts();
-	static int GetHTTPProxyPort();
-	
-   	static ScreenInfo & GetScreenInfo();
-    //internal?
-    static int GetZBufferSize();
-    static eGPUFamily GetGPUFamily();
-    static NetworkInfo GetNetworkInfo();
-
-    static List<StorageInfo> GetStoragesList();
-    static int32 GetCpuCount();
-
     //human interface device(HID)
     enum eHIDType
     {
@@ -170,31 +148,55 @@ public:
         HID_SYSTEM_CONTROL_TYPE,
         HID_COUNT_TYPE,
     };
-    
+    using HIDCallBackFunc = std::function<void(eHIDType, bool)>;
+    using ListForStorageInfo = List<StorageInfo>;
+//     ///static SIGNAL_STRENGTH_UNKNOWN;
+//     using ScreenInfo = deviceInfoTypes::ScreenInfo;
+//     using ePlatform = deviceInfoTypes::ePlatform;
+//     using eNetworkType = deviceInfoTypes::eNetworkType;
+//     using NetworkInfo = deviceInfoTypes::NetworkInfo;
+// //    using eStorageType = deviceInfoTypes::eStorageType;
+//     using StorageInfo = deviceInfoTypes::StorageInfo;
+//     using eHIDType = deviceInfoTypes::eHIDType;
+//     using HIDCallBackFunc = deviceInfoTypes::HIDCallBackFunc;
+
+    static ePlatform GetPlatform();
+    static String GetPlatformString();
+    static String GetVersion();
+    static String GetManufacturer();
+    static String GetModel();
+    static String GetLocale();
+    static String GetRegion();
+    static String GetTimeZone();
+    static String GetUDID();
+    static WideString GetName();
+    static String GetHTTPProxyHost();
+    static String GetHTTPNonProxyHosts();
+    static int GetHTTPProxyPort();
+    static ScreenInfo& GetScreenInfo();
+    static int GetZBufferSize();
+    static eGPUFamily GetGPUFamily();
+    static NetworkInfo GetNetworkInfo();
+    static List<StorageInfo> GetStoragesList();
+    static int32 GetCpuCount();
+    static void InitializeScreenInfo();
+
     // true, if device connected
-    static bool IsHIDConnect(eHIDType hid);
-    
+    static bool IsHIDConnected(eHIDType hid);
+
     // for notify, if you need know, when "human interface device" connection is changed
     // int value - type "human interface device"
     // bool value - device has been connected(true), or disconnected(false)
-    using HIDCallBackFunc = std::function<void(eHIDType, bool)>;
     static void SubscribeHID(eHIDType hid, HIDCallBackFunc&& func);
-    
+
     // true, if App started on mobile device(Surface desktop device)
     static bool IsMobileMode();
-    
+
     // true, if App started on emulator
     static bool IsRunningOnEmulator();
 
-#if defined (__DAVAENGINE_WIN_UAP__)
-    // it's a temporary decision
-    static void InitializeScreenInfo(int32 width, int32 height);
-#else 
-    static void InitializeScreenInfo();
-#endif
-
 private:
-    static ScreenInfo screenInfo;
+    static DeviceInfoPrivate* GetPrivateImpl();
 };
 
 };

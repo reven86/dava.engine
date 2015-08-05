@@ -26,11 +26,9 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#include "Platform/DeviceInfo.h"
-
 #ifdef __DAVAENGINE_IPHONE__
 
+#include "Platform/TemplateiOS/DeviceInfoPrivateiOS.h"
 #include "Utils/StringFormat.h"
 
 #import <UIKit/UIDevice.h>
@@ -44,18 +42,36 @@
 namespace DAVA
 {
 
-String DeviceInfo::GetVersion()
+DeviceInfoPrivate::DeviceInfoPrivate()
+{
+}
+
+ePlatform DeviceInfoPrivate::GetPlatform()
+{
+	#if defined(TARGET_IPHONE_SIMULATOR) && TARGET_IPHONE_SIMULATOR == 1
+		return 	PLATFORM_IOS_SIMULATOR;
+	#else
+		return 	PLATFORM_IOS;
+	#endif
+}
+
+String DeviceInfoPrivate::GetPlatformString()
+{
+    return GlobalEnumMap<ePlatform>::Instance()->ToString(GetPlatform());
+}
+
+String DeviceInfoPrivate::GetVersion()
 {
 	NSString* systemVersion = [[UIDevice currentDevice] systemVersion];
 	return String([systemVersion UTF8String]);
 }
 
-String DeviceInfo::GetManufacturer()
+String DeviceInfoPrivate::GetManufacturer()
 {
 	return "Apple inc.";
 }
 
-String DeviceInfo::GetModel()
+String DeviceInfoPrivate::GetModel()
 {
 	String model = "";
 
@@ -208,7 +224,7 @@ String DeviceInfo::GetModel()
 	return model;
 }
 
-String DeviceInfo::GetLocale()
+String DeviceInfoPrivate::GetLocale()
 {
 	NSLocale *english = [[[NSLocale alloc] initWithLocaleIdentifier:@"en_US"] autorelease];
 
@@ -219,7 +235,7 @@ String DeviceInfo::GetLocale()
 	return res;
 }
 
-String DeviceInfo::GetRegion()
+String DeviceInfoPrivate::GetRegion()
 {
 	NSLocale *english = [[[NSLocale alloc] initWithLocaleIdentifier:@"en_US"] autorelease];
 
@@ -230,13 +246,13 @@ String DeviceInfo::GetRegion()
 	return res;
 }
 
-String DeviceInfo::GetTimeZone()
+String DeviceInfoPrivate::GetTimeZone()
 {
 	NSTimeZone *localTime = [NSTimeZone systemTimeZone];
 	return [[localTime name] UTF8String];
 }
     
-String DeviceInfo::GetUDID()
+String DeviceInfoPrivate::GetUDID()
 {
 	bool hasAdvertisingId = (NSClassFromString(@"ASIdentifierManager") != nil);
 
@@ -261,7 +277,7 @@ String DeviceInfo::GetUDID()
 	return [udid UTF8String];
 }
     
-WideString DeviceInfo::GetName()
+WideString DeviceInfoPrivate::GetName()
 {
     NSString * deviceName = [[UIDevice currentDevice] name];
     
@@ -272,40 +288,50 @@ WideString DeviceInfo::GetName()
 }
     
 // Not impletemted yet
-String DeviceInfo::GetHTTPProxyHost()
+String DeviceInfoPrivate::GetHTTPProxyHost()
 {
 	return String();
 }
 
 // Not impletemted yet
-String DeviceInfo::GetHTTPNonProxyHosts()
+String DeviceInfoPrivate::GetHTTPNonProxyHosts()
 {
 	return String();
 }
 
 // Not impletemted yet
-int DeviceInfo::GetHTTPProxyPort()
+int DeviceInfoPrivate::GetHTTPProxyPort()
 {
 	return 0;
 }
     
-eGPUFamily DeviceInfo::GetGPUFamily()
+DeviceInfo::ScreenInfo& DeviceInfoPrivate::GetScreenInfo()
+{
+    return screenInfo;
+}
+
+int DeviceInfoPrivate::GetZBufferSize()
+{
+    return 24;
+}
+
+eGPUFamily DeviceInfoPrivate::GetGPUFamily()
 {
     return GPU_POWERVR_IOS;
 }
     
-DeviceInfo::NetworkInfo DeviceInfo::GetNetworkInfo()
+DeviceInfo::NetworkInfo DeviceInfoPrivate::GetNetworkInfo()
 {
     static const struct
     {
         NetworkStatus platformNetworkStatus;
-        DeviceInfo::eNetworkType internalNetworkType;
+        eNetworkType internalNetworkType;
     }
     networkStatusMap[] =
     {
-        { NotReachable, DeviceInfo::NETWORK_TYPE_NOT_CONNECTED },
-        { ReachableViaWiFi, DeviceInfo::NETWORK_TYPE_WIFI },
-        { ReachableViaWWAN, DeviceInfo::NETWORK_TYPE_CELLULAR }
+        { NotReachable, NETWORK_TYPE_NOT_CONNECTED },
+        { ReachableViaWiFi, NETWORK_TYPE_WIFI },
+        { ReachableViaWWAN, NETWORK_TYPE_CELLULAR }
     };
 
     NetworkInfo networkInfo;
@@ -331,8 +357,13 @@ DeviceInfo::NetworkInfo DeviceInfo::GetNetworkInfo()
     return networkInfo;
 }
 
+List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetStoragesList()
+{
+    List<DeviceInfo::StorageInfo> l;
+    return l;
+}
 
-void DeviceInfo::InitializeScreenInfo()
+void DeviceInfoPrivate::InitializeScreenInfo()
 {
     //detecting physical screen size and initing core system with this size
     ::UIScreen* mainScreen = [::UIScreen mainScreen];
@@ -350,29 +381,29 @@ void DeviceInfo::InitializeScreenInfo()
     }
 }
 
-int32 DeviceInfo::GetCpuCount()
+int32 DeviceInfoPrivate::GetCpuCount()
 {
     return (int32)[[NSProcessInfo processInfo] processorCount];
 }
 
-bool DeviceInfo::IsHIDConnect(eHIDType hid)
+bool DeviceInfoPrivate::IsHIDConnect(eHIDType hid)
 {
         DVASSERT(false && "Not Implement");
         return false;
 }
 
-void DeviceInfo::SubscribeHID(eHIDType hid, HIDCallBackFunc&& func)
+void DeviceInfoPrivate::SubscribeHID(eHIDType hid, HIDCallBackFunc&& func)
 {
         DVASSERT(false && "Not Implement");
 }
 
-bool DeviceInfo::IsMobileMode()
+bool DeviceInfoPrivate::IsMobileMode()
 {
         DVASSERT(false && "Not Implement");
         return false;
 }
 
-bool DeviceInfo::IsRunningOnEmulator()
+bool DeviceInfoPrivate::IsRunningOnEmulator()
 {
         DVASSERT(false && "Not Implement");
         return false;

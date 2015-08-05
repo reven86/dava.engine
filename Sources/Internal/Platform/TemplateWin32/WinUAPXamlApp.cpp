@@ -125,11 +125,6 @@ void WinUAPXamlApp::SetCursorVisible(bool isVisible)
 void WinUAPXamlApp::OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^ args)
 {
     CoreWindow^ coreWindow = Window::Current->CoreWindow;
-    // need initialize device info on UI thread
-    // // it's a temporary decision
-    float32 landscapeWidth = Max(coreWindow->Bounds.Width, coreWindow->Bounds.Height);
-    float32 landscapeHeight = Min(coreWindow->Bounds.Width, coreWindow->Bounds.Height);
-    DeviceInfo::InitializeScreenInfo(static_cast<int32>(landscapeWidth), static_cast<int32>(landscapeHeight));
     uiThreadDispatcher = coreWindow->Dispatcher;
 
     CreateBaseXamlUI();
@@ -179,7 +174,6 @@ void WinUAPXamlApp::Run()
     RenderManager::Instance()->BindToCurrentThread();
     ReInitRender();
     InitCoordinatesSystem();
-
 
     // View size and orientation option should be configured in FrameowrkDidLaunched
     FrameworkDidLaunched();

@@ -42,53 +42,65 @@
 namespace DAVA
 {
 
-class JniDeviceInfo
+class DeviceInfoPrivate
 {
 public:
-	JniDeviceInfo();
-
-	String GetVersion();
-	String GetManufacturer();
-	String GetModel();
-	String GetLocale();
-	String GetRegion();
-	String GetTimeZone();
-	String GetUDID();
-	String GetName();
-	String GetHTTPProxyHost();
-	String GetHTTPNonProxyHosts();
-	int32 GetHTTPProxyPort();
-	int32 GetZBufferSize();
-	int32 GetGPUFamily();
-	int32 GetNetworkType();
-	int32 GetSignalStrength(int32 networkType);
-
-	bool IsPrimaryExternalStoragePresent();
-	DeviceInfo::StorageInfo GetInternalStorageInfo();
-	DeviceInfo::StorageInfo GetPrimaryExternalStorageInfo();
-	List<DeviceInfo::StorageInfo> GetSecondaryExternalStoragesList();
+    DeviceInfoPrivate();
+    DeviceInfo::ePlatform GetPlatform();
+    String GetPlatformString();
+    String GetVersion();
+    String GetManufacturer();
+    String GetModel();
+    String GetLocale();
+    String GetRegion();
+    String GetTimeZone();
+    String GetUDID();
+    WideString GetName();
+    String GetHTTPProxyHost();
+    String GetHTTPNonProxyHosts();
+    int GetHTTPProxyPort();
+    DeviceInfo::ScreenInfo& GetScreenInfo();
+    int GetZBufferSize();
+    DeviceInfo::eGPUFamily GetGPUFamily();
+    DeviceInfo::NetworkInfo GetNetworkInfo();
+    List<DeviceInfo::StorageInfo> GetStoragesList();
+    int32 GetCpuCount();
+    void InitializeScreenInfo();
+    bool IsHIDConnected(DeviceInfo::eHIDType hid);
+    void SubscribeHID(DeviceInfo::eHIDType hid, DeviceInfo::HIDCallBackFunc&& func);
+    bool IsMobileMode();
+    bool IsRunningOnEmulator();
 
 protected:
-	DeviceInfo::StorageInfo StorageInfoFromJava(jobject object);
+    DeviceInfo::StorageInfo StorageInfoFromJava(jobject object);
 
 private:
-	JNI::JavaClass jniDeviceInfo;
-	Function<jstring ()> getVersion;
-	Function<jstring ()> getManufacturer;
-	Function<jstring ()> getModel;
-	Function<jstring ()> getLocale;
-	Function<jstring ()> getRegion;
-	Function<jstring ()> getTimeZone;
-	Function<jstring ()> getUDID;
-	Function<jstring ()> getName;
-	Function<jint ()> getZBufferSize;
-	Function<jstring ()> getHTTPProxyHost;
-	Function<jstring ()> getHTTPNonProxyHosts;
-	Function<jint ()> getHTTPProxyPort;
-	Function<jint ()> getGPUFamily;
-	Function<jint ()> getNetworkType;
-	Function<jint (jint)> getSignalStrength;
-	Function<jboolean ()> isPrimaryExternalStoragePresent;
+    int32 GetNetworkType();
+    int32 GetSignalStrength(int32 networkType);
+    bool IsPrimaryExternalStoragePresent();
+    DeviceInfo::StorageInfo GetInternalStorageInfo();
+    DeviceInfo::StorageInfo GetPrimaryExternalStorageInfo();
+    List<DeviceInfo::StorageInfo> GetSecondaryExternalStoragesList();
+
+    JNI::JavaClass jniDeviceInfo;
+    Function<jstring()> getVersion;
+    Function<jstring()> getManufacturer;
+    Function<jstring()> getModel;
+    Function<jstring()> getLocale;
+    Function<jstring()> getRegion;
+    Function<jstring()> getTimeZone;
+    Function<jstring()> getUDID;
+    Function<jstring()> getName;
+    Function<jint()> getZBufferSize;
+    Function<jstring()> getHTTPProxyHost;
+    Function<jstring()> getHTTPNonProxyHosts;
+    Function<jint()> getHTTPProxyPort;
+    Function<jint()> getGPUFamily;
+    Function<jint()> getNetworkType;
+    Function<jint(jint)> getSignalStrength;
+    Function<jboolean()> isPrimaryExternalStoragePresent;
+
+    DeviceInfo::ScreenInfo screenInfo;
 };
 
 };

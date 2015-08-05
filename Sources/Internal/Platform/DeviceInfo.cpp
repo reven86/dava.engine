@@ -26,80 +26,150 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 #include "DeviceInfo.h"
 #include "Base/GlobalEnum.h"
 
 #if defined(__DAVAENGINE_IPHONE__)
-#include "TargetConditionals.h"
+    #include "TargetConditionals.h"
+    #include "Platform/TemplateiOS/DeviceInfoiOS.h"
+#elif defined(__DAVAENGINE_MACOS__)
+    #include "Platform/TemplateMacOS/DeviceInfoMacOS.h"
+#elif defined(__DAVAENGINE_ANDROID__)
+    #include "Platform/TemplateAndroid/DeviceInfoAndroid.h"
+#elif defined(__DAVAENGINE_WIN32__)
+    #include "Platform/TemplateWin32/DeviceInfoWin32.h"
+#elif defined(__DAVAENGINE_WIN_UAP__)
+    #include "Platform/TemplateWin32/DeviceInfoWinUAP.h"
 #endif
 
 namespace DAVA
 {
 
-DeviceInfo::ScreenInfo DeviceInfo::screenInfo;
-
 DeviceInfo::ePlatform DeviceInfo::GetPlatform()
 {
-	ePlatform platform = PLATFORM_UNKNOWN;
-
-#if defined(__DAVAENGINE_MACOS__)
-	platform = PLATFORM_MACOS;
-
-#elif defined(__DAVAENGINE_IPHONE__)
-	platform = PLATFORM_IOS;
-	#if defined(TARGET_IPHONE_SIMULATOR) && TARGET_IPHONE_SIMULATOR == 1
-		platform = PLATFORM_IOS_SIMULATOR;
-	#endif
-
-#elif defined(__DAVAENGINE_ANDROID__)
-	platform = PLATFORM_ANDROID;
-
-#elif defined(__DAVAENGINE_WIN_UAP__)
-    platform = PLATFORM_WIN_UAP;
-
-#elif defined(__DAVAENGINE_WIN32__)
-	platform = PLATFORM_WIN32;
-#endif
-
-	return platform;
+    return GetPrivateImpl()->GetPlatform();
 }
 
 String DeviceInfo::GetPlatformString()
 {
-    return GlobalEnumMap<ePlatform>::Instance()->ToString(GetPlatform());
+    return GetPrivateImpl()->GetPlatformString();
 }
 
+String DeviceInfo::GetVersion()
+{
+    return GetPrivateImpl()->GetVersion();
+}
+
+String DeviceInfo::GetManufacturer()
+{
+    return GetPrivateImpl()->GetManufacturer();
+}
+
+String DeviceInfo::GetModel()
+{
+    return GetPrivateImpl()->GetModel();
+}
+
+String DeviceInfo::GetLocale()
+{
+    return GetPrivateImpl()->GetLocale();
+}
+
+String DeviceInfo::GetRegion()
+{
+    return GetPrivateImpl()->GetRegion();
+}
+
+String DeviceInfo::GetTimeZone()
+{
+    return GetPrivateImpl()->GetTimeZone();
+}
+
+String DeviceInfo::GetUDID()
+{
+    return GetPrivateImpl()->GetUDID();
+}
+
+WideString DeviceInfo::GetName()
+{
+    return GetPrivateImpl()->GetName();
+}
+
+String DeviceInfo::GetHTTPProxyHost()
+{
+    return GetPrivateImpl()->GetHTTPProxyHost();
+}
+
+String DeviceInfo::GetHTTPNonProxyHosts()
+{
+    return GetPrivateImpl()->GetHTTPNonProxyHosts();
+}
+
+int DeviceInfo::GetHTTPProxyPort()
+{
+    return GetPrivateImpl()->GetHTTPProxyPort();
+}
 
 DeviceInfo::ScreenInfo & DeviceInfo::GetScreenInfo()
 {
-	return screenInfo;
+    return GetPrivateImpl()->GetScreenInfo();
 }
 
-#if !defined(__DAVAENGINE_ANDROID__)
 int DeviceInfo::GetZBufferSize()
 {
-	return 24;
+    return GetPrivateImpl()->GetZBufferSize();
 }
-#endif
 
-#if !defined(__DAVAENGINE_ANDROID__) && !defined(__DAVAENGINE_WIN_UAP__)
+eGPUFamily DeviceInfo::GetGPUFamily()
+{
+    return GetPrivateImpl()->GetGPUFamily();
+}
+
+DeviceInfo::NetworkInfo DeviceInfo::GetNetworkInfo()
+{
+    return GetPrivateImpl()->GetNetworkInfo();
+}
+
 List<DeviceInfo::StorageInfo> DeviceInfo::GetStoragesList()
 {
-    List<DeviceInfo::StorageInfo> l;
-    return l;
+    return GetPrivateImpl()->GetStoragesList();
 }
-#endif   
-
-#ifdef __DAVAENGINE_WINDOWS__
 
 int32 DeviceInfo::GetCpuCount()
 {
-	SYSTEM_INFO sysinfo;
-	GetSystemInfo(&sysinfo);
-	return sysinfo.dwNumberOfProcessors;
+    return GetPrivateImpl()->GetCpuCount();
 }
 
-#endif
+void DeviceInfo::InitializeScreenInfo()
+{
+    GetPrivateImpl()->InitializeScreenInfo();
+}
+
+
+bool DeviceInfo::IsHIDConnected(eHIDType hid)
+{
+    return GetPrivateImpl()->IsHIDConnected(hid);
+}
+
+void DeviceInfo::SubscribeHID(eHIDType hid, HIDCallBackFunc&& func)
+{
+    GetPrivateImpl()->SubscribeHID(hid, std::forward<HIDCallBackFunc>(func));
+}
+
+bool DeviceInfo::IsMobileMode()
+{
+    return GetPrivateImpl()->IsMobileMode();
+}
+
+bool DeviceInfo::IsRunningOnEmulator()
+{
+    return GetPrivateImpl()->IsRunningOnEmulator();
+}
+
+DeviceInfoPrivate* DeviceInfo::GetPrivateImpl()
+{
+    static DeviceInfoPrivate* privateImpl = new DeviceInfoPrivate();
+    return privateImpl;
+}
 
 }
