@@ -113,7 +113,7 @@ void TCPConnection::Disconnect()
 
     isConnected = false;
 
-    Net::NetCore::Instance()->DestroyController(controllerId);
+    Net::NetCore::Instance()->DestroyControllerBlocked(controllerId);
     controllerId = Net::NetCore::INVALID_TRACK_ID;
 }
     
