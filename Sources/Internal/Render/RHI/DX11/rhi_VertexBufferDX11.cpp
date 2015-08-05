@@ -159,7 +159,7 @@ dx11_VertexBuffer_Map( Handle vb, unsigned offset, unsigned size )
         self->_mapped = true;
     }
 
-    return ptr;
+    return ((uint8*)ptr)+offset;
 }
 
 

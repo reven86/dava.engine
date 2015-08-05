@@ -55,6 +55,7 @@ ShaderProp
     uint32      bufferindex;
     uint32      bufferReg;
     uint32      bufferRegCount;
+    uint32      isBigArray:1;
     float       defaultValue[16];
 };
 

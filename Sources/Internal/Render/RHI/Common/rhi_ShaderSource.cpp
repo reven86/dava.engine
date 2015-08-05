@@ -201,7 +201,8 @@ SCOPED_NAMED_TIMING("ShaderSource::Construct");
                     tags   = match[4].str();
                     script = match[5].str();
                    
-                    p.arraySize = atoi( arrSz.c_str() );
+                    p.arraySize  = atoi( arrSz.c_str() );
+                    p.isBigArray = (strstr( script.c_str(), "bigarray" )) ? true : false;
                 }
                 else
                 {
@@ -210,7 +211,8 @@ SCOPED_NAMED_TIMING("ShaderSource::Construct");
                     tags   = match[3].str();
                     script = match[4].str();
                     
-                    p.arraySize = 1;
+                    p.arraySize  = 1;
+                    p.isBigArray = false;
                 }
                 #else
                 if( propArray )
@@ -221,7 +223,8 @@ SCOPED_NAMED_TIMING("ShaderSource::Construct");
                     proparr_re.get_pattern( 4, &tags );
                     proparr_re.get_pattern( 5, &script );
                    
-                    p.arraySize = atoi( arrSz.c_str() );
+                    p.arraySize  = atoi( arrSz.c_str() );
+                    p.isBigArray = (strstr( script.c_str(), "bigarray" )) ? true : false;
                 }
                 else
                 {
@@ -230,7 +233,8 @@ SCOPED_NAMED_TIMING("ShaderSource::Construct");
                     prop_re.get_pattern( 3, &tags );
                     prop_re.get_pattern( 4, &script );
                     
-                    p.arraySize = 1;
+                    p.arraySize  = 1;
+                    p.isBigArray = false;
                 }
                 #endif
 
@@ -707,6 +711,31 @@ SCOPED_NAMED_TIMING("ShaderSource::Construct");
 
     if( success )
     {
+        // check if any const-buffer has more than one bigarray-prop
+        
+        for( unsigned b=0,b_end=buf.size(); b!=b_end; ++b )
+        {
+            unsigned    bigarray_cnt = 0;
+
+            for( std::vector<ShaderProp>::iterator p=prop.begin(),p_end=prop.end(); p!=p_end; ++p )
+            {
+                if( p->isBigArray  &&  p->bufferindex == b )
+                {
+                    if( ++bigarray_cnt > 1 )
+                        break;
+                }
+            }
+
+            if( bigarray_cnt > 1 )
+            {
+                DVASSERT(bigarray_cnt<=1);
+                return false;
+            }
+        }
+        
+
+        // generate prop-var definitions
+
         const char* prog_begin  = (progType == PROG_VERTEX)  ? "VPROG_BEGIN"  : "FPROG_BEGIN";
         const char* prog        = strstr( code.c_str(), prog_begin );
 
@@ -745,7 +774,7 @@ SCOPED_NAMED_TIMING("ShaderSource::Construct");
                         var_len += Snprintf
                         ( 
                             var_def+var_len, sizeof(var_def)-var_len, 
-//                            "    float2 %s = float2( %cP_Buffer%u[%u].%c, %cP_Buffer%u[%u].%c );\n", 
+//                            "    float2 %s = float2( %cP_Buffer%u[%u].%c, %cP_Buffer%u[%u].%c );\n",      k
                             "    float2 %s = float2( float4(%cP_Buffer%u[%u]).%c, float4(%cP_Buffer%u[%u]).%c );\n", 
                             p->uid.c_str(), 
                             pt, p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount+0],
@@ -776,10 +805,17 @@ SCOPED_NAMED_TIMING("ShaderSource::Construct");
                         }
                         else
                         {
-                            var_len += Snprintf( var_def+var_len, sizeof(var_def)-var_len, "    float4 %s[%u];\n", p->uid.c_str(), p->arraySize );
-                            for( unsigned i=0; i!=p->arraySize; ++i )
+                            if( p->isBigArray )
                             {
-                                var_len += Snprintf( var_def+var_len, sizeof(var_def)-var_len, "      %s[%u] = %cP_Buffer%u[%u];\n", p->uid.c_str(), i, pt, p->bufferindex, p->bufferReg+i );
+                                var_len += Snprintf( var_def+var_len, sizeof(var_def)-var_len, "    #define %s %cP_Buffer%u\n", p->uid.c_str(), pt, p->bufferindex );
+                            }
+                            else
+                            {
+                                var_len += Snprintf( var_def+var_len, sizeof(var_def)-var_len, "    float4 %s[%u];\n", p->uid.c_str(), p->arraySize );
+                                for( unsigned i=0; i!=p->arraySize; ++i )
+                                {
+                                    var_len += Snprintf( var_def+var_len, sizeof(var_def)-var_len, "      %s[%u] = %cP_Buffer%u[%u];\n", p->uid.c_str(), i, pt, p->bufferindex, p->bufferReg+i );
+                                }
                             }
                         }
                     }   break;

@@ -26,7 +26,7 @@ namespace rhi
 
 
 ID3D11InputLayout*
-_CreateInputLayout( const VertexLayout& layout, const void* code, unsigned code_sz, bool force_immediate )
+_CreateInputLayout( const VertexLayout& layout, const void* code, unsigned code_sz )
 {
     ID3D11InputLayout*          vdecl     = nullptr;
     D3D11_INPUT_ELEMENT_DESC    elem[32];
@@ -119,7 +119,6 @@ _CreateInputLayout( const VertexLayout& layout, const void* code, unsigned code_
 }
 
 
-
 //==============================================================================
 
 class
@@ -172,6 +171,27 @@ ConstBufDX11::ConstBufDX11()
 
 ConstBufDX11::~ConstBufDX11()
 {
+}
+
+
+//------------------------------------------------------------------------------
+
+static D3D11_BLEND
+_BlendOpDX11( BlendOp op )
+{
+    D3D11_BLEND b = D3D11_BLEND_ONE;
+
+    switch( op )
+    {
+        case BLENDOP_ZERO           : b = D3D11_BLEND_ZERO; break;
+        case BLENDOP_ONE            : b = D3D11_BLEND_ONE; break;
+        case BLENDOP_SRC_ALPHA      : b = D3D11_BLEND_SRC_ALPHA; break;
+        case BLENDOP_INV_SRC_ALPHA  : b = D3D11_BLEND_INV_SRC_ALPHA; break;
+        case BLENDOP_SRC_COLOR      : b = D3D11_BLEND_SRC_COLOR; break;
+        case BLENDOP_DST_COLOR      : b = D3D11_BLEND_DEST_COLOR; break;
+    }
+    
+    return b;
 }
 
 
@@ -383,17 +403,32 @@ public:
 
     Handle  CreateConstBuffer( ProgType type, unsigned buf_i );
 
+    ID3D10Blob*         vpCode;
+    ID3D11VertexShader* vertexShader;
+    unsigned            vertexBufCount;
+    unsigned            vertexBufRegCount[16];
 
-    ID3D11VertexShader* _vs11;
-    unsigned            _vp_buf_count;
-    unsigned            _vp_buf_reg_count[16];
+    ID3D11PixelShader*  pixelShader;
+    unsigned            fragmentBufCount;
+    unsigned            fragmentBufRegCount[16];
 
-    ID3D11PixelShader*  _ps11;
-    unsigned            _fp_buf_count;
-    unsigned            _fp_buf_reg_count[16];
+    VertexLayout        vertexLayout;
+    ID3D11InputLayout*  inputLayout;
 
-    VertexLayout        _layout;
-    ID3D11InputLayout*  _layout11;
+    ID3D11BlendState*   _blend_state;
+
+
+    struct
+    LayoutInfo
+    {
+        ID3D11InputLayout*  inputLayout;
+        uint32              layoutUID;
+    };
+    
+    std::vector<LayoutInfo> altLayout;
+
+    std::vector<uint8>      dbgVertexSrc;
+    std::vector<uint8>      dbgPixelSrc;
 };
 
 typedef ResourcePool<PipelineStateDX11_t,RESOURCE_PIPELINE_STATE>   PipelineStateDX11Pool;
@@ -411,7 +446,7 @@ PipelineStateDX11_t::CreateConstBuffer( ProgType type, unsigned buf_i )
     Handle          handle = ConstBufDX11Pool::Alloc();
     ConstBufDX11*   cb     = ConstBufDX11Pool::Get( handle );
 
-    cb->Construct( type, buf_i, (type==PROG_VERTEX) ? _vp_buf_reg_count[buf_i] : _fp_buf_reg_count[buf_i] );
+    cb->Construct( type, buf_i, (type==PROG_VERTEX) ? vertexBufRegCount[buf_i] : fragmentBufRegCount[buf_i] );
 
     return handle;
 }
@@ -461,7 +496,7 @@ desc.vertexLayout.Dump();
     
     if( SUCCEEDED(hr) )
     {
-        hr = _D3D11_Device->CreateVertexShader( vp_code->GetBufferPointer(), vp_code->GetBufferSize(), NULL, &(ps->_vs11) );
+        hr = _D3D11_Device->CreateVertexShader( vp_code->GetBufferPointer(), vp_code->GetBufferSize(), NULL, &(ps->vertexShader) );
         
         if( SUCCEEDED(hr) )
         {
@@ -476,7 +511,7 @@ desc.vertexLayout.Dump();
 
                 if( SUCCEEDED(hr) )
                 {
-                    ps->_vp_buf_count = desc.ConstantBuffers;
+                    ps->vertexBufCount = desc.ConstantBuffers;
                     
                     for( unsigned b=0; b!=desc.ConstantBuffers; ++b )
                     {
@@ -489,7 +524,7 @@ desc.vertexLayout.Dump();
                             hr = cb->GetDesc( &cb_desc );
                             if( SUCCEEDED(hr) )
                             {
-                                ps->_vp_buf_reg_count[b] = cb_desc.Size/(4*sizeof(float));
+                                ps->vertexBufRegCount[b] = cb_desc.Size/(4*sizeof(float));
                             }
                         }
                     }
@@ -533,7 +568,7 @@ desc.vertexLayout.Dump();
     
     if( SUCCEEDED(hr) )
     {
-        hr = _D3D11_Device->CreatePixelShader( fp_code->GetBufferPointer(), fp_code->GetBufferSize(), NULL, &(ps->_ps11) );
+        hr = _D3D11_Device->CreatePixelShader( fp_code->GetBufferPointer(), fp_code->GetBufferSize(), NULL, &(ps->pixelShader) );
         
         if( SUCCEEDED(hr) )
         {
@@ -548,7 +583,7 @@ desc.vertexLayout.Dump();
 
                 if( SUCCEEDED(hr) )
                 {
-                    ps->_fp_buf_count = desc.ConstantBuffers;
+                    ps->fragmentBufCount = desc.ConstantBuffers;
 
                     for( unsigned b=0; b!=desc.ConstantBuffers; ++b )
                     {
@@ -561,7 +596,7 @@ desc.vertexLayout.Dump();
                             hr = cb->GetDesc( &cb_desc );
                             if( SUCCEEDED(hr) )
                             {
-                                ps->_fp_buf_reg_count[b] = cb_desc.Size/(4*sizeof(float));
+                                ps->fragmentBufRegCount[b] = cb_desc.Size/(4*sizeof(float));
                             }
                         }
                     }
@@ -587,10 +622,31 @@ desc.vertexLayout.Dump();
 
 
     // create input-layout
+    ps->vpCode       = vp_code;
+    ps->inputLayout  = _CreateInputLayout( desc.vertexLayout, vp_code->GetBufferPointer(), vp_code->GetBufferSize() );
+    ps->vertexLayout = desc.vertexLayout;
+    DVASSERT(ps->inputLayout);
 
-    ps->_layout11 = _CreateInputLayout( desc.vertexLayout, vp_code->GetBufferPointer(), vp_code->GetBufferSize(), true );
-    ps->_layout   = desc.vertexLayout;
-    DVASSERT(ps->_layout11);
+    ps->dbgVertexSrc = vprog_bin;
+    ps->dbgPixelSrc  = fprog_bin;
+
+
+    // create blend-state
+    
+    D3D11_BLEND_DESC    bs_desc;
+
+    bs_desc.AlphaToCoverageEnable                   = FALSE;
+    bs_desc.IndependentBlendEnable                  = FALSE;
+    bs_desc.RenderTarget[0].BlendEnable             = desc.blending.rtBlend[0].blendEnabled;
+    bs_desc.RenderTarget[0].RenderTargetWriteMask   = D3D11_COLOR_WRITE_ENABLE_ALL;
+    bs_desc.RenderTarget[0].SrcBlend                = _BlendOpDX11( BlendOp(desc.blending.rtBlend[0].colorSrc) );
+    bs_desc.RenderTarget[0].DestBlend               = _BlendOpDX11( BlendOp(desc.blending.rtBlend[0].colorDst) );
+    bs_desc.RenderTarget[0].BlendOp                 = D3D11_BLEND_OP_ADD;
+    bs_desc.RenderTarget[0].SrcBlendAlpha           = _BlendOpDX11( BlendOp(desc.blending.rtBlend[0].alphaSrc) );
+    bs_desc.RenderTarget[0].DestBlendAlpha          = _BlendOpDX11( BlendOp(desc.blending.rtBlend[0].alphaDst) );
+    bs_desc.RenderTarget[0].BlendOpAlpha            = D3D11_BLEND_OP_ADD;
+
+    hr = _D3D11_Device->CreateBlendState( &bs_desc, &(ps->_blend_state) );
 
     return handle;
 }
@@ -680,11 +736,41 @@ SetupDispatch( Dispatch* dispatch )
 void
 SetToRHI( Handle ps, uint32 layoutUID )
 {
-    PipelineStateDX11_t* ps11 = PipelineStateDX11Pool::Get( ps );
-    
-    _D3D11_ImmediateContext->IASetInputLayout( ps11->_layout11 );
-    _D3D11_ImmediateContext->VSSetShader( ps11->_vs11, NULL, 0 );
-    _D3D11_ImmediateContext->PSSetShader( ps11->_ps11, NULL, 0 );
+    PipelineStateDX11_t* ps11     = PipelineStateDX11Pool::Get( ps );
+    ID3D11InputLayout*   layout11 = nullptr;
+
+    if( layoutUID == VertexLayout::InvalidUID )
+    {
+        layout11 = ps11->inputLayout;
+    }
+    else
+    {
+        for( std::vector<PipelineStateDX11_t::LayoutInfo>::iterator l=ps11->altLayout.begin(),l_end=ps11->altLayout.end(); l!=l_end; ++l )
+        {
+            if( l->layoutUID == layoutUID )
+            {
+                layout11 = l->inputLayout;
+                break;
+            }
+        }
+        
+        if( !layout11 )
+        {
+            const VertexLayout*             layout = VertexLayout::Get( layoutUID );
+            PipelineStateDX11_t::LayoutInfo info;
+
+            layout11 = _CreateInputLayout( *layout, ps11->vpCode->GetBufferPointer(), ps11->vpCode->GetBufferSize() );
+            
+            info.inputLayout = layout11;                    ;
+            info.layoutUID   = layoutUID;
+            ps11->altLayout.push_back( info );
+        }
+    }
+
+    _D3D11_ImmediateContext->IASetInputLayout( layout11 );
+    _D3D11_ImmediateContext->VSSetShader( ps11->vertexShader, NULL, 0 );
+    _D3D11_ImmediateContext->PSSetShader( ps11->pixelShader, NULL, 0 );
+    _D3D11_ImmediateContext->OMSetBlendState( ps11->_blend_state, NULL, 0xFFFFFFFF );
 }
 
 unsigned
@@ -692,7 +778,7 @@ VertexLayoutStride( Handle ps )
 {
     PipelineStateDX11_t* ps11 = PipelineStateDX11Pool::Get( ps );
     
-    return ps11->_layout.Stride();
+    return ps11->vertexLayout.Stride();
 }
 
 } // namespace PipelineStateDX9
