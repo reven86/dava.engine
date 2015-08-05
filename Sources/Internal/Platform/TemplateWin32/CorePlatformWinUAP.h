@@ -35,6 +35,7 @@
 
 #include "Base/BaseTypes.h"
 #include "Core/Core.h"
+#include "Platform/DeviceInfo.h"
 
 namespace DAVA
 {
@@ -132,6 +133,9 @@ void CorePlatformWinUAP::RunOnMainThreadBlocked(F&& fn)
 {
     RunOnMainThread(std::function<void()>(std::forward<F>(fn)), true);
 }
+
+// temporary decision, need delete when signal will be enabled
+DeviceInfo::HIDCallBackFunc MainThreadRedirector(DeviceInfo::HIDCallBackFunc func);
 
 }   // namespace DAVA
 

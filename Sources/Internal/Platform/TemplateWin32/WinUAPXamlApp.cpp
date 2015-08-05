@@ -1,4 +1,4 @@
-/*==================================================================================
+﻿/*==================================================================================
     Copyright (c) 2008, binaryzebra
     All rights reserved.
 
@@ -68,6 +68,7 @@ using namespace ::Windows::Phone::UI::Input;
 
 namespace DAVA
 {
+
 
 WinUAPXamlApp::WinUAPXamlApp()
     : core(static_cast<CorePlatformWinUAP*>(Core::Instance()))
