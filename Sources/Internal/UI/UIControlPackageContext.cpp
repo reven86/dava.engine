@@ -45,7 +45,19 @@ UIControlPackageContext::UIControlPackageContext() :
 void UIControlPackageContext::AddStyleSheet(const UIPriorityStyleSheet &styleSheet)
 {
     styleSheetsSorted = false;
-    styleSheets.push_back(styleSheet);
+    
+    auto it = std::find(styleSheets.begin(), styleSheets.end(), [&styleSheet](UIPriorityStyleSheet& ss) {
+        return ss.GetStyleSheet() == styleSheet.GetStyleSheet();
+    });
+    
+    if (it == styleSheets.end())
+    {
+        styleSheets.push_back(styleSheet);
+    }
+    else
+    {
+        *it = styleSheet;
+    }
 }
     
 void UIControlPackageContext::RemoveAllStyleSheets()
