@@ -138,6 +138,8 @@ void RenderManager::Create(Windows::UI::Xaml::Controls::SwapChainPanel^ swapChai
     eglSurface = eglCreateWindowSurface(eglDisplay, eglConfig, reinterpret_cast<IInspectable*>(surfaceCreationProperties), surfaceAttributes);
     if (eglSurface == EGL_NO_SURFACE)
         throw Exception::CreateException(E_FAIL, L"Failed to create EGL surface");
+
+    Thread::InitGLThread();
 }
 
 void RenderManager::BindToCurrentThread()
