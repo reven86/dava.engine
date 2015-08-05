@@ -285,11 +285,11 @@ DAVA_TESTCLASS(NetworkTest)
         if (testName == "TestEcho")
         {
             // Check whether DestroyControllerBlocked() really blocks until controller is destroyed
-            size_t nactive = NetCore::Instance()->ActiveControllersCount();
+            size_t nactive = NetCore::Instance()->ControllersCount();
             NetCore::Instance()->DestroyControllerBlocked(serverId);
-            TEST_VERIFY(NetCore::Instance()->ActiveControllersCount() == nactive - 1);
+            TEST_VERIFY(NetCore::Instance()->ControllersCount() == nactive - 1);
             NetCore::Instance()->DestroyControllerBlocked(clientId);
-            TEST_VERIFY(NetCore::Instance()->ActiveControllersCount() == nactive - 2);
+            TEST_VERIFY(NetCore::Instance()->ControllersCount() == nactive - 2);
             serverId = NetCore::INVALID_TRACK_ID;
             clientId = NetCore::INVALID_TRACK_ID;
         }

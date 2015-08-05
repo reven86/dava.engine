@@ -73,7 +73,7 @@ public:
 
     void RestartAllControllers();
 
-    size_t ActiveControllersCount() const;
+    size_t ControllersCount() const;
 
     int32 Run();
     int32 Poll();
@@ -124,7 +124,7 @@ inline const char8* NetCore::ServiceName(uint32 serviceId) const
     return registrar.Name(serviceId);
 }
 
-inline size_t NetCore::ActiveControllersCount() const
+inline size_t NetCore::ControllersCount() const
 {
     return trackedObjects.size();
 }
