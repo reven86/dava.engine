@@ -66,8 +66,12 @@ MainWindow::MainWindow(QWidget *parent)
     toolBarPlugins->addAction(actionReloadSprites);
 
     actionLocalizationManager->setEnabled(false);
+    toolBarPlugins->addSeparator();
     InitLanguageBox();
+    toolBarPlugins->addSeparator();
     InitRtlBox();
+    toolBarPlugins->addSeparator();
+    InitGlobalClasses();
 
     tabBar->setElideMode(Qt::ElideNone);
     setWindowTitle(ResourcesManageHelper::GetProjectTitle());
@@ -252,6 +256,21 @@ void MainWindow::InitRtlBox()
     wrapper->setLayout(layout);
     toolBarPlugins->addWidget(wrapper);
     connect(rtlBox, &QCheckBox::stateChanged, this, &MainWindow::OnRtlChanged);
+}
+
+void MainWindow::InitGlobalClasses()
+{
+    QLineEdit *classesEdit = new QLineEdit();
+    classesEdit->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
+    QLabel *label = new QLabel(tr("global classes"));
+    label->setBuddy(classesEdit);
+    QHBoxLayout *layout = new QHBoxLayout;
+    layout->setMargin(0);
+    layout->addWidget(label);
+    layout->addWidget(classesEdit);
+    QWidget *wrapper = new QWidget();
+    wrapper->setLayout(layout);
+    toolBarPlugins->addWidget(wrapper);
 }
 
 void MainWindow::InitMenu()

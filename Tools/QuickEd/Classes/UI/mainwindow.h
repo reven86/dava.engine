@@ -109,6 +109,7 @@ private slots:
 private:
     void InitLanguageBox();
     void InitRtlBox();
+    void InitGlobalClasses();
 	void InitMenu();
     void SetupViewMenu();
     void DisableActions();
