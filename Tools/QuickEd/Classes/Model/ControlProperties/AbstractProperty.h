@@ -48,6 +48,7 @@ public:
 
     enum eEditFrags
     {
+        EF_NONE = 0x00,
         EF_CAN_RESET = 0x01,
         EF_INHERITED = 0x02,
         EF_CAN_REMOVE = 0x04,

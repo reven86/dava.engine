@@ -43,7 +43,7 @@ BackgroundPropertiesSection::BackgroundPropertiesSection(UIControl *aControl, in
     , bgNum(aBgNum)
 {
     bg = SafeRetain(control->GetBackgroundComponent(bgNum));
-    if (bg == NULL && sourceSection != NULL && sourceSection->GetBg() != NULL)
+    if (bg == nullptr && sourceSection != nullptr && sourceSection->GetBg() != nullptr)
     {
         bg = control->CreateBackgroundComponent(bgNum);
         control->SetBackgroundComponent(bgNum, bg);
@@ -57,8 +57,8 @@ BackgroundPropertiesSection::BackgroundPropertiesSection(UIControl *aControl, in
         {
             const InspMember *member = insp->Member(j);
             
-            IntrospectionProperty *sourceProp = sourceSection == NULL ? NULL : sourceSection->FindProperty(member);
-            IntrospectionProperty *prop = new IntrospectionProperty(bg, member, dynamic_cast<IntrospectionProperty*>(sourceProp), cloneType);
+            IntrospectionProperty *sourceProp = sourceSection == nullptr ? nullptr : sourceSection->FindProperty(member);
+            IntrospectionProperty *prop = new IntrospectionProperty(bg, member, sourceProp, cloneType);
             AddProperty(prop);
             SafeRelease(prop);
         }

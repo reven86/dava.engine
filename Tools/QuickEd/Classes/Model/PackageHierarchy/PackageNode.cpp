@@ -75,20 +75,20 @@ PackageNode::~PackageNode()
 
 int PackageNode::GetCount() const
 {
-    return 3;
+    return SECTION_COUNT;
 }
 
 PackageBaseNode *PackageNode::Get(int index) const
 {
     switch (index)
     {
-        case 0:
+        case SECTION_IMPORTED_PACKAGES:
             return importedPackagesNode;
             
-        case 1:
+        case SECTION_STYLES:
             return styleSheets;
 
-        case 2:
+        case SECTION_CONTROLS:
             return packageControlsNode;
             
     }
@@ -383,7 +383,6 @@ void PackageNode::RemoveImportedPackage(PackageNode *node)
 
 void PackageNode::RebuildStyleSheets()
 {
-    Logger::Debug("--- styles ---");
     Vector<UIPriorityStyleSheet> importedStyleSheets;
     for (int32 i = 0; i < importedPackagesNode->GetCount(); i++)
     {
@@ -399,7 +398,6 @@ void PackageNode::RebuildStyleSheets()
     for (const UIPriorityStyleSheet &styleSheet : importedStyleSheets)
     {
         packageContext->AddStyleSheet(styleSheet);
-        Logger::Debug("  SS: %s (%d)", styleSheet.GetStyleSheet()->GetSelectorChain().ToString().c_str(), styleSheet.GetPriority());
     }
     
     for (int32 i = 0; i < styleSheets->GetCount(); i++)
@@ -409,21 +407,21 @@ void PackageNode::RebuildStyleSheets()
         for (UIStyleSheet *styleSheet : styleSheets)
         {
             packageContext->AddStyleSheet(UIPriorityStyleSheet(styleSheet));
-            Logger::Debug("  SS: %s", styleSheet->GetSelectorChain().ToString().c_str());
         }
-    }
-    Logger::Debug("--- res ---");
-
-    const Vector<UIPriorityStyleSheet> &res = packageContext->GetSortedStyleSheets();
-    for (const UIPriorityStyleSheet &styleSheet : res)
-    {
-        Logger::Debug("  Res: %s (%d)", styleSheet.GetStyleSheet()->GetSelectorChain().ToString().c_str(), styleSheet.GetPriority());
     }
 
 }
 
-void PackageNode::RefreshPackageStylesAndLayout()
+void PackageNode::RefreshPackageStylesAndLayout(bool includeImportedPackages)
 {
+    if (includeImportedPackages)
+    {
+        for (int32 i = 0; i < importedPackagesNode->GetCount(); i++)
+        {
+            importedPackagesNode->GetImportedPackage(i)->RefreshPackageStylesAndLayout(true);
+        }
+    }
+    
     RebuildStyleSheets();
 
     for (int32 i = 0; i < packageControlsNode->GetCount(); i++)

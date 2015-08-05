@@ -85,6 +85,7 @@ void PackageSerializer::SerializePackage(PackageNode *package)
     package->Accept(this);
     importedPackages.clear();
     controls.clear();
+    styles.clear();
 }
 
 void PackageSerializer::SerializePackageNodes(PackageNode *package, const DAVA::Vector<ControlNode*> &serializationControls, const DAVA::Vector<StyleSheetNode*> &serializationStyles)
@@ -120,7 +121,7 @@ void PackageSerializer::VisitPackage(PackageNode *node)
     if (!importedPackages.empty())
     {
         BeginArray("ImportedPackages");
-        for (PackageNode *package : importedPackages)
+        for (const PackageNode *package : importedPackages)
             PutValue(package->GetPath().GetFrameworkPath());
         EndArray();
     }

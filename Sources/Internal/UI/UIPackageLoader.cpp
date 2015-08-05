@@ -204,9 +204,9 @@ void UIPackageLoader::LoadStyleSheets(const YamlNode *styleSheetsNode, AbstractU
     const Vector<YamlNode*> &styleSheetMap = styleSheetsNode->AsVector();
     const UIStyleSheetPropertyDataBase* propertyDB = UIStyleSheetPropertyDataBase::Instance();
     
-    for (auto styleSheetIter = styleSheetMap.begin(); styleSheetIter != styleSheetMap.end(); ++styleSheetIter)
+    for (YamlNode *styleSheetNode : styleSheetMap)
     {
-        const MultiMap<String, YamlNode*> &styleSheet = (*styleSheetIter)->AsMap();
+        const MultiMap<String, YamlNode*> &styleSheet = styleSheetNode->AsMap();
         
         auto propertiesSectionIter = styleSheet.find("properties");
         

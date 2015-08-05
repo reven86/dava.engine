@@ -53,7 +53,6 @@ void FontValueProperty::Refresh(DAVA::int32 refreshFlags)
 VariantType FontValueProperty::GetValue() const
 {
     return member->Value(object);
-//    return VariantType(presetName);
 }
 
 void FontValueProperty::ApplyValue(const DAVA::VariantType &value)

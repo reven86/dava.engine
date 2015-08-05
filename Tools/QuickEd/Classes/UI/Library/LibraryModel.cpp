@@ -131,19 +131,18 @@ QMimeData *LibraryModel::mimeData(const QModelIndexList &indexes) const
             
             if (control)
             {
+                RefPtr<ControlNode> resultControl;
                 if (control->GetPackage() != nullptr)
-                    control = ControlNode::CreateFromPrototype(control);
+                    resultControl = RefPtr<ControlNode>(ControlNode::CreateFromPrototype(control));
                 else
-                    control = SafeRetain(control);
+                    resultControl = control;
                 
-                controls.push_back(control);
+                controls.push_back(resultControl.Get());
                 
                 YamlPackageSerializer serializer;
                 serializer.SerializePackageNodes(root, controls, styles);
                 String str = serializer.WriteToString();
                 data->setText(QString::fromStdString(str));
-                
-                SafeRelease(control);
                 
                 return data;
             }

@@ -88,12 +88,7 @@ const DAVA::FilePath &Document::GetPackageFilePath() const
 
 void Document::RefreshLayout()
 {
-    for (int32 i = 0; i < package->GetImportedPackagesNode()->GetCount(); i++)
-    {
-        package->GetImportedPackagesNode()->GetImportedPackage(i)->RefreshPackageStylesAndLayout();
-    }
-
-    package->RefreshPackageStylesAndLayout();
+    package->RefreshPackageStylesAndLayout(true);
 }
 
 void Document::RefreshAllControlProperties()

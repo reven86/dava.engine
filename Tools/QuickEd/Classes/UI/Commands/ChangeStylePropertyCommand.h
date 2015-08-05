@@ -43,8 +43,8 @@ public:
     ChangeStylePropertyCommand(PackageNode *_root, StyleSheetNode *_node, AbstractProperty *_property, const DAVA::VariantType &newValue, QUndoCommand *parent = 0);
     virtual ~ChangeStylePropertyCommand();
     
-    virtual void redo();
-    virtual void undo();
+    void redo() override;
+    void undo() override;
     
 private:
     PackageNode *root;

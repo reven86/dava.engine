@@ -110,6 +110,14 @@ private:
     void UpdateStyleSheetPropertyTable();
     
 private:
+    enum eSection
+    {
+        SECTION_SELECTORS = 0,
+        SECTION_PROPERTIES = 1,
+        SECTION_COUNT = 2
+    };
+    
+private:
     StyleSheetNode *styleSheet = nullptr;
     DAVA::Vector<PropertyListener*> listeners;
     

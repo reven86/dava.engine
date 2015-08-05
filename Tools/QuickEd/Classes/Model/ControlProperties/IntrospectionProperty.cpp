@@ -122,7 +122,7 @@ IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject *anObject, const D
     }
     children.clear();
     
-    if (sourceProperty)
+    if (sourceProperty != nullptr)
         sourceValue = sourceProperty->sourceValue;
     else
         sourceValue = member->Value(object);

@@ -79,16 +79,16 @@ StyleSheetRootProperty::~StyleSheetRootProperty()
 
 int StyleSheetRootProperty::GetCount() const
 {
-    return 2;
+    return SECTION_COUNT;
 }
 
 AbstractProperty *StyleSheetRootProperty::GetProperty(int index) const
 {
     switch (index)
     {
-        case 0:
+        case SECTION_SELECTORS:
             return selectors;
-        case 1:
+        case SECTION_PROPERTIES:
             return propertiesSection;
     }
     DVASSERT(false);
@@ -277,14 +277,14 @@ StyleSheetSelectorProperty *StyleSheetRootProperty::GetSelectorAtIndex(DAVA::int
 
 String StyleSheetRootProperty::GetSelectorsAsString() const
 {
-    String name;
+    StringStream stream;
     for (int32 i = 0; i < selectors->GetCount(); i++)
     {
         if (i > 0)
-            name += ", ";
-        name += selectors->GetProperty(i)->GetValue().AsString();
+            stream << ", ";
+        stream << selectors->GetProperty(i)->GetValue().AsString();
     }
-    return name;
+    return stream.str();
 }
 
 Vector<UIStyleSheet*> StyleSheetRootProperty::CollectStyleSheets()

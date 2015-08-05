@@ -49,7 +49,7 @@ VariantTypeProperty::~VariantTypeProperty()
 
 void VariantTypeProperty::Accept(PropertyVisitor *visitor)
 {
-    //visitor->VisitStyleSheetProperty(this);
+    // do nothing
 }
 
 bool VariantTypeProperty::IsReadOnly() const

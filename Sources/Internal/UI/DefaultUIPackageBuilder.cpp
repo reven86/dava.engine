@@ -123,7 +123,7 @@ void DefaultUIPackageBuilder::EndPackage()
         }
     }
 
-    for (UIPriorityStyleSheet &styleSheet : styleSheets)
+    for (const UIPriorityStyleSheet &styleSheet : styleSheets)
     {
         package->GetControlPackageContext()->AddStyleSheet(styleSheet);
     }

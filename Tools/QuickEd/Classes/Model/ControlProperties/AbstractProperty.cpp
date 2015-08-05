@@ -87,7 +87,7 @@ bool AbstractProperty::HasChanges() const
 
 uint32 AbstractProperty::GetFlags() const
 {
-    return 0;
+    return EF_NONE;
 }
 
 int32 AbstractProperty::GetStylePropertyIndex() const

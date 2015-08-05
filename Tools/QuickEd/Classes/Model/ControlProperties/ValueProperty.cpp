@@ -156,9 +156,9 @@ void ValueProperty::ResetValue()
 
 bool ValueProperty::IsOverridden() const
 {
-    bool ovverriddenLocally = IsOverriddenLocally();
-    if (ovverriddenLocally || prototypeProperty == nullptr)
-        return ovverriddenLocally;
+    bool overriddenLocally = IsOverriddenLocally();
+    if (overriddenLocally || prototypeProperty == nullptr)
+        return overriddenLocally;
     
     return prototypeProperty->IsOverridden();
 }
