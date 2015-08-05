@@ -44,7 +44,7 @@ int GetRequest::SendRequest()
     const String hash = options.GetOption("-h").AsString();
     AssetCache::CacheItemKey key(hash);
     
-    auto requestSent = client.GetFromCache(key);
+    auto requestSent = client.RequestFromCache(key);
     if (!requestSent)
     {
         Logger::Error("[GetRequest::%s] Cannot request files from server", __FUNCTION__);
