@@ -40,7 +40,9 @@ public:
         // Allow only small caps letters
         bool accept = true;
         for (size_t i = 0, n = replacementString.length();i < n && accept;++i)
+        {
             accept = 'a' <= replacementString[i] && replacementString[i] <= 'z';
+        }
         Logger::Debug("****** TextDelegate2::TextFieldKeyPressed: accepted=%d", accept);
         return accept;
     }
@@ -63,7 +65,9 @@ public:
         // Allow only numbers
         bool accept = true;
         for (size_t i = 0, n = replacementString.length();i < n && accept;++i)
+        {
             accept = '0' <= replacementString[i] && replacementString[i] <= '9';
+        }
         Logger::Debug("****** TextDelegate1::TextFieldKeyPressed: accepted=%d", accept);
         return accept;
     }

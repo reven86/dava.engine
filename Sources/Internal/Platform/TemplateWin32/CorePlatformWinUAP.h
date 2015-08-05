@@ -104,7 +104,7 @@ void CorePlatformWinUAP::RunOnUIThread(F&& fn)
     }
     else
     {
-        RunOnUIThread(std::function<void()>(std::move(fn)), false);
+        RunOnUIThread(std::function<void()>(std::forward<F>(fn)), false);
     }
 }
 
@@ -117,20 +117,20 @@ void CorePlatformWinUAP::RunOnUIThreadBlocked(F&& fn)
     }
     else
     {
-        RunOnUIThread(std::function<void()>(std::move(fn)), true);
+        RunOnUIThread(std::function<void()>(std::forward<F>(fn)), true);
     }
 }
 
 template<typename F>
 void CorePlatformWinUAP::RunOnMainThread(F&& fn)
 {
-    RunOnMainThread(std::function<void()>(std::move(fn)), false);
+    RunOnMainThread(std::function<void()>(std::forward<F>(fn)), false);
 }
 
 template<typename F>
 void CorePlatformWinUAP::RunOnMainThreadBlocked(F&& fn)
 {
-    RunOnMainThread(std::function<void()>(std::move(fn)), true);
+    RunOnMainThread(std::function<void()>(std::forward<F>(fn)), true);
 }
 
 }   // namespace DAVA

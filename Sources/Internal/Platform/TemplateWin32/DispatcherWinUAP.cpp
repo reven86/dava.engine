@@ -64,8 +64,7 @@ public:
     void WaitTaskComplete()
     {
         UniqueLock<Mutex> lock(mutex);
-        while (!taskDone)
-            cv.Wait(lock);
+        cv.Wait(lock, [this](){ return taskDone; });
     }
 
 private:

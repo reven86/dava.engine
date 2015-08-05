@@ -184,12 +184,18 @@ void PrivateTextFieldWinUAP::Init()
 
         std::weak_ptr<PrivateTextFieldWinUAP> self_weak(shared_from_this());
         auto keyboardHiding = ref new TypedEventHandler<InputPane^, InputPaneVisibilityEventArgs^>([this, self_weak](InputPane^, InputPaneVisibilityEventArgs^) {
-            if (auto self = self_weak.lock())
+            auto self = self_weak.lock();
+            if (self != nullptr)
+            {
                 OnKeyboardHiding();
+            }
         });
         auto keyboardShowing = ref new TypedEventHandler<InputPane^, InputPaneVisibilityEventArgs^>([this, self_weak](InputPane^, InputPaneVisibilityEventArgs^) {
-            if (auto self = self_weak.lock())
+            auto self = self_weak.lock();
+            if (self != nullptr)
+            {
                 OnKeyboardShowing();
+            }
         });
         InputPane::GetForCurrentView()->Showing += keyboardShowing;
         InputPane::GetForCurrentView()->Hiding += keyboardHiding;
@@ -584,24 +590,39 @@ void PrivateTextFieldWinUAP::InstallTextEventHandlers()
 
     std::weak_ptr<PrivateTextFieldWinUAP> self_weak(shared_from_this());
     auto keyDown = ref new KeyEventHandler([this, self_weak](Object^, KeyRoutedEventArgs^ args) {
-        if (auto self = self_weak.lock())
+        auto self = self_weak.lock();
+        if (self != nullptr)
+        {
             OnKeyDown(args->Key);
+        }
     });
     auto gotFocus = ref new RoutedEventHandler([this, self_weak](Object^, RoutedEventArgs^) {
-        if (auto self = self_weak.lock())
+        auto self = self_weak.lock();
+        if (self != nullptr)
+        {
             OnGotFocus();
+        }
     });
     auto lostFocus = ref new RoutedEventHandler([this, self_weak](Object^, RoutedEventArgs^) {
-        if (auto self = self_weak.lock())
+        auto self = self_weak.lock();
+        if (self != nullptr)
+        {
             OnLostFocus();
+        }
     });
     auto selectionChanged = ref new RoutedEventHandler([this, self_weak](Object^, RoutedEventArgs^) {
-        if (auto self = self_weak.lock())
+        auto self = self_weak.lock();
+        if (self != nullptr)
+        {
             OnSelectionChanged();
+        }
     });
     auto textChanged = ref new TextChangedEventHandler([this, self_weak](Object^, TextChangedEventArgs^) {
-        if (auto self = self_weak.lock())
+        auto self = self_weak.lock();
+        if (self != nullptr)
+        {
             OnTextChanged();
+        }
     });
     nativeText->KeyDown += keyDown;
     nativeText->GotFocus += gotFocus;
@@ -615,16 +636,25 @@ void PrivateTextFieldWinUAP::InstallPasswordEventHandlers()
     using namespace Platform;
     std::weak_ptr<PrivateTextFieldWinUAP> self_weak(shared_from_this());
     auto keyDown = ref new KeyEventHandler([this, self_weak](Object^, KeyRoutedEventArgs^ args) {
-        if (auto self = self_weak.lock())
+        auto self = self_weak.lock();
+        if (self != nullptr)
+        {
             OnKeyDown(args->Key);
+        }
     });
     auto lostFocus = ref new RoutedEventHandler([this, self_weak](Object^, RoutedEventArgs^) {
-        if (auto self = self_weak.lock())
+        auto self = self_weak.lock();
+        if (self != nullptr)
+        {
             OnLostFocus();
+        }
     });
     auto passwordChanged = ref new RoutedEventHandler([this, self_weak](Object^, RoutedEventArgs^) {
-        if (auto self = self_weak.lock())
+        auto self = self_weak.lock();
+        if (self != nullptr)
+        {
             OnPasswordChanged();
+        }
     });
     nativePassword->KeyDown += keyDown;
     nativePassword->LostFocus += lostFocus;

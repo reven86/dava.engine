@@ -101,7 +101,9 @@ bool DVAssertMessage::InnerShow(eModalType /*modalType*/, const char* content)
         // 
         // So we simply tell caller to always debug break on DVASSERT to notify programmer about problems
         if (core->XamlApplication()->MainThreadDispatcher()->InBlockingCall())
+        {
             return true;
+        }
 
         Mutex mutex;
         ConditionVariable cv;
