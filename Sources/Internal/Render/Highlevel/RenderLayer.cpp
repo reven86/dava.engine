@@ -128,7 +128,7 @@ void RenderLayer::Draw(Camera* camera, const RenderBatchArray & batchArray, rhi:
                 packet.vertexCount = pg->vertexCount;
                 packet.indexBuffer = pg->indexBuffer;
                 packet.primitiveType = pg->primitiveType;
-                packet.primitiveCount = pg->indexCount / 3;
+                packet.primitiveCount = GetPrimitiveCount(pg->indexCount, pg->primitiveType); //later move it into pg!
                 packet.vertexLayoutUID = pg->vertexLayoutId;                
                 packet.startIndex = 0;
                 DVASSERT(packet.primitiveCount);
@@ -141,7 +141,7 @@ void RenderLayer::Draw(Camera* camera, const RenderBatchArray & batchArray, rhi:
                 packet.vertexCount = batch->vertexCount;
                 packet.indexBuffer = batch->indexBuffer;
                 packet.primitiveType = batch->primitiveType;
-                packet.primitiveCount = batch->indexCount / 3;
+                packet.primitiveCount = GetPrimitiveCount(batch->indexCount, batch->primitiveType);
                 packet.vertexLayoutUID = batch->vertexLayoutId;                
                 packet.startIndex = batch->startIndex;
                 DVASSERT(packet.primitiveCount);
