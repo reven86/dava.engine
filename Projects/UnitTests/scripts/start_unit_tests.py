@@ -125,7 +125,7 @@ while continue_process_stdout:
                 sys.stdout.write(line)
                 sys.stdout.flush()
             if line.find("Force finishing activity com.dava.unittests") != -1 or \
-               line.find(line.find("end=assert=msg") != -1):
+               line.find("end=assert=msg") != -1:
                 app_exit_code = 1
                 sys.stdout.write(line)
                 sys.stdout.flush()
