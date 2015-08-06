@@ -44,9 +44,6 @@
 namespace DAVA
 {
     
-Set<uint32> TCPConnection::registeredServices;
-Mutex TCPConnection::serviceMutex;
-    
 TCPConnection * TCPConnection::CreateClient(uint32 service, const Net::Endpoint & endpoint)
 {
     return new TCPConnection(Net::CLIENT_ROLE, service, endpoint);
@@ -80,7 +77,15 @@ TCPConnection::~TCPConnection()
 bool TCPConnection::Connect()
 {
     isConnected = false;
-    bool isRegistered = RegisterService(service);
+    
+    bool isRegistered = Net::NetCore::Instance()->IsServiceRegistered(service);
+    if(!isRegistered)
+    {
+        isRegistered = Net::NetCore::Instance()->RegisterService(service,
+                                                                 MakeFunction(&TCPConnection::Create),
+                                                                 MakeFunction(&TCPConnection::Delete));
+    }
+    
     if(isRegistered)
     {
         Net::NetConfig config(role);
@@ -114,26 +119,6 @@ void TCPConnection::Disconnect()
 
     Net::NetCore::Instance()->DestroyControllerBlocked(controllerId);
     controllerId = Net::NetCore::INVALID_TRACK_ID;
-}
-    
-bool TCPConnection::RegisterService(uint32 serviceId)
-{
-    LockGuard<Mutex> guard(serviceMutex);
-    
-    auto isRegistered = registeredServices.find(serviceId) != registeredServices.end();
-    if(!isRegistered)
-    {
-        isRegistered = Net::NetCore::Instance()->RegisterService(serviceId,
-                                                               MakeFunction(&TCPConnection::Create),
-                                                               MakeFunction(&TCPConnection::Delete));
-
-        if(isRegistered)
-        {
-            registeredServices.insert(serviceId);
-        }
-    }
-    
-    return isRegistered;
 }
     
     

@@ -65,8 +65,6 @@ protected:
     static Net::IChannelListener * Create(uint32 serviceId, void* context);
     static void Delete(Net::IChannelListener* obj, void* context);
 
-    static bool RegisterService(uint32 service);
-    
     TCPChannel * CreateChannel();
 
 protected:
@@ -77,9 +75,6 @@ protected:
     Net::NetCore::TrackId controllerId;
 
     bool isConnected = false;
-
-    static Set<uint32> registeredServices;
-    static Mutex serviceMutex;
     
     List<TCPChannel *> channels;
     Mutex channelMutex;
