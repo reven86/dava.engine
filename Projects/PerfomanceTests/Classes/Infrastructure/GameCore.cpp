@@ -196,113 +196,27 @@ void GameCore::InitScreenController()
     
     Logger::Instance()->AddCustomOutput(&teamCityOutput);
     Logger::Info(GetDeviceName().c_str());
-    
-    BaseTest::TestParams singleTestParams = defaultTestParams;
-    String testForRun;
 
 	bool chooserFound = CommandLineParser::Instance()->CommandIsFound("-chooser");
     bool testFound = CommandLineParser::Instance()->CommandIsFound("-test");
     bool withoutUIFound = CommandLineParser::Instance()->CommandIsFound("-without-ui");
 
-    bool testTimeFound = CommandLineParser::Instance()->CommandIsFound("-test-time");
-    bool startTimeFound = CommandLineParser::Instance()->CommandIsFound("-statistic-start-time");
-    bool endTimeFound = CommandLineParser::Instance()->CommandIsFound("-statistic-end-time");
-    
-    bool testFramesFound = CommandLineParser::Instance()->CommandIsFound("-test-frames");
-    bool frameDeltaFound = CommandLineParser::Instance()->CommandIsFound("-frame-delta");
+    String testForRun;
 
-    bool debugFrameFound = CommandLineParser::Instance()->CommandIsFound("-debug-frame");
-    bool maxDeltaFound = CommandLineParser::Instance()->CommandIsFound("-max-delta");
-    
-    if(testFound)
+    if (testFound)
     {
         testForRun = CommandLineParser::Instance()->GetCommandParamAdditional("-test", 0);
     }
-    
-    if (chooserFound || !testForRun.empty())
+
+    if (chooserFound)
+    {
+        testFlowController = std::unique_ptr<SingleTestFlowController>(new SingleTestFlowController("", defaultTestParams, !withoutUIFound));
+    }
+    else if (!testForRun.empty())
 	{
-        if (testTimeFound)
-        {
-            String testTimeParam = CommandLineParser::Instance()->GetCommandParamAdditional("-test-time", 0);
-            singleTestParams.targetTime = std::atoi(testTimeParam.c_str());
-            
-            if(singleTestParams.targetTime < 0)
-            {
-                Logger::Error("Incorrect params. TargetTime < 0");
-                Core::Instance()->Quit();
-            }
-        }
-        
-        if(startTimeFound)
-        {
-            if(!endTimeFound)
-            {
-                Logger::Error("Incorrect params. Set end time for range");
-                Core::Instance()->Quit();
-            }
-            
-            String startTime = CommandLineParser::Instance()->GetCommandParamAdditional("-statistic-start-time", 0);
-            String endTime = CommandLineParser::Instance()->GetCommandParamAdditional("-statistic-end-time", 0);
-            
-            singleTestParams.startTime = std::atoi(startTime.c_str());
-            singleTestParams.endTime = std::atoi(endTime.c_str());
-            
-            int32 timeRange = singleTestParams.endTime - singleTestParams.startTime;
-            
-            if(timeRange < 100 || singleTestParams.startTime < 0)
-            {
-                Logger::Error("Incorrect params. Too small time range");
-                Core::Instance()->Quit();
-            }
-        }
-        
-        if (testFramesFound)
-        {
-            String testFramesParam = CommandLineParser::Instance()->GetCommandParamAdditional("-test-frames", 0);
-            singleTestParams.targetFramesCount = std::atoi(testFramesParam.c_str());
+        BaseTest::TestParams singleTestParams = defaultTestParams;
 
-            if(singleTestParams.targetFramesCount < 0)
-            {
-                Logger::Error("Incorrect params. TargetFramesCount < 0");
-                Core::Instance()->Quit();
-            }
-        }
-        
-        if(frameDeltaFound)
-        {
-            String frameDeltaParam = CommandLineParser::Instance()->GetCommandParamAdditional("-frame-delta", 0);
-            singleTestParams.targetFrameDelta = std::atof(frameDeltaParam.c_str());
-            
-            if(singleTestParams.targetFrameDelta < 0.0f)
-            {
-                Logger::Error("Incorrect params. TargetFrameDelta < 0");
-                Core::Instance()->Quit();
-            }
-        }
-
-        if (debugFrameFound)
-        {
-            String debugFrameParam = CommandLineParser::Instance()->GetCommandParamAdditional("-debug-frame", 0);
-            singleTestParams.frameForDebug = std::atoi(debugFrameParam.c_str());
-            
-            if(singleTestParams.frameForDebug < 0)
-            {
-                Logger::Error("Incorrect params. DebugFrame < 0");
-                Core::Instance()->Quit();
-            }
-        }
-        
-        if (maxDeltaFound)
-        {
-            String maxDeltaParam = CommandLineParser::Instance()->GetCommandParamAdditional("-max-delta", 0);
-            singleTestParams.maxDelta = std::atof(maxDeltaParam.c_str());
-            
-            if(singleTestParams.maxDelta < 0.0f)
-            {
-                Logger::Error("Incorrect params. MaxDelta < 0");
-                Core::Instance()->Quit();
-            }
-        }
+        ReadSingleTestParams(singleTestParams);
 
         testFlowController = std::unique_ptr<SingleTestFlowController>(new SingleTestFlowController(testForRun, singleTestParams, !withoutUIFound));
         
@@ -323,6 +237,100 @@ void GameCore::InitScreenController()
     testFlowController->Init(testChain);
 }
 
+void GameCore::ReadSingleTestParams(BaseTest::TestParams& params)
+{
+    bool testTimeFound = CommandLineParser::Instance()->CommandIsFound("-test-time");
+    bool startTimeFound = CommandLineParser::Instance()->CommandIsFound("-statistic-start-time");
+    bool endTimeFound = CommandLineParser::Instance()->CommandIsFound("-statistic-end-time");
 
+    bool testFramesFound = CommandLineParser::Instance()->CommandIsFound("-test-frames");
+    bool frameDeltaFound = CommandLineParser::Instance()->CommandIsFound("-frame-delta");
+
+    bool debugFrameFound = CommandLineParser::Instance()->CommandIsFound("-debug-frame");
+    bool maxDeltaFound = CommandLineParser::Instance()->CommandIsFound("-max-delta");
+
+    if (testTimeFound)
+    {
+        String testTimeParam = CommandLineParser::Instance()->GetCommandParamAdditional("-test-time", 0);
+        params.targetTime = std::atoi(testTimeParam.c_str());
+
+        if (params.targetTime < 0)
+        {
+            Logger::Error("Incorrect params. TargetTime < 0");
+            Core::Instance()->Quit();
+        }
+    }
+
+    if (startTimeFound)
+    {
+        if (!endTimeFound)
+        {
+            Logger::Error("Incorrect params. Set end time for range");
+            Core::Instance()->Quit();
+        }
+
+        String startTime = CommandLineParser::Instance()->GetCommandParamAdditional("-statistic-start-time", 0);
+        String endTime = CommandLineParser::Instance()->GetCommandParamAdditional("-statistic-end-time", 0);
+
+        params.startTime = std::atoi(startTime.c_str());
+        params.endTime = std::atoi(endTime.c_str());
+
+        int32 timeRange = params.endTime - params.startTime;
+
+        if (timeRange < 100 || params.startTime < 0)
+        {
+            Logger::Error("Incorrect params. Too small time range");
+            Core::Instance()->Quit();
+        }
+    }
+
+    if (testFramesFound)
+    {
+        String testFramesParam = CommandLineParser::Instance()->GetCommandParamAdditional("-test-frames", 0);
+        params.targetFramesCount = std::atoi(testFramesParam.c_str());
+
+        if (params.targetFramesCount < 0)
+        {
+            Logger::Error("Incorrect params. TargetFramesCount < 0");
+            Core::Instance()->Quit();
+        }
+    }
+
+    if (frameDeltaFound)
+    {
+        String frameDeltaParam = CommandLineParser::Instance()->GetCommandParamAdditional("-frame-delta", 0);
+        params.targetFrameDelta = std::atof(frameDeltaParam.c_str());
+
+        if (params.targetFrameDelta < 0.0f)
+        {
+            Logger::Error("Incorrect params. TargetFrameDelta < 0");
+            Core::Instance()->Quit();
+        }
+    }
+
+    if (debugFrameFound)
+    {
+        String debugFrameParam = CommandLineParser::Instance()->GetCommandParamAdditional("-debug-frame", 0);
+        params.frameForDebug = std::atoi(debugFrameParam.c_str());
+
+        if (params.frameForDebug < 0)
+        {
+            Logger::Error("Incorrect params. DebugFrame < 0");
+            Core::Instance()->Quit();
+        }
+    }
+
+    if (maxDeltaFound)
+    {
+        String maxDeltaParam = CommandLineParser::Instance()->GetCommandParamAdditional("-max-delta", 0);
+        params.maxDelta = std::atof(maxDeltaParam.c_str());
+
+        if (params.maxDelta < 0.0f)
+        {
+            Logger::Error("Incorrect params. MaxDelta < 0");
+            Core::Instance()->Quit();
+        }
+    }
+}
 
 
