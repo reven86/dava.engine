@@ -31,6 +31,27 @@
 
 #include "Concurrency/LockGuard.h"
 
+ServerLogics::RequestDescription::RequestDescription(DAVA::TCPChannel *channel, const DAVA::AssetCache::CacheItemKey &_key, DAVA::AssetCache::ePacketID _request)
+    : clientChannel(channel)
+    , key(_key)
+    , request(_request)
+{
+}
+
+ServerLogics::ServerTask::ServerTask(const DAVA::AssetCache::CacheItemKey &_key, DAVA::AssetCache::ePacketID _request)
+    : key(_key)
+    , request(_request)
+{
+}
+
+ServerLogics::ServerTask::ServerTask(const DAVA::AssetCache::CacheItemKey &_key, const DAVA::AssetCache::CachedFiles & _files, DAVA::AssetCache::ePacketID _request)
+    : key(_key)
+    , files(_files)
+    , request(_request)
+{
+}
+
+
 void ServerLogics::Init(DAVA::AssetCache::Server *_server, DAVA::AssetCache::Client *_client, DAVA::AssetCache::CacheDB *_dataBase)
 {
     server = _server;
@@ -46,14 +67,9 @@ void ServerLogics::OnAddToCache(DAVA::TCPChannel *tcpChannel, const DAVA::AssetC
         dataBase->Insert(key, files);
         server->FilesAddedToCache(tcpChannel, key, true);
 
-        ServerTask task;
-        task.key = key;
-        task.files = files;
-        task.request = DAVA::AssetCache::PACKET_ADD_FILES_REQUEST;
-        
         {   //add task for lazy sending of files;
             DAVA::LockGuard<DAVA::Mutex> lock(taskMutex);
-            serverTasks.push_back(task);
+            serverTasks.emplace_back(ServerTask(key, files, DAVA::AssetCache::PACKET_ADD_FILES_REQUEST));
         }
     }
 }
@@ -66,16 +82,16 @@ void ServerLogics::OnRequestedFromCache(DAVA::TCPChannel *tcpChannel, const DAVA
         if(nullptr != entry)
         {   // Found in db.
             server->SendFiles(tcpChannel, key, entry->GetFiles());
+            
+            {   //add task for lazy sending of files;
+                DAVA::LockGuard<DAVA::Mutex> lock(taskMutex);
+                serverTasks.emplace_back(ServerTask(key, DAVA::AssetCache::PACKET_WARMING_UP_REQUEST));
+            }
         }
         else if (client->RequestFromCache(key))
         {   // Not found in db. Ask from remote cache.
-            RequestDescription description;
-            description.request = DAVA::AssetCache::PACKET_GET_FILES_REQUEST;
-            description.key = key;
-            description.clientChannel = tcpChannel;
-            
             DAVA::LockGuard<DAVA::Mutex> lock(requestMutex);
-            waitedRequests.push_back(description);
+            waitedRequests.emplace_back(RequestDescription(tcpChannel, key, DAVA::AssetCache::PACKET_GET_FILES_REQUEST));
         }
         else
         {   // Not found in db. Remote server isn't connected.
@@ -144,11 +160,26 @@ void ServerLogics::ProcessServerTasks()
 {
     if(!serverTasks.empty() && client && client->IsConnected())
     {
-        const ServerTask & task = serverTasks.front();
-        client->AddToCache(task.key, task.files);
-        
         DAVA::LockGuard<DAVA::Mutex> lock(taskMutex);
-        serverTasks.pop_front();
+        
+        for(const auto & task: serverTasks)
+        {
+            switch (task.request)
+            {
+                case DAVA::AssetCache::PACKET_ADD_FILES_REQUEST:
+                    client->AddToCache(task.key, task.files);
+                    break;
+
+                case DAVA::AssetCache::PACKET_WARMING_UP_REQUEST:
+                    client->WarmingUp(task.key);
+                    break;
+                    
+                default:
+                    break;
+            }
+        }
+        
+        serverTasks.clear();
     }
 }
 

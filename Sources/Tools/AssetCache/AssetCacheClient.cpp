@@ -141,6 +141,24 @@ void Client::OnGotFromCache(KeyedArchive * archieve)
         listener->OnReceivedFromCache(key, files);
     }
 }
+    
+bool Client::WarmingUp(const CacheItemKey &key)
+{
+    if(openedChannel)
+    {
+        ScopedPtr<KeyedArchive> archieve(new KeyedArchive());
+        archieve->SetUInt32("PacketID", PACKET_WARMING_UP_REQUEST);
+        
+        ScopedPtr<KeyedArchive> keyArchieve(new KeyedArchive());
+        key.Serialize(keyArchieve);
+        archieve->SetArchive("key", keyArchieve);
+        
+        return openedChannel->SendArchieve(archieve);
+    }
+    
+    return false;
+}
+
 
 void Client::ChannelOpened(TCPChannel *tcpChannel)
 {

@@ -69,6 +69,7 @@ public:
     
     bool AddToCache(const CacheItemKey &key, const CachedFiles &files);
     bool RequestFromCache(const CacheItemKey &key);
+    bool WarmingUp(const CacheItemKey &key);
     
     //TCPChannelDelegate
     void ChannelOpened(TCPChannel *tcpChannel) override;

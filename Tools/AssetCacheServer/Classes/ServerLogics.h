@@ -60,6 +60,8 @@ private:
     
     struct RequestDescription
     {
+        RequestDescription(DAVA::TCPChannel *channel, const DAVA::AssetCache::CacheItemKey &_key, DAVA::AssetCache::ePacketID _request);
+        
         DAVA::TCPChannel *clientChannel = nullptr;
         DAVA::AssetCache::CacheItemKey key;
 
@@ -71,6 +73,9 @@ private:
     
     struct ServerTask
     {
+        ServerTask(const DAVA::AssetCache::CacheItemKey &_key, DAVA::AssetCache::ePacketID _request);
+        ServerTask(const DAVA::AssetCache::CacheItemKey &_key, const DAVA::AssetCache::CachedFiles & _files, DAVA::AssetCache::ePacketID _request);
+        
         DAVA::AssetCache::CacheItemKey key;
         DAVA::AssetCache::CachedFiles files;
         
