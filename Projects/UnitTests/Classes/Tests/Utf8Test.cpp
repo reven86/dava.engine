@@ -94,7 +94,7 @@ DAVA_TESTCLASS(Utf8Test)
 {
     DAVA_TEST(TestUtf8ToUtf32Function)
     {
-        String utf8String = "это текст на русском внутри в utf8 в исходном файле тоже в utf8";
+        String utf8String = u8"это текст на русском внутри в utf8 в исходном файле тоже в utf8";
         WideString result = UTF8Utils::EncodeToWideString(utf8String);
 
         TEST_VERIFY(result.size() < utf8String.size());
