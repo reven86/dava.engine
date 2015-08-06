@@ -61,6 +61,8 @@ struct SerializedGeneralInfo
     Array<char8, 64> udid;
     Array<char8, 32> name;
 };
+// make sure that sizeof SerializedGeneralInfo with arrays like char8 arr[] is same as witn std::array 
+static_assert(196 == sizeof(SerializedGeneralInfo), "invalid SerializedGeneralInfo size.");
 
 struct SerializedIfAddress
 {

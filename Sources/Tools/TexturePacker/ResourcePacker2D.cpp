@@ -157,8 +157,8 @@ bool ResourcePacker2D::IsMD5ChangedDir(const FilePath & processDirectoryPath, co
 
     FilePath md5FileName = FilePath::CreateWithNewExtension(processDirectoryPath + name, ".md5");
 
-    std::array<uint8, 16> oldMD5Digest;
-    std::array<uint8, 16> newMD5Digest;
+    Array<uint8, 16> oldMD5Digest;
+    Array<uint8, 16> newMD5Digest;
     bool isChanged = false;
 
     ScopedPtr<File> file(File::Create(md5FileName, File::OPEN | File::READ));
@@ -193,8 +193,8 @@ bool ResourcePacker2D::IsMD5ChangedFile(const FilePath & processDirectoryPath, c
 
     FilePath md5FileName = FilePath::CreateWithNewExtension(processDirectoryPath + psdName, ".md5");
 
-	std::array<uint8, MD5::DIGEST_SIZE> oldMD5Digest;
-	std::array<uint8, MD5::DIGEST_SIZE> newMD5Digest;
+    Array<uint8, MD5::DIGEST_SIZE> oldMD5Digest;
+    Array<uint8, MD5::DIGEST_SIZE> newMD5Digest;
     bool isChanged = false;
     File * file = File::Create(md5FileName, File::OPEN | File::READ);
 

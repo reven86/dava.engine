@@ -1090,7 +1090,7 @@ bool LibDdsHelper::WriteAtcFile(const FilePath & fileNameOriginal, const Vector<
     int32 bufSize = 0;
     Vector<int32> mipSize;
     mipSize.resize(imageSet.size());
-    int dataCount = static_cast<int>(imageSet.size());
+    uint32 dataCount = static_cast<uint32>(imageSet.size());
     if(imageSet.size() == 0)
     {
         Logger::Error("[LibDdsHelper::WriteAtcFile] Empty income image vector.");
@@ -1099,7 +1099,7 @@ bool LibDdsHelper::WriteAtcFile(const FilePath & fileNameOriginal, const Vector<
 
     auto pixelSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(imageSet[0]->format);
     auto atcFormat = QualcommHelper::GetQualcommFormat(imageSet[0]->format);
-    for(int32 i = 0; i < dataCount; ++i)
+    for(uint32 i = 0; i < dataCount; ++i)
     {
         TQonvertImage srcImg = {0};
 
@@ -1130,7 +1130,7 @@ bool LibDdsHelper::WriteAtcFile(const FilePath & fileNameOriginal, const Vector<
     unsigned char* buffer = new unsigned char[bufSize];
     unsigned char* tmpBuffer = buffer;
 
-    for(int32 i = 0; i < dataCount; ++i)
+    for(uint32 i = 0; i < dataCount; ++i)
     {
         TQonvertImage srcImg = { 0 };
 

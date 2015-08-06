@@ -44,7 +44,6 @@ namespace DAVA
 class Vector2
 {
 public:
-    static const size_t size = 2;
     static const Vector2 UnitX;
     static const Vector2 UnitY;
 
@@ -57,7 +56,7 @@ public:
         {
             float32 dx, dy;
         };
-        float32 data[size];
+        float32 data[2];
 	};
 	
 	//! Basic
@@ -135,7 +134,6 @@ class Vector4;
 class Vector3
 {
  public:
-    static const size_t size = 3;
     static const Vector3 UnitX;
     static const Vector3 UnitY;
     static const Vector3 UnitZ;
@@ -145,7 +143,7 @@ class Vector3
 		{
 			float32 x, y, z;
 		};
-        float32 data[size];
+        float32 data[3];
 	};
 
 	inline Vector3();
@@ -226,13 +224,12 @@ inline Vector3 Reflect(const Vector3 & v, const Vector3 & n);
 class Vector4
 {
 public:
-    static const size_t size = 4;
 	union{
 		struct
 		{
 			float32 x, y, z, w;
 		};
-        float32 data[size];
+        float32 data[4];
 	};
 
 	inline Vector4();

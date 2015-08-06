@@ -394,7 +394,6 @@ const FilePath & FileSystem::GetCurrentWorkingDirectory()
     Array<char, MAX_PATH> tempDir;
     ::GetCurrentDirectoryA(MAX_PATH, tempDir.data());
     path = tempDir.data();
-
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
 
     Array<char, PATH_MAX> tempDir;
@@ -412,12 +411,12 @@ FilePath FileSystem::GetCurrentExecutableDirectory()
     FilePath currentExecuteDirectory;
 
 #if defined(__DAVAENGINE_WIN32__)
-    std::array<char, MAX_PATH> tempDir;
-    ::GetModuleFileNameA( nullptr, tempDir.data(),static_cast<uint32>(tempDir.size()) );
+    Array<char, MAX_PATH> tempDir;
+    ::GetModuleFileNameA(nullptr, tempDir.data(), MAX_PATH);
     currentExecuteDirectory = FilePath(tempDir.data()).GetDirectory();
 #elif defined(__DAVAENGINE_MACOS__)
-    std::array<char, PATH_MAX> tempDir;
-    proc_pidpath(getpid(), tempDir.data(), tempDir.size());
+    Array<char, PATH_MAX> tempDir;
+    proc_pidpath(getpid(), tempDir.data(), PATH_MAX);
     currentExecuteDirectory = FilePath(dirname(tempDir.data()));
 #else
     const String& str = Core::Instance()->GetCommandLine().at(0);

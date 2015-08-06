@@ -54,7 +54,7 @@ const MetaInfo* InspMember::Type() const
 
 void* InspMember::Pointer(void *object) const
 {
-	return (static_cast<char *>(object) + offset);
+    return OffsetPointer<void>(object, offset);
 }
 
 void* InspMember::Data(void *object) const

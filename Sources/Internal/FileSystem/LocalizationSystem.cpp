@@ -446,14 +446,15 @@ bool LocalizationSystem::GetStringsForCurrentLocale(Map<WideString, WideString>&
     
 String LocalizationSystem::GetCountryCode() const
 {
-    size_t knownLocalesNumber = languageLocaleMap.size();
-	for (size_t i = 0; i < knownLocalesNumber; i ++)
-	{
-		if (languageLocaleMap[i].languageCode == langId)
-		{
-			return languageLocaleMap[i].localeCode;
-		}
-	}
+    auto iter = std::find_if(languageLocaleMap.begin(), languageLocaleMap.end(), [&](const LocalizationSystem::LanguageLocalePair & langPair)
+    {
+        return langPair.languageCode == langId;
+    });
+
+    if (iter != languageLocaleMap.end())
+    {
+        return (*iter).localeCode;
+    }
 
     return "en_US";
 }

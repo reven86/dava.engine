@@ -195,7 +195,7 @@ private:
     
     Timestamp InternalTimeGm(tm *t) const;
     
-    bool IsNumber(const char * s) const;
+    bool IsNumber(const String & s) const;
     
     Timestamp   innerTime;
     int32       timeZoneOffset;// offset in seconds

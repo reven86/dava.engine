@@ -29,6 +29,7 @@
 
 #include "Platform/DateTime.h"
 #include <stdlib.h>
+#include <algorithm>
 
 #ifdef __DAVAENGINE_WINDOWS__
 #include <time.h>
@@ -198,7 +199,7 @@ bool DateTime::ParseISO8601Date(const DAVA::String& src)
     {
         const size_t substringYearLength = 4;
         const DAVA::String yr = src.substr(0, substringYearLength);
-        if (!IsNumber(yr.c_str()))
+        if (!IsNumber(yr))
         {
             return false;
         }
@@ -210,7 +211,7 @@ bool DateTime::ParseISO8601Date(const DAVA::String& src)
         }
         
         const DAVA::String mon = src.substr(5, 2);
-        if (!IsNumber(mon.c_str()))
+        if (!IsNumber(mon))
         {
             return false;
         }
@@ -222,7 +223,7 @@ bool DateTime::ParseISO8601Date(const DAVA::String& src)
         }
         
         const DAVA::String dy = src.substr(8, 2);
-        if (!IsNumber(dy.c_str()))
+        if (!IsNumber(dy))
         {
             return false;
         }
@@ -237,7 +238,7 @@ bool DateTime::ParseISO8601Date(const DAVA::String& src)
     /// time
     {
         const DAVA::String hr = src.substr(11, 2);
-        if (!IsNumber(hr.c_str()))
+        if (!IsNumber(hr))
         {
             return false;
         }
@@ -249,7 +250,7 @@ bool DateTime::ParseISO8601Date(const DAVA::String& src)
         }
         
         const DAVA::String mn = src.substr(14, 2);
-        if (!IsNumber(mn.c_str()))
+        if (!IsNumber(mn))
         {
             return false;
         }
@@ -261,7 +262,7 @@ bool DateTime::ParseISO8601Date(const DAVA::String& src)
         }
         
         const DAVA::String sc = src.substr(17, 2);
-        if (!IsNumber(sc.c_str()))
+        if (!IsNumber(sc))
         {
             return false;
         }
@@ -296,7 +297,7 @@ bool DateTime::ParseISO8601Date(const DAVA::String& src)
             }
             
             const DAVA::String hr = src.substr(20, 2);
-            if (!IsNumber(hr.c_str()))
+            if (!IsNumber(hr))
             {
                 return false;
             }
@@ -308,7 +309,7 @@ bool DateTime::ParseISO8601Date(const DAVA::String& src)
             }
             
             const DAVA::String mn = src.substr(23, 2);
-            if (!IsNumber(mn.c_str()))
+            if (!IsNumber(mn))
             {
                 return false;
             }
@@ -604,18 +605,9 @@ Timestamp DateTime::InternalTimeGm(tm *t) const
     return result;
 }
 
-bool DateTime::IsNumber(const char * s) const
+bool DateTime::IsNumber(const String & s) const
 {
-    size_t len = strlen(s);
-    for(size_t i = 0; i < len; ++i)
-    {
-        if (s[i] >= '0' && s[i] <= '9')
-        {
-            continue;
-        }
-        return false;
-    }
-    
-    return true;
+    //http://stackoverflow.com/questions/8888748/how-to-check-if-given-c-string-or-char-contains-only-digits
+    return std::all_of(s.begin(), s.end(), ::isdigit);
 }
 };

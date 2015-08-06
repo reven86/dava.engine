@@ -55,8 +55,10 @@ bool IPAddress::ToString(char8* buffer, size_t size) const
 
 String IPAddress::ToString() const
 {
-    Array<char8, 20> buf;  // This should be enough for IPv4 address
-    return ToString(buf.data(), buf.size()) ? String(buf.data()) : String();
+    char8 buf[20];  // This should be enough for IPv4 address
+    bool ret = ToString(buf, 20);
+    DVASSERT(ret);
+    return String(ret ? buf : "");
 }
 
 IPAddress IPAddress::FromString(const char8* addr)

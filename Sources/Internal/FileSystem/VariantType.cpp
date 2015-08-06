@@ -809,8 +809,9 @@ bool VariantType::Write(File * fp) const
             break;
     case TYPE_COLOR:
 		{
-            written = fp->Write(colorValue->color.data(), sizeof(float32) * 4);
-            if (written != sizeof(float32) * 4)
+            uint32 size = static_cast<uint32>(colorValue->color.size() * sizeof(float32));
+            written = fp->Write(colorValue->color.data(), size);
+            if (written != size)
             {
                 return false;
             }
