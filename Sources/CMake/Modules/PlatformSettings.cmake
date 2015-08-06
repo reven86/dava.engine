@@ -6,7 +6,7 @@ if( NOT DISABLE_DEBUG )
 endif  ()
 
 if     ( ANDROID )
-    set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14" )
+    set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y" )
     set( CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -mfloat-abi=softfp -mfpu=neon -frtti" )    
     set( CMAKE_ECLIPSE_MAKE_ARGUMENTS -j8 )
     
@@ -123,7 +123,8 @@ if( WARNINGS_AS_ERRORS )
 -Wno-header-hygiene \
 -Wno-old-style-cast \
 -Wno-unknown-warning-option \
--Wno-unreachable-code-return")
+-Wno-unreachable-code-return \
+-Wno-unreachable-code-break")
 
 
     if( ANDROID )
