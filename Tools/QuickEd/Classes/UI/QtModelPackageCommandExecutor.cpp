@@ -65,7 +65,7 @@
 #include "UI/UIPackageLoader.h"
 #include "UI/Styles/UIStyleSheetPropertyDataBase.h"
 
-#include "Base/Result.h"
+#include "QtTools/ConsoleWidget/PointerSerializer.h"
 
 using namespace DAVA;
 
@@ -267,7 +267,7 @@ ResultList QtModelPackageCommandExecutor::InsertControl(ControlNode *control, Co
     }
     else
     {
-        resultList.AddResult(Result::RESULT_ERROR, "Can not inster control!", VariantType(reinterpret_cast<int64>(control)));
+        Logger::Warning("%s", String("Can not insert control!" + PointerSerializer::FromPointer(control)).c_str());
     }
     return resultList;
 }

@@ -103,5 +103,5 @@ void DeviceLogController::Output(const String& msg)
         else if (list[2] == "error")
             ll = Logger::LEVEL_ERROR;
     }
-    view->Model()->Output(ll, msg.c_str());
+    view->AddMessage(ll, msg.c_str());
 }
