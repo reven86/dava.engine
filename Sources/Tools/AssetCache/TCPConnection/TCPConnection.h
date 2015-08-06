@@ -56,6 +56,8 @@ public:
     void SetListener(TCPChannelListener * listener);
     
     const Net::Endpoint & GetEndpoint() const;
+
+    void DestroyChannel(TCPChannel *channel);
     
 protected:
     TCPConnection(Net::eNetworkRole role, uint32 service, const Net::Endpoint & endpoint);
@@ -66,9 +68,7 @@ protected:
     static bool RegisterService(uint32 service);
     
     TCPChannel * CreateChannel();
-    void DestroyChannel(TCPChannel *channel);
-    
-    
+
 protected:
     
     uint32 service;

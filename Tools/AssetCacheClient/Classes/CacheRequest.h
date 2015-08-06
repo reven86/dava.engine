@@ -29,7 +29,7 @@
 #ifndef __CACHE_REQUEST_H__
 #define __CACHE_REQUEST_H__
 
-#include "ProgramOptions.h"
+#include "CommandLine/ProgramOptions.h"
 #include "AssetCache/AssetCache.h"
 
 struct RequestResult

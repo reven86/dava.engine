@@ -179,6 +179,7 @@
     <None Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Sources\Tools\CommandLine\ProgramOptions.h" />
     <ClInclude Include="..\..\Sources\Tools\TeamcityOutput\TeamcityOutput.h" />
     <ClInclude Include="..\..\Sources\Tools\TeamcityOutput\TeamCityTestsOutput.h" />
     <ClInclude Include="..\..\Sources\Tools\TextureCompression\DXTConverter.h" />

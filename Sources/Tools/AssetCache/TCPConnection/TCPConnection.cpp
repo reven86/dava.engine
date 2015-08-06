@@ -165,12 +165,9 @@ void TCPConnection::DestroyChannel(TCPChannel *channel)
 {
     LockGuard<Mutex> guard(channelMutex);
 
-    auto found = std::find(channels.cbegin(), channels.cend(), channel);
-    if(found != channels.cend())
-    {
-        channels.erase(found);
-    }
-    
+    auto channelFound = std::find(channels.cbegin(), channels.cend(), channel);
+    DVASSERT(channelFound != channels.cend())
+    channels.erase(channelFound);
     delete channel;
 }
 
