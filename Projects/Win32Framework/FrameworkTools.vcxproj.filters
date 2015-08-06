@@ -34,6 +34,9 @@
     <Filter Include="Source Files\AssetCache\TCPConnection">
       <UniqueIdentifier>{75f7fe1e-4c1a-497f-ad16-6b0825002e38}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\CommandLine">
+      <UniqueIdentifier>{49506135-645d-4426-ae04-2379e6001a9b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
@@ -74,6 +77,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Tools\TeamcityOutput\TeamCityTestsOutput.h">
       <Filter>TeamcityOutput</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Tools\CommandLine\ProgramOptions.h">
+      <Filter>Source Files\CommandLine</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

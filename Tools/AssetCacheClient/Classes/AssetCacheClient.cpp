@@ -57,7 +57,7 @@ bool AssetCacheClient::ParseCommandLine(int argc, char * argv[])
         const char *command = argv[1];
         for(auto & r : requests)
         {
-            if(0 == strcmp(command, r->options.GetCommand().c_str()))
+            if (r->options.GetCommand() == command)
             {
                 activeRequest = r;
                 auto commandLineIsOk = r->options.Parse(argc, argv, 2);

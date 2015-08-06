@@ -82,26 +82,27 @@ void Server::PacketReceived(DAVA::TCPChannel *tcpChannel, const uint8* packet, s
 {
     if(length)
     {
-        ScopedPtr<KeyedArchive> archieve(new KeyedArchive());
-        archieve->Deserialize(packet, length);
+        ScopedPtr<KeyedArchive> archive(new KeyedArchive());
+        archive->Deserialize(packet, length);
         
-        const auto packetID = archieve->GetUInt32("PacketID", PACKET_UNKNOWN);
+        const auto packetID = archive->GetUInt32("PacketID", PACKET_UNKNOWN);
         switch (packetID)
         {
             case PACKET_ADD_FILES_REQUEST:
-                OnAddToCache(tcpChannel, archieve);
+                OnAddToCache(tcpChannel, archive);
                 break;
                 
             case PACKET_GET_FILES_REQUEST:
-                OnGetFromCache(tcpChannel, archieve);
+                OnGetFromCache(tcpChannel, archive);
                 break;
                 
             case PACKET_WARMING_UP_REQUEST:
-                OnWarmingUp(tcpChannel, archieve);
+                OnWarmingUp(tcpChannel, archive);
                 break;
                 
             default:
-                Logger::Error("[Server::%s] Cannot parce packet (%d)", __FUNCTION__, packetID);
+                Logger::Error("[AssetCache::Server::%s] Invalid packet id: (%d). Closing channel", __FUNCTION__, packetID);
+                netServer->DestroyChannel(tcpChannel);
                 break;
         }
     }
