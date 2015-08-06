@@ -130,6 +130,7 @@
 		E841A48F1B25AD97003E2C03 /* TCPChannel.h in Headers */ = {isa = PBXBuildFile; fileRef = E841A48B1B25AD97003E2C03 /* TCPChannel.h */; };
 		E841A4901B25AD97003E2C03 /* TCPChannel.h in Headers */ = {isa = PBXBuildFile; fileRef = E841A48B1B25AD97003E2C03 /* TCPChannel.h */; };
 		E841A4911B25AD97003E2C03 /* TCPChannel.h in Headers */ = {isa = PBXBuildFile; fileRef = E841A48B1B25AD97003E2C03 /* TCPChannel.h */; };
+		FECAA1C81B735563008BC3FC /* ProgramOptions.h in Headers */ = {isa = PBXBuildFile; fileRef = FECAA1C71B735563008BC3FC /* ProgramOptions.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -179,6 +180,7 @@
 		E841A48B1B25AD97003E2C03 /* TCPChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TCPChannel.h; sourceTree = "<group>"; };
 		E8BE2FDD1A80CC7500AC96C2 /* libTextureConverter.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libTextureConverter.dylib; sourceTree = "<group>"; };
 		E8BE2FDF1A80CCA300AC96C2 /* libTextureConverter.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTextureConverter.dylib; path = ../../Tools/Bin/libTextureConverter.dylib; sourceTree = "<group>"; };
+		FECAA1C71B735563008BC3FC /* ProgramOptions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ProgramOptions.h; path = CommandLine/ProgramOptions.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -238,6 +240,7 @@
 		A69854A717CE41EC001E9FDE /* Tools */ = {
 			isa = PBXGroup;
 			children = (
+				FECAA1C91B73556D008BC3FC /* ProgramOptions */,
 				E834DE661B171F8200E4B2DB /* AssetCache */,
 				76962824196BF8130064C3A0 /* TeamcitOutput */,
 				A69854A817CE41EC001E9FDE /* TextureCompression */,
@@ -315,6 +318,14 @@
 			path = TCPConnection;
 			sourceTree = "<group>";
 		};
+		FECAA1C91B73556D008BC3FC /* ProgramOptions */ = {
+			isa = PBXGroup;
+			children = (
+				FECAA1C71B735563008BC3FC /* ProgramOptions.h */,
+			);
+			name = ProgramOptions;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -329,6 +340,7 @@
 				A69854CB17CE41EC001E9FDE /* CommandLineParser.h in Headers */,
 				E834DE9F1B171F8200E4B2DB /* CachedFiles.h in Headers */,
 				A69854D117CE41EC001E9FDE /* DefinitionFile.h in Headers */,
+				FECAA1C81B735563008BC3FC /* ProgramOptions.h in Headers */,
 				E834DEB71B171F8200E4B2DB /* ServerCacheEntry.h in Headers */,
 				E834DE8D1B171F8200E4B2DB /* AssetCacheConstants.h in Headers */,
 				A69854D717CE41EC001E9FDE /* FramePathHelper.h in Headers */,

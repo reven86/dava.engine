@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		4F09300D199E3BF9007AF242 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4F09300C199E3BF9007AF242 /* main.cpp */; };
-		4F503B971AE95369005C3F89 /* libTextureConverter.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F503B961AE95369005C3F89 /* libTextureConverter.dylib */; };
+		4F503B971AE95369005C3F89 /* libTextureConverter.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F503B961AE95369005C3F89 /* libTextureConverter.dylib */; settings = {ATTRIBUTES = (Required, ); }; };
 		4F81C0CA19585A2500AD364E /* libFramework.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F81C0B2195859D100AD364E /* libFramework.a */; };
 		4F81C0D419585CF900AD364E /* libfmodevent.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F81C0D219585CF900AD364E /* libfmodevent.dylib */; };
 		4F81C0D519585CF900AD364E /* libfmodex.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F81C0D319585CF900AD364E /* libfmodex.dylib */; };
@@ -53,16 +53,38 @@
 			remoteGlobalIDString = D2AAC07D0554694100DB518D;
 			remoteInfo = Framework;
 		};
+		FECAA1C11B73551C008BC3FC /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = FECAA1B91B73551B008BC3FC /* FrameworkTools.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = A698542917CE38C0001E9FDE;
+			remoteInfo = FrameworkTools;
+		};
+		FECAA1C31B73551C008BC3FC /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = FECAA1B91B73551B008BC3FC /* FrameworkTools.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = A698543717CE38D8001E9FDE;
+			remoteInfo = FrameworkToolsQt;
+		};
+		FECAA1C51B73551C008BC3FC /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = FECAA1B91B73551B008BC3FC /* FrameworkTools.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = A698543F17CE38E5001E9FDE;
+			remoteInfo = FrameworkToolsNPAPI;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		4F81B2411958565100AD364E /* CopyFiles */ = {
+		4F81B2411958565100AD364E /* Copy Files */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = /usr/share/man/man1/;
 			dstSubfolderSpec = 0;
 			files = (
 			);
+			name = "Copy Files";
 			runOnlyForDeploymentPostprocessing = 1;
 		};
 /* End PBXCopyFilesBuildPhase section */
@@ -88,6 +110,7 @@
 		4F81C11019586FA100AD364E /* libpng_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpng_macos.a; path = ../../Libs/libs/libpng_macos.a; sourceTree = "<group>"; };
 		4F81C1121958709D00AD364E /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 		4F81C14C196EDC1E00AD364E /* libcurl.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcurl.dylib; path = usr/lib/libcurl.dylib; sourceTree = SDKROOT; };
+		FECAA1B91B73551B008BC3FC /* FrameworkTools.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = FrameworkTools.xcodeproj; path = ../../Projects/MacOSFramework/FrameworkTools.xcodeproj; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -118,6 +141,7 @@
 		4F81B23A1958565100AD364E = {
 			isa = PBXGroup;
 			children = (
+				FECAA1B91B73551B008BC3FC /* FrameworkTools.xcodeproj */,
 				4F503B961AE95369005C3F89 /* libTextureConverter.dylib */,
 				4F503B941AE9532B005C3F89 /* TextureConverter.lib */,
 				4F81C14C196EDC1E00AD364E /* libcurl.dylib */,
@@ -167,6 +191,16 @@
 			path = Classes;
 			sourceTree = "<group>";
 		};
+		FECAA1BA1B73551B008BC3FC /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				FECAA1C21B73551C008BC3FC /* libFrameworkTools.a */,
+				FECAA1C41B73551C008BC3FC /* libFrameworkToolsQt.a */,
+				FECAA1C61B73551C008BC3FC /* libFrameworkToolsNPAPI.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -176,7 +210,8 @@
 			buildPhases = (
 				4F81B23F1958565100AD364E /* Sources */,
 				4F81B2401958565100AD364E /* Frameworks */,
-				4F81B2411958565100AD364E /* CopyFiles */,
+				FECAA1DA1B7364B5008BC3FC /* ShellScript */,
+				4F81B2411958565100AD364E /* Copy Files */,
 			);
 			buildRules = (
 			);
@@ -213,6 +248,10 @@
 					ProductGroup = 4F81C0AB195859D100AD364E /* Products */;
 					ProjectRef = 4F81C0AA195859D100AD364E /* Framework.xcodeproj */;
 				},
+				{
+					ProductGroup = FECAA1BA1B73551B008BC3FC /* Products */;
+					ProjectRef = FECAA1B91B73551B008BC3FC /* FrameworkTools.xcodeproj */;
+				},
 			);
 			projectRoot = "";
 			targets = (
@@ -243,7 +282,44 @@
 			remoteRef = 4F81C0B5195859D100AD364E /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
+		FECAA1C21B73551C008BC3FC /* libFrameworkTools.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libFrameworkTools.a;
+			remoteRef = FECAA1C11B73551C008BC3FC /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		FECAA1C41B73551C008BC3FC /* libFrameworkToolsQt.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libFrameworkToolsQt.a;
+			remoteRef = FECAA1C31B73551C008BC3FC /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		FECAA1C61B73551C008BC3FC /* libFrameworkToolsNPAPI.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libFrameworkToolsNPAPI.a;
+			remoteRef = FECAA1C51B73551C008BC3FC /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 /* End PBXReferenceProxy section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		FECAA1DA1B7364B5008BC3FC /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "cp \"${BUILT_PRODUCTS_DIR}/ResourcePatcher\" \"${PROJECT_DIR}/../Bin/\"";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		4F81B23F1958565100AD364E /* Sources */ = {

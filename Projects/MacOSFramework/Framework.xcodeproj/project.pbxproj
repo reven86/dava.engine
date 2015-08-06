@@ -76,7 +76,6 @@
 		02A2FC3518D2E7460039E66A /* TreeToAnimatedTreeConverter.h in Headers */ = {isa = PBXBuildFile; fileRef = 02A2FC3118D2E7460039E66A /* TreeToAnimatedTreeConverter.h */; };
 		02A2FC3618D2E7460039E66A /* TreeToAnimatedTreeConverter.h in Headers */ = {isa = PBXBuildFile; fileRef = 02A2FC3118D2E7460039E66A /* TreeToAnimatedTreeConverter.h */; };
 		02A2FC3718D2E7460039E66A /* TreeToAnimatedTreeConverter.h in Headers */ = {isa = PBXBuildFile; fileRef = 02A2FC3118D2E7460039E66A /* TreeToAnimatedTreeConverter.h */; };
-		02E9E3AB17296D4200C501BC /* FMODUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E9E3AA17296D4200C501BC /* FMODUtils.h */; };
 		02E9E4231739616800C501BC /* SoundComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E9E4211739616800C501BC /* SoundComponent.cpp */; };
 		02E9E4241739616800C501BC /* SoundComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E9E4221739616800C501BC /* SoundComponent.h */; };
 		02E9E4321739622E00C501BC /* FMODUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E9E3AA17296D4200C501BC /* FMODUtils.h */; };
@@ -1082,7 +1081,6 @@
 		641A61DD18CDC2F4003359E7 /* FoliageSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 641A61D918CDC2F4003359E7 /* FoliageSystem.h */; };
 		641A61DE18CDC2F4003359E7 /* FoliageSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 641A61D918CDC2F4003359E7 /* FoliageSystem.h */; };
 		641A61DF18CDC2F4003359E7 /* FoliageSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 641A61D918CDC2F4003359E7 /* FoliageSystem.h */; };
-		6435963B18C1FA3200862C31 /* AbstractQuadTree.h in Headers */ = {isa = PBXBuildFile; fileRef = 6435963718C1FA3200862C31 /* AbstractQuadTree.h */; };
 		6435963C18C1FA3200862C31 /* AbstractQuadTree.h in Headers */ = {isa = PBXBuildFile; fileRef = 6435963718C1FA3200862C31 /* AbstractQuadTree.h */; };
 		6435963D18C1FA3200862C31 /* AbstractQuadTree.h in Headers */ = {isa = PBXBuildFile; fileRef = 6435963718C1FA3200862C31 /* AbstractQuadTree.h */; };
 		644C86BE19476A7100964F91 /* RenderBatchPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 644C86A819476A7100964F91 /* RenderBatchPool.cpp */; };
@@ -1290,8 +1288,6 @@
 		84CB671F191FC8850086483D /* ImageSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 84CB6710191FC8850086483D /* ImageSystem.h */; };
 		84CB6720191FC8850086483D /* LibDdsHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84CB6711191FC8850086483D /* LibDdsHelper.cpp */; };
 		84CB6721191FC8850086483D /* LibDdsHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 84CB6712191FC8850086483D /* LibDdsHelper.h */; };
-		84CB6722191FC8850086483D /* LibWebPHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84CB6713191FC8850086483D /* LibWebPHelper.cpp */; };
-		84CB6723191FC8850086483D /* LibWebPHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 84CB6714191FC8850086483D /* LibWebPHelper.h */; };
 		84CB6724191FC8850086483D /* LibPngHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84CB6715191FC8850086483D /* LibPngHelper.cpp */; };
 		84CB6725191FC8850086483D /* LibPngHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 84CB6716191FC8850086483D /* LibPngHelper.h */; };
 		84CB6726191FC8850086483D /* LibPVRHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84CB6717191FC8850086483D /* LibPVRHelper.cpp */; };
@@ -1305,8 +1301,6 @@
 		84E975C6191FCE060054CCF9 /* ImageSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 84CB6710191FC8850086483D /* ImageSystem.h */; };
 		84E975C7191FCE0A0054CCF9 /* LibDdsHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84CB6711191FC8850086483D /* LibDdsHelper.cpp */; };
 		84E975C8191FCE0D0054CCF9 /* LibDdsHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 84CB6712191FC8850086483D /* LibDdsHelper.h */; };
-		84E975C9191FCE100054CCF9 /* LibWebPHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84CB6713191FC8850086483D /* LibWebPHelper.cpp */; };
-		84E975CA191FCE130054CCF9 /* LibWebPHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 84CB6714191FC8850086483D /* LibWebPHelper.h */; };
 		84E975CB191FCE160054CCF9 /* LibPngHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84CB6715191FC8850086483D /* LibPngHelper.cpp */; };
 		84E975CD191FCE1D0054CCF9 /* LibPVRHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84CB6717191FC8850086483D /* LibPVRHelper.cpp */; };
 		84E975CE191FCE200054CCF9 /* LibPVRHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 84CB6718191FC8850086483D /* LibPVRHelper.h */; };
@@ -2688,9 +2682,6 @@
 		E89EDE881A2E17170036E993 /* DateTime.h in Headers */ = {isa = PBXBuildFile; fileRef = 62BD24BF18C621EB00D2F0D3 /* DateTime.h */; };
 		E89EDE891A2E17170036E993 /* DateTime.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62BD24BE18C621EB00D2F0D3 /* DateTime.cpp */; };
 		E89EDE8A1A2E17170036E993 /* DateTime.h in Headers */ = {isa = PBXBuildFile; fileRef = 62BD24BF18C621EB00D2F0D3 /* DateTime.h */; };
-		E89EDE8C1A2E17750036E993 /* OpenUDIDMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 846CFE62174D1A75004ECE3C /* OpenUDIDMacOS.mm */; };
-		E89EDE8E1A2E177A0036E993 /* OpenUDIDMacOS.h in Headers */ = {isa = PBXBuildFile; fileRef = 846CFE61174D1A75004ECE3C /* OpenUDIDMacOS.h */; };
-		E89EDE8F1A2E177B0036E993 /* OpenUDIDMacOS.h in Headers */ = {isa = PBXBuildFile; fileRef = 846CFE61174D1A75004ECE3C /* OpenUDIDMacOS.h */; };
 		E89EDE901A2E17B80036E993 /* OpenUDIDApple.mm in Sources */ = {isa = PBXBuildFile; fileRef = 846CFE5E174D1A64004ECE3C /* OpenUDIDApple.mm */; };
 		E89EDE911A2E17D90036E993 /* DateTimeApple.mm in Sources */ = {isa = PBXBuildFile; fileRef = 6280BAA818D6F909007809B7 /* DateTimeApple.mm */; };
 		E89EDE921A2E17DA0036E993 /* DateTimeApple.mm in Sources */ = {isa = PBXBuildFile; fileRef = 6280BAA818D6F909007809B7 /* DateTimeApple.mm */; };
@@ -2718,7 +2709,6 @@
 		E8E081421A03956D009A3228 /* OpenUDIDMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 846CFE62174D1A75004ECE3C /* OpenUDIDMacOS.mm */; };
 		E8E081431A039573009A3228 /* OpenUDIDMacOS.h in Headers */ = {isa = PBXBuildFile; fileRef = 846CFE61174D1A75004ECE3C /* OpenUDIDMacOS.h */; };
 		E8E081441A03973A009A3228 /* OpenUDIDApple.h in Headers */ = {isa = PBXBuildFile; fileRef = 846CFE5D174D1A64004ECE3C /* OpenUDIDApple.h */; };
-		E8E081451A03973D009A3228 /* OpenUDIDApple.mm in Sources */ = {isa = PBXBuildFile; fileRef = 846CFE5E174D1A64004ECE3C /* OpenUDIDApple.mm */; };
 		E8E081461A039740009A3228 /* OpenUDIDApple.h in Headers */ = {isa = PBXBuildFile; fileRef = 846CFE5D174D1A64004ECE3C /* OpenUDIDApple.h */; };
 		E8F21DCA16C196DC007F957A /* GlobalEventSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50D6C8E616C107D400BB3F78 /* GlobalEventSystem.cpp */; };
 		E8F21DCB16C196DD007F957A /* GlobalEventSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50D6C8E616C107D400BB3F78 /* GlobalEventSystem.cpp */; };
@@ -2783,6 +2773,12 @@
 		FE578C621327927C0081BDE9 /* libvorbisfile_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FE578C5F1327927C0081BDE9 /* libvorbisfile_macos.a */; };
 		FEA1D3CE1ADF9B88006B981A /* LibTgaHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FEA1D3CC1ADF9B88006B981A /* LibTgaHelper.cpp */; };
 		FEA1D3CF1ADF9B88006B981A /* LibTgaHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = FEA1D3CD1ADF9B88006B981A /* LibTgaHelper.h */; };
+		FECAA1CA1B7358B4008BC3FC /* AbstractQuadTree.h in Headers */ = {isa = PBXBuildFile; fileRef = 6435963718C1FA3200862C31 /* AbstractQuadTree.h */; };
+		FECAA1CB1B7358B4008BC3FC /* LibWebPHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 84CB6714191FC8850086483D /* LibWebPHelper.h */; };
+		FECAA1CC1B7358B4008BC3FC /* FMODUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E9E3AA17296D4200C501BC /* FMODUtils.h */; };
+		FECAA1CD1B7358B4008BC3FC /* LibWebPHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84CB6713191FC8850086483D /* LibWebPHelper.cpp */; };
+		FECAA1CE1B7358B4008BC3FC /* LibWebPHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 84CB6714191FC8850086483D /* LibWebPHelper.h */; };
+		FECAA1CF1B7358B4008BC3FC /* LibWebPHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84CB6713191FC8850086483D /* LibWebPHelper.cpp */; };
 		FED4C0C91B3AA41F006D0379 /* LibJpegHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FED4C0C71B3AA41E006D0379 /* LibJpegHelper.cpp */; };
 		FED4C0CA1B3AA41F006D0379 /* LibJpegHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = FED4C0C81B3AA41E006D0379 /* LibJpegHelper.h */; };
 		FEF4E23212CD3C1F004B850E /* libBox2D_MacOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FEF4E22C12CD3BED004B850E /* libBox2D_MacOS.a */; };
@@ -5917,7 +5913,6 @@
 				026A1DC519DAF09700813AEF /* SkeletonComponent.h in Headers */,
 				176DEA14174B5561007A983B /* DPIHelper.h in Headers */,
 				176DEA15174B5561007A983B /* UIWebView.h in Headers */,
-				E89EDE8E1A2E177A0036E993 /* OpenUDIDMacOS.h in Headers */,
 				11B1551F1B2F26B200E0EECE /* UIControlPackageContext.h in Headers */,
 				176DEA16174B5561007A983B /* IWebViewControl.h in Headers */,
 				644C86E719476A7100964F91 /* VegetationGeometry.h in Headers */,
@@ -6198,8 +6193,7 @@
 				1166AC161A8CDF2D00F1618D /* dlmalloc.h in Headers */,
 				50B429D41A5A704400CEB3D3 /* Discoverer.h in Headers */,
 				50F3B8751B1EE39E00976CBC /* TestClassFactory.h in Headers */,
-				84CB6723191FC8850086483D /* LibWebPHelper.h in Headers */,
-				84CB6723191FC8850086483D /* LibWebPHelper.h in Headers */,
+				FECAA1CB1B7358B4008BC3FC /* LibWebPHelper.h in Headers */,
 				E8989ECD16BD24E500732C04 /* NSFullScreenWindow.h in Headers */,
 				E8989ECF16BD24E500732C04 /* OpenGLView.h in Headers */,
 				644C86DF19476A7100964F91 /* VegetationFixedGeometry.h in Headers */,
@@ -6494,10 +6488,8 @@
 				748A99751726C5EE00C6411B /* UIScrollView.h in Headers */,
 				74D1EABA172E950700EDE0B7 /* UIScrollViewContainer.h in Headers */,
 				E8990B3E1A288C2000FF71A1 /* WASDControllerComponent.h in Headers */,
-				6435963B18C1FA3200862C31 /* AbstractQuadTree.h in Headers */,
-				02E9E3AB17296D4200C501BC /* FMODUtils.h in Headers */,
-				6435963B18C1FA3200862C31 /* AbstractQuadTree.h in Headers */,
-				02E9E3AB17296D4200C501BC /* FMODUtils.h in Headers */,
+				FECAA1CA1B7358B4008BC3FC /* AbstractQuadTree.h in Headers */,
+				FECAA1CC1B7358B4008BC3FC /* FMODUtils.h in Headers */,
 				02A2FC3518D2E7460039E66A /* TreeToAnimatedTreeConverter.h in Headers */,
 				02E9E4241739616800C501BC /* SoundComponent.h in Headers */,
 				02E9E439173964DA00C501BC /* SoundUpdateSystem.h in Headers */,
@@ -6720,7 +6712,6 @@
 				D7CC263819C43C7C00A3B754 /* LocalNotificationController.h in Headers */,
 				B7464C8B1AEA7BEE00D3AB13 /* TextLayout.h in Headers */,
 				02FD8270192A3861007762C0 /* WaveComponent.h in Headers */,
-				E89EDE8F1A2E177B0036E993 /* OpenUDIDMacOS.h in Headers */,
 				E89EDE521A2E16FA0036E993 /* AutotestingSystemConfig.h in Headers */,
 				CC931B29188EC95F000375F9 /* SwitchToRenerObjectConverter.h in Headers */,
 				E898A0E516BD265400732C04 /* Font.h in Headers */,
@@ -6985,8 +6976,7 @@
 				A679102317B3C71B000AA2F2 /* SkyboxRenderObject.h in Headers */,
 				EA56554E17CDFF4B00426EB8 /* PerformanceSettings.h in Headers */,
 				E89EDE611A2E16FA0036E993 /* GameAPI.h in Headers */,
-				84E975CA191FCE130054CCF9 /* LibWebPHelper.h in Headers */,
-				84E975CA191FCE130054CCF9 /* LibWebPHelper.h in Headers */,
+				FECAA1CE1B7358B4008BC3FC /* LibWebPHelper.h in Headers */,
 				CC0D7B381A76055A00309408 /* EdgeComponent.h in Headers */,
 				50A5187417B256250022E8FA /* ShaderCache.h in Headers */,
 				A6B0518117E886D8000EED68 /* SerializationContext.h in Headers */,
@@ -7074,7 +7064,7 @@
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0510;
+				LastUpgradeCheck = 0640;
 			};
 			buildConfigurationList = 1DEB922208733DC00010E9CD /* Build configuration list for PBXProject "Framework" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -7558,9 +7548,7 @@
 				50C16DAF1A52D7B9003C307A /* NetworkUtils.cpp in Sources */,
 				7C007E1B1B384DAC000003DB /* ThreadWin32.cpp in Sources */,
 				E8989DB816BD24E500732C04 /* BaseObjectChecker.cpp in Sources */,
-				84CB6722191FC8850086483D /* LibJpegHelper.cpp in Sources */,
-				84CB6722191FC8850086483D /* LibWebPHelper.cpp in Sources */,
-				84CB6722191FC8850086483D /* LibWebPHelper.cpp in Sources */,
+				FECAA1CD1B7358B4008BC3FC /* LibWebPHelper.cpp in Sources */,
 				7C007E0F1B384DAC000003DB /* Thread.cpp in Sources */,
 				7C007DF41B384DAC000003DB /* ConditionVariable.cpp in Sources */,
 				E8989DBB16BD24E500732C04 /* Data.cpp in Sources */,
@@ -8141,7 +8129,6 @@
 				E89EDE491A2E16FA0036E993 /* AutotestingSystem_wrap.cxx in Sources */,
 				E898A21016BD265400732C04 /* StaticMesh.cpp in Sources */,
 				E898A21116BD265400732C04 /* CursorMacOS.mm in Sources */,
-				E89EDE8C1A2E17750036E993 /* OpenUDIDMacOS.mm in Sources */,
 				CC84B01D18211A9000934482 /* JobManager.cpp in Sources */,
 				E898A21216BD265400732C04 /* ColorOnlyEffect.cpp in Sources */,
 				E898A21316BD265400732C04 /* MultiTextureEffect.cpp in Sources */,
@@ -8245,8 +8232,7 @@
 				E898A26516BD265400732C04 /* PathManip.cpp in Sources */,
 				E898A26616BD265400732C04 /* PolygonGroupInstance.cpp in Sources */,
 				B786013A1A08B6170041F817 /* StringUtils.cpp in Sources */,
-				84E975C9191FCE100054CCF9 /* LibWebPHelper.cpp in Sources */,
-				84E975C9191FCE100054CCF9 /* LibWebPHelper.cpp in Sources */,
+				FECAA1CF1B7358B4008BC3FC /* LibWebPHelper.cpp in Sources */,
 				E8990B551A288C8F00FF71A1 /* WASDControllerSystem.cpp in Sources */,
 				E898A26B16BD265400732C04 /* Scene.cpp in Sources */,
 				E898A26C16BD265400732C04 /* SceneAnimationMixer.cpp in Sources */,
@@ -8257,7 +8243,6 @@
 				644C86BF19476A7100964F91 /* RenderBatchPool.cpp in Sources */,
 				E898A27116BD265400732C04 /* SceneNodeAnimation.cpp in Sources */,
 				E898A27216BD265400732C04 /* SceneNodeAnimationKey.cpp in Sources */,
-				E8E081451A03973D009A3228 /* OpenUDIDApple.mm in Sources */,
 				E898A27316BD265400732C04 /* SceneNodeAnimationList.cpp in Sources */,
 				E898A27416BD265400732C04 /* ShadowVolumeNode.cpp in Sources */,
 				E898A27516BD265400732C04 /* SkeletonNode.cpp in Sources */,
