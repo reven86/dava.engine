@@ -10,9 +10,6 @@ endif()
 if( ANDROID )
     find_package( AndroidTools REQUIRED )
 
-    set(ANDROID_STL c++_shared)
-    set(ANDROID_TOOLCHAIN_NAME arm-linux-androideabi-clang3.6)
-
     if( WIN32 )
         set( MAKE_PROGRAM ${ANDROID_NDK}/prebuilt/windows-x86_64/bin/make.exe ) 
     elseif( APPLE )
