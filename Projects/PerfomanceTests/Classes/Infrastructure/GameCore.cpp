@@ -214,20 +214,12 @@ void GameCore::InitScreenController()
     }
     else if (!testForRun.empty())
 	{
-        BaseTest::TestParams singleTestParams = defaultTestParams;
+        Logger::Instance()->Info(DAVA::Format("Test %s", testForRun.c_str()).c_str());
 
+        BaseTest::TestParams singleTestParams = defaultTestParams;
         ReadSingleTestParams(singleTestParams);
 
         testFlowController = std::unique_ptr<SingleTestFlowController>(new SingleTestFlowController(testForRun, singleTestParams, !withoutUIFound));
-        
-        Logger::Instance()->Info(DAVA::Format("Test %s params ", testForRun.c_str()).c_str());
-        Logger::Instance()->Info(DAVA::Format("Target time : %d", singleTestParams.targetTime).c_str());
-        Logger::Instance()->Info(DAVA::Format("Statistic start time : %d", singleTestParams.startTime).c_str());
-        Logger::Instance()->Info(DAVA::Format("Statistic end time : %d", singleTestParams.endTime).c_str());
-        Logger::Instance()->Info(DAVA::Format("Target frames count : %d", singleTestParams.targetFramesCount).c_str());
-        Logger::Instance()->Info(DAVA::Format("Target frame delta : %f", singleTestParams.targetFrameDelta).c_str());
-        Logger::Instance()->Info(DAVA::Format("Frame for debug : %d", singleTestParams.frameForDebug).c_str());
-        Logger::Instance()->Info(DAVA::Format("Max delta : %f", singleTestParams.maxDelta).c_str());
     }
 	else
 	{
@@ -331,6 +323,14 @@ void GameCore::ReadSingleTestParams(BaseTest::TestParams& params)
             Core::Instance()->Quit();
         }
     }
+
+    Logger::Instance()->Info(DAVA::Format("Target time : %d", params.targetTime).c_str());
+    Logger::Instance()->Info(DAVA::Format("Statistic start time : %d", params.startTime).c_str());
+    Logger::Instance()->Info(DAVA::Format("Statistic end time : %d", params.endTime).c_str());
+    Logger::Instance()->Info(DAVA::Format("Target frames count : %d", params.targetFramesCount).c_str());
+    Logger::Instance()->Info(DAVA::Format("Target frame delta : %f", params.targetFrameDelta).c_str());
+    Logger::Instance()->Info(DAVA::Format("Frame for debug : %d", params.frameForDebug).c_str());
+    Logger::Instance()->Info(DAVA::Format("Max delta : %f", params.maxDelta).c_str());
 }
 
 
