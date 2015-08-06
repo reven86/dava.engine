@@ -542,7 +542,7 @@ metal_SyncObject_IsSignaled( Handle obj )
 //------------------------------------------------------------------------------
 
 static void
-metal_Present()
+metal_Present( Handle sync)
 {
 SCOPED_NAMED_TIMING("rhi.draw-present");
 
