@@ -3,8 +3,6 @@
 #include <QClipboard>
 #include <QKeyEvent>
 #include <QScrollBar>
-#include <QScrollBar>
-#include <QBuffer>
 
 #include "LogModel.h"
 #include "LogFilterModel.h"
@@ -14,13 +12,14 @@
 #include "Debug/DVAssert.h"
 #include "ui_LogWidget.h"
 
+
 LogWidget::LogWidget(QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::LogWidget)
-    , onBottom(true)
 {
     ui->setupUi(this);
-    time.start();
+    ui->toolButton_clearFilter->setIcon(QIcon(":/QtTools/Icons/reset.png"));
+    ui->toolButton_clearConsole->setIcon(QIcon(":/QtTools/Icons/clear.png"));
 
     logModel = new LogModel(this);
     logFilterModel = new LogFilterModel(this);
@@ -28,14 +27,20 @@ LogWidget::LogWidget(QWidget* parent)
     logFilterModel->setSourceModel(logModel);
     ui->log->setModel(logFilterModel);
     ui->log->installEventFilter(this);
-
+    LogDelegate *logDelegate = new LogDelegate(ui->log);
     FillFiltersCombo();
+    connect(logDelegate, &LogDelegate::copyRequest, this, &LogWidget::OnCopy);
+    connect(logDelegate, &LogDelegate::clearRequest, logModel, &LogModel::Clear);
+    connect(ui->toolButton_clearFilter, &QToolButton::clicked, ui->search, &LineEditEx::clear);
+    connect(ui->toolButton_clearConsole, &QToolButton::clicked, logModel, &LogModel::Clear);
     connect(ui->filter, &CheckableComboBox::selectedUserDataChanged, logFilterModel, &LogFilterModel::SetFilters);
-    connect(ui->search, &LineEditEx::textUpdated, this, &LogWidget::OnTextFilterChanged);
-    connect(logFilterModel, &LogFilterModel::filterStringChanged, ui->search, &LineEditEx::setText);
+    connect(ui->search, &LineEditEx::textUpdated, logFilterModel, &LogFilterModel::setFilterFixedString);
     connect(ui->log->model(), &QAbstractItemModel::rowsAboutToBeInserted, this, &LogWidget::OnBeforeAdded);
-    connect(ui->log->model(), &QAbstractItemModel::rowsInserted, this, &LogWidget::OnRowAdded);
-    ui->filter->selectUserData(logFilterModel->GetFilters());
+    connect(ui->log, &QListView::clicked, this, &LogWidget::OnItemClicked);
+    scrollTimer = new QTimer(this);
+    scrollTimer->setSingleShot(true);
+    scrollTimer->setInterval(0);
+    connect(scrollTimer, &QTimer::timeout, this, &LogWidget::UpdateScroll);
 }
 
 LogWidget::~LogWidget()
@@ -43,17 +48,17 @@ LogWidget::~LogWidget()
     delete ui;
 }
 
-LogModel* LogWidget::Model() const
+void LogWidget::SetConvertFunction(LogModel::ConvertFunc func)
 {
-    return logModel;
+    logModel->SetConvertFunction(func);
 }
 
 QByteArray LogWidget::Serialize() const
 {
     QByteArray retData;
     QDataStream stream(&retData, QIODevice::WriteOnly);
-    stream << logFilterModel->GetFilterString();
-    stream << logFilterModel->GetFilters();
+    stream << ui->search->text();
+    stream << ui->filter->selectedUserData();
     return retData;
 }
 
@@ -68,13 +73,18 @@ void LogWidget::Deserialize(const QByteArray& data)
     }
     QVariantList logLevels;
     stream >> logLevels;
+
     if (stream.status() == QDataStream::ReadCorruptData)
     {
         return;
     }
-    logFilterModel->SetFilterString(filterString);
-    logFilterModel->SetFilters(logLevels);
+    ui->search->setText(filterString);
     ui->filter->selectUserData(logLevels);
+}
+
+void LogWidget::AddMessage(DAVA::Logger::eLogLevel ll, const char* msg)
+{
+    logModel->AddMessage(ll, msg);
 }
 
 void LogWidget::AddResultList(const DAVA::ResultList &resultList)
@@ -96,11 +106,6 @@ void LogWidget::AddResultList(const DAVA::ResultList &resultList)
         }
         logModel->AddMessage(level, QString::fromStdString(result.message));
     }
-}
-
-void LogWidget::OnTextFilterChanged(const QString& text)
-{
-    logFilterModel->SetFilterString(text);
 }
 
 void LogWidget::FillFiltersCombo()
@@ -170,34 +175,31 @@ void LogWidget::OnCopy()
         sortedSelection[realIdx] = index;
     }
 
-    QString text;
-    QTextStream ss(&text);
+    QStringList strList;
     for (auto it = sortedSelection.constBegin(); it != sortedSelection.constEnd(); ++it)
     {
-        ss << it.value().data(Qt::DisplayRole).toString() << "\n";
+        strList << it.value().data(Qt::DisplayRole).toString();
     }
-    ss.flush();
-
+    QString text = strList.join('\n');
     QClipboard* clipboard = QApplication::clipboard();
     clipboard->setText(text);
 }
 
-void LogWidget::OnClear()
-{
-    logModel->removeRows(0, logModel->rowCount());
-}
-
 void LogWidget::OnBeforeAdded()
 {
-    onBottom = ui->log->verticalScrollBar()->value() == ui->log->verticalScrollBar()->maximum();
-}
-
-
-void LogWidget::OnRowAdded()
-{
+    bool onBottom = ui->log->verticalScrollBar()->value() == ui->log->verticalScrollBar()->maximum();
     if (onBottom)
     {
-        ui->log->scrollToBottom();
+        scrollTimer->start();
     }
 }
 
+void LogWidget::UpdateScroll()
+{
+    ui->log->scrollToBottom();
+}
+
+void LogWidget::OnItemClicked(const QModelIndex &index)
+{
+   emit ItemClicked(logFilterModel->data(index, LogModel::INTERNAL_DATA_ROLE).toString());
+};
