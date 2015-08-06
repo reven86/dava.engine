@@ -65,7 +65,7 @@ if( ANDROID )
     set ( FRAMEWORK_DEFINITIONS  ${FRAMEWORK_DEFINITIONS} -D__ANDROID__ )
     set ( LIBRARY_OUTPUT_PATH    ${THIRD_PARTY_LIBRARIES_PATH} )
 
-    set ( IGNORED_RHI_FOLDER "Metal" "DX9" )
+    set ( IGNORED_RHI_FOLDER "Metal" "DX9" "DX11" )
 
 elseif( MACOS )
     find_package( ZLIB )
@@ -93,7 +93,7 @@ elseif( MACOS )
     file ( GLOB LIB_LIST "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/*.a" )
     list ( APPEND LIST_SHARED_LIBRARIES ${LIB_LIST}  )   
     
-    set ( IGNORED_RHI_FOLDER "Metal" "DX9" )
+    set ( IGNORED_RHI_FOLDER "Metal" "DX9" "DX11" )
 
 elseif( IOS )  
     find_package( ZLIB )
@@ -128,7 +128,7 @@ elseif( IOS )
     file ( GLOB RESOURCE "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/*.a" )
     list ( APPEND LIST_SHARED_LIBRARIES ${RESOURCE}  )    
 
-    set ( IGNORED_RHI_FOLDER "DX9" )
+    set ( IGNORED_RHI_FOLDER "DX9" "DX11" )
 
 elseif ( WINDOWS_UAP )
     file ( GLOB DEBUG_LIB_LIST "${DAVA_WIN_UAP_LIBRARIES_PATH_DEBUG}/*.lib" )
@@ -151,7 +151,8 @@ elseif( WIN32 )
     list ( APPEND LIST_SHARED_LIBRARIES_RELEASE ${LIB_LIST}  )
 
 #    list ( APPEND LIST_SHARED_LIBRARIES         "Wininet.lib" "opengl32.lib" "ws2_32.lib" "winmm.lib" "wldap32.lib" "iphlpapi.lib" "Gdi32.lib" "glu32.lib" "psapi.lib" "dbghelp.lib" "$ENV{DXSDK_DIR}/lib/x86/d3d9.lib" "$ENV{DXSDK_DIR}/lib/x86/d3dx9.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/d3d11.lib" "$ENV{DXSDK_DIR}/lib/x86/d3dx11.lib" "$ENV{DXSDK_DIR}/lib/x86/d3dcompiler.lib" "$ENV{DXSDK_DIR}/lib/x86/dxguid.lib" )
-    list ( APPEND LIST_SHARED_LIBRARIES         "Wininet.lib" "opengl32.lib" "ws2_32.lib" "winmm.lib" "wldap32.lib" "iphlpapi.lib" "Gdi32.lib" "glu32.lib" "psapi.lib" "dbghelp.lib" "$ENV{DXSDK_DIR}/lib/x86/d3d9.lib" "$ENV{DXSDK_DIR}/lib/x86/d3dx9.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3d11.lib" "$ENV{DXSDK_DIR}/lib/x86/d3dcompiler.lib" "$ENV{DXSDK_DIR}/lib/x86/dxguid.lib" )
+#    list ( APPEND LIST_SHARED_LIBRARIES         "Wininet.lib" "opengl32.lib" "ws2_32.lib" "winmm.lib" "wldap32.lib" "iphlpapi.lib" "Gdi32.lib" "glu32.lib" "psapi.lib" "dbghelp.lib" "$ENV{DXSDK_DIR}/lib/x86/d3d9.lib" "$ENV{DXSDK_DIR}/lib/x86/d3dx9.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3d11.lib" "$ENV{DXSDK_DIR}/lib/x86/d3dcompiler.lib" "$ENV{DXSDK_DIR}/lib/x86/dxguid.lib" )
+    list ( APPEND LIST_SHARED_LIBRARIES         "Wininet.lib" "opengl32.lib" "ws2_32.lib" "winmm.lib" "wldap32.lib" "iphlpapi.lib" "Gdi32.lib" "glu32.lib" "psapi.lib" "dbghelp.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3d9.lib" "$ENV{DXSDK_DIR}/lib/x86/d3dx9.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3d11.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3dcompiler.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/dxguid.lib" )
 
     list ( APPEND LIST_SHARED_LIBRARIES_RELEASE "msvcrt.lib"  )
     list ( APPEND LIST_SHARED_LIBRARIES_DEBUG   "msvcrtd.lib" )
