@@ -32,6 +32,7 @@
 #ifdef __DAVAENGINE_MACOS__
 
 #include "Platform/TemplateMacOS/DeviceInfoMacOS.h"
+#include "Base/GlobalEnum.h"
 
 #import <Foundation/NSLocale.h>
 #import <Foundation/NSTimeZone.h>
@@ -174,7 +175,7 @@ int32 DeviceInfoPrivate::GetCpuCount()
     return (int32)[[NSProcessInfo processInfo] processorCount];
 }
 
-bool DeviceInfoPrivate::IsHIDConnect(DeviceInfo::eHIDType hid)
+bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType hid)
 {
         DVASSERT(false && "Not Implement");
         return false;

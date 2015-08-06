@@ -33,6 +33,7 @@
 #include "Utils/Utils.h"
 
 #include "Platform/TemplateWin32/CorePlatformWinUAP.h"
+#include "Base/GlobalEnum.h"
 
 using namespace Windows::UI::Xaml;
 using namespace Windows::UI::ViewManagement;

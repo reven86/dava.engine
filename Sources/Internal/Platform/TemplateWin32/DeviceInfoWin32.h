@@ -30,10 +30,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef __FRAMEWORK__DEVICEINFO_WIN32__
 #define __FRAMEWORK__DEVICEINFO_WIN32__
 
-#include "Base/Platform.h"
+#include "Base/BaseTypes.h"
 
 #if defined(__DAVAENGINE_WIN32__)
 
+#include "Base/Platform.h"
 #include "Platform/DeviceInfo.h"
 
 namespace DAVA

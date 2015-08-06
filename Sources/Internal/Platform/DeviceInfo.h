@@ -135,6 +135,7 @@ public:
             , emulated(false)
         {}
     };
+
     //human interface device(HID)
     enum eHIDType
     {
@@ -150,15 +151,6 @@ public:
     };
     using HIDCallBackFunc = std::function<void(eHIDType, bool)>;
     using ListForStorageInfo = List<StorageInfo>;
-//     ///static SIGNAL_STRENGTH_UNKNOWN;
-//     using ScreenInfo = deviceInfoTypes::ScreenInfo;
-//     using ePlatform = deviceInfoTypes::ePlatform;
-//     using eNetworkType = deviceInfoTypes::eNetworkType;
-//     using NetworkInfo = deviceInfoTypes::NetworkInfo;
-// //    using eStorageType = deviceInfoTypes::eStorageType;
-//     using StorageInfo = deviceInfoTypes::StorageInfo;
-//     using eHIDType = deviceInfoTypes::eHIDType;
-//     using HIDCallBackFunc = deviceInfoTypes::HIDCallBackFunc;
 
     static ePlatform GetPlatform();
     static String GetPlatformString();

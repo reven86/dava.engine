@@ -58,7 +58,7 @@ public:
     int GetHTTPProxyPort();
     DeviceInfo::ScreenInfo& GetScreenInfo();
     int GetZBufferSize();
-    DeviceInfo::eGPUFamily GetGPUFamily();
+    eGPUFamily GetGPUFamily();
     DeviceInfo::NetworkInfo GetNetworkInfo();
     List<DeviceInfo::StorageInfo> GetStoragesList();
     int32 GetCpuCount();

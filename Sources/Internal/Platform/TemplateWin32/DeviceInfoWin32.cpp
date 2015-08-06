@@ -26,14 +26,15 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "Base/BaseTypes.h"
+
+#if defined(__DAVAENGINE_WIN32__)
+
 #include "Platform/DeviceInfo.h"
 #include "Utils/StringFormat.h"
 #include "Utils/MD5.h"
 #include "Utils/Utils.h"
 #include "Debug/DVAssert.h"
-
-#if defined(__DAVAENGINE_WIN32__)
-
 #include "Platform/TemplateWin32/DeviceInfoWin32.h"
 #include "Base/GlobalEnum.h"
 #include "winsock2.h"

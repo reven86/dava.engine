@@ -26,11 +26,11 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#include "Utils/Utils.h"
+#include "Base/BaseTypes.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 
+#include "Utils/Utils.h"
 #include "DeviceInfoAndroid.h"
 #include "ExternC/AndroidLayer.h"
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
@@ -162,19 +162,17 @@ DeviceInfo::NetworkInfo DeviceInfoPrivate::GetNetworkInfo()
 
 List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetStoragesList()
 {
-    JniDeviceInfo jniDeviceInfo;
-
     List<DeviceInfo::StorageInfo> l;
 
-    DeviceInfo::StorageInfo internal = jniDeviceInfo.GetInternalStorageInfo();
-    DeviceInfo::StorageInfo external = jniDeviceInfo.GetPrimaryExternalStorageInfo();
-    List<DeviceInfo::StorageInfo> secondaryList = jniDeviceInfo.GetSecondaryExternalStoragesList();
+    DeviceInfo::StorageInfo internal = GetInternalStorageInfo();
+    DeviceInfo::StorageInfo external = GetPrimaryExternalStorageInfo();
+    List<DeviceInfo::StorageInfo> secondaryList = GetSecondaryExternalStoragesList();
 
-    if (internal.type != STORAGE_TYPE_UNKNOWN)
+    if (internal.type != DeviceInfo::STORAGE_TYPE_UNKNOWN)
     {
         l.push_back(internal);
     }
-    if (external.type != STORAGE_TYPE_UNKNOWN)
+    if (external.type != DeviceInfo::STORAGE_TYPE_UNKNOWN)
     {
         l.push_back(external);
     }
@@ -197,13 +195,13 @@ void DeviceInfoPrivate::InitializeScreenInfo()
     screenInfo.scale = 1;
 }
 
-bool DeviceInfoPrivate::IsHIDConnected(eHIDType hid)
+bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType hid)
 {
     DVASSERT(false && "Not Implement");
     return false;
 }
 
-void DeviceInfoPrivate::SubscribeHID(eHIDType hid, HIDCallBackFunc&& func)
+void DeviceInfoPrivate::SubscribeHID(DeviceInfo::eHIDType hid, DeviceInfo::HIDCallBackFunc&& func)
 {
     DVASSERT(false && "Not Implement");
 }
@@ -220,9 +218,9 @@ bool DeviceInfoPrivate::IsRunningOnEmulator()
     return false;
 }
 
-StorageInfo DeviceInfoPrivate::StorageInfoFromJava(jobject object)
+DeviceInfo::StorageInfo DeviceInfoPrivate::StorageInfoFromJava(jobject object)
 {
-	StorageInfo info;
+	DeviceInfo::StorageInfo info;
 
 	if (object)
 	{
@@ -266,7 +264,7 @@ int32 DeviceInfoPrivate::GetSignalStrength(int32 networkType)
     return getSignalStrength(networkType);
 }
 
-StorageInfo DeviceInfoPrivate::GetInternalStorageInfo()
+DeviceInfo::StorageInfo DeviceInfoPrivate::GetInternalStorageInfo()
 {
 	JNIEnv *env = JNI::GetEnv();
 	jmethodID mid = env->GetStaticMethodID(jniDeviceInfo, "GetInternalStorageInfo", "()Lcom/dava/framework/JNIDeviceInfo$StorageInfo;");
@@ -292,7 +290,7 @@ bool DeviceInfoPrivate::IsPrimaryExternalStoragePresent()
 	return isPrimaryExternalStoragePresent();
 }
 
-StorageInfo DeviceInfoPrivate::GetPrimaryExternalStorageInfo()
+DeviceInfo::StorageInfo DeviceInfoPrivate::GetPrimaryExternalStorageInfo()
 {
 	DeviceInfo::StorageInfo info;
 	if (!IsPrimaryExternalStoragePresent())

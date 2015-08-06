@@ -26,11 +26,9 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "DeviceInfo.h"
-#include "Base/GlobalEnum.h"
+#include "Platform/DeviceInfo.h"
 
 #if defined(__DAVAENGINE_IPHONE__)
-    #include "TargetConditionals.h"
     #include "Platform/TemplateiOS/DeviceInfoiOS.h"
 #elif defined(__DAVAENGINE_MACOS__)
     #include "Platform/TemplateMacOS/DeviceInfoMacOS.h"
@@ -168,8 +166,8 @@ bool DeviceInfo::IsRunningOnEmulator()
 
 DeviceInfoPrivate* DeviceInfo::GetPrivateImpl()
 {
-    static DeviceInfoPrivate* privateImpl = new DeviceInfoPrivate();
-    return privateImpl;
+    static DeviceInfoPrivate privateImpl;
+    return &privateImpl;
 }
 
 }

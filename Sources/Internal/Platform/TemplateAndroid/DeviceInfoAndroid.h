@@ -30,13 +30,13 @@
 #ifndef __FRAMEWORK__DEVICEINFOANDROID__
 #define __FRAMEWORK__DEVICEINFOANDROID__
 
-#include "JniExtensions.h"
 #include "Base/BaseTypes.h"
-
-#include "Platform/DeviceInfo.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 
+#include "JniExtensions.h"
+#include "Base/BaseTypes.h"
+#include "Platform/DeviceInfo.h"
 #include "Platform/TemplateAndroid/JniHelpers.h"
 
 namespace DAVA
@@ -61,7 +61,7 @@ public:
     int GetHTTPProxyPort();
     DeviceInfo::ScreenInfo& GetScreenInfo();
     int GetZBufferSize();
-    DeviceInfo::eGPUFamily GetGPUFamily();
+    eGPUFamily GetGPUFamily();
     DeviceInfo::NetworkInfo GetNetworkInfo();
     List<DeviceInfo::StorageInfo> GetStoragesList();
     int32 GetCpuCount();

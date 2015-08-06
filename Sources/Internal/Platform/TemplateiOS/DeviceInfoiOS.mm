@@ -26,10 +26,13 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "Base/BaseTypes.h"
+
 #ifdef __DAVAENGINE_IPHONE__
 
-#include "Platform/TemplateiOS/DeviceInfoPrivateiOS.h"
+#include "Platform/TemplateiOS/DeviceInfoiOS.h"
 #include "Utils/StringFormat.h"
+#include "Base/GlobalEnum.h"
 
 #import <UIKit/UIDevice.h>
 #import <UIKit/UIKit.h>
@@ -46,18 +49,18 @@ DeviceInfoPrivate::DeviceInfoPrivate()
 {
 }
 
-ePlatform DeviceInfoPrivate::GetPlatform()
+DeviceInfo::ePlatform DeviceInfoPrivate::GetPlatform()
 {
 	#if defined(TARGET_IPHONE_SIMULATOR) && TARGET_IPHONE_SIMULATOR == 1
-		return 	PLATFORM_IOS_SIMULATOR;
+		return 	DeviceInfo::PLATFORM_IOS_SIMULATOR;
 	#else
-		return 	PLATFORM_IOS;
+		return 	DeviceInfo::PLATFORM_IOS;
 	#endif
 }
 
 String DeviceInfoPrivate::GetPlatformString()
 {
-    return GlobalEnumMap<ePlatform>::Instance()->ToString(GetPlatform());
+    return GlobalEnumMap<DeviceInfo::ePlatform>::Instance()->ToString(GetPlatform());
 }
 
 String DeviceInfoPrivate::GetVersion()
@@ -75,7 +78,7 @@ String DeviceInfoPrivate::GetModel()
 {
 	String model = "";
 
-	if (GetPlatform() == PLATFORM_IOS_SIMULATOR)
+	if (GetPlatform() == DeviceInfo::PLATFORM_IOS_SIMULATOR)
 	{
 		model = [[[UIDevice currentDevice] model] UTF8String];
 	}
@@ -325,16 +328,16 @@ DeviceInfo::NetworkInfo DeviceInfoPrivate::GetNetworkInfo()
     static const struct
     {
         NetworkStatus platformNetworkStatus;
-        eNetworkType internalNetworkType;
+        DeviceInfo::eNetworkType internalNetworkType;
     }
     networkStatusMap[] =
     {
-        { NotReachable, NETWORK_TYPE_NOT_CONNECTED },
-        { ReachableViaWiFi, NETWORK_TYPE_WIFI },
-        { ReachableViaWWAN, NETWORK_TYPE_CELLULAR }
+        { NotReachable, DeviceInfo::NETWORK_TYPE_NOT_CONNECTED },
+        { ReachableViaWiFi, DeviceInfo::NETWORK_TYPE_WIFI },
+        { ReachableViaWWAN, DeviceInfo::NETWORK_TYPE_CELLULAR }
     };
 
-    NetworkInfo networkInfo;
+    DeviceInfo::NetworkInfo networkInfo;
     
     Reachability *reachability = [Reachability reachabilityForInternetConnection];
     [reachability startNotifier];
@@ -386,13 +389,13 @@ int32 DeviceInfoPrivate::GetCpuCount()
     return (int32)[[NSProcessInfo processInfo] processorCount];
 }
 
-bool DeviceInfoPrivate::IsHIDConnect(eHIDType hid)
+bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType hid)
 {
         DVASSERT(false && "Not Implement");
         return false;
 }
 
-void DeviceInfoPrivate::SubscribeHID(eHIDType hid, HIDCallBackFunc&& func)
+void DeviceInfoPrivate::SubscribeHID(DeviceInfo::eHIDType hid, DeviceInfo::HIDCallBackFunc&& func)
 {
         DVASSERT(false && "Not Implement");
 }
@@ -402,13 +405,13 @@ bool DeviceInfoPrivate::IsMobileMode()
         DVASSERT(false && "Not Implement");
         return false;
 }
-
+/*
 bool DeviceInfoPrivate::IsRunningOnEmulator()
 {
         DVASSERT(false && "Not Implement");
         return false;
 }
-
+*/
 }
 
 #endif
