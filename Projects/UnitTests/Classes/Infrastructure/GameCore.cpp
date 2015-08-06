@@ -40,7 +40,7 @@ namespace
 {
 
 // List of semicolon separated names specifying which test classes should run
-String runOnlyTheseTestClasses = "FunctionBindSignalTest";
+String runOnlyTheseTestClasses = "";
 // List of semicolon separated names specifying which test classes shouldn't run. This list takes precedence over runOnlyTheseTests
 String disableTheseTestClasses = "";
 

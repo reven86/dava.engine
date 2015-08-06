@@ -172,17 +172,8 @@ public:
 template<typename T>
 auto MakeSharedObject(T *obj) -> typename std::enable_if<std::is_base_of<BaseObject, T>::value, std::shared_ptr<T>>::type
 {
-    std::shared_ptr<T> ret;
-
-    if (nullptr != obj)
-    {
-        obj->Retain();
-        ret.reset(obj, [](T *obj) { 
-            obj->Release(); 
-        });
-    }
-
-    return ret;
+    DVASSERT(nullptr != obj);
+    return std::shared_ptr<T>(obj, [](T *obj) { obj->Release(); });
 }
 
 /** 
