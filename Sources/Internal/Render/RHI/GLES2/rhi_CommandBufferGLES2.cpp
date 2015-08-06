@@ -790,6 +790,7 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
                     if( passCfg.depthStencilBuffer.loadAction == LOADACTION_CLEAR )
                     {
                         #if defined(__DAVAENGINE_IPHONE__)
+                        glStencilMask( 0xFFFFFFFF );
                         glClearDepthf( passCfg.depthStencilBuffer.clearDepth );
                         #else
                         glClearDepth( passCfg.depthStencilBuffer.clearDepth );
