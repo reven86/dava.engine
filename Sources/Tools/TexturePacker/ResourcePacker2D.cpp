@@ -411,7 +411,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
                 ScopedPtr<File> md5File(File::Create(md5FileName, File::OPEN | File::READ));
                 if (md5File)
                 {   //invalidation of primary key
-                    auto read = md5File->Read(cacheKey.keyData.hash.primary, MD5::DIGEST_SIZE);
+                    auto read = md5File->Read(cacheKey.data(), MD5::DIGEST_SIZE);
                     DVASSERT(read == MD5::DIGEST_SIZE);
                 }
 
@@ -423,7 +423,9 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
 
                 auto strDataPtr = cachedParams.c_str();
                 auto strDataSize = cachedParams.size();
-                MD5::ForData(reinterpret_cast<const uint8 *>(strDataPtr), static_cast<uint32>(strDataSize), cacheKey.keyData.hash.secondary);
+                
+                DVASSERT(cacheKey.size() >= MD5::DIGEST_SIZE * 2); //To inform about crashes
+                MD5::ForData(reinterpret_cast<const uint8 *>(strDataPtr), static_cast<uint32>(strDataSize), cacheKey.data() + MD5::DIGEST_SIZE);
             }
 
             bool needRepack = !GetFilesFromCache(cacheKey, inputPath, outputPath);
@@ -600,7 +602,7 @@ bool ResourcePacker2D::GetFilesFromCache(const AssetCache::CacheItemKey &key, co
     arguments.push_back("get");
 
     arguments.push_back("-h");
-    arguments.push_back(key.ToString());
+    arguments.push_back(AssetCache::KeyToString(key));
 
     arguments.push_back("-f");
     arguments.push_back(outputPath.GetAbsolutePathname());
@@ -691,7 +693,7 @@ bool ResourcePacker2D::AddFilesToCache(const AssetCache::CacheItemKey &key, cons
         arguments.push_back("add");
 
         arguments.push_back("-h");
-        arguments.push_back(key.ToString());
+        arguments.push_back(AssetCache::KeyToString(key));
 
         arguments.push_back("-f");
         arguments.push_back(fileListString);

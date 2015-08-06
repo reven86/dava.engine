@@ -30,27 +30,27 @@
 #ifndef __DAVAENGINE_ASSET_CACHE_ITEM_KEY_H__
 #define __DAVAENGINE_ASSET_CACHE_ITEM_KEY_H__
 
-//#include "AssetCache/DoubleMD5Key.h"
-//
-//namespace DAVA
-//{
-//namespace AssetCache
-//{
-//using CacheItemKey = DAVA::AssetCache::DoubleMD5Key;
-//}; // end of namespace AssetCache
-//}; // end of namespace DAVA
-
-
-#include "AssetCache/MD5Key.h"
+#include "AssetCache/DoubleMD5Key.h"
 
 namespace DAVA
 {
     namespace AssetCache
     {
-        using CacheItemKey = DAVA::AssetCache::MD5Key;
-        
-    } // end of namespace AssetCache
-} // end of namespace DAVA
+        using CacheItemKey = DAVA::AssetCache::DoubleMD5Key;
+    }; // end of namespace AssetCache
+}; // end of namespace DAVA
+
+
+//#include "AssetCache/MD5Key.h"
+//
+//namespace DAVA
+//{
+//    namespace AssetCache
+//    {
+//        using CacheItemKey = DAVA::AssetCache::MD5Key;
+//        
+//    } // end of namespace AssetCache
+//} // end of namespace DAVA
 
 
 namespace std
