@@ -310,12 +310,20 @@ SetupDispatch( Dispatch* dispatch )
 
 
 void
-SetToRHI( Handle tex, unsigned unit_i )
+SetToRHIFragment( Handle tex, unsigned unit_i )
 {
     TextureDX11_t*  self = TextureDX11Pool::Get( tex );
     
     _D3D11_ImmediateContext->PSSetShaderResources( unit_i, 1, &(self->tex2d_srv) );
     self->lastUnit = unit_i;
+}
+
+void
+SetToRHIVertex( Handle tex, unsigned unit_i )
+{
+    TextureDX11_t*  self = TextureDX11Pool::Get( tex );
+    
+    _D3D11_ImmediateContext->VSSetShaderResources( unit_i, 1, &(self->tex2d_srv) );
 }
 
 

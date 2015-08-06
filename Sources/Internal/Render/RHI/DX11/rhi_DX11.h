@@ -81,7 +81,8 @@ void        InvalidateAllConstBufferInstances();
 namespace TextureDX11
 {
 void        SetupDispatch( Dispatch* dispatch );
-void        SetToRHI( Handle tex, unsigned unitIndex );
+void        SetToRHIFragment( Handle tex, unsigned unitIndex );
+void        SetToRHIVertex( Handle tex, unsigned unitIndex );
 void        SetRenderTarget( Handle color, Handle depthstencil );
 Size2i      Size( Handle tex );
 }

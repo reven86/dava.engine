@@ -141,7 +141,7 @@ elseif ( WINDOWS_UAP )
     #list ( APPEND LIST_SHARED_LIBRARIES_RELEASE  "" )
     #list ( APPEND LIST_SHARED_LIBRARIES_DEBUG   "" )
 
-    list ( APPEND LIST_SHARED_LIBRARIES    "Wininet.lib" "ws2_32.lib" "winmm.lib" "wldap32.lib" "iphlpapi.lib" "Gdi32.lib" "dbghelp.lib" "d2d1.lib" "d3d11.lib" "d3dx11.lib" "d3dcompiler.lib" "dxgi.lib" "windowscodecs.lib" "dwrite.lib" )
+    list ( APPEND LIST_SHARED_LIBRARIES    "Wininet.lib" "ws2_32.lib" "winmm.lib" "wldap32.lib" "iphlpapi.lib" "Gdi32.lib" "dbghelp.lib" "d2d1.lib" "d3d11.lib" "d3dcompiler.lib" "dxgi.lib" "windowscodecs.lib" "dwrite.lib" )
     
     #choose target architecture libraries
     if( "${CMAKE_GENERATOR_PLATFORM}" STREQUAL "ARM" )
@@ -171,9 +171,9 @@ elseif( WIN32 )
     file ( GLOB LIB_LIST "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/*.lib" )
     list ( APPEND LIST_SHARED_LIBRARIES_RELEASE ${LIB_LIST}  )
 
-#    list ( APPEND LIST_SHARED_LIBRARIES         "Wininet.lib" "opengl32.lib" "ws2_32.lib" "winmm.lib" "wldap32.lib" "iphlpapi.lib" "Gdi32.lib" "glu32.lib" "psapi.lib" "dbghelp.lib" "$ENV{DXSDK_DIR}/lib/x86/d3d9.lib" "$ENV{DXSDK_DIR}/lib/x86/d3dx9.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/d3d11.lib" "$ENV{DXSDK_DIR}/lib/x86/d3dx11.lib" "$ENV{DXSDK_DIR}/lib/x86/d3dcompiler.lib" "$ENV{DXSDK_DIR}/lib/x86/dxguid.lib" )
-#    list ( APPEND LIST_SHARED_LIBRARIES         "Wininet.lib" "opengl32.lib" "ws2_32.lib" "winmm.lib" "wldap32.lib" "iphlpapi.lib" "Gdi32.lib" "glu32.lib" "psapi.lib" "dbghelp.lib" "$ENV{DXSDK_DIR}/lib/x86/d3d9.lib" "$ENV{DXSDK_DIR}/lib/x86/d3dx9.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3d11.lib" "$ENV{DXSDK_DIR}/lib/x86/d3dcompiler.lib" "$ENV{DXSDK_DIR}/lib/x86/dxguid.lib" )
     list ( APPEND LIST_SHARED_LIBRARIES         "Wininet.lib" "opengl32.lib" "ws2_32.lib" "winmm.lib" "wldap32.lib" "iphlpapi.lib" "Gdi32.lib" "glu32.lib" "psapi.lib" "dbghelp.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3d9.lib" "$ENV{DXSDK_DIR}/lib/x86/d3dx9.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3d11.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3dcompiler.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/dxguid.lib" )
+#    list ( APPEND LIST_SHARED_LIBRARIES         "Wininet.lib" "opengl32.lib" "ws2_32.lib" "winmm.lib" "wldap32.lib" "iphlpapi.lib" "Gdi32.lib" "glu32.lib" "psapi.lib" "dbghelp.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3d9.lib"  "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3d11.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3dcompiler.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/dxguid.lib" )
+
 
     list ( APPEND LIST_SHARED_LIBRARIES_RELEASE "msvcrt.lib"  )
     list ( APPEND LIST_SHARED_LIBRARIES_DEBUG   "msvcrtd.lib" )

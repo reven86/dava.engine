@@ -9,9 +9,7 @@
     #include <windows.h>
 
     #pragma warning( disable: 7 9 193 271 304 791 )
-//    #include <d3d9types.h>
-//    #include <d3d9.h>
-#include <dxgi.h>
+    #include <dxgi.h>
     #include <d3d11.h>
     
     #include "../rhi_Type.h"

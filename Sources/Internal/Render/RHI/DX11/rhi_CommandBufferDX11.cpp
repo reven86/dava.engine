@@ -87,8 +87,9 @@ CommandDX11
     DX11__SET_SCISSOR_RECT,
     DX11__SET_VIEWPORT,
     DX11__SET_VERTEX_PROG_CONST_BUFFER,
+    DX11__SET_VERTEX_TEXTURE,
     DX11__SET_FRAGMENT_PROG_CONST_BUFFER,
-    DX11__SET_TEXTURE,
+    DX11__SET_FRAGMENT_TEXTURE,
 
     DX11__SET_DEPTHSTENCIL_STATE,
     DX11__SET_SAMPLER_STATE,
@@ -421,6 +422,7 @@ dx11_CommandBuffer_SetVertexTexture( Handle cmdBuf, uint32 unitIndex, Handle tex
 {
 #if RHI__DX11_USE_DEFERRED_CONTEXT
 #else
+    CommandBufferPool::Get(cmdBuf)->Command( DX11__SET_VERTEX_TEXTURE, tex, unitIndex );
 #endif
 }
 
@@ -481,7 +483,7 @@ dx11_CommandBuffer_SetFragmentTexture( Handle cmdBuf, uint32 unitIndex, Handle t
 {
 #if RHI__DX11_USE_DEFERRED_CONTEXT
 #else
-        CommandBufferPool::Get(cmdBuf)->Command( DX11__SET_TEXTURE, tex, unitIndex );
+    CommandBufferPool::Get(cmdBuf)->Command( DX11__SET_FRAGMENT_TEXTURE, tex, unitIndex );
 #endif
 }
 
@@ -1285,12 +1287,21 @@ SCOPED_FUNCTION_TIMING();
                 c += 2;
             }   break;
 
-            case DX11__SET_TEXTURE :
+            case DX11__SET_FRAGMENT_TEXTURE :
             {
                 Handle      tex    = Handle(arg[0]);
                 unsigned    unit_i = unsigned(arg[1]);
 
-                TextureDX11::SetToRHI( tex, unit_i );
+                TextureDX11::SetToRHIFragment( tex, unit_i );
+                c += 2;
+            }   break;
+
+            case DX11__SET_VERTEX_TEXTURE :
+            {
+                Handle      tex    = Handle(arg[0]);
+                unsigned    unit_i = unsigned(arg[1]);
+
+                TextureDX11::SetToRHIVertex( tex, unit_i );
                 c += 2;
             }   break;
 
