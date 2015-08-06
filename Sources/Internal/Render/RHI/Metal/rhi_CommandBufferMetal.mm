@@ -483,7 +483,7 @@ metal_CommandBuffer_DrawIndexedPrimitive( Handle cmdBuf, PrimitiveType type, uin
         
         case PRIMITIVE_TRIANGLESTRIP :
             ptype = MTLPrimitiveTypeTriangleStrip;
-            v_cnt = 2 + count;
+            i_cnt = 2 + count;
             break;
         
         case PRIMITIVE_LINELIST :
