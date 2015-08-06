@@ -59,7 +59,15 @@ int ValueProperty::GetCount() const
 
 AbstractProperty *ValueProperty::GetProperty(int index) const
 {
-    return children[index];
+    if (0 <= index && index < children.size())
+    {
+        return children[index];
+    }
+    else
+    {
+        DVASSERT(false);
+        return nullptr;
+    }
 }
 
 void ValueProperty::Refresh(DAVA::int32 refreshFlags)

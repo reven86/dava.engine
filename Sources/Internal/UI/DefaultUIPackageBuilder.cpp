@@ -119,7 +119,7 @@ void DefaultUIPackageBuilder::EndPackage()
         const Vector<UIPriorityStyleSheet>& packageStyleSheets = importedPackage->GetControlPackageContext()->GetSortedStyleSheets();
         for (const UIPriorityStyleSheet& packageStyleSheet : packageStyleSheets)
         {
-            styleSheets.push_back(UIPriorityStyleSheet(packageStyleSheet.GetStyleSheet(), packageStyleSheet.GetPriority() + 1));
+            styleSheets.emplace_back(UIPriorityStyleSheet(packageStyleSheet.GetStyleSheet(), packageStyleSheet.GetPriority() + 1));
         }
     }
 

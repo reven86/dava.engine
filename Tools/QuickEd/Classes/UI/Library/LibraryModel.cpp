@@ -75,12 +75,10 @@ LibraryModel::LibraryModel(PackageNode *_root, QObject *parent)
     
     for (QString &controlName : controls)
     {
-        UIControl *control = ObjectFactory::Instance()->New<UIControl>(controlName.toStdString());
+        ScopedPtr<UIControl> control(ObjectFactory::Instance()->New<UIControl>(controlName.toStdString()));
         if (control)
         {
-            ControlNode *node = ControlNode::CreateFromControl(control);
-            SafeRelease(control);
-            defaultControls.push_back(node);
+            defaultControls.push_back(ControlNode::CreateFromControl(control));
         }
         else
         {

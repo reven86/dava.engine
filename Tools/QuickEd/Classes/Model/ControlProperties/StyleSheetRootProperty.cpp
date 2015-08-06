@@ -292,8 +292,7 @@ Vector<UIStyleSheet*> StyleSheetRootProperty::CollectStyleSheets()
     Vector<UIStyleSheet*> result;
     for (int32 i = 0; i < selectors->GetCount(); i++)
     {
-        StyleSheetSelectorProperty *selector = static_cast<StyleSheetSelectorProperty*>(selectors->GetProperty(i));
-        result.push_back(selector->GetStyleSheet());
+        result.push_back(selectors->GetProperty(i)->GetStyleSheet());
     }
     return result;
 }
@@ -303,8 +302,7 @@ DAVA::Vector<DAVA::UIStyleSheetSelectorChain> StyleSheetRootProperty::CollectSty
     Vector<UIStyleSheetSelectorChain> result;
     for (int32 i = 0; i < selectors->GetCount(); i++)
     {
-        StyleSheetSelectorProperty *selector = static_cast<StyleSheetSelectorProperty*>(selectors->GetProperty(i));
-        result.push_back(selector->GetSelectorChain());
+        result.push_back(selectors->GetProperty(i)->GetSelectorChain());
     }
     return result;
 }
@@ -314,8 +312,7 @@ DAVA::Vector<DAVA::UIStyleSheetProperty> StyleSheetRootProperty::CollectStyleShe
     Vector<UIStyleSheetProperty> properties;
     for (int32 i = 0; i < propertiesSection->GetCount(); i++)
     {
-        StyleSheetProperty *property = static_cast<StyleSheetProperty*>(propertiesSection->GetProperty(i));
-        properties.push_back(property->GetProperty());
+        properties.push_back(propertiesSection->GetProperty(i)->GetProperty());
     }
     return properties;
 }

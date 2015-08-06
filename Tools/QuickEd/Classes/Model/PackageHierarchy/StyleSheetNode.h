@@ -44,8 +44,11 @@ class StyleSheetNode : public PackageBaseNode
 {
 public:
     StyleSheetNode(const DAVA::Vector<DAVA::UIStyleSheetSelectorChain> &selectorChains, const DAVA::Vector<DAVA::UIStyleSheetProperty> &properties);
+
+protected:
     virtual ~StyleSheetNode();
 
+public:
     StyleSheetNode *Clone() const;
 
     int GetCount() const override;
