@@ -198,6 +198,7 @@ public:
     }
 };
 
+#if 0
 template<typename... Args>
 class SignalMt : public Sig11::SignalImpl<Mutex, Thread::Id, Args...>
 {
@@ -226,11 +227,11 @@ class SignalMt : public Sig11::SignalImpl<Mutex, Thread::Id, Args...>
                 // add implementation
                 // new to send fn variable directly into thread with given id = con.second.tid
                 // ...
-                static_assert(false, "This method isn't implemented yet.");
             }
         }
     }
 };
+#endif
 
 
 } // namespace DAVA
