@@ -46,6 +46,7 @@ public class InternalViewClientV14 extends WebViewClient {
         {
             this.pendingVisible = isVisible;
             
+            // Workaround: call updateVisible instantly because it will not be called on SystemDraw
             if(!isVisible) {
                 updateVisible(view);
             }
