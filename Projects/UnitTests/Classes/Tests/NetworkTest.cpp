@@ -133,30 +133,30 @@ public:
     TestEchoClient()
     {
         // Prepare data of various length
-        Vector<Parcel> a = {
-            { malloc(1), 1, 0 },
-            { malloc(1000), 1000, 0 },
-            { malloc(10000), 10000, 0 },
-            { malloc(100000), 100000, 0 },
-            { malloc(1000000), 1000000, 0 },
-            { malloc(10000000), 10000000, 0 }
-            };
+        Parcel a[] = {
+            {::operator new(1), 1, 0},
+            {::operator new(1000), 1000, 0},
+            {::operator new(10000), 10000, 0},
+            {::operator new(100000), 100000, 0},
+            {::operator new(1000000), 1000000, 0},
+            {::operator new(10000000), 10000000, 0}
+        };
         uint8 v = 'A';
-        for (size_t i = 0;i < a.size();++i, ++v)
+        for (size_t i = 0;i < COUNT_OF(a);++i, ++v)
         {
             Memset(a[i].outbuf, v, a[i].length);
             parcels.push_back(a[i]);
         }
 
         // Prepare end marker
-        Parcel end = {malloc(3), 3, 0};
+        Parcel end = {::operator new(3), 3, 0};
         Memcpy(end.outbuf, "END", 3);
         parcels.push_back(end);
     }
     virtual ~TestEchoClient()
     {
         for (auto& x : parcels)
-            free(x.outbuf);
+            ::operator delete(x.outbuf);
     }
 
     void ChannelOpen() override
@@ -259,6 +259,9 @@ DAVA_TESTCLASS(NetworkTest)
     TestEchoServer echoServer;
     TestEchoClient echoClient;
 
+    NetCore::TrackId serverId = NetCore::INVALID_TRACK_ID;
+    NetCore::TrackId clientId = NetCore::INVALID_TRACK_ID;
+
     void SetUp(const String& testName) override
     {
         if (testName == "TestEcho")
@@ -272,8 +275,8 @@ DAVA_TESTCLASS(NetworkTest)
             NetConfig clientConfig = serverConfig.Mirror(IPAddress("127.0.0.1"));
 
             // Server config must be recreated first due to restrictions of service management
-            NetCore::Instance()->CreateController(serverConfig, reinterpret_cast<void*>(ECHO_SERVER_CONTEXT));
-            NetCore::Instance()->CreateController(clientConfig, reinterpret_cast<void*>(ECHO_CLIENT_CONTEXT));
+            serverId = NetCore::Instance()->CreateController(serverConfig, reinterpret_cast<void*>(ECHO_SERVER_CONTEXT));
+            clientId = NetCore::Instance()->CreateController(clientConfig, reinterpret_cast<void*>(ECHO_CLIENT_CONTEXT));
         }
     }
 
@@ -281,7 +284,14 @@ DAVA_TESTCLASS(NetworkTest)
     {
         if (testName == "TestEcho")
         {
-            NetCore::Instance()->DestroyAllControllersBlocked();
+            // Check whether DestroyControllerBlocked() really blocks until controller is destroyed
+            size_t nactive = NetCore::Instance()->ControllersCount();
+            NetCore::Instance()->DestroyControllerBlocked(serverId);
+            TEST_VERIFY(NetCore::Instance()->ControllersCount() == nactive - 1);
+            NetCore::Instance()->DestroyControllerBlocked(clientId);
+            TEST_VERIFY(NetCore::Instance()->ControllersCount() == nactive - 2);
+            serverId = NetCore::INVALID_TRACK_ID;
+            clientId = NetCore::INVALID_TRACK_ID;
         }
     }
 

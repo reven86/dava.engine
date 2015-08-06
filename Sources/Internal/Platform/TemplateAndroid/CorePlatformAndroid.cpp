@@ -122,30 +122,34 @@ namespace DAVA
 
 	void CorePlatformAndroid::RepaintView()
 	{
-		if(renderIsActive)
-		{
-			//  Control FPS
-			{
-				//Because we shouldn't sleep more than 1 frame at 60 FPS
-				static uint32 MAX_FRAME_SLEEP_TIME = 1000 / 60;
-				static uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
-				uint64 elapsedTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
-				int32 fps = RenderManager::Instance()->GetFPS();
-				if(fps > 0)
-				{
-					int64 sleepMs = (1000 / fps) - elapsedTime;
-					if(sleepMs > 0 && sleepMs <= MAX_FRAME_SLEEP_TIME)
-					{
-						Thread::Sleep(sleepMs);
-					}
-				}
-				startTime = SystemTimer::Instance()->AbsoluteMS();
-			}
-		
-			DAVA::RenderManager::Instance()->Lock();
-			Core::SystemProcessFrame();
-			DAVA::RenderManager::Instance()->Unlock();
-		}
+	    if(renderIsActive)
+	    {
+	        auto sysTimer = SystemTimer::Instance();
+	        auto sysRender = RenderManager::Instance();
+	        //  Control FPS
+	        {
+	            // we count full frame time once per cycle
+	            // C++->Java->C++(frame ended)
+	            static uint64 startTime = sysTimer->AbsoluteMS();
+
+	            uint64 elapsedTime = sysTimer->AbsoluteMS() - startTime;
+	            int32 fpsLimit = sysRender->GetFPS();
+	            if (fpsLimit > 0)
+	            {
+	                uint64 averageFrameTime = 1000UL / static_cast<uint64>(fpsLimit);
+	                if(averageFrameTime > elapsedTime)
+	                {
+	                    uint64 sleepMs = averageFrameTime - elapsedTime;
+	                    Thread::Sleep(static_cast<uint32>(sleepMs));
+	                }
+	            }
+	            startTime = sysTimer->AbsoluteMS();
+	        }
+
+	        sysRender->Lock();
+	        Core::SystemProcessFrame();
+	        sysRender->Unlock();
+	    }
 	}
 
 	void CorePlatformAndroid::ResizeView(int32 w, int32 h)
