@@ -221,6 +221,12 @@ class SignalMt : public Sig11::SignalImpl<Mutex, Thread::Id, Args...>
             else
             {
                 Function<void()> fn = std::bind(con.second.fn, std::forward<Args>(args)...);
+
+                // TODO:
+                // add implementation
+                // new to send fn variable directly into thread with given id = con.second.tid
+                // ...
+                static_assert(false, "This method isn't implemented yet.");
             }
         }
     }
