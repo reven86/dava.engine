@@ -33,6 +33,7 @@
 #include "Base/BaseTypes.h"
 
 #include "AssetCache/TCPConnection/TCPConnection.h"
+#include "AssetCache/CacheItemKey.h"
 
 namespace DAVA
 {
@@ -42,7 +43,6 @@ namespace AssetCache
 {
  
 class CachedFiles;
-class CacheItemKey;
 
     
 class ServerDelegate

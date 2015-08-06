@@ -33,6 +33,8 @@
 #include "Base/BaseTypes.h"
 
 #include "AssetCache/TCPConnection/TCPConnection.h"
+#include "AssetCache/CacheItemKey.h"
+
 
 namespace DAVA
 {
@@ -41,7 +43,6 @@ class TCPClient;
 namespace AssetCache
 {
  
-class CacheItemKey;
 class CachedFiles;
     
 class ClientListener

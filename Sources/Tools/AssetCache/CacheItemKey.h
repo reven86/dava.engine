@@ -30,59 +30,41 @@
 #ifndef __DAVAENGINE_ASSET_CACHE_ITEM_KEY_H__
 #define __DAVAENGINE_ASSET_CACHE_ITEM_KEY_H__
 
-#include "Base/BaseTypes.h"
-#include "Utils/MD5.h"
+//#include "AssetCache/DoubleMD5Key.h"
+//
+//namespace DAVA
+//{
+//namespace AssetCache
+//{
+//using CacheItemKey = DAVA::AssetCache::DoubleMD5Key;
+//}; // end of namespace AssetCache
+//}; // end of namespace DAVA
 
+
+#include "AssetCache/MD5Key.h"
 
 namespace DAVA
 {
-    
-class KeyedArchive;
-    
-namespace AssetCache
-{
-    
-class CacheItemKey
-{
-    
-public:
-    static const uint32 HASH_SIZE = MD5::DIGEST_SIZE;
-    static const uint32 INTERNAL_DATA_SIZE = MD5::DIGEST_SIZE * 2;
-    
-public:
-    
-    CacheItemKey();
-    CacheItemKey(const String &hashString);
-    
-    virtual ~CacheItemKey() = default;
-
-    void Serialize(KeyedArchive * archieve) const;
-    void Deserialize(KeyedArchive * archieve);
-
-    bool operator == (const CacheItemKey &right) const;
-    bool operator < (const CacheItemKey &right) const;
-
-    String ToString() const;
-
-public:
-    
-    union InternalData
+    namespace AssetCache
     {
-        struct Keys
-        {
-            uint8 primary[HASH_SIZE];     // hash of data files
-            uint8 secondary[HASH_SIZE];   // hash of params
-        }hash;
+        using CacheItemKey = DAVA::AssetCache::MD5Key;
         
-        uint8 internalData[INTERNAL_DATA_SIZE];
+    } // end of namespace AssetCache
+} // end of namespace DAVA
+
+
+namespace std
+{
+    template<>
+    struct hash<DAVA::AssetCache::CacheItemKey>
+    {
+        size_t operator()(const DAVA::AssetCache::CacheItemKey & key) const
+        {
+            DAVA::String keyStr = DAVA::AssetCache::KeyToString(key);
+            return std::hash<std::string>()(keyStr);
+        }
     };
-    
-    InternalData keyData;
-};
-    
-    
-}; // end of namespace AssetCache
-}; // end of namespace DAVA
+}
 
 
 #endif // __DAVAENGINE_ASSET_CACHE_ITEM_KEY_H__
