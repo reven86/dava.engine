@@ -36,9 +36,9 @@
 
 using namespace DAVA;
 
-#ifdef __DAVAENGINE_WIN32__
+#ifdef __DAVAENGINE_WINDOWS__
 
-// As soon as microsoft fully support C++11(string_literals, ) remove WIN32 part of this test
+// As soon as microsoft will fully support C++11(string_literals, ) remove WIN32 part of this test
 
 DAVA_TESTCLASS(Utf8Test)
 {
@@ -65,26 +65,32 @@ DAVA_TESTCLASS(Utf8Test)
     {
         String binaryContentUTF16LE = FileSystem::Instance()->ReadFileContents("~res:/TestData/Utf8Test/utf16le.txt");
         TEST_VERIFY(binaryContentUTF16LE.size() > 0);
-        const wchar_t* wideCStr = reinterpret_cast<const wchar_t*>(binaryContentUTF16LE.c_str());
-        WideString wideString(wideCStr, binaryContentUTF16LE.size() / sizeof(wchar_t));
+        if (binaryContentUTF16LE.empty())
+        {
+        	TEST_VERIFY(false && "no input file");
+        } else
+        {
+        	const wchar_t* wideCStr = reinterpret_cast<const wchar_t*>(binaryContentUTF16LE.c_str());
+        	WideString wideString(wideCStr, binaryContentUTF16LE.size() / sizeof(wchar_t));
 
-        String str = UTF8Utils::EncodeToUTF8(wideString);
+        	String str = UTF8Utils::EncodeToUTF8(wideString);
 
-        TEST_VERIFY(str.size() > wideString.size());
+        	TEST_VERIFY(str.size() > wideString.size());
 
-        // 'э'
-        TEST_VERIFY(0xd1 == static_cast<uint8_t>(str[0]));
-        TEST_VERIFY(0x8d == static_cast<uint8_t>(str[1]));
-        // 'т'
-        TEST_VERIFY(0xd1 == static_cast<uint8_t>(str[2]));
-        TEST_VERIFY(0x82 == static_cast<uint8_t>(str[3]));
-        // 'о'
-        TEST_VERIFY(0xd0 == static_cast<uint8_t>(str[4]));
-        TEST_VERIFY(0xbe == static_cast<uint8_t>(str[5]));
+        	// 'э'
+        	TEST_VERIFY(0xd1 == static_cast<uint8_t>(str[0]));
+        	TEST_VERIFY(0x8d == static_cast<uint8_t>(str[1]));
+        	// 'т'
+        	TEST_VERIFY(0xd1 == static_cast<uint8_t>(str[2]));
+        	TEST_VERIFY(0x82 == static_cast<uint8_t>(str[3]));
+        	// 'о'
+        	TEST_VERIFY(0xd0 == static_cast<uint8_t>(str[4]));
+        	TEST_VERIFY(0xbe == static_cast<uint8_t>(str[5]));
 
-        WideString empty;
-        str = UTF8Utils::EncodeToUTF8(empty);
-        TEST_VERIFY(str == "");
+        	WideString empty;
+        	str = UTF8Utils::EncodeToUTF8(empty);
+        	TEST_VERIFY(str == "");
+        }
     }
 };
 

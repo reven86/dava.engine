@@ -1,3 +1,6 @@
+# next line needed for teamcity special build agent to test ASAN
+MEMORY_SANITIZE := false
+
 APP_STL := gnustl_shared
 APP_CPPFLAGS := -frtti -fexceptions
 
