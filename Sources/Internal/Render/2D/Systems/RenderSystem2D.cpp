@@ -628,10 +628,12 @@ void RenderSystem2D::Flush()
         case rhi::PRIMITIVE_LINELIST:
             packet.primitiveCount = batch.count / 2;
             break;
+/*
         case rhi::PRIMITIVE_TRIANGLEFAN:
             DVASSERT(batch.count > 2);
             packet.primitiveCount = batch.count - 2;
             break;
+*/        
         case rhi::PRIMITIVE_TRIANGLELIST:
             packet.primitiveCount = batch.count / 3;
             break;
@@ -681,6 +683,7 @@ void RenderSystem2D::HardResetBatchingBuffers(uint32 verticesCount, uint32 indic
 
 void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
 {
+return;
     if (currentClip.dx == 0.f || currentClip.dy == 0.f)
     {
         // Ignore draw if clip has zero width or height.
@@ -802,6 +805,7 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
 
 void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * drawState, const Color& color)
 {
+return;
     if(!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW))
 	{
 		return;

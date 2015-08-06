@@ -425,6 +425,10 @@ dx9_CommandBuffer_DrawPrimitive( Handle cmdBuf, PrimitiveType type, uint32 count
         case PRIMITIVE_TRIANGLELIST :
             type9 = D3DPT_TRIANGLELIST;
             break;
+
+        case PRIMITIVE_TRIANGLESTRIP :
+            type9 = D3DPT_TRIANGLESTRIP;
+            break;
         
         case PRIMITIVE_LINELIST :
             type9 = D3DPT_LINELIST;
@@ -447,6 +451,10 @@ dx9_CommandBuffer_DrawIndexedPrimitive( Handle cmdBuf, PrimitiveType type, uint3
     {
         case PRIMITIVE_TRIANGLELIST :
             type9 = D3DPT_TRIANGLELIST;
+            break;
+
+        case PRIMITIVE_TRIANGLESTRIP :
+            type9 = D3DPT_TRIANGLESTRIP;
             break;
 
         case PRIMITIVE_LINELIST :

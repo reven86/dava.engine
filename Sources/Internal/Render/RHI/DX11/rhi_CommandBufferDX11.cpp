@@ -528,6 +528,11 @@ dx11_CommandBuffer_DrawPrimitive( Handle cmdBuf, PrimitiveType type, uint32 coun
             topo  = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
             break;
 
+        case PRIMITIVE_TRIANGLESTRIP :
+            v_cnt = 2 + count;
+            topo  = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
+            break;
+
         case PRIMITIVE_LINELIST :
             v_cnt = count*2;
             topo  = D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
@@ -556,6 +561,11 @@ dx11_CommandBuffer_DrawIndexedPrimitive( Handle cmdBuf, PrimitiveType type, uint
         case PRIMITIVE_TRIANGLELIST :
             i_cnt = count*3;
             topo  = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+            break;
+
+        case PRIMITIVE_TRIANGLESTRIP :
+            i_cnt = 2 + count;
+            topo  = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
             break;
 
         case PRIMITIVE_LINELIST :
