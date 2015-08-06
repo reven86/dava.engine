@@ -809,7 +809,7 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
                 
                 if( isLastInPass )
                 {
-                    glFlush();
+//                    glFlush();
 
                     if (_GLES2_Binded_FrameBuffer != _GLES2_Default_FrameBuffer)
                     {
