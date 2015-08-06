@@ -895,9 +895,7 @@ public:
 	static bool IsRuntimeFlag(const FastName& flagName);
     static bool IsRuntimeProperty(const FastName& propName);
     static bool IsRuntimeTexture(const FastName& textureName);
-
-    template<size_t size>
-    static bool IsNamePartOfArray(const FastName& fastName, Array<FastName, size> &array);
+    static bool IsNamePartOfArray(const FastName& fastName, const Vector<FastName> & propertyArray);
 		
 protected:
 	
@@ -922,19 +920,6 @@ public:
 				  );
 
 };
-
-template<size_t size>
-bool NMaterial::IsNamePartOfArray(const FastName& fastName, Array<FastName, size> &array)
-{
-    for (size_t i = 0; i < size; ++i)
-    {
-        if (array[i] == fastName)
-        {
-            return true;
-        }
-    }
-    return false;
-}
 
 inline void NMaterial::SetMaterialType(eMaterialType matType)
 {

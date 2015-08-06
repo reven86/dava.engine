@@ -139,7 +139,7 @@ const FastName NMaterial::FLAG_VIEWSPECULAR = FastName("VIEW_SPECULAR");
 
 const FastName NMaterial::FLAG_ALPHATESTVALUE = FastName("ALPHATESTVALUE");
 
-static Array<FastName, 5> TEXTURE_NAME_PROPS =
+static Vector<FastName> TEXTURE_NAME_PROPS =
 {
 	NMaterial::TEXTURE_ALBEDO,
 	NMaterial::TEXTURE_NORMAL,
@@ -148,7 +148,7 @@ static Array<FastName, 5> TEXTURE_NAME_PROPS =
 	NMaterial::TEXTURE_DECAL
 };
 
-static Array<FastName, 10> RUNTIME_ONLY_FLAGS =
+static Vector<FastName> RUNTIME_ONLY_FLAGS =
 {
 	NMaterial::FLAG_LIGHTMAPONLY,
 	NMaterial::FLAG_TEXTUREONLY,
@@ -164,7 +164,7 @@ static Array<FastName, 10> RUNTIME_ONLY_FLAGS =
 	NMaterial::FLAG_VIEWSPECULAR
 };
 
-static Array<FastName, 8>  RUNTIME_ONLY_PROPERTIES =
+static Vector<FastName>  RUNTIME_ONLY_PROPERTIES =
 {
     NMaterial::PARAM_LIGHTMAP_SIZE,
     NMaterial::PARAM_LIGHT_POSITION0,
@@ -176,7 +176,7 @@ static Array<FastName, 8>  RUNTIME_ONLY_PROPERTIES =
     NMaterial::PARAM_SCREEN_OFFSET
 };
 
-static Array<FastName, 3> RUNTIME_ONLY_TEXTURES =
+static Vector<FastName> RUNTIME_ONLY_TEXTURES =
 {
     NMaterial::TEXTURE_DYNAMIC_REFLECTION,
     NMaterial::TEXTURE_DYNAMIC_REFRACTION,
@@ -1822,6 +1822,16 @@ bool NMaterial::IsRuntimeProperty(const FastName& propName)
 bool NMaterial::IsRuntimeTexture(const FastName& textureName)
 {
     return IsNamePartOfArray(textureName, RUNTIME_ONLY_TEXTURES);
+}
+
+bool NMaterial::IsNamePartOfArray(const FastName& fastName, const Vector<FastName> & propertyArray)
+{
+    auto it = std::find_if(propertyArray.begin(), propertyArray.end(), [fastName](const FastName& toFind)
+    {
+        return fastName == toFind;
+    });
+
+    return it != propertyArray.end();
 }
 
 void NMaterial::SetMaterialTemplateName(const FastName& templateName)
