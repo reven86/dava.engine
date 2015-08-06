@@ -221,7 +221,7 @@ void GameCore::InitScreenController()
     
 	if (chooserFound)
 	{
-        testFlowController = std::make_unique<SingleTestFlowController>(!withoutUIFound);
+        testFlowController = std::unique_ptr<SingleTestFlowController>(new SingleTestFlowController(!withoutUIFound));
 	}
     else if (!testForRun.empty())
     {
@@ -308,7 +308,7 @@ void GameCore::InitScreenController()
             }
         }
 
-        testFlowController = std::make_unique<SingleTestFlowController>(testForRun, singleTestParams, !withoutUIFound);
+        testFlowController = std::unique_ptr<SingleTestFlowController>(new SingleTestFlowController(testForRun, singleTestParams, !withoutUIFound));
         
         Logger::Instance()->Info(DAVA::Format("Test %s params ", testForRun.c_str()).c_str());
         Logger::Instance()->Info(DAVA::Format("Target time : %d", singleTestParams.targetTime).c_str());
@@ -321,11 +321,11 @@ void GameCore::InitScreenController()
     }
 	else if (withoutUIFound)
 	{
-        testFlowController = std::make_unique<TestChainFlowController>(false);
+        testFlowController = std::unique_ptr<TestChainFlowController>(new TestChainFlowController(false));
 	} 
 	else
 	{
-		testFlowController = std::make_unique<TestChainFlowController>(true);
+        testFlowController = std::unique_ptr<TestChainFlowController>(new TestChainFlowController(true));
 	}
 
     testFlowController->Init(testChain);

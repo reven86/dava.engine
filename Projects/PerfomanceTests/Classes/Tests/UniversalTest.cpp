@@ -75,7 +75,7 @@ void UniversalTest::LoadResources()
         
         GetScene()->SetCurrentCamera(camera);
         
-        waypointInterpolator = std::make_unique<WaypointsInterpolator>(pathComponent->GetPoints(), GetParams().targetTime / 1000.0f);
+        waypointInterpolator = std::unique_ptr<WaypointsInterpolator>(new WaypointsInterpolator(pathComponent->GetPoints(), GetParams().targetTime / 1000.0f));
     }
     
     Entity* tanksEntity = GetScene()->FindByName(TANKS);

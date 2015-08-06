@@ -45,7 +45,7 @@ void WaypointsInterpolator::Init()
 {
     DVASSERT(waypoints.size() > 3);
 
-    spline = std::make_unique<BasicSpline3>();
+    spline = std::unique_ptr<BasicSpline3>(new BasicSpline3());
     Polygon3 poly;
 
     for (auto *point : waypoints)
