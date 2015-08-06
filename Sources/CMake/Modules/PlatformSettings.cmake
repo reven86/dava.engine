@@ -122,15 +122,15 @@ if( WARNINGS_AS_ERRORS )
 -Wno-delete-non-virtual-dtor \
 -Wno-header-hygiene \
 -Wno-old-style-cast \
--Wno-unknown-warning-option")
+-Wno-unknown-warning-option \
+-Wno-unreachable-code-return")
 
 
     if( ANDROID )
         set( LOCAL_DISABLED_WARNINGS "${LOCAL_DISABLED_WARNINGS} \
 -Wno-reserved-id-macro \
 -Wno-unused-local-typedef \
--Wno-inconsistent-missing-override \
--Wno-unreachable-code-return")
+-Wno-inconsistent-missing-override")
         set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${LOCAL_DISABLED_WARNINGS}" ) # warnings as errors
     elseif( APPLE )
         set( LOCAL_DISABLED_WARNINGS "${LOCAL_DISABLED_WARNINGS} \
