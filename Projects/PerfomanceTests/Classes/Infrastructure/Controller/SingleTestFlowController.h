@@ -35,7 +35,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 class SingleTestFlowController : public TestFlowController
 {
 public:
-    SingleTestFlowController(bool showUI);
     SingleTestFlowController(const String& testName, const BaseTest::TestParams& testParams, bool showUI);
     
     void Init(const Vector<BaseTest*>& testChain) override;
@@ -45,10 +44,9 @@ public:
     
 private:
     
-    bool showUI;
-    
     String testForRunName;
-    
+    bool showUI;
+
     BaseTest::TestParams testParams;
     BaseTest* testForRun;
     ScopedPtr<TestChooserScreen> testChooserScreen;

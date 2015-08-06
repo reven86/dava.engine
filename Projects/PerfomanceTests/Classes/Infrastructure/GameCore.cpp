@@ -219,12 +219,8 @@ void GameCore::InitScreenController()
         testForRun = CommandLineParser::Instance()->GetCommandParamAdditional("-test", 0);
     }
     
-	if (chooserFound)
+    if (chooserFound || !testForRun.empty())
 	{
-        testFlowController = std::unique_ptr<SingleTestFlowController>(new SingleTestFlowController(!withoutUIFound));
-	}
-    else if (!testForRun.empty())
-    {
         if (testTimeFound)
         {
             String testTimeParam = CommandLineParser::Instance()->GetCommandParamAdditional("-test-time", 0);
@@ -319,14 +315,10 @@ void GameCore::InitScreenController()
         Logger::Instance()->Info(DAVA::Format("Frame for debug : %d", singleTestParams.frameForDebug).c_str());
         Logger::Instance()->Info(DAVA::Format("Max delta : %f", singleTestParams.maxDelta).c_str());
     }
-	else if (withoutUIFound)
-	{
-        testFlowController = std::unique_ptr<TestChainFlowController>(new TestChainFlowController(false));
-	} 
 	else
 	{
-        testFlowController = std::unique_ptr<TestChainFlowController>(new TestChainFlowController(true));
-	}
+        testFlowController = std::unique_ptr<TestChainFlowController>(new TestChainFlowController(!withoutUIFound));
+	} 
 
     testFlowController->Init(testChain);
 }

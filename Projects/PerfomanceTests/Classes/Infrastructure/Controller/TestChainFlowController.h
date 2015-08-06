@@ -50,7 +50,7 @@ private:
     
     uint32 currentTestIndex;
     
-    bool showUIReport;
+    bool showUI;
     bool testsFinished;
 };
 
