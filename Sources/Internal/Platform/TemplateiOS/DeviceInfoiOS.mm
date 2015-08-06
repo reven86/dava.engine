@@ -405,13 +405,13 @@ bool DeviceInfoPrivate::IsMobileMode()
         DVASSERT(false && "Not Implement");
         return false;
 }
-/*
+
 bool DeviceInfoPrivate::IsRunningOnEmulator()
 {
         DVASSERT(false && "Not Implement");
         return false;
 }
-*/
+
 }
 
 #endif
