@@ -28,6 +28,7 @@
 
 
 #include "DAVAEngine.h"
+#include "QtTools/ConsoleWidget/PointerSerializer.h"
 
 #include <QMessageBox>
 #include <QDesktopServices>
@@ -590,6 +591,14 @@ void QtMainWindow::SetupDocks()
     // Console dock
 	{
         LogWidget *logWidget = new LogWidget();
+        logWidget->SetConvertFunction([](const DAVA::String & text)
+        {
+            QRegularExpression re(PointerSerializer::GetRegex());
+            QString qText = QString::fromStdString(text);
+            qText.replace(re, "");
+            return qText.toStdString();
+        });
+        connect(logWidget, &LogWidget::ItemClicked, this, &QtMainWindow::OnConsoleItemClicked);
         const auto var = SettingsManager::Instance()->GetValue(Settings::Internal_LogWidget);
 
         const QByteArray arr(reinterpret_cast<const char*>(var.AsByteArray()), var.AsByteArraySize());
@@ -3095,6 +3104,35 @@ void QtMainWindow::DebugDeviceList()
         deviceListController->SetView(w);
     }
     deviceListController->ShowView();
+}
+
+void QtMainWindow::OnConsoleItemClicked(const QString &data)
+{
+    PointerSerializer conv(data.toStdString());
+    if (conv.CanConvert<Entity*>())
+    {
+        if (nullptr != GetCurrentScene())
+        {
+            auto vec = conv.GetPointers<Entity*>();
+            if (!vec.empty())
+            {
+                EntityGroup entityGroup;
+                DAVA::Vector<Entity *> allEntities;
+                GetCurrentScene()->GetChildNodes(allEntities);
+                for (auto entity : vec)
+                {
+                    if (std::find(allEntities.begin(), allEntities.end(), entity) != allEntities.end())
+                    {
+                        entityGroup.Add(entity);
+                    }
+                }
+                if (entityGroup.Size() != 0)
+                {
+                    GetCurrentScene()->selectionSystem->SetSelection(entityGroup);
+                }
+            }
+        }
+    }
 }
 
 void QtMainWindow::OnGenerateHeightDelta()

@@ -232,17 +232,43 @@
     return result;
 }
 
-- (void)eventEditingChanged:(UITextField *)sender
+- (void)eventEditingChanged:(UIView *)sender
 {
-    if (sender == textCtrl && cppTextField && cppTextField->GetDelegate()
-        && ![cachedText isEqualToString:[textCtrl valueForKey:@"text"]])
+    NSString* fieldText = [textCtrl valueForKey:@"text"];
+    
+    if (sender == textCtrl
+        && cppTextField
+        && cppTextField->GetDelegate()
+        && ![cachedText isEqualToString:fieldText])
     {
         DAVA::WideString oldString;
         const char * cstr = [cachedText cStringUsingEncoding:NSUTF8StringEncoding];
         DAVA::UTF8Utils::EncodeToWideString((DAVA::uint8*)cstr, (DAVA::int32)strlen(cstr), oldString);
         
+        
+        // Workaround: Additional check on the maximum length for cases
+        // where the system event shouldChangeCharactersInRange does not work for Asian keyboards
+        int maxLength = cppTextField->GetMaxLength();
+        if(maxLength > 0 && (int)fieldText.length > maxLength)
+        {
+            fieldText = [fieldText substringToIndex:maxLength];
+            if ([textCtrl class] == [::UITextField class])
+            {
+                auto textFieldPtr = (::UITextField*)textCtrl;
+                auto selection = [textFieldPtr selectedTextRange];
+                [textFieldPtr setText:fieldText];
+                [textFieldPtr setSelectedTextRange:selection];
+            } else {
+                auto textViewPtr = (::UITextView*)textCtrl;
+                auto selection = [textViewPtr selectedTextRange];
+                [textViewPtr setText:fieldText];
+                [textViewPtr setSelectedTextRange:selection];
+            }
+        }
+        // End workaround
+        
         [cachedText release];
-        cachedText = [[NSString alloc] initWithString:[textCtrl valueForKey:@"text"]];
+        cachedText = [[NSString alloc] initWithString:fieldText];
         
         DAVA::WideString newString;
         cstr = [cachedText cStringUsingEncoding:NSUTF8StringEncoding];
@@ -260,6 +286,12 @@
 - (BOOL)textViewShouldBeginEditing:(UITextView *)textView
 {
     return textInputAllowed;
+}
+
+- (void)dropCachedText
+{
+    [cachedText release];
+    cachedText = [[NSString alloc] initWithString:[textCtrl valueForKey:@"text"]];
 }
 
 - (void)setIsPassword:(bool)isPassword

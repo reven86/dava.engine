@@ -56,6 +56,8 @@
 #include "Commands2/ParticleEditorCommands.h"
 #include "Commands2/SaveEntityAsAction.h"
 #include "Commands2/ConvertToShadowCommand.h"
+#include "QtTools/ConsoleWidget/PointerSerializer.h"
+#include "FileSystem/VariantType.h"
 
 #include "Tools/LazyUpdater/LazyUpdater.h"
 
@@ -595,12 +597,20 @@ void SceneTree::RemoveSelection()
             {
                 selection.Rem(entity);
                 --i;
+                DAVA::StringStream ss;
+                ss << "Can not remove entity "
+                    << entity->GetName().c_str()
+                    << ": entity is locked!"
+                    << PointerSerializer::FromPointer(entity);
+                Logger::Warning("%s", ss.str().c_str());
             }
         }
         
-        if(selection.Size())
-		sceneEditor->structureSystem->Remove(selection);
-	}
+        if (selection.Size())
+        {
+            sceneEditor->structureSystem->Remove(selection);
+        }
+    }
 }
 
 void SceneTree::CollapseSwitch()

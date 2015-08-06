@@ -62,7 +62,8 @@ namespace DAVA
         DVASSERT(textFieldHolder->textCtrl != nullptr);
         
         [textFieldHolder setTextField:&davaTextField];
-
+        [textFieldHolder dropCachedText];
+        
         objcClassPtr = textFieldHolder;
         
         prevRect = tf.GetRect();
@@ -357,15 +358,11 @@ namespace DAVA
         bool textChanged = ![textInField isEqualToString:truncatedText];
         
         [view setValue:truncatedText forKey:@"text"];
+        // Drop cached text in text field holder for correct dispatching OnTextChanged event
+        [textFieldHolder dropCachedText];
         
         [textFieldHolder->textCtrl.undoManager removeAllActions];
 
-        // Notify UITextFieldDelegate::TextFieldOnTextChanged event
-        if ([view respondsToSelector:@selector(sendActionsForControlEvents)])
-        {
-            [(id)view sendActionsForControlEvents:UIControlEventEditingChanged];
-        }
-        
         if(textChanged || string.empty())
         {
             isNeedToUpdateTexture = true;
