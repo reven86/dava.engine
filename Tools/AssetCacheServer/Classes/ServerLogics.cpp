@@ -44,9 +44,9 @@ ServerLogics::ServerTask::ServerTask(const DAVA::AssetCache::CacheItemKey &_key,
 {
 }
 
-ServerLogics::ServerTask::ServerTask(const DAVA::AssetCache::CacheItemKey &_key, const DAVA::AssetCache::CachedFiles & _files, DAVA::AssetCache::ePacketID _request)
+ServerLogics::ServerTask::ServerTask(const DAVA::AssetCache::CacheItemKey &_key, DAVA::AssetCache::CachedFiles &&_files, DAVA::AssetCache::ePacketID _request)
     : key(_key)
-    , files(_files)
+    , files(std::move(_files))
     , request(_request)
 {
 }
@@ -60,7 +60,7 @@ void ServerLogics::Init(DAVA::AssetCache::Server *_server, DAVA::AssetCache::Cli
     dataBase = _dataBase;
 }
 
-void ServerLogics::OnAddToCache(DAVA::TCPChannel *tcpChannel, const DAVA::AssetCache::CacheItemKey &key, const DAVA::AssetCache::CachedFiles &files)
+void ServerLogics::OnAddToCache(DAVA::TCPChannel *tcpChannel, const DAVA::AssetCache::CacheItemKey &key, DAVA::AssetCache::CachedFiles &&files)
 {
     if((nullptr != server) && (nullptr != tcpChannel))
     {
@@ -69,7 +69,7 @@ void ServerLogics::OnAddToCache(DAVA::TCPChannel *tcpChannel, const DAVA::AssetC
 
         {   //add task for lazy sending of files;
             DAVA::LockGuard<DAVA::Mutex> lock(taskMutex);
-            serverTasks.emplace_back(ServerTask(key, files, DAVA::AssetCache::PACKET_ADD_FILES_REQUEST));
+            serverTasks.emplace_back(ServerTask(key, std::forward<DAVA::AssetCache::CachedFiles>(files), DAVA::AssetCache::PACKET_ADD_FILES_REQUEST));
         }
     }
 }
@@ -125,7 +125,7 @@ void ServerLogics::OnChannelClosed(DAVA::TCPChannel *tcpChannel, const DAVA::cha
     }
 }
 
-void ServerLogics::OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey &key, const DAVA::AssetCache::CachedFiles &files)
+void ServerLogics::OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey &key, DAVA::AssetCache::CachedFiles &&files)
 {
     if(nullptr != dataBase && files.GetFiles().size() != 0)
     {

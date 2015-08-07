@@ -42,7 +42,7 @@ namespace DAVA
 namespace AssetCache
 {
     
-CachedFiles::CachedFiles(const CachedFiles & right)
+CachedFiles::CachedFiles(const CachedFiles & right) DAVA_NOEXCEPT
 {
     filesAreLoaded = right.filesAreLoaded;
     filesSize = right.filesSize;
@@ -53,6 +53,16 @@ CachedFiles::CachedFiles(const CachedFiles & right)
         SafeRetain(f.second);
     }
 }
+    
+CachedFiles::CachedFiles(CachedFiles &&right) DAVA_NOEXCEPT
+    : files(std::move(right.files))
+    , filesSize(right.filesSize)
+    , filesAreLoaded(right.filesAreLoaded)
+{
+    right.filesSize = 0;
+    right.filesAreLoaded = false;
+}
+    
     
 CachedFiles::~CachedFiles()
 {
@@ -173,6 +183,22 @@ CachedFiles & CachedFiles::operator=(const CachedFiles &right)
         {
             SafeRetain(f.second);
         }
+    }
+
+    return (*this);
+}
+
+CachedFiles & CachedFiles::operator=(CachedFiles &&right)
+{
+    if (this != &right)
+    {
+        files = std::move(right.files);
+
+        filesAreLoaded = right.filesAreLoaded;
+        filesSize = right.filesSize;
+        
+        right.filesSize = 0;
+        right.filesAreLoaded = false;
     }
 
     return (*this);

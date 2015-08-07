@@ -82,7 +82,7 @@ public:
     
 private:
 
-    void Insert(const CacheItemKey &key, const ServerCacheEntry &entry);
+    void Insert(const CacheItemKey &key, ServerCacheEntry &&entry);
     
     FilePath CreateFolderPath(const CacheItemKey &key) const;
     

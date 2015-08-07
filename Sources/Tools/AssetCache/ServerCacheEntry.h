@@ -31,24 +31,32 @@
 #define __DAVAENGINE_ASSET_CACHE_SERVER_CACHE_ENTRY_H__
 
 #include "Base/BaseTypes.h"
-
 #include "AssetCache/CachedFiles.h"
 
 
-namespace DAVA {
+namespace DAVA
+{
 
 class KeyedArchive;
 
-namespace AssetCache {
+namespace AssetCache
+{
 
 class ServerCacheEntry
 {
 public:
     
     ServerCacheEntry();
-    explicit ServerCacheEntry(const CachedFiles &files);
+    explicit ServerCacheEntry(CachedFiles &&files);
+    
+    ServerCacheEntry(const ServerCacheEntry &right) = delete;
+    ServerCacheEntry(ServerCacheEntry &&right);
+    
     virtual ~ServerCacheEntry() = default;
 
+    ServerCacheEntry & operator=(const ServerCacheEntry &right) = delete;
+    ServerCacheEntry & operator=(ServerCacheEntry &&right);
+    
     bool operator == (const ServerCacheEntry &right) const;
 
     void Serialize(KeyedArchive * archieve) const;

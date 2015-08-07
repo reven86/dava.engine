@@ -175,7 +175,7 @@ void Server::OnAddToCache(DAVA::TCPChannel *tcpChannel, KeyedArchive * archieve)
         CachedFiles files;
         files.Deserialize(filesArchieve);
         
-        delegate->OnAddToCache(tcpChannel, key, files);
+        delegate->OnAddToCache(tcpChannel, key, std::forward<CachedFiles>(files));
     }
     else
     {

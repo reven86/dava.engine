@@ -46,12 +46,29 @@ ServerCacheEntry::ServerCacheEntry()
 {
 }
 
-ServerCacheEntry::ServerCacheEntry(const CachedFiles &_files)
-    : files(_files)
+ServerCacheEntry::ServerCacheEntry(CachedFiles &&_files)
+    : files(std::move(_files))
 {
-    
 }
 
+ServerCacheEntry::ServerCacheEntry(ServerCacheEntry &&right)
+    : files(std::move(right.files))
+    , accessID(right.accessID)
+{
+}
+
+ServerCacheEntry & ServerCacheEntry::operator=(ServerCacheEntry &&right)
+{
+    if(this != &right)
+    {
+        files = std::move(right.files);
+        accessID = right.accessID;
+    }
+    
+    return (*this);
+}
+
+    
 
 bool ServerCacheEntry::operator == (const ServerCacheEntry &right) const
 {

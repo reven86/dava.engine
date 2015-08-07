@@ -138,7 +138,7 @@ void Client::OnGotFromCache(KeyedArchive * archieve)
         CachedFiles files;
         files.Deserialize(filesArchieve);
         
-        listener->OnReceivedFromCache(key, files);
+        listener->OnReceivedFromCache(key, std::forward<CachedFiles>(files));
     }
 }
     

@@ -50,7 +50,8 @@ class CachedFiles
 public:
     
     CachedFiles() = default;
-    CachedFiles(const CachedFiles & right);
+    CachedFiles(const CachedFiles & right) DAVA_NOEXCEPT;
+    CachedFiles(CachedFiles && right) DAVA_NOEXCEPT;
     
     virtual ~CachedFiles();
     
@@ -63,9 +64,10 @@ public:
     void Serialize(KeyedArchive * archieve, bool serializeData) const;
     void Deserialize(KeyedArchive * archieve);
     
-    bool operator == (const CachedFiles &right) const;
+    bool operator== (const CachedFiles &right) const;
     CachedFiles & operator=(const CachedFiles &right);
-
+    CachedFiles & operator=(CachedFiles &&right);
+    
     void LoadFiles();
     void UnloadFiles();
     

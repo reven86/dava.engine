@@ -147,7 +147,7 @@ void CacheDB::Load()
         ServerCacheEntry entry;
         entry.Deserialize(itemArchieve);
         
-        fullCache[key] = entry;
+        fullCache[key] = std::move(entry);
     }
     
     dbStateChanged = false;
@@ -297,11 +297,11 @@ void CacheDB::Insert(const CacheItemKey &key, const CachedFiles &files)
     auto savedPath = CreateFolderPath(key);
     auto dbFiles = files.Copy(savedPath);
     
-    ServerCacheEntry entry(dbFiles);
-    Insert(key, entry);
+    ServerCacheEntry entry(std::forward<CachedFiles>(dbFiles));
+    Insert(key, std::forward<ServerCacheEntry>(entry));
 }
     
-void CacheDB::Insert(const CacheItemKey &key, const ServerCacheEntry &entry)
+void CacheDB::Insert(const CacheItemKey &key, ServerCacheEntry &&entry)
 {
     auto found = fullCache.find(key);
     if(found != fullCache.end())
@@ -309,7 +309,7 @@ void CacheDB::Insert(const CacheItemKey &key, const ServerCacheEntry &entry)
         IncreaseUsedSize(found->second.GetFiles());
     }
 
-    fullCache[key] = entry;
+    fullCache[key] = std::move(entry);
     ServerCacheEntry *entryForFastCache = &fullCache[key];
     
     entryForFastCache->InvalidateAccesToken(nextItemID++);
@@ -323,7 +323,7 @@ void CacheDB::Insert(const CacheItemKey &key, const ServerCacheEntry &entry)
     }
     
     auto savedPath = CreateFolderPath(key);
-    entry.GetFiles().Save(savedPath);
+    entryForFastCache->GetFiles().Save(savedPath);
     usedSize += newFilesSize;
     
     dbStateChanged = true;
