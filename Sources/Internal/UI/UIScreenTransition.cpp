@@ -55,13 +55,10 @@ UIScreenTransition::UIScreenTransition()
     duration = 0.7f;
     interpolationFunc = Interpolation::GetFunction(Interpolation::EASY_IN_EASY_OUT);
     SetFillBorderOrder(UIScreen::FILL_BORDER_AFTER_DRAW);
-    shooter = new UIScreenshoter();
-    shooter->SetRenderPriorities(PRIORITY_SCREENSHOT_CLEAR_PASS, PRIORITY_SCREENSHOT_3D_PASS, PRIORITY_SCREENSHOT_2D_PASS);
 }
 
 UIScreenTransition::~UIScreenTransition()
 {
-    SafeDelete(shooter);
 }
 
 void UIScreenTransition::CreateRenderTargets()
@@ -97,13 +94,13 @@ void UIScreenTransition::StartTransition(UIScreen * _prevScreen, UIScreen * _nex
     nextScreen = _nextScreen;
     prevScreen = _prevScreen;
 
-    shooter->MakeScreenshotWithPreparedTexture(prevScreen, renderTargetPrevScreen->GetTexture());
+    UIControlSystem::Instance()->GetScreenshoter()->MakeScreenshot(prevScreen, renderTargetPrevScreen->GetTexture());
 
     nextScreen->LoadGroup();
     nextScreen->SystemWillAppear();
     nextScreen->SystemUpdate(SystemTimer::FrameDelta());
 
-    shooter->MakeScreenshotWithPreparedTexture(nextScreen, renderTargetNextScreen->GetTexture());
+    UIControlSystem::Instance()->GetScreenshoter()->MakeScreenshot(nextScreen, renderTargetNextScreen->GetTexture());
     
     currentTime = 0;
 }

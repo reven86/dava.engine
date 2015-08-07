@@ -25,7 +25,7 @@
     namespace rhi { extern void _InitDX9(); }
     #include <vector>
 
-    #define RHI__USE_DX9_RENDER_THREAD          0
+    #define RHI__USE_DX9_RENDER_THREAD          1
     #define RHI__DX9_MAX_PREPARED_FRAME_COUNT   2
 
 
