@@ -33,7 +33,7 @@
 #include "Base/BaseTypes.h"
 #include "Base/Singleton.h"
 #include "Base/Message.h"
-#include "Base/Function.h"
+#include "Functional/Function.h"
 #include "Base/FastName.h"
 #include "Concurrency/Atomic.h"
 #include "Concurrency/Mutex.h"

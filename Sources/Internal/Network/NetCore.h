@@ -31,7 +31,7 @@
 #define __DAVAENGINE_NETCORE_H__
 
 #include <Base/BaseTypes.h>
-#include <Base/Function.h>
+#include <Functional/Function.h>
 #include <Base/Singleton.h>
 
 #include <Network/Base/IOLoop.h>

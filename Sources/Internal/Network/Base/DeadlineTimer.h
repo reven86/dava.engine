@@ -30,7 +30,7 @@
 #ifndef __DAVAENGINE_DEADLINETIMER_H__
 #define __DAVAENGINE_DEADLINETIMER_H__
 
-#include <Base/Function.h>
+#include <Functional/Function.h>
 
 #include <Network/Base/DeadlineTimerTemplate.h>
 
