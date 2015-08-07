@@ -174,6 +174,11 @@ void UILayoutSystem::MeasureControl(UIControl *control, UISizePolicyComponent *s
             value += layout->GetPadding() * 2.0f;
         }
     }
+    
+    if (policy != UISizePolicyComponent::PERCENT_OF_PARENT && policy != UISizePolicyComponent::IGNORE_SIZE)
+    {
+        value = Clamp(value, sizeHint->GetMinValueByAxis(axis), sizeHint->GetMaxValueByAxis(axis));
+    }
     newSize.data[axis] = value;
     
     if (control->GetSize() != newSize)
@@ -270,11 +275,10 @@ void UILayoutSystem::ApplyLinearLayout(UIControl *control, UILinearLayoutCompone
                         size = 0.0f;
                     else
                         size = restSize * sizeHint->GetValueByAxis(axis) / Max(totalPercent, 100.0f);
+                    size = Clamp(size, sizeHint->GetMinValueByAxis(axis), sizeHint->GetMaxValueByAxis(axis));
                 }
                 else
                     size = child->GetSize().data[axis];
-                
-                size = Clamp(size, sizeHint->GetMinValueByAxis(axis), sizeHint->GetMaxValueByAxis(axis));
             }
             else
             {
@@ -325,8 +329,8 @@ void UILayoutSystem::ApplyAnchorLayout(UIControl *control, int32 axis)
             if (sizeHint->GetPolicyByAxis(axis) == UISizePolicyComponent::PERCENT_OF_PARENT)
             {
                 s = control->GetSize().data[axis] * sizeHint->GetValueByAxis(axis) / 100.0f;
+                s = Clamp(s, sizeHint->GetMinValueByAxis(axis), sizeHint->GetMaxValueByAxis(axis));
             }
-            s = Clamp(s, sizeHint->GetMinValueByAxis(axis), sizeHint->GetMaxValueByAxis(axis));
             newSize.data[axis] = s;
             
             if (newSize != child->GetSize())
