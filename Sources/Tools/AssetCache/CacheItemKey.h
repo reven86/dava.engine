@@ -31,6 +31,7 @@
 #define __DAVAENGINE_ASSET_CACHE_ITEM_KEY_H__
 
 #include "AssetCache/DoubleMD5Key.h"
+#include "Base/Hash.h"
 
 namespace DAVA
 {
@@ -44,34 +45,23 @@ namespace DAVA
         void SerializeKey(const CacheItemKey & key, KeyedArchive *archieve);
         void DeserializeKey(CacheItemKey & key, const KeyedArchive *archieve);
 
-    }; // end of namespace AssetCache
-}; // end of namespace DAVA
-
-
-//#include "AssetCache/MD5Key.h"
-//
-//namespace DAVA
-//{
-//    namespace AssetCache
-//    {
-//        using CacheItemKey = DAVA::AssetCache::MD5Key;
-//        
-//    } // end of namespace AssetCache
-//} // end of namespace DAVA
+    } // end of namespace AssetCache
+} // end of namespace DAVA
 
 
 namespace std
 {
-    template<>
-    struct hash<DAVA::AssetCache::CacheItemKey>
+
+template<>
+struct hash<DAVA::AssetCache::CacheItemKey>
+{
+    size_t operator()(const DAVA::AssetCache::CacheItemKey & key) const DAVA_NOEXCEPT
     {
-        size_t operator()(const DAVA::AssetCache::CacheItemKey & key) const
-        {
-            DAVA::String keyStr = DAVA::AssetCache::KeyToString(key);
-            return std::hash<std::string>()(keyStr);
-        }
-    };
-}
+        return DAVA::BufferHash(key.data(), key.size());
+    }
+}; //end of struct hash
+
+} // end of namespace std
 
 
 #endif // __DAVAENGINE_ASSET_CACHE_ITEM_KEY_H__
