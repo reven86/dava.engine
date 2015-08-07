@@ -14,6 +14,7 @@
     
     #include "../rhi_Type.h"
 
+    #define RHI__FORCE_DX11_91 1
 
 
 const char* D3D11ErrorText( HRESULT hr );

@@ -485,8 +485,11 @@ desc.vertexLayout.Dump();
         NULL, // no macros
         NULL, // no includes
         "vp_main",
-//        "vs_4_0_level_9_1",
+        #if RHI__FORCE_DX11_91
+        "vs_4_0_level_9_1",
+        #else
         "vs_4_0",
+        #endif
         D3D10_SHADER_OPTIMIZATION_LEVEL2,
         0, // no effect compile flags
         &vp_code,
@@ -558,8 +561,11 @@ desc.vertexLayout.Dump();
         NULL, // no macros
         NULL, // no includes
         "fp_main",
-//        "ps_4_0_level_9_1",
+        #if RHI__FORCE_DX11_91
+        "ps_4_0_level_9_1",
+        #else
         "ps_4_0",
+        #endif
         D3D10_SHADER_OPTIMIZATION_LEVEL2,
         0, // no effect compile flags
         &fp_code,

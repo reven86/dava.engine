@@ -211,7 +211,7 @@ _GetRasterizerState( RasterizerParamDX11 param )
         desc.DepthBias              = 0;
         desc.DepthBiasClamp         = 0;
         desc.SlopeScaledDepthBias   = 0.0f;
-        desc.DepthClipEnable        = FALSE;
+        desc.DepthClipEnable        = TRUE;
         desc.ScissorEnable          = param.scissorEnabled;
         desc.MultisampleEnable      = FALSE;
         desc.AntialiasedLineEnable  = FALSE;
