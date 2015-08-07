@@ -199,7 +199,7 @@ void MemProfController::ComposeFilePath(DAVA::FilePath& result)
 
     DateTime now = DateTime::Now();
     String level3 = Format("%04d-%02d-%02d %02d%02d%02d/",
-                           now.GetYear(), now.GetMonth(), now.GetDay(),
+                           now.GetYear(), now.GetMonth() + 1, now.GetDay(),
                            now.GetHour(), now.GetMinute(), now.GetSecond());
 
     result = "~doc:/";
