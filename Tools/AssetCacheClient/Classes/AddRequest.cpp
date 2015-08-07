@@ -43,7 +43,9 @@ AddRequest::AddRequest()
 
 int AddRequest::SendRequest()
 {
-    AssetCache::CacheItemKey key(options.GetOption("-h").AsString());
+    AssetCache::CacheItemKey key;
+    AssetCache::StringToKey(options.GetOption("-h").AsString(), key);
+
     AssetCache::CachedFiles files;
 
     auto filesCount = options.GetOptionsCount("-f");

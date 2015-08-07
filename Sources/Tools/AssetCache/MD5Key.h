@@ -44,9 +44,6 @@ namespace AssetCache
 static const uint32 HASH_SIZE = MD5::DIGEST_SIZE;
 using MD5Key = Array<uint8, HASH_SIZE>;
     
-String KeyToString(const MD5Key &key);
-MD5Key StringToKey(const String & string);
-    
 }; // end of namespace AssetCache
 }; // end of namespace DAVA
 

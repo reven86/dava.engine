@@ -34,16 +34,14 @@
 
 namespace DAVA
 {
+
+class KeyedArchive;
 namespace AssetCache
 {
     
 static const uint32 HASH_SIZE = MD5::DIGEST_SIZE * 2;
 using DoubleMD5Key = Array<uint8, HASH_SIZE>;
 
-String KeyToString(const DoubleMD5Key &key);
-DoubleMD5Key StringToKey(const String & string);
-
-    
 }// end of namespace AssetCache
 }// end of namespace DAVA
 

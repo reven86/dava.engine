@@ -78,7 +78,7 @@ bool Client::AddToCache(const CacheItemKey &key, const CachedFiles &files)
         archieve->SetUInt32("PacketID", PACKET_ADD_FILES_REQUEST);
 
         ScopedPtr<KeyedArchive> keyArchieve(new KeyedArchive());
-        key.Serialize(keyArchieve);
+        SerializeKey(key, keyArchieve);
         archieve->SetArchive("key", keyArchieve);
         
         ScopedPtr<KeyedArchive> filesArchieve(new KeyedArchive());
@@ -98,7 +98,7 @@ void Client::OnAddedToCache(KeyedArchive * archieve)
         KeyedArchive *keyArchieve = archieve->GetArchive("key");
         DVASSERT(keyArchieve);
         CacheItemKey key;
-        key.Deserialize(keyArchieve);
+        DeserializeKey(key, keyArchieve);
         
         bool added = archieve->GetBool("added");
         
@@ -115,7 +115,7 @@ bool Client::RequestFromCache(const CacheItemKey &key)
         archieve->SetUInt32("PacketID", PACKET_GET_FILES_REQUEST);
         
         ScopedPtr<KeyedArchive> keyArchieve(new KeyedArchive());
-        key.Serialize(keyArchieve);
+        SerializeKey(key, keyArchieve);
         archieve->SetArchive("key", keyArchieve);
         
         return openedChannel->SendArchieve(archieve);
@@ -131,7 +131,7 @@ void Client::OnGotFromCache(KeyedArchive * archieve)
         KeyedArchive *keyArchieve = archieve->GetArchive("key");
         DVASSERT(keyArchieve);
         CacheItemKey key;
-        key.Deserialize(keyArchieve);
+        DeserializeKey(key, keyArchieve);
         
         KeyedArchive *filesArchieve = archieve->GetArchive("files");
         DVASSERT(filesArchieve);
@@ -150,7 +150,7 @@ bool Client::WarmingUp(const CacheItemKey &key)
         archieve->SetUInt32("PacketID", PACKET_WARMING_UP_REQUEST);
         
         ScopedPtr<KeyedArchive> keyArchieve(new KeyedArchive());
-        key.Serialize(keyArchieve);
+        SerializeKey(key, keyArchieve);
         archieve->SetArchive("key", keyArchieve);
         
         return openedChannel->SendArchieve(archieve);

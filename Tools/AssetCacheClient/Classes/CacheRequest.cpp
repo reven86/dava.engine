@@ -75,7 +75,7 @@ int CacheRequest::Process()
 int CacheRequest::CheckOptions() const
 {
     const String hash = options.GetOption("-h").AsString();
-    if(hash.length() != AssetCache::CacheItemKey::INTERNAL_DATA_SIZE * 2)
+    if(hash.length() != AssetCache::HASH_SIZE * 2)
     {
         Logger::Error("[CacheRequest::%s] Wrong hash argument (%s)", __FUNCTION__, hash.c_str());
         return AssetCacheClientConstants::EXIT_WRONG_COMMAND_LINE;

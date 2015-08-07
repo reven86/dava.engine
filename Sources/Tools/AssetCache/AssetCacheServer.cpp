@@ -125,7 +125,7 @@ bool Server::FilesAddedToCache(DAVA::TCPChannel *tcpChannel, const CacheItemKey 
         archieve->SetUInt32("PacketID", PACKET_ADD_FILES_RESPONCE);
 
         ScopedPtr<KeyedArchive> keyArchieve(new KeyedArchive());
-        key.Serialize(keyArchieve);
+        SerializeKey(key, keyArchieve);
         archieve->SetArchive("key", keyArchieve);
        
         archieve->SetBool("added", added);
@@ -145,7 +145,7 @@ bool Server::SendFiles(DAVA::TCPChannel *tcpChannel, const CacheItemKey &key, co
         archieve->SetUInt32("PacketID", PACKET_GET_FILES_RESPONCE);
 
         ScopedPtr<KeyedArchive> keyArchieve(new KeyedArchive());
-        key.Serialize(keyArchieve);
+        SerializeKey(key, keyArchieve);
         archieve->SetArchive("key", keyArchieve);
 
         ScopedPtr<KeyedArchive> filesArchieve(new KeyedArchive());
@@ -167,7 +167,7 @@ void Server::OnAddToCache(DAVA::TCPChannel *tcpChannel, KeyedArchive * archieve)
         DVASSERT(keyArchieve);
         
         CacheItemKey key;
-        key.Deserialize(keyArchieve);
+        DeserializeKey(key, keyArchieve);
         
         KeyedArchive *filesArchieve = archieve->GetArchive("files");
         DVASSERT(filesArchieve);
@@ -192,7 +192,7 @@ void Server::OnGetFromCache(DAVA::TCPChannel *tcpChannel, KeyedArchive * archiev
         DVASSERT(keyArchieve);
         
         CacheItemKey key;
-        key.Deserialize(keyArchieve);
+        DeserializeKey(key, keyArchieve);
         
         delegate->OnRequestedFromCache(tcpChannel, key);
     }
@@ -210,7 +210,7 @@ void Server::OnWarmingUp(DAVA::TCPChannel *tcpChannel, KeyedArchive * archieve)
         DVASSERT(keyArchieve);
         
         CacheItemKey key;
-        key.Deserialize(keyArchieve);
+        DeserializeKey(key, keyArchieve);
         
         delegate->OnWarmingUp(tcpChannel, key);
     }

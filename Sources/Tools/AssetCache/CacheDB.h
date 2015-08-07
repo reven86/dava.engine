@@ -37,32 +37,6 @@
 
 #include <atomic>
 
-//namespace std
-//{
-//    template<>
-//    struct hash<DAVA::AssetCache::DoubleMD5Key>
-//    {
-//        size_t operator()(const DAVA::AssetCache::DoubleMD5Key & key) const
-//        {
-//            size_t value = 0;
-//            for(DAVA::uint32 i = 0; i < DAVA::AssetCache::DoubleMD5Key::INTERNAL_DATA_SIZE; ++i)
-//            {
-//                auto byte = key.keyData.internalData[i];
-//                
-//                value *= 0x10;
-//                value += ((byte & 0xF0) >> 4);
-//                
-//                value *= 0x10;
-//                value += (byte & 0x0F);
-//            }
-//            
-//            return value;
-//        }
-//    };
-//}
-
-
-
 namespace DAVA
 {
     

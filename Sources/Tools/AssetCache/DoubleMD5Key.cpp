@@ -27,6 +27,7 @@
 =====================================================================================*/
 
 #include "AssetCache/DoubleMD5Key.h"
+#include "FileSystem/KeyedArchive.h"
 #include "Debug/DVAssert.h"
 
 namespace DAVA
@@ -37,26 +38,37 @@ namespace AssetCache
 String KeyToString(const DoubleMD5Key &key)
 {
     static const DAVA::uint32 bufferSize = HASH_SIZE * 2;
-    Array<DAVA::char8, bufferSize> buffer;
+    Array<DAVA::char8, bufferSize + 1> buffer; // +1 is for MD5::HashToChar for \0
     
-    MD5::HashToChar(key.data(), buffer.data(), bufferSize);
-    MD5::HashToChar(key.data() + MD5::DIGEST_SIZE, buffer.data() + HASH_SIZE, bufferSize);
+    MD5::HashToChar(key.data(), buffer.data(), HASH_SIZE + 1);
+    MD5::HashToChar(key.data() + MD5::DIGEST_SIZE, buffer.data() + HASH_SIZE, HASH_SIZE + 1);
     
     return String(buffer.data(), bufferSize);
 }
   
-DoubleMD5Key StringToKey(const String & string)
+void StringToKey(const String & string, DoubleMD5Key &key)
 {
     DVASSERT(string.length() == HASH_SIZE * 2);
     
-    DoubleMD5Key key;
     MD5::CharToHash(string.data(), key.data());
     MD5::CharToHash(string.data() + HASH_SIZE, key.data() + MD5::DIGEST_SIZE);
-    
-    return key;
 }
 
-        
+void SerializeKey(const DoubleMD5Key & key, KeyedArchive *archieve)
+{
+    archieve->SetByteArray("keyData", key.data(), key.size());
+}
+
+void DeserializeKey(DoubleMD5Key & key, const KeyedArchive *archieve)
+{
+    auto size = archieve->GetByteArraySize("keyData");
+    DVASSERT(size == HASH_SIZE);
+
+    Memcpy(key.data(), archieve->GetByteArray("keyData"), size);
+}
+
+    
+    
 } // end of namespace AssetCache
 } // end of namespace DAVA
 

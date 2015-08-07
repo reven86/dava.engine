@@ -28,6 +28,7 @@
 
 
 #include "AssetCache/MD5Key.h"
+#include "FileSystem/KeyedArchive.h"
 #include "Debug/DVAssert.h"
 
 namespace DAVA
@@ -45,15 +46,26 @@ String KeyToString(const MD5Key &key)
     return String(buffer.data(), bufferSize);
 }
 
-MD5Key StringToKey(const String & string)
+void StringToKey(const String & string, MD5Key &key)
 {
     DVASSERT(string.length() == HASH_SIZE * 2);
-    
-    MD5Key key;
     MD5::CharToHash(string.data(), key.data());
-    
-    return key;
 }
+    
+void SerializeKey(const MD5Key & key, KeyedArchive *archieve)
+{
+    archieve->SetByteArray("keyData", key.data(), key.size());
+}
+
+void DeserializeKey(MD5Key & key, const KeyedArchive *archieve)
+{
+    auto size = archieve->GetByteArraySize("keyData");
+    DVASSERT(size == HASH_SIZE);
+    
+    Memcpy(key.data(), archieve->GetByteArray("keyData"), size);
+}
+    
+    
     
 }; // end of namespace AssetCache
 }; // end of namespace DAVA

@@ -41,8 +41,8 @@ GetRequest::GetRequest()
 
 int GetRequest::SendRequest()
 {
-    const String hash = options.GetOption("-h").AsString();
-    AssetCache::CacheItemKey key(hash);
+    AssetCache::CacheItemKey key;
+    AssetCache::StringToKey(options.GetOption("-h").AsString(), key);
     
     auto requestSent = client.RequestFromCache(key);
     if (!requestSent)

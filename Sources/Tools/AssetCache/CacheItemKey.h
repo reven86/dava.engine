@@ -37,6 +37,13 @@ namespace DAVA
     namespace AssetCache
     {
         using CacheItemKey = DAVA::AssetCache::DoubleMD5Key;
+        
+        String KeyToString(const CacheItemKey &key);
+        void StringToKey(const String & string, CacheItemKey &key);
+        
+        void SerializeKey(const CacheItemKey & key, KeyedArchive *archieve);
+        void DeserializeKey(CacheItemKey & key, const KeyedArchive *archieve);
+
     }; // end of namespace AssetCache
 }; // end of namespace DAVA
 

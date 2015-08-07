@@ -142,7 +142,7 @@ void CacheDB::Load()
         DVASSERT(nullptr != itemArchieve);
         
         CacheItemKey key;
-        key.Deserialize(itemArchieve);
+        DeserializeKey(key, itemArchieve);
 
         ServerCacheEntry entry;
         entry.Deserialize(itemArchieve);
@@ -191,7 +191,7 @@ void CacheDB::Save()
     for (auto & item: fullCache)
     {
         ScopedPtr<KeyedArchive> itemArchieve(new KeyedArchive());
-        item.first.Serialize(itemArchieve);
+        SerializeKey(item.first, itemArchieve);
         item.second.Serialize(itemArchieve);
         
         cache->SetArchive(Format("item_%d", index++), itemArchieve);
