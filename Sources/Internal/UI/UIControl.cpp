@@ -667,13 +667,18 @@ namespace DAVA
         }
     }
 
-    Vector2 UIControl::GetContentPreferredSize() const
+    Vector2 UIControl::GetContentPreferredSize(const Vector2 &constraints) const
     {
         if (background != nullptr && background->GetSprite() != nullptr)
         {
             return background->GetSprite()->GetSize();
         }
         return Vector2(0.0f, 0.0f);
+    }
+    
+    bool UIControl::IsHeightDependsOnWidth() const
+    {
+        return false;
     }
 
     void UIControl::SetVisible(bool isVisible)

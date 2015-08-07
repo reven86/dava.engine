@@ -239,9 +239,14 @@ const Vector2 & UIStaticText::GetTextSize()
     return textBlock->GetTextSize();
 }
 
-Vector2 UIStaticText::GetContentPreferredSize() const
+Vector2 UIStaticText::GetContentPreferredSize(const Vector2 &constraints) const
 {
-    return textBlock->GetPreferredSize();
+    return textBlock->GetPreferredSizeForWidth(constraints.x);
+}
+    
+bool UIStaticText::IsHeightDependsOnWidth() const
+{
+    return textBlock->GetMultiline();
 }
 
 const Color &UIStaticText::GetTextColor() const

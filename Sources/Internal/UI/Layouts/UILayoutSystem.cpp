@@ -154,8 +154,15 @@ void UILayoutSystem::MeasureControl(UIControl *control, UISizePolicyComponent *s
                 break;
                 
             case UISizePolicyComponent::PERCENT_OF_CONTENT:
-                value = control->GetContentPreferredSize().data[axis] * hintValue / 100.0f;
+            {
+                Vector2 constraints(-1.0f, -1.0f);
+                if (control->IsHeightDependsOnWidth() && axis == Vector2::AXIS_Y)
+                {
+                    constraints.x = newSize.x;
+                }
+                value = control->GetContentPreferredSize(constraints).data[axis] * hintValue / 100.0f;
                 break;
+            }
                 
             case UISizePolicyComponent::PERCENT_OF_PARENT:
                 value = newSize.data[axis]; // ignore

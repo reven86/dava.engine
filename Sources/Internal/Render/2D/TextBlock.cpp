@@ -270,7 +270,7 @@ void TextBlock::SetFittingOption(int32 _fittingType)
     mutex.Unlock();
 }
 
-Vector2 TextBlock::GetPreferredSize()
+Vector2 TextBlock::GetPreferredSizeForWidth(float32 width)
 {
     if(!font)
         return Vector2();
@@ -289,7 +289,7 @@ Vector2 TextBlock::GetPreferredSize()
         Vector2 oldRequestedSize = requestedSize;
         int32 oldFitting = fittingType;
         
-        requestedSize = Vector2(-1.0f, -1.0f);
+        requestedSize = Vector2(width, -1.0f);
         fittingType = FITTING_DISABLED;
         
         mutex.Unlock();

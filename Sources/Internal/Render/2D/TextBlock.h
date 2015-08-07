@@ -93,7 +93,7 @@ public:
     virtual void SetMultiline(bool isMultilineEnabled, bool bySymbol = false);
     virtual void SetFittingOption(int32 fittingType);//may be FITTING_DISABLED, FITTING_ENLARGE, FITTING_REDUCE, FITTING_ENLARGE | FITTING_REDUCE, FITTING_POINTS
 
-    Vector2 GetPreferredSize();
+    Vector2 GetPreferredSizeForWidth(float32 width);
     
     virtual Font * GetFont();
     virtual const WideString & GetText();

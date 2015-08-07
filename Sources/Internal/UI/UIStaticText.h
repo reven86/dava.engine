@@ -107,7 +107,8 @@ public:
     virtual const WideString& GetVisualText() const;
     const Vector2 & GetTextSize();
 
-    Vector2 GetContentPreferredSize() const override;
+    Vector2 GetContentPreferredSize(const Vector2 &constraints) const override;
+    bool IsHeightDependsOnWidth() const override;
 
     void PrepareSprite();
 
