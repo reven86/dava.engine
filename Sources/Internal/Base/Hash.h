@@ -253,7 +253,7 @@ inline size_t BufferHash(const DAVA::uint8 *buffer, DAVA::uint32 bufferLength) D
 {
     //this function was found in gcc49 functional_hash.h
 
-#if defined(__x86_64__) || defined(_WIN64)
+#if defined(__x86_64__) || defined(_WIN64) || defined(__LP64__)
     static_assert(sizeof(size_t) == 8, "wrong size_t size");
 
     const size_t basis = 14695981039346656037ULL;
