@@ -105,16 +105,18 @@ public:
     
     /*
         \brief This is additional sorting key. It should be from 0 to 15.
-     */
-   
+     */   
     void SetSortingKey(uint32 key);
     inline uint32 GetSortingKey() const;
 
     /*sorting offset allowed in 0..31 range, 15 default, more - closer to camera*/
     void SetSortingOffset(uint32 offset);
     inline uint32 GetSortingOffset();    
+
+
+    void BindGeometryData(rhi::Packet& packet);
     
-	virtual void UpdateAABBoxFromSource();
+	void UpdateAABBoxFromSource();
 	
     pointer_size layerSortingKey;
 
@@ -143,12 +145,6 @@ protected:
     const static uint32 SORTING_KEY_DEF_VALUE = 0xf8;
     
 	AABBox3 aabbox;
-#if defined(__DAVA_USE_OCCLUSION_QUERY__)
-    OcclusionQuery * occlusionQuery;
-    int32 queryRequested;
-    uint32 queryRequestFrame;
-    uint32 lastFraemDrawn;
-#endif
 
 	void InsertDataNode(DataNode *node, Set<DataNode*> & dataNodes);
     
@@ -206,6 +202,34 @@ inline uint32 RenderBatch::GetSortingOffset()
     return ((sortingKey&SORTING_OFFSET_MASK)>>SORTING_OFFSET_SHIFT);
 }
 
+
+inline void RenderBatch::BindGeometryData(rhi::Packet& packet)
+{    
+    if (dataSource)
+    {
+        packet.vertexStreamCount = 1;
+        packet.vertexStream[0] = dataSource->vertexBuffer;
+        packet.baseVertex = 0;
+        packet.vertexCount = dataSource->vertexCount;
+        packet.indexBuffer = dataSource->indexBuffer;
+        packet.primitiveType = dataSource->primitiveType;
+        packet.primitiveCount = GetPrimitiveCount(dataSource->indexCount, dataSource->primitiveType); //later move it into pg!
+        packet.vertexLayoutUID = dataSource->vertexLayoutId;
+        packet.startIndex = 0;        
+    }
+    else
+    {
+        packet.vertexStreamCount = 1;
+        packet.vertexStream[0] = vertexBuffer;
+        packet.baseVertex = vertexBase;
+        packet.vertexCount = vertexCount;
+        packet.indexBuffer = indexBuffer;
+        packet.primitiveType = primitiveType;
+        packet.primitiveCount = GetPrimitiveCount(indexCount, primitiveType);
+        packet.vertexLayoutUID = vertexLayoutId;
+        packet.startIndex = startIndex;        
+    }
+}
     
 } //
 
