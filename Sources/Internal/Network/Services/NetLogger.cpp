@@ -157,7 +157,7 @@ String NetLogger::TimestampToString(time_t timestamp) const
     localtime_r(&timestamp, &tms);
 #endif  // __DAVAENGINE_WINDOWS__
     Array<char8, 50> buf = {0};
-    strftime(buf.data(), buf.size(), "%Y-%m-%d %H:%M:%S", &tms);
+    std::strftime(buf.data(), buf.size(), "%Y-%m-%d %H:%M:%S", &tms);
     return String(buf.data());
 }
 
