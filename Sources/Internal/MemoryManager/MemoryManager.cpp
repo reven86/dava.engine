@@ -181,6 +181,8 @@ DAVA_NOINLINE void* MemoryManager::Allocate(size_t size, uint32 poolIndex)
 {
     assert(ALLOC_POOL_TOTAL < poolIndex && poolIndex < MAX_ALLOC_POOL_COUNT);
 
+    auto start = std::chrono::high_resolution_clock::now();
+
     // On zero-sized allocation request allocate 1 byte to return unique memory block
     size_t totalSize = sizeof(MemoryBlock) + (size != 0 ? size : 1);
     if (totalSize & (BLOCK_ALIGN - 1))
@@ -224,6 +226,9 @@ DAVA_NOINLINE void* MemoryManager::Allocate(size_t size, uint32 poolIndex)
             LockType lock(bktraceMutex);
             InsertBacktrace(backtrace);
         }
+
+        auto end = std::chrono::high_resolution_clock::now();
+        std::chrono::nanoseconds diff = end - start;
         return static_cast<void*>(block + 1);
     }
     return nullptr;
@@ -405,7 +410,7 @@ void MemoryManager::InternalDeallocate(void* ptr) DAVA_NOEXCEPT
 uint32 MemoryManager::GetSystemMemoryUsage() const
 {
 #if defined(__DAVAENGINE_WIN32__)
-#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
+#elif defined(__DAVAENGINE_APPLE__)
     struct task_basic_info info;
     mach_msg_type_number_t size = sizeof(info);
     if (KERN_SUCCESS == task_info(mach_task_self(), TASK_BASIC_INFO, (task_info_t)&info, &size))
