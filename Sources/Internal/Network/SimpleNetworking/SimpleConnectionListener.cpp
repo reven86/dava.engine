@@ -28,13 +28,44 @@
 
 
 #include "Network/SimpleNetworking/SimpleConnectionListener.h"
+#include "Network/SimpleNetworking/Private/SimpleConnectionListenerPrivate.h"
 
 namespace DAVA
 {
 namespace Net
 {
 
+ConnectionListener::ConnectionListener(const ConnectionWaitFunction& connWaiter,
+                                       const Endpoint& endPoint,
+                                       NotificationType notifType)
+{
+    pimpl = std::make_unique<ConnectionListenerPrivate>(connWaiter, endPoint, notifType);
+}
 
+ConnectionListener::ConnectionListener(IConnectionPtr& conn, NotificationType notifType)
+{
+    pimpl = std::make_unique<ConnectionListenerPrivate>(conn, notifType);
+}
+
+IConnectionPtr ConnectionListener::GetConnection() const
+{
+    return pimpl->GetConnection();
+}
+
+void ConnectionListener::AddConnectionCallback(const ConnectionCallback& cb)
+{
+    return pimpl->AddConnectionCallback(cb);
+}
+
+void ConnectionListener::AddDataReceiveCallback(const DataReceiveCallback& cb)
+{
+    return pimpl->AddDataReceiveCallback(cb);
+}
+
+void ConnectionListener::Start()
+{
+    return pimpl->Start();
+}
 
 }  // namespace Net
 }  // namespace DAVA

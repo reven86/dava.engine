@@ -640,11 +640,11 @@ void Core::InitializeNetwork()
     Net::Endpoint endPoint("127.0.0.1", 1911);
     auto netLoggerService = std::make_unique<Net::NetLogger>();
 
-    //TODO: make a normal service id
-    bool result =
-        simpleNetCore->RegisterService(777, std::move(netLoggerService), endPoint);
+    //TODO: make a normal service name
+    size_t serviceId = simpleNetCore->RegisterService(
+        std::move(netLoggerService), Net::IConnectionManager::kServerRole, endPoint, "NetLogger");
 
-    DVASSERT_MSG(result, "Failed to create a NetLogger service");
+    DVASSERT_MSG(serviceId != 0, "Failed to create a NetLogger service");
     
 #endif  // __DAVAENGINE_WIN_UAP__
 }

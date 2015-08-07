@@ -73,5 +73,19 @@ const Endpoint& ChannelBridge::RemoteEndpoint() const
     return connection->GetEndpoint();
 }
 
+SimpleNetServicePrivate::SimpleNetServicePrivate(size_t serviceId,
+                                                 std::unique_ptr<NetService>&& service,
+                                                 const Endpoint& endPoint,
+                                                 const String& serviceName,
+                                                 ConnectionListener&& connectionListener)
+    : servId(serviceId)
+    , netService(std::move(service))
+    , servEndPoint(endPoint)
+    , servName(serviceName)
+    , listener(std::move(connectionListener))
+{
+    listener.Start();
+}
+
 }  // namespace Net
 }  // namespace DAVA

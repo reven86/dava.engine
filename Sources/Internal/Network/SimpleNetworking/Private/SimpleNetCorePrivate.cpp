@@ -30,20 +30,63 @@
 #include "Network/SimpleNetworking/Private/SimpleNetCorePrivate.h"
 
 #include "Network/SimpleNetworking/SimpleConnectionListener.h"
+#include "Network/SimpleNetworking/SimpleNetService.h"
+#include "Network/SimpleNetworking/Private/SimpleConnectionListenerPrivate.h"
 
 namespace DAVA
 {
 namespace Net
 {
 
-bool SimpleNetCorePrivate::RegisterService(size_t serviceId,
-                                           std::unique_ptr<NetService>&& service,
-                                           const Endpoint& endPoint,
-                                           const String& serviceName)
+size_t SimpleNetCorePrivate::RegisterService(std::unique_ptr<NetService>&& service,
+                                            IConnectionManager::ConnectionRole role,
+                                            const Endpoint& endPoint,
+                                            const String& serviceName,
+                                            NotificationType notifType)
+{
+    if (IsServiceRegistered(serviceName))
+        return 0;
+
+    size_t serviceId = serviceIdGenerator++;
+
+    //connection wait function
+    IConnectionManager* connManager = GetConnectionManager();
+    auto connWaiter = [=](const Endpoint& endPoint) -> IConnectionPtr
+    {
+        unsigned roles = connManager->GetAvailableConnectionRoles();
+        if ((roles & role) == 0)
+        {
+            DVASSERT_MSG(false, "Requsted connection role for NetService is unavailable");
+            return IConnectionPtr();
+        }
+
+        return connManager->CreateConnection(role, endPoint);
+    };
+
+    //create net service
+    ConnectionListener connListener(connWaiter, endPoint, notifType);
+    SimpleNetService netService
+        (serviceId, std::move(service), endPoint, serviceName, std::move(connListener));
+
+    services.emplace(serviceId, std::move(netService));
+    return serviceId;
+}
+
+bool SimpleNetCorePrivate::IsServiceRegistered(size_t serviceId) const
 {
     auto iter = services.find(serviceId);
-    if (iter != services.end())
-        return false;
+    return iter != services.end();
+}
+
+bool SimpleNetCorePrivate::IsServiceRegistered(const String& serviceName) const
+{
+    for (const auto& iter : services)
+    {
+        if (iter.second.GetServiceName() == serviceName)
+        {
+            return true;
+        }
+    }
 
     return false;
 }

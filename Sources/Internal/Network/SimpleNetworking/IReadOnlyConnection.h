@@ -35,6 +35,8 @@
 #include <type_traits>
 
 #include "Base/BaseTypes.h"
+#include "Base/RefPtr.h"
+#include "Base/TypeHolders.h"
 #include "Network/Base/Endpoint.h"
 
 namespace DAVA
@@ -45,7 +47,7 @@ namespace Net
 //--------------------------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------------------------
-struct IReadOnlyConnection
+struct IReadOnlyConnection : public RefCounter
 {
     virtual ~IReadOnlyConnection() {}
     
@@ -66,7 +68,7 @@ struct IReadOnlyConnection
     template <typename Container>
     void Read(Container& container, size_t count);
 };
-using IReadOnlyConnectionPtr = std::shared_ptr<IReadOnlyConnection>;
+using IReadOnlyConnectionPtr = RefPtr<IReadOnlyConnection>;
 
 //--------------------------------------------------------------------------------------------------
 //Implementation of template methods

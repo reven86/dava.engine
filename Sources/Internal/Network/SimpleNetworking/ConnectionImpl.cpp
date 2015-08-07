@@ -27,67 +27,61 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_SIMPLE_NET_CORE_H__
-#define __DAVAENGINE_SIMPLE_NET_CORE_H__
+#include "Network/SimpleNetworking/ConnectionImpl.h"
 
-#include <memory.h>
+#include <libuv/uv.h>
 
-#include "Base/BaseTypes.h"
-#include "Base/Singleton.h"
-#include "Network/NetService.h"
-#include "Network/Base/Endpoint.h"
-#include "Network/SimpleNetworking/IConnection.h"
+#include "Concurrency/LockGuard.h"
+#include "Debug/DVAssert.h"
+#include "Network/SimpleNetworking/SimpleAbstractSocket.h"
 
 namespace DAVA
 {
 namespace Net
 {
-
-enum class NotificationType
-{
-    kMainThread,
-    kAnyThread
-};
     
-struct IConnectionManager
+ConnectionImpl::ConnectionImpl(ISimpleAbstractSocketPtr&& abstractSocket)
+    : socket(std::move(abstractSocket)) 
 {
-    enum ConnectionRole
-    {
-        kServerRole = 0x1,
-        kClientRole = 0x2
-    };
+    DVASSERT_MSG(socket, "Socket cannot be empty");
+}
     
-    virtual unsigned GetAvailableConnectionRoles() = 0;
-    virtual IConnectionPtr CreateConnection(ConnectionRole role,
-                                            const Endpoint& endPoint) = 0;
-};
-
-class SimpleNetCore : public Singleton<SimpleNetCore>
+IReadOnlyConnection::ChannelState ConnectionImpl::GetChannelState()
 {
-public:
-    SimpleNetCore();
+    LockGuard<Mutex> lock(mutex);
+
+    bool connectionEstablished = socket->IsConnectionEstablished();
+    return connectionEstablished ? ChannelState::kConnected : ChannelState::kDisconnected;
+}
+
+const Endpoint& ConnectionImpl::GetEndpoint()
+{
+    return socket->GetEndpoint();
+}
+
+size_t ConnectionImpl::ReadSome(char* buffer, size_t bufSize)
+{
+    LockGuard<Mutex> lock(mutex);
+
+    size_t read = socket->Recv(buffer, bufSize, false);
+    return read > 0;
+}
+
+bool ConnectionImpl::ReadAll(char* buffer, size_t bufSize)
+{
+    LockGuard<Mutex> lock(mutex);
+
+    size_t read = socket->Recv(buffer, bufSize, true);
+    return read > 0;
+}
+
+size_t ConnectionImpl::Write(const char* buffer, size_t bufSize)
+{
+    LockGuard<Mutex> lock(mutex);
+
+    size_t wrote = socket->Send(buffer, bufSize);
+    return wrote;
+}
     
-    IConnectionManager* GetConnectionManager();
-
-    bool IsServiceRegistered(size_t serviceId) const;
-    bool IsServiceRegistered(const String& serviceName) const;
-
-    size_t RegisterService(std::unique_ptr<NetService>&& service,
-                           IConnectionManager::ConnectionRole role,
-                           const Endpoint& endPoint,
-                           const String& serviceName,
-                           NotificationType notifType = NotificationType::kAnyThread);
-    void UnregisterAllServices();
-
-    String GetServiceName(size_t serviceId) const;
-    size_t GetServiceId(const String& serviceName) const;
-    Endpoint GetServiceEndpoint(size_t serviceId) const;
-        
-private:
-    std::unique_ptr<class SimpleNetCorePrivate> pimpl;
-};
-
 }  // namespace Net
 }  // namespace DAVA
-
-#endif  // __DAVAENGINE_SIMPLE_NET_CORE_H__

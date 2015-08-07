@@ -61,7 +61,7 @@ IConnectionPtr WaitIncomingConnection(const Endpoint& endPoint)
     socket->Listen(endPoint);
     socket->Accept();
     
-    return std::make_shared<Connection>(std::move(socket));
+    return MakeRefPtr<Connection>(std::move(socket));
 }
 
 IConnectionPtr CreateConnection(const Endpoint& endPoint) 

@@ -27,67 +27,36 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_SIMPLE_NET_CORE_H__
-#define __DAVAENGINE_SIMPLE_NET_CORE_H__
+#ifndef __DAVAENGINE_CONNECTION_IMPL_H__
+#define __DAVAENGINE_CONNECTION_IMPL_H__
 
-#include <memory.h>
-
-#include "Base/BaseTypes.h"
-#include "Base/Singleton.h"
-#include "Network/NetService.h"
-#include "Network/Base/Endpoint.h"
+#include "Concurrency/Mutex.h"
+#include "Network/SimpleNetworking/SimpleAbstractSocket.h"
 #include "Network/SimpleNetworking/IConnection.h"
 
 namespace DAVA
 {
 namespace Net
 {
-
-enum class NotificationType
-{
-    kMainThread,
-    kAnyThread
-};
     
-struct IConnectionManager
-{
-    enum ConnectionRole
-    {
-        kServerRole = 0x1,
-        kClientRole = 0x2
-    };
-    
-    virtual unsigned GetAvailableConnectionRoles() = 0;
-    virtual IConnectionPtr CreateConnection(ConnectionRole role,
-                                            const Endpoint& endPoint) = 0;
-};
-
-class SimpleNetCore : public Singleton<SimpleNetCore>
+class ConnectionImpl : public IConnection
 {
 public:
-    SimpleNetCore();
+    ConnectionImpl(ISimpleAbstractSocketPtr&& abstractSocket);
     
-    IConnectionManager* GetConnectionManager();
+    ChannelState GetChannelState() override;
+    const Endpoint& GetEndpoint() override;
 
-    bool IsServiceRegistered(size_t serviceId) const;
-    bool IsServiceRegistered(const String& serviceName) const;
+    size_t ReadSome(char* buffer, size_t bufSize) override;
+    bool ReadAll(char* buffer, size_t bufSize) override;
+    size_t Write(const char* buffer, size_t bufSize) override;
 
-    size_t RegisterService(std::unique_ptr<NetService>&& service,
-                           IConnectionManager::ConnectionRole role,
-                           const Endpoint& endPoint,
-                           const String& serviceName,
-                           NotificationType notifType = NotificationType::kAnyThread);
-    void UnregisterAllServices();
-
-    String GetServiceName(size_t serviceId) const;
-    size_t GetServiceId(const String& serviceName) const;
-    Endpoint GetServiceEndpoint(size_t serviceId) const;
-        
 private:
-    std::unique_ptr<class SimpleNetCorePrivate> pimpl;
+    ISimpleAbstractSocketPtr socket;
+    Mutex mutex;
 };
 
 }  // namespace Net
 }  // namespace DAVA
 
-#endif  // __DAVAENGINE_SIMPLE_NET_CORE_H__
+#endif  // __DAVAENGINE_CONNECTION_IMPL_H__

@@ -45,14 +45,19 @@ public:
                             std::unique_ptr<NetService>&& service,
                             const Endpoint& endPoint,
                             const String& serviceName,
-                            ConnectionListener&& connectionListener) {}
+                            ConnectionListener&& connectionListener);
 
-    NetService* GetNetService() { return nullptr; }
-    String GetServiceName() const { return ""; }
-    size_t GetServiceId() const { return 0; }
-    Endpoint GetServiceEndpoint() const { return Endpoint(); }
+    NetService* GetNetService() { return netService.get(); }
+    String GetServiceName() const { return servName; }
+    size_t GetServiceId() const { return servId; }
+    Endpoint GetServiceEndpoint() const { return servEndPoint; }
 
 private:
+    size_t servId;
+    std::unique_ptr<NetService> netService;
+    Endpoint servEndPoint;
+    String servName;
+    ConnectionListener listener;
 };
 
 }  // namespace Net

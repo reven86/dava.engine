@@ -53,7 +53,7 @@ struct IConnection : public IReadOnlyConnection
     template <typename T>
     bool Write(const Vector<T>& vect);
 };
-using IConnectionPtr = std::shared_ptr<IConnection>;
+using IConnectionPtr = RefPtr<IConnection>;
 
 //--------------------------------------------------------------------------------------------------
 //

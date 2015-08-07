@@ -42,10 +42,16 @@ namespace Net
 class SimpleNetCorePrivate
 {
 public:
-    bool RegisterService(size_t serviceId, 
-                         std::unique_ptr<NetService>&& service,
-                         const Endpoint& endPoint,
-                         const String& serviceName);
+    IConnectionManager* GetConnectionManager() { return nullptr; }
+
+    bool IsServiceRegistered(size_t serviceId) const;
+    bool IsServiceRegistered(const String& serviceName) const;
+    
+    size_t RegisterService(std::unique_ptr<NetService>&& service,
+                           IConnectionManager::ConnectionRole role,
+                           const Endpoint& endPoint,
+                           const String& serviceName,
+                           NotificationType notifType);
     void UnregisterAllServices();
 
     String GetServiceName(size_t serviceId) const;
@@ -54,6 +60,7 @@ public:
 
 private:
     Map<size_t, SimpleNetService> services;
+    size_t serviceIdGenerator = 1;
 };
 
 }  // namespace Net

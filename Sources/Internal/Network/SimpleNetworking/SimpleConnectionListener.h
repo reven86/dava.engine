@@ -32,6 +32,7 @@
 
 #include <functional>
 #include "Network/SimpleNetworking/IConnection.h"
+#include "Network/SimpleNetworking/SimpleNetCore.h"
 
 namespace DAVA
 {
@@ -52,12 +53,6 @@ public:
         kConnectionListening
     };
 
-    enum class NotificationType
-    {
-        kMainThread,
-        kAnyThread
-    };
-
     ConnectionListener(const ConnectionWaitFunction& connWaiter,
                        const Endpoint& endPoint,
                        NotificationType notifType = NotificationType::kAnyThread);
@@ -69,16 +64,10 @@ public:
     void AddConnectionCallback(const ConnectionCallback& cb);
     void AddDataReceiveCallback(const DataReceiveCallback& cb);
 
+    void Start();
+
 private:
-    void Start(const ConnectionWaitFunction& connectionWaiter, const Endpoint& endPoint);
-    void Start(IConnectionPtr& conn);
-
     std::unique_ptr<class ConnectionListenerPrivate> pimpl;
-
-    /*RefPtr<Thread> thread;
-    IConnectionPtr connection;
-    List<ConnectionCallback> onConnectCallbacks;
-    List<DataReceiveCallback> onDataReceiveCallbacks;*/
 };
 
 }  // namespace Net

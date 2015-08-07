@@ -27,67 +27,53 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_SIMPLE_NET_CORE_H__
-#define __DAVAENGINE_SIMPLE_NET_CORE_H__
+#ifndef __DAVAENGINE_SIMPLE_CONNECTION_LISTENER_PRIVATE_H__
+#define __DAVAENGINE_SIMPLE_CONNECTION_LISTENER_PRIVATE_H__
 
-#include <memory.h>
-
-#include "Base/BaseTypes.h"
-#include "Base/Singleton.h"
-#include "Network/NetService.h"
-#include "Network/Base/Endpoint.h"
-#include "Network/SimpleNetworking/IConnection.h"
+#include "Concurrency/Atomic.h"
+#include "Concurrency/ConcurrentObject.h"
+#include "Concurrency/Spinlock.h"
+#include "Concurrency/Thread.h"
+#include "Network/SimpleNetworking/SimpleConnectionListener.h"
 
 namespace DAVA
 {
 namespace Net
 {
 
-enum class NotificationType
-{
-    kMainThread,
-    kAnyThread
-};
-    
-struct IConnectionManager
-{
-    enum ConnectionRole
-    {
-        kServerRole = 0x1,
-        kClientRole = 0x2
-    };
-    
-    virtual unsigned GetAvailableConnectionRoles() = 0;
-    virtual IConnectionPtr CreateConnection(ConnectionRole role,
-                                            const Endpoint& endPoint) = 0;
-};
+template <typename T>
+using ConcurrentList = ConcurrentObject<List<T>>;
 
-class SimpleNetCore : public Singleton<SimpleNetCore>
+template <typename T>
+using ConcurrentRefPtr = ConcurrentObject<RefPtr<T>, Spinlock>;
+
+class ConnectionListenerPrivate
 {
 public:
-    SimpleNetCore();
-    
-    IConnectionManager* GetConnectionManager();
+    ConnectionListenerPrivate(const ConnectionWaitFunction& connWaiter,
+                              const Endpoint& endPoint,
+                              NotificationType notifType);
 
-    bool IsServiceRegistered(size_t serviceId) const;
-    bool IsServiceRegistered(const String& serviceName) const;
+    ConnectionListenerPrivate(IConnectionPtr& conn, NotificationType notifType);
 
-    size_t RegisterService(std::unique_ptr<NetService>&& service,
-                           IConnectionManager::ConnectionRole role,
-                           const Endpoint& endPoint,
-                           const String& serviceName,
-                           NotificationType notifType = NotificationType::kAnyThread);
-    void UnregisterAllServices();
+    IConnectionPtr GetConnection() const;
+    void AddConnectionCallback(const ConnectionCallback& cb);
+    void AddDataReceiveCallback(const DataReceiveCallback& cb);
 
-    String GetServiceName(size_t serviceId) const;
-    size_t GetServiceId(const String& serviceName) const;
-    Endpoint GetServiceEndpoint(size_t serviceId) const;
-        
+    void Start();
+
 private:
-    std::unique_ptr<class SimpleNetCorePrivate> pimpl;
+    void Start(const ConnectionWaitFunction& connectionWaiter, const Endpoint& endPoint);
+    void Start(IConnectionPtr& conn);
+
+    RefPtr<Thread> thread;
+    mutable ConcurrentRefPtr<IConnection> connection;
+    ConcurrentList<ConnectionCallback> onConnectCallbacks;
+    ConcurrentList<DataReceiveCallback> onDataReceiveCallbacks;
+    Atomic<NotificationType> notificationType;
 };
 
 }  // namespace Net
 }  // namespace DAVA
 
-#endif  // __DAVAENGINE_SIMPLE_NET_CORE_H__
+#endif  // __DAVAENGINE_SIMPLE_CONNECTION_LISTENER_PRIVATE_H__

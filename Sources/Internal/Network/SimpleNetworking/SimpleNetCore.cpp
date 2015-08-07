@@ -35,13 +35,29 @@ namespace Net
 {
 
 SimpleNetCore::SimpleNetCore() : pimpl(new SimpleNetCorePrivate) {}
-
-bool SimpleNetCore::RegisterService(size_t serviceId,
-                                    std::unique_ptr<NetService>&& service,
-                                    const Endpoint& endPoint,
-                                    const String& serviceName)
+    
+IConnectionManager* SimpleNetCore::GetConnectionManager()
 {
-    return pimpl->RegisterService(serviceId, std::move(service), endPoint, serviceName);
+    return pimpl->GetConnectionManager();
+}
+
+bool SimpleNetCore::IsServiceRegistered(size_t serviceId) const
+{
+    return pimpl->IsServiceRegistered(serviceId);
+}
+
+bool SimpleNetCore::IsServiceRegistered(const String& serviceName) const
+{
+    return pimpl->IsServiceRegistered(serviceName);
+}
+
+size_t SimpleNetCore::RegisterService(std::unique_ptr<NetService>&& service,
+                                      IConnectionManager::ConnectionRole role,
+                                      const Endpoint& endPoint,
+                                      const String& serviceName,
+                                      NotificationType notifType)
+{
+    return pimpl->RegisterService(std::move(service), role, endPoint, serviceName, notifType);
 }
 
 void SimpleNetCore::UnregisterAllServices()

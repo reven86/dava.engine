@@ -39,16 +39,9 @@ namespace DAVA
 template <class T> class RefPtr
 {
 public:
-	RefPtr()
-	{
-		_ptr = 0;
-	}
+	RefPtr() DAVA_NOEXCEPT : _ptr(nullptr) {}
 	
-	explicit RefPtr(T * p)
-	{
-		_ptr = p;
-	}
-	
+	explicit RefPtr(T * p) DAVA_NOEXCEPT : _ptr(p) {}
 	
 	/// reinitializes pointer without incrementing reference
 	void Set(T * p)
@@ -63,26 +56,29 @@ public:
 		SafeRelease(_ptr);
 	}
 		
-	RefPtr(const RefPtr<T> & rp)
+	RefPtr(const RefPtr<T> & rp) DAVA_NOEXCEPT : _ptr(rp._ptr)
 	{
-		_ptr = rp._ptr;
-		
 		SafeRetain(_ptr);
 	}
+
+    RefPtr(RefPtr<T>&& rp) DAVA_NOEXCEPT : RefPtr()
+    {
+        std::swap(_ptr, rp._ptr);
+    }
 	
-	template <class Other> RefPtr(RefPtr < Other > & rp)
+	template <class Other> RefPtr(RefPtr < Other > & rp) DAVA_NOEXCEPT
 	{
 		_ptr = rp.Get();
 		
 		SafeRetain(_ptr);
 	}
 	
-	T * Get() const
+	T * Get() const DAVA_NOEXCEPT
 	{
 		return _ptr;
 	}
 	
-	bool Valid() const
+	bool Valid() const DAVA_NOEXCEPT
 	{
 		return _ptr != 0;
 	}
@@ -145,7 +141,6 @@ public:
 private:
 	T * _ptr;
 	
-	
 	template <class Other> void assign(const RefPtr<Other> & rp)
 	{
 		if (_ptr == rp.Get())
@@ -158,6 +153,11 @@ private:
 	}
 };
 
+template <typename T, typename ... Args>
+RefPtr<T> MakeRefPtr(Args&&... args)
+{
+    return RefPtr<T>(new T(std::forward<Args>(args)...));
+}
 
 } // ns
 
