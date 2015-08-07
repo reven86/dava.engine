@@ -81,7 +81,7 @@ String ConvertCFormatListToString(const char8* format, va_list pargs)
     return String("never happen! ");
 }
 
-void Logger::Logv(eLogLevel ll, const char8* text, va_list li)
+void Logger::Logv(eLogLevel ll, const char8* text, va_list li) const
 {
     if (!text || text[0] == '\0')
         return;
@@ -136,12 +136,12 @@ Logger::~Logger()
     }
 }
 
-Logger::eLogLevel Logger::GetLogLevel()
+Logger::eLogLevel Logger::GetLogLevel() const
 {
     return logLevel;
 }
 
-const char8 * Logger::GetLogLevelString(eLogLevel ll)
+const char8 * Logger::GetLogLevelString(eLogLevel ll) const
 {
 #ifndef __DAVAENGINE_WINDOWS__
     static_assert(logLevelString.size() == LEVEL__DISABLE,
@@ -155,7 +155,7 @@ void Logger::SetLogLevel(eLogLevel ll)
     logLevel = ll;
 }
 
-void Logger::Log(eLogLevel ll, const char8* text, ...)
+void Logger::Log(eLogLevel ll, const char8* text, ...) const
 {
     if (ll < logLevel)
         return;
@@ -252,7 +252,7 @@ void Logger::SetLogPathname(const FilePath & filepath)
     logFilename = filepath;
 }
 
-void Logger::FileLog(eLogLevel ll, const char8* text)
+void Logger::FileLog(eLogLevel ll, const char8* text) const
 {
     if (nullptr != FileSystem::Instance())
     {
@@ -268,7 +268,7 @@ void Logger::FileLog(eLogLevel ll, const char8* text)
     }
 }
 
-void Logger::CustomLog(eLogLevel ll, const char8* text)
+void Logger::CustomLog(eLogLevel ll, const char8* text) const
 {
     for (auto output : customOutputs)
     {
@@ -281,12 +281,12 @@ void Logger::EnableConsoleMode()
     consoleModeEnabled = true;
 }
 
-void Logger::ConsoleLog(DAVA::Logger::eLogLevel ll, const char8 *text)
+void Logger::ConsoleLog(DAVA::Logger::eLogLevel ll, const char8 *text) const
 {
     printf("[%s] %s", GetLogLevelString(ll), text);
 }
 
-void Logger::Output(eLogLevel ll, const char8* formatedMsg)
+void Logger::Output(eLogLevel ll, const char8* formatedMsg) const
 {
     CustomLog(ll, formatedMsg);
     // print platform log or write log to file

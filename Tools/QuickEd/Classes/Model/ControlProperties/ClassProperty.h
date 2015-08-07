@@ -52,7 +52,7 @@ public:
     const DAVA::String &GetClassName() const;
     ControlNode *GetControlNode() const;
     
-protected:
+private:
     ControlNode *control; // weak
 };
 
