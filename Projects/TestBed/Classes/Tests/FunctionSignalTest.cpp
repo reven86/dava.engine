@@ -53,13 +53,13 @@ FunctionSignalTest::FunctionSignalTest()
     : BaseScreen("FunctionSignalTest")
 { }
 
-int test(int a, int b, int i)
+DAVA_NOINLINE int test(int a, int b, int i)
 {
     return (i * (a + b));
 }
 
 struct TestStruct {
-    int test(int a, int b, int i)
+    DAVA_NOINLINE int test(int a, int b, int i)
     {
         return (i * (a + b));
     }
@@ -143,7 +143,7 @@ void DoFunctionSignalTest(FunctionSignalTest *fst)
     });
     
     int cap1 = 10, cap2 = 20;
-    auto lam = [&cap1, &cap2](int index) -> int { return cap1 + cap2 * index; };
+    auto lam = [&cap1, &cap2](int index) -> int { return test(cap1, cap2, index); };
     std::function<int(int)> stdLam(lam);
     Function<int(int)> davaLam(lam);
     
