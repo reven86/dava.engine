@@ -49,6 +49,7 @@ namespace DAVA
 {
 
 class UIScreen;
+class UILayoutSystem;
 class UIStyleSheetSystem;
 class UIScreenshoter;
 
@@ -298,8 +299,11 @@ public:
 
     void UI3DViewAdded();
     void UI3DViewRemoved();
-
-    UIStyleSheetSystem* GetStyleSheetSystem();
+    
+    bool IsRtl() const;
+    void SetRtl(bool rtl);
+    UILayoutSystem *GetLayoutSystem() const;
+    UIStyleSheetSystem* GetStyleSheetSystem() const;
     UIScreenshoter* GetScreenshoter();
 
 private:
@@ -319,6 +323,7 @@ private:
 
     void CopyTouchData(UIEvent* dst, const UIEvent* src);
 
+    UILayoutSystem *layoutSystem;
     UIStyleSheetSystem* styleSheetSystem;
     UIScreenshoter* screenshoter;
 
@@ -347,7 +352,7 @@ private:
 	UIGeometricData baseGeometricData;
 
     int32 ui3DViewCount;
-	
+
 	friend class UIScreenTransition;
 	friend class UIScreenManager;
 };

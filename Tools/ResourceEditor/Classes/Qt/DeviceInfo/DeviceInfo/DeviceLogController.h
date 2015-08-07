@@ -36,7 +36,7 @@
 #include <Network/PeerDesription.h>
 #include <Network/NetService.h>
 
-class DeviceLogWidget;
+class LogWidget;
 
 class DeviceLogController : public QObject
                           , public DAVA::Net::NetService
@@ -57,7 +57,7 @@ private:
     void Output(const DAVA::String& msg);
 
 private:
-    QPointer<DeviceLogWidget> view;
+    QPointer<LogWidget> view;
     QPointer<QWidget> parentWidget;
     DAVA::Net::PeerDescription peer;
 };

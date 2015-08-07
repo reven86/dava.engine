@@ -96,6 +96,7 @@ private:
     bool renderToTexture;
     bool isSingleLine = true;
     int deltaMoveControl = 0;
+    bool isNeedToUpdateTexture = false;
 };
 };
 

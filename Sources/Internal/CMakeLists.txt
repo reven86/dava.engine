@@ -1,5 +1,4 @@
-cmake_minimum_required( VERSION 3.0 )
-
+cmake_minimum_required (VERSION 3.0)
 project( DavaFramework )
 
 set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../CMake/Modules/" ) 
@@ -49,6 +48,7 @@ if( ANDROID )
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libuv_android.a"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libiconv_android.so"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/liblua_android.a"
+         "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libwebp_android.a"
          )
 
     list ( APPEND LIST_LIBRARIES
@@ -57,7 +57,7 @@ if( ANDROID )
          "-llog"
          "-landroid"
          "-lGLESv2"
-         "-lstdc++" 
+         "-lstdc++"
          )
 
     list ( APPEND LIST_SHARED_LIBRARIES ${LIST_LIBRARIES} )
@@ -201,7 +201,7 @@ endforeach ()
 install_libraries( ${PROJECT_NAME} )
 
 if ( WINDOWS_UAP )
-    set_property(TARGET ${PROJECT_NAME} PROPERTY VS_MOBILE_EXTENSIONS_VERSION "10.0.0.1")
+    set_property(TARGET ${PROJECT_NAME} PROPERTY VS_MOBILE_EXTENSIONS_VERSION ${WINDOWS_UAP_MOBILE_EXT_SDK_VERSION} )
 endif()
 
 

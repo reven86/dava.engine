@@ -36,12 +36,14 @@
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 
+#include "Platform/TemplateWin32/DeviceDetectorWinUAP.h"
+
 #include "Iphlpapi.h"
 #include "winsock2.h"
 
-using namespace Windows::Foundation;
-using namespace Windows::UI::Core;
-using namespace Windows::Graphics::Display;
+using namespace ::Windows::Foundation;
+using namespace ::Windows::UI::Core;
+using namespace ::Windows::Graphics::Display;
 
 namespace DAVA
 {
@@ -122,27 +124,11 @@ DeviceInfo::NetworkInfo DeviceInfo::GetNetworkInfo()
     return NetworkInfo();
 }
 
-#if defined (__DAVAENGINE_WIN_UAP__)
 void DeviceInfo::InitializeScreenInfo(int32 width, int32 height)
 {
     screenInfo.width = width;
     screenInfo.height = height;
 }
-#elif //  __DAVAENGINE_WIN_UAP__
-void DeviceInfo::InitializeScreenInfo()
-{
-}
-#endif
-
-#if defined (__DAVAENGINE_WIN_UAP__)
-bool DeviceInfo::IsRunningOnEmulator()
-{
-    using namespace Windows::Security::ExchangeActiveSyncProvisioning;
-    EasClientDeviceInformation deviceInfo;
-    bool isEmulator = ("Virtual" == deviceInfo.SystemProductName);
-    return isEmulator;
-}
-#endif //  __DAVAENGINE_WIN_UAP__
 
 bool FillStorageSpaceInfo(DeviceInfo::StorageInfo& storage_info)
 {
@@ -197,6 +183,31 @@ List<DeviceInfo::StorageInfo> DeviceInfo::GetStoragesList()
     }
 
     return result;
+}
+
+bool DeviceInfo::IsHIDConnect(eHIDType hid)
+{
+    return DeviceDetector::GetDeviceDetector()->IsHIDConnected(hid);
+}
+
+// warning!!! notification occur in DeviceWatcher's thread
+// for notify in main's thread use MainThreadRedirector
+// it pass call from Watcher's thread in main
+// for example DeviceInfo::SubscribeHID(DeviceInfo::eHIDType::HID_MOUSE_TYPE, MainThreadRedirector([this](int32 a, bool b) { OnMouseAdd(a, b);}));
+void DeviceInfo::SubscribeHID(eHIDType hid, HIDCallBackFunc&& func)
+{
+    DeviceDetector::GetDeviceDetector()->AddCallBack(hid, std::forward<DeviceInfo::HIDCallBackFunc>(func));
+}
+
+bool DeviceInfo::IsMobileMode()
+{
+    return Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent("Windows.Phone.PhoneContract", 1);
+}
+
+bool DeviceInfo::IsRunningOnEmulator()
+{
+    Windows::Security::ExchangeActiveSyncProvisioning::EasClientDeviceInformation deviceInfo;
+    return ("Virtual" == deviceInfo.SystemProductName);
 }
 
 }

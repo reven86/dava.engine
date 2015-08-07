@@ -22,20 +22,16 @@ if( ANDROID )
 
 elseif ( WINDOWS_UAP )
 
-    #define system name and version for windows universal application
-    set ( CMAKE_SYSTEM_NAME "${WINDOWS_UAP_PLATFORM_NAME}" )
-    set ( CMAKE_SYSTEM_VERSION "${WINDOWS_UAP_PLATRORM_VERSION}" )
-
     if ( DAVA_MEMORY_PROFILER )
         message(WARNING "Windows Store platform detected. Memory profiling is disabled")
         remove_definitions( -DDAVA_MEMORY_PROFILING_ENABLE )
         unset ( DAVA_MEMORY_PROFILER )
     endif ()
-
+    
     #no fmod on Win10
     set ( DISABLE_SOUNDS true )
     message(WARNING "Windows Store platform detected. FMOD is disabled")
-	
+    
 endif()
 
 include ( PlatformSettings     )

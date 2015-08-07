@@ -117,6 +117,17 @@ void CorePlatformWinUAP::SetCursorPinning(bool isPinning)
     });
 }
 
+// temporary decision, need change when signal will be enabled
+DeviceInfo::HIDCallBackFunc MainThreadRedirector(DeviceInfo::HIDCallBackFunc func)
+{
+    return [=](DeviceInfo::eHIDType hid, bool b) {
+        CorePlatformWinUAP* core = static_cast<CorePlatformWinUAP*>(Core::Instance());
+        DVASSERT(nullptr != core && "In MainThreadRedirector() function CorePlatformWinUAP* = nullptr");
+        core->RunOnMainThread([=]() { func(hid, b); });
+
+    };
+}
+
 }   // namespace DAVA
 
 #endif  // __DAVAENGINE_WIN_UAP__

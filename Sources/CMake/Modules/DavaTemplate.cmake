@@ -12,7 +12,6 @@
 #set( WIN32_RESOURCES )
 #
 #set( ANDROID_USE_STANDART_TEMLATE )
-#set( ANDROID_DATA_FOLDER          )
 #set( ANDROID_PACKAGE              )
 #set( ANDROID_APP_NAME             )
 #set( ANDROID_ACTIVITY_APP_NAME    )
@@ -142,11 +141,9 @@ elseif ( WINDOWS_UAP )
 			${WIN_UAP_MANIFESTS_DIR}/Package_vc${COMPILER_VERSION}.${PLATFORM}.appxmanifest.in
 			${CMAKE_CURRENT_BINARY_DIR}/${APP_MANIFEST_NAME}
 			@ONLY)
-			
-		configure_file(
-			${WIN_UAP_CONF_DIR}/TemporaryKey.pfx
-			${CMAKE_CURRENT_BINARY_DIR}/${APP_TEMPKEY_NAME}
-			@ONLY)
+
+        file ( COPY ${WIN_UAP_CONF_DIR}/TemporaryKey.pfx DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+        file ( RENAME ${CMAKE_CURRENT_BINARY_DIR}/TemporaryKey.pfx ${CMAKE_CURRENT_BINARY_DIR}/${APP_TEMPKEY_NAME} )
 	endif()
 	
 	if (WINDOWS_PHONE8)
@@ -166,9 +163,9 @@ elseif ( WINDOWS_UAP )
 		)
 	endif()
 	
-    set(RESOURCE_FILES
-		${CONTENT_FILES} ${DEBUG_CONTENT_FILES} ${RELEASE_CONTENT_FILES} ${ASSET_FILES} ${STRING_FILES} )
-	list( APPEND RESOURCES_LIST ${RESOURCE_FILES} )
+    set(RESOURCE_FILES ${CONTENT_FILES} ${DEBUG_CONTENT_FILES} ${RELEASE_CONTENT_FILES} 
+        ${ASSET_FILES} ${STRING_FILES} ${CMAKE_CURRENT_BINARY_DIR}/${APP_TEMPKEY_NAME} )
+    list( APPEND RESOURCES_LIST ${RESOURCE_FILES} )
 	
 	#add dll's to project and package
 	file ( GLOB DAVA_DEBUG_DLL_LIST   "${DAVA_WIN_UAP_LIBRARIES_PATH_DEBUG}/*.dll" )
@@ -220,6 +217,10 @@ if( DAVA_FOUND )
         include_directories   ( ${DAVA_ENGINE_DIR}/Platform/TemplateAndroid )
         list( APPEND PATTERNS_CPP    ${DAVA_ENGINE_DIR}/Platform/TemplateAndroid/*.cpp )
         list( APPEND PATTERNS_H      ${DAVA_ENGINE_DIR}/Platform/TemplateAndroid/*.h   )
+
+        list( APPEND PATTERNS_CPP    ${ANDROID_NDK}/sources/android/cpufeatures/*.c )
+        list( APPEND PATTERNS_H      ${ANDROID_NDK}/sources/android/cpufeatures/*.h )
+
     endif()
 
     if( QT_PREFIX )
@@ -375,16 +376,10 @@ if( ANDROID AND NOT ANDROID_CUSTOM_BUILD )
         execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${ANDROID_JAVA_RES} ${CMAKE_BINARY_DIR}/res )
     endif()
 
-
-    if( ANDROID_DATA_FOLDER )
-        set( ASSETS_FOLDER "${ANDROID_JAVA_ASSET_FOLDER}" )    
-
-    else()
+    if( APP_DATA )
         get_filename_component( ASSETS_FOLDER ${APP_DATA} NAME )
-          
+        execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${APP_DATA} ${CMAKE_BINARY_DIR}/assets/${ASSETS_FOLDER} )
     endif()
-
-    execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${APP_DATA} ${CMAKE_BINARY_DIR}/assets/${ASSETS_FOLDER} )
 
     if( ANDROID_ICO )
         execute_process(COMMAND ${CMAKE_COMMAND} -E copy ${ANDROID_ICO}  ${CMAKE_BINARY_DIR} )     
