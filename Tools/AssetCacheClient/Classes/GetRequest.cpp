@@ -67,7 +67,7 @@ int GetRequest::CheckOptionsInternal() const
 }
 
 
-void GetRequest::OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey &key, const DAVA::AssetCache::CachedFiles &files)
+void GetRequest::OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey &key, DAVA::AssetCache::CachedFiles &&files)
 {
     requestResult.recieved = true;
     requestResult.succeed = (files.IsEmtpy() == false);
