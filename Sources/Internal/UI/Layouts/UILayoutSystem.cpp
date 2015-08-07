@@ -43,60 +43,54 @@ void UILayoutSystem::ResetDirty()
 
 void UILayoutSystem::ApplyLayout(UIControl *control)
 {
-    DoMeasurePhase(control);
-    DoLayoutPhase(control);
-
-    std::sort(changedControls.begin(), changedControls.end());
-    auto end = std::unique(changedControls.begin(), changedControls.end());
-    for (auto it = changedControls.begin(); it != end; it++)
+    for (int32 axis = 0; axis < Vector2::AXIS_COUNT; axis++)
     {
-        (*it)->OnSizeChanged();
+        DoMeasurePhase(control, axis);
+        DoLayoutPhase(control, axis);
+    }
+    
+    for (UIControl *control : changedControls)
+    {
+        control->OnSizeChanged();
     }
     changedControls.clear();
 }
 
-void UILayoutSystem::DoMeasurePhase(UIControl *control)
+void UILayoutSystem::DoMeasurePhase(UIControl *control, int32 axis)
 {
     const List<UIControl*> &children = control->GetChildren();
     for (UIControl *child : children)
-        DoMeasurePhase(child);
+        DoMeasurePhase(child, axis);
     
     UISizePolicyComponent *sizeHint = control->GetComponent<UISizePolicyComponent>();
     if (sizeHint)
     {
-        MeasureControl(control, sizeHint);
+        MeasureControl(control, sizeHint, axis);
     }
 }
 
-void UILayoutSystem::DoLayoutPhase(UIControl *control)
+void UILayoutSystem::DoLayoutPhase(UIControl *control, int32 axis)
 {
     UILinearLayoutComponent *linearLayoutComponent = control->GetComponent<UILinearLayoutComponent>();
-    
-    bool allowHorizontalAnchor = true;
-    bool allowVerticalAnchor = true;
-    
-    if (linearLayoutComponent)
+    if (linearLayoutComponent && linearLayoutComponent->GetOrientation() == axis)
     {
-        if (linearLayoutComponent->GetOrientation() == UILinearLayoutComponent::HORIZONTAL)
-            allowHorizontalAnchor = false;
-        else
-            allowVerticalAnchor = false;
-        
-        ApplyLinearLayout(control, linearLayoutComponent);
+        ApplyLinearLayout(control, linearLayoutComponent, axis);
     }
-    
-    ApplyAnchorLayout(control, allowHorizontalAnchor, allowVerticalAnchor);
+    else
+    {
+        ApplyAnchorLayout(control, axis);
+    }
 
     const List<UIControl*> &children = control->GetChildren();
     for (UIControl *child : children)
-        DoLayoutPhase(child);
+        DoLayoutPhase(child, axis);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Measuring
 ////////////////////////////////////////////////////////////////////////////////
 
-void UILayoutSystem::MeasureControl(UIControl *control, UISizePolicyComponent *sizeHint)
+void UILayoutSystem::MeasureControl(UIControl *control, UISizePolicyComponent *sizeHint, int32 axis)
 {
     DVASSERT(sizeHint);
     
@@ -106,90 +100,86 @@ void UILayoutSystem::MeasureControl(UIControl *control, UISizePolicyComponent *s
     UILinearLayoutComponent *layout = control->GetComponent<UILinearLayoutComponent>();
     bool skipInvisible = layout ? layout->IsSkipInvisibleControls() : false;
     
-
-    for (int32 axis = 0; axis < Vector2::AXIS_COUNT; axis++)
+    UISizePolicyComponent::eSizePolicy policy = sizeHint->GetPolicyByAxis(axis);
+    float32 hintValue = sizeHint->GetValueByAxis(axis);
+    float32 value = 0;
+    
+    switch (policy)
     {
-        UISizePolicyComponent::eSizePolicy policy = sizeHint->GetPolicyByAxis(axis);
-        float32 hintValue = sizeHint->GetValueByAxis(axis);
-        float32 value = 0;
-        
-        switch (policy)
-        {
-            case UISizePolicyComponent::IGNORE_SIZE:
-                value = newSize.data[axis]; // ignore
-                break;
-                
-            case UISizePolicyComponent::FIXED_SIZE:
-                value = hintValue;
-                break;
-                
-            case UISizePolicyComponent::PERCENT_OF_CHILDREN_SUM:
-                for (UIControl *child : children)
-                {
-                    if (!skipInvisible || child->GetVisible())
-                        value += child->GetSize().data[axis];
-                }
-                value = value * hintValue / 100.0f;
-                break;
-                
-            case UISizePolicyComponent::PERCENT_OF_MAX_CHILD:
-                for (UIControl *child : children)
-                {
-                    if (!skipInvisible || child->GetVisible())
-                        value = Max(value, child->GetSize().data[axis]);
-                }
-                value = value * hintValue / 100.0f;
-                break;
+        case UISizePolicyComponent::IGNORE_SIZE:
+            value = newSize.data[axis]; // ignore
+            break;
+            
+        case UISizePolicyComponent::FIXED_SIZE:
+            value = hintValue;
+            break;
+            
+        case UISizePolicyComponent::PERCENT_OF_CHILDREN_SUM:
+            for (UIControl *child : children)
+            {
+                if (!skipInvisible || child->GetVisible())
+                    value += child->GetSize().data[axis];
+            }
+            value = value * hintValue / 100.0f;
+            break;
+            
+        case UISizePolicyComponent::PERCENT_OF_MAX_CHILD:
+            for (UIControl *child : children)
+            {
+                if (!skipInvisible || child->GetVisible())
+                    value = Max(value, child->GetSize().data[axis]);
+            }
+            value = value * hintValue / 100.0f;
+            break;
 
-            case UISizePolicyComponent::PERCENT_OF_FIRST_CHILD:
-                if (!children.empty())
-                    value = children.front()->GetSize().data[axis];
-                value = value * hintValue / 100.0f;
-                break;
-                
-            case UISizePolicyComponent::PERCENT_OF_LAST_CHILD:
-                if (!children.empty())
-                    value = children.back()->GetSize().data[axis];
-                value = value * hintValue / 100.0f;
-                break;
-                
-            case UISizePolicyComponent::PERCENT_OF_CONTENT:
-            {
-                Vector2 constraints(-1.0f, -1.0f);
-                if (control->IsHeightDependsOnWidth() && axis == Vector2::AXIS_Y)
-                {
-                    constraints.x = newSize.x;
-                }
-                value = control->GetContentPreferredSize(constraints).data[axis] * hintValue / 100.0f;
-                break;
-            }
-                
-            case UISizePolicyComponent::PERCENT_OF_PARENT:
-                value = newSize.data[axis]; // ignore
-                break;
-                
-        }
-        
-        if (policy == UISizePolicyComponent::PERCENT_OF_CHILDREN_SUM ||
-            policy == UISizePolicyComponent::PERCENT_OF_MAX_CHILD ||
-            policy == UISizePolicyComponent::PERCENT_OF_FIRST_CHILD ||
-            policy == UISizePolicyComponent::PERCENT_OF_LAST_CHILD)
+        case UISizePolicyComponent::PERCENT_OF_FIRST_CHILD:
+            if (!children.empty())
+                value = children.front()->GetSize().data[axis];
+            value = value * hintValue / 100.0f;
+            break;
+            
+        case UISizePolicyComponent::PERCENT_OF_LAST_CHILD:
+            if (!children.empty())
+                value = children.back()->GetSize().data[axis];
+            value = value * hintValue / 100.0f;
+            break;
+            
+        case UISizePolicyComponent::PERCENT_OF_CONTENT:
         {
-            if (layout && layout->GetOrientation() == axis)
+            Vector2 constraints(-1.0f, -1.0f);
+            if (control->IsHeightDependsOnWidth() && axis == Vector2::AXIS_Y)
             {
-                if (policy == UISizePolicyComponent::PERCENT_OF_CHILDREN_SUM && !children.empty())
-                    value += layout->GetSpacing() * (children.size() - 1);
-                
-                value += layout->GetPadding() * 2.0f;
+                constraints.x = newSize.x;
             }
+            value = control->GetContentPreferredSize(constraints).data[axis] * hintValue / 100.0f;
+            break;
         }
-        newSize.data[axis] = value;
+            
+        case UISizePolicyComponent::PERCENT_OF_PARENT:
+            value = newSize.data[axis]; // ignore
+            break;
+            
     }
+    
+    if (policy == UISizePolicyComponent::PERCENT_OF_CHILDREN_SUM ||
+        policy == UISizePolicyComponent::PERCENT_OF_MAX_CHILD ||
+        policy == UISizePolicyComponent::PERCENT_OF_FIRST_CHILD ||
+        policy == UISizePolicyComponent::PERCENT_OF_LAST_CHILD)
+    {
+        if (layout && layout->GetOrientation() == axis)
+        {
+            if (policy == UISizePolicyComponent::PERCENT_OF_CHILDREN_SUM && !children.empty())
+                value += layout->GetSpacing() * (children.size() - 1);
+            
+            value += layout->GetPadding() * 2.0f;
+        }
+    }
+    newSize.data[axis] = value;
     
     if (control->GetSize() != newSize)
     {
         control->SetSize(newSize);
-        changedControls.push_back(control);
+        changedControls.insert(control);
     }
 }
 
@@ -197,7 +187,7 @@ void UILayoutSystem::MeasureControl(UIControl *control, UISizePolicyComponent *s
 // Linear Layout
 ////////////////////////////////////////////////////////////////////////////////
 
-void UILayoutSystem::ApplyLinearLayout(UIControl *control, UILinearLayoutComponent *layout)
+void UILayoutSystem::ApplyLinearLayout(UIControl *control, UILinearLayoutComponent *layout, int32 axis)
 {
     float32 fixedSize = 0.0f;
     float32 totalPercent = 0.0f;
@@ -209,7 +199,6 @@ void UILayoutSystem::ApplyLinearLayout(UIControl *control, UILinearLayoutCompone
     bool inverse = isRtl && layout->IsUseRtl() && layout->GetOrientation() == UILinearLayoutComponent::HORIZONTAL;
     const bool skipInvisible = layout->IsSkipInvisibleControls();
 
-    const int32 axis = static_cast<int32>(layout->GetOrientation());
     int32 childrenCount = 0;
     for (UIControl *child : children)
     {
@@ -312,7 +301,7 @@ void UILayoutSystem::ApplyLinearLayout(UIControl *control, UILinearLayoutCompone
             else
                 position += size + spacing;
             
-            changedControls.push_back(child);
+            changedControls.insert(child);
         }
     }
 }
@@ -321,7 +310,7 @@ void UILayoutSystem::ApplyLinearLayout(UIControl *control, UILinearLayoutCompone
 // Anchor Layout
 ////////////////////////////////////////////////////////////////////////////////
 
-void UILayoutSystem::ApplyAnchorLayout(UIControl *control, bool allowHorizontal, bool allowVertical)
+void UILayoutSystem::ApplyAnchorLayout(UIControl *control, int32 axis)
 {
     const Vector2 &parentSize = control->GetSize();
     const List<UIControl*> &children = control->GetChildren();
@@ -331,24 +320,19 @@ void UILayoutSystem::ApplyAnchorLayout(UIControl *control, bool allowHorizontal,
         if (sizeHint)
         {
             Vector2 newSize = child->GetSize();
-            for (int32 axis = 0; axis < Vector2::AXIS_COUNT; axis++)
+            
+            float32 s = newSize.data[axis];
+            if (sizeHint->GetPolicyByAxis(axis) == UISizePolicyComponent::PERCENT_OF_PARENT)
             {
-                bool allow = (axis == Vector2::AXIS_X && allowHorizontal) || (axis == Vector2::AXIS_Y && allowVertical);
-                if (allow)
-                {
-                    float32 s = newSize.data[axis];
-                    if (sizeHint->GetPolicyByAxis(axis) == UISizePolicyComponent::PERCENT_OF_PARENT)
-                    {
-                        s = control->GetSize().data[axis] * sizeHint->GetValueByAxis(axis) / 100.0f;
-                    }
-                    s = Clamp(s, sizeHint->GetMinValueByAxis(axis), sizeHint->GetMaxValueByAxis(axis));
-                    newSize.data[axis] = s;
-                }
+                s = control->GetSize().data[axis] * sizeHint->GetValueByAxis(axis) / 100.0f;
             }
+            s = Clamp(s, sizeHint->GetMinValueByAxis(axis), sizeHint->GetMaxValueByAxis(axis));
+            newSize.data[axis] = s;
+            
             if (newSize != child->GetSize())
             {
                 child->SetSize(newSize);
-                changedControls.push_back(child);
+                changedControls.insert(child);
             }
         }
         
@@ -358,7 +342,7 @@ void UILayoutSystem::ApplyAnchorLayout(UIControl *control, bool allowHorizontal,
             const Rect &rect = child->GetRect();
             Rect newRect = rect;
             
-            if (allowHorizontal && (hint->IsLeftAnchorEnabled() || hint->IsHCenterAnchorEnabled() || hint->IsRightAnchorEnabled()))
+            if (axis == Vector2::AXIS_X && (hint->IsLeftAnchorEnabled() || hint->IsHCenterAnchorEnabled() || hint->IsRightAnchorEnabled()))
             {
                 bool leftEnabled = hint->IsLeftAnchorEnabled();
                 float32 left = hint->GetLeftAnchor();
@@ -387,7 +371,7 @@ void UILayoutSystem::ApplyAnchorLayout(UIControl *control, bool allowHorizontal,
                                         newRect.x, newRect.dx);
                 
             }
-            if (allowVertical && (hint->IsTopAnchorEnabled() || hint->IsVCenterAnchorEnabled() || hint->IsBottomAnchorEnabled()))
+            if (axis == Vector2::AXIS_Y && (hint->IsTopAnchorEnabled() || hint->IsVCenterAnchorEnabled() || hint->IsBottomAnchorEnabled()))
             {
                 GetAxisDataByAnchorData(rect.dy, parentSize.y,
                                         hint->IsTopAnchorEnabled(), hint->GetTopAnchor(),
@@ -400,7 +384,7 @@ void UILayoutSystem::ApplyAnchorLayout(UIControl *control, bool allowHorizontal,
             {
                 child->SetSize(newRect.GetSize());
                 child->SetPosition(newRect.GetPosition() + child->GetPivotPoint());
-                changedControls.push_back(child);
+                changedControls.insert(child);
             }
         }
     }

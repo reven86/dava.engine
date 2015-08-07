@@ -54,17 +54,17 @@ public:
     void ApplyLayout(UIControl *control);
     
 private:
-    void DoMeasurePhase(UIControl *control);
-    void DoLayoutPhase(UIControl *control);
+    void DoMeasurePhase(UIControl *control, int32 axis);
+    void DoLayoutPhase(UIControl *control, int32 axis);
     
 private: // measuring
-    void MeasureControl(UIControl *control, UISizePolicyComponent *sizeHint);
+    void MeasureControl(UIControl *control, UISizePolicyComponent *sizeHint, int32 axis);
     
 private: // linear layout
-    void ApplyLinearLayout(UIControl *control, UILinearLayoutComponent *linearLayoutComponent);
+    void ApplyLinearLayout(UIControl *control, UILinearLayoutComponent *linearLayoutComponent, int32 axis);
     
 private: // anchor layout
-    void ApplyAnchorLayout(UIControl *control, bool allowHorizontal, bool allowVertical);
+    void ApplyAnchorLayout(UIControl *control, int32 axis);
     void GetAxisDataByAnchorData(float32 size, float32 parentSize,
                                  bool firstSideAnchorEnabled, float32 firstSideAnchor,
                                  bool centerAnchorEnabled, float32 centerAnchor,
@@ -75,7 +75,7 @@ private: // anchor layout
 private:
     bool isRtl = false;
     bool dirty = true;
-    DAVA::Vector<UIControl*> changedControls;
+    DAVA::Set<UIControl*> changedControls;
 };
 
 
