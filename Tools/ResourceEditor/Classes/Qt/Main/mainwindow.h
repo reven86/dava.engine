@@ -55,8 +55,6 @@ class VersionInfoWidget;
 
 class DeviceListController;
 
-
-
 class QtMainWindow
     : public QMainWindow
     , public DAVA::Singleton<QtMainWindow>
@@ -260,6 +258,7 @@ private slots:
     void DebugVersionInfo();
     void DebugColorPicker();
     void DebugDeviceList();
+    void OnConsoleItemClicked(const QString &data);
 
 private:
 	Ui::MainWindow *ui;
