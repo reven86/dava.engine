@@ -101,6 +101,29 @@ int DeviceInfoPrivate::GetHTTPProxyPort()
 	return 0;
 }
 
+DeviceInfo::ScreenInfo& DeviceInfoPrivate::GetScreenInfo()
+{
+    return screenInfo;
+}
+
+int DeviceInfoPrivate::GetZBufferSize()
+{
+    return 24;
+}
+
+List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetStoragesList()
+{
+    List<DeviceInfo::StorageInfo> l;
+    return l;
+}
+
+int32 DeviceInfoPrivate::GetCpuCount()
+{
+    SYSTEM_INFO sysinfo;
+    GetSystemInfo(&sysinfo);
+    return sysinfo.dwNumberOfProcessors;
+}
+
 String DeviceInfoPrivate::GetUDID()
 {
     ULONG family = AF_INET;
