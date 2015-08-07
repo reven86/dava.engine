@@ -133,12 +133,6 @@
 		E8BB522A1B74979300D3866C /* DoubleMD5Key.h in Headers */ = {isa = PBXBuildFile; fileRef = E8BB52241B74979300D3866C /* DoubleMD5Key.h */; };
 		E8BB522B1B74979300D3866C /* DoubleMD5Key.h in Headers */ = {isa = PBXBuildFile; fileRef = E8BB52241B74979300D3866C /* DoubleMD5Key.h */; };
 		E8BB522C1B74979300D3866C /* DoubleMD5Key.h in Headers */ = {isa = PBXBuildFile; fileRef = E8BB52241B74979300D3866C /* DoubleMD5Key.h */; };
-		E8BB522D1B74979300D3866C /* MD5Key.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8BB52251B74979300D3866C /* MD5Key.cpp */; };
-		E8BB522E1B74979300D3866C /* MD5Key.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8BB52251B74979300D3866C /* MD5Key.cpp */; };
-		E8BB522F1B74979300D3866C /* MD5Key.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8BB52251B74979300D3866C /* MD5Key.cpp */; };
-		E8BB52301B74979300D3866C /* MD5Key.h in Headers */ = {isa = PBXBuildFile; fileRef = E8BB52261B74979300D3866C /* MD5Key.h */; };
-		E8BB52311B74979300D3866C /* MD5Key.h in Headers */ = {isa = PBXBuildFile; fileRef = E8BB52261B74979300D3866C /* MD5Key.h */; };
-		E8BB52321B74979300D3866C /* MD5Key.h in Headers */ = {isa = PBXBuildFile; fileRef = E8BB52261B74979300D3866C /* MD5Key.h */; };
 		FECAA1C81B735563008BC3FC /* ProgramOptions.h in Headers */ = {isa = PBXBuildFile; fileRef = FECAA1C71B735563008BC3FC /* ProgramOptions.h */; };
 /* End PBXBuildFile section */
 
@@ -188,8 +182,6 @@
 		E841A48B1B25AD97003E2C03 /* TCPChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TCPChannel.h; sourceTree = "<group>"; };
 		E8BB52231B74979300D3866C /* DoubleMD5Key.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DoubleMD5Key.cpp; sourceTree = "<group>"; };
 		E8BB52241B74979300D3866C /* DoubleMD5Key.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DoubleMD5Key.h; sourceTree = "<group>"; };
-		E8BB52251B74979300D3866C /* MD5Key.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MD5Key.cpp; sourceTree = "<group>"; };
-		E8BB52261B74979300D3866C /* MD5Key.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MD5Key.h; sourceTree = "<group>"; };
 		E8BE2FDD1A80CC7500AC96C2 /* libTextureConverter.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libTextureConverter.dylib; sourceTree = "<group>"; };
 		E8BE2FDF1A80CCA300AC96C2 /* libTextureConverter.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTextureConverter.dylib; path = ../../Tools/Bin/libTextureConverter.dylib; sourceTree = "<group>"; };
 		FECAA1C71B735563008BC3FC /* ProgramOptions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ProgramOptions.h; path = CommandLine/ProgramOptions.h; sourceTree = "<group>"; };
@@ -312,8 +304,6 @@
 				E834DE721B171F8200E4B2DB /* CacheItemKey.h */,
 				E8BB52231B74979300D3866C /* DoubleMD5Key.cpp */,
 				E8BB52241B74979300D3866C /* DoubleMD5Key.h */,
-				E8BB52251B74979300D3866C /* MD5Key.cpp */,
-				E8BB52261B74979300D3866C /* MD5Key.h */,
 				E834DE771B171F8200E4B2DB /* ServerCacheEntry.cpp */,
 				E834DE781B171F8200E4B2DB /* ServerCacheEntry.h */,
 				E834DE791B171F8200E4B2DB /* TCPConnection */,
@@ -358,7 +348,6 @@
 				FECAA1C81B735563008BC3FC /* ProgramOptions.h in Headers */,
 				E834DEB71B171F8200E4B2DB /* ServerCacheEntry.h in Headers */,
 				E834DE8D1B171F8200E4B2DB /* AssetCacheConstants.h in Headers */,
-				E8BB52301B74979300D3866C /* MD5Key.h in Headers */,
 				A69854D717CE41EC001E9FDE /* FramePathHelper.h in Headers */,
 				76962821196BF80D0064C3A0 /* TeamcityOutput.h in Headers */,
 				E834DEC61B171F8200E4B2DB /* TCPConnection.h in Headers */,
@@ -385,7 +374,6 @@
 				A69854C017CE41EC001E9FDE /* DXTConverter.h in Headers */,
 				A69854C617CE41EC001E9FDE /* PVRConverter.h in Headers */,
 				A69854CC17CE41EC001E9FDE /* CommandLineParser.h in Headers */,
-				E8BB52311B74979300D3866C /* MD5Key.h in Headers */,
 				E834DEA01B171F8200E4B2DB /* CachedFiles.h in Headers */,
 				A69854D217CE41EC001E9FDE /* DefinitionFile.h in Headers */,
 				E8BB522B1B74979300D3866C /* DoubleMD5Key.h in Headers */,
@@ -416,7 +404,6 @@
 				A69854C117CE41EC001E9FDE /* DXTConverter.h in Headers */,
 				A69854C717CE41EC001E9FDE /* PVRConverter.h in Headers */,
 				A69854CD17CE41EC001E9FDE /* CommandLineParser.h in Headers */,
-				E8BB52321B74979300D3866C /* MD5Key.h in Headers */,
 				E834DEA11B171F8200E4B2DB /* CachedFiles.h in Headers */,
 				A69854D317CE41EC001E9FDE /* DefinitionFile.h in Headers */,
 				E8BB522C1B74979300D3866C /* DoubleMD5Key.h in Headers */,
@@ -526,7 +513,6 @@
 			files = (
 				E834DE961B171F8200E4B2DB /* CacheDB.cpp in Sources */,
 				E834DE901B171F8200E4B2DB /* AssetCacheServer.cpp in Sources */,
-				E8BB522D1B74979300D3866C /* MD5Key.cpp in Sources */,
 				E841A48C1B25AD97003E2C03 /* TCPChannel.cpp in Sources */,
 				A69854BC17CE41EC001E9FDE /* DXTConverter.cpp in Sources */,
 				E8BB52271B74979300D3866C /* DoubleMD5Key.cpp in Sources */,
@@ -553,7 +539,6 @@
 			files = (
 				E834DE971B171F8200E4B2DB /* CacheDB.cpp in Sources */,
 				E834DE911B171F8200E4B2DB /* AssetCacheServer.cpp in Sources */,
-				E8BB522E1B74979300D3866C /* MD5Key.cpp in Sources */,
 				E841A48D1B25AD97003E2C03 /* TCPChannel.cpp in Sources */,
 				A69854BD17CE41EC001E9FDE /* DXTConverter.cpp in Sources */,
 				E8BB52281B74979300D3866C /* DoubleMD5Key.cpp in Sources */,
@@ -580,7 +565,6 @@
 			files = (
 				E834DE981B171F8200E4B2DB /* CacheDB.cpp in Sources */,
 				E834DE921B171F8200E4B2DB /* AssetCacheServer.cpp in Sources */,
-				E8BB522F1B74979300D3866C /* MD5Key.cpp in Sources */,
 				E841A48E1B25AD97003E2C03 /* TCPChannel.cpp in Sources */,
 				A69854BE17CE41EC001E9FDE /* DXTConverter.cpp in Sources */,
 				E8BB52291B74979300D3866C /* DoubleMD5Key.cpp in Sources */,
