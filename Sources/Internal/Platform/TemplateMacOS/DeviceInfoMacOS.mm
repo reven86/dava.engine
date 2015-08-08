@@ -142,6 +142,29 @@ int32 DeviceInfo::GetCpuCount()
     return (int32)[[NSProcessInfo processInfo] processorCount];
 }
 
+bool DeviceInfo::IsHIDConnect(eHIDType hid)
+{
+        DVASSERT(false && "Not Implement");
+        return false;
+}
+
+void DeviceInfo::SubscribeHID(eHIDType hid, HIDCallBackFunc&& func)
+{
+        DVASSERT(false && "Not Implement");
+}
+
+bool DeviceInfo::IsMobileMode()
+{
+        DVASSERT(false && "Not Implement");
+        return false;
+}
+
+bool DeviceInfo::IsRunningOnEmulator()
+{
+        DVASSERT(false && "Not Implement");
+        return false;
+}
+
 }
 
 #endif
