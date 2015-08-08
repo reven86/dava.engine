@@ -68,18 +68,42 @@ const WideString htmlString =
 
 }   // unnamed namespace
 
+class MyWebViewDelegate : public IUIWebViewDelegate
+{
+public:
+    eAction URLChanged(UIWebView* webview, const String& newURL, bool isRedirectedByMouseClick) override
+    {
+        Logger::Debug("MyWebViewDelegate::URLChanged: %s", newURL.c_str());
+        return eAction::PROCESS_IN_WEBVIEW;
+    }
+
+    void OnExecuteJScript(UIWebView* webview, const String& result) override
+    {
+        Logger::Debug("MyWebViewDelegate::OnExecuteJScript: %s", result.c_str());
+    }
+
+    void PageLoaded(UIWebView* webview) override
+    {
+        Logger::Debug("MyWebViewDelegate::PageLoaded");
+    }
+
+    void SwipeGesture(bool left) override {}
+};
+
 StaticWebViewTest::StaticWebViewTest()
     : BaseScreen("StaticWebViewTest")
 {}
 
 void StaticWebViewTest::LoadResources()
 {
+    webviewDelegate = new MyWebViewDelegate;
+
     webView1 = new UIWebView(Rect(5, 5, 400, 300));
     webView1->SetVisible(true);
     webView1->SetRenderToTexture(true);
     webView1->SetDebugDraw(true);
-    // only http://www.microsoft.com works with IE ole component nice
-    webView1->OpenURL("http://www.microsoft.com");
+    webView1->SetDelegate(webviewDelegate);
+    webView1->OpenURL("http://en.cppreference.com/");
     AddControl(webView1);
 
     webView2 = new UIWebView(Rect(410, 50, 400, 300));
@@ -138,6 +162,8 @@ void StaticWebViewTest::UnloadResources()
     SafeRelease(webView1);
     SafeRelease(webView2);
     SafeRelease(webView3);
+
+    SafeDelete(webviewDelegate);
 
     SafeRelease(setStaticButton);
     SafeRelease(setNormalButton);
