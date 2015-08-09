@@ -32,13 +32,8 @@
 
 #include <QWidget>
 #include <QDockWidget>
-#include <QPointer>
 #include "Document.h"
 #include "ui_PackageWidget.h"
-
-namespace Ui {
-    class PackageWidget;
-}
 
 class ControlNode;
 class FilteredPackageModel;

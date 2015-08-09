@@ -149,7 +149,6 @@ void PreviewModel::SetCanvasControlScale(int intNewScale)
     Vector2 oldScale = canvas->GetScale();
     Vector2 newScale(float32(intNewScale) / 100.0f, float32(intNewScale) / 100.0f);
     canvas->SetScale(newScale);
-    int intOldScale = oldScale.x*100.0f;
 
     Vector2 oldCanvasScaledSize = CalcScaledCanvasSize(canvas->GetSize(), oldScale, view->GetSize());
     Vector2 newCanvasScaledSize = CalcScaledCanvasSize(canvas->GetSize(), newScale, view->GetSize());
@@ -186,99 +185,18 @@ void PreviewModel::SetCanvasPosition(const QPoint &newCanvasPosition)
     }
 }
 
-void PreviewModel::OnControlSelected(const DAVA::List<std::pair<DAVA::UIControl *, DAVA::UIControl*> > &selectedPairs)
-{
-    ResultList resultList;
-    QList<ControlNode*> selectedNodes;
-    for (auto pair : selectedPairs)
-    {
-        DAVA::UIControl* rootControl = pair.first;
-        DAVA::UIControl* selectedControl = pair.second;
-        auto it = rootNodes.find(rootControl);
-        if (it != rootNodes.end())
-        {
-            Vector<UIControl*> path;
-            ControlNode *node = it->second;
-            if (selectedControl != rootControl)
-            {
-                UIControl *c = selectedControl;
-                while (nullptr != c && c != rootControl)
-                {
-                    path.push_back(c);
-                    c = c->GetParent();
-                }
-
-                for (auto it = path.rbegin(); it != path.rend(); ++it)
-                {
-                    bool found = false;
-                    for (int32 index = 0; index < node->GetCount(); index++)
-                    {
-                        ControlNode *child = node->Get(index);
-                        if (child->GetControl() == *it)
-                        {
-                            node = child;
-                            found = true;
-                            break;
-                        }
-                    }
-
-                    if (!found)
-                    {
-                        node = nullptr;
-                        break;
-                    }
-                }
-            }
-
-            if (node)
-            {
-                selectedNodes.push_back(node);
-            }
-            else
-            {
-                resultList.AddResult(Result::RESULT_FAILURE, ("selected control is equal to the current root control"));
-            }
-        }
-        else
-        {
-            resultList.AddResult(Result::RESULT_FAILURE, ("rootControl not found!"));
-        }
-    }
-    if (!selectedNodes.isEmpty())
-    {
-        emit ControlNodeSelected(selectedNodes);
-    }
-    if (!resultList)
-    {
-        emit ErrorOccurred(resultList);
-        for (const auto &result : resultList.GetResults())
-        {
-            if (!result.message.empty())
-            {
-                switch (result.type)
-                {
-                case Result::RESULT_SUCCESS: Logger::FrameworkDebug("%s", result.message.c_str()); break;
-                case Result::RESULT_FAILURE: Logger::Warning("%s", result.message.c_str());  break;
-                case Result::RESULT_ERROR: Logger::Error("%s", result.message.c_str()); break;
-                }
-            }
-        }
-    }
-}
-
-void PreviewModel::SetRootControls(const QList<ControlNode*> &activatedControls)
+void PreviewModel::SetRootControls(const QSet<PackageBaseNode*> &activatedControls)
 {
     rootNodes.clear();
     canvas->RemoveAllControls();
 
-    foreach(ControlNode *controlNode, activatedControls)
+    foreach(auto *node, activatedControls)
     {
-        rootNodes[controlNode->GetControl()] = controlNode;
+        rootNodes[node->GetControl()] = node;
 
         ScopedPtr<CheckeredCanvas> checkeredCanvas(new CheckeredCanvas());
-        checkeredCanvas->AddControlSelectionListener(this);
-        checkeredCanvas->AddControl(controlNode->GetControl());
-        checkeredCanvas->SetSize(controlNode->GetControl()->GetSize());
+        checkeredCanvas->AddControl(node->GetControl());
+        checkeredCanvas->SetSize(node->GetControl()->GetSize());
         canvas->AddControl(checkeredCanvas);
     }
 
@@ -298,23 +216,6 @@ void PreviewModel::SetRootControls(const QList<ControlNode*> &activatedControls)
 
     Vector2 newPosition = CalcCanvasPosition(view->GetSize(), view->GetSize(), oldCanvasScaledSize, newCanvasScaledSize, Vector2(0.5f, 0.5f), canvasPosition);
     SetCanvasPosition(QPoint(newPosition.x, newPosition.y));
-}
-
-void PreviewModel::SetSelectedControls(const QList<ControlNode *> &selectedControls)
-{
-    for (auto &rootNode : rootNodes)
-    {
-        DynamicTypeCheck<CheckeredCanvas*>(rootNode.first->GetParent())->ClearSelections();
-    }
-    
-    for (ControlNode *node : selectedControls)
-    {
-        UIControl *control = node->GetControl();
-        CheckeredCanvas *rootContainer = FindControlContainer(control);
-        if (rootContainer)
-            rootContainer->SelectControl(control);
-    }
-
 }
 
 QPoint PreviewModel::GetCanvasPosition() const

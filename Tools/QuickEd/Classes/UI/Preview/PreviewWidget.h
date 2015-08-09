@@ -34,6 +34,7 @@
 #include <QPointer>
 #include "ui_PreviewWidget.h"
 #include "Base/Result.h"
+#include "Document.h"
 
 namespace Ui {
     class PreviewWidget;
@@ -58,8 +59,8 @@ public:
     ~PreviewWidget() = default;
     DavaGLWidget *GetDavaGLWidget();
 public slots:
-    void OnDocumentChanged(SharedData *context);
-    void OnDataChanged(const QByteArray &role);
+    void OnDocumentChanged(Document *document);
+    void OnSelectedNodesChanged(const SelectionList &selected, const SelectionList &deselected);
 
 private slots:
     // Zoom.
@@ -78,18 +79,14 @@ private slots:
     
     void OnMonitorChanged();
 
-    void OnControlNodeSelected(QList<ControlNode*> selectedNodes);
-
-    void OnError(const DAVA::ResultList &resultList);
-
 private:
     void OnScaleByZoom(int scaleDelta); 
-    void UpdateSelection();
 
 private:
-    DavaGLWidget *davaGLWidget;
-    SharedData *sharedData;
-    PreviewModel *model;
+    Document *document = nullptr;
+    SelectionList selectedNodes;
+    DavaGLWidget *davaGLWidget = nullptr;
+    PreviewModel *model = nullptr;
 };
 
 #endif // __QUICKED_PREVIEW_WIDGET_H__

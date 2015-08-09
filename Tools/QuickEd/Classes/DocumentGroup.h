@@ -50,6 +50,7 @@ public:
     const QUndoGroup* GetUndoGroup() const;
 public slots:
     void SetActiveDocument(Document* document);
+    void OnSelectedNodesChanged(const SelectionList &selected, const SelectionList &deselected);
 
 signals:
     void ActiveDocumentChanged(Document*);

@@ -75,7 +75,8 @@ EditorCore::EditorCore(QObject *parent)
     connect(documentGroup, &DocumentGroup::SelectedNodesChanged, mainWindow->propertiesWidget, &PropertiesWidget::OnSelectedNodesChanged);
 
     connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->packageWidget, &PackageWidget::OnDocumentChanged);
-    connect(documentGroup, &DocumentGroup::SelectedNodesChanged, mainWindow->packageWidget, &PackageWidget::onSelectedNodesChanged);
+    connect(documentGroup, &DocumentGroup::SelectedNodesChanged, mainWindow->packageWidget, &PackageWidget::OnSelectedNodesChanged);
+    connect(mainWindow->packageWidget, &PackageWidget::SelectedNodesChanged, documentGroup, &DocumentGroup::OnSelectedNodesChanged);
 
     connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->previewWidget, &PreviewWidget::OnDocumentChanged);
     connect(documentGroup, &DocumentGroup::SelectedNodesChanged, mainWindow->previewWidget, &PreviewWidget::OnSelectedNodesChanged);

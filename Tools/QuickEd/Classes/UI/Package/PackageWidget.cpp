@@ -64,7 +64,6 @@ namespace
         PackageModel *packageModel;
         FilteredPackageModel *filteredPackageModel;
         QList<QPersistentModelIndex> expandedIndexes;
-        QItemSelection selection;
         QString filterString;
     };
     
@@ -187,9 +186,6 @@ void PackageWidget::LoadContext()
                 treeView->setExpanded(index, true);
             }
         }
-        //restore selection
-        treeView->selectionModel()->select(context->selection, QItemSelectionModel::ClearAndSelect);
-        //restore filter line
         filterLine->setText(context->filterString);
     }
 
@@ -203,7 +199,6 @@ void PackageWidget::SaveContext()
     }
     PackageContext *context = reinterpret_cast<PackageContext*>(document->GetContext(this));
     context->expandedIndexes = GetExpandedIndexes();
-    context->selection = treeView->selectionModel()->selection();
     context->filterString = filterLine->text();
 }
 
@@ -283,7 +278,6 @@ void PackageWidget::OnSelectionChanged(const QItemSelection &proxySelected, cons
     if (nullptr == filteredPackageModel)
         return;
 
-
     RefreshActions();
     SelectionList selected;
     SelectionList deselected;
@@ -299,8 +293,7 @@ void PackageWidget::OnSelectionChanged(const QItemSelection &proxySelected, cons
     {
         deselected.insert(static_cast<PackageBaseNode*>(index.internalPointer()));
     }
-    
-    SelectedNodesChanged(selected, deselected);
+    emit SelectedNodesChanged(selected, deselected);
 }
 
 void PackageWidget::OnImport()
@@ -405,13 +398,17 @@ void PackageWidget::filterTextChanged(const QString &filterText)
 
 void PackageWidget::OnSelectedNodesChanged(const SelectionList &selected, const SelectionList &deselected)
 {
-    treeView->selectionModel()->clear();
+    for (auto &node : deselected)
+    {
+        QModelIndex srcIndex = packageModel->indexByNode(node);
+        QModelIndex dstIndex = filteredPackageModel->mapFromSource(srcIndex);
+        treeView->selectionModel()->select(dstIndex, QItemSelectionModel::Deselect);
+    }
     for (auto &node : selected)
     {
         QModelIndex srcIndex = packageModel->indexByNode(node);
         QModelIndex dstIndex = filteredPackageModel->mapFromSource(srcIndex);
         treeView->selectionModel()->select(dstIndex, QItemSelectionModel::Select);
-        treeView->expand(dstIndex);
         treeView->scrollTo(dstIndex);
     }
 }

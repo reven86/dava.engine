@@ -58,7 +58,6 @@ Document::Document(PackageNode *_package, QObject *parent)
 Document::~Document()
 {
     SafeRelease(package);
-
     SafeRelease(commandExecutor);
 }
 

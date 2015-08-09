@@ -37,7 +37,9 @@
 #include <QScreen>
 #include <QMessageBox>
 
-#include "Model/PackageHierarchy/ControlNode.h"
+#include "Model/PackageHierarchy/PackageBaseNode.h"
+#include "Model/PackageHierarchy/PackageControlsNode.h"
+#include "Model/PackageHierarchy/PackageNode.h"
 
 #include "QtTools/DavaGLWidget/davaglwidget.h"
 
@@ -55,7 +57,6 @@ static const char* PERCENTAGE_FORMAT = "%1 %";
 
 PreviewWidget::PreviewWidget(QWidget *parent)
     : QWidget(parent)
-    , sharedData(nullptr)
     , model(new PreviewModel(this))
 {
     setupUi(this);
@@ -96,9 +97,6 @@ PreviewWidget::PreviewWidget(QWidget *parent)
     connect(model, &PreviewModel::CanvasOrViewChanged, this, &PreviewWidget::OnScrollAreaChanged);
     connect(model, &PreviewModel::CanvasPositionChanged, this, &PreviewWidget::OnScrollPositionChanged);
     connect(model, &PreviewModel::CanvasScaleChanged, this, &PreviewWidget::OnCanvasScaleChanged);
-
-    connect(model, &PreviewModel::ControlNodeSelected, this, &PreviewWidget::OnControlNodeSelected);
-    connect(model, &PreviewModel::ErrorOccurred, this, &PreviewWidget::OnError);
 }
 
 DavaGLWidget *PreviewWidget::GetDavaGLWidget()
@@ -106,16 +104,41 @@ DavaGLWidget *PreviewWidget::GetDavaGLWidget()
     return davaGLWidget;
 }
 
-void PreviewWidget::OnDocumentChanged(SharedData *data)
+void PreviewWidget::OnDocumentChanged(Document *arg)
 {
-    if (sharedData == data)
-    {
-        return;
-    }
-    sharedData = data;
+    document = arg;
+    OnSelectedNodesChanged(SelectionList(), SelectionList());
+}
 
-    UpdateSelection();
-    if (nullptr != sharedData)
+void PreviewWidget::OnSelectedNodesChanged(const SelectionList &selected, const SelectionList &deselected)
+{
+    selectedNodes.unite(selected);
+    selectedNodes.subtract(deselected);
+    SelectionList rootControls;
+    if (document != nullptr)
+    {
+        if(selectedNodes.isEmpty())
+        {
+            PackageControlsNode *controlsNode = document->GetPackage()->GetPackageControlsNode();
+            for (int32 index = 0; index < controlsNode->GetCount(); ++index)
+                rootControls.insert(controlsNode->Get(index));
+        }
+        else
+        {
+            for (auto &node : selectedNodes)
+            {
+                if (nullptr != node->GetControl())
+                {
+                    PackageBaseNode *root = node;
+                    while (root->GetParent() && root->GetParent()->GetControl())
+                        root = root->GetParent();
+                    rootControls.insert(root);
+                }
+            }
+        }
+    }
+    model->SetRootControls(rootControls);
+    if (nullptr != document)
     {
         OnScrollAreaChanged(model->GetViewSize(), model->GetScaledCanvasSize());
         OnScrollPositionChanged(model->GetCanvasPosition());
@@ -125,68 +148,11 @@ void PreviewWidget::OnDocumentChanged(SharedData *data)
     }
 }
 
-void PreviewWidget::OnDataChanged(const QByteArray &role)
-{
-    if (role == "selection")
-    {
-        UpdateSelection();
-    }
-}
-
-void PreviewWidget::UpdateSelection()
-{
-    QList<ControlNode*> selectedControls;
-    QList<ControlNode*> selectedRootControls;
-    
-    if (sharedData)
-    {
-        for (PackageBaseNode *node : selectedNodes)
-        {
-            if (node->GetControl())
-            {
-                selectedControls.push_back(static_cast<ControlNode*>(node));
-                
-                PackageBaseNode *root = node;
-                while (root->GetParent() && root->GetParent()->GetControl())
-                    root = root->GetParent();
-                if (selectedRootControls.indexOf(static_cast<ControlNode*>(root)) < 0)
-                    selectedRootControls.push_back(static_cast<ControlNode*>(root));
-                
-            }
-        }
-    }
-    model->SetRootControls(selectedRootControls);
-    model->SetSelectedControls(selectedControls);
-
-}
-
 void PreviewWidget::OnMonitorChanged()
 {
     const auto index = scaleCombo->currentIndex();
     scaleCombo->setCurrentIndex(-1);
     scaleCombo->setCurrentIndex(index);
-}
-
-void PreviewWidget::OnControlNodeSelected(QList<ControlNode *> selectedNodes)
-{
-    sharedData->SetData("editorActiveControls", QVariant::fromValue(selectedNodes));
-}
-
-void PreviewWidget::OnError(const ResultList &resultList)
-{
-    if (resultList)
-    {
-        return;
-    }
-    else
-    {
-        QStringList errors;
-        for(const auto &result : resultList.GetResults())
-        {
-            errors << QString::fromStdString(result.message);
-        }
-        QMessageBox::warning(qApp->activeWindow(), tr("Error occurred!"), errors.join('\n'));
-    }
 }
 
 void PreviewWidget::OnScaleByZoom(int scaleDelta)

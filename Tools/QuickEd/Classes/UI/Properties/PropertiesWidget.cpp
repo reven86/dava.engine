@@ -81,6 +81,12 @@ PropertiesWidget::PropertiesWidget(QWidget *parent)
 void PropertiesWidget::OnDocumentChanged(Document *arg)
 {
     document = arg;
+}
+
+void PropertiesWidget::OnSelectedNodesChanged(const SelectionList &selected, const SelectionList &deselected)
+{
+    selectedNodes.unite(selected);
+    selectedNodes.subtract(deselected);
     UpdateSelection();
 }
 
@@ -165,7 +171,7 @@ void PropertiesWidget::UpdateSelection()
         for (PackageBaseNode *node : selectedNodes)
         {
             ControlNode *control = dynamic_cast<ControlNode*>(node);
-            if (control)
+            if (nullptr != control)
             {
                 treeView->setModel(new PropertiesModel(control, document->GetCommandExecutor()));
                 break;
@@ -173,7 +179,7 @@ void PropertiesWidget::UpdateSelection()
             else
             {
                 StyleSheetNode *styleSheet = dynamic_cast<StyleSheetNode*>(node);
-                if (styleSheet)
+                if (nullptr != styleSheet)
                 {
                     treeView->setModel(new PropertiesModel(styleSheet, document->GetCommandExecutor()));
                     break;

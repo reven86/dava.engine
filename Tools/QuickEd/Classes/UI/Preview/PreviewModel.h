@@ -36,13 +36,12 @@
 #include "DAVAEngine.h"
 
 #include "Base/Result.h"
-#include "ControlSelectionListener.h"
 
 class PackageCanvas;
-class ControlNode;
+class PackageBaseNode;
 class CheckeredCanvas;
 
-class PreviewModel : public QObject, ControlSelectionListener
+class PreviewModel : public QObject
 {
     Q_OBJECT
 public:
@@ -61,19 +60,12 @@ public:
     QSize GetViewSize() const;
     DAVA::UIControl *GetViewControl() const;
 
-    void SetRootControls(const QList<ControlNode*> &activatedControls);
-    void SetSelectedControls(const QList<ControlNode *> &selectedControls);
+    void SetRootControls(const QSet<PackageBaseNode*> &activatedControls);
 
-    // ControlSelectionListener
-    virtual void OnControlSelected(const DAVA::List<std::pair<DAVA::UIControl *, DAVA::UIControl*> > &selectedPairs) override;
 signals:
     void CanvasPositionChanged(const QPoint &canvasPosition);
     void CanvasOrViewChanged(const QSize &viewSize, const QSize &scaledContentSize);
     void CanvasScaleChanged(int canvasScale);
-
-    void ControlNodeSelected(const QList<ControlNode *> &selectedNodes);
-
-    void ErrorOccurred(const DAVA::ResultList &error);
 
 private:
     CheckeredCanvas *FindControlContainer(DAVA::UIControl *control);
@@ -84,7 +76,7 @@ private:
     PackageCanvas *canvas;
     DAVA::UIControl *view;
 
-    DAVA::Map<DAVA::UIControl*, ControlNode*> rootNodes;
+    DAVA::Map<DAVA::UIControl*, PackageBaseNode*> rootNodes;
 };
 
 inline DAVA::UIControl *PreviewModel::GetViewControl() const 

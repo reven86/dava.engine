@@ -32,33 +32,15 @@
 
 #include "DAVAEngine.h"
 
-class ControlSelectionListener;
-
 class CheckeredCanvas: public DAVA::UIControl
 {
 public:
     CheckeredCanvas();
 private:
-    virtual ~CheckeredCanvas();
+    ~CheckeredCanvas() override = default;
     
-public:
-    virtual void Draw(const DAVA::UIGeometricData &geometricData) override;
-    virtual void DrawAfterChilds(const DAVA::UIGeometricData &geometricData) override;
-    virtual bool SystemInput(DAVA::UIEvent *currentInput) override;
-
-public:
-    void SelectControl(UIControl *control);
-    void RemoveSelection(UIControl *control);
-    void ClearSelections();
-    UIControl *GetControlByPos(UIControl *control, const DAVA::Vector2 &pos);
-    
-    void AddControlSelectionListener(ControlSelectionListener *listener);
-    void RemoveControlSelectionListener(ControlSelectionListener *listener);
-
-private:
-    DAVA::Set<UIControl*> selectionControls;
-    DAVA::List<ControlSelectionListener*> selectionListeners;
-    
+    void Draw(const DAVA::UIGeometricData &geometricData) override;
+    void DrawAfterChilds(const DAVA::UIGeometricData &geometricData) override;    
 };
 
 class PackageCanvas: public DAVA::UIControl

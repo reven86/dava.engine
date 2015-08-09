@@ -80,23 +80,39 @@ void DocumentGroup::SetActiveDocument(Document* document)
     {
         return;
     }
+    SelectionList deselected;
+    SelectionList selected;
     if (nullptr != active) 
     {
+        deselected = active->selectedNodes;
         disconnect(active, &Document::SelectedNodesChanged, this, &DocumentGroup::SelectedNodesChanged);
     }
     
     active = document;
-
+    
     if (nullptr == active)
     {
         undoGroup->setActiveStack(nullptr);
     }
     else
     {
+        selected = active->selectedNodes;
         connect(active, &Document::SelectedNodesChanged, this, &DocumentGroup::SelectedNodesChanged);
         undoGroup->setActiveStack(active->GetUndoStack());
     }
     emit ActiveDocumentChanged(document);
+    DAVA::Logger::Info("deselected size: %d, selected size: %d", deselected.size(), selected.size());
+    {
+        emit SelectedNodesChanged(selected, deselected);
+    }
+}
+
+void DocumentGroup::OnSelectedNodesChanged(const SelectionList &selected, const SelectionList &deselected)
+{
+    if(nullptr != active)
+    {
+        active->OnSelectedNodesChanged(selected, deselected);
+    }
 }
 
 Document *DocumentGroup::GetActiveDocument() const

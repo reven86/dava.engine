@@ -51,12 +51,14 @@ class SharedData;
 class PropertiesModel;
 class PackageModel;
 class ControlNode;
+class DocumentGroup;
 
 using SelectionList = QSet<PackageBaseNode*>;
 
 class Document : public QObject
 {
     Q_OBJECT
+    friend class DocumentGroup;
 public:
     Document(PackageNode *package, QObject *parent = nullptr);
     ~Document();
