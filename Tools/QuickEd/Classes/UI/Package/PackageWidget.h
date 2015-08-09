@@ -33,10 +33,7 @@
 #include <QWidget>
 #include <QDockWidget>
 #include <QPointer>
-#include <QItemSelectionModel>
-#include "UI/Package/FilteredPackageModel.h"
-#include "UI/Package/PackageModel.h"
-#include "DAVAEngine.h"
+#include "Document.h"
 #include "ui_PackageWidget.h"
 
 namespace Ui {
@@ -44,7 +41,9 @@ namespace Ui {
 }
 
 class ControlNode;
-class SharedData;
+class FilteredPackageModel;
+class PackageModel;
+class QItemSelection;
 
 class PackageWidget : public QDockWidget, public Ui::PackageWidget
 {
@@ -52,18 +51,17 @@ class PackageWidget : public QDockWidget, public Ui::PackageWidget
 public:
     explicit PackageWidget(QWidget *parent = 0);
     ~PackageWidget() = default;
-
+signals:
+    void SelectedNodesChanged(const SelectionList &selected, const SelectionList &deselected);
 public slots:
-    void OnDocumentChanged(SharedData *context);
-    void OnDataChanged(const QByteArray &role);
+    void OnDocumentChanged(Document *context);
+    void OnSelectedNodesChanged(const SelectionList &selected, const SelectionList &deselected);
 private:
     void LoadContext();
     void SaveContext();
 private:
     
-    void OnControlSelectedInEditor(const QList<ControlNode *> &node);
-
-    void RefreshActions(const QList<PackageBaseNode*> &indexList);
+    void RefreshActions();
     void RefreshAction(QAction *action, bool enabled, bool visible);
     void CollectSelectedControls(DAVA::Vector<ControlNode*> &nodes, bool forCopy, bool forRemove);
     void CollectSelectedImportedPackages(DAVA::Vector<PackageNode*> &nodes, bool forCopy, bool forRemove);
@@ -82,16 +80,15 @@ private slots:
     void OnRename();
 
 private:
-    SharedData *sharedData;
-    QAction *importPackageAction;
-    QAction *copyAction;
-    QAction *pasteAction;
-    QAction *cutAction;
-    QAction *delAction;
-    QAction *renameAction;
-    
-    QPointer<FilteredPackageModel> filteredPackageModel;
-    QPointer<PackageModel> packageModel;
+    QAction *importPackageAction = nullptr;
+    QAction *copyAction = nullptr;
+    QAction *pasteAction = nullptr;
+    QAction *cutAction = nullptr;
+    QAction *delAction = nullptr;
+    QAction *renameAction = nullptr;
+    Document *document = nullptr;
+    FilteredPackageModel *filteredPackageModel = nullptr;
+    PackageModel *packageModel = nullptr;
 };
 
 #endif // __UI_EDITOR_UI_PACKAGE_WIDGET__

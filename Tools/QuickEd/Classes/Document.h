@@ -31,6 +31,14 @@
 #define __QUICKED_DOCUMENT_H__
 
 #include <QUndoStack>
+#include <QSet>
+#include <QMap>
+#include "Model/PackageHierarchy/PackageBaseNode.h"
+
+struct WidgetContext
+{
+    
+};
 
 namespace DAVA {
     class FilePath;
@@ -44,14 +52,14 @@ class PropertiesModel;
 class PackageModel;
 class ControlNode;
 
+using SelectionList = QSet<PackageBaseNode*>;
+
 class Document : public QObject
 {
     Q_OBJECT
 public:
     Document(PackageNode *package, QObject *parent = nullptr);
-
-    virtual ~Document();
-
+    ~Document();
     const DAVA::FilePath &GetPackageFilePath() const;
     PackageNode *GetPackage() const;
 
@@ -60,22 +68,21 @@ public:
     QtModelPackageCommandExecutor *GetCommandExecutor() const;
 
     void RefreshLayout();
+    WidgetContext* GetContext(QObject* requester) const;
+    void SetContext(QObject* requester, WidgetContext* widgetContext);
 
 signals:
-    void SharedDataChanged(const QByteArray &role);
+    void SelectedNodesChanged(const SelectionList &selected, const SelectionList &deselected);
 public slots:
     void RefreshAllControlProperties();
-
+    void OnSelectedNodesChanged(const SelectionList &selected, const SelectionList &deselected);
 private:
-    void InitSharedData();
-
-private:
-    PackageNode *package;
-
-    SharedData *sharedData;
-
-    QtModelPackageCommandExecutor *commandExecutor;
-    QUndoStack *undoStack;
+    SelectionList selectedNodes;
+    QMap < QObject*, WidgetContext* > contexts;
+    
+    PackageNode *package = nullptr;
+    QtModelPackageCommandExecutor *commandExecutor = nullptr;
+    QUndoStack *undoStack = nullptr;
 };
 
 inline QUndoStack *Document::GetUndoStack() const
@@ -93,9 +100,6 @@ inline QtModelPackageCommandExecutor *Document::GetCommandExecutor() const
     return commandExecutor;
 }
 
-inline SharedData *Document::GetContext() const
-{
-    return sharedData;
-}
+Q_DECLARE_METATYPE(PackageBaseNode*);
 
 #endif // __QUICKED_DOCUMENT_H__

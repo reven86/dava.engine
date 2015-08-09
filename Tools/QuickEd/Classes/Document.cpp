@@ -41,8 +41,6 @@
 #include "Model/ControlProperties/LocalizedTextValueProperty.h"
 #include "Model/ControlProperties/FontValueProperty.h"
 
-#include "SharedData.h"
-
 #include "Ui/QtModelPackageCommandExecutor.h"
 #include "EditorCore.h"
 
@@ -51,12 +49,9 @@ using namespace DAVA;
 Document::Document(PackageNode *_package, QObject *parent)
     : QObject(parent)
     , package(SafeRetain(_package))
-    , sharedData(new SharedData(this))
     , commandExecutor(new QtModelPackageCommandExecutor(this))
     , undoStack(new QUndoStack(this))
 {
-    InitSharedData();
-    connect(sharedData, &SharedData::DataChanged, this, &Document::SharedDataChanged);
     connect(GetEditorFontSystem(), &EditorFontSystem::UpdateFontPreset, this, &Document::RefreshAllControlProperties);
 }
 
@@ -65,19 +60,6 @@ Document::~Document()
     SafeRelease(package);
 
     SafeRelease(commandExecutor);
-}
-
-void Document::InitSharedData()
-{
-    sharedData->SetData("controlDeselected", false);
-    sharedData->SetData("controlsDeselected", false);
-    
-    QList<ControlNode*> rootControls;
-    PackageControlsNode *controlsNode = package->GetPackageControlsNode();
-    for (int32 index = 0; index < controlsNode->GetCount(); ++index)
-        rootControls.push_back(controlsNode->Get(index));
-    
-    sharedData->SetData("activeRootControls", QVariant::fromValue(rootControls));
 }
 
 const DAVA::FilePath &Document::GetPackageFilePath() const
@@ -90,8 +72,34 @@ void Document::RefreshLayout()
     package->RefreshLayout();
 }
 
+WidgetContext* Document::GetContext(QObject* requester) const
+{
+    return contexts.value(requester, nullptr);
+}
+
+void Document::SetContext(QObject* requester, WidgetContext* widgetContext)
+{
+    if(contexts.contains(requester))
+    {
+        DVASSERT_MSG(false, "document already have this context");
+        delete contexts.take(requester);
+    }
+    contexts.insert(requester, widgetContext);
+}
+
 void Document::RefreshAllControlProperties()
 {
     package->GetPackageControlsNode()->RefreshControlProperties();
+}
+
+void Document::OnSelectedNodesChanged(const SelectionList &selected, const SelectionList &deselected)
+{
+    if(selected.isEmpty() && deselected.isEmpty())
+    {
+        return;
+    }
+    selectedNodes.unite(selected);
+    selectedNodes.subtract(deselected);
+    emit SelectedNodesChanged(selected, deselected);
 }
 

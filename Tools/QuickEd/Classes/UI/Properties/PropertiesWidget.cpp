@@ -40,7 +40,6 @@
 #include "Model/PackageHierarchy/StyleSheetNode.h"
 
 #include <QAbstractItemModel>
-#include "SharedData.h"
 
 #include "ui_PropertiesWidget.h"
 #include "PropertiesModel.h"
@@ -53,11 +52,6 @@ using namespace DAVA;
 
 PropertiesWidget::PropertiesWidget(QWidget *parent)
     : QDockWidget(parent)
-    , sharedData(nullptr)
-    , addComponentAction(nullptr)
-    , removeComponentAction(nullptr)
-    , selectedComponentType(-1)
-    , selectedComponentIndex(-1)
 {
     setupUi(this);
     treeView->setItemDelegate(new PropertiesTreeItemDelegate(this));
@@ -84,29 +78,21 @@ PropertiesWidget::PropertiesWidget(QWidget *parent)
     treeView->addAction(removeComponentAction);
 }
 
-void PropertiesWidget::OnDocumentChanged(SharedData *arg)
+void PropertiesWidget::OnDocumentChanged(Document *arg)
 {
-    sharedData = arg;
+    document = arg;
     UpdateSelection();
-}
-
-void PropertiesWidget::OnDataChanged(const QByteArray &role)
-{
-    if (role == "selection")
-    {
-        UpdateSelection();
-    }
 }
 
 void PropertiesWidget::OnAddComponent(QAction *action)
 {
-    if (sharedData)
+    if (nullptr != document)
     {
         uint32 componentType = action->data().toUInt();
         if (componentType < UIComponent::COMPONENT_COUNT)
         {
             ControlNode *node = GetSelectedControlNode();
-            sharedData->GetDocument()->GetCommandExecutor()->AddComponent(node, componentType);
+            document->GetCommandExecutor()->AddComponent(node, componentType);
         }
         else
         {
@@ -117,12 +103,12 @@ void PropertiesWidget::OnAddComponent(QAction *action)
 
 void PropertiesWidget::OnRemoveComponent()
 {
-    if (sharedData)
+    if (nullptr != document)
     {
         if (0 <= selectedComponentType && selectedComponentType < UIComponent::COMPONENT_COUNT)
         {
             ControlNode *node = GetSelectedControlNode();
-            sharedData->GetDocument()->GetCommandExecutor()->RemoveComponent(node, selectedComponentType, selectedComponentIndex);
+            document->GetCommandExecutor()->RemoveComponent(node, selectedComponentType, selectedComponentIndex);
         }
         else
         {
@@ -139,17 +125,13 @@ void PropertiesWidget::OnSelectionChanged(const QItemSelection &selected, const 
 
 ControlNode *PropertiesWidget::GetSelectedControlNode() const
 {
-    if (!sharedData)
+    if (nullptr == document)
         return nullptr;
-    
-    const QList<PackageBaseNode*> &selection = sharedData->GetSelection();
-    if (selection.empty())
-        return nullptr;
-    
-    for (PackageBaseNode *node : selection)
+ 
+    for (const auto &node : selectedNodes)
     {
         ControlNode *control = dynamic_cast<ControlNode*>(node);
-        if (control)
+        if (nullptr != control)
             return control;
     }
     return nullptr;
@@ -157,14 +139,10 @@ ControlNode *PropertiesWidget::GetSelectedControlNode() const
 
 StyleSheetNode *PropertiesWidget::GetSelectedStyleSheetNode() const
 {
-    if (!sharedData)
+    if (nullptr == document)
         return nullptr;
     
-    const QList<PackageBaseNode*> &selection = sharedData->GetSelection();
-    if (selection.empty())
-        return nullptr;
-    
-    for (PackageBaseNode *node : selection)
+    for (PackageBaseNode *node : selectedNodes)
     {
         StyleSheetNode *styleSheet = dynamic_cast<StyleSheetNode*>(node);
         if (styleSheet)
@@ -178,20 +156,18 @@ StyleSheetNode *PropertiesWidget::GetSelectedStyleSheetNode() const
 void PropertiesWidget::UpdateSelection()
 {
     QAbstractItemModel *prevModel = treeView->model();
-    if (nullptr == sharedData)
+    if (nullptr == document)
     {
         treeView->setModel(nullptr);
     }
     else
     {
-        const QList<PackageBaseNode*> &selection = sharedData->GetSelection();
-        
-        for (PackageBaseNode *node : selection)
+        for (PackageBaseNode *node : selectedNodes)
         {
             ControlNode *control = dynamic_cast<ControlNode*>(node);
             if (control)
             {
-                treeView->setModel(new PropertiesModel(control, sharedData->GetDocument()->GetCommandExecutor()));
+                treeView->setModel(new PropertiesModel(control, document->GetCommandExecutor()));
                 break;
             }
             else
@@ -199,7 +175,7 @@ void PropertiesWidget::UpdateSelection()
                 StyleSheetNode *styleSheet = dynamic_cast<StyleSheetNode*>(node);
                 if (styleSheet)
                 {
-                    treeView->setModel(new PropertiesModel(styleSheet, sharedData->GetDocument()->GetCommandExecutor()));
+                    treeView->setModel(new PropertiesModel(styleSheet, document->GetCommandExecutor()));
                     break;
                 }
                 else

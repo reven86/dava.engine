@@ -29,10 +29,7 @@
 
 #include "DocumentGroup.h"
 #include <QObject>
-#include "Document.h"
 #include <QUndoGroup>
-#include <QDebug>
-
 #include "Debug/DVAssert.h"
 
 DocumentGroup::DocumentGroup(QObject *parent) 
@@ -85,22 +82,18 @@ void DocumentGroup::SetActiveDocument(Document* document)
     }
     if (nullptr != active) 
     {
-        disconnect(active, &Document::SharedDataChanged, this, &DocumentGroup::SharedDataChanged);
+        disconnect(active, &Document::SelectedNodesChanged, this, &DocumentGroup::SelectedNodesChanged);
     }
     
     active = document;
 
     if (nullptr == active)
     {
-        emit DocumentChanged(nullptr);
         undoGroup->setActiveStack(nullptr);
     }
     else
     {
-        emit DocumentChanged(active->GetContext());
-        
-        connect(active, &Document::SharedDataChanged, this, &DocumentGroup::SharedDataChanged);
-
+        connect(active, &Document::SelectedNodesChanged, this, &DocumentGroup::SelectedNodesChanged);
         undoGroup->setActiveStack(active->GetUndoStack());
     }
     emit ActiveDocumentChanged(document);

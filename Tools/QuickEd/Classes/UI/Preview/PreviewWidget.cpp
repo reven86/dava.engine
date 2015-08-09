@@ -32,7 +32,6 @@
 #include "PreviewModel.h"
 
 #include "EditScreen.h"
-#include "SharedData.h"
 
 #include <QLineEdit>
 #include <QScreen>
@@ -141,8 +140,7 @@ void PreviewWidget::UpdateSelection()
     
     if (sharedData)
     {
-        const QList<PackageBaseNode*> &nodes = sharedData->GetSelection();
-        for (PackageBaseNode *node : nodes)
+        for (PackageBaseNode *node : selectedNodes)
         {
             if (node->GetControl())
             {

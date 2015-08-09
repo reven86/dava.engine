@@ -32,8 +32,7 @@
 
 #include <QDockWidget>
 #include "ui_PropertiesWidget.h"
-
-class SharedData;
+#include "Document.h"
 
 class ControlNode;
 class StyleSheetNode;
@@ -45,9 +44,9 @@ public:
     PropertiesWidget(QWidget *parent = NULL);
 
 public slots:
-    void OnDocumentChanged(SharedData *sharedData);
-    void OnDataChanged(const QByteArray &role);
-
+    void OnDocumentChanged(Document *document);
+    void OnSelectedNodesChanged(const SelectionList &selected, const SelectionList &deselected);
+private slots:
     void OnAddComponent(QAction *action);
     void OnRemoveComponent();
     void OnSelectionChanged(const QItemSelection &selected,
@@ -60,11 +59,12 @@ private:
     void UpdateActions();
     
 private:
-    SharedData *sharedData;
-    QAction *addComponentAction;
-    QAction *removeComponentAction;
-    int selectedComponentType;
-    int selectedComponentIndex;
+    Document *document = nullptr;
+    SelectionList selectedNodes;
+    QAction *addComponentAction = nullptr;
+    QAction *removeComponentAction = nullptr;
+    int selectedComponentType = -1;
+    int selectedComponentIndex = -1;
 };
 
 #endif //__QUICKED_PROPERTIES_WIDGET_H__

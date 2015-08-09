@@ -35,7 +35,6 @@
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"
 
-#include "SharedData.h"
 #include <QSettings>
 #include <QVariant>
 #include <QByteArray>
@@ -70,16 +69,16 @@ EditorCore::EditorCore(QObject *parent)
     connect(mainWindow, &MainWindow::SaveDocument, this, static_cast<void(EditorCore::*)(int)>(&EditorCore::SaveDocument));
     connect(mainWindow, &MainWindow::RtlChanged, this, &EditorCore::OnRtlChanged);
 
-    connect(documentGroup, &DocumentGroup::DocumentChanged, mainWindow->libraryWidget, &LibraryWidget::OnDocumentChanged);
+    connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->libraryWidget, &LibraryWidget::OnDocumentChanged);
 
-    connect(documentGroup, &DocumentGroup::DocumentChanged, mainWindow->propertiesWidget, &PropertiesWidget::OnDocumentChanged);
-    connect(documentGroup, &DocumentGroup::SharedDataChanged, mainWindow->propertiesWidget, &PropertiesWidget::OnDataChanged);
+    connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->propertiesWidget, &PropertiesWidget::OnDocumentChanged);
+    connect(documentGroup, &DocumentGroup::SelectedNodesChanged, mainWindow->propertiesWidget, &PropertiesWidget::OnSelectedNodesChanged);
 
-    connect(documentGroup, &DocumentGroup::DocumentChanged, mainWindow->packageWidget, &PackageWidget::OnDocumentChanged);
-    connect(documentGroup, &DocumentGroup::SharedDataChanged, mainWindow->packageWidget, &PackageWidget::OnDataChanged);
+    connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->packageWidget, &PackageWidget::OnDocumentChanged);
+    connect(documentGroup, &DocumentGroup::SelectedNodesChanged, mainWindow->packageWidget, &PackageWidget::onSelectedNodesChanged);
 
-    connect(documentGroup, &DocumentGroup::DocumentChanged, mainWindow->previewWidget, &PreviewWidget::OnDocumentChanged);
-    connect(documentGroup, &DocumentGroup::SharedDataChanged, mainWindow->previewWidget, &PreviewWidget::OnDataChanged);
+    connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->previewWidget, &PreviewWidget::OnDocumentChanged);
+    connect(documentGroup, &DocumentGroup::SelectedNodesChanged, mainWindow->previewWidget, &PreviewWidget::OnSelectedNodesChanged);
     
     connect(project->GetEditorLocalizationSystem(), &EditorLocalizationSystem::LocaleChanged, this, &EditorCore::UpdateLanguage);
 

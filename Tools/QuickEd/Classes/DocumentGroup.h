@@ -32,8 +32,8 @@
 
 #include <QObject>
 #include <QUndoGroup>
+#include "Document.h"
 
-class Document;
 class SharedData;
 
 class DocumentGroup : public QObject
@@ -53,9 +53,7 @@ public slots:
 
 signals:
     void ActiveDocumentChanged(Document*);
-
-    void SharedDataChanged(const QByteArray &role);
-    void DocumentChanged(SharedData *data);
+    void SelectedNodesChanged(const SelectionList &selected, const SelectionList &deselected);
 protected:
     Document *active;
     QList<Document*> documentList;

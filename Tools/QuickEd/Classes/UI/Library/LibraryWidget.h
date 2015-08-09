@@ -33,7 +33,7 @@
 #include <QDockWidget>
 #include "ui_LibraryWidget.h"
 
-class SharedData;
+class Document;
 
 class LibraryWidget : public QDockWidget, public Ui::LibraryWidget
 {
@@ -42,10 +42,10 @@ public:
     LibraryWidget(QWidget *parent = nullptr);
     ~LibraryWidget() = default;
 public slots:
-    void OnDocumentChanged(SharedData *data);
+    void OnDocumentChanged(Document *document);
 private:
     void LoadContext();
-    SharedData *sharedData;
+    Document *document = nullptr;
 };
 
 #endif // __QUICKED_LIBRARY_WIDGET_H__
