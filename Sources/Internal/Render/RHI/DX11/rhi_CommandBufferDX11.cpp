@@ -446,6 +446,7 @@ dx11_CommandBuffer_SetQueryIndex( Handle cmdBuf, uint32 objectIndex )
 {
 #if RHI__DX11_USE_DEFERRED_CONTEXT
 #else
+    CommandBufferPool::Get(cmdBuf)->Command( DX11__SET_QUERY_INDEX, objectIndex );
 #endif
 }
 
@@ -457,6 +458,7 @@ dx11_CommandBuffer_SetQueryBuffer( Handle cmdBuf, Handle queryBuf )
 {
 #if RHI__DX11_USE_DEFERRED_CONTEXT
 #else
+    CommandBufferPool::Get(cmdBuf)->Command( DX11__SET_QUERY_BUFFER, queryBuf );
 #endif
 }
 
@@ -1157,6 +1159,19 @@ SCOPED_FUNCTION_TIMING();
                 c += 1;
             }   break;
 
+            case DX11__SET_QUERY_BUFFER :
+            {
+                DVASSERT(cur_query_buf == InvalidHandle);
+                cur_query_buf = (Handle)(arg[0]);
+                c += 1;
+            }   break;
+
+            case DX11__SET_QUERY_INDEX :
+            {
+                cur_query_i = uint32(arg[0]);
+                c += 1;
+            }   break;
+
             case DX11__SET_PIPELINE_STATE :
             {
                 uint32              vd_uid = (uint32)(arg[1]);
@@ -1325,8 +1340,14 @@ SCOPED_FUNCTION_TIMING();
 
                 VertexBufferDX11::SetToRHI( cur_vb, 0, 0, cur_vb_stride );
 
+                if( cur_query_i != InvalidIndex )
+                    QueryBufferDX11::BeginQuery( cur_query_buf, cur_query_i );
+                
                 _D3D11_ImmediateContext->Draw( vertexCount, baseVertex );
                 
+                if( cur_query_i != InvalidIndex )
+                    QueryBufferDX11::EndQuery( cur_query_buf, cur_query_i );
+
                 c += 3;
             }   break;
 
@@ -1351,7 +1372,14 @@ SCOPED_FUNCTION_TIMING();
 
                 IndexBufferDX11::SetToRHI( cur_ib, 0 );
                 VertexBufferDX11::SetToRHI( cur_vb, 0, 0, cur_vb_stride );
+                
+                if( cur_query_i != InvalidIndex )
+                    QueryBufferDX11::BeginQuery( cur_query_buf, cur_query_i );
+                
                 _D3D11_ImmediateContext->DrawIndexed( indexCount, startIndex, baseVertex );    
+
+                if( cur_query_i != InvalidIndex )
+                    QueryBufferDX11::BeginQuery( cur_query_buf, cur_query_i );
                 
                 c += 4;
             }   break;

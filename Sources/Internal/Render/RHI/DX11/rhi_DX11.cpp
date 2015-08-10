@@ -216,10 +216,9 @@ dx11_Initialize( const InitParam& param )
     _DX11_InitParam = param;
     InitializeRenderThreadDX11();
 
-
     VertexBufferDX11::SetupDispatch( &DispatchDX11 );
     IndexBufferDX11::SetupDispatch( &DispatchDX11 );
-//    QueryBufferDX11::SetupDispatch( &DispatchDX11 );
+    QueryBufferDX11::SetupDispatch( &DispatchDX11 );
     TextureDX11::SetupDispatch( &DispatchDX11 );
     PipelineStateDX11::SetupDispatch( &DispatchDX11 );
     ConstBufferDX11::SetupDispatch( &DispatchDX11 );
