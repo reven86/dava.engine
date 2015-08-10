@@ -136,6 +136,12 @@ public:
         return *this;
     }
 
+    void Swap(Closure &c)
+    {
+        std::swap(shared, c.shared);
+        std::swap(storage, c.storage);
+    }
+
 protected:
     bool shared = false;
     Storage storage;
@@ -416,6 +422,12 @@ public:
         return invoker(closure, std::forward<Args>(args)...);
     }
 
+    void Swap(Function& fn)
+    {
+        std::swap(invoker, fn.invoker);
+        closure.Swap(fn.closure);
+    }
+
 protected:
     using Invoker = Ret(*)(const Fn11::Closure &, typename std::conditional<Fn11::is_best_argument<Args>::value, Args, Args&&>::type...);
 
@@ -494,5 +506,15 @@ template<typename Ret, typename... Args>
 Function<Ret(Args...)> MakeFunction(const Function<Ret(Args...)>& fn) { return Function<Ret(Args...)>(fn); }
 
 } // namespace DAVA
+
+namespace std
+{
+    template<typename F>
+    void swap(DAVA::Function<F> &lf, DAVA::Function<F> &rf)
+    {
+        lf.Swap(rf);
+    }
+
+} // namespace std
 
 #endif // __DAVA_FUNCTION_H__

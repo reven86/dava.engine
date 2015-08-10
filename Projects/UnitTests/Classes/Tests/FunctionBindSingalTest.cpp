@@ -126,6 +126,18 @@ DAVA_TESTCLASS(FunctionBindSignalTest)
         TEST_VERIFY(class_f3c(&a, 3, 8, 5) == a.classFn3_const(3, 8, 5));
 
         // ==================================================================================
+        // std::swap test
+        // ==================================================================================
+        auto sw_la1 = []{ return 1; };
+        auto sw_la2 = []{ return 2; };
+        Function<int()> fn_swap1(sw_la1);
+        Function<int()> fn_swap2(sw_la2);
+
+        std::swap(fn_swap1, fn_swap2);
+        TEST_VERIFY(fn_swap1() == sw_la2());
+        TEST_VERIFY(fn_swap2() == sw_la1());
+
+        // ==================================================================================
         // function with assigned object
         // ==================================================================================
         Function<int()> object_f0(&a, &A::classFn0);
