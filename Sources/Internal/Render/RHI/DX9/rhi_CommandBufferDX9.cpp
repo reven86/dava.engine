@@ -1284,6 +1284,12 @@ Trace("exec %i\n",int(cmd->func));
                 CHECK_HR(cmd->retval);
             }   break;
 
+            case DX9Command::GET_QUERY_DATA :
+            {
+                cmd->retval = ((IDirect3DQuery9*)(arg[0]))->GetData( (void*)(arg[1]), DWORD(arg[2]), DWORD(arg[3]) );
+                CHECK_HR(cmd->retval);
+            }   break;
+
             case DX9Command::QUERY_INTERFACE :
             {
                 cmd->retval = ((IUnknown*)(arg[0]))->QueryInterface( *((const GUID*)(arg[1])), (void**)(arg[2]) );
