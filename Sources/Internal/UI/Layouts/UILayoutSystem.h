@@ -35,6 +35,7 @@ namespace DAVA
 {
 class UIControl;
 class UILinearLayoutComponent;
+class UIFlowLayoutComponent;
 class UISizePolicyComponent;
 
 class UILayoutSystem
@@ -57,13 +58,11 @@ private:
     void DoMeasurePhase(UIControl *control, int32 axis);
     void DoLayoutPhase(UIControl *control, int32 axis);
     
-private: // measuring
     void MeasureControl(UIControl *control, UISizePolicyComponent *sizeHint, int32 axis);
-    
-private: // linear layout
     void ApplyLinearLayout(UIControl *control, UILinearLayoutComponent *linearLayoutComponent, int32 axis);
-    
-private: // anchor layout
+    void ApplyFlowLayout(UIControl *control, UIFlowLayoutComponent *flowLayoutComponent, int32 axis);
+    void ApplyFlowLayoutHorizontally(UIControl *control, UIFlowLayoutComponent *flowLayoutComponent);
+    void ApplyFlowLayoutVertically(UIControl *control, UIFlowLayoutComponent *flowLayoutComponent);
     void ApplyAnchorLayout(UIControl *control, int32 axis);
     void GetAxisDataByAnchorData(float32 size, float32 parentSize,
                                  bool firstSideAnchorEnabled, float32 firstSideAnchor,

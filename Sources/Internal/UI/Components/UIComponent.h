@@ -42,6 +42,7 @@ public:
     enum eType
     {
         LINEAR_LAYOUT_COMPONENT,
+        FLOW_LAYOUT_COMPONENT,
         SIZE_POLICY_COMPONENT,
         ANCHOR_COMPONENT,
         

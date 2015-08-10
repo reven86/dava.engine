@@ -1,6 +1,7 @@
 #include "UILayoutSystem.h"
 
 #include "UILinearLayoutComponent.h"
+#include "UIFlowLayoutComponent.h"
 #include "UIAnchorComponent.h"
 #include "UISizePolicyComponent.h"
 
@@ -71,14 +72,22 @@ void UILayoutSystem::DoMeasurePhase(UIControl *control, int32 axis)
 
 void UILayoutSystem::DoLayoutPhase(UIControl *control, int32 axis)
 {
-    UILinearLayoutComponent *linearLayoutComponent = control->GetComponent<UILinearLayoutComponent>();
-    if (linearLayoutComponent && linearLayoutComponent->GetOrientation() == axis)
+    UIFlowLayoutComponent *flowLayoutComponent = control->GetComponent<UIFlowLayoutComponent>();
+    if (flowLayoutComponent)
     {
-        ApplyLinearLayout(control, linearLayoutComponent, axis);
+        ApplyFlowLayout(control, flowLayoutComponent, axis);
     }
     else
     {
-        ApplyAnchorLayout(control, axis);
+        UILinearLayoutComponent *linearLayoutComponent = control->GetComponent<UILinearLayoutComponent>();
+        if (linearLayoutComponent && linearLayoutComponent->GetOrientation() == axis)
+        {
+            ApplyLinearLayout(control, linearLayoutComponent, axis);
+        }
+        else
+        {
+            ApplyAnchorLayout(control, axis);
+        }
     }
 
     const List<UIControl*> &children = control->GetChildren();
@@ -96,9 +105,23 @@ void UILayoutSystem::MeasureControl(UIControl *control, UISizePolicyComponent *s
     
     Vector2 newSize = control->GetSize();
     
+    bool skipInvisible = false;
+    
+    
     const DAVA::List<UIControl*> &children = control->GetChildren();
-    UILinearLayoutComponent *layout = control->GetComponent<UILinearLayoutComponent>();
-    bool skipInvisible = layout ? layout->IsSkipInvisibleControls() : false;
+    UILinearLayoutComponent *linearLayout = nullptr;
+    UIFlowLayoutComponent *flowLayout = control->GetComponent<UIFlowLayoutComponent>();
+    
+    if (flowLayout)
+    {
+        skipInvisible = flowLayout->IsSkipInvisibleControls();
+    }
+    else
+    {
+        linearLayout = control->GetComponent<UILinearLayoutComponent>();
+        if (linearLayout)
+            skipInvisible = linearLayout->IsSkipInvisibleControls();
+    }
     
     UISizePolicyComponent::eSizePolicy policy = sizeHint->GetPolicyByAxis(axis);
     float32 hintValue = sizeHint->GetValueByAxis(axis);
@@ -115,10 +138,33 @@ void UILayoutSystem::MeasureControl(UIControl *control, UISizePolicyComponent *s
             break;
             
         case UISizePolicyComponent::PERCENT_OF_CHILDREN_SUM:
-            for (UIControl *child : children)
+            if (flowLayout && axis == Vector2::AXIS_Y)
             {
-                if (!skipInvisible || child->GetVisible())
-                    value += child->GetSize().data[axis];
+                const float32 spacing = flowLayout->GetSpacing();
+                float32 x = children.front()->GetPosition().x;
+                float32 maxH = 0;
+                bool first = true;
+                for (UIControl *child : children)
+                {
+                    float childX = child->GetPosition().x;
+                    if (childX <= x + EPSILON && !first)
+                    {
+                        value += maxH + spacing;
+                        maxH = 0;
+                    }
+                    x = childX;
+                    maxH = Max(maxH, child->GetSize().dy);
+                    first = false;
+                }
+                value += maxH;
+            }
+            else
+            {
+                for (UIControl *child : children)
+                {
+                    if (!skipInvisible || child->GetVisible())
+                        value += child->GetSize().data[axis];
+                }
             }
             value = value * hintValue / 100.0f;
             break;
@@ -166,12 +212,12 @@ void UILayoutSystem::MeasureControl(UIControl *control, UISizePolicyComponent *s
         policy == UISizePolicyComponent::PERCENT_OF_FIRST_CHILD ||
         policy == UISizePolicyComponent::PERCENT_OF_LAST_CHILD)
     {
-        if (layout && layout->GetOrientation() == axis)
+        if (linearLayout && linearLayout->GetOrientation() == axis)
         {
             if (policy == UISizePolicyComponent::PERCENT_OF_CHILDREN_SUM && !children.empty())
-                value += layout->GetSpacing() * (children.size() - 1);
+                value += linearLayout->GetSpacing() * (children.size() - 1);
             
-            value += layout->GetPadding() * 2.0f;
+            value += linearLayout->GetPadding() * 2.0f;
         }
     }
     
@@ -188,6 +234,92 @@ void UILayoutSystem::MeasureControl(UIControl *control, UISizePolicyComponent *s
     }
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// Flow Layout
+////////////////////////////////////////////////////////////////////////////////
+
+void UILayoutSystem::ApplyFlowLayout(UIControl *control, UIFlowLayoutComponent *flowLayoutComponent, int32 axis)
+{
+    const DAVA::List<UIControl*> &children = control->GetChildren();
+    if (children.empty())
+        return;
+
+    if (axis == Vector2::AXIS_X)
+        ApplyFlowLayoutHorizontally(control, flowLayoutComponent);
+    else
+        ApplyFlowLayoutVertically(control, flowLayoutComponent);
+}
+
+void UILayoutSystem::ApplyFlowLayoutHorizontally(UIControl *control, UIFlowLayoutComponent *component)
+{
+    const DAVA::List<UIControl*> &children = control->GetChildren();
+    const float32 padding = component->GetPadding();
+    const float32 spacing = component->GetSpacing();
+    const float32 controlSize = control->GetSize().dx;
+    float32 x = padding;
+    for (UIControl *child : children)
+    {
+        float32 childSize = child->GetSize().dx;
+        UISizePolicyComponent *sizePolicy = child->GetComponent<UISizePolicyComponent>();
+        if (sizePolicy)
+        {
+            if (sizePolicy->GetHorizontalPolicy() == UISizePolicyComponent::PERCENT_OF_PARENT)
+            {
+                childSize = control->GetSize().dx * sizePolicy->GetHorizontalValue() / 100.0f;
+                childSize = Clamp(childSize, sizePolicy->GetHorizontalMinValue(), sizePolicy->GetHorizontalMaxValue());
+                child->SetSize(Vector2(childSize, child->GetSize().dy));
+                changedControls.insert(child);
+            }
+        }
+        
+        if (x > padding + EPSILON && x + childSize > controlSize - padding + EPSILON)
+        {
+            x = padding;
+        }
+        child->SetPosition(Vector2(x, child->GetPosition().y));
+        x += child->GetSize().dx + spacing;
+    }
+}
+
+void UILayoutSystem::ApplyFlowLayoutVertically(UIControl *control, UIFlowLayoutComponent *component)
+{
+    const DAVA::List<UIControl*> &children = control->GetChildren();
+    const float32 padding = component->GetPadding();
+    const float32 spacing = component->GetSpacing();
+//    const float32 controlSize = control->GetSize().dx;
+    float32 x = children.front()->GetPosition().x;
+    float32 y = padding;
+    float32 maxH = 0;
+    bool first = true;
+    for (UIControl *child : children)
+    {
+//        float32 childSize = child->GetSize().dx;
+//        UISizePolicyComponent *sizePolicy = child->GetComponent<UISizePolicyComponent>();
+//        if (sizePolicy)
+//        {
+//            if (sizePolicy->GetHorizontalPolicy() == UISizePolicyComponent::PERCENT_OF_PARENT)
+//            {
+//                childSize = control->GetSize().dx * sizePolicy->GetHorizontalValue() / 100.0f;
+//                childSize = Clamp(childSize, sizePolicy->GetHorizontalMinValue(), sizePolicy->GetHorizontalMaxValue());
+//                child->SetSize(Vector2(childSize, child->GetSize().dy));
+//                changedControls.insert(child);
+//            }
+//        }
+        
+        float childX = child->GetPosition().x;
+        if (childX <= x + EPSILON && !first)
+        {
+            y += maxH + spacing;
+            maxH = 0;
+        }
+        child->SetPosition(Vector2(childX, y));
+
+        x = childX;
+        maxH = Max(maxH, child->GetSize().dy);
+        first = false;
+    }
+}
+    
 ////////////////////////////////////////////////////////////////////////////////
 // Linear Layout
 ////////////////////////////////////////////////////////////////////////////////

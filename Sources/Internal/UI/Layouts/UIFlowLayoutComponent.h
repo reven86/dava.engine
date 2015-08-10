@@ -26,38 +26,29 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
-#ifndef __DAVAENGINE_UI_LINEAR_LAYOUT_COMPONENT_H__
-#define __DAVAENGINE_UI_LINEAR_LAYOUT_COMPONENT_H__
+#ifndef __DAVAENGINE_UI_FLOW_LAYOUT_COMPONENT_H__
+#define __DAVAENGINE_UI_FLOW_LAYOUT_COMPONENT_H__
 
 #include "UI/Components/UIComponent.h"
 
 namespace DAVA
 {
-class UILinearLayoutComponent : public UIComponent
+class UIFlowLayoutComponent : public UIComponent
 {
 public:
-    enum eOrientation {
-        HORIZONTAL = 0,
-        VERTICAL = 1
-    };
+    IMPLEMENT_COMPONENT_TYPE(FLOW_LAYOUT_COMPONENT);
     
-public:
-    IMPLEMENT_COMPONENT_TYPE(LINEAR_LAYOUT_COMPONENT);
-    
-    UILinearLayoutComponent();
-    UILinearLayoutComponent(const UILinearLayoutComponent &src);
+    UIFlowLayoutComponent();
+    UIFlowLayoutComponent(const UIFlowLayoutComponent &src);
     
 protected:
-    virtual ~UILinearLayoutComponent();
+    virtual ~UIFlowLayoutComponent();
     
 private:
-    UILinearLayoutComponent &operator=(const UILinearLayoutComponent &) = delete;
+    UIFlowLayoutComponent &operator=(const UIFlowLayoutComponent &) = delete;
     
 public:
-    virtual UILinearLayoutComponent* Clone() const override;
-    
-    eOrientation GetOrientation() const;
-    void SetOrientation(eOrientation orientation);
+    virtual UIFlowLayoutComponent* Clone() const override;
     
     float32 GetPadding() const;
     void SetPadding(float32 padding);
@@ -77,11 +68,6 @@ public:
     void SetSkipInvisibleControls(bool skip);
     
 private:
-    int32 GetOrientationAsInt() const;
-    void SetOrientationFromInt(int32 type);
-    
-private:
-    eOrientation orientation = HORIZONTAL;
     float32 padding = 0.0f;
     float32 spacing = 0.0f;
     bool dynamicPadding = false;
@@ -90,8 +76,7 @@ private:
     bool skipInvisibleControls = true;
     
 public:
-    INTROSPECTION_EXTEND(UILinearLayoutComponent, UIComponent,
-                         PROPERTY("orientation", InspDesc("Orientation", GlobalEnumMap<eOrientation>::Instance()), GetOrientationAsInt, SetOrientationFromInt, I_SAVE | I_VIEW | I_EDIT)
+    INTROSPECTION_EXTEND(UIFlowLayoutComponent, UIComponent,
                          PROPERTY("padding", "Padding", GetPadding, SetPadding, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("dynamicPadding", "Dynamic Padding", IsDynamicPadding, SetDynamicPadding, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("spacing", "Spacing", GetSpacing, SetSpacing, I_SAVE | I_VIEW | I_EDIT)
@@ -105,4 +90,4 @@ public:
 }
 
 
-#endif //__DAVAENGINE_UI_LINEAR_LAYOUT_COMPONENT_H__
+#endif //__DAVAENGINE_UI_FLOW_LAYOUT_COMPONENT_H__
