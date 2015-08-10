@@ -48,7 +48,9 @@ template<typename... Args>
 using first_pointer_class_t = typename first_pointer_class<Args...>::type;
 
 template<typename T>
-struct is_best_argument : std::integral_constant < bool, std::is_fundamental<T>::value || std::is_pointer<T>::value >
+struct is_best_argument_type : std::integral_constant<bool,
+        std::is_fundamental<T>::value || std::is_pointer<T>::value ||
+        (sizeof(T) <= sizeof(void*) && (std::is_standard_layout<T>::value || std::is_pod<T>::value))>
 { };
 
 class Closure
@@ -181,13 +183,13 @@ public:
         : fn(_fn)
     { }
 
-    static Ret invokeTrivial(const Closure& storage, typename std::conditional<is_best_argument<Args>::value, Args, Args&&>::type... args)
+    static Ret invokeTrivial(const Closure& storage, typename std::conditional<is_best_argument_type<Args>::value, Args, Args&&>::type... args)
     {
         HolderFree *holder = storage.GetTrivial<HolderFree>();
         return (Ret)holder->fn(std::forward<Args>(args)...);
     }
 
-    static Ret invokeShared(const Closure& storage, typename std::conditional<is_best_argument<Args>::value, Args, Args&&>::type... args)
+    static Ret invokeShared(const Closure& storage, typename std::conditional<is_best_argument_type<Args>::value, Args, Args&&>::type... args)
     {
         HolderFree *holder = storage.GetShared<HolderFree>();
         return (Ret)holder->fn(std::forward<Args>(args)...);
@@ -209,13 +211,13 @@ public:
         : fn(_fn)
     { }
 
-    static Ret invokeTrivial(const Closure &storage, Obj* cls, typename std::conditional<is_best_argument<ClsArgs>::value, ClsArgs, ClsArgs&&>::type... args)
+    static Ret invokeTrivial(const Closure &storage, Obj* cls, typename std::conditional<is_best_argument_type<ClsArgs>::value, ClsArgs, ClsArgs&&>::type... args)
     {
         HolderClass *holder = storage.GetTrivial<HolderClass>();
         return (Ret)(static_cast<Cls*>(cls)->*holder->fn)(std::forward<ClsArgs>(args)...);
     }
 
-    static Ret invokeShared(const Closure &storage, Obj* cls, typename std::conditional<is_best_argument<ClsArgs>::value, ClsArgs, ClsArgs&&>::type... args)
+    static Ret invokeShared(const Closure &storage, Obj* cls, typename std::conditional<is_best_argument_type<ClsArgs>::value, ClsArgs, ClsArgs&&>::type... args)
     {
         HolderClass *holder = storage.GetShared<HolderClass>();
         return (Ret)(static_cast<Cls*>(cls)->*holder->fn)(std::forward<ClsArgs>(args)...);
@@ -238,13 +240,13 @@ public:
         , obj(_obj)
     { }
 
-    static Ret invokeTrivial(const Closure &storage, typename std::conditional<is_best_argument<ClsArgs>::value, ClsArgs, ClsArgs&&>::type... args)
+    static Ret invokeTrivial(const Closure &storage, typename std::conditional<is_best_argument_type<ClsArgs>::value, ClsArgs, ClsArgs&&>::type... args)
     {
         HolderObject *holder = storage.GetTrivial<HolderObject>();
         return (Ret)(static_cast<Cls *>(holder->obj)->*holder->fn)(std::forward<ClsArgs>(args)...);
     }
 
-    static Ret invokeShared(const Closure &storage, typename std::conditional<is_best_argument<ClsArgs>::value, ClsArgs, ClsArgs&&>::type... args)
+    static Ret invokeShared(const Closure &storage, typename std::conditional<is_best_argument_type<ClsArgs>::value, ClsArgs, ClsArgs&&>::type... args)
     {
         HolderObject *holder = storage.GetShared<HolderObject>();
         return (Ret)(static_cast<Cls *>(holder->obj)->*holder->fn)(std::forward<ClsArgs>(args)...);
@@ -268,7 +270,7 @@ public:
         , obj(_obj)
     { }
 
-    static Ret invokeShared(const Closure &storage, typename std::conditional<is_best_argument<ClsArgs>::value, ClsArgs, ClsArgs&&>::type... args)
+    static Ret invokeShared(const Closure &storage, typename std::conditional<is_best_argument_type<ClsArgs>::value, ClsArgs, ClsArgs&&>::type... args)
     {
         HolderSharedObject *holder = storage.GetShared<HolderSharedObject>();
         return (static_cast<Cls*>(holder->obj.get())->*holder->fn)(std::forward<ClsArgs>(args)...);
@@ -412,6 +414,21 @@ public:
         return !operator==(nullptr);
     }
 
+    bool operator<(const Function& fn) const
+    {
+        return (invoker < fn.invoker);
+    }
+
+    friend bool operator==(std::nullptr_t, const Function &fn)
+    {
+        return (nullptr == fn.invoker);
+    }
+
+    friend bool operator!=(std::nullptr_t, const Function &fn)
+    {
+        return (nullptr != fn.invoker);
+    }
+
     operator bool() const
     {
         return !operator==(nullptr);
@@ -429,7 +446,7 @@ public:
     }
 
 protected:
-    using Invoker = Ret(*)(const Fn11::Closure &, typename std::conditional<Fn11::is_best_argument<Args>::value, Args, Args&&>::type...);
+    using Invoker = Ret(*)(const Fn11::Closure &, typename std::conditional<Fn11::is_best_argument_type<Args>::value, Args, Args&&>::type...);
 
     Invoker invoker = nullptr;
     Fn11::Closure closure;
@@ -438,7 +455,6 @@ protected:
     void Init(const Fn& fn, Prms&&... params)
     {
         Detail<
-            (
                 trivial && sizeof(Hldr) <= sizeof(Fn11::Closure::Storage)
                 && std::is_trivially_destructible<Fn>::value
 #ifdef __DAVAENGINE_ANDROID__
@@ -450,8 +466,7 @@ protected:
                 && std::is_trivially_copy_constructible<Fn>::value
                 && std::is_trivially_copy_assignable<Fn>::value
 #endif
-            ),
-            Hldr, Fn, Prms... >::Init(this, fn, std::forward<Prms>(params)...);
+            , Hldr, Fn, Prms... >::Init(this, fn, std::forward<Prms>(params)...);
     }
 
 private:

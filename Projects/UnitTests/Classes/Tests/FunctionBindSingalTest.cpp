@@ -237,6 +237,7 @@ DAVA_TESTCLASS(FunctionBindSignalTest)
         TEST_VERIFY(null_f0() == staticFn0());
         null_f0 = 0;
         TEST_VERIFY(null_f0 == nullptr);
+        TEST_VERIFY(nullptr == null_f0);
 
         null_f0 = object_f0;
         TEST_VERIFY(null_f0() == object_f0());
