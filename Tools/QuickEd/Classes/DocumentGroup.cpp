@@ -26,7 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
+#include "Document.h"
 #include "DocumentGroup.h"
 #include <QObject>
 #include <QUndoGroup>
@@ -80,8 +80,8 @@ void DocumentGroup::SetActiveDocument(Document* document)
     {
         return;
     }
-    SelectionList deselected;
-    SelectionList selected;
+    SelectedNodes deselected;
+    SelectedNodes selected;
     if (nullptr != active) 
     {
         deselected = active->selectedNodes;
@@ -107,7 +107,7 @@ void DocumentGroup::SetActiveDocument(Document* document)
     }
 }
 
-void DocumentGroup::OnSelectedNodesChanged(const SelectionList &selected, const SelectionList &deselected)
+void DocumentGroup::OnSelectedNodesChanged(const SelectedNodes &selected, const SelectedNodes &deselected)
 {
     if(nullptr != active)
     {

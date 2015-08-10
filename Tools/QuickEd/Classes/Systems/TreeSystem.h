@@ -31,30 +31,25 @@
 #define __SYSTEMS_SELECTION_SYSTEM_H__
 
 #include "Systems/Interfaces.h"
-#include <QObject>
-#include <QSet>
 
 class Document;
 class ControlNode;
 
-class TreeSystem : public QObject, public InputInterface
-{
-    Q_OBJECT
-    
+class TreeSystem : public InputInterface, public SelectionInterface
+{   
 public:
     explicit TreeSystem(Document *parent);
-    TreeSystem() = default;
+    virtual ~TreeSystem() = default;
     
-    bool OnInput(QEvent *event) override;
-public slots:
-    void OnSelectionChanged(const QSet<ControlNode*> &selected, const QSet<ControlNode*> &deselected);
+    bool OnInput(DAVA::UIEvent *currentInput) override;
+    void SelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected) override;
 private:
     void OnCopy();
     void OnPaste();
     void OnDelete();
     
     Document *document;
-    QSet<ControlNode*> selectionList;
+    SelectedControls selectionList;
 };
 
 #endif // __SYSTEMS_SELECTION_SYSTEM_H__

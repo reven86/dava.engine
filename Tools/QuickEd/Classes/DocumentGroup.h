@@ -32,9 +32,9 @@
 
 #include <QObject>
 #include <QUndoGroup>
-#include "Document.h"
+#include "Defines.h"
 
-class SharedData;
+class Document;
 
 class DocumentGroup : public QObject
 {
@@ -50,11 +50,11 @@ public:
     const QUndoGroup* GetUndoGroup() const;
 public slots:
     void SetActiveDocument(Document* document);
-    void OnSelectedNodesChanged(const SelectionList &selected, const SelectionList &deselected);
+    void OnSelectedNodesChanged(const SelectedNodes &selected, const SelectedNodes &deselected);
 
 signals:
     void ActiveDocumentChanged(Document*);
-    void SelectedNodesChanged(const SelectionList &selected, const SelectionList &deselected);
+    void SelectedNodesChanged(const SelectedNodes &selected, const SelectedNodes &deselected);
 protected:
     Document *active;
     QList<Document*> documentList;

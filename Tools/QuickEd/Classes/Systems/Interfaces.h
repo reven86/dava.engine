@@ -30,12 +30,25 @@
 #ifndef __SYSTEMS_INTERFACES_H__
 #define __SYSTEMS_INTERFACES_H__
 
-class QEvent;
+#include "Base/BaseTypes.h"
+
+namespace DAVA{
+    class UIEvent;
+}
+
+class ControlNode;
 
 class InputInterface
 {
 public:
-    virtual bool OnInput(QEvent *event) = 0;
+    virtual bool OnInput(DAVA::UIEvent *currentInput) = 0;
+};
+
+class SelectionInterface
+{
+public:
+    using SelectedControls = DAVA::UnorderedSet < ControlNode* > ;
+    virtual void SelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected) = 0;
 };
 
 #endif // __SYSTEMS_INTERFACES_H__

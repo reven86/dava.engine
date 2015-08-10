@@ -30,6 +30,7 @@
 #include "PreviewModel.h"
 
 #include "UI/Preview/EditScreen.h"
+#include "Model/PackageHierarchy/PackageBaseNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Document.h"
 #include "Base/Result.h"
@@ -185,7 +186,7 @@ void PreviewModel::SetCanvasPosition(const QPoint &newCanvasPosition)
     }
 }
 
-void PreviewModel::SetRootControls(const QSet<PackageBaseNode*> &activatedControls)
+void PreviewModel::SetRootControls(const SelectedNodes &activatedControls)
 {
     rootNodes.clear();
     canvas->RemoveAllControls();

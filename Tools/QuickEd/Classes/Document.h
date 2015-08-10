@@ -31,9 +31,10 @@
 #define __QUICKED_DOCUMENT_H__
 
 #include <QUndoStack>
-#include <QSet>
-#include <QMap>
 #include "Model/PackageHierarchy/PackageBaseNode.h"
+#include "Systems/Interfaces.h"
+#include "Systems/SelectionSystem.h"
+#include "Defines.h"
 
 struct WidgetContext
 {
@@ -47,15 +48,12 @@ namespace DAVA {
 class PackageNode;
 class QtModelPackageCommandExecutor;
 
-class SharedData;
 class PropertiesModel;
 class PackageModel;
 class ControlNode;
 class DocumentGroup;
 
-using SelectionList = QSet<PackageBaseNode*>;
-
-class Document : public QObject
+class Document : public QObject, public SelectionInterface
 {
     Q_OBJECT
     friend class DocumentGroup;
@@ -65,23 +63,21 @@ public:
     const DAVA::FilePath &GetPackageFilePath() const;
     PackageNode *GetPackage() const;
 
-    SharedData *GetContext() const;
     QUndoStack *GetUndoStack() const;
     QtModelPackageCommandExecutor *GetCommandExecutor() const;
 
     void RefreshLayout();
     WidgetContext* GetContext(QObject* requester) const;
     void SetContext(QObject* requester, WidgetContext* widgetContext);
-
+    void SelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected) override;
 signals:
-    void SelectedNodesChanged(const SelectionList &selected, const SelectionList &deselected);
+    void SelectedNodesChanged(const SelectedNodes &selected, const SelectedNodes &deselected);
 public slots:
     void RefreshAllControlProperties();
-    void OnSelectedNodesChanged(const SelectionList &selected, const SelectionList &deselected);
+    void OnSelectedNodesChanged(const SelectedNodes &selected, const SelectedNodes &deselected);
 private:
-    SelectionList selectedNodes;
     QMap < QObject*, WidgetContext* > contexts;
-    
+    SelectedNodes selectedNodes;
     PackageNode *package = nullptr;
     QtModelPackageCommandExecutor *commandExecutor = nullptr;
     QUndoStack *undoStack = nullptr;
@@ -101,7 +97,5 @@ inline QtModelPackageCommandExecutor *Document::GetCommandExecutor() const
 {
     return commandExecutor;
 }
-
-Q_DECLARE_METATYPE(PackageBaseNode*);
 
 #endif // __QUICKED_DOCUMENT_H__

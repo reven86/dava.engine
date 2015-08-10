@@ -40,19 +40,20 @@ class ImportedPackagesNode;
 class PackageListener
 {
 public:
-    virtual void ControlPropertyWasChanged(ControlNode *node, AbstractProperty *property) = 0;
+    virtual ~PackageListener() {}
+    virtual void ControlPropertyWasChanged(ControlNode *node, AbstractProperty *property) {}
     
-    virtual void ControlWillBeAdded(ControlNode *node, ControlsContainerNode *destination, int index) = 0;
-    virtual void ControlWasAdded(ControlNode *node, ControlsContainerNode *destination, int index) = 0;
+    virtual void ControlWillBeAdded(ControlNode *node, ControlsContainerNode *destination, int index) {}
+    virtual void ControlWasAdded(ControlNode *node, ControlsContainerNode *destination, int index) {}
 
-    virtual void ControlWillBeRemoved(ControlNode *node, ControlsContainerNode *from) = 0;
-    virtual void ControlWasRemoved(ControlNode *node, ControlsContainerNode *from) = 0;
+    virtual void ControlWillBeRemoved(ControlNode *node, ControlsContainerNode *from) {}
+    virtual void ControlWasRemoved(ControlNode *node, ControlsContainerNode *from) {}
     
-    virtual void ImportedPackageWillBeAdded(PackageNode *node, ImportedPackagesNode *to, int index) = 0;
-    virtual void ImportedPackageWasAdded(PackageNode *node, ImportedPackagesNode *to, int index) = 0;
+    virtual void ImportedPackageWillBeAdded(PackageNode *node, ImportedPackagesNode *to, int index) {}
+    virtual void ImportedPackageWasAdded(PackageNode *node, ImportedPackagesNode *to, int index) {}
 
-    virtual void ImportedPackageWillBeRemoved(PackageNode *node, ImportedPackagesNode *from) = 0;
-    virtual void ImportedPackageWasRemoved(PackageNode *node, ImportedPackagesNode *from) = 0;
+    virtual void ImportedPackageWillBeRemoved(PackageNode *node, ImportedPackagesNode *from) {}
+    virtual void ImportedPackageWasRemoved(PackageNode *node, ImportedPackagesNode *from) {}
     
 };
 

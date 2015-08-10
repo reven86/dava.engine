@@ -36,6 +36,7 @@
 #include "DAVAEngine.h"
 
 #include "Base/Result.h"
+#include "Defines.h"
 
 class PackageCanvas;
 class PackageBaseNode;
@@ -60,7 +61,7 @@ public:
     QSize GetViewSize() const;
     DAVA::UIControl *GetViewControl() const;
 
-    void SetRootControls(const QSet<PackageBaseNode*> &activatedControls);
+    void SetRootControls(const SelectedNodes &activatedControls);
 
 signals:
     void CanvasPositionChanged(const QPoint &canvasPosition);

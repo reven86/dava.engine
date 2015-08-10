@@ -46,9 +46,9 @@ TreeSystem::TreeSystem(Document* parent)
     
 }
 
-bool TreeSystem::OnInput(QEvent *event)
+bool TreeSystem::OnInput(DAVA::UIEvent *currentInput)
 {
-    if(event->type() == QEvent::KeyPress)
+    /*if(event->type() == QEvent::KeyPress)
     {
         QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
         if(keyEvent->matches(QKeySequence::Copy))
@@ -74,34 +74,33 @@ bool TreeSystem::OnInput(QEvent *event)
         }
 
     }
-    return false;
+    return false;*/
 }
 
-void TreeSystem::OnSelectionChanged(const QSet<ControlNode *> &selected, const QSet<ControlNode *> &deselected)
+void TreeSystem::SelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected)
 {
-    selectionList.unite(selected);
-    selectionList.subtract(deselected);
+    selectionList.insert(selected.begin(), selected.end());
+    selectionList.erase(deselected.begin(), deselected.end());
 }
 
 void TreeSystem::OnCopy()
 {
-    QClipboard *clipboard = QApplication::clipboard();
-    auto nodesToCopy = selectionList;
-    for(auto node : nodesToCopy)
+    DAVA::Vector<ControlNode*> nodesToCopy;
+    for(auto node : selectionList)
     {
-        if(!node->CanCopy())
+        if(node->CanCopy())
         {
-            nodesToCopy.remove(node);
+            nodesToCopy.push_back(node);
         }
     }
-    if(nodesToCopy.isEmpty())
+    if(nodesToCopy.empty())
     {
         return;
     }
     YamlPackageSerializer serializer;
-    serializer.SerializePackageNodes(document->GetPackage(), nodesToCopy.toList().toVector().toStdVector());
+    serializer.SerializePackageNodes(document->GetPackage(), nodesToCopy);
     DAVA::String str = serializer.WriteToString();
-    clipboard->setText(QString::fromStdString(str));
+    QApplication::clipboard()->setText(QString::fromStdString(str));
 }
 
 void TreeSystem::OnPaste()
@@ -123,16 +122,16 @@ void TreeSystem::OnPaste()
 
 void TreeSystem::OnDelete()
 {
-    auto nodesToRemove = selectionList;
-    for(auto node : nodesToRemove)
+    DAVA::Vector<ControlNode*> nodesToRemove;
+    for (auto node : selectionList)
     {
-        if(!node->CanRemove())
+        if(node->CanRemove())
         {
-            nodesToRemove.remove(node);
+            nodesToRemove.push_back(node);
         }
     }
-    if(!nodesToRemove.isEmpty())
+    if (!nodesToRemove.empty())
     {
-        document->GetCommandExecutor()->RemoveControls(nodesToRemove.toList().toVector().toStdVector());
+        document->GetCommandExecutor()->RemoveControls(nodesToRemove);
     }
 }

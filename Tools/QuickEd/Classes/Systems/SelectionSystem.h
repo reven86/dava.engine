@@ -32,37 +32,24 @@
 
 #include "Systems/Interfaces.h"
 #include "Model/PackageHierarchy/PackageListener.h"
-#include <QObject>
-#include <QSet>
 
 class Document;
 
-class SelectionSystem : public QObject, public InputInterface, public PackageListener
+class SelectionSystem : public SelectionInterface, public InputInterface, public PackageListener
 {
-    Q_OBJECT
-
 public:
-    explicit SelectionSystem(Document *parent);
     SelectionSystem() = default;
-    
-    bool OnInput(QEvent *event) override;
+    virtual ~SelectionSystem() = default;
+
+    bool OnInput(DAVA::UIEvent *currentInput) override;
     void ControlWasRemoved(ControlNode *node, ControlsContainerNode *from) override;
-signals:
-    void SelectionChanged(const QSet<ControlNode*> &selected, const QSet<ControlNode*> &deselected);
-public slots:
-    void OnSelectionChanged(const QSet<ControlNode*> &selected, const QSet<ControlNode*> &deselected);
+    void SelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected) override;
+    void AddListener(SelectionInterface *listener);
+    void RemoveListener(SelectionInterface *listener);
+
 private:
-    Document *document;
-    QSet<ControlNode*> selectionList;
-public: //unused virtual funcitons
-    void ControlPropertyWasChanged(ControlNode *node, AbstractProperty *property) override {}
-    void ControlWillBeAdded(ControlNode *node, ControlsContainerNode *destination, int index) override {}
-    void ControlWasAdded(ControlNode *node, ControlsContainerNode *destination, int index) override {}
-    void ControlWillBeRemoved(ControlNode *node, ControlsContainerNode *from) override {}
-    void ImportedPackageWillBeAdded(PackageNode *node, ImportedPackagesNode *to, int index) override {};
-    void ImportedPackageWasAdded(PackageNode *node, ImportedPackagesNode *to, int index) override {};
-    void ImportedPackageWillBeRemoved(PackageNode *node, ImportedPackagesNode *from) override {};
-    void ImportedPackageWasRemoved(PackageNode *node, ImportedPackagesNode *from) override {};
+    SelectedControls selectedControls;
+    DAVA::Vector<SelectionInterface*> listeners;
 };
 
 #endif // __SYSTEMS_SELECTION_SYSTEM_H__

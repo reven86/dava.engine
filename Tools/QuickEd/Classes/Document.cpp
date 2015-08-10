@@ -86,19 +86,33 @@ void Document::SetContext(QObject* requester, WidgetContext* widgetContext)
     contexts.insert(requester, widgetContext);
 }
 
+void Document::SelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected)
+{
+    auto tmpSelected = selectedNodes;
+    SelectedNodes selected_(selected.begin(), selected.end());
+    SelectedNodes deselected_(deselected.begin(), deselected.end());
+    tmpSelected.insert(selected_.begin(), selected_.end());
+    tmpSelected.erase(deselected_.begin(), deselected_.end());
+    if (tmpSelected != selectedNodes)
+    {
+        emit SelectedNodesChanged(selected_, deselected_);
+    }
+}
+
 void Document::RefreshAllControlProperties()
 {
     package->GetPackageControlsNode()->RefreshControlProperties();
 }
 
-void Document::OnSelectedNodesChanged(const SelectionList &selected, const SelectionList &deselected)
+void Document::OnSelectedNodesChanged(const SelectedNodes &selected, const SelectedNodes &deselected)
 {
-    if(selected.isEmpty() && deselected.isEmpty())
+    auto tmpSelected = selectedNodes;
+    tmpSelected.insert(selected.begin(), selected.end());
+    tmpSelected.erase(deselected.begin(), deselected.end());
+    if (tmpSelected != selectedNodes)
     {
-        return;
+        //!todo: selectionSystem->setselection
+        emit SelectedNodesChanged(selected, deselected);
     }
-    selectedNodes.unite(selected);
-    selectedNodes.subtract(deselected);
-    emit SelectedNodesChanged(selected, deselected);
 }
 

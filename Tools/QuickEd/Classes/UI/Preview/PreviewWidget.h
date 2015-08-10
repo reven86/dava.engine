@@ -40,7 +40,6 @@ namespace Ui {
     class PreviewWidget;
 }
 
-class SharedData;
 class PreviewModel;
 class DavaGLWidget;
 class ControlNode;

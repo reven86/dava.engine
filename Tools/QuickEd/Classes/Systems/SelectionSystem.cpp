@@ -27,36 +27,77 @@
 =====================================================================================*/
 
 
-#include "Document.h"
 #include "Systems/SelectionSystem.h"
-#include <QEvent>
+#include "Model/PackageHierarchy/ControlNode.h"
+#include "UI/UIEvent.h"
 
+using namespace DAVA;
 
-SelectionSystem::SelectionSystem(Document* parent)
-    : QObject(parent)
-    , document(parent)
-{
-    
-}
-
-bool SelectionSystem::OnInput(QEvent *event)
-{
+bool SelectionSystem::OnInput(UIEvent* currentInput)
+{    
+    if (currentInput->phase == UIEvent::PHASE_BEGAN || currentInput->phase == UIEvent::PHASE_DRAG)
+    {
+        /*UIControl *control = controlsCanvas->GetControlByPos(this, currentInput->point);
+        if (nullptr != control)
+        {
+            UIControl *rootControl = control;
+            while (rootControl->GetParent() != nullptr && rootControl->GetParent() != this)
+            {
+                rootControl = rootControl->GetParent();
+            }
+            if (rootControl->GetParent() == this)
+            {
+                selectedControls.push_back(std::make_pair(rootControl, control));
+            }
+        }
+        for (auto listener : selectionListeners)
+        {
+            listener->OnControlSelected(selectedControls);
+        }*/
+        return true;
+    }
     return false;
 }
 
 void SelectionSystem::ControlWasRemoved(ControlNode *node, ControlsContainerNode *from)
 {
-    if(selectionList.contains(node))
+    auto iter = std::find(selectedControls.begin(), selectedControls.end(), node);
+    if (iter != selectedControls.end())
     {
-        selectionList.remove(node);
-        emit SelectionChanged(QSet<ControlNode*>(), QSet<ControlNode*>() << node);
+        selectedControls.erase(iter);
+        SelectedControls deselected;
+        deselected.insert(*iter);
+        for (auto listener : listeners)
+        {
+            listener->SelectionWasChanged(SelectedControls(), deselected);
+        }
     }
 }
 
-void SelectionSystem::OnSelectionChanged(const QSet<ControlNode *> &selected, const QSet<ControlNode *> &deselected)
+void SelectionSystem::SelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected)
 {
-    selectionList.unite(selected);
-    selectionList.subtract(deselected);
-    emit SelectionChanged(selected, deselected);
+    selectedControls.insert(selected.begin(), selected.end());
+    selectedControls.erase(deselected.begin(), deselected.end());
+    for (auto listener : listeners)
+    {
+        listener->SelectionWasChanged(SelectedControls(), deselected);
+    }
 }
 
+void SelectionSystem::AddListener(SelectionInterface *listener)
+{
+    listeners.push_back(listener);
+}
+
+void SelectionSystem::RemoveListener(SelectionInterface *listener)
+{
+    auto it = std::find(listeners.begin(), listeners.end(), listener);
+    if (it != listeners.end())
+    {
+        listeners.erase(it);
+    }
+    else
+    {
+        DVASSERT(false);
+    }
+}
