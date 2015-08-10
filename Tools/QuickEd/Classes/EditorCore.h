@@ -69,7 +69,9 @@ protected slots:
     void OnCurrentTabChanged(int index);
     
     void UpdateLanguage();
-    
+   
+    void OnRtlChanged(bool isRtl);
+
 protected:
     void OpenProject(const QString &path);
     bool CloseProject();

@@ -88,7 +88,21 @@ void NetCore::DestroyController(TrackId id)
 {
     DVASSERT(false == isFinishing);
     DVASSERT(GetTrackedObject(id) != NULL);
-    loop.Post(std::bind(&NetCore::DoDestroy, this, id));
+	loop.Post(std::bind(&NetCore::DoDestroy, this, id, nullptr));
+}
+
+void NetCore::DestroyControllerBlocked(TrackId id)
+{
+    DVASSERT(false == isFinishing);
+    DVASSERT(GetTrackedObject(id) != NULL);
+
+    volatile bool oneStopped = false;
+    loop.Post(std::bind(&NetCore::DoDestroy, this, id, &oneStopped));
+
+    // Block until given controller is stopped and destroyed
+    do {
+        Poll();
+    } while (!oneStopped);
 }
 
 void NetCore::DestroyAllControllers(Function<void ()> callback)
@@ -140,15 +154,17 @@ void NetCore::DoRestart()
     }
 }
 
-void NetCore::DoDestroy(TrackId id)
+void NetCore::DoDestroy(TrackId id, volatile bool* stoppedFlag)
 {
     DVASSERT(GetTrackedObject(id) != NULL);
     IController* ctrl = GetTrackedObject(id);
     if (trackedObjects.erase(ctrl) > 0)
     {
         dyingObjects.insert(ctrl);
-        ctrl->Stop(MakeFunction(this, &NetCore::TrackedObjectStopped));
+        ctrl->Stop(std::bind(&NetCore::TrackedObjectStopped, this, std::placeholders::_1, stoppedFlag));
     }
+    else if (stoppedFlag != nullptr)
+        *stoppedFlag = true;
 }
 
 void NetCore::DoDestroyAll()
@@ -157,7 +173,7 @@ void NetCore::DoDestroyAll()
     {
         IController* ctrl = *i;
         dyingObjects.insert(ctrl);
-        ctrl->Stop(MakeFunction(this, &NetCore::TrackedObjectStopped));
+        ctrl->Stop(std::bind(&NetCore::TrackedObjectStopped, this, std::placeholders::_1, nullptr));
     }
     trackedObjects.clear();
 
@@ -188,12 +204,16 @@ IController* NetCore::GetTrackedObject(TrackId id) const
                                      : NULL;
 }
 
-void NetCore::TrackedObjectStopped(IController* obj)
+void NetCore::TrackedObjectStopped(IController* obj, volatile bool* stoppedFlag)
 {
     DVASSERT(dyingObjects.find(obj) != dyingObjects.end());
     if (dyingObjects.erase(obj) > 0)    // erase returns number of erased elements
     {
         SafeDelete(obj);
+        if (stoppedFlag != nullptr)
+        {
+            *stoppedFlag = true;
+        }
     }
 
     if (true == dyingObjects.empty() && true == trackedObjects.empty())

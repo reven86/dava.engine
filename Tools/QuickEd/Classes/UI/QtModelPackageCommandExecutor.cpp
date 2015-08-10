@@ -32,13 +32,13 @@
 #include "Document.h"
 
 #include "UI/Commands/ChangePropertyValueCommand.h"
-#include "UI/Commands/ChangeDefaultValueCommand.h"
 #include "UI/Commands/InsertControlCommand.h"
 #include "UI/Commands/RemoveControlCommand.h"
 #include "UI/Commands/InsertImportedPackageCommand.h"
 #include "UI/Commands/RemoveImportedPackageCommand.h"
 #include "UI/Commands/AddComponentCommand.h"
 #include "UI/Commands/RemoveComponentCommand.h"
+#include "UI/Commands/AttachComponentPrototypeSectionCommand.h"
 
 #include "Model/PackageHierarchy/PackageControlsNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"
@@ -54,7 +54,7 @@
 #include "UI/UIControl.h"
 #include "UI/UIPackageLoader.h"
 
-#include "Base/Result.h"
+#include "QtTools/ConsoleWidget/PointerSerializer.h"
 
 using namespace DAVA;
 
@@ -168,11 +168,8 @@ void QtModelPackageCommandExecutor::AddComponent(ControlNode *node, uint32 compo
     {
         const char *componentName = GlobalEnumMap<UIComponent::eType>::Instance()->ToString(componentType);
         BeginMacro(Format("Add Component %s", componentName).c_str());
-        UIComponent::eType type = static_cast<UIComponent::eType>(componentType);
         int32 index = node->GetControl()->GetComponentCount(componentType);
-        ComponentPropertiesSection *section = new ComponentPropertiesSection(node->GetControl(), type, index, nullptr, AbstractProperty::CT_COPY);
-        AddComponentImpl(node, section);
-        SafeRelease(section);
+        AddComponentImpl(node, componentType, index, nullptr);
         EndMacro();
     }
 }
@@ -203,7 +200,7 @@ ResultList QtModelPackageCommandExecutor::InsertControl(ControlNode *control, Co
     }
     else
     {
-        resultList.AddResult(Result::RESULT_ERROR, "Can not inster control!", VariantType(reinterpret_cast<int64>(control)));
+        Logger::Warning("%s", String("Can not insert control!" + PointerSerializer::FromPointer(control)).c_str());
     }
     return resultList;
 }
@@ -441,17 +438,29 @@ void QtModelPackageCommandExecutor::RemoveControlImpl(ControlNode* node)
     
 }
 
-void QtModelPackageCommandExecutor::AddComponentImpl(ControlNode *node, ComponentPropertiesSection *section)
+void QtModelPackageCommandExecutor::AddComponentImpl(ControlNode *node, int32 typeIndex, int32 index, ComponentPropertiesSection *prototypeSection)
 {
-    PushCommand(new AddComponentCommand(document->GetPackage(), node, section));
-    Vector<ControlNode*> instances = node->GetInstances();
-    for (ControlNode *instance : instances)
+    UIComponent::eType type = static_cast<UIComponent::eType>(typeIndex);
+    
+    ComponentPropertiesSection *destSection = nullptr;
+    if (!UIComponent::IsMultiple(type))
+    {        
+        destSection = node->GetRootProperty()->FindComponentPropertiesSection(type, index);
+        if (destSection)
+        {
+            PushCommand(new AttachComponentPrototypeSectionCommand(document->GetPackage(), node, destSection, prototypeSection));
+        }
+    }
+    
+    if (destSection == nullptr)
     {
-        UIComponent::eType type = static_cast<UIComponent::eType>(section->GetComponentType());
-        int32 index = section->GetComponentIndex();
-        ComponentPropertiesSection *instanceSection = new ComponentPropertiesSection(instance->GetControl(), type, index, section, AbstractProperty::CT_INHERIT);
-        AddComponentImpl(instance, instanceSection);
-        SafeRelease(instanceSection);
+        ComponentPropertiesSection *section = new ComponentPropertiesSection(node->GetControl(), type, index, prototypeSection, prototypeSection ? AbstractProperty::CT_INHERIT : AbstractProperty::CT_COPY);
+        PushCommand(new AddComponentCommand(document->GetPackage(), node, section));
+        
+        for (ControlNode *instance : node->GetInstances())
+            AddComponentImpl(instance, type, index, section);
+        
+        SafeRelease(section);
     }
 }
 

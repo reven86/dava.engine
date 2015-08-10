@@ -27,31 +27,31 @@
 =====================================================================================*/
 
 
-#include "UIFakeComponent.h"
+#include "LazyUpdater.h"
 
-namespace DAVA
-{
+#include <QTimer>
 
-UIFakeComponent::UIFakeComponent()
-    : value(0)
-{
-    
-}
-    
-UIFakeComponent::UIFakeComponent(UIFakeComponent *src)
-    : value(src->value)
+LazyUpdater::LazyUpdater(Updater _updater, QObject *parent /* = nullptr */)
+	: QObject(parent)
+	, updater(_updater)
 {
 }
 
-
-UIFakeComponent::~UIFakeComponent()
+void LazyUpdater::Update()
 {
-    
+	++counter;
+	QTimer::singleShot(0, this, &LazyUpdater::OnTimer);
 }
 
-UIFakeComponent* UIFakeComponent::Clone()
+void LazyUpdater::OnTimer()
 {
-    return new UIFakeComponent(this);
-}
+	if (counter > 1)
+	{
+		--counter;
+		return;
+	}
 
+	counter = 0;
+
+	updater();
 }

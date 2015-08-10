@@ -228,7 +228,7 @@ void DeviceListController::DisonnectDeviceInternal(QModelIndex& index)
 
     item->setData(QVariant(static_cast<qulonglong>(NetCore::INVALID_TRACK_ID)), ROLE_CONNECTION_ID);
     // And destroy controller related to remote device
-    DAVA::Net::NetCore::Instance()->DestroyController(trackId);
+    DAVA::Net::NetCore::Instance()->DestroyControllerBlocked(trackId);
 
     QString s = item->text();
     int pos = s.indexOf('!');

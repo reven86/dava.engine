@@ -297,7 +297,17 @@ void RootProperty::RemoveComponentPropertiesSection(ComponentPropertiesSection *
     }
 }
 
-const DAVA::Vector<BackgroundPropertiesSection*> &RootProperty::GetBackgroundProperties() const
+void RootProperty::AttachPrototypeComponent(ComponentPropertiesSection *section, ComponentPropertiesSection *prototypeSection)
+{
+    section->AttachPrototypeSection(prototypeSection);
+}
+
+void RootProperty::DetachPrototypeComponent(ComponentPropertiesSection *section, ComponentPropertiesSection *prototypeSection)
+{
+    section->DetachPrototypeSection(prototypeSection);
+}
+
+const Vector<BackgroundPropertiesSection*> &RootProperty::GetBackgroundProperties() const
 {
     return backgroundProperties;
 }
@@ -483,7 +493,6 @@ uint32 RootProperty::GetComponentAbsIndex(DAVA::uint32 componentType, DAVA::uint
 
 void RootProperty::RefreshComponentIndices()
 {
-    Logger::Debug("REFRESH SECTION %s", node->GetName().c_str());
     for (ComponentPropertiesSection *section : componentProperties)
     {
         section->RefreshIndex();

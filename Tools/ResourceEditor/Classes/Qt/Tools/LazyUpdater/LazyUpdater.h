@@ -27,53 +27,36 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_UI_FAKE_COMPONENT_H__
-#define __DAVAENGINE_UI_FAKE_COMPONENT_H__
+#ifndef __TOOL_LAZY_UPDATER_H__
+#define __TOOL_LAZY_UPDATER_H__
 
-#include "UIComponent.h"
+#include "Functional/Function.h"
 
-namespace DAVA
+#include <QObject>
+
+class LazyUpdater : public QObject
 {
-    class UIControl;
-    
-    class UIFakeComponent : public UIComponent
-    {
-    public:
-        UIFakeComponent();
-        UIFakeComponent(UIFakeComponent *src);
-        
-    protected:
-        virtual ~UIFakeComponent();
-        
-    public:
-        IMPLEMENT_COMPONENT_TYPE(FAKE_COMPONENT);
-        
-        virtual UIFakeComponent* Clone() override;
+	Q_OBJECT
+public:
 
-        int32 GetValue() const;
-        void SetValue(int32 val);
-        
-    private:
-        int32 value;
-        
-    public:
-        INTROSPECTION_EXTEND(UIFakeComponent, UIComponent,
-                             PROPERTY("value", "Value", GetValue, SetValue, I_SAVE | I_VIEW | I_EDIT)
-                             );
-        
-    };
-
-    inline int32 UIFakeComponent::GetValue() const
-    {
-        return value;
-    }
-    
-    inline void UIFakeComponent::SetValue(int32 val)
-    {
-        value = val;
-    }
-
-}
+	using Updater = DAVA::Function < void() > ;
 
 
-#endif //__DAVAENGINE_UI_FAKE_COMPONENT_H__
+public:
+	LazyUpdater(Updater updater, QObject *parent = nullptr);
+
+	void Update();
+
+private slots:
+
+	void OnTimer();
+
+
+private:
+
+	Updater updater;
+	int counter = 0;
+
+};
+
+#endif // __TOOL_LAZY_UPDATER_H__
