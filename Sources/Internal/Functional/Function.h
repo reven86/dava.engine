@@ -34,7 +34,7 @@
 #include <array>
 #include <functional>
 #include <type_traits>
-#include "Base/Platform.h"
+#include "Base/BaseTypes.h"
 
 namespace DAVA {
 namespace Fn11 {
@@ -56,7 +56,7 @@ struct is_best_argument_type : std::integral_constant<bool,
 class Closure
 {
 public:
-    using Storage = std::array<void *, 4>;
+    using Storage = Array<void *, 4>;
 
     Closure()
     { }
@@ -93,7 +93,7 @@ public:
     inline Hldr* GetTrivial() const
     {
         static_assert(sizeof(Hldr) <= sizeof(Storage), "Fn can't be trivially get");
-        return reinterpret_cast<Hldr *>((void *)storage.data());
+        return reinterpret_cast<Hldr *>(const_cast<void **>(storage.data()));
     }
 
     Closure(const Closure& c)
@@ -150,7 +150,7 @@ protected:
 
     inline std::shared_ptr<void>* SharedPtr() const
     {
-        return reinterpret_cast<std::shared_ptr<void>*>((void *)storage.data());
+        return reinterpret_cast<std::shared_ptr<void>*>(const_cast<void**>(storage.data()));
     }
 
     void Clear()
