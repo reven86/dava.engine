@@ -73,17 +73,13 @@ uint32 ShaderDescriptor::CalculateRegsCount(rhi::ShaderProp::Type type, uint32 a
     case rhi::ShaderProp::TYPE_FLOAT3:
         DVASSERT(arraySize==1); //arrays of non register aligned types are not supported
         return 1;
-        break;
     case rhi::ShaderProp::TYPE_FLOAT4:
         return arraySize; //1 float4 register per array element
-        break;
     case rhi::ShaderProp::TYPE_FLOAT4X4:
         return arraySize * 4; //4 float4 register per array element
-        break;
     default:
         DVASSERT(false); //how did we get here? unknown property type
         return 0;
-        break;
     }
 }
 

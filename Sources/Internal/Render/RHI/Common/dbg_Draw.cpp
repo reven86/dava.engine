@@ -13,7 +13,7 @@
     #include <stdio.h>
     #include <stdarg.h>
 
-    #if defined(__DAVAENGINE_MACOS__)  ||  defined(__DAVAENGINE_IPHONE__)
+    #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
     #define _vsnprintf vsnprintf
     #endif
 

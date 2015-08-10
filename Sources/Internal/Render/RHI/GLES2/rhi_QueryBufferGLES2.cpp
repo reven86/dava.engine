@@ -82,6 +82,7 @@ gles2_QueryBuffer_Delete( Handle handle )
             {
                 #if defined(__DAVAENGINE_IPHONE__)
                 glDeleteQueriesEXT( 1, &id );
+				#elif defined(__DAVAENGINE_ANDROID__)
                 #else
                 glDeleteQueries( 1, &id );
                 #endif
@@ -106,6 +107,7 @@ gles2_QueryBuffer_IsReady( Handle handle, uint32 objectIndex )
 
         #if defined(__DAVAENGINE_IPHONE__)
         glGetQueryObjectuivEXT( buf->query[objectIndex], GL_QUERY_RESULT_AVAILABLE_EXT, &result );
+		#elif defined(__DAVAENGINE_ANDROID__)
         #else
         glGetQueryObjectuiv( buf->query[objectIndex], GL_QUERY_RESULT_AVAILABLE, &result );
         #endif
@@ -128,6 +130,7 @@ gles2_QueryBuffer_Value( Handle handle, uint32 objectIndex )
 
         #if defined(__DAVAENGINE_IPHONE__)
         glGetQueryObjectuivEXT( buf->query[objectIndex], GL_QUERY_RESULT_EXT, &result );
+		#elif defined(__DAVAENGINE_ANDROID__)
         #else
         glGetQueryObjectuiv( buf->query[objectIndex], GL_QUERY_RESULT, &result );
         #endif
@@ -165,6 +168,7 @@ BeginQuery( Handle handle, uint32 objectIndex )
         {
             #if defined(__DAVAENGINE_IPHONE__)
             glGenQueriesEXT( 1, &q );
+			#elif defined(__DAVAENGINE_ANDROID__)
             #else
             glGenQueries( 1, &q );
             #endif
@@ -176,6 +180,7 @@ BeginQuery( Handle handle, uint32 objectIndex )
         {
             #if defined(__DAVAENGINE_IPHONE__)
             glBeginQueryEXT( GL_ANY_SAMPLES_PASSED_EXT, q );
+			#elif defined(__DAVAENGINE_ANDROID__)
             #elif defined(__DAVAENGINE_MACOS__)
             glBeginQuery( GL_SAMPLES_PASSED, q );
             #else
@@ -199,6 +204,7 @@ EndQuery( Handle handle, uint32 objectIndex )
         {
             #if defined(__DAVAENGINE_IPHONE__)
             glEndQueryEXT( GL_ANY_SAMPLES_PASSED_EXT );
+			#elif defined(__DAVAENGINE_ANDROID__)
             #elif defined(__DAVAENGINE_MACOS__)
             glEndQuery( GL_SAMPLES_PASSED );
             #else

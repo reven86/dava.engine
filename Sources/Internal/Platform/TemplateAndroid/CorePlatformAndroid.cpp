@@ -26,8 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#include "Platform/TemplateAndroid/CorePlatformAndroid.h"
+#include "Base/Platform.h"
 
 //#include "Core/Core.h"
 
@@ -43,6 +42,7 @@ extern void FrameworkWillTerminate();
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Platform/TemplateAndroid/JniHelpers.h"
+#include "Platform/TemplateAndroid/CorePlatformAndroid.h"
 
 namespace DAVA
 {
@@ -130,7 +130,7 @@ namespace DAVA
 				static uint32 MAX_FRAME_SLEEP_TIME = 1000 / 60;
 				static uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
 				uint64 elapsedTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
-				int32 fps = RenderManager::Instance()->GetFPS();
+				int32 fps = Renderer::GetDesiredFPS();
 				if(fps > 0)
 				{
 					int64 sleepMs = (1000 / fps) - elapsedTime;
@@ -141,10 +141,8 @@ namespace DAVA
 				}
 				startTime = SystemTimer::Instance()->AbsoluteMS();
 			}
-		
-			DAVA::RenderManager::Instance()->Lock();
+
 			Core::SystemProcessFrame();
-			DAVA::RenderManager::Instance()->Unlock();
 		}
 	}
 
@@ -162,9 +160,7 @@ namespace DAVA
 		Logger::Debug("[CorePlatformAndroid::UpdateScreenMode] start");
 		VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(width, height);
 		VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(width, height);
-
-		RenderManager::Instance()->InitFBSize(width, height);
-        RenderManager::Instance()->Init(width, height);
+		VirtualCoordinatesSystem::Instance()->ScreenSizeChanged();
 
 		Logger::Debug("[CorePlatformAndroid::] w = %d, h = %d", width, height);
 		Logger::Debug("[CorePlatformAndroid::UpdateScreenMode] done");
@@ -183,6 +179,16 @@ namespace DAVA
 		Logger::SetTag(logTag);
 	}
 
+	void AcquireContext()
+	{
+
+	}
+
+	void ReleaseContex()
+	{
+
+	}
+
 	void CorePlatformAndroid::RenderRecreated(int32 w, int32 h)
 	{
 		Logger::Debug("[CorePlatformAndroid::RenderRecreated] start");
@@ -193,63 +199,33 @@ namespace DAVA
 
 		if(wasCreated)
 		{
-			RenderManager::Instance()->Lost();
 			RenderResource::SaveAllResourcesToSystemMem();
 			RenderResource::LostAllResources();
 
 			ResizeView(w, h);
 
-			RenderManager::Instance()->Invalidate();
+			rhi::ResetParam params = {(uint32)width, (uint32)height};
+			Renderer::Reset(params);
+
+//			RenderManager::Instance()->Invalidate();   RHI_COMPLETE
 			RenderResource::InvalidateAllResources();
-			SceneCache::Instance()->InvalidateSceneMaterials();
+//			SceneCache::Instance()->InvalidateSceneMaterials();   RHI_COMPLETE
         }
 		else
 		{
 			wasCreated = true;
 
-			Logger::Debug("[CorePlatformAndroid::] before create renderer");
-			const GLubyte* glVersion = glGetString(GL_VERSION);
-			Logger::Debug("RENDERER glVersion %s",(const char*)glVersion);
-			if ((NULL != glVersion))
-			{
-				String ver((const char*)glVersion);
-				std::size_t found = ver.find_first_of(".");
-				if (found!=std::string::npos && found > 0)
-				{
-					char cv = ver.at(found-1);
-					int major = atoi(&cv);
-					if(major >= 3)
-					{
-						RenderManager::Create(Core::RENDERER_OPENGL_ES_3_0);
-						Logger::Debug("RENDERER_OPENGL_ES_3_0 ");
-					} else
-					{
-						RenderManager::Create(Core::RENDERER_OPENGL_ES_2_0);
-						Logger::Debug("RENDERER_OPENGL_ES_2_0 ");
-					}
-				}else
-				{
-					RenderManager::Create(Core::RENDERER_OPENGL_ES_2_0);
-					Logger::Debug("RENDERER_OPENGL_ES_2_0 GLVersion invalid format");
-				}
-
-			} else
-			{
-				RenderManager::Create(Core::RENDERER_OPENGL_ES_2_0);
-				Logger::Debug("RENDERER_OPENGL_ES_2_0 NULL");
-			}
-
-			FileSystem::Instance()->Init();
-			RenderSystem2D::Instance()->Init();
-
-			RenderManager::Instance()->InitFBO(androidDelegate->RenderBuffer(), androidDelegate->FrameBuffer());
-			Logger::Debug("[CorePlatformAndroid::] after create renderer");
-
 			ResizeView(w, h);
+			rendererParams.width = (uint32)width;
+			rendererParams.height = (uint32)height;
+
+			rendererParams.acquireContextFunc = &AcquireContext;
+			rendererParams.releaseContextFunc = &ReleaseContex;
+
 			// Set proper width and height before call FrameworkDidlaunched
 			FrameworkDidLaunched();
 
-			RenderManager::Instance()->SetFPS(60);
+			FileSystem::Instance()->Init();
 
 			//////////////////////////////////////////////////////////////////////////
 			Core::Instance()->SystemAppStarted();

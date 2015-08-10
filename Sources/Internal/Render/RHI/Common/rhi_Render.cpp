@@ -847,6 +847,7 @@ SCOPED_NAMED_TIMING("rhi.AddPackets");
                 {
                     case CULL_CW  : mode = CULL_CCW; break;
                     case CULL_CCW : mode = CULL_CW; break;
+                    default: break;
                 }
             }
 

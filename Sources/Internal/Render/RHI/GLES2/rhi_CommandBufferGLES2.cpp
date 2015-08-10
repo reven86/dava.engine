@@ -782,7 +782,7 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
 
                     if( passCfg.depthStencilBuffer.loadAction == LOADACTION_CLEAR )
                     {
-                        #if defined(__DAVAENGINE_IPHONE__)
+                        #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
                         glStencilMask( 0xFFFFFFFF );
                         glClearDepthf( passCfg.depthStencilBuffer.clearDepth );
                         #else
@@ -1750,7 +1750,7 @@ _ExecGL( GLCommand* command, uint32 cmdCount )
 
             case GLCommand::DRAWBUFFERS :
             {
-                #if defined __DAVAENGINE_IPHONE__
+                #if defined __DAVAENGINE_IPHONE__ || defined __DAVAENGINE_ANDROID__
                 #else
                 EXEC_GL(glDrawBuffers( GLuint(arg[0]), (GLenum*)(arg[1]) ));
                 cmd->status = err;

@@ -227,7 +227,7 @@ gles2_Texture_Create( const Texture::Descriptor& desc )
             GLCommand   cmd3[] =
             {
                 { GLCommand::BIND_TEXTURE, { GL_TEXTURE_2D, uid[0] } },
-                { GLCommand::TEX_IMAGE2D, { GL_TEXTURE_2D, 0, GL_RGBA, desc.width, desc.height, 0, GL_BGRA, GL_UNSIGNED_BYTE, 0 } },
+                { GLCommand::TEX_IMAGE2D, { GL_TEXTURE_2D, 0, GL_RGBA, desc.width, desc.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0 } },
                 { GLCommand::TEX_PARAMETER_I, { GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST } },
                 { GLCommand::TEX_PARAMETER_I, { GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST } },
                 { GLCommand::BIND_TEXTURE, { GL_TEXTURE_2D, 0 } },
@@ -635,7 +635,7 @@ SetAsRenderTarget( Handle tex, Handle depth )
                 if( ds->uid2 )
                     glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, ds->uid2 );
             }
-            #if defined __DAVAENGINE_IPHONE__
+            #if defined __DAVAENGINE_IPHONE__ || defined __DAVAENGINE_ANDROID__
             #else
             glDrawBuffers( 1, b );
             #endif

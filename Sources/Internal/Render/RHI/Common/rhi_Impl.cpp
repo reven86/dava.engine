@@ -10,6 +10,8 @@
     #elif defined(__DAVAENGINE_IPHONE__)
         #include "../Metal/rhi_Metal.h"
         #include "../GLES2/rhi_GLES2.h"
+	#elif defined(__DAVAENGINE_ANDROID__)
+        #include "../GLES2/rhi_GLES2.h"
     #else
     #endif
 
