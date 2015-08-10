@@ -46,7 +46,9 @@ namespace AssetCache
 
 class CachedFiles
 {
-    
+	using FilesData = std::shared_ptr < Vector<uint8> > ;
+	using FilesDataContainer = Map < FilePath, FilesData>;
+
 public:
     
     CachedFiles() = default;
@@ -56,7 +58,6 @@ public:
     virtual ~CachedFiles();
     
     void AddFile(const FilePath &path);
-    const Map<FilePath, Data *> & GetFiles() const;
     
     bool IsEmtpy() const;
     bool FilesAreLoaded() const;
@@ -79,11 +80,13 @@ public:
     
 private:
     void RecalculateFileSize();
-    Data * LoadFile(const FilePath & pathname);
+	FilesData LoadFile(const FilePath & pathname);
     
+	bool IsDataLoaded(const FilesData & data) const;
+
 private:
 
-    Map<FilePath, Data *> files;
+	FilesDataContainer files;
 
     uint64 filesSize = 0;
     bool filesAreLoaded = false;
@@ -100,10 +103,9 @@ inline bool CachedFiles::FilesAreLoaded() const
     return filesAreLoaded;
 }
 
-    
-inline const Map<FilePath, Data *> & CachedFiles::GetFiles() const
+inline bool CachedFiles::IsDataLoaded(const CachedFiles::FilesData & data) const
 {
-    return files;
+	return (data.get() != nullptr && !data.get()->empty());
 }
 
     

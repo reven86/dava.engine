@@ -127,7 +127,7 @@ void ServerLogics::OnChannelClosed(DAVA::TCPChannel *tcpChannel, const DAVA::cha
 
 void ServerLogics::OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey &key, DAVA::AssetCache::CachedFiles &&files)
 {
-    if(nullptr != dataBase && files.GetFiles().size() != 0)
+    if(nullptr != dataBase && !files.IsEmtpy())
     {
         dataBase->Insert(key, files);
     }

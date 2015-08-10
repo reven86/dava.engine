@@ -43,15 +43,10 @@ namespace AssetCache
 {
     
 CachedFiles::CachedFiles(const CachedFiles & right) DAVA_NOEXCEPT
+	: files(right.files)
+	, filesSize(right.filesSize)
+	, filesAreLoaded(right.filesAreLoaded)
 {
-    filesAreLoaded = right.filesAreLoaded;
-    filesSize = right.filesSize;
-    
-    files = right.files;
-    for(auto & f: files)
-    {
-        SafeRetain(f.second);
-    }
 }
     
 CachedFiles::CachedFiles(CachedFiles &&right) DAVA_NOEXCEPT
@@ -75,7 +70,7 @@ CachedFiles::~CachedFiles()
 #if defined (__DAVAENGINE_DEBUG__)
         for(auto & f : files)
         {
-            DVASSERT(f.second == nullptr);
+			DVASSERT(IsDataLoaded(f.second) == false);
         }
 #endif// (__DAVAENGINE_DEBUG__)
     }
@@ -89,19 +84,19 @@ void CachedFiles::AddFile(const FilePath &path)
 {
     DVASSERT(files.count(path) == 0);
 
-    Data *fileData = nullptr;
+	FilesData fileData = std::make_shared<Vector<uint8> >();
     if(filesAreLoaded)
     {
         fileData = LoadFile(path);
-        filesSize += fileData->GetSize();
+        filesSize += fileData.get()->size();
     }
     else
     {
-        uint32 filesize = 0;
-        FileSystem::Instance()->GetFileSize(path, filesize);
-        if (filesize > 0)
+        uint32 sz = 0;
+        FileSystem::Instance()->GetFileSize(path, sz);
+        if (sz > 0)
         {
-            filesSize += filesize;
+            filesSize += sz;
         }
     }
 
@@ -123,10 +118,10 @@ void CachedFiles::Serialize(KeyedArchive * archieve, bool serializeData) const
     {
         archieve->SetString(Format("path_%d", index), f.first.GetStringValue());
 
-        if(f.second && serializeData)
+		if (IsDataLoaded(f.second) && serializeData)
         {
-            auto fileData = f.second;
-            archieve->SetByteArray(Format("file_%d", index), fileData->GetPtr(), fileData->GetSize());
+            auto & fileData = f.second;
+            archieve->SetByteArray(Format("file_%d", index), fileData.get()->data(), fileData.get()->size());
         }
         
         ++index;
@@ -146,16 +141,16 @@ void CachedFiles::Deserialize(KeyedArchive * archieve)
     for(uint32 i = 0; i < count; ++i)
     {
         FilePath path = archieve->GetString(Format("path_%d", i));
-        Data *fileData = nullptr;
-        
+		FilesData fileData = std::make_shared<Vector<uint8> >();
+
         auto key = Format("file_%d", i);
         auto size = archieve->GetByteArraySize(key);
         if(size)
         {
             filesAreLoaded = true;
 
-            fileData = new Data(size);
-            Memcpy(fileData->GetPtr(), archieve->GetByteArray(key), size);
+			fileData.get()->resize(size);
+			Memcpy(fileData.get()->data(), archieve->GetByteArray(key), size);
         }
         
         files[path] = fileData;
@@ -179,10 +174,6 @@ CachedFiles & CachedFiles::operator=(const CachedFiles &right)
         filesSize = right.filesSize;
 
         files = right.files;
-        for (auto & f : files)
-        {
-            SafeRetain(f.second);
-        }
     }
 
     return (*this);
@@ -219,7 +210,7 @@ void CachedFiles::LoadFiles()
     
     for(auto & f : files)
     {
-        DVASSERT(f.second == nullptr);
+        DVASSERT(IsDataLoaded(f.second) == false);
         f.second = LoadFile(f.first);
     }
 }
@@ -231,8 +222,8 @@ void CachedFiles::UnloadFiles()
     filesAreLoaded = false;
     for(auto & f : files)
     {
-        DVASSERT(f.second != nullptr);
-        SafeRelease(f.second);
+		DVASSERT(IsDataLoaded(f.second) == true);
+		f.second.reset();
     }
 }
     
@@ -244,7 +235,7 @@ void CachedFiles::Save(const FilePath & folder) const
     
     for(auto & f : files)
     {
-        if(nullptr == f.second)
+        if(IsDataLoaded(f.second) == false)
         {
             Logger::Warning("[CachedFiles::%s] File(%s) not loaded", __FUNCTION__, f.first.GetStringValue().c_str());
             continue;
@@ -255,8 +246,8 @@ void CachedFiles::Save(const FilePath & folder) const
         ScopedPtr<File> file(File::Create(savedPath, File::CREATE | File::WRITE));
         if(file)
         {
-            auto written = file->Write(f.second->GetPtr(), f.second->GetSize());
-            DVVERIFY(written == f.second->GetSize());
+            auto written = file->Write(f.second.get()->data(), f.second.get()->size());
+			DVVERIFY(written == f.second.get()->size());
         }
         else
         {
@@ -265,17 +256,17 @@ void CachedFiles::Save(const FilePath & folder) const
     }
 }
     
-Data * CachedFiles::LoadFile(const FilePath & pathname)
+CachedFiles::FilesData CachedFiles::LoadFile(const FilePath & pathname)
 {
-    Data * fileData = nullptr;
-    
-    ScopedPtr<File> file(File::Create(pathname, File::OPEN | File::READ));
+	FilesData fileData = std::make_shared<Vector<uint8>>();
+
+	ScopedPtr<File> file(File::Create(pathname, File::OPEN | File::READ));
     if(file)
     {
         auto dataSize = file->GetSize();
-        fileData = new Data(dataSize);
+		fileData.get()->resize(dataSize);
         
-        auto read = file->Read(fileData->GetPtr(), dataSize);
+		auto read = file->Read(fileData.get()->data(), dataSize);
         DVVERIFY(read == dataSize);
     }
     else
@@ -294,11 +285,11 @@ CachedFiles CachedFiles::Copy(const FilePath & folder) const
     
     copyFiles.filesAreLoaded = filesAreLoaded;
     copyFiles.filesSize = filesSize;
-    
+
     for(auto & f: files)
     {
         auto path = folder + f.first.GetFilename();
-        copyFiles.files[path] = SafeRetain(f.second);
+        copyFiles.files[path] = f.second;
     }
     
     return copyFiles;
