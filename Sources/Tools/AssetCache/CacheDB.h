@@ -92,7 +92,7 @@ private:
     ServerCacheEntry * FindInFullCache(const CacheItemKey &key);
     const ServerCacheEntry * FindInFullCache(const CacheItemKey &key) const;
     
-    void IncreaseUsedSize(const CachedFiles &files);
+    void IncreaseUsedSize(DAVA::uint64 size);
     
     void InsertInFastCache(const CacheItemKey &key, ServerCacheEntry * entry);
     

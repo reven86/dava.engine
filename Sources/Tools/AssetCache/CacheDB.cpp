@@ -306,7 +306,7 @@ void CacheDB::Insert(const CacheItemKey &key, ServerCacheEntry &&entry)
     auto found = fullCache.find(key);
     if(found != fullCache.end())
     {
-        IncreaseUsedSize(found->second.GetFiles());
+        IncreaseUsedSize(found->second.GetFiles().GetFilesSize());
     }
 
     fullCache[key] = std::move(entry);
@@ -398,7 +398,7 @@ void CacheDB::RemoveFromFullCache(const CacheMap::iterator &it)
 {
     DVASSERT(it != fullCache.end());
     
-    IncreaseUsedSize(it->second.GetFiles());
+    IncreaseUsedSize(it->second.GetFiles().GetFilesSize());
     fullCache.erase(it);
 }
     
@@ -413,12 +413,11 @@ void CacheDB::RemoveFromFastCache(const FastCacheMap::iterator &it)
 }
 
     
-void CacheDB::IncreaseUsedSize(const CachedFiles &files)
+void CacheDB::IncreaseUsedSize(DAVA::uint64 size)
 {
-    auto fileSize = files.GetFilesSize();
-    DVASSERT(fileSize <= usedSize);
+    DVASSERT(size <= usedSize);
     
-    usedSize -= fileSize;
+    usedSize -= size;
 }
 
 FilePath CacheDB::CreateFolderPath(const CacheItemKey &key) const
