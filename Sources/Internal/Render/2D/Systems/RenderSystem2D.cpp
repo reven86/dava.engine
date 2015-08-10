@@ -493,7 +493,7 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
         currentPacket.baseVertex = vertexBuffer.baseVertex;
         currentPacket.indexBuffer = indexBuffer.buffer;
         currentIndexBase = indexBuffer.baseIndex;
-    }
+}
     // End create vertex and index buffers
 
     // Begin define draw color
@@ -933,7 +933,7 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * drawState, const 
         }
 
         spriteVertexCount = sprite->clipPolygon->GetPointCount();
-        DVASSERT(spriteVertexCount >= 2);
+        DVASSERT(spriteVertexCount > 2); // Clip polygon should contain 3 points or more
         spriteIndexCount = (spriteVertexCount - 2) * 3;
 
         spriteClippedIndecex.clear();

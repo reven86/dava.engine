@@ -16,8 +16,8 @@
 
     #include "_gl.h"
 
-    #define USE_RENDER_THREAD               0
-    #define RHI_MAX_PREPARED_FRAME_COUNT    1
+    #define USE_RENDER_THREAD               1
+    #define RHI_MAX_PREPARED_FRAME_COUNT    2
 
 
 namespace rhi
@@ -809,7 +809,7 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
                 
                 if( isLastInPass )
                 {
-                    glFlush();
+//                    glFlush();
 
                     if (_GLES2_Binded_FrameBuffer != _GLES2_Default_FrameBuffer)
                     {
