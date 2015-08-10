@@ -36,15 +36,12 @@
 #include <fstream>
 #include <algorithm>
 
-#include "Tests/GlobalPerformanceTest.h"
-#include "Tests/AsiaPerformanceTest.h"
 #include "Tests/UniversalTest.h"
+#include "Tests/MaterialsTest.h"
 
 using namespace DAVA;
 
 GameCore::GameCore()
-    :   testFlowController(nullptr)
-    
 {
 }
 
@@ -71,10 +68,8 @@ void GameCore::OnAppFinished()
 {
 	testFlowController->Finish();
     GraphicsDetect::Instance()->Release();
-    SafeRelease(testFlowController);
-    
 
-    for(BaseTest* test : testChain)
+    for(auto *test : testChain)
 	{
 		SafeRelease(test);
 	}
@@ -126,8 +121,57 @@ void GameCore::EndFrame()
 
 void GameCore::RegisterTests()
 {
-    testChain.push_back(new AsiaPerformanceTest(defaultTestParams));
-    testChain.push_back(new GlobalPerformanceTest(defaultTestParams));
+    // load material test
+    Vector<std::pair<String, String> > scenes;
+    LoadMaps(MaterialsTest::TEST_NAME, scenes);
+    
+    for(const auto& scene : scenes)
+    {
+        BaseTest::TestParams params = defaultTestParams;
+        params.sceneName = scene.first;
+        params.scenePath = scene.second;
+        
+        testChain.push_back(new MaterialsTest(params));
+    }
+    
+    scenes.clear();
+    
+    // load universal test
+    LoadMaps(UniversalTest::TEST_NAME, scenes);
+    
+    for(const auto& scene : scenes)
+    {
+        BaseTest::TestParams params = defaultTestParams;
+        params.sceneName = scene.first;
+        params.scenePath = scene.second;
+        
+        testChain.push_back(new UniversalTest(params));
+    }
+}
+
+void GameCore::LoadMaps(const String& testName, Vector<std::pair<String, String>>& mapsVector)
+{
+    YamlParser* testsParser = YamlParser::Create("~res:/tests.yaml");
+    DVASSERT_MSG(testsParser, "can't open ~res:/tests.yaml");
+    
+    YamlParser* mapsParser = YamlParser::Create("~res:/maps.yaml");
+    DVASSERT_MSG(mapsParser, "can't open ~res:/maps.yaml");
+    
+    YamlNode* testsRootNode = testsParser->GetRootNode();
+    YamlNode* mapsRootNode = mapsParser->GetRootNode();
+
+    const auto& maps = testsRootNode->Get(testName)->AsVector();
+    
+    for(auto mapNameNode: maps)
+    {
+        const String& mapName = mapNameNode->AsString();
+        const String& mapPath = mapsRootNode->Get(mapName)->AsString();
+        
+        mapsVector.push_back(std::pair<String, String>(mapName, mapPath));
+    }
+    
+    SafeRelease(mapsParser);
+    SafeRelease(testsParser);
 }
 
 String GameCore::GetDeviceName()
@@ -149,190 +193,144 @@ String GameCore::GetDeviceName()
 void GameCore::InitScreenController()
 {
     Random::Instance()->Seed(0);
-
-    Logger::Instance()->AddCustomOutput(&teamCityOutput);
-    String deviceName = GetDeviceName();
-    Logger::Info(deviceName.c_str());
     
-    BaseTest::TestParams singleTestParams = defaultTestParams;
-    String testForRun;
+    Logger::Instance()->AddCustomOutput(&teamCityOutput);
+    Logger::Info(GetDeviceName().c_str());
 
 	bool chooserFound = CommandLineParser::Instance()->CommandIsFound("-chooser");
     bool testFound = CommandLineParser::Instance()->CommandIsFound("-test");
-    bool universalTest = CommandLineParser::Instance()->CommandIsFound("-universal-test");
     bool withoutUIFound = CommandLineParser::Instance()->CommandIsFound("-without-ui");
 
+    String testForRun;
+
+    if (testFound)
+    {
+        testForRun = CommandLineParser::Instance()->GetCommandParamAdditional("-test", 0);
+    }
+
+    if (chooserFound)
+    {
+        testFlowController = std::unique_ptr<SingleTestFlowController>(new SingleTestFlowController("", defaultTestParams, !withoutUIFound));
+    }
+    else if (!testForRun.empty())
+	{
+        Logger::Instance()->Info(DAVA::Format("Test %s", testForRun.c_str()).c_str());
+
+        BaseTest::TestParams singleTestParams = defaultTestParams;
+        ReadSingleTestParams(singleTestParams);
+
+        testFlowController = std::unique_ptr<SingleTestFlowController>(new SingleTestFlowController(testForRun, singleTestParams, !withoutUIFound));
+    }
+	else
+	{
+        testFlowController = std::unique_ptr<TestChainFlowController>(new TestChainFlowController(!withoutUIFound));
+	} 
+
+    testFlowController->Init(testChain);
+}
+
+void GameCore::ReadSingleTestParams(BaseTest::TestParams& params)
+{
     bool testTimeFound = CommandLineParser::Instance()->CommandIsFound("-test-time");
     bool startTimeFound = CommandLineParser::Instance()->CommandIsFound("-statistic-start-time");
     bool endTimeFound = CommandLineParser::Instance()->CommandIsFound("-statistic-end-time");
-    
+
     bool testFramesFound = CommandLineParser::Instance()->CommandIsFound("-test-frames");
     bool frameDeltaFound = CommandLineParser::Instance()->CommandIsFound("-frame-delta");
 
     bool debugFrameFound = CommandLineParser::Instance()->CommandIsFound("-debug-frame");
     bool maxDeltaFound = CommandLineParser::Instance()->CommandIsFound("-max-delta");
 
-    if (universalTest)
+    if (testTimeFound)
     {
-        String universalTest = CommandLineParser::Instance()->GetCommandParamAdditional("-universal-test", 0);
-        
-        testChain.clear();
-        
-        YamlParser* parser = YamlParser::Create("~res:/maps.yaml");
-        
-        DVASSERT_MSG(parser, "can't open ~res:/maps.yaml");
-        
-        YamlNode* rootNode = parser->GetRootNode();
-        if(rootNode)
+        String testTimeParam = CommandLineParser::Instance()->GetCommandParamAdditional("-test-time", 0);
+        params.targetTime = std::atoi(testTimeParam.c_str());
+
+        if (params.targetTime < 0)
         {
-            int32 sz = rootNode->GetCount();
-            
-            for(int32 i = 0; i < sz; ++i)
-            {
-                testChain.push_back(new UniversalTest(rootNode->GetItemKeyName(i), defaultTestParams));
-            }
-        }
-        
-        SafeRelease(parser);
-        
-        if(!universalTest.empty())
-        {
-            testForRun = universalTest;
+            Logger::Error("Incorrect params. TargetTime < 0");
+            Core::Instance()->Quit();
         }
     }
-    
-    if(testFound)
+
+    if (startTimeFound)
     {
-        testForRun = CommandLineParser::Instance()->GetCommandParamAdditional("-test", 0);
+        if (!endTimeFound)
+        {
+            Logger::Error("Incorrect params. Set end time for range");
+            Core::Instance()->Quit();
+        }
+
+        String startTime = CommandLineParser::Instance()->GetCommandParamAdditional("-statistic-start-time", 0);
+        String endTime = CommandLineParser::Instance()->GetCommandParamAdditional("-statistic-end-time", 0);
+
+        params.startTime = std::atoi(startTime.c_str());
+        params.endTime = std::atoi(endTime.c_str());
+
+        int32 timeRange = params.endTime - params.startTime;
+
+        if (timeRange < 100 || params.startTime < 0)
+        {
+            Logger::Error("Incorrect params. Too small time range");
+            Core::Instance()->Quit();
+        }
     }
-    
-	if (chooserFound)
-	{
-        testFlowController = new SingleTestFlowController(!withoutUIFound);
-	}
-    else if (!testForRun.empty())
+
+    if (testFramesFound)
     {
-        if (testTimeFound)
-        {
-            String testTimeParam = CommandLineParser::Instance()->GetCommandParamAdditional("-test-time", 0);
-            singleTestParams.targetTime = std::atoi(testTimeParam.c_str());
-            
-            if(singleTestParams.targetTime < 0)
-            {
-                Logger::Error("Incorrect params. TargetTime < 0");
-                Core::Instance()->Quit();
-            }
-        }
-        
-        if(startTimeFound)
-        {
-            if(!endTimeFound)
-            {
-                Logger::Error("Incorrect params. Set end time for range");
-                Core::Instance()->Quit();
-            }
-            
-            String startTime = CommandLineParser::Instance()->GetCommandParamAdditional("-statistic-start-time", 0);
-            String endTime = CommandLineParser::Instance()->GetCommandParamAdditional("-statistic-end-time", 0);
-            
-            singleTestParams.startTime = std::atoi(startTime.c_str());
-            singleTestParams.endTime = std::atoi(endTime.c_str());
-            
-            int32 timeRange = singleTestParams.endTime - singleTestParams.startTime;
-            
-            if(timeRange < 100 || singleTestParams.startTime < 0)
-            {
-                Logger::Error("Incorrect params. Too small time range");
-                Core::Instance()->Quit();
-            }
-        }
-        
-        if (testFramesFound)
-        {
-            if(!frameDeltaFound)
-            {
-                Logger::Error("Incorrect params. Set debug frame number");
-                Core::Instance()->Quit();
-            }
-            
-            String testFramesParam = CommandLineParser::Instance()->GetCommandParamAdditional("-test-frames", 0);
-            String frameDeltaParam = CommandLineParser::Instance()->GetCommandParamAdditional("-frame-delta", 0);
+        String testFramesParam = CommandLineParser::Instance()->GetCommandParamAdditional("-test-frames", 0);
+        params.targetFramesCount = std::atoi(testFramesParam.c_str());
 
-            singleTestParams.targetFramesCount = std::atoi(testFramesParam.c_str());
-            singleTestParams.targetFrameDelta = std::atof(frameDeltaParam.c_str());
-            
-            if(singleTestParams.targetFrameDelta < 0.0f)
-            {
-                Logger::Error("Incorrect params. TargetFrameDelta < 0");
-                Core::Instance()->Quit();
-            }
-            
-            if(singleTestParams.targetFramesCount < 0)
-            {
-                Logger::Error("Incorrect params. TargetFramesCount < 0");
-                Core::Instance()->Quit();
-            }
-        }
-        
-        if(frameDeltaFound)
+        if (params.targetFramesCount < 0)
         {
-            String frameDeltaParam = CommandLineParser::Instance()->GetCommandParamAdditional("-frame-delta", 0);
-            singleTestParams.targetFrameDelta = std::atof(frameDeltaParam.c_str());
-            
-            if(singleTestParams.targetFrameDelta < 0.0f)
-            {
-                Logger::Error("Incorrect params. TargetFrameDelta < 0");
-                Core::Instance()->Quit();
-            }
+            Logger::Error("Incorrect params. TargetFramesCount < 0");
+            Core::Instance()->Quit();
         }
-
-        if (debugFrameFound)
-        {
-            String debugFrameParam = CommandLineParser::Instance()->GetCommandParamAdditional("-debug-frame", 0);
-            singleTestParams.frameForDebug = std::atoi(debugFrameParam.c_str());
-            
-            if(singleTestParams.frameForDebug < 0)
-            {
-                Logger::Error("Incorrect params. DebugFrame < 0");
-                Core::Instance()->Quit();
-            }
-        }
-        
-        if (maxDeltaFound)
-        {
-            String maxDeltaParam = CommandLineParser::Instance()->GetCommandParamAdditional("-max-delta", 0);
-            singleTestParams.maxDelta = std::atof(maxDeltaParam.c_str());
-            
-            if(singleTestParams.maxDelta < 0.0f)
-            {
-                Logger::Error("Incorrect params. MaxDelta < 0");
-                Core::Instance()->Quit();
-            }
-        }
-
-        testFlowController = new SingleTestFlowController(testForRun, singleTestParams, !withoutUIFound);
-        
-        Logger::Instance()->Info(DAVA::Format("Test %s params ", testForRun.c_str()).c_str());
-        Logger::Instance()->Info(DAVA::Format("Target time : %d", singleTestParams.targetTime).c_str());
-        Logger::Instance()->Info(DAVA::Format("Statistic start time : %d", singleTestParams.startTime).c_str());
-        Logger::Instance()->Info(DAVA::Format("Statistic end time : %d", singleTestParams.endTime).c_str());
-        Logger::Instance()->Info(DAVA::Format("Target frames count : %d", singleTestParams.targetFramesCount).c_str());
-        Logger::Instance()->Info(DAVA::Format("Target frame delta : %f", singleTestParams.targetFrameDelta).c_str());
-        Logger::Instance()->Info(DAVA::Format("Frame for debug : %d", singleTestParams.frameForDebug).c_str());
-        Logger::Instance()->Info(DAVA::Format("Max delta : %f", singleTestParams.maxDelta).c_str());
     }
-	else if (withoutUIFound)
-	{
-        testFlowController = new TestChainFlowController(false);
-	} 
-	else
-	{
-		testFlowController = new TestChainFlowController(true);
-	}
 
-    testFlowController->Init(testChain);
+    if (frameDeltaFound)
+    {
+        String frameDeltaParam = CommandLineParser::Instance()->GetCommandParamAdditional("-frame-delta", 0);
+        params.targetFrameDelta = std::atof(frameDeltaParam.c_str());
+
+        if (params.targetFrameDelta < 0.0f)
+        {
+            Logger::Error("Incorrect params. TargetFrameDelta < 0");
+            Core::Instance()->Quit();
+        }
+    }
+
+    if (debugFrameFound)
+    {
+        String debugFrameParam = CommandLineParser::Instance()->GetCommandParamAdditional("-debug-frame", 0);
+        params.frameForDebug = std::atoi(debugFrameParam.c_str());
+
+        if (params.frameForDebug < 0)
+        {
+            Logger::Error("Incorrect params. DebugFrame < 0");
+            Core::Instance()->Quit();
+        }
+    }
+
+    if (maxDeltaFound)
+    {
+        String maxDeltaParam = CommandLineParser::Instance()->GetCommandParamAdditional("-max-delta", 0);
+        params.maxDelta = std::atof(maxDeltaParam.c_str());
+
+        if (params.maxDelta < 0.0f)
+        {
+            Logger::Error("Incorrect params. MaxDelta < 0");
+            Core::Instance()->Quit();
+        }
+    }
+
+    Logger::Instance()->Info(DAVA::Format("Target time : %d", params.targetTime).c_str());
+    Logger::Instance()->Info(DAVA::Format("Statistic start time : %d", params.startTime).c_str());
+    Logger::Instance()->Info(DAVA::Format("Statistic end time : %d", params.endTime).c_str());
+    Logger::Instance()->Info(DAVA::Format("Target frames count : %d", params.targetFramesCount).c_str());
+    Logger::Instance()->Info(DAVA::Format("Target frame delta : %f", params.targetFrameDelta).c_str());
+    Logger::Instance()->Info(DAVA::Format("Frame for debug : %d", params.frameForDebug).c_str());
+    Logger::Instance()->Info(DAVA::Format("Max delta : %f", params.maxDelta).c_str());
 }
-
-
 
 
