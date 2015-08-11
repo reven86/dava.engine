@@ -30,7 +30,7 @@
 
 #include "AssetCache/AssetCacheClient.h"
 #include "AssetCache/AssetCacheConstants.h"
-#include "AssetCache/CachedFiles.h"
+#include "AssetCache/CachedItemValue.h"
 #include "AssetCache/CacheItemKey.h"
 #include "AssetCache/TCPConnection/TCPConnection.h"
 #include "FileSystem/KeyedArchive.h"
@@ -70,20 +70,20 @@ void Client::Disconnect()
 }
     
     
-bool Client::AddToCache(const CacheItemKey &key, const CachedFiles &files)
+bool Client::AddToCache(const CacheItemKey &key, const CachedItemValue &value)
 {
     if(openedChannel)
     {
         ScopedPtr<KeyedArchive> archieve(new KeyedArchive());
-        archieve->SetUInt32("PacketID", PACKET_ADD_FILES_REQUEST);
+        archieve->SetUInt32("PacketID", PACKET_ADD_REQUEST);
 
         ScopedPtr<KeyedArchive> keyArchieve(new KeyedArchive());
         SerializeKey(key, keyArchieve);
         archieve->SetArchive("key", keyArchieve);
         
-        ScopedPtr<KeyedArchive> filesArchieve(new KeyedArchive());
-        files.Serialize(filesArchieve, true);
-        archieve->SetArchive("files", filesArchieve);
+		ScopedPtr<KeyedArchive> valueArchieve(new KeyedArchive());
+		value.Serialize(valueArchieve, true);
+		archieve->SetArchive("value", valueArchieve);
         
         return openedChannel->SendArchieve(archieve);
     }
@@ -112,7 +112,7 @@ bool Client::RequestFromCache(const CacheItemKey &key)
     if(openedChannel)
     {
         ScopedPtr<KeyedArchive> archieve(new KeyedArchive());
-        archieve->SetUInt32("PacketID", PACKET_GET_FILES_REQUEST);
+        archieve->SetUInt32("PacketID", PACKET_GET_REQUEST);
         
         ScopedPtr<KeyedArchive> keyArchieve(new KeyedArchive());
         SerializeKey(key, keyArchieve);
@@ -133,12 +133,12 @@ void Client::OnGotFromCache(KeyedArchive * archieve)
         CacheItemKey key;
         DeserializeKey(key, keyArchieve);
         
-        KeyedArchive *filesArchieve = archieve->GetArchive("files");
-        DVASSERT(filesArchieve);
-        CachedFiles files;
-        files.Deserialize(filesArchieve);
+		KeyedArchive *valueArchieve = archieve->GetArchive("value");
+		DVASSERT(valueArchieve);
+		CachedItemValue value;
+		value.Deserialize(valueArchieve);
         
-        listener->OnReceivedFromCache(key, std::forward<CachedFiles>(files));
+		listener->OnReceivedFromCache(key, std::forward<CachedItemValue>(value));
     }
 }
     
@@ -184,11 +184,11 @@ void Client::PacketReceived(DAVA::TCPChannel *tcpChannel, const uint8* packet, s
         
         switch (packetID)
         {
-            case PACKET_ADD_FILES_RESPONCE:
+            case PACKET_ADD_RESPONSE:
                 OnAddedToCache(archieve);
                 break;
 
-            case PACKET_GET_FILES_RESPONCE:
+            case PACKET_GET_RESPONSE:
                 OnGotFromCache(archieve);
                 break;
 

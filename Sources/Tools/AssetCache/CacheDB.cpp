@@ -31,7 +31,7 @@
 #include "AssetCache/CacheDB.h"
 
 #include "AssetCache/CacheItemKey.h"
-#include "AssetCache/CachedFiles.h"
+#include "AssetCache/CachedItemValue.h"
 #include "AssetCache/ServerCacheEntry.h"
 
 #include "FileSystem/File.h"
@@ -159,7 +159,7 @@ void CacheDB::Unload()
     
     for(auto & entry: fastCache)
     {
-        entry.second->Unload();
+        entry.second->Free();
     }
     
     fastCache.clear();
@@ -247,7 +247,9 @@ ServerCacheEntry * CacheDB::Get(const CacheItemKey &key)
         entry = FindInFullCache(key);
         if(nullptr != entry)
         {
-            entry->Load();
+			const FilePath path = CreateFolderPath(key);
+
+            entry->Fetch(path);
             InsertInFastCache(key, entry);
         }
     }
@@ -292,12 +294,9 @@ const ServerCacheEntry * CacheDB::FindInFullCache(const CacheItemKey &key) const
 }
 
 
-void CacheDB::Insert(const CacheItemKey &key, const CachedFiles &files)
+void CacheDB::Insert(const CacheItemKey &key, const CachedItemValue &value)
 {
-    auto savedPath = CreateFolderPath(key);
-    auto dbFiles = files.Copy(savedPath);
-    
-    ServerCacheEntry entry(std::forward<CachedFiles>(dbFiles));
+    ServerCacheEntry entry(value);
     Insert(key, std::forward<ServerCacheEntry>(entry));
 }
     
@@ -306,7 +305,7 @@ void CacheDB::Insert(const CacheItemKey &key, ServerCacheEntry &&entry)
     auto found = fullCache.find(key);
     if(found != fullCache.end())
     {
-        IncreaseUsedSize(found->second.GetFiles().GetFilesSize());
+        IncreaseUsedSize(found->second.GetValue().GetSize());
     }
 
     fullCache[key] = std::move(entry);
@@ -315,16 +314,16 @@ void CacheDB::Insert(const CacheItemKey &key, ServerCacheEntry &&entry)
     entryForFastCache->InvalidateAccesToken(nextItemID++);
     InsertInFastCache(key, entryForFastCache);
     
-    auto newFilesSize = entryForFastCache->GetFiles().GetFilesSize();
-    if(usedSize + newFilesSize > storageSize)
+	auto newSize = entryForFastCache->GetValue().GetSize();
+    if(usedSize + newSize > storageSize)
     {
-        DVASSERT(storageSize > newFilesSize);
-        ReduceFullCacheBySize((usedSize > newFilesSize) ? (usedSize - newFilesSize) : 0);
+        DVASSERT(storageSize > newSize);
+        ReduceFullCacheBySize((usedSize > newSize) ? (usedSize - newSize) : 0);
     }
     
-    auto savedPath = CreateFolderPath(key);
-    entryForFastCache->GetFiles().Save(savedPath);
-    usedSize += newFilesSize;
+    const FilePath savedPath = CreateFolderPath(key);
+	entryForFastCache->GetValue().Export(savedPath);
+    usedSize += newSize;
     
     dbStateChanged = true;
 }
@@ -342,7 +341,7 @@ void CacheDB::InsertInFastCache(const CacheItemKey &key, ServerCacheEntry * entr
         ReduceFastCacheByCount(1);
     }
     
-    DVASSERT(entry->GetFiles().FilesAreLoaded() == true);
+    DVASSERT(entry->GetValue().IsFetched() == true);
 
     fastCache[key] = entry;
 }
@@ -398,7 +397,7 @@ void CacheDB::RemoveFromFullCache(const CacheMap::iterator &it)
 {
     DVASSERT(it != fullCache.end());
     
-    IncreaseUsedSize(it->second.GetFiles().GetFilesSize());
+	IncreaseUsedSize(it->second.GetValue().GetSize());
     fullCache.erase(it);
 }
     
@@ -407,8 +406,8 @@ void CacheDB::RemoveFromFastCache(const FastCacheMap::iterator &it)
 {
     DVASSERT(it != fastCache.end());
 
-    DVASSERT(it->second->GetFiles().FilesAreLoaded() == true);
-    it->second->Unload();
+	DVASSERT(it->second->GetValue().IsFetched() == true);
+    it->second->Free();
     fastCache.erase(it);
 }
 

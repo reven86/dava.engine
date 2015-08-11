@@ -38,13 +38,13 @@ public:
     void Init(DAVA::AssetCache::Server *server, DAVA::AssetCache::Client *client, DAVA::AssetCache::CacheDB *dataBase);
     
     //ServerDelegate
-    void OnAddToCache(DAVA::TCPChannel *tcpChannel, const DAVA::AssetCache::CacheItemKey &key, DAVA::AssetCache::CachedFiles &&files) override;
+    void OnAddToCache(DAVA::TCPChannel *tcpChannel, const DAVA::AssetCache::CacheItemKey &key, DAVA::AssetCache::CachedItemValue &&value) override;
     void OnRequestedFromCache(DAVA::TCPChannel *tcpChannel, const DAVA::AssetCache::CacheItemKey &key) override;
     void OnWarmingUp(DAVA::TCPChannel *tcpChannel, const DAVA::AssetCache::CacheItemKey &key) override;
     void OnChannelClosed(DAVA::TCPChannel *tcpChannel, const DAVA::char8* message) override;
     
     //ClientListener
-    void OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey &key, DAVA::AssetCache::CachedFiles &&files) override;
+	void OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey &key, DAVA::AssetCache::CachedItemValue &&value) override;
     
     void Update();
     
@@ -74,10 +74,10 @@ private:
     struct ServerTask
     {
         ServerTask(const DAVA::AssetCache::CacheItemKey &_key, DAVA::AssetCache::ePacketID _request);
-        ServerTask(const DAVA::AssetCache::CacheItemKey &_key, DAVA::AssetCache::CachedFiles &&_files, DAVA::AssetCache::ePacketID _request);
+		ServerTask(const DAVA::AssetCache::CacheItemKey &_key, DAVA::AssetCache::CachedItemValue &&_value, DAVA::AssetCache::ePacketID _request);
         
         DAVA::AssetCache::CacheItemKey key;
-        DAVA::AssetCache::CachedFiles files;
+		DAVA::AssetCache::CachedItemValue value;
         
         DAVA::AssetCache::ePacketID request = DAVA::AssetCache::PACKET_UNKNOWN;
     };

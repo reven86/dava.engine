@@ -42,7 +42,7 @@ class TCPServer;
 namespace AssetCache
 {
  
-class CachedFiles;
+class CachedItemValue;
 
     
 class ServerDelegate
@@ -51,7 +51,7 @@ public:
     
     virtual ~ServerDelegate() = default;
     
-    virtual void OnAddToCache(DAVA::TCPChannel *tcpChannel, const CacheItemKey &key, CachedFiles &&files) = 0;
+    virtual void OnAddToCache(DAVA::TCPChannel *tcpChannel, const CacheItemKey &key, CachedItemValue &&value) = 0;
     virtual void OnRequestedFromCache(DAVA::TCPChannel *tcpChannel, const CacheItemKey &key) = 0;
     virtual void OnWarmingUp(DAVA::TCPChannel *tcpChannel, const CacheItemKey &key) = 0;
 
@@ -80,8 +80,8 @@ public:
     void ChannelClosed(TCPChannel *tcpChannel, const char8* message) override;
     //END of TCPChannelDelegate
     
-    bool FilesAddedToCache(DAVA::TCPChannel *tcpChannel, const CacheItemKey &key, bool added);
-    bool SendFiles(DAVA::TCPChannel *tcpChannel, const CacheItemKey &key, const CachedFiles &files);
+    bool AddedToCache(DAVA::TCPChannel *tcpChannel, const CacheItemKey &key, bool added);
+    bool Send(DAVA::TCPChannel *tcpChannel, const CacheItemKey &key, const CachedItemValue &value);
     
 private:
     

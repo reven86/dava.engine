@@ -30,7 +30,7 @@
 
 #include "AssetCache/AssetCacheServer.h"
 #include "AssetCache/AssetCacheConstants.h"
-#include "AssetCache/CachedFiles.h"
+#include "AssetCache/CachedItemValue.h"
 #include "AssetCache/CacheItemKey.h"
 #include "AssetCache/TCPConnection/TCPConnection.h"
 #include "Debug/DVAssert.h"
@@ -88,11 +88,11 @@ void Server::PacketReceived(DAVA::TCPChannel *tcpChannel, const uint8* packet, s
         const auto packetID = archive->GetUInt32("PacketID", PACKET_UNKNOWN);
         switch (packetID)
         {
-            case PACKET_ADD_FILES_REQUEST:
+            case PACKET_ADD_REQUEST:
                 OnAddToCache(tcpChannel, archive);
                 break;
                 
-            case PACKET_GET_FILES_REQUEST:
+            case PACKET_GET_REQUEST:
                 OnGetFromCache(tcpChannel, archive);
                 break;
                 
@@ -117,12 +117,12 @@ void Server::ChannelClosed(TCPChannel *tcpChannel, const char8* message)
 }
 
     
-bool Server::FilesAddedToCache(DAVA::TCPChannel *tcpChannel, const CacheItemKey &key, bool added)
+bool Server::AddedToCache(DAVA::TCPChannel *tcpChannel, const CacheItemKey &key, bool added)
 {
     if(tcpChannel)
     {
         ScopedPtr<KeyedArchive> archieve(new KeyedArchive());
-        archieve->SetUInt32("PacketID", PACKET_ADD_FILES_RESPONCE);
+        archieve->SetUInt32("PacketID", PACKET_ADD_RESPONSE);
 
         ScopedPtr<KeyedArchive> keyArchieve(new KeyedArchive());
         SerializeKey(key, keyArchieve);
@@ -137,20 +137,20 @@ bool Server::FilesAddedToCache(DAVA::TCPChannel *tcpChannel, const CacheItemKey 
 }
     
     
-bool Server::SendFiles(DAVA::TCPChannel *tcpChannel, const CacheItemKey &key, const CachedFiles &files)
+bool Server::Send(DAVA::TCPChannel *tcpChannel, const CacheItemKey &key, const CachedItemValue &value)
 {
     if(tcpChannel)
     {
         ScopedPtr<KeyedArchive> archieve(new KeyedArchive());
-        archieve->SetUInt32("PacketID", PACKET_GET_FILES_RESPONCE);
+        archieve->SetUInt32("PacketID", PACKET_GET_RESPONSE);
 
         ScopedPtr<KeyedArchive> keyArchieve(new KeyedArchive());
         SerializeKey(key, keyArchieve);
         archieve->SetArchive("key", keyArchieve);
 
-        ScopedPtr<KeyedArchive> filesArchieve(new KeyedArchive());
-        files.Serialize(filesArchieve, true);
-        archieve->SetArchive("files", filesArchieve);
+		ScopedPtr<KeyedArchive> valueArchieve(new KeyedArchive());
+		value.Serialize(valueArchieve, true);
+		archieve->SetArchive("value", valueArchieve);
 
         return tcpChannel->SendArchieve(archieve);
     }
@@ -169,13 +169,13 @@ void Server::OnAddToCache(DAVA::TCPChannel *tcpChannel, KeyedArchive * archieve)
         CacheItemKey key;
         DeserializeKey(key, keyArchieve);
         
-        KeyedArchive *filesArchieve = archieve->GetArchive("files");
-        DVASSERT(filesArchieve);
+		KeyedArchive *valueArchieve = archieve->GetArchive("value");
+		DVASSERT(valueArchieve);
         
-        CachedFiles files;
-        files.Deserialize(filesArchieve);
+		CachedItemValue value;
+		value.Deserialize(valueArchieve);
         
-        delegate->OnAddToCache(tcpChannel, key, std::forward<CachedFiles>(files));
+		delegate->OnAddToCache(tcpChannel, key, std::forward<CachedItemValue>(value));
     }
     else
     {

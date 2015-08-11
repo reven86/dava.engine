@@ -46,13 +46,13 @@ ServerCacheEntry::ServerCacheEntry()
 {
 }
 
-ServerCacheEntry::ServerCacheEntry(CachedFiles &&_files)
-    : files(std::move(_files))
+ServerCacheEntry::ServerCacheEntry(const CachedItemValue &_value)
+	: value(_value)
 {
 }
 
 ServerCacheEntry::ServerCacheEntry(ServerCacheEntry &&right)
-    : files(std::move(right.files))
+	: value(std::move(right.value))
     , accessID(right.accessID)
 {
 }
@@ -61,7 +61,7 @@ ServerCacheEntry & ServerCacheEntry::operator=(ServerCacheEntry &&right)
 {
     if(this != &right)
     {
-        files = std::move(right.files);
+		value = std::move(right.value);
         accessID = right.accessID;
     }
     
@@ -72,7 +72,7 @@ ServerCacheEntry & ServerCacheEntry::operator=(ServerCacheEntry &&right)
 
 bool ServerCacheEntry::operator == (const ServerCacheEntry &right) const
 {
-    return (accessID == right.accessID) && (files == right.files);
+	return (accessID == right.accessID) && (value == right.value);
 }
 
 void ServerCacheEntry::Serialize(KeyedArchive * archieve) const
@@ -81,9 +81,9 @@ void ServerCacheEntry::Serialize(KeyedArchive * archieve) const
     
     archieve->SetUInt64("accessID", accessID);
     
-    ScopedPtr<KeyedArchive> filesArchieve(new KeyedArchive());
-    files.Serialize(filesArchieve, false);
-    archieve->SetArchive("files", filesArchieve);
+    ScopedPtr<KeyedArchive> valueArchieve(new KeyedArchive());
+	value.Serialize(valueArchieve, false);
+	archieve->SetArchive("value", valueArchieve);
 }
 
 void ServerCacheEntry::Deserialize(KeyedArchive * archieve)
@@ -92,19 +92,19 @@ void ServerCacheEntry::Deserialize(KeyedArchive * archieve)
     
     accessID = archieve->GetUInt64("accessID");
     
-    KeyedArchive *filesArchieve = archieve->GetArchive("files");
-    DVASSERT(filesArchieve);
-    files.Deserialize(filesArchieve);
+	KeyedArchive *valueArchieve = archieve->GetArchive("value");
+	DVASSERT(valueArchieve);
+	value.Deserialize(valueArchieve);
 }
     
-void ServerCacheEntry::Load()
+void ServerCacheEntry::Fetch(const FilePath & folder)
 {
-    files.LoadFiles();
+	value.Fetch(folder);
 }
     
-void ServerCacheEntry::Unload()
+void ServerCacheEntry::Free()
 {
-    files.UnloadFiles();
+	value.Free();
 }
     
     

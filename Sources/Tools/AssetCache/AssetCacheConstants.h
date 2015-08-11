@@ -43,12 +43,12 @@ static const uint16 ASSET_SERVER_PORT = 0xACCA;
 enum ePacketID: uint8
 {
     PACKET_UNKNOWN = 0,
-    PACKET_ADD_FILES_REQUEST,
-    PACKET_ADD_FILES_RESPONCE,
-    PACKET_GET_FILES_REQUEST,
-    PACKET_GET_FILES_RESPONCE,
+    PACKET_ADD_REQUEST,
+    PACKET_ADD_RESPONSE,
+    PACKET_GET_REQUEST,
+    PACKET_GET_RESPONSE,
     PACKET_WARMING_UP_REQUEST,
-//    PACKET_WARMING_UP_RESPONCE, // We don't need send responce right now. Left it in code for better reading
+//    PACKET_WARMING_UP_RESPONSE, // We don't need send response right now. Left it in code for better reading
     
 };
     
