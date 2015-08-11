@@ -30,6 +30,7 @@
 #define __DAVAENGINE_MMANOTHERSERVICE_H__
 
 #include "Base/BaseTypes.h"
+#include "Base/Function.h"
 
 #include "FileSystem/FilePath.h"
 
@@ -51,6 +52,15 @@ class IOLoop;
 class NetController;
 class ServiceRegistrar;
 struct IController;
+
+struct SnapshotRecvCallbackParam
+{
+    bool success;
+    uint32 totalSize;
+    uint32 recvSize;
+    uint32 transferredSize;
+    const uint8* buffer;
+};
 
 class MMAnotherService : public NetService
 {
@@ -87,6 +97,7 @@ public:
     void Stop();
 
     void TransferSnapshot(const FilePath& snapshotFile);
+    void SetSnapshotCallback(Function<void(const SnapshotRecvCallbackParam&)> callback);
 
     // Overriden methods from NetService
     void ChannelOpen() override;
@@ -101,6 +112,7 @@ private:
     bool BeginNextSnapshot(SnapshotInfo* snapshot);
 
     void ClientPacketRecieved(const void* packet, size_t length);
+    void ProcessAutoReplySnapshot(const MMNetProto::PacketHeader* inHeader, const void* packetData, size_t dataLength);
 
     void IOThread();
     void StartAnotherNetController();
@@ -126,6 +138,8 @@ private:
 
     File* fileHandle = nullptr;
     Array<uint8, OUTBUF_SIZE> outbuf;
+
+    Function<void(const SnapshotRecvCallbackParam&)> snapshotRecvCallback;
 };
 
 }   // namespace Net

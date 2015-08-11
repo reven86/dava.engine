@@ -121,7 +121,7 @@ void MemProfWidget::StatArrived(size_t /*itemCount*/)
     UpdatePlot(stat);
 }
 
-void MemProfWidget::SnapshotArrived(size_t sizeTotal, size_t sizeRecv)
+void MemProfWidget::SnapshotArrived(unsigned int sizeTotal, unsigned int sizeRecv)
 {
     if (sizeTotal > 0 && sizeRecv > 0)
     {

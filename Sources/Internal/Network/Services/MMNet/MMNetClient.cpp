@@ -26,7 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "Base/Function.h"
+#include "Base/FunctionTraits.h"
 
 #include "Debug/DVAssert.h"
 
@@ -49,7 +49,7 @@ MMNetClient::MMNetClient()
     , snapshotRecvSize(0)
     , anotherService(new MMAnotherService(CLIENT_ROLE))
 {
-
+    anotherService->SetSnapshotCallback(MakeFunction(this, &MMNetClient::OnSnapshotRecieved));
 }
 
 MMNetClient::~MMNetClient()
@@ -105,9 +105,9 @@ void MMNetClient::PacketReceived(const void* packet, size_t length)
             case MMNetProto::TYPE_AUTO_STAT:
                 ProcessAutoReplyStat(header, static_cast<const void*>(header + 1), dataLength);
                 break;
-            case MMNetProto::TYPE_AUTO_SNAPSHOT:
-                ProcessAutoReplySnapshot(header, static_cast<const void*>(header + 1), dataLength);
-                break;
+            //case MMNetProto::TYPE_AUTO_SNAPSHOT:
+            //    ProcessAutoReplySnapshot(header, static_cast<const void*>(header + 1), dataLength);
+            //    break;
             default:
                 break;
         }
@@ -163,7 +163,7 @@ void MMNetClient::ProcessAutoReplySnapshot(const MMNetProto::PacketHeader* inHea
 
         if (snapshotRecvSize == snapshotTotalSize)
         {
-            snapshotCallback(SNAPSHOT_STAGE_FINISHED, snapshotTotalSize, snapshotRecvSize, static_cast<const void*>(snapshotData.data()));
+            snapshotCallback(SNAPSHOT_STAGE_FINISHED, snapshotTotalSize, snapshotRecvSize, snapshotData.data());
 
             snapshotTotalSize = 0;
             snapshotRecvSize = 0;
@@ -183,7 +183,46 @@ void MMNetClient::ProcessAutoReplySnapshot(const MMNetProto::PacketHeader* inHea
         snapshotData.clear();
     }
 }
-    
+
+void MMNetClient::OnSnapshotRecieved(const SnapshotRecvCallbackParam& param)
+{
+    if (param.success)
+    {
+        if (0 == snapshotTotalSize)
+        {
+            snapshotRecvSize = 0;
+            snapshotTotalSize = param.totalSize;
+            snapshotData.resize(snapshotTotalSize);
+
+            snapshotCallback(SNAPSHOT_STAGE_STARTED, snapshotTotalSize, 0, nullptr);
+        }
+
+        Memcpy(&*snapshotData.begin() + snapshotRecvSize, param.buffer, param.transferredSize);
+        snapshotRecvSize += param.transferredSize;
+
+        if (snapshotRecvSize == snapshotTotalSize)
+        {
+            snapshotCallback(SNAPSHOT_STAGE_FINISHED, snapshotTotalSize, snapshotRecvSize, snapshotData.data());
+
+            snapshotTotalSize = 0;
+            snapshotRecvSize = 0;
+            snapshotData.clear();
+        }
+        else
+        {
+            snapshotCallback(SNAPSHOT_STAGE_PROGRESS, snapshotTotalSize, snapshotRecvSize, nullptr);
+        }
+    }
+    else
+    {
+        snapshotCallback(SNAPSHOT_STAGE_ERROR, 0, 0, nullptr);
+
+        snapshotTotalSize = 0;
+        snapshotRecvSize = 0;
+        snapshotData.clear();
+    }
+}
+
 void MMNetClient::FastRequest(uint16 type)
 {
     ParcelEx parcel(0);

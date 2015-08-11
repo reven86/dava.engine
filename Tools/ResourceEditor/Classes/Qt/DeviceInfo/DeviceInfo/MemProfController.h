@@ -72,14 +72,14 @@ public:
 
     void NetConnEstablished(bool resumed, const DAVA::MMStatConfig* config);
     void NetConnLost(const DAVA::char8* message);
-    void NetStatRecieved(const DAVA::MMCurStat* stat, size_t count);
-    void NetSnapshotRecieved(int stage, size_t totalSize, size_t recvSize, const void* data);
+    void NetStatRecieved(const DAVA::MMCurStat* stat, DAVA::uint32 count);
+    void NetSnapshotRecieved(int stage, DAVA::uint32 totalSize, DAVA::uint32 recvSize, const DAVA::uint8* data);
 
 signals:
     void ConnectionEstablished(bool newConnection);
     void ConnectionLost(const DAVA::char8* message);
-    void StatArrived(size_t itemCount);
-    void SnapshotArrived(size_t sizeTotal, size_t sizeRecv);
+    void StatArrived(DAVA::uint32 itemCount);
+    void SnapshotArrived(unsigned int sizeTotal, unsigned int sizeRecv);
 
 public slots:
     void OnSnapshotPressed();

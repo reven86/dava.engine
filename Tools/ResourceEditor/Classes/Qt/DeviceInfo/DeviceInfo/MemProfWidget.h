@@ -76,7 +76,7 @@ public slots:
     void ConnectionEstablished(bool newConnection);
     void ConnectionLost(const DAVA::char8* message);
     void StatArrived(size_t itemCount);
-    void SnapshotArrived(size_t sizeTotal, size_t sizeRecv);
+    void SnapshotArrived(unsigned int sizeTotal, unsigned int sizeRecv);
 
     void RealtimeToggled(bool checked);
     void DiffClicked();

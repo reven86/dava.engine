@@ -104,6 +104,14 @@ void MMAnotherService::TransferSnapshot(const FilePath& snapshotFile)
     ioLoop->Post(Bind(MakeFunction(this, &MMAnotherService::DoTransferSnapshot), snapshotFile));
 }
 
+void MMAnotherService::SetSnapshotCallback(Function<void(const SnapshotRecvCallbackParam&)> callback)
+{
+    DVASSERT(CLIENT_ROLE == role);
+    DVASSERT(callback != 0);
+
+    snapshotRecvCallback = callback;
+}
+
 void MMAnotherService::ChannelOpen()
 {
 
@@ -185,7 +193,7 @@ void MMAnotherService::SendNextChunk(SnapshotInfo* snapshot)
 
     const uint32 PACKET_PREFIX_SIZE = sizeof(MMNetProto::PacketHeader) + sizeof(MMNetProto::PacketParamSnapshot);
     const uint32 chunkSize = std::min(OUTBUF_SIZE - PACKET_PREFIX_SIZE, snapshot->fileSize - snapshot->bytesTransferred);
-    uint32 nread = fileHandle->Read(outbuf.data(), chunkSize);
+    uint32 nread = fileHandle->Read(outbuf.data() + PACKET_PREFIX_SIZE, chunkSize);
     if (nread == chunkSize)
     {
         snapshot->chunkSize = chunkSize;
@@ -233,7 +241,45 @@ bool MMAnotherService::BeginNextSnapshot(SnapshotInfo* snapshot)
 
 void MMAnotherService::ClientPacketRecieved(const void* packet, size_t length)
 {
+    const size_t dataLength = length - sizeof(MMNetProto::PacketHeader);
+    const MMNetProto::PacketHeader* header = static_cast<const MMNetProto::PacketHeader*>(packet);
+    if (length >= sizeof(MMNetProto::PacketHeader) && header->length == length)
+    {
+        switch (header->type)
+        {
+        case MMNetProto::TYPE_AUTO_SNAPSHOT:
+            ProcessAutoReplySnapshot(header, static_cast<const void*>(header + 1), dataLength);
+            break;
+        default:
+            break;
+        }
+    }
+}
 
+void MMAnotherService::ProcessAutoReplySnapshot(const MMNetProto::PacketHeader* inHeader, const void* packetData, size_t dataLength)
+{
+    SnapshotRecvCallbackParam callbackParam;
+    if (inHeader->status == MMNetProto::STATUS_SUCCESS)
+    {
+        const MMNetProto::PacketParamSnapshot* param = static_cast<const MMNetProto::PacketParamSnapshot*>(packetData);
+        const void* data = static_cast<const void*>(param + 1);
+
+        callbackParam.success = true;
+        callbackParam.totalSize = param->snapshotSize;
+        callbackParam.recvSize = param->chunkOffset;
+        callbackParam.transferredSize = param->chunkSize;
+        callbackParam.buffer = static_cast<const uint8*>(data);
+        snapshotRecvCallback(callbackParam);
+    }
+    else
+    {
+        callbackParam.success = true;
+        callbackParam.totalSize = 0;
+        callbackParam.recvSize = 0;
+        callbackParam.transferredSize = 0;
+        callbackParam.buffer = nullptr;
+        snapshotRecvCallback(callbackParam);
+    }
 }
 
 void MMAnotherService::IOThread()

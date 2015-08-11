@@ -160,13 +160,13 @@ void MemProfController::NetConnLost(const DAVA::char8* message)
     emit ConnectionLost(message);
 }
 
-void MemProfController::NetStatRecieved(const DAVA::MMCurStat* stat, size_t count)
+void MemProfController::NetStatRecieved(const DAVA::MMCurStat* stat, uint32 count)
 {
     profilingSession->AppendStatItems(stat, count);
     emit StatArrived(count);
 }
 
-void MemProfController::NetSnapshotRecieved(int stage, size_t totalSize, size_t recvSize, const void* data)
+void MemProfController::NetSnapshotRecieved(int stage, uint32 totalSize, uint32 recvSize, const uint8* data)
 {
     switch (stage)
     {
@@ -177,7 +177,7 @@ void MemProfController::NetSnapshotRecieved(int stage, size_t totalSize, size_t 
         emit SnapshotArrived(totalSize, recvSize);
         break;
     case MMNetClient::SNAPSHOT_STAGE_FINISHED:
-        profilingSession->AppendSnapshot(static_cast<const MMSnapshot*>(data));
+        profilingSession->AppendSnapshot(reinterpret_cast<const MMSnapshot*>(data));
         emit SnapshotArrived(totalSize, recvSize);
         break;
     case MMNetClient::SNAPSHOT_STAGE_ERROR:

@@ -42,6 +42,7 @@ namespace Net
 {
 
 class MMAnotherService;
+struct SnapshotRecvCallbackParam;
 
 class MMNetClient : public NetService
 {
@@ -111,8 +112,8 @@ public:
 
     using ConnEstablishedCallback = Function<void (bool, const MMStatConfig*)>;
     using ConnLostCallback = Function<void (const char8*)>;
-    using StatCallback = Function<void (const MMCurStat*, size_t)>;
-    using SnapshotCallback = Function<void (int, size_t, size_t, const void*)>;
+    using StatCallback = Function<void(const MMCurStat*, uint32)>;
+    using SnapshotCallback = Function<void(int, uint32, uint32, const uint8*)>;
 
 public:
     MMNetClient();
@@ -141,6 +142,8 @@ private:
     
     void Cleanup();
 
+    void OnSnapshotRecieved(const SnapshotRecvCallbackParam& param);
+
 private:
     uint32 connToken = 0;
     bool tokenRequested = false;
@@ -148,8 +151,8 @@ private:
     List<ParcelEx> queue;
 
     bool canRequestSnapshot = true;
-    size_t snapshotTotalSize = 0;
-    size_t snapshotRecvSize = 0;
+    uint32 snapshotTotalSize = 0;
+    uint32 snapshotRecvSize = 0;
     std::vector<uint8> snapshotData;
 
     ConnEstablishedCallback connEstablishedCallback;
