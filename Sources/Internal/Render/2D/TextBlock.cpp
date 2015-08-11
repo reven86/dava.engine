@@ -560,82 +560,82 @@ void TextBlock::CalculateCacheParams()
 
     if(!isMultilineEnabled || treatMultilineAsSingleLine)
     {
-        textSize = font->GetStringMetrics(visualText);
+        Vector<float32> charSizes;
+        textSize = font->GetStringMetrics(visualText, &charSizes);
+        DVASSERT(charSizes.size() == visualText.length());
         WideString pointsStr;
-        if(fittingType & FITTING_POINTS)
+        if((fittingType & FITTING_POINTS) && (drawSize.x < textSize.width))
         {
-            if(drawSize.x < textSize.width)
+            auto length = charSizes.size();
+            auto pointsMetric = font->GetStringMetrics(L"...");
+            auto fullWidth = static_cast<float32>(textSize.width + pointsMetric.width);
+            for (auto i = length - 1; i > 0U; --i)
             {
-                Size2i textSizePoints;
-
-                int32 length = (int32)visualText.length();
-                for(int32 i = length - 1; i > 0; --i)
+                if(fullWidth <= drawSize.x)
                 {
-                    pointsStr.clear();
-                    pointsStr.append(visualText, 0, i);
-                    pointsStr += L"...";
 #if defined(LOCALIZATION_DEBUG)
                     fittingTypeUsed = FITTING_POINTS;
 #endif
-                    textSize = font->GetStringMetrics(pointsStr);
-                    if(textSize.width <= drawSize.x)
-                    {
-                        break;
-                    }
+                    pointsStr.clear();
+                    pointsStr.append(visualText, 0, i + 1);
+                    pointsStr += L"...";
+                    break;
                 }
+                fullWidth -= charSizes[i];
             }
         }
-        else if(!((fittingType & FITTING_REDUCE) || (fittingType & FITTING_ENLARGE)) && (drawSize.x + 1 < textSize.width) && (requestedSize.x >= 0))
+        else if(!((fittingType & FITTING_REDUCE) || (fittingType & FITTING_ENLARGE)) && (drawSize.x < textSize.width) && (requestedSize.x >= 0))
         {
-            int32 length = (int32)visualText.length();
+            auto length = charSizes.size();
+            auto fullWidth = static_cast<float32>(textSize.width);
             if(ALIGN_RIGHT & align)
             {
-                for(int32 i = 1; i < length - 1; ++i)
+                for(auto i = 0; i < length; ++i)
                 {
-                    pointsStr.clear();
-                    pointsStr.append(visualText, i, length - i);
-
-                    textSize = font->GetStringMetrics(pointsStr);
-                    if(textSize.width <= drawSize.x)
+                    if(fullWidth <= drawSize.x)
                     {
+                        pointsStr.clear();
+                        pointsStr.append(visualText, i, length - i);
                         break;
                     }
+                    fullWidth -= charSizes[i];
                 }
             }
             else if(ALIGN_HCENTER & align)
             {
                 int32 left = 0;
-                int32 right = length;
+                int32 right = length - 1;
                 bool cutFromBegin = false;
-
+                
                 while (left != right)
                 {
-                    pointsStr.clear();
-                    pointsStr.append(visualText, left, right - left);
-
-                    textSize = font->GetStringMetrics(pointsStr);
-                    if (textSize.width <= drawSize.x)
+                    if (fullWidth <= drawSize.x)
                     {
+                        pointsStr.clear();
+                        pointsStr.append(visualText, left, right - left + 1);
                         break;
                     }
 
                     if (cutFromBegin)
-                        left++;
+                    {
+                        fullWidth -= charSizes[left++];
+                    }
                     else
-                        right--;
+                    {
+                        fullWidth -= charSizes[right--];
+                    }
                     cutFromBegin = !cutFromBegin;
                 }
             }
             else if (ALIGN_LEFT & align)
             {
-                for (int32 i = 0; i < length; ++i)
+                for (int32 i = 1; i < length; ++i)
                 {
-                    pointsStr.clear();
-                    pointsStr.append(visualText, 0, length - i);
-
-                    textSize = font->GetStringMetrics(pointsStr);
-                    if (textSize.width <= drawSize.x)
+                    fullWidth -= charSizes[length - i];
+                    if (fullWidth <= drawSize.x)
                     {
+                        pointsStr.clear();
+                        pointsStr.append(visualText, 0, length - i);
                         break;
                     }
                 }
