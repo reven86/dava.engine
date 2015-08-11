@@ -33,6 +33,7 @@
 #include "../PackageHierarchy/StyleSheetNode.h"
 
 #include "UI/Styles/UIStyleSheet.h"
+#include "Utils/Utils.h"
 
 using namespace DAVA;
 
@@ -83,7 +84,17 @@ VariantType StyleSheetSelectorProperty::GetValue() const
 
 void StyleSheetSelectorProperty::ApplyValue(const DAVA::VariantType &aValue)
 {
-    styleSheet->SetSelectorChain(UIStyleSheetSelectorChain(aValue.AsString()));
+    Vector<String> selectorList;
+    Split(aValue.AsString(), ",", selectorList);
+
+    if (!selectorList.empty())
+    {
+        styleSheet->SetSelectorChain(UIStyleSheetSelectorChain(selectorList.front()));
+    }
+    else
+    {
+        styleSheet->SetSelectorChain(UIStyleSheetSelectorChain(""));
+    }
     value = styleSheet->GetSelectorChain().ToString();
 }
 
