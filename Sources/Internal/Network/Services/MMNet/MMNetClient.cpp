@@ -116,7 +116,8 @@ void MMNetClient::PacketReceived(const void* packet, size_t length)
 
 void MMNetClient::ProcessReplyToken(const MMNetProto::PacketHeader* inHeader, const void* packetData, size_t dataLength)
 {
-    if (dataLength > 0)     // Config has come, new profiling session
+    bool newSession = dataLength > 0;
+    if (newSession)     // Config has come, new profiling session
     {
         connToken = inHeader->token;
         const MMStatConfig* config = static_cast<const MMStatConfig*>(packetData);
@@ -128,7 +129,7 @@ void MMNetClient::ProcessReplyToken(const MMNetProto::PacketHeader* inHeader, co
         connEstablishedCallback(true, nullptr);
     }
     tokenRequested = true;
-    anotherService->Start(connToken, channel->RemoteEndpoint().Address());
+    anotherService->Start(newSession, connToken, channel->RemoteEndpoint().Address());
 }
 
 void MMNetClient::ProcessReplySnapshot(const MMNetProto::PacketHeader* inHeader, const void* packetData, size_t dataLength)

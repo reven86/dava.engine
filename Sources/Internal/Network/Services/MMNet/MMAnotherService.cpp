@@ -27,6 +27,10 @@
 =====================================================================================*/
 
 #include "Base/FunctionTraits.h"
+#include "Base/Bind.h"
+
+#include "FileSystem/File.h"
+#include "FileSystem/FileSystem.h"
 #include "FileSystem/Logger.h"
 
 #include "Concurrency/Thread.h"
@@ -35,6 +39,7 @@
 #include "Network/ServiceRegistrar.h"
 #include "Network/Base/IOLoop.h"
 #include "Network/Private/NetController.h"
+#include "Network/Services/MMNet/MMNetProto.h"
 #include "Network/Services/MMNet/MMAnotherService.h"
 
 namespace DAVA
@@ -63,9 +68,17 @@ MMAnotherService::~MMAnotherService()
     ioThread->Join();
 }
 
-void MMAnotherService::Start(uint32 connToken_, const IPAddress& addr)
+void MMAnotherService::Start(bool newSession, uint32 connToken_, const IPAddress& addr)
 {
     connToken = connToken_;
+    if (newSession && SERVER_ROLE == role)
+    {
+        for (SnapshotInfo& o : snapshotQueue)
+        {
+            FileSystem::Instance()->DeleteFile(o.filename);
+        }
+        snapshotQueue.clear();
+    }
 
     NetConfig config(role);
     Endpoint endpoint = SERVER_ROLE == role ? Endpoint(PORT)
@@ -84,22 +97,141 @@ void MMAnotherService::Stop()
     netController->Stop(MakeFunction(this, &MMAnotherService::OnNetControllerStopped));
 }
 
+void MMAnotherService::TransferSnapshot(const FilePath& snapshotFile)
+{
+    DVASSERT(SERVER_ROLE == role);
+
+    ioLoop->Post(Bind(MakeFunction(this, &MMAnotherService::DoTransferSnapshot), snapshotFile));
+}
+
 void MMAnotherService::ChannelOpen()
 {
 
 }
 
-void MMAnotherService::ChannelClosed(const char8* message)
+void MMAnotherService::ChannelClosed(const char8* /*message*/)
 {
-
+    SafeRelease(fileHandle);
+    if (!snapshotQueue.empty())
+    {
+        SnapshotInfo* snapshot = &snapshotQueue.front();
+        snapshot->chunkSize = 0;
+        snapshot->bytesTransferred = 0;
+    }
 }
 
 void MMAnotherService::PacketReceived(const void* packet, size_t length)
 {
-
+    if (CLIENT_ROLE == role)
+    {
+        ClientPacketRecieved(packet, length);
+    }
 }
 
 void MMAnotherService::PacketDelivered()
+{
+    if (SERVER_ROLE == role)
+    {
+        ServerPacketDelivered();
+    }
+}
+
+void MMAnotherService::ServerPacketDelivered()
+{
+    DVASSERT(!snapshotQueue.empty());
+
+    SnapshotInfo* snapshot = &snapshotQueue.front();
+    snapshot->bytesTransferred += snapshot->chunkSize;
+
+    if (snapshot->bytesTransferred == snapshot->fileSize)
+    {
+        SafeRelease(fileHandle);
+        FileSystem::Instance()->DeleteFile(snapshot->filename);
+        snapshotQueue.pop_front();
+
+        while (!snapshotQueue.empty())
+        {
+            snapshot = &snapshotQueue.front();
+            if (!BeginNextSnapshot(snapshot))
+            {
+                FileSystem::Instance()->DeleteFile(snapshot->filename);
+                snapshotQueue.pop_front();
+            }
+            else
+                break;
+        }
+    }
+    else
+    {
+        SendNextChunk(snapshot);
+    }
+}
+
+void MMAnotherService::DoTransferSnapshot(const FilePath& snapshotFile)
+{
+    bool wasEmpty = snapshotQueue.empty();
+    snapshotQueue.emplace_back(SnapshotInfo(snapshotFile));
+    if (wasEmpty)
+    {
+        SnapshotInfo* snapshot = &snapshotQueue.front();
+        BeginNextSnapshot(snapshot);
+    }
+}
+
+void MMAnotherService::SendNextChunk(SnapshotInfo* snapshot)
+{
+    MMNetProto::PacketHeader* hdr = OffsetPointer<MMNetProto::PacketHeader>(outbuf.data(), 0);
+    MMNetProto::PacketParamSnapshot* param = OffsetPointer<MMNetProto::PacketParamSnapshot>(outbuf.data(), sizeof(MMNetProto::PacketHeader));
+
+    const uint32 PACKET_PREFIX_SIZE = sizeof(MMNetProto::PacketHeader) + sizeof(MMNetProto::PacketParamSnapshot);
+    const uint32 chunkSize = std::min(OUTBUF_SIZE - PACKET_PREFIX_SIZE, snapshot->fileSize - snapshot->bytesTransferred);
+    uint32 nread = fileHandle->Read(outbuf.data(), chunkSize);
+    if (nread == chunkSize)
+    {
+        snapshot->chunkSize = chunkSize;
+
+        hdr->length = PACKET_PREFIX_SIZE + chunkSize;
+        hdr->type = MMNetProto::TYPE_AUTO_SNAPSHOT;
+        hdr->status = MMNetProto::STATUS_SUCCESS;
+        hdr->itemCount = 0;
+        hdr->token = connToken;
+
+        param->flags = 0;
+        param->snapshotSize = snapshot->fileSize;
+        param->chunkSize = snapshot->chunkSize;
+        param->chunkOffset = snapshot->bytesTransferred;
+    }
+    else
+    {
+        snapshot->bytesTransferred = 0;
+        snapshot->fileSize = chunkSize;
+
+        hdr->length = sizeof(MMNetProto::PacketHeader);
+        hdr->type = MMNetProto::TYPE_AUTO_SNAPSHOT;
+        hdr->status = MMNetProto::STATUS_ERROR;
+        hdr->itemCount = 0;
+        hdr->token = connToken;
+    }
+    Send(outbuf.data(), hdr->length);
+}
+
+bool MMAnotherService::BeginNextSnapshot(SnapshotInfo* snapshot)
+{
+    fileHandle = File::Create(snapshot->filename, File::OPEN | File::READ);
+    if (fileHandle != nullptr)
+    {
+        snapshot->fileSize = fileHandle->GetSize();
+        if (snapshot->fileSize > 0)
+        {
+            SendNextChunk(snapshot);
+            return true;
+        }
+        SafeRelease(fileHandle);
+    }
+    return false;
+}
+
+void MMAnotherService::ClientPacketRecieved(const void* packet, size_t length)
 {
 
 }

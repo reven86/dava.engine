@@ -84,7 +84,6 @@ void MMNetServer::OnTag(uint32 tag, bool entering)
 void MMNetServer::ChannelOpen()
 {
     statItemSize = MemoryManager::Instance()->CalcCurStatSize();
-    anotherService->Start(connToken);
 }
 
 void MMNetServer::ChannelClosed(const char8* /*message*/)
@@ -116,7 +115,8 @@ void MMNetServer::PacketReceived(const void* packet, size_t length)
 
 void MMNetServer::ProcessRequestToken(const MMNetProto::PacketHeader* inHeader, const void* packetData, size_t dataLength)
 {
-    if (inHeader->token != connToken)
+    bool newSession = inHeader->token != connToken;
+    if (newSession)
     {
         size_t configSize = MemoryManager::Instance()->CalcStatConfigSize();
         ParcelEx parcel(configSize);
@@ -134,6 +134,7 @@ void MMNetServer::ProcessRequestToken(const MMNetProto::PacketHeader* inHeader, 
     {
         FastReply(MMNetProto::TYPE_REPLY_TOKEN, MMNetProto::STATUS_SUCCESS);
     }
+    anotherService->Start(newSession, connToken);
 }
 
 void MMNetServer::ProcessRequestSnapshot(const MMNetProto::PacketHeader* inHeader, const void* packetData, size_t dataLength)
@@ -147,7 +148,7 @@ void MMNetServer::ProcessRequestSnapshot(const MMNetProto::PacketHeader* inHeade
         {
             lastManualSnapshotTimestamp = curTimestamp;
             status = GetAndSaveSnapshot(curTimestamp - timerBegin) ? MMNetProto::STATUS_SUCCESS
-                                                                   : MMNetProto::STATUS_BUSY;
+                                                                   : MMNetProto::STATUS_ERROR;
         }
     }
     FastReply(MMNetProto::TYPE_REPLY_SNAPSHOT, status);
@@ -363,7 +364,8 @@ bool MMNetServer::GetAndSaveSnapshot(uint64 curTimestamp)
 #endif
         if (MemoryManager::Instance()->GetMemorySnapshot(file, curTimestamp, &snapshotInfo.fileSize))
         {
-            readySnapshots.emplace_back(std::forward<SnapshotInfo>(snapshotInfo));
+            //readySnapshots.emplace_back(std::forward<SnapshotInfo>(snapshotInfo));
+            anotherService->TransferSnapshot(filePath);
             result = true;
         }
         fclose(file);
