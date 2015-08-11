@@ -50,7 +50,7 @@ public:
     void ProcessControl(UIControl* control);
     void AddGlobalClass(const FastName &clazz);
     void RemoveGlobalClass(const FastName &clazz);
-    bool HasGlobalClass(const FastName &clazz);
+    bool HasGlobalClass(const FastName &clazz) const;
     void ClearGlobalFlags();
 private:
     bool StyleSheetMatchesControl(const UIStyleSheet* styleSheet, UIControl* control);

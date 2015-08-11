@@ -375,7 +375,7 @@ ResultList QtModelPackageCommandExecutor::InsertStyle(StyleSheetNode *styleSheet
     }
     else
     {
-        resultList.AddResult(Result::RESULT_ERROR, "Can not inster style sheet!");
+        resultList.AddResult(Result::RESULT_ERROR, "Can not instert style sheet!");
     }
     
     return resultList;

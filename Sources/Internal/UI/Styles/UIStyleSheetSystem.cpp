@@ -188,7 +188,7 @@ void UIStyleSheetSystem::RemoveGlobalClass(const FastName &clazz)
     }
 }
     
-bool UIStyleSheetSystem::HasGlobalClass(const FastName &clazz)
+bool UIStyleSheetSystem::HasGlobalClass(const FastName &clazz) const
 {
     return find(globalClasses.begin(), globalClasses.end(), clazz) != globalClasses.end();
 }

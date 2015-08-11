@@ -135,13 +135,14 @@ QMimeData *LibraryModel::mimeData(const QModelIndexList &indexes) const
             QMimeData *data = new QMimeData();
             auto item = itemFromIndex(index);
             
-            Vector<ControlNode*> controls;
-            Vector<StyleSheetNode*> styles;
             PackageBaseNode *node = static_cast<PackageBaseNode*>(item->data(POINTER_DATA).value<void*>());
             ControlNode *control = node ? dynamic_cast<ControlNode*>(node) : nullptr;
             
             if (control)
             {
+                Vector<ControlNode*> controls;
+                Vector<StyleSheetNode*> styles;
+
                 RefPtr<ControlNode> resultControl;
                 if (control->GetPackage() != nullptr)
                     resultControl = RefPtr<ControlNode>(ControlNode::CreateFromPrototype(control));
