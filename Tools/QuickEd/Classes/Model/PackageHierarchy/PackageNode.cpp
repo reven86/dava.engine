@@ -223,6 +223,9 @@ void PackageNode::RefreshProperty(ControlNode *node, AbstractProperty *property)
 
     RefreshControlStylesAndLayout(node);
     RefreshPropertiesInInstances(node, property);
+    
+    for (PackageListener *listener : listeners)
+        listener->ControlPropertyWasChanged(node, property);
 }
 
 void PackageNode::AddComponent(ControlNode *node, ComponentPropertiesSection *section)
