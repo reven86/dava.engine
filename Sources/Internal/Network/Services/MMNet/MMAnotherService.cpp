@@ -284,9 +284,7 @@ void MMAnotherService::ProcessAutoReplySnapshot(const MMNetProto::PacketHeader* 
 
 void MMAnotherService::IOThread()
 {
-    Logger::Debug("*************** MMAnotherService::IOThread enter: %u", GetCurrentThreadId());
     ioLoop->Run();
-    Logger::Debug("*************** MMAnotherService::IOThread leave");
 }
 
 void MMAnotherService::OnNetControllerStopped(IController* controller)
