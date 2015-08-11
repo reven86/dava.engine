@@ -36,14 +36,16 @@
 #include "Concurrency/Spinlock.h"
 
 #include "Network/NetService.h"
+#include "Network/Services/MMNet/MMNetProto.h"
+
 #include "MemoryManager/MemoryManagerTypes.h"
-#include "MMNetProto.h"
 
 namespace DAVA
 {
-
 namespace Net
 {
+
+class MMAnotherService;
 
 class MMNetServer : public NetService
 {
@@ -179,6 +181,8 @@ private:
     
     uint32 curSnapshotIndex = 0;
     uint64 lastManualSnapshotTimestamp = 0;
+
+    std::unique_ptr<MMAnotherService> anotherService;
 };
 
 }   // namespace Net

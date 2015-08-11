@@ -41,6 +41,8 @@ namespace DAVA
 namespace Net
 {
 
+class MMAnotherService;
+
 class MMNetClient : public NetService
 {
     struct ParcelEx
@@ -154,6 +156,8 @@ private:
     ConnLostCallback connLostCallback;
     StatCallback statCallback;
     SnapshotCallback snapshotCallback;
+
+    std::unique_ptr<MMAnotherService> anotherService;
 };
 
 }   // namespace Net

@@ -34,7 +34,9 @@
 #include "DLC/Patcher/ZLibStream.h"
 #include "MemoryManager/MemoryManager.h"
 
-#include "MMNetClient.h"
+#include "Network/Base/Endpoint.h"
+#include "Network/Services/MMNet/MMNetClient.h"
+#include "Network/Services/MMNet/MMAnotherService.h"
 
 namespace DAVA
 {
@@ -45,6 +47,7 @@ MMNetClient::MMNetClient()
     : NetService()
     , snapshotTotalSize(0)
     , snapshotRecvSize(0)
+    , anotherService(new MMAnotherService(CLIENT_ROLE))
 {
 
 }
@@ -80,6 +83,7 @@ void MMNetClient::ChannelClosed(const char8* message)
     tokenRequested = false;
     canRequestSnapshot = true;
     
+    anotherService->Stop();
     Cleanup();
     connLostCallback(message);
 }
@@ -124,6 +128,7 @@ void MMNetClient::ProcessReplyToken(const MMNetProto::PacketHeader* inHeader, co
         connEstablishedCallback(true, nullptr);
     }
     tokenRequested = true;
+    anotherService->Start(connToken, channel->RemoteEndpoint().Address());
 }
 
 void MMNetClient::ProcessReplySnapshot(const MMNetProto::PacketHeader* inHeader, const void* packetData, size_t dataLength)

@@ -31,7 +31,6 @@
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
 
 #include "Base/FunctionTraits.h"
-#include "Concurrency/LockGuard.h"
 #include "Debug/DVAssert.h"
 #include "DLC/Patcher/ZLibStream.h"
 #include "Platform/SystemTimer.h"
@@ -42,9 +41,8 @@
 
 #include "MemoryManager/MemoryManager.h"
 
-#include "MMNetServer.h"
-
-#include <cstdlib>
+#include "Network/Services/MMNet/MMNetServer.h"
+#include "Network/Services/MMNet/MMAnotherService.h"
 
 namespace DAVA
 {
@@ -53,18 +51,16 @@ namespace Net
 
 MMNetServer::MMNetServer()
     : NetService()
-    , timerBegin(0)
+    , connToken(Random::Instance()->Rand())
+    , timerBegin(SystemTimer::Instance()->AbsoluteMS())
+    , anotherService(new MMAnotherService(SERVER_ROLE))
 {
-    connToken = Random::Instance()->Rand();
-    timerBegin = SystemTimer::Instance()->AbsoluteMS();
-
     MemoryManager::Instance()->SetCallbacks(MakeFunction(this, &MMNetServer::OnUpdate),
                                             MakeFunction(this, &MMNetServer::OnTag));
 }
 
 MMNetServer::~MMNetServer()
 {
-
 }
 
 void MMNetServer::OnUpdate()
@@ -88,11 +84,13 @@ void MMNetServer::OnTag(uint32 tag, bool entering)
 void MMNetServer::ChannelOpen()
 {
     statItemSize = MemoryManager::Instance()->CalcCurStatSize();
+    anotherService->Start(connToken);
 }
 
 void MMNetServer::ChannelClosed(const char8* /*message*/)
 {
     tokenRequested = false;
+    anotherService->Stop();
     Cleanup();
 }
 
