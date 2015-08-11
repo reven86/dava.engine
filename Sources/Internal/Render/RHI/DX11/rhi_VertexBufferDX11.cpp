@@ -202,7 +202,7 @@ SetToRHI( Handle vbh, unsigned stream_i, unsigned offset, unsigned stride, ID3D1
     UINT                vb_stride[1] = { stride };
     
     
-    DVASSERT(!self->_mapped);
+///    DVASSERT(!self->_mapped);
     context->IASetVertexBuffers( stream_i, 1, vb, vb_stride, vb_offset );
 }
 

@@ -198,7 +198,7 @@ SetToRHI( Handle ibh, unsigned offset, ID3D11DeviceContext* context )
 {
     IndexBufferDX11_t*  self = IndexBufferDX11Pool::Get( ibh );    
     
-    DVASSERT(!self->_mapped);
+///    DVASSERT(!self->_mapped);
     context->IASetIndexBuffer( self->_ib11, DXGI_FORMAT_R16_UINT, offset );
 }
 
