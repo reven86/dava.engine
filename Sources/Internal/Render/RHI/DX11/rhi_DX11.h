@@ -34,6 +34,7 @@
 #include "../Common/rhi_Private.h"
 #include "../Common/rhi_Impl.h"
 
+struct ID3D11DeviceContext;
 
 namespace rhi
 {
@@ -44,21 +45,21 @@ void        dx11_Initialize( const InitParam& param );
 namespace VertexBufferDX11
 {
 void        SetupDispatch( Dispatch* dispatch );
-void        SetToRHI( Handle vb, unsigned stream_i, unsigned offset, unsigned stride );
+void        SetToRHI( Handle vb, unsigned stream_i, unsigned offset, unsigned stride, ID3D11DeviceContext* context );
 }
 
 namespace IndexBufferDX11
 {
 void        SetupDispatch( Dispatch* dispatch );
-void        SetToRHI( Handle vb, unsigned offset );
+void        SetToRHI( Handle vb, unsigned offset, ID3D11DeviceContext* context );
 }
 
 namespace QueryBufferDX11
 {
 void        SetupDispatch( Dispatch* dispatch );
 
-void        BeginQuery( Handle buf, uint32 objectIndex );
-void        EndQuery( Handle buf, uint32 objectIndex );
+void        BeginQuery( Handle buf, uint32 objectIndex, ID3D11DeviceContext* context );
+void        EndQuery( Handle buf, uint32 objectIndex, ID3D11DeviceContext* context );
 }
 
 
@@ -66,14 +67,14 @@ namespace PipelineStateDX11
 {
 void        SetupDispatch( Dispatch* dispatch );
 unsigned    VertexLayoutStride( Handle ps );
-void        SetToRHI( Handle ps, uint32 layoutUID );
+void        SetToRHI( Handle ps, uint32 layoutUID, ID3D11DeviceContext* context );
 }
 
 namespace ConstBufferDX11
 {
 void        SetupDispatch( Dispatch* dispatch );
 void        InitializeRingBuffer( uint32 size );
-void        SetToRHI( Handle cb, const void* inst_data );
+void        SetToRHI( Handle cb, const void* inst_data, ID3D11DeviceContext* context );
 const void* InstData( Handle cb );
 void        InvalidateAllConstBufferInstances();
 }
@@ -81,9 +82,9 @@ void        InvalidateAllConstBufferInstances();
 namespace TextureDX11
 {
 void        SetupDispatch( Dispatch* dispatch );
-void        SetToRHIFragment( Handle tex, unsigned unitIndex );
-void        SetToRHIVertex( Handle tex, unsigned unitIndex );
-void        SetRenderTarget( Handle color, Handle depthstencil );
+void        SetToRHIFragment( Handle tex, unsigned unitIndex, ID3D11DeviceContext* context );
+void        SetToRHIVertex( Handle tex, unsigned unitIndex, ID3D11DeviceContext* context );
+void        SetRenderTarget( Handle color, Handle depthstencil, ID3D11DeviceContext* context );
 Size2i      Size( Handle tex );
 }
 
@@ -91,13 +92,13 @@ Size2i      Size( Handle tex );
 namespace DepthStencilStateDX11
 {
 void        SetupDispatch( Dispatch* dispatch );
-void        SetToRHI( Handle state );
+void        SetToRHI( Handle state, ID3D11DeviceContext* context );
 }
 
 namespace SamplerStateDX11
 {
 void        SetupDispatch( Dispatch* dispatch );
-void        SetToRHI( Handle state );
+void        SetToRHI( Handle state, ID3D11DeviceContext* context );
 }
 
 

@@ -150,7 +150,7 @@ SetupDispatch( Dispatch* dispatch )
 }
 
 void
-BeginQuery( Handle handle, uint32 objectIndex )
+BeginQuery( Handle handle, uint32 objectIndex, ID3D11DeviceContext* context )
 {
     QueryBufferDX11_t*  buf = QueryBufferDX11Pool::Get( handle );
 
@@ -179,14 +179,14 @@ BeginQuery( Handle handle, uint32 objectIndex )
 
         if( iq )
         {
-            _D3D11_ImmediateContext->Begin( iq );
+            context->Begin( iq );
         }
     }
 }
 
 
 void
-EndQuery( Handle handle, uint32 objectIndex )
+EndQuery( Handle handle, uint32 objectIndex, ID3D11DeviceContext* context )
 {
     QueryBufferDX11_t*  buf = QueryBufferDX11Pool::Get( handle );
 
@@ -195,7 +195,7 @@ EndQuery( Handle handle, uint32 objectIndex )
         ID3D11Query*    iq = buf->query[objectIndex];
         
         DVASSERT(iq);
-        _D3D11_ImmediateContext->End( iq );
+        context->End( iq );
     }
 }
 

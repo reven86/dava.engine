@@ -38,6 +38,28 @@ namespace rhi
 {
 //==============================================================================
 
+struct
+RasterizerParamDX11
+{
+    uint32  cullMode:3;
+    uint32  scissorEnabled:1;
+
+    bool    operator==( const RasterizerParamDX11& b ) const
+            {
+                return this->cullMode == b.cullMode  &&  this->scissorEnabled == b.scissorEnabled;
+            }
+};
+
+struct
+RasterizerStateDX11
+{
+    RasterizerParamDX11     param;
+    ID3D11RasterizerState*  state;
+};
+
+
+//==============================================================================
+
 class
 CommandBufferDX11_t
 {
@@ -59,12 +81,32 @@ public:
     void        Command( uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3, uint64 arg4, uint64 arg5, uint64 arg6 );
 
 
+    void        BeginScene( ID3D11DeviceContext* context );
+    void        EndScene( ID3D11DeviceContext* context );
+
 
     RenderPassConfig    passCfg;
     uint32              isFirstInPass:1;
     uint32              isLastInPass:1;
     
     std::vector<uint64> _cmd;
+
+
+    D3D11_PRIMITIVE_TOPOLOGY    cur_topo;
+    Handle                      cur_ib;
+    Handle                      cur_vb;
+    Handle                      cur_vb_stride;
+    Handle                      cur_pipelinestate;
+    uint32                      cur_stride;
+    Handle                      cur_query_buf;
+    uint32                      cur_query_i;
+    D3D11_VIEWPORT              def_viewport;
+    RasterizerParamDX11         rs_param;
+    ID3D11RasterizerState*      cur_rs;
+
+    ID3D11DeviceContext*        context;
+    ID3D11CommandList*          commandList;
+
     
     RingBuffer*         text;
 
@@ -153,27 +195,6 @@ static DAVA::Spinlock       _DX11_RenderThreadExitSync;
 static DAVA::Semaphore      _DX11_RenderThreadStartedSync   (0);
 #endif
 
-//==============================================================================
-
-struct
-RasterizerParamDX11
-{
-    uint32  cullMode:3;
-    uint32  scissorEnabled:1;
-
-    bool    operator==( const RasterizerParamDX11& b ) const
-            {
-                return this->cullMode == b.cullMode  &&  this->scissorEnabled == b.scissorEnabled;
-            }
-};
-
-struct
-RasterizerStateDX11
-{
-    RasterizerParamDX11     param;
-    ID3D11RasterizerState*  state;
-};
-
 
 //------------------------------------------------------------------------------
 
@@ -258,6 +279,13 @@ dx11_RenderPass_Allocate( const RenderPassConfig& passDesc, uint32 cmdBufCount, 
         cb->isFirstInPass = i == 0;
         cb->isLastInPass  = i == cmdBufCount-1;
 
+        #if RHI__DX11_USE_DEFERRED_CONTEXT
+        if( cb->context )
+        {
+            HRESULT hr = _D3D11_Device->CreateDeferredContext( 0, cb->context );
+        }
+        #endif
+
         pass->cmdBuf[i] = h;
         cmdBuf[i]       = h;
     }
@@ -321,9 +349,34 @@ SetupDispatch( Dispatch* dispatch )
 static void
 dx11_CommandBuffer_Begin( Handle cmdBuf )
 {
+    CommandBufferDX11_t*    cb = CommandBufferPool::Get( cmdBuf );
+    
+    cb->cur_topo                = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+    cb->cur_ib                  = InvalidIndex;
+    cb->cur_vb                  = InvalidIndex;
+    cb->cur_vb_stride           = 0;
+    cb->cur_pipelinestate       = InvalidHandle;
+    cb->cur_stride              = 0;
+    cb->cur_query_buf           = InvalidHandle;
+    cb->cur_query_i             = InvalidIndex;
+    cb->def_viewport;
+    cb->rs_param;
+    cb->cur_rs                  = nullptr;
+
+    cb->rs_param.cullMode       = CULL_NONE;
+    cb->rs_param.scissorEnabled = false;
+
+    cb->sync = InvalidHandle;
+
+    cb->def_viewport.TopLeftX   = 0;
+    cb->def_viewport.TopLeftY   = 0;
+    cb->def_viewport.MinDepth   = 0.0f;
+    cb->def_viewport.MaxDepth   = 1.0f;
+
 #if RHI__DX11_USE_DEFERRED_CONTEXT
+    cb->Command( DX11__BEGIN );
 #else
-    CommandBufferPool::Get(cmdBuf)->Command( DX11__BEGIN );
+    cb->Command( DX11__BEGIN );
 #endif
 }
 
@@ -333,9 +386,14 @@ dx11_CommandBuffer_Begin( Handle cmdBuf )
 static void
 dx11_CommandBuffer_End( Handle cmdBuf, Handle syncObject )
 {
+    CommandBufferDX11_t*    cb = CommandBufferPool::Get( cmdBuf );
+
 #if RHI__DX11_USE_DEFERRED_CONTEXT
+
+    cb->context->FinishCommandList( &(cb->commandList) );
+    cb->Command( DX11__END, syncObject );
 #else
-    CommandBufferPool::Get(cmdBuf)->Command( DX11__END, syncObject );
+    cb->Command( DX11__END, syncObject );
 #endif
 }
 
@@ -343,11 +401,28 @@ dx11_CommandBuffer_End( Handle cmdBuf, Handle syncObject )
 //------------------------------------------------------------------------------
 
 static void
-dx11_CommandBuffer_SetPipelineState( Handle cmdBuf, Handle ps, uint32 vdecl )
+dx11_CommandBuffer_SetPipelineState( Handle cmdBuf, Handle ps, uint32 vdeclUID )
 {
 #if RHI__DX11_USE_DEFERRED_CONTEXT
+
+    CommandBufferDX11_t*    cb = CommandBufferPool::Get( cmdBuf );
+
+    const VertexLayout* vdecl  = (vdeclUID == VertexLayout::InvalidUID)  
+                                 ? nullptr  
+                                 : VertexLayout::Get( vdeclUID );
+                
+    cb->cur_pipelinestate = ps;
+    cb->cur_vb_stride     = (vdecl)  ? vdecl->Stride()  : 0;
+
+
+    PipelineStateDX11::SetToRHI( ps, vdeclUID );
+
+    StatSet::IncStat( stat_SET_PS, 1 );
+
 #else
-    CommandBufferPool::Get(cmdBuf)->Command( DX11__SET_PIPELINE_STATE, ps, vdecl );
+
+    CommandBufferPool::Get(cmdBuf)->Command( DX11__SET_PIPELINE_STATE, ps, vdeclUID );
+
 #endif
 }
 
@@ -703,7 +778,7 @@ Trace("\n\n-------------------------------\nexecuting frame %u\n",frame_n);
         {
             Handle               cb_h = pp->cmdBuf[b];
             CommandBufferDX11_t* cb   = CommandBufferPool::Get( cb_h );
-
+            
             cb->Execute();
 
             if( cb->sync != InvalidHandle )
@@ -909,7 +984,9 @@ Trace("\n\n-------------------------------\nframe %u generated\n",_Frame.back().
 //------------------------------------------------------------------------------
 
 CommandBufferDX11_t::CommandBufferDX11_t()
-  : text(nullptr)
+  : text(nullptr),
+    context(nullptr),
+    commandList(nullptr)
 {
 }
 
@@ -1048,9 +1125,88 @@ CommandBufferDX11_t::Command( uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3,
 //------------------------------------------------------------------------------
 
 void
+CommandBufferDX11_t::BeginScene( ID3D11DeviceContext* context )
+{
+    if( isFirstInPass )
+    {
+        bool                    clear_color = passCfg.colorBuffer[0].loadAction == LOADACTION_CLEAR;
+        bool                    clear_depth = passCfg.depthStencilBuffer.loadAction == LOADACTION_CLEAR;
+        ID3D11RenderTargetView* rt[1]       = { _D3D11_RenderTargetView };
+
+        if( passCfg.colorBuffer[0].texture != rhi::InvalidHandle )
+        {
+            Size2i  sz = TextureDX11::Size( passCfg.colorBuffer[0].texture );
+                        
+            def_viewport.Width  = float(sz.dx);
+            def_viewport.Height = float(sz.dy);
+
+            TextureDX11::SetRenderTarget( passCfg.colorBuffer[0].texture, passCfg.depthStencilBuffer.texture, _D3D11_ImmediateContext );
+        }
+        else
+        {
+            context->OMSetRenderTargets( 1, rt, _D3D11_DepthStencilView );
+        }
+
+
+        ID3D11RenderTargetView* rt_view[D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT] = { NULL };
+        ID3D11DepthStencilView* ds_view = NULL;
+                    
+        context->OMGetRenderTargets( countof(rt_view), rt_view, &ds_view );
+
+        for( unsigned i=0; i!=countof(rt_view); ++i )
+        {
+            if( rt_view[i] )
+            {
+                if( i == 0 )
+                {
+                    if( passCfg.colorBuffer[0].texture == rhi::InvalidHandle )
+                    {
+                        D3D11_TEXTURE2D_DESC    desc;
+
+                        _D3D11_SwapChainBuffer->GetDesc( &desc );
+
+                        def_viewport.Width  = float(desc.Width);
+                        def_viewport.Height = float(desc.Height);                                
+                    }
+                                                                
+                    context->RSSetViewports( 1, &def_viewport );
+                }
+                            
+                if( clear_color )
+                    context->ClearRenderTargetView( rt_view[i], passCfg.colorBuffer[0].clearColor );
+                            
+                rt_view[i]->Release();
+            }
+        }
+
+        if( ds_view )
+        {
+            if( clear_depth )
+                context->ClearDepthStencilView( ds_view, D3D11_CLEAR_DEPTH, passCfg.depthStencilBuffer.clearDepth, 0 );
+                        
+            ds_view->Release();
+        }
+    }
+
+    context->IASetPrimitiveTopology( cur_topo );
+}
+
+
+//------------------------------------------------------------------------------
+
+void
+CommandBufferDX11_t::EndScene( ID3D11DeviceContext* context )
+{
+}
+
+
+//------------------------------------------------------------------------------
+
+void
 CommandBufferDX11_t::Execute()
 {
 SCOPED_FUNCTION_TIMING();
+/*
     D3D11_PRIMITIVE_TOPOLOGY    cur_topo            = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
     Handle                      cur_ib              = InvalidIndex;
     Handle                      cur_vb              = InvalidIndex;
@@ -1072,6 +1228,15 @@ SCOPED_FUNCTION_TIMING();
     def_viewport.TopLeftY = 0;
     def_viewport.MinDepth = 0.0f;
     def_viewport.MaxDepth = 1.0f;
+*/
+
+#if RHI__DX11_USE_DEFERRED_CONTEXT 
+
+    _D3D11_ImmediateContext->ExecuteCommandList( commandList, TRUE );
+    commandList->Release();
+    commandList = nullptr;
+
+#else
 
     for( std::vector<uint64>::const_iterator c=_cmd.begin(),c_end=_cmd.end(); c!=c_end; ++c )
     {
@@ -1085,68 +1250,7 @@ SCOPED_FUNCTION_TIMING();
         {
             case DX11__BEGIN :
             {
-                if( isFirstInPass )
-                {
-                    bool                    clear_color = passCfg.colorBuffer[0].loadAction == LOADACTION_CLEAR;
-                    bool                    clear_depth = passCfg.depthStencilBuffer.loadAction == LOADACTION_CLEAR;
-                    ID3D11RenderTargetView* rt[1]       = { _D3D11_RenderTargetView };
-
-                    if( passCfg.colorBuffer[0].texture != rhi::InvalidHandle )
-                    {
-                        Size2i  sz = TextureDX11::Size( passCfg.colorBuffer[0].texture );
-                        
-                        def_viewport.Width  = float(sz.dx);
-                        def_viewport.Height = float(sz.dy);
-
-                        TextureDX11::SetRenderTarget( passCfg.colorBuffer[0].texture, passCfg.depthStencilBuffer.texture );
-                    }
-                    else
-                    {
-                        _D3D11_ImmediateContext->OMSetRenderTargets( 1, rt, _D3D11_DepthStencilView );
-                    }
-
-
-                    ID3D11RenderTargetView* rt_view[D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT] = { NULL };
-                    ID3D11DepthStencilView* ds_view = NULL;
-                    
-                    _D3D11_ImmediateContext->OMGetRenderTargets( countof(rt_view), rt_view, &ds_view );
-
-                    for( unsigned i=0; i!=countof(rt_view); ++i )
-                    {
-                        if( rt_view[i] )
-                        {
-                            if( i == 0 )
-                            {
-                                if( passCfg.colorBuffer[0].texture == rhi::InvalidHandle )
-                                {
-                                    D3D11_TEXTURE2D_DESC    desc;
-
-                                    _D3D11_SwapChainBuffer->GetDesc( &desc );
-
-                                    def_viewport.Width  = float(desc.Width);
-                                    def_viewport.Height = float(desc.Height);                                
-                                }
-                                                                
-                                _D3D11_ImmediateContext->RSSetViewports( 1, &def_viewport );
-                            }
-                            
-                            if( clear_color )
-                                _D3D11_ImmediateContext->ClearRenderTargetView( rt_view[i], passCfg.colorBuffer[0].clearColor );
-                            
-                            rt_view[i]->Release();
-                        }
-                    }
-
-                    if( ds_view )
-                    {
-                        if( clear_depth )
-                            _D3D11_ImmediateContext->ClearDepthStencilView( ds_view, D3D11_CLEAR_DEPTH, passCfg.depthStencilBuffer.clearDepth, 0 );
-                        
-                        ds_view->Release();
-                    }
-                }
-
-                _D3D11_ImmediateContext->IASetPrimitiveTopology( cur_topo );
+                BeginScene( _D3D11_ImmediateContext );
             }   break;
             
             case DX11__END :
@@ -1183,7 +1287,7 @@ SCOPED_FUNCTION_TIMING();
                 cur_vb_stride     = (vdecl)  ? vdecl->Stride()  : 0;
 
 
-                PipelineStateDX11::SetToRHI( cur_pipelinestate, vd_uid );
+                PipelineStateDX11::SetToRHI( cur_pipelinestate, vd_uid, _D3D11_ImmediateContext );
 
                 StatSet::IncStat( stat_SET_PS, 1 );
                 c += 2;
@@ -1202,7 +1306,7 @@ SCOPED_FUNCTION_TIMING();
                 Handle      cb   = Handle(arg[1]);
                 const void* inst = (const void*)(arg[2]);
 
-                ConstBufferDX11::SetToRHI( cb, inst );
+                ConstBufferDX11::SetToRHI( cb, inst, _D3D11_ImmediateContext );
                 c += 3;
             }   break;
 
@@ -1212,7 +1316,7 @@ SCOPED_FUNCTION_TIMING();
                 Handle      cb   = Handle(arg[1]);
                 const void* inst = (const void*)(arg[2]);
 
-                ConstBufferDX11::SetToRHI( cb, inst );
+                ConstBufferDX11::SetToRHI( cb, inst, _D3D11_ImmediateContext );
                 c += 3;
             }   break;
             
@@ -1272,7 +1376,7 @@ SCOPED_FUNCTION_TIMING();
             {
                 Handle  ds = Handle(arg[0]);
 
-                DepthStencilStateDX11::SetToRHI( ds );
+                DepthStencilStateDX11::SetToRHI( ds, _D3D11_ImmediateContext );
                 c += 1;
             }   break;
 
@@ -1280,7 +1384,7 @@ SCOPED_FUNCTION_TIMING();
             {
                 Handle  ss = Handle(arg[0]);
 
-                SamplerStateDX11::SetToRHI( ss );
+                SamplerStateDX11::SetToRHI( ss, _D3D11_ImmediateContext );
                 c += 1;
             }   break;
 
@@ -1307,7 +1411,7 @@ SCOPED_FUNCTION_TIMING();
                 Handle      tex    = Handle(arg[0]);
                 unsigned    unit_i = unsigned(arg[1]);
 
-                TextureDX11::SetToRHIFragment( tex, unit_i );
+                TextureDX11::SetToRHIFragment( tex, unit_i, _D3D11_ImmediateContext );
                 c += 2;
             }   break;
 
@@ -1316,7 +1420,7 @@ SCOPED_FUNCTION_TIMING();
                 Handle      tex    = Handle(arg[0]);
                 unsigned    unit_i = unsigned(arg[1]);
 
-                TextureDX11::SetToRHIVertex( tex, unit_i );
+                TextureDX11::SetToRHIVertex( tex, unit_i, _D3D11_ImmediateContext );
                 c += 2;
             }   break;
 
@@ -1338,15 +1442,15 @@ SCOPED_FUNCTION_TIMING();
                     _D3D11_ImmediateContext->RSSetState( cur_rs );
                 }
 
-                VertexBufferDX11::SetToRHI( cur_vb, 0, 0, cur_vb_stride );
+                VertexBufferDX11::SetToRHI( cur_vb, 0, 0, cur_vb_stride, _D3D11_ImmediateContext );
 
                 if( cur_query_i != InvalidIndex )
-                    QueryBufferDX11::BeginQuery( cur_query_buf, cur_query_i );
+                    QueryBufferDX11::BeginQuery( cur_query_buf, cur_query_i, _D3D11_ImmediateContext );
                 
                 _D3D11_ImmediateContext->Draw( vertexCount, baseVertex );
                 
                 if( cur_query_i != InvalidIndex )
-                    QueryBufferDX11::EndQuery( cur_query_buf, cur_query_i );
+                    QueryBufferDX11::EndQuery( cur_query_buf, cur_query_i, _D3D11_ImmediateContext );
 
                 c += 3;
             }   break;
@@ -1370,16 +1474,16 @@ SCOPED_FUNCTION_TIMING();
                     _D3D11_ImmediateContext->RSSetState( cur_rs );
                 }
 
-                IndexBufferDX11::SetToRHI( cur_ib, 0 );
-                VertexBufferDX11::SetToRHI( cur_vb, 0, 0, cur_vb_stride );
+                IndexBufferDX11::SetToRHI( cur_ib, 0, _D3D11_ImmediateContext );
+                VertexBufferDX11::SetToRHI( cur_vb, 0, 0, cur_vb_stride, _D3D11_ImmediateContext );
                 
                 if( cur_query_i != InvalidIndex )
-                    QueryBufferDX11::BeginQuery( cur_query_buf, cur_query_i );
+                    QueryBufferDX11::BeginQuery( cur_query_buf, cur_query_i, _D3D11_ImmediateContext );
                 
                 _D3D11_ImmediateContext->DrawIndexed( indexCount, startIndex, baseVertex );    
 
                 if( cur_query_i != InvalidIndex )
-                    QueryBufferDX11::BeginQuery( cur_query_buf, cur_query_i );
+                    QueryBufferDX11::BeginQuery( cur_query_buf, cur_query_i, _D3D11_ImmediateContext );
                 
                 c += 4;
             }   break;
@@ -1398,6 +1502,7 @@ SCOPED_FUNCTION_TIMING();
     }
 
     _cmd.clear();
+#endif
 }
 
 

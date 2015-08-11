@@ -194,7 +194,7 @@ SetupDispatch( Dispatch* dispatch )
 
 
 void 
-SetToRHI( Handle vbh, unsigned stream_i, unsigned offset, unsigned stride  )
+SetToRHI( Handle vbh, unsigned stream_i, unsigned offset, unsigned stride, ID3D11DeviceContext* context  )
 {
     VertexBufferDX11_t* self         = VertexBufferDX11Pool::Get( vbh );
     ID3D11Buffer*       vb[1]        = { self->_vb11 };
@@ -203,7 +203,7 @@ SetToRHI( Handle vbh, unsigned stream_i, unsigned offset, unsigned stride  )
     
     
     DVASSERT(!self->_mapped);
-    _D3D11_ImmediateContext->IASetVertexBuffers( stream_i, 1, vb, vb_stride, vb_offset );
+    context->IASetVertexBuffers( stream_i, 1, vb, vb_stride, vb_offset );
 }
 
 }

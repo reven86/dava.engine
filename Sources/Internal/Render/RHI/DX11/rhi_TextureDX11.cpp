@@ -363,25 +363,25 @@ SetupDispatch( Dispatch* dispatch )
 
 
 void
-SetToRHIFragment( Handle tex, unsigned unit_i )
+SetToRHIFragment( Handle tex, unsigned unit_i, ID3D11DeviceContext* context )
 {
     TextureDX11_t*  self = TextureDX11Pool::Get( tex );
     
-    _D3D11_ImmediateContext->PSSetShaderResources( unit_i, 1, &(self->tex2d_srv) );
+    context->PSSetShaderResources( unit_i, 1, &(self->tex2d_srv) );
     self->lastUnit = unit_i;
 }
 
 void
-SetToRHIVertex( Handle tex, unsigned unit_i )
+SetToRHIVertex( Handle tex, unsigned unit_i, ID3D11DeviceContext* context )
 {
     TextureDX11_t*  self = TextureDX11Pool::Get( tex );
     
-    _D3D11_ImmediateContext->VSSetShaderResources( unit_i, 1, &(self->tex2d_srv) );
+    context->VSSetShaderResources( unit_i, 1, &(self->tex2d_srv) );
 }
 
 
 void
-SetRenderTarget( Handle color, Handle depthstencil )
+SetRenderTarget( Handle color, Handle depthstencil, ID3D11DeviceContext* context )
 {
     TextureDX11_t*  rt = TextureDX11Pool::Get( color );
     TextureDX11_t*  ds = (depthstencil!=InvalidHandle) ? TextureDX11Pool::Get( depthstencil ) : nullptr;
@@ -390,11 +390,11 @@ SetRenderTarget( Handle color, Handle depthstencil )
     {
         ID3D11ShaderResourceView*   srv[1] = { NULL };
 
-        _D3D11_ImmediateContext->PSSetShaderResources( rt->lastUnit, 1, srv );
+        context->PSSetShaderResources( rt->lastUnit, 1, srv );
         rt->lastUnit = InvalidIndex;
     }
 
-    _D3D11_ImmediateContext->OMSetRenderTargets( 1, &(rt->tex2d_rtv), (ds)?ds->tex2d_dsv:_D3D11_DepthStencilView );
+    context->OMSetRenderTargets( 1, &(rt->tex2d_rtv), (ds)?ds->tex2d_dsv:_D3D11_DepthStencilView );
 }
 
 void
