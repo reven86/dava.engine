@@ -43,6 +43,8 @@
 
 #include "QtTools/DavaGLWidget/davaglwidget.h"
 
+#include "Document.h"
+
 using namespace DAVA;
 
 static const int SCALE_PERCENTAGES[] =
@@ -107,17 +109,17 @@ DavaGLWidget *PreviewWidget::GetDavaGLWidget()
 void PreviewWidget::OnDocumentChanged(Document *arg)
 {
     document = arg;
-    OnSelectedNodesChanged(SelectionList(), SelectionList());
+    OnSelectedNodesChanged(SelectedNodes(), SelectedNodes());
 }
 
-void PreviewWidget::OnSelectedNodesChanged(const SelectionList &selected, const SelectionList &deselected)
+void PreviewWidget::OnSelectedNodesChanged(const SelectedNodes &selected, const SelectedNodes &deselected)
 {
-    selectedNodes.unite(selected);
-    selectedNodes.subtract(deselected);
-    SelectionList rootControls;
+    UniteNodes(selected, selectedNodes);
+    SubstractNodes(deselected, selectedNodes);
+    SelectedNodes rootControls;
     if (document != nullptr)
     {
-        if(selectedNodes.isEmpty())
+        if(selectedNodes.empty())
         {
             PackageControlsNode *controlsNode = document->GetPackage()->GetPackageControlsNode();
             for (int32 index = 0; index < controlsNode->GetCount(); ++index)

@@ -91,8 +91,8 @@ void Document::SelectionWasChanged(const SelectedControls &selected, const Selec
     auto tmpSelected = selectedNodes;
     SelectedNodes selected_(selected.begin(), selected.end());
     SelectedNodes deselected_(deselected.begin(), deselected.end());
-    tmpSelected.insert(selected_.begin(), selected_.end());
-    tmpSelected.erase(deselected_.begin(), deselected_.end());
+    UniteNodes(selected_, tmpSelected);
+    SubstractNodes(deselected_, tmpSelected);
     if (tmpSelected != selectedNodes)
     {
         emit SelectedNodesChanged(selected_, deselected_);
@@ -107,8 +107,8 @@ void Document::RefreshAllControlProperties()
 void Document::OnSelectedNodesChanged(const SelectedNodes &selected, const SelectedNodes &deselected)
 {
     auto tmpSelected = selectedNodes;
-    tmpSelected.insert(selected.begin(), selected.end());
-    tmpSelected.erase(deselected.begin(), deselected.end());
+    UniteNodes(selected, tmpSelected);
+    SubstractNodes(deselected, tmpSelected);
     if (tmpSelected != selectedNodes)
     {
         //!todo: selectionSystem->setselection

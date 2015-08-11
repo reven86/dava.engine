@@ -204,7 +204,7 @@ void PackageWidget::SaveContext()
 
 void PackageWidget::RefreshActions()
 {
-    SelectionList nodes;
+    SelectedNodes nodes;
     QModelIndexList indexes = filteredPackageModel->mapSelectionToSource(treeView->selectionModel()->selection()).indexes();
     for (const QModelIndex &index : indexes)
         nodes.insert(static_cast<PackageBaseNode*>(index.internalPointer()));
@@ -279,8 +279,8 @@ void PackageWidget::OnSelectionChanged(const QItemSelection &proxySelected, cons
         return;
 
     RefreshActions();
-    SelectionList selected;
-    SelectionList deselected;
+    SelectedNodes selected;
+    SelectedNodes deselected;
     
     QItemSelection selectedIndexes = filteredPackageModel->mapSelectionToSource(proxySelected);
     QItemSelection deselectedIndexes = filteredPackageModel->mapSelectionToSource(proxyDeselected);
@@ -396,7 +396,7 @@ void PackageWidget::filterTextChanged(const QString &filterText)
     }
 }
 
-void PackageWidget::OnSelectedNodesChanged(const SelectionList &selected, const SelectionList &deselected)
+void PackageWidget::OnSelectedNodesChanged(const SelectedNodes &selected, const SelectedNodes &deselected)
 {
     for (auto &node : deselected)
     {

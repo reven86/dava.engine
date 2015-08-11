@@ -44,7 +44,7 @@
 #include "ui_PropertiesWidget.h"
 #include "PropertiesModel.h"
 #include "UI/Properties/PropertiesTreeItemDelegate.h"
-
+#include "Document.h"
 #include "UI/Components/UIComponent.h"
 #include "UI/UIControl.h"
 
@@ -83,10 +83,10 @@ void PropertiesWidget::OnDocumentChanged(Document *arg)
     document = arg;
 }
 
-void PropertiesWidget::OnSelectedNodesChanged(const SelectionList &selected, const SelectionList &deselected)
+void PropertiesWidget::OnSelectedNodesChanged(const SelectedNodes &selected, const SelectedNodes &deselected)
 {
-    selectedNodes.unite(selected);
-    selectedNodes.subtract(deselected);
+    UniteNodes(selected, selectedNodes);
+    SubstractNodes(deselected, selectedNodes);
     UpdateSelection();
 }
 

@@ -31,10 +31,25 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define __QUICKED_DEFINES_H__
 
 #include "Base/BaseTypes.h"
+#include <algorithm>
+#include <vector>
+#include <iterator>
 
 class PackageBaseNode;
 
 using SelectedNodes = DAVA::Set < PackageBaseNode* > ;
+
+template <typename T>
+void UniteNodes(const DAVA::Set<T>& from, DAVA::Set<T> &to)
+{
+    to.insert(from.begin(), from.end());
+}
+
+template <typename T>
+void SubstractNodes(const  DAVA::Set<T> &from, DAVA::Set<T> &to)
+{
+    set_difference(to.begin(), to.end(), from.begin(), from.end(), std::inserter(to, to.end()));
+}
 
 Q_DECLARE_METATYPE(SelectedNodes);
 

@@ -32,10 +32,11 @@
 
 #include <QDockWidget>
 #include "ui_PropertiesWidget.h"
-#include "Document.h"
+#include "Defines.h"
 
 class ControlNode;
 class StyleSheetNode;
+class Document;
 
 class PropertiesWidget : public QDockWidget, public Ui::PropertiesWidget
 {
@@ -45,7 +46,7 @@ public:
 
 public slots:
     void OnDocumentChanged(Document *document);
-    void OnSelectedNodesChanged(const SelectionList &selected, const SelectionList &deselected);
+    void OnSelectedNodesChanged(const SelectedNodes &selected, const SelectedNodes &deselected);
 private slots:
     void OnAddComponent(QAction *action);
     void OnRemoveComponent();
@@ -60,7 +61,7 @@ private:
     
 private:
     Document *document = nullptr;
-    SelectionList selectedNodes;
+    SelectedNodes selectedNodes;
     QAction *addComponentAction = nullptr;
     QAction *removeComponentAction = nullptr;
     int selectedComponentType = -1;

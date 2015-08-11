@@ -34,16 +34,14 @@
 #include "UI/QtModelPackageCommandExecutor.h"
 
 #include "Systems/TreeSystem.h"
-#include <QEvent>
-#include <QKeyEvent>
 #include <QApplication>
 #include <QClipboard>
 
+
 TreeSystem::TreeSystem(Document* parent)
-    : QObject(parent)
-    , document(parent)
+    : document(parent)
 {
-    
+
 }
 
 bool TreeSystem::OnInput(DAVA::UIEvent *currentInput)
@@ -52,29 +50,28 @@ bool TreeSystem::OnInput(DAVA::UIEvent *currentInput)
     {
         QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
         if(keyEvent->matches(QKeySequence::Copy))
-        {
-            OnCopy();
-            return true;
-        }
-        if(keyEvent->matches(QKeySequence::Paste))
-        {
-            OnPaste();
-            return true;
-        }
-        if(keyEvent->matches(QKeySequence::Delete))
-        {
-            OnDelete();
-            return true;
-        }
-        if(keyEvent->matches(QKeySequence::Cut))
-        {
-            OnCopy();
-            OnDelete();
-            return true;
-        }
-
+    {
+        OnCopy();
+        return true;
     }
-    return false;*/
+    if(keyEvent->matches(QKeySequence::Paste))
+    {
+        OnPaste();
+        return true;
+    }
+    if(keyEvent->matches(QKeySequence::Delete))
+    {
+        OnDelete();
+        return true;
+    }
+    if(keyEvent->matches(QKeySequence::Cut))
+    {
+        OnCopy();
+        OnDelete();
+        return true;
+    }
+    }*/
+    return false;
 }
 
 void TreeSystem::SelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected)
@@ -86,14 +83,14 @@ void TreeSystem::SelectionWasChanged(const SelectedControls &selected, const Sel
 void TreeSystem::OnCopy()
 {
     DAVA::Vector<ControlNode*> nodesToCopy;
-    for(auto node : selectionList)
+    for (auto node : selectionList)
     {
-        if(node->CanCopy())
+        if (node->CanCopy())
         {
             nodesToCopy.push_back(node);
         }
     }
-    if(nodesToCopy.empty())
+    if (nodesToCopy.empty())
     {
         return;
     }
@@ -105,14 +102,14 @@ void TreeSystem::OnCopy()
 
 void TreeSystem::OnPaste()
 {
-    if(QApplication::clipboard()->text().isEmpty())
+    if (QApplication::clipboard()->text().isEmpty())
     {
         return;
     }
-    for(auto &node : selectionList)
+    for (auto &node : selectionList)
     {
         DVASSERT(nullptr != node);
-        if(!node->IsReadOnly())
+        if (!node->IsReadOnly())
         {
             DAVA::String string = QApplication::clipboard()->text().toStdString();
             document->GetCommandExecutor()->Paste(document->GetPackage(), node, node->GetCount(), string);
@@ -125,7 +122,7 @@ void TreeSystem::OnDelete()
     DAVA::Vector<ControlNode*> nodesToRemove;
     for (auto node : selectionList)
     {
-        if(node->CanRemove())
+        if (node->CanRemove())
         {
             nodesToRemove.push_back(node);
         }

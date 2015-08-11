@@ -32,10 +32,12 @@
 
 #include <QWidget>
 #include <QDockWidget>
-#include "Document.h"
 #include "ui_PackageWidget.h"
+#include "Defines.h"
 
+class Document;
 class ControlNode;
+class PackageNode;
 class FilteredPackageModel;
 class PackageModel;
 class QItemSelection;
@@ -47,10 +49,10 @@ public:
     explicit PackageWidget(QWidget *parent = 0);
     ~PackageWidget() = default;
 signals:
-    void SelectedNodesChanged(const SelectionList &selected, const SelectionList &deselected);
+    void SelectedNodesChanged(const SelectedNodes &selected, const SelectedNodes &deselected);
 public slots:
     void OnDocumentChanged(Document *context);
-    void OnSelectedNodesChanged(const SelectionList &selected, const SelectionList &deselected);
+    void OnSelectedNodesChanged(const SelectedNodes &selected, const SelectedNodes &deselected);
 private:
     void LoadContext();
     void SaveContext();

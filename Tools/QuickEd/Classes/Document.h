@@ -31,6 +31,7 @@
 #define __QUICKED_DOCUMENT_H__
 
 #include <QUndoStack>
+#include <QMap>
 #include "Model/PackageHierarchy/PackageBaseNode.h"
 #include "Systems/Interfaces.h"
 #include "Systems/SelectionSystem.h"

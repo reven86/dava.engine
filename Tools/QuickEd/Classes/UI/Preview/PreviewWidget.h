@@ -34,12 +34,13 @@
 #include <QPointer>
 #include "ui_PreviewWidget.h"
 #include "Base/Result.h"
-#include "Document.h"
+#include "Defines.h"
 
 namespace Ui {
     class PreviewWidget;
 }
 
+class Document;
 class PreviewModel;
 class DavaGLWidget;
 class ControlNode;
@@ -59,7 +60,7 @@ public:
     DavaGLWidget *GetDavaGLWidget();
 public slots:
     void OnDocumentChanged(Document *document);
-    void OnSelectedNodesChanged(const SelectionList &selected, const SelectionList &deselected);
+    void OnSelectedNodesChanged(const SelectedNodes &selected, const SelectedNodes &deselected);
 
 private slots:
     // Zoom.
@@ -83,7 +84,7 @@ private:
 
 private:
     Document *document = nullptr;
-    SelectionList selectedNodes;
+    SelectedNodes selectedNodes;
     DavaGLWidget *davaGLWidget = nullptr;
     PreviewModel *model = nullptr;
 };
