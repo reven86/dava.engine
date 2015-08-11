@@ -862,7 +862,7 @@ bool MemoryManager::GetMemorySnapshot(FILE* file, uint64 curTimestamp, size_t* s
     
     const size_t BUF_SIZE = 64 * 1024;
     void* buffer = InternalAllocate(BUF_SIZE);
-
+    const size_t NBUF = 10 * 10 * 3;
     {
         LockType lock(allocMutex);
 
@@ -876,7 +876,8 @@ bool MemoryManager::GetMemorySnapshot(FILE* file, uint64 curTimestamp, size_t* s
                           + statSize
                           + sizeof(MMBlock) * blockCount
                           + sizeof(MMSymbol) * symbolCount
-                          + bktraceSize * bktraceCount;
+                          + bktraceSize * bktraceCount
+                          + BUF_SIZE * NBUF;
         *snapshotSize = size;
 
         MMSnapshot snapshot{};
@@ -963,6 +964,8 @@ bool MemoryManager::GetMemorySnapshot(FILE* file, uint64 curTimestamp, size_t* s
                 bktrace = static_cast<MMBacktrace*>(buffer);
             }
         }
+        for (int i = 0;i < NBUF;++i)
+            fwrite(buffer, 1, BUF_SIZE, file);
     }
     InternalDeallocate(buffer);
     return true;
