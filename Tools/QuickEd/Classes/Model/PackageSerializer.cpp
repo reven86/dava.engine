@@ -423,13 +423,12 @@ void PackageSerializer::VisitStyleSheetRoot(StyleSheetRootProperty *property)
 {
     PutValue("selector", property->GetSelectorsAsString());
 
+    BeginMap("properties", false);
     if (property->GetPropertiesSection()->GetCount() > 0)
     {
-        BeginMap("properties", false);
         AcceptChildren(property->GetPropertiesSection());
-        EndMap();
     }
-
+    EndMap();
 }
 
 void PackageSerializer::VisitStyleSheetSelectorProperty(StyleSheetSelectorProperty *property)
