@@ -46,12 +46,8 @@ private:
 class PackageCanvas: public DAVA::UIControl
 {
 public:
-    PackageCanvas();
-private:
-    virtual ~PackageCanvas();
-public:
     void LayoutCanvas();
-private:
+
 };
 
 #endif // __UIEditor_EditScreen_h__

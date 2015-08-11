@@ -50,7 +50,6 @@ public:
     virtual ~PreviewModel();
 
     void SetViewControlSize(const QSize &newSize);
-    void SetCanvasControlSize(const QSize &newSize);
     void SetCanvasControlScale(int newScale);
 
     void SetCanvasPosition(const QPoint &newPosition);
@@ -67,9 +66,6 @@ signals:
     void CanvasPositionChanged(const QPoint &canvasPosition);
     void CanvasOrViewChanged(const QSize &viewSize, const QSize &scaledContentSize);
     void CanvasScaleChanged(int canvasScale);
-
-private:
-    CheckeredCanvas *FindControlContainer(DAVA::UIControl *control);
 
 private:
     DAVA::Vector2 canvasPosition;

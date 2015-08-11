@@ -53,25 +53,6 @@ void CheckeredCanvas::Draw( const UIGeometricData &geometricData )
 
 void CheckeredCanvas::DrawAfterChilds( const UIGeometricData &geometricData )
 {
-    // Grid constants.
-    static const float32 scaleTresholdToDrawGrid = 8.0f; // 800%+ as requested.
-
-    if (GetScale().x >= scaleTresholdToDrawGrid)
-    {
-        Color gridColor = EditorSettings::Instance()->GetGrigColor();
-        RenderHelper::Instance()->DrawGrid(geometricData.GetUnrotatedRect(), Vector2(GetScale().x, GetScale().x), gridColor, RenderState::RENDERSTATE_2D_BLEND);
-    }
-}
-
-PackageCanvas::PackageCanvas()
-    : UIControl()
-{
-
-}
-
-PackageCanvas::~PackageCanvas()
-{
-
 }
 
 void PackageCanvas::LayoutCanvas()
