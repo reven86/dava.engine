@@ -38,7 +38,7 @@
 
 using namespace DAVA;
 
-ControlNode::ControlNode(UIControl *control)
+ControlNode::ControlNode(UIControl *control, bool recursively)
     : ControlsContainerNode(nullptr)
     , control(SafeRetain(control))
     , rootProperty(nullptr)
@@ -46,6 +46,18 @@ ControlNode::ControlNode(UIControl *control)
     , creationType(CREATED_FROM_CLASS)
 {
     rootProperty = new RootProperty(this, nullptr, AbstractProperty::CT_COPY);
+    
+    if (recursively)
+    {
+        const List<UIControl*> &children = control->GetChildren();
+        for (UIControl *child : children)
+        {
+            ControlNode *childNode(new ControlNode(child, recursively));
+            childNode->SetParent(this);
+            childNode->SetPackageContext(GetPackageContext());
+            nodes.push_back(childNode);
+        }
+    }
 }
 
 ControlNode::ControlNode(ControlNode *node, eCreationType _creationType)
@@ -98,7 +110,12 @@ ControlNode::~ControlNode()
 
 ControlNode *ControlNode::CreateFromControl(DAVA::UIControl *control)
 {
-    return new ControlNode(control);
+    return new ControlNode(control, false);
+}
+
+ControlNode *ControlNode::CreateFromControlWithChildren(UIControl *control)
+{
+    return new ControlNode(control, true);
 }
 
 ControlNode *ControlNode::CreateFromPrototype(ControlNode *sourceNode)

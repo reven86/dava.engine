@@ -58,27 +58,31 @@ LibraryModel::LibraryModel(PackageNode *_root, QObject *parent)
     , importedPackageRootItem(nullptr)
 {
     root->AddListener(this);
-    QStringList controls;
-    controls
-        << "UIControl"
-        << "UIButton"
-        << "UIStaticText"
-        << "UITextField"
-        << "UISlider"
-        << "UIList"
-        << "UIListCell"
-        << "UIScrollBar"
-        << "UIScrollView"
-        << "UISpinner"
-        << "UISwitch"
-        << "UIParticles";
-    
-    for (QString &controlName : controls)
+    Vector<std::pair<String, bool>> controlDescrs =
     {
-        ScopedPtr<UIControl> control(ObjectFactory::Instance()->New<UIControl>(controlName.toStdString()));
+        {"UIControl", false},
+        {"UIButton", false},
+        {"UIStaticText", false},
+        {"UITextField", false},
+        {"UISlider", true},
+        {"UIList", false},
+        {"UIListCell", false},
+        {"UIScrollBar", true},
+        {"UIScrollView", true},
+        {"UISpinner", true},
+        {"UISwitch", true},
+        {"UIParticles", false}
+    };
+    
+    for (std::pair<String, bool> &descr : controlDescrs)
+    {
+        ScopedPtr<UIControl> control(ObjectFactory::Instance()->New<UIControl>(descr.first));
         if (control)
         {
-            defaultControls.push_back(ControlNode::CreateFromControl(control));
+            if (descr.second)
+                defaultControls.push_back(ControlNode::CreateFromControlWithChildren(control));
+            else
+                defaultControls.push_back(ControlNode::CreateFromControl(control));
         }
         else
         {

@@ -52,12 +52,13 @@ public:
     };
     
 private:
-    ControlNode(DAVA::UIControl *control);
+    ControlNode(DAVA::UIControl *control, bool recursively);
     ControlNode(ControlNode *node, eCreationType creationType);
     virtual ~ControlNode();
 
 public:
     static ControlNode *CreateFromControl(DAVA::UIControl *control);
+    static ControlNode *CreateFromControlWithChildren(DAVA::UIControl *control);
     static ControlNode *CreateFromPrototype(ControlNode *sourceNode);
     static ControlNode *CreateFromPrototypeChild(ControlNode *sourceNode);
 
