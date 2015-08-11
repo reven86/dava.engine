@@ -57,7 +57,7 @@ public:
     
     virtual ~CachedItemValue();
     
-    void AddFile(const FilePath &path);
+    void Add(const String &name, ValueData data);
     
     bool IsEmtpy() const;
     bool IsFetched() const;

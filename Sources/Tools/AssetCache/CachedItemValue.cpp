@@ -80,27 +80,15 @@ CachedItemValue::~CachedItemValue()
     isFetched = false;
 }
     
-void CachedItemValue::AddFile(const FilePath &path)
+void CachedItemValue::Add(const String &name, ValueData data)
 {
-    DVASSERT(dataContainer.count(path.GetFilename()) == 0);
+    DVASSERT(dataContainer.count(name) == 0);
+	DVASSERT(IsDataLoaded(data));
 
-	ValueData data = std::make_shared<Vector<uint8> >();
-    if(isFetched)
-    {
-        data = LoadFile(path);
-        size += data.get()->size();
-    }
-    else
-    {
-        uint32 sz = 0;
-        FileSystem::Instance()->GetFileSize(path, sz);
-        if (sz > 0)
-        {
-            size += sz;
-        }
-    }
+	dataContainer[name] = data;
+	size += data.get()->size();
 
-	dataContainer[path.GetFilename()] = data;
+	isFetched = true;
 }
 
     

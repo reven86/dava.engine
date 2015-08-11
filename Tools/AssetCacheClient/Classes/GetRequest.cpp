@@ -67,10 +67,10 @@ int GetRequest::CheckOptionsInternal() const
 }
 
 
-void GetRequest::OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey &key, DAVA::AssetCache::CachedFiles &&files)
+void GetRequest::OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey &key, DAVA::AssetCache::CachedItemValue &&value)
 {
     requestResult.recieved = true;
-    requestResult.succeed = (files.IsEmtpy() == false);
+    requestResult.succeed = (value.IsEmtpy() == false);
     
     if(requestResult.succeed)
     {
@@ -78,6 +78,6 @@ void GetRequest::OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey &key, 
         folder.MakeDirectoryPathname();
         
         FileSystem::Instance()->CreateDirectory(folder, true);
-        files.Save(folder);
+        value.Export(folder);
     }
 }

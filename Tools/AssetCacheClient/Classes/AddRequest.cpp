@@ -46,17 +46,33 @@ int AddRequest::SendRequest()
     AssetCache::CacheItemKey key;
     AssetCache::StringToKey(options.GetOption("-h").AsString(), key);
 
-    AssetCache::CachedFiles files;
+    AssetCache::CachedItemValue value;
 
-    auto filesCount = options.GetOptionsCount("-f");
-    for(decltype(filesCount) i = 0; i < filesCount; ++i)
+    uint32 filesCount = options.GetOptionsCount("-f");
+	for (uint32 i = 0; i < filesCount; ++i)
     {
-        files.AddFile(options.GetOption("-f", i).AsString());
+		const FilePath path = options.GetOption("-f", i).AsString();
+		ScopedPtr<File> file(File::Create(path, File::OPEN | File::READ));
+		if (file)
+		{
+			std::shared_ptr<Vector<uint8> >  data = std::make_shared<Vector<uint8>>();
+
+			auto dataSize = file->GetSize();
+			data.get()->resize(dataSize);
+
+			auto read = file->Read(data.get()->data(), dataSize);
+			DVVERIFY(read == dataSize);
+
+			value.Add(path.GetFilename(), data);
+		}
+		else
+		{
+			Logger::Error("[AddRequest::%s] Cannot read file(%s)", __FUNCTION__, path.GetStringValue().c_str());
+			return AssetCacheClientConstants::EXIT_READ_FILES;
+		}
     }
     
-    files.LoadFiles();
-    
-    auto requestSent = client.AddToCache(key, files);
+	auto requestSent = client.AddToCache(key, value);
     if (!requestSent)
     {
         Logger::Error("[AddRequest::%s] Cannot send files to server", __FUNCTION__);
