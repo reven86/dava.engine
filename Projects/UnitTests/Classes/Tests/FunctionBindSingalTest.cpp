@@ -326,7 +326,8 @@ DAVA_TESTCLASS(FunctionBindSignalTest)
 
         // track object deletion, while it is tracked by signal
         sgA *a1 = new sgA();
-        sig0.Track(a1, sig0.Connect([&a1]{ a1->AddA(); }));
+        SigConnectionID connID = sig0.Connect([&a1]{ a1->AddA(); });
+        sig0.Track(a1, connID);
         sig0.Connect(a1, &sgA::AddA);
         sig0.Emit();
         delete a1;

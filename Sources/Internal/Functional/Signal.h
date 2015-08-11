@@ -70,27 +70,27 @@ public:
     }
 
     template<typename Fn>
-    SigConnectionID Connect(const Fn& fn, ThreadIDType tid = {}) throw()
+    SigConnectionID Connect(const Fn& fn, ThreadIDType tid = {})
     {
         LockGuard<MutexType> guard(mutex);
         return AddConnection(nullptr, Func(fn), tid);
     }
 
     template<typename Obj>
-    SigConnectionID Connect(Obj *obj, void (Obj::* const& fn)(Args...), ThreadIDType tid = ThreadIDType()) throw()
+    SigConnectionID Connect(Obj *obj, void (Obj::* const& fn)(Args...), ThreadIDType tid = ThreadIDType())
     {
         LockGuard<MutexType> guard(mutex);
         return AddConnection(TrackedObject::Cast(obj), Func(obj, fn), tid);
     }
 
     template<typename Obj>
-    SigConnectionID Connect(Obj *obj, void (Obj::* const& fn)(Args...) const, ThreadIDType tid = ThreadIDType()) throw()
+    SigConnectionID Connect(Obj *obj, void (Obj::* const& fn)(Args...) const, ThreadIDType tid = ThreadIDType())
     {
         LockGuard<MutexType> guard(mutex);
         return AddConnection(TrackedObject::Cast(obj), Func(obj, fn), tid);
     }
 
-    void Disconnect(SigConnectionID id) throw()
+    void Disconnect(SigConnectionID id)
     {
         LockGuard<MutexType> guard(mutex);
 
@@ -107,7 +107,7 @@ public:
         }
     }
 
-    void Disconnect(TrackedObject *obj) throw() override final
+    void Disconnect(TrackedObject *obj) override final
     {
         if (nullptr != obj)
         {
@@ -131,7 +131,7 @@ public:
         }
     }
 
-    void DisconnectAll() throw()
+    void DisconnectAll()
     {
         LockGuard<MutexType> guard(mutex);
 
@@ -147,7 +147,7 @@ public:
         connections.clear();
     }
 
-    void Track(TrackedObject* obj, SigConnectionID id) throw()
+    void Track(SigConnectionID id, TrackedObject* obj)
     {
         LockGuard<MutexType> guard(mutex);
 
@@ -168,12 +168,48 @@ public:
         }
     }
 
+    TrackedObject* GetTracked(SigConnectionID id) const
+    {
+        TrackedObject* ret = nullptr;
+
+        auto it = connections.find(id);
+        if (it != connections.end())
+        {
+            ret = it->second.obj;
+        }
+
+        return ret;
+    }
+
+    void Block(SigConnectionID id, bool block)
+    {
+        auto it = connections.find(id);
+        if (it != connections.end())
+        {
+            it->second.blocked = block;
+        }
+    }
+
+    bool IsBlocked(SigConnectionID id) const
+    {
+        bool ret = false;
+
+        auto it = connections.find(id);
+        if (it != connections.end())
+        {
+            ret = it->second.blocked;
+        }
+
+        return ret;
+    }
+
     virtual void Emit(Args&&...) = 0;
 
 protected:
     struct ConnData
     {
         Func fn;
+        bool blocked;
         TrackedObject* obj;
         ThreadIDType tid;
     };
@@ -181,7 +217,7 @@ protected:
     MutexType mutex;
     Map<SigConnectionID, ConnData> connections;
 
-    SigConnectionID AddConnection(TrackedObject* obj, Func&& fn, const ThreadIDType& tid) throw()
+    SigConnectionID AddConnection(TrackedObject* obj, Func&& fn, const ThreadIDType& tid)
     {
         static Atomic<SigConnectionID> counter = { InvalidSigConnectionID };
 
@@ -220,7 +256,10 @@ public:
     {
         for (auto&& con : Base::connections)
         {
-            con.second.fn(std::forward<Args>(args)...);
+            if (!con.second.blocked)
+            {
+                con.second.fn(std::forward<Args>(args)...);
+            }
         }
     }
 };
@@ -242,18 +281,21 @@ class SignalMt : public Sig11::SignalImpl<Mutex, Thread::Id, Args...>
         LockGuard<Mutex> guard(Base::mutex);
         for (auto&& con : Base::connections)
         {
-            if (con.second.tid == thisTid)
+            if (!con.second.blocked)
             {
-                con.second.fn(std::forward<Args>(args)...);
-            }
-            else
-            {
-                Function<void()> fn = std::bind(con.second.fn, std::forward<Args>(args)...);
+                if (con.second.tid == thisTid)
+                {
+                    con.second.fn(std::forward<Args>(args)...);
+                }
+                else
+                {
+                    Function<void()> fn = std::bind(con.second.fn, std::forward<Args>(args)...);
 
-                // TODO:
-                // add implementation
-                // new to send fn variable directly into thread with given id = con.second.tid
-                // ...
+                    // TODO:
+                    // add implementation
+                    // new to send fn variable directly into thread with given id = con.second.tid
+                    // ...
+                }
             }
         }
     }
