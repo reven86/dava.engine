@@ -106,7 +106,15 @@ Qt::ItemFlags LibraryModel::flags(const QModelIndex &index) const
         return Qt::NoItemFlags;
     }
 
-    return QAbstractItemModel::flags(index) | Qt::ItemIsUserCheckable | Qt::ItemIsDragEnabled;
+    QStandardItem *item = itemFromIndex(index);
+    
+    Qt::ItemFlags result = QAbstractItemModel::flags(index);
+    Vector<ControlNode*> controls;
+    Vector<StyleSheetNode*> styles;
+    PackageBaseNode *node = static_cast<PackageBaseNode*>(item->data(POINTER_DATA).value<void*>());
+    if (node && node->GetControl() != nullptr)
+        result |= Qt::ItemIsDragEnabled;
+    return result;
 }
 
 QStringList LibraryModel::mimeTypes() const
@@ -125,7 +133,8 @@ QMimeData *LibraryModel::mimeData(const QModelIndexList &indexes) const
             
             Vector<ControlNode*> controls;
             Vector<StyleSheetNode*> styles;
-            ControlNode *control = static_cast<ControlNode*>(item->data(POINTER_DATA).value<void*>());
+            PackageBaseNode *node = static_cast<PackageBaseNode*>(item->data(POINTER_DATA).value<void*>());
+            ControlNode *control = node ? dynamic_cast<ControlNode*>(node) : nullptr;
             
             if (control)
             {
