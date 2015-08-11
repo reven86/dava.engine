@@ -105,9 +105,9 @@ void MMNetClient::PacketReceived(const void* packet, size_t length)
             case MMNetProto::TYPE_AUTO_STAT:
                 ProcessAutoReplyStat(header, static_cast<const void*>(header + 1), dataLength);
                 break;
-            //case MMNetProto::TYPE_AUTO_SNAPSHOT:
-            //    ProcessAutoReplySnapshot(header, static_cast<const void*>(header + 1), dataLength);
-            //    break;
+            case MMNetProto::TYPE_AUTO_SNAPSHOT:
+                ProcessAutoReplySnapshot(header, static_cast<const void*>(header + 1), dataLength);
+                break;
             default:
                 break;
         }

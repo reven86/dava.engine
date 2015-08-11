@@ -964,8 +964,6 @@ bool MemoryManager::GetMemorySnapshot(FILE* file, uint64 curTimestamp, size_t* s
                 bktrace = static_cast<MMBacktrace*>(buffer);
             }
         }
-        for (int i = 0;i < NBUF;++i)
-            fwrite(buffer, 1, BUF_SIZE, file);
     }
     InternalDeallocate(buffer);
     return true;
