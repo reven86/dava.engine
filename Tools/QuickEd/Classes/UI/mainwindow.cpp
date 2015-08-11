@@ -72,6 +72,8 @@ MainWindow::MainWindow(QWidget *parent)
     InitRtlBox();
     toolBarPlugins->addSeparator();
     InitGlobalClasses();
+    toolBarPlugins->addSeparator();
+    InitEmulationMode();
 
     tabBar->setElideMode(Qt::ElideNone);
     setWindowTitle(ResourcesManageHelper::GetProjectTitle());
@@ -272,6 +274,22 @@ void MainWindow::InitGlobalClasses()
     wrapper->setLayout(layout);
     toolBarPlugins->addWidget(wrapper);
     connect(classesEdit, &QLineEdit::textChanged, this, &MainWindow::OnGlobalClassesChanged);
+}
+
+void MainWindow::InitEmulationMode()
+{
+    QCheckBox *emulationBox = new QCheckBox();
+    emulationBox->setCheckState(Qt::Unchecked);
+    QLabel *label = new QLabel(tr("Emulation"));
+    label->setBuddy(emulationBox);
+    QHBoxLayout *layout = new QHBoxLayout;
+    layout->setMargin(0);
+    layout->addWidget(label);
+    layout->addWidget(emulationBox);
+    QWidget *wrapper = new QWidget();
+    wrapper->setLayout(layout);
+    toolBarPlugins->addWidget(wrapper);
+    connect(emulationBox, &QCheckBox::stateChanged, this, &MainWindow::OnEmulationModeChanged);
 }
 
 void MainWindow::InitMenu()
@@ -495,6 +513,11 @@ void MainWindow::OnPixelizationStateChanged()
 void MainWindow::OnRtlChanged(int arg)
 {
     emit RtlChanged(arg == Qt::Checked);
+}
+
+void MainWindow::OnEmulationModeChanged(int arg)
+{
+    previewWidget->SetEmulationMode(arg == Qt::Checked);
 }
 
 void MainWindow::OnGlobalClassesChanged(const QString &str)
