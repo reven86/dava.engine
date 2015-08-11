@@ -35,7 +35,6 @@
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
 
 #include <type_traits>
-#include <chrono>
 
 #include "Base/Function.h"
 #include "Concurrency/Spinlock.h"

@@ -181,8 +181,6 @@ DAVA_NOINLINE void* MemoryManager::Allocate(size_t size, uint32 poolIndex)
 {
     assert(ALLOC_POOL_TOTAL < poolIndex && poolIndex < MAX_ALLOC_POOL_COUNT);
 
-    auto start = std::chrono::high_resolution_clock::now();
-
     // On zero-sized allocation request allocate 1 byte to return unique memory block
     size_t totalSize = sizeof(MemoryBlock) + (size != 0 ? size : 1);
     if (totalSize & (BLOCK_ALIGN - 1))
@@ -226,9 +224,6 @@ DAVA_NOINLINE void* MemoryManager::Allocate(size_t size, uint32 poolIndex)
             LockType lock(bktraceMutex);
             InsertBacktrace(backtrace);
         }
-
-        auto end = std::chrono::high_resolution_clock::now();
-        std::chrono::nanoseconds diff = end - start;
         return static_cast<void*>(block + 1);
     }
     return nullptr;
@@ -928,10 +923,11 @@ bool MemoryManager::GetMemorySnapshot(FILE* file, uint64 curTimestamp, size_t* s
             const size_t SYMBOLS_IN_BUF = BUF_SIZE / sizeof(MMSymbol);
             MMSymbol* symbols = static_cast<MMSymbol*>(buffer);
 
-            for (auto i = symbolMap->begin(), e = symbolMap->end();i != e;)
+            size_t symCounter = 0;
+            for (auto i = symbolMap->begin(), e = symbolMap->end();i != e && symCounter < symbolCount;)
             {
                 size_t k = 0;
-                for (;k < SYMBOLS_IN_BUF && i != e;++k, ++i)
+                for (;k < SYMBOLS_IN_BUF && i != e && symCounter < symbolCount;++k, ++i, ++symCounter)
                 {
                     void* addr = i->first;
                     auto& name = i->second;
