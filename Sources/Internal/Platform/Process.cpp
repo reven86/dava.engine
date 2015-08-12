@@ -180,7 +180,8 @@ bool Process::Run(bool showWindow)
         
         // Create the child process.
 
-        String runArgsFlat = executablePath.GetAbsolutePathname();
+        String runArgsFlat = "cmd.exe /c ";
+        runArgsFlat += executablePath.GetAbsolutePathname();
         if(runArgs.size() > 0)
         {
             for(int i = 0; i < (int)runArgs.size(); ++i)
@@ -198,12 +199,9 @@ bool Process::Run(bool showWindow)
         size_t execArgsWLength = 0;
 
         //VI: TODO: UNICODE: Use framework methods to convert to Unicode once it will be ready.
-        ConvertToWideChar(executablePath.GetAbsolutePathname(), &execPathW, &execPathWLength);
         ConvertToWideChar(runArgsFlat, &execArgsW, &execArgsWLength);
 
-        if(execPathW != NULL)
-        {
-            bSuccess = CreateProcess(execPathW,
+            bSuccess = CreateProcess(NULL,
                                  execArgsW,   // command line
                                  NULL,          // process security attributes
                                  NULL,          // primary thread security attributes
@@ -213,13 +211,11 @@ bool Process::Run(bool showWindow)
                                  NULL,          // use parent's current directory
                                  &siStartInfo,  // STARTUPINFO pointer
                                  &piProcInfo);  // receives PROCESS_INFORMATION
-        }
         
-        SafeDeleteArray(execPathW);
         SafeDeleteArray(execArgsW);
 
 #else
-            bSuccess = CreateProcess(executablePath.GetAbsolutePathname().c_str(),
+            bSuccess = CreateProcess(NULL,
                                  runArgsFlat.c_str(),   // command line
                                  NULL,          // process security attributes
                                  NULL,          // primary thread security attributes
