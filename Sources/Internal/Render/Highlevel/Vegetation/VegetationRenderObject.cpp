@@ -41,6 +41,7 @@
 #include "Job/JobManager.h"
 
 #include "Render/Highlevel/Vegetation/VegetationGeometry.h"
+#include "Render/Highlevel/RenderPassNames.h"
 
 namespace DAVA
 {
@@ -839,6 +840,7 @@ void VegetationRenderObject::UpdateVegetationSetup()
     if(IsValidGeometryData())
     {
         CreateRenderData();
+        renderData->GetMaterial()->PreBuildMaterial(PASS_FORWARD);
     }
     
     if(IsValidSpatialData())
@@ -958,8 +960,8 @@ void VegetationRenderObject::CreateRenderData()
     props->SetVector3(VegetationPropertyNames::UNIFORM_PERTURBATION_FORCE.c_str(), perturbationForce);
     props->SetFloat(VegetationPropertyNames::UNIFORM_PERTURBATION_FORCE_DISTANCE.c_str(), maxPerturbationDistance);
     props->SetVector3(VegetationPropertyNames::UNIFORM_PERTURBATION_POINT.c_str(), perturbationPoint);
-    props->SetString(NMaterialTextureName::TEXTURE_ALBEDO.c_str(), albedoTexturePath.GetAbsolutePathname());
-    props->SetString(VegetationPropertyNames::UNIFORM_SAMPLER_VEGETATIONMAP.c_str(), lightmapTexturePath.GetAbsolutePathname());
+    props->SetString(NMaterialTextureName::TEXTURE_ALBEDO.c_str(), albedoTexturePath.GetStringValue());
+    props->SetString(VegetationPropertyNames::UNIFORM_SAMPLER_VEGETATIONMAP.c_str(), lightmapTexturePath.GetStringValue());
     
     vegetationGeometry->OnVegetationPropertiesChanged(renderData->GetMaterial(), props);
     
@@ -1022,7 +1024,7 @@ size_t VegetationRenderObject::SelectDirectionIndex(const Vector3& cameraDirecti
     return index;
 }
 
-void VegetationRenderObject::DebugDrawVisibleNodes()
+void VegetationRenderObject::DebugDrawVisibleNodes(RenderHelper * drawer)
 {
     uint32 requestedBatchCount = static_cast<uint32>(Min(visibleCells.size(), (size_t)maxVisibleQuads));
     for(uint32 i = 0; i < requestedBatchCount; ++i)
@@ -1030,10 +1032,7 @@ void VegetationRenderObject::DebugDrawVisibleNodes()
         AbstractQuadTreeNode<VegetationSpatialData>* treeNode = visibleCells[i];
         uint32 resolutionIndex = MapCellSquareToResolutionIndex(treeNode->data.width * treeNode->data.height);
 
-#if RHI_COMPLETE
-        RenderSystem2D::Instance()->SetColor(RESOLUTION_COLOR[resolutionIndex]);
-        RenderHelper::Instance()->DrawBox(treeNode->data.bbox, 1.0f, RenderState::RENDERSTATE_3D_OPAQUE);
-#endif // RHI_COMPLETE
+        drawer->DrawAABox(treeNode->data.bbox, RESOLUTION_COLOR[resolutionIndex], RenderHelper::DRAW_WIRE_DEPTH);
     }
 }
 

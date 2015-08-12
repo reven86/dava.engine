@@ -39,15 +39,19 @@ TextDrawSystem::TextDrawSystem(DAVA::Scene * scene, SceneCameraSystem *_cameraSy
 	, cameraSystem(_cameraSystem)
 	, font(NULL)
 {
+#if RHI_COMPLETE_EDITOR
 	DAVA::FilePath defPath = DAVA::FilePath("~res:/Fonts/terminus.def");
 	DAVA::FilePath txtPath = DAVA::FilePath("~res:/Gfx/Fonts/terminus.txt");
 
-	font = DAVA::GraphicsFont::Create(defPath, txtPath);
+	font = DAVA::GraphicFont::Create(defPath, txtPath);
+#endif
 }
 
 TextDrawSystem::~TextDrawSystem()
 {
+#if RHI_COMPLETE_EDITOR
 	SafeRelease(font);
+#endif
 }
 
 void TextDrawSystem::Process(float timeElapsed)
@@ -66,10 +70,10 @@ DAVA::Vector2 TextDrawSystem::ToPos2d(const DAVA::Vector3 &pos3d) const
 
 void TextDrawSystem::Draw()
 {
-#if RHI_COMPLETE_EDITOR
+
 	if(listToDraw.size() > 0)
 	{
-
+#if RHI_COMPLETE_EDITOR
 		if(NULL != font)
 		{
             DAVA::RenderSystem2D::Instance()->Setup2DMatrices();
@@ -126,10 +130,10 @@ void TextDrawSystem::Draw()
 				font->DrawString(x, y, wStr);
 			}
 		}
-
+#endif // RHI_COMPLETE_EDITOR
 		listToDraw.clear();
 	}
-#endif RHI_COMPLETE_EDITOR
+
 }
 
 void TextDrawSystem::DrawText(int x, int y, const DAVA::String &text, const DAVA::Color &color, Align align)

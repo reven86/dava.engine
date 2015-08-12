@@ -92,28 +92,28 @@ namespace DAVA
 class Core : public Singleton<Core>
 {
 public:
-	
-	enum eScreenOrientation
-	{
-			SCREEN_ORIENTATION_TEXTURE = -1// uses only for the draw to texture purposes
-		,	SCREEN_ORIENTATION_LANDSCAPE_RIGHT = 0
-		,	SCREEN_ORIENTATION_LANDSCAPE_LEFT
-		,	SCREEN_ORIENTATION_PORTRAIT
-		,	SCREEN_ORIENTATION_PORTRAIT_UPSIDE_DOWN
-        ,   SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE
-        ,   SCREEN_ORIENTATION_PORTRAIT_AUTOROTATE
-	};        
-	
-	Core();
-	virtual ~Core();
-	
-	enum eScreenMode
-	{
-		MODE_UNSUPPORTED = 0,	// for all devices that do not support 
-		MODE_FULLSCREEN, 
-		MODE_WINDOWED,
-	};
-	
+
+    enum eScreenOrientation
+    {
+        SCREEN_ORIENTATION_TEXTURE = -1,     // Use only for texture purpose drawings
+        SCREEN_ORIENTATION_LANDSCAPE_RIGHT = 0,
+        SCREEN_ORIENTATION_LANDSCAPE_LEFT,
+        SCREEN_ORIENTATION_PORTRAIT,
+        SCREEN_ORIENTATION_PORTRAIT_UPSIDE_DOWN,
+        SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE,
+        SCREEN_ORIENTATION_PORTRAIT_AUTOROTATE
+    };
+
+    Core();
+    virtual ~Core();
+
+    enum eScreenMode
+    {
+        MODE_UNSUPPORTED = 0,   // for all devices that do not support 
+        MODE_FULLSCREEN, 
+        MODE_WINDOWED,
+    };
+
     enum eDeviceFamily
     {
         DEVICE_UNKNOWN = -1,
@@ -122,22 +122,22 @@ public:
         DEVICE_DESKTOP
     };
     
-	static int Run(int argc, char *argv[], AppHandle handle = 0);
-	static int RunCmdTool(int argc, char *argv[], AppHandle handle = 0);
+    static int Run(int argc, char *argv[], AppHandle handle = 0);
+    static int RunCmdTool(int argc, char *argv[], AppHandle handle = 0);
 
-	// Should be called in platform initialization before FrameworkDidLaunched
-	void CreateSingletons();
+    // Should be called in platform initialization before FrameworkDidLaunched
+    void CreateSingletons();
     // Should be called after framework did launched to initialize proper render manager
     void CreateRenderer();
     // Should be called after full release
-	void ReleaseSingletons();
+    void ReleaseSingletons();
 
-	const Vector<String> & GetCommandLine(); 
-	bool IsConsoleMode();
-	
+    const Vector<String> & GetCommandLine(); 
+    bool IsConsoleMode();
+
 public:
-	void SetOptions(KeyedArchive * archiveOfOptions);
-	KeyedArchive * GetOptions();
+    void SetOptions(KeyedArchive * archiveOfOptions);
+    KeyedArchive * GetOptions();
 
 	
 	static void SetApplicationCore(ApplicationCore * core);

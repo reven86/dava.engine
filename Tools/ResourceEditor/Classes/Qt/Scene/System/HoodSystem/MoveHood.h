@@ -37,7 +37,7 @@ struct MoveHood : public HoodObject
 	MoveHood();
 	~MoveHood();
 
-	virtual void Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, TextDrawSystem *textDrawSystem);
+	virtual void Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, DAVA::RenderHelper * drawer, TextDrawSystem *textDrawSystem);
 
 	DAVA::Vector3 modifOffset;
 

@@ -29,12 +29,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "TestChainFlowController.h"
 
 TestChainFlowController::TestChainFlowController(bool _showUIReport)
-    :   currentTest(nullptr)
-    ,   currentScreen(nullptr)
+    :   currentScreen(nullptr)
+    ,   currentTest(nullptr)
     ,   currentTestIndex(0)
     ,   showUIReport(_showUIReport)
-    ,   testsFinished(false)
     ,   reportCreated(false)
+    ,   testsFinished(false)
     
 {
 }
@@ -45,6 +45,7 @@ void TestChainFlowController::Init(const Vector<BaseTest*>& _testChain)
     
     currentTestIndex = 0;
     currentTest = testChain[currentTestIndex];
+    currentTest->ShowUI(showUIReport);
     currentScreen = currentTest;
 }
 
@@ -71,6 +72,7 @@ void TestChainFlowController::EndFrame()
         if (!testsFinished)
         {
             currentTest = testChain[currentTestIndex];
+            currentTest->ShowUI(showUIReport);
             currentScreen = currentTest;
         }
     }

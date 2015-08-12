@@ -34,7 +34,7 @@
 
 // framework
 #include "Entity/SceneSystem.h"
-#include "Render/2D/GraphicsFont.h"
+#include "Render/2D/GraphicFont.h"
 
 class TextDrawSystem : public DAVA::SceneSystem
 {
@@ -62,7 +62,7 @@ public:
 	void DrawText(int x, int y, const DAVA::String &text, const DAVA::Color &color, Align align = TopLeft);
 	void DrawText(DAVA::Vector2 pos2d, const DAVA::String &text, const DAVA::Color &color, Align align = TopLeft);
 
-    inline DAVA::GraphicsFont * GetFont() const;
+    inline DAVA::GraphicFont * GetFont() const;
 
 protected:
 	struct TextToDraw
@@ -79,14 +79,14 @@ protected:
 
 	SceneCameraSystem *cameraSystem;
 
-	DAVA::GraphicsFont *font;
+	DAVA::GraphicFont *font;
 	DAVA::List<TextToDraw> listToDraw;
 
 	virtual void Process(DAVA::float32 timeElapsed);
 	void Draw();
 };
 
-inline DAVA::GraphicsFont * TextDrawSystem::GetFont() const
+inline DAVA::GraphicFont * TextDrawSystem::GetFont() const
 {
     return font;
 }

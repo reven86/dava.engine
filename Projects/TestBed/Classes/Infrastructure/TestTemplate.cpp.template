@@ -27,17 +27,24 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
 
-#include "$UNITTEST_CLASSNAME$.h"
+#include "Tests/$UNITTEST_CLASSNAME$.h"
 
 using namespace DAVA;
 
 $UNITTEST_CLASSNAME$::$UNITTEST_CLASSNAME$ ()
-: TestTemplate<$UNITTEST_CLASSNAME$> ("$UNITTEST_CLASSNAME$")
+    : BaseScreen("$UNITTEST_CLASSNAME$")
 {
-    RegisterFunction (this, &$UNITTEST_CLASSNAME$::TestFunc, String ("TestFunc"), nullptr);
 }
 
-void $UNITTEST_CLASSNAME$::TestFunc (PerfFuncData * data)
+void $UNITTEST_CLASSNAME$::LoadResources()
 {
-    TEST_VERIFY (false);
+    BaseScreen::LoadResources();
+    //TODO: Initialize resources here
 }
+
+void $UNITTEST_CLASSNAME$::UnloadResources()
+{
+    BaseScreen::UnloadResources();
+    //TODO: Release resources here
+}
+

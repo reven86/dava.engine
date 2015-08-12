@@ -73,9 +73,6 @@ protected:
 
 	void	ThreadMessage(BaseObject * obj, void * userData, void *callerData);
 	Thread * thread;
-#if !RHI_COMPLETE
-    bool loaded;
-#endif
 
 private:
 	virtual void SetDuration(float32 timeInSeconds);

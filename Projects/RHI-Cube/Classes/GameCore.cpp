@@ -571,8 +571,7 @@ void GameCore::SetupTank()
             int32 vertexStride = GetVertexSize(vertexFormat);
             int32 vertexCount = keyedArchive->GetInt32("vertexCount");
             int32 indexCount = keyedArchive->GetInt32("indexCount");
-            int32 textureCoordCount = keyedArchive->GetInt32("textureCoordCount");
-            ePrimitiveType primitiveType = (ePrimitiveType)keyedArchive->GetInt32("primitiveType");
+            int32 textureCoordCount = keyedArchive->GetInt32("textureCoordCount");            
             int32 cubeTextureCoordCount = keyedArchive->GetInt32("cubeTextureCoordCount");
             if (vertexFormat != (EVF_VERTEX | EVF_NORMAL | EVF_TEXCOORD0))
                 continue; //for now only this format

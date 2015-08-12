@@ -116,7 +116,9 @@ SoundSystem::SoundSystem()
 #ifdef DAVA_FMOD_PROFILE
     initFlags |= FMOD_INIT_ENABLE_PROFILE;
 #endif
+
     FMOD_RESULT initResult = fmodEventSystem->init(MAX_SOUND_VIRTUAL_CHANNELS, initFlags, extraDriverData);
+
     if (initResult != FMOD_OK)
     {
         Logger::Error("Failed to initialize FMOD: %s", FMOD_ErrorString(initResult));
@@ -397,7 +399,7 @@ void SoundSystem::Update(float32 timeElapsed)
 
     if (fmodEventSystem)
     {
-        fmodEventSystem->update();
+        FMOD_VERIFY(fmodEventSystem->update());
     }
     
 	uint32 size = static_cast<uint32>(soundsToReleaseOnUpdate.size());
@@ -495,6 +497,10 @@ void SoundSystem::SetListenerOrientation(const Vector3 & forward, const Vector3 
         forwardNorm.Normalize();
         Vector3 upNorm = forwardNorm.CrossProduct(left);
         upNorm.Normalize();
+        
+        DVASSERT(forwardNorm.SquareLength() > EPSILON);
+        DVASSERT(upNorm.SquareLength() > EPSILON);
+        DVASSERT(left.SquareLength() > EPSILON);
 
         FMOD_VERIFY(fmodEventSystem->set3DListenerAttributes(0, 0, 0, (FMOD_VECTOR*)&forwardNorm, (FMOD_VECTOR*)&upNorm));
     }

@@ -27,7 +27,7 @@
 =====================================================================================*/
 
 
-#include "GameCore.h"
+#include "Infrastructure/GameCore.h"
 
 #include "Platform/DateTime.h"
 #include "TexturePacker/CommandLineParser.h"
@@ -35,6 +35,12 @@
 #include "Infrastructure/TestListScreen.h"
 #include "Tests/NotificationTest.h"
 #include "Tests/UIScrollViewTest.h"
+#include "Tests/SpeedLoadImagesTest.h"
+#include "Tests/MultilineTest.h"
+#include "Tests/StaticTextTest.h"
+#include "Tests/StaticWebViewTest.h"
+#include "Tests/UIMovieTest.h"
+#include "Tests/FontTest.h"
 //$UNITTEST_INCLUDE
 
 void GameCore::RunOnlyThisTest()
@@ -51,6 +57,13 @@ void GameCore::RegisterTests()
 {
     new UIScrollViewTest();
     new NotificationScreen();
+    new SpeedLoadImagesTest();
+    new MultilineTest();
+    new StaticTextTest();
+    new StaticWebViewTest();
+    new UIMovieTest();
+    new FontTest();
+//$UNITTEST_CTOR
 }
 
 #include <fstream>
@@ -125,7 +138,6 @@ void GameCore::OnAppFinished()
 void GameCore::BeginFrame()
 {
     ApplicationCore::BeginFrame();
-    RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
 }
 
 void GameCore::RunTests()

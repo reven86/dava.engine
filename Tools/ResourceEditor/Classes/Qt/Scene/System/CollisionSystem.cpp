@@ -71,7 +71,7 @@ SceneCollisionSystem::SceneCollisionSystem(DAVA::Scene * scene)
 	objectsCollConf = new btDefaultCollisionConfiguration();
 	objectsCollDisp = new btCollisionDispatcher(objectsCollConf);
 	objectsBroadphase = new btAxisSweep3(worldMin,worldMax);
-	objectsDebugDrawer = new SceneCollisionDebugDrawer();
+    objectsDebugDrawer = new SceneCollisionDebugDrawer(scene->GetRenderSystem()->GetDebugDrawer());
 	objectsDebugDrawer->setDebugMode(btIDebugDraw::DBG_DrawWireframe);
 	objectsCollWorld = new btCollisionWorld(objectsCollDisp, objectsBroadphase, objectsCollConf);
 	objectsCollWorld->setDebugDrawer(objectsDebugDrawer);
@@ -79,7 +79,7 @@ SceneCollisionSystem::SceneCollisionSystem(DAVA::Scene * scene)
 	landCollConf = new btDefaultCollisionConfiguration();
 	landCollDisp = new btCollisionDispatcher(landCollConf);
 	landBroadphase = new btAxisSweep3(worldMin,worldMax);
-	landDebugDrawer = new SceneCollisionDebugDrawer();
+    landDebugDrawer = new SceneCollisionDebugDrawer(scene->GetRenderSystem()->GetDebugDrawer());
 	landDebugDrawer->setDebugMode(btIDebugDraw::DBG_DrawWireframe);
 	landCollWorld = new btCollisionWorld(landCollDisp, landBroadphase, landCollConf);
 	landCollWorld->setDebugDrawer(landDebugDrawer);	      
@@ -334,23 +334,21 @@ void SceneCollisionSystem::Input(DAVA::UIEvent *event)
 
 void SceneCollisionSystem::Draw()
 {
-#if RHI_COMPLETE_EDITOR
+    RenderHelper * drawer = GetScene()->GetRenderSystem()->GetDebugDrawer();
+
 	if(drawMode & CS_DRAW_LAND)
 	{
-		DAVA::RenderManager::Instance()->SetColor(DAVA::Color(0, 0.5f, 0, 1.0f));
 		landCollWorld->debugDrawWorld();
 	}
 
 	if(drawMode & CS_DRAW_LAND_RAYTEST)
 	{
-		DAVA::RenderManager::Instance()->SetColor(DAVA::Color(0, 1.0f, 0, 1.0f));
-		DAVA::RenderHelper::Instance()->DrawLine(lastLandRayFrom, lastLandRayTo, 1.0f, renderState);
+        drawer->DrawLine(lastLandRayFrom, lastLandRayTo, DAVA::Color(0, 1.0f, 0, 1.0f));
 	}
 
 	if(drawMode & CS_DRAW_LAND_COLLISION)
 	{
-		DAVA::RenderManager::Instance()->SetColor(DAVA::Color(0, 1.0f, 0, 1.0f));
-		DAVA::RenderHelper::Instance()->DrawPoint(lastLandCollision, 7.0f, renderState);
+        drawer->DrawIcosahedron(lastLandCollision, 0.5f, DAVA::Color(0, 1.0f, 0, 1.0f), RenderHelper::DRAW_SOLID_DEPTH);
 	}
 
 	if(drawMode & CS_DRAW_OBJECTS)
@@ -360,8 +358,7 @@ void SceneCollisionSystem::Draw()
 
 	if(drawMode & CS_DRAW_OBJECTS_RAYTEST)
 	{
-		DAVA::RenderManager::Instance()->SetColor(DAVA::Color(1.0f, 0, 0, 1.0f));
-		DAVA::RenderHelper::Instance()->DrawLine(lastRayFrom, lastRayTo, 1.0f, renderState);
+        drawer->DrawLine(lastRayFrom, lastRayTo, DAVA::Color(1.0f, 0, 0, 1.0f));
 	}
 
 	if(drawMode & CS_DRAW_OBJECTS_SELECTED)
@@ -389,7 +386,6 @@ void SceneCollisionSystem::Draw()
 			}
 		}
 	}
-#endif // RHI_COMPLETE_EDITOR
 }
 
 void SceneCollisionSystem::ProcessCommand(const Command2 *command, bool redo)
@@ -599,8 +595,8 @@ void SceneCollisionSystem::DestroyFromEntity(DAVA::Entity * entity)
 // debug draw
 // -----------------------------------------------------------------------------------------------
 
-SceneCollisionDebugDrawer::SceneCollisionDebugDrawer()
-	: dbgMode(0)	
+SceneCollisionDebugDrawer::SceneCollisionDebugDrawer(RenderHelper * _drawer)
+    : dbgMode(0), drawer(_drawer)
 {    
 }
 
@@ -613,19 +609,14 @@ void SceneCollisionDebugDrawer::drawLine(const btVector3& from, const btVector3&
 	DAVA::Vector3 davaFrom(from.x(), from.y(), from.z());
 	DAVA::Vector3 davaTo(to.x(), to.y(), to.z());
 	DAVA::Color davaColor(color.x(), color.y(), color.z(), 1.0f);
-#if RHI_COMPLETE_EDITOR
-	manager->SetColor(davaColor);
-	helper->DrawLine(davaFrom, davaTo, 1.0f, renderState);
-#endif // RHI_COMPLETE_EDITOR
+
+    drawer->DrawLine(davaFrom, davaTo, davaColor, RenderHelper::DRAW_WIRE_DEPTH);
 }
 
 void SceneCollisionDebugDrawer::drawContactPoint( const btVector3& PointOnB,const btVector3& normalOnB,btScalar distance,int lifeTime,const btVector3& color )
 {
 	DAVA::Color davaColor(color.x(), color.y(), color.z(), 1.0f);
-#if RHI_COMPLETE_EDITOR
-	manager->SetColor(davaColor);
-	helper->DrawPoint(DAVA::Vector3(PointOnB.x(), PointOnB.y(), PointOnB.z()), 1.0f, renderState);
-#endif // RHI_COMPLETE_EDITOR
+    drawer->DrawIcosahedron(DAVA::Vector3(PointOnB.x(), PointOnB.y(), PointOnB.z()), distance / 20.f, davaColor, RenderHelper::DRAW_SOLID_DEPTH);
 }
 
 void SceneCollisionDebugDrawer::reportErrorWarning( const char* warningString )

@@ -6,8 +6,8 @@ if( NOT DISABLE_DEBUG )
 endif  ()
 
 if     ( ANDROID )
-    set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y -Wno-invalid-offsetof" )
-    set( CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -mfloat-abi=softfp -mfpu=neon -Wno-invalid-offsetof -frtti" )    
+    set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y" )
+    set( CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -mfloat-abi=softfp -mfpu=neon -frtti" )    
     set( CMAKE_ECLIPSE_MAKE_ARGUMENTS -j8 )
     
 elseif ( IOS     ) 
@@ -50,10 +50,15 @@ elseif ( WIN32 )
 	    set ( CRT_TYPE_DEBUG "/MTd" )
 		set ( CRT_TYPE_RELEASE "/MT" )
 	endif ()
-	
+    
+    # ignorance of linker warnings
+    set ( CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /IGNORE:4099,4221,4264" )
+    set ( CMAKE_STATIC_LINKER_FLAGS "${CMAKE_STATIC_LINKER_FLAGS} /IGNORE:4099,4221,4264" )
+    set ( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /IGNORE:4099" )
+
     set ( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${CRT_TYPE_DEBUG} ${ADDITIONAL_CXX_FLAGS} /MP /EHsc /Zi /Od" ) 
     set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${CRT_TYPE_RELEASE} ${ADDITIONAL_CXX_FLAGS} /MP /EHsc" ) 
-    set ( CMAKE_EXE_LINKER_FLAGS_RELEASE "/ENTRY:mainCRTStartup /INCREMENTAL:NO" )
+    set ( CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /ENTRY:mainCRTStartup /INCREMENTAL:NO" )
 
     # undef macros min and max defined in windows.h
     add_definitions ( -DNOMINMAX )
@@ -115,13 +120,14 @@ if( WARNINGS_AS_ERRORS )
 -Wno-consumed \
 -Wno-sometimes-uninitialized \
 -Wno-delete-non-virtual-dtor \
--Wno-header-hygiene")
+-Wno-header-hygiene \
+-Wno-old-style-cast \
+-Wno-unknown-warning-option")
 
     if( ANDROID )
         set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${LOCAL_DISABLED_WARNINGS}" ) # warnings as errors
     elseif( APPLE )
         set( LOCAL_DISABLED_WARNINGS "${LOCAL_DISABLED_WARNINGS} \
--Wno-old-style-cast \
 -Wno-cstring-format-directive \
 -Wno-duplicate-enum \
 -Wno-unreachable-code-break \

@@ -35,23 +35,33 @@
 #include "Render/Image/Image.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 
+#include "UI/UI3DView.h"
+#include "Scene3D/Scene.h"
+#include "UI/UIScreenshoter.h"
+
 namespace DAVA
 {
+
+static const int32 PRIORITY_SCREENSHOT_CLEAR_PASS = eDefaultPassPriority::PRIORITY_SERVICE_2D + 3;
+static const int32 PRIORITY_SCREENSHOT_3D_PASS = eDefaultPassPriority::PRIORITY_SERVICE_2D + 2;
+static const int32 PRIORITY_SCREENSHOT_2D_PASS = eDefaultPassPriority::PRIORITY_SERVICE_2D + 1;
+
+
 Sprite * UIScreenTransition::renderTargetPrevScreen = 0;
 Sprite * UIScreenTransition::renderTargetNextScreen = 0;
-
-UniqueHandle UIScreenTransition::alphaClearStateHandle = InvalidUniqueHandle;
 
 UIScreenTransition::UIScreenTransition()
 {
     duration = 0.7f;
     interpolationFunc = Interpolation::GetFunction(Interpolation::EASY_IN_EASY_OUT);
     SetFillBorderOrder(UIScreen::FILL_BORDER_AFTER_DRAW);
-
+    shooter = new UIScreenshoter();
+    shooter->SetRenderPriorities(PRIORITY_SCREENSHOT_CLEAR_PASS, PRIORITY_SCREENSHOT_3D_PASS, PRIORITY_SCREENSHOT_2D_PASS);
 }
 
 UIScreenTransition::~UIScreenTransition()
 {
+    SafeDelete(shooter);
 }
 
 void UIScreenTransition::CreateRenderTargets()
@@ -87,22 +97,14 @@ void UIScreenTransition::StartTransition(UIScreen * _prevScreen, UIScreen * _nex
     nextScreen = _nextScreen;
     prevScreen = _prevScreen;
 
-    if (prevScreen)
-    {
-        Texture * textureTargetPrev = renderTargetPrevScreen->GetTexture();
-        RenderSystem2D::Instance()->BeginRenderTargetPass(textureTargetPrev);
-        prevScreen->SystemDraw(UIControlSystem::Instance()->GetBaseGeometricData());
-        RenderSystem2D::Instance()->EndRenderTargetPass();
-    }
+    shooter->MakeScreenshotWithPreparedTexture(prevScreen, renderTargetPrevScreen->GetTexture());
 
     nextScreen->LoadGroup();
     nextScreen->SystemWillAppear();
+    nextScreen->SystemUpdate(SystemTimer::FrameDelta());
 
-    Texture * textureTargetNext = renderTargetNextScreen->GetTexture();
-    RenderSystem2D::Instance()->BeginRenderTargetPass(textureTargetNext);
-    nextScreen->SystemDraw(UIControlSystem::Instance()->GetBaseGeometricData());
-    RenderSystem2D::Instance()->EndRenderTargetPass();
-
+    shooter->MakeScreenshotWithPreparedTexture(nextScreen, renderTargetNextScreen->GetTexture());
+    
     currentTime = 0;
 }
 
@@ -113,7 +115,6 @@ void UIScreenTransition::Update(float32 timeElapsed)
     if (currentTime >= duration)
     {
         currentTime = duration;
-        UIControlSystem::Instance()->ReplaceScreen(nextScreen);
         
         if (prevScreen)
         {
@@ -126,6 +127,7 @@ void UIScreenTransition::Update(float32 timeElapsed)
             SafeRelease(prevScreen);
         }
         
+        UIControlSystem::Instance()->ReplaceScreen(nextScreen);
         nextScreen->SystemDidAppear();
         if (nextScreen->IsOnScreen())
             nextScreen->SystemWillBecomeVisible();
@@ -167,6 +169,30 @@ void UIScreenTransition::SetDuration(float32 timeInSeconds)
 bool UIScreenTransition::IsLoadingTransition()
 {
     return false;
+}
+
+UI3DView* UIScreenTransition::FindFirst3dView(UIControl* control)
+{
+    List<UIControl*> processControls;
+    processControls.push_back(control);
+    while (!processControls.empty())
+    {
+        auto currentCtrl = processControls.front();
+        processControls.pop_front();
+        
+        UI3DView* current3dView = dynamic_cast<UI3DView*>(currentCtrl);
+        if (nullptr != current3dView)
+        {
+            return current3dView;
+        }
+
+        auto& children = currentCtrl->GetChildren();
+        for (auto child : children)
+        {
+            processControls.push_back(child);
+        }
+    }
+    return nullptr;
 }
 
 };

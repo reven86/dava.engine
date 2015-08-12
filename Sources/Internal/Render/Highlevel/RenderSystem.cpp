@@ -59,6 +59,8 @@ RenderSystem::RenderSystem()
     renderHierarchy = new QuadTree(10);
 	hierarchyInitialized = false;   
 	markedObjects.reserve(100);
+
+    debugDrawer = new RenderHelper();
 }
 
 RenderSystem::~RenderSystem()
@@ -70,6 +72,8 @@ RenderSystem::~RenderSystem()
     
     SafeDelete(renderHierarchy);	
     SafeDelete(mainRenderPass);
+
+    SafeDelete(debugDrawer);
 }
     
 
@@ -129,7 +133,6 @@ void RenderSystem::AddRenderObject(RenderObject * renderObject)
         RenderBatch *batch = renderObject->GetRenderBatch(i);
         RegisterBatch(batch);
     }
-
 }
 
 void RenderSystem::RemoveRenderObject(RenderObject * renderObject)
@@ -174,6 +177,7 @@ void RenderSystem::RegisterMaterial(NMaterial * material)
     
 void RenderSystem::UnregisterMaterial(NMaterial * material)
 {
+    /*
     if (!material) return;
 
     while (material->GetParent() && material->GetParent() != globalMaterial)
@@ -185,6 +189,7 @@ void RenderSystem::UnregisterMaterial(NMaterial * material)
     {
         material->SetParent(nullptr);
     }
+    */
 }
     
 void RenderSystem::SetGlobalMaterial(NMaterial * newGlobalMaterial)

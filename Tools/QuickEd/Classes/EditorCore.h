@@ -33,6 +33,7 @@
 #include <QObject>
 #include "UI/mainwindow.h"
 #include "Project/Project.h"
+#include "Base/BaseTypes.h"
 #include "Base/Singleton.h"
 
 class QAction;
@@ -41,8 +42,6 @@ class DocumentGroup;
 class Project;
 class MainWindow;
 class PackageNode;
-
-class DialogReloadSprites;
 
 class EditorCore : public QObject, public DAVA::Singleton<EditorCore>
 {
@@ -70,6 +69,8 @@ protected slots:
     void OnCurrentTabChanged(int index);
     
     void UpdateLanguage();
+    
+    void OnRtlChanged(bool isRtl);
 
 protected:
     void OpenProject(const QString &path);
@@ -86,8 +87,6 @@ private:
     QList<Document*> documents;
     DocumentGroup *documentGroup;
     MainWindow *mainWindow;
-    
-    DialogReloadSprites *dialogReloadSprites;
 };
 
 inline MainWindow* EditorCore::GetMainWindow() const

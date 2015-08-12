@@ -124,10 +124,10 @@ void CustomColorsProxy::UpdateSpriteFromConfig()
     if (customColors.size())
     {
         Color color = customColors.front();
-        RenderHelper::Instance()->CreateClearPass(customColorsRenderTarget->handle, PRIORITY_CLEAR, color, viewport);
+        RenderHelper::CreateClearPass(customColorsRenderTarget->handle, PRIORITY_CLEAR, color, viewport);
     }
     else
     {
-        RenderHelper::Instance()->CreateClearPass(customColorsRenderTarget->handle, PRIORITY_CLEAR, Color(0.f, 0.f, 0.f, 0.f), viewport);
+        RenderHelper::CreateClearPass(customColorsRenderTarget->handle, PRIORITY_CLEAR, Color(0.f, 0.f, 0.f, 0.f), viewport);
     }
 }

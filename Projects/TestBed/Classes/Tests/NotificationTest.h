@@ -29,7 +29,7 @@
 #ifndef __NOTIFICATION_SCREEN_H__
 #define __NOTIFICATION_SCREEN_H__
 
-#include "BaseScreen.h"
+#include "Infrastructure/BaseScreen.h"
 
 using namespace DAVA;
 
@@ -50,6 +50,7 @@ public:
 
 private:
     void OnNotifyText(BaseObject *obj, void *data, void *callerData);
+    void OnNotifyTextDelayed(BaseObject *obj, void *data, void *callerData);
     void OnHideText(BaseObject *obj, void *data, void *callerData);
     void OnNotifyProgress(BaseObject *obj, void *data, void *callerData);
     void OnHideProgress(BaseObject *obj, void *data, void *callerData);
@@ -59,6 +60,7 @@ private:
 
 private:
     UIButton *showNotificationText;
+    UIButton *showNotificationTextDelayed;
     UIButton *hideNotificationText;
     UIButton *showNotificationProgress;
     UIButton *hideNotificationProgress;

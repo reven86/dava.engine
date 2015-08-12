@@ -85,6 +85,11 @@ const DAVA::FilePath &Document::GetPackageFilePath() const
     return package->GetPath();
 }
 
+void Document::RefreshLayout()
+{
+    package->RefreshLayout();
+}
+
 void Document::RefreshAllControlProperties()
 {
     package->GetPackageControlsNode()->RefreshControlProperties();

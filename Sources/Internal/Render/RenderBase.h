@@ -130,6 +130,13 @@ enum eBlending
     BLENDING_STRONG_MULTIPLICATIVE
 };
 
+enum ImageQuality : uint8
+{
+    MIN_IMAGE_QUALITY = 0,
+    MAX_IMAGE_QUALITY = 100,
+    DEFAULT_IMAGE_QUALITY = MAX_IMAGE_QUALITY
+};
+
 enum ImageFormat : uint8
 {
     IMAGE_FORMAT_PNG = 0,
@@ -137,6 +144,7 @@ enum ImageFormat : uint8
     IMAGE_FORMAT_PVR,
     IMAGE_FORMAT_JPEG,
     IMAGE_FORMAT_TGA,
+    IMAGE_FORMAT_WEBP,
     IMAGE_FORMAT_COUNT,
     IMAGE_FORMAT_UNKNOWN = 127
 };
@@ -222,17 +230,7 @@ extern const String STENCIL_OP_NAMES[STENCILOP_COUNT];
 extern const String FILL_MODE_NAMES[FILLMODE_COUNT];
 
     
-enum ePrimitiveType
-{
-	PRIMITIVETYPE_POINTLIST = 0,
-	PRIMITIVETYPE_LINELIST,
-	PRIMITIVETYPE_LINESTRIP,
-	PRIMITIVETYPE_TRIANGLELIST,
-	PRIMITIVETYPE_TRIANGLESTRIP,
-	PRIMITIVETYPE_TRIANGLEFAN,
 
-	PRIMITIVETYPE_COUNT
-};
 
 enum eDefaultPassPriority
 {
@@ -340,6 +338,20 @@ inline int32 GetVertexSize(int32 flags)
     if (flags & EVF_JOINTWEIGHT) size += 1*sizeof(float32);
 
     return size;
+}
+
+inline uint32 GetPrimitiveCount(uint32 indexCount, rhi::PrimitiveType primitiveType)
+{
+    switch (primitiveType)
+    {
+    case rhi::PRIMITIVE_TRIANGLELIST:
+        return indexCount / 3;
+    case rhi::PRIMITIVE_LINELIST:
+        return indexCount / 2;
+    default:
+        DVASSERT_MSG(false, "Unknown primitive type");
+    }
+    return 0;
 }
 
 uint32 GetVertexLayoutRequiredFormat(const rhi::VertexLayout& layout);

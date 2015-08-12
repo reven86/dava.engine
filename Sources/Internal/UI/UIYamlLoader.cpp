@@ -36,16 +36,17 @@
 #include "FileSystem/YamlEmitter.h"
 #include "FileSystem/YamlParser.h"
 #include "FileSystem/FileSystem.h"
-#include "Render/2D/GraphicsFont.h"
-#include "Render/2D/DFFont.h"
+#include "Render/2D/GraphicFont.h"
 #include "Render/2D/FontManager.h"
 #include "Render/2D/TextBlock.h"
-#include "Utils/Utils.h"
 #include "Render/2D/FTFont.h"
+#include "Utils/Utils.h"
 #include "UI/UIPackage.h"
 #include "UI/DefaultUIPackageBuilder.h"
 #include "UI/UIPackageLoader.h"
 #include "UI/UIControlHelpers.h"
+#include "UI/Layouts/UILayoutSystem.h"
+#include "UI/UIControlSystem.h"
 
 namespace DAVA
 {
@@ -469,7 +470,7 @@ void UIYamlLoader::ProcessLoad(UIControl * rootControl, const FilePath & yamlPat
 	
 	// After the scene is fully loaded, apply the align settings
 	// to position child controls correctly.
-    rootControl->UpdateChildrenLayout();
+    UIControlSystem::Instance()->GetLayoutSystem()->ApplyLayout(rootControl);
     
     PostLoad(rootControl);
     
@@ -551,37 +552,21 @@ Font* UIYamlLoader::CreateFontFromYamlNode(const YamlNode* node)
             return nullptr;
         }
     }
-    else if (type == "GraphicsFont")
-    {
-        const YamlNode * fontNameNode = node->Get("sprite");
-        if (!fontNameNode)
-            return nullptr;
-
-        const YamlNode * definitionNode = node->Get("definition");
-        if (!definitionNode)
-            return nullptr;
-
-        GraphicsFont* graphicsFont = GraphicsFont::Create(definitionNode->AsString(), fontNameNode->AsString());
-        font = graphicsFont;
-
-        if (!font)
-        {
-            return nullptr;
-        }
-
-        const YamlNode * fontHorizontalSpacingNode = node->Get("horizontalSpacing");
-        if (fontHorizontalSpacingNode)
-        {
-            graphicsFont->SetHorizontalSpacing(fontHorizontalSpacingNode->AsInt32());
-        }
-    }
-    else if (type == "DFFont")
+    else if (type == "GraphicFont")
     {
         const YamlNode * fontNameNode = node->Get("name");
         if (!fontNameNode)
+        {
             return nullptr;
+        }
 
-        font = DFFont::Create(fontNameNode->AsString());
+        const YamlNode * texNameNode = node->Get("texture");
+        if (!fontNameNode)
+        {
+            return nullptr;
+        }
+
+        font = GraphicFont::Create(fontNameNode->AsString(), texNameNode->AsString());
         if (!font)
         {
             return nullptr;

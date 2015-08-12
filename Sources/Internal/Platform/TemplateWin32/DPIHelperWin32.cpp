@@ -36,16 +36,16 @@ namespace DAVA
 #if defined(__DAVAENGINE_WIN32__)
 
     uint32 DPIHelper::GetScreenDPI()
-	{
-		HDC screen = GetDC(NULL);
+    {
+        HDC screen = GetDC(NULL);
 
-		// in common dpi is the same in horizontal and vertical demensions
-		// in any case under win this value is 96dpi due to OS limitation
-		uint32 hDPI = GetDeviceCaps(screen, LOGPIXELSX);
-		ReleaseDC(NULL, screen);
+        // in common dpi is the same in horizontal and vertical demensions
+        // in any case under win this value is 96dpi due to OS limitation
+        uint32 hDPI = GetDeviceCaps(screen, LOGPIXELSX);
+        ReleaseDC(NULL, screen);
 
-		return hDPI;
-	}
+        return hDPI;
+    }
 
     float64 DPIHelper::GetDpiScaleFactor(int32 screenId)
     {
@@ -66,6 +66,8 @@ namespace DAVA
 
     uint32 DPIHelper::GetScreenDPI()
     {
+        __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
+
         using namespace Windows::Graphics::Display;
         return uint32(DisplayInformation::GetForCurrentView()->LogicalDpi);
     }
@@ -102,4 +104,4 @@ namespace DAVA
 
 #endif
 
-}
+}   // namespace DAVA

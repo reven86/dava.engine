@@ -145,7 +145,6 @@ void Core::CreateSingletons()
     new FontManager();
     new UIControlSystem();
     new InputSystem();
-    new RenderHelper();
     new PerformanceSettings();
     new VersionInfo();
     new ImageSystem();
@@ -174,7 +173,9 @@ void Core::CreateSingletons()
     
     new LocalNotificationController();
 
+#if !defined (__DAVAENGINE_WIN_UAP__)
     DeviceInfo::InitializeScreenInfo();
+#endif
     
     RegisterDAVAClasses();
 
@@ -211,7 +212,6 @@ void Core::ReleaseSingletons()
     LocalNotificationController::Instance()->Release();
     DownloadManager::Instance()->Release();
     PerformanceSettings::Instance()->Release();
-    RenderHelper::Instance()->Release();
     UIScreenManager::Instance()->Release();
     UIControlSystem::Instance()->Release();
     FontManager::Instance()->Release();
@@ -256,8 +256,10 @@ SafeRelease(options);
         screenScaleFactor = DeviceInfo::GetScreenInfo().scale;
     }
     
-#if !defined(__DAVAENGINE_ANDROID__)
-	//YZ android platform always use SCREEN_ORIENTATION_PORTRAIT and rotate system view and don't rotate GL view  
+#if defined(__DAVAENGINE_WIN_UAP__)
+    screenOrientation = options->GetInt32("orientation", SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE);
+#elif !defined(__DAVAENGINE_ANDROID__) // defined(__DAVAENGINE_WIN_UAP__)
+    //YZ android platform always use SCREEN_ORIENTATION_PORTRAIT and rotate system view and don't rotate GL view  
 	screenOrientation = options->GetInt32("orientation", SCREEN_ORIENTATION_PORTRAIT);
 #endif
 }

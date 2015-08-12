@@ -17,7 +17,7 @@
     #include "_gl.h"
 
     #define USE_RENDER_THREAD               0
-    #define RHI_MAX_PREPARED_FRAME_COUNT    2
+    #define RHI_MAX_PREPARED_FRAME_COUNT    1
 
 
 namespace rhi
@@ -104,6 +104,7 @@ SyncObjectGLES2_t
 {
     uint32  frame;
     uint32  is_signaled:1;
+    uint32  is_used:1;
 };
 
 
@@ -135,9 +136,10 @@ static DAVA::Thread*        _GLES2_RenderThread             = nullptr;
 struct
 FrameGLES2
 {
-    unsigned            number;
-    std::vector<Handle> pass;
-    uint32              readyToExecute:1;
+    unsigned            number;  
+    Handle              sync;
+    std::vector<Handle> pass;        
+    uint32              readyToExecute:1;        
 };
 
 static std::vector<FrameGLES2>  _Frame;
@@ -187,7 +189,7 @@ gles2_RenderPass_Begin( Handle pass )
     _FrameSync.Lock();
 
     if( !_FrameStarted )
-    {
+    {        
         _Frame.push_back( FrameGLES2() );
         _Frame.back().number         = _FrameNumber;
         _Frame.back().readyToExecute = false;
@@ -489,6 +491,7 @@ gles2_SyncObject_Create()
     SyncObjectGLES2_t*  sync   = SyncObjectPool::Get( handle );
 
     sync->is_signaled = false;
+    sync->is_used = false;
 
     return handle;
 }
@@ -816,7 +819,7 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
                 
                 if( isLastInPass )
                 {
-                    glFlush();
+//                    glFlush();
 
                     if (_GLES2_Binded_FrameBuffer != _GLES2_Default_FrameBuffer)
                     {
@@ -1175,6 +1178,14 @@ Trace("rhi-gl.exec-queued-cmd\n");
     {
         do_exit = true;
     }
+    if (_Frame.begin()->sync != InvalidHandle)
+    {
+        SyncObjectGLES2_t*  sync = SyncObjectPool::Get(_Frame.begin()->sync);
+
+        sync->frame = frame_n;
+        sync->is_signaled = false;
+        sync->is_used = true;
+    }
     _FrameSync.Unlock();
 
     if( do_exit )
@@ -1198,6 +1209,7 @@ Trace("\n\n-------------------------------\nexecuting frame %u\n",frame_n);
 
                 sync->frame       = frame_n;
                 sync->is_signaled = false;
+                sync->is_used = true;
             }
 
             CommandBufferPool::Free( cb_h );
@@ -1306,8 +1318,8 @@ Trace("rhi-gl.swap-buffers done\n");
 
     for( SyncObjectPool::Iterator s=SyncObjectPool::Begin(),s_end=SyncObjectPool::End(); s!=s_end; ++s )
     {
-        if( frame_n - s->frame > 3 )
-            s->is_signaled = true;
+        if (s->is_used && (frame_n - s->frame > 3))        
+            s->is_signaled = true;                    
     }
 }
 
@@ -1315,7 +1327,7 @@ Trace("rhi-gl.swap-buffers done\n");
 //------------------------------------------------------------------------------
 
 static void
-gles2_Present()
+gles2_Present(Handle sync)
 {    
 #if USE_RENDER_THREAD
 
@@ -1326,6 +1338,7 @@ Trace("rhi-gl.present\n");
         if( _Frame.size() )
         {
             _Frame.back().readyToExecute = true;
+            _Frame.back().sync = sync;
             _FrameStarted = false;
 Trace("\n\n-------------------------------\nframe %u generated\n",_Frame.back().number);
         }
@@ -1350,6 +1363,7 @@ Trace("\n\n-------------------------------\nframe %u generated\n",_Frame.back().
     if( _Frame.size() )
     {
         _Frame.back().readyToExecute = true;
+        _Frame.back().sync = sync;
         _FrameStarted = false;
     }
 

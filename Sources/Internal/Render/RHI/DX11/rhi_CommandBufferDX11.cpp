@@ -175,6 +175,7 @@ struct
 FrameDX11
 {
     unsigned            number;
+    Handle              sync;
     std::vector<Handle> pass;
     uint32              readyToExecute:1;
 };
@@ -1113,7 +1114,7 @@ UninitializeRenderThreadDX11()
 //------------------------------------------------------------------------------
 
 static void
-dx11_Present()
+dx11_Present(Handle sync)
 {
 #if RHI__USE_DX11_RENDER_THREAD
 

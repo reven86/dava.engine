@@ -82,9 +82,9 @@ Uninitialize()
 }
 
 void
-Present()
+PresentImpl(Handle sync)
 {
-    (*_Impl.impl_Present)();
+    (*_Impl.impl_Present)(sync);
 }
 
 Api

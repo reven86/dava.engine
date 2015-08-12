@@ -71,10 +71,17 @@ protected:
 
     void SetupCameraParams(Camera* mainCamera, Camera* drawCamera, Vector4 *externalClipPlane = NULL);
     void DrawLayers(Camera *camera);
+    void DrawDebug(Camera *camera, RenderSystem * renderSystem);
+
+    void BeginRender();
+    void EndRender();
 
     Vector<RenderLayer*> renderLayers;
     std::array< RenderBatchArray, RenderLayer::RENDER_LAYER_ID_COUNT > layersBatchArrays;
     Vector<RenderObject *> visibilityArray;
+
+    rhi::HPacketList packetList;
+    rhi::HRenderPass renderPass;
 
 public:
     

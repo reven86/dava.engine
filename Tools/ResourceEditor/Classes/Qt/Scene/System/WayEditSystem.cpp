@@ -474,7 +474,6 @@ void WayEditSystem::ProcessCommand(const Command2 *command, bool redo)
 
 void WayEditSystem::Draw()
 {
-#if RHI_COMPLETE_EDITOR
     const EntityGroup & selectionGroup = (currentSelection.Size()) ? currentSelection : prevSelectedWaypoints;
 
     const uint32 count = waypointEntities.size();
@@ -491,8 +490,6 @@ void WayEditSystem::Draw()
         
         DAVA::WaypointComponent* wpComponent = GetWaypointComponent(e);
         DVASSERT(wpComponent);
-
-        RenderManager::SetDynamicParam(PARAM_WORLD, &e->GetWorldTransform(), (pointer_size)&e->GetWorldTransform());
         
         AABBox3 worldBox = selectionSystem->GetSelectionAABox(e);
 
@@ -514,12 +511,9 @@ void WayEditSystem::Draw()
             greenValue = 1.0f;
         }
         
-        DAVA::RenderManager::Instance()->SetColor(DAVA::Color(redValue, greenValue, blueValue, 0.3f));
-        DAVA::RenderHelper::Instance()->FillBox(worldBox, wayDrawState);
-        DAVA::RenderManager::Instance()->SetColor(DAVA::Color(redValue, greenValue, blueValue, 1.0f));
-        DAVA::RenderHelper::Instance()->DrawBox(worldBox, 1.0f, wayDrawState);
+        GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABoxTransformed(worldBox, e->GetWorldTransform(), DAVA::Color(redValue, greenValue, blueValue, 0.3f), RenderHelper::DRAW_SOLID_DEPTH);
+        GetScene()->GetRenderSystem()->GetDebugDrawer()->DrawAABoxTransformed(worldBox, e->GetWorldTransform(), DAVA::Color(redValue, greenValue, blueValue, 1.0f), RenderHelper::DRAW_WIRE_DEPTH);
     }
-#endif RHI_COMPLETE_EDITOR
 }
 
 void WayEditSystem::EnableWayEdit(bool enable)

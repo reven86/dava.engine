@@ -337,9 +337,9 @@ void SceneValidator::ValidateMaterials(DAVA::Scene *scene, Set<String> &errorsLo
             }
         }
 
-#if RHI_COMPLETE //Material Quality Groups
+
         bool qualityGroupIsOk = false;
-        DAVA::FastName materialGroup = (*it)->GetMaterialGroup();
+        DAVA::FastName materialGroup = (*it)->GetQualityGroup();
 
         // if some group is set in material we should check it exists in quality system
         if (materialGroup.IsValid())
@@ -359,7 +359,7 @@ void SceneValidator::ValidateMaterials(DAVA::Scene *scene, Set<String> &errorsLo
                 errorsLog.insert(Format("Material \"%s\" has unknown quality group \"%s\"", (*it)->GetMaterialName().c_str(), materialGroup.c_str()));
             }
         }
-#endif
+
 
         if ((*it)->GetEffectiveFXName().IsValid() && materialTemplates && (*it)->GetEffectiveFXName() != NMaterialName::SHADOW_VOLUME) //ShadowVolume material is non-assignable and it's okey
         {

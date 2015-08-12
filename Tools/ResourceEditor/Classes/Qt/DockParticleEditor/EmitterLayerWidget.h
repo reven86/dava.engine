@@ -74,8 +74,7 @@ signals:
 	
 protected slots:
 	void OnLodsChanged();
-	void OnValueChanged();
-	void OnPresetChanged();
+	void OnValueChanged();	
 	void OnSpriteBtn();
 	void OnSpritePathChanged(const QString& text);
 	
@@ -88,7 +87,7 @@ private:
 	void FillLayerTypes();
 	int32 LayerTypeToIndex(ParticleLayer::eType layerType);
 
-	void FillBlendCombos();
+	
 
 private:
 	ParticleLayer* layer;
@@ -139,11 +138,7 @@ private:
 
 	QLabel *blendOptionsLabel;
 	QLabel *presetLabel;
-	QComboBox *presetComboBox;
-	QLabel *srcFactorLabel;
-	QComboBox *srcFactorComboBox;
-	QLabel *dstFactorLabel;
-	QComboBox *dstFactorComboBox;
+	QComboBox *presetComboBox;	
 	QCheckBox *fogCheckBox;	
 
 	TimeLineWidget* lifeTimeLine;

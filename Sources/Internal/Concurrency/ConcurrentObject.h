@@ -30,8 +30,8 @@
 #ifndef __DAVAENGINE_CONCURRENT_OBJECT_H__
 #define __DAVAENGINE_CONCURRENT_OBJECT_H__
 
-#include "Concurrency/LockGuard.h"
 #include "Concurrency/Mutex.h"
+#include "Concurrency/UniqueLock.h"
 
 namespace DAVA
 {
@@ -61,7 +61,7 @@ public:
 
     private:
         T& objectRef;
-        LockGuard<MutexType> guard;
+        UniqueLock<MutexType> guard;
     };
 
     Accessor GetAccessor() { return Accessor(*this); }

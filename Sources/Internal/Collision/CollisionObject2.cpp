@@ -201,10 +201,8 @@ void CollisionObject2::DebugDraw()
 {
 	if (!basePolygon)return;    
     Color red = Color(1.0f, 0.0f, 0.0f, 1.0f);
-#if RHI_COMPLETE
-    RenderHelper::Instance()->DrawPoint(circle.center, 3, red);
-#endif
-	
+
+    RenderSystem2D::Instance()->DrawCircle(circle.center, 2.f, red);
     RenderSystem2D::Instance()->DrawCircle(circle.center, circle.radius, red);
 
 	if (type == TYPE_POLYGON)
@@ -213,11 +211,8 @@ void CollisionObject2::DebugDraw()
 	}
 	
     Color blue = Color(0.0f, 0.0f, 1.0f, 1.0f);
-	for (int32 k = 0; k < manifold.count; ++k)
-#if RHI_COMPLETE
-        RenderHelper::Instance()->DrawPoint(manifold.contactPoints[k], 3, blue)
-#endif
-        ;
+    for (int32 k = 0; k < manifold.count; ++k)
+        RenderSystem2D::Instance()->DrawCircle(manifold.contactPoints[k], 3.f, blue);
 }
 	
 	

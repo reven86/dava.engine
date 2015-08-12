@@ -11,13 +11,11 @@ DAVA_ROOT := $(DV_PROJECT_ROOT)/../..
 include $(CLEAR_VARS)
 
 # set module name
-LOCAL_MODULE := UnitTestsLib
+LOCAL_MODULE := UnitTests
 
 # set path for includes
 LOCAL_C_INCLUDES := $(LOCAL_PATH)
 LOCAL_C_INCLUDES += $(DV_PROJECT_ROOT)/Classes
-LOCAL_C_INCLUDES += $(DV_PROJECT_ROOT)/Classes/OldTests
-LOCAL_C_INCLUDES += $(DV_PROJECT_ROOT)/Classes/Infrastructure
 LOCAL_C_INCLUDES += $(DAVA_ROOT)/Sources/Tools
 
 # set exported includes
@@ -30,10 +28,9 @@ LOCAL_SRC_FILES := \
 	$(wildcard $(DV_PROJECT_ROOT)/Classes/Infrastructure/*.cpp) \
 	$(wildcard $(DV_PROJECT_ROOT)/Classes/Tests/*.cpp) \
 	$(wildcard $(DAVA_ROOT)/Sources/Tools/TeamcityOutput/*.cpp) \
-	$(wildcard $(DAVA_ROOT)/Sources/Tools/TexturePacker/CommandLineParser.cpp) \
-	$(wildcard $(DAVA_ROOT)/Sources/Internal/Platform/TemplateAndroid/ExternC/*.cpp) )
+	$(wildcard $(DAVA_ROOT)/Sources/Tools/TexturePacker/CommandLineParser.cpp) )
 
-LOCAL_LDLIBS := -lz -lOpenSLES -landroid
+LOCAL_LDLIBS := -lz -lOpenSLES -landroid -latomic
 
 ifeq ($(TARGET_ARCH_ABI), $(filter $(TARGET_ARCH_ABI), armeabi-v7a))
 LOCAL_ARM_NEON := true

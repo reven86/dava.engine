@@ -53,7 +53,8 @@ public:
 	static const FastName TILE_MASK;
 	static const FastName DETAIL_ALPHATEST;
 	static const FastName SHADOW_VOLUME;
-	static const FastName VERTEXCOLOR_ALPHABLEND;
+    static const FastName VERTEXCOLOR_ALPHABLEND;
+    static const FastName VERTEXCOLOR_ALPHABLEND_NODEPTHTEST;
     static const FastName VERTEXCOLOR_ALPHABLEND_TEXTURED;
 	static const FastName DETAIL_OPAQUE;
 	static const FastName SILHOUETTE;
@@ -67,7 +68,8 @@ public:
     static const FastName SPHERICLIT_TEXTURED_ALPHATEST;
     static const FastName SPHERICLIT_TEXTURED_VERTEXCOLOR_OPAQUE;
     static const FastName SPHERICLIT_TEXTURED_VERTEXCOLOR_ALPHATEST;
-	static const FastName VERTEXCOLOR_OPAQUE;
+    static const FastName VERTEXCOLOR_OPAQUE;
+    static const FastName VERTEXCOLOR_OPAQUE_NODEPTHTEST;
 	static const FastName PIXELLIT_OPAQUE;
 	static const FastName TEXTURE_LIGHTMAP_ALPHABLEND;
 	static const FastName VERTEXLIT_ALPHATEST;

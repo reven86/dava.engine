@@ -36,6 +36,7 @@
 #include "Entity/SceneSystem.h"
 #include "Render/Highlevel/IRenderUpdatable.h"
 #include "Render/Highlevel/SpatialTree.h"
+#include "Render/RenderHelper.h"
 
 namespace DAVA
 {
@@ -123,6 +124,8 @@ public:
     
     inline RenderPass* GetMainRenderPass() const;
     
+    inline RenderHelper * GetDebugDrawer() const { return debugDrawer; }
+
 private:
 	void CreateSpatialTree();
     void ProcessClipping();
@@ -149,6 +152,8 @@ private:
     Camera * drawCamera;
 
     NMaterial *globalMaterial;
+
+    RenderHelper * debugDrawer;
 
     friend class RenderPass;
 };

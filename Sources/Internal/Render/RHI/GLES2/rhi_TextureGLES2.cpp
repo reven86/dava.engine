@@ -579,8 +579,7 @@ SetToRHI( Handle tex, unsigned unit_i, uint32 base_i )
     }
 
     if(     _CurSamplerState
-        &&  (self->forceSetSamplerState  ||  memcmp( &(self->samplerState), sampler, sizeof(rhi::SamplerState::Descriptor::Sampler)) )
-        &&  !self->isRenderTarget
+        &&  (self->forceSetSamplerState  ||  memcmp( &(self->samplerState), sampler, sizeof(rhi::SamplerState::Descriptor::Sampler)) )     
         &&  !self->isRenderBuffer
        )
     {

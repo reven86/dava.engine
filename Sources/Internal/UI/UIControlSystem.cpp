@@ -37,8 +37,10 @@
 #include "Debug/Replay.h"
 #include "Debug/Stats.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "UI/Layouts/UILayoutSystem.h"
 #include "Render/Renderer.h"
 #include "Render/RenderHelper.h"
+#include "UI/UIScreenshoter.h"
 
 namespace DAVA 
 {
@@ -50,9 +52,12 @@ UIControlSystem::~UIControlSystem()
 	SafeRelease(currentScreen); 
 	SafeRelease(popupContainer);
     SafeDelete(styleSheetSystem);
+    SafeDelete(layoutSystem);
+    SafeDelete(screenshoter);
 }
 	
 UIControlSystem::UIControlSystem()
+    : layoutSystem(nullptr)
 {
 	screenLockCount = 0;
 	frameSkip = 0;
@@ -82,7 +87,9 @@ UIControlSystem::UIControlSystem()
 
     ui3DViewCount = 0;
 
+    layoutSystem = new UILayoutSystem();
     styleSheetSystem = new UIStyleSheetSystem();
+    screenshoter = new UIScreenshoter();
 }
 	
 void UIControlSystem::SetScreen(UIScreen *_nextScreen, UIScreenTransition * _transition)
@@ -122,6 +129,8 @@ void UIControlSystem::ReplaceScreen(UIScreen *newMainControl)
 	prevScreen = currentScreen;
 	currentScreen = newMainControl;
     NotifyListenersDidSwitch(currentScreen);
+    
+    layoutSystem->SetDirty();
 }
 
 	
@@ -340,7 +349,7 @@ void UIControlSystem::Draw()
     viewport.x = viewport.y = 0U;
     viewport.width = (uint32)Renderer::GetFramebufferWidth();
     viewport.height = (uint32)Renderer::GetFramebufferHeight();
-    RenderHelper::Instance()->CreateClearPass(rhi::HTexture(), PRIORITY_CLEAR, Color(.4f, .4f, .4f, 1.f), viewport);
+    RenderHelper::CreateClearPass(rhi::HTexture(), PRIORITY_CLEAR, Color(.3f, .3f, .3f, 1.f), viewport);
 
 	if (currentScreen)
 	{
@@ -356,6 +365,8 @@ void UIControlSystem::Draw()
     //Logger::Info("UIControlSystem::draws: %d", drawCounter);
 
     FrameOcclusionQueryManager::Instance()->EndQuery(FRAME_QUERY_UI_DRAW);
+
+    GetScreenshoter()->OnFrame();
 }
 	
 void UIControlSystem::SwitchInputToControl(int32 eventID, UIControl *targetControl)
@@ -683,6 +694,7 @@ UIControl *UIControlSystem::GetExclusiveInputLocker()
 void UIControlSystem::ScreenSizeChanged()
 {
     popupContainer->SystemScreenSizeDidChanged(VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect());
+    layoutSystem->SetDirty();
 }
 
 void UIControlSystem::SetHoveredControl(UIControl *newHovered)
@@ -830,9 +842,29 @@ void UIControlSystem::UI3DViewRemoved()
     ui3DViewCount--;
 }
 
-UIStyleSheetSystem* UIControlSystem::GetStyleSheetSystem()
+bool UIControlSystem::IsRtl() const
+{
+    return layoutSystem->IsRtl();
+}
+
+void UIControlSystem::SetRtl(bool rtl)
+{
+    layoutSystem->SetRtl(rtl);
+}
+
+UILayoutSystem *UIControlSystem::GetLayoutSystem() const
+{
+    return layoutSystem;
+}
+
+UIStyleSheetSystem* UIControlSystem::GetStyleSheetSystem() const
 {
     return styleSheetSystem;
+}
+
+UIScreenshoter* UIControlSystem::GetScreenshoter()
+{
+    return screenshoter;
 }
 
 };

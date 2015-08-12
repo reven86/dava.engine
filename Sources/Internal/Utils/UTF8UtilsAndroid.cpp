@@ -69,6 +69,11 @@ void UTF8Utils::EncodeToWideString(const uint8 * string, size_t size, WideString
 
 String UTF8Utils::EncodeToUTF8(const WideString& wstring)
 {
+    return EncodeToUTF8(wstring.c_str());
+}
+
+String UTF8Utils::EncodeToUTF8(const wchar_t* wstring)
+{
 	String resultString = "";
 
 	iconv_t cd = iconv_open("UTF-8", "UTF-32LE");
