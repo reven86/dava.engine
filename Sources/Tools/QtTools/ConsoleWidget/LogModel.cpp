@@ -12,16 +12,26 @@ LogModel::LogModel(QObject* parent)
     : QAbstractListModel(parent)
 {
     createIcons();
+    func = [](const DAVA::String &str)
+    {
+        return str;
+    };
     qRegisterMetaType<DAVA::Logger::eLogLevel>("DAVA::Logger::eLogLevel");
     DAVA::Logger::AddCustomOutput(this);
     timer = new QTimer(this);
-    timer->setInterval(1);
-    connect(timer, &QTimer::timeout, this, &LogModel::OnTimeout, Qt::QueuedConnection);
+    timer->setSingleShot(true);
+    timer->setInterval(0);
+    connect(timer, &QTimer::timeout, this, &LogModel::OnTimeout);
 }
 
 LogModel::~LogModel()
 {
     DAVA::Logger::RemoveCustomOutput(this);
+}
+
+void LogModel::SetConvertFunction(ConvertFunc func_)
+{
+    func = func_;
 }
 
 void LogModel::Output(DAVA::Logger::eLogLevel ll, const DAVA::char8* text)
@@ -47,6 +57,8 @@ QVariant LogModel::data(const QModelIndex &index, int role) const
 
     case LEVEL_ROLE:
         return item.ll;
+    case INTERNAL_DATA_ROLE:
+        return item.data;
     default:
         return QVariant();
     }
@@ -54,32 +66,41 @@ QVariant LogModel::data(const QModelIndex &index, int role) const
 
 int LogModel::rowCount(const QModelIndex &parent) const
 {
-    QMutexLocker locker(&mutex);
-    return items.size();
+    return registerCount;
 }
 
 void LogModel::AddMessage(DAVA::Logger::eLogLevel ll, const QString& text)
 {
     {
         QMutexLocker locker(&mutex);
-        items.append(LogItem(ll, normalize(text)));
+        items.append(LogItem(ll,
+            QString::fromStdString(func(text.toStdString())),
+            text));
     }
-    timer->start();
+    QMetaObject::invokeMethod(timer, "start", Qt::QueuedConnection);
+}
+
+void LogModel::Clear()
+{
+    beginRemoveRows(QModelIndex(), 0, rowCount() - 1);
+    registerCount = 0;
+    items.clear();
+    endRemoveRows();
 }
 
 void LogModel::OnTimeout()
 {
-    if (rowCount() != registerCount)
+    int newSize;
     {
-        emit beginInsertRows(QModelIndex(), registerCount, rowCount() - 1);
-        registerCount = rowCount();
+        QMutexLocker locker(&mutex);
+        newSize = items.size();
+    }
+    if (newSize != registerCount)
+    {
+        emit beginInsertRows(QModelIndex(), registerCount, newSize - 1);
+        registerCount = newSize;
         emit endInsertRows();
     }
-}
-
-QString LogModel::normalize(const QString& text) const
-{
-    return text.split('\n', QString::SkipEmptyParts).join("\n");
 }
 
 void LogModel::createIcons()
@@ -138,8 +159,8 @@ const QPixmap &LogModel::GetIcon(int ll) const
     return icons.at(ll);
 }
 
-LogModel::LogItem::LogItem(DAVA::Logger::eLogLevel ll_, const QString& text_)
-    : ll(ll_), text(text_)
+LogModel::LogItem::LogItem(DAVA::Logger::eLogLevel ll_, const QString& text_, const QString &data_)
+    : ll(ll_), text(text_), data(data_)
 {
-    //TODO: add here extraction of data from text
+    text = text.split('\n', QString::SkipEmptyParts).join("\n");
 }
