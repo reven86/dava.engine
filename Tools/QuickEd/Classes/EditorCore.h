@@ -42,6 +42,10 @@ class DocumentGroup;
 class Project;
 class MainWindow;
 class PackageNode;
+namespace DAVA
+{
+    class UIControl;
+}
 
 class EditorCore : public QObject, public DAVA::Singleton<EditorCore>
 {
@@ -49,10 +53,12 @@ class EditorCore : public QObject, public DAVA::Singleton<EditorCore>
 public:
     explicit EditorCore(QObject *parent = nullptr);
     ~EditorCore();
+    void CreateRootControl();
     void Start();
 
     MainWindow *GetMainWindow() const;
     Project *GetProject() const;
+    DAVA::UIControl *GetRootControl() const;
 
 protected slots:
     void OnCleanChanged(bool clean);
@@ -83,10 +89,11 @@ private:
     void CloseDocument(int index);
     int GetIndexByPackagePath(const QString &fileName) const;
     ///Return: pointer to currentDocument if exists, nullptr if not
-    Project *project;
+    Project *project = nullptr;
     QList<Document*> documents;
-    DocumentGroup *documentGroup;
-    MainWindow *mainWindow;
+    DocumentGroup *documentGroup = nullptr;
+    MainWindow *mainWindow = nullptr;
+    DAVA::UIControl *rootControl = nullptr;
 };
 
 inline MainWindow* EditorCore::GetMainWindow() const

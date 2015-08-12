@@ -31,6 +31,7 @@
 #define __UIEditor_EditScreen_h__
 
 #include "DAVAEngine.h"
+/*
 
 class CheckeredCanvas: public DAVA::UIControl
 {
@@ -49,5 +50,5 @@ public:
     void LayoutCanvas();
 
 };
-
+*/
 #endif // __UIEditor_EditScreen_h__

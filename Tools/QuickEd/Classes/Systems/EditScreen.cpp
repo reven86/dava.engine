@@ -27,59 +27,57 @@
 =====================================================================================*/
 
 
-#ifndef __QUICKED_PREVIEW_MODEL_H__
-#define __QUICKED_PREVIEW_MODEL_H__
+#include "EditScreen.h"
+#include "EditorSettings.h"
 
-#include <QObject>
-#include <QPoint>
-#include <QSize>
-#include "DAVAEngine.h"
+using namespace DAVA;
+/*
 
-#include "Base/Result.h"
-#include "Defines.h"
-
-class PackageCanvas;
-class PackageBaseNode;
-class CheckeredCanvas;
-
-class PreviewModel : public QObject
+CheckeredCanvas::CheckeredCanvas()
+: UIControl()
 {
-    Q_OBJECT
-public:
-    PreviewModel(QObject *parent);
-    virtual ~PreviewModel();
-
-    void SetViewControlSize(const QSize &newSize);
-    void SetCanvasControlScale(int newScale);
-
-    void SetCanvasPosition(const QPoint &newPosition);
-    QPoint GetCanvasPosition() const;
-    int GetCanvasScale() const;
-
-    QSize GetScaledCanvasSize() const;
-    QSize GetViewSize() const;
-    DAVA::UIControl *GetViewControl() const;
-
-    void SetRootControls(const SelectedNodes &activatedControls);
-
-signals:
-    void CanvasPositionChanged(const QPoint &canvasPosition);
-    void CanvasOrViewChanged(const QSize &viewSize, const QSize &scaledContentSize);
-    void CanvasScaleChanged(int canvasScale);
-
-private:
-    DAVA::Vector2 canvasPosition;
-
-    PackageCanvas *canvas;
-    DAVA::UIControl *view;
-
-    DAVA::Map<DAVA::UIControl*, PackageBaseNode*> rootNodes;
-};
-
-inline DAVA::UIControl *PreviewModel::GetViewControl() const 
-{
-    return view;
+    GetBackground()->SetSprite("~res:/Gfx/CheckeredBg", 0);
+    GetBackground()->SetDrawType(UIControlBackground::DRAW_TILED);
+    GetBackground()->SetShader(SafeRetain(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR));
 }
 
+void CheckeredCanvas::Draw( const UIGeometricData &geometricData )
+{
+    float32 invScale = 1.0f / geometricData.scale.x;
+    UIGeometricData unscaledGd;
+    unscaledGd.scale = Vector2(invScale, invScale);
+    unscaledGd.size = geometricData.size * geometricData.scale.x;
+    unscaledGd.AddGeometricData(geometricData);
+    GetBackground()->Draw(unscaledGd);
+}
 
-#endif // __QUICKED_PREVIEW_MODEL_H__
+void CheckeredCanvas::DrawAfterChilds( const UIGeometricData &geometricData )
+{
+}
+
+void PackageCanvas::LayoutCanvas()
+{
+    float32 maxWidth = 0.0f;
+    float32 totalHeight = 0.0f;
+    for (List< UIControl* >::const_iterator iter = childs.begin(); iter != childs.end(); ++iter)
+    {
+        maxWidth = Max(maxWidth, (*iter)->GetSize().x);
+        totalHeight += (*iter)->GetSize().y;
+    }
+
+    SetSize(Vector2(maxWidth, totalHeight));
+
+    float32 curY = 0.0f;
+    for (List< UIControl* >::const_iterator iter = childs.begin(); iter != childs.end(); ++iter)
+    {
+        UIControl* control = *iter;
+
+        Rect rect = control->GetRect();
+        rect.y = curY;
+        rect.x = (maxWidth - rect.dx)/2.0f;
+        control->SetRect(rect);
+
+        curY += rect.dy + 5;
+    }
+}
+*/

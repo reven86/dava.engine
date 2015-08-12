@@ -26,3 +26,28 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
+#ifndef __UIEditor_EditScreen_h__
+#define __UIEditor_EditScreen_h__
+
+#include "DAVAEngine.h"
+/*
+class CheckeredCanvas: public DAVA::UIControl
+{
+public:
+    CheckeredCanvas();
+private:
+    ~CheckeredCanvas() override = default;
+    
+    void Draw(const DAVA::UIGeometricData &geometricData) override;
+    void DrawAfterChilds(const DAVA::UIGeometricData &geometricData) override;    
+};
+
+class PackageCanvas: public DAVA::UIControl
+{
+public:
+    void LayoutCanvas();
+
+};
+*/
+#endif // __UIEditor_EditScreen_h__

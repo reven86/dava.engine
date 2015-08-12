@@ -27,57 +27,45 @@
 =====================================================================================*/
 
 
-#include "EditScreen.h"
-#include "EditorSettings.h"
+#ifndef __QUICKED_PREVIEW_SCROLL_AREA_CONTROLLER_H__
+#define __QUICKED_PREVIEW_SCROLL_AREA_CONTROLLER_H__
 
-using namespace DAVA;
-/*
+#include <QObject>
+#include <QPoint>
+#include <QSize>
 
-CheckeredCanvas::CheckeredCanvas()
-: UIControl()
-{
-    GetBackground()->SetSprite("~res:/Gfx/CheckeredBg", 0);
-    GetBackground()->SetDrawType(UIControlBackground::DRAW_TILED);
-    GetBackground()->SetShader(SafeRetain(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR));
+namespace DAVA{
+    class UIControl;
 }
 
-void CheckeredCanvas::Draw( const UIGeometricData &geometricData )
+class ScrollAreaController : public QObject
 {
-    float32 invScale = 1.0f / geometricData.scale.x;
-    UIGeometricData unscaledGd;
-    unscaledGd.scale = Vector2(invScale, invScale);
-    unscaledGd.size = geometricData.size * geometricData.scale.x;
-    unscaledGd.AddGeometricData(geometricData);
-    GetBackground()->Draw(unscaledGd);
-}
+    Q_OBJECT
+public:
+    Q_PROPERTY(QSize size READ GetSize WRITE SetSize NOTIFY SizeChanged);
+    Q_PROPERTY(int scale READ GetScale WRITE SetScale NOTIFY ScaleChanged);
+    Q_PROPERTY(QPoint position READ GetPosition WRITE SetPosition NOTIFY PositionChanged);
 
-void CheckeredCanvas::DrawAfterChilds( const UIGeometricData &geometricData )
-{
-}
+    ScrollAreaController(QObject *parent = nullptr);
+    ~ScrollAreaController() = default;
 
-void PackageCanvas::LayoutCanvas()
-{
-    float32 maxWidth = 0.0f;
-    float32 totalHeight = 0.0f;
-    for (List< UIControl* >::const_iterator iter = childs.begin(); iter != childs.end(); ++iter)
-    {
-        maxWidth = Max(maxWidth, (*iter)->GetSize().x);
-        totalHeight += (*iter)->GetSize().y;
-    }
+    QSize GetSize() const;
+    int GetScale() const;
+    QPoint GetPosition() const;
 
-    SetSize(Vector2(maxWidth, totalHeight));
+public slots:
+    void SetSize(const QSize &size);
+    void SetScale(int scale);
+    void SetPosition(const QPoint &position);
+signals:
+    void SizeChanged(const QSize &size);
+    void ScaleChanged(int scale);
+    void PositionChanged(const QPoint &position);
+private:
+    static DAVA::UIControl *Root();
+    QSize size = QSize(0, 0);
+    int scale = 0;
+    QPoint position = QPoint(0, 0);
+};
 
-    float32 curY = 0.0f;
-    for (List< UIControl* >::const_iterator iter = childs.begin(); iter != childs.end(); ++iter)
-    {
-        UIControl* control = *iter;
-
-        Rect rect = control->GetRect();
-        rect.y = curY;
-        rect.x = (maxWidth - rect.dx)/2.0f;
-        control->SetRect(rect);
-
-        curY += rect.dy + 5;
-    }
-}
-*/
+#endif // __QUICKED_PREVIEW_SCROLL_AREA_CONTROLLER_H__

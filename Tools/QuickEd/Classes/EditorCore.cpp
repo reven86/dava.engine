@@ -79,7 +79,6 @@ EditorCore::EditorCore(QObject *parent)
     connect(mainWindow->packageWidget, &PackageWidget::SelectedNodesChanged, documentGroup, &DocumentGroup::OnSelectedNodesChanged);
 
     connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->previewWidget, &PreviewWidget::OnDocumentChanged);
-    connect(documentGroup, &DocumentGroup::SelectedNodesChanged, mainWindow->previewWidget, &PreviewWidget::OnSelectedNodesChanged);
     
     connect(project->GetEditorLocalizationSystem(), &EditorLocalizationSystem::LocaleChanged, this, &EditorCore::UpdateLanguage);
 
@@ -91,9 +90,33 @@ EditorCore::~EditorCore()
     delete mainWindow;
 }
 
+void EditorCore::CreateRootControl()
+{
+    DVASSERT(nullptr == rootControl);
+    if (nullptr != rootControl)
+    {
+        return;
+    }
+    rootControl = new UIControl();
+
+    ScopedPtr<UIScreen> davaUIScreen(new UIScreen());
+    davaUIScreen->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
+    davaUIScreen->GetBackground()->SetColor(Color(0.3f, 0.3f, 0.3f, 1.0f));
+    UIScreenManager::Instance()->RegisterScreen(EDIT_SCREEN, davaUIScreen);
+    UIScreenManager::Instance()->SetFirst(EDIT_SCREEN);
+    UIScreenManager::Instance()->GetScreen()->AddControl(rootControl);
+}
+
 void EditorCore::Start()
 {
+    CreateRootControl();
     mainWindow->show();
+}
+
+UIControl* EditorCore::GetRootControl() const
+{
+    DVASSERT(nullptr != rootControl);
+    return rootControl;
 }
 
 void EditorCore::OnCleanChanged(bool clean)
@@ -115,7 +138,7 @@ void EditorCore::OnOpenPackageFile(const QString &path)
         int index = GetIndexByPackagePath(path);
         if (index == -1)
         {
-            DAVA::RefPtr<PackageNode> package = project->OpenPackage(path);
+            RefPtr<PackageNode> package = project->OpenPackage(path);
             if (nullptr != package)
             {
                 index = CreateDocument(package.Get());
@@ -342,7 +365,7 @@ void EditorCore::SaveDocument(Document *document)
 int EditorCore::GetIndexByPackagePath(const QString &fileName) const
 {
     QString canonicalFilePath = QFileInfo(fileName).canonicalFilePath();
-    DAVA::FilePath davaPath(canonicalFilePath.toStdString());
+    FilePath davaPath(canonicalFilePath.toStdString());
 
     for (int index = 0; index < documents.size(); ++index)
     {
@@ -368,17 +391,17 @@ bool EditorCore::eventFilter( QObject *obj, QEvent *event )
             {
             case Qt::ApplicationInactive:
             {
-                if ( DAVA::QtLayer::Instance() )
+                if ( QtLayer::Instance() )
                 {
-                    DAVA::QtLayer::Instance()->OnSuspend();
+                    QtLayer::Instance()->OnSuspend();
                 }
                 break;
             }
             case Qt::ApplicationActive:
             {
-                if ( DAVA::QtLayer::Instance() )
+                if ( QtLayer::Instance() )
                 {
-                    DAVA::QtLayer::Instance()->OnResume();
+                    QtLayer::Instance()->OnResume();
                 }
                 break;
             }

@@ -27,57 +27,24 @@
 =====================================================================================*/
 
 
-#include "EditScreen.h"
-#include "EditorSettings.h"
+#ifndef __UIEditor_EditScreen_h__
+#define __UIEditor_EditScreen_h__
 
-using namespace DAVA;
-/*
+#include "UI/UIControl.h"
+#include "Interfaces.h"
+#include "Defines.h"
 
-CheckeredCanvas::CheckeredCanvas()
-: UIControl()
+class Document;
+
+class CanvasSystem : public SelectionInterface
 {
-    GetBackground()->SetSprite("~res:/Gfx/CheckeredBg", 0);
-    GetBackground()->SetDrawType(UIControlBackground::DRAW_TILED);
-    GetBackground()->SetShader(SafeRetain(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR));
-}
+    CanvasSystem(Document *parent);
+    ~CanvasSystem() = default;
 
-void CheckeredCanvas::Draw( const UIGeometricData &geometricData )
-{
-    float32 invScale = 1.0f / geometricData.scale.x;
-    UIGeometricData unscaledGd;
-    unscaledGd.scale = Vector2(invScale, invScale);
-    unscaledGd.size = geometricData.size * geometricData.scale.x;
-    unscaledGd.AddGeometricData(geometricData);
-    GetBackground()->Draw(unscaledGd);
-}
+    void SelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected) override;
 
-void CheckeredCanvas::DrawAfterChilds( const UIGeometricData &geometricData )
-{
-}
+private:
+    SelectedControls selectedControls;
+};
 
-void PackageCanvas::LayoutCanvas()
-{
-    float32 maxWidth = 0.0f;
-    float32 totalHeight = 0.0f;
-    for (List< UIControl* >::const_iterator iter = childs.begin(); iter != childs.end(); ++iter)
-    {
-        maxWidth = Max(maxWidth, (*iter)->GetSize().x);
-        totalHeight += (*iter)->GetSize().y;
-    }
-
-    SetSize(Vector2(maxWidth, totalHeight));
-
-    float32 curY = 0.0f;
-    for (List< UIControl* >::const_iterator iter = childs.begin(); iter != childs.end(); ++iter)
-    {
-        UIControl* control = *iter;
-
-        Rect rect = control->GetRect();
-        rect.y = curY;
-        rect.x = (maxWidth - rect.dx)/2.0f;
-        control->SetRect(rect);
-
-        curY += rect.dy + 5;
-    }
-}
-*/
+#endif // __UIEditor_EditScreen_h__

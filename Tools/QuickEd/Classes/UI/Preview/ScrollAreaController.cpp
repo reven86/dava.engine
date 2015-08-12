@@ -27,57 +27,67 @@
 =====================================================================================*/
 
 
-#include "EditScreen.h"
-#include "EditorSettings.h"
+#include "ScrollAreaController.h"
+#include "EditorCore.h"
 
 using namespace DAVA;
-/*
 
-CheckeredCanvas::CheckeredCanvas()
-: UIControl()
+ScrollAreaController::ScrollAreaController(QObject *parent)
+    : QObject(parent)
 {
-    GetBackground()->SetSprite("~res:/Gfx/CheckeredBg", 0);
-    GetBackground()->SetDrawType(UIControlBackground::DRAW_TILED);
-    GetBackground()->SetShader(SafeRetain(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR));
+    
 }
 
-void CheckeredCanvas::Draw( const UIGeometricData &geometricData )
+QSize ScrollAreaController::GetSize() const
 {
-    float32 invScale = 1.0f / geometricData.scale.x;
-    UIGeometricData unscaledGd;
-    unscaledGd.scale = Vector2(invScale, invScale);
-    unscaledGd.size = geometricData.size * geometricData.scale.x;
-    unscaledGd.AddGeometricData(geometricData);
-    GetBackground()->Draw(unscaledGd);
+    return size;
 }
 
-void CheckeredCanvas::DrawAfterChilds( const UIGeometricData &geometricData )
+int ScrollAreaController::GetScale() const
 {
+    return scale;
 }
 
-void PackageCanvas::LayoutCanvas()
+QPoint ScrollAreaController::GetPosition() const
 {
-    float32 maxWidth = 0.0f;
-    float32 totalHeight = 0.0f;
-    for (List< UIControl* >::const_iterator iter = childs.begin(); iter != childs.end(); ++iter)
+    return position;
+}
+
+void ScrollAreaController::SetSize(const QSize &size_)
+{
+    if (size_ != size)
     {
-        maxWidth = Max(maxWidth, (*iter)->GetSize().x);
-        totalHeight += (*iter)->GetSize().y;
-    }
-
-    SetSize(Vector2(maxWidth, totalHeight));
-
-    float32 curY = 0.0f;
-    for (List< UIControl* >::const_iterator iter = childs.begin(); iter != childs.end(); ++iter)
-    {
-        UIControl* control = *iter;
-
-        Rect rect = control->GetRect();
-        rect.y = curY;
-        rect.x = (maxWidth - rect.dx)/2.0f;
-        control->SetRect(rect);
-
-        curY += rect.dy + 5;
+        size = size_;
+        auto newSize = Vector2(size.width(), size.height());
+        UIScreenManager::Instance()->GetScreen()->SetSize(newSize);
+        Root()->SetSize(newSize);
+        emit SizeChanged(size_);
     }
 }
-*/
+
+void ScrollAreaController::SetScale(int scale_)
+{
+    if (scale_ != scale)
+    {
+        scale = scale_;
+        Vector2 newScale(static_cast<float>(scale) / 100.0f, static_cast<float>(scale) / 100.0f);
+        Root()->SetScale(newScale);
+        emit ScaleChanged(scale_);
+    }
+}
+
+void ScrollAreaController::SetPosition(const QPoint &position_)
+{
+    if (position_ != position)
+    {
+        position = position_;
+        auto newPos = Vector2(position.x(), position.y());
+        Root()->SetPosition(newPos);
+        emit PositionChanged(position_);
+    }
+}
+
+UIControl *ScrollAreaController::Root()
+{
+    return EditorCore::Instance()->GetRootControl();
+}

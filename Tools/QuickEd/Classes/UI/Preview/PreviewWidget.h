@@ -31,19 +31,16 @@
 #define __QUICKED_PREVIEW_WIDGET_H__
 
 #include <QWidget>
-#include <QPointer>
 #include "ui_PreviewWidget.h"
-#include "Base/Result.h"
-#include "Defines.h"
 
 namespace Ui {
     class PreviewWidget;
 }
 
 class Document;
-class PreviewModel;
 class DavaGLWidget;
 class ControlNode;
+class ScrollAreaController;
 
 enum ScreenId
 {
@@ -60,7 +57,6 @@ public:
     DavaGLWidget *GetDavaGLWidget();
 public slots:
     void OnDocumentChanged(Document *document);
-    void OnSelectedNodesChanged(const SelectedNodes &selected, const SelectedNodes &deselected);
 
 private slots:
     // Zoom.
@@ -69,13 +65,10 @@ private slots:
 	void OnZoomInRequested();
 	void OnZoomOutRequested();
     
-    void OnCanvasScaleChanged(int newScale);
     void OnGLWidgetResized(int width, int height, int dpr);
 
     void OnVScrollbarMoved(int position);
     void OnHScrollbarMoved(int position);
-    void OnScrollPositionChanged(const QPoint &newPosition);
-    void OnScrollAreaChanged(const QSize &viewSize, const QSize &contentSize);
     
     void OnMonitorChanged();
 
@@ -84,9 +77,9 @@ private:
 
 private:
     Document *document = nullptr;
-    SelectedNodes selectedNodes;
     DavaGLWidget *davaGLWidget = nullptr;
-    PreviewModel *model = nullptr;
+    ScrollAreaController *scrollAreaController = nullptr;
+    QList<int> percentages;
 };
 
 #endif // __QUICKED_PREVIEW_WIDGET_H__
