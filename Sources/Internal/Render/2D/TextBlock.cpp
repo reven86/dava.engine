@@ -564,7 +564,7 @@ void TextBlock::CalculateCacheParams()
         textSize = font->GetStringMetrics(visualText, &charSizes);
         DVASSERT(charSizes.size() == visualText.length());
         
-        for (auto& val : charSizes)
+        for (float32& val : charSizes)
         {
             val = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(val);
         }
@@ -572,10 +572,10 @@ void TextBlock::CalculateCacheParams()
         WideString pointsStr;
         if((fittingType & FITTING_POINTS) && (drawSize.x < textSize.width))
         {
-            auto length = charSizes.size();
-            auto pointsMetric = font->GetStringMetrics(L"...");
-            auto fullWidth = static_cast<float32>(textSize.width + pointsMetric.width);
-            for (auto i = length - 1; i > 0U; --i)
+            uint32 length = charSizes.size();
+            Font::StringMetrics pointsMetric = font->GetStringMetrics(L"...");
+            float32 fullWidth = static_cast<float32>(textSize.width + pointsMetric.width);
+            for (uint32 i = length - 1; i > 0U; --i)
             {
                 if(fullWidth <= drawSize.x)
                 {
@@ -592,11 +592,11 @@ void TextBlock::CalculateCacheParams()
         }
         else if(!((fittingType & FITTING_REDUCE) || (fittingType & FITTING_ENLARGE)) && (drawSize.x < textSize.width) && (requestedSize.x >= 0))
         {
-            auto length = charSizes.size();
-            auto fullWidth = static_cast<float32>(textSize.width);
+            uint32 length = charSizes.size();
+            float32 fullWidth = static_cast<float32>(textSize.width);
             if(ALIGN_RIGHT & align)
             {
-                for(auto i = 0U; i < length; ++i)
+                for(uint32 i = 0U; i < length; ++i)
                 {
                     if(fullWidth <= drawSize.x)
                     {
@@ -609,8 +609,8 @@ void TextBlock::CalculateCacheParams()
             }
             else if(ALIGN_HCENTER & align)
             {
-                auto left = 0U;
-                auto right = length - 1;
+                uint32 left = 0U;
+                uint32 right = length - 1;
                 bool cutFromBegin = false;
                 
                 while (left != right)
@@ -635,7 +635,7 @@ void TextBlock::CalculateCacheParams()
             }
             else if (ALIGN_LEFT & align)
             {
-                for (auto i = 1U; i < length; ++i)
+                for (uint32 i = 1U; i < length; ++i)
                 {
                     fullWidth -= charSizes[length - i];
                     if (fullWidth <= drawSize.x)
