@@ -81,11 +81,6 @@ public:
     TCPConnection * GetConnection() const;
     
 private:
-    
-    void OnAddedToCache(KeyedArchive * archieve);
-    void OnGotFromCache(KeyedArchive * archieve);
-    
-private:
     std::unique_ptr<TCPConnection> netClient;
     TCPChannel * openedChannel = nullptr;
     

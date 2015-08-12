@@ -122,7 +122,6 @@ void CachedFiles::Serialize(KeyedArchive * archieve, bool serializeData) const
         ++index;
     }
 }
-    
 
 void CachedFiles::Deserialize(KeyedArchive * archieve)
 {
@@ -150,6 +149,83 @@ void CachedFiles::Deserialize(KeyedArchive * archieve)
         
         files[path] = fileData;
     }
+}
+
+bool CachedFiles::Serialize(File* buffer) const
+{
+    DVASSERT(buffer);
+
+    if (buffer->Write(&filesSize) != sizeof(filesSize))
+        return false;
+
+    uint64 count = files.size();
+    if (buffer->Write(&count) != sizeof(count))
+        return false;
+
+    for (auto &file : files)
+    {
+        const FilePath& filePath = file.first;
+        const Data* fileData = file.second;
+
+        if (buffer->WriteString(filePath.GetAbsolutePathname()) == false)
+            return false;
+
+        uint32 dataSize = 0;
+        const uint8* data = nullptr;
+
+        if (fileData)
+        {
+            dataSize = fileData->GetSize();
+            data = fileData->GetPtr();
+        }
+
+        if (buffer->Write(&dataSize) != sizeof(dataSize))
+            return false;
+
+        if (buffer->Write(fileData->GetPtr(), dataSize) != dataSize)
+            return false;
+    }
+
+    return true;
+}
+
+bool CachedFiles::Deserialize(File* file)
+{
+    DVASSERT(file);
+
+    if (file->Read(&filesSize) != sizeof(filesSize))
+        return false;
+
+    uint64 count;
+    if (file->Read(&count) != sizeof(count))
+        return false;
+
+    for (; count; --count)
+    {
+        String path;
+        if (!file->ReadString(path))
+            return false;
+
+        FilePath filePath(path);
+
+        uint32 datasize = 0;
+        Data* data = nullptr;
+
+        if (file->Read(&datasize) != sizeof(datasize))
+            return false;
+
+        if (datasize > 0)
+        {
+            filesAreLoaded = true;
+            data = new Data(datasize);
+            if (file->Read(data->GetPtr(), datasize) != datasize)
+                return false;
+        }
+
+        files[filePath] = data;
+    }
+
+    return true;
 }
 
 

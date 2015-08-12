@@ -33,12 +33,12 @@
 #include "Base/BaseTypes.h"
 #include "Network/NetService.h"
 
-namespace DAVA
-{
+namespace DAVA {
+
 class KeyedArchive;
-    
-    
 class TCPChannel;
+class DynamicMemoryFile;
+
 class TCPChannelListener
 {
 public:
@@ -58,7 +58,9 @@ public:
     ~TCPChannel() override;
 
     
-    uint32 SendData(const uint8 * data, const size_t dataSize);
+    bool SendData(const DynamicMemoryFile* buffer);
+    bool SendData(const Vector<uint8>& data);
+    bool SendData(const uint8 * data, const size_t dataSize);
     void SetListener(TCPChannelListener * delegate);
     
     //IChannelListener

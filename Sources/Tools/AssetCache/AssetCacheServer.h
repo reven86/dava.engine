@@ -82,16 +82,9 @@ public:
     
     bool FilesAddedToCache(DAVA::TCPChannel *tcpChannel, const CacheItemKey &key, bool added);
     bool SendFiles(DAVA::TCPChannel *tcpChannel, const CacheItemKey &key, const CachedFiles &files);
-    
-private:
-    
 
-    void OnAddToCache(DAVA::TCPChannel *tcpChannel, KeyedArchive * archieve);
-    void OnGetFromCache(DAVA::TCPChannel *tcpChannel, KeyedArchive * archieve);
-    void OnWarmingUp(DAVA::TCPChannel *tcpChannel, KeyedArchive * archieve);
-    
 private:
-    
+
     uint16 listenPort = 0;
     std::unique_ptr<TCPConnection> netServer;
     ServerDelegate *delegate = nullptr;

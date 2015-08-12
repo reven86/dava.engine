@@ -33,6 +33,7 @@
 #include "Base/FunctionTraits.h"
 
 #include "FileSystem/KeyedArchive.h"
+#include "FileSystem/DynamicMemoryFile.h"
 
 #include "Network/NetworkCommon.h"
 #include "Network/NetConfig.h"
@@ -73,20 +74,32 @@ bool TCPChannel::SendArchieve(KeyedArchive * archieve)
     
     DVVERIFY(packedSize == archieve->Serialize(packedData, packedSize));
     
-    auto packedId = SendData(packedData, packedSize);
-    return (packedId != 0);
+    return SendData(packedData, packedSize);
 }
-    
-uint32 TCPChannel::SendData(const uint8 * data, const size_t dataSize)
+
+bool TCPChannel::SendData(const DynamicMemoryFile* buffer)
+{
+    DVASSERT(buffer);
+    return SendData(buffer->GetData(), buffer->GetSize());
+}
+
+bool TCPChannel::SendData(const Vector<uint8>& data)
+{
+    return SendData(data.data(), data.size());
+}
+
+bool TCPChannel::SendData(const uint8 * data, const size_t dataSize)
 {
     uint32 packetID = 0;
     bool sent = Send(data, dataSize, &packetID);
-    if(sent)
+    if (sent)
     {
-        return packetID;
+        return (packetID != 0);
     }
-    
-    return 0;
+    else
+    {
+        return false;
+    }
 }
     
     

@@ -40,6 +40,7 @@ namespace DAVA
 
 class KeyedArchive;
 class File;
+class VariantBuffer;
     
 namespace AssetCache
 {
@@ -62,6 +63,9 @@ public:
 
     void Serialize(KeyedArchive * archieve, bool serializeData) const;
     void Deserialize(KeyedArchive * archieve);
+
+    bool Serialize(File* file) const;
+    bool Deserialize(File* file);
     
     bool operator == (const CachedFiles &right) const;
     CachedFiles & operator=(const CachedFiles &right);

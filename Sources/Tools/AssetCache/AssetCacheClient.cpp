@@ -32,16 +32,16 @@
 #include "AssetCache/AssetCacheConstants.h"
 #include "AssetCache/CachedFiles.h"
 #include "AssetCache/CacheItemKey.h"
+#include "AssetCache/CachePacket.h"
 #include "AssetCache/TCPConnection/TCPConnection.h"
 #include "FileSystem/KeyedArchive.h"
 #include "Debug/DVAssert.h"
+#include "FileSystem/DynamicMemoryFile.h"
 
-namespace DAVA
-{
-    
-namespace AssetCache
-{
-    
+namespace DAVA {
+namespace AssetCache {
+
+
 Client::~Client()
 {
     listener = nullptr;
@@ -74,89 +74,45 @@ bool Client::AddToCache(const CacheItemKey &key, const CachedFiles &files)
 {
     if(openedChannel)
     {
-        ScopedPtr<KeyedArchive> archieve(new KeyedArchive());
-        archieve->SetUInt32("PacketID", PACKET_ADD_FILES_REQUEST);
-
-        ScopedPtr<KeyedArchive> keyArchieve(new KeyedArchive());
-        SerializeKey(key, keyArchieve);
-        archieve->SetArchive("key", keyArchieve);
-        
-        ScopedPtr<KeyedArchive> filesArchieve(new KeyedArchive());
-        files.Serialize(filesArchieve, true);
-        archieve->SetArchive("files", filesArchieve);
-        
-        return openedChannel->SendArchieve(archieve);
+        CachePacket packet;
+        packet.type = PACKET_ADD_FILES_REQUEST;
+        packet.key = key;
+        packet.files = files;
+        return (packet.Serialize() && openedChannel->SendData(packet.buffer));
     }
-    
-    return false;
-}
-    
-void Client::OnAddedToCache(KeyedArchive * archieve)
-{
-    if(listener)
+    else
     {
-        KeyedArchive *keyArchieve = archieve->GetArchive("key");
-        DVASSERT(keyArchieve);
-        CacheItemKey key;
-        DeserializeKey(key, keyArchieve);
-        
-        bool added = archieve->GetBool("added");
-        
-        listener->OnAddedToCache(key, added);
+        return false;
     }
 }
-    
 
 bool Client::RequestFromCache(const CacheItemKey &key)
 {
     if(openedChannel)
     {
-        ScopedPtr<KeyedArchive> archieve(new KeyedArchive());
-        archieve->SetUInt32("PacketID", PACKET_GET_FILES_REQUEST);
-        
-        ScopedPtr<KeyedArchive> keyArchieve(new KeyedArchive());
-        SerializeKey(key, keyArchieve);
-        archieve->SetArchive("key", keyArchieve);
-        
-        return openedChannel->SendArchieve(archieve);
+        CachePacket packet;
+        packet.type = PACKET_GET_FILES_REQUEST;
+        packet.key = key;
+        return (packet.Serialize() && openedChannel->SendData(packet.buffer));
     }
-    
-    return false;
+    else
+    {
+        return false;
+    }
 }
 
-void Client::OnGotFromCache(KeyedArchive * archieve)
-{
-    if(listener)
-    {
-        KeyedArchive *keyArchieve = archieve->GetArchive("key");
-        DVASSERT(keyArchieve);
-        CacheItemKey key;
-        DeserializeKey(key, keyArchieve);
-        
-        KeyedArchive *filesArchieve = archieve->GetArchive("files");
-        DVASSERT(filesArchieve);
-        CachedFiles files;
-        files.Deserialize(filesArchieve);
-        
-        listener->OnReceivedFromCache(key, files);
-    }
-}
-    
 bool Client::WarmingUp(const CacheItemKey &key)
 {
     if(openedChannel)
     {
-        ScopedPtr<KeyedArchive> archieve(new KeyedArchive());
-        archieve->SetUInt32("PacketID", PACKET_WARMING_UP_REQUEST);
-        
-        ScopedPtr<KeyedArchive> keyArchieve(new KeyedArchive());
-        SerializeKey(key, keyArchieve);
-        archieve->SetArchive("key", keyArchieve);
-        
-        return openedChannel->SendArchieve(archieve);
+        CachePacket packet;
+        packet.type = PACKET_WARMING_UP_REQUEST;
+        packet.key = key;
+        return (packet.Serialize() && openedChannel->SendData(packet.buffer));
     }
-    
-    return false;
+    {
+        return false;
+    }
 }
 
 
@@ -172,30 +128,47 @@ void Client::ChannelClosed(TCPChannel *tcpChannel, const char8* message)
     openedChannel = nullptr;
 }
 
-void Client::PacketReceived(DAVA::TCPChannel *tcpChannel, const uint8* packet, size_t length)
+void Client::PacketReceived(DAVA::TCPChannel *tcpChannel, const uint8* packetData, size_t length)
 {
     DVASSERT(openedChannel == tcpChannel);
-    if(length && openedChannel == tcpChannel)
+    if(length)
     {
-        ScopedPtr<KeyedArchive> archieve(new KeyedArchive());
-        archieve->Deserialize(packet, length);
-        
-        auto packetID = archieve->GetUInt32("PacketID", PACKET_UNKNOWN);
-        
-        switch (packetID)
+        CachePacket packet;
+        packet.buffer.reset(DynamicMemoryFile::Create(packetData, length, File::OPEN | File::READ)); // todo: create without copy
+
+        if (!packet.Deserialize())
         {
-            case PACKET_ADD_FILES_RESPONCE:
-                OnAddedToCache(archieve);
-                break;
-
-            case PACKET_GET_FILES_RESPONCE:
-                OnGotFromCache(archieve);
-                break;
-
-            default:
-                Logger::Error("[Client::%s] Cannot parce packet (%d)", __FUNCTION__, packetID);
-                break;
+            Logger::Error("[AssetCache::Server::%s] Can't deserialize packet. Closing channel", __FUNCTION__);
+            netClient->DestroyChannel(tcpChannel);
+            return;
         }
+
+        switch (packet.type)
+        {
+        case PACKET_ADD_FILES_RESPONSE:
+        {
+            if (listener)
+                listener->OnAddedToCache(packet.key, packet.added);
+            return;
+        }
+        case PACKET_GET_FILES_RESPONSE:
+        {
+            if (listener)
+                listener->OnReceivedFromCache(packet.key, packet.files);
+            break;
+        }
+        default:
+        {
+            Logger::Error("[AssetCache::Server::%s] Invalid packet id: (%d). Closing channel", __FUNCTION__, packet.type);
+            netClient->DestroyChannel(tcpChannel);
+            break;
+        }
+        }
+    }
+    else
+    {
+        Logger::Error("[AssetCache::Client::%s] Empty packet is received. Closing channel", __FUNCTION__);
+        netClient->DestroyChannel(tcpChannel);
     }
 }
     
