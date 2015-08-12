@@ -69,7 +69,6 @@ private:
     };
     
     DAVA::List<RequestDescription> waitedRequests;
-    DAVA::Mutex requestMutex;
     
     struct ServerTask
     {
@@ -83,7 +82,6 @@ private:
     };
 
     DAVA::List<ServerTask> serverTasks;
-    DAVA::Mutex taskMutex;
 };
 
 

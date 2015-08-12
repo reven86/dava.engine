@@ -68,7 +68,6 @@ void ServerLogics::OnAddToCache(DAVA::TCPChannel *tcpChannel, const DAVA::AssetC
         server->FilesAddedToCache(tcpChannel, key, true);
 
         {   //add task for lazy sending of files;
-            DAVA::LockGuard<DAVA::Mutex> lock(taskMutex);
             serverTasks.emplace_back(ServerTask(key, files, DAVA::AssetCache::PACKET_ADD_FILES_REQUEST));
         }
     }
@@ -84,13 +83,11 @@ void ServerLogics::OnRequestedFromCache(DAVA::TCPChannel *tcpChannel, const DAVA
             server->SendFiles(tcpChannel, key, entry->GetFiles());
             
             {   //add task for lazy sending of files;
-                DAVA::LockGuard<DAVA::Mutex> lock(taskMutex);
                 serverTasks.emplace_back(ServerTask(key, DAVA::AssetCache::PACKET_WARMING_UP_REQUEST));
             }
         }
         else if (client->RequestFromCache(key))
         {   // Not found in db. Ask from remote cache.
-            DAVA::LockGuard<DAVA::Mutex> lock(requestMutex);
             waitedRequests.emplace_back(RequestDescription(tcpChannel, key, DAVA::AssetCache::PACKET_GET_FILES_REQUEST));
         }
         else
@@ -112,7 +109,6 @@ void ServerLogics::OnChannelClosed(DAVA::TCPChannel *tcpChannel, const DAVA::cha
 {
     if(waitedRequests.size())
     {
-        DAVA::LockGuard<DAVA::Mutex> lock(requestMutex);
         auto iter = std::find_if(waitedRequests.begin(), waitedRequests.end(), [&tcpChannel](const RequestDescription& description) -> bool
                                  {
                                      return (description.clientChannel == tcpChannel);
@@ -134,7 +130,6 @@ void ServerLogics::OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey &key
 
     if((nullptr != server) && waitedRequests.size())
     {
-        DAVA::LockGuard<DAVA::Mutex> lock(requestMutex);
         auto iter = std::find_if(waitedRequests.begin(), waitedRequests.end(), [&key](const RequestDescription& description) -> bool
                                  {
                                      return (description.key == key) && (description.request == DAVA::AssetCache::PACKET_GET_FILES_REQUEST);
@@ -160,8 +155,6 @@ void ServerLogics::ProcessServerTasks()
 {
     if(!serverTasks.empty() && client && client->IsConnected())
     {
-        DAVA::LockGuard<DAVA::Mutex> lock(taskMutex);
-        
         for(const auto & task: serverTasks)
         {
             switch (task.request)
