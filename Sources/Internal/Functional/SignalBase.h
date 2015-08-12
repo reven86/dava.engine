@@ -33,27 +33,25 @@
 
 namespace DAVA {
 
-class TrackedObject;
+using SigConnectionID = size_t;
 
+class TrackedObject;
 class SignalBase
 {
 public:
     virtual ~SignalBase() = default;
     virtual void Disconnect(TrackedObject*) = 0;
+
+    static SigConnectionID GetUniqueConnectionID()
+    {
+        static Atomic<SigConnectionID> counter = { 0 };
+        return ++counter;
+    }
 };
 
 class TrackedObject
 {
 public:
-    ~TrackedObject()
-    {
-        while (trackedSignals.size() > 0)
-        {
-            auto it = trackedSignals.begin();
-            (*it)->Disconnect(this);
-        }
-    }
-
     void Track(SignalBase *signal)
     {
         trackedSignals.insert(signal);
@@ -75,6 +73,15 @@ protected:
 
     template<bool is_derived_from_tracked_obj>
     struct Detail;
+
+    ~TrackedObject()
+    {
+        while (trackedSignals.size() > 0)
+        {
+            auto it = trackedSignals.begin();
+            (*it)->Disconnect(this);
+        }
+    }
 };
     
 template<>

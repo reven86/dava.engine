@@ -32,9 +32,8 @@
 #include <new>
 #include <memory>
 #include <array>
-#include <functional>
 #include <type_traits>
-#include "Base/BaseTypes.h"
+#include <functional>
 
 namespace DAVA {
 namespace Fn11 {
@@ -56,7 +55,10 @@ struct is_best_argument_type : std::integral_constant<bool,
 class Closure
 {
 public:
-    using Storage = Array<void *, 4>;
+    // this is internal storage for pointer on function or functional objects (lambda/bind)
+    // if it fits Storage size and has trivial constructor|destructor it can be stored
+    // in-place in Storage, otherwise 'new' should be used.
+    using Storage = std::array<void *, 4>;
 
     Closure()
     { }
@@ -66,6 +68,7 @@ public:
         Clear();
     }
 
+    // Store Hldr class in-place
     template<typename Hldr, typename Fn, typename... Prms>
     void BindTrivial(const Fn& fn, Prms... params)
     {
@@ -74,6 +77,7 @@ public:
         new (storage.data()) Hldr(fn, std::forward<Prms>(params)...);
     }
 
+    // Store Hldr class using std::shared_ptr
     template<typename Hldr, typename Fn, typename... Prms>
     void BindShared(const Fn& fn, Prms... params)
     {
@@ -183,15 +187,15 @@ public:
         : fn(_fn)
     { }
 
-    static Ret invokeTrivial(const Closure& storage, typename std::conditional<is_best_argument_type<Args>::value, Args, Args&&>::type... args)
+    static Ret invokeTrivial(const Closure &c, typename std::conditional<is_best_argument_type<Args>::value, Args, Args&&>::type... args)
     {
-        HolderFree *holder = storage.GetTrivial<HolderFree>();
+        HolderFree *holder = c.GetTrivial<HolderFree>();
         return (Ret)holder->fn(std::forward<Args>(args)...);
     }
 
-    static Ret invokeShared(const Closure& storage, typename std::conditional<is_best_argument_type<Args>::value, Args, Args&&>::type... args)
+    static Ret invokeShared(const Closure &c, typename std::conditional<is_best_argument_type<Args>::value, Args, Args&&>::type... args)
     {
-        HolderFree *holder = storage.GetShared<HolderFree>();
+        HolderFree *holder = c.GetShared<HolderFree>();
         return (Ret)holder->fn(std::forward<Args>(args)...);
     }
 
@@ -211,15 +215,15 @@ public:
         : fn(_fn)
     { }
 
-    static Ret invokeTrivial(const Closure &storage, Obj* cls, typename std::conditional<is_best_argument_type<ClsArgs>::value, ClsArgs, ClsArgs&&>::type... args)
+    static Ret invokeTrivial(const Closure &c, Obj* cls, typename std::conditional<is_best_argument_type<ClsArgs>::value, ClsArgs, ClsArgs&&>::type... args)
     {
-        HolderClass *holder = storage.GetTrivial<HolderClass>();
+        HolderClass *holder = c.GetTrivial<HolderClass>();
         return (Ret)(static_cast<Cls*>(cls)->*holder->fn)(std::forward<ClsArgs>(args)...);
     }
 
-    static Ret invokeShared(const Closure &storage, Obj* cls, typename std::conditional<is_best_argument_type<ClsArgs>::value, ClsArgs, ClsArgs&&>::type... args)
+    static Ret invokeShared(const Closure &c, Obj* cls, typename std::conditional<is_best_argument_type<ClsArgs>::value, ClsArgs, ClsArgs&&>::type... args)
     {
-        HolderClass *holder = storage.GetShared<HolderClass>();
+        HolderClass *holder = c.GetShared<HolderClass>();
         return (Ret)(static_cast<Cls*>(cls)->*holder->fn)(std::forward<ClsArgs>(args)...);
     }
 
@@ -240,15 +244,15 @@ public:
         , obj(_obj)
     { }
 
-    static Ret invokeTrivial(const Closure &storage, typename std::conditional<is_best_argument_type<ClsArgs>::value, ClsArgs, ClsArgs&&>::type... args)
+    static Ret invokeTrivial(const Closure &c, typename std::conditional<is_best_argument_type<ClsArgs>::value, ClsArgs, ClsArgs&&>::type... args)
     {
-        HolderObject *holder = storage.GetTrivial<HolderObject>();
+        HolderObject *holder = c.GetTrivial<HolderObject>();
         return (Ret)(static_cast<Cls *>(holder->obj)->*holder->fn)(std::forward<ClsArgs>(args)...);
     }
 
-    static Ret invokeShared(const Closure &storage, typename std::conditional<is_best_argument_type<ClsArgs>::value, ClsArgs, ClsArgs&&>::type... args)
+    static Ret invokeShared(const Closure &c, typename std::conditional<is_best_argument_type<ClsArgs>::value, ClsArgs, ClsArgs&&>::type... args)
     {
-        HolderObject *holder = storage.GetShared<HolderObject>();
+        HolderObject *holder = c.GetShared<HolderObject>();
         return (Ret)(static_cast<Cls *>(holder->obj)->*holder->fn)(std::forward<ClsArgs>(args)...);
     }
 
@@ -265,14 +269,14 @@ class HolderSharedObject
 public:
     using Fn = Ret(Cls::*)(ClsArgs...);
 
-    HolderSharedObject(const Fn& _fn, const std::shared_ptr<Obj> _obj) DAVA_NOEXCEPT
+    HolderSharedObject(const Fn& _fn, const std::shared_ptr<Obj> _obj)
         : fn(_fn)
         , obj(_obj)
     { }
 
-    static Ret invokeShared(const Closure &storage, typename std::conditional<is_best_argument_type<ClsArgs>::value, ClsArgs, ClsArgs&&>::type... args)
+    static Ret invokeShared(const Closure &c, typename std::conditional<is_best_argument_type<ClsArgs>::value, ClsArgs, ClsArgs&&>::type... args)
     {
-        HolderSharedObject *holder = storage.GetShared<HolderSharedObject>();
+        HolderSharedObject *holder = c.GetShared<HolderSharedObject>();
         return (static_cast<Cls*>(holder->obj.get())->*holder->fn)(std::forward<ClsArgs>(args)...);
     }
 
@@ -434,7 +438,7 @@ public:
         return !operator==(nullptr);
     }
 
-    DAVA_FORCEINLINE Ret operator()(Args... args) const
+    Ret operator()(Args... args) const
     {
         return invoker(closure, std::forward<Args>(args)...);
     }
@@ -445,7 +449,7 @@ public:
         closure.Swap(fn.closure);
     }
 
-protected:
+private:
     using Invoker = Ret(*)(const Fn11::Closure &, typename std::conditional<Fn11::is_best_argument_type<Args>::value, Args, Args&&>::type...);
 
     Invoker invoker = nullptr;
@@ -457,7 +461,7 @@ protected:
         Detail<
                 trivial && sizeof(Hldr) <= sizeof(Fn11::Closure::Storage)
                 && std::is_trivially_destructible<Fn>::value
-#ifdef __DAVAENGINE_ANDROID__
+#if defined(__GLIBCXX__) && __GLIBCXX__ <= 20141030
                 // android old-style way
                 && std::has_trivial_copy_constructor<Fn>::value
                 && std::has_trivial_copy_assign<Fn>::value
@@ -505,17 +509,17 @@ Function<Ret(Cls*, Args...)> MakeFunction(Ret(Cls::* const &fn)(Args...)) { retu
 template<typename Cls, typename Ret, typename... Args>
 Function<Ret(Cls*, Args...)> MakeFunction(Ret(Cls::* const &fn)(Args...) const) { return Function<Ret(Cls*, Args...)>(fn); }
 
-template<typename Obj, typename Ret, typename... Args>
-Function<Ret(Args...)> MakeFunction(Obj *obj, Ret(Obj::* const &fn)(Args...)) { return Function<Ret(Args...)>(obj, fn); }
+template<typename Obj, typename Cls, typename Ret, typename... Args>
+Function<Ret(Args...)> MakeFunction(Obj *obj, Ret(Cls::* const &fn)(Args...)) { return Function<Ret(Args...)>(obj, fn); }
 
-template<typename Obj, typename Ret, typename... Args>
-Function<Ret(Args...)> MakeFunction(Obj *obj, Ret(Obj::* const &fn)(Args...) const) { return Function<Ret(Args...)>(obj, fn); }
+template<typename Obj, typename Cls, typename Ret, typename... Args>
+Function<Ret(Args...)> MakeFunction(Obj *obj, Ret(Cls::* const &fn)(Args...) const) { return Function<Ret(Args...)>(obj, fn); }
 
-template<typename Obj, typename Ret, typename... Args>
-Function<Ret(Args...)> MakeFunction(const std::shared_ptr<Obj> &obj, Ret(Obj::* const &fn)(Args...)) { return Function<Ret(Args...)>(obj, fn); }
+template<typename Obj, typename Cls, typename Ret, typename... Args>
+Function<Ret(Args...)> MakeFunction(const std::shared_ptr<Obj> &obj, Ret(Cls::* const &fn)(Args...)) { return Function<Ret(Args...)>(obj, fn); }
 
-template<typename Obj, typename Ret, typename... Args>
-Function<Ret(Args...)> MakeFunction(const std::shared_ptr<Obj> &obj, Ret(Obj::* const &fn)(Args...) const) { return Function<Ret(Args...)>(obj, fn); }
+template<typename Obj, typename Cls, typename Ret, typename... Args>
+Function<Ret(Args...)> MakeFunction(const std::shared_ptr<Obj> &obj, Ret(Cls::* const &fn)(Args...) const) { return Function<Ret(Args...)>(obj, fn); }
 
 template<typename Ret, typename... Args>
 Function<Ret(Args...)> MakeFunction(const Function<Ret(Args...)>& fn) { return Function<Ret(Args...)>(fn); }

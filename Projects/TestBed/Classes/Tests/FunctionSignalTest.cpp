@@ -47,8 +47,6 @@ String BenchTest(const char* name, F& f, A... a)
     return Format("%s: %lu ms, res = %d\n", name, clock() - time_ms, res);
 }
 
-#define BENCH_TEST(name, fn, ...) BenchTest(name, fn, ##__VA_ARGS__)
-
 FunctionSignalTest::FunctionSignalTest()
     : BaseScreen("FunctionSignalTest")
 { }
@@ -100,6 +98,8 @@ void FunctionSignalTest::UnloadResources()
 {
     SafeRelease(runResult);
     SafeRelease(runButton);
+
+    BaseScreen::UnloadResources();
 }
 
 DAVA_NOINLINE int viewStdFnCall(std::function<int(int, int, int)> &fn)
@@ -112,7 +112,7 @@ DAVA_NOINLINE int viewDavaFnCall(Function<int(int, int, int)> &fn)
     return fn(10, 20, 30);
 }
 
-void DoFunctionSignalTest(FunctionSignalTest *fst)
+void FunctionSpeedTestJob(FunctionSignalTest *fst)
 {
     TestStruct ts;
 
@@ -134,9 +134,9 @@ void DoFunctionSignalTest(FunctionSignalTest *fst)
     });
     
     String resStr = "Static function:\n";
-    resStr += BENCH_TEST("  native", test, 10, 20);
-    resStr += BENCH_TEST("  std   ", stdStatic, 10, 20);
-    resStr += BENCH_TEST("  dava  ", davaStatic, 10, 20);
+    resStr += BenchTest("  native", test, 10, 20);
+    resStr += BenchTest("  std   ", stdStatic, 10, 20);
+    resStr += BenchTest("  dava  ", davaStatic, 10, 20);
     
     JobManager::Instance()->CreateMainJob([fst, resStr]{
         fst->runResult->SetText(StringToWString(resStr));
@@ -148,9 +148,9 @@ void DoFunctionSignalTest(FunctionSignalTest *fst)
     Function<int(int)> davaLam(lam);
     
     resStr += "\nLambda function:\n";
-    resStr += BENCH_TEST("  native", lam);
-    resStr += BENCH_TEST("  std   ", stdLam);
-    resStr += BENCH_TEST("  dava  ", davaLam);
+    resStr += BenchTest("  native", lam);
+    resStr += BenchTest("  std   ", stdLam);
+    resStr += BenchTest("  dava  ", davaLam);
     
     JobManager::Instance()->CreateMainJob([fst, resStr]{
         fst->runResult->SetText(StringToWString(resStr));
@@ -161,9 +161,9 @@ void DoFunctionSignalTest(FunctionSignalTest *fst)
     Function<int(TestStruct *ts, int, int, int)> davaCls(&TestStruct::test);
     
     resStr += "\nClass function:\n";
-    resStr += BENCH_TEST("  native", nativeCls, &ts, 10, 20);
-    resStr += BENCH_TEST("  std   ", stdCls, &ts, 10, 20);
-    resStr += BENCH_TEST("  dava  ", davaCls, &ts, 10, 20);
+    resStr += BenchTest("  native", nativeCls, &ts, 10, 20);
+    resStr += BenchTest("  std   ", stdCls, &ts, 10, 20);
+    resStr += BenchTest("  dava  ", davaCls, &ts, 10, 20);
     
     JobManager::Instance()->CreateMainJob([fst, resStr]{
         fst->runResult->SetText(StringToWString(resStr));
@@ -174,9 +174,9 @@ void DoFunctionSignalTest(FunctionSignalTest *fst)
     Function<int(int, int, int)> davaObj(&ts, &TestStruct::test);
     
     resStr += "\nObj function:\n";
-    resStr += BENCH_TEST("  native", nativeObj, 10, 20);
-    resStr += BENCH_TEST("  std   ", stdObj, 10, 20);
-    resStr += BENCH_TEST("  dava  ", davaObj, 10, 20);
+    resStr += BenchTest("  native", nativeObj, 10, 20);
+    resStr += BenchTest("  std   ", stdObj, 10, 20);
+    resStr += BenchTest("  dava  ", davaObj, 10, 20);
     
     JobManager::Instance()->CreateMainJob([fst, resStr]{
         fst->runResult->SetText(StringToWString(resStr));
@@ -187,9 +187,9 @@ void DoFunctionSignalTest(FunctionSignalTest *fst)
     Function<int(int)> davaBind = std::bind(&TestStruct::test, &ts, 10, 20, std::placeholders::_1);
     
     resStr += "\nBinded function:\n";
-    resStr += BENCH_TEST("  native", nativeBind);
-    resStr += BENCH_TEST("  std   ", stdBind);
-    resStr += BENCH_TEST("  dava  ", davaBind);
+    resStr += BenchTest("  native", nativeBind);
+    resStr += BenchTest("  std   ", stdBind);
+    resStr += BenchTest("  dava  ", davaBind);
     
     resStr += "\n\nDone!";
     
@@ -204,7 +204,15 @@ void FunctionSignalTest::OnButtonPress(BaseObject *obj, void *data, void *caller
     if(!runButton->GetDisabled())
     {
         runButton->SetDisabled(true);
-        JobManager::Instance()->CreateWorkerJob(std::bind(&DoFunctionSignalTest, this));
-
+        JobManager::Instance()->CreateWorkerJob(std::bind(&FunctionSpeedTestJob, this));
     }
 }
+
+void FunctionSignalTest::OnExitButton(BaseObject *obj, void *data, void *callerData)
+{
+    if (!JobManager::Instance()->HasWorkerJobs())
+    {
+        BaseScreen::OnExitButton(obj, data, callerData);
+    }
+}
+

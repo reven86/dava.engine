@@ -43,8 +43,8 @@ int staticFn3(int i1, int i2, int i3) { return i1 + i2 + i3; }
 
 void* exStaticFnV(void *a) { return a; }
 void* exStaticFnVV(void **a) { return *a; }
-const char* exStaticFnCC(const char *a) { return a; }
-const char* exStaticFnCCC(const char **a) { return *a; }
+const char* exStaticFnCC(const char *a, int b) { return a + b; }
+const char* exStaticFnCCC(const char **a, int b) { return *a + b; }
 
 struct A
 {
@@ -209,6 +209,11 @@ DAVA_TESTCLASS(FunctionBindSignalTest)
         Function<int(C*, int i, long j)> c_f2def = &C::f2def;
         Function<int(C*, int i, long j)> c_f2virt = &C::f2virt;
 
+        Logger::Info("%u\n", sizeof(&C::f2defvirt));
+        Logger::Info("%u\n", sizeof(&C::f2def));
+        Logger::Info("%u\n", sizeof(&C::f2virt));
+
+
         c_f2(&c);
         TEST_VERIFY(c_f2defvirt(&c, 2000, 4454656) == c.f2defvirt(2000, 4454656));
         TEST_VERIFY(c_f2def(&c, 2000, 4454656) == c.f2def(2000, 4454656));
@@ -276,13 +281,13 @@ DAVA_TESTCLASS(FunctionBindSignalTest)
 
         Function<void* (void *)> sta0(&exStaticFnV);
         Function<void* (void **)> sta1(&exStaticFnVV);
-        Function<const char* (const char *)> sta2(&exStaticFnCC);
-        Function<const char* (const char **)> sta3(&exStaticFnCCC);
+        Function<const char* (const char *, int)> sta2(&exStaticFnCC);
+        Function<const char* (const char **, int)> sta3(&exStaticFnCCC);
 
         TEST_VERIFY(sta0(void_test) == exStaticFnV(void_test));
         TEST_VERIFY(sta1(&void_test) == exStaticFnVV(&void_test));
-        TEST_VERIFY(sta2(char_test) == exStaticFnCC(char_test));
-        TEST_VERIFY(sta3(&char_test) == exStaticFnCCC(&char_test));
+        TEST_VERIFY(sta2(char_test, 5) == exStaticFnCC(char_test, 5));
+        TEST_VERIFY(sta3(&char_test, 10) == exStaticFnCCC(&char_test, 10));
 
         Function<A* (B*, A*)> cla0(&B::exClassFn);
         Function<const A* (B*, const A*)> cla1(&B::exClassFn1);
@@ -296,54 +301,100 @@ DAVA_TESTCLASS(FunctionBindSignalTest)
     }
 
 
-    class sgA : public TrackedObject
+    class TestObjA : public TrackedObject
     {
     public:
-        int a = 0;
-        void AddA() { a++; }
+        int v1 = 0;
+        int v2 = 0;
+        void Slot1(int v) { v1 = v; }
+        void Slot2(int v) { v2 = v; }
     };
 
-    class sgB
+    class TestObjB
     {
     public:
-        virtual ~sgB() { };
-        int b;
+        int v1 = 0;
+        void Slot1(int v) { v1 = v; }
+
+        virtual ~TestObjB() { };
     };
 
-    class sgC : public sgB, public TrackedObject
-    {
-    public:
-        int c;
-        void AddC() { c++; }
-    };
+    class TestObjC : public TestObjB, public TrackedObject
+    { };
 
     DAVA_TEST(TestSignals)
     {
         // ==================================================================================
         // signals
         // ==================================================================================
-        Signal<> sig0;
+        Signal<int> testSignal;
 
-        // track object deletion, while it is tracked by signal
-        sgA *a1 = new sgA();
-        SigConnectionID connID = sig0.Connect([&a1]{ a1->AddA(); });
-        sig0.Track(connID, a1);
-        sig0.Connect(a1, &sgA::AddA);
-        sig0.Emit();
-        delete a1;
-        sig0.Emit(); // <-- this shouldn't crash
+        {
+            TestObjA *objA = new TestObjA();
 
-        // track signal deletion, while tracking object exists
-        sgC *c1 = new sgC();
-        Signal<> *sig1 = new Signal<>();
-        sig1->Connect(c1, &sgC::AddC);
-        delete sig1;
-        delete c1; // <-- this shouldn't crash
+            SigConnectionID connA1 = testSignal.Connect(objA, &TestObjA::Slot1);
+            // connA1 will be automatically tracked
+            testSignal.Emit(10);
+            TEST_VERIFY(objA->v1 == 10);
 
-        SigConnectionID connID2 = sig0.Connect([&sig0, &connID2]{
-            sig0.Block(connID2, true);
-            sig0.Emit();
-        });
-        sig0.Emit(); // <-- this shouldn't hang
+            SigConnectionID connA2 = testSignal.Connect([objA](int v) {
+                objA->Slot2(v);
+            });
+            // connA2 wont be automatically tracked 
+            // we should add it manually
+            testSignal.Track(connA2, objA);
+            testSignal.Emit(20);
+            TEST_VERIFY(objA->v1 == 20);
+            TEST_VERIFY(objA->v2 == 20);
+
+            // deleting object that is still connected to the signal
+            // if that object is derived by TrackedObject it will be
+            // automatically disconnected
+            delete objA;
+            testSignal.Emit(10); // <-- this shouldn't crash
+        }
+
+        {
+            TestObjB objB;
+            SigConnectionID connB1 = testSignal.Connect(&objB, &TestObjB::Slot1);
+            testSignal.Emit(10);
+
+            TEST_VERIFY(objB.v1 == 10);
+            
+            // TestObjB isn't derived from TrackedObject, so we
+            // should disconnect it manually
+            testSignal.Disconnect(connB1);  // <-- if we don't do this there can be crash, 
+                                            // when user invokes Emmit after objB becomes out of scope
+        }
+
+        testSignal.Emit(10); // <-- this should crash, because we already disconnect from dead objB
+
+        {
+            TestObjC *objC = new TestObjC();
+            Signal<int>* testSignal1 = new Signal<int>();
+
+            static_assert(std::is_base_of<TestObjB, TestObjC>::value, "");
+            Function<void(int)> fff(objC, &TestObjC::Slot1);
+
+            // track signal deletion, while tracking object exists
+            testSignal1->Connect(objC, &TestObjC::Slot1);
+            delete testSignal1;
+            delete objC; // <-- this shouldn't crash, because tracked signal will be removed when that signal was destroyed
+        }
+
+        {
+            testSignal.DisconnectAll();
+
+            TestObjC objC;
+            SigConnectionID connC1 = testSignal.Connect([&testSignal, &connC1, &objC](int v) {
+                objC.Slot1(v);
+                testSignal.Block(connC1, true);
+                testSignal.Emit(20);
+            });
+            testSignal.Emit(10); // <-- this shouldn't hang
+
+            TEST_VERIFY(objC.v1 == 10);
+            TEST_VERIFY(testSignal.IsBlocked(connC1) == true);
+        }
     }
 };

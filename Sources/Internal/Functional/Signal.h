@@ -37,11 +37,9 @@
 #include "Functional/Function.h"
 #include "Functional/SignalBase.h"
 
+// #define ENABLE_MULTITHREADED_SIGNALS // <-- this still isn't implemented
+
 namespace DAVA  {
-
-using SigConnectionID = size_t;
-static const SigConnectionID InvalidSigConnectionID = 0;
-
 namespace Sig11 {
 
 struct DummyMutex
@@ -76,15 +74,15 @@ public:
         return AddConnection(nullptr, Func(fn), tid);
     }
 
-    template<typename Obj>
-    SigConnectionID Connect(Obj *obj, void (Obj::* const& fn)(Args...), ThreadIDType tid = ThreadIDType())
+    template<typename Obj, typename Cls>
+    SigConnectionID Connect(Obj *obj, void (Cls::* const& fn)(Args...), ThreadIDType tid = ThreadIDType())
     {
         LockGuard<MutexType> guard(mutex);
         return AddConnection(TrackedObject::Cast(obj), Func(obj, fn), tid);
     }
 
-    template<typename Obj>
-    SigConnectionID Connect(Obj *obj, void (Obj::* const& fn)(Args...) const, ThreadIDType tid = ThreadIDType())
+    template<typename Obj, typename Cls>
+    SigConnectionID Connect(Obj *obj, void (Cls::* const& fn)(Args...) const, ThreadIDType tid = ThreadIDType())
     {
         LockGuard<MutexType> guard(mutex);
         return AddConnection(TrackedObject::Cast(obj), Func(obj, fn), tid);
@@ -208,10 +206,14 @@ public:
 protected:
     struct ConnData
     {
+        ConnData(Func&& fn_, TrackedObject* obj_, ThreadIDType tid_)
+            : fn(std::move(fn_)), obj(obj_), tid(tid_), blocked(false)
+        { }
+
         Func fn;
-        bool blocked;
         TrackedObject* obj;
         ThreadIDType tid;
+        bool blocked;
     };
 
     MutexType mutex;
@@ -219,16 +221,8 @@ protected:
 
     SigConnectionID AddConnection(TrackedObject* obj, Func&& fn, const ThreadIDType& tid)
     {
-        static Atomic<SigConnectionID> counter = { InvalidSigConnectionID };
-
-        SigConnectionID id = ++counter;
-
-        ConnData data;
-        data.fn = std::move(fn);
-        data.obj = obj;
-        data.tid = tid;
-
-        connections.emplace(id, data);
+        SigConnectionID id = SignalBase::GetUniqueConnectionID();
+        connections.emplace(std::make_pair(id, ConnData(std::move(fn), obj, tid)));
 
         if (nullptr != obj)
         {
@@ -264,7 +258,8 @@ public:
     }
 };
 
-#if 0
+#ifdef ENABLE_MULTITHREADED_SIGNALS
+
 template<typename... Args>
 class SignalMt : public Sig11::SignalImpl<Mutex, Thread::Id, Args...>
 {
@@ -300,6 +295,7 @@ class SignalMt : public Sig11::SignalImpl<Mutex, Thread::Id, Args...>
         }
     }
 };
+
 #endif
 
 

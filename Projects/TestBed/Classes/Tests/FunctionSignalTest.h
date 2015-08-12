@@ -45,6 +45,7 @@ public:
 
 protected:
     void OnButtonPress(BaseObject *obj, void *data, void *callerData);
+    void OnExitButton(BaseObject *obj, void *data, void *callerData) override;
 };
 
 #endif //__FUNCTIONSIGNAL_TEST_H__
