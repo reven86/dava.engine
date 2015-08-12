@@ -219,6 +219,7 @@ protected:
     MutexType mutex;
     Map<SigConnectionID, ConnData> connections;
 
+private:
     SigConnectionID AddConnection(TrackedObject* obj, Func&& fn, const ThreadIDType& tid)
     {
         SigConnectionID id = SignalBase::GetUniqueConnectionID();
@@ -237,7 +238,7 @@ protected:
 
 
 template<typename... Args>
-class Signal : public Sig11::SignalImpl<Sig11::DummyMutex, Sig11::DymmyThreadID, Args...>
+class Signal final : public Sig11::SignalImpl<Sig11::DummyMutex, Sig11::DymmyThreadID, Args...>
 {
 public:
     using Base = Sig11::SignalImpl<Sig11::DummyMutex, Sig11::DymmyThreadID, Args...>;
@@ -261,7 +262,7 @@ public:
 #ifdef ENABLE_MULTITHREADED_SIGNALS
 
 template<typename... Args>
-class SignalMt : public Sig11::SignalImpl<Mutex, Thread::Id, Args...>
+class SignalMt final : public Sig11::SignalImpl<Mutex, Thread::Id, Args...> 
 {
     using Base = Sig11::SignalImpl<Mutex, Thread::Id, Args...>;
 

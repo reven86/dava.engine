@@ -373,11 +373,8 @@ DAVA_TESTCLASS(FunctionBindSignalTest)
             TestObjC *objC = new TestObjC();
             Signal<int>* testSignal1 = new Signal<int>();
 
-            static_assert(std::is_base_of<TestObjB, TestObjC>::value, "");
-            Function<void(int)> fff(objC, &TestObjC::Slot1);
-
             // track signal deletion, while tracking object exists
-            testSignal1->Connect(objC, &TestObjC::Slot1);
+            testSignal1->Connect(objC, &TestObjB::Slot1);
             delete testSignal1;
             delete objC; // <-- this shouldn't crash, because tracked signal will be removed when that signal was destroyed
         }
