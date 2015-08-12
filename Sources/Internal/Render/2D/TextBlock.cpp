@@ -563,6 +563,12 @@ void TextBlock::CalculateCacheParams()
         Vector<float32> charSizes;
         textSize = font->GetStringMetrics(visualText, &charSizes);
         DVASSERT(charSizes.size() == visualText.length());
+        
+        for (auto& val : charSizes)
+        {
+            val = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(val);
+        }
+        
         WideString pointsStr;
         if((fittingType & FITTING_POINTS) && (drawSize.x < textSize.width))
         {
@@ -590,7 +596,7 @@ void TextBlock::CalculateCacheParams()
             auto fullWidth = static_cast<float32>(textSize.width);
             if(ALIGN_RIGHT & align)
             {
-                for(auto i = 0; i < length; ++i)
+                for(auto i = 0U; i < length; ++i)
                 {
                     if(fullWidth <= drawSize.x)
                     {
@@ -603,8 +609,8 @@ void TextBlock::CalculateCacheParams()
             }
             else if(ALIGN_HCENTER & align)
             {
-                int32 left = 0;
-                int32 right = length - 1;
+                auto left = 0U;
+                auto right = length - 1;
                 bool cutFromBegin = false;
                 
                 while (left != right)
@@ -629,7 +635,7 @@ void TextBlock::CalculateCacheParams()
             }
             else if (ALIGN_LEFT & align)
             {
-                for (int32 i = 1; i < length; ++i)
+                for (auto i = 1U; i < length; ++i)
                 {
                     fullWidth -= charSizes[length - i];
                     if (fullWidth <= drawSize.x)

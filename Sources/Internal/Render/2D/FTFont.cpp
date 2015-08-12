@@ -288,6 +288,17 @@ FT_Long FT_MulFix_Wrapper(FT_Long a, FT_Long b)
     return FT_MulFix(a, b);
 }
     
+#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_MACOS__)
+static FT_Long FT_DivFix_Wrapper(FT_Long a, FT_Long b) __attribute__((noinline));
+#else
+static FT_Long FT_DivFix_Wrapper(FT_Long a, FT_Long b);
+#endif
+
+FT_Long FT_DivFix_Wrapper(FT_Long a, FT_Long b)
+{
+    return FT_DivFix(a, b);
+}
+    
 FTInternalFont::FTInternalFont(const FilePath & path)
 : fontPath(path)
 , streamFont()
@@ -633,8 +644,12 @@ void FTInternalFont::Prepare(FT_Vector * advances)
 			{
 				FT_Vector  kern;
 				FT_Get_Kerning(face, prevIndex, glyph.index, FT_KERNING_UNFITTED, &kern );
-				prevAdvance->x += kern.x;
-				prevAdvance->y += kern.y;
+                // Scale kernings from virtual to physical, because FT_Set_Transform
+                // converts only glyph advances without kernings
+                // See http://www.freetype.org/freetype2/docs/reference/ft2-base_interface.html#FT_Set_Transform\
+                // TODO: Maybe should rewrite draw function with change font size and without usnig FT_Set_Transform
+                prevAdvance->x += FT_DivFix_Wrapper(kern.x, face->size->metrics.x_scale);
+                prevAdvance->y += FT_DivFix_Wrapper(kern.y, face->size->metrics.y_scale);
             	prevAdvance->x += glyph.delta;
 			}
 		}
