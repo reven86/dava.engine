@@ -50,7 +50,7 @@ bool CachePacket::Serialize()
     if (file->Write(&type) != sizeof(type))
         return false;
 
-    if (file->Write(key.data()) != key.size())
+    if (file->Write(key.data(), key.size()) != key.size())
         return false;
 
     if (type == PACKET_ADD_FILES_REQUEST || type == PACKET_GET_FILES_RESPONSE)
@@ -103,7 +103,7 @@ bool CachePacket::Deserialize()
         return false;
     }
 
-    if (file->Read(key.data()) != key.size())
+    if (file->Read(key.data(), key.size()) != key.size())
         return false;
 
     if (type == PACKET_ADD_FILES_REQUEST || type == PACKET_GET_FILES_RESPONSE)
