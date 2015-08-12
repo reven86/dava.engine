@@ -2777,6 +2777,10 @@
 		EAADA02918A26525001E1AA2 /* UIParticles.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EAAD9FFE1892A458001E1AA2 /* UIParticles.cpp */; };
 		EAADA02A18A2652A001E1AA2 /* UIParticles.h in Headers */ = {isa = PBXBuildFile; fileRef = EAAD9FFF1892A458001E1AA2 /* UIParticles.h */; };
 		EAADA02B18A2652A001E1AA2 /* UIParticles.h in Headers */ = {isa = PBXBuildFile; fileRef = EAAD9FFF1892A458001E1AA2 /* UIParticles.h */; };
+		F3E441D21B7A4DE9001FF7F1 /* Function.h in Headers */ = {isa = PBXBuildFile; fileRef = F3E441CE1B7A4DE9001FF7F1 /* Function.h */; };
+		F3E441D31B7A4DE9001FF7F1 /* Functional.h in Headers */ = {isa = PBXBuildFile; fileRef = F3E441CF1B7A4DE9001FF7F1 /* Functional.h */; };
+		F3E441D41B7A4DE9001FF7F1 /* Signal.h in Headers */ = {isa = PBXBuildFile; fileRef = F3E441D01B7A4DE9001FF7F1 /* Signal.h */; };
+		F3E441D51B7A4DE9001FF7F1 /* SignalBase.h in Headers */ = {isa = PBXBuildFile; fileRef = F3E441D11B7A4DE9001FF7F1 /* SignalBase.h */; };
 		FE44432A114D8DF600F5EFD6 /* ApplicationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE444329114D8DF600F5EFD6 /* ApplicationServices.framework */; };
 		FE578C601327927C0081BDE9 /* libogg_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FE578C5D1327927C0081BDE9 /* libogg_macos.a */; };
 		FE578C611327927C0081BDE9 /* libvorbis_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FE578C5E1327927C0081BDE9 /* libvorbis_macos.a */; };
@@ -3868,6 +3872,10 @@
 		EAAC98891937333D00549BAD /* MeshUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MeshUtils.h; sourceTree = "<group>"; };
 		EAAD9FFE1892A458001E1AA2 /* UIParticles.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIParticles.cpp; sourceTree = "<group>"; };
 		EAAD9FFF1892A458001E1AA2 /* UIParticles.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIParticles.h; sourceTree = "<group>"; };
+		F3E441CE1B7A4DE9001FF7F1 /* Function.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Function.h; path = Functional/Function.h; sourceTree = "<group>"; };
+		F3E441CF1B7A4DE9001FF7F1 /* Functional.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Functional.h; path = Functional/Functional.h; sourceTree = "<group>"; };
+		F3E441D01B7A4DE9001FF7F1 /* Signal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Signal.h; path = Functional/Signal.h; sourceTree = "<group>"; };
+		F3E441D11B7A4DE9001FF7F1 /* SignalBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SignalBase.h; path = Functional/SignalBase.h; sourceTree = "<group>"; };
 		FE444329114D8DF600F5EFD6 /* ApplicationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ApplicationServices.framework; path = /System/Library/Frameworks/ApplicationServices.framework; sourceTree = "<absolute>"; };
 		FE44442F114E77EC00F5EFD6 /* OpenAL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenAL.framework; path = /System/Library/Frameworks/OpenAL.framework; sourceTree = "<absolute>"; };
 		FE578C5D1327927C0081BDE9 /* libogg_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libogg_macos.a; path = ../../Libs/oggvorbis/lib/libogg_macos.a; sourceTree = SOURCE_ROOT; };
@@ -5493,6 +5501,17 @@
 			path = Controller;
 			sourceTree = "<group>";
 		};
+		F3E441CD1B7A4DCF001FF7F1 /* Functional */ = {
+			isa = PBXGroup;
+			children = (
+				F3E441CE1B7A4DE9001FF7F1 /* Function.h */,
+				F3E441CF1B7A4DE9001FF7F1 /* Functional.h */,
+				F3E441D01B7A4DE9001FF7F1 /* Signal.h */,
+				F3E441D11B7A4DE9001FF7F1 /* SignalBase.h */,
+			);
+			name = Functional;
+			sourceTree = "<group>";
+		};
 		FECFABB612E58B7800C71562 /* External */ = {
 			isa = PBXGroup;
 			children = (
@@ -5504,6 +5523,7 @@
 		FECFC0A512E87E3000C71562 /* Internal */ = {
 			isa = PBXGroup;
 			children = (
+				F3E441CD1B7A4DCF001FF7F1 /* Functional */,
 				E8989ABD16BD24E400732C04 /* Animation */,
 				E8989ACD16BD24E400732C04 /* Autotesting */,
 				E8989AD916BD24E400732C04 /* Base */,
@@ -6160,6 +6180,7 @@
 				E8989E6816BD24E500732C04 /* Math2DTemplateClasses.h in Headers */,
 				E8989E6916BD24E500732C04 /* MathConstants.h in Headers */,
 				E8989E6A16BD24E500732C04 /* MathDefines.h in Headers */,
+				F3E441D41B7A4DE9001FF7F1 /* Signal.h in Headers */,
 				E8989E6B16BD24E500732C04 /* MathHelpers.h in Headers */,
 				E8989E6C16BD24E500732C04 /* Matrix2.h in Headers */,
 				E8989E6D16BD24E500732C04 /* Matrix3.h in Headers */,
@@ -6200,6 +6221,7 @@
 				50F3B8751B1EE39E00976CBC /* TestClassFactory.h in Headers */,
 				84CB6723191FC8850086483D /* LibWebPHelper.h in Headers */,
 				84CB6723191FC8850086483D /* LibWebPHelper.h in Headers */,
+				F3E441D51B7A4DE9001FF7F1 /* SignalBase.h in Headers */,
 				E8989ECD16BD24E500732C04 /* NSFullScreenWindow.h in Headers */,
 				E8989ECF16BD24E500732C04 /* OpenGLView.h in Headers */,
 				644C86DF19476A7100964F91 /* VegetationFixedGeometry.h in Headers */,
@@ -6256,6 +6278,7 @@
 				E8990B381A288C2000FF71A1 /* SnapToLandscapeControllerComponent.h in Headers */,
 				644C86FD19476A7100964F91 /* VegetationSpatialData.h in Headers */,
 				E8989F5316BD24E500732C04 /* RenderResource.h in Headers */,
+				F3E441D21B7A4DE9001FF7F1 /* Function.h in Headers */,
 				026A1DC319DAF09700813AEF /* SkeletonComponent.h in Headers */,
 				E8989F5616BD24E500732C04 /* RGBColor.h in Headers */,
 				E8989F5816BD24E500732C04 /* Shader.h in Headers */,
@@ -6314,6 +6337,7 @@
 				E8989FA016BD24E500732C04 /* ImposterManager.h in Headers */,
 				0282B87718BC72BE006F1EE4 /* FMODFileSoundEvent.h in Headers */,
 				E8989FA216BD24E500732C04 /* ImposterNode.h in Headers */,
+				F3E441D31B7A4DE9001FF7F1 /* Functional.h in Headers */,
 				E8989FA416BD24E500732C04 /* LodNode.h in Headers */,
 				D7E6C5B0198255C000B96D1A /* bs_common.h in Headers */,
 				E8989FA616BD24E500732C04 /* MeshInstance.h in Headers */,
@@ -7558,7 +7582,7 @@
 				50C16DAF1A52D7B9003C307A /* NetworkUtils.cpp in Sources */,
 				7C007E1B1B384DAC000003DB /* ThreadWin32.cpp in Sources */,
 				E8989DB816BD24E500732C04 /* BaseObjectChecker.cpp in Sources */,
-				84CB6722191FC8850086483D /* LibJpegHelper.cpp in Sources */,
+				84CB6722191FC8850086483D /* LibWebPHelper.cpp in Sources */,
 				84CB6722191FC8850086483D /* LibWebPHelper.cpp in Sources */,
 				84CB6722191FC8850086483D /* LibWebPHelper.cpp in Sources */,
 				7C007E0F1B384DAC000003DB /* Thread.cpp in Sources */,
