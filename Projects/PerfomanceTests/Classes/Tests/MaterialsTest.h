@@ -26,46 +26,62 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
-#ifndef __UNIVERSAL_TEST_H__
-#define __UNIVERSAL_TEST_H__
+#ifndef __MATERIALS_TEST_H__
+#define __MATERIALS_TEST_H__
 
-#include "Tests/BaseTest.h"
-#include "Tests/Utils/WaypointsInterpolator.h"
-#include "Tests/Utils/TankUtils.h"
+#include "BaseTest.h"
 
-class UniversalTest : public BaseTest
+class MaterialsTest : public BaseTest
 {
 public:
+    MaterialsTest(const TestParams& testParams);
+    ~MaterialsTest();
     
-    UniversalTest(const TestParams& params);
+    void BeginFrame() override;
+    
+    bool IsFinished() const override;
     
     static const String TEST_NAME;
     
 protected:
-    
+  
     void LoadResources() override;
-    void PerformTestLogic(float32 timeElapsed) override;
+    void PerformTestLogic(float32 timeElapsed) override {};
+    
+    void PrintStatistic(const Vector<BaseTest::FrameInfo>& frames) override;
+    
+    const String& GetSceneName() const override;
     
 private:
     
-    static const FastName CAMERA;
+    Entity* CreateSpeedTreeEntity(Entity* entity);
+    Entity* CreateSkinnedEntity(Entity* entity);
+    Entity* CreateEntityForLightmapMaterial(Entity* entity);
     
-    static const FastName CAMERA_PATH;
-    static const FastName TANK_STUB;
-    static const FastName TANKS;
+    void ReplacePlanes(const Vector<Entity*>& planes);
     
-    static const float32 TANK_ROTATION_ANGLE;
+    static const String SPHERICAL_LIT_MATERIAL;
+    static const String SKINNED_MATERIAL;
+    static const String LIGHTMAP_MATERIAL;
     
-    Map<FastName, std::pair<Entity*, Vector<uint16>>> skinnedTankData;
-    List<Entity*> tankStubs;
+    static const FastName LIGHT_ENTITY;
+    static const FastName CAMERA_ENTITY;
+    static const FastName PLANE_ENTITY;
+    static const FastName MATERIALS_ENTITY;
     
-    std::unique_ptr<WaypointsInterpolator> waypointInterpolator;
+    static const uint32 FRAMES_PER_MATERIAL_TEST;
     
-    ScopedPtr<Camera> camera;
-    Vector3 camPos;
-    Vector3 camDst;
+    int32  currentTestStartFrame;
+    uint64 currentTestStartTime;
+    uint32 currentMaterialIndex;
     
-    float32 time;
+    Vector<Entity*> planes;
+    Vector<Entity*> spoPlanes;
+    Vector<Entity*> skinnedPlanes;
+    Vector<Entity*> lightmapMaterialPlanes;
+    
+    Vector<NMaterial*> materials;
+    Vector<float32> materialTestsElapsedTime;
 };
 
-#endif 
+#endif

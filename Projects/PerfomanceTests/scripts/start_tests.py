@@ -91,7 +91,6 @@ if args['test'] and args['test'] != "All":
 
     if args['test-frames']:
         TEST_PARAMS += " -test-frames " + args['test-frames']
-        TEST_PARAMS += " -frame-delta " + args['frame-delta']   
 
     if args['frame-delta']:
         TEST_PARAMS += " -frame-delta " + args['frame-delta']   
@@ -166,6 +165,9 @@ branch = branch.replace("/", "_")
 if not os.path.exists("../artifacts"):
     os.makedirs("../artifacts")
 
+if not os.path.exists("../artifacts/materials"):
+    os.makedirs("../artifacts/materials")
+
 device_name = "device_unrecognized"
 test_name = ""
 
@@ -184,10 +186,9 @@ while continue_process_stdout:
                 if line.find("device") != -1:
                     device_name = line.split("text")[1].split("'")[1].split("|")[0].split("device_")[1]
 
-                if line.find("TestName") != -1:
+                if line.find("testStarted") != -1:
 
-                    print line
-                    test_name = line.split("text")[1].split("'")[1].split("|")[0].split(":")[1]
+                    test_name = line.split("name")[1].split("'")[1].replace(": ", "_")
 
                     if 'frame_delta_file' in locals():
                         frame_delta_file.close()
@@ -197,13 +198,31 @@ while continue_process_stdout:
                     frame_delta_file = open("../artifacts/frame_delta" + "_test_" + test_name + "_branch_" + branch + "_" + device_name + ".txt", "w")
                     statistic_file = open("../artifacts/statistic" + "_test_" + test_name + "_branch_" + branch + "_" + device_name + ".txt", "w")
 
+                if line.find("MaterialsTest") != -1:
+
+                    material_test_file = open("../artifacts/materials/material_test.txt", "w")
+
+                if line.find("MaterialSubtestName:") != -1:
+
+                    subtest_name = line.split("Name:")[1].split("'")[0].split("|")[0]
+                    material_test_file.write(subtest_name + "\n")
+
+                    if 'subtest_delta_file' in locals():
+                        subtest_delta_file.close()
+
+                    subtest_delta_file = open("../artifacts/materials/" + subtest_name + ".txt", "w")
+
                 if line.find("buildStatisticValue") != -1:
 
                     key = line.split("key")[1].split("'")[1]
                     value = line.split("value")[1].split("'")[1]
 
+                    #write material frame delta
+                    if line.find("Material_frame_delta") != -1:
+                        subtest_delta_file.write(value + "\n")
+
                     # write Frame_delta build statistic to file
-                    if line.find("Frame_delta") != -1:
+                    elif line.find("Frame_delta") != -1:
                         frame_delta_file.write(value + "\n")
 
                     # append info to build statistic keys for compare on teamcity
@@ -212,6 +231,13 @@ while continue_process_stdout:
                         # write fps and memory statistic to file
                         if line.find("fps") != -1 or line.find("memory") != -1:
                             statistic_file.write(key + " " + value + "\n")
+
+                        #write material metrics
+                        if line.find("Material_test_time") != -1:
+                            material_test_file.write("Test time : " + value + "\n")
+
+                        if line.find("Material__elapsed_test_time") != -1:
+                            material_test_file.write("Test elapsed time : " + value + "\n\n")
 
                         #per frame metrics in ms
                         if line.find("frame") != -1:
@@ -233,6 +259,12 @@ while continue_process_stdout:
 
                     frame_delta_file.close()
                     statistic_file.close()
+
+                    if "material_test_file" in locals():
+                        material_test_file.close()
+
+                    if "subtest_delta_file" in locals():    
+                        subtest_delta_file.close()
 
                     if start_on_android:
                         # we want to exit from logcat process because sub_process.stdout.readline() will block
