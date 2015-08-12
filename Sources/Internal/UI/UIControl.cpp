@@ -118,8 +118,6 @@ namespace DAVA
 
 
         SetRect(rect, rectInAbsoluteCoordinates);
-
-        initialState = STATE_NORMAL;
     }
 
     UIControl::~UIControl()
@@ -1072,7 +1070,6 @@ namespace DAVA
         inputEnabled = srcControl->inputEnabled;
         clipContents = srcControl->clipContents;
 
-        initialState = srcControl->GetInitialState();
         drawPivotPointMode = srcControl->drawPivotPointMode;
         debugDrawColor = srcControl->debugDrawColor;
         debugDrawEnabled = srcControl->debugDrawEnabled;
@@ -1908,11 +1905,6 @@ namespace DAVA
         {
             node->Set("tag", GetTag());
         }
-        // Initial state.
-        if (baseControl->GetInitialState() != GetInitialState())
-        {
-            node->Set("initialState", GetInitialState());
-        }
 
         // Anchor data
         // Left Align
@@ -2071,14 +2063,6 @@ namespace DAVA
         if (tagNode)
         {
             SetTag(tagNode->AsInt32());
-        }
-
-        const YamlNode * initialStateNode = node->Get("initialState");
-        if (initialStateNode)
-        {
-            int32 newInitialState = initialStateNode->AsInt32();
-            SetInitialState(newInitialState);
-            SetState(newInitialState);
         }
 
         const YamlNode * leftAlignNode = node->Get("leftAlign");
@@ -2430,16 +2414,6 @@ namespace DAVA
     void UIControl::SetPreferredNodeType(YamlNode* node, const String& nodeTypeName)
     {
         node->Set("type", nodeTypeName);
-    }
-
-    int32 UIControl::GetInitialState() const
-    {
-        return initialState;
-    }
-
-    void UIControl::SetInitialState(int32 newState)
-    {
-        initialState = newState;
     }
 
     void UIControl::RegisterInputProcessor()
