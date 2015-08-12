@@ -31,7 +31,7 @@
 
     #define RHI__USE_DX11_RENDER_THREAD         0
     #define RHI__DX11_MAX_PREPARED_FRAME_COUNT  2
-    #define RHI__DX11_USE_DEFERRED_CONTEXT      0
+    #define RHI__DX11_USE_DEFERRED_CONTEXT      1
 
 
 namespace rhi
@@ -105,6 +105,7 @@ public:
     ID3D11RasterizerState*      cur_rs;
 
     ID3D11DeviceContext*        context;
+    ID3DUserDefinedAnnotation*  contextAnnotation;
     ID3D11CommandList*          commandList;
 
     
@@ -284,6 +285,11 @@ dx11_RenderPass_Allocate( const RenderPassConfig& passDesc, uint32 cmdBufCount, 
         if( !cb->context )
         {
             HRESULT hr = _D3D11_Device->CreateDeferredContext( 0, &(cb->context) );
+            
+            if( SUCCEEDED(hr) )            
+            {
+                hr = cb->context->QueryInterface( __uuidof(ID3DUserDefinedAnnotation), (void**)(&(cb->contextAnnotation)) );
+            }
         }
         #endif
 
@@ -836,16 +842,24 @@ dx11_CommandBuffer_DrawIndexedPrimitive( Handle cmdBuf, PrimitiveType type, uint
 static void
 dx11_CommandBuffer_SetMarker( Handle cmdBuf, const char* text )
 {
-#if RHI__DX11_USE_DEFERRED_CONTEXT
+    CommandBufferDX11_t* cb = CommandBufferPool::Get(cmdBuf);
 
+#if RHI__DX11_USE_DEFERRED_CONTEXT
+    
     wchar_t txt[128];
 
     ::MultiByteToWideChar( CP_ACP, 0, text, -1, txt, countof(txt));
-    ::D3DPERF_SetMarker( D3DCOLOR_ARGB(0xFF,0x40,0x40,0x80), txt );
+    
+    if( cb->contextAnnotation )
+    {
+        cb->contextAnnotation->SetMarker( txt );
+    }
+    else
+    {
+        ::D3DPERF_SetMarker( D3DCOLOR_ARGB(0xFF,0x40,0x40,0x80), txt );
+    }
 
 #else
-
-    CommandBufferDX11_t* cb = CommandBufferPool::Get(cmdBuf);
 
     if( !cb->text )
     {
@@ -1165,6 +1179,7 @@ Trace("\n\n-------------------------------\nframe %u generated\n",_Frame.back().
 CommandBufferDX11_t::CommandBufferDX11_t()
   : text(nullptr),
     context(nullptr),
+    contextAnnotation(nullptr),
     commandList(nullptr)
 {
 }

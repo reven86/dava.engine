@@ -20,15 +20,16 @@
 namespace rhi
 {
 
-ID3D11Device*           _D3D11_Device               = nullptr;
-IDXGISwapChain*         _D3D11_SwapChain            = nullptr;
-ID3D11Texture2D*        _D3D11_SwapChainBuffer      = nullptr;
-ID3D11RenderTargetView* _D3D11_RenderTargetView     = nullptr;
-ID3D11Texture2D*        _D3D11_DepthStencilBuffer   = nullptr;
-ID3D11DepthStencilView* _D3D11_DepthStencilView     = nullptr;
-D3D_FEATURE_LEVEL       _D3D11_FeatureLevel         = D3D_FEATURE_LEVEL_9_1;
-ID3D11DeviceContext*    _D3D11_ImmediateContext     = nullptr;
-ID3D11Debug*            _D3D11_Debug                = nullptr;
+ID3D11Device*               _D3D11_Device               = nullptr;
+IDXGISwapChain*             _D3D11_SwapChain            = nullptr;
+ID3D11Texture2D*            _D3D11_SwapChainBuffer      = nullptr;
+ID3D11RenderTargetView*     _D3D11_RenderTargetView     = nullptr;
+ID3D11Texture2D*            _D3D11_DepthStencilBuffer   = nullptr;
+ID3D11DepthStencilView*     _D3D11_DepthStencilView     = nullptr;
+D3D_FEATURE_LEVEL           _D3D11_FeatureLevel         = D3D_FEATURE_LEVEL_9_1;
+ID3D11DeviceContext*        _D3D11_ImmediateContext     = nullptr;
+ID3D11Debug*                _D3D11_Debug                = nullptr;
+ID3DUserDefinedAnnotation*  _D3D11_UserAnnotation       = nullptr;
 
 InitParam               _DX11_InitParam;
 
