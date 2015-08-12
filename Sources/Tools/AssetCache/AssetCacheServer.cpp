@@ -51,8 +51,8 @@ bool Server::Listen(uint16 port)
 {
     listenPort = port;
     DVASSERT(!netServer);
-    
-    netServer.reset(TCPConnection::CreateServer(NET_SERVICE_ID, Net::Endpoint(listenPort)));
+
+	netServer.reset(new TCPConnection(Net::SERVER_ROLE, NET_SERVICE_ID, Net::Endpoint(listenPort)));
     netServer->SetListener(this);
 
     return netServer->IsConnected();
@@ -77,49 +77,51 @@ void Server::Disconnect()
         netServer.reset();
     }
 }
-    
-void Server::PacketReceived(DAVA::TCPChannel *tcpChannel, const uint8* packet, size_t length)
+
+void Server::OnPacketReceived(Net::IChannel * channel, const void* packet, size_t length)
 {
     if(length)
     {
         ScopedPtr<KeyedArchive> archive(new KeyedArchive());
-        archive->Deserialize(packet, length);
+		archive->Deserialize(static_cast<const uint8 *>(packet), length);
         
         const auto packetID = archive->GetUInt32("PacketID", PACKET_UNKNOWN);
         switch (packetID)
         {
             case PACKET_ADD_REQUEST:
-                OnAddToCache(tcpChannel, archive);
+				OnAddToCache(channel, archive);
                 break;
                 
             case PACKET_GET_REQUEST:
-                OnGetFromCache(tcpChannel, archive);
+				OnGetFromCache(channel, archive);
                 break;
                 
             case PACKET_WARMING_UP_REQUEST:
-                OnWarmingUp(tcpChannel, archive);
+				OnWarmingUp(channel, archive);
                 break;
                 
             default:
                 Logger::Error("[AssetCache::Server::%s] Invalid packet id: (%d). Closing channel", __FUNCTION__, packetID);
-                netServer->DestroyChannel(tcpChannel);
+				netServer->DestroyChannel(channel);
                 break;
         }
     }
+
+	delete[] static_cast<const uint8*>(packet);
 }
     
-void Server::ChannelClosed(TCPChannel *tcpChannel, const char8* message)
+void Server::OnChannelClosed(Net::IChannel * channel, const char8* message)
 {
     if(delegate)
     {
-        delegate->OnChannelClosed(tcpChannel, message);
+		delegate->OnChannelClosed(channel, message);
     }
 }
 
     
-bool Server::AddedToCache(DAVA::TCPChannel *tcpChannel, const CacheItemKey &key, bool added)
+bool Server::AddedToCache(Net::IChannel * channel, const CacheItemKey &key, bool added)
 {
-    if(tcpChannel)
+    if(channel)
     {
         ScopedPtr<KeyedArchive> archieve(new KeyedArchive());
         archieve->SetUInt32("PacketID", PACKET_ADD_RESPONSE);
@@ -130,16 +132,16 @@ bool Server::AddedToCache(DAVA::TCPChannel *tcpChannel, const CacheItemKey &key,
        
         archieve->SetBool("added", added);
         
-        return tcpChannel->SendArchieve(archieve);
+		return SendArchieve(channel, archieve);
     }
     
     return false;
 }
     
     
-bool Server::Send(DAVA::TCPChannel *tcpChannel, const CacheItemKey &key, const CachedItemValue &value)
+bool Server::Send(Net::IChannel * channel, const CacheItemKey &key, const CachedItemValue &value)
 {
-    if(tcpChannel)
+    if(channel)
     {
         ScopedPtr<KeyedArchive> archieve(new KeyedArchive());
         archieve->SetUInt32("PacketID", PACKET_GET_RESPONSE);
@@ -152,14 +154,14 @@ bool Server::Send(DAVA::TCPChannel *tcpChannel, const CacheItemKey &key, const C
 		value.Serialize(valueArchieve, true);
 		archieve->SetArchive("value", valueArchieve);
 
-        return tcpChannel->SendArchieve(archieve);
-    }
+		return SendArchieve(channel, archieve);
+	}
     
     return false;
 }
 
 
-void Server::OnAddToCache(DAVA::TCPChannel *tcpChannel, KeyedArchive * archieve)
+void Server::OnAddToCache(Net::IChannel * channel, KeyedArchive * archieve)
 {
     if(delegate)
     {
@@ -175,7 +177,7 @@ void Server::OnAddToCache(DAVA::TCPChannel *tcpChannel, KeyedArchive * archieve)
 		CachedItemValue value;
 		value.Deserialize(valueArchieve);
         
-		delegate->OnAddToCache(tcpChannel, key, std::forward<CachedItemValue>(value));
+		delegate->OnAddToCache(channel, key, std::forward<CachedItemValue>(value));
     }
     else
     {
@@ -184,7 +186,7 @@ void Server::OnAddToCache(DAVA::TCPChannel *tcpChannel, KeyedArchive * archieve)
 }
     
     
-void Server::OnGetFromCache(DAVA::TCPChannel *tcpChannel, KeyedArchive * archieve)
+void Server::OnGetFromCache(Net::IChannel * channel, KeyedArchive * archieve)
 {
     if(delegate)
     {
@@ -194,7 +196,7 @@ void Server::OnGetFromCache(DAVA::TCPChannel *tcpChannel, KeyedArchive * archiev
         CacheItemKey key;
         DeserializeKey(key, keyArchieve);
         
-        delegate->OnRequestedFromCache(tcpChannel, key);
+        delegate->OnRequestedFromCache(channel, key);
     }
     else
     {
@@ -202,7 +204,7 @@ void Server::OnGetFromCache(DAVA::TCPChannel *tcpChannel, KeyedArchive * archiev
     }
 }
     
-void Server::OnWarmingUp(DAVA::TCPChannel *tcpChannel, KeyedArchive * archieve)
+void Server::OnWarmingUp(Net::IChannel * channel, KeyedArchive * archieve)
 {
     if(delegate)
     {
@@ -212,7 +214,7 @@ void Server::OnWarmingUp(DAVA::TCPChannel *tcpChannel, KeyedArchive * archieve)
         CacheItemKey key;
         DeserializeKey(key, keyArchieve);
         
-        delegate->OnWarmingUp(tcpChannel, key);
+        delegate->OnWarmingUp(channel, key);
     }
     else
     {
@@ -220,7 +222,20 @@ void Server::OnWarmingUp(DAVA::TCPChannel *tcpChannel, KeyedArchive * archieve)
     }
 }
 
-    
+bool Server::SendArchieve(DAVA::Net::IChannel* channel, KeyedArchive *archieve)
+{
+	DVASSERT(false && "Need to create one function for sendind data");
+
+	DVASSERT(archieve && channel);
+
+	auto packedSize = archieve->Serialize(nullptr, 0);
+	uint8 *packedData = new uint8[packedSize];
+
+	DVVERIFY(packedSize == archieve->Serialize(packedData, packedSize));
+
+	uint32 packedId = 0;
+	return channel->Send(packedData, packedSize, 0, &packedId);
+}
 
 }; // end of namespace AssetCache
 }; // end of namespace DAVA

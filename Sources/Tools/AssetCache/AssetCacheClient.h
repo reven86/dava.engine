@@ -32,6 +32,8 @@
 
 #include "Base/BaseTypes.h"
 
+#include "Network/IChannel.h"
+
 #include "AssetCache/TCPConnection/TCPConnection.h"
 #include "AssetCache/CacheItemKey.h"
 
@@ -39,7 +41,6 @@
 namespace DAVA
 {
 
-class TCPClient;
 namespace AssetCache
 {
  
@@ -54,7 +55,7 @@ public:
 	virtual void OnReceivedFromCache(const CacheItemKey &key, CachedItemValue &&value) {};
 };
 
-class Client: public DAVA::TCPChannelListener
+class Client: public DAVA::Net::IChannelListener
 {
 public:
     
@@ -71,23 +72,32 @@ public:
 	bool AddToCache(const CacheItemKey &key, const CachedItemValue &value);
     bool RequestFromCache(const CacheItemKey &key);
     bool WarmingUp(const CacheItemKey &key);
-    
-    //TCPChannelDelegate
-    void ChannelOpened(TCPChannel *tcpChannel) override;
-    void ChannelClosed(TCPChannel *tcpChannel, const char8* message) override;
-    void PacketReceived(DAVA::TCPChannel *tcpChannel, const uint8* packet, size_t length) override;
-    //END of TCPChannelDelegate
-    
-    TCPConnection * GetConnection() const;
-    
+
+	TCPConnection * GetConnection() const;
+
+	//Net::IChannelListener
+	// Channel is open (underlying transport has connection) and can receive and send data through IChannel interface
+	void OnChannelOpen(Net::IChannel* channel) override;
+	// Channel is closed (underlying transport has disconnected) with reason
+	void OnChannelClosed(Net::IChannel* channel, const char8* message) override;
+	// Some data arrived into channel
+	void OnPacketReceived(Net::IChannel* channel, const void* buffer, size_t length) override;
+	// Buffer has been sent and can be reused or freed
+	void OnPacketSent(Net::IChannel* channel, const void* buffer, size_t length) override {};
+	// Data packet with given ID has been delivered to other side
+	void OnPacketDelivered(Net::IChannel* channel, uint32 packetId) override {};
+
 private:
     
     void OnAddedToCache(KeyedArchive * archieve);
     void OnGotFromCache(KeyedArchive * archieve);
+
+	bool SendArchieve(DAVA::Net::IChannel* channel, KeyedArchive *archieve);
     
 private:
     std::unique_ptr<TCPConnection> netClient;
-    TCPChannel * openedChannel = nullptr;
+	
+	DAVA::Net::IChannel * openedChannel = nullptr;
     
     ClientListener * listener = nullptr;
 };
@@ -97,14 +107,15 @@ inline void Client::SetListener(ClientListener * _listener)
     listener = _listener;
 }
 
-inline TCPConnection * Client::GetConnection() const
-{
-    return netClient.get();
-}
-   
+ 
 inline bool Client::IsConnected()
 {
     return (openedChannel != nullptr);
+}
+
+inline TCPConnection * Client::GetConnection() const
+{
+	return netClient.get();
 }
 
     

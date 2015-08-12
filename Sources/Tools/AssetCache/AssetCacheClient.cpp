@@ -52,7 +52,7 @@ bool Client::Connect(const String &ip, uint16 port)
     DVASSERT(nullptr == netClient);
     DVASSERT(nullptr == openedChannel);
     
-    netClient.reset(TCPConnection::CreateClient(NET_SERVICE_ID, Net::Endpoint(ip.c_str(), port)));
+	netClient.reset(new TCPConnection(Net::CLIENT_ROLE, NET_SERVICE_ID, Net::Endpoint(ip.c_str(), port)));
     netClient->SetListener(this);
     
     return true;
@@ -85,8 +85,8 @@ bool Client::AddToCache(const CacheItemKey &key, const CachedItemValue &value)
 		value.Serialize(valueArchieve, true);
 		archieve->SetArchive("value", valueArchieve);
         
-        return openedChannel->SendArchieve(archieve);
-    }
+		return SendArchieve(openedChannel, archieve);
+	}
     
     return false;
 }
@@ -118,8 +118,8 @@ bool Client::RequestFromCache(const CacheItemKey &key)
         SerializeKey(key, keyArchieve);
         archieve->SetArchive("key", keyArchieve);
         
-        return openedChannel->SendArchieve(archieve);
-    }
+		return SendArchieve(openedChannel, archieve);
+	}
     
     return false;
 }
@@ -153,32 +153,32 @@ bool Client::WarmingUp(const CacheItemKey &key)
         SerializeKey(key, keyArchieve);
         archieve->SetArchive("key", keyArchieve);
         
-        return openedChannel->SendArchieve(archieve);
-    }
+		return SendArchieve(openedChannel, archieve);
+	}
     
     return false;
 }
 
 
-void Client::ChannelOpened(TCPChannel *tcpChannel)
+void Client::OnChannelOpen(DAVA::Net::IChannel* channel)
 {
     DVASSERT(openedChannel == nullptr);
-    openedChannel = tcpChannel;
+	openedChannel = channel;
 }
 
-void Client::ChannelClosed(TCPChannel *tcpChannel, const char8* message)
+void Client::OnChannelClosed(DAVA::Net::IChannel* channel, const char8* )
 {
-    DVASSERT(openedChannel == tcpChannel);
+	DVASSERT(openedChannel == channel);
     openedChannel = nullptr;
 }
 
-void Client::PacketReceived(DAVA::TCPChannel *tcpChannel, const uint8* packet, size_t length)
+void Client::OnPacketReceived(DAVA::Net::IChannel* channel, const void* packet, size_t length)
 {
-    DVASSERT(openedChannel == tcpChannel);
-    if(length && openedChannel == tcpChannel)
+	DVASSERT(openedChannel == channel);
+	if (length && openedChannel == channel)
     {
         ScopedPtr<KeyedArchive> archieve(new KeyedArchive());
-        archieve->Deserialize(packet, length);
+        archieve->Deserialize(static_cast<const uint8 *>(packet), length);
         
         auto packetID = archieve->GetUInt32("PacketID", PACKET_UNKNOWN);
         
@@ -197,8 +197,26 @@ void Client::PacketReceived(DAVA::TCPChannel *tcpChannel, const uint8* packet, s
                 break;
         }
     }
+
+	delete[] static_cast<const uint8*>(packet);
 }
-    
+
+bool Client::SendArchieve(DAVA::Net::IChannel* channel, KeyedArchive *archieve)
+{
+	DVASSERT(false && "Need to create one function for sendind data");
+
+	DVASSERT(archieve && channel);
+
+	auto packedSize = archieve->Serialize(nullptr, 0);
+	uint8 *packedData = new uint8[packedSize];
+
+	DVVERIFY(packedSize == archieve->Serialize(packedData, packedSize));
+
+	uint32 packedId = 0;
+	return channel->Send(packedData, packedSize, 0, &packedId);
+}
+
+
 }; // end of namespace AssetCache
 }; // end of namespace DAVA
 

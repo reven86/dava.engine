@@ -31,7 +31,7 @@
 
 #include "Concurrency/LockGuard.h"
 
-ServerLogics::RequestDescription::RequestDescription(DAVA::TCPChannel *channel, const DAVA::AssetCache::CacheItemKey &_key, DAVA::AssetCache::ePacketID _request)
+ServerLogics::RequestDescription::RequestDescription(DAVA::Net::IChannel *channel, const DAVA::AssetCache::CacheItemKey &_key, DAVA::AssetCache::ePacketID _request)
     : clientChannel(channel)
     , key(_key)
     , request(_request)
@@ -60,12 +60,12 @@ void ServerLogics::Init(DAVA::AssetCache::Server *_server, DAVA::AssetCache::Cli
     dataBase = _dataBase;
 }
 
-void ServerLogics::OnAddToCache(DAVA::TCPChannel *tcpChannel, const DAVA::AssetCache::CacheItemKey &key, DAVA::AssetCache::CachedItemValue &&value)
+void ServerLogics::OnAddToCache(DAVA::Net::IChannel *channel, const DAVA::AssetCache::CacheItemKey &key, DAVA::AssetCache::CachedItemValue &&value)
 {
-    if((nullptr != server) && (nullptr != tcpChannel))
+    if((nullptr != server) && (nullptr != channel))
     {
         dataBase->Insert(key, value);
-        server->AddedToCache(tcpChannel, key, true);
+        server->AddedToCache(channel, key, true);
 
         {   //add task for lazy sending of data
             DAVA::LockGuard<DAVA::Mutex> lock(taskMutex);
@@ -74,14 +74,14 @@ void ServerLogics::OnAddToCache(DAVA::TCPChannel *tcpChannel, const DAVA::AssetC
     }
 }
 
-void ServerLogics::OnRequestedFromCache(DAVA::TCPChannel *tcpChannel, const DAVA::AssetCache::CacheItemKey &key)
+void ServerLogics::OnRequestedFromCache(DAVA::Net::IChannel *channel, const DAVA::AssetCache::CacheItemKey &key)
 {
-    if((nullptr != server) && (nullptr != dataBase) && (nullptr != tcpChannel))
+    if((nullptr != server) && (nullptr != dataBase) && (nullptr != channel))
     {
         auto entry = dataBase->Get(key);
         if(nullptr != entry)
         {   // Found in db.
-			server->Send(tcpChannel, key, entry->GetValue());
+			server->Send(channel, key, entry->GetValue());
             
             {   //add task for lazy warming up
                 DAVA::LockGuard<DAVA::Mutex> lock(taskMutex);
@@ -91,16 +91,16 @@ void ServerLogics::OnRequestedFromCache(DAVA::TCPChannel *tcpChannel, const DAVA
         else if (client->RequestFromCache(key))
         {   // Not found in db. Ask from remote cache.
             DAVA::LockGuard<DAVA::Mutex> lock(requestMutex);
-            waitedRequests.emplace_back(RequestDescription(tcpChannel, key, DAVA::AssetCache::PACKET_GET_REQUEST));
+            waitedRequests.emplace_back(RequestDescription(channel, key, DAVA::AssetCache::PACKET_GET_REQUEST));
         }
         else
         {   // Not found in db. Remote server isn't connected.
-			server->Send(tcpChannel, key, DAVA::AssetCache::CachedItemValue());
+			server->Send(channel, key, DAVA::AssetCache::CachedItemValue());
         }
     }
 }
 
-void ServerLogics::OnWarmingUp(DAVA::TCPChannel *tcpChannel, const DAVA::AssetCache::CacheItemKey &key)
+void ServerLogics::OnWarmingUp(DAVA::Net::IChannel *channel, const DAVA::AssetCache::CacheItemKey &key)
 {
     if(nullptr != dataBase)
     {
@@ -108,14 +108,14 @@ void ServerLogics::OnWarmingUp(DAVA::TCPChannel *tcpChannel, const DAVA::AssetCa
     }
 }
 
-void ServerLogics::OnChannelClosed(DAVA::TCPChannel *tcpChannel, const DAVA::char8*)
+void ServerLogics::OnChannelClosed(DAVA::Net::IChannel *channel, const DAVA::char8*)
 {
     if(waitedRequests.size())
     {
         DAVA::LockGuard<DAVA::Mutex> lock(requestMutex);
-        auto iter = std::find_if(waitedRequests.begin(), waitedRequests.end(), [&tcpChannel](const RequestDescription& description) -> bool
+        auto iter = std::find_if(waitedRequests.begin(), waitedRequests.end(), [&channel](const RequestDescription& description) -> bool
                                  {
-                                     return (description.clientChannel == tcpChannel);
+                                     return (description.clientChannel == channel);
                                  });
         
         if(iter != waitedRequests.end())

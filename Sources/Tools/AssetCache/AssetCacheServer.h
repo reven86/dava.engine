@@ -32,13 +32,14 @@
 
 #include "Base/BaseTypes.h"
 
+#include "Network/IChannel.h"
+
 #include "AssetCache/TCPConnection/TCPConnection.h"
 #include "AssetCache/CacheItemKey.h"
 
 namespace DAVA
 {
 
-class TCPServer;
 namespace AssetCache
 {
  
@@ -51,15 +52,15 @@ public:
     
     virtual ~ServerDelegate() = default;
     
-    virtual void OnAddToCache(DAVA::TCPChannel *tcpChannel, const CacheItemKey &key, CachedItemValue &&value) = 0;
-    virtual void OnRequestedFromCache(DAVA::TCPChannel *tcpChannel, const CacheItemKey &key) = 0;
-    virtual void OnWarmingUp(DAVA::TCPChannel *tcpChannel, const CacheItemKey &key) = 0;
+	virtual void OnAddToCache(Net::IChannel * channel, const CacheItemKey &key, CachedItemValue &&value) = 0;
+	virtual void OnRequestedFromCache(Net::IChannel * channel, const CacheItemKey &key) = 0;
+	virtual void OnWarmingUp(Net::IChannel * channel, const CacheItemKey &key) = 0;
 
-    virtual void OnChannelClosed(TCPChannel *tcpChannel, const char8* message) { } ;
+	virtual void OnChannelClosed(Net::IChannel * channel, const char8* message) { };
 };
     
     
-class Server: public DAVA::TCPChannelListener
+class Server: public Net::IChannelListener
 {
 public:
     
@@ -75,20 +76,29 @@ public:
     
     uint16 GetListenPort() const;
     
-    //TCPChannelDelegate
-    void PacketReceived(DAVA::TCPChannel *tcpChannel, const uint8* packet, size_t length) override;
-    void ChannelClosed(TCPChannel *tcpChannel, const char8* message) override;
-    //END of TCPChannelDelegate
-    
-    bool AddedToCache(DAVA::TCPChannel *tcpChannel, const CacheItemKey &key, bool added);
-    bool Send(DAVA::TCPChannel *tcpChannel, const CacheItemKey &key, const CachedItemValue &value);
-    
-private:
-    
+	bool AddedToCache(Net::IChannel * channel, const CacheItemKey &key, bool added);
+	bool Send(Net::IChannel * channel, const CacheItemKey &key, const CachedItemValue &value);
 
-    void OnAddToCache(DAVA::TCPChannel *tcpChannel, KeyedArchive * archieve);
-    void OnGetFromCache(DAVA::TCPChannel *tcpChannel, KeyedArchive * archieve);
-    void OnWarmingUp(DAVA::TCPChannel *tcpChannel, KeyedArchive * archieve);
+	//Net::IChannelListener
+	// Channel is open (underlying transport has connection) and can receive and send data through IChannel interface
+	void OnChannelOpen(Net::IChannel* channel) override {};
+	// Channel is closed (underlying transport has disconnected) with reason
+	void OnChannelClosed(Net::IChannel * channel, const char8* message) override;
+	// Some data arrived into channel
+	void OnPacketReceived(Net::IChannel * channel, const void* buffer, size_t length) override;
+	// Buffer has been sent and can be reused or freed
+	void OnPacketSent(Net::IChannel* channel, const void* buffer, size_t length) override {};
+	// Data packet with given ID has been delivered to other side
+	void OnPacketDelivered(Net::IChannel* channel, uint32 packetId) override {};
+
+
+private:
+	bool SendArchieve(DAVA::Net::IChannel* channel, KeyedArchive *archieve);
+
+
+	void OnAddToCache(Net::IChannel * channel, KeyedArchive * archieve);
+	void OnGetFromCache(Net::IChannel * channel, KeyedArchive * archieve);
+	void OnWarmingUp(Net::IChannel * channel, KeyedArchive * archieve);
     
 private:
     

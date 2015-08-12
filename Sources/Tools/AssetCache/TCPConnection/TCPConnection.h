@@ -34,52 +34,46 @@
 #include "Network/NetworkCommon.h"
 #include "Network/NetCore.h"
 
-#include "AssetCache/TCPConnection/TCPChannel.h"
-
-
 namespace DAVA
 {
-    
+namespace Net
+{
+	struct IChannel;
+}
+
 class TCPConnection
 {
 public:
-
-    static TCPConnection * CreateClient(uint32 service, const Net::Endpoint & endpoint);
-    static TCPConnection * CreateServer(uint32 service, const Net::Endpoint & endpoint);
+	TCPConnection(Net::eNetworkRole role, uint32 service, const Net::Endpoint & endpoint);
     
     virtual ~TCPConnection();
 
-    bool Connect();
     void Disconnect();
     bool IsConnected() const;
 
-    void SetListener(TCPChannelListener * listener);
+    void SetListener(Net::IChannelListener * listener);
     
     const Net::Endpoint & GetEndpoint() const;
 
-    void DestroyChannel(TCPChannel *channel);
+    void DestroyChannel(Net::IChannel *channel);
     
 protected:
-    TCPConnection(Net::eNetworkRole role, uint32 service, const Net::Endpoint & endpoint);
-    
+
+	bool Connect(Net::eNetworkRole _role, uint32 service);
+
+
     static Net::IChannelListener * Create(uint32 serviceId, void* context);
     static void Delete(Net::IChannelListener* obj, void* context);
 
-    TCPChannel * CreateChannel();
+    Net::IChannel * CreateChannel();
 
 protected:
     
-    uint32 service;
-    Net::eNetworkRole role;
     Net::Endpoint endpoint;
     Net::NetCore::TrackId controllerId;
 
     bool isConnected = false;
-    
-    List<TCPChannel *> channels;
-    Mutex channelMutex;
-    
-    TCPChannelListener *listener;
+	Net::IChannelListener *listener;
 };
 
 inline bool TCPConnection::IsConnected() const

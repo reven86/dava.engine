@@ -29,7 +29,6 @@
 
 
 #include "AssetCache/TCPConnection/TCPConnection.h"
-#include "AssetCache/TCPConnection/TCPChannel.h"
 
 #include "Base/FunctionTraits.h"
 #include "Debug/DVAssert.h"
@@ -44,24 +43,11 @@
 namespace DAVA
 {
     
-TCPConnection * TCPConnection::CreateClient(uint32 service, const Net::Endpoint & endpoint)
-{
-    return new TCPConnection(Net::CLIENT_ROLE, service, endpoint);
-}
-
-TCPConnection * TCPConnection::CreateServer(uint32 service, const Net::Endpoint & endpoint)
-{
-    return new TCPConnection(Net::SERVER_ROLE, service, endpoint);
-}
-    
-    
 TCPConnection::TCPConnection(Net::eNetworkRole _role, uint32 _service, const Net::Endpoint & _endpoint)
-    : service(_service)
-    , role(_role)
-    , endpoint(_endpoint)
+    : endpoint(_endpoint)
     , controllerId(Net::NetCore::INVALID_TRACK_ID)
 {
-    Connect();
+    Connect(_role, _service);
 }
     
     
@@ -74,7 +60,7 @@ TCPConnection::~TCPConnection()
 }
     
     
-bool TCPConnection::Connect()
+bool TCPConnection::Connect(Net::eNetworkRole role, uint32 service)
 {
     isConnected = false;
     
@@ -124,47 +110,45 @@ void TCPConnection::Disconnect()
     
 Net::IChannelListener * TCPConnection::Create(uint32 serviceId, void* context)
 {
-    auto connection = static_cast<TCPConnection *>(context);
-    return connection->CreateChannel();
+//     auto connection = static_cast<TCPConnection *>(context);
+	//     return connection->CreateChannel();
+	DVASSERT(false && "Create function");
+	return nullptr;
 }
 
 void TCPConnection::Delete(Net::IChannelListener* obj, void* context)
 {
-    auto connection = static_cast<TCPConnection *>(context);
-    auto channel = DynamicTypeCheck<TCPChannel *>(obj);
-    return connection->DestroyChannel(channel);
+	DVASSERT(false && "Create function");
+//     auto connection = static_cast<TCPConnection *>(context);
+//     return connection->DestroyChannel(obj);
 }
 
-TCPChannel * TCPConnection::CreateChannel()
+Net::IChannel * TCPConnection::CreateChannel()
 {
-    LockGuard<Mutex> guard(channelMutex);
+	DVASSERT(false && "Create function");
 
-    auto newChannel = new TCPChannel();
-    newChannel->SetListener(listener);
+// 	auto newChannel = new Net::IChannel();
+//     newChannel->SetListener(listener);
+// 
+//     channels.push_back(newChannel);
+//    return newChannel;
 
-    channels.push_back(newChannel);
-    return newChannel;
+	return nullptr;
 }
 
-void TCPConnection::DestroyChannel(TCPChannel *channel)
+void TCPConnection::DestroyChannel(Net::IChannel *channel)
 {
-    LockGuard<Mutex> guard(channelMutex);
-
-    auto channelFound = std::find(channels.cbegin(), channels.cend(), channel);
-    DVASSERT(channelFound != channels.cend())
-    channels.erase(channelFound);
-    delete channel;
+	DVASSERT(false && "Create function");
+// 
+//     auto channelFound = std::find(channels.cbegin(), channels.cend(), channel);
+//     DVASSERT(channelFound != channels.cend())
+//     channels.erase(channelFound);
+//     delete channel;
 }
 
-void TCPConnection::SetListener(TCPChannelListener * _listener)
+void TCPConnection::SetListener(Net::IChannelListener * _listener)
 {
     listener = _listener;
-    
-    LockGuard<Mutex> guard(channelMutex);
-    for(auto ch: channels)
-    {
-        ch->SetListener(listener);
-    }
 }
     
 const Net::Endpoint & TCPConnection::GetEndpoint() const
