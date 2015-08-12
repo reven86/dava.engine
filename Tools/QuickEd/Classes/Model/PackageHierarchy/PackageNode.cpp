@@ -489,9 +489,11 @@ void PackageNode::RestoreProperties(ControlNode *node)
         for (int32 j = 0; j < controlSection->GetCount(); j++)
         {
             IntrospectionProperty *prop = controlSection->GetProperty(j);
-            if (prop->GetFlags() & AbstractProperty::EF_DEPENDS_ON_LAYOUTS && prop->GetStylePropertyIndex() != -1)
+            if (prop->GetFlags() & AbstractProperty::EF_DEPENDS_ON_LAYOUTS)
             {
-                node->GetControl()->SetPropertyLocalFlag(prop->GetStylePropertyIndex(), prop->IsOverridden());
+                prop->Refresh(AbstractProperty::REFRESH_DEPENDED_ON_LAYOUT_PROPERTIES);
+                if (prop->GetStylePropertyIndex() != -1)
+                    node->GetControl()->SetPropertyLocalFlag(prop->GetStylePropertyIndex(), prop->IsOverridden());
             }
         }
     }
