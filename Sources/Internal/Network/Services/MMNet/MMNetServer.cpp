@@ -52,27 +52,24 @@ namespace Net
 MMNetServer::MMNetServer()
     : NetService()
     , connToken(Random::Instance()->Rand())
-    , timerBegin(SystemTimer::Instance()->AbsoluteMS())
+    , baseTimePoint(SystemTimer::Instance()->AbsoluteMS())
     , anotherService(new MMAnotherService(SERVER_ROLE))
 {
     MemoryManager::Instance()->SetCallbacks(MakeFunction(this, &MMNetServer::OnUpdate),
                                             MakeFunction(this, &MMNetServer::OnTag));
 }
 
-MMNetServer::~MMNetServer()
-{
-}
+MMNetServer::~MMNetServer() = default;
 
 void MMNetServer::OnUpdate()
 {
     if (tokenRequested)
     {
-        statPeriod = 0;
         uint64 curTimestamp = SystemTimer::Instance()->AbsoluteMS();
-        if (curTimestamp - lastStatTimestamp >= statPeriod)
+        if (curTimestamp - lastGatheredStatTimestamp >= statGatherFreq)
         {
-            AutoReplyStat(curTimestamp - timerBegin);
-            lastStatTimestamp = curTimestamp;
+            AutoReplyStat(curTimestamp - baseTimePoint);
+            lastGatheredStatTimestamp = curTimestamp;
         }
     }
 }
@@ -86,13 +83,23 @@ void MMNetServer::ChannelOpen()
 {
     configSize = MemoryManager::Instance()->CalcStatConfigSize();
     statItemSize = MemoryManager::Instance()->CalcCurStatSize();
+
+    const uint32 MAX_PACKET_SIZE = 1024 * 30;
+    const uint32 FRAMES_PER_SECOND = 1000 / 16;
+    maxStatItemsPerPacket = statGatherFreq > 0 ? statSendFreq / statGatherFreq + 1
+                                               : statSendFreq / FRAMES_PER_SECOND + 1;
+    maxStatItemsPerPacket = std::min(maxStatItemsPerPacket, MAX_PACKET_SIZE / statItemSize);
 }
 
 void MMNetServer::ChannelClosed(const char8* /*message*/)
 {
     tokenRequested = false;
+    lastGatheredStatTimestamp = 0;
+    statSentStatTimestamp = 0;
+    statItemsInPacket = 0;
+    freePoolEntries = totalPoolEntries;
+    packetQueue.clear();
     anotherService->Stop();
-    // do cleanup
 }
 
 void MMNetServer::PacketReceived(const void* packet, size_t length)
@@ -110,7 +117,6 @@ void MMNetServer::PacketReceived(const void* packet, size_t length)
             ProcessRequestSnapshot(header, static_cast<const void*>(header + 1), dataLength);
             break;
         default:
-            DVASSERT(0);
             break;
         }
     }
@@ -126,58 +132,35 @@ void MMNetServer::ProcessRequestToken(const MMNetProto::PacketHeader* inHeader, 
 void MMNetServer::ProcessRequestSnapshot(const MMNetProto::PacketHeader* inHeader, const void* packetData, size_t dataLength)
 {
     DVASSERT(tokenRequested == true);
-    if (tokenRequested)
-    {
-        uint16 status = MMNetProto::STATUS_BUSY;
-        uint64 curTimestamp = SystemTimer::Instance()->AbsoluteMS();
-        if (curTimestamp - lastManualSnapshotTimestamp >= 5000)
-        {
-            lastManualSnapshotTimestamp = curTimestamp;
-            status = GetAndSaveSnapshot(curTimestamp - timerBegin) ? MMNetProto::STATUS_SUCCESS
-                                                                   : MMNetProto::STATUS_ERROR;
-        }
-        SendPacket(CreateHeaderOnlyPacket(MMNetProto::TYPE_REPLY_SNAPSHOT, status));
-    }
+    uint64 curTimestamp = SystemTimer::Instance()->AbsoluteMS();
+    uint16 status = GetAndSaveSnapshot(curTimestamp - baseTimePoint) ? MMNetProto::STATUS_SUCCESS
+                                                                     : MMNetProto::STATUS_ERROR;
+    SendPacket(CreateHeaderOnlyPacket(MMNetProto::TYPE_REPLY_SNAPSHOT, status));
 }
 
 void MMNetServer::AutoReplyStat(uint64 curTimestamp)
 {
-    if (0 == statTimestamp)
+    // Do not send anything if outgoing queue is too big
+    if (packetQueue.size() > 256)
+        return;
+
+    if (0 == statSentStatTimestamp)
     {
-        if (freeCachedPackets > 0)
-        {
-            curStatPacket = std::move(cachedStatPackets[cachedStatPackets.size() - freeCachedPackets]);
-            freeCachedPackets -= 1;
-        }
-        else
-        {
-            curStatPacket = CreateReplyStatPacket(maxStatItemsPerPacket);
-        }
-
-        MMNetProto::PacketHeader* header = curStatPacket.Header();
-        header->length = sizeof(MMNetProto::PacketHeader);
-        header->type = MMNetProto::TYPE_AUTO_STAT;
-        header->status = MMNetProto::STATUS_SUCCESS;
-        header->itemCount = 0;
-        header->token = connToken;
-
-        statTimestamp = curTimestamp;
+        curStatPacket = ObtainStatPacket();
+        statSentStatTimestamp = curTimestamp;
     }
 
-    MemoryManager::Instance()->GetCurStat(curStatPacket.Data<void>(statItemSize * statItemsInPacket), statItemSize);
-
-    MMCurStat* stat = curStatPacket.Data<MMCurStat>(statItemSize * statItemsInPacket);
-    stat->timestamp = curTimestamp;
+    MemoryManager::Instance()->GetCurStat(curTimestamp, curStatPacket.Data<void>(statItemSize * statItemsInPacket), statItemSize);
 
     MMNetProto::PacketHeader* header = curStatPacket.Header();
     header->length += statItemSize;
     header->itemCount += 1;
 
     statItemsInPacket += 1;
-    if (statItemsInPacket == maxStatItemsPerPacket || (curTimestamp - statTimestamp) >= 500)
+    if (statItemsInPacket == maxStatItemsPerPacket || (curTimestamp - statSentStatTimestamp) >= statSendFreq)
     {
-        statTimestamp = 0;
         statItemsInPacket = 0;
+        statSentStatTimestamp = 0;
         SendPacket(std::forward<MMNetProto::Packet>(curStatPacket));
     }
 }
@@ -196,16 +179,18 @@ void MMNetServer::PacketDelivered()
     }
     else if (MMNetProto::TYPE_AUTO_STAT == header->type)
     {
-        if (freeCachedPackets < cachedStatPackets.size())
-        {
-            cachedStatPackets[cachedStatPackets.size() - freeCachedPackets - 1] = std::move(packet);
-            freeCachedPackets += 1;
+        if (freePoolEntries < totalPoolEntries)
+        {   // Return packet back to pool if it has at least one occupied entry
+            packetPool[totalPoolEntries - freePoolEntries - 1] = std::move(packet);
+            freePoolEntries += 1;
         }
-        else if (cachedStatPackets.size() < maxCachedPackets)
-        {
-            cachedStatPackets.emplace_back(std::forward<MMNetProto::Packet>(packet));
-            freeCachedPackets += 1;
+        else if (totalPoolEntries < MAX_POOL_SIZE)
+        {   // Or increase pool if its size is less than maximum permitted size
+            packetPool[totalPoolEntries] = std::move(packet);
+            totalPoolEntries += 1;
+            freePoolEntries += 1;
         }
+        // If no conditions above are true simply discard packet
     }
 
     if (!packetQueue.empty())
@@ -224,6 +209,28 @@ void MMNetServer::SendPacket(MMNetProto::Packet&& packet)
         MMNetProto::Packet& x = packetQueue.front();
         Send(x.PlainBytes(), x.Header()->length);
     }
+}
+
+MMNetProto::Packet MMNetServer::ObtainStatPacket()
+{
+    MMNetProto::Packet packet;
+    if (freePoolEntries > 0)
+    {   // Pool has free entry, so get packet from entry with highest index
+        packet = std::move(packetPool[totalPoolEntries - freePoolEntries]);
+        freePoolEntries -= 1;
+    }
+    else
+    {   // Pool has no free entries or empty, so allocate new packet
+        packet = CreateReplyStatPacket(maxStatItemsPerPacket);
+    }
+
+    MMNetProto::PacketHeader* header = packet.Header();
+    header->length = sizeof(MMNetProto::PacketHeader);
+    header->type = MMNetProto::TYPE_AUTO_STAT;
+    header->status = MMNetProto::STATUS_SUCCESS;
+    header->itemCount = 0;
+    header->token = connToken;
+    return packet;
 }
 
 MMNetProto::Packet MMNetServer::CreateHeaderOnlyPacket(uint16 type, uint16 status)

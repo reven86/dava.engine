@@ -84,32 +84,61 @@ class Packet
 {
 public:
     Packet() = default;
-    Packet(size_t dataSize)
-        : plainBytes(sizeof(PacketHeader) + dataSize)
-    {}
-    Packet(Packet&& other)
-        : plainBytes(std::move(other.plainBytes))
-    {}
-    Packet& operator = (Packet&& other)
-    {
-        if (this != &other)
-            plainBytes = std::move(other.plainBytes);
-        return *this;
-    }
+    Packet(size_t dataSize);
+    Packet(Packet&& other);
+    Packet& operator = (Packet&& other) DAVA_NOEXCEPT;
 
-    const uint8* PlainBytes() const { return &*plainBytes.begin(); }
+    const uint8* PlainBytes() const;
+    size_t PlainSize() const;
 
-    PacketHeader* Header() { return reinterpret_cast<PacketHeader*>(&*plainBytes.begin()); }
-
+    PacketHeader* Header();
     template<typename T>
-    T* Data(const size_t offset = 0) { return OffsetPointer<T>(&*plainBytes.begin(), sizeof(PacketHeader) + offset); }
+    T* Data(const size_t offset = 0);
 
 private:
     Vector<uint8> plainBytes;
 };
 
-}   // namespace MMNetProto
+//////////////////////////////////////////////////////////////////////////
+inline Packet::Packet(size_t dataSize)
+    : plainBytes(sizeof(PacketHeader) + dataSize)
+{}
 
+inline Packet::Packet(Packet&& other)
+    : plainBytes(std::move(other.plainBytes))
+{}
+
+inline Packet& Packet::operator = (Packet&& other) DAVA_NOEXCEPT
+{
+    if (this != &other)
+    {
+        plainBytes = std::move(other.plainBytes);
+    }
+    return *this;
+}
+
+inline const uint8* Packet::PlainBytes() const
+{
+    return &*plainBytes.begin();
+}
+
+inline size_t Packet::PlainSize() const
+{
+    return plainBytes.size();
+}
+
+inline PacketHeader* Packet::Header()
+{
+    return reinterpret_cast<PacketHeader*>(&*plainBytes.begin());
+}
+
+template<typename T>
+inline T* Packet::Data(const size_t offset)
+{
+    return OffsetPointer<T>(&*plainBytes.begin(), sizeof(PacketHeader) + offset);
+}
+
+}   // namespace MMNetProto
 }   // namespace Net
 }   // namespace DAVA
 
