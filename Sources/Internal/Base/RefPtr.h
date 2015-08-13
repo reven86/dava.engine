@@ -46,10 +46,14 @@ public:
 	/// reinitializes pointer without incrementing reference
 	void Set(T * p)
 	{
-		T*tmp_ptr = _ptr;
-		_ptr = p;
-		SafeRelease(tmp_ptr);
+        std::swap(p, _ptr);
+		SafeRelease(p);
 	}
+
+    void Reset()
+    {
+        Set(nullptr);
+    }
 	
 	~RefPtr()
 	{
@@ -88,6 +92,13 @@ public:
 		assign(rp);
 		return *this;
 	}
+
+    RefPtr & operator = (RefPtr && rp) DAVA_NOEXCEPT
+    {
+        RefPtr<T> rcv(std::move(rp));
+        Swap(rcv);
+        return *this;
+    }
 	
 	template <class Other> RefPtr & operator = (const RefPtr<Other> & rp)
 	{
@@ -106,6 +117,11 @@ public:
 		SafeRelease(tmp_ptr);
 		return *this;
 	}
+
+    void Swap(RefPtr & rp) DAVA_NOEXCEPT
+    {
+        std::swap(rp._ptr, _ptr);
+    }
 	
 	/// implicit output conversion
 	//operator T*() const { return _ptr; }
