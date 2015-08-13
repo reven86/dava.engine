@@ -956,6 +956,8 @@
 		505EB4111824CEC5009BEA3C /* OcclusionQuery.h in Headers */ = {isa = PBXBuildFile; fileRef = 505EB40D1824CEC5009BEA3C /* OcclusionQuery.h */; };
 		505EB4121824CEC5009BEA3C /* OcclusionQuery.h in Headers */ = {isa = PBXBuildFile; fileRef = 505EB40D1824CEC5009BEA3C /* OcclusionQuery.h */; };
 		505EB4131824CEC5009BEA3C /* OcclusionQuery.h in Headers */ = {isa = PBXBuildFile; fileRef = 505EB40D1824CEC5009BEA3C /* OcclusionQuery.h */; };
+		50684F901B7A4FCB005A1DE2 /* MMAnotherService.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50684F8E1B7A4FCB005A1DE2 /* MMAnotherService.cpp */; };
+		50684F911B7A4FCB005A1DE2 /* MMAnotherService.h in Headers */ = {isa = PBXBuildFile; fileRef = 50684F8F1B7A4FCB005A1DE2 /* MMAnotherService.h */; };
 		509740D816C12EED00631E71 /* IntrospectionBase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8CC1BF616C109F1009B49BF /* IntrospectionBase.cpp */; };
 		509740DA16C12EEE00631E71 /* IntrospectionBase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8CC1BF616C109F1009B49BF /* IntrospectionBase.cpp */; };
 		50A3043B18575C370082CA8D /* StaticOcclusion.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50A3043718575C370082CA8D /* StaticOcclusion.cpp */; };
@@ -2994,6 +2996,8 @@
 		5059E0951B32DA1000FD2730 /* TestClass.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TestClass.cpp; path = UnitTests/TestClass.cpp; sourceTree = "<group>"; };
 		505EB40C1824CEC5009BEA3C /* OcclusionQuery.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OcclusionQuery.cpp; sourceTree = "<group>"; };
 		505EB40D1824CEC5009BEA3C /* OcclusionQuery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OcclusionQuery.h; sourceTree = "<group>"; };
+		50684F8E1B7A4FCB005A1DE2 /* MMAnotherService.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MMAnotherService.cpp; path = MMNet/MMAnotherService.cpp; sourceTree = "<group>"; };
+		50684F8F1B7A4FCB005A1DE2 /* MMAnotherService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MMAnotherService.h; path = MMNet/MMAnotherService.h; sourceTree = "<group>"; };
 		50A3043718575C370082CA8D /* StaticOcclusion.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StaticOcclusion.cpp; sourceTree = "<group>"; };
 		50A3043818575C370082CA8D /* StaticOcclusion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StaticOcclusion.h; sourceTree = "<group>"; };
 		50A3043918575C370082CA8D /* StaticOcclusionRenderPass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StaticOcclusionRenderPass.h; sourceTree = "<group>"; };
@@ -4097,6 +4101,8 @@
 		5015AF3C1B15E5320062C971 /* MMNet */ = {
 			isa = PBXGroup;
 			children = (
+				50684F8E1B7A4FCB005A1DE2 /* MMAnotherService.cpp */,
+				50684F8F1B7A4FCB005A1DE2 /* MMAnotherService.h */,
 				5015AF3D1B15E5400062C971 /* MMNetClient.cpp */,
 				5015AF3E1B15E5400062C971 /* MMNetClient.h */,
 				5015AF3F1B15E5400062C971 /* MMNetProto.h */,
@@ -6174,6 +6180,7 @@
 				E8989E7816BD24E500732C04 /* Quaternion.h in Headers */,
 				11B346911B42CDD6007DD207 /* UIStyleSheetPropertyDataBase.h in Headers */,
 				D738BD731B01F1BC00989C29 /* RawTimer.h in Headers */,
+				50684F911B7A4FCB005A1DE2 /* MMAnotherService.h in Headers */,
 				5015AF441B15E5400062C971 /* MMNetProto.h in Headers */,
 				E8989E7916BD24E500732C04 /* Ray.h in Headers */,
 				E8989E7A16BD24E500732C04 /* Rect.h in Headers */,
@@ -7558,7 +7565,7 @@
 				50C16DAF1A52D7B9003C307A /* NetworkUtils.cpp in Sources */,
 				7C007E1B1B384DAC000003DB /* ThreadWin32.cpp in Sources */,
 				E8989DB816BD24E500732C04 /* BaseObjectChecker.cpp in Sources */,
-				84CB6722191FC8850086483D /* LibJpegHelper.cpp in Sources */,
+				84CB6722191FC8850086483D /* LibWebPHelper.cpp in Sources */,
 				84CB6722191FC8850086483D /* LibWebPHelper.cpp in Sources */,
 				84CB6722191FC8850086483D /* LibWebPHelper.cpp in Sources */,
 				7C007E0F1B384DAC000003DB /* Thread.cpp in Sources */,
@@ -7799,6 +7806,7 @@
 				E8989FC516BD24E500732C04 /* SceneNodeAnimation.cpp in Sources */,
 				EAAC988A1937333D00549BAD /* MeshUtils.cpp in Sources */,
 				E8989FC716BD24E500732C04 /* SceneNodeAnimationKey.cpp in Sources */,
+				50684F901B7A4FCB005A1DE2 /* MMAnotherService.cpp in Sources */,
 				E8989FC916BD24E500732C04 /* SceneNodeAnimationList.cpp in Sources */,
 				E8989FCB16BD24E500732C04 /* ShadowVolumeNode.cpp in Sources */,
 				50A3043B18575C370082CA8D /* StaticOcclusion.cpp in Sources */,
