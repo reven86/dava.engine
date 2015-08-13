@@ -288,17 +288,6 @@ FT_Long FT_MulFix_Wrapper(FT_Long a, FT_Long b)
     return FT_MulFix(a, b);
 }
     
-#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_MACOS__)
-static FT_Long FT_DivFix_Wrapper(FT_Long a, FT_Long b) __attribute__((noinline));
-#else
-static FT_Long FT_DivFix_Wrapper(FT_Long a, FT_Long b);
-#endif
-
-FT_Long FT_DivFix_Wrapper(FT_Long a, FT_Long b)
-{
-    return FT_DivFix(a, b);
-}
-    
 FTInternalFont::FTInternalFont(const FilePath & path)
 : fontPath(path)
 , streamFont()
