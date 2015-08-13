@@ -31,7 +31,6 @@
 
     #define RHI__USE_DX11_RENDER_THREAD         0
     #define RHI__DX11_MAX_PREPARED_FRAME_COUNT  2
-    #define RHI__DX11_USE_DEFERRED_CONTEXT      1
 
 
 namespace rhi
@@ -64,32 +63,14 @@ class
 CommandBufferDX11_t
 {
 public:
-                CommandBufferDX11_t();
-                ~CommandBufferDX11_t();
+                                CommandBufferDX11_t();
+                                ~CommandBufferDX11_t();
 
-    void        Begin();
-    void        End();
-    void        Execute();
+    void                        Execute();
 
-
-    void        Command( uint64 cmd );
-    void        Command( uint64 cmd, uint64 arg1 );
-    void        Command( uint64 cmd, uint64 arg1, uint64 arg2 );
-    void        Command( uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3 );
-    void        Command( uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3, uint64 arg4 );
-    void        Command( uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3, uint64 arg4, uint64 arg5 );
-    void        Command( uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3, uint64 arg4, uint64 arg5, uint64 arg6 );
-
-
-    void        BeginScene( ID3D11DeviceContext* context );
-    void        EndScene( ID3D11DeviceContext* context );
-
-
-    RenderPassConfig    passCfg;
-    uint32              isFirstInPass:1;
-    uint32              isLastInPass:1;
-    
-    std::vector<uint64> _cmd;
+    RenderPassConfig            passCfg;
+    uint32                      isFirstInPass:1;
+    uint32                      isLastInPass:1;
 
 
     D3D11_PRIMITIVE_TOPOLOGY    cur_topo;
@@ -107,44 +88,10 @@ public:
     ID3D11DeviceContext*        context;
     ID3DUserDefinedAnnotation*  contextAnnotation;
     ID3D11CommandList*          commandList;
-
     
-    RingBuffer*         text;
-
-    Handle              sync;
+    Handle                      sync;
 };
 
-enum
-CommandDX11
-{
-    DX11__BEGIN,
-    DX11__END,
-
-    DX11__SET_VERTEX_DATA,
-    DX11__SET_INDICES,
-    DX11__SET_QUERY_BUFFER,
-    DX11__SET_QUERY_INDEX,
-
-    DX11__SET_PIPELINE_STATE,
-    DX11__SET_CULL_MODE,
-    DX11__SET_SCISSOR_RECT,
-    DX11__SET_VIEWPORT,
-    DX11__SET_VERTEX_PROG_CONST_BUFFER,
-    DX11__SET_VERTEX_TEXTURE,
-    DX11__SET_FRAGMENT_PROG_CONST_BUFFER,
-    DX11__SET_FRAGMENT_TEXTURE,
-
-    DX11__SET_DEPTHSTENCIL_STATE,
-    DX11__SET_SAMPLER_STATE,
-
-    DX11__DRAW_PRIMITIVE,
-    DX11__DRAW_INDEXED_PRIMITIVE,
-
-    DX11__DEBUG_MARKER,
-
-
-    DX11__NOP
-};
 
 class 
 RenderPassDX11_t
@@ -154,6 +101,7 @@ public:
     std::vector<Handle> cmdBuf;
     int                 priority;
 };
+
 
 struct
 SyncObjectDX11_t 
@@ -281,7 +229,6 @@ dx11_RenderPass_Allocate( const RenderPassConfig& passDesc, uint32 cmdBufCount, 
         cb->isFirstInPass = i == 0;
         cb->isLastInPass  = i == cmdBufCount-1;
 
-        #if RHI__DX11_USE_DEFERRED_CONTEXT
         if( !cb->context )
         {
             HRESULT hr = _D3D11_Device->CreateDeferredContext( 0, &(cb->context) );
@@ -291,7 +238,6 @@ dx11_RenderPass_Allocate( const RenderPassConfig& passDesc, uint32 cmdBufCount, 
                 hr = cb->context->QueryInterface( __uuidof(ID3DUserDefinedAnnotation), (void**)(&(cb->contextAnnotation)) );
             }
         }
-        #endif
 
         pass->cmdBuf[i] = h;
         cmdBuf[i]       = h;
@@ -350,23 +296,93 @@ SetupDispatch( Dispatch* dispatch )
 }
 
 
-
 //------------------------------------------------------------------------------
 
 static void
 dx11_CommandBuffer_Begin( Handle cmdBuf )
 {
-    CommandBufferDX11_t*    cb = CommandBufferPool::Get( cmdBuf );
+    CommandBufferDX11_t*    cb          = CommandBufferPool::Get( cmdBuf );
+    ID3D11DeviceContext*    context     = cb->context;
+    bool                    clear_color = cb->isFirstInPass && cb->passCfg.colorBuffer[0].loadAction == LOADACTION_CLEAR;
+    bool                    clear_depth = cb->isFirstInPass && cb->passCfg.depthStencilBuffer.loadAction == LOADACTION_CLEAR;
+    ID3D11RenderTargetView* rt[1]       = { _D3D11_RenderTargetView };
     
-#if RHI__DX11_USE_DEFERRED_CONTEXT
+    cb->cur_topo                = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+    cb->cur_ib                  = InvalidIndex;
+    cb->cur_vb                  = InvalidIndex;
+    cb->cur_vb_stride           = 0;
+    cb->cur_pipelinestate       = InvalidHandle;
+    cb->cur_stride              = 0;
+    cb->cur_query_buf           = InvalidHandle;
+    cb->cur_query_i             = InvalidIndex;
+    cb->cur_rs                  = nullptr;
 
-    cb->BeginScene( cb->context );
+    cb->rs_param.cullMode       = CULL_NONE;
+    cb->rs_param.scissorEnabled = false;
 
-#else
+    cb->sync                    = InvalidHandle;
 
-    cb->Command( DX11__BEGIN );
+    cb->def_viewport.TopLeftX   = 0;
+    cb->def_viewport.TopLeftY   = 0;
+    cb->def_viewport.MinDepth   = 0.0f;
+    cb->def_viewport.MaxDepth   = 1.0f;
 
-#endif
+
+    if( cb->passCfg.colorBuffer[0].texture != rhi::InvalidHandle )
+    {
+        Size2i  sz = TextureDX11::Size( cb->passCfg.colorBuffer[0].texture );
+                        
+        cb->def_viewport.Width  = float(sz.dx);
+        cb->def_viewport.Height = float(sz.dy);
+
+        TextureDX11::SetRenderTarget( cb->passCfg.colorBuffer[0].texture, cb->passCfg.depthStencilBuffer.texture, _D3D11_ImmediateContext );
+    }
+    else
+    {
+        context->OMSetRenderTargets( 1, rt, _D3D11_DepthStencilView );
+    }
+
+
+    ID3D11RenderTargetView* rt_view[D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT] = { NULL };
+    ID3D11DepthStencilView* ds_view = NULL;
+                    
+    context->OMGetRenderTargets( countof(rt_view), rt_view, &ds_view );
+
+    for( unsigned i=0; i!=countof(rt_view); ++i )
+    {
+        if( rt_view[i] )
+        {
+            if( i == 0 )
+            {
+                if( cb->passCfg.colorBuffer[0].texture == rhi::InvalidHandle )
+                {
+                    D3D11_TEXTURE2D_DESC    desc;
+
+                    _D3D11_SwapChainBuffer->GetDesc( &desc );
+
+                    cb->def_viewport.Width  = float(desc.Width);
+                    cb->def_viewport.Height = float(desc.Height);                                
+                }
+                                                                
+                context->RSSetViewports( 1, &(cb->def_viewport) );
+            }
+                            
+            if( clear_color )
+                context->ClearRenderTargetView( rt_view[i], cb->passCfg.colorBuffer[0].clearColor );
+                            
+            rt_view[i]->Release();
+        }
+    }
+
+    if( ds_view )
+    {
+        if( clear_depth )
+            context->ClearDepthStencilView( ds_view, D3D11_CLEAR_DEPTH, cb->passCfg.depthStencilBuffer.clearDepth, 0 );
+                        
+        ds_view->Release();
+    }
+
+    context->IASetPrimitiveTopology( cb->cur_topo );
 }
 
 
@@ -377,16 +393,8 @@ dx11_CommandBuffer_End( Handle cmdBuf, Handle syncObject )
 {
     CommandBufferDX11_t*    cb = CommandBufferPool::Get( cmdBuf );
 
-#if RHI__DX11_USE_DEFERRED_CONTEXT
-
     cb->context->FinishCommandList( TRUE, &(cb->commandList) );
     cb->sync = syncObject;
-
-#else
-
-    cb->Command( DX11__END, syncObject );
-
-#endif
 }
 
 
@@ -395,26 +403,16 @@ dx11_CommandBuffer_End( Handle cmdBuf, Handle syncObject )
 static void
 dx11_CommandBuffer_SetPipelineState( Handle cmdBuf, Handle ps, uint32 vdeclUID )
 {
-    CommandBufferDX11_t*    cb = CommandBufferPool::Get( cmdBuf );
-
-#if RHI__DX11_USE_DEFERRED_CONTEXT
-
-    const VertexLayout* vdecl  = (vdeclUID == VertexLayout::InvalidUID)  
-                                 ? nullptr  
-                                 : VertexLayout::Get( vdeclUID );
+    CommandBufferDX11_t*    cb    = CommandBufferPool::Get( cmdBuf );
+    const VertexLayout*     vdecl = (vdeclUID == VertexLayout::InvalidUID)  
+                                    ? nullptr  
+                                    : VertexLayout::Get( vdeclUID );
                 
     cb->cur_pipelinestate = ps;
     cb->cur_vb_stride     = (vdecl)  ? vdecl->Stride()  : 0;
 
-
     PipelineStateDX11::SetToRHI( ps, vdeclUID, cb->context );
     StatSet::IncStat( stat_SET_PS, 1 );
-
-#else
-
-    cb->Command( DX11__SET_PIPELINE_STATE, ps, vdeclUID );
-
-#endif
 }
 
 
@@ -425,16 +423,8 @@ dx11_CommandBuffer_SetCullMode( Handle cmdBuf, CullMode mode )
 {
     CommandBufferDX11_t*    cb = CommandBufferPool::Get( cmdBuf );
 
-#if RHI__DX11_USE_DEFERRED_CONTEXT
-
     cb->rs_param.cullMode = mode;
     cb->cur_rs = nullptr;
-
-#else
-
-    CommandBufferPool::Get(cmdBuf)->Command( DX11__SET_CULL_MODE, mode );
-
-#endif
 }
 
 
@@ -444,13 +434,10 @@ void
 dx11_CommandBuffer_SetScissorRect( Handle cmdBuf, ScissorRect rect )
 {
     CommandBufferDX11_t*    cb = CommandBufferPool::Get( cmdBuf );
-
-#if RHI__DX11_USE_DEFERRED_CONTEXT
-
-    int x = rect.x;
-    int y = rect.y;
-    int w = rect.width;
-    int h = rect.height;
+    int                     x  = rect.x;
+    int                     y  = rect.y;
+    int                     w  = rect.width;
+    int                     h  = rect.height;
 
     if( !(x==0  &&  y==0  &&  w==0  &&  h==0) )
     {
@@ -466,12 +453,6 @@ dx11_CommandBuffer_SetScissorRect( Handle cmdBuf, ScissorRect rect )
         cb->rs_param.scissorEnabled = false;
         cb->cur_rs = nullptr;
     }
-
-#else
-    
-    cb->Command( DX11__SET_SCISSOR_RECT, rect.x, rect.y, rect.width, rect.height );
-
-#endif
 }
 
 
@@ -481,13 +462,10 @@ void
 dx11_CommandBuffer_SetViewport( Handle cmdBuf, Viewport vp )
 {
     CommandBufferDX11_t*    cb = CommandBufferPool::Get( cmdBuf );
-
-#if RHI__DX11_USE_DEFERRED_CONTEXT
-    
-    int x = vp.x;
-    int y = vp.y;
-    int w = vp.width;
-    int h = vp.height;
+    int                     x  = vp.x;
+    int                     y  = vp.y;
+    int                     w  = vp.width;
+    int                     h  = vp.height;
 
     if( !(x==0  &&  y==0  &&  w==0  &&  h==0) )
     {
@@ -506,12 +484,6 @@ dx11_CommandBuffer_SetViewport( Handle cmdBuf, Viewport vp )
     {
         cb->context->RSSetViewports( 1, &(cb->def_viewport) );
     }
-
-#else
-
-    cb->Command( DX11__SET_VIEWPORT, vp.x, vp.y, vp.width, vp.height );
-
-#endif
 }
 
 
@@ -522,18 +494,10 @@ dx11_CommandBuffer_SetVertexData( Handle cmdBuf, Handle vb, uint32 streamIndex )
 {
     CommandBufferDX11_t*    cb = CommandBufferPool::Get( cmdBuf );
 
-#if RHI__DX11_USE_DEFERRED_CONTEXT
-
     cb->cur_vb        = vb;
     cb->cur_vb_stride = (cb->cur_vb_stride) 
                         ? cb->cur_vb_stride
                         : PipelineStateDX11::VertexLayoutStride( cb->cur_pipelinestate );
-
-#else
-
-    cb->Command( DX11__SET_VERTEX_DATA, vb, streamIndex );
-
-#endif
 }
 
 
@@ -544,16 +508,7 @@ dx11_CommandBuffer_SetVertexConstBuffer( Handle cmdBuf, uint32 bufIndex, Handle 
 {
     CommandBufferDX11_t*    cb = CommandBufferPool::Get( cmdBuf );
 
-#if RHI__DX11_USE_DEFERRED_CONTEXT
-    
     ConstBufferDX11::SetToRHI( buffer, ConstBufferDX11::InstData(buffer), cb->context );
-
-#else
-    DVASSERT(bufIndex < MAX_CONST_BUFFER_COUNT);
-    
-    if( buffer != InvalidIndex )
-        cb->Command( DX11__SET_VERTEX_PROG_CONST_BUFFER, bufIndex, (uint64)(buffer), (uint64)(ConstBufferDX11::InstData(buffer)) );
-#endif
 }
 
 
@@ -564,15 +519,7 @@ dx11_CommandBuffer_SetVertexTexture( Handle cmdBuf, uint32 unitIndex, Handle tex
 {
     CommandBufferDX11_t*    cb = CommandBufferPool::Get( cmdBuf );
 
-#if RHI__DX11_USE_DEFERRED_CONTEXT
-
     TextureDX11::SetToRHIVertex( tex, unitIndex, cb->context );
-
-#else
-
-    CommandBufferPool::Get(cmdBuf)->Command( DX11__SET_VERTEX_TEXTURE, tex, unitIndex );
-
-#endif
 }
 
 
@@ -583,15 +530,7 @@ dx11_CommandBuffer_SetIndices( Handle cmdBuf, Handle ib )
 {
     CommandBufferDX11_t*    cb = CommandBufferPool::Get( cmdBuf );
 
-#if RHI__DX11_USE_DEFERRED_CONTEXT
-
     cb->cur_ib = ib;
-
-#else
-
-    CommandBufferPool::Get(cmdBuf)->Command( DX11__SET_INDICES, ib );
-
-#endif
 }
 
 
@@ -602,15 +541,7 @@ dx11_CommandBuffer_SetQueryIndex( Handle cmdBuf, uint32 objectIndex )
 {
     CommandBufferDX11_t*    cb = CommandBufferPool::Get( cmdBuf );
 
-#if RHI__DX11_USE_DEFERRED_CONTEXT
-
     cb->cur_query_i = objectIndex;
-
-#else
-
-    CommandBufferPool::Get(cmdBuf)->Command( DX11__SET_QUERY_INDEX, objectIndex );
-
-#endif
 }
 
 
@@ -621,16 +552,8 @@ dx11_CommandBuffer_SetQueryBuffer( Handle cmdBuf, Handle queryBuf )
 {
     CommandBufferDX11_t*    cb = CommandBufferPool::Get( cmdBuf );
 
-#if RHI__DX11_USE_DEFERRED_CONTEXT
-
     DVASSERT(cb->cur_query_buf == InvalidHandle);
     cb->cur_query_buf = queryBuf;
-
-#else
-
-    cb->Command( DX11__SET_QUERY_BUFFER, queryBuf );
-
-#endif
 }
 
 
@@ -641,18 +564,7 @@ dx11_CommandBuffer_SetFragmentConstBuffer( Handle cmdBuf, uint32 bufIndex, Handl
 {
     CommandBufferDX11_t*    cb = CommandBufferPool::Get( cmdBuf );
 
-#if RHI__DX11_USE_DEFERRED_CONTEXT
-
     ConstBufferDX11::SetToRHI( buffer, ConstBufferDX11::InstData(buffer), cb->context );
-
-#else
-
-    DVASSERT(bufIndex < MAX_CONST_BUFFER_COUNT);
-    
-    if( buffer != InvalidIndex )
-        cb->Command( DX11__SET_FRAGMENT_PROG_CONST_BUFFER, bufIndex, (uint64)(buffer), (uint64)(ConstBufferDX11::InstData(buffer)) );
-
-#endif
 }
 
 
@@ -663,15 +575,7 @@ dx11_CommandBuffer_SetFragmentTexture( Handle cmdBuf, uint32 unitIndex, Handle t
 {
     CommandBufferDX11_t*    cb = CommandBufferPool::Get( cmdBuf );
 
-#if RHI__DX11_USE_DEFERRED_CONTEXT
-    
     TextureDX11::SetToRHIFragment( tex, unitIndex, cb->context );
-
-#else
-
-    cb->Command( DX11__SET_FRAGMENT_TEXTURE, tex, unitIndex );
-
-#endif
 }
 
 
@@ -682,15 +586,7 @@ dx11_CommandBuffer_SetDepthStencilState( Handle cmdBuf, Handle depthStencilState
 {
     CommandBufferDX11_t*    cb = CommandBufferPool::Get( cmdBuf );
 
-#if RHI__DX11_USE_DEFERRED_CONTEXT
-    
     DepthStencilStateDX11::SetToRHI( depthStencilState, cb->context );
-
-#else
-
-    cb->Command( DX11__SET_DEPTHSTENCIL_STATE, depthStencilState );
-
-#endif
 }
 
 
@@ -701,15 +597,7 @@ dx11_CommandBuffer_SetSamplerState( Handle cmdBuf, const Handle samplerState )
 {
     CommandBufferDX11_t*    cb = CommandBufferPool::Get( cmdBuf );
 
-#if RHI__DX11_USE_DEFERRED_CONTEXT
-    
     SamplerStateDX11::SetToRHI( samplerState, cb->context );
-
-#else
-
-    cb->Command( DX11__SET_SAMPLER_STATE, samplerState );
-
-#endif
 }
 
 
@@ -719,6 +607,7 @@ static void
 dx11_CommandBuffer_DrawPrimitive( Handle cmdBuf, PrimitiveType type, uint32 count )
 {
     CommandBufferDX11_t*        cb          = CommandBufferPool::Get( cmdBuf );
+    ID3D11DeviceContext*        ctx         = cb->context;
     unsigned                    vertexCount = 0;
     D3D11_PRIMITIVE_TOPOLOGY    topo        = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
     INT                         baseVertex  = 0;
@@ -741,10 +630,6 @@ dx11_CommandBuffer_DrawPrimitive( Handle cmdBuf, PrimitiveType type, uint32 coun
             break;
     }
 
-#if RHI__DX11_USE_DEFERRED_CONTEXT
-
-    ID3D11DeviceContext*    ctx = cb->context;
-
     if( topo != cb->cur_topo )
     {
         ctx->IASetPrimitiveTopology( topo );
@@ -766,12 +651,6 @@ dx11_CommandBuffer_DrawPrimitive( Handle cmdBuf, PrimitiveType type, uint32 coun
                 
     if( cb->cur_query_i != InvalidIndex )
         QueryBufferDX11::EndQuery( cb->cur_query_buf, cb->cur_query_i, ctx );    
-
-#else
-
-    cb->Command( DX11__DRAW_PRIMITIVE, topo, vertexCount, 0 );
-
-#endif
 }
 
 
@@ -781,6 +660,7 @@ static void
 dx11_CommandBuffer_DrawIndexedPrimitive( Handle cmdBuf, PrimitiveType type, uint32 count, uint32 vertexCount, uint32 firstVertex, uint32 startIndex )
 {
     CommandBufferDX11_t*        cb          = CommandBufferPool::Get( cmdBuf );
+    ID3D11DeviceContext*        ctx         = cb->context;
     unsigned                    indexCount  = 0;
     D3D11_PRIMITIVE_TOPOLOGY    topo        = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
@@ -801,10 +681,6 @@ dx11_CommandBuffer_DrawIndexedPrimitive( Handle cmdBuf, PrimitiveType type, uint
             topo        = D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
             break;
     }
-
-#if RHI__DX11_USE_DEFERRED_CONTEXT
-
-    ID3D11DeviceContext*    ctx = cb->context;
 
     if( topo != cb->cur_topo )
     {
@@ -828,12 +704,6 @@ dx11_CommandBuffer_DrawIndexedPrimitive( Handle cmdBuf, PrimitiveType type, uint
 
     if( cb->cur_query_i != InvalidIndex )
         QueryBufferDX11::BeginQuery( cb->cur_query_buf, cb->cur_query_i, ctx );
-
-#else
-
-    CommandBufferPool::Get(cmdBuf)->Command( DX11__DRAW_INDEXED_PRIMITIVE, topo, indexCount, startIndex, firstVertex );
-
-#endif
 }
 
 
@@ -843,10 +713,7 @@ static void
 dx11_CommandBuffer_SetMarker( Handle cmdBuf, const char* text )
 {
     CommandBufferDX11_t* cb = CommandBufferPool::Get(cmdBuf);
-
-#if RHI__DX11_USE_DEFERRED_CONTEXT
-    
-    wchar_t txt[128];
+    wchar_t              txt[128];
 
     ::MultiByteToWideChar( CP_ACP, 0, text, -1, txt, countof(txt));
     
@@ -858,23 +725,6 @@ dx11_CommandBuffer_SetMarker( Handle cmdBuf, const char* text )
     {
         ::D3DPERF_SetMarker( D3DCOLOR_ARGB(0xFF,0x40,0x40,0x80), txt );
     }
-
-#else
-
-    if( !cb->text )
-    {
-        cb->text = new RingBuffer();
-        cb->text->Initialize( 64*1024 );
-    }
-    
-    int     len = strlen( text );
-    char*   txt = (char*)cb->text->Alloc( len/sizeof(float)+1 );
-
-    memcpy( txt, text, len );
-    txt[len] = '\0';
-
-    cb->Command( DX11__DEBUG_MARKER, (uint64)(txt) );
-#endif
 }
 
 
@@ -1177,8 +1027,7 @@ Trace("\n\n-------------------------------\nframe %u generated\n",_Frame.back().
 //------------------------------------------------------------------------------
 
 CommandBufferDX11_t::CommandBufferDX11_t()
-  : text(nullptr),
-    context(nullptr),
+  : context(nullptr),
     contextAnnotation(nullptr),
     commandList(nullptr)
 {
@@ -1195,506 +1044,13 @@ CommandBufferDX11_t::~CommandBufferDX11_t()
 //------------------------------------------------------------------------------
 
 void
-CommandBufferDX11_t::Begin()
-{
-}
-
-
-//------------------------------------------------------------------------------
-
-void
-CommandBufferDX11_t::End()
-{
-}
-
-
-//------------------------------------------------------------------------------
-
-void
-CommandBufferDX11_t::Command( uint64 cmd )
-{
-    _cmd.push_back( cmd );
-}
-
-
-//------------------------------------------------------------------------------
-
-void
-CommandBufferDX11_t::Command( uint64 cmd, uint64 arg1 )
-{
-    _cmd.resize( _cmd.size()+1+1 );
-
-    std::vector<uint64>::iterator   b = _cmd.end() - (1+1);
-
-    b[0] = cmd; 
-    b[1] = arg1; 
-}
-
-
-//------------------------------------------------------------------------------
-
-void
-CommandBufferDX11_t::Command( uint64 cmd, uint64 arg1, uint64 arg2 )
-{
-    _cmd.resize( _cmd.size()+1+2 );
-
-    std::vector<uint64>::iterator   b = _cmd.end() - (1+2);
-
-    b[0] = cmd; 
-    b[1] = arg1; 
-    b[2] = arg2; 
-}
-
-
-//------------------------------------------------------------------------------
-
-void
-CommandBufferDX11_t::Command( uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3 )
-{
-    _cmd.resize( _cmd.size()+1+3 );
-
-    std::vector<uint64>::iterator   b = _cmd.end() - (1+3);
-
-    b[0] = cmd; 
-    b[1] = arg1; 
-    b[2] = arg2; 
-    b[3] = arg3; 
-}
-
-
-//------------------------------------------------------------------------------
-
-void
-CommandBufferDX11_t::Command( uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3, uint64 arg4 )
-{
-    _cmd.resize( _cmd.size()+1+4 );
-
-    std::vector<uint64>::iterator   b = _cmd.end() - (1+4);
-
-    b[0] = cmd; 
-    b[1] = arg1; 
-    b[2] = arg2; 
-    b[3] = arg3; 
-    b[4] = arg4; 
-}
-
-
-//------------------------------------------------------------------------------
-
-void
-CommandBufferDX11_t::Command( uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3, uint64 arg4, uint64 arg5 )
-{
-    _cmd.resize( _cmd.size()+1+5 );
-
-    std::vector<uint64>::iterator   b = _cmd.end() - (1+5);
-
-    b[0] = cmd; 
-    b[1] = arg1; 
-    b[2] = arg2; 
-    b[3] = arg3; 
-    b[4] = arg4; 
-    b[5] = arg5; 
-}
-
-
-//------------------------------------------------------------------------------
-
-inline void
-CommandBufferDX11_t::Command( uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3, uint64 arg4, uint64 arg5, uint64 arg6 )
-{
-    _cmd.resize( _cmd.size()+1+6 );
-
-    std::vector<uint64>::iterator   b = _cmd.end() - (1+6);
-
-    b[0] = cmd; 
-    b[1] = arg1; 
-    b[2] = arg2; 
-    b[3] = arg3; 
-    b[4] = arg4; 
-    b[5] = arg5; 
-    b[6] = arg6; 
-}
-
-
-//------------------------------------------------------------------------------
-
-void
-CommandBufferDX11_t::BeginScene( ID3D11DeviceContext* context )
-{
-    cur_topo                = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-    cur_ib                  = InvalidIndex;
-    cur_vb                  = InvalidIndex;
-    cur_vb_stride           = 0;
-    cur_pipelinestate       = InvalidHandle;
-    cur_stride              = 0;
-    cur_query_buf           = InvalidHandle;
-    cur_query_i             = InvalidIndex;
-    cur_rs                  = nullptr;
-
-    rs_param.cullMode       = CULL_NONE;
-    rs_param.scissorEnabled = false;
-
-    sync                    = InvalidHandle;
-
-    def_viewport.TopLeftX   = 0;
-    def_viewport.TopLeftY   = 0;
-    def_viewport.MinDepth   = 0.0f;
-    def_viewport.MaxDepth   = 1.0f;
-
-
-//    if( isFirstInPass )
-    {
-        bool                    clear_color = isFirstInPass && passCfg.colorBuffer[0].loadAction == LOADACTION_CLEAR;
-        bool                    clear_depth = isFirstInPass && passCfg.depthStencilBuffer.loadAction == LOADACTION_CLEAR;
-        ID3D11RenderTargetView* rt[1]       = { _D3D11_RenderTargetView };
-
-        if( passCfg.colorBuffer[0].texture != rhi::InvalidHandle )
-        {
-            Size2i  sz = TextureDX11::Size( passCfg.colorBuffer[0].texture );
-                        
-            def_viewport.Width  = float(sz.dx);
-            def_viewport.Height = float(sz.dy);
-
-            TextureDX11::SetRenderTarget( passCfg.colorBuffer[0].texture, passCfg.depthStencilBuffer.texture, _D3D11_ImmediateContext );
-        }
-        else
-        {
-            context->OMSetRenderTargets( 1, rt, _D3D11_DepthStencilView );
-        }
-
-
-        ID3D11RenderTargetView* rt_view[D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT] = { NULL };
-        ID3D11DepthStencilView* ds_view = NULL;
-                    
-        context->OMGetRenderTargets( countof(rt_view), rt_view, &ds_view );
-
-        for( unsigned i=0; i!=countof(rt_view); ++i )
-        {
-            if( rt_view[i] )
-            {
-                if( i == 0 )
-                {
-                    if( passCfg.colorBuffer[0].texture == rhi::InvalidHandle )
-                    {
-                        D3D11_TEXTURE2D_DESC    desc;
-
-                        _D3D11_SwapChainBuffer->GetDesc( &desc );
-
-                        def_viewport.Width  = float(desc.Width);
-                        def_viewport.Height = float(desc.Height);                                
-                    }
-                                                                
-                    context->RSSetViewports( 1, &def_viewport );
-                }
-                            
-                if( clear_color )
-                    context->ClearRenderTargetView( rt_view[i], passCfg.colorBuffer[0].clearColor );
-                            
-                rt_view[i]->Release();
-            }
-        }
-
-        if( ds_view )
-        {
-            if( clear_depth )
-                context->ClearDepthStencilView( ds_view, D3D11_CLEAR_DEPTH, passCfg.depthStencilBuffer.clearDepth, 0 );
-                        
-            ds_view->Release();
-        }
-    }
-
-    context->IASetPrimitiveTopology( cur_topo );
-}
-
-
-//------------------------------------------------------------------------------
-
-void
-CommandBufferDX11_t::EndScene( ID3D11DeviceContext* context )
-{
-}
-
-
-//------------------------------------------------------------------------------
-
-void
 CommandBufferDX11_t::Execute()
 {
 SCOPED_FUNCTION_TIMING();
 
-#if RHI__DX11_USE_DEFERRED_CONTEXT 
-
     _D3D11_ImmediateContext->ExecuteCommandList( commandList, FALSE );
     commandList->Release();
     commandList = nullptr;
-
-#else
-
-    for( std::vector<uint64>::const_iterator c=_cmd.begin(),c_end=_cmd.end(); c!=c_end; ++c )
-    {
-        const uint64                        cmd = *c;
-        std::vector<uint64>::const_iterator arg = c+1;
-
-//        if( cmd == EndCmd )
-//            break;
-
-        switch( cmd )
-        {
-            case DX11__BEGIN :
-            {
-                BeginScene( _D3D11_ImmediateContext );
-            }   break;
-            
-            case DX11__END :
-            {
-                sync = Handle(arg[0]);
-
-                if( isLastInPass )
-                {
-                }
-                c += 1;
-            }   break;
-
-            case DX11__SET_QUERY_BUFFER :
-            {
-                DVASSERT(cur_query_buf == InvalidHandle);
-                cur_query_buf = (Handle)(arg[0]);
-                c += 1;
-            }   break;
-
-            case DX11__SET_QUERY_INDEX :
-            {
-                cur_query_i = uint32(arg[0]);
-                c += 1;
-            }   break;
-
-            case DX11__SET_PIPELINE_STATE :
-            {
-                uint32              vd_uid = (uint32)(arg[1]);
-                const VertexLayout* vdecl  = (vd_uid == VertexLayout::InvalidUID)  
-                                             ? nullptr  
-                                             : VertexLayout::Get( vd_uid );
-                
-                cur_pipelinestate = (Handle)(arg[0]);
-                cur_vb_stride     = (vdecl)  ? vdecl->Stride()  : 0;
-
-
-                PipelineStateDX11::SetToRHI( cur_pipelinestate, vd_uid, _D3D11_ImmediateContext );
-
-                StatSet::IncStat( stat_SET_PS, 1 );
-                c += 2;
-            }   break;
-
-            case DX11__SET_CULL_MODE :
-            {
-                rs_param.cullMode = CullMode(arg[0]);
-                cur_rs = nullptr;
-                c += 1;
-            }   break;
-            
-            case DX11__SET_VERTEX_PROG_CONST_BUFFER :
-            {
-//                unsigned    buf_i = arg[0];
-                Handle      cb   = Handle(arg[1]);
-                const void* inst = (const void*)(arg[2]);
-
-                ConstBufferDX11::SetToRHI( cb, inst, _D3D11_ImmediateContext );
-                c += 3;
-            }   break;
-
-            case DX11__SET_FRAGMENT_PROG_CONST_BUFFER :
-            {
-//                unsigned    buf_i = arg[0];
-                Handle      cb   = Handle(arg[1]);
-                const void* inst = (const void*)(arg[2]);
-
-                ConstBufferDX11::SetToRHI( cb, inst, _D3D11_ImmediateContext );
-                c += 3;
-            }   break;
-            
-            case DX11__SET_SCISSOR_RECT :
-            {
-                int x = int(arg[0]);
-                int y = int(arg[1]);
-                int w = int(arg[2]);
-                int h = int(arg[3]);
-
-                if( !(x==0  &&  y==0  &&  w==0  &&  h==0) )
-                {
-                    D3D11_RECT  rect = { x, y, x+w-1, y+h-1 };
-
-                    rs_param.scissorEnabled = true;
-                    cur_rs                  = nullptr;
-                    _D3D11_ImmediateContext->RSSetScissorRects( 1, &rect );
-                }
-                else
-                {
-                    rs_param.scissorEnabled = false;
-                    cur_rs = nullptr;
-                }
-
-                c += 4;
-            }   break;
-
-            case DX11__SET_VIEWPORT :
-            {
-                int x = int(arg[0]);
-                int y = int(arg[1]);
-                int w = int(arg[2]);
-                int h = int(arg[3]);
-
-                if( !(x==0  &&  y==0  &&  w==0  &&  h==0) )
-                {
-                    D3D11_VIEWPORT  vp;
-
-                    vp.TopLeftX = float(x);
-                    vp.TopLeftY = float(y);
-                    vp.Width    = float(w);
-                    vp.Height   = float(h);
-                    vp.MinDepth = 0.0f;
-                    vp.MaxDepth = 1.0f;
-                    
-                    _D3D11_ImmediateContext->RSSetViewports( 1, &vp );
-                }
-                else
-                {
-                    _D3D11_ImmediateContext->RSSetViewports( 1, &def_viewport );
-                }
-
-                c += 4;
-            }   break;
-
-            case DX11__SET_DEPTHSTENCIL_STATE :
-            {
-                Handle  ds = Handle(arg[0]);
-
-                DepthStencilStateDX11::SetToRHI( ds, _D3D11_ImmediateContext );
-                c += 1;
-            }   break;
-
-            case DX11__SET_SAMPLER_STATE :
-            {
-                Handle  ss = Handle(arg[0]);
-
-                SamplerStateDX11::SetToRHI( ss, _D3D11_ImmediateContext );
-                c += 1;
-            }   break;
-
-            case DX11__SET_INDICES :
-            {
-                cur_ib = Handle(arg[0]);
-                c += 1;
-            }   break;
-
-            case DX11__SET_VERTEX_DATA :
-            {
-                DVASSERT(cur_pipelinestate != InvalidHandle);
-                
-                cur_vb        = Handle(arg[0]);
-                cur_vb_stride = (cur_vb_stride) 
-                                ? cur_vb_stride
-                                : PipelineStateDX11::VertexLayoutStride( cur_pipelinestate );
-
-                c += 2;
-            }   break;
-
-            case DX11__SET_FRAGMENT_TEXTURE :
-            {
-                Handle      tex    = Handle(arg[0]);
-                unsigned    unit_i = unsigned(arg[1]);
-
-                TextureDX11::SetToRHIFragment( tex, unit_i, _D3D11_ImmediateContext );
-                c += 2;
-            }   break;
-
-            case DX11__SET_VERTEX_TEXTURE :
-            {
-                Handle      tex    = Handle(arg[0]);
-                unsigned    unit_i = unsigned(arg[1]);
-
-                TextureDX11::SetToRHIVertex( tex, unit_i, _D3D11_ImmediateContext );
-                c += 2;
-            }   break;
-
-            case DX11__DRAW_PRIMITIVE :
-            {
-                D3D11_PRIMITIVE_TOPOLOGY    topo        = (D3D11_PRIMITIVE_TOPOLOGY)(arg[0]);
-                UINT                        vertexCount = (UINT)(arg[1]);
-                INT                         baseVertex  = (UINT)(arg[2]);
-                
-                if( topo != cur_topo )
-                {
-                    _D3D11_ImmediateContext->IASetPrimitiveTopology( topo );
-                    cur_topo = topo;
-                }
-
-                if( !cur_rs )
-                {
-                    cur_rs = _GetRasterizerState( rs_param );
-                    _D3D11_ImmediateContext->RSSetState( cur_rs );
-                }
-
-                VertexBufferDX11::SetToRHI( cur_vb, 0, 0, cur_vb_stride, _D3D11_ImmediateContext );
-
-                if( cur_query_i != InvalidIndex )
-                    QueryBufferDX11::BeginQuery( cur_query_buf, cur_query_i, _D3D11_ImmediateContext );
-                
-                _D3D11_ImmediateContext->Draw( vertexCount, baseVertex );
-                
-                if( cur_query_i != InvalidIndex )
-                    QueryBufferDX11::EndQuery( cur_query_buf, cur_query_i, _D3D11_ImmediateContext );
-
-                c += 3;
-            }   break;
-
-            case DX11__DRAW_INDEXED_PRIMITIVE :
-            {
-                D3D11_PRIMITIVE_TOPOLOGY    topo        = (D3D11_PRIMITIVE_TOPOLOGY)(arg[0]);
-                UINT                        indexCount  = (UINT)(arg[1]);
-                UINT                        startIndex  = (UINT)(arg[2]);
-                INT                         baseVertex  = (UINT)(arg[3]);
-                
-                if( topo != cur_topo )
-                {
-                    _D3D11_ImmediateContext->IASetPrimitiveTopology( topo );
-                    cur_topo = topo;
-                }
-
-                if( !cur_rs )
-                {
-                    cur_rs = _GetRasterizerState( rs_param );
-                    _D3D11_ImmediateContext->RSSetState( cur_rs );
-                }
-
-                IndexBufferDX11::SetToRHI( cur_ib, 0, _D3D11_ImmediateContext );
-                VertexBufferDX11::SetToRHI( cur_vb, 0, 0, cur_vb_stride, _D3D11_ImmediateContext );
-                
-                if( cur_query_i != InvalidIndex )
-                    QueryBufferDX11::BeginQuery( cur_query_buf, cur_query_i, _D3D11_ImmediateContext );
-                
-                _D3D11_ImmediateContext->DrawIndexed( indexCount, startIndex, baseVertex );    
-
-                if( cur_query_i != InvalidIndex )
-                    QueryBufferDX11::BeginQuery( cur_query_buf, cur_query_i, _D3D11_ImmediateContext );
-                
-                c += 4;
-            }   break;
-
-            case DX11__DEBUG_MARKER :
-            {
-                wchar_t txt[128];
-
-                ::MultiByteToWideChar( CP_ACP, 0, (const char*)(arg[0]), -1, txt, countof(txt));
-                ::D3DPERF_SetMarker( D3DCOLOR_ARGB(0xFF,0x40,0x40,0x80), txt );
-            }   break;
-
-            default:
-                DVASSERT("unknown DX11 render-command");
-        }
-    }
-
-    _cmd.clear();
-#endif
 }
 
 
