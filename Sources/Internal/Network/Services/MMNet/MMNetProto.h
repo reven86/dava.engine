@@ -90,6 +90,12 @@ public:
     Packet(Packet&& other)
         : plainBytes(std::move(other.plainBytes))
     {}
+    Packet& operator = (Packet&& other)
+    {
+        if (this != &other)
+            plainBytes = std::move(other.plainBytes);
+        return *this;
+    }
 
     const uint8* PlainBytes() const { return &*plainBytes.begin(); }
 

@@ -53,10 +53,10 @@ MMNetServer::MMNetServer()
     : NetService()
     , connToken(Random::Instance()->Rand())
     , timerBegin(SystemTimer::Instance()->AbsoluteMS())
-    //, anotherService(new MMAnotherService(SERVER_ROLE))
+    , anotherService(new MMAnotherService(SERVER_ROLE))
 {
-    //MemoryManager::Instance()->SetCallbacks(MakeFunction(this, &MMNetServer::OnUpdate),
-    //                                        MakeFunction(this, &MMNetServer::OnTag));
+    MemoryManager::Instance()->SetCallbacks(MakeFunction(this, &MMNetServer::OnUpdate),
+                                            MakeFunction(this, &MMNetServer::OnTag));
 }
 
 MMNetServer::~MMNetServer()
@@ -67,8 +67,9 @@ void MMNetServer::OnUpdate()
 {
     if (tokenRequested)
     {
+        statPeriod = 0;
         uint64 curTimestamp = SystemTimer::Instance()->AbsoluteMS();
-        //if (curTimestamp - lastStatTimestamp >= statPeriod)
+        if (curTimestamp - lastStatTimestamp >= statPeriod)
         {
             AutoReplyStat(curTimestamp - timerBegin);
             lastStatTimestamp = curTimestamp;
