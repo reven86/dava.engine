@@ -15,7 +15,7 @@ MACRO ( FILE_TREE_CHECK arg_folders )
             COMMAND ${PYTHON_EXECUTABLE} ${DAVA_SCRIPTS_FILES_PATH}/versions_check.py ${CMAKE_CURRENT_BINARY_DIR} "${folders}" ${FILE_TREE_HASH}
         )
 
-        set_target_properties( FILE_TREE PROPERTIES FOLDER ${DAVA_PREDEFINED_TARGETS_FOLDER} )         
+        set_target_properties( FILE_TREE_${PROJECT_NAME} PROPERTIES FOLDER ${DAVA_PREDEFINED_TARGETS_FOLDER} )         
 
         FOREACH( item ${arg_folders} )
             message( " - ${item}" )        

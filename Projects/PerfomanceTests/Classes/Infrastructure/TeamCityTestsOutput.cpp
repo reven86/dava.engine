@@ -52,6 +52,10 @@ const String TeamcityTestsOutput::AVERAGE_FPS = "Average_fps";
 
 const String TeamcityTestsOutput::FRAME_DELTA = "Frame_delta";
 const String TeamcityTestsOutput::MAX_MEM_USAGE = "Max_memory_usage";
+    
+const String TeamcityTestsOutput::MATERIAL_TEST_TIME = "Material_test_time";
+const String TeamcityTestsOutput::MATERIAL_ELAPSED_TEST_TIME = "Material__elapsed_test_time";
+const String TeamcityTestsOutput::MATERIAL_FRAME_DELTA = "Material_frame_delta";
 
 void TeamcityTestsOutput::Output(Logger::eLogLevel ll, const char8 *text)
 {

@@ -38,10 +38,9 @@
 namespace DAVA 
 {
 
-void Logger::PlatformLog(eLogLevel ll, const char8* text)
+void Logger::PlatformLog(eLogLevel ll, const char8* text) const
 {
 	OutputDebugStringA(text);
-	//printf("%s", text);
 }
 
 }
