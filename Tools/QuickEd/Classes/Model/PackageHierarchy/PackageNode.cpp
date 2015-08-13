@@ -393,7 +393,7 @@ void PackageNode::RebuildStyleSheets()
         const Vector<UIPriorityStyleSheet> &styleSheets = node->GetContext()->GetSortedStyleSheets();
         for (const UIPriorityStyleSheet &ss : styleSheets)
         {
-            importedStyleSheets.push_back(UIPriorityStyleSheet(ss.GetStyleSheet(), ss.GetPriority() + 1));
+            importedStyleSheets.emplace_back(UIPriorityStyleSheet(ss.GetStyleSheet(), ss.GetPriority() + 1));
         }
     }
 
@@ -448,7 +448,9 @@ void PackageNode::RefreshControlStylesAndLayout(ControlNode *node)
     Vector<ControlNode*> roots;
     ControlNode *root = node;
     while (root->GetParent() != nullptr && root->GetParent()->GetControl() != nullptr)
+    {
         root = static_cast<ControlNode*>(root->GetParent());
+    }
 
     RestoreProperties(root);
     RefreshStyles(root);
