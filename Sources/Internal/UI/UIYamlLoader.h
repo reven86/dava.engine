@@ -74,9 +74,9 @@ public:
     static bool SaveFonts(const FilePath & yamlPathname);
     /**
         \brief	This is main function in UIYamlLoader and it loads control hierarchy from yamlPathname file and add it to
-                rootControl.
+                backgroundControl.
 
-        \param[in, out]	rootControl					we add all created control classes to this control
+        \param[in, out]	backgroundControl					we add all created control classes to this control
         \param[in] yamlPathName						we get config file using this pathname
         \param[in] assertIfCustomControlNotFound	if this flag is set to true, ASSERT and stop app execution if the
                                                     custom control can't be loaded.
@@ -85,9 +85,9 @@ public:
 
     /**
      \brief	This function saves the UIControl's hierarchy to the YAML file passed.
-     rootControl.
+     backgroundControl.
 
-     \param[in, out]	rootControl		is used to take the configuration from
+     \param[in, out]	backgroundControl		is used to take the configuration from
      \param[in]			yamlPathName	path to store hierarchy to
      \return            true if the save was successful
      */

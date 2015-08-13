@@ -35,14 +35,25 @@ using namespace DAVA;
 
 ScrollAreaController::ScrollAreaController(UIControl *root, QObject *parent)
     : QObject(parent)
-    , rootControl(root)
 {
-    
+    backgroundControl = new UIControl();
+    backgroundControl->AddControl(root);
+    ScopedPtr<UIScreen> davaUIScreen(new UIScreen());
+    davaUIScreen->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
+    davaUIScreen->GetBackground()->SetColor(Color(0.3f, 0.3f, 0.3f, 1.0f));
+    UIScreenManager::Instance()->RegisterScreen(0, davaUIScreen);
+    UIScreenManager::Instance()->SetFirst(0);
+    UIScreenManager::Instance()->GetScreen()->AddControl(backgroundControl);
 }
 
-QSize ScrollAreaController::GetSize() const
+QSize ScrollAreaController::GetCanvasSize() const
 {
-    return size;
+    return canvasSize;
+}
+
+QSize ScrollAreaController::GetViewSize() const
+{
+    return viewSize;
 }
 
 int ScrollAreaController::GetScale() const
@@ -55,14 +66,27 @@ QPoint ScrollAreaController::GetPosition() const
     return position;
 }
 
-void ScrollAreaController::SetSize(const QSize &size_)
+void ScrollAreaController::SetCanvasSize(const QSize &canvasSize_)
 {
-    if (size_ != size)
+    if (canvasSize_ != canvasSize)
     {
-        size = size_;
-        auto newSize = Vector2(size.width(), size.height());
+        canvasSize = canvasSize_ + QSize(Margin * 2, Margin * 2);
+        auto newCanvasSize = Vector2(canvasSize.width(), canvasSize.height());
+        backgroundControl->SetSize(newCanvasSize);
+        UpdatePosition();
+        emit ViewSizeChanged(canvasSize);
+    }
+}
+
+void ScrollAreaController::SetViewSize(const QSize& viewSize_)
+{
+    if (viewSize_ != viewSize)
+    {
+        viewSize = viewSize_;
+        auto newSize = Vector2(viewSize_.width(), viewSize_.height());
         UIScreenManager::Instance()->GetScreen()->SetSize(newSize);
-        emit SizeChanged(size_);
+        UpdatePosition();
+        emit ViewSizeChanged(viewSize_);
     }
 }
 
@@ -72,7 +96,7 @@ void ScrollAreaController::SetScale(int scale_)
     {
         scale = scale_;
         Vector2 newScale(static_cast<float>(scale) / 100.0f, static_cast<float>(scale) / 100.0f);
-        rootControl->SetScale(newScale);
+        backgroundControl->SetScale(newScale);
         emit ScaleChanged(scale_);
     }
 }
@@ -81,9 +105,24 @@ void ScrollAreaController::SetPosition(const QPoint &position_)
 {
     if (position_ != position)
     {
-        position = position_;
+        position = position_ + QPoint(Margin, Margin);
         auto newPos = Vector2(position.x(), position.y());
-        rootControl->SetPosition(newPos);
+        backgroundControl->SetPosition(newPos);
         emit PositionChanged(position_);
     }
 }
+
+void ScrollAreaController::UpdatePosition()
+{
+    QPoint position(0, 0);
+    if (viewSize.width() > canvasSize.width())
+    {
+        position.setX((viewSize.width() - canvasSize.width()) / 2.0f);
+    }
+    if (viewSize.height() > canvasSize.height())
+    {
+        position.setY((viewSize.height() - canvasSize.height()) / 2.0f);
+    }
+    SetPosition(position);
+}
+

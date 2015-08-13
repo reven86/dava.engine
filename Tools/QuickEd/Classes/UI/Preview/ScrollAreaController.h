@@ -42,30 +42,36 @@ class ScrollAreaController : public QObject
 {
     Q_OBJECT
 public:
-    Q_PROPERTY(QSize size READ GetSize WRITE SetSize NOTIFY SizeChanged);
+    Q_PROPERTY(QSize canvasSize READ GetCanvasSize WRITE SetCanvasSize NOTIFY CanvasSizeChanged);
+    Q_PROPERTY(QSize viewSize READ GetViewSize WRITE SetViewSize NOTIFY ViewSizeChanged);
     Q_PROPERTY(int scale READ GetScale WRITE SetScale NOTIFY ScaleChanged);
     Q_PROPERTY(QPoint position READ GetPosition WRITE SetPosition NOTIFY PositionChanged);
-
     ScrollAreaController(DAVA::UIControl *root, QObject *parent = nullptr);
     ~ScrollAreaController() = default;
 
-    QSize GetSize() const;
+    QSize GetCanvasSize() const;
+    QSize GetViewSize() const;
     int GetScale() const;
     QPoint GetPosition() const;
 
 public slots:
-    void SetSize(const QSize &size);
+    void SetCanvasSize(const QSize &canvasSize);
+    void SetViewSize(const QSize &size);
     void SetScale(int scale);
     void SetPosition(const QPoint &position);
 signals:
-    void SizeChanged(const QSize &size);
+    void CanvasSizeChanged(const QSize &canvasSize);
+    void ViewSizeChanged(const QSize &size);
     void ScaleChanged(int scale);
     void PositionChanged(const QPoint &position);
 private:
-    DAVA::UIControl *rootControl = nullptr;
-    QSize size = QSize(0, 0);
+    void UpdatePosition();
+    DAVA::UIControl *backgroundControl = nullptr;
+    QSize canvasSize = QSize(0, 0);
+    QSize viewSize = QSize(0, 0);
     int scale = 0;
     QPoint position = QPoint(0, 0);
+    const int Margin = 50;
 };
 
 #endif // __QUICKED_PREVIEW_SCROLL_AREA_CONTROLLER_H__

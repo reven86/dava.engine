@@ -52,17 +52,8 @@ using namespace DAVA;
 PreviewWidget::PreviewWidget(QWidget *parent)
     : QWidget(parent)
     , rootControl(new UIControl())
-    , backgroundControl(new UIControl)
     , scrollAreaController(new ScrollAreaController(rootControl, this))
 {
-    backgroundControl->AddControl(rootControl);
-    ScopedPtr<UIScreen> davaUIScreen(new UIScreen());
-    davaUIScreen->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
-    davaUIScreen->GetBackground()->SetColor(Color(0.3f, 0.3f, 0.3f, 1.0f));
-    UIScreenManager::Instance()->RegisterScreen(0, davaUIScreen);
-    UIScreenManager::Instance()->SetFirst(0);
-    UIScreenManager::Instance()->GetScreen()->AddControl(backgroundControl);
-
     percentages
         << 10
         << 25
@@ -89,6 +80,8 @@ PreviewWidget::PreviewWidget(QWidget *parent)
     {
         scaleCombo->addItem(QString("%1 %").arg(percentage));
     }
+    connect(scrollAreaController, &ScrollAreaController::ViewSizeChanged, this, &PreviewWidget::UpdateScrollArea);
+    connect(scrollAreaController, &ScrollAreaController::CanvasSizeChanged, this, &PreviewWidget::UpdateScrollArea);
 
     connect(scaleCombo, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &PreviewWidget::OnScaleByComboIndex);
     connect(scaleCombo->lineEdit(), &QLineEdit::editingFinished, this, &PreviewWidget::OnScaleByComboText);
@@ -116,7 +109,8 @@ void PreviewWidget::OnDocumentChanged(Document *arg)
     if (nullptr != document)
     {
         document->GetCanvasSystem()->Attach(rootControl);
-        UpdateScrollArea();
+        QSize size(rootControl->GetSize().x, rootControl->GetSize().y);
+        scrollAreaController->SetCanvasSize(size);
     }
 }
 
@@ -127,11 +121,7 @@ void PreviewWidget::OnMonitorChanged()
 
 void PreviewWidget::UpdateScrollArea()
 {
-    QSize canvasSize(rootControl->GetSize().x * rootControl->GetScale().x
-        , rootControl->GetSize().y * rootControl->GetScale().y);
-    
-    QSize glWidgetSize = davaGLWidget->size() * davaGLWidget->GetGLWindow()->devicePixelRatio();
-    QSize maxPos(canvasSize - glWidgetSize);
+    QSize maxPos(scrollAreaController->GetCanvasSize() - scrollAreaController->GetViewSize());
     if (maxPos.height() < 0)
     {
         maxPos.setHeight(0);
@@ -143,24 +133,12 @@ void PreviewWidget::UpdateScrollArea()
     if (verticalScrollBar->maximum() != maxPos.height())
     {
         verticalScrollBar->setMaximum(maxPos.height());
-        verticalScrollBar->setPageStep(glWidgetSize.height());
+        verticalScrollBar->setPageStep(scrollAreaController->GetViewSize().height());
     }
     if (horizontalScrollBar->maximum() != maxPos.width())
     {
         horizontalScrollBar->setMaximum(maxPos.width());
-        horizontalScrollBar->setPageStep(glWidgetSize.width());
-    }
-
-    if (backgroundControl->GetSize().x > rootControl->GetSize().x)
-    {
-        Rect rect = rootControl->GetRect();
-        rect.x = (backgroundControl->GetSize().x - rect.dx) / 2.0f;
-        rootControl->SetRect(rect);
-    }
-    else
-    {
-        Rect size(Vector2(0, 0), rootControl->GetSize());
-        rootControl->SetRect(size);
+        horizontalScrollBar->setPageStep(scrollAreaController->GetViewSize().width());
     }
 }
 
@@ -207,8 +185,7 @@ void PreviewWidget::OnZoomOutRequested()
 
 void PreviewWidget::OnGLWidgetResized(int width, int height, int dpr)
 {
-    scrollAreaController->SetSize(QSize(width * dpr, height * dpr));
-    backgroundControl->SetSize(Vector2(width * dpr, height * dpr));
+    scrollAreaController->SetViewSize(QSize(width * dpr, height * dpr));
     UpdateScrollArea();
 }
 

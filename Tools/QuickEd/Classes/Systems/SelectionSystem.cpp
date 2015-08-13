@@ -42,14 +42,14 @@ bool SelectionSystem::OnInput(UIEvent* currentInput)
         /*UIControl *control = controlsCanvas->GetControlByPos(this, currentInput->point);
         if (nullptr != control)
         {
-            UIControl *rootControl = control;
-            while (rootControl->GetParent() != nullptr && rootControl->GetParent() != this)
+            UIControl *backgroundControl = control;
+            while (backgroundControl->GetParent() != nullptr && backgroundControl->GetParent() != this)
             {
-                rootControl = rootControl->GetParent();
+                backgroundControl = backgroundControl->GetParent();
             }
-            if (rootControl->GetParent() == this)
+            if (backgroundControl->GetParent() == this)
             {
-                selectedControls.push_back(std::make_pair(rootControl, control));
+                selectedControls.push_back(std::make_pair(backgroundControl, control));
             }
         }
         for (auto listener : selectionListeners)
