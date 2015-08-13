@@ -32,11 +32,9 @@ static FILE* const              _HandleBase     = (FILE*)(0x1000);
 void
 mcpp__set_cur_file( const char* filename )
 {
-    DAVA::PathManip   path(filename);
-
     IncludeSearchPath.clear();
-    IncludeSearchPath.push_back( path.GetPath() );
-    IncludeSearchPath.push_back( DAVA::FilePath("~res:/Materials/Shaders").GetAbsolutePathname() );
+    IncludeSearchPath.push_back( DAVA::FilePath(filename).GetDirectory().GetFrameworkPath() );
+    IncludeSearchPath.push_back( DAVA::FilePath("~res:/Materials/Shaders/").MakeDirectoryPathname().GetFrameworkPath() );
 }
 
 
@@ -89,7 +87,11 @@ mcpp__fopen( const char* filename, const char* mode )
     {
         for( std::vector<std::string>::const_iterator p=IncludeSearchPath.begin(),p_end=IncludeSearchPath.end(); p!=p_end; ++p )
         {
-            std::string name = *p + filename;
+            std::string name = *p;
+            if(filename[0] == '/')
+            	name += (filename+1);
+            else
+            	name += filename;
 
             if( DAVA::FileSystem::Instance()->IsFile( name.c_str() ) )
             {
