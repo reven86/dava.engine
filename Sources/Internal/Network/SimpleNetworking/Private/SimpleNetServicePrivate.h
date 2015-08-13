@@ -31,7 +31,8 @@
 #define __DAVAENGINE_SIMPLE_NET_SERVICE_PRIVATE_H__
 
 #include "Network/NetService.h"
-#include "Network/SimpleNetworking/SimpleNetService.h"
+#include "Network/SimpleNetworking/SimpleConnectionListener.h"
+#include "Network/SimpleNetworking/Private/ChannelAdapter.h"
 
 namespace DAVA
 {
@@ -58,6 +59,7 @@ private:
     Endpoint servEndPoint;
     String servName;
     ConnectionListener listener;
+    ChannelAdapter channelAdapter;
 };
 
 }  // namespace Net

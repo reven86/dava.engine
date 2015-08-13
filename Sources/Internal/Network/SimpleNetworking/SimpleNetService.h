@@ -47,6 +47,10 @@ public:
                      const String& serviceName,
                      ConnectionListener&& connectionListener);
 
+    SimpleNetService(const SimpleNetService&) = delete;
+    SimpleNetService(SimpleNetService&& other);
+    ~SimpleNetService();
+
     NetService* GetNetService();
     String GetServiceName() const;
     size_t GetServiceId() const;

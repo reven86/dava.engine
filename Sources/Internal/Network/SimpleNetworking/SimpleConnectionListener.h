@@ -60,6 +60,10 @@ public:
     ConnectionListener(IConnectionPtr& conn,
                        NotificationType notifType = NotificationType::kAnyThread);
 
+    ConnectionListener(const ConnectionListener&) = delete;
+    ConnectionListener(ConnectionListener&& other);
+    ~ConnectionListener();
+
     IConnectionPtr GetConnection() const;
     void AddConnectionCallback(const ConnectionCallback& cb);
     void AddDataReceiveCallback(const DataReceiveCallback& cb);

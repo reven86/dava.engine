@@ -31,8 +31,8 @@
 #define __DAVAENGINE_CONNECTION_H__
 
 #include "Concurrency/Mutex.h"
-#include "Network/SimpleNetworking/SimpleAbstractSocket.h"
 #include "Network/SimpleNetworking/IConnection.h"
+#include "Network/SimpleNetworking/Private/SimpleAbstractSocket.h"
 
 namespace DAVA
 {
@@ -53,7 +53,8 @@ public:
 
 private:
     ISimpleAbstractSocketPtr socket;
-    Mutex mutex;
+    Mutex recvMutex;
+    Mutex sendMutex;
 };
 
 }  // namespace Net

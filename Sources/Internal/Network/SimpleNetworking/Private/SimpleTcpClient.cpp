@@ -27,28 +27,15 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_SIMPLE_NETWORKING_H__
-#define __DAVAENGINE_SIMPLE_NETWORKING_H__
-
-#include "Network/Base/Endpoint.h"
-#include "Network/SimpleNetworking/IConnection.h"
+#include "Network/SimpleNetworking/Private/SimpleTcpClient.h"
+#include "Network/SimpleNetworking/Private/LogNetworkError.h"
 
 namespace DAVA
 {
 namespace Net
 {
 
-void LogNetworkError(const String& str);
 
-namespace TCP
-{
     
-IConnectionPtr WaitIncomingConnection(const Endpoint& endPoint);
-IConnectionPtr CreateConnection(const Endpoint& endPoint);
-
-}  // namespace TCP
-
 }  // namespace Net
 }  // namespace DAVA
-
-#endif  // __DAVAENGINE_SIMPLE_NETWORKING_H__

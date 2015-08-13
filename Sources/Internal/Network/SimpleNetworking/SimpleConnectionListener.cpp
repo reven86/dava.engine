@@ -47,6 +47,16 @@ ConnectionListener::ConnectionListener(IConnectionPtr& conn, NotificationType no
     pimpl = std::make_unique<ConnectionListenerPrivate>(conn, notifType);
 }
 
+ConnectionListener::ConnectionListener(ConnectionListener&& other) 
+    : pimpl(std::move(other.pimpl))
+{
+}
+
+ConnectionListener::~ConnectionListener()
+{
+    pimpl.reset();
+}
+
 IConnectionPtr ConnectionListener::GetConnection() const
 {
     return pimpl->GetConnection();

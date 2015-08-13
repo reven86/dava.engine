@@ -190,10 +190,7 @@ void Core::CreateRenderManager()
         
 void Core::ReleaseSingletons()
 {
-    // Finish network infrastructure
-    // As I/O event loop runs in main thread so NetCore should run out loop to make graceful shutdown
-    Net::NetCore::Instance()->Finish(true);
-    Net::NetCore::Instance()->Release();
+    DeInitializeNetwork();
 
 #ifdef __DAVAENGINE_AUTOTESTING__
 	AutotestingSystem::Instance()->Release();
@@ -651,6 +648,9 @@ void Core::InitializeNetwork()
 
 void Core::DeInitializeNetwork()
 {
+    // Finish network infrastructure
+    // As I/O event loop runs in main thread so NetCore should run out loop to make graceful shutdown
+    Net::NetCore::Instance()->Finish(true);
     Net::NetCore::Instance()->Release();
 
 #ifdef __DAVAENGINE_WIN_UAP__

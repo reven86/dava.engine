@@ -29,49 +29,12 @@
 
 #include "Network/SimpleNetworking/Private/SimpleNetServicePrivate.h"
 
-#include "Concurrency/Thread.h"
-#include <functional>
 #include "Debug/DVAssert.h"
 
 namespace DAVA
 {
 namespace Net
 {
-
-class ChannelBridge : public IChannel
-{
-public:
-    ChannelBridge(IConnectionPtr& conn, IChannelListener* listener);
-
-    bool Send(const void* data, size_t length, uint32 flags, uint32* packetId) override;
-    const Endpoint& RemoteEndpoint() const override;
-
-private:
-    IConnectionPtr connection;
-    IChannelListener* channelListener;
-};
-
-ChannelBridge::ChannelBridge(IConnectionPtr& conn, IChannelListener* listener)
-    : connection(conn)
-    , channelListener(listener)
-{
-    DVASSERT_MSG(connection,      "Connection cannot be empty");
-    DVASSERT_MSG(channelListener, "Channel listener cannot be empty");
-
-    channelListener->OnChannelOpen(this);
-}
-
-bool ChannelBridge::Send(const void* data, size_t length, uint32 /*flags*/, uint32* /*packetId*/)
-{
-    const char* buf = reinterpret_cast<const char*>(data);
-    size_t wrote = connection->Write(buf, length);
-    return wrote == length;
-}
-
-const Endpoint& ChannelBridge::RemoteEndpoint() const
-{
-    return connection->GetEndpoint();
-}
 
 SimpleNetServicePrivate::SimpleNetServicePrivate(size_t serviceId,
                                                  std::unique_ptr<NetService>&& service,
@@ -83,7 +46,19 @@ SimpleNetServicePrivate::SimpleNetServicePrivate(size_t serviceId,
     , servEndPoint(endPoint)
     , servName(serviceName)
     , listener(std::move(connectionListener))
+    , channelAdapter(netService.get())
 {
+    listener.AddConnectionCallback(
+        [this](IConnectionPtr& conn)
+        {
+            channelAdapter.SetConnection(conn);
+        });
+    listener.AddDataReceiveCallback(
+        [this](const DataBuffer& buf)
+        {
+            channelAdapter.Receive(buf.data(), buf.size());
+        });
+
     listener.Start();
 }
 

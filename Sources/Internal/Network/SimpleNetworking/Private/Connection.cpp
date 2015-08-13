@@ -27,28 +27,59 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_SIMPLE_CONNECTION_DISPATCHER_H__
-#define __DAVAENGINE_SIMPLE_CONNECTION_DISPATCHER_H__
+#include "Network/SimpleNetworking/Private/Connection.h"
 
-#include "Network/SimpleNetworking/IConnection.h"
+#include <libuv/uv.h>
+
+#include "Concurrency/LockGuard.h"
+#include "Debug/DVAssert.h"
+#include "Network/SimpleNetworking/Private/SimpleAbstractSocket.h"
 
 namespace DAVA
 {
 namespace Net
 {
     
-class ConnectionDispatcher
+Connection::Connection(ISimpleAbstractSocketPtr&& abstractSocket)
+    : socket(std::move(abstractSocket)) 
 {
-public:
-    ConnectionDispatcher(IConnectionPtr&& connection);
+    DVASSERT_MSG(socket, "Socket cannot be empty");
+}
+    
+IReadOnlyConnection::ChannelState Connection::GetChannelState()
+{
+    bool connectionEstablished = socket->IsConnectionEstablished();
+    return connectionEstablished ? ChannelState::kConnected : ChannelState::kDisconnected;
+}
 
-    IConnectionPtr RegisterService(size_t serviceId);
+const Endpoint& Connection::GetEndpoint()
+{
+    return socket->GetEndpoint();
+}
 
-private:
-    std::unique_ptr<class ConnectionDispatcherPrivate> pimpl;
-};
+size_t Connection::ReadSome(char* buffer, size_t bufSize)
+{
+    LockGuard<Mutex> lock(recvMutex);
 
+    size_t read = socket->Recv(buffer, bufSize, false);
+    return read > 0;
+}
+
+bool Connection::ReadAll(char* buffer, size_t bufSize)
+{
+    LockGuard<Mutex> lock(recvMutex);
+
+    size_t read = socket->Recv(buffer, bufSize, true);
+    return read > 0;
+}
+
+size_t Connection::Write(const char* buffer, size_t bufSize)
+{
+    LockGuard<Mutex> lock(sendMutex);
+
+    size_t written = socket->Send(buffer, bufSize);
+    return written;
+}
+    
 }  // namespace Net
 }  // namespace DAVA
-
-#endif  // __DAVAENGINE_SIMPLE_CONNECTION_DISPATCHER_H__

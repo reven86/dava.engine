@@ -45,6 +45,16 @@ SimpleNetService::SimpleNetService(size_t serviceId,
         serviceId, std::move(service), endPoint, serviceName, std::move(connectionListener));
 }
 
+SimpleNetService::SimpleNetService(SimpleNetService&& other)
+    : pimpl(std::move(other.pimpl))
+{
+}
+
+SimpleNetService::~SimpleNetService()
+{
+    pimpl.reset();
+}
+
 NetService* SimpleNetService::GetNetService()
 {
     return pimpl->GetNetService();

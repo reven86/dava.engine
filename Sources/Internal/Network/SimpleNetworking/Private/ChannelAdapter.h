@@ -27,61 +27,37 @@
 =====================================================================================*/
 
 
-#include "Network/SimpleNetworking/Connection.h"
+#ifndef __DAVAENGINE_CHANNEL_ADAPTER_H__
+#define __DAVAENGINE_CHANNEL_ADAPTER_H__
 
-#include <libuv/uv.h>
-
-#include "Concurrency/LockGuard.h"
-#include "Debug/DVAssert.h"
-#include "Network/SimpleNetworking/SimpleAbstractSocket.h"
+#include "Network/IChannel.h"
+#include "Network/SimpleNetworking/IConnection.h"
 
 namespace DAVA
 {
 namespace Net
 {
-    
-Connection::Connection(ISimpleAbstractSocketPtr&& abstractSocket)
-    : socket(std::move(abstractSocket)) 
+
+class ChannelAdapter : public IChannel
 {
-    DVASSERT_MSG(socket, "Socket cannot be empty");
-}
-    
-IReadOnlyConnection::ChannelState Connection::GetChannelState()
-{
-    LockGuard<Mutex> lock(mutex);
+public:
+    ChannelAdapter(IChannelListener* listener);
 
-    bool connectionEstablished = socket->IsConnectionEstablished();
-    return connectionEstablished ? ChannelState::kConnected : ChannelState::kDisconnected;
-}
+    void SetConnection(IConnectionPtr& conn);
+    void RemoveConnection();
 
-const Endpoint& Connection::GetEndpoint()
-{
-    return socket->GetEndpoint();
-}
+    bool Send(const void* data, size_t length, uint32 flags, uint32* packetId) override;
+    void Receive(const void* data, size_t length);
 
-size_t Connection::ReadSome(char* buffer, size_t bufSize)
-{
-    LockGuard<Mutex> lock(mutex);
+    const Endpoint& RemoteEndpoint() const override;
 
-    size_t read = socket->Recv(buffer, bufSize, false);
-    return read > 0;
-}
+private:
+    IConnectionPtr connection;
+    IChannelListener* channelListener;
+};
 
-bool Connection::ReadAll(char* buffer, size_t bufSize)
-{
-    LockGuard<Mutex> lock(mutex);
 
-    size_t read = socket->Recv(buffer, bufSize, true);
-    return read > 0;
-}
-
-size_t Connection::Write(const char* buffer, size_t bufSize)
-{
-    LockGuard<Mutex> lock(mutex);
-
-    size_t wrote = socket->Send(buffer, bufSize);
-    return wrote;
-}
-    
 }  // namespace Net
 }  // namespace DAVA
+
+#endif  // __DAVAENGINE_CHANNEL_ADAPTER_H__

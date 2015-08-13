@@ -27,25 +27,22 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_SIMPLE_TCP_SERVER_H__
-#define __DAVAENGINE_SIMPLE_TCP_SERVER_H__
+#ifndef __DAVAENGINE_SIMPLE_TCP_CLIENT_H__
+#define __DAVAENGINE_SIMPLE_TCP_CLIENT_H__
 
 #include "Network/Base/Endpoint.h"
-#include "Network/SimpleNetworking/SimpleAbstractSocket.h"
+#include "Network/SimpleNetworking/Private/SimpleAbstractSocket.h"
 
 namespace DAVA
 {
 namespace Net
 {
 
-namespace TCP
-{
-
-class SimpleTcpServer : public ISimpleAbstractSocket
+class SimpleTcpClient : public ISimpleAbstractSocket
 {
 public:
-    SimpleTcpServer();
-    ~SimpleTcpServer();
+    SimpleTcpClient();
+    ~SimpleTcpClient();
     
     void Listen(const class Endpoint& endPoint);
     void Accept();
@@ -66,9 +63,7 @@ private:
     SOCKET socket_id;
 };
 
-}  // namespace TCP
-
 }  // namespace Net
 }  // namespace DAVA
 
-#endif  // __DAVAENGINE_SIMPLE_TCP_SERVER_H__
+#endif  // __DAVAENGINE_SIMPLE_TCP_CLIENT_H__

@@ -26,50 +26,23 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "Network/SimpleNetworking/SimpleNetworking.h"
-
-#include "Debug/DVAssert.h"
-#include "Network/SimpleNetworking/Connection.h"
-#include "Network/SimpleNetworking/SimpleTcpServer.h"
+#include "Network/SimpleNetworking/SimpleNetCore.h"
 
 namespace DAVA
 {
 namespace Net
 {
 
-void LogNetworkError(const String& str)
+class ConnectionManager : public IConnectionManager
 {
-    int error_num = 0;
-#ifdef __DAVAENGINE_WINDOWS__
-    error_num = WSAGetLastError();
-#else
-    error = errno;
-#endif
+public:
+    unsigned GetAvailableConnectionRoles() override;
+    IConnectionPtr CreateConnection(ConnectionRole role, const Endpoint& endPoint) override;
 
-    String error = std::to_string(error_num);
-    String message = str + " (error " + error + ")";
-    DVASSERT_MSG(false, message);
-}
-    
-namespace TCP
-{
-    
-IConnectionPtr WaitIncomingConnection(const Endpoint& endPoint)
-{
-    //create socket, listen connection and accept it
-    auto socket = std::make_unique<SimpleTcpServer>();
-    socket->Listen(endPoint);
-    socket->Accept();
-    
-    return MakeRefPtr<Connection>(std::move(socket));
-}
-
-IConnectionPtr CreateConnection(const Endpoint& endPoint) 
-{
-    return IConnectionPtr(); 
-}
-    
-}  // namespace TCP
+private:
+    IConnectionPtr CreateServerConnection(const Endpoint& endPoint);
+    IConnectionPtr CreateClientConnection(const Endpoint& endPoint);
+};
     
 }  // namespace Net
 }  // namespace DAVA

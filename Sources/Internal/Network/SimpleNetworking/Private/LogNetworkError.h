@@ -27,61 +27,31 @@
 =====================================================================================*/
 
 
-#include "Network/SimpleNetworking/ConnectionImpl.h"
+#ifndef __DAVAENGINE_LOG_NETWORK_ERROR_H__
+#define __DAVAENGINE_LOG_NETWORK_ERROR_H__
 
-#include <libuv/uv.h>
-
-#include "Concurrency/LockGuard.h"
 #include "Debug/DVAssert.h"
-#include "Network/SimpleNetworking/SimpleAbstractSocket.h"
 
 namespace DAVA
 {
-namespace Net
-{
-    
-ConnectionImpl::ConnectionImpl(ISimpleAbstractSocketPtr&& abstractSocket)
-    : socket(std::move(abstractSocket)) 
-{
-    DVASSERT_MSG(socket, "Socket cannot be empty");
-}
-    
-IReadOnlyConnection::ChannelState ConnectionImpl::GetChannelState()
-{
-    LockGuard<Mutex> lock(mutex);
 
-    bool connectionEstablished = socket->IsConnectionEstablished();
-    return connectionEstablished ? ChannelState::kConnected : ChannelState::kDisconnected;
-}
-
-const Endpoint& ConnectionImpl::GetEndpoint()
+inline void LogNetworkError(const String& str)
 {
-    return socket->GetEndpoint();
+    int error_num = 0;
+#ifdef __DAVAENGINE_WINDOWS__
+    error_num = WSAGetLastError();
+#else
+    error = errno;
+#endif
+
+    if (error_num == 0)
+        return;
+
+    String error = std::to_string(error_num);
+    String message = str + " (error " + error + ")";
+    DVASSERT_MSG(false, message);
 }
 
-size_t ConnectionImpl::ReadSome(char* buffer, size_t bufSize)
-{
-    LockGuard<Mutex> lock(mutex);
-
-    size_t read = socket->Recv(buffer, bufSize, false);
-    return read > 0;
-}
-
-bool ConnectionImpl::ReadAll(char* buffer, size_t bufSize)
-{
-    LockGuard<Mutex> lock(mutex);
-
-    size_t read = socket->Recv(buffer, bufSize, true);
-    return read > 0;
-}
-
-size_t ConnectionImpl::Write(const char* buffer, size_t bufSize)
-{
-    LockGuard<Mutex> lock(mutex);
-
-    size_t wrote = socket->Send(buffer, bufSize);
-    return wrote;
-}
-    
-}  // namespace Net
 }  // namespace DAVA
+
+#endif  // __DAVAENGINE_LOG_NETWORK_ERROR_H__

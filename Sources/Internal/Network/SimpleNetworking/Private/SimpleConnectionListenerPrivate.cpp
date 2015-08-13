@@ -53,13 +53,8 @@ ConnectionListenerPrivate::ConnectionListenerPrivate(IConnectionPtr& conn,
                                                      NotificationType notifType) 
     : notificationType(notifType)
 {
-    IConnectionPtr connLocal = conn;
-    auto threadFunc = [this, connLocal]
-    {
-        Start(IConnectionPtr(connLocal));
-    };
-
-    thread = RefPtr<Thread>(Thread::Create(threadFunc));
+    auto threadFunc = [this](IConnectionPtr& connection) { Start(connection); };
+    thread = RefPtr<Thread>(Thread::Create(std::bind(threadFunc, IConnectionPtr(conn))));
 }
 
 IConnectionPtr ConnectionListenerPrivate::GetConnection() const 
@@ -70,6 +65,12 @@ IConnectionPtr ConnectionListenerPrivate::GetConnection() const
 void ConnectionListenerPrivate::AddConnectionCallback(const ConnectionCallback& cb) 
 {
     onConnectCallbacks.GetAccessor()->emplace_back(cb);
+
+    IConnectionPtr conn = GetConnection();
+    if (conn)
+    {
+        cb(conn);
+    }
 }
 void ConnectionListenerPrivate::AddDataReceiveCallback(const DataReceiveCallback& cb) 
 {

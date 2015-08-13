@@ -32,7 +32,7 @@
 
 #include "Network/SimpleNetworking/SimpleNetCore.h"
 #include "Network/SimpleNetworking/SimpleNetService.h"
-#include "Network/SimpleNetworking/Private/SimpleNetServicePrivate.h"
+#include "Network/SimpleNetworking/Private/ConnectionManager.h"
 
 namespace DAVA
 {
@@ -42,7 +42,7 @@ namespace Net
 class SimpleNetCorePrivate
 {
 public:
-    IConnectionManager* GetConnectionManager() { return nullptr; }
+    IConnectionManager* GetConnectionManager();
 
     bool IsServiceRegistered(size_t serviceId) const;
     bool IsServiceRegistered(const String& serviceName) const;
@@ -59,6 +59,7 @@ public:
     Endpoint GetServiceEndpoint(size_t serviceId) const;
 
 private:
+    ConnectionManager connectionManager;
     Map<size_t, SimpleNetService> services;
     size_t serviceIdGenerator = 1;
 };

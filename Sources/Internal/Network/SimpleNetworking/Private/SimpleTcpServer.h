@@ -27,14 +27,43 @@
 =====================================================================================*/
 
 
-#include "Network/SimpleNetworking/SimpleConnectionDispatcher.h"
+#ifndef __DAVAENGINE_SIMPLE_TCP_SERVER_H__
+#define __DAVAENGINE_SIMPLE_TCP_SERVER_H__
+
+#include "Network/Base/Endpoint.h"
+#include "Network/SimpleNetworking/Private/SimpleAbstractSocket.h"
 
 namespace DAVA
 {
 namespace Net
 {
 
+class SimpleTcpServer : public ISimpleAbstractSocket
+{
+public:
+    SimpleTcpServer();
+    ~SimpleTcpServer();
+    
+    void Listen(const class Endpoint& endPoint);
+    void Accept();
 
+    const Endpoint& GetEndpoint() override;
+    void Shutdown() override;
+    
+    size_t Send(const char* buf, size_t bufSize) override;
+    size_t Recv(char* buf, size_t bufSize, bool recvAll = false) override;
+    bool IsConnectionEstablished() override { return connectionEstablished; }
+    
+private:
+    void Bind(const class Endpoint& endPoint);
+    void Close();
+    
+    bool connectionEstablished = false;
+    Endpoint socketEndPoint;
+    SOCKET socket_id;
+};
 
 }  // namespace Net
 }  // namespace DAVA
+
+#endif  // __DAVAENGINE_SIMPLE_TCP_SERVER_H__

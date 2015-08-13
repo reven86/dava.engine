@@ -30,8 +30,6 @@
 #include "Network/SimpleNetworking/Private/SimpleNetCorePrivate.h"
 
 #include "Network/SimpleNetworking/SimpleConnectionListener.h"
-#include "Network/SimpleNetworking/SimpleNetService.h"
-#include "Network/SimpleNetworking/Private/SimpleConnectionListenerPrivate.h"
 
 namespace DAVA
 {
@@ -70,6 +68,11 @@ size_t SimpleNetCorePrivate::RegisterService(std::unique_ptr<NetService>&& servi
 
     services.emplace(serviceId, std::move(netService));
     return serviceId;
+}
+
+IConnectionManager* SimpleNetCorePrivate::GetConnectionManager()
+{
+    return &connectionManager;
 }
 
 bool SimpleNetCorePrivate::IsServiceRegistered(size_t serviceId) const

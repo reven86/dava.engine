@@ -27,20 +27,16 @@
 =====================================================================================*/
 
 
-#include "Network/SimpleNetworking/SimpleTcpServer.h"
+#include "Network/SimpleNetworking/Private/SimpleTcpServer.h"
 
 #include <libuv/uv.h>
-#include "Debug/DVAssert.h"
-#include "Network/SimpleNetworking/SimpleNetworking.h"
+#include "Network/SimpleNetworking/Private/LogNetworkError.h"
 
 namespace DAVA
 {
 namespace Net
 {
 
-namespace TCP
-{
-    
 SimpleTcpServer::SimpleTcpServer()
 {
     socket_id = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -180,7 +176,5 @@ void SimpleTcpServer::Close()
     }
 }
     
-}  // namespace TCP
-
 }  // namespace Net
 }  // namespace DAVA
