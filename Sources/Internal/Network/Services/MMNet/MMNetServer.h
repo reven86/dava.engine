@@ -49,86 +49,6 @@ class MMAnotherService;
 
 class MMNetServer : public NetService
 {
-    struct ParcelEx
-    {
-        ParcelEx()
-            : bufferSize(0)
-            , buffer(nullptr)
-            , header(nullptr)
-            , data(nullptr)
-        {}
-        ParcelEx(size_t dataSize)
-            : bufferSize(sizeof(MMNetProto::PacketHeader) + dataSize)
-            , buffer(::operator new(bufferSize))
-            , header(static_cast<MMNetProto::PacketHeader*>(buffer))
-            , data(static_cast<void*>(header + 1))
-        {}
-        ParcelEx(ParcelEx&& other)
-            : bufferSize(other.bufferSize)
-            , buffer(other.buffer)
-            , header(other.header)
-            , data(other.data)
-        {
-            other.bufferSize = 0;
-            other.buffer = nullptr;
-            other.header = nullptr;
-            other.data = nullptr;
-        }
-        ParcelEx& operator = (ParcelEx&& other)
-        {
-            if (this != &other)
-            {
-                ::operator delete(buffer);
-
-                bufferSize = other.bufferSize;
-                buffer = other.buffer;
-                header = other.header;
-                data = other.data;
-
-                other.bufferSize = 0;
-                other.buffer = nullptr;
-                other.header = nullptr;
-                other.data = nullptr;
-            }
-            return *this;
-        }
-        ParcelEx(const ParcelEx& other) = delete;
-        ParcelEx& operator = (const ParcelEx&) = delete;
-        ~ParcelEx()
-        {
-            ::operator delete(buffer);
-        }
-
-        size_t bufferSize;
-        void* buffer;
-        MMNetProto::PacketHeader* header;
-        void* data;
-    };
-    
-    struct SnapshotInfo
-    {
-        SnapshotInfo() {}
-        SnapshotInfo(const String& fname) : filename(fname) {}
-        SnapshotInfo(SnapshotInfo&& other)
-            : filename(std::move(other.filename))
-            , fileSize(other.fileSize)
-            , bytesTransferred(other.bytesTransferred)
-        {}
-        SnapshotInfo& operator = (SnapshotInfo&& other)
-        {
-            filename = std::move(other.filename);
-            fileSize = other.fileSize;
-            bytesTransferred = other.bytesTransferred;
-            return *this;
-        }
-        
-        String filename;
-        size_t fileSize = 0;
-        size_t bytesTransferred = 0;
-    };
-    
-    static const size_t SNAPSHOT_CHUNK_SIZE = 63 * 1024;
-
 public:
     MMNetServer();
     virtual ~MMNetServer();
@@ -147,18 +67,12 @@ private:
     void ProcessRequestSnapshot(const MMNetProto::PacketHeader* inHeader, const void* packetData, size_t dataLength);
     
     void AutoReplyStat(uint64 curTimestamp);
-    void FastReply(uint16 type, uint16 status);
+    void SendPacket(MMNetProto::Packet&& packet);
 
-    void EnqueueParcel(ParcelEx& parcel);
-    void SendParcel(const ParcelEx& parcel);
-    
-    void Cleanup();
-    void CleanupSnapshot(bool erase);
+    MMNetProto::Packet CreateHeaderOnlyPacket(uint16 type, uint16 status);
+    MMNetProto::Packet CreateReplyTokenPacket(bool newSession);
+    MMNetProto::Packet CreateReplyStatPacket(uint32 maxItems);
 
-    void UpdateSnapshotProgress(const ParcelEx& parcel);
-    void CheckAndTransferSnapshot();
-    void ContinueSnapshotTransfer();
-    void BeginNextSnapshotTransfer();
     bool GetAndSaveSnapshot(uint64 curTimestamp);
 
 private:
@@ -168,18 +82,18 @@ private:
     uint64 lastStatTimestamp = 0;
     uint64 statPeriod = 250;
 
-    List<ParcelEx> queue;
-    
-    size_t statItemSize = 0;
-    
-    Spinlock snapshotMutex;
-    List<SnapshotInfo> readySnapshots;
-    ParcelEx snapshotParcel;
-    SnapshotInfo* curSnapshotInfo = nullptr;
-    FILE* snapshotFileHandle = nullptr;
-    bool waitSnapshotAck = false;
-    
-    uint32 curSnapshotIndex = 0;
+    List<MMNetProto::Packet> packetQueue;
+    MMNetProto::Packet curStatPacket;
+    uint32 maxStatItemsPerPacket = 30;
+    uint32 statItemsInPacket = 0;
+    uint64 statTimestamp = 0;
+
+    Vector<MMNetProto::Packet> cachedStatPackets;
+    uint32 maxCachedPackets = 4;
+    uint32 freeCachedPackets = 0;
+
+    uint32 statItemSize = 0;
+    uint32 configSize = 0;
     uint64 lastManualSnapshotTimestamp = 0;
 
     std::unique_ptr<MMAnotherService> anotherService;

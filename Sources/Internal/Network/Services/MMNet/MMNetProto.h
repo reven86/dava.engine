@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 #ifndef __DAVAENGINE_MMNETPROTO_H__
 #define __DAVAENGINE_MMNETPROTO_H__
 
@@ -79,6 +78,29 @@ struct PacketParamSnapshot
     uint32 chunkSize;       // Chunk size in unpacked snapshot
 };
 static_assert(sizeof(PacketParamSnapshot) == 16, "sizeof(MMNetProto::PacketParamSnapshot) != 16");
+
+//////////////////////////////////////////////////////////////////////////
+class Packet
+{
+public:
+    Packet() = default;
+    Packet(size_t dataSize)
+        : plainBytes(sizeof(PacketHeader) + dataSize)
+    {}
+    Packet(Packet&& other)
+        : plainBytes(std::move(other.plainBytes))
+    {}
+
+    const uint8* PlainBytes() const { return &*plainBytes.begin(); }
+
+    PacketHeader* Header() { return reinterpret_cast<PacketHeader*>(&*plainBytes.begin()); }
+
+    template<typename T>
+    T* Data(const size_t offset = 0) { return OffsetPointer<T>(&*plainBytes.begin(), sizeof(PacketHeader) + offset); }
+
+private:
+    Vector<uint8> plainBytes;
+};
 
 }   // namespace MMNetProto
 

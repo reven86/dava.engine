@@ -94,7 +94,10 @@ void MMAnotherService::Start(bool newSession, uint32 connToken_, const IPAddress
 
 void MMAnotherService::Stop()
 {
-    netController->Stop(MakeFunction(this, &MMAnotherService::OnNetControllerStopped));
+    if (netController != nullptr)
+    {
+        netController->Stop(MakeFunction(this, &MMAnotherService::OnNetControllerStopped));
+    }
 }
 
 void MMAnotherService::TransferSnapshot(const FilePath& snapshotFile)
