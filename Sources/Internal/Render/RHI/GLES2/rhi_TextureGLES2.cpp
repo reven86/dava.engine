@@ -1,7 +1,7 @@
 
     #include "../Common/rhi_Private.h"
     #include "../Common/rhi_Pool.h"
-    #include "../Common/format_convert.h"
+    #include "../Common/rhi_FormatConversion.h"
     #include "rhi_GLES2.h"
 
     #include "Debug/DVAssert.h"
@@ -26,8 +26,7 @@ public:
 
 
     unsigned        uid;
-    GLuint          fbo;
-    GLuint          depth;
+    unsigned        uid2;
 
     unsigned        width;
     unsigned        height;
@@ -37,7 +36,19 @@ public:
     GLenum          mappedFace;
     uint32          isCubeMap:1;
     uint32          isRenderTarget:1;
+    uint32          isRenderBuffer:1;
     uint32          isMapped:1;
+
+    struct
+    fbo_t
+    {
+        Handle  color;
+        Handle  depthStencil;
+
+        GLuint  frameBuffer;
+    };
+    std::vector<fbo_t>  fbo;
+
 
     SamplerState::Descriptor::Sampler   samplerState;
     uint32                              forceSetSamplerState:1;
@@ -46,12 +57,13 @@ public:
 
 TextureGLES2_t::TextureGLES2_t()
   : uid(0),
+    uid2(0),
     fbo(0),
-    depth(0),
     width(0),
     height(0),
     isCubeMap(false),
     isRenderTarget(false),
+    isRenderBuffer(false),
     mappedData(nullptr),
     isMapped(false),
     forceSetSamplerState(true)
@@ -61,6 +73,7 @@ TextureGLES2_t::TextureGLES2_t()
 typedef ResourcePool<TextureGLES2_t,RESOURCE_TEXTURE>   TextureGLES2Pool;
 RHI_IMPL_POOL(TextureGLES2_t,RESOURCE_TEXTURE);
 
+
 //------------------------------------------------------------------------------
 
 static void
@@ -68,15 +81,45 @@ gles2_Texture_Delete( Handle tex )
 {
     if( tex != InvalidHandle )
     {
-        TextureGLES2_t* self = TextureGLES2Pool::Get( tex );
-        GLCommand       cmd[] =
-        {
-            { GLCommand::DELETE_TEXTURES, { 1, uint64(&(self->uid)) } },
-            { GLCommand::DELETE_RENDERBUFFERS, { 1, uint64(&(self->depth)) } },
-            { GLCommand::DELETE_FRAMEBUFFERS, { 1, uint64(&(self->fbo)) } }
-        };
+        TextureGLES2_t* self    = TextureGLES2Pool::Get( tex );
+        GLCommand       cmd[16];
+        unsigned        cmd_cnt = 1;
 
-        ExecGL( cmd, countof(cmd) );
+        if( self->isRenderTarget )
+        {
+            DVASSERT(self->fbo.size() <= countof(cmd)-1);
+            for( unsigned i=0; i!=self->fbo.size(); ++i )
+            {
+                cmd[1+i].func   = GLCommand::DELETE_FRAMEBUFFERS;
+                cmd[1+i].arg[0] = 1;
+                cmd[1+i].arg[1] = uint64(&(self->fbo[i].frameBuffer));
+            }
+
+            cmd_cnt += self->fbo.size();
+            self->fbo.clear();
+        }
+        else if( self->isRenderBuffer )
+        {
+            cmd[0].func   = GLCommand::DELETE_RENDERBUFFERS;
+            cmd[0].arg[0] = 1;
+            cmd[0].arg[1] = uint64(&(self->uid));
+
+            if( self->uid2 )
+            {
+                cmd[1].func   = GLCommand::DELETE_RENDERBUFFERS;
+                cmd[1].arg[0] = 1;
+                cmd[1].arg[1] = uint64(&(self->uid2));
+            }
+        }
+        else
+        {
+            cmd[0].func   = GLCommand::DELETE_TEXTURES;
+            cmd[0].arg[0] = 1;
+            cmd[0].arg[1] = uint64(&(self->uid));
+        }
+
+        ExecGL( cmd, cmd_cnt );
+
 
 
         DVASSERT(!self->isMapped);
@@ -102,118 +145,96 @@ gles2_Texture_Create( const Texture::Descriptor& desc )
 {
     DVASSERT(desc.levelCount);
 
-    Handle      handle = InvalidHandle;
-    GLuint      uid    = InvalidIndex;
-    GLCommand   cmd1   = { GLCommand::GEN_TEXTURES, { 1, (uint64)(&uid) } };
-
-    ExecGL( &cmd1, 1 );
-    if( cmd1.status == GL_NO_ERROR )
+    Handle      handle       = InvalidHandle;
+    GLuint      uid[2]        = { InvalidIndex, InvalidIndex };
+    bool        is_depth     = desc.format == TEXTURE_FORMAT_D16  ||  desc.format == TEXTURE_FORMAT_D24S8;
+    bool        need_stencil = desc.format == TEXTURE_FORMAT_D24S8;
+    
+    if( is_depth )
     {
-        GLenum      target = (desc.type == TEXTURE_TYPE_CUBE)  ? GL_TEXTURE_CUBE_MAP  : GL_TEXTURE_2D;
-        GLCommand   cmd2[] =
-        {
-            { GLCommand::BIND_TEXTURE, { target, uid } },
-            { (desc.autoGenMipmaps) ? GLCommand::GENERATE_MIPMAP : GLCommand::NOP, { } },
-//            #if !defined __DAVAENGINE_IPHONE__
-//            { GLCommand::TEX_PARAMETER_I, { target, GL_TEXTURE_BASE_LEVEL, 0 } },
-//            { GLCommand::TEX_PARAMETER_I, { target, GL_TEXTURE_MAX_LEVEL, 0 } },
-//            #endif
-            { GLCommand::BIND_TEXTURE, { target, 0 } }
-        };
+        GLCommand   cmd1 = { GLCommand::GEN_RENDERBUFFERS, { uint64((need_stencil)?2:1), (uint64)(uid) } };
 
-        ExecGL( cmd2, countof(cmd2) );
+        ExecGL( &cmd1, 1 );
+
+        if( cmd1.status == GL_NO_ERROR )
+        {
+            GLCommand   cmd2[] =
+            {
+                { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, uid[0] } },
+                { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, desc.width, desc.height } },
+                { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, 0 } },
+                { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, uid[1] } },
+                { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, GL_STENCIL_INDEX8, desc.width, desc.height } },
+                { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, 0 } },
+            };
+
+            if( !need_stencil )
+            {
+                cmd2[3].func = GLCommand::NOP;
+                cmd2[4].func = GLCommand::NOP;
+                cmd2[5].func = GLCommand::NOP;
+            }
+
+            ExecGL( cmd2, countof(cmd2) );
+        }
+    }
+    else
+    {
+        GLCommand   cmd1 = { GLCommand::GEN_TEXTURES, { 1, (uint64)(uid) } };
+
+        ExecGL( &cmd1, 1 );
+
+        if(     cmd1.status == GL_NO_ERROR 
+            &&  (desc.autoGenMipmaps  &&  !desc.isRenderTarget)
+          )
+        {
+            GLenum      target = (desc.type == TEXTURE_TYPE_CUBE)  ? GL_TEXTURE_CUBE_MAP  : GL_TEXTURE_2D;
+            GLCommand   cmd2[] =
+            {
+                { GLCommand::SET_ACTIVE_TEXTURE, { GL_TEXTURE0+0 } },
+                { GLCommand::BIND_TEXTURE, { target, uid[0] } },
+                { GLCommand::GENERATE_MIPMAP, {} },
+                { GLCommand::RESTORE_TEXTURE0, {} }
+            };
+            
+            ExecGL( cmd2, countof(cmd2) );
+        }
     }
 
-    if( uid != InvalidIndex )
+
+    if( uid[0] != InvalidIndex )
     {
         TextureGLES2_t* self = nullptr;
         
         handle = TextureGLES2Pool::Alloc();
         self   = TextureGLES2Pool::Get( handle );
 
-        self->uid                   = uid;
+        self->uid                   = uid[0];
         self->mappedData            = nullptr;
         self->width                 = desc.width;
         self->height                = desc.height;
         self->format                = desc.format;
         self->isCubeMap             = desc.type == TEXTURE_TYPE_CUBE;
         self->isMapped              = false;
+        self->isRenderBuffer        = is_depth;
         self->forceSetSamplerState  = true;
         
         if( desc.isRenderTarget )
         {
-            GLuint      fbo    = 0;
-            GLuint      depth  = 0;
-            GLCommand   cmd3[] = 
+            self->isRenderTarget        = true;
+            self->forceSetSamplerState  = false;
+
+            GLCommand   cmd3[] =
             {
-                { GLCommand::GEN_FRAMEBUFFERS, { 1, (uint64)(&fbo) } },
-//                { GLCommand::GEN_TEXTURES, { 1, (uint64)(&depth) } }
-                { GLCommand::GEN_RENDERBUFFERS, { 1, (uint64)(&depth) } }
+                { GLCommand::BIND_TEXTURE, { GL_TEXTURE_2D, uid[0] } },
+                { GLCommand::TEX_IMAGE2D, { GL_TEXTURE_2D, 0, GL_RGBA, desc.width, desc.height, 0, GL_BGRA, GL_UNSIGNED_BYTE, 0 } },
+                { GLCommand::TEX_PARAMETER_I, { GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST } },
+                { GLCommand::TEX_PARAMETER_I, { GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST } },
+                { GLCommand::BIND_TEXTURE, { GL_TEXTURE_2D, 0 } },
+                { GLCommand::RESTORE_TEXTURE0, {} }
             };
-            
+
             ExecGL( cmd3, countof(cmd3) );
-
-            if( fbo  &&  depth )
-            {
-                GLenum      b[1]   = { GL_COLOR_ATTACHMENT0 };
-                GLCommand   cmd4[] =
-                {
-                    { GLCommand::BIND_TEXTURE, { GL_TEXTURE_2D, uid } },
-                    { GLCommand::TEX_IMAGE2D, { GL_TEXTURE_2D, 0, GL_RGBA, desc.width, desc.height, 0, GL_BGRA, GL_UNSIGNED_BYTE, 0 } },
-                    { GLCommand::TEX_PARAMETER_I, { GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST } },
-                    { GLCommand::TEX_PARAMETER_I, { GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST } },
-                    { GLCommand::BIND_TEXTURE, { GL_TEXTURE_2D, 0 } },
-
-                    { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, depth } },
-                    { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, desc.width, desc.height } },
-                    { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, 0 } },
-                    
-                    { GLCommand::BIND_FRAMEBUFFER, { GL_FRAMEBUFFER, fbo } },
-                    { GLCommand::FRAMEBUFFER_TEXTURE, { GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, uid, 0 } },                    
-                    { GLCommand::FRAMEBUFFER_RENDERBUFFER, { GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depth } },
-                    { GLCommand::DRAWBUFFERS, { 1, (uint64)b } },
-                    { GLCommand::FRAMEBUFFER_STATUS, { GL_FRAMEBUFFER } },
-                    { GLCommand::BIND_FRAMEBUFFER, { GL_FRAMEBUFFER, 0 } }
-/*
-                    { GLCommand::BIND_TEXTURE, { GL_TEXTURE_2D, uid } },
-                    { GLCommand::TEX_IMAGE2D, { GL_TEXTURE_2D, 0, GL_RGBA, desc.width, desc.height, 0, GL_BGRA, GL_UNSIGNED_BYTE, 0 } },
-                    { GLCommand::TEX_PARAMETER_I, { GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST } },
-                    { GLCommand::TEX_PARAMETER_I, { GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST } },
-                    { GLCommand::BIND_TEXTURE, { GL_TEXTURE_2D, 0 } },
-
-                    { GLCommand::BIND_TEXTURE, { GL_TEXTURE_2D, depth } },
-//                    { GLCommand::TEX_IMAGE2D, { GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, desc.width, desc.height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, NULL } },
-                    { GLCommand::BIND_TEXTURE, { GL_TEXTURE_2D, 0 } },
-
-                    { GLCommand::BIND_FRAMEBUFFER, { GL_FRAMEBUFFER, fbo } },                    
-                    { GLCommand::FRAMEBUFFER_TEXTURE, { GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, uid, 0 } },                    
-                    { GLCommand::FRAMEBUFFER_TEXTURE, { GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depth, 0 } },                    
-                    { GLCommand::DRAWBUFFERS, { 1, (uint64)b } },
-                    { GLCommand::FRAMEBUFFER_STATUS, { GL_FRAMEBUFFER } },
-                    { GLCommand::BIND_FRAMEBUFFER, { GL_FRAMEBUFFER, 0 } }
-*/
-                };
-
-                ExecGL( cmd4, countof(cmd4) );
-
-                if( cmd4[ countof(cmd4)-2 ].retval == GL_FRAMEBUFFER_COMPLETE )
-                {
-                    self->fbo            = fbo;
-                    self->depth          = depth;
-                    self->isRenderTarget = true;
-                }
-                else
-                {
-/*
-GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT
-GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS
-GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT
-GL_FRAMEBUFFER_UNSUPPORTED
-*/
-                    Logger::Error( "glCheckFramebufferStatus= %08X", cmd4[ countof(cmd4)-2 ].retval );
-                    DVASSERT(cmd4[ countof(cmd4)-2 ].retval == GL_FRAMEBUFFER_COMPLETE);
-                }
-            }
         }
     }
 
@@ -229,20 +250,24 @@ gles2_Texture_Map( Handle tex, unsigned level, TextureFace face )
     TextureGLES2_t* self = TextureGLES2Pool::Get( tex );
     void*              mem = nullptr;
     uint32 textureDataSize = TextureSize(self->format, self->width, self->height, level);
-
+    
+    DVASSERT(!self->isRenderBuffer);
     DVASSERT(!self->isMapped);
+
     self->mappedData = ::realloc( self->mappedData, textureDataSize );
+    
     if( self->mappedData )
     {
         if( self->isRenderTarget )
         {
             DVASSERT(level==0);
+            DVASSERT(self->fbo.size())
             GLenum      target = (self->isCubeMap)  ? GL_TEXTURE_CUBE_MAP  : GL_TEXTURE_2D;
             GLCommand   cmd[]  =
             {
-                { GLCommand::BIND_FRAMEBUFFER, {GL_FRAMEBUFFER, self->fbo} },
-                { GLCommand::READ_PIXELS, {0,0,self->width,self->height,GL_RGBA,GL_UNSIGNED_BYTE,uint64(self->mappedData)} },
-                { GLCommand::BIND_FRAMEBUFFER, {GL_FRAMEBUFFER, 0} },
+                { GLCommand::BIND_FRAMEBUFFER, { GL_FRAMEBUFFER, self->fbo[0].frameBuffer } },
+                { GLCommand::READ_PIXELS, { 0,0,self->width,self->height,GL_RGBA,GL_UNSIGNED_BYTE,uint64(self->mappedData) } },
+                { GLCommand::BIND_FRAMEBUFFER, { GL_FRAMEBUFFER, _GLES2_Binded_FrameBuffer } },
             };
 
             ExecGL( cmd, countof(cmd) );            
@@ -310,9 +335,10 @@ gles2_Texture_Unmap( Handle tex )
     GLenum      target = (self->isCubeMap)  ? GL_TEXTURE_CUBE_MAP  : GL_TEXTURE_2D;
     GLCommand   cmd[]  =
     {
-        { GLCommand::BIND_TEXTURE, {target, self->uid} },
-        { GLCommand::TEX_IMAGE2D, {target, self->mappedLevel, uint64(int_fmt), uint64(sz.dx), uint64(sz.dy), 0, uint64(fmt), type, uint64(textureDataSize), (uint64)(self->mappedData), compressed} },
-        { GLCommand::BIND_TEXTURE, {target, 0} }
+        { GLCommand::SET_ACTIVE_TEXTURE, { GL_TEXTURE0+0 } },
+        { GLCommand::BIND_TEXTURE, { target, self->uid } },
+        { GLCommand::TEX_IMAGE2D, { target, self->mappedLevel, uint64(int_fmt), uint64(sz.dx), uint64(sz.dy), 0, uint64(fmt), type, uint64(textureDataSize), (uint64)(self->mappedData), compressed } },
+        { GLCommand::RESTORE_TEXTURE0, {} }
     };
 
     ExecGL( cmd, countof(cmd) );
@@ -332,12 +358,14 @@ gles2_Texture_Update( Handle tex, const void* data, uint32 level, TextureFace fa
     GLint           fmt;
     GLenum          type;
     bool            compressed;
+    uint32          textureDataSize = TextureSize( self->format, sz.dx, sz.dy );
     
-    uint32 textureDataSize = TextureSize(self->format, sz.dx, sz.dy);
-    GetGLTextureFormat( self->format, &int_fmt, &fmt, &type, &compressed);
-    
+    DVASSERT(!self->isRenderBuffer);
     DVASSERT(!self->isMapped);
-    if (self->format == TEXTURE_FORMAT_R4G4B4A4 || self->format == TEXTURE_FORMAT_R5G5B5A1)
+
+    GetGLTextureFormat( self->format, &int_fmt, &fmt, &type, &compressed );
+    
+    if( self->format == TEXTURE_FORMAT_R4G4B4A4 || self->format == TEXTURE_FORMAT_R5G5B5A1 )
     {
         gles2_Texture_Map( tex, level, face );
         memcpy( self->mappedData, data, textureDataSize );
@@ -362,10 +390,11 @@ gles2_Texture_Update( Handle tex, const void* data, uint32 level, TextureFace fa
         }
 
         GLCommand   cmd[]  =
-        {
-            { GLCommand::BIND_TEXTURE, {ttarget, self->uid} },
-            { GLCommand::TEX_IMAGE2D, {target, uint64(level), uint64(int_fmt), uint64(sz.dx), uint64(sz.dy), 0, uint64(fmt), type, uint64(textureDataSize), (uint64)(data), compressed} },
-            { GLCommand::BIND_TEXTURE, {ttarget, 0} }
+        {        
+            { GLCommand::SET_ACTIVE_TEXTURE, { GL_TEXTURE0+0 } },
+            { GLCommand::BIND_TEXTURE, { ttarget, self->uid } },
+            { GLCommand::TEX_IMAGE2D, { target, uint64(level), uint64(int_fmt), uint64(sz.dx), uint64(sz.dy), 0, uint64(fmt), type, uint64(textureDataSize), (uint64)(data), compressed } },
+            { GLCommand::RESTORE_TEXTURE0, {} }
         };
 
         ExecGL( cmd, countof(cmd) );
@@ -542,9 +571,16 @@ SetToRHI( Handle tex, unsigned unit_i, uint32 base_i )
 
     GL_CALL(glActiveTexture( GL_TEXTURE0+sampler_i ));
     GL_CALL(glBindTexture( target, self->uid ));
+    
+    if( sampler_i == 0 )
+    {
+        _GLES2_LastSetTex0       = self->uid;
+        _GLES2_LastSetTex0Target = target;
+    }
 
     if(     _CurSamplerState
-        &&  (self->forceSetSamplerState  ||  memcmp( &(self->samplerState), sampler, sizeof(rhi::SamplerState::Descriptor::Sampler)) )
+        &&  (self->forceSetSamplerState  ||  memcmp( &(self->samplerState), sampler, sizeof(rhi::SamplerState::Descriptor::Sampler)) )     
+        &&  !self->isRenderBuffer
        )
     {
         if( sampler->mipFilter != TEXMIPFILTER_NONE )
@@ -567,13 +603,62 @@ SetToRHI( Handle tex, unsigned unit_i, uint32 base_i )
 }
 
 void
-SetAsRenderTarget( Handle tex )
+SetAsRenderTarget( Handle tex, Handle depth )
 {
     TextureGLES2_t* self = TextureGLES2Pool::Get( tex );
+    GLuint          fb   = 0;
 
-    glBindFramebuffer( GL_FRAMEBUFFER, self->fbo );
-//-    glViewport( 0, 0, self->width, self->height );
-    _GLES2_Binded_FrameBuffer = self->fbo;
+    for( unsigned i=0; i!=self->fbo.size(); ++i )
+    {
+        if( self->fbo[i].color == tex  &&  self->fbo[i].depthStencil == depth )
+        {
+            fb = self->fbo[i].frameBuffer;
+            break;
+        }
+    }
+
+    if( !fb )
+    {            
+        glGenFramebuffers( 1, &fb );
+            
+        if( fb )
+        {
+            TextureGLES2_t* ds   = (depth != InvalidHandle)  ? TextureGLES2Pool::Get( depth )  : nullptr;
+            GLenum          b[1] = { GL_COLOR_ATTACHMENT0 };
+                
+            glBindFramebuffer( GL_FRAMEBUFFER, fb );
+            glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, self->uid, 0 );
+            if( ds )
+            {
+                glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, ds->uid );
+                
+                if( ds->uid2 )
+                    glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, ds->uid2 );
+            }
+            #if defined __DAVAENGINE_IPHONE__
+            #else
+            glDrawBuffers( 1, b );
+            #endif
+            
+            int status = glCheckFramebufferStatus( GL_FRAMEBUFFER );
+            glBindFramebuffer( GL_FRAMEBUFFER, 0 );
+            
+            if( status == GL_FRAMEBUFFER_COMPLETE )
+            {
+                TextureGLES2_t::fbo_t   fbo = { tex, depth, fb };
+
+                self->fbo.push_back( fbo );
+            }
+            else
+            {
+                Logger::Error( "glCheckFramebufferStatus= %08X", status );
+                DVASSERT(status == GL_FRAMEBUFFER_COMPLETE);
+            }
+        }
+    }
+
+    glBindFramebuffer( GL_FRAMEBUFFER, fb );
+    _GLES2_Binded_FrameBuffer = fb;
 }
 
 Size2i

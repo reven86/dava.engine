@@ -860,6 +860,7 @@ dx9_PipelineState_Create( const PipelineState::Descriptor& desc )
 static void
 dx9_PipelineState_Delete( Handle ps )
 {
+    PipelineStateDX9Pool::Free( ps ); 
 }
 
 

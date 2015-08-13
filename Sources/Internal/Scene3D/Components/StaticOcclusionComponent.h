@@ -119,6 +119,7 @@ public:
 
 class StaticOcclusionDebugDrawComponent : public Component
 {
+    friend class StaticOcclusionDebugDrawSystem;
 public:
     IMPLEMENT_COMPONENT_TYPE(STATIC_OCCLUSION_DEBUG_DRAW_COMPONENT);
 
@@ -134,6 +135,10 @@ protected:
     ~StaticOcclusionDebugDrawComponent();
 private:
     RenderObject * renderObject;
+    rhi::HVertexBuffer vertices;
+    rhi::HIndexBuffer  gridIndices, coverIndices;
+    uint32 vertexCount, gridIndexCount, coverIndexCount;
+    AABBox3 bbox;
     
 public:
     INTROSPECTION_EXTEND(StaticOcclusionDebugDrawComponent, Component,

@@ -39,7 +39,7 @@ RulerToolProxy::RulerToolProxy(int32 size)
     viewport.x = viewport.y = 0U;
     viewport.width = (uint32)size;
     viewport.height = (uint32)size;
-    RenderHelper::Instance()->CreateClearPass(rulerToolTexture->handle, PRIORITY_CLEAR, Color(0.f, 0.f, 0.f, 0.f), viewport);
+    RenderHelper::CreateClearPass(rulerToolTexture->handle, PRIORITY_CLEAR, Color(0.f, 0.f, 0.f, 0.f), viewport);
 }
 
 RulerToolProxy::~RulerToolProxy()

@@ -9,7 +9,7 @@
 
 namespace rhi
 {
-
+    
 struct
 TextureSet_t
 {
@@ -52,6 +52,23 @@ static std::vector<TextureSetInfo>      _TextureSetInfo;
 static std::vector<DepthStencilState_t> _DepthStencilStateInfo;
 static std::vector<SamplerState_t>      _SamplerStateInfo;
 
+struct ScheduledDeleteResource 
+{
+    Handle handle;    
+    ResourceType resourceType;
+};
+
+
+
+    
+
+
+
+
+const static uint32 frameSyncObjectsCount = 16;
+static uint32 currFrameSyncId = 0;
+static std::array<HSyncObject, frameSyncObjectsCount> frameSyncObjects;
+static std::array<std::vector<ScheduledDeleteResource>, frameSyncObjectsCount> scheduledDeleteResources;
 
 
 struct
@@ -98,9 +115,12 @@ CreateVertexBuffer( const VertexBuffer::Descriptor& desc )
 //------------------------------------------------------------------------------
 
 void
-DeleteVertexBuffer( HVertexBuffer vb )
-{
-    VertexBuffer::Delete( vb );
+DeleteVertexBuffer(HVertexBuffer vb, bool forceImmediate)
+{           
+    if (forceImmediate)
+        VertexBuffer::Delete(vb);
+    else
+        scheduledDeleteResources[currFrameSyncId].push_back({ vb, RESOURCE_VERTEX_BUFFER });
 }
 
 
@@ -143,9 +163,12 @@ CreateIndexBuffer( const IndexBuffer::Descriptor& desc )
 //------------------------------------------------------------------------------
 
 void
-DeleteIndexBuffer( HIndexBuffer ib )
+DeleteIndexBuffer(HIndexBuffer ib, bool forceImmediate)
 {
-    IndexBuffer::Delete( ib );
+    if (forceImmediate)
+        IndexBuffer::Delete(ib);
+    else
+        scheduledDeleteResources[currFrameSyncId].push_back({ ib, RESOURCE_INDEX_BUFFER });
 }
 
 
@@ -197,9 +220,12 @@ ResetQueryBuffer( HQueryBuffer buf )
 //------------------------------------------------------------------------------
 
 void
-DeleteQueryBuffer( HQueryBuffer buf )
-{
-    QueryBuffer::Delete( buf );
+DeleteQueryBuffer(HQueryBuffer buf, bool forceImmediate)
+{    
+    if (forceImmediate)
+        QueryBuffer::Delete(buf);
+    else
+        scheduledDeleteResources[currFrameSyncId].push_back({ buf, RESOURCE_QUERY_BUFFER });   
 }
 
 
@@ -240,7 +266,7 @@ AcquireRenderPipelineState( const PipelineState::Descriptor& desc )
 //------------------------------------------------------------------------------
 
 void
-ReleaseRenderPipelineState( HPipelineState rps )
+ReleaseRenderPipelineState(HPipelineState rps, bool forceImmediate)
 {
 //    PipelineState::Delete( rps );
 }
@@ -313,9 +339,12 @@ UpdateConstBuffer1fv( HConstBuffer constBuf, uint32 constIndex, uint32 constSubI
 //------------------------------------------------------------------------------
 
 void
-DeleteConstBuffer( HConstBuffer constBuf )
+DeleteConstBuffer(HConstBuffer constBuf, bool forceImmediate)
 {
-    ConstBuffer::Delete( constBuf );
+    if (forceImmediate)
+        ConstBuffer::Delete(constBuf);
+    else
+        scheduledDeleteResources[currFrameSyncId].push_back({ constBuf, RESOURCE_CONST_BUFFER });    
 }
 
 
@@ -331,9 +360,12 @@ CreateTexture( const Texture::Descriptor& desc )
 //------------------------------------------------------------------------------
 
 void
-DeleteTexture( HTexture tex )
+DeleteTexture(HTexture tex, bool forceImmediate)
 {
-    Texture::Delete( tex );
+    if (forceImmediate)
+        Texture::Delete(tex);
+    else
+        scheduledDeleteResources[currFrameSyncId].push_back({ tex, RESOURCE_TEXTURE });
 }
 
 
@@ -431,7 +463,7 @@ CopyTextureSet( HTextureSet tsh )
 //------------------------------------------------------------------------------
 
 void
-ReleaseTextureSet( HTextureSet tsh )
+ReleaseTextureSet(HTextureSet tsh, bool forceImmediate)
 {
     TextureSet_t*   ts  = TextureSetPool::Get( tsh );
 
@@ -439,7 +471,10 @@ ReleaseTextureSet( HTextureSet tsh )
     {
         if( --ts->refCount == 0 )
         {
-            TextureSetPool::Free( tsh );
+            if (forceImmediate)
+                TextureSetPool::Free(tsh);
+            else
+                scheduledDeleteResources[currFrameSyncId].push_back({ tsh, RESOURCE_TEXTURE_SET });
 
             for( std::vector<TextureSetInfo>::iterator i=_TextureSetInfo.begin(),i_end=_TextureSetInfo.end(); i!=i_end; ++i )
             {
@@ -511,7 +546,7 @@ CopyDepthStencilState( HDepthStencilState ds )
 //------------------------------------------------------------------------------
 
 void
-ReleaseDepthStencilState( HDepthStencilState ds )
+ReleaseDepthStencilState(HDepthStencilState ds, bool forceImmediate)
 {
     for( std::vector<DepthStencilState_t>::iterator i=_DepthStencilStateInfo.begin(),i_end=_DepthStencilStateInfo.end(); i!=i_end; ++i )
     {
@@ -519,7 +554,10 @@ ReleaseDepthStencilState( HDepthStencilState ds )
         {
             if( --i->refCount == 0 )
             {
-                DepthStencilState::Delete( i->state );
+                if (forceImmediate)
+                    DepthStencilState::Delete(i->state);
+                else
+                    scheduledDeleteResources[currFrameSyncId].push_back({ i->state, RESOURCE_DEPTHSTENCIL_STATE });                
                 _DepthStencilStateInfo.erase( i );
             }
 
@@ -587,7 +625,7 @@ CopySamplerState( HSamplerState ss )
 //------------------------------------------------------------------------------
 
 void
-ReleaseSamplerState( HSamplerState ss )
+ReleaseSamplerState(HSamplerState ss, bool forceImmediate)
 {
     for( std::vector<SamplerState_t>::iterator i=_SamplerStateInfo.begin(),i_end=_SamplerStateInfo.end(); i!=i_end; ++i )
     {
@@ -595,13 +633,43 @@ ReleaseSamplerState( HSamplerState ss )
         {
             if( --i->refCount == 0 )
             {
-                SamplerState::Delete( i->state );
+                if (forceImmediate)
+                    SamplerState::Delete(i->state);
+                else                
+                    scheduledDeleteResources[currFrameSyncId].push_back({ i->state, RESOURCE_SAMPLER_STATE });
                 _SamplerStateInfo.erase( i );
             }
 
             break;
         }
     }
+}
+
+
+//------------------------------------------------------------------------------
+
+HSyncObject
+CreateSyncObject()
+{
+    return HSyncObject(SyncObject::Create());
+}
+
+
+//------------------------------------------------------------------------------
+
+void
+DeleteSyncObject( HSyncObject obj )
+{
+    SyncObject::Delete( obj );
+}
+
+
+//------------------------------------------------------------------------------
+
+bool
+SyncObjectSignaled( HSyncObject obj )
+{
+    return SyncObject::IsSygnaled( obj );
 }
 
 
@@ -718,11 +786,11 @@ BeginPacketList( HPacketList packetList )
 //------------------------------------------------------------------------------
 
 void
-EndPacketList( HPacketList packetList )
+EndPacketList( HPacketList packetList, HSyncObject syncObject )
 {
     PacketList_t*   pl  = PacketListPool::Get( packetList );
 
-    CommandBuffer::End( pl->cmdBuf );
+    CommandBuffer::End( pl->cmdBuf, syncObject );
     PacketListPool::Free( packetList );
 }
 
@@ -879,6 +947,81 @@ AddPacket( HPacketList packetList, const Packet& packet )
 }
 
 
+/**/
+
+void ProcessScheduledDelete()
+{        
+    for (int i = 0; i < frameSyncObjectsCount; i++)
+    {
+        if (frameSyncObjects[i].IsValid() && SyncObjectSignaled(frameSyncObjects[i]))
+        {
+            for (std::vector<ScheduledDeleteResource>::iterator it = scheduledDeleteResources[i].begin(), e = scheduledDeleteResources[i].end(); it != e; ++it)            
+            {
+                ScheduledDeleteResource& res = *it;
+                switch (res.resourceType)
+                {
+                case RESOURCE_VERTEX_BUFFER: //+
+                    VertexBuffer::Delete(res.handle);                    
+                    break;
+                case RESOURCE_INDEX_BUFFER: //+
+                    IndexBuffer::Delete(res.handle);
+                    break;
+                case RESOURCE_TEXTURE: //+
+                    Texture::Delete(res.handle);
+                    break;
+                case RESOURCE_QUERY_BUFFER: //+
+                    QueryBuffer::Delete(res.handle);
+                    break;
+                case RESOURCE_CONST_BUFFER: //+
+                    ConstBuffer::Delete(res.handle);
+                    break;
+                case RESOURCE_PIPELINE_STATE: //-
+                    PipelineState::Delete(res.handle);
+                    break;
+                case RESOURCE_DEPTHSTENCIL_STATE: //+
+                    DepthStencilState::Delete(res.handle);
+                    break;
+                case RESOURCE_SAMPLER_STATE: //+
+                    SamplerState::Delete(res.handle);
+                    break;
+                case RESOURCE_TEXTURE_SET:
+                    TextureSetPool::Free(res.handle);                    
+                    break;                        
+                default:
+                    DVASSERT_MSG(false, "Not supported resource scheduled for deletion");
+                }
+            }
+            scheduledDeleteResources[i].clear();
+        }
+    }
+}
+
+void Present()
+{        
+    if (scheduledDeleteResources[currFrameSyncId].size()&&!frameSyncObjects[currFrameSyncId].IsValid())
+        frameSyncObjects[currFrameSyncId] = CreateSyncObject();
+
+    PresentImpl(frameSyncObjects[currFrameSyncId]);                
+
+    currFrameSyncId = (currFrameSyncId + 1) % frameSyncObjectsCount;
+    DVASSERT(scheduledDeleteResources[currFrameSyncId].empty()); //we are not going to mix new resources for deletion with existing once still waiting    
+    if (frameSyncObjects[currFrameSyncId].IsValid())
+    {
+        DeleteSyncObject(frameSyncObjects[currFrameSyncId]);
+        frameSyncObjects[currFrameSyncId] = HSyncObject();
+    }
+
+    ProcessScheduledDelete();
+    
+}
+
+HSyncObject GetCurrentFrameSyncObject()
+{
+    if (!frameSyncObjects[currFrameSyncId].IsValid())
+        frameSyncObjects[currFrameSyncId] = CreateSyncObject();
+
+    return frameSyncObjects[currFrameSyncId];
+}
 
 
 

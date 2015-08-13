@@ -463,8 +463,7 @@ void NMaterial::ClearLocalBuffers()
 }
 
 void NMaterial::InvalidateBufferBindings()
-{
-    ClearLocalBuffers();
+{    
     needRebuildBindings = true;
     for (auto& child : children)
         child->InvalidateBufferBindings();
@@ -535,6 +534,7 @@ void NMaterial::CollectMaterialFlags(HashMap<FastName, int32>& target)
 
 void NMaterial::RebuildBindings()
 {
+    ClearLocalBuffers();
     for (auto& variant : renderVariants)
     {
         RenderVariantInstance* currRenderVariant = variant.second;

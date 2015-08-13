@@ -43,14 +43,14 @@
 
 #endif
 
-#ifdef __DAVAENGINE_ANDROID__
+#if defined(__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_WIN_UAP__)
 #ifndef GL_COMPRESSED_RGBA_S3TC_DXT3_EXT
 #define GL_COMPRESSED_RGBA_S3TC_DXT3_EXT 0x83F2
 #endif //GL_COMPRESSED_RGBA_S3TC_DXT3_EXT
 #ifndef GL_COMPRESSED_RGBA_S3TC_DXT5_EXT
 #define GL_COMPRESSED_RGBA_S3TC_DXT5_EXT 0x83F3
 #endif //GL_COMPRESSED_RGBA_S3TC_DXT5_EXT
-#endif //__DAVAENGINE_ANDROID__
+#endif //defined(__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_WIN_UAP__)
 
 #if !defined(GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG)
 #define  GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG    0
@@ -164,5 +164,10 @@ extern void     (*_GLES2_ReleaseContext)();
 
 extern int      _GLES2_DefaultFrameBuffer_Width;
 extern int      _GLES2_DefaultFrameBuffer_Height;
+
+extern GLuint   _GLES2_LastSetIB;
+extern GLuint   _GLES2_LastSetVB;
+extern GLuint   _GLES2_LastSetTex0;
+extern GLenum   _GLES2_LastSetTex0Target;
 
 bool            GetGLTextureFormat( rhi::TextureFormat rhiFormat, GLint* internalFormat, GLint* format, GLenum* type, bool* compressed );

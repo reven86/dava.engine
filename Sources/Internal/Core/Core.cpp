@@ -145,7 +145,6 @@ void Core::CreateSingletons()
     new FontManager();
     new UIControlSystem();
     new InputSystem();
-    new RenderHelper();
     new PerformanceSettings();
     new VersionInfo();
     new ImageSystem();
@@ -213,7 +212,6 @@ void Core::ReleaseSingletons()
     LocalNotificationController::Instance()->Release();
     DownloadManager::Instance()->Release();
     PerformanceSettings::Instance()->Release();
-    RenderHelper::Instance()->Release();
     UIScreenManager::Instance()->Release();
     UIControlSystem::Instance()->Release();
     FontManager::Instance()->Release();

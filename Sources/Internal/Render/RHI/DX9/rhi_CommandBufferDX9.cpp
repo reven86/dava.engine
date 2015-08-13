@@ -56,18 +56,19 @@ ReleaseDevice()
 
 //- static std::vector<Handle>  _CmdQueue;
 struct
-Frame
+FrameDX9
 {
     unsigned            number;
+    Handle              sync;
     std::vector<Handle> pass;
     uint32              readyToExecute:1;
 };
 
-static std::vector<Frame>   _Frame;
-static bool                 _FrameStarted   = false;
-static unsigned             _FrameNumber    = 1;
+static std::vector<FrameDX9>    _Frame;
+static bool                     _FrameStarted   = false;
+static unsigned                 _FrameNumber    = 1;
 //static DAVA::Spinlock       _FrameSync;
-static DAVA::Mutex          _FrameSync;
+static DAVA::Mutex              _FrameSync;
 
 static void _ExecuteQueuedCommands();
 
@@ -159,14 +160,26 @@ public:
     uint32              isLastInPass:1;
 
     RingBuffer*         text;
+
+    Handle              sync;
 };
 
 
+struct
+SyncObjectDX9_t 
+{
+    uint32  frame;
+    uint32  is_signaled:1;
+    uint32  is_used:1;
+};
+
 typedef ResourcePool<CommandBufferDX9_t,RESOURCE_COMMAND_BUFFER>    CommandBufferPool;
 typedef ResourcePool<RenderPassDX9_t,RESOURCE_RENDER_PASS>          RenderPassPool;
+typedef ResourcePool<SyncObjectDX9_t,RESOURCE_SYNC_OBJECT>          SyncObjectPool;
 
 RHI_IMPL_POOL(CommandBufferDX9_t,RESOURCE_COMMAND_BUFFER);
 RHI_IMPL_POOL(RenderPassDX9_t,RESOURCE_RENDER_PASS);
+RHI_IMPL_POOL(SyncObjectDX9_t,RESOURCE_SYNC_OBJECT);
 
     
 const uint64   CommandBufferDX9_t::EndCmd = 0xFFFFFFFF;
@@ -209,7 +222,7 @@ dx9_RenderPass_Begin( Handle pass )
 
     if( !_FrameStarted )
     {
-        _Frame.push_back( Frame() );
+        _Frame.push_back( FrameDX9() );
         _Frame.back().number         = _FrameNumber;
         _Frame.back().readyToExecute = false;
 
@@ -262,9 +275,9 @@ dx9_CommandBuffer_Begin( Handle cmdBuf )
 //------------------------------------------------------------------------------
 
 static void
-dx9_CommandBuffer_End( Handle cmdBuf )
+dx9_CommandBuffer_End( Handle cmdBuf, Handle syncObject )
 {
-    CommandBufferPool::Get(cmdBuf)->Command( DX9__END );
+    CommandBufferPool::Get(cmdBuf)->Command( DX9__END, syncObject );
 }
 
 
@@ -470,10 +483,52 @@ dx9_CommandBuffer_SetMarker( Handle cmdBuf, const char* text )
 }
 
 
+//------------------------------------------------------------------------------
+
+static Handle
+dx9_SyncObject_Create()
+{
+    Handle              handle = SyncObjectPool::Alloc();
+    SyncObjectDX9_t*    sync   = SyncObjectPool::Get( handle );
+
+    sync->is_signaled = false;
+    sync->is_used = false;
+
+    return handle;
+}
+
+
+//------------------------------------------------------------------------------
+
+static void
+dx9_SyncObject_Delete( Handle obj )
+{
+    SyncObjectPool::Free( obj );
+}
+
+
+//------------------------------------------------------------------------------
+
+static bool
+dx9_SyncObject_IsSignaled( Handle obj )
+{
+    bool                signaled = false;
+    SyncObjectDX9_t*    sync     = SyncObjectPool::Get( obj );
+    
+    if( sync )
+        signaled = sync->is_signaled;
+
+    return signaled;
+}
+
+
+
+
 CommandBufferDX9_t::CommandBufferDX9_t()
   : isFirstInPass(true),
     isLastInPass(true),
-    text(nullptr)
+    text(nullptr),
+    sync(InvalidHandle)
 {
 }
 
@@ -626,6 +681,8 @@ SCOPED_FUNCTION_TIMING();
 
     _D3D9_Device->GetViewport( &def_viewport );
 
+    sync = InvalidHandle;
+
     for( std::vector<uint64>::const_iterator c=_cmd.begin(),c_end=_cmd.end(); c!=c_end; ++c )
     {
         const uint64                        cmd = *c;
@@ -645,6 +702,13 @@ SCOPED_FUNCTION_TIMING();
                         DVASSERT(!_D3D9_BackBuf);
                         _D3D9_Device->GetRenderTarget( 0, &_D3D9_BackBuf );
                         TextureDX9::SetAsRenderTarget( passCfg.colorBuffer[0].texture );                        
+                    }
+
+                    if( passCfg.depthStencilBuffer.texture != rhi::InvalidHandle )
+                    {
+                        DVASSERT(!_D3D9_DepthBuf);
+                        _D3D9_Device->GetDepthStencilSurface( &_D3D9_DepthBuf );
+                        TextureDX9::SetAsDepthStencil( passCfg.depthStencilBuffer.texture );
                     }
                     
                     // update default viewport
@@ -695,6 +759,8 @@ SCOPED_FUNCTION_TIMING();
 
             case DX9__END :
             {
+                sync = Handle(arg[0]);
+
                 if( isLastInPass )
                 {
                     DX9_CALL(_D3D9_Device->EndScene(),"EndScene");
@@ -704,7 +770,15 @@ SCOPED_FUNCTION_TIMING();
                         _D3D9_BackBuf->Release();
                         _D3D9_BackBuf = nullptr;
                     }
+                    if( _D3D9_DepthBuf )
+                    {
+                        DX9_CALL(_D3D9_Device->SetDepthStencilSurface( _D3D9_DepthBuf ),"SetDepthStencilSurface");
+                        _D3D9_DepthBuf->Release();
+                        _D3D9_DepthBuf = nullptr;
+                    }
                 }
+
+                c += 1;
             }   break;
             
             case DX9__SET_VERTEX_DATA :
@@ -904,7 +978,7 @@ SCOPED_FUNCTION_TIMING();
 //------------------------------------------------------------------------------
 
 static void
-dx9_Present()
+dx9_Present(Handle sync)
 {
 #if RHI__USE_DX9_RENDER_THREAD
 
@@ -915,6 +989,7 @@ Trace("rhi-dx9.present\n");
         if( _Frame.size() )
         {
             _Frame.back().readyToExecute = true;
+            _Frame.back().sync = sync;
             _FrameStarted = false;
 Trace("\n\n-------------------------------\nframe %u generated\n",_Frame.back().number);
         }
@@ -939,6 +1014,7 @@ Trace("\n\n-------------------------------\nframe %u generated\n",_Frame.back().
     if( _Frame.size() )
     {
         _Frame.back().readyToExecute = true;
+        _Frame.back().sync = sync;
         _FrameStarted = false;
     }
 
@@ -991,6 +1067,14 @@ Trace("rhi-dx9.exec-queued-cmd\n");
     {
         do_exit = true;
     }
+    if (_Frame.begin()->sync != InvalidHandle)
+    {
+        SyncObjectDX9_t*  sync = SyncObjectPool::Get(_Frame.begin()->sync);
+
+        sync->frame = frame_n;
+        sync->is_signaled = false;
+        sync->is_used = true;
+    }
     _FrameSync.Unlock();
 
     if( do_exit )
@@ -1007,6 +1091,16 @@ Trace("\n\n-------------------------------\nexecuting frame %u\n",frame_n);
             CommandBufferDX9_t* cb   = CommandBufferPool::Get( cb_h );
 
             cb->Execute();
+
+            if( cb->sync != InvalidHandle )
+            {
+                SyncObjectDX9_t*    sync = SyncObjectPool::Get( cb->sync );
+
+                sync->frame       = frame_n;
+                sync->is_signaled = false;
+                sync->is_used = true;
+            }
+
             CommandBufferPool::Free( cb_h );
         }
         
@@ -1053,6 +1147,15 @@ Trace("\n\n-------------------------------\nframe %u executed(submitted to GPU)\
         if( hr == D3DERR_DEVICELOST )
             _ResetPending = true;
     }    
+
+
+    // update sync-objects
+
+    for( SyncObjectPool::Iterator s=SyncObjectPool::Begin(),s_end=SyncObjectPool::End(); s!=s_end; ++s )
+    {
+        if (s->is_used && ( frame_n - s->frame > 3 ))
+            s->is_signaled = true;
+    }
 }
 
 
@@ -1369,6 +1472,10 @@ SetupDispatch( Dispatch* dispatch )
     dispatch->impl_CommandBuffer_DrawPrimitive          = &dx9_CommandBuffer_DrawPrimitive;
     dispatch->impl_CommandBuffer_DrawIndexedPrimitive   = &dx9_CommandBuffer_DrawIndexedPrimitive;
     dispatch->impl_CommandBuffer_SetMarker              = &dx9_CommandBuffer_SetMarker;
+
+    dispatch->impl_SyncObject_Create                    = &dx9_SyncObject_Create;
+    dispatch->impl_SyncObject_Delete                    = &dx9_SyncObject_Delete;
+    dispatch->impl_SyncObject_IsSignaled                = &dx9_SyncObject_IsSignaled;
     
     dispatch->impl_Present                              = &dx9_Present;
 }

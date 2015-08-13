@@ -133,7 +133,7 @@ void ShaderDescriptor::UpdateDynamicParams()
             }
             else
             {
-                uint32 arraySize = Renderer::GetDynamicBindings().GetDynamicParamArraySize(dynamicBinding.dynamicPropertySemantic, 1);
+                uint32 arraySize = Renderer::GetDynamicBindings().GetDynamicParamArraySize(dynamicBinding.dynamicPropertySemantic, dynamicBinding.arraySize);
                 DVASSERT(arraySize <= dynamicBinding.regCount);
                 rhi::UpdateConstBuffer4fv(dynamicBinding.buffer, dynamicBinding.reg, data, CalculateRegsCount(dynamicBinding.type, arraySize));
             }
@@ -222,6 +222,7 @@ ShaderDescriptor::ShaderDescriptor(rhi::ShaderSource *vSource, rhi::ShaderSource
                 binding.buffer = dynamicBufferHandle;
                 binding.reg = prop.bufferReg;
                 binding.regCount = prop.bufferRegCount;
+                binding.arraySize = prop.arraySize;
                 binding.updateSemantic = 0;
                 binding.dynamicPropertySemantic = DynamicBindings::GetUniformSemanticByName(prop.uid);
                 if( binding.dynamicPropertySemantic == DynamicBindings::UNKNOWN_SEMANTIC )

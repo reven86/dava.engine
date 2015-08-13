@@ -40,36 +40,81 @@ class UIControl;
 class UI3DView;
 class Texture;
 
+/**
+ * \brief Class for creating screenshot of UIControl to Texture
+ */
 class UIScreenshoter
 {
 public:
+    /**
+    * \brief Default c-tor
+    */
     UIScreenshoter();
+
+    /**
+    * \brief D-tor
+    */
     ~UIScreenshoter();
 
-    Texture* MakeScreenshot(UIControl* control, const PixelFormat format, bool cloneControl = false);
-    void MakeScreenshotWithCallback(UIControl* control, const PixelFormat format, Function<void(Texture*)> callback, bool cloneControl = false);
-    void MakeScreenshotWithPreparedTexture(UIControl* control, Texture* texture, bool cloneControl = false);
-
+    /**
+    * \brief Call each frame to control internal resources and render flow
+    */
     void OnFrame();
+
+    /**
+     * \brief Render control to texture and return it immediately (but not rendered) 
+     * 
+     * \param control pointer to source UIControl
+     * \param format PixelFormat
+     * \return target texture
+     */
+    Texture* MakeScreenshot(UIControl* control, const PixelFormat format);
+
+    /**
+     * \brief Render control to texture and call callback when it will rendered
+     * 
+     * \param control pointer to source UIControl
+     * \param format PixelFormat
+     * \param callback function which be called after render
+     */
+    void MakeScreenshot(UIControl* control, const PixelFormat format, Function<void(Texture*)> callback);
+
+    /**
+     * \brief Render control to target texture
+     * 
+     * \param control pointer to source UIControl
+     * \param screenshot pointer to target Texture
+     */
+    void MakeScreenshot(UIControl* control, Texture* screenshot);
+
+    /**
+    * \brief Render control to target texture
+    *
+    * \param control pointer to source UIControl
+    * \param screenshot pointer to target Texture
+    * \param callback function which be called after render
+    */
+    void MakeScreenshot(UIControl* control, Texture* screenshot, Function<void(Texture*)> callback);
 
 private:
     struct Control3dInfo
     {
-        UI3DView* control;
-        int32 priority;
-        rhi::Handle texture;
+        UI3DView* control = nullptr;
+        int32 priority = 0;
+        rhi::Handle texture = rhi::InvalidHandle;
+        rhi::Handle depht = rhi::InvalidHandle;
     };
 
     struct ScreenshotWaiter
     {
-        UIControl * control;
-        Texture * texture;
-        int32 cooldown;
+        Texture * texture = nullptr;
+        rhi::HSyncObject syncObj;
         Function<void(Texture*)> callback;
     };
 
-    List<Control3dInfo> FindAll3dViews(UIControl * control);
-    void RenderToTexture(UIControl* control, Texture* screenshot);
+    void MakeScreenshotInternal(UIControl* control, Texture* screenshot, Function<void(Texture*)> callback);
+    void FindAll3dViews(UIControl * control, List<UIScreenshoter::Control3dInfo> & foundViews);
+    void RenderToTexture(const ScreenshotWaiter& waiter);
     
     List<ScreenshotWaiter> waiters;
 };

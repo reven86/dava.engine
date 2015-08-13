@@ -862,6 +862,7 @@ void TexturePacker::ExportImage(PngImageExt *image, const ImageExportKeys& keys,
     TexturePacker::FilterItem ftItem = GetDescriptorFilter(descriptor->GetGenerateMipMaps());
     descriptor->drawSettings.minFilter = ftItem.minFilter;
     descriptor->drawSettings.magFilter = ftItem.magFilter;
+    descriptor->drawSettings.mipFilter = ftItem.mipFilter;
 
     if (keys.toComressForGPU)
     {

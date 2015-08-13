@@ -1,0 +1,27 @@
+#include "blending.cgh"
+
+FPROG_IN_BEGIN
+    FPROG_IN_TEXCOORD0(uv,2)
+    FPROG_IN_COLOR0(color,4)
+FPROG_OUT_END
+
+FPROG_OUT_BEGIN
+    FPROG_OUT_COLOR
+FPROG_OUT_END
+
+DECL_FP_SAMPLER2D(tex)
+
+property float smoothing : static,instance : ;
+
+FPROG_BEGIN
+
+    float4 in_color = FP_IN(color);
+    float2 in_uv = FP_IN(uv);
+
+    float distance = FP_TEXTURE2D( tex, in_uv ).a;
+    float alpha = smoothstep(0.5 - smoothing, 0.5 + smoothing, distance);
+    alpha = min(alpha, in_color.a);
+
+    FP_OUT_COLOR = float4(in_color.rgb, alpha);
+
+FPROG_END

@@ -69,7 +69,7 @@ protected slots:
     void OnCurrentTabChanged(int index);
     
     void UpdateLanguage();
-    
+   
     void OnRtlChanged(bool isRtl);
 
 protected:

@@ -1,7 +1,7 @@
 
     #include "../Common/rhi_Private.h"
     #include "../Common/rhi_Pool.h"
-    #include "../Common/format_convert.h"
+    #include "../Common/rhi_FormatConversion.h"
     #include "rhi_DX9.h"
 
     #include "Debug/DVAssert.h"
@@ -40,6 +40,7 @@ public:
     TextureFace                 mappedFace;
     void*                       mappedData;
     unsigned                    isRenderTarget:1;
+    unsigned                    isDepthStencil:1;
     unsigned                    isMapped:1;
 };
 
@@ -79,9 +80,14 @@ dx9_Texture_Create( const Texture::Descriptor& desc )
     HRESULT             hr          = E_FAIL;
     bool                auto_mip    = (desc.autoGenMipmaps)  ? true  : false;
     unsigned            mip_count   = desc.levelCount;
+    bool                is_depthbuf = false;
 
     if( fmt == D3DFMT_D24S8  ||  fmt == D3DFMT_D32  ||  fmt == D3DFMT_D16 )
-        pool = D3DPOOL_DEFAULT; 
+    {
+        pool        = D3DPOOL_DEFAULT; 
+        usage       = D3DUSAGE_DEPTHSTENCIL;
+        is_depthbuf = true;
+    }
 
 //    if( options&TEXTURE_OPT_DYNAMIC )
 //        usage |= D3DUSAGE_DYNAMIC;
@@ -116,16 +122,17 @@ dx9_Texture_Create( const Texture::Descriptor& desc )
 
                 ExecDX9( cmd2, countof(cmd2) );
 
-                if( desc.isRenderTarget )
+                if( desc.isRenderTarget  ||  is_depthbuf )
                 {
                     DX9Command  cmd3 = { DX9Command::GET_TEXTURE_SURFACE_LEVEl, { uint64_t(tex9), 0, uint64_t(&tex->surf9) } };
 
                     ExecDX9( &cmd3, 1 );
                 }
 
-                tex->width  = desc.width;
-                tex->height = desc.height;
-                tex->format = desc.format;
+                tex->width          = desc.width;
+                tex->height         = desc.height;
+                tex->format         = desc.format;
+                tex->isDepthStencil = is_depthbuf;
             }
             else
             {
@@ -161,9 +168,10 @@ dx9_Texture_Create( const Texture::Descriptor& desc )
 
                 ExecDX9( cmd2, countof(cmd2) );
                 
-                tex->width  = desc.width;
-                tex->height = desc.height;
-                tex->format = desc.format;
+                tex->width          = desc.width;
+                tex->height         = desc.height;
+                tex->format         = desc.format;
+                tex->isDepthStencil = is_depthbuf;
             }
             else
             {
@@ -473,6 +481,14 @@ SetAsRenderTarget( Handle tex )
     }
 
     DX9_CALL(_D3D9_Device->SetRenderTarget( 0, self->surf9 ),"SetRenderTarget");
+}
+
+void
+SetAsDepthStencil( Handle tex )
+{
+    TextureDX9_t*   self = TextureDX9Pool::Get( tex );
+    
+    DX9_CALL(_D3D9_Device->SetDepthStencilSurface( self->surf9 ),"SetDepthStencilSurface");
 }
 
 

@@ -37,9 +37,16 @@
 
 #include "UI/UI3DView.h"
 #include "Scene3D/Scene.h"
+#include "UI/UIScreenshoter.h"
 
 namespace DAVA
 {
+
+static const int32 PRIORITY_SCREENSHOT_CLEAR_PASS = eDefaultPassPriority::PRIORITY_SERVICE_2D + 3;
+static const int32 PRIORITY_SCREENSHOT_3D_PASS = eDefaultPassPriority::PRIORITY_SERVICE_2D + 2;
+static const int32 PRIORITY_SCREENSHOT_2D_PASS = eDefaultPassPriority::PRIORITY_SERVICE_2D + 1;
+
+
 Sprite * UIScreenTransition::renderTargetPrevScreen = 0;
 Sprite * UIScreenTransition::renderTargetNextScreen = 0;
 
@@ -48,7 +55,6 @@ UIScreenTransition::UIScreenTransition()
     duration = 0.7f;
     interpolationFunc = Interpolation::GetFunction(Interpolation::EASY_IN_EASY_OUT);
     SetFillBorderOrder(UIScreen::FILL_BORDER_AFTER_DRAW);
-
 }
 
 UIScreenTransition::~UIScreenTransition()
@@ -88,13 +94,13 @@ void UIScreenTransition::StartTransition(UIScreen * _prevScreen, UIScreen * _nex
     nextScreen = _nextScreen;
     prevScreen = _prevScreen;
 
-    MakeScreenshot(renderTargetPrevScreen->GetTexture(), prevScreen);
+    UIControlSystem::Instance()->GetScreenshoter()->MakeScreenshot(prevScreen, renderTargetPrevScreen->GetTexture());
 
     nextScreen->LoadGroup();
     nextScreen->SystemWillAppear();
     nextScreen->SystemUpdate(SystemTimer::FrameDelta());
 
-    MakeScreenshot(renderTargetNextScreen->GetTexture(), nextScreen);
+    UIControlSystem::Instance()->GetScreenshoter()->MakeScreenshot(nextScreen, renderTargetNextScreen->GetTexture());
     
     currentTime = 0;
 }
@@ -160,44 +166,6 @@ void UIScreenTransition::SetDuration(float32 timeInSeconds)
 bool UIScreenTransition::IsLoadingTransition()
 {
     return false;
-}
-
-void UIScreenTransition::MakeScreenshot(Texture* target, UIScreen* screen)
-{
-    static const int32 PRIORITY_SCREENSHOT_CLEAR_PASS = eDefaultPassPriority::PRIORITY_SERVICE_2D + 3;
-    static const int32 PRIORITY_SCREENSHOT_3D_PASS = eDefaultPassPriority::PRIORITY_SERVICE_2D + 2;
-    static const int32 PRIORITY_SCREENSHOT_2D_PASS = eDefaultPassPriority::PRIORITY_SERVICE_2D + 1;
-
-    rhi::Viewport v;
-    v.width = target->GetWidth();
-    v.height = target->GetHeight();
-    RenderHelper::Instance()->CreateClearPass(target->handle, PRIORITY_SCREENSHOT_CLEAR_PASS, Color::Clear, v);
-    
-    if (screen)
-    {
-        UI3DView* view3d = FindFirst3dView(screen);
-        int32 oldPriority = eDefaultPassPriority::PRIORITY_MAIN_3D;
-        rhi::Handle oldTexture = rhi::InvalidHandle;
-        if (view3d != nullptr && view3d->GetScene())
-        {
-            rhi::RenderPassConfig& config = view3d->GetScene()->GetMainPassConfig();
-            oldPriority = config.priority;
-            oldTexture = config.colorBuffer[0].texture;
-            config.priority = PRIORITY_SCREENSHOT_3D_PASS;
-            config.colorBuffer[0].texture = target->handle;
-        }
-
-        RenderSystem2D::Instance()->BeginRenderTargetPass(target, false, Color::Clear, PRIORITY_SCREENSHOT_2D_PASS);
-        screen->SystemDraw(UIControlSystem::Instance()->GetBaseGeometricData());
-        RenderSystem2D::Instance()->EndRenderTargetPass();
-
-        if (view3d != nullptr && view3d->GetScene())
-        {
-            rhi::RenderPassConfig& config = view3d->GetScene()->GetMainPassConfig();
-            config.priority = oldPriority;
-            config.colorBuffer[0].texture = oldTexture;
-        }
-    }
 }
 
 UI3DView* UIScreenTransition::FindFirst3dView(UIControl* control)

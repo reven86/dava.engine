@@ -38,6 +38,7 @@
 #include "Debug/Replay.h"
 #include "Debug/Stats.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "UI/Layouts/UILayoutSystem.h"
 #include "Render/Renderer.h"
 #include "Render/RenderHelper.h"
 #include "UI/UIScreenshoter.h"
@@ -52,6 +53,7 @@ UIControlSystem::~UIControlSystem()
 	SafeRelease(currentScreen); 
 	SafeRelease(popupContainer);
     SafeDelete(styleSheetSystem);
+    SafeDelete(layoutSystem);
     SafeDelete(screenshoter);
 }
 	
@@ -348,7 +350,7 @@ void UIControlSystem::Draw()
     viewport.x = viewport.y = 0U;
     viewport.width = (uint32)Renderer::GetFramebufferWidth();
     viewport.height = (uint32)Renderer::GetFramebufferHeight();
-    RenderHelper::Instance()->CreateClearPass(rhi::HTexture(), PRIORITY_CLEAR, Color(.4f, .4f, .4f, 1.f), viewport);
+    RenderHelper::CreateClearPass(rhi::HTexture(), PRIORITY_CLEAR, Color(.3f, .3f, .3f, 1.f), viewport);
 
 	if (currentScreen)
 	{

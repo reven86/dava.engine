@@ -45,6 +45,7 @@ GameCore::~GameCore()
 void GameCore::OnAppStarted()
 {
     Renderer::GetOptions()->SetOption(RenderOptions::LAYER_OCCLUSION_STATS, true);
+    DynamicBufferAllocator::SetDefaultPageSize(1024 * 1024); //1 mb
 }
 
 void GameCore::OnAppFinished()

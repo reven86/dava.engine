@@ -371,6 +371,11 @@ const Matrix4 & Camera::GetMatrix() const
     return viewMatrix;
 }
 
+const Matrix4 & Camera::GetProjectionMatrix() const
+{
+    return projMatrix;
+}
+
 void Camera::RebuildCameraFromValues()
 {
 //    Logger::FrameworkDebug("camera rebuild: pos(%0.2f %0.2f %0.2f) target(%0.2f %0.2f %0.2f) up(%0.2f %0.2f %0.2f)",

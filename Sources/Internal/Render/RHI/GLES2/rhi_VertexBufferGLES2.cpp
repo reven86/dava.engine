@@ -55,10 +55,15 @@ gles2_VertexBuffer_Create( const VertexBuffer::Descriptor& desc )
         ExecGL( &cmd1, 1 );
         if( cmd1.status == GL_NO_ERROR )
         {
-            GLCommand   cmd2 = { GLCommand::BIND_BUFFER, { GL_ARRAY_BUFFER, b } };
+            GLCommand   cmd2[] =
+            {
+                { GLCommand::BIND_BUFFER, { GL_ARRAY_BUFFER, b } },
+                { GLCommand::RESTORE_VERTEX_BUFFER, {} }
+            };
 
-            ExecGL( &cmd2, 1 );
-            if( cmd2.status == GL_NO_ERROR )
+            ExecGL( cmd2, countof(cmd2) );
+            
+            if( cmd2[0].status == GL_NO_ERROR )
             {
                 void*   data = malloc( desc.size );
 
@@ -107,6 +112,8 @@ gles2_VertexBuffer_Delete( Handle vb )
             self->size = 0;
             self->uid  = 0;
         }
+
+        VertexBufferGLES2Pool::Free( vb );
     }
 }
 
@@ -127,7 +134,7 @@ gles2_VertexBuffer_Update( Handle vb, const void* data, uint32 offset, uint32 si
         {
             { GLCommand::BIND_BUFFER, { GL_ARRAY_BUFFER, self->uid } },
             { GLCommand::BUFFER_DATA, { GL_ARRAY_BUFFER, self->size, (uint64)(self->data), self->usage } },
-            { GLCommand::BIND_BUFFER, { GL_ARRAY_BUFFER, 0 } }
+            { GLCommand::RESTORE_VERTEX_BUFFER, {} }
         };
 
         memcpy( ((uint8*)self->data)+offset, data, size );
@@ -168,7 +175,7 @@ gles2_VertexBuffer_Unmap( Handle vb )
     {
         { GLCommand::BIND_BUFFER, { GL_ARRAY_BUFFER, self->uid } },
         { GLCommand::BUFFER_DATA, { GL_ARRAY_BUFFER, self->size, (uint64)(self->data), self->usage } },
-        { GLCommand::BIND_BUFFER, { GL_ARRAY_BUFFER, 0 } }
+        { GLCommand::RESTORE_VERTEX_BUFFER, {} }
     };
 
     ExecGL( cmd, countof(cmd) );
@@ -198,6 +205,7 @@ SetToRHI( Handle vb )
     DVASSERT(!self->mapped);
 Trace("set-vb %p  sz= %u\n",self->data,self->size);
     GL_CALL(glBindBuffer( GL_ARRAY_BUFFER, self->uid ));
+    _GLES2_LastSetVB = self->uid;
 }
 
 }

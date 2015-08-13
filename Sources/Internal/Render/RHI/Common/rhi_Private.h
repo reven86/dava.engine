@@ -175,12 +175,21 @@ void    End( Handle pass );
 
 }
 
+namespace SyncObject
+{
+
+Handle  Create();
+void    Delete( Handle obj );
+bool    IsSygnaled( Handle obj );
+
+}
+
 
 namespace CommandBuffer
 {
 
 void    Begin( Handle cmdBuf );
-void    End( Handle cmdBuf );
+void    End( Handle cmdBuf, Handle syncObject=InvalidHandle );
 
 void    SetPipelineState( Handle cmdBuf, Handle ps, uint32 vdecl=VertexLayout::InvalidUID );
 void    SetCullMode( Handle cmdBuf, CullMode mode );
@@ -209,6 +218,7 @@ void    SetMarker( Handle cmdBuf, const char* text );
 
 } // namespace CommandBuffer
 
+void PresentImpl(Handle sync);
 
 // debug
 

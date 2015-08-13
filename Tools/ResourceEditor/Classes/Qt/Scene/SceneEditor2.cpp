@@ -163,9 +163,6 @@ SceneEditor2::SceneEditor2()
 
     editorLODSystem = new EditorLODSystem(this);
     AddSystem(editorLODSystem, MAKE_COMPONENT_MASK(Component::LOD_COMPONENT));
-#if RHI_COMPLETE_EDITOR
-	SetShadowBlendMode(ShadowPassBlendMode::MODE_BLEND_MULTIPLY);
-#endif
 
     float32 * clearColor = renderSystem->GetMainRenderPass()->GetPassConfig().colorBuffer[0].clearColor;
     clearColor[0] = clearColor[1] = clearColor[2] = .3f;

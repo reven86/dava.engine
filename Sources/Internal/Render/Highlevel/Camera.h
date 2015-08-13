@@ -285,6 +285,8 @@ public:
      */
     const Matrix4 & GetMatrix() const;  
 	
+    const Matrix4 & GetProjectionMatrix() const;
+
     /**
         \brief Rebuild camera from all values that set inside it.
      */

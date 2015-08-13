@@ -66,6 +66,7 @@ metal_IndexBuffer_Delete( Handle ib )
 
     if( self )
     {
+        IndexBufferMetalPool::Free( ib );
     }
 }
 

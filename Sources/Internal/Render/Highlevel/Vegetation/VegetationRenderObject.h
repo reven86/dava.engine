@@ -106,7 +106,7 @@ public:
     virtual void RecalcBoundingBox();
     
     void CollectMetrics(VegetationMetrics& metrics);
-    void DebugDrawVisibleNodes();
+    void DebugDrawVisibleNodes(RenderHelper * drawer);
     virtual void GetDataNodes(Set<DataNode*> & dataNodes);
     
     inline void SetHeightmap(Heightmap* _heightmap);
@@ -432,7 +432,7 @@ inline void VegetationRenderObject::SetVegetationTexture(const FilePath& texture
     if(vegetationGeometry != NULL)
     {
         KeyedArchive* props = new KeyedArchive();
-        props->SetString(NMaterialTextureName::TEXTURE_ALBEDO.c_str(), albedoTexturePath.GetAbsolutePathname());
+        props->SetString(NMaterialTextureName::TEXTURE_ALBEDO.c_str(), albedoTexturePath.GetStringValue());
         
         vegetationGeometry->OnVegetationPropertiesChanged(renderData->GetMaterial(), props);
         

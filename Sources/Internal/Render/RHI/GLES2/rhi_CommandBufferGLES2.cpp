@@ -17,7 +17,7 @@
     #include "_gl.h"
 
     #define USE_RENDER_THREAD               0
-    #define RHI_MAX_PREPARED_FRAME_COUNT    2
+    #define RHI_MAX_PREPARED_FRAME_COUNT    1
 
 
 namespace rhi
@@ -95,13 +95,26 @@ public:
 
     uint32              dbgCommandCount;
     RingBuffer*         text;
+
+    Handle              sync;
 };
+
+struct
+SyncObjectGLES2_t 
+{
+    uint32  frame;
+    uint32  is_signaled:1;
+    uint32  is_used:1;
+};
+
 
 typedef ResourcePool<CommandBufferGLES2_t,RESOURCE_COMMAND_BUFFER>  CommandBufferPool;
 typedef ResourcePool<RenderPassGLES2_t,RESOURCE_RENDER_PASS>        RenderPassPool;
+typedef ResourcePool<SyncObjectGLES2_t,RESOURCE_SYNC_OBJECT>        SyncObjectPool;
 
 RHI_IMPL_POOL(CommandBufferGLES2_t,RESOURCE_COMMAND_BUFFER);
 RHI_IMPL_POOL(RenderPassGLES2_t,RESOURCE_RENDER_PASS);
+RHI_IMPL_POOL(SyncObjectGLES2_t,RESOURCE_SYNC_OBJECT);
     
 const uint64   CommandBufferGLES2_t::EndCmd = 0xFFFFFFFF;
 
@@ -121,18 +134,19 @@ static DAVA::Thread*        _GLES2_RenderThread             = nullptr;
 #endif
 
 struct
-Frame
+FrameGLES2
 {
-    unsigned            number;
-    std::vector<Handle> pass;
-    uint32              readyToExecute:1;
+    unsigned            number;  
+    Handle              sync;
+    std::vector<Handle> pass;        
+    uint32              readyToExecute:1;        
 };
 
-static std::vector<Frame>   _Frame;
-static bool                 _FrameStarted   = false;
-static unsigned             _FrameNumber    = 1;
+static std::vector<FrameGLES2>  _Frame;
+static bool                     _FrameStarted   = false;
+static unsigned                 _FrameNumber    = 1;
 //static DAVA::Spinlock       _FrameSync;
-static DAVA::Mutex          _FrameSync;
+static DAVA::Mutex              _FrameSync;
 
 
 static void _ExecGL( GLCommand* command, uint32 cmdCount );
@@ -175,8 +189,8 @@ gles2_RenderPass_Begin( Handle pass )
     _FrameSync.Lock();
 
     if( !_FrameStarted )
-    {
-        _Frame.push_back( Frame() );
+    {        
+        _Frame.push_back( FrameGLES2() );
         _Frame.back().number         = _FrameNumber;
         _Frame.back().readyToExecute = false;
 
@@ -234,9 +248,9 @@ gles2_CommandBuffer_Begin( Handle cmdBuf )
 //------------------------------------------------------------------------------
 
 static void
-gles2_CommandBuffer_End( Handle cmdBuf )
+gles2_CommandBuffer_End( Handle cmdBuf, Handle syncObject )
 {
-    CommandBufferPool::Get(cmdBuf)->Command( GLES2__END );
+    CommandBufferPool::Get(cmdBuf)->Command( GLES2__END, syncObject );
 }
 
 
@@ -458,6 +472,45 @@ gles2_CommandBuffer_SetMarker( Handle cmdBuf, const char* text )
 }
 
 
+//------------------------------------------------------------------------------
+
+static Handle
+gles2_SyncObject_Create()
+{
+    Handle              handle = SyncObjectPool::Alloc();
+    SyncObjectGLES2_t*  sync   = SyncObjectPool::Get( handle );
+
+    sync->is_signaled = false;
+    sync->is_used = false;
+
+    return handle;
+}
+
+
+//------------------------------------------------------------------------------
+
+static void
+gles2_SyncObject_Delete( Handle obj )
+{
+    SyncObjectPool::Free( obj );
+}
+
+
+//------------------------------------------------------------------------------
+
+static bool
+gles2_SyncObject_IsSignaled( Handle obj )
+{
+    bool                signaled = false;
+    SyncObjectGLES2_t*  sync     = SyncObjectPool::Get( obj );
+    
+    if( sync )
+        signaled = sync->is_signaled;
+
+    return signaled;
+}
+
+
 
 
 
@@ -465,7 +518,8 @@ gles2_CommandBuffer_SetMarker( Handle cmdBuf, const char* text )
 CommandBufferGLES2_t::CommandBufferGLES2_t()
   : isFirstInPass(true),
     isLastInPass(true),
-    text(nullptr)
+    text(nullptr),
+    sync(InvalidHandle)
 {
 }
 
@@ -642,6 +696,8 @@ SCOPED_NAMED_TIMING("gl.exec");
 
     int immediate_cmd_ttw = 10;
 
+    sync = InvalidHandle;
+
 Trace("cmd-count= %i\n",int(dbgCommandCount));
 unsigned cmd_n=0;
     for( std::vector<uint64>::const_iterator c=_cmd.begin(),c_end=_cmd.end(); c!=c_end; ++c )
@@ -679,7 +735,7 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
                     {
                         Size2i  sz = TextureGLES2::Size( passCfg.colorBuffer[0].texture );
                         
-                        TextureGLES2::SetAsRenderTarget( passCfg.colorBuffer[0].texture );
+                        TextureGLES2::SetAsRenderTarget( passCfg.colorBuffer[0].texture, passCfg.depthStencilBuffer.texture );
                         def_viewport[2] = sz.dx;
                         def_viewport[3] = sz.dy;
                     }
@@ -727,16 +783,18 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
                     if( passCfg.depthStencilBuffer.loadAction == LOADACTION_CLEAR )
                     {
                         #if defined(__DAVAENGINE_IPHONE__)
+                        glStencilMask( 0xFFFFFFFF );
                         glClearDepthf( passCfg.depthStencilBuffer.clearDepth );
                         #else
                         glClearDepth( passCfg.depthStencilBuffer.clearDepth );
+                        glStencilMask( 0xFFFFFFFF );
                         glClearStencil( 0 );
                         #endif
 
                         flags |= GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT;
                     }
 
-                    if(flags)
+                    if( flags )
                     {
                         glClear( flags );
                     }
@@ -747,9 +805,11 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
             
             case GLES2__END :
             {
+                sync = Handle(arg[0]);
+                
                 if( isLastInPass )
                 {
-                    glFlush();
+//                    glFlush();
 
                     if (_GLES2_Binded_FrameBuffer != _GLES2_Default_FrameBuffer)
                     {
@@ -757,6 +817,8 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
                         _GLES2_Binded_FrameBuffer = _GLES2_Default_FrameBuffer;
                     }
                 }
+
+                c += 1;
             }   break;
             
             case GLES2__SET_VERTEX_DATA :
@@ -1106,6 +1168,14 @@ Trace("rhi-gl.exec-queued-cmd\n");
     {
         do_exit = true;
     }
+    if (_Frame.begin()->sync != InvalidHandle)
+    {
+        SyncObjectGLES2_t*  sync = SyncObjectPool::Get(_Frame.begin()->sync);
+
+        sync->frame = frame_n;
+        sync->is_signaled = false;
+        sync->is_used = true;
+    }
     _FrameSync.Unlock();
 
     if( do_exit )
@@ -1122,10 +1192,18 @@ Trace("\n\n-------------------------------\nexecuting frame %u\n",frame_n);
             CommandBufferGLES2_t*   cb   = CommandBufferPool::Get( cb_h );
 
             cb->Execute();
+
+            if( cb->sync != InvalidHandle )
+            {
+                SyncObjectGLES2_t*  sync = SyncObjectPool::Get( cb->sync );
+
+                sync->frame       = frame_n;
+                sync->is_signaled = false;
+                sync->is_used = true;
+            }
+
             CommandBufferPool::Free( cb_h );
         }
-        
-//        RenderPassPool::Free( *p );
     }
 
     _FrameSync.Lock();
@@ -1224,13 +1302,22 @@ Trace("rhi-gl.swap-buffers done\n");
         ios_gl_end_frame();
 #endif
     }
+
+
+    // update sync-objects
+
+    for( SyncObjectPool::Iterator s=SyncObjectPool::Begin(),s_end=SyncObjectPool::End(); s!=s_end; ++s )
+    {
+        if (s->is_used && (frame_n - s->frame > 3))        
+            s->is_signaled = true;                    
+    }
 }
 
 
 //------------------------------------------------------------------------------
 
 static void
-gles2_Present()
+gles2_Present(Handle sync)
 {    
 #if USE_RENDER_THREAD
 
@@ -1241,6 +1328,7 @@ Trace("rhi-gl.present\n");
         if( _Frame.size() )
         {
             _Frame.back().readyToExecute = true;
+            _Frame.back().sync = sync;
             _FrameStarted = false;
 Trace("\n\n-------------------------------\nframe %u generated\n",_Frame.back().number);
         }
@@ -1265,6 +1353,7 @@ Trace("\n\n-------------------------------\nframe %u generated\n",_Frame.back().
     if( _Frame.size() )
     {
         _Frame.back().readyToExecute = true;
+        _Frame.back().sync = sync;
         _FrameStarted = false;
     }
 
@@ -1377,7 +1466,7 @@ _LogGLError( const char* expr, int err )
 static void
 _ExecGL( GLCommand* command, uint32 cmdCount )
 {
-    int     err = 0;
+    int     err = GL_NO_ERROR;
 
 /*
     do 
@@ -1430,6 +1519,18 @@ _ExecGL( GLCommand* command, uint32 cmdCount )
                 cmd->status = err;
             }   break;
 
+            case GLCommand::RESTORE_VERTEX_BUFFER :
+            {
+                EXEC_GL(glBindBuffer( GL_ARRAY_BUFFER, _GLES2_LastSetVB ));
+                cmd->status = err;
+            }   break;
+
+            case GLCommand::RESTORE_INDEX_BUFFER :
+            {
+                EXEC_GL(glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, _GLES2_LastSetIB ));
+                cmd->status = err;
+            }   break;
+
             case GLCommand::DELETE_BUFFERS :
             {
                 EXEC_GL(glDeleteBuffers( (GLsizei)(arg[0]), (GLuint*)(arg[1]) ));
@@ -1460,9 +1561,21 @@ _ExecGL( GLCommand* command, uint32 cmdCount )
                 cmd->status = err;
             }   break;
 
+            case GLCommand::SET_ACTIVE_TEXTURE :
+            {
+                EXEC_GL(glActiveTexture( GLenum(arg[0]) ));
+                cmd->status = err;
+            }   break;
+
             case GLCommand::BIND_TEXTURE :
             {
                 EXEC_GL(glBindTexture( (GLenum)(cmd->arg[0]), (GLuint)(cmd->arg[1]) ));
+                cmd->status = err;
+            }   break;
+
+            case GLCommand::RESTORE_TEXTURE0 :
+            {
+                EXEC_GL(glBindTexture( _GLES2_LastSetTex0Target, _GLES2_LastSetTex0 ));
                 cmd->status = err;
             }   break;
 
@@ -1724,6 +1837,10 @@ SetupDispatch( Dispatch* dispatch )
     dispatch->impl_CommandBuffer_DrawPrimitive          = &gles2_CommandBuffer_DrawPrimitive;
     dispatch->impl_CommandBuffer_DrawIndexedPrimitive   = &gles2_CommandBuffer_DrawIndexedPrimitive;
     dispatch->impl_CommandBuffer_SetMarker              = &gles2_CommandBuffer_SetMarker;
+
+    dispatch->impl_SyncObject_Create                    = &gles2_SyncObject_Create;
+    dispatch->impl_SyncObject_Delete                    = &gles2_SyncObject_Delete;
+    dispatch->impl_SyncObject_IsSignaled                = &gles2_SyncObject_IsSignaled;
     
     dispatch->impl_Present                              = &gles2_Present;
 }

@@ -47,6 +47,7 @@ namespace DAVA
     const FastName NMaterialName::DETAIL_ALPHATEST = FastName("~res:/Materials/Detail.Alphatest.material");
     const FastName NMaterialName::SHADOW_VOLUME = FastName("~res:/Materials/ShadowVolume.material");
     const FastName NMaterialName::VERTEXCOLOR_ALPHABLEND = FastName("~res:/Materials/VertexColor.Alphablend.material");
+    const FastName NMaterialName::VERTEXCOLOR_ALPHABLEND_NODEPTHTEST = FastName("~res:/Materials/VertexColor.Alphablend.NoDepthtest.material");
     const FastName NMaterialName::VERTEXCOLOR_ALPHABLEND_TEXTURED = FastName("~res:/Materials/VertexColor.Alphablend.Textured.material");
     const FastName NMaterialName::DETAIL_OPAQUE = FastName("~res:/Materials/Detail.Opaque.material");
     const FastName NMaterialName::SILHOUETTE = FastName("~res:/Materials/Silhouette.material");
@@ -61,6 +62,7 @@ namespace DAVA
     const FastName NMaterialName::SPHERICLIT_TEXTURED_VERTEXCOLOR_OPAQUE = FastName("~res:/Materials/SphericalLitAllQualities.Textured.VertexColor.Opaque.material");
     const FastName NMaterialName::SPHERICLIT_TEXTURED_VERTEXCOLOR_ALPHATEST = FastName("~res:/Materials/SphericalLitAllQualities.Textured.VertexColor.Alphatest.material");
     const FastName NMaterialName::VERTEXCOLOR_OPAQUE = FastName("~res:/Materials/VertexColor.Opaque.material");
+    const FastName NMaterialName::VERTEXCOLOR_OPAQUE_NODEPTHTEST = FastName("~res:/Materials/VertexColor.Opaque.NoDepthtest.material");
     const FastName NMaterialName::PIXELLIT_OPAQUE = FastName("~res:/Materials/PixelLit.Opaque.material");
     const FastName NMaterialName::TEXTURE_LIGHTMAP_ALPHABLEND = FastName("~res:/Materials/TextureLightmap.Alphablend.material");
     const FastName NMaterialName::VERTEXLIT_ALPHATEST = FastName("~res:/Materials/VertexLit.Alphatest.material");

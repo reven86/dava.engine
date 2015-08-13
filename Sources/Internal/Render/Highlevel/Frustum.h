@@ -47,6 +47,7 @@ namespace DAVA
     Main logical question is why frustum is related to render, and not in Math or Scene3D.
     The answer is simple: I assume that culling code can differ for OGL, DX matrices. Let's see when we'll add DirectX am I right.  
 */
+class RenderHelper;
 class Frustum : public BaseObject
 {	
 
@@ -144,7 +145,7 @@ public:
 
 
 	// 
-	void DebugDraw();
+	void DebugDraw(RenderHelper * drawer);
 	
 
 private:

@@ -39,8 +39,10 @@ namespace DAVA
 class Camera;
 class RenderObject;
 class StaticOcclusion;
+class StaticOcclusionComponent;
 class StaticOcclusionData;
 class StaticOcclusionDataComponent;
+class StaticOcclusionDebugDrawComponent;
 class NMaterial;
 class PolygonGroup;
 
@@ -156,11 +158,19 @@ public:
     void ImmediateEvent(Component * component, uint32 event) override;
 
 
-    static PolygonGroup* CreateStaticOcclusionDebugDrawGrid(const AABBox3& boundingBox, uint32 xSubdivisions, uint32 ySubdivisions, uint32 zSubdivisions, const float32 *cellHeightOffset);
-    static PolygonGroup* CreateStaticOcclusionDebugDrawCover(const AABBox3& boundingBox, uint32 xSubdivisions, uint32 ySubdivisions, uint32 zSubdivisions, PolygonGroup *gridPolygonGroup);
+    /*HVertexBuffer CreateStaticOcclusionDebugDrawGrid(const AABBox3& boundingBox, uint32 xSubdivisions, uint32 ySubdivisions, uint32 zSubdivisions, const float32 *cellHeightOffset);
+    PolygonGroup* CreateStaticOcclusionDebugDrawCover(const AABBox3& boundingBox, uint32 xSubdivisions, uint32 ySubdivisions, uint32 zSubdivisions, PolygonGroup *gridPolygonGroup);*/
+
     ~StaticOcclusionDebugDrawSystem();    
 private:
-    NMaterial *debugOpaqueMaterial, *debugAlphablendMaterial;
+    void UpdateGeometry(StaticOcclusionDebugDrawComponent * component);
+
+    void CreateStaticOcclusionDebugDrawVertices(StaticOcclusionDebugDrawComponent *target, StaticOcclusionComponent *source);
+    void CreateStaticOcclusionDebugDrawGridIndice(StaticOcclusionDebugDrawComponent *target, StaticOcclusionComponent *source);
+    void CreateStaticOcclusionDebugDrawCoverIndice(StaticOcclusionDebugDrawComponent *target, StaticOcclusionComponent *source);
+
+    NMaterial *gridMaterial, *coverMaterial;
+    uint32 vertexLayoutId;
 };
     
 inline void StaticOcclusionBuildSystem::SetCamera(Camera * _camera)

@@ -33,16 +33,26 @@ struct
 CommandBufferMetal_t
 {
     id<MTLRenderCommandEncoder> encoder;
+    id<MTLCommandBuffer>        buf;
 
     id<MTLTexture>              rt;
     Handle                      cur_ib;
 };
 
+
+struct
+SyncObjectMetal_t 
+{
+    uint32  is_signaled:1;
+};
+
 typedef ResourcePool<CommandBufferMetal_t,RESOURCE_COMMAND_BUFFER>  CommandBufferPool;
 typedef ResourcePool<RenderPassMetal_t,RESOURCE_RENDER_PASS>        RenderPassPool;
+typedef ResourcePool<SyncObjectMetal_t,RESOURCE_SYNC_OBJECT>        SyncObjectPool;
 
 RHI_IMPL_POOL(CommandBufferMetal_t,RESOURCE_COMMAND_BUFFER);
 RHI_IMPL_POOL(RenderPassMetal_t,RESOURCE_RENDER_PASS);
+RHI_IMPL_POOL(SyncObjectMetal_t,RESOURCE_SYNC_OBJECT);
 
 static id<CAMetalDrawable>      _CurDrawable = nil;    
 static std::vector<Handle>      _CmdQueue;
@@ -66,7 +76,7 @@ SCOPED_NAMED_TIMING("rhi.mtl-vsync");
     desc.colorAttachments[0].texture = _CurDrawable.texture;
     if( passConf.colorBuffer[0].texture != InvalidHandle )
         TextureMetal::SetAsRenderTarget( passConf.colorBuffer[0].texture, desc );
-
+    
     desc.colorAttachments[0].loadAction     = (passConf.colorBuffer[0].loadAction==LOADACTION_CLEAR) ? MTLLoadActionClear : MTLLoadActionDontCare;
     desc.colorAttachments[0].storeAction    = MTLStoreActionStore;
     desc.colorAttachments[0].clearColor     = MTLClearColorMake(passConf.colorBuffer[0].clearColor[0],passConf.colorBuffer[0].clearColor[1],passConf.colorBuffer[0].clearColor[2],passConf.colorBuffer[0].clearColor[3]);
@@ -75,6 +85,14 @@ SCOPED_NAMED_TIMING("rhi.mtl-vsync");
     desc.depthAttachment.loadAction         = (passConf.depthStencilBuffer.loadAction==LOADACTION_CLEAR) ? MTLLoadActionClear : MTLLoadActionDontCare;
     desc.depthAttachment.storeAction        = (passConf.depthStencilBuffer.storeAction==STOREACTION_STORE) ? MTLStoreActionStore : MTLStoreActionDontCare;
     desc.depthAttachment.clearDepth         = passConf.depthStencilBuffer.clearDepth;
+
+    desc.stencilAttachment.texture          = _Metal_DefStencilBuf;
+    desc.stencilAttachment.loadAction       = (passConf.depthStencilBuffer.loadAction==LOADACTION_CLEAR) ? MTLLoadActionClear : MTLLoadActionDontCare;
+    desc.stencilAttachment.storeAction      = (passConf.depthStencilBuffer.storeAction==STOREACTION_STORE) ? MTLStoreActionStore : MTLStoreActionDontCare;
+    desc.stencilAttachment.clearStencil     = passConf.depthStencilBuffer.clearStencil;
+
+    if( passConf.depthStencilBuffer.texture != InvalidHandle )
+        TextureMetal::SetAsDepthStencil( passConf.depthStencilBuffer.texture, desc );
     
     if( passConf.queryBuffer != InvalidHandle )
     {
@@ -95,6 +113,7 @@ SCOPED_NAMED_TIMING("rhi.mtl-vsync");
         pass->buf       = [_Metal_DefCmdQueue commandBufferWithUnretainedReferences]; 
 
         cb->encoder      = [pass->buf renderCommandEncoderWithDescriptor:desc];
+        cb->buf          = pass->buf;
         cb->rt           = desc.colorAttachments[0].texture;
         cb->cur_ib       = InvalidHandle;
         
@@ -113,6 +132,7 @@ SCOPED_NAMED_TIMING("rhi.mtl-vsync");
             CommandBufferMetal_t*   cb   = CommandBufferPool::Get( cb_h );
 
             cb->encoder     = [pass->encoder renderCommandEncoder];
+            cb->buf         = pass->buf;
             cb->rt          = desc.colorAttachments[0].texture;
             cb->cur_ib      = InvalidHandle;
             
@@ -172,11 +192,21 @@ metal_CommandBuffer_Begin( Handle cmdBuf )
 //------------------------------------------------------------------------------
 
 static void
-metal_CommandBuffer_End( Handle cmdBuf )
+metal_CommandBuffer_End( Handle cmdBuf, Handle syncObject )
 {
     CommandBufferMetal_t*   cb = CommandBufferPool::Get( cmdBuf );
 
     [cb->encoder endEncoding];
+
+    if( syncObject != InvalidHandle )
+    {
+        [cb->buf addCompletedHandler:^(id <MTLCommandBuffer> cmdb)
+        {
+            SyncObjectMetal_t*  sync = SyncObjectPool::Get( syncObject );
+            
+            sync->is_signaled = true;
+        }];
+    }
 }
 
 
@@ -238,7 +268,7 @@ metal_CommandBuffer_SetScissorRect( Handle cmdBuf, ScissorRect rect )
     else
     {
         rc.x      = 0;
-        rc.x      = 0;
+        rc.y      = 0;
         rc.width  = cb->rt.width;
         rc.height = cb->rt.height;
     }
@@ -471,8 +501,48 @@ metal_CommandBuffer_SetMarker( Handle cmdBuf, const char* text )
 
 //------------------------------------------------------------------------------
 
+static Handle
+metal_SyncObject_Create()
+{
+    Handle              handle = SyncObjectPool::Alloc();
+    SyncObjectMetal_t*  sync   = SyncObjectPool::Get( handle );
+    
+    sync->is_signaled = false;
+
+    return handle;
+}
+
+
+//------------------------------------------------------------------------------
+
 static void
-metal_Present()
+metal_SyncObject_Delete( Handle obj )
+{
+    SyncObjectPool::Free( obj );
+}
+
+
+//------------------------------------------------------------------------------
+
+static bool
+metal_SyncObject_IsSignaled( Handle obj )
+{
+    bool                signaled = false;
+    SyncObjectMetal_t*  sync     = SyncObjectPool::Get( obj );
+    
+    if( sync )
+        signaled = sync->is_signaled;
+
+    return signaled;
+}
+
+
+
+
+//------------------------------------------------------------------------------
+
+static void
+metal_Present( Handle sync)
 {
 SCOPED_NAMED_TIMING("rhi.draw-present");
 
@@ -505,7 +575,7 @@ SCOPED_NAMED_TIMING("rhi.draw-present");
     for( std::vector<RenderPassMetal_t*>::iterator p=pass.begin(),p_end=pass.end(); p!=p_end; ++p )
     {
         RenderPassMetal_t*  pass = *p;
-        \
+        
         for( unsigned b=0; b!=pass->cmdBuf.size(); ++b )
         {
             Handle                  cb_h = pass->cmdBuf[b];
@@ -557,6 +627,10 @@ SetupDispatch( Dispatch* dispatch )
     dispatch->impl_CommandBuffer_DrawPrimitive          = &metal_CommandBuffer_DrawPrimitive;
     dispatch->impl_CommandBuffer_DrawIndexedPrimitive   = &metal_CommandBuffer_DrawIndexedPrimitive;
     dispatch->impl_CommandBuffer_SetMarker              = &metal_CommandBuffer_SetMarker;
+
+    dispatch->impl_SyncObject_Create                    = &metal_SyncObject_Create;
+    dispatch->impl_SyncObject_Delete                    = &metal_SyncObject_Delete;
+    dispatch->impl_SyncObject_IsSignaled                = &metal_SyncObject_IsSignaled;
     
     dispatch->impl_Present                              = &metal_Present;
 }

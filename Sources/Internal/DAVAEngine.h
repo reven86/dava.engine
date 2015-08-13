@@ -134,11 +134,10 @@
 
 // Fonts
 #include "Render/2D/Font.h"
-#include "Render/2D/GraphicsFont.h"
+#include "Render/2D/GraphicFont.h"
 #include "Render/2D/FTFont.h"
 #include "Render/2D/FontManager.h"
 #include "Render/2D/TextBlock.h"
-#include "Render/2D/DFFont.h"
 
 // UI
 #include "UI/UIControl.h"
@@ -216,6 +215,8 @@
 #include "Render/3D/EdgeAdjacency.h"
 #include "Render/3D/MeshUtils.h"
 
+#include "Render/RenderHelper.h"
+#include "Render/DynamicBufferAllocator.h"
 
 #include "Render/Material/NMaterialNames.h"
 
@@ -223,6 +224,8 @@
 #include "Scene3D/Scene.h"
 #include "Scene3D/Entity.h"
 #include "Scene3D/MeshInstanceNode.h"
+#include "Render/Highlevel/RenderPass.h"
+#include "Render/Highlevel/RenderPassNames.h"
 #include "Render/Highlevel/Landscape.h"
 #include "Render/Highlevel/Heightmap.h"
 #include "Render/Highlevel/Light.h"

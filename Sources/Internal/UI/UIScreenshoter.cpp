@@ -40,7 +40,6 @@ namespace DAVA
 static const int32 PRIORITY_SCREENSHOT_CLEAR_PASS = eDefaultPassPriority::PRIORITY_SERVICE_2D + 12;
 static const int32 PRIORITY_SCREENSHOT_3D_PASS = eDefaultPassPriority::PRIORITY_SERVICE_2D + 11;
 static const int32 PRIORITY_SCREENSHOT_2D_PASS = eDefaultPassPriority::PRIORITY_SERVICE_2D + 10;
-static const int32 DEFAULT_COOLDOWN = 3; // frames
 
 UIScreenshoter::UIScreenshoter()
 {
@@ -48,99 +47,9 @@ UIScreenshoter::UIScreenshoter()
 
 UIScreenshoter::~UIScreenshoter()
 {
-    for (auto waiter : waiters)
+    for (auto& waiter : waiters)
     {
-        SafeRelease(waiter.control);
         SafeRelease(waiter.texture);
-    }
-}
-
-Texture* UIScreenshoter::MakeScreenshot(UIControl* control, const PixelFormat format, bool cloneControl /*= false*/)
-{
-    if (control == nullptr)
-        return nullptr;
-
-    if (cloneControl)
-    {
-        control = control->Clone();
-    }
-
-    Vector2 size(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(control->GetSize()));
-    Texture * screenshot(Texture::CreateFBO((int32)size.dx, (int32)size.dy, format));
-    RenderToTexture(control, screenshot);
-
-    {
-        ScreenshotWaiter waiter;
-        waiter.control = SafeRetain(control);
-        waiter.texture = SafeRetain(screenshot);
-        waiter.callback = 0;
-        waiter.cooldown = DEFAULT_COOLDOWN;
-        waiters.push_back(waiter);
-    }
-
-    if (cloneControl)
-    {
-        SafeRelease(control);
-    }
-    
-    return screenshot;
-}
-
-void UIScreenshoter::MakeScreenshotWithCallback(UIControl* control, const PixelFormat format, Function<void(Texture*)> callback, bool cloneControl /*= false*/)
-{
-    if (control == nullptr)
-        return;
-
-    if (cloneControl)
-    {
-        control = control->Clone();
-    }
-
-    Vector2 size(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(control->GetSize()));
-    Texture * screenshot(Texture::CreateFBO((int32)size.dx, (int32)size.dy, format));
-    RenderToTexture(control, screenshot);
-
-    {
-        ScreenshotWaiter waiter;
-        waiter.control = SafeRetain(control);
-        waiter.texture = SafeRetain(screenshot);
-        waiter.callback = callback;
-        waiter.cooldown = DEFAULT_COOLDOWN;
-        waiters.push_back(waiter);
-    }
-
-    if (cloneControl)
-    {
-        SafeRelease(control);
-    }
-
-    SafeRelease(screenshot);
-}
-
-void UIScreenshoter::MakeScreenshotWithPreparedTexture(UIControl* control, Texture* texture, bool cloneControl /*= false*/)
-{
-    if (control == nullptr)
-        return;
-
-    if (cloneControl)
-    {
-        control = control->Clone();
-    }
-
-    RenderToTexture(control, texture);
-
-    {
-        ScreenshotWaiter waiter;
-        waiter.control = SafeRetain(control);
-        waiter.texture = SafeRetain(texture);
-        waiter.callback = 0;
-        waiter.cooldown = DEFAULT_COOLDOWN;
-        waiters.push_back(waiter);
-    }
-
-    if (cloneControl)
-    {
-        SafeRelease(control);
     }
 }
 
@@ -149,15 +58,12 @@ void UIScreenshoter::OnFrame()
     auto itEnd = waiters.end();
     for (auto it = waiters.begin(); it != itEnd;)
     {
-        it->cooldown--;
-
-        if (it->cooldown < 0)
+        if (rhi::SyncObjectSignaled(it->syncObj))
         {
             if (it->callback != 0)
             {
                 it->callback(it->texture);
             }
-            SafeRelease(it->control);
             SafeRelease(it->texture);
             it = waiters.erase(it);
             itEnd = waiters.end();
@@ -169,9 +75,103 @@ void UIScreenshoter::OnFrame()
     }
 }
 
-List<UIScreenshoter::Control3dInfo> UIScreenshoter::FindAll3dViews(UIControl * control)
+Texture* UIScreenshoter::MakeScreenshot(UIControl* control, const PixelFormat format)
 {
-    List<Control3dInfo> foundViews;
+    const Vector2 size(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(control->GetSize()));
+    Texture * screenshot(Texture::CreateFBO((int32)size.dx, (int32)size.dy, format));
+    
+    MakeScreenshotInternal(control, screenshot, 0);
+    
+    return screenshot;
+}
+
+void UIScreenshoter::MakeScreenshot(UIControl* control, const PixelFormat format, Function<void(Texture*)> callback)
+{
+    const Vector2 size(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(control->GetSize()));
+    Texture * screenshot(Texture::CreateFBO((int32)size.dx, (int32)size.dy, format));
+
+    MakeScreenshotInternal(control, screenshot, callback);
+
+    SafeRelease(screenshot);
+}
+
+void UIScreenshoter::MakeScreenshot(UIControl* control, Texture* screenshot)
+{
+    MakeScreenshotInternal(control, screenshot, 0);
+}
+
+void UIScreenshoter::MakeScreenshot(UIControl* control, Texture* screenshot, Function<void(Texture*)> callback)
+{
+    MakeScreenshotInternal(control, screenshot, callback);
+}
+
+void UIScreenshoter::MakeScreenshotInternal(UIControl* control, Texture* screenshot, Function<void(Texture*)> callback)
+{
+    if (control == nullptr)
+        return;
+
+    // Create depth and stencil buffer
+    rhi::Texture::Descriptor descriptor;
+    descriptor.width = screenshot->GetWidth();
+    descriptor.height = screenshot->GetHeight();
+    descriptor.autoGenMipmaps = false;
+    descriptor.type = rhi::TEXTURE_TYPE_2D;
+    descriptor.format = rhi::TEXTURE_FORMAT_D24S8;
+    rhi::HTexture dephtTexture = rhi::CreateTexture(descriptor);
+    // End creating
+
+    // Prepare waiter
+    ScreenshotWaiter waiter;
+    waiter.texture = SafeRetain(screenshot);
+    waiter.callback = callback;
+    waiter.syncObj = rhi::GetCurrentFrameSyncObject();
+    waiters.push_back(waiter);
+    // End preparing
+
+    // Render to texture
+    rhi::Viewport viewport;
+    viewport.height = waiter.texture->GetHeight();
+    viewport.width = waiter.texture->GetWidth();
+    RenderHelper::CreateClearPass(waiter.texture->handle, PRIORITY_SCREENSHOT_CLEAR_PASS, Color::Clear, viewport);
+
+    List<Control3dInfo> controls3d;
+    FindAll3dViews(control, controls3d);
+    for (auto& info : controls3d)
+    {
+        SafeRetain(info.control);
+        if (nullptr != info.control->GetScene())
+        {
+            rhi::RenderPassConfig& config = info.control->GetScene()->GetMainPassConfig();
+            info.priority = config.priority;
+            info.texture = config.colorBuffer[0].texture;
+            info.depht = config.depthStencilBuffer.texture;
+            config.priority = PRIORITY_SCREENSHOT_3D_PASS;
+            config.colorBuffer[0].texture = waiter.texture->handle;
+            config.depthStencilBuffer.texture = dephtTexture;
+        }
+    }
+    RenderSystem2D::Instance()->BeginRenderTargetPass(waiter.texture, false, Color::Clear, PRIORITY_SCREENSHOT_2D_PASS);
+    control->Update(0.f);
+    control->SystemDraw(UIControlSystem::Instance()->GetBaseGeometricData());
+    RenderSystem2D::Instance()->EndRenderTargetPass();
+    for (auto& info : controls3d)
+    {
+        if (nullptr != info.control->GetScene())
+        {
+            rhi::RenderPassConfig& config = info.control->GetScene()->GetMainPassConfig();
+            config.priority = info.priority;
+            config.colorBuffer[0].texture = info.texture;
+            config.depthStencilBuffer.texture = info.depht;
+        }
+        SafeRelease(info.control);
+    }
+    // End render
+
+    rhi::DeleteTexture(dephtTexture);
+}
+
+void UIScreenshoter::FindAll3dViews(UIControl * control, List<UIScreenshoter::Control3dInfo> & foundViews)
+{
     List<UIControl*> processControls;
     processControls.push_back(control);
     while (!processControls.empty())
@@ -189,45 +189,10 @@ List<UIScreenshoter::Control3dInfo> UIScreenshoter::FindAll3dViews(UIControl * c
         if (nullptr != current3dView)
         {
             Control3dInfo info;
-            info.control = SafeRetain(current3dView);
+            info.control = current3dView;
             info.priority = 0;
             info.texture = rhi::InvalidHandle;
             foundViews.push_back(info);
-        }
-    }
-    return foundViews;
-}
-
-void UIScreenshoter::RenderToTexture(UIControl* control, Texture* texture)
-{
-    rhi::Viewport viewport;
-    viewport.height = texture->GetHeight();
-    viewport.width = texture->GetWidth();
-    RenderHelper::Instance()->CreateClearPass(texture->handle, PRIORITY_SCREENSHOT_CLEAR_PASS, Color::Clear, viewport);
-
-    List<Control3dInfo>& controls3d(FindAll3dViews(control));
-    for (auto& info : controls3d)
-    {
-        if (nullptr != info.control->GetScene())
-        {
-            rhi::RenderPassConfig& config = info.control->GetScene()->GetMainPassConfig();
-            info.priority = config.priority;
-            info.texture = config.colorBuffer[0].texture;
-            config.priority = PRIORITY_SCREENSHOT_3D_PASS;
-            config.colorBuffer[0].texture = texture->handle;
-        }
-    }
-    RenderSystem2D::Instance()->BeginRenderTargetPass(texture, false, Color::Clear, PRIORITY_SCREENSHOT_2D_PASS);
-    control->Update(0.f);
-    control->SystemDraw(UIControlSystem::Instance()->GetBaseGeometricData());
-    RenderSystem2D::Instance()->EndRenderTargetPass();
-    for (auto& info : controls3d)
-    {
-        if (nullptr != info.control->GetScene())
-        {
-            rhi::RenderPassConfig& config = info.control->GetScene()->GetMainPassConfig();
-            config.priority = info.priority;
-            config.colorBuffer[0].texture = info.texture;
         }
     }
 }

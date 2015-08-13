@@ -549,7 +549,7 @@ GameCore::SetupRT()
 
 
     rhi::Texture::Descriptor    colorDesc(512,512,rhi::TEXTURE_FORMAT_R8G8B8A8);
-    rhi::Texture::Descriptor    depthDesc(512,512,rhi::TEXTURE_FORMAT_D16);
+    rhi::Texture::Descriptor    depthDesc(512,512,rhi::TEXTURE_FORMAT_D24S8);
     
     colorDesc.isRenderTarget = true;
     
@@ -621,7 +621,7 @@ void GameCore::SetupTank()
                 int size = keyedArchive->GetByteArraySize("indices");
                 uint16 *indexArray = new uint16[indexCount];
                 const uint8 * archiveData = keyedArchive->GetByteArray("indices");
-                rhi::Handle ib = rhi::IndexBuffer::Create(indexCount * INDEX_FORMAT_SIZE[indexFormat], 0);
+                rhi::Handle ib = rhi::IndexBuffer::Create( rhi::IndexBuffer::Descriptor(indexCount*INDEX_FORMAT_SIZE[indexFormat]) );
                 rhi::IndexBuffer::Update(ib, archiveData, 0, indexCount * INDEX_FORMAT_SIZE[indexFormat]);
                 tank.ib.push_back(ib);
                 tank.indCount.push_back(indexCount);
@@ -670,6 +670,59 @@ void GameCore::SetupTank()
 
 void GameCore::OnAppStarted()
 {
+    struct
+    {
+        const char* file;
+        const char* flag[16];
+    } src[]
+    {
+        { "../../Tools/ResourceEditor/Data/Materials/Shaders/Default/materials-vp.cg", {"VERTEX_LIT",nullptr} },
+        { "../../Tools/ResourceEditor/Data/Materials/Shaders/Default/materials-vp.cg", {"PIXEL_LIT",nullptr} },
+        { "../../Tools/ResourceEditor/Data/Materials/Shaders/Default/materials-vp.cg", {"SKINNING","PIXEL_LIT",nullptr} }
+    };
+
+    
+    profiler::Start();    
+    
+    for( unsigned i=0; i!=countof(src); ++i )
+    {
+        File*   file = File::CreateFromSystemPath( src[i].file, File::OPEN|File::READ );
+    
+        if( file )
+        {
+            rhi::ShaderSource   vp;
+            uint32              sz = file->GetSize();
+            char                buf[64*1024];
+
+            DVASSERT(sz < sizeof(buf));
+            file->Read( buf, sz );
+            buf[sz] = '\0';
+
+
+            std::vector<std::string>    defines;
+            
+            for( unsigned k=0; k!=countof(src[i].flag); ++k )    
+            {
+                if( src[i].flag[k] )
+                {
+                    defines.push_back( src[i].flag[k] );
+                    defines.push_back( "1" );
+                }
+                else
+                {
+                    break;
+                }
+            }
+            if( vp.Construct( rhi::PROG_VERTEX, buf, defines ) )
+            {
+                //vp.Dump();
+            }
+        }
+    }
+    
+    profiler::Stop();
+    profiler::Dump();
+
 /*
 {
     File*   file = File::CreateFromSystemPath( "../../Tools/ResourceEditor/Data/Materials/Shaders/Default/materials-vp.cg", File::OPEN|File::READ );
@@ -748,7 +801,7 @@ void GameCore::OnAppStarted()
 //    SetupTriangle();
     SetupCube();
 //    SetupTank();
-//    SetupRT();
+    SetupRT();
 
 //    sceneRenderTest.reset(new SceneRenderTestV3());    
 
@@ -1506,6 +1559,7 @@ GameCore::rtDraw()
 
     #if USE_RT
     pass_desc.colorBuffer[0].texture         = rtColor;
+    pass_desc.depthStencilBuffer.texture     = rtDepthStencil;
     #endif
     pass_desc.colorBuffer[0].loadAction      = rhi::LOADACTION_CLEAR;
     pass_desc.colorBuffer[0].storeAction     = rhi::STOREACTION_STORE;

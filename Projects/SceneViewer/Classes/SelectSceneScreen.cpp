@@ -83,8 +83,6 @@ void SelectSceneScreen::LoadResources()
     AddControl(clearPathButton);
     AddControl(startButton);
     
-    
-
     DVASSERT(fileSystemDialog == NULL);
     fileSystemDialog = new UIFileSystemDialog("~res:/Fonts/korinna.ttf");
 	fileSystemDialog->SetDelegate(this);

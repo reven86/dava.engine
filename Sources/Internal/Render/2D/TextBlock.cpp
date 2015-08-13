@@ -37,8 +37,7 @@
 #include "Core/Core.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Render/2D/TextBlockSoftwareRender.h"
-#include "Render/2D/TextBlockGraphicsRender.h"
-#include "Render/2D/TextBlockDistanceRender.h"
+#include "Render/2D/TextBlockGraphicRender.h"
 #include "Concurrency/Thread.h"
 #include "Utils/StringUtils.h"
 #include "Concurrency/LockGuard.h"
@@ -163,13 +162,10 @@ void TextBlock::SetFont(Font * _font)
             textBlockRender = new TextBlockSoftwareRender(this);
             textureInvalidater = new TextBlockSoftwareTexInvalidater(this);
 			break;
-		case Font::TYPE_GRAPHICAL:
-			textBlockRender = new TextBlockGraphicsRender(this);
+		case Font::TYPE_GRAPHIC:
+        case Font::TYPE_DISTANCE:
+			textBlockRender = new TextBlockGraphicRender(this);
 			break;
-		case Font::TYPE_DISTANCE:
-			textBlockRender = new TextBlockDistanceRender(this);
-			break;
-			
 		default:
 			DVASSERT(!"Unknown font type");
 			break;
