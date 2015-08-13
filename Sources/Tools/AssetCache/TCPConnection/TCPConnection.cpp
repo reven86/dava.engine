@@ -37,15 +37,16 @@
 #include "Network/NetworkCommon.h"
 #include "Network/NetConfig.h"
 #include "Network/NetCore.h"
+#include "Network/Base/Endpoint.h"
 
 #include "Concurrency/LockGuard.h"
 
 namespace DAVA
 {
     
-TCPConnection::TCPConnection(Net::eNetworkRole _role, uint32 _service, const Net::Endpoint & _endpoint)
+TCPConnection::TCPConnection(Net::eNetworkRole _role, uint32 _service, const Net::Endpoint & _endpoint, Net::IChannelListener * _listener)
     : endpoint(_endpoint)
-    , controllerId(Net::NetCore::INVALID_TRACK_ID)
+	, listener(_listener)
 {
     Connect(_role, _service);
 }
@@ -53,17 +54,15 @@ TCPConnection::TCPConnection(Net::eNetworkRole _role, uint32 _service, const Net
     
 TCPConnection::~TCPConnection()
 {
-    if(Net::NetCore::INVALID_TRACK_ID != controllerId && Net::NetCore::Instance())
+    if(Net::NetCore::INVALID_TRACK_ID != controllerId)
     {
-        Disconnect();
+        DisconnectBlocked();
     }
 }
     
     
 bool TCPConnection::Connect(Net::eNetworkRole role, uint32 service)
 {
-    isConnected = false;
-    
     bool isRegistered = Net::NetCore::Instance()->IsServiceRegistered(service);
     if(!isRegistered)
     {
@@ -81,8 +80,8 @@ bool TCPConnection::Connect(Net::eNetworkRole role, uint32 service)
         controllerId = Net::NetCore::Instance()->CreateController(config, this);
         if(Net::NetCore::INVALID_TRACK_ID != controllerId)
         {
-            isConnected = true;
-        }
+			return true;
+		}
         else
         {
             Logger::Error("[TCPConnection::%s] Cannot create controller", __FUNCTION__);
@@ -93,68 +92,33 @@ bool TCPConnection::Connect(Net::eNetworkRole role, uint32 service)
         Logger::Error("[TCPConnection::%s] Cannot register service(%d)", __FUNCTION__, service);
     }
 
-    return isConnected;
+    return false;
 }
     
-void TCPConnection::Disconnect()
+void TCPConnection::DisconnectBlocked()
 {
     DVASSERT(Net::NetCore::INVALID_TRACK_ID != controllerId);
     DVASSERT(Net::NetCore::Instance() != nullptr);
 
-    isConnected = false;
-
     Net::NetCore::Instance()->DestroyControllerBlocked(controllerId);
-    controllerId = Net::NetCore::INVALID_TRACK_ID;
+	listener = nullptr;
+	controllerId = Net::NetCore::INVALID_TRACK_ID;
 }
     
     
 Net::IChannelListener * TCPConnection::Create(uint32 serviceId, void* context)
 {
-//     auto connection = static_cast<TCPConnection *>(context);
-	//     return connection->CreateChannel();
-	DVASSERT(false && "Create function");
-	return nullptr;
+	auto connection = static_cast<TCPConnection *>(context);
+	return connection->listener;
 }
 
 void TCPConnection::Delete(Net::IChannelListener* obj, void* context)
 {
-	DVASSERT(false && "Create function");
-//     auto connection = static_cast<TCPConnection *>(context);
-//     return connection->DestroyChannel(obj);
+	//do nothing
+	//listener has external creation and deletion
 }
 
-Net::IChannel * TCPConnection::CreateChannel()
-{
-	DVASSERT(false && "Create function");
-
-// 	auto newChannel = new Net::IChannel();
-//     newChannel->SetListener(listener);
-// 
-//     channels.push_back(newChannel);
-//    return newChannel;
-
-	return nullptr;
-}
-
-void TCPConnection::DestroyChannel(Net::IChannel *channel)
-{
-	DVASSERT(false && "Create function");
-// 
-//     auto channelFound = std::find(channels.cbegin(), channels.cend(), channel);
-//     DVASSERT(channelFound != channels.cend())
-//     channels.erase(channelFound);
-//     delete channel;
-}
-
-void TCPConnection::SetListener(Net::IChannelListener * _listener)
-{
-    listener = _listener;
-}
-    
-const Net::Endpoint & TCPConnection::GetEndpoint() const
-{
-    return endpoint;
-}
+  
     
 
 

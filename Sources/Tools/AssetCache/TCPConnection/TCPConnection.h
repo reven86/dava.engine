@@ -44,43 +44,31 @@ namespace Net
 class TCPConnection
 {
 public:
-	TCPConnection(Net::eNetworkRole role, uint32 service, const Net::Endpoint & endpoint);
-    
-    virtual ~TCPConnection();
+	TCPConnection(Net::eNetworkRole role, uint32 service, const Net::Endpoint & endpoint, Net::IChannelListener * listener);
+    ~TCPConnection();
 
-    void Disconnect();
-    bool IsConnected() const;
-
-    void SetListener(Net::IChannelListener * listener);
-    
     const Net::Endpoint & GetEndpoint() const;
 
-    void DestroyChannel(Net::IChannel *channel);
-    
-protected:
+private:
 
 	bool Connect(Net::eNetworkRole _role, uint32 service);
-
+	void DisconnectBlocked();
 
     static Net::IChannelListener * Create(uint32 serviceId, void* context);
     static void Delete(Net::IChannelListener* obj, void* context);
 
-    Net::IChannel * CreateChannel();
-
-protected:
+private:
     
     Net::Endpoint endpoint;
-    Net::NetCore::TrackId controllerId;
+	Net::NetCore::TrackId controllerId = Net::NetCore::INVALID_TRACK_ID;
 
-    bool isConnected = false;
-	Net::IChannelListener *listener;
+	Net::IChannelListener *listener = nullptr;
 };
 
-inline bool TCPConnection::IsConnected() const
+inline const Net::Endpoint & TCPConnection::GetEndpoint() const
 {
-    return isConnected;
+	return endpoint;
 }
-
 
 };
 

@@ -71,7 +71,6 @@ public:
 
     bool Listen(uint16 port);
     
-    bool IsConnected() const;
     void Disconnect();
     
     uint16 GetListenPort() const;

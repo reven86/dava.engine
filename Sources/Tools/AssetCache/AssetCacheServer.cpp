@@ -52,30 +52,14 @@ bool Server::Listen(uint16 port)
     listenPort = port;
     DVASSERT(!netServer);
 
-	netServer.reset(new TCPConnection(Net::SERVER_ROLE, NET_SERVICE_ID, Net::Endpoint(listenPort)));
-    netServer->SetListener(this);
-
-    return netServer->IsConnected();
+	netServer.reset(new TCPConnection(Net::SERVER_ROLE, NET_SERVICE_ID, Net::Endpoint(listenPort), this));
+	return true;
 }
     
-bool Server::IsConnected() const
-{
-    if(netServer)
-    {
-        return netServer->IsConnected();
-    }
-    
-    return false;
-}
 
 void Server::Disconnect()
 {
-    if(netServer)
-    {
-        netServer->Disconnect();
-        netServer->SetListener(nullptr);
-        netServer.reset();
-    }
+	netServer.reset();
 }
 
 void Server::OnPacketReceived(Net::IChannel * channel, const void* packet, size_t length)
@@ -101,8 +85,8 @@ void Server::OnPacketReceived(Net::IChannel * channel, const void* packet, size_
                 break;
                 
             default:
-                Logger::Error("[AssetCache::Server::%s] Invalid packet id: (%d). Closing channel", __FUNCTION__, packetID);
-				netServer->DestroyChannel(channel);
+				Logger::Error("[AssetCache::Server::%s] Invalid packet id: (%d). Closing channel", __FUNCTION__, packetID);
+				DVASSERT(false && "Invalid packet id");
                 break;
         }
     }

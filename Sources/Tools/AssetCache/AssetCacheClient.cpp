@@ -52,21 +52,15 @@ bool Client::Connect(const String &ip, uint16 port)
     DVASSERT(nullptr == netClient);
     DVASSERT(nullptr == openedChannel);
     
-	netClient.reset(new TCPConnection(Net::CLIENT_ROLE, NET_SERVICE_ID, Net::Endpoint(ip.c_str(), port)));
-    netClient->SetListener(this);
+	netClient.reset(new TCPConnection(Net::CLIENT_ROLE, NET_SERVICE_ID, Net::Endpoint(ip.c_str(), port), this));
     
     return true;
 }
     
 void Client::Disconnect()
 {
-    if(netClient)
-    {
-        netClient->Disconnect();
-        netClient->SetListener(nullptr);
-        netClient = nullptr;
-        openedChannel = nullptr;
-    }
+	netClient.reset();
+	openedChannel = nullptr;
 }
     
     
