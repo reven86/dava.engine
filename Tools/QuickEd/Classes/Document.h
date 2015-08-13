@@ -34,7 +34,6 @@
 #include <QMap>
 #include "Model/PackageHierarchy/PackageBaseNode.h"
 #include "Systems/Interfaces.h"
-#include "Systems/SelectionSystem.h"
 #include "Defines.h"
 
 struct WidgetContext
@@ -52,21 +51,23 @@ class QtModelPackageCommandExecutor;
 class PropertiesModel;
 class PackageModel;
 class ControlNode;
-class DocumentGroup;
+class SelectionSystem;
+class CanvasSystem;
 
 class Document : public QObject, public SelectionInterface
 {
     Q_OBJECT
-    friend class DocumentGroup;
 public:
     Document(PackageNode *package, QObject *parent = nullptr);
     ~Document();
+    void Detach();
+    void Attach();
     const DAVA::FilePath &GetPackageFilePath() const;
-    PackageNode *GetPackage() const;
 
     QUndoStack *GetUndoStack() const;
+    PackageNode *GetPackage() const;
     QtModelPackageCommandExecutor *GetCommandExecutor() const;
-
+    CanvasSystem *GetCanvasSystem() const;
     void RefreshLayout();
     WidgetContext* GetContext(QObject* requester) const;
     void SetContext(QObject* requester, WidgetContext* widgetContext);
@@ -79,9 +80,13 @@ public slots:
 private:
     QMap < QObject*, WidgetContext* > contexts;
     SelectedNodes selectedNodes;
+    SelectedControls selectedControls;
     PackageNode *package = nullptr;
     QtModelPackageCommandExecutor *commandExecutor = nullptr;
     QUndoStack *undoStack = nullptr;
+
+    SelectionSystem *selectionSystem;
+    CanvasSystem *canvasSystem;
 };
 
 inline QUndoStack *Document::GetUndoStack() const

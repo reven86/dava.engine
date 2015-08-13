@@ -90,33 +90,9 @@ EditorCore::~EditorCore()
     delete mainWindow;
 }
 
-void EditorCore::CreateRootControl()
-{
-    DVASSERT(nullptr == rootControl);
-    if (nullptr != rootControl)
-    {
-        return;
-    }
-    rootControl = new UIControl();
-
-    ScopedPtr<UIScreen> davaUIScreen(new UIScreen());
-    davaUIScreen->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
-    davaUIScreen->GetBackground()->SetColor(Color(0.3f, 0.3f, 0.3f, 1.0f));
-    UIScreenManager::Instance()->RegisterScreen(EDIT_SCREEN, davaUIScreen);
-    UIScreenManager::Instance()->SetFirst(EDIT_SCREEN);
-    UIScreenManager::Instance()->GetScreen()->AddControl(rootControl);
-}
-
 void EditorCore::Start()
 {
-    CreateRootControl();
     mainWindow->show();
-}
-
-UIControl* EditorCore::GetRootControl() const
-{
-    DVASSERT(nullptr != rootControl);
-    return rootControl;
 }
 
 void EditorCore::OnCleanChanged(bool clean)

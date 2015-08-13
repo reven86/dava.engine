@@ -42,10 +42,6 @@ class DocumentGroup;
 class Project;
 class MainWindow;
 class PackageNode;
-namespace DAVA
-{
-    class UIControl;
-}
 
 class EditorCore : public QObject, public DAVA::Singleton<EditorCore>
 {
@@ -53,12 +49,10 @@ class EditorCore : public QObject, public DAVA::Singleton<EditorCore>
 public:
     explicit EditorCore(QObject *parent = nullptr);
     ~EditorCore();
-    void CreateRootControl();
     void Start();
 
     MainWindow *GetMainWindow() const;
     Project *GetProject() const;
-    DAVA::UIControl *GetRootControl() const;
 
 protected slots:
     void OnCleanChanged(bool clean);

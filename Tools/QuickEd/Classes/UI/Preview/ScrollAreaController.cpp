@@ -28,12 +28,14 @@
 
 
 #include "ScrollAreaController.h"
-#include "EditorCore.h"
+#include "UI/UIControl.h"
+#include "UI/UIScreenManager.h"
 
 using namespace DAVA;
 
-ScrollAreaController::ScrollAreaController(QObject *parent)
+ScrollAreaController::ScrollAreaController(UIControl *root, QObject *parent)
     : QObject(parent)
+    , rootControl(root)
 {
     
 }
@@ -60,7 +62,6 @@ void ScrollAreaController::SetSize(const QSize &size_)
         size = size_;
         auto newSize = Vector2(size.width(), size.height());
         UIScreenManager::Instance()->GetScreen()->SetSize(newSize);
-        Root()->SetSize(newSize);
         emit SizeChanged(size_);
     }
 }
@@ -71,7 +72,7 @@ void ScrollAreaController::SetScale(int scale_)
     {
         scale = scale_;
         Vector2 newScale(static_cast<float>(scale) / 100.0f, static_cast<float>(scale) / 100.0f);
-        Root()->SetScale(newScale);
+        rootControl->SetScale(newScale);
         emit ScaleChanged(scale_);
     }
 }
@@ -82,12 +83,7 @@ void ScrollAreaController::SetPosition(const QPoint &position_)
     {
         position = position_;
         auto newPos = Vector2(position.x(), position.y());
-        Root()->SetPosition(newPos);
+        rootControl->SetPosition(newPos);
         emit PositionChanged(position_);
     }
-}
-
-UIControl *ScrollAreaController::Root()
-{
-    return EditorCore::Instance()->GetRootControl();
 }

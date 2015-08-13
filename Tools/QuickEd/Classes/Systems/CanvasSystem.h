@@ -30,20 +30,29 @@
 #ifndef __UIEditor_EditScreen_h__
 #define __UIEditor_EditScreen_h__
 
-#include "UI/UIControl.h"
 #include "Interfaces.h"
 #include "Defines.h"
 
 class Document;
+namespace DAVA
+{
+    class UIControl;
+}
 
 class CanvasSystem : public SelectionInterface
 {
+public:
     CanvasSystem(Document *parent);
-    ~CanvasSystem() = default;
-
+    virtual ~CanvasSystem();
+    void Attach(DAVA::UIControl *root);
     void SelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected) override;
 
 private:
+    void SetRootControls(const SelectedNodes &controls);
+    void LayoutCanvas();
+    DAVA::UIControl *attachedRoot = nullptr;
+    DAVA::UIControl *canvas = nullptr;
+    Document *document = nullptr;
     SelectedControls selectedControls;
 };
 

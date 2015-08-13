@@ -31,6 +31,8 @@
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "UI/UIEvent.h"
 
+#include "Defines.h"
+
 using namespace DAVA;
 
 bool SelectionSystem::OnInput(UIEvent* currentInput)
@@ -76,8 +78,8 @@ void SelectionSystem::ControlWasRemoved(ControlNode *node, ControlsContainerNode
 
 void SelectionSystem::SelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected)
 {
-    selectedControls.insert(selected.begin(), selected.end());
-    selectedControls.erase(deselected.begin(), deselected.end());
+    UniteNodes(selected, selectedControls);
+    SubstractNodes(deselected, selectedControls);
     for (auto listener : listeners)
     {
         listener->SelectionWasChanged(SelectedControls(), deselected);
@@ -98,6 +100,6 @@ void SelectionSystem::RemoveListener(SelectionInterface *listener)
     }
     else
     {
-        DVASSERT(false);
+        DVASSERT_MSG(false, "listener was not attached");
     }
 }

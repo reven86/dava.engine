@@ -38,17 +38,31 @@
 #include "Model/PackageHierarchy/PackageBaseNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
 #include "Model/PackageHierarchy/PackageNode.h"
+#include "UI/UIControl.h"
+#include "UI/UIScreen.h"
+#include "UI/UIScreenManager.h"
 
 #include "QtTools/DavaGLWidget/davaglwidget.h"
 
 #include "Document.h"
+#include "Systems/CanvasSystem.h"
 
 using namespace DAVA;
 
 PreviewWidget::PreviewWidget(QWidget *parent)
     : QWidget(parent)
-    , scrollAreaController(new ScrollAreaController(this))
+    , rootControl(new UIControl())
+    , backgroundControl(new UIControl)
+    , scrollAreaController(new ScrollAreaController(rootControl, this))
 {
+    backgroundControl->AddControl(rootControl);
+    ScopedPtr<UIScreen> davaUIScreen(new UIScreen());
+    davaUIScreen->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
+    davaUIScreen->GetBackground()->SetColor(Color(0.3f, 0.3f, 0.3f, 1.0f));
+    UIScreenManager::Instance()->RegisterScreen(0, davaUIScreen);
+    UIScreenManager::Instance()->SetFirst(0);
+    UIScreenManager::Instance()->GetScreen()->AddControl(backgroundControl);
+
     percentages
         << 10
         << 25
@@ -82,11 +96,12 @@ PreviewWidget::PreviewWidget(QWidget *parent)
     connect(verticalScrollBar, &QScrollBar::valueChanged, this, &PreviewWidget::OnVScrollbarMoved);
     connect(horizontalScrollBar, &QScrollBar::valueChanged, this, &PreviewWidget::OnHScrollbarMoved);
 
+    connect(davaGLWidget->GetGLWindow(), &QWindow::screenChanged, this, &PreviewWidget::OnMonitorChanged);
+
     scaleCombo->setCurrentIndex(percentages.indexOf(100)); //100%
     scaleCombo->lineEdit()->setMaxLength(6); //3 digits + whitespace + % ?
     scaleCombo->setInsertPolicy(QComboBox::NoInsert);
-      
-    connect(davaGLWidget->GetGLWindow(), &QWindow::screenChanged, this, &PreviewWidget::OnMonitorChanged);
+    UpdateScrollArea();
 }
 
 DavaGLWidget *PreviewWidget::GetDavaGLWidget()
@@ -97,13 +112,56 @@ DavaGLWidget *PreviewWidget::GetDavaGLWidget()
 void PreviewWidget::OnDocumentChanged(Document *arg)
 {
     document = arg;
+    rootControl->RemoveAllControls();
+    if (nullptr != document)
+    {
+        document->GetCanvasSystem()->Attach(rootControl);
+        UpdateScrollArea();
+    }
 }
 
 void PreviewWidget::OnMonitorChanged()
 {
-    const auto index = scaleCombo->currentIndex();
-    scaleCombo->setCurrentIndex(-1);
-    scaleCombo->setCurrentIndex(index);
+    OnScaleByComboIndex(scaleCombo->currentIndex());
+}
+
+void PreviewWidget::UpdateScrollArea()
+{
+    QSize canvasSize(rootControl->GetSize().x * rootControl->GetScale().x
+        , rootControl->GetSize().y * rootControl->GetScale().y);
+    
+    QSize glWidgetSize = davaGLWidget->size() * davaGLWidget->GetGLWindow()->devicePixelRatio();
+    QSize maxPos(canvasSize - glWidgetSize);
+    if (maxPos.height() < 0)
+    {
+        maxPos.setHeight(0);
+    }
+    if (maxPos.width() < 0)
+    {
+        maxPos.setWidth(0);
+    }
+    if (verticalScrollBar->maximum() != maxPos.height())
+    {
+        verticalScrollBar->setMaximum(maxPos.height());
+        verticalScrollBar->setPageStep(glWidgetSize.height());
+    }
+    if (horizontalScrollBar->maximum() != maxPos.width())
+    {
+        horizontalScrollBar->setMaximum(maxPos.width());
+        horizontalScrollBar->setPageStep(glWidgetSize.width());
+    }
+
+    if (backgroundControl->GetSize().x > rootControl->GetSize().x)
+    {
+        Rect rect = rootControl->GetRect();
+        rect.x = (backgroundControl->GetSize().x - rect.dx) / 2.0f;
+        rootControl->SetRect(rect);
+    }
+    else
+    {
+        Rect size(Vector2(0, 0), rootControl->GetSize());
+        rootControl->SetRect(size);
+    }
 }
 
 void PreviewWidget::OnScaleByZoom(int scaleDelta)
@@ -150,6 +208,8 @@ void PreviewWidget::OnZoomOutRequested()
 void PreviewWidget::OnGLWidgetResized(int width, int height, int dpr)
 {
     scrollAreaController->SetSize(QSize(width * dpr, height * dpr));
+    backgroundControl->SetSize(Vector2(width * dpr, height * dpr));
+    UpdateScrollArea();
 }
 
 void PreviewWidget::OnVScrollbarMoved(int vPosition)

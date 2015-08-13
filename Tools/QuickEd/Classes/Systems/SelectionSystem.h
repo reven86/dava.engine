@@ -40,7 +40,6 @@ class SelectionSystem : public SelectionInterface, public InputInterface, public
 public:
     SelectionSystem() = default;
     virtual ~SelectionSystem() = default;
-
     bool OnInput(DAVA::UIEvent *currentInput) override;
     void ControlWasRemoved(ControlNode *node, ControlsContainerNode *from) override;
     void SelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected) override;

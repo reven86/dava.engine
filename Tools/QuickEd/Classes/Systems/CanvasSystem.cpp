@@ -26,8 +26,19 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 #include "CanvasSystem.h"
+#include "Defines.h"
+#include "EditorCore.h"
+#include "Document.h"
+
+#include "UI/UIControl.h"
+#include "Base/BaseTypes.h"
+#include "Model/PackageHierarchy/PackageBaseNode.h"
+#include "Model/PackageHierarchy/ControlNode.h"
+#include "Model/PackageHierarchy/PackageNode.h"
+#include "Model/PackageHierarchy/PackageControlsNode.h"
+
+using namespace DAVA;
 
 class CheckeredCanvas : public DAVA::UIControl
 {
@@ -35,7 +46,105 @@ public:
     CheckeredCanvas();
 private:
     ~CheckeredCanvas() override = default;
-
     void Draw(const DAVA::UIGeometricData &geometricData) override;
 };
 
+CheckeredCanvas::CheckeredCanvas()
+    : UIControl()
+{
+    GetBackground()->SetSprite("~res:/Gfx/CheckeredBg", 0);
+    GetBackground()->SetDrawType(UIControlBackground::DRAW_TILED);
+    GetBackground()->SetShader(SafeRetain(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR));
+}
+
+void CheckeredCanvas::Draw(const UIGeometricData &geometricData)
+{
+    float32 invScale = 1.0f / geometricData.scale.x;
+    UIGeometricData unscaledGd;
+    unscaledGd.scale = Vector2(invScale, invScale);
+    unscaledGd.size = geometricData.size * geometricData.scale.x;
+    unscaledGd.AddGeometricData(geometricData);
+    GetBackground()->Draw(unscaledGd);
+}
+
+CanvasSystem::CanvasSystem(Document *parent)
+    : document(parent)
+{
+    canvas = new UIControl();
+}
+
+CanvasSystem::~CanvasSystem()
+{
+    canvas->Release();
+}
+
+void CanvasSystem::Attach(DAVA::UIControl* root)
+{
+    attachedRoot = root;
+    attachedRoot->AddControl(canvas);
+    SelectionWasChanged(SelectedControls(), SelectedControls());
+}
+
+void CanvasSystem::SelectionWasChanged(const SelectedControls& selected, const SelectedControls& deselected)
+{
+    UniteNodes(selected, selectedControls);
+    SubstractNodes(deselected, selectedControls);
+    SelectedNodes rootControls;
+    if (selectedControls.empty())
+    {
+        auto controlsNode = document->GetPackage()->GetPackageControlsNode();
+        for (INT index = 0; index < controlsNode->GetCount(); ++index)
+            rootControls.insert(controlsNode->Get(index));
+    }
+    else
+    {
+        for (auto &node : selectedControls)
+        {
+            if (nullptr != node->GetControl())
+            {
+                PackageBaseNode *root = node;
+                while (root->GetParent() && root->GetParent()->GetControl())
+                    root = root->GetParent();
+                rootControls.insert(root);
+            }
+        }
+    }
+    SetRootControls(rootControls);
+}
+
+void CanvasSystem::SetRootControls(const SelectedNodes& controls)
+{
+    canvas->RemoveAllControls();
+    for(auto node : controls)
+    {
+        ScopedPtr<CheckeredCanvas> checkeredCanvas(new CheckeredCanvas());
+        checkeredCanvas->AddControl(node->GetControl());
+        checkeredCanvas->SetSize(node->GetControl()->GetSize());
+        canvas->AddControl(checkeredCanvas);
+    }
+    LayoutCanvas();
+}
+
+void CanvasSystem::LayoutCanvas()
+{
+    float32 maxWidth = 0.0f;
+    float32 totalHeight = 0.0f;
+    for (auto control : canvas->GetChildren())
+    {
+        maxWidth = Max(maxWidth, control->GetSize().x);
+        totalHeight += control->GetSize().y;
+    }
+    Vector2 size(maxWidth, totalHeight);
+    attachedRoot->SetSize(size);
+    canvas->SetSize(size);
+    float32 curY = 0.0f;
+    for (auto control : canvas->GetChildren())
+    {
+        Rect rect = control->GetRect();
+        rect.y = curY;
+        rect.x = (maxWidth - rect.dx) / 2.0f;
+        control->SetRect(rect);
+
+        curY += rect.dy + 5;
+    }
+}

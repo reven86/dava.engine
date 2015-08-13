@@ -32,21 +32,17 @@
 
 #include <QWidget>
 #include "ui_PreviewWidget.h"
+#include <UI/UIControl.h>
 
 namespace Ui {
     class PreviewWidget;
+    class UIControl;
 }
 
 class Document;
 class DavaGLWidget;
 class ControlNode;
 class ScrollAreaController;
-
-enum ScreenId
-{
-    UNKNOWN_SCREEN = -1,
-    EDIT_SCREEN = 0,
-};
 
 class PreviewWidget : public QWidget, public Ui::PreviewWidget
 {
@@ -73,9 +69,11 @@ private slots:
     void OnMonitorChanged();
 
 private:
+    void UpdateScrollArea();
     void OnScaleByZoom(int scaleDelta); 
 
-private:
+    DAVA::UIControl *rootControl = nullptr;
+    DAVA::UIControl *backgroundControl = nullptr;
     Document *document = nullptr;
     DavaGLWidget *davaGLWidget = nullptr;
     ScrollAreaController *scrollAreaController = nullptr;

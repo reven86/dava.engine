@@ -43,6 +43,9 @@
 #include "Ui/QtModelPackageCommandExecutor.h"
 #include "EditorCore.h"
 
+#include "Systems/SelectionSystem.h"
+#include "Systems/CanvasSystem.h"
+
 using namespace DAVA;
 
 Document::Document(PackageNode *_package, QObject *parent)
@@ -50,7 +53,11 @@ Document::Document(PackageNode *_package, QObject *parent)
     , package(SafeRetain(_package))
     , commandExecutor(new QtModelPackageCommandExecutor(this))
     , undoStack(new QUndoStack(this))
+    , selectionSystem(new SelectionSystem())
+    , canvasSystem(new CanvasSystem(this))
 {
+    selectionSystem->AddListener(this);
+    selectionSystem->AddListener(canvasSystem);
     connect(GetEditorFontSystem(), &EditorFontSystem::UpdateFontPreset, this, &Document::RefreshAllControlProperties);
 }
 
@@ -58,12 +65,30 @@ Document::~Document()
 {
     SafeRelease(package);
     SafeRelease(commandExecutor);
+    delete selectionSystem;
+    delete canvasSystem;
+}
+
+void Document::Detach()
+{
+    emit SelectedNodesChanged(SelectedNodes(), selectedNodes);
+}
+
+void Document::Attach()
+{
+    emit SelectedNodesChanged(selectedNodes, SelectedNodes());
 }
 
 const DAVA::FilePath &Document::GetPackageFilePath() const
 {
     return package->GetPath();
 }
+
+CanvasSystem* Document::GetCanvasSystem() const
+{
+    return canvasSystem;
+}
+
 
 void Document::RefreshLayout()
 {
@@ -108,9 +133,27 @@ void Document::OnSelectedNodesChanged(const SelectedNodes &selected, const Selec
     auto tmpSelected = selectedNodes;
     UniteNodes(selected, tmpSelected);
     SubstractNodes(deselected, tmpSelected);
+    SelectedControls selectedControls;
+    SelectedControls deselectedControls;
+    for (auto node : selected)
+    {
+        ControlNode *controlNode = dynamic_cast<ControlNode*>(node);
+        if (nullptr != controlNode)
+        {
+            selectedControls.insert(controlNode);
+        }
+    }
+    for (auto node : deselected)
+    {
+        ControlNode *controlNode = dynamic_cast<ControlNode*>(node);
+        if (nullptr != controlNode)
+        {
+            deselectedControls.insert(controlNode);
+        }
+    }
+    selectionSystem->SelectionWasChanged(selectedControls, deselectedControls);
     if (tmpSelected != selectedNodes)
     {
-        //!todo: selectionSystem->setselection
         emit SelectedNodesChanged(selected, deselected);
     }
 }
