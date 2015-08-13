@@ -166,11 +166,11 @@ SetupDispatch( Dispatch* dispatch )
 }
 
 void
-SetToRHI( Handle hstate )
+SetToRHI( Handle hstate, ID3D11DeviceContext* context )
 {
     SamplerStateDX11_t* state = SamplerStateDX11Pool::Get( hstate );
     
-      _D3D11_ImmediateContext->PSSetSamplers( 0, state->fragmentSamplerCount, state->fragmentSampler );
+      context->PSSetSamplers( 0, state->fragmentSamplerCount, state->fragmentSampler );
 }
 
 }

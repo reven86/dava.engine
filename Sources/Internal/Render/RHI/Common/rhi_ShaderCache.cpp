@@ -822,11 +822,11 @@ static const char* _ShaderDefine_DX11 =
 "#define FPROG_OUT_END           };\n"
 
 "#define DECL_FP_SAMPLER2D(unit)    Texture2D FragmentTexture##unit : register(t##unit); SamplerState FragmentTexture##unit##_Sampler : register(s##unit);\n"
-"#define DECL_FP_SAMPLERCUBE(unit)  uniform samplerCUBE FragmentTexture##unit : TEXUNIT##unit;\n"
+"#define DECL_FP_SAMPLERCUBE(unit)    TextureCube FragmentTexture##unit : register(t##unit); SamplerState FragmentTexture##unit##_Sampler : register(s##unit);\n"
 "#define DECL_VP_SAMPLER2D(unit)    Texture2D VertexTexture##unit : register(t##unit); SamplerState VertexTexture##unit##_Sampler : register(s##unit);\n"
 
 "#define FP_TEXTURE2D(unit,uv)   FragmentTexture##unit.Sample( FragmentTexture##unit##_Sampler, uv )\n"
-"#define FP_TEXTURECUBE(unit,uv) texCUBE( FragmentTexture##unit, uv )\n"
+"#define FP_TEXTURECUBE(unit,uv) FragmentTexture##unit.Sample( FragmentTexture##unit##_Sampler, uv )\n"
 "#define FP_IN(name)             IN.##name\n"
 
 "#define FP_OUT_COLOR            OUT.color\n"

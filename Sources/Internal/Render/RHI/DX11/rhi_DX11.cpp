@@ -138,8 +138,11 @@ _InitDX11()
 {
     HRESULT                 hr;
     DWORD                   flags           = 0;
-    D3D_FEATURE_LEVEL       feature[]       = { D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_9_1 };
-//    D3D_FEATURE_LEVEL       feature[]       = { D3D_FEATURE_LEVEL_9_1 };
+    #if RHI__FORCE_DX11_91
+    D3D_FEATURE_LEVEL       feature[]       = { D3D_FEATURE_LEVEL_9_3, D3D_FEATURE_LEVEL_9_2, D3D_FEATURE_LEVEL_9_1 };
+    #else
+    D3D_FEATURE_LEVEL       feature[]       = { /*D3D_FEATURE_LEVEL_11_1, */D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_9_1 };
+    #endif
     DXGI_SWAP_CHAIN_DESC    swapchain_desc  = {0};
 
     #if 1
@@ -181,6 +184,8 @@ _InitDX11()
         if( SUCCEEDED(hr) )
         {
             hr = _D3D11_Device->QueryInterface( __uuidof(ID3D11Debug), (void**)(&_D3D11_Debug) );
+
+            hr = _D3D11_ImmediateContext->QueryInterface( __uuidof(ID3DUserDefinedAnnotation), (void**)(&_D3D11_UserAnnotation) );
         }
 
         hr = _D3D11_Device->CreateRenderTargetView( _D3D11_SwapChainBuffer, 0, &_D3D11_RenderTargetView );
@@ -213,10 +218,9 @@ dx11_Initialize( const InitParam& param )
     _DX11_InitParam = param;
     InitializeRenderThreadDX11();
 
-
     VertexBufferDX11::SetupDispatch( &DispatchDX11 );
     IndexBufferDX11::SetupDispatch( &DispatchDX11 );
-//    QueryBufferDX11::SetupDispatch( &DispatchDX11 );
+    QueryBufferDX11::SetupDispatch( &DispatchDX11 );
     TextureDX11::SetupDispatch( &DispatchDX11 );
     PipelineStateDX11::SetupDispatch( &DispatchDX11 );
     ConstBufferDX11::SetupDispatch( &DispatchDX11 );

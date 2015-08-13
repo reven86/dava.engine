@@ -20,15 +20,16 @@
 namespace rhi
 {
 
-ID3D11Device*           _D3D11_Device               = nullptr;
-IDXGISwapChain*         _D3D11_SwapChain            = nullptr;
-ID3D11Texture2D*        _D3D11_SwapChainBuffer      = nullptr;
-ID3D11RenderTargetView* _D3D11_RenderTargetView     = nullptr;
-ID3D11Texture2D*        _D3D11_DepthStencilBuffer   = nullptr;
-ID3D11DepthStencilView* _D3D11_DepthStencilView     = nullptr;
-D3D_FEATURE_LEVEL       _D3D11_FeatureLevel         = D3D_FEATURE_LEVEL_9_1;
-ID3D11DeviceContext*    _D3D11_ImmediateContext     = nullptr;
-ID3D11Debug*            _D3D11_Debug                = nullptr;
+ID3D11Device*               _D3D11_Device               = nullptr;
+IDXGISwapChain*             _D3D11_SwapChain            = nullptr;
+ID3D11Texture2D*            _D3D11_SwapChainBuffer      = nullptr;
+ID3D11RenderTargetView*     _D3D11_RenderTargetView     = nullptr;
+ID3D11Texture2D*            _D3D11_DepthStencilBuffer   = nullptr;
+ID3D11DepthStencilView*     _D3D11_DepthStencilView     = nullptr;
+D3D_FEATURE_LEVEL           _D3D11_FeatureLevel         = D3D_FEATURE_LEVEL_9_1;
+ID3D11DeviceContext*        _D3D11_ImmediateContext     = nullptr;
+ID3D11Debug*                _D3D11_Debug                = nullptr;
+ID3DUserDefinedAnnotation*  _D3D11_UserAnnotation       = nullptr;
 
 InitParam               _DX11_InitParam;
 
@@ -108,7 +109,7 @@ DX11_TextureFormat( TextureFormat format )
         case TEXTURE_FORMAT_A16R16G16B16    : return DXGI_FORMAT_R16G16B16A16_FLOAT;
         case TEXTURE_FORMAT_A32R32G32B32    : return DXGI_FORMAT_R32G32B32A32_FLOAT;
 
-        case TEXTURE_FORMAT_R8              : return DXGI_FORMAT_A8_UNORM;
+        case TEXTURE_FORMAT_R8              : return DXGI_FORMAT_R8_UNORM;
         case TEXTURE_FORMAT_R16             : return DXGI_FORMAT_R16_FLOAT;
 
         case TEXTURE_FORMAT_DXT1            : return DXGI_FORMAT_BC1_UNORM;

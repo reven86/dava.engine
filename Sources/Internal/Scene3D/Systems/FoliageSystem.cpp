@@ -175,6 +175,10 @@ void FoliageSystem::Process(float32 timeElapsed)
     
 void FoliageSystem::SyncFoliageWithLandscape()
 {
+// CRAP: until issue with DX11 11.0 & 4444-textures resolved
+if( rhi::HostApi() == rhi::RHI_DX11 )
+    return;
+
     if(landscapeEntity && foliageEntity)
     {
         Landscape* landscapeRO = GetLandscape(landscapeEntity);

@@ -427,6 +427,10 @@ dx9_CommandBuffer_DrawPrimitive( Handle cmdBuf, PrimitiveType type, uint32 count
         case PRIMITIVE_TRIANGLELIST :
             type9 = D3DPT_TRIANGLELIST;
             break;
+
+        case PRIMITIVE_TRIANGLESTRIP :
+            type9 = D3DPT_TRIANGLESTRIP;
+            break;
         
         case PRIMITIVE_LINELIST :
             type9 = D3DPT_LINELIST;
@@ -449,6 +453,10 @@ dx9_CommandBuffer_DrawIndexedPrimitive( Handle cmdBuf, PrimitiveType type, uint3
     {
         case PRIMITIVE_TRIANGLELIST :
             type9 = D3DPT_TRIANGLELIST;
+            break;
+
+        case PRIMITIVE_TRIANGLESTRIP :
+            type9 = D3DPT_TRIANGLESTRIP;
             break;
 
         case PRIMITIVE_LINELIST :
@@ -1287,6 +1295,12 @@ Trace("exec %i\n",int(cmd->func));
             case DX9Command::CREATE_PIXEL_SHADER :
             {
                 cmd->retval = _D3D9_Device->CreatePixelShader( (const DWORD*)(arg[0]), (IDirect3DPixelShader9**)(arg[1]) );
+                CHECK_HR(cmd->retval);
+            }   break;
+
+            case DX9Command::GET_QUERY_DATA :
+            {
+                cmd->retval = ((IDirect3DQuery9*)(arg[0]))->GetData( (void*)(arg[1]), DWORD(arg[2]), DWORD(arg[3]) );
                 CHECK_HR(cmd->retval);
             }   break;
 

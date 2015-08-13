@@ -194,12 +194,12 @@ SetupDispatch( Dispatch* dispatch )
 
 
 void 
-SetToRHI( Handle ibh, unsigned offset )
+SetToRHI( Handle ibh, unsigned offset, ID3D11DeviceContext* context )
 {
     IndexBufferDX11_t*  self = IndexBufferDX11Pool::Get( ibh );    
     
-    DVASSERT(!self->_mapped);
-    _D3D11_ImmediateContext->IASetIndexBuffer( self->_ib11, DXGI_FORMAT_R16_UINT, offset );
+///    DVASSERT(!self->_mapped);
+    context->IASetIndexBuffer( self->_ib11, DXGI_FORMAT_R16_UINT, offset );
 }
 
 }

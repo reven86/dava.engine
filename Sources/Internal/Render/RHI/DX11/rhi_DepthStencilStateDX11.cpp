@@ -147,11 +147,11 @@ SetupDispatch( Dispatch* dispatch )
 }
 
 void
-SetToRHI( Handle hstate )
+SetToRHI( Handle hstate, ID3D11DeviceContext* context )
 {
     DepthStencilStateDX11_t* state  = DepthStencilStateDX11Pool::Get( hstate );
     
-    _D3D11_ImmediateContext->OMSetDepthStencilState( state->_ds11, state->_stencilRef );
+    context->OMSetDepthStencilState( state->_ds11, state->_stencilRef );
 }
 
 }

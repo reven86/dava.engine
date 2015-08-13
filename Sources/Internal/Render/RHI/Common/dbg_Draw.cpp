@@ -327,16 +327,6 @@ DbgDraw::Buffer<DbgDraw::Vertex_PC,rhi::PRIMITIVE_LINELIST>::_prim_count( unsign
 
 template <>
 inline unsigned
-DbgDraw::Buffer<DbgDraw::Vertex_PC,rhi::PRIMITIVE_TRIANGLEFAN>::_prim_count( unsigned v_cnt ) const
-{
-    return v_cnt-2;
-}
-
-
-//------------------------------------------------------------------------------
-
-template <>
-inline unsigned
 DbgDraw::Buffer<DbgDraw::Vertex_PC,rhi::PRIMITIVE_TRIANGLELIST>::_prim_count( unsigned v_cnt ) const
 {
     return v_cnt/3;

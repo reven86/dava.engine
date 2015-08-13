@@ -236,6 +236,10 @@ gles2_Texture_Create( const Texture::Descriptor& desc )
 
             ExecGL( cmd3, countof(cmd3) );
         }
+        else
+        {
+            self->isRenderTarget = false;
+        }
     }
 
     return handle;

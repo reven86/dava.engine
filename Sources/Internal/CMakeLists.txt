@@ -1,4 +1,5 @@
-cmake_minimum_required (VERSION 3.0)
+cmake_minimum_required( VERSION 3.0 )
+
 project( DavaFramework )
 
 set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../CMake/Modules/" ) 
@@ -48,7 +49,6 @@ if( ANDROID )
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libuv_android.a"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libiconv_android.so"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/liblua_android.a"
-         "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libwebp_android.a"
          )
 
     list ( APPEND LIST_LIBRARIES
@@ -57,7 +57,7 @@ if( ANDROID )
          "-llog"
          "-landroid"
          "-lGLESv2"
-         "-lstdc++"
+         "-lstdc++" 
          )
 
     list ( APPEND LIST_SHARED_LIBRARIES ${LIST_LIBRARIES} )
@@ -98,7 +98,7 @@ elseif( MACOS )
 elseif( IOS )  
     find_package( ZLIB )
 
-    add_definitions( -DDARWIN_NO_CARBON ) 
+    add_definitions( -DDDARWIN_NO_CARBON ) 
     
     INCLUDE_DIRECTORIES ( /System/Library/Frameworks )
     foreach( NAME  CoreGraphics 
@@ -131,10 +131,31 @@ elseif( IOS )
     set ( IGNORED_RHI_FOLDER "DX9" "DX11" )
 
 elseif ( WINDOWS_UAP )
-    file ( GLOB DEBUG_LIB_LIST "${DAVA_WIN_UAP_LIBRARIES_PATH_DEBUG}/*.lib" )
+
+    set( DAVA_THIRD_PARTY_INCLUDES_PATH "${DAVA_THIRD_PARTY_INCLUDES_PATH}" 
+                                        "${DAVA_THIRD_PARTY_ROOT_PATH}/angle-ms-master/include" )
+    set ( DAVA_WIN_STORE_LIBRARIES_PATH "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win10" ) 
+
+    #file ( GLOB SHARED_LIB_LIST "${DAVA_WIN_STORE_LIBRARIES_PATH}/*.lib" )
+    #list ( APPEND LIST_SHARED_LIBRARIES ${SHARED_LIB_LIST}  )
+    #list ( APPEND LIST_SHARED_LIBRARIES_RELEASE  "" )
+    #list ( APPEND LIST_SHARED_LIBRARIES_DEBUG   "" )
+
+    list ( APPEND LIST_SHARED_LIBRARIES    "Wininet.lib" "ws2_32.lib" "winmm.lib" "wldap32.lib" "iphlpapi.lib" "Gdi32.lib" "dbghelp.lib" "d2d1.lib" "d3d11.lib" "d3dcompiler.lib" "dxgi.lib" "windowscodecs.lib" "dwrite.lib" )
+    
+    #choose target architecture libraries
+    if( "${CMAKE_GENERATOR_PLATFORM}" STREQUAL "ARM" )
+        set ( LIBS_ARCH_SELECTOR "arm" )
+    elseif ( "${CMAKE_GENERATOR_PLATFORM}" STREQUAL "x64" )
+        set ( LIBS_ARCH_SELECTOR "x64" )
+    else ()
+        set ( LIBS_ARCH_SELECTOR "x86" )
+    endif ()
+
+    file ( GLOB DEBUG_LIB_LIST "${DAVA_WIN_STORE_LIBRARIES_PATH}/${LIBS_ARCH_SELECTOR}/Debug/*.lib" )
     list ( APPEND LIST_SHARED_LIBRARIES_DEBUG ${DEBUG_LIB_LIST}  )
 
-    file ( GLOB RELEASE_LIB_LIST "${DAVA_WIN_UAP_LIBRARIES_PATH_RELEASE}/*.lib" )
+    file ( GLOB RELEASE_LIB_LIST "${DAVA_WIN_STORE_LIBRARIES_PATH}/${LIBS_ARCH_SELECTOR}/Release/*.lib" )
     list ( APPEND LIST_SHARED_LIBRARIES_RELEASE ${RELEASE_LIB_LIST}  )
     list ( APPEND LIST_SHARED_LIBRARIES         "Wininet.lib" "opengl32.lib" "ws2_32.lib" "winmm.lib" "wldap32.lib" "iphlpapi.lib" "Gdi32.lib" "glu32.lib" "psapi.lib" "dbghelp.lib" "$ENV{DXSDK_DIR}/lib/x86/d3d9.lib" "$ENV{DXSDK_DIR}/lib/x86/d3dx9.lib" "$ENV{DXSDK_DIR}/lib/x86/dxguid.lib" )
 
@@ -149,12 +170,13 @@ elseif( WIN32 )
     file ( GLOB LIB_LIST "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/*.lib" )
     list ( APPEND LIST_SHARED_LIBRARIES_RELEASE ${LIB_LIST}  )
 
-#    list ( APPEND LIST_SHARED_LIBRARIES         "Wininet.lib" "opengl32.lib" "ws2_32.lib" "winmm.lib" "wldap32.lib" "iphlpapi.lib" "Gdi32.lib" "glu32.lib" "psapi.lib" "dbghelp.lib" "$ENV{DXSDK_DIR}/lib/x86/d3d9.lib" "$ENV{DXSDK_DIR}/lib/x86/d3dx9.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/d3d11.lib" "$ENV{DXSDK_DIR}/lib/x86/d3dx11.lib" "$ENV{DXSDK_DIR}/lib/x86/d3dcompiler.lib" "$ENV{DXSDK_DIR}/lib/x86/dxguid.lib" )
-#    list ( APPEND LIST_SHARED_LIBRARIES         "Wininet.lib" "opengl32.lib" "ws2_32.lib" "winmm.lib" "wldap32.lib" "iphlpapi.lib" "Gdi32.lib" "glu32.lib" "psapi.lib" "dbghelp.lib" "$ENV{DXSDK_DIR}/lib/x86/d3d9.lib" "$ENV{DXSDK_DIR}/lib/x86/d3dx9.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3d11.lib" "$ENV{DXSDK_DIR}/lib/x86/d3dcompiler.lib" "$ENV{DXSDK_DIR}/lib/x86/dxguid.lib" )
     list ( APPEND LIST_SHARED_LIBRARIES         "Wininet.lib" "opengl32.lib" "ws2_32.lib" "winmm.lib" "wldap32.lib" "iphlpapi.lib" "Gdi32.lib" "glu32.lib" "psapi.lib" "dbghelp.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3d9.lib" "$ENV{DXSDK_DIR}/lib/x86/d3dx9.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3d11.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3dcompiler.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/dxguid.lib" )
+#    list ( APPEND LIST_SHARED_LIBRARIES         "Wininet.lib" "opengl32.lib" "ws2_32.lib" "winmm.lib" "wldap32.lib" "iphlpapi.lib" "Gdi32.lib" "glu32.lib" "psapi.lib" "dbghelp.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3d9.lib"  "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3d11.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/d3dcompiler.lib" "${WINDOWSSDK_LATEST_DIR}/lib/winv6.3/um/x86/dxguid.lib" )
+
 
     list ( APPEND LIST_SHARED_LIBRARIES_RELEASE "msvcrt.lib"  )
     list ( APPEND LIST_SHARED_LIBRARIES_DEBUG   "msvcrtd.lib" )
+
     set ( IGNORED_RHI_FOLDER "Metal" )
 
 endif()

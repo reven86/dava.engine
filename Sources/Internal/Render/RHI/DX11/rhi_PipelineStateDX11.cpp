@@ -137,7 +137,7 @@ public:
 
     bool        SetConst( unsigned const_i, unsigned count, const float* data );
     bool        SetConst( unsigned const_i, unsigned const_sub_i, const float* data, unsigned dataCount );
-    void        SetToRHI( const void* inst_data ) const;
+    void        SetToRHI( const void* inst_data, ID3D11DeviceContext* context ) const;
 
 
 private:
@@ -324,16 +324,16 @@ ConstBufDX11::SetConst( unsigned const_i, unsigned const_sub_i, const float* dat
 //------------------------------------------------------------------------------
 
 void
-ConstBufDX11::SetToRHI( const void* inst_data ) const
+ConstBufDX11::SetToRHI( const void* inst_data, ID3D11DeviceContext* context ) const
 {
-    _D3D11_ImmediateContext->UpdateSubresource( buf, 0, NULL, inst_data, regCount*4*sizeof(float), 0 );
+    context->UpdateSubresource( buf, 0, NULL, inst_data, regCount*4*sizeof(float), 0 );
 
     ID3D11Buffer*   cb[1] = { buf };
 
     if( progType == PROG_VERTEX )
-        _D3D11_ImmediateContext->VSSetConstantBuffers( buf_i, 1, &buf );
+        context->VSSetConstantBuffers( buf_i, 1, &buf );
     else
-        _D3D11_ImmediateContext->PSSetConstantBuffers( buf_i, 1, &buf );
+        context->PSSetConstantBuffers( buf_i, 1, &buf );
 }
 
 
@@ -485,8 +485,11 @@ desc.vertexLayout.Dump();
         NULL, // no macros
         NULL, // no includes
         "vp_main",
-//        "vs_4_0_level_9_1",
+        #if RHI__FORCE_DX11_91
+        "vs_4_0_level_9_1",
+        #else
         "vs_4_0",
+        #endif
         D3D10_SHADER_OPTIMIZATION_LEVEL2,
         0, // no effect compile flags
         &vp_code,
@@ -558,8 +561,11 @@ desc.vertexLayout.Dump();
         NULL, // no macros
         NULL, // no includes
         "fp_main",
-//        "ps_4_0_level_9_1",
+        #if RHI__FORCE_DX11_91
+        "ps_4_0_level_9_1",
+        #else
         "ps_4_0",
+        #endif
         D3D10_SHADER_OPTIMIZATION_LEVEL2,
         0, // no effect compile flags
         &fp_code,
@@ -734,7 +740,7 @@ SetupDispatch( Dispatch* dispatch )
 //------------------------------------------------------------------------------
 
 void
-SetToRHI( Handle ps, uint32 layoutUID )
+SetToRHI( Handle ps, uint32 layoutUID, ID3D11DeviceContext* context )
 {
     PipelineStateDX11_t* ps11     = PipelineStateDX11Pool::Get( ps );
     ID3D11InputLayout*   layout11 = nullptr;
@@ -767,10 +773,10 @@ SetToRHI( Handle ps, uint32 layoutUID )
         }
     }
 
-    _D3D11_ImmediateContext->IASetInputLayout( layout11 );
-    _D3D11_ImmediateContext->VSSetShader( ps11->vertexShader, NULL, 0 );
-    _D3D11_ImmediateContext->PSSetShader( ps11->pixelShader, NULL, 0 );
-    _D3D11_ImmediateContext->OMSetBlendState( ps11->_blend_state, NULL, 0xFFFFFFFF );
+    context->IASetInputLayout( layout11 );
+    context->VSSetShader( ps11->vertexShader, NULL, 0 );
+    context->PSSetShader( ps11->pixelShader, NULL, 0 );
+    context->OMSetBlendState( ps11->_blend_state, NULL, 0xFFFFFFFF );
 }
 
 unsigned
@@ -797,11 +803,11 @@ SetupDispatch( Dispatch* dispatch )
 }
 
 void
-SetToRHI( Handle cb, const void* inst_data )
+SetToRHI( Handle cb, const void* inst_data, ID3D11DeviceContext* context )
 {
     ConstBufDX11*   cb11 = ConstBufDX11Pool::Get( cb );
     
-    cb11->SetToRHI( inst_data );
+    cb11->SetToRHI( inst_data, context );
 }
 
 const void* 

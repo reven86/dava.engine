@@ -1,0 +1,21 @@
+#include "common.cgh"
+
+
+VPROG_IN_BEGIN
+    VPROG_IN_POSITION        
+VPROG_IN_END
+
+VPROG_OUT_BEGIN
+    VPROG_OUT_POSITION
+VPROG_OUT_END
+
+property float4x4 worldViewProjMatrix : dynamic,a : ;
+
+
+
+
+
+VPROG_BEGIN
+    float4 position = float4(VP_IN_POSITION, 1.0);    
+    VP_OUT_POSITION = mul(position, worldViewProjMatrix);   
+VPROG_END
