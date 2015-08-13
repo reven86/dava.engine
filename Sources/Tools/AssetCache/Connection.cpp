@@ -28,7 +28,8 @@
 
 
 
-#include "AssetCache/TCPConnection/TCPConnection.h"
+#include "AssetCache/Connection.h"
+#include "AssetCache/AssetCacheConstants.h"
 
 #include "Base/FunctionTraits.h"
 #include "Debug/DVAssert.h"
@@ -41,86 +42,86 @@
 
 #include "Concurrency/LockGuard.h"
 
-namespace DAVA
-{
-    
-TCPConnection::TCPConnection(Net::eNetworkRole _role, uint32 _service, const Net::Endpoint & _endpoint, Net::IChannelListener * _listener)
-    : endpoint(_endpoint)
+namespace DAVA {
+namespace AssetCache{
+
+
+Connection::Connection(Net::eNetworkRole _role, const Net::Endpoint & _endpoint, Net::IChannelListener * _listener, Net::eTransportType transport)
+	: endpoint(_endpoint)
 	, listener(_listener)
 {
-    Connect(_role, _service);
+	Connect(_role, transport);
 }
-    
-    
-TCPConnection::~TCPConnection()
+
+
+Connection::~Connection()
 {
-    if(Net::NetCore::INVALID_TRACK_ID != controllerId)
-    {
-        DisconnectBlocked();
-    }
+	if (Net::NetCore::INVALID_TRACK_ID != controllerId)
+	{
+		DisconnectBlocked();
+	}
 }
-    
-    
-bool TCPConnection::Connect(Net::eNetworkRole role, uint32 service)
+
+bool Connection::Connect(Net::eNetworkRole role, Net::eTransportType transport)
 {
-    bool isRegistered = Net::NetCore::Instance()->IsServiceRegistered(service);
-    if(!isRegistered)
-    {
-        isRegistered = Net::NetCore::Instance()->RegisterService(service,
-                                                                 MakeFunction(&TCPConnection::Create),
-                                                                 MakeFunction(&TCPConnection::Delete));
-    }
-    
-    if(isRegistered)
-    {
-        Net::NetConfig config(role);
-        config.AddTransport(Net::TRANSPORT_TCP, endpoint);
-        config.AddService(service);
-        
-        controllerId = Net::NetCore::Instance()->CreateController(config, this);
-        if(Net::NetCore::INVALID_TRACK_ID != controllerId)
-        {
+	bool isRegistered = Net::NetCore::Instance()->IsServiceRegistered(NET_SERVICE_ID);
+	if (!isRegistered)
+	{
+		isRegistered = Net::NetCore::Instance()->RegisterService(NET_SERVICE_ID,
+			MakeFunction(&Connection::Create),
+			MakeFunction(&Connection::Delete));
+	}
+
+	if (isRegistered)
+	{
+		Net::NetConfig config(role);
+		config.AddTransport(transport, endpoint);
+		config.AddService(NET_SERVICE_ID);
+
+		controllerId = Net::NetCore::Instance()->CreateController(config, this);
+		if (Net::NetCore::INVALID_TRACK_ID != controllerId)
+		{
 			return true;
 		}
-        else
-        {
-            Logger::Error("[TCPConnection::%s] Cannot create controller", __FUNCTION__);
-        }
-    }
-    else
-    {
-        Logger::Error("[TCPConnection::%s] Cannot register service(%d)", __FUNCTION__, service);
-    }
+		else
+		{
+			Logger::Error("[TCPConnection::%s] Cannot create controller", __FUNCTION__);
+		}
+	}
+	else
+	{
+		Logger::Error("[TCPConnection::%s] Cannot register service(%d)", __FUNCTION__, NET_SERVICE_ID);
+	}
 
-    return false;
+	return false;
 }
-    
-void TCPConnection::DisconnectBlocked()
-{
-    DVASSERT(Net::NetCore::INVALID_TRACK_ID != controllerId);
-    DVASSERT(Net::NetCore::Instance() != nullptr);
 
-    Net::NetCore::Instance()->DestroyControllerBlocked(controllerId);
+void Connection::DisconnectBlocked()
+{
+	DVASSERT(Net::NetCore::INVALID_TRACK_ID != controllerId);
+	DVASSERT(Net::NetCore::Instance() != nullptr);
+
+	Net::NetCore::Instance()->DestroyControllerBlocked(controllerId);
 	listener = nullptr;
 	controllerId = Net::NetCore::INVALID_TRACK_ID;
 }
-    
-    
-Net::IChannelListener * TCPConnection::Create(uint32 serviceId, void* context)
+
+
+Net::IChannelListener * Connection::Create(uint32 serviceId, void* context)
 {
-	auto connection = static_cast<TCPConnection *>(context);
+	auto connection = static_cast<Connection *>(context);
 	return connection->listener;
 }
 
-void TCPConnection::Delete(Net::IChannelListener* obj, void* context)
+void Connection::Delete(Net::IChannelListener* obj, void* context)
 {
 	//do nothing
 	//listener has external creation and deletion
 }
 
-  
-    
 
 
-}; // end of namespace DAVA
+
+} // end of namespace AssetCache
+} // end of namespace DAVA
 

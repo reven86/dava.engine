@@ -31,8 +31,6 @@
 #include "AssetCache/AssetCacheServer.h"
 #include "AssetCache/AssetCacheConstants.h"
 #include "AssetCache/CachedItemValue.h"
-#include "AssetCache/CacheItemKey.h"
-#include "AssetCache/TCPConnection/TCPConnection.h"
 #include "Debug/DVAssert.h"
 #include "FileSystem/KeyedArchive.h"
 
@@ -52,7 +50,7 @@ bool Server::Listen(uint16 port)
     listenPort = port;
     DVASSERT(!netServer);
 
-	netServer.reset(new TCPConnection(Net::SERVER_ROLE, NET_SERVICE_ID, Net::Endpoint(listenPort), this));
+	netServer.reset(new Connection(Net::SERVER_ROLE, Net::Endpoint(listenPort), this));
 	return true;
 }
     

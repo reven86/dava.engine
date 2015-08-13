@@ -34,7 +34,7 @@
 
 #include "Network/IChannel.h"
 
-#include "AssetCache/TCPConnection/TCPConnection.h"
+#include "AssetCache/Connection.h"
 #include "AssetCache/CacheItemKey.h"
 
 namespace DAVA
@@ -102,7 +102,7 @@ private:
 private:
     
     uint16 listenPort = 0;
-    std::unique_ptr<TCPConnection> netServer;
+	std::unique_ptr<Connection> netServer;
     ServerDelegate *delegate = nullptr;
 };
 

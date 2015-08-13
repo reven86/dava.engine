@@ -34,7 +34,7 @@
 
 #include "Network/IChannel.h"
 
-#include "AssetCache/TCPConnection/TCPConnection.h"
+#include "AssetCache/Connection.h"
 #include "AssetCache/CacheItemKey.h"
 
 
@@ -43,7 +43,6 @@ namespace DAVA
 
 namespace AssetCache
 {
- 
 class CachedItemValue;
     
 class ClientListener
@@ -73,7 +72,7 @@ public:
     bool RequestFromCache(const CacheItemKey &key);
     bool WarmingUp(const CacheItemKey &key);
 
-	TCPConnection * GetConnection() const;
+	Connection * GetConnection() const;
 
 	//Net::IChannelListener
 	// Channel is open (underlying transport has connection) and can receive and send data through IChannel interface
@@ -95,7 +94,7 @@ private:
 	bool SendArchieve(DAVA::Net::IChannel* channel, KeyedArchive *archieve);
     
 private:
-    std::unique_ptr<TCPConnection> netClient;
+	std::unique_ptr<Connection> netClient;
 	
 	DAVA::Net::IChannel * openedChannel = nullptr;
     
@@ -113,7 +112,7 @@ inline bool Client::IsConnected()
     return (openedChannel != nullptr);
 }
 
-inline TCPConnection * Client::GetConnection() const
+inline Connection * Client::GetConnection() const
 {
 	return netClient.get();
 }

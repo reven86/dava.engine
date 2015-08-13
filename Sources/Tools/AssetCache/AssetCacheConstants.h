@@ -32,10 +32,8 @@
 
 #include "Base/BaseTypes.h"
 
-namespace DAVA
-{
-namespace AssetCache
-{
+namespace DAVA {
+namespace AssetCache {
 
 static const uint32 NET_SERVICE_ID = 0xACCA;
 static const uint16 ASSET_SERVER_PORT = 0xACCA;
@@ -49,11 +47,10 @@ enum ePacketID: uint8
     PACKET_GET_RESPONSE,
     PACKET_WARMING_UP_REQUEST,
 //    PACKET_WARMING_UP_RESPONSE, // We don't need send response right now. Left it in code for better reading
-    
 };
     
-}; // end of namespace AssetCache
-}; // end of namespace DAVA
+} // end of namespace AssetCache
+} // end of namespace DAVA
 
 
 #endif // __DAVAENGINE_ASSET_CACHE_CONSTANTS_H__

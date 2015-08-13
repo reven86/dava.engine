@@ -31,8 +31,6 @@
 #include "AssetCache/AssetCacheClient.h"
 #include "AssetCache/AssetCacheConstants.h"
 #include "AssetCache/CachedItemValue.h"
-#include "AssetCache/CacheItemKey.h"
-#include "AssetCache/TCPConnection/TCPConnection.h"
 #include "FileSystem/KeyedArchive.h"
 #include "Debug/DVAssert.h"
 
@@ -52,7 +50,7 @@ bool Client::Connect(const String &ip, uint16 port)
     DVASSERT(nullptr == netClient);
     DVASSERT(nullptr == openedChannel);
     
-	netClient.reset(new TCPConnection(Net::CLIENT_ROLE, NET_SERVICE_ID, Net::Endpoint(ip.c_str(), port), this));
+	netClient.reset(new Connection(Net::CLIENT_ROLE, Net::Endpoint(ip.c_str(), port), this));
     
     return true;
 }

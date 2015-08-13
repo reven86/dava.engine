@@ -27,8 +27,8 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_TCP_CONNECTION_H__
-#define __DAVAENGINE_TCP_CONNECTION_H__
+#ifndef __DAVAENGINE_ASSETCACHE_CONNECTION_H__
+#define __DAVAENGINE_ASSETCACHE_CONNECTION_H__
 
 #include "Network/Base/Endpoint.h"
 #include "Network/NetworkCommon.h"
@@ -41,17 +41,20 @@ namespace Net
 	struct IChannel;
 }
 
-class TCPConnection
+namespace AssetCache
+{
+
+class Connection
 {
 public:
-	TCPConnection(Net::eNetworkRole role, uint32 service, const Net::Endpoint & endpoint, Net::IChannelListener * listener);
-    ~TCPConnection();
+	Connection(Net::eNetworkRole role, const Net::Endpoint & endpoint, Net::IChannelListener * listener, Net::eTransportType transport = Net::TRANSPORT_TCP);
+	~Connection();
 
     const Net::Endpoint & GetEndpoint() const;
 
 private:
 
-	bool Connect(Net::eNetworkRole _role, uint32 service);
+	bool Connect(Net::eNetworkRole _role, Net::eTransportType transport);
 	void DisconnectBlocked();
 
     static Net::IChannelListener * Create(uint32 serviceId, void* context);
@@ -65,12 +68,13 @@ private:
 	Net::IChannelListener *listener = nullptr;
 };
 
-inline const Net::Endpoint & TCPConnection::GetEndpoint() const
+inline const Net::Endpoint & Connection::GetEndpoint() const
 {
 	return endpoint;
 }
 
-};
+} // end of namespace AssetCache
+} // end of namespace DAVA
 
-#endif // __DAVAENGINE_TCP_CONNECTION_H__
+#endif // __DAVAENGINE_ASSETCACHE_CONNECTION_H__
 
