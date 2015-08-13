@@ -80,7 +80,7 @@ bool CachePacket::Deserialize()
 
     if (header != PACKET_HEADER)
     {
-        Logger::Error("[%s] Wrong packet header: %s", __FUNCTION__, header);
+        Logger::Error("[%s] Wrong packet header: %s", __FUNCTION__, header.c_str());
         return false;
     }
 
