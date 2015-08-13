@@ -637,19 +637,21 @@ void FTInternalFont::Prepare(FT_Vector * advances)
 		advances[i] = glyph.image->advance;
 		advances[i].x >>= 10;
 		advances[i].y >>= 10;
-		
-		if(prevAdvance)
+
+        if(prevAdvance)
 		{
 			if(useKerning)
 			{
 				FT_Vector  kern;
 				FT_Get_Kerning(face, prevIndex, glyph.index, FT_KERNING_UNFITTED, &kern );
-                // Scale kernings from virtual to physical, because FT_Set_Transform
-                // converts only glyph advances without kernings
+                // Scale kerning from virtual to physical, because FT_Set_Transform
+                // converts only glyph advances without kerning
                 // See http://www.freetype.org/freetype2/docs/reference/ft2-base_interface.html#FT_Set_Transform\
-                // TODO: Maybe should rewrite draw function with change font size and without usnig FT_Set_Transform
-                prevAdvance->x += FT_DivFix_Wrapper(kern.x, face->size->metrics.x_scale);
-                prevAdvance->y += FT_DivFix_Wrapper(kern.y, face->size->metrics.y_scale);
+                // TODO: Maybe should rewrite draw function with change font size and without using FT_Set_Transform
+//                 prevAdvance->x += FT_DivFix_Wrapper(kern.x, face->size->metrics.x_scale);
+//                 prevAdvance->y += FT_DivFix_Wrapper(kern.y, face->size->metrics.y_scale);
+                prevAdvance->x += static_cast<FT_Pos>(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(static_cast<float32>(kern.x)));
+                prevAdvance->y += static_cast<FT_Pos>(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(static_cast<float32>(kern.y)));
             	prevAdvance->x += glyph.delta;
 			}
 		}
