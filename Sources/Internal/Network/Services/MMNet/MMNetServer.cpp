@@ -207,6 +207,12 @@ void MMNetServer::PacketDelivered()
             freeCachedPackets += 1;
         }
     }
+
+    if (!packetQueue.empty())
+    {
+        MMNetProto::Packet& x = packetQueue.front();
+        Send(x.PlainBytes(), x.Header()->length);
+    }
 }
 
 void MMNetServer::SendPacket(MMNetProto::Packet&& packet)
