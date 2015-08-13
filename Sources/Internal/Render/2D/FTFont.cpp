@@ -634,7 +634,8 @@ void FTInternalFont::Prepare(FT_Vector * advances)
 				FT_Vector  kern;
 				FT_Get_Kerning(face, prevIndex, glyph.index, FT_KERNING_UNFITTED, &kern );
                 // Scale kerning from virtual to physical, because FT_Set_Transform
-                // converts only glyph advances without kerning
+                // converts only glyph advances without kerning.
+                // It used for mobile platforms with different DPI and scale factor (iOS/Android).
                 // See http://www.freetype.org/freetype2/docs/reference/ft2-base_interface.html#FT_Set_Transform
                 prevAdvance->x += static_cast<FT_Pos>(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(static_cast<float32>(kern.x)));
                 prevAdvance->y += static_cast<FT_Pos>(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(static_cast<float32>(kern.y)));
