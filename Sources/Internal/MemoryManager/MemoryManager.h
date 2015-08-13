@@ -62,11 +62,11 @@ class MemoryManager final
     static const uint32 INTERNAL_BLOCK_MARK = 0x55AACC11;
     static const uint32 DEAD_BLOCK_MARK = 0xECECECEC;
     static const size_t BLOCK_ALIGN = 16;
-    static const size_t BACKTRACE_DEPTH = 32;
+    static const uint32 BACKTRACE_DEPTH = 32;
 
 public:
     static const uint32 MAX_ALLOC_POOL_COUNT = 24;
-    static const size_t MAX_TAG_COUNT = 32;
+    static const uint32 MAX_TAG_COUNT = 32;
 
     struct MemoryBlock;
     struct InternalMemoryBlock;
@@ -109,13 +109,13 @@ public:
     uint32 GetSystemMemoryUsage() const;
     uint32 GetTrackedMemoryUsage() const;
 
-    size_t CalcStatConfigSize() const;
-    void GetStatConfig(void* buffer, size_t bufSize) const;
+    uint32 CalcStatConfigSize() const;
+    void GetStatConfig(void* buffer, uint32 bufSize) const;
 
-    size_t CalcCurStatSize() const;
-    void GetCurStat(void* buffer, size_t bufSize) const;
+    uint32 CalcCurStatSize() const;
+    void GetCurStat(uint64 timestamp, void* buffer, uint32 bufSize) const;
 
-    bool GetMemorySnapshot(FILE* file, uint64 curTimestamp, size_t* snapshotSize);
+    bool GetMemorySnapshot(uint64 timestamp, uint32* snapshotSize, FILE* file);
 
 private:
     // Make construtor and destructor private to disallow external creation of MemoryManager
@@ -189,8 +189,8 @@ private:
 
 private:
     // Make the following data members static to allow initialization of predefined values not in constructor
-    static size_t registeredTagCount;                               // Number of registered tags
-    static size_t registeredAllocPoolCount;                         // Number of registered allocation pools including predefined
+    static uint32 registeredTagCount;                               // Number of registered tags
+    static uint32 registeredAllocPoolCount;                         // Number of registered allocation pools including predefined
 
     static MMItemName tagNames[MAX_TAG_COUNT];                // Names of tags
     static MMItemName allocPoolNames[MAX_ALLOC_POOL_COUNT];   // Names of allocation pools

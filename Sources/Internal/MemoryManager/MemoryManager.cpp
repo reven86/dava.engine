@@ -101,8 +101,8 @@ struct MemoryManager::AllocScopeItem
 MMItemName MemoryManager::tagNames[MAX_TAG_COUNT];
 MMItemName MemoryManager::allocPoolNames[MAX_ALLOC_POOL_COUNT];
 
-size_t MemoryManager::registeredTagCount = 0;
-size_t MemoryManager::registeredAllocPoolCount = 0;
+uint32 MemoryManager::registeredTagCount = 0;
+uint32 MemoryManager::registeredAllocPoolCount = 0;
 
 void MemoryManager::RegisterAllocPoolName(uint32 index, const char8* name)
 {
@@ -794,16 +794,16 @@ void MemoryManager::ObtainBacktraceSymbols(const Backtrace* backtrace)
 #endif
 }
 
-size_t MemoryManager::CalcStatConfigSize() const
+uint32 MemoryManager::CalcStatConfigSize() const
 {
     return sizeof(MMStatConfig)
         + sizeof(MMItemName) * registeredAllocPoolCount
         + sizeof(MMItemName) * registeredTagCount;
 }
 
-void MemoryManager::GetStatConfig(void* buffer, size_t bufSize) const
+void MemoryManager::GetStatConfig(void* buffer, uint32 bufSize) const
 {
-    const size_t requiredSize = CalcStatConfigSize();
+    const uint32 requiredSize = CalcStatConfigSize();
     DVASSERT(requiredSize <= bufSize);
 
     MMStatConfig* config = static_cast<MMStatConfig*>(buffer);
@@ -813,80 +813,78 @@ void MemoryManager::GetStatConfig(void* buffer, size_t bufSize) const
     config->bktraceDepth = BACKTRACE_DEPTH;
 
     MMItemName* names = OffsetPointer<MMItemName>(config, sizeof(MMStatConfig));
-    for (size_t i = 0;i < registeredAllocPoolCount;++i, ++names)
+    for (uint32 i = 0;i < registeredAllocPoolCount;++i, ++names)
     {
         *names = allocPoolNames[i];
     }
-    for (size_t i = 0;i < registeredTagCount;++i, ++names)
+    for (uint32 i = 0;i < registeredTagCount;++i, ++names)
     {
         *names = tagNames[i];
     }
 }
 
-size_t MemoryManager::CalcCurStatSize() const
+uint32 MemoryManager::CalcCurStatSize() const
 {
     return sizeof(MMCurStat)
         + sizeof(AllocPoolStat) * registeredAllocPoolCount
         + sizeof(TagAllocStat) * registeredTagCount;
 }
 
-void MemoryManager::GetCurStat(void* buffer, size_t bufSize) const
+void MemoryManager::GetCurStat(uint64 timestamp, void* buffer, uint32 bufSize) const
 {
-    const size_t requiredSize = CalcCurStatSize();
+    const uint32 requiredSize = CalcCurStatSize();
     DVASSERT(requiredSize <= bufSize);
 
     LockType lockAlloc(allocMutex);
     LockType lockStat(statMutex);
 
     MMCurStat* curStat = static_cast<MMCurStat*>(buffer);
-    curStat->timestamp = 0;
+    curStat->timestamp = timestamp;
     curStat->size = static_cast<uint32>(requiredSize);
     curStat->statGeneral = statGeneral;
 
     AllocPoolStat* pools = OffsetPointer<AllocPoolStat>(curStat, sizeof(MMCurStat));
-    for (size_t i = 0;i < registeredAllocPoolCount;++i)
+    for (uint32 i = 0;i < registeredAllocPoolCount;++i)
     {
         pools[i] = statAllocPool[i];
     }
 
     TagAllocStat* tags = OffsetPointer<TagAllocStat>(pools, sizeof(AllocPoolStat) * registeredAllocPoolCount);
-    for (size_t i = 0;i < registeredTagCount;++i)
+    for (uint32 i = 0;i < registeredTagCount;++i)
     {
         tags[i] = statTag[i];
     }
 }
 
-bool MemoryManager::GetMemorySnapshot(FILE* file, uint64 curTimestamp, size_t* snapshotSize)
+bool MemoryManager::GetMemorySnapshot(uint64 timestamp, uint32* snapshotSize, FILE* file)
 {
     assert(file != nullptr && snapshotSize != nullptr);
     
     const size_t BUF_SIZE = 64 * 1024;
     void* buffer = InternalAllocate(BUF_SIZE);
-    const size_t NBUF = 10 * 10 * 3;
     {
         LockType lock(allocMutex);
 
-        const size_t blockCount = statAllocPool[ALLOC_POOL_TOTAL].blockCount;
-        const size_t symbolCount = symbolMap->size();
-        const size_t bktraceCount = bktraceMap->size();
+        const uint32 blockCount = statAllocPool[ALLOC_POOL_TOTAL].blockCount;
+        const uint32 symbolCount = static_cast<uint32>(symbolMap->size());
+        const uint32 bktraceCount = static_cast<uint32>(bktraceMap->size());
 
-        const size_t statSize = CalcCurStatSize();
-        const size_t bktraceSize = sizeof(MMBacktrace) + sizeof(uint64) * BACKTRACE_DEPTH;
-        const size_t size = sizeof(MMSnapshot)
+        const uint32 statSize = CalcCurStatSize();
+        const uint32 bktraceSize = sizeof(MMBacktrace) + sizeof(uint64) * BACKTRACE_DEPTH;
+        const uint32 size = sizeof(MMSnapshot)
                           + statSize
                           + sizeof(MMBlock) * blockCount
                           + sizeof(MMSymbol) * symbolCount
-                          + bktraceSize * bktraceCount
-                          + BUF_SIZE * NBUF;
+                          + bktraceSize * bktraceCount;
         *snapshotSize = size;
 
         MMSnapshot snapshot{};
-        snapshot.timestamp = curTimestamp;
-        snapshot.size = static_cast<uint32>(size);
-        snapshot.statItemSize = static_cast<uint32>(statSize);
-        snapshot.blockCount = static_cast<uint32>(blockCount);
-        snapshot.bktraceCount = static_cast<uint32>(bktraceCount);
-        snapshot.symbolCount = static_cast<uint32>(symbolCount);
+        snapshot.timestamp = timestamp;
+        snapshot.size = size;
+        snapshot.statItemSize = statSize;
+        snapshot.blockCount = blockCount;
+        snapshot.bktraceCount = bktraceCount;
+        snapshot.symbolCount = symbolCount;
         snapshot.bktraceDepth = BACKTRACE_DEPTH;
 
         fwrite(&snapshot, sizeof(MMSnapshot), 1, file);
@@ -894,7 +892,7 @@ bool MemoryManager::GetMemorySnapshot(FILE* file, uint64 curTimestamp, size_t* s
         {
             MMCurStat* curStat = static_cast<MMCurStat*>(buffer);
             Memset(curStat, 0, statSize);
-            curStat->size = static_cast<uint32>(statSize);
+            curStat->size = statSize;
             fwrite(buffer, 1, statSize, file);
         }
         {
