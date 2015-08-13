@@ -26,30 +26,31 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __GLOBAL_PERFORMANCE_TEST_H__
-#define __GLOBAL_PERFORMANCE_TEST_H__
 
-#include "BaseTest.h"
-#include "Tests/Utils/WaypointsInterpolator.h"
+#ifndef __WEBVIEWTEST_TEST_H__
+#define __WEBVIEWTEST_TEST_H__
 
-class GlobalPerformanceTest : public BaseTest
+#include "DAVAEngine.h"
+#include "Infrastructure/BaseScreen.h"
+
+using namespace DAVA;
+
+class WebViewTest : public BaseScreen
 {
 public:
-    GlobalPerformanceTest(const TestParams& params);
+    WebViewTest();
 
 protected:
-
     void LoadResources() override;
     void UnloadResources() override;
-
-    void PerformTestLogic(float32 timeElapsed) override;
+    void Update(float32 delta) override;
 
 private:
-    static const String TEST_NAME;
-    static const String CAMERA_PATH;
+    UIWebView* webView;
+    UIControl* bgStubPanel;
+    bool updateWait;
 
-    WaypointsInterpolator* waypointInterpolator;
-    Camera* camera;
+    void OnVisibleClick(BaseObject* sender, void * data, void * callerData);
 };
 
-#endif
+#endif //__WEBVIEWTEST_TEST_H__
