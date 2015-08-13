@@ -61,7 +61,7 @@ void TCPChannel::OnPacketSent(Net::IChannel* channel, const void* buffer, size_t
     Net::NetService::OnPacketSent(channel, buffer, length);
 
     // archieve has been sent and buffer can be deleted
-    delete [] static_cast<const uint8*>(buffer);
+    buffers.erase(buffer); // temporary solution
 }
     
 
@@ -77,9 +77,11 @@ bool TCPChannel::SendArchieve(KeyedArchive * archieve)
     return SendData(packedData, packedSize);
 }
 
-bool TCPChannel::SendData(const DynamicMemoryFile* buffer)
+bool TCPChannel::SendData(DynamicMemoryFile* buffer)
 {
     DVASSERT(buffer);
+    
+    buffers[buffer->GetData()] = SafeRetain(buffer);
     return SendData(buffer->GetData(), buffer->GetSize());
 }
 

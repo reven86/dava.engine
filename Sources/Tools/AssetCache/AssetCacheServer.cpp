@@ -30,7 +30,7 @@
 
 #include "AssetCache/AssetCacheServer.h"
 #include "AssetCache/AssetCacheConstants.h"
-#include "AssetCache/CachedFiles.h"
+#include "AssetCache/CachedItemValue.h"
 #include "AssetCache/CacheItemKey.h"
 #include "AssetCache/CachePacket.h"
 #include "AssetCache/TCPConnection/TCPConnection.h"
@@ -79,6 +79,7 @@ void Server::Disconnect()
     
 void Server::PacketReceived(DAVA::TCPChannel *tcpChannel, const uint8* packetData, size_t length)
 {
+    Logger::FrameworkDebug("[channel %d] Packet received", tcpChannel);
     if(length && delegate)
     {
         CachePacket packet;
@@ -91,14 +92,16 @@ void Server::PacketReceived(DAVA::TCPChannel *tcpChannel, const uint8* packetDat
             return;
         }
 
+        Logger::FrameworkDebug("Packet type: %d, length %d", packet.type, length);
+
         switch (packet.type)
         {
-        case PACKET_ADD_FILES_REQUEST:
+        case PACKET_ADD_REQUEST:
         {
-            delegate->OnAddToCache(tcpChannel, packet.key, packet.files);
+            delegate->OnAddToCache(tcpChannel, packet.key, std::forward<CachedItemValue>(packet.value));
             break;
         }
-        case PACKET_GET_FILES_REQUEST:
+        case PACKET_GET_REQUEST:
         {
             delegate->OnRequestedFromCache(tcpChannel, packet.key);
             break;
@@ -132,6 +135,7 @@ void Server::PacketReceived(DAVA::TCPChannel *tcpChannel, const uint8* packetDat
     
 void Server::ChannelClosed(TCPChannel *tcpChannel, const char8* message)
 {
+    Logger::FrameworkDebug("[channel %d] closed");
     if(delegate)
     {
         delegate->OnChannelClosed(tcpChannel, message);
@@ -139,12 +143,12 @@ void Server::ChannelClosed(TCPChannel *tcpChannel, const char8* message)
 }
 
     
-bool Server::FilesAddedToCache(DAVA::TCPChannel *tcpChannel, const CacheItemKey &key, bool added)
+bool Server::AddedToCache(DAVA::TCPChannel *tcpChannel, const CacheItemKey &key, bool added)
 {
     if(tcpChannel)
     {
         CachePacket packet;
-        packet.type = PACKET_ADD_FILES_RESPONSE;
+        packet.type = PACKET_ADD_RESPONSE;
         packet.key = key;
         packet.added = added;
         return (packet.Serialize() && tcpChannel->SendData(packet.buffer));
@@ -156,18 +160,20 @@ bool Server::FilesAddedToCache(DAVA::TCPChannel *tcpChannel, const CacheItemKey 
 }
     
     
-bool Server::SendFiles(DAVA::TCPChannel *tcpChannel, const CacheItemKey &key, const CachedFiles &files)
+bool Server::Send(DAVA::TCPChannel *tcpChannel, const CacheItemKey &key, const CachedItemValue &value)
 {
+    Logger::FrameworkDebug("Sending response packet, value size: %d", value.GetSize());
     if (tcpChannel)
     {
         CachePacket packet;
-        packet.type = PACKET_GET_FILES_RESPONSE;
+        packet.type = PACKET_GET_RESPONSE;
         packet.key = key;
-        packet.files = files;
+        packet.value = value;
         return (packet.Serialize() && tcpChannel->SendData(packet.buffer));
     }
     else
     {
+        Logger::FrameworkDebug("Cancel send: no tcp channel");
         return false;
     }
 }

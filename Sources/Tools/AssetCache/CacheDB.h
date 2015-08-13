@@ -44,7 +44,7 @@ class KeyedArchive;
 namespace AssetCache
 {
 
-class CachedFiles;
+class CachedItemValue;
 class ServerCacheEntry;
     
 class CacheDB
@@ -68,7 +68,7 @@ public:
     
     ServerCacheEntry * Get(const CacheItemKey &key);
     
-    void Insert(const CacheItemKey &key, const CachedFiles &files);
+    void Insert(const CacheItemKey &key, const CachedItemValue &value);
     void Remove(const CacheItemKey &key);
     void InvalidateAccessToken(const CacheItemKey &key);
 
@@ -82,7 +82,7 @@ public:
     
 private:
 
-    void Insert(const CacheItemKey &key, const ServerCacheEntry &entry);
+    void Insert(const CacheItemKey &key, ServerCacheEntry &&entry);
     
     FilePath CreateFolderPath(const CacheItemKey &key) const;
     
@@ -92,7 +92,7 @@ private:
     ServerCacheEntry * FindInFullCache(const CacheItemKey &key);
     const ServerCacheEntry * FindInFullCache(const CacheItemKey &key) const;
     
-    void IncreaseUsedSize(const CachedFiles &files);
+    void IncreaseUsedSize(DAVA::uint64 size);
     
     void InsertInFastCache(const CacheItemKey &key, ServerCacheEntry * entry);
     
@@ -113,9 +113,9 @@ private:
     FilePath cacheSettings;             //path to settings
 
     uint64 storageSize = 0;             //maximum cache size
-    uint32 maxItemsInMemory = 0;           //count of items in memory, to use for fast access
+    uint32 maxItemsInMemory = 0;        //count of items in memory, to use for fast access
 
-    uint64 usedSize = 0;                //used by files
+    uint64 usedSize = 0;                //used by CacheItemValues
     uint64 nextItemID = 0;              //item counter, used as last access time token
     
     uint64 autoSaveTimeout = 0;
@@ -124,7 +124,7 @@ private:
     FastCacheMap fastCache;             //runtime, week storage
     CacheMap fullCache;                 //stored on disk, strong storage
     
-	std::atomic<bool> dbStateChanged;    //flag about changes in db
+	std::atomic<bool> dbStateChanged;   //flag about changes in db
 };
     
     

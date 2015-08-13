@@ -33,7 +33,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <memory>
 #include "FileSystem/DynamicMemoryFile.h"
 #include "AssetCache/CacheItemKey.h"
-#include "AssetCache/CachedFiles.h"
+#include "AssetCache/CachedItemValue.h"
 #include "AssetCache/AssetCacheConstants.h"
 
 namespace DAVA {
@@ -48,7 +48,7 @@ struct CachePacket
 
     ePacketID type = PACKET_UNKNOWN;
     CacheItemKey key;
-    CachedFiles files;
+    CachedItemValue value;
     ScopedPtr<DynamicMemoryFile> buffer;
     bool added = false;
 };

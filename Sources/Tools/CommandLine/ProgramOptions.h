@@ -162,13 +162,13 @@ public:
         }
     }
 
-    size_t GetOptionsCount(const char *optionName) const
+	DAVA::uint32 GetOptionsCount(const char *optionName) const
     {
         for(auto & opt: options)
         {
             if(opt.name == optionName)
             {
-                const auto count = opt.values.size();
+				DAVA::uint32 count = opt.values.size();
                 return (count > 0) ? count: 1; //real arguments or default
             }
         }

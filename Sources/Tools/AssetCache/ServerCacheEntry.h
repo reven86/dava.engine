@@ -31,24 +31,32 @@
 #define __DAVAENGINE_ASSET_CACHE_SERVER_CACHE_ENTRY_H__
 
 #include "Base/BaseTypes.h"
+#include "AssetCache/CachedItemValue.h"
 
-#include "AssetCache/CachedFiles.h"
 
-
-namespace DAVA {
+namespace DAVA
+{
 
 class KeyedArchive;
 
-namespace AssetCache {
+namespace AssetCache
+{
 
 class ServerCacheEntry
 {
 public:
     
     ServerCacheEntry();
-    explicit ServerCacheEntry(const CachedFiles &files);
+    explicit ServerCacheEntry(const CachedItemValue &value);
+    
+    ServerCacheEntry(const ServerCacheEntry &right) = delete;
+    ServerCacheEntry(ServerCacheEntry &&right);
+    
     virtual ~ServerCacheEntry() = default;
 
+    ServerCacheEntry & operator=(const ServerCacheEntry &right) = delete;
+    ServerCacheEntry & operator=(ServerCacheEntry &&right);
+    
     bool operator == (const ServerCacheEntry &right) const;
 
     void Serialize(KeyedArchive * archieve) const;
@@ -57,13 +65,13 @@ public:
     void InvalidateAccesToken(uint64 accessID);
     const uint64 GetAccesID() const;
     
-    const CachedFiles & GetFiles() const;
+    const CachedItemValue & GetValue() const;
     
-    void Load();
-    void Unload();
+    void Fetch(const FilePath & folder);
+    void Free();
     
 private:
-    CachedFiles files;
+    CachedItemValue value;
     
 private:
     uint64 accessID = 0;
@@ -82,9 +90,9 @@ inline const uint64 ServerCacheEntry::GetAccesID() const
 }
 
 
-inline const CachedFiles & ServerCacheEntry::GetFiles() const
+inline const CachedItemValue & ServerCacheEntry::GetValue() const
 {
-    return files;
+	return value;
 }
 
     

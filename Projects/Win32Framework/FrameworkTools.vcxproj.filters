@@ -128,9 +128,6 @@
     <ClCompile Include="..\..\Sources\Tools\AssetCache\CacheDB.cpp">
       <Filter>Source Files\AssetCache</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Tools\AssetCache\CachedFiles.cpp">
-      <Filter>Source Files\AssetCache</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Tools\AssetCache\ServerCacheEntry.cpp">
       <Filter>Source Files\AssetCache</Filter>
     </ClCompile>

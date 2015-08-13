@@ -37,7 +37,7 @@ public:
     
     GetRequest();
     
-    void OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey &key, const DAVA::AssetCache::CachedFiles &files) override;
+    void OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey &key, DAVA::AssetCache::CachedItemValue &&value) override;
 
 protected:
     int SendRequest() override;

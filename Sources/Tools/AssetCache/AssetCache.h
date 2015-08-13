@@ -36,7 +36,7 @@
 #include "AssetCache/AssetCacheServer.h"
 
 #include "AssetCache/CacheItemKey.h"
-#include "AssetCache/CachedFiles.h"
+#include "AssetCache/CachedItemValue.h"
 
 #include "AssetCache/ServerCacheEntry.h"
 

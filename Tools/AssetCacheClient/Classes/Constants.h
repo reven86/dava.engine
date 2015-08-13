@@ -41,6 +41,7 @@ namespace AssetCacheClientConstants
         EXIT_TIMEOUT,
         EXIT_CANNOT_CONNECT,
         EXIT_SERVER_ERROR,
+		EXIT_READ_FILES
     };
 };
 

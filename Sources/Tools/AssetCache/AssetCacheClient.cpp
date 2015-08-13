@@ -30,7 +30,7 @@
 
 #include "AssetCache/AssetCacheClient.h"
 #include "AssetCache/AssetCacheConstants.h"
-#include "AssetCache/CachedFiles.h"
+#include "AssetCache/CachedItemValue.h"
 #include "AssetCache/CacheItemKey.h"
 #include "AssetCache/CachePacket.h"
 #include "AssetCache/TCPConnection/TCPConnection.h"
@@ -70,14 +70,14 @@ void Client::Disconnect()
 }
     
     
-bool Client::AddToCache(const CacheItemKey &key, const CachedFiles &files)
+bool Client::AddToCache(const CacheItemKey &key, const CachedItemValue &value)
 {
     if(openedChannel)
     {
         CachePacket packet;
-        packet.type = PACKET_ADD_FILES_REQUEST;
+        packet.type = PACKET_ADD_REQUEST;
         packet.key = key;
-        packet.files = files;
+        packet.value = value;
         return (packet.Serialize() && openedChannel->SendData(packet.buffer));
     }
     else
@@ -91,7 +91,7 @@ bool Client::RequestFromCache(const CacheItemKey &key)
     if(openedChannel)
     {
         CachePacket packet;
-        packet.type = PACKET_GET_FILES_REQUEST;
+        packet.type = PACKET_GET_REQUEST;
         packet.key = key;
         return (packet.Serialize() && openedChannel->SendData(packet.buffer));
     }
@@ -145,16 +145,16 @@ void Client::PacketReceived(DAVA::TCPChannel *tcpChannel, const uint8* packetDat
 
         switch (packet.type)
         {
-        case PACKET_ADD_FILES_RESPONSE:
+        case PACKET_ADD_RESPONSE:
         {
             if (listener)
                 listener->OnAddedToCache(packet.key, packet.added);
             return;
         }
-        case PACKET_GET_FILES_RESPONSE:
+        case PACKET_GET_RESPONSE:
         {
             if (listener)
-                listener->OnReceivedFromCache(packet.key, packet.files);
+                listener->OnReceivedFromCache(packet.key, std::forward<CachedItemValue>(packet.value));
             break;
         }
         default:

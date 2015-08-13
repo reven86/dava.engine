@@ -53,13 +53,13 @@ bool CachePacket::Serialize()
     if (file->Write(key.data(), key.size()) != key.size())
         return false;
 
-    if (type == PACKET_ADD_FILES_REQUEST || type == PACKET_GET_FILES_RESPONSE)
+    if (type == PACKET_ADD_REQUEST || type == PACKET_GET_RESPONSE)
     {
-        if (files.Serialize(buffer) == false)
+        if (value.Serialize(buffer) == false)
             return false;
     }
 
-    if (type == PACKET_ADD_FILES_RESPONSE)
+    if (type == PACKET_ADD_RESPONSE)
     {
         if (file->Write(&added) != sizeof(added))
             return false;
@@ -106,13 +106,13 @@ bool CachePacket::Deserialize()
     if (file->Read(key.data(), key.size()) != key.size())
         return false;
 
-    if (type == PACKET_ADD_FILES_REQUEST || type == PACKET_GET_FILES_RESPONSE)
+    if (type == PACKET_ADD_REQUEST || type == PACKET_GET_RESPONSE)
     {
-        if (files.Deserialize(file) == false)
+        if (value.Deserialize(file) == false)
             return false;
     }
 
-    if (type == PACKET_ADD_FILES_RESPONSE)
+    if (type == PACKET_ADD_RESPONSE)
     {
         if (file->Read(&added) != sizeof(added))
             return false;

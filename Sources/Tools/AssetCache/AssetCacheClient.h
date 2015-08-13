@@ -43,7 +43,7 @@ class TCPClient;
 namespace AssetCache
 {
  
-class CachedFiles;
+class CachedItemValue;
     
 class ClientListener
 {
@@ -51,7 +51,7 @@ public:
     
     virtual void OnAssetClientStateChanged() {};
     virtual void OnAddedToCache(const CacheItemKey &key, bool added) {};
-    virtual void OnReceivedFromCache(const CacheItemKey &key, const CachedFiles &files) {};
+	virtual void OnReceivedFromCache(const CacheItemKey &key, CachedItemValue &&value) {};
 };
 
 class Client: public DAVA::TCPChannelListener
@@ -68,7 +68,7 @@ public:
 
     bool IsConnected();
     
-    bool AddToCache(const CacheItemKey &key, const CachedFiles &files);
+	bool AddToCache(const CacheItemKey &key, const CachedItemValue &value);
     bool RequestFromCache(const CacheItemKey &key);
     bool WarmingUp(const CacheItemKey &key);
     

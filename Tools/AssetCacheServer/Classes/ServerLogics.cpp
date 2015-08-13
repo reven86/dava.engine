@@ -44,9 +44,9 @@ ServerLogics::ServerTask::ServerTask(const DAVA::AssetCache::CacheItemKey &_key,
 {
 }
 
-ServerLogics::ServerTask::ServerTask(const DAVA::AssetCache::CacheItemKey &_key, const DAVA::AssetCache::CachedFiles & _files, DAVA::AssetCache::ePacketID _request)
+ServerLogics::ServerTask::ServerTask(const DAVA::AssetCache::CacheItemKey &_key, DAVA::AssetCache::CachedItemValue &&_value, DAVA::AssetCache::ePacketID _request)
     : key(_key)
-    , files(_files)
+    , value(std::move(_value))
     , request(_request)
 {
 }
@@ -60,15 +60,15 @@ void ServerLogics::Init(DAVA::AssetCache::Server *_server, DAVA::AssetCache::Cli
     dataBase = _dataBase;
 }
 
-void ServerLogics::OnAddToCache(DAVA::TCPChannel *tcpChannel, const DAVA::AssetCache::CacheItemKey &key, const DAVA::AssetCache::CachedFiles &files)
+void ServerLogics::OnAddToCache(DAVA::TCPChannel *tcpChannel, const DAVA::AssetCache::CacheItemKey &key, DAVA::AssetCache::CachedItemValue &&value)
 {
     if((nullptr != server) && (nullptr != tcpChannel))
     {
-        dataBase->Insert(key, files);
-        server->FilesAddedToCache(tcpChannel, key, true);
+        dataBase->Insert(key, value);
+        server->AddedToCache(tcpChannel, key, true);
 
         {   //add task for lazy sending of files;
-            serverTasks.emplace_back(ServerTask(key, files, DAVA::AssetCache::PACKET_ADD_FILES_REQUEST));
+			serverTasks.emplace_back(ServerTask(key, std::forward<DAVA::AssetCache::CachedItemValue>(value), DAVA::AssetCache::PACKET_ADD_REQUEST));
         }
     }
 }
@@ -80,7 +80,7 @@ void ServerLogics::OnRequestedFromCache(DAVA::TCPChannel *tcpChannel, const DAVA
         auto entry = dataBase->Get(key);
         if(nullptr != entry)
         {   // Found in db.
-            server->SendFiles(tcpChannel, key, entry->GetFiles());
+			server->Send(tcpChannel, key, entry->GetValue());
             
             {   //add task for lazy sending of files;
                 serverTasks.emplace_back(ServerTask(key, DAVA::AssetCache::PACKET_WARMING_UP_REQUEST));
@@ -88,11 +88,11 @@ void ServerLogics::OnRequestedFromCache(DAVA::TCPChannel *tcpChannel, const DAVA
         }
         else if (client->RequestFromCache(key))
         {   // Not found in db. Ask from remote cache.
-            waitedRequests.emplace_back(RequestDescription(tcpChannel, key, DAVA::AssetCache::PACKET_GET_FILES_REQUEST));
+            waitedRequests.emplace_back(RequestDescription(tcpChannel, key, DAVA::AssetCache::PACKET_GET_REQUEST));
         }
         else
         {   // Not found in db. Remote server isn't connected.
-            server->SendFiles(tcpChannel, key, DAVA::AssetCache::CachedFiles());
+			server->Send(tcpChannel, key, DAVA::AssetCache::CachedItemValue());
         }
     }
 }
@@ -121,18 +121,18 @@ void ServerLogics::OnChannelClosed(DAVA::TCPChannel *tcpChannel, const DAVA::cha
     }
 }
 
-void ServerLogics::OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey &key, const DAVA::AssetCache::CachedFiles &files)
+void ServerLogics::OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey &key, DAVA::AssetCache::CachedItemValue &&value)
 {
-    if(nullptr != dataBase && files.GetFiles().size() != 0)
+    if(nullptr != dataBase && !value.IsEmtpy())
     {
-        dataBase->Insert(key, files);
+        dataBase->Insert(key, value);
     }
 
     if((nullptr != server) && waitedRequests.size())
     {
         auto iter = std::find_if(waitedRequests.begin(), waitedRequests.end(), [&key](const RequestDescription& description) -> bool
                                  {
-                                     return (description.key == key) && (description.request == DAVA::AssetCache::PACKET_GET_FILES_REQUEST);
+                                     return (description.key == key) && (description.request == DAVA::AssetCache::PACKET_GET_REQUEST);
                                  });
         
         if(iter != waitedRequests.end())
@@ -140,7 +140,7 @@ void ServerLogics::OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey &key
             RequestDescription &description = (*iter);
             if(nullptr != description.clientChannel)
             {
-                server->SendFiles(description.clientChannel, key, files);
+                server->Send(description.clientChannel, key, value);
             }
 			waitedRequests.erase(iter);
         }
@@ -159,8 +159,8 @@ void ServerLogics::ProcessServerTasks()
         {
             switch (task.request)
             {
-                case DAVA::AssetCache::PACKET_ADD_FILES_REQUEST:
-                    client->AddToCache(task.key, task.files);
+                case DAVA::AssetCache::PACKET_ADD_REQUEST:
+                    client->AddToCache(task.key, task.value);
                     break;
 
                 case DAVA::AssetCache::PACKET_WARMING_UP_REQUEST:

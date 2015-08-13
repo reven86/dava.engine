@@ -32,6 +32,7 @@
 
 #include "Base/BaseTypes.h"
 #include "Network/NetService.h"
+#include "Base/ScopedPtr.h"
 
 namespace DAVA {
 
@@ -58,7 +59,7 @@ public:
     ~TCPChannel() override;
 
     
-    bool SendData(const DynamicMemoryFile* buffer);
+    bool SendData(DynamicMemoryFile* buffer);
     bool SendData(const Vector<uint8>& data);
     bool SendData(const uint8 * data, const size_t dataSize);
     void SetListener(TCPChannelListener * delegate);
@@ -80,6 +81,7 @@ public:
 protected:
     
     TCPChannelListener *listener = nullptr;
+    Map<const void*,DynamicMemoryFile*> buffers;
 };
 
 
