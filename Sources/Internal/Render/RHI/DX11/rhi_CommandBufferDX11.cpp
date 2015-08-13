@@ -26,7 +26,7 @@
     #include <vector>
 
     
-    #include <d3d9.h>
+//    #include <d3d9.h>
 
 
     #define RHI__USE_DX11_RENDER_THREAD         0
@@ -721,10 +721,10 @@ dx11_CommandBuffer_SetMarker( Handle cmdBuf, const char* text )
     {
         cb->contextAnnotation->SetMarker( txt );
     }
-    else
-    {
-        ::D3DPERF_SetMarker( D3DCOLOR_ARGB(0xFF,0x40,0x40,0x80), txt );
-    }
+//    else
+//    {
+//        ::D3DPERF_SetMarker( D3DCOLOR_ARGB(0xFF,0x40,0x40,0x80), txt );
+//    }
 }
 
 
