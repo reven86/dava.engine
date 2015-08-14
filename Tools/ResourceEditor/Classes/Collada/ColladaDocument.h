@@ -56,6 +56,7 @@ public:
 	
 	bool	IsEmptyNode(ColladaSceneNode * node);
 	
+    void    SaveSC2( const FilePath & scenePath, const String & sceneName );
 	void	SaveScene(const FilePath & scenePath, const String & sceneName);
     String  GetTextureName(const FilePath & scenePath, ColladaTexture * texture);
 
@@ -78,6 +79,10 @@ public:
 	
 	void	GetAnimationTimeInfo(FCDocument * document, float32 & timeStart, float32 & timeEnd);
 	
+private:
+    void    GetMeshesFromCollada(Scene * const scene);
+    
+public:
 	FILE	* sceneFP;
 	ColladaScene *				colladaScene;
 private:

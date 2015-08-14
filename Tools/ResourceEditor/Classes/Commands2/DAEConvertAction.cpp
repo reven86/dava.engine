@@ -46,11 +46,10 @@ void DAEConvertAction::Redo()
 {
 	if(daePath.Exists() && daePath.IsEqualToExtension(".dae"))
 	{
-		eColladaErrorCodes code = ConvertDaeToSce(daePath);
+		eColladaErrorCodes code = ConvertDaeToSc2(daePath);
 		if(code == COLLADA_OK)
 		{
-            ConvertFromSceToSc2();
-			FileSystem::Instance()->DeleteFile(FilePath::CreateWithNewExtension(daePath, ".sce"));
+            return;
         }
 		else if(code == COLLADA_ERROR_OF_ROOT_NODE)
 		{

@@ -29,6 +29,7 @@
 
 #include "stdafx.h"
 #include "ColladaDocument.h"
+#include "ColladaPolygonGroup.h"
 #include "Scene3D/SceneFile.h"
 #include "TexturePacker/CommandLineParser.h"
 
@@ -248,6 +249,114 @@ String ColladaDocument::GetTextureName(const FilePath & scenePath, ColladaTextur
         }
     }
     return texPathname.GetRelativePathname(scenePath);
+}
+
+void ColladaDocument::GetMeshesFromCollada(Scene * const scene)
+{
+    RenderComponent * davaRenderComponent = new RenderComponent();
+    
+    ScopedPtr<NMaterial> davaMaterialParent(NMaterial::CreateMaterial(FastName("Mesh Material"), NMaterialName::TEXTURED_OPAQUE, NMaterial::DEFAULT_QUALITY_NAME));
+    
+    for (uint32 staticMeshIndex = 0; staticMeshIndex < header.staticMeshCount; ++staticMeshIndex)
+    {
+        Entity * davaEntity = new Entity();
+        ScopedPtr<Mesh> davaMesh(new Mesh());
+        
+        ColladaMesh * mesh = colladaScene->colladaMeshes[staticMeshIndex];
+        
+        davaEntity->SetName(FastName(mesh->name.c_str()));
+        
+        uint32 polygonGroupsInMesh = mesh->GetPolygonGroupCount();
+        for (uint32 i = 0; i < polygonGroupsInMesh; ++i)
+        {
+            ColladaPolygonGroup *colladaPolygon = mesh->GetPolygonGroup(i);
+            auto vertexFormat = colladaPolygon->GetVertexFormat();
+            auto vertices = colladaPolygon->GetVertices();
+            auto indecies = colladaPolygon->GetIndices();
+            size_t indexCount = indecies.size();
+            size_t vertexCount = vertices.size();
+            
+            PolygonGroup * davaPolygon = new PolygonGroup();
+            
+            davaPolygon->AllocateData(vertexFormat, vertexCount, indexCount);
+            
+            for(uint32 indexNo = 0; indexNo < indexCount; ++indexNo)
+            {
+                davaPolygon->indexArray[indexNo] = indecies[indexNo];
+            }
+            
+            for (uint32 vertexNo = 0; vertexNo < vertexCount; ++vertexNo)
+            {
+                auto & vertex = vertices[vertexNo];
+                
+                if (vertexFormat & EVF_VERTEX)
+                {
+                    davaPolygon->SetCoord(vertexNo, vertex.position);
+                }
+                if (vertexFormat & EVF_NORMAL)
+                {
+                    davaPolygon->SetNormal(vertexNo, vertex.normal);
+                }
+                if (vertexFormat & EVF_TANGENT)
+                {
+                    davaPolygon->SetTangent(vertexNo, vertex.tangent);
+                }
+                if (vertexFormat & EVF_BINORMAL)
+                {
+                    davaPolygon->SetBinormal(vertexNo, vertex.binormal);
+                }
+                if (vertexFormat & EVF_TEXCOORD0)
+                {
+                    davaPolygon->SetTexcoord(0, vertexNo, vertex.texCoords[0]);
+                }
+                if (vertexFormat & EVF_TEXCOORD1)
+                {
+                    davaPolygon->SetTexcoord(1, vertexNo, vertex.texCoords[1]);
+                }
+                if (vertexFormat & EVF_TEXCOORD2)
+                {
+                    davaPolygon->SetTexcoord(2, vertexNo, vertex.texCoords[2]);
+                }
+                if (vertexFormat & EVF_TEXCOORD3)
+                {
+                    davaPolygon->SetTexcoord(3, vertexNo, vertex.texCoords[3]);
+                }
+            }
+            
+            davaPolygon->triangleCount = colladaPolygon->GetTriangleCount();
+            
+            davaPolygon->BuildBuffers();
+            davaPolygon->RecalcAABBox();
+            
+            ScopedPtr<NMaterial> davaMaterial(NMaterial::CreateMaterialInstance());
+            auto materialSemantic = colladaPolygon->GetMaterialSemantic();
+            davaMaterial->SetMaterialName(FastName(materialSemantic.c_str()));
+            davaMaterial->SetParent(davaMaterialParent);
+            
+            davaMesh->AddPolygonGroup(davaPolygon, davaMaterial);
+        }
+        
+        davaRenderComponent->SetRenderObject(davaMesh);
+        davaEntity->AddComponent(davaRenderComponent);
+
+        scene->AddNode(davaEntity);
+    }
+}
+
+void ColladaDocument::SaveSC2(const FilePath & scenePath, const String & sceneName)
+{
+    header.materialCount = (uint32)colladaScene->colladaMaterials.size();
+    header.staticMeshCount = (uint32)colladaScene->colladaMeshes.size();
+    header.animatedMeshCount = (uint32)colladaScene->colladaAnimatedMeshes.size();
+    header.cameraCount = (uint32)colladaScene->colladaCameras.size();
+    header.nodeAnimationsCount = (uint32)colladaScene->colladaAnimations.size();
+    header.lightCount = (uint32)colladaScene->colladaLights.size();
+    
+    ScopedPtr<Scene> scene(new Scene());
+    
+    GetMeshesFromCollada(scene);
+
+    scene->SaveScene(scenePath + sceneName);
 }
 
 void ColladaDocument::SaveScene( const FilePath & scenePath, const String & sceneName )
