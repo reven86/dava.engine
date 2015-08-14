@@ -27,41 +27,44 @@
  =====================================================================================*/
 
 
-#ifndef __QUICKED_STYLE_SHEET_TRANSITIONS_SECTION_H__
-#define __QUICKED_STYLE_SHEET_TRANSITIONS_SECTION_H__
+#include "AddRemoveStylePropertyCommand.h"
 
-#include "Model/ControlProperties/AbstractProperty.h"
+#include "Model/PackageHierarchy/PackageNode.h"
+#include "Model/PackageHierarchy/StyleSheetNode.h"
+#include "Model/ControlProperties/StyleSheetProperty.h"
+#include "Model/ControlProperties/StyleSheetRootProperty.h"
+#include "UI/Components/UIComponent.h"
 
-class StyleSheetTransition;
+using namespace DAVA;
 
-class StyleSheetNode;
-
-namespace DAVA
+AddRemoveStylePropertyCommand::AddRemoveStylePropertyCommand(PackageNode *aRoot, StyleSheetNode *aNode, StyleSheetProperty *aProperty, bool anAdd, QUndoCommand *parent)
+    : QUndoCommand(parent)
+    , root(SafeRetain(aRoot))
+    , node(SafeRetain(aNode))
+    , property(SafeRetain(aProperty))
+    , add(anAdd)
 {
-    class UIControl;
 }
 
-class StyleSheetTransitionsSection : public AbstractProperty
+AddRemoveStylePropertyCommand::~AddRemoveStylePropertyCommand()
 {
-public:
-    StyleSheetTransitionsSection(StyleSheetNode *styleSheet);
-protected:
-    virtual ~StyleSheetTransitionsSection();
-    
-public:
-    int GetCount() const override;
-    AbstractProperty *GetProperty(int index) const override;
-    
-    void Accept(PropertyVisitor *visitor) override;
-    bool IsReadOnly() const override;
-    
-    const DAVA::String &GetName() const override;
-    ePropertyType GetType() const override;
-    
-    
-private:
-    StyleSheetNode *styleSheet; // weak
-    DAVA::Vector<StyleSheetTransition*> transitions;
-};
+    SafeRelease(root);
+    SafeRelease(node);
+    SafeRelease(property);
+}
 
-#endif // __QUICKED_STYLE_SHEET_TRANSITIONS_SECTION_H__
+void AddRemoveStylePropertyCommand::redo()
+{
+    if (add)
+        root->AddStyleProperty(node, property);
+    else
+        root->RemoveStyleProperty(node, property);
+}
+
+void AddRemoveStylePropertyCommand::undo()
+{
+    if (add)
+        root->RemoveStyleProperty(node, property);
+    else
+        root->AddStyleProperty(node, property);
+}

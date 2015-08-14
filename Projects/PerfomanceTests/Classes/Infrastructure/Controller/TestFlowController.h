@@ -31,7 +31,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Tests/BaseTest.h"
 
-class TestFlowController : public BaseObject
+class TestFlowController
 {
 public:
     
@@ -43,10 +43,10 @@ public:
     virtual void BeginFrame() = 0;
     virtual void EndFrame() = 0;
     
-protected:
-
     virtual ~TestFlowController() {};
-
+    
+protected:
+    
     Vector<BaseTest*> testChain;
 };
 

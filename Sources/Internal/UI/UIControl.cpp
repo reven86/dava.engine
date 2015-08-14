@@ -118,8 +118,6 @@ namespace DAVA
 
 
         SetRect(rect, rectInAbsoluteCoordinates);
-
-        initialState = STATE_NORMAL;
     }
 
     UIControl::~UIControl()
@@ -1077,12 +1075,12 @@ namespace DAVA
         inputEnabled = srcControl->inputEnabled;
         clipContents = srcControl->clipContents;
 
-        initialState = srcControl->GetInitialState();
         drawPivotPointMode = srcControl->drawPivotPointMode;
         debugDrawColor = srcControl->debugDrawColor;
         debugDrawEnabled = srcControl->debugDrawEnabled;
 
         classes = srcControl->classes;
+        localProperties = srcControl->localProperties;
         styleSheetRebuildNeeded = srcControl->styleSheetRebuildNeeded;
         styleSheetInitialized = false;
 
@@ -1913,11 +1911,6 @@ namespace DAVA
         {
             node->Set("tag", GetTag());
         }
-        // Initial state.
-        if (baseControl->GetInitialState() != GetInitialState())
-        {
-            node->Set("initialState", GetInitialState());
-        }
 
         // Anchor data
         // Left Align
@@ -2076,14 +2069,6 @@ namespace DAVA
         if (tagNode)
         {
             SetTag(tagNode->AsInt32());
-        }
-
-        const YamlNode * initialStateNode = node->Get("initialState");
-        if (initialStateNode)
-        {
-            int32 newInitialState = initialStateNode->AsInt32();
-            SetInitialState(newInitialState);
-            SetState(newInitialState);
         }
 
         const YamlNode * leftAlignNode = node->Get("leftAlign");
@@ -2437,16 +2422,6 @@ namespace DAVA
         node->Set("type", nodeTypeName);
     }
 
-    int32 UIControl::GetInitialState() const
-    {
-        return initialState;
-    }
-
-    void UIControl::SetInitialState(int32 newState)
-    {
-        initialState = newState;
-    }
-
     void UIControl::RegisterInputProcessor()
     {
         inputProcessorsCount++;
@@ -2790,6 +2765,11 @@ namespace DAVA
     const UIStyleSheetPropertySet& UIControl::GetLocalPropertySet() const
     {
         return localProperties;
+    }
+
+    void UIControl::SetLocalPropertySet(const UIStyleSheetPropertySet &set)
+    {
+        localProperties = set;
     }
 
     void UIControl::SetPropertyLocalFlag(uint32 propertyIndex, bool value)

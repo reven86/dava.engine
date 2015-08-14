@@ -74,7 +74,9 @@ private:
 private:
     bool isRtl = false;
     bool dirty = true;
+
     DAVA::Set<UIControl*> changedControls;
+    DAVA::int32 indexOfSizeProperty;
 };
 
 

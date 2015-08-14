@@ -62,6 +62,7 @@ JniWebView::JniWebView()
 	setBackgroundTransparency = jniWebView.GetStaticMethod<void, jint, jboolean>("SetBackgroundTransparency");
 	setRenderToTexture = jniWebView.GetStaticMethod<void, jint, jboolean>("setRenderToTexture");
 	isRenderToTexture = jniWebView.GetStaticMethod<jboolean, jint>("isRenderToTexture");
+	willDraw = jniWebView.GetStaticMethod<void, jint>("WillDraw");
 }
 
 void JniWebView::Initialize(WebViewControl* control, int id, const Rect& controlRect)
@@ -205,6 +206,11 @@ void JniWebView::SetRenderToTexture(int id, bool renderToTexture)
 bool JniWebView::IsRenderToTexture(int id)
 {
     return isRenderToTexture(id) == 0 ? false : true;
+}
+
+void JniWebView::WillDraw(int id)
+{
+	willDraw(id);
 }
 
 IUIWebViewDelegate::eAction JniWebView::URLChanged(int id, const String& newURL, bool isRedirectedByMouseClick)
@@ -372,6 +378,12 @@ bool WebViewControl::IsRenderToTexture() const
 {
     JniWebView jniWebView;
     return jniWebView.IsRenderToTexture(webViewId);
+}
+
+void WebViewControl::WillDraw()
+{
+	JniWebView jniWebView;
+	jniWebView.WillDraw(webViewId);
 }
 
 }//namespace DAVA

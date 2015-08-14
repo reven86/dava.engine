@@ -6,11 +6,14 @@
 #include "UISizePolicyComponent.h"
 
 #include "UI/UIControl.h"
+#include "UI/Styles/UIStyleSheetPropertyDataBase.h"
 
 namespace DAVA
 {
 UILayoutSystem::UILayoutSystem()
+    : indexOfSizeProperty(-1)
 {
+    indexOfSizeProperty = UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyIndex(FastName("size"));
 }
 
 UILayoutSystem::~UILayoutSystem()
@@ -52,6 +55,7 @@ void UILayoutSystem::ApplyLayout(UIControl *control)
     
     for (UIControl *control : changedControls)
     {
+        control->SetPropertyLocalFlag(indexOfSizeProperty, true);
         control->OnSizeChanged();
     }
     changedControls.clear();

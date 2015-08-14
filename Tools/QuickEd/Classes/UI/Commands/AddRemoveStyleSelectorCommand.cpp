@@ -27,64 +27,62 @@
  =====================================================================================*/
 
 
-#include "StyleSheetPropertiesSection.h"
+#include "AddRemoveStyleSelectorCommand.h"
 
-#include "StyleSheetProperty.h"
-#include "PropertyVisitor.h"
-#include "../PackageHierarchy/StyleSheetNode.h"
-#include "UI/Styles/UIStyleSheet.h"
+#include "Model/PackageHierarchy/PackageNode.h"
+#include "Model/PackageHierarchy/StyleSheetNode.h"
+#include "Model/ControlProperties/StyleSheetSelectorProperty.h"
+#include "Model/ControlProperties/StyleSheetRootProperty.h"
+#include "Model/ControlProperties/SectionProperty.h"
+#include "UI/Components/UIComponent.h"
 
 using namespace DAVA;
 
-StyleSheetPropertiesSection::StyleSheetPropertiesSection(StyleSheetNode *aStyleSheet)
-    : styleSheet(aStyleSheet) // weak
+AddRemoveStyleSelectorCommand::AddRemoveStyleSelectorCommand(PackageNode *aRoot, StyleSheetNode *aNode, StyleSheetSelectorProperty *aProperty, bool anAdd, QUndoCommand *parent)
+    : QUndoCommand(parent)
+    , root(SafeRetain(aRoot))
+    , node(SafeRetain(aNode))
+    , property(SafeRetain(aProperty))
+    , add(anAdd)
+    , index(-1)
 {
-    UIStyleSheet *ss = styleSheet->GetStyleSheet();
-    const UIStyleSheetPropertyTable *table = ss->GetPropertyTable();
-    const Vector<UIStyleSheetProperty> &tableProperties = table->GetProperties();
-    for (auto &pair : tableProperties)
+    if (add)
     {
-        StyleSheetProperty *prop = new StyleSheetProperty(styleSheet, pair.propertyIndex);
-        prop->SetParent(this);
-        properties.push_back(prop);
+        index = aNode->GetRootProperty()->GetSelectors()->GetCount();
+    }
+    else
+    {
+        index = aNode->GetRootProperty()->GetSelectors()->GetIndex(property);
+    }
+    
+    DVASSERT(index != -1);
+}
+
+AddRemoveStyleSelectorCommand::~AddRemoveStyleSelectorCommand()
+{
+    SafeRelease(root);
+    SafeRelease(node);
+    SafeRelease(property);
+}
+
+void AddRemoveStyleSelectorCommand::redo()
+{
+    if (index != -1)
+    {
+        if (add)
+            root->InsertSelector(node, property, index);
+        else
+            root->RemoveSelector(node, property);
     }
 }
 
-StyleSheetPropertiesSection::~StyleSheetPropertiesSection()
+void AddRemoveStyleSelectorCommand::undo()
 {
-    styleSheet = nullptr; //weak
-    for (StyleSheetProperty *prop : properties)
-        SafeRelease(prop);
-    properties.clear();
-}
-
-int StyleSheetPropertiesSection::GetCount() const
-{
-    return static_cast<int>(properties.size());
-}
-
-AbstractProperty *StyleSheetPropertiesSection::GetProperty(int index) const
-{
-    return properties[index];
-}
-
-void StyleSheetPropertiesSection::Accept(PropertyVisitor *visitor)
-{
-    visitor->VisitStyleSheetPropertiesSection(this);
-}
-
-bool StyleSheetPropertiesSection::IsReadOnly() const
-{
-    return true;
-}
-
-const DAVA::String &StyleSheetPropertiesSection::GetName() const
-{
-    static String name = "Properties";
-    return name;
-}
-
-AbstractProperty::ePropertyType StyleSheetPropertiesSection::GetType() const
-{
-    return TYPE_HEADER;
+    if (index != -1)
+    {
+        if (add)
+            root->RemoveSelector(node, property);
+        else
+            root->InsertSelector(node, property, index);
+    }
 }
