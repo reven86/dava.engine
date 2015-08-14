@@ -50,6 +50,7 @@
 namespace DAVA
 {
 
+class File;
 class Thread;
 class BaseObject;
 
@@ -115,7 +116,7 @@ public:
     uint32 CalcCurStatSize() const;
     void GetCurStat(uint64 timestamp, void* buffer, uint32 bufSize) const;
 
-    bool GetMemorySnapshot(uint64 timestamp, uint32* snapshotSize, FILE* file);
+    bool GetMemorySnapshot(uint64 timestamp, File* file, uint32* snapshotSize = nullptr);
 
 private:
     // Make construtor and destructor private to disallow external creation of MemoryManager

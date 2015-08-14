@@ -50,6 +50,8 @@
 #include "Concurrency/Thread.h"
 #include "Math/MathHelpers.h"
 
+#include "FileSystem/File.h"
+
 #include "MemoryManager/MallocHook.h"
 #include "MemoryManager/MemoryManager.h"
 
@@ -856,12 +858,21 @@ void MemoryManager::GetCurStat(uint64 timestamp, void* buffer, uint32 bufSize) c
     }
 }
 
-bool MemoryManager::GetMemorySnapshot(uint64 timestamp, uint32* snapshotSize, FILE* file)
+bool MemoryManager::GetMemorySnapshot(uint64 timestamp, File* file, uint32* snapshotSize)
 {
-    assert(file != nullptr && snapshotSize != nullptr);
+    assert(file != nullptr);
     
+#if defined(__DAVAENGINE_WINDOWS__)
+    // Dirty hack on Win32 to force file internal buffer allocation to exclude
+    // memory allocations under allocMutex
+    uint8 dummy[1] = {0};
+    file->Write(dummy);
+    file->Seek(0, File::SEEK_FROM_START);
+#endif
+
     const size_t BUF_SIZE = 64 * 1024;
-    void* buffer = InternalAllocate(BUF_SIZE);
+    std::vector<uint8, InternalAllocator<uint8>> v(BUF_SIZE);
+    void* buffer = static_cast<void*>(&*v.begin());
     {
         LockType lock(allocMutex);
 
@@ -876,7 +887,10 @@ bool MemoryManager::GetMemorySnapshot(uint64 timestamp, uint32* snapshotSize, FI
                           + sizeof(MMBlock) * blockCount
                           + sizeof(MMSymbol) * symbolCount
                           + bktraceSize * bktraceCount;
-        *snapshotSize = size;
+        if (snapshotSize != nullptr)
+        {
+            *snapshotSize = size;
+        }
 
         MMSnapshot snapshot{};
         snapshot.timestamp = timestamp;
@@ -887,13 +901,15 @@ bool MemoryManager::GetMemorySnapshot(uint64 timestamp, uint32* snapshotSize, FI
         snapshot.symbolCount = symbolCount;
         snapshot.bktraceDepth = BACKTRACE_DEPTH;
 
-        fwrite(&snapshot, sizeof(MMSnapshot), 1, file);
+        if (file->Write(&snapshot) != sizeof(MMSnapshot))
+            return false;
 
         {
             MMCurStat* curStat = static_cast<MMCurStat*>(buffer);
             Memset(curStat, 0, statSize);
             curStat->size = statSize;
-            fwrite(buffer, 1, statSize, file);
+            if (file->Write(curStat, statSize) != statSize)
+                return false;
         }
         {
             const size_t BLOCKS_IN_BUF = BUF_SIZE / sizeof(MMBlock);
@@ -915,7 +931,8 @@ bool MemoryManager::GetMemorySnapshot(uint64 timestamp, uint32* snapshotSize, FI
 
                     curBlock = curBlock->next;
                 }
-                fwrite(buffer, sizeof(MMBlock), k, file);
+                if (file->Write(buffer, sizeof(MMBlock) * k) != sizeof(MMBlock) * k)
+                    return false;
             }
         }
         {
@@ -936,7 +953,8 @@ bool MemoryManager::GetMemorySnapshot(uint64 timestamp, uint32* snapshotSize, FI
                     strncpy(dstSymbol.name, name.c_str(), MMSymbol::NAME_LENGTH);
                     dstSymbol.name[MMSymbol::NAME_LENGTH - 1] = '\0';
                 }
-                fwrite(buffer, sizeof(MMSymbol), k, file);
+                if (file->Write(buffer, sizeof(MMSymbol) * k) != sizeof(MMSymbol) * k)
+                    return false;
             }
         }
         {
@@ -958,12 +976,12 @@ bool MemoryManager::GetMemorySnapshot(uint64 timestamp, uint32* snapshotSize, FI
                     }
                     bktrace = OffsetPointer<MMBacktrace>(bktrace, bktraceSize);
                 }
-                fwrite(buffer, 1, bktraceSize * k, file);
+                if (file->Write(buffer, bktraceSize * k) != bktraceSize * k)
+                    return false;
                 bktrace = static_cast<MMBacktrace*>(buffer);
             }
         }
     }
-    InternalDeallocate(buffer);
     return true;
 }
 

@@ -36,7 +36,9 @@
 #include "Platform/SystemTimer.h"
 #include "Utils/Random.h"
 
+#include "FileSystem/FileSystem.h"
 #include "FileSystem/FilePath.h"
+#include "FileSystem/File.h"
 #include "FileSystem/Logger.h"
 
 #include "MemoryManager/MemoryManager.h"
@@ -140,7 +142,7 @@ void MMNetServer::ProcessRequestSnapshot(const MMNetProto::PacketHeader* inHeade
 
 void MMNetServer::AutoReplyStat(uint64 curTimestamp)
 {
-    // Do not send anything if outgoing queue is too big
+    // Do not send anything if outgoing queue is greater some reasonable size
     if (packetQueue.size() > 256)
         return;
 
@@ -279,33 +281,29 @@ MMNetProto::Packet MMNetServer::CreateReplyStatPacket(uint32 maxItems)
 
 bool MMNetServer::GetAndSaveSnapshot(uint64 curTimestamp)
 {
-    bool result = false;
-#if 0
-    LockGuard<Spinlock> lock(snapshotMutex);
+    static Atomic<uint32> curSnapshotIndex = 0;
 
+    bool result = false;
     FilePath filePath("~doc:");
     filePath += Format("msnap_%u.bin", curSnapshotIndex++);
-    
-    SnapshotInfo snapshotInfo(filePath.GetAbsolutePathname());
 
-    FILE* file = fopen(snapshotInfo.filename.c_str(), "wb");
-    if (file != nullptr)
+    bool erase = false;
     {
-#if defined(__DAVAENGINE_WIN32__)
-        // Dirty hack on Win32
-        uint8 dummy[1] = {0};
-        fwrite(dummy, 1, 1, file);
-        fseek(file, -1, SEEK_CUR);
-#endif
-        if (MemoryManager::Instance()->GetMemorySnapshot(file, curTimestamp, &snapshotInfo.fileSize))
+        ScopedPtr<File> file(File::Create(filePath, File::CREATE | File::WRITE));
+        if (file)
         {
-            //readySnapshots.emplace_back(std::forward<SnapshotInfo>(snapshotInfo));
-            anotherService->TransferSnapshot(filePath);
-            result = true;
+            if (MemoryManager::Instance()->GetMemorySnapshot(curTimestamp, file.get(), nullptr))
+            {
+                anotherService->TransferSnapshot(filePath);
+                result = true;
+            }
+            erase = !result;
         }
-        fclose(file);
     }
-#endif
+    if (erase)
+    {   // Erase snapshot file if something went wrong
+        FileSystem::Instance()->DeleteFile(filePath);
+    }
     return result;
 }
 
