@@ -65,7 +65,7 @@ public:
 
 	virtual void CreateAndroidWindow(const char8 *docPathEx, const char8 *docPathIn, const char8 *assets, const char8 *logTag, AndroidSystemDelegate * sysDelegate);
 
-	virtual void Quit();
+	void Quit() override;
 
 	void RenderReset(int32 w, int32 h);
 	void ProcessFrame();

@@ -170,7 +170,7 @@ void DeinitApplication()
 	{
 		core->Quit();
 		core->ReleaseSingletons();
-		core = NULL;
+		core = nullptr;
 	}
 
 	SafeDelete(androidDelegate);

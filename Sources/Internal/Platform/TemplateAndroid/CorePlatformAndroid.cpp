@@ -37,6 +37,7 @@ extern void FrameworkWillTerminate();
 
 #include "Platform/DeviceInfo.h"
 #include "Input/InputSystem.h"
+#include "UI/UIEvent.h"
 #include "FileSystem/FileSystem.h"
 #include "Scene3D/SceneCache.h"
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
@@ -97,13 +98,13 @@ namespace DAVA
 
 	void CorePlatformAndroid::Quit()
 	{
-		Logger::Debug("[CorePlatformAndroid::Quit]");
-		QuitAction();
+	    Logger::Debug("[CorePlatformAndroid::Quit]");
+	    QuitAction();
 
-		// finish java activity, never return back
-		JNI::JavaClass javaClass("com/dava/framework/JNIActivity");
-		Function<void()> finishActivity = javaClass.GetStaticMethod<void>("finishActivity");
-		finishActivity();
+	    // finish java activity
+	    JNI::JavaClass javaClass("com/dava/framework/JNIActivity");
+	    Function<void()> finishActivity = javaClass.GetStaticMethod<void>("finishActivity");
+	    finishActivity();
 	}
 
 	void CorePlatformAndroid::QuitAction()
@@ -112,6 +113,7 @@ namespace DAVA
 
 		if(Core::Instance())
 		{
+		    // will call gameCore->onAppFinished() destroy game singletons
 			Core::Instance()->SystemAppFinished();
 		}
 
@@ -339,7 +341,7 @@ namespace DAVA
 		InputSystem::Instance()->GetGamepadDevice().OnTriggersAvailable(isAvailable);
 	}
 
-	void CorePlatformAndroid::OnInput(int32 action, int32 source, Vector< UIEvent >& activeInputs, Vector< UIEvent >& allInputs)
+	void CorePlatformAndroid::OnInput(int32 action, int32 source, Vector<UIEvent>& activeInputs, Vector<UIEvent>& allInputs)
 	{
 		DVASSERT(!allInputs.empty());
 		if (!allInputs.empty())
