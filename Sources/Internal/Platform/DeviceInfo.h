@@ -75,6 +75,7 @@ public:
         PLATFORM_ANDROID,
         PLATFORM_WIN32,
         PLATFORM_WIN_UAP,
+        PLATFORM_PHONE_WIN_UAP,
         PLATFORM_UNKNOWN,
         PLATFORMS_COUNT
     };

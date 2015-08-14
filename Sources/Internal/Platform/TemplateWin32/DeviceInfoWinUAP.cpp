@@ -26,21 +26,23 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "Base/Platform.h"
+
+#if defined(__DAVAENGINE_WIN_UAP__)
+
+#include <GLES2/gl2.h>
+#include <Iphlpapi.h>
+#include <winsock2.h>
 
 #include "Debug/DVAssert.h"
 #include "FileSystem/FileSystem.h"
-#include "Platform/DeviceInfo.h"
 #include "Utils/MD5.h"
 #include "Utils/StringFormat.h"
 #include "Utils/Utils.h"
 
-#if defined(__DAVAENGINE_WIN_UAP__)
-
 #include "Platform/TemplateWin32/DeviceInfoWinUAP.h"
+// temporary decision
 #include "Platform/TemplateWin32/CorePlatformWinUAP.h"
-
-#include "Iphlpapi.h"
-#include "winsock2.h"
 
 using namespace ::Windows::UI::Core;
 using namespace ::Windows::Graphics::Display;
@@ -50,6 +52,9 @@ using namespace ::Windows::Foundation;
 using namespace ::Windows::Devices;
 using namespace ::Windows::Devices::Enumeration;
 using namespace ::Windows::Devices::HumanInterfaceDevice;
+using namespace ::Windows::Security::ExchangeActiveSyncProvisioning;
+using namespace ::Windows::Networking::Connectivity;
+using namespace ::Windows::System::UserProfile;
 
 namespace DAVA
 {
@@ -70,64 +75,73 @@ DeviceInfoPrivate::DeviceInfoPrivate()
 
 DeviceInfo::ePlatform DeviceInfoPrivate::GetPlatform()
 {
+    if (IsMobileMode())
+    {
+        return DeviceInfo::PLATFORM_PHONE_WIN_UAP;
+    }
     return DeviceInfo::PLATFORM_WIN_UAP;
 }
 
 String DeviceInfoPrivate::GetPlatformString()
 {
+    Logger::FrameworkDebug("[DeviceInfoPrivate::GetPlatformString] \"%s\".", GlobalEnumMap<DeviceInfo::ePlatform>::Instance()->ToString(GetPlatform()));
     return GlobalEnumMap<DeviceInfo::ePlatform>::Instance()->ToString(GetPlatform());
 }
 
 String DeviceInfoPrivate::GetVersion()
 {
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-    return "Not yet implemented";
+    EasClientDeviceInformation deviceInfo;
+    Logger::FrameworkDebug("[DeviceInfoPrivate::GetVersion] \"%s\".", RTStringToString(deviceInfo.SystemFirmwareVersion).c_str());
+    return RTStringToString(deviceInfo.SystemFirmwareVersion);
 }
 
 String DeviceInfoPrivate::GetManufacturer()
 {
-    Windows::Security::ExchangeActiveSyncProvisioning::EasClientDeviceInformation deviceInfo;
-	return WStringToString(deviceInfo.SystemManufacturer->Data());
+    EasClientDeviceInformation deviceInfo;
+    Logger::FrameworkDebug("[DeviceInfoPrivate::GetManufacturer] \"%s\".", RTStringToString(deviceInfo.SystemManufacturer).c_str());
+    return RTStringToString(deviceInfo.SystemManufacturer);
 }
 
 String DeviceInfoPrivate::GetModel()
 {
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-	return "Not yet implemented";
+    EasClientDeviceInformation deviceInfo;
+    Logger::FrameworkDebug("[DeviceInfoPrivate::GetModel] \"%s\".", RTStringToString(deviceInfo.FriendlyName).c_str());
+    return RTStringToString(deviceInfo.FriendlyName);
 }
 
 String DeviceInfoPrivate::GetLocale()
 {
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-	return "Not yet implemented";
+    Logger::FrameworkDebug("[DeviceInfoPrivate::GetLocale] \"%s\".", RTStringToString(GlobalizationPreferences::Languages->GetAt(0)).c_str());
+    return RTStringToString(GlobalizationPreferences::Languages->GetAt(0));
 }
 
 String DeviceInfoPrivate::GetRegion()
 {
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-	return "Not yet implemented";
+    Logger::FrameworkDebug("[DeviceInfoPrivate::GetRegion] \"%s\".", RTStringToString(GlobalizationPreferences::HomeGeographicRegion).c_str());
+    return RTStringToString(GlobalizationPreferences::HomeGeographicRegion);
 }
 
 String DeviceInfoPrivate::GetTimeZone()
 {
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-	return "Not yet implemented";
+    //uncomment after add Windows.System.SystemManagementContract
+    // Logger::FrameworkDebug("[DeviceInfoPrivate::GetTimeZone] \"%s\".", RTStringToString(Windows::System::TimeZoneSettings::CurrentTimeZoneDisplayName).c_str());
+    // return RTStringToString(Windows::System::TimeZoneSettings::CurrentTimeZoneDisplayName);
+    return "Not yet implemented";
 }
+
 String DeviceInfoPrivate::GetHTTPProxyHost()
 {
-	return "Not yet implemented";
+    return "Not yet implemented";
 }
 
 String DeviceInfoPrivate::GetHTTPNonProxyHosts()
 {
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-	return "Not yet implemented";
+    return "Not yet implemented";
 }
 
 int DeviceInfoPrivate::GetHTTPProxyPort()
 {
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-	return 0;
+    return 0;
 }
 
 DeviceInfo::ScreenInfo& DeviceInfoPrivate::GetScreenInfo()
@@ -142,28 +156,92 @@ int DeviceInfoPrivate::GetZBufferSize()
 
 String DeviceInfoPrivate::GetUDID()
 {
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-        return "Not yet implemented";
+    Windows::Security::ExchangeActiveSyncProvisioning::EasClientDeviceInformation deviceInfo;
+    Logger::FrameworkDebug("[DeviceInfoPrivate::GetUDID] \"%s\".", RTStringToString(deviceInfo.Id.ToString()).c_str());
+    return RTStringToString(deviceInfo.Id.ToString());
 }
 
 WideString DeviceInfoPrivate::GetName()
 {
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-    return L"Not yet implemented";
+    EasClientDeviceInformation deviceInfo;
+    Logger::FrameworkDebug("[DeviceInfoPrivate::GetModel] \"%s\".", RTStringToString(deviceInfo.SystemProductName).c_str());
+    return deviceInfo.SystemProductName->Data();
 }
 
 eGPUFamily DeviceInfoPrivate::GetGPUFamily()
 {
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-    return GPU_TEGRA;
+    eGPUFamily gpuFamily(GPU_INVALID);
+    auto rendererTemp = glGetString(GL_RENDERER);
+    if (nullptr == rendererTemp)
+    {
+        DVASSERT(false && "GL not initialized");
+        return gpuFamily;
+    }
+    String renderer((const char8 *)rendererTemp);
+    std::transform(renderer.begin(), renderer.end(), renderer.begin(), ::tolower);
+    if (renderer.find("tegra") != String::npos)
+    {
+        gpuFamily = GPU_TEGRA;
+    }
+    else if (renderer.find("powervr") != String::npos)
+    {
+        gpuFamily = GPU_POWERVR_ANDROID;
+    }
+    else if (renderer.find("adreno") != String::npos)
+    {
+        gpuFamily = GPU_ADRENO;
+    }
+    else if (renderer.find("mali") != String::npos)
+    {
+        gpuFamily = GPU_MALI;
+    }
+
+    if (gpuFamily == GPU_INVALID)
+    {
+        auto extensionsTemp = glGetString(GL_EXTENSIONS);
+        if (nullptr == extensionsTemp)
+        {
+            DVASSERT(false && "GL not initialized");
+            return gpuFamily;
+        }
+        String extensions((const char8 *)extensionsTemp);
+
+        if (extensions.find("GL_IMG_texture_compression_pvrtc") != String::npos)
+            gpuFamily = GPU_POWERVR_ANDROID;
+        else if (extensions.find("GL_NV_draw_texture") >= 0)
+            gpuFamily = GPU_TEGRA;
+        else if (extensions.find("GL_AMD_compressed_ATC_texture") != String::npos)
+            gpuFamily = GPU_ADRENO;
+        else if (extensions.find("GL_OES_compressed_ETC1_RGB8_texture") != String::npos)
+            gpuFamily = GPU_MALI;
+    }
+    return gpuFamily;
 }
 
 DeviceInfo::NetworkInfo DeviceInfoPrivate::GetNetworkInfo()
 {
-    // For now return default network info for Windows.
-    return DeviceInfo::NetworkInfo();
+    DeviceInfo::NetworkInfo networkInfo;
+    ConnectionProfile^ icp = NetworkInformation::GetInternetConnectionProfile();
+    if (icp != nullptr && icp->NetworkAdapter != nullptr)
+    {
+        if (icp->IsWlanConnectionProfile)
+        {
+            networkInfo.networkType = DeviceInfo::NETWORK_TYPE_WIFI;
+        }
+        else if (icp->IsWwanConnectionProfile)
+        {
+            networkInfo.networkType = DeviceInfo::NETWORK_TYPE_CELLULAR;
+        }
+        else
+        {
+            // in other case Ethernet
+            networkInfo.networkType = DeviceInfo::NETWORK_TYPE_ETHERNET;
+        }
+    }
+    return networkInfo;
 }
 
+// temporary decision
 void DeviceInfoPrivate::InitializeScreenInfo()
 {
     int32 w = 0, h = 0;
@@ -240,8 +318,8 @@ List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetStoragesList()
 
 int32 DeviceInfoPrivate::GetCpuCount()
 {
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-    return 0;
+    int32 cpuCount = static_cast<int32>(std::thread::hardware_concurrency());
+    return cpuCount == 0 ? 1 : cpuCount;
 }
 
 bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType hid)
