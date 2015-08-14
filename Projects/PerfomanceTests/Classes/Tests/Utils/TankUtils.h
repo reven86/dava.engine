@@ -26,45 +26,28 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef ASIA_PERFORMANCE_TEST_H__
-#define ASIA_PERFORMANCE_TEST_H__
+#ifndef __CONQUEROR_ANIMATOR_H__
+#define __CONQUEROR_ANIMATOR_H__
 
-#include "Tests/BaseTest.h"
-#include "Tests/Utils/WaypointsInterpolator.h"
-#include "Tests/Utils/TankAnimator.h"
+#include "DAVAEngine.h"
+#include "Infrastructure/Settings/GraphicsDetect.h"
 
-class AsiaPerformanceTest : public BaseTest
+namespace DAVA
 {
-public:
-    AsiaPerformanceTest(const TestParams& params);
-    ~AsiaPerformanceTest();
-
-protected:
-
-    void LoadResources() override;
-    void PerformTestLogic(float32 timeElapsed) override;
-
-private:
-    static const String TEST_NAME;
-
-    static const FastName CAMERA_PATH;
-    static const FastName TANK_STUB;
-    static const FastName TANKS;
-
-    static const float32 TANK_ROTATION_ANGLE;
-
-    Map<FastName, std::pair<Entity*, Vector<uint16>>> skinnedTankData;
-    List<Entity*> tankStubs;
-
-    WaypointsInterpolator* waypointInterpolator;
-    TankAnimator* tankAnimator;
-
-    Camera* camera;
-    Vector3 camPos;
-    Vector3 camDst;
-
-    float32 time;
-
-};
+namespace TankUtils
+{
+    struct TankNode
+    {
+        const static FastName TURRET;
+        const static FastName L_WHEELS;
+        const static FastName R_WHEELS;
+        const static FastName GUN_SHOT;
+        const static FastName SKINNED_TANK;
+    };
+    
+    void Animate(Entity* skinnedTank, const Vector<uint16>& jointIndexes, float32 angle);
+    void MakeSkinnedTank(Entity* entity, Vector<uint16>& jointsInfo);
+}
+}
 
 #endif

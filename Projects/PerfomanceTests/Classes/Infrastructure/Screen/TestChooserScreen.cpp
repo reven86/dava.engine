@@ -28,26 +28,21 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "TestChooserScreen.h"
 
 
-TestChooserScreen::TestChooserScreen(const Vector<BaseTest*>& _testChain)
-    :   testChain(_testChain)
-    ,   testForRun(nullptr)
-    ,   chooserFont(nullptr)
+TestChooserScreen::TestChooserScreen()
+    :   testForRun(nullptr)
 {
 }
 
 void TestChooserScreen::LoadResources()
 {
+    BaseScreen::LoadResources();
+    
     CreateChooserUI();
-}
-
-void TestChooserScreen::UnloadResources()
-{
-    SafeRelease(chooserFont);
 }
 
 void TestChooserScreen::OnFinish()
 {
-    DVASSERT(testForRun != nullptr);
+    DVASSERT(nullptr != testForRun);
 }
 
 bool TestChooserScreen::IsFinished() const
@@ -58,11 +53,11 @@ bool TestChooserScreen::IsFinished() const
 void TestChooserScreen::OnButtonPressed(BaseObject *obj, void *data, void *callerData)
 {
     UIButton* button = static_cast<UIButton*>(obj);
-    String testName = button->GetName();
+    const String& testName = button->GetName();
     
-    for(BaseTest* test : testChain)
+    for(auto *test : testChain)
     {
-        if (testName == test->GetName())
+        if (testName == test->GetSceneName())
         {
             testForRun = test;
         }
@@ -73,19 +68,18 @@ void TestChooserScreen::OnButtonPressed(BaseObject *obj, void *data, void *calle
 
 void TestChooserScreen::CreateChooserUI()
 {
-    chooserFont = FTFont::Create("./Data/Fonts/korinna.ttf");
+    ScopedPtr<FTFont> chooserFont(FTFont::Create("~res:/Fonts/korinna.ttf"));
     uint32 testNumber = 0;
     
-    for (BaseTest* test : testChain)
+    for (auto *test : testChain)
     {
-        UIButton* button = new UIButton();
+        ScopedPtr<UIButton> button(new UIButton());
+        button->SetName(test->GetSceneName());
 
-        button->SetName(test->GetName());
-
-        button->SetPosition(Vector2(10.0f, 10.0f + testNumber * 60));
-        button->SetSize(Vector2(150.0f, 50.0f));
+        button->SetPosition(Vector2(40.0f, 40.0f + testNumber * 100));
+        button->SetSize(Vector2(200.0f, 70.0f));
         button->SetStateFont(UIControl::STATE_NORMAL, chooserFont);
-        button->SetStateText(UIButton::STATE_NORMAL, UTF8Utils::EncodeToWideString(test->GetName()));
+        button->SetStateText(UIButton::STATE_NORMAL, UTF8Utils::EncodeToWideString(test->GetSceneName()));
         button->SetStateTextAlign(UIButton::STATE_NORMAL, ALIGN_HCENTER | ALIGN_VCENTER);
 
         button->SetStateDrawType(UIControl::STATE_NORMAL, UIControlBackground::DRAW_FILL);
