@@ -35,6 +35,7 @@
 #include <QSize>
 
 namespace DAVA{
+    class Vector2;
     class UIControl;
 }
 
@@ -42,7 +43,7 @@ class ScrollAreaController : public QObject
 {
     Q_OBJECT
 public:
-    Q_PROPERTY(QSize canvasSize READ GetCanvasSize WRITE SetCanvasSize NOTIFY CanvasSizeChanged);
+    Q_PROPERTY(QSize canvasSize READ GetCanvasSize NOTIFY CanvasSizeChanged);
     Q_PROPERTY(QSize viewSize READ GetViewSize WRITE SetViewSize NOTIFY ViewSizeChanged);
     Q_PROPERTY(int scale READ GetScale WRITE SetScale NOTIFY ScaleChanged);
     Q_PROPERTY(QPoint position READ GetPosition WRITE SetPosition NOTIFY PositionChanged);
@@ -53,9 +54,8 @@ public:
     QSize GetViewSize() const;
     int GetScale() const;
     QPoint GetPosition() const;
-
+    void UpdateCanvasContentSize();
 public slots:
-    void SetCanvasSize(const QSize &canvasSize);
     void SetViewSize(const QSize &size);
     void SetScale(int scale);
     void SetPosition(const QPoint &position);
@@ -66,10 +66,12 @@ signals:
     void PositionChanged(const QPoint &position);
 private:
     void UpdatePosition();
+    double GetUIScale() const;
     DAVA::UIControl *backgroundControl = nullptr;
+    DAVA::UIControl *rootControl = nullptr;
     QSize canvasSize = QSize(0, 0);
     QSize viewSize = QSize(0, 0);
-    int scale = 0;
+    int scale = 1;
     QPoint position = QPoint(0, 0);
     const int Margin = 50;
 };

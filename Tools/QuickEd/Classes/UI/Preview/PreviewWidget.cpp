@@ -82,6 +82,7 @@ PreviewWidget::PreviewWidget(QWidget *parent)
     }
     connect(scrollAreaController, &ScrollAreaController::ViewSizeChanged, this, &PreviewWidget::UpdateScrollArea);
     connect(scrollAreaController, &ScrollAreaController::CanvasSizeChanged, this, &PreviewWidget::UpdateScrollArea);
+    connect(scrollAreaController, &ScrollAreaController::ScaleChanged, this, &PreviewWidget::UpdateScrollArea);
 
     connect(scaleCombo, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &PreviewWidget::OnScaleByComboIndex);
     connect(scaleCombo->lineEdit(), &QLineEdit::editingFinished, this, &PreviewWidget::OnScaleByComboText);
@@ -109,8 +110,7 @@ void PreviewWidget::OnDocumentChanged(Document *arg)
     if (nullptr != document)
     {
         document->GetCanvasSystem()->Attach(rootControl);
-        QSize size(rootControl->GetSize().x, rootControl->GetSize().y);
-        scrollAreaController->SetCanvasSize(size);
+        scrollAreaController->UpdateCanvasContentSize();
     }
 }
 
