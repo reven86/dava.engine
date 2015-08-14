@@ -286,7 +286,7 @@ MMNetProto::Packet MMNetServer::CreateReplyStatPacket(uint32 maxItems)
 
 bool MMNetServer::GetAndSaveSnapshot(uint64 curTimestamp)
 {
-    static Atomic<uint32> curSnapshotIndex = 0;
+    static Atomic<uint32> curSnapshotIndex{0};
 
     bool result = false;
     FilePath filePath("~doc:");
