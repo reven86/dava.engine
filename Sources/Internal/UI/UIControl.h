@@ -1362,6 +1362,7 @@ public:
     void SetClassesFromString(const String &classes);
     
     const UIStyleSheetPropertySet& GetLocalPropertySet() const;
+    void SetLocalPropertySet(const UIStyleSheetPropertySet &set);
     void SetPropertyLocalFlag(uint32 propertyIndex, bool value);
     
     const UIStyleSheetPropertySet& GetStyledPropertySet() const;

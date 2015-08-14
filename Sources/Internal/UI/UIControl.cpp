@@ -1075,6 +1075,7 @@ namespace DAVA
         debugDrawEnabled = srcControl->debugDrawEnabled;
 
         classes = srcControl->classes;
+        localProperties = srcControl->localProperties;
         styleSheetRebuildNeeded = srcControl->styleSheetRebuildNeeded;
         styleSheetInitialized = false;
 
@@ -2759,6 +2760,11 @@ namespace DAVA
     const UIStyleSheetPropertySet& UIControl::GetLocalPropertySet() const
     {
         return localProperties;
+    }
+
+    void UIControl::SetLocalPropertySet(const UIStyleSheetPropertySet &set)
+    {
+        localProperties = set;
     }
 
     void UIControl::SetPropertyLocalFlag(uint32 propertyIndex, bool value)

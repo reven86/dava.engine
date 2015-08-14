@@ -68,6 +68,7 @@ ControlNode::ControlNode(ControlNode *node, eCreationType _creationType)
     , creationType(_creationType)
 {
     control = ObjectFactory::Instance()->New<UIControl>(node->GetControl()->GetClassName());
+    control->SetLocalPropertySet(node->GetControl()->GetLocalPropertySet());
     
     eCreationType childCreationType;
     if (creationType == CREATED_FROM_CLASS)
