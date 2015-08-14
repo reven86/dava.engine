@@ -170,7 +170,7 @@ void Client::OnPacketReceived(DAVA::Net::IChannel* channel, const void* packet, 
 	if (length && openedChannel == channel)
     {
         ScopedPtr<KeyedArchive> archieve(new KeyedArchive());
-        archieve->Deserialize(static_cast<const uint8 *>(packet), length);
+        archieve->Load(static_cast<const uint8 *>(packet), length);
         
         auto packetID = archieve->GetUInt32("PacketID", PACKET_UNKNOWN);
         

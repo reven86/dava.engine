@@ -427,6 +427,23 @@ public:
     bool Save(File *file) const;
     
     /**
+         \brief Function to save archieve to byte array.
+         \param[in] data byte arrat for archieve data, if data is null function returns only requested size of data for serialization
+         \param[in] size size of byte array, if size is 0 function returns only requested size of data for serialization
+         \returns size of really serialized data
+     */
+    uint32 Save(uint8 *data, uint32 size) const;
+    
+    /**
+         \brief Function to load archieve from byte array.
+         \param[in] data byte arrat with archieve data
+         \param[in] size size of byte array
+         \returns result of loading
+     */
+    bool Load(const uint8 *data, uint32 size);
+
+    
+    /**
      \brief Function loads data from given yaml file.
      \param[in] pathName relative pathname in application documents folder
 	 */
@@ -478,23 +495,6 @@ public:
     
     static const char* GenKeyFromIndex(uint32 index);
     
-
-    /**
-         \brief Function to serialize archieve to byte array.
-         \param[in] data byte arrat for archieve data, if data is null function returns only requested size of data for serialization
-         \param[in] size size of byte array, if size is 0 function returns only requested size of data for serialization
-         \returns size of really serialized data
-     */
-    uint32 Serialize(uint8 *data, uint32 size) const;
-
-    /**
-         \brief Function to deserialize archieve from byte array.
-         \param[in] data byte arrat with archieve data
-         \param[in] size size of byte array
-     */
-    void Deserialize(const uint8 *data, uint32 size);
-
-
 private:
 	Map<String, VariantType*> objectMap;
 

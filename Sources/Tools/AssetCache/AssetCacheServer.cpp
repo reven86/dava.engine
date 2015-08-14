@@ -65,7 +65,7 @@ void Server::OnPacketReceived(Net::IChannel * channel, const void* packet, size_
     if(length)
     {
         ScopedPtr<KeyedArchive> archive(new KeyedArchive());
-		archive->Deserialize(static_cast<const uint8 *>(packet), length);
+		archive->Load(static_cast<const uint8 *>(packet), length);
         
         const auto packetID = archive->GetUInt32("PacketID", PACKET_UNKNOWN);
         switch (packetID)

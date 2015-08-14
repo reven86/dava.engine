@@ -51,10 +51,10 @@ bool SendArchieve(Net::IChannel* channel, KeyedArchive *archieve)
 {
 	DVASSERT(archieve && channel);
 
-	auto packedSize = archieve->Serialize(nullptr, 0);
+	auto packedSize = archieve->Save(nullptr, 0);
 	uint8 *packedData = new uint8[packedSize];
 
-	DVVERIFY(packedSize == archieve->Serialize(packedData, packedSize));
+	DVVERIFY(packedSize == archieve->Save(packedData, packedSize));
 
 	uint32 packedId = 0;
 	return channel->Send(packedData, packedSize, 0, &packedId);
