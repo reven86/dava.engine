@@ -53,15 +53,6 @@ class NetController;
 class ServiceRegistrar;
 struct IController;
 
-struct SnapshotRecvCallbackParam
-{
-    bool success;
-    uint32 totalSize;
-    uint32 recvSize;
-    uint32 transferredSize;
-    const uint8* buffer;
-};
-
 class MMAnotherService : public NetService
 {
     struct SnapshotInfo
@@ -90,6 +81,9 @@ class MMAnotherService : public NetService
     };
 
 public:
+    using SnapshotCallback = Function<void(uint32 totalSize, uint32 chunkOffset, uint32 chunkSize, const uint8* chunk)>;
+
+public:
     MMAnotherService(eNetworkRole role);
     virtual ~MMAnotherService();
 
@@ -97,7 +91,7 @@ public:
     void Stop();
 
     void TransferSnapshot(const FilePath& snapshotFile);
-    void SetSnapshotCallback(Function<void(const SnapshotRecvCallbackParam&)> callback);
+    void SetSnapshotCallback(SnapshotCallback callback);
 
     // Overriden methods from NetService
     void ChannelOpen() override;
@@ -139,7 +133,7 @@ private:
     File* fileHandle = nullptr;
     Array<uint8, OUTBUF_SIZE> outbuf;
 
-    Function<void(const SnapshotRecvCallbackParam&)> snapshotRecvCallback;
+    SnapshotCallback snapshotCallback;
 };
 
 }   // namespace Net
