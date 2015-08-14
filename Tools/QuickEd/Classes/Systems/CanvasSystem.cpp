@@ -68,13 +68,8 @@ void CheckeredCanvas::Draw(const UIGeometricData &geometricData)
 
 CanvasSystem::CanvasSystem(Document *parent)
     : document(parent)
+    , canvas(new UIControl())
 {
-    canvas = new UIControl();
-}
-
-CanvasSystem::~CanvasSystem()
-{
-    canvas->Release();
 }
 
 void CanvasSystem::Attach(DAVA::UIControl* root)

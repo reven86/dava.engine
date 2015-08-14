@@ -33,6 +33,8 @@
 #include "Interfaces.h"
 #include "Defines.h"
 
+#include "Base/ScopedPtr.h"
+
 class Document;
 namespace DAVA
 {
@@ -43,16 +45,16 @@ class CanvasSystem : public SelectionInterface
 {
 public:
     CanvasSystem(Document *parent);
-    virtual ~CanvasSystem();
+    virtual ~CanvasSystem() = default;
     void Attach(DAVA::UIControl *root);
     void SelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected) override;
 
 private:
     void SetRootControls(const SelectedNodes &controls);
     void LayoutCanvas();
-    DAVA::UIControl *attachedRoot = nullptr;
-    DAVA::UIControl *canvas = nullptr;
     Document *document = nullptr;
+    DAVA::UIControl *attachedRoot;
+    DAVA::ScopedPtr<DAVA::UIControl> canvas;
     SelectedControls selectedControls;
 };
 

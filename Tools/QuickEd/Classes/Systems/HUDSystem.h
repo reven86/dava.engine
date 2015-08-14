@@ -32,10 +32,13 @@
 
 #include "Interfaces.h"
 #include "Defines.h"
+#include "Base/ScopedPtr.h"
+#include "Math/Vector.h"
 
 class Document;
 namespace DAVA
 {
+    struct Rect;
     class UIControl;
 }
 
@@ -43,13 +46,37 @@ class HUDSystem : public SelectionInterface
 {
 public:
     HUDSystem();
-    virtual ~HUDSystem();
+    virtual ~HUDSystem() = default;
     void Attach(DAVA::UIControl *root);
     void SelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected) override;
 
 private:
-    DAVA::UIControl *hudControl = nullptr;
-    SelectedControls selectedControls;
+    DAVA::ScopedPtr<DAVA::UIControl> hudControl;
+    struct HUD
+    {
+        enum PLACE
+        {
+            TOP_LEFT,
+            TOP_CENTER,
+            TOP_RIGHT,
+            CENTER_LEFT,
+            CENTER_RIGHT,
+            BOTTOM_LEFT,
+            BOTTOM_CENTER,
+            BOTTOM_RIGHT,
+            COUNT
+        };
+        DAVA::ScopedPtr<DAVA::UIControl> frame;
+        DAVA::Vector < DAVA::ScopedPtr<DAVA::UIControl> > frameRects;
+        HUD(DAVA::UIControl *control, DAVA::UIControl *hudControl);
+        ~HUD();
+    private:
+        static DAVA::Vector2 GetPos(const PLACE place, const DAVA::Rect &control);
+        DAVA::UIControl *control = nullptr;
+        DAVA::UIControl *hudControl = nullptr;
+    };
+    DAVA::Map<ControlNode*, HUD> hudMap;
+    DAVA::ScopedPtr<DAVA::UIControl> selectionRect;
 };
 
 #endif // __QUICKED_HUD_SYSTEM_H__

@@ -65,13 +65,9 @@ class FrameRectControl : public DAVA::UIControl
 };
 
 HUDSystem::HUDSystem()
+    : hudControl(new UIControl())
+    , selectionRect(new UIControl())
 {
-    hudControl = new UIControl();
-}
-
-HUDSystem::~HUDSystem()
-{
-    hudControl->Release();
 }
 
 void HUDSystem::Attach(DAVA::UIControl* root)
@@ -81,17 +77,59 @@ void HUDSystem::Attach(DAVA::UIControl* root)
 
 void HUDSystem::SelectionWasChanged(const SelectedControls& selected, const SelectedControls& deselected)
 {
-    hudControl->RemoveAllControls();
+    for (auto control : deselected)
+    {
+        hudMap.erase(control);
+    }
     for (auto control : selected)
     {
-        ScopedPtr<UIControl> frame(new FrameControl());
-        frame->SetRect(control->GetControl()->GetRect());
-        hudControl->AddControl(frame);
-        ScopedPtr<UIControl> r(new FrameRectControl());
-        Rect rect(Vector2(0, 0), Vector2(10, 10));
-        rect.SetCenter(control->GetControl()->GetPosition());
-        r->SetRect(rect);
-        hudControl->AddControl(r);
+        hudMap.emplace(std::piecewise_construct, 
+            std::forward_as_tuple(control),
+            std::forward_as_tuple(control->GetControl(), hudControl));
     }
 }
 
+HUDSystem::HUD::HUD(UIControl* control_, UIControl* hudControl_)
+    : frame(new FrameControl)
+    , control(control_)
+    , hudControl(hudControl_)
+{
+
+    frame->SetRect(control->GetAbsoluteRect() - hudControl->GetAbsolutePosition());
+    hudControl->AddControl(frame);
+    
+    for (int i = TOP_LEFT; i < COUNT; ++i)
+    {
+        ScopedPtr<UIControl> littleRectFrame(new FrameRectControl());
+        Rect rect(Vector2(0, 0), Vector2(10, 10));
+        rect.SetCenter(GetPos(static_cast<PLACE>(i), control->GetAbsoluteRect() - hudControl->GetAbsolutePosition()));
+        littleRectFrame->SetRect(rect);
+        frameRects.push_back(littleRectFrame);
+        hudControl->AddControl(littleRectFrame);
+    }
+}
+
+HUDSystem::HUD::~HUD()
+{
+    hudControl->RemoveControl(frame);
+    for (auto frameRect : frameRects)
+    {
+        hudControl->RemoveControl(frameRect);
+    }
+}
+
+Vector2 HUDSystem::HUD::GetPos(const PLACE place, const Rect &rect)
+{
+    switch (place)
+    {
+    case TOP_LEFT: return rect.GetPosition() + Vector2(0, 0);
+    case TOP_CENTER: return rect.GetPosition() + Vector2(rect.dx / 2.0f, 0);
+    case TOP_RIGHT: return rect.GetPosition() + Vector2(rect.dx, 0);
+    case CENTER_LEFT: return rect.GetPosition() + Vector2(0, rect.dy / 2.0f);
+    case CENTER_RIGHT: return rect.GetPosition() + Vector2(rect.dx, rect.dy / 2.0f);
+    case BOTTOM_LEFT: return rect.GetPosition() + Vector2(0, rect.dy);
+    case BOTTOM_CENTER: return rect.GetPosition() + Vector2(rect.dx / 2.0f, rect.dy);
+    case BOTTOM_RIGHT: return rect.GetPosition() + Vector2(rect.dx, rect.dy);
+    case COUNT: DVASSERT_MSG(false, "what are you doing here?!"); return Vector2(0, 0);
+    }
+}
