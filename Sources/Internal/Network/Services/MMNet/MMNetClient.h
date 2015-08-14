@@ -80,9 +80,6 @@ private:
     uint32 connToken = 0;
     
     bool canRequestSnapshot = false;
-    uint32 snapshotTotalSize = 0;
-    uint32 snapshotRecvSize = 0;
-    std::vector<uint8> snapshotData;
 
     ConnEstablishedCallback connEstablishedCallback;
     ConnLostCallback connLostCallback;

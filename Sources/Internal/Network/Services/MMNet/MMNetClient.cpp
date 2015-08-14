@@ -45,8 +45,6 @@ namespace Net
 
 MMNetClient::MMNetClient()
     : NetService()
-    , snapshotTotalSize(0)
-    , snapshotRecvSize(0)
     , anotherService(new MMAnotherService(CLIENT_ROLE))
 {
 }
