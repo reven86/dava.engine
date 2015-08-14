@@ -36,6 +36,8 @@
 
     #define GetGLErrorString(code)  "<unknown>"
 
+	#include "android_gl.h"
+
 #else
 
     #include <GL/GL.h>

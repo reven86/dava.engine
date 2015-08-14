@@ -33,8 +33,6 @@
 AndroidDelegate::AndroidDelegate(JavaVM *vm) :
 	AndroidSystemDelegate(vm)
 {
-    renderBuffer = 0;
-    frameBuffer = 0;
 }
 
 bool AndroidDelegate::DownloadHttpFile(const DAVA::String & url, const DAVA::String & documentsPathname)
@@ -68,19 +66,4 @@ bool AndroidDelegate::DownloadHttpFile(const DAVA::String & url, const DAVA::Str
 	return retValue;
 }
 
-void AndroidDelegate::SetBuffers(GLint newFrameBuffer, GLint newRenderBuffer)
-{
-    renderBuffer = newRenderBuffer;
-    frameBuffer = newFrameBuffer;
-}
-
-GLint AndroidDelegate::RenderBuffer()
-{
-    return renderBuffer;
-}
-
-GLint AndroidDelegate::FrameBuffer()
-{
-    return frameBuffer;
-}
 

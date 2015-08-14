@@ -193,6 +193,9 @@ gles2_Reset( const ResetParam& param )
 {
     _GLES2_DefaultFrameBuffer_Width  = param.width;
     _GLES2_DefaultFrameBuffer_Height = param.height;
+#if defined(__DAVAENGINE_ANDROID__)
+    android_gl_reset();
+#endif
 }
 
 
@@ -497,11 +500,13 @@ gles2_Initialize(const InitParam& param)
 void
 gles2_Initialize( const InitParam& param )
 {
-    _GLES2_AcquireContext = param.acquireContextFunc;
-    _GLES2_ReleaseContext = param.releaseContextFunc;
+    _GLES2_AcquireContext = &android_gl_acquire_context;
+    _GLES2_ReleaseContext = &android_gl_release_context;
 
     _GLES2_DefaultFrameBuffer_Width  = param.width;
     _GLES2_DefaultFrameBuffer_Height = param.height;
+
+	android_gl_init(param.window);
 
     ConstBufferGLES2::InitializeRingBuffer(4 * 1024 * 1024); // CRAP: hardcoded default const ring-buf size
 

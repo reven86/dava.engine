@@ -6,7 +6,8 @@ import java.util.Set;
 
 import android.content.Context;
 import android.graphics.PixelFormat;
-import android.opengl.GLSurfaceView;
+import android.os.Build;
+import android.os.PowerManager;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.Pair;
@@ -14,6 +15,9 @@ import android.view.GestureDetector;
 import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
+import android.view.Surface;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.view.ViewGroup.LayoutParams;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
@@ -21,22 +25,34 @@ import android.view.inputmethod.InputConnection;
 import com.bda.controller.ControllerListener;
 import com.bda.controller.StateEvent;
 
-public class JNIGLSurfaceView extends GLSurfaceView
+public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callback
 {
 	private static final int MAX_KEYS = 256; // Maximum number of keycodes which used in native code
-
-	private JNIRenderer mRenderer = null;
 
 	private native void nativeOnInput(int action, int source, int groupSize, ArrayList< InputRunnable.InputEvent > activeInputs, ArrayList< InputRunnable.InputEvent > allInputs);
 	private native void nativeOnKeyDown(int keyCode);
 	private native void nativeOnKeyUp(int keyCode);
 	private native void nativeOnGamepadElement(int elementKey, float value, boolean isKeycode);
+
+	private native void nativeSurfaceCreated(Surface surface);
+	private native void nativeSurfaceChanged(int width, int height);
+	private native void nativeSurfaceDestroyed();
+
+    private native void nativeReset(int w, int h);
+    private native void nativeProcessFrame();
+    private native void nativeOnPause(boolean isLocked);
+    private native void nativeOnResume();
+	
+	private Surface surface = null;
+	private int surfaceWidth = 0, surfaceHeight = 0;
 	
 	private boolean isMultitouchEnabled = true;
 	
 	private Integer[] gamepadAxises = null;
 	private Integer[] overridedGamepadKeys = null;
 	private ArrayList< Pair<Integer, Integer> > gamepadButtonsAxisMap = new ArrayList< Pair<Integer, Integer> >();
+	
+	private ArrayList<Runnable> mEventQueue = new ArrayList<Runnable>();
 	
 	private static volatile boolean isPaused = false;
 	
@@ -46,36 +62,38 @@ public class JNIGLSurfaceView extends GLSurfaceView
 
 	public int lastDoubleActionIdx = -1;
 	
+	private int frameCounter = 0;
+	
 	public static boolean isPaused()
 	{
 	    return isPaused;
 	}
 	
 	class DoubleTapListener extends GestureDetector.SimpleOnGestureListener{
-		JNIGLSurfaceView glview;
+		JNISurfaceView surfaceView;
 		
-		DoubleTapListener(JNIGLSurfaceView view) {
-			this.glview = view;
+		DoubleTapListener(JNISurfaceView view) {
+			this.surfaceView = view;
 		}
 		
 		@Override
 		public boolean onDoubleTap(MotionEvent e) {
 			lastDoubleActionIdx = e.getActionIndex();
 			
-			glview.queueEvent(new InputRunnable(e, 2));
+			surfaceView.queueEvent(new InputRunnable(e, 2));
 			return true;
 		}
 	}
 	
 	GestureDetector doubleTapDetector = null;
 
-	public JNIGLSurfaceView(Context context) 
+	public JNISurfaceView(Context context) 
 	{
 		super(context);
 		Init();
 	}
 
-	public JNIGLSurfaceView(Context context, AttributeSet attrs)
+	public JNISurfaceView(Context context, AttributeSet attrs)
 	{
 		super(context, attrs);
 		Init();
@@ -84,21 +102,8 @@ public class JNIGLSurfaceView extends GLSurfaceView
 	private void Init()
 	{
 		this.getHolder().setFormat(PixelFormat.TRANSLUCENT);
-
-		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB)
-		{
-			setPreserveEGLContextOnPause(true);
-		}
-		setEGLContextFactory(new JNIContextFactory());
-		setEGLConfigChooser(new JNIConfigChooser());
-
-		mRenderer = new JNIRenderer();
-		setRenderer(mRenderer);
-		setRenderMode(RENDERMODE_CONTINUOUSLY);
 		
 		mogaListener = new MOGAListener(this);
-		
-		setDebugFlags(0);
 		
 		doubleTapDetector = new GestureDetector(JNIActivity.GetActivity(), new DoubleTapListener(this));
 
@@ -106,6 +111,40 @@ public class JNIGLSurfaceView extends GLSurfaceView
 		gamepadButtonsAxisMap.add(new Pair<Integer, Integer>(KeyEvent.KEYCODE_BUTTON_L2, MotionEvent.AXIS_BRAKE));
 		gamepadButtonsAxisMap.add(new Pair<Integer, Integer>(KeyEvent.KEYCODE_BUTTON_R2, MotionEvent.AXIS_RTRIGGER));
 		gamepadButtonsAxisMap.add(new Pair<Integer, Integer>(KeyEvent.KEYCODE_BUTTON_R2, MotionEvent.AXIS_GAS));
+		
+        getHolder().addCallback(this);
+	}
+	
+	public void ProcessQueueEvents()
+	{
+		ArrayList<Runnable> queueCopy = null;
+		synchronized (mEventQueue) 
+		{
+			queueCopy = new ArrayList<Runnable>(mEventQueue);
+			mEventQueue.clear();
+		}
+		
+		for(Runnable r : queueCopy)
+    	{
+    		r.run();
+    	}
+	}
+	
+	public void ProcessFrame()
+	{
+        if (!JNIAssert.waitUserInputOnAssertDialog)
+        {
+            nativeProcessFrame();
+            
+            ++frameCounter;
+            // Workaround wait 5 frames for render static text field to textures
+            // and transition from one screen to another during lock/unlock
+            // skip bad print screen texture
+            if (5 == frameCounter)
+            {
+                JNIActivity.GetActivity().HideSplashScreenView();
+            }
+        }
 	}
 	
 	public void SetAvailableGamepadAxises(Integer[] axises)
@@ -130,7 +169,8 @@ public class JNIGLSurfaceView extends GLSurfaceView
 	}
 	
     @Override
-    public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
+    public InputConnection onCreateInputConnection(EditorInfo outAttrs) 
+    {
         // Fix lag when text field lost focus, but keyboard not closed yet. 
         outAttrs.imeOptions = JNITextField.GetLastKeyboardIMEOptions();
         outAttrs.inputType = JNITextField.GetLastKeyboardInputType();
@@ -138,47 +178,57 @@ public class JNIGLSurfaceView extends GLSurfaceView
     }
     
 	@Override
-	protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+	protected void onSizeChanged(int w, int h, int oldw, int oldh) 
+	{
 		//YZ rewrite size parameter from fill parent to fixed size
 		LayoutParams params = getLayoutParams();
 		params.height = h;
 		params.width = w;
 		super.onSizeChanged(w, h, oldw, oldh);
 	}
-	
-    @Override
-    public void onPause() {
+
+    public void onPause() 
+    {
         isPaused = true;
-        Log.d(JNIConst.LOG_TAG, "Activity JNIGLSurfaceView onPause");
-        setRenderMode(RENDERMODE_WHEN_DIRTY);
+        Log.d(JNIConst.LOG_TAG, "Activity JNISurfaceView onPause");
         queueEvent(new Runnable() {
-            public void run() {
-                mRenderer.OnPause();
+        	
+            @SuppressWarnings("deprecation")
+			public void run()
+            {
+                PowerManager pm = (PowerManager) JNIApplication.GetApplication().getSystemService(Context.POWER_SERVICE);
+                boolean isScreenLocked = false;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH)
+                	isScreenLocked = !pm.isInteractive();
+                else
+                	isScreenLocked = !pm.isScreenOn();
+                
+                nativeOnPause(isScreenLocked);
+
+                frameCounter = 0;
             }
         });
-        super.onPause();// destroy eglCondext(or unbind), eglScreen, eglSurface
-        // we write AAA mobile game and for user better resume as fast as posible
-        // so DO NOT destroy opengl context
     }
 
-    @Override
-    public void onResume() {
-        Log.d(JNIConst.LOG_TAG, "Activity JNIGLSurfaceView onResume");
-        // first call parent to restore eglContext and start gl thread
-        super.onResume();
+    public void onResume() 
+    {
+        Log.d(JNIConst.LOG_TAG, "Activity JNISurfaceView onResume");
         
         JNIActivity activity = JNIActivity.GetActivity();
 
-        Runnable action = new Runnable() {
+        Runnable action = new Runnable()
+        {
+        	@Override
             public void run() {
-                resumeGameLoop();
+                nativeOnResume();
             }
         };
         
         if (activity.hasWindowFocus())
         {
             queueEvent(action);
-        } else 
+        } 
+        else 
         {
             // we have to resume game later on some devices
             // to resolve deadlock
@@ -186,11 +236,6 @@ public class JNIGLSurfaceView extends GLSurfaceView
         }
         isPaused = false;
     }
-    
-    private void resumeGameLoop() {
-        mRenderer.OnResume();
-        setRenderMode(RENDERMODE_CONTINUOUSLY);
-    };
 	
 	public class InputRunnable implements Runnable
 	{
@@ -437,11 +482,82 @@ public class JNIGLSurfaceView extends GLSurfaceView
     	return true;
     }
     
+    public void queueEvent(Runnable r)
+    {
+        synchronized(mEventQueue)
+        {
+            mEventQueue.add(r);
+        }
+    }
+
+    public void surfaceCreated(SurfaceHolder holder)
+    {
+    	surface = holder.getSurface();
+    	surfaceWidth = surfaceHeight = 0;
+    	
+    	queueEvent(new Runnable() {
+			public void run() {
+		    	nativeSurfaceCreated(surface);
+			}
+		});
+    }
+
+    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height)
+    {
+        // while we always in landscape mode, but some devices
+        // call this method on lock screen with portrait w and h
+        // then call this method second time with correct portrait w and h
+        // I assume width always more then height
+        // we need skip portrait w and h because text in engine can be
+        // pre render into texture with incorrect aspect and on second
+        // call with correct w and h such text textures stays incorrect
+        // http://stackoverflow.com/questions/8556332/is-it-safe-to-assume-that-in-landscape-mode-height-is-always-less-than-width
+        // DF-5068
+        // strange but after add to manifest.xml screenSize to config
+        // on nexus 5 w == h == 1080
+        // if you have any trouble here you should first check
+        // res/layout/activity_main.xml and root layout is FrameLayout!
+        if (width > height)
+        {
+            if (width != surfaceWidth || height != surfaceHeight)
+            {
+            	surfaceWidth = width;
+            	surfaceHeight = height;
+
+            	queueEvent(new Runnable() {
+        			public void run() {
+        		    	nativeSurfaceChanged(surfaceWidth, surfaceHeight);
+        			}
+        		});
+                
+                // Workaround! we have to initialize keyboard after glView(OpenGL)
+                // initialization for some devices like
+                // HTC One (adreno 320, os 4.3)
+                final JNIActivity activity = JNIActivity.GetActivity();
+                activity.runOnUiThread(new Runnable(){
+                    @Override
+                    public void run() {
+                        activity.InitKeyboardLayout();
+                    }
+                });
+            }
+        }
+    }
+    
+    public void surfaceDestroyed(SurfaceHolder holder)
+    {
+    	queueEvent(new Runnable() {
+			public void run() {
+		    	nativeSurfaceDestroyed();
+			}
+		});
+    }
+    
     class MOGAListener implements ControllerListener
     {
-    	GLSurfaceView parent = null;
+    	JNISurfaceView parent = null;
     	
-    	MOGAListener(GLSurfaceView parent)
+    	MOGAListener(JNISurfaceView parent)
     	{
     		this.parent = parent;
     	}

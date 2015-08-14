@@ -120,7 +120,7 @@ namespace DAVA
 		Logger::Debug("[CorePlatformAndroid::QuitAction] done");
 	}
 
-	void CorePlatformAndroid::RepaintView()
+	void CorePlatformAndroid::ProcessFrame()
 	{
 		if(renderIsActive)
 		{
@@ -179,23 +179,11 @@ namespace DAVA
 		Logger::SetTag(logTag);
 	}
 
-	void AcquireContext()
+	void CorePlatformAndroid::RenderReset(int32 w, int32 h)
 	{
-
-	}
-
-	void ReleaseContex()
-	{
-
-	}
-
-	void CorePlatformAndroid::RenderRecreated(int32 w, int32 h)
-	{
-		Logger::Debug("[CorePlatformAndroid::RenderRecreated] start");
+		Logger::Debug("[CorePlatformAndroid::RenderReset] start");
 
 		renderIsActive = true;
-
-		Thread::InitGLThread();
 
 		if(wasCreated)
 		{
@@ -219,9 +207,6 @@ namespace DAVA
 			rendererParams.width = (uint32)width;
 			rendererParams.height = (uint32)height;
 
-			rendererParams.acquireContextFunc = &AcquireContext;
-			rendererParams.releaseContextFunc = &ReleaseContex;
-
 			// Set proper width and height before call FrameworkDidlaunched
 			FrameworkDidLaunched();
 
@@ -233,7 +218,7 @@ namespace DAVA
 			StartForeground();
 		}
 
-		Logger::Debug("[CorePlatformAndroid::RenderRecreated] end");
+		Logger::Debug("[CorePlatformAndroid::RenderReset] end");
 	}
 
 	void CorePlatformAndroid::OnCreateActivity()
@@ -380,5 +365,10 @@ namespace DAVA
 	{
 		return androidDelegate;
 	}
+
+    void CorePlatformAndroid::SetNativeWindow(void * nativeWindow)
+    {
+    	rendererParams.window = nativeWindow;
+    }
 }
 #endif // #if defined(__DAVAENGINE_ANDROID__)

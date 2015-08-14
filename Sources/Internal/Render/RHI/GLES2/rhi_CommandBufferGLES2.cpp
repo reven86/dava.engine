@@ -1300,6 +1300,8 @@ Trace("rhi-gl.swap-buffers done\n");
         macos_gl_end_frame();
 #elif defined(__DAVAENGINE_IPHONE__)
         ios_gl_end_frame();
+#elif defined(__DAVAENGINE_ANDROID__)
+        android_gl_end_frame();
 #endif
     }
 

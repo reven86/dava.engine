@@ -216,6 +216,7 @@ gles2_Texture_Create( const Texture::Descriptor& desc )
         self->format                = desc.format;
         self->isCubeMap             = desc.type == TEXTURE_TYPE_CUBE;
         self->isMapped              = false;
+        self->isRenderTarget		= false;
         self->isRenderBuffer        = is_depth;
         self->forceSetSamplerState  = true;
         
