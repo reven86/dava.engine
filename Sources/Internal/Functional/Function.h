@@ -300,7 +300,7 @@ public:
     Function()
     { }
 
-    Function(std::nullptr_t)
+    explicit Function(std::nullptr_t)
     { }
 
     template<typename Fn>
@@ -407,6 +407,9 @@ public:
         fn.invoker = nullptr;
         return *this;
     }
+
+    bool operator==(const Function&) const = delete;
+    bool operator!=(const Function&) const = delete;
 
     bool operator==(std::nullptr_t) const
     {
