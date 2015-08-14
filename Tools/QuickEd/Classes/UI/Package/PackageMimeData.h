@@ -38,6 +38,7 @@
 #include "Base/BaseTypes.h"
 
 class ControlNode;
+class StyleSheetNode;
 
 class PackageMimeData: public QMimeData
 {
@@ -50,8 +51,11 @@ public:
     PackageMimeData();
     virtual ~PackageMimeData();
     
-    void AddControlNode(ControlNode *node);
-    const DAVA::Vector<ControlNode*> &GetControlNodes() const;
+    void AddControl(ControlNode *node);
+    void AddStyle(StyleSheetNode *node);
+
+    const DAVA::Vector<ControlNode*> &GetControls() const;
+    const DAVA::Vector<StyleSheetNode*> &GetStyles() const;
     
     virtual bool hasFormat(const QString &mimetype) const override;
     virtual QStringList formats() const override;
@@ -60,7 +64,8 @@ protected:
     virtual QVariant retrieveData(const QString &mimetype, QVariant::Type preferredType) const override;
     
 private:
-    DAVA::Vector<ControlNode*> nodes;
+    DAVA::Vector<ControlNode*> controls;
+    DAVA::Vector<StyleSheetNode*> styles;
 };
 
 

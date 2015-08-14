@@ -63,6 +63,11 @@ ClassProperty::ePropertyType ClassProperty::GetType() const
     return TYPE_VARIANT;
 }
 
+DAVA::uint32 ClassProperty::GetFlags() const
+{
+    return EF_AFFECTS_STYLES;
+}
+
 VariantType ClassProperty::GetValue() const
 {
     return VariantType(control->GetControl()->GetClassName());

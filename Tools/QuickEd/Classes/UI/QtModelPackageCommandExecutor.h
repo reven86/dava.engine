@@ -42,6 +42,7 @@ class QUndoCommand;
 
 class ControlNode;
 class StyleSheetNode;
+class StyleSheetsNode;
 class PackageControlsNode;
 class PackageNode;
 class AbstractProperty;
@@ -61,23 +62,31 @@ public:
     void RemoveImportedPackagesFromPackage(const DAVA::Vector<PackageNode*> &importedPackage, PackageNode *package);
 
 public:
-    void ChangeProperty(StyleSheetNode *node, AbstractProperty *property, const DAVA::VariantType &value);
-    void ResetProperty(StyleSheetNode *node, AbstractProperty *property);
-
     void ChangeProperty(ControlNode *node, AbstractProperty *property, const DAVA::VariantType &value);
     void ResetProperty(ControlNode *node, AbstractProperty *property);
 
-public:
     void AddComponent(ControlNode *node, DAVA::uint32 componentType);
     void RemoveComponent(ControlNode *node, DAVA::uint32 componentType, DAVA::uint32 componentIndex);
+
+    void ChangeProperty(StyleSheetNode *node, AbstractProperty *property, const DAVA::VariantType &value);
+
+    void AddStyleProperty(StyleSheetNode *node, DAVA::uint32 propertyIndex);
+    void RemoveStyleProperty(StyleSheetNode *node, DAVA::uint32 propertyIndex);
+
+    void AddStyleSelector(StyleSheetNode *node);
+    void RemoveStyleSelector(StyleSheetNode *node, DAVA::int32 selectorIndex);
 
     DAVA::ResultList InsertControl(ControlNode *control, ControlsContainerNode *dest, DAVA::int32 destIndex);
     void InsertInstances(const DAVA::Vector<ControlNode*> &controls, ControlsContainerNode *dest, DAVA::int32 destIndex);
     void CopyControls(const DAVA::Vector<ControlNode*> &nodes, ControlsContainerNode *dest, DAVA::int32 destIndex);
     void MoveControls(const DAVA::Vector<ControlNode*> &nodes, ControlsContainerNode *dest, DAVA::int32 destIndex);
-    void RemoveControls(const DAVA::Vector<ControlNode*> &nodes);
 
-    bool Paste(PackageNode *root, ControlsContainerNode *dest, DAVA::int32 destIndex, const DAVA::String &data);
+    DAVA::ResultList InsertStyle(StyleSheetNode *node, StyleSheetsNode *dest, DAVA::int32 destIndex);
+    void CopyStyles(const DAVA::Vector<StyleSheetNode*> &nodes, StyleSheetsNode *dest, DAVA::int32 destIndex);
+    void MoveStyles(const DAVA::Vector<StyleSheetNode*> &nodes, StyleSheetsNode *dest, DAVA::int32 destIndex);
+
+    void Remove(const DAVA::Vector<ControlNode*> &controls, const DAVA::Vector<StyleSheetNode*> &styles);
+    bool Paste(PackageNode *root, PackageBaseNode *dest, DAVA::int32 destIndex, const DAVA::String &data);
 
 private:
     void AddImportedPackageIntoPackageImpl(PackageNode *importedPackage, PackageNode *package);
@@ -92,8 +101,6 @@ private:
     void PushCommand(QUndoCommand *cmd);
     void BeginMacro(const QString &name);
     void EndMacro();
-    
-    DAVA::String FormatControlNames(const DAVA::Vector<ControlNode*> &nodes);
     
 private:
     Document *document;
