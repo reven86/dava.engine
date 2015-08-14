@@ -89,8 +89,13 @@ void Server::OnPacketReceived(Net::IChannel * channel, const void* packet, size_
         }
     }
 
-//	delete[] static_cast<const uint8*>(packet);
 }
+
+void Server::OnPacketSent(Net::IChannel* channel, const void* buffer, size_t length)
+{
+    delete[] static_cast<const uint8*>(buffer);
+}
+
     
 void Server::OnChannelClosed(Net::IChannel * channel, const char8* message)
 {

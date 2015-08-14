@@ -70,7 +70,7 @@ Connection::Connection(Net::eNetworkRole _role, const Net::Endpoint & _endpoint,
 
 Connection::~Connection()
 {
-	if (Net::NetCore::INVALID_TRACK_ID != controllerId)
+	if (Net::NetCore::INVALID_TRACK_ID != controllerId && Net::NetCore::Instance() != nullptr)
 	{
 		DisconnectBlocked();
 	}
@@ -78,10 +78,12 @@ Connection::~Connection()
 
 bool Connection::Connect(Net::eNetworkRole role, Net::eTransportType transport)
 {
-	bool isRegistered = Net::NetCore::Instance()->IsServiceRegistered(NET_SERVICE_ID);
+    const auto serviceID = NET_SERVICE_ID;
+    
+	bool isRegistered = Net::NetCore::Instance()->IsServiceRegistered(serviceID);
 	if (!isRegistered)
 	{
-		isRegistered = Net::NetCore::Instance()->RegisterService(NET_SERVICE_ID,
+		isRegistered = Net::NetCore::Instance()->RegisterService(serviceID,
 			MakeFunction(&Connection::Create),
 			MakeFunction(&Connection::Delete));
 	}
@@ -90,7 +92,7 @@ bool Connection::Connect(Net::eNetworkRole role, Net::eTransportType transport)
 	{
 		Net::NetConfig config(role);
 		config.AddTransport(transport, endpoint);
-		config.AddService(NET_SERVICE_ID);
+		config.AddService(serviceID);
 
 		controllerId = Net::NetCore::Instance()->CreateController(config, this);
 		if (Net::NetCore::INVALID_TRACK_ID != controllerId)

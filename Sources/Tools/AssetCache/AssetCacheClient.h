@@ -82,7 +82,7 @@ public:
 	// Some data arrived into channel
 	void OnPacketReceived(Net::IChannel* channel, const void* buffer, size_t length) override;
 	// Buffer has been sent and can be reused or freed
-	void OnPacketSent(Net::IChannel* channel, const void* buffer, size_t length) override {};
+	void OnPacketSent(Net::IChannel* channel, const void* buffer, size_t length) override;
 	// Data packet with given ID has been delivered to other side
 	void OnPacketDelivered(Net::IChannel* channel, uint32 packetId) override {};
 

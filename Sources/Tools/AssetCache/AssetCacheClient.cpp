@@ -189,8 +189,12 @@ void Client::OnPacketReceived(DAVA::Net::IChannel* channel, const void* packet, 
                 break;
         }
     }
+}
 
-//	delete[] static_cast<const uint8*>(packet);
+void Client::OnPacketSent(Net::IChannel* channel, const void* buffer, size_t length)
+{
+    DVASSERT(openedChannel == channel);
+    delete[] static_cast<const uint8*>(buffer);
 }
 
 
