@@ -266,6 +266,14 @@ void Numberf(float64 num, int32 base, int32 size, int32 precision, int32 type, B
             integerPart++;
     }
 
+    // Check whether integral part should be incremented due to rounding rules according to precision
+    // e.g. 5.99 with precision 1 should become 6.0
+    if (fracPart >= pow(10.0, precision))
+    {
+        integerPart += 1;
+        fracPart -= static_cast<int32>(pow(10.0, precision));
+    }
+
     const size_t TEMPBUF_SIZE = 128;
     char16 tempBuf[TEMPBUF_SIZE];
     BufferState tstate(tempBuf, TEMPBUF_SIZE);
