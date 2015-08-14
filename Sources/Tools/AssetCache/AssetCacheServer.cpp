@@ -89,7 +89,7 @@ void Server::OnPacketReceived(Net::IChannel * channel, const void* packet, size_
         }
     }
 
-	delete[] static_cast<const uint8*>(packet);
+//	delete[] static_cast<const uint8*>(packet);
 }
     
 void Server::OnChannelClosed(Net::IChannel * channel, const char8* message)
@@ -204,20 +204,6 @@ void Server::OnWarmingUp(Net::IChannel * channel, KeyedArchive * archieve)
     }
 }
 
-bool Server::SendArchieve(DAVA::Net::IChannel* channel, KeyedArchive *archieve)
-{
-	DVASSERT(false && "Need to create one function for sendind data");
-
-	DVASSERT(archieve && channel);
-
-	auto packedSize = archieve->Serialize(nullptr, 0);
-	uint8 *packedData = new uint8[packedSize];
-
-	DVVERIFY(packedSize == archieve->Serialize(packedData, packedSize));
-
-	uint32 packedId = 0;
-	return channel->Send(packedData, packedSize, 0, &packedId);
-}
 
 }; // end of namespace AssetCache
 }; // end of namespace DAVA

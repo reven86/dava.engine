@@ -41,9 +41,12 @@ namespace Net
 	struct IChannel;
 }
 
+class KeyedArchive;
 namespace AssetCache
 {
 
+bool SendArchieve(Net::IChannel* channel, KeyedArchive *archieve);
+    
 class Connection
 {
 public:

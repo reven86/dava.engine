@@ -58,7 +58,7 @@ bool Client::Connect(const String &ip, uint16 port)
 void Client::Disconnect()
 {
 	netClient.reset();
-	openedChannel = nullptr;
+    openedChannel = nullptr;
 }
     
     
@@ -190,23 +190,9 @@ void Client::OnPacketReceived(DAVA::Net::IChannel* channel, const void* packet, 
         }
     }
 
-	delete[] static_cast<const uint8*>(packet);
+//	delete[] static_cast<const uint8*>(packet);
 }
 
-bool Client::SendArchieve(DAVA::Net::IChannel* channel, KeyedArchive *archieve)
-{
-	DVASSERT(false && "Need to create one function for sendind data");
-
-	DVASSERT(archieve && channel);
-
-	auto packedSize = archieve->Serialize(nullptr, 0);
-	uint8 *packedData = new uint8[packedSize];
-
-	DVVERIFY(packedSize == archieve->Serialize(packedData, packedSize));
-
-	uint32 packedId = 0;
-	return channel->Send(packedData, packedSize, 0, &packedId);
-}
 
 
 }; // end of namespace AssetCache

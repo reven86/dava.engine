@@ -92,8 +92,6 @@ public:
 
 
 private:
-	bool SendArchieve(DAVA::Net::IChannel* channel, KeyedArchive *archieve);
-
 
 	void OnAddToCache(Net::IChannel * channel, KeyedArchive * archieve);
 	void OnGetFromCache(Net::IChannel * channel, KeyedArchive * archieve);

@@ -33,8 +33,10 @@
 
 #include "Base/FunctionTraits.h"
 #include "Debug/DVAssert.h"
+#include "FileSystem/KeyedArchive.h"
 #include "FileSystem/Logger.h"
 
+#include "Network/IChannel.h"
 #include "Network/NetworkCommon.h"
 #include "Network/NetConfig.h"
 #include "Network/NetCore.h"
@@ -45,7 +47,19 @@
 namespace DAVA {
 namespace AssetCache{
 
+bool SendArchieve(Net::IChannel* channel, KeyedArchive *archieve)
+{
+	DVASSERT(archieve && channel);
 
+	auto packedSize = archieve->Serialize(nullptr, 0);
+	uint8 *packedData = new uint8[packedSize];
+
+	DVVERIFY(packedSize == archieve->Serialize(packedData, packedSize));
+
+	uint32 packedId = 0;
+	return channel->Send(packedData, packedSize, 0, &packedId);
+}
+    
 Connection::Connection(Net::eNetworkRole _role, const Net::Endpoint & _endpoint, Net::IChannelListener * _listener, Net::eTransportType transport)
 	: endpoint(_endpoint)
 	, listener(_listener)

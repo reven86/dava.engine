@@ -91,8 +91,6 @@ private:
     void OnAddedToCache(KeyedArchive * archieve);
     void OnGotFromCache(KeyedArchive * archieve);
 
-	bool SendArchieve(DAVA::Net::IChannel* channel, KeyedArchive *archieve);
-    
 private:
 	std::unique_ptr<Connection> netClient;
 	
