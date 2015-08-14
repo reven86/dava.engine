@@ -44,7 +44,7 @@ class FrameControl : public DAVA::UIControl
     void Draw(const DAVA::UIGeometricData &geometricData) override
     {
         Color oldColor = RenderManager::Instance()->GetColor();
-        RenderManager::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.f);
+        RenderManager::Instance()->SetColor(Color(1.0f, 0.0f, 0.0f, 1.f));
         RenderHelper::Instance()->DrawRect(Rect(geometricData.position, geometricData.size * GetGeometricData().scale), RenderState::RENDERSTATE_2D_BLEND);
         RenderManager::Instance()->SetColor(oldColor);
     }
@@ -56,7 +56,10 @@ class FrameRectControl : public DAVA::UIControl
     {
         Color oldColor = RenderManager::Instance()->GetColor();
         RenderManager::Instance()->SetColor(0.0f, 1.0f, 0.0f, 1.f);
-        RenderHelper::Instance()->FillRect(Rect(geometricData.position, geometricData.size), RenderState::RENDERSTATE_2D_BLEND);
+        Rect trueRect(geometricData.position, geometricData.size * GetGeometricData().scale);
+        Rect drawRect(Vector2(0, 0), geometricData.size);
+        drawRect.SetCenter(trueRect.GetCenter());
+        RenderHelper::Instance()->FillRect(drawRect, RenderState::RENDERSTATE_2D_BLEND);
         RenderManager::Instance()->SetColor(oldColor);
     }
 };
