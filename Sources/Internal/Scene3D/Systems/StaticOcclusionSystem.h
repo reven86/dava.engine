@@ -60,6 +60,11 @@ private:
 // System that allow to build occlusion information. Required only in editor.
 class StaticOcclusionBuildSystem : public SceneSystem
 {
+    enum eIndexRenew
+    {
+        RENEW_OCCLUSION_INDICES,
+        LEAVE_OLD_INDICES,
+    };
 public:
     StaticOcclusionBuildSystem(Scene * scene);
     virtual ~StaticOcclusionBuildSystem();
@@ -98,7 +103,8 @@ private:
     uint32 activeIndex;
     uint32 buildStepsCount;
     uint32 buildStepRemains;
-    uint32 renewIndex;
+    eIndexRenew renewIndex;
+    
 #if RHI_COMPLETE
     Map<NMaterial* , RenderStateData> originalRenderStateData;
 #endif // RHI_COMPLETE

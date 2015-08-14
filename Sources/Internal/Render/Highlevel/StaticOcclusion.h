@@ -73,52 +73,29 @@ public:
     float32* cellHeightOffset;
 };
 
+struct StaticOcclusionFrameResult
+{
+    uint32 blockIndex;
+    rhi::HQueryBuffer queryBuffer;
+    Vector<RenderObject *> frameRequests;
+};
+
 class StaticOcclusion
 {
-public:
-    enum eIndexRenew
-    {
-        RENEW_OCCLUSION_INDICES,
-        LEAVE_OLD_INDICES,
-    };
+public:    
     
     StaticOcclusion();
     ~StaticOcclusion();
+                
+    void StartBuildOcclusion(StaticOcclusionData * currentData, RenderSystem * renderSystem, Landscape * landscape);                       
+    void ProccessBlock();                               
     
-    inline void SetScene(Scene * _scene);
-    inline void SetRenderSystem(RenderSystem * _renderSystem);
-    
-    void BuildOcclusionInParallel(Vector<RenderObject*> & renderObjects,
-                                  Landscape * landscape,
-                                  StaticOcclusionData * currentData,
-                                  eIndexRenew renewIndexEnum);
-    
-    void SetEqualVisibilityVector(Map<RenderObject*,
-                                  Vector<RenderObject*> > & equalVisibility);
 
+private:    
+    AABBox3 GetCellBox(uint32 x, uint32 y, uint32 z);            
     
-    inline OcclusionQueryPool & GetOcclusionQueryPool();
-    //uint32 * GetCellVisibilityData(Camera * camera);
-    
-    uint32 RenderFrame();
-    void RenderFrame(uint32 cellX, uint32 cellY, uint32 cellZ);
-
-    void FillOcclusionDataObject(StaticOcclusionData * data);
-    
-    void RecordFrameQuery(RenderBatch * batch, OcclusionQueryPoolHandle handle);
-    
-    //Vector<Vector3> renderPositions;
-    //Vector<Vector3> renderDirections;
-    
-    inline Texture * GetRTTexture() const;
-    
-private:
-    void ProcessRecordedBatches();
-    AABBox3 GetCellBox(uint32 x, uint32 y, uint32 z);
-        
-    OcclusionQueryPool queryPool;
-    Vector<std::pair<RenderBatch*, OcclusionQueryPoolHandle> > recordedBatches;
-    Set<RenderObject*> frameGlobalVisibleInfo;
+    void RenderCurrentBlock();
+    void ProcessRecorderQueries();    
     
     AABBox3  occlusionAreaRect;
     float32 *cellHeightOffset;
@@ -130,27 +107,19 @@ private:
     uint32 currentFrameY;
     uint32 currentFrameZ;
     Camera * cameras[6];
-    StaticOcclusionRenderPass * staticOcclusionRenderPass;
-    Texture * renderTargetTexture;
+    StaticOcclusionRenderPass * staticOcclusionRenderPass;            
 
     StaticOcclusionData * currentData;
     
-    // for testing purposes
-    RenderSystem * renderSystem;
-    Scene * scene;
-    Vector<RenderObject*> renderObjectsArray;
-    Landscape * landscape;
-    Map<RenderObject*, Vector<RenderObject*> > equalVisibilityArray;
-};
+    Vector<StaticOcclusionFrameResult> occlusionFrameResults;
     
-inline OcclusionQueryPool & StaticOcclusion::GetOcclusionQueryPool()
-{
-    return queryPool;
-}
+    RenderSystem * renderSystem;    
+    Landscape * landscape;
 
-inline void StaticOcclusion::SetScene(Scene * _scene) { scene = _scene; };
-inline void StaticOcclusion::SetRenderSystem(RenderSystem * _renderSystem) {renderSystem = _renderSystem; };
-inline Texture * StaticOcclusion::GetRTTexture() const { return renderTargetTexture; };
+
+
+    
+};
 
 };
 

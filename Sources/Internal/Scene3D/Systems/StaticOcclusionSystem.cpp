@@ -208,12 +208,11 @@ void StaticOcclusionBuildSystem::StartBuildOcclusion(BaseObject * bo, void * mes
     for(uint32 k = 0; k < size; ++k)
     {
         RenderObject * renderObject = GetRenderObject(entities[k]);
-        if (   (RenderObject::TYPE_MESH == renderObject->GetType())
-            || (RenderObject::TYPE_LANDSCAPE == renderObject->GetType())
+        if (   (RenderObject::TYPE_MESH == renderObject->GetType())            
             || (RenderObject::TYPE_SPEED_TREE == renderObject->GetType()))
         {
             renderObjectsArray.push_back(renderObject);
-            renderObject->SetFlags(renderObject->GetFlags() | RenderObject::VISIBLE_STATIC_OCCLUSION);
+            renderObject->AddFlag(RenderObject::VISIBLE_STATIC_OCCLUSION);
         }
         if (RenderObject::TYPE_LANDSCAPE == renderObject->GetType())
         {
@@ -237,7 +236,7 @@ void StaticOcclusionBuildSystem::StartBuildOcclusion(BaseObject * bo, void * mes
     
     StaticOcclusionData & data = componentInProgress->GetData();
     
-    if (StaticOcclusion::RENEW_OCCLUSION_INDICES == renewIndex)
+    if (RENEW_OCCLUSION_INDICES == renewIndex)
     {
         data.Init(occlusionComponent->GetSubdivisionsX(),
                   occlusionComponent->GetSubdivisionsY(),
@@ -247,24 +246,26 @@ void StaticOcclusionBuildSystem::StartBuildOcclusion(BaseObject * bo, void * mes
                   occlusionComponent->GetCellHeightOffsets());
 
         GetScene()->staticOcclusionSystem->ClearOcclusionObjects();
+
+        for (uint32 k = 0; k < renderObjectsArray.size(); ++k)
+        {
+            DVASSERT(renderObjectsArray[k]->GetStaticOcclusionIndex() == INVALID_STATIC_OCCLUSION_INDEX); //if we are going to renew indices they should be cleared prior to it
+            renderObjectsArray[k]->SetStaticOcclusionIndex((uint16)k);
+        }
     }
+            
     
-    staticOcclusion->SetScene(GetScene());
-    staticOcclusion->SetRenderSystem(GetScene()->GetRenderSystem());
-    staticOcclusion->BuildOcclusionInParallel(renderObjectsArray, landscape, &data, (StaticOcclusion::eIndexRenew)renewIndex);
+    staticOcclusion->StartBuildOcclusion(&data, GetScene()->GetRenderSystem(), landscape);
     
     SceneForceLod(0);
-    UpdateMaterialsForOcclusionRecursively(GetScene());
-    
-    Map<RenderObject*, Vector<RenderObject*> > equalRenderObjects;
-    staticOcclusion->SetEqualVisibilityVector(equalRenderObjects);
+    UpdateMaterialsForOcclusionRecursively(GetScene());       
     
     messageQueue.AddMessage(Message(this, &StaticOcclusionBuildSystem::OcclusionBuildStep, 0));
 }
     
 void StaticOcclusionBuildSystem::OcclusionBuildStep(BaseObject * bo, void * messageData, void * callerData)
 {
-    if (StaticOcclusion::LEAVE_OLD_INDICES == renewIndex)
+    if (LEAVE_OLD_INDICES == renewIndex)
     {
         const Vector3 & position = camera->GetPosition();
         
@@ -423,8 +424,9 @@ void StaticOcclusionBuildSystem::RestoreOcclusionMaterials()
 }
 
 void StaticOcclusionBuildSystem::Process(float32 timeElapsed)
-{
-    messageQueue.DispatchMessages();
+{   
+    //if (is building)
+    staticOcclusion->ProccessBlock();
 }
     
     
