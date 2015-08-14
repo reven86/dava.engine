@@ -66,7 +66,6 @@ public:
     // Add statistics items for memory consumption trends
     void AppendStatItems(const DAVA::MMCurStat* statBuf, size_t itemCount);
     // Add memory snapshot retrieved from profiled device
-    void AppendSnapshot(const DAVA::MMSnapshot* msnapshot);
     void AppendSnapshot(const DAVA::FilePath& filename);
     // Flush file buffers to storage
     void Flush();

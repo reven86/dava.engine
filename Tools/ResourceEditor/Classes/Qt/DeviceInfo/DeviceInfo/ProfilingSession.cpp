@@ -135,27 +135,6 @@ void ProfilingSession::AppendStatItems(const DAVA::MMCurStat* statBuf, size_t it
     }
 }
 
-void ProfilingSession::AppendSnapshot(const DAVA::MMSnapshot* msnapshot)
-{
-    FilePath filename = storageDir;
-    filename += Format("%02d_at_%d.snapshot", snapshotSeqNo, uint32(msnapshot->timestamp / 1000));
-
-    RefPtr<File> file(File::Create(filename, File::CREATE | File::WRITE));
-    if (file.Valid())
-    {
-        file->Write(msnapshot, msnapshot->size);
-        snapshots.emplace_back(filename, msnapshot);
-
-        if (msnapshot->symbolCount > 0)
-        {
-            uint32 symOffset = sizeof(MMSnapshot) + msnapshot->statItemSize + msnapshot->blockCount * sizeof(MMBlock);
-            const MMSymbol* symbols = OffsetPointer<const MMSymbol>(msnapshot, symOffset);
-            LoadSymbols(symbols, msnapshot->symbolCount);
-        }
-    }
-    snapshotSeqNo += 1;
-}
-
 void ProfilingSession::AppendSnapshot(const DAVA::FilePath& filename)
 {
     LoadShapshotDescriptor(filename);
