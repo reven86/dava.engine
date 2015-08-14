@@ -36,11 +36,12 @@ using namespace DAVA;
 
 void FrameworkDidLaunched()
 {    
+#define WIDTH   1024
+#define HEIGHT  768
 #if defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
     
 //for iPad
-#define WIDTH   1024
-#define HEIGHT  768
+
     
 	KeyedArchive * appOptions = new KeyedArchive();
 	appOptions->SetInt32("orientation", Core::SCREEN_ORIENTATION_LANDSCAPE_LEFT);
@@ -59,17 +60,17 @@ void FrameworkDidLaunched()
 
     KeyedArchive * appOptions = new KeyedArchive();
 
-	appOptions->SetInt32("renderer", rhi::RHI_DX9);
+	appOptions->SetInt32("renderer", rhi::RHI_DX11);
 
-    appOptions->SetInt32("width", DeviceInfo::GetScreenInfo().width);
-    appOptions->SetInt32("height", DeviceInfo::GetScreenInfo().height);
+    appOptions->SetInt32("width", WIDTH);
+    appOptions->SetInt32("height", HEIGHT);
 
     appOptions->SetInt32("fullscreen", 0);
     appOptions->SetInt32("bpp", 32);
     appOptions->SetString(String("title"), String("Scene Viewer"));
 
-    DAVA::VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(DeviceInfo::GetScreenInfo().width, DeviceInfo::GetScreenInfo().height);
-    DAVA::VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(DeviceInfo::GetScreenInfo().width, DeviceInfo::GetScreenInfo().height, "Gfx");
+    DAVA::VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(WIDTH, HEIGHT);
+    DAVA::VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(WIDTH, HEIGHT, "Gfx");
 
 #else
 	KeyedArchive * appOptions = new KeyedArchive();

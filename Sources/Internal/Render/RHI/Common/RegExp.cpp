@@ -199,7 +199,7 @@ RegExp::compile( const TCHAR *pattern, const TCHAR* attributes )
 
     if (!this->_is_ref)
     free(this->_pattern);
-    this->_pattern = _tcsdup(pattern);
+    this->_pattern = _strdup(pattern);
     this->_is_ref = _is_ref;
     _tcscpy(flags, attributes);
 

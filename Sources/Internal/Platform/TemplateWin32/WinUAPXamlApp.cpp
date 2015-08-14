@@ -195,6 +195,10 @@ void WinUAPXamlApp::Run()
     // View size and orientation option should be configured in FrameowrkDidLaunched
     FrameworkDidLaunched();
 
+	core->rendererParams.window = reinterpret_cast<void*>(swapChainPanel);
+	core->rendererParams.width = core->GetOptions()->GetInt32("width", -1);
+	core->rendererParams.height = core->GetOptions()->GetInt32("height", -1);
+
     core->RunOnUIThreadBlocked([this]() {
         SetupEventHandlers();
         SetTitleName();

@@ -40,11 +40,13 @@ Initialize( Api api, const InitParam& param )
 {
     switch( api )
     {
-#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_WIN_UAP__)
+#if defined(__DAVAENGINE_WIN32__)
         case RHI_DX9 :
             dx9_Initialize( param );
             break;
+#endif
 
+#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_WIN_UAP__)
         case RHI_DX11 :
             dx11_Initialize( param );
             break;

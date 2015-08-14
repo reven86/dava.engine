@@ -6,7 +6,7 @@
         #define WIN32_LEAN_AND_MEAN
     #endif    
     #pragma warning( disable: 4005 )
-    #define _WIN32_WINNT 0x0601
+    //#define _WIN32_WINNT 0x0602
     #include <windows.h>
 
     #pragma warning( disable: 7 9 193 271 304 791 )
@@ -17,7 +17,6 @@
     #include "../rhi_Type.h"
 
     #define RHI__FORCE_DX11_91 1
-
 
 const char* D3D11ErrorText( HRESULT hr );
 

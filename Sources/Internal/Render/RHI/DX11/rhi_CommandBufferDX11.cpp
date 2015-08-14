@@ -856,7 +856,7 @@ dx11_CommandBuffer_SetMarker( Handle cmdBuf, const char* text )
     }
     else
     {
-        ::D3DPERF_SetMarker( D3DCOLOR_ARGB(0xFF,0x40,0x40,0x80), txt );
+        //::D3DPERF_SetMarker( D3DCOLOR_ARGB(0xFF,0x40,0x40,0x80), txt );
     }
 
 #else
