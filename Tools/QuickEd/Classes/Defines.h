@@ -37,18 +37,24 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 class PackageBaseNode;
 
-using SelectedNodes = DAVA::UnorderedSet < PackageBaseNode* > ;
+using SelectedNodes = DAVA::Set < PackageBaseNode* > ;
 
 template <typename T>
-void UniteNodes(const DAVA::UnorderedSet<T>& from, DAVA::UnorderedSet<T> &to)
+void UniteNodes(const DAVA::Set<T>& from, DAVA::Set<T> &to)
 {
-    to.insert(from.begin(), from.end());
+    if (!from.empty())
+    {
+        to.insert(from.begin(), from.end());
+    }
 }
 
 template <typename T>
-void SubstractNodes(const  DAVA::UnorderedSet<T> &from, DAVA::UnorderedSet<T> &to)
+void SubstractNodes(const DAVA::Set<T> &nodes, DAVA::Set<T> &from)
 {
-    set_difference(to.begin(), to.end(), from.begin(), from.end(), std::inserter(to, to.end()));
+    for (auto node : nodes)
+    {
+        from.erase(node);
+    }
 }
 
 #if defined Q_DECLARE_METATYPE

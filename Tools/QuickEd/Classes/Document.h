@@ -53,6 +53,7 @@ class PackageModel;
 class ControlNode;
 class SelectionSystem;
 class CanvasSystem;
+class HUDSystem;
 
 class Document : public QObject, public SelectionInterface
 {
@@ -62,12 +63,12 @@ public:
     ~Document();
     void Detach();
     void Attach();
+    void AttachToRoot(DAVA::UIControl *root);
     const DAVA::FilePath &GetPackageFilePath() const;
 
     QUndoStack *GetUndoStack() const;
     PackageNode *GetPackage() const;
     QtModelPackageCommandExecutor *GetCommandExecutor() const;
-    CanvasSystem *GetCanvasSystem() const;
     void RefreshLayout();
     WidgetContext* GetContext(QObject* requester) const;
     void SetContext(QObject* requester, WidgetContext* widgetContext);
@@ -87,6 +88,7 @@ private:
 
     SelectionSystem *selectionSystem;
     CanvasSystem *canvasSystem;
+    HUDSystem *hudSystem;
 };
 
 inline QUndoStack *Document::GetUndoStack() const

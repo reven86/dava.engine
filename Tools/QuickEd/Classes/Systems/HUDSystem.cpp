@@ -1,83 +1,94 @@
 /*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
+Copyright (c) 2008, binaryzebra
+All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
 
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
+* Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+* Redistributions in binary form must reproduce the above copyright
+notice, this list of conditions and the following disclaimer in the
+documentation and/or other materials provided with the distribution.
+* Neither the name of the binaryzebra nor the
+names of its contributors may be used to endorse or promote products
+derived from this software without specific prior written permission.
 
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "HUDSystem.h"
 
-#include "EditScreen.h"
-#include "EditorSettings.h"
+#include "UI/UIControl.h"
+#include "Base/BaseTypes.h"
+#include "Model/PackageHierarchy/PackageBaseNode.h"
+#include "Model/PackageHierarchy/ControlNode.h"
+#include "Model/PackageHierarchy/PackageNode.h"
+#include "Model/PackageHierarchy/PackageControlsNode.h"
+#include "Render/RenderState.h"
+#include "Render/RenderManager.h"
+#include "Render/RenderHelper.h"
 
 using namespace DAVA;
-/*
-
-CheckeredCanvas::CheckeredCanvas()
-: UIControl()
+class FrameControl : public DAVA::UIControl
 {
-    GetBackground()->SetSprite("~res:/Gfx/CheckeredBg", 0);
-    GetBackground()->SetDrawType(UIControlBackground::DRAW_TILED);
-    GetBackground()->SetShader(SafeRetain(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR));
-}
-
-void CheckeredCanvas::Draw( const UIGeometricData &geometricData )
-{
-    float32 invScale = 1.0f / geometricData.scale.x;
-    UIGeometricData unscaledGd;
-    unscaledGd.scale = Vector2(invScale, invScale);
-    unscaledGd.size = geometricData.size * geometricData.scale.x;
-    unscaledGd.AddGeometricData(geometricData);
-    GetBackground()->Draw(unscaledGd);
-}
-
-void CheckeredCanvas::DrawAfterChilds( const UIGeometricData &geometricData )
-{
-}
-
-void PackageCanvas::LayoutCanvas()
-{
-    float32 maxWidth = 0.0f;
-    float32 totalHeight = 0.0f;
-    for (List< UIControl* >::const_iterator iter = childs.begin(); iter != childs.end(); ++iter)
+    void Draw(const DAVA::UIGeometricData &geometricData) override
     {
-        maxWidth = Max(maxWidth, (*iter)->GetSize().x);
-        totalHeight += (*iter)->GetSize().y;
+        Color oldColor = RenderManager::Instance()->GetColor();
+        RenderManager::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.f);
+        RenderHelper::Instance()->DrawRect(Rect(geometricData.position, geometricData.size * GetGeometricData().scale), RenderState::RENDERSTATE_2D_BLEND);
+        RenderManager::Instance()->SetColor(oldColor);
     }
+};
 
-    SetSize(Vector2(maxWidth, totalHeight));
-
-    float32 curY = 0.0f;
-    for (List< UIControl* >::const_iterator iter = childs.begin(); iter != childs.end(); ++iter)
+class FrameRectControl : public DAVA::UIControl
+{
+    void Draw(const DAVA::UIGeometricData &geometricData) override
     {
-        UIControl* control = *iter;
+        Color oldColor = RenderManager::Instance()->GetColor();
+        RenderManager::Instance()->SetColor(0.0f, 1.0f, 0.0f, 1.f);
+        RenderHelper::Instance()->FillRect(Rect(geometricData.position, geometricData.size), RenderState::RENDERSTATE_2D_BLEND);
+        RenderManager::Instance()->SetColor(oldColor);
+    }
+};
 
-        Rect rect = control->GetRect();
-        rect.y = curY;
-        rect.x = (maxWidth - rect.dx)/2.0f;
-        control->SetRect(rect);
+HUDSystem::HUDSystem()
+{
+    hudControl = new UIControl();
+}
 
-        curY += rect.dy + 5;
+HUDSystem::~HUDSystem()
+{
+    hudControl->Release();
+}
+
+void HUDSystem::Attach(DAVA::UIControl* root)
+{
+    root->AddControl(hudControl);
+}
+
+void HUDSystem::SelectionWasChanged(const SelectedControls& selected, const SelectedControls& deselected)
+{
+    hudControl->RemoveAllControls();
+    for (auto control : selected)
+    {
+        ScopedPtr<UIControl> frame(new FrameControl());
+        frame->SetRect(control->GetControl()->GetRect());
+        hudControl->AddControl(frame);
+        ScopedPtr<UIControl> r(new FrameRectControl());
+        Rect rect(Vector2(0, 0), Vector2(10, 10));
+        rect.SetCenter(control->GetControl()->GetPosition());
+        r->SetRect(rect);
+        hudControl->AddControl(r);
     }
 }
-*/
+

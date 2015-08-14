@@ -45,6 +45,7 @@
 
 #include "Systems/SelectionSystem.h"
 #include "Systems/CanvasSystem.h"
+#include "Systems/HUDSystem.h"
 
 using namespace DAVA;
 
@@ -55,9 +56,11 @@ Document::Document(PackageNode *_package, QObject *parent)
     , undoStack(new QUndoStack(this))
     , selectionSystem(new SelectionSystem())
     , canvasSystem(new CanvasSystem(this))
+    , hudSystem(new HUDSystem())
 {
     selectionSystem->AddListener(this);
     selectionSystem->AddListener(canvasSystem);
+    selectionSystem->AddListener(hudSystem);
     connect(GetEditorFontSystem(), &EditorFontSystem::UpdateFontPreset, this, &Document::RefreshAllControlProperties);
 }
 
@@ -67,6 +70,7 @@ Document::~Document()
     SafeRelease(commandExecutor);
     delete selectionSystem;
     delete canvasSystem;
+    delete hudSystem;
 }
 
 void Document::Detach()
@@ -79,16 +83,16 @@ void Document::Attach()
     emit SelectedNodesChanged(selectedNodes, SelectedNodes());
 }
 
+void Document::AttachToRoot(DAVA::UIControl* root)
+{
+    canvasSystem->Attach(root);
+    hudSystem->Attach(root);
+}
+
 const DAVA::FilePath &Document::GetPackageFilePath() const
 {
     return package->GetPath();
 }
-
-CanvasSystem* Document::GetCanvasSystem() const
-{
-    return canvasSystem;
-}
-
 
 void Document::RefreshLayout()
 {
@@ -154,6 +158,7 @@ void Document::OnSelectedNodesChanged(const SelectedNodes &selected, const Selec
     selectionSystem->SelectionWasChanged(selectedControls, deselectedControls);
     if (tmpSelected != selectedNodes)
     {
+        selectedNodes = tmpSelected;
         emit SelectedNodesChanged(selected, deselected);
     }
 }

@@ -109,9 +109,14 @@ void PreviewWidget::OnDocumentChanged(Document *arg)
     rootControl->RemoveAllControls();
     if (nullptr != document)
     {
-        document->GetCanvasSystem()->Attach(rootControl);
+        document->AttachToRoot(rootControl);
         scrollAreaController->UpdateCanvasContentSize();
     }
+}
+
+void PreviewWidget::OnSelectedNodesChanged(const SelectedNodes &selected, const SelectedNodes &deselected)
+{
+    scrollAreaController->UpdateCanvasContentSize();
 }
 
 void PreviewWidget::OnMonitorChanged()

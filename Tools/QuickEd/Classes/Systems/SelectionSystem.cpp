@@ -82,7 +82,7 @@ void SelectionSystem::SelectionWasChanged(const SelectedControls &selected, cons
     SubstractNodes(deselected, selectedControls);
     for (auto listener : listeners)
     {
-        listener->SelectionWasChanged(SelectedControls(), deselected);
+        listener->SelectionWasChanged(selected, deselected);
     }
 }
 

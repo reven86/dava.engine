@@ -27,8 +27,8 @@
 =====================================================================================*/
 
 
-#ifndef __UIEditor_EditScreen_h__
-#define __UIEditor_EditScreen_h__
+#ifndef __QUICKED_CANVAS_SYSTEM_H__
+#define __QUICKED_CANVAS_SYSTEM_H__
 
 #include "Interfaces.h"
 #include "Defines.h"
@@ -56,4 +56,4 @@ private:
     SelectedControls selectedControls;
 };
 
-#endif // __UIEditor_EditScreen_h__
+#endif // __QUICKED_CANVAS_SYSTEM_H__

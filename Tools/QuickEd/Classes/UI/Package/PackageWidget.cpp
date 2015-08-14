@@ -276,8 +276,9 @@ void PackageWidget::RemoveNodes(const DAVA::Vector<ControlNode*> &nodes)
 void PackageWidget::OnSelectionChanged(const QItemSelection &proxySelected, const QItemSelection &proxyDeselected)
 {
     if (nullptr == filteredPackageModel)
+    {
         return;
-
+    }
     RefreshActions();
     SelectedNodes selected;
     SelectedNodes deselected;

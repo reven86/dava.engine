@@ -96,9 +96,12 @@ void DocumentGroup::SetActiveDocument(Document* document)
     {
         connect(active, &Document::SelectedNodesChanged, this, &DocumentGroup::SelectedNodesChanged);
         undoGroup->setActiveStack(active->GetUndoStack());
-        active->Attach();
     }
     emit ActiveDocumentChanged(document);
+    if (nullptr != active)
+    {
+        active->Attach();
+    }
 }
 
 void DocumentGroup::OnSelectedNodesChanged(const SelectedNodes &selected, const SelectedNodes &deselected)

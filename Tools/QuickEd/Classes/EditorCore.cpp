@@ -79,6 +79,7 @@ EditorCore::EditorCore(QObject *parent)
     connect(mainWindow->packageWidget, &PackageWidget::SelectedNodesChanged, documentGroup, &DocumentGroup::OnSelectedNodesChanged);
 
     connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->previewWidget, &PreviewWidget::OnDocumentChanged);
+    connect(documentGroup, &DocumentGroup::SelectedNodesChanged, mainWindow->previewWidget, &PreviewWidget::OnSelectedNodesChanged);
     
     connect(project->GetEditorLocalizationSystem(), &EditorLocalizationSystem::LocaleChanged, this, &EditorCore::UpdateLanguage);
 

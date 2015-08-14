@@ -33,6 +33,7 @@
 #include <QWidget>
 #include "ui_PreviewWidget.h"
 #include <UI/UIControl.h>
+#include "Defines.h"
 
 namespace Ui {
     class PreviewWidget;
@@ -53,6 +54,7 @@ public:
     DavaGLWidget *GetDavaGLWidget();
 public slots:
     void OnDocumentChanged(Document *document);
+    void OnSelectedNodesChanged(const SelectedNodes &selected, const SelectedNodes &deselected);
 
 private slots:
     // Zoom.

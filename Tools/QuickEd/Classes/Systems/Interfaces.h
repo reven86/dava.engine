@@ -47,7 +47,7 @@ public:
 class SelectionInterface
 {
 public:
-    using SelectedControls = DAVA::UnorderedSet < ControlNode* > ;
+    using SelectedControls = DAVA::Set < ControlNode* >;
     virtual void SelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected) = 0;
 };
 

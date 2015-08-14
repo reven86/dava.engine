@@ -27,27 +27,29 @@
 =====================================================================================*/
 
 
-#ifndef __UIEditor_EditScreen_h__
-#define __UIEditor_EditScreen_h__
+#ifndef __QUICKED_HUD_SYSTEM_H__
+#define __QUICKED_HUD_SYSTEM_H__
 
-#include "DAVAEngine.h"
-/*
-class CheckeredCanvas: public DAVA::UIControl
+#include "Interfaces.h"
+#include "Defines.h"
+
+class Document;
+namespace DAVA
+{
+    class UIControl;
+}
+
+class HUDSystem : public SelectionInterface
 {
 public:
-    CheckeredCanvas();
+    HUDSystem();
+    virtual ~HUDSystem();
+    void Attach(DAVA::UIControl *root);
+    void SelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected) override;
+
 private:
-    ~CheckeredCanvas() override = default;
-    
-    void Draw(const DAVA::UIGeometricData &geometricData) override;
-    void DrawAfterChilds(const DAVA::UIGeometricData &geometricData) override;    
+    DAVA::UIControl *hudControl = nullptr;
+    SelectedControls selectedControls;
 };
 
-class PackageCanvas: public DAVA::UIControl
-{
-public:
-    void LayoutCanvas();
-
-};
-*/
-#endif // __UIEditor_EditScreen_h__
+#endif // __QUICKED_HUD_SYSTEM_H__

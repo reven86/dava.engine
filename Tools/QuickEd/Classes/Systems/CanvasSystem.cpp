@@ -27,16 +27,15 @@
 =====================================================================================*/
 
 #include "CanvasSystem.h"
-#include "Defines.h"
-#include "EditorCore.h"
 #include "Document.h"
-
 #include "UI/UIControl.h"
 #include "Base/BaseTypes.h"
 #include "Model/PackageHierarchy/PackageBaseNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
+#include "Render/Shader.h"
 
 using namespace DAVA;
 

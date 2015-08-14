@@ -47,6 +47,7 @@ public:
     Q_PROPERTY(QSize viewSize READ GetViewSize WRITE SetViewSize NOTIFY ViewSizeChanged);
     Q_PROPERTY(int scale READ GetScale WRITE SetScale NOTIFY ScaleChanged);
     Q_PROPERTY(QPoint position READ GetPosition WRITE SetPosition NOTIFY PositionChanged);
+
     ScrollAreaController(DAVA::UIControl *root, QObject *parent = nullptr);
     ~ScrollAreaController() = default;
 
