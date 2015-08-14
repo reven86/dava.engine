@@ -99,7 +99,12 @@ void MMNetServer::ChannelClosed(const char8* /*message*/)
     lastGatheredStatTimestamp = 0;
     statSentStatTimestamp = 0;
     statItemsInPacket = 0;
-    freePoolEntries = totalPoolEntries;
+    freePoolEntries = 0;
+    totalPoolEntries = 0;
+    for (MMNetProto::Packet& p : packetPool)
+    {
+        p = std::move(MMNetProto::Packet());
+    }
     packetQueue.clear();
     anotherService->Stop();
 }
@@ -140,33 +145,6 @@ void MMNetServer::ProcessRequestSnapshot(const MMNetProto::PacketHeader* inHeade
     SendPacket(CreateHeaderOnlyPacket(MMNetProto::TYPE_REPLY_SNAPSHOT, status));
 }
 
-void MMNetServer::AutoReplyStat(uint64 curTimestamp)
-{
-    // Do not send anything if outgoing queue is greater some reasonable size
-    if (packetQueue.size() > 256)
-        return;
-
-    if (0 == statSentStatTimestamp)
-    {
-        curStatPacket = ObtainStatPacket();
-        statSentStatTimestamp = curTimestamp;
-    }
-
-    MemoryManager::Instance()->GetCurStat(curTimestamp, curStatPacket.Data<void>(statItemSize * statItemsInPacket), statItemSize);
-
-    MMNetProto::PacketHeader* header = curStatPacket.Header();
-    header->length += statItemSize;
-    header->itemCount += 1;
-
-    statItemsInPacket += 1;
-    if (statItemsInPacket == maxStatItemsPerPacket || (curTimestamp - statSentStatTimestamp) >= statSendFreq)
-    {
-        statItemsInPacket = 0;
-        statSentStatTimestamp = 0;
-        SendPacket(std::forward<MMNetProto::Packet>(curStatPacket));
-    }
-}
-
 void MMNetServer::PacketDelivered()
 {
     DVASSERT(!packetQueue.empty());
@@ -199,6 +177,33 @@ void MMNetServer::PacketDelivered()
     {
         MMNetProto::Packet& x = packetQueue.front();
         Send(x.PlainBytes(), x.Header()->length);
+    }
+}
+
+void MMNetServer::AutoReplyStat(uint64 curTimestamp)
+{
+    // Do not send anything if outgoing queue is greater some reasonable size
+    if (packetQueue.size() > 256)
+        return;
+
+    if (0 == statSentStatTimestamp)
+    {
+        curStatPacket = ObtainStatPacket();
+        statSentStatTimestamp = curTimestamp;
+    }
+
+    MemoryManager::Instance()->GetCurStat(curTimestamp, curStatPacket.Data<void>(statItemSize * statItemsInPacket), statItemSize);
+
+    MMNetProto::PacketHeader* header = curStatPacket.Header();
+    header->length += statItemSize;
+    header->itemCount += 1;
+
+    statItemsInPacket += 1;
+    if (statItemsInPacket == maxStatItemsPerPacket || (curTimestamp - statSentStatTimestamp) >= statSendFreq)
+    {
+        statItemsInPacket = 0;
+        statSentStatTimestamp = 0;
+        SendPacket(std::forward<MMNetProto::Packet>(curStatPacket));
     }
 }
 
