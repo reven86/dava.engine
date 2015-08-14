@@ -60,8 +60,13 @@ public:
     // in-place in Storage, otherwise 'new' should be used.
     using Storage = std::array<void *, 4>;
 
-    Closure()
-    { }
+    enum StorageType
+    {
+        TRIVIAL,
+        SHARED
+    };
+
+    Closure() = default;
 
     ~Closure()
     {
@@ -70,7 +75,7 @@ public:
 
     // Store Hldr class in-place
     template<typename Hldr, typename Fn, typename... Prms>
-    void BindTrivial(const Fn& fn, Prms... params)
+    void BindTrivialHolder(const Fn& fn, Prms... params)
     {
         Clear();
         static_assert(sizeof(Hldr) <= sizeof(Storage), "Fn can't be trivially bind");
@@ -79,22 +84,22 @@ public:
 
     // Store Hldr class using std::shared_ptr
     template<typename Hldr, typename Fn, typename... Prms>
-    void BindShared(const Fn& fn, Prms... params)
+    void BindSharedHolder(const Fn& fn, Prms... params)
     {
         Clear();
         Hldr *holder = new Hldr(fn, std::forward<Prms>(params)...);
         new (storage.data()) std::shared_ptr<void>(holder);
-        shared = true;
+        storageType = SHARED;
     }
 
     template<typename Hldr>
-    inline Hldr* GetShared() const
+    inline Hldr* GetSharedHolder() const
     {
         return static_cast<Hldr*>(SharedPtr()->get());
     }
 
     template<typename Hldr>
-    inline Hldr* GetTrivial() const
+    inline Hldr* GetTrivialHolder() const
     {
         static_assert(sizeof(Hldr) <= sizeof(Storage), "Fn can't be trivially get");
         return reinterpret_cast<Hldr *>(const_cast<void **>(storage.data()));
@@ -107,10 +112,7 @@ public:
 
     Closure(Closure&& c)
     {
-        Copy(c);
-
-        c.shared = false;
-        c.storage.fill(nullptr);
+        Swap(c);
     }
 
     Closure& operator=(const Closure &c)
@@ -127,11 +129,7 @@ public:
     Closure& operator=(Closure &&c)
     {
         Clear();
-        shared = c.shared;
-        storage = c.storage;
-
-        c.shared = false;
-        c.storage.fill(nullptr);
+        Swap(c);
 
         return *this;
     }
@@ -142,15 +140,28 @@ public:
         return *this;
     }
 
-    void Swap(Closure &c)
+    bool operator==(const Closure&) const = delete;
+    bool operator!=(const Closure&) const = delete;
+
+    void Swap(Closure& c)
     {
-        std::swap(shared, c.shared);
+        std::swap(storageType, c.storageType);
         std::swap(storage, c.storage);
     }
 
+    const Storage& GetStorage() const
+    {
+        return storage;
+    }
+
+    StorageType GetStorageType() const
+    {
+        return storageType;
+    }
+
 protected:
-    bool shared = false;
-    Storage storage;
+    Storage storage{ };
+    StorageType storageType{ TRIVIAL };
 
     inline std::shared_ptr<void>* SharedPtr() const
     {
@@ -159,25 +170,23 @@ protected:
 
     void Clear()
     {
-        if (shared)
+        if (SHARED == storageType)
         {
-            shared = false;
             SharedPtr()->reset();
+            storageType = TRIVIAL;
         }
         storage.fill(nullptr);
     }
 
     void Copy(const Closure& c)
     {
-        shared = c.shared;
-        if (shared)
+        storageType = c.storageType;
+        if (SHARED == storageType)
             new (storage.data()) std::shared_ptr<void>(*c.SharedPtr());
         else
             storage = c.storage;
     }
 };
-
-struct Null {};
 
 template<typename Fn, typename Ret, typename... Args>
 class HolderFree
@@ -189,13 +198,13 @@ public:
 
     static Ret invokeTrivial(const Closure &c, typename std::conditional<is_best_argument_type<Args>::value, Args, Args&&>::type... args)
     {
-        HolderFree *holder = c.GetTrivial<HolderFree>();
+        HolderFree *holder = c.GetTrivialHolder<HolderFree>();
         return (Ret)holder->fn(std::forward<Args>(args)...);
     }
 
     static Ret invokeShared(const Closure &c, typename std::conditional<is_best_argument_type<Args>::value, Args, Args&&>::type... args)
     {
-        HolderFree *holder = c.GetShared<HolderFree>();
+        HolderFree *holder = c.GetSharedHolder<HolderFree>();
         return (Ret)holder->fn(std::forward<Args>(args)...);
     }
 
@@ -217,13 +226,13 @@ public:
 
     static Ret invokeTrivial(const Closure &c, Obj* cls, typename std::conditional<is_best_argument_type<ClsArgs>::value, ClsArgs, ClsArgs&&>::type... args)
     {
-        HolderClass *holder = c.GetTrivial<HolderClass>();
+        HolderClass *holder = c.GetTrivialHolder<HolderClass>();
         return (Ret)(static_cast<Cls*>(cls)->*holder->fn)(std::forward<ClsArgs>(args)...);
     }
 
     static Ret invokeShared(const Closure &c, Obj* cls, typename std::conditional<is_best_argument_type<ClsArgs>::value, ClsArgs, ClsArgs&&>::type... args)
     {
-        HolderClass *holder = c.GetShared<HolderClass>();
+        HolderClass *holder = c.GetSharedHolder<HolderClass>();
         return (Ret)(static_cast<Cls*>(cls)->*holder->fn)(std::forward<ClsArgs>(args)...);
     }
 
@@ -246,13 +255,13 @@ public:
 
     static Ret invokeTrivial(const Closure &c, typename std::conditional<is_best_argument_type<ClsArgs>::value, ClsArgs, ClsArgs&&>::type... args)
     {
-        HolderObject *holder = c.GetTrivial<HolderObject>();
+        HolderObject *holder = c.GetTrivialHolder<HolderObject>();
         return (Ret)(static_cast<Cls *>(holder->obj)->*holder->fn)(std::forward<ClsArgs>(args)...);
     }
 
     static Ret invokeShared(const Closure &c, typename std::conditional<is_best_argument_type<ClsArgs>::value, ClsArgs, ClsArgs&&>::type... args)
     {
-        HolderObject *holder = c.GetShared<HolderObject>();
+        HolderObject *holder = c.GetSharedHolder<HolderObject>();
         return (Ret)(static_cast<Cls *>(holder->obj)->*holder->fn)(std::forward<ClsArgs>(args)...);
     }
 
@@ -276,7 +285,7 @@ public:
 
     static Ret invokeShared(const Closure &c, typename std::conditional<is_best_argument_type<ClsArgs>::value, ClsArgs, ClsArgs&&>::type... args)
     {
-        HolderSharedObject *holder = c.GetShared<HolderSharedObject>();
+        HolderSharedObject *holder = c.GetSharedHolder<HolderSharedObject>();
         return (static_cast<Cls*>(holder->obj.get())->*holder->fn)(std::forward<ClsArgs>(args)...);
     }
 
@@ -300,7 +309,7 @@ public:
     Function()
     { }
 
-    explicit Function(std::nullptr_t)
+    Function(std::nullptr_t)
     { }
 
     template<typename Fn>
@@ -350,7 +359,7 @@ public:
         using Fn = Ret(Cls::*)(ClsArgs...);
 
         // always use BindShared
-        closure.template BindShared<Holder, Fn>(fn, obj);
+        closure.template BindSharedHolder<Holder, Fn>(fn, obj);
         invoker = &Holder::invokeShared;
     }
 
@@ -361,7 +370,7 @@ public:
         using Fn = Ret(Cls::*)(ClsArgs...);
 
         // always use BindShared
-        closure.template BindShared<Holder, Fn>(reinterpret_cast<Fn>(fn), obj);
+        closure.template BindSharedHolder<Holder, Fn>(reinterpret_cast<Fn>(fn), obj);
         invoker = &Holder::invokeShared;
     }
 
@@ -433,7 +442,7 @@ public:
 
     friend bool operator!=(std::nullptr_t, const Function &fn)
     {
-        return (nullptr != fn.invoker);
+        return !operator==(nullptr, fn);
     }
 
     operator bool() const
@@ -450,6 +459,16 @@ public:
     {
         std::swap(invoker, fn.invoker);
         closure.Swap(fn.closure);
+    }
+
+    const Fn11::Closure::Storage& Target() const
+    {
+        return closure.GetStorage();
+    }
+
+    bool IsTrivialTarget() const
+    {
+        return (Fn11::Closure::TRIVIAL == closure.GetStorageType());
     }
 
 private:
@@ -486,7 +505,7 @@ private:
     {
         static void Init(Function *that, const Fn& fn, Prms&&... params)
         {
-            that->closure.template BindTrivial<Hldr, Fn>(fn, std::forward<Prms>(params)...);
+            that->closure.template BindTrivialHolder<Hldr, Fn>(fn, std::forward<Prms>(params)...);
             that->invoker = &Hldr::invokeTrivial;
         }
     };
@@ -497,7 +516,7 @@ private:
     {
         static void Init(Function *that, const Fn& fn, Prms&&... params)
         {
-            that->closure.template BindShared<Hldr, Fn>(fn, std::forward<Prms>(params)...);
+            that->closure.template BindSharedHolder<Hldr, Fn>(fn, std::forward<Prms>(params)...);
             that->invoker = &Hldr::invokeShared;
         }
     };
