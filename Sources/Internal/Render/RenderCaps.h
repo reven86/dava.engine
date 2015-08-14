@@ -48,8 +48,15 @@ struct RenderCaps
 #if defined(__DAVAENGINE_ANDROID__)
         isGlDepth24Stencil8Supported = isGlDepthNvNonLinearSupported = false;
 #endif
-        isVertexTextureUnitsSupported = true; // RHI_COMPLETE for grass rendering
+        
         isCenterPixelMapping = false;
+        
+        //RHI_COMPLETE: fix render caps
+        {
+            isVertexTextureUnitsSupported = true;
+            isPVRTCSupported = isPVRTC2Supported = true;
+            isETCSupported = isDXTSupported = isATCSupported = true;
+        }
     }
     bool isHardwareCursorSupported;
     bool isPVRTCSupported;
