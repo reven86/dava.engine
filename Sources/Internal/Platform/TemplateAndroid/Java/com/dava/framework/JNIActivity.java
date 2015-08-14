@@ -620,7 +620,6 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     // return to GLThread back
     public static void finishActivity()
     {
-        JNIRenderer.nativeSingletonsDestroyed = true;
         final JNIActivity activity = JNIActivity.GetActivity();
         
         activity.runOnUiThread(new Runnable(){

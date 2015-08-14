@@ -32,8 +32,10 @@ static FILE* const              _HandleBase     = (FILE*)(0x1000);
 void
 mcpp__set_cur_file( const char* filename )
 {
+	DAVA::FilePath fileDir = DAVA::FilePath(filename).GetDirectory();
+
     IncludeSearchPath.clear();
-    IncludeSearchPath.push_back( DAVA::FilePath(filename).GetDirectory().GetFrameworkPath() );
+    IncludeSearchPath.push_back( fileDir.IsEmpty() ? std::string() : fileDir.GetFrameworkPath() );
     IncludeSearchPath.push_back( DAVA::FilePath("~res:/Materials/Shaders/").MakeDirectoryPathname().GetFrameworkPath() );
 }
 
