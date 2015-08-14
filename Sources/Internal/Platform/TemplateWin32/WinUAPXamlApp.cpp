@@ -129,7 +129,7 @@ void WinUAPXamlApp::OnLaunched(::Windows::ApplicationModel::Activation::LaunchAc
 
     CreateBaseXamlUI();
 
-    UpdateScreenSize(coreWindow->Bounds.Width, coreWindow->Bounds.Height);
+    UpdateScreenSize(Max(coreWindow->Bounds.Width, coreWindow->Bounds.Height), Min(coreWindow->Bounds.Width, coreWindow->Bounds.Height));
     InitRender();
 
     WorkItemHandler^ workItemHandler = ref new WorkItemHandler([this](Windows::Foundation::IAsyncAction^ action) { Run(); });
@@ -616,6 +616,12 @@ void WinUAPXamlApp::InitInput()
 
 void WinUAPXamlApp::InitRender()
 {
+    Windows::Graphics::Display::DisplayInformation^ currentDisplayInformation = Windows::Graphics::Display::DisplayInformation::GetForCurrentView();
+    if (nullptr != currentDisplayInformation)
+    {
+        rawPixelsPerViewPixel = currentDisplayInformation->RawPixelsPerViewPixel;
+    }
+
     Logger::FrameworkDebug("[CorePlatformWinUAP] InitRender");
     RenderManager::Create(Core::RENDERER_OPENGL_ES_2_0);
     RenderManager::Instance()->Create(swapChainPanel);
@@ -624,7 +630,7 @@ void WinUAPXamlApp::InitRender()
 void WinUAPXamlApp::ReInitRender()
 {
     Logger::FrameworkDebug("[CorePlatformWinUAP] ReInitRender");
-    RenderManager::Instance()->Init(static_cast<int32>(windowWidth), static_cast<int32>(windowHeight));
+    RenderManager::Instance()->Init(static_cast<int32>(windowWidth * rawPixelsPerViewPixel), static_cast<int32>(windowHeight * rawPixelsPerViewPixel));
     RenderSystem2D::Instance()->Init();
 }
 
@@ -632,7 +638,8 @@ void WinUAPXamlApp::InitCoordinatesSystem()
 {
     Logger::FrameworkDebug("[CorePlatformWinUAP] InitCoordinatesSystem");
     VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(static_cast<int32>(windowWidth), static_cast<int32>(windowHeight));
-    VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(static_cast<int32>(windowWidth), static_cast<int32>(windowHeight));
+    VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(static_cast<int32>(windowWidth * rawPixelsPerViewPixel), static_cast<int32>(windowHeight * rawPixelsPerViewPixel));
+    VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(static_cast<int32>(windowWidth* rawPixelsPerViewPixel), static_cast<int32>(windowHeight* rawPixelsPerViewPixel));
     VirtualCoordinatesSystem::Instance()->EnableReloadResourceOnResize(true);
 }
 
@@ -641,9 +648,9 @@ void WinUAPXamlApp::ReInitCoordinatesSystem()
     Logger::FrameworkDebug("[CorePlatformWinUAP] ReInitCoordinatesSystem");
     VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(static_cast<int32>(windowWidth), static_cast<int32>(windowHeight));
     VirtualCoordinatesSystem::Instance()->UnregisterAllAvailableResourceSizes();
-    VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(static_cast<int32>(windowWidth), static_cast<int32>(windowHeight), "Gfx");
-    VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(static_cast<int32>(windowWidth), static_cast<int32>(windowHeight));
-    VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(static_cast<int32>(windowWidth), static_cast<int32>(windowHeight));
+    VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(static_cast<int32>(windowWidth * rawPixelsPerViewPixel), static_cast<int32>(windowHeight * rawPixelsPerViewPixel), "Gfx");
+    VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(static_cast<int32>(windowWidth * rawPixelsPerViewPixel), static_cast<int32>(windowHeight * rawPixelsPerViewPixel));
+    VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(static_cast<int32>(windowWidth* rawPixelsPerViewPixel), static_cast<int32>(windowHeight* rawPixelsPerViewPixel));
     VirtualCoordinatesSystem::Instance()->ScreenSizeChanged();
 }
 

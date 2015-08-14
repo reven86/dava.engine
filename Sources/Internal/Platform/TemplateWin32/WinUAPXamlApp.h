@@ -166,6 +166,7 @@ private:
 
     float32 windowWidth = static_cast<float32>(DisplayMode::DEFAULT_WIDTH);
     float32 windowHeight = static_cast<float32>(DisplayMode::DEFAULT_HEIGHT);
+    float32 rawPixelsPerViewPixel = 1.0f;
 
     Windows::Graphics::Display::DisplayOrientations displayOrientation = ::Windows::Graphics::Display::DisplayOrientations::None;
 };
