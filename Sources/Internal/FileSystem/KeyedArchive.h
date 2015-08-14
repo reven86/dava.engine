@@ -105,7 +105,7 @@ public:
          \param[in] defaultValue this is value that is used if variable with this key do not exists in archive
          \returns value of variable or defaultValue if key isn't available
      */
-    float64 GetFloat64(const String & key, float64 defaultValue = 0.0f) const;
+    float64 GetFloat64(const String & key, float64 defaultValue = 0.0) const;
 	/**
 		\brief Functions to get variable from archive.
 		\param[in] key string key
