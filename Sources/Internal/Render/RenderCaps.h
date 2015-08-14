@@ -52,8 +52,11 @@ struct RenderCaps
 
         // RHI_COMPLETE: fix Render Caps
         {
+#if defined(__DAVAENGINE_IPHONE__)
             isPVRTCSupported = isPVRTC2Supported = true;
+#elif defined(__DAVAENGINE_ANDROID__)
             isETCSupported = isDXTSupported = isATCSupported = true;
+#endif
             isVertexTextureUnitsSupported = true; // for grass rendering
         }
     }
