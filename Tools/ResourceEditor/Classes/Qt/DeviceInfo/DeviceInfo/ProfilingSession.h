@@ -67,8 +67,11 @@ public:
     void AppendStatItems(const DAVA::MMCurStat* statBuf, size_t itemCount);
     // Add memory snapshot retrieved from profiled device
     void AppendSnapshot(const DAVA::MMSnapshot* msnapshot);
+    void AppendSnapshot(const DAVA::FilePath& filename);
     // Flush file buffers to storage
     void Flush();
+
+    DAVA::FilePath GenerateSnapshotFilename() const;
 
     // Get index of the closest stat item or -1 if not found
     size_t ClosestStatItem(DAVA::uint64 timestamp) const;
@@ -122,7 +125,7 @@ private:
     bool isFileMode = false;
     size_t allocPoolCount = 0;
     size_t tagCount = 0;
-    int snapshotSeqNo = 1;
+    mutable int snapshotSeqNo = 1;
     DAVA::Net::PeerDescription deviceInfo;
     DAVA::Vector<DAVA::String> allocPoolNames;
     DAVA::Vector<DAVA::String> tagNames;
@@ -133,7 +136,7 @@ private:
     DAVA::FilePath logFileName;
     DAVA::RefPtr<DAVA::File> logFile;
     size_t statItemFlushed = 0;
-    size_t statItemFlushThreshold = 1000;
+    size_t statItemFlushThreshold = 5000;
 
     BacktraceSymbolTable symbolTable;
 };

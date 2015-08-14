@@ -156,12 +156,22 @@ void ProfilingSession::AppendSnapshot(const DAVA::MMSnapshot* msnapshot)
     snapshotSeqNo += 1;
 }
 
+void ProfilingSession::AppendSnapshot(const DAVA::FilePath& filename)
+{
+    LoadShapshotDescriptor(filename);
+}
+
 void ProfilingSession::Flush()
 {
     if (logFile.Valid())
     {
         logFile->Flush();
     }
+}
+
+FilePath ProfilingSession::GenerateSnapshotFilename() const
+{
+    return storageDir + Format("%02d.snapshot", snapshotSeqNo++);
 }
 
 bool ProfilingSession::LoadSnapshot(size_t index)

@@ -109,7 +109,7 @@ void MemProfWidget::ConnectionLost(const char8* message)
                                                 : QString("Connection lost"));
 }
 
-void MemProfWidget::StatArrived(size_t /*itemCount*/)
+void MemProfWidget::StatArrived(uint32 /*itemCount*/)
 {
     const MemoryStatItem& stat = profileSession->LastStat();
     if (realtimeMode)
@@ -121,18 +121,14 @@ void MemProfWidget::StatArrived(size_t /*itemCount*/)
     UpdatePlot(stat);
 }
 
-void MemProfWidget::SnapshotArrived(unsigned int sizeTotal, unsigned int sizeRecv)
+void MemProfWidget::SnapshotProgress(uint32 totalSize, uint32 recvSize)
 {
-    if (sizeTotal > 0 && sizeRecv > 0)
+    if (totalSize > 0)
     {
-        if (sizeRecv < sizeTotal)
+        int percent = static_cast<int>(double(recvSize) / double(totalSize) * 100.0);
+        ui->snapshotProgress->setValue(percent);
+        if (totalSize == recvSize)
         {
-            int percent = static_cast<int>(double(sizeRecv) / double(sizeTotal) * 100.0);
-            ui->snapshotProgress->setValue(percent);
-        }
-        else
-        {
-            ui->snapshotProgress->setValue(100);
             snapshotModel->NewSnapshotArrived();
         }
     }
