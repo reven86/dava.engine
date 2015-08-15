@@ -87,7 +87,7 @@ void CanvasSystem::SelectionWasChanged(const SelectedControls& selected, const S
     if (selectedControls.empty())
     {
         auto controlsNode = document->GetPackage()->GetPackageControlsNode();
-        for (INT index = 0; index < controlsNode->GetCount(); ++index)
+        for (int index = 0; index < controlsNode->GetCount(); ++index)
             rootControls.insert(controlsNode->Get(index));
     }
     else

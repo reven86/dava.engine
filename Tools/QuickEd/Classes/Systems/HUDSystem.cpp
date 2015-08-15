@@ -94,15 +94,18 @@ HUDSystem::HUD::HUD(UIControl* control_, UIControl* hudControl_)
     , control(control_)
     , hudControl(hudControl_)
 {
-
-    frame->SetRect(control->GetAbsoluteRect() - hudControl->GetAbsolutePosition());
+    Vector2 framePos = control->GetAbsolutePosition() - hudControl->GetAbsolutePosition();
+    auto scale = hudControl->GetParent()->GetParent()->GetScale().x; //get scale of background control
+    framePos /= scale;
+    Rect frameRect(framePos, control->GetSize());
+    frame->SetRect(frameRect);
     hudControl->AddControl(frame);
     
     for (int i = TOP_LEFT; i < COUNT; ++i)
     {
         ScopedPtr<UIControl> littleRectFrame(new FrameRectControl());
         Rect rect(Vector2(0, 0), Vector2(10, 10));
-        rect.SetCenter(GetPos(static_cast<PLACE>(i), control->GetAbsoluteRect() - hudControl->GetAbsolutePosition()));
+        rect.SetCenter(GetPos(static_cast<PLACE>(i), frameRect));
         littleRectFrame->SetRect(rect);
         frameRects.push_back(littleRectFrame);
         hudControl->AddControl(littleRectFrame);
