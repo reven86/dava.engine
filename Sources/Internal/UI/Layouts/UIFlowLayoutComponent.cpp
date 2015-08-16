@@ -8,12 +8,11 @@ UIFlowLayoutComponent::UIFlowLayoutComponent()
 }
 
 UIFlowLayoutComponent::UIFlowLayoutComponent(const UIFlowLayoutComponent &src)
-    : padding(src.padding)
-    , spacing(src.spacing)
-    , dynamicPadding(src.dynamicPadding)
-    , dynamicSpacing(src.dynamicSpacing)
-    , useRtl(src.useRtl)
-    , skipInvisibleControls(src.skipInvisibleControls)
+    : horizontalPadding(src.horizontalPadding)
+    , horizontalSpacing(src.horizontalSpacing)
+    , verticalPadding(src.verticalPadding)
+    , verticalSpacing(src.verticalSpacing)
+    , flags(src.flags)
 {
     
 }
@@ -28,64 +27,135 @@ UIFlowLayoutComponent* UIFlowLayoutComponent::Clone() const
     return new UIFlowLayoutComponent(*this);
 }
 
-float32 UIFlowLayoutComponent::GetPadding() const
+bool UIFlowLayoutComponent::IsEnabled() const
 {
-    return padding;
+    return flags.test(FLAG_ENABLED);
 }
 
-void UIFlowLayoutComponent::SetPadding(float32 newPadding)
+void UIFlowLayoutComponent::SetEnabled(bool enabled)
 {
-    padding = newPadding;
+    flags.set(FLAG_ENABLED, enabled);
 }
 
-float32 UIFlowLayoutComponent::GetSpacing() const
+UIFlowLayoutComponent::eOrientation UIFlowLayoutComponent::GetOrientation() const
 {
-    return spacing;
+    return flags.test(FLAG_IS_RIGHT_TO_LEFT) ? ORIENTATION_RIGHT_TO_LEFT : ORIENTATION_LEFT_TO_RIGHT;
 }
 
-void UIFlowLayoutComponent::SetSpacing(float32 newSpacing)
+void UIFlowLayoutComponent::SetOrientation(eOrientation orientation)
 {
-    spacing = newSpacing;
+    flags.set(FLAG_IS_RIGHT_TO_LEFT, orientation == ORIENTATION_RIGHT_TO_LEFT);
 }
 
-bool UIFlowLayoutComponent::IsDynamicPadding() const
+float32 UIFlowLayoutComponent::GetHorizontalPadding() const
 {
-    return dynamicPadding;
+    return horizontalPadding;
 }
 
-void UIFlowLayoutComponent::SetDynamicPadding(bool dynamic)
+void UIFlowLayoutComponent::SetHorizontalPadding(float32 padding)
 {
-    dynamicPadding = dynamic;
+    horizontalPadding = padding;
 }
 
-bool UIFlowLayoutComponent::IsDynamicSpacing() const
+float32 UIFlowLayoutComponent::GetHorizontalSpacing() const
 {
-    return dynamicSpacing;
+    return horizontalSpacing;
 }
 
-void UIFlowLayoutComponent::SetDynamicSpacing(bool dynamic)
+void UIFlowLayoutComponent::SetHorizontalSpacing(float32 spacing)
 {
-    dynamicSpacing = dynamic;
+    horizontalSpacing = spacing;
 }
 
-bool UIFlowLayoutComponent::IsSkipInvisibleControls() const
+bool UIFlowLayoutComponent::IsDynamicHorizontalPadding() const
 {
-    return skipInvisibleControls;
+    return flags.test(FLAG_DYNAMIC_HORIZONTAL_PADDING);
 }
 
-void UIFlowLayoutComponent::SetSkipInvisibleControls(bool skip)
+void UIFlowLayoutComponent::SetDynamicHorizontalPadding(bool dynamic)
 {
-    skipInvisibleControls = skip;
+    flags.set(FLAG_DYNAMIC_HORIZONTAL_PADDING, dynamic);
 }
 
+bool UIFlowLayoutComponent::IsDynamicHorizontalSpacing() const
+{
+    return flags.test(FLAG_DYNAMIC_HORIZONTAL_SPACING);
+}
+
+void UIFlowLayoutComponent::SetDynamicHorizontalSpacing(bool dynamic)
+{
+    flags.set(FLAG_DYNAMIC_HORIZONTAL_SPACING, dynamic);
+}
+
+float32 UIFlowLayoutComponent::GetVerticalPadding() const
+{
+    return verticalPadding;
+}
+
+void UIFlowLayoutComponent::SetVerticalPadding(float32 padding)
+{
+    verticalPadding = padding;
+}
+
+float32 UIFlowLayoutComponent::GetVerticalSpacing() const
+{
+    return verticalSpacing;
+}
+
+void UIFlowLayoutComponent::SetVerticalSpacing(float32 spacing)
+{
+    verticalSpacing = spacing;
+}
+
+bool UIFlowLayoutComponent::IsDynamicVerticalPadding() const
+{
+    return flags.test(FLAG_DYNAMIC_VERTICAL_PADDING);
+}
+
+void UIFlowLayoutComponent::SetDynamicVerticalPadding(bool dynamic)
+{
+    flags.set(FLAG_DYNAMIC_VERTICAL_PADDING, dynamic);
+}
+
+bool UIFlowLayoutComponent::IsDynamicVerticalSpacing() const
+{
+    return flags.test(FLAG_DYNAMIC_VERTICAL_SPACING);
+}
+
+void UIFlowLayoutComponent::SetDynamicVerticalSpacing(bool dynamic)
+{
+    flags.set(FLAG_DYNAMIC_VERTICAL_SPACING, dynamic);
+}
+
+    
 bool UIFlowLayoutComponent::IsUseRtl() const
 {
-    return useRtl;
+    return flags.test(FLAG_USE_RTL);
 }
 
 void UIFlowLayoutComponent::SetUseRtl(bool use)
 {
-    useRtl = use;
+    flags.set(FLAG_USE_RTL, use);
+}
+
+bool UIFlowLayoutComponent::IsSkipInvisibleControls() const
+{
+    return flags.test(FLAG_SKIP_INVISIBLE_CONTROLS);
 }
     
+void UIFlowLayoutComponent::SetSkipInvisibleControls(bool skip)
+{
+    flags.set(FLAG_SKIP_INVISIBLE_CONTROLS, skip);
+}
+
+int32 UIFlowLayoutComponent::GetOrientationAsInt() const
+{
+    return GetOrientation();
+}
+
+void UIFlowLayoutComponent::SetOrientationFromInt(int32 orientation)
+{
+    SetOrientation(static_cast<eOrientation>(orientation));
+}
+
 }

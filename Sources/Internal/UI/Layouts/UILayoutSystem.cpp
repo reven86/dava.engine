@@ -144,7 +144,7 @@ void UILayoutSystem::MeasureControl(UIControl *control, UISizePolicyComponent *s
         case UISizePolicyComponent::PERCENT_OF_CHILDREN_SUM:
             if (flowLayout && axis == Vector2::AXIS_Y)
             {
-                const float32 spacing = flowLayout->GetSpacing();
+                const float32 spacing = flowLayout->GetVerticalSpacing();
                 float32 x = children.front()->GetPosition().x;
                 float32 maxH = 0;
                 bool first = true;
@@ -223,6 +223,10 @@ void UILayoutSystem::MeasureControl(UIControl *control, UISizePolicyComponent *s
             
             value += linearLayout->GetPadding() * 2.0f;
         }
+        else if (flowLayout && axis == Vector2::AXIS_X)
+        {
+            value += flowLayout->GetHorizontalPadding() * 2.0f;
+        }
     }
     
     if (policy != UISizePolicyComponent::PERCENT_OF_PARENT && policy != UISizePolicyComponent::IGNORE_SIZE)
@@ -257,8 +261,8 @@ void UILayoutSystem::ApplyFlowLayout(UIControl *control, UIFlowLayoutComponent *
 void UILayoutSystem::ApplyFlowLayoutHorizontally(UIControl *control, UIFlowLayoutComponent *component)
 {
     const DAVA::List<UIControl*> &children = control->GetChildren();
-    const float32 padding = component->GetPadding();
-    const float32 spacing = component->GetSpacing();
+    const float32 padding = component->GetHorizontalPadding();
+    const float32 spacing = component->GetHorizontalSpacing();
     const float32 controlSize = control->GetSize().dx;
     float32 x = padding;
     for (UIControl *child : children)
@@ -288,8 +292,8 @@ void UILayoutSystem::ApplyFlowLayoutHorizontally(UIControl *control, UIFlowLayou
 void UILayoutSystem::ApplyFlowLayoutVertically(UIControl *control, UIFlowLayoutComponent *component)
 {
     const DAVA::List<UIControl*> &children = control->GetChildren();
-    const float32 padding = component->GetPadding();
-    const float32 spacing = component->GetSpacing();
+    const float32 padding = component->GetVerticalPadding();
+    const float32 spacing = component->GetVerticalSpacing();
 //    const float32 controlSize = control->GetSize().dx;
     float32 x = children.front()->GetPosition().x;
     float32 y = padding;

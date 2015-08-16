@@ -36,6 +36,12 @@ namespace DAVA
 class UIFlowLayoutComponent : public UIComponent
 {
 public:
+    enum eOrientation
+    {
+        ORIENTATION_LEFT_TO_RIGHT,
+        ORIENTATION_RIGHT_TO_LEFT
+    };
+public:
     IMPLEMENT_COMPONENT_TYPE(FLOW_LAYOUT_COMPONENT);
     
     UIFlowLayoutComponent();
@@ -50,17 +56,36 @@ private:
 public:
     virtual UIFlowLayoutComponent* Clone() const override;
     
-    float32 GetPadding() const;
-    void SetPadding(float32 padding);
+    bool IsEnabled() const;
+    void SetEnabled(bool enabled);
     
-    float32 GetSpacing() const;
-    void SetSpacing(float32 spacing);
+    eOrientation GetOrientation() const;
+    void SetOrientation(eOrientation orientation);
     
-    bool IsDynamicPadding() const;
-    void SetDynamicPadding(bool dynamic);
+    float32 GetHorizontalPadding() const;
+    void SetHorizontalPadding(float32 padding);
     
-    bool IsDynamicSpacing() const;
-    void SetDynamicSpacing(bool dynamic);
+    float32 GetHorizontalSpacing() const;
+    void SetHorizontalSpacing(float32 spacing);
+    
+    bool IsDynamicHorizontalPadding() const;
+    void SetDynamicHorizontalPadding(bool dynamic);
+    
+    bool IsDynamicHorizontalSpacing() const;
+    void SetDynamicHorizontalSpacing(bool dynamic);
+
+    float32 GetVerticalPadding() const;
+    void SetVerticalPadding(float32 padding);
+    
+    float32 GetVerticalSpacing() const;
+    void SetVerticalSpacing(float32 spacing);
+    
+    bool IsDynamicVerticalPadding() const;
+    void SetDynamicVerticalPadding(bool dynamic);
+    
+    bool IsDynamicVerticalSpacing() const;
+    void SetDynamicVerticalSpacing(bool dynamic);
+
     bool IsUseRtl() const;
     void SetUseRtl(bool use);
     
@@ -68,19 +93,45 @@ public:
     void SetSkipInvisibleControls(bool skip);
     
 private:
-    float32 padding = 0.0f;
-    float32 spacing = 0.0f;
-    bool dynamicPadding = false;
-    bool dynamicSpacing = false;
-    bool useRtl = false;
-    bool skipInvisibleControls = true;
+    int32 GetOrientationAsInt() const;
+    void SetOrientationFromInt(int32 orientation);
+    
+private:
+    enum eFlags {
+        FLAG_ENABLED,
+        FLAG_DYNAMIC_HORIZONTAL_PADDING,
+        FLAG_DYNAMIC_HORIZONTAL_SPACING,
+        FLAG_DYNAMIC_VERTICAL_PADDING,
+        FLAG_DYNAMIC_VERTICAL_SPACING,
+        FLAG_USE_RTL,
+        FLAG_SKIP_INVISIBLE_CONTROLS,
+        FLAG_IS_RIGHT_TO_LEFT,
+        FLAG_COUNT
+    };
+    
+    float32 horizontalPadding = 0.0f;
+    float32 horizontalSpacing = 0.0f;
+    float32 verticalPadding = 0.0f;
+    float32 verticalSpacing = 0.0f;
+
+    Bitset<eFlags::FLAG_COUNT> flags;
     
 public:
     INTROSPECTION_EXTEND(UIFlowLayoutComponent, UIComponent,
-                         PROPERTY("padding", "Padding", GetPadding, SetPadding, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("dynamicPadding", "Dynamic Padding", IsDynamicPadding, SetDynamicPadding, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("spacing", "Spacing", GetSpacing, SetSpacing, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("dynamicSpacing", "Dynamic Spacing", IsDynamicSpacing, SetDynamicSpacing, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("enabled", "Enabled", IsEnabled, SetEnabled, I_SAVE | I_VIEW | I_EDIT)
+                         
+                         PROPERTY("orientation", InspDesc("Orientation", GlobalEnumMap<eOrientation>::Instance()), GetOrientationAsInt, SetOrientationFromInt, I_SAVE | I_VIEW | I_EDIT)
+                         
+                         PROPERTY("hPadding", "Horizontal Padding", GetHorizontalPadding, SetHorizontalPadding, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("hDynamicPadding", "Dynamic Horizontal Padding", IsDynamicHorizontalPadding, SetDynamicHorizontalPadding, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("hSpacing", "Horizontal Spacing", GetHorizontalSpacing, SetHorizontalSpacing, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("dynamicSpacing", "Dynamic Horizontal Spacing", IsDynamicHorizontalSpacing, SetDynamicHorizontalSpacing, I_SAVE | I_VIEW | I_EDIT)
+                         
+                         PROPERTY("vPadding", "Vertical Padding", GetVerticalPadding, SetVerticalPadding, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("vDynamicPadding", "Dynamic Vertical Padding", IsDynamicVerticalPadding, SetDynamicVerticalPadding, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("vSpacing", "Vertical Spacing", GetVerticalSpacing, SetVerticalSpacing, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("vDynamicSpacing", "Dynamic Vertical Spacing", IsDynamicVerticalSpacing, SetDynamicVerticalSpacing, I_SAVE | I_VIEW | I_EDIT)
+
                          PROPERTY("skipInvisible", "Skip Invisible Controls", IsSkipInvisibleControls, SetSkipInvisibleControls, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("useRtl", "Use Rtl Align", IsUseRtl, SetUseRtl, I_SAVE | I_VIEW | I_EDIT)
                          );
