@@ -86,6 +86,9 @@ public:
     bool IsDynamicVerticalSpacing() const;
     void SetDynamicVerticalSpacing(bool dynamic);
 
+    float32 GetPaddingByAxis(Vector2::eAxis axis);
+    float32 GetSpacingByAxis(Vector2::eAxis axis);
+    
     bool IsUseRtl() const;
     void SetUseRtl(bool use);
     
@@ -109,11 +112,9 @@ private:
         FLAG_COUNT
     };
     
-    float32 horizontalPadding = 0.0f;
-    float32 horizontalSpacing = 0.0f;
-    float32 verticalPadding = 0.0f;
-    float32 verticalSpacing = 0.0f;
-
+    Array<float32, Vector2::AXIS_COUNT> padding;
+    Array<float32, Vector2::AXIS_COUNT> spacing;
+    
     Bitset<eFlags::FLAG_COUNT> flags;
     
 public:

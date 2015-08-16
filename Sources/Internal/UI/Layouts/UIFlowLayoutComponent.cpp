@@ -8,13 +8,13 @@ UIFlowLayoutComponent::UIFlowLayoutComponent()
 }
 
 UIFlowLayoutComponent::UIFlowLayoutComponent(const UIFlowLayoutComponent &src)
-    : horizontalPadding(src.horizontalPadding)
-    , horizontalSpacing(src.horizontalSpacing)
-    , verticalPadding(src.verticalPadding)
-    , verticalSpacing(src.verticalSpacing)
-    , flags(src.flags)
+    : flags(src.flags)
 {
-    
+    for (int32 i = 0; i < Vector2::AXIS_COUNT; i++)
+    {
+        padding[i] = src.padding[i];
+        spacing[i] = src.spacing[i];
+    }
 }
 
 UIFlowLayoutComponent::~UIFlowLayoutComponent()
@@ -49,22 +49,22 @@ void UIFlowLayoutComponent::SetOrientation(eOrientation orientation)
 
 float32 UIFlowLayoutComponent::GetHorizontalPadding() const
 {
-    return horizontalPadding;
+    return padding[Vector2::AXIS_X];
 }
 
-void UIFlowLayoutComponent::SetHorizontalPadding(float32 padding)
+void UIFlowLayoutComponent::SetHorizontalPadding(float32 newPadding)
 {
-    horizontalPadding = padding;
+    padding[Vector2::AXIS_X] = newPadding;
 }
 
 float32 UIFlowLayoutComponent::GetHorizontalSpacing() const
 {
-    return horizontalSpacing;
+    return spacing[Vector2::AXIS_X];
 }
 
-void UIFlowLayoutComponent::SetHorizontalSpacing(float32 spacing)
+void UIFlowLayoutComponent::SetHorizontalSpacing(float32 newSpacing)
 {
-    horizontalSpacing = spacing;
+    spacing[Vector2::AXIS_X] = newSpacing;
 }
 
 bool UIFlowLayoutComponent::IsDynamicHorizontalPadding() const
@@ -89,22 +89,22 @@ void UIFlowLayoutComponent::SetDynamicHorizontalSpacing(bool dynamic)
 
 float32 UIFlowLayoutComponent::GetVerticalPadding() const
 {
-    return verticalPadding;
+    return padding[Vector2::AXIS_Y];
 }
 
-void UIFlowLayoutComponent::SetVerticalPadding(float32 padding)
+void UIFlowLayoutComponent::SetVerticalPadding(float32 newPadding)
 {
-    verticalPadding = padding;
+    padding[Vector2::AXIS_Y] = newPadding;
 }
 
 float32 UIFlowLayoutComponent::GetVerticalSpacing() const
 {
-    return verticalSpacing;
+    return spacing[Vector2::AXIS_Y];
 }
 
-void UIFlowLayoutComponent::SetVerticalSpacing(float32 spacing)
+void UIFlowLayoutComponent::SetVerticalSpacing(float32 newSpacing)
 {
-    verticalSpacing = spacing;
+    spacing[Vector2::AXIS_Y] = newSpacing;
 }
 
 bool UIFlowLayoutComponent::IsDynamicVerticalPadding() const
@@ -127,6 +127,15 @@ void UIFlowLayoutComponent::SetDynamicVerticalSpacing(bool dynamic)
     flags.set(FLAG_DYNAMIC_VERTICAL_SPACING, dynamic);
 }
 
+float32 UIFlowLayoutComponent::GetPaddingByAxis(Vector2::eAxis axis)
+{
+    return padding[axis];
+}
+
+float32 UIFlowLayoutComponent::GetSpacingByAxis(Vector2::eAxis axis)
+{
+    return spacing[axis];
+}
     
 bool UIFlowLayoutComponent::IsUseRtl() const
 {
