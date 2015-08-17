@@ -82,41 +82,44 @@ void Server::PacketReceived(DAVA::TCPChannel *tcpChannel, const uint8* packetDat
     Logger::FrameworkDebug("[channel %d] Packet received", tcpChannel);
     if(length && delegate)
     {
-        CachePacket packet;
-        packet.buffer.reset(DynamicMemoryFile::Create(packetData, length, File::OPEN | File::READ)); // todo: create without copy
-
-        if (!packet.Deserialize())
+        CachePacket* packet = CachePacket::Deserialize(packetData, length);
+        if (packet)
         {
-            Logger::Error("[AssetCache::Server::%s] Can't deserialize packet. Closing channel", __FUNCTION__);
+            Logger::FrameworkDebug("Packet type: %d, length %d", packet->type, length);
+
+            switch (packet->type)
+            {
+            case PACKET_ADD_REQUEST:
+            {
+                AddRequestPacket *p = static_cast<AddRequestPacket*>(packet);
+                delegate->OnAddToCache(tcpChannel, p->key, std::forward<CachedItemValue>(p->value));
+                return;
+            }
+            case PACKET_GET_REQUEST:
+            {
+                GetRequestPacket* p = static_cast<GetRequestPacket*>(packet);
+                delegate->OnRequestedFromCache(tcpChannel, p->key);
+                return;
+            }
+            case PACKET_WARMING_UP_REQUEST:
+            {
+                WarmupRequestPacket* p = static_cast<WarmupRequestPacket*>(packet);
+                delegate->OnWarmingUp(tcpChannel, p->key);
+                return;
+            }
+            default:
+            {
+                Logger::Error("[AssetCache::Server::%s] Unexpected packet type: (%d). Closing channel", __FUNCTION__, packet->type);
+                netServer->DestroyChannel(tcpChannel);
+                return;
+            }
+            }
+        }
+        else
+        {
+            Logger::Error("[AssetCache::Server::%s] Invalid packet received. Closing channel", __FUNCTION__, packet->type);
             netServer->DestroyChannel(tcpChannel);
             return;
-        }
-
-        Logger::FrameworkDebug("Packet type: %d, length %d", packet.type, length);
-
-        switch (packet.type)
-        {
-        case PACKET_ADD_REQUEST:
-        {
-            delegate->OnAddToCache(tcpChannel, packet.key, std::forward<CachedItemValue>(packet.value));
-            break;
-        }
-        case PACKET_GET_REQUEST:
-        {
-            delegate->OnRequestedFromCache(tcpChannel, packet.key);
-            break;
-        }
-        case PACKET_WARMING_UP_REQUEST:
-        {
-            delegate->OnWarmingUp(tcpChannel, packet.key);
-            break;
-        }
-        default:
-        {
-            Logger::Error("[AssetCache::Server::%s] Invalid packet type: (%d). Closing channel", __FUNCTION__, packet.type);
-            netServer->DestroyChannel(tcpChannel);
-            break;
-        }
         }
     }
     else
@@ -147,11 +150,8 @@ bool Server::AddedToCache(DAVA::TCPChannel *tcpChannel, const CacheItemKey &key,
 {
     if(tcpChannel)
     {
-        CachePacket packet;
-        packet.type = PACKET_ADD_RESPONSE;
-        packet.key = key;
-        packet.added = added;
-        return (packet.Serialize() && tcpChannel->SendData(packet.buffer));
+        AddResponsePacket packet(key, added);
+        return packet.SendTo(tcpChannel);
     }
     else
     {
@@ -165,11 +165,8 @@ bool Server::Send(DAVA::TCPChannel *tcpChannel, const CacheItemKey &key, const C
     Logger::FrameworkDebug("Sending response packet, value size: %d", value.GetSize());
     if (tcpChannel)
     {
-        CachePacket packet;
-        packet.type = PACKET_GET_RESPONSE;
-        packet.key = key;
-        packet.value = value;
-        return (packet.Serialize() && tcpChannel->SendData(packet.buffer));
+        GetResponsePacket packet(key, value);
+        return packet.SendTo(tcpChannel);
     }
     else
     {

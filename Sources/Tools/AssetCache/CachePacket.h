@@ -37,20 +37,68 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "AssetCache/AssetCacheConstants.h"
 
 namespace DAVA {
+
+    class TCPChannel;
+
 namespace AssetCache {
+
+
+
 
 struct CachePacket
 {
-    CachePacket() : buffer(nullptr) {}
+    static CachePacket* Deserialize(const uint8* buffer, size_t length);
 
-    bool Serialize();
-    bool Deserialize();
+    bool SendTo(TCPChannel* channel);
 
     ePacketID type = PACKET_UNKNOWN;
+    ScopedPtr<DynamicMemoryFile> buffer;
+
+protected:
+    CachePacket() : buffer(nullptr) {}
+};
+
+struct AddRequestPacket : public CachePacket
+{
+    AddRequestPacket() { type = PACKET_ADD_REQUEST; }
+    AddRequestPacket(const CacheItemKey& key, const CachedItemValue& value);
+
     CacheItemKey key;
     CachedItemValue value;
-    ScopedPtr<DynamicMemoryFile> buffer;
-    bool added = false;
+};
+
+struct AddResponsePacket : public CachePacket
+{
+    AddResponsePacket() { type = PACKET_ADD_RESPONSE; }
+    AddResponsePacket(const CacheItemKey& key, bool added);
+
+    CacheItemKey key;
+    bool added;
+};
+
+struct GetRequestPacket : public CachePacket
+{
+    GetRequestPacket() { type = PACKET_GET_REQUEST; }
+    GetRequestPacket(const CacheItemKey& key);
+
+    CacheItemKey key;
+};
+
+struct GetResponsePacket : public CachePacket
+{
+    GetResponsePacket() { type = PACKET_GET_RESPONSE; }
+    GetResponsePacket(const CacheItemKey& key, const CachedItemValue& value);
+
+    CacheItemKey key;
+    CachedItemValue value;
+};
+
+struct WarmupRequestPacket : public CachePacket
+{
+    WarmupRequestPacket() { type = PACKET_WARMING_UP_REQUEST; }
+    WarmupRequestPacket(const CacheItemKey& key);
+
+    CacheItemKey key;
 };
 
 }}

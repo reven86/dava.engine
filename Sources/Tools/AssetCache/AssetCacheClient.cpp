@@ -74,11 +74,8 @@ bool Client::AddToCache(const CacheItemKey &key, const CachedItemValue &value)
 {
     if(openedChannel)
     {
-        CachePacket packet;
-        packet.type = PACKET_ADD_REQUEST;
-        packet.key = key;
-        packet.value = value;
-        return (packet.Serialize() && openedChannel->SendData(packet.buffer));
+        AddRequestPacket packet(key, value);
+        return packet.SendTo(openedChannel);
     }
     else
     {
@@ -90,10 +87,8 @@ bool Client::RequestFromCache(const CacheItemKey &key)
 {
     if(openedChannel)
     {
-        CachePacket packet;
-        packet.type = PACKET_GET_REQUEST;
-        packet.key = key;
-        return (packet.Serialize() && openedChannel->SendData(packet.buffer));
+        GetRequestPacket packet(key);
+        return packet.SendTo(openedChannel);
     }
     else
     {
@@ -105,11 +100,10 @@ bool Client::WarmingUp(const CacheItemKey &key)
 {
     if(openedChannel)
     {
-        CachePacket packet;
-        packet.type = PACKET_WARMING_UP_REQUEST;
-        packet.key = key;
-        return (packet.Serialize() && openedChannel->SendData(packet.buffer));
+        WarmupRequestPacket packet(key);
+        return packet.SendTo(openedChannel);
     }
+    else
     {
         return false;
     }
@@ -133,36 +127,38 @@ void Client::PacketReceived(DAVA::TCPChannel *tcpChannel, const uint8* packetDat
     DVASSERT(openedChannel == tcpChannel);
     if(length)
     {
-        CachePacket packet;
-        packet.buffer.reset(DynamicMemoryFile::Create(packetData, length, File::OPEN | File::READ)); // todo: create without copy
-
-        if (!packet.Deserialize())
+        CachePacket* packet = CachePacket::Deserialize(packetData, length);
+        if(packet)
         {
-            Logger::Error("[AssetCache::Server::%s] Can't deserialize packet. Closing channel", __FUNCTION__);
+            switch (packet->type)
+            {
+            case PACKET_ADD_RESPONSE:
+            {
+                AddResponsePacket *p = static_cast<AddResponsePacket*>(packet);
+                if (listener)
+                    listener->OnAddedToCache(p->key, p->added);
+                return;
+            }
+            case PACKET_GET_RESPONSE:
+            {
+                GetResponsePacket* p = static_cast<GetResponsePacket*>(packet);
+                if (listener)
+                    listener->OnReceivedFromCache(p->key, std::forward<CachedItemValue>(p->value));
+                return;
+            }
+            default:
+            {
+                Logger::Error("[AssetCache::Server::%s] Unexpected packet type: (%d). Closing channel", __FUNCTION__, packet->type);
+                netClient->DestroyChannel(tcpChannel);
+                return;
+            }
+            }
+        }
+        else
+        {
+            Logger::Error("[AssetCache::Server::%s] Invalid packet received. Closing channel", __FUNCTION__, packet->type);
             netClient->DestroyChannel(tcpChannel);
             return;
-        }
-
-        switch (packet.type)
-        {
-        case PACKET_ADD_RESPONSE:
-        {
-            if (listener)
-                listener->OnAddedToCache(packet.key, packet.added);
-            return;
-        }
-        case PACKET_GET_RESPONSE:
-        {
-            if (listener)
-                listener->OnReceivedFromCache(packet.key, std::forward<CachedItemValue>(packet.value));
-            break;
-        }
-        default:
-        {
-            Logger::Error("[AssetCache::Server::%s] Invalid packet id: (%d). Closing channel", __FUNCTION__, packet.type);
-            netClient->DestroyChannel(tcpChannel);
-            break;
-        }
         }
     }
     else
