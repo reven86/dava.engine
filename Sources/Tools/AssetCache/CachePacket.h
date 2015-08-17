@@ -36,69 +36,114 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "AssetCache/CachedItemValue.h"
 #include "AssetCache/AssetCacheConstants.h"
 
-namespace DAVA {
-
-    class TCPChannel;
-
-namespace AssetCache {
-
-
-
-
-struct CachePacket
+namespace DAVA 
 {
-    static CachePacket* Deserialize(const uint8* buffer, size_t length);
 
-    bool SendTo(TCPChannel* channel);
+namespace Net
+{
+	struct IChannel;
+}
+
+namespace AssetCache 
+{
+
+class CachePacket
+{
+protected:
+	CachePacket(ePacketID type, bool createBuffer);
+
+	static CachePacket* CreateByType(ePacketID type);
+
+	void WriteHeader(File *file) const;
+	virtual bool Load(File *file) { return false; };
+
+public:
+
+    static CachePacket* Create(const uint8* buffer, uint32 length);
+
+	
+	bool SendTo(Net::IChannel* channel);
+	static void PacketSent(const uint8* buffer, size_t length);
+
+public:
 
     ePacketID type = PACKET_UNKNOWN;
-    ScopedPtr<DynamicMemoryFile> buffer;
+    ScopedPtr<DynamicMemoryFile> serializationBuffer;
 
-protected:
-    CachePacket() : buffer(nullptr) {}
+private:
+
+	static List<ScopedPtr<DynamicMemoryFile> > sendingPackets;
 };
 
-struct AddRequestPacket : public CachePacket
+
+class AddRequestPacket : public CachePacket
 {
-    AddRequestPacket() { type = PACKET_ADD_REQUEST; }
+public:
+	AddRequestPacket() : CachePacket(PACKET_ADD_REQUEST, false) {}
     AddRequestPacket(const CacheItemKey& key, const CachedItemValue& value);
 
+protected:
+	bool Load(File *file) override;
+
+public:
     CacheItemKey key;
     CachedItemValue value;
 };
 
-struct AddResponsePacket : public CachePacket
+
+class AddResponsePacket : public CachePacket
 {
-    AddResponsePacket() { type = PACKET_ADD_RESPONSE; }
+public:
+	AddResponsePacket() : CachePacket(PACKET_ADD_RESPONSE, false) {}
     AddResponsePacket(const CacheItemKey& key, bool added);
 
-    CacheItemKey key;
-    bool added;
+protected:
+	bool Load(File *file) override;
+
+public:
+	CacheItemKey key;
+    bool added = false;
 };
 
-struct GetRequestPacket : public CachePacket
+class GetRequestPacket : public CachePacket
 {
-    GetRequestPacket() { type = PACKET_GET_REQUEST; }
+public:
+	GetRequestPacket() : CachePacket(PACKET_GET_REQUEST, false) {}
     GetRequestPacket(const CacheItemKey& key);
 
+protected:
+	bool Load(File *file) override;
+
+public:
+
     CacheItemKey key;
 };
 
-struct GetResponsePacket : public CachePacket
+class GetResponsePacket : public CachePacket
 {
-    GetResponsePacket() { type = PACKET_GET_RESPONSE; }
+public:
+	GetResponsePacket() : CachePacket(PACKET_GET_RESPONSE, false) {}
     GetResponsePacket(const CacheItemKey& key, const CachedItemValue& value);
 
-    CacheItemKey key;
+protected:
+	bool Load(File *file) override;
+
+public:
+	CacheItemKey key;
     CachedItemValue value;
 };
 
-struct WarmupRequestPacket : public CachePacket
+class WarmupRequestPacket : public CachePacket
 {
-    WarmupRequestPacket() { type = PACKET_WARMING_UP_REQUEST; }
+public:
+	WarmupRequestPacket() : CachePacket(PACKET_WARMING_UP_REQUEST, false) {}
     WarmupRequestPacket(const CacheItemKey& key);
 
-    CacheItemKey key;
+protected:
+	bool Load(File *file) override;
+
+public:
+	CacheItemKey key;
 };
 
 }}

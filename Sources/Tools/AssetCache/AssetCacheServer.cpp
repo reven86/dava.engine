@@ -72,7 +72,7 @@ void Server::OnPacketReceived(Net::IChannel * channel, const void* packetData, s
 
 	if(length > 0)
 	{
-		CachePacket* packet = CachePacket::Deserialize(static_cast<const uint8 *>(packetData), length);
+		CachePacket* packet = CachePacket::Create(static_cast<const uint8 *>(packetData), length);
 		if (packet)
 		{
 			switch (packet->type)
@@ -80,19 +80,19 @@ void Server::OnPacketReceived(Net::IChannel * channel, const void* packetData, s
 			case PACKET_ADD_REQUEST:
 				{
 					AddRequestPacket *p = static_cast<AddRequestPacket*>(packet);
-					delegate->OnAddToCache(tcpChannel, p->key, std::forward<CachedItemValue>(p->value));
+					delegate->OnAddToCache(channel, p->key, std::forward<CachedItemValue>(p->value));
 					break;
 				}
 			case PACKET_GET_REQUEST:
 				{
 					GetRequestPacket* p = static_cast<GetRequestPacket*>(packet);
-					delegate->OnRequestedFromCache(tcpChannel, p->key);
+					delegate->OnRequestedFromCache(channel, p->key);
 					break;
 				}
 			case PACKET_WARMING_UP_REQUEST:
 				{
 					WarmupRequestPacket* p = static_cast<WarmupRequestPacket*>(packet);
-					delegate->OnWarmingUp(tcpChannel, p->key);
+					delegate->OnWarmingUp(channel, p->key);
 					break;
 				}
 			default:
@@ -118,7 +118,7 @@ void Server::OnPacketReceived(Net::IChannel * channel, const void* packetData, s
 
 void Server::OnPacketSent(Net::IChannel* channel, const void* buffer, size_t length)
 {
-	delete[] static_cast<const uint8*>(buffer);
+	CachePacket::PacketSent(static_cast<const uint8 *> (buffer), length);
 }
 
 
@@ -146,7 +146,7 @@ bool Server::Send(Net::IChannel * channel, const CacheItemKey &key, const Cached
 	if (channel)
 	{
 		GetResponsePacket packet(key, value);
-		return packet.SendTo(tcpChannel);
+		return packet.SendTo(channel);
 	}
 
 	return false;

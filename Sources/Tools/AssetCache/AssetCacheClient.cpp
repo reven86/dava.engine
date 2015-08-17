@@ -119,7 +119,7 @@ void Client::OnPacketReceived(DAVA::Net::IChannel* channel, const void* packetDa
 	DVASSERT(openedChannel == channel);
 	if(length > 0)
 	{
-		CachePacket* packet = CachePacket::Deserialize(static_cast<const uint8 *>(packetData), length);
+		CachePacket* packet = CachePacket::Create(static_cast<const uint8 *>(packetData), length);
 		if(packet != nullptr)
 		{
 			switch (packet->type)
@@ -160,7 +160,7 @@ void Client::OnPacketReceived(DAVA::Net::IChannel* channel, const void* packetDa
 void Client::OnPacketSent(Net::IChannel* channel, const void* buffer, size_t length)
 {
 	DVASSERT(openedChannel == channel);
-	delete[] static_cast<const uint8*>(buffer);
+	CachePacket::PacketSent(static_cast<const uint8 *> (buffer), length);
 }
 
 
