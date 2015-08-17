@@ -1192,7 +1192,7 @@ void Scene::ImportShadowColor(Entity * rootNode)
 				sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_SHADOW_COLOR,
 					Shader::UT_FLOAT_VEC4,
 					1,
-                    shadowColor.color.data());
+                    shadowColor.color);
 
 				props->DeleteKey("ShadowColor");
 			}
