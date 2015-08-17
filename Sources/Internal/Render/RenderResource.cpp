@@ -150,7 +150,7 @@ void RenderResource::InvalidateAllShaders()
         }
     }
     resourceListMutex.Unlock();
-#endif RHI_COMPLETE
+#endif
 }
     
 void RenderResource::LostAllTextures()

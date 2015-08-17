@@ -356,6 +356,7 @@ SCOPED_NAMED_TIMING("ShaderSource::Construct");
                         case ShaderProp::TYPE_FLOAT1 : sz = 1; break;
                         case ShaderProp::TYPE_FLOAT2 : sz = 2; break;
                         case ShaderProp::TYPE_FLOAT3 : sz = 3; break;
+                        default: break;
                     }
 
                     for( unsigned r=0; r!=cbuf->avlRegIndex.size(); ++r )                    
@@ -1079,6 +1080,9 @@ ShaderSource::Dump() const
                 case ShaderProp::TYPE_FLOAT3 :
                     Logger::Info( "  %-16s    buf#%u  -  %u, %c%c%c", p->uid.c_str(), p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount+0], xyzw[p->bufferRegCount+1], xyzw[p->bufferRegCount+2] );
                     break;
+
+                default:
+                	break;
             }
         }
     }

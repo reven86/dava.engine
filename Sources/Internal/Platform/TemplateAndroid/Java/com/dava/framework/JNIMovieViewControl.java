@@ -59,11 +59,11 @@ public class JNIMovieViewControl {
 
 	public static void Initialize(final int id, final float x, final float y,
 			final float dx, final float dy) {
-		FutureTask<Void> task = new FutureTask<Void>(new Callable<Void>() {
+		final JNIActivity activity = JNIActivity.GetActivity();
+        FutureTask<Void> task = new FutureTask<Void>(new Callable<Void>() {
 			
 			@Override
 			public Void call() throws Exception {
-				Activity activity = JNIActivity.GetActivity();
 				FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
 						Math.round(dx), Math.round(dy));
 				params.leftMargin = (int) x;
@@ -136,9 +136,11 @@ public class JNIMovieViewControl {
 			}
 		});
 		
-		JNIActivity.GetActivity().runOnUiThread(task);
-		while (!task.isDone())
+		activity.runOnUiThread(task);
+		while (!task.isDone() && !activity.GetIsPausing())
+		{
 			Thread.yield();
+		}
 	}
 
 	public static void Uninitialize(final int id) {

@@ -538,8 +538,7 @@ public class JNIWebView {
                 }
             }
 
-            JNIActivity.GetActivity()
-                    .PostEventToGL(new jsCallback(id, message));
+            JNIActivity.GetActivity().RunOnMainLoopThread(new jsCallback(id, message));
             result.confirm();
             return true;
         }

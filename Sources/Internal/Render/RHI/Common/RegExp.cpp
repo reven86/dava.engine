@@ -1428,6 +1428,8 @@ RegExp::_parse_range()
             case RSrliteral:
             r.setbit2(c);
             break;
+            default:
+            break;
         }
         _parser_pos++;
         break;
@@ -1480,6 +1482,8 @@ RegExp::_parse_range()
                 case RSrliteral:
                 r.setbit2(c);
                 break;
+                default:
+				break;
             }
             rs = RSstart;
             continue;
