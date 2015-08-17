@@ -70,6 +70,21 @@ public:
 
         // stop test logic when frameDelta greater than maxDelta
         float32 maxDelta;
+        
+        String sceneName;
+        String scenePath;
+    };
+    
+    struct StatisticData
+    {
+        float32 minDelta;
+        float32 maxDelta;
+        float32 averageDelta;
+        
+        float32 testTime;
+        float32 elapsedTime;
+        
+        uint64 maxAllocatedMemory;
     };
     
     BaseTest(const String& testName, const TestParams& testParams);
@@ -84,45 +99,53 @@ public:
     void ShowUI(bool visible);
     bool IsUIVisible() const;
     
-    const String& GetName() const;
+    const String& GetTestName() const;
+    virtual const String& GetSceneName() const;
     
     bool IsFinished() const override;
     
     void SetParams(const TestParams& testParams);
+    void MergeParams(const TestParams& otherParams);
     const TestParams& GetParams() const;
     
     float32 GetOverallTestTime() const;
     uint64 GetElapsedTime() const;
-    uint32 GetFrameNumber() const;
+    
+    int32 GetAbsoluteFrameNumber() const;
+    int32 GetTestFrameNumber() const;
     
     Scene* GetScene() const;
     const Vector<FrameInfo>& GetFramesInfo() const;
     
-    static const float32 FRAME_OFFSET;
+    static const uint32 FRAME_OFFSET;
     
 protected:
     
     virtual ~BaseTest() {};
-
+    
     void LoadResources() override;
     void UnloadResources() override;
+    
+    virtual void PrintStatistic(const Vector<FrameInfo>& frames);
 
     virtual void CreateUI();
     virtual void UpdateUI();
     
     size_t GetAllocatedMemory();
-    DAVA::UIControl* GetUIRoot() const;
-    
+
     virtual void PerformTestLogic(float32 timeElapsed) = 0;
     
 private:
     
     Vector<FrameInfo> frames;
+    
     String testName;
+    String sceneName;
     
     TestParams testParams;
     
     uint32 frameNumber;
+    
     uint64 startTime;
     uint64 elapsedTime;
     
@@ -135,7 +158,7 @@ private:
     Scene* scene;
     UI3DView* sceneView;
     
-    DAVA::UIControl* uiRoot;
+    ScopedPtr<DAVA::UIControl> uiRoot;
     
     UIStaticText* testNameText;
     UIStaticText* maxFPSText;
@@ -158,21 +181,7 @@ inline Scene* BaseTest::GetScene() const
     return scene;
 }
 
-inline bool BaseTest::IsFinished() const
-{
-    if (testParams.targetFramesCount > 0 && frameNumber >= (testParams.targetFramesCount + FRAME_OFFSET))
-    {
-        return true;
-    }
-    if (testParams.targetTime > 0 && (overallTestTime * 1000) >= testParams.targetTime)
-    {
-        return true;
-    }
-    
-    return false;
-}
-
-inline const String& BaseTest::GetName() const
+inline const String& BaseTest::GetTestName() const
 {
     return testName;
 }
@@ -187,14 +196,20 @@ inline float32 BaseTest::GetOverallTestTime() const
     return overallTestTime;
 }
 
-inline uint32 BaseTest::GetFrameNumber() const
+inline int32 BaseTest::GetAbsoluteFrameNumber() const
 {
     return frameNumber;
 }
 
+inline int32 BaseTest::GetTestFrameNumber() const
+{
+    int32 frameDiff = frameNumber - FRAME_OFFSET;
+    return frameDiff < 0 ? 0 : frameDiff;
+}
+
 inline void BaseTest::SetParams(const TestParams& _testParams)
 {
-    DVASSERT_MSG(frameNumber == 0, "Can't set params after test started");
+    DVASSERT_MSG(frameNumber == 1, "Can't set params after test started");
     
     this->testParams = _testParams;
 }
@@ -204,19 +219,25 @@ inline const BaseTest::TestParams& BaseTest::GetParams() const
     return testParams;
 }
 
-inline DAVA::UIControl* BaseTest::GetUIRoot() const
-{
-    return uiRoot;
-}
-
 inline void BaseTest::ShowUI(bool visible)
 {
-    GetUIRoot()->SetVisible(visible);
+    uiRoot->SetVisible(visible);
 }
 
 inline bool BaseTest::IsUIVisible() const
 {
-    return GetUIRoot()->GetVisible();
+    return uiRoot->GetVisible();
+}
+
+inline void BaseTest::MergeParams(const TestParams& otherParams)
+{
+    testParams.targetTime = otherParams.targetTime;
+    testParams.startTime = otherParams.startTime;
+    testParams.endTime = otherParams.endTime;
+    testParams.targetFramesCount = otherParams.targetFramesCount;
+    testParams.targetFrameDelta = otherParams.targetFrameDelta;
+    testParams.frameForDebug = otherParams.frameForDebug;
+    testParams.maxDelta = otherParams.maxDelta;
 }
 
 #endif

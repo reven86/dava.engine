@@ -37,7 +37,6 @@ class WaypointsInterpolator
 {
 public:
     WaypointsInterpolator(const Vector<PathComponent::Waypoint*>& waypoints, float32 time);
-    ~WaypointsInterpolator();
 
     void NextPosition(Vector3& position, Vector3& target, float32 timeElapsed);
 
@@ -45,8 +44,6 @@ public:
 
     void SetStep(float32 step);
     float32 GetStep() const;
-
-    BasicSpline3* GetSpline() const;
 
 private:
 
@@ -67,7 +64,7 @@ private:
 
     float32 splineLength;
 
-    BasicSpline3* spline;    
+    std::unique_ptr<BasicSpline3> spline;
 };
 
 inline void WaypointsInterpolator::SetWaypoints(const Vector<PathComponent::Waypoint*>& _waypoints)
@@ -75,11 +72,6 @@ inline void WaypointsInterpolator::SetWaypoints(const Vector<PathComponent::Wayp
     waypoints = _waypoints;
 
     Init();
-}
-
-inline BasicSpline3* WaypointsInterpolator::GetSpline() const
-{
-    return spline;
 }
 
 #endif

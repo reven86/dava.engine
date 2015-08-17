@@ -26,68 +26,54 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
+#include "VariantTypeProperty.h"
 
-#include "StyleSheetTransitionsSection.h"
-
-#include "StyleSheetTransition.h"
 #include "PropertyVisitor.h"
-#include "../PackageHierarchy/StyleSheetNode.h"
+#include "IntrospectionProperty.h"
+
+#include "Model/PackageHierarchy/StyleSheetNode.h"
 #include "UI/Styles/UIStyleSheet.h"
 
 using namespace DAVA;
 
-StyleSheetTransitionsSection::StyleSheetTransitionsSection(StyleSheetNode *aStyleSheet)
-    : styleSheet(aStyleSheet) // weak
+VariantTypeProperty::VariantTypeProperty(const String &name, VariantType &vt)
+    : ValueProperty(name)
+    , value(vt)
 {
-    UIStyleSheet *ss = styleSheet->GetStyleSheet();
-    const UIStyleSheetPropertyTable *table = ss->GetPropertyTable();
-    const Vector<UIStyleSheetProperty> &tableProperties = table->GetProperties();
-    for (auto &prop : tableProperties)
-    {
-        if (prop.transition)
-        {
-            StyleSheetTransition *transition = new StyleSheetTransition(styleSheet, prop.propertyIndex);
-            transition->SetParent(this);
-            transitions.push_back(transition);
-        }
-    }
+    SetOverridden(true);
 }
 
-StyleSheetTransitionsSection::~StyleSheetTransitionsSection()
+VariantTypeProperty::~VariantTypeProperty()
 {
-    styleSheet = nullptr; //weak
-    for (StyleSheetTransition *transition : transitions)
-        SafeRelease(transition);
-    transitions.clear();
 }
 
-int StyleSheetTransitionsSection::GetCount() const
+void VariantTypeProperty::Accept(PropertyVisitor *visitor)
 {
-    return static_cast<int>(transitions.size());
+    // do nothing
 }
 
-AbstractProperty *StyleSheetTransitionsSection::GetProperty(int index) const
+bool VariantTypeProperty::IsReadOnly() const
 {
-    return transitions[index];
+    return GetParent() == nullptr ? true : GetParent()->IsReadOnly();
 }
 
-void StyleSheetTransitionsSection::Accept(PropertyVisitor *visitor)
+AbstractProperty::ePropertyType VariantTypeProperty::GetType() const
 {
-    visitor->VisitStyleSheetTransitionsSection(this);
+    return TYPE_VARIANT;
 }
 
-bool StyleSheetTransitionsSection::IsReadOnly() const
+VariantType VariantTypeProperty::GetValue() const
 {
-    return true;
+    return value;
 }
 
-const DAVA::String &StyleSheetTransitionsSection::GetName() const
+const EnumMap *VariantTypeProperty::GetEnumMap() const
 {
-    static String name = "Transitions";
-    return name;
+    return nullptr;
 }
 
-AbstractProperty::ePropertyType StyleSheetTransitionsSection::GetType() const
+void VariantTypeProperty::ApplyValue(const DAVA::VariantType &newValue)
 {
-    return TYPE_HEADER;
+    value = newValue;
 }
+

@@ -27,11 +27,11 @@
  =====================================================================================*/
 
 
-#ifndef __QUICKED_STYLE_SHEET_TRANSITION_H__
-#define __QUICKED_STYLE_SHEET_TRANSITION_H__
+#ifndef __QUICKED_STYLE_SHEET_SELECTOR_PROPERTY_H__
+#define __QUICKED_STYLE_SHEET_SELECTOR_PROPERTY_H__
 
 #include "Model/ControlProperties/ValueProperty.h"
-#include "Animation/Interpolation.h"
+#include "UI/Styles/UIStyleSheetSelectorChain.h"
 
 class ValueProperty;
 
@@ -40,38 +40,38 @@ class StyleSheetNode;
 namespace DAVA
 {
     class UIControl;
-    struct UIStyleSheetProperty;
+    class UIStyleSheet;
+    class UIStyleSheetPropertyTable;
 }
 
-class StyleSheetTransition : public ValueProperty
+class StyleSheetSelectorProperty : public ValueProperty
 {
 public:
-    StyleSheetTransition(StyleSheetNode *styleSheet, DAVA::uint32 propertyIndex);
+    StyleSheetSelectorProperty(const DAVA::UIStyleSheetSelectorChain &chain);
 protected:
-    virtual ~StyleSheetTransition();
+    virtual ~StyleSheetSelectorProperty();
     
 public:
     int GetCount() const override;
     AbstractProperty *GetProperty(int index) const override;
     
     void Accept(PropertyVisitor *visitor) override;
-    bool IsReadOnly() const override;
     
     ePropertyType GetType() const override;
+    DAVA::uint32 GetFlags() const override;
 
     DAVA::VariantType GetValue() const;
-
-    DAVA::float32 GetTransitionTime() const;
-    DAVA::Interpolation::FuncType GetTransitionFunction() const;
-
-    const EnumMap *GetEnumMap() const;
     void ApplyValue(const DAVA::VariantType &value);
     
+    const DAVA::UIStyleSheetSelectorChain &GetSelectorChain() const;
+    const DAVA::String &GetSelectorChainString() const;
+    DAVA::UIStyleSheet *GetStyleSheet() const;
+    
+    void SetStyleSheetPropertyTable(DAVA::UIStyleSheetPropertyTable *propertyTable);
+    
 private:
-    const DAVA::UIStyleSheetProperty* GetStyleSheetProperty() const;
-
-    StyleSheetNode *styleSheet; // weak
-    DAVA::uint32 propertyIndex;
+    DAVA::UIStyleSheet *styleSheet = nullptr;
+    DAVA::String value;
 };
 
-#endif // __QUICKED_STYLE_SHEET_TRANSITION_H__
+#endif // __QUICKED_STYLE_SHEET_SELECTOR_PROPERTY_H__

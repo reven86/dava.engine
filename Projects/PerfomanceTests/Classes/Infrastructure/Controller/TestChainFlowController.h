@@ -44,13 +44,13 @@ public:
 
 private:
 
+    ScopedPtr<ReportScreen> reportScreen;
     BaseScreen* currentScreen;
     BaseTest* currentTest;
     
     uint32 currentTestIndex;
     
-    bool showUIReport;
-    bool reportCreated;
+    bool showUI;
     bool testsFinished;
 };
 

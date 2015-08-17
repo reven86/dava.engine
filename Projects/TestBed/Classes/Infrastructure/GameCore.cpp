@@ -40,6 +40,7 @@
 #include "Tests/StaticTextTest.h"
 #include "Tests/StaticWebViewTest.h"
 #include "Tests/UIMovieTest.h"
+#include "Tests/WebViewTest.h"
 //$UNITTEST_INCLUDE
 
 void GameCore::RunOnlyThisTest()
@@ -61,6 +62,7 @@ void GameCore::RegisterTests()
     new StaticTextTest();
     new StaticWebViewTest();
     new UIMovieTest();
+    new WebViewTest();
 //$UNITTEST_CTOR
 }
 
