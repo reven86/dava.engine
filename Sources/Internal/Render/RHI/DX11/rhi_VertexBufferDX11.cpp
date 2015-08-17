@@ -1,3 +1,30 @@
+/*==================================================================================
+    Copyright (c) 2008, binaryzebra
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+=====================================================================================*/
 
 
     #include "../Common/rhi_Private.h"
@@ -23,9 +50,9 @@ public:
                             VertexBufferDX11_t();
                             ~VertexBufferDX11_t();
 
-    unsigned        _size;
-    ID3D11Buffer*   _vb11;
-    unsigned        _mapped:1;
+    unsigned        size;
+    ID3D11Buffer*   buffer;
+    uint32          isMapped:1;
 };
 
 typedef ResourcePool<VertexBufferDX11_t,RESOURCE_VERTEX_BUFFER>   VertexBufferDX11Pool;
@@ -34,9 +61,9 @@ RHI_IMPL_POOL(VertexBufferDX11_t,RESOURCE_VERTEX_BUFFER);
 
 
 VertexBufferDX11_t::VertexBufferDX11_t()
-  : _size(0),
-    _vb11(nullptr),
-    _mapped(false)
+  : size(0),
+    buffer(nullptr),
+    isMapped(false)
 {
 }
 
@@ -77,9 +104,9 @@ dx11_VertexBuffer_Create( const VertexBuffer::Descriptor& desc )
             handle = VertexBufferDX11Pool::Alloc();
             VertexBufferDX11_t*    vb = VertexBufferDX11Pool::Get( handle );
 
-            vb->_size     = desc.size;
-            vb->_vb11     = buf;
-            vb->_mapped   = false;
+            vb->size     = desc.size;
+            vb->buffer   = buf;
+            vb->isMapped = false;
         }
         else
         {
@@ -100,13 +127,13 @@ dx11_VertexBuffer_Delete( Handle vb )
 
     if( self )
     {
-        if( self->_vb11 )
+        if( self->buffer )
         {
-            self->_vb11->Release();
-            self->_vb11 = nullptr;
+            self->buffer->Release();
+            self->buffer = nullptr;
         }
 
-        self->_size = 0;
+        self->size = 0;
 
         VertexBufferDX11Pool::Free( vb );
     }
@@ -121,18 +148,18 @@ dx11_VertexBuffer_Update( Handle vb, const void* data, unsigned offset, unsigned
     bool                success = false;
     VertexBufferDX11_t* self    = VertexBufferDX11Pool::Get( vb );
 
-    DVASSERT(!self->_mapped);
+    DVASSERT(!self->isMapped);
 
-    if( offset+size <= self->_size )
+    if( offset+size <= self->size )
     {
         D3D11_MAPPED_SUBRESOURCE    rc = {0};
         
-        _D3D11_ImmediateContext->Map( self->_vb11, 0, D3D11_MAP_WRITE_DISCARD, 0, &rc );
+        _D3D11_ImmediateContext->Map( self->buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &rc );
         
         if( rc.pData )
         {            
             memcpy( ((uint8*)(rc.pData))+offset, data, size );            
-            _D3D11_ImmediateContext->Unmap( self->_vb11, 0 );
+            _D3D11_ImmediateContext->Unmap( self->buffer, 0 );
             success = true;
         }
     }
@@ -150,13 +177,13 @@ dx11_VertexBuffer_Map( Handle vb, unsigned offset, unsigned size )
     VertexBufferDX11_t*         self = VertexBufferDX11Pool::Get( vb );
     D3D11_MAPPED_SUBRESOURCE    rc   = {0};
 
-    DVASSERT(!self->_mapped);
-    _D3D11_ImmediateContext->Map( self->_vb11, 0, D3D11_MAP_WRITE_DISCARD, 0, &rc );
+    DVASSERT(!self->isMapped);
+    _D3D11_ImmediateContext->Map( self->buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &rc );
 
     if( rc.pData )
     {
-        ptr           = rc.pData;
-        self->_mapped = true;
+        ptr            = rc.pData;
+        self->isMapped = true;
     }
 
     return ((uint8*)ptr)+offset;
@@ -170,9 +197,9 @@ dx11_VertexBuffer_Unmap( Handle vb )
 {
     VertexBufferDX11_t* self = VertexBufferDX11Pool::Get( vb );
     
-    DVASSERT(self->_mapped);
-    _D3D11_ImmediateContext->Unmap( self->_vb11, 0 );
-    self->_mapped = false;
+    DVASSERT(self->isMapped);
+    _D3D11_ImmediateContext->Unmap( self->buffer, 0 );
+    self->isMapped = false;
 }
 
 
@@ -197,12 +224,12 @@ void
 SetToRHI( Handle vbh, unsigned stream_i, unsigned offset, unsigned stride, ID3D11DeviceContext* context  )
 {
     VertexBufferDX11_t* self         = VertexBufferDX11Pool::Get( vbh );
-    ID3D11Buffer*       vb[1]        = { self->_vb11 };
+    ID3D11Buffer*       vb[1]        = { self->buffer };
     UINT                vb_offset[1] = { offset };
     UINT                vb_stride[1] = { stride };
     
     
-///    DVASSERT(!self->_mapped);
+///    DVASSERT(!self->isMapped);
     context->IASetVertexBuffers( stream_i, 1, vb, vb_stride, vb_offset );
 }
 

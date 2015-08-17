@@ -653,7 +653,7 @@ namespace DAVA
             ::UITextView* textView = [[UITextView alloc] initWithFrame:rect textContainer:nil];
             
             HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
-            BackgroundView* backgroundView = [appDelegate glController].backgroundView;
+            BackgroundView* backgroundView = [[appDelegate renderViewController] backgroundView];
             [backgroundView PrepareView: textFieldHolder->textCtrl];
             
             [textFieldHolder addSubview:textView];

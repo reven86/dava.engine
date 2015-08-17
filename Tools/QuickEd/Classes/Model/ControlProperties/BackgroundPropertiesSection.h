@@ -31,6 +31,7 @@
 #define __UI_EDITOR_BACKGROUND_PROPERTIES_SECTION_H__
 
 #include "SectionProperty.h"
+#include "IntrospectionProperty.h"
 
 namespace DAVA
 {
@@ -38,7 +39,7 @@ namespace DAVA
     class UIControlBackground;
 }
 
-class BackgroundPropertiesSection : public SectionProperty
+class BackgroundPropertiesSection : public SectionProperty<IntrospectionProperty>
 {
 public:
     BackgroundPropertiesSection(DAVA::UIControl *control, int bgNum, const BackgroundPropertiesSection *sourceSection, eCloneType copyType);

@@ -48,8 +48,17 @@ struct RenderCaps
 #if defined(__DAVAENGINE_ANDROID__)
         isGlDepth24Stencil8Supported = isGlDepthNvNonLinearSupported = false;
 #endif
-        isVertexTextureUnitsSupported = true; // RHI_COMPLETE for grass rendering
         isCenterPixelMapping = false;
+
+        // RHI_COMPLETE: fix Render Caps
+        {
+#if defined(__DAVAENGINE_IPHONE__)
+            isPVRTCSupported = isPVRTC2Supported = true;
+#elif defined(__DAVAENGINE_ANDROID__)
+            isETCSupported = isDXTSupported = isATCSupported = true;
+#endif
+            isVertexTextureUnitsSupported = true; // for grass rendering
+        }
     }
     bool isHardwareCursorSupported;
     bool isPVRTCSupported;

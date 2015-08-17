@@ -56,6 +56,7 @@ void FrameworkDidLaunched()
 
 	DAVA::VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(WIDTH, HEIGHT);
 	DAVA::VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(WIDTH, HEIGHT, "Gfx");
+	DAVA::VirtualCoordinatesSystem::Instance()->SetProportionsIsFixed(false);
 #elif defined (__DAVAENGINE_WIN_UAP__)
 
     KeyedArchive * appOptions = new KeyedArchive();

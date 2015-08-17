@@ -106,7 +106,17 @@ bool PackageBaseNode::IsInsertingPackagesSupported() const
     return false;
 }
 
+bool PackageBaseNode::IsInsertingStylesSupported() const
+{
+    return false;
+}
+
 bool PackageBaseNode::CanInsertControl(ControlNode *node, DAVA::int32 pos) const
+{
+    return false;
+}
+
+bool PackageBaseNode::CanInsertStyle(StyleSheetNode *node, DAVA::int32 pos) const
 {
     return false;
 }

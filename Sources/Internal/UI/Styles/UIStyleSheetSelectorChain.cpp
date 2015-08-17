@@ -183,6 +183,8 @@ String UIStyleSheetSelectorChain::ToString() const
 
     if (!result.empty())
         result.resize(result.size() - 1);
+    else
+        result = "?";
 
     return result;
 }
