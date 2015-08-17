@@ -66,7 +66,7 @@ public:
     bool Connect(const String &ip, uint16 port);
     void Disconnect();
 
-    bool IsConnected();
+    bool ChannelIsOpened();
     
 	bool AddToCache(const CacheItemKey &key, const CachedItemValue &value);
     bool RequestFromCache(const CacheItemKey &key);
@@ -105,7 +105,7 @@ inline void Client::SetListener(ClientListener * _listener)
 }
 
  
-inline bool Client::IsConnected()
+inline bool Client::ChannelIsOpened()
 {
     return (openedChannel != nullptr);
 }

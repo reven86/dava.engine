@@ -155,7 +155,7 @@ void ServerLogics::OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey &key
 
 void ServerLogics::ProcessServerTasks()
 {
-    if(!serverTasks.empty() && client && client->IsConnected())
+    if(!serverTasks.empty() && client && client->ChannelIsOpened())
     {
         DAVA::LockGuard<DAVA::Mutex> lock(taskMutex);
         

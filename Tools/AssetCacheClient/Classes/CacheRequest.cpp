@@ -99,12 +99,12 @@ int CacheRequest::Connect()
     const auto startTime = SystemTimer::Instance()->AbsoluteMS();
     const auto connectionTimeout = options.GetOption("-t").AsUInt64() * 1000;   // convert to ms
     
-    while(client.IsConnected() == false)
+    while(client.ChannelIsOpened() == false)
     {
         Net::NetCore::Instance()->Poll();
         
         auto deltaTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
-        if(((connectionTimeout > 0) && (deltaTime > connectionTimeout)) && (client.IsConnected() == false))
+        if(((connectionTimeout > 0) && (deltaTime > connectionTimeout)) && (client.ChannelIsOpened() == false))
         {
             Logger::Error("[CacheRequest::%s] connection to %s refused by timeout (%lld sec)", __FUNCTION__, ipAdress.c_str(), connectionTimeout / 1000);
             return AssetCacheClientConstants::EXIT_TIMEOUT;
