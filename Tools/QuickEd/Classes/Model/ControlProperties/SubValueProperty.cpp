@@ -95,9 +95,9 @@ void SubValueProperty::ResetValue()
     GetValueProperty()->ResetValue();
 }
 
-bool SubValueProperty::IsReplaced() const
+bool SubValueProperty::IsOverriddenLocally() const
 {
-    return GetValueProperty()->IsReplaced();
+    return GetValueProperty()->IsOverriddenLocally();
 }
 
 ValueProperty *SubValueProperty::GetValueProperty() const
