@@ -27,42 +27,30 @@
  =====================================================================================*/
 
 
-#include "DependedOnLayoutProperty.h"
+#ifndef __QUICKED_INSERT_REMOVE_STYLE_COMMAND_H__
+#define __QUICKED_INSERT_REMOVE_STYLE_COMMAND_H__
 
-#include "FileSystem/LocalizationSystem.h"
+#include <QUndoCommand>
 
-using namespace DAVA;
+class PackageNode;
+class StyleSheetNode;
+class StyleSheetsNode;
 
-DependedOnLayoutProperty::DependedOnLayoutProperty(DAVA::BaseObject *anObject, const DAVA::InspMember *aMmember, const DependedOnLayoutProperty *sourceProperty, eCloneType cloneType)
-    : IntrospectionProperty(anObject, aMmember, sourceProperty, cloneType)
+class InsertRemoveStyleCommand : public QUndoCommand
 {
-    ApplyValue(member->Value(object));
-    if (sourceProperty)
-        sourceValue = sourceProperty->sourceValue;
-}
-
-DependedOnLayoutProperty::~DependedOnLayoutProperty()
-{
+public:
+    InsertRemoveStyleCommand(PackageNode *_root, StyleSheetNode *_node, StyleSheetsNode *_dest, int _index, bool insert, QUndoCommand *parent = nullptr);
+    virtual ~InsertRemoveStyleCommand();
     
-}
+    void redo() override;
+    void undo() override;
+    
+private:
+    PackageNode *root;
+    StyleSheetNode *node;
+    StyleSheetsNode *dest;
+    int index;
+    bool insert;
+};
 
-void DependedOnLayoutProperty::RestoreSourceValue()
-{
-    ApplyValue(sourceValue);
-}
-
-VariantType DependedOnLayoutProperty::GetValue() const
-{
-    return member->Value(GetBaseObject());
-}
-
-void DependedOnLayoutProperty::ApplyValue(const DAVA::VariantType &value)
-{
-    if (value.GetType() == VariantType::TYPE_NONE)
-    {
-        return;
-    }
-    if (sourceValue != value)
-        sourceValue = value;
-    member->SetValue(GetBaseObject(), value);
-}
+#endif // __QUICKED_INSERT_REMOVE_STYLE_COMMAND_H__

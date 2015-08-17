@@ -80,6 +80,7 @@ private: // anchor layout
 private:
     bool isRtl = false;
     bool dirty = true;
+    DAVA::int32 indexOfSizeProperty;
     DAVA::Vector<UIControl*> changedControls;
 };
 

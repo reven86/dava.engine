@@ -30,25 +30,41 @@
 #ifndef __QUICKED_STYLE_SHEETS_ROOT_PROPERTY_H__
 #define __QUICKED_STYLE_SHEETS_ROOT_PROPERTY_H__
 
-#include "Model/ControlProperties/AbstractProperty.h"
+#include "AbstractProperty.h"
+#include "SectionProperty.h"
+#include "StyleSheetProperty.h"
+#include "StyleSheetSelectorProperty.h"
+
+#include "UI/Styles/UIStyleSheetSelectorChain.h"
 
 class PropertyListener;
 class ValueProperty;
-class StyleSheetSelectorsProperty;
-class StyleSheetPropertiesSection;
-class StyleSheetTransitionsSection;
 
 class StyleSheetNode;
 
 namespace DAVA
 {
     class UIControl;
+    class UIStyleSheetPropertyTable;
+    class UIStyleSheet;
 }
+
+class StyleSheetPropertiesSection : public SectionProperty<StyleSheetProperty>
+{
+public:
+    StyleSheetPropertiesSection(const DAVA::String &name) : SectionProperty<StyleSheetProperty>(name) { }
+};
+
+class StyleSheetSelectorsSection : public SectionProperty<StyleSheetSelectorProperty>
+{
+public:
+    StyleSheetSelectorsSection(const DAVA::String &name) : SectionProperty<StyleSheetSelectorProperty>(name) { }
+};
 
 class StyleSheetRootProperty : public AbstractProperty
 {
 public:
-    StyleSheetRootProperty(StyleSheetNode *styleSheet);
+    StyleSheetRootProperty(StyleSheetNode *styleSheet, const DAVA::Vector<DAVA::UIStyleSheetSelectorChain> &selectorChains, const DAVA::Vector<DAVA::UIStyleSheetProperty> &properties);
 protected:
     virtual ~StyleSheetRootProperty();
     
@@ -66,19 +82,49 @@ public:
     void RemoveListener(PropertyListener *listener);
     
     void SetProperty(AbstractProperty *property, const DAVA::VariantType &newValue);
-    void ResetProperty(AbstractProperty *property);
+    bool CanAddProperty(DAVA::uint32 propertyIndex) const;
+    bool CanRemoveProperty(DAVA::uint32 propertyIndex) const;
+    void AddProperty(StyleSheetProperty *property);
+    void RemoveProperty(StyleSheetProperty *property);
+    bool CanAddSelector() const;
+    bool CanRemoveSelector() const;
+    void InsertSelector(StyleSheetSelectorProperty *property, int index);
+    void RemoveSelector(StyleSheetSelectorProperty *property);
     
-    StyleSheetSelectorsProperty *GetSelectors() const;
+    StyleSheetSelectorsSection *GetSelectors() const;
     StyleSheetPropertiesSection *GetPropertiesSection() const;
-    StyleSheetTransitionsSection *GetTransitionsSection() const;
+
+    StyleSheetProperty *FindPropertyByPropertyIndex(DAVA::uint32 index) const;
+    StyleSheetSelectorProperty *GetSelectorAtIndex(DAVA::int32 index) const;
+
+    DAVA::String GetSelectorsAsString() const;
+    
+    DAVA::Vector<DAVA::UIStyleSheet*> CollectStyleSheets();
+
+    DAVA::Vector<DAVA::UIStyleSheetSelectorChain> CollectStyleSheetSelectors() const;
+    DAVA::Vector<DAVA::UIStyleSheetProperty> CollectStyleSheetProperties() const;
+    
+    DAVA::UIStyleSheetPropertyTable *GetStyleSheetPropertyTable() const;
 
 private:
-    StyleSheetNode *styleSheet = nullptr; // weak
+    void UpdateStyleSheetPropertyTable();
+    
+private:
+    enum eSection
+    {
+        SECTION_SELECTORS = 0,
+        SECTION_PROPERTIES = 1,
+        SECTION_COUNT = 2
+    };
+    
+private:
+    StyleSheetNode *styleSheet = nullptr;
     DAVA::Vector<PropertyListener*> listeners;
     
-    StyleSheetSelectorsProperty *selectors = nullptr;
+    StyleSheetSelectorsSection *selectors = nullptr;
     StyleSheetPropertiesSection *propertiesSection = nullptr;
-    StyleSheetTransitionsSection *transitionsSection = nullptr;
+    
+    DAVA::UIStyleSheetPropertyTable *propertyTable = nullptr;
 };
 
 #endif // __QUICKED_STYLE_SHEETS_ROOT_PROPERTY_H__

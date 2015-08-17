@@ -53,15 +53,18 @@ PackageControlsNode::~PackageControlsNode()
 void PackageControlsNode::Add(ControlNode *node)
 {
     DVASSERT(node->GetParent() == nullptr);
+    DVASSERT(node->GetPackageContext() == nullptr);
     node->SetParent(this);
+    node->SetPackageContext(GetPackage()->GetContext());
     nodes.push_back(SafeRetain(node));
 }
 
 void PackageControlsNode::InsertAtIndex(int index, ControlNode *node)
 {
-    DVASSERT(node->GetParent() == NULL);
+    DVASSERT(node->GetParent() == nullptr);
+    DVASSERT(node->GetPackageContext() == nullptr);
     node->SetParent(this);
-
+    node->SetPackageContext(GetPackage()->GetContext());
     nodes.insert(nodes.begin() + index, SafeRetain(node));
 }
 
@@ -71,7 +74,10 @@ void PackageControlsNode::Remove(ControlNode *node)
     if (it != nodes.end())
     {
         DVASSERT(node->GetParent() == this);
-        node->SetParent(NULL);
+        node->SetParent(nullptr);
+        
+        DVASSERT(node->GetPackageContext() == GetPackage()->GetContext());
+        node->SetPackageContext(nullptr);
 
         nodes.erase(it);
         SafeRelease(node);
