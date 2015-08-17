@@ -112,43 +112,14 @@ void RenderLayer::Draw(Camera* camera, const RenderBatchArray & batchArray, rhi:
     for (uint32 k = 0; k < size; ++k)
     {
         RenderBatch* batch = batchArray.Get(k);
-        RenderObject* renderObject = batch->GetRenderObject();
-        DVASSERT(renderObject != 0);
-        renderObject->BindDynamicParameters(camera);
-        
+        RenderObject* renderObject = batch->GetRenderObject();        
+        renderObject->BindDynamicParameters(camera);        
         NMaterial *mat = batch->GetMaterial();
         if (mat)
         {
-            PolygonGroup *pg = batch->GetPolygonGroup();
-            if (pg)
-            {
-                packet.vertexStreamCount = 1;
-                packet.vertexStream[0] = pg->vertexBuffer;
-                packet.baseVertex = 0;
-                packet.vertexCount = pg->vertexCount;
-                packet.indexBuffer = pg->indexBuffer;
-                packet.primitiveType = pg->primitiveType;
-                packet.primitiveCount = pg->indexCount / 3;
-                packet.vertexLayoutUID = pg->vertexLayoutId;                
-                packet.startIndex = 0;
-                DVASSERT(packet.primitiveCount);
-            }
-            else
-            {
-                packet.vertexStreamCount = 1;
-                packet.vertexStream[0] = batch->vertexBuffer;
-                packet.baseVertex = batch->vertexBase;
-                packet.vertexCount = batch->vertexCount;
-                packet.indexBuffer = batch->indexBuffer;
-                packet.primitiveType = batch->primitiveType;
-                packet.primitiveCount = batch->indexCount / 3;
-                packet.vertexLayoutUID = batch->vertexLayoutId;                
-                packet.startIndex = batch->startIndex;
-                DVASSERT(packet.primitiveCount);
-            }
-
+            batch->BindGeometryData(packet);
+            DVASSERT(packet.primitiveCount);
             mat->BindParams(packet);
-
             packet.debugMarker = mat->GetEffectiveFXName().c_str();
             rhi::AddPacket(packetList, packet);
         }        

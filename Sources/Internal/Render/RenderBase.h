@@ -340,6 +340,20 @@ inline int32 GetVertexSize(int32 flags)
     return size;
 }
 
+inline uint32 GetPrimitiveCount(uint32 indexCount, rhi::PrimitiveType primitiveType)
+{
+    switch (primitiveType)
+    {
+    case rhi::PRIMITIVE_TRIANGLELIST:
+        return indexCount / 3;
+    case rhi::PRIMITIVE_LINELIST:
+        return indexCount / 2;
+    default:
+        DVASSERT_MSG(false, "Unknown primitive type");
+    }
+    return 0;
+}
+
 uint32 GetVertexLayoutRequiredFormat(const rhi::VertexLayout& layout);
 
 
