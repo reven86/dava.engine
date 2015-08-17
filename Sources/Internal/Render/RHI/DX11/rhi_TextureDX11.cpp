@@ -1,3 +1,30 @@
+/*==================================================================================
+    Copyright (c) 2008, binaryzebra
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+=====================================================================================*/
 
     #include "../Common/rhi_Private.h"
     #include "../Common/rhi_Pool.h"
@@ -26,6 +53,8 @@ public:
     TextureFormat               format;
     unsigned                    width;
     unsigned                    height;
+    unsigned                    arraySize;
+    unsigned                    mipLevelCount;
 
     ID3D11Texture2D*            tex2d;
     ID3D11ShaderResourceView*   tex2d_srv;
@@ -34,6 +63,7 @@ public:
 
     void*                       mappedData;
     unsigned                    mappedLevel;
+    TextureFace                 mappedFace;
 
     unsigned                    isMapped:1;
     unsigned                    lastUnit;
@@ -43,6 +73,7 @@ public:
 TextureDX11_t::TextureDX11_t()
   : width(0),
     height(0),
+    arraySize(1),
     tex2d(nullptr),
     tex2d_srv(nullptr),
     tex2d_rtv(nullptr),
@@ -82,7 +113,18 @@ dx11_Texture_Create( const Texture::Descriptor& desc )
     desc2d.CPUAccessFlags       = 0;//D3D11_CPU_ACCESS_WRITE;
     desc2d.MiscFlags            = 0;
 
+// CRAP: just to make it work somehow
+//{
+//if( desc.format == TEXTURE_FORMAT_R5G6B5 || desc.format == TEXTURE_FORMAT_R4G4B4A4 )
+//    desc2d.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+//}
     DVASSERT(desc2d.Format!=DXGI_FORMAT_UNKNOWN);
+
+    if( desc.type == TEXTURE_TYPE_CUBE )
+    {
+        desc2d.ArraySize  = 6;
+        desc2d.MiscFlags |= D3D11_RESOURCE_MISC_TEXTURECUBE;
+    }
     
     if( desc.autoGenMipmaps )
         desc2d.MiscFlags |= D3D11_RESOURCE_MISC_GENERATE_MIPS;
@@ -109,12 +151,14 @@ dx11_Texture_Create( const Texture::Descriptor& desc )
         handle  = TextureDX11Pool::Alloc();
         TextureDX11_t*  tex = TextureDX11Pool::Get( handle );
 
-        tex->tex2d      = tex2d;
-        tex->format     = desc.format;
-        tex->width      = desc.width;
-        tex->height     = desc.height;
-        tex->mappedData = nullptr;
-        tex->isMapped   = false;
+        tex->tex2d          = tex2d;
+        tex->format         = desc.format;
+        tex->width          = desc.width;
+        tex->height         = desc.height;
+        tex->arraySize      = desc2d.ArraySize;
+        tex->mipLevelCount  = desc2d.MipLevels;
+        tex->mappedData     = nullptr;
+        tex->isMapped       = false;
         
         if( need_srv )
         {
@@ -122,9 +166,19 @@ dx11_Texture_Create( const Texture::Descriptor& desc )
             ID3D11ShaderResourceView*       srv = nullptr;
 
             srv_desc.Format                     = desc2d.Format;
-            srv_desc.ViewDimension              = D3D11_SRV_DIMENSION_TEXTURE2D;
-            srv_desc.Texture2D.MipLevels        = desc2d.MipLevels;
-            srv_desc.Texture2D.MostDetailedMip  = 0;
+
+            if( desc.type == TEXTURE_TYPE_CUBE )
+            {                
+                srv_desc.ViewDimension              = D3D11_SRV_DIMENSION_TEXTURECUBE;
+                srv_desc.TextureCube.MipLevels      = desc2d.MipLevels;
+                srv_desc.TextureCube.MostDetailedMip= 0;
+            }
+            else
+            {
+                srv_desc.ViewDimension              = D3D11_SRV_DIMENSION_TEXTURE2D;
+                srv_desc.Texture2D.MipLevels        = desc2d.MipLevels;
+                srv_desc.Texture2D.MostDetailedMip  = 0;
+            }
 
             hr = _D3D11_Device->CreateShaderResourceView( tex2d, &srv_desc, &srv );
             
@@ -136,9 +190,10 @@ dx11_Texture_Create( const Texture::Descriptor& desc )
 
         if( need_rtv )
         {
+            DVASSERT(desc.type == TEXTURE_TYPE_2D);
             D3D11_RENDER_TARGET_VIEW_DESC   rtv_desc;
             ID3D11RenderTargetView*         rtv     = nullptr;
-
+            
             rtv_desc.Format             = desc2d.Format;
             rtv_desc.ViewDimension      = D3D11_RTV_DIMENSION_TEXTURE2D;
             rtv_desc.Texture2D.MipSlice = 0;
@@ -153,6 +208,7 @@ dx11_Texture_Create( const Texture::Descriptor& desc )
 
         if( need_dsv )
         {
+            DVASSERT(desc.type == TEXTURE_TYPE_2D);
             D3D11_DEPTH_STENCIL_VIEW_DESC   dsv_desc;
             ID3D11DepthStencilView*         dsv     = nullptr;
             
@@ -225,6 +281,7 @@ dx11_Texture_Map( Handle tex, unsigned level, TextureFace face )
     DVASSERT(!self->isMapped);
     self->mappedData  = ::realloc( self->mappedData, TextureSize(self->format,self->width,self->height,level) );
     self->mappedLevel = level;
+    self->mappedFace  = face;
     self->isMapped    = true;
 
     if( self->format == TEXTURE_FORMAT_R8G8B8A8 )
@@ -266,10 +323,33 @@ dx11_Texture_Unmap( Handle tex )
         _SwapRB5551(self->mappedData, TextureSize(self->format, self->width, self->height, self->mappedLevel));
     }
 
+    int rc_i = 0;
+    int face = 0;
+    
+    if( self->arraySize == 6 )
+    {
+        switch( self->mappedFace )
+        {
+            case TEXTURE_FACE_POSITIVE_X : face = 0; break;
+            case TEXTURE_FACE_NEGATIVE_X : face = 1; break;
+            case TEXTURE_FACE_POSITIVE_Y : face = 2; break;
+            case TEXTURE_FACE_NEGATIVE_Y : face = 3; break;
+            case TEXTURE_FACE_POSITIVE_Z : face = 4; break;
+            case TEXTURE_FACE_NEGATIVE_Z : face = 5; break;
+        }
+        
+        rc_i = self->mappedLevel + (face * self->mipLevelCount);
+    }
+    else
+    {
+        rc_i = self->mappedLevel;
+    }
+
+
     _D3D11_ImmediateContext->UpdateSubresource
     (
         self->tex2d,
-        self->mappedLevel,
+        rc_i,
         NULL,
         self->mappedData,
         TextureStride(self->format,Size2i(self->width,self->height),self->mappedLevel),
@@ -310,17 +390,25 @@ SetupDispatch( Dispatch* dispatch )
 
 
 void
-SetToRHI( Handle tex, unsigned unit_i )
+SetToRHIFragment( Handle tex, unsigned unit_i, ID3D11DeviceContext* context )
 {
     TextureDX11_t*  self = TextureDX11Pool::Get( tex );
     
-    _D3D11_ImmediateContext->PSSetShaderResources( unit_i, 1, &(self->tex2d_srv) );
+    context->PSSetShaderResources( unit_i, 1, &(self->tex2d_srv) );
     self->lastUnit = unit_i;
+}
+
+void
+SetToRHIVertex( Handle tex, unsigned unit_i, ID3D11DeviceContext* context )
+{
+    TextureDX11_t*  self = TextureDX11Pool::Get( tex );
+    
+    context->VSSetShaderResources( unit_i, 1, &(self->tex2d_srv) );
 }
 
 
 void
-SetRenderTarget( Handle color, Handle depthstencil )
+SetRenderTarget( Handle color, Handle depthstencil, ID3D11DeviceContext* context )
 {
     TextureDX11_t*  rt = TextureDX11Pool::Get( color );
     TextureDX11_t*  ds = (depthstencil!=InvalidHandle) ? TextureDX11Pool::Get( depthstencil ) : nullptr;
@@ -329,11 +417,11 @@ SetRenderTarget( Handle color, Handle depthstencil )
     {
         ID3D11ShaderResourceView*   srv[1] = { NULL };
 
-        _D3D11_ImmediateContext->PSSetShaderResources( rt->lastUnit, 1, srv );
+        context->PSSetShaderResources( rt->lastUnit, 1, srv );
         rt->lastUnit = InvalidIndex;
     }
 
-    _D3D11_ImmediateContext->OMSetRenderTargets( 1, &(rt->tex2d_rtv), (ds)?ds->tex2d_dsv:_D3D11_DepthStencilView );
+    context->OMSetRenderTargets( 1, &(rt->tex2d_rtv), (ds)?ds->tex2d_dsv:_D3D11_DepthStencilView );
 }
 
 void

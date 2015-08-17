@@ -28,13 +28,13 @@
 
     #include "../Common/rhi_Private.h"
     #include "../Common/rhi_Pool.h"
-    #include "rhi_DX9.h"
+    #include "rhi_DX11.h"
 
     #include "Debug/DVAssert.h"
     #include "FileSystem/Logger.h"
     using DAVA::Logger;
 
-    #include "_dx9.h"
+    #include "_dx11.h"
 
 
 namespace rhi
@@ -42,38 +42,38 @@ namespace rhi
 //==============================================================================
 
 class
-QueryBufferDX9_t
+QueryBufferDX11_t
 {
 public:
-                                    QueryBufferDX9_t();
-                                    ~QueryBufferDX9_t();
+                                QueryBufferDX11_t();
+                                ~QueryBufferDX11_t();
 
-    std::vector<IDirect3DQuery9*>   query;
+    std::vector<ID3D11Query*>   query;
 };
 
-typedef ResourcePool<QueryBufferDX9_t,RESOURCE_QUERY_BUFFER>    QueryBufferDX9Pool;
-RHI_IMPL_POOL(QueryBufferDX9_t,RESOURCE_QUERY_BUFFER);
+typedef ResourcePool<QueryBufferDX11_t,RESOURCE_QUERY_BUFFER>   QueryBufferDX11Pool;
+RHI_IMPL_POOL(QueryBufferDX11_t,RESOURCE_QUERY_BUFFER);
 
 
 //==============================================================================
 
 
-QueryBufferDX9_t::QueryBufferDX9_t()
+QueryBufferDX11_t::QueryBufferDX11_t()
 {
 }
 
 
 //------------------------------------------------------------------------------
 
-QueryBufferDX9_t::~QueryBufferDX9_t()
+QueryBufferDX11_t::~QueryBufferDX11_t()
 {
 }
 
 static Handle
-dx9_QueryBuffer_Create( uint32 maxObjectCount )
+dx11_QueryBuffer_Create( uint32 maxObjectCount )
 {
-    Handle              handle = QueryBufferDX9Pool::Alloc();
-    QueryBufferDX9_t*   buf    = QueryBufferDX9Pool::Get( handle );
+    Handle              handle = QueryBufferDX11Pool::Alloc();
+    QueryBufferDX11_t*  buf    = QueryBufferDX11Pool::Get( handle );
 
     if( buf )
     {
@@ -85,32 +85,28 @@ dx9_QueryBuffer_Create( uint32 maxObjectCount )
 }
 
 static void
-dx9_QueryBuffer_Delete( Handle handle )
+dx11_QueryBuffer_Delete( Handle handle )
 {
-    QueryBufferDX9_t*   buf = QueryBufferDX9Pool::Get( handle );
+    QueryBufferDX11_t*   buf = QueryBufferDX11Pool::Get( handle );
 
     if( buf )
     {
-        std::vector<DX9Command> cmd;
-
-        for( std::vector<IDirect3DQuery9*>::iterator q=buf->query.begin(),q_end=buf->query.end(); q!=q_end; ++q )
+        for( std::vector<ID3D11Query*>::iterator q=buf->query.begin(),q_end=buf->query.end(); q!=q_end; ++q )
         {
-            DX9Command  c  = { DX9Command::RELEASE, { uint64_t(static_cast<IUnknown*>(*q)) } };
-            
-            cmd.push_back( c );
+            if( *q )
+                (*q)->Release();
         }
 
-        ExecDX9( &cmd[0], cmd.size() );
         buf->query.clear();
     }
 
-    QueryBufferDX9Pool::Free( handle );
+    QueryBufferDX11Pool::Free( handle );
 }
 
 static void
-dx9_QueryBuffer_Reset( Handle handle )
+dx11_QueryBuffer_Reset( Handle handle )
 {
-    QueryBufferDX9_t*   buf    = QueryBufferDX9Pool::Get( handle );
+    QueryBufferDX11_t*   buf = QueryBufferDX11Pool::Get( handle );
 
     if( buf )
     {
@@ -118,25 +114,22 @@ dx9_QueryBuffer_Reset( Handle handle )
 }
 
 static bool
-dx9_QueryBuffer_IsReady( Handle handle, uint32 objectIndex )
+dx11_QueryBuffer_IsReady( Handle handle, uint32 objectIndex )
 {
     bool                ready = false;
-    QueryBufferDX9_t*   buf   = QueryBufferDX9Pool::Get( handle );
+    QueryBufferDX11_t*  buf   = QueryBufferDX11Pool::Get( handle );
 
     if( buf  &&  objectIndex < buf->query.size() )
     {
-        IDirect3DQuery9*    iq = buf->query[objectIndex];
-        
+        ID3D11Query*    iq = buf->query[objectIndex];
+
         if( iq )
         {
-            DWORD       val;
-            DX9Command  cmd = { DX9Command::GET_QUERY_DATA, { uint64_t(iq), uint64_t(&val), sizeof(val), 0 } }; // DO NOT flush
+            HRESULT hr= _D3D11_ImmediateContext->GetData( iq, NULL, 0, D3D11_ASYNC_GETDATA_DONOTFLUSH );
             
-            ExecDX9( &cmd, 1 );
-
-            if( SUCCEEDED(cmd.retval) )
+            if( SUCCEEDED(hr) )
             {
-                ready = cmd.retval == S_OK;
+                ready = hr == S_OK;
             }
         }
     }
@@ -145,23 +138,21 @@ dx9_QueryBuffer_IsReady( Handle handle, uint32 objectIndex )
 }
 
 static int
-dx9_QueryBuffer_Value( Handle handle, uint32 objectIndex )
+dx11_QueryBuffer_Value( Handle handle, uint32 objectIndex )
 {
     int                 value = 0;
-    QueryBufferDX9_t*   buf    = QueryBufferDX9Pool::Get( handle );
+    QueryBufferDX11_t*  buf   = QueryBufferDX11Pool::Get( handle );
 
     if( buf  &&  objectIndex < buf->query.size() )
     {
-        IDirect3DQuery9*    iq = buf->query[objectIndex];
-        
+        ID3D11Query*    iq = buf->query[objectIndex];
+
         if( iq )
         {
-            DWORD       val = 0;
-            DX9Command  cmd = { DX9Command::GET_QUERY_DATA, { uint64_t(iq), uint64_t(&val), sizeof(val), 0 } }; // DO NOT flush
-
-            ExecDX9( &cmd, 1 );
-
-            if( cmd.retval == S_OK )
+            UINT64  val;
+            HRESULT hr  = _D3D11_ImmediateContext->GetData( iq, &val, sizeof(UINT64), D3D11_ASYNC_GETDATA_DONOTFLUSH );
+            
+            if( hr == S_OK )
             {
                 value = val;
             }
@@ -172,31 +163,36 @@ dx9_QueryBuffer_Value( Handle handle, uint32 objectIndex )
 }
 
 
-namespace QueryBufferDX9
+namespace QueryBufferDX11
 {
 
 void
 SetupDispatch( Dispatch* dispatch )
 {
-    dispatch->impl_QueryBuffer_Create   = &dx9_QueryBuffer_Create;
-    dispatch->impl_QueryBuffer_Reset    = &dx9_QueryBuffer_Reset;
-    dispatch->impl_QueryBuffer_Delete   = &dx9_QueryBuffer_Delete;
-    dispatch->impl_QueryBuffer_IsReady  = &dx9_QueryBuffer_IsReady;
-    dispatch->impl_QueryBuffer_Value    = &dx9_QueryBuffer_Value;
+    dispatch->impl_QueryBuffer_Create   = &dx11_QueryBuffer_Create;
+    dispatch->impl_QueryBuffer_Reset    = &dx11_QueryBuffer_Reset;
+    dispatch->impl_QueryBuffer_Delete   = &dx11_QueryBuffer_Delete;
+    dispatch->impl_QueryBuffer_IsReady  = &dx11_QueryBuffer_IsReady;
+    dispatch->impl_QueryBuffer_Value    = &dx11_QueryBuffer_Value;
 }
 
 void
-BeginQuery( Handle handle, uint32 objectIndex )
+BeginQuery( Handle handle, uint32 objectIndex, ID3D11DeviceContext* context )
 {
-    QueryBufferDX9_t*   buf    = QueryBufferDX9Pool::Get( handle );
+    QueryBufferDX11_t*  buf = QueryBufferDX11Pool::Get( handle );
 
     if( buf  &&  objectIndex < buf->query.size() )
     {
-        IDirect3DQuery9*    iq = buf->query[objectIndex];
+        ID3D11Query*    iq = buf->query[objectIndex];
 
         if( !iq )
         {
-            HRESULT hr = _D3D9_Device->CreateQuery( D3DQUERYTYPE_OCCLUSION, &iq );
+            D3D11_QUERY_DESC    desc;
+
+            desc.Query      = D3D11_QUERY_OCCLUSION;
+            desc.MiscFlags  = 0;
+            
+            HRESULT hr = _D3D11_Device->CreateQuery( &desc, &iq );
             
             if( SUCCEEDED(hr) )
             {
@@ -210,23 +206,23 @@ BeginQuery( Handle handle, uint32 objectIndex )
 
         if( iq )
         {
-            iq->Issue( D3DISSUE_BEGIN );
+            context->Begin( iq );
         }
     }
 }
 
 
 void
-EndQuery( Handle handle, uint32 objectIndex )
+EndQuery( Handle handle, uint32 objectIndex, ID3D11DeviceContext* context )
 {
-    QueryBufferDX9_t*   buf    = QueryBufferDX9Pool::Get( handle );
+    QueryBufferDX11_t*  buf = QueryBufferDX11Pool::Get( handle );
 
     if( buf  &&  objectIndex < buf->query.size() )
     {
-        IDirect3DQuery9*    iq = buf->query[objectIndex];
+        ID3D11Query*    iq = buf->query[objectIndex];
         
         DVASSERT(iq);
-        iq->Issue( D3DISSUE_END );
+        context->End( iq );
     }
 }
 

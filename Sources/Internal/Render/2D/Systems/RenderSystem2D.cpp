@@ -625,10 +625,6 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
     case rhi::PRIMITIVE_LINELIST:
         currentPacket.primitiveCount += batchDesc.indexCount / 2;
         break;
-    case rhi::PRIMITIVE_TRIANGLEFAN:
-        DVASSERT(batchDesc.indexCount > 2);
-        currentPacket.primitiveCount += batchDesc.indexCount - 2;
-        break;
     case rhi::PRIMITIVE_TRIANGLELIST:
         currentPacket.primitiveCount += batchDesc.indexCount / 3;
         break;
