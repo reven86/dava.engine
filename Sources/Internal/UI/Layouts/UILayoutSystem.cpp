@@ -223,9 +223,9 @@ void UILayoutSystem::MeasureControl(UIControl *control, UISizePolicyComponent *s
             
             value += linearLayout->GetPadding() * 2.0f;
         }
-        else if (flowLayout && axis == Vector2::AXIS_X)
+        else if (flowLayout)
         {
-            value += flowLayout->GetHorizontalPadding() * 2.0f;
+            value += flowLayout->GetPaddingByAxis(axis) * 2.0f;
         }
     }
     
@@ -273,7 +273,15 @@ void UILayoutSystem::ApplyFlowLayoutHorizontally(UIControl *control, UIFlowLayou
         {
             if (sizePolicy->GetHorizontalPolicy() == UISizePolicyComponent::PERCENT_OF_PARENT)
             {
-                childSize = control->GetSize().dx * sizePolicy->GetHorizontalValue() / 100.0f;
+                float32 restSize = control->GetSize().dx - padding * 2;
+                float32 value = sizePolicy->GetHorizontalValue();
+                if (value < 100.0f && value > EPSILON)
+                {
+                    int32 potentialSpacesCount = static_cast<int32>(100.0f / value) - 1;
+                    restSize -= potentialSpacesCount * spacing;
+                }
+                
+                childSize = restSize * value / 100.0f;
                 childSize = Clamp(childSize, sizePolicy->GetHorizontalMinValue(), sizePolicy->GetHorizontalMaxValue());
                 child->SetSize(Vector2(childSize, child->GetSize().dy));
                 changedControls.insert(child);
@@ -301,18 +309,19 @@ void UILayoutSystem::ApplyFlowLayoutVertically(UIControl *control, UIFlowLayoutC
     bool first = true;
     for (UIControl *child : children)
     {
-//        float32 childSize = child->GetSize().dx;
-//        UISizePolicyComponent *sizePolicy = child->GetComponent<UISizePolicyComponent>();
-//        if (sizePolicy)
-//        {
-//            if (sizePolicy->GetHorizontalPolicy() == UISizePolicyComponent::PERCENT_OF_PARENT)
-//            {
-//                childSize = control->GetSize().dx * sizePolicy->GetHorizontalValue() / 100.0f;
-//                childSize = Clamp(childSize, sizePolicy->GetHorizontalMinValue(), sizePolicy->GetHorizontalMaxValue());
-//                child->SetSize(Vector2(childSize, child->GetSize().dy));
-//                changedControls.insert(child);
-//            }
-//        }
+        float32 childSize = child->GetSize().dy;
+        UISizePolicyComponent *sizePolicy = child->GetComponent<UISizePolicyComponent>();
+        if (sizePolicy)
+        {
+            if (sizePolicy->GetVerticalPolicy() == UISizePolicyComponent::PERCENT_OF_PARENT)
+            {
+                float32 restSize = control->GetSize().dy - padding * 2.0f;
+                childSize = restSize * sizePolicy->GetVerticalValue() / 100.0f;
+                childSize = Clamp(childSize, sizePolicy->GetVerticalMinValue(), sizePolicy->GetVerticalMaxValue());
+                child->SetSize(Vector2(child->GetSize().dx, childSize));
+                changedControls.insert(child);
+            }
+        }
         
         float childX = child->GetPosition().x;
         if (childX <= x + EPSILON && !first)
