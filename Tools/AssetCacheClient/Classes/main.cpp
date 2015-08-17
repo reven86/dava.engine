@@ -76,7 +76,7 @@ int main (int argc, char * argv[])
     {
         CreateDAVA();
         
-        DAVA::Logger::Instance()->SetLogLevel(DAVA::Logger::LEVEL_WARNING);
+        DAVA::Logger::Instance()->SetLogLevel(DAVA::Logger::LEVEL_FRAMEWORK);
         cacheClient.Process();
         
         ReleaseDAVA();

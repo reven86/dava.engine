@@ -38,7 +38,7 @@ namespace AssetCache {
 static const uint32 NET_SERVICE_ID = 0xACCA;
 static const uint16 ASSET_SERVER_PORT = 0xACCA;
 
-enum ePacketID: uint8
+enum ePacketID : uint8
 {
     PACKET_UNKNOWN = 0,
     PACKET_ADD_REQUEST,
@@ -47,6 +47,7 @@ enum ePacketID: uint8
     PACKET_GET_RESPONSE,
     PACKET_WARMING_UP_REQUEST,
 //    PACKET_WARMING_UP_RESPONSE, // We don't need send response right now. Left it in code for better reading
+	PACKET_COUNT
 };
     
 } // end of namespace AssetCache

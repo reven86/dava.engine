@@ -82,7 +82,6 @@ private:
     };
 
     DAVA::List<ServerTask> serverTasks;
-    DAVA::Mutex taskMutex;
 };
 
 

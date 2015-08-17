@@ -196,13 +196,13 @@ public:
 	/** 
 		\brief Get current file position
 	*/
-	virtual uint32 GetPos();
+	virtual uint32 GetPos() const;
 	
 	/** 
 		\brief Get current file size if writing
 		\brief and get real file size if file for reading
 	*/
-	virtual	uint32 GetSize();
+	virtual	uint32 GetSize() const;
 	
 	/** 
 		\brief Set current file position

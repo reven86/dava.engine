@@ -124,8 +124,8 @@ void ProcessRecourcePacker()
     
     
     auto toolFolderPath = resourcePacker->excludeDirectory + (commandLine[2] + "/");
-    String pvrTexToolName = String("PVRTexToolCLI");
-    String cacheToolName = "AssetCacheClient";
+    String pvrTexToolName = "PVRTexToolCLI";
+    String cacheToolName = "AssetCacheClient.exe";
     
     PVRConverter::Instance()->SetPVRTexTool(toolFolderPath + pvrTexToolName);
     

@@ -31,182 +31,125 @@
 #include "AssetCache/AssetCacheServer.h"
 #include "AssetCache/AssetCacheConstants.h"
 #include "AssetCache/CachedItemValue.h"
+#include "AssetCache/CachePacket.h"
 #include "Debug/DVAssert.h"
 #include "FileSystem/KeyedArchive.h"
+#include "FileSystem/DynamicMemoryFile.h"
 
 
-namespace DAVA
-{
-    
-namespace AssetCache
-{
-    
+namespace DAVA {
+namespace AssetCache {
+
+
 Server::~Server()
 {
 }
 
+
 bool Server::Listen(uint16 port)
 {
-    listenPort = port;
-    DVASSERT(!netServer);
+	listenPort = port;
+	DVASSERT(!netServer);
 
 	netServer.reset(new Connection(Net::SERVER_ROLE, Net::Endpoint(listenPort), this));
+	DVASSERT(false && "remove bool");
 	return true;
 }
-    
+
 
 void Server::Disconnect()
 {
 	netServer.reset();
 }
 
-void Server::OnPacketReceived(Net::IChannel * channel, const void* packet, size_t length)
-{
-    if(length)
-    {
-        ScopedPtr<KeyedArchive> archive(new KeyedArchive());
-		archive->Load(static_cast<const uint8 *>(packet), length);
-        
-        const auto packetID = archive->GetUInt32("PacketID", PACKET_UNKNOWN);
-        switch (packetID)
-        {
-            case PACKET_ADD_REQUEST:
-				OnAddToCache(channel, archive);
-                break;
-                
-            case PACKET_GET_REQUEST:
-				OnGetFromCache(channel, archive);
-                break;
-                
-            case PACKET_WARMING_UP_REQUEST:
-				OnWarmingUp(channel, archive);
-                break;
-                
-            default:
-				Logger::Error("[AssetCache::Server::%s] Invalid packet id: (%d). Closing channel", __FUNCTION__, packetID);
-				DVASSERT(false && "Invalid packet id");
-                break;
-        }
-    }
 
+void Server::OnPacketReceived(Net::IChannel * channel, const void* packetData, size_t length)
+{
+	if(nullptr == delegate)
+	{	// do not need to process data in case of nullptr delegate
+		return;
+	}
+
+	if(length > 0)
+	{
+		CachePacket* packet = CachePacket::Deserialize(static_cast<const uint8 *>(packetData), length);
+		if (packet)
+		{
+			switch (packet->type)
+			{
+			case PACKET_ADD_REQUEST:
+				{
+					AddRequestPacket *p = static_cast<AddRequestPacket*>(packet);
+					delegate->OnAddToCache(tcpChannel, p->key, std::forward<CachedItemValue>(p->value));
+					break;
+				}
+			case PACKET_GET_REQUEST:
+				{
+					GetRequestPacket* p = static_cast<GetRequestPacket*>(packet);
+					delegate->OnRequestedFromCache(tcpChannel, p->key);
+					break;
+				}
+			case PACKET_WARMING_UP_REQUEST:
+				{
+					WarmupRequestPacket* p = static_cast<WarmupRequestPacket*>(packet);
+					delegate->OnWarmingUp(tcpChannel, p->key);
+					break;
+				}
+			default:
+				{
+					Logger::Error("[AssetCache::Server::%s] Unexpected packet type: (%d). Closing channel", __FUNCTION__, packet->type);
+					DVASSERT(false);
+					break;
+				}
+			}
+
+			delete packet;
+		}
+		else
+		{
+			DVASSERT(false && "Invalid packet received");
+		}
+	}
+	else
+	{
+		Logger::Error("[AssetCache::Server::%s] Empty packet is received.", __FUNCTION__);
+	}
 }
 
 void Server::OnPacketSent(Net::IChannel* channel, const void* buffer, size_t length)
 {
-    delete[] static_cast<const uint8*>(buffer);
+	delete[] static_cast<const uint8*>(buffer);
 }
 
-    
+
 void Server::OnChannelClosed(Net::IChannel * channel, const char8* message)
 {
-    if(delegate)
-    {
+	if(delegate)
+	{
 		delegate->OnChannelClosed(channel, message);
-    }
+	}
 }
 
-    
 bool Server::AddedToCache(Net::IChannel * channel, const CacheItemKey &key, bool added)
 {
-    if(channel)
-    {
-        ScopedPtr<KeyedArchive> archieve(new KeyedArchive());
-        archieve->SetUInt32("PacketID", PACKET_ADD_RESPONSE);
+	if(channel)
+	{
+		AddResponsePacket packet(key, added);
+		return packet.SendTo(channel);
+	}
 
-        ScopedPtr<KeyedArchive> keyArchieve(new KeyedArchive());
-        SerializeKey(key, keyArchieve);
-        archieve->SetArchive("key", keyArchieve);
-       
-        archieve->SetBool("added", added);
-        
-		return SendArchieve(channel, archieve);
-    }
-    
-    return false;
+	return false;
 }
-    
-    
+
 bool Server::Send(Net::IChannel * channel, const CacheItemKey &key, const CachedItemValue &value)
 {
-    if(channel)
-    {
-        ScopedPtr<KeyedArchive> archieve(new KeyedArchive());
-        archieve->SetUInt32("PacketID", PACKET_GET_RESPONSE);
-
-        ScopedPtr<KeyedArchive> keyArchieve(new KeyedArchive());
-        SerializeKey(key, keyArchieve);
-        archieve->SetArchive("key", keyArchieve);
-
-		ScopedPtr<KeyedArchive> valueArchieve(new KeyedArchive());
-		value.Serialize(valueArchieve, true);
-		archieve->SetArchive("value", valueArchieve);
-
-		return SendArchieve(channel, archieve);
+	if (channel)
+	{
+		GetResponsePacket packet(key, value);
+		return packet.SendTo(tcpChannel);
 	}
-    
-    return false;
-}
 
-
-void Server::OnAddToCache(Net::IChannel * channel, KeyedArchive * archieve)
-{
-    if(delegate)
-    {
-        KeyedArchive *keyArchieve = archieve->GetArchive("key");
-        DVASSERT(keyArchieve);
-        
-        CacheItemKey key;
-        DeserializeKey(key, keyArchieve);
-        
-		KeyedArchive *valueArchieve = archieve->GetArchive("value");
-		DVASSERT(valueArchieve);
-        
-		CachedItemValue value;
-		value.Deserialize(valueArchieve);
-        
-		delegate->OnAddToCache(channel, key, std::forward<CachedItemValue>(value));
-    }
-    else
-    {
-        Logger::Error("[Server::%s] delegate not installed", __FUNCTION__);
-    }
-}
-    
-    
-void Server::OnGetFromCache(Net::IChannel * channel, KeyedArchive * archieve)
-{
-    if(delegate)
-    {
-        KeyedArchive *keyArchieve = archieve->GetArchive("key");
-        DVASSERT(keyArchieve);
-        
-        CacheItemKey key;
-        DeserializeKey(key, keyArchieve);
-        
-        delegate->OnRequestedFromCache(channel, key);
-    }
-    else
-    {
-        Logger::Error("[Server::%s] delegate not installed", __FUNCTION__);
-    }
-}
-    
-void Server::OnWarmingUp(Net::IChannel * channel, KeyedArchive * archieve)
-{
-    if(delegate)
-    {
-        KeyedArchive *keyArchieve = archieve->GetArchive("key");
-        DVASSERT(keyArchieve);
-        
-        CacheItemKey key;
-        DeserializeKey(key, keyArchieve);
-        
-        delegate->OnWarmingUp(channel, key);
-    }
-    else
-    {
-        Logger::Error("[Server::%s] delegate not installed", __FUNCTION__);
-    }
+	return false;
 }
 
 

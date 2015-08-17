@@ -128,12 +128,6 @@
     <ClCompile Include="..\..\Sources\Tools\AssetCache\CacheDB.cpp">
       <Filter>Source Files\AssetCache</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Tools\AssetCache\CachedFiles.cpp">
-      <Filter>Source Files\AssetCache</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Tools\AssetCache\CacheItemKey.cpp">
-      <Filter>Source Files\AssetCache</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Tools\AssetCache\ServerCacheEntry.cpp">
       <Filter>Source Files\AssetCache</Filter>
     </ClCompile>
@@ -142,6 +136,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Tools\AssetCache\TCPConnection\TCPConnection.cpp">
       <Filter>Source Files\AssetCache\TCPConnection</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Tools\AssetCache\DoubleMD5Key.cpp">
+      <Filter>Source Files\AssetCache</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

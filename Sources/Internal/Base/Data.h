@@ -54,12 +54,13 @@ public:
         \brief Get pointer to data array
         \returns pointer
      */
+    inline const uint8 * GetPtr() const;
     inline uint8 * GetPtr();
     /**
         \brief Get size of this date object
         \returns size
      */
-    inline uint32   GetSize();
+    inline uint32   GetSize() const;
 private:
     uint8 * data;
     uint32 size;
@@ -71,7 +72,12 @@ inline uint8 * Data::GetPtr()
     return data;
 }
 
-inline uint32 Data::GetSize()
+inline const uint8 * Data::GetPtr() const
+{
+    return data;
+}
+
+inline uint32 Data::GetSize() const
 {
     return size;
 }

@@ -60,7 +60,7 @@ int AbstractProperty::GetIndex(AbstractProperty *property) const
     return -1;
 }
 
-void AbstractProperty::Refresh()
+void AbstractProperty::Refresh(DAVA::int32 refreshFlags)
 {
 }
 
@@ -83,6 +83,16 @@ bool AbstractProperty::HasChanges() const
             return true;
     }
     return false;
+}
+
+uint32 AbstractProperty::GetFlags() const
+{
+    return EF_NONE;
+}
+
+int32 AbstractProperty::GetStylePropertyIndex() const
+{
+    return -1;
 }
 
 bool AbstractProperty::IsReadOnly() const
@@ -120,7 +130,12 @@ void AbstractProperty::ResetValue()
     // Do nothing by default
 }
 
-bool AbstractProperty::IsReplaced() const
+bool AbstractProperty::IsOverridden() const
+{
+    return false; // false by default
+}
+
+bool AbstractProperty::IsOverriddenLocally() const
 {
     return false; // false by default
 }

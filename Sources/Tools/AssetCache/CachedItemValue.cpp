@@ -145,6 +145,79 @@ void CachedItemValue::Deserialize(KeyedArchive * archieve)
     }
 }
 
+bool CachedItemValue::Serialize(File* buffer) const
+{
+    DVASSERT(buffer);
+
+    if (buffer->Write(&size) != sizeof(size))
+        return false;
+
+    uint64 count = dataContainer.size();
+    if (buffer->Write(&count) != sizeof(count))
+        return false;
+
+    for (auto &entry : dataContainer)
+    {
+        if (buffer->WriteString(entry.first) == false)
+            return false;
+
+        uint32 dataSize = 0;
+        const uint8* data = nullptr;
+
+        if (IsDataLoaded(entry.second))
+        {
+            data = entry.second->data();
+            dataSize = entry.second->size();
+        }
+
+        if (buffer->Write(&dataSize) != sizeof(dataSize))
+            return false;
+
+        if (buffer->Write(data, dataSize) != dataSize)
+            return false;
+    }
+
+    return true;
+}
+
+bool CachedItemValue::Deserialize(File* file)
+{
+    DVASSERT(file);
+    DVASSERT(isFetched == false);
+    DVASSERT(dataContainer.empty());
+
+    if (file->Read(&size) != sizeof(size))
+        return false;
+
+    uint64 count;
+    if (file->Read(&count) != sizeof(count))
+        return false;
+
+    for (; count; --count)
+    {
+        String name;
+        if (!file->ReadString(name))
+            return false;
+
+        uint32 datasize = 0;
+        ValueData data = std::make_shared<Vector<uint8> >();
+
+        if (file->Read(&datasize) != sizeof(datasize))
+            return false;
+
+        if (datasize > 0)
+        {
+            isFetched = true;
+            data->resize(datasize);
+            if (file->Read(data->data(), datasize) != datasize)
+                return false;
+        }
+
+        dataContainer[name] = data;
+    }
+
+    return true;
+}
 
 bool CachedItemValue::operator == (const CachedItemValue &right) const
 {

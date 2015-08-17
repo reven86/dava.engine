@@ -43,15 +43,16 @@ protected:
     virtual ~NameProperty();
     
 public:
-    void Refresh() override;
+    void Refresh(DAVA::int32 refreshFlags) override;
     void Accept(PropertyVisitor *visitor) override;
     
     bool IsReadOnly() const override;
     
     ePropertyType GetType() const override;
+    DAVA::uint32 GetFlags() const override;
     DAVA::VariantType GetValue() const override;
 
-    bool IsReplaced() const override;
+    bool IsOverriddenLocally() const override;
     
     ControlNode *GetControlNode() const;
 

@@ -31,174 +31,140 @@
 #include "AssetCache/AssetCacheClient.h"
 #include "AssetCache/AssetCacheConstants.h"
 #include "AssetCache/CachedItemValue.h"
+#include "AssetCache/CachePacket.h"
 #include "FileSystem/KeyedArchive.h"
 #include "Debug/DVAssert.h"
+#include "FileSystem/DynamicMemoryFile.h"
 
-namespace DAVA
-{
-    
-namespace AssetCache
-{
-    
+namespace DAVA {
+namespace AssetCache {
+
+
 Client::~Client()
 {
-    listener = nullptr;
+	listener = nullptr;
 }
 
 bool Client::Connect(const String &ip, uint16 port)
 {
-    DVASSERT(nullptr == netClient);
-    DVASSERT(nullptr == openedChannel);
-    
+	DVASSERT(nullptr == netClient);
+	DVASSERT(nullptr == openedChannel);
+
 	netClient.reset(new Connection(Net::CLIENT_ROLE, Net::Endpoint(ip.c_str(), port), this));
-    
-    return true;
+
+	DVASSERT(false && "Remove bool from return");
+	return true;
 }
-    
+
 void Client::Disconnect()
 {
 	netClient.reset();
-    openedChannel = nullptr;
+	openedChannel = nullptr;
 }
-    
-    
+
+
 bool Client::AddToCache(const CacheItemKey &key, const CachedItemValue &value)
 {
-    if(openedChannel)
-    {
-        ScopedPtr<KeyedArchive> archieve(new KeyedArchive());
-        archieve->SetUInt32("PacketID", PACKET_ADD_REQUEST);
-
-        ScopedPtr<KeyedArchive> keyArchieve(new KeyedArchive());
-        SerializeKey(key, keyArchieve);
-        archieve->SetArchive("key", keyArchieve);
-        
-		ScopedPtr<KeyedArchive> valueArchieve(new KeyedArchive());
-		value.Serialize(valueArchieve, true);
-		archieve->SetArchive("value", valueArchieve);
-        
-		return SendArchieve(openedChannel, archieve);
+	if(openedChannel)
+	{
+		AddRequestPacket packet(key, value);
+		return packet.SendTo(openedChannel);
 	}
-    
-    return false;
+
+	return false;
 }
-    
-void Client::OnAddedToCache(KeyedArchive * archieve)
-{
-    if(listener)
-    {
-        KeyedArchive *keyArchieve = archieve->GetArchive("key");
-        DVASSERT(keyArchieve);
-        CacheItemKey key;
-        DeserializeKey(key, keyArchieve);
-        
-        bool added = archieve->GetBool("added");
-        
-        listener->OnAddedToCache(key, added);
-    }
-}
-    
+
 
 bool Client::RequestFromCache(const CacheItemKey &key)
 {
-    if(openedChannel)
-    {
-        ScopedPtr<KeyedArchive> archieve(new KeyedArchive());
-        archieve->SetUInt32("PacketID", PACKET_GET_REQUEST);
-        
-        ScopedPtr<KeyedArchive> keyArchieve(new KeyedArchive());
-        SerializeKey(key, keyArchieve);
-        archieve->SetArchive("key", keyArchieve);
-        
-		return SendArchieve(openedChannel, archieve);
+	if(openedChannel)
+	{
+		GetRequestPacket packet(key);
+		return packet.SendTo(openedChannel);
 	}
-    
-    return false;
+
+	return false;
 }
 
-void Client::OnGotFromCache(KeyedArchive * archieve)
-{
-    if(listener)
-    {
-        KeyedArchive *keyArchieve = archieve->GetArchive("key");
-        DVASSERT(keyArchieve);
-        CacheItemKey key;
-        DeserializeKey(key, keyArchieve);
-        
-		KeyedArchive *valueArchieve = archieve->GetArchive("value");
-		DVASSERT(valueArchieve);
-		CachedItemValue value;
-		value.Deserialize(valueArchieve);
-        
-		listener->OnReceivedFromCache(key, std::forward<CachedItemValue>(value));
-    }
-}
-    
 bool Client::WarmingUp(const CacheItemKey &key)
 {
-    if(openedChannel)
-    {
-        ScopedPtr<KeyedArchive> archieve(new KeyedArchive());
-        archieve->SetUInt32("PacketID", PACKET_WARMING_UP_REQUEST);
-        
-        ScopedPtr<KeyedArchive> keyArchieve(new KeyedArchive());
-        SerializeKey(key, keyArchieve);
-        archieve->SetArchive("key", keyArchieve);
-        
-		return SendArchieve(openedChannel, archieve);
+	if(openedChannel)
+	{
+		WarmupRequestPacket packet(key);
+		return packet.SendTo(openedChannel);
 	}
-    
-    return false;
-}
 
+	return false;
+}
 
 void Client::OnChannelOpen(DAVA::Net::IChannel* channel)
 {
-    DVASSERT(openedChannel == nullptr);
+	DVASSERT(openedChannel == nullptr);
 	openedChannel = channel;
 }
 
 void Client::OnChannelClosed(DAVA::Net::IChannel* channel, const char8* )
 {
 	DVASSERT(openedChannel == channel);
-    openedChannel = nullptr;
+	openedChannel = nullptr;
 }
 
-void Client::OnPacketReceived(DAVA::Net::IChannel* channel, const void* packet, size_t length)
+void Client::OnPacketReceived(DAVA::Net::IChannel* channel, const void* packetData, size_t length)
 {
+	if(nullptr == listener)
+	{	// do not need to process data in case of nullptr listener
+		return;
+	}
+
 	DVASSERT(openedChannel == channel);
-	if (length && openedChannel == channel)
-    {
-        ScopedPtr<KeyedArchive> archieve(new KeyedArchive());
-        archieve->Load(static_cast<const uint8 *>(packet), length);
-        
-        auto packetID = archieve->GetUInt32("PacketID", PACKET_UNKNOWN);
-        
-        switch (packetID)
-        {
-            case PACKET_ADD_RESPONSE:
-                OnAddedToCache(archieve);
-                break;
+	if(length > 0)
+	{
+		CachePacket* packet = CachePacket::Deserialize(static_cast<const uint8 *>(packetData), length);
+		if(packet != nullptr)
+		{
+			switch (packet->type)
+			{
+			case PACKET_ADD_RESPONSE:
+				{
+					AddResponsePacket *p = static_cast<AddResponsePacket*>(packet);
+					listener->OnAddedToCache(p->key, p->added);
+					break;
+				}
+			case PACKET_GET_RESPONSE:
+				{
+					GetResponsePacket* p = static_cast<GetResponsePacket*>(packet);
+					listener->OnReceivedFromCache(p->key, std::forward<CachedItemValue>(p->value));
+					break;
+				}
+			default:
+				{
+					Logger::Error("[AssetCache::Server::%s] Unexpected packet type: (%d).", __FUNCTION__, packet->type);
+					DVASSERT(false);
+					break;
+				}
+			}
 
-            case PACKET_GET_RESPONSE:
-                OnGotFromCache(archieve);
-                break;
-
-            default:
-                Logger::Error("[Client::%s] Cannot parce packet (%d)", __FUNCTION__, packetID);
-                break;
-        }
-    }
+			delete packet;
+		}
+		else
+		{
+			DVASSERT(false && "Invalid packet received");
+		}
+	}
+	else
+	{
+		Logger::Error("[AssetCache::Client::%s] Empty packet is received.", __FUNCTION__);
+	}
 }
 
 void Client::OnPacketSent(Net::IChannel* channel, const void* buffer, size_t length)
 {
-    DVASSERT(openedChannel == channel);
-    delete[] static_cast<const uint8*>(buffer);
+	DVASSERT(openedChannel == channel);
+	delete[] static_cast<const uint8*>(buffer);
 }
 
 
 
-}; // end of namespace AssetCache
-}; // end of namespace DAVA
+} // end of namespace AssetCache
+} // end of namespace DAVA
 

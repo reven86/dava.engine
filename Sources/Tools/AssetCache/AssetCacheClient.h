@@ -88,12 +88,10 @@ public:
 
 private:
     
-    void OnAddedToCache(KeyedArchive * archieve);
-    void OnGotFromCache(KeyedArchive * archieve);
+//     void OnAddedToCache(KeyedArchive * archieve);
+//     void OnGotFromCache(KeyedArchive * archieve);
 
-private:
 	std::unique_ptr<Connection> netClient;
-	
 	DAVA::Net::IChannel * openedChannel = nullptr;
     
     ClientListener * listener = nullptr;

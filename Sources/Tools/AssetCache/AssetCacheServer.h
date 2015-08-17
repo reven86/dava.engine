@@ -92,12 +92,6 @@ public:
 
 private:
 
-	void OnAddToCache(Net::IChannel * channel, KeyedArchive * archieve);
-	void OnGetFromCache(Net::IChannel * channel, KeyedArchive * archieve);
-	void OnWarmingUp(Net::IChannel * channel, KeyedArchive * archieve);
-    
-private:
-    
     uint16 listenPort = 0;
 	std::unique_ptr<Connection> netServer;
     ServerDelegate *delegate = nullptr;

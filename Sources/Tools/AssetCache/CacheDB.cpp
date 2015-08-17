@@ -315,6 +315,8 @@ void CacheDB::Insert(const CacheItemKey &key, ServerCacheEntry &&entry)
     InsertInFastCache(key, entryForFastCache);
     
 	auto newSize = entryForFastCache->GetValue().GetSize();
+    Logger::FrameworkDebug("Storage size: %d, used size: %d, new size: %d", storageSize, usedSize, newSize);
+
     if(usedSize + newSize > storageSize)
     {
         DVASSERT(storageSize > newSize);

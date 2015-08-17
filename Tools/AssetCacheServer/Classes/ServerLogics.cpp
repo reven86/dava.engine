@@ -67,8 +67,7 @@ void ServerLogics::OnAddToCache(DAVA::Net::IChannel *channel, const DAVA::AssetC
         dataBase->Insert(key, value);
         server->AddedToCache(channel, key, true);
 
-        {   //add task for lazy sending of data
-            DAVA::LockGuard<DAVA::Mutex> lock(taskMutex);
+        {   //add task for lazy sending of files;
 			serverTasks.emplace_back(ServerTask(key, std::forward<DAVA::AssetCache::CachedItemValue>(value), DAVA::AssetCache::PACKET_ADD_REQUEST));
         }
     }
@@ -83,14 +82,13 @@ void ServerLogics::OnRequestedFromCache(DAVA::Net::IChannel *channel, const DAVA
         {   // Found in db.
 			server->Send(channel, key, entry->GetValue());
             
-            {   //add task for lazy warming up
-                DAVA::LockGuard<DAVA::Mutex> lock(taskMutex);
+            {   //add task for lazy sending of files;
                 serverTasks.emplace_back(ServerTask(key, DAVA::AssetCache::PACKET_WARMING_UP_REQUEST));
             }
         }
         else if (client->RequestFromCache(key))
         {   // Not found in db. Ask from remote cache.
-            waitedRequests.emplace_back(RequestDescription(channel, key, DAVA::AssetCache::PACKET_GET_REQUEST));
+			waitedRequests.emplace_back(RequestDescription(channel, key, DAVA::AssetCache::PACKET_GET_REQUEST));
         }
         else
         {   // Not found in db. Remote server isn't connected.
@@ -157,8 +155,6 @@ void ServerLogics::ProcessServerTasks()
 {
     if(!serverTasks.empty() && client && client->ChannelIsOpened())
     {
-        DAVA::LockGuard<DAVA::Mutex> lock(taskMutex);
-        
         for(const auto & task: serverTasks)
         {
             switch (task.request)

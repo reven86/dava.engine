@@ -311,12 +311,12 @@ bool File::GetNextChar(uint8 *nextChar)
     }
 }
 
-uint32 File::GetPos()
+uint32 File::GetPos() const
 {
     return static_cast<uint32>(ftell(file));
 }
 
-uint32 File::GetSize()
+uint32 File::GetSize() const
 {
     return size;
 }
