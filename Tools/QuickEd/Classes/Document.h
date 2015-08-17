@@ -54,8 +54,9 @@ class ControlNode;
 class SelectionSystem;
 class CanvasSystem;
 class HUDSystem;
+class TreeSystem;
 
-class Document : public QObject, public SelectionInterface
+class Document : public QObject, public SelectionInterface, InputInterface
 {
     Q_OBJECT
 public:
@@ -73,6 +74,8 @@ public:
     WidgetContext* GetContext(QObject* requester) const;
     void SetContext(QObject* requester, WidgetContext* widgetContext);
     void SelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected) override;
+    bool OnInput(DAVA::UIEvent *currentInput) override;
+    ControlNode* GetControlNodeByPos(const DAVA::Vector2 &pos, ControlNode *node = nullptr);
 signals:
     void SelectedNodesChanged(const SelectedNodes &selected, const SelectedNodes &deselected);
 public slots:
@@ -89,6 +92,8 @@ private:
     SelectionSystem *selectionSystem;
     CanvasSystem *canvasSystem;
     HUDSystem *hudSystem;
+    TreeSystem *treeSystem;
+    QList<InputInterface*> inputListeners;
 };
 
 inline QUndoStack *Document::GetUndoStack() const

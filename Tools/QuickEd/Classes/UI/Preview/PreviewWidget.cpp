@@ -33,25 +33,36 @@
 
 #include <QLineEdit>
 #include <QScreen>
-#include <QMessageBox>
-
-#include "Model/PackageHierarchy/PackageBaseNode.h"
-#include "Model/PackageHierarchy/PackageControlsNode.h"
-#include "Model/PackageHierarchy/PackageNode.h"
 #include "UI/UIControl.h"
-#include "UI/UIScreen.h"
 #include "UI/UIScreenManager.h"
 
 #include "QtTools/DavaGLWidget/davaglwidget.h"
 
 #include "Document.h"
-#include "Systems/CanvasSystem.h"
 
 using namespace DAVA;
 
+class RootControl : public UIControl
+{
+public:
+    void SetActiveDocument(Document *doc)
+    {
+        activeDocument = doc;
+    }
+    bool SystemInput(UIEvent *currentInput) override
+    {
+        if (nullptr != activeDocument)
+        {
+            return activeDocument->OnInput(currentInput);
+        }
+        return UIControl::SystemInput(currentInput);
+    }
+    Document *activeDocument = nullptr;
+};
+
 PreviewWidget::PreviewWidget(QWidget *parent)
     : QWidget(parent)
-    , rootControl(new UIControl())
+    , rootControl(new RootControl())
     , scrollAreaController(new ScrollAreaController(rootControl, this))
 {
     percentages
@@ -112,6 +123,7 @@ void PreviewWidget::OnDocumentChanged(Document *arg)
         document->AttachToRoot(rootControl);
         scrollAreaController->UpdateCanvasContentSize();
     }
+    static_cast<RootControl*>(rootControl)->SetActiveDocument(document);
 }
 
 void PreviewWidget::OnSelectedNodesChanged(const SelectedNodes &selected, const SelectedNodes &deselected)

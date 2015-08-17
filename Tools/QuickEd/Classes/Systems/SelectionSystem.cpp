@@ -26,39 +26,73 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
+#include "Input/InputSystem.h"
+#include "Input/KeyboardDevice.h"
 #include "Systems/SelectionSystem.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "UI/UIEvent.h"
-
+#include "Document.h"
 #include "Defines.h"
 
 using namespace DAVA;
 
+SelectionSystem::SelectionSystem(Document* doc)
+    : document(doc)
+{
+    
+}
+
+
 bool SelectionSystem::OnInput(UIEvent* currentInput)
-{    
-    if (currentInput->phase == UIEvent::PHASE_BEGAN || currentInput->phase == UIEvent::PHASE_DRAG)
+{   
+    SelectedControls selected;
+    SelectedControls deselected;
+    if (currentInput->phase == UIEvent::PHASE_BEGAN)
     {
-        /*UIControl *control = controlsCanvas->GetControlByPos(this, currentInput->point);
-        if (nullptr != control)
+        auto node = document->GetControlNodeByPos(currentInput->point);
+        if (nullptr != node)
         {
-            UIControl *backgroundControl = control;
-            while (backgroundControl->GetParent() != nullptr && backgroundControl->GetParent() != this)
+            if (InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_SHIFT))
             {
-                backgroundControl = backgroundControl->GetParent();
+                selected.insert(node);
             }
-            if (backgroundControl->GetParent() == this)
+            else if (InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_CTRL))
             {
-                selectedControls.push_back(std::make_pair(backgroundControl, control));
+                if (selectedControls.find(node) != selectedControls.end())
+                {
+                    deselected.insert(node);
+                }
+                else
+                {
+                    selected.insert(node);
+                }
+            }
+            else
+            {
+                deselected = selectedControls;
+                selected.insert(node);
             }
         }
-        for (auto listener : selectionListeners)
-        {
-            listener->OnControlSelected(selectedControls);
-        }*/
-        return true;
     }
-    return false;
+    else if (currentInput->phase == UIEvent::PHASE_KEYCHAR)
+    {
+        if (currentInput->tid == DVKEY_TAB)
+        {
+            deselected = selectedControls;
+            //TODO: select next control
+        }
+    }
+    if (selected.empty() && deselected.empty())
+    {
+        return false;
+    }
+    UniteNodes(selected, selectedControls);
+    SubstractNodes(deselected, selectedControls);
+    for (auto listener : listeners)
+    {
+        listener->SelectionWasChanged(selected, deselected);
+    }
+    return true;
 }
 
 void SelectionSystem::ControlWasRemoved(ControlNode *node, ControlsContainerNode *from)
@@ -66,9 +100,9 @@ void SelectionSystem::ControlWasRemoved(ControlNode *node, ControlsContainerNode
     auto iter = std::find(selectedControls.begin(), selectedControls.end(), node);
     if (iter != selectedControls.end())
     {
-        selectedControls.erase(iter);
         SelectedControls deselected;
         deselected.insert(*iter);
+        SubstractNodes(deselected, selectedControls);
         for (auto listener : listeners)
         {
             listener->SelectionWasChanged(SelectedControls(), deselected);

@@ -42,14 +42,14 @@ namespace DAVA
     class UIControl;
 }
 
-class HUDSystem : public SelectionInterface
+class HUDSystem : public SelectionInterface, public InputInterface
 {
 public:
     HUDSystem();
     virtual ~HUDSystem() = default;
     void Attach(DAVA::UIControl *root);
     void SelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected) override;
-
+    bool OnInput(DAVA::UIEvent *currentInput) override;
 private:
     DAVA::ScopedPtr<DAVA::UIControl> hudControl;
     struct HUD

@@ -46,6 +46,7 @@
 #include "Systems/SelectionSystem.h"
 #include "Systems/CanvasSystem.h"
 #include "Systems/HUDSystem.h"
+#include "Systems/TreeSystem.h"
 
 using namespace DAVA;
 
@@ -54,10 +55,12 @@ Document::Document(PackageNode *_package, QObject *parent)
     , package(SafeRetain(_package))
     , commandExecutor(new QtModelPackageCommandExecutor(this))
     , undoStack(new QUndoStack(this))
-    , selectionSystem(new SelectionSystem())
+    , selectionSystem(new SelectionSystem(this))
     , canvasSystem(new CanvasSystem(this))
     , hudSystem(new HUDSystem())
+    , treeSystem(new TreeSystem(this))
 {
+    inputListeners << selectionSystem << hudSystem << treeSystem;
     selectionSystem->AddListener(this);
     selectionSystem->AddListener(canvasSystem);
     selectionSystem->AddListener(hudSystem);
@@ -126,6 +129,57 @@ void Document::SelectionWasChanged(const SelectedControls &selected, const Selec
         emit SelectedNodesChanged(selected_, deselected_);
     }
 }
+
+bool Document::OnInput(UIEvent *currentInput)
+{
+    QListIterator<InputInterface*> it(inputListeners);
+    it.toBack();
+    while (it.hasPrevious())
+    {
+        if (it.previous()->OnInput(currentInput))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+ControlNode* Document::GetControlNodeByPos(const DAVA::Vector2& pos, ControlNode* node)
+{
+    if (node == nullptr)
+    {
+        auto controlsNode = package->GetPackageControlsNode();
+        for (int index = 0; index < controlsNode->GetCount(); ++index)
+        {
+            auto tmpNode = controlsNode->Get(index);
+            DVASSERT(nullptr != tmpNode);
+            auto retVal = GetControlNodeByPos(pos, tmpNode);
+            if (nullptr != retVal)
+            {
+                return retVal;
+            }
+        }
+    }
+    else
+    {
+        int count = node->GetCount();
+        for (int i = 0; i < count; ++i)
+        {
+            auto retVal = GetControlNodeByPos(pos, node->Get(i));
+            if (nullptr != retVal)
+            {
+                return retVal;
+            }
+        }
+        auto control = node->GetControl();
+        if (control->IsPointInside(pos) && control->GetVisible() && control->GetVisibleForUIEditor())
+        {
+            return node;
+        }
+    }
+    return nullptr;
+}
+
 
 void Document::RefreshAllControlProperties()
 {

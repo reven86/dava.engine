@@ -43,7 +43,7 @@ using namespace DAVA;
 class ControlContainer : public UIControl
 {
 public:
-    ControlContainer(UIControl *container)
+    explicit ControlContainer(UIControl *container)
         : UIControl()
         , control(container)
     {}
@@ -54,11 +54,11 @@ protected:
 class FrameControl : public ControlContainer
 {
 public:
-    FrameControl(UIControl *container)
+    explicit FrameControl(UIControl *container)
         : ControlContainer(container)
     { }
 private:
-    void Draw(const DAVA::UIGeometricData &geometricData) override
+    void Draw(const UIGeometricData &geometricData) override
     {
         SetRect(control->GetGeometricData().GetUnrotatedRect());
         Color oldColor = RenderManager::Instance()->GetColor();
@@ -66,6 +66,11 @@ private:
         RenderHelper::Instance()->DrawRect(GetRect(), RenderState::RENDERSTATE_2D_BLEND);
         RenderManager::Instance()->SetColor(oldColor);
     }
+};
+
+class HUDControl : public UIControl
+{
+public:
 };
 
 class FrameRectControl : public ControlContainer
@@ -88,7 +93,7 @@ public:
         , place(place_)
     { }
 private:
-    void Draw(const DAVA::UIGeometricData &geometricData) override
+    void Draw(const UIGeometricData &geometricData) override
     {
         Rect rect(0, 0, 5, 5);
         rect.SetCenter(GetPos());
@@ -127,7 +132,7 @@ public:
         : ControlContainer(container)
     { }
 private:
-    void Draw(const DAVA::UIGeometricData &geometricData) override
+    void Draw(const UIGeometricData &geometricData) override
     {
         Color oldColor = RenderManager::Instance()->GetColor();
         RenderManager::Instance()->SetColor(Color(0.0f, 0.0f, 1.0f, 1.f));
@@ -145,7 +150,7 @@ HUDSystem::HUDSystem()
 {
 }
 
-void HUDSystem::Attach(DAVA::UIControl* root)
+void HUDSystem::Attach(UIControl* root)
 {
     root->AddControl(hudControl);
 }
@@ -162,6 +167,11 @@ void HUDSystem::SelectionWasChanged(const SelectedControls& selected, const Sele
             std::forward_as_tuple(control),
             std::forward_as_tuple(control->GetControl(), hudControl));
     }
+}
+
+bool HUDSystem::OnInput(DAVA::UIEvent *currentInput)
+{
+    return false;
 }
 
 HUDSystem::HUD::HUD(UIControl* control_, UIControl* hudControl_)

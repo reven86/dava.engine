@@ -38,7 +38,7 @@ class Document;
 class SelectionSystem : public SelectionInterface, public InputInterface, public PackageListener
 {
 public:
-    SelectionSystem() = default;
+    SelectionSystem(Document *doc);
     virtual ~SelectionSystem() = default;
     bool OnInput(DAVA::UIEvent *currentInput) override;
     void ControlWasRemoved(ControlNode *node, ControlsContainerNode *from) override;
@@ -47,6 +47,7 @@ public:
     void RemoveListener(SelectionInterface *listener);
 
 private:
+    Document *document = nullptr;
     SelectedControls selectedControls;
     DAVA::Vector<SelectionInterface*> listeners;
 };

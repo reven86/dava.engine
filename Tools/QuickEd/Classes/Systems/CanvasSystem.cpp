@@ -88,7 +88,9 @@ void CanvasSystem::SelectionWasChanged(const SelectedControls& selected, const S
     {
         auto controlsNode = document->GetPackage()->GetPackageControlsNode();
         for (int index = 0; index < controlsNode->GetCount(); ++index)
+        {
             rootControls.insert(controlsNode->Get(index));
+        }
     }
     else
     {
@@ -98,7 +100,9 @@ void CanvasSystem::SelectionWasChanged(const SelectedControls& selected, const S
             {
                 PackageBaseNode *root = node;
                 while (root->GetParent() && root->GetParent()->GetControl())
+                {
                     root = root->GetParent();
+                }
                 rootControls.insert(root);
             }
         }
