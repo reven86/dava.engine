@@ -106,21 +106,6 @@
 		E834DEB71B171F8200E4B2DB /* ServerCacheEntry.h in Headers */ = {isa = PBXBuildFile; fileRef = E834DE781B171F8200E4B2DB /* ServerCacheEntry.h */; };
 		E834DEB81B171F8200E4B2DB /* ServerCacheEntry.h in Headers */ = {isa = PBXBuildFile; fileRef = E834DE781B171F8200E4B2DB /* ServerCacheEntry.h */; };
 		E834DEB91B171F8200E4B2DB /* ServerCacheEntry.h in Headers */ = {isa = PBXBuildFile; fileRef = E834DE781B171F8200E4B2DB /* ServerCacheEntry.h */; };
-		E834DEBA1B171F8200E4B2DB /* TCP.h in Headers */ = {isa = PBXBuildFile; fileRef = E834DE7A1B171F8200E4B2DB /* TCP.h */; };
-		E834DEBB1B171F8200E4B2DB /* TCP.h in Headers */ = {isa = PBXBuildFile; fileRef = E834DE7A1B171F8200E4B2DB /* TCP.h */; };
-		E834DEBC1B171F8200E4B2DB /* TCP.h in Headers */ = {isa = PBXBuildFile; fileRef = E834DE7A1B171F8200E4B2DB /* TCP.h */; };
-		E834DEC31B171F8200E4B2DB /* TCPConnection.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E834DE7D1B171F8200E4B2DB /* TCPConnection.cpp */; };
-		E834DEC41B171F8200E4B2DB /* TCPConnection.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E834DE7D1B171F8200E4B2DB /* TCPConnection.cpp */; };
-		E834DEC51B171F8200E4B2DB /* TCPConnection.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E834DE7D1B171F8200E4B2DB /* TCPConnection.cpp */; };
-		E834DEC61B171F8200E4B2DB /* TCPConnection.h in Headers */ = {isa = PBXBuildFile; fileRef = E834DE7E1B171F8200E4B2DB /* TCPConnection.h */; };
-		E834DEC71B171F8200E4B2DB /* TCPConnection.h in Headers */ = {isa = PBXBuildFile; fileRef = E834DE7E1B171F8200E4B2DB /* TCPConnection.h */; };
-		E834DEC81B171F8200E4B2DB /* TCPConnection.h in Headers */ = {isa = PBXBuildFile; fileRef = E834DE7E1B171F8200E4B2DB /* TCPConnection.h */; };
-		E841A48C1B25AD97003E2C03 /* TCPChannel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E841A48A1B25AD97003E2C03 /* TCPChannel.cpp */; };
-		E841A48D1B25AD97003E2C03 /* TCPChannel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E841A48A1B25AD97003E2C03 /* TCPChannel.cpp */; };
-		E841A48E1B25AD97003E2C03 /* TCPChannel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E841A48A1B25AD97003E2C03 /* TCPChannel.cpp */; };
-		E841A48F1B25AD97003E2C03 /* TCPChannel.h in Headers */ = {isa = PBXBuildFile; fileRef = E841A48B1B25AD97003E2C03 /* TCPChannel.h */; };
-		E841A4901B25AD97003E2C03 /* TCPChannel.h in Headers */ = {isa = PBXBuildFile; fileRef = E841A48B1B25AD97003E2C03 /* TCPChannel.h */; };
-		E841A4911B25AD97003E2C03 /* TCPChannel.h in Headers */ = {isa = PBXBuildFile; fileRef = E841A48B1B25AD97003E2C03 /* TCPChannel.h */; };
 		E8BB52271B74979300D3866C /* DoubleMD5Key.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8BB52231B74979300D3866C /* DoubleMD5Key.cpp */; };
 		E8BB52281B74979300D3866C /* DoubleMD5Key.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8BB52231B74979300D3866C /* DoubleMD5Key.cpp */; };
 		E8BB52291B74979300D3866C /* DoubleMD5Key.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8BB52231B74979300D3866C /* DoubleMD5Key.cpp */; };
@@ -167,11 +152,6 @@
 		E834DE721B171F8200E4B2DB /* CacheItemKey.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CacheItemKey.h; sourceTree = "<group>"; };
 		E834DE771B171F8200E4B2DB /* ServerCacheEntry.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ServerCacheEntry.cpp; sourceTree = "<group>"; };
 		E834DE781B171F8200E4B2DB /* ServerCacheEntry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ServerCacheEntry.h; sourceTree = "<group>"; };
-		E834DE7A1B171F8200E4B2DB /* TCP.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TCP.h; sourceTree = "<group>"; };
-		E834DE7D1B171F8200E4B2DB /* TCPConnection.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TCPConnection.cpp; sourceTree = "<group>"; };
-		E834DE7E1B171F8200E4B2DB /* TCPConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TCPConnection.h; sourceTree = "<group>"; };
-		E841A48A1B25AD97003E2C03 /* TCPChannel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TCPChannel.cpp; sourceTree = "<group>"; };
-		E841A48B1B25AD97003E2C03 /* TCPChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TCPChannel.h; sourceTree = "<group>"; };
 		E8BB52231B74979300D3866C /* DoubleMD5Key.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DoubleMD5Key.cpp; sourceTree = "<group>"; };
 		E8BB52241B74979300D3866C /* DoubleMD5Key.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DoubleMD5Key.h; sourceTree = "<group>"; };
 		E8BE2FDD1A80CC7500AC96C2 /* libTextureConverter.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libTextureConverter.dylib; sourceTree = "<group>"; };
@@ -296,21 +276,8 @@
 				E8BB52241B74979300D3866C /* DoubleMD5Key.h */,
 				E834DE771B171F8200E4B2DB /* ServerCacheEntry.cpp */,
 				E834DE781B171F8200E4B2DB /* ServerCacheEntry.h */,
-				E834DE791B171F8200E4B2DB /* TCPConnection */,
 			);
 			path = AssetCache;
-			sourceTree = "<group>";
-		};
-		E834DE791B171F8200E4B2DB /* TCPConnection */ = {
-			isa = PBXGroup;
-			children = (
-				E834DE7A1B171F8200E4B2DB /* TCP.h */,
-				E841A48A1B25AD97003E2C03 /* TCPChannel.cpp */,
-				E841A48B1B25AD97003E2C03 /* TCPChannel.h */,
-				E834DE7D1B171F8200E4B2DB /* TCPConnection.cpp */,
-				E834DE7E1B171F8200E4B2DB /* TCPConnection.h */,
-			);
-			path = TCPConnection;
 			sourceTree = "<group>";
 		};
 		FECAA1C91B73556D008BC3FC /* ProgramOptions */ = {
@@ -328,7 +295,6 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E834DEBA1B171F8200E4B2DB /* TCP.h in Headers */,
 				E834DE931B171F8200E4B2DB /* AssetCacheServer.h in Headers */,
 				A69854BF17CE41EC001E9FDE /* DXTConverter.h in Headers */,
 				A69854C517CE41EC001E9FDE /* PVRConverter.h in Headers */,
@@ -339,7 +305,6 @@
 				E834DE8D1B171F8200E4B2DB /* AssetCacheConstants.h in Headers */,
 				A69854D717CE41EC001E9FDE /* FramePathHelper.h in Headers */,
 				76962821196BF80D0064C3A0 /* TeamcityOutput.h in Headers */,
-				E834DEC61B171F8200E4B2DB /* TCPConnection.h in Headers */,
 				A69854DD17CE41EC001E9FDE /* ImagePacker.h in Headers */,
 				E834DE991B171F8200E4B2DB /* CacheDB.h in Headers */,
 				A69854E317CE41EC001E9FDE /* PngImage.h in Headers */,
@@ -348,7 +313,6 @@
 				E834DE841B171F8200E4B2DB /* AssetCache.h in Headers */,
 				A6A617E317CF502C00375E11 /* TextureConverter.h in Headers */,
 				E834DEA51B171F8200E4B2DB /* CacheItemKey.h in Headers */,
-				E841A48F1B25AD97003E2C03 /* TCPChannel.h in Headers */,
 				E8BB522A1B74979300D3866C /* DoubleMD5Key.h in Headers */,
 				E834DE8A1B171F8200E4B2DB /* AssetCacheClient.h in Headers */,
 			);
@@ -358,7 +322,6 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E834DEBB1B171F8200E4B2DB /* TCP.h in Headers */,
 				E834DE941B171F8200E4B2DB /* AssetCacheServer.h in Headers */,
 				A69854C017CE41EC001E9FDE /* DXTConverter.h in Headers */,
 				A69854C617CE41EC001E9FDE /* PVRConverter.h in Headers */,
@@ -369,7 +332,6 @@
 				E834DE8E1B171F8200E4B2DB /* AssetCacheConstants.h in Headers */,
 				A69854D817CE41EC001E9FDE /* FramePathHelper.h in Headers */,
 				76962822196BF80D0064C3A0 /* TeamcityOutput.h in Headers */,
-				E834DEC71B171F8200E4B2DB /* TCPConnection.h in Headers */,
 				A69854DE17CE41EC001E9FDE /* ImagePacker.h in Headers */,
 				E834DE9A1B171F8200E4B2DB /* CacheDB.h in Headers */,
 				A69854E417CE41EC001E9FDE /* PngImage.h in Headers */,
@@ -378,7 +340,6 @@
 				E834DE851B171F8200E4B2DB /* AssetCache.h in Headers */,
 				A6A617E417CF502C00375E11 /* TextureConverter.h in Headers */,
 				E834DEA61B171F8200E4B2DB /* CacheItemKey.h in Headers */,
-				E841A4901B25AD97003E2C03 /* TCPChannel.h in Headers */,
 				E834DE8B1B171F8200E4B2DB /* AssetCacheClient.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -387,7 +348,6 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E834DEBC1B171F8200E4B2DB /* TCP.h in Headers */,
 				E834DE951B171F8200E4B2DB /* AssetCacheServer.h in Headers */,
 				A69854C117CE41EC001E9FDE /* DXTConverter.h in Headers */,
 				A69854C717CE41EC001E9FDE /* PVRConverter.h in Headers */,
@@ -398,7 +358,6 @@
 				E834DE8F1B171F8200E4B2DB /* AssetCacheConstants.h in Headers */,
 				A69854D917CE41EC001E9FDE /* FramePathHelper.h in Headers */,
 				76962823196BF80D0064C3A0 /* TeamcityOutput.h in Headers */,
-				E834DEC81B171F8200E4B2DB /* TCPConnection.h in Headers */,
 				A69854DF17CE41EC001E9FDE /* ImagePacker.h in Headers */,
 				E834DE9B1B171F8200E4B2DB /* CacheDB.h in Headers */,
 				A69854E517CE41EC001E9FDE /* PngImage.h in Headers */,
@@ -407,7 +366,6 @@
 				E834DE861B171F8200E4B2DB /* AssetCache.h in Headers */,
 				A6A617E517CF502C00375E11 /* TextureConverter.h in Headers */,
 				E834DEA71B171F8200E4B2DB /* CacheItemKey.h in Headers */,
-				E841A4911B25AD97003E2C03 /* TCPChannel.h in Headers */,
 				E834DE8C1B171F8200E4B2DB /* AssetCacheClient.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -500,7 +458,6 @@
 			files = (
 				E834DE961B171F8200E4B2DB /* CacheDB.cpp in Sources */,
 				E834DE901B171F8200E4B2DB /* AssetCacheServer.cpp in Sources */,
-				E841A48C1B25AD97003E2C03 /* TCPChannel.cpp in Sources */,
 				A69854BC17CE41EC001E9FDE /* DXTConverter.cpp in Sources */,
 				E8BB52271B74979300D3866C /* DoubleMD5Key.cpp in Sources */,
 				A69854C217CE41EC001E9FDE /* PVRConverter.cpp in Sources */,
@@ -514,7 +471,6 @@
 				A69854E017CE41EC001E9FDE /* PngImage.cpp in Sources */,
 				A69854E617CE41EC001E9FDE /* ResourcePacker2D.cpp in Sources */,
 				A69854EC17CE41EC001E9FDE /* TexturePacker.cpp in Sources */,
-				E834DEC31B171F8200E4B2DB /* TCPConnection.cpp in Sources */,
 				A6A617E017CF502C00375E11 /* TextureConverter.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -525,7 +481,6 @@
 			files = (
 				E834DE971B171F8200E4B2DB /* CacheDB.cpp in Sources */,
 				E834DE911B171F8200E4B2DB /* AssetCacheServer.cpp in Sources */,
-				E841A48D1B25AD97003E2C03 /* TCPChannel.cpp in Sources */,
 				A69854BD17CE41EC001E9FDE /* DXTConverter.cpp in Sources */,
 				E8BB52281B74979300D3866C /* DoubleMD5Key.cpp in Sources */,
 				A69854C317CE41EC001E9FDE /* PVRConverter.cpp in Sources */,
@@ -539,7 +494,6 @@
 				A69854E117CE41EC001E9FDE /* PngImage.cpp in Sources */,
 				A69854E717CE41EC001E9FDE /* ResourcePacker2D.cpp in Sources */,
 				A69854ED17CE41EC001E9FDE /* TexturePacker.cpp in Sources */,
-				E834DEC41B171F8200E4B2DB /* TCPConnection.cpp in Sources */,
 				A6A617E117CF502C00375E11 /* TextureConverter.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -550,7 +504,6 @@
 			files = (
 				E834DE981B171F8200E4B2DB /* CacheDB.cpp in Sources */,
 				E834DE921B171F8200E4B2DB /* AssetCacheServer.cpp in Sources */,
-				E841A48E1B25AD97003E2C03 /* TCPChannel.cpp in Sources */,
 				A69854BE17CE41EC001E9FDE /* DXTConverter.cpp in Sources */,
 				E8BB52291B74979300D3866C /* DoubleMD5Key.cpp in Sources */,
 				A69854C417CE41EC001E9FDE /* PVRConverter.cpp in Sources */,
@@ -564,7 +517,6 @@
 				A69854E217CE41EC001E9FDE /* PngImage.cpp in Sources */,
 				A69854E817CE41EC001E9FDE /* ResourcePacker2D.cpp in Sources */,
 				A69854EE17CE41EC001E9FDE /* TexturePacker.cpp in Sources */,
-				E834DEC51B171F8200E4B2DB /* TCPConnection.cpp in Sources */,
 				A6A617E217CF502C00375E11 /* TextureConverter.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

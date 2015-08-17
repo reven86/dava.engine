@@ -56,20 +56,17 @@ void ServerCore::Start()
 {
     if (state != State::STARTED)
     {
-        auto established = server.Listen(settings.GetPort());
-        if (established)
+        server.Listen(settings.GetPort());
+        const auto remoteServer = settings.GetCurrentServer();
+        if (!remoteServer.ip.empty())
         {
-            const auto remoteServer = settings.GetCurrentServer();
-            if (!remoteServer.ip.empty())
-            {
-                client.Connect(remoteServer.ip, remoteServer.port);
-            }
-
-            updateTimer->start(UPDATE_INTERVAL_MS);
-
-            state = State::STARTED;
-            emit ServerStateChanged(this);
+            client.Connect(remoteServer.ip, remoteServer.port);
         }
+        
+        updateTimer->start(UPDATE_INTERVAL_MS);
+        
+        state = State::STARTED;
+        emit ServerStateChanged(this);
     }
 }
 
@@ -150,15 +147,12 @@ void ServerCore::OnSettingsUpdated(const ApplicationSettings *_settings)
     {   // restart network connections after changing of settings
         if (needServerRestart)
         {
-            auto established = server.Listen(settings.GetPort());
-            if (!established)
-            {
-                state = State::STOPPED;
-                emit ServerStateChanged(this);
-                return;
-            }
+            server.Listen(settings.GetPort());
+            state = State::STOPPED;
+            emit ServerStateChanged(this);
+            return;
         }
-            
+        
         if(needClientRestart && !remoteServer.ip.empty())
         {
             client.Connect(remoteServer.ip, remoteServer.port);

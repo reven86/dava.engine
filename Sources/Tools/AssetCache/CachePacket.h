@@ -59,6 +59,8 @@ protected:
 
 public:
 
+    virtual ~CachePacket() {};
+
     static CachePacket* Create(const uint8* buffer, uint32 length);
 
 	

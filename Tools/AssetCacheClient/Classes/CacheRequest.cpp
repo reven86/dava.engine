@@ -89,12 +89,7 @@ int CacheRequest::Connect()
     const String ipAdress = options.GetOption("-ip").AsString();
     const uint16 port = static_cast<uint16>(options.GetOption("-p").AsUInt32());
     
-    bool connected = client.Connect(ipAdress, port);
-    if(!connected)
-    {
-        Logger::Error("[CacheRequest::%s] cannot connect to %s", __FUNCTION__, ipAdress.c_str());
-        return AssetCacheClientConstants::EXIT_WRONG_IP;
-    }
+    client.Connect(ipAdress, port);
     
     const auto startTime = SystemTimer::Instance()->AbsoluteMS();
     const auto connectionTimeout = options.GetOption("-t").AsUInt64() * 1000;   // convert to ms

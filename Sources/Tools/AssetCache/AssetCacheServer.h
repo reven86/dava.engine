@@ -69,7 +69,7 @@ public:
     
     void SetDelegate(ServerDelegate * delegate);
 
-    bool Listen(uint16 port);
+    void Listen(uint16 port);
     
     void Disconnect();
     

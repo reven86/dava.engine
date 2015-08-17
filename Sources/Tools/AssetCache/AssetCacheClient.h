@@ -63,7 +63,7 @@ public:
     
     void SetListener(ClientListener * delegate);
     
-    bool Connect(const String &ip, uint16 port);
+    void Connect(const String &ip, uint16 port);
     void Disconnect();
 
     bool ChannelIsOpened();
@@ -88,9 +88,6 @@ public:
 
 private:
     
-//     void OnAddedToCache(KeyedArchive * archieve);
-//     void OnGotFromCache(KeyedArchive * archieve);
-
 	std::unique_ptr<Connection> netClient;
 	DAVA::Net::IChannel * openedChannel = nullptr;
     

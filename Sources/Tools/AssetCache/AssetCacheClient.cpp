@@ -45,15 +45,12 @@ Client::~Client()
 	listener = nullptr;
 }
 
-bool Client::Connect(const String &ip, uint16 port)
+void Client::Connect(const String &ip, uint16 port)
 {
 	DVASSERT(nullptr == netClient);
 	DVASSERT(nullptr == openedChannel);
 
 	netClient.reset(new Connection(Net::CLIENT_ROLE, Net::Endpoint(ip.c_str(), port), this));
-
-	DVASSERT(false && "Remove bool from return");
-	return true;
 }
 
 void Client::Disconnect()
@@ -159,7 +156,6 @@ void Client::OnPacketReceived(DAVA::Net::IChannel* channel, const void* packetDa
 
 void Client::OnPacketSent(Net::IChannel* channel, const void* buffer, size_t length)
 {
-	DVASSERT(openedChannel == channel);
 	CachePacket::PacketSent(static_cast<const uint8 *> (buffer), length);
 }
 

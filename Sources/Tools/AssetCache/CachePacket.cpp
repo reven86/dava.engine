@@ -160,7 +160,7 @@ AddRequestPacket::AddRequestPacket(const CacheItemKey& _key, const CachedItemVal
 	WriteHeader(file);
 
 	file->Write(_key.data(), _key.size());
-    value.Serialize(file);
+    _value.Serialize(file);
 }
 
 bool AddRequestPacket::Load(File *file)

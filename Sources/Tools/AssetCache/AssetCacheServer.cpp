@@ -46,14 +46,12 @@ Server::~Server()
 }
 
 
-bool Server::Listen(uint16 port)
+void Server::Listen(uint16 port)
 {
 	listenPort = port;
 	DVASSERT(!netServer);
 
 	netServer.reset(new Connection(Net::SERVER_ROLE, Net::Endpoint(listenPort), this));
-	DVASSERT(false && "remove bool");
-	return true;
 }
 
 
