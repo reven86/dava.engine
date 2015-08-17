@@ -90,7 +90,6 @@ void ServerLogics::OnRequestedFromCache(DAVA::Net::IChannel *channel, const DAVA
         }
         else if (client->RequestFromCache(key))
         {   // Not found in db. Ask from remote cache.
-            DAVA::LockGuard<DAVA::Mutex> lock(requestMutex);
             waitedRequests.emplace_back(RequestDescription(channel, key, DAVA::AssetCache::PACKET_GET_REQUEST));
         }
         else
@@ -112,7 +111,6 @@ void ServerLogics::OnChannelClosed(DAVA::Net::IChannel *channel, const DAVA::cha
 {
     if(waitedRequests.size())
     {
-        DAVA::LockGuard<DAVA::Mutex> lock(requestMutex);
         auto iter = std::find_if(waitedRequests.begin(), waitedRequests.end(), [&channel](const RequestDescription& description) -> bool
                                  {
                                      return (description.clientChannel == channel);
@@ -134,7 +132,6 @@ void ServerLogics::OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey &key
 
     if((nullptr != server) && waitedRequests.size())
     {
-        DAVA::LockGuard<DAVA::Mutex> lock(requestMutex);
         auto iter = std::find_if(waitedRequests.begin(), waitedRequests.end(), [&key](const RequestDescription& description) -> bool
                                  {
                                      return (description.key == key) && (description.request == DAVA::AssetCache::PACKET_GET_REQUEST);
