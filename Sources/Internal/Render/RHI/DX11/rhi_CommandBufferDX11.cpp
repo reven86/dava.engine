@@ -352,7 +352,7 @@ dx11_CommandBuffer_Begin( Handle cmdBuf )
         cb->def_viewport.Width  = float(sz.dx);
         cb->def_viewport.Height = float(sz.dy);
 
-        TextureDX11::SetRenderTarget( cb->passCfg.colorBuffer[0].texture, cb->passCfg.depthStencilBuffer.texture, _D3D11_ImmediateContext );
+        TextureDX11::SetRenderTarget( cb->passCfg.colorBuffer[0].texture, cb->passCfg.depthStencilBuffer.texture, context );
     }
     else
     {
