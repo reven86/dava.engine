@@ -251,96 +251,148 @@ String ColladaDocument::GetTextureName(const FilePath & scenePath, ColladaTextur
     return texPathname.GetRelativePathname(scenePath);
 }
 
-void ColladaDocument::GetMeshesFromCollada(Scene * const scene)
+void FindMeshes(ColladaSceneNode * node, Set<ColladaMesh *> &foundMeshes)
+{
+    for (ColladaMeshInstance * mesh : node->meshInstances)
+    {
+        for (auto polygonGroup : mesh->polyGroupInstances)
+        {
+            if (polygonGroup->polyGroup && polygonGroup->polyGroup->parentMesh)
+            {
+                foundMeshes.insert(polygonGroup->polyGroup->parentMesh);
+            }
+        }
+    }
+}
+    
+void SetTransform(Entity * entity, ColladaSceneNode * node)
+{
+    if (nullptr != entity)
+    {
+        TransformComponent * tc = static_cast<TransformComponent *>(entity->GetComponent(Component::TRANSFORM_COMPONENT));
+        tc->SetLocalTransform(&node->localTransform);
+    }
+}
+    
+void ColladaDocument::LoadMeshesRecursive(Entity * parent, ColladaSceneNode * parentNode)
+{
+    Entity * currentLayer = nullptr;
+    Set<ColladaMesh*> meshChilds;
+    FindMeshes(parentNode, meshChilds);
+    for (auto mesh : meshChilds)
+    {
+        currentLayer = GetMeshesFromCollada(mesh);
+        parent->AddNode(currentLayer);
+    }
+    SetTransform(currentLayer, parentNode);
+    
+    if (nullptr == currentLayer)
+    {
+        currentLayer = parent;
+    }
+    
+    for(auto childNode : parentNode->childs)
+    {
+        NodesToSC2(currentLayer, childNode);
+    }
+}
+    
+void ColladaDocument::NodesToSC2(Entity * parent, ColladaSceneNode * parentNode)
+{
+    LoadMeshesRecursive(parent, parentNode);
+    
+
+}
+    
+Entity * ColladaDocument::GetMeshesFromCollada(ColladaMesh * mesh)
 {
     RenderComponent * davaRenderComponent = new RenderComponent();
     
     ScopedPtr<NMaterial> davaMaterialParent(NMaterial::CreateMaterial(FastName("Mesh Material"), NMaterialName::TEXTURED_OPAQUE, NMaterial::DEFAULT_QUALITY_NAME));
     
-    for (uint32 staticMeshIndex = 0; staticMeshIndex < header.staticMeshCount; ++staticMeshIndex)
+    ScopedPtr<Mesh> davaMesh(new Mesh());
+    
+    Entity * davaEntity = new Entity();
+    
+    davaEntity->SetName(FastName(mesh->name.c_str()));
+    
+    String parentName = mesh->mesh->GetParent()->GetDaeId().c_str();
+    
+    
+    uint32 polygonGroupsInMesh = mesh->GetPolygonGroupCount();
+    for (uint32 i = 0; i < polygonGroupsInMesh; ++i)
     {
-        Entity * davaEntity = new Entity();
-        ScopedPtr<Mesh> davaMesh(new Mesh());
+        ColladaPolygonGroup *colladaPolygon = mesh->GetPolygonGroup(i);
+        auto vertexFormat = colladaPolygon->GetVertexFormat();
+        auto vertices = colladaPolygon->GetVertices();
+        auto indecies = colladaPolygon->GetIndices();
+        size_t indexCount = indecies.size();
+        size_t vertexCount = vertices.size();
         
-        ColladaMesh * mesh = colladaScene->colladaMeshes[staticMeshIndex];
+        PolygonGroup * davaPolygon = new PolygonGroup();
         
-        davaEntity->SetName(FastName(mesh->name.c_str()));
+        davaPolygon->AllocateData(vertexFormat, vertexCount, indexCount);
         
-        uint32 polygonGroupsInMesh = mesh->GetPolygonGroupCount();
-        for (uint32 i = 0; i < polygonGroupsInMesh; ++i)
+        for(uint32 indexNo = 0; indexNo < indexCount; ++indexNo)
         {
-            ColladaPolygonGroup *colladaPolygon = mesh->GetPolygonGroup(i);
-            auto vertexFormat = colladaPolygon->GetVertexFormat();
-            auto vertices = colladaPolygon->GetVertices();
-            auto indecies = colladaPolygon->GetIndices();
-            size_t indexCount = indecies.size();
-            size_t vertexCount = vertices.size();
+            davaPolygon->indexArray[indexNo] = indecies[indexNo];
+        }
+        // Take collada vertices and set to polygon group
+        for (uint32 vertexNo = 0; vertexNo < vertexCount; ++vertexNo)
+        {
+            auto & vertex = vertices[vertexNo];
             
-            PolygonGroup * davaPolygon = new PolygonGroup();
-            
-            davaPolygon->AllocateData(vertexFormat, vertexCount, indexCount);
-            
-            for(uint32 indexNo = 0; indexNo < indexCount; ++indexNo)
+            if (vertexFormat & EVF_VERTEX)
             {
-                davaPolygon->indexArray[indexNo] = indecies[indexNo];
+                davaPolygon->SetCoord(vertexNo, vertex.position);
             }
-            
-            for (uint32 vertexNo = 0; vertexNo < vertexCount; ++vertexNo)
+            if (vertexFormat & EVF_NORMAL)
             {
-                auto & vertex = vertices[vertexNo];
-                
-                if (vertexFormat & EVF_VERTEX)
-                {
-                    davaPolygon->SetCoord(vertexNo, vertex.position);
-                }
-                if (vertexFormat & EVF_NORMAL)
-                {
-                    davaPolygon->SetNormal(vertexNo, vertex.normal);
-                }
-                if (vertexFormat & EVF_TANGENT)
-                {
-                    davaPolygon->SetTangent(vertexNo, vertex.tangent);
-                }
-                if (vertexFormat & EVF_BINORMAL)
-                {
-                    davaPolygon->SetBinormal(vertexNo, vertex.binormal);
-                }
-                if (vertexFormat & EVF_TEXCOORD0)
-                {
-                    davaPolygon->SetTexcoord(0, vertexNo, vertex.texCoords[0]);
-                }
-                if (vertexFormat & EVF_TEXCOORD1)
-                {
-                    davaPolygon->SetTexcoord(1, vertexNo, vertex.texCoords[1]);
-                }
-                if (vertexFormat & EVF_TEXCOORD2)
-                {
-                    davaPolygon->SetTexcoord(2, vertexNo, vertex.texCoords[2]);
-                }
-                if (vertexFormat & EVF_TEXCOORD3)
-                {
-                    davaPolygon->SetTexcoord(3, vertexNo, vertex.texCoords[3]);
-                }
+                davaPolygon->SetNormal(vertexNo, vertex.normal);
             }
-            
-            davaPolygon->triangleCount = colladaPolygon->GetTriangleCount();
-            
-            davaPolygon->BuildBuffers();
-            davaPolygon->RecalcAABBox();
-            
-            ScopedPtr<NMaterial> davaMaterial(NMaterial::CreateMaterialInstance());
-            auto materialSemantic = colladaPolygon->GetMaterialSemantic();
-            davaMaterial->SetMaterialName(FastName(materialSemantic.c_str()));
-            davaMaterial->SetParent(davaMaterialParent);
-            
-            davaMesh->AddPolygonGroup(davaPolygon, davaMaterial);
+            if (vertexFormat & EVF_TANGENT)
+            {
+                davaPolygon->SetTangent(vertexNo, vertex.tangent);
+            }
+            if (vertexFormat & EVF_BINORMAL)
+            {
+                davaPolygon->SetBinormal(vertexNo, vertex.binormal);
+            }
+            if (vertexFormat & EVF_TEXCOORD0)
+            {
+                davaPolygon->SetTexcoord(0, vertexNo, vertex.texCoords[0]);
+            }
+            if (vertexFormat & EVF_TEXCOORD1)
+            {
+                davaPolygon->SetTexcoord(1, vertexNo, vertex.texCoords[1]);
+            }
+            if (vertexFormat & EVF_TEXCOORD2)
+            {
+                davaPolygon->SetTexcoord(2, vertexNo, vertex.texCoords[2]);
+            }
+            if (vertexFormat & EVF_TEXCOORD3)
+            {
+                davaPolygon->SetTexcoord(3, vertexNo, vertex.texCoords[3]);
+            }
         }
         
-        davaRenderComponent->SetRenderObject(davaMesh);
-        davaEntity->AddComponent(davaRenderComponent);
+        davaPolygon->triangleCount = colladaPolygon->GetTriangleCount();
 
-        scene->AddNode(davaEntity);
+        davaPolygon->RecalcAABBox();
+        davaPolygon->BuildBuffers();
+        
+        ScopedPtr<NMaterial> davaMaterial(NMaterial::CreateMaterialInstance());
+        auto materialSemantic = colladaPolygon->GetMaterialSemantic();
+        davaMaterial->SetMaterialName(FastName(materialSemantic.c_str()));
+        davaMaterial->SetParent(davaMaterialParent);
+        
+        davaMesh->AddPolygonGroup(davaPolygon, davaMaterial);
     }
+    
+    davaRenderComponent->SetRenderObject(davaMesh);
+    davaEntity->AddComponent(davaRenderComponent);
+
+    return davaEntity;
 }
 
 void ColladaDocument::SaveSC2(const FilePath & scenePath, const String & sceneName)
@@ -353,10 +405,10 @@ void ColladaDocument::SaveSC2(const FilePath & scenePath, const String & sceneNa
     header.lightCount = (uint32)colladaScene->colladaLights.size();
     
     ScopedPtr<Scene> scene(new Scene());
-    
-    GetMeshesFromCollada(scene);
-
+    NodesToSC2(scene, colladaScene->rootNode);
     scene->SaveScene(scenePath + sceneName);
+    
+    
 }
 
 void ColladaDocument::SaveScene( const FilePath & scenePath, const String & sceneName )

@@ -80,7 +80,9 @@ public:
 	void	GetAnimationTimeInfo(FCDocument * document, float32 & timeStart, float32 & timeEnd);
 	
 private:
-    void    GetMeshesFromCollada(Scene * const scene);
+    void LoadMeshesRecursive(Entity * parent, ColladaSceneNode * parentNode);
+    void    NodesToSC2(Entity * parent, ColladaSceneNode * parentNode);
+    Entity * GetMeshesFromCollada(ColladaMesh * mesh);
     
 public:
 	FILE	* sceneFP;
