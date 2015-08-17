@@ -784,7 +784,7 @@ static const char* _ShaderDefine_DX11 =
 "#define VPROG_OUT_END                          };\n"
 
 //"#define DECL_VPROG_BUFFER(idx,sz) uniform float4 VP_Buffer##idx[sz];\n"
-"#define DECL_VPROG_BUFFER(idx,sz) cbuffer VP_Buffer##idx##_t : register(cb##idx) { float4 VP_Buffer##idx[sz]; };\n"
+"#define DECL_VPROG_BUFFER(idx,sz) cbuffer VP_Buffer##idx##_t : register(b##idx) { float4 VP_Buffer##idx[sz]; };\n"
 "#define VP_BUF_FLOAT3X3(buf,reg)  float3x3( (float3)(float4(VP_Buffer##buf[reg+0])), (float3)(float4(VP_Buffer##buf[reg+1])), (float3)(float4(VP_Buffer##buf[reg+2])) );\n"
 
 "#define VPROG_BEGIN             VP_Output vp_main( VP_Input IN ) { VP_Output OUT;\n"
@@ -859,7 +859,7 @@ static const char* _ShaderDefine_DX11 =
 
 "#define FP_OUT_COLOR            OUT.color\n"
 
-"#define DECL_FPROG_BUFFER(idx,sz) cbuffer FP_Buffer##idx##_t : register(cb##idx) { float4 FP_Buffer##idx[sz]; };\n"
+"#define DECL_FPROG_BUFFER(idx,sz) cbuffer FP_Buffer##idx##_t : register(b##idx) { float4 FP_Buffer##idx[sz]; };\n"
 
 "#define FPROG_BEGIN             FP_Output fp_main( FP_Input IN ) { FP_Output OUT;\n"
 "#define FPROG_END               return OUT; }\n"
