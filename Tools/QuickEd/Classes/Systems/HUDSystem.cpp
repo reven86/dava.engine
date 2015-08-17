@@ -39,30 +39,105 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Render/RenderHelper.h"
 
 using namespace DAVA;
-class FrameControl : public DAVA::UIControl
+
+class ControlContainer : public UIControl
 {
+public:
+    ControlContainer(UIControl *container)
+        : UIControl()
+        , control(container)
+    {}
+protected:
+    UIControl *control;
+};
+
+class FrameControl : public ControlContainer
+{
+public:
+    FrameControl(UIControl *container)
+        : ControlContainer(container)
+    { }
+private:
     void Draw(const DAVA::UIGeometricData &geometricData) override
     {
+        SetRect(control->GetGeometricData().GetUnrotatedRect());
         Color oldColor = RenderManager::Instance()->GetColor();
         RenderManager::Instance()->SetColor(Color(1.0f, 0.0f, 0.0f, 1.f));
-        RenderHelper::Instance()->DrawRect(Rect(geometricData.position, geometricData.size * GetGeometricData().scale), RenderState::RENDERSTATE_2D_BLEND);
+        RenderHelper::Instance()->DrawRect(GetRect(), RenderState::RENDERSTATE_2D_BLEND);
         RenderManager::Instance()->SetColor(oldColor);
     }
 };
 
-class FrameRectControl : public DAVA::UIControl
+class FrameRectControl : public ControlContainer
 {
+public:
+    enum PLACE
+    {
+        TOP_LEFT,
+        TOP_CENTER,
+        TOP_RIGHT,
+        CENTER_LEFT,
+        CENTER_RIGHT,
+        BOTTOM_LEFT,
+        BOTTOM_CENTER,
+        BOTTOM_RIGHT,
+        COUNT
+    };
+    FrameRectControl(PLACE place_, UIControl *container)
+        : ControlContainer(container)
+        , place(place_)
+    { }
+private:
+    void Draw(const DAVA::UIGeometricData &geometricData) override
+    {
+        Rect rect(0, 0, 5, 5);
+        rect.SetCenter(GetPos());
+        SetRect(rect);
+
+        Color oldColor = RenderManager::Instance()->GetColor();
+        RenderManager::Instance()->SetColor(Color(0.0f, 1.0f, 0.0f, 1.f));
+        RenderHelper::Instance()->FillRect(GetRect(), RenderState::RENDERSTATE_2D_BLEND);
+        RenderManager::Instance()->SetColor(oldColor);
+    }
+
+    Vector2 FrameRectControl::GetPos()
+    {
+        Rect rect = control->GetGeometricData().GetUnrotatedRect();
+        Vector2 retVal = rect.GetPosition();
+        switch (place)
+        {
+        case TOP_LEFT: return retVal;
+        case TOP_CENTER: return retVal + Vector2(rect.dx / 2.0f, 0);
+        case TOP_RIGHT: return retVal + Vector2(rect.dx, 0);
+        case CENTER_LEFT: return retVal + Vector2(0, rect.dy / 2.0f);
+        case CENTER_RIGHT: return retVal + Vector2(rect.dx, rect.dy / 2.0f);
+        case BOTTOM_LEFT: return retVal + Vector2(0, rect.dy);
+        case BOTTOM_CENTER: return retVal + Vector2(rect.dx / 2.0f, rect.dy);
+        case BOTTOM_RIGHT: return retVal + Vector2(rect.dx, rect.dy);
+        default: DVASSERT_MSG(false, "what are you doing here?!"); return Vector2(0, 0);
+        }
+    }
+    PLACE place;
+};
+
+class PivotPointControl : public ControlContainer
+{
+public:
+    PivotPointControl(UIControl *container)
+        : ControlContainer(container)
+    { }
+private:
     void Draw(const DAVA::UIGeometricData &geometricData) override
     {
         Color oldColor = RenderManager::Instance()->GetColor();
-        RenderManager::Instance()->SetColor(0.0f, 1.0f, 0.0f, 1.f);
-        Rect trueRect(geometricData.position, geometricData.size * GetGeometricData().scale);
-        Rect drawRect(Vector2(0, 0), geometricData.size);
-        drawRect.SetCenter(trueRect.GetCenter());
-        RenderHelper::Instance()->FillRect(drawRect, RenderState::RENDERSTATE_2D_BLEND);
+        RenderManager::Instance()->SetColor(Color(0.0f, 0.0f, 1.0f, 1.f));
+        Rect rect(0, 0, 5, 5);
+        rect.SetCenter(control->GetGeometricData().GetUnrotatedRect().GetPosition() + control->GetPivotPoint());
+        RenderHelper::Instance()->FillRect(rect, RenderState::RENDERSTATE_2D_BLEND);
         RenderManager::Instance()->SetColor(oldColor);
     }
 };
+
 
 HUDSystem::HUDSystem()
     : hudControl(new UIControl())
@@ -90,23 +165,15 @@ void HUDSystem::SelectionWasChanged(const SelectedControls& selected, const Sele
 }
 
 HUDSystem::HUD::HUD(UIControl* control_, UIControl* hudControl_)
-    : frame(new FrameControl)
+    : frame(new FrameControl(control_))
     , control(control_)
     , hudControl(hudControl_)
 {
-    Vector2 framePos = control->GetAbsolutePosition() - hudControl->GetAbsolutePosition();
-    auto scale = hudControl->GetParent()->GetParent()->GetScale().x; //get scale of background control
-    framePos /= scale;
-    Rect frameRect(framePos, control->GetSize());
-    frame->SetRect(frameRect);
     hudControl->AddControl(frame);
     
-    for (int i = TOP_LEFT; i < COUNT; ++i)
+    for (int i = FrameRectControl::TOP_LEFT; i < FrameRectControl::COUNT; ++i)
     {
-        ScopedPtr<UIControl> littleRectFrame(new FrameRectControl());
-        Rect rect(Vector2(0, 0), Vector2(10, 10));
-        rect.SetCenter(GetPos(static_cast<PLACE>(i), frameRect));
-        littleRectFrame->SetRect(rect);
+        ScopedPtr<UIControl> littleRectFrame(new FrameRectControl(static_cast<FrameRectControl::PLACE>(i), control_));
         frameRects.push_back(littleRectFrame);
         hudControl->AddControl(littleRectFrame);
     }
@@ -118,21 +185,5 @@ HUDSystem::HUD::~HUD()
     for (auto frameRect : frameRects)
     {
         hudControl->RemoveControl(frameRect);
-    }
-}
-
-Vector2 HUDSystem::HUD::GetPos(const PLACE place, const Rect &rect)
-{
-    switch (place)
-    {
-    case TOP_LEFT: return rect.GetPosition() + Vector2(0, 0);
-    case TOP_CENTER: return rect.GetPosition() + Vector2(rect.dx / 2.0f, 0);
-    case TOP_RIGHT: return rect.GetPosition() + Vector2(rect.dx, 0);
-    case CENTER_LEFT: return rect.GetPosition() + Vector2(0, rect.dy / 2.0f);
-    case CENTER_RIGHT: return rect.GetPosition() + Vector2(rect.dx, rect.dy / 2.0f);
-    case BOTTOM_LEFT: return rect.GetPosition() + Vector2(0, rect.dy);
-    case BOTTOM_CENTER: return rect.GetPosition() + Vector2(rect.dx / 2.0f, rect.dy);
-    case BOTTOM_RIGHT: return rect.GetPosition() + Vector2(rect.dx, rect.dy);
-    case COUNT: DVASSERT_MSG(false, "what are you doing here?!"); return Vector2(0, 0);
     }
 }

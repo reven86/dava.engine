@@ -54,24 +54,11 @@ private:
     DAVA::ScopedPtr<DAVA::UIControl> hudControl;
     struct HUD
     {
-        enum PLACE
-        {
-            TOP_LEFT,
-            TOP_CENTER,
-            TOP_RIGHT,
-            CENTER_LEFT,
-            CENTER_RIGHT,
-            BOTTOM_LEFT,
-            BOTTOM_CENTER,
-            BOTTOM_RIGHT,
-            COUNT
-        };
         DAVA::ScopedPtr<DAVA::UIControl> frame;
         DAVA::Vector < DAVA::ScopedPtr<DAVA::UIControl> > frameRects;
         HUD(DAVA::UIControl *control, DAVA::UIControl *hudControl);
         ~HUD();
     private:
-        static DAVA::Vector2 GetPos(const PLACE place, const DAVA::Rect &control);
         DAVA::UIControl *control = nullptr;
         DAVA::UIControl *hudControl = nullptr;
     };

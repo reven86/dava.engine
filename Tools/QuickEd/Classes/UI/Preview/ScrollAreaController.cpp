@@ -69,12 +69,12 @@ QPoint ScrollAreaController::GetPosition() const
 
 void ScrollAreaController::UpdateCanvasContentSize()
 {
-    QSize contentSize(rootControl->GetSize().x, rootControl->GetSize().y);
+    QSize contentSize(rootControl->GetGeometricData().GetUnrotatedRect().dx, rootControl->GetGeometricData().GetUnrotatedRect().dy);
     QSize marginsSize = QSize(Margin * 2, Margin * 2);
-    QSize tmpSize = contentSize + marginsSize / GetUIScale();
+    QSize tmpSize = contentSize + marginsSize;
     Vector2 newCanvasSize(tmpSize.width(), tmpSize.height());
     backgroundControl->SetSize(newCanvasSize);
-    canvasSize = contentSize * GetUIScale() + marginsSize;
+    canvasSize = tmpSize;
     UpdatePosition();
     emit CanvasSizeChanged(GetCanvasSize());
 }
@@ -97,8 +97,8 @@ void ScrollAreaController::SetScale(int scale_)
     {
         scale = scale_;
         Vector2 newScale(GetUIScale(), GetUIScale());
-        backgroundControl->SetScale(newScale);
-        rootControl->SetPosition(Vector2(Margin / GetUIScale(), Margin / GetUIScale()));
+        rootControl->SetPosition(Vector2(Margin, Margin));
+        rootControl->SetScale(newScale);
         UpdateCanvasContentSize();
         emit ScaleChanged(scale_);
     }
