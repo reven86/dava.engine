@@ -37,7 +37,7 @@ private:
     void InitSymbolsView();
     void InitBranchView();
 
-    DAVA::Vector<const char*> GetSelectedSymbols();
+    DAVA::Vector<const DAVA::String*> GetSelectedSymbols();
 
 private:
     const MemorySnapshot* snapshot;

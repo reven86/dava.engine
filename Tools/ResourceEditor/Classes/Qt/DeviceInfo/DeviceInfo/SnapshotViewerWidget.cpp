@@ -71,7 +71,7 @@ void SnapshotViewerWidget::InitSymbolsView()
     QPushButton* buildTree = new QPushButton("Build tree");
 
     connect(filter, &QLineEdit::textChanged, symbolsFilterModel, &SymbolsFilterModel::SetFilterString);
-    connect(toggleStd, &QPushButton::clicked, symbolsFilterModel, &SymbolsFilterModel::ToggleStd);
+    connect(toggleStd, &QPushButton::clicked, symbolsFilterModel, &SymbolsFilterModel::ToggleHideStdAndUnresolved);
     connect(buildTree, &QPushButton::clicked, this, &SnapshotViewerWidget::SymbolView_OnBuldTree);
 
     QVBoxLayout* layout = new QVBoxLayout;
@@ -114,7 +114,7 @@ void SnapshotViewerWidget::InitBranchView()
 
 void SnapshotViewerWidget::SymbolView_OnBuldTree()
 {
-    Vector<const char*> selection = GetSelectedSymbols();
+    Vector<const String*> selection = GetSelectedSymbols();
     if (!selection.empty())
     {
         branchTreeModel->PrepareModel(selection);
@@ -124,9 +124,9 @@ void SnapshotViewerWidget::SymbolView_OnBuldTree()
 void SnapshotViewerWidget::BranchView_SelectionChanged(const QModelIndex& current, const QModelIndex& previous)
 {
     Branch* branch = static_cast<Branch*>(current.internalPointer());
-    Vector<MMBlock> blocks = branch->GetMemoryBlocks();
+    Vector<MMBlock*> blocks = branch->GetMemoryBlocks();
 
-    blockListModel->PrepareModel(std::forward<Vector<MMBlock>>(blocks));
+    blockListModel->PrepareModel(std::forward<Vector<MMBlock*>>(blocks));
 }
 
 void SnapshotViewerWidget::BranchBlockView_DoubleClicked(const QModelIndex& current)
@@ -138,24 +138,21 @@ void SnapshotViewerWidget::BranchBlockView_DoubleClicked(const QModelIndex& curr
     }
 }
 
-Vector<const char*> SnapshotViewerWidget::GetSelectedSymbols()
+Vector<const String*> SnapshotViewerWidget::GetSelectedSymbols()
 {
-    Vector<const char*> result;
-    QItemSelectionModel* selModel = symbolsTree->selectionModel();
-    if (selModel->hasSelection())
+    Vector<const String*> result;
+    QItemSelectionModel* selectionModel = symbolsTree->selectionModel();
+    if (selectionModel->hasSelection())
     {
-        QModelIndexList list = selModel->selectedRows(0);
-        for (auto x : list)
+        QModelIndexList indexList = selectionModel->selectedRows(0);
+        result.reserve(indexList.size());
+        for (const QModelIndex& i : indexList)
         {
-            QModelIndex index = symbolsFilterModel->mapToSource(x);
+            QModelIndex index = symbolsFilterModel->mapToSource(i);
             if (index.isValid())
             {
-                GenericTreeNode* p = static_cast<GenericTreeNode*>(index.internalPointer());
-                if (p->Type() == SymbolsTreeModel::TYPE_NAME)
-                {
-                    SymbolsTreeModel::NameNode* node = static_cast<SymbolsTreeModel::NameNode*>(p);
-                    result.push_back(node->Name());
-                }
+                const String* name = symbolsTreeModel->Symbol(index.row());
+                result.push_back(name);
             }
         }
     }

@@ -40,8 +40,6 @@ class MemorySnapshot final
 {
 public:
     MemorySnapshot(const DAVA::FilePath& filename, const DAVA::MMSnapshot* msnapshot);
-    MemorySnapshot(const MemorySnapshot&) = delete;
-    MemorySnapshot& operator = (const MemorySnapshot&) = delete;
     MemorySnapshot(MemorySnapshot&& other);
     MemorySnapshot& operator = (MemorySnapshot&& other);
     ~MemorySnapshot() = default;
@@ -60,27 +58,27 @@ public:
     const BacktraceSymbolTable* SymbolTable() const;
     
     // Create call tree branch starting from given names
-    Branch* CreateBranch(const DAVA::Vector<const char*>& startNames) const;
+    Branch* CreateBranch(const DAVA::Vector<const DAVA::String*>& startNames) const;
 
 private:
     void Init(const DAVA::MMSnapshot* msnapshot);
     bool LoadFile();
     void BuildBlockMap();
     
-    Branch* BuildPath(Branch* parent, int startFrame, const DAVA::Vector<const char*>& frames) const;
-    int FindNamesInBacktrace(const DAVA::Vector<const char*>& names, const DAVA::Vector<const char*>& frames) const;
+    Branch* BuildPath(Branch* parent, int startFrame, const DAVA::Vector<const DAVA::String*>& bktraceNames) const;
+    int FindNamesInBacktrace(const DAVA::Vector<const DAVA::String*>& namesToFind, const DAVA::Vector<const DAVA::String*>& bktraceNames) const;
 
 private:
     DAVA::FilePath fileName;
-    DAVA::uint64 timestamp;
-    size_t blockCount;
-    size_t symbolCount;
-    size_t bktraceCount;
-    size_t totalSize;
+    DAVA::uint64 timestamp = 0;
+    size_t blockCount = 0;
+    size_t symbolCount = 0;
+    size_t bktraceCount = 0;
+    size_t totalSize = 0;
 
     BacktraceSymbolTable* symbolTable = nullptr;
-    DAVA::Vector<DAVA::MMBlock> mblocks;
-    DAVA::Map<DAVA::uint32, DAVA::Vector<DAVA::MMBlock>> blockMap;
+    DAVA::Vector<DAVA::MMBlock> mblocks;                                // All memory blocks contained in snapshot
+    DAVA::Map<DAVA::uint32, DAVA::Vector<DAVA::MMBlock*>> blockMap;     // Map of memory blocks allocated at backtrace identified by its hash
 };
 
 //////////////////////////////////////////////////////////////////////////

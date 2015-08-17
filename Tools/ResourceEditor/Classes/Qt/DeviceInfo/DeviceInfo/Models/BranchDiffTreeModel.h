@@ -23,7 +23,7 @@ public:
     BranchDiffTreeModel(const MemorySnapshot* snapshot1, const MemorySnapshot* snapshot2, QObject* parent = nullptr);
     virtual ~BranchDiffTreeModel();
 
-    void PrepareModel(const DAVA::Vector<const char*>& names);
+    void PrepareModel(const DAVA::Vector<const DAVA::String*>& names);
     void ResetModel();
 
     QVariant data(const QModelIndex& index, int role) const override;

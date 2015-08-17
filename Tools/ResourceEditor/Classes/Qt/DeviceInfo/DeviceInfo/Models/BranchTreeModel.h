@@ -21,7 +21,7 @@ public:
     BranchTreeModel(const MemorySnapshot* snapshot, QObject* parent = nullptr);
     virtual ~BranchTreeModel();
 
-    void PrepareModel(const DAVA::Vector<const char*>& names);
+    void PrepareModel(const DAVA::Vector<const DAVA::String*>& names);
     void ResetModel();
 
     QVariant data(const QModelIndex& index, int role) const override;

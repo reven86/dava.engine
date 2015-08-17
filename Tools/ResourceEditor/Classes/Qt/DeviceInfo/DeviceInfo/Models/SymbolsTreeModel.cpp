@@ -1,47 +1,44 @@
-#include <QDebug>
+#include "Debug/DVAssert.h"
 
-#include "../BacktraceSymbolTable.h"
-#include "SymbolsTreeModel.h"
+#include "Qt/DeviceInfo/DeviceInfo/BacktraceSymbolTable.h"
+#include "Qt/DeviceInfo/DeviceInfo/Models/SymbolsTreeModel.h"
 
 using namespace DAVA;
 
-SymbolsTreeModel::SymbolsTreeModel(const BacktraceSymbolTable& backtraceTable,
-                                   QObject* parent)
-    : GenericTreeModel(1, parent)
-    , bktraceTable(backtraceTable)
-    , rootNode(new GenericTreeNode)
+SymbolsTreeModel::SymbolsTreeModel(const BacktraceSymbolTable& symbolTable_, QObject* parent)
+    : QAbstractListModel(parent)
+    , symbolTable(symbolTable_)
 {
-    SetRootNode(rootNode.get());
-    BuildTree();
+    PrepareSymbols();
 }
 
-SymbolsTreeModel::~SymbolsTreeModel()
-{
+SymbolsTreeModel::~SymbolsTreeModel() = default;
 
+const String* SymbolsTreeModel::Symbol(int row) const
+{
+    DVASSERT(row < static_cast<int>(allSymbols.size()));
+    return allSymbols[row];
+}
+
+int SymbolsTreeModel::rowCount(const QModelIndex& parent) const
+{
+    return static_cast<int>(allSymbols.size());
 }
 
 QVariant SymbolsTreeModel::data(const QModelIndex& index, int role) const
 {
     if (index.isValid() && Qt::DisplayRole == role)
     {
-        GenericTreeNode* node = static_cast<GenericTreeNode*>(index.internalPointer());
-        switch (node->Type())
-        {
-        case TYPE_NAME:
-            return NameNodeData(static_cast<NameNode*>(node), index.row(), index.column());
-        }
+        const String* name = allSymbols[index.row()];
+        return QString(name->c_str());
     }
     return QVariant();
 }
 
-void SymbolsTreeModel::BuildTree()
+void SymbolsTreeModel::PrepareSymbols()
 {
-    bktraceTable.IterateOverSymbols([this](const char8* name) -> void {
-        rootNode->AppendChild(new NameNode(name));
+    allSymbols.reserve(symbolTable.SymbolCount());
+    symbolTable.IterateOverSymbols([this](const String& name) {
+        allSymbols.push_back(&name);
     });
-}
-
-QVariant SymbolsTreeModel::NameNodeData(NameNode* node, int row, int clm) const
-{
-    return QVariant(node->Name());
 }

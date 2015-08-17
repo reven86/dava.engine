@@ -2,38 +2,26 @@
 
 #include "Base/BaseTypes.h"
 
-#include "GenericTreeModel.h"
-#include "GenericTreeNode.h"
+#include <QAbstractListModel>
 
 class BacktraceSymbolTable;
-class SymbolsTreeModel : public GenericTreeModel
+
+class SymbolsTreeModel : public QAbstractListModel
 {
 public:
-    enum {
-        TYPE_NAME = 1
-    };
-
-    class NameNode : public GenericTreeNode
-    {
-    public:
-        NameNode(const DAVA::char8*& s) : GenericTreeNode(TYPE_NAME), name(s) {}
-        const DAVA::char8* Name() const { return name; }
-    private:
-        const DAVA::char8* name;
-    };
-
-public:
-    SymbolsTreeModel(const BacktraceSymbolTable& backtraceTable, QObject* parent = nullptr);
+    SymbolsTreeModel(const BacktraceSymbolTable& symbolTable, QObject* parent = nullptr);
     virtual ~SymbolsTreeModel();
 
+    const DAVA::String* Symbol(int row) const;
+
+    // QAbstractListModel
+    int rowCount(const QModelIndex& parent) const override;
     QVariant data(const QModelIndex& index, int role) const override;
 
 private:
-    void BuildTree();
-
-    QVariant NameNodeData(NameNode* node, int row, int clm) const;
+    void PrepareSymbols();
 
 private:
-    const BacktraceSymbolTable& bktraceTable;
-    std::unique_ptr<GenericTreeNode> rootNode;
+    const BacktraceSymbolTable& symbolTable;
+    DAVA::Vector<const DAVA::String*> allSymbols;
 };

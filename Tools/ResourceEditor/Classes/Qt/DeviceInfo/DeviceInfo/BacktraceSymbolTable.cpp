@@ -1,110 +1,96 @@
-#include "Base/Hash.h"
 #include "Debug/DVAssert.h"
 
 #include "BacktraceSymbolTable.h"
 
 using namespace DAVA;
 
-void BacktraceSymbolTable::AddSymbol(DAVA::uint64 frameAddr, const DAVA::String& name)
+const uint64 INVALID_ADDRESS = 0xFFFF;
+
+const DAVA::String* BacktraceSymbolTable::AddSymbol(uint64 stackAddr, const String& name)
 {
-    auto iterAddr = addrToNameMap.find(frameAddr);
+    DVASSERT(name.empty() == false && stackAddr > INVALID_ADDRESS);
+
+    // Check whether frame address and its associated name are already in map
+    auto iterAddr = addrToNameMap.find(stackAddr);
     if (iterAddr == addrToNameMap.end())
     {
-        uint32 nameHash = HashValue_N(name.c_str(), static_cast<size_t>(name.length()));
-        auto iterName = uniqueNames.find(nameHash);
-        if (iterName == uniqueNames.end())
+        // Check whether name is already in unique names set, if not place it there
+        auto iterUniqueName = uniqueNames.find(name);
+        if (iterUniqueName == uniqueNames.end())
         {
-            uniqueNames.emplace(nameHash, name);
+            iterUniqueName = uniqueNames.emplace(name).first;
         }
-        addrToNameMap.emplace(frameAddr, nameHash);
+
+        // Associate name with frame address
+        const String* namePointer = &*iterUniqueName;
+        iterAddr = addrToNameMap.emplace(stackAddr, namePointer).first;
+    }
+    else
+    {   // TODO: remove, for debug purpose
+        const String& nameInMap = *iterAddr->second;
+        DVASSERT(nameInMap == name);
+    }
+    return iterAddr->second;
+}
+
+void BacktraceSymbolTable::AddBacktrace(uint32 hash, const uint64* stackFrames, size_t stackDepth)
+{
+    DVASSERT(stackFrames != nullptr && stackDepth > 0);
+
+    auto iter = bktraceMap.find(hash);
+    if (iter == bktraceMap.end())
+    {
+        bktraceMap.emplace(hash, ResolveFrameNames(stackFrames, stackDepth));
+    }
+    else
+    {   // TODO: remove, for debug purpose
+        const Vector<const String*> y = iter->second;
+        Vector<const String*> x = ResolveFrameNames(stackFrames, stackDepth);
+        DVASSERT(y == x);
     }
 }
 
-void BacktraceSymbolTable::AddSymbol(DAVA::uint64 frameAddr)
+const String* BacktraceSymbolTable::GetSymbol(uint64 stackAddr) const
 {
-    auto iterAddr = addrToNameMap.find(frameAddr);
-    if (iterAddr == addrToNameMap.end())
-    {
-        char name[32];
-        Snprintf(name, COUNT_OF(name), "%08llX", frameAddr);
+    auto iter = addrToNameMap.find(stackAddr);
+    return iter != addrToNameMap.end() ? iter->second : nullptr;
+}
 
-        uint32 nameHash = HashValue_N(name, strlen(name));
-        auto iterName = uniqueNames.find(nameHash);
-        if (iterName == uniqueNames.end())
+const Vector<const String*>* BacktraceSymbolTable::GetBacktraceSymbols(uint32 bktraceHash) const
+{
+    auto iter = bktraceMap.find(bktraceHash);
+    return iter != bktraceMap.end() ? &iter->second : nullptr;
+}
+
+const String* BacktraceSymbolTable::GenerateAndAddSymbol(uint64 stackAddr)
+{
+    const size_t NAMEBUF_LEN = 32;
+    char8 namebuf[NAMEBUF_LEN];
+    Snprintf(namebuf, NAMEBUF_LEN, "#%08llX", stackAddr);
+    return AddSymbol(stackAddr, String(namebuf));
+}
+
+size_t BacktraceSymbolTable::GetValidFramesCount(const uint64* stackFrames, size_t stackDepth) const
+{
+    auto iter = std::find_if(stackFrames, stackFrames + stackDepth, [](const uint64 frame) -> bool { return frame <= INVALID_ADDRESS; });
+    return std::distance(stackFrames, iter);
+}
+
+Vector<const String*> BacktraceSymbolTable::ResolveFrameNames(const uint64* stackFrames, size_t stackDepth)
+{
+    size_t n = GetValidFramesCount(stackFrames, stackDepth);
+    DVASSERT(n > 0);
+
+    Vector<const String*> names;
+    names.reserve(n);
+    for (size_t i = 0;i < n;++i)
+    {
+        const DAVA::String* name = GetSymbol(stackFrames[i]);
+        if (nullptr == name)
         {
-            uniqueNames.emplace(nameHash, name);
+            name = GenerateAndAddSymbol(stackFrames[i]);
         }
-        addrToNameMap.emplace(frameAddr, nameHash);
+        names.push_back(name);
     }
-}
-
-void BacktraceSymbolTable::AddBacktrace(DAVA::uint32 hash, const DAVA::uint64* frames, size_t maxFrameDepth)
-{
-    DVASSERT(frames != nullptr && maxFrameDepth > 0);
-
-    auto iterBktrace = bktraces.find(hash);
-    if (iterBktrace == bktraces.end())
-    {
-        bktraces.emplace(hash, CreateBacktrace(hash, frames, maxFrameDepth));
-    }
-}
-
-const DAVA::String& BacktraceSymbolTable::GetSymbol(DAVA::uint64 frameAddr) const
-{
-    auto iterAddr = addrToNameMap.find(frameAddr);
-    if (iterAddr != addrToNameMap.end())
-    {
-        const uint32 nameHash = iterAddr->second;
-        auto iterName = uniqueNames.find(nameHash);
-        if (iterName != uniqueNames.end())
-        {
-            return iterName->second;
-        }
-    }
-    static const String empty;
-    return empty;
-}
-
-const DAVA::Vector<const char*>& BacktraceSymbolTable::GetFrames(DAVA::uint32 hash) const
-{
-    auto iterBktrace = bktraces.find(hash);
-    DVASSERT(iterBktrace != bktraces.end());
-    if (iterBktrace != bktraces.end())
-    {
-        const Backtrace& o = iterBktrace->second;
-        return o.frameNames;
-    }
-    static const Vector<const char*> empty;
-    return empty;
-}
-
-BacktraceSymbolTable::Backtrace BacktraceSymbolTable::CreateBacktrace(DAVA::uint32 hash, const DAVA::uint64* frames, size_t maxFrameDepth)
-{
-    size_t nframes = GetUsefulFramesCount(frames, maxFrameDepth);
-    DVASSERT(nframes > 0);
-
-    Backtrace bktrace(hash);
-    bktrace.frameNames.reserve(nframes);
-    for (size_t i = 0;i < nframes;++i)
-    {
-        const char* s = GetSymbol(frames[i]).c_str();
-        if (s[0] == '\0')
-        {
-            char buf[32];
-            Snprintf(buf, COUNT_OF(buf), "#_%08llX", frames[i]);
-            AddSymbol(frames[i], buf);
-            s = GetSymbol(frames[i]).c_str();
-        }
-        bktrace.frameNames.push_back(s);
-    }
-    return bktrace;
-}
-
-size_t BacktraceSymbolTable::GetUsefulFramesCount(const DAVA::uint64* frames, size_t maxFrameDepth) const
-{
-    size_t n = 0;
-    const uint64 INVALID_FRAME = 0xFFFF;
-    for (;n < maxFrameDepth && frames[n] > INVALID_FRAME;++n)
-    {}
-    return n;
+    return names;
 }

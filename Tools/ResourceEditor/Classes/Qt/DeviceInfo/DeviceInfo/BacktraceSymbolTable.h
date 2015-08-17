@@ -7,26 +7,17 @@
 class BacktraceSymbolTable
 {
 public:
-    struct Backtrace
-    {
-        Backtrace(DAVA::uint32 aHash) : hash(aHash) {}
-        Backtrace(const Backtrace&) = delete;
-        Backtrace& operator=(const Backtrace&) = delete;
+    BacktraceSymbolTable() = default;
+    ~BacktraceSymbolTable() = default;
 
-        Backtrace(Backtrace&& o) : hash(o.hash) , frameNames(std::move(o.frameNames))
-        {}
-        Backtrace& operator = (Backtrace&&) = delete;
-        DAVA::uint32 hash;
-        DAVA::Vector<const char*> frameNames;
-    };
+    const DAVA::String* AddSymbol(DAVA::uint64 stackAddr, const DAVA::String& name);
+    void AddBacktrace(DAVA::uint32 hash, const DAVA::uint64* stackFrames, size_t stackDepth);
 
-public:
-    void AddSymbol(DAVA::uint64 frameAddr, const DAVA::String& name);
-    void AddSymbol(DAVA::uint64 frameAddr);
-    void AddBacktrace(DAVA::uint32 hash, const DAVA::uint64* frames, size_t maxFrameDepth);
+    const DAVA::String* GetSymbol(DAVA::uint64 stackAddr) const;
+    const DAVA::Vector<const DAVA::String*>* GetBacktraceSymbols(DAVA::uint32 bktraceHash) const;
 
-    const DAVA::String& GetSymbol(DAVA::uint64 frameAddr) const;
-    const DAVA::Vector<const char*>& GetFrames(DAVA::uint32 hash) const;
+    size_t SymbolCount() const;
+    size_t BacktraceCount() const;
 
     template<typename F>
     void IterateOverSymbols(F fn) const;
@@ -34,33 +25,38 @@ public:
     void IterateOverBacktraces(F fn) const;
 
 private:
-    Backtrace CreateBacktrace(DAVA::uint32 hash, const DAVA::uint64* frames, size_t maxFrameDepth);
-    size_t GetUsefulFramesCount(const DAVA::uint64* frames, size_t maxFrameDepth) const;
+    const DAVA::String* GenerateAndAddSymbol(DAVA::uint64 stackAddr);
+
+    size_t GetValidFramesCount(const DAVA::uint64* stackFrames, size_t stackDepth) const;
+    DAVA::Vector<const DAVA::String*> ResolveFrameNames(const DAVA::uint64* stackFrames, size_t stackDepth);
 
 private:
-    DAVA::UnorderedMap<DAVA::uint64, DAVA::uint32> addrToNameMap;
-    DAVA::UnorderedMap<DAVA::uint32, DAVA::String> uniqueNames;
-
-    DAVA::UnorderedMap<DAVA::uint32, Backtrace> bktraces;
+    DAVA::UnorderedSet<DAVA::String> uniqueNames;
+    DAVA::UnorderedMap<DAVA::uint64, const DAVA::String*> addrToNameMap;
+    DAVA::UnorderedMap<DAVA::uint32, DAVA::Vector<const DAVA::String*>> bktraceMap; // Keep names instead of addresses
 };
 
 //////////////////////////////////////////////////////////////////////////
+inline size_t BacktraceSymbolTable::SymbolCount() const
+{
+    return uniqueNames.size();
+}
+
+inline size_t BacktraceSymbolTable::BacktraceCount() const
+{
+    return bktraceMap.size();
+}
+
 template<typename F>
 void BacktraceSymbolTable::IterateOverSymbols(F fn) const
 {
-    for (auto& x : uniqueNames)
-    {
-        fn(x.second.c_str());
-    }
+    std::for_each(uniqueNames.cbegin(), uniqueNames.cend(), fn);
 }
 
 template<typename F>
 void BacktraceSymbolTable::IterateOverBacktraces(F fn) const
 {
-    for (auto& x : bktraces)
-    {
-        fn(x.first, x.second.frameNames);
-    }
+    std::for_each(bktraceMap.cbegin(), bktraceMap.cend(), [fn](const std::pair<DAVA::uint32, DAVA::Vector<const DAVA::String*>>& x) { fn(x.first, x.second);});
 }
 
 #endif  // __BACKTRACESYMBOLTABLE_H_

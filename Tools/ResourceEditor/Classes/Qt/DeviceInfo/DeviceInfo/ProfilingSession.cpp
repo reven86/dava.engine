@@ -421,17 +421,11 @@ void ProfilingSession::LoadShapshotDescriptor(const DAVA::FilePath& path)
     }
 }
 
-void ProfilingSession::LoadSymbols(const DAVA::MMSymbol* symbols, size_t count)
+void ProfilingSession::LoadSymbols(const MMSymbol* symbols, size_t count)
 {
     for (size_t i = 0;i < count;++i)
     {
-        if (symbols[i].name[0] != '\0')
-        {
-            symbolTable.AddSymbol(symbols[i].addr, symbols[i].name);
-        }
-        else
-        {
-            symbolTable.AddSymbol(symbols[i].addr);
-        }
+        DVASSERT(strlen(symbols[i].name) > 0);
+        symbolTable.AddSymbol(symbols[i].addr, symbols[i].name);
     }
 }

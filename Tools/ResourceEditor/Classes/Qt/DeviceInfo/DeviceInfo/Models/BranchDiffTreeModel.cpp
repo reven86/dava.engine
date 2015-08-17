@@ -27,7 +27,7 @@ BranchDiffTreeModel::~BranchDiffTreeModel()
     SafeDelete(rootRight);
 }
 
-void BranchDiffTreeModel::PrepareModel(const DAVA::Vector<const char*>& names)
+void BranchDiffTreeModel::PrepareModel(const Vector<const String*>& names)
 {
     DVASSERT(!names.empty());
 
@@ -63,9 +63,9 @@ QVariant BranchDiffTreeModel::data(const QModelIndex& index, int role) const
             {
             case CLM_NAME:
                 if (branch->left)
-                    return QString(branch->left->name);
+                    return QString(branch->left->name->c_str());
                 else if (branch->right)
-                    return QString(branch->right->name);
+                    return QString(branch->right->name->c_str());
                 else
                     return QString("Root");
             case CLM_STAT1:

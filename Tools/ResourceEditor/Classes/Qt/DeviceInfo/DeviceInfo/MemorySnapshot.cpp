@@ -86,29 +86,30 @@ void MemorySnapshot::Unload()
     mblocks.shrink_to_fit();
 }
 
-Branch* MemorySnapshot::CreateBranch(const DAVA::Vector<const char*>& startNames) const
+Branch* MemorySnapshot::CreateBranch(const Vector<const String*>& startNames) const
 {
     DVASSERT(IsLoaded());
     
-    Branch* root = new Branch(nullptr);
+    Branch* root = new Branch;
     for (auto& pair : blockMap)
     {
-        auto& frames = symbolTable->GetFrames(pair.first);
-        auto& blocks = pair.second;
+        const Vector<const String*>* bktraceNames = symbolTable->GetBacktraceSymbols(pair.first);
+        const Vector<DAVA::MMBlock*>& blocks = pair.second;
+        DVASSERT(bktraceNames != nullptr);
         
-        if (!blocks.empty() && !frames.empty())
+        if (!blocks.empty() && !bktraceNames->empty())
         {
-            int startFrame = FindNamesInBacktrace(startNames, frames);
+            int startFrame = FindNamesInBacktrace(startNames, *bktraceNames);
             if (startFrame >= 0)
             {
-                Branch* leaf = BuildPath(root, startFrame, frames);
+                Branch* leaf = BuildPath(root, startFrame, *bktraceNames);
                 
                 // Append memory blocks to leaf
                 uint32 allocByApp = 0;
                 leaf->mblocks.reserve(leaf->mblocks.size() + blocks.size());
                 for (auto& x : blocks)
                 {
-                    allocByApp += x.allocByApp;
+                    allocByApp += x->allocByApp;
                     leaf->mblocks.emplace_back(x);
                 }
                 leaf->UpdateStat(allocByApp, static_cast<uint32>(blocks.size()));
@@ -116,14 +117,14 @@ Branch* MemorySnapshot::CreateBranch(const DAVA::Vector<const char*>& startNames
         }
     }
     // Sort children by symbol name
-    root->SortChildren([](const Branch* l, const Branch* r) -> bool { return strcmp(l->name, r->name) < 0; });
+    root->SortChildren([](const Branch* l, const Branch* r) -> bool { return *l->name < *r->name; });
     return root;
 }
 
-Branch* MemorySnapshot::BuildPath(Branch* parent, int startFrame, const DAVA::Vector<const char*>& frames) const
+Branch* MemorySnapshot::BuildPath(Branch* parent, int startFrame, const Vector<const String*>& bktraceNames) const
 {
     do {
-        const char* curName = frames[startFrame];
+        const String* curName = bktraceNames[startFrame];
         Branch* branch = parent->FindInChildren(curName);
         if (nullptr == branch)
         {
@@ -135,12 +136,12 @@ Branch* MemorySnapshot::BuildPath(Branch* parent, int startFrame, const DAVA::Ve
     return parent;
 }
 
-int MemorySnapshot::FindNamesInBacktrace(const DAVA::Vector<const char*>& names, const DAVA::Vector<const char*>& frames) const
+int MemorySnapshot::FindNamesInBacktrace(const DAVA::Vector<const DAVA::String*>& namesToFind, const DAVA::Vector<const DAVA::String*>& bktraceNames) const
 {
-    int index = static_cast<int>(frames.size() - 1);
+    int index = static_cast<int>(bktraceNames.size() - 1);
     do {
-        auto iterFind = std::find(names.begin(), names.end(), frames[index]);
-        if (iterFind != names.end())
+        auto iterFind = std::find(namesToFind.begin(), namesToFind.end(), bktraceNames[index]);
+        if (iterFind != namesToFind.end())
         {
             return index;
         }
@@ -199,15 +200,15 @@ bool MemorySnapshot::LoadFile()
 
 void MemorySnapshot::BuildBlockMap()
 {
-    DAVA::Map<DAVA::uint32, DAVA::Vector<DAVA::MMBlock>> map;
+    Map<uint32, Vector<MMBlock*>> map;
     for (MMBlock& curBlock : mblocks)
     {
-        auto iterAt = map.find(curBlock.bktraceHash);
-        if (iterAt == map.end())
+        auto iter = map.find(curBlock.bktraceHash);
+        if (iter == map.end())
         {
-            iterAt = map.emplace(curBlock.bktraceHash, DAVA::Vector<DAVA::MMBlock>()).first;
+            iter = map.emplace(curBlock.bktraceHash, Vector<MMBlock*>()).first;
         }
-        iterAt->second.emplace_back(curBlock);
+        iter->second.emplace_back(&curBlock);
     }
     blockMap.swap(map);
 }

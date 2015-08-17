@@ -1,62 +1,42 @@
-#include "SymbolsFilterModel.h"
-#include "SymbolsTreeModel.h"
-#include "GenericTreeNode.h"
+#include "Qt/DeviceInfo/DeviceInfo/Models/SymbolsFilterModel.h"
+#include "Qt/DeviceInfo/DeviceInfo/Models/SymbolsTreeModel.h"
 
 using namespace DAVA;
 
-SymbolsFilterModel::SymbolsFilterModel()
-    : hideStd(false)
-{
-
-}
-
 void SymbolsFilterModel::SetFilterString(const QString& filterString)
 {
-    String s = filterString.toStdString();
-    if (s != filter)
+    QString lowerCaseFilter = filterString.toLower();
+    if (lowerCaseFilter != filter)
     {
-        filter.swap(s);
+        filter = lowerCaseFilter;
         invalidateFilter();
     }
 }
 
-void SymbolsFilterModel::ToggleStd()
+void SymbolsFilterModel::ToggleHideStdAndUnresolved()
 {
-    hideStd = !hideStd;
+    hideStdAndUnresolved = !hideStdAndUnresolved;
     invalidateFilter();
 }
 
 bool SymbolsFilterModel::lessThan(const QModelIndex& left, const QModelIndex& right) const
 {
-    GenericTreeNode* pl = static_cast<GenericTreeNode*>(left.internalPointer());
-    GenericTreeNode* pr = static_cast<GenericTreeNode*>(right.internalPointer());
-    int ltype = pl->Type();
-    int rtype = pr->Type();
-    Q_ASSERT(ltype == rtype);
-
-    if (ltype == SymbolsTreeModel::TYPE_NAME)
-    {
-        SymbolsTreeModel::NameNode* l = static_cast<SymbolsTreeModel::NameNode*>(pl);
-        SymbolsTreeModel::NameNode* r = static_cast<SymbolsTreeModel::NameNode*>(pr);
-
-        return strcmp(l->Name(), r->Name()) < 0;
-    }
-    return false;
+    QAbstractItemModel* source = sourceModel();
+    QString nameLeft = source->data(left, Qt::DisplayRole).toString();
+    QString nameRight = source->data(right, Qt::DisplayRole).toString();
+    return nameLeft < nameRight;
 }
 
 bool SymbolsFilterModel::filterAcceptsRow(int source_row, const QModelIndex& source_parent) const
 {
-    QModelIndex index = sourceModel()->index(source_row, 0, source_parent);
-    GenericTreeNode* p = static_cast<GenericTreeNode*>(index.internalPointer());
-    if (p->Type() == SymbolsTreeModel::TYPE_NAME)
+    QAbstractItemModel* source = sourceModel();
+    QModelIndex index = source->index(source_row, 0, source_parent);
+    QString name = source->data(index, Qt::DisplayRole).toString().toLower();
+
+    bool decline = hideStdAndUnresolved && (name.startsWith("std::") || name.startsWith("#"));
+    if (!decline)
     {
-        SymbolsTreeModel::NameNode* node = static_cast<SymbolsTreeModel::NameNode*>(p);
-        String name = node->Name();
-        if (hideStd && (name.find("std::") == 0 || name.find("#_") == 0))
-        {
-            return false;
-        }
-        return name.find(filter) != String::npos;
+        decline = !name.contains(filter);
     }
-    return true;
+    return !decline;
 }

@@ -32,10 +32,6 @@
 
 using namespace DAVA;
 
-Branch::Branch(const char* aName)
-    : name(aName)
-{}
-
 Branch::~Branch()
 {
     for (auto child : children)
@@ -44,28 +40,20 @@ Branch::~Branch()
     }
 }
 
-Branch* Branch::FindInChildren(const char* name_) const
+Branch* Branch::FindInChildren(const String* name_) const
 {
-    for (auto child : children)
-    {
-        if (child->name == name_)
-        {
-            return child;
-        }
-    }
-    return nullptr;
+    auto iter = std::find_if(children.cbegin(), children.cend(), [name_](const Branch* o) -> bool {
+        return o->name == name_;
+    });
+    return iter != children.cend() ? *iter : nullptr;
 }
 
 int Branch::ChildIndex(Branch* child) const
 {
-    for (int i = 0, n = static_cast<size_t>(children.size());i < n;++i)
-    {
-        if (children[i] == child)
-        {
-            return i;
-        }
-    }
-    return -1;
+    auto iter = std::find_if(children.cbegin(), children.cend(), [child](const Branch* o) -> bool {
+        return o == child;
+    });
+    return iter != children.cend() ? static_cast<int>(std::distance(children.cbegin(), iter)) : -1;
 }
 
 void Branch::AppendChild(Branch* child)
@@ -78,7 +66,7 @@ void Branch::AppendChild(Branch* child)
     child->level = level + 1;
 }
 
-void Branch::UpdateStat(DAVA::uint32 allocSize, DAVA::uint32 blockCount)
+void Branch::UpdateStat(uint32 allocSize, uint32 blockCount)
 {
     allocByApp += allocSize;
     nblocks += blockCount;
@@ -92,27 +80,24 @@ void Branch::UpdateStat(DAVA::uint32 allocSize, DAVA::uint32 blockCount)
     }
 }
 
-Vector<MMBlock> Branch::GetMemoryBlocks() const
+Vector<MMBlock*> Branch::GetMemoryBlocks() const
 {
-    Vector<MMBlock> result;
+    Vector<MMBlock*> result;
     if (nblocks > 0)
     {
         result.reserve(nblocks);
         CollectBlocks(this, result);
 
-        std::sort(result.begin(), result.end(), [](const MMBlock& l, const MMBlock& r) -> bool {
-            return l.orderNo < r.orderNo;
+        std::sort(result.begin(), result.end(), [](const MMBlock* l, const MMBlock* r) -> bool {
+            return l->orderNo < r->orderNo;
         });
     }
     return result;
 }
 
-void Branch::CollectBlocks(const Branch* branch, Vector<MMBlock>& target)
+void Branch::CollectBlocks(const Branch* branch, Vector<MMBlock*>& target)
 {
-    for (auto& block : branch->mblocks)
-    {
-        target.emplace_back(block);
-    }
+    target.insert(target.end(), branch->mblocks.cbegin(), branch->mblocks.cend());
     for (auto child : branch->children)
     {
         CollectBlocks(child, target);
