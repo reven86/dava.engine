@@ -90,10 +90,18 @@ long init_device_and_swapchain_uap(void* panel, int width, int height)
 
 	if (SUCCEEDED(hr))
 	{
-		Microsoft::WRL::ComPtr<ISwapChainPanelNative> swapChainNative;
-		IInspectable* panelInspectable = (IInspectable*) reinterpret_cast<IInspectable*>(swapChainPanel);
-		panelInspectable->QueryInterface(__uuidof(ISwapChainPanelNative), (void **)&swapChainNative);
-		swapChainNative->SetSwapChain(swapChain.Get());
+// 		Microsoft::WRL::ComPtr<ISwapChainPanelNative> swapChainNative;
+// 		IInspectable* panelInspectable = (IInspectable*) reinterpret_cast<IInspectable*>(swapChainPanel);
+// 		panelInspectable->QueryInterface(__uuidof(ISwapChainPanelNative), (void **)&swapChainNative);
+// 		swapChainNative->SetSwapChain(swapChain.Get());
+
+		swapChainPanel->Dispatcher->RunAsync(::Windows::UI::Core::CoreDispatcherPriority::High, ref new Windows::UI::Core::DispatchedHandler([=]()
+		{
+			// Get backing native interface for SwapChainPanel
+			Microsoft::WRL::ComPtr<ISwapChainPanelNative> panelNative;
+			reinterpret_cast<IUnknown*>(swapChainPanel)->QueryInterface(IID_PPV_ARGS(&panelNative));
+			panelNative->SetSwapChain(swapChain.Get());
+		}, Platform::CallbackContext::Any));
 
 		Microsoft::WRL::ComPtr<ID3D11Texture2D> dxgiBackBuffer;
 		hr = swapChain->GetBuffer(0, IID_PPV_ARGS(&dxgiBackBuffer));// __uuidof(ID3D11Texture2D), (void**)(&_D3D11_SwapChainBuffer));
