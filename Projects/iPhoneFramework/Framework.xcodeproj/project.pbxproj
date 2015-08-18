@@ -931,8 +931,6 @@
 		32B074C619E53C0C0069981A /* UIPackageLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32B074BB19E53C0C0069981A /* UIPackageLoader.cpp */; };
 		32B074C719E53C0C0069981A /* UIPackageLoader.h in Headers */ = {isa = PBXBuildFile; fileRef = 32B074BC19E53C0C0069981A /* UIPackageLoader.h */; };
 		32B074C819E53C0C0069981A /* UIPackageLoader.h in Headers */ = {isa = PBXBuildFile; fileRef = 32B074BC19E53C0C0069981A /* UIPackageLoader.h */; };
-		32C37BA21B78BE9F00D2523E /* UIFlowLayoutComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32C37BA01B78BE9F00D2523E /* UIFlowLayoutComponent.cpp */; };
-		32C37BA31B78BE9F00D2523E /* UIFlowLayoutComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 32C37BA11B78BE9F00D2523E /* UIFlowLayoutComponent.h */; };
 		32E91F5B1B7B3097008325F9 /* UIPriorityStyleSheet.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32E91F591B7B3097008325F9 /* UIPriorityStyleSheet.cpp */; };
 		32E91F5C1B7B3097008325F9 /* UIPriorityStyleSheet.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32E91F591B7B3097008325F9 /* UIPriorityStyleSheet.cpp */; };
 		32E91F5D1B7B3097008325F9 /* UIPriorityStyleSheet.h in Headers */ = {isa = PBXBuildFile; fileRef = 32E91F5A1B7B3097008325F9 /* UIPriorityStyleSheet.h */; };
@@ -2120,8 +2118,6 @@
 		32B074BA19E53C0C0069981A /* UIPackage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIPackage.h; sourceTree = "<group>"; };
 		32B074BB19E53C0C0069981A /* UIPackageLoader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIPackageLoader.cpp; sourceTree = "<group>"; };
 		32B074BC19E53C0C0069981A /* UIPackageLoader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIPackageLoader.h; sourceTree = "<group>"; };
-		32C37BA01B78BE9F00D2523E /* UIFlowLayoutComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIFlowLayoutComponent.cpp; sourceTree = "<group>"; };
-		32C37BA11B78BE9F00D2523E /* UIFlowLayoutComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIFlowLayoutComponent.h; sourceTree = "<group>"; };
 		32E91F591B7B3097008325F9 /* UIPriorityStyleSheet.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = UIPriorityStyleSheet.cpp; path = Styles/UIPriorityStyleSheet.cpp; sourceTree = "<group>"; };
 		32E91F5A1B7B3097008325F9 /* UIPriorityStyleSheet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UIPriorityStyleSheet.h; path = Styles/UIPriorityStyleSheet.h; sourceTree = "<group>"; };
 		32F29AB31A7B733800EB2325 /* UIPackagesCache.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIPackagesCache.cpp; sourceTree = "<group>"; };
@@ -3208,8 +3204,6 @@
 		32491C4C1B4D1298004CE811 /* Layouts */ = {
 			isa = PBXGroup;
 			children = (
-				32C37BA01B78BE9F00D2523E /* UIFlowLayoutComponent.cpp */,
-				32C37BA11B78BE9F00D2523E /* UIFlowLayoutComponent.h */,
 				32491C4D1B4D1298004CE811 /* UIAnchorComponent.cpp */,
 				32491C4E1B4D1298004CE811 /* UIAnchorComponent.h */,
 				32491C4F1B4D1298004CE811 /* UILayoutSystem.cpp */,
@@ -5168,7 +5162,6 @@
 				FEA1D3D51ADF9CB5006B981A /* LibTgaHelper.h in Headers */,
 				B786014F1A08EB140041F817 /* StringUtils.h in Headers */,
 				E8B3CA8B16B9326E002BD35F /* LinearAnimation.h in Headers */,
-				32C37BA31B78BE9F00D2523E /* UIFlowLayoutComponent.h in Headers */,
 				E8B3CA8C16B9326E002BD35F /* NamedAnimationsList.h in Headers */,
 				E8B3CA9216B9326E002BD35F /* AutotestingSystem.h in Headers */,
 				50C7D5FD186082B100D8936D /* StaticOcclusionComponent.h in Headers */,
@@ -6565,7 +6558,6 @@
 				E8B3CD2016B9326E002BD35F /* UIStaticText.cpp in Sources */,
 				E8B3CD2216B9326E002BD35F /* UITextField.cpp in Sources */,
 				E8B3CD2516B9326E002BD35F /* UITextFieldiPhone.mm in Sources */,
-				32C37BA21B78BE9F00D2523E /* UIFlowLayoutComponent.cpp in Sources */,
 				E8B3CD2616B9326E002BD35F /* UIYamlLoader.cpp in Sources */,
 				32491C551B4D1298004CE811 /* UIAnchorComponent.cpp in Sources */,
 				E8B3CD2916B9326E002BD35F /* HTTPDownloader.mm in Sources */,
