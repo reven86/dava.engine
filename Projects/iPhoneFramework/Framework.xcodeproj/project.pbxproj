@@ -931,6 +931,10 @@
 		32B074C619E53C0C0069981A /* UIPackageLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32B074BB19E53C0C0069981A /* UIPackageLoader.cpp */; };
 		32B074C719E53C0C0069981A /* UIPackageLoader.h in Headers */ = {isa = PBXBuildFile; fileRef = 32B074BC19E53C0C0069981A /* UIPackageLoader.h */; };
 		32B074C819E53C0C0069981A /* UIPackageLoader.h in Headers */ = {isa = PBXBuildFile; fileRef = 32B074BC19E53C0C0069981A /* UIPackageLoader.h */; };
+		32B14A5E1B837B1300F8C026 /* UIIgnoreLayoutComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32B14A5C1B837B1300F8C026 /* UIIgnoreLayoutComponent.cpp */; };
+		32B14A5F1B837B1300F8C026 /* UIIgnoreLayoutComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32B14A5C1B837B1300F8C026 /* UIIgnoreLayoutComponent.cpp */; };
+		32B14A601B837B1300F8C026 /* UIIgnoreLayoutComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 32B14A5D1B837B1300F8C026 /* UIIgnoreLayoutComponent.h */; };
+		32B14A611B837B1300F8C026 /* UIIgnoreLayoutComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 32B14A5D1B837B1300F8C026 /* UIIgnoreLayoutComponent.h */; };
 		32E91F5B1B7B3097008325F9 /* UIPriorityStyleSheet.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32E91F591B7B3097008325F9 /* UIPriorityStyleSheet.cpp */; };
 		32E91F5C1B7B3097008325F9 /* UIPriorityStyleSheet.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32E91F591B7B3097008325F9 /* UIPriorityStyleSheet.cpp */; };
 		32E91F5D1B7B3097008325F9 /* UIPriorityStyleSheet.h in Headers */ = {isa = PBXBuildFile; fileRef = 32E91F5A1B7B3097008325F9 /* UIPriorityStyleSheet.h */; };
@@ -2118,6 +2122,8 @@
 		32B074BA19E53C0C0069981A /* UIPackage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIPackage.h; sourceTree = "<group>"; };
 		32B074BB19E53C0C0069981A /* UIPackageLoader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIPackageLoader.cpp; sourceTree = "<group>"; };
 		32B074BC19E53C0C0069981A /* UIPackageLoader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIPackageLoader.h; sourceTree = "<group>"; };
+		32B14A5C1B837B1300F8C026 /* UIIgnoreLayoutComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIIgnoreLayoutComponent.cpp; sourceTree = "<group>"; };
+		32B14A5D1B837B1300F8C026 /* UIIgnoreLayoutComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIIgnoreLayoutComponent.h; sourceTree = "<group>"; };
 		32E91F591B7B3097008325F9 /* UIPriorityStyleSheet.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = UIPriorityStyleSheet.cpp; path = Styles/UIPriorityStyleSheet.cpp; sourceTree = "<group>"; };
 		32E91F5A1B7B3097008325F9 /* UIPriorityStyleSheet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UIPriorityStyleSheet.h; path = Styles/UIPriorityStyleSheet.h; sourceTree = "<group>"; };
 		32F29AB31A7B733800EB2325 /* UIPackagesCache.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIPackagesCache.cpp; sourceTree = "<group>"; };
@@ -3204,6 +3210,8 @@
 		32491C4C1B4D1298004CE811 /* Layouts */ = {
 			isa = PBXGroup;
 			children = (
+				32B14A5C1B837B1300F8C026 /* UIIgnoreLayoutComponent.cpp */,
+				32B14A5D1B837B1300F8C026 /* UIIgnoreLayoutComponent.h */,
 				32491C4D1B4D1298004CE811 /* UIAnchorComponent.cpp */,
 				32491C4E1B4D1298004CE811 /* UIAnchorComponent.h */,
 				32491C4F1B4D1298004CE811 /* UILayoutSystem.cpp */,
@@ -4757,6 +4765,7 @@
 				02FD7F581924997C007762C0 /* FileSystem.h in Headers */,
 				02FD7F5A1924997C007762C0 /* KeyedArchive.h in Headers */,
 				02FD7F5B1924997C007762C0 /* KeyedArchiver.h in Headers */,
+				32B14A611B837B1300F8C026 /* UIIgnoreLayoutComponent.h in Headers */,
 				02FD7F5C1924997C007762C0 /* KeyedUnarchiver.h in Headers */,
 				02FD7F5D1924997C007762C0 /* LocalizationIPhone.h in Headers */,
 				D7FEF15819864E5C00B2C7AF /* BSDiff.h in Headers */,
@@ -5207,6 +5216,7 @@
 				E8B3CAB416B9326E002BD35F /* Message.h in Headers */,
 				E8B3CAB516B9326E002BD35F /* Meta.h in Headers */,
 				E8B3CAB616B9326E002BD35F /* ObjectCreator.h in Headers */,
+				32B14A601B837B1300F8C026 /* UIIgnoreLayoutComponent.h in Headers */,
 				32491C5B1B4D1298004CE811 /* UILayoutSystem.h in Headers */,
 				E8B3CAB816B9326E002BD35F /* ObjectFactory.h in Headers */,
 				32E91F5D1B7B3097008325F9 /* UIPriorityStyleSheet.h in Headers */,
@@ -6089,6 +6099,7 @@
 				02FD818F1924997C007762C0 /* UILoadingTransition.cpp in Sources */,
 				02FD81901924997C007762C0 /* UIMoveInTransition.cpp in Sources */,
 				E8525D281A30911400FDF76E /* RotationControllerSystem.cpp in Sources */,
+				32B14A5F1B837B1300F8C026 /* UIIgnoreLayoutComponent.cpp in Sources */,
 				02FD81911924997C007762C0 /* UIPopup.cpp in Sources */,
 				02FD81921924997C007762C0 /* UIScreen.cpp in Sources */,
 				02FD81931924997C007762C0 /* UIScreenManageriPhone.mm in Sources */,
@@ -6420,6 +6431,7 @@
 				E8B3CC3416B9326E002BD35F /* RenderOptions.cpp in Sources */,
 				E8B3CC3616B9326E002BD35F /* RenderResource.cpp in Sources */,
 				32B074C519E53C0C0069981A /* UIPackageLoader.cpp in Sources */,
+				32B14A5E1B837B1300F8C026 /* UIIgnoreLayoutComponent.cpp in Sources */,
 				E8B3CC3B16B9326E002BD35F /* Shader.cpp in Sources */,
 				E8B3CC3D16B9326E002BD35F /* ShaderDX.cpp in Sources */,
 				E8B3CC3E16B9326E002BD35F /* ShaderGL.cpp in Sources */,
