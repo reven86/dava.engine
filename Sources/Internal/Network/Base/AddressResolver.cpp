@@ -79,7 +79,7 @@ void AddressResolver::UnbindResolver(uv_getaddrinfo_t* handle, const AddressReso
 {
     LockGuard<Mutex> lock(handlesMutex);
 
-    auto& handleEntry = handles.find(handle);
+    const auto& handleEntry = handles.find(handle);
     if (handleEntry != handles.end() && handleEntry->second.resolver == resolver)
     {
         handleEntry->second.resolver = nullptr;
