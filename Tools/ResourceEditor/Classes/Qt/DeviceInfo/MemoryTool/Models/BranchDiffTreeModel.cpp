@@ -1,11 +1,11 @@
 #include "Debug/DVAssert.h"
 
-#include "BranchDiffTreeModel.h"
-#include "DataFormat.h"
+#include "Qt/DeviceInfo/MemoryTool/Models/BranchDiffTreeModel.h"
+#include "Qt/DeviceInfo/MemoryTool/Models/DataFormat.h"
 
-#include "Classes/Qt/DeviceInfo/DeviceInfo/MemorySnapshot.h"
-#include "../Branch.h"
-#include "../BranchDiff.h"
+#include "Qt/DeviceInfo/MemoryTool/MemorySnapshot.h"
+#include "Qt/DeviceInfo/MemoryTool/Branch.h"
+#include "Qt/DeviceInfo/MemoryTool/BranchDiff.h"
 
 #include <QColor>
 

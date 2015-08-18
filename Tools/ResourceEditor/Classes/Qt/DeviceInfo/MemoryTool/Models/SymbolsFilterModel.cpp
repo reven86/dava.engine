@@ -1,5 +1,5 @@
-#include "Qt/DeviceInfo/DeviceInfo/Models/SymbolsFilterModel.h"
-#include "Qt/DeviceInfo/DeviceInfo/Models/SymbolsListModel.h"
+#include "Qt/DeviceInfo/MemoryTool/Models/SymbolsFilterModel.h"
+#include "Qt/DeviceInfo/MemoryTool/Models/SymbolsListModel.h"
 
 using namespace DAVA;
 

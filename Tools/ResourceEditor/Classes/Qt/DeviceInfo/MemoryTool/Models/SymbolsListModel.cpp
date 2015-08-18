@@ -1,5 +1,5 @@
-#include "Qt/DeviceInfo/DeviceInfo/BacktraceSymbolTable.h"
-#include "Qt/DeviceInfo/DeviceInfo/Models/SymbolsListModel.h"
+#include "Qt/DeviceInfo/MemoryTool/BacktraceSymbolTable.h"
+#include "Qt/DeviceInfo/MemoryTool/Models/SymbolsListModel.h"
 
 using namespace DAVA;
 

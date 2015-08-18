@@ -1,16 +1,16 @@
 #include "Debug/DVAssert.h"
 #include "Platform/SystemTimer.h"
 
-#include "SnapshotViewerWidget.h"
+#include "Qt/DeviceInfo/MemoryTool/SnapshotViewerWidget.h"
 
-#include "Classes/Qt/DeviceInfo/DeviceInfo/Models/SymbolsListModel.h"
-#include "Classes/Qt/DeviceInfo/DeviceInfo/Models/SymbolsFilterModel.h"
-#include "Classes/Qt/DeviceInfo/DeviceInfo/Models/BranchTreeModel.h"
-#include "Classes/Qt/DeviceInfo/DeviceInfo/Models/BlockListModel.h"
+#include "Qt/DeviceInfo/MemoryTool/Models/SymbolsListModel.h"
+#include "Qt/DeviceInfo/MemoryTool/Models/SymbolsFilterModel.h"
+#include "Qt/DeviceInfo/MemoryTool/Models/BranchTreeModel.h"
+#include "Qt/DeviceInfo/MemoryTool/Models/BlockListModel.h"
 
-#include "Classes/Qt/DeviceInfo/DeviceInfo/Branch.h"
-#include "Classes/Qt/DeviceInfo/DeviceInfo/ProfilingSession.h"
-#include "Classes/Qt/DeviceInfo/DeviceInfo/MemorySnapshot.h"
+#include "Qt/DeviceInfo/MemoryTool/Branch.h"
+#include "Qt/DeviceInfo/MemoryTool/ProfilingSession.h"
+#include "Qt/DeviceInfo/MemoryTool/MemorySnapshot.h"
 
 #include <QDebug>
 #include <QFileDialog>

@@ -3,15 +3,15 @@
 
 #include "SnapshotDiffViewerWidget.h"
 
-#include "Models/SymbolsListModel.h"
-#include "Models/SymbolsFilterModel.h"
-#include "Models/BranchDiffTreeModel.h"
-#include "Models/BlockListModel.h"
+#include "Qt/DeviceInfo/MemoryTool/Models/SymbolsListModel.h"
+#include "Qt/DeviceInfo/MemoryTool/Models/SymbolsFilterModel.h"
+#include "Qt/DeviceInfo/MemoryTool/Models/BranchDiffTreeModel.h"
+#include "Qt/DeviceInfo/MemoryTool/Models/BlockListModel.h"
 
-#include "Classes/Qt/DeviceInfo/DeviceInfo/Branch.h"
-#include "Classes/Qt/DeviceInfo/DeviceInfo/BranchDiff.h"
-#include "Classes/Qt/DeviceInfo/DeviceInfo/ProfilingSession.h"
-#include "Classes/Qt/DeviceInfo/DeviceInfo/MemorySnapshot.h"
+#include "Qt/DeviceInfo/MemoryTool/Branch.h"
+#include "Qt/DeviceInfo/MemoryTool/BranchDiff.h"
+#include "Qt/DeviceInfo/MemoryTool/ProfilingSession.h"
+#include "Qt/DeviceInfo/MemoryTool/MemorySnapshot.h"
 
 #include <QDebug>
 #include <QFileDialog>
