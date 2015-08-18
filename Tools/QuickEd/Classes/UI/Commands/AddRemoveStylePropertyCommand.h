@@ -27,28 +27,29 @@
  =====================================================================================*/
 
 
-#ifndef __QUICKED_DEPENDED_ON_LAYOUT_PROPERTY_H__
-#define __QUICKED_DEPENDED_ON_LAYOUT_PROPERTY_H__
+#ifndef __QUICKED_ADD_REMOVE_STYLE_PROPERTY_COMMAND_H__
+#define __QUICKED_ADD_REMOVE_STYLE_PROPERTY_COMMAND_H__
 
-#include "IntrospectionProperty.h"
+#include <QUndoCommand>
 
-class DependedOnLayoutProperty : public IntrospectionProperty
+class PackageNode;
+class StyleSheetNode;
+class StyleSheetProperty;
+
+class AddRemoveStylePropertyCommand : public QUndoCommand
 {
 public:
-    DependedOnLayoutProperty(DAVA::BaseObject *object, const DAVA::InspMember *member, const DependedOnLayoutProperty *sourceProperty, eCloneType cloneType);
+    AddRemoveStylePropertyCommand(PackageNode *root, StyleSheetNode *node, StyleSheetProperty *property, bool add, QUndoCommand *parent = nullptr);
+    virtual ~AddRemoveStylePropertyCommand();
     
-protected:
-    virtual ~DependedOnLayoutProperty();
+    void redo() override;
+    void undo() override;
     
-public:
-    void RestoreSourceValue();
-    
-    DAVA::VariantType GetValue() const override;
-protected:
-    void ApplyValue(const DAVA::VariantType &value) override;
-    
-protected:
-    DAVA::VariantType sourceValue;
+private:
+    PackageNode *root;
+    StyleSheetNode *node;
+    StyleSheetProperty *property;
+    bool add;
 };
 
-#endif // __QUICKED_DEPENDED_ON_LAYOUT_PROPERTY_H__
+#endif // __QUICKED_ADD_REMOVE_STYLE_PROPERTY_COMMAND_H__

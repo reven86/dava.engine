@@ -27,74 +27,44 @@
  =====================================================================================*/
 
 
-#include "StyleSheetNode.h"
-#include "PackageVisitor.h"
+#include "InsertRemoveStyleCommand.h"
 
-#include "Model/ControlProperties/StyleSheetRootProperty.h"
-#include "Model/ControlProperties/StyleSheetSelectorProperty.h"
-#include "Model/ControlProperties/StyleSheetProperty.h"
-#include "Model/ControlProperties/SectionProperty.h"
-
-#include "UI/Styles/UIStyleSheet.h"
+#include "Model/PackageHierarchy/StyleSheetNode.h"
+#include "Model/PackageHierarchy/StyleSheetsNode.h"
+#include "Model/PackageHierarchy/PackageNode.h"
 
 using namespace DAVA;
 
-StyleSheetNode::StyleSheetNode(const DAVA::Vector<DAVA::UIStyleSheetSelectorChain> &selectorChains, const DAVA::Vector<DAVA::UIStyleSheetProperty> &properties)
-    : PackageBaseNode(nullptr)
-    , rootProperty(nullptr)
+InsertRemoveStyleCommand::InsertRemoveStyleCommand(PackageNode *_root, StyleSheetNode *_node, StyleSheetsNode *_dest, int _index, bool _insert, QUndoCommand *parent)
+    : QUndoCommand(parent)
+    , root(SafeRetain(_root))
+    , node(SafeRetain(_node))
+    , dest(SafeRetain(_dest))
+    , index(_index)
+    , insert(_insert)
 {
-    rootProperty = new StyleSheetRootProperty(this, selectorChains, properties);
-    name = rootProperty->GetSelectorsAsString();
+    
 }
 
-StyleSheetNode::~StyleSheetNode()
+InsertRemoveStyleCommand::~InsertRemoveStyleCommand()
 {
-    SafeRelease(rootProperty);
+    SafeRelease(root);
+    SafeRelease(node);
+    SafeRelease(dest);
 }
 
-StyleSheetNode *StyleSheetNode::Clone() const
+void InsertRemoveStyleCommand::redo()
 {
-    Vector<UIStyleSheetSelectorChain> selectors = rootProperty->CollectStyleSheetSelectors();
-    Vector<UIStyleSheetProperty> properties = rootProperty->CollectStyleSheetProperties();
-    return new StyleSheetNode(selectors, properties);
+    if (insert)
+        root->InsertStyle(node, dest, index);
+    else
+        root->RemoveStyle(node, dest);
 }
 
-int StyleSheetNode::GetCount() const
+void InsertRemoveStyleCommand::undo()
 {
-    return 0;
-}
-
-PackageBaseNode *StyleSheetNode::Get(int index) const
-{
-    return nullptr;
-}
-
-void StyleSheetNode::Accept(PackageVisitor *visitor)
-{
-    visitor->VisitStyleSheet(this);
-}
-
-String StyleSheetNode::GetName() const
-{
-    return name;
-}
-
-void StyleSheetNode::UpdateName()
-{
-    name = rootProperty->GetSelectorsAsString();
-}
-
-bool StyleSheetNode::CanRemove() const
-{
-    return !IsReadOnly();
-}
-
-bool StyleSheetNode::CanCopy() const
-{
-    return true;
-}
-
-StyleSheetRootProperty *StyleSheetNode::GetRootProperty() const
-{
-    return rootProperty;
+    if (insert)
+        root->RemoveStyle(node, dest);
+    else
+        root->InsertStyle(node, dest, index);
 }
