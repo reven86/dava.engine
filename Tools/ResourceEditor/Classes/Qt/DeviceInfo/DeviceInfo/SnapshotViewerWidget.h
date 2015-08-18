@@ -10,7 +10,7 @@ class QTabWidget;
 class QTreeView;
 class QListView;
 
-class SymbolsTreeModel;
+class SymbolsListModel;
 class SymbolsFilterModel;
 
 class BranchTreeModel;
@@ -42,7 +42,7 @@ private:
 private:
     const MemorySnapshot* snapshot;
 
-    SymbolsTreeModel* symbolsTreeModel = nullptr;
+    SymbolsListModel* symbolsListModel = nullptr;
     SymbolsFilterModel* symbolsFilterModel = nullptr;
 
     BranchTreeModel* branchTreeModel = nullptr;

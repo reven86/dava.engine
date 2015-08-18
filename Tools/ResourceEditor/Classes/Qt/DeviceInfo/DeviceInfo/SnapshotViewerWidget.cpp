@@ -3,7 +3,7 @@
 
 #include "SnapshotViewerWidget.h"
 
-#include "Classes/Qt/DeviceInfo/DeviceInfo/Models/SymbolsTreeModel.h"
+#include "Classes/Qt/DeviceInfo/DeviceInfo/Models/SymbolsListModel.h"
 #include "Classes/Qt/DeviceInfo/DeviceInfo/Models/SymbolsFilterModel.h"
 #include "Classes/Qt/DeviceInfo/DeviceInfo/Models/BranchTreeModel.h"
 #include "Classes/Qt/DeviceInfo/DeviceInfo/Models/BlockListModel.h"
@@ -37,7 +37,7 @@ SnapshotViewerWidget::SnapshotViewerWidget(const MemorySnapshot* snapshot_, QWid
 SnapshotViewerWidget::~SnapshotViewerWidget()
 {
     delete symbolsFilterModel;
-    delete symbolsTreeModel;
+    delete symbolsListModel;
     delete branchTreeModel;
     delete blockListModel;
 }
@@ -56,9 +56,9 @@ void SnapshotViewerWidget::Init()
 
 void SnapshotViewerWidget::InitSymbolsView()
 {
-    symbolsTreeModel = new SymbolsTreeModel(*snapshot->SymbolTable());
+    symbolsListModel = new SymbolsListModel(*snapshot->SymbolTable());
     symbolsFilterModel = new SymbolsFilterModel;
-    symbolsFilterModel->setSourceModel(symbolsTreeModel);
+    symbolsFilterModel->setSourceModel(symbolsListModel);
     symbolsFilterModel->sort(0);
 
     symbolsTree = new QTreeView;
@@ -151,7 +151,7 @@ Vector<const String*> SnapshotViewerWidget::GetSelectedSymbols()
             QModelIndex index = symbolsFilterModel->mapToSource(i);
             if (index.isValid())
             {
-                const String* name = symbolsTreeModel->Symbol(index.row());
+                const String* name = symbolsListModel->Symbol(index.row());
                 result.push_back(name);
             }
         }

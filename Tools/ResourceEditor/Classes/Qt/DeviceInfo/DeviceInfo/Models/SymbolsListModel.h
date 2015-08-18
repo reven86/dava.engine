@@ -6,11 +6,11 @@
 
 class BacktraceSymbolTable;
 
-class SymbolsTreeModel : public QAbstractListModel
+class SymbolsListModel : public QAbstractListModel
 {
 public:
-    SymbolsTreeModel(const BacktraceSymbolTable& symbolTable, QObject* parent = nullptr);
-    virtual ~SymbolsTreeModel();
+    SymbolsListModel(const BacktraceSymbolTable& symbolTable, QObject* parent = nullptr);
+    virtual ~SymbolsListModel();
 
     const DAVA::String* Symbol(int row) const;
 

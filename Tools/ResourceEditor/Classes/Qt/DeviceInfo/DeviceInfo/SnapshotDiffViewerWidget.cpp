@@ -3,7 +3,7 @@
 
 #include "SnapshotDiffViewerWidget.h"
 
-#include "Models/SymbolsTreeModel.h"
+#include "Models/SymbolsListModel.h"
 #include "Models/SymbolsFilterModel.h"
 #include "Models/BranchDiffTreeModel.h"
 #include "Models/BlockListModel.h"
@@ -41,7 +41,7 @@ SnapshotDiffViewerWidget::SnapshotDiffViewerWidget(const MemorySnapshot* snapsho
 SnapshotDiffViewerWidget::~SnapshotDiffViewerWidget()
 {
     delete symbolsFilterModel;
-    delete symbolsTreeModel;
+    delete symbolsListModel;
     delete branchTreeModel;
     delete blockListModel1;
     delete blockListModel2;
@@ -61,9 +61,9 @@ void SnapshotDiffViewerWidget::Init()
 
 void SnapshotDiffViewerWidget::InitSymbolsView()
 {
-    symbolsTreeModel = new SymbolsTreeModel(*snapshot1->SymbolTable());
+    symbolsListModel = new SymbolsListModel(*snapshot1->SymbolTable());
     symbolsFilterModel = new SymbolsFilterModel;
-    symbolsFilterModel->setSourceModel(symbolsTreeModel);
+    symbolsFilterModel->setSourceModel(symbolsListModel);
     symbolsFilterModel->sort(0);
 
     symbolsTree = new QTreeView;
@@ -174,7 +174,7 @@ Vector<const String*> SnapshotDiffViewerWidget::GetSelectedSymbols()
             QModelIndex index = symbolsFilterModel->mapToSource(i);
             if (index.isValid())
             {
-                const String* name = symbolsTreeModel->Symbol(index.row());
+                const String* name = symbolsListModel->Symbol(index.row());
                 result.push_back(name);
             }
         }
