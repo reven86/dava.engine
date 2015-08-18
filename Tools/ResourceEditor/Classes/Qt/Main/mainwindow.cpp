@@ -131,6 +131,8 @@
 #include "Scene3D/Components/Controller/WASDControllerComponent.h"
 #include "Scene3D/Components/Controller/RotationControllerComponent.h"
 
+#include "Scene3D/Systems/StaticOcclusionSystem.h"
+
 #include "QtTools/FileDialog/FileDialog.h"
 
 

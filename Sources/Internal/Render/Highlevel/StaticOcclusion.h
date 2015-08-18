@@ -88,7 +88,10 @@ public:
     ~StaticOcclusion();
                 
     void StartBuildOcclusion(StaticOcclusionData * currentData, RenderSystem * renderSystem, Landscape * landscape);                       
-    void ProccessBlock();                               
+    bool ProccessBlock();    //return true if finished building
+    
+    uint32 GetCurrentStepsCount();
+    uint32 GetTotalStepsCount();
     
 
 private:    
@@ -114,10 +117,7 @@ private:
     Vector<StaticOcclusionFrameResult> occlusionFrameResults;
     
     RenderSystem * renderSystem;    
-    Landscape * landscape;
-
-
-
+    Landscape * landscape;        
     
 };
 

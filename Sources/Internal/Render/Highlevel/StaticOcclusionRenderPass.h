@@ -40,6 +40,7 @@
 namespace DAVA
 {
 
+struct StaticOcclusionFrameResult;
 
 class StaticOcclusionRenderPass : public RenderPass
 {
@@ -47,8 +48,7 @@ public:
     StaticOcclusionRenderPass(const FastName & name);
     ~StaticOcclusionRenderPass();
 
-    inline void SetIndex(int32 side, int32 i, int32 j, int32 k);
-    inline void SetOcclusionCamera(Camera * camera);
+    inline void SetIndex(int32 side, int32 i, int32 j, int32 k);    
     void DrawOcclusionFrame(RenderSystem * renderSystem, Camera *occlusionCamera, StaticOcclusionFrameResult& target);
     static bool CompareFunction(const RenderBatch * a, const RenderBatch *  b);
     

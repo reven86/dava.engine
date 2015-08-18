@@ -101,13 +101,12 @@ AABBox3 StaticOcclusion::GetCellBox(uint32 x, uint32 y, uint32 z)
     return blockBBox;
 }
     
-void StaticOcclusion::ProccessBlock()
+bool StaticOcclusion::ProccessBlock()
 {
     ProcessRecorderQueries();
     if (currentFrameZ >= zBlockCount)
     {
-
-        return;
+        return true;
     }
     RenderCurrentBlock();
     
@@ -128,6 +127,18 @@ void StaticOcclusion::ProccessBlock()
     remain -= (currentFrameY * xBlockCount);
     remain -= (currentFrameZ * xBlockCount * yBlockCount);
     return remain;*/
+
+    return false;
+}
+
+uint32 StaticOcclusion::GetCurrentStepsCount()
+{
+    return currentFrameX + (currentFrameY * xBlockCount) + (currentFrameZ * xBlockCount * yBlockCount);
+    
+}
+uint32 StaticOcclusion::GetTotalStepsCount()
+{
+    return xBlockCount * yBlockCount * zBlockCount;
 }
     
 void StaticOcclusion::RenderCurrentBlock()
@@ -235,9 +246,7 @@ void StaticOcclusion::RenderCurrentBlock()
                     {
                         camera->SetUp(Vector3(0.0f, 0.0f, 1.0f));
                         camera->SetLeft(Vector3(1.0f, 0.0f, 0.0f));
-                    }                    
-
-                    staticOcclusionRenderPass->SetOcclusionCamera(camera);
+                    }                                        
                     
 
                     StaticOcclusionFrameResult res;

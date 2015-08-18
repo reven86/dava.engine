@@ -38,77 +38,12 @@ namespace DAVA
 {
 class Camera;
 class RenderObject;
-class StaticOcclusion;
 class StaticOcclusionComponent;
 class StaticOcclusionData;
 class StaticOcclusionDataComponent;
 class StaticOcclusionDebugDrawComponent;
 class NMaterial;
 class PolygonGroup;
-
-class MessageQueue
-{
-public:
-    MessageQueue();
-    
-    void DispatchMessages();
-    void AddMessage(const Message & message);
-private:
-    std::queue<Message> messageQueue;
-};
-    
-// System that allow to build occlusion information. Required only in editor.
-class StaticOcclusionBuildSystem : public SceneSystem
-{
-    enum eIndexRenew
-    {
-        RENEW_OCCLUSION_INDICES,
-        LEAVE_OLD_INDICES,
-    };
-public:
-    StaticOcclusionBuildSystem(Scene * scene);
-    virtual ~StaticOcclusionBuildSystem();
-    
-    virtual void AddEntity(Entity * entity);
-    virtual void RemoveEntity(Entity * entity);
-    virtual void Process(float32 timeElapsed);
-    void ImmediateEvent(Component * component, uint32 event) override;
-    
-    inline void SetCamera(Camera * camera);
-
-    void Build();
-    void RebuildCurrentCell();
-    void Cancel();
-
-    bool IsInBuild() const;
-    uint32 GetBuildStatus() const;
-
-private:
-    MessageQueue messageQueue;
-    
-    
-    void StartBuildOcclusion(BaseObject * bo, void * messageData, void * callerData);
-    void OcclusionBuildStep(BaseObject * bo, void * messageData, void * callerData);
-    void FinishBuildOcclusion(BaseObject * bo, void * messageData, void * callerData);
-    void SceneForceLod(int32 layerIndex);
-
-    void CollectEntitiesForOcclusionRecursively(Vector<Entity*>& dest, Entity *entity);
-    void UpdateMaterialsForOcclusionRecursively(Entity *entity);
-    void RestoreOcclusionMaterials();
-    
-    Camera * camera;
-    Vector<Entity*> entities;
-    StaticOcclusion * staticOcclusion;
-    StaticOcclusionDataComponent * componentInProgress;
-    uint32 activeIndex;
-    uint32 buildStepsCount;
-    uint32 buildStepRemains;
-    eIndexRenew renewIndex;
-    
-#if RHI_COMPLETE
-    Map<NMaterial* , RenderStateData> originalRenderStateData;
-#endif // RHI_COMPLETE
-};
     
 // System that allow to use occlusion information during rendering
 class StaticOcclusionSystem : public SceneSystem
@@ -179,10 +114,6 @@ private:
     uint32 vertexLayoutId;
 };
     
-inline void StaticOcclusionBuildSystem::SetCamera(Camera * _camera)
-{
-    camera = _camera;
-}
 
 inline void StaticOcclusionSystem::SetCamera(Camera * _camera)
 {
