@@ -27,6 +27,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
 #include "Network/SimpleNetworking/SimpleNetCore.h"
+#include "Network/SimpleNetworking/Private/SimpleAbstractSocket.h"
 
 namespace DAVA
 {
@@ -39,9 +40,16 @@ public:
     unsigned GetAvailableConnectionRoles() override;
     IConnectionPtr CreateConnection(ConnectionRole role, const Endpoint& endPoint) override;
 
+    void Cancel();
+
 private:
     IConnectionPtr CreateServerConnection(const Endpoint& endPoint);
     IConnectionPtr CreateClientConnection(const Endpoint& endPoint);
+
+    template <typename T>
+    std::shared_ptr<T> CreateSocket(const Endpoint& endPoint);
+
+    std::vector<std::weak_ptr<ISimpleAbstractSocket>> sockets;
 };
     
 }  // namespace Net

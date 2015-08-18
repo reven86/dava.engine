@@ -30,6 +30,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Network/SimpleNetworking/Private/ConnectionManager.h"
 
 #include "Network/SimpleNetworking/Private/Connection.h"
+#include "Network/SimpleNetworking/Private/SimpleTcpClient.h"
 #include "Network/SimpleNetworking/Private/SimpleTcpServer.h"
 
 namespace DAVA
@@ -39,11 +40,7 @@ namespace Net
     
 unsigned ConnectionManager::GetAvailableConnectionRoles()
 {
-#if WINAPI_FAMILY_PARTITION(WINAPI_FAMILY_PHONE_APP)
-    return kServerRole;
-#else
     return kServerRole | kClientRole;
-#endif
 }
 
 IConnectionPtr ConnectionManager::CreateConnection(ConnectionRole role, const Endpoint& endPoint)
@@ -53,19 +50,46 @@ IConnectionPtr ConnectionManager::CreateConnection(ConnectionRole role, const En
     return CreateServerConnection(endPoint);
 }
 
+void ConnectionManager::Cancel() 
+{
+    for (auto&& x : sockets)
+    {
+        ISimpleAbstractSocketPtr socket = x.lock();
+        if (socket)
+        {
+            socket->Shutdown();
+        }
+    }
+}
+
 IConnectionPtr ConnectionManager::CreateServerConnection(const Endpoint& endPoint)
 {
     //create socket, listen connection and accept it
-    auto socket = std::make_unique<SimpleTcpServer>();
-    socket->Listen(endPoint);
-    socket->Accept();
+    auto socket = CreateSocket<SimpleTcpServer>(endPoint);
+    if (!socket->Listen() || !socket->Accept())
+        return IConnectionPtr();
 
-    return MakeRefPtr<Connection>(std::move(socket));
+    return MakeRefPtr<Connection>(socket);
 }
 
 IConnectionPtr ConnectionManager::CreateClientConnection(const Endpoint& endPoint)
 {
-    return IConnectionPtr();
+    //create socket and connect it
+    auto socket = CreateSocket<SimpleTcpClient>(endPoint);
+    if (!socket->Connect())
+        return IConnectionPtr();
+
+    return MakeRefPtr<Connection>(socket);
+}
+
+template <typename T>
+std::shared_ptr<T> ConnectionManager::CreateSocket(const Endpoint& endPoint)
+{
+    static_assert(std::is_base_of<ISimpleAbstractSocket, T>::value, "Not a ISimpleAbstractSocket");
+    auto socket = std::make_shared<T>(endPoint);
+
+    sockets.push_back(socket);
+    return socket;
 }
 
 }  // namespace Net

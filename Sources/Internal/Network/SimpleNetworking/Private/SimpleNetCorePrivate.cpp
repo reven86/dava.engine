@@ -36,6 +36,12 @@ namespace DAVA
 namespace Net
 {
 
+SimpleNetCorePrivate::~SimpleNetCorePrivate()
+{
+    connectionManager.Cancel();
+    UnregisterAllServices();
+}
+
 size_t SimpleNetCorePrivate::RegisterService(std::unique_ptr<NetService>&& service,
                                             IConnectionManager::ConnectionRole role,
                                             const Endpoint& endPoint,

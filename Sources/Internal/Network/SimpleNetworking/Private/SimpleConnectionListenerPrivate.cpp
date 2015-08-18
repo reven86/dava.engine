@@ -49,6 +49,12 @@ ConnectionListenerPrivate::ConnectionListenerPrivate(const ConnectionWaitFunctio
     thread = RefPtr<Thread>(Thread::Create(threadFunc));
 }
 
+ConnectionListenerPrivate::~ConnectionListenerPrivate()
+{
+    thread->Cancel();
+    thread->Join();
+}
+
 ConnectionListenerPrivate::ConnectionListenerPrivate(IConnectionPtr& conn, 
                                                      NotificationType notifType) 
     : notificationType(notifType)
@@ -98,7 +104,7 @@ void ConnectionListenerPrivate::Start(IConnectionPtr& conn)
 {
     Array<char, 1024> buffer;
 
-    while (conn->GetChannelState() == IReadOnlyConnection::ChannelState::kConnected)
+    while (conn && conn->GetChannelState() == IReadOnlyConnection::ChannelState::kConnected)
     {
         size_t read = conn->ReadSome(buffer.data(), buffer.size());
         if (read == 0)

@@ -64,17 +64,17 @@ IConnectionPtr ConnectionListener::GetConnection() const
 
 void ConnectionListener::AddConnectionCallback(const ConnectionCallback& cb)
 {
-    return pimpl->AddConnectionCallback(cb);
+    pimpl->AddConnectionCallback(cb);
 }
 
 void ConnectionListener::AddDataReceiveCallback(const DataReceiveCallback& cb)
 {
-    return pimpl->AddDataReceiveCallback(cb);
+    pimpl->AddDataReceiveCallback(cb);
 }
 
 void ConnectionListener::Start()
 {
-    return pimpl->Start();
+    pimpl->Start();
 }
 
 }  // namespace Net

@@ -43,13 +43,15 @@ struct ISimpleAbstractSocket
     virtual ~ISimpleAbstractSocket() {}
     
     virtual const Endpoint& GetEndpoint() = 0;
-    virtual void Shutdown() = 0;
+    virtual bool Shutdown() = 0;
     
     virtual size_t Send(const char* buf, size_t bufSize) = 0;
     virtual size_t Recv(char* buf, size_t bufSize, bool recvAll = false) = 0;
     virtual bool IsConnectionEstablished() = 0;
+
+    virtual bool IsValid() = 0;
 };
-using ISimpleAbstractSocketPtr = std::unique_ptr<ISimpleAbstractSocket>;
+using ISimpleAbstractSocketPtr = std::shared_ptr<ISimpleAbstractSocket>;
 
 }  // namespace Net
 }  // namespace DAVA

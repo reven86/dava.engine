@@ -28,7 +28,7 @@
 
 
 #include "Network/SimpleNetworking/Private/LogNetworkError.h"
-#include "Network/SimpleNetworking/Private/SimpleTcpServer.h"
+#include "Network/SimpleNetworking/Private/SimpleTcpSocket.h"
 #include <libuv/uv.h>
 
 namespace DAVA
@@ -36,68 +36,97 @@ namespace DAVA
 namespace Net
 {
 
-SimpleTcpServer::SimpleTcpServer(const Endpoint& endPoint)
-    : SimpleTcpSocket(endPoint)
+SimpleTcpSocket::SimpleTcpSocket(const Endpoint& endPoint)
+    : socketEndPoint(endPoint)
 {
-}
-
-bool SimpleTcpServer::Listen()
-{
+    socketId = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    
     if (socketId == INVALID_SOCKET)
     {
-        DVASSERT_MSG(false, "Unable to listen server - it is invalid");
-        return false;
+        LogNetworkError("Failed to create socket");
     }
-    
-    if (!Bind())
-    {
-        return false;
-    }
-    
-    int listenRes = ::listen(socketId, 1);
-    if (listenRes == SOCKET_ERROR)
-    {   
-        LogNetworkError("Failed to listen socket");
-        Close();
-    }
-    
-    return listenRes != SOCKET_ERROR;
 }
 
-bool SimpleTcpServer::Accept()
+SimpleTcpSocket::~SimpleTcpSocket()
 {
+    Shutdown();
+    Close();
+}
+
+bool SimpleTcpSocket::Shutdown()
+{
+    if (!IsConnectionEstablished())
+    {
+        if (socketId != INVALID_SOCKET)
+        {
+            Close();
+            return true;
+        }
+        return false;
+    }
+
     if (socketId == INVALID_SOCKET)
     {
-        DVASSERT_MSG(false, "Unable to accept server - it is invalid");
+        DVASSERT_MSG(false, "Unable to shutdown server - it is invalid");
         return false;
     }
     
-    SOCKET acceptSocket = ::accept(socketId, nullptr, nullptr);
-    if (acceptSocket == INVALID_SOCKET)
+    int res = ::shutdown(socketId, SD_BOTH);
+    if (res == SOCKET_ERROR)
     {
-        LogNetworkError("Failed to accept socket");
-        return false;
+        LogNetworkError("Failed to shutdown connection");
     }
-    
-    ::closesocket(socketId);
-    socketId = acceptSocket;
-    connectionEstablished = true;
 
+    Close();
     return true;
 }
 
-bool SimpleTcpServer::Bind()
+size_t SimpleTcpSocket::Send(const char* buf, size_t bufSize)
 {
-    const sockaddr* addr = reinterpret_cast<const sockaddr*>(socketEndPoint.CastToSockaddrIn());
+    if (!IsConnectionEstablished())
+        return 0;
 
-    int bindRes = ::bind(socketId, addr, socketEndPoint.Size());
-    if (bindRes == SOCKET_ERROR)
+    int size = ::send(socketId, buf, bufSize, 0);
+    
+    if (size == SOCKET_ERROR)
     {
-        LogNetworkError("Failed to bind socket");
+        LogNetworkError("Failed to send data");
         Close();
-    }
 
-    return bindRes != SOCKET_ERROR;
+        return 0;
+    }
+    
+    return static_cast<size_t>(size);
+}
+
+size_t SimpleTcpSocket::Recv(char* buf, size_t bufSize, bool recvAll)
+{
+    if (!IsConnectionEstablished())
+        return 0;
+
+    int flags = recvAll ? MSG_WAITALL : 0;
+    int size = ::recv(socketId, buf, bufSize, flags);
+    
+    if (size == SOCKET_ERROR)
+    {
+        LogNetworkError("Failed to receive data");
+        Close();
+
+        return 0;
+    }
+    
+    return static_cast<size_t>(size);
+}
+
+void SimpleTcpSocket::Close()
+{
+    if (socketId != INVALID_SOCKET)
+    {
+        ::closesocket(socketId);
+        socketId = INVALID_SOCKET;
+        connectionEstablished = false;
+        socketEndPoint = Endpoint();
+    }
 }
     
 }  // namespace Net

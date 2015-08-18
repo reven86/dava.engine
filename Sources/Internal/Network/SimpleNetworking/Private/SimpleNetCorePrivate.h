@@ -42,6 +42,8 @@ namespace Net
 class SimpleNetCorePrivate
 {
 public:
+    ~SimpleNetCorePrivate();
+
     IConnectionManager* GetConnectionManager();
 
     bool IsServiceRegistered(size_t serviceId) const;

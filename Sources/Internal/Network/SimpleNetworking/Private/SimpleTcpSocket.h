@@ -27,39 +27,41 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_CONNECTION_H__
-#define __DAVAENGINE_CONNECTION_H__
+#ifndef __DAVAENGINE_SIMPLE_TCP_SOCKET_H__
+#define __DAVAENGINE_SIMPLE_TCP_SOCKET_H__
 
-#include "Concurrency/Mutex.h"
-#include "Network/SimpleNetworking/IConnection.h"
+#include "Network/Base/Endpoint.h"
 #include "Network/SimpleNetworking/Private/SimpleAbstractSocket.h"
 
 namespace DAVA
 {
 namespace Net
 {
-    
-class Connection : public IConnection
+
+class SimpleTcpSocket : public ISimpleAbstractSocket
 {
 public:
-    Connection(const ISimpleAbstractSocketPtr& abstractSocket);
+    SimpleTcpSocket(const Endpoint& endPoint);
+    ~SimpleTcpSocket();
     
-    ChannelState GetChannelState() override;
-    const Endpoint& GetEndpoint() override;
+    const Endpoint& GetEndpoint() override { return socketEndPoint; }
+    bool Shutdown() override;
+    
+    size_t Send(const char* buf, size_t bufSize) override;
+    size_t Recv(char* buf, size_t bufSize, bool recvAll = false) override;
+    bool IsConnectionEstablished() override { return connectionEstablished; }
 
-    void Shutdown() override;
-
-    size_t ReadSome(char* buffer, size_t bufSize) override;
-    bool ReadAll(char* buffer, size_t bufSize) override;
-    size_t Write(const char* buffer, size_t bufSize) override;
-
-private:
-    ISimpleAbstractSocketPtr socket;
-    Mutex recvMutex;
-    Mutex sendMutex;
+    bool IsValid() override { return socketId != INVALID_SOCKET; }
+    
+protected:
+    void Close();
+    
+    bool connectionEstablished = false;
+    Endpoint socketEndPoint;
+    SOCKET socketId;
 };
 
 }  // namespace Net
 }  // namespace DAVA
 
-#endif  // __DAVAENGINE_CONNECTION_H__
+#endif  // __DAVAENGINE_SIMPLE_TCP_SOCKET_H__

@@ -31,6 +31,7 @@
 #define __DAVAENGINE_LOG_NETWORK_ERROR_H__
 
 #include "Debug/DVAssert.h"
+#include <libuv/uv.h>
 
 namespace DAVA
 {

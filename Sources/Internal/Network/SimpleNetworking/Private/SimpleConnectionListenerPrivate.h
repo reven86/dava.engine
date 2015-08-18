@@ -55,6 +55,7 @@ public:
                               NotificationType notifType);
 
     ConnectionListenerPrivate(IConnectionPtr& conn, NotificationType notifType);
+    ~ConnectionListenerPrivate();
 
     IConnectionPtr GetConnection() const;
     void AddConnectionCallback(const ConnectionCallback& cb);

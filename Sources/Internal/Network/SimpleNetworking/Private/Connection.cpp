@@ -40,8 +40,8 @@ namespace DAVA
 namespace Net
 {
     
-Connection::Connection(ISimpleAbstractSocketPtr&& abstractSocket)
-    : socket(std::move(abstractSocket)) 
+Connection::Connection(const ISimpleAbstractSocketPtr& abstractSocket)
+    : socket(abstractSocket) 
 {
     DVASSERT_MSG(socket, "Socket cannot be empty");
 }
@@ -55,6 +55,11 @@ IReadOnlyConnection::ChannelState Connection::GetChannelState()
 const Endpoint& Connection::GetEndpoint()
 {
     return socket->GetEndpoint();
+}
+
+void Connection::Shutdown()
+{
+    socket->Shutdown();
 }
 
 size_t Connection::ReadSome(char* buffer, size_t bufSize)
