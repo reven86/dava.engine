@@ -109,7 +109,7 @@ void MipMapReplacer::EnumerateTexturesRecursive(Entity * entity, Set<Texture *> 
             }
         }
     }
-#endif RHI_COMPLETE
+#endif
 }
 
 void MipMapReplacer::ReplaceMipMaps(Texture * texture)

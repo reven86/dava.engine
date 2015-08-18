@@ -41,16 +41,10 @@ namespace DAVA
 
 ConcurrentObject<Set<Thread *>> Thread::threadList;
 Thread::Id Thread::mainThreadId;
-Thread::Id Thread::glThreadId;
 
 void Thread::InitMainThread()
 {
     mainThreadId = GetCurrentId();
-}
-
-void Thread::InitGLThread()
-{
-    glThreadId = GetCurrentId();
 }
 
 bool Thread::IsMainThread()
@@ -61,7 +55,7 @@ bool Thread::IsMainThread()
     }
 
     Id currentId = GetCurrentId();
-    return currentId == mainThreadId || currentId == glThreadId;
+    return currentId == mainThreadId;
 }
 
 Thread *Thread::Create(const Message& msg)

@@ -15,8 +15,13 @@
     #include <sys/stat.h>
     #include <stdio.h>
 
+    #include "Base/Platform.h"
+
 #if defined(__DAVAENGINE_WIN32__)
     typedef struct _stat stat_t;
+    #ifndef S_IRUSR
+    #define S_IRUSR S_IREAD
+    #endif
 #else
     typedef struct stat stat_t;
 #endif

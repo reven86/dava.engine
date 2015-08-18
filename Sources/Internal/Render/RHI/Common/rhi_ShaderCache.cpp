@@ -1022,7 +1022,7 @@ PreProcessSource( Api targetApi, const char* srcText, std::string* preprocessedT
             
         case RHI_GLES2 :
             preprocessedText->insert( 0, _ShaderHeader_GLES2 );
-            #if defined(__DAVAENGINE_IPHONE__)
+            #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
             preprocessedText->insert( 0, "precision highp float;\n" );
             #endif
             break;

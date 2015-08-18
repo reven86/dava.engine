@@ -23,15 +23,6 @@ public class JNIApplication extends Application
 	private Locale launchLocale;
 	private boolean firstLaunch = true;
 	private final String TAG = "JNIApplication";
-	
-	private static volatile boolean eglContextDestroed = false;
-    
-    public static boolean isEglContextWasDestroyed() {
-        return eglContextDestroed;
-    }
-    public static void setEglContextWasDestroyed(boolean value) {
-        eglContextDestroed = value;
-    }
 
 	/**
 	 * Initialize native framework core in first time.

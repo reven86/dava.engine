@@ -29,6 +29,15 @@
 
     #include "ios_gl.h"
 
+#elif defined(__DAVAENGINE_ANDROID__)
+
+	#include <GLES2/gl2.h>
+	#include <GLES2/gl2ext.h>
+
+    #define GetGLErrorString(code)  "<unknown>"
+
+	#include "android_gl.h"
+
 #else
 
     #include <GL/GL.h>

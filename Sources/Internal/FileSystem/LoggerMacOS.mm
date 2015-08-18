@@ -37,9 +37,8 @@ namespace DAVA
 // iPhone / MacOS implementation of Logger
 	
 	
-void Logger::PlatformLog(eLogLevel ll, const char8* text)
+void Logger::PlatformLog(eLogLevel ll, const char8* text) const
 {
-	//NSString * string = [NSString stringWithFormat:@"[%s] %@", GetLogLevelString(ll), [NSString stringWithUTF8String:text]];
 	NSLog(@"[%s] %s", GetLogLevelString(ll), text);
 }
 
