@@ -12,6 +12,7 @@
 #include "Qt/DeviceInfo/MemoryTool/ProfilingSession.h"
 #include "Qt/DeviceInfo/MemoryTool/MemorySnapshot.h"
 #include "Qt/DeviceInfo/MemoryTool/SymbolsWidget.h"
+#include "Qt/DeviceInfo/MemoryTool/MemoryBlocksWidget.h"
 
 #include <QDebug>
 #include <QFileDialog>
@@ -28,13 +29,17 @@
 
 using namespace DAVA;
 
-SnapshotDiffViewerWidget::SnapshotDiffViewerWidget(const MemorySnapshot* snapshot1_, const MemorySnapshot* snapshot2_, QWidget* parent)
+SnapshotDiffViewerWidget::SnapshotDiffViewerWidget(const ProfilingSession* session_, size_t snapshotIndex1, size_t snapshotIndex2, QWidget* parent)
     : QWidget(parent, Qt::Window)
-    , snapshot1(snapshot1_)
-    , snapshot2(snapshot2_)
+    , session(session_)
 {
-    DVASSERT(snapshot1 != nullptr && snapshot1->IsLoaded());
-    DVASSERT(snapshot2 != nullptr && snapshot2->IsLoaded());
+    DVASSERT(session != nullptr);
+
+    snapshot1 = &session->Snapshot(snapshotIndex1);
+    snapshot2 = &session->Snapshot(snapshotIndex2);
+
+    allBlocksLinked = BlockLink::CreateBlockLink(snapshot1, snapshot2);
+
     Init();
 }
 
@@ -51,6 +56,7 @@ void SnapshotDiffViewerWidget::Init()
 
     InitSymbolsView();
     InitBranchView();
+    InitMemoryBlocksView();
 
     QVBoxLayout* mainLayout = new QVBoxLayout;
     mainLayout->addWidget(tab);
@@ -106,6 +112,13 @@ void SnapshotDiffViewerWidget::InitBranchView()
     frame->setLayout(layout);
 
     tab->addTab(frame, "Branches");
+}
+
+void SnapshotDiffViewerWidget::InitMemoryBlocksView()
+{
+    memoryBlocksWidget = new MemoryBlocksWidget(session, &allBlocksLinked);
+
+    tab->addTab(memoryBlocksWidget, "Memory blocks");
 }
 
 void SnapshotDiffViewerWidget::SymbolView_OnBuldTree()

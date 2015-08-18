@@ -4,6 +4,8 @@
 #include "Base/BaseTypes.h"
 #include "MemoryManager/MemoryManagerTypes.h"
 
+#include "Qt/DeviceInfo/MemoryTool/BlockLink.h"
+
 #include <QWidget>
 
 class QTabWidget;
@@ -11,10 +13,12 @@ class QTreeView;
 class QListView;
 
 class SymbolsWidget;
+class MemoryBlocksWidget;
 
 class BranchDiffTreeModel;
 class BlockListModel;
 
+class ProfilingSession;
 class MemorySnapshot;
 
 class SnapshotDiffViewerWidget : public QWidget
@@ -22,7 +26,7 @@ class SnapshotDiffViewerWidget : public QWidget
     Q_OBJECT
 
 public:
-    SnapshotDiffViewerWidget(const MemorySnapshot* snapshot1, const MemorySnapshot* snapshot2, QWidget* parent = nullptr);
+    SnapshotDiffViewerWidget(const ProfilingSession* session, size_t snapshotIndex1, size_t snapshotIndex2, QWidget* parent = nullptr);
     virtual ~SnapshotDiffViewerWidget();
 
 public slots:
@@ -35,10 +39,14 @@ private:
     void Init();
     void InitSymbolsView();
     void InitBranchView();
+    void InitMemoryBlocksView();
 
 private:
-    const MemorySnapshot* snapshot1;
-    const MemorySnapshot* snapshot2;
+    const ProfilingSession* session = nullptr;
+    const MemorySnapshot* snapshot1 = nullptr;
+    const MemorySnapshot* snapshot2 = nullptr;
+
+    BlockLink allBlocksLinked;
 
     BranchDiffTreeModel* branchTreeModel = nullptr;
     BlockListModel* blockListModel1 = nullptr;
@@ -46,6 +54,7 @@ private:
 
     QTabWidget* tab = nullptr;
     SymbolsWidget* symbolWidget = nullptr;
+    MemoryBlocksWidget* memoryBlocksWidget = nullptr;
     QTreeView* branchTree = nullptr;
     QListView* blockList1 = nullptr;
     QListView* blockList2 = nullptr;

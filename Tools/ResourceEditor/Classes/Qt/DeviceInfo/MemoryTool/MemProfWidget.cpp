@@ -198,10 +198,7 @@ void MemProfWidget::DiffClicked()
     int index2 = selected[1];
     if (profileSession->LoadSnapshot(index1) && profileSession->LoadSnapshot(index2))
     {
-        const MemorySnapshot& snapshot1 = profileSession->Snapshot(index1);
-        const MemorySnapshot& snapshot2 = profileSession->Snapshot(index2);
-
-        SnapshotDiffViewerWidget* w = new SnapshotDiffViewerWidget(&snapshot1, &snapshot2, this);
+        SnapshotDiffViewerWidget* w = new SnapshotDiffViewerWidget(profileSession, index1, index2, this);
         w->resize(800, 600);
         w->show();
     }
@@ -212,8 +209,7 @@ void MemProfWidget::SnapshotList_OnDoubleClicked(const QModelIndex& index)
     int row = index.row();
     if (profileSession->LoadSnapshot(row))
     {
-        const MemorySnapshot& snapshot = profileSession->Snapshot(row);
-        SnapshotViewerWidget* w = new SnapshotViewerWidget(&snapshot, this);
+        SnapshotViewerWidget* w = new SnapshotViewerWidget(profileSession, row, this);
         w->resize(800, 600);
         w->show();
     }

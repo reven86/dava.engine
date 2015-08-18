@@ -11,6 +11,7 @@
 #include "Qt/DeviceInfo/MemoryTool/ProfilingSession.h"
 #include "Qt/DeviceInfo/MemoryTool/MemorySnapshot.h"
 #include "Qt/DeviceInfo/MemoryTool/SymbolsWidget.h"
+#include "Qt/DeviceInfo/MemoryTool/MemoryBlocksWidget.h"
 
 #include <QDebug>
 #include <QFileDialog>
@@ -29,11 +30,16 @@
 
 using namespace DAVA;
 
-SnapshotViewerWidget::SnapshotViewerWidget(const MemorySnapshot* snapshot_, QWidget* parent)
+SnapshotViewerWidget::SnapshotViewerWidget(const ProfilingSession* session_, size_t snapshotIndex, QWidget* parent)
     : QWidget(parent, Qt::Window)
-    , snapshot(snapshot_)
+    , session(session_)
 {
-    DVASSERT(snapshot != nullptr && snapshot->IsLoaded());
+    DVASSERT(session != nullptr);
+
+    snapshot = &session->Snapshot(snapshotIndex);
+
+    allBlocksLinked = BlockLink::CreateBlockLink(snapshot);
+
     Init();
 }
 
@@ -49,6 +55,7 @@ void SnapshotViewerWidget::Init()
 
     InitSymbolsView();
     InitBranchView();
+    InitMemoryBlocksView();
 
     QVBoxLayout* mainLayout = new QVBoxLayout;
     mainLayout->addWidget(tab);
@@ -108,6 +115,13 @@ void SnapshotViewerWidget::InitBranchView()
     frame->setLayout(layout);
 
     tab->addTab(frame, "Branches");
+}
+
+void SnapshotViewerWidget::InitMemoryBlocksView()
+{
+    memoryBlocksWidget = new MemoryBlocksWidget(session, &allBlocksLinked);
+
+    tab->addTab(memoryBlocksWidget, "Memory blocks");
 }
 
 QComboBox* SnapshotViewerWidget::InitAllocPoolsCombo()

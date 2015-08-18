@@ -4,6 +4,8 @@
 #include "Base/BaseTypes.h"
 #include "MemoryManager/MemoryManagerTypes.h"
 
+#include "Qt/DeviceInfo/MemoryTool/BlockLink.h"
+
 #include <QWidget>
 
 class QTabWidget;
@@ -13,11 +15,13 @@ class QComboBox;
 class QStandardItem;
 
 class SymbolsWidget;
+class MemoryBlocksWidget;
 
 class BranchTreeModel;
 class BranchFilterModel;
 class BlockListModel;
 
+class ProfilingSession;
 class MemorySnapshot;
 
 class SnapshotViewerWidget : public QWidget
@@ -25,7 +29,7 @@ class SnapshotViewerWidget : public QWidget
     Q_OBJECT
 
 public:
-    SnapshotViewerWidget(const MemorySnapshot* snapshot, QWidget* parent = nullptr);
+    SnapshotViewerWidget(const ProfilingSession* session, size_t snapshotIndex, QWidget* parent = nullptr);
     virtual ~SnapshotViewerWidget();
 
 public slots:
@@ -43,12 +47,16 @@ private:
     void Init();
     void InitSymbolsView();
     void InitBranchView();
+    void InitMemoryBlocksView();
 
     QComboBox* InitAllocPoolsCombo();
     QComboBox* InitTagsCombo();
 
 private:
-    const MemorySnapshot* snapshot;
+    const ProfilingSession* session = nullptr;
+    const MemorySnapshot* snapshot = nullptr;
+
+    BlockLink allBlocksLinked;
 
     BranchTreeModel* branchTreeModel = nullptr;
     BranchFilterModel* branchFilterModel = nullptr;
@@ -56,6 +64,7 @@ private:
 
     QTabWidget* tab = nullptr;
     SymbolsWidget* symbolWidget = nullptr;
+    MemoryBlocksWidget* memoryBlocksWidget = nullptr;
     QTreeView* branchTree = nullptr;
     QListView* blockList = nullptr;
 
