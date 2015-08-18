@@ -12,8 +12,7 @@ class QListView;
 class QComboBox;
 class QStandardItem;
 
-class SymbolsListModel;
-class SymbolsFilterModel;
+class SymbolsWidget;
 
 class BranchTreeModel;
 class BranchFilterModel;
@@ -48,20 +47,15 @@ private:
     QComboBox* InitAllocPoolsCombo();
     QComboBox* InitTagsCombo();
 
-    DAVA::Vector<const DAVA::String*> GetSelectedSymbols();
-
 private:
     const MemorySnapshot* snapshot;
-
-    SymbolsListModel* symbolsListModel = nullptr;
-    SymbolsFilterModel* symbolsFilterModel = nullptr;
 
     BranchTreeModel* branchTreeModel = nullptr;
     BranchFilterModel* branchFilterModel = nullptr;
     BlockListModel* blockListModel = nullptr;
 
     QTabWidget* tab = nullptr;
-    QTreeView* symbolsTree = nullptr;
+    SymbolsWidget* symbolWidget = nullptr;
     QTreeView* branchTree = nullptr;
     QListView* blockList = nullptr;
 

@@ -10,8 +10,7 @@ class QTabWidget;
 class QTreeView;
 class QListView;
 
-class SymbolsListModel;
-class SymbolsFilterModel;
+class SymbolsWidget;
 
 class BranchDiffTreeModel;
 class BlockListModel;
@@ -37,21 +36,16 @@ private:
     void InitSymbolsView();
     void InitBranchView();
 
-    DAVA::Vector<const DAVA::String*> GetSelectedSymbols();
-
 private:
     const MemorySnapshot* snapshot1;
     const MemorySnapshot* snapshot2;
-
-    SymbolsListModel* symbolsListModel = nullptr;
-    SymbolsFilterModel* symbolsFilterModel = nullptr;
 
     BranchDiffTreeModel* branchTreeModel = nullptr;
     BlockListModel* blockListModel1 = nullptr;
     BlockListModel* blockListModel2 = nullptr;
 
     QTabWidget* tab = nullptr;
-    QTreeView* symbolsTree = nullptr;
+    SymbolsWidget* symbolWidget = nullptr;
     QTreeView* branchTree = nullptr;
     QListView* blockList1 = nullptr;
     QListView* blockList2 = nullptr;

@@ -4,7 +4,6 @@
 #include "SnapshotDiffViewerWidget.h"
 
 #include "Qt/DeviceInfo/MemoryTool/Models/SymbolsListModel.h"
-#include "Qt/DeviceInfo/MemoryTool/Models/SymbolsFilterModel.h"
 #include "Qt/DeviceInfo/MemoryTool/Models/BranchDiffTreeModel.h"
 #include "Qt/DeviceInfo/MemoryTool/Models/BlockListModel.h"
 
@@ -12,6 +11,7 @@
 #include "Qt/DeviceInfo/MemoryTool/BranchDiff.h"
 #include "Qt/DeviceInfo/MemoryTool/ProfilingSession.h"
 #include "Qt/DeviceInfo/MemoryTool/MemorySnapshot.h"
+#include "Qt/DeviceInfo/MemoryTool/SymbolsWidget.h"
 
 #include <QDebug>
 #include <QFileDialog>
@@ -40,8 +40,6 @@ SnapshotDiffViewerWidget::SnapshotDiffViewerWidget(const MemorySnapshot* snapsho
 
 SnapshotDiffViewerWidget::~SnapshotDiffViewerWidget()
 {
-    delete symbolsFilterModel;
-    delete symbolsListModel;
     delete branchTreeModel;
     delete blockListModel1;
     delete blockListModel2;
@@ -61,29 +59,13 @@ void SnapshotDiffViewerWidget::Init()
 
 void SnapshotDiffViewerWidget::InitSymbolsView()
 {
-    symbolsListModel = new SymbolsListModel(*snapshot1->SymbolTable());
-    symbolsFilterModel = new SymbolsFilterModel;
-    symbolsFilterModel->setSourceModel(symbolsListModel);
-    symbolsFilterModel->sort(0);
-
-    symbolsTree = new QTreeView;
-    symbolsTree->setFont(QFont("Consolas", 10, 500));
-    symbolsTree->setSelectionMode(QAbstractItemView::ContiguousSelection);
-    symbolsTree->setModel(symbolsFilterModel);
-
-    QLineEdit* filter = new QLineEdit;
-    QPushButton* toggleStd = new QPushButton("Toggle 'std::' on/off");
+    symbolWidget = new SymbolsWidget(*snapshot1->SymbolTable());
     QPushButton* buildTree = new QPushButton("Build tree");
-
-    connect(filter, &QLineEdit::textChanged, symbolsFilterModel, &SymbolsFilterModel::SetFilterString);
-    connect(toggleStd, &QPushButton::clicked, symbolsFilterModel, &SymbolsFilterModel::ToggleHideStdAndUnresolved);
     connect(buildTree, &QPushButton::clicked, this, &SnapshotDiffViewerWidget::SymbolView_OnBuldTree);
 
     QVBoxLayout* layout = new QVBoxLayout;
-    layout->addWidget(filter);
-    layout->addWidget(toggleStd);
     layout->addWidget(buildTree);
-    layout->addWidget(symbolsTree);
+    layout->addWidget(symbolWidget);
 
     QFrame* frame = new QFrame;
     frame->setLayout(layout);
@@ -128,7 +110,7 @@ void SnapshotDiffViewerWidget::InitBranchView()
 
 void SnapshotDiffViewerWidget::SymbolView_OnBuldTree()
 {
-    Vector<const DAVA::String*> selection = GetSelectedSymbols();
+    Vector<const String*> selection = symbolWidget->GetSelectedSymbols();
     if (!selection.empty())
     {
         branchTreeModel->PrepareModel(selection);
@@ -159,25 +141,4 @@ void SnapshotDiffViewerWidget::BranchView_SelectionChanged(const QModelIndex& cu
 void SnapshotDiffViewerWidget::BranchBlockView_DoubleClicked(const QModelIndex& current)
 {
     
-}
-
-Vector<const String*> SnapshotDiffViewerWidget::GetSelectedSymbols()
-{
-    Vector<const String*> result;
-    QItemSelectionModel* selectionModel = symbolsTree->selectionModel();
-    if (selectionModel->hasSelection())
-    {
-        QModelIndexList indexList = selectionModel->selectedRows(0);
-        result.reserve(indexList.size());
-        for (const QModelIndex& i : indexList)
-        {
-            QModelIndex index = symbolsFilterModel->mapToSource(i);
-            if (index.isValid())
-            {
-                const String* name = symbolsListModel->Symbol(index.row());
-                result.push_back(name);
-            }
-        }
-    }
-    return result;
 }
