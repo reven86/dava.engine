@@ -60,10 +60,7 @@ private:
     
     void MeasureControl(UIControl *control, UISizePolicyComponent *sizeHint, int32 axis);
     void ApplyLinearLayout(UIControl *control, UILinearLayoutComponent *linearLayoutComponent, int32 axis);
-    void ApplyFlowLayout(UIControl *control, UIFlowLayoutComponent *flowLayoutComponent, int32 axis);
-    void ApplyFlowLayoutHorizontally(UIControl *control, UIFlowLayoutComponent *flowLayoutComponent);
-    void ApplyFlowLayoutVertically(UIControl *control, UIFlowLayoutComponent *flowLayoutComponent);
-    void ApplyAnchorLayout(UIControl *control, int32 axis);
+    void ApplyAnchorLayout(UIControl *control, int32 axis, bool onlyForIgnoredControls);
     void GetAxisDataByAnchorData(float32 size, float32 parentSize,
                                  bool firstSideAnchorEnabled, float32 firstSideAnchor,
                                  bool centerAnchorEnabled, float32 centerAnchor,
@@ -71,6 +68,8 @@ private:
                                  float32 &newPos, float32 &newSize);
     void GetAnchorDataByAxisData(float32 size, float32 pos, float32 parentSize, bool firstSideAnchorEnabled, bool centerAnchorEnabled, bool secondSideAnchorEnabled, float32 &firstSideAnchor, float32 &centerAnchor, float32 &secondSideAnchor);
 
+    bool HaveToSkipControl(UIControl *control, bool skipInvisible) const;
+    
 private:
     bool isRtl = false;
     bool dirty = true;

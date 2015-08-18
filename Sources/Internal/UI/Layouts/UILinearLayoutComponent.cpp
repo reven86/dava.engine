@@ -4,7 +4,8 @@ namespace DAVA
 {
 UILinearLayoutComponent::UILinearLayoutComponent()
 {
-    
+    SetEnabled(true);
+    SetSkipInvisibleControls(true);
 }
 
 UILinearLayoutComponent::UILinearLayoutComponent(const UILinearLayoutComponent &src)
@@ -55,7 +56,6 @@ void UILinearLayoutComponent::SetOrientationFromInt(int32 orientation)
     SetOrientation(static_cast<eOrientation>(orientation));
 }
 
-
 float32 UILinearLayoutComponent::GetPadding() const
 {
     return padding;
@@ -93,7 +93,7 @@ bool UILinearLayoutComponent::IsDynamicSpacing() const
 
 void UILinearLayoutComponent::SetDynamicSpacing(bool dynamic)
 {
-    flags.set(FLAG_DYNAMIC_SPACING);
+    flags.set(FLAG_DYNAMIC_SPACING, dynamic);
 }
 
 bool UILinearLayoutComponent::IsSkipInvisibleControls() const
