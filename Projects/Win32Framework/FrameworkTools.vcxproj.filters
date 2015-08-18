@@ -31,9 +31,6 @@
     <Filter Include="Source Files\AssetCache">
       <UniqueIdentifier>{c54f3a9f-7306-45a5-9e4d-1bfa06cac95c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\AssetCache\TCPConnection">
-      <UniqueIdentifier>{75f7fe1e-4c1a-497f-ad16-6b0825002e38}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\CommandLine">
       <UniqueIdentifier>{49506135-645d-4426-ae04-2379e6001a9b}</UniqueIdentifier>
     </Filter>
@@ -130,12 +127,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Tools\AssetCache\ServerCacheEntry.cpp">
       <Filter>Source Files\AssetCache</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Tools\AssetCache\TCPConnection\TCPChannel.cpp">
-      <Filter>Source Files\AssetCache\TCPConnection</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Tools\AssetCache\TCPConnection\TCPConnection.cpp">
-      <Filter>Source Files\AssetCache\TCPConnection</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Tools\AssetCache\DoubleMD5Key.cpp">
       <Filter>Source Files\AssetCache</Filter>

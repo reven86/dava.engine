@@ -66,16 +66,15 @@ void ServerCore::Start()
 {
     if (state != State::STARTED)
     {
-        bool started = StartListening();
-        if (started)
-        {
-            remoteServerData = settings.GetCurrentServer();
-            ConnectRemote();
+        StartListening();
 
-            updateTimer->start(UPDATE_INTERVAL_MS);
+        remoteServerData = settings.GetCurrentServer();
+        ConnectRemote();
 
-            emit ServerStateChanged(this);
-        }
+        updateTimer->start(UPDATE_INTERVAL_MS);
+
+        state = State::STARTED;
+        emit ServerStateChanged(this);
     }
 }
 
@@ -92,22 +91,12 @@ void ServerCore::Stop()
     }
 }
 
-bool ServerCore::StartListening()
+void ServerCore::StartListening()
 {
     DVASSERT(state == State::STOPPED);
 
-    bool established = server.Listen(settings.GetPort());
-
-    if (established)
-    {
-        state = State::STARTED;
-        return true;
-    }
-    else
-    {
-        state = State::STOPPED;
-        return false;
-    }
+    server.Listen(settings.GetPort());
+    state = State::STARTED;
 }
 
 void ServerCore::StopListening()
@@ -172,7 +161,7 @@ void ServerCore::OnAssetClientStateChanged()
 {
     DVASSERT(remoteState != RemoteState::STOPPED);
 
-    if (client.IsConnected())
+    if (client.ChannelIsOpened())
     {
         connectTimer->stop();
         reattemptWaitTimer->stop();

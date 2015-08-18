@@ -81,7 +81,7 @@ private slots:
     void OnReattemptTimer();
             
 private:
-    bool StartListening();
+    void StartListening();
     void StopListening();
 
     bool ConnectRemote();

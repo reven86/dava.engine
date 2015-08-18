@@ -27,7 +27,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
 #include "AssetCache/CachePacket.h"
-#include "AssetCache/TCPConnection/TCPChannel.h"
+#include "Network/IChannel.h"
 
 namespace DAVA {
 namespace AssetCache {
@@ -35,7 +35,38 @@ namespace AssetCache {
 const String PACKET_HEADER = "AssetCachePacket";
 const uint32 PACKET_VERSION = 1;
 
-CachePacket* CachePacket::Deserialize(const uint8* rawdata, size_t length)
+List<ScopedPtr<DynamicMemoryFile> > CachePacket::sendingPackets;
+
+
+bool CachePacket::SendTo(Net::IChannel* channel)
+{
+	DVASSERT(channel);
+
+	sendingPackets.push_back(serializationBuffer);
+
+	uint32 packetId = 0;
+	channel->Send(serializationBuffer->GetData(), serializationBuffer->GetSize(), 0, &packetId);
+	return (packetId != 0);
+}
+
+void CachePacket::PacketSent(const uint8* buffer, size_t length)
+{
+	for (auto it = sendingPackets.begin(), endIt = sendingPackets.end(); it != endIt; ++it)
+	{
+		ScopedPtr<DynamicMemoryFile> packet = *it;
+		if (packet->GetData() == buffer && packet->GetSize() == length)
+		{
+			sendingPackets.erase(it);
+			break;
+		}
+	}
+
+	return;
+}
+
+
+
+CachePacket* CachePacket::Create(const uint8* rawdata, uint32 length)
 {
     DynamicMemoryFile* dynamicBuffer = DynamicMemoryFile::Create(rawdata, length, File::OPEN | File::READ); // todo: create without copy
     File* buffer = dynamicBuffer;
@@ -46,195 +77,158 @@ CachePacket* CachePacket::Deserialize(const uint8* rawdata, size_t length)
 
     if (header != PACKET_HEADER)
     {
-        Logger::Error("[%s] Wrong packet header: %s", __FUNCTION__, header.c_str());
+        Logger::Error("[CachePacket::%s] Wrong packet header: %s", __FUNCTION__, header.c_str());
         return nullptr;
     }
 
     uint32 version = 0;
-    if (buffer->Read(&version) != sizeof(version))
-        return nullptr;
+	if (buffer->Read(&version) != sizeof(version))
+	{
+		Logger::Error("[CachePacket::%s] Error of reading of version", __FUNCTION__);
+		return nullptr;
+	}
 
     if (version != PACKET_VERSION)
     {
-        Logger::Error("[%s] Wrong packet version: %d", __FUNCTION__, version);
+        Logger::Error("[CachePacket::%s] Wrong packet version: %d", __FUNCTION__, version);
         return nullptr;
     }
 
     ePacketID type = PACKET_UNKNOWN;
-    if (buffer->Read(&type) != sizeof(type))
-        return nullptr;
+	if (buffer->Read(&type) != sizeof(type))
+	{
+		Logger::Error("[CachePacket::%s] Error of reading of type", __FUNCTION__);
+		return nullptr;
+	}
 
-    switch (type)
-    {
-    case PACKET_ADD_REQUEST:
-    {
-        Logger::FrameworkDebug("Deserializing ADD_REQUEST packet");
-        AddRequestPacket* packet = new AddRequestPacket();
+	CachePacket *packet = CachePacket::CreateByType(type);
+	if (packet != nullptr)
+	{
+		bool loaded = packet->Load(buffer);
+		if (!loaded)
+		{
+			Logger::Error("[CachePacket::%s] Cannot load packet(type: %d)", __FUNCTION__, type);
+			SafeDelete(packet);
+		}
+	}
 
-        if (buffer->Read(packet->key.data(), packet->key.size()) == packet->key.size() &&
-            packet->value.Deserialize(buffer))
-        {
-            return packet;
-        }
-        else
-        {
-            Logger::Error("[%s] Wrong packet contents", __FUNCTION__);
-            delete packet;
-            return nullptr;
-        }
-    }
-    case PACKET_ADD_RESPONSE:
-    {
-        Logger::FrameworkDebug("Deserializing ADD_RESPONSE packet");
-        AddResponsePacket* packet = new AddResponsePacket();
-
-        if (buffer->Read(packet->key.data(), packet->key.size()) == packet->key.size() &&
-            buffer->Read(&packet->added) == sizeof(packet->added))
-        {
-            return packet;
-        }
-        else
-        {
-            Logger::Error("[%s] Wrong packet contents", __FUNCTION__);
-            delete packet;
-            return nullptr;
-        }
-    }
-    case PACKET_GET_REQUEST:
-    {
-        Logger::FrameworkDebug("Deserializing GET_REQUEST packet");
-        GetRequestPacket* packet = new GetRequestPacket();
-
-        if (buffer->Read(packet->key.data(), packet->key.size()) == packet->key.size())
-        {
-            return packet;
-        }
-        else
-        {
-            Logger::Error("[%s] Wrong packet contents", __FUNCTION__);
-            delete packet;
-            return nullptr;
-        }
-    }
-    case PACKET_GET_RESPONSE:
-    {
-        Logger::FrameworkDebug("Deserializing GET_RESPONSE packet");
-        GetResponsePacket* packet = new GetResponsePacket();
-
-        if (buffer->Read(packet->key.data(), packet->key.size()) == packet->key.size() &&
-            packet->value.Deserialize(buffer))
-        {
-            return packet;
-        }
-        else
-        {
-            Logger::Error("[%s] Wrong packet contents", __FUNCTION__);
-            delete packet;
-            return nullptr;
-        }
-    }
-    case PACKET_WARMING_UP_REQUEST:
-    {
-        Logger::FrameworkDebug("Deserializing WARMING_UP packet");
-        WarmupRequestPacket* packet = new WarmupRequestPacket();
-
-        if (buffer->Read(packet->key.data(), packet->key.size()) == packet->key.size())
-        {
-            return packet;
-        }
-        else
-        {
-            Logger::Error("[%s] Wrong packet contents", __FUNCTION__);
-            delete packet;
-            return nullptr;
-        }
-    }
-    default:
-    {
-        Logger::Error("[%s] Wrong packet type: %d", __FUNCTION__, type);
-        return nullptr;
-    }
-    }
+	return packet;
 }
 
-bool CachePacket::SendTo(TCPChannel* channel)
+CachePacket * CachePacket::CreateByType(ePacketID type)
 {
-    DVASSERT(channel);
-    return channel->SendData(buffer);
+	switch (type)
+	{
+	case PACKET_ADD_REQUEST:		return new AddRequestPacket();
+	case PACKET_ADD_RESPONSE:		return new AddResponsePacket();
+	case PACKET_GET_REQUEST:		return new GetRequestPacket();
+	case PACKET_GET_RESPONSE:		return new GetResponsePacket();
+	case PACKET_WARMING_UP_REQUEST:	return new WarmupRequestPacket();
+	default:
+	{
+		Logger::Error("[CachePacket::%s] Wrong packet type: %d", __FUNCTION__, type);
+		break;
+	}
+	}
+	return nullptr;
 }
 
-AddRequestPacket::AddRequestPacket(const CacheItemKey& key, const CachedItemValue& value)
+
+CachePacket::CachePacket(ePacketID _type, bool createBuffer)
+	: type(_type)
+	, serializationBuffer(nullptr)
 {
-    Logger::FrameworkDebug("Constructing ADD_REQUEST packet");
-
-    type = PACKET_ADD_REQUEST;
-    buffer.reset(DynamicMemoryFile::Create(File::CREATE | File::WRITE));
-    File* file = buffer;
-
-    file->WriteString(PACKET_HEADER);
-    file->Write(&PACKET_VERSION);
-    file->Write(&type);
-    file->Write(key.data(), key.size());
-    value.Serialize(file);
+	if (createBuffer)
+	{
+		serializationBuffer.reset(DynamicMemoryFile::Create(File::CREATE | File::WRITE));
+	}
 }
 
-AddResponsePacket::AddResponsePacket(const CacheItemKey& key, bool _added)
+void CachePacket::WriteHeader(File *file) const
 {
-    Logger::FrameworkDebug("Constructing ADD_RESPONSE packet");
-
-    type = PACKET_ADD_RESPONSE;
-    added = _added;
-
-    buffer.reset(DynamicMemoryFile::Create(File::CREATE | File::WRITE));
-    File* file = buffer;
-
-    file->WriteString(PACKET_HEADER);
-    file->Write(&PACKET_VERSION);
-    file->Write(&type);
-    file->Write(key.data(), key.size());
+	file->WriteString(PACKET_HEADER);
+	file->Write(&PACKET_VERSION);
+	file->Write(&type);
 }
 
-GetRequestPacket::GetRequestPacket(const CacheItemKey& key)
+
+
+AddRequestPacket::AddRequestPacket(const CacheItemKey& _key, const CachedItemValue& _value)
+	: CachePacket(PACKET_ADD_REQUEST, true)
 {
-    Logger::FrameworkDebug("Constructing GET_REQUEST packet");
+    File* file = serializationBuffer;
+	WriteHeader(file);
 
-    type = PACKET_GET_REQUEST;
-    buffer.reset(DynamicMemoryFile::Create(File::CREATE | File::WRITE));
-    File* file = buffer;
-
-    file->WriteString(PACKET_HEADER);
-    file->Write(&PACKET_VERSION);
-    file->Write(&type);
-    file->Write(key.data(), key.size());
+	file->Write(_key.data(), _key.size());
+    _value.Serialize(file);
 }
 
-GetResponsePacket::GetResponsePacket(const CacheItemKey& key, const CachedItemValue& value)
+bool AddRequestPacket::Load(File *file)
 {
-    Logger::FrameworkDebug("Constructing GET_RESPONSE packet");
-
-    type = PACKET_GET_RESPONSE;
-    buffer.reset(DynamicMemoryFile::Create(File::CREATE | File::WRITE));
-    File* file = buffer;
-
-    file->WriteString(PACKET_HEADER);
-    file->Write(&PACKET_VERSION);
-    file->Write(&type);
-    file->Write(key.data(), key.size());
-    value.Serialize(file);
+	return ((file->Read(key.data(), key.size()) == key.size())
+		&& value.Deserialize(file));
 }
 
-WarmupRequestPacket::WarmupRequestPacket(const CacheItemKey& key)
+
+AddResponsePacket::AddResponsePacket(const CacheItemKey& _key, bool _added)
+	: CachePacket(PACKET_ADD_RESPONSE, true)
 {
-    Logger::FrameworkDebug("Constructing WARM_UP packet");
+	File* file = serializationBuffer;
+	WriteHeader(file);
 
-    type = PACKET_WARMING_UP_REQUEST;
-    buffer.reset(DynamicMemoryFile::Create(File::CREATE | File::WRITE));
-    File* file = buffer;
-
-    file->WriteString(PACKET_HEADER);
-    file->Write(&PACKET_VERSION);
-    file->Write(&type);
-    file->Write(key.data(), key.size());
+	file->Write(_key.data(), _key.size());
+	file->Write(&_added);
 }
 
-}}
+bool AddResponsePacket::Load(File *file)
+{
+	return ((file->Read(key.data(), key.size()) == key.size())
+		&& (file->Read(&added) == sizeof(added)));
+}
+
+GetRequestPacket::GetRequestPacket(const CacheItemKey& _key)
+	: CachePacket(PACKET_GET_REQUEST, true)
+{
+	File* file = serializationBuffer;
+	WriteHeader(file);
+
+	file->Write(_key.data(), _key.size());
+}
+
+bool GetRequestPacket::Load(File *file)
+{
+	return (file->Read(key.data(), key.size()) == key.size());
+}
+
+GetResponsePacket::GetResponsePacket(const CacheItemKey& _key, const CachedItemValue& _value)
+	: CachePacket(PACKET_GET_RESPONSE, true)
+{
+	File* file = serializationBuffer;
+	WriteHeader(file);
+
+	file->Write(_key.data(), _key.size());
+	_value.Serialize(file);
+}
+
+bool GetResponsePacket::Load(File *file)
+{
+	return ((file->Read(key.data(), key.size()) == key.size())
+		&& value.Deserialize(file));
+}
+
+WarmupRequestPacket::WarmupRequestPacket(const CacheItemKey& _key)
+	: CachePacket(PACKET_WARMING_UP_REQUEST, true)
+{
+	File* file = serializationBuffer;
+	WriteHeader(file);
+
+	file->Write(_key.data(), _key.size());
+}
+
+bool WarmupRequestPacket::Load(File *file)
+{
+	return (file->Read(key.data(), key.size()) == key.size());
+}
+
+} //AssetCache
+} //DAVA

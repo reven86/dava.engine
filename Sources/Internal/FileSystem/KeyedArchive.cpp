@@ -184,6 +184,37 @@ bool KeyedArchive::Save(File *archive) const
 	return true;
 }
     
+uint32 KeyedArchive::Save(uint8 *data, uint32 size) const
+{
+    ScopedPtr<DynamicMemoryFile> buffer(DynamicMemoryFile::Create(File::CREATE | File::WRITE));
+    
+    Save(buffer);
+    
+    auto archieveSize = buffer->GetSize();
+    if(data && size >= archieveSize)
+    {   // if data is null, we just return requested size for data
+        Memcpy(data, buffer->GetData(), archieveSize);
+    }
+    return archieveSize;
+}
+
+bool KeyedArchive::Load(const uint8 *data, uint32 size)
+{
+    if(nullptr == data || 0 == size)
+    {
+        return false;
+    }
+    
+    ScopedPtr<DynamicMemoryFile> buffer(DynamicMemoryFile::Create(File::CREATE | File::WRITE | File::READ));
+    auto written = buffer->Write(data, size);
+    DVASSERT(written == size);
+    
+    buffer->Seek(0, File::SEEK_FROM_START);
+    
+    return Load(buffer);
+}
+
+    
 bool KeyedArchive::LoadFromYamlFile(const FilePath & pathName)
 {
 	YamlParser	*parser	= YamlParser::Create(pathName);
@@ -668,34 +699,5 @@ const char* KeyedArchive::GenKeyFromIndex(uint32 index)
 	return tmpKey;
 }
 
-uint32 KeyedArchive::Serialize(uint8 *data, uint32 size) const
-{
-    ScopedPtr<DynamicMemoryFile> buffer(DynamicMemoryFile::Create(File::CREATE | File::WRITE));
-
-    Save(buffer);
-    
-    auto archieveSize = buffer->GetSize();
-    if(data && size >= archieveSize)
-    {
-        Memcpy(data, buffer->GetData(), archieveSize);
-    }
-    return archieveSize;
-}
-
-void KeyedArchive::Deserialize(const uint8 *data, uint32 size)
-{
-    if(nullptr == data || 0 == size)
-    {
-        return;
-    }
-    
-    ScopedPtr<DynamicMemoryFile> buffer(DynamicMemoryFile::Create(File::CREATE | File::WRITE | File::READ));
-    auto written = buffer->Write(data, size);
-    DVASSERT(written == size);
-    
-    buffer->Seek(0, File::SEEK_FROM_START);
-    
-    Load(buffer);
-}
 	
 };

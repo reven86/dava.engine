@@ -38,10 +38,10 @@ public:
     void Init(DAVA::AssetCache::Server *server, DAVA::AssetCache::Client *client, DAVA::AssetCache::CacheDB *dataBase);
     
     //ServerDelegate
-    void OnAddToCache(DAVA::TCPChannel *tcpChannel, const DAVA::AssetCache::CacheItemKey &key, DAVA::AssetCache::CachedItemValue &&value) override;
-    void OnRequestedFromCache(DAVA::TCPChannel *tcpChannel, const DAVA::AssetCache::CacheItemKey &key) override;
-    void OnWarmingUp(DAVA::TCPChannel *tcpChannel, const DAVA::AssetCache::CacheItemKey &key) override;
-    void OnChannelClosed(DAVA::TCPChannel *tcpChannel, const DAVA::char8* message) override;
+    void OnAddToCache(DAVA::Net::IChannel *channel, const DAVA::AssetCache::CacheItemKey &key, DAVA::AssetCache::CachedItemValue &&value) override;
+	void OnRequestedFromCache(DAVA::Net::IChannel *channel, const DAVA::AssetCache::CacheItemKey &key) override;
+	void OnWarmingUp(DAVA::Net::IChannel *channel, const DAVA::AssetCache::CacheItemKey &key) override;
+	void OnChannelClosed(DAVA::Net::IChannel *channel, const DAVA::char8* message) override;
     
     //ClientListener
 	void OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey &key, DAVA::AssetCache::CachedItemValue &&value) override;
@@ -60,9 +60,9 @@ private:
     
     struct RequestDescription
     {
-        RequestDescription(DAVA::TCPChannel *channel, const DAVA::AssetCache::CacheItemKey &_key, DAVA::AssetCache::ePacketID _request);
+		RequestDescription(DAVA::Net::IChannel *channel, const DAVA::AssetCache::CacheItemKey &_key, DAVA::AssetCache::ePacketID _request);
         
-        DAVA::TCPChannel *clientChannel = nullptr;
+		DAVA::Net::IChannel *clientChannel = nullptr;
         DAVA::AssetCache::CacheItemKey key;
 
         DAVA::AssetCache::ePacketID request = DAVA::AssetCache::PACKET_UNKNOWN;

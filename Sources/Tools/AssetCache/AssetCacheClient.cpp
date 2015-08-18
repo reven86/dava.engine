@@ -31,9 +31,7 @@
 #include "AssetCache/AssetCacheClient.h"
 #include "AssetCache/AssetCacheConstants.h"
 #include "AssetCache/CachedItemValue.h"
-#include "AssetCache/CacheItemKey.h"
 #include "AssetCache/CachePacket.h"
-#include "AssetCache/TCPConnection/TCPConnection.h"
 #include "FileSystem/KeyedArchive.h"
 #include "Debug/DVAssert.h"
 #include "FileSystem/DynamicMemoryFile.h"
@@ -53,17 +51,12 @@ bool Client::Connect(const String &ip, uint16 port)
     return addressResolver.StartResolving(ip.c_str(), port);
 }
 
+
 void Client::Disconnect()
 {
-    addressResolver.Stop();
-
-    if(netClient)
-    {
-        netClient->Disconnect();
-        netClient->SetListener(nullptr);
-        netClient = nullptr;
-        openedChannel = nullptr;
-    }
+	addressResolver.Stop();
+	netClient.reset();
+	openedChannel = nullptr;
 }
 
 void Client::OnAddressResolved()
@@ -74,63 +67,55 @@ void Client::OnAddressResolved()
     if (addressResolver.GetState() == Net::AddressResolver::State::RESOLVED)
     {
         auto& addr = addressResolver.Result();
-        netClient.reset(TCPConnection::CreateClient(NET_SERVICE_ID, Net::Endpoint(addr.ai_addr)));
-        netClient->SetListener(this);
+        netClient.reset(new Connection(Net::CLIENT_ROLE, Net::Endpoint(addr.ai_addr), this));
     }
 }
 
 bool Client::AddToCache(const CacheItemKey &key, const CachedItemValue &value)
 {
-    if(openedChannel)
-    {
-        AddRequestPacket packet(key, value);
-        return packet.SendTo(openedChannel);
-    }
-    else
-    {
-        return false;
-    }
+	if(openedChannel)
+	{
+		AddRequestPacket packet(key, value);
+		return packet.SendTo(openedChannel);
+	}
+
+	return false;
 }
+
 
 bool Client::RequestFromCache(const CacheItemKey &key)
 {
-    if(openedChannel)
-    {
-        GetRequestPacket packet(key);
-        return packet.SendTo(openedChannel);
-    }
-    else
-    {
-        return false;
-    }
+	if(openedChannel)
+	{
+		GetRequestPacket packet(key);
+		return packet.SendTo(openedChannel);
+	}
+
+	return false;
 }
 
 bool Client::WarmingUp(const CacheItemKey &key)
 {
-    if(openedChannel)
-    {
-        WarmupRequestPacket packet(key);
-        return packet.SendTo(openedChannel);
-    }
-    else
-    {
-        return false;
-    }
+	if(openedChannel)
+	{
+		WarmupRequestPacket packet(key);
+		return packet.SendTo(openedChannel);
+	}
+
+	return false;
 }
 
-
-void Client::ChannelOpened(TCPChannel *tcpChannel)
+void Client::OnChannelOpen(DAVA::Net::IChannel* channel)
 {
-    DVASSERT(openedChannel == nullptr);
-    openedChannel = tcpChannel;
-    StateChanged();
+	DVASSERT(openedChannel == nullptr);
+	openedChannel = channel;
 }
 
-void Client::ChannelClosed(TCPChannel *tcpChannel, const char8* message)
+void Client::OnChannelClosed(DAVA::Net::IChannel* channel, const char8* )
 {
-    DVASSERT(openedChannel == tcpChannel);
-    openedChannel = nullptr;
-    StateChanged();
+	DVASSERT(openedChannel == channel);
+	openedChannel = nullptr;
+	StateChanged();
 }
 
 void Client::StateChanged()
@@ -141,50 +126,59 @@ void Client::StateChanged()
     }
 }
 
-void Client::PacketReceived(DAVA::TCPChannel *tcpChannel, const uint8* packetData, size_t length)
+void Client::OnPacketReceived(DAVA::Net::IChannel* channel, const void* packetData, size_t length)
 {
-    DVASSERT(openedChannel == tcpChannel);
-    if(length)
-    {
-        CachePacket* packet = CachePacket::Deserialize(packetData, length);
-        if(packet)
-        {
-            switch (packet->type)
-            {
-            case PACKET_ADD_RESPONSE:
-            {
-                AddResponsePacket *p = static_cast<AddResponsePacket*>(packet);
-                for (auto& listener : listeners)
-                    listener->OnAddedToCache(p->key, p->added);
-                return;
-            }
-            case PACKET_GET_RESPONSE:
-            {
-                GetResponsePacket* p = static_cast<GetResponsePacket*>(packet);
-                for (auto& listener : listeners)
-                    listener->OnReceivedFromCache(p->key, std::forward<CachedItemValue>(p->value));
-                return;
-            }
-            default:
-            {
-                Logger::Error("[AssetCache::Server::%s] Unexpected packet type: (%d). Closing channel", __FUNCTION__, packet->type);
-                netClient->DestroyChannel(tcpChannel);
-                return;
-            }
-            }
-        }
-        else
-        {
-            Logger::Error("[AssetCache::Server::%s] Invalid packet received. Closing channel", __FUNCTION__, packet->type);
-            netClient->DestroyChannel(tcpChannel);
-            return;
-        }
-    }
-    else
-    {
-        Logger::Error("[AssetCache::Client::%s] Empty packet is received. Closing channel", __FUNCTION__);
-        netClient->DestroyChannel(tcpChannel);
-    }
+	if(listeners.empty())
+	{	// do not need to process data in case of nullptr listener
+		return;
+	}
+
+	DVASSERT(openedChannel == channel);
+	if(length > 0)
+	{
+		CachePacket* packet = CachePacket::Create(static_cast<const uint8 *>(packetData), length);
+		if(packet != nullptr)
+		{
+			switch (packet->type)
+			{
+			case PACKET_ADD_RESPONSE:
+				{
+					AddResponsePacket *p = static_cast<AddResponsePacket*>(packet);
+                    for (auto& listener : listeners)
+					    listener->OnAddedToCache(p->key, p->added);
+					break;
+				}
+			case PACKET_GET_RESPONSE:
+				{
+					GetResponsePacket* p = static_cast<GetResponsePacket*>(packet);
+                    for (auto& listener : listeners)
+					    listener->OnReceivedFromCache(p->key, std::forward<CachedItemValue>(p->value));
+					break;
+				}
+			default:
+				{
+					Logger::Error("[AssetCache::Server::%s] Unexpected packet type: (%d).", __FUNCTION__, packet->type);
+					DVASSERT(false);
+					break;
+				}
+			}
+
+			delete packet;
+		}
+		else
+		{
+			DVASSERT(false && "Invalid packet received");
+		}
+	}
+	else
+	{
+		Logger::Error("[AssetCache::Client::%s] Empty packet is received.", __FUNCTION__);
+	}
+}
+
+void Client::OnPacketSent(Net::IChannel* channel, const void* buffer, size_t length)
+{
+	CachePacket::PacketSent(static_cast<const uint8 *> (buffer), length);
 }
 
 void Client::AddListener(ClientListener* listener)
@@ -199,7 +193,6 @@ void Client::RemoveListener(ClientListener* listener)
     listeners.erase(listener);
 }
 
-    
-}; // end of namespace AssetCache
-}; // end of namespace DAVA
+} // end of namespace AssetCache
+} // end of namespace DAVA
 

@@ -31,9 +31,7 @@
 #include "AssetCache/AssetCacheServer.h"
 #include "AssetCache/AssetCacheConstants.h"
 #include "AssetCache/CachedItemValue.h"
-#include "AssetCache/CacheItemKey.h"
 #include "AssetCache/CachePacket.h"
-#include "AssetCache/TCPConnection/TCPConnection.h"
 #include "Debug/DVAssert.h"
 #include "FileSystem/KeyedArchive.h"
 #include "FileSystem/DynamicMemoryFile.h"
@@ -42,138 +40,116 @@
 namespace DAVA {
 namespace AssetCache {
 
+
 Server::~Server()
 {
 }
 
-bool Server::Listen(uint16 port)
-{
-    listenPort = port;
-    DVASSERT(!netServer);
-    
-    netServer.reset(TCPConnection::CreateServer(NET_SERVICE_ID, Net::Endpoint(listenPort)));
-    netServer->SetListener(this);
 
-    return netServer->IsConnected();
-}
-    
-bool Server::IsConnected() const
+void Server::Listen(uint16 port)
 {
-    if(netServer)
-    {
-        return netServer->IsConnected();
-    }
-    
-    return false;
+	listenPort = port;
+	DVASSERT(!netServer);
+
+	netServer.reset(new Connection(Net::SERVER_ROLE, Net::Endpoint(listenPort), this));
 }
+
 
 void Server::Disconnect()
 {
-    if(netServer)
-    {
-        netServer->Disconnect();
-        netServer->SetListener(nullptr);
-        netServer.reset();
-    }
-}
-    
-void Server::PacketReceived(DAVA::TCPChannel *tcpChannel, const uint8* packetData, size_t length)
-{
-    Logger::FrameworkDebug("[channel %d] Packet received", tcpChannel);
-    if(length && delegate)
-    {
-        CachePacket* packet = CachePacket::Deserialize(packetData, length);
-        if (packet)
-        {
-            Logger::FrameworkDebug("Packet type: %d, length %d", packet->type, length);
-
-            switch (packet->type)
-            {
-            case PACKET_ADD_REQUEST:
-            {
-                AddRequestPacket *p = static_cast<AddRequestPacket*>(packet);
-                delegate->OnAddToCache(tcpChannel, p->key, std::forward<CachedItemValue>(p->value));
-                return;
-            }
-            case PACKET_GET_REQUEST:
-            {
-                GetRequestPacket* p = static_cast<GetRequestPacket*>(packet);
-                delegate->OnRequestedFromCache(tcpChannel, p->key);
-                return;
-            }
-            case PACKET_WARMING_UP_REQUEST:
-            {
-                WarmupRequestPacket* p = static_cast<WarmupRequestPacket*>(packet);
-                delegate->OnWarmingUp(tcpChannel, p->key);
-                return;
-            }
-            default:
-            {
-                Logger::Error("[AssetCache::Server::%s] Unexpected packet type: (%d). Closing channel", __FUNCTION__, packet->type);
-                netServer->DestroyChannel(tcpChannel);
-                return;
-            }
-            }
-        }
-        else
-        {
-            Logger::Error("[AssetCache::Server::%s] Invalid packet received. Closing channel", __FUNCTION__, packet->type);
-            netServer->DestroyChannel(tcpChannel);
-            return;
-        }
-    }
-    else
-    {
-        if (!length)
-        {
-            Logger::Error("[AssetCache::Server::%s] Empty packet is received. Closing channel", __FUNCTION__);
-            netServer->DestroyChannel(tcpChannel);
-        }
-        if (!delegate)
-        {
-            Logger::Error("Server delegate is not set");
-        }
-    }
-}
-    
-void Server::ChannelClosed(TCPChannel *tcpChannel, const char8* message)
-{
-    Logger::FrameworkDebug("[channel %d] closed");
-    if(delegate)
-    {
-        delegate->OnChannelClosed(tcpChannel, message);
-    }
+	netServer.reset();
 }
 
-    
-bool Server::AddedToCache(DAVA::TCPChannel *tcpChannel, const CacheItemKey &key, bool added)
+
+void Server::OnPacketReceived(Net::IChannel * channel, const void* packetData, size_t length)
 {
-    if(tcpChannel)
-    {
-        AddResponsePacket packet(key, added);
-        return packet.SendTo(tcpChannel);
-    }
-    else
-    {
-        return false;
-    }
+	if(nullptr == delegate)
+	{	// do not need to process data in case of nullptr delegate
+		return;
+	}
+
+	if(length > 0)
+	{
+		CachePacket* packet = CachePacket::Create(static_cast<const uint8 *>(packetData), length);
+		if (packet)
+		{
+			switch (packet->type)
+			{
+			case PACKET_ADD_REQUEST:
+				{
+					AddRequestPacket *p = static_cast<AddRequestPacket*>(packet);
+					delegate->OnAddToCache(channel, p->key, std::forward<CachedItemValue>(p->value));
+					break;
+				}
+			case PACKET_GET_REQUEST:
+				{
+					GetRequestPacket* p = static_cast<GetRequestPacket*>(packet);
+					delegate->OnRequestedFromCache(channel, p->key);
+					break;
+				}
+			case PACKET_WARMING_UP_REQUEST:
+				{
+					WarmupRequestPacket* p = static_cast<WarmupRequestPacket*>(packet);
+					delegate->OnWarmingUp(channel, p->key);
+					break;
+				}
+			default:
+				{
+					Logger::Error("[AssetCache::Server::%s] Unexpected packet type: (%d). Closing channel", __FUNCTION__, packet->type);
+					DVASSERT(false);
+					break;
+				}
+			}
+
+			delete packet;
+		}
+		else
+		{
+			DVASSERT(false && "Invalid packet received");
+		}
+	}
+	else
+	{
+		Logger::Error("[AssetCache::Server::%s] Empty packet is received.", __FUNCTION__);
+	}
 }
-    
-    
-bool Server::Send(DAVA::TCPChannel *tcpChannel, const CacheItemKey &key, const CachedItemValue &value)
+
+void Server::OnPacketSent(Net::IChannel* channel, const void* buffer, size_t length)
 {
-    Logger::FrameworkDebug("Sending response packet, value size: %d", value.GetSize());
-    if (tcpChannel)
-    {
-        GetResponsePacket packet(key, value);
-        return packet.SendTo(tcpChannel);
-    }
-    else
-    {
-        Logger::FrameworkDebug("Cancel send: no tcp channel");
-        return false;
-    }
+	CachePacket::PacketSent(static_cast<const uint8 *> (buffer), length);
 }
+
+
+void Server::OnChannelClosed(Net::IChannel * channel, const char8* message)
+{
+	if(delegate)
+	{
+		delegate->OnChannelClosed(channel, message);
+	}
+}
+
+bool Server::AddedToCache(Net::IChannel * channel, const CacheItemKey &key, bool added)
+{
+	if(channel)
+	{
+		AddResponsePacket packet(key, added);
+		return packet.SendTo(channel);
+	}
+
+	return false;
+}
+
+bool Server::Send(Net::IChannel * channel, const CacheItemKey &key, const CachedItemValue &value)
+{
+	if (channel)
+	{
+		GetResponsePacket packet(key, value);
+		return packet.SendTo(channel);
+	}
+
+	return false;
+}
+
 
 }; // end of namespace AssetCache
 }; // end of namespace DAVA
