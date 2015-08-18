@@ -1,10 +1,30 @@
-//==============================================================================
-//
-//  
-//
-//==============================================================================
-//
-//  externals:
+/*==================================================================================
+    Copyright (c) 2008, binaryzebra
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+=====================================================================================*/
 
     #include "rhi_DX11.h"
     #include "../Common/rhi_Impl.h"
@@ -21,30 +41,13 @@
     #include <vector>
 
 
-#define E_MINSPEC (-3)  // Error code for gfx-card that doesn't meet min.spec
-
 
 namespace rhi
 {
 //==============================================================================
 
-Dispatch    DispatchDX11 = {0};
+static Dispatch     DispatchDX11 = {0};
 
-
-//==============================================================================
-/*
-struct
-DisplayMode
-{
-    unsigned        width;
-    unsigned        height;
-//    Texture::Format format;
-    unsigned        refresh_rate;
-};
-*/
-
-//D3DPRESENT_PARAMETERS       _PresentParam;
-//std::vector<DisplayMode>    _DisplayMode;
 
 
 //------------------------------------------------------------------------------
@@ -138,8 +141,11 @@ _InitDX11()
 {
     HRESULT                 hr;
     DWORD                   flags           = 0;
-    D3D_FEATURE_LEVEL       feature[]       = { D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_9_1 };
-//    D3D_FEATURE_LEVEL       feature[]       = { D3D_FEATURE_LEVEL_9_1 };
+    #if RHI__FORCE_DX11_91
+    D3D_FEATURE_LEVEL       feature[]       = { D3D_FEATURE_LEVEL_9_3, D3D_FEATURE_LEVEL_9_2, D3D_FEATURE_LEVEL_9_1 };
+    #else
+    D3D_FEATURE_LEVEL       feature[]       = { /*D3D_FEATURE_LEVEL_11_1, */D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_9_1 };
+    #endif
     DXGI_SWAP_CHAIN_DESC    swapchain_desc  = {0};
 
     #if 1
@@ -181,6 +187,8 @@ _InitDX11()
         if( SUCCEEDED(hr) )
         {
             hr = _D3D11_Device->QueryInterface( __uuidof(ID3D11Debug), (void**)(&_D3D11_Debug) );
+
+            hr = _D3D11_ImmediateContext->QueryInterface( __uuidof(ID3DUserDefinedAnnotation), (void**)(&_D3D11_UserAnnotation) );
         }
 
         hr = _D3D11_Device->CreateRenderTargetView( _D3D11_SwapChainBuffer, 0, &_D3D11_RenderTargetView );
@@ -213,10 +221,9 @@ dx11_Initialize( const InitParam& param )
     _DX11_InitParam = param;
     InitializeRenderThreadDX11();
 
-
     VertexBufferDX11::SetupDispatch( &DispatchDX11 );
     IndexBufferDX11::SetupDispatch( &DispatchDX11 );
-//    QueryBufferDX11::SetupDispatch( &DispatchDX11 );
+    QueryBufferDX11::SetupDispatch( &DispatchDX11 );
     TextureDX11::SetupDispatch( &DispatchDX11 );
     PipelineStateDX11::SetupDispatch( &DispatchDX11 );
     ConstBufferDX11::SetupDispatch( &DispatchDX11 );

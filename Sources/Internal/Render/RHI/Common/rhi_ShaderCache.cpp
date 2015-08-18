@@ -1,3 +1,31 @@
+/*==================================================================================
+    Copyright (c) 2008, binaryzebra
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+=====================================================================================*/
+
 
     #include "MCPP/mcpp_lib.h"
 
@@ -756,7 +784,7 @@ static const char* _ShaderDefine_DX11 =
 "#define VPROG_OUT_END                          };\n"
 
 //"#define DECL_VPROG_BUFFER(idx,sz) uniform float4 VP_Buffer##idx[sz];\n"
-"#define DECL_VPROG_BUFFER(idx,sz) cbuffer VP_Buffer##idx##_t : register(cb##idx) { float4 VP_Buffer##idx[sz]; };\n"
+"#define DECL_VPROG_BUFFER(idx,sz) cbuffer VP_Buffer##idx##_t : register(b##idx) { float4 VP_Buffer##idx[sz]; };\n"
 "#define VP_BUF_FLOAT3X3(buf,reg)  float3x3( (float3)(float4(VP_Buffer##buf[reg+0])), (float3)(float4(VP_Buffer##buf[reg+1])), (float3)(float4(VP_Buffer##buf[reg+2])) );\n"
 
 "#define VPROG_BEGIN             VP_Output vp_main( VP_Input IN ) { VP_Output OUT;\n"
@@ -822,16 +850,16 @@ static const char* _ShaderDefine_DX11 =
 "#define FPROG_OUT_END           };\n"
 
 "#define DECL_FP_SAMPLER2D(unit)    Texture2D FragmentTexture##unit : register(t##unit); SamplerState FragmentTexture##unit##_Sampler : register(s##unit);\n"
-"#define DECL_FP_SAMPLERCUBE(unit)  uniform samplerCUBE FragmentTexture##unit : TEXUNIT##unit;\n"
+"#define DECL_FP_SAMPLERCUBE(unit)    TextureCube FragmentTexture##unit : register(t##unit); SamplerState FragmentTexture##unit##_Sampler : register(s##unit);\n"
 "#define DECL_VP_SAMPLER2D(unit)    Texture2D VertexTexture##unit : register(t##unit); SamplerState VertexTexture##unit##_Sampler : register(s##unit);\n"
 
 "#define FP_TEXTURE2D(unit,uv)   FragmentTexture##unit.Sample( FragmentTexture##unit##_Sampler, uv )\n"
-"#define FP_TEXTURECUBE(unit,uv) texCUBE( FragmentTexture##unit, uv )\n"
+"#define FP_TEXTURECUBE(unit,uv) FragmentTexture##unit.Sample( FragmentTexture##unit##_Sampler, uv )\n"
 "#define FP_IN(name)             IN.##name\n"
 
 "#define FP_OUT_COLOR            OUT.color\n"
 
-"#define DECL_FPROG_BUFFER(idx,sz) cbuffer FP_Buffer##idx##_t : register(cb##idx) { float4 FP_Buffer##idx[sz]; };\n"
+"#define DECL_FPROG_BUFFER(idx,sz) cbuffer FP_Buffer##idx##_t : register(b##idx) { float4 FP_Buffer##idx[sz]; };\n"
 
 "#define FPROG_BEGIN             FP_Output fp_main( FP_Input IN ) { FP_Output OUT;\n"
 "#define FPROG_END               return OUT; }\n"

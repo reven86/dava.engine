@@ -48,6 +48,8 @@ public:
     bool IsReadOnly() const override;
     
     ePropertyType GetType() const override;
+    DAVA::uint32 GetFlags() const override;
+
     DAVA::VariantType GetValue() const override;
     const DAVA::String &GetClassName() const;
     ControlNode *GetControlNode() const;

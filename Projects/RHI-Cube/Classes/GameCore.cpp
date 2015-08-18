@@ -100,15 +100,6 @@ GameCore::SetupTriangle()
         "    VP_OUT_POSITION = float4(in_pos.x,in_pos.y,in_pos.z,1.0);\n"
         "\n"
         "VPROG_END\n"
-
-/*
-"precision highp float;\n"
-        "attribute vec4 attr_position;\n"
-        "void main()\n"
-        "{\n"
-        "    gl_Position = vec4(attr_position.x,attr_position.y,attr_position.z,1.0);\n"
-        "}\n"
-*/    
     );
     rhi::ShaderCache::UpdateProg
     ( 
@@ -125,19 +116,6 @@ GameCore::SetupTriangle()
         "FPROG_BEGIN\n"
         "    FP_OUT_COLOR = float4(FP_Buffer0[0]);\n"
         "FPROG_END\n"
-
-/*
-        "precision highp float;\n"
-#if DV_USE_UNIFORMBUFFER_OBJECT
-        "uniform FP_Buffer0_Block { vec4 FP_Buffer0[4]; };\n"
-#else
-        "uniform vec4 FP_Buffer0[4];\n"
-#endif
-        "void main()\n"
-        "{\n"
-        "    gl_FragColor = FP_Buffer0[0];\n"
-        "}\n"
-*/    
     );
 
 
@@ -669,6 +647,7 @@ void GameCore::SetupTank()
 
 void GameCore::OnAppStarted()
 {
+/*
     struct
     {
         const char* file;
@@ -721,7 +700,7 @@ void GameCore::OnAppStarted()
     
     profiler::Stop();
     profiler::Dump();
-
+*/
 /*
 {
     File*   file = File::CreateFromSystemPath( "../../Tools/ResourceEditor/Data/Materials/Shaders/Default/materials-vp.cg", File::OPEN|File::READ );
@@ -800,7 +779,7 @@ void GameCore::OnAppStarted()
 //    SetupTriangle();
     SetupCube();
 //    SetupTank();
-    SetupRT();
+//    SetupRT();
 
 //    sceneRenderTest.reset(new SceneRenderTestV3());    
 
@@ -1117,7 +1096,7 @@ GameCore::rhiDraw()
 #endif
 
 
-#define USE_SECOND_CB 1
+#define USE_SECOND_CB 0
 
     rhi::RenderPassConfig   pass_desc;
 
@@ -1142,15 +1121,15 @@ GameCore::rhiDraw()
     rhi::RenderPass::Begin( pass );
     rhi::CommandBuffer::Begin( cb[0] );
 
-#if 0
+#if 1
     
     rhi::ConstBuffer::SetConst( triangle.fp_const, 0, 1, clr );
 
-    rhi::CommandBuffer::SetPipelineState( cb, triangle.ps );
-    rhi::CommandBuffer::SetVertexData( cb, triangle.vb );
-    rhi::CommandBuffer::SetIndices( cb, triangle.ib );
-    rhi::CommandBuffer::SetFragmentConstBuffer( cb, 0, triangle.fp_const );
-    rhi::CommandBuffer::DrawIndexedPrimitive( cb, rhi::PRIMITIVE_TRIANGLELIST, 1 );
+    rhi::CommandBuffer::SetPipelineState( cb[0], triangle.ps );
+    rhi::CommandBuffer::SetVertexData( cb[0], triangle.vb );
+    rhi::CommandBuffer::SetIndices( cb[0], triangle.ib );
+    rhi::CommandBuffer::SetFragmentConstBuffer( cb[0], 0, triangle.fp_const );
+    rhi::CommandBuffer::DrawIndexedPrimitive( cb[0], rhi::PRIMITIVE_TRIANGLELIST, 1, 3 );
     
 #else
     
@@ -1248,6 +1227,7 @@ SCOPED_NAMED_TIMING("app-draw");
 
     DbgDraw::SetScreenSize( VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dx, VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy );
 
+/*
     {
     char    title[128] = "RHI Cube  -  ";
 
@@ -1262,6 +1242,7 @@ SCOPED_NAMED_TIMING("app-draw");
 //    DbgDraw::SetSmallTextSize();
     DbgDraw::Text2D( 10, 50, 0xFFFFFFFF, title );
     }
+*/
 
     pass_desc.colorBuffer[0].loadAction      = rhi::LOADACTION_CLEAR;
     pass_desc.colorBuffer[0].storeAction     = rhi::STOREACTION_NONE;
@@ -1298,7 +1279,7 @@ SCOPED_NAMED_TIMING("app-draw");
     packet.primitiveType        = rhi::PRIMITIVE_TRIANGLELIST;
     packet.primitiveCount       = 1;
 
-    rhi::UpdateConstBuffer( triangle.fp_const, 0, clr, 1 );
+    rhi::ConstBuffer::SetConst( triangle.fp_const, 0, 1, clr );
     rhi::AddPacket( pl[0], packet );
 
 #else
@@ -1351,6 +1332,8 @@ SCOPED_NAMED_TIMING("app-draw");
     {
         const unsigned  row_cnt = 200;
         const unsigned  col_cnt = 12;
+//const unsigned  row_cnt = 1;
+//const unsigned  col_cnt = 2;
         const float     w       = 0.5f * float(col_cnt);
         
         rhi::BeginPacketList( pl[1] );
@@ -1380,7 +1363,7 @@ STOP_NAMED_TIMING("app.cb--upd");
 
 #endif
 
-    DbgDraw::FlushBatched( pl[0], view, projection );
+///    DbgDraw::FlushBatched( pl[0], view, projection );
 
     rhi::EndPacketList( pl[0] );
 

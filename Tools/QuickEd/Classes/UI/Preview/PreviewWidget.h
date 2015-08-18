@@ -57,6 +57,8 @@ public:
     explicit PreviewWidget(QWidget *parent = nullptr);
     ~PreviewWidget() = default;
     DavaGLWidget *GetDavaGLWidget();
+    void SetEmulationMode(bool emulationMode);
+    
 public slots:
     void OnDocumentChanged(SharedData *context);
     void OnDataChanged(const QByteArray &role);

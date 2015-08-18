@@ -167,9 +167,6 @@ ENUM_DECLARE(Interpolation::FuncType)
     ENUM_ADD_DESCR(Interpolation::BOUNCE_IN, "BOUNCE_IN");
     ENUM_ADD_DESCR(Interpolation::BOUNCE_OUT, "BOUNCE_OUT");
     ENUM_ADD_DESCR(Interpolation::BOUNCE_IN_BOUNCE_OUT, "BOUNCE_IN_BOUNCE_OUT");
-    ENUM_ADD_DESCR(Interpolation::EASY_IN, "EASY_IN");
-    ENUM_ADD_DESCR(Interpolation::EASY_OUT, "EASY_OUT");
-    ENUM_ADD_DESCR(Interpolation::EASY_IN_EASY_OUT, "EASY_IN_EASY_OUT");
 }
 
 ENUM_DECLARE(UIControlBackground::eDrawType)
@@ -352,7 +349,7 @@ ENUM_DECLARE(rhi::TextureMipFilter)
 ENUM_DECLARE(rhi::PrimitiveType)
 {
     ENUM_ADD(rhi::PRIMITIVE_TRIANGLELIST);
-    ENUM_ADD(rhi::PRIMITIVE_TRIANGLEFAN);
+    ENUM_ADD(rhi::PRIMITIVE_TRIANGLESTRIP);
     ENUM_ADD(rhi::PRIMITIVE_LINELIST);
 };
 

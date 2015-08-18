@@ -1,3 +1,30 @@
+/*==================================================================================
+    Copyright (c) 2008, binaryzebra
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+=====================================================================================*/
 
 
     #include "../Common/rhi_Private.h"
@@ -23,9 +50,9 @@ public:
                             IndexBufferDX11_t();
                             ~IndexBufferDX11_t();
 
-    unsigned        _size;
-    ID3D11Buffer*   _ib11;
-    unsigned        _mapped:1;
+    unsigned        size;
+    ID3D11Buffer*   buffer;
+    unsigned        isMapped:1;
 };
 
 typedef ResourcePool<IndexBufferDX11_t,RESOURCE_VERTEX_BUFFER>  IndexBufferDX11Pool;
@@ -34,9 +61,9 @@ RHI_IMPL_POOL(IndexBufferDX11_t,RESOURCE_VERTEX_BUFFER);
 
 
 IndexBufferDX11_t::IndexBufferDX11_t()
-  : _size(0),
-    _ib11(nullptr),
-    _mapped(false)
+  : size(0),
+    buffer(nullptr),
+    isMapped(false)
 {
 }
 
@@ -77,9 +104,9 @@ dx11_IndexBuffer_Create( const IndexBuffer::Descriptor& desc )
             handle = IndexBufferDX11Pool::Alloc();
             IndexBufferDX11_t*    vb = IndexBufferDX11Pool::Get( handle );
 
-            vb->_size   = desc.size;
-            vb->_ib11   = buf;
-            vb->_mapped = false;
+            vb->size     = desc.size;
+            vb->buffer   = buf;
+            vb->isMapped = false;
         }
         else
         {
@@ -100,13 +127,13 @@ dx11_IndexBuffer_Delete( Handle ib )
 
     if( self )
     {
-        if( self->_ib11 )
+        if( self->buffer )
         {
-            self->_ib11->Release();
-            self->_ib11 = nullptr;
+            self->buffer->Release();
+            self->buffer = nullptr;
         }
 
-        self->_size = 0;
+        self->size = 0;
 
         IndexBufferDX11Pool::Free( ib );
     }
@@ -121,18 +148,18 @@ dx11_IndexBuffer_Update( Handle vb, const void* data, unsigned offset, unsigned 
     bool                success = false;
     IndexBufferDX11_t*  self    = IndexBufferDX11Pool::Get( vb );
 
-    DVASSERT(!self->_mapped);
+    DVASSERT(!self->isMapped);
 
-    if( offset+size <= self->_size )
+    if( offset+size <= self->size )
     {
         D3D11_MAPPED_SUBRESOURCE    rc = {0};
         
-        _D3D11_ImmediateContext->Map( self->_ib11, 0, D3D11_MAP_WRITE_DISCARD, 0, &rc );
+        _D3D11_ImmediateContext->Map( self->buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &rc );
         
         if( rc.pData )
         {            
             memcpy( ((uint8*)(rc.pData))+offset, data, size );            
-            _D3D11_ImmediateContext->Unmap( self->_ib11, 0 );
+            _D3D11_ImmediateContext->Unmap( self->buffer, 0 );
             success = true;
         }
     }
@@ -150,13 +177,13 @@ dx11_IndexBuffer_Map( Handle ib, unsigned offset, unsigned size )
     IndexBufferDX11_t*          self = IndexBufferDX11Pool::Get( ib );
     D3D11_MAPPED_SUBRESOURCE    rc   = {0};
 
-    DVASSERT(!self->_mapped);
-    _D3D11_ImmediateContext->Map( self->_ib11, 0, D3D11_MAP_WRITE_DISCARD, 0, &rc );
+    DVASSERT(!self->isMapped);
+    _D3D11_ImmediateContext->Map( self->buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &rc );
 
     if( rc.pData )
     {
-        ptr           = rc.pData;
-        self->_mapped = true;
+        ptr            = rc.pData;
+        self->isMapped = true;
     }
 
     return ((uint8*)ptr)+offset;
@@ -170,9 +197,9 @@ dx11_IndexBuffer_Unmap( Handle ib )
 {
     IndexBufferDX11_t*  self = IndexBufferDX11Pool::Get( ib );
     
-    DVASSERT(self->_mapped);
-    _D3D11_ImmediateContext->Unmap( self->_ib11, 0 );
-    self->_mapped = false;
+    DVASSERT(self->isMapped);
+    _D3D11_ImmediateContext->Unmap( self->buffer, 0 );
+    self->isMapped = false;
 }
 
 
@@ -194,12 +221,12 @@ SetupDispatch( Dispatch* dispatch )
 
 
 void 
-SetToRHI( Handle ibh, unsigned offset )
+SetToRHI( Handle ibh, unsigned offset, ID3D11DeviceContext* context )
 {
     IndexBufferDX11_t*  self = IndexBufferDX11Pool::Get( ibh );    
     
-    DVASSERT(!self->_mapped);
-    _D3D11_ImmediateContext->IASetIndexBuffer( self->_ib11, DXGI_FORMAT_R16_UINT, offset );
+///    DVASSERT(!self->isMapped);
+    context->IASetIndexBuffer( self->buffer, DXGI_FORMAT_R16_UINT, offset );
 }
 
 }

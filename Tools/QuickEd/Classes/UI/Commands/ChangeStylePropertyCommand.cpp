@@ -27,58 +27,36 @@
  =====================================================================================*/
 
 
-#include "StyleSheetSelectorsProperty.h"
+#include "ChangeStylePropertyCommand.h"
 
-#include "PropertyVisitor.h"
-#include "../PackageHierarchy/StyleSheetNode.h"
+#include "Model/PackageHierarchy/PackageNode.h"
+#include "Model/PackageHierarchy/StyleSheetNode.h"
+#include "Model/ControlProperties/AbstractProperty.h"
 
-#include "UI/Styles/UIStyleSheet.h"
-
-using namespace DAVA;
-
-StyleSheetSelectorsProperty::StyleSheetSelectorsProperty(StyleSheetNode *aStyleSheet)
-    : ValueProperty("Selectors")
-    , styleSheet(aStyleSheet) // weak
+ChangeStylePropertyCommand::ChangeStylePropertyCommand(PackageNode *_root, StyleSheetNode *_node, AbstractProperty *prop, const DAVA::VariantType &newVal, QUndoCommand *parent /*= 0*/ )
+: QUndoCommand(parent)
+, root(SafeRetain(_root))
+, node(SafeRetain(_node))
+, property(SafeRetain(prop))
+, newValue(newVal)
 {
-    
+    oldValue = property->GetValue();
+    setText( QString("change %1").arg(QString(property->GetName().c_str())));
 }
 
-StyleSheetSelectorsProperty::~StyleSheetSelectorsProperty()
+ChangeStylePropertyCommand::~ChangeStylePropertyCommand()
 {
-    styleSheet = nullptr; //weak
+    SafeRelease(root);
+    SafeRelease(node);
+    SafeRelease(property);
 }
 
-int StyleSheetSelectorsProperty::GetCount() const
+void ChangeStylePropertyCommand::redo()
 {
-    return 0;
+    root->SetStyleProperty(node, property, newValue);
 }
 
-AbstractProperty *StyleSheetSelectorsProperty::GetProperty(int index) const
+void ChangeStylePropertyCommand::undo()
 {
-    return nullptr;
-}
-
-void StyleSheetSelectorsProperty::Accept(PropertyVisitor *visitor)
-{
-    visitor->VisitStyleSheetSelectorsProperty(this);
-}
-
-bool StyleSheetSelectorsProperty::IsReadOnly() const
-{
-    return styleSheet->IsReadOnly();
-}
-
-AbstractProperty::ePropertyType StyleSheetSelectorsProperty::GetType() const
-{
-    return TYPE_VARIANT;
-}
-
-DAVA::VariantType StyleSheetSelectorsProperty::GetValue() const
-{
-    return VariantType(styleSheet->GetName());
-}
-
-void StyleSheetSelectorsProperty::ApplyValue(const DAVA::VariantType &value)
-{
-    
+    root->SetStyleProperty(node, property, oldValue);
 }

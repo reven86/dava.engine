@@ -27,12 +27,13 @@
  =====================================================================================*/
 
 
-#ifndef __QUICKED_STYLE_SHEET_SELECTORS_PROPERTY_H__
-#define __QUICKED_STYLE_SHEET_SELECTORS_PROPERTY_H__
+#ifndef __QUICKED_VALUE_PROPERTY_H__
+#define __QUICKED_VALUE_PROPERTY_H__
 
 #include "Model/ControlProperties/ValueProperty.h"
 
 class ValueProperty;
+class IntrospectionProperty;
 
 class StyleSheetNode;
 
@@ -41,27 +42,25 @@ namespace DAVA
     class UIControl;
 }
 
-class StyleSheetSelectorsProperty : public ValueProperty
+class VariantTypeProperty : public ValueProperty
 {
 public:
-    StyleSheetSelectorsProperty(StyleSheetNode *styleSheet);
+    VariantTypeProperty(const DAVA::String &name, DAVA::VariantType &variantType);
 protected:
-    virtual ~StyleSheetSelectorsProperty();
+    virtual ~VariantTypeProperty();
     
 public:
-    int GetCount() const override;
-    AbstractProperty *GetProperty(int index) const override;
-    
     void Accept(PropertyVisitor *visitor) override;
     bool IsReadOnly() const override;
     
     ePropertyType GetType() const override;
     
     DAVA::VariantType GetValue() const;
+    const EnumMap *GetEnumMap() const;
     void ApplyValue(const DAVA::VariantType &value);
-
+    
 private:
-    StyleSheetNode *styleSheet; // weak
+    DAVA::VariantType &value;
 };
 
-#endif // __QUICKED_STYLE_SHEET_SELECTORS_PROPERTY_H__
+#endif // __QUICKED_VALUE_PROPERTY_H__

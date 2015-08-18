@@ -27,41 +27,31 @@
  =====================================================================================*/
 
 
-#ifndef __QUICKED_STYLE_SHEET_PROPERTIES_SECTION_H__
-#define __QUICKED_STYLE_SHEET_PROPERTIES_SECTION_H__
+#ifndef __QUICKED_CHANGE_STYLE_PROPERTY_COMMAND_H__
+#define __QUICKED_CHANGE_STYLE_PROPERTY_COMMAND_H__
 
-#include "Model/ControlProperties/AbstractProperty.h"
+#include <QUndoCommand>
+#include "FileSystem/VariantType.h"
 
-class StyleSheetProperty;
-
+class PackageNode;
 class StyleSheetNode;
+class AbstractProperty;
 
-namespace DAVA
-{
-    class UIControl;
-}
-
-class StyleSheetPropertiesSection : public AbstractProperty
+class ChangeStylePropertyCommand: public QUndoCommand
 {
 public:
-    StyleSheetPropertiesSection(StyleSheetNode *styleSheet);
-protected:
-    virtual ~StyleSheetPropertiesSection();
+    ChangeStylePropertyCommand(PackageNode *_root, StyleSheetNode *_node, AbstractProperty *_property, const DAVA::VariantType &newValue, QUndoCommand *parent = 0);
+    virtual ~ChangeStylePropertyCommand();
     
-public:
-    int GetCount() const override;
-    AbstractProperty *GetProperty(int index) const override;
-    
-    void Accept(PropertyVisitor *visitor) override;
-    bool IsReadOnly() const override;
-    
-    const DAVA::String &GetName() const override;
-    ePropertyType GetType() const override;
-    
+    void redo() override;
+    void undo() override;
     
 private:
-    StyleSheetNode *styleSheet; // weak
-    DAVA::Vector<StyleSheetProperty*> properties;
+    PackageNode *root;
+    StyleSheetNode *node;
+    AbstractProperty *property;
+    DAVA::VariantType oldValue;
+    DAVA::VariantType newValue;
 };
 
-#endif // __QUICKED_STYLE_SHEET_PROPERTIES_SECTION_H__
+#endif // __QUICKED_CHANGE_STYLE_PROPERTY_COMMAND_H__

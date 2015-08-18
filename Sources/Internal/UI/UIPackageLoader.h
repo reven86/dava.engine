@@ -71,6 +71,7 @@ private:
     };
     
 private:
+    void LoadStyleSheets(const YamlNode *styleSheetsNode, AbstractUIPackageBuilder *builder);
     void LoadControl(const YamlNode *node, bool root, AbstractUIPackageBuilder *builder);
 
     void LoadControlPropertiesFromYamlNode(UIControl *control, const InspInfo *typeInfo, const YamlNode *node, AbstractUIPackageBuilder *builder);
