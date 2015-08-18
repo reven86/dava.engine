@@ -82,7 +82,9 @@ PropertiesTreeItemDelegate::PropertiesTreeItemDelegate(QObject *parent)
     variantTypeItemDelegates[DAVA::VariantType::TYPE_VECTOR4] = new Vector4PropertyDelegate(this);
 
     propertyNameTypeItemDelegates["Sprite"] = new SpritePropertyDelegate(this);
+    propertyNameTypeItemDelegates["sprite"] = new SpritePropertyDelegate(this);
     propertyNameTypeItemDelegates["Font"] = new FontPropertyDelegate(this);
+    propertyNameTypeItemDelegates["font"] = new FontPropertyDelegate(this);
 }
 
 PropertiesTreeItemDelegate::~PropertiesTreeItemDelegate()

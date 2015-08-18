@@ -40,6 +40,10 @@
 #include "Model/ControlProperties/RootProperty.h"
 #include "Model/ControlProperties/ClassProperty.h"
 #include "Model/ControlProperties/CustomClassProperty.h"
+#include "Model/YamlPackageSerializer.h"
+
+#include "Base/ObjectFactory.h"
+#include "UI/UIControl.h"
 
 #include "Utils/QtDavaConvertion.h"
 #include "UI/IconHelper.h"
@@ -54,19 +58,38 @@ LibraryModel::LibraryModel(PackageNode *_root, QObject *parent)
     , importedPackageRootItem(nullptr)
 {
     root->AddListener(this);
-    defaultControls
-        << "UIControl"
-        << "UIButton"
-        << "UIStaticText"
-        << "UITextField"
-        << "UISlider"
-        << "UIList"
-        << "UIListCell"
-        << "UIScrollBar"
-        << "UIScrollView"
-        << "UISpinner"
-        << "UISwitch"
-        << "UIParticles";
+    Vector<std::pair<String, bool>> controlDescrs =
+    {
+        {"UIControl", false},
+        {"UIButton", false},
+        {"UIStaticText", false},
+        {"UITextField", false},
+        {"UISlider", true},
+        {"UIList", false},
+        {"UIListCell", false},
+        {"UIScrollBar", true},
+        {"UIScrollView", true},
+        {"UISpinner", true},
+        {"UISwitch", true},
+        {"UIParticles", false}
+    };
+    
+    for (std::pair<String, bool> &descr : controlDescrs)
+    {
+        ScopedPtr<UIControl> control(ObjectFactory::Instance()->New<UIControl>(descr.first));
+        if (control)
+        {
+            if (descr.second)
+                defaultControls.push_back(ControlNode::CreateFromControlWithChildren(control));
+            else
+                defaultControls.push_back(ControlNode::CreateFromControl(control));
+        }
+        else
+        {
+            DVASSERT(false);
+        }
+    }
+    
     BuildModel();
 }
 
@@ -74,6 +97,10 @@ LibraryModel::~LibraryModel()
 {
     root->RemoveListener(this);
     SafeRelease(root);
+    
+    for (ControlNode *control : defaultControls)
+        control->Release();
+    defaultControls.clear();
 }
 
 Qt::ItemFlags LibraryModel::flags(const QModelIndex &index) const
@@ -83,7 +110,15 @@ Qt::ItemFlags LibraryModel::flags(const QModelIndex &index) const
         return Qt::NoItemFlags;
     }
 
-    return QAbstractItemModel::flags(index) | Qt::ItemIsUserCheckable | Qt::ItemIsDragEnabled;
+    QStandardItem *item = itemFromIndex(index);
+    
+    Qt::ItemFlags result = QAbstractItemModel::flags(index);
+    Vector<ControlNode*> controls;
+    Vector<StyleSheetNode*> styles;
+    PackageBaseNode *node = static_cast<PackageBaseNode*>(item->data(POINTER_DATA).value<void*>());
+    if (node && node->GetControl() != nullptr)
+        result |= Qt::ItemIsDragEnabled;
+    return result;
 }
 
 QStringList LibraryModel::mimeTypes() const
@@ -99,8 +134,30 @@ QMimeData *LibraryModel::mimeData(const QModelIndexList &indexes) const
         {
             QMimeData *data = new QMimeData();
             auto item = itemFromIndex(index);
-            data->setText(item->data(INNER_NAME_DATA).toString());
-            return data;
+            
+            PackageBaseNode *node = static_cast<PackageBaseNode*>(item->data(POINTER_DATA).value<void*>());
+            ControlNode *control = node ? dynamic_cast<ControlNode*>(node) : nullptr;
+            
+            if (control)
+            {
+                Vector<ControlNode*> controls;
+                Vector<StyleSheetNode*> styles;
+
+                RefPtr<ControlNode> resultControl;
+                if (control->GetPackage() != nullptr)
+                    resultControl = RefPtr<ControlNode>(ControlNode::CreateFromPrototype(control));
+                else
+                    resultControl = control;
+                
+                controls.push_back(resultControl.Get());
+                
+                YamlPackageSerializer serializer;
+                serializer.SerializePackageNodes(root, controls, styles);
+                String str = serializer.WriteToString();
+                data->setText(QString::fromStdString(str));
+                
+                return data;
+            }
         }
     }
     return nullptr;
@@ -131,13 +188,12 @@ void LibraryModel::BuildModel()
     defaultControlsRootItem = new QStandardItem(tr("Default controls"));
     defaultControlsRootItem->setBackground(QBrush(Qt::lightGray));
     invisibleRootItem()->appendRow(defaultControlsRootItem);
-    for (const auto &defaultControl : defaultControls)
+    for (ControlNode *defaultControl : defaultControls)
     {
-        auto item = new QStandardItem(
-            QIcon(IconHelper::GetIconPathForClassName(defaultControl)),
-            defaultControl
-            ); 
-        item->setData(defaultControl, INNER_NAME_DATA);
+        QString className = QString::fromStdString(defaultControl->GetControl()->GetClassName());
+        auto item = new QStandardItem(QIcon(IconHelper::GetIconPathForClassName(className)), className);
+        item->setData(QVariant::fromValue(static_cast<void*>(defaultControl)), POINTER_DATA);
+        item->setData(className, INNER_NAME_DATA);
         defaultControlsRootItem->appendRow(item);
     }
     const auto packageControls = root->GetPackageControlsNode();
@@ -244,6 +300,11 @@ void LibraryModel::ControlPropertyWasChanged(ControlNode *node, AbstractProperty
     }
 }
 
+void LibraryModel::StylePropertyWasChanged(StyleSheetNode *node, AbstractProperty *property)
+{
+    // do nothing
+}
+
 void LibraryModel::ControlWillBeAdded(ControlNode *node, ControlsContainerNode *destination, int row)
 {
     Q_UNUSED(node);
@@ -317,6 +378,26 @@ void LibraryModel::ImportedPackageWasAdded(PackageNode *node, ImportedPackagesNo
             AddImportedControl(node);
         }
     }
+}
+
+void LibraryModel::StyleWillBeAdded(StyleSheetNode *node, StyleSheetsNode *destination, int index)
+{
+    // do nothing
+}
+
+void LibraryModel::StyleWasAdded(StyleSheetNode *node, StyleSheetsNode *destination, int index)
+{
+    // do nothing
+}
+
+void LibraryModel::StyleWillBeRemoved(StyleSheetNode *node, StyleSheetsNode *from)
+{
+    // do nothing
+}
+
+void LibraryModel::StyleWasRemoved(StyleSheetNode *node, StyleSheetsNode *from)
+{
+    // do nothing
 }
 
 void LibraryModel::ImportedPackageWillBeRemoved(PackageNode *node, ImportedPackagesNode *from)

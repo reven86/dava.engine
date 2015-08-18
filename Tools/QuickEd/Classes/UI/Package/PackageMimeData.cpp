@@ -30,6 +30,7 @@
 #include "PackageMimeData.h"
 
 #include "Model/PackageHierarchy/ControlNode.h"
+#include "Model/PackageHierarchy/StyleSheetNode.h"
 
 using namespace DAVA;
 
@@ -41,19 +42,34 @@ PackageMimeData::PackageMimeData()
 
 PackageMimeData::~PackageMimeData()
 {
-    for (ControlNode *node : nodes)
-        node->Release();
-    nodes.clear();
+    for (ControlNode *control : controls)
+        control->Release();
+    controls.clear();
+
+    for (StyleSheetNode *style : styles)
+        style->Release();
+    
+    styles.clear();
 }
 
-void PackageMimeData::AddControlNode(ControlNode *node)
+void PackageMimeData::AddControl(ControlNode *node)
 {
-    nodes.push_back(SafeRetain(node));
+    controls.push_back(SafeRetain(node));
 }
 
-const Vector<ControlNode*> &PackageMimeData::GetControlNodes() const
+void PackageMimeData::AddStyle(StyleSheetNode *node)
 {
-    return nodes;
+    styles.push_back(SafeRetain(node));
+}
+
+const Vector<ControlNode*> &PackageMimeData::GetControls() const
+{
+    return controls;
+}
+
+const Vector<StyleSheetNode*> &PackageMimeData::GetStyles() const
+{
+    return styles;
 }
 
 bool PackageMimeData::hasFormat(const QString &mimetype) const

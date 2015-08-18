@@ -1936,6 +1936,9 @@
     <ClInclude Include="..\..\Sources\Internal\Functional\SignalBase.h">
       <Filter>Internal\Functional</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIPriorityStyleSheet.h">
+      <Filter>Internal\UI\Styles</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.cpp">
@@ -3417,6 +3420,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UISizePolicyComponent.cpp">
       <Filter>Internal\UI\Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIPriorityStyleSheet.cpp">
+      <Filter>Internal\UI\Styles</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
