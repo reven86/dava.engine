@@ -47,7 +47,7 @@ namespace DAVA
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 
-
+using namespace ::Windows::Graphics::Display;
 
 void RenderManager::Create(Windows::UI::Xaml::Controls::SwapChainPanel^ swapChainPanel)
 {
@@ -143,8 +143,15 @@ void RenderManager::Create(Windows::UI::Xaml::Controls::SwapChainPanel^ swapChai
         {
             rawPixelsPerViewPixel = currentDisplayInformation->RawPixelsPerViewPixel;
         }
-        surfaceSize.Width = Max(coreWindow->Bounds.Width, coreWindow->Bounds.Height) * rawPixelsPerViewPixel;
-        surfaceSize.Height = Min(coreWindow->Bounds.Width, coreWindow->Bounds.Height) * rawPixelsPerViewPixel;
+        float32 width = coreWindow->Bounds.Width;
+        float32 height = coreWindow->Bounds.Height;
+        DisplayOrientations orient = DisplayInformation::GetForCurrentView()->CurrentOrientation;
+        if (DisplayOrientations::Portrait == orient || DisplayOrientations::PortraitFlipped == orient)
+        {
+            std::swap(width, height);
+        }
+        surfaceSize.Width = width * rawPixelsPerViewPixel;
+        surfaceSize.Height = height * rawPixelsPerViewPixel;
         Logger::FrameworkDebug("Initialize Angle render with size: Width = %d, Height = %d.", surfaceSize.Width, surfaceSize.Height);
         surfaceCreationProperties->Insert(ref new Platform::String(EGLRenderSurfaceSizeProperty), Windows::Foundation::PropertyValue::CreateSize(surfaceSize));
     }
