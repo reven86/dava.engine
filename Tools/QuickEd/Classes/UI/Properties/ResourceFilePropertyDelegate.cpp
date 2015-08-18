@@ -27,31 +27,32 @@
 =====================================================================================*/
 
 
-#include "SpritePropertyDelegate.h"
+#include "ResourceFilePropertyDelegate.h"
 #include <DAVAEngine.h>
 #include <QAction>
 #include <QLineEdit>
 #include "PropertiesTreeItemDelegate.h"
 #include "Utils/QtDavaConvertion.h"
-#include "Helpers/ResourcesManageHelper.h"
-
 #include "QtTools/FileDialog/FileDialog.h"
+#include "ResourcesManageHelper.h"
 
 using namespace DAVA;
 
 
-SpritePropertyDelegate::SpritePropertyDelegate(PropertiesTreeItemDelegate *delegate)
+ResourceFilePropertyDelegate::ResourceFilePropertyDelegate(const QString &aResourcefilter, const QString &aResourceDir, PropertiesTreeItemDelegate *delegate)
     : BasePropertyDelegate(delegate)
+    , resourcefilter(aResourcefilter)
+    , resourceDir(aResourceDir)
 {
 
 }
 
-SpritePropertyDelegate::~SpritePropertyDelegate()
+ResourceFilePropertyDelegate::~ResourceFilePropertyDelegate()
 {
 
 }
 
-QWidget * SpritePropertyDelegate::createEditor(QWidget * parent, const QStyleOptionViewItem & option, const QModelIndex & index) const
+QWidget * ResourceFilePropertyDelegate::createEditor(QWidget * parent, const QStyleOptionViewItem & option, const QModelIndex & index) const
 {
     QLineEdit *lineEdit = new QLineEdit(parent);
     lineEdit->setObjectName(QString::fromUtf8("lineEdit"));
@@ -60,16 +61,16 @@ QWidget * SpritePropertyDelegate::createEditor(QWidget * parent, const QStyleOpt
     return lineEdit;
 }
 
-void SpritePropertyDelegate::setEditorData(QWidget * rawEditor, const QModelIndex & index) const
+void ResourceFilePropertyDelegate::setEditorData(QWidget * rawEditor, const QModelIndex & index) const
 {
     QLineEdit *editor = rawEditor->findChild<QLineEdit*>("lineEdit");
 
     DAVA::VariantType variant = index.data(Qt::EditRole).value<DAVA::VariantType>();
-    QString stringValue = StringToQString(variant.AsFilePath().GetAbsolutePathname());
+    QString stringValue = StringToQString(variant.AsFilePath().GetStringValue());
     editor->setText(stringValue);
 }
 
-bool SpritePropertyDelegate::setModelData(QWidget * rawEditor, QAbstractItemModel * model, const QModelIndex & index) const
+bool ResourceFilePropertyDelegate::setModelData(QWidget * rawEditor, QAbstractItemModel * model, const QModelIndex & index) const
 {
     if (BasePropertyDelegate::setModelData(rawEditor, model, index))
         return true;
@@ -77,8 +78,9 @@ bool SpritePropertyDelegate::setModelData(QWidget * rawEditor, QAbstractItemMode
     QLineEdit *editor = rawEditor->findChild<QLineEdit*>("lineEdit");
 
     DAVA::VariantType variantType = index.data(Qt::EditRole).value<DAVA::VariantType>();
-    DAVA::FilePath filePath = QStringToString(editor->text());
-    variantType.SetFilePath(filePath);
+    DAVA::FilePath absoluteFilePath = QStringToString(editor->text());
+    DAVA::FilePath frameworkFilePath = absoluteFilePath.GetFrameworkPath();
+    variantType.SetFilePath(frameworkFilePath);
 
     QVariant variant;
     variant.setValue<DAVA::VariantType>(variantType);
@@ -86,22 +88,22 @@ bool SpritePropertyDelegate::setModelData(QWidget * rawEditor, QAbstractItemMode
     return model->setData(index, variant, Qt::EditRole);
 }
 
-void SpritePropertyDelegate::enumEditorActions(QWidget *parent, const QModelIndex &index, QList<QAction *> &actions) const
+void ResourceFilePropertyDelegate::enumEditorActions(QWidget *parent, const QModelIndex &index, QList<QAction *> &actions) const
 {
-    QAction *openFileDialogAction = new QAction(tr("..."), parent);
-    openFileDialogAction->setToolTip(tr("Select sprite descriptor"));
-    actions.push_back(openFileDialogAction);
-    connect(openFileDialogAction, SIGNAL(triggered(bool)), this, SLOT(openFileDialogClicked()));
+    QAction *selectFileAction = new QAction(tr("..."), parent);
+    selectFileAction->setToolTip(tr("Select resource file"));
+    actions.push_back(selectFileAction);
+    connect(selectFileAction, SIGNAL(triggered(bool)), this, SLOT(selectFileClicked()));
 
-    QAction *clearSpriteAction = new QAction(QIcon(":/Icons/editclear.png"), tr("clear"), parent);
-    clearSpriteAction->setToolTip(tr("Clear sprite descriptor"));
-    actions.push_back(clearSpriteAction);
-    connect(clearSpriteAction, SIGNAL(triggered(bool)), this, SLOT(clearSpriteClicked()));
+    QAction *clearFileAction = new QAction(QIcon(":/Icons/editclear.png"), tr("clear"), parent);
+    clearFileAction->setToolTip(tr("Clear resource file"));
+    actions.push_back(clearFileAction);
+    connect(clearFileAction, SIGNAL(triggered(bool)), this, SLOT(clearFileClicked()));
 
     BasePropertyDelegate::enumEditorActions(parent, index, actions);
 }
 
-void SpritePropertyDelegate::openFileDialogClicked()
+void ResourceFilePropertyDelegate::selectFileClicked()
 {
     QAction *openFileDialogAction = qobject_cast<QAction *>(sender());
     if (!openFileDialogAction)
@@ -122,20 +124,22 @@ void SpritePropertyDelegate::openFileDialogClicked()
     }
     else
     {
-        dir = ResourcesManageHelper::GetSpritesDirectory();
+        dir = ResourcesManageHelper::GetResourceRootDirectory() + resourceDir;
     }
 
-    QString filePathText = FileDialog::getOpenFileName(editor->parentWidget(), tr("Select sprite descriptor"), dir, QString("*.txt"));
+    QString filePathText = FileDialog::getOpenFileName(editor->parentWidget(), tr("Select resource file"), dir, resourcefilter);
     if (!filePathText.isEmpty())
     {
-        lineEdit->setText(filePathText);
+        DAVA::FilePath absoluteFilePath = QStringToString(filePathText);
+        DAVA::FilePath frameworkFilePath = absoluteFilePath.GetFrameworkPath();
+        lineEdit->setText(StringToQString(frameworkFilePath.GetStringValue()));
 
         BasePropertyDelegate::SetValueModified(editor, true);
         itemDelegate->emitCommitData(editor);
     }
 }
 
-void SpritePropertyDelegate::clearSpriteClicked()
+void ResourceFilePropertyDelegate::clearFileClicked()
 {
     QAction *clearSpriteAction = qobject_cast<QAction *>(sender());
     if (!clearSpriteAction)
@@ -153,7 +157,7 @@ void SpritePropertyDelegate::clearSpriteClicked()
     itemDelegate->emitCommitData(editor);
 }
 
-void SpritePropertyDelegate::valueChanged()
+void ResourceFilePropertyDelegate::valueChanged()
 {
     QLineEdit *lineEdit = qobject_cast<QLineEdit *>(sender());
     if (!lineEdit)
