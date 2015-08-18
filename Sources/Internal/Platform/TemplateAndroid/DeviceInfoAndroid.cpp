@@ -137,7 +137,7 @@ String DeviceInfoPrivate::GetHTTPNonProxyHosts()
 	return jstringToString(getHTTPNonProxyHosts());
 }
 
-int DeviceInfoPrivate::GetHTTPProxyPort()
+int32 DeviceInfoPrivate::GetHTTPProxyPort()
 {
 	return getHTTPProxyPort();
 }
@@ -204,18 +204,6 @@ bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType hid)
 void DeviceInfoPrivate::SubscribeHID(DeviceInfo::eHIDType hid, DeviceInfo::HIDCallBackFunc&& func)
 {
     DVASSERT(false && "Not Implement");
-}
-
-bool DeviceInfoPrivate::IsMobileMode()
-{
-    DVASSERT(false && "Not Implement");
-    return false;
-}
-
-bool DeviceInfoPrivate::IsRunningOnEmulator()
-{
-    DVASSERT(false && "Not Implement");
-    return false;
 }
 
 DeviceInfo::StorageInfo DeviceInfoPrivate::StorageInfoFromJava(jobject object)

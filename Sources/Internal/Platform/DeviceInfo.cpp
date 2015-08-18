@@ -103,7 +103,7 @@ String DeviceInfo::GetHTTPNonProxyHosts()
     return GetPrivateImpl()->GetHTTPNonProxyHosts();
 }
 
-int DeviceInfo::GetHTTPProxyPort()
+int32 DeviceInfo::GetHTTPProxyPort()
 {
     return GetPrivateImpl()->GetHTTPProxyPort();
 }
@@ -113,7 +113,7 @@ DeviceInfo::ScreenInfo & DeviceInfo::GetScreenInfo()
     return GetPrivateImpl()->GetScreenInfo();
 }
 
-int DeviceInfo::GetZBufferSize()
+int32 DeviceInfo::GetZBufferSize()
 {
     return GetPrivateImpl()->GetZBufferSize();
 }
@@ -152,16 +152,6 @@ bool DeviceInfo::IsHIDConnected(eHIDType hid)
 void DeviceInfo::SubscribeHID(eHIDType hid, HIDCallBackFunc&& func)
 {
     GetPrivateImpl()->SubscribeHID(hid, std::forward<HIDCallBackFunc>(func));
-}
-
-bool DeviceInfo::IsMobileMode()
-{
-    return GetPrivateImpl()->IsMobileMode();
-}
-
-bool DeviceInfo::IsRunningOnEmulator()
-{
-    return GetPrivateImpl()->IsRunningOnEmulator();
 }
 
 DeviceInfoPrivate* DeviceInfo::GetPrivateImpl()

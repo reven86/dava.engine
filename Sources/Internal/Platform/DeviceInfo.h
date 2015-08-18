@@ -74,7 +74,7 @@ public:
         PLATFORM_IOS_SIMULATOR,
         PLATFORM_ANDROID,
         PLATFORM_WIN32,
-        PLATFORM_WIN_UAP,
+        PLATFORM_DESKTOP_WIN_UAP,
         PLATFORM_PHONE_WIN_UAP,
         PLATFORM_UNKNOWN,
         PLATFORMS_COUNT
@@ -165,9 +165,9 @@ public:
     static WideString GetName();
     static String GetHTTPProxyHost();
     static String GetHTTPNonProxyHosts();
-    static int GetHTTPProxyPort();
+    static int32 GetHTTPProxyPort();
     static ScreenInfo& GetScreenInfo();
-    static int GetZBufferSize();
+    static int32 GetZBufferSize();
     static eGPUFamily GetGPUFamily();
     static NetworkInfo GetNetworkInfo();
     static List<StorageInfo> GetStoragesList();
@@ -181,12 +181,6 @@ public:
     // int value - type "human interface device"
     // bool value - device has been connected(true), or disconnected(false)
     static void SubscribeHID(eHIDType hid, HIDCallBackFunc&& func);
-
-    // true, if App started on mobile device(Surface desktop device)
-    static bool IsMobileMode();
-
-    // true, if App started on emulator
-    static bool IsRunningOnEmulator();
 
 private:
     static DeviceInfoPrivate* GetPrivateImpl();

@@ -64,8 +64,6 @@ namespace DAVA
         void InitializeScreenInfo();
         bool IsHIDConnected(DeviceInfo::eHIDType hid);
         void SubscribeHID(DeviceInfo::eHIDType hid, DeviceInfo::HIDCallBackFunc&& func);
-        bool IsMobileMode();
-        bool IsRunningOnEmulator();
 
     private:
         enum AQSyntax
@@ -79,6 +77,17 @@ namespace DAVA
             AQS_KEYPAD = 0x07,
             AQS_SYSTEM_CONTROL = 0x80
         };
+
+        Map<AQSyntax, DeviceInfo::eHIDType> convAqsToHid = 
+        { { AQS_UNKNOWN , DeviceInfo::HID_UNKNOWN_TYPE }, { AQS_POINTER, DeviceInfo::HID_POINTER_TYPE }, { AQS_MOUSE, DeviceInfo::HID_MOUSE_TYPE },
+          { AQS_JOYSTICK, DeviceInfo::HID_JOYSTICK_TYPE }, { AQS_GAMEPAD, DeviceInfo::HID_GAMEPAD_TYPE }, { AQS_KEYBOARD, DeviceInfo::HID_KEYBOARD_TYPE },
+          { AQS_KEYPAD, DeviceInfo::HID_KEYPAD_TYPE }, { AQS_SYSTEM_CONTROL, DeviceInfo::HID_SYSTEM_CONTROL_TYPE } };
+
+        Map<DeviceInfo::eHIDType, AQSyntax> convHidToAqs =
+        { { DeviceInfo::HID_UNKNOWN_TYPE, AQS_UNKNOWN }, { DeviceInfo::HID_POINTER_TYPE, AQS_POINTER }, { DeviceInfo::HID_MOUSE_TYPE, AQS_MOUSE },
+          { DeviceInfo::HID_JOYSTICK_TYPE, AQS_JOYSTICK }, { DeviceInfo::HID_GAMEPAD_TYPE, AQS_GAMEPAD }, { DeviceInfo::HID_KEYBOARD_TYPE, AQS_KEYBOARD },
+          { DeviceInfo::HID_KEYPAD_TYPE, AQS_KEYPAD }, { DeviceInfo::HID_SYSTEM_CONTROL_TYPE, AQS_SYSTEM_CONTROL } };
+
         const uint16 AQS_USAGE_PAGE = 0x01;
         struct cmpDeviceWatcher {
             bool operator()(Windows::Devices::Enumeration::DeviceWatcher^ a, Windows::Devices::Enumeration::DeviceWatcher^ b) const {
@@ -95,15 +104,25 @@ namespace DAVA
         void OnDeviceAdded(Windows::Devices::Enumeration::DeviceWatcher^, Windows::Devices::Enumeration::DeviceInformation^);
         void OnDeviceRemoved(Windows::Devices::Enumeration::DeviceWatcher^, Windows::Devices::Enumeration::DeviceInformationUpdate^);
         bool IsEnabled(AQSyntax usageId);
-        AQSyntax ConvertHIDToAQS(DeviceInfo::eHIDType hid);
-        DeviceInfo::eHIDType ConvertAQSToHID(AQSyntax aqs);
         void NotifyAllClients(AQSyntax usageId, bool connectState);
+        eGPUFamily GPUFamily();
+        bool IsMobileMode();
 
         bool isTouchPresent = false;
         MapForWatchers mapWatchers;
         MapForTypeAndDeviceInfo devices;
         MapForTypeAndConnections connections;
+
+        DeviceInfo::ePlatform platform = DeviceInfo::PLATFORM_UNKNOWN;
         DeviceInfo::ScreenInfo screenInfo;
+        eGPUFamily gpu = GPU_INVALID;
+        String platformString;
+        String version;
+        String manufacturer;
+        String uDID;
+        WideString productName;
+        int32 zBufferSize = 24;
+        int32 cpuCount = 1;
     };
 
 };

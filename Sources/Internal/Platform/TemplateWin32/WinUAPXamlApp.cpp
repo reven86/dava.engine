@@ -96,13 +96,12 @@ void WinUAPXamlApp::SetScreenMode(ApplicationViewWindowingMode screenMode)
 
 Windows::Foundation::Size WinUAPXamlApp::GetCurrentScreenSize()
 {
-    return Windows::Foundation::Size(windowWidth, windowHeight);
+    return Windows::Foundation::Size(physicalWidth, physicalHeight);
 }
 
 void WinUAPXamlApp::SetCursorPinning(bool isPinning)
 {
     // should be started on UI thread
-    Logger::FrameworkDebug("[CorePlatformWinUAP] CursorPinning %d", static_cast<int32>(isPinning));
     if (isPhoneApiDetected)
     {
         return;
@@ -117,7 +116,6 @@ void WinUAPXamlApp::SetCursorVisible(bool isVisible)
     {
         return;
     }
-    Logger::FrameworkDebug("[CorePlatformWinUAP] CursorState %d", static_cast<int32>(isVisible));
     if (isVisible != isMouseCursorShown)
     {
         Window::Current->CoreWindow->PointerCursor = (isVisible ? ref new CoreCursor(CoreCursorType::Arrow, 0) : nullptr);
@@ -127,13 +125,9 @@ void WinUAPXamlApp::SetCursorVisible(bool isVisible)
 
 void WinUAPXamlApp::OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^ args)
 {
-    CoreWindow^ coreWindow = Window::Current->CoreWindow;
-    uiThreadDispatcher = coreWindow->Dispatcher;
+    uiThreadDispatcher = Window::Current->CoreWindow->Dispatcher;
 
     CreateBaseXamlUI();
-
-    UpdateScreenSize(Max(coreWindow->Bounds.Width, coreWindow->Bounds.Height), Min(coreWindow->Bounds.Width, coreWindow->Bounds.Height));
-    InitRender();
 
     WorkItemHandler^ workItemHandler = ref new WorkItemHandler([this](Windows::Foundation::IAsyncAction^ action) { Run(); });
     renderLoopWorker = ThreadPool::RunAsync(workItemHandler, WorkItemPriority::High, WorkItemOptions::TimeSliced);
@@ -179,21 +173,27 @@ void WinUAPXamlApp::Run()
 {
     dispatcher = std::make_unique<DispatcherWinUAP>();
 
+    core->RunOnUIThreadBlocked([this]() {
+        SetupEventHandlers();
+    });
     Core::Instance()->CreateSingletons();
-    
+
+    // View size and orientation option should be configured in FrameowrkDidLaunched
+    FrameworkDidLaunched();
+
+    core->RunOnUIThreadBlocked([this]() {
+        PrepareScreenSize();
+        SetTitleName();
+        SetDisplayOrientations();
+        CoreWindow^ coreWindow = Window::Current->CoreWindow;
+        UpdateScreenSize(coreWindow->Bounds.Width, coreWindow->Bounds.Height);
+        InitRender();
+    });
+
     RenderManager::Instance()->BindToCurrentThread();
     ReInitRender();
     InitCoordinatesSystem();
 
-    // View size and orientation option should be configured in FrameowrkDidLaunched
-    FrameworkDidLaunched();
-    core->RunOnUIThreadBlocked([this]() {
-        SetupEventHandlers();
-        SetTitleName();
-        InitInput();
-        PrepareScreenSize();
-        SetDisplayOrientations();
-    });
     Core::Instance()->SetIsActive(true);
 
     Core::Instance()->SystemAppStarted();
@@ -269,15 +269,17 @@ void WinUAPXamlApp::OnWindowVisibilityChanged(::Windows::UI::Core::CoreWindow^ s
 
 void WinUAPXamlApp::OnWindowSizeChanged(::Windows::UI::Core::CoreWindow^ sender, ::Windows::UI::Core::WindowSizeChangedEventArgs^ args)
 {
-    // Propagate to main thread
-    float32 w = args->Size.Width;
-    float32 h = args->Size.Height;
-    core->RunOnMainThread([this, w, h]() {
-        UpdateScreenSize(w, h);
-        ReInitRender();
-        ReInitCoordinatesSystem();
-        UIScreenManager::Instance()->ScreenSizeChanged();
-    });
+    UpdateScreenSize(args->Size.Width, args->Size.Height);
+    // render will be created on UI thread
+    if (isRenderCreated)
+    {
+        // Propagate to main thread
+        core->RunOnMainThread([this]() {
+            ReInitRender();
+            ReInitCoordinatesSystem();
+            UIScreenManager::Instance()->ScreenSizeChanged();
+        });
+    }
 }
 
 void WinUAPXamlApp::OnPointerPressed(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args)
@@ -360,7 +362,6 @@ void WinUAPXamlApp::OnPointerMoved(Windows::UI::Core::CoreWindow^ sender, Window
 void WinUAPXamlApp::OnPointerEntered(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args)
 {
     // will be started on main thread
-    Logger::FrameworkDebug("[CorePlatformWinUAP] OnPointerEntered");
     PointerDeviceType type = args->CurrentPoint->PointerDevice->PointerDeviceType;
     if (PointerDeviceType::Mouse == type && isCursorPinning)
     {
@@ -375,7 +376,6 @@ void WinUAPXamlApp::OnPointerExited(Windows::UI::Core::CoreWindow^ sender, Windo
     float32 y = args->CurrentPoint->Position.Y;
     int32 id = args->CurrentPoint->PointerId;
 
-    Logger::FrameworkDebug("[CorePlatformWinUAP] OnPointerExited");
     PointerDeviceType type = args->CurrentPoint->PointerDevice->PointerDeviceType;
     if ((PointerDeviceType::Mouse == type) || PointerDeviceType::Pen == type)
     {
@@ -403,7 +403,6 @@ void WinUAPXamlApp::OnPointerExited(Windows::UI::Core::CoreWindow^ sender, Windo
 void WinUAPXamlApp::OnPointerWheel(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args)
 {
     // will be started on main thread
-    Logger::FrameworkDebug("[CorePlatformWinUAP] OnPointerWheel");
     PointerPoint^ point = args->CurrentPoint;
     PointerPointProperties^ pointProperties = point->Properties;
     int32 wheelDelta = pointProperties->MouseWheelDelta;
@@ -515,7 +514,6 @@ void WinUAPXamlApp::OnMouseMoved(MouseDevice^ mouseDevice, MouseEventArgs^ args)
 
 void WinUAPXamlApp::DAVATouchEvent(UIEvent::eInputPhase phase, float32 x, float32 y, int32 id)
 {
-    Logger::FrameworkDebug("[CorePlatformWinUAP] DAVATouchEvent phase = %d, ID = %d, position.X = %f, position.Y = %f", phase, id, x, y);
     Vector<DAVA::UIEvent> touches;
     bool isFind = false;
     for (auto it = allTouches.begin(), end = allTouches.end(); it != end; ++it)
@@ -576,11 +574,10 @@ void WinUAPXamlApp::SetupEventHandlers()
     coreWindow->KeyDown += ref new TypedEventHandler<CoreWindow^, KeyEventArgs^>(this, &WinUAPXamlApp::OnKeyDown);
     coreWindow->KeyUp += ref new TypedEventHandler<CoreWindow^, KeyEventArgs^>(this, &WinUAPXamlApp::OnKeyUp);
     MouseDevice::GetForCurrentView()->MouseMoved += ref new TypedEventHandler<MouseDevice^, MouseEventArgs^>(this, &WinUAPXamlApp::OnMouseMoved);
-    if (Windows::Foundation::Metadata::ApiInformation::IsTypePresent("Windows.Phone.UI.Input.HardwareButtons"))
+    if (DeviceInfo::ePlatform::PLATFORM_PHONE_WIN_UAP == DeviceInfo::GetPlatform())
     {
         HardwareButtons::BackPressed += ref new EventHandler<BackPressedEventArgs^>(this, &WinUAPXamlApp::OnHardwareBackButtonPressed);
         isPhoneApiDetected = true;
-        Logger::FrameworkDebug("[CorePlatformWinUAP] Detected Phone Mode!");
     }
 }
 
@@ -606,7 +603,6 @@ void WinUAPXamlApp::CreateBaseXamlUI()
 void WinUAPXamlApp::SetTitleName()
 {
     // Note: must run on UI thread
-    Logger::FrameworkDebug("[CorePlatformWinUAP] SetTitleName");
     KeyedArchive* options = Core::Instance()->GetOptions();
     if (nullptr != options)
     {
@@ -618,7 +614,6 @@ void WinUAPXamlApp::SetTitleName()
 void WinUAPXamlApp::SetDisplayOrientations()
 {
     // Note: must run on UI thread
-    Logger::FrameworkDebug("[CorePlatformWinUAP] SetDisplayOrientations");
     Core::eScreenOrientation orientMode = Core::Instance()->GetScreenOrientation();
     switch (orientMode)
     {
@@ -646,61 +641,46 @@ void WinUAPXamlApp::SetDisplayOrientations()
     DisplayInformation::GetForCurrentView()->AutoRotationPreferences = displayOrientation;
 }
 
-void WinUAPXamlApp::InitInput()
-{
-    // Detect touch
-    Logger::FrameworkDebug("[CorePlatformWinUAP] InitInput");
-    TouchCapabilities^ touchCapabilities = ref new TouchCapabilities();
-    isTouchDetected = (1 == touchCapabilities->TouchPresent);   // Touch is always present in MSVS simulator
-
-    // Detect mouse
-    MouseCapabilities^ mouseCapabilities = ref new MouseCapabilities();
-    isMouseDetected = (1 == mouseCapabilities->MousePresent);
-}
-
 void WinUAPXamlApp::InitRender()
 {
-    Windows::Graphics::Display::DisplayInformation^ currentDisplayInformation = Windows::Graphics::Display::DisplayInformation::GetForCurrentView();
-    if (nullptr != currentDisplayInformation)
-    {
-        rawPixelsPerViewPixel = currentDisplayInformation->RawPixelsPerViewPixel;
-    }
-
-    Logger::FrameworkDebug("[CorePlatformWinUAP] InitRender");
     RenderManager::Create(Core::RENDERER_OPENGL_ES_2_0);
     RenderManager::Instance()->Create(swapChainPanel);
+    isRenderCreated = true;
 }
 
 void WinUAPXamlApp::ReInitRender()
 {
-    Logger::FrameworkDebug("[CorePlatformWinUAP] ReInitRender");
-    RenderManager::Instance()->Init(static_cast<int32>(windowWidth * rawPixelsPerViewPixel), static_cast<int32>(windowHeight * rawPixelsPerViewPixel));
+    RenderManager::Instance()->Init(physicalWidth, physicalHeight);
     RenderSystem2D::Instance()->Init();
 }
 
 void WinUAPXamlApp::InitCoordinatesSystem()
 {
-    Logger::FrameworkDebug("[CorePlatformWinUAP] InitCoordinatesSystem");
-    VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(static_cast<int32>(windowWidth), static_cast<int32>(windowHeight));
-    VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(static_cast<int32>(windowWidth * rawPixelsPerViewPixel), static_cast<int32>(windowHeight * rawPixelsPerViewPixel));
-    VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(static_cast<int32>(windowWidth* rawPixelsPerViewPixel), static_cast<int32>(windowHeight* rawPixelsPerViewPixel));
-    VirtualCoordinatesSystem::Instance()->EnableReloadResourceOnResize(true);
+    VirtualCoordinatesSystem* virtSystem = VirtualCoordinatesSystem::Instance();
+    virtSystem->SetInputScreenAreaSize(viewWidth, viewHeight);
+    virtSystem->SetPhysicalScreenSize(physicalWidth, physicalHeight);
+
+    virtSystem->EnableReloadResourceOnResize(true);
+    virtSystem->SetVirtualScreenSize(currentMode.width, currentMode.height);
 }
 
 void WinUAPXamlApp::ReInitCoordinatesSystem()
 {
-    Logger::FrameworkDebug("[CorePlatformWinUAP] ReInitCoordinatesSystem");
-    VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(static_cast<int32>(windowWidth), static_cast<int32>(windowHeight));
-    VirtualCoordinatesSystem::Instance()->UnregisterAllAvailableResourceSizes();
-    VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(static_cast<int32>(windowWidth * rawPixelsPerViewPixel), static_cast<int32>(windowHeight * rawPixelsPerViewPixel), "Gfx");
-    VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(static_cast<int32>(windowWidth * rawPixelsPerViewPixel), static_cast<int32>(windowHeight * rawPixelsPerViewPixel));
-    VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(static_cast<int32>(windowWidth* rawPixelsPerViewPixel), static_cast<int32>(windowHeight* rawPixelsPerViewPixel));
-    VirtualCoordinatesSystem::Instance()->ScreenSizeChanged();
+    VirtualCoordinatesSystem* virtSystem = VirtualCoordinatesSystem::Instance();
+    virtSystem->SetInputScreenAreaSize(viewWidth, viewHeight);
+    virtSystem->SetPhysicalScreenSize(physicalWidth, physicalHeight);
+
+    virtSystem->UnregisterAllAvailableResourceSizes();
+    virtSystem->RegisterAvailableResourceSize(currentMode.width, currentMode.height, "Gfx");
+    virtSystem->RegisterAvailableResourceSize(currentMode.width * 2, currentMode.height * 2, "Gfx2");
+    virtSystem->SetVirtualScreenSize(currentMode.width, currentMode.height);
+    virtSystem->ScreenSizeChanged();
 }
 
 void WinUAPXamlApp::PrepareScreenSize()
 {
     // Note: must run on UI thread
+    bool isFull(false);
     KeyedArchive* options = Core::Instance()->GetOptions();
     if (nullptr != options)
     {
@@ -711,40 +691,52 @@ void WinUAPXamlApp::PrepareScreenSize()
         fullscreenMode.width = options->GetInt32("fullscreen.width", fullscreenMode.width);
         fullscreenMode.height = options->GetInt32("fullscreen.height", fullscreenMode.height);
         fullscreenMode.bpp = windowedMode.bpp;
-        isFullscreen = (0 != options->GetInt32("fullscreen", 0));
+        isFull = (0 != options->GetInt32("fullscreen", 0));
     }
-    Logger::FrameworkDebug("[PlatformWin32] best display fullscreen mode matched: %d x %d x %d refreshRate: %d",
-                           fullscreenMode.width, fullscreenMode.height, fullscreenMode.bpp, fullscreenMode.refreshRate);
-    SetFullScreen(isFullscreen);
+    SetFullScreen(isFull);
     if (isFullscreen)
     {
+        fullscreenMode.width = viewWidth;
+        fullscreenMode.height = viewHeight;
         currentMode = fullscreenMode;
     }
     else
     {
+        // in units of effective (view) pixels
+        SetPreferredSize(static_cast<float32>(windowedMode.width), static_cast<float32>(windowedMode.height));
         currentMode = windowedMode;
-        SetPreferredSize(windowedMode.width, windowedMode.height);
     }
 }
 
 void WinUAPXamlApp::UpdateScreenSize(float32 width, float32 height)
 {
-    windowWidth = width;
-    windowHeight = height;
-    Logger::FrameworkDebug("[CorePlatformWinUAP] UpdateScreenSize windowWidth = %f, windowHeight = %f.", windowWidth, windowHeight);
+    // Note: must run on UI thread
+    Windows::Graphics::Display::DisplayInformation^ currentDisplayInformation = Windows::Graphics::Display::DisplayInformation::GetForCurrentView();
+    if (nullptr != currentDisplayInformation)
+    {
+        rawPixelsPerViewPixel = currentDisplayInformation->RawPixelsPerViewPixel;
+    }
+    viewWidth = static_cast<int32>(width);
+    viewHeight = static_cast<int32>(height);
+    physicalWidth = static_cast<int32>(viewWidth * rawPixelsPerViewPixel);
+    physicalHeight = static_cast<int32>(viewHeight * rawPixelsPerViewPixel);
+    if (isFullscreen)
+    {
+        currentMode.width = viewWidth;
+        currentMode.height = viewHeight;
+    }
 }
 
 void WinUAPXamlApp::SetFullScreen(bool isFullscreen_)
 {
     // Note: must run on UI thread
-    Logger::FrameworkDebug("[CorePlatformWinUAP] SetFullScreen %d", (int32)isFullscreen_);
-    if (isPhoneApiDetected)
+    ApplicationView^ view = ApplicationView::GetForCurrentView();
+    if (view->IsFullScreenMode == isFullscreen_)
     {
+        isFullscreen = isFullscreen_;
         return;
     }
-    ApplicationView^ view = ApplicationView::GetForCurrentView();
-    bool isFull = view->IsFullScreenMode;
-    if (isFull == isFullscreen_)
+    if (DeviceInfo::ePlatform::PLATFORM_PHONE_WIN_UAP == DeviceInfo::GetPlatform())
     {
         return;
     }
@@ -759,16 +751,16 @@ void WinUAPXamlApp::SetFullScreen(bool isFullscreen_)
     }
 }
 
-void WinUAPXamlApp::SetPreferredSize(int32 width, int32 height)
+void WinUAPXamlApp::SetPreferredSize(float32 width, float32 height)
 {
     // Note: must run on UI thread
-    Logger::FrameworkDebug("[CorePlatformWinUAP] SetPreferredSize width = %d, height = %d", width, height);
-    if (isPhoneApiDetected)
+    if (DeviceInfo::ePlatform::PLATFORM_PHONE_WIN_UAP == DeviceInfo::GetPlatform())
     {
         return;
     }
     // MSDN::This property only has an effect when the app is launched on a desktop device that is not in tablet mode.
-    ApplicationView::GetForCurrentView()->PreferredLaunchViewSize = Windows::Foundation::Size(static_cast<float32>(width), static_cast<float32>(height));
+    ApplicationView::GetForCurrentView()->PreferredLaunchViewSize = Windows::Foundation::Size(width, height);
+    ApplicationView::PreferredLaunchWindowingMode = ApplicationViewWindowingMode::PreferredLaunchViewSize;
 }
 
 }   // namespace DAVA

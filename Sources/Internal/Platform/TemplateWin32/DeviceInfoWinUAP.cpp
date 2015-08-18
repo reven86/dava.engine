@@ -30,7 +30,10 @@
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 
+#if defined(__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__)
 #include <GLES2/gl2.h>
+#endif //  (__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__)
+
 #include <Iphlpapi.h>
 #include <winsock2.h>
 
@@ -39,10 +42,13 @@
 #include "Utils/MD5.h"
 #include "Utils/StringFormat.h"
 #include "Utils/Utils.h"
+#include "Base/GlobalEnum.h"
 
 #include "Platform/TemplateWin32/DeviceInfoWinUAP.h"
-// temporary decision
+
+#if defined(__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__)
 #include "Platform/TemplateWin32/CorePlatformWinUAP.h"
+#endif //  (__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__)
 
 using namespace ::Windows::UI::Core;
 using namespace ::Windows::Graphics::Display;
@@ -71,61 +77,68 @@ DeviceInfoPrivate::DeviceInfoPrivate()
     mapWatchers.insert(PairForWatchersAndType(WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_KEYBOARD), AQS_KEYBOARD));
     mapWatchers.insert(PairForWatchersAndType(WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_KEYPAD), AQS_KEYPAD));
     mapWatchers.insert(PairForWatchersAndType(WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_SYSTEM_CONTROL), AQS_SYSTEM_CONTROL));
+
+    if (IsMobileMode())
+    {
+        platform = DeviceInfo::PLATFORM_PHONE_WIN_UAP;
+    }
+    platform = DeviceInfo::PLATFORM_DESKTOP_WIN_UAP;
+    platformString = GlobalEnumMap<DeviceInfo::ePlatform>::Instance()->ToString(GetPlatform());
+
+    EasClientDeviceInformation deviceInfo;
+    uDID.swap(RTStringToString(deviceInfo.Id.ToString()));
+    version.swap(RTStringToString(deviceInfo.SystemFirmwareVersion));
+    manufacturer.swap(RTStringToString(deviceInfo.SystemManufacturer));
+    productName = WideString(deviceInfo.SystemProductName->Data());
+    gpu = GPUFamily();
+    cpuCount = static_cast<int32>(std::thread::hardware_concurrency());
+    if (0 == cpuCount)
+    {
+        cpuCount = 1;
+    }
+
 }
 
 DeviceInfo::ePlatform DeviceInfoPrivate::GetPlatform()
 {
-    if (IsMobileMode())
-    {
-        return DeviceInfo::PLATFORM_PHONE_WIN_UAP;
-    }
-    return DeviceInfo::PLATFORM_WIN_UAP;
+    return platform;
 }
 
 String DeviceInfoPrivate::GetPlatformString()
 {
-    Logger::FrameworkDebug("[DeviceInfoPrivate::GetPlatformString] \"%s\".", GlobalEnumMap<DeviceInfo::ePlatform>::Instance()->ToString(GetPlatform()));
-    return GlobalEnumMap<DeviceInfo::ePlatform>::Instance()->ToString(GetPlatform());
+    return platformString;
 }
 
 String DeviceInfoPrivate::GetVersion()
 {
-    EasClientDeviceInformation deviceInfo;
-    Logger::FrameworkDebug("[DeviceInfoPrivate::GetVersion] \"%s\".", RTStringToString(deviceInfo.SystemFirmwareVersion).c_str());
-    return RTStringToString(deviceInfo.SystemFirmwareVersion);
-}
+    return version;
+ }
 
 String DeviceInfoPrivate::GetManufacturer()
 {
-    EasClientDeviceInformation deviceInfo;
-    Logger::FrameworkDebug("[DeviceInfoPrivate::GetManufacturer] \"%s\".", RTStringToString(deviceInfo.SystemManufacturer).c_str());
-    return RTStringToString(deviceInfo.SystemManufacturer);
+    return manufacturer;
 }
 
 String DeviceInfoPrivate::GetModel()
 {
     EasClientDeviceInformation deviceInfo;
-    Logger::FrameworkDebug("[DeviceInfoPrivate::GetModel] \"%s\".", RTStringToString(deviceInfo.FriendlyName).c_str());
     return RTStringToString(deviceInfo.FriendlyName);
 }
 
 String DeviceInfoPrivate::GetLocale()
 {
-    Logger::FrameworkDebug("[DeviceInfoPrivate::GetLocale] \"%s\".", RTStringToString(GlobalizationPreferences::Languages->GetAt(0)).c_str());
     return RTStringToString(GlobalizationPreferences::Languages->GetAt(0));
 }
 
 String DeviceInfoPrivate::GetRegion()
 {
-    Logger::FrameworkDebug("[DeviceInfoPrivate::GetRegion] \"%s\".", RTStringToString(GlobalizationPreferences::HomeGeographicRegion).c_str());
     return RTStringToString(GlobalizationPreferences::HomeGeographicRegion);
 }
 
 String DeviceInfoPrivate::GetTimeZone()
 {
-    //uncomment after add Windows.System.SystemManagementContract
-    // Logger::FrameworkDebug("[DeviceInfoPrivate::GetTimeZone] \"%s\".", RTStringToString(Windows::System::TimeZoneSettings::CurrentTimeZoneDisplayName).c_str());
-    // return RTStringToString(Windows::System::TimeZoneSettings::CurrentTimeZoneDisplayName);
+    // TO::DO uncomment after add Windows.System.SystemManagementContract
+    // RTStringToString(Windows::System::TimeZoneSettings::CurrentTimeZoneDisplayName);
     return "Not yet implemented";
 }
 
@@ -151,71 +164,22 @@ DeviceInfo::ScreenInfo& DeviceInfoPrivate::GetScreenInfo()
 
 int DeviceInfoPrivate::GetZBufferSize()
 {
-    return 24;
+    return zBufferSize;
 }
 
 String DeviceInfoPrivate::GetUDID()
 {
-    Windows::Security::ExchangeActiveSyncProvisioning::EasClientDeviceInformation deviceInfo;
-    Logger::FrameworkDebug("[DeviceInfoPrivate::GetUDID] \"%s\".", RTStringToString(deviceInfo.Id.ToString()).c_str());
-    return RTStringToString(deviceInfo.Id.ToString());
+    return uDID;
 }
 
 WideString DeviceInfoPrivate::GetName()
 {
-    EasClientDeviceInformation deviceInfo;
-    Logger::FrameworkDebug("[DeviceInfoPrivate::GetModel] \"%s\".", RTStringToString(deviceInfo.SystemProductName).c_str());
-    return deviceInfo.SystemProductName->Data();
+    return productName;
 }
 
 eGPUFamily DeviceInfoPrivate::GetGPUFamily()
-{
-    eGPUFamily gpuFamily(GPU_INVALID);
-    auto rendererTemp = glGetString(GL_RENDERER);
-    if (nullptr == rendererTemp)
-    {
-        DVASSERT(false && "GL not initialized");
-        return gpuFamily;
-    }
-    String renderer((const char8 *)rendererTemp);
-    std::transform(renderer.begin(), renderer.end(), renderer.begin(), ::tolower);
-    if (renderer.find("tegra") != String::npos)
-    {
-        gpuFamily = GPU_TEGRA;
-    }
-    else if (renderer.find("powervr") != String::npos)
-    {
-        gpuFamily = GPU_POWERVR_ANDROID;
-    }
-    else if (renderer.find("adreno") != String::npos)
-    {
-        gpuFamily = GPU_ADRENO;
-    }
-    else if (renderer.find("mali") != String::npos)
-    {
-        gpuFamily = GPU_MALI;
-    }
-
-    if (gpuFamily == GPU_INVALID)
-    {
-        auto extensionsTemp = glGetString(GL_EXTENSIONS);
-        if (nullptr == extensionsTemp)
-        {
-            DVASSERT(false && "GL not initialized");
-            return gpuFamily;
-        }
-        String extensions((const char8 *)extensionsTemp);
-
-        if (extensions.find("GL_IMG_texture_compression_pvrtc") != String::npos)
-            gpuFamily = GPU_POWERVR_ANDROID;
-        else if (extensions.find("GL_NV_draw_texture") >= 0)
-            gpuFamily = GPU_TEGRA;
-        else if (extensions.find("GL_AMD_compressed_ATC_texture") != String::npos)
-            gpuFamily = GPU_ADRENO;
-        else if (extensions.find("GL_OES_compressed_ETC1_RGB8_texture") != String::npos)
-            gpuFamily = GPU_MALI;
-    }
-    return gpuFamily;
+{   
+    return gpu;
 }
 
 DeviceInfo::NetworkInfo DeviceInfoPrivate::GetNetworkInfo()
@@ -244,21 +208,28 @@ DeviceInfo::NetworkInfo DeviceInfoPrivate::GetNetworkInfo()
 // temporary decision
 void DeviceInfoPrivate::InitializeScreenInfo()
 {
+#if defined(__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__)
     int32 w = 0, h = 0;
     CorePlatformWinUAP* core = static_cast<CorePlatformWinUAP*>(Core::Instance());
     DVASSERT(nullptr != core && "In DeviceInfo, InitializeScreenInfo() function CorePlatformWinUAP* = nullptr");
     auto func = [&w, &h]()
     {
-        auto window = CoreWindow::GetForCurrentThread();
+        CoreWindow^ window = CoreWindow::GetForCurrentThread();
         if (nullptr != window)
         {
-            w = static_cast<int32>(Max(window->Bounds.Width, window->Bounds.Height));
-            h = static_cast<int32>(Min(window->Bounds.Width, window->Bounds.Height));
+            w = static_cast<int32>(window->Bounds.Width);
+            h = static_cast<int32>(window->Bounds.Height);
+            DisplayOrientations current = DisplayInformation::GetForCurrentView()->CurrentOrientation;
+            if (DisplayOrientations::Portrait == current || DisplayOrientations::PortraitFlipped == current)
+            {
+                std::swap(w, h);
+            }
         }
     };
     core->RunOnUIThreadBlocked(func);
     screenInfo.width = w;
     screenInfo.height = h;
+#endif
 }
 
 bool FillStorageSpaceInfo(DeviceInfo::StorageInfo& storage_info)
@@ -303,7 +274,7 @@ List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetStoragesList()
     size_t size = removableStorages->Size;
     for (size_t i = 0; i < size; ++i)
     {
-        auto path = removableStorages->GetAt(i)->Path;
+        Platform::String^ path = removableStorages->GetAt(i)->Path;
         storage.path = WStringToString(path->Data());
         if (FillStorageSpaceInfo(storage))
         {
@@ -318,13 +289,12 @@ List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetStoragesList()
 
 int32 DeviceInfoPrivate::GetCpuCount()
 {
-    int32 cpuCount = static_cast<int32>(std::thread::hardware_concurrency());
-    return cpuCount == 0 ? 1 : cpuCount;
+    return cpuCount;
 }
 
 bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType hid)
 {
-    return IsEnabled(ConvertHIDToAQS(hid));
+    return IsEnabled(convHidToAqs[hid]);
 }
 
 // warning!!! notification occur in DeviceWatcher's thread
@@ -333,82 +303,12 @@ bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType hid)
 // for example DeviceInfo::SubscribeHID(DeviceInfo::eHIDType::HID_MOUSE_TYPE, MainThreadRedirector([this](int32 a, bool b) { OnMouseAdd(a, b);}));
 void DeviceInfoPrivate::SubscribeHID(DeviceInfo::eHIDType hid, DeviceInfo::HIDCallBackFunc&& func)
 {
-    connections[ConvertHIDToAQS(hid)].emplace_back(std::forward<DeviceInfo::HIDCallBackFunc>(func));
+    connections[convHidToAqs[hid]].emplace_back(std::forward<DeviceInfo::HIDCallBackFunc>(func));
 }
 
 bool DeviceInfoPrivate::IsMobileMode()
 {
     return Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent("Windows.Phone.PhoneContract", 1);
-}
-
-bool DeviceInfoPrivate::IsRunningOnEmulator()
-{
-    Windows::Security::ExchangeActiveSyncProvisioning::EasClientDeviceInformation deviceInfo;
-    return ("Virtual" == deviceInfo.SystemProductName);
-}
-
-DeviceInfoPrivate::AQSyntax DeviceInfoPrivate::ConvertHIDToAQS(DeviceInfo::eHIDType hid)
-{
-    AQSyntax aqsType(AQS_UNKNOWN);
-    switch (hid)
-    {
-    case DeviceInfo::HID_POINTER_TYPE:
-        aqsType = AQS_POINTER;
-        break;
-    case DeviceInfo::HID_MOUSE_TYPE:
-        aqsType = AQS_MOUSE;
-        break;
-    case DeviceInfo::HID_JOYSTICK_TYPE:
-        aqsType = AQS_JOYSTICK;
-        break;
-    case DeviceInfo::HID_GAMEPAD_TYPE:
-        aqsType = AQS_GAMEPAD;
-        break;
-    case DeviceInfo::HID_KEYBOARD_TYPE:
-        aqsType = AQS_KEYBOARD;
-        break;
-    case DeviceInfo::HID_KEYPAD_TYPE:
-        aqsType = AQS_KEYPAD;
-        break;
-    case DeviceInfo::HID_SYSTEM_CONTROL_TYPE:
-        aqsType = AQS_SYSTEM_CONTROL;
-        break;
-    default:
-        DVASSERT(false && "DeviceDetector ( HID_UNKNOWN_TYPE )");
-    }
-    return aqsType;
-}
-
-DeviceInfo::eHIDType DeviceInfoPrivate::ConvertAQSToHID(AQSyntax aqs)
-{
-    DeviceInfo::eHIDType hid(DeviceInfo::HID_UNKNOWN_TYPE);
-    switch (aqs)
-    {
-    case AQS_POINTER:
-        hid = DeviceInfo::HID_POINTER_TYPE;
-    	break;
-    case AQS_MOUSE:
-        hid = DeviceInfo::HID_MOUSE_TYPE;
-        break;
-    case AQS_JOYSTICK:
-        hid = DeviceInfo::HID_JOYSTICK_TYPE;
-        break;
-    case AQS_GAMEPAD:
-        hid = DeviceInfo::HID_GAMEPAD_TYPE;
-        break;
-    case AQS_KEYBOARD:
-        hid = DeviceInfo::HID_KEYBOARD_TYPE;
-        break;
-    case AQS_KEYPAD:
-        hid = DeviceInfo::HID_KEYPAD_TYPE;
-        break;
-    case AQS_SYSTEM_CONTROL:
-        hid = DeviceInfo::HID_SYSTEM_CONTROL_TYPE;
-        break;
-    default:
-        DVASSERT(false && "DeviceDetector ( HID_AQS_TYPE )");
-    }
-    return hid;
 }
 
 void DeviceInfoPrivate::NotifyAllClients(AQSyntax usageId, bool connectState)
@@ -420,8 +320,62 @@ void DeviceInfoPrivate::NotifyAllClients(AQSyntax usageId, bool connectState)
     }
     for (auto iter : (itForTypes->second))
     {
-        (iter)(ConvertAQSToHID(usageId), connectState);
+        (iter)(convAqsToHid[usageId], connectState);
     }
+}
+
+eGPUFamily DeviceInfoPrivate::GPUFamily()
+{
+    eGPUFamily gpuFamily(GPU_INVALID);
+#if defined(__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__)
+    const GLubyte* rendererTemp = glGetString(GL_RENDERER);
+    if (nullptr == rendererTemp)
+    {
+        DVASSERT(false && "GL not initialized");
+        return gpuFamily;
+    }
+    String renderer((const char8 *)rendererTemp);
+    std::transform(renderer.begin(), renderer.end(), renderer.begin(), ::tolower);
+    if (renderer.find("tegra") != String::npos)
+    {
+        gpuFamily = GPU_TEGRA;
+    }
+    else if (renderer.find("powervr") != String::npos)
+    {
+        gpuFamily = GPU_POWERVR_ANDROID;
+    }
+    else if (renderer.find("adreno") != String::npos)
+    {
+        gpuFamily = GPU_ADRENO;
+    }
+    else if (renderer.find("mali") != String::npos)
+    {
+        gpuFamily = GPU_MALI;
+    }
+
+    if (gpuFamily == GPU_INVALID)
+    {
+        const GLubyte* extensionsTemp = glGetString(GL_EXTENSIONS);
+        if (nullptr == extensionsTemp)
+        {
+            DVASSERT(false && "GL not initialized");
+            return gpuFamily;
+        }
+        String extensions((const char8 *)extensionsTemp);
+
+        if (extensions.find("GL_IMG_texture_compression_pvrtc") != String::npos)
+            gpuFamily = GPU_POWERVR_ANDROID;
+        else if (extensions.find("GL_NV_draw_texture") >= 0)
+            gpuFamily = GPU_TEGRA;
+        else if (extensions.find("GL_AMD_compressed_ATC_texture") != String::npos)
+            gpuFamily = GPU_ADRENO;
+        else if (extensions.find("GL_OES_compressed_ETC1_RGB8_texture") != String::npos)
+            gpuFamily = GPU_MALI;
+    }
+    return gpuFamily;
+#else
+        return gpuFamily;
+#endif //  (__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__)
 }
 
 DeviceWatcher^ DeviceInfoPrivate::WatcherForDeviceEvents(uint16 usagePage, uint16 usageId)
@@ -442,7 +396,6 @@ DeviceWatcher^ DeviceInfoPrivate::WatcherForDeviceEvents(uint16 usagePage, uint1
 
 void DeviceInfoPrivate::OnDeviceAdded(DeviceWatcher^ watcher, DeviceInformation^ information)
 {
-    Logger::FrameworkDebug("[DeviceDetector] device added with name \"%s\", id = \"%s\", isEnabled = %d", String(WStringToString(information->Name->Data())).c_str(), String(WStringToString(information->Id->Data())).c_str(), static_cast<int32>(information->IsEnabled));
     auto iter = mapWatchers.find(watcher);
     if (iter != mapWatchers.end())
     {
@@ -453,7 +406,6 @@ void DeviceInfoPrivate::OnDeviceAdded(DeviceWatcher^ watcher, DeviceInformation^
 
 void DeviceInfoPrivate::OnDeviceRemoved(DeviceWatcher^ watcher, DeviceInformationUpdate^ information)
 {
-    Logger::FrameworkDebug("[DeviceDetector] device removed with id = \"%s\".", String(WStringToString(information->Id->Data())).c_str());
     MapForWatchers::iterator iter = mapWatchers.find(watcher);
     if (iter != mapWatchers.end())
     {

@@ -58,9 +58,9 @@ public:
     WideString GetName();
     String GetHTTPProxyHost();
     String GetHTTPNonProxyHosts();
-    int GetHTTPProxyPort();
+    int32 GetHTTPProxyPort();
     DeviceInfo::ScreenInfo& GetScreenInfo();
-    int GetZBufferSize();
+    int32 GetZBufferSize();
     eGPUFamily GetGPUFamily();
     DeviceInfo::NetworkInfo GetNetworkInfo();
     List<DeviceInfo::StorageInfo> GetStoragesList();
@@ -68,8 +68,6 @@ public:
     void InitializeScreenInfo();
     bool IsHIDConnected(DeviceInfo::eHIDType hid);
     void SubscribeHID(DeviceInfo::eHIDType hid, DeviceInfo::HIDCallBackFunc&& func);
-    bool IsMobileMode();
-    bool IsRunningOnEmulator();
 
 protected:
     DeviceInfo::StorageInfo StorageInfoFromJava(jobject object);

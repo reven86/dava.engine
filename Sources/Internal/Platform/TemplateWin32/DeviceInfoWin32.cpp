@@ -96,7 +96,7 @@ String DeviceInfoPrivate::GetHTTPNonProxyHosts()
 	return "Not yet implemented";
 }
 
-int DeviceInfoPrivate::GetHTTPProxyPort()
+int32 DeviceInfoPrivate::GetHTTPProxyPort()
 {
 	return 0;
 }
@@ -106,7 +106,7 @@ DeviceInfo::ScreenInfo& DeviceInfoPrivate::GetScreenInfo()
     return screenInfo;
 }
 
-int DeviceInfoPrivate::GetZBufferSize()
+int32 DeviceInfoPrivate::GetZBufferSize()
 {
     return 24;
 }
@@ -259,18 +259,6 @@ bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType hid)
 void DeviceInfoPrivate::SubscribeHID(DeviceInfo::eHIDType hid, DeviceInfo::HIDCallBackFunc&& func)
 {
         DVASSERT(false && "Not Implement");
-}
-
-bool DeviceInfoPrivate::IsMobileMode()
-{
-        DVASSERT(false && "Not Implement");
-        return false;
-}
-
-bool DeviceInfoPrivate::IsRunningOnEmulator()
-{
-        DVASSERT(false && "Not Implement");
-        return false;
 }
 
 }

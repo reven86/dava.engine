@@ -35,7 +35,6 @@
 #include "Platform/TemplateWin32/CorePlatformWinUAP.h"
 #include "Platform/TemplateWin32/WinUAPXamlApp.h"
 #include "Platform/TemplateWin32/DispatcherWinUAP.h"
-#include "Base/GlobalEnum.h"
 
 using namespace Windows::UI::Core;
 using namespace Windows::UI::Xaml;
