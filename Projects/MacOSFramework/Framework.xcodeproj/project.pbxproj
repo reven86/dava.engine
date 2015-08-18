@@ -7572,7 +7572,7 @@
 				50C16DAF1A52D7B9003C307A /* NetworkUtils.cpp in Sources */,
 				7C007E1B1B384DAC000003DB /* ThreadWin32.cpp in Sources */,
 				E8989DB816BD24E500732C04 /* BaseObjectChecker.cpp in Sources */,
-				84CB6722191FC8850086483D /* LibWebPHelper.cpp in Sources */,
+				84CB6722191FC8850086483D /* LibJpegHelper.cpp in Sources */,
 				84CB6722191FC8850086483D /* LibWebPHelper.cpp in Sources */,
 				84CB6722191FC8850086483D /* LibWebPHelper.cpp in Sources */,
 				7C007E0F1B384DAC000003DB /* Thread.cpp in Sources */,
