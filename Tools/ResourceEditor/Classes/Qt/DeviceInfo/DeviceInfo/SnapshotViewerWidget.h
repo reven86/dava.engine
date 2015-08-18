@@ -9,11 +9,14 @@
 class QTabWidget;
 class QTreeView;
 class QListView;
+class QComboBox;
+class QStandardItem;
 
 class SymbolsListModel;
 class SymbolsFilterModel;
 
 class BranchTreeModel;
+class BranchFilterModel;
 class BlockListModel;
 
 class MemorySnapshot;
@@ -32,10 +35,18 @@ public slots:
     void BranchView_SelectionChanged(const QModelIndex& current, const QModelIndex& previous);
     void BranchBlockView_DoubleClicked(const QModelIndex& current);
 
+    void AllocPoolComboItemChanged(QStandardItem* item);
+    void TagComboItemChanged(QStandardItem* item);
+
+    void ApplyClicked();
+
 private:
     void Init();
     void InitSymbolsView();
     void InitBranchView();
+
+    QComboBox* InitAllocPoolsCombo();
+    QComboBox* InitTagsCombo();
 
     DAVA::Vector<const DAVA::String*> GetSelectedSymbols();
 
@@ -46,12 +57,16 @@ private:
     SymbolsFilterModel* symbolsFilterModel = nullptr;
 
     BranchTreeModel* branchTreeModel = nullptr;
+    BranchFilterModel* branchFilterModel = nullptr;
     BlockListModel* blockListModel = nullptr;
 
     QTabWidget* tab = nullptr;
     QTreeView* symbolsTree = nullptr;
     QTreeView* branchTree = nullptr;
     QListView* blockList = nullptr;
+
+    DAVA::uint32 poolFilter = 0;
+    DAVA::uint32 tagFilter = 0;
 };
 
 #endif  // __SNAPSHOTVIEWERWIDGET_H__

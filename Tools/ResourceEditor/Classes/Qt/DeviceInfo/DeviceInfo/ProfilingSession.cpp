@@ -332,11 +332,14 @@ void ProfilingSession::ApplyConfig(const DAVA::MMStatConfig* config)
     tagCount = config->tagCount;
 
     allocPoolNames.reserve(allocPoolCount);
+    poolMaskMapping.reserve(allocPoolCount);
     tagNames.reserve(tagCount);
 
     const MMItemName* names = OffsetPointer<const MMItemName>(config, sizeof(MMItemName));
     for (size_t i = 0;i < allocPoolCount;++i)
     {
+        uint32 mask = static_cast<uint32>(1 << i);
+        poolMaskMapping.emplace_back(1 << i, i);
         allocPoolNames.push_back(names->name);
         names += 1;
     }
@@ -402,7 +405,7 @@ void ProfilingSession::LoadShapshotDescriptor(const DAVA::FilePath& path)
         {
             if (msnapshot.blockCount > 0 && msnapshot.bktraceDepth > 0)
             {
-                snapshots.emplace_back(path, &msnapshot);
+                snapshots.emplace_back(this, path, &msnapshot);
 
                 if (msnapshot.symbolCount > 0)
                 {

@@ -4,9 +4,29 @@
 #include "Base/BaseTypes.h"
 
 #include <QAbstractItemModel>
+#include <QSortFilterProxyModel>
 
 struct Branch;
 class MemorySnapshot;
+
+class BranchFilterModel : public QSortFilterProxyModel
+{
+public:
+    void SetFilter(DAVA::uint32 pools_, DAVA::uint32 tags_)
+    {
+        pools = pools_;
+        tags = tags_;
+        invalidateFilter();
+    }
+
+protected:
+    //bool lessThan(const QModelIndex& left, const QModelIndex& right) const override;
+    bool filterAcceptsRow(int source_row, const QModelIndex& source_parent) const override;
+
+private:
+    DAVA::uint32 pools = 0;
+    DAVA::uint32 tags = 0;
+};
 
 class BranchTreeModel : public QAbstractItemModel
 {

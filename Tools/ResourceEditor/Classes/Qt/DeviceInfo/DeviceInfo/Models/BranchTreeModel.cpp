@@ -52,9 +52,11 @@ QVariant BranchTreeModel::data(const QModelIndex& index, int role) const
             case CLM_NAME:
                 return QString(branch->name != nullptr ? branch->name->c_str() : "Root");
             case CLM_STAT:
-                return QString("alloc=%1, nblocks=%2")
+                return QString("alloc=%1, nblocks=%2, pool=%3, tags=%4")
                     .arg(FormatNumberWithDigitGroups(branch->allocByApp).c_str())
-                    .arg(branch->nblocks);
+                    .arg(branch->nblocks)
+                    .arg(branch->poolMask, 0, 16)
+                    .arg(branch->tagMask, 0, 16);
             default:
                 break;
             }
@@ -115,4 +117,19 @@ QModelIndex BranchTreeModel::parent(const QModelIndex& index) const
         }
     }
     return QModelIndex();
+}
+
+//////////////////////////////////////////////////////////////////////////
+bool BranchFilterModel::filterAcceptsRow(int source_row, const QModelIndex& source_parent) const
+{
+    if (pools == 0 && tags == 0) return true;
+
+    QAbstractItemModel* source = sourceModel();
+    QModelIndex index = sourceModel()->index(source_row, 0, source_parent);
+    if (index.isValid())
+    {
+        Branch* branch = static_cast<Branch*>(index.internalPointer());
+        return (branch->poolMask & pools) || (branch->tagMask & tags);
+    }
+    return true;
 }

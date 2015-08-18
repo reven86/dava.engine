@@ -37,7 +37,8 @@
 using namespace DAVA;
 
 MemorySnapshot::MemorySnapshot(MemorySnapshot&& other)
-    : fileName(std::move(other.fileName))
+    : profilingSession(std::move(other.profilingSession))
+    , fileName(std::move(other.fileName))
     , timestamp(std::move(other.timestamp))
     , blockCount(std::move(other.blockCount))
     , symbolCount(std::move(other.symbolCount))
@@ -52,6 +53,7 @@ MemorySnapshot& MemorySnapshot::operator = (MemorySnapshot&& other)
 {
     if (this != &other)
     {
+        profilingSession = std::move(other.profilingSession);
         fileName = std::move(other.fileName);
         timestamp = std::move(other.timestamp);
         blockCount = std::move(other.blockCount);
@@ -106,13 +108,18 @@ Branch* MemorySnapshot::CreateBranch(const Vector<const String*>& startNames) co
                 
                 // Append memory blocks to leaf
                 uint32 allocByApp = 0;
-                leaf->mblocks.reserve(leaf->mblocks.size() + blocks.size());
+                uint32 pools = 0;
+                uint32 tags = 0;
+                uint32 nblocks = static_cast<uint32>(blocks.size());
+                leaf->mblocks.reserve(leaf->mblocks.size() + nblocks);
                 for (auto& x : blocks)
                 {
                     allocByApp += x->allocByApp;
+                    pools |= x->pool;
+                    tags |= x->tags;
                     leaf->mblocks.emplace_back(x);
                 }
-                leaf->UpdateStat(allocByApp, static_cast<uint32>(blocks.size()));
+                leaf->UpdateStat(allocByApp, nblocks, pools, tags);
             }
         }
     }
@@ -188,6 +195,10 @@ bool MemorySnapshot::LoadFile()
                             curOffset += bktraceSize;
                         }
 
+                        for (MMBlock& x : blocks)
+                        {
+                            x.pool = 1 << x.pool;
+                        }
                         mblocks.swap(blocks);
                         return true;
                     }

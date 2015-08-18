@@ -66,16 +66,20 @@ void Branch::AppendChild(Branch* child)
     child->level = level + 1;
 }
 
-void Branch::UpdateStat(uint32 allocSize, uint32 blockCount)
+void Branch::UpdateStat(uint32 allocSize, uint32 blockCount, uint32 pools, uint32 tags)
 {
     allocByApp += allocSize;
     nblocks += blockCount;
+    poolMask |= pools;
+    tagMask |= tags;
 
     Branch* p = parent;
     while (p != nullptr)
     {
         p->allocByApp += allocSize;
         p->nblocks += blockCount;
+        p->poolMask |= pools;
+        p->tagMask |= tags;
         p = p->parent;
     }
 }

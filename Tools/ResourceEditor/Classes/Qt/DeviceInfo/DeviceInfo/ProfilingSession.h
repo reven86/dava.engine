@@ -92,6 +92,7 @@ public:
     const BacktraceSymbolTable& SymbolTable() const;
 
     const DAVA::String& AllocPoolName(size_t index) const;
+    const DAVA::String& AllocPoolNameByMask(DAVA::uint32 mask) const;
     const DAVA::String& TagName(size_t index) const;
     // Get stat item by index, items are sorted by timestamp
     const MemoryStatItem& Stat(size_t index) const;
@@ -127,6 +128,7 @@ private:
     mutable int snapshotSeqNo = 1;
     DAVA::Net::PeerDescription deviceInfo;
     DAVA::Vector<DAVA::String> allocPoolNames;
+    DAVA::Vector<std::pair<DAVA::uint32, size_t>> poolMaskMapping;
     DAVA::Vector<DAVA::String> tagNames;
     DAVA::Vector<MemoryStatItem> stat;
     DAVA::Vector<MemorySnapshot> snapshots;
@@ -185,6 +187,17 @@ inline const DAVA::String& ProfilingSession::AllocPoolName(size_t index) const
 {
     DVASSERT(0 <= index && index < allocPoolCount);
     return allocPoolNames[index];
+}
+
+inline const DAVA::String& ProfilingSession::AllocPoolNameByMask(DAVA::uint32 mask) const
+{
+    DVASSERT(DAVA::IsPowerOf2(mask));
+    auto iter = std::find_if(poolMaskMapping.cbegin(), poolMaskMapping.cend(), [mask](const std::pair<DAVA::uint32, size_t>& p) -> bool {
+        return p.first == mask;
+    });
+    DVASSERT(iter != poolMaskMapping.cend());
+    size_t index = iter->second;
+    return AllocPoolName(index);
 }
 
 inline const DAVA::String& ProfilingSession::TagName(size_t index) const
