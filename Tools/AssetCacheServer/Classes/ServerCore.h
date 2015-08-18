@@ -31,6 +31,7 @@
 #define __SERVER_CORE_H__
 
 #include "AssetCache/AssetCache.h"
+#include "AssetCache/AssetCacheClient.h"
 #include "ServerLogics.h"
 #include "ApplicationSettings.h"
 
@@ -40,14 +41,19 @@
 
 class QTimer;
 
-class ServerCore: public QObject
+class ServerCore : public QObject, 
+                   public DAVA::AssetCache::ClientListener
 {
     Q_OBJECT
     
-    static const int UPDATE_INTERVAL_MS = 1;
+    static const uint32 UPDATE_INTERVAL_MS = 1;
+    static const uint32 CONNECT_TIMEOUT_SEC = 1;
+    static const uint32 CONNECT_REATTEMPT_WAIT_SEC = 5;
+    
     
 public:
     enum class State {STARTED, STOPPED};
+    enum class RemoteState { STARTED, STOPPED, CONNECTING, WAITING_REATTEMPT};
 
     ServerCore();
     ~ServerCore() override;
@@ -58,6 +64,10 @@ public:
     void Stop();
 
     State GetState() const;
+    RemoteState GetRemoteState() const;
+
+    // ClientDelegate
+    virtual void OnAssetClientStateChanged() override;
 
 signals:
     void ServerStateChanged(const ServerCore* serverCore) const;
@@ -67,8 +77,18 @@ public slots:
 
 private slots:
     void OnTimerUpdate();
-
+    void OnConnectTimeout();
+    void OnReattemptTimer();
+            
 private:
+    bool StartListening();
+    void StopListening();
+
+    bool ConnectRemote();
+    void DisconnectRemote();
+    
+private:
+    
     DAVA::AssetCache::Server server;
     DAVA::AssetCache::Client client;
     DAVA::AssetCache::CacheDB dataBase;
@@ -77,11 +97,24 @@ private:
     ApplicationSettings settings;
 
     std::atomic<State> state;
+    std::atomic<RemoteState> remoteState;
+
+    ServerData remoteServerData;
 
     QTimer* updateTimer;
+    QTimer* connectTimer;
+    QTimer* reattemptWaitTimer;
 };
 
+inline ServerCore::State ServerCore::GetState() const
+{
+    return state;
+}
 
+inline ServerCore::RemoteState ServerCore::GetRemoteState() const
+{
+    return remoteState;
+}
 
 inline ApplicationSettings& ServerCore::Settings()
 {

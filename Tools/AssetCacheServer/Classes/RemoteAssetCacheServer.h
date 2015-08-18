@@ -51,12 +51,17 @@ public:
 
     bool IsCorrectData();
 
+    bool IsChecked() const;
+    void SetChecked(bool checked);
+
 signals:
+    void ServerChecked(bool checked);
     void ParametersChanged();
     void RemoveLater();
 
 private slots:
     void OnParametersChanged();
+    void OnChecked(int val);
 
 private:
     Ui::RemoteAssetCacheServer *ui;

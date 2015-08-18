@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>325</width>
+    <width>332</width>
     <height>41</height>
    </rect>
   </property>
@@ -15,9 +15,16 @@
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <item>
+    <widget class="QCheckBox" name="enabledCheckBox">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QLabel" name="ipLabel">
      <property name="text">
-      <string>IP:</string>
+      <string>Address:</string>
      </property>
     </widget>
    </item>

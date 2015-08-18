@@ -41,25 +41,22 @@
 namespace DAVA {
 namespace AssetCache {
 
-
-Client::~Client()
-{
-    listener = nullptr;
-}
+Client::Client() : addressResolver(*this)
+{}
 
 bool Client::Connect(const String &ip, uint16 port)
 {
     DVASSERT(nullptr == netClient);
     DVASSERT(nullptr == openedChannel);
-    
-    netClient.reset(TCPConnection::CreateClient(NET_SERVICE_ID, Net::Endpoint(ip.c_str(), port)));
-    netClient->SetListener(this);
-    
-    return true;
+    DVASSERT(addressResolver.GetState() != Net::AddressResolver::State::RESOLVING)
+
+    return addressResolver.StartResolving(ip.c_str(), port);
 }
-    
+
 void Client::Disconnect()
 {
+    addressResolver.Stop();
+
     if(netClient)
     {
         netClient->Disconnect();
@@ -68,8 +65,20 @@ void Client::Disconnect()
         openedChannel = nullptr;
     }
 }
-    
-    
+
+void Client::OnAddressResolved()
+{
+    DVASSERT(!netClient);
+    DVASSERT(nullptr == openedChannel);
+
+    if (addressResolver.GetState() == Net::AddressResolver::State::RESOLVED)
+    {
+        auto& addr = addressResolver.Result();
+        netClient.reset(TCPConnection::CreateClient(NET_SERVICE_ID, Net::Endpoint(addr.ai_addr)));
+        netClient->SetListener(this);
+    }
+}
+
 bool Client::AddToCache(const CacheItemKey &key, const CachedItemValue &value)
 {
     if(openedChannel)
@@ -114,12 +123,22 @@ void Client::ChannelOpened(TCPChannel *tcpChannel)
 {
     DVASSERT(openedChannel == nullptr);
     openedChannel = tcpChannel;
+    StateChanged();
 }
 
 void Client::ChannelClosed(TCPChannel *tcpChannel, const char8* message)
 {
     DVASSERT(openedChannel == tcpChannel);
     openedChannel = nullptr;
+    StateChanged();
+}
+
+void Client::StateChanged()
+{
+    for (auto& listener : listeners)
+    {
+        listener->OnAssetClientStateChanged();
+    }
 }
 
 void Client::PacketReceived(DAVA::TCPChannel *tcpChannel, const uint8* packetData, size_t length)
@@ -135,14 +154,14 @@ void Client::PacketReceived(DAVA::TCPChannel *tcpChannel, const uint8* packetDat
             case PACKET_ADD_RESPONSE:
             {
                 AddResponsePacket *p = static_cast<AddResponsePacket*>(packet);
-                if (listener)
+                for (auto& listener : listeners)
                     listener->OnAddedToCache(p->key, p->added);
                 return;
             }
             case PACKET_GET_RESPONSE:
             {
                 GetResponsePacket* p = static_cast<GetResponsePacket*>(packet);
-                if (listener)
+                for (auto& listener : listeners)
                     listener->OnReceivedFromCache(p->key, std::forward<CachedItemValue>(p->value));
                 return;
             }
@@ -167,6 +186,19 @@ void Client::PacketReceived(DAVA::TCPChannel *tcpChannel, const uint8* packetDat
         netClient->DestroyChannel(tcpChannel);
     }
 }
+
+void Client::AddListener(ClientListener* listener)
+{
+    DVASSERT(listener != nullptr);
+    listeners.insert(listener);
+}
+
+void Client::RemoveListener(ClientListener* listener)
+{
+    DVASSERT(listener != nullptr);
+    listeners.erase(listener);
+}
+
     
 }; // end of namespace AssetCache
 }; // end of namespace DAVA

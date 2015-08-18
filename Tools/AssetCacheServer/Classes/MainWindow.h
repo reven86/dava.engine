@@ -81,6 +81,7 @@ private slots:
     void OnRemoteServerAdded();
     void OnRemoteServerRemoved();
     void OnRemoteServerEdited();
+    void OnRemoteServerChecked(bool);
 
     void OnApplyButtonClicked();
     void OnCloseButtonClicked();
@@ -97,7 +98,7 @@ private:
 
     enum SettingsState
     {
-        NOT_EDITED, NOT_VERIFIED, VERIFIED
+        NOT_EDITED, EDITED
     };
 
     void ChangeSettingsState(SettingsState newState);
@@ -107,11 +108,13 @@ private:
     QAction *startAction;
     QAction *stopAction;
     QSystemTrayIcon* trayIcon;
-    std::unique_ptr<QIcon> greenTrayIcon;
-    std::unique_ptr<QIcon> redTrayIcon;
+    std::unique_ptr<QIcon> greenGreenTrayIcon;
+    std::unique_ptr<QIcon> greenGrayTrayIcon;
+    std::unique_ptr<QIcon> greenRedTrayIcon;
+    std::unique_ptr<QIcon> redGrayTrayIcon;
 
     QVBoxLayout *serversBoxLayout;
-    QList<RemoteAssetCacheServer *> remoteServers;
+    List<RemoteAssetCacheServer*> remoteServers;
 
     ServerCore& serverCore;
 

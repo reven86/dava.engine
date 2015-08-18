@@ -114,6 +114,7 @@ void ApplicationSettings::Serialize(DAVA::KeyedArchive * archive) const
     {
         archive->SetString(Format("Server_%d_ip", index), sd.ip);
         archive->SetUInt32(Format("Server_%d_port", index), sd.port);
+        archive->SetBool(Format("Server_%d_enabled", index), sd.enabled);
         ++index;
     }
 }
@@ -137,6 +138,7 @@ void ApplicationSettings::Deserialize(DAVA::KeyedArchive * archive)
         ServerData sd;
         sd.ip = archive->GetString(Format("Server_%d_ip", i));
         sd.port = archive->GetUInt32(Format("Server_%d_port", i));
+        sd.enabled = archive->GetBool(Format("Server_%d_enabled", i), false);
 
         remoteServers.push_back(sd);
     }
@@ -225,12 +227,15 @@ void ApplicationSettings::RemoveServer(const ServerData & server)
 
 ServerData ApplicationSettings::GetCurrentServer() const
 {
-    if(remoteServers.empty())
-        return ServerData();
-    
-    
-    //TODO: it's temporary solution. Need update UI
-    return remoteServers.front();
+    for (auto& server : remoteServers)
+    {
+        if (server.enabled)
+        {
+            return server;
+        }
+    }
+
+    return ServerData();
 }
 
 

@@ -39,9 +39,6 @@ RemoteAssetCacheServer::RemoteAssetCacheServer(QWidget *parent)
 {
     ui->setupUi(this);
 
-    QRegExp ipRegExp("(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])[.]){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])");
-    QRegExpValidator *ipValidator = new QRegExpValidator(ipRegExp);
-    ui->ipLineEdit->setValidator(ipValidator);
     ui->ipLineEdit->setText("127.0.0.1");
     
     connect(ui->removeServerButton, &QPushButton::clicked,
@@ -49,11 +46,13 @@ RemoteAssetCacheServer::RemoteAssetCacheServer(QWidget *parent)
     connect(ui->ipLineEdit, &QLineEdit::textChanged,
             this, &RemoteAssetCacheServer::OnParametersChanged);
     connect(ui->portSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnParametersChanged()));
+    connect(ui->enabledCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnChecked(int)));
 }
 
 RemoteAssetCacheServer::RemoteAssetCacheServer(const ServerData &newServer, QWidget *parent)
     : RemoteAssetCacheServer(parent)
 {
+    ui->enabledCheckBox->setChecked(newServer.enabled);
     ui->ipLineEdit->setText(newServer.ip.c_str());
     ui->portSpinBox->setValue(newServer.port);
     ui->portSpinBox->setEnabled(true);
@@ -66,22 +65,30 @@ RemoteAssetCacheServer::~RemoteAssetCacheServer()
 
 ServerData RemoteAssetCacheServer::GetServerData() const
 {
-    return ServerData(ui->ipLineEdit->text().toStdString(), ui->portSpinBox->value());
+    return ServerData(ui->ipLineEdit->text().toStdString(), ui->portSpinBox->value(), ui->enabledCheckBox->isChecked());
 }
 
 bool RemoteAssetCacheServer::IsCorrectData()
 {
-    QString ip(ui->ipLineEdit->text());
-    QStringList ipList = ip.split(".", QString::SkipEmptyParts);
-    if (ipList.count() != 4)
-    {
-        return false;
-    }
-
     return true;
 }
 
 void RemoteAssetCacheServer::OnParametersChanged()
 {
     emit ParametersChanged();
+}
+
+void RemoteAssetCacheServer::OnChecked(int val)
+{
+    emit ServerChecked(val == Qt::Checked);
+}
+
+bool RemoteAssetCacheServer::IsChecked() const
+{
+    return ui->enabledCheckBox->isChecked();
+}
+
+void RemoteAssetCacheServer::SetChecked(bool checked)
+{
+    ui->enabledCheckBox->setChecked(checked);
 }

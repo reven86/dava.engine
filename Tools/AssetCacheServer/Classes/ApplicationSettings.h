@@ -45,7 +45,9 @@ using namespace DAVA;
 struct ServerData
 {
     ServerData() = default;
-    ServerData(String _ip, uint16 _port) : ip(_ip), port(_port) {};
+    ServerData(String _ip, uint16 _port, bool _enabled) : ip(_ip), port(_port), enabled(_enabled) {};
+
+    bool IsEmpty() const { return ip.empty(); }
     
     bool operator == (const ServerData & right) const
     {
@@ -68,6 +70,7 @@ struct ServerData
     
     String ip = "";
     uint16 port = AssetCache::ASSET_SERVER_PORT;
+    bool enabled = false;
 };
 
 

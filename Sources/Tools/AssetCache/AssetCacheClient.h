@@ -34,17 +34,16 @@
 
 #include "AssetCache/TCPConnection/TCPConnection.h"
 #include "AssetCache/CacheItemKey.h"
+#include "Network/Base/AddressResolver.h"
 
-
-namespace DAVA
-{
+namespace DAVA {
 
 class TCPClient;
-namespace AssetCache
-{
+
+namespace AssetCache {
  
 class CachedItemValue;
-    
+
 class ClientListener
 {
 public:
@@ -54,14 +53,14 @@ public:
 	virtual void OnReceivedFromCache(const CacheItemKey &key, CachedItemValue &&value) {};
 };
 
-class Client: public DAVA::TCPChannelListener
+class Client: public DAVA::TCPChannelListener,
+              public Net::AddressRequester
 {
 public:
+    Client();
     
-    Client() = default;
-    virtual ~Client();
-    
-    void SetListener(ClientListener * delegate);
+    void AddListener(ClientListener*);
+    void RemoveListener(ClientListener*);
     
     bool Connect(const String &ip, uint16 port);
     void Disconnect();
@@ -76,21 +75,25 @@ public:
     void ChannelOpened(TCPChannel *tcpChannel) override;
     void ChannelClosed(TCPChannel *tcpChannel, const char8* message) override;
     void PacketReceived(DAVA::TCPChannel *tcpChannel, const uint8* packet, size_t length) override;
-    //END of TCPChannelDelegate
+
+    // AddressRequester
+    virtual void OnAddressResolved() override;
     
     TCPConnection * GetConnection() const;
     
 private:
+    void OnAddedToCache(KeyedArchive * archieve);
+    void OnGetFromCache(KeyedArchive * archieve);
+
+    void StateChanged();
+    
+private:
+    Net::AddressResolver addressResolver;
     std::unique_ptr<TCPConnection> netClient;
     TCPChannel * openedChannel = nullptr;
     
-    ClientListener * listener = nullptr;
+    Set<ClientListener*> listeners;
 };
-
-inline void Client::SetListener(ClientListener * _listener)
-{
-    listener = _listener;
-}
 
 inline TCPConnection * Client::GetConnection() const
 {
