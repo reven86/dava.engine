@@ -148,7 +148,7 @@ bool MemoryFile::Seek(uint32 position, uint32 seekType)
 
 	
 	if (pos < 0)return false;
-	if (pos > fileSize)return false;
+	if (pos > (int64)fileSize)return false;
 	
 	dataCurrent = dataStart + (uint32)pos;
 	return true;

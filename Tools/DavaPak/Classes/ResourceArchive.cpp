@@ -298,7 +298,7 @@ bool ResourceArchive::PackResource(const String & resourceToPack, int32 * resour
 
 		uint8 * data = new uint8[packFileSize];
 			
-		if (packFileSize != packFile->Read(data, packFileSize))return false;
+		if ((uint32)packFileSize != packFile->Read(data, packFileSize))return false;
 
 		dictNode.packedFileSize = packFileSize;
 		*resourcePackedSize = packFileSize;

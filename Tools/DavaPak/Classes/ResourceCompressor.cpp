@@ -31,7 +31,7 @@
 #include <fstream>
 #include <algorithm>
 #include <cctype>
-#include <stdio.h>
+#include <cstdio>
 
 #include "ResourceArchive.h"
 #include "AnsiFileSystem.h"

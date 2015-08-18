@@ -39,7 +39,7 @@ bool IFile::ReadString(String & result)
 	char8 sym = 0;
 	char8 tmp[2048];
 	int32 counter = 0;
-	while(1)
+	while(true)
 	{
 		Read(&sym, 1);
 		if (sym == 0)
