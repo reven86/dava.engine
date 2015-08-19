@@ -420,35 +420,13 @@ public:
     bool operator==(const Function&) const = delete;
     bool operator!=(const Function&) const = delete;
 
-    bool operator==(std::nullptr_t) const
-    {
-        return (nullptr == invoker);
-    }
+    operator bool() const { return !operator==(nullptr); }
 
-    bool operator!=(std::nullptr_t) const
-    {
-        return !operator==(nullptr);
-    }
-
-    bool operator<(const Function& fn) const
-    {
-        return (invoker < fn.invoker);
-    }
-
-    friend bool operator==(std::nullptr_t, const Function &fn)
-    {
-        return (nullptr == fn.invoker);
-    }
-
-    friend bool operator!=(std::nullptr_t, const Function &fn)
-    {
-        return (nullptr != fn.invoker);
-    }
-
-    operator bool() const
-    {
-        return !operator==(nullptr);
-    }
+    friend bool operator<(const Function& fnL, const Function& fnR) { return (fnL.invoker < fnR.invoker); }
+    friend bool operator==(std::nullptr_t, const Function &fn) { return (nullptr == fn.invoker); }
+    friend bool operator==(const Function &fn, std::nullptr_t) { return (nullptr == fn.invoker); }
+    friend bool operator!=(std::nullptr_t, const Function &fn) { return (nullptr != fn.invoker); }
+    friend bool operator!=(const Function &fn, std::nullptr_t) { return (nullptr != fn.invoker); }
 
     Ret operator()(Args... args) const
     {
