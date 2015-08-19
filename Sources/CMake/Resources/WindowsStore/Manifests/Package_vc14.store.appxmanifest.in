@@ -21,6 +21,8 @@
   <Capabilities>
     <uap:Capability Name="removableStorage" />
     <Capability Name="internetClient" />
+    <Capability Name="internetClientServer" />
+    <Capability Name="privateNetworkClientServer" />
   </Capabilities>
 
   <Resources>
