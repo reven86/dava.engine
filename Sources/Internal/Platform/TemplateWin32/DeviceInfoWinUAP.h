@@ -66,6 +66,7 @@ namespace DAVA
         void SubscribeHID(DeviceInfo::eHIDType hid, DeviceInfo::HIDCallBackFunc&& func);
 
     private:
+
         enum AQSyntax
         {
             AQS_UNKNOWN = 0x00,
@@ -78,15 +79,18 @@ namespace DAVA
             AQS_SYSTEM_CONTROL = 0x80
         };
 
-        UnorderedMap<AQSyntax, DeviceInfo::eHIDType> convAqsToHid =
-        { { AQS_UNKNOWN , DeviceInfo::HID_UNKNOWN_TYPE }, { AQS_POINTER, DeviceInfo::HID_POINTER_TYPE }, { AQS_MOUSE, DeviceInfo::HID_MOUSE_TYPE },
-          { AQS_JOYSTICK, DeviceInfo::HID_JOYSTICK_TYPE }, { AQS_GAMEPAD, DeviceInfo::HID_GAMEPAD_TYPE }, { AQS_KEYBOARD, DeviceInfo::HID_KEYBOARD_TYPE },
-          { AQS_KEYPAD, DeviceInfo::HID_KEYPAD_TYPE }, { AQS_SYSTEM_CONTROL, DeviceInfo::HID_SYSTEM_CONTROL_TYPE } };
+        class AqsHidPair
+        {
+        public:
+            AqsHidPair(AQSyntax first_, DeviceInfo::eHIDType second_) : first(), second(second_) {}
+            AQSyntax first;
+            DeviceInfo::eHIDType second;
+        };
 
-        UnorderedMap<DeviceInfo::eHIDType, AQSyntax> convHidToAqs =
-        { { DeviceInfo::HID_UNKNOWN_TYPE, AQS_UNKNOWN }, { DeviceInfo::HID_POINTER_TYPE, AQS_POINTER }, { DeviceInfo::HID_MOUSE_TYPE, AQS_MOUSE },
-          { DeviceInfo::HID_JOYSTICK_TYPE, AQS_JOYSTICK }, { DeviceInfo::HID_GAMEPAD_TYPE, AQS_GAMEPAD }, { DeviceInfo::HID_KEYBOARD_TYPE, AQS_KEYBOARD },
-          { DeviceInfo::HID_KEYPAD_TYPE, AQS_KEYPAD }, { DeviceInfo::HID_SYSTEM_CONTROL_TYPE, AQS_SYSTEM_CONTROL } };
+        Vector<AqsHidPair> unionAqsAndHid = 
+            { AqsHidPair(AQS_UNKNOWN , DeviceInfo::HID_UNKNOWN_TYPE) , AqsHidPair(AQS_POINTER, DeviceInfo::HID_POINTER_TYPE), AqsHidPair(AQS_MOUSE, DeviceInfo::HID_MOUSE_TYPE),
+            AqsHidPair(AQS_JOYSTICK, DeviceInfo::HID_JOYSTICK_TYPE), AqsHidPair(AQS_GAMEPAD, DeviceInfo::HID_GAMEPAD_TYPE), AqsHidPair(AQS_KEYBOARD, DeviceInfo::HID_KEYBOARD_TYPE),
+            AqsHidPair(AQS_KEYPAD, DeviceInfo::HID_KEYPAD_TYPE ), AqsHidPair(AQS_SYSTEM_CONTROL, DeviceInfo::HID_SYSTEM_CONTROL_TYPE ) };
 
         const uint16 AQS_USAGE_PAGE = 0x01;
         struct cmpDeviceWatcher {

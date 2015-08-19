@@ -70,13 +70,13 @@ DeviceInfoPrivate::DeviceInfoPrivate()
     TouchCapabilities touchCapabilities;
     isTouchPresent = (1 == touchCapabilities.TouchPresent); //  Touch is always present in MSVS simulator
                                                             //add watchers
-    mapWatchers.insert(PairForWatchersAndType(WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_POINTER), AQS_POINTER));
-    mapWatchers.insert(PairForWatchersAndType(WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_MOUSE), AQS_MOUSE));
-    mapWatchers.insert(PairForWatchersAndType(WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_JOYSTICK), AQS_JOYSTICK));
-    mapWatchers.insert(PairForWatchersAndType(WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_GAMEPAD), AQS_GAMEPAD));
-    mapWatchers.insert(PairForWatchersAndType(WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_KEYBOARD), AQS_KEYBOARD));
-    mapWatchers.insert(PairForWatchersAndType(WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_KEYPAD), AQS_KEYPAD));
-    mapWatchers.insert(PairForWatchersAndType(WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_SYSTEM_CONTROL), AQS_SYSTEM_CONTROL));
+    mapWatchers[WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_POINTER)] =  AQS_POINTER;
+    mapWatchers[WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_MOUSE)] = AQS_MOUSE;
+    mapWatchers[WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_JOYSTICK)] = AQS_JOYSTICK;
+    mapWatchers[WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_GAMEPAD)] = AQS_GAMEPAD;
+    mapWatchers[WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_KEYBOARD)] = AQS_KEYBOARD;
+    mapWatchers[WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_KEYPAD)] = AQS_KEYPAD;
+    mapWatchers[WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_SYSTEM_CONTROL)] = AQS_SYSTEM_CONTROL;
 
     if (IsMobileMode())
     {
@@ -294,7 +294,7 @@ int32 DeviceInfoPrivate::GetCpuCount()
 
 bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType hid)
 {
-    return IsEnabled(convHidToAqs[hid]);
+    return IsEnabled(std::find_if(unionAqsAndHid.begin(), unionAqsAndHid.end(), [hid](AqsHidPair pair)->bool { return pair.second == hid; })->first);
 }
 
 // warning!!! notification occur in DeviceWatcher's thread
@@ -303,7 +303,7 @@ bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType hid)
 // for example DeviceInfo::SubscribeHID(DeviceInfo::eHIDType::HID_MOUSE_TYPE, MainThreadRedirector([this](int32 a, bool b) { OnMouseAdd(a, b);}));
 void DeviceInfoPrivate::SubscribeHID(DeviceInfo::eHIDType hid, DeviceInfo::HIDCallBackFunc&& func)
 {
-    connections[convHidToAqs[hid]].emplace_back(std::forward<DeviceInfo::HIDCallBackFunc>(func));
+    connections[std::find_if(unionAqsAndHid.begin(), unionAqsAndHid.end(), [hid](AqsHidPair pair)->bool { return pair.second == hid; })->first].emplace_back(std::forward<DeviceInfo::HIDCallBackFunc>(func));
 }
 
 bool DeviceInfoPrivate::IsMobileMode()
@@ -320,7 +320,7 @@ void DeviceInfoPrivate::NotifyAllClients(AQSyntax usageId, bool connectState)
     }
     for (auto iter : (itForTypes->second))
     {
-        (iter)(convAqsToHid[usageId], connectState);
+        (iter)(std::find_if(unionAqsAndHid.begin(), unionAqsAndHid.end(), [usageId](AqsHidPair pair)->bool { return pair.first == usageId; })->second, connectState);
     }
 }
 

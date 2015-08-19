@@ -133,6 +133,7 @@ private:
     void SetFullScreen(bool isFullScreenFlag);
     // in units of effective (view) pixels
     void SetPreferredSize(float32 width, float32 height);
+    void HideAsyncTaskBar();
 
 private:
     CorePlatformWinUAP* core;

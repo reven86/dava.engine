@@ -188,6 +188,7 @@ void WinUAPXamlApp::Run()
         CoreWindow^ coreWindow = Window::Current->CoreWindow;
         UpdateScreenSize(coreWindow->Bounds.Width, coreWindow->Bounds.Height);
         InitRender();
+        HideAsyncTaskBar();
     });
 
     RenderManager::Instance()->BindToCurrentThread();
@@ -761,6 +762,14 @@ void WinUAPXamlApp::SetPreferredSize(float32 width, float32 height)
     // MSDN::This property only has an effect when the app is launched on a desktop device that is not in tablet mode.
     ApplicationView::GetForCurrentView()->PreferredLaunchViewSize = Windows::Foundation::Size(width, height);
     ApplicationView::PreferredLaunchWindowingMode = ApplicationViewWindowingMode::PreferredLaunchViewSize;
+}
+
+void WinUAPXamlApp::HideAsyncTaskBar()
+{
+    if (DeviceInfo::ePlatform::PLATFORM_PHONE_WIN_UAP == DeviceInfo::GetPlatform())
+    {
+        StatusBar::GetForCurrentView()->HideAsync();
+    }
 }
 
 }   // namespace DAVA
