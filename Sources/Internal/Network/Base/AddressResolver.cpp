@@ -26,7 +26,7 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include <string>
+#include <sstream>
 
 #include "Network/Base/AddressResolver.h"
 #include "Concurrency/LockGuard.h"
@@ -98,7 +98,11 @@ bool AddressResolver::StartResolving(const char8* address, uint16 port)
 
     uv_getaddrinfo_t* handle = OccupyHandle(this);
 
-    int res = uv_getaddrinfo(loop, handle, AddressResolver::GetAddrInfoCallback, address, std::to_string(port).c_str(), &hints);
+    std::stringstream ss;
+    ss << port;
+    std::string strPort(ss.str());
+
+    int res = uv_getaddrinfo(loop, handle, AddressResolver::GetAddrInfoCallback, address, strPort.c_str(), &hints);
 
     if (!res)
     {
