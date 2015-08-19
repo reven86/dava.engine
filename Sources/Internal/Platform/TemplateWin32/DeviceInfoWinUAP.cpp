@@ -296,7 +296,9 @@ int32 DeviceInfoPrivate::GetCpuCount()
 
 bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType hid)
 {
-    return IsEnabled(std::find_if(unionAqsAndHid.begin(), unionAqsAndHid.end(), [hid](AqsHidPair pair)->bool { return pair.second == hid; })->first);
+    return IsEnabled(std::find_if(unionAqsAndHid.begin(), unionAqsAndHid.end(), [hid](AqsHidPair pair)->bool {
+        return pair.second == hid; 
+    })->first);
 }
 
 // warning!!! notification occur in DeviceWatcher's thread
@@ -305,7 +307,9 @@ bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType hid)
 // for example DeviceInfo::SubscribeHID(DeviceInfo::eHIDType::HID_MOUSE_TYPE, MainThreadRedirector([this](int32 a, bool b) { OnMouseAdd(a, b);}));
 void DeviceInfoPrivate::SubscribeHID(DeviceInfo::eHIDType hid, DeviceInfo::HIDCallBackFunc&& func)
 {
-    AQSyntax aqsId = std::find_if(unionAqsAndHid.begin(), unionAqsAndHid.end(), [hid](AqsHidPair pair)->bool { return pair.second == hid; })->first;
+    AQSyntax aqsId = std::find_if(unionAqsAndHid.begin(), unionAqsAndHid.end(), [hid](AqsHidPair pair)->bool {
+        return pair.second == hid;
+    })->first;
     deviceTypes[aqsId].callbacks.emplace_back(std::forward<DeviceInfo::HIDCallBackFunc>(func));
 }
 
@@ -313,7 +317,9 @@ void DeviceInfoPrivate::NotifyAllClients(AQSyntax usageId, bool connectState)
 {
     for (auto iter : (deviceTypes[usageId].callbacks))
     {
-        (iter)(std::find_if(unionAqsAndHid.begin(), unionAqsAndHid.end(), [usageId](AqsHidPair pair)->bool { return pair.first == usageId; })->second, connectState);
+        (iter)(std::find_if(unionAqsAndHid.begin(), unionAqsAndHid.end(), [usageId](AqsHidPair pair)->bool {
+            return pair.first == usageId;
+        })->second, connectState);
     }
 }
 
@@ -380,10 +386,10 @@ DeviceWatcher^ DeviceInfoPrivate::WatcherForDeviceEvents(AQSyntax usageId)
 {
     DeviceWatcher^ watcher = DeviceInformation::CreateWatcher(HidDevice::GetDeviceSelector(AQS_USAGE_PAGE, usageId));
     auto added = ref new TypedEventHandler<DeviceWatcher^, DeviceInformation^>([this, usageId](DeviceWatcher^ watcher, DeviceInformation^ information) {
-        OnDeviceAdded(usageId, information->Id, information->Name);
+        OnDeviceAdded(usageId, information);
     });
     auto removed = ref new TypedEventHandler<DeviceWatcher^ , DeviceInformationUpdate^>([this, usageId](DeviceWatcher^ watcher, DeviceInformationUpdate^ information) {
-        OnDeviceRemoved(usageId, information->Id);
+        OnDeviceRemoved(usageId, information);
     });
 
     watcher->Added += added;
@@ -392,12 +398,12 @@ DeviceWatcher^ DeviceInfoPrivate::WatcherForDeviceEvents(AQSyntax usageId)
     return watcher;
 }
 
-void DeviceInfoPrivate::OnDeviceAdded(AQSyntax usageId, Platform::String^ deviceId, Platform::String^ deviceName)
+void DeviceInfoPrivate::OnDeviceAdded(AQSyntax usageId, DeviceInformation^ information)
 {
     if (isTouchPresent)
     {
         // skip because Windows touch mimics under mouse and keyboard
-        if (CompareWithModelName(deviceName))
+        if (CompareWithModelName(information->Name))
         {
             return;
         }
@@ -406,17 +412,17 @@ void DeviceInfoPrivate::OnDeviceAdded(AQSyntax usageId, Platform::String^ device
     auto it = deviceTypes.find(usageId);
     if (it != deviceTypes.end())
     {
-        it->second.deviceInfo[deviceId] = deviceName;
+        it->second.deviceInfo[information->Id] = information->Name;
         NotifyAllClients(usageId, true);
     }
 }
 
-void DeviceInfoPrivate::OnDeviceRemoved(AQSyntax usageId, Platform::String^ deviceId)
+void DeviceInfoPrivate::OnDeviceRemoved(AQSyntax usageId, DeviceInformationUpdate^ information)
 {
     auto it = deviceTypes.find(usageId);
     if (it != deviceTypes.end())
     {
-        it->second.deviceInfo.erase(deviceId);
+        it->second.deviceInfo.erase(information->Id);
         NotifyAllClients(usageId, false);
     }
 }
