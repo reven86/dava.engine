@@ -199,6 +199,7 @@ bool MemorySnapshot::LoadFile()
                         {
                             x.pool = 1 << x.pool;
                         }
+                        std::sort(blocks.begin(), blocks.end(), [](const MMBlock& l, const MMBlock& r) -> bool { return l.orderNo < r.orderNo; });
                         mblocks.swap(blocks);
                         return true;
                     }

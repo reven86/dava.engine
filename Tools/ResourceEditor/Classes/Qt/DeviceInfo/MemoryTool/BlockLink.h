@@ -53,6 +53,9 @@ struct BlockLink
 
     static BlockLink CreateBlockLink(const MemorySnapshot* snapshot);
     static BlockLink CreateBlockLink(const MemorySnapshot* snapshot1, const MemorySnapshot* snapshot2);
+    static BlockLink CreateBlockLink(const DAVA::Vector<DAVA::MMBlock*>& blocks, const MemorySnapshot* snapshot);
+    static BlockLink CreateBlockLink(const DAVA::Vector<DAVA::MMBlock*>& blocks1, const MemorySnapshot* snapshot1,
+                                     const DAVA::Vector<DAVA::MMBlock*>& blocks2, const MemorySnapshot* snapshot2);
 
     BlockLink() = default;
     BlockLink(BlockLink&& other);
@@ -62,6 +65,7 @@ struct BlockLink
     DAVA::uint32 linkCount = 0;
     DAVA::uint32 allocSize[2];
     DAVA::uint32 blockCount[2];
+    const MemorySnapshot* sourceSnapshots[2];
 };
 
 #endif  // __MEMORYTOOL_BLOCKLINK_H__
