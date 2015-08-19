@@ -71,14 +71,6 @@ DeviceInfoPrivate::DeviceInfoPrivate()
     isTouchPresent = (1 == touchCapabilities.TouchPresent); //  Touch is always present in MSVS simulator
     isMobileMode = Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent("Windows.Phone.PhoneContract", 1);
 
-    vectorWatchers.emplace_back(WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_POINTER));
-    vectorWatchers.emplace_back(WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_MOUSE));
-    vectorWatchers.emplace_back(WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_JOYSTICK));
-    vectorWatchers.emplace_back(WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_GAMEPAD));
-    vectorWatchers.emplace_back(WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_KEYBOARD));
-    vectorWatchers.emplace_back(WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_KEYPAD));
-    vectorWatchers.emplace_back(WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_SYSTEM_CONTROL));
-
     platform = isMobileMode ? DeviceInfo::PLATFORM_PHONE_WIN_UAP : DeviceInfo::PLATFORM_DESKTOP_WIN_UAP;
     platformString = GlobalEnumMap<DeviceInfo::ePlatform>::Instance()->ToString(GetPlatform());
 
@@ -86,6 +78,7 @@ DeviceInfoPrivate::DeviceInfoPrivate()
     uDID.swap(RTStringToString(deviceInfo.Id.ToString()));
     version.swap(RTStringToString(deviceInfo.SystemFirmwareVersion));
     manufacturer.swap(RTStringToString(deviceInfo.SystemManufacturer));
+    modelName.swap(RTStringToString(deviceInfo.FriendlyName));
     productName = WideString(deviceInfo.SystemProductName->Data());
     gpu = GPUFamily();
     cpuCount = static_cast<int32>(std::thread::hardware_concurrency());
@@ -94,6 +87,13 @@ DeviceInfoPrivate::DeviceInfoPrivate()
         cpuCount = 1;
     }
 
+    vectorWatchers.emplace_back(WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_POINTER));
+    vectorWatchers.emplace_back(WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_MOUSE));
+    vectorWatchers.emplace_back(WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_JOYSTICK));
+    vectorWatchers.emplace_back(WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_GAMEPAD));
+    vectorWatchers.emplace_back(WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_KEYBOARD));
+    vectorWatchers.emplace_back(WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_KEYPAD));
+    vectorWatchers.emplace_back(WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_SYSTEM_CONTROL));
 }
 
 DeviceInfo::ePlatform DeviceInfoPrivate::GetPlatform()
@@ -118,8 +118,7 @@ String DeviceInfoPrivate::GetManufacturer()
 
 String DeviceInfoPrivate::GetModel()
 {
-    EasClientDeviceInformation deviceInfo;
-    return RTStringToString(deviceInfo.FriendlyName);
+    return modelName;
 }
 
 String DeviceInfoPrivate::GetLocale()
@@ -366,6 +365,11 @@ eGPUFamily DeviceInfoPrivate::GPUFamily()
 #endif //  (__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__)
 }
 
+bool DeviceInfoPrivate::CompareWithModelName(Platform::String^ str)
+{
+    return (modelName.compare(RTStringToString(str)) == 0);
+}
+
 DeviceWatcher^ DeviceInfoPrivate::WatcherForDeviceEvents(uint16 usagePage, AQSyntax usageId)
 {
     DeviceWatcher^ watcher = DeviceInformation::CreateWatcher(HidDevice::GetDeviceSelector(usagePage, usageId));
@@ -387,8 +391,7 @@ void DeviceInfoPrivate::OnDeviceAdded(AQSyntax usageId, Platform::String^ device
     if (isTouchPresent)
     {
         // skip because Windows touch mimics under mouse and keyboard
-        String modelName = GetModel();
-        if (RTStringToString(deviceName).compare(modelName) == 0)
+        if (CompareWithModelName(deviceName))
         {
             return;
         }

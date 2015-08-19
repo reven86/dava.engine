@@ -109,6 +109,7 @@ namespace DAVA
         bool IsEnabled(AQSyntax usageId);
         void NotifyAllClients(AQSyntax usageId, bool connectState);
         eGPUFamily GPUFamily();
+        bool CompareWithModelName(Platform::String^ str);
 
         bool isTouchPresent = false;
         bool isMobileMode = false;
@@ -121,6 +122,7 @@ namespace DAVA
         String platformString;
         String version;
         String manufacturer;
+        String modelName;
         String uDID;
         WideString productName;
         int32 zBufferSize = 24;
