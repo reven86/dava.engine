@@ -58,6 +58,8 @@ bool    Update( Handle vb, const void* data, uint32 offset=0, uint32 size=0 );
 void*   Map( Handle vb, uint32 offset, uint32 size );
 void    Unmap( Handle vb );
 
+bool    NeedReload( Handle vb );
+
 } // namespace VertexBuffer
 
 
@@ -74,6 +76,8 @@ bool    Update( Handle ib, const void* data, uint32 offset=0, uint32 size=0 );
 
 void*   Map( Handle ib, uint32 offset, uint32 size );
 void    Unmap( Handle ib );
+
+bool    NeedReload( Handle ib );
 
 } // namespace IndexBuffer
 
@@ -108,6 +112,8 @@ void*   Map( Handle tex, unsigned level=0, TextureFace face=TEXTURE_FACE_NEGATIV
 void    Unmap( Handle tex );
 
 void    Update( Handle tex, const void* data, uint32 level, TextureFace face=TEXTURE_FACE_NEGATIVE_X );
+
+bool    NeedReload( Handle tex );
 
 };
 

@@ -103,6 +103,12 @@ Reset( const ResetParam& param )
     (*_Impl.impl_Reset)( param );
 }
 
+bool
+NeedReloadResources()
+{
+    return (*_Impl.impl_NeedReloadResources)();
+}
+
 void
 Uninitialize()
 {
@@ -164,6 +170,12 @@ Unmap( Handle vb )
     return (*_Impl.impl_VertexBuffer_Unmap)( vb );
 }
 
+bool    
+NeedReload( Handle vb )
+{
+    return (*_Impl.impl_VertexBuffer_NeedReload)( vb );
+}
+
 } // namespace VertexBuffer
 
 
@@ -201,6 +213,12 @@ void
 Unmap( Handle vb )
 {
     return (*_Impl.impl_IndexBuffer_Unmap)( vb );
+}
+
+bool    
+NeedReload( Handle ib )
+{
+    return (*_Impl.impl_IndexBuffer_NeedReload)( ib );
 }
 
 } // namespace IndexBuffer
@@ -278,6 +296,13 @@ void
 Update( Handle tex, const void* data, uint32 level, TextureFace face )
 {
     return (*_Impl.impl_Texture_Update)( tex, data, level, face );
+}
+
+
+bool    
+NeedReload( Handle tex )
+{
+    return (*_Impl.impl_Texture_NeedReload)( tex );
 }
 
 };
