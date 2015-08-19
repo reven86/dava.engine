@@ -219,6 +219,16 @@ private:
 	int32			resourceCount;
 };
 
+void FrameworkDidLaunched()
+{
+    
+}
+
+void FrameworkWillTerminate()
+{
+    
+}
+
 
 int main(int argc, char* argv[])
 {
