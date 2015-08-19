@@ -386,7 +386,7 @@ void DeviceInfoPrivate::OnDeviceAdded(AQSyntax usageId, Platform::String^ device
 {
     if (isTouchPresent)
     {
-        // because Windows touch mimics under mouse and keyboard
+        // skip because Windows touch mimics under mouse and keyboard
         String modelName = GetModel();
         if (RTStringToString(deviceName).compare(modelName) == 0)
         {

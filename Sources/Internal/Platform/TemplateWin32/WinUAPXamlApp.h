@@ -171,7 +171,7 @@ private:
     bool isLeftButtonPressed = false;
     bool isMiddleButtonPressed = false;
 
-    float32 rawPixelsPerViewPixel = 1.0f;
+    float64 rawPixelsPerViewPixel = 1.0f;
     int32 viewWidth = DisplayMode::DEFAULT_WIDTH;
     int32 viewHeight = DisplayMode::DEFAULT_HEIGHT;
     int32 physicalWidth = static_cast<int32>(viewWidth * rawPixelsPerViewPixel);
