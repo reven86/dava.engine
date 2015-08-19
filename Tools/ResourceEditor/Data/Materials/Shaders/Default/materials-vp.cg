@@ -168,8 +168,8 @@ property float3 metalFresnelReflectance : static,a : ;
 #endif
 
 #if SKINNING
-property float4 jointPositions[MAX_JOINTS] : dynamic,skin : ; // (x, y, z, scale)
-property float4 jointQuaternions[MAX_JOINTS] : dynamic,skin : ;
+property float4 jointPositions[MAX_JOINTS] : dynamic,skin1 : bigarray ; // (x, y, z, scale)
+property float4 jointQuaternions[MAX_JOINTS] : dynamic,skin2 : bigarray ;
 #endif
 
 #include "vp-fog-props.cgh"

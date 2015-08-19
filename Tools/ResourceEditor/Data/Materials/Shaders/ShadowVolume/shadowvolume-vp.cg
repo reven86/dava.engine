@@ -22,8 +22,8 @@ property float4x4 worldViewInvTransposeMatrix : dynamic,instance : ;
 property float4 lightPosition0 : dynamic,instance : ;
 
 #if SKINNING
-property float4 jointPositions[MAX_JOINTS] : dynamic,skin : ; // (x, y, z, scale)
-property float4 jointQuaternions[MAX_JOINTS] : dynamic,skin : ;
+property float4 jointPositions[MAX_JOINTS] : dynamic,skin1 : bigarray ; // (x, y, z, scale)
+property float4 jointQuaternions[MAX_JOINTS] : dynamic,skin2 : bigarray ;
 #endif
 
 // prototypes, to shut up Metal shader-compiler
