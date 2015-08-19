@@ -124,7 +124,7 @@ WideString DeviceInfoPrivate::GetName()
 
 int32 DeviceInfoPrivate::GetZBufferSize()
 {
-	return getZBufferSize();
+	return static_cast<int32>(getZBufferSize());
 }
 
 String DeviceInfoPrivate::GetHTTPProxyHost()
@@ -139,7 +139,7 @@ String DeviceInfoPrivate::GetHTTPNonProxyHosts()
 
 int32 DeviceInfoPrivate::GetHTTPProxyPort()
 {
-	return getHTTPProxyPort();
+	return static_cast<int32>(getHTTPProxyPort());
 }
 
 DeviceInfo::ScreenInfo& DeviceInfoPrivate::GetScreenInfo()

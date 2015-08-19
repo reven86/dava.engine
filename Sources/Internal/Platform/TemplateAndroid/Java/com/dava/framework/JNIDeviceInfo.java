@@ -87,7 +87,7 @@ public class JNIDeviceInfo {
 		return serial;
 	}
 	
-	public static int32 GetZBufferSize()
+	public static int GetZBufferSize()
 	{
 		return JNIConfigChooser.GetDepthBufferSize();
 	}
@@ -97,10 +97,10 @@ public class JNIDeviceInfo {
 		return System.getProperty("http.proxyHost");
 	}
 	
-	public static int32 GetHTTPProxyPort()
+	public static int GetHTTPProxyPort()
 	{
             String portStr = System.getProperty("http.proxyPort");
-	    int32 proxyPort = Integer.parseInt((portStr != null ? portStr : "-1"));
+	    int proxyPort = Integer.parseInt((portStr != null ? portStr : "-1"));
 	    return proxyPort;
 	}
 	
