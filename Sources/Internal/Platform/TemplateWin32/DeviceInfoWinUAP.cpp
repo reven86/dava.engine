@@ -69,20 +69,17 @@ DeviceInfoPrivate::DeviceInfoPrivate()
 {
     TouchCapabilities touchCapabilities;
     isTouchPresent = (1 == touchCapabilities.TouchPresent); //  Touch is always present in MSVS simulator
-                                                            //add watchers
-    mapWatchers[WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_POINTER)] =  AQS_POINTER;
-    mapWatchers[WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_MOUSE)] = AQS_MOUSE;
-    mapWatchers[WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_JOYSTICK)] = AQS_JOYSTICK;
-    mapWatchers[WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_GAMEPAD)] = AQS_GAMEPAD;
-    mapWatchers[WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_KEYBOARD)] = AQS_KEYBOARD;
-    mapWatchers[WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_KEYPAD)] = AQS_KEYPAD;
-    mapWatchers[WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_SYSTEM_CONTROL)] = AQS_SYSTEM_CONTROL;
+    isMobileMode = Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent("Windows.Phone.PhoneContract", 1);
 
-    if (IsMobileMode())
-    {
-        platform = DeviceInfo::PLATFORM_PHONE_WIN_UAP;
-    }
-    platform = DeviceInfo::PLATFORM_DESKTOP_WIN_UAP;
+    vectorWatchers.emplace_back(WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_POINTER));
+    vectorWatchers.emplace_back(WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_MOUSE));
+    vectorWatchers.emplace_back(WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_JOYSTICK));
+    vectorWatchers.emplace_back(WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_GAMEPAD));
+    vectorWatchers.emplace_back(WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_KEYBOARD));
+    vectorWatchers.emplace_back(WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_KEYPAD));
+    vectorWatchers.emplace_back(WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_SYSTEM_CONTROL));
+
+    platform = isMobileMode ? DeviceInfo::PLATFORM_PHONE_WIN_UAP : DeviceInfo::PLATFORM_DESKTOP_WIN_UAP;
     platformString = GlobalEnumMap<DeviceInfo::ePlatform>::Instance()->ToString(GetPlatform());
 
     EasClientDeviceInformation deviceInfo;
@@ -303,22 +300,13 @@ bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType hid)
 // for example DeviceInfo::SubscribeHID(DeviceInfo::eHIDType::HID_MOUSE_TYPE, MainThreadRedirector([this](int32 a, bool b) { OnMouseAdd(a, b);}));
 void DeviceInfoPrivate::SubscribeHID(DeviceInfo::eHIDType hid, DeviceInfo::HIDCallBackFunc&& func)
 {
-    connections[std::find_if(unionAqsAndHid.begin(), unionAqsAndHid.end(), [hid](AqsHidPair pair)->bool { return pair.second == hid; })->first].emplace_back(std::forward<DeviceInfo::HIDCallBackFunc>(func));
-}
-
-bool DeviceInfoPrivate::IsMobileMode()
-{
-    return Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent("Windows.Phone.PhoneContract", 1);
+    AQSyntax aqsId = std::find_if(unionAqsAndHid.begin(), unionAqsAndHid.end(), [hid](AqsHidPair pair)->bool { return pair.second == hid; })->first;
+    deviceTypes[aqsId].callbacks.emplace_back(std::forward<DeviceInfo::HIDCallBackFunc>(func));
 }
 
 void DeviceInfoPrivate::NotifyAllClients(AQSyntax usageId, bool connectState)
 {
-    MapForTypeAndConnections::iterator itForTypes = connections.find(usageId);
-    if (itForTypes == connections.end())
-    {
-        return;
-    }
-    for (auto iter : (itForTypes->second))
+    for (auto iter : (deviceTypes[usageId].callbacks))
     {
         (iter)(std::find_if(unionAqsAndHid.begin(), unionAqsAndHid.end(), [usageId](AqsHidPair pair)->bool { return pair.first == usageId; })->second, connectState);
     }
@@ -378,14 +366,14 @@ eGPUFamily DeviceInfoPrivate::GPUFamily()
 #endif //  (__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__)
 }
 
-DeviceWatcher^ DeviceInfoPrivate::WatcherForDeviceEvents(uint16 usagePage, uint16 usageId)
+DeviceWatcher^ DeviceInfoPrivate::WatcherForDeviceEvents(uint16 usagePage, AQSyntax usageId)
 {
-    Windows::Devices::Enumeration::DeviceWatcher^ watcher = Enumeration::DeviceInformation::CreateWatcher(HidDevice::GetDeviceSelector(usagePage, usageId));
-    auto added = ref new TypedEventHandler<DeviceWatcher^, DeviceInformation^>([this](DeviceWatcher^ watcher, DeviceInformation^ information) {
-        OnDeviceAdded(watcher, information);
+    DeviceWatcher^ watcher = DeviceInformation::CreateWatcher(HidDevice::GetDeviceSelector(usagePage, usageId));
+    auto added = ref new TypedEventHandler<DeviceWatcher^, DeviceInformation^>([this, usageId](DeviceWatcher^ watcher, DeviceInformation^ information) {
+        OnDeviceAdded(usageId, information->Id, information->Name);
     });
-    auto removed = ref new TypedEventHandler<DeviceWatcher^ , DeviceInformationUpdate^>([this](DeviceWatcher^ watcher, DeviceInformationUpdate^ information) {
-        OnDeviceRemoved(watcher, information);
+    auto removed = ref new TypedEventHandler<DeviceWatcher^ , DeviceInformationUpdate^>([this, usageId](DeviceWatcher^ watcher, DeviceInformationUpdate^ information) {
+        OnDeviceRemoved(usageId, information->Id);
     });
 
     watcher->Added += added;
@@ -394,29 +382,39 @@ DeviceWatcher^ DeviceInfoPrivate::WatcherForDeviceEvents(uint16 usagePage, uint1
     return watcher;
 }
 
-void DeviceInfoPrivate::OnDeviceAdded(DeviceWatcher^ watcher, DeviceInformation^ information)
+void DeviceInfoPrivate::OnDeviceAdded(AQSyntax usageId, Platform::String^ deviceId, Platform::String^ deviceName)
 {
-    auto iter = mapWatchers.find(watcher);
-    if (iter != mapWatchers.end())
+    if (isTouchPresent)
     {
-        devices[iter->second][information->Id] = information->Name;
-        NotifyAllClients(iter->second, true);
+        // because Windows touch mimics under mouse and keyboard
+        String modelName = GetModel();
+        if (RTStringToString(deviceName).compare(modelName) == 0)
+        {
+            return;
+        }
+    }
+    
+    auto it = deviceTypes.find(usageId);
+    if (it != deviceTypes.end())
+    {
+        it->second.deviceInfo[deviceId] = deviceName;
+        NotifyAllClients(usageId, true);
     }
 }
 
-void DeviceInfoPrivate::OnDeviceRemoved(DeviceWatcher^ watcher, DeviceInformationUpdate^ information)
+void DeviceInfoPrivate::OnDeviceRemoved(AQSyntax usageId, Platform::String^ deviceId)
 {
-    MapForWatchers::iterator iter = mapWatchers.find(watcher);
-    if (iter != mapWatchers.end())
+    auto it = deviceTypes.find(usageId);
+    if (it != deviceTypes.end())
     {
-        devices[iter->second].erase(information->Id);
-        NotifyAllClients(iter->second, false);
+        it->second.deviceInfo.erase(deviceId);
+        NotifyAllClients(usageId, false);
     }
 }
 
 bool DeviceInfoPrivate::IsEnabled(AQSyntax usageId)
 {
-    return (devices[usageId].size() > 0);
+    return (deviceTypes[usageId].deviceInfo.size() > 0);
 }
 
 }

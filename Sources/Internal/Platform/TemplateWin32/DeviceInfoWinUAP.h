@@ -78,6 +78,7 @@ namespace DAVA
             AQS_KEYPAD = 0x07,
             AQS_SYSTEM_CONTROL = 0x80
         };
+        const uint16 AQS_USAGE_PAGE = 0x01;
 
         class AqsHidPair
         {
@@ -92,30 +93,27 @@ namespace DAVA
             AqsHidPair(AQS_JOYSTICK, DeviceInfo::HID_JOYSTICK_TYPE), AqsHidPair(AQS_GAMEPAD, DeviceInfo::HID_GAMEPAD_TYPE), AqsHidPair(AQS_KEYBOARD, DeviceInfo::HID_KEYBOARD_TYPE),
             AqsHidPair(AQS_KEYPAD, DeviceInfo::HID_KEYPAD_TYPE ), AqsHidPair(AQS_SYSTEM_CONTROL, DeviceInfo::HID_SYSTEM_CONTROL_TYPE ) };
 
-        const uint16 AQS_USAGE_PAGE = 0x01;
-        struct cmpDeviceWatcher {
-            bool operator()(Windows::Devices::Enumeration::DeviceWatcher^ a, Windows::Devices::Enumeration::DeviceWatcher^ b) const {
-                return a->GetHashCode() < b->GetHashCode();
-            }
-        };
-        using PairForWatchersAndType = std::pair<Windows::Devices::Enumeration::DeviceWatcher^, AQSyntax>;
-        using MapForWatchers = Map<PairForWatchersAndType::first_type, PairForWatchersAndType::second_type, cmpDeviceWatcher>;
         using MapForIdAndName = Map<Platform::String^, Platform::String^>;
-        using MapForTypeAndDeviceInfo = Map<AQSyntax, MapForIdAndName>;
-        using MapForTypeAndConnections = Map<AQSyntax, Vector<DeviceInfo::HIDCallBackFunc > >;
+        using VectorCallBacks = Vector<DeviceInfo::HIDCallBackFunc >;
+        class ClientsAndDevices
+        {
+        public:
+            MapForIdAndName deviceInfo;
+            VectorCallBacks callbacks;
+        };
+        using MapForHIDTypes = Map<AQSyntax, ClientsAndDevices>;
 
-        Windows::Devices::Enumeration::DeviceWatcher^ WatcherForDeviceEvents(uint16 usagePage, uint16 usageId);
-        void OnDeviceAdded(Windows::Devices::Enumeration::DeviceWatcher^, Windows::Devices::Enumeration::DeviceInformation^);
-        void OnDeviceRemoved(Windows::Devices::Enumeration::DeviceWatcher^, Windows::Devices::Enumeration::DeviceInformationUpdate^);
+        Windows::Devices::Enumeration::DeviceWatcher^ WatcherForDeviceEvents(uint16 usagePage, AQSyntax usageId);
+        void OnDeviceAdded(AQSyntax usageId, Platform::String^ deviceId, Platform::String^ deviceName);
+        void OnDeviceRemoved(AQSyntax usageId, Platform::String^ deviceId);
         bool IsEnabled(AQSyntax usageId);
         void NotifyAllClients(AQSyntax usageId, bool connectState);
         eGPUFamily GPUFamily();
-        bool IsMobileMode();
 
         bool isTouchPresent = false;
-        MapForWatchers mapWatchers;
-        MapForTypeAndDeviceInfo devices;
-        MapForTypeAndConnections connections;
+        bool isMobileMode = false;
+        MapForHIDTypes deviceTypes;
+        Vector<Windows::Devices::Enumeration::DeviceWatcher^> vectorWatchers;
 
         DeviceInfo::ePlatform platform = DeviceInfo::PLATFORM_UNKNOWN;
         DeviceInfo::ScreenInfo screenInfo;
