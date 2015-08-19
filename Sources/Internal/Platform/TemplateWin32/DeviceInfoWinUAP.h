@@ -78,12 +78,12 @@ namespace DAVA
             AQS_SYSTEM_CONTROL = 0x80
         };
 
-        Map<AQSyntax, DeviceInfo::eHIDType> convAqsToHid = 
+        UnorderedMap<AQSyntax, DeviceInfo::eHIDType> convAqsToHid =
         { { AQS_UNKNOWN , DeviceInfo::HID_UNKNOWN_TYPE }, { AQS_POINTER, DeviceInfo::HID_POINTER_TYPE }, { AQS_MOUSE, DeviceInfo::HID_MOUSE_TYPE },
           { AQS_JOYSTICK, DeviceInfo::HID_JOYSTICK_TYPE }, { AQS_GAMEPAD, DeviceInfo::HID_GAMEPAD_TYPE }, { AQS_KEYBOARD, DeviceInfo::HID_KEYBOARD_TYPE },
           { AQS_KEYPAD, DeviceInfo::HID_KEYPAD_TYPE }, { AQS_SYSTEM_CONTROL, DeviceInfo::HID_SYSTEM_CONTROL_TYPE } };
 
-        Map<DeviceInfo::eHIDType, AQSyntax> convHidToAqs =
+        UnorderedMap<DeviceInfo::eHIDType, AQSyntax> convHidToAqs =
         { { DeviceInfo::HID_UNKNOWN_TYPE, AQS_UNKNOWN }, { DeviceInfo::HID_POINTER_TYPE, AQS_POINTER }, { DeviceInfo::HID_MOUSE_TYPE, AQS_MOUSE },
           { DeviceInfo::HID_JOYSTICK_TYPE, AQS_JOYSTICK }, { DeviceInfo::HID_GAMEPAD_TYPE, AQS_GAMEPAD }, { DeviceInfo::HID_KEYBOARD_TYPE, AQS_KEYBOARD },
           { DeviceInfo::HID_KEYPAD_TYPE, AQS_KEYPAD }, { DeviceInfo::HID_SYSTEM_CONTROL_TYPE, AQS_SYSTEM_CONTROL } };
