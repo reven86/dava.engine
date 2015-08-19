@@ -74,13 +74,19 @@ DeviceInfoPrivate::DeviceInfoPrivate()
     platform = isMobileMode ? DeviceInfo::PLATFORM_PHONE_WIN_UAP : DeviceInfo::PLATFORM_DESKTOP_WIN_UAP;
     platformString = GlobalEnumMap<DeviceInfo::ePlatform>::Instance()->ToString(GetPlatform());
 
-    EasClientDeviceInformation deviceInfo;
-    uDID.swap(RTStringToString(deviceInfo.Id.ToString()));
-    version.swap(RTStringToString(deviceInfo.SystemFirmwareVersion));
-    manufacturer.swap(RTStringToString(deviceInfo.SystemManufacturer));
-    modelName.swap(RTStringToString(deviceInfo.FriendlyName));
-    productName = WideString(deviceInfo.SystemProductName->Data());
-    gpu = GPUFamily();
+    try
+    {
+        EasClientDeviceInformation deviceInfo;
+        version.swap(RTStringToString(deviceInfo.SystemFirmwareVersion));
+        manufacturer.swap(RTStringToString(deviceInfo.SystemManufacturer));
+        modelName.swap(RTStringToString(deviceInfo.FriendlyName));
+        productName = WideString(deviceInfo.SystemProductName->Data());
+        gpu = GPUFamily();
+        uDID.swap(RTStringToString(deviceInfo.Id.ToString()));
+    }
+    catch (Platform::Exception^ e)
+    {
+    }
     cpuCount = static_cast<int32>(std::thread::hardware_concurrency());
     if (0 == cpuCount)
     {
