@@ -40,7 +40,10 @@ bool DVAssertMessage::ShowMessage(eModalType modalType, const char8 * text, ...)
 {
     bool userClickBreak = false;
 	// we don't need to show assert window for console mode
-	if(Core::Instance()->IsConsoleMode()) return userClickBreak; // TODO what to do here? is loging only in console mode?
+    if (Core::Instance() && Core::Instance()->IsConsoleMode()) 
+    {
+        return userClickBreak; // TODO what to do here? is loging only in console mode?
+    }
 
 	va_list vl;
 	va_start(vl, text);
