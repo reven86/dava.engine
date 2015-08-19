@@ -80,14 +80,14 @@ namespace DAVA
         };
         const uint16 AQS_USAGE_PAGE = 0x01;
 
-        class AqsHidPair
-        {
-        public:
-            AqsHidPair(AQSyntax first_, DeviceInfo::eHIDType second_) : first(), second(second_) {}
-            AQSyntax first;
-            DeviceInfo::eHIDType second;
-        };
-
+//         class AqsHidPair
+//         {
+//         public:
+//             AqsHidPair(AQSyntax first_, DeviceInfo::eHIDType second_) : first(), second(second_) {}
+//             AQSyntax first;
+//             DeviceInfo::eHIDType second;
+//         };
+        using AqsHidPair = std::pair<AQSyntax, DeviceInfo::eHIDType>;
         Vector<AqsHidPair> unionAqsAndHid = 
             { AqsHidPair(AQS_UNKNOWN , DeviceInfo::HID_UNKNOWN_TYPE) , AqsHidPair(AQS_POINTER, DeviceInfo::HID_POINTER_TYPE), AqsHidPair(AQS_MOUSE, DeviceInfo::HID_MOUSE_TYPE),
             AqsHidPair(AQS_JOYSTICK, DeviceInfo::HID_JOYSTICK_TYPE), AqsHidPair(AQS_GAMEPAD, DeviceInfo::HID_GAMEPAD_TYPE), AqsHidPair(AQS_KEYBOARD, DeviceInfo::HID_KEYBOARD_TYPE),
