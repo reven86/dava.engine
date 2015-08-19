@@ -72,12 +72,12 @@ QVariant MemoryBlocksModel::data(const QModelIndex& index, int role) const
             if (block != nullptr)
             {
                 const String& poolName = session->AllocPoolNameByMask(block->pool);
-                return QString("order=%1, size=%2, pool=%3, tags=%4")
+                return QString("order=%1;size=%2;pool=%3;backtrace=%4;%5")
                     .arg(block->orderNo)
                     .arg(block->allocByApp)
                     .arg(poolName.c_str())
-                    .arg(block->tags, 0, 16)
-                    ;
+                    .arg(block->bktraceHash)
+                    .arg(block->tags != 0 ? TagsToString(block->tags) : QString());
             }
         }
         else if (ROLE_LINKITEM_POINTER == role)
@@ -88,21 +88,63 @@ QVariant MemoryBlocksModel::data(const QModelIndex& index, int role) const
     return QVariant();
 }
 
+QVariant MemoryBlocksModel::headerData(int section, Qt::Orientation orientation, int role) const
+{
+    if (role == Qt::DisplayRole && Qt::Horizontal == orientation && blockLink != nullptr)
+    {
+        DVASSERT(section < static_cast<int>(blockLink->linkCount));
+        String filename = blockLink->sourceSnapshots[section]->FileName().GetFilename();
+        return QString("Memory blocks of %1").arg(filename.c_str());
+    }
+    return QAbstractTableModel::headerData(section, orientation, role);
+}
+
+QString MemoryBlocksModel::TagsToString(uint32 tags) const
+{
+    QString result("tags=");
+    int bit = HighestBitIndex(tags);
+    for (;bit >= 0 && tags != 0;--bit)
+    {
+        tags &= ~(1 << bit);
+        result += session->TagName(bit).c_str();
+        result += ',';
+    }
+    result.chop(1);     // Remove last comma
+    return result;
+}
+
 //////////////////////////////////////////////////////////////////////////
 MemoryBlocksFilterModel::MemoryBlocksFilterModel(MemoryBlocksModel* model, QObject* parent)
     : QSortFilterProxyModel(parent)
     , lessThanPredicate([](const BlockLink::Item& l, const BlockLink::Item& r) { return BlockLink::AnyBlock(l)->orderNo < BlockLink::AnyBlock(r)->orderNo; })
     , filterPredicate([](const BlockLink::Item&) { return true; })
 {
+    QSortFilterProxyModel::setDynamicSortFilter(false);
     QSortFilterProxyModel::setSourceModel(model);
 }
 
 MemoryBlocksFilterModel::~MemoryBlocksFilterModel() = default;
 
+void MemoryBlocksFilterModel::ClearFilter()
+{
+    dontFilter = true;
+    invalidateFilter();
+}
+
+QVariant MemoryBlocksFilterModel::headerData(int section, Qt::Orientation orientation, int role) const
+{
+    if (role == Qt::DisplayRole && Qt::Vertical == orientation)
+    {
+        return QVariant(section + 1);
+    }
+    return QSortFilterProxyModel::headerData(section, orientation, role);
+}
+
 bool MemoryBlocksFilterModel::lessThan(const QModelIndex& left, const QModelIndex& right) const
 {
-    QVariant vleft = data(left, MemoryBlocksModel::ROLE_LINKITEM_POINTER);
-    QVariant vright = data(right, MemoryBlocksModel::ROLE_LINKITEM_POINTER);
+    QAbstractItemModel* source = sourceModel();
+    QVariant vleft = source->data(left, MemoryBlocksModel::ROLE_LINKITEM_POINTER);
+    QVariant vright = source->data(right, MemoryBlocksModel::ROLE_LINKITEM_POINTER);
 
     const BlockLink::Item* itemLeft = static_cast<const BlockLink::Item*>(vleft.value<void*>());
     const BlockLink::Item* itemRight = static_cast<const BlockLink::Item*>(vright.value<void*>());

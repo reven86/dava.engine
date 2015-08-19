@@ -31,15 +31,19 @@
 
 #include "Base/BaseTypes.h"
 
+#include "Qt/DeviceInfo/MemoryTool/BlockLink.h"
+
 #include <QWidget>
 
 class QTableView;
 class QListView;
+class QModelIndex;
 
 class ProfilingSession;
 class MemorySnapshot;
 class MemoryBlocksModel;
 class MemoryBlocksFilterModel;
+class BacktraceListModel;
 struct BlockLink;
 
 class MemoryBlocksWidget : public QWidget
@@ -47,20 +51,41 @@ class MemoryBlocksWidget : public QWidget
     Q_OBJECT
 
 public:
-    MemoryBlocksWidget(const ProfilingSession* session, const BlockLink* blockLink, QWidget* parent = nullptr);
+    MemoryBlocksWidget(const ProfilingSession* session, const BlockLink* blockLink, bool showBacktrace = true, QWidget* parent = nullptr);
     virtual ~MemoryBlocksWidget();
+
+    void SetBlockLink(const BlockLink* blockLink);
+
+signals:
+    void MemoryBlockDoubleClicked(const BlockLink::Item& item);
+
+private slots:
+    void TableWidget_SelectionChanged(const QModelIndex& current, const QModelIndex& previous);
+    void TableWidget_DoubleClicked(const QModelIndex& index);
+
+    void FilterBar_SortingOrderChanged(int order);
+    void FilterBar_FilterChanged(DAVA::uint32 poolMask, DAVA::uint32 tagMask);
+    void FilterBar_HideTheSameChanged(bool hide);
 
 private:
     void Init();
+    bool Filter(const BlockLink::Item& item);
 
 private:
     const ProfilingSession* session = nullptr;
     const BlockLink* blockLink = nullptr;
 
     QTableView* tableWidget = nullptr;
+    QListView* backtraceWidget = nullptr;
+    bool showBacktrace = true;
 
     std::unique_ptr<MemoryBlocksModel> memoryBlocksModel;
     std::unique_ptr<MemoryBlocksFilterModel> memoryBlocksFilterModel;
+    std::unique_ptr<BacktraceListModel> backtraceListModel;
+
+    DAVA::uint32 filterPoolMask = 0;
+    DAVA::uint32 filterTagMask = 0;
+    bool hideTheSame = false;
 };
 
 #endif  // __MEMORYTOOL_MEMORYBLOCKSWIDGET_H__
