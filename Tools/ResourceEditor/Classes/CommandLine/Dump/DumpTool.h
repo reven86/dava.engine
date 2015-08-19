@@ -27,20 +27,20 @@
 =====================================================================================*/
 
 
-#ifndef __STATIC_OCCLUSION_TOOL_H__
-#define __STATIC_OCCLUSION_TOOL_H__
+#ifndef __DUMP_TOOL_H__
+#define __DUMP_TOOL_H__
 
-#include "../CommandLineTool.h"
+#include "CommandLine/CommandLineTool.h"
 
-class StaticOcclusionTool: public CommandLineTool
+class DumpTool: public CommandLineTool
 {
     enum eAction
     {
         ACTION_NONE = -1,
         
-        ACTION_BUILD,
+        ACTION_DUMP_LINKS,
     };
-
+    
 public:
 
 	DAVA::String GetCommandLineKey() override;
@@ -53,8 +53,11 @@ public:
 protected:
 
     eAction commandAction;
-    DAVA::FilePath scenePathname;
+    DAVA::String filename;
+    DAVA::FilePath inFolder;
+	DAVA::FilePath outFile;
+	DAVA::FilePath qualityPathname;
 };
 
 
-#endif // __STATIC_OCCLUSION_TOOL_H__
+#endif // __DUMP_TOOL_H__

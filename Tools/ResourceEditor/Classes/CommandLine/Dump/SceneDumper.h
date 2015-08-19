@@ -27,34 +27,45 @@
 =====================================================================================*/
 
 
-#ifndef __STATIC_OCCLUSION_TOOL_H__
-#define __STATIC_OCCLUSION_TOOL_H__
+#ifndef __SCENE_DUMPER_H__
+#define __SCENE_DUMPER_H__
 
-#include "../CommandLineTool.h"
+#include "Base/BaseTypes.h"
+#include "FileSystem/FilePath.h"
 
-class StaticOcclusionTool: public CommandLineTool
+namespace DAVA
 {
-    enum eAction
-    {
-        ACTION_NONE = -1,
-        
-        ACTION_BUILD,
-    };
+	class Scene;
+	class Entity;
+	class RenderObject;
+	class KeyedArchive;
+	class ParticleEffectComponent;
+	class ParticleEmitter;
+}
 
+class SceneDumper
+{
 public:
 
-	DAVA::String GetCommandLineKey() override;
-	bool InitializeFromCommandLine() override;
-	void Process() override;
-	void PrintUsage() override;
-	void DumpParams() override;
-	DAVA::FilePath GetQualityConfigPath() const override;
+	using SceneLinks = DAVA::Set < DAVA::FilePath >;
 
-protected:
+	static SceneLinks DumpLinks(const DAVA::FilePath &scenePath, DAVA::Set<DAVA::String> &errorLog);
 
-    eAction commandAction;
-    DAVA::FilePath scenePathname;
+private:
+
+	SceneDumper(const DAVA::FilePath &scenePath, DAVA::Set<DAVA::String> &errorLog);
+	~SceneDumper();
+
+	void DumpLinksRecursive(DAVA::Entity *entity, SceneLinks &links) const;
+
+	void DumpCustomProperties(DAVA::KeyedArchive *properties, SceneLinks &links) const;
+	void DumpRenderObject(DAVA::RenderObject *renderObject, SceneLinks &links) const;
+	void DumpEffect(DAVA::ParticleEffectComponent *effect, SceneLinks &links) const;
+	void DumpEmitter(DAVA::ParticleEmitter *emitter, SceneLinks &links, SceneLinks &gfxFolders) const;
+
+private:
+	DAVA::Scene *scene = nullptr;
 };
 
 
-#endif // __STATIC_OCCLUSION_TOOL_H__
+#endif // __SCENE_DUMPER_H__

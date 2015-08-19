@@ -44,13 +44,12 @@ class SceneSaverTool: public CommandLineTool
     
 public:
 
-    virtual DAVA::String GetCommandLineKey();
-    virtual bool InitializeFromCommandLine();
-    virtual void Process();
-    virtual void PrintUsage();
-    virtual void DumpParams();
-
-    virtual DAVA::FilePath GetQualityConfigPath() const;
+	DAVA::String GetCommandLineKey() override;
+	bool InitializeFromCommandLine() override;
+	void Process() override;
+	void PrintUsage() override;
+	void DumpParams() override;
+	DAVA::FilePath GetQualityConfigPath() const override;
 
 protected:
 

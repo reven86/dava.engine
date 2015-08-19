@@ -44,11 +44,11 @@ class ImageSplitterTool: public CommandLineTool
     
 public:
 
-    virtual DAVA::String GetCommandLineKey();
-    virtual bool InitializeFromCommandLine();
-    virtual void Process();
-    virtual void PrintUsage();
-   
+	DAVA::String GetCommandLineKey() override;
+	bool InitializeFromCommandLine() override;
+	void Process() override;
+	void PrintUsage() override;
+
 protected:
     
     eAction commandAction;
