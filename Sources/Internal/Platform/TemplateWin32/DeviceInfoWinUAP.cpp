@@ -93,13 +93,13 @@ DeviceInfoPrivate::DeviceInfoPrivate()
         cpuCount = 1;
     }
 
-    vectorWatchers.emplace_back(WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_POINTER));
-    vectorWatchers.emplace_back(WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_MOUSE));
-    vectorWatchers.emplace_back(WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_JOYSTICK));
-    vectorWatchers.emplace_back(WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_GAMEPAD));
-    vectorWatchers.emplace_back(WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_KEYBOARD));
-    vectorWatchers.emplace_back(WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_KEYPAD));
-    vectorWatchers.emplace_back(WatcherForDeviceEvents(AQS_USAGE_PAGE, AQS_SYSTEM_CONTROL));
+    vectorWatchers.emplace_back(WatcherForDeviceEvents(AQS_POINTER));
+    vectorWatchers.emplace_back(WatcherForDeviceEvents(AQS_MOUSE));
+    vectorWatchers.emplace_back(WatcherForDeviceEvents(AQS_JOYSTICK));
+    vectorWatchers.emplace_back(WatcherForDeviceEvents(AQS_GAMEPAD));
+    vectorWatchers.emplace_back(WatcherForDeviceEvents(AQS_KEYBOARD));
+    vectorWatchers.emplace_back(WatcherForDeviceEvents(AQS_KEYPAD));
+    vectorWatchers.emplace_back(WatcherForDeviceEvents(AQS_SYSTEM_CONTROL));
 }
 
 DeviceInfo::ePlatform DeviceInfoPrivate::GetPlatform()
@@ -376,9 +376,9 @@ bool DeviceInfoPrivate::CompareWithModelName(Platform::String^ str)
     return (modelName.compare(RTStringToString(str)) == 0);
 }
 
-DeviceWatcher^ DeviceInfoPrivate::WatcherForDeviceEvents(uint16 usagePage, AQSyntax usageId)
+DeviceWatcher^ DeviceInfoPrivate::WatcherForDeviceEvents(AQSyntax usageId)
 {
-    DeviceWatcher^ watcher = DeviceInformation::CreateWatcher(HidDevice::GetDeviceSelector(usagePage, usageId));
+    DeviceWatcher^ watcher = DeviceInformation::CreateWatcher(HidDevice::GetDeviceSelector(AQS_USAGE_PAGE, usageId));
     auto added = ref new TypedEventHandler<DeviceWatcher^, DeviceInformation^>([this, usageId](DeviceWatcher^ watcher, DeviceInformation^ information) {
         OnDeviceAdded(usageId, information->Id, information->Name);
     });

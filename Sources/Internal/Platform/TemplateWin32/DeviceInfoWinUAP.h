@@ -96,7 +96,7 @@ namespace DAVA
         };
         using MapForHIDTypes = Map<AQSyntax, ClientsAndDevices>;
 
-        Windows::Devices::Enumeration::DeviceWatcher^ WatcherForDeviceEvents(uint16 usagePage, AQSyntax usageId);
+        Windows::Devices::Enumeration::DeviceWatcher^ WatcherForDeviceEvents(AQSyntax usageId);
         void OnDeviceAdded(AQSyntax usageId, Platform::String^ deviceId, Platform::String^ deviceName);
         void OnDeviceRemoved(AQSyntax usageId, Platform::String^ deviceId);
         bool IsEnabled(AQSyntax usageId);
