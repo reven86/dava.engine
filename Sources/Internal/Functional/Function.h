@@ -420,7 +420,7 @@ public:
     bool operator==(const Function&) const = delete;
     bool operator!=(const Function&) const = delete;
 
-    operator bool() const { return !operator==(nullptr); }
+    operator bool() const { return (invoker != nullptr); }
 
     friend bool operator<(const Function& fnL, const Function& fnR) { return (fnL.invoker < fnR.invoker); }
     friend bool operator==(std::nullptr_t, const Function &fn) { return (nullptr == fn.invoker); }
