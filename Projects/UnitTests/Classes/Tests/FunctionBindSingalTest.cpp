@@ -234,7 +234,6 @@ DAVA_TESTCLASS(FunctionBindSignalTest)
         Function<int()> null_f0;
         Function<int()> null_f0_1 = nullptr;
 
-        TEST_VERIFY(null_f0 == null_f0_1);
         TEST_VERIFY(null_f0 == nullptr);
         TEST_VERIFY(null_f0_1 == nullptr);
 

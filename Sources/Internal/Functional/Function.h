@@ -442,7 +442,7 @@ public:
 
     friend bool operator!=(std::nullptr_t, const Function &fn)
     {
-        return !operator==(nullptr, fn);
+        return (nullptr != fn.invoker);
     }
 
     operator bool() const
