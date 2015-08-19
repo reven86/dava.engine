@@ -99,7 +99,7 @@ public class JNIDeviceInfo {
 	
 	public static int GetHTTPProxyPort()
 	{
-            String portStr = System.getProperty("http.proxyPort");
+		String portStr = System.getProperty("http.proxyPort");
 	    int proxyPort = Integer.parseInt((portStr != null ? portStr : "-1"));
 	    return proxyPort;
 	}
