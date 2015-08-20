@@ -62,7 +62,7 @@ private:
     friend bool operator == (const ClientEntry& entry, const IClientTransport* obj);
 
 public:
-    NetController(IOLoop* aLoop, const ServiceRegistrar& aRegistrar, void* aServiceContext);
+    NetController(IOLoop* aLoop, const ServiceRegistrar& aRegistrar, void* aServiceContext, uint32 readTimeout);
     virtual ~NetController();
 
     bool ApplyConfig(const NetConfig& config, size_t trIndex = 0);
@@ -104,6 +104,7 @@ private:
     size_t runningObjects;
     Function<void (IController*)> stopHandler;
     bool isTerminating;
+    uint32 readTimeout = 0;
 
     Vector<uint32> serviceIds;
     Vector<IServerTransport*> servers;

@@ -45,18 +45,18 @@ class IOLoop;
 class TCPClientTransport : public IClientTransport
 {
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
-    // Increase read timeout when memory profiling enabled to reduce connection breaks on timeout
-    static const uint32 DEFAULT_READ_TIMEOUT = 5 * 1000 * 100;   // Timeout in ms
+    // Increase default read timeout when memory profiling enabled to reduce connection breaks on timeout
+    static const uint32 DEFAULT_READ_TIMEOUT = 120 * 1000;      // Timeout in ms
 #else
-    static const uint32 DEFAULT_READ_TIMEOUT = 5 * 1000 * 100;        // Timeout in ms
+    static const uint32 DEFAULT_READ_TIMEOUT = 5 * 1000;        // Timeout in ms
 #endif
     static const uint32 RESTART_DELAY_PERIOD = 3000;
 
 public:
     // Constructor for accepted connection
-    TCPClientTransport(IOLoop* aLoop);
+    TCPClientTransport(IOLoop* aLoop, uint32 readTimeout = 0);
     // Constructor for connection initiator
-    TCPClientTransport(IOLoop* aLoop, const Endpoint& aEndpoint);
+    TCPClientTransport(IOLoop* aLoop, const Endpoint& aEndpoint, uint32 readTimeout);
     virtual ~TCPClientTransport();
 
     TCPSocket& Socket();

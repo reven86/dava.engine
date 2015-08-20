@@ -44,7 +44,7 @@ class IOLoop;
 class TCPServerTransport : public IServerTransport
 {
 public:
-    TCPServerTransport(IOLoop* aLoop, const Endpoint& aEndpoint);
+    TCPServerTransport(IOLoop* aLoop, const Endpoint& aEndpoint, uint32 readTimeout);
     virtual ~TCPServerTransport();
 
     // IServerTransport
@@ -66,6 +66,7 @@ private:
     TCPAcceptor acceptor;
     IServerListener* listener;  // Who receive notifications; also indicator that Start has been called
     bool isTerminating;         // Stop has been invoked
+    uint32 readTimeout = 0;
 
     Set<IClientTransport*> spawnedClients;
 };

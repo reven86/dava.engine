@@ -54,10 +54,10 @@ NetCore::~NetCore()
     DVASSERT(true == trackedObjects.empty() && true == dyingObjects.empty());
 }
 
-NetCore::TrackId NetCore::CreateController(const NetConfig& config, void* context)
+NetCore::TrackId NetCore::CreateController(const NetConfig& config, void* context, uint32 readTimeout)
 {
     DVASSERT(false == isFinishing && true == config.Validate());
-    NetController* ctrl = new NetController(&loop, registrar, context);
+    NetController* ctrl = new NetController(&loop, registrar, context, readTimeout);
     if (true == ctrl->ApplyConfig(config))
     {
         loop.Post(Bind(MakeFunction(this, &NetCore::DoStart), ctrl));

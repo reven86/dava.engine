@@ -87,7 +87,7 @@ void MMAnotherService::Start(bool newSession, uint32 connToken_, const IPAddress
     config.AddTransport(TRANSPORT_TCP, endpoint);
     config.AddService(SERVICE_ID);
 
-    netController.reset(new NetController(ioLoop.get(), *registrar, this));
+    netController.reset(new NetController(ioLoop.get(), *registrar, this, 0));
     netController->ApplyConfig(config);
     netController->Start();
 }

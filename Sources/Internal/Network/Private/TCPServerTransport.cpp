@@ -40,12 +40,13 @@ namespace DAVA
 namespace Net
 {
 
-TCPServerTransport::TCPServerTransport(IOLoop* aLoop, const Endpoint& aEndpoint)
+TCPServerTransport::TCPServerTransport(IOLoop* aLoop, const Endpoint& aEndpoint, uint32 readTimeout_)
     : loop(aLoop)
     , endpoint(aEndpoint)
     , acceptor(aLoop)
     , listener(NULL)
     , isTerminating(false)
+    , readTimeout(readTimeout_)
 {
     DVASSERT(loop != NULL);
 }
@@ -128,7 +129,7 @@ void TCPServerTransport::AcceptorHandleConnect(TCPAcceptor* acceptor, int32 erro
     
     if (0 == error)
     {
-        TCPClientTransport* client = new TCPClientTransport(loop);
+        TCPClientTransport* client = new TCPClientTransport(loop, readTimeout);
         error = acceptor->Accept(&client->Socket());
         if (0 == error)
         {
