@@ -96,7 +96,7 @@ void WinUAPXamlApp::SetScreenMode(ApplicationViewWindowingMode screenMode)
 
 Windows::Foundation::Size WinUAPXamlApp::GetCurrentScreenSize()
 {
-    return Windows::Foundation::Size(physicalWidth, physicalHeight);
+    return Windows::Foundation::Size(static_cast<float32>(physicalWidth), static_cast<float32>(physicalHeight));
 }
 
 void WinUAPXamlApp::SetCursorPinning(bool isPinning)
