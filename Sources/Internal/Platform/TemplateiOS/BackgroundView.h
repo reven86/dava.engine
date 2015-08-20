@@ -43,7 +43,7 @@
 
 - (UITextFieldHolder *) CreateTextField;
 - (void) ReleaseTextField: (UITextFieldHolder *)textField;
-
+- (UIView *) PrepareView: (UIView *)view;
 
 @end
 
