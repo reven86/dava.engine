@@ -150,7 +150,8 @@ void SceneDumper::DumpRenderObject(DAVA::RenderObject *renderObject, SceneLinks 
 				TextureDescriptor *descriptor = TextureDescriptor::CreateFromFile(descriptorPath);
 				if (descriptor)
 				{
-					if (descriptor->IsCubeMap())
+					if (descriptor->IsCubeMap() && 
+						(descriptor->dataSettings.sourceFileFormat != IMAGE_FORMAT_DDS && descriptor->dataSettings.sourceFileFormat != IMAGE_FORMAT_PVR))
 					{
 						Vector<FilePath> faceNames;
 						descriptor->GetFacePathnames(faceNames);
