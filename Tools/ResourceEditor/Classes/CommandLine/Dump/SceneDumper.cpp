@@ -117,11 +117,6 @@ void SceneDumper::DumpRenderObject(DAVA::RenderObject *renderObject, SceneLinks 
 			links.insert(landscape->GetHeightmapPathname());
 			break;
 		}
-		case RenderObject::TYPE_PARTICLE_EMTITTER:
-		{
-
-			break;
-		}
 		case RenderObject::TYPE_VEGETATION:
 		{
 			VegetationRenderObject *vegetation = static_cast<VegetationRenderObject *>(renderObject);
@@ -142,22 +137,45 @@ void SceneDumper::DumpRenderObject(DAVA::RenderObject *renderObject, SceneLinks 
 		auto renderBatch = renderObject->GetRenderBatch(rb);
 		auto material = renderBatch->GetMaterial();
 
-		uint32 texCount = material->GetTextureCount();
-		for (uint32 t = 0; t < texCount; ++t)
+		while (nullptr != material)
 		{
-			const auto & descriptorPath = material->GetTexturePath(t);
-			links.insert(descriptorPath);
-
-			//TODO: create image texture path
-			TextureDescriptor *descriptor = TextureDescriptor::CreateFromFile(descriptorPath);
-			links.insert(descriptor->GetSourceTexturePathname());
-
-			for (int gpu = 0; gpu < GPU_DEVICE_COUNT; ++gpu)
+			uint32 texCount = material->GetTextureCount();
+			for (uint32 t = 0; t < texCount; ++t)
 			{
-				links.insert(descriptor->CreatePathnameForGPU(static_cast<eGPUFamily>(gpu)));
+				const auto & descriptorPath = material->GetTexturePath(t);
+				if (descriptorPath.IsEmpty()) continue;
+
+				links.insert(descriptorPath);
+
+				TextureDescriptor *descriptor = TextureDescriptor::CreateFromFile(descriptorPath);
+				if (descriptor)
+				{
+					if (descriptor->IsCubeMap())
+					{
+						Vector<FilePath> faceNames;
+						descriptor->GetFacePathnames(faceNames);
+
+						links.insert(faceNames.cbegin(), faceNames.cend());
+					}
+					else
+					{
+						links.insert(descriptor->GetSourceTexturePathname());
+					}
+
+					for (int gpu = 0; gpu < GPU_DEVICE_COUNT; ++gpu)
+					{
+						const auto & compression = descriptor->compression[gpu];
+						if (compression.format != FORMAT_INVALID)
+						{
+							links.insert(descriptor->CreatePathnameForGPU(static_cast<eGPUFamily>(gpu)));
+						}
+					}
+
+					delete descriptor;
+				}
 			}
 
-			delete descriptor;
+			material = material->GetParent();
 		}
 	}
 }
