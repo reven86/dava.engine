@@ -27,65 +27,31 @@
 =====================================================================================*/
 
 
-#include "SectionProperty.h"
+#ifndef __RESOURCE_FILE_PROPERTY_DELEGATE_H__
+#define __RESOURCE_FILE_PROPERTY_DELEGATE_H__
 
-using namespace DAVA;
+#include "BasePropertyDelegate.h"
 
-SectionProperty::SectionProperty(const DAVA::String &sectionName)
-    : name(sectionName)
+class ResourceFilePropertyDelegate : public BasePropertyDelegate
 {
-    
-}
+    Q_OBJECT
+public:
+    explicit ResourceFilePropertyDelegate(const QString &resourcefilter, const QString &resourceDir, PropertiesTreeItemDelegate *delegate);
+    ~ResourceFilePropertyDelegate();
 
-SectionProperty::~SectionProperty()
-{
-    for (auto it = children.begin(); it != children.end(); ++it)
-    {
-        DVASSERT((*it)->GetParent() == this);
-        (*it)->SetParent(NULL);
-        (*it)->Release();
-    }
-    children.clear();
-}
+    QWidget * createEditor(QWidget * parent, const QStyleOptionViewItem & option, const QModelIndex & index) const override;
+    void setEditorData(QWidget * editor, const QModelIndex & index) const override;
+    bool setModelData(QWidget * editor, QAbstractItemModel * model, const QModelIndex & index) const override;
+    void enumEditorActions(QWidget *parent, const QModelIndex &index, QList<QAction *> &actions) const override;
 
-void SectionProperty::AddProperty(ValueProperty *value)
-{
-    DVASSERT(value->GetParent() == NULL);
-    value->SetParent(this);
-    children.push_back(SafeRetain(value));
-}
+private slots:
+    void selectFileClicked();
+    void clearFileClicked();
+    void valueChanged();
 
-int SectionProperty::GetCount() const
-{
-    return static_cast<int>(children.size());
-}
+private:
+    QString resourcefilter;
+    QString resourceDir;
+};
 
-ValueProperty *SectionProperty::GetProperty(int index) const
-{
-    if (0 <= index && index < children.size())
-        return children[index];
-
-    DVASSERT(false);
-    return nullptr;
-}
-
-void SectionProperty::Refresh()
-{
-    for (ValueProperty *prop : children)
-        prop->Refresh();
-}
-
-const DAVA::String & SectionProperty::GetName() const
-{
-    return name;
-}
-
-ValueProperty *SectionProperty::FindProperty(const DAVA::InspMember *member) const
-{
-    for (auto child : children)
-    {
-        if (child->IsSameMember(member))
-            return child;
-    }
-    return nullptr;
-}
+#endif // __RESOURCE_FILE_PROPERTY_DELEGATE_H__

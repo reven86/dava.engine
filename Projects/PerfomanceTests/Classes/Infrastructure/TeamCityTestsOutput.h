@@ -59,6 +59,10 @@ public:
     static const String FRAME_DELTA;
     static const String MAX_MEM_USAGE;
 
+    static const String MATERIAL_TEST_TIME;
+    static const String MATERIAL_ELAPSED_TEST_TIME;
+    static const String MATERIAL_FRAME_DELTA;
+
 private:
 
     static const String START_TEST;

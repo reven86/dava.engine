@@ -857,6 +857,12 @@
 		32C147611B4C15AD00892B98 /* UIAnchorComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 32C1475D1B4C15AD00892B98 /* UIAnchorComponent.h */; };
 		32C147621B4C15AD00892B98 /* UISizePolicyComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32C1475E1B4C15AD00892B98 /* UISizePolicyComponent.cpp */; };
 		32C147631B4C15AD00892B98 /* UISizePolicyComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 32C1475F1B4C15AD00892B98 /* UISizePolicyComponent.h */; };
+		32E91F501B7B3037008325F9 /* UIPriorityStyleSheet.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32E91F4E1B7B3037008325F9 /* UIPriorityStyleSheet.cpp */; };
+		32E91F511B7B3037008325F9 /* UIPriorityStyleSheet.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32E91F4E1B7B3037008325F9 /* UIPriorityStyleSheet.cpp */; };
+		32E91F521B7B3037008325F9 /* UIPriorityStyleSheet.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32E91F4E1B7B3037008325F9 /* UIPriorityStyleSheet.cpp */; };
+		32E91F531B7B3037008325F9 /* UIPriorityStyleSheet.h in Headers */ = {isa = PBXBuildFile; fileRef = 32E91F4F1B7B3037008325F9 /* UIPriorityStyleSheet.h */; };
+		32E91F541B7B3037008325F9 /* UIPriorityStyleSheet.h in Headers */ = {isa = PBXBuildFile; fileRef = 32E91F4F1B7B3037008325F9 /* UIPriorityStyleSheet.h */; };
+		32E91F551B7B3037008325F9 /* UIPriorityStyleSheet.h in Headers */ = {isa = PBXBuildFile; fileRef = 32E91F4F1B7B3037008325F9 /* UIPriorityStyleSheet.h */; };
 		4910CBF6167B73EC00CF948A /* libdxt_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4910CBF5167B73EC00CF948A /* libdxt_macos.a */; };
 		4F34E1BB1A234DDA000681BB /* JobThread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4F34E1B91A234DDA000681BB /* JobThread.cpp */; };
 		4F34E1BC1A234DDA000681BB /* JobThread.h in Headers */ = {isa = PBXBuildFile; fileRef = 4F34E1BA1A234DDA000681BB /* JobThread.h */; };
@@ -2964,6 +2970,8 @@
 		32C1475D1B4C15AD00892B98 /* UIAnchorComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIAnchorComponent.h; sourceTree = "<group>"; };
 		32C1475E1B4C15AD00892B98 /* UISizePolicyComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UISizePolicyComponent.cpp; sourceTree = "<group>"; };
 		32C1475F1B4C15AD00892B98 /* UISizePolicyComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UISizePolicyComponent.h; sourceTree = "<group>"; };
+		32E91F4E1B7B3037008325F9 /* UIPriorityStyleSheet.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = UIPriorityStyleSheet.cpp; path = Styles/UIPriorityStyleSheet.cpp; sourceTree = "<group>"; };
+		32E91F4F1B7B3037008325F9 /* UIPriorityStyleSheet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UIPriorityStyleSheet.h; path = Styles/UIPriorityStyleSheet.h; sourceTree = "<group>"; };
 		4910CBF5167B73EC00CF948A /* libdxt_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libdxt_macos.a; path = ../../Libs/libs/libdxt_macos.a; sourceTree = "<group>"; };
 		4F34E1B91A234DDA000681BB /* JobThread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = JobThread.cpp; path = Job/JobThread.cpp; sourceTree = "<group>"; };
 		4F34E1BA1A234DDA000681BB /* JobThread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = JobThread.h; path = Job/JobThread.h; sourceTree = "<group>"; };
@@ -4058,6 +4066,8 @@
 		11B155411B32D84800E0EECE /* Styles */ = {
 			isa = PBXGroup;
 			children = (
+				32E91F4E1B7B3037008325F9 /* UIPriorityStyleSheet.cpp */,
+				32E91F4F1B7B3037008325F9 /* UIPriorityStyleSheet.h */,
 				11B155421B32D85400E0EECE /* UIStyleSheet.cpp */,
 				11B155431B32D85400E0EECE /* UIStyleSheet.h */,
 				11B155461B32D85400E0EECE /* UIStyleSheetSystem.cpp */,
@@ -5810,6 +5820,7 @@
 				176DE9BF174B5561007A983B /* CameraComponent.h in Headers */,
 				176DE9C0174B5561007A983B /* DebugRenderComponent.h in Headers */,
 				176DE9C1174B5561007A983B /* LightComponent.h in Headers */,
+				32E91F551B7B3037008325F9 /* UIPriorityStyleSheet.h in Headers */,
 				176DE9C2174B5561007A983B /* LodComponent.h in Headers */,
 				7C007DF91B384DAC000003DB /* ConditionVariable.h in Headers */,
 				176DE9C3174B5561007A983B /* ParticleEffectComponent.h in Headers */,
@@ -6070,6 +6081,7 @@
 				50F3B8771B1EE39E00976CBC /* TestCore.h in Headers */,
 				32C147611B4C15AD00892B98 /* UIAnchorComponent.h in Headers */,
 				E8989DD016BD24E500732C04 /* Message.h in Headers */,
+				32E91F531B7B3037008325F9 /* UIPriorityStyleSheet.h in Headers */,
 				84CB671D191FC8850086483D /* ImageFormatInterface.h in Headers */,
 				E8989DD116BD24E500732C04 /* Meta.h in Headers */,
 				E8989DD216BD24E500732C04 /* ObjectCreator.h in Headers */,
@@ -6590,6 +6602,7 @@
 				E898A07216BD265400732C04 /* IntrospectionCollection.h in Headers */,
 				E898A07316BD265400732C04 /* IntrospectionFlags.h in Headers */,
 				644C86F519476A7100964F91 /* VegetationRenderData.h in Headers */,
+				32E91F541B7B3037008325F9 /* UIPriorityStyleSheet.h in Headers */,
 				D738BD741B01F1BC00989C29 /* RawTimer.h in Headers */,
 				E898A07416BD265400732C04 /* IntrospectionProperty.h in Headers */,
 				E898A07616BD265400732C04 /* Message.h in Headers */,
@@ -7350,6 +7363,7 @@
 				322FFD4619C042880000ED71 /* UIControlHelpers.cpp in Sources */,
 				176DEAEF174B5561007A983B /* PolygonGroupInstance.cpp in Sources */,
 				EAAC988C1937333E00549BAD /* MeshUtils.cpp in Sources */,
+				32E91F521B7B3037008325F9 /* UIPriorityStyleSheet.cpp in Sources */,
 				176DEAF1174B5561007A983B /* Scene.cpp in Sources */,
 				644C86D819476A7100964F91 /* VegetationCustomSLGeometry.cpp in Sources */,
 				176DEAF2174B5561007A983B /* SceneAnimationMixer.cpp in Sources */,
@@ -7680,6 +7694,7 @@
 				E8989EDB16BD24E500732C04 /* FontManager.cpp in Sources */,
 				E8989EDD16BD24E500732C04 /* FTFont.cpp in Sources */,
 				E89EDE751A2E16FA0036E993 /* Rect_wrap.cxx in Sources */,
+				32E91F501B7B3037008325F9 /* UIPriorityStyleSheet.cpp in Sources */,
 				E8989EDF16BD24E500732C04 /* GraphicsFont.cpp in Sources */,
 				E8989EE216BD24E500732C04 /* Sprite.cpp in Sources */,
 				84CB671B191FC8850086483D /* Image.mm in Sources */,
@@ -8079,6 +8094,7 @@
 				E89EDE671A2E16FA0036E993 /* KeyedArchiveSwig.cpp in Sources */,
 				D7CC264119C43C7C00A3B754 /* LocalNotificationProgress.cpp in Sources */,
 				E898A1CB16BD265400732C04 /* FilePath.cpp in Sources */,
+				32E91F511B7B3037008325F9 /* UIPriorityStyleSheet.cpp in Sources */,
 				E898A1CC16BD265400732C04 /* FileSystem.cpp in Sources */,
 				E898A1CD16BD265400732C04 /* FileSystemObjective.mm in Sources */,
 				E898A1CE16BD265400732C04 /* KeyedArchive.cpp in Sources */,

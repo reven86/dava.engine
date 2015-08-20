@@ -49,11 +49,8 @@
 #include "ControlProperties/NameProperty.h"
 #include "ControlProperties/PrototypeNameProperty.h"
 #include "ControlProperties/StyleSheetRootProperty.h"
-#include "ControlProperties/StyleSheetSelectorsProperty.h"
-#include "ControlProperties/StyleSheetPropertiesSection.h"
+#include "ControlProperties/StyleSheetSelectorProperty.h"
 #include "ControlProperties/StyleSheetProperty.h"
-#include "ControlProperties/StyleSheetTransitionsSection.h"
-#include "ControlProperties/StyleSheetTransition.h"
 
 using namespace DAVA;
 
@@ -75,6 +72,11 @@ void PackageSerializer::SerializePackage(PackageNode *package)
         importedPackages.push_back(package->GetImportedPackagesNode()->GetImportedPackage(i));
     }
     
+    for (int32 i = 0; i < package->GetStyleSheets()->GetCount(); i++)
+    {
+        styles.push_back(package->GetStyleSheets()->Get(i));
+    }
+    
     for (int32 i = 0; i < package->GetPackageControlsNode()->GetCount(); i++)
     {
         controls.push_back(package->GetPackageControlsNode()->Get(i));
@@ -83,9 +85,10 @@ void PackageSerializer::SerializePackage(PackageNode *package)
     package->Accept(this);
     importedPackages.clear();
     controls.clear();
+    styles.clear();
 }
 
-void PackageSerializer::SerializePackageNodes(PackageNode *package, const DAVA::Vector<ControlNode*> &serializationControls)
+void PackageSerializer::SerializePackageNodes(PackageNode *package, const DAVA::Vector<ControlNode*> &serializationControls, const DAVA::Vector<StyleSheetNode*> &serializationStyles)
 {
     for (ControlNode *control : serializationControls)
     {
@@ -96,10 +99,17 @@ void PackageSerializer::SerializePackageNodes(PackageNode *package, const DAVA::
         }
     }
 
+    for (StyleSheetNode *style : serializationStyles)
+    {
+        if (style->CanCopy())
+            styles.push_back(style);
+    }
+
     package->Accept(this);
 
     importedPackages.clear();
     controls.clear();
+    styles.clear();
 }
 
 void PackageSerializer::VisitPackage(PackageNode *node)
@@ -107,18 +117,30 @@ void PackageSerializer::VisitPackage(PackageNode *node)
     BeginMap("Header");
     PutValue("version", Format("%d", CURRENT_VERSION));
     EndMap();
-    
-    BeginArray("ImportedPackages");
-    for (PackageNode *package : importedPackages)
-        PutValue(package->GetPath().GetFrameworkPath());
-    EndArray();
 
-    node->GetStyleSheets()->Accept(this);
+    if (!importedPackages.empty())
+    {
+        BeginArray("ImportedPackages");
+        for (const PackageNode *package : importedPackages)
+            PutValue(package->GetPath().GetFrameworkPath());
+        EndArray();
+    }
     
-    BeginArray("Controls");
-    for (ControlNode *control : controls)
-        control->Accept(this);
-    EndArray();
+    if (!styles.empty())
+    {
+        BeginArray("StyleSheets");
+        for (StyleSheetNode *style : styles)
+            style->Accept(this);
+        EndMap();
+    }
+
+    if (!controls.empty())
+    {
+        BeginArray("Controls");
+        for (ControlNode *control : controls)
+            control->Accept(this);
+        EndArray();
+    }
 }
 
 void PackageSerializer::VisitImportedPackages(ImportedPackagesNode *node)
@@ -170,9 +192,7 @@ void PackageSerializer::VisitControl(ControlNode *node)
 
 void PackageSerializer::VisitStyleSheets(StyleSheetsNode *node)
 {
-    BeginArray("StyleSheets");
-    AcceptChildren(node);
-    EndMap();
+    // do nothing
 }
 
 void PackageSerializer::VisitStyleSheet(StyleSheetNode *node)
@@ -385,7 +405,7 @@ void PackageSerializer::VisitClassProperty(ClassProperty *property)
 
 void PackageSerializer::VisitCustomClassProperty(CustomClassProperty *property)
 {
-    if (property->IsReplaced())
+    if (property->IsOverriddenLocally())
     {
         PutValue("customClass", property->GetCustomClassName());
     }
@@ -393,7 +413,7 @@ void PackageSerializer::VisitCustomClassProperty(CustomClassProperty *property)
 
 void PackageSerializer::VisitIntrospectionProperty(IntrospectionProperty *property)
 {
-    if (property->IsReplaced())
+    if (property->IsOverriddenLocally())
     {
         PutValueProperty(property->GetMember()->Name().c_str(), property);
     }
@@ -401,47 +421,37 @@ void PackageSerializer::VisitIntrospectionProperty(IntrospectionProperty *proper
 
 void PackageSerializer::VisitStyleSheetRoot(StyleSheetRootProperty *property)
 {
-    property->GetSelectors()->Accept(this);
-    property->GetPropertiesSection()->Accept(this);
-    property->GetTransitionsSection()->Accept(this);
-}
+    PutValue("selector", property->GetSelectorsAsString());
 
-void PackageSerializer::VisitStyleSheetSelectorsProperty(StyleSheetSelectorsProperty *property)
-{
-    PutValue("selector", property->GetValue());
-}
-
-void PackageSerializer::VisitStyleSheetPropertiesSection(StyleSheetPropertiesSection *property)
-{
-    if (property->GetCount() > 0)
+    BeginMap("properties", false);
+    if (property->GetPropertiesSection()->GetCount() > 0)
     {
-        BeginMap("properties", false);
-        AcceptChildren(property);
-        EndMap();
+        AcceptChildren(property->GetPropertiesSection());
     }
+    EndMap();
+}
+
+void PackageSerializer::VisitStyleSheetSelectorProperty(StyleSheetSelectorProperty *property)
+{
+    // do nothing
 }
 
 void PackageSerializer::VisitStyleSheetProperty(StyleSheetProperty *property)
 {
-    PutValueProperty(property->GetName(), property);
-}
-
-void PackageSerializer::VisitStyleSheetTransitionsSection(StyleSheetTransitionsSection *property)
-{
-    if (property->GetCount() > 0)
+    if (property->HasTransition())
     {
-        BeginMap("transition", false);
-        AcceptChildren(property);
+        BeginMap(property->GetName());
+        PutValueProperty("value", property);
+        PutValue("transitionTime", VariantType(property->GetTransitionTime()));
+
+        const EnumMap *enumMap = GlobalEnumMap<Interpolation::FuncType>::Instance();
+        PutValue("transitionFunction", enumMap->ToString(property->GetTransitionFunction()));
         EndMap();
     }
-}
-
-void PackageSerializer::VisitStyleSheetTransition(StyleSheetTransition *property)
-{
-    BeginArray(property->GetName(), true);
-    PutValue(VariantType(property->GetTransitionTime()));
-    PutValue(GlobalEnumMap<Interpolation::FuncType>::Instance()->ToString(property->GetTransitionFunction()));
-    EndArray();
+    else
+    {
+        PutValueProperty(property->GetName(), property);
+    }
 }
 
 void PackageSerializer::AcceptChildren(AbstractProperty *property)

@@ -713,6 +713,7 @@
     <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UILinearLayoutComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UISizePolicyComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\ScrollHelper.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIPriorityStyleSheet.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetPropertyDataBase.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetPropertyTable.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetSelectorChain.h" />
@@ -1220,6 +1221,7 @@
     <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UILinearLayoutComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UISizePolicyComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\ScrollHelper.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIPriorityStyleSheet.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetPropertyDataBase.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetPropertyTable.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetSelectorChain.cpp" />
