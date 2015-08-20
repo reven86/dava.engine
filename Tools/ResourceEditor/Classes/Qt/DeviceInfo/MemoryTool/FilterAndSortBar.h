@@ -37,7 +37,7 @@ class ProfilingSession;
 
 class QComboBox;
 class QCheckBox;
-class QStandardItem;
+class CheckableComboBox;
 class QStandardItemModel;
 
 class FilterAndSortBar : public QWidget
@@ -76,15 +76,15 @@ signals:
 
 private slots:
     void SortOrderCombo_CurrentIndexChanged(int index);
-    void FilterPoolCombo_ItemChanged(QStandardItem* item);
-    void FilterTagCombo_ItemChanged(QStandardItem* item);
+    void FilterPoolCombo_DataChanged(const QVariantList& data);
+    void FilterTagCombo_DataChanged(const QVariantList& data);
     void HideTheSameCheck_StateChanges(int state);
 
 private:
     void Init(DAVA::int32 flags);
     QComboBox* CreateSortCombo();
-    QComboBox* CreateFilterPoolCombo();
-    QComboBox* CreateFilterTagCombo();
+    CheckableComboBox* CreateFilterPoolCombo();
+    CheckableComboBox* CreateFilterTagCombo();
     QCheckBox* CreateHideTheSameCheck();
 
 private:

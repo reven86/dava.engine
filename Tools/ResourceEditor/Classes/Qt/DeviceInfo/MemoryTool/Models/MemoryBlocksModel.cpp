@@ -72,7 +72,7 @@ QVariant MemoryBlocksModel::data(const QModelIndex& index, int role) const
             if (block != nullptr)
             {
                 const String& poolName = session->AllocPoolNameByMask(block->pool);
-                return QString("order=%1;size=%2;pool=%3;backtrace=%4;%5")
+                return QString("order=%1;size=%2;pool=[%3];backtrace=%4;%5")
                     .arg(block->orderNo)
                     .arg(block->allocByApp)
                     .arg(poolName.c_str())

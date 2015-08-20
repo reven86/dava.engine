@@ -31,6 +31,8 @@
 #include "Qt/DeviceInfo/MemoryTool/ProfilingSession.h"
 #include "Qt/DeviceInfo/MemoryTool/FilterAndSortBar.h"
 
+#include "QtTools/ComboBox/CheckableComboBox.h"
+
 #include <QComboBox>
 #include <QCheckBox>
 #include <QHBoxLayout>
@@ -98,45 +100,47 @@ QComboBox* FilterAndSortBar::CreateSortCombo()
     return widget;
 }
 
-QComboBox* FilterAndSortBar::CreateFilterPoolCombo()
+CheckableComboBox* FilterAndSortBar::CreateFilterPoolCombo()
 {
+    CheckableComboBox* widget = new CheckableComboBox;
+
     int nrows = static_cast<int>(session->AllocPoolCount());
-    QStandardItemModel* model = new QStandardItemModel(nrows, 1);
     for (int i = 0;i < nrows;++i)
     {
         const String& name = session->AllocPoolName(i);
-        QStandardItem* item = new QStandardItem(QString(name.c_str()));
-        item->setFlags(Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
-        item->setData(Qt::Unchecked, Qt::CheckStateRole);
-        item->setData(1 << i, Qt::UserRole + 1);
-
-        model->setItem(i, 0, item);
+        widget->addItem(name.c_str(), 1 << i);
     }
-    connect(model, &QStandardItemModel::itemChanged, this, &FilterAndSortBar::FilterPoolCombo_ItemChanged);
 
-    QComboBox* widget = new QComboBox;
-    widget->setModel(model);
+    QAbstractItemModel* model = widget->model();
+    for (int i = 0;i < nrows;++i)
+    {
+        QModelIndex index = model->index(i, 0);
+        model->setData(index, Qt::Unchecked, Qt::CheckStateRole);
+    }
+
+    connect(widget, &CheckableComboBox::selectedUserDataChanged, this, &FilterAndSortBar::FilterPoolCombo_DataChanged);
     return widget;
 }
 
-QComboBox* FilterAndSortBar::CreateFilterTagCombo()
+CheckableComboBox* FilterAndSortBar::CreateFilterTagCombo()
 {
+    CheckableComboBox* widget = new CheckableComboBox;
+
     int nrows = static_cast<int>(session->TagCount());
-    QStandardItemModel* model = new QStandardItemModel(nrows, 1);
     for (int i = 0;i < nrows;++i)
     {
         const String& name = session->TagName(i);
-        QStandardItem* item = new QStandardItem(QString(name.c_str()));
-        item->setFlags(Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
-        item->setData(Qt::Unchecked, Qt::CheckStateRole);
-        item->setData(1 << i, Qt::UserRole + 1);
-
-        model->setItem(i, 0, item);
+        widget->addItem(name.c_str(), 1 << i);
     }
-    connect(model, &QStandardItemModel::itemChanged, this, &FilterAndSortBar::FilterTagCombo_ItemChanged);
 
-    QComboBox* widget = new QComboBox;
-    widget->setModel(model);
+    QAbstractItemModel* model = widget->model();
+    for (int i = 0;i < nrows;++i)
+    {
+        QModelIndex index = model->index(i, 0);
+        model->setData(index, Qt::Unchecked, Qt::CheckStateRole);
+    }
+
+    connect(widget, &CheckableComboBox::selectedUserDataChanged, this, &FilterAndSortBar::FilterTagCombo_DataChanged);
     return widget;
 }
 
@@ -160,24 +164,28 @@ void FilterAndSortBar::SortOrderCombo_CurrentIndexChanged(int index)
     }
 }
 
-void FilterAndSortBar::FilterPoolCombo_ItemChanged(QStandardItem* item)
+void FilterAndSortBar::FilterPoolCombo_DataChanged(const QVariantList& data)
 {
-    int v = item->data(Qt::UserRole + 1).toInt();
-    bool checked = Qt::Checked == item->data(Qt::CheckStateRole).toInt();
-    checked ? filterPoolMask |= v : filterPoolMask &= ~v;
-    FilterChanged(filterPoolMask, filterTagMask);
+    filterPoolMask = 0;
+    for (const QVariant& v : data)
+    {
+        filterPoolMask |= v.toUInt();
+    }
+    emit FilterChanged(filterPoolMask, filterTagMask);
 }
 
-void FilterAndSortBar::FilterTagCombo_ItemChanged(QStandardItem* item)
+void FilterAndSortBar::FilterTagCombo_DataChanged(const QVariantList& data)
 {
-    int v = item->data(Qt::UserRole + 1).toInt();
-    bool checked = Qt::Checked == item->data(Qt::CheckStateRole).toInt();
-    checked ? filterTagMask |= v : filterTagMask &= ~v;
-    FilterChanged(filterPoolMask, filterTagMask);
+    filterTagMask = 0;
+    for (const QVariant& v : data)
+    {
+        filterTagMask |= v.toUInt();
+    }
+    emit FilterChanged(filterPoolMask, filterTagMask);
 }
 
 void FilterAndSortBar::HideTheSameCheck_StateChanges(int state)
 {
     hideTheSame = state == Qt::Checked;
-    HideTheSameChanged(hideTheSame);
+    emit HideTheSameChanged(hideTheSame);
 }
