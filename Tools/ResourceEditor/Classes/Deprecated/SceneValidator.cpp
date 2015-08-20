@@ -814,6 +814,17 @@ bool SceneValidator::IsObjectHasDifferentLODsCount(DAVA::RenderObject *renderObj
 }
 
 
+void SceneValidator::ExtractEmptyRenderObjectsAndShowErrors(DAVA::Entity *entity)
+{
+	Set<String> errors;
+	SceneValidator::ExtractEmptyRenderObjects(entity, errors);
+	if (!errors.empty())
+	{
+		ShowErrorDialog(errors);
+	}
+}
+
+
 void SceneValidator::ExtractEmptyRenderObjects(DAVA::Entity *entity, Set<String> &errorsLog)
 {
 	auto renderObject = GetRenderObject(entity);

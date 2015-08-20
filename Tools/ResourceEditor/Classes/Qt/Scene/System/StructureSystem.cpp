@@ -42,7 +42,6 @@
 #include "Commands2/ParticleForceRemoveCommand.h"
 
 #include "Deprecated/SceneValidator.h"
-#include "Main/QtUtils.h"
 
 StructureSystem::StructureSystem(DAVA::Scene * scene)
 	: DAVA::SceneSystem(scene)
@@ -580,13 +579,7 @@ DAVA::Entity* StructureSystem::LoadInternal(const DAVA::FilePath& sc2path, bool 
             
             CheckAndMarkSolid(loadedEntity);
 
-
-			Set<String> errors;
-			SceneValidator::ExtractEmptyRenderObjects(loadedEntity, errors);
-			if (!errors.empty())
-			{
-				ShowErrorDialog(errors);
-			}
+			SceneValidator::ExtractEmptyRenderObjectsAndShowErrors(loadedEntity);
         }
 	}
     else

@@ -124,6 +124,7 @@ public:
     DAVA_DEPRECATED(static bool IsEntityHasDifferentLODsCount(DAVA::Entity *entity));
     DAVA_DEPRECATED(static bool IsObjectHasDifferentLODsCount(DAVA::RenderObject *renderObject));
 
+	static void ExtractEmptyRenderObjectsAndShowErrors(DAVA::Entity *entity);
 	static void ExtractEmptyRenderObjects(DAVA::Entity *entity, Set<String> &errorsLog);
 
 
