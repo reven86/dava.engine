@@ -138,10 +138,10 @@ void RenderManager::Create(Windows::UI::Xaml::Controls::SwapChainPanel^ swapChai
     {
         Windows::Foundation::Size surfaceSize(0, 0);
         Windows::Graphics::Display::DisplayInformation^ currentDisplayInformation = Windows::Graphics::Display::DisplayInformation::GetForCurrentView();
-        float64 rawPixelsPerViewPixel(1.0);
+        float32 rawPixelsPerViewPixel(1.0f);
         if (nullptr != currentDisplayInformation)
         {
-            rawPixelsPerViewPixel = currentDisplayInformation->RawPixelsPerViewPixel;
+            rawPixelsPerViewPixel = static_cast<float32>(currentDisplayInformation->RawPixelsPerViewPixel);
         }
         float32 width = coreWindow->Bounds.Width;
         float32 height = coreWindow->Bounds.Height;
