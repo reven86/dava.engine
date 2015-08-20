@@ -812,3 +812,21 @@ bool SceneValidator::IsObjectHasDifferentLODsCount(DAVA::RenderObject *renderObj
 
     return ((maxLod[0] != maxLod[1]) && (maxLod[0] != -1 && maxLod[1] != -1));
 }
+
+
+void SceneValidator::ExtractEmptyRenderObjects(DAVA::Entity *entity, Set<String> &errorsLog)
+{
+	auto renderObject = GetRenderObject(entity);
+	if ((nullptr != renderObject) && (0 == renderObject->GetRenderBatchCount()))
+	{
+		entity->RemoveComponent(Component::RENDER_COMPONENT);
+		errorsLog.insert(DAVA::Format("Entity %s has empty render object", entity->GetName().c_str()));
+	}
+
+	const uint32 count = entity->GetChildrenCount();
+	for (uint32 i = 0; i < count; ++i)
+	{
+		ExtractEmptyRenderObjects(entity->GetChild(i), errorsLog);
+	}
+}
+

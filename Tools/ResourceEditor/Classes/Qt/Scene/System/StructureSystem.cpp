@@ -42,6 +42,7 @@
 #include "Commands2/ParticleForceRemoveCommand.h"
 
 #include "Deprecated/SceneValidator.h"
+#include "Main/QtUtils.h"
 
 StructureSystem::StructureSystem(DAVA::Scene * scene)
 	: DAVA::SceneSystem(scene)
@@ -397,7 +398,7 @@ void StructureSystem::Add(const DAVA::FilePath &newModelPath, const DAVA::Vector
 			// 
 			// Перенести в Load и завалидейтить только подгруженную Entity
 			// -->
-            SceneValidator::Instance()->ValidateSceneAndShowErrors(sceneEditor, sceneEditor->GetScenePath());
+			SceneValidator::Instance()->ValidateSceneAndShowErrors(sceneEditor, sceneEditor->GetScenePath());
 			// <--
             
 			EmitChanged();
@@ -578,11 +579,19 @@ DAVA::Entity* StructureSystem::LoadInternal(const DAVA::FilePath& sc2path, bool 
             props->SetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER, sc2path.GetAbsolutePathname());
             
             CheckAndMarkSolid(loadedEntity);
+
+
+			Set<String> errors;
+			SceneValidator::ExtractEmptyRenderObjects(loadedEntity, errors);
+			if (!errors.empty())
+			{
+				ShowErrorDialog(errors);
+			}
         }
 	}
     else
     {
-        DAVA::Logger::Instance()->Error("Wrong extension or no such file: %s", sc2path.GetAbsolutePathname().c_str());
+        DAVA::Logger::Error("Wrong extension or no such file: %s", sc2path.GetAbsolutePathname().c_str());
     }
 
 	return loadedEntity;
