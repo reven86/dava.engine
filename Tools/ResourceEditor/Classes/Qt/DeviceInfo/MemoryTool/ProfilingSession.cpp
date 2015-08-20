@@ -338,7 +338,6 @@ void ProfilingSession::ApplyConfig(const DAVA::MMStatConfig* config)
     const MMItemName* names = OffsetPointer<const MMItemName>(config, sizeof(MMItemName));
     for (size_t i = 0;i < allocPoolCount;++i)
     {
-        uint32 mask = static_cast<uint32>(1 << i);
         poolMaskMapping.emplace_back(1 << i, i);
         allocPoolNames.push_back(names->name);
         names += 1;
