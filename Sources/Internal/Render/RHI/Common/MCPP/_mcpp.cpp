@@ -212,7 +212,11 @@ mcpp__stat( const char* path, stat_t* buffer )
     if( strcmp( path, MCPP_Text ) != 0 )
     {
         memset( buffer, 0, sizeof(stat_t) );
-        buffer->st_mode = S_IFREG | S_IRUSR;
+        buffer->st_mode = S_IFREG
+#if defined(__DAVAENGINE_ANDROID__)
+			| S_IRUSR
+#endif
+			;
         ret = 0;
     }
 

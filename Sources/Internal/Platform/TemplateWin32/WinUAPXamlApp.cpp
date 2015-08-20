@@ -96,7 +96,7 @@ void WinUAPXamlApp::SetScreenMode(ApplicationViewWindowingMode screenMode)
 
 Windows::Foundation::Size WinUAPXamlApp::GetCurrentScreenSize()
 {
-    return Windows::Foundation::Size(windowWidth, windowHeight);
+    return Windows::Foundation::Size(static_cast<float32>(windowWidth), static_cast<float32>(windowHeight));
 }
 
 void WinUAPXamlApp::SetCursorPinning(bool isPinning)
@@ -136,9 +136,6 @@ void WinUAPXamlApp::OnLaunched(::Windows::ApplicationModel::Activation::LaunchAc
     uiThreadDispatcher = coreWindow->Dispatcher;
 
     CreateBaseXamlUI();
-
-    UpdateScreenSize(coreWindow->Bounds.Width, coreWindow->Bounds.Height);
-    InitRender();
 
     WorkItemHandler^ workItemHandler = ref new WorkItemHandler([this](Windows::Foundation::IAsyncAction^ action) { Run(); });
     renderLoopWorker = ThreadPool::RunAsync(workItemHandler, WorkItemPriority::High, WorkItemOptions::TimeSliced);
@@ -186,26 +183,30 @@ void WinUAPXamlApp::Run()
 
     Core::Instance()->CreateSingletons();
     
-#if RHI_COMLETE // init renderer in FrameworkDidLaunched and SystemAppStarted
-    RenderManager::Instance()->BindToCurrentThread();
-	ReInitRender();
-#endif
-
-	InitCoordinatesSystem();
-    // View size and orientation option should be configured in FrameowrkDidLaunched
+	// View size and orientation option should be configured in FrameowrkDidLaunched
     FrameworkDidLaunched();
 
-	core->rendererParams.window = reinterpret_cast<void*>(swapChainPanel);
-	core->rendererParams.width = core->GetOptions()->GetInt32("width", -1);
-	core->rendererParams.height = core->GetOptions()->GetInt32("height", -1);
-
     core->RunOnUIThreadBlocked([this]() {
+
+        swapChainPanel->SizeChanged +=
+            ref new SizeChangedEventHandler(this, &WinUAPXamlApp::OnSwapChainPanelSizeChanged);
+
         SetupEventHandlers();
         SetTitleName();
         InitInput();
         PrepareScreenSize();
         SetDisplayOrientations();
     });
+
+    core->rendererParams.window = reinterpret_cast<void*>(swapChainPanel);
+	//core->rendererParams.width = core->GetOptions()->GetInt32("width", -1);
+	//core->rendererParams.height = core->GetOptions()->GetInt32("height", -1);
+    core->rendererParams.width = windowWidth;
+    core->rendererParams.height = windowHeight;
+
+    //SetPreferredSize(core->rendererParams.width, core->rendererParams.height);
+    UpdateScreenSize(core->rendererParams.width, core->rendererParams.height);
+    InitCoordinatesSystem();
 
     Core::Instance()->SetIsActive(true);
 
@@ -280,14 +281,28 @@ void WinUAPXamlApp::OnWindowVisibilityChanged(::Windows::UI::Core::CoreWindow^ s
     Core::Instance()->SetIsActive(isWindowVisible);
 }
 
+void WinUAPXamlApp::OnSwapChainPanelSizeChanged(Platform::Object^ sender, SizeChangedEventArgs^ e)
+{
+    //critical_section::scoped_lock lock(m_main->GetCriticalSection());
+    //m_deviceResources->SetLogicalSize(e->NewSize);
+    int32 w = static_cast<int32>(e->NewSize.Width);// *swapChainPanel->CompositionScaleX);
+    int32 h = static_cast<int32>(e->NewSize.Height);// *swapChainPanel->CompositionScaleY);
+    core->RunOnMainThread([this, w, h]() {
+        UpdateScreenSize(w, h);
+        ResetRender();
+        ReInitCoordinatesSystem();
+        //UIScreenManager::Instance()->ScreenSizeChanged();
+    });
+}
+
 void WinUAPXamlApp::OnWindowSizeChanged(::Windows::UI::Core::CoreWindow^ sender, ::Windows::UI::Core::WindowSizeChangedEventArgs^ args)
 {
     // Propagate to main thread
-    float32 w = args->Size.Width;
-    float32 h = args->Size.Height;
+    int32 w = static_cast<int32>(args->Size.Width);
+    int32 h = static_cast<int32>(args->Size.Height);
     core->RunOnMainThread([this, w, h]() {
         UpdateScreenSize(w, h);
-        ReInitRender();
+        ResetRender();
         ReInitCoordinatesSystem();
         UIScreenManager::Instance()->ScreenSizeChanged();
     });
@@ -576,7 +591,7 @@ void WinUAPXamlApp::SetupEventHandlers()
 
     CoreWindow^ coreWindow = Window::Current->CoreWindow;
     coreWindow->Activated += ref new TypedEventHandler<CoreWindow^, WindowActivatedEventArgs^>(this, &WinUAPXamlApp::OnWindowActivationChanged);
-    coreWindow->SizeChanged += ref new TypedEventHandler<CoreWindow^, WindowSizeChangedEventArgs^>(this, &WinUAPXamlApp::OnWindowSizeChanged);
+    //coreWindow->SizeChanged += ref new TypedEventHandler<CoreWindow^, WindowSizeChangedEventArgs^>(this, &WinUAPXamlApp::OnWindowSizeChanged);
     coreWindow->VisibilityChanged += ref new TypedEventHandler<CoreWindow^, VisibilityChangedEventArgs^>(this, &WinUAPXamlApp::OnWindowVisibilityChanged);
 
     coreWindow->PointerPressed += ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>(this, &WinUAPXamlApp::OnPointerPressed);
@@ -671,41 +686,32 @@ void WinUAPXamlApp::InitInput()
     isMouseDetected = (1 == mouseCapabilities->MousePresent);
 }
 
-void WinUAPXamlApp::InitRender()
-{
-#if RHI_COMPLETE_WIN10
-    Logger::FrameworkDebug("[CorePlatformWinUAP] InitRender");
-    RenderManager::Create(Core::RENDERER_OPENGL_ES_2_0);
-    RenderManager::Instance()->Create(swapChainPanel);
-#endif RHI_COMPLETE_WIN10
-}
-
-void WinUAPXamlApp::ReInitRender()
+void WinUAPXamlApp::ResetRender()
 {
     Logger::FrameworkDebug("[CorePlatformWinUAP] ReInitRender");
 	rhi::ResetParam params;
 	params.width = static_cast<int32>(windowWidth);
 	params.height = static_cast<int32>(windowHeight);
 	Renderer::Reset(params);
-    //RenderSystem2D::Instance()->Init(); //RHI_COMPLETE
 }
 
 void WinUAPXamlApp::InitCoordinatesSystem()
 {
     Logger::FrameworkDebug("[CorePlatformWinUAP] InitCoordinatesSystem");
-    VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(static_cast<int32>(windowWidth), static_cast<int32>(windowHeight));
-    VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(static_cast<int32>(windowWidth), static_cast<int32>(windowHeight));
+    VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(windowWidth, windowHeight);
+    VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(windowWidth, windowHeight);
+    VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(windowWidth, windowHeight);
     VirtualCoordinatesSystem::Instance()->EnableReloadResourceOnResize(true);
 }
 
 void WinUAPXamlApp::ReInitCoordinatesSystem()
 {
     Logger::FrameworkDebug("[CorePlatformWinUAP] ReInitCoordinatesSystem");
-    VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(static_cast<int32>(windowWidth), static_cast<int32>(windowHeight));
+    VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(windowWidth, windowHeight);
     VirtualCoordinatesSystem::Instance()->UnregisterAllAvailableResourceSizes();
-    VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(static_cast<int32>(windowWidth), static_cast<int32>(windowHeight), "Gfx");
-    VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(static_cast<int32>(windowWidth), static_cast<int32>(windowHeight));
-    VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(static_cast<int32>(windowWidth), static_cast<int32>(windowHeight));
+    VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(windowWidth, windowHeight, "Gfx");
+    VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(windowWidth, windowHeight);
+    VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(windowWidth, windowHeight);
     VirtualCoordinatesSystem::Instance()->ScreenSizeChanged();
 }
 
@@ -738,7 +744,7 @@ void WinUAPXamlApp::PrepareScreenSize()
     }
 }
 
-void WinUAPXamlApp::UpdateScreenSize(float32 width, float32 height)
+void WinUAPXamlApp::UpdateScreenSize(int32 width, int32 height)
 {
     windowWidth = width;
     windowHeight = height;

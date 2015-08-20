@@ -34,6 +34,7 @@
 #if defined(__DAVAENGINE_WIN_UAP__)
 
 #include <agile.h>
+#include <concrt.h>
 
 #include "Core/Core.h"
 #include "Core/DisplayMode.h"
@@ -124,18 +125,19 @@ private:
 
     void InitInput();
 
-    void InitRender();
-    void ReInitRender();
+    void ResetRender();
 
     void InitCoordinatesSystem();
     void ReInitCoordinatesSystem();
 
     void PrepareScreenSize();
-    void UpdateScreenSize(float32 width, float32 height);
+    void UpdateScreenSize(int32 width, int32 height);
     void SetFullScreen(bool isFullScreenFlag);
     void SetPreferredSize(int32 width, int32 height);
-
+    
+    void OnSwapChainPanelSizeChanged(Platform::Object^ sender, Windows::UI::Xaml::SizeChangedEventArgs^ e);
 private:
+    Concurrency::critical_section criticalSection;
     CorePlatformWinUAP* core;
     Windows::UI::Core::CoreDispatcher^ uiThreadDispatcher = nullptr;
     std::unique_ptr<DispatcherWinUAP> dispatcher = nullptr;
@@ -170,8 +172,8 @@ private:
     bool isLeftButtonPressed = false;
     bool isMiddleButtonPressed = false;
 
-    float32 windowWidth = static_cast<float32>(DisplayMode::DEFAULT_WIDTH);
-    float32 windowHeight = static_cast<float32>(DisplayMode::DEFAULT_HEIGHT);
+    int32 windowWidth = DisplayMode::DEFAULT_WIDTH;
+    int32 windowHeight = DisplayMode::DEFAULT_HEIGHT;
 
     Windows::Graphics::Display::DisplayOrientations displayOrientation = ::Windows::Graphics::Display::DisplayOrientations::None;
 };
