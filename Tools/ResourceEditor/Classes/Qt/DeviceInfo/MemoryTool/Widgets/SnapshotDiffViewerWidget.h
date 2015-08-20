@@ -32,7 +32,7 @@ public slots:
     void SymbolView_OnBuldTree();
 
     void BranchView_SelectionChanged(const QModelIndex& current, const QModelIndex& previous);
-    void SnapshotDiffViewerWidget::MemoryBlockDoubleClicked(const BlockLink::Item& item);
+    void MemoryBlockDoubleClicked(const BlockLink::Item& item);
 
 private:
     void Init();
