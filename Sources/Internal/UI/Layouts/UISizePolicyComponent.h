@@ -111,7 +111,7 @@ private:
     };
     
 private:
-    AxisPolicy policy[2];
+    Array<AxisPolicy, Vector2::AXIS_COUNT> policy;
     
 public:
     INTROSPECTION_EXTEND(UISizePolicyComponent, UIComponent,

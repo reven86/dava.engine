@@ -62,6 +62,8 @@ public:
     eOrientation GetOrientation() const;
     void SetOrientation(eOrientation orientation);
     
+    Vector2::eAxis GetAxis() const;
+    
     float32 GetPadding() const;
     void SetPadding(float32 padding);
     

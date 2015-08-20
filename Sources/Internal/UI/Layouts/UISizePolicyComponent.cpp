@@ -35,12 +35,16 @@ namespace DAVA
 {
 UISizePolicyComponent::UISizePolicyComponent()
 {
+    const float32 DEFAULT_VALUE = 100.0f;
+    const float32 MIN_LIMIT = 0.0f;
+    const float32 MAX_LIMIT = 99999.0f;
+    
     for (int32 i = 0; i < Vector2::AXIS_COUNT; i++)
     {
         policy[i].policy = IGNORE_SIZE;
-        policy[i].value = 100.0f;
-        policy[i].min = 0.0f;
-        policy[i].max = 10000.0f;
+        policy[i].value = DEFAULT_VALUE;
+        policy[i].min = MIN_LIMIT;
+        policy[i].max = MAX_LIMIT;
     }
 }
 

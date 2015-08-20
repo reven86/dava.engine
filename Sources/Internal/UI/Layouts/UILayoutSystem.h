@@ -30,6 +30,7 @@
 #define __DAVAENGINE_UI_LAYOUT_SYSTEM_H__
 
 #include "Base/BaseTypes.h"
+#include "Math/Vector.h"
 
 namespace DAVA
 {
@@ -55,12 +56,12 @@ public:
     void ApplyLayout(UIControl *control);
     
 private:
-    void DoMeasurePhase(UIControl *control, int32 axis);
-    void DoLayoutPhase(UIControl *control, int32 axis);
+    void DoMeasurePhase(UIControl *control, Vector2::eAxis axis);
+    void DoLayoutPhase(UIControl *control, Vector2::eAxis axis);
     
-    void MeasureControl(UIControl *control, UISizePolicyComponent *sizeHint, int32 axis);
-    void ApplyLinearLayout(UIControl *control, UILinearLayoutComponent *linearLayoutComponent, int32 axis);
-    void ApplyAnchorLayout(UIControl *control, int32 axis, bool onlyForIgnoredControls);
+    void MeasureControl(UIControl *control, UISizePolicyComponent *sizeHint, Vector2::eAxis axis);
+    void ApplyLinearLayout(UIControl *control, UILinearLayoutComponent *linearLayoutComponent, Vector2::eAxis axis);
+    void ApplyAnchorLayout(UIControl *control, Vector2::eAxis axis, bool onlyForIgnoredControls);
     void GetAxisDataByAnchorData(float32 size, float32 parentSize,
                                  bool firstSideAnchorEnabled, float32 firstSideAnchor,
                                  bool centerAnchorEnabled, float32 centerAnchor,

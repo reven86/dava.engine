@@ -46,6 +46,11 @@ void UILinearLayoutComponent::SetOrientation(eOrientation newOrientation)
     flags.set(FLAG_ORIENTATION_VERTICAL, newOrientation == VERTICAL);
 }
 
+Vector2::eAxis UILinearLayoutComponent::GetAxis() const
+{
+    return flags.test(FLAG_ORIENTATION_VERTICAL) ? Vector2::AXIS_Y : Vector2::AXIS_X;
+}
+
 int32 UILinearLayoutComponent::GetOrientationAsInt() const
 {
     return static_cast<int32>(GetOrientation());

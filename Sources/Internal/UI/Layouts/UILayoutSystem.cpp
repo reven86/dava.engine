@@ -48,8 +48,8 @@ void UILayoutSystem::ApplyLayout(UIControl *control)
 {
     for (int32 axis = 0; axis < Vector2::AXIS_COUNT; axis++)
     {
-        DoMeasurePhase(control, axis);
-        DoLayoutPhase(control, axis);
+        DoMeasurePhase(control, static_cast<Vector2::eAxis>(axis));
+        DoLayoutPhase(control, static_cast<Vector2::eAxis>(axis));
     }
     
     for (UIControl *control : changedControls)
@@ -60,7 +60,7 @@ void UILayoutSystem::ApplyLayout(UIControl *control)
     changedControls.clear();
 }
 
-void UILayoutSystem::DoMeasurePhase(UIControl *control, int32 axis)
+void UILayoutSystem::DoMeasurePhase(UIControl *control, Vector2::eAxis axis)
 {
     const List<UIControl*> &children = control->GetChildren();
     for (UIControl *child : children)
@@ -73,11 +73,11 @@ void UILayoutSystem::DoMeasurePhase(UIControl *control, int32 axis)
     }
 }
 
-void UILayoutSystem::DoLayoutPhase(UIControl *control, int32 axis)
+void UILayoutSystem::DoLayoutPhase(UIControl *control, Vector2::eAxis axis)
 {
     UILinearLayoutComponent *linearLayoutComponent = control->GetComponent<UILinearLayoutComponent>();
     bool anchorOnlyIgnoredControls = false;
-    if (linearLayoutComponent && linearLayoutComponent->IsEnabled() && linearLayoutComponent->GetOrientation() == axis)
+    if (linearLayoutComponent && linearLayoutComponent->IsEnabled() && linearLayoutComponent->GetAxis() == axis)
     {
         ApplyLinearLayout(control, linearLayoutComponent, axis);
         anchorOnlyIgnoredControls = true;
@@ -94,7 +94,7 @@ void UILayoutSystem::DoLayoutPhase(UIControl *control, int32 axis)
 // Measuring
 ////////////////////////////////////////////////////////////////////////////////
 
-void UILayoutSystem::MeasureControl(UIControl *control, UISizePolicyComponent *sizeHint, int32 axis)
+void UILayoutSystem::MeasureControl(UIControl *control, UISizePolicyComponent *sizeHint, Vector2::eAxis axis)
 {
     DVASSERT(sizeHint);
     
@@ -127,7 +127,7 @@ void UILayoutSystem::MeasureControl(UIControl *control, UISizePolicyComponent *s
         case UISizePolicyComponent::PERCENT_OF_CHILDREN_SUM:
             for (UIControl *child : children)
             {
-                if (HaveToSkipControl(child, skipInvisible))
+                if (!HaveToSkipControl(child, skipInvisible))
                     value += child->GetSize().data[axis];
             }
             value = value * hintValue / 100.0f;
@@ -176,7 +176,7 @@ void UILayoutSystem::MeasureControl(UIControl *control, UISizePolicyComponent *s
         policy == UISizePolicyComponent::PERCENT_OF_FIRST_CHILD ||
         policy == UISizePolicyComponent::PERCENT_OF_LAST_CHILD)
     {
-        if (linearLayout && linearLayout->GetOrientation() == axis)
+        if (linearLayout && linearLayout->GetAxis() == axis)
         {
             if (policy == UISizePolicyComponent::PERCENT_OF_CHILDREN_SUM && !children.empty())
                 value += linearLayout->GetSpacing() * (children.size() - 1);
@@ -202,7 +202,7 @@ void UILayoutSystem::MeasureControl(UIControl *control, UISizePolicyComponent *s
 // Linear Layout
 ////////////////////////////////////////////////////////////////////////////////
 
-void UILayoutSystem::ApplyLinearLayout(UIControl *control, UILinearLayoutComponent *layout, int32 axis)
+void UILayoutSystem::ApplyLinearLayout(UIControl *control, UILinearLayoutComponent *layout, Vector2::eAxis axis)
 {
     float32 fixedSize = 0.0f;
     float32 totalPercent = 0.0f;
@@ -324,7 +324,7 @@ void UILayoutSystem::ApplyLinearLayout(UIControl *control, UILinearLayoutCompone
 // Anchor Layout
 ////////////////////////////////////////////////////////////////////////////////
 
-void UILayoutSystem::ApplyAnchorLayout(UIControl *control, int32 axis, bool onlyForIgnoredControls)
+void UILayoutSystem::ApplyAnchorLayout(UIControl *control, Vector2::eAxis axis, bool onlyForIgnoredControls)
 {
     const Vector2 &parentSize = control->GetSize();
     const List<UIControl*> &children = control->GetChildren();
