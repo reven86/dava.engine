@@ -77,6 +77,7 @@ private slots:
     void OnRename();
 
 private:
+    void SetSelectedNodes(const SelectedNodes &selected, const SelectedNodes &deselected);
     QAction *importPackageAction = nullptr;
     QAction *copyAction = nullptr;
     QAction *pasteAction = nullptr;
@@ -86,6 +87,7 @@ private:
     Document *document = nullptr;
     FilteredPackageModel *filteredPackageModel = nullptr;
     PackageModel *packageModel = nullptr;
+    SelectedNodes selectedNodes;
 };
 
 #endif // __UI_EDITOR_UI_PACKAGE_WIDGET__

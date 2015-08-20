@@ -40,6 +40,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Render/RenderHelper.h"
 
 #include <QApplication>
+#include <QWidget>
 
 using namespace DAVA;
 
@@ -231,15 +232,39 @@ bool HUDSystem::OnInput(UIEvent *currentInput)
 
 void HUDSystem::ProcessCursor(const Vector2& pos) const
 {
-    QCursor cursor;
+    static Qt::CursorShape shape;
+    static int shapesCount;
+    bool found;
+    QCursor cursor = GetCursorByPos(pos, found);
+    if (found)
+    {
+        if (shape == cursor.shape() && shapesCount)
+        {
+            return;
+        }
+        shape = cursor.shape();
+        shapesCount++;
+        qApp->setOverrideCursor(cursor);
+    }
+    else
+    {
+        while (shapesCount)
+        {
+            shapesCount--;
+            qApp->restoreOverrideCursor();
+        }
+    }
+}
+
+QCursor HUDSystem::GetCursorByPos(const Vector2& pos, bool& found) const
+{
+    found = true;
     for (const auto &iter : hudMap)
     {
         const auto &hud = iter.second;
-
-        const UIGeometricData &gd = hud.frame->GetGeometricData();
-        if (hud.frame->IsPointInside(pos))
+        if (hud.pivotPoint->IsPointInside(pos))
         {
-            cursor = Qt::SizeAllCursor;
+            return Qt::SizeAllCursor;
         }
         for (auto frameRect : hud.frameRects)
         {
@@ -250,19 +275,19 @@ void HUDSystem::ProcessCursor(const Vector2& pos) const
                 {
                 case FrameRectControl::TOP_LEFT:
                 case FrameRectControl::BOTTOM_RIGHT:
-                    cursor = Qt::SizeFDiagCursor;
+                    return Qt::SizeFDiagCursor;
                     break;
                 case FrameRectControl::TOP_RIGHT:
                 case FrameRectControl::BOTTOM_LEFT:
-                    cursor = Qt::SizeBDiagCursor;
+                    return Qt::SizeBDiagCursor;
                     break;
                 case FrameRectControl::TOP_CENTER:
                 case FrameRectControl::BOTTOM_CENTER:
-                    cursor = Qt::SizeVerCursor;
+                    return Qt::SizeVerCursor;
                     break;
                 case FrameRectControl::CENTER_LEFT:
                 case FrameRectControl::CENTER_RIGHT:
-                    cursor = Qt::SizeHorCursor;
+                    return Qt::SizeHorCursor;
                     break;
                 default:
                     DVASSERT_MSG(false, "unexpected enum value");
@@ -270,13 +295,15 @@ void HUDSystem::ProcessCursor(const Vector2& pos) const
                 }
             }
         }
-        if (hud.pivotPoint->IsPointInside(pos))
+        if (hud.frame->IsPointInside(pos))
         {
-            cursor = Qt::SizeAllCursor;
+            return Qt::SizeAllCursor;
         }
     }
-    qApp->setOverrideCursor(cursor);
+    found = false;
+    return QCursor();
 }
+
 
 HUDSystem::HUD::HUD(UIControl* control_, UIControl* hudControl_)
     : frame(new FrameControl(control_))

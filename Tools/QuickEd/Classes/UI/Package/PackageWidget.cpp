@@ -294,7 +294,7 @@ void PackageWidget::OnSelectionChanged(const QItemSelection &proxySelected, cons
     {
         deselected.insert(static_cast<PackageBaseNode*>(index.internalPointer()));
     }
-    emit SelectedNodesChanged(selected, deselected);
+    SetSelectedNodes(selected, deselected);
 }
 
 void PackageWidget::OnImport()
@@ -399,19 +399,7 @@ void PackageWidget::filterTextChanged(const QString &filterText)
 
 void PackageWidget::OnSelectedNodesChanged(const SelectedNodes &selected, const SelectedNodes &deselected)
 {
-    for (auto &node : deselected)
-    {
-        QModelIndex srcIndex = packageModel->indexByNode(node);
-        QModelIndex dstIndex = filteredPackageModel->mapFromSource(srcIndex);
-        treeView->selectionModel()->select(dstIndex, QItemSelectionModel::Deselect);
-    }
-    for (auto &node : selected)
-    {
-        QModelIndex srcIndex = packageModel->indexByNode(node);
-        QModelIndex dstIndex = filteredPackageModel->mapFromSource(srcIndex);
-        treeView->selectionModel()->select(dstIndex, QItemSelectionModel::Select);
-        treeView->scrollTo(dstIndex);
-    }
+    SetSelectedNodes(selected, deselected);
 }
 
 QList<QPersistentModelIndex> PackageWidget::GetExpandedIndexes() const
@@ -428,4 +416,35 @@ QList<QPersistentModelIndex> PackageWidget::GetExpandedIndexes() const
     }
 
     return retval;
+}
+
+void PackageWidget::SetSelectedNodes(const SelectedNodes& selected, const SelectedNodes& deselected)
+{
+    if (deselected.empty() && selected.empty())
+    {
+        return;
+    }
+    SelectedNodes tmpSelected = selectedNodes;
+    SubstractNodes(deselected, tmpSelected);
+    UniteNodes(selected, tmpSelected);
+    if (selectedNodes != tmpSelected)
+    {
+        selectedNodes = tmpSelected;
+        treeView->selectionModel()->blockSignals(true);
+        for (auto &node : deselected)
+        {
+            QModelIndex srcIndex = packageModel->indexByNode(node);
+            QModelIndex dstIndex = filteredPackageModel->mapFromSource(srcIndex);
+            treeView->selectionModel()->select(dstIndex, QItemSelectionModel::Deselect);
+        }
+        for (auto &node : selected)
+        {
+            QModelIndex srcIndex = packageModel->indexByNode(node);
+            QModelIndex dstIndex = filteredPackageModel->mapFromSource(srcIndex);
+            treeView->selectionModel()->select(dstIndex, QItemSelectionModel::Select);
+            treeView->scrollTo(dstIndex);
+        }
+        treeView->selectionModel()->blockSignals(false);
+        emit SelectedNodesChanged(selected, deselected);
+    }
 }

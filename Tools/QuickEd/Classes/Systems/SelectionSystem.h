@@ -47,6 +47,7 @@ public:
     void RemoveListener(SelectionInterface *listener);
 
 private:
+    void SetSelectedControls(const SelectedControls &selected, const SelectedControls &deselected);
     Document *document = nullptr;
     SelectedControls selectedControls;
     DAVA::Vector<SelectionInterface*> listeners;

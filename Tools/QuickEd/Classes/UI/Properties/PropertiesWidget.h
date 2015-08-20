@@ -52,7 +52,7 @@ private slots:
     void OnRemoveComponent();
     void OnSelectionChanged(const QItemSelection &selected,
                             const QItemSelection &deselected);
-
+    void OnModelChanged();
 private:
     ControlNode *GetSelectedControlNode() const;
     StyleSheetNode *GetSelectedStyleSheetNode() const;

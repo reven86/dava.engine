@@ -83,9 +83,9 @@ public slots:
     void RefreshAllControlProperties();
     void OnSelectedNodesChanged(const SelectedNodes &selected, const SelectedNodes &deselected);
 private:
+    void SetSelectedNodes(const SelectedNodes &selected, const SelectedNodes &deselected);
     QMap < QObject*, WidgetContext* > contexts;
     SelectedNodes selectedNodes;
-    SelectedControls selectedControls;
     PackageNode *package = nullptr;
     QtModelPackageCommandExecutor *commandExecutor = nullptr;
     QUndoStack *undoStack = nullptr;

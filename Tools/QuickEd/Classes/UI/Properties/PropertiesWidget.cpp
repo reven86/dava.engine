@@ -55,7 +55,6 @@ PropertiesWidget::PropertiesWidget(QWidget *parent)
 {
     setupUi(this);
     treeView->setItemDelegate(new PropertiesTreeItemDelegate(this));
-    
     QMenu *addComponentMenu = new QMenu(this);
     for (int32 i = 0; i < UIComponent::COMPONENT_COUNT; i++)
     {
@@ -129,6 +128,12 @@ void PropertiesWidget::OnSelectionChanged(const QItemSelection &selected, const 
     UpdateActions();
 }
 
+void PropertiesWidget::OnModelChanged()
+{
+    treeView->expandToDepth(0);
+    treeView->resizeColumnToContents(0);
+}
+
 ControlNode *PropertiesWidget::GetSelectedControlNode() const
 {
     if (nullptr == document)
@@ -190,9 +195,6 @@ void PropertiesWidget::UpdateSelection()
                 }
             }
         }
-        
-        treeView->expandToDepth(0);
-        treeView->resizeColumnToContents(0);
     }
     
     addComponentAction->setEnabled(treeView->model() != nullptr);
@@ -202,7 +204,7 @@ void PropertiesWidget::UpdateSelection()
     {
         connect(treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &PropertiesWidget::OnSelectionChanged);
     }
-    
+    QMetaObject::invokeMethod(this, "OnModelChanged", Qt::QueuedConnection);
     delete prevModel;
 }
 

@@ -125,15 +125,9 @@ void Document::SetContext(QObject* requester, WidgetContext* widgetContext)
 
 void Document::SelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected)
 {
-    auto tmpSelected = selectedNodes;
     SelectedNodes selected_(selected.begin(), selected.end());
     SelectedNodes deselected_(deselected.begin(), deselected.end());
-    UniteNodes(selected_, tmpSelected);
-    SubstractNodes(deselected_, tmpSelected);
-    if (tmpSelected != selectedNodes)
-    {
-        emit SelectedNodesChanged(selected_, deselected_);
-    }
+    SetSelectedNodes(selected_, deselected_);
 }
 
 bool Document::OnInput(UIEvent *currentInput)
@@ -194,32 +188,43 @@ void Document::RefreshAllControlProperties()
 
 void Document::OnSelectedNodesChanged(const SelectedNodes &selected, const SelectedNodes &deselected)
 {
+    SetSelectedNodes(selected, deselected);
+}
+
+void Document::SetSelectedNodes(const SelectedNodes& selected, const SelectedNodes& deselected)
+{
+    if (selected.empty() && deselected.empty())
+    {
+        return;
+    }
     auto tmpSelected = selectedNodes;
     UniteNodes(selected, tmpSelected);
     SubstractNodes(deselected, tmpSelected);
-    SelectedControls selectedControls;
-    SelectedControls deselectedControls;
-    for (auto node : selected)
-    {
-        ControlNode *controlNode = dynamic_cast<ControlNode*>(node);
-        if (nullptr != controlNode)
-        {
-            selectedControls.insert(controlNode);
-        }
-    }
-    for (auto node : deselected)
-    {
-        ControlNode *controlNode = dynamic_cast<ControlNode*>(node);
-        if (nullptr != controlNode)
-        {
-            deselectedControls.insert(controlNode);
-        }
-    }
-    selectionSystem->SelectionWasChanged(selectedControls, deselectedControls);
-    if (tmpSelected != selectedNodes)
+    if (selectedNodes != tmpSelected)
     {
         selectedNodes = tmpSelected;
+        SelectedControls selectedControls;
+        SelectedControls deselectedControls;
+        for (auto node : selected)
+        {
+            ControlNode *controlNode = dynamic_cast<ControlNode*>(node);
+            if (nullptr != controlNode)
+            {
+                selectedControls.insert(controlNode);
+            }
+        }
+        for (auto node : deselected)
+        {
+            ControlNode *controlNode = dynamic_cast<ControlNode*>(node);
+            if (nullptr != controlNode)
+            {
+                deselectedControls.insert(controlNode);
+            }
+        }
+        if (!selectedControls.empty() || !deselectedControls.empty())
+        {
+            selectionSystem->SelectionWasChanged(selectedControls, deselectedControls);
+        }
         emit SelectedNodesChanged(selected, deselected);
     }
 }
-

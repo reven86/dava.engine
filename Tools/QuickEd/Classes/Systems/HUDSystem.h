@@ -35,6 +35,9 @@
 #include "Base/ScopedPtr.h"
 #include "Math/Vector.h"
 
+#include <QCursor>
+class QWidget;
+
 class Document;
 namespace DAVA
 {
@@ -53,12 +56,11 @@ public:
     bool OnInput(DAVA::UIEvent *currentInput) override;
 private:
     void ProcessCursor(const DAVA::Vector2& pos) const;
+    QCursor GetCursorByPos(const DAVA::Vector2& pos, bool& found) const;
     DAVA::ScopedPtr<DAVA::UIControl> hudControl;
     struct HUD
     {
         HUD(DAVA::UIControl *control, DAVA::UIControl *hudControl);
-        HUD(HUD &&hud);
-        HUD& operator = (HUD &&hud);
         ~HUD();
         DAVA::ScopedPtr<DAVA::UIControl> frame;
         DAVA::Vector < DAVA::ScopedPtr<DAVA::UIControl> > frameRects;

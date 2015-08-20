@@ -87,12 +87,7 @@ bool SelectionSystem::OnInput(UIEvent* currentInput)
     {
         return false;
     }
-    SubstractNodes(deselected, selectedControls);
-    UniteNodes(selected, selectedControls);
-    for (auto listener : listeners)
-    {
-        listener->SelectionWasChanged(selected, deselected);
-    }
+    SetSelectedControls(selected, deselected);
     return true;
 }
 
@@ -103,22 +98,13 @@ void SelectionSystem::ControlWasRemoved(ControlNode *node, ControlsContainerNode
     {
         SelectedControls deselected;
         deselected.insert(*iter);
-        SubstractNodes(deselected, selectedControls);
-        for (auto listener : listeners)
-        {
-            listener->SelectionWasChanged(SelectedControls(), deselected);
-        }
+        SetSelectedControls(SelectedControls(), deselected);
     }
 }
 
 void SelectionSystem::SelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected)
 {
-    UniteNodes(selected, selectedControls);
-    SubstractNodes(deselected, selectedControls);
-    for (auto listener : listeners)
-    {
-        listener->SelectionWasChanged(selected, deselected);
-    }
+    SetSelectedControls(selected, deselected);
 }
 
 void SelectionSystem::AddListener(SelectionInterface *listener)
@@ -136,5 +122,20 @@ void SelectionSystem::RemoveListener(SelectionInterface *listener)
     else
     {
         DVASSERT_MSG(false, "listener was not attached");
+    }
+}
+
+void SelectionSystem::SetSelectedControls(const SelectedControls &selected, const SelectedControls &deselected)
+{
+    SelectedControls tmpSelected = selectedControls;
+    UniteNodes(selected, tmpSelected);
+    SubstractNodes(deselected, tmpSelected);
+    if (selectedControls != tmpSelected)
+    {
+        selectedControls = tmpSelected;
+        for (auto listener : listeners)
+        {
+            listener->SelectionWasChanged(selected, deselected);
+        }
     }
 }
