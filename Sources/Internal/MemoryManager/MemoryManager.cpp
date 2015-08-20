@@ -167,11 +167,13 @@ void MemoryManager::SetCallbacks(Function<void()> updateCallback_, Function<void
 
 void MemoryManager::Update()
 {
+#if !defined(DAVA_MEMORY_PROFILING_LIGHTWEIGHT_MODE)
     if (nullptr == symbolCollectorThread)
     {
         symbolCollectorThread = Thread::Create(Message(this, &MemoryManager::SymbolCollectorThread));
         symbolCollectorThread->Start();
     }
+#endif
 
     if (updateCallback != 0)
     {
@@ -193,15 +195,12 @@ DAVA_NOINLINE void* MemoryManager::Allocate(size_t size, uint32 poolIndex)
     MemoryBlock* block = static_cast<MemoryBlock*>(MallocHook::Malloc(totalSize));
     if (block != nullptr)
     {
-        Backtrace backtrace;
-        CollectBacktrace(&backtrace, 1);
-
         block->mark = BLOCK_MARK;
         block->pool = poolIndex;
         block->realBlockStart = static_cast<void*>(block);
         block->allocByApp = static_cast<uint32>(size);
         block->allocTotal = static_cast<uint32>(MallocHook::MallocSize(block->realBlockStart));
-        block->bktraceHash = backtrace.hash;
+        block->bktraceHash = 0;
 
         if (tlsAllocScopeStack.IsCreated())
         {
@@ -222,10 +221,16 @@ DAVA_NOINLINE void* MemoryManager::Allocate(size_t size, uint32 poolIndex)
             LockType lock(statMutex);
             UpdateStatAfterAlloc(block);
         }
+#if !defined(DAVA_MEMORY_PROFILING_LIGHTWEIGHT_MODE)
         {
+            Backtrace backtrace;
+            CollectBacktrace(&backtrace, 1);
+            block->bktraceHash = backtrace.hash;
+
             LockType lock(bktraceMutex);
             InsertBacktrace(backtrace);
         }
+#endif
         return static_cast<void*>(block + 1);
     }
     return nullptr;
@@ -256,16 +261,13 @@ DAVA_NOINLINE void* MemoryManager::AlignedAllocate(size_t size, size_t align, ui
         uintptr_t aligned = uintptr_t(realPtr) + sizeof(MemoryBlock);
         aligned += align - (aligned & (align - 1));
 
-        Backtrace backtrace;
-        CollectBacktrace(&backtrace, 1);
-
         MemoryBlock* block = reinterpret_cast<MemoryBlock*>(aligned - sizeof(MemoryBlock));
         block->mark = BLOCK_MARK;
         block->pool = poolIndex;
         block->realBlockStart = realPtr;
         block->allocByApp = static_cast<uint32>(size);
         block->allocTotal = static_cast<uint32>(MallocHook::MallocSize(block->realBlockStart));
-        block->bktraceHash = backtrace.hash;
+        block->bktraceHash = 0;
 
         if (tlsAllocScopeStack.IsCreated())
         {
@@ -286,10 +288,16 @@ DAVA_NOINLINE void* MemoryManager::AlignedAllocate(size_t size, size_t align, ui
             LockType lock(statMutex);
             UpdateStatAfterAlloc(block);
         }
+#if !defined(DAVA_MEMORY_PROFILING_LIGHTWEIGHT_MODE)
         {
+            Backtrace backtrace;
+            CollectBacktrace(&backtrace, 1);
+            block->bktraceHash = backtrace.hash;
+
             LockType lock(bktraceMutex);
             InsertBacktrace(backtrace);
         }
+#endif
         return reinterpret_cast<void*>(aligned);
     }
     return nullptr;
@@ -338,10 +346,12 @@ void MemoryManager::Deallocate(void* ptr)
                 LockType lock(statMutex);
                 UpdateStatAfterDealloc(block);
             }
+#if !defined(DAVA_MEMORY_PROFILING_LIGHTWEIGHT_MODE)
             {
                 LockType lock(bktraceMutex);
                 RemoveBacktrace(block->bktraceHash);
             }
+#endif
 
             // Tracked memory block consists of header (of type struct MemoryBlock) and data block that returned to app.
             // Tracked memory blocks are distinguished by special mark in header.
@@ -419,9 +429,12 @@ uint32 MemoryManager::GetSystemMemoryUsage() const
     return 0;
 }
 
-uint32 MemoryManager::GetTrackedMemoryUsage() const
+uint32 MemoryManager::GetTrackedMemoryUsage(uint32 poolIndex) const
 {
-    return statAllocPool[ALLOC_POOL_TOTAL].allocByApp;
+    assert(ALLOC_POOL_TOTAL < poolIndex && poolIndex < MAX_ALLOC_POOL_COUNT);
+
+    LockType lock(statMutex);
+    return statAllocPool[poolIndex].allocByApp;
 }
 
 void MemoryManager::EnterTagScope(uint32 tag)
@@ -645,6 +658,7 @@ void MemoryManager::UpdateStatAfterGPUDealloc(MemoryBlock* block)
     }
 }
 
+#if !defined(DAVA_MEMORY_PROFILING_LIGHTWEIGHT_MODE)
 void MemoryManager::InsertBacktrace(Backtrace& backtrace)
 {
     if (nullptr == bktraceMap)
@@ -795,6 +809,7 @@ void MemoryManager::ObtainBacktraceSymbols(const Backtrace* backtrace)
     }
 #endif
 }
+#endif  // !defined(DAVA_MEMORY_PROFILING_LIGHTWEIGHT_MODE)
 
 uint32 MemoryManager::CalcStatConfigSize() const
 {
@@ -860,131 +875,140 @@ void MemoryManager::GetCurStat(uint64 timestamp, void* buffer, uint32 bufSize) c
 
 bool MemoryManager::GetMemorySnapshot(uint64 timestamp, File* file, uint32* snapshotSize)
 {
-    assert(file != nullptr);
-    
-#if defined(__DAVAENGINE_WINDOWS__)
-    // Dirty hack on Win32 to force file internal buffer allocation to exclude
-    // memory allocations under allocMutex
-    uint8 dummy[1] = {0};
-    file->Write(dummy);
-    file->Seek(0, File::SEEK_FROM_START);
-#endif
-
-    const size_t BUF_SIZE = 64 * 1024;
-    std::vector<uint8, InternalAllocator<uint8>> v(BUF_SIZE);
-    void* buffer = static_cast<void*>(&*v.begin());
+#if defined(DAVA_MEMORY_PROFILING_LIGHTWEIGHT_MODE)
+    // In lightweight mode snapshot has no sense as it doesn't contains backtraces and symbols
+    if (snapshotSize != nullptr)
     {
+        *snapshotSize = 0;
+    }
+    return false;
+#else
+    assert(file != nullptr);
+
+    const uint32 BUF_SIZE = 64 * 1024;
+    std::vector<uint8, InternalAllocator<uint8>> v(BUF_SIZE);   // For automatic memory management
+    void* buffer = static_cast<void*>(&*v.begin());             // For convenience
+
+    const uint32 bktraceSize = sizeof(MMBacktrace) + sizeof(uint64) * BACKTRACE_DEPTH;
+
+    MMSnapshot snapshot{};
+    snapshot.timestamp = timestamp;
+    snapshot.dataOffset = sizeof(MMSnapshot);
+    snapshot.bktraceDepth = BACKTRACE_DEPTH;
+
+    // Write empty header to force file internal buffer allocation to exclude
+    // memory allocations under allocMutex (primarily for Win32 release builds)
+    if (file->Write(&snapshot) != sizeof(MMSnapshot))
+        return false;
+
+    {   // Store memory blocks into file
         LockType lock(allocMutex);
 
-        const uint32 blockCount = statAllocPool[ALLOC_POOL_TOTAL].blockCount;
-        const uint32 symbolCount = static_cast<uint32>(symbolMap->size());
-        const uint32 bktraceCount = static_cast<uint32>(bktraceMap->size());
+        const uint32 BLOCKS_IN_BUF = BUF_SIZE / sizeof(MMBlock);
+        MMBlock* destBegin = static_cast<MMBlock*>(buffer);
 
-        const uint32 statSize = CalcCurStatSize();
-        const uint32 bktraceSize = sizeof(MMBacktrace) + sizeof(uint64) * BACKTRACE_DEPTH;
-        const uint32 size = sizeof(MMSnapshot)
-                          + statSize
-                          + sizeof(MMBlock) * blockCount
-                          + sizeof(MMSymbol) * symbolCount
-                          + bktraceSize * bktraceCount;
-        if (snapshotSize != nullptr)
+        MemoryBlock* curBlock = head;
+        while (curBlock != nullptr)
         {
-            *snapshotSize = size;
-        }
+            uint32 k = 0;
+            for (;k < BLOCKS_IN_BUF && curBlock != nullptr;++k)
+            {
+                MMBlock& dstBlock = destBegin[k];
+                dstBlock.orderNo = curBlock->orderNo;
+                dstBlock.allocByApp = curBlock->allocByApp;
+                dstBlock.allocTotal = curBlock->allocTotal;
+                dstBlock.bktraceHash = curBlock->bktraceHash;
+                dstBlock.pool = curBlock->pool;
+                dstBlock.tags = curBlock->tags;
 
-        MMSnapshot snapshot{};
-        snapshot.timestamp = timestamp;
-        snapshot.size = size;
-        snapshot.statItemSize = statSize;
-        snapshot.blockCount = blockCount;
-        snapshot.bktraceCount = bktraceCount;
-        snapshot.symbolCount = symbolCount;
-        snapshot.bktraceDepth = BACKTRACE_DEPTH;
-
-        if (file->Write(&snapshot) != sizeof(MMSnapshot))
-            return false;
-
-        {
-            MMCurStat* curStat = static_cast<MMCurStat*>(buffer);
-            Memset(curStat, 0, statSize);
-            curStat->size = statSize;
-            if (file->Write(curStat, statSize) != statSize)
+                curBlock = curBlock->next;
+            }
+            snapshot.blockCount += k;
+            if (file->Write(buffer, sizeof(MMBlock) * k) != sizeof(MMBlock) * k)
                 return false;
         }
+    }
+    {   // Store function names into file
+        LockType lock(bktraceMutex);
+
+        const size_t SYMBOLS_IN_BUF = BUF_SIZE / sizeof(MMSymbol);
+        MMSymbol* symbols = static_cast<MMSymbol*>(buffer);
+
+        auto itBegin = symbolMap->cbegin();
+        auto itEnd = symbolMap->cend();
+        while (itBegin != itEnd)
         {
-            const size_t BLOCKS_IN_BUF = BUF_SIZE / sizeof(MMBlock);
-            MMBlock* blocks = static_cast<MMBlock*>(buffer);
-
-            MemoryBlock* curBlock = head;
-            for (size_t i = 0, n = blockCount;i < n;)
+            uint32 k = 0;
+            for (;k < SYMBOLS_IN_BUF && itBegin != itEnd;++k)
             {
-                size_t k = 0;
-                for (;k < BLOCKS_IN_BUF && i < n;++k, ++i)
-                {
-                    MMBlock& dstBlock = blocks[k];
-                    dstBlock.orderNo = curBlock->orderNo;
-                    dstBlock.allocByApp = curBlock->allocByApp;
-                    dstBlock.allocTotal = curBlock->allocTotal;
-                    dstBlock.bktraceHash = curBlock->bktraceHash;
-                    dstBlock.pool = curBlock->pool;
-                    dstBlock.tags = curBlock->tags;
+                void* addr = itBegin->first;
+                auto& name = itBegin->second;
 
-                    curBlock = curBlock->next;
-                }
-                if (file->Write(buffer, sizeof(MMBlock) * k) != sizeof(MMBlock) * k)
-                    return false;
+                MMSymbol& dstSymbol = symbols[k];
+                dstSymbol.addr = reinterpret_cast<uint64>(addr);
+                strncpy(dstSymbol.name, name.c_str(), MMSymbol::NAME_LENGTH);
+                dstSymbol.name[MMSymbol::NAME_LENGTH - 1] = '\0';
+
+                ++itBegin;
             }
-        }
-        {
-            const size_t SYMBOLS_IN_BUF = BUF_SIZE / sizeof(MMSymbol);
-            MMSymbol* symbols = static_cast<MMSymbol*>(buffer);
-
-            size_t symCounter = 0;
-            for (auto i = symbolMap->begin(), e = symbolMap->end();i != e && symCounter < symbolCount;)
-            {
-                size_t k = 0;
-                for (;k < SYMBOLS_IN_BUF && i != e && symCounter < symbolCount;++k, ++i, ++symCounter)
-                {
-                    void* addr = i->first;
-                    auto& name = i->second;
-
-                    MMSymbol& dstSymbol = symbols[k];
-                    dstSymbol.addr = reinterpret_cast<uint64>(addr);
-                    strncpy(dstSymbol.name, name.c_str(), MMSymbol::NAME_LENGTH);
-                    dstSymbol.name[MMSymbol::NAME_LENGTH - 1] = '\0';
-                }
-                if (file->Write(buffer, sizeof(MMSymbol) * k) != sizeof(MMSymbol) * k)
-                    return false;
-            }
-        }
-        {
-            const size_t BKTRACE_IN_BUF = BUF_SIZE / bktraceSize;
-            MMBacktrace* bktrace = static_cast<MMBacktrace*>(buffer);
-
-            for (auto i = bktraceMap->begin(), e = bktraceMap->end();i != e;)
-            {
-                size_t k = 0;
-                for (;k < BKTRACE_IN_BUF && i != e;++k, ++i)
-                {
-                    auto& o = i->second;
-
-                    bktrace->hash = o.hash;
-                    uint64* frames = OffsetPointer<uint64>(bktrace, sizeof(MMBacktrace));
-                    for (size_t i = 0;i < BACKTRACE_DEPTH;++i)
-                    {
-                        frames[i] = reinterpret_cast<uint64>(o.frames[i]);
-                    }
-                    bktrace = OffsetPointer<MMBacktrace>(bktrace, bktraceSize);
-                }
-                if (file->Write(buffer, bktraceSize * k) != bktraceSize * k)
-                    return false;
-                bktrace = static_cast<MMBacktrace*>(buffer);
-            }
+            snapshot.symbolCount += k;
+            if (file->Write(buffer, sizeof(MMSymbol) * k) != sizeof(MMSymbol) * k)
+                return false;
         }
     }
+    {   // Store backtraces into file
+        LockType lock(bktraceMutex);
+
+        const size_t BKTRACE_IN_BUF = BUF_SIZE / bktraceSize;
+        MMBacktrace* bktrace = static_cast<MMBacktrace*>(buffer);
+
+        auto itBegin = bktraceMap->cbegin();
+        auto itEnd = bktraceMap->cend();
+        while (itBegin != itEnd)
+        {
+            uint32 k = 0;
+            for (;k < BKTRACE_IN_BUF && itBegin != itEnd;++k)
+            {
+                auto& o = itBegin->second;
+
+                bktrace->hash = o.hash;
+                uint64* frames = OffsetPointer<uint64>(bktrace, sizeof(MMBacktrace));
+                for (size_t i = 0;i < BACKTRACE_DEPTH;++i)
+                {
+                    frames[i] = reinterpret_cast<uint64>(o.frames[i]);
+                }
+
+                bktrace = OffsetPointer<MMBacktrace>(bktrace, bktraceSize);
+                ++itBegin;
+            }
+            snapshot.bktraceCount += k;
+            if (file->Write(buffer, bktraceSize * k) != bktraceSize * k)
+                return false;
+            bktrace = static_cast<MMBacktrace*>(buffer);
+        }
+    }
+
+    // Write down header
+    const uint32 totalSize = sizeof(MMSnapshot)
+                           + sizeof(MMBlock) * snapshot.blockCount
+                           + sizeof(MMSymbol) * snapshot.symbolCount
+                           + bktraceSize * snapshot.bktraceCount;
+    if (snapshotSize != nullptr)
+    {
+        *snapshotSize = totalSize;
+    }
+    snapshot.size = totalSize;
+
+    assert(file->GetPos() == totalSize);
+
+    file->Seek(0, File::SEEK_FROM_START);
+    if (file->Write(&snapshot) != sizeof(MMSnapshot))
+        return false;
     return true;
+#endif  // defined(DAVA_MEMORY_PROFILING_LIGHTWEIGHT_MODE)
 }
 
+#if !defined(DAVA_MEMORY_PROFILING_LIGHTWEIGHT_MODE)
 void MemoryManager::SymbolCollectorThread(BaseObject*, void*, void*)
 {
     const size_t BUF_CAPACITY = 1000;   // Select some reasonable buffer for backtraces
@@ -1026,6 +1050,7 @@ void MemoryManager::SymbolCollectorThread(BaseObject*, void*, void*)
         }
     }
 }
+#endif  // !defined(DAVA_MEMORY_PROFILING_LIGHTWEIGHT_MODE)
 
 }   // namespace DAVA
 

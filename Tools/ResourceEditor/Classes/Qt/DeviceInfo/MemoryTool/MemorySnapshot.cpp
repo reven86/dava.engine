@@ -166,8 +166,8 @@ bool MemorySnapshot::LoadFile()
         size_t nread = file->Read(&msnapshot);
         if (sizeof(MMSnapshot) == nread || file->GetSize() == msnapshot.size)
         {
-            // Skip statistics
-            file->Seek(msnapshot.statItemSize, File::SEEK_FROM_CURRENT);
+            // Move pointer to data
+            file->Seek(msnapshot.dataOffset, File::SEEK_FROM_START);
 
             const uint32 bktraceSize = sizeof(MMBacktrace) + msnapshot.bktraceDepth * sizeof(uint64);
             Vector<MMBlock> blocks(msnapshot.blockCount, MMBlock());

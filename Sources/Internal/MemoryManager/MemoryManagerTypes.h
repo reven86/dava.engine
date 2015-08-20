@@ -182,12 +182,11 @@ struct MMSnapshot
 {
     uint64 timestamp;           // Room for timestamp
     uint32 size;                // Total size of memory snapshot
-    uint32 statItemSize;        // Size of stat item
+    uint32 dataOffset;          // Offset of snapshot data
     uint32 blockCount;          // Number of blocks in snapshot
     uint32 bktraceCount;        // Number of backtraces in snapshot
     uint32 symbolCount;         // Number of symbols in snapshot
     uint32 bktraceDepth;        // Depth of collected backtrace
-    // MMCurStat statCur;
     // MMBlock blocks[];
     // MMSymbol symbols[];
     // MMBacktrace bktrace[];

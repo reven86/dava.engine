@@ -299,6 +299,7 @@ bool MMNetServer::GetAndSaveSnapshot(uint64 curTimestamp)
         {
             if (MemoryManager::Instance()->GetMemorySnapshot(curTimestamp, file.get(), nullptr))
             {
+                file.reset(nullptr);
                 anotherService->TransferSnapshot(filePath);
                 result = true;
             }

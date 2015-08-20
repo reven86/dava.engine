@@ -34,6 +34,9 @@
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
 
+// Define DAVA_MEMORY_PROFILING_LIGHTWEIGHT_MODE for lightweight memory profiling
+// In lightweight mode backtraces and symbols are not collected and snapshots are disabled
+
 #include <type_traits>
 
 #include "Base/Function.h"
@@ -108,7 +111,7 @@ public:
     void TrackGpuDealloc(uint32 id, uint32 gpuPoolIndex);
 
     uint32 GetSystemMemoryUsage() const;
-    uint32 GetTrackedMemoryUsage() const;
+    uint32 GetTrackedMemoryUsage(uint32 poolIndex = ALLOC_POOL_TOTAL) const;
 
     uint32 CalcStatConfigSize() const;
     void GetStatConfig(void* buffer, uint32 bufSize) const;
@@ -146,15 +149,17 @@ private:
     void UpdateStatAfterGPUAlloc(MemoryBlock* block, size_t sizeIncr);
     void UpdateStatAfterGPUDealloc(MemoryBlock* block);
 
+    uint64 PackGPUKey(uint32 id, uint32 allocPool) const;
+
+#if !defined(DAVA_MEMORY_PROFILING_LIGHTWEIGHT_MODE)
     void InsertBacktrace(Backtrace& backtrace);
     void RemoveBacktrace(uint32 hash);
 
     DAVA_NOINLINE void CollectBacktrace(Backtrace* backtrace, size_t nskip);
     void ObtainBacktraceSymbols(const Backtrace* backtrace);
 
-    uint64 PackGPUKey(uint32 id, uint32 allocPool) const;
-
     void SymbolCollectorThread(BaseObject*, void*, void*);
+#endif  // !defined(DAVA_MEMORY_PROFILING_LIGHTWEIGHT_MODE)
 
 private:
     MemoryBlock* head = nullptr;                        // Linked list of tracked memory blocks
@@ -168,22 +173,27 @@ private:
 
     mutable MutexType allocMutex;       // Mutex for managing list of allocated memory blocks
     mutable MutexType statMutex;        // Mutex for updating memory statistics
-    mutable MutexType bktraceMutex;     // Mutex for working with backtraces
     mutable MutexType gpuMutex;         // Mutex for managing GPU allocations
 
+    using GpuBlockMap = std::unordered_map<uint64, MemoryBlock, std::hash<uint64>, std::equal_to<uint64>, InternalAllocator<std::pair<const uint64, MemoryBlock>>>;
+
+    GpuBlockMap* gpuBlockMap = nullptr;
+
+#if !defined(DAVA_MEMORY_PROFILING_LIGHTWEIGHT_MODE)
     using InternalString = std::basic_string<char8, std::char_traits<char8>, InternalAllocator<char8>>;
     using BacktraceMap = std::unordered_map<uint32, Backtrace, std::hash<uint32>, std::equal_to<uint32>, InternalAllocator<std::pair<const uint32, Backtrace>>>;
     using SymbolMap = std::unordered_map<void*, InternalString, std::hash<void*>, std::equal_to<void*>, InternalAllocator<std::pair<void* const, InternalString>>>;
-    using GpuBlockMap = std::unordered_map<uint64, MemoryBlock, std::hash<uint64>, std::equal_to<uint64>, InternalAllocator<std::pair<const uint64, MemoryBlock>>>;
+
+    mutable MutexType bktraceMutex;     // Mutex for working with backtraces
 
     BacktraceMap* bktraceMap = nullptr;
     SymbolMap* symbolMap = nullptr;
-    GpuBlockMap* gpuBlockMap = nullptr;
 
     Thread* symbolCollectorThread = nullptr;
     ConditionVariable symbolCollectorCondVar;
     Mutex symbolCollectorMutex;
     size_t bktraceGrowDelta = 0;
+#endif  // !defined(DAVA_MEMORY_PROFILING_LIGHTWEIGHT_MODE)
 
     Function<void()> updateCallback;
     Function<void(uint32, bool)> tagCallback;

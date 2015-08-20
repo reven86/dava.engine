@@ -409,8 +409,8 @@ void ProfilingSession::LoadShapshotDescriptor(const DAVA::FilePath& path)
 
                 if (msnapshot.symbolCount > 0)
                 {
-                    uint32 symOffset = msnapshot.statItemSize + msnapshot.blockCount * sizeof(MMBlock);
-                    file->Seek(symOffset, File::SEEK_FROM_CURRENT);
+                    uint32 symOffset = msnapshot.dataOffset + msnapshot.blockCount * sizeof(MMBlock);
+                    file->Seek(symOffset, File::SEEK_FROM_START);
 
                     Vector<MMSymbol> symbols(msnapshot.symbolCount, MMSymbol());
                     nread = file->Read(&*symbols.begin(), msnapshot.symbolCount * sizeof(MMSymbol));
