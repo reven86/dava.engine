@@ -182,7 +182,14 @@ void DeviceListController::ConnectDeviceInternal(QModelIndex& index, size_t ifIn
     {
         IPAddress addr = endp.Address();    // Use IP address from multicast packets
         NetConfig config = peer.NetworkConfig().Mirror(addr);
-        trackId = NetCore::Instance()->CreateController(config, reinterpret_cast<void*>(index.row()));
+        const Vector<uint32>& servIds = config.Services();
+
+        // Chech whether remote device is under memory profiler and increase read timeout
+        // Else leave it zero to allow underlying network system to choose timeout itself
+        bool deviceUnderMemoryProfiler = std::find(servIds.begin(), servIds.end(), SERVICE_MEMPROF) != servIds.end();
+        uint32 readTimeout = deviceUnderMemoryProfiler ? 120 * 1000 : 0;
+
+        trackId = NetCore::Instance()->CreateController(config, reinterpret_cast<void*>(index.row()), readTimeout);
         if (trackId != NetCore::INVALID_TRACK_ID)
         {
             QStandardItem* item = model->itemFromIndex(index);
@@ -197,7 +204,6 @@ void DeviceListController::ConnectDeviceInternal(QModelIndex& index, size_t ifIn
             {
                 DeviceServices services = index.data(ROLE_PEER_SERVICES).value<DeviceServices>();
                 // Check whether remote device has corresponding services
-                const Vector<uint32>& servIds = config.Services();
                 auto iterService = std::find(servIds.begin(), servIds.end(), SERVICE_LOG);
                 if (iterService != servIds.end())
                 {
