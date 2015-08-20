@@ -250,13 +250,13 @@ void DeviceInfoPrivate::InitializeScreenInfo()
 	screenInfo.scale = 1;
 }
 
-bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType hid)
+bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType type)
 {
         DVASSERT(false && "Not Implement");
         return false;
 }
 
-void DeviceInfoPrivate::SubscribeHID(DeviceInfo::eHIDType hid, DeviceInfo::HIDCallBackFunc&& func)
+void DeviceInfoPrivate::SetHIDConnectionCallback(eHIDType type, DeviceInfo::HIDCallBackFunc&& callback)
 {
         DVASSERT(false && "Not Implement");
 }

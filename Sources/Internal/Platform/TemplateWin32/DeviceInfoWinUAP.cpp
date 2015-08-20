@@ -30,9 +30,8 @@
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 
-#if defined(__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__)
+__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
 #include <GLES2/gl2.h>
-#endif //  (__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__)
 
 #include <Iphlpapi.h>
 #include <winsock2.h>
@@ -46,9 +45,8 @@
 
 #include "Platform/TemplateWin32/DeviceInfoWinUAP.h"
 
-#if defined(__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__)
+__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
 #include "Platform/TemplateWin32/CorePlatformWinUAP.h"
-#endif //  (__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__)
 
 using namespace ::Windows::UI::Core;
 using namespace ::Windows::Graphics::Display;
@@ -77,12 +75,12 @@ DeviceInfoPrivate::DeviceInfoPrivate()
     try
     {
         EasClientDeviceInformation deviceInfo;
-        version.swap(RTStringToString(deviceInfo.SystemFirmwareVersion));
-        manufacturer.swap(RTStringToString(deviceInfo.SystemManufacturer));
-        modelName.swap(RTStringToString(deviceInfo.FriendlyName));
+        version = RTStringToString(deviceInfo.SystemFirmwareVersion);
+        manufacturer = RTStringToString(deviceInfo.SystemManufacturer);
+        modelName = RTStringToString(deviceInfo.FriendlyName);
         productName = WideString(deviceInfo.SystemProductName->Data());
         gpu = GPUFamily();
-        uDID.swap(RTStringToString(deviceInfo.Id.ToString()));
+        uDID = RTStringToString(deviceInfo.Id.ToString());
     }
     catch (Platform::Exception^ e)
     {
@@ -93,13 +91,13 @@ DeviceInfoPrivate::DeviceInfoPrivate()
         cpuCount = 1;
     }
 
-    vectorWatchers.emplace_back(WatcherForDeviceEvents(AQS_POINTER));
-    vectorWatchers.emplace_back(WatcherForDeviceEvents(AQS_MOUSE));
-    vectorWatchers.emplace_back(WatcherForDeviceEvents(AQS_JOYSTICK));
-    vectorWatchers.emplace_back(WatcherForDeviceEvents(AQS_GAMEPAD));
-    vectorWatchers.emplace_back(WatcherForDeviceEvents(AQS_KEYBOARD));
-    vectorWatchers.emplace_back(WatcherForDeviceEvents(AQS_KEYPAD));
-    vectorWatchers.emplace_back(WatcherForDeviceEvents(AQS_SYSTEM_CONTROL));
+    watchers.emplace_back(CreateDeviceWatcher(POINTER));
+    watchers.emplace_back(CreateDeviceWatcher(MOUSE));
+    watchers.emplace_back(CreateDeviceWatcher(JOYSTICK));
+    watchers.emplace_back(CreateDeviceWatcher(GAMEPAD));
+    watchers.emplace_back(CreateDeviceWatcher(KEYBOARD));
+    watchers.emplace_back(CreateDeviceWatcher(KEYPAD));
+    watchers.emplace_back(CreateDeviceWatcher(SYSTEM_CONTROL));
 }
 
 DeviceInfo::ePlatform DeviceInfoPrivate::GetPlatform()
@@ -210,7 +208,7 @@ DeviceInfo::NetworkInfo DeviceInfoPrivate::GetNetworkInfo()
 // temporary decision
 void DeviceInfoPrivate::InitializeScreenInfo()
 {
-#if defined(__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__)
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
     int32 w = 0, h = 0;
     CorePlatformWinUAP* core = static_cast<CorePlatformWinUAP*>(Core::Instance());
     DVASSERT(nullptr != core && "In DeviceInfo, InitializeScreenInfo() function CorePlatformWinUAP* = nullptr");
@@ -231,7 +229,6 @@ void DeviceInfoPrivate::InitializeScreenInfo()
     core->RunOnUIThreadBlocked(func);
     screenInfo.width = w;
     screenInfo.height = h;
-#endif
 }
 
 bool FillStorageSpaceInfo(DeviceInfo::StorageInfo& storage_info)
@@ -294,39 +291,44 @@ int32 DeviceInfoPrivate::GetCpuCount()
     return cpuCount;
 }
 
-bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType hid)
+bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType type)
 {
-    return IsEnabled(std::find_if(unionAqsAndHid.begin(), unionAqsAndHid.end(), [hid](AqsHidPair pair)->bool {
-        return pair.second == hid; 
-    })->first);
+    auto func = [type](HIDConvPair pair)->bool {
+        return pair.second == type;
+    };
+    auto it = std::find_if(HidConvSet.begin(), HidConvSet.end(), func);
+    return IsEnabled(it->first);
 }
 
 // warning!!! notification occur in DeviceWatcher's thread
 // for notify in main's thread use MainThreadRedirector
 // it pass call from Watcher's thread in main
-// for example DeviceInfo::SubscribeHID(DeviceInfo::eHIDType::HID_MOUSE_TYPE, MainThreadRedirector([this](int32 a, bool b) { OnMouseAdd(a, b);}));
-void DeviceInfoPrivate::SubscribeHID(DeviceInfo::eHIDType hid, DeviceInfo::HIDCallBackFunc&& func)
+// for example DeviceInfo::SetHIDConnectionCallback(DeviceInfo::eHIDType::HID_MOUSE_TYPE, MainThreadRedirector([this](int32 a, bool b) { OnMouseAdd(a, b);}));
+void DeviceInfoPrivate::SetHIDConnectionCallback(DeviceInfo::eHIDType type, DeviceInfo::HIDCallBackFunc&& callback)
 {
-    AQSyntax aqsId = std::find_if(unionAqsAndHid.begin(), unionAqsAndHid.end(), [hid](AqsHidPair pair)->bool {
-        return pair.second == hid;
-    })->first;
-    deviceTypes[aqsId].callbacks.emplace_back(std::forward<DeviceInfo::HIDCallBackFunc>(func));
+    auto func = [type](HIDConvPair pair)->bool {
+        return pair.second == type;
+    };
+    auto it = std::find_if(HidConvSet.begin(), HidConvSet.end(), func);
+    hids[it->first].callbacks.emplace_back(std::forward<DeviceInfo::HIDCallBackFunc>(callback));
 }
 
-void DeviceInfoPrivate::NotifyAllClients(AQSyntax usageId, bool connectState)
+void DeviceInfoPrivate::NotifyAllClients(NativeHIDType type, bool isConnected)
 {
-    for (auto iter : (deviceTypes[usageId].callbacks))
+    auto func = [type](HIDConvPair pair)->bool {
+        return pair.first == type;
+    };
+    for (auto& iter : (hids[type].callbacks))
     {
-        (iter)(std::find_if(unionAqsAndHid.begin(), unionAqsAndHid.end(), [usageId](AqsHidPair pair)->bool {
-            return pair.first == usageId;
-        })->second, connectState);
+        auto it = std::find_if(HidConvSet.begin(), HidConvSet.end(), func);
+        (iter)(it->second, isConnected);
     }
 }
 
 eGPUFamily DeviceInfoPrivate::GPUFamily()
 {
-    eGPUFamily gpuFamily(GPU_INVALID);
-#if defined(__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__)
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
+        eGPUFamily gpuFamily(GPU_INVALID);
     const GLubyte* rendererTemp = glGetString(GL_RENDERER);
     if (nullptr == rendererTemp)
     {
@@ -372,24 +374,16 @@ eGPUFamily DeviceInfoPrivate::GPUFamily()
             gpuFamily = GPU_MALI;
     }
     return gpuFamily;
-#else
-        return gpuFamily;
-#endif //  (__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__)
 }
 
-bool DeviceInfoPrivate::CompareWithModelName(Platform::String^ str)
+DeviceWatcher^ DeviceInfoPrivate::CreateDeviceWatcher(NativeHIDType type)
 {
-    return (modelName.compare(RTStringToString(str)) == 0);
-}
-
-DeviceWatcher^ DeviceInfoPrivate::WatcherForDeviceEvents(AQSyntax usageId)
-{
-    DeviceWatcher^ watcher = DeviceInformation::CreateWatcher(HidDevice::GetDeviceSelector(AQS_USAGE_PAGE, usageId));
-    auto added = ref new TypedEventHandler<DeviceWatcher^, DeviceInformation^>([this, usageId](DeviceWatcher^ watcher, DeviceInformation^ information) {
-        OnDeviceAdded(usageId, information);
+    DeviceWatcher^ watcher = DeviceInformation::CreateWatcher(HidDevice::GetDeviceSelector(USAGE_PAGE, type));
+    auto added = ref new TypedEventHandler<DeviceWatcher^, DeviceInformation^>([this, type](DeviceWatcher^ watcher, DeviceInformation^ information) {
+        OnDeviceAdded(type, information);
     });
-    auto removed = ref new TypedEventHandler<DeviceWatcher^ , DeviceInformationUpdate^>([this, usageId](DeviceWatcher^ watcher, DeviceInformationUpdate^ information) {
-        OnDeviceRemoved(usageId, information);
+    auto removed = ref new TypedEventHandler<DeviceWatcher^ , DeviceInformationUpdate^>([this, type](DeviceWatcher^ watcher, DeviceInformationUpdate^ information) {
+        OnDeviceRemoved(type, information);
     });
 
     watcher->Added += added;
@@ -398,38 +392,38 @@ DeviceWatcher^ DeviceInfoPrivate::WatcherForDeviceEvents(AQSyntax usageId)
     return watcher;
 }
 
-void DeviceInfoPrivate::OnDeviceAdded(AQSyntax usageId, DeviceInformation^ information)
+void DeviceInfoPrivate::OnDeviceAdded(NativeHIDType type, DeviceInformation^ information)
 {
     if (isTouchPresent)
     {
         // skip because Windows touch mimics under mouse and keyboard
-        if (CompareWithModelName(information->Name))
+        if (modelName.compare(RTStringToString(information->Name)) == 0)
         {
             return;
         }
     }
     
-    auto it = deviceTypes.find(usageId);
-    if (it != deviceTypes.end())
+    auto it = hids.find(type);
+    if (it != hids.end())
     {
-        it->second.deviceInfo[information->Id] = information->Name;
-        NotifyAllClients(usageId, true);
+        it->second.hidCount++;
+        NotifyAllClients(type, true);
     }
 }
 
-void DeviceInfoPrivate::OnDeviceRemoved(AQSyntax usageId, DeviceInformationUpdate^ information)
+void DeviceInfoPrivate::OnDeviceRemoved(NativeHIDType type, DeviceInformationUpdate^ information)
 {
-    auto it = deviceTypes.find(usageId);
-    if (it != deviceTypes.end())
+    auto it = hids.find(type);
+    if (it != hids.end())
     {
-        it->second.deviceInfo.erase(information->Id);
-        NotifyAllClients(usageId, false);
+        it->second.hidCount--;
+        NotifyAllClients(type, false);
     }
 }
 
-bool DeviceInfoPrivate::IsEnabled(AQSyntax usageId)
+bool DeviceInfoPrivate::IsEnabled(NativeHIDType type)
 {
-    return (deviceTypes[usageId].deviceInfo.size() > 0);
+    return (hids[type].hidCount > 0);
 }
 
 }

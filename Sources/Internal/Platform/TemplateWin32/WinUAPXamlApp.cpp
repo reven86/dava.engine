@@ -71,7 +71,7 @@ namespace DAVA
 
 
 WinUAPXamlApp::WinUAPXamlApp()
-    : core(static_cast<CorePlatformWinUAP*>(Core::Instance()))
+    : core(static_cast<CorePlatformWinUAP*>(Core::Instance())), isPhoneApiDetected(DeviceInfo::ePlatform::PLATFORM_PHONE_WIN_UAP == DeviceInfo::GetPlatform())
 {}
 
 WinUAPXamlApp::~WinUAPXamlApp() {}
@@ -172,16 +172,12 @@ void WinUAPXamlApp::UnfocusUIElement()
 void WinUAPXamlApp::Run()
 {
     dispatcher = std::make_unique<DispatcherWinUAP>();
-
-    core->RunOnUIThreadBlocked([this]() {
-        SetupEventHandlers();
-    });
     Core::Instance()->CreateSingletons();
-
     // View size and orientation option should be configured in FrameowrkDidLaunched
     FrameworkDidLaunched();
 
     core->RunOnUIThreadBlocked([this]() {
+        SetupEventHandlers();
         PrepareScreenSize();
         SetTitleName();
         SetDisplayOrientations();
@@ -575,10 +571,9 @@ void WinUAPXamlApp::SetupEventHandlers()
     coreWindow->KeyDown += ref new TypedEventHandler<CoreWindow^, KeyEventArgs^>(this, &WinUAPXamlApp::OnKeyDown);
     coreWindow->KeyUp += ref new TypedEventHandler<CoreWindow^, KeyEventArgs^>(this, &WinUAPXamlApp::OnKeyUp);
     MouseDevice::GetForCurrentView()->MouseMoved += ref new TypedEventHandler<MouseDevice^, MouseEventArgs^>(this, &WinUAPXamlApp::OnMouseMoved);
-    if (DeviceInfo::ePlatform::PLATFORM_PHONE_WIN_UAP == DeviceInfo::GetPlatform())
+    if (isPhoneApiDetected)
     {
         HardwareButtons::BackPressed += ref new EventHandler<BackPressedEventArgs^>(this, &WinUAPXamlApp::OnHardwareBackButtonPressed);
-        isPhoneApiDetected = true;
     }
 }
 
@@ -737,7 +732,7 @@ void WinUAPXamlApp::SetFullScreen(bool isFullscreen_)
         isFullscreen = isFullscreen_;
         return;
     }
-    if (DeviceInfo::ePlatform::PLATFORM_PHONE_WIN_UAP == DeviceInfo::GetPlatform())
+    if (isPhoneApiDetected)
     {
         return;
     }
@@ -755,7 +750,7 @@ void WinUAPXamlApp::SetFullScreen(bool isFullscreen_)
 void WinUAPXamlApp::SetPreferredSize(float32 width, float32 height)
 {
     // Note: must run on UI thread
-    if (DeviceInfo::ePlatform::PLATFORM_PHONE_WIN_UAP == DeviceInfo::GetPlatform())
+    if (isPhoneApiDetected)
     {
         return;
     }
@@ -766,7 +761,7 @@ void WinUAPXamlApp::SetPreferredSize(float32 width, float32 height)
 
 void WinUAPXamlApp::HideAsyncTaskBar()
 {
-    if (DeviceInfo::ePlatform::PLATFORM_PHONE_WIN_UAP == DeviceInfo::GetPlatform())
+    if (isPhoneApiDetected)
     {
         StatusBar::GetForCurrentView()->HideAsync();
     }

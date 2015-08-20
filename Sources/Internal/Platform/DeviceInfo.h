@@ -175,12 +175,13 @@ public:
     static void InitializeScreenInfo();
 
     // true, if device connected
-    static bool IsHIDConnected(eHIDType hid);
+    static bool IsHIDConnected(eHIDType type);
+    
 
     // for notify, if you need know, when "human interface device" connection is changed
     // int value - type "human interface device"
     // bool value - device has been connected(true), or disconnected(false)
-    static void SubscribeHID(eHIDType hid, HIDCallBackFunc&& func);
+    static void SetHIDConnectionCallback(eHIDType type, DeviceInfo::HIDCallBackFunc&& callback);
 
 private:
     static DeviceInfoPrivate* GetPrivateImpl();

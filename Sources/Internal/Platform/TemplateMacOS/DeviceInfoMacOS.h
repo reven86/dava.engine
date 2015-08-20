@@ -63,8 +63,8 @@ public:
     List<DeviceInfo::StorageInfo> GetStoragesList();
     int32 GetCpuCount();
     void InitializeScreenInfo();
-    bool IsHIDConnected(DeviceInfo::eHIDType hid);
-    void SubscribeHID(DeviceInfo::eHIDType hid, DeviceInfo::HIDCallBackFunc&& func);
+    bool IsHIDConnected(DeviceInfo::eHIDType type);
+    void SetHIDConnectionCallback(eHIDType type, DeviceInfo::HIDCallBackFunc&& callback);
 
 private:
     DeviceInfo::ScreenInfo screenInfo;

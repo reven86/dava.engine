@@ -62,52 +62,54 @@ namespace DAVA
         List<DeviceInfo::StorageInfo> GetStoragesList();
         int32 GetCpuCount();
         void InitializeScreenInfo();
-        bool IsHIDConnected(DeviceInfo::eHIDType hid);
-        void SubscribeHID(DeviceInfo::eHIDType hid, DeviceInfo::HIDCallBackFunc&& func);
+        bool IsHIDConnected(DeviceInfo::eHIDType type);
+        void SetHIDConnectionCallback(DeviceInfo::eHIDType type, DeviceInfo::HIDCallBackFunc&& callback);
 
     private:
 
-        enum AQSyntax
+        enum NativeHIDType
         {
-            AQS_UNKNOWN = 0x00,
-            AQS_POINTER = 0x01,
-            AQS_MOUSE = 0x02,
-            AQS_JOYSTICK = 0x04,
-            AQS_GAMEPAD = 0x05,
-            AQS_KEYBOARD = 0x06,
-            AQS_KEYPAD = 0x07,
-            AQS_SYSTEM_CONTROL = 0x80
+            UNKNOWN = 0x00,
+            POINTER = 0x01,
+            MOUSE = 0x02,
+            JOYSTICK = 0x04,
+            GAMEPAD = 0x05,
+            KEYBOARD = 0x06,
+            KEYPAD = 0x07,
+            SYSTEM_CONTROL = 0x80
         };
-        const uint16 AQS_USAGE_PAGE = 0x01;
+        const uint16 USAGE_PAGE = 0x01;
+        using HIDConvPair = std::pair<NativeHIDType, DeviceInfo::eHIDType>;
+        Vector<HIDConvPair> HidConvSet =
+        { 
+            {UNKNOWN,        DeviceInfo::HID_UNKNOWN_TYPE},
+            {POINTER,        DeviceInfo::HID_POINTER_TYPE},
+            {MOUSE,          DeviceInfo::HID_MOUSE_TYPE},
+            {JOYSTICK,       DeviceInfo::HID_JOYSTICK_TYPE},
+            {GAMEPAD,        DeviceInfo::HID_GAMEPAD_TYPE},
+            {KEYBOARD,       DeviceInfo::HID_KEYBOARD_TYPE},
+            {KEYPAD,         DeviceInfo::HID_KEYPAD_TYPE},
+            {SYSTEM_CONTROL, DeviceInfo::HID_SYSTEM_CONTROL_TYPE}
+        };
 
-        using AqsHidPair = std::pair<AQSyntax, DeviceInfo::eHIDType>;
-        Vector<AqsHidPair> unionAqsAndHid = 
-            { AqsHidPair(AQS_UNKNOWN , DeviceInfo::HID_UNKNOWN_TYPE) , AqsHidPair(AQS_POINTER, DeviceInfo::HID_POINTER_TYPE), AqsHidPair(AQS_MOUSE, DeviceInfo::HID_MOUSE_TYPE),
-            AqsHidPair(AQS_JOYSTICK, DeviceInfo::HID_JOYSTICK_TYPE), AqsHidPair(AQS_GAMEPAD, DeviceInfo::HID_GAMEPAD_TYPE), AqsHidPair(AQS_KEYBOARD, DeviceInfo::HID_KEYBOARD_TYPE),
-            AqsHidPair(AQS_KEYPAD, DeviceInfo::HID_KEYPAD_TYPE ), AqsHidPair(AQS_SYSTEM_CONTROL, DeviceInfo::HID_SYSTEM_CONTROL_TYPE ) };
-
-        using MapForIdAndName = Map<Platform::String^, Platform::String^>;
-        using VectorCallBacks = Vector<DeviceInfo::HIDCallBackFunc >;
-        class ClientsAndDevices
+        class HIDsConnState
         {
         public:
-            MapForIdAndName deviceInfo;
-            VectorCallBacks callbacks;
+            uint16 hidCount = 0;
+            Vector<DeviceInfo::HIDCallBackFunc > callbacks;
         };
-        using MapForHIDTypes = Map<AQSyntax, ClientsAndDevices>;
 
-        Windows::Devices::Enumeration::DeviceWatcher^ WatcherForDeviceEvents(AQSyntax usageId);
-        void OnDeviceAdded(AQSyntax usageId, Windows::Devices::Enumeration::DeviceInformation^ information);
-        void OnDeviceRemoved(AQSyntax usageId, Windows::Devices::Enumeration::DeviceInformationUpdate^ information);
-        bool IsEnabled(AQSyntax usageId);
-        void NotifyAllClients(AQSyntax usageId, bool connectState);
+        Windows::Devices::Enumeration::DeviceWatcher^ CreateDeviceWatcher(NativeHIDType type);
+        void OnDeviceAdded(NativeHIDType type, Windows::Devices::Enumeration::DeviceInformation^ information);
+        void OnDeviceRemoved(NativeHIDType type, Windows::Devices::Enumeration::DeviceInformationUpdate^ information);
+        bool IsEnabled(NativeHIDType type);
+        void NotifyAllClients(NativeHIDType type, bool isConnected);
         eGPUFamily GPUFamily();
-        bool CompareWithModelName(Platform::String^ str);
 
         bool isTouchPresent = false;
         bool isMobileMode = false;
-        MapForHIDTypes deviceTypes;
-        Vector<Windows::Devices::Enumeration::DeviceWatcher^> vectorWatchers;
+        Map<NativeHIDType, HIDsConnState> hids;
+        Vector<Windows::Devices::Enumeration::DeviceWatcher^> watchers;
 
         DeviceInfo::ePlatform platform = DeviceInfo::PLATFORM_UNKNOWN;
         DeviceInfo::ScreenInfo screenInfo;
