@@ -16,7 +16,6 @@ class SymbolsWidget;
 class MemoryBlocksWidget;
 
 class BranchDiffTreeModel;
-class BlockListModel;
 
 class ProfilingSession;
 class MemorySnapshot;
@@ -33,7 +32,7 @@ public slots:
     void SymbolView_OnBuldTree();
 
     void BranchView_SelectionChanged(const QModelIndex& current, const QModelIndex& previous);
-    void BranchBlockView_DoubleClicked(const QModelIndex& current);
+    void SnapshotDiffViewerWidget::MemoryBlockDoubleClicked(const BlockLink::Item& item);
 
 private:
     void Init();
@@ -48,16 +47,17 @@ private:
 
     BlockLink allBlocksLinked;
 
-    BranchDiffTreeModel* branchTreeModel = nullptr;
-    BlockListModel* blockListModel1 = nullptr;
-    BlockListModel* blockListModel2 = nullptr;
+    DAVA::Vector<DAVA::MMBlock*> branchBlocks1;
+    DAVA::Vector<DAVA::MMBlock*> branchBlocks2;
+    BlockLink branchBlockLinked;
+
+    std::unique_ptr<BranchDiffTreeModel> branchTreeModel;
 
     QTabWidget* tab = nullptr;
     SymbolsWidget* symbolWidget = nullptr;
     MemoryBlocksWidget* memoryBlocksWidget = nullptr;
+    MemoryBlocksWidget* branchBlocksWidget = nullptr;
     QTreeView* branchTree = nullptr;
-    QListView* blockList1 = nullptr;
-    QListView* blockList2 = nullptr;
 };
 
 #endif  // __SNAPSHOTDIFFVIEWERWIDGET_H__

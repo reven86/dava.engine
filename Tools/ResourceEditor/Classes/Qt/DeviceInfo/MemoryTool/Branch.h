@@ -54,8 +54,6 @@ struct Branch final
     Branch* parent = nullptr;
     DAVA::Vector<Branch*> children;
 
-    DAVA::uint32 poolMask = 0;              // Combined allocation pools of memory blocks allocated under branch
-    DAVA::uint32 tagMask = 0;               // Combined tags of memory blocks allocated under branch
     DAVA::uint32 allocByApp = 0;            // Total allocated size in branch including children
     DAVA::uint32 nblocks = 0;               // Total block count in branch including children
     DAVA::Vector<DAVA::MMBlock*> mblocks;   // Memory blocks belonging to leaf branch

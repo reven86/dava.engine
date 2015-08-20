@@ -7,13 +7,13 @@
 #include "Qt/DeviceInfo/MemoryTool/Models/BranchTreeModel.h"
 
 #include "Qt/DeviceInfo/MemoryTool/Branch.h"
+#include "Qt/DeviceInfo/MemoryTool/BranchDiff.h"
 #include "Qt/DeviceInfo/MemoryTool/ProfilingSession.h"
 #include "Qt/DeviceInfo/MemoryTool/MemorySnapshot.h"
 #include "Qt/DeviceInfo/MemoryTool/SymbolsWidget.h"
 #include "Qt/DeviceInfo/MemoryTool/FilterAndSortBar.h"
 #include "Qt/DeviceInfo/MemoryTool/MemoryBlocksWidget.h"
 
-#include <QDebug>
 #include <QTabWidget>
 #include <QTreeView>
 #include <QVBoxLayout>
@@ -37,10 +37,7 @@ SnapshotViewerWidget::SnapshotViewerWidget(const ProfilingSession* session_, siz
     Init();
 }
 
-SnapshotViewerWidget::~SnapshotViewerWidget()
-{
-    delete branchTreeModel;
-}
+SnapshotViewerWidget::~SnapshotViewerWidget() = default;
 
 void SnapshotViewerWidget::Init()
 {
@@ -72,20 +69,17 @@ void SnapshotViewerWidget::InitSymbolsView()
 
 void SnapshotViewerWidget::InitBranchView()
 {
-    branchTreeModel = new BranchTreeModel(snapshot);
-    branchFilterModel = new BranchFilterModel;
-    branchFilterModel->setSourceModel(branchTreeModel);
+    branchTreeModel.reset(new BranchTreeModel(snapshot));
 
     branchTree = new QTreeView;
     branchTree->setFont(QFont("Consolas", 10, 500));
-    //branchTree->setModel(branchTreeModel);
-    branchTree->setModel(branchFilterModel);
+    branchTree->setModel(branchTreeModel.get());
 
     QItemSelectionModel* selModel = branchTree->selectionModel();
     connect(selModel, &QItemSelectionModel::currentChanged, this, &SnapshotViewerWidget::BranchView_SelectionChanged);
-    //connect(blockList, &QTreeView::doubleClicked, this, &SnapshotViewerWidget::BranchBlockView_DoubleClicked);
 
     branchBlocksWidget = new MemoryBlocksWidget(session, &branchBlockLinked, false);
+    connect(branchBlocksWidget, &MemoryBlocksWidget::MemoryBlockDoubleClicked, this, &SnapshotViewerWidget::MemoryBlockDoubleClicked);
 
     QSplitter* splitter = new QSplitter(Qt::Vertical);
     splitter->addWidget(branchTree);
@@ -106,28 +100,22 @@ void SnapshotViewerWidget::SymbolView_OnBuldTree()
     if (!selection.empty())
     {
         branchTreeModel->PrepareModel(selection);
-        tab->setCurrentIndex(1);
+        tab->setCurrentIndex(2);
     }
 }
 
 void SnapshotViewerWidget::BranchView_SelectionChanged(const QModelIndex& current, const QModelIndex& previous)
 {
-    QModelIndex index = branchFilterModel->mapToSource(current);
-
-    Branch* branch = static_cast<Branch*>(index.internalPointer());
+    Branch* branch = static_cast<Branch*>(current.internalPointer());
     if (branch != nullptr)
     {
-        Vector<MMBlock*> blocks = branch->GetMemoryBlocks();
-        branchBlockLinked = BlockLink::CreateBlockLink(blocks, snapshot);
+        branchBlocks = branch->GetMemoryBlocks();
+        branchBlockLinked = BlockLink::CreateBlockLink(branchBlocks, snapshot);
         branchBlocksWidget->SetBlockLink(&branchBlockLinked);
     }
 }
 
-void SnapshotViewerWidget::BranchBlockView_DoubleClicked(const QModelIndex& current)
+void SnapshotViewerWidget::MemoryBlockDoubleClicked(const BlockLink::Item& item)
 {
-    //const MMBlock* block = blockListModel->GetBlock(current);
-    //if (block != nullptr)
-    //{
-    //    // TODO: expand callstack tree to view block allocation site
-    //}
+    // TODO: expand callstack tree to view block allocation site
 }

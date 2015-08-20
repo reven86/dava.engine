@@ -15,7 +15,6 @@ class SymbolsWidget;
 class MemoryBlocksWidget;
 
 class BranchTreeModel;
-class BranchFilterModel;
 
 class ProfilingSession;
 class MemorySnapshot;
@@ -32,7 +31,7 @@ public slots:
     void SymbolView_OnBuldTree();
 
     void BranchView_SelectionChanged(const QModelIndex& current, const QModelIndex& previous);
-    void BranchBlockView_DoubleClicked(const QModelIndex& current);
+    void MemoryBlockDoubleClicked(const BlockLink::Item& item);
 
 private:
     void Init();
@@ -49,8 +48,7 @@ private:
     DAVA::Vector<DAVA::MMBlock*> branchBlocks;
     BlockLink branchBlockLinked;
 
-    BranchTreeModel* branchTreeModel = nullptr;
-    BranchFilterModel* branchFilterModel = nullptr;
+    std::unique_ptr<BranchTreeModel> branchTreeModel;
 
     QTabWidget* tab = nullptr;
     SymbolsWidget* symbolWidget = nullptr;

@@ -96,7 +96,7 @@ Branch* MemorySnapshot::CreateBranch(const Vector<const String*>& startNames) co
     for (auto& pair : blockMap)
     {
         const Vector<const String*>* bktraceNames = symbolTable->GetBacktraceSymbols(pair.first);
-        const Vector<DAVA::MMBlock*>& blocks = pair.second;
+        const Vector<MMBlock*>& blocks = pair.second;
         DVASSERT(bktraceNames != nullptr);
         
         if (!blocks.empty() && !bktraceNames->empty())

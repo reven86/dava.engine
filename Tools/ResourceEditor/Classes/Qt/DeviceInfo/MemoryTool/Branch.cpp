@@ -70,16 +70,12 @@ void Branch::UpdateStat(uint32 allocSize, uint32 blockCount, uint32 pools, uint3
 {
     allocByApp += allocSize;
     nblocks += blockCount;
-    poolMask |= pools;
-    tagMask |= tags;
 
     Branch* p = parent;
     while (p != nullptr)
     {
         p->allocByApp += allocSize;
         p->nblocks += blockCount;
-        p->poolMask |= pools;
-        p->tagMask |= tags;
         p = p->parent;
     }
 }

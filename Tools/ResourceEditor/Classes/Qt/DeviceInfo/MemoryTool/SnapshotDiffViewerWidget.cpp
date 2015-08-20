@@ -5,27 +5,22 @@
 
 #include "Qt/DeviceInfo/MemoryTool/Models/SymbolsListModel.h"
 #include "Qt/DeviceInfo/MemoryTool/Models/BranchDiffTreeModel.h"
-#include "Qt/DeviceInfo/MemoryTool/Models/BlockListModel.h"
 
 #include "Qt/DeviceInfo/MemoryTool/Branch.h"
 #include "Qt/DeviceInfo/MemoryTool/BranchDiff.h"
 #include "Qt/DeviceInfo/MemoryTool/ProfilingSession.h"
 #include "Qt/DeviceInfo/MemoryTool/MemorySnapshot.h"
 #include "Qt/DeviceInfo/MemoryTool/SymbolsWidget.h"
+#include "Qt/DeviceInfo/MemoryTool/FilterAndSortBar.h"
 #include "Qt/DeviceInfo/MemoryTool/MemoryBlocksWidget.h"
 
-#include <QDebug>
-#include <QFileDialog>
 #include <QTabWidget>
 #include <QTreeView>
 #include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QAction>
-#include <QLabel>
 #include <QFrame>
 #include <QPushButton>
 #include <QLineEdit>
-#include <QListView>
+#include <QSplitter>
 
 using namespace DAVA;
 
@@ -43,20 +38,15 @@ SnapshotDiffViewerWidget::SnapshotDiffViewerWidget(const ProfilingSession* sessi
     Init();
 }
 
-SnapshotDiffViewerWidget::~SnapshotDiffViewerWidget()
-{
-    delete branchTreeModel;
-    delete blockListModel1;
-    delete blockListModel2;
-}
+SnapshotDiffViewerWidget::~SnapshotDiffViewerWidget() = default;
 
 void SnapshotDiffViewerWidget::Init()
 {
     tab = new QTabWidget;
 
+    InitMemoryBlocksView();
     InitSymbolsView();
     InitBranchView();
-    InitMemoryBlocksView();
 
     QVBoxLayout* mainLayout = new QVBoxLayout;
     mainLayout->addWidget(tab);
@@ -80,44 +70,28 @@ void SnapshotDiffViewerWidget::InitSymbolsView()
 
 void SnapshotDiffViewerWidget::InitBranchView()
 {
-    branchTreeModel = new BranchDiffTreeModel(snapshot1, snapshot2);
-    blockListModel1 = new BlockListModel;
-    blockListModel2 = new BlockListModel;
+    branchTreeModel.reset(new BranchDiffTreeModel(snapshot1, snapshot2));
 
     branchTree = new QTreeView;
     branchTree->setFont(QFont("Consolas", 10, 500));
-    branchTree->setModel(branchTreeModel);
-
-    blockList1 = new QListView;
-    blockList1->setFont(QFont("Consolas", 10, 500));
-    blockList1->setModel(blockListModel1);
-
-    blockList2 = new QListView;
-    blockList2->setFont(QFont("Consolas", 10, 500));
-    blockList2->setModel(blockListModel2);
+    branchTree->setModel(branchTreeModel.get());
 
     QItemSelectionModel* selModel = branchTree->selectionModel();
     connect(selModel, &QItemSelectionModel::currentChanged, this, &SnapshotDiffViewerWidget::BranchView_SelectionChanged);
-    //connect(blockList, &QTreeView::doubleClicked, this, &SnapshotDiffViewerWidget::BranchBlockView_DoubleClicked);
 
-    QHBoxLayout* hlayout = new QHBoxLayout;
-    hlayout->addWidget(blockList1);
-    hlayout->addWidget(blockList2);
+    branchBlocksWidget = new MemoryBlocksWidget(session, &branchBlockLinked, false);
+    connect(branchBlocksWidget, &MemoryBlocksWidget::MemoryBlockDoubleClicked, this, &SnapshotDiffViewerWidget::MemoryBlockDoubleClicked);
 
-    QVBoxLayout* layout = new QVBoxLayout;
-    layout->addWidget(branchTree);
-    layout->addLayout(hlayout);
+    QSplitter* splitter = new QSplitter(Qt::Vertical);
+    splitter->addWidget(branchTree);
+    splitter->addWidget(branchBlocksWidget);
 
-    QFrame* frame = new QFrame;
-    frame->setLayout(layout);
-
-    tab->addTab(frame, "Branches");
+    tab->addTab(splitter, "Branches");
 }
 
 void SnapshotDiffViewerWidget::InitMemoryBlocksView()
 {
     memoryBlocksWidget = new MemoryBlocksWidget(session, &allBlocksLinked);
-
     tab->addTab(memoryBlocksWidget, "Memory blocks");
 }
 
@@ -127,6 +101,7 @@ void SnapshotDiffViewerWidget::SymbolView_OnBuldTree()
     if (!selection.empty())
     {
         branchTreeModel->PrepareModel(selection);
+        tab->setCurrentIndex(2);
     }
 }
 
@@ -134,24 +109,22 @@ void SnapshotDiffViewerWidget::BranchView_SelectionChanged(const QModelIndex& cu
 {
     BranchDiff* branchDiff = static_cast<BranchDiff*>(current.internalPointer());
 
-    if (branchDiff->left)
-    {
-        Vector<MMBlock*> blocks = branchDiff->left->GetMemoryBlocks();
-        blockListModel1->PrepareModel(std::forward<Vector<MMBlock*>>(blocks));
-    }
-    else
-        blockListModel1->ResetModel();
+    branchBlocks1.clear();
+    branchBlocks2.clear();
 
+    if (branchDiff->left != nullptr)
+    {
+        branchBlocks1 = branchDiff->left->GetMemoryBlocks();
+    }
     if (branchDiff->right)
     {
-        Vector<MMBlock*> blocks = branchDiff->right->GetMemoryBlocks();
-        blockListModel2->PrepareModel(std::forward<Vector<MMBlock*>>(blocks));
+        branchBlocks2 = branchDiff->right->GetMemoryBlocks();
     }
-    else
-        blockListModel2->ResetModel();
+    branchBlockLinked = BlockLink::CreateBlockLink(branchBlocks1, snapshot1, branchBlocks2, snapshot2);
+    branchBlocksWidget->SetBlockLink(&branchBlockLinked);
 }
 
-void SnapshotDiffViewerWidget::BranchBlockView_DoubleClicked(const QModelIndex& current)
+void SnapshotDiffViewerWidget::MemoryBlockDoubleClicked(const BlockLink::Item& item)
 {
-    
+    // TODO: expand callstack tree to view block allocation site
 }
