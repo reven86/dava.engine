@@ -155,7 +155,7 @@ bool DeviceInfo::IsHIDConnected(eHIDType type)
 }
 
 
-void DeviceInfo::SetHIDConnectionCallback(eHIDType type, DeviceInfo::HIDCallBackFunc&& callback)
+void DeviceInfo::SetHIDConnectionCallback(DeviceInfo::eHIDType type, DeviceInfo::HIDCallBackFunc&& callback)
 {
     GetPrivateImpl()->SetHIDConnectionCallback(type, std::forward<HIDCallBackFunc>(callback));
 }

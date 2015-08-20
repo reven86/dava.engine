@@ -395,7 +395,7 @@ bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType type)
         return false;
 }
 
-void DeviceInfoPrivate::SetHIDConnectionCallback(eHIDType type, DeviceInfo::HIDCallBackFunc&& callback)
+void DeviceInfoPrivate::SetHIDConnectionCallback(DeviceInfo::eHIDType type, DeviceInfo::HIDCallBackFunc&& callback)
 {
         DVASSERT(false && "Not Implement");
 }

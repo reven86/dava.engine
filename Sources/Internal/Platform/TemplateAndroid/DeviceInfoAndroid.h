@@ -67,7 +67,7 @@ public:
     int32 GetCpuCount();
     void InitializeScreenInfo();
     bool IsHIDConnected(DeviceInfo::eHIDType type);
-    void SetHIDConnectionCallback(eHIDType type, DeviceInfo::HIDCallBackFunc&& callback);
+    void SetHIDConnectionCallback(DeviceInfo::eHIDType type, DeviceInfo::HIDCallBackFunc&& callback);
 
 protected:
     DeviceInfo::StorageInfo StorageInfoFromJava(jobject object);
