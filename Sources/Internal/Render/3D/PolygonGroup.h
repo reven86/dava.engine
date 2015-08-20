@@ -121,8 +121,7 @@ public:
 	int32	textureCoordCount;
 	int32	vertexStride;
 	int32	vertexFormat;
-	int32	indexFormat;
-	int32	triangleCount;
+	int32	indexFormat;	
     rhi::PrimitiveType primitiveType;
 	int32	cubeTextureCoordCount;
 	
@@ -207,8 +206,7 @@ public:
         MEMBER(textureCoordCount, "Texture Coord Count", I_VIEW | I_SAVE)
         MEMBER(vertexStride, "Vertex Stride", I_VIEW | I_SAVE)
         MEMBER(vertexFormat, "Vertex Format", I_VIEW | I_SAVE)
-        MEMBER(indexFormat, "Index Format", I_VIEW | I_SAVE)
-        MEMBER(triangleCount, "Triangle Count", I_VIEW | I_SAVE)
+        MEMBER(indexFormat, "Index Format", I_VIEW | I_SAVE)        
 //        MEMBER(primitiveType, "Primitive Type", INTROSPECTION_SERIALIZABLE)
 
 //        MEMBER(vertices, "Vertices", INTROSPECTION_SERIALIZABLE)
