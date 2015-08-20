@@ -83,6 +83,11 @@ void ConnectionListenerPrivate::AddDataReceiveCallback(const DataReceiveCallback
     onDataReceiveCallbacks.GetAccessor()->emplace_back(cb);
 }
 
+void ConnectionListenerPrivate::AddConnectionCloseCallback(const ConnectionCloseCallback& cb)
+{
+    onConnectionCloseCallbacks.GetAccessor()->emplace_back(cb);
+}
+
 void ConnectionListenerPrivate::Start()
 {
     thread->Start();
@@ -115,6 +120,11 @@ void ConnectionListenerPrivate::Start(IConnectionPtr& conn)
         {
             cb(buf);
         }
+    }
+
+    for (const auto& cb : *onConnectionCloseCallbacks.GetAccessor())
+    {
+        cb();
     }
 }
 

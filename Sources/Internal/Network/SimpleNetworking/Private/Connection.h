@@ -47,8 +47,6 @@ public:
     ChannelState GetChannelState() override;
     const Endpoint& GetEndpoint() override;
 
-    void Shutdown() override;
-
     size_t ReadSome(char* buffer, size_t bufSize) override;
     bool ReadAll(char* buffer, size_t bufSize) override;
     size_t Write(const char* buffer, size_t bufSize) override;

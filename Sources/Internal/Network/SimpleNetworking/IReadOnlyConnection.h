@@ -59,8 +59,6 @@ struct IReadOnlyConnection : public RefCounter
     virtual ChannelState GetChannelState() = 0;
     virtual const Endpoint& GetEndpoint() = 0;
 
-    virtual void Shutdown() = 0;
-
     virtual size_t ReadSome(char* buffer, size_t bufSize) = 0;
     virtual bool ReadAll(char* buffer, size_t bufSize) = 0;
     

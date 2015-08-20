@@ -56,32 +56,34 @@ struct IConnectionManager
         kServerRole = 0x1,
         kClientRole = 0x2
     };
-    
-    virtual unsigned GetAvailableConnectionRoles() = 0;
     virtual IConnectionPtr CreateConnection(ConnectionRole role,
                                             const Endpoint& endPoint) = 0;
 };
+
+class SimpleNetService;
 
 class SimpleNetCore : public Singleton<SimpleNetCore>
 {
 public:
     SimpleNetCore();
+    ~SimpleNetCore();
     
     IConnectionManager* GetConnectionManager();
 
     bool IsServiceRegistered(size_t serviceId) const;
     bool IsServiceRegistered(const String& serviceName) const;
 
-    size_t RegisterService(std::unique_ptr<NetService>&& service,
-                           IConnectionManager::ConnectionRole role,
-                           const Endpoint& endPoint,
-                           const String& serviceName,
-                           NotificationType notifType = NotificationType::kAnyThread);
+    const SimpleNetService* RegisterService(
+        std::unique_ptr<NetService>&& service,
+        IConnectionManager::ConnectionRole role,
+        const Endpoint& endPoint,
+        const String& serviceName,
+        NotificationType notifType = NotificationType::kAnyThread);
+
     void UnregisterAllServices();
 
-    String GetServiceName(size_t serviceId) const;
-    size_t GetServiceId(const String& serviceName) const;
-    Endpoint GetServiceEndpoint(size_t serviceId) const;
+    const SimpleNetService* GetService(size_t serviceId) const;
+    const SimpleNetService* GetService(const String& serviceName) const;
         
 private:
     std::unique_ptr<class SimpleNetCorePrivate> pimpl;

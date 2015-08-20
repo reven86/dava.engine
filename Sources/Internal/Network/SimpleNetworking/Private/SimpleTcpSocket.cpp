@@ -122,10 +122,12 @@ void SimpleTcpSocket::Close()
 {
     if (socketId != INVALID_SOCKET)
     {
-        ::closesocket(socketId);
+        SOCKET socket = socketId;
         socketId = INVALID_SOCKET;
         connectionEstablished = false;
         socketEndPoint = Endpoint();
+
+        ::closesocket(socket);
     }
 }
     

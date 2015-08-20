@@ -43,6 +43,7 @@ ChannelAdapter::ChannelAdapter(IChannelListener* listener)
 void ChannelAdapter::SetConnection(IConnectionPtr& conn)
 {
     connection = conn;
+    connectionWasHere = true;
     channelListener->OnChannelOpen(this);
 }
 
@@ -77,6 +78,11 @@ void ChannelAdapter::Receive(const void* data, size_t length)
 const Endpoint& ChannelAdapter::RemoteEndpoint() const
 {
     return connection->GetEndpoint();
+}
+
+bool ChannelAdapter::IsSessionEnded() const 
+{ 
+    return connectionWasHere && !IsConnectionEstablished(); 
 }
 
 }  // namespace Net

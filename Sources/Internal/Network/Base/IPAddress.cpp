@@ -62,16 +62,19 @@ String IPAddress::ToString() const
 
 IPAddress IPAddress::FromString(const char8* addr)
 {
-#ifdef __DAVAENGINE_WIN_UAP__
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-    return IPAddress();
-#else
     DVASSERT(addr != NULL);
+
+#ifdef __DAVAENGINE_WIN_UAP__
+
+    return IPAddress(htonl(inet_addr(addr)));
+
+#else
 
     Endpoint endp;
     if(0 == uv_ip4_addr(addr, 0, endp.CastToSockaddrIn()))
         return endp.Address();
     return IPAddress();
+
 #endif
 }
 

@@ -30,7 +30,6 @@
 #ifndef __DAVAENGINE_SIMPLE_CONNECTION_LISTENER_PRIVATE_H__
 #define __DAVAENGINE_SIMPLE_CONNECTION_LISTENER_PRIVATE_H__
 
-#include "Concurrency/Atomic.h"
 #include "Concurrency/ConcurrentObject.h"
 #include "Concurrency/Spinlock.h"
 #include "Concurrency/Thread.h"
@@ -60,6 +59,7 @@ public:
     IConnectionPtr GetConnection() const;
     void AddConnectionCallback(const ConnectionCallback& cb);
     void AddDataReceiveCallback(const DataReceiveCallback& cb);
+    void AddConnectionCloseCallback(const ConnectionCloseCallback& cb);
 
     void Start();
 
@@ -71,7 +71,8 @@ private:
     mutable ConcurrentRefPtr<IConnection> connection;
     ConcurrentList<ConnectionCallback> onConnectCallbacks;
     ConcurrentList<DataReceiveCallback> onDataReceiveCallbacks;
-    Atomic<NotificationType> notificationType;
+    ConcurrentList<ConnectionCloseCallback> onConnectionCloseCallbacks;
+    NotificationType notificationType;
 };
 
 }  // namespace Net

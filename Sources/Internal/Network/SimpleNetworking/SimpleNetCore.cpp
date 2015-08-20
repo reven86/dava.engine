@@ -35,6 +35,8 @@ namespace Net
 {
 
 SimpleNetCore::SimpleNetCore() : pimpl(new SimpleNetCorePrivate) {}
+
+SimpleNetCore::~SimpleNetCore() {}
     
 IConnectionManager* SimpleNetCore::GetConnectionManager()
 {
@@ -51,11 +53,12 @@ bool SimpleNetCore::IsServiceRegistered(const String& serviceName) const
     return pimpl->IsServiceRegistered(serviceName);
 }
 
-size_t SimpleNetCore::RegisterService(std::unique_ptr<NetService>&& service,
-                                      IConnectionManager::ConnectionRole role,
-                                      const Endpoint& endPoint,
-                                      const String& serviceName,
-                                      NotificationType notifType)
+const SimpleNetService* SimpleNetCore::RegisterService(
+    std::unique_ptr<NetService>&& service,
+    IConnectionManager::ConnectionRole role,
+    const Endpoint& endPoint,
+    const String& serviceName,
+    NotificationType notifType)
 {
     return pimpl->RegisterService(std::move(service), role, endPoint, serviceName, notifType);
 }
@@ -65,21 +68,15 @@ void SimpleNetCore::UnregisterAllServices()
     pimpl->UnregisterAllServices();
 }
 
-String SimpleNetCore::GetServiceName(size_t serviceId) const
+const SimpleNetService* SimpleNetCore::GetService(size_t serviceId) const
 {
-    return pimpl->GetServiceName(serviceId);
+    return pimpl->GetService(serviceId);
 }
 
-size_t SimpleNetCore::GetServiceId(const String& serviceName) const
+const SimpleNetService* SimpleNetCore::GetService(const String& serviceName) const
 {
-    return pimpl->GetServiceId(serviceName);
+    return pimpl->GetService(serviceName);
 }
-
-Endpoint SimpleNetCore::GetServiceEndpoint(size_t serviceId) const
-{
-    return pimpl->GetServiceEndpoint(serviceId);
-}
-
 
 }  // namespace Net
 }  // namespace DAVA

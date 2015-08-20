@@ -49,6 +49,7 @@ bool SimpleTcpClient::Connect()
     }
 
     const sockaddr* addr = reinterpret_cast<const sockaddr*>(socketEndPoint.CastToSockaddrIn());
+
     int connectRes = ::connect(socketId, addr, socketEndPoint.Size());
     if (connectRes == SOCKET_ERROR)
     {
@@ -56,7 +57,8 @@ bool SimpleTcpClient::Connect()
         Close();
     }
 
-    return connectRes != SOCKET_ERROR;
+    connectionEstablished = connectRes != SOCKET_ERROR;
+    return connectionEstablished;
 }
     
 }  // namespace Net

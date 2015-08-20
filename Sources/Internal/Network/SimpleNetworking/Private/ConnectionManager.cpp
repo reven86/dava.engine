@@ -38,11 +38,6 @@ namespace DAVA
 namespace Net
 {
     
-unsigned ConnectionManager::GetAvailableConnectionRoles()
-{
-    return kServerRole | kClientRole;
-}
-
 IConnectionPtr ConnectionManager::CreateConnection(ConnectionRole role, const Endpoint& endPoint)
 {
     if (role == kClientRole)
@@ -50,7 +45,7 @@ IConnectionPtr ConnectionManager::CreateConnection(ConnectionRole role, const En
     return CreateServerConnection(endPoint);
 }
 
-void ConnectionManager::Cancel() 
+void ConnectionManager::Shutdown() 
 {
     for (auto&& x : sockets)
     {

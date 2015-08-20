@@ -52,7 +52,11 @@ SimpleNetService::SimpleNetService(SimpleNetService&& other)
 
 SimpleNetService::~SimpleNetService()
 {
-    pimpl.reset();
+}
+
+bool SimpleNetService::IsActive() const
+{
+    return pimpl->IsActive();
 }
 
 NetService* SimpleNetService::GetNetService()

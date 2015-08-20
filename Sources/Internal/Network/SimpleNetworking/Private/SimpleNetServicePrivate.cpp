@@ -1,4 +1,4 @@
-/*==================================================================================
+﻿/*==================================================================================
     Copyright (c) 2008, binaryzebra
     All rights reserved.
 
@@ -42,22 +42,23 @@ SimpleNetServicePrivate::SimpleNetServicePrivate(size_t serviceId,
                                                  const String& serviceName,
                                                  ConnectionListener&& connectionListener)
     : servId(serviceId)
-    , netService(std::move(service))
+    , netService(std::forward<std::unique_ptr<NetService>>(service))
     , servEndPoint(endPoint)
     , servName(serviceName)
-    , listener(std::move(connectionListener))
+    , listener(std::forward<ConnectionListener>(connectionListener))
     , channelAdapter(netService.get())
 {
     listener.AddConnectionCallback(
-        [this](IConnectionPtr& conn)
+        [this] (IConnectionPtr& conn)
         {
             channelAdapter.SetConnection(conn);
         });
     listener.AddDataReceiveCallback(
-        [this](const DataBuffer& buf)
+        [this] (const DataBuffer& buf)
         {
             channelAdapter.Receive(buf.data(), buf.size());
         });
+    listener.AddConnectionCloseCallback([this] { channelAdapter.RemoveConnection(); });
 
     listener.Start();
 }

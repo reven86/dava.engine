@@ -39,10 +39,11 @@ namespace DAVA
 namespace Net
 {
     
-using DataBuffer             = Vector<char>;
-using ConnectionWaitFunction = std::function<IConnectionPtr(const Endpoint&)>;
-using ConnectionCallback     = std::function<void(IConnectionPtr)>;
-using DataReceiveCallback    = std::function<void(const DataBuffer&)>;
+using DataBuffer              = Vector<char>;
+using ConnectionWaitFunction  = std::function<IConnectionPtr(const Endpoint&)>;
+using ConnectionCallback      = std::function<void(IConnectionPtr)>;
+using DataReceiveCallback     = std::function<void(const DataBuffer&)>;
+using ConnectionCloseCallback = std::function<void(void)>;
 
 class ConnectionListener
 {
@@ -67,6 +68,7 @@ public:
     IConnectionPtr GetConnection() const;
     void AddConnectionCallback(const ConnectionCallback& cb);
     void AddDataReceiveCallback(const DataReceiveCallback& cb);
+    void AddConnectionCloseCallback(const ConnectionCloseCallback& cb);
 
     void Start();
 

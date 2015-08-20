@@ -634,14 +634,15 @@ void Core::InitializeNetwork()
     Net::SimpleNetCore* simpleNetCore = new Net::SimpleNetCore();
 
     //TODO: recognize if current machine is phone and make a normal end point!
-    Net::Endpoint endPoint("127.0.0.1", 1911);
+    //Net::Endpoint endPoint("127.0.0.1", 1911);
+    Net::Endpoint endPoint("127.0.0.1", 7777);
     auto netLoggerService = std::make_unique<Net::NetLogger>();
 
     //TODO: make a normal service name
-    size_t serviceId = simpleNetCore->RegisterService(
-        std::move(netLoggerService), Net::IConnectionManager::kServerRole, endPoint, "NetLogger");
+    const Net::SimpleNetService* service = simpleNetCore->RegisterService(
+        std::move(netLoggerService), Net::IConnectionManager::kClientRole, endPoint, "NetLogger");
 
-    DVASSERT_MSG(serviceId != 0, "Failed to create a NetLogger service");
+    DVASSERT_MSG(service != 0, "Failed to create a NetLogger service");
     
 #endif  // __DAVAENGINE_WIN_UAP__
 }

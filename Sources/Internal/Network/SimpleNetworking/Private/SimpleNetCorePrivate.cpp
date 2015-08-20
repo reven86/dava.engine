@@ -38,32 +38,30 @@ namespace Net
 
 SimpleNetCorePrivate::~SimpleNetCorePrivate()
 {
-    connectionManager.Cancel();
+    connectionManager.Shutdown();
     UnregisterAllServices();
 }
 
-size_t SimpleNetCorePrivate::RegisterService(std::unique_ptr<NetService>&& service,
-                                            IConnectionManager::ConnectionRole role,
-                                            const Endpoint& endPoint,
-                                            const String& serviceName,
-                                            NotificationType notifType)
+const SimpleNetService* SimpleNetCorePrivate::RegisterService(
+    std::unique_ptr<NetService>&& service,
+    IConnectionManager::ConnectionRole role,
+    const Endpoint& endPoint,
+    const String& serviceName,
+    NotificationType notifType)
 {
-    if (IsServiceRegistered(serviceName))
-        return 0;
+    if (serviceName.empty())
+        return nullptr;
+
+    const SimpleNetService* serv = GetService(serviceName);
+    if (serv)
+        return serv;
 
     size_t serviceId = serviceIdGenerator++;
 
     //connection wait function
     IConnectionManager* connManager = GetConnectionManager();
-    auto connWaiter = [=](const Endpoint& endPoint) -> IConnectionPtr
+    auto connWaiter = [connManager, role] (const Endpoint& endPoint)
     {
-        unsigned roles = connManager->GetAvailableConnectionRoles();
-        if ((roles & role) == 0)
-        {
-            DVASSERT_MSG(false, "Requsted connection role for NetService is unavailable");
-            return IConnectionPtr();
-        }
-
         return connManager->CreateConnection(role, endPoint);
     };
 
@@ -72,8 +70,8 @@ size_t SimpleNetCorePrivate::RegisterService(std::unique_ptr<NetService>&& servi
     SimpleNetService netService
         (serviceId, std::move(service), endPoint, serviceName, std::move(connListener));
 
-    services.emplace(serviceId, std::move(netService));
-    return serviceId;
+    auto iter = services.emplace(serviceId, std::move(netService));
+    return &iter.first->second;
 }
 
 IConnectionManager* SimpleNetCorePrivate::GetConnectionManager()
@@ -83,21 +81,12 @@ IConnectionManager* SimpleNetCorePrivate::GetConnectionManager()
 
 bool SimpleNetCorePrivate::IsServiceRegistered(size_t serviceId) const
 {
-    auto iter = services.find(serviceId);
-    return iter != services.end();
+    return GetService(serviceId) != nullptr;
 }
 
 bool SimpleNetCorePrivate::IsServiceRegistered(const String& serviceName) const
 {
-    for (const auto& iter : services)
-    {
-        if (iter.second.GetServiceName() == serviceName)
-        {
-            return true;
-        }
-    }
-
-    return false;
+    return GetService(serviceName) != nullptr;
 }
 
 void SimpleNetCorePrivate::UnregisterAllServices()
@@ -105,38 +94,29 @@ void SimpleNetCorePrivate::UnregisterAllServices()
     services.clear();
 }
 
-String SimpleNetCorePrivate::GetServiceName(size_t serviceId) const
+const SimpleNetService* SimpleNetCorePrivate::GetService(size_t serviceId) const
 {
     auto iter = services.find(serviceId);
 
     if (iter != services.end())
-        return iter->second.GetServiceName();
-    return "";
+        return &iter->second;
+    return nullptr;
 }
 
-size_t SimpleNetCorePrivate::GetServiceId(const String& serviceName) const
+const SimpleNetService* SimpleNetCorePrivate::GetService(const String& serviceName) const
 {
     if (serviceName.empty())
-        return 0;
+        return nullptr;
 
     for (const auto& iter : services)
     {
         if (iter.second.GetServiceName() == serviceName)
         {
-            return iter.second.GetServiceId();
+            return &iter.second;
         }
     }
 
-    return 0;
-}
-
-Endpoint SimpleNetCorePrivate::GetServiceEndpoint(size_t serviceId) const
-{
-    auto iter = services.find(serviceId);
-
-    if (iter != services.end())
-        return iter->second.GetServiceEndpoint();
-    return Endpoint();
+    return nullptr;
 }
 
 }  // namespace Net

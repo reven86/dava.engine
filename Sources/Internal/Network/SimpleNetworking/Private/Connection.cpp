@@ -57,17 +57,12 @@ const Endpoint& Connection::GetEndpoint()
     return socket->GetEndpoint();
 }
 
-void Connection::Shutdown()
-{
-    socket->Shutdown();
-}
-
 size_t Connection::ReadSome(char* buffer, size_t bufSize)
 {
     LockGuard<Mutex> lock(recvMutex);
 
     size_t read = socket->Recv(buffer, bufSize, false);
-    return read > 0;
+    return read;
 }
 
 bool Connection::ReadAll(char* buffer, size_t bufSize)

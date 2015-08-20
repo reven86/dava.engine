@@ -72,6 +72,11 @@ void ConnectionListener::AddDataReceiveCallback(const DataReceiveCallback& cb)
     pimpl->AddDataReceiveCallback(cb);
 }
 
+void ConnectionListener::AddConnectionCloseCallback(const ConnectionCloseCallback& cb)
+{
+    pimpl->AddConnectionCloseCallback(cb);
+}
+
 void ConnectionListener::Start()
 {
     pimpl->Start();

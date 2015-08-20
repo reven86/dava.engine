@@ -51,11 +51,14 @@ public:
 
     const Endpoint& RemoteEndpoint() const override;
 
+    bool IsConnectionEstablished() const { return connection != nullptr; }
+    bool IsSessionEnded() const;
+
 private:
     IConnectionPtr connection;
     IChannelListener* channelListener;
+    bool connectionWasHere = false;
 };
-
 
 }  // namespace Net
 }  // namespace DAVA

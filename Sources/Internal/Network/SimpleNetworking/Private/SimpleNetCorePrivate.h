@@ -49,16 +49,17 @@ public:
     bool IsServiceRegistered(size_t serviceId) const;
     bool IsServiceRegistered(const String& serviceName) const;
     
-    size_t RegisterService(std::unique_ptr<NetService>&& service,
-                           IConnectionManager::ConnectionRole role,
-                           const Endpoint& endPoint,
-                           const String& serviceName,
-                           NotificationType notifType);
+    const SimpleNetService* RegisterService(
+        std::unique_ptr<NetService>&& service,
+        IConnectionManager::ConnectionRole role,
+        const Endpoint& endPoint,
+        const String& serviceName,
+        NotificationType notifType);
+
     void UnregisterAllServices();
 
-    String GetServiceName(size_t serviceId) const;
-    size_t GetServiceId(const String& serviceName) const;
-    Endpoint GetServiceEndpoint(size_t serviceId) const;
+    const SimpleNetService* GetService(size_t serviceId) const;
+    const SimpleNetService* GetService(const String& serviceName) const;
 
 private:
     ConnectionManager connectionManager;

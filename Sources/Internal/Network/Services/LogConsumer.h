@@ -30,9 +30,10 @@
 #ifndef __DAVAENGINE_LOGCONSUMER_H__
 #define __DAVAENGINE_LOGCONSUMER_H__
 
-#include <Base/Noncopyable.h>
+#include "Base/Noncopyable.h"
+#include "Base/Optional.h"
 
-#include <Network/NetService.h>
+#include "Network/NetService.h"
 
 namespace DAVA
 {
@@ -46,17 +47,28 @@ namespace Net
  This is a simple log consumer: each log message is treated as string
 */
 class LogConsumer : public NetService
-                  , private Noncopyable
 {
 public:
-    LogConsumer(const char8* filename, bool toConsoleFlag = false);
-    virtual ~LogConsumer();
+    //Options for LogConsumer
+    struct Options
+    {
+        Optional<String> filename;   //name of output file for logging
+        bool writeToConsole = false; //print log in standard out
+        bool rawOutput = false;      //write log without formatting
+    };
 
-    virtual void OnPacketReceived(IChannel* channel, const void* buffer, size_t length);
+    LogConsumer(const Options& options = Options());
+    ~LogConsumer() override;
+
+    LogConsumer(const LogConsumer&) = delete;
+    Noncopyable& operator = (const Noncopyable&) = delete;
+
+    void OnPacketReceived(IChannel* channel, const void* buffer, size_t length) override;
 
 private:
-    File* file;
-    bool toConsole;
+    bool writeToConsole;
+    bool rawOutput;
+    RefPtr<File> file;
 };
 
 }   // namespace Net

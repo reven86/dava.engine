@@ -37,10 +37,9 @@ namespace Net
 class ConnectionManager : public IConnectionManager
 {
 public:
-    unsigned GetAvailableConnectionRoles() override;
     IConnectionPtr CreateConnection(ConnectionRole role, const Endpoint& endPoint) override;
 
-    void Cancel();
+    void Shutdown();
 
 private:
     IConnectionPtr CreateServerConnection(const Endpoint& endPoint);

@@ -51,6 +51,9 @@ public:
     SimpleNetService(SimpleNetService&& other);
     ~SimpleNetService();
 
+    //Service is active when connection established
+    bool IsActive() const;
+
     NetService* GetNetService();
     String GetServiceName() const;
     size_t GetServiceId() const;
