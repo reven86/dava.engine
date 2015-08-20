@@ -27,19 +27,17 @@
 =====================================================================================*/
 
 
+#include <QCoreApplication>
 #include "Core/Core.h"
+
+#include <objbase.h>
 
 #if defined(__DAVAENGINE_WIN32__)
 
-int APIENTRY WinMain(HINSTANCE hInstance,
-                     HINSTANCE hPrevInstance,
-                     LPSTR    lpCmdLine,
-                     int       nCmdShow)
+int main(int argc, char* argv[])
 {
-    UNREFERENCED_PARAMETER(hPrevInstance);
-    UNREFERENCED_PARAMETER(lpCmdLine);
-
-    DAVA::Core::RunCmdTool(0, 0, hPrevInstance);
+    QCoreApplication appl(argc, argv);
+    return DAVA::Core::RunCmdTool(0, 0, 0);
 }
 
 #endif // defined(__DAVAENGINE_WIN32__)

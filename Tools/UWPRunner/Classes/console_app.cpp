@@ -38,9 +38,9 @@
 
 using namespace DAVA;
 
-NoNameStruct ParseCommandLine()
+PackageOptions ParseCommandLine()
 {
-    NoNameStruct out;
+    PackageOptions out;
 
     CommandLineParser parser;
     parser.SetArguments(Core::Instance()->GetCommandLine());
@@ -113,7 +113,7 @@ bool CheckDependenciesOption(const Optional<String>& dependencies)
     return true;
 }
 
-bool CheckOptions(const NoNameStruct& options)
+bool CheckOptions(const PackageOptions& options)
 {
     bool packageIsOk = CheckPackageOption(options.package);
     bool profileIsOk = CheckProfileOption(options.profile);

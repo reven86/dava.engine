@@ -27,8 +27,8 @@
 =====================================================================================*/
 
 
-#ifndef RUNNER_H
-#define RUNNER_H
+#ifndef UWP_RUNNER_H
+#define UWP_RUNNER_H
 
 #include "Base/BaseTypes.h"
 #include "Base/Optional.h"
@@ -38,16 +38,16 @@ using DAVA::Optional;
 using DAVA::String;
 using DAVA::FilePath;
 
-struct NoNameStruct
+struct PackageOptions
 {
     Optional<String> package;
     Optional<String> profile;
     Optional<String> dependencies; //?
 };
 
-NoNameStruct ParseCommandLine();
-bool CheckOptions(const NoNameStruct& options);
+PackageOptions ParseCommandLine();
+bool CheckOptions(const PackageOptions& options);
 
-String ReadManifest(const FilePath& package);
+FilePath ExtractManifest(const FilePath& package);
 
-#endif  // RUNNER_H
+#endif  // UWP_RUNNER_H

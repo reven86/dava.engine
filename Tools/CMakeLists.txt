@@ -40,3 +40,7 @@ add_subdirectory      ( "${DAVA_ROOT_DIR}/Projects/UnitTests"   ${CMAKE_CURRENT_
 set_deploy_dir        ( SceneViewer )
 add_subdirectory      ( "${DAVA_ROOT_DIR}/Projects/SceneViewer"   ${CMAKE_CURRENT_BINARY_DIR}/SceneViewer )
 
+if ( WIN32 )
+    set_deploy_dir    ( UWPRunner )
+    add_subdirectory  ( "${DAVA_ROOT_DIR}/Tools/UWPRunner"   ${CMAKE_CURRENT_BINARY_DIR}/UWPRunner )
+endif ()

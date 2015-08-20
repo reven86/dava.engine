@@ -27,32 +27,31 @@
 =====================================================================================*/
 
 
-#include "uwp_runner.h"
-
 #include "FileSystem/File.h"
 #include "FileSystem/FileSystem.h"
+
+#include "uwp_runner.h"
 
 using namespace DAVA;
 
 bool ExtractManifestFromPackage(const String& zipFile, const String& outFile);
 
-String ReadManifest(const FilePath& package)
+FilePath ExtractManifest(const FilePath& package)
 {
-    FileSystem* fs = FileSystem::Instance();
-    FilePath manifestFilePath(fs->GetCurrentExecutableDirectory(), "manifest");
-    SCOPE_EXIT { fs->DeleteFile(manifestFilePath); };
+    Array<char, 128> tempPath {};
+    GetTempPathA(tempPath.size(), tempPath.data());
+
+    Array<char, MAX_PATH> tempFilePath {};
+    GetTempFileNameA(tempPath.data(), "manifest", 0, tempFilePath.data());
+
+    FilePath manifestFilePath = tempFilePath.data();
 
     if (!ExtractManifestFromPackage(package.GetAbsolutePathname(), 
                                     manifestFilePath.GetAbsolutePathname()))
     {
-        return "";
+        return FilePath();
     }
-
-    RefPtr<File> manifestFile(File::PureCreate(manifestFilePath, File::OPEN | File::READ));
-    String content;
-    manifestFile->ReadString(content);
-    
-    return content;
+    return manifestFilePath;
 }
 
 

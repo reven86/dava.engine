@@ -41,10 +41,12 @@
 #ifndef CORECON_H
 #define CORECON_H
 
-#include <Windows.h>
-#include <memory>
+#include <QtCore/qt_windows.h>
+#include <QtCore/QList>
+#include <QtCore/QScopedPointer>
+#include <QtCore/QLoggingCategory>
 
-#include "Base/BaseTypes.h"
+QT_USE_NAMESPACE
 
 class CoreConDevicePrivate;
 class CoreConDevice
@@ -52,12 +54,13 @@ class CoreConDevice
 public:
     explicit CoreConDevice(int version);
     ~CoreConDevice();
-    DAVA::String name() const;
-    DAVA::String id() const;
+    QString name() const;
+    QString id() const;
     bool isEmulator() const;
-    HANDLE handle() const;
+    Qt::HANDLE handle() const;
 private:
-    std::unique_ptr<CoreConDevicePrivate> d_ptr;
+    QScopedPointer<CoreConDevicePrivate> d_ptr;
+    Q_DECLARE_PRIVATE(CoreConDevice)
 friend class CoreConServerPrivate;
 };
 
@@ -68,11 +71,14 @@ public:
     explicit CoreConServer(int version);
     ~CoreConServer();
     bool initialize();
-    HANDLE handle() const;
-    DAVA::List<CoreConDevice *> devices() const;
-    DAVA::String formatError(HRESULT hr) const;
+    Qt::HANDLE handle() const;
+    QList<CoreConDevice *> devices() const;
+    QString formatError(HRESULT hr) const;
 private:
-    std::unique_ptr<CoreConServerPrivate> d_ptr;
+    QScopedPointer<CoreConServerPrivate> d_ptr;
+    Q_DECLARE_PRIVATE(CoreConServer)
 };
+
+Q_DECLARE_LOGGING_CATEGORY(lcCoreCon)
 
 #endif // CORECON_H
