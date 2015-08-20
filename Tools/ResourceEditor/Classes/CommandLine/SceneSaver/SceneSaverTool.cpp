@@ -34,7 +34,7 @@
 
 using namespace DAVA;
 
-void SceneSaverTool::PrintUsage()
+void SceneSaverTool::PrintUsage() const
 {
     printf("\n");
     printf("-scenesaver -save [-indir [directory]] [-outdir [directory]] [-processfile [directory]] [-copyconverted]\n");
@@ -53,7 +53,7 @@ void SceneSaverTool::PrintUsage()
     printf("-scenesaver -resave -indir /Users/User/Project/DataSource/3d -processfile Maps/level.sc2 -forceclose\n");
 }
 
-DAVA::String SceneSaverTool::GetCommandLineKey()
+DAVA::String SceneSaverTool::GetCommandLineKey() const
 {
     return "-scenesaver";
 }
@@ -103,12 +103,12 @@ bool SceneSaverTool::InitializeFromCommandLine()
     return true;
 }
 
-void SceneSaverTool::DumpParams()
+void SceneSaverTool::DumpParams() const
 {
     Logger::Info("SceneSaver started with params:\n\tIn folder: %s\n\tOut folder: %s\n\tFilename: %s\n\tCopy converted: %d", inFolder.GetStringValue().c_str(), outFolder.GetStringValue().c_str(),filename.c_str(), copyConverted);
 }
 
-void SceneSaverTool::Process()
+void SceneSaverTool::Process() 
 {
     SceneSaver saver;
 

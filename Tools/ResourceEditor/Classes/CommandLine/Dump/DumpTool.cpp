@@ -34,7 +34,7 @@
 
 using namespace DAVA;
 
-void DumpTool::PrintUsage()
+void DumpTool::PrintUsage() const
 {
     printf("\n");
     printf("-dump -links [-indir] [-processfile] [-outfile] [-qualitycfgpath]\n");
@@ -51,7 +51,7 @@ void DumpTool::PrintUsage()
 	printf("-dump -links -indir /Users/User/Project/DataSource/3d -processfile Maps/level.sc2 -outfile /Users/User/links.txt -qualitycfgpath /Users/User/quality.yaml\n");
 }
 
-DAVA::String DumpTool::GetCommandLineKey()
+DAVA::String DumpTool::GetCommandLineKey() const
 {
     return "-dump";
 }
@@ -96,13 +96,13 @@ bool DumpTool::InitializeFromCommandLine()
     return true;
 }
 
-void DumpTool::DumpParams()
+void DumpTool::DumpParams() const
 {
 	Logger::Info("DumpTool started with params:\n\tIn folder: %s\n\tFilename: %s\n\tOut file: %s\n\tQuality file: %s\n",
 		inFolder.GetStringValue().c_str(), filename.c_str(), outFile.GetStringValue().c_str(), qualityPathname.GetStringValue().c_str());
 }
 
-void DumpTool::Process()
+void DumpTool::Process() 
 {
     if(commandAction == ACTION_DUMP_LINKS)
     {
@@ -111,7 +111,7 @@ void DumpTool::Process()
 		ScopedPtr<File> file(File::Create(outFile, File::WRITE | File::CREATE));
 		if (file)
 		{
-			for (auto &link : links)
+			for (const auto &link : links)
 			{
 				if (!link.IsEmpty() && link.GetType() != FilePath::PATH_IN_MEMORY)
 				{

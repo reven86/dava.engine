@@ -49,10 +49,10 @@ class TextureDescriptorTool: public CommandLineTool
     
 public:
 
-	DAVA::String GetCommandLineKey() override;
+	DAVA::String GetCommandLineKey() const override;
 	bool InitializeFromCommandLine() override;
 	void Process() override;
-	void PrintUsage() override;
+	void PrintUsage() const override;
 
 protected:
 

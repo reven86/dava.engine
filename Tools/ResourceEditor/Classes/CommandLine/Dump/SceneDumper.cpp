@@ -143,7 +143,10 @@ void SceneDumper::DumpRenderObject(DAVA::RenderObject *renderObject, SceneLinks 
 			for (uint32 t = 0; t < texCount; ++t)
 			{
 				const auto & descriptorPath = material->GetTexturePath(t);
-				if (descriptorPath.IsEmpty()) continue;
+				if (descriptorPath.IsEmpty())
+				{
+					continue;
+				}
 
 				links.insert(descriptorPath);
 
@@ -183,7 +186,10 @@ void SceneDumper::DumpRenderObject(DAVA::RenderObject *renderObject, SceneLinks 
 
 void SceneDumper::DumpEffect(ParticleEffectComponent *effect, SceneLinks &links) const
 {
-	if (nullptr == effect) return;
+	if (nullptr == effect)
+	{
+		return;
+	}
 
 	SceneLinks gfxFolders;
 
@@ -209,7 +215,7 @@ void SceneDumper::DumpEmitter(DAVA::ParticleEmitter *emitter, SceneLinks &links,
 
 	const Vector<ParticleLayer*> &layers = emitter->layers;
 
-	const uint32 count = (uint32)layers.size();
+	const uint32 count = static_cast<uint32>(layers.size());
 	for (uint32 i = 0; i < count; ++i)
 	{
 		if (layers[i]->type == ParticleLayer::TYPE_SUPEREMITTER_PARTICLES)
@@ -219,7 +225,10 @@ void SceneDumper::DumpEmitter(DAVA::ParticleEmitter *emitter, SceneLinks &links,
 		else
 		{
 			Sprite *sprite = layers[i]->sprite;
-			if (nullptr == sprite) continue;
+			if (nullptr == sprite)
+			{
+				continue;
+			}
 
 			FilePath psdPath = ReplaceInString(sprite->GetRelativePathname().GetAbsolutePathname(), "/Data/", "/DataSource/");
 			psdPath.ReplaceExtension(".psd");

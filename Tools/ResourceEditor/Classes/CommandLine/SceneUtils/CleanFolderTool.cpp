@@ -33,7 +33,7 @@
 
 using namespace DAVA;
 
-void CleanFolderTool::PrintUsage()
+void CleanFolderTool::PrintUsage() const
 {
     printf("\n");
     printf("-cleanfolder [-folder [directory]]\n");
@@ -45,7 +45,7 @@ void CleanFolderTool::PrintUsage()
     printf("-cleanfolder -folder /Users/User/Project/Data/3d -forceclose\n");
 }
 
-DAVA::String CleanFolderTool::GetCommandLineKey()
+DAVA::String CleanFolderTool::GetCommandLineKey() const
 {
     return "-cleanfolder";
 }
@@ -64,7 +64,7 @@ bool CleanFolderTool::InitializeFromCommandLine()
     return true;
 }
 
-void CleanFolderTool::Process()
+void CleanFolderTool::Process() 
 {
     bool ret = FileSystem::Instance()->DeleteDirectory(foldername);
     if(!ret)
