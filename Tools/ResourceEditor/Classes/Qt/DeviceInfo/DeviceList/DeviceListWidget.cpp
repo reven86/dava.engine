@@ -42,8 +42,8 @@
 #include "FileSystem/File.h"
 
 #include "Qt/DeviceInfo/MemoryTool/ProfilingSession.h"
-#include "Qt/DeviceInfo/MemoryTool/MemProfWidget.h"
 #include "Qt/DeviceInfo/MemoryTool/MemProfController.h"
+#include "Qt/DeviceInfo/MemoryTool/Widgets/MemProfWidget.h"
 
 using namespace DAVA;
 

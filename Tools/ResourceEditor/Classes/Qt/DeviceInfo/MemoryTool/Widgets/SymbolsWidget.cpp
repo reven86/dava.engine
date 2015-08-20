@@ -30,7 +30,7 @@
 
 #include "Qt/DeviceInfo/MemoryTool/Models/SymbolsListModel.h"
 
-#include "Qt/DeviceInfo/MemoryTool/SymbolsWidget.h"
+#include "Qt/DeviceInfo/MemoryTool/Widgets/SymbolsWidget.h"
 
 #include <QListView>
 #include <QLineEdit>

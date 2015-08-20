@@ -29,7 +29,7 @@
 #include "Debug/DVAssert.h"
 
 #include "Qt/DeviceInfo/MemoryTool/ProfilingSession.h"
-#include "Qt/DeviceInfo/MemoryTool/FilterAndSortBar.h"
+#include "Qt/DeviceInfo/MemoryTool/Widgets/FilterAndSortBar.h"
 
 #include "QtTools/ComboBox/CheckableComboBox.h"
 

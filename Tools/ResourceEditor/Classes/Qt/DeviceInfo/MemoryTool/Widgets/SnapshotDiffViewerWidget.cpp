@@ -1,8 +1,6 @@
 #include "Debug/DVAssert.h"
 #include "Platform/SystemTimer.h"
 
-#include "SnapshotDiffViewerWidget.h"
-
 #include "Qt/DeviceInfo/MemoryTool/Models/SymbolsListModel.h"
 #include "Qt/DeviceInfo/MemoryTool/Models/BranchDiffTreeModel.h"
 
@@ -10,9 +8,11 @@
 #include "Qt/DeviceInfo/MemoryTool/BranchDiff.h"
 #include "Qt/DeviceInfo/MemoryTool/ProfilingSession.h"
 #include "Qt/DeviceInfo/MemoryTool/MemorySnapshot.h"
-#include "Qt/DeviceInfo/MemoryTool/SymbolsWidget.h"
-#include "Qt/DeviceInfo/MemoryTool/FilterAndSortBar.h"
-#include "Qt/DeviceInfo/MemoryTool/MemoryBlocksWidget.h"
+
+#include "Qt/DeviceInfo/MemoryTool/Widgets/SymbolsWidget.h"
+#include "Qt/DeviceInfo/MemoryTool/Widgets/FilterAndSortBar.h"
+#include "Qt/DeviceInfo/MemoryTool/Widgets/MemoryBlocksWidget.h"
+#include "Qt/DeviceInfo/MemoryTool/Widgets/SnapshotDiffViewerWidget.h"
 
 #include <QTabWidget>
 #include <QTreeView>

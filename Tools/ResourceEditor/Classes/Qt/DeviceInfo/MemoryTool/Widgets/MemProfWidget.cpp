@@ -29,11 +29,20 @@
 #include "Base/BaseTypes.h"
 #include "MemoryManager/MemoryManagerTypes.h"
 
-#include "ProfilingSession.h"
-#include "Models/AllocPoolModel.h"
-#include "Models/TagModel.h"
-#include "Models/GeneralStatModel.h"
-#include "Models/SnapshotListModel.h"
+#include "Qt/DeviceInfo/MemoryTool/BranchDiff.h"
+#include "Qt/DeviceInfo/MemoryTool/Branch.h"
+#include "Qt/DeviceInfo/MemoryTool/ProfilingSession.h"
+
+#include "Qt/DeviceInfo/MemoryTool/Models/AllocPoolModel.h"
+#include "Qt/DeviceInfo/MemoryTool/Models/TagModel.h"
+#include "Qt/DeviceInfo/MemoryTool/Models/GeneralStatModel.h"
+#include "Qt/DeviceInfo/MemoryTool/Models/SnapshotListModel.h"
+
+#include "Qt/DeviceInfo/MemoryTool/Widgets/SnapshotViewerWidget.h"
+#include "Qt/DeviceInfo/MemoryTool/Widgets/SnapshotDiffViewerWidget.h"
+#include "Qt/DeviceInfo/MemoryTool/Widgets/MemProfWidget.h"
+
+#include "ui_MemProfWidget.h"
 
 #include <QLabel>
 #include <QFrame>
@@ -42,15 +51,6 @@
 #include <QVBoxLayout>
 #include <QMessageBox>
 #include "qcustomplot.h"
-
-#include "SnapshotViewerWidget.h"
-#include "SnapshotDiffViewerWidget.h"
-
-#include "BranchDiff.h"
-#include "Branch.h"
-
-#include "MemProfWidget.h"
-#include "ui_MemProfWidget.h"
 
 using namespace DAVA;
 

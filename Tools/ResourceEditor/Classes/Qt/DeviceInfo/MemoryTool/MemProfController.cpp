@@ -39,10 +39,10 @@
 #include "Platform/DateTime.h"
 #include "Network/Services/MMNet/MMNetClient.h"
 
-#include "MemProfWidget.h"
-#include "MemProfController.h"
-#include "ProfilingSession.h"
-#include "BacktraceSymbolTable.h"
+#include "Qt/DeviceInfo/MemoryTool/ProfilingSession.h"
+#include "Qt/DeviceInfo/MemoryTool/BacktraceSymbolTable.h"
+#include "Qt/DeviceInfo/MemoryTool/MemProfController.h"
+#include "Qt/DeviceInfo/MemoryTool/Widgets/MemProfWidget.h"
 
 using namespace DAVA;
 using namespace DAVA::Net;

@@ -30,13 +30,12 @@
 #include "MemoryManager/MemoryManagerTypes.h"
 
 #include "Qt/DeviceInfo/MemoryTool/BlockLink.h"
+#include "Qt/DeviceInfo/MemoryTool/ProfilingSession.h"
 #include "Qt/DeviceInfo/MemoryTool/Models/MemoryBlocksModel.h"
 #include "Qt/DeviceInfo/MemoryTool/Models/BacktraceListModel.h"
 
-#include "Qt/DeviceInfo/MemoryTool/BlockLink.h"
-#include "Qt/DeviceInfo/MemoryTool/ProfilingSession.h"
-#include "Qt/DeviceInfo/MemoryTool/FilterAndSortBar.h"
-#include "Qt/DeviceInfo/MemoryTool/MemoryBlocksWidget.h"
+#include "Qt/DeviceInfo/MemoryTool/Widgets/FilterAndSortBar.h"
+#include "Qt/DeviceInfo/MemoryTool/Widgets/MemoryBlocksWidget.h"
 
 #include <QTableView>
 #include <QHeaderView>
