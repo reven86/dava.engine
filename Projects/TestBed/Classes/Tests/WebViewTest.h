@@ -26,32 +26,31 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __CONQUEROR_ANIMATOR_H__
-#define __CONQUEROR_ANIMATOR_H__
+
+#ifndef __WEBVIEWTEST_TEST_H__
+#define __WEBVIEWTEST_TEST_H__
 
 #include "DAVAEngine.h"
-#include "Infrastructure/Settings/GraphicsDetect.h"
+#include "Infrastructure/BaseScreen.h"
 
 using namespace DAVA;
 
-class TankAnimator
+class WebViewTest : public BaseScreen
 {
 public:
-    TankAnimator();
-    ~TankAnimator();
+    WebViewTest();
 
-    static void Animate(Entity* skinnedTank, const Vector<uint16>& jointIndexes, float32 angle);
-    static void MakeSkinnedTank(Entity* entity, Vector<uint16>& jointsInfo);
+protected:
+    void LoadResources() override;
+    void UnloadResources() override;
+    void Update(float32 delta) override;
 
 private:
+    UIWebView* webView;
+    UIControl* bgStubPanel;
+    bool updateWait;
 
-    static void SetReflectionRefractionVisibility(Entity *node, DAVA::uint32 visibility);
-
-    const static FastName TURRET;
-    const static FastName L_WHEELS;
-    const static FastName R_WHEELS;
-    const static FastName GUN_SHOT;
-    const static FastName SKINNED_TANK;
+    void OnVisibleClick(BaseObject* sender, void * data, void * callerData);
 };
 
-#endif
+#endif //__WEBVIEWTEST_TEST_H__

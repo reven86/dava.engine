@@ -326,18 +326,43 @@ void SceneSelectionSystem::SetSelection(DAVA::Entity *entity)
 
 void SceneSelectionSystem::AddSelection(DAVA::Entity *entity)
 {
-    if(IsEntitySelectable(entity) && !curSelections.ContainsEntity(entity))
+    if(!IsLocked())
     {
-        EntityGroupItem selectableItem;
-        
-        selectableItem.entity = entity;
-        selectableItem.bbox = GetSelectionAABox(entity);
-        curSelections.Add(selectableItem);
-        
-        selectionHasChanges = true;
+        if(IsEntitySelectable(entity) && !curSelections.ContainsEntity(entity))
+        {
+            EntityGroupItem selectableItem;
+            
+            selectableItem.entity = entity;
+            selectableItem.bbox = GetSelectionAABox(entity);
+            curSelections.Add(selectableItem);
+            
+            selectionHasChanges = true;
+            UpdateHoodPos();
+            
+            invalidSelectionBoxes = true;
+        }
+    }
+}
+
+void SceneSelectionSystem::AddSelection(const EntityGroup &entities)
+{
+    if(!IsLocked())
+    {
+        for (size_t i = 0; i < entities.Size(); ++i)
+        {
+            const auto entity = entities.GetEntity(i);
+            if (IsEntitySelectable(entity) && !curSelections.ContainsEntity(entity))
+            {
+                EntityGroupItem selectableItem;
+
+                selectableItem.entity = entity;
+                selectableItem.bbox = GetSelectionAABox(entity);
+                curSelections.Add(selectableItem);
+                selectionHasChanges = true;
+                invalidSelectionBoxes = true;
+            }
+        }
         UpdateHoodPos();
-        
-        invalidSelectionBoxes = true;
     }
 }
 
@@ -365,6 +390,25 @@ void SceneSelectionSystem::RemSelection(DAVA::Entity *entity)
 
 		UpdateHoodPos();
 	}
+}
+
+void SceneSelectionSystem::RemSelection(const EntityGroup& entities)
+{
+    if (!IsLocked())
+    {
+        for (size_t i = 0; i < entities.Size(); ++i)
+        {
+            auto entity = entities.GetEntity(i);
+            if (curSelections.ContainsEntity(entity))
+            {
+                curSelections.Rem(entity);
+                curDeselections.Add(entity);
+
+                selectionHasChanges = true;
+            }
+        }
+        UpdateHoodPos();
+    }
 }
 
 void SceneSelectionSystem::Clear()

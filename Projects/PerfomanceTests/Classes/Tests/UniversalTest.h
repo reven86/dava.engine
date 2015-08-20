@@ -31,14 +31,15 @@
 
 #include "Tests/BaseTest.h"
 #include "Tests/Utils/WaypointsInterpolator.h"
-#include "Tests/Utils/TankAnimator.h"
+#include "Tests/Utils/TankUtils.h"
 
 class UniversalTest : public BaseTest
 {
 public:
     
-    UniversalTest(const String& testName, const TestParams& params);
-    ~UniversalTest();
+    UniversalTest(const TestParams& params);
+    
+    static const String TEST_NAME;
     
 protected:
     
@@ -46,6 +47,8 @@ protected:
     void PerformTestLogic(float32 timeElapsed) override;
     
 private:
+    
+    static const FastName CAMERA;
     
     static const FastName CAMERA_PATH;
     static const FastName TANK_STUB;
@@ -56,10 +59,9 @@ private:
     Map<FastName, std::pair<Entity*, Vector<uint16>>> skinnedTankData;
     List<Entity*> tankStubs;
     
-    WaypointsInterpolator* waypointInterpolator;
-    TankAnimator* tankAnimator;
+    std::unique_ptr<WaypointsInterpolator> waypointInterpolator;
     
-    Camera* camera;
+    ScopedPtr<Camera> camera;
     Vector3 camPos;
     Vector3 camDst;
     

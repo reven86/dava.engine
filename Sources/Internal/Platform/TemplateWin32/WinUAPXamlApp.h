@@ -122,8 +122,6 @@ private:
     void SetTitleName();
     void SetDisplayOrientations();
 
-    void InitInput();
-
     void InitRender();
     void ReInitRender();
 
@@ -133,7 +131,9 @@ private:
     void PrepareScreenSize();
     void UpdateScreenSize(float32 width, float32 height);
     void SetFullScreen(bool isFullScreenFlag);
-    void SetPreferredSize(int32 width, int32 height);
+    // in units of effective (view) pixels
+    void SetPreferredSize(float32 width, float32 height);
+    void HideAsyncTaskBar();
 
 private:
     CorePlatformWinUAP* core;
@@ -157,6 +157,7 @@ private:
     bool isWindowVisible = true;
     bool isWindowClosed = false;
     bool isFullscreen = false;
+    bool isRenderCreated = false;
     DisplayMode windowedMode = DisplayMode(DisplayMode::DEFAULT_WIDTH,
                                            DisplayMode::DEFAULT_HEIGHT,
                                            DisplayMode::DEFAULT_BITS_PER_PIXEL,
@@ -170,8 +171,11 @@ private:
     bool isLeftButtonPressed = false;
     bool isMiddleButtonPressed = false;
 
-    float32 windowWidth = static_cast<float32>(DisplayMode::DEFAULT_WIDTH);
-    float32 windowHeight = static_cast<float32>(DisplayMode::DEFAULT_HEIGHT);
+    float64 rawPixelsPerViewPixel = 1.0;
+    int32 viewWidth = DisplayMode::DEFAULT_WIDTH;
+    int32 viewHeight = DisplayMode::DEFAULT_HEIGHT;
+    int32 physicalWidth = static_cast<int32>(viewWidth * rawPixelsPerViewPixel);
+    int32 physicalHeight = static_cast<int32>(viewHeight * rawPixelsPerViewPixel);
 
     Windows::Graphics::Display::DisplayOrientations displayOrientation = ::Windows::Graphics::Display::DisplayOrientations::None;
 };

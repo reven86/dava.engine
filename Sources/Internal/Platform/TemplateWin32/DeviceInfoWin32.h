@@ -26,45 +26,53 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef ASIA_PERFORMANCE_TEST_H__
-#define ASIA_PERFORMANCE_TEST_H__
 
-#include "Tests/BaseTest.h"
-#include "Tests/Utils/WaypointsInterpolator.h"
-#include "Tests/Utils/TankAnimator.h"
+#ifndef __FRAMEWORK__DEVICEINFO_WIN32__
+#define __FRAMEWORK__DEVICEINFO_WIN32__
 
-class AsiaPerformanceTest : public BaseTest
+#include "Base/BaseTypes.h"
+
+#if defined(__DAVAENGINE_WIN32__)
+
+#include "Base/Platform.h"
+#include "Platform/DeviceInfo.h"
+
+namespace DAVA
+{
+
+class DeviceInfoPrivate
 {
 public:
-    AsiaPerformanceTest(const TestParams& params);
-    ~AsiaPerformanceTest();
-
-protected:
-
-    void LoadResources() override;
-    void PerformTestLogic(float32 timeElapsed) override;
+    DeviceInfoPrivate();
+    DeviceInfo::ePlatform GetPlatform();
+    String GetPlatformString();
+    String GetVersion();
+    String GetManufacturer();
+    String GetModel();
+    String GetLocale();
+    String GetRegion();
+    String GetTimeZone();
+    String GetUDID();
+    WideString GetName();
+    String GetHTTPProxyHost();
+    String GetHTTPNonProxyHosts();
+    int32 GetHTTPProxyPort();
+    DeviceInfo::ScreenInfo & GetScreenInfo();
+    int32 GetZBufferSize();
+    eGPUFamily GetGPUFamily();
+    DeviceInfo::NetworkInfo GetNetworkInfo();
+    List<DeviceInfo::StorageInfo> GetStoragesList();
+    int32 GetCpuCount();
+    void InitializeScreenInfo();
+    bool IsHIDConnected(DeviceInfo::eHIDType type);
+    void SetHIDConnectionCallback(DeviceInfo::eHIDType type, DeviceInfo::HIDCallBackFunc&& callback);
 
 private:
-    static const String TEST_NAME;
-
-    static const FastName CAMERA_PATH;
-    static const FastName TANK_STUB;
-    static const FastName TANKS;
-
-    static const float32 TANK_ROTATION_ANGLE;
-
-    Map<FastName, std::pair<Entity*, Vector<uint16>>> skinnedTankData;
-    List<Entity*> tankStubs;
-
-    WaypointsInterpolator* waypointInterpolator;
-    TankAnimator* tankAnimator;
-
-    Camera* camera;
-    Vector3 camPos;
-    Vector3 camDst;
-
-    float32 time;
+    DeviceInfo::ScreenInfo screenInfo;
+};
 
 };
 
-#endif
+#endif //  defined(__DAVAENGINE_WIN_32__)
+
+#endif //  defined(__FRAMEWORK__DEVICEINFO_WIN32__)

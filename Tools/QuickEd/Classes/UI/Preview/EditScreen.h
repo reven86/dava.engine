@@ -54,11 +54,12 @@ public:
     
     void AddControlSelectionListener(ControlSelectionListener *listener);
     void RemoveControlSelectionListener(ControlSelectionListener *listener);
+    void SetEmulationMode(bool emulationMode);
 
 private:
     DAVA::Set<UIControl*> selectionControls;
     DAVA::List<ControlSelectionListener*> selectionListeners;
-    
+    bool emulationMode = false;
 };
 
 class PackageCanvas: public DAVA::UIControl

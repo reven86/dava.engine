@@ -43,7 +43,7 @@ private:
    
     void ReadSettings(const DAVA::String & fileName, DAVA::YamlNode * node);
 
-    DAVA::KeyedArchive* archive;
+    DAVA::ScopedPtr<DAVA::KeyedArchive> archive;
 
     DAVA::String  water;
     DAVA::String  vegetation;

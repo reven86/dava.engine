@@ -42,7 +42,9 @@
 
 
 #include "UI/Layouts/UILayoutSystem.h"
+#include "UI/Styles/UIStyleSheetSystem.h"
 #include "UI/UIControlSystem.h"
+#include "Utils/Utils.h"
 
 using namespace DAVA;
 
@@ -69,6 +71,7 @@ EditorCore::EditorCore(QObject *parent)
     connect(mainWindow, &MainWindow::SaveAllDocuments, this, &EditorCore::SaveAllDocuments);
     connect(mainWindow, &MainWindow::SaveDocument, this, static_cast<void(EditorCore::*)(int)>(&EditorCore::SaveDocument));
     connect(mainWindow, &MainWindow::RtlChanged, this, &EditorCore::OnRtlChanged);
+    connect(mainWindow, &MainWindow::GlobalStyleClassesChanged, this, &EditorCore::OnGlobalStyleClassesChanged);
 
     connect(documentGroup, &DocumentGroup::DocumentChanged, mainWindow->libraryWidget, &LibraryWidget::OnDocumentChanged);
 
@@ -241,6 +244,22 @@ void EditorCore::UpdateLanguage()
 void EditorCore::OnRtlChanged(bool isRtl)
 {
     UIControlSystem::Instance()->GetLayoutSystem()->SetRtl(isRtl);
+    for(auto &document : documents)
+    {
+        document->RefreshAllControlProperties();
+        document->RefreshLayout();
+    }
+}
+
+void EditorCore::OnGlobalStyleClassesChanged(const QString &classesStr)
+{
+    Vector<String> tokens;
+    Split(classesStr.toStdString(), " ", tokens);
+    
+    UIControlSystem::Instance()->GetStyleSheetSystem()->ClearGlobalFlags();
+    for (String &token : tokens)
+        UIControlSystem::Instance()->GetStyleSheetSystem()->AddGlobalClass(FastName(token));
+
     for(auto &document : documents)
     {
         document->RefreshAllControlProperties();

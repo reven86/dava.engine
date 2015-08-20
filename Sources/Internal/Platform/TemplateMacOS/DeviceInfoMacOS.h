@@ -26,30 +26,52 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __GLOBAL_PERFORMANCE_TEST_H__
-#define __GLOBAL_PERFORMANCE_TEST_H__
 
-#include "BaseTest.h"
-#include "Tests/Utils/WaypointsInterpolator.h"
+#ifndef __FRAMEWORK__DEVICEINFO_MACOS__
+#define __FRAMEWORK__DEVICEINFO_MACOS__
 
-class GlobalPerformanceTest : public BaseTest
+#include "Base/BaseTypes.h"
+
+#if defined(__DAVAENGINE_MACOS__)
+
+#include "Platform/DeviceInfo.h"
+
+namespace DAVA
+{
+
+class DeviceInfoPrivate
 {
 public:
-    GlobalPerformanceTest(const TestParams& params);
-
-protected:
-
-    void LoadResources() override;
-    void UnloadResources() override;
-
-    void PerformTestLogic(float32 timeElapsed) override;
+    DeviceInfoPrivate();
+    DeviceInfo::ePlatform GetPlatform();
+    String GetPlatformString();
+    String GetVersion();
+    String GetManufacturer();
+    String GetModel();
+    String GetLocale();
+    String GetRegion();
+    String GetTimeZone();
+    String GetUDID();
+    WideString GetName();
+    String GetHTTPProxyHost();
+    String GetHTTPNonProxyHosts();
+    int32 GetHTTPProxyPort();
+    DeviceInfo::ScreenInfo& GetScreenInfo();
+    int32 GetZBufferSize();
+    eGPUFamily GetGPUFamily();
+    DeviceInfo::NetworkInfo GetNetworkInfo();
+    List<DeviceInfo::StorageInfo> GetStoragesList();
+    int32 GetCpuCount();
+    void InitializeScreenInfo();
+    bool IsHIDConnected(DeviceInfo::eHIDType type);
+    void SetHIDConnectionCallback(DeviceInfo::eHIDType type, DeviceInfo::HIDCallBackFunc&& callback);
 
 private:
-    static const String TEST_NAME;
-    static const String CAMERA_PATH;
-
-    WaypointsInterpolator* waypointInterpolator;
-    Camera* camera;
+    DeviceInfo::ScreenInfo screenInfo;
 };
 
-#endif
+}; // namespace DAVA
+
+#endif //defined(__DAVAENGINE_MACOS__)
+
+#endif /* defined(__FRAMEWORK__DEVICEINFO_MACOS__) */
