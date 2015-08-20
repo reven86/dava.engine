@@ -48,7 +48,7 @@ public:
     Q_PROPERTY(int scale READ GetScale WRITE SetScale NOTIFY ScaleChanged);
     Q_PROPERTY(QPoint position READ GetPosition WRITE SetPosition NOTIFY PositionChanged);
 
-    ScrollAreaController(DAVA::UIControl *root, QObject *parent = nullptr);
+    ScrollAreaController(DAVA::UIControl *root, DAVA::UIControl *scalableContent, QObject *parent = nullptr);
     ~ScrollAreaController() = default;
 
     QSize GetCanvasSize() const;
@@ -67,9 +67,9 @@ signals:
     void PositionChanged(const QPoint &position);
 private:
     void UpdatePosition();
-    double GetUIScale() const;
     DAVA::UIControl *backgroundControl = nullptr;
     DAVA::UIControl *rootControl = nullptr;
+    DAVA::UIControl *scalableContent = nullptr;
     QSize canvasSize = QSize(0, 0);
     QSize viewSize = QSize(0, 0);
     int scale = 1;

@@ -33,12 +33,18 @@
 
 using namespace DAVA;
 
-ScrollAreaController::ScrollAreaController(UIControl *root, QObject *parent)
+ScrollAreaController::ScrollAreaController(UIControl *root_, UIControl *scalableContent_, QObject *parent)
     : QObject(parent)
-    , rootControl(root)
+    , rootControl(root_)
+    , scalableContent(scalableContent_)
 {
     backgroundControl = new UIControl();
     backgroundControl->AddControl(rootControl);
+    backgroundControl->SetDebugDraw(true);
+    backgroundControl->SetDebugDrawColor(Color(0.0f, 0.0f, 1.0f, 1.0f));
+    rootControl->SetDebugDraw(true);
+    rootControl->SetPosition(Vector2(Margin, Margin));
+
     ScopedPtr<UIScreen> davaUIScreen(new UIScreen());
     davaUIScreen->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
     davaUIScreen->GetBackground()->SetColor(Color(0.3f, 0.3f, 0.3f, 1.0f));
@@ -69,14 +75,13 @@ QPoint ScrollAreaController::GetPosition() const
 
 void ScrollAreaController::UpdateCanvasContentSize()
 {
-    QSize contentSize(rootControl->GetGeometricData().GetUnrotatedRect().dx, rootControl->GetGeometricData().GetUnrotatedRect().dy);
-    QSize marginsSize = QSize(Margin * 2, Margin * 2);
-    QSize tmpSize = contentSize + marginsSize;
-    Vector2 newCanvasSize(tmpSize.width(), tmpSize.height());
-    backgroundControl->SetSize(newCanvasSize);
-    canvasSize = tmpSize;
+    Vector2 contentSize(scalableContent->GetGeometricData().GetUnrotatedRect().GetSize());
+    Vector2 marginsSize(Margin * 2, Margin * 2);
+    Vector2 tmpSize = contentSize + marginsSize;
+    backgroundControl->SetSize(tmpSize);
+    canvasSize = QSize(tmpSize.dx, tmpSize.dy);
     UpdatePosition();
-    emit CanvasSizeChanged(GetCanvasSize());
+    emit CanvasSizeChanged(canvasSize);
 }
 
 void ScrollAreaController::SetViewSize(const QSize& viewSize_)
@@ -96,9 +101,9 @@ void ScrollAreaController::SetScale(int scale_)
     if (scale_ != scale)
     {
         scale = scale_;
-        Vector2 newScale(GetUIScale(), GetUIScale());
-        rootControl->SetPosition(Vector2(Margin, Margin));
-        rootControl->SetScale(newScale);
+        double uiScale = scale / 100.0f;
+        Vector2 newScale(uiScale, uiScale);
+        scalableContent->SetScale(newScale);
         UpdateCanvasContentSize();
         emit ScaleChanged(scale_);
     }
@@ -128,9 +133,3 @@ void ScrollAreaController::UpdatePosition()
     }
     SetPosition(position);
 }
-
-double ScrollAreaController::GetUIScale() const
-{
-    return scale / 100.f;
-}
-

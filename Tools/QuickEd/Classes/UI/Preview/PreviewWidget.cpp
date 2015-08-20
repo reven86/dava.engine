@@ -39,6 +39,8 @@
 #include "QtTools/DavaGLWidget/davaglwidget.h"
 
 #include "Document.h"
+#include "Systems/CanvasSystem.h"
+#include "Systems/HUDSystem.h"
 
 using namespace DAVA;
 
@@ -63,8 +65,12 @@ public:
 PreviewWidget::PreviewWidget(QWidget *parent)
     : QWidget(parent)
     , rootControl(new RootControl())
-    , scrollAreaController(new ScrollAreaController(rootControl, this))
+    , scalableContent(new UIControl())
+    , scrollAreaController(new ScrollAreaController(rootControl, scalableContent, this))
 {
+    rootControl->SetName("rootControl");
+    rootControl->AddControl(scalableContent);
+    scalableContent->SetName("scalableContent");
     percentages
         << 10
         << 25
@@ -117,10 +123,10 @@ DavaGLWidget *PreviewWidget::GetDavaGLWidget()
 void PreviewWidget::OnDocumentChanged(Document *arg)
 {
     document = arg;
-    rootControl->RemoveAllControls();
     if (nullptr != document)
     {
-        document->AttachToRoot(rootControl);
+        document->GetCanvasSystem()->Attach(scalableContent);
+        document->GetHUDSystem()->Attach(rootControl);
         scrollAreaController->UpdateCanvasContentSize();
     }
     static_cast<RootControl*>(rootControl)->SetActiveDocument(document);

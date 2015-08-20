@@ -29,6 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "HUDSystem.h"
 
 #include "UI/UIControl.h"
+#include "UI/UIEvent.h"
 #include "Base/BaseTypes.h"
 #include "Model/PackageHierarchy/PackageBaseNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"
@@ -37,6 +38,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Render/RenderState.h"
 #include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
+
+#include <QApplication>
 
 using namespace DAVA;
 
@@ -60,17 +63,13 @@ public:
 private:
     void Draw(const UIGeometricData &geometricData) override
     {
-        SetRect(control->GetGeometricData().GetUnrotatedRect());
+        Rect rect(control->GetGeometricData().GetUnrotatedRect());
+        SetAbsoluteRect(rect);
         Color oldColor = RenderManager::Instance()->GetColor();
-        RenderManager::Instance()->SetColor(Color(1.0f, 0.0f, 0.0f, 1.f));
-        RenderHelper::Instance()->DrawRect(GetRect(), RenderState::RENDERSTATE_2D_BLEND);
+        RenderManager::Instance()->SetColor(GetDebugDrawColor());
+        RenderHelper::Instance()->DrawRect(GetAbsoluteRect(), RenderState::RENDERSTATE_2D_BLEND);
         RenderManager::Instance()->SetColor(oldColor);
     }
-};
-
-class HUDControl : public UIControl
-{
-public:
 };
 
 class FrameRectControl : public ControlContainer
@@ -88,20 +87,24 @@ public:
         BOTTOM_RIGHT,
         COUNT
     };
-    FrameRectControl(PLACE place_, UIControl *container)
+    explicit FrameRectControl(PLACE place_, UIControl *container)
         : ControlContainer(container)
         , place(place_)
     { }
+    PLACE GetPlace() const
+    {
+        return place;
+    }
 private:
     void Draw(const UIGeometricData &geometricData) override
     {
         Rect rect(0, 0, 5, 5);
         rect.SetCenter(GetPos());
-        SetRect(rect);
+        SetAbsoluteRect(rect);
 
         Color oldColor = RenderManager::Instance()->GetColor();
-        RenderManager::Instance()->SetColor(Color(0.0f, 1.0f, 0.0f, 1.f));
-        RenderHelper::Instance()->FillRect(GetRect(), RenderState::RENDERSTATE_2D_BLEND);
+        RenderManager::Instance()->SetColor(GetDebugDrawColor());
+        RenderHelper::Instance()->FillRect(GetAbsoluteRect(), RenderState::RENDERSTATE_2D_BLEND);
         RenderManager::Instance()->SetColor(oldColor);
     }
 
@@ -128,17 +131,18 @@ private:
 class PivotPointControl : public ControlContainer
 {
 public:
-    PivotPointControl(UIControl *container)
+    explicit PivotPointControl(UIControl *container)
         : ControlContainer(container)
     { }
 private:
     void Draw(const UIGeometricData &geometricData) override
     {
         Color oldColor = RenderManager::Instance()->GetColor();
-        RenderManager::Instance()->SetColor(Color(0.0f, 0.0f, 1.0f, 1.f));
+        RenderManager::Instance()->SetColor(GetDebugDrawColor());
         Rect rect(0, 0, 5, 5);
         rect.SetCenter(control->GetGeometricData().GetUnrotatedRect().GetPosition() + control->GetPivotPoint());
-        RenderHelper::Instance()->FillRect(rect, RenderState::RENDERSTATE_2D_BLEND);
+        SetAbsoluteRect(rect);
+        RenderHelper::Instance()->FillRect(GetAbsoluteRect(), RenderState::RENDERSTATE_2D_BLEND);
         RenderManager::Instance()->SetColor(oldColor);
     }
 };
@@ -148,11 +152,23 @@ HUDSystem::HUDSystem()
     : hudControl(new UIControl())
     , selectionRect(new UIControl())
 {
+    selectionRect->SetDebugDraw(true);
+    selectionRect->SetDebugDrawColor(Color(1.0f, 1.0f, 0.0f, 1.0f));
+    hudControl->AddControl(selectionRect);
+    hudControl->SetName("hudControl");
+    hudControl->SetDebugDraw(true);
+    hudControl->SetDebugDrawColor(Color(0.0f, 1.0f, 0.0f, 1.0f));
+    hudControl->SetSize(Vector2(10, 10));
 }
 
 void HUDSystem::Attach(UIControl* root)
 {
     root->AddControl(hudControl);
+}
+
+void HUDSystem::Detach()
+{
+    hudControl->RemoveFromParent();
 }
 
 void HUDSystem::SelectionWasChanged(const SelectedControls& selected, const SelectedControls& deselected)
@@ -169,29 +185,122 @@ void HUDSystem::SelectionWasChanged(const SelectedControls& selected, const Sele
     }
 }
 
-bool HUDSystem::OnInput(DAVA::UIEvent *currentInput)
+bool HUDSystem::OnInput(UIEvent *currentInput)
 {
+    enum MOUSE_STATE
+    {
+        PRESSED,
+        MOVED,
+        RELEASED
+    };
+    static MOUSE_STATE mouseState = RELEASED;
+    static Vector2 pressedPoint;
+    switch (currentInput->phase)
+    {
+    case UIEvent::PHASE_MOVE:
+        ProcessCursor(currentInput->point);
+        return false;
+    case UIEvent::PHASE_BEGAN:
+        mouseState = PRESSED;
+        pressedPoint = currentInput->point;
+        return false;
+    case UIEvent::PHASE_DRAG:
+        switch (mouseState)
+        {
+        case RELEASED:
+            return false;
+        default:
+            mouseState = MOVED;
+            Vector2 point(currentInput->point);
+            Vector2 size(point - pressedPoint);
+            selectionRect->SetAbsoluteRect(Rect(pressedPoint, size));
+            return true;
+        }
+    case UIEvent::PHASE_ENDED:
+        bool retVal = mouseState == MOVED;
+        if (mouseState == MOVED)
+        {
+            auto rect = selectionRect->GetAbsoluteRect();
+        }
+        mouseState = RELEASED;
+        selectionRect->SetSize(Vector2(0, 0));
+        return retVal;
+    }
     return false;
+}
+
+void HUDSystem::ProcessCursor(const Vector2& pos) const
+{
+    QCursor cursor;
+    for (const auto &iter : hudMap)
+    {
+        const auto &hud = iter.second;
+
+        const UIGeometricData &gd = hud.frame->GetGeometricData();
+        if (hud.frame->IsPointInside(pos))
+        {
+            cursor = Qt::SizeAllCursor;
+        }
+        for (auto frameRect : hud.frameRects)
+        {
+            if (frameRect->IsPointInside(pos))
+            {
+                FrameRectControl::PLACE place = static_cast<FrameRectControl*>(frameRect.get())->GetPlace();
+                switch (place)
+                {
+                case FrameRectControl::TOP_LEFT:
+                case FrameRectControl::BOTTOM_RIGHT:
+                    cursor = Qt::SizeFDiagCursor;
+                    break;
+                case FrameRectControl::TOP_RIGHT:
+                case FrameRectControl::BOTTOM_LEFT:
+                    cursor = Qt::SizeBDiagCursor;
+                    break;
+                case FrameRectControl::TOP_CENTER:
+                case FrameRectControl::BOTTOM_CENTER:
+                    cursor = Qt::SizeVerCursor;
+                    break;
+                case FrameRectControl::CENTER_LEFT:
+                case FrameRectControl::CENTER_RIGHT:
+                    cursor = Qt::SizeHorCursor;
+                    break;
+                default:
+                    DVASSERT_MSG(false, "unexpected enum value");
+                    break;
+                }
+            }
+        }
+        if (hud.pivotPoint->IsPointInside(pos))
+        {
+            cursor = Qt::SizeAllCursor;
+        }
+    }
+    qApp->setOverrideCursor(cursor);
 }
 
 HUDSystem::HUD::HUD(UIControl* control_, UIControl* hudControl_)
     : frame(new FrameControl(control_))
+    , pivotPoint(new PivotPointControl(control_))
     , control(control_)
     , hudControl(hudControl_)
 {
+    frame->SetDebugDrawColor(Color(1.0f, 0.0f, 0.0f, 1.f));
+    pivotPoint->SetDebugDrawColor(Color(0.0f, 0.0f, 1.0f, 1.f));
     hudControl->AddControl(frame);
-    
     for (int i = FrameRectControl::TOP_LEFT; i < FrameRectControl::COUNT; ++i)
     {
         ScopedPtr<UIControl> littleRectFrame(new FrameRectControl(static_cast<FrameRectControl::PLACE>(i), control_));
         frameRects.push_back(littleRectFrame);
+        littleRectFrame->SetDebugDrawColor(Color(0.0f, 1.0f, 0.0f, 1.f));
         hudControl->AddControl(littleRectFrame);
     }
+    hudControl->AddControl(pivotPoint);
 }
 
 HUDSystem::HUD::~HUD()
 {
     hudControl->RemoveControl(frame);
+    hudControl->RemoveControl(pivotPoint);
     for (auto frameRect : frameRects)
     {
         hudControl->RemoveControl(frameRect);

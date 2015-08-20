@@ -47,6 +47,7 @@ public:
     CanvasSystem(Document *parent);
     virtual ~CanvasSystem() = default;
     void Attach(DAVA::UIControl *root);
+    void Detach();
     void SelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected) override;
 
 private:

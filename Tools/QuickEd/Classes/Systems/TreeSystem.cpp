@@ -26,6 +26,7 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
+#include "UI/UIEvent.h"
 #include "Model/YamlPackageSerializer.h"
 #include "Base/BaseTypes.h"
 #include "Model/PackageHierarchy/ControlNode.h"
@@ -37,6 +38,7 @@
 #include <QApplication>
 #include <QClipboard>
 
+using namespace DAVA;
 
 TreeSystem::TreeSystem(Document* parent)
     : document(parent)
@@ -44,8 +46,13 @@ TreeSystem::TreeSystem(Document* parent)
 
 }
 
-bool TreeSystem::OnInput(DAVA::UIEvent *currentInput)
+bool TreeSystem::OnInput(UIEvent *currentInput)
 {
+    if (currentInput->phase == UIEvent::PHASE_KEYCHAR)
+    {
+
+        return true;
+    }
     /*if(event->type() == QEvent::KeyPress)
     {
         QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
@@ -82,7 +89,7 @@ void TreeSystem::SelectionWasChanged(const SelectedControls &selected, const Sel
 
 void TreeSystem::OnCopy()
 {
-    DAVA::Vector<ControlNode*> nodesToCopy;
+    Vector<ControlNode*> nodesToCopy;
     for (auto node : selectionList)
     {
         if (node->CanCopy())
@@ -96,7 +103,7 @@ void TreeSystem::OnCopy()
     }
     YamlPackageSerializer serializer;
     serializer.SerializePackageNodes(document->GetPackage(), nodesToCopy);
-    DAVA::String str = serializer.WriteToString();
+    String str = serializer.WriteToString();
     QApplication::clipboard()->setText(QString::fromStdString(str));
 }
 
@@ -111,7 +118,7 @@ void TreeSystem::OnPaste()
         DVASSERT(nullptr != node);
         if (!node->IsReadOnly())
         {
-            DAVA::String string = QApplication::clipboard()->text().toStdString();
+            String string = QApplication::clipboard()->text().toStdString();
             document->GetCommandExecutor()->Paste(document->GetPackage(), node, node->GetCount(), string);
         }
     }
@@ -119,7 +126,7 @@ void TreeSystem::OnPaste()
 
 void TreeSystem::OnDelete()
 {
-    DAVA::Vector<ControlNode*> nodesToRemove;
+    Vector<ControlNode*> nodesToRemove;
     for (auto node : selectionList)
     {
         if (node->CanRemove())

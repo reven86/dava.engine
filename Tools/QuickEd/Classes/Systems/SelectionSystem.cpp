@@ -70,6 +70,7 @@ bool SelectionSystem::OnInput(UIEvent* currentInput)
             else
             {
                 deselected = selectedControls;
+                deselected.erase(node);
                 selected.insert(node);
             }
         }
@@ -86,8 +87,8 @@ bool SelectionSystem::OnInput(UIEvent* currentInput)
     {
         return false;
     }
-    UniteNodes(selected, selectedControls);
     SubstractNodes(deselected, selectedControls);
+    UniteNodes(selected, selectedControls);
     for (auto listener : listeners)
     {
         listener->SelectionWasChanged(selected, deselected);

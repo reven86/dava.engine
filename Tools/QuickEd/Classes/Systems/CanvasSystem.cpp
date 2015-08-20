@@ -39,13 +39,13 @@
 
 using namespace DAVA;
 
-class CheckeredCanvas : public DAVA::UIControl
+class CheckeredCanvas : public UIControl
 {
 public:
     CheckeredCanvas();
 private:
     ~CheckeredCanvas() override = default;
-    void Draw(const DAVA::UIGeometricData &geometricData) override;
+    void Draw(const UIGeometricData &geometricData) override;
 };
 
 CheckeredCanvas::CheckeredCanvas()
@@ -72,11 +72,16 @@ CanvasSystem::CanvasSystem(Document *parent)
 {
 }
 
-void CanvasSystem::Attach(DAVA::UIControl* root)
+void CanvasSystem::Attach(UIControl* root)
 {
     attachedRoot = root;
     attachedRoot->AddControl(canvas);
     SelectionWasChanged(SelectedControls(), SelectedControls());
+}
+
+void CanvasSystem::Detach()
+{
+    canvas->RemoveFromParent();
 }
 
 void CanvasSystem::SelectionWasChanged(const SelectedControls& selected, const SelectedControls& deselected)
@@ -127,10 +132,16 @@ void CanvasSystem::LayoutCanvas()
 {
     float32 maxWidth = 0.0f;
     float32 totalHeight = 0.0f;
+    const int spacing = 5;
     for (auto control : canvas->GetChildren())
     {
         maxWidth = Max(maxWidth, control->GetSize().x);
         totalHeight += control->GetSize().y;
+    }
+    int childrenCount = canvas->GetChildren().size();
+    if (childrenCount > 1)
+    {
+        totalHeight += spacing * (childrenCount - 1);
     }
     Vector2 size(maxWidth, totalHeight);
     attachedRoot->SetSize(size);

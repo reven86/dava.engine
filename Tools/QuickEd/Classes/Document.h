@@ -64,7 +64,8 @@ public:
     ~Document();
     void Detach();
     void Attach();
-    void AttachToRoot(DAVA::UIControl *root);
+    CanvasSystem *GetCanvasSystem() const;
+    HUDSystem *GetHUDSystem() const;
     const DAVA::FilePath &GetPackageFilePath() const;
 
     QUndoStack *GetUndoStack() const;

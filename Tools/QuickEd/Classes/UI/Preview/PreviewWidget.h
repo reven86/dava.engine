@@ -76,6 +76,7 @@ private:
     void OnScaleByZoom(int scaleDelta); 
 
     DAVA::UIControl *rootControl = nullptr;
+    DAVA::UIControl *scalableContent = nullptr;
     Document *document = nullptr;
     DavaGLWidget *davaGLWidget = nullptr;
     ScrollAreaController *scrollAreaController = nullptr;

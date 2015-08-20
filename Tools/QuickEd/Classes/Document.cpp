@@ -78,6 +78,8 @@ Document::~Document()
 
 void Document::Detach()
 {
+    hudSystem->Detach();
+    canvasSystem->Detach();
     emit SelectedNodesChanged(SelectedNodes(), selectedNodes);
 }
 
@@ -86,13 +88,17 @@ void Document::Attach()
     emit SelectedNodesChanged(selectedNodes, SelectedNodes());
 }
 
-void Document::AttachToRoot(DAVA::UIControl* root)
+CanvasSystem* Document::GetCanvasSystem() const
 {
-    canvasSystem->Attach(root);
-    hudSystem->Attach(root);
+    return canvasSystem;
 }
 
-const DAVA::FilePath &Document::GetPackageFilePath() const
+HUDSystem* Document::GetHUDSystem() const
+{
+    return hudSystem;
+}
+
+const FilePath &Document::GetPackageFilePath() const
 {
     return package->GetPath();
 }
@@ -144,7 +150,7 @@ bool Document::OnInput(UIEvent *currentInput)
     return false;
 }
 
-ControlNode* Document::GetControlNodeByPos(const DAVA::Vector2& pos, ControlNode* node)
+ControlNode* Document::GetControlNodeByPos(const Vector2& pos, ControlNode* node)
 {
     if (node == nullptr)
     {

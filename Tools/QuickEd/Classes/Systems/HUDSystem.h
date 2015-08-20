@@ -48,16 +48,21 @@ public:
     HUDSystem();
     virtual ~HUDSystem() = default;
     void Attach(DAVA::UIControl *root);
+    void Detach();
     void SelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected) override;
     bool OnInput(DAVA::UIEvent *currentInput) override;
 private:
+    void ProcessCursor(const DAVA::Vector2& pos) const;
     DAVA::ScopedPtr<DAVA::UIControl> hudControl;
     struct HUD
     {
+        HUD(DAVA::UIControl *control, DAVA::UIControl *hudControl);
+        HUD(HUD &&hud);
+        HUD& operator = (HUD &&hud);
+        ~HUD();
         DAVA::ScopedPtr<DAVA::UIControl> frame;
         DAVA::Vector < DAVA::ScopedPtr<DAVA::UIControl> > frameRects;
-        HUD(DAVA::UIControl *control, DAVA::UIControl *hudControl);
-        ~HUD();
+        DAVA::ScopedPtr<DAVA::UIControl> pivotPoint;
     private:
         DAVA::UIControl *control = nullptr;
         DAVA::UIControl *hudControl = nullptr;
