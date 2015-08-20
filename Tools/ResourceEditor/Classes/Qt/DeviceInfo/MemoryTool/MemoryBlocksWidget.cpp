@@ -65,7 +65,6 @@ void MemoryBlocksWidget::SetBlockLink(const BlockLink* blockLink_)
     DVASSERT(blockLink_ != nullptr);
     blockLink = blockLink_;
     memoryBlocksModel->SetBlockLink(blockLink);
-    tableWidget->verticalHeader()->resizeSections(QHeaderView::ResizeToContents);
 }
 
 void MemoryBlocksWidget::TableWidget_SelectionChanged(const QModelIndex& current, const QModelIndex& previous)
@@ -185,12 +184,14 @@ void MemoryBlocksWidget::Init()
 
     tableWidget = new QTableView;
     tableWidget->setFont(QFont("Consolas", 10, 500));
+    int fontHeight = QFontMetrics(tableWidget->font()).height();
+    tableWidget->verticalHeader()->setDefaultSectionSize(fontHeight + 6);
+    tableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    tableWidget->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+
     tableWidget->setSelectionMode(QAbstractItemView::SingleSelection);
     tableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
     tableWidget->setModel(memoryBlocksFilterModel.get());
-    tableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    tableWidget->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-    tableWidget->verticalHeader()->resizeSections(QHeaderView::ResizeToContents);
 
     const int32 flags = 1 == blockLink->linkCount ? FilterAndSortBar::FLAG_ENABLE_ALL_FOR_SINGLE : FilterAndSortBar::FLAG_ENABLE_ALL_FOR_DIFF;
     FilterAndSortBar* filterBar = new FilterAndSortBar(session, flags);
