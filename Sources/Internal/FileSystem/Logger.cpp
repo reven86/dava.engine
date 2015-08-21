@@ -87,7 +87,7 @@ void Logger::Logv(eLogLevel ll, const char8* text, va_list li) const
         return;
 
     // try use stack first
-    std::array<char8, defaultBufferSize> stackbuf;
+    Array<char8, defaultBufferSize> stackbuf;
 
     va_list copy;
     va_copy(copy, li);
@@ -110,7 +110,7 @@ void Logger::Logv(eLogLevel ll, const char8* text, va_list li) const
     }
 }
 
-static const std::array<const char8*, 5> logLevelString
+static const Array<const char8*, 5> logLevelString
 {
     {
         "framwork",
@@ -259,7 +259,7 @@ void Logger::FileLog(eLogLevel ll, const char8* text) const
         File *file = File::Create(logFilename, File::APPEND | File::WRITE);
         if (nullptr != file)
         {
-            std::array<char8, 128> prefix;
+            Array<char8, 128> prefix;
             snprintf(&prefix[0], prefix.size(), "[%s] ", GetLogLevelString(ll));
             file->Write(prefix.data(), static_cast<uint32>(strlen(prefix.data())));
             file->Write(text, static_cast<uint32>(strlen(text)));
