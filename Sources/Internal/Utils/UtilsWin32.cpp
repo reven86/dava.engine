@@ -50,7 +50,7 @@ String GenerateGUID()
 
     //get string representation of GUID
     Array<OLECHAR, 64> guidString {};
-    ::StringFromGUID2(guid, guidString.data(), guidString.size());
+    ::StringFromGUID2(guid, guidString.data(), static_cast<int>(guidString.size()));
     
     //convert to normal string
     USES_CONVERSION;

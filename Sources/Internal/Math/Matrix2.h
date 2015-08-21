@@ -162,9 +162,13 @@ inline Matrix2& Matrix2::operator -= (const Matrix2 & m)
     //! Comparison operators
 inline bool Matrix2::operator == (const Matrix2 & _m) const
 {
-    for (uint8 k = 0; k < COUNT_OF(data); ++k)
+    for (uint8 k = 0; k < 4; ++k)
+    {
         if (!FLOAT_EQUAL(data[k], _m.data[k]))
+        {
             return false;
+        }
+    }
     return true;
 }
     
