@@ -111,16 +111,6 @@ inline String WStringToString(const WideString& s)
 	return temp; 
 }
 
-inline char* WStringToDynamicArray(const WideString& wstr)
-{
-    size_t len = wstr.length();
-    char* buffer = new char[len + 1];
-    for (size_t i = 0; i < len; ++i)
-        buffer[i] = static_cast<char>(wstr[i]);
-    buffer[len] = '\0';
-    return buffer;
-}
-
 #if defined(__DAVAENGINE_WIN_UAP__)
 inline  Platform::String^ StringToRTString(const String & s)
 {
