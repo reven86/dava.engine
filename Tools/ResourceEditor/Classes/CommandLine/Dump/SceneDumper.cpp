@@ -61,7 +61,7 @@ SceneDumper::SceneDumper(const FilePath &scenePath, Set<String> &errorLog)
 	scene = new Scene();
 	if (SceneFileV2::ERROR_NO_ERROR != scene->LoadScene(scenePath))
 	{
-		errorLog.insert(Format("[SceneDumper::SceneDumper] Can't open file %s", scenePath.GetStringValue().c_str()));
+		errorLog.emplace(Format("[SceneDumper::SceneDumper] Can't open file %s", scenePath.GetStringValue().c_str()));
 		SafeRelease(scene);
 	}
 }
@@ -153,8 +153,8 @@ void SceneDumper::DumpRenderObject(DAVA::RenderObject *renderObject, SceneLinks 
 				TextureDescriptor *descriptor = TextureDescriptor::CreateFromFile(descriptorPath);
 				if (descriptor)
 				{
-					if (descriptor->IsCubeMap() && 
-						(descriptor->dataSettings.sourceFileFormat != IMAGE_FORMAT_DDS && descriptor->dataSettings.sourceFileFormat != IMAGE_FORMAT_PVR))
+					bool isCompressedSource = TextureDescriptor::IsSupportedCompressedFormat(descriptor->dataSettings.sourceFileFormat);
+					if (descriptor->IsCubeMap() && !isCompressedSource)
 					{
 						Vector<FilePath> faceNames;
 						descriptor->GetFacePathnames(faceNames);
@@ -211,6 +211,8 @@ void SceneDumper::DumpEffect(ParticleEffectComponent *effect, SceneLinks &links)
 
 void SceneDumper::DumpEmitter(DAVA::ParticleEmitter *emitter, SceneLinks &links, SceneLinks &gfxFolders) const
 {
+	DVASSERT(nullptr != emitter);
+
 	links.insert(emitter->configPath);
 
 	const Vector<ParticleLayer*> &layers = emitter->layers;
@@ -218,6 +220,8 @@ void SceneDumper::DumpEmitter(DAVA::ParticleEmitter *emitter, SceneLinks &links,
 	const uint32 count = static_cast<uint32>(layers.size());
 	for (uint32 i = 0; i < count; ++i)
 	{
+		DVASSERT(nullptr != layers[i]);
+
 		if (layers[i]->type == ParticleLayer::TYPE_SUPEREMITTER_PARTICLES)
 		{
 			DumpEmitter(layers[i]->innerEmitter, links, gfxFolders);
