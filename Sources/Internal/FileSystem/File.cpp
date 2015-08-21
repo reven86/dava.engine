@@ -78,16 +78,14 @@ File * File::CreateFromSystemPath(const FilePath &filename, uint32 attributes)
 		if (pos == 0)
 		{
 			String relfilename = filenamecpp.substr(item.attachPath.length());
-			int32 size = item.archive->LoadResource(relfilename, 0);
-			if ( size == -1 )
+            ResourceArchive::ContentAndSize contentAndSize;
+			bool isLoaded = item.archive->LoadFile(relfilename, contentAndSize);
+			if (!isLoaded)
 			{
 				return 0;
 			}
-
-			uint8 * buffer = new uint8[size];
-			item.archive->LoadResource(relfilename, buffer);
-			DynamicMemoryFile * file =  DynamicMemoryFile::Create(buffer, size, attributes);
-            SafeDeleteArray(buffer);
+		    const uint8* data = reinterpret_cast<uint8*>(contentAndSize.content.get());
+		    DynamicMemoryFile * file =  DynamicMemoryFile::Create(data, contentAndSize.size, attributes);
 			return file;
 		}
 	}

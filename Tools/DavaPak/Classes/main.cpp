@@ -28,10 +28,6 @@
 
 
 #include <iostream>
-#include <fstream>
-#include <algorithm>
-#include <cctype>
-#include <cstdio>
 
 #include <FileSystem/FileSystem.h>
 #include <FileSystem/ResourceArchive.h>
@@ -39,7 +35,6 @@
 #include <CommandLine/ProgramOptions.h>
 
 using namespace DAVA;
-
 
 class Packer
 {
@@ -58,28 +53,23 @@ public:
 	}
 	
 
-	bool Pack()
+	bool Pack(const String& compression)
 	{
-        bool withPaths = true;
-		resourceArchive->StartResource(resourceName, withPaths, packedDir);
-        String dirName = ExtractName(packedDir);
+        auto dirName = ExtractName(packedDir);
 		CollectAllFilesInDirectory(packedDir, "");
-		resourceArchive->FinishResource();
 	
 
-		std::cout << "Saving archive... " << std::endl;
-		std::cout << "file count:" << resourceCount << std::endl;
+		std::cout << "Saving archive... " << '\n';
+		std::cout << "file count:" << resourceCount << '\n';
 			
 		// saving process
-		List<String>::iterator name = fileNameList.begin();
-
-		int32 resourceId = 0;
+		auto name = fileNameList.begin();
 	
-		int32 resourceRealSum = 0;
-		int32 resourcePackedSum = 0;
+		auto resourceRealSum = 0;
+		auto resourcePackedSum = 0;
 
 
-		for (int file = 0; file < resourceCount; ++file)
+		for (auto file = 0; file < resourceCount; ++file)
 		{
 			int32 resourcePackedSize; 
 			int32 resourceRealSize;
@@ -87,7 +77,7 @@ public:
 			if (-1 == resourceArchive->SaveProgress(&resourcePackedSize, &resourceRealSize))
 			{
 				std::cout << "*** Resource Archive Error\n";
-				std::cout << "file:" << * name;
+				std::cout << "file:" << *name << '\n';
 				return false;
 			}
 
@@ -95,29 +85,34 @@ public:
 			resourcePackedSum += resourcePackedSize;
 
 			// process information
-			std::cout << "file:" << * name;
-			std::cout << " size:" << resourceRealSize << " packed: " << resourcePackedSize << std::endl;
+			std::cout << "file:" << *name;
+			std::cout << "size:" << resourceRealSize << " packed: " << resourcePackedSize << '\n';
 
-			name++;
+			++name;
 		}
 
 		// pack summary	
 		std::cout << "Summary:\n"
 		          << "size: " << resourceRealSum << '\n'
 		          << "packed size: " << resourcePackedSum << '\n'
-		          << "compression rate: " << (static_cast<float32>(resourcePackedSum) / resourceRealSum) << std::endl;
+		          << "compression rate: " << (static_cast<float32>(resourcePackedSum) / resourceRealSum) << '\n';
 		
         return true;
 	}	
 
 	String ExtractName(const String & name)
 	{		
-		String::size_type n = name.rfind("/");
-		if (n == -1)return name;
+		auto n = name.rfind("/");
+        if (n == String::npos)
+        {
+            return name;
+        }
 		else
 		{
-			if (n == name.length())
-				n = name.rfind("/", n - 1);
+            if (n == name.length())
+            {
+                n = name.rfind("/", n - 1);
+            }
 
 			return name.substr(n);
 		}
@@ -127,13 +122,13 @@ public:
 	{
         FilePath pathToDir = pathDirName;
         fileSystem->SetCurrentWorkingDirectory(pathToDir);
-        bool includeHidden = false;
-        FileList * fileList = new FileList(pathToDir, includeHidden);
-		for (int file = 0; file < fileList->GetCount(); ++file)
+        auto includeHidden = false;
+        auto * fileList = new FileList(pathToDir, includeHidden);
+		for (auto file = 0; file < fileList->GetCount(); ++file)
 		{
 			if (fileList->IsDirectory(file))
 			{
-                String directoryName = fileList->GetFilename(file);
+                auto directoryName = fileList->GetFilename(file);
                 if ((directoryName != "..") && (directoryName != "."))
 				{
                     std::cout << "Directory: " << directoryName << '\n';
@@ -141,8 +136,8 @@ public:
 				}
 			}else
 			{
-                String filename = fileList->GetFilename(file);
-				String pathname = redusedPath + filename;
+                auto filename = fileList->GetFilename(file);
+				auto pathname = redusedPath + filename;
 				
 				std::cout << "file: " << pathname << '\n';
 				fileNameList.push_back(pathname);
@@ -177,7 +172,7 @@ void FrameworkWillTerminate()
 
 int PackDirectoryIntoPakfile(const String& dir, const String& pak, const String& compression)
 {
-    int result = EXIT_FAILURE;
+    auto result = EXIT_FAILURE;
 
     std::cout << "===================================================\n"
               << "=== Packer started\n"
@@ -185,11 +180,11 @@ int PackDirectoryIntoPakfile(const String& dir, const String& pak, const String&
               << "=== Pack archiveName: " << pak << '\n'
               << "===================================================\n";
 
-    const String dirWithSlash = (dir.back() == '/' ? dir : dir + '/');
+    auto dirWithSlash = (dir.back() == '/' ? dir : dir + '/');
 
     Packer packer(pak, dirWithSlash);
 
-    if(packer.Pack())
+    if (packer.Pack(compression))
     {
         result = EXIT_SUCCESS;
     }
@@ -199,9 +194,9 @@ int PackDirectoryIntoPakfile(const String& dir, const String& pak, const String&
 
 int UnpackPackfileIntoDirectory(const String& pak, const String& dir)
 {
-    FileSystem * fs = new FileSystem();
+    auto fs = new FileSystem();
     DVASSERT(fs);
-    String programmPath = fs->GetCurrentWorkingDirectory().GetAbsolutePathname();
+    auto programmPath = fs->GetCurrentWorkingDirectory().GetAbsolutePathname();
 
     auto pathArchiveNameDir = programmPath + "/" + pak;
 
@@ -217,41 +212,14 @@ int UnpackPackfileIntoDirectory(const String& pak, const String& dir)
     std::unique_ptr<ResourceArchive, void (*)(ResourceArchive*)> ra(new ResourceArchive(), [](ResourceArchive*ptr){ SafeRelease(ptr); });
     ra->Open(pathArchiveNameDir);
 
-    for (int file = 0; file < ra->GetFileCount(); ++file)
-    {
-        String pathName = ra->GetResourcePathname(file);
-        pathName = dir + pathName;
-
-        String::size_type pos = pathName.rfind('/');
-        if (pos != String::npos)
-        {
-            String dirCreate = pathName.substr(0, pos);
-            fs->CreateDirectory(dirCreate.c_str());
-        }
-
-        int32 size = ra->LoadResource(file, 0);
-        uint8 * data = new uint8[size];
-        ra->LoadResource(file, data);
-
-        File * unpackFile = File::Create(pathName, File::CREATE | File::WRITE);
-        if (unpackFile)
-        {
-            unpackFile->Write(data, size);
-            SafeRelease(unpackFile);
-        } else
-        {
-            // TODO error
-        }
-
-        delete[] data;
-    }
+    // TODO
     return EXIT_SUCCESS;
 }
 
 
 int main(int argc, char* argv[])
 {
-    int result = EXIT_FAILURE;
+    auto result = EXIT_FAILURE;
 
     ProgramOptions packOptions("pack");
     packOptions.AddOption("--compression", VariantType(String("lz4")), "compression method, lz4 - default");
@@ -264,16 +232,16 @@ int main(int argc, char* argv[])
 
     if (packOptions.Parse(argc, argv))
     {
-        String compression = packOptions.GetOption("--compression").AsString();
+        auto compression = packOptions.GetOption("--compression").AsString();
 
-        String dirName = packOptions.GetArgument("directory");
-        String pakFile = packOptions.GetArgument("pakfile");
+        auto dirName = packOptions.GetArgument("directory");
+        auto pakFile = packOptions.GetArgument("pakfile");
 
         result = PackDirectoryIntoPakfile(dirName, pakFile, compression);
     } else if (unpackOptions.Parse(argc, argv))
     {
-        String pakFile = unpackOptions.GetArgument("pakfile");
-        String dirName = unpackOptions.GetArgument("directory");
+        auto pakFile = unpackOptions.GetArgument("pakfile");
+        auto dirName = unpackOptions.GetArgument("directory");
         
         result = UnpackPackfileIntoDirectory(pakFile, dirName);
     } else
