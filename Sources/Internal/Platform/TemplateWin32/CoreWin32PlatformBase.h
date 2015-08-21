@@ -43,7 +43,7 @@ class CoreWin32PlatformBase : public Core
 public:
     CoreWin32PlatformBase();
 
-    void InitCommandLineArgs();
+    void InitArgs();
     void Quit() override;
 
     HINSTANCE GetInstance() const;

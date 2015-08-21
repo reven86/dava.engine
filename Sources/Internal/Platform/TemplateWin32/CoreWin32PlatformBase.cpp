@@ -55,30 +55,23 @@ HWND CoreWin32PlatformBase::GetWindow() const
     return hWindow;
 }
 
-void CoreWin32PlatformBase::InitCommandLineArgs()
+void CoreWin32PlatformBase::InitArgs()
 {
-    LPWSTR *szArglist;
     int argc = 0;
-
-    szArglist = ::CommandLineToArgvW(::GetCommandLineW(), &argc);
+    LPWSTR *szArglist = ::CommandLineToArgvW(::GetCommandLineW(), &argc);
 
     if (argc > 0 && NULL != szArglist)
     {
-        char** argv = new char*[argc];
+        Vector<String> args(argc);
         for (int i = 0; i < argc; ++i)
         {
-            argv[i] = WStringToDynamicArray(szArglist[i]);
+            args[i] = std::move(WStringToString(szArglist[i]));
         }
 
-        SetCommandLine(argc, argv);
-
-        for (int i = 0; i < argc; ++i)
-        {
-            delete[] argv[i];
-        }
-        delete[] argv;
+        SetCommandLine(std::move(args));
     }
-    LocalFree(szArglist);
+
+    ::LocalFree(szArglist);
 }
 
 void CoreWin32PlatformBase::Quit()

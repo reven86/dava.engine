@@ -57,7 +57,7 @@ public:
     CorePlatformWinUAP(const CorePlatformWinUAP&) = delete;
     CorePlatformWinUAP& operator = (const CorePlatformWinUAP&) = delete;
 
-    void InitCommandLineArgs();
+    void InitArgs();
     void Run();
     void Quit() override;
 

@@ -275,7 +275,7 @@ protected:
 	int32 screenOrientation;
 
 	void SetCommandLine(int argc, char *argv[]);
-	void SetCommandLine(const DAVA::String& cmdLine);
+	void SetCommandLine(Vector<String>&& args);
 
 private:
     KeyedArchive * options;
