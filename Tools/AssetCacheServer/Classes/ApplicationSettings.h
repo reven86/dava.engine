@@ -45,28 +45,13 @@ using namespace DAVA;
 struct ServerData
 {
     ServerData() = default;
-    ServerData(String _ip, uint16 _port, bool _enabled) : ip(_ip), port(_port), enabled(_enabled) {};
+    ServerData(String _ip, uint16 _port, bool _enabled);
 
-    bool IsEmpty() const { return ip.empty(); }
-    
-    bool operator == (const ServerData & right) const
-    {
-        return (ip == right.ip) && (port == right.port);
-    }
-    
-    bool EquivalentTo(const DAVA::Net::Endpoint & right) const
-    {
-        return (ip == right.Address().ToString()) && (port == right.Port());
-    }
+	bool IsEmpty() const;
+	bool EquivalentTo(const DAVA::Net::Endpoint & right) const;
 
-    bool operator < (const ServerData & right) const
-    {
-        if(ip == right.ip)
-        {
-            return port < right.port;
-        }
-        return ip < right.ip;
-    }
+	bool operator == (const ServerData & right) const;
+	bool operator < (const ServerData & right) const;
     
     String ip = "";
     uint16 port = AssetCache::ASSET_SERVER_PORT;

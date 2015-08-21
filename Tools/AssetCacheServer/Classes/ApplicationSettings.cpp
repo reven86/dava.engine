@@ -44,6 +44,39 @@ namespace {
 }
 
 
+ServerData::ServerData(String _ip, uint16 _port, bool _enabled) 
+	: ip(_ip)
+	, port(_port)
+	, enabled(_enabled) 
+{
+}
+
+bool ServerData::IsEmpty() const 
+{
+	return ip.empty(); 
+}
+
+bool ServerData::operator == (const ServerData & right) const
+{
+	return (ip == right.ip) && (port == right.port);
+}
+
+bool ServerData::EquivalentTo(const DAVA::Net::Endpoint & right) const
+{
+	return (ip == right.Address().ToString()) && (port == right.Port());
+}
+
+bool ServerData::operator < (const ServerData & right) const
+{
+	if (ip == right.ip)
+	{
+		return port < right.port;
+	}
+	return ip < right.ip;
+}
+
+
+
 void ApplicationSettings::Save() const
 {
     static FilePath path("~doc:/AssetServer/ACS_settings.dat");
