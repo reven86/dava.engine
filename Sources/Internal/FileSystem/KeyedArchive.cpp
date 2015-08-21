@@ -191,7 +191,7 @@ uint32 KeyedArchive::Save(uint8 *data, uint32 size) const
     Save(buffer);
     
     auto archieveSize = buffer->GetSize();
-    if(data && size >= archieveSize)
+    if((nullptr != data) && (size >= archieveSize))
     {   // if data is null, we just return requested size for data
         Memcpy(data, buffer->GetData(), archieveSize);
     }

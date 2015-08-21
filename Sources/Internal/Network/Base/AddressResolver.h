@@ -80,11 +80,11 @@ private:
 
 private:
 
-    uv_getaddrinfo_t* handle;
+	uv_getaddrinfo_t* handle = nullptr;
     addrinfo result;
 
     AddressRequester& requester;
-    State state;
+	State state = State::NOT_REQUESTED;
 };
 
 

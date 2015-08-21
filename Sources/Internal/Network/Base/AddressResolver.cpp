@@ -43,8 +43,6 @@ Mutex AddressResolver::handlesMutex;
 
 AddressResolver::AddressResolver(AddressRequester& rq)
     : requester(rq)
-    , state(State::NOT_REQUESTED)
-    , handle(nullptr)
 {
 }
 
@@ -113,7 +111,7 @@ bool AddressResolver::StartResolving(const char8* address, uint16 port)
     {
         state = State::RESOLVE_ERROR;
         const char* err = uv_err_name(res);
-        Logger::FrameworkDebug("Can't get addr info: %s", err);
+        Logger::Error("[AddressResolver::StartResolving] Can't get addr info: %s", err);
         return false;
     }
 }
@@ -158,7 +156,7 @@ void AddressResolver::GotAddrInfo(int status, struct addrinfo* response)
     {
         state = State::RESOLVE_ERROR;
         const char* err = uv_err_name(status);
-        Logger::FrameworkDebug("Can't get addr info: %s", err);
+        Logger::Error("[AddressResolver::GotAddrInfo] Can't get addr info: %s", err);
     }
 
     requester.OnAddressResolved();
