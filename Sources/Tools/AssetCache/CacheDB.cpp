@@ -219,7 +219,7 @@ void CacheDB::ReduceFullCacheBySize(uint64 toSize)
 
 void CacheDB::ReduceFastCacheByCount(uint32 countToRemove)
 {
-    for (; countToRemove; --countToRemove)
+    for (; countToRemove > 0; --countToRemove)
     {
         const auto & oldestFound = std::min_element(fastCache.begin(), fastCache.end(), [](const FastCacheMap::value_type &left, const FastCacheMap::value_type & right) -> bool
         {

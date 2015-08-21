@@ -168,7 +168,7 @@ String DeviceInfo::GetUDID()
 
 
 	uint8 md5Digest[MD5::DIGEST_SIZE];
-	MD5::ForData((uint8*)res.c_str(), (uint32)res.size(), md5Digest);
+	MD5::ForData(reinterpret_cast<const uint8 *>(res.c_str()), static_cast<uint32>(res.size()), md5Digest);
 
 	String digest(MD5::DIGEST_SIZE * 2 + 1, '\0');
 	MD5::HashToChar(md5Digest, const_cast<char8 *>(digest.data()), digest.size());

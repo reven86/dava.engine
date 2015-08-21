@@ -68,11 +68,11 @@ private:
         
 private:
     
-    int64 pid;
+    int64 pid = -1;
     String output;
     FilePath executablePath;
     Vector<String> runArgs;
-    bool running;
+	bool running = false;
     
 #if defined (__DAVAENGINE_WIN32__)
     HANDLE childProcIn[2];
@@ -81,7 +81,7 @@ private:
     int pipes[2];
 #endif
 
-    int exitCode;
+    int exitCode = -1; //invalid by default
     
 };
 };

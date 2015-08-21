@@ -42,14 +42,14 @@ namespace DAVA
 namespace AssetCache
 {
     
-CachedItemValue::CachedItemValue(const CachedItemValue & right) DAVA_NOEXCEPT
+CachedItemValue::CachedItemValue(const CachedItemValue & right)
 	: dataContainer(right.dataContainer)
 	, size(right.size)
 	, isFetched(right.isFetched)
 {
 }
     
-CachedItemValue::CachedItemValue(CachedItemValue &&right) DAVA_NOEXCEPT
+CachedItemValue::CachedItemValue(CachedItemValue &&right)
 	: dataContainer(std::move(right.dataContainer))
     , size(right.size)
 	, isFetched(right.isFetched)
@@ -67,12 +67,7 @@ CachedItemValue::~CachedItemValue()
     }
     else
     {
-#if defined (__DAVAENGINE_DEBUG__)
-		for (auto & data : dataContainer)
-        {
-			DVASSERT(IsDataLoaded(data.second) == false);
-        }
-#endif// (__DAVAENGINE_DEBUG__)
+		DVASSERT(std::all_of(dataContainer.cbegin(), dataContainer.cend(), [this](const ValueDataContainer::value_type &data) { return IsDataLoaded(data.second) == false; }));
     }
     
     dataContainer.clear();

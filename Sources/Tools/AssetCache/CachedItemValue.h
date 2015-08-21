@@ -53,10 +53,10 @@ class CachedItemValue
 public:
     
     CachedItemValue() = default;
-    CachedItemValue(const CachedItemValue & right) DAVA_NOEXCEPT;
-    CachedItemValue(CachedItemValue && right) DAVA_NOEXCEPT;
+    CachedItemValue(const CachedItemValue & right);
+    CachedItemValue(CachedItemValue && right);
     
-    virtual ~CachedItemValue();
+    ~CachedItemValue();
     
     void Add(const String &name, ValueData data);
     
