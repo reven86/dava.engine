@@ -51,7 +51,7 @@ public:
 
 	union
 	{
-		float32	color[4];
+		float32 color[4];
 		struct  
 		{
 			float32 r, g, b, a;
@@ -75,6 +75,8 @@ public:
 
     inline uint32 GetRGBA() const;
 };
+
+static_assert(sizeof(Color) == 4 * sizeof(float32), "Wrong Sizeof(Color)");
 
 //! with color
 inline Color operator - (const Color & _v1, const Color & _v2);

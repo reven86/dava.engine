@@ -79,7 +79,7 @@ private:
 		String languageCode;// in ISO 639-1, like en,ru,uk
 		String localeCode;// like en_US, ru_RU
 	};
-    static const LanguageLocalePair languageLocaleMap[];
+    static const Vector<LanguageLocalePair> languageLocaleMap;
     
 	void LoadStringFile(const String & langId, const FilePath & fileName);
 	void UnloadStringFile(const FilePath & fileName); 

@@ -48,7 +48,7 @@ Announcer::Announcer(IOLoop* ioLoop, const Endpoint& endp, uint32 sendPeriod, Fu
     , dataCallback(needDataCallback)
 {
     DVASSERT(true == endpoint.Address().IsMulticast());
-    DVVERIFY(true == endpoint.Address().ToString(endpAsString, COUNT_OF(endpAsString)));
+    DVVERIFY(true == endpoint.Address().ToString(endpAsString.data(), endpAsString.size()));
     DVASSERT(loop != nullptr && announcePeriod > 0 && dataCallback != nullptr);
 }
 
@@ -82,7 +82,7 @@ void Announcer::DoStart()
     int32 error = socket.Bind(Endpoint(endpoint.Port()), true);
     if (0 == error)
     {
-        error = socket.JoinMulticastGroup(endpAsString, NULL);
+        error = socket.JoinMulticastGroup(endpAsString.data(), NULL);
         if (0 == error)
             error = timer.Wait(0, MakeFunction(this, &Announcer::TimerHandleTimer));
     }
