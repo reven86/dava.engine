@@ -82,5 +82,15 @@ void ConnectionListener::Start()
     pimpl->Start();
 }
 
+void ConnectionListener::SetRestartable(bool restartable)
+{
+    pimpl->SetRestartable(restartable);
+}
+
+bool ConnectionListener::IsRestartable() const
+{
+    return pimpl->IsRestartable();
+}
+
 }  // namespace Net
 }  // namespace DAVA

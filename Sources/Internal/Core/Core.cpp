@@ -632,8 +632,8 @@ void Core::InitializeNetwork()
     Net::SimpleNetCore* simpleNetCore = new Net::SimpleNetCore();
 
     //TODO: recognize if current machine is phone and make a normal end point!
-    //Net::Endpoint endPoint("127.0.0.1", 1911);
-    Net::Endpoint endPoint("127.0.0.1", 7777);
+    Net::Endpoint endPoint("127.0.0.1", 1911);
+    //Net::Endpoint endPoint("127.0.0.1", 777);
     auto netLoggerService = std::make_unique<Net::NetLogger>();
 
     //TODO: make a normal service name

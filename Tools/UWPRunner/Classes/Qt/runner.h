@@ -61,6 +61,7 @@ public:
 
     bool isValid() const;
     QString app() const;
+    QString profile() const;
     QString manifest() const;
     QString dependenciesDir() const;
     QString outputFileName() const;

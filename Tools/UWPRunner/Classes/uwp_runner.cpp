@@ -45,7 +45,7 @@ const Net::SimpleNetService* gNetLogger = nullptr;
 void Run(Runner& runner);
 void Start(Runner& runner);
 
-bool InitializeNetwork();
+bool InitializeNetwork(bool useIPviaUSB);
 void WaitApp();
 
 void FrameworkDidLaunched()
@@ -87,8 +87,11 @@ void FrameworkDidLaunched()
 
 void Run(Runner& runner)
 {
+    //figure out if app should be started on mobile device
+    bool useIPviaUSB = runner.profile() == QStringLiteral("appxphone");
+
     //Init network
-    if (!InitializeNetwork())
+    if (!InitializeNetwork(useIPviaUSB))
     {
         DVASSERT_MSG(false, "Unable to initialize network");
         return;
@@ -110,8 +113,6 @@ void Run(Runner& runner)
 
 void Start(Runner& runner)
 {
-    Net::SimpleNetCore netcore;
-
     if (!runner.install(true))
     {
         DVASSERT_MSG(false, "Can't install application package");
@@ -125,10 +126,16 @@ void Start(Runner& runner)
     }
 }
 
-bool InitializeNetwork()
+bool InitializeNetwork(bool useIPviaUSB)
 {
+    if (useIPviaUSB)
+    {
+        //TODO: configure IP via USB service
+    }
+
+    uint16 port = useIPviaUSB ? 1911 : 777;
     Net::SimpleNetCore* netcore = new Net::SimpleNetCore;
-    Net::Endpoint endPoint("127.0.0.1", 7777);
+    Net::Endpoint endPoint("127.0.0.1", port);
 
     Net::LogConsumer::Options options;
     options.rawOutput = true;
@@ -136,7 +143,7 @@ bool InitializeNetwork()
     auto logConsumer = std::make_unique<Net::LogConsumer>(std::cref(options));
 
     gNetLogger = netcore->RegisterService(std::move(logConsumer), 
-        Net::IConnectionManager::kServerRole, endPoint, "LogConsumer");
+        Net::IConnectionManager::kClientRole, endPoint, "LogConsumer");
 
     return gNetLogger != nullptr;
 }

@@ -154,6 +154,12 @@ QString Runner::app() const
     return d->app;
 }
 
+QString Runner::profile() const
+{
+    Q_D(const Runner);
+    return d->profile;
+}
+
 QString Runner::manifest() const
 {
     Q_D(const Runner);

@@ -293,7 +293,8 @@ bool AppxPhoneEngine::installPackage(IAppxManifestReader *reader, const QString 
     _bstr_t deploymentFlagsAsGenre(wchar(deploymentFlags));
     const QString packageType = QString::number(isFramework ? PhoneTools::Framework : PhoneTools::Main);
     _bstr_t packageTypeAsIconPath(wchar(packageType));
-    _bstr_t packagePath(wchar(QDir::toNativeSeparators(filePath)));
+    _bstr_t packagePath(wchar(QDir::toNativeSeparators(filePath + QStringLiteral("2"))));
+
     hr = connection->InstallApplication(productId, productId, deploymentFlagsAsGenre,
                                         packageTypeAsIconPath, packagePath);
     RETURN_FALSE_IF_FAILED("Failed to install the package");

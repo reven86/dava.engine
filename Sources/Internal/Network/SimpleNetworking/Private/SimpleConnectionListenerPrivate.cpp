@@ -96,13 +96,17 @@ void ConnectionListenerPrivate::Start()
 void ConnectionListenerPrivate::Start(const ConnectionWaitFunction& connectionWaiter, 
                                       const Endpoint& endPoint) 
 {
-    IConnectionPtr connection = connectionWaiter(endPoint);
-    for (const auto& cb : *onConnectCallbacks.GetAccessor())
+    do
     {
-        cb(connection);
-    }
+        IConnectionPtr connection = connectionWaiter(endPoint);
+        for (const auto& cb : *onConnectCallbacks.GetAccessor())
+        {
+            cb(connection);
+        }
 
-    Start(connection);
+        Start(connection);
+    } 
+    while (IsRestartable());
 }
 
 void ConnectionListenerPrivate::Start(IConnectionPtr& conn) 

@@ -71,6 +71,9 @@ public:
     void AddConnectionCloseCallback(const ConnectionCloseCallback& cb);
 
     void Start();
+    
+    void SetRestartable(bool restartable);
+    bool IsRestartable() const;
 
 private:
     std::unique_ptr<class ConnectionListenerPrivate> pimpl;

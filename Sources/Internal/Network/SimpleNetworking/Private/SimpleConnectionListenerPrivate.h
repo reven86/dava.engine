@@ -30,6 +30,7 @@
 #ifndef __DAVAENGINE_SIMPLE_CONNECTION_LISTENER_PRIVATE_H__
 #define __DAVAENGINE_SIMPLE_CONNECTION_LISTENER_PRIVATE_H__
 
+#include "Concurrency/Atomic.h"
 #include "Concurrency/ConcurrentObject.h"
 #include "Concurrency/Spinlock.h"
 #include "Concurrency/Thread.h"
@@ -63,6 +64,9 @@ public:
 
     void Start();
 
+    void SetRestartable(bool restart) { restartable = restart; }
+    bool IsRestartable() const { return restartable.Get(); }
+
 private:
     void Start(const ConnectionWaitFunction& connectionWaiter, const Endpoint& endPoint);
     void Start(IConnectionPtr& conn);
@@ -73,6 +77,7 @@ private:
     ConcurrentList<DataReceiveCallback> onDataReceiveCallbacks;
     ConcurrentList<ConnectionCloseCallback> onConnectionCloseCallbacks;
     NotificationType notificationType;
+    Atomic<bool> restartable = false;
 };
 
 }  // namespace Net
