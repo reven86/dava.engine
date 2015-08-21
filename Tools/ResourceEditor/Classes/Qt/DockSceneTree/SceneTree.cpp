@@ -1204,7 +1204,7 @@ void SceneTree::CloneLayer()
 		return;
 	}
 
-	if (!selectedEmitter || !selectedLayer)
+	if (nullptr == selectedEmitter || nullptr == selectedLayer)
 	{
 		DVASSERT(false);
 		return;
