@@ -500,6 +500,11 @@ private:
     };
 };
 
+using namespace std::placeholders;
+
+template<typename... Args>
+auto Bind(Args&&... args) -> decltype(std::bind(std::forward<Args>(args)...)) { return std::bind(std::forward<Args>(args)...); }
+
 template<typename Ret, typename... Args>
 Function<Ret(Args...)> MakeFunction(Ret(*const &fn)(Args...)) { return Function<Ret(Args...)>(fn); }
 

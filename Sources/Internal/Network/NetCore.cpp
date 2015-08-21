@@ -58,7 +58,7 @@ NetCore::TrackId NetCore::CreateController(const NetConfig& config, void* contex
     NetController* ctrl = new NetController(&loop, registrar, context);
     if (true == ctrl->ApplyConfig(config))
     {
-        loop.Post(std::bind(&NetCore::DoStart, this, ctrl));
+        loop.Post(Bind(&NetCore::DoStart, this, ctrl));
         return ObjectToTrackId(ctrl);
     }
     else
@@ -72,7 +72,7 @@ NetCore::TrackId NetCore::CreateAnnouncer(const Endpoint& endpoint, uint32 sendP
 {
     DVASSERT(false == isFinishing);
     Announcer* ctrl = new Announcer(&loop, endpoint, sendPeriod, needDataCallback);
-    loop.Post(std::bind(&NetCore::DoStart, this, ctrl));
+    loop.Post(Bind(&NetCore::DoStart, this, ctrl));
     return ObjectToTrackId(ctrl);
 }
 
@@ -80,7 +80,7 @@ NetCore::TrackId NetCore::CreateDiscoverer(const Endpoint& endpoint, Function<vo
 {
     DVASSERT(false == isFinishing);
     Discoverer* ctrl = new Discoverer(&loop, endpoint, dataReadyCallback);
-    loop.Post(std::bind(&NetCore::DoStart, this, ctrl));
+    loop.Post(Bind(&NetCore::DoStart, this, ctrl));
     return ObjectToTrackId(ctrl);
 }
 
@@ -88,7 +88,7 @@ void NetCore::DestroyController(TrackId id)
 {
     DVASSERT(false == isFinishing);
     DVASSERT(GetTrackedObject(id) != NULL);
-	loop.Post(std::bind(&NetCore::DoDestroy, this, id, nullptr));
+	loop.Post(Bind(&NetCore::DoDestroy, this, id, nullptr));
 }
 
 void NetCore::DestroyControllerBlocked(TrackId id)
@@ -97,7 +97,7 @@ void NetCore::DestroyControllerBlocked(TrackId id)
     DVASSERT(GetTrackedObject(id) != NULL);
 
     volatile bool oneStopped = false;
-    loop.Post(std::bind(&NetCore::DoDestroy, this, id, &oneStopped));
+    loop.Post(Bind(&NetCore::DoDestroy, this, id, &oneStopped));
 
     // Block until given controller is stopped and destroyed
     do {
@@ -161,7 +161,7 @@ void NetCore::DoDestroy(TrackId id, volatile bool* stoppedFlag)
     if (trackedObjects.erase(ctrl) > 0)
     {
         dyingObjects.insert(ctrl);
-        ctrl->Stop(std::bind(&NetCore::TrackedObjectStopped, this, std::placeholders::_1, stoppedFlag));
+        ctrl->Stop(Bind(&NetCore::TrackedObjectStopped, this, _1, stoppedFlag));
     }
     else if (stoppedFlag != nullptr)
         *stoppedFlag = true;
@@ -173,7 +173,7 @@ void NetCore::DoDestroyAll()
     {
         IController* ctrl = *i;
         dyingObjects.insert(ctrl);
-        ctrl->Stop(std::bind(&NetCore::TrackedObjectStopped, this, std::placeholders::_1, nullptr));
+        ctrl->Stop(Bind(&NetCore::TrackedObjectStopped, this, _1, nullptr));
     }
     trackedObjects.clear();
 

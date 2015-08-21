@@ -170,7 +170,7 @@ FilePath DLC::GetMetaStorePath() const
     
 void DLC::PostEvent(DLCEvent event)
 {
-    Function<void()> fn = std::bind(&DLC::FSM, this, event);
+    Function<void()> fn = Bind(&DLC::FSM, this, event);
 	JobManager::Instance()->CreateMainJob(fn);
 }
 

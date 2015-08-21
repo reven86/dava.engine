@@ -102,7 +102,7 @@ Shader * ShaderAsset::Compile(const FastNameSet & defines)
                                             fragmentShaderDataSize,
                                             defines);
 	
-		Function<void()> fn = std::bind(&ShaderAsset::CompileShaderInternal, this, shader, defines);
+		Function<void()> fn = Bind(&ShaderAsset::CompileShaderInternal, this, shader, defines);
 		uint32 jobId = JobManager::Instance()->CreateMainJob(fn);
 		JobManager::Instance()->WaitMainJobID(jobId);
 	}
@@ -121,7 +121,7 @@ void ShaderAsset::ReloadShaders()
 		Shader *shader = it->second;
 		shader->Reload(vertexShaderData, fragmentShaderData, vertexShaderDataStart, vertexShaderDataSize, fragmentShaderDataStart, fragmentShaderDataSize);
 
-		Function<void()> fn = std::bind(&ShaderAsset::ReloadShaderInternal, this, shader);
+		Function<void()> fn = Bind(&ShaderAsset::ReloadShaderInternal, this, shader);
 		uint32 jobId = JobManager::Instance()->CreateMainJob(fn);
 		JobManager::Instance()->WaitMainJobID(jobId);
 	}

@@ -323,7 +323,7 @@ void PrintBackTraceToLog(Logger::eLogLevel logLevel )
     {
         Function<void (Logger::eLogLevel,pointer_size,const char * )> onStackFrame = &OnStackFrame;
         Logger::FrameworkDebug("DAVA BACKTRACE PRINTING");
-        backtraceProvider->PrintableBacktrace(std::bind(onStackFrame, logLevel, std::placeholders::_1, std::placeholders::_2),nullptr,0);
+        backtraceProvider->PrintableBacktrace(Bind(onStackFrame, logLevel, _1, _2),nullptr,0);
     }
     else
     {

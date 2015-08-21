@@ -250,7 +250,7 @@ void Texture::ReleaseTextureData()
 	state = STATE_INVALID;
     uint32 tt = textureType;
 
-    Function<void()> fn = std::bind(&Texture::ReleaseTextureDataInternal, this, tt, id, fboID, rboID, platformStencilRboID);
+    Function<void()> fn = Bind(&Texture::ReleaseTextureDataInternal, this, tt, id, fboID, rboID, platformStencilRboID);
 	JobManager::Instance()->CreateMainJob(fn);
 
     id = 0;
@@ -729,7 +729,7 @@ void Texture::SetParamsFromImages(const Vector<Image *> * images)
 
 void Texture::FlushDataToRenderer(Vector<Image *> * images)
 {
-    Function<void()> fn = std::bind(MakeFunction(MakeSharedObject(this), &Texture::FlushDataToRendererInternal), images);
+    Function<void()> fn = Bind(MakeFunction(MakeSharedObject(this), &Texture::FlushDataToRendererInternal), images);
 	JobManager::Instance()->CreateMainJob(fn);
 }
 

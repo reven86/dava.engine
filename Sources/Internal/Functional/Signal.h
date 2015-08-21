@@ -285,7 +285,7 @@ class SignalMt final : public Sig11::SignalImpl<Mutex, Thread::Id, Args...>
                 }
                 else
                 {
-                    Function<void()> fn = std::bind(con.second.fn, std::forward<Args>(args)...);
+                    Function<void()> fn = Bind(con.second.fn, std::forward<Args>(args)...);
 
                     // TODO:
                     // add implementation
