@@ -265,20 +265,19 @@ void CreateDeviceResources()
 
 void CreateWindowSizeDependentResources()
 {
-    m_d3Debug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
-
     // Clear the previous window size specific context.
-    ID3D11RenderTargetView* nullViews[] = { nullptr };
-    m_d3dContext->OMSetRenderTargets(ARRAYSIZE(nullViews), nullViews, nullptr);
-    m_d3dContext->ClearState();
-    m_d3dContext->Flush();
+#if 0
+    ID3D11RenderTargetView* nullViews[D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT] = { nullptr };
+    m_d3dContext->OMSetRenderTargets(D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT, nullViews, nullptr);
+#endif
 
     m_swapChainBuffer.Reset();
     m_d3dRenderTargetView.Reset();
     m_d3dDepthStencilBuffer.Reset();
     m_d3dDepthStencilView.Reset();
 
-    m_d3Debug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
+    m_d3dContext->Flush();
+    m_d3dContext->ClearState();
 
     // Calculate the necessary swap chain and render target size in pixels.
     m_outputSize.Width = m_logicalSize.Width * m_compositionScaleX;
@@ -296,10 +295,6 @@ void CreateWindowSizeDependentResources()
     bool swapDimensions = displayRotation == DXGI_MODE_ROTATION_ROTATE90 || displayRotation == DXGI_MODE_ROTATION_ROTATE270;
     m_d3dRenderTargetSize.Width = swapDimensions ? m_outputSize.Height : m_outputSize.Width;
     m_d3dRenderTargetSize.Height = swapDimensions ? m_outputSize.Width : m_outputSize.Height;
-
-    // RHI_COMPLETE: TODO: Fix ResizeBuffers error
-    //m_swapChain = nullptr; 
-    // -------------------------------------------
 
     if (m_swapChain != nullptr)
     {
@@ -439,8 +434,6 @@ void CreateWindowSizeDependentResources()
         );
 #endif
 
-    m_d3Debug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
-
     // Create a render target view of the swap chain back buffer.
     ThrowIfFailed(
         m_swapChain->GetBuffer(0, IID_PPV_ARGS(&m_swapChainBuffer))
@@ -453,8 +446,6 @@ void CreateWindowSizeDependentResources()
             &m_d3dRenderTargetView
             )
         );
-
-    m_d3Debug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
 
     // Create a depth stencil view for use with 3D rendering if needed.
     CD3D11_TEXTURE2D_DESC depthStencilDesc(
@@ -482,8 +473,6 @@ void CreateWindowSizeDependentResources()
             &m_d3dDepthStencilView
             )
         );
-
-    m_d3Debug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
 
     // Set the 3D rendering viewport to target the entire window.
     m_screenViewport = CD3D11_VIEWPORT(

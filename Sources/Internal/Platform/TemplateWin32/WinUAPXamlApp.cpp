@@ -291,7 +291,7 @@ void WinUAPXamlApp::OnSwapChainPanelSizeChanged(Platform::Object^ sender, SizeCh
         UpdateScreenSize(w, h);
         ResetRender();
         ReInitCoordinatesSystem();
-        //UIScreenManager::Instance()->ScreenSizeChanged();
+        UIScreenManager::Instance()->ScreenSizeChanged();
     });
 }
 
