@@ -33,7 +33,6 @@
 #pragma warning(disable:4702)
 #endif // _WIN32
 
-#ifndef NOMINMAX
 #define NOMINMAX /**< Rid us of the default versions of MINMAX. */
 #ifdef max
 #undef max
@@ -41,7 +40,6 @@
 #ifdef min
 #undef min
 #endif // min
-#endif //NOMINMAX
 
 #ifndef FCOLLADA_NOMINMAX
 /** Retrieves the largest of two values. */
