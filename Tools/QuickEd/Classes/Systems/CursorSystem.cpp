@@ -26,30 +26,56 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
+#include "Systems/CursorSystem.h"
+#include <QApplication>
+#include "Debug/DVAssert.h"
 
-#ifndef __SYSTEMS_TREE_SYSTEM_H__
-#define __SYSTEMS_TREE_SYSTEM_H__
+using namespace DAVA;
 
-#include "Systems/Interfaces.h"
+void CursorSystem::MouseEnterArea(ControlNode* targetNode, const eArea area)
+{
+    QCursor cursor = GetCursorByArea(area);
+    if (shape == cursor.shape() && shapesCount)
+    {
+        return;
+    }
+    shape = cursor.shape();
+    shapesCount++;
+    qApp->setOverrideCursor(cursor);
+}
 
-class Document;
-class ControlNode;
+void CursorSystem::MouseLeaveArea()
+{
+    while (shapesCount)
+    {
+        shapesCount--;
+        qApp->restoreOverrideCursor();
+    }
+}
 
-class TreeSystem final : public InputInterface, public SelectionInterface
-{   
-public:
-    explicit TreeSystem(Document *parent);
-    ~TreeSystem() = default;
-    
-    bool OnInput(DAVA::UIEvent *currentInput) override final;
-    void SelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected) override;
-private:
-    void OnCopy();
-    void OnPaste();
-    void OnDelete();
-    
-    Document *document;
-    SelectedControls selectionList;
-};
-
-#endif // __SYSTEMS_TREE_SYSTEM_H__
+QCursor CursorSystem::GetCursorByArea(const eArea area) const
+{
+    switch (area)
+    {
+    case FRAME:
+    case PIVOT_POINT:
+        return Qt::SizeAllCursor;
+    case TOP_LEFT:
+    case BOTTOM_RIGHT:
+        return Qt::SizeFDiagCursor;
+    case TOP_RIGHT:
+    case BOTTOM_LEFT:
+        return Qt::SizeBDiagCursor;
+    case TOP_CENTER:
+    case BOTTOM_CENTER:
+        return Qt::SizeVerCursor;
+    case CENTER_LEFT:
+    case CENTER_RIGHT:
+        return Qt::SizeHorCursor;
+    case ROTATE:
+        return Qt::CrossCursor;
+    default:
+        DVASSERT_MSG(false, "unexpected enum value");
+        return QCursor();
+    }
+}

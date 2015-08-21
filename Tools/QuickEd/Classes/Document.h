@@ -36,9 +36,16 @@
 #include "Systems/Interfaces.h"
 #include "Defines.h"
 
+#include "Systems/SelectionSystem.h"
+#include "Systems/CanvasSystem.h"
+#include "Systems/HUDSystem.h"
+#include "Systems/TreeSystem.h"
+#include "Systems/CursorSystem.h"
+#include "Systems/TransformSystem.h"
+
 struct WidgetContext
 {
-    
+    virtual ~WidgetContext() = default;
 };
 
 namespace DAVA {
@@ -51,21 +58,17 @@ class QtModelPackageCommandExecutor;
 class PropertiesModel;
 class PackageModel;
 class ControlNode;
-class SelectionSystem;
-class CanvasSystem;
-class HUDSystem;
-class TreeSystem;
 
-class Document : public QObject, public SelectionInterface, InputInterface
+class Document final : public QObject, public SelectionInterface, InputInterface
 {
     Q_OBJECT
 public:
-    Document(PackageNode *package, QObject *parent = nullptr);
+    explicit Document(PackageNode *package, QObject *parent = nullptr);
     ~Document();
     void Detach();
     void Attach();
-    CanvasSystem *GetCanvasSystem() const;
-    HUDSystem *GetHUDSystem() const;
+    CanvasSystem *GetCanvasSystem();
+    HUDSystem *GetHUDSystem();
     const DAVA::FilePath &GetPackageFilePath() const;
 
     QUndoStack *GetUndoStack() const;
@@ -86,14 +89,16 @@ private:
     void SetSelectedNodes(const SelectedNodes &selected, const SelectedNodes &deselected);
     QMap < QObject*, WidgetContext* > contexts;
     SelectedNodes selectedNodes;
-    PackageNode *package = nullptr;
-    QtModelPackageCommandExecutor *commandExecutor = nullptr;
-    QUndoStack *undoStack = nullptr;
+    PackageNode *package;
+    QtModelPackageCommandExecutor *commandExecutor;
+    QUndoStack *undoStack;
 
-    SelectionSystem *selectionSystem;
-    CanvasSystem *canvasSystem;
-    HUDSystem *hudSystem;
-    TreeSystem *treeSystem;
+    SelectionSystem selectionSystem;
+    CanvasSystem canvasSystem;
+    HUDSystem hudSystem;
+    TreeSystem treeSystem;
+    CursorSystem cursorSystem;
+    TransformSystem transformSystem;
     QList<InputInterface*> inputListeners;
 };
 

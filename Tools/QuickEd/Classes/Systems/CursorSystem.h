@@ -27,29 +27,24 @@
  =====================================================================================*/
 
 
-#ifndef __SYSTEMS_TREE_SYSTEM_H__
-#define __SYSTEMS_TREE_SYSTEM_H__
+#ifndef __SYSTEMS_CURSOR_SYSTEM_H__
+#define __SYSTEMS_CURSOR_SYSTEM_H__
 
 #include "Systems/Interfaces.h"
+#include <QCursor>
 
-class Document;
-class ControlNode;
-
-class TreeSystem final : public InputInterface, public SelectionInterface
+class CursorSystem final : public ControlAreaInterface
 {   
 public:
-    explicit TreeSystem(Document *parent);
-    ~TreeSystem() = default;
+    explicit CursorSystem() = default;
+    ~CursorSystem() = default;
     
-    bool OnInput(DAVA::UIEvent *currentInput) override final;
-    void SelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected) override;
+    void MouseEnterArea(ControlNode *targetNode, const eArea area) override;
+    void MouseLeaveArea() override;
 private:
-    void OnCopy();
-    void OnPaste();
-    void OnDelete();
-    
-    Document *document;
-    SelectedControls selectionList;
+    QCursor GetCursorByArea(const eArea area) const;
+    Qt::CursorShape shape = Qt::CustomCursor;
+    int shapesCount = 0;
 };
 
 #endif // __SYSTEMS_TREE_SYSTEM_H__

@@ -34,52 +34,46 @@
 #include "Model/PackageHierarchy/PackageControlsNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 
-#include "Model/ControlProperties/RootProperty.h"
-#include "Model/ControlProperties/SectionProperty.h"
-#include "Model/ControlProperties/ValueProperty.h"
-#include "Model/ControlProperties/LocalizedTextValueProperty.h"
-#include "Model/ControlProperties/FontValueProperty.h"
-
 #include "Ui/QtModelPackageCommandExecutor.h"
 #include "EditorCore.h"
 
-#include "Systems/SelectionSystem.h"
-#include "Systems/CanvasSystem.h"
-#include "Systems/HUDSystem.h"
-#include "Systems/TreeSystem.h"
 
-using namespace DAVA;
 
 Document::Document(PackageNode *_package, QObject *parent)
     : QObject(parent)
     , package(SafeRetain(_package))
     , commandExecutor(new QtModelPackageCommandExecutor(this))
     , undoStack(new QUndoStack(this))
-    , selectionSystem(new SelectionSystem(this))
-    , canvasSystem(new CanvasSystem(this))
-    , hudSystem(new HUDSystem())
-    , treeSystem(new TreeSystem(this))
+    , selectionSystem(this)
+    , canvasSystem(this)
+    , hudSystem()
+    , treeSystem(this)
+    , cursorSystem()
+    , transformSystem(this)
 {
-    inputListeners << selectionSystem << hudSystem << treeSystem;
-    selectionSystem->AddListener(this);
-    selectionSystem->AddListener(canvasSystem);
-    selectionSystem->AddListener(hudSystem);
+    inputListeners << &selectionSystem << &hudSystem << &treeSystem << &transformSystem;
+    selectionSystem.AddListener(this);
+    selectionSystem.AddListener(&canvasSystem);
+    selectionSystem.AddListener(&hudSystem);
+    hudSystem.AddListener(&cursorSystem);
+    hudSystem.AddListener(&transformSystem);
     connect(GetEditorFontSystem(), &EditorFontSystem::UpdateFontPreset, this, &Document::RefreshAllControlProperties);
 }
 
 Document::~Document()
 {
-    SafeRelease(package);
-    SafeRelease(commandExecutor);
-    delete selectionSystem;
-    delete canvasSystem;
-    delete hudSystem;
+    for (auto context : contexts)
+    {
+        delete context;
+    }
 }
+
+using namespace DAVA;
 
 void Document::Detach()
 {
-    hudSystem->Detach();
-    canvasSystem->Detach();
+    hudSystem.Detach();
+    canvasSystem.Detach();
     emit SelectedNodesChanged(SelectedNodes(), selectedNodes);
 }
 
@@ -88,14 +82,14 @@ void Document::Attach()
     emit SelectedNodesChanged(selectedNodes, SelectedNodes());
 }
 
-CanvasSystem* Document::GetCanvasSystem() const
+CanvasSystem* Document::GetCanvasSystem()
 {
-    return canvasSystem;
+    return &canvasSystem;
 }
 
-HUDSystem* Document::GetHUDSystem() const
+HUDSystem* Document::GetHUDSystem()
 {
-    return hudSystem;
+    return &hudSystem;
 }
 
 const FilePath &Document::GetPackageFilePath() const
@@ -223,7 +217,7 @@ void Document::SetSelectedNodes(const SelectedNodes& selected, const SelectedNod
         }
         if (!selectedControls.empty() || !deselectedControls.empty())
         {
-            selectionSystem->SelectionWasChanged(selectedControls, deselectedControls);
+            selectionSystem.SelectionWasChanged(selectedControls, deselectedControls);
         }
         emit SelectedNodesChanged(selected, deselected);
     }

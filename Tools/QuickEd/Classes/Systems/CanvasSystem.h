@@ -34,18 +34,15 @@
 #include "Defines.h"
 
 #include "Base/ScopedPtr.h"
+#include "UI/UIControl.h"
 
 class Document;
-namespace DAVA
-{
-    class UIControl;
-}
 
-class CanvasSystem : public SelectionInterface
+class CanvasSystem final : public SelectionInterface
 {
 public:
     CanvasSystem(Document *parent);
-    virtual ~CanvasSystem() = default;
+    ~CanvasSystem() = default;
     void Attach(DAVA::UIControl *root);
     void Detach();
     void SelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected) override;

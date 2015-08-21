@@ -31,46 +31,45 @@
 #define __QUICKED_HUD_SYSTEM_H__
 
 #include "Interfaces.h"
-#include "Defines.h"
 #include "Base/ScopedPtr.h"
 #include "Math/Vector.h"
-
-#include <QCursor>
-class QWidget;
+#include "UI/UIControl.h"
 
 class Document;
 namespace DAVA
 {
     struct Rect;
-    class UIControl;
 }
-
-class HUDSystem : public SelectionInterface, public InputInterface
+ 
+class HUDSystem final : public SelectionInterface, public InputInterface
 {
 public:
     HUDSystem();
-    virtual ~HUDSystem() = default;
+    ~HUDSystem() = default;
     void Attach(DAVA::UIControl *root);
     void Detach();
     void SelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected) override;
     bool OnInput(DAVA::UIEvent *currentInput) override;
+    void AddListener(ControlAreaInterface *listener);
+    void RemoveListener(ControlAreaInterface *listener);
 private:
-    void ProcessCursor(const DAVA::Vector2& pos) const;
-    QCursor GetCursorByPos(const DAVA::Vector2& pos, bool& found) const;
+    void ProcessCursor(const DAVA::Vector2& pos);
+    void GetControlArea(ControlNode *node, ControlAreaInterface::eArea &area, const DAVA::Vector2 &pos);
+    ControlAreaInterface::eArea activeArea = ControlAreaInterface::NO_AREA;
+    ControlNode *activeControl = nullptr;
+    void SetNewArea(ControlNode* node, const ControlAreaInterface::eArea area);
     DAVA::ScopedPtr<DAVA::UIControl> hudControl;
     struct HUD
     {
-        HUD(DAVA::UIControl *control, DAVA::UIControl *hudControl);
+        HUD(ControlNode *node, DAVA::UIControl *hudControl);
         ~HUD();
-        DAVA::ScopedPtr<DAVA::UIControl> frame;
-        DAVA::Vector < DAVA::ScopedPtr<DAVA::UIControl> > frameRects;
-        DAVA::ScopedPtr<DAVA::UIControl> pivotPoint;
-    private:
+        ControlNode *node = nullptr;
         DAVA::UIControl *control = nullptr;
-        DAVA::UIControl *hudControl = nullptr;
+        DAVA::Vector < DAVA::ScopedPtr<DAVA::UIControl> > hudControls;
     };
     DAVA::Map<ControlNode*, HUD> hudMap;
     DAVA::ScopedPtr<DAVA::UIControl> selectionRect;
+    DAVA::List<ControlAreaInterface*> listeners;
 };
 
 #endif // __QUICKED_HUD_SYSTEM_H__

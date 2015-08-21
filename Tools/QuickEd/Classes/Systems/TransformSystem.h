@@ -27,29 +27,25 @@
  =====================================================================================*/
 
 
-#ifndef __SYSTEMS_TREE_SYSTEM_H__
-#define __SYSTEMS_TREE_SYSTEM_H__
+#ifndef __SYSTEMS_TRANSFORM_SYSTEM_H__
+#define __SYSTEMS_TRANSFORM_SYSTEM_H__
 
 #include "Systems/Interfaces.h"
 
 class Document;
-class ControlNode;
 
-class TreeSystem final : public InputInterface, public SelectionInterface
+class TransformSystem final : public InputInterface, public ControlAreaInterface
 {   
 public:
-    explicit TreeSystem(Document *parent);
-    ~TreeSystem() = default;
-    
-    bool OnInput(DAVA::UIEvent *currentInput) override final;
-    void SelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected) override;
+    explicit TransformSystem(Document *parent);
+    ~TransformSystem() = default;
+    void MouseEnterArea(ControlNode *targetNode, const eArea area) override;
+    void MouseLeaveArea() override;
+    bool OnInput(DAVA::UIEvent *currentInput) override;
 private:
-    void OnCopy();
-    void OnPaste();
-    void OnDelete();
-    
     Document *document;
-    SelectedControls selectionList;
+    eArea activeArea = NO_AREA;
+    ControlNode *activeControl = nullptr;
 };
 
-#endif // __SYSTEMS_TREE_SYSTEM_H__
+#endif // __SYSTEMS_TRANSFORM_SYSTEM_H__

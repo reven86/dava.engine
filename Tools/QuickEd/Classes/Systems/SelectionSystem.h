@@ -35,11 +35,11 @@
 
 class Document;
 
-class SelectionSystem : public SelectionInterface, public InputInterface, public PackageListener
+class SelectionSystem final : public SelectionInterface, public InputInterface, public PackageListener
 {
 public:
     SelectionSystem(Document *doc);
-    virtual ~SelectionSystem() = default;
+    ~SelectionSystem() = default;
     bool OnInput(DAVA::UIEvent *currentInput) override;
     void ControlWasRemoved(ControlNode *node, ControlsContainerNode *from) override;
     void SelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected) override;

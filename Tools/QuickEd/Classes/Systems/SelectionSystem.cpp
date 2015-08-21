@@ -109,7 +109,15 @@ void SelectionSystem::SelectionWasChanged(const SelectedControls &selected, cons
 
 void SelectionSystem::AddListener(SelectionInterface *listener)
 {
-    listeners.push_back(listener);
+    auto it = std::find(listeners.begin(), listeners.end(), listener);
+    if (it == listeners.end())
+    {
+        listeners.push_back(listener);
+    }
+    else
+    {
+        DVASSERT_MSG(false, "listener has already attached");
+    }
 }
 
 void SelectionSystem::RemoveListener(SelectionInterface *listener)

@@ -31,35 +31,35 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "UI/UIControl.h"
 #include "UI/UIEvent.h"
 #include "Base/BaseTypes.h"
-#include "Model/PackageHierarchy/PackageBaseNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"
-#include "Model/PackageHierarchy/PackageNode.h"
-#include "Model/PackageHierarchy/PackageControlsNode.h"
 #include "Render/RenderState.h"
 #include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
-
-#include <QApplication>
-#include <QWidget>
 
 using namespace DAVA;
 
 class ControlContainer : public UIControl
 {
 public:
-    explicit ControlContainer(UIControl *container)
+    explicit ControlContainer(UIControl *container, const ControlAreaInterface::eArea area_)
         : UIControl()
         , control(container)
+        , area(area_)
     {}
+    ControlAreaInterface::eArea GetArea() const
+    {
+        return area;
+    }
 protected:
-    UIControl *control;
+    const UIControl *control = nullptr;
+    const ControlAreaInterface::eArea area = ControlAreaInterface::NO_AREA;
 };
 
 class FrameControl : public ControlContainer
 {
 public:
     explicit FrameControl(UIControl *container)
-        : ControlContainer(container)
+        : ControlContainer(container, ControlAreaInterface::FRAME)
     { }
 private:
     void Draw(const UIGeometricData &geometricData) override
@@ -67,7 +67,7 @@ private:
         Rect rect(control->GetGeometricData().GetUnrotatedRect());
         SetAbsoluteRect(rect);
         Color oldColor = RenderManager::Instance()->GetColor();
-        RenderManager::Instance()->SetColor(GetDebugDrawColor());
+        RenderManager::Instance()->SetColor(Color(1.0f, 0.0f, 0.0f, 1.f));
         RenderHelper::Instance()->DrawRect(GetAbsoluteRect(), RenderState::RENDERSTATE_2D_BLEND);
         RenderManager::Instance()->SetColor(oldColor);
     }
@@ -76,70 +76,52 @@ private:
 class FrameRectControl : public ControlContainer
 {
 public:
-    enum PLACE
-    {
-        TOP_LEFT,
-        TOP_CENTER,
-        TOP_RIGHT,
-        CENTER_LEFT,
-        CENTER_RIGHT,
-        BOTTOM_LEFT,
-        BOTTOM_CENTER,
-        BOTTOM_RIGHT,
-        COUNT
-    };
-    explicit FrameRectControl(PLACE place_, UIControl *container)
-        : ControlContainer(container)
-        , place(place_)
+    explicit FrameRectControl(UIControl *container, const ControlAreaInterface::eArea area_)
+        : ControlContainer(container, area_)
     { }
-    PLACE GetPlace() const
-    {
-        return place;
-    }
 private:
     void Draw(const UIGeometricData &geometricData) override
     {
-        Rect rect(0, 0, 5, 5);
+        Rect rect(0, 0, 8, 8);
         rect.SetCenter(GetPos());
         SetAbsoluteRect(rect);
 
         Color oldColor = RenderManager::Instance()->GetColor();
-        RenderManager::Instance()->SetColor(GetDebugDrawColor());
+        RenderManager::Instance()->SetColor(Color(0.0f, 1.0f, 0.0f, 1.f));
         RenderHelper::Instance()->FillRect(GetAbsoluteRect(), RenderState::RENDERSTATE_2D_BLEND);
         RenderManager::Instance()->SetColor(oldColor);
     }
 
-    Vector2 FrameRectControl::GetPos()
+    Vector2 FrameRectControl::GetPos() const
     {
         Rect rect = control->GetGeometricData().GetUnrotatedRect();
         Vector2 retVal = rect.GetPosition();
-        switch (place)
+        switch (area)
         {
-        case TOP_LEFT: return retVal;
-        case TOP_CENTER: return retVal + Vector2(rect.dx / 2.0f, 0);
-        case TOP_RIGHT: return retVal + Vector2(rect.dx, 0);
-        case CENTER_LEFT: return retVal + Vector2(0, rect.dy / 2.0f);
-        case CENTER_RIGHT: return retVal + Vector2(rect.dx, rect.dy / 2.0f);
-        case BOTTOM_LEFT: return retVal + Vector2(0, rect.dy);
-        case BOTTOM_CENTER: return retVal + Vector2(rect.dx / 2.0f, rect.dy);
-        case BOTTOM_RIGHT: return retVal + Vector2(rect.dx, rect.dy);
+        case ControlAreaInterface::TOP_LEFT: return retVal;
+        case ControlAreaInterface::TOP_CENTER: return retVal + Vector2(rect.dx / 2.0f, 0);
+        case ControlAreaInterface::TOP_RIGHT: return retVal + Vector2(rect.dx, 0);
+        case ControlAreaInterface::CENTER_LEFT: return retVal + Vector2(0, rect.dy / 2.0f);
+        case ControlAreaInterface::CENTER_RIGHT: return retVal + Vector2(rect.dx, rect.dy / 2.0f);
+        case ControlAreaInterface::BOTTOM_LEFT: return retVal + Vector2(0, rect.dy);
+        case ControlAreaInterface::BOTTOM_CENTER: return retVal + Vector2(rect.dx / 2.0f, rect.dy);
+        case ControlAreaInterface::BOTTOM_RIGHT: return retVal + Vector2(rect.dx, rect.dy);
         default: DVASSERT_MSG(false, "what are you doing here?!"); return Vector2(0, 0);
         }
     }
-    PLACE place;
 };
 
 class PivotPointControl : public ControlContainer
 {
 public:
     explicit PivotPointControl(UIControl *container)
-        : ControlContainer(container)
+        : ControlContainer(container, ControlAreaInterface::PIVOT_POINT)
     { }
 private:
     void Draw(const UIGeometricData &geometricData) override
     {
         Color oldColor = RenderManager::Instance()->GetColor();
-        RenderManager::Instance()->SetColor(GetDebugDrawColor());
+        RenderManager::Instance()->SetColor(Color(0.0f, 0.0f, 1.0f, 1.f));
         Rect rect(0, 0, 5, 5);
         rect.SetCenter(control->GetGeometricData().GetUnrotatedRect().GetPosition() + control->GetPivotPoint());
         SetAbsoluteRect(rect);
@@ -148,6 +130,25 @@ private:
     }
 };
 
+class RotateControl : public ControlContainer
+{
+public:
+    explicit RotateControl(UIControl *container)
+        : ControlContainer(container, ControlAreaInterface::ROTATE)
+    { }
+private:
+    void Draw(const UIGeometricData &geometricData) override
+    {
+        Color oldColor = RenderManager::Instance()->GetColor();
+        RenderManager::Instance()->SetColor(Color(1.0f, 1.0f, 0.0f, 1.0f));
+        Rect rect(0, 0, 20, 20);
+        Rect controlRect = control->GetGeometricData().GetUnrotatedRect();
+        rect.SetCenter(Vector2(controlRect.GetPosition().x + controlRect.dx / 2.0f, controlRect.GetPosition().y - 20));
+        SetAbsoluteRect(rect);
+        RenderHelper::Instance()->FillRect(GetAbsoluteRect(), RenderState::RENDERSTATE_2D_BLEND);
+        RenderManager::Instance()->SetColor(oldColor);
+    }
+};
 
 HUDSystem::HUDSystem()
     : hudControl(new UIControl())
@@ -156,7 +157,7 @@ HUDSystem::HUDSystem()
     selectionRect->SetDebugDraw(true);
     selectionRect->SetDebugDrawColor(Color(1.0f, 1.0f, 0.0f, 1.0f));
     hudControl->AddControl(selectionRect);
-    hudControl->SetName("hudControl");
+    hudControl->SetName("hud");
     hudControl->SetDebugDraw(true);
     hudControl->SetDebugDrawColor(Color(0.0f, 1.0f, 0.0f, 1.0f));
     hudControl->SetSize(Vector2(10, 10));
@@ -182,18 +183,12 @@ void HUDSystem::SelectionWasChanged(const SelectedControls& selected, const Sele
     {
         hudMap.emplace(std::piecewise_construct, 
             std::forward_as_tuple(control),
-            std::forward_as_tuple(control->GetControl(), hudControl));
+            std::forward_as_tuple(control, hudControl));
     }
 }
 
 bool HUDSystem::OnInput(UIEvent *currentInput)
 {
-    enum MOUSE_STATE
-    {
-        PRESSED,
-        MOVED,
-        RELEASED
-    };
     static MOUSE_STATE mouseState = RELEASED;
     static Vector2 pressedPoint;
     switch (currentInput->phase)
@@ -202,6 +197,7 @@ bool HUDSystem::OnInput(UIEvent *currentInput)
         ProcessCursor(currentInput->point);
         return false;
     case UIEvent::PHASE_BEGAN:
+        
         mouseState = PRESSED;
         pressedPoint = currentInput->point;
         return false;
@@ -230,106 +226,106 @@ bool HUDSystem::OnInput(UIEvent *currentInput)
     return false;
 }
 
-void HUDSystem::ProcessCursor(const Vector2& pos) const
+void HUDSystem::AddListener(ControlAreaInterface *listener)
 {
-    static Qt::CursorShape shape;
-    static int shapesCount;
-    bool found;
-    QCursor cursor = GetCursorByPos(pos, found);
-    if (found)
+    auto it = std::find(listeners.begin(), listeners.end(), listener);
+    if (it == listeners.end())
     {
-        if (shape == cursor.shape() && shapesCount)
-        {
-            return;
-        }
-        shape = cursor.shape();
-        shapesCount++;
-        qApp->setOverrideCursor(cursor);
+        listeners.push_back(listener);
     }
     else
     {
-        while (shapesCount)
-        {
-            shapesCount--;
-            qApp->restoreOverrideCursor();
-        }
+        DVASSERT_MSG(false, "listener has already attached");
     }
 }
 
-QCursor HUDSystem::GetCursorByPos(const Vector2& pos, bool& found) const
+void HUDSystem::RemoveListener(ControlAreaInterface *listener)
 {
-    found = true;
+    auto it = std::find(listeners.begin(), listeners.end(), listener);
+    if (it != listeners.end())
+    {
+        listeners.erase(it);
+    }
+    else
+    {
+        DVASSERT_MSG(false, "listener was not attached");
+    }
+}
+
+void HUDSystem::ProcessCursor(const Vector2& pos)
+{
+    ControlNode *node = nullptr;
+    ControlAreaInterface::eArea area = ControlAreaInterface::NO_AREA;
+    GetControlArea(node, area, pos);
+    SetNewArea(node, area);
+}
+
+void HUDSystem::GetControlArea(ControlNode* node, ControlAreaInterface::eArea& area, const Vector2 &pos)
+{
     for (const auto &iter : hudMap)
     {
-        const auto &hud = iter.second;
-        if (hud.pivotPoint->IsPointInside(pos))
+        auto &hud = iter.second;
+        for (const auto &hudControl : hud.hudControls)
         {
-            return Qt::SizeAllCursor;
-        }
-        for (auto frameRect : hud.frameRects)
-        {
-            if (frameRect->IsPointInside(pos))
+            if (hudControl->IsPointInside(pos))
             {
-                FrameRectControl::PLACE place = static_cast<FrameRectControl*>(frameRect.get())->GetPlace();
-                switch (place)
-                {
-                case FrameRectControl::TOP_LEFT:
-                case FrameRectControl::BOTTOM_RIGHT:
-                    return Qt::SizeFDiagCursor;
-                    break;
-                case FrameRectControl::TOP_RIGHT:
-                case FrameRectControl::BOTTOM_LEFT:
-                    return Qt::SizeBDiagCursor;
-                    break;
-                case FrameRectControl::TOP_CENTER:
-                case FrameRectControl::BOTTOM_CENTER:
-                    return Qt::SizeVerCursor;
-                    break;
-                case FrameRectControl::CENTER_LEFT:
-                case FrameRectControl::CENTER_RIGHT:
-                    return Qt::SizeHorCursor;
-                    break;
-                default:
-                    DVASSERT_MSG(false, "unexpected enum value");
-                    break;
-                }
+                auto container = static_cast<ControlContainer*>(hudControl.get());
+                node = hud.node;
+                area = container->GetArea();
+                return;
             }
         }
-        if (hud.frame->IsPointInside(pos))
-        {
-            return Qt::SizeAllCursor;
-        }
     }
-    found = false;
-    return QCursor();
+    node = nullptr;
+    area = ControlAreaInterface::NO_AREA;
+    return;
 }
 
-
-HUDSystem::HUD::HUD(UIControl* control_, UIControl* hudControl_)
-    : frame(new FrameControl(control_))
-    , pivotPoint(new PivotPointControl(control_))
-    , control(control_)
-    , hudControl(hudControl_)
+void HUDSystem::SetNewArea(ControlNode* node, const ControlAreaInterface::eArea area)
 {
-    frame->SetDebugDrawColor(Color(1.0f, 0.0f, 0.0f, 1.f));
-    pivotPoint->SetDebugDrawColor(Color(0.0f, 0.0f, 1.0f, 1.f));
-    hudControl->AddControl(frame);
-    for (int i = FrameRectControl::TOP_LEFT; i < FrameRectControl::COUNT; ++i)
+    if (activeControl != node || activeArea != area)
     {
-        ScopedPtr<UIControl> littleRectFrame(new FrameRectControl(static_cast<FrameRectControl::PLACE>(i), control_));
-        frameRects.push_back(littleRectFrame);
-        littleRectFrame->SetDebugDrawColor(Color(0.0f, 1.0f, 0.0f, 1.f));
-        hudControl->AddControl(littleRectFrame);
+        activeControl = node;
+        activeArea = area;
+        if (area != ControlAreaInterface::NO_AREA)
+        {
+            for (auto listener : listeners)
+            {
+                listener->MouseEnterArea(node, area);
+            }
+        }
+        else
+        {
+            for (auto listener : listeners)
+            {
+                listener->MouseLeaveArea();
+            }
+        }
     }
-    hudControl->AddControl(pivotPoint);
+}
+
+HUDSystem::HUD::HUD(ControlNode *node_, UIControl* hudControl)
+    : node(node_)
+    , control(node_->GetControl())
+{
+    hudControls.emplace_back(new PivotPointControl(control));
+    hudControls.emplace_back(new RotateControl(control));
+    for (int i = ControlAreaInterface::TOP_LEFT; i < ControlAreaInterface::CORNER_COUNT; ++i)
+    {
+        ControlAreaInterface::eArea area = static_cast<ControlAreaInterface::eArea>(i);
+        hudControls.emplace_back(new FrameRectControl(control, area));
+    }
+    hudControls.emplace_back(new FrameControl(control));
+    for (auto iter = hudControls.rbegin(); iter != hudControls.rend(); ++iter)
+    {
+        hudControl->AddControl(*iter);
+    }
 }
 
 HUDSystem::HUD::~HUD()
 {
-    hudControl->RemoveControl(frame);
-    hudControl->RemoveControl(pivotPoint);
-    for (auto frameRect : frameRects)
+    for (auto control : hudControls)
     {
-        hudControl->RemoveControl(frameRect);
+        control->RemoveFromParent();
     }
 }

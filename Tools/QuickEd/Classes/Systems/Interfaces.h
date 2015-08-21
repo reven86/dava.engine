@@ -51,4 +51,28 @@ public:
     virtual void SelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected) = 0;
 };
 
+class ControlAreaInterface
+{
+public:
+    enum eArea
+    {
+        TOP_LEFT,
+        TOP_CENTER,
+        TOP_RIGHT,
+        CENTER_LEFT,
+        CENTER_RIGHT,
+        BOTTOM_LEFT,
+        BOTTOM_CENTER,
+        BOTTOM_RIGHT,
+        FRAME,
+        PIVOT_POINT,
+        ROTATE,
+        NO_AREA
+    };
+    static const int CORNER_COUNT = FRAME - TOP_LEFT;
+    static const int AREAS_COuNT = NO_AREA - TOP_LEFT;
+    virtual void MouseEnterArea(ControlNode *targetNode, const eArea area) = 0;
+    virtual void MouseLeaveArea() = 0;
+};
+
 #endif // __SYSTEMS_INTERFACES_H__

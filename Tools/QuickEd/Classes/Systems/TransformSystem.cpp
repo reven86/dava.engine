@@ -26,30 +26,29 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
+#include "Systems/TransformSystem.h"
 
-#ifndef __SYSTEMS_TREE_SYSTEM_H__
-#define __SYSTEMS_TREE_SYSTEM_H__
+using namespace DAVA;
 
-#include "Systems/Interfaces.h"
-
-class Document;
-class ControlNode;
-
-class TreeSystem final : public InputInterface, public SelectionInterface
-{   
-public:
-    explicit TreeSystem(Document *parent);
-    ~TreeSystem() = default;
+TransformSystem::TransformSystem(Document *parent)
+    : document(parent)
+{
     
-    bool OnInput(DAVA::UIEvent *currentInput) override final;
-    void SelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected) override;
-private:
-    void OnCopy();
-    void OnPaste();
-    void OnDelete();
-    
-    Document *document;
-    SelectedControls selectionList;
-};
+}
 
-#endif // __SYSTEMS_TREE_SYSTEM_H__
+void TransformSystem::MouseEnterArea(ControlNode *targetNode, const eArea area)
+{
+    activeControl = targetNode;
+    activeArea = area;
+}
+
+void TransformSystem::MouseLeaveArea()
+{
+    activeControl = nullptr;
+    activeArea = NO_AREA;
+}
+
+bool TransformSystem::OnInput(UIEvent* currentInput)
+{
+    return false;
+}
