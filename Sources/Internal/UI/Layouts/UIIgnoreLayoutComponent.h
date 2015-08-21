@@ -40,11 +40,11 @@ namespace DAVA
     public:
         IMPLEMENT_COMPONENT_TYPE(IGNORE_LAYOUT_COMPONENT);
         
-        UIIgnoreLayoutComponent();
-        UIIgnoreLayoutComponent(const UIIgnoreLayoutComponent &src);
+        UIIgnoreLayoutComponent() = default;
+        UIIgnoreLayoutComponent(const UIIgnoreLayoutComponent &src) = default;
         
     protected:
-        virtual ~UIIgnoreLayoutComponent();
+        virtual ~UIIgnoreLayoutComponent() = default;
         
     private:
         UIIgnoreLayoutComponent &operator=(const UIIgnoreLayoutComponent &) = delete;

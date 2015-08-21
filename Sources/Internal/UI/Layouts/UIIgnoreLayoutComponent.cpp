@@ -33,19 +33,6 @@
 
 namespace DAVA
 {
-    UIIgnoreLayoutComponent::UIIgnoreLayoutComponent()
-    {
-    }
-    
-    UIIgnoreLayoutComponent::UIIgnoreLayoutComponent(const UIIgnoreLayoutComponent &src)
-    {
-    }
-    
-    UIIgnoreLayoutComponent::~UIIgnoreLayoutComponent()
-    {
-        
-    }
-    
     UIIgnoreLayoutComponent* UIIgnoreLayoutComponent::Clone() const
     {
         return new UIIgnoreLayoutComponent(*this);

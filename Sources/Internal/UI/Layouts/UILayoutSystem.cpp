@@ -136,7 +136,7 @@ void UILayoutSystem::MeasureControl(UIControl *control, UISizePolicyComponent *s
         case UISizePolicyComponent::PERCENT_OF_MAX_CHILD:
             for (UIControl *child : children)
             {
-                if (HaveToSkipControl(child, skipInvisible))
+                if (!HaveToSkipControl(child, skipInvisible))
                     value = Max(value, child->GetSize().data[axis]);
             }
             value = value * hintValue / 100.0f;
