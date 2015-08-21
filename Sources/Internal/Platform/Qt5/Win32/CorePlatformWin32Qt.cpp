@@ -44,7 +44,7 @@ int Core::Run(int argc, char * argv[], AppHandle handle)
 {
 	CoreWin32PlatformQt * core = new CoreWin32PlatformQt();
 	core->CreateSingletons();
-	core->InitArgs();
+	core->InitCommandLineArgs();
 
 	return 0;
 }
@@ -56,7 +56,7 @@ int Core::RunCmdTool(int argc, char * argv[], AppHandle handle)
 	core->EnableConsoleMode();
 	core->CreateSingletons();
 
-	core->InitArgs();
+	core->InitCommandLineArgs();
 
 	Logger::Instance()->EnableConsoleMode();
 

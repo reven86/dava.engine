@@ -43,15 +43,36 @@ namespace DAVA
 int Core::Run(int /*argc*/, char* /*argv*/[], AppHandle /*handle*/)
 {
     std::unique_ptr<CorePlatformWinUAP> core = std::make_unique<CorePlatformWinUAP>();
-    core->InitArgs();
+    core->InitCommandLineArgs();
     core->Run();
     return 0;
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CorePlatformWinUAP::InitArgs()
+void CorePlatformWinUAP::InitCommandLineArgs()
 {
-    SetCommandLine(WStringToString(::GetCommandLineW()));
+    LPWSTR *szArglist;
+    int argc = 0;
+
+    szArglist = ::CommandLineToArgvW(::GetCommandLineW(), &argc);
+
+    if (argc > 0 && NULL != szArglist)
+    {
+        char** argv = new char*[argc];
+        for (int i = 0; i < argc; ++i)
+        {
+            argv[i] = WStringToDynamicArray(szArglist[i]);
+        }
+
+        SetCommandLine(argc, argv);
+
+        for (int i = 0; i < argc; ++i)
+        {
+            delete[] argv[i];
+        }
+        delete[] argv;
+    }
+    LocalFree(szArglist);
 }
 
 void CorePlatformWinUAP::Run()
