@@ -119,10 +119,10 @@ void SaveEntityAsAction::RemoveLightmapsRecursive(Entity *entity) const
 			NMaterial *material = renderObject->GetRenderBatch(b)->GetMaterial();
 			if (nullptr != material)
 			{
-				auto lightmapPath = material->GetTexturePath(FastName("lightmap"));
+				auto lightmapPath = material->GetTexturePath(NMaterial::TEXTURE_LIGHTMAP);
 				if (!lightmapPath.IsEmpty())
 				{
-					material->SetTexturePath(FastName("lightmap"), FilePath());
+					material->SetTexturePath(NMaterial::TEXTURE_LIGHTMAP, FilePath());
 				}
 			}
 		}
