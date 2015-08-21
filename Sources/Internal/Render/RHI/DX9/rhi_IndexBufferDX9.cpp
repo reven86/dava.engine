@@ -48,11 +48,18 @@ public:
                             IndexBufferDX9_t();
                             ~IndexBufferDX9_t();
 
+    bool                    Create( const IndexBuffer::Descriptor& desc, bool force_immediate=false );
+    void                    Destroy( bool force_immediate=false );
+
 
     unsigned                size;
     IDirect3DIndexBuffer9*  buffer;
     unsigned                isMapped:1;
+    unsigned                needReload:1;
+
+    static unsigned         NeedReloadCount;
 };
+unsigned    IndexBufferDX9_t::NeedReloadCount = 0;
 
 typedef ResourcePool<IndexBufferDX9_t,RESOURCE_INDEX_BUFFER>    IndexBufferDX9Pool;
 RHI_IMPL_POOL(IndexBufferDX9_t,RESOURCE_INDEX_BUFFER);
@@ -78,12 +85,12 @@ IndexBufferDX9_t::~IndexBufferDX9_t()
 
 //------------------------------------------------------------------------------
 
-static Handle
-dx9_IndexBuffer_Create( const IndexBuffer::Descriptor& desc )
+bool
+IndexBufferDX9_t::Create( const IndexBuffer::Descriptor& desc, bool force_immediate )
 {
-    Handle  handle = InvalidIndex;
-
     DVASSERT(desc.size);
+    bool    success = false;
+
     if( desc.size )
     {
         DWORD   usage = D3DUSAGE_WRITEONLY;
@@ -95,20 +102,16 @@ dx9_IndexBuffer_Create( const IndexBuffer::Descriptor& desc )
             case USAGE_DYNAMICDRAW  : usage = D3DUSAGE_WRITEONLY|D3DUSAGE_DYNAMIC; break;
         }
 
-        IDirect3DIndexBuffer9*  ib9   = nullptr;
-        DX9Command              cmd[] = { { DX9Command::CREATE_INDEX_BUFFER, { desc.size, usage, D3DFMT_INDEX16, D3DPOOL_DEFAULT, uint64_t(&ib9), NULL } } };
+        DX9Command  cmd[] = { { DX9Command::CREATE_INDEX_BUFFER, { desc.size, usage, D3DFMT_INDEX16, D3DPOOL_DEFAULT, uint64_t(&buffer), NULL } } };
         
-        ExecDX9( cmd, countof(cmd) );
+        ExecDX9( cmd, countof(cmd), force_immediate );
 
         if( SUCCEEDED(cmd[0].retval) )
         {
-            handle = IndexBufferDX9Pool::Alloc();
-
-            IndexBufferDX9_t* ib = IndexBufferDX9Pool::Get( handle );
+            size     = desc.size;
+            isMapped = false;
             
-            ib->size     = desc.size;
-            ib->buffer   = ib9;
-            ib->isMapped = false;
+            success  = true;
         }
         else
         {
@@ -116,6 +119,44 @@ dx9_IndexBuffer_Create( const IndexBuffer::Descriptor& desc )
         }
     }
 
+    return success;
+}
+
+
+//------------------------------------------------------------------------------
+
+void
+IndexBufferDX9_t::Destroy( bool force_immediate )
+{
+    if( buffer )
+    {
+        DX9Command  cmd[] = { DX9Command::RELEASE, { uint64_t(static_cast<IUnknown*>(buffer)) } };
+
+        ExecDX9( cmd, countof(cmd), force_immediate );
+        buffer = nullptr;
+    }
+
+    size = 0;
+}
+
+
+//------------------------------------------------------------------------------
+
+static Handle
+dx9_IndexBuffer_Create( const IndexBuffer::Descriptor& desc )
+{
+    Handle              handle = IndexBufferDX9Pool::Alloc();
+    IndexBufferDX9_t*   ib     = IndexBufferDX9Pool::Get( handle );
+    
+    if( ib->Create( desc ) )
+    {
+    }
+    else
+    {
+        IndexBufferDX9Pool::Free( handle );
+        handle = InvalidHandle;
+    }
+    
     return handle;
 }
 
@@ -129,16 +170,7 @@ dx9_IndexBuffer_Delete( Handle ib )
     
     if( self )
     {
-        if( self->buffer )
-        {
-            DX9Command  cmd[] = { DX9Command::RELEASE, { uint64_t(static_cast<IUnknown*>(self->buffer)) } };
-
-            ExecDX9( cmd, countof(cmd) );
-            self->buffer = nullptr;
-        }
-
-        self->size = 0;
-        
+        self->Destroy();
         IndexBufferDX9Pool::Free( ib );
     }    
 }
@@ -168,6 +200,13 @@ dx9_IndexBuffer_Update( Handle ib, const void* data, unsigned offset, unsigned s
             
             ExecDX9( &cmd2, 1 );
             success = true;
+            
+            if( self->needReload )
+            {
+                self->needReload = false;
+                DVASSERT(IndexBufferDX9_t::NeedReloadCount);
+                --IndexBufferDX9_t::NeedReloadCount;
+            }
         }
     }
 
@@ -210,7 +249,25 @@ dx9_IndexBuffer_Unmap( Handle ib )
     if( SUCCEEDED(cmd.retval) )
     {
         self->isMapped = false;
+        
+        if( self->needReload )
+        {
+            self->needReload = false;
+            DVASSERT(IndexBufferDX9_t::NeedReloadCount);
+            --IndexBufferDX9_t::NeedReloadCount;
+        }
     }
+}
+
+
+//------------------------------------------------------------------------------
+
+static bool
+dx9_IndexBuffer_NeedReload( Handle ib )
+{
+    IndexBufferDX9_t*   self = IndexBufferDX9Pool::Get( ib );
+    
+    return false;
 }
 
 
@@ -223,11 +280,12 @@ namespace IndexBufferDX9
 void
 SetupDispatch( Dispatch* dispatch )
 {
-    dispatch->impl_IndexBuffer_Create   = &dx9_IndexBuffer_Create;
-    dispatch->impl_IndexBuffer_Delete   = &dx9_IndexBuffer_Delete;
-    dispatch->impl_IndexBuffer_Update   = &dx9_IndexBuffer_Update;
-    dispatch->impl_IndexBuffer_Map      = &dx9_IndexBuffer_Map;
-    dispatch->impl_IndexBuffer_Unmap    = &dx9_IndexBuffer_Unmap;
+    dispatch->impl_IndexBuffer_Create       = &dx9_IndexBuffer_Create;
+    dispatch->impl_IndexBuffer_Delete       = &dx9_IndexBuffer_Delete;
+    dispatch->impl_IndexBuffer_Update       = &dx9_IndexBuffer_Update;
+    dispatch->impl_IndexBuffer_Map          = &dx9_IndexBuffer_Map;
+    dispatch->impl_IndexBuffer_Unmap        = &dx9_IndexBuffer_Unmap;
+    dispatch->impl_IndexBuffer_NeedReload   = &dx9_IndexBuffer_NeedReload;
 }
 
 void 
@@ -240,6 +298,27 @@ SetToRHI( Handle ib )
 
     if( FAILED(hr) )    
         Logger::Error( "SetIndices failed:\n%s\n", D3D9ErrorText(hr) );
+}
+
+void
+ReCreateAll()
+{
+    for( IndexBufferDX9Pool::Iterator b=IndexBufferDX9Pool::Begin(),b_end=IndexBufferDX9Pool::End(); b!=b_end; ++b )
+    {
+        IndexBuffer::Descriptor desc(b->size);
+        
+        b->Destroy( true );
+        b->Create( desc, true );
+        b->needReload = true;
+
+        ++IndexBufferDX9_t::NeedReloadCount;
+    }
+}
+
+unsigned
+NeedReloadCount()
+{
+    return IndexBufferDX9_t::NeedReloadCount;
 }
 
 }

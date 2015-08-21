@@ -72,7 +72,7 @@ private:
     UDPSocket socket;
     DeadlineTimer timer;
     Endpoint endpoint;
-    char8 endpAsString[30];
+    Array<char8, 30> endpAsString;
     bool isTerminating;
     size_t runningObjects;
     Function<void (IController*)> stopCallback;

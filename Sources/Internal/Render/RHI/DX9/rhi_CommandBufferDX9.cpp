@@ -1063,8 +1063,11 @@ Trace("rhi-dx9.exec-queued-cmd\n");
 
     std::vector<RenderPassDX9_t*>   pass;
     std::vector<Handle>             pass_h;
-    unsigned                        frame_n = 0;
-    bool                            do_exit = false;
+    unsigned                        frame_n   = 0;
+    bool                            do_render = true;
+
+    if( _ResetPending )
+        _Frame.clear();
 
     _FrameSync.Lock();
     if( _Frame.size() )
@@ -1093,7 +1096,7 @@ Trace("rhi-dx9.exec-queued-cmd\n");
     }
     else
     {
-        do_exit = true;
+        do_render = false;
     }
     if (_Frame.begin()->sync != InvalidHandle)
     {
@@ -1105,46 +1108,45 @@ Trace("rhi-dx9.exec-queued-cmd\n");
     }
     _FrameSync.Unlock();
 
-    if( do_exit )
-        return;
-
+    if( do_render )
+    {
 Trace("\n\n-------------------------------\nexecuting frame %u\n",frame_n);
-    for( std::vector<RenderPassDX9_t*>::iterator p=pass.begin(),p_end=pass.end(); p!=p_end; ++p )
-    {
-        RenderPassDX9_t*    pp = *p;
-
-        for( unsigned b=0; b!=pp->cmdBuf.size(); ++b )
+        for( std::vector<RenderPassDX9_t*>::iterator p=pass.begin(),p_end=pass.end(); p!=p_end; ++p )
         {
-            Handle              cb_h = pp->cmdBuf[b];
-            CommandBufferDX9_t* cb   = CommandBufferPool::Get( cb_h );
+            RenderPassDX9_t*    pp = *p;
 
-            cb->Execute();
-
-            if( cb->sync != InvalidHandle )
+            for( unsigned b=0; b!=pp->cmdBuf.size(); ++b )
             {
-                SyncObjectDX9_t*    sync = SyncObjectPool::Get( cb->sync );
+                Handle              cb_h = pp->cmdBuf[b];
+                CommandBufferDX9_t* cb   = CommandBufferPool::Get( cb_h );
 
-                sync->frame       = frame_n;
-                sync->is_signaled = false;
-                sync->is_used = true;
+                cb->Execute();
+
+                if( cb->sync != InvalidHandle )
+                {
+                    SyncObjectDX9_t*    sync = SyncObjectPool::Get( cb->sync );
+
+                    sync->frame       = frame_n;
+                    sync->is_signaled = false;
+                    sync->is_used = true;
+                }
+
+                CommandBufferPool::Free( cb_h );
             }
-
-            CommandBufferPool::Free( cb_h );
+        
+    //        RenderPassPool::Free( *p );
         }
-        
-//        RenderPassPool::Free( *p );
-    }
 
-    _FrameSync.Lock();
-    {
+        _FrameSync.Lock();
+        {
 Trace("\n\n-------------------------------\nframe %u executed(submitted to GPU)\n",frame_n);
-        _Frame.erase( _Frame.begin() );
+            _Frame.erase( _Frame.begin() );
         
-        for( std::vector<Handle>::iterator p=pass_h.begin(),p_end=pass_h.end(); p!=p_end; ++p )
-            RenderPassPool::Free( *p );
-    }    
-    _FrameSync.Unlock();
-
+            for( std::vector<Handle>::iterator p=pass_h.begin(),p_end=pass_h.end(); p!=p_end; ++p )
+                RenderPassPool::Free( *p );
+        }    
+        _FrameSync.Unlock();
+    }
     
     // do flip, reset/restore device if necessary
 
@@ -1156,7 +1158,15 @@ Trace("\n\n-------------------------------\nframe %u executed(submitted to GPU)\
 
         if( hr == D3DERR_DEVICENOTRESET )
         {
-///            reset( Size2i(_present_param->BackBufferWidth,_present_param->BackBufferHeight) );
+            HRESULT hr = _D3D9_Device->Reset( &_DX9_PresentParam );
+
+            if( SUCCEEDED(hr) )
+            {
+                TextureDX9::ReCreateAll();
+                VertexBufferDX9::ReCreateAll();
+                IndexBufferDX9::ReCreateAll();
+                _ResetPending = false;
+            }
 
             _ResetPending = false;
         }
@@ -1173,7 +1183,10 @@ Trace("\n\n-------------------------------\nframe %u executed(submitted to GPU)\
             Logger::Error( "present() failed:\n%s\n", D3D9ErrorText(hr) );
 
         if( hr == D3DERR_DEVICELOST )
+        {
             _ResetPending = true;
+            _Frame.clear();
+        }
     }    
 
 

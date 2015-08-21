@@ -72,7 +72,7 @@ void Thread::Start()
     auto hdl = _beginthreadex
         (
         0, // Security attributes
-        stackSize,
+        static_cast<DWORD>(stackSize),
         ThreadFunc,
         this,
         0,
@@ -85,6 +85,11 @@ void Thread::Start()
 unsigned __stdcall ThreadFunc(void* param)
 {	
 #if defined(__DAVAENGINE_DEBUG__)
+    /*
+     inside that ifdef we set thread name through raising speciefic exception.
+     https://msdn.microsoft.com/en-us/library/xcb2z8hs.aspx
+     */
+    
     Thread *t = static_cast<Thread *>(param);
 
     THREADNAME_INFO info;
@@ -95,7 +100,7 @@ unsigned __stdcall ThreadFunc(void* param)
 
     __try
     {
-        RaiseException(MS_VC_EXCEPTION, 0, sizeof(info)/sizeof(DWORD), (ULONG_PTR*)&info );
+        RaiseException(MS_VC_EXCEPTION, 0, sizeof(info)/sizeof(ULONG_PTR), reinterpret_cast<PULONG_PTR>(&info));
     }
     __except(EXCEPTION_CONTINUE_EXECUTION)
     {

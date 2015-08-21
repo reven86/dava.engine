@@ -57,13 +57,14 @@ void                AcquireDevice();
 void                ReleaseDevice();
 
 
-extern IDirect3D9*          _D3D9;
-extern IDirect3DDevice9*    _D3D9_Device;
-extern unsigned             _D3D9_Adapter;
-extern IDirect3DSurface9*   _D3D9_BackBuf;
-extern IDirect3DSurface9*   _D3D9_DepthBuf;
+extern IDirect3D9*              _D3D9;
+extern IDirect3DDevice9*        _D3D9_Device;
+extern unsigned                 _D3D9_Adapter;
+extern IDirect3DSurface9*       _D3D9_BackBuf;
+extern IDirect3DSurface9*       _D3D9_DepthBuf;
 
-extern InitParam            _DX9_InitParam;
+extern InitParam                _DX9_InitParam;
+extern D3DPRESENT_PARAMETERS    _DX9_PresentParam;
 
 } // namespace rhi
 
