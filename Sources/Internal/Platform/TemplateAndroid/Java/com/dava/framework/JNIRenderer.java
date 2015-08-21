@@ -26,6 +26,8 @@ public class JNIRenderer implements GLSurfaceView.Renderer {
     
     private int cachedWidth = 0;
     private int cachedHeight = 0;
+    
+    public static volatile boolean nativeSingletonsDestroyed = false;
 
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
@@ -117,7 +119,8 @@ public class JNIRenderer implements GLSurfaceView.Renderer {
 
     @Override
     public void onDrawFrame(GL10 gl) {
-        if (!JNIAssert.waitUserInputOnAssertDialog)
+        if (!JNIAssert.waitUserInputOnAssertDialog ||
+            !nativeSingletonsDestroyed)
         {
             nativeRender();
             

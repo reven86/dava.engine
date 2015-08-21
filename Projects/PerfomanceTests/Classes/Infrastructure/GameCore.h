@@ -39,9 +39,6 @@
 #include "Infrastructure/Controller/SingleTestFlowController.h"
 #include "Infrastructure/Settings/GraphicsDetect.h"
 
-#include "Tests/GlobalPerformanceTest.h"
-#include "Tests/AsiaPerformanceTest.h"
-
 #include <fstream>
 
 class GameCore : public ApplicationCore
@@ -72,10 +69,13 @@ public:
 private:
     void InitScreenController();
 	void RegisterTests();
+    void ReadSingleTestParams(BaseTest::TestParams& params);
+    void LoadMaps(const String& testName, Vector<std::pair<String, String>>& maps);
+    
     String GetDeviceName();
 
 	Vector<BaseTest*> testChain;
-	TestFlowController* testFlowController;
+    std::unique_ptr<TestFlowController> testFlowController;
 
     TeamcityTestsOutput teamCityOutput;
     BaseTest::TestParams defaultTestParams;

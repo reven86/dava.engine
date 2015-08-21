@@ -243,7 +243,7 @@ DV_LOCAL_STATIC_LIBRARIES += uv_android
 DV_LOCAL_STATIC_LIBRARIES += webp_android
 DV_LOCAL_STATIC_LIBRARIES += cpufeatures
 
-DV_LOCAL_EXPORT_LDLIBS := -lGLESv1_CM -llog -lEGL
+DV_LOCAL_EXPORT_LDLIBS := -lGLESv1_CM -llog -lEGL -latomic
 
 ifeq ($(APP_PLATFORM), android-14)
 	DV_LOCAL_EXPORT_LDLIBS += -lGLESv2
@@ -366,6 +366,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/UI/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/Components/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/Styles/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/UI/Layouts/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UnitTests/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Utils/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Job/*.cpp) \

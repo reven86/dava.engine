@@ -39,44 +39,30 @@ using namespace DAVA;
 CustomClassProperty::CustomClassProperty(ControlNode *aControl, const CustomClassProperty *sourceProperty, eCloneType cloneType)
     : ValueProperty("Custom Class")
     , control(aControl) // weak
-    , prototypeProperty(nullptr)
 {
-    defaultValue = VariantType(String(""));
-    
     if (sourceProperty)
     {
-        customClass = sourceProperty->customClass;
-        
         if (cloneType == CT_COPY)
         {
-            defaultValue = sourceProperty->GetDefaultValue();
-            replaced = sourceProperty->IsReplaced();
+            SetOverridden(sourceProperty->IsOverriddenLocally());
+            SetDefaultValue(sourceProperty->GetDefaultValue());
         }
         else
         {
-            prototypeProperty = sourceProperty;
-            defaultValue = sourceProperty->GetValue();
+            AttachPrototypeProperty(sourceProperty);
+            SetDefaultValue(sourceProperty->GetValue());
         }
+        customClass = sourceProperty->customClass;
+    }
+    else
+    {
+        SetDefaultValue(VariantType(String("")));
     }
 }
 
 CustomClassProperty::~CustomClassProperty()
 {
     control = nullptr; //weak
-}
-
-void CustomClassProperty::Refresh()
-{
-    if (prototypeProperty)
-    {
-        SetDefaultValue(prototypeProperty->GetValue());
-    }
-    ValueProperty::Refresh();
-}
-
-AbstractProperty *CustomClassProperty::FindPropertyByPrototype(AbstractProperty *prototype)
-{
-    return prototypeProperty == prototype ? this : nullptr;
 }
 
 void CustomClassProperty::Accept(PropertyVisitor *visitor)
@@ -107,14 +93,5 @@ const String &CustomClassProperty::GetCustomClassName() const
 void CustomClassProperty::ApplyValue(const DAVA::VariantType &value)
 {
     customClass = value.AsString();
-}
-
-bool CustomClassProperty::IsSet() const
-{
-    if (IsReplaced())
-        return true;
-    if (prototypeProperty)
-        return prototypeProperty->IsReplaced();
-    return false;
 }
 

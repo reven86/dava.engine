@@ -32,47 +32,39 @@ float32 WaypointsInterpolator::SPLINE_DELTA_TIME = 0.00001f;
 
 WaypointsInterpolator::WaypointsInterpolator(const Vector<PathComponent::Waypoint*>& _waypoints, float32 _time)
     :   waypoints(_waypoints)
-    ,   spline(nullptr)
     ,   segment(0)
-    ,   splineTime(_time)
-    ,   splineLength(0.0f)
     ,   segmentTime(0.0f)
     ,   targetSegmentTime(0.0f)
+    ,   splineTime(_time)
+    ,   splineLength(0.0f)
 {
-    spline = new BasicSpline3();
-
     Init();
-}
-
-WaypointsInterpolator::~WaypointsInterpolator()
-{
-    SafeDelete(spline);
 }
 
 void WaypointsInterpolator::Init()
 {
     DVASSERT(waypoints.size() > 3);
 
+    spline = std::unique_ptr<BasicSpline3>(new BasicSpline3());
     Polygon3 poly;
 
-    for (PathComponent::Waypoint* point : waypoints)
+    for (auto *point : waypoints)
     {
         poly.AddPoint(point->position);
     }
 
     spline->Construct(poly);
 
-    for (int32 i = 0; i < spline->pointCount - 1; i++)
+    for (uint32 i = 0; i < spline->pointCount - 1; i++)
     {
         float32 t = 0.0f;
         float32 length = 0.0f;
 
-        Vector3 current;
         Vector3 prev = spline->Evaluate(i, t);
 
         while (t <= 1.0f)
         {
-            current = spline->Evaluate(i, t);
+            const Vector3& current = spline->Evaluate(i, t);
             length += (current - prev).Length();
 
             prev = current;

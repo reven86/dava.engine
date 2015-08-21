@@ -78,7 +78,12 @@ DAVA_TESTCLASS(StringFormatTest)
         };
         float32 values[] = {
             1234.1234f, 876.876f, 0.1234f, 0.2567f, 0.5f, 0.7543f,
-            -1234.1234f, -876.876f, -0.1234f, -0.2567f, -0.5f, -0.7543f
+            -1234.1234f, -876.876f, -0.1234f, -0.2567f, -0.5f, -0.7543f,
+            12.1234f, 12.2567f, 12.5f, 12.7543f,
+            -12.1234f, -12.2567f, -12.5f, -12.7543f,
+            5.97391319f, -5.97391319f,
+            12345.9876f, -12345.9876f, 12345.5638f, -12345.5638f,
+            666.98f, -666.98f
         };
         for (auto& fmt : formatStr)
         {
@@ -159,13 +164,13 @@ DAVA_TESTCLASS(StringFormatTest)
     {
         // Special test case for emulating StringFormat behavior from wot.blitz client
         // Works only for wide strings
-        TEST_VERIFY(StringFormatAsUsedByClient(L"", L"%s", "", nullptr) == L"[]");
-        TEST_VERIFY(StringFormatAsUsedByClient(L"", L"%s", "", L"%s", "", nullptr) == L"[][]");
-        TEST_VERIFY(StringFormatAsUsedByClient(L"", L"%ls", L"", nullptr) == L"[]");
-        TEST_VERIFY(StringFormatAsUsedByClient(L"", L"%ls", L"", L"%ls", L"", nullptr) == L"[][]");
+        TEST_VERIFY(StringFormatAsUsedByClient(L"", L"%s", "", std::nullptr_t()) == L"[]");
+        TEST_VERIFY(StringFormatAsUsedByClient(L"", L"%s", "", L"%s", "", std::nullptr_t()) == L"[][]");
+        TEST_VERIFY(StringFormatAsUsedByClient(L"", L"%ls", L"", std::nullptr_t()) == L"[]");
+        TEST_VERIFY(StringFormatAsUsedByClient(L"", L"%ls", L"", L"%ls", L"", std::nullptr_t()) == L"[][]");
 
-        TEST_VERIFY(StringFormatAsUsedByClient(L"", L"%s", "str", L"%d", 13, L"%ls", L"wstr", L"%s", "", nullptr) == L"[str][13][wstr][]");
-        TEST_VERIFY(StringFormatAsUsedByClient(L"", L"%s %ls", "str", L"wstr", L"%s", "", nullptr) == L"[str wstr][]");
+        TEST_VERIFY(StringFormatAsUsedByClient(L"", L"%s", "str", L"%d", 13, L"%ls", L"wstr", L"%s", "", std::nullptr_t()) == L"[str][13][wstr][]");
+        TEST_VERIFY(StringFormatAsUsedByClient(L"", L"%s %ls", "str", L"wstr", L"%s", "", std::nullptr_t()) == L"[str wstr][]");
     }
 
     WideString StringFormatAsUsedByClient(const char16* mileStone, ...)

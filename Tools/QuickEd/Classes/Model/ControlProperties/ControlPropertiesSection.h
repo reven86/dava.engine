@@ -31,13 +31,14 @@
 #define __UI_EDITOR_CONTROL_PROPERTIES_SECTION_H__
 
 #include "SectionProperty.h"
+#include "IntrospectionProperty.h"
 
 namespace DAVA
 {
     class UIControl;
 }
 
-class ControlPropertiesSection : public SectionProperty
+class ControlPropertiesSection : public SectionProperty<IntrospectionProperty>
 {
 public:
     ControlPropertiesSection(DAVA::UIControl *control, const DAVA::InspInfo *typeInfo, const ControlPropertiesSection *sourceSection, eCloneType copyType);

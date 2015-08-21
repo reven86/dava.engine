@@ -47,6 +47,9 @@
 #include "fribidi/fribidi-unicode.h"
 #include "TextLayout.h"
 
+
+#include "UI/UIControlSystem.h"
+
 namespace DAVA 
 {
 
@@ -106,8 +109,7 @@ TextBlock::TextBlock()
 {
     font = NULL;
     isMultilineEnabled = false;
-    isRtl = false;
-    useRtlAlign = false;
+    useRtlAlign = RTL_DONT_USE;
     fittingType = FITTING_DISABLED;
 
 	originalFontSize = 0.1f;
@@ -116,6 +118,7 @@ TextBlock::TextBlock()
 
 	isMultilineBySymbolEnabled = false;
     treatMultilineAsSingleLine = false;
+    isRtl = false;
     
 	textBlockRender = NULL;
 	needPrepareInternal = false;
@@ -267,6 +270,43 @@ void TextBlock::SetFittingOption(int32 _fittingType)
     mutex.Unlock();
 }
 
+Vector2 TextBlock::GetPreferredSize()
+{
+    if(!font)
+        return Vector2();
+
+    Vector2 result;
+    
+    mutex.Lock();
+    
+    if (requestedSize.dx < 0.0f && requestedSize.dy < 0.0f && fittingType == FITTING_DISABLED)
+    {
+        result = cacheTextSize;
+        mutex.Unlock();
+    }
+    else
+    {
+        Vector2 oldRequestedSize = requestedSize;
+        int32 oldFitting = fittingType;
+        
+        requestedSize = Vector2(-1.0f, -1.0f);
+        fittingType = FITTING_DISABLED;
+        
+        mutex.Unlock();
+        
+        CalculateCacheParams();
+
+        mutex.Lock();
+        result = cacheTextSize;
+        requestedSize = oldRequestedSize;
+        fittingType = oldFitting;
+        mutex.Unlock();
+        
+        CalculateCacheParams();
+    }
+
+    return result;
+}
 
 Font * TextBlock::GetFont()
 {
@@ -358,7 +398,7 @@ void TextBlock::SetAlign(int32 _align)
     mutex.Unlock();
 }
 
-void TextBlock::SetUseRtlAlign(bool const& useRtlAlign)
+void TextBlock::SetUseRtlAlign(eUseRtlAlign useRtlAlign)
 {
     mutex.Lock();
 	if(this->useRtlAlign != useRtlAlign)
@@ -371,12 +411,12 @@ void TextBlock::SetUseRtlAlign(bool const& useRtlAlign)
     mutex.Unlock();
 }
 
-bool TextBlock::GetUseRtlAlign()
+TextBlock::eUseRtlAlign TextBlock::GetUseRtlAlign()
 {
     LockGuard<Mutex> guard(mutex);
     return useRtlAlign;
 }
-
+    
 bool TextBlock::IsRtl()
 {
     LockGuard<Mutex> guard(mutex);
@@ -397,7 +437,9 @@ int32 TextBlock::GetVisualAlign()
 	
 int32 TextBlock::GetVisualAlignNoMutexLock() const
 {
-	if(useRtlAlign && isRtl && (align & ALIGN_LEFT || align & ALIGN_RIGHT))
+	if (((align & (ALIGN_LEFT | ALIGN_RIGHT)) != 0) &&
+        ((useRtlAlign == RTL_USE_BY_CONTENT && isRtl) ||
+         (useRtlAlign == RTL_USE_BY_SYSTEM && UIControlSystem::Instance()->IsRtl())))
     {
         // Mirror left/right align
         return align ^ (ALIGN_LEFT | ALIGN_RIGHT);
@@ -487,7 +529,7 @@ void TextBlock::CalculateCacheParams()
     
     textLayout.Reset(logicalText, *font);
     isRtl = textLayout.IsRtlText();
-
+    
     visualText = textLayout.GetVisualText(false);
 
     bool useJustify = ((align & ALIGN_HJUSTIFY) != 0);
@@ -518,68 +560,90 @@ void TextBlock::CalculateCacheParams()
 
     if(!isMultilineEnabled || treatMultilineAsSingleLine)
     {
-        textSize = font->GetStringMetrics(visualText);
-        WideString pointsStr;
-        if(fittingType & FITTING_POINTS)
+        Vector<float32> charSizes;
+        textSize = font->GetStringMetrics(visualText, &charSizes);
+        DVASSERT(charSizes.size() == visualText.length());
+        
+        for (float32& val : charSizes)
         {
-            if(drawSize.x < textSize.width)
+            val = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(val);
+        }
+        
+        WideString pointsStr;
+        if((fittingType & FITTING_POINTS) && (drawSize.x < textSize.width))
+        {
+            uint32 length = charSizes.size();
+            Font::StringMetrics pointsMetric = font->GetStringMetrics(L"...");
+            float32 fullWidth = static_cast<float32>(textSize.width + pointsMetric.width);
+            for (uint32 i = length - 1; i > 0U; --i)
             {
-                Size2i textSizePoints;
-
-                int32 length = (int32)visualText.length();
-                for(int32 i = length - 1; i > 0; --i)
+                if(fullWidth <= drawSize.x)
                 {
-                    pointsStr.clear();
-                    pointsStr.append(visualText, 0, i);
-                    pointsStr += L"...";
 #if defined(LOCALIZATION_DEBUG)
                     fittingTypeUsed = FITTING_POINTS;
 #endif
-                    textSize = font->GetStringMetrics(pointsStr);
-                    if(textSize.width <= drawSize.x)
-                    {
-                        break;
-                    }
+                    pointsStr.clear();
+                    pointsStr.append(visualText, 0, i + 1);
+                    pointsStr += L"...";
+                    break;
                 }
+                fullWidth -= charSizes[i];
             }
         }
-        else if(!((fittingType & FITTING_REDUCE) || (fittingType & FITTING_ENLARGE)) && (drawSize.x + 1 < textSize.width) && (requestedSize.x >= 0))
+        else if(!((fittingType & FITTING_REDUCE) || (fittingType & FITTING_ENLARGE)) && (drawSize.x < textSize.width) && (requestedSize.x >= 0))
         {
-            Size2i textSizePoints;
-            int32 length = (int32)visualText.length();
+            uint32 length = charSizes.size();
+            float32 fullWidth = static_cast<float32>(textSize.width);
             if(ALIGN_RIGHT & align)
             {
-                for(int32 i = 1; i < length - 1; ++i)
+                for(uint32 i = 0U; i < length; ++i)
                 {
-                    pointsStr.clear();
-                    pointsStr.append(visualText, i, length - i);
-
-                    textSize = font->GetStringMetrics(pointsStr);
-                    if(textSize.width <= drawSize.x)
+                    if(fullWidth <= drawSize.x)
                     {
+                        pointsStr.clear();
+                        pointsStr.append(visualText, i, length - i);
                         break;
                     }
+                    fullWidth -= charSizes[i];
                 }
             }
             else if(ALIGN_HCENTER & align)
             {
-                int32 endPos = length / 2;
-                int32 startPos = endPos - 1;
-                int32 count = endPos;
-
-                for(int32 i = 1; i < count; ++i)
+                uint32 left = 0U;
+                uint32 right = length - 1;
+                bool cutFromBegin = false;
+                
+                while (left != right)
                 {
-                    pointsStr.clear();
-                    pointsStr.append(visualText, startPos, endPos - startPos);
-
-                    textSize = font->GetStringMetrics(pointsStr);
-                    if(drawSize.x <= textSize.width)
+                    if (fullWidth <= drawSize.x)
                     {
+                        pointsStr.clear();
+                        pointsStr.append(visualText, left, right - left + 1);
                         break;
                     }
 
-                    --startPos;
-                    ++endPos;
+                    if (cutFromBegin)
+                    {
+                        fullWidth -= charSizes[left++];
+                    }
+                    else
+                    {
+                        fullWidth -= charSizes[right--];
+                    }
+                    cutFromBegin = !cutFromBegin;
+                }
+            }
+            else if (ALIGN_LEFT & align)
+            {
+                for (uint32 i = 1U; i < length; ++i)
+                {
+                    fullWidth -= charSizes[length - i];
+                    if (fullWidth <= drawSize.x)
+                    {
+                        pointsStr.clear();
+                        pointsStr.append(visualText, 0, length - i);
+                        break;
+                    }
                 }
             }
         }

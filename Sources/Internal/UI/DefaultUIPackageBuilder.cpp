@@ -29,17 +29,18 @@
 
 #include "DefaultUIPackageBuilder.h"
 
-#include "UIPackage.h"
-#include "UIPackageLoader.h"
+#include "UI/UIPackage.h"
+#include "UI/UIPackageLoader.h"
+#include "UI/UIControlSystem.h"
+#include "UI/Layouts/UILayoutSystem.h"
+
 #include "Base/ObjectFactory.h"
 #include "UI/UIControl.h"
-#include "UI/UIControlPackageContext.h"
 #include "UI/UIControlHelpers.h"
 #include "UI/Components/UIComponent.h"
 #include "FileSystem/LocalizationSystem.h"
-#include "UIPackagesCache.h"
+#include "UI/UIPackagesCache.h"
 #include "UI/Styles/UIStyleSheet.h"
-#include "UI/Styles/UIStyleSheetYamlLoader.h"
 
 namespace DAVA
 {
@@ -113,20 +114,21 @@ void DefaultUIPackageBuilder::BeginPackage(const FilePath &packagePath)
 
 void DefaultUIPackageBuilder::EndPackage()
 {
-    Vector<UIStyleSheet*> importedStyleSheets;
     for (UIPackage* importedPackage : importedPackages)
     {
-        Vector<UIStyleSheet*> packageStyleSheets = importedPackage->GetControlPackageContext()->GetSortedStyleSheets();
-        for (UIStyleSheet* packageStyleSheet : packageStyleSheets)
+        const Vector<UIPriorityStyleSheet>& packageStyleSheets = importedPackage->GetControlPackageContext()->GetSortedStyleSheets();
+        for (const UIPriorityStyleSheet& packageStyleSheet : packageStyleSheets)
         {
-            importedStyleSheets.push_back(packageStyleSheet);
+            styleSheets.emplace_back(UIPriorityStyleSheet(packageStyleSheet.GetStyleSheet(), packageStyleSheet.GetPriority() + 1));
         }
     }
-    std::sort(importedStyleSheets.begin(), importedStyleSheets.end());
-    auto last = std::unique(importedStyleSheets.begin(), importedStyleSheets.end());
-    importedStyleSheets.erase(last, importedStyleSheets.end());
 
-    AddStyleSheets(importedStyleSheets);
+    for (const UIPriorityStyleSheet &styleSheet : styleSheets)
+    {
+        package->GetControlPackageContext()->AddStyleSheet(styleSheet);
+    }
+
+    styleSheets.clear();
 }
 
 bool DefaultUIPackageBuilder::ProcessImportedPackage(const String &packagePath, AbstractUIPackageLoader *loader)
@@ -155,17 +157,18 @@ bool DefaultUIPackageBuilder::ProcessImportedPackage(const String &packagePath, 
     }
 }
 
-void DefaultUIPackageBuilder::ProcessStyleSheets(const YamlNode *styleSheetsNode)
+void DefaultUIPackageBuilder::ProcessStyleSheet(const Vector<UIStyleSheetSelectorChain> &selectorChains, const Vector<UIStyleSheetProperty> &properties)
 {
-    UIStyleSheetYamlLoader styleSheetLoader;
+    for (const UIStyleSheetSelectorChain &chain : selectorChains)
+    {
+        ScopedPtr<UIStyleSheet> styleSheet(new UIStyleSheet());
+        styleSheet->SetSelectorChain(chain);
+        ScopedPtr<UIStyleSheetPropertyTable> propertiesTable(new UIStyleSheetPropertyTable());
+        propertiesTable->SetProperties(properties);
+        styleSheet->SetPropertyTable(propertiesTable);
 
-    Vector< UIStyleSheet* > styleSheets;
-    styleSheetLoader.LoadFromYaml(styleSheetsNode, &styleSheets);
-
-    AddStyleSheets(styleSheets);
-
-    for (UIStyleSheet* styleSheet : styleSheets)
-        SafeRelease(styleSheet);
+        package->GetControlPackageContext()->AddStyleSheet(UIPriorityStyleSheet(styleSheet));
+    }
 }
 
 UIControl *DefaultUIPackageBuilder::BeginControlWithClass(const String &className)
@@ -269,7 +272,9 @@ void DefaultUIPackageBuilder::EndControl(bool isRoot)
     {
         if (controlsStack.empty() || isRoot)
         {
-            package->AddControl(lastDescr->control.Get());
+            UIControl *control = lastDescr->control.Get();
+            UIControlSystem::Instance()->GetLayoutSystem()->ApplyLayout(control);
+            package->AddControl(control);
         }
         else
         {
@@ -293,10 +298,14 @@ void DefaultUIPackageBuilder::EndControlPropertiesSection()
     
 UIComponent *DefaultUIPackageBuilder::BeginComponentPropertiesSection(uint32 componentType, uint32 componentIndex)
 {
-    UIComponent *component = UIComponent::CreateByType(componentType);
     UIControl *control = controlsStack.back()->control.Get();
-    control->AddComponent(component);
-    component->Release();
+    UIComponent *component = control->GetComponent(componentType, componentIndex);
+    if (component == nullptr)
+    {
+        component = UIComponent::CreateByType(componentType);
+        control->AddComponent(component);
+        component->Release();
+    }
     currentObject = component;
     return component;
 }
@@ -387,11 +396,5 @@ UIPackage *DefaultUIPackageBuilder::FindImportedPackageByName(const String &name
     
     return nullptr;
 }
-
-void DefaultUIPackageBuilder::AddStyleSheets(const DAVA::Vector<UIStyleSheet*>& styleSheets)
-{
-    for (UIStyleSheet* styleSheet : styleSheets)
-        package->GetControlPackageContext()->AddStyleSheet(styleSheet);
-}
-
+    
 }

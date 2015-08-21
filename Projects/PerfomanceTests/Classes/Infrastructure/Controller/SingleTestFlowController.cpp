@@ -28,21 +28,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "SingleTestFlowController.h"
 
-SingleTestFlowController::SingleTestFlowController()
-    :   testForRun(nullptr)
-    ,   testChooserScreen(nullptr)
-    ,   currentScreen(nullptr)
-
-{
-}
-
-SingleTestFlowController::SingleTestFlowController(const String& _testName, const BaseTest::TestParams& _testParams)
-    :   testForRun(nullptr)
-    ,   testChooserScreen(nullptr)
-    ,   currentScreen(nullptr)
+SingleTestFlowController::SingleTestFlowController(const String& _testName, const BaseTest::TestParams& _testParams, bool _showUI)
+    :   showUI(_showUI)
     ,   testForRunName(_testName)
     ,   testParams(_testParams)
-
+    ,   testForRun(nullptr)
+    ,   testChooserScreen(new TestChooserScreen())
+    ,   currentScreen(nullptr)
 {
 }
 
@@ -52,28 +44,25 @@ void SingleTestFlowController::Init(const Vector<BaseTest*>& _testChain)
     
     if (testForRunName.empty())
     {
-        testChooserScreen = new TestChooserScreen(testChain);
+        testChooserScreen->SetTestChain(testChain);
         currentScreen = testChooserScreen;
     }
     else
     {
-        for (BaseTest* test : _testChain)
+        for (auto *test : _testChain)
         {
-            if (test->GetName() == testForRunName)
+            if (test->GetParams().sceneName == testForRunName)
             {
+                test->MergeParams(testParams);
+                test->ShowUI(showUI);
+
                 testForRun = test;
-                testForRun->SetParams(testParams);
-                
-                if (testParams.frameForDebug > 0 || testParams.maxDelta > 0.001f)
-                {
-                    testForRun->SetDebuggable(true);
-                }
             }
         }
 
         currentScreen = testForRun;
 
-        if (currentScreen == nullptr)
+        if (nullptr == currentScreen)
         {
             Logger::Error(DAVA::Format("Test with name: %s not found", testForRunName.c_str()).c_str());
             Core::Instance()->Quit();
@@ -94,12 +83,15 @@ void SingleTestFlowController::BeginFrame()
 }
 
 void SingleTestFlowController::EndFrame()
-{ 
+{
+    currentScreen->EndFrame();
+    
     if (nullptr == testForRun)
     {
         if (testChooserScreen->IsFinished())
         {
             testForRun = testChooserScreen->GetTestForRun();
+            testForRun->ShowUI(showUI);
             currentScreen = testForRun;
         }
     }
@@ -110,6 +102,4 @@ void SingleTestFlowController::EndFrame()
         Logger::Info("Finish all tests.");
         Core::Instance()->Quit();
     }
-
-    currentScreen->EndFrame();
 }

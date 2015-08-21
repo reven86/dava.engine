@@ -32,6 +32,7 @@
 #include "UI/Preview/EditScreen.h"
 
 #include "Model/PackageHierarchy/PackageNode.h"
+#include "Model/PackageHierarchy/ImportedPackagesNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 
@@ -83,6 +84,11 @@ void Document::InitSharedData()
 const DAVA::FilePath &Document::GetPackageFilePath() const
 {
     return package->GetPath();
+}
+
+void Document::RefreshLayout()
+{
+    package->RefreshPackageStylesAndLayout(true);
 }
 
 void Document::RefreshAllControlProperties()

@@ -57,7 +57,7 @@
 #include "IntegerPropertyDelegate.h"
 #include "FloatPropertyDelegate.h"
 #include "BoolPropertyDelegate.h"
-#include "SpritePropertyDelegate.h"
+#include "ResourceFilePropertyDelegate.h"
 #include "Vector4PropertyDelegate.h"
 
 #include "FontPropertyDelegate.h"
@@ -81,8 +81,11 @@ PropertiesTreeItemDelegate::PropertiesTreeItemDelegate(QObject *parent)
     variantTypeItemDelegates[DAVA::VariantType::TYPE_BOOLEAN] = new BoolPropertyDelegate(this);
     variantTypeItemDelegates[DAVA::VariantType::TYPE_VECTOR4] = new Vector4PropertyDelegate(this);
 
-    propertyNameTypeItemDelegates["Sprite"] = new SpritePropertyDelegate(this);
+    propertyNameTypeItemDelegates["Sprite"] = new ResourceFilePropertyDelegate("*.txt", "/Gfx/", this);
+    propertyNameTypeItemDelegates["sprite"] = new ResourceFilePropertyDelegate("*.txt", "/Gfx/", this);
+    propertyNameTypeItemDelegates["Effect path"] = new ResourceFilePropertyDelegate("*.sc2", "/3d/", this);
     propertyNameTypeItemDelegates["Font"] = new FontPropertyDelegate(this);
+    propertyNameTypeItemDelegates["font"] = new FontPropertyDelegate(this);
 }
 
 PropertiesTreeItemDelegate::~PropertiesTreeItemDelegate()

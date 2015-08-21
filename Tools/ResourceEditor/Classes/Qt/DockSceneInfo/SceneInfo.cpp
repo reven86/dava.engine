@@ -53,6 +53,7 @@
 
 #include "Scene3D/Components/ComponentHelpers.h"
 
+
 using namespace DAVA;
 
 SceneInfo::SceneInfo(QWidget *parent /* = 0 */)

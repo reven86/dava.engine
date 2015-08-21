@@ -28,18 +28,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "ReportScreen.h"
 
-const String ReportScreen::MIN_DELTA = "MinDeltaValue";
-const String ReportScreen::MAX_DELTA = "MaxDeltaValue";
-const String ReportScreen::AVERAGE_DELTA = "AverageDeltaValue";
-const String ReportScreen::TEST_TIME = "TestTimeValue";
-const String ReportScreen::ELAPSED_TIME = "ElapsedTimeValue";
-const String ReportScreen::FRAMES_RENDERED = "FramesRenderedValue";
-
-ReportScreen::ReportScreen(const Vector<BaseTest*>& _testChain)
-    :   testChain(_testChain)
-{
-}
-
 bool ReportScreen::IsFinished() const
 {
     return false;
@@ -47,16 +35,14 @@ bool ReportScreen::IsFinished() const
 
 void ReportScreen::LoadResources()
 {
-    CreateReportScreen();
-}
+    BaseScreen::LoadResources();
 
-void ReportScreen::UnloadResources()
-{
+    CreateReportScreen();
 }
 
 void ReportScreen::CreateReportScreen()
 {
-    UIControl* reportItem = new UIControl();
+    ScopedPtr<UIControl> reportItem(new UIControl());
 
     UIYamlLoader::LoadFonts("~res:/UI/Fonts/fonts.yaml");
     UIYamlLoader::Load(reportItem, ControlHelpers::GetPathToUIYaml("ReportItem.yaml"));
@@ -64,11 +50,11 @@ void ReportScreen::CreateReportScreen()
     uint32 offsetY = 150;
     uint32 testNumber = 0;
     
-    for (BaseTest* test : testChain)
+    for (auto* test : testChain)
     {
         if (test->IsFinished())
         {
-            Vector<BaseTest::FrameInfo> frameInfoList = test->GetFramesInfo();
+            const auto& framesInfo = test->GetFramesInfo();
             
             float32 minDelta = FLT_MAX;
             float32 maxDelta = FLT_MIN;
@@ -77,9 +63,9 @@ void ReportScreen::CreateReportScreen()
             float32 testTime = 0.0f;
             float32 elapsedTime = 0.0f;
             
-            uint32 framesCount = test->GetFramesInfo().size();
+            uint32 framesCount = framesInfo.size();
             
-            for (BaseTest::FrameInfo frameInfo : frameInfoList)
+            for (const auto& frameInfo : framesInfo)
             {
                 if (frameInfo.delta > maxDelta)
                 {
@@ -95,28 +81,31 @@ void ReportScreen::CreateReportScreen()
 
             averageDelta /= framesCount;
 
-            testTime = test->GetTestTime();
+            testTime = test->GetOverallTestTime();
             elapsedTime = test->GetElapsedTime() / 1000.0f;
 
-            UIControl* reportItemCopy = reportItem->Clone();
+            ScopedPtr<UIControl> reportItemCopy(reportItem->Clone());
             reportItemCopy->SetPosition(Vector2(0.0f, 0.0f + testNumber * offsetY));
+            
+            UIStaticText* testName = reportItemCopy->FindByPath<UIStaticText*>(ControlHelpers::ReportItem::TEST_NAME_PATH);
+            testName->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("%s", test->GetSceneName().c_str())));
 
-            UIStaticText* minDeltaText = static_cast<UIStaticText*>(reportItemCopy->FindByName(MIN_DELTA));
+            UIStaticText* minDeltaText = reportItemCopy->FindByPath<UIStaticText*>(ControlHelpers::ReportItem::MIN_DELTA_PATH);
             minDeltaText->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("%f", minDelta)));
 
-            UIStaticText* maxDeltaText = static_cast<UIStaticText*>(reportItemCopy->FindByName(MAX_DELTA));
+            UIStaticText* maxDeltaText = reportItemCopy->FindByPath<UIStaticText*>(ControlHelpers::ReportItem::MAX_DELTA_PATH);
             maxDeltaText->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("%f", maxDelta)));
 
-            UIStaticText* averageDeltaText = static_cast<UIStaticText*>(reportItemCopy->FindByName(AVERAGE_DELTA));
+            UIStaticText* averageDeltaText = reportItemCopy->FindByPath<UIStaticText*>(ControlHelpers::ReportItem::AVERAGE_DELTA_PATH);
             averageDeltaText->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("%f", averageDelta)));
 
-            UIStaticText* testTimeText = static_cast<UIStaticText*>(reportItemCopy->FindByName(TEST_TIME));
+            UIStaticText* testTimeText = reportItemCopy->FindByPath<UIStaticText*>(ControlHelpers::ReportItem::TEST_TIME_PATH);
             testTimeText->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("%f", testTime)));
 
-            UIStaticText* elapsedTimeText = static_cast<UIStaticText*>(reportItemCopy->FindByName(ELAPSED_TIME));
+            UIStaticText* elapsedTimeText = reportItemCopy->FindByPath<UIStaticText*>(ControlHelpers::ReportItem::ELAPSED_TIME_PATH);
             elapsedTimeText->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("%f", elapsedTime)));
 
-            UIStaticText* framesRenderedText = static_cast<UIStaticText*>(reportItemCopy->FindByName(FRAMES_RENDERED));
+            UIStaticText* framesRenderedText = reportItemCopy->FindByPath<UIStaticText*>(ControlHelpers::ReportItem::FRAMES_RENDERED_PATH);
             framesRenderedText->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("%d", framesCount)));
 
             AddControl(reportItemCopy);
@@ -124,6 +113,4 @@ void ReportScreen::CreateReportScreen()
             testNumber++;
         }
     }
-
-    SafeRelease(reportItem);
 }

@@ -37,6 +37,10 @@ LNKEXE     = link.exe $(NOLOGO)
 LNKLIB     = lib.exe $(NOLOGO)
 MT         = mt.exe $(NOLOGO)
 
+!IF "$(ARCH)" == "arm"
+CFLAGS     = $(CFLAGS) /D_ARM_WINAPI_PARTITION_DESKTOP_SDK_AVAILABLE=1
+!ENDIF
+
 CFGSET     = FALSE
 !IF "$(OBJDIR)" == ""
 OUTDIR = ..\obj\

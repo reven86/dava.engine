@@ -58,8 +58,8 @@ ComponentPropertiesSection::ComponentPropertiesSection(DAVA::UIControl *aControl
     {
         const InspMember *member = insp->Member(j);
         
-        const ValueProperty *sourceProp = sourceSection == NULL ? NULL : sourceSection->FindProperty(member);
-        ValueProperty *prop = new IntrospectionProperty(component, member, dynamic_cast<const IntrospectionProperty *>(sourceProp), cloneType);
+        const IntrospectionProperty *sourceProp = sourceSection == nullptr ? nullptr : sourceSection->FindProperty(member);
+        IntrospectionProperty *prop = new IntrospectionProperty(component, member, sourceProp, cloneType);
         AddProperty(prop);
         SafeRelease(prop);
     }
@@ -80,6 +80,51 @@ UIComponent *ComponentPropertiesSection::GetComponent() const
 DAVA::uint32 ComponentPropertiesSection::GetComponentType() const
 {
     return component->GetType();
+}
+
+void ComponentPropertiesSection::AttachPrototypeSection(ComponentPropertiesSection *section)
+{
+    if (prototypeSection == nullptr)
+    {
+        prototypeSection = section;
+        const InspInfo *insp = component->GetTypeInfo();
+        for (int j = 0; j < insp->MembersCount(); j++)
+        {
+            const InspMember *member = insp->Member(j);
+            ValueProperty *value = FindProperty(member);
+            ValueProperty *prototypeValue = prototypeSection->FindProperty(member);
+            value->AttachPrototypeProperty(prototypeValue);
+        }
+    }
+    else
+    {
+        DVASSERT(false);
+    }
+}
+
+void ComponentPropertiesSection::DetachPrototypeSection(ComponentPropertiesSection *section)
+{
+    if (prototypeSection == section)
+    {
+        prototypeSection = nullptr; // weak
+        for (int i = 0; i < GetCount(); i++)
+        {
+            ValueProperty *value = GetProperty(i);
+            if (value->GetPrototypeProperty())
+            {
+                DVASSERT(value->GetPrototypeProperty()->GetParent() == section);
+                value->DetachPrototypeProperty(value->GetPrototypeProperty());
+            }
+            else
+            {
+                DVASSERT(false);
+            }
+        }
+    }
+    else
+    {
+        DVASSERT(false);
+    }
 }
 
 bool ComponentPropertiesSection::HasChanges() const
@@ -130,9 +175,6 @@ void ComponentPropertiesSection::RefreshIndex()
     if (component->GetControl() == control)
     {
         index = control->GetComponentIndex(component);
-        
-        Logger::Debug("Refresh %s, %d, %d", control->GetName().c_str(), component->GetType(), index);
-
         RefreshName();
     }
 }

@@ -39,7 +39,6 @@ using namespace DAVA;
 NameProperty::NameProperty(ControlNode *anControl, const NameProperty *sourceProperty, eCloneType cloneType)
     : ValueProperty("Name")
     , control(anControl) // weak ptr
-    , prototypeProperty(nullptr)
 {
     if (sourceProperty)
     {
@@ -47,7 +46,7 @@ NameProperty::NameProperty(ControlNode *anControl, const NameProperty *sourcePro
 
         if (cloneType == CT_INHERIT && control->GetCreationType() == ControlNode::CREATED_FROM_PROTOTYPE_CHILD)
         {
-            prototypeProperty = sourceProperty;
+            AttachPrototypeProperty(sourceProperty);
         }
     }
 }
@@ -55,22 +54,14 @@ NameProperty::NameProperty(ControlNode *anControl, const NameProperty *sourcePro
 NameProperty::~NameProperty()
 {
     control = nullptr; // weak ptr
-    prototypeProperty = nullptr; // weak ptr
 }
 
-void NameProperty::Refresh()
+void NameProperty::Refresh(DAVA::int32 refreshFlags)
 {
-    if (prototypeProperty)
-    {
-        SetDefaultValue(prototypeProperty->GetValue());
-        ApplyValue(defaultValue);
-    }
-    ValueProperty::Refresh();
-}
-
-AbstractProperty *NameProperty::FindPropertyByPrototype(AbstractProperty *prototype)
-{
-    return prototypeProperty == prototype ? this : nullptr;
+    ValueProperty::Refresh(refreshFlags);
+    
+    if ((refreshFlags & REFRESH_DEFAULT_VALUE) != 0 && GetPrototypeProperty())
+        ApplyValue(GetDefaultValue());
 }
 
 void NameProperty::Accept(PropertyVisitor *visitor)
@@ -88,12 +79,17 @@ NameProperty::ePropertyType NameProperty::GetType() const
     return TYPE_VARIANT;
 }
 
+DAVA::uint32 NameProperty::GetFlags() const
+{
+    return EF_AFFECTS_STYLES;
+}
+
 VariantType NameProperty::GetValue() const
 {
     return VariantType(control->GetName());
 }
 
-bool NameProperty::IsReplaced() const
+bool NameProperty::IsOverriddenLocally() const
 {
     return control->GetCreationType() != ControlNode::CREATED_FROM_PROTOTYPE_CHILD;
 }

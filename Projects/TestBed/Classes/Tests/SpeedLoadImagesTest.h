@@ -29,7 +29,7 @@
 #ifndef __SPEED_LOAD_IMAGES_TEST__
 #define __SPEED_LOAD_IMAGES_TEST__
 
-#include "BaseScreen.h"
+#include "Infrastructure/BaseScreen.h"
 
 using namespace DAVA;
 

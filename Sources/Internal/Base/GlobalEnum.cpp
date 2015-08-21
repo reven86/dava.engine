@@ -39,6 +39,8 @@
 #include "UI/UIList.h"
 #include "UI/UITextField.h"
 #include "UI/Components/UIComponent.h"
+#include "UI/Layouts/UISizePolicyComponent.h"
+#include "UI/Layouts/UILinearLayoutComponent.h"
 #include "FileSystem/Logger.h"
 
 using namespace DAVA;
@@ -147,6 +149,7 @@ ENUM_DECLARE(DeviceInfo::ePlatform)
     ENUM_ADD_DESCR(DeviceInfo::PLATFORM_MACOS, "MacOS");
     ENUM_ADD_DESCR(DeviceInfo::PLATFORM_ANDROID, "Android");
     ENUM_ADD_DESCR(DeviceInfo::PLATFORM_WIN32, "Win32");
+    ENUM_ADD_DESCR(DeviceInfo::PLATFORM_WIN_UAP, "Windows UAP");
     ENUM_ADD_DESCR(DeviceInfo::PLATFORM_UNKNOWN, "Unknown");
 }
 
@@ -180,9 +183,6 @@ ENUM_DECLARE(Interpolation::FuncType)
     ENUM_ADD_DESCR(Interpolation::BOUNCE_IN, "BOUNCE_IN");
     ENUM_ADD_DESCR(Interpolation::BOUNCE_OUT, "BOUNCE_OUT");
     ENUM_ADD_DESCR(Interpolation::BOUNCE_IN_BOUNCE_OUT, "BOUNCE_IN_BOUNCE_OUT");
-    ENUM_ADD_DESCR(Interpolation::EASY_IN, "EASY_IN");
-    ENUM_ADD_DESCR(Interpolation::EASY_OUT, "EASY_OUT");
-    ENUM_ADD_DESCR(Interpolation::EASY_IN_EASY_OUT, "EASY_IN_EASY_OUT");
 }
 
 ENUM_DECLARE(UIControlBackground::eDrawType)
@@ -239,6 +239,13 @@ ENUM_DECLARE(TextBlock::eFitType)
     ENUM_ADD_DESCR(TextBlock::FITTING_ENLARGE, "ENLARGE");
     ENUM_ADD_DESCR(TextBlock::FITTING_REDUCE, "REDUCE");
     ENUM_ADD_DESCR(TextBlock::FITTING_POINTS, "POINTS");
+};
+
+ENUM_DECLARE(TextBlock::eUseRtlAlign)
+{
+    ENUM_ADD_DESCR(TextBlock::RTL_DONT_USE, "DONT_USE");
+    ENUM_ADD_DESCR(TextBlock::RTL_USE_BY_CONTENT, "USE_BY_CONTENT");
+    ENUM_ADD_DESCR(TextBlock::RTL_USE_BY_SYSTEM, "USE_BY_SYSTEM");
 };
 
 ENUM_DECLARE(UIList::eListOrientation)
@@ -312,8 +319,27 @@ ENUM_DECLARE(UITextField::eReturnKeyType)
 
 ENUM_DECLARE(UIComponent::eType)
 {
-    ENUM_ADD_DESCR(UIComponent::FAKE_COMPONENT       , "Fake"       );
-    ENUM_ADD_DESCR(UIComponent::FAKE_MULTI_COMPONENT       , "FakeMultiple"       );
+    ENUM_ADD_DESCR(UIComponent::LINEAR_LAYOUT_COMPONENT, "LinearLayout");
+    ENUM_ADD_DESCR(UIComponent::SIZE_POLICY_COMPONENT, "SizePolicy");
+    ENUM_ADD_DESCR(UIComponent::ANCHOR_COMPONENT, "Anchor");
+};
+
+ENUM_DECLARE(UISizePolicyComponent::eSizePolicy)
+{
+    ENUM_ADD_DESCR(UISizePolicyComponent::IGNORE_SIZE, "Ignore");
+    ENUM_ADD_DESCR(UISizePolicyComponent::FIXED_SIZE, "FixedSize");
+    ENUM_ADD_DESCR(UISizePolicyComponent::PERCENT_OF_CHILDREN_SUM, "PercentOfChildrenSum");
+    ENUM_ADD_DESCR(UISizePolicyComponent::PERCENT_OF_MAX_CHILD, "PercentOfMaxChild");
+    ENUM_ADD_DESCR(UISizePolicyComponent::PERCENT_OF_FIRST_CHILD, "PercentOfFirstChild");
+    ENUM_ADD_DESCR(UISizePolicyComponent::PERCENT_OF_LAST_CHILD, "PercentOfLastChild");
+    ENUM_ADD_DESCR(UISizePolicyComponent::PERCENT_OF_CONTENT, "PercentOfContent");
+    ENUM_ADD_DESCR(UISizePolicyComponent::PERCENT_OF_PARENT, "PercentOfParent");
+};
+
+ENUM_DECLARE(UILinearLayoutComponent::eOrientation)
+{
+    ENUM_ADD_DESCR(UILinearLayoutComponent::HORIZONTAL, "Horizontal");
+    ENUM_ADD_DESCR(UILinearLayoutComponent::VERTICAL, "Vertical");
 };
 
 /*

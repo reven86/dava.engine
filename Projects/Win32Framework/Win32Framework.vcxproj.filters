@@ -202,6 +202,9 @@
     <Filter Include="Internal\Concurrency">
       <UniqueIdentifier>{fef8edc5-3139-4a47-9e07-d9bc662be831}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Internal\UI\Layouts">
+      <UniqueIdentifier>{35e9d1cc-cb7d-4460-b271-1e7012178889}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\External\Box2D\Box2D.h">
@@ -1807,12 +1810,6 @@
     <ClInclude Include="..\..\Sources\Internal\Timer\RawTimer.h">
       <Filter>Internal\Timer</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\UI\Components\UIFakeComponent.h">
-      <Filter>Internal\UI\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\UI\Components\UIFakeMultiComponent.h">
-      <Filter>Internal\UI\Components</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UnitTests\TestClass.h">
       <Filter>Internal\UnitTests</Filter>
     </ClInclude>
@@ -1913,6 +1910,21 @@
       <Filter>Internal\UI\Styles</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetPropertyTable.h">
+      <Filter>Internal\UI\Styles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UIAnchorComponent.h">
+      <Filter>Internal\UI\Layouts</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UILayoutSystem.h">
+      <Filter>Internal\UI\Layouts</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UILinearLayoutComponent.h">
+      <Filter>Internal\UI\Layouts</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UISizePolicyComponent.h">
+      <Filter>Internal\UI\Layouts</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIPriorityStyleSheet.h">
       <Filter>Internal\UI\Styles</Filter>
     </ClInclude>
   </ItemGroup>
@@ -2814,9 +2826,6 @@
     <ClCompile Include="..\..\Sources\Internal\Autotesting\MongodbUpdateObject.cpp">
       <Filter>Internal\Autotesting</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Platform\MovieViewControlStub.cpp">
-      <Filter>Internal\Platform</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\UIMovieView.cpp">
       <Filter>Internal\UI</Filter>
     </ClCompile>
@@ -2998,7 +3007,7 @@
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibPngHelper.cpp">
       <Filter>Internal\Render\Image</Filter>
     </ClCompile>
-	<ClCompile Include="..\..\Sources\Internal\Render\Image\LibWebPHelper.cpp">
+    <ClCompile Include="..\..\Sources\Internal\Render\Image\LibWebPHelper.cpp">
       <Filter>Internal\Render\Image</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibJpegHelper.cpp">
@@ -3328,12 +3337,6 @@
     <ClCompile Include="..\..\Sources\Internal\Timer\RawTimer.cpp">
       <Filter>Internal\Timer</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\UI\Components\UIFakeComponent.cpp">
-      <Filter>Internal\UI\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\UI\Components\UIFakeMultiComponent.cpp">
-      <Filter>Internal\UI\Components</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UnitTests\TestCore.cpp">
       <Filter>Internal\UnitTests</Filter>
     </ClCompile>
@@ -3392,6 +3395,21 @@
       <Filter>Internal\UI\Styles</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetPropertyTable.cpp">
+      <Filter>Internal\UI\Styles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UIAnchorComponent.cpp">
+      <Filter>Internal\UI\Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UILayoutSystem.cpp">
+      <Filter>Internal\UI\Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UILinearLayoutComponent.cpp">
+      <Filter>Internal\UI\Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UISizePolicyComponent.cpp">
+      <Filter>Internal\UI\Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIPriorityStyleSheet.cpp">
       <Filter>Internal\UI\Styles</Filter>
     </ClCompile>
   </ItemGroup>

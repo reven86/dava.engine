@@ -68,7 +68,7 @@ int32 LogLevelToAndtoid(Logger::eLogLevel ll)
 	return androidLL;
 }
 
-void Logger::PlatformLog(eLogLevel ll, const char8* text)
+void Logger::PlatformLog(eLogLevel ll, const char8* text) const
 {
     size_t len = strlen(text);
     // about limit on android: http://stackoverflow.com/questions/8888654/android-set-max-length-of-logcat-messages
