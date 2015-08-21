@@ -633,6 +633,7 @@ void SceneTreeModel::ItemChanged(QStandardItem * item)
 
 			CommandUpdateParticleLayerEnabled* command = new CommandUpdateParticleLayerEnabled(itemLayer->layer, isLayerEnabled);
 			curScene->Exec(command);
+			curScene->MarkAsChanged();
 		}
 	}
 }

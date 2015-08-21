@@ -387,6 +387,7 @@ void ParticleEffectPropertiesWidget::OnValueChanged()
 
 	DVASSERT(activeScene != 0);
 	activeScene->Exec(commandUpdateEffect);
+	activeScene->MarkAsChanged();
 
 	Init(activeScene, particleEffect);
 }
