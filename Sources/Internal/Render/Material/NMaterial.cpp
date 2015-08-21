@@ -139,7 +139,7 @@ const FastName NMaterial::FLAG_VIEWSPECULAR = FastName("VIEW_SPECULAR");
 
 const FastName NMaterial::FLAG_ALPHATESTVALUE = FastName("ALPHATESTVALUE");
 
-static FastName TEXTURE_NAME_PROPS[] =
+static Vector<FastName> TEXTURE_NAME_PROPS =
 {
 	NMaterial::TEXTURE_ALBEDO,
 	NMaterial::TEXTURE_NORMAL,
@@ -148,7 +148,7 @@ static FastName TEXTURE_NAME_PROPS[] =
 	NMaterial::TEXTURE_DECAL
 };
 
-static FastName RUNTIME_ONLY_FLAGS[] =
+static Vector<FastName> RUNTIME_ONLY_FLAGS =
 {
 	NMaterial::FLAG_LIGHTMAPONLY,
 	NMaterial::FLAG_TEXTUREONLY,
@@ -164,7 +164,7 @@ static FastName RUNTIME_ONLY_FLAGS[] =
 	NMaterial::FLAG_VIEWSPECULAR
 };
 
-static FastName RUNTIME_ONLY_PROPERTIES[] =
+static Vector<FastName>  RUNTIME_ONLY_PROPERTIES =
 {
     NMaterial::PARAM_LIGHTMAP_SIZE,
     NMaterial::PARAM_LIGHT_POSITION0,
@@ -176,7 +176,7 @@ static FastName RUNTIME_ONLY_PROPERTIES[] =
     NMaterial::PARAM_SCREEN_OFFSET
 };
 
-static FastName RUNTIME_ONLY_TEXTURES[] =
+static Vector<FastName> RUNTIME_ONLY_TEXTURES =
 {
     NMaterial::TEXTURE_DYNAMIC_REFLECTION,
     NMaterial::TEXTURE_DYNAMIC_REFRACTION,
@@ -1809,37 +1809,29 @@ NMaterial* NMaterial::CreateMaterialInstance(const FastName& materialName,
 	return mat;
 }
 
-bool NMaterial::IsNamePartOfArray(const FastName& fastName, FastName* array, uint32 count)
-{
-	DVASSERT(array);
-	
-	bool result = false;
-	for(size_t i = 0; i < count; ++i)
-	{
-		if(array[i] == fastName)
-		{
-			result = true;
-			break;
-		}
-	}
-	
-	return result;
-	
-}
-
 bool NMaterial::IsRuntimeFlag(const FastName& flagName)
 {
-	return IsNamePartOfArray(flagName, RUNTIME_ONLY_FLAGS, COUNT_OF(RUNTIME_ONLY_FLAGS));
+    return IsNamePartOfArray(flagName, RUNTIME_ONLY_FLAGS);
 }
 
 bool NMaterial::IsRuntimeProperty(const FastName& propName)
 {
-	return IsNamePartOfArray(propName, RUNTIME_ONLY_PROPERTIES, COUNT_OF(RUNTIME_ONLY_PROPERTIES));
+    return IsNamePartOfArray(propName, RUNTIME_ONLY_PROPERTIES);
 }
 
 bool NMaterial::IsRuntimeTexture(const FastName& textureName)
 {
-    return IsNamePartOfArray(textureName, RUNTIME_ONLY_TEXTURES, COUNT_OF(RUNTIME_ONLY_TEXTURES));
+    return IsNamePartOfArray(textureName, RUNTIME_ONLY_TEXTURES);
+}
+
+bool NMaterial::IsNamePartOfArray(const FastName& fastName, const Vector<FastName> & propertyArray)
+{
+    auto it = std::find_if(propertyArray.begin(), propertyArray.end(), [fastName](const FastName& toFind)
+    {
+        return fastName == toFind;
+    });
+
+    return it != propertyArray.end();
 }
 
 void NMaterial::SetMaterialTemplateName(const FastName& templateName)

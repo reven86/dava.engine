@@ -171,7 +171,7 @@ template<> struct Hash <DAVA::uint32>
 	}
 };
 
-inline DAVA::uint32 HashValue_N( const char* key, unsigned length ) DAVA_NOEXCEPT
+inline DAVA::uint32 HashValue_N( const char* key, uint32 length ) DAVA_NOEXCEPT
 {
     using DAVA::uint32;
 
