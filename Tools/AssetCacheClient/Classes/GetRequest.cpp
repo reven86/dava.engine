@@ -29,6 +29,7 @@
 #include "GetRequest.h"
 #include "Constants.h"
 
+#include "FileSystem/FileSystem.h"
 #include "Platform/SystemTimer.h"
 
 using namespace DAVA;
