@@ -60,7 +60,7 @@ protected:
 
     struct PolygonSortData
     {
-        VegetationIndex indices[3];
+        Array<VegetationIndex, 3> indices;
         float32 cameraDistance;
 
         inline PolygonSortData();

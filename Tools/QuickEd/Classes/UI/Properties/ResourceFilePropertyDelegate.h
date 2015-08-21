@@ -27,27 +27,31 @@
 =====================================================================================*/
 
 
-#ifndef __SPRITE_PROPERTY_DELEGATE_H__
-#define __SPRITE_PROPERTY_DELEGATE_H__
+#ifndef __RESOURCE_FILE_PROPERTY_DELEGATE_H__
+#define __RESOURCE_FILE_PROPERTY_DELEGATE_H__
 
 #include "BasePropertyDelegate.h"
 
-class SpritePropertyDelegate : public BasePropertyDelegate
+class ResourceFilePropertyDelegate : public BasePropertyDelegate
 {
     Q_OBJECT
 public:
-    explicit SpritePropertyDelegate(PropertiesTreeItemDelegate *delegate);
-    ~SpritePropertyDelegate();
+    explicit ResourceFilePropertyDelegate(const QString &resourcefilter, const QString &resourceDir, PropertiesTreeItemDelegate *delegate);
+    ~ResourceFilePropertyDelegate();
 
-    virtual QWidget * createEditor(QWidget * parent, const QStyleOptionViewItem & option, const QModelIndex & index) const override;
-    virtual void setEditorData(QWidget * editor, const QModelIndex & index) const override;
-    virtual bool setModelData(QWidget * editor, QAbstractItemModel * model, const QModelIndex & index) const override;
-    virtual void enumEditorActions(QWidget *parent, const QModelIndex &index, QList<QAction *> &actions) const;
+    QWidget * createEditor(QWidget * parent, const QStyleOptionViewItem & option, const QModelIndex & index) const override;
+    void setEditorData(QWidget * editor, const QModelIndex & index) const override;
+    bool setModelData(QWidget * editor, QAbstractItemModel * model, const QModelIndex & index) const override;
+    void enumEditorActions(QWidget *parent, const QModelIndex &index, QList<QAction *> &actions) const override;
 
 private slots:
-    void openFileDialogClicked();
-    void clearSpriteClicked();
+    void selectFileClicked();
+    void clearFileClicked();
     void valueChanged();
+
+private:
+    QString resourcefilter;
+    QString resourceDir;
 };
 
-#endif // __SPRITE_PROPERTY_DELEGATE_H__
+#endif // __RESOURCE_FILE_PROPERTY_DELEGATE_H__

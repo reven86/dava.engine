@@ -528,7 +528,7 @@ void Scene::ImmediateEvent(Entity * entity, uint32 componentType, uint32 event)
 }
 #endif
     
-void Scene::AddSystem(SceneSystem * sceneSystem, uint64 componentFlags, uint32 processFlags /*= 0*/, SceneSystem * insertBeforeSceneForProcess /* = NULL */)
+void Scene::AddSystem(SceneSystem * sceneSystem, uint64 componentFlags, uint32 processFlags /*= 0*/, SceneSystem * insertBeforeSceneForProcess /* = nullptr */)
 {
     sceneSystem->SetRequiredComponents(componentFlags);
     //Set<SceneSystem*> & systemSetForType = componentTypeMapping.GetValue(componentFlags);
@@ -635,7 +635,7 @@ Camera * Scene::GetCamera(int32 n)
 	if (n >= 0 && n < (int32)cameras.size())
 		return cameras[n];
 	
-	return NULL;
+	return nullptr;
 }
     
 void Scene::SetupTestLighting()
@@ -1038,10 +1038,10 @@ void Scene::OptimizeBeforeExport()
 
 void Scene::ImportShadowColor(Entity * rootNode)
 {
-    if(NULL != sceneGlobalMaterial)
+    if(nullptr != sceneGlobalMaterial)
     {
 		Entity * landscapeNode = FindLandscapeEntity(rootNode);
-		if(NULL != landscapeNode)
+		if(nullptr != landscapeNode)
 		{
 			// try to get shadow color for landscape
 			KeyedArchive * props = GetCustomPropertiesArchieve(landscapeNode);

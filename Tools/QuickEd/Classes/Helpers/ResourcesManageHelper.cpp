@@ -99,7 +99,7 @@ const QString PROJECT_DATA_GFX = PROJECT_DATA + GFX;
 // Project converted graphics fonts sprites folder
 const QString PROJECT_DATA_GRAPHICS_FONTS = PROJECT_DATA_GFX + FONTS;
 // Default project title
-const QString PROJECT_TITLE = "UIEdtior";
+const QString PROJECT_TITLE = "QuickEd";
 
 // Resource wrong location error message
 const QString RES_WRONG_LOCATION_ERROR_MESSAGE = "Resource %1 is not located inside project 'Data' folder. It can't be linked with project or control!";
