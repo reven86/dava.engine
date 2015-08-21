@@ -25,8 +25,8 @@ if( IOS OR ANDROID )
     set( ADDED_H_PATTERNS   TeamcityOutput/*.h   TexturePacker/CommandLineParser.h    )
 
 else()
-    set( ADDED_CPP_PATTERNS AssetCache/*/*.cpp AssetCache/*.cpp TeamcityOutput/*.cpp TextureCompression/*.cpp TexturePacker/*.cpp )
-    set( ADDED_H_PATTERNS   AssetCache/*/*.h   AssetCache/*.h   TeamcityOutput/*.h   TextureCompression/*.h   TexturePacker/*.h   )
+    set( ADDED_CPP_PATTERNS AssetCache/*/*.cpp AssetCache/*.cpp CommandLine/*.cpp TeamcityOutput/*.cpp TextureCompression/*.cpp TexturePacker/*.cpp )
+    set( ADDED_H_PATTERNS   AssetCache/*/*.h   AssetCache/*.h   CommandLine/*.h   TeamcityOutput/*.h   TextureCompression/*.h   TexturePacker/*.h   )
 
 endif()
 

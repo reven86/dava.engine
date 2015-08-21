@@ -29,357 +29,59 @@
 #ifndef __PROGRAM_OPTIONS_H__
 #define __PROGRAM_OPTIONS_H__
 
-#include "FileSystem/FileSystem.h"
+#include "Base/BaseTypes.h"
 #include "FileSystem/VariantType.h"
 
-#include "Utils/Utils.h"
 
 class ProgramOptions
 {
 public:
     
-    ProgramOptions(const DAVA::String _commandName) : commandName(_commandName)
-    {
-    }
-    
-    void AddOption(const char *optionName, const DAVA::VariantType &defaultValue, const char *description = nullptr, bool canBeMultiple = false)
-    {
-        Option op;
-        op.name = optionName;
-        op.multipleValuesSuported = canBeMultiple;
-        op.defaultValue = defaultValue;
-        
-        if(nullptr != description)
-        {
-            op.descr = description;
-        }
+    ProgramOptions(const DAVA::String &_commandName);
 
-        options.push_back(op);
-    }
+	void AddOption(const char *optionName, const DAVA::VariantType &defaultValue, const char *description = nullptr, bool canBeMultiple = false);
+    void AddArgument(const char *argumentName, bool required = true);
 
-    void AddArgument(const char *argumentName, bool required = true)
-    {
-        Argument ar;
-        ar.name = argumentName;
-        ar.required = required;
-        ar.set = false;
-        arguments.push_back(ar);
-    }
+	DAVA::uint32 GetOptionsCount(const char *optionName) const;
+    DAVA::VariantType GetOption(const char *optionName, size_t pos = 0) const;
 
-    bool Parse(int argc, char *argv[], size_t start = 1)
-    {
-        bool ret = true;
-        size_t curParamPos = 0;
+    DAVA::String GetArgument(const char *argumentName) const;
+    const DAVA::String & GetCommand() const;
 
-        argValues = argv;
-        argCount = (size_t) argc;
-        argIndex = start;
-        
-        while(ret && argIndex < argCount)
-        {
-            // search if there is options with such name
-            if(!ParseOption())
-            {
-                // set required
-                if(curParamPos < arguments.size())
-                {
-                    arguments[curParamPos].value = argValues[argIndex];
-                    arguments[curParamPos].set = true;
-                    curParamPos++;
-                }
-                else
-                {
-                    printf("Error - unknown argument: %s\n", argValues[argIndex]);
-                    ret = false;
-                }
-            }
+	bool Parse(int argc, char *argv[], size_t start = 1);
+	void PrintUsage() const;
 
-            argIndex++;
-        }
+private:
 
-        // check if there is all required parameters
-        for(auto & arg: arguments)
-        {
-            if(arg.required && !arg.set)
-            {
-                printf("Error - required argument not specified: %s\n", arg.name.c_str());
-                ret = false;
-            }
-        }
+	bool ParseOption();
 
-        return ret;
-    }
-
-    void PrintUsage()
-    {
-        printf("  %s ", commandName.c_str());
-
-        if(options.size() > 0)
-        {
-            printf("[options] ");
-        }
-
-        for(auto & arg: arguments)
-        {
-            if(arg.required)
-            {
-                printf("<%s> ", arg.name.c_str());
-            }
-            else
-            {
-                printf("[%s] ", arg.name.c_str());
-            }
-        }
-        
-        printf("\n");
-
-
-        for(auto & opt: options)
-        {
-            printf("\t%s", opt.name.c_str());
-            
-            int optionType = opt.defaultValue.GetType();
-            if(optionType != DAVA::VariantType::TYPE_BOOLEAN)
-            {
-                printf(" <value>");
-                if(opt.multipleValuesSuported)
-                {
-                    printf(",[additional values...]");
-                }
-                printf("\t");
-            }
-            else
-            {
-                printf("\t\t");
-            }
-            
-            if(!opt.descr.empty())
-            {
-                printf("- %s", opt.descr.c_str());
-            }
-
-            printf("\n");
-        }
-    }
-
-	DAVA::uint32 GetOptionsCount(const char *optionName) const
-    {
-        for(auto & opt: options)
-        {
-            if(opt.name == optionName)
-            {
-				DAVA::uint32 count = opt.values.size();
-                return (count > 0) ? count: 1; //real arguments or default
-            }
-        }
-        
-        return 1;   //default
-    }
-    
-    DAVA::VariantType GetOption(const char *optionName, size_t pos = 0) const
-    {
-        for(auto & opt: options)
-        {
-            if(opt.name == optionName)
-            {
-                const auto count = opt.values.size();
-                if(count > 0)
-                {
-                    DVASSERT(pos < opt.values.size());
-                    if(pos < opt.values.size())
-                    {
-                        return opt.values[pos];
-                    }
-                }
-
-                return opt.defaultValue;
-            }
-        }
-
-        return DAVA::VariantType();
-    }
-
-    DAVA::String GetArgument(const char *argumentName) const
-    {
-        for(auto & arg: arguments)
-        {
-            if(arg.name == argumentName)
-            {
-                return arg.value;
-            }
-        }
-        
-        return DAVA::String();
-    }
-    
-    const DAVA::String & GetCommand() const
-    {
-        return commandName;
-    }
 
 private:
     struct Option
     {
-        DAVA::String name;
+		void SetValue(const DAVA::VariantType & value);
+        
+		DAVA::String name;
         DAVA::String alias;
         DAVA::String descr;
         bool multipleValuesSuported = false;
         DAVA::VariantType defaultValue;
         DAVA::Vector<DAVA::VariantType> values;
-        
-        void SetValue(const DAVA::VariantType & value)
-        {
-            if(multipleValuesSuported || values.size() == 0)
-            {
-                values.push_back(value);
-            }
-            else
-            {
-                values[0] = value;
-            }
-        }
     };
 
     struct Argument
     {
-        bool required;
-        bool set;
+        bool required = false;
+        bool set = false;
         DAVA::String name;
         DAVA::String value;
     };
 
-    bool ParseOption()
-    {
-        bool ret = false;
-        const char *str = argValues[argIndex];
+    char **argValues = nullptr;
+    size_t argCount = 0;
+    size_t argIndex = 0;
 
-        for(size_t i = 0; i < options.size(); ++i)
-        {
-            const char *optionName = options[i].name.c_str();
-            size_t optionNameLen = options[i].name.length();
-            size_t index = 0;
-            
-            for(index = 0; index < optionNameLen; ++index)
-            {
-                if(optionName[index] != str[index])
-                {
-                    break;
-                }
-            }
-
-            // found
-            if(index == optionNameLen)
-            {
-                if(optionNameLen == strlen(str))
-                {
-                    if(options[i].defaultValue.GetType() == DAVA::VariantType::TYPE_BOOLEAN)
-                    {
-                        // bool option don't need any arguments
-                        options[i].SetValue(DAVA::VariantType(true));
-                        ret = true;
-                    }
-                    else
-                    {
-                        argIndex++;
-                        if(argIndex < argCount)
-                        {
-                            const DAVA::String valueStr = DAVA::String(argValues[argIndex]);
-                            DAVA::Vector<DAVA::String> tokens; //one or more params
-
-                            if(options[i].multipleValuesSuported)
-                            {
-                                DAVA::Split(valueStr, ",", tokens, true, false);
-                            }
-                            else
-                            {
-                                tokens.push_back(valueStr);
-                            }
-
-                            int optionType = options[i].defaultValue.GetType();
-                            switch(optionType)
-                            {
-                                case DAVA::VariantType::TYPE_STRING:
-                                case DAVA::VariantType::TYPE_NONE:
-                                {
-                                    for(auto &t: tokens)
-                                    {
-                                        options[i].SetValue(DAVA::VariantType(t));
-                                    }
-                                    break;
-                                }
-                                case DAVA::VariantType::TYPE_INT32:
-                                    {
-                                        for(auto &t: tokens)
-                                        {
-                                            DAVA::int32 value = 0;
-                                            if(1 == sscanf(t.c_str(), "%d", &value))
-                                            {
-                                                options[i].SetValue(DAVA::VariantType(value));
-                                            }
-                                        }
-                                    }
-                                    break;
-                                case DAVA::VariantType::TYPE_UINT32:
-                                    {
-                                        for(auto &t: tokens)
-                                        {
-                                            DAVA::uint32 value = 0;
-                                            if(1 == sscanf(t.c_str(), "%u", &value))
-                                            {
-                                                options[i].SetValue(DAVA::VariantType(value));
-                                            }
-                                        }
-                                    }
-                                    break;
-                                case DAVA::VariantType::TYPE_UINT64:
-                                {
-                                    for(auto &t: tokens)
-                                    {
-                                        DAVA::uint64 value = 0;
-                                        if(1 == sscanf(t.c_str(), "%llu", &value))
-                                        {
-                                            options[i].SetValue(DAVA::VariantType(value));
-                                        }
-                                    }
-                                }
-                                    break;
-                                case DAVA::VariantType::TYPE_BOOLEAN:
-                                {
-                                    for(auto &t: tokens)
-                                    {
-                                        if(strcmp(t.c_str(), "true"))
-                                        {
-                                            options[i].SetValue(DAVA::VariantType(true));
-                                        }
-                                        else if(strcmp(t.c_str(), "false"))
-                                        {
-                                            options[i].SetValue(DAVA::VariantType(false));
-                                        }
-                                    }
-                                    break;
-                                    
-                                }
-                                default:
-                                    DVASSERT(0 && "Not implemented")
-                                    break;
-                            }
-
-                            ret = true;
-                            break;
-                        }
-                    }
-                }
-                
-            }
-        }
-
-        return ret;
-    }
-
-    char **argValues;
-    size_t argCount;
-    size_t argIndex;
-    DAVA::Vector<Argument> arguments;
+	DAVA::Vector<Argument> arguments;
     DAVA::Vector<Option> options;
     
     DAVA::String commandName;
