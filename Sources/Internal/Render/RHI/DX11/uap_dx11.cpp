@@ -244,9 +244,14 @@ void CreateDeviceResources()
     }
 #endif
 
-    ThrowIfFailed(
-        device.As(&m_d3Debug)
-        );
+#if defined(_DEBUG)
+    if (SdkLayersAvailable())
+    {
+        ThrowIfFailed(
+            device.As(&m_d3Debug)
+            );
+    }
+#endif
     
     ThrowIfFailed(
         context.As(&m_d3UserAnnotation)
@@ -420,7 +425,7 @@ void CreateWindowSizeDependentResources()
 #endif
 
     // Setup inverse scale on the swap chain
-#if 0
+#if 1
     DXGI_MATRIX_3X2_F inverseScale = { 0 };
     inverseScale._11 = 1.0f / m_compositionScaleX;
     inverseScale._22 = 1.0f / m_compositionScaleY;
@@ -646,13 +651,13 @@ void Present()
 #endif
 }
 
-void init_device_and_swapchain_uap(void* panel, int width, int height)
+void init_device_and_swapchain_uap(void* panel, int width, int height, float32 sx, float32 sy)
 {
     SwapChainPanel^ swapChain = reinterpret_cast<SwapChainPanel^>(panel);
 
     CreateDeviceResources();
     SetSwapChainPanel(swapChain);
-    //SetCompositionScale(swapChain->CompositionScaleX, swapChain->CompositionScaleY);
+    SetCompositionScale(sx, sy);
     SetLogicalSize(Windows::Foundation::Size(width, height));
 
     _D3D11_Device = m_d3dDevice.Get();
@@ -669,8 +674,9 @@ void init_device_and_swapchain_uap(void* panel, int width, int height)
 
 }
 
-void reset_swapchain(int width, int height)
+void reset_swapchain(int width, int height, float32 sx, float32 sy)
 {
+    SetCompositionScale(sx, sy);
     SetLogicalSize(Windows::Foundation::Size(width, height));
 
     _D3D11_SwapChain = m_swapChain.Get();

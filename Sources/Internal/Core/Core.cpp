@@ -104,8 +104,6 @@ Core::Core()
     isConsoleMode = false;
     options = new KeyedArchive();
     screenScaleFactor = 1.f;
-
-    memset(&rendererParams, 0, sizeof(rhi::InitParam));
 }
 
 Core::~Core()

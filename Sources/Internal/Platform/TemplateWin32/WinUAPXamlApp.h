@@ -132,6 +132,7 @@ private:
 
     void PrepareScreenSize();
     void UpdateScreenSize(int32 width, int32 height);
+    void UpdateScreenScale(float32 scaleX, float32 scaleY);
     void SetFullScreen(bool isFullScreenFlag);
     void SetPreferredSize(int32 width, int32 height);
     
@@ -172,8 +173,10 @@ private:
     bool isLeftButtonPressed = false;
     bool isMiddleButtonPressed = false;
 
-    int32 windowWidth = DisplayMode::DEFAULT_WIDTH;
-    int32 windowHeight = DisplayMode::DEFAULT_HEIGHT;
+    int32 swapChainWidth = DisplayMode::DEFAULT_WIDTH;
+    int32 swapChainHeight = DisplayMode::DEFAULT_HEIGHT;
+    float32 swapChainScaleX = 1.f;
+    float32 swapChainScaleY = 1.f;
 
     Windows::Graphics::Display::DisplayOrientations displayOrientation = ::Windows::Graphics::Display::DisplayOrientations::None;
 };

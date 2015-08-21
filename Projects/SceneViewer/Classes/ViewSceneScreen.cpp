@@ -158,8 +158,11 @@ void ViewSceneScreen::LoadResources()
 
 void ViewSceneScreen::UnloadResources()
 {
-    scene->RemoveSystem(wasdSystem);
-    scene->RemoveSystem(rotationControllerSystem);
+    if (scene)
+    {
+        scene->RemoveSystem(wasdSystem);
+        scene->RemoveSystem(rotationControllerSystem);
+    }
     SafeDelete(wasdSystem);
     SafeDelete(rotationControllerSystem);
 

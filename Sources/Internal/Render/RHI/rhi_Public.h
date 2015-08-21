@@ -43,6 +43,8 @@ InitParam
 {
     uint32  width;
     uint32  height;
+    float32 scaleX;
+    float32 scaleY;
     void*   window;
 
     void    (*acquireContextFunc)();
@@ -51,6 +53,8 @@ InitParam
             InitParam()
               : width(0),
                 height(0),
+                scaleX(1.f),
+                scaleY(1.f),
                 window(nullptr),
                 acquireContextFunc(nullptr),
                 releaseContextFunc(nullptr)
@@ -62,6 +66,15 @@ ResetParam
 {
     uint32  width;
     uint32  height;
+    float32 scaleX;
+    float32 scaleY;
+
+    ResetParam()
+        : width(0)
+        , height(0)
+        , scaleX(1.f)
+        , scaleY(1.f)
+    {}
 };
 
 

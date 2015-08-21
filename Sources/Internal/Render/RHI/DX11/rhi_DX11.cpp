@@ -135,7 +135,7 @@ static void
 dx11_Reset( const ResetParam& param )
 {
 #if defined(__DAVAENGINE_WIN_UAP__)
-    reset_swapchain(param.width, param.height);
+    reset_swapchain(param.width, param.height, param.scaleX, param.scaleY);
 
 #else
     //Not implemented
@@ -149,7 +149,7 @@ void
 _InitDX11()
 {
 #if defined(__DAVAENGINE_WIN_UAP__)
-    init_device_and_swapchain_uap(_DX11_InitParam.window, _DX11_InitParam.width, _DX11_InitParam.height);
+    init_device_and_swapchain_uap(_DX11_InitParam.window, _DX11_InitParam.width, _DX11_InitParam.height, _DX11_InitParam.scaleX, _DX11_InitParam.scaleY);
 
 #else
     HRESULT                 hr;
