@@ -63,20 +63,15 @@ class VegetationCustomSLGeometry : public VegetationGeometry
     
 public:
     
-    VegetationCustomSLGeometry(const Vector<VegetationLayerParams>& _maxClusters,
-                             uint32 _maxDensityLevels,
-                             const Vector2& _unitSize,
-                             const FilePath& _dataPath,
-                             const uint32* _resolutionCellSquare,
-                             uint32 _resolutionCellSquareCount,
-                             const float32* _resolutionScale,
-                             uint32 _resolutionScaleCount,
-                             const uint32* _resolutionTilesPerRow,
-                             uint32 _resolutionTilesPerRowCount,
-                             const uint32* _resolutionClusterStride,
-                             uint32 _resolutionClusterStrideCount,
-                             const Vector3& _worldSize,
-                             const VegetationCustomGeometrySerializationDataPtr& geometryData);
+    VegetationCustomSLGeometry(const Vector<VegetationLayerParams> & _maxClusters,
+                               uint32 _maxDensityLevels,
+                               const Vector2 & _unitSize,
+                               const FilePath & _dataPath,
+                               const Vector<uint32> & _resolutionTilesPerRow,
+                               const Vector<uint32> & _resolutionClusterStride,
+                               const Vector3 & _worldSize,
+                               const VegetationCustomGeometrySerializationDataPtr& geometryData);
+    
     virtual ~VegetationCustomSLGeometry();
     
     virtual void Build(Vector<VegetationRenderData*>& renderDataArray, const FastNameSet& materialFlags);
@@ -210,14 +205,12 @@ private:
     
 private:
     
-    Vector<VegetationLayerParams> maxClusters;
+    const Vector<VegetationLayerParams> & maxClusters;
     uint32 maxDensityLevels;
     Vector2 unitSize;
     FilePath sourceDataPath;
-    Vector<uint32> resolutionCellSquare;
-    Vector<float32> resolutionScale;
-    Vector<uint32> resolutionTilesPerRow;
-    Vector<uint32> resolutionClusterStride;
+    const Vector<uint32> resolutionTilesPerRow;
+    const Vector<uint32> resolutionClusterStride;
     Vector3 worldSize;
     uint32 resolutionCount;
     

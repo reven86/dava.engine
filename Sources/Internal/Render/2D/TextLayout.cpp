@@ -152,8 +152,8 @@ bool TextLayout::NextBySymbols(const float32 lineWidth)
 {
     float32 targetWidth = std::floor(lineWidth);
     float32 currentLineDx = 0;
-    int32 totalSize = (int32)preparedText.length();
-    int32 pos = 0;
+    size_t totalSize = preparedText.length();
+    size_t pos = 0;
 
     for (pos = fromPos; pos < totalSize; pos++)
     {
