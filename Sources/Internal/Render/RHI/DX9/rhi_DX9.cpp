@@ -63,7 +63,6 @@ DisplayMode
 };
 
 
-D3DPRESENT_PARAMETERS       _PresentParam;
 std::vector<DisplayMode>    _DisplayMode;
 
 
@@ -148,6 +147,17 @@ dx9_Uninitialize()
 static void
 dx9_Reset( const ResetParam& param )
 {
+}
+
+
+//------------------------------------------------------------------------------
+
+static bool
+dx9_NeedReloadResources()
+{
+    bool    needReload = TextureDX9::NeedReloadCount()  ||  VertexBufferDX9::NeedReloadCount()  ||  IndexBufferDX9::NeedReloadCount();
+
+    return needReload;
 }
 
 
@@ -246,15 +256,15 @@ _InitDX9()
 
         // CRAP: hardcoded params
 
-        _PresentParam.Windowed               = TRUE;
-        _PresentParam.BackBufferFormat       = D3DFMT_UNKNOWN;
-        _PresentParam.BackBufferWidth        = backbuf_width;
-        _PresentParam.BackBufferHeight       = backbuf_height;
-        _PresentParam.SwapEffect             = D3DSWAPEFFECT_DISCARD;
-        _PresentParam.BackBufferCount        = 1;
-        _PresentParam.EnableAutoDepthStencil = TRUE;
-        _PresentParam.AutoDepthStencilFormat = D3DFMT_D24S8;
-        _PresentParam.PresentationInterval   = (use_vsync) ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE;
+        _DX9_PresentParam.Windowed               = TRUE;
+        _DX9_PresentParam.BackBufferFormat       = D3DFMT_UNKNOWN;
+        _DX9_PresentParam.BackBufferWidth        = backbuf_width;
+        _DX9_PresentParam.BackBufferHeight       = backbuf_height;
+        _DX9_PresentParam.SwapEffect             = D3DSWAPEFFECT_DISCARD;
+        _DX9_PresentParam.BackBufferCount        = 1;
+        _DX9_PresentParam.EnableAutoDepthStencil = TRUE;
+        _DX9_PresentParam.AutoDepthStencilFormat = D3DFMT_D24S8;
+        _DX9_PresentParam.PresentationInterval   = (use_vsync) ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE;
 
 
         // TODO: check z-buf formats and create most suitable
@@ -311,7 +321,7 @@ _InitDX9()
                                               device,
                                               wnd,
                                               vertex_processing, 
-                                              &_PresentParam,
+                                              &_DX9_PresentParam,
                                               &_D3D9_Device
                                             )
           ))
@@ -364,6 +374,7 @@ dx9_Initialize( const InitParam& param )
     DispatchDX9.impl_Uninitialize           = &dx9_Uninitialize;
     DispatchDX9.impl_Reset                  = &dx9_Reset;
     DispatchDX9.impl_HostApi                = &dx9_HostApi;
+    DispatchDX9.impl_NeedReloadResources    = &dx9_NeedReloadResources;
     DispatchDX9.impl_TextureFormatSupported = &dx9_TextureFormatSupported;
 
     SetDispatchTable( DispatchDX9 );

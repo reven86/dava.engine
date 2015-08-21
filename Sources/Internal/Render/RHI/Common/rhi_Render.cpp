@@ -180,6 +180,15 @@ UpdateVertexBuffer( HVertexBuffer vb, const void* data, uint32 offset, uint32 si
 
 //------------------------------------------------------------------------------
 
+bool
+NeedReloadVertexBuffer( HVertexBuffer vb )
+{
+    return VertexBuffer::NeedReload( vb );
+}
+
+
+//------------------------------------------------------------------------------
+
 HIndexBuffer
 CreateIndexBuffer( const IndexBuffer::Descriptor& desc )
 {
@@ -223,6 +232,15 @@ void
 UpdateIndexBuffer( HIndexBuffer ib, const void* data, uint32 offset, uint32 size )
 {
     IndexBuffer::Update( ib, data, offset, size );
+}
+
+
+//------------------------------------------------------------------------------
+
+bool
+NeedReloadIndexBuffer( HIndexBuffer ib )
+{
+    return IndexBuffer::NeedReload( ib );
 }
 
 
@@ -420,6 +438,15 @@ void
 UpdateTexture( HTexture tex, const void* data, uint32 level, TextureFace face )
 {
     Texture::Update( tex, data, level, face );
+}
+
+
+//------------------------------------------------------------------------------
+
+bool
+NeedReloadTexture( HTexture tex )
+{
+    return Texture::NeedReload( tex );
 }
 
 
