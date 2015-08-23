@@ -165,8 +165,8 @@ bool TransformSystem::ProcessDrag(const DAVA::Vector2 &pos)
         case PIVOT_POINT:
         {
             auto control = activeControl->GetControl();
-            Vector2 pivotPoint = control->GetGeometricData().GetUnrotatedRect().GetPosition() + control->GetPivotPoint();
-            control->SetPivotPoint(pivotPoint + delta);
+            Vector2 pivotPoint = control->GetPivotPoint();
+            control->SetPivotPoint(pivotPoint - delta);
         }
             break;
         case ROTATE:
@@ -182,6 +182,7 @@ bool TransformSystem::ProcessDrag(const DAVA::Vector2 &pos)
             float angleRad = atan2(cross, dot);
             angleRad = atan2(l2.y, l2.x) - atan2(l1.y, l1.x);
             float angle = angleRad * 180.0f / PI;
+            angle = static_cast<int>(Round(angle));
             AdjustProperty(activeControl, "Angle", angle);
         }
             break;
