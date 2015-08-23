@@ -26,25 +26,20 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
+#include "Systems/BaseSystemClass.h"
 
-#ifndef __QUICKED_CURSOR_SYSTEM_H__
-#define __QUICKED_CURSOR_SYSTEM_H__
-
-#include "Systems/Interfaces.h"
-#include <QCursor>
-
-class CursorSystem final : public ControlAreaInterface
-{   
-public:
-    explicit CursorSystem() = default;
-    ~CursorSystem() = default;
+BaseSystemClass::BaseSystemClass(Document *parent)
+    : document(parent)
+{
     
-    void MouseEnterArea(ControlNode *targetNode, const eArea area) override;
-    void MouseLeaveArea() override;
-private:
-    QCursor GetCursorByArea(const eArea area) const;
-    Qt::CursorShape shape = Qt::CustomCursor;
-    int shapesCount = 0;
-};
+}
 
-#endif // __QUICKED_TREE_SYSTEM_H__
+void BaseSystemClass::Attach()
+{
+    
+}
+
+void BaseSystemClass::Detach()
+{
+    
+}

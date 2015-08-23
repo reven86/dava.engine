@@ -26,25 +26,31 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
+#include "Systems/MenuSystem.h"
 
-#ifndef __QUICKED_CURSOR_SYSTEM_H__
-#define __QUICKED_CURSOR_SYSTEM_H__
+using namespace DAVA;
 
-#include "Systems/Interfaces.h"
-#include <QCursor>
-
-class CursorSystem final : public ControlAreaInterface
-{   
-public:
-    explicit CursorSystem() = default;
-    ~CursorSystem() = default;
+MenuSystem::MenuSystem(Document *parent)
+: BaseSystemClass(parent)
+{
     
-    void MouseEnterArea(ControlNode *targetNode, const eArea area) override;
-    void MouseLeaveArea() override;
-private:
-    QCursor GetCursorByArea(const eArea area) const;
-    Qt::CursorShape shape = Qt::CustomCursor;
-    int shapesCount = 0;
-};
+}
+void MenuSystem::Attach()
+{
+    
+}
 
-#endif // __QUICKED_TREE_SYSTEM_H__
+void MenuSystem::Detach()
+{
+    
+}
+
+bool MenuSystem::OnInput(UIEvent *currentInput)
+{
+    return false;
+}
+
+void MenuSystem::SelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected)
+{
+    
+}

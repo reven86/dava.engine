@@ -42,53 +42,23 @@ SelectionSystem::SelectionSystem(Document* doc)
     
 }
 
-
 bool SelectionSystem::OnInput(UIEvent* currentInput)
-{   
-    SelectedControls selected;
-    SelectedControls deselected;
-    if (currentInput->phase == UIEvent::PHASE_BEGAN)
+{
+    switch(currentInput->phase)
     {
-        auto node = document->GetControlNodeByPos(currentInput->point);
-        if (nullptr != node)
-        {
-            if (InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_SHIFT))
-            {
-                selected.insert(node);
-            }
-            else if (InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_CTRL))
-            {
-                if (selectedControls.find(node) != selectedControls.end())
-                {
-                    deselected.insert(node);
-                }
-                else
-                {
-                    selected.insert(node);
-                }
-            }
-            else
-            {
-                deselected = selectedControls;
-                deselected.erase(node);
-                selected.insert(node);
-            }
-        }
-    }
-    else if (currentInput->phase == UIEvent::PHASE_KEYCHAR)
+    case UIEvent::PHASE_BEGAN:
+        return ProcessMousePress(currentInput->point);
+    case UIEvent::PHASE_KEYCHAR:
     {
         if (currentInput->tid == DVKEY_TAB)
         {
-            deselected = selectedControls;
+            SetSelectedControls(SelectedControls(), selectedControls);
             //TODO: select next control
+            return true;
         }
     }
-    if (selected.empty() && deselected.empty())
-    {
-        return false;
     }
-    SetSelectedControls(selected, deselected);
-    return true;
+    return false;
 }
 
 void SelectionSystem::ControlWasRemoved(ControlNode *node, ControlsContainerNode *from)
@@ -131,6 +101,39 @@ void SelectionSystem::RemoveListener(SelectionInterface *listener)
     {
         DVASSERT_MSG(false, "listener was not attached");
     }
+}
+
+bool SelectionSystem::ProcessMousePress(const DAVA::Vector2 &point)
+{
+    SelectedControls selected;
+    SelectedControls deselected;
+    auto node = document->GetControlNodeByPos(point);
+    if (nullptr != node)
+    {
+        if (InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_SHIFT))
+        {
+            selected.insert(node);
+        }
+        else if (InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_CTRL))
+        {
+            if (selectedControls.find(node) != selectedControls.end())
+            {
+                deselected.insert(node);
+            }
+            else
+            {
+                selected.insert(node);
+            }
+        }
+        else
+        {
+            deselected = selectedControls;
+            deselected.erase(node);
+            selected.insert(node);
+        }
+        SetSelectedControls(selected, deselected);
+    }
+    return !selected.empty() && !deselected.empty();
 }
 
 void SelectionSystem::SetSelectedControls(const SelectedControls &selected, const SelectedControls &deselected)

@@ -27,24 +27,20 @@
  =====================================================================================*/
 
 
-#ifndef __QUICKED_CURSOR_SYSTEM_H__
-#define __QUICKED_CURSOR_SYSTEM_H__
+#ifndef __QUICKED_BASE_SYSTEM_CLASS_H__
+#define __QUICKED_BASE_SYSTEM_CLASS_H__
 
-#include "Systems/Interfaces.h"
-#include <QCursor>
+class Document;
 
-class CursorSystem final : public ControlAreaInterface
+class BaseSystemClass
 {   
 public:
-    explicit CursorSystem() = default;
-    ~CursorSystem() = default;
-    
-    void MouseEnterArea(ControlNode *targetNode, const eArea area) override;
-    void MouseLeaveArea() override;
+    explicit BaseSystemClass(Document *parent);
+    virtual ~BaseSystemClass() = default;
+    virtual void Attach(); //restore system state
+    virtual void Detach(); //detach system
 private:
-    QCursor GetCursorByArea(const eArea area) const;
-    Qt::CursorShape shape = Qt::CustomCursor;
-    int shapesCount = 0;
+    Document *document = nullptr;
 };
 
-#endif // __QUICKED_TREE_SYSTEM_H__
+#endif // __QUICKED_BASE_SYSTEM_CLASS_H__

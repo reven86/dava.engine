@@ -27,24 +27,23 @@
  =====================================================================================*/
 
 
-#ifndef __QUICKED_CURSOR_SYSTEM_H__
-#define __QUICKED_CURSOR_SYSTEM_H__
+#ifndef __QUICKED_MENU_SYSTEM_CLASS_H__
+#define __QUICKED_MENU_SYSTEM_CLASS_H__
 
+#include "Systems/BaseSystemClass.h"
 #include "Systems/Interfaces.h"
-#include <QCursor>
 
-class CursorSystem final : public ControlAreaInterface
+class MenuSystem final : public BaseSystemClass, InputInterface, SelectionInterface
 {   
 public:
-    explicit CursorSystem() = default;
-    ~CursorSystem() = default;
-    
-    void MouseEnterArea(ControlNode *targetNode, const eArea area) override;
-    void MouseLeaveArea() override;
+    explicit MenuSystem(Document *parent);
+    void Attach() override; //restore system state
+    void Detach() override; //detach system
+    bool OnInput(DAVA::UIEvent *currentInput);
+    void SelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected) override;
+
 private:
-    QCursor GetCursorByArea(const eArea area) const;
-    Qt::CursorShape shape = Qt::CustomCursor;
-    int shapesCount = 0;
+    Document *document = nullptr;
 };
 
-#endif // __QUICKED_TREE_SYSTEM_H__
+#endif // __QUICKED_MENU_SYSTEM_CLASS_H__

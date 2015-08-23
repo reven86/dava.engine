@@ -27,13 +27,16 @@
 =====================================================================================*/
 
 
-#ifndef __SYSTEMS_SELECTION_SYSTEM_H__
-#define __SYSTEMS_SELECTION_SYSTEM_H__
+#ifndef __QUICKED_SELECTION_SYSTEM_H__
+#define __QUICKED_SELECTION_SYSTEM_H__
 
 #include "Systems/Interfaces.h"
 #include "Model/PackageHierarchy/PackageListener.h"
 
 class Document;
+namespace DAVA {
+    class Vector2;
+}
 
 class SelectionSystem final : public SelectionInterface, public InputInterface, public PackageListener
 {
@@ -47,10 +50,11 @@ public:
     void RemoveListener(SelectionInterface *listener);
 
 private:
+    bool ProcessMousePress(const DAVA::Vector2 &point);
     void SetSelectedControls(const SelectedControls &selected, const SelectedControls &deselected);
     Document *document = nullptr;
     SelectedControls selectedControls;
     DAVA::Vector<SelectionInterface*> listeners;
 };
 
-#endif // __SYSTEMS_SELECTION_SYSTEM_H__
+#endif // __QUICKED_SELECTION_SYSTEM_H__

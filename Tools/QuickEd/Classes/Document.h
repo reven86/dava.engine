@@ -58,6 +58,7 @@ class QtModelPackageCommandExecutor;
 class PropertiesModel;
 class PackageModel;
 class ControlNode;
+class AbstractProperty;
 
 class Document final : public QObject, public SelectionInterface, InputInterface
 {
@@ -70,7 +71,6 @@ public:
     CanvasSystem *GetCanvasSystem();
     HUDSystem *GetHUDSystem();
     const DAVA::FilePath &GetPackageFilePath() const;
-
     QUndoStack *GetUndoStack() const;
     PackageNode *GetPackage() const;
     QtModelPackageCommandExecutor *GetCommandExecutor() const;
@@ -80,6 +80,7 @@ public:
     void SelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected) override;
     bool OnInput(DAVA::UIEvent *currentInput) override;
     ControlNode* GetControlNodeByPos(const DAVA::Vector2 &pos, ControlNode *node = nullptr);
+    AbstractProperty* GetPropertyByName(const ControlNode* node, const DAVA::String &name);
 signals:
     void SelectedNodesChanged(const SelectedNodes &selected, const SelectedNodes &deselected);
 public slots:

@@ -26,6 +26,7 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "Document.h"
 #include "HUDSystem.h"
 
 #include "UI/UIControl.h"
@@ -92,7 +93,7 @@ private:
         RenderManager::Instance()->SetColor(oldColor);
     }
 
-    Vector2 FrameRectControl::GetPos() const
+    Vector2 GetPos() const
     {
         Rect rect = control->GetGeometricData().GetUnrotatedRect();
         Vector2 retVal = rect.GetPosition();
@@ -150,8 +151,9 @@ private:
     }
 };
 
-HUDSystem::HUDSystem()
-    : hudControl(new UIControl())
+HUDSystem::HUDSystem(Document *document_)
+    : document(document_)
+    , hudControl(new UIControl())
     , selectionRect(new UIControl())
 {
     selectionRect->SetDebugDraw(true);
@@ -189,39 +191,30 @@ void HUDSystem::SelectionWasChanged(const SelectedControls& selected, const Sele
 
 bool HUDSystem::OnInput(UIEvent *currentInput)
 {
-    static MOUSE_STATE mouseState = RELEASED;
-    static Vector2 pressedPoint;
     switch (currentInput->phase)
     {
     case UIEvent::PHASE_MOVE:
         ProcessCursor(currentInput->point);
         return false;
     case UIEvent::PHASE_BEGAN:
-        
-        mouseState = PRESSED;
+        canDrawRect = document->GetControlNodeByPos(currentInput->point) == nullptr;
         pressedPoint = currentInput->point;
         return false;
     case UIEvent::PHASE_DRAG:
-        switch (mouseState)
+        if(canDrawRect)
         {
-        case RELEASED:
-            return false;
-        default:
-            mouseState = MOVED;
             Vector2 point(currentInput->point);
             Vector2 size(point - pressedPoint);
             selectionRect->SetAbsoluteRect(Rect(pressedPoint, size));
-            return true;
         }
+        return canDrawRect;
     case UIEvent::PHASE_ENDED:
-        bool retVal = mouseState == MOVED;
-        if (mouseState == MOVED)
+        if(canDrawRect)
         {
-            auto rect = selectionRect->GetAbsoluteRect();
+            //auto rect = selectionRect->GetAbsoluteRect();
+            selectionRect->SetSize(Vector2(0, 0));
         }
-        mouseState = RELEASED;
-        selectionRect->SetSize(Vector2(0, 0));
-        return retVal;
+        return canDrawRect;
     }
     return false;
 }
@@ -260,7 +253,7 @@ void HUDSystem::ProcessCursor(const Vector2& pos)
     SetNewArea(node, area);
 }
 
-void HUDSystem::GetControlArea(ControlNode* node, ControlAreaInterface::eArea& area, const Vector2 &pos)
+void HUDSystem::GetControlArea(ControlNode*& node, ControlAreaInterface::eArea& area, const Vector2 &pos)
 {
     for (const auto &iter : hudMap)
     {
@@ -272,6 +265,8 @@ void HUDSystem::GetControlArea(ControlNode* node, ControlAreaInterface::eArea& a
                 auto container = static_cast<ControlContainer*>(hudControl.get());
                 node = hud.node;
                 area = container->GetArea();
+                DVASSERT_MSG(area != ControlAreaInterface::NO_AREA && node != nullptr
+                             , "no control node for area");
                 return;
             }
         }

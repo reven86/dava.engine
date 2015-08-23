@@ -27,6 +27,14 @@
  =====================================================================================*/
 
 #include "Systems/TransformSystem.h"
+#include "Document.h"
+#include "Defines.h"
+#include "UI/UIEvent.h"
+#include "Input/KeyboardDevice.h"
+#include "Model/PackageHierarchy/ControlNode.h"
+#include "Model/ControlProperties/RootProperty.h"
+#include "Model/ControlProperties/ValueProperty.h"
+#include "UI/QtModelPackageCommandExecutor.h"
 
 using namespace DAVA;
 
@@ -50,5 +58,172 @@ void TransformSystem::MouseLeaveArea()
 
 bool TransformSystem::OnInput(UIEvent* currentInput)
 {
+    switch(currentInput->phase)
+    {
+        case UIEvent::PHASE_KEYCHAR:
+            return ProcessKey(currentInput->tid);
+        case UIEvent::PHASE_BEGAN:
+            if(activeArea != NO_AREA)
+            {
+                prevPos = currentInput->point;
+            }
+            return activeArea != NO_AREA;
+        case UIEvent::PHASE_DRAG:
+            return ProcessDrag(currentInput->point);
+            
+    }
     return false;
 }
+
+void TransformSystem::SelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected)
+{
+    UniteNodes(selected, selectedControls);
+    SubstractNodes(deselected, selectedControls);
+}
+
+bool TransformSystem::ProcessKey(const DAVA::int32 key)
+{
+    if(!selectedControls.empty())
+    {
+        switch(key)
+        {
+            case DVKEY_LEFT:
+                MoveAllSelectedControls(Vector2(-1, 0));
+                return true;
+            case DVKEY_UP:
+                MoveAllSelectedControls(Vector2(0, -1));
+                return true;
+            case DVKEY_RIGHT:
+                MoveAllSelectedControls(Vector2(1, 0));
+                return true;
+            case DVKEY_DOWN:
+                MoveAllSelectedControls(Vector2(0, 1));
+                return true;
+        }
+    }
+    return false;
+}
+
+bool TransformSystem::ProcessDrag(const DAVA::Vector2 &pos)
+{
+    if(activeArea == NO_AREA)
+    {
+        return false;
+    }
+    Vector2 delta = pos - prevPos;
+    bool retval = true;
+    switch(activeArea)
+    {
+        case FRAME:
+            AdjustProperty(activeControl, "Position", delta);
+            break;
+        case TOP_LEFT:
+            AdjustProperty(activeControl, "Position", delta);
+            AdjustProperty(activeControl, "Size", delta * -1);
+            break;
+        case TOP_CENTER:
+            delta.x = 0;
+            AdjustProperty(activeControl, "Position", delta);
+            AdjustProperty(activeControl, "Size", delta * -1);
+            break;
+        case TOP_RIGHT:
+        {
+            Vector2 position = delta;
+            position.x = 0;
+            Vector2 size = delta;
+            size.y = delta.y * -1;
+            AdjustProperty(activeControl, "Position", position);
+            AdjustProperty(activeControl, "Size", size);
+        }
+            break;
+        case CENTER_LEFT:
+            delta.y = 0;
+            AdjustProperty(activeControl, "Position", delta);
+            AdjustProperty(activeControl, "Size", delta * -1);
+            break;
+        case CENTER_RIGHT:
+            delta.y = 0;
+            AdjustProperty(activeControl, "Size", delta);
+            break;
+        case BOTTOM_LEFT:
+        {
+            Vector2 position = delta;
+            position.y = 0;
+            Vector2 size = delta;
+            size.x = size.x * -1;
+            AdjustProperty(activeControl, "Position", position);
+            AdjustProperty(activeControl, "Size", size);
+        }
+            break;
+        case BOTTOM_CENTER:
+            delta.x = 0;
+            AdjustProperty(activeControl, "Size", delta);
+            break;
+        case BOTTOM_RIGHT:
+            AdjustProperty(activeControl, "Size", delta);
+            break;
+        case PIVOT_POINT:
+        {
+            auto control = activeControl->GetControl();
+            Vector2 pivotPoint = control->GetGeometricData().GetUnrotatedRect().GetPosition() + control->GetPivotPoint();
+            control->SetPivotPoint(pivotPoint + delta);
+        }
+            break;
+        case ROTATE:
+        {
+            auto control = activeControl->GetControl();
+            Vector2 pivotPoint = control->GetGeometricData().GetUnrotatedRect().GetPosition() + control->GetPivotPoint();
+            
+            Vector2 rotatePoint = pivotPoint;
+            Vector2 l1(prevPos.x - rotatePoint.x, prevPos.y - rotatePoint.y);
+            Vector2 l2(pos.x - rotatePoint.x, pos.y - rotatePoint.y);
+            float dot = l1.x * l2.x + l1.y * l2.y;
+            float cross = l1.x * l2.y - l1.y * l2.x;
+            float angleRad = atan2(cross, dot);
+            angleRad = atan2(l2.y, l2.x) - atan2(l1.y, l1.x);
+            float angle = angleRad * 180.0f / PI;
+            AdjustProperty(activeControl, "Angle", angle);
+        }
+            break;
+        default:
+            retval = false;
+    }
+    prevPos = pos;
+    return retval;
+}
+
+void TransformSystem::MoveAllSelectedControls(const DAVA::Vector2 &delta)
+{
+    for( auto &controlNode : selectedControls)
+    {
+        if(controlNode->IsEditingSupported())
+        {
+            AdjustProperty(controlNode, "Position", delta);
+        }
+    }
+}
+
+template <typename T>
+void TransformSystem::AdjustProperty(ControlNode *node, const DAVA::String &propertyName, const T &delta)
+{
+    AbstractProperty *property = document->GetPropertyByName(node, propertyName);
+    DVASSERT(nullptr != property);
+    VariantType var(delta);
+    
+    switch(var.GetType())
+    {
+        case VariantType::TYPE_VECTOR2:
+            var = VariantType(property->GetValue().AsVector2() + delta);
+            break;
+        case VariantType::TYPE_FLOAT:
+            var = VariantType(property->GetValue().AsFloat() + delta);
+            break;
+        default:
+            DVASSERT_MSG(false, "unexpected type");
+            break;
+    }
+    
+    document->GetCommandExecutor()->ChangeProperty(node, property, var);
+}
+
+

@@ -27,8 +27,8 @@
 =====================================================================================*/
 
 
-#ifndef __SYSTEMS_INTERFACES_H__
-#define __SYSTEMS_INTERFACES_H__
+#ifndef __QUICKED_INTERFACES_H__
+#define __QUICKED_INTERFACES_H__
 
 #include "Base/BaseTypes.h"
 
@@ -75,4 +75,4 @@ public:
     virtual void MouseLeaveArea() = 0;
 };
 
-#endif // __SYSTEMS_INTERFACES_H__
+#endif // __QUICKED_INTERFACES_H__

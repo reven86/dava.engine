@@ -27,14 +27,16 @@
  =====================================================================================*/
 
 
-#ifndef __SYSTEMS_TRANSFORM_SYSTEM_H__
-#define __SYSTEMS_TRANSFORM_SYSTEM_H__
+#ifndef __QUICKED_TRANSFORM_SYSTEM_H__
+#define __QUICKED_TRANSFORM_SYSTEM_H__
 
 #include "Systems/Interfaces.h"
+#include "Base/BaseTypes.h"
+#include "Math/Vector.h"
 
 class Document;
 
-class TransformSystem final : public InputInterface, public ControlAreaInterface
+class TransformSystem final : public InputInterface, public ControlAreaInterface, public SelectionInterface
 {   
 public:
     explicit TransformSystem(Document *parent);
@@ -42,10 +44,18 @@ public:
     void MouseEnterArea(ControlNode *targetNode, const eArea area) override;
     void MouseLeaveArea() override;
     bool OnInput(DAVA::UIEvent *currentInput) override;
+    void SelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected);
 private:
-    Document *document;
+    bool ProcessKey(const DAVA::int32 key);
+    bool ProcessDrag(const DAVA::Vector2 &pos);
+    void MoveAllSelectedControls(const DAVA::Vector2 &delta);
+    template <typename T>
+    void AdjustProperty(ControlNode *node, const DAVA::String &propertyName, const T &value);
+    Document *document = nullptr;
     eArea activeArea = NO_AREA;
     ControlNode *activeControl = nullptr;
+    SelectedControls selectedControls;
+    DAVA::Vector2 prevPos;
 };
 
-#endif // __SYSTEMS_TRANSFORM_SYSTEM_H__
+#endif // __QUICKED_TRANSFORM_SYSTEM_H__

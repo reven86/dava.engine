@@ -34,6 +34,7 @@
 #include "Base/ScopedPtr.h"
 #include "Math/Vector.h"
 #include "UI/UIControl.h"
+#include "Math/Vector.h"
 
 class Document;
 namespace DAVA
@@ -44,7 +45,7 @@ namespace DAVA
 class HUDSystem final : public SelectionInterface, public InputInterface
 {
 public:
-    HUDSystem();
+    HUDSystem(Document *document);
     ~HUDSystem() = default;
     void Attach(DAVA::UIControl *root);
     void Detach();
@@ -53,8 +54,9 @@ public:
     void AddListener(ControlAreaInterface *listener);
     void RemoveListener(ControlAreaInterface *listener);
 private:
+    Document *document = nullptr;
     void ProcessCursor(const DAVA::Vector2& pos);
-    void GetControlArea(ControlNode *node, ControlAreaInterface::eArea &area, const DAVA::Vector2 &pos);
+    void GetControlArea(ControlNode *&node, ControlAreaInterface::eArea &area, const DAVA::Vector2 &pos);
     ControlAreaInterface::eArea activeArea = ControlAreaInterface::NO_AREA;
     ControlNode *activeControl = nullptr;
     void SetNewArea(ControlNode* node, const ControlAreaInterface::eArea area);
@@ -70,6 +72,9 @@ private:
     DAVA::Map<ControlNode*, HUD> hudMap;
     DAVA::ScopedPtr<DAVA::UIControl> selectionRect;
     DAVA::List<ControlAreaInterface*> listeners;
+    
+    DAVA::Vector2 pressedPoint; //corner of selection rect
+    bool canDrawRect = false; //selection rect state
 };
 
 #endif // __QUICKED_HUD_SYSTEM_H__

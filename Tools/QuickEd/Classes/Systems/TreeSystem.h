@@ -27,8 +27,8 @@
  =====================================================================================*/
 
 
-#ifndef __SYSTEMS_TREE_SYSTEM_H__
-#define __SYSTEMS_TREE_SYSTEM_H__
+#ifndef __QUICKED_TREE_SYSTEM_H__
+#define __QUICKED_TREE_SYSTEM_H__
 
 #include "Systems/Interfaces.h"
 
@@ -52,4 +52,4 @@ private:
     SelectedControls selectionList;
 };
 
-#endif // __SYSTEMS_TREE_SYSTEM_H__
+#endif // __QUICKED_TREE_SYSTEM_H__

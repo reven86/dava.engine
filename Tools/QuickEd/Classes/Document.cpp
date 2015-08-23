@@ -33,11 +33,11 @@
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"
+#include "Model/ControlProperties/RootProperty.h"
+#include "Model/ControlProperties/SectionProperty.h"
 
 #include "Ui/QtModelPackageCommandExecutor.h"
 #include "EditorCore.h"
-
-
 
 Document::Document(PackageNode *_package, QObject *parent)
     : QObject(parent)
@@ -46,7 +46,7 @@ Document::Document(PackageNode *_package, QObject *parent)
     , undoStack(new QUndoStack(this))
     , selectionSystem(this)
     , canvasSystem(this)
-    , hudSystem()
+    , hudSystem(this)
     , treeSystem(this)
     , cursorSystem()
     , transformSystem(this)
@@ -55,6 +55,7 @@ Document::Document(PackageNode *_package, QObject *parent)
     selectionSystem.AddListener(this);
     selectionSystem.AddListener(&canvasSystem);
     selectionSystem.AddListener(&hudSystem);
+    selectionSystem.AddListener(&transformSystem);
     hudSystem.AddListener(&cursorSystem);
     hudSystem.AddListener(&transformSystem);
     connect(GetEditorFontSystem(), &EditorFontSystem::UpdateFontPreset, this, &Document::RefreshAllControlProperties);
@@ -174,6 +175,28 @@ ControlNode* Document::GetControlNodeByPos(const Vector2& pos, ControlNode* node
     return nullptr;
 }
 
+AbstractProperty* Document::GetPropertyByName(const ControlNode *node, const DAVA::String &name)
+{
+    RootProperty *propertiesRoot = node->GetRootProperty();
+    int propertiesCount = propertiesRoot->GetCount();
+    for (int index = 0; index < propertiesCount; ++index)
+    {
+        SectionProperty *section = dynamic_cast<SectionProperty*>(propertiesRoot->GetProperty(index));
+        if (section)
+        {
+            int sectionCount = section->GetCount();
+            for (int prop = 0; prop < sectionCount; ++prop)
+            {
+                ValueProperty *valueProperty = dynamic_cast<ValueProperty*>(section->GetProperty(prop));
+                if (nullptr != valueProperty && valueProperty->GetName() == name)
+                {
+                    return valueProperty;
+                }
+            }
+        }
+    }
+    return nullptr;
+}
 
 void Document::RefreshAllControlProperties()
 {
