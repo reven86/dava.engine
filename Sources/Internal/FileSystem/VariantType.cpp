@@ -95,8 +95,8 @@ const Array<VariantType::PairTypeName, VariantType::TYPES_COUNT> VariantType::va
 }};
 
 VariantType::VariantType()
-:	type(TYPE_NONE)
-,	pointerValue(0)
+    : type(TYPE_NONE)
+    , pointerValue(nullptr)
 {
 }
 
@@ -809,8 +809,9 @@ bool VariantType::Write(File * fp) const
             break;
     case TYPE_COLOR:
 		{
-            written = fp->Write(colorValue->color, sizeof(float32) * 4);
-            if (written != sizeof(float32) * 4)
+            uint32 size = static_cast<uint32>(sizeof(Color));
+            written = fp->Write(colorValue->color, size);
+            if (written != size)
             {
                 return false;
             }
@@ -1079,7 +1080,7 @@ bool VariantType::Read(File * fp)
         case TYPE_COLOR:
 			{
 				colorValue = new Color;
-				read = fp->Read(colorValue->color, sizeof(float32) * 4);
+                read = fp->Read(colorValue->color, sizeof(Color));
                 if (read != sizeof(float32) * 4)
                 {
                     return false;

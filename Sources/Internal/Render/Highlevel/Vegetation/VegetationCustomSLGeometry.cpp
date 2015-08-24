@@ -105,52 +105,22 @@ bool VegetationCustomSLGeometry::ClusterByMatrixCompareFunction(const ClusterRes
     return a.cellIndex < b.cellIndex;
 }
 
-VegetationCustomSLGeometry::VegetationCustomSLGeometry(const Vector<VegetationLayerParams>& _maxClusters,
+VegetationCustomSLGeometry::VegetationCustomSLGeometry(const Vector<VegetationLayerParams> & _maxClusters,
                                                    uint32 _maxDensityLevels,
-                                                   const Vector2& _unitSize,
-                                                   const FilePath& _dataPath,
-                                                   const uint32* _resolutionCellSquare,
-                                                   uint32 _resolutionCellSquareCount,
-                                                   const float32* _resolutionScale,
-                                                   uint32 _resolutionScaleCount,
-                                                   const uint32* _resolutionTilesPerRow,
-                                                   uint32 _resolutionTilesPerRowCount,
-                                                   const uint32* _resolutionClusterStride,
-                                                   uint32 _resolutionClusterStrideCount,
-                                                   const Vector3& _worldSize,
+                                                   const Vector2 & _unitSize,
+                                                   const FilePath & _dataPath,
+                                                   const Vector<uint32> & _resolutionTilesPerRow,
+                                                   const Vector<uint32> & _resolutionClusterStride,
+                                                   const Vector3 & _worldSize,
                                                    const VegetationCustomGeometrySerializationDataPtr& geometryData)
+    : maxClusters(_maxClusters)
+    , maxDensityLevels(_maxDensityLevels)
+    , unitSize(_unitSize)
+    , sourceDataPath(_dataPath)
+    , resolutionTilesPerRow(_resolutionTilesPerRow)
+    , resolutionClusterStride(_resolutionClusterStride)
+    , worldSize(_worldSize)
 {
-    maxClusters = _maxClusters;
-    
-    maxDensityLevels = _maxDensityLevels;
-    unitSize = _unitSize;
-    sourceDataPath = _dataPath;
-    
-    resolutionCellSquare.reserve(_resolutionCellSquareCount);
-    for(uint32 i = 0; i < _resolutionCellSquareCount; ++i)
-    {
-        resolutionCellSquare.push_back(_resolutionCellSquare[i]);
-    }
-    
-    resolutionScale.reserve(_resolutionScaleCount);
-    for(uint32 i = 0; i < _resolutionScaleCount; ++i)
-    {
-        resolutionScale.push_back(_resolutionScale[i]);
-    }
-    
-    resolutionTilesPerRow.reserve(_resolutionTilesPerRowCount);
-    for(uint32 i = 0; i < _resolutionTilesPerRowCount; ++i)
-    {
-        resolutionTilesPerRow.push_back(_resolutionTilesPerRow[i]);
-    }
-    
-    resolutionClusterStride.reserve(_resolutionClusterStrideCount);
-    for(uint32 i = 0; i < _resolutionClusterStrideCount; ++i)
-    {
-        resolutionClusterStride.push_back(_resolutionClusterStride[i]);
-    }
-    
-    worldSize = _worldSize;
     resolutionCount = static_cast<uint32>(resolutionClusterStride.size());
     
     materialTransform = new CustomMaterialTransformer();
@@ -640,7 +610,7 @@ void VegetationCustomSLGeometry::GenerateIndexData(const Vector<CustomGeometryEn
                                                    Vector<SortBufferData>& directionOffsets)
 {
     uint32 lastClusterIndex = rangeData.clusterStartIndex + rangeData.clusterCount;
-    uint32 vertexIndexOffset = 0;
+    size_t vertexIndexOffset = 0;
     Vector<VegetationIndex> sourceCellIndices;
     for(uint32 clusterIndex = rangeData.clusterStartIndex; clusterIndex < lastClusterIndex; ++clusterIndex)
     {
@@ -651,7 +621,7 @@ void VegetationCustomSLGeometry::GenerateIndexData(const Vector<CustomGeometryEn
         
         for(size_t i = 0; i < clusterIndexCount; ++i)
         {
-            sourceCellIndices.push_back(rangeData.vertexStartIndex + vertexIndexOffset + layerGeometry.sourceIndices[i]);
+            sourceCellIndices.push_back(rangeData.vertexStartIndex + static_cast<int32>(vertexIndexOffset) + layerGeometry.sourceIndices[i]);
         }
         
         vertexIndexOffset += layerGeometry.sourcePositions.size();
