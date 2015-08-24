@@ -253,7 +253,7 @@ public:
 		{
 			float32 x, y, z, w;
 		};
-        float32 data[4];
+        float32 data[AXIS_COUNT];
 	};
 
 	inline Vector4();
