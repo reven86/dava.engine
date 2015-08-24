@@ -60,11 +60,11 @@ Endpoint::Endpoint(const sockaddr_in* sin)
 bool Endpoint::ToString(char8* buffer, size_t size) const
 {
     DVASSERT(buffer != NULL && size > 0);
-    char8 addr[20];
-    if(Address().ToString(addr, COUNT_OF(addr)))
+    Array<char8, 20> addr;
+    if(Address().ToString(addr.data(), addr.size()))
     {
         // TODO: Snprintf on Win32 do not conform standard
-        Snprintf(buffer, size, "%s:%hu", addr, Port());
+        Snprintf(buffer, size, "%s:%hu", addr.data(), Port());
         return true;
     }
     return false;
@@ -72,9 +72,9 @@ bool Endpoint::ToString(char8* buffer, size_t size) const
 
 String Endpoint::ToString() const
 {
-    char8 buf[50];
-    if(ToString(buf, COUNT_OF(buf)))
-        return String(buf);
+    Array<char8, 50> buf;
+    if(ToString(buf.data(), buf.size()))
+        return String(buf.data());
     return String();
 }
 
