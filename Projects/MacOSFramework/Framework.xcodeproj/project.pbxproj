@@ -2716,6 +2716,12 @@
 		E8E081431A039573009A3228 /* OpenUDIDMacOS.h in Headers */ = {isa = PBXBuildFile; fileRef = 846CFE61174D1A75004ECE3C /* OpenUDIDMacOS.h */; };
 		E8E081441A03973A009A3228 /* OpenUDIDApple.h in Headers */ = {isa = PBXBuildFile; fileRef = 846CFE5D174D1A64004ECE3C /* OpenUDIDApple.h */; };
 		E8E081461A039740009A3228 /* OpenUDIDApple.h in Headers */ = {isa = PBXBuildFile; fileRef = 846CFE5D174D1A64004ECE3C /* OpenUDIDApple.h */; };
+		E8E6ECC11B8B4C4F00FA81B9 /* StaticMemoryFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8E6ECBF1B8B4C4F00FA81B9 /* StaticMemoryFile.cpp */; };
+		E8E6ECC21B8B4C4F00FA81B9 /* StaticMemoryFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8E6ECBF1B8B4C4F00FA81B9 /* StaticMemoryFile.cpp */; };
+		E8E6ECC31B8B4C4F00FA81B9 /* StaticMemoryFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8E6ECBF1B8B4C4F00FA81B9 /* StaticMemoryFile.cpp */; };
+		E8E6ECC41B8B4C4F00FA81B9 /* StaticMemoryFile.h in Headers */ = {isa = PBXBuildFile; fileRef = E8E6ECC01B8B4C4F00FA81B9 /* StaticMemoryFile.h */; };
+		E8E6ECC51B8B4C4F00FA81B9 /* StaticMemoryFile.h in Headers */ = {isa = PBXBuildFile; fileRef = E8E6ECC01B8B4C4F00FA81B9 /* StaticMemoryFile.h */; };
+		E8E6ECC61B8B4C4F00FA81B9 /* StaticMemoryFile.h in Headers */ = {isa = PBXBuildFile; fileRef = E8E6ECC01B8B4C4F00FA81B9 /* StaticMemoryFile.h */; };
 		E8F21DCA16C196DC007F957A /* GlobalEventSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50D6C8E616C107D400BB3F78 /* GlobalEventSystem.cpp */; };
 		E8F21DCB16C196DD007F957A /* GlobalEventSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50D6C8E616C107D400BB3F78 /* GlobalEventSystem.cpp */; };
 		E8F43E24186C3D02006796CB /* MaterialSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8F43E22186C3D02006796CB /* MaterialSystem.cpp */; };
@@ -3850,6 +3856,8 @@
 		E8BAD5AE185213F100C98C8D /* IntrospectionDynamic.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IntrospectionDynamic.cpp; sourceTree = "<group>"; };
 		E8BAD5AF185213F100C98C8D /* IntrospectionDynamic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IntrospectionDynamic.h; sourceTree = "<group>"; };
 		E8CC1BF616C109F1009B49BF /* IntrospectionBase.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IntrospectionBase.cpp; sourceTree = "<group>"; };
+		E8E6ECBF1B8B4C4F00FA81B9 /* StaticMemoryFile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StaticMemoryFile.cpp; sourceTree = "<group>"; };
+		E8E6ECC01B8B4C4F00FA81B9 /* StaticMemoryFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StaticMemoryFile.h; sourceTree = "<group>"; };
 		E8F43E22186C3D02006796CB /* MaterialSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MaterialSystem.cpp; sourceTree = "<group>"; };
 		E8F43E23186C3D02006796CB /* MaterialSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MaterialSystem.h; sourceTree = "<group>"; };
 		E8FC12F0186972560095D8FE /* QualitySettingsComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = QualitySettingsComponent.cpp; sourceTree = "<group>"; };
@@ -4713,6 +4721,8 @@
 		E8989B5816BD24E400732C04 /* FileSystem */ = {
 			isa = PBXGroup;
 			children = (
+				E8E6ECBF1B8B4C4F00FA81B9 /* StaticMemoryFile.cpp */,
+				E8E6ECC01B8B4C4F00FA81B9 /* StaticMemoryFile.h */,
 				15D3117E198285C800919AAA /* YamlEmitter.cpp */,
 				15D3117F198285C800919AAA /* YamlEmitter.h */,
 				155D77D6197DD22E006AEBCD /* YamlNode.cpp */,
@@ -5637,6 +5647,7 @@
 				176DE92F174B5561007A983B /* MongodbObject.h in Headers */,
 				176DE930174B5561007A983B /* DAVAConfig.h in Headers */,
 				176DE931174B5561007A983B /* DAVAEngine.h in Headers */,
+				E8E6ECC61B8B4C4F00FA81B9 /* StaticMemoryFile.h in Headers */,
 				17B3EA9718E9A64C0069AE7A /* CorePlatformMacOS.h in Headers */,
 				176DE933174B5561007A983B /* DVAssert.h in Headers */,
 				176DE934174B5561007A983B /* List.h in Headers */,
@@ -6059,6 +6070,7 @@
 				E8989DC816BD24E500732C04 /* HashMap.h in Headers */,
 				50C16DD21A52D7B9003C307A /* LogConsumer.h in Headers */,
 				E8989DC916BD24E500732C04 /* Introspection.h in Headers */,
+				E8E6ECC41B8B4C4F00FA81B9 /* StaticMemoryFile.h in Headers */,
 				E8989DCA16BD24E500732C04 /* IntrospectionBase.h in Headers */,
 				76199F3A192DF73D008A47E2 /* VersionInfo.h in Headers */,
 				50F3B8741B1EE39E00976CBC /* TestClass.h in Headers */,
@@ -6855,6 +6867,7 @@
 				E898A16416BD265400732C04 /* LightUpdateSystem.h in Headers */,
 				E898A16516BD265400732C04 /* LodSystem.h in Headers */,
 				E898A16616BD265400732C04 /* ParticleEffectSystem.h in Headers */,
+				E8E6ECC51B8B4C4F00FA81B9 /* StaticMemoryFile.h in Headers */,
 				E898A16816BD265400732C04 /* RenderUpdateSystem.h in Headers */,
 				E898A16916BD265400732C04 /* SwitchSystem.h in Headers */,
 				644C86CE19476A7100964F91 /* VegetationCustomGeometry.h in Headers */,
@@ -7382,6 +7395,7 @@
 				02141409181984D600925E51 /* DAVAClassRegistrator.cpp in Sources */,
 				176DEB0B174B5561007A983B /* ScrollHelper.cpp in Sources */,
 				4F53ED3019A23BE700D3869D /* CurlDownloader.cpp in Sources */,
+				E8E6ECC31B8B4C4F00FA81B9 /* StaticMemoryFile.cpp in Sources */,
 				E89EDE741A2E16FA0036E993 /* Polygon2Swig.cpp in Sources */,
 				A6DBFA711887D804006BE11C /* NMaterialNames.cpp in Sources */,
 				176DEB0C174B5561007A983B /* TheoraPlayer.cpp in Sources */,
@@ -7935,6 +7949,7 @@
 				CCC7A46B16F1D6170061EA5D /* ShadowVolume.cpp in Sources */,
 				CCC7A46F16F1D6170061EA5D /* ShadowVolumeRenderPass.cpp in Sources */,
 				CCC7A47316F1D6170061EA5D /* SpriteObject.cpp in Sources */,
+				E8E6ECC11B8B4C4F00FA81B9 /* StaticMemoryFile.cpp in Sources */,
 				CCC7A47716F1D6170061EA5D /* SpriteRenderBatch.cpp in Sources */,
 				11B3468E1B42CDD6007DD207 /* UIStyleSheetPropertyDataBase.cpp in Sources */,
 				320A4B2D19E6B5B80049D713 /* AbstractUIPackageBuilder.cpp in Sources */,
@@ -8380,6 +8395,7 @@
 				CCC7A47016F1D6170061EA5D /* ShadowVolumeRenderPass.cpp in Sources */,
 				CCC7A47416F1D6170061EA5D /* SpriteObject.cpp in Sources */,
 				647EFC42195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.cpp in Sources */,
+				E8E6ECC21B8B4C4F00FA81B9 /* StaticMemoryFile.cpp in Sources */,
 				CCC7A47816F1D6170061EA5D /* SpriteRenderBatch.cpp in Sources */,
 				CCC7A47E16F1D64D0061EA5D /* RenderState.cpp in Sources */,
 				CCC7A48416F1D6700061EA5D /* UpdateSystem.cpp in Sources */,
