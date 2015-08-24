@@ -47,12 +47,28 @@ namespace Net
 namespace AssetCache 
 {
 
+#pragma pack(1)
+
+#pragma pack(push, 1) // exact fit - no padding
+struct CachePacketHeader
+{
+    CachePacketHeader() {};
+    CachePacketHeader(uint16 header, uint8 _version, ePacketID type) : headerID(header), version(_version), packetType(type) {}
+
+    uint16 headerID = 0;
+    uint8 version = 0;
+    ePacketID packetType = PACKET_UNKNOWN;
+};
+#pragma pack(pop) //back to whatever the previous packing mode was
+
+
+
 class CachePacket
 { 
 public:
     virtual ~CachePacket() {};  // this is base class for asset cache network packets
 
-    static std::unique_ptr<CachePacket> Create(const uint8* buffer, uint32 length);
+    static std::unique_ptr<CachePacket> Create(uint8* buffer, uint32 length);
 
     bool SendTo(Net::IChannel* channel);
     static void PacketSent(const uint8* buffer, size_t length);

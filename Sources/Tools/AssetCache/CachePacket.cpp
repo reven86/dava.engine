@@ -27,13 +27,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
 #include "AssetCache/CachePacket.h"
+#include "FileSystem/StaticMemoryFile.h"
 #include "Network/IChannel.h"
 
 namespace DAVA {
 namespace AssetCache {
 
-const String PACKET_HEADER = "AssetCachePacket";
-const uint32 PACKET_VERSION = 1;
+const uint16 PACKET_HEADER = 0xACCA;
+const uint8 PACKET_VERSION = 1;
 
 List<ScopedPtr<DynamicMemoryFile> > CachePacket::sendingPackets;
 
@@ -66,47 +67,30 @@ void CachePacket::PacketSent(const uint8* buffer, size_t length)
 
 
 
-std::unique_ptr<CachePacket> CachePacket::Create(const uint8* rawdata, uint32 length)
+std::unique_ptr<CachePacket> CachePacket::Create(uint8 * rawdata, uint32 length)
 {
-    ScopedPtr<File> buffer(DynamicMemoryFile::Create(rawdata, length, File::OPEN | File::READ));
+    ScopedPtr<File> buffer(StaticMemoryFile::Create(rawdata, length, File::OPEN | File::READ));
 
-    String header;
-    if (buffer->ReadString(header) == false)
-        return nullptr;
-
-    if (header != PACKET_HEADER)
+    CachePacketHeader header;
+    if (buffer->Read(&header) != sizeof(header))
     {
-        Logger::Error("[CachePacket::%s] Wrong packet header: %s", __FUNCTION__, header.c_str());
+        Logger::Error("[CachePacket::%s] Cannot read header: %s", __FUNCTION__);
         return nullptr;
     }
 
-    uint32 version = 0;
-    if (buffer->Read(&version) != sizeof(version))
+    if (header.headerID != PACKET_HEADER || header.version != PACKET_VERSION || header.packetType == PACKET_UNKNOWN)
     {
-        Logger::Error("[CachePacket::%s] Error of reading of version", __FUNCTION__);
+        Logger::Error("[CachePacket::%s] Wrong header: id(%d), version(%d), packet type(%d)", __FUNCTION__, header.headerID, header.version, header.packetType);
         return nullptr;
     }
 
-    if (version != PACKET_VERSION)
-    {
-        Logger::Error("[CachePacket::%s] Wrong packet version: %d", __FUNCTION__, version);
-        return nullptr;
-    }
-
-    ePacketID type = PACKET_UNKNOWN;
-    if (buffer->Read(&type) != sizeof(type))
-    {
-        Logger::Error("[CachePacket::%s] Error of reading of type", __FUNCTION__);
-        return nullptr;
-    }
-
-    std::unique_ptr<CachePacket> packet = CachePacket::CreateByType(type);
+    std::unique_ptr<CachePacket> packet = CachePacket::CreateByType(header.packetType);
     if (packet != nullptr)
     {
         bool loaded = packet->Load(buffer);
         if (!loaded)
         {
-            Logger::Error("[CachePacket::%s] Cannot load packet(type: %d)", __FUNCTION__, type);
+            Logger::Error("[CachePacket::%s] Cannot load packet(type: %d)", __FUNCTION__, header.packetType);
             packet.reset();
         }
     }
@@ -129,6 +113,7 @@ std::unique_ptr<CachePacket> CachePacket::CreateByType(ePacketID type)
         break;
     }
     }
+   
     return nullptr;
 }
 
@@ -145,9 +130,8 @@ CachePacket::CachePacket(ePacketID _type, bool createBuffer)
 
 void CachePacket::WriteHeader(File *file) const
 {
-    file->WriteString(PACKET_HEADER);
-    file->Write(&PACKET_VERSION);
-    file->Write(&type);
+    CachePacketHeader header(PACKET_HEADER, PACKET_VERSION, type);
+    file->Write(&header);
 }
 
 

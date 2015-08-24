@@ -27,8 +27,8 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_MEMORY_FILE_H__
-#define __DAVAENGINE_MEMORY_FILE_H__
+#ifndef __DAVAENGINE_STATIC_MEMORY_FILE_H__
+#define __DAVAENGINE_STATIC_MEMORY_FILE_H__
 
 #include "Base/BaseTypes.h"
 #include "Base/BaseObject.h"
@@ -37,30 +37,29 @@
 
 namespace DAVA 
 {
-class DynamicMemoryFile : public File
+
+/**
+	\ingroup filesystem
+	\brief class to work with file read-write interface on memory buffer
+ */
+
+class StaticMemoryFile : public File
 {
 protected:
 
-    DynamicMemoryFile();
-    virtual ~DynamicMemoryFile();
+    StaticMemoryFile(uint8 *data, uint32 dataSize, uint32 attributes);
+    ~StaticMemoryFile() override;
 
 public:
 
     /**
-     \brief funciton to create a file instance with give attributes
+     \brief function to create a file instance with give attributes
      \param[in] data pointer to data to create file from
      \param[in] dataSize size of data to create file from
      \param[in] attributes combinations of eFileAttributes
      \returns file instance
      */
-    static DynamicMemoryFile * Create(const uint8 * data, int32 dataSize, uint32 attributes);
-
-    /**
-     \brief funciton to create a file instance with give attributes
-     \param[in] attributes combinations of eFileAttributes
-     \returns file instance
-     */
-    static DynamicMemoryFile * Create(uint32 attributes);
+    static StaticMemoryFile * Create(uint8 *data, uint32 dataSize, uint32 attributes);
 
 
     /**
@@ -68,8 +67,6 @@ public:
      \returns pointer to the first byte of the file data if file is empty returns NULL
      */
     const uint8* GetData() const;
-
-    const Vector<uint8>& GetDataVector() const;
 
 
     /**
@@ -80,6 +77,7 @@ public:
      */
     uint32 Write(const void * pointerToData, uint32 dataSize) override;
 
+
     /**
      \brief Read [dataSize] bytes from this file to [pointerToData]
      \param[in, out] pointerToData function write data to this pointer
@@ -88,16 +86,19 @@ public:
      */
     uint32 Read(void * pointerToData, uint32 dataSize) override;
 
+   
     /**
      \brief Get current file position
      */
     uint32 GetPos() const override;
+
 
     /**
      \brief Get current file size if writing
      \brief and get real file size if file for reading
      */
     uint32 GetSize() const override;
+
 
     /**
      \brief Set current file position
@@ -107,22 +108,42 @@ public:
      */
     bool Seek(int32 position, uint32 seekType) override;
 
+
     //! return true if end of file reached and false in another case
     bool IsEof() const override;
 
 protected:
-    uint32 currentPtr;
-    Vector<uint8> data;
-    uint32 fileAttributes;
-    bool isEof;
+
+    uint8 *memoryBuffer = nullptr;
+    uint32 memoryBufferSize = 0;
+    uint32 currentPtr = 0;
+
+    uint32 fileAttributes = File::READ | File::OPEN;
+    bool isEof = false;
 };
 
-inline const Vector<uint8>& DynamicMemoryFile::GetDataVector() const
+inline const uint8* StaticMemoryFile::GetData() const
 {
-    return data;
+    return memoryBuffer;
 }
 
+inline uint32 StaticMemoryFile::GetPos() const
+{
+    return currentPtr;
+}
+
+inline uint32 StaticMemoryFile::GetSize() const
+{
+    return memoryBufferSize;
+}
+
+inline bool StaticMemoryFile::IsEof() const
+{
+    return isEof;
+}
+
+
 };
 
 
-#endif
+#endif //__DAVAENGINE_STATIC_MEMORY_FILE_H__

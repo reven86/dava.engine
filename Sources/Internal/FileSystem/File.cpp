@@ -347,7 +347,7 @@ bool File::Flush()
     return 0 == fflush(file);
 }
 
-bool File::IsEof()
+bool File::IsEof() const
 {
     return (feof(file) != 0);
 }

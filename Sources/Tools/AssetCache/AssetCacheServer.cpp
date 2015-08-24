@@ -70,7 +70,7 @@ void Server::OnPacketReceived(Net::IChannel * channel, const void* packetData, s
 
     if(length > 0)
     {
-        std::unique_ptr<CachePacket> packet = CachePacket::Create(static_cast<const uint8 *>(packetData), length);
+        std::unique_ptr<CachePacket> packet = CachePacket::Create(const_cast<uint8 *>(static_cast<const uint8 *>(packetData)), length);
         if (packet)
         {
             switch (packet->type)

@@ -213,7 +213,7 @@ public:
 	virtual bool Seek(int32 position, uint32 seekType);
 	
 	//! return true if end of file reached and false in another case
-	virtual bool IsEof();
+	virtual bool IsEof() const;
 
     /**
         \brief Truncate a file to a specified length
