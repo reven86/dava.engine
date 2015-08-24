@@ -62,10 +62,11 @@ void CoreWin32PlatformBase::InitArgs()
 
     if (argc > 0 && NULL != szArglist)
     {
-        Vector<String> args(argc);
+        Vector<String> args;
+        args.reserve(argc);
         for (int i = 0; i < argc; ++i)
         {
-            args[i] = std::move(WStringToString(szArglist[i]));
+            args.emplace_back(WStringToString(szArglist[i]));
         }
 
         SetCommandLine(std::move(args));

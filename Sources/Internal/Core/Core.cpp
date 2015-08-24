@@ -576,7 +576,7 @@ void Core::SetCommandLine(int argc, char *argv[])
 
 void Core::SetCommandLine(Vector<String>&& args)
 {
-    commandLine = args;
+    commandLine = std::move(args);
 }
 
 void Core::SetCommandLine(const DAVA::String& cmdLine)
