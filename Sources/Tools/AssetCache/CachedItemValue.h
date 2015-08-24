@@ -45,7 +45,7 @@ class VariantBuffer;
 namespace AssetCache
 {
 
-class CachedItemValue
+class CachedItemValue final
 {
     using ValueData = std::shared_ptr < Vector<uint8> > ;
     using ValueDataContainer = Map < String, ValueData>;

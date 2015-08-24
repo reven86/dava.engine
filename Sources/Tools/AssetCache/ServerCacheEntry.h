@@ -42,7 +42,7 @@ class KeyedArchive;
 namespace AssetCache
 {
 
-class ServerCacheEntry
+class ServerCacheEntry final
 {
 public:
     
@@ -52,7 +52,7 @@ public:
     ServerCacheEntry(const ServerCacheEntry &right) = delete;
     ServerCacheEntry(ServerCacheEntry &&right);
     
-    virtual ~ServerCacheEntry() = default;
+    ~ServerCacheEntry() = default;
 
     ServerCacheEntry & operator=(const ServerCacheEntry &right) = delete;
     ServerCacheEntry & operator=(ServerCacheEntry &&right);
