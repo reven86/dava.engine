@@ -43,6 +43,14 @@ namespace DAVA
 class Color
 {
 public:
+    enum eChannel
+    {
+        CHANNEL_RED = 0,
+        CHANNEL_GREEN = 1,
+        CHANNEL_BLUE = 2,
+        CHANNEL_ALPHA = 3,
+        CHANNEL_COUNT = 4
+    };
 
     static const Color White;
     static const Color Transparent;
@@ -51,7 +59,7 @@ public:
 
 	union
 	{
-		float32 color[4];
+		float32 color[CHANNEL_COUNT];
 		struct  
 		{
 			float32 r, g, b, a;

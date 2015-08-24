@@ -239,6 +239,15 @@ inline Vector3 Reflect(const Vector3 & v, const Vector3 & n);
 class Vector4
 {
 public:
+    enum eAxis
+    {
+        AXIS_X = 0,
+        AXIS_Y = 1,
+        AXIS_Z = 2,
+        AXIS_W = 3,
+        AXIS_COUNT = 4
+    };
+    
 	union{
 		struct
 		{
