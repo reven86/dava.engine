@@ -27,7 +27,7 @@
 =====================================================================================*/
 
 
-#include "RunGuard.h"
+#include "QtTools/RunGuard/RunGuard.h"
 
 #include <QCryptographicHash>
 
