@@ -852,7 +852,7 @@ bool FileSystem::CompareTextFiles(const FilePath& filePath1, const FilePath& fil
 
     if (nullptr == static_cast<File *>(f1) || nullptr == static_cast<File *>(f2))
     {
-        Logger::Error("Couldn't copmare file %s and file %s, can't open", filePath1.GetAbsolutePathname().c_str(), filePath2.GetAbsolutePathname().c_str());
+        Logger::Error("Couldn't compare file %s and file %s, can't open", filePath1.GetAbsolutePathname().c_str(), filePath2.GetAbsolutePathname().c_str());
         return false;
     }
 
@@ -915,7 +915,7 @@ bool FileSystem::CompareBinaryFiles(const FilePath &filePath1, const FilePath &f
 
     if (nullptr == static_cast<File *>(f1) || nullptr == static_cast<File *>(f2))
     {
-        Logger::Error("Couldn't copmare file %s and file %s, can't open", filePath1.GetAbsolutePathname().c_str(), filePath2.GetAbsolutePathname().c_str());
+        Logger::Error("Couldn't compare file %s and file %s, can't open", filePath1.GetAbsolutePathname().c_str(), filePath2.GetAbsolutePathname().c_str());
         return false;
     }
 
@@ -962,11 +962,8 @@ bool FileSystem::GetFileSize(const FilePath& path, uint32& size)
         size = file->GetSize();
         return true;
     }
-    else
-    {
-        Logger::Error("Cannot read file %s to get file size", path.GetStringValue().c_str());
-        return false;
-    }
+
+    return false;
 }
 
 }
