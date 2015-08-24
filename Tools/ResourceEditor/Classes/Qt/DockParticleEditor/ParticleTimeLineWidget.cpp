@@ -495,16 +495,13 @@ void ParticleTimeLineWidget::paintEvent(QPaintEvent *e)
 					lineStyle = Qt::DotLine;
 					useDeltaTime = false;
 				}
-				else if (useDurationTime)
+				else
 				{
 					currentEndTime = currentStartTime + durationTime;
 					lineStyle = Qt::SolidLine;
 					useDeltaTime = (line.deltaTime > 0);
 				}
-				else 
-				{
-					DVASSERT("Current time is not being incremented in either way." && false);
-				}
+
 				// We should not exceed loopEnd time
 				currentEndTime = Min(currentEndTime, loopEndTime);
 							
