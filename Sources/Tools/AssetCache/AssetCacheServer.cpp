@@ -70,26 +70,26 @@ void Server::OnPacketReceived(Net::IChannel * channel, const void* packetData, s
 
     if(length > 0)
     {
-        CachePacket* packet = CachePacket::Create(static_cast<const uint8 *>(packetData), length);
+        std::unique_ptr<CachePacket> packet = CachePacket::Create(static_cast<const uint8 *>(packetData), length);
         if (packet)
         {
             switch (packet->type)
             {
             case PACKET_ADD_REQUEST:
                 {
-                    AddRequestPacket *p = static_cast<AddRequestPacket*>(packet);
+                    AddRequestPacket *p = static_cast<AddRequestPacket*>(packet.get());
                     delegate->OnAddToCache(channel, p->key, std::forward<CachedItemValue>(p->value));
                     break;
                 }
             case PACKET_GET_REQUEST:
                 {
-                    GetRequestPacket* p = static_cast<GetRequestPacket*>(packet);
+                    GetRequestPacket* p = static_cast<GetRequestPacket*>(packet.get());
                     delegate->OnRequestedFromCache(channel, p->key);
                     break;
                 }
             case PACKET_WARMING_UP_REQUEST:
                 {
-                    WarmupRequestPacket* p = static_cast<WarmupRequestPacket*>(packet);
+                    WarmupRequestPacket* p = static_cast<WarmupRequestPacket*>(packet.get());
                     delegate->OnWarmingUp(channel, p->key);
                     break;
                 }
@@ -100,8 +100,6 @@ void Server::OnPacketReceived(Net::IChannel * channel, const void* packetData, s
                     break;
                 }
             }
-
-            delete packet;
         }
         else
         {

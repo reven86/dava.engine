@@ -104,19 +104,19 @@ private:
     void ChangeSettingsState(SettingsState newState);
 
 private:
-    Ui::MainWindow *ui;
-    QAction *startAction;
-    QAction *stopAction;
-    QSystemTrayIcon* trayIcon;
+    Ui::MainWindow *ui = nullptr;
+    QAction *startAction = nullptr;
+    QAction *stopAction = nullptr;
+    QSystemTrayIcon* trayIcon = nullptr;
     std::unique_ptr<QIcon> greenGreenTrayIcon;
     std::unique_ptr<QIcon> greenGrayTrayIcon;
     std::unique_ptr<QIcon> greenRedTrayIcon;
     std::unique_ptr<QIcon> redGrayTrayIcon;
 
-    QVBoxLayout *serversBoxLayout;
+    QVBoxLayout *serversBoxLayout = nullptr;
     List<RemoteAssetCacheServer*> remoteServers;
 
-    ServerCore& serverCore;
+    ServerCore &serverCore;
 
     SettingsState settingsState = NOT_EDITED;
 };

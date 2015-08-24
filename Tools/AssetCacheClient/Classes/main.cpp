@@ -82,6 +82,6 @@ int main (int argc, char * argv[])
         ReleaseDAVA();
     }
     
-    auto exitCode = cacheClient.GetExitCode();
+    int exitCode = cacheClient.GetExitCode();
     return exitCode;
 }

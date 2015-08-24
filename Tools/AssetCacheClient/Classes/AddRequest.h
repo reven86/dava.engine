@@ -42,7 +42,6 @@ public:
 protected:
     int SendRequest() override;
     int CheckOptionsInternal() const override;
-
 };
 
 

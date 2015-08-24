@@ -49,14 +49,14 @@ public:
     
 private:
     
-    void PrintUsage();
+    void PrintUsage() const;
 
     
 private:
     
     int exitCode = AssetCacheClientConstants::EXIT_OK;
     
-    DAVA::List<CacheRequest *> requests;
+    DAVA::List<std::unique_ptr<CacheRequest>> requests;
     CacheRequest *activeRequest = nullptr;
 };
 

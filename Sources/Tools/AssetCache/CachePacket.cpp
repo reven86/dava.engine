@@ -66,7 +66,7 @@ void CachePacket::PacketSent(const uint8* buffer, size_t length)
 
 
 
-CachePacket* CachePacket::Create(const uint8* rawdata, uint32 length)
+std::unique_ptr<CachePacket> CachePacket::Create(const uint8* rawdata, uint32 length)
 {
     ScopedPtr<File> buffer(DynamicMemoryFile::Create(rawdata, length, File::OPEN | File::READ));
 
@@ -100,29 +100,29 @@ CachePacket* CachePacket::Create(const uint8* rawdata, uint32 length)
         return nullptr;
     }
 
-    CachePacket *packet = CachePacket::CreateByType(type);
+    std::unique_ptr<CachePacket> packet = CachePacket::CreateByType(type);
     if (packet != nullptr)
     {
         bool loaded = packet->Load(buffer);
         if (!loaded)
         {
             Logger::Error("[CachePacket::%s] Cannot load packet(type: %d)", __FUNCTION__, type);
-            SafeDelete(packet);
+            packet.reset();
         }
     }
 
     return packet;
 }
 
-CachePacket * CachePacket::CreateByType(ePacketID type)
+std::unique_ptr<CachePacket> CachePacket::CreateByType(ePacketID type)
 {
     switch (type)
     {
-    case PACKET_ADD_REQUEST:        return new AddRequestPacket();
-    case PACKET_ADD_RESPONSE:        return new AddResponsePacket();
-    case PACKET_GET_REQUEST:        return new GetRequestPacket();
-    case PACKET_GET_RESPONSE:        return new GetResponsePacket();
-    case PACKET_WARMING_UP_REQUEST:    return new WarmupRequestPacket();
+    case PACKET_ADD_REQUEST:        return std::unique_ptr<CachePacket>(new AddRequestPacket());
+    case PACKET_ADD_RESPONSE:        return std::unique_ptr<CachePacket>(new AddResponsePacket());
+    case PACKET_GET_REQUEST:        return std::unique_ptr<CachePacket>(new GetRequestPacket());
+    case PACKET_GET_RESPONSE:        return std::unique_ptr<CachePacket>(new GetResponsePacket());
+    case PACKET_WARMING_UP_REQUEST:    return std::unique_ptr<CachePacket>(new WarmupRequestPacket());
     default:
     {
         Logger::Error("[CachePacket::%s] Wrong packet type: %d", __FUNCTION__, type);

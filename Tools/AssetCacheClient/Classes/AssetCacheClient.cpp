@@ -35,19 +35,13 @@ AssetCacheClient::AssetCacheClient()
 :   exitCode(AssetCacheClientConstants::EXIT_OK)
     ,   activeRequest(nullptr)
 {
-    requests.push_back(new AddRequest());
-    requests.push_back(new GetRequest());
+    requests.emplace_back(std::unique_ptr<CacheRequest>(new AddRequest()));
+    requests.emplace_back(std::unique_ptr<CacheRequest>(new GetRequest()));
 }
 
 AssetCacheClient::~AssetCacheClient()
 {
     activeRequest = nullptr;
-    
-    for(auto r: requests)
-    {
-        delete r;
-    }
-    requests.clear();
 }
 
 bool AssetCacheClient::ParseCommandLine(int argc, char * argv[])
@@ -59,7 +53,7 @@ bool AssetCacheClient::ParseCommandLine(int argc, char * argv[])
         {
             if (r->options.GetCommand() == command)
             {
-                activeRequest = r;
+                activeRequest = r.get();
                 auto commandLineIsOk = r->options.Parse(argc, argv, 2);
                 if(commandLineIsOk)
                 {
@@ -85,7 +79,7 @@ bool AssetCacheClient::ParseCommandLine(int argc, char * argv[])
 }
 
 
-void AssetCacheClient::PrintUsage()
+void AssetCacheClient::PrintUsage() const
 {
     printf("Usage: AssetCacheClient <command>\n");
     printf("\n Commands: ");

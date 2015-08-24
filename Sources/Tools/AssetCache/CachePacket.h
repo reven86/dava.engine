@@ -52,7 +52,7 @@ class CachePacket
 public:
     virtual ~CachePacket() {};  // this is base class for asset cache network packets
 
-    static CachePacket* Create(const uint8* buffer, uint32 length);
+    static std::unique_ptr<CachePacket> Create(const uint8* buffer, uint32 length);
 
     bool SendTo(Net::IChannel* channel);
     static void PacketSent(const uint8* buffer, size_t length);
@@ -60,7 +60,7 @@ public:
 protected:
     CachePacket(ePacketID type, bool createBuffer);
 
-    static CachePacket* CreateByType(ePacketID type);
+    static std::unique_ptr<CachePacket> CreateByType(ePacketID type);
 
     void WriteHeader(File *file) const;
     virtual bool Load(File *file) = 0;

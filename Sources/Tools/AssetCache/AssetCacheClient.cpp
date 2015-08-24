@@ -39,8 +39,10 @@
 namespace DAVA {
 namespace AssetCache {
 
-Client::Client() : addressResolver(*this)
-{}
+Client::Client() 
+    : addressResolver(*this)
+{
+}
 
 bool Client::Connect(const String &ip, uint16 port)
 {
@@ -136,21 +138,21 @@ void Client::OnPacketReceived(DAVA::Net::IChannel* channel, const void* packetDa
     DVASSERT(openedChannel == channel);
     if(length > 0)
     {
-        CachePacket* packet = CachePacket::Create(static_cast<const uint8 *>(packetData), length);
+        std::unique_ptr<CachePacket> packet = CachePacket::Create(static_cast<const uint8 *>(packetData), length);
         if(packet != nullptr)
         {
             switch (packet->type)
             {
             case PACKET_ADD_RESPONSE:
                 {
-                    AddResponsePacket *p = static_cast<AddResponsePacket*>(packet);
+                    AddResponsePacket *p = static_cast<AddResponsePacket*>(packet.get());
                     for (auto& listener : listeners)
                         listener->OnAddedToCache(p->key, p->added);
                     break;
                 }
             case PACKET_GET_RESPONSE:
                 {
-                    GetResponsePacket* p = static_cast<GetResponsePacket*>(packet);
+                    GetResponsePacket* p = static_cast<GetResponsePacket*>(packet.get());
                     for (auto& listener : listeners)
                         listener->OnReceivedFromCache(p->key, std::forward<CachedItemValue>(p->value));
                     break;
@@ -162,8 +164,6 @@ void Client::OnPacketReceived(DAVA::Net::IChannel* channel, const void* packetDa
                     break;
                 }
             }
-
-            delete packet;
         }
         else
         {
