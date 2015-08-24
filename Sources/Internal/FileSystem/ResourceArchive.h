@@ -68,7 +68,7 @@ public:
 
     struct Rule
     {
-        std::string fileExt;
+        String fileExt;
         CompressionType compressionType;
     };
 
@@ -76,8 +76,8 @@ public:
 
     bool Open(const FilePath& archiveName);
     const FileInfos& GetFilesInfo() const;
+    const FileInfo* GetFileInfo(const String& fileName) const;
     bool HasFile(const String& fileName) const;
-    const FileInfo* GetFileInfo(const std::string& fileName) const;
     bool LoadFile(const String& fileName, ContentAndSize& output) const;
     void Close();
 

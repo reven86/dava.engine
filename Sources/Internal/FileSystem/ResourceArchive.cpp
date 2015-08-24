@@ -28,62 +28,62 @@ THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "FileSystem/FileSystem.h"
-#include "FileSystem/File.h"
 #include "FileSystem/ResourceArchive.h"
 
 #include <lz4/lz4.h>
 #include <lz4/lz4hc.h>
 
+#include "FileSystem/FileSystem.h"
+#include "FileSystem/File.h"
+
 namespace
 {
 const std::array<char, 4> PackFileMarker = {'P', 'A', 'C', 'K'};
-const ::DAVA::uint32 PackFileMagic = 20150817;
+const DAVA::uint32 PackFileMagic = 20150817;
 
-struct PackFileStructure
+using PackingType = ::DAVA::ResourceArchive::CompressionType;
+
+struct PackFile
 {
-    struct FileHeaderBlock
+    struct HeaderBlock
     {
         std::array<char, 4> resPackMarker;
-        ::DAVA::uint32 fileNamesLength;
-        ::DAVA::uint32 numFiles;
-        ::DAVA::uint32 sizeOfAllFilesData;
-        ::DAVA::uint32 startPositionFileNames;
-        ::DAVA::uint32 startPositionFilesData;
-        ::DAVA::uint32 startPositionCompressedContent;
-        ::DAVA::uint32 magic;
+        DAVA::uint32 magic;
+        DAVA::uint32 namesBlockSize;
+        DAVA::uint32 filesTableBlockSize;
+        DAVA::uint32 startFileNames;
+        DAVA::uint32 startFilesTable;
+        DAVA::uint32 startPackedFiles;
+        DAVA::uint32 numFiles;
     } headerBlock;
 
-    struct StringsFileNamesBlock
+    struct NamesBlock
     {
-        ::DAVA::String fileNames;
-    } fileNamesBlock;
+        DAVA::String sortedNames;
+    } namesBlock;
 
-    struct FileTableBlock
+    struct FilesDataBlock
     {
-        struct FileData
+        struct Data
         {
-            ::DAVA::uint32 fileStartPosition;
-            ::DAVA::uint32 compressedSize;
-            ::DAVA::uint32 originalSize;
-            ::DAVA::ResourceArchive::CompressionType compressionType;
-            std::array<char, 16> reservedMetadata;
+            DAVA::uint32 start;
+            DAVA::uint32 compressed;
+            DAVA::uint32 original;
+            PackingType packType;
+            std::array<char, 16> reserved;
         };
-        static_assert(sizeof(FileData) == 32, "fix file table size");
-        std::vector<FileData> fileTable;
-    } fileTableBlock;
+        DAVA::Vector<Data> fileTable;
+    } filesDataBlock;
 
-    struct RawCompressedFilesBlock
+    struct PackedFilesBlock
     {
-        std::unique_ptr<uint8_t[]> rawCompressedFilesContent;
+        uint8_t* packedFiles;
     } notUsedReadDirectlyFromFile;
 };
 
-using FileTableEntry = PackFileStructure::FileTableBlock::FileData;
+using FileTableEntry = PackFile::FilesDataBlock::Data;
 
-static_assert(sizeof(PackFileStructure::FileHeaderBlock) == 32,
-              "fix compiler padding");
-
+static_assert(sizeof(PackFile::HeaderBlock) == 32, "fix compiler padding");
 static_assert(sizeof(FileTableEntry) == 32, "fix compiler padding");
 }  // end of anonymous namespace
 
@@ -94,137 +94,150 @@ class ResourceArchiveImpl
 public:
     explicit ResourceArchiveImpl() = default;
 
-    bool Open(const std::string& file_name)
+    bool Open(const String& file_name)
     {
-        bool result = false;
         file.Set(File::Create(file_name, File::OPEN));
         if (!file)
         {
-            throw std::runtime_error("can't Open file: " + file_name);
+            Logger::Error("can't Open file: %s\n", file_name.c_str());
+            return false;
         }
         auto& header_block = packFile.headerBlock;
         uint32 isOk = file->Read(&header_block, sizeof(header_block));
         if (isOk <= 0)
         {
-            throw std::runtime_error("can't read header from packfile");
+            Logger::Error("can't read header from packfile: %s\n",
+                          file_name.c_str());
+            return false;
         }
         if (header_block.resPackMarker != PackFileMarker)
         {
-            throw std::runtime_error("incorrect marker in pack file: " +
-                                     file_name);
+            Logger::Error("incorrect marker in pack file: %s\n",
+                          file_name.c_str());
+            return false;
         }
         if (PackFileMagic != header_block.magic)
         {
-            throw std::runtime_error("can't read pack file incorrect magic: " +
-                                     std::to_string(header_block.magic));
+            Logger::Error("can't read packfile incorrect magic: 0x%X\n",
+                          header_block.magic);
+            return false;
         }
         if (header_block.numFiles == 0)
         {
-            throw std::runtime_error("can't load packfile no files inside");
+            Logger::Error("can't load packfile no files inside");
+            return false;
         }
-        if (header_block.startPositionFileNames != file->GetPos())
+        if (header_block.startFileNames != file->GetPos())
         {
-            throw std::runtime_error(
+            Logger::Error(
                 "error in header of packfile start position for file names "
                 "incorrect");
+            return false;
         }
-        String& fileNames = packFile.fileNamesBlock.fileNames;
-        fileNames.resize(header_block.fileNamesLength, '\0');
+        String& fileNames = packFile.namesBlock.sortedNames;
+        fileNames.resize(header_block.namesBlockSize, '\0');
 
         isOk = file->Read(&fileNames[0], fileNames.size());
         if (isOk <= 0)
         {
-            throw std::runtime_error("can't read file names from packfile");
+            Logger::Error("can't read file names from packfile");
+            return false;
         }
 
-        if (header_block.startPositionFilesData != file->GetPos())
+        if (header_block.startFilesTable != file->GetPos())
         {
-            throw std::runtime_error(
+            Logger::Error(
                 "can't load packfile incorrect start position of files data");
+            return false;
         }
 
-        Vector<FileTableEntry>& fileTable = packFile.fileTableBlock.fileTable;
+        Vector<FileTableEntry>& fileTable = packFile.filesDataBlock.fileTable;
         fileTable.resize(header_block.numFiles);
 
-        if (header_block.sizeOfAllFilesData / header_block.numFiles !=
+        if (header_block.filesTableBlockSize / header_block.numFiles !=
             sizeof(FileTableEntry))
         {
-            throw std::runtime_error(
-                "can't load packfile bad originalSize of file table");
+            Logger::Error("can't load packfile bad originalSize of file table");
+            return false;
         }
 
         isOk = file->Read(reinterpret_cast<char*>(&fileTable[0]),
-                          header_block.sizeOfAllFilesData);
+                          header_block.filesTableBlockSize);
         if (isOk <= 0)
         {
-            throw std::runtime_error("can't read files table from packfile");
+            Logger::Error("can't read files table from packfile");
+            return false;
         }
 
-        if (header_block.startPositionCompressedContent != file->GetPos())
+        if (header_block.startPackedFiles != file->GetPos())
         {
-            throw std::runtime_error(
+            Logger::Error(
                 "can't read packfile, incorrect start position of compressed "
                 "content");
+            return false;
         }
 
         filesInfoSortedByName.reserve(header_block.numFiles);
 
-        // now fill support structures for quik search by filename
-        std::size_t fileNameIndex{0};
+        size_t num_files =
+            std::count_if(fileNames.begin(), fileNames.end(), [](const char& ch)
+                          {
+                              return '\0' == ch;
+                          });
+        if (num_files != fileTable.size())
+        {
+            Logger::Error("number of file names not match with table");
+            return false;
+        }
+
+        // now fill support structures for fast search by filename
+        size_t fileNameIndex{0};
 
         std::for_each(
-            std::begin(fileTable), std::end(fileTable),
-            [&](FileTableEntry& fileEntry)
+            begin(fileTable), end(fileTable), [&](FileTableEntry& fileEntry)
             {
                 const char* fileName = &fileNames[fileNameIndex];
                 mapFileData.emplace(fileName, &fileEntry);
 
                 filesInfoSortedByName.push_back(
                     ResourceArchive::FileInfo{fileName,
-                                              fileEntry.originalSize,
-                                              fileEntry.compressedSize,
-                                              fileEntry.compressionType});
+                                              fileEntry.original,
+                                              fileEntry.compressed,
+                                              fileEntry.packType});
 
                 fileNameIndex = fileNames.find('\0', fileNameIndex + 1);
-                if (fileNameIndex == std::string::npos)
-                {
-                    throw std::runtime_error(
-                        "can't load packfile, error during parsing filenames");
-                }
                 ++fileNameIndex;
             });
 
-        result = std::is_sorted(filesInfoSortedByName.begin(),
-                                filesInfoSortedByName.end(),
-                                [](const ResourceArchive::FileInfo& first,
-                                   const ResourceArchive::FileInfo& second)
-                                {
-                                    return first.name < second.name;
-                                });
+        bool result = std::is_sorted(filesInfoSortedByName.begin(),
+                                     filesInfoSortedByName.end(),
+                                     [](const ResourceArchive::FileInfo& first,
+                                        const ResourceArchive::FileInfo& second)
+                                     {
+                                         return first.name < second.name;
+                                     });
         if (!result)
         {
-            throw std::runtime_error("file names in pakfile not sorted!");
+            Logger::Error("file names in pakfile not sorted!");
+            return false;
         }
-        else
-        {
-            result = true;
-        }
-        return result;
+
+        return true;
     }
 
-    const std::vector<ResourceArchive::FileInfo>& GetFileList() const
+    const ResourceArchive::FileInfos& GetFileList() const
     {
         return filesInfoSortedByName;
     }
 
-    bool IsFileExist(const std::string& file_name,
+    bool IsFileExist(const String& file_name,
                      std::size_t* uncompressed_size) const
     {
         auto iterator = mapFileData.find(file_name);
         bool found = iterator != mapFileData.end();
         if (found && uncompressed_size)
         {
-            *uncompressed_size = iterator->second->originalSize;
+            *uncompressed_size = iterator->second->original;
         }
         return found;
     }
@@ -246,87 +259,223 @@ public:
         return result;
     }
 
-    bool LoadFile(const std::string& file_name,
-                  char* destBuf,
-                  std::size_t buff_size) const
+    bool LoadFile(const String& file_name,
+                  ResourceArchive::ContentAndSize& output) const
     {
-        bool result = false;
-        std::size_t originalSize = 0;
-        if (IsFileExist(file_name, &originalSize))
-        {
-            if (originalSize <= buff_size)
-            {
-                const FileTableEntry& fileEntry =
-                    *mapFileData.find(file_name)->second;
-                std::unique_ptr<char[]> compressedBuff(
-                    new char[fileEntry.compressedSize]);
-                if (file.Valid())
-                {
-                    bool isOk = file->Seek(fileEntry.fileStartPosition,
-                                           File::SEEK_FROM_START);
-                    if (isOk)
-                    {
-                        uint32 readOk = file->Read(compressedBuff.get(),
-                                                   fileEntry.compressedSize);
-                        if (readOk)
-                        {
-                            int decompressResult = LZ4_decompress_fast(
-                                compressedBuff.get(), destBuf, originalSize);
-                            if (decompressResult > 0)
-                            {
-                                result = true;
-                            }
-                            else
-                            {
-                                Logger::Error(
-                                    "can't load file: %s  couse: decompress "
-                                    "error\n",
-                                    file_name.c_str());
-                            }
-                        }
-                        else
-                        {
-                            Logger::Error(
-                                "can't load file: %s couse: can't read "
-                                "compressed content\n",
-                                file_name.c_str());
-                        }
-                    }
-                    else
-                    {
-                        Logger::Error(
-                            "can't load file: %s couse: can't find start file "
-                            "position in pack file\n",
-                            file_name.c_str());
-                    }
-                }
-                else
-                {
-                    Logger::Error(
-                        "can't load file: %s couse: no opened packfile\n",
-                        file_name.c_str());
-                }
-            }
-            else
-            {
-                Logger::Error("cant't load file: %s couse: buffer too small\n",
-                              file_name.c_str());
-            }
-        }
-        else
+        if (!IsFileExist(file_name, &output.size))
         {
             Logger::Error("can't load file: %s couse: not found\n",
                           file_name.c_str());
+            return false;
         }
-        return result;
+
+        const FileTableEntry& fileEntry = *mapFileData.find(file_name)->second;
+
+        if (!file)
+        {
+            Logger::Error("can't load file: %s couse: no opened packfile\n",
+                          file_name.c_str());
+            return false;
+        }
+
+        bool isOk = file->Seek(fileEntry.start, File::SEEK_FROM_START);
+        if (!isOk)
+        {
+            Logger::Error(
+                "can't load file: %s couse: can't find start file "
+                "position in pack file\n",
+                file_name.c_str());
+            return false;
+        }
+
+        switch (fileEntry.packType)
+        {
+            case ResourceArchive::CompressionType::None:
+            {
+                output.content.reset(new char[fileEntry.compressed]);
+                uint32 readOk =
+                    file->Read(output.content.get(), fileEntry.compressed);
+                if (readOk != fileEntry.compressed)
+                {
+                    Logger::Error(
+                        "can't load file: %s couse: can't read "
+                        "uncompressed content\n",
+                        file_name.c_str());
+                    return false;
+                }
+            }
+            break;
+            case ResourceArchive::CompressionType::Lz4:
+            case ResourceArchive::CompressionType::Lz4HC:
+            {
+                std::unique_ptr<char[]> packedBuf(
+                    new char[fileEntry.compressed]);
+
+                uint32 readOk =
+                    file->Read(packedBuf.get(), fileEntry.compressed);
+                if (readOk != fileEntry.compressed)
+                {
+                    Logger::Error(
+                        "can't load file: %s couse: can't read "
+                        "compressed content\n",
+                        file_name.c_str());
+                    return false;
+                }
+
+                output.content.reset(new char[fileEntry.original]);
+
+                int decompressResult = LZ4_decompress_fast(
+                    packedBuf.get(), output.content.get(), output.size);
+                if (decompressResult < 0)
+                {
+                    Logger::Error(
+                        "can't load file: %s  couse: decompress "
+                        "error\n",
+                        file_name.c_str());
+                    return false;
+                }
+            }
+            break;
+        }
+        return true;
     }
 
 private:
     mutable RefPtr<File> file;
-    PackFileStructure packFile;
-    std::unordered_map<std::string, FileTableEntry*> mapFileData;
-    std::vector<ResourceArchive::FileInfo> filesInfoSortedByName;
+    PackFile packFile;
+    UnorderedMap<String, FileTableEntry*> mapFileData;
+    ResourceArchive::FileInfos filesInfoSortedByName;
 };
+
+static ResourceArchive::CompressionType GetPackingByExt(
+    const String& fileName,
+    const Vector<ResourceArchive::Rule>& rules)
+{
+    for (const auto& rule : rules)
+    {
+        if (fileName.rfind(rule.fileExt, 0) != String::npos)
+        {
+            return rule.compressionType;
+        }
+    }
+    return ResourceArchive::CompressionType::Lz4HC;
+};
+
+static bool Packing(const String& fileName,
+                    Vector<FileTableEntry>& fileTable,
+                    Vector<char>& inBuffer,
+                    Vector<char>& packingBuf,
+                    RefPtr<File> output,
+                    uint32 origSize,
+                    uint32 startPos,
+                    int (*packFunction)(const char*, char*, int),
+                    PackingType packingType)
+{
+    int sizeBound = LZ4_compressBound(origSize);
+    packingBuf.resize(sizeBound);
+
+    int packResult = packFunction(&inBuffer[0], &packingBuf[0], origSize);
+    if (packResult <= 0)
+    {
+        Logger::Error("can't compress lz4 file: %s\n", fileName.c_str());
+        return false;
+    }
+
+    uint32_t packedSize = static_cast<uint32>(packResult);
+
+    uint32 writeOk = output->Write(&packingBuf[0], packedSize);
+    if (writeOk <= 0)
+    {
+        Logger::Error("can't write into tmp archive file");
+        return false;
+    }
+
+    PackFile::FilesDataBlock::Data fileData{
+        startPos, packedSize, origSize, packingType};
+
+    fileTable.push_back(fileData);
+
+    return true;
+}
+
+static bool CompressFileAndWriteToOutput(
+    const String& fileName,
+    const Vector<ResourceArchive::Rule>& packingRules,
+    Vector<FileTableEntry>& fileTable,
+    Vector<char>& inBuffer,
+    Vector<char>& packingBuf,
+    RefPtr<File> output)
+{
+    RefPtr<File> inFile(File::Create(fileName, File::OPEN | File::READ));
+
+    if (!inFile)
+    {
+        Logger::Error("can't read input file: %s\n", fileName.c_str());
+        return false;
+    }
+
+    inFile->Seek(0, File::SEEK_FROM_END);
+    uint32 origSize = inFile->GetPos();
+    inFile->Seek(0, File::SEEK_FROM_START);
+    inBuffer.resize(origSize);
+    uint32 readOk = inFile->Read(&inBuffer[0], origSize);
+    if (readOk <= 0)
+    {
+        Logger::Error("can't read input file: %s\n", fileName.c_str());
+        return false;
+    }
+    inFile->Release();
+
+    PackingType compressionType = GetPackingByExt(fileName, packingRules);
+
+    uint32 startPos{0};
+    if (fileTable.empty() == false)
+    {
+        auto& prevPackData = fileTable.back();
+        startPos = prevPackData.start + prevPackData.compressed;
+    }
+
+    switch (compressionType)
+    {
+        case PackingType::Lz4:
+        {
+            if (!Packing(fileName, fileTable, inBuffer, packingBuf, output,
+                         origSize, startPos, LZ4_compress, PackingType::Lz4))
+            {
+                return false;
+            }
+        }
+        break;
+        case PackingType::Lz4HC:
+        {
+            if (!Packing(fileName, fileTable, inBuffer, packingBuf, output,
+                         origSize, startPos, LZ4_compressHC,
+                         PackingType::Lz4HC))
+            {
+                return false;
+            }
+        }
+        break;
+        case PackingType::None:
+        {
+            PackFile::FilesDataBlock::Data fileData{
+                startPos,
+                origSize,
+                origSize,
+                ResourceArchive::CompressionType::None};
+
+            fileTable.push_back(fileData);
+            uint32 writeOk = output->Write(&inBuffer[0], origSize);
+            if (writeOk <= 0)
+            {
+                Logger::Error("can't write into tmp archive file");
+                return false;
+            }
+        }
+        break;
+    }
+    return true;
+}
 
 ResourceArchive::ResourceArchive() : impl(nullptr)
 {
@@ -337,32 +486,25 @@ ResourceArchive::~ResourceArchive()
     Close();
 }
 
-// Open code
 bool ResourceArchive::Open(const FilePath& archiveName)
 {
-    bool result = false;
     impl.reset(new ResourceArchiveImpl());
-    result = impl->Open(archiveName.GetAbsolutePathname());
-    if (!result)
+    if (impl->Open(archiveName.GetAbsolutePathname()))
     {
-        impl.reset();
+        return true;
     }
-    else
-    {
-        result = true;
-    }
-    return result;
+    impl.reset();
+    return false;
 }
 
 const ResourceArchive::FileInfos& ResourceArchive::GetFilesInfo() const
 {
-    static std::vector<ResourceArchive::FileInfo> emptyVector;
-    ResourceArchive::FileInfos& result = emptyVector;
+    static FileInfos emptyVector;
     if (impl)
     {
-        result = impl->GetFileList();
+        return impl->GetFileList();
     }
-    return result;
+    return emptyVector;
 }
 
 bool ResourceArchive::HasFile(const String& file_name) const
@@ -378,7 +520,7 @@ bool ResourceArchive::HasFile(const String& file_name) const
 const ResourceArchive::FileInfo* ResourceArchive::GetFileInfo(
     const String& fileName) const
 {
-    const ResourceArchive::FileInfo* result = nullptr;
+    const FileInfo* result = nullptr;
     if (impl)
     {
         result = impl->GetFileInfo(fileName);
@@ -387,31 +529,59 @@ const ResourceArchive::FileInfo* ResourceArchive::GetFileInfo(
 }
 
 bool ResourceArchive::LoadFile(const String& fileName,
-                               ResourceArchive::ContentAndSize& output) const
+                               ContentAndSize& output) const
 {
-    bool result = false;
     if (impl)
     {
-        if (impl->IsFileExist(fileName, &output.size))
-        {
-            output.content.reset(new char[output.size]);
-            if (!impl->LoadFile(fileName, output.content.get(), output.size))
-            {
-                output.content.reset();
-                output.size = 0;
-            }
-            else
-            {
-                result = true;
-            }
-        }
+        return impl->LoadFile(fileName, output);
     }
-    return result;
+    return false;
 }
 
 void ResourceArchive::Close()
 {
     impl.reset();
+}
+
+static bool CopyTmpfileToPackfile(RefPtr<File> packFileOutput,
+                                  RefPtr<File> packedFile)
+{
+    std::array<char, 4096> copyBuf;
+    uint32 lastRead = packedFile->Read(&copyBuf[0], copyBuf.size());
+    while (lastRead == copyBuf.size())
+    {
+        uint32 lastWrite = packFileOutput->Write(&copyBuf[0], copyBuf.size());
+        if (lastWrite != copyBuf.size())
+        {
+            Logger::Error(
+                "can't write part of tmp archive file into output "
+                "packfile\n");
+            return false;
+        }
+        lastRead = packedFile->Read(&copyBuf[0], copyBuf.size());
+    }
+    if (lastRead > 0)
+    {
+        uint32 lastWrite = packFileOutput->Write(&copyBuf[0], lastRead);
+        if (lastWrite != lastRead)
+        {
+            Logger::Error(
+                "can't write part of tmp archive file into output "
+                "packfile\n");
+            return false;
+        }
+    }
+
+    if (!packedFile->IsEof())
+    {
+        Logger::Error(
+            "can't read full content of tmp compressed output file\n");
+        return false;
+    }
+
+    packedFile->Release();
+
+    return true;
 }
 
 bool ResourceArchive::CreatePack(const String& pacName,
@@ -423,317 +593,139 @@ bool ResourceArchive::CreatePack(const String& pacName,
 
     if (!std::is_sorted(sortedFileNames.begin(), sortedFileNames.end()))
     {
-        Logger::Error("ERROR: input sortedFileNames list is not sorted!\n");
+        Logger::Error("sortedFileNames list is not sorted!\n");
+        return false;
     }
-    else
+
+    RefPtr<File> packFileOutput(
+        File::Create(pacName, File::CREATE | File::WRITE));
+
+    if (!packFileOutput)
     {
-        RefPtr<File> packFileOutput(
-            File::Create(pacName, File::CREATE | File::WRITE));
-        if (packFileOutput.Valid())
-        {
-            PackFileStructure pack;
-
-            auto& fileTable = pack.fileTableBlock.fileTable;
-
-            Vector<char> fileBuffer;
-
-            Vector<char> compressedFileBuffer;
-
-            UnorderedSet<String> skippedFiles;
-
-            auto compressedFileTmp = pacName + "_tmp_compressed_files.bin";
-
-            RefPtr<File> outFile(
-                File::Create(compressedFileTmp, File::CREATE | File::WRITE));
-
-            if (outFile.Valid())
-            {
-            }
-            else
-            {
-                Logger::Error("can't create tmp file for resource archive");
-                return false;
-            }
-
-            pack.fileTableBlock.fileTable.reserve(sortedFileNames.size());
-
-            std::for_each(
-                std::begin(sortedFileNames), std::end(sortedFileNames),
-                [&](const String& fileName)
-                {
-                    try
-                    {
-                        RefPtr<File> inFile(
-                            File::Create(fileName, File::OPEN | File::READ));
-
-                        DVASSERT(inFile);
-
-                        inFile->Seek(0, File::SEEK_FROM_END);
-                        uint32 inFileSize = inFile->GetPos();
-                        inFile->Seek(0, File::SEEK_FROM_START);
-                        fileBuffer.resize(inFileSize);
-                        uint32 readOk =
-                            inFile->Read(&fileBuffer[0], inFileSize);
-                        if (readOk <= 0)
-                        {
-                            DVASSERT(false);
-                        }
-                        inFile->Release();
-
-                        auto GetCompressionRuleFromFileName =
-                            [&](const String& name) -> CompressionType
-                        {
-                            for (const auto& rule : compressionRules)
-                            {
-                                if (name.rfind(rule.fileExt, 0) != String::npos)
-                                {
-                                    return rule.compressionType;
-                                }
-                            }
-                            return CompressionType::Lz4;
-                        };
-
-                        ResourceArchive::CompressionType compressionType =
-                            GetCompressionRuleFromFileName(fileName);
-
-                        uint32 startPos{0};
-                        if (fileTable.empty() == false)
-                        {
-                            auto& prevCompressedFile = fileTable.back();
-                            startPos = prevCompressedFile.fileStartPosition +
-                                       prevCompressedFile.compressedSize;
-                        }
-
-                        switch (compressionType)
-                        {
-                            case CompressionType::Lz4:
-                            {
-                                int compressedSizeBound =
-                                    LZ4_compressBound(inFileSize);
-                                compressedFileBuffer.resize(
-                                    compressedSizeBound);
-
-                                int compressResult = LZ4_compress(
-                                    &fileBuffer[0], &compressedFileBuffer[0],
-                                    inFileSize);
-                                if (compressResult <= 0)
-                                {
-                                    throw std::runtime_error(
-                                        "can't compress packFileOutput: " +
-                                        fileName);
-                                }
-
-                                uint32_t compressedSize =
-                                    static_cast<uint32>(compressResult);
-
-                                PackFileStructure::FileTableBlock::FileData
-                                    fileData{startPos,
-                                             compressedSize,
-                                             inFileSize,
-                                             CompressionType::Lz4};
-
-                                fileTable.push_back(fileData);
-
-                                uint32 writeOk = outFile->Write(
-                                    &compressedFileBuffer[0], compressedSize);
-                                if (writeOk <= 0)
-                                {
-                                    throw std::runtime_error(
-                                        "can't write into tmp archive file");
-                                }
-                            }
-                            break;
-                            case CompressionType::Lz4HC:
-                            {
-                                int compressedSizeBound =
-                                    LZ4_compressBound(inFileSize);
-                                compressedFileBuffer.resize(
-                                    compressedSizeBound);
-
-                                int compressResult = LZ4_compressHC(
-                                    &fileBuffer[0], &compressedFileBuffer[0],
-                                    inFileSize);
-                                if (compressResult <= 0)
-                                {
-                                    throw std::runtime_error(
-                                        "can't compress packFileOutput: " +
-                                        fileName);
-                                }
-
-                                uint32_t compressedSize =
-                                    static_cast<uint32>(compressResult);
-
-                                PackFileStructure::FileTableBlock::FileData
-                                    fileData{startPos,
-                                             compressedSize,
-                                             inFileSize,
-                                             CompressionType::Lz4HC};
-
-                                fileTable.push_back(fileData);
-
-                                uint32 writeOk = outFile->Write(
-                                    &compressedFileBuffer[0], compressedSize);
-                                if (writeOk <= 0)
-                                {
-                                    throw std::runtime_error(
-                                        "can't write into tmp archive file");
-                                }
-                            }
-                            break;
-                            case CompressionType::None:
-                            {
-                                PackFileStructure::FileTableBlock::FileData
-                                    fileData{startPos,
-                                             inFileSize,
-                                             inFileSize,
-                                             CompressionType::None};
-
-                                fileTable.push_back(fileData);
-                                uint32 writeOk =
-                                    outFile->Write(&fileBuffer[0], inFileSize);
-                                if (writeOk <= 0)
-                                {
-                                    throw std::runtime_error(
-                                        "can't write into tmp archive file");
-                                }
-                            }
-                            break;
-                        }
-
-                        if (!outFile)
-                        {
-                            throw std::runtime_error(
-                                "can't write compressed packFileOutput to tmp");
-                        }
-                    }
-                    catch (std::exception& ex)
-                    {
-                        Logger::Error(
-                            "ERROR: can't compress packFileOutput: %s  cause: "
-                            "%s skip to next.\n", ex.what());
-                        skippedFiles.insert(fileName);
-                    }
-                });
-            outFile->Flush();
-
-            PackFileStructure::FileHeaderBlock& headerBlock = pack.headerBlock;
-            headerBlock.resPackMarker = PackFileMarker;
-            headerBlock.magic = PackFileMagic;
-            headerBlock.numFiles = sortedFileNames.size() - skippedFiles.size();
-
-            StringStream ss;
-            std::for_each(
-                sortedFileNames.begin(), sortedFileNames.end(),
-                [&](const std::string& fileName)
-                {
-                    if (skippedFiles.find(fileName) == skippedFiles.end())
-                    {
-                        ss << fileName << '\0';
-                    }
-                });
-
-            PackFileStructure::StringsFileNamesBlock& stringsFileNamesBlock =
-                pack.fileNamesBlock;
-            stringsFileNamesBlock.fileNames = std::move(ss.str());
-
-            headerBlock.fileNamesLength =
-                stringsFileNamesBlock.fileNames.size();
-
-            headerBlock.startPositionFileNames =
-                sizeof(PackFileStructure::FileHeaderBlock);
-
-            headerBlock.startPositionFilesData =
-                headerBlock.startPositionFileNames +
-                stringsFileNamesBlock.fileNames.size();
-
-            uint32 sizeOfFilesTable =
-                pack.fileTableBlock.fileTable.size() *
-                sizeof(pack.fileTableBlock.fileTable[0]);
-
-            headerBlock.sizeOfAllFilesData = sizeOfFilesTable;
-            headerBlock.startPositionCompressedContent =
-                headerBlock.startPositionFilesData + sizeOfFilesTable;
-
-            std::for_each(
-                std::begin(fileTable), std::end(fileTable),
-                [&](PackFileStructure::FileTableBlock::FileData& fileData)
-                {
-                    fileData.fileStartPosition +=
-                        headerBlock.startPositionCompressedContent;
-                });
-
-            uint32 writeOk = packFileOutput->Write(&pack.headerBlock,
-                                 sizeof(pack.headerBlock));
-            if (writeOk <= 0)
-            {
-                Logger::Error("can't write header block to archive");
-                return false;
-            }
-
-            writeOk = packFileOutput->Write(&pack.fileNamesBlock.fileNames[0],
-                                 pack.fileNamesBlock.fileNames.size());
-            if(writeOk <= 0)
-            {
-                Logger::Error("can't write filenames block to archive");
-                return false;
-            }
-            writeOk = packFileOutput->Write(
-                &pack.fileTableBlock.fileTable[0],
-                sizeOfFilesTable);
-
-            if(writeOk <= 0)
-            {
-                Logger::Error("can't write filetable block to archive");
-                return false;
-            }
-
-            RefPtr<File> compressedContentFile(File::Create(compressedFileTmp, File::OPEN | File::READ));
-            if(!compressedContentFile)
-            {
-                Logger::Error("can't open compressed tmp file");
-                return false;
-            }
-
-            std::array<char, 4096> copyBuf;
-            uint32 lastRead = compressedContentFile->Read(&copyBuf[0], copyBuf.size());
-            while(lastRead == copyBuf.size())
-            {
-                uint32 lastWrite = packFileOutput->Write(&copyBuf[0], copyBuf.size());
-                if (lastWrite != copyBuf.size())
-                {
-                    Logger::Error("can't write part of tmp archive file into output packfile\n");
-                    return false;
-                }
-                lastRead = compressedContentFile->Read(&copyBuf[0], copyBuf.size());
-            }
-            if (lastRead > 0)
-            {
-                uint32 lastWrite = packFileOutput->Write(&copyBuf[0], lastRead);
-                if (lastWrite != lastRead)
-                {
-                    Logger::Error("can't write part of tmp archive file into output packfile\n");
-                    return false;
-                }
-            }
-
-            if (!compressedContentFile->IsEof())
-            {
-                Logger::Error("can't read full content of tmp compressed output file\n");
-                return false;
-            }
-
-            compressedContentFile->Release();
-
-            std::remove(compressedFileTmp.c_str());
-
-            result = true;
-        }
-        else
-        {
-            Logger::Error("can't create packfile, can't Open: %s\n", pacName);
-        }
+        Logger::Error("can't create packfile, can't Open: %s\n", pacName);
+        return false;
     }
-    return result;
+
+    PackFile pack;
+
+    auto& fileTable = pack.filesDataBlock.fileTable;
+
+    Vector<char> fileBuffer;
+    Vector<char> compressedFileBuffer;
+    UnorderedSet<String> skippedFiles;
+
+    auto packedFileTmp = pacName + "_tmp_compressed_files.bin";
+
+    RefPtr<File> outTmpFile(
+        File::Create(packedFileTmp, File::CREATE | File::WRITE));
+
+    if (!outTmpFile)
+    {
+        Logger::Error("can't create tmp file for resource archive");
+        return false;
+    }
+
+    pack.filesDataBlock.fileTable.reserve(sortedFileNames.size());
+
+    std::for_each(std::begin(sortedFileNames), std::end(sortedFileNames),
+                  [&](const String& fileName)
+                  {
+                      bool result = CompressFileAndWriteToOutput(
+                          fileName, compressionRules, fileTable, fileBuffer,
+                          compressedFileBuffer, outTmpFile);
+                      if (!result)
+                      {
+                          Logger::Info("can't pack file: %s, skip it\n", fileName.c_str());
+                          skippedFiles.insert(fileName);
+                      }
+                  });
+    outTmpFile->Flush();
+    outTmpFile->Release();
+
+    PackFile::HeaderBlock& headerBlock = pack.headerBlock;
+    headerBlock.resPackMarker = PackFileMarker;
+    headerBlock.magic = PackFileMagic;
+    headerBlock.numFiles = sortedFileNames.size() - skippedFiles.size();
+
+    StringStream ss;
+    std::for_each(sortedFileNames.begin(), sortedFileNames.end(),
+                  [&skippedFiles, &ss](const std::string& fileName)
+                  {
+                      if (skippedFiles.find(fileName) == skippedFiles.end())
+                      {
+                          ss << fileName << '\0';
+                      }
+                  });
+
+    PackFile::NamesBlock& stringsFileNamesBlock = pack.namesBlock;
+    stringsFileNamesBlock.sortedNames = std::move(ss.str());
+
+    headerBlock.namesBlockSize = stringsFileNamesBlock.sortedNames.size();
+
+    headerBlock.startFileNames = sizeof(PackFile::HeaderBlock);
+
+    headerBlock.startFilesTable =
+        headerBlock.startFileNames + stringsFileNamesBlock.sortedNames.size();
+
+    uint32 sizeOfFilesTable = pack.filesDataBlock.fileTable.size() *
+                              sizeof(pack.filesDataBlock.fileTable[0]);
+
+    headerBlock.filesTableBlockSize = sizeOfFilesTable;
+    headerBlock.startPackedFiles =
+        headerBlock.startFilesTable + sizeOfFilesTable;
+
+    uint32 delta = headerBlock.startPackedFiles;
+
+    std::for_each(std::begin(fileTable), std::end(fileTable),
+                  [delta](PackFile::FilesDataBlock::Data& fileData)
+                  {
+                      fileData.start += delta;
+                  });
+
+    uint32 writeOk =
+        packFileOutput->Write(&pack.headerBlock, sizeof(pack.headerBlock));
+    if (writeOk <= 0)
+    {
+        Logger::Error("can't write header block to archive");
+        return false;
+    }
+
+    const String& sortedNames = pack.namesBlock.sortedNames;
+
+    writeOk = packFileOutput->Write(&sortedNames[0], sortedNames.size());
+    if (writeOk <= 0)
+    {
+        Logger::Error("can't write filenames block to archive");
+        return false;
+    }
+    writeOk = packFileOutput->Write(&pack.filesDataBlock.fileTable[0],
+                                    sizeOfFilesTable);
+
+    if (writeOk <= 0)
+    {
+        Logger::Error("can't write filetable block to archive");
+        return false;
+    }
+
+    RefPtr<File> tmpfile(File::Create(packedFileTmp, File::OPEN | File::READ));
+    if (!tmpfile)
+    {
+        Logger::Error("can't open compressed tmp file");
+        return false;
+    }
+
+    if (!CopyTmpfileToPackfile(packFileOutput, tmpfile))
+    {
+        return false;
+    }
+
+    if (0 != std::remove(packedFileTmp.c_str()))
+    {
+        Logger::Error("can't remove temporary file");
+        return false;
+    }
+
+    return true;
 }
 
 }  // end namespace DAVA
