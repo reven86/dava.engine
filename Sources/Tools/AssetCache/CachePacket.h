@@ -49,6 +49,14 @@ namespace AssetCache
 
 class CachePacket
 { 
+public:
+    virtual ~CachePacket() {};  // this is base class for asset cache network packets
+
+    static CachePacket* Create(const uint8* buffer, uint32 length);
+
+    bool SendTo(Net::IChannel* channel);
+    static void PacketSent(const uint8* buffer, size_t length);
+
 protected:
     CachePacket(ePacketID type, bool createBuffer);
 
@@ -58,22 +66,10 @@ protected:
     virtual bool Load(File *file) = 0;
 
 public:
-
-    virtual ~CachePacket() {};
-
-    static CachePacket* Create(const uint8* buffer, uint32 length);
-
-
-    bool SendTo(Net::IChannel* channel);
-    static void PacketSent(const uint8* buffer, size_t length);
-
-public:
-
     ePacketID type = PACKET_UNKNOWN;
     ScopedPtr<DynamicMemoryFile> serializationBuffer;
 
 private:
-
     static List<ScopedPtr<DynamicMemoryFile> > sendingPackets;
 };
 
