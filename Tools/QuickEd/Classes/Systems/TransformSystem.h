@@ -44,11 +44,15 @@ public:
     void MouseEnterArea(ControlNode *targetNode, const eArea area) override;
     void MouseLeaveArea() override;
     bool OnInput(DAVA::UIEvent *currentInput) override;
-    void SelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected);
+    void SelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected) override;
 private:
     bool ProcessKey(const DAVA::int32 key);
     bool ProcessDrag(const DAVA::Vector2 &pos);
     void MoveAllSelectedControls(const DAVA::Vector2 &delta);
+    void MoveConrol(const DAVA::Vector2 &pos);
+    void ResizeControlByPivot(const DAVA::Vector2 &pos);
+    void ResizeControlFree(const DAVA::Vector2 &pos);
+    void ResizeControlByPivotProportional(const DAVA::Vector2 &pos);
     template <typename T>
     void AdjustProperty(ControlNode *node, const DAVA::String &propertyName, const T &value);
     Document *document = nullptr;
@@ -56,6 +60,7 @@ private:
     ControlNode *activeControl = nullptr;
     SelectedControls selectedControls;
     DAVA::Vector2 prevPos;
+    DAVA::Vector2 beginPos;
 };
 
 #endif // __QUICKED_TRANSFORM_SYSTEM_H__

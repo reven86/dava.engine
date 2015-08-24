@@ -26,6 +26,9 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
+#include "Input/InputSystem.h"
+#include "Input/KeyboardDevice.h"
+
 #include "Systems/TransformSystem.h"
 #include "Document.h"
 #include "Defines.h"
@@ -65,14 +68,22 @@ bool TransformSystem::OnInput(UIEvent* currentInput)
         case UIEvent::PHASE_BEGAN:
             if(activeArea != NO_AREA)
             {
+                beginPos = currentInput->point;
                 prevPos = currentInput->point;
             }
             return activeArea != NO_AREA;
         case UIEvent::PHASE_DRAG:
             return ProcessDrag(currentInput->point);
+        case UIEvent::PHASE_ENDED:
+        {
+            bool retVal = beginPos != currentInput->point;
+            beginPos = Vector2(-1, -1);
+            return retVal;
+        }
+        default:
+            return false;
             
     }
-    return false;
 }
 
 void TransformSystem::SelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected)
@@ -110,63 +121,43 @@ bool TransformSystem::ProcessDrag(const DAVA::Vector2 &pos)
     {
         return false;
     }
+    const auto &keyBoard = InputSystem::Instance()->GetKeyboard();
     Vector2 delta = pos - prevPos;
     bool retval = true;
     switch(activeArea)
     {
         case FRAME:
-            AdjustProperty(activeControl, "Position", delta);
+            MoveConrol(pos);
             break;
         case TOP_LEFT:
-            AdjustProperty(activeControl, "Position", delta);
-            AdjustProperty(activeControl, "Size", delta * -1);
-            break;
         case TOP_CENTER:
-            delta.x = 0;
-            AdjustProperty(activeControl, "Position", delta);
-            AdjustProperty(activeControl, "Size", delta * -1);
-            break;
         case TOP_RIGHT:
-        {
-            Vector2 position = delta;
-            position.x = 0;
-            Vector2 size = delta;
-            size.y = delta.y * -1;
-            AdjustProperty(activeControl, "Position", position);
-            AdjustProperty(activeControl, "Size", size);
-        }
-            break;
         case CENTER_LEFT:
-            delta.y = 0;
-            AdjustProperty(activeControl, "Position", delta);
-            AdjustProperty(activeControl, "Size", delta * -1);
-            break;
         case CENTER_RIGHT:
-            delta.y = 0;
-            AdjustProperty(activeControl, "Size", delta);
-            break;
         case BOTTOM_LEFT:
-        {
-            Vector2 position = delta;
-            position.y = 0;
-            Vector2 size = delta;
-            size.x = size.x * -1;
-            AdjustProperty(activeControl, "Position", position);
-            AdjustProperty(activeControl, "Size", size);
-        }
-            break;
         case BOTTOM_CENTER:
-            delta.x = 0;
-            AdjustProperty(activeControl, "Size", delta);
-            break;
         case BOTTOM_RIGHT:
-            AdjustProperty(activeControl, "Size", delta);
+            if (keyBoard.IsKeyPressed(DVKEY_SHIFT)
+                && keyBoard.IsKeyPressed(DVKEY_ALT))
+            {
+                ResizeControlByPivotProportional(pos);
+            }
+            else if (keyBoard.IsKeyPressed(DVKEY_ALT))
+            {
+                ResizeControlByPivot(pos);
+            }
+            else
+            {
+                ResizeControlFree(pos);
+            }
             break;
         case PIVOT_POINT:
         {
             auto control = activeControl->GetControl();
+            Rect absRect = control->GetAbsoluteRect();
             Vector2 pivotPoint = control->GetPivotPoint();
-            control->SetPivotPoint(pivotPoint - delta);
+            control->SetPivotPoint(pivotPoint + delta);
+            control->SetAbsoluteRect(absRect);
         }
             break;
         case ROTATE:
@@ -177,13 +168,9 @@ bool TransformSystem::ProcessDrag(const DAVA::Vector2 &pos)
             Vector2 rotatePoint = pivotPoint;
             Vector2 l1(prevPos.x - rotatePoint.x, prevPos.y - rotatePoint.y);
             Vector2 l2(pos.x - rotatePoint.x, pos.y - rotatePoint.y);
-            float dot = l1.x * l2.x + l1.y * l2.y;
-            float cross = l1.x * l2.y - l1.y * l2.x;
-            float angleRad = atan2(cross, dot);
-            angleRad = atan2(l2.y, l2.x) - atan2(l1.y, l1.x);
+            float angleRad = atan2(l2.y, l2.x) - atan2(l1.y, l1.x);
             float angle = angleRad * 180.0f / PI;
-            angle = static_cast<int>(Round(angle));
-            AdjustProperty(activeControl, "Angle", angle);
+            AdjustProperty(activeControl, "Angle", round(angle));
         }
             break;
         default:
@@ -204,9 +191,149 @@ void TransformSystem::MoveAllSelectedControls(const DAVA::Vector2 &delta)
     }
 }
 
-template <typename T>
-void TransformSystem::AdjustProperty(ControlNode *node, const DAVA::String &propertyName, const T &delta)
+void TransformSystem::MoveConrol(const DAVA::Vector2& pos)
 {
+    Vector2 delta = pos - prevPos;
+    auto gd =  activeControl->GetControl()->GetGeometricData();
+    Vector2 realDelta = delta / gd.scale;
+    if (InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_SHIFT))
+    {
+        const int step = 20;
+        static int x, y;
+        if (abs(x) < step)
+        {
+            x += realDelta.x;
+        }
+        if (abs(y) < step)
+        {
+            y += realDelta.y;
+        }
+        realDelta = Vector2(x - x % step, y - y % step);
+        x -= realDelta.x;
+        y -= realDelta.y;
+    }
+    AdjustProperty(activeControl, "Position", realDelta);
+}
+
+void TransformSystem::ResizeControlByPivot(const DAVA::Vector2& pos)
+{
+    DVASSERT(activeArea != NO_AREA);
+    Vector2 delta = pos - prevPos;
+    auto gd = activeControl->GetControl()->GetGeometricData();
+    Vector2 realDelta = delta / gd.scale;
+    Vector2 deltaPosition = realDelta;
+    Vector2 deltaSize = realDelta;
+
+    switch (activeArea)
+    {
+    default:
+        DVASSERT_MSG(false, "wrong parameter passed to function");
+    case TOP_LEFT:
+        AdjustProperty(activeControl, "Position", deltaPosition);
+        AdjustProperty(activeControl, "Size", deltaSize * -1);
+        break;
+    case TOP_CENTER:
+        deltaPosition.x = 0;
+        deltaSize.x = 0;
+        AdjustProperty(activeControl, "Position", deltaPosition);
+        AdjustProperty(activeControl, "Size", deltaSize * -1);
+        break;
+    case TOP_RIGHT:
+        deltaPosition.x = 0;
+        deltaSize.y = deltaSize.y * -1;
+        AdjustProperty(activeControl, "Position", deltaPosition);
+        AdjustProperty(activeControl, "Size", deltaSize);
+        break;
+    case CENTER_LEFT:
+        deltaPosition.y = 0;
+        deltaSize.y = 0;
+        AdjustProperty(activeControl, "Position", deltaPosition);
+        AdjustProperty(activeControl, "Size", deltaSize * -1);
+        break;
+    case CENTER_RIGHT:
+        deltaSize.y = 0;
+        AdjustProperty(activeControl, "Size", deltaSize);
+        break;
+    case BOTTOM_LEFT:
+        deltaPosition.y = 0;
+        deltaSize.x *= -1;
+        AdjustProperty(activeControl, "Position", deltaPosition);
+        AdjustProperty(activeControl, "Size", deltaSize);
+        break;
+    case BOTTOM_CENTER:
+        deltaSize.x = 0;
+        AdjustProperty(activeControl, "Size", deltaSize);
+        break;
+    case BOTTOM_RIGHT:
+        AdjustProperty(activeControl, "Size", deltaSize);
+        break;
+    }
+}
+
+void TransformSystem::ResizeControlFree(const DAVA::Vector2 &pos)
+{
+    DVASSERT(activeArea != NO_AREA);
+    Vector2 delta = pos - prevPos;
+    auto gd = activeControl->GetControl()->GetGeometricData();
+    Vector2 realDelta = delta / gd.scale;
+    Vector2 deltaPosition = realDelta;
+    Vector2 deltaSize = realDelta;
+
+    switch (activeArea)
+    {
+    default:
+        DVASSERT_MSG(false, "wrong parameter passed to function");
+    case TOP_LEFT:
+        AdjustProperty(activeControl, "Position", deltaPosition);
+        AdjustProperty(activeControl, "Size", deltaSize * -1);
+        break;
+    case TOP_CENTER:
+        deltaPosition.x = 0;
+        deltaSize.x = 0;
+        AdjustProperty(activeControl, "Position", deltaPosition);
+        AdjustProperty(activeControl, "Size", deltaSize * -1);
+        break;
+    case TOP_RIGHT:
+        deltaPosition.x = 0;
+        deltaSize.y = deltaSize.y * -1;
+        AdjustProperty(activeControl, "Position", deltaPosition);
+        AdjustProperty(activeControl, "Size", deltaSize);
+        break;
+    case CENTER_LEFT:
+        deltaPosition.y = 0;
+        deltaSize.y = 0;
+        AdjustProperty(activeControl, "Position", deltaPosition);
+        AdjustProperty(activeControl, "Size", deltaSize * -1);
+        break;
+    case CENTER_RIGHT:
+        deltaSize.y = 0;
+        AdjustProperty(activeControl, "Size", deltaSize);
+        break;
+    case BOTTOM_LEFT:
+        deltaPosition.y = 0;
+        deltaSize.x *= -1;
+        AdjustProperty(activeControl, "Position", deltaPosition);
+        AdjustProperty(activeControl, "Size", deltaSize);
+        break;
+    case BOTTOM_CENTER:
+        deltaSize.x = 0;
+        AdjustProperty(activeControl, "Size", deltaSize);
+        break;
+    case BOTTOM_RIGHT:
+        AdjustProperty(activeControl, "Size", deltaSize);
+        break;
+    }
+}
+
+void TransformSystem::ResizeControlByPivotProportional(const DAVA::Vector2 &pos)
+{
+    
+}
+
+template <typename T>
+void TransformSystem::AdjustProperty(ControlNode *node, const String &propertyName, const T &delta)
+{
+
     AbstractProperty *property = document->GetPropertyByName(node, propertyName);
     DVASSERT(nullptr != property);
     VariantType var(delta);

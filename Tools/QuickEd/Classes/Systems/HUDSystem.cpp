@@ -65,7 +65,7 @@ public:
 private:
     void Draw(const UIGeometricData &geometricData) override
     {
-        Rect rect(control->GetGeometricData().GetUnrotatedRect());
+        Rect rect(control->GetGeometricData().GetAABBox());
         SetAbsoluteRect(rect);
         Color oldColor = RenderManager::Instance()->GetColor();
         RenderManager::Instance()->SetColor(Color(1.0f, 0.0f, 0.0f, 1.f));
@@ -95,7 +95,7 @@ private:
 
     Vector2 GetPos() const
     {
-        Rect rect = control->GetGeometricData().GetUnrotatedRect();
+        Rect rect = control->GetGeometricData().GetAABBox();
         Vector2 retVal = rect.GetPosition();
         switch (area)
         {
@@ -124,7 +124,7 @@ private:
         Color oldColor = RenderManager::Instance()->GetColor();
         RenderManager::Instance()->SetColor(Color(0.0f, 0.0f, 1.0f, 1.f));
         Rect rect(0, 0, 5, 5);
-        rect.SetCenter(control->GetGeometricData().GetUnrotatedRect().GetPosition() + control->GetPivotPoint());
+        rect.SetCenter(control->GetGeometricData().GetAABBox().GetPosition() + control->GetPivotPoint());
         SetAbsoluteRect(rect);
         RenderHelper::Instance()->FillRect(GetAbsoluteRect(), RenderState::RENDERSTATE_2D_BLEND);
         RenderManager::Instance()->SetColor(oldColor);
@@ -143,7 +143,7 @@ private:
         Color oldColor = RenderManager::Instance()->GetColor();
         RenderManager::Instance()->SetColor(Color(1.0f, 1.0f, 0.0f, 1.0f));
         Rect rect(0, 0, 20, 20);
-        Rect controlRect = control->GetGeometricData().GetUnrotatedRect();
+        Rect controlRect = control->GetGeometricData().GetAABBox();
         rect.SetCenter(Vector2(controlRect.GetPosition().x + controlRect.dx / 2.0f, controlRect.GetPosition().y - 20));
         SetAbsoluteRect(rect);
         RenderHelper::Instance()->FillRect(GetAbsoluteRect(), RenderState::RENDERSTATE_2D_BLEND);
@@ -214,7 +214,9 @@ bool HUDSystem::OnInput(UIEvent *currentInput)
             //auto rect = selectionRect->GetAbsoluteRect();
             selectionRect->SetSize(Vector2(0, 0));
         }
-        return canDrawRect;
+        bool retVal = canDrawRect;
+        canDrawRect = false;
+        return retVal;
     }
     return false;
 }

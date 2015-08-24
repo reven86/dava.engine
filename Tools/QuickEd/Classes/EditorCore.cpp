@@ -84,6 +84,7 @@ EditorCore::EditorCore(QObject *parent)
     connect(project->GetEditorLocalizationSystem(), &EditorLocalizationSystem::LocaleChanged, this, &EditorCore::UpdateLanguage);
 
     qApp->installEventFilter(this);
+
 }
     
 EditorCore::~EditorCore()
@@ -93,6 +94,12 @@ EditorCore::~EditorCore()
 
 void EditorCore::Start()
 {
+    int32 projectCount = EditorSettings::Instance()->GetLastOpenedCount();
+    QStringList projectList;
+    if (projectCount > 0)
+    {
+        OpenProject(QDir::toNativeSeparators(QString(EditorSettings::Instance()->GetLastOpenedFile(0).c_str())));
+    }
     mainWindow->show();
 }
 

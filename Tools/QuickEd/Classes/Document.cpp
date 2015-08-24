@@ -48,7 +48,7 @@ Document::Document(PackageNode *_package, QObject *parent)
     , canvasSystem(this)
     , hudSystem(this)
     , treeSystem(this)
-    , cursorSystem()
+    , cursorSystem(this)
     , transformSystem(this)
 {
     inputListeners << &selectionSystem << &hudSystem << &treeSystem << &transformSystem;

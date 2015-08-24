@@ -30,15 +30,17 @@
 #ifndef __QUICKED_CURSOR_SYSTEM_H__
 #define __QUICKED_CURSOR_SYSTEM_H__
 
+#include "Systems/BaseSystemClass.h"
 #include "Systems/Interfaces.h"
 #include <QCursor>
 
-class CursorSystem final : public ControlAreaInterface
+class CursorSystem final : public BaseSystemClass, public ControlAreaInterface
 {   
 public:
-    explicit CursorSystem() = default;
-    ~CursorSystem() = default;
-    
+    explicit CursorSystem(Document *doc);
+    ~CursorSystem() override = default;
+    void Attach() override;
+    void Detach() override;
     void MouseEnterArea(ControlNode *targetNode, const eArea area) override;
     void MouseLeaveArea() override;
 private:

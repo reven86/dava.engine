@@ -42,7 +42,7 @@ KeyboardDevice::~KeyboardDevice()
 {
 }
     
-bool KeyboardDevice::IsKeyPressed(int32 keyCode)
+bool KeyboardDevice::IsKeyPressed(const int32 keyCode) const
 {
     DVASSERT( keyCode < DVKEY_COUNT );
 
@@ -57,21 +57,21 @@ bool KeyboardDevice::IsKeyPressed(int32 keyCode)
 	if(DVKEY_ALT == keyCode)
 	{
 		auto isAlt = ::GetKeyState(VK_MENU);
-        keyStatus[keyCode] = (isAlt < 0);
+        return isAlt < 0;
 	}
 #endif //  __DAVAENGINE_WIN_UAP__ | __DAVAENGINE_WIN32__
 
     return keyStatus[keyCode];
 }
 
-void KeyboardDevice::OnKeyPressed(int32 keyCode)
+void KeyboardDevice::OnKeyPressed(const int32 keyCode)
 {
     DVASSERT(keyCode < DVKEY_COUNT);
     keyStatus[keyCode] = true;
     realKeyStatus[keyCode] = true;
 }
 
-void KeyboardDevice::OnKeyUnpressed(int32 keyCode)
+void KeyboardDevice::OnKeyUnpressed(const int32 keyCode)
 {
     DVASSERT(keyCode < DVKEY_COUNT);
     realKeyStatus[keyCode] = false;
@@ -89,19 +89,19 @@ void KeyboardDevice::OnAfterUpdate()
     }
 }
     
-int32 KeyboardDevice::GetDavaKeyForSystemKey(int32 systemKeyCode)
+int32 KeyboardDevice::GetDavaKeyForSystemKey(const int32 systemKeyCode) const
 {
     DVASSERT(systemKeyCode < MAX_KEYS);
     return keyTranslator[systemKeyCode];
 }
 
-void KeyboardDevice::OnSystemKeyPressed(int32 systemKeyCode)
+void KeyboardDevice::OnSystemKeyPressed(const int32 systemKeyCode)
 {
     DVASSERT(systemKeyCode < MAX_KEYS);
     OnKeyPressed(keyTranslator[systemKeyCode]);
 }
 
-void KeyboardDevice::OnSystemKeyUnpressed(int32 systemKeyCode)
+void KeyboardDevice::OnSystemKeyUnpressed(const int32 systemKeyCode)
 {
     DVASSERT(systemKeyCode < MAX_KEYS);
     OnKeyUnpressed(keyTranslator[systemKeyCode]);

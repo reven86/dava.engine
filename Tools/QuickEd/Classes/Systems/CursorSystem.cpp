@@ -32,6 +32,22 @@
 
 using namespace DAVA;
 
+CursorSystem::CursorSystem(Document* doc)
+    : BaseSystemClass(doc)
+{
+    
+}
+
+void CursorSystem::Attach()
+{
+
+}
+
+void CursorSystem::Detach()
+{
+    
+}
+
 void CursorSystem::MouseEnterArea(ControlNode* targetNode, const eArea area)
 {
     QCursor cursor = GetCursorByArea(area);
@@ -58,8 +74,9 @@ QCursor CursorSystem::GetCursorByArea(const eArea area) const
     switch (area)
     {
     case FRAME:
-    case PIVOT_POINT:
         return Qt::SizeAllCursor;
+    case PIVOT_POINT:
+        return Qt::CrossCursor;
     case TOP_LEFT:
     case BOTTOM_RIGHT:
         return Qt::SizeFDiagCursor;

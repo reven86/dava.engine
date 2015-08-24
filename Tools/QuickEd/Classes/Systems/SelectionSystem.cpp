@@ -44,9 +44,13 @@ SelectionSystem::SelectionSystem(Document* doc)
 
 bool SelectionSystem::OnInput(UIEvent* currentInput)
 {
+    static Vector2 prevPos;
     switch(currentInput->phase)
     {
     case UIEvent::PHASE_BEGAN:
+        prevPos = currentInput->point;
+        return ProcessMousePress(currentInput->point);
+    case UIEvent::PHASE_ENDED:
         return ProcessMousePress(currentInput->point);
     case UIEvent::PHASE_KEYCHAR:
     {

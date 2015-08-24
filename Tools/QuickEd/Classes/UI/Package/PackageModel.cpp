@@ -465,8 +465,11 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
 
 void PackageModel::ControlPropertyWasChanged(ControlNode *node, AbstractProperty *property)
 {
-    QModelIndex index = indexByNode(node);
-    emit dataChanged(index, index);
+    if (property->GetName() == "Name")
+    {
+        QModelIndex index = indexByNode(node);
+        emit dataChanged(index, index);
+    }
 }
 
 void PackageModel::ControlWillBeAdded(ControlNode *node, ControlsContainerNode *destination, int row)

@@ -218,9 +218,7 @@ void LibraryModel::CreateImportPackagesRootItem()
 
 void LibraryModel::ControlPropertyWasChanged(ControlNode *node, AbstractProperty *property)
 {
-    String name = property->GetName();
-    std::transform(name.begin(), name.end(), name.begin(), ::tolower);
-    if (name == "name")
+    if (property->GetName() == "Name")
     {
         QModelIndex index = indexByNode(node, invisibleRootItem());
         if (index.isValid())
