@@ -86,6 +86,8 @@ CommandGLES2
 struct
 RenderPassGLES2_t
 {
+    struct Desc {};
+
     std::vector<Handle> cmdBuf;
     int                 priority;
 };
@@ -95,6 +97,9 @@ struct
 CommandBufferGLES2_t
 {
 public:
+    
+    struct Desc {};
+
                 CommandBufferGLES2_t();
                 ~CommandBufferGLES2_t();
 
@@ -129,19 +134,21 @@ public:
 struct
 SyncObjectGLES2_t 
 {
+    struct Desc {};
+
     uint32  frame;
     uint32  is_signaled:1;
     uint32  is_used:1;
 };
 
 
-typedef ResourcePool<CommandBufferGLES2_t,RESOURCE_COMMAND_BUFFER>  CommandBufferPool;
-typedef ResourcePool<RenderPassGLES2_t,RESOURCE_RENDER_PASS>        RenderPassPool;
-typedef ResourcePool<SyncObjectGLES2_t,RESOURCE_SYNC_OBJECT>        SyncObjectPool;
+typedef ResourcePool<CommandBufferGLES2_t,RESOURCE_COMMAND_BUFFER,CommandBufferGLES2_t::Desc,false>  CommandBufferPool;
+typedef ResourcePool<RenderPassGLES2_t,RESOURCE_RENDER_PASS,RenderPassGLES2_t::Desc,false>        RenderPassPool;
+typedef ResourcePool<SyncObjectGLES2_t,RESOURCE_SYNC_OBJECT,SyncObjectGLES2_t::Desc,false>        SyncObjectPool;
 
-RHI_IMPL_POOL(CommandBufferGLES2_t,RESOURCE_COMMAND_BUFFER);
-RHI_IMPL_POOL(RenderPassGLES2_t,RESOURCE_RENDER_PASS);
-RHI_IMPL_POOL(SyncObjectGLES2_t,RESOURCE_SYNC_OBJECT);
+RHI_IMPL_POOL(CommandBufferGLES2_t,RESOURCE_COMMAND_BUFFER,CommandBufferGLES2_t::Desc,false);
+RHI_IMPL_POOL(RenderPassGLES2_t,RESOURCE_RENDER_PASS,RenderPassGLES2_t::Desc,false);
+RHI_IMPL_POOL(SyncObjectGLES2_t,RESOURCE_SYNC_OBJECT,SyncObjectGLES2_t::Desc,false);
     
 const uint64   CommandBufferGLES2_t::EndCmd = 0xFFFFFFFF;
 

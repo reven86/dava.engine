@@ -44,6 +44,7 @@ namespace rhi
 
 class
 TextureDX9_t
+  : public ResourceImpl<TextureDX9_t,Texture::Descriptor>
 {
 public:
 
@@ -51,7 +52,6 @@ public:
 
     bool                        Create( const Texture::Descriptor& desc, bool force_immediate=false );
     void                        Destroy( bool force_immediate=false);
-
 
     TextureFormat               format;
     unsigned                    width;
@@ -72,11 +72,8 @@ public:
     unsigned                    isRenderTarget:1;
     unsigned                    isDepthStencil:1;
     unsigned                    isMapped:1;
-    unsigned                    needReload:1;
-    
-    static unsigned             NeedReloadCount;
 };
-unsigned    TextureDX9_t::NeedReloadCount = 0;
+RHI_IMPL_RESOURCE(TextureDX9_t,Texture::Descriptor);
 
 
 TextureDX9_t::TextureDX9_t()
@@ -91,8 +88,7 @@ TextureDX9_t::TextureDX9_t()
     lastUnit(InvalidIndex),
     mappedData(nullptr),
     isRenderTarget(false),
-    isMapped(false),
-    needReload(false)
+    isMapped(false)
 {
 }
 
@@ -270,8 +266,8 @@ TextureDX9_t::Destroy( bool force_immediate )
     height = 0;
 }
 
-typedef ResourcePool<TextureDX9_t,RESOURCE_TEXTURE> TextureDX9Pool;
-RHI_IMPL_POOL(TextureDX9_t,RESOURCE_TEXTURE);
+typedef ResourcePool<TextureDX9_t,RESOURCE_TEXTURE,Texture::Descriptor,true> TextureDX9Pool;
+RHI_IMPL_POOL(TextureDX9_t,RESOURCE_TEXTURE,Texture::Descriptor,true);
 
 
 
@@ -285,6 +281,7 @@ dx9_Texture_Create( const Texture::Descriptor& desc )
 
     if( tex->Create( desc ) )
     {
+        tex->UpdateCreationDesc( desc );
     }
     else
     {
@@ -482,13 +479,7 @@ dx9_Texture_Unmap( Handle tex )
     }
 
     self->isMapped = false;
-
-    if( self->needReload )
-    {
-        self->needReload = false;
-        DVASSERT(TextureDX9_t::NeedReloadCount);
-        --TextureDX9_t::NeedReloadCount;
-    }
+    self->MarkRestored();
 }
 
 
@@ -509,11 +500,11 @@ dx9_Texture_Update( Handle tex, const void* data, uint32 level, TextureFace face
 //------------------------------------------------------------------------------
 
 static bool
-dx9_Texture_NeedReload( Handle tex )
+dx9_Texture_NeedRestore( Handle tex )
 {
     TextureDX9_t*   self = TextureDX9Pool::Get( tex );
     
-    return self->needReload;
+    return self->NeedRestore();
 }
 
 
@@ -530,7 +521,7 @@ SetupDispatch( Dispatch* dispatch )
     dispatch->impl_Texture_Map          = &dx9_Texture_Map;
     dispatch->impl_Texture_Unmap        = &dx9_Texture_Unmap;
     dispatch->impl_Texture_Update       = &dx9_Texture_Update;
-    dispatch->impl_Texture_NeedReload   = &dx9_Texture_NeedReload;
+    dispatch->impl_Texture_NeedRestore  = &dx9_Texture_NeedRestore;
 }
 
 
@@ -569,30 +560,13 @@ SetAsDepthStencil( Handle tex )
 void
 ReCreateAll()
 {
-    for( TextureDX9Pool::Iterator t=TextureDX9Pool::Begin(),t_end=TextureDX9Pool::End(); t!=t_end; ++t )
-    {
-        Texture::Descriptor desc;
-
-        desc.type   = (t->cubetex9) ? TEXTURE_TYPE_CUBE : TEXTURE_TYPE_2D;
-        desc.width  = t->width;
-        desc.height = t->height;
-        desc.format = t->format;
-//        desc.levelCount = t->l
-        desc.isRenderTarget = t->isRenderTarget;
-//        desc.autoGenMipmaps = ;
-
-        t->Destroy( true );
-        t->Create( desc, true );
-        t->needReload = true;
-
-        ++TextureDX9_t::NeedReloadCount;
-    }
+    TextureDX9Pool::ReCreateAll();
 }
 
 unsigned
-NeedReloadCount()
+NeedRestoreCount()
 {
-    return TextureDX9_t::NeedReloadCount;
+    return TextureDX9_t::NeedRestoreCount();
 }
 
 }

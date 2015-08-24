@@ -63,8 +63,8 @@ DepthStencilStateDX9_t
     }       stencilFront,stencilBack;
 };
 
-typedef ResourcePool<DepthStencilStateDX9_t,RESOURCE_DEPTHSTENCIL_STATE>    DepthStencilStateDX9Pool;
-RHI_IMPL_POOL(DepthStencilStateDX9_t,RESOURCE_DEPTHSTENCIL_STATE);
+typedef ResourcePool<DepthStencilStateDX9_t,RESOURCE_DEPTHSTENCIL_STATE,DepthStencilState::Descriptor,false>    DepthStencilStateDX9Pool;
+RHI_IMPL_POOL(DepthStencilStateDX9_t,RESOURCE_DEPTHSTENCIL_STATE,DepthStencilState::Descriptor,false);
 
 
 //------------------------------------------------------------------------------

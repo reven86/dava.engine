@@ -40,6 +40,8 @@ namespace rhi
 struct
 TextureSet_t
 {
+    struct Desc {};
+
     uint32  fragmentTextureCount;
     Handle  fragmentTexture[MAX_FRAGMENT_TEXTURE_SAMPLER_COUNT];
     uint32  vertexTextureCount;
@@ -47,8 +49,8 @@ TextureSet_t
     int     refCount;
 };
 
-typedef ResourcePool<TextureSet_t,RESOURCE_TEXTURE_SET> TextureSetPool;
-RHI_IMPL_POOL(TextureSet_t,RESOURCE_TEXTURE_SET);
+typedef ResourcePool<TextureSet_t,RESOURCE_TEXTURE_SET,TextureSet_t::Desc,false> TextureSetPool;
+RHI_IMPL_POOL(TextureSet_t,RESOURCE_TEXTURE_SET,TextureSet_t::Desc,false);
 
 struct
 TextureSetInfo
@@ -101,6 +103,8 @@ static std::array<std::vector<ScheduledDeleteResource>, frameSyncObjectsCount> s
 struct
 PacketList_t
 {
+    struct Desc {};
+
     Handle      cmdBuf;
     Handle      queryBuffer;
     Viewport    viewport;
@@ -126,8 +130,8 @@ PacketList_t
     uint32      batchIndex;
 };
 
-typedef ResourcePool<PacketList_t,RESOURCE_PACKET_LIST>     PacketListPool;
-RHI_IMPL_POOL(PacketList_t,RESOURCE_PACKET_LIST);
+typedef ResourcePool<PacketList_t,RESOURCE_PACKET_LIST,PacketList_t::Desc,false>    PacketListPool;
+RHI_IMPL_POOL(PacketList_t,RESOURCE_PACKET_LIST,PacketList_t::Desc,false);
 
 
 //------------------------------------------------------------------------------
@@ -181,9 +185,9 @@ UpdateVertexBuffer( HVertexBuffer vb, const void* data, uint32 offset, uint32 si
 //------------------------------------------------------------------------------
 
 bool
-NeedReloadVertexBuffer( HVertexBuffer vb )
+NeedRestoreVertexBuffer( HVertexBuffer vb )
 {
-    return VertexBuffer::NeedReload( vb );
+    return VertexBuffer::NeedRestore( vb );
 }
 
 
@@ -238,9 +242,9 @@ UpdateIndexBuffer( HIndexBuffer ib, const void* data, uint32 offset, uint32 size
 //------------------------------------------------------------------------------
 
 bool
-NeedReloadIndexBuffer( HIndexBuffer ib )
+NeedRestoreIndexBuffer( HIndexBuffer ib )
 {
-    return IndexBuffer::NeedReload( ib );
+    return IndexBuffer::NeedRestore( ib );
 }
 
 
@@ -444,9 +448,9 @@ UpdateTexture( HTexture tex, const void* data, uint32 level, TextureFace face )
 //------------------------------------------------------------------------------
 
 bool
-NeedReloadTexture( HTexture tex )
+NeedRestoreTexture( HTexture tex )
 {
-    return Texture::NeedReload( tex );
+    return Texture::NeedRestore( tex );
 }
 
 

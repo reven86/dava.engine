@@ -59,8 +59,8 @@ public:
     unsigned    isMapped:1;
 };
 
-typedef ResourcePool<IndexBufferGLES2_t,RESOURCE_INDEX_BUFFER>   IndexBufferGLES2Pool;
-RHI_IMPL_POOL(IndexBufferGLES2_t,RESOURCE_INDEX_BUFFER);
+typedef ResourcePool<IndexBufferGLES2_t,RESOURCE_INDEX_BUFFER,IndexBuffer::Descriptor,true>   IndexBufferGLES2Pool;
+RHI_IMPL_POOL(IndexBufferGLES2_t,RESOURCE_INDEX_BUFFER,IndexBuffer::Descriptor,true);
 
 
 //==============================================================================

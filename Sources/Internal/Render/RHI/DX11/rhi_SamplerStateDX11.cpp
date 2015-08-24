@@ -43,7 +43,7 @@ namespace rhi
 
 struct
 SamplerStateDX11_t
-{
+{    
     uint32              fragmentSamplerCount;
     ID3D11SamplerState* fragmentSampler[MAX_FRAGMENT_TEXTURE_SAMPLER_COUNT];
                         
@@ -52,8 +52,8 @@ SamplerStateDX11_t
                         {}
 };
 
-typedef ResourcePool<SamplerStateDX11_t,RESOURCE_SAMPLER_STATE>  SamplerStateDX11Pool;
-RHI_IMPL_POOL(SamplerStateDX11_t,RESOURCE_SAMPLER_STATE);
+typedef ResourcePool<SamplerStateDX11_t,RESOURCE_SAMPLER_STATE,SamplerState::Descriptor,false>  SamplerStateDX11Pool;
+RHI_IMPL_POOL(SamplerStateDX11_t,RESOURCE_SAMPLER_STATE,SamplerState::Descriptor,false);
 
 
 //------------------------------------------------------------------------------

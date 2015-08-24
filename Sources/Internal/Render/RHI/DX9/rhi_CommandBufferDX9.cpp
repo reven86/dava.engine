@@ -144,6 +144,8 @@ RenderPassDX9_t
 {
 public:
 
+    struct Desc {};
+
     std::vector<Handle> cmdBuf;
     int                 priority;
 };
@@ -154,6 +156,9 @@ class
 CommandBufferDX9_t
 {
 public:
+    
+    struct Desc {};
+
                 CommandBufferDX9_t();
                 ~CommandBufferDX9_t();
 
@@ -188,18 +193,20 @@ public:
 struct
 SyncObjectDX9_t 
 {
+    struct Desc {};
+
     uint32  frame;
     uint32  is_signaled:1;
     uint32  is_used:1;
 };
 
-typedef ResourcePool<CommandBufferDX9_t,RESOURCE_COMMAND_BUFFER>    CommandBufferPool;
-typedef ResourcePool<RenderPassDX9_t,RESOURCE_RENDER_PASS>          RenderPassPool;
-typedef ResourcePool<SyncObjectDX9_t,RESOURCE_SYNC_OBJECT>          SyncObjectPool;
+typedef ResourcePool<CommandBufferDX9_t,RESOURCE_COMMAND_BUFFER,CommandBufferDX9_t::Desc,false> CommandBufferPool;
+typedef ResourcePool<RenderPassDX9_t,RESOURCE_RENDER_PASS,RenderPassDX9_t::Desc,false>          RenderPassPool;
+typedef ResourcePool<SyncObjectDX9_t,RESOURCE_SYNC_OBJECT,SyncObjectDX9_t::Desc,false>          SyncObjectPool;
 
-RHI_IMPL_POOL(CommandBufferDX9_t,RESOURCE_COMMAND_BUFFER);
-RHI_IMPL_POOL(RenderPassDX9_t,RESOURCE_RENDER_PASS);
-RHI_IMPL_POOL(SyncObjectDX9_t,RESOURCE_SYNC_OBJECT);
+RHI_IMPL_POOL(CommandBufferDX9_t,RESOURCE_COMMAND_BUFFER,CommandBufferDX9_t::Desc,false);
+RHI_IMPL_POOL(RenderPassDX9_t,RESOURCE_RENDER_PASS,RenderPassDX9_t::Desc,false);
+RHI_IMPL_POOL(SyncObjectDX9_t,RESOURCE_SYNC_OBJECT,SyncObjectDX9_t::Desc,false);
 
     
 const uint64   CommandBufferDX9_t::EndCmd = 0xFFFFFFFF;
@@ -1128,7 +1135,7 @@ Trace("\n\n-------------------------------\nexecuting frame %u\n",frame_n);
 
                     sync->frame       = frame_n;
                     sync->is_signaled = false;
-                    sync->is_used = true;
+                    sync->is_used     = true;
                 }
 
                 CommandBufferPool::Free( cb_h );

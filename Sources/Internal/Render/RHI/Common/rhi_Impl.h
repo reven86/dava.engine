@@ -46,7 +46,7 @@ Dispatch
     void    (*impl_Uninitialize)();
     void    (*impl_Present)( Handle );
     Api     (*impl_HostApi)();
-    bool    (*impl_NeedReloadResources)();
+    bool    (*impl_NeedRestoreResources)();
     bool    (*impl_TextureFormatSupported)( TextureFormat );
 
     Handle  (*impl_VertexBuffer_Create)( const VertexBuffer::Descriptor& desc );
@@ -54,14 +54,14 @@ Dispatch
     bool    (*impl_VertexBuffer_Update)( Handle, const void*, uint32, uint32 );
     void*   (*impl_VertexBuffer_Map)( Handle, uint32, uint32 );
     void    (*impl_VertexBuffer_Unmap)( Handle );
-    bool    (*impl_VertexBuffer_NeedReload)( Handle );
+    bool    (*impl_VertexBuffer_NeedRestore)( Handle );
 
     Handle  (*impl_IndexBuffer_Create)( const IndexBuffer::Descriptor& desc );
     void    (*impl_IndexBuffer_Delete)( Handle );
     bool    (*impl_IndexBuffer_Update)( Handle, const void*, uint32, uint32 );
     void*   (*impl_IndexBuffer_Map)( Handle, uint32, uint32 );
     void    (*impl_IndexBuffer_Unmap)( Handle );
-    bool    (*impl_IndexBuffer_NeedReload)( Handle );
+    bool    (*impl_IndexBuffer_NeedRestore)( Handle );
 
     Handle  (*impl_QueryBuffer_Create)( unsigned maxObjectCount );
     void    (*impl_QueryBuffer_Reset)( Handle buf );
@@ -74,7 +74,7 @@ Dispatch
     void*   (*impl_Texture_Map)( Handle, unsigned, TextureFace );
     void    (*impl_Texture_Unmap)( Handle );
     void    (*impl_Texture_Update)( Handle, const void*, uint32, TextureFace );
-    bool    (*impl_Texture_NeedReload)( Handle );
+    bool    (*impl_Texture_NeedRestore)( Handle );
 
     Handle  (*impl_PipelineState_Create)( const PipelineState::Descriptor& );
     void    (*impl_PipelineState_Delete)( Handle );

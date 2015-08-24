@@ -68,7 +68,7 @@ ResetParam
 void    Initialize( Api api, const InitParam& param );
 void    Uninitialize();
 void    Reset( const ResetParam& param );
-bool    NeedReloadResources();
+bool    NeedRestoreResources();
 
 void    Present(); // execute all submitted command-buffers & do flip/present
 
@@ -109,7 +109,7 @@ void            UnmapVertexBuffer( HVertexBuffer vb );
 
 void            UpdateVertexBuffer( HVertexBuffer vb, const void* data, uint32 offset, uint32 size );
 
-bool            NeedReloadVertexBuffer( HVertexBuffer vb );
+bool            NeedRestoreVertexBuffer( HVertexBuffer vb );
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -125,7 +125,7 @@ void            UnmapIndexBuffer( HIndexBuffer ib );
 
 void            UpdateIndexBuffer( HIndexBuffer ib, const void* data, uint32 offset, uint32 size );
 
-bool            NeedReloadIndexBuffer( HVertexBuffer vb );
+bool            NeedRestoreIndexBuffer( HVertexBuffer vb );
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -176,7 +176,7 @@ void            UnmapTexture( HTexture tex );
 
 void            UpdateTexture( HTexture tex, const void* data, uint32 level, TextureFace face=TEXTURE_FACE_NEGATIVE_X );
 
-bool            NeedReloadTexture( HTexture tex );
+bool            NeedRestoreTexture( HTexture tex );
 
 
 struct

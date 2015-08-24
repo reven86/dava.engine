@@ -420,7 +420,7 @@ Descriptor
     Pool    pool;
     Usage   usage;
             
-            Descriptor( uint32 sz ) 
+            Descriptor( uint32 sz=0 ) 
               : size(sz),
                 pool(POOL_DEFAULT),
                 usage(USAGE_DEFAULT) 
@@ -437,7 +437,7 @@ Descriptor
     Pool    pool;
     Usage   usage;
             
-            Descriptor( uint32 sz ) 
+            Descriptor( uint32 sz=0 ) 
               : size(sz),
                 pool(POOL_DEFAULT),
                 usage(USAGE_DEFAULT) 

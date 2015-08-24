@@ -45,6 +45,7 @@ namespace rhi
 
 class
 VertexBufferDX9_t
+  : public ResourceImpl<VertexBufferDX9_t,VertexBuffer::Descriptor>
 {
 public:
                             VertexBufferDX9_t();
@@ -56,23 +57,19 @@ public:
     unsigned                size;
     IDirect3DVertexBuffer9* buffer;
     unsigned                isMapped:1;
-    unsigned                needReload:1;
-
-    static unsigned         NeedReloadCount;
 };
-unsigned    VertexBufferDX9_t::NeedReloadCount = 0;
+RHI_IMPL_RESOURCE(VertexBufferDX9_t,VertexBuffer::Descriptor);
 
 
-typedef ResourcePool<VertexBufferDX9_t,RESOURCE_VERTEX_BUFFER>   VertexBufferDX9Pool;
+typedef ResourcePool<VertexBufferDX9_t,RESOURCE_VERTEX_BUFFER,VertexBuffer::Descriptor,true>   VertexBufferDX9Pool;
 
-RHI_IMPL_POOL(VertexBufferDX9_t,RESOURCE_VERTEX_BUFFER);
+RHI_IMPL_POOL(VertexBufferDX9_t,RESOURCE_VERTEX_BUFFER,VertexBuffer::Descriptor,true);
 
 
 VertexBufferDX9_t::VertexBufferDX9_t()
   : size(0),
     buffer(nullptr),
-    isMapped(false),
-    needReload(false)
+    isMapped(false)
 {
 }
 
@@ -154,6 +151,7 @@ dx9_VertexBuffer_Create( const VertexBuffer::Descriptor& desc )
     
     if( vb->Create( desc ) )
     {
+        vb->UpdateCreationDesc( desc );
     }
     else
     {
@@ -205,12 +203,7 @@ dx9_VertexBuffer_Update( Handle vb, const void* data, unsigned offset, unsigned 
             ExecDX9( &cmd2, 1 );
             success = true;
             
-            if( self->needReload )
-            {
-                self->needReload = false;
-                DVASSERT(VertexBufferDX9_t::NeedReloadCount);
-                --VertexBufferDX9_t::NeedReloadCount;
-            }
+            self->MarkRestored();            
         }
     }
 
@@ -253,13 +246,7 @@ dx9_VertexBuffer_Unmap( Handle vb )
     if( SUCCEEDED(cmd.retval) )
     {
         self->isMapped = false;
-        
-        if( self->needReload )
-        {
-            self->needReload = false;
-            DVASSERT(VertexBufferDX9_t::NeedReloadCount);
-            --VertexBufferDX9_t::NeedReloadCount;
-        }
+        self->MarkRestored();        
     }
 }
 
@@ -267,7 +254,7 @@ dx9_VertexBuffer_Unmap( Handle vb )
 //------------------------------------------------------------------------------
 
 static bool
-dx9_VertexBuffer_NeedReload( Handle vb )
+dx9_VertexBuffer_NeedRestore( Handle vb )
 {
     VertexBufferDX9_t*  self = VertexBufferDX9Pool::Get( vb );
     
@@ -289,7 +276,7 @@ SetupDispatch( Dispatch* dispatch )
     dispatch->impl_VertexBuffer_Update      = &dx9_VertexBuffer_Update;
     dispatch->impl_VertexBuffer_Map         = &dx9_VertexBuffer_Map;
     dispatch->impl_VertexBuffer_Unmap       = &dx9_VertexBuffer_Unmap;
-    dispatch->impl_VertexBuffer_NeedReload  = &dx9_VertexBuffer_NeedReload;
+    dispatch->impl_VertexBuffer_NeedRestore = &dx9_VertexBuffer_NeedRestore;
 }
 
 
@@ -309,22 +296,13 @@ SetToRHI( Handle vb, unsigned stream_i, unsigned offset, unsigned stride  )
 void
 ReCreateAll()
 {
-    for( VertexBufferDX9Pool::Iterator b=VertexBufferDX9Pool::Begin(),b_end=VertexBufferDX9Pool::End(); b!=b_end; ++b )
-    {
-        VertexBuffer::Descriptor desc(b->size);
-        
-        b->Destroy( true );
-        b->Create( desc, true );
-        b->needReload = true;
-
-        ++VertexBufferDX9_t::NeedReloadCount;
-    }
+    VertexBufferDX9Pool::ReCreateAll();
 }
 
 unsigned
-NeedReloadCount()
+NeedRestoreCount()
 {
-    return VertexBufferDX9_t::NeedReloadCount;
+    return VertexBufferDX9_t::NeedRestoreCount();
 }
 
 }

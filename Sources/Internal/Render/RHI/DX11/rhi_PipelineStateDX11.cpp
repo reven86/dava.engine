@@ -151,6 +151,9 @@ class
 ConstBufDX11
 {
 public:
+
+    struct Desc {};
+
                 ConstBufDX11();
                 ~ConstBufDX11();
     
@@ -457,11 +460,11 @@ public:
     std::vector<uint8>      dbgPixelSrc;
 };
 
-typedef ResourcePool<PipelineStateDX11_t,RESOURCE_PIPELINE_STATE>   PipelineStateDX11Pool;
-typedef ResourcePool<ConstBufDX11,RESOURCE_CONST_BUFFER>            ConstBufDX11Pool;
+typedef ResourcePool<PipelineStateDX11_t,RESOURCE_PIPELINE_STATE,PipelineState::Descriptor,false>   PipelineStateDX11Pool;
+typedef ResourcePool<ConstBufDX11,RESOURCE_CONST_BUFFER,ConstBufDX11::Desc,false>                   ConstBufDX11Pool;
 
-RHI_IMPL_POOL(PipelineStateDX11_t,RESOURCE_PIPELINE_STATE);
-RHI_IMPL_POOL_SIZE(ConstBufDX11,RESOURCE_CONST_BUFFER,8*1024);
+RHI_IMPL_POOL(PipelineStateDX11_t,RESOURCE_PIPELINE_STATE,PipelineState::Descriptor,false);
+RHI_IMPL_POOL_SIZE(ConstBufDX11,RESOURCE_CONST_BUFFER,ConstBufDX11::Desc,false,8*1024);
 
 
 //------------------------------------------------------------------------------

@@ -64,6 +64,9 @@ public:
     ConstBuf
     {
     public:
+        
+        struct Desc {};
+
 
                             ConstBuf()
                               : location(-1),

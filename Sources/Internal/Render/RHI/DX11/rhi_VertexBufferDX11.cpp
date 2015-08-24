@@ -55,9 +55,9 @@ public:
     uint32          isMapped:1;
 };
 
-typedef ResourcePool<VertexBufferDX11_t,RESOURCE_VERTEX_BUFFER>   VertexBufferDX11Pool;
+typedef ResourcePool<VertexBufferDX11_t,RESOURCE_VERTEX_BUFFER,VertexBuffer::Descriptor,true>   VertexBufferDX11Pool;
 
-RHI_IMPL_POOL(VertexBufferDX11_t,RESOURCE_VERTEX_BUFFER);
+RHI_IMPL_POOL(VertexBufferDX11_t,RESOURCE_VERTEX_BUFFER,VertexBuffer::Descriptor,true);
 
 
 VertexBufferDX11_t::VertexBufferDX11_t()

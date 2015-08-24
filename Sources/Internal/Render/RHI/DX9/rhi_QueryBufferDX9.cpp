@@ -45,14 +45,17 @@ class
 QueryBufferDX9_t
 {
 public:
+
+    struct Desc {};
+
                                     QueryBufferDX9_t();
                                     ~QueryBufferDX9_t();
 
     std::vector<IDirect3DQuery9*>   query;
 };
 
-typedef ResourcePool<QueryBufferDX9_t,RESOURCE_QUERY_BUFFER>    QueryBufferDX9Pool;
-RHI_IMPL_POOL(QueryBufferDX9_t,RESOURCE_QUERY_BUFFER);
+typedef ResourcePool<QueryBufferDX9_t,RESOURCE_QUERY_BUFFER,QueryBufferDX9_t::Desc,false>    QueryBufferDX9Pool;
+RHI_IMPL_POOL(QueryBufferDX9_t,RESOURCE_QUERY_BUFFER,QueryBufferDX9_t::Desc,false);
 
 
 //==============================================================================

@@ -52,8 +52,8 @@ DepthStencilStateDX11_t
                                 {}
 };
 
-typedef ResourcePool<DepthStencilStateDX11_t,RESOURCE_DEPTHSTENCIL_STATE>   DepthStencilStateDX11Pool;
-RHI_IMPL_POOL(DepthStencilStateDX11_t,RESOURCE_DEPTHSTENCIL_STATE);
+typedef ResourcePool<DepthStencilStateDX11_t,RESOURCE_DEPTHSTENCIL_STATE,DepthStencilState::Descriptor,false>   DepthStencilStateDX11Pool;
+RHI_IMPL_POOL(DepthStencilStateDX11_t,RESOURCE_DEPTHSTENCIL_STATE,DepthStencilState::Descriptor,false);
 
 
 //------------------------------------------------------------------------------

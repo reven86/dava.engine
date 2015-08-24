@@ -104,9 +104,9 @@ Reset( const ResetParam& param )
 }
 
 bool
-NeedReloadResources()
+NeedRestoreResources()
 {
-    return (*_Impl.impl_NeedReloadResources)();
+    return (*_Impl.impl_NeedRestoreResources)();
 }
 
 void
@@ -171,9 +171,9 @@ Unmap( Handle vb )
 }
 
 bool    
-NeedReload( Handle vb )
+NeedRestore( Handle vb )
 {
-    return (*_Impl.impl_VertexBuffer_NeedReload)( vb );
+    return (*_Impl.impl_VertexBuffer_NeedRestore)( vb );
 }
 
 } // namespace VertexBuffer
@@ -216,9 +216,9 @@ Unmap( Handle vb )
 }
 
 bool    
-NeedReload( Handle ib )
+NeedRestore( Handle ib )
 {
-    return (*_Impl.impl_IndexBuffer_NeedReload)( ib );
+    return (*_Impl.impl_IndexBuffer_NeedRestore)( ib );
 }
 
 } // namespace IndexBuffer
@@ -300,9 +300,9 @@ Update( Handle tex, const void* data, uint32 level, TextureFace face )
 
 
 bool    
-NeedReload( Handle tex )
+NeedRestore( Handle tex )
 {
-    return (*_Impl.impl_Texture_NeedReload)( tex );
+    return (*_Impl.impl_Texture_NeedRestore)( tex );
 }
 
 };

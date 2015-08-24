@@ -83,8 +83,8 @@ TextureDX11_t::TextureDX11_t()
 {
 }
 
-typedef ResourcePool<TextureDX11_t,RESOURCE_TEXTURE> TextureDX11Pool;
-RHI_IMPL_POOL(TextureDX11_t,RESOURCE_TEXTURE);
+typedef ResourcePool<TextureDX11_t,RESOURCE_TEXTURE,Texture::Descriptor,true> TextureDX11Pool;
+RHI_IMPL_POOL(TextureDX11_t,RESOURCE_TEXTURE,Texture::Descriptor,true);
 
 //------------------------------------------------------------------------------
 
