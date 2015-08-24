@@ -210,26 +210,28 @@ DeviceInfo::NetworkInfo DeviceInfoPrivate::GetNetworkInfo()
 void DeviceInfoPrivate::InitializeScreenInfo()
 {
     __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
-    int32 w = 0, h = 0;
+    
     CorePlatformWinUAP* core = static_cast<CorePlatformWinUAP*>(Core::Instance());
-    DVASSERT(nullptr != core && "In DeviceInfo, InitializeScreenInfo() function CorePlatformWinUAP* = nullptr");
-    auto func = [&w, &h]()
+    DVASSERT(nullptr != core && "DeviceInfo::InitializeScreenInfo(): Core::Instance() is null");
+
+    auto func = [this]()
     {
         CoreWindow^ window = CoreWindow::GetForCurrentThread();
-        if (nullptr != window)
+        DVASSERT(window != nullptr);
+
+        using Windows::Graphics::Display::DisplayInformation;
+        DisplayInformation^ displayInfo = DisplayInformation::GetForCurrentView();
+        screenInfo.scale = static_cast<float32>(displayInfo->RawPixelsPerViewPixel);
+
+        screenInfo.width = static_cast<int32>(window->Bounds.Width);
+        screenInfo.height = static_cast<int32>(window->Bounds.Height);
+        DisplayOrientations curOrientation = DisplayInformation::GetForCurrentView()->CurrentOrientation;
+        if (DisplayOrientations::Portrait == curOrientation || DisplayOrientations::PortraitFlipped == curOrientation)
         {
-            w = static_cast<int32>(window->Bounds.Width);
-            h = static_cast<int32>(window->Bounds.Height);
-            DisplayOrientations current = DisplayInformation::GetForCurrentView()->CurrentOrientation;
-            if (DisplayOrientations::Portrait == current || DisplayOrientations::PortraitFlipped == current)
-            {
-                std::swap(w, h);
-            }
+            std::swap(screenInfo.width, screenInfo.height);
         }
     };
     core->RunOnUIThreadBlocked(func);
-    screenInfo.width = w;
-    screenInfo.height = h;
 }
 
 bool FillStorageSpaceInfo(DeviceInfo::StorageInfo& storage_info)
