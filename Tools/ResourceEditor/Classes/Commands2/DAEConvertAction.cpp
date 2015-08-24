@@ -49,6 +49,7 @@ void DAEConvertAction::Redo()
 		eColladaErrorCodes code = ConvertDaeToSc2(daePath);
 		if(code == COLLADA_OK)
 		{
+            ConvertFromSceToSc2();
             return;
         }
 		else if(code == COLLADA_ERROR_OF_ROOT_NODE)
@@ -68,7 +69,7 @@ void DAEConvertAction::ConvertFromSceToSc2() const
     FixLODFarDistance(scene);
     
     
-    FilePath sc2Path = FilePath::CreateWithNewExtension(daePath, ".sc2");
+    FilePath sc2Path = FilePath::CreateWithNewExtension(daePath, "old.sc2");
     scene->SaveScene(sc2Path);
     scene->Release();
 }
