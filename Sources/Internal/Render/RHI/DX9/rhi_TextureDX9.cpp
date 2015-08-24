@@ -49,6 +49,9 @@ public:
 
                                 TextureDX9_t();
 
+    bool                        Create( const Texture::Descriptor& desc, bool force_immediate=false );
+    void                        Destroy( bool force_immediate=false);
+
 
     TextureFormat               format;
     unsigned                    width;
@@ -69,7 +72,11 @@ public:
     unsigned                    isRenderTarget:1;
     unsigned                    isDepthStencil:1;
     unsigned                    isMapped:1;
+    unsigned                    needReload:1;
+    
+    static unsigned             NeedReloadCount;
 };
+unsigned    TextureDX9_t::NeedReloadCount = 0;
 
 
 TextureDX9_t::TextureDX9_t()
@@ -84,26 +91,22 @@ TextureDX9_t::TextureDX9_t()
     lastUnit(InvalidIndex),
     mappedData(nullptr),
     isRenderTarget(false),
-    isMapped(false)
+    isMapped(false),
+    needReload(false)
 {
 }
 
-typedef ResourcePool<TextureDX9_t,RESOURCE_TEXTURE> TextureDX9Pool;
-RHI_IMPL_POOL(TextureDX9_t,RESOURCE_TEXTURE);
 
 //------------------------------------------------------------------------------
 
-static Handle
-dx9_Texture_Create( const Texture::Descriptor& desc )
+bool
+TextureDX9_t::Create( const Texture::Descriptor& desc, bool force_immediate )
 {
     DVASSERT(desc.levelCount);
-
-    Handle              handle      = InvalidHandle;
-    TextureDX9_t*       tex         = nullptr;
-    IDirect3DTexture9*  tex9        = nullptr;
+    bool                success     = false;
     D3DFORMAT           fmt         = DX9_TextureFormat( desc.format );
     DWORD               usage       =(desc.isRenderTarget)  ? D3DUSAGE_RENDERTARGET  : 0;
-    D3DPOOL             pool        = (desc.isRenderTarget/*  ||  options&TEXTURE_OPT_DYNAMIC*/)  ? D3DPOOL_DEFAULT  : D3DPOOL_MANAGED;
+    D3DPOOL             pool        = (desc.isRenderTarget)  ? D3DPOOL_DEFAULT  : D3DPOOL_MANAGED;
     HRESULT             hr          = E_FAIL;
     bool                auto_mip    = (desc.autoGenMipmaps)  ? true  : false;
     unsigned            mip_count   = desc.levelCount;
@@ -116,9 +119,6 @@ dx9_Texture_Create( const Texture::Descriptor& desc )
         is_depthbuf = true;
     }
 
-//    if( options&TEXTURE_OPT_DYNAMIC )
-//        usage |= D3DUSAGE_DYNAMIC;
-
     if( desc.isRenderTarget )
         mip_count = 1;
 
@@ -129,37 +129,35 @@ dx9_Texture_Create( const Texture::Descriptor& desc )
         {
             DX9Command  cmd1 = { DX9Command::CREATE_TEXTURE, { desc.width, desc.height, mip_count, usage, fmt, pool, uint64_t(&tex9), 0 } };
             
-            ExecDX9( &cmd1, 1 );
+            ExecDX9( &cmd1, 1, force_immediate );
             hr = cmd1.retval;
 
             if( SUCCEEDED(hr) )
             {
-                handle = TextureDX9Pool::Alloc();
-                tex    = TextureDX9Pool::Get( handle );
-                tex->tex9 = tex9;
-
                 DX9Command  cmd2[] =
                 {
-                    { DX9Command::QUERY_INTERFACE, { uint64_t(static_cast<IUnknown*>(tex9)), uint64_t((const void*)(&IID_IDirect3DBaseTexture9)), uint64((void**)(&tex->basetex9)) } },
-                    { DX9Command::SET_TEXTURE_AUTOGEN_FILTER_TYPE, { uint64_t(tex->basetex9), D3DTEXF_LINEAR } }
+                    { DX9Command::QUERY_INTERFACE, { uint64_t(static_cast<IUnknown*>(tex9)), uint64_t((const void*)(&IID_IDirect3DBaseTexture9)), uint64((void**)(&basetex9)) } },
+                    { DX9Command::SET_TEXTURE_AUTOGEN_FILTER_TYPE, { uint64_t(basetex9), D3DTEXF_LINEAR } }
                 };
 
                 if( !auto_mip )
                     cmd2[1].func = DX9Command::NOP;
 
-                ExecDX9( cmd2, countof(cmd2) );
+                ExecDX9( cmd2, countof(cmd2), force_immediate );
 
                 if( desc.isRenderTarget  ||  is_depthbuf )
                 {
-                    DX9Command  cmd3 = { DX9Command::GET_TEXTURE_SURFACE_LEVEl, { uint64_t(tex9), 0, uint64_t(&tex->surf9) } };
+                    DX9Command  cmd3 = { DX9Command::GET_TEXTURE_SURFACE_LEVEl, { uint64_t(tex9), 0, uint64_t(&surf9) } };
 
-                    ExecDX9( &cmd3, 1 );
+                    ExecDX9( &cmd3, 1, force_immediate );
                 }
 
-                tex->width          = desc.width;
-                tex->height         = desc.height;
-                tex->format         = desc.format;
-                tex->isDepthStencil = is_depthbuf;
+                width          = desc.width;
+                height         = desc.height;
+                format         = desc.format;
+                isDepthStencil = is_depthbuf;
+
+                success        = true;
             }
             else
             {
@@ -178,16 +176,12 @@ dx9_Texture_Create( const Texture::Descriptor& desc )
         
             if( SUCCEEDED(hr) )
             {
-                handle = TextureDX9Pool::Alloc();
-                tex    = TextureDX9Pool::Get( handle );
-
-                tex->cubetex9 = cubetex9;
-                tex->tex9     = nullptr;
+                tex9 = nullptr;
 
                 DX9Command  cmd2[] =
                 {
-                    { DX9Command::QUERY_INTERFACE, { uint64_t(static_cast<IUnknown*>(cubetex9)), uint64_t((const void*)(&IID_IDirect3DBaseTexture9)), uint64((void**)(&tex->basetex9)) } },
-                    { DX9Command::SET_TEXTURE_AUTOGEN_FILTER_TYPE, { uint64_t(tex->basetex9), D3DTEXF_LINEAR } }
+                    { DX9Command::QUERY_INTERFACE, { uint64_t(static_cast<IUnknown*>(cubetex9)), uint64_t((const void*)(&IID_IDirect3DBaseTexture9)), uint64((void**)(&basetex9)) } },
+                    { DX9Command::SET_TEXTURE_AUTOGEN_FILTER_TYPE, { uint64_t(basetex9), D3DTEXF_LINEAR } }
                 };
 
                 if( !auto_mip )
@@ -195,20 +189,108 @@ dx9_Texture_Create( const Texture::Descriptor& desc )
 
                 ExecDX9( cmd2, countof(cmd2) );
                 
-                tex->width          = desc.width;
-                tex->height         = desc.height;
-                tex->format         = desc.format;
-                tex->isDepthStencil = is_depthbuf;
+                width          = desc.width;
+                height         = desc.height;
+                format         = desc.format;
+                isDepthStencil = is_depthbuf;
+                
+                success        = true;
             }
             else
             {
                 Logger::Error( "failed to create texture:\n%s\n", D3D9ErrorText(hr) );
             }
         }   break;
-
     }
 
-    tex->isRenderTarget = desc.isRenderTarget;
+    isRenderTarget = desc.isRenderTarget;
+
+
+    return success;
+}
+
+
+//------------------------------------------------------------------------------
+
+void
+TextureDX9_t::Destroy( bool force_immediate )
+{
+    DVASSERT(!isMapped);
+
+    DX9Command  cmd[] =
+    {
+        { DX9Command::NOP, { uint64_t(static_cast<IUnknown*>(surf9)) } },
+        { DX9Command::NOP, { uint64_t(static_cast<IUnknown*>(basetex9)) } },
+        { DX9Command::NOP, { uint64_t(static_cast<IUnknown*>(tex9)) } },
+        { DX9Command::NOP, { uint64_t(static_cast<IUnknown*>(cubetex9)) } },
+        { DX9Command::NOP, { uint64_t(static_cast<IUnknown*>(rt_surf9)) } },
+        { DX9Command::NOP, { uint64_t(static_cast<IUnknown*>(rt_tex9)) } }
+    };
+
+    if( surf9 )
+    {
+        cmd[0].func = DX9Command::RELEASE;
+        surf9 = nullptr;
+    }
+
+    if( basetex9 )
+    {
+        cmd[1].func = DX9Command::RELEASE;
+        basetex9 = nullptr;
+    }
+
+    if( tex9 )
+    {
+        cmd[2].func = DX9Command::RELEASE;
+        tex9 = nullptr;
+    }
+
+    if( cubetex9 )
+    {
+        cmd[3].func = DX9Command::RELEASE;
+        cubetex9 = nullptr;
+    }
+        
+    if( rt_surf9 )
+    {
+        cmd[4].func = DX9Command::RELEASE;
+        rt_surf9 = nullptr;
+    }
+
+    if( rt_tex9 )
+    {
+        cmd[5].func = DX9Command::RELEASE;
+        rt_tex9 = nullptr;
+    }
+
+    ExecDX9( cmd, countof(cmd), force_immediate );
+
+
+    width  = 0;
+    height = 0;
+}
+
+typedef ResourcePool<TextureDX9_t,RESOURCE_TEXTURE> TextureDX9Pool;
+RHI_IMPL_POOL(TextureDX9_t,RESOURCE_TEXTURE);
+
+
+
+//------------------------------------------------------------------------------
+
+static Handle
+dx9_Texture_Create( const Texture::Descriptor& desc )
+{
+    Handle          handle = TextureDX9Pool::Alloc();
+    TextureDX9_t*   tex    = TextureDX9Pool::Get( handle );
+
+    if( tex->Create( desc ) )
+    {
+    }
+    else
+    {
+        TextureDX9Pool::Free( handle );
+        handle = InvalidHandle;
+    }
     
     return handle;
 }
@@ -223,60 +305,7 @@ dx9_Texture_Delete( Handle tex )
     {
         TextureDX9_t* self = TextureDX9Pool::Get( tex );
 
-        DVASSERT(!self->isMapped);
-
-        DX9Command  cmd[] =
-        {
-            { DX9Command::NOP, { uint64_t(static_cast<IUnknown*>(self->surf9)) } },
-            { DX9Command::NOP, { uint64_t(static_cast<IUnknown*>(self->basetex9)) } },
-            { DX9Command::NOP, { uint64_t(static_cast<IUnknown*>(self->tex9)) } },
-            { DX9Command::NOP, { uint64_t(static_cast<IUnknown*>(self->cubetex9)) } },
-            { DX9Command::NOP, { uint64_t(static_cast<IUnknown*>(self->rt_surf9)) } },
-            { DX9Command::NOP, { uint64_t(static_cast<IUnknown*>(self->rt_tex9)) } }
-        };
-
-        if( self->surf9 )
-        {
-            cmd[0].func = DX9Command::RELEASE;
-            self->surf9 = nullptr;
-        }
-
-        if( self->basetex9 )
-        {
-            cmd[1].func = DX9Command::RELEASE;
-            self->basetex9 = nullptr;
-        }
-
-        if( self->tex9 )
-        {
-            cmd[2].func = DX9Command::RELEASE;
-            self->tex9 = nullptr;
-        }
-
-        if( self->cubetex9 )
-        {
-            cmd[3].func = DX9Command::RELEASE;
-            self->cubetex9 = nullptr;
-        }
-        
-        if( self->rt_surf9 )
-        {
-            cmd[4].func = DX9Command::RELEASE;
-            self->rt_surf9 = nullptr;
-        }
-
-        if( self->rt_tex9 )
-        {
-            cmd[5].func = DX9Command::RELEASE;
-            self->rt_tex9 = nullptr;
-        }
-
-        ExecDX9( cmd, countof(cmd) );
-
-
-        self->width  = 0;
-        self->height = 0;
-        
+        self->Destroy();        
         TextureDX9Pool::Free( tex );
     }
 }
@@ -453,12 +482,19 @@ dx9_Texture_Unmap( Handle tex )
     }
 
     self->isMapped = false;
+
+    if( self->needReload )
+    {
+        self->needReload = false;
+        DVASSERT(TextureDX9_t::NeedReloadCount);
+        --TextureDX9_t::NeedReloadCount;
+    }
 }
 
 
 //------------------------------------------------------------------------------
 
-void
+static void
 dx9_Texture_Update( Handle tex, const void* data, uint32 level, TextureFace face )
 {
     TextureDX9_t*   self = TextureDX9Pool::Get( tex );
@@ -470,6 +506,17 @@ dx9_Texture_Update( Handle tex, const void* data, uint32 level, TextureFace face
 }
 
 
+//------------------------------------------------------------------------------
+
+static bool
+dx9_Texture_NeedReload( Handle tex )
+{
+    TextureDX9_t*   self = TextureDX9Pool::Get( tex );
+    
+    return self->needReload;
+}
+
+
 //==============================================================================
 
 namespace TextureDX9
@@ -478,11 +525,12 @@ namespace TextureDX9
 void
 SetupDispatch( Dispatch* dispatch )
 {
-    dispatch->impl_Texture_Create = &dx9_Texture_Create;
-    dispatch->impl_Texture_Delete = &dx9_Texture_Delete;
-    dispatch->impl_Texture_Map    = &dx9_Texture_Map;
-    dispatch->impl_Texture_Unmap  = &dx9_Texture_Unmap;
-    dispatch->impl_Texture_Update = &dx9_Texture_Update;
+    dispatch->impl_Texture_Create       = &dx9_Texture_Create;
+    dispatch->impl_Texture_Delete       = &dx9_Texture_Delete;
+    dispatch->impl_Texture_Map          = &dx9_Texture_Map;
+    dispatch->impl_Texture_Unmap        = &dx9_Texture_Unmap;
+    dispatch->impl_Texture_Update       = &dx9_Texture_Update;
+    dispatch->impl_Texture_NeedReload   = &dx9_Texture_NeedReload;
 }
 
 
@@ -518,6 +566,34 @@ SetAsDepthStencil( Handle tex )
     DX9_CALL(_D3D9_Device->SetDepthStencilSurface( self->surf9 ),"SetDepthStencilSurface");
 }
 
+void
+ReCreateAll()
+{
+    for( TextureDX9Pool::Iterator t=TextureDX9Pool::Begin(),t_end=TextureDX9Pool::End(); t!=t_end; ++t )
+    {
+        Texture::Descriptor desc;
+
+        desc.type   = (t->cubetex9) ? TEXTURE_TYPE_CUBE : TEXTURE_TYPE_2D;
+        desc.width  = t->width;
+        desc.height = t->height;
+        desc.format = t->format;
+//        desc.levelCount = t->l
+        desc.isRenderTarget = t->isRenderTarget;
+//        desc.autoGenMipmaps = ;
+
+        t->Destroy( true );
+        t->Create( desc, true );
+        t->needReload = true;
+
+        ++TextureDX9_t::NeedReloadCount;
+    }
+}
+
+unsigned
+NeedReloadCount()
+{
+    return TextureDX9_t::NeedReloadCount;
+}
 
 }
 

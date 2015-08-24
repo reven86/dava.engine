@@ -38,6 +38,8 @@
 #include "Scene/EntityGroup.h"
 #include "Scene/SceneEditor2.h"
 
+#include "Scene3D/Systems/StaticOcclusionSystem.h"
+
 #include "Commands2/TransformCommand.h"
 #include "Commands2/BakeTransformCommand.h"
 #include "Commands2/EntityAddCommand.h"

@@ -47,16 +47,16 @@ public:
     static const Vector2 UnitX;
     static const Vector2 UnitY;
 
-	union{
-		struct
-		{
-			float32 x, y;
-		};
-		struct  
-		{
-			float32 dx, dy;
-		};
-		float32 data[2];
+    union{
+        struct
+        {
+            float32 x, y;
+        };
+        struct
+        {
+            float32 dx, dy;
+        };
+        float32 data[2];
 	};
 	
 	//! Basic
@@ -230,7 +230,7 @@ public:
 		{
 			float32 x, y, z, w;
 		};
-		float32 data[4];
+        float32 data[4];
 	};
 
 	inline Vector4();

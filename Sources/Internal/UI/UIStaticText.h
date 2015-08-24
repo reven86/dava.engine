@@ -173,9 +173,6 @@ public:
     void SetMarginsAsVector4(const Vector4 &margins);
     
     INTROSPECTION_EXTEND(UIStaticText, UIControl,
-                         PROPERTY("text", "Text", GetText, SetTextWithoutRect, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("font", "Font", GetFontPresetName, SetFontByPresetName, I_SAVE | I_VIEW | I_EDIT)
-                         
                          PROPERTY("textColor", "Text Color", GetTextColor, SetTextColor, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("textcolorInheritType", InspDesc("Text Color Inherit Type", GlobalEnumMap<UIControlBackground::eColorInheritType>::Instance()), GetTextColorInheritType, SetTextColorInheritType, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("textperPixelAccuracyType", InspDesc("Text Per Pixel Accuracy Type", GlobalEnumMap<UIControlBackground::ePerPixelAccuracyType>::Instance()), GetTextPerPixelAccuracyType, SetTextPerPixelAccuracyType, I_SAVE | I_VIEW | I_EDIT)
@@ -188,6 +185,8 @@ public:
                          PROPERTY("textalign", InspDesc("Text Align", GlobalEnumMap<eAlign>::Instance(), InspDesc::T_FLAGS), GetTextAlign, SetTextAlign, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("textUseRtlAlign", InspDesc("Use Rtl Align", GlobalEnumMap<TextBlock::eUseRtlAlign>::Instance(), InspDesc::T_ENUM), GetTextUseRtlAlignAsInt, SetTextUseRtlAlignFromInt, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("textMargins", "Text margins", GetMarginsAsVector4, SetMarginsAsVector4, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("text", "Text", GetText, SetTextWithoutRect, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("font", "Font", GetFontPresetName, SetFontByPresetName, I_SAVE | I_VIEW | I_EDIT)
                          );
 
 };
