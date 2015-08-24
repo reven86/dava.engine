@@ -34,17 +34,8 @@
 
 using namespace DAVA;
 
-namespace {
-    String DEFAULT_FOLDER = "";
-    float64 DEFAULT_CACHE_SIZE_GB = 5;
-    uint32 DEFAULT_FILES_COUNT = 5;
-    uint32 DEFAULT_AUTO_SAVE_TIMEOUT_MIN = 1;
-    uint16 DEFAULT_PORT = DAVA::AssetCache::ASSET_SERVER_PORT;
-    bool DEFAULT_AUTO_START = true;
-}
 
-
-ServerData::ServerData(String _ip, uint16 _port, bool _enabled) 
+ServerData::ServerData(String _ip, uint16 _port, bool _enabled)
 	: ip(_ip)
 	, port(_port)
 	, enabled(_enabled) 
@@ -75,6 +66,9 @@ bool ServerData::operator < (const ServerData & right) const
 	return ip < right.ip;
 }
 
+
+const String ApplicationSettings::DEFAULT_FOLDER = "";
+const float64 ApplicationSettings::DEFAULT_CACHE_SIZE_GB = 5.0;
 
 
 void ApplicationSettings::Save() const

@@ -1,3 +1,4 @@
+
 /*==================================================================================
     Copyright (c) 2008, binaryzebra
     All rights reserved.
@@ -66,6 +67,16 @@ class ApplicationSettings: public QObject
 {
     Q_OBJECT
     
+private:
+
+    static const String DEFAULT_FOLDER;
+    static const float64 DEFAULT_CACHE_SIZE_GB; 
+    static const uint32 DEFAULT_FILES_COUNT = 5;
+    static const uint32 DEFAULT_AUTO_SAVE_TIMEOUT_MIN = 1;
+    static const uint16 DEFAULT_PORT = DAVA::AssetCache::ASSET_SERVER_PORT;
+    static const bool DEFAULT_AUTO_START = true;
+    
+    
 public:
     
     void Save() const;
@@ -112,11 +123,11 @@ private:
 public:
 
     FilePath folder;
-    float64 cacheSizeGb;
-    uint32 filesCount;
-    uint32 autoSaveTimeoutMin;
-    uint16 listenPort;
-    bool autoStart = true;
+    float64 cacheSizeGb = DEFAULT_CACHE_SIZE_GB;
+    uint32 filesCount = DEFAULT_FILES_COUNT;
+    uint32 autoSaveTimeoutMin = DEFAULT_AUTO_SAVE_TIMEOUT_MIN;
+    uint16 listenPort = DEFAULT_PORT;
+    bool autoStart = DEFAULT_AUTO_START;
     List<ServerData> remoteServers;
 
     bool isFirstLaunch = true;
