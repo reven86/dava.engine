@@ -68,8 +68,7 @@ void CachePacket::PacketSent(const uint8* buffer, size_t length)
 
 CachePacket* CachePacket::Create(const uint8* rawdata, uint32 length)
 {
-    DynamicMemoryFile* dynamicBuffer = DynamicMemoryFile::Create(rawdata, length, File::OPEN | File::READ); // todo: create without copy
-    File* buffer = dynamicBuffer;
+    ScopedPtr<File> buffer(DynamicMemoryFile::Create(rawdata, length, File::OPEN | File::READ));
 
     String header;
     if (buffer->ReadString(header) == false)
