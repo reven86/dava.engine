@@ -160,8 +160,9 @@ void ResourcePacker2D::RecalculateMD5ForOutputDir()
 
 bool ResourcePacker2D::RecalculateDirMD5(const FilePath& pathname, const FilePath& md5file, bool isRecursive) const
 {
-    std::array<uint8, 16> oldMD5Digest;
-    std::array<uint8, 16> newMD5Digest;
+    MD5::MD5Digest oldMD5Digest;
+    MD5::MD5Digest newMD5Digest;
+
     bool isChanged = false;
 
     ScopedPtr<File> file(File::Create(md5file, File::OPEN | File::READ));
@@ -171,19 +172,20 @@ bool ResourcePacker2D::RecalculateDirMD5(const FilePath& pathname, const FilePat
     }
     else
     {
-        auto bytesRead = file->Read(oldMD5Digest.data(), MD5::DIGEST_SIZE);
-        DVASSERT(bytesRead == 16 && "We should always read 16 bytes from md5 file");
+        auto bytesRead = file->Read(oldMD5Digest.digest.data(), oldMD5Digest.digest.size());
+        DVASSERT(bytesRead == MD5::MD5Digest::DIGEST_SIZE && "We should always read 16 bytes from md5 file");
     }
 
-    MD5::ForDirectory(pathname, newMD5Digest.data(), isRecursive, /*includeHidden=*/false);
+    MD5::ForDirectory(pathname, newMD5Digest, isRecursive, /*includeHidden=*/false);
 
     file = File::Create(md5file, File::CREATE | File::WRITE);
     DVASSERT(file && "Can't create md5 file");
     
-    auto bytesWritten = file->Write(newMD5Digest.data(), MD5::DIGEST_SIZE);
-    DVASSERT(bytesWritten == 16 && "16 bytes should be always written for md5 file");
+    auto bytesWritten = file->Write(newMD5Digest.digest.data(), newMD5Digest.digest.size());
+    DVASSERT(bytesWritten == MD5::MD5Digest::DIGEST_SIZE && "16 bytes should be always written for md5 file");
 
-    return isChanged ? true : oldMD5Digest != newMD5Digest;
+    bool digestEqual = (oldMD5Digest == newMD5Digest);
+    return isChanged ? true : !digestEqual;
 }
 
 
@@ -191,8 +193,9 @@ bool ResourcePacker2D::RecalculateFileMD5(const FilePath& pathname, const FilePa
 {
     FilePath md5FileName = FilePath::CreateWithNewExtension(md5file, ".md5");
 
-	std::array<uint8, MD5::DIGEST_SIZE> oldMD5Digest;
-	std::array<uint8, MD5::DIGEST_SIZE> newMD5Digest;
+    MD5::MD5Digest oldMD5Digest;
+    MD5::MD5Digest newMD5Digest;
+
     bool isChanged = false;
 
     ScopedPtr<File> file(File::Create(md5FileName, File::OPEN | File::READ));
@@ -201,19 +204,20 @@ bool ResourcePacker2D::RecalculateFileMD5(const FilePath& pathname, const FilePa
     	isChanged = true;
 	else
     {
-		auto bytesRead = file->Read(oldMD5Digest.data(), MD5::DIGEST_SIZE);
-		DVASSERT(bytesRead == MD5::DIGEST_SIZE && "We should always read 16 bytes from md5 file");
+        auto bytesRead = file->Read(oldMD5Digest.digest.data(), oldMD5Digest.digest.size());
+        DVASSERT(bytesRead == MD5::MD5Digest::DIGEST_SIZE && "We should always read 16 bytes from md5 file");
 	}
 		
-	MD5::ForFile(pathname, newMD5Digest.data());
+	MD5::ForFile(pathname, newMD5Digest);
     
     file = File::Create(md5FileName, File::CREATE | File::WRITE);
     DVASSERT(file && "Can't create md5 file");
 
-	auto bytesWritten = file->Write(newMD5Digest.data(), MD5::DIGEST_SIZE);
-	DVASSERT(bytesWritten == MD5::DIGEST_SIZE && "16 bytes should be always written for md5 file");
+    auto bytesWritten = file->Write(newMD5Digest.digest.data(), newMD5Digest.digest.size());
+    DVASSERT(bytesWritten == MD5::MD5Digest::DIGEST_SIZE && "16 bytes should be always written for md5 file");
 
-	return isChanged ? true : oldMD5Digest != newMD5Digest;
+    bool digestEqual = (oldMD5Digest == newMD5Digest);
+    return isChanged ? true : !digestEqual;
 }
 
 DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryPath, const FilePath & psdPathname, const String & psdName, bool twoSideMargin, uint32 texturesMargin)
@@ -411,8 +415,8 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
                 ScopedPtr<File> md5File(File::Create(md5FileName, File::OPEN | File::READ));
                 if (md5File)
                 {   //invalidation of primary key
-                    auto read = md5File->Read(cacheKey.data(), MD5::DIGEST_SIZE);
-                    DVASSERT(read == MD5::DIGEST_SIZE);
+                    auto read = md5File->Read(cacheKey.data(), MD5::MD5Digest::DIGEST_SIZE);
+                    DVASSERT(read == MD5::MD5Digest::DIGEST_SIZE);
                 }
 
                 String cachedParams;
@@ -424,8 +428,10 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
                 auto strDataPtr = cachedParams.c_str();
                 auto strDataSize = cachedParams.size();
                 
-                DVASSERT(cacheKey.size() >= MD5::DIGEST_SIZE * 2); //To inform about crashes
-                MD5::ForData(reinterpret_cast<const uint8 *>(strDataPtr), static_cast<uint32>(strDataSize), cacheKey.data() + MD5::DIGEST_SIZE);
+                DVASSERT(cacheKey.size() >= MD5::MD5Digest::DIGEST_SIZE * 2); //To inform about crashes
+                MD5::MD5Digest digest;
+                MD5::ForData(reinterpret_cast<const uint8 *>(strDataPtr), static_cast<uint32>(strDataSize), digest);
+                Memcpy(cacheKey.data() + MD5::MD5Digest::DIGEST_SIZE, digest.digest.data(), digest.digest.size());
             }
 
             bool needRepack = !GetFilesFromCache(cacheKey, inputPath, outputPath);

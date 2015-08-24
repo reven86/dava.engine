@@ -41,7 +41,7 @@ String KeyToString(const DoubleMD5Key &key)
     Array<DAVA::char8, bufferSize + 1> buffer; // +1 is for MD5::HashToChar for \0
     
     MD5::HashToChar(key.data(), buffer.data(), HASH_SIZE + 1);
-    MD5::HashToChar(key.data() + MD5::DIGEST_SIZE, buffer.data() + HASH_SIZE, HASH_SIZE + 1);
+    MD5::HashToChar(key.data() + MD5::MD5Digest::DIGEST_SIZE, buffer.data() + HASH_SIZE, HASH_SIZE + 1);
     
     return String(buffer.data(), bufferSize);
 }
@@ -51,7 +51,7 @@ void StringToKey(const String & string, DoubleMD5Key &key)
     DVASSERT(string.length() == HASH_SIZE * 2);
     
     MD5::CharToHash(string.data(), key.data());
-    MD5::CharToHash(string.data() + HASH_SIZE, key.data() + MD5::DIGEST_SIZE);
+    MD5::CharToHash(string.data() + HASH_SIZE, key.data() + MD5::MD5Digest::DIGEST_SIZE);
 }
 
 void SerializeKey(const DoubleMD5Key & key, KeyedArchive *archieve)
