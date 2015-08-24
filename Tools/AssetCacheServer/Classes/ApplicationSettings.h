@@ -82,8 +82,6 @@ public:
     void Save() const;
     void Load();
 
-    void SetDefaultSettings();
-
     bool IsFirstLaunch() const;
 
     const FilePath & GetFolder() const;

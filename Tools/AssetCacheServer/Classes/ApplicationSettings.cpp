@@ -106,20 +106,9 @@ void ApplicationSettings::Load()
     else
     {
         isFirstLaunch = true;
-        SetDefaultSettings();
     }
 
     emit SettingsUpdated(this);
-}
-
-void ApplicationSettings::SetDefaultSettings()
-{
-    folder = DEFAULT_FOLDER;
-    cacheSizeGb = DEFAULT_CACHE_SIZE_GB;
-    filesCount = DEFAULT_FILES_COUNT;
-    autoSaveTimeoutMin = DEFAULT_AUTO_SAVE_TIMEOUT_MIN;
-    listenPort = DEFAULT_PORT;
-    autoStart = DEFAULT_AUTO_START;
 }
 
 void ApplicationSettings::Serialize(DAVA::KeyedArchive * archive) const
