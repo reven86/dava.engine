@@ -123,8 +123,6 @@ private:
     void SetTitleName();
     void SetDisplayOrientations();
 
-    void InitInput();
-
     void ResetRender();
 
     void InitCoordinatesSystem();
@@ -134,7 +132,9 @@ private:
     void UpdateScreenSize(int32 width, int32 height);
     void UpdateScreenScale(float32 scaleX, float32 scaleY);
     void SetFullScreen(bool isFullScreenFlag);
-    void SetPreferredSize(int32 width, int32 height);
+    // in units of effective (view) pixels
+    void SetPreferredSize(float32 width, float32 height);
+    void HideAsyncTaskBar();
     
     void OnSwapChainPanelSizeChanged(Platform::Object^ sender, Windows::UI::Xaml::SizeChangedEventArgs^ e);
 private:
@@ -160,6 +160,7 @@ private:
     bool isWindowVisible = true;
     bool isWindowClosed = false;
     bool isFullscreen = false;
+    bool isRenderCreated = false;
     DisplayMode windowedMode = DisplayMode(DisplayMode::DEFAULT_WIDTH,
                                            DisplayMode::DEFAULT_HEIGHT,
                                            DisplayMode::DEFAULT_BITS_PER_PIXEL,
@@ -173,10 +174,12 @@ private:
     bool isLeftButtonPressed = false;
     bool isMiddleButtonPressed = false;
 
-    int32 swapChainWidth = DisplayMode::DEFAULT_WIDTH;
-    int32 swapChainHeight = DisplayMode::DEFAULT_HEIGHT;
     float32 swapChainScaleX = 1.f;
     float32 swapChainScaleY = 1.f;
+    int32 swapChainWidth = DisplayMode::DEFAULT_WIDTH;
+    int32 swapChainHeight = DisplayMode::DEFAULT_HEIGHT;
+    int32 physicalWidth = static_cast<int32>(swapChainWidth * swapChainScaleX);
+    int32 physicalHeight = static_cast<int32>(swapChainHeight * swapChainScaleY);
 
     Windows::Graphics::Display::DisplayOrientations displayOrientation = ::Windows::Graphics::Display::DisplayOrientations::None;
 };
