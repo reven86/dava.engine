@@ -49,90 +49,90 @@ namespace AssetCache{
 
 bool SendArchieve(Net::IChannel* channel, KeyedArchive *archieve)
 {
-	DVASSERT(archieve && channel);
+    DVASSERT(archieve && channel);
 
-	auto packedSize = archieve->Save(nullptr, 0);
-	uint8 *packedData = new uint8[packedSize];
+    auto packedSize = archieve->Save(nullptr, 0);
+    uint8 *packedData = new uint8[packedSize];
 
-	DVVERIFY(packedSize == archieve->Save(packedData, packedSize));
+    DVVERIFY(packedSize == archieve->Save(packedData, packedSize));
 
-	uint32 packedId = 0;
-	return channel->Send(packedData, packedSize, 0, &packedId);
+    uint32 packedId = 0;
+    return channel->Send(packedData, packedSize, 0, &packedId);
 }
     
 Connection::Connection(Net::eNetworkRole _role, const Net::Endpoint & _endpoint, Net::IChannelListener * _listener, Net::eTransportType transport)
-	: endpoint(_endpoint)
-	, listener(_listener)
+    : endpoint(_endpoint)
+    , listener(_listener)
 {
-	Connect(_role, transport);
+    Connect(_role, transport);
 }
 
 
 Connection::~Connection()
 {
-	if (Net::NetCore::INVALID_TRACK_ID != controllerId && Net::NetCore::Instance() != nullptr)
-	{
-		DisconnectBlocked();
-	}
+    if (Net::NetCore::INVALID_TRACK_ID != controllerId && Net::NetCore::Instance() != nullptr)
+    {
+        DisconnectBlocked();
+    }
 }
 
 bool Connection::Connect(Net::eNetworkRole role, Net::eTransportType transport)
 {
     const auto serviceID = NET_SERVICE_ID;
     
-	bool isRegistered = Net::NetCore::Instance()->IsServiceRegistered(serviceID);
-	if (!isRegistered)
-	{
-		isRegistered = Net::NetCore::Instance()->RegisterService(serviceID,
-			MakeFunction(&Connection::Create),
-			MakeFunction(&Connection::Delete));
-	}
+    bool isRegistered = Net::NetCore::Instance()->IsServiceRegistered(serviceID);
+    if (!isRegistered)
+    {
+        isRegistered = Net::NetCore::Instance()->RegisterService(serviceID,
+            MakeFunction(&Connection::Create),
+            MakeFunction(&Connection::Delete));
+    }
 
-	if (isRegistered)
-	{
-		Net::NetConfig config(role);
-		config.AddTransport(transport, endpoint);
-		config.AddService(serviceID);
+    if (isRegistered)
+    {
+        Net::NetConfig config(role);
+        config.AddTransport(transport, endpoint);
+        config.AddService(serviceID);
 
-		controllerId = Net::NetCore::Instance()->CreateController(config, this);
-		if (Net::NetCore::INVALID_TRACK_ID != controllerId)
-		{
-			return true;
-		}
-		else
-		{
-			Logger::Error("[TCPConnection::%s] Cannot create controller", __FUNCTION__);
-		}
-	}
-	else
-	{
-		Logger::Error("[TCPConnection::%s] Cannot register service(%d)", __FUNCTION__, NET_SERVICE_ID);
-	}
+        controllerId = Net::NetCore::Instance()->CreateController(config, this);
+        if (Net::NetCore::INVALID_TRACK_ID != controllerId)
+        {
+            return true;
+        }
+        else
+        {
+            Logger::Error("[TCPConnection::%s] Cannot create controller", __FUNCTION__);
+        }
+    }
+    else
+    {
+        Logger::Error("[TCPConnection::%s] Cannot register service(%d)", __FUNCTION__, NET_SERVICE_ID);
+    }
 
-	return false;
+    return false;
 }
 
 void Connection::DisconnectBlocked()
 {
-	DVASSERT(Net::NetCore::INVALID_TRACK_ID != controllerId);
-	DVASSERT(Net::NetCore::Instance() != nullptr);
+    DVASSERT(Net::NetCore::INVALID_TRACK_ID != controllerId);
+    DVASSERT(Net::NetCore::Instance() != nullptr);
 
-	Net::NetCore::Instance()->DestroyControllerBlocked(controllerId);
-	listener = nullptr;
-	controllerId = Net::NetCore::INVALID_TRACK_ID;
+    Net::NetCore::Instance()->DestroyControllerBlocked(controllerId);
+    listener = nullptr;
+    controllerId = Net::NetCore::INVALID_TRACK_ID;
 }
 
 
 Net::IChannelListener * Connection::Create(uint32 serviceId, void* context)
 {
-	auto connection = static_cast<Connection *>(context);
-	return connection->listener;
+    auto connection = static_cast<Connection *>(context);
+    return connection->listener;
 }
 
 void Connection::Delete(Net::IChannelListener* obj, void* context)
 {
-	//do nothing
-	//listener has external creation and deletion
+    //do nothing
+    //listener has external creation and deletion
 }
 
 

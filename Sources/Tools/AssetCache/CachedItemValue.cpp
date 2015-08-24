@@ -43,16 +43,16 @@ namespace AssetCache
 {
     
 CachedItemValue::CachedItemValue(const CachedItemValue & right)
-	: dataContainer(right.dataContainer)
-	, size(right.size)
-	, isFetched(right.isFetched)
+    : dataContainer(right.dataContainer)
+    , size(right.size)
+    , isFetched(right.isFetched)
 {
 }
     
 CachedItemValue::CachedItemValue(CachedItemValue &&right)
-	: dataContainer(std::move(right.dataContainer))
+    : dataContainer(std::move(right.dataContainer))
     , size(right.size)
-	, isFetched(right.isFetched)
+    , isFetched(right.isFetched)
 {
     right.size = 0;
     right.isFetched = false;
@@ -67,7 +67,7 @@ CachedItemValue::~CachedItemValue()
     }
     else
     {
-		DVASSERT(std::all_of(dataContainer.cbegin(), dataContainer.cend(), [this](const ValueDataContainer::value_type &data) { return IsDataLoaded(data.second) == false; }));
+        DVASSERT(std::all_of(dataContainer.cbegin(), dataContainer.cend(), [this](const ValueDataContainer::value_type &data) { return IsDataLoaded(data.second) == false; }));
     }
     
     dataContainer.clear();
@@ -78,12 +78,12 @@ CachedItemValue::~CachedItemValue()
 void CachedItemValue::Add(const String &name, ValueData data)
 {
     DVASSERT(dataContainer.count(name) == 0);
-	DVASSERT(IsDataLoaded(data));
+    DVASSERT(IsDataLoaded(data));
 
-	dataContainer[name] = data;
-	size += data.get()->size();
+    dataContainer[name] = data;
+    size += data.get()->size();
 
-	isFetched = true;
+    isFetched = true;
 }
 
     
@@ -101,7 +101,7 @@ void CachedItemValue::Serialize(KeyedArchive * archieve, bool serializeData) con
     {
         archieve->SetString(Format("name_%d", index), dc.first);
 
-		if (IsDataLoaded(dc.second) && serializeData)
+        if (IsDataLoaded(dc.second) && serializeData)
         {
             auto & data = dc.second;
             archieve->SetByteArray(Format("data_%d", index), data.get()->data(), data.get()->size());
@@ -115,7 +115,7 @@ void CachedItemValue::Serialize(KeyedArchive * archieve, bool serializeData) con
 void CachedItemValue::Deserialize(KeyedArchive * archieve)
 {
     DVASSERT(nullptr != archieve);
-	DVASSERT(dataContainer.empty());
+    DVASSERT(dataContainer.empty());
     DVASSERT(isFetched == false);
     
     size = archieve->GetUInt64("size");
@@ -124,7 +124,7 @@ void CachedItemValue::Deserialize(KeyedArchive * archieve)
     for(uint32 i = 0; i < count; ++i)
     {
         String name = archieve->GetString(Format("name_%d", i));
-		ValueData data = std::make_shared<Vector<uint8> >();
+        ValueData data = std::make_shared<Vector<uint8> >();
 
         auto key = Format("data_%d", i);
         auto size = archieve->GetByteArraySize(key);
@@ -132,11 +132,11 @@ void CachedItemValue::Deserialize(KeyedArchive * archieve)
         {
             isFetched = true;
 
-			data.get()->resize(size);
-			Memcpy(data.get()->data(), archieve->GetByteArray(key), size);
+            data.get()->resize(size);
+            Memcpy(data.get()->data(), archieve->GetByteArray(key), size);
         }
         
-		dataContainer[name] = data;
+        dataContainer[name] = data;
     }
 }
 
@@ -216,7 +216,7 @@ bool CachedItemValue::Deserialize(File* file)
 
 bool CachedItemValue::operator == (const CachedItemValue &right) const
 {
-	return (dataContainer == right.dataContainer) && (isFetched == right.isFetched) && (size == right.size);
+    return (dataContainer == right.dataContainer) && (isFetched == right.isFetched) && (size == right.size);
 }
 
 CachedItemValue & CachedItemValue::operator=(const CachedItemValue &right)
@@ -229,7 +229,7 @@ CachedItemValue & CachedItemValue::operator=(const CachedItemValue &right)
         isFetched = right.isFetched;
         size = right.size;
 
-		dataContainer = right.dataContainer;
+        dataContainer = right.dataContainer;
     }
 
     return (*this);
@@ -239,7 +239,7 @@ CachedItemValue & CachedItemValue::operator=(CachedItemValue &&right)
 {
     if (this != &right)
     {
-		dataContainer = std::move(right.dataContainer);
+        dataContainer = std::move(right.dataContainer);
 
         isFetched = right.isFetched;
         size = right.size;
@@ -255,14 +255,14 @@ CachedItemValue & CachedItemValue::operator=(CachedItemValue &&right)
 
 void CachedItemValue::Fetch(const FilePath & folder)
 {
-	DVASSERT(folder.IsDirectoryPathname());
-	DVASSERT(isFetched == false);
+    DVASSERT(folder.IsDirectoryPathname());
+    DVASSERT(isFetched == false);
     
     isFetched = true;
-	for (auto & dc : dataContainer)
+    for (auto & dc : dataContainer)
     {
         DVASSERT(IsDataLoaded(dc.second) == false);
-		dc.second = LoadFile(folder + dc.first);
+        dc.second = LoadFile(folder + dc.first);
     }
 }
 
@@ -271,10 +271,10 @@ void CachedItemValue::Free()
     DVASSERT(isFetched == true);
 
     isFetched = false;
-	for (auto & dc : dataContainer)
+    for (auto & dc : dataContainer)
     {
-		DVASSERT(IsDataLoaded(dc.second) == true);
-		dc.second.reset();
+        DVASSERT(IsDataLoaded(dc.second) == true);
+        dc.second.reset();
     }
 }
     
@@ -284,7 +284,7 @@ void CachedItemValue::Export(const FilePath & folder) const
     
     FileSystem::Instance()->CreateDirectory(folder, true);
     
-	for (auto & dc : dataContainer)
+    for (auto & dc : dataContainer)
     {
         if(IsDataLoaded(dc.second) == false)
         {
@@ -297,10 +297,10 @@ void CachedItemValue::Export(const FilePath & folder) const
         ScopedPtr<File> file(File::Create(savedPath, File::CREATE | File::WRITE));
         if(file)
         {
-			const ValueData &data = dc.second;
+            const ValueData &data = dc.second;
 
             auto written = file->Write(data.get()->data(), data.get()->size());
-			DVVERIFY(written == data.get()->size());
+            DVVERIFY(written == data.get()->size());
         }
         else
         {
@@ -311,15 +311,15 @@ void CachedItemValue::Export(const FilePath & folder) const
     
 CachedItemValue::ValueData CachedItemValue::LoadFile(const FilePath & pathname)
 {
-	ValueData data = std::make_shared<Vector<uint8>>();
+    ValueData data = std::make_shared<Vector<uint8>>();
 
-	ScopedPtr<File> file(File::Create(pathname, File::OPEN | File::READ));
+    ScopedPtr<File> file(File::Create(pathname, File::OPEN | File::READ));
     if(file)
     {
         auto dataSize = file->GetSize();
-		data.get()->resize(dataSize);
+        data.get()->resize(dataSize);
         
-		auto read = file->Read(data.get()->data(), dataSize);
+        auto read = file->Read(data.get()->data(), dataSize);
         DVVERIFY(read == dataSize);
     }
     else

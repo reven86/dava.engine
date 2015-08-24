@@ -47,8 +47,8 @@ namespace AssetCache
 
 class CachedItemValue
 {
-	using ValueData = std::shared_ptr < Vector<uint8> > ;
-	using ValueDataContainer = Map < String, ValueData>;
+    using ValueData = std::shared_ptr < Vector<uint8> > ;
+    using ValueDataContainer = Map < String, ValueData>;
 
 public:
     
@@ -62,7 +62,7 @@ public:
     
     bool IsEmtpy() const;
     bool IsFetched() const;
-	uint64 GetSize() const;
+    uint64 GetSize() const;
 
     void Serialize(KeyedArchive * archieve, bool serializeData) const;
     void Deserialize(KeyedArchive * archieve);
@@ -74,19 +74,19 @@ public:
     CachedItemValue & operator=(const CachedItemValue &right);
     CachedItemValue & operator=(CachedItemValue &&right);
     
-	void Fetch(const FilePath & folder);
+    void Fetch(const FilePath & folder);
     void Free();
     
     void Export(const FilePath & folder) const;
     
 private:
-	ValueData LoadFile(const FilePath & pathname);
+    ValueData LoadFile(const FilePath & pathname);
     
-	bool IsDataLoaded(const ValueData & data) const;
+    bool IsDataLoaded(const ValueData & data) const;
 
 private:
 
-	ValueDataContainer dataContainer;
+    ValueDataContainer dataContainer;
 
     uint64 size = 0;
     bool isFetched = false;
@@ -95,7 +95,7 @@ private:
 
 inline bool CachedItemValue::IsEmtpy() const
 {
-	return dataContainer.empty();
+    return dataContainer.empty();
 }
 
 inline bool CachedItemValue::IsFetched() const
@@ -105,13 +105,13 @@ inline bool CachedItemValue::IsFetched() const
 
 inline bool CachedItemValue::IsDataLoaded(const CachedItemValue::ValueData & data) const
 {
-	return (data.get() != nullptr && !data.get()->empty());
+    return (data.get() != nullptr && !data.get()->empty());
 }
 
 inline uint64 CachedItemValue::GetSize() const
 {
-	DVASSERT((dataContainer.empty() && size == 0) || (!dataContainer.empty() && size > 0));
-	return size;
+    DVASSERT((dataContainer.empty() && size == 0) || (!dataContainer.empty() && size > 0));
+    return size;
 }
 
 }; // end of namespace AssetCache

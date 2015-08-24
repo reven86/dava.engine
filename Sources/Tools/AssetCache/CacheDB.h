@@ -124,7 +124,7 @@ private:
     FastCacheMap fastCache;             //runtime, week storage
     CacheMap fullCache;                 //stored on disk, strong storage
     
-	std::atomic<bool> dbStateChanged;   //flag about changes in db
+    std::atomic<bool> dbStateChanged;   //flag about changes in db
 };
     
     

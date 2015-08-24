@@ -47,12 +47,12 @@ ServerCacheEntry::ServerCacheEntry()
 }
 
 ServerCacheEntry::ServerCacheEntry(const CachedItemValue &_value)
-	: value(_value)
+    : value(_value)
 {
 }
 
 ServerCacheEntry::ServerCacheEntry(ServerCacheEntry &&right)
-	: value(std::move(right.value))
+    : value(std::move(right.value))
     , accessID(right.accessID)
 {
 }
@@ -61,7 +61,7 @@ ServerCacheEntry & ServerCacheEntry::operator=(ServerCacheEntry &&right)
 {
     if(this != &right)
     {
-		value = std::move(right.value);
+        value = std::move(right.value);
         accessID = right.accessID;
     }
     
@@ -72,7 +72,7 @@ ServerCacheEntry & ServerCacheEntry::operator=(ServerCacheEntry &&right)
 
 bool ServerCacheEntry::operator == (const ServerCacheEntry &right) const
 {
-	return (accessID == right.accessID) && (value == right.value);
+    return (accessID == right.accessID) && (value == right.value);
 }
 
 void ServerCacheEntry::Serialize(KeyedArchive * archieve) const
@@ -82,8 +82,8 @@ void ServerCacheEntry::Serialize(KeyedArchive * archieve) const
     archieve->SetUInt64("accessID", accessID);
     
     ScopedPtr<KeyedArchive> valueArchieve(new KeyedArchive());
-	value.Serialize(valueArchieve, false);
-	archieve->SetArchive("value", valueArchieve);
+    value.Serialize(valueArchieve, false);
+    archieve->SetArchive("value", valueArchieve);
 }
 
 void ServerCacheEntry::Deserialize(KeyedArchive * archieve)
@@ -92,19 +92,19 @@ void ServerCacheEntry::Deserialize(KeyedArchive * archieve)
     
     accessID = archieve->GetUInt64("accessID");
     
-	KeyedArchive *valueArchieve = archieve->GetArchive("value");
-	DVASSERT(valueArchieve);
-	value.Deserialize(valueArchieve);
+    KeyedArchive *valueArchieve = archieve->GetArchive("value");
+    DVASSERT(valueArchieve);
+    value.Deserialize(valueArchieve);
 }
     
 void ServerCacheEntry::Fetch(const FilePath & folder)
 {
-	value.Fetch(folder);
+    value.Fetch(folder);
 }
     
 void ServerCacheEntry::Free()
 {
-	value.Free();
+    value.Free();
 }
     
     

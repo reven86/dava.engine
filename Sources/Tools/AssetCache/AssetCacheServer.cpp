@@ -48,106 +48,106 @@ Server::~Server()
 
 void Server::Listen(uint16 port)
 {
-	listenPort = port;
-	DVASSERT(!netServer);
+    listenPort = port;
+    DVASSERT(!netServer);
 
-	netServer.reset(new Connection(Net::SERVER_ROLE, Net::Endpoint(listenPort), this));
+    netServer.reset(new Connection(Net::SERVER_ROLE, Net::Endpoint(listenPort), this));
 }
 
 
 void Server::Disconnect()
 {
-	netServer.reset();
+    netServer.reset();
 }
 
 
 void Server::OnPacketReceived(Net::IChannel * channel, const void* packetData, size_t length)
 {
-	if(nullptr == delegate)
-	{	// do not need to process data in case of nullptr delegate
-		return;
-	}
+    if(nullptr == delegate)
+    {    // do not need to process data in case of nullptr delegate
+        return;
+    }
 
-	if(length > 0)
-	{
-		CachePacket* packet = CachePacket::Create(static_cast<const uint8 *>(packetData), length);
-		if (packet)
-		{
-			switch (packet->type)
-			{
-			case PACKET_ADD_REQUEST:
-				{
-					AddRequestPacket *p = static_cast<AddRequestPacket*>(packet);
-					delegate->OnAddToCache(channel, p->key, std::forward<CachedItemValue>(p->value));
-					break;
-				}
-			case PACKET_GET_REQUEST:
-				{
-					GetRequestPacket* p = static_cast<GetRequestPacket*>(packet);
-					delegate->OnRequestedFromCache(channel, p->key);
-					break;
-				}
-			case PACKET_WARMING_UP_REQUEST:
-				{
-					WarmupRequestPacket* p = static_cast<WarmupRequestPacket*>(packet);
-					delegate->OnWarmingUp(channel, p->key);
-					break;
-				}
-			default:
-				{
-					Logger::Error("[AssetCache::Server::%s] Unexpected packet type: (%d). Closing channel", __FUNCTION__, packet->type);
-					DVASSERT(false);
-					break;
-				}
-			}
+    if(length > 0)
+    {
+        CachePacket* packet = CachePacket::Create(static_cast<const uint8 *>(packetData), length);
+        if (packet)
+        {
+            switch (packet->type)
+            {
+            case PACKET_ADD_REQUEST:
+                {
+                    AddRequestPacket *p = static_cast<AddRequestPacket*>(packet);
+                    delegate->OnAddToCache(channel, p->key, std::forward<CachedItemValue>(p->value));
+                    break;
+                }
+            case PACKET_GET_REQUEST:
+                {
+                    GetRequestPacket* p = static_cast<GetRequestPacket*>(packet);
+                    delegate->OnRequestedFromCache(channel, p->key);
+                    break;
+                }
+            case PACKET_WARMING_UP_REQUEST:
+                {
+                    WarmupRequestPacket* p = static_cast<WarmupRequestPacket*>(packet);
+                    delegate->OnWarmingUp(channel, p->key);
+                    break;
+                }
+            default:
+                {
+                    Logger::Error("[AssetCache::Server::%s] Unexpected packet type: (%d). Closing channel", __FUNCTION__, packet->type);
+                    DVASSERT(false);
+                    break;
+                }
+            }
 
-			delete packet;
-		}
-		else
-		{
-			DVASSERT(false && "Invalid packet received");
-		}
-	}
-	else
-	{
-		Logger::Error("[AssetCache::Server::%s] Empty packet is received.", __FUNCTION__);
-	}
+            delete packet;
+        }
+        else
+        {
+            DVASSERT(false && "Invalid packet received");
+        }
+    }
+    else
+    {
+        Logger::Error("[AssetCache::Server::%s] Empty packet is received.", __FUNCTION__);
+    }
 }
 
 void Server::OnPacketSent(Net::IChannel* channel, const void* buffer, size_t length)
 {
-	CachePacket::PacketSent(static_cast<const uint8 *> (buffer), length);
+    CachePacket::PacketSent(static_cast<const uint8 *> (buffer), length);
 }
 
 
 void Server::OnChannelClosed(Net::IChannel * channel, const char8* message)
 {
-	if(delegate)
-	{
-		delegate->OnChannelClosed(channel, message);
-	}
+    if(delegate)
+    {
+        delegate->OnChannelClosed(channel, message);
+    }
 }
 
 bool Server::AddedToCache(Net::IChannel * channel, const CacheItemKey &key, bool added)
 {
-	if(channel)
-	{
-		AddResponsePacket packet(key, added);
-		return packet.SendTo(channel);
-	}
+    if(channel)
+    {
+        AddResponsePacket packet(key, added);
+        return packet.SendTo(channel);
+    }
 
-	return false;
+    return false;
 }
 
 bool Server::Send(Net::IChannel * channel, const CacheItemKey &key, const CachedItemValue &value)
 {
-	if (channel)
-	{
-		GetResponsePacket packet(key, value);
-		return packet.SendTo(channel);
-	}
+    if (channel)
+    {
+        GetResponsePacket packet(key, value);
+        return packet.SendTo(channel);
+    }
 
-	return false;
+    return false;
 }
 
 

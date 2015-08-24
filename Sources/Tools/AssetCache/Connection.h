@@ -38,7 +38,7 @@ namespace DAVA
 {
 namespace Net
 {
-	struct IChannel;
+    struct IChannel;
 }
 
 class KeyedArchive;
@@ -50,15 +50,15 @@ bool SendArchieve(Net::IChannel* channel, KeyedArchive *archieve);
 class Connection
 {
 public:
-	Connection(Net::eNetworkRole role, const Net::Endpoint & endpoint, Net::IChannelListener * listener, Net::eTransportType transport = Net::TRANSPORT_TCP);
-	~Connection();
+    Connection(Net::eNetworkRole role, const Net::Endpoint & endpoint, Net::IChannelListener * listener, Net::eTransportType transport = Net::TRANSPORT_TCP);
+    ~Connection();
 
     const Net::Endpoint & GetEndpoint() const;
 
 private:
 
-	bool Connect(Net::eNetworkRole _role, Net::eTransportType transport);
-	void DisconnectBlocked();
+    bool Connect(Net::eNetworkRole _role, Net::eTransportType transport);
+    void DisconnectBlocked();
 
     static Net::IChannelListener * Create(uint32 serviceId, void* context);
     static void Delete(Net::IChannelListener* obj, void* context);
@@ -66,14 +66,14 @@ private:
 private:
     
     Net::Endpoint endpoint;
-	Net::NetCore::TrackId controllerId = Net::NetCore::INVALID_TRACK_ID;
+    Net::NetCore::TrackId controllerId = Net::NetCore::INVALID_TRACK_ID;
 
-	Net::IChannelListener *listener = nullptr;
+    Net::IChannelListener *listener = nullptr;
 };
 
 inline const Net::Endpoint & Connection::GetEndpoint() const
 {
-	return endpoint;
+    return endpoint;
 }
 
 } // end of namespace AssetCache

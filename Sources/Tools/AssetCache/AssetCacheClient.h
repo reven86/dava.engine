@@ -49,7 +49,7 @@ public:
     
     virtual void OnAssetClientStateChanged() {};
     virtual void OnAddedToCache(const CacheItemKey &key, bool added) {};
-	virtual void OnReceivedFromCache(const CacheItemKey &key, CachedItemValue &&value) {};
+    virtual void OnReceivedFromCache(const CacheItemKey &key, CachedItemValue &&value) {};
 };
 
 class Client: public DAVA::Net::IChannelListener,
@@ -66,33 +66,33 @@ public:
 
     bool ChannelIsOpened();
     
-	bool AddToCache(const CacheItemKey &key, const CachedItemValue &value);
+    bool AddToCache(const CacheItemKey &key, const CachedItemValue &value);
     bool RequestFromCache(const CacheItemKey &key);
     bool WarmingUp(const CacheItemKey &key);
 
-	Connection * GetConnection() const;
+    Connection * GetConnection() const;
 
-	//Net::IChannelListener
-	// Channel is open (underlying transport has connection) and can receive and send data through IChannel interface
-	void OnChannelOpen(Net::IChannel* channel) override;
-	// Channel is closed (underlying transport has disconnected) with reason
-	void OnChannelClosed(Net::IChannel* channel, const char8* message) override;
-	// Some data arrived into channel
-	void OnPacketReceived(Net::IChannel* channel, const void* buffer, size_t length) override;
-	// Buffer has been sent and can be reused or freed
-	void OnPacketSent(Net::IChannel* channel, const void* buffer, size_t length) override;
-	// Data packet with given ID has been delivered to other side
-	void OnPacketDelivered(Net::IChannel* channel, uint32 packetId) override {};
+    //Net::IChannelListener
+    // Channel is open (underlying transport has connection) and can receive and send data through IChannel interface
+    void OnChannelOpen(Net::IChannel* channel) override;
+    // Channel is closed (underlying transport has disconnected) with reason
+    void OnChannelClosed(Net::IChannel* channel, const char8* message) override;
+    // Some data arrived into channel
+    void OnPacketReceived(Net::IChannel* channel, const void* buffer, size_t length) override;
+    // Buffer has been sent and can be reused or freed
+    void OnPacketSent(Net::IChannel* channel, const void* buffer, size_t length) override;
+    // Data packet with given ID has been delivered to other side
+    void OnPacketDelivered(Net::IChannel* channel, uint32 packetId) override {};
 
-	// AddressRequester
+    // AddressRequester
     virtual void OnAddressResolved() override;
 
     void StateChanged();
 
 private:
-	Net::AddressResolver addressResolver;
-	std::unique_ptr<Connection> netClient;
-	DAVA::Net::IChannel * openedChannel = nullptr;
+    Net::AddressResolver addressResolver;
+    std::unique_ptr<Connection> netClient;
+    DAVA::Net::IChannel * openedChannel = nullptr;
     
     Set<ClientListener*> listeners;
 };
@@ -105,7 +105,7 @@ inline bool Client::ChannelIsOpened()
 
 inline Connection * Client::GetConnection() const
 {
-	return netClient.get();
+    return netClient.get();
 }
 
     

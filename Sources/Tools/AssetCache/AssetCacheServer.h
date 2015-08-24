@@ -52,11 +52,11 @@ public:
     
     virtual ~ServerDelegate() = default;
     
-	virtual void OnAddToCache(Net::IChannel * channel, const CacheItemKey &key, CachedItemValue &&value) = 0;
-	virtual void OnRequestedFromCache(Net::IChannel * channel, const CacheItemKey &key) = 0;
-	virtual void OnWarmingUp(Net::IChannel * channel, const CacheItemKey &key) = 0;
+    virtual void OnAddToCache(Net::IChannel * channel, const CacheItemKey &key, CachedItemValue &&value) = 0;
+    virtual void OnRequestedFromCache(Net::IChannel * channel, const CacheItemKey &key) = 0;
+    virtual void OnWarmingUp(Net::IChannel * channel, const CacheItemKey &key) = 0;
 
-	virtual void OnChannelClosed(Net::IChannel * channel, const char8* message) { };
+    virtual void OnChannelClosed(Net::IChannel * channel, const char8* message) { };
 };
     
     
@@ -75,25 +75,25 @@ public:
     
     uint16 GetListenPort() const;
     
-	bool AddedToCache(Net::IChannel * channel, const CacheItemKey &key, bool added);
-	bool Send(Net::IChannel * channel, const CacheItemKey &key, const CachedItemValue &value);
+    bool AddedToCache(Net::IChannel * channel, const CacheItemKey &key, bool added);
+    bool Send(Net::IChannel * channel, const CacheItemKey &key, const CachedItemValue &value);
 
-	//Net::IChannelListener
-	// Channel is open (underlying transport has connection) and can receive and send data through IChannel interface
-	void OnChannelOpen(Net::IChannel* channel) override {};
-	// Channel is closed (underlying transport has disconnected) with reason
-	void OnChannelClosed(Net::IChannel * channel, const char8* message) override;
-	// Some data arrived into channel
-	void OnPacketReceived(Net::IChannel * channel, const void* buffer, size_t length) override;
-	// Buffer has been sent and can be reused or freed
-	void OnPacketSent(Net::IChannel* channel, const void* buffer, size_t length) override;
-	// Data packet with given ID has been delivered to other side
-	void OnPacketDelivered(Net::IChannel* channel, uint32 packetId) override {};
+    //Net::IChannelListener
+    // Channel is open (underlying transport has connection) and can receive and send data through IChannel interface
+    void OnChannelOpen(Net::IChannel* channel) override {};
+    // Channel is closed (underlying transport has disconnected) with reason
+    void OnChannelClosed(Net::IChannel * channel, const char8* message) override;
+    // Some data arrived into channel
+    void OnPacketReceived(Net::IChannel * channel, const void* buffer, size_t length) override;
+    // Buffer has been sent and can be reused or freed
+    void OnPacketSent(Net::IChannel* channel, const void* buffer, size_t length) override;
+    // Data packet with given ID has been delivered to other side
+    void OnPacketDelivered(Net::IChannel* channel, uint32 packetId) override {};
 
 private:
 
     uint16 listenPort = 0;
-	std::unique_ptr<Connection> netServer;
+    std::unique_ptr<Connection> netServer;
     ServerDelegate *delegate = nullptr;
 };
 
