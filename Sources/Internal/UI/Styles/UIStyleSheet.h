@@ -64,7 +64,7 @@ private:
         
     RefPtr<UIStyleSheetPropertyTable> properties;
 
-    int32 score;
+    uint32 score;
 };
 
 };
