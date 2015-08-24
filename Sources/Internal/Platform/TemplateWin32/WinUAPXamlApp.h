@@ -98,7 +98,10 @@ private:    // Event handlers
     // Windows state change handlers
     void OnWindowActivationChanged(::Windows::UI::Core::CoreWindow^ sender, ::Windows::UI::Core::WindowActivatedEventArgs^ args);
     void OnWindowVisibilityChanged(::Windows::UI::Core::CoreWindow^ sender, ::Windows::UI::Core::VisibilityChangedEventArgs^ args);
-    void OnWindowSizeChanged(::Windows::UI::Core::CoreWindow^ sender, ::Windows::UI::Core::WindowSizeChangedEventArgs^ args);
+    
+    // Swap chain panel state change handlers
+    void OnSwapChainPanelSizeChanged(Platform::Object^ sender, Windows::UI::Xaml::SizeChangedEventArgs^ e);
+    void OnSwapChainPanelScaleChanged(Windows::UI::Xaml::Controls::SwapChainPanel^ panel, Platform::Object^ args);
 
     // Mouse and touch handlers
     void OnPointerPressed(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args);
@@ -136,7 +139,6 @@ private:
     void SetPreferredSize(float32 width, float32 height);
     void HideAsyncTaskBar();
     
-    void OnSwapChainPanelSizeChanged(Platform::Object^ sender, Windows::UI::Xaml::SizeChangedEventArgs^ e);
 private:
     Concurrency::critical_section criticalSection;
     CorePlatformWinUAP* core;

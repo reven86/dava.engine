@@ -184,7 +184,7 @@ void WinUAPXamlApp::Run()
         SetDisplayOrientations();
         HideAsyncTaskBar();
         
-        UpdateScreenSize(swapChainPanel->Width, swapChainPanel->Height);
+        UpdateScreenSize(swapChainPanel->ActualWidth, swapChainPanel->ActualHeight);
         UpdateScreenScale(swapChainPanel->CompositionScaleX, swapChainPanel->CompositionScaleY);
     });
 
@@ -271,7 +271,6 @@ void WinUAPXamlApp::OnWindowVisibilityChanged(::Windows::UI::Core::CoreWindow^ s
 
 void WinUAPXamlApp::OnSwapChainPanelSizeChanged(Platform::Object^ sender, SizeChangedEventArgs^ e)
 {
-    //critical_section::scoped_lock lock(m_main->GetCriticalSection());
     int32 w = static_cast<int32>(e->NewSize.Width);
     int32 h = static_cast<int32>(e->NewSize.Height);
     float32 sx = swapChainPanel->CompositionScaleX;
@@ -285,17 +284,15 @@ void WinUAPXamlApp::OnSwapChainPanelSizeChanged(Platform::Object^ sender, SizeCh
     });
 }
 
-void WinUAPXamlApp::OnWindowSizeChanged(::Windows::UI::Core::CoreWindow^ sender, ::Windows::UI::Core::WindowSizeChangedEventArgs^ args)
+void WinUAPXamlApp::OnSwapChainPanelScaleChanged(SwapChainPanel^ panel, Platform::Object^ args)
 {
-    // Propagate to main thread
-//     int32 w = static_cast<int32>(args->Size.Width);
-//     int32 h = static_cast<int32>(args->Size.Height);
-//     core->RunOnMainThread([this, w, h]() {
-//         UpdateScreenSize(w, h);
-//         ResetRender();
-//         ReInitCoordinatesSystem();
-//         UIScreenManager::Instance()->ScreenSizeChanged();
-//     });
+    float32 sx = swapChainPanel->CompositionScaleX;
+    float32 sy = swapChainPanel->CompositionScaleY;
+    core->RunOnMainThread([this, sx, sy]() {
+        UpdateScreenScale(sx, sy);
+        ResetRender();
+        ReInitCoordinatesSystem();
+    });
 }
 
 void WinUAPXamlApp::OnPointerPressed(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args)
@@ -579,8 +576,8 @@ void WinUAPXamlApp::SetupEventHandlers()
     coreWindow->Activated += ref new TypedEventHandler<CoreWindow^, WindowActivatedEventArgs^>(this, &WinUAPXamlApp::OnWindowActivationChanged);
     coreWindow->VisibilityChanged += ref new TypedEventHandler<CoreWindow^, VisibilityChangedEventArgs^>(this, &WinUAPXamlApp::OnWindowVisibilityChanged);
 
-    //coreWindow->SizeChanged += ref new TypedEventHandler<CoreWindow^, WindowSizeChangedEventArgs^>(this, &WinUAPXamlApp::OnWindowSizeChanged);
     swapChainPanel->SizeChanged += ref new SizeChangedEventHandler(this, &WinUAPXamlApp::OnSwapChainPanelSizeChanged);
+    swapChainPanel->CompositionScaleChanged += ref new TypedEventHandler<SwapChainPanel^, Object^>(this, &WinUAPXamlApp::OnSwapChainPanelScaleChanged);
 
     coreWindow->PointerPressed += ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>(this, &WinUAPXamlApp::OnPointerPressed);
     coreWindow->PointerMoved += ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>(this, &WinUAPXamlApp::OnPointerMoved);
@@ -710,8 +707,8 @@ void WinUAPXamlApp::PrepareScreenSize()
     SetFullScreen(isFull);
     if (isFullscreen)
     {
-        fullscreenMode.width = viewWidth;
-        fullscreenMode.height = viewHeight;
+        fullscreenMode.width = swapChainWidth;
+        fullscreenMode.height = swapChainHeight;
         currentMode = fullscreenMode;
     }
     else
@@ -730,8 +727,8 @@ void WinUAPXamlApp::UpdateScreenSize(int32 width, int32 height)
     physicalHeight = static_cast<int32>(swapChainHeight * swapChainScaleY);
     if (isFullscreen)
     {
-        currentMode.width = viewWidth;
-        currentMode.height = viewHeight;
+        currentMode.width = swapChainWidth;
+        currentMode.height = swapChainHeight;
     }
 }
 
