@@ -670,20 +670,22 @@ void main()
             // view http://www.terathon.com/lengyel/Lengyel-UnifiedFog.pdf
             // to get more clear understanding about this calculations
             float fogK = step(cameraPosition.z, fogHalfspaceHeight);
+            float fogZ = float(viewDirectionInWorldSpace.z == 0.0) + abs(viewDirectionInWorldSpace.z);
+
             float fogFdotP = viewPointInWorldSpace.z - fogHalfspaceHeight;
             float fogFdotC = cameraPosition.z - fogHalfspaceHeight;
             
             float fogC1 = fogK * (fogFdotP + fogFdotC);
             float fogC2 = (1.0 - 2.0 * fogK) * fogFdotP;
             float fogG = min(fogC2, 0.0);
-            fogG = -length(viewDirectionInWorldSpace) * fogHalfspaceDensity * (fogC1 - fogG * fogG / abs(viewDirectionInWorldSpace.z));
-            
+            fogG = -length(viewDirectionInWorldSpace) * fogHalfspaceDensity * (fogC1 - fogG * fogG / fogZ);
             float halfSpaceFogAmoung = 1.0 - exp2(-fogG);
         #else
-            float fogK = viewDirectionInWorldSpace.z / fogDistance;
             float fogB = cameraPosition.z - fogHalfspaceHeight;
-            
-            float halfSpaceFogAmoung = fogHalfspaceDensity * exp(-fogHalfspaceFalloff * fogB) * (1.0 - exp(-fogHalfspaceFalloff * fogK * fogDistance)) / fogK;
+            float fogBExp = exp(-fogHalfspaceFalloff * fogB);
+            float fogZ = float(viewDirectionInWorldSpace.z == 0.0) + viewDirectionInWorldSpace.z;
+            float fogKExp = exp(-fogHalfspaceFalloff * fogZ);
+            float halfSpaceFogAmoung = (fogHalfspaceDensity * fogDistance / fogZ) * (fogBExp - fogBExp * fogKExp);
         #endif
         varFogAmoung = varFogAmoung + clamp(halfSpaceFogAmoung, 0.0, fogHalfspaceLimit);
     #endif
