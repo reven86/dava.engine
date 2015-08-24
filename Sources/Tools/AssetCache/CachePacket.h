@@ -55,7 +55,7 @@ protected:
     static CachePacket* CreateByType(ePacketID type);
 
     void WriteHeader(File *file) const;
-    virtual bool Load(File *file) { return false; };
+    virtual bool Load(File *file) = 0;
 
 public:
 
