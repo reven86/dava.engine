@@ -579,6 +579,22 @@ void Core::SetCommandLine(Vector<String>&& args)
     commandLine = args;
 }
 
+void Core::SetCommandLine(const DAVA::String& cmdLine)
+{
+    commandLine.clear();
+    Split(cmdLine, " ", commandLine);
+
+    //remove "quotes"
+    for (auto& arg : commandLine)
+    {
+        const char quote = '\"';
+        if (arg.front() == quote && arg.back() == quote)
+        {
+            arg = arg.substr(1, arg.size() - 2);
+        }
+    }
+}
+
 const Vector<String> & Core::GetCommandLine()
 {
 	return commandLine;

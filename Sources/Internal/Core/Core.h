@@ -276,6 +276,7 @@ protected:
 
 	void SetCommandLine(int argc, char *argv[]);
 	void SetCommandLine(Vector<String>&& args);
+    void SetCommandLine(const DAVA::String& cmdLine);
 
 private:
     KeyedArchive * options;
