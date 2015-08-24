@@ -93,52 +93,22 @@ bool VegetationCustomGeometry::ClusterByMatrixCompareFunction(const ClusterResol
     return a.cellIndex < b.cellIndex;
 }
 
-VegetationCustomGeometry::VegetationCustomGeometry(const Vector<uint32>& _maxClusters,
+VegetationCustomGeometry::VegetationCustomGeometry(const Vector<uint32> & _maxClusters,
                                                    uint32 _maxDensityLevels,
-                                                   const Vector2& _unitSize,
-                                                   const FilePath& _dataPath,
-                                                   const uint32* _resolutionCellSquare,
-                                                   uint32 _resolutionCellSquareCount,
-                                                   const float32* _resolutionScale,
-                                                   uint32 _resolutionScaleCount,
-                                                   const uint32* _resolutionTilesPerRow,
-                                                   uint32 _resolutionTilesPerRowCount,
-                                                   const uint32* _resolutionClusterStride,
-                                                   uint32 _resolutionClusterStrideCount,
-                                                   const Vector3& _worldSize,
+                                                   const Vector2 & _unitSize,
+                                                   const FilePath & _dataPath,
+                                                   const Vector<uint32> & _resolutionTilesPerRow,
+                                                   const Vector<uint32> & _resolutionClusterStride,
+                                                   const Vector3 & _worldSize,
                                                    VegetationCustomGeometrySerializationData* geometryData)
+    : maxClusters(_maxClusters)
+    , maxDensityLevels(_maxDensityLevels)
+    , unitSize(_unitSize)
+    , sourceDataPath(_dataPath)
+    , resolutionTilesPerRow(_resolutionTilesPerRow)
+    , resolutionClusterStride(_resolutionClusterStride)
+    , worldSize(_worldSize)
 {
-    maxClusters = _maxClusters;
-    
-    maxDensityLevels = _maxDensityLevels;
-    unitSize = _unitSize;
-    sourceDataPath = _dataPath;
-    
-    resolutionCellSquare.reserve(_resolutionCellSquareCount);
-    for(uint32 i = 0; i < _resolutionCellSquareCount; ++i)
-    {
-        resolutionCellSquare.push_back(_resolutionCellSquare[i]);
-    }
-    
-    resolutionScale.reserve(_resolutionScaleCount);
-    for(uint32 i = 0; i < _resolutionScaleCount; ++i)
-    {
-        resolutionScale.push_back(_resolutionScale[i]);
-    }
-    
-    resolutionTilesPerRow.reserve(_resolutionTilesPerRowCount);
-    for(uint32 i = 0; i < _resolutionTilesPerRowCount; ++i)
-    {
-        resolutionTilesPerRow.push_back(_resolutionTilesPerRow[i]);
-    }
-    
-    resolutionClusterStride.reserve(_resolutionClusterStrideCount);
-    for(uint32 i = 0; i < _resolutionClusterStrideCount; ++i)
-    {
-        resolutionClusterStride.push_back(_resolutionClusterStride[i]);
-    }
-    
-    worldSize = _worldSize;
     resolutionCount = static_cast<uint32>(resolutionClusterStride.size());
     
     materialTransform = new CustomMaterialTransformer();
