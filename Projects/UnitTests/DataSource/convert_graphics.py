@@ -43,8 +43,8 @@ pvrTexToolPathname = framework_path[platform.system()] + "/Tools/Bin/"
 if (framework_path[platform.system()] != ""):
     os.chdir(framework_path[platform.system()] + "/Tools/Bin/");
     for dir in gfxDirs:
-#        params = ["./ResourcePacker", os.path.realpath(currentDir + "/" + dir)] + [pvrTexToolPathname] + flags + ['-useCache', '-ip', '127.0.0.1', '-p', '44234', '-t', '10'];
-        params = ["./ResourcePacker", os.path.realpath(currentDir + "/" + dir)] + [pvrTexToolPathname] + flags;
+        params = ["./ResourcePacker", os.path.realpath(currentDir + "/" + dir)] + [pvrTexToolPathname] + flags + ['-useCache', '-ip', '127.0.0.1', '-p', '44234', '-t', '10'];
+#        params = ["./ResourcePacker", os.path.realpath(currentDir + "/" + dir)] + [pvrTexToolPathname] + flags;
         os.spawnv(os.P_WAIT, "./ResourcePacker", params);
 else:
 	print "Framework path not defined, please define it in dava_framework_path.py"
