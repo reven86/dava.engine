@@ -414,9 +414,17 @@ static bool CompressFileAndWriteToOutput(
         return false;
     }
 
-    inFile->Seek(0, File::SEEK_FROM_END);
+    if(!inFile->Seek(0, File::SEEK_FROM_END))
+    {
+        Logger::Error("can't seek inside file: %s\n", fileName.c_str());
+        return false;
+    }
     uint32 origSize = inFile->GetPos();
-    inFile->Seek(0, File::SEEK_FROM_START);
+    if(!inFile->Seek(0, File::SEEK_FROM_START))
+    {
+        Logger::Error("can't seek inside file: %s\n", fileName.c_str());
+        return false;
+    }
     inBuffer.resize(origSize);
     uint32 readOk = inFile->Read(&inBuffer[0], origSize);
     if (readOk <= 0)
@@ -585,9 +593,8 @@ static bool CopyTmpfileToPackfile(RefPtr<File> packFileOutput,
 }
 
 bool ResourceArchive::CreatePack(const String& pacName,
-                                 const String& basePath,
                                  const Vector<String>& sortedFileNames,
-                                 const Vector<Rule>& compressionRules)
+                                 const Rules& compressionRules)
 {
     bool result = false;
 
@@ -635,7 +642,8 @@ bool ResourceArchive::CreatePack(const String& pacName,
                           compressedFileBuffer, outTmpFile);
                       if (!result)
                       {
-                          Logger::Info("can't pack file: %s, skip it\n", fileName.c_str());
+                          Logger::Info("can't pack file: %s, skip it\n",
+                                       fileName.c_str());
                           skippedFiles.insert(fileName);
                       }
                   });

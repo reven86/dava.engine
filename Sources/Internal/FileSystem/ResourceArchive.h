@@ -81,10 +81,11 @@ public:
     bool LoadFile(const String& fileName, ContentAndSize& output) const;
     void Close();
 
+    using Rules = Vector<Rule>;
+
     static bool CreatePack(const String& pacName,
-                           const String& basePath,
                            const Vector<String>& sortedFileNames,
-                           const Vector<Rule>& compressionRules);
+                           const Rules& compressionRules);
 
 private:
     std::unique_ptr<ResourceArchiveImpl> impl;

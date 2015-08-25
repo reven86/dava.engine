@@ -15,17 +15,18 @@
     derived from this software without specific prior written permission.
 
     THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED
     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
     DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
     DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
-
 
 #include <iostream>
 
@@ -36,158 +37,82 @@
 
 using namespace DAVA;
 
-class Packer
-{
-public:
-	Packer(const String & _resourceName, const String & _packedDir)
-        : fileSystem{ new FileSystem() }
-        , resourceArchive(new ResourceArchive(), [](ResourceArchive* ar){SafeRelease(ar); })
-        , resourceName(_resourceName)
-        , packedDir(_packedDir) 
-	{
-	}
-
-	~Packer()
-	{
-        fileSystem->Release();
-	}
-	
-
-	bool Pack(const String& compression)
-	{
-        auto dirName = ExtractName(packedDir);
-		CollectAllFilesInDirectory(packedDir, "");
-	
-
-		std::cout << "Saving archive... " << '\n';
-		std::cout << "file count:" << resourceCount << '\n';
-			
-		// saving process
-		auto name = fileNameList.begin();
-	
-		auto resourceRealSum = 0;
-		auto resourcePackedSum = 0;
-
-
-		for (auto file = 0; file < resourceCount; ++file)
-		{
-			int32 resourcePackedSize; 
-			int32 resourceRealSize;
-						
-			if (-1 == resourceArchive->SaveProgress(&resourcePackedSize, &resourceRealSize))
-			{
-				std::cout << "*** Resource Archive Error\n";
-				std::cout << "file:" << *name << '\n';
-				return false;
-			}
-
-			resourceRealSum += resourceRealSize;
-			resourcePackedSum += resourcePackedSize;
-
-			// process information
-			std::cout << "file:" << *name;
-			std::cout << "size:" << resourceRealSize << " packed: " << resourcePackedSize << '\n';
-
-			++name;
-		}
-
-		// pack summary	
-		std::cout << "Summary:\n"
-		          << "size: " << resourceRealSum << '\n'
-		          << "packed size: " << resourcePackedSum << '\n'
-		          << "compression rate: " << (static_cast<float32>(resourcePackedSum) / resourceRealSum) << '\n';
-		
-        return true;
-	}	
-
-	String ExtractName(const String & name)
-	{		
-		auto n = name.rfind("/");
-        if (n == String::npos)
-        {
-            return name;
-        }
-		else
-		{
-            if (n == name.length())
-            {
-                n = name.rfind("/", n - 1);
-            }
-
-			return name.substr(n);
-		}
-	}
-	
-	void CollectAllFilesInDirectory(const String & pathDirName, const String & redusedPath)
-	{
-        FilePath pathToDir = pathDirName;
-        fileSystem->SetCurrentWorkingDirectory(pathToDir);
-        auto includeHidden = false;
-        auto * fileList = new FileList(pathToDir, includeHidden);
-		for (auto file = 0; file < fileList->GetCount(); ++file)
-		{
-			if (fileList->IsDirectory(file))
-			{
-                auto directoryName = fileList->GetFilename(file);
-                if ((directoryName != "..") && (directoryName != "."))
-				{
-                    std::cout << "Directory: " << directoryName << '\n';
-                    CollectAllFilesInDirectory(directoryName + '/', redusedPath + directoryName + '/');
-				}
-			}else
-			{
-                auto filename = fileList->GetFilename(file);
-				auto pathname = redusedPath + filename;
-				
-				std::cout << "file: " << pathname << '\n';
-				fileNameList.push_back(pathname);
-
-				resourceArchive->AddFile(pathname);
-				resourceCount++;
-			}
-		}
-		fileList->Release();
-	}
-private:
-
-    FileSystem*	    fileSystem = nullptr;
-    std::unique_ptr<ResourceArchive, void(*)(ResourceArchive*)> resourceArchive;
-
-	List<String>	fileNameList;
-
-	String			resourceName;
-	String			packedDir;
-	int32			resourceCount = 0;
-};
+template <typename T>
+using Deleter = void (*)(T* obj);
 
 void FrameworkDidLaunched()
 {
-    
 }
 
 void FrameworkWillTerminate()
 {
-    
 }
 
-int PackDirectoryIntoPakfile(const String& dir, const String& pak, const String& compression)
+void CollectAllFilesInDirectory(const String& pathDirName,
+                                Vector<String>& fileNameList)
+{
+    FilePath pathToDir = pathDirName;
+    auto includeHidden = false;
+    auto* fileList = new FileList(pathToDir, includeHidden);
+    for (auto file = 0; file < fileList->GetCount(); ++file)
+    {
+        if (fileList->IsDirectory(file))
+        {
+            auto directoryName = fileList->GetFilename(file);
+            if ((directoryName != "..") && (directoryName != "."))
+            {
+                CollectAllFilesInDirectory(directoryName + '/', fileNameList);
+            }
+        }
+        else
+        {
+            auto filename = fileList->GetFilename(file);
+            auto pathname = pathDirName + filename;
+            fileNameList.push_back(pathname);
+        }
+    }
+    fileList->Release();
+}
+
+int PackDirectoryIntoPakfile(const String& dir,
+                             const String& pakfileName,
+                             const ResourceArchive::Rules& compressionRules)
 {
     auto result = EXIT_FAILURE;
 
     std::cout << "===================================================\n"
               << "=== Packer started\n"
               << "=== Pack directory: " << dir << '\n'
-              << "=== Pack archiveName: " << pak << '\n'
+              << "=== Pack archiveName: " << pakfileName << '\n'
               << "===================================================\n";
 
     auto dirWithSlash = (dir.back() == '/' ? dir : dir + '/');
 
-    Packer packer(pak, dirWithSlash);
+    std::unique_ptr<FileSystem, Deleter<FileSystem>> fileSystem(
+        new FileSystem(), [](FileSystem* fs)
+        {
+            SafeDelete(fs);
+        });
 
-    if (packer.Pack(compression))
+    fileSystem->SetCurrentWorkingDirectory(dir);
+
+    Vector<String> filesList;
+
+    CollectAllFilesInDirectory("", filesList);
+
+    if (filesList.empty())
     {
-        result = EXIT_SUCCESS;
+        Logger::Error("no files found in: %s\n", dir.c_str());
+        return EXIT_FAILURE;
     }
+
+    std::sort(begin(filesList), end(filesList),
+              [](const String& one, const String& two)
+              {
+                  return one < two;
+              });
+
+    ResourceArchive::CreatePack(pakfileName, filesList, compressionRules);
 
     return result;
 }
@@ -201,28 +126,57 @@ int UnpackPackfileIntoDirectory(const String& pak, const String& dir)
     auto pathArchiveNameDir = programmPath + "/" + pak;
 
     std::cout << "===================================================\n"
-        << "=== Unpacker started\n"
-        << "=== Unpack directory: " << dir << '\n'
-        << "=== Unpack archiveName: " << pak << '\n'
-        << "===================================================\n";
-
+              << "=== Unpacker started\n"
+              << "=== Unpack directory: " << dir << '\n'
+              << "=== Unpack archiveName: " << pak << '\n'
+              << "===================================================\n";
 
     fs->CreateDirectory(dir);
 
-    std::unique_ptr<ResourceArchive, void (*)(ResourceArchive*)> ra(new ResourceArchive(), [](ResourceArchive*ptr){ SafeRelease(ptr); });
+    std::unique_ptr<ResourceArchive, Deleter<ResourceArchive>> ra(
+        new ResourceArchive(), [](ResourceArchive* ptr)
+        {
+            SafeRelease(ptr);
+        });
     ra->Open(pathArchiveNameDir);
 
     // TODO
     return EXIT_SUCCESS;
 }
 
+ResourceArchive::CompressionType ToPackType(
+    const String& value,
+    ResourceArchive::CompressionType defaultVal)
+{
+    const Vector<std::pair<String, ResourceArchive::CompressionType>>
+        packTypes = {{"lz4", ResourceArchive::CompressionType::Lz4},
+                     {"lz4hc", ResourceArchive::CompressionType::Lz4HC},
+                     {"none", ResourceArchive::CompressionType::None}};
+    for (auto& pair : packTypes)
+    {
+        if (pair.first == value)
+        {
+            return pair.second;
+        }
+    }
+    Logger::Error(
+        "can't convert: \"%s\" into any valid compression type, use default\n",
+        value.c_str());
+    return defaultVal;
+}
 
 int main(int argc, char* argv[])
 {
     auto result = EXIT_FAILURE;
 
     ProgramOptions packOptions("pack");
-    packOptions.AddOption("--compression", VariantType(String("lz4")), "compression method, lz4 - default");
+    packOptions.AddOption("--compression", VariantType(String("lz4hc")),
+                          "default compression method, lz4hc - default");
+    // dafault rule pack all files into lz4hc
+    packOptions.AddOption("--rule", VariantType(String(".lz4hc")),
+                          "rule to select compression type like: --rule "
+                          "xml.lz4 suported lz4, lz4hc, none",
+                          true);
     packOptions.AddArgument("directory");
     packOptions.AddArgument("pakfile");
 
@@ -234,24 +188,42 @@ int main(int argc, char* argv[])
     {
         auto compression = packOptions.GetOption("--compression").AsString();
 
+        ResourceArchive::Rules compressionRules;
+
+        for (uint32 i = 0; i < packOptions.GetOptionsCount("--rule"); ++i)
+        {
+            VariantType option = packOptions.GetOption("--rule", i);
+            String str = option.AsString();
+            size_t dotPos = str.find('.');
+            if (dotPos == String::npos)
+            {
+                Logger::Error("incorrect option: %s\n", str.c_str());
+                return EXIT_FAILURE;
+            }
+            String ext = str.substr(0, dotPos);
+            String compressionType = str.substr(dotPos + 1);
+            ResourceArchive::CompressionType packType =
+                ToPackType(compressionType, ResourceArchive::CompressionType::Lz4HC);
+            compressionRules.push_back({ext, packType});
+        }
+
         auto dirName = packOptions.GetArgument("directory");
         auto pakFile = packOptions.GetArgument("pakfile");
 
-        result = PackDirectoryIntoPakfile(dirName, pakFile, compression);
-    } else if (unpackOptions.Parse(argc, argv))
+        result = PackDirectoryIntoPakfile(dirName, pakFile, compressionRules);
+    }
+    else if (unpackOptions.Parse(argc, argv))
     {
         auto pakFile = unpackOptions.GetArgument("pakfile");
         auto dirName = unpackOptions.GetArgument("directory");
-        
+
         result = UnpackPackfileIntoDirectory(pakFile, dirName);
-    } else
+    }
+    else
     {
         packOptions.PrintUsage();
         unpackOptions.PrintUsage();
     }
 
-	return result;
+    return result;
 }
-
-
-
