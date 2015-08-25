@@ -65,6 +65,7 @@ private:
 
 private:
 	DAVA::Scene *scene = nullptr;
+    DAVA::FilePath scenePathname;
 };
 
 

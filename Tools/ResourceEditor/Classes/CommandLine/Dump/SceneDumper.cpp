@@ -39,6 +39,8 @@
 #include "Scene3D/Components/ParticleEffectComponent.h"
 
 #include "Qt/Main/QtUtils.h"
+#include "CommandLine/CommandLineTool.h"
+
 #include "StringConstants.h"
 
 using namespace DAVA;
@@ -57,11 +59,12 @@ SceneDumper::SceneLinks SceneDumper::DumpLinks(const FilePath &scenePath, Set<St
 }
 
 SceneDumper::SceneDumper(const FilePath &scenePath, Set<String> &errorLog)
+    :   scenePathname(scenePath)
 {
 	scene = new Scene();
-	if (SceneFileV2::ERROR_NO_ERROR != scene->LoadScene(scenePath))
+    if (SceneFileV2::ERROR_NO_ERROR != scene->LoadScene(scenePathname))
 	{
-		errorLog.emplace(Format("[SceneDumper::SceneDumper] Can't open file %s", scenePath.GetStringValue().c_str()));
+        errorLog.emplace(Format("[SceneDumper::SceneDumper] Can't open file %s", scenePathname.GetStringValue().c_str()));
 		SafeRelease(scene);
 	}
 }
@@ -101,8 +104,15 @@ void SceneDumper::DumpCustomProperties(DAVA::KeyedArchive *properties, SceneLink
 	};
 
 	SaveProp(ResourceEditor::EDITOR_REFERENCE_TO_OWNER);
-	SaveProp(ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP);
 	SaveProp("touchdownEffect");
+
+    //save custom colors
+    String pathname = properties->GetString(ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP);
+    if (!pathname.empty())
+    {
+        FilePath projectPath = CommandLineTool::CreateProjectPathFromPath(scenePathname);
+        links.emplace(projectPath + pathname);
+    }
 }
 
 void SceneDumper::DumpRenderObject(DAVA::RenderObject *renderObject, SceneLinks &links) const
