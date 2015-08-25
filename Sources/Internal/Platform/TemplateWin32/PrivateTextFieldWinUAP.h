@@ -77,7 +77,7 @@ public:
     void SetTextUseRtlAlign(bool useRtlAlign);
     bool GetTextUseRtlAlign() const;
 
-    void SetFontSize(float32 size);
+    void SetFontSize(float32 virtualFontSize);
 
     void SetDelegate(UITextFieldDelegate* textFieldDelegate);
 
@@ -109,7 +109,7 @@ private:
     void SetVisibilityNative(bool show);
     void SetAlignmentNative(int32 alignment);
     void InvertTextAlignmentDependingOnRtlAlignment();
-    void PositionNative(const Rect& rect, bool offScreen);
+    void PositionNative(const Rect& rectInVirtualCoordinates, bool offScreen);
 
     void RenderToTexture();
     Sprite* CreateSpriteFromPreviewData(const uint8* imageData, int32 width, int32 height) const;

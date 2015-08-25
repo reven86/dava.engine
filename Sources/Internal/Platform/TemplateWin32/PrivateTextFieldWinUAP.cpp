@@ -407,15 +407,19 @@ void PrivateTextFieldWinUAP::SetTextUseRtlAlign(bool useRtlAlign)
     }
 }
 
-void PrivateTextFieldWinUAP::SetFontSize(float32 size)
+void PrivateTextFieldWinUAP::SetFontSize(float32 virtualFontSize)
 {
+    const float32 scaleFactor = core->GetScreenScaleFactor();
+    float32 fontSize = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(virtualFontSize);
+    fontSize /= scaleFactor;
+
     auto self{shared_from_this()};
-    core->RunOnUIThread([this, self, size]()
+    core->RunOnUIThread([this, self, fontSize]()
     {
         if (nativeText != nullptr)
-            nativeText->FontSize = size;
+            nativeText->FontSize = fontSize;
         else if (nativePassword != nullptr)
-            nativePassword->FontSize = size;
+            nativePassword->FontSize = fontSize;
         pendingTextureUpdate = true;
     });
 }
@@ -700,24 +704,31 @@ void PrivateTextFieldWinUAP::InvertTextAlignmentDependingOnRtlAlignment()
     }
 }
 
-void PrivateTextFieldWinUAP::PositionNative(const Rect& rect, bool offScreen)
+void PrivateTextFieldWinUAP::PositionNative(const Rect& rectInVirtualCoordinates, bool offScreen)
 {
-    VirtualCoordinatesSystem* coordSys = VirtualCoordinatesSystem::Instance();
+    VirtualCoordinatesSystem* coordSystem = VirtualCoordinatesSystem::Instance();
 
-    Rect physRect = coordSys->ConvertVirtualToPhysical(rect);
-    const Vector2 physOffset = coordSys->GetPhysicalDrawOffset();
+    // 1. map virtual to physical
+    Rect controlRect = coordSystem->ConvertVirtualToPhysical(rectInVirtualCoordinates);
+    controlRect += coordSystem->GetPhysicalDrawOffset();
 
-    float32 width = physRect.dx + physOffset.x;
-    float32 height = physRect.dy + physOffset.y;
+    // 2. map physical to window
+    const float32 scaleFactor = core->GetScreenScaleFactor();
+    controlRect.x /= scaleFactor;
+    controlRect.y /= scaleFactor;
+    controlRect.dx /= scaleFactor;
+    controlRect.dy /= scaleFactor;
 
     if (offScreen)
     {
-        physRect.x = -width;
-        physRect.y = -height;
+        controlRect.x = -controlRect.dx;
+        controlRect.y = -controlRect.dy;
     }
-    nativeControl->Width = width;
-    nativeControl->Height = height;
-    core->XamlApplication()->PositionUIElement(nativeControl, physRect.x, physRect.y);
+
+    // 3. set control's position and size
+    nativeControl->Width = controlRect.dx;
+    nativeControl->Height = controlRect.dy;
+    core->XamlApplication()->PositionUIElement(nativeControl, controlRect.x, controlRect.y);
 }
 
 void PrivateTextFieldWinUAP::OnKeyDown(Windows::System::VirtualKey virtualKey)

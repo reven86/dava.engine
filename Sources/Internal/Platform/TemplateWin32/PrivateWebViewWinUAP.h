@@ -67,7 +67,7 @@ public:
 
 private:
     void InstallEventHandlers();
-    void PositionWebView(const Rect& rect, bool offScreen);
+    void PositionWebView(const Rect& rectInVirtualCoordinates, bool offScreen);
 
     void RenderToTexture();
     Sprite* CreateSpriteFromPreviewData(const uint8* imageData, int32 width, int32 height) const;
