@@ -326,7 +326,7 @@ void TextureDescriptor::SaveInternal(File *file, const int32 signature, const ui
     file->Write(&dataSettings.cubefaceFlags);
     file->Write(&dataSettings.sourceFileFormat);
     
-    uint32 length = dataSettings.sourceFileExtension.length();
+    uint32 length = static_cast<uint32>(dataSettings.sourceFileExtension.length());
     file->Write(&length);
     file->Write(dataSettings.sourceFileExtension.c_str(), length);
 
@@ -335,7 +335,7 @@ void TextureDescriptor::SaveInternal(File *file, const int32 signature, const ui
         if (dataSettings.cubefaceFlags & (1 << i))
         {
             String faceExt = GetFaceExtension(i);
-            length = faceExt.length();
+            length = static_cast<uint32>(faceExt.length());
             file->Write(&length);
             file->Write(faceExt.c_str(), length);
         }

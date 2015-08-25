@@ -254,7 +254,8 @@ private:
     bool IsDataLoadNeeded();
     
 private:
-    
+    uint32 MapCellSquareToResolutionIndex(uint32 cellSquare);
+
     Heightmap* heightmap;
     Vector3 worldSize;
     Vector<Vector2> unitWorldSize;
