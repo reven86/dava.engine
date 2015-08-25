@@ -43,6 +43,7 @@ namespace rhi
 
 struct
 IndexBufferGLES2_t
+  : public ResourceImpl<IndexBufferGLES2_t,IndexBuffer::Descriptor>
 {
 public:
                 IndexBufferGLES2_t()
@@ -51,24 +52,27 @@ public:
                     uid(0),
                     isMapped(false)
                 {}
-
+    
+    bool        Create( const IndexBuffer::Descriptor& desc, bool force_immediate=false );
+    void        Destroy( bool force_immediate=false );
 
     unsigned    size;
     void*       data;
     unsigned    uid;
     unsigned    isMapped:1;
 };
+RHI_IMPL_RESOURCE(IndexBufferGLES2_t,IndexBuffer::Descriptor);
 
 typedef ResourcePool<IndexBufferGLES2_t,RESOURCE_INDEX_BUFFER,IndexBuffer::Descriptor,true>   IndexBufferGLES2Pool;
 RHI_IMPL_POOL(IndexBufferGLES2_t,RESOURCE_INDEX_BUFFER,IndexBuffer::Descriptor,true);
 
 
-//==============================================================================
+//------------------------------------------------------------------------------
 
-static Handle
-gles2_IndexBuffer_Create( const IndexBuffer::Descriptor& desc )
+bool
+IndexBufferGLES2_t::Create( const IndexBuffer::Descriptor& desc, bool force_immediate )
 {
-    Handle  handle = InvalidIndex;
+    bool    success = false;
 
     DVASSERT(desc.size);
     if( desc.size )
@@ -76,7 +80,7 @@ gles2_IndexBuffer_Create( const IndexBuffer::Descriptor& desc )
         GLuint      b    = 0;
         GLCommand   cmd1 = { GLCommand::GEN_BUFFERS, {1,(uint64)(&b)} };
         
-        ExecGL( &cmd1, 1 );
+        ExecGL( &cmd1, 1, force_immediate );
         
         if( cmd1.status == GL_NO_ERROR )
         {
@@ -86,27 +90,66 @@ gles2_IndexBuffer_Create( const IndexBuffer::Descriptor& desc )
                 { GLCommand::RESTORE_INDEX_BUFFER, {} }
             };
 
-            ExecGL( cmd2, countof(cmd2) );
+            ExecGL( cmd2, countof(cmd2), force_immediate );
 
             if( cmd2[0].status == GL_NO_ERROR )
             {
-                void*   data = malloc( desc.size );
+                void*   d = malloc( desc.size );
                 
-                if( data )
+                if( d )
                 {
-                    handle = IndexBufferGLES2Pool::Alloc();
+                    data     = d;
+                    size     = desc.size;
+                    uid      = b;
+                    isMapped = false;
                     
-                    IndexBufferGLES2_t* ib = IndexBufferGLES2Pool::Get( handle );
-                    
-                    ib->data     = data;
-                    ib->size     = desc.size;
-                    ib->uid      = b;
-                    ib->isMapped = false;
+                    success = true;
                 }
             }
         }
     }
+    
+    return success;
+}
 
+
+//------------------------------------------------------------------------------
+
+void
+IndexBufferGLES2_t::Destroy( bool force_immediate )
+{
+    if( data )
+    {
+        GLCommand   cmd = { GLCommand::DELETE_BUFFERS, { 1, (uint64)(&uid) } };
+        ExecGL( &cmd, 1, force_immediate );
+        
+        ::free( data );
+
+        data = nullptr;
+        size = 0;
+        uid  = 0;
+    }
+}
+
+
+//==============================================================================
+
+static Handle
+gles2_IndexBuffer_Create( const IndexBuffer::Descriptor& desc )
+{
+    Handle              handle = IndexBufferGLES2Pool::Alloc();
+    IndexBufferGLES2_t* ib     = IndexBufferGLES2Pool::Get( handle );
+
+    if( ib->Create( desc ) )
+    {
+        ib->UpdateCreationDesc( desc );
+    }
+    else
+    {
+        IndexBufferGLES2Pool::Free( handle );
+        handle = InvalidHandle;
+    }
+    
     return handle;
 }
 
@@ -117,22 +160,12 @@ static void
 gles2_IndexBuffer_Delete( Handle ib )
 {
     IndexBufferGLES2_t* self = IndexBufferGLES2Pool::Get( ib );
-    
+
     if( self )
     {
-        if( self->data )
-        {
-            GLCommand   cmd = { GLCommand::DELETE_BUFFERS, { 1, (uint64)(&self->uid) } };
-            ExecGL( &cmd, 1 );
-
-            self->data = nullptr;
-            self->size = 0;
-            self->uid  = 0;
-        }
-
+        self->Destroy();
         IndexBufferGLES2Pool::Free( ib );
     }
-
 }
 
 
@@ -158,6 +191,7 @@ gles2_IndexBuffer_Update( Handle ib, const void* data, unsigned offset, unsigned
         memcpy( ((uint8*)self->data)+offset, data, size );
         ExecGL( cmd, countof(cmd) );
         success = cmd[1].status == GL_NO_ERROR;
+        self->MarkRestored();
     }
 
     return success;
@@ -199,6 +233,18 @@ gles2_IndexBuffer_Unmap( Handle ib )
     ExecGL( cmd, countof(cmd) );
     
     self->isMapped = false;
+    self->MarkRestored();
+}
+
+
+//------------------------------------------------------------------------------
+
+static bool
+gles2_IndexBuffer_NeedRestore( Handle ib )
+{
+    IndexBufferGLES2_t* self = IndexBufferGLES2Pool::Get( ib );
+    
+    return self->NeedRestore();
 }
 
 
@@ -210,11 +256,12 @@ namespace IndexBufferGLES2
 void
 SetupDispatch( Dispatch* dispatch )
 {
-    dispatch->impl_IndexBuffer_Create  = &gles2_IndexBuffer_Create;
-    dispatch->impl_IndexBuffer_Delete  = &gles2_IndexBuffer_Delete;
-    dispatch->impl_IndexBuffer_Update  = &gles2_IndexBuffer_Update;
-    dispatch->impl_IndexBuffer_Map     = &gles2_IndexBuffer_Map;
-    dispatch->impl_IndexBuffer_Unmap   = &gles2_IndexBuffer_Unmap;
+    dispatch->impl_IndexBuffer_Create       = &gles2_IndexBuffer_Create;
+    dispatch->impl_IndexBuffer_Delete       = &gles2_IndexBuffer_Delete;
+    dispatch->impl_IndexBuffer_Update       = &gles2_IndexBuffer_Update;
+    dispatch->impl_IndexBuffer_Map          = &gles2_IndexBuffer_Map;
+    dispatch->impl_IndexBuffer_Unmap        = &gles2_IndexBuffer_Unmap;
+    dispatch->impl_IndexBuffer_NeedRestore  = &gles2_IndexBuffer_NeedRestore;
 }
 
 void 

@@ -238,8 +238,8 @@ ResourcePool<T,RT,DT,nr>::ReCreateAll()
     {
         DT  desc = i->CreationDesc();
 
-        i->Destroy();
-        i->Create( desc );
+        i->Destroy( true );
+        i->Create( desc, true );
         i->MarkNeedRestore();
         ++count;
     }
