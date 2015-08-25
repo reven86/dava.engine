@@ -45,17 +45,14 @@ class
 QueryBufferGLES2_t
 {
 public:
-
-    struct Desc {};
-
                         QueryBufferGLES2_t();
                         ~QueryBufferGLES2_t();
 
     std::vector<GLuint> query;
 };
 
-typedef ResourcePool<QueryBufferGLES2_t,RESOURCE_QUERY_BUFFER,QueryBufferGLES2_t::Desc,false>  QueryBufferGLES2Pool;
-RHI_IMPL_POOL(QueryBufferGLES2_t,RESOURCE_QUERY_BUFFER,QueryBufferGLES2_t::Desc,false);
+typedef ResourcePool<QueryBufferGLES2_t,RESOURCE_QUERY_BUFFER,QueryBuffer::Descriptor,false>  QueryBufferGLES2Pool;
+RHI_IMPL_POOL(QueryBufferGLES2_t,RESOURCE_QUERY_BUFFER,QueryBuffer::Descriptor,false);
 
 
 //==============================================================================

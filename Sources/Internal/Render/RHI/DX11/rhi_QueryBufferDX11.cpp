@@ -46,17 +46,14 @@ QueryBufferDX11_t
 {
 public:
 
-    struct Desc {};
-
-
                                 QueryBufferDX11_t();
                                 ~QueryBufferDX11_t();
 
     std::vector<ID3D11Query*>   query;
 };
 
-typedef ResourcePool<QueryBufferDX11_t,RESOURCE_QUERY_BUFFER,QueryBufferDX11_t::Desc,false>   QueryBufferDX11Pool;
-RHI_IMPL_POOL(QueryBufferDX11_t,RESOURCE_QUERY_BUFFER,QueryBufferDX11_t::Desc,false);
+typedef ResourcePool<QueryBufferDX11_t,RESOURCE_QUERY_BUFFER,QueryBuffer::Descriptor,false>   QueryBufferDX11Pool;
+RHI_IMPL_POOL(QueryBufferDX11_t,RESOURCE_QUERY_BUFFER,QueryBuffer::Descriptor,false);
 
 
 //==============================================================================

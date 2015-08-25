@@ -80,9 +80,6 @@ class
 CommandBufferDX11_t
 {
 public:
-
-    struct Desc {};
-
                                 CommandBufferDX11_t();
                                 ~CommandBufferDX11_t();
 
@@ -117,9 +114,6 @@ class
 RenderPassDX11_t
 {
 public:
-
-    struct Desc {};
-
     std::vector<Handle> cmdBuf;
     int                 priority;
 };
@@ -128,19 +122,17 @@ public:
 struct
 SyncObjectDX11_t 
 {
-    struct Desc {};
-
     uint32  frame;
     uint32  is_signaled:1;
 };
 
-typedef ResourcePool<CommandBufferDX11_t,RESOURCE_COMMAND_BUFFER,CommandBufferDX11_t::Desc,false>   CommandBufferPool;
-typedef ResourcePool<RenderPassDX11_t,RESOURCE_RENDER_PASS,RenderPassDX11_t::Desc,false>            RenderPassPool;
-typedef ResourcePool<SyncObjectDX11_t,RESOURCE_SYNC_OBJECT,SyncObjectDX11_t::Desc,false>            SyncObjectPool;
+typedef ResourcePool<CommandBufferDX11_t,RESOURCE_COMMAND_BUFFER,CommandBuffer::Descriptor,false>   CommandBufferPool;
+typedef ResourcePool<RenderPassDX11_t,RESOURCE_RENDER_PASS,RenderPassConfig,false>            RenderPassPool;
+typedef ResourcePool<SyncObjectDX11_t,RESOURCE_SYNC_OBJECT,SyncObject::Descriptor,false>            SyncObjectPool;
 
-RHI_IMPL_POOL(CommandBufferDX11_t,RESOURCE_COMMAND_BUFFER,CommandBufferDX11_t::Desc,false);
-RHI_IMPL_POOL(RenderPassDX11_t,RESOURCE_RENDER_PASS,RenderPassDX11_t::Desc,false);
-RHI_IMPL_POOL(SyncObjectDX11_t,RESOURCE_SYNC_OBJECT,SyncObjectDX11_t::Desc,false);
+RHI_IMPL_POOL(CommandBufferDX11_t,RESOURCE_COMMAND_BUFFER,CommandBuffer::Descriptor,false);
+RHI_IMPL_POOL(RenderPassDX11_t,RESOURCE_RENDER_PASS,RenderPassConfig,false);
+RHI_IMPL_POOL(SyncObjectDX11_t,RESOURCE_SYNC_OBJECT,SyncObject::Descriptor,false);
 
 
 
