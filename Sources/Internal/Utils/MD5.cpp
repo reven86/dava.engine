@@ -163,7 +163,7 @@ void MD5::HashToChar(const uint8 * hash, uint32 hashSize, char8 *buffer, uint32 
 {
     DVASSERT((hashSize * 2 + 1) == bufferSize && "To small buffer. Must be enought to put all characters of hash and \0");
 
-    for (int32 i = 0; i < hashSize; ++i)
+    for (uint32 i = 0; i < hashSize; ++i)
     {
         buffer[2 * i] = GetCharacterFromNumber(hash[i] & 0x0F);
         buffer[2 * i + 1] = GetCharacterFromNumber((hash[i] & 0xF0) >> 4);
@@ -187,7 +187,7 @@ void MD5::CharToHash(const char8 *buffer, uint32 bufferSize, uint8 * hash, uint3
         return;
     }
 
-    for (int32 i = 0; i < hashSize; ++i)
+    for (uint32 i = 0; i < hashSize; ++i)
     {
         uint8 low = GetNumberFromCharacter(buffer[2 * i]);
         uint8 high = GetNumberFromCharacter(buffer[2 * i + 1]);
