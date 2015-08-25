@@ -63,7 +63,7 @@ void Client::Disconnect()
 
 void Client::OnAddressResolved(std::unique_ptr<Net::Endpoint>& endpoint)
 {
-    DVASSERT(false == netClient);
+    DVASSERT(!netClient);
     DVASSERT(nullptr == openedChannel);
 
     if (endpoint)
