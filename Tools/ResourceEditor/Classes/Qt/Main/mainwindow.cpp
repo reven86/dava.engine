@@ -3126,9 +3126,14 @@ void QtMainWindow::OnConsoleItemClicked(const QString &data)
                         entityGroup.Add(entity);
                     }
                 }
-                if (entityGroup.Size() != 0)
+                if (entityGroup.Size() > 0)
                 {
-                    GetCurrentScene()->selectionSystem->SetSelection(entityGroup);
+					auto currentScene = GetCurrentScene();
+                    currentScene->selectionSystem->SetSelection(entityGroup);
+
+					auto currentSelection = currentScene->selectionSystem->GetSelection();
+					if (currentSelection.Size() > 0)
+						currentScene->cameraSystem->LookAt(currentSelection.GetCommonBbox());
                 }
             }
         }
