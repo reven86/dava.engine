@@ -670,7 +670,7 @@ void main()
             // view http://www.terathon.com/lengyel/Lengyel-UnifiedFog.pdf
             // to get more clear understanding about this calculations
             float fogK = step(cameraPosition.z, fogHalfspaceHeight);
-            float fogZ = float(viewDirectionInWorldSpace.z == 0.0) + abs(viewDirectionInWorldSpace.z);
+            float fogZ = abs(viewDirectionInWorldSpace.z) + 0.001;
 
             float fogFdotP = viewPointInWorldSpace.z - fogHalfspaceHeight;
             float fogFdotC = cameraPosition.z - fogHalfspaceHeight;
