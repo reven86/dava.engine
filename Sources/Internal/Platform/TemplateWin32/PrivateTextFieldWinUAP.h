@@ -35,6 +35,7 @@
 
 #include "Base/BaseTypes.h"
 #include "Math/Rect.h"
+#include "Concurrency/Mutex.h"
 
 namespace DAVA
 {
@@ -125,7 +126,8 @@ private:    // Event handlers
     // PasswordBox specific events
     void OnPasswordChanged();
 
-    bool ProcessTextChanged(const WideString& newText);
+    bool HasFocus() const;
+    bool ProcessTextChanged(const WideString& curText, const WideString& newText);
 
     void OnKeyboardHiding();
     void OnKeyboardShowing();
@@ -148,6 +150,8 @@ private:
     bool pendingTextureUpdate = false;      // Flag indicating that texture image should be recreated
 
     WideString curText;
+    mutable Mutex textMutex;
+
     bool ignoreTextChange = false;
     int32 caretPosition = 0;                // Current caret position
     int32 savedCaretPosition = 0;           // Saved caret position to restore it when delegate declines text changing
