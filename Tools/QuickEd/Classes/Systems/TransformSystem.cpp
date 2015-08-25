@@ -264,27 +264,32 @@ void TransformSystem::ResizeControl(const DAVA::Vector2& pos, bool withPivot, bo
     }
 }
 
-#include <QWidget>
-#include <QApplication>
-void TransformSystem::ResizeTopLeft(const DAVA::Vector2 &delta, bool withPivot, bool rateably)
+void TransformSystem::ResizeTopLeft(Vector2 delta, bool withPivot, bool rateably)
 {
-    Vector2 deltaPosition = delta;
-    Vector2 deltaSize = delta;
-    QWidget *w = qApp->activePopupWidget();
+    Vector2 deltaPosition;
+    Vector2 deltaSize;
     Vector2 pivot = document->GetPropertyByName(activeControl, "Pivot")->GetValue().AsVector2();
+
+    if (rateably)
+    {
+        Vector2 size = activeControl->GetControl()->GetSize();
+        float perc = size.x / size.y;
+        if (abs(delta.y) > abs(delta.x))
+            delta.x = delta.y * perc;
+        else
+            delta.y = delta.x / perc;
+    }
     if (withPivot)
     {   
         AdjustProperty(activeControl, "Size", delta * -1 / pivot);
     }
     else
     {
-        deltaPosition = delta * pivot;
+        deltaPosition = delta * (1 - pivot);
         deltaSize = delta;
         AdjustProperty(activeControl, "Position", deltaPosition);
         AdjustProperty(activeControl, "Size", deltaSize * -1);
     }
-
-    
 }
 
 template <typename T>
