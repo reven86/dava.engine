@@ -49,7 +49,8 @@ if ( WINDOWS_UAP )
     #turning on ANGLE and openssl_WinRT lib on Windows Store
     set( DAVA_THIRD_PARTY_INCLUDES_PATH "${DAVA_THIRD_PARTY_INCLUDES_PATH}" 
                                         "${DAVA_THIRD_PARTY_ROOT_PATH}/angle-ms-master/include"
-                                        "${DAVA_THIRD_PARTY_ROOT_PATH}/openssl_win10/include" )
+                                        "${DAVA_THIRD_PARTY_ROOT_PATH}/openssl_win10/include"
+                                        "${DAVA_THIRD_PARTY_ROOT_PATH}/fmod_uap/include" )
 
     #libs paths	
     set ( DAVA_WIN_UAP_LIBRARIES_PATH_COMMON "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win10" ) 
