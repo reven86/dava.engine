@@ -361,7 +361,7 @@ void RenderObject::BakeGeometry(const Matrix4 & transform)
 
 void RenderObject::RecalculateWorldBoundingBox()
 {
-    DVASSERT(!bbox.IsEmpty());
+	DVASSERT(!bbox.IsEmpty());
 	bbox.GetTransformedBox(*worldTransform, worldBBox);
 }
 
