@@ -50,7 +50,8 @@ WebViewControl::WebViewControl(UIWebView& uiWebView)
 
 WebViewControl::~WebViewControl()
 {
-    privateImpl->DetachDelegateAndView();
+    // Tell private implementation that owner is sentenced to death
+    privateImpl->OwnerAtPremortem();
 }
 
 void WebViewControl::Initialize(const Rect& rect)

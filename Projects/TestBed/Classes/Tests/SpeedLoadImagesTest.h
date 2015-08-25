@@ -48,6 +48,7 @@ private:
     void OnTestJpg(BaseObject *obj, void *data, void *callerData);
     void OnTestTga(BaseObject *obj, void *data, void *callerData);
     void OnTestWebP(BaseObject *obj, void *data, void *callerData);
+    void OnTestPvr(BaseObject *obj, void *data, void *callerData);
 
     void TestAndDisplayFormat(String extension, const Vector<String> &qualities);
     void CreatePaths(String extension, const Vector<String> &qualities, Vector<FilePath> &outPaths);

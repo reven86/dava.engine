@@ -142,6 +142,7 @@ public:
         return S_OK;
     }
 public:
+#pragma warning(push, 0)
     // IUnknown
     STDMETHODIMP QueryInterface(REFIID riid, void **ppvObject)
     {
@@ -153,6 +154,7 @@ public:
         };
         return QISearch(this, qit, riid, ppvObject);
     }
+#pragma warning(pop)
 
     ULONG STDMETHODCALLTYPE AddRef()
     {
@@ -182,7 +184,7 @@ public:
             return E_POINTER;
         DVASSERT(!baseUrl.empty())
 
-        *ppszDisplayName = OleStrDup(baseUrl.c_str(), baseUrl.length());
+        *ppszDisplayName = OleStrDup(baseUrl.c_str(), static_cast<int>(baseUrl.length()));
 
         return S_OK;
     }

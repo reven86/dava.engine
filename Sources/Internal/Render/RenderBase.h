@@ -94,6 +94,7 @@
 #include <angle_gl.h>
 #include <angle_windowsstore.h>
 
+#define __DAVAENGINE_OPENGL_ES_ANGLE__
 #define __DAVAENGINE_OPENGL_ES__
 
 #elif defined(__DAVAENGINE_ANDROID__)

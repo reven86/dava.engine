@@ -42,14 +42,14 @@ void  UTF8Utils::EncodeToWideString(const uint8 * string, size_t size, WideStrin
 {
 	resultString = L"";
 
-	int32 wstringLen = MultiByteToWideChar(CP_UTF8, 0, (LPCSTR)string, size, NULL, NULL);
+	int32 wstringLen = MultiByteToWideChar(CP_UTF8, 0, (LPCSTR)string, static_cast<int>(size), NULL, NULL);
 	if (!wstringLen)
 	{
 		return;
 	}
 
 	wchar_t* buf = new wchar_t[wstringLen];
-	int32 convertRes = MultiByteToWideChar(CP_UTF8, 0, (LPCSTR)string, size, buf, wstringLen);
+	int32 convertRes = MultiByteToWideChar(CP_UTF8, 0, (LPCSTR)string, static_cast<int>(size), buf, wstringLen);
 	if (convertRes)
 	{
 		resultString = WideString(buf, wstringLen);
