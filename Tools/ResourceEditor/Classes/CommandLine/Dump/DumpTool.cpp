@@ -31,6 +31,7 @@
 #include "CommandLine/Dump/SceneDumper.h"
 #include "TexturePacker/CommandLineParser.h"
 #include "FileSystem/FilePath.h"
+#include "FileSystem/FileSystem.h"
 
 using namespace DAVA;
 
@@ -108,6 +109,7 @@ void DumpTool::Process()
     {
 		auto links = SceneDumper::DumpLinks(inFolder + filename, errors);
 
+        FileSystem::Instance()->CreateDirectory(outFile.GetDirectory(), true);
 		ScopedPtr<File> file(File::Create(outFile, File::WRITE | File::CREATE));
 		if (file)
 		{
