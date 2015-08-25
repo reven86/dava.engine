@@ -26,10 +26,9 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include <sstream>
-
 #include "Network/Base/AddressResolver.h"
-#include "Concurrency/LockGuard.h"
+#include "Network/Base/Endpoint.h"
+#include "Network/Base/IOLoop.h"
 #include "FileSystem/Logger.h"
 #include "Debug/DVAssert.h"
 
@@ -37,12 +36,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace DAVA {
 namespace Net {
 
-List<AddressResolver::HandlePtr> AddressResolver::handlesHolder;
-Map<uv_getaddrinfo_t*, AddressResolver::HandleContext> AddressResolver::handles;
-Mutex AddressResolver::handlesMutex;
-
-AddressResolver::AddressResolver(AddressRequester& rq)
-    : requester(rq)
+AddressResolver::AddressResolver(IOLoop* loop_) 
+    : loop(loop_)
+    , handle(nullptr)
 {
 }
 
@@ -51,42 +47,10 @@ AddressResolver::~AddressResolver()
     Stop();
 }
 
-uv_getaddrinfo_t* AddressResolver::OccupyHandle(AddressResolver* resolver)
+bool AddressResolver::StartResolving(const char8* address, uint16 port, ResolverCallbackFn cbk)
 {
-    DVASSERT(resolver);
-
-    LockGuard<Mutex> lock(handlesMutex);
-
-    for (auto& handle : handles)
-    {
-        if (handle.second.isFree)
-        {
-            handle.second.resolver = resolver;
-            handle.second.isFree = false;
-            return handle.first;
-        }
-    }
-
-    uv_getaddrinfo_t* handle = new uv_getaddrinfo_t;
-    handlesHolder.emplace_back(handle);
-    handles[handle] = { resolver, false };
-    return handle;
-}
-
-void AddressResolver::UnbindResolver(uv_getaddrinfo_t* handle, const AddressResolver* resolver)
-{
-    LockGuard<Mutex> lock(handlesMutex);
-
-    const auto& handleEntry = handles.find(handle);
-    if (handleEntry != handles.end() && handleEntry->second.resolver == resolver)
-    {
-        handleEntry->second.resolver = nullptr;
-    }
-}
-
-bool AddressResolver::StartResolving(const char8* address, uint16 port)
-{
-    uv_loop_t* loop = uv_default_loop();
+    DVASSERT(loop != nullptr);
+    DVASSERT(handle == nullptr);
 
     struct addrinfo hints;
     hints.ai_family = PF_INET;
@@ -94,22 +58,22 @@ bool AddressResolver::StartResolving(const char8* address, uint16 port)
     hints.ai_flags = 0;
     hints.ai_protocol = IPPROTO_TCP;
 
-    uv_getaddrinfo_t* handle = OccupyHandle(this);
+    uv_getaddrinfo_t* handle = new uv_getaddrinfo_t;
+    handle->data = this;
 
-    std::stringstream ss;
-    ss << port;
-    std::string strPort(ss.str());
+    Array<char, 6> portstring;
+    Snprintf(portstring.data(), portstring.size(), "%u", port);
 
-    int res = uv_getaddrinfo(loop, handle, AddressResolver::GetAddrInfoCallback, address, strPort.c_str(), &hints);
+    int res = uv_getaddrinfo(loop->Handle(), handle, AddressResolver::GetAddrInfoCallback, address, portstring.data(), &hints);
 
     if (!res)
     {
-        state = State::RESOLVING;
+        resolverCallbackFn = cbk;
         return true;
     }
     else
     {
-        state = State::RESOLVE_ERROR;
+        delete handle;
         const char* err = uv_err_name(res);
         Logger::Error("[AddressResolver::StartResolving] Can't get addr info: %s", err);
         return false;
@@ -120,46 +84,44 @@ void AddressResolver::Stop()
 {
     if (handle)
     {
-        UnbindResolver(handle, this);
+        handle->data = nullptr;
         handle = nullptr;
-        state = State::NOT_REQUESTED;
     }
 }
 
 void AddressResolver::GetAddrInfoCallback(uv_getaddrinfo_t* handle, int status, struct addrinfo* response)
 {
-    LockGuard<Mutex> lock(handlesMutex);
+    AddressResolver* resolver = static_cast<AddressResolver*>(handle->data);
 
-    AddressResolver* resolver = nullptr;
-    auto handleAndContext = handles.find(handle);
-    DVASSERT(handleAndContext != handles.end());
-
-    resolver = handleAndContext->second.resolver;
-    handleAndContext->second.isFree = true;
-
-    if (resolver)
+    if (resolver != nullptr)
     {
         resolver->GotAddrInfo(status, response);
+        resolver->Stop();
     }
-    
+    else
+    {
+        delete handle;
+    }
+
     uv_freeaddrinfo(response);
 }
 
 void AddressResolver::GotAddrInfo(int status, struct addrinfo* response)
 {
+    EndpointPtr endpoint;
+
     if (status == 0)
     {
-        state = State::RESOLVED;
-        result = *response;
+         endpoint.reset(new Endpoint(response->ai_addr));
     }
     else
     {
-        state = State::RESOLVE_ERROR;
         const char* err = uv_err_name(status);
         Logger::Error("[AddressResolver::GotAddrInfo] Can't get addr info: %s", err);
+        endpoint.reset();
     }
 
-    requester.OnAddressResolved();
+    resolverCallbackFn(endpoint);
 }
 
 }};

@@ -52,12 +52,11 @@ public:
     virtual void OnReceivedFromCache(const CacheItemKey &key, CachedItemValue &&value) {};
 };
 
-class Client: public DAVA::Net::IChannelListener,
-              public Net::AddressRequester
+class Client: public DAVA::Net::IChannelListener
 {
 public:
     Client();
-    
+
     void AddListener(ClientListener*);
     void RemoveListener(ClientListener*);
     
@@ -84,8 +83,7 @@ public:
     // Data packet with given ID has been delivered to other side
     void OnPacketDelivered(Net::IChannel* channel, uint32 packetId) override {};
 
-    // AddressRequester
-    virtual void OnAddressResolved() override;
+    void OnAddressResolved(std::unique_ptr<Net::Endpoint>& endpoint);
 
     void StateChanged();
 

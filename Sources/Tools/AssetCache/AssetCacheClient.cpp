@@ -35,12 +35,13 @@
 #include "FileSystem/KeyedArchive.h"
 #include "Debug/DVAssert.h"
 #include "FileSystem/DynamicMemoryFile.h"
+#include "Base/FunctionTraits.h"
 
 namespace DAVA {
 namespace AssetCache {
 
 Client::Client() 
-    : addressResolver(*this)
+    : addressResolver(Net::NetCore::Instance()->Loop())
 {
 }
 
@@ -48,9 +49,8 @@ bool Client::Connect(const String &ip, uint16 port)
 {
     DVASSERT(nullptr == netClient);
     DVASSERT(nullptr == openedChannel);
-    DVASSERT(addressResolver.GetState() != Net::AddressResolver::State::RESOLVING)
 
-    return addressResolver.StartResolving(ip.c_str(), port);
+    return addressResolver.StartResolving(ip.c_str(), port, MakeFunction(this, &Client::OnAddressResolved));
 }
 
 
@@ -61,15 +61,14 @@ void Client::Disconnect()
     openedChannel = nullptr;
 }
 
-void Client::OnAddressResolved()
+void Client::OnAddressResolved(std::unique_ptr<Net::Endpoint>& endpoint)
 {
-    DVASSERT(!netClient);
+    DVASSERT(false == netClient);
     DVASSERT(nullptr == openedChannel);
 
-    if (addressResolver.GetState() == Net::AddressResolver::State::RESOLVED)
+    if (endpoint)
     {
-        auto& addr = addressResolver.Result();
-        netClient.reset(new Connection(Net::CLIENT_ROLE, Net::Endpoint(addr.ai_addr), this));
+        netClient.reset(new Connection(Net::CLIENT_ROLE, *endpoint, this));
     }
 }
 

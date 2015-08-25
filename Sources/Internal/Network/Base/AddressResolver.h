@@ -31,74 +31,40 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define __DAVAENGINE_ADDRESS_RESOLVER_H__
 
 #include "Base/BaseTypes.h"
-#include "Concurrency/Mutex.h"
+#include "Base/Function.h"
 #include <libuv/uv.h>
+
 
 namespace DAVA {
 namespace Net {
 
-struct AddressRequester
-{
-    virtual void OnAddressResolved() = 0;
-};
+class IOLoop;
+class Endpoint;
+
 
 class AddressResolver
 {
 public:
-    AddressResolver(AddressRequester& requester);
-    ~AddressResolver();
-
-    enum class State { NOT_REQUESTED, RESOLVING, RESOLVED, RESOLVE_ERROR };
-    State GetState() const;
-
-    bool StartResolving(const char8* address, uint16 port);
-    void Stop();
-
-    const addrinfo& Result() const;
+    using EndpointPtr = std::unique_ptr < Net::Endpoint > ;
+    using ResolverCallbackFn = Function < void(EndpointPtr&) >;
 
 public:
-    struct HandleContext
-    {
-        AddressResolver* resolver;
-        bool isFree;
-    };
+    explicit AddressResolver(IOLoop* loop);
+    ~AddressResolver();
 
-    using HandlePtr = std::unique_ptr < uv_getaddrinfo_t > ;
+    bool StartResolving(const char8* address, uint16 port, ResolverCallbackFn cbk);
+    void Stop();
 
 private:
-    static uv_getaddrinfo_t* OccupyHandle(AddressResolver* resolver);
-    static void UnbindResolver(uv_getaddrinfo_t* handle, const AddressResolver* resolver);
-
     static void GetAddrInfoCallback(uv_getaddrinfo_t* handle, int status, addrinfo* response);
-
     void GotAddrInfo(int status, addrinfo* response);
 
 private:
-    static List<HandlePtr> handlesHolder;
-    static Map<uv_getaddrinfo_t*, HandleContext> handles;
-    static Mutex handlesMutex;
-
-private:
-
-	uv_getaddrinfo_t* handle = nullptr;
-    addrinfo result;
-
-    AddressRequester& requester;
-	State state = State::NOT_REQUESTED;
+    IOLoop* loop;
+    uv_getaddrinfo_t* handle;
+    ResolverCallbackFn resolverCallbackFn;
 };
 
-
-
-
-inline AddressResolver::State AddressResolver::GetState() const
-{
-    return state;
-}
-
-inline const addrinfo& AddressResolver::Result() const
-{
-    return result;
-}
 
 }
 }
