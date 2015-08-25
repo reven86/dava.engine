@@ -1065,7 +1065,7 @@ Trace("rhi-dx9.exec-queued-cmd\n");
     unsigned                        frame_n   = 0;
     bool                            do_render = true;
 
-    if( _ResetPending )
+    if( _ResetPending  ||  NeedRestoreResources() )
         _Frame.clear();
 
     _FrameSync.Lock();
@@ -1101,9 +1101,9 @@ Trace("rhi-dx9.exec-queued-cmd\n");
     {
         SyncObjectDX9_t*  sync = SyncObjectPool::Get(_Frame.begin()->sync);
 
-        sync->frame = frame_n;
+        sync->frame       = frame_n;
         sync->is_signaled = false;
-        sync->is_used = true;
+        sync->is_used     = true;
     }
     _FrameSync.Unlock();
 
@@ -1147,6 +1147,7 @@ Trace("\n\n-------------------------------\nframe %u executed(submitted to GPU)\
         _FrameSync.Unlock();
     }
     
+
     // do flip, reset/restore device if necessary
 
     HRESULT hr;
