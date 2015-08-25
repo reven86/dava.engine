@@ -47,7 +47,7 @@ namespace AssetCache
 
 bool SendArchieve(Net::IChannel* channel, KeyedArchive *archieve);
     
-class Connection
+class Connection final
 {
 public:
     Connection(Net::eNetworkRole role, const Net::Endpoint & endpoint, Net::IChannelListener * listener, Net::eTransportType transport = Net::TRANSPORT_TCP);

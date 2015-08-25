@@ -60,12 +60,12 @@ public:
 };
     
     
-class Server: public Net::IChannelListener
+class Server final: public Net::IChannelListener
 {
 public:
     
     Server() = default;
-    virtual ~Server();
+    ~Server();
     
     void SetDelegate(ServerDelegate * delegate);
 

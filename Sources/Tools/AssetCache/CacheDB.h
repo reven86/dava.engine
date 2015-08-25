@@ -47,7 +47,7 @@ namespace AssetCache
 class CachedItemValue;
 class ServerCacheEntry;
     
-class CacheDB
+class CacheDB final
 {
     static const String DB_FILE_NAME;
     static const uint32 VERSION;
@@ -59,7 +59,7 @@ class CacheDB
 public:
     
     CacheDB();
-    virtual ~CacheDB();
+    ~CacheDB();
 
     void UpdateSettings(const FilePath &folderPath, const uint64 size, const uint32 itemsInMemory, const uint64 autoSaveTimeout);
     

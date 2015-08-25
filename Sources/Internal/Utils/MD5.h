@@ -100,10 +100,10 @@ public:
 	static void ForDirectory(const FilePath & pathName, MD5Digest &digest, bool isRecursive, bool includeHidden);
     
 	static void HashToChar(const MD5Digest &digest, char8 *buffer, uint32 bufferSize);
-    static void HashToChar(const uint8 * hash, char8 *buffer, uint32 bufferSize);
+    static void HashToChar(const uint8 * hash, uint32 hashSize, char8 *buffer, uint32 bufferSize);
     
     static void CharToHash(const char8 *buffer, MD5Digest &digest);
-    static void CharToHash(const char8 *buffer, uint8 * hash);
+    static void CharToHash(const char8 *buffer, uint32 bufferSize, uint8 * hash, uint32 hashSize);
 
 private:
 

@@ -155,38 +155,39 @@ void MD5::RecursiveDirectoryMD5(const FilePath & pathName, MD5 & md5, bool isRec
 
 void MD5::HashToChar(const MD5Digest &digest, char8 *buffer, uint32 bufferSize)
 {
-    HashToChar(digest.digest.data(), buffer, bufferSize);
+    HashToChar(digest.digest.data(), digest.digest.size(), buffer, bufferSize);
 }
 
-void MD5::HashToChar(const uint8 * hash, char8 *buffer, uint32 bufferSize)
+    
+void MD5::HashToChar(const uint8 * hash, uint32 hashSize, char8 *buffer, uint32 bufferSize)
 {
-    DVASSERT(((MD5Digest::DIGEST_SIZE * 2 + 1) <= bufferSize) && "To small buffer. Must be enought to put 32 characters of hash and \0");
+    DVASSERT((hashSize * 2 + 1) == bufferSize && "To small buffer. Must be enought to put all characters of hash and \0");
 
-    for (int32 i = 0; i < MD5Digest::DIGEST_SIZE; ++i)
+    for (uint32 i = 0; i < hashSize; ++i)
     {
         buffer[2 * i] = GetCharacterFromNumber(hash[i] & 0x0F);
         buffer[2 * i + 1] = GetCharacterFromNumber((hash[i] & 0xF0) >> 4);
     }
 
-    buffer[2 * MD5Digest::DIGEST_SIZE] = 0;
+    buffer[bufferSize - 1] = 0;
 }
 
 
 void MD5::CharToHash(const char8 *buffer, MD5Digest &digest)
 {
-    CharToHash(buffer, digest.digest.data());
+    const int32 bufferSize = Min(static_cast<int32>(strlen(buffer)), MD5Digest::DIGEST_SIZE * 2);
+    CharToHash(buffer, bufferSize, digest.digest.data(), digest.digest.size());
 }
 
-void MD5::CharToHash(const char8 *buffer, uint8 * hash)
+void MD5::CharToHash(const char8 *buffer, uint32 bufferSize, uint8 * hash, uint32 hashSize)
 {
-    int32 bufferSize = static_cast<int32>(strlen(buffer));
-    if ((MD5Digest::DIGEST_SIZE * 2) != bufferSize)
+    if (bufferSize != hashSize * 2)
     {
-        Logger::Error("[MD5::CharToHash] char string has wrong size (%d). Must be 32 characters", bufferSize);
+        Logger::Error("[MD5::CharToHash] char string has wrong size (%d). Must be %d characters", bufferSize, hashSize * 2);
         return;
     }
 
-    for (int32 i = 0; i < MD5Digest::DIGEST_SIZE; ++i)
+    for (uint32 i = 0; i < hashSize; ++i)
     {
         uint8 low = GetNumberFromCharacter(buffer[2 * i]);
         uint8 high = GetNumberFromCharacter(buffer[2 * i + 1]);
