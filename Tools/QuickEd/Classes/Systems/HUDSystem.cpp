@@ -36,6 +36,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Render/RenderState.h"
 #include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
+#include "Model/ControlProperties/ValueProperty.h"
 
 using namespace DAVA;
 
@@ -46,7 +47,9 @@ public:
         : UIControl()
         , control(container)
         , area(area_)
-    {}
+    {
+        DVASSERT(container != nullptr && area != ControlAreaInterface::NO_AREA);
+    }
     ControlAreaInterface::eArea GetArea() const
     {
         return area;
@@ -115,20 +118,26 @@ private:
 class PivotPointControl : public ControlContainer
 {
 public:
-    explicit PivotPointControl(UIControl *container)
+    explicit PivotPointControl(UIControl *container, AbstractProperty *pivotProperty_)
         : ControlContainer(container, ControlAreaInterface::PIVOT_POINT)
-    { }
+        , pivotProperty(pivotProperty_)
+    {
+        DVASSERT(pivotProperty != nullptr);
+    }
 private:
     void Draw(const UIGeometricData &geometricData) override
     {
         Color oldColor = RenderManager::Instance()->GetColor();
         RenderManager::Instance()->SetColor(Color(0.0f, 0.0f, 1.0f, 1.f));
         Rect rect(0, 0, 5, 5);
-        rect.SetCenter(control->GetGeometricData().GetAABBox().GetPosition() + control->GetPivotPoint());
+        Vector2 pivot = pivotProperty->GetValue().AsVector2();
+        const Rect &controlRect = control->GetGeometricData().GetAABBox();
+        rect.SetCenter(controlRect.GetPosition() + controlRect.GetSize() * pivot);
         SetAbsoluteRect(rect);
         RenderHelper::Instance()->FillRect(GetAbsoluteRect(), RenderState::RENDERSTATE_2D_BLEND);
         RenderManager::Instance()->SetColor(oldColor);
     }
+    AbstractProperty *pivotProperty;
 };
 
 class RotateControl : public ControlContainer
@@ -185,7 +194,7 @@ void HUDSystem::SelectionWasChanged(const SelectedControls& selected, const Sele
     {
         hudMap.emplace(std::piecewise_construct, 
             std::forward_as_tuple(control),
-            std::forward_as_tuple(control, hudControl));
+            std::forward_as_tuple(document, control, hudControl));
     }
 }
 
@@ -301,11 +310,11 @@ void HUDSystem::SetNewArea(ControlNode* node, const ControlAreaInterface::eArea 
     }
 }
 
-HUDSystem::HUD::HUD(ControlNode *node_, UIControl* hudControl)
+HUDSystem::HUD::HUD(const Document *document, ControlNode *node_, UIControl* hudControl)
     : node(node_)
     , control(node_->GetControl())
 {
-    hudControls.emplace_back(new PivotPointControl(control));
+    hudControls.emplace_back(new PivotPointControl(control, document->GetPropertyByName(node, "Pivot")));
     hudControls.emplace_back(new RotateControl(control));
     for (int i = ControlAreaInterface::TOP_LEFT; i < ControlAreaInterface::CORNER_COUNT; ++i)
     {

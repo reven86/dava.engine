@@ -79,8 +79,8 @@ public:
     void SetContext(QObject* requester, WidgetContext* widgetContext);
     void SelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected) override;
     bool OnInput(DAVA::UIEvent *currentInput) override;
-    ControlNode* GetControlNodeByPos(const DAVA::Vector2 &pos, ControlNode *node = nullptr);
-    AbstractProperty* GetPropertyByName(const ControlNode* node, const DAVA::String &name);
+    ControlNode* GetControlNodeByPos(const DAVA::Vector2 &pos, ControlNode *node = nullptr) const;
+    AbstractProperty* GetPropertyByName(const ControlNode* node, const DAVA::String &name) const;
 signals:
     void SelectedNodesChanged(const SelectedNodes &selected, const SelectedNodes &deselected);
 public slots:

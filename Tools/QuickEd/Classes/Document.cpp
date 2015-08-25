@@ -139,7 +139,7 @@ bool Document::OnInput(UIEvent *currentInput)
     return false;
 }
 
-ControlNode* Document::GetControlNodeByPos(const Vector2& pos, ControlNode* node)
+ControlNode* Document::GetControlNodeByPos(const Vector2& pos, ControlNode* node) const
 {
     if (node == nullptr)
     {
@@ -175,7 +175,7 @@ ControlNode* Document::GetControlNodeByPos(const Vector2& pos, ControlNode* node
     return nullptr;
 }
 
-AbstractProperty* Document::GetPropertyByName(const ControlNode *node, const DAVA::String &name)
+AbstractProperty* Document::GetPropertyByName(const ControlNode *node, const DAVA::String &name) const
 {
     RootProperty *propertiesRoot = node->GetRootProperty();
     int propertiesCount = propertiesRoot->GetCount();

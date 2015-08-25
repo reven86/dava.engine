@@ -63,7 +63,7 @@ private:
     DAVA::ScopedPtr<DAVA::UIControl> hudControl;
     struct HUD
     {
-        HUD(ControlNode *node, DAVA::UIControl *hudControl);
+        HUD(const Document *doc, ControlNode *node, DAVA::UIControl *hudControl);
         ~HUD();
         ControlNode *node = nullptr;
         DAVA::UIControl *control = nullptr;
