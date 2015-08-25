@@ -76,9 +76,9 @@ bool TransformSystem::OnInput(UIEvent* currentInput)
             return ProcessDrag(currentInput->point);
         case UIEvent::PHASE_ENDED:
         {
-            bool retVal = beginPos != currentInput->point;
+            bool retVal = activeArea == FRAME && beginPos == currentInput->point;
             beginPos = Vector2(-1, -1);
-            return retVal;
+            return !retVal;
         }
         default:
             return false;
@@ -137,20 +137,12 @@ bool TransformSystem::ProcessDrag(const DAVA::Vector2 &pos)
         case BOTTOM_LEFT:
         case BOTTOM_CENTER:
         case BOTTOM_RIGHT:
-            if (keyBoard.IsKeyPressed(DVKEY_SHIFT)
-                && keyBoard.IsKeyPressed(DVKEY_ALT))
-            {
-                ResizeControlByPivotProportional(pos);
-            }
-            else if (keyBoard.IsKeyPressed(DVKEY_ALT))
-            {
-                ResizeControlByPivot(pos);
-            }
-            else
-            {
-                ResizeControlFree(pos);
-            }
-            break;
+        {
+            bool withPivot = keyBoard.IsKeyPressed(DVKEY_ALT);
+            bool rateably = keyBoard.IsKeyPressed(DVKEY_SHIFT);
+            ResizeControl(pos, withPivot, rateably);
+        }
+        break;
         case PIVOT_POINT:
         {
             auto control = activeControl->GetControl();
@@ -217,7 +209,7 @@ void TransformSystem::MoveConrol(const DAVA::Vector2& pos)
     AdjustProperty(activeControl, "Position", realDelta);
 }
 
-void TransformSystem::ResizeControlByPivot(const DAVA::Vector2& pos)
+void TransformSystem::ResizeControl(const DAVA::Vector2& pos, bool withPivot, bool rateably)
 {
     DVASSERT(activeArea != NO_AREA);
     Vector2 delta = pos - prevPos;
@@ -231,8 +223,8 @@ void TransformSystem::ResizeControlByPivot(const DAVA::Vector2& pos)
     default:
         DVASSERT_MSG(false, "wrong parameter passed to function");
     case TOP_LEFT:
-        AdjustProperty(activeControl, "Position", deltaPosition);
-        AdjustProperty(activeControl, "Size", deltaSize * -1);
+        ResizeTopLeft(deltaSize, withPivot, rateably);
+
         break;
     case TOP_CENTER:
         deltaPosition.x = 0;
@@ -272,63 +264,26 @@ void TransformSystem::ResizeControlByPivot(const DAVA::Vector2& pos)
     }
 }
 
-void TransformSystem::ResizeControlFree(const DAVA::Vector2 &pos)
+#include <QWidget>
+#include <QApplication>
+void TransformSystem::ResizeTopLeft(const DAVA::Vector2 &delta, bool withPivot, bool rateably)
 {
-    DVASSERT(activeArea != NO_AREA);
-    Vector2 delta = pos - prevPos;
-    auto gd = activeControl->GetControl()->GetGeometricData();
-    Vector2 realDelta = delta / gd.scale;
-    Vector2 deltaPosition = realDelta;
-    Vector2 deltaSize = realDelta;
-
-    switch (activeArea)
-    {
-    default:
-        DVASSERT_MSG(false, "wrong parameter passed to function");
-    case TOP_LEFT:
-        AdjustProperty(activeControl, "Position", deltaPosition);
-        AdjustProperty(activeControl, "Size", deltaSize * -1);
-        break;
-    case TOP_CENTER:
-        deltaPosition.x = 0;
-        deltaSize.x = 0;
-        AdjustProperty(activeControl, "Position", deltaPosition);
-        AdjustProperty(activeControl, "Size", deltaSize * -1);
-        break;
-    case TOP_RIGHT:
-        deltaPosition.x = 0;
-        deltaSize.y = deltaSize.y * -1;
-        AdjustProperty(activeControl, "Position", deltaPosition);
-        AdjustProperty(activeControl, "Size", deltaSize);
-        break;
-    case CENTER_LEFT:
-        deltaPosition.y = 0;
-        deltaSize.y = 0;
-        AdjustProperty(activeControl, "Position", deltaPosition);
-        AdjustProperty(activeControl, "Size", deltaSize * -1);
-        break;
-    case CENTER_RIGHT:
-        deltaSize.y = 0;
-        AdjustProperty(activeControl, "Size", deltaSize);
-        break;
-    case BOTTOM_LEFT:
-        deltaPosition.y = 0;
-        deltaSize.x *= -1;
-        AdjustProperty(activeControl, "Position", deltaPosition);
-        AdjustProperty(activeControl, "Size", deltaSize);
-        break;
-    case BOTTOM_CENTER:
-        deltaSize.x = 0;
-        AdjustProperty(activeControl, "Size", deltaSize);
-        break;
-    case BOTTOM_RIGHT:
-        AdjustProperty(activeControl, "Size", deltaSize);
-        break;
+    Vector2 deltaPosition = delta;
+    Vector2 deltaSize = delta;
+    QWidget *w = qApp->activePopupWidget();
+    Vector2 pivot = document->GetPropertyByName(activeControl, "Pivot")->GetValue().AsVector2();
+    if (withPivot)
+    {   
+        AdjustProperty(activeControl, "Size", delta * -1 / pivot);
     }
-}
+    else
+    {
+        deltaPosition = delta * pivot;
+        deltaSize = delta;
+        AdjustProperty(activeControl, "Position", deltaPosition);
+        AdjustProperty(activeControl, "Size", deltaSize * -1);
+    }
 
-void TransformSystem::ResizeControlByPivotProportional(const DAVA::Vector2 &pos)
-{
     
 }
 
@@ -355,5 +310,3 @@ void TransformSystem::AdjustProperty(ControlNode *node, const String &propertyNa
     
     document->GetCommandExecutor()->ChangeProperty(node, property, var);
 }
-
-
