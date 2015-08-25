@@ -41,9 +41,6 @@ public:
     void Detach() override; //detach system
     bool OnInput(DAVA::UIEvent *currentInput);
     void SelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected) override;
-
-private:
-    Document *document = nullptr;
 };
 
 #endif // __QUICKED_MENU_SYSTEM_CLASS_H__

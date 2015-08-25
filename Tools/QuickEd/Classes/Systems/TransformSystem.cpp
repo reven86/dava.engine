@@ -154,10 +154,12 @@ bool TransformSystem::ProcessDrag(const DAVA::Vector2 &pos)
         case PIVOT_POINT:
         {
             auto control = activeControl->GetControl();
-            Rect absRect = control->GetAbsoluteRect();
-            Vector2 pivotPoint = control->GetPivotPoint();
-            control->SetPivotPoint(pivotPoint + delta);
-            control->SetAbsoluteRect(absRect);
+            Vector2 delta = pos - prevPos;
+            auto gd =  activeControl->GetControl()->GetGeometricData();
+            Vector2 realDelta = delta / gd.scale;
+            Vector2 pivot(realDelta / control->GetSize()); //pivot is half of pos / size
+            AdjustProperty(activeControl, "Pivot", pivot);
+            AdjustProperty(activeControl, "Position", realDelta);
         }
             break;
         case ROTATE:
@@ -170,7 +172,7 @@ bool TransformSystem::ProcessDrag(const DAVA::Vector2 &pos)
             Vector2 l2(pos.x - rotatePoint.x, pos.y - rotatePoint.y);
             float angleRad = atan2(l2.y, l2.x) - atan2(l1.y, l1.x);
             float angle = angleRad * 180.0f / PI;
-            AdjustProperty(activeControl, "Angle", round(angle));
+            AdjustProperty(activeControl, "Angle", static_cast<float32>(round(angle)));
         }
             break;
         default:
