@@ -365,7 +365,7 @@ static bool Packing(const String& fileName,
                     Vector<FileTableEntry>& fileTable,
                     Vector<char>& inBuffer,
                     Vector<char>& packingBuf,
-                    RefPtr<File> output,
+                    File* output,
                     uint32 origSize,
                     uint32 startPos,
                     int (*packFunction)(const char*, char*, int),
@@ -404,7 +404,7 @@ static bool CompressFileAndWriteToOutput(
     Vector<FileTableEntry>& fileTable,
     Vector<char>& inBuffer,
     Vector<char>& packingBuf,
-    RefPtr<File> output)
+    File* output)
 {
     RefPtr<File> inFile(File::Create(fileName, File::OPEN | File::READ));
 
@@ -414,25 +414,17 @@ static bool CompressFileAndWriteToOutput(
         return false;
     }
 
-    if(!inFile->Seek(0, File::SEEK_FROM_END))
+    if (!inFile->Seek(0, File::SEEK_FROM_END))
     {
         Logger::Error("can't seek inside file: %s\n", fileName.c_str());
         return false;
     }
     uint32 origSize = inFile->GetPos();
-    if(!inFile->Seek(0, File::SEEK_FROM_START))
+    if (!inFile->Seek(0, File::SEEK_FROM_START))
     {
         Logger::Error("can't seek inside file: %s\n", fileName.c_str());
         return false;
     }
-    inBuffer.resize(origSize);
-    uint32 readOk = inFile->Read(&inBuffer[0], origSize);
-    if (readOk <= 0)
-    {
-        Logger::Error("can't read input file: %s\n", fileName.c_str());
-        return false;
-    }
-    inFile->Release();
 
     PackingType compressionType = GetPackingByExt(fileName, packingRules);
 
@@ -441,6 +433,28 @@ static bool CompressFileAndWriteToOutput(
     {
         auto& prevPackData = fileTable.back();
         startPos = prevPackData.start + prevPackData.compressed;
+    }
+
+    if (origSize > 0)
+    {
+        inBuffer.resize(origSize);
+        uint32 readOk = inFile->Read(&inBuffer[0], origSize);
+        if (readOk <= 0)
+        {
+            Logger::Error("can't read input file: %s\n", fileName.c_str());
+            return false;
+        }
+    }
+    else
+    {
+        PackFile::FilesDataBlock::Data fileData{
+            startPos,
+            origSize,
+            origSize,
+            ResourceArchive::CompressionType::None};
+
+        fileTable.push_back(fileData);
+        return true;
     }
 
     switch (compressionType)
@@ -586,9 +600,6 @@ static bool CopyTmpfileToPackfile(RefPtr<File> packFileOutput,
             "can't read full content of tmp compressed output file\n");
         return false;
     }
-
-    packedFile->Release();
-
     return true;
 }
 
@@ -623,8 +634,16 @@ bool ResourceArchive::CreatePack(const String& pacName,
 
     auto packedFileTmp = pacName + "_tmp_compressed_files.bin";
 
-    RefPtr<File> outTmpFile(
-        File::Create(packedFileTmp, File::CREATE | File::WRITE));
+    std::unique_ptr<File, void (*)(File*)> outTmpFile(
+        File::Create(packedFileTmp, File::CREATE | File::WRITE), [](File* f)
+        {
+            auto name = f->GetFilename().GetAbsolutePathname();
+            if (0 != std::remove(name.c_str()))
+            {
+                Logger::Error("can't delete tmp file: %s", name.c_str());
+            }
+            SafeRelease(f);
+        });
 
     if (!outTmpFile)
     {
@@ -639,7 +658,7 @@ bool ResourceArchive::CreatePack(const String& pacName,
                   {
                       bool result = CompressFileAndWriteToOutput(
                           fileName, compressionRules, fileTable, fileBuffer,
-                          compressedFileBuffer, outTmpFile);
+                          compressedFileBuffer, outTmpFile.get());
                       if (!result)
                       {
                           Logger::Info("can't pack file: %s, skip it\n",
@@ -648,7 +667,6 @@ bool ResourceArchive::CreatePack(const String& pacName,
                       }
                   });
     outTmpFile->Flush();
-    outTmpFile->Release();
 
     PackFile::HeaderBlock& headerBlock = pack.headerBlock;
     headerBlock.resPackMarker = PackFileMarker;
@@ -727,11 +745,7 @@ bool ResourceArchive::CreatePack(const String& pacName,
         return false;
     }
 
-    if (0 != std::remove(packedFileTmp.c_str()))
-    {
-        Logger::Error("can't remove temporary file");
-        return false;
-    }
+    tmpfile.Set(nullptr);
 
     return true;
 }

@@ -688,8 +688,10 @@ String FilePath::NormalizePathname(const String &pathname)
     }
     
 	//process last /
-	if(('/' == path[path.length() - 1]) && (path.length() != 1))
-		result += String("/");
+    if (('/' == path.back()) && (!result.empty()))
+    {
+        result += String("/");
+    }
     
     return result;
 }

@@ -452,10 +452,27 @@ bool FileSystem::IsFile(const FilePath & pathToCheck)
 		return (fileSet.find(path) != fileSet.end());
 #endif
 	struct stat s;
-	if(stat(pathToCheck.GetAbsolutePathname().c_str(),&s) == 0)
+
+    const String& cs = pathToCheck.GetAbsolutePathname();
+    int result = stat(cs.c_str(), &s);
+    if(result == 0)
 	{
 		return (0 != (s.st_mode & S_IFREG));
-	}
+	} else
+    {
+        switch (errno)
+        {
+        case ENOENT:
+            Logger::Error("File %s not found.", cs.c_str());
+            break;
+        case EINVAL:
+            Logger::Error("Invalid parameter to stat.");
+            break;
+        default:
+            /* Should never be reached. */
+            Logger::Error("Unexpected error in _stat.");
+        }
+    }
 
  	return false;
 }
