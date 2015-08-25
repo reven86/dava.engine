@@ -851,7 +851,7 @@ void NMaterial::Load(KeyedArchive * archive, SerializationContext * serializatio
 
     if (archive->IsKeyExists("fxName"))
     {
-        fxName = FastName(archive->GetString("materialTemplate").c_str());
+        fxName = FastName(archive->GetString("fxName").c_str());
     }
 
     if (archive->IsKeyExists("properties"))
