@@ -378,6 +378,18 @@ bool SceneTreeModel::dropMimeData(const QMimeData * data, Qt::DropAction action,
                 }
 
                 curScene->structureSystem->MoveEmitter(emittersGroup, effectsGroup, effect, row);
+
+				if (emittersV.size() == 1)
+				{
+					// moved only one emitter - keep it selected
+					curScene->particlesSystem->SetEmitterSelected(effect->GetEntity(), emittersV.front());
+				}
+				else 
+				{
+					// moved several emitters - reset selection
+					curScene->particlesSystem->SetEmitterSelected(nullptr, nullptr);
+				}
+
                 ret = true;
             }
         }
