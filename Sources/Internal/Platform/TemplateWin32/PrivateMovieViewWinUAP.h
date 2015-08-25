@@ -43,11 +43,11 @@ class PrivateMovieViewWinUAP : public std::enable_shared_from_this<PrivateMovieV
 {
 public:
     PrivateMovieViewWinUAP();
-    virtual ~PrivateMovieViewWinUAP();
+    ~PrivateMovieViewWinUAP();
 
     // MovieViewControl should invoke it in its destructor to tell this class instance
     // to fly away on its own (finish pending jobs if any, and delete when all references are lost)
-    void FlyToSunIcarus();
+    void OwnerAtPremortem();
 
     void Initialize(const Rect& rect);
 

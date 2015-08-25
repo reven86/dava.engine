@@ -895,7 +895,9 @@ public:
 	static bool IsRuntimeFlag(const FastName& flagName);
     static bool IsRuntimeProperty(const FastName& propName);
     static bool IsRuntimeTexture(const FastName& textureName);
-    static bool IsNamePartOfArray(const FastName& fastName, FastName* array, uint32 count);
+
+protected:
+    static bool IsNamePartOfArray(const FastName& fastName, const Vector<FastName> & propertyArray);
 		
 protected:
 	

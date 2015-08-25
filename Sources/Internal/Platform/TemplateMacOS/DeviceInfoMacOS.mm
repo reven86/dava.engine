@@ -31,6 +31,9 @@
 
 #ifdef __DAVAENGINE_MACOS__
 
+#include "Platform/TemplateMacOS/DeviceInfoMacOS.h"
+#include "Base/GlobalEnum.h"
+
 #import <Foundation/NSLocale.h>
 #import <Foundation/NSTimeZone.h>
 #import <AppKit/NSScreen.h>
@@ -40,22 +43,36 @@
 namespace DAVA
 {
 
-String DeviceInfo::GetVersion()
+DeviceInfoPrivate::DeviceInfoPrivate()
+{
+}
+
+DeviceInfo::ePlatform DeviceInfoPrivate::GetPlatform()
+{
+    return 	DeviceInfo::PLATFORM_MACOS;
+}
+
+String DeviceInfoPrivate::GetPlatformString()
+{
+    return GlobalEnumMap<DeviceInfo::ePlatform>::Instance()->ToString(GetPlatform());
+}
+
+String DeviceInfoPrivate::GetVersion()
 {
 	return "Not yet implemented";
 }
 
-String DeviceInfo::GetManufacturer()
+String DeviceInfoPrivate::GetManufacturer()
 {
 	return "Apple inc.";
 }
 
-String DeviceInfo::GetModel()
+String DeviceInfoPrivate::GetModel()
 {
 	return "Not yet implemented";
 }
 
-String DeviceInfo::GetLocale()
+String DeviceInfoPrivate::GetLocale()
 {
 	NSLocale *english = [[[NSLocale alloc] initWithLocaleIdentifier:@"en_US"] autorelease];
 
@@ -66,7 +83,7 @@ String DeviceInfo::GetLocale()
 	return res;
 }
 
-String DeviceInfo::GetRegion()
+String DeviceInfoPrivate::GetRegion()
 {
 	NSLocale *english = [[[NSLocale alloc] initWithLocaleIdentifier:@"en_US"] autorelease];
 
@@ -77,7 +94,7 @@ String DeviceInfo::GetRegion()
 	return res;
 }
 
-String DeviceInfo::GetTimeZone()
+String DeviceInfoPrivate::GetTimeZone()
 {
 	NSTimeZone *localTime = [NSTimeZone systemTimeZone];
     
@@ -85,13 +102,13 @@ String DeviceInfo::GetTimeZone()
 	return res;
 }
     
-String DeviceInfo::GetUDID()
+String DeviceInfoPrivate::GetUDID()
 {
     OpenUDIDMacOS*  udid = [[[OpenUDIDMacOS alloc] init] autorelease];
     return [[udid value] UTF8String];
 }
     
-WideString DeviceInfo::GetName()
+WideString DeviceInfoPrivate::GetName()
 {
     NSString * deviceName = [[NSHost currentHost] localizedName];
     
@@ -102,44 +119,71 @@ WideString DeviceInfo::GetName()
 }
 
 // Not impletemted yet
-String DeviceInfo::GetHTTPProxyHost()
+String DeviceInfoPrivate::GetHTTPProxyHost()
 {
 	return String();
 }
 
 // Not impletemted yet
-String DeviceInfo::GetHTTPNonProxyHosts()
+String DeviceInfoPrivate::GetHTTPNonProxyHosts()
 {
 	return String();
 }
 
 // Not impletemted yet
-int DeviceInfo::GetHTTPProxyPort()
+int32 DeviceInfoPrivate::GetHTTPProxyPort()
 {
 	return 0;
 }
 
-eGPUFamily DeviceInfo::GetGPUFamily()
+DeviceInfo::ScreenInfo& DeviceInfoPrivate::GetScreenInfo()
+{
+    return screenInfo;
+}
+
+int32 DeviceInfoPrivate::GetZBufferSize()
+{
+    return 24;
+}
+
+eGPUFamily DeviceInfoPrivate::GetGPUFamily()
 {
     return GPU_INVALID;
 }
 
-DeviceInfo::NetworkInfo DeviceInfo::GetNetworkInfo()
+DeviceInfo::NetworkInfo DeviceInfoPrivate::GetNetworkInfo()
 {
     // For now return default network info for MacOS.
-    return NetworkInfo();
+    return DeviceInfo::NetworkInfo();
 }
 
-void DeviceInfo::InitializeScreenInfo()
+List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetStoragesList()
+{
+    List<DeviceInfo::StorageInfo> l;
+    return l;
+}
+
+void DeviceInfoPrivate::InitializeScreenInfo()
 {
 	screenInfo.width = [[NSScreen mainScreen] frame].size.width;
 	screenInfo.height = [[NSScreen mainScreen] frame].size.height;
 	screenInfo.scale = 1;
 }
 
-int32 DeviceInfo::GetCpuCount()
+int32 DeviceInfoPrivate::GetCpuCount()
 {
     return (int32)[[NSProcessInfo processInfo] processorCount];
+}
+
+bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType type)
+{
+        DVASSERT(false && "Not Implement");
+        return false;
+}
+
+void DeviceInfoPrivate::SetHIDConnectionCallback(DeviceInfo::eHIDType type, DeviceInfo::HIDCallBackFunc&& callback)
+{
+        DVASSERT(false && "Not Implement");
 }
 
 }

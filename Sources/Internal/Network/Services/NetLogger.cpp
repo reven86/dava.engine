@@ -156,9 +156,9 @@ String NetLogger::TimestampToString(time_t timestamp) const
 #else   // __DAVAENGINE_WINDOWS__
     localtime_r(&timestamp, &tms);
 #endif  // __DAVAENGINE_WINDOWS__
-    char8 buf[50] = {0};
-    strftime(buf, COUNT_OF(buf), "%Y-%m-%d %H:%M:%S", &tms);
-    return String(buf);
+    Array<char8, 50> buf = {0};
+    std::strftime(buf.data(), buf.size(), "%Y-%m-%d %H:%M:%S", &tms);
+    return String(buf.data());
 }
 
 }   // namespace Net
