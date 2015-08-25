@@ -52,7 +52,6 @@ public:
     DAVA::VariantType GetValue() const override;
     
     const DAVA::String &GetCustomClassName() const;
-    bool IsSet() const;
     
 protected:
     virtual void ApplyValue(const DAVA::VariantType &value) override;

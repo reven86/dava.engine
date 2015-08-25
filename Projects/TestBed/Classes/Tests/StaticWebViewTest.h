@@ -36,6 +36,8 @@
 
 using namespace DAVA;
 
+class MyWebViewDelegate;
+
 class StaticWebViewTest : public BaseScreen
 {
 protected:
@@ -77,6 +79,8 @@ private:
     UIWebView* webView1 = nullptr;
     UIWebView* webView2 = nullptr;
     UIWebView* webView3 = nullptr;
+
+    MyWebViewDelegate* webviewDelegate = nullptr;
 };
 
 #endif /* defined(__TEMPLATEPROJECTIPHONE__STATICWEBVIEWTEST__) */

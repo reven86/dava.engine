@@ -30,10 +30,10 @@
 #ifndef __BASESCREEN_H__
 #define __BASESCREEN_H__
 
-#include <DAVAEngine.h>
+#include "DAVAEngine.h"
 #include "Infrastructure/GameCore.h"
 
-class BaseScreen: public DAVA::UIScreen
+class BaseScreen : public DAVA::UIScreen
 {
 protected:
     virtual ~BaseScreen(){}
@@ -49,12 +49,13 @@ public:
 protected:
     void LoadResources() override;
     void UnloadResources() override;
+    bool SystemInput(DAVA::UIEvent *currentInput) override;
+
+private:
+    void OnExitButton(DAVA::BaseObject *obj, void *data, void *callerData);
     
 private:
-    void OnExitButton(BaseObject *obj, void *data, void *callerData);
-    
-private:
-    static DAVA::int32 globalScreenId; // 1, on create of screen increment
+    static DAVA::int32 globalScreenId; // 1, on create of screen increment  
     DAVA::int32 currentScreenId;
     DAVA::UIButton *exitButton;
 };

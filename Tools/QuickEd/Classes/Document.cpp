@@ -32,6 +32,7 @@
 #include "UI/Preview/EditScreen.h"
 
 #include "Model/PackageHierarchy/PackageNode.h"
+#include "Model/PackageHierarchy/ImportedPackagesNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 
@@ -87,7 +88,7 @@ const DAVA::FilePath &Document::GetPackageFilePath() const
 
 void Document::RefreshLayout()
 {
-    package->RefreshLayout();
+    package->RefreshPackageStylesAndLayout(true);
 }
 
 void Document::RefreshAllControlProperties()
