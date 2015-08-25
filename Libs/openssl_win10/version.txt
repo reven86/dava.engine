@@ -1,0 +1,2 @@
+Downloaded from https://github.com/Microsoft/openssl/tree/OpenSSL_1_0_2_WinRT-stable
+Commit 2f7ba9b3e4920ca88e218e01d9a2733865eddbc3

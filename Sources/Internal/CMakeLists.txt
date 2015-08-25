@@ -157,14 +157,11 @@ elseif ( WINDOWS_UAP )
 
     file ( GLOB RELEASE_LIB_LIST "${DAVA_WIN_STORE_LIBRARIES_PATH}/${LIBS_ARCH_SELECTOR}/Release/*.lib" )
     list ( APPEND LIST_SHARED_LIBRARIES_RELEASE ${RELEASE_LIB_LIST}  )
-
 elseif( WIN32 ) 
-
     include( FindWindowsSDK )
 
 #    link_directories       ( $ENV{DXSDK_DIR}/lib/x86 )
     link_directories       ( ${WINDOWSSDK_LATEST_DIR}/lib/x86 )
-
     file ( GLOB LIB_LIST "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/D/*" )
     list ( APPEND LIST_SHARED_LIBRARIES_DEBUG ${LIB_LIST}  )
 
@@ -225,5 +222,9 @@ foreach ( FILE ${LIST_SHARED_LIBRARIES_RELEASE} )
 endforeach ()
 
 install_libraries( ${PROJECT_NAME} )
+
+if ( WINDOWS_UAP )
+    set_property(TARGET ${PROJECT_NAME} PROPERTY VS_MOBILE_EXTENSIONS_VERSION ${WINDOWS_UAP_MOBILE_EXT_SDK_VERSION} )
+endif()
 
 

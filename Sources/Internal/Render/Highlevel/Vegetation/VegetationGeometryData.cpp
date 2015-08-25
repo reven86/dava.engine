@@ -43,7 +43,7 @@ static const FastName VEGETATION_ENTITY_LAYER_1("layer_1");
 static const FastName VEGETATION_ENTITY_LAYER_2("layer_2");
 static const FastName VEGETATION_ENTITY_LAYER_3("layer_3");
 
-static FastName VEGETATION_ENTITY_LAYER_NAMES[] =
+static Vector<FastName> VEGETATION_ENTITY_LAYER_NAMES =
 {
     VEGETATION_ENTITY_LAYER_0,
     VEGETATION_ENTITY_LAYER_1,
@@ -213,8 +213,8 @@ VegetationGeometryDataPtr VegetationGeometryDataReader::ReadScene(const FilePath
         return result;
     }
 
-    uint32 layerCount = COUNT_OF(VEGETATION_ENTITY_LAYER_NAMES);
-    for (uint32 layerIndex = 0; layerIndex < layerCount; ++layerIndex)
+    const size_t layerCount = VEGETATION_ENTITY_LAYER_NAMES.size();
+    for (size_t layerIndex = 0; layerIndex < layerCount; ++layerIndex)
     {
         Entity* layerEntity = currentVariation->FindByName(VEGETATION_ENTITY_LAYER_NAMES[layerIndex]);
         if (!layerEntity)
