@@ -42,6 +42,7 @@
 #include "Qt/DeviceInfo/MemoryTool/MemProfController.h"
 #include <Base/FunctionTraits.h>
 
+#include <Network/NetworkCommon.h>
 #include <Network/PeerDesription.h>
 
 using namespace DAVA;
@@ -187,7 +188,7 @@ void DeviceListController::ConnectDeviceInternal(QModelIndex& index, size_t ifIn
         // Chech whether remote device is under memory profiler and increase read timeout
         // Else leave it zero to allow underlying network system to choose timeout itself
         bool deviceUnderMemoryProfiler = std::find(servIds.begin(), servIds.end(), SERVICE_MEMPROF) != servIds.end();
-        uint32 readTimeout = deviceUnderMemoryProfiler ? 120 * 1000 : 0;
+        uint32 readTimeout = deviceUnderMemoryProfiler ? 120 * 1000 : Net::DEFAULT_READ_TIMEOUT;
 
         trackId = NetCore::Instance()->CreateController(config, reinterpret_cast<void*>(index.row()), readTimeout);
         if (trackId != NetCore::INVALID_TRACK_ID)

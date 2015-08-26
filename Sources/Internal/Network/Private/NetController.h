@@ -30,10 +30,11 @@
 #ifndef __DAVAENGINE_NETCONTROLLER_H__
 #define __DAVAENGINE_NETCONTROLLER_H__
 
-#include <Base/BaseTypes.h>
+#include "Base/BaseTypes.h"
 
-#include <Network/IController.h>
-#include <Network/Private/ITransport.h>
+#include "Network/NetworkCommon.h"
+#include "Network/IController.h"
+#include "Network/Private/ITransport.h"
 
 namespace DAVA
 {
@@ -62,7 +63,7 @@ private:
     friend bool operator == (const ClientEntry& entry, const IClientTransport* obj);
 
 public:
-    NetController(IOLoop* aLoop, const ServiceRegistrar& aRegistrar, void* aServiceContext, uint32 readTimeout);
+    NetController(IOLoop* aLoop, const ServiceRegistrar& aRegistrar, void* aServiceContext, uint32 readTimeout = DEFAULT_READ_TIMEOUT);
     virtual ~NetController();
 
     bool ApplyConfig(const NetConfig& config, size_t trIndex = 0);

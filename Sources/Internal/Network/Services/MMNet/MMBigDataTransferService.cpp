@@ -87,7 +87,7 @@ void MMBigDataTransferService::Start(bool newSession, uint32 connToken_, const I
     config.AddTransport(TRANSPORT_TCP, endpoint);
     config.AddService(SERVICE_ID);
 
-    netController.reset(new NetController(ioLoop.get(), *registrar, this, 0));
+    netController.reset(new NetController(ioLoop.get(), *registrar, this));
     netController->ApplyConfig(config);
     netController->Start();
 }

@@ -44,13 +44,14 @@ TCPClientTransport::TCPClientTransport(IOLoop* aLoop, uint32 readTimeout_)
     , socket(aLoop)
     , timer(aLoop)
     , listener(NULL)
-    , readTimeout(readTimeout_ > 0 ? readTimeout_ : DEFAULT_READ_TIMEOUT)
+    , readTimeout(readTimeout_)
     , isInitiator(false)
     , isTerminating(false)
     , isConnected(false)
     , sendBufferCount(0)
 {
     DVASSERT(aLoop != NULL);
+    DVASSERT(readTimeout > 0);
 }
 
 TCPClientTransport::TCPClientTransport(IOLoop* aLoop, const Endpoint& aEndpoint, uint32 readTimeout_)
@@ -60,13 +61,14 @@ TCPClientTransport::TCPClientTransport(IOLoop* aLoop, const Endpoint& aEndpoint,
     , socket(aLoop)
     , timer(aLoop)
     , listener(NULL)
-    , readTimeout(readTimeout_ > 0 ? readTimeout_ : DEFAULT_READ_TIMEOUT)
+    , readTimeout(readTimeout_)
     , isInitiator(true)
     , isTerminating(false)
     , isConnected(false)
     , sendBufferCount(0)
 {
     DVASSERT(aLoop != NULL);
+    DVASSERT(readTimeout > 0);
 }
 
 TCPClientTransport::~TCPClientTransport()
