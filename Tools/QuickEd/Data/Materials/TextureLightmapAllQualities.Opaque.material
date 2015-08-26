@@ -1,3 +1,0 @@
-MaterialTemplate:    
-    HIGH : "~res:/Materials/TextureLightmap.Opaque.material"
-    LOW : "~res:/Materials/Textured.Opaque.material"
