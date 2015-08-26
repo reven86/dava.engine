@@ -407,24 +407,31 @@ void PrivateWebViewWinUAP::InstallEventHandlers()
     nativeWebView->NavigationCompleted += navigationCompleted;
 }
 
-void PrivateWebViewWinUAP::PositionWebView(const Rect& rect, bool offScreen)
+void PrivateWebViewWinUAP::PositionWebView(const Rect& rectInVirtualCoordinates, bool offScreen)
 {
-    VirtualCoordinatesSystem* coordSys = VirtualCoordinatesSystem::Instance();
+    VirtualCoordinatesSystem* coordSystem = VirtualCoordinatesSystem::Instance();
 
-    Rect physRect = coordSys->ConvertVirtualToPhysical(rect);
-    const Vector2 physOffset = coordSys->GetPhysicalDrawOffset();
+    // 1. map virtual to physical
+    Rect controlRect = coordSystem->ConvertVirtualToPhysical(rectInVirtualCoordinates);
+    controlRect += coordSystem->GetPhysicalDrawOffset();
 
-    float32 width = physRect.dx + physOffset.x;
-    float32 height = physRect.dy + physOffset.y;
+    // 2. map physical to window
+    const float32 scaleFactor = core->GetScreenScaleFactor();
+    controlRect.x /= scaleFactor;
+    controlRect.y /= scaleFactor;
+    controlRect.dx /= scaleFactor;
+    controlRect.dy /= scaleFactor;
 
     if (offScreen)
     {
-        physRect.x = -width;
-        physRect.y = -height;
+        controlRect.x = -controlRect.dx;
+        controlRect.y = -controlRect.dy;
     }
-    nativeWebView->Width = width;
-    nativeWebView->Height = height;
-    core->XamlApplication()->PositionUIElement(nativeWebView, physRect.x, physRect.y);
+
+    // 3. set control's position and size
+    nativeWebView->Width = controlRect.dx;
+    nativeWebView->Height = controlRect.dy;
+    core->XamlApplication()->PositionUIElement(nativeWebView, controlRect.x, controlRect.y);
 }
 
 void PrivateWebViewWinUAP::OnNavigationStarting(WebView^ sender, WebViewNavigationStartingEventArgs^ args)
@@ -545,13 +552,7 @@ Sprite* PrivateWebViewWinUAP::CreateSpriteFromPreviewData(const uint8* imageData
     DWORD bitsOffset = *OffsetPointer<DWORD>(imageData, 10);
 
     RefPtr<Image> imgSrc(Image::CreateFromData(width, height, FORMAT_RGBA8888, imageData + bitsOffset));
-    RefPtr<Image> imgDst(Image::Create(width, height, FORMAT_RGB888));
-    if (imgSrc.Valid() && imgDst.Valid())
-    {
-        ImageConvert::ConvertImageDirect(imgSrc.Get(), imgDst.Get());
-        return Sprite::CreateFromImage(imgDst.Get());
-    }
-    return nullptr;
+    return Sprite::CreateFromImage(imgSrc.Get(), true, false);
 }
 
 }   // namespace DAVA

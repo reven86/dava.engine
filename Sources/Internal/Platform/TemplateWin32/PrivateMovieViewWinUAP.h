@@ -66,7 +66,7 @@ public:
 
 private:
     void InstallEventHandlers();
-    void PositionMovieView(const Rect& rect);
+    void PositionMovieView(const Rect& rectInVirtualCoordinates);
 
     Windows::Storage::Streams::IRandomAccessStream^ CreateStreamFromUri(Windows::Foundation::Uri^ uri) const;
     Windows::Foundation::Uri^ UriFromPath(const FilePath& path) const;
