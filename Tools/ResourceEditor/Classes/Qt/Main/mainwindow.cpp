@@ -1599,15 +1599,11 @@ void QtMainWindow::UnmodalDialogFinished(int)
 
 void QtMainWindow::OnAddLandscape()
 {
-
     Entity* entityToProcess = new Entity();
     entityToProcess->SetName(ResourceEditor::LANDSCAPE_NODE_NAME);
     entityToProcess->SetLocked(true);
     
     Landscape* newLandscape = new Landscape();
-#if RHI_COMPLETE_EDITOR
-    newLandscape->Create();
-#endif // RHI_COMPLETE_EDITOR
 
     RenderComponent* component = new RenderComponent();
     component->SetRenderObject(newLandscape);
