@@ -49,9 +49,9 @@ bool KeyboardDevice::IsKeyPressed(int32 keyCode)
 #if defined (__DAVAENGINE_WIN_UAP__)
 	if (DVKEY_ALT == keyCode)
 	{
-// 		auto current_frame =  Windows::UI::Core::CoreWindow::GetForCurrentThread();
-// 		auto isAlt = current_frame->GetKeyState(static_cast<Windows::System::VirtualKey>(VK_MENU));
-// 		keyStatus[keyCode] = (Windows::UI::Core::CoreVirtualKeyStates::Down  == isAlt);
+ 		auto current_frame =  Windows::UI::Core::CoreWindow::GetForCurrentThread();
+ 		auto isAlt = current_frame->GetKeyState(static_cast<Windows::System::VirtualKey>(VK_MENU));
+ 		keyStatus[keyCode] = (Windows::UI::Core::CoreVirtualKeyStates::Down  == isAlt);
 	}
 #elif defined (__DAVAENGINE_WIN32__)
 	if(DVKEY_ALT == keyCode)

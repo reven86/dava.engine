@@ -96,7 +96,6 @@ void WinUAPXamlApp::SetScreenMode(ApplicationViewWindowingMode screenMode)
 
 Windows::Foundation::Size WinUAPXamlApp::GetCurrentScreenSize()
 {
-    //return Windows::Foundation::Size(static_cast<float32>(physicalWidth), static_cast<float32>(physicalHeight)); //TODO
     return Windows::Foundation::Size(static_cast<float32>(swapChainWidth), static_cast<float32>(swapChainHeight));
 }
 
@@ -668,9 +667,9 @@ void WinUAPXamlApp::ResetRender()
 void WinUAPXamlApp::InitCoordinatesSystem()
 {
     VirtualCoordinatesSystem* virtSystem = VirtualCoordinatesSystem::Instance();
-    virtSystem->SetInputScreenAreaSize(swapChainWidth, swapChainHeight); //TODO: comments
-    virtSystem->SetPhysicalScreenSize(physicalWidth, physicalHeight); //TODO: comments
-    virtSystem->SetVirtualScreenSize(currentMode.width, currentMode.height); //TODO: comments //TODO: check on diffirent platforms
+    virtSystem->SetInputScreenAreaSize(swapChainWidth, swapChainHeight); //TODO: move to FrameworkMain
+    virtSystem->SetPhysicalScreenSize(physicalWidth, physicalHeight); //TODO: move to FrameworkMain
+    virtSystem->SetVirtualScreenSize(currentMode.width, currentMode.height); //TODO: move to FrameworkMain
     virtSystem->EnableReloadResourceOnResize(true);
 }
 
@@ -681,9 +680,9 @@ void WinUAPXamlApp::ReInitCoordinatesSystem()
     virtSystem->SetPhysicalScreenSize(physicalWidth, physicalHeight);
 
     virtSystem->UnregisterAllAvailableResourceSizes();
-    virtSystem->RegisterAvailableResourceSize(currentMode.width, currentMode.height, "Gfx"); //TODO:
-    virtSystem->RegisterAvailableResourceSize(currentMode.width * 2, currentMode.height * 2, "Gfx2"); //TODO:
-    virtSystem->SetVirtualScreenSize(currentMode.width, currentMode.height); //TODO:
+    virtSystem->RegisterAvailableResourceSize(currentMode.width, currentMode.height, "Gfx"); //TODO: move to FrameworkMain
+    virtSystem->RegisterAvailableResourceSize(currentMode.width * 2, currentMode.height * 2, "Gfx2"); //TODO: move to FrameworkMain
+    virtSystem->SetVirtualScreenSize(currentMode.width, currentMode.height); //TODO: move to FrameworkMain
     
     virtSystem->ScreenSizeChanged();
 }

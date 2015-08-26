@@ -38,14 +38,6 @@
     
     #define GetGLErrorString gluErrorString
 
-// #elif defined(__DAVAENGINE_WIN_UAP__)
-// 
-// 	#include "GL/glew.h"
-// 	#include <GL/GL.h>
-// 	#include "GL/wglew.h"
-// 
-// #define GetGLErrorString(code) #code
-
 #elif defined(__DAVAENGINE_MACOS__)
 
     #include <Carbon/Carbon.h>

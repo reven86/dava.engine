@@ -34,7 +34,7 @@
     #endif    
     #pragma warning( disable: 4005 )
 #if defined(__DAVAENGINE_WIN32__)
-    #define _WIN32_WINNT 0x0602
+    #define _WIN32_WINNT 0x0601
 #endif
     #include <windows.h>
 

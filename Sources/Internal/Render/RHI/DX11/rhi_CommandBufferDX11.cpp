@@ -412,8 +412,6 @@ dx11_CommandBuffer_End( Handle cmdBuf, Handle syncObject )
 
     cb->context->FinishCommandList( TRUE, &(cb->commandList) );
     cb->sync = syncObject;
-
-    //cb->context->ClearState();
 }
 
 
@@ -890,7 +888,7 @@ Trace("\n\n-------------------------------\nframe %u executed(submitted to GPU)\
     else
 */    
     {
-        _D3D11_SwapChain->Present( 1, 0 );
+        _D3D11_SwapChain->Present( 0, 0 );
     }    
 
 
