@@ -30,9 +30,9 @@
 #include "Debug/DVAssert.h"
 #include "FileSystem/File.h"
 
-#include "Branch.h"
-#include "BacktraceSymbolTable.h"
-#include "MemorySnapshot.h"
+#include "Qt/DeviceInfo/MemoryTool/Branch.h"
+#include "Qt/DeviceInfo/MemoryTool/BacktraceSymbolTable.h"
+#include "Qt/DeviceInfo/MemoryTool/MemorySnapshot.h"
 
 using namespace DAVA;
 
@@ -143,7 +143,7 @@ Branch* MemorySnapshot::BuildPath(Branch* parent, int startFrame, const Vector<c
     return parent;
 }
 
-int MemorySnapshot::FindNamesInBacktrace(const DAVA::Vector<const DAVA::String*>& namesToFind, const DAVA::Vector<const DAVA::String*>& bktraceNames) const
+int MemorySnapshot::FindNamesInBacktrace(const Vector<const String*>& namesToFind, const Vector<const String*>& bktraceNames) const
 {
     int index = static_cast<int>(bktraceNames.size() - 1);
     do {

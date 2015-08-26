@@ -1,6 +1,6 @@
 #include "Debug/DVAssert.h"
 
-#include "BacktraceSymbolTable.h"
+#include "Qt/DeviceInfo/MemoryTool/BacktraceSymbolTable.h"
 
 using namespace DAVA;
 

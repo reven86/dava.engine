@@ -33,9 +33,8 @@
 #include "Platform/DateTime.h"
 #include "Debug/DVAssert.h"
 
-#include "BacktraceSymbolTable.h"
-
-#include "ProfilingSession.h"
+#include "Qt/DeviceInfo/MemoryTool/BacktraceSymbolTable.h"
+#include "Qt/DeviceInfo/MemoryTool/ProfilingSession.h"
 
 using namespace DAVA;
 

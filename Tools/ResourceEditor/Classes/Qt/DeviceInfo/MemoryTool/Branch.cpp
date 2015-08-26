@@ -28,7 +28,7 @@
 
 #include "Debug/DVAssert.h"
 
-#include "Branch.h"
+#include "Qt/DeviceInfo/MemoryTool/Branch.h"
 
 using namespace DAVA;
 

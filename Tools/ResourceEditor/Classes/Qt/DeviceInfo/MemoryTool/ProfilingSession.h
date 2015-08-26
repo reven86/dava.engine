@@ -36,9 +36,9 @@
 #include "Network/PeerDesription.h"
 #include "MemoryManager/MemoryManagerTypes.h"
 
-#include "BacktraceSymbolTable.h"
-#include "MemoryStatItem.h"
-#include "MemorySnapshot.h"
+#include "Qt/DeviceInfo/MemoryTool/BacktraceSymbolTable.h"
+#include "Qt/DeviceInfo/MemoryTool/MemoryStatItem.h"
+#include "Qt/DeviceInfo/MemoryTool/MemorySnapshot.h"
 
 namespace DAVA
 {
