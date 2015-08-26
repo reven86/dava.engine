@@ -133,7 +133,7 @@ public:
     TestEchoClient()
     {
         // Prepare data of various length
-        Parcel a[] = {
+        Vector<Parcel> a = {
             {::operator new(1), 1, 0},
             {::operator new(1000), 1000, 0},
             {::operator new(10000), 10000, 0},
@@ -142,7 +142,7 @@ public:
             {::operator new(10000000), 10000000, 0}
         };
         uint8 v = 'A';
-        for (size_t i = 0;i < COUNT_OF(a);++i, ++v)
+        for (size_t i = 0;i < a.size();++i, ++v)
         {
             Memset(a[i].outbuf, v, a[i].length);
             parcels.push_back(a[i]);

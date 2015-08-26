@@ -27,8 +27,8 @@
 =====================================================================================*/
 
 
-#ifndef __LOGENGINE_ASSERT_H__
-#define __LOGENGINE_ASSERT_H__
+#ifndef __DAVAENGINE_ASSERT_H__
+#define __DAVAENGINE_ASSERT_H__
 
 #include "Base/BaseTypes.h"
 #include "FileSystem/Logger.h"

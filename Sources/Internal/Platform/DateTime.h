@@ -195,7 +195,7 @@ private:
     
     Timestamp InternalTimeGm(tm *t) const;
     
-    bool IsNumber(const char * s) const;
+    bool IsNumber(const String & s) const;
     
     Timestamp   innerTime;
     int32       timeZoneOffset;// offset in seconds
@@ -219,7 +219,7 @@ bool DateTime::IsLeap(int32 year) const
         return true;
     if(year % 100 == 0)
         return false;
-    if(year % 4 == 0)
+    if(year % 4 == 0) //-V112 // PVS warning disable: not an adderss
         return true;
     return false;
 }
@@ -228,7 +228,7 @@ int32 DateTime::DaysFrom0(int32 year) const
 {
     DVASSERT(year >= 1970);
     year--;
-    return 365 * year + (year / 400) - (year/100) + (year / 4);
+    return 365 * year + (year / 400) - (year/100) + (year / 4); //-V112 // PVS warning disable: not an adderss
 }
 
 int32 DateTime::DaysFrom1970(int32 year) const

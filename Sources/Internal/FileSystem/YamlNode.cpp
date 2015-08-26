@@ -820,19 +820,19 @@ bool YamlNode::InitArrayFromVariantType(const VariantType &varType)
     case VariantType::TYPE_VECTOR2:
         {
             const Vector2 & vector = varType.AsVector2();
-            InternalSetVector(vector.data,COUNT_OF(vector.data));
+            InternalSetVector(vector.data, 2);
         }
         break;
     case VariantType::TYPE_VECTOR3:
         {
             const Vector3& vector = varType.AsVector3();
-            InternalSetVector(vector.data,COUNT_OF(vector.data));
+            InternalSetVector(vector.data, 3);
         }
         break;
     case VariantType::TYPE_VECTOR4:
         {
             const Vector4& vector = varType.AsVector4();
-            InternalSetVector(vector.data,COUNT_OF(vector.data));
+            InternalSetVector(vector.data, 4);
         }
         break;
     case VariantType::TYPE_MATRIX2:
@@ -862,7 +862,7 @@ bool YamlNode::InitArrayFromVariantType(const VariantType &varType)
     case VariantType::TYPE_COLOR:
         {
             const Color& color = varType.AsColor();
-            InternalSetVector(color.color,COUNT_OF(color.color));
+            InternalSetVector(color.color, static_cast<uint32>(sizeof(Color)));
         }
         break;
     default:
