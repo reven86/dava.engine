@@ -44,6 +44,8 @@ InitParam
     uint32  width;
     uint32  height;
     void*   window;
+    uint32  threadedRenderEnabled:1;
+    uint32  threadedRenderFrameCount;
 
     void    (*acquireContextFunc)();
     void    (*releaseContextFunc)();
@@ -52,6 +54,8 @@ InitParam
               : width(0),
                 height(0),
                 window(nullptr),
+                threadedRenderEnabled(false),
+                threadedRenderFrameCount(2),
                 acquireContextFunc(nullptr),
                 releaseContextFunc(nullptr)
             {}

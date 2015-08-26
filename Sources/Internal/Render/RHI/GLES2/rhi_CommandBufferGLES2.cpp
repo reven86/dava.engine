@@ -43,9 +43,6 @@
 
     #include "_gl.h"
 
-    #define USE_RENDER_THREAD               0
-    #define RHI_MAX_PREPARED_FRAME_COUNT    1
-
 
 namespace rhi
 {
@@ -156,9 +153,8 @@ static bool                 _GLES2_RenderThreadExitPending  = false;
 static DAVA::Spinlock       _GLES2_RenderThreadExitSync;
 static DAVA::Semaphore      _GLES2_RenderThredStartedSync   (1);
 
-#if USE_RENDER_THREAD 
 static DAVA::Thread*        _GLES2_RenderThread             = nullptr;
-#endif
+static unsigned             _GLES2_RenderThreadFrameCount   = 0;
 
 struct
 FrameGLES2
@@ -1285,47 +1281,47 @@ Trace("rhi-gl.swap-buffers done\n");
 static void
 gles2_Present(Handle sync)
 {    
-#if USE_RENDER_THREAD
-
+    if( _GLES2_RenderThreadFrameCount )
+    {
 Trace("rhi-gl.present\n");
 
-    _FrameSync.Lock(); 
-    {   
+        _FrameSync.Lock(); 
+        {   
+            if( _Frame.size() )
+            {
+                _Frame.back().readyToExecute = true;
+                _Frame.back().sync = sync;
+                _FrameStarted = false;
+Trace("\n\n-------------------------------\nframe %u generated\n",_Frame.back().number);
+            }
+
+    //        _FrameStarted = false;
+        }
+        _FrameSync.Unlock();
+
+        unsigned frame_cnt = 0;
+
+        do
+        {
+        _FrameSync.Lock();
+        frame_cnt = _Frame.size();
+    //Trace("rhi-gl.present frame-cnt= %u\n",frame_cnt);
+        _FrameSync.Unlock();
+        }
+        while( frame_cnt >= _GLES2_RenderThreadFrameCount );
+
+    }
+    else
+    {
         if( _Frame.size() )
         {
             _Frame.back().readyToExecute = true;
             _Frame.back().sync = sync;
             _FrameStarted = false;
-Trace("\n\n-------------------------------\nframe %u generated\n",_Frame.back().number);
         }
 
-//        _FrameStarted = false;
+        _ExecuteQueuedCommands(); 
     }
-    _FrameSync.Unlock();
-
-    unsigned frame_cnt = 0;
-
-    do
-    {
-    _FrameSync.Lock();
-    frame_cnt = _Frame.size();
-//Trace("rhi-gl.present frame-cnt= %u\n",frame_cnt);
-    _FrameSync.Unlock();
-    }
-    while( frame_cnt >= RHI_MAX_PREPARED_FRAME_COUNT );
-
-#else
-
-    if( _Frame.size() )
-    {
-        _Frame.back().readyToExecute = true;
-        _Frame.back().sync = sync;
-        _FrameStarted = false;
-    }
-
-    _ExecuteQueuedCommands(); 
-
-#endif
 
     ProgGLES2::InvalidateAllConstBufferInstances();
 }
@@ -1388,33 +1384,36 @@ _RenderFunc( DAVA::BaseObject* obj, void*, void* )
 }
 
 void
-InitializeRenderThread()
+InitializeRenderThreadGLES2( uint32 frameCount )
 {
-#if USE_RENDER_THREAD
+    _GLES2_RenderThreadFrameCount = frameCount;
 
-    DVASSERT(_GLES2_ReleaseContext);
-    _GLES2_ReleaseContext();
+    if( _GLES2_RenderThreadFrameCount )
+    {
+        DVASSERT(_GLES2_ReleaseContext);
+        _GLES2_ReleaseContext();
 
-    _GLES2_RenderThread = DAVA::Thread::Create( DAVA::Message(&_RenderFunc) );
-    _GLES2_RenderThread->SetName( "RHI.gl-render" );
-    _GLES2_RenderThread->Start();    
-    _GLES2_RenderThredStartedSync.Wait();
-#endif
+        _GLES2_RenderThread = DAVA::Thread::Create( DAVA::Message(&_RenderFunc) );
+        _GLES2_RenderThread->SetName( "RHI.gl-render" );
+        _GLES2_RenderThread->Start();    
+        _GLES2_RenderThredStartedSync.Wait();
+    }
 }
 
 
 //------------------------------------------------------------------------------
 
 void
-UninitializeRenderThread()
+UninitializeRenderThreadGLES2()
 {
-#if USE_RENDER_THREAD
-    _GLES2_RenderThreadExitSync.Lock();
-    _GLES2_RenderThreadExitPending = true;
-    _GLES2_RenderThreadExitSync.Unlock();
+    if( _GLES2_RenderThreadFrameCount )
+    {
+        _GLES2_RenderThreadExitSync.Lock();
+        _GLES2_RenderThreadExitPending = true;
+        _GLES2_RenderThreadExitSync.Unlock();
 
-    _GLES2_RenderThread->Join();
-#endif
+        _GLES2_RenderThread->Join();
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -1734,9 +1733,7 @@ _ExecGL( GLCommand* command, uint32 cmdCount )
 void
 ExecGL( GLCommand* command, uint32 cmdCount, bool force_immediate )
 {
-#if USE_RENDER_THREAD
-
-    if( force_immediate )
+    if( force_immediate  ||  !_GLES2_RenderThreadFrameCount )
     {
         _ExecGL( command, cmdCount );
     }
@@ -1769,12 +1766,6 @@ ExecGL( GLCommand* command, uint32 cmdCount, bool force_immediate )
             _GLES2_PendingImmediateCmdSync.Unlock();
         } while( !executed );
     }
-
-#else
-
-    _ExecGL( command, cmdCount );
-
-#endif
 }
 
 

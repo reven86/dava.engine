@@ -357,7 +357,7 @@ void
 dx9_Initialize( const InitParam& param )
 {
     _DX9_InitParam = param;
-    InitializeRenderThreadDX9();
+    InitializeRenderThreadDX9( (param.threadedRenderEnabled)?param.threadedRenderFrameCount:0 );
 
 
     VertexBufferDX9::SetupDispatch( &DispatchDX9 );
