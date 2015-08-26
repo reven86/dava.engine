@@ -39,7 +39,7 @@
 class QMenu;
 class QVBoxLayout;
 
-class RemoteAssetCacheServer;
+class RemoteServerWidget;
 class ApplicationSettings;
 struct ServerData;
 
@@ -114,7 +114,7 @@ private:
     std::unique_ptr<QIcon> redGrayTrayIcon;
 
     QVBoxLayout *serversBoxLayout = nullptr;
-    List<RemoteAssetCacheServer*> remoteServers;
+    List<RemoteServerWidget*> remoteServers;
 
     ServerCore &serverCore;
 

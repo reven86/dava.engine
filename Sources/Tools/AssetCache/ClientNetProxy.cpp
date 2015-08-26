@@ -28,7 +28,7 @@
 
 
 
-#include "AssetCache/AssetCacheClient.h"
+#include "AssetCache/ClientNetProxy.h"
 #include "AssetCache/AssetCacheConstants.h"
 #include "AssetCache/CachedItemValue.h"
 #include "AssetCache/CachePacket.h"
@@ -40,28 +40,28 @@
 namespace DAVA {
 namespace AssetCache {
 
-Client::Client() 
+ClientNetProxy::ClientNetProxy() 
     : addressResolver(Net::NetCore::Instance()->Loop())
 {
 }
 
-bool Client::Connect(const String &ip, uint16 port)
+bool ClientNetProxy::Connect(const String &ip, uint16 port)
 {
     DVASSERT(nullptr == netClient);
     DVASSERT(nullptr == openedChannel);
 
-    return addressResolver.StartResolving(ip.c_str(), port, MakeFunction(this, &Client::OnAddressResolved));
+    return addressResolver.StartResolving(ip.c_str(), port, MakeFunction(this, &ClientNetProxy::OnAddressResolved));
 }
 
 
-void Client::Disconnect()
+void ClientNetProxy::Disconnect()
 {
     addressResolver.Stop();
     netClient.reset();
     openedChannel = nullptr;
 }
 
-void Client::OnAddressResolved(std::unique_ptr<Net::Endpoint>& endpoint)
+void ClientNetProxy::OnAddressResolved(std::unique_ptr<Net::Endpoint>& endpoint)
 {
     DVASSERT(!netClient);
     DVASSERT(nullptr == openedChannel);
@@ -72,7 +72,7 @@ void Client::OnAddressResolved(std::unique_ptr<Net::Endpoint>& endpoint)
     }
 }
 
-bool Client::AddToCache(const CacheItemKey &key, const CachedItemValue &value)
+bool ClientNetProxy::AddToCache(const CacheItemKey &key, const CachedItemValue &value)
 {
     if(openedChannel)
     {
@@ -84,7 +84,7 @@ bool Client::AddToCache(const CacheItemKey &key, const CachedItemValue &value)
 }
 
 
-bool Client::RequestFromCache(const CacheItemKey &key)
+bool ClientNetProxy::RequestFromCache(const CacheItemKey &key)
 {
     if(openedChannel)
     {
@@ -95,7 +95,7 @@ bool Client::RequestFromCache(const CacheItemKey &key)
     return false;
 }
 
-bool Client::WarmingUp(const CacheItemKey &key)
+bool ClientNetProxy::WarmingUp(const CacheItemKey &key)
 {
     if(openedChannel)
     {
@@ -106,20 +106,20 @@ bool Client::WarmingUp(const CacheItemKey &key)
     return false;
 }
 
-void Client::OnChannelOpen(DAVA::Net::IChannel* channel)
+void ClientNetProxy::OnChannelOpen(DAVA::Net::IChannel* channel)
 {
     DVASSERT(openedChannel == nullptr);
     openedChannel = channel;
 }
 
-void Client::OnChannelClosed(DAVA::Net::IChannel* channel, const char8* )
+void ClientNetProxy::OnChannelClosed(DAVA::Net::IChannel* channel, const char8* )
 {
     DVASSERT(openedChannel == channel);
     openedChannel = nullptr;
     StateChanged();
 }
 
-void Client::StateChanged()
+void ClientNetProxy::StateChanged()
 {
     for (auto& listener : listeners)
     {
@@ -127,7 +127,7 @@ void Client::StateChanged()
     }
 }
 
-void Client::OnPacketReceived(DAVA::Net::IChannel* channel, const void* packetData, size_t length)
+void ClientNetProxy::OnPacketReceived(DAVA::Net::IChannel* channel, const void* packetData, size_t length)
 {
     if(listeners.empty())
     {    // do not need to process data in case of nullptr listener
@@ -158,7 +158,7 @@ void Client::OnPacketReceived(DAVA::Net::IChannel* channel, const void* packetDa
                 }
             default:
                 {
-                    Logger::Error("[AssetCache::Server::%s] Unexpected packet type: (%d).", __FUNCTION__, packet->type);
+                    Logger::Error("[AssetCache::ServerNetProxy::%s] Unexpected packet type: (%d).", __FUNCTION__, packet->type);
                     DVASSERT(false);
                     break;
                 }
@@ -175,18 +175,18 @@ void Client::OnPacketReceived(DAVA::Net::IChannel* channel, const void* packetDa
     }
 }
 
-void Client::OnPacketSent(Net::IChannel* channel, const void* buffer, size_t length)
+void ClientNetProxy::OnPacketSent(Net::IChannel* channel, const void* buffer, size_t length)
 {
     CachePacket::PacketSent(static_cast<const uint8 *> (buffer), length);
 }
 
-void Client::AddListener(ClientListener* listener)
+void ClientNetProxy::AddListener(ClientNetProxyListener* listener)
 {
     DVASSERT(listener != nullptr);
     listeners.insert(listener);
 }
 
-void Client::RemoveListener(ClientListener* listener)
+void ClientNetProxy::RemoveListener(ClientNetProxyListener* listener)
 {
     DVASSERT(listener != nullptr);
     listeners.erase(listener);

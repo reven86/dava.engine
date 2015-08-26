@@ -43,7 +43,7 @@ namespace AssetCache {
 
 class CachedItemValue;
 
-class ClientListener
+class ClientNetProxyListener
 {
 public:
     
@@ -52,13 +52,13 @@ public:
     virtual void OnReceivedFromCache(const CacheItemKey &key, CachedItemValue &&value) {};
 };
 
-class Client: public DAVA::Net::IChannelListener
+class ClientNetProxy: public DAVA::Net::IChannelListener
 {
 public:
-    Client();
+    ClientNetProxy();
 
-    void AddListener(ClientListener*);
-    void RemoveListener(ClientListener*);
+    void AddListener(ClientNetProxyListener*);
+    void RemoveListener(ClientNetProxyListener*);
     
     bool Connect(const String &ip, uint16 port);
     void Disconnect();
@@ -92,16 +92,16 @@ private:
     std::unique_ptr<Connection> netClient;
     DAVA::Net::IChannel * openedChannel = nullptr;
     
-    Set<ClientListener*> listeners;
+    Set<ClientNetProxyListener*> listeners;
 };
 
  
-inline bool Client::ChannelIsOpened()
+inline bool ClientNetProxy::ChannelIsOpened()
 {
     return (openedChannel != nullptr);
 }
 
-inline Connection * Client::GetConnection() const
+inline Connection * ClientNetProxy::GetConnection() const
 {
     return netClient.get();
 }

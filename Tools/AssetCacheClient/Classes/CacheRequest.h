@@ -39,7 +39,7 @@ struct RequestResult
 };
 
 
-class CacheRequest : public DAVA::AssetCache::ClientListener
+class CacheRequest : public DAVA::AssetCache::ClientNetProxyListener
 {
 public:
 
@@ -63,7 +63,7 @@ public:
     
     ProgramOptions options;
     
-    DAVA::AssetCache::Client client;
+    DAVA::AssetCache::ClientNetProxy client;
     RequestResult requestResult;
 };
 

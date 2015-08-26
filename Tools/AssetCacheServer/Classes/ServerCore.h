@@ -31,7 +31,7 @@
 #define __SERVER_CORE_H__
 
 #include "AssetCache/AssetCache.h"
-#include "AssetCache/AssetCacheClient.h"
+#include "AssetCache/ClientNetProxy.h"
 #include "ServerLogics.h"
 #include "ApplicationSettings.h"
 
@@ -42,7 +42,7 @@
 class QTimer;
 
 class ServerCore : public QObject, 
-                   public DAVA::AssetCache::ClientListener
+                   public DAVA::AssetCache::ClientNetProxyListener
 {
     Q_OBJECT
     
@@ -66,7 +66,7 @@ public:
     State GetState() const;
     RemoteState GetRemoteState() const;
 
-    // ClientDelegate
+    // ClientNetProxyListener
     virtual void OnAssetClientStateChanged() override;
 
 signals:
@@ -89,8 +89,8 @@ private:
     
 private:
     
-    DAVA::AssetCache::Server server;
-    DAVA::AssetCache::Client client;
+    DAVA::AssetCache::ServerNetProxy server;
+    DAVA::AssetCache::ClientNetProxy client;
     DAVA::AssetCache::CacheDB dataBase;
 
 	ServerLogics serverLogics;

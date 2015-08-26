@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>RemoteAssetCacheServer</class>
- <widget class="QWidget" name="RemoteAssetCacheServer">
+ <class>RemoteServerWidget</class>
+ <widget class="QWidget" name="RemoteServerWidget">
   <property name="geometry">
    <rect>
     <x>0</x>

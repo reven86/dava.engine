@@ -46,11 +46,11 @@ namespace AssetCache
 class CachedItemValue;
 
     
-class ServerDelegate
+class ServerNetProxyListener
 {
 public:
     
-    virtual ~ServerDelegate() = default;
+    virtual ~ServerNetProxyListener() = default;
     
     virtual void OnAddToCache(Net::IChannel * channel, const CacheItemKey &key, CachedItemValue &&value) = 0;
     virtual void OnRequestedFromCache(Net::IChannel * channel, const CacheItemKey &key) = 0;
@@ -60,14 +60,14 @@ public:
 };
     
     
-class Server final: public Net::IChannelListener
+class ServerNetProxy final: public Net::IChannelListener
 {
 public:
     
-    Server() = default;
-    ~Server();
+    ServerNetProxy() = default;
+    ~ServerNetProxy();
     
-    void SetDelegate(ServerDelegate * delegate);
+    void SetDelegate(ServerNetProxyListener * delegate);
 
     void Listen(uint16 port);
     
@@ -94,15 +94,15 @@ private:
 
     uint16 listenPort = 0;
     std::unique_ptr<Connection> netServer;
-    ServerDelegate *delegate = nullptr;
+    ServerNetProxyListener *delegate = nullptr;
 };
 
-inline uint16 Server::GetListenPort() const
+inline uint16 ServerNetProxy::GetListenPort() const
 {
     return listenPort;
 }
 
-inline void Server::SetDelegate(ServerDelegate * _delegate)
+inline void ServerNetProxy::SetDelegate(ServerNetProxyListener * _delegate)
 {
     delegate = _delegate;
 }

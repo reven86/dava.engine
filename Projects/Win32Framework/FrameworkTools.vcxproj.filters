@@ -78,6 +78,12 @@
     <ClInclude Include="..\..\Sources\Tools\CommandLine\ProgramOptions.h">
       <Filter>Source Files\CommandLine</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Tools\AssetCache\CacheItemKey.h">
+      <Filter>Source Files\AssetCache</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Tools\AssetCache\DoubleMD5Key.h">
+      <Filter>Source Files\AssetCache</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\Tools\TexturePacker\CommandLineParser.cpp">
@@ -115,18 +121,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Tools\TeamcityOutput\TeamCityTestsOutput.cpp">
       <Filter>TeamcityOutput</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Tools\AssetCache\AssetCacheClient.cpp">
-      <Filter>Source Files\AssetCache</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Tools\AssetCache\AssetCacheServer.cpp">
-      <Filter>Source Files\AssetCache</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Tools\AssetCache\CacheDB.cpp">
-      <Filter>Source Files\AssetCache</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Tools\AssetCache\ServerCacheEntry.cpp">
-      <Filter>Source Files\AssetCache</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Tools\AssetCache\DoubleMD5Key.cpp">
       <Filter>Source Files\AssetCache</Filter>

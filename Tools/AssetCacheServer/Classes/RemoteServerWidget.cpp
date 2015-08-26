@@ -27,44 +27,68 @@
 =====================================================================================*/
 
 
-#ifndef __REMOTE_ASSET_CACHE_SERVER_H__
-#define __REMOTE_ASSET_CACHE_SERVER_H__
+#include "RemoteServerWidget.h"
+#include "ui_RemoteServerWidget.h"
 
-#include <QWidget>
-#include "ApplicationSettings.h"
+#include <QValidator>
 
-namespace Ui
+
+RemoteServerWidget::RemoteServerWidget(QWidget *parent)
+    : QWidget(parent)
+    , ui(new Ui::RemoteServerWidget)
 {
-    class RemoteAssetCacheServer;
+    ui->setupUi(this);
+
+    ui->ipLineEdit->setText("127.0.0.1");
+    
+    connect(ui->removeServerButton, &QPushButton::clicked,
+            this, &RemoteServerWidget::RemoveLater);
+    connect(ui->ipLineEdit, &QLineEdit::textChanged,
+            this, &RemoteServerWidget::OnParametersChanged);
+    connect(ui->portSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnParametersChanged()));
+    connect(ui->enabledCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnChecked(int)));
 }
 
-class RemoteAssetCacheServer : public QWidget
+RemoteServerWidget::RemoteServerWidget(const ServerData &newServer, QWidget *parent)
+    : RemoteServerWidget(parent)
 {
-    Q_OBJECT
+    ui->enabledCheckBox->setChecked(newServer.enabled);
+    ui->ipLineEdit->setText(newServer.ip.c_str());
+    ui->portSpinBox->setValue(newServer.port);
+    ui->portSpinBox->setEnabled(true);
+}
 
-public:
-    explicit RemoteAssetCacheServer(QWidget *parent = nullptr);
-    explicit RemoteAssetCacheServer(const ServerData &newServer, QWidget *parent = nullptr);
-    ~RemoteAssetCacheServer() override;
+RemoteServerWidget::~RemoteServerWidget()
+{
+    delete ui;
+}
 
-    ServerData GetServerData() const;
+ServerData RemoteServerWidget::GetServerData() const
+{
+    return ServerData(ui->ipLineEdit->text().toStdString(), ui->portSpinBox->value(), ui->enabledCheckBox->isChecked());
+}
 
-    bool IsCorrectData();
+bool RemoteServerWidget::IsCorrectData()
+{
+    return true;
+}
 
-    bool IsChecked() const;
-    void SetChecked(bool checked);
+void RemoteServerWidget::OnParametersChanged()
+{
+    emit ParametersChanged();
+}
 
-signals:
-    void ServerChecked(bool checked);
-    void ParametersChanged();
-    void RemoveLater();
+void RemoteServerWidget::OnChecked(int val)
+{
+    emit ServerChecked(val == Qt::Checked);
+}
 
-private slots:
-    void OnParametersChanged();
-    void OnChecked(int val);
+bool RemoteServerWidget::IsChecked() const
+{
+    return ui->enabledCheckBox->isChecked();
+}
 
-private:
-    Ui::RemoteAssetCacheServer *ui;
-};
-
-#endif // __REMOTE_ASSET_CACHE_SERVER_H__
+void RemoteServerWidget::SetChecked(bool checked)
+{
+    ui->enabledCheckBox->setChecked(checked);
+}

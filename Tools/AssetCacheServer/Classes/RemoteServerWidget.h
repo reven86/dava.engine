@@ -27,21 +27,44 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_ASSET_CACHE_SKOPPED_INCLUDE_H__
-#define __DAVAENGINE_ASSET_CACHE_SKOPPED_INCLUDE_H__
+#ifndef __REMOTE_ASSET_CACHE_SERVER_H__
+#define __REMOTE_ASSET_CACHE_SERVER_H__
 
-#include "AssetCache/AssetCacheConstants.h"
+#include <QWidget>
+#include "ApplicationSettings.h"
 
-#include "AssetCache/ClientNetProxy.h"
-#include "AssetCache/ServerNetProxy.h"
+namespace Ui
+{
+    class RemoteServerWidget;
+}
 
-#include "AssetCache/CacheItemKey.h"
-#include "AssetCache/CachedItemValue.h"
+class RemoteServerWidget : public QWidget
+{
+    Q_OBJECT
 
-#include "AssetCache/ServerCacheEntry.h"
+public:
+    explicit RemoteServerWidget(QWidget *parent = nullptr);
+    explicit RemoteServerWidget(const ServerData &newServer, QWidget *parent = nullptr);
+    ~RemoteServerWidget() override;
 
-#include "AssetCache/CacheDB.h"
+    ServerData GetServerData() const;
 
+    bool IsCorrectData();
 
-#endif // __DAVAENGINE_ASSET_CACHE_SKOPPED_INCLUDE_H__
+    bool IsChecked() const;
+    void SetChecked(bool checked);
 
+signals:
+    void ServerChecked(bool checked);
+    void ParametersChanged();
+    void RemoveLater();
+
+private slots:
+    void OnParametersChanged();
+    void OnChecked(int val);
+
+private:
+    Ui::RemoteServerWidget *ui;
+};
+
+#endif // __REMOTE_ASSET_CACHE_SERVER_H__

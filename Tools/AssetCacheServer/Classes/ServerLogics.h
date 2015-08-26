@@ -32,18 +32,20 @@
 
 #include "AssetCache/AssetCache.h"
 
-class ServerLogics: public DAVA::AssetCache::ServerDelegate, public DAVA::AssetCache::ClientListener
+class ServerLogics: 
+    public DAVA::AssetCache::ServerNetProxyListener, 
+    public DAVA::AssetCache::ClientNetProxyListener
 {
 public:
-    void Init(DAVA::AssetCache::Server *server, DAVA::AssetCache::Client *client, DAVA::AssetCache::CacheDB *dataBase);
+    void Init(DAVA::AssetCache::ServerNetProxy *server, DAVA::AssetCache::ClientNetProxy *client, DAVA::AssetCache::CacheDB *dataBase);
     
-    //ServerDelegate
+    //ServerNetProxyListener
     void OnAddToCache(DAVA::Net::IChannel *channel, const DAVA::AssetCache::CacheItemKey &key, DAVA::AssetCache::CachedItemValue &&value) override;
 	void OnRequestedFromCache(DAVA::Net::IChannel *channel, const DAVA::AssetCache::CacheItemKey &key) override;
 	void OnWarmingUp(DAVA::Net::IChannel *channel, const DAVA::AssetCache::CacheItemKey &key) override;
 	void OnChannelClosed(DAVA::Net::IChannel *channel, const DAVA::char8* message) override;
     
-    //ClientListener
+    //ClientNetProxyListener
 	void OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey &key, DAVA::AssetCache::CachedItemValue &&value) override;
     
     void Update();
@@ -54,8 +56,8 @@ private:
     
 private:
     
-    DAVA::AssetCache::Server *server = nullptr;
-    DAVA::AssetCache::Client *client = nullptr;
+    DAVA::AssetCache::ServerNetProxy *server = nullptr;
+    DAVA::AssetCache::ClientNetProxy *client = nullptr;
     DAVA::AssetCache::CacheDB *dataBase = nullptr;
     
     struct RequestDescription

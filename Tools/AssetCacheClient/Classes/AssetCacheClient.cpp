@@ -32,8 +32,8 @@
 #include "GetRequest.h"
 
 AssetCacheClient::AssetCacheClient()
-:   exitCode(AssetCacheClientConstants::EXIT_OK)
-    ,   activeRequest(nullptr)
+    : exitCode(AssetCacheClientConstants::EXIT_OK)
+    , activeRequest(nullptr)
 {
     requests.emplace_back(std::unique_ptr<CacheRequest>(new AddRequest()));
     requests.emplace_back(std::unique_ptr<CacheRequest>(new GetRequest()));

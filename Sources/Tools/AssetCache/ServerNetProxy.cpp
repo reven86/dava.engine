@@ -28,7 +28,7 @@
 
 
 
-#include "AssetCache/AssetCacheServer.h"
+#include "AssetCache/ServerNetProxy.h"
 #include "AssetCache/AssetCacheConstants.h"
 #include "AssetCache/CachedItemValue.h"
 #include "AssetCache/CachePacket.h"
@@ -41,12 +41,12 @@ namespace DAVA {
 namespace AssetCache {
 
 
-Server::~Server()
+ServerNetProxy::~ServerNetProxy()
 {
 }
 
 
-void Server::Listen(uint16 port)
+void ServerNetProxy::Listen(uint16 port)
 {
     listenPort = port;
     DVASSERT(!netServer);
@@ -55,13 +55,13 @@ void Server::Listen(uint16 port)
 }
 
 
-void Server::Disconnect()
+void ServerNetProxy::Disconnect()
 {
     netServer.reset();
 }
 
 
-void Server::OnPacketReceived(Net::IChannel * channel, const void* packetData, size_t length)
+void ServerNetProxy::OnPacketReceived(Net::IChannel * channel, const void* packetData, size_t length)
 {
     if(nullptr == delegate)
     {    // do not need to process data in case of nullptr delegate
@@ -95,7 +95,7 @@ void Server::OnPacketReceived(Net::IChannel * channel, const void* packetData, s
                 }
             default:
                 {
-                    Logger::Error("[AssetCache::Server::%s] Unexpected packet type: (%d). Closing channel", __FUNCTION__, packet->type);
+                    Logger::Error("[AssetCache::ServerNetProxy::%s] Unexpected packet type: (%d). Closing channel", __FUNCTION__, packet->type);
                     DVASSERT(false);
                     break;
                 }
@@ -108,17 +108,17 @@ void Server::OnPacketReceived(Net::IChannel * channel, const void* packetData, s
     }
     else
     {
-        Logger::Error("[AssetCache::Server::%s] Empty packet is received.", __FUNCTION__);
+        Logger::Error("[AssetCache::ServerNetProxy::%s] Empty packet is received.", __FUNCTION__);
     }
 }
 
-void Server::OnPacketSent(Net::IChannel* channel, const void* buffer, size_t length)
+void ServerNetProxy::OnPacketSent(Net::IChannel* channel, const void* buffer, size_t length)
 {
     CachePacket::PacketSent(static_cast<const uint8 *> (buffer), length);
 }
 
 
-void Server::OnChannelClosed(Net::IChannel * channel, const char8* message)
+void ServerNetProxy::OnChannelClosed(Net::IChannel * channel, const char8* message)
 {
     if(delegate)
     {
@@ -126,7 +126,7 @@ void Server::OnChannelClosed(Net::IChannel * channel, const char8* message)
     }
 }
 
-bool Server::AddedToCache(Net::IChannel * channel, const CacheItemKey &key, bool added)
+bool ServerNetProxy::AddedToCache(Net::IChannel * channel, const CacheItemKey &key, bool added)
 {
     if(channel)
     {
@@ -137,7 +137,7 @@ bool Server::AddedToCache(Net::IChannel * channel, const CacheItemKey &key, bool
     return false;
 }
 
-bool Server::Send(Net::IChannel * channel, const CacheItemKey &key, const CachedItemValue &value)
+bool ServerNetProxy::Send(Net::IChannel * channel, const CacheItemKey &key, const CachedItemValue &value)
 {
     if (channel)
     {

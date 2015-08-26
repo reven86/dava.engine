@@ -33,7 +33,7 @@
 #include "AssetCache/AssetCacheConstants.h"
 
 #include "ApplicationSettings.h"
-#include "RemoteAssetCacheServer.h"
+#include "RemoteServerWidget.h"
 
 #include "FileSystem/KeyedArchive.h"
 #include "FileSystem/FileSystem.h"
@@ -218,7 +218,7 @@ void MainWindow::OnRemoteServerAdded()
 
 void MainWindow::OnRemoteServerRemoved()
 {
-    RemoteAssetCacheServer *remoteServer = qobject_cast<RemoteAssetCacheServer *>(sender());
+    RemoteServerWidget *remoteServer = qobject_cast<RemoteServerWidget *>(sender());
     remoteServers.remove(remoteServer);
 
     remoteServer->deleteLater();
@@ -234,7 +234,7 @@ void MainWindow::OnRemoteServerChecked(bool checked)
 {
     if (checked)
     {
-        RemoteAssetCacheServer *checkedServer = qobject_cast<RemoteAssetCacheServer *>(sender());
+        RemoteServerWidget *checkedServer = qobject_cast<RemoteServerWidget *>(sender());
         for (auto& nextServer : remoteServers)
         {
             if (nextServer->IsChecked() && nextServer != checkedServer)
@@ -266,11 +266,11 @@ void MainWindow::OnStopAction()
 
 void MainWindow::AddRemoteServer(const ServerData & newServer)
 {
-    RemoteAssetCacheServer *server = new RemoteAssetCacheServer(newServer, this);
+    RemoteServerWidget *server = new RemoteServerWidget(newServer, this);
     remoteServers.push_back(server);
 
-    connect(server, &RemoteAssetCacheServer::RemoveLater, this, &MainWindow::OnRemoteServerRemoved);
-    connect(server, &RemoteAssetCacheServer::ParametersChanged, this, &MainWindow::OnRemoteServerEdited);
+    connect(server, &RemoteServerWidget::RemoveLater, this, &MainWindow::OnRemoteServerRemoved);
+    connect(server, &RemoteServerWidget::ParametersChanged, this, &MainWindow::OnRemoteServerEdited);
     connect(server, SIGNAL(ServerChecked(bool)), this, SLOT(OnRemoteServerChecked(bool)));
 
     serversBoxLayout->insertWidget(serversBoxLayout->count() - 1, server);
