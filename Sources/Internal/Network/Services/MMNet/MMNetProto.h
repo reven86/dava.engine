@@ -86,7 +86,7 @@ public:
     Packet() = default;
     Packet(size_t dataSize);
     Packet(Packet&& other);
-    Packet& operator = (Packet&& other) DAVA_NOEXCEPT;
+    Packet& operator = (Packet&& other);
 
     const uint8* PlainBytes() const;
     size_t PlainSize() const;
@@ -108,7 +108,7 @@ inline Packet::Packet(Packet&& other)
     : plainBytes(std::move(other.plainBytes))
 {}
 
-inline Packet& Packet::operator = (Packet&& other) DAVA_NOEXCEPT
+inline Packet& Packet::operator = (Packet&& other)
 {
     if (this != &other)
     {
@@ -119,7 +119,7 @@ inline Packet& Packet::operator = (Packet&& other) DAVA_NOEXCEPT
 
 inline const uint8* Packet::PlainBytes() const
 {
-    return &*plainBytes.begin();
+    return &plainBytes[0];
 }
 
 inline size_t Packet::PlainSize() const
