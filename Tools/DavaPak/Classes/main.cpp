@@ -37,9 +37,6 @@ THIS
 
 using namespace DAVA;
 
-template <typename T>
-using Deleter = void (*)(T* obj);
-
 void FrameworkDidLaunched()
 {
 }
@@ -53,7 +50,7 @@ void CollectAllFilesInDirectory(const String& pathDirName,
 {
     FilePath pathToDir = pathDirName;
     bool includeHidden = false;
-    FileList* fileList = new FileList(pathToDir, includeHidden);
+    RefPtr<FileList> fileList(new FileList(pathToDir, includeHidden));
     for (auto file = 0; file < fileList->GetCount(); ++file)
     {
         if (fileList->IsDirectory(file))
@@ -75,7 +72,6 @@ void CollectAllFilesInDirectory(const String& pathDirName,
             fileNameList.push_back(pathname);
         }
     }
-    fileList->Release();
 }
 
 int PackDirectoryIntoPakfile(const String& dir,
@@ -90,48 +86,42 @@ int PackDirectoryIntoPakfile(const String& dir,
 
     auto dirWithSlash = (dir.back() == '/' ? dir : dir + '/');
 
-    std::unique_ptr<FileSystem, Deleter<FileSystem>> fileSystem(
-        new FileSystem(), [](FileSystem* fs)
-        {
-            SafeDelete(fs);
-        });
+    RefPtr<FileSystem> fileSystem(new FileSystem());
 
-    FilePath absPathPack = fileSystem->GetCurrentWorkingDirectory() + pakfileName;
+    FilePath absPathPack =
+        fileSystem->GetCurrentWorkingDirectory() + pakfileName;
 
     if (fileSystem->IsFile(absPathPack))
     {
-        Logger::Error("pakfile already exist! Delete it.\n");
+        std::cerr << "pakfile already exist! Delete it.\n";
         if (0 != std::remove(absPathPack.GetAbsolutePathname().c_str()))
         {
-            Logger::Error("can't remove existing pakfile.\n");
+            std::cerr << "can't remove existing pakfile.\n";
             return EXIT_FAILURE;
         }
     }
 
     fileSystem->SetCurrentWorkingDirectory(dirWithSlash);
 
-    Vector<String> filesList;
+    Vector<String> files;
 
-    CollectAllFilesInDirectory(".", filesList);
+    CollectAllFilesInDirectory(".", files);
 
-    if (filesList.empty())
+    if (files.empty())
     {
-        Logger::Error("no files found in: %s\n", dir.c_str());
+        std::cerr << "no files found in: " << dir << '\n';
         return EXIT_FAILURE;
     }
 
-    std::sort(begin(filesList), end(filesList),
-              [](const String& one, const String& two)
-              {
-                  return one < two;
-              });
+    std::stable_sort(begin(files), end(files));
 
-    std::for_each(begin(filesList), end(filesList), [](const String& f)
+    std::for_each(begin(files), end(files), [](const String& f)
                   {
                       std::cout << f << '\n';
                   });
     std::cout << "start paking...\n";
-    if (ResourceArchive::CreatePack(absPathPack.GetAbsolutePathname(), filesList, compressionRules))
+    if (ResourceArchive::CreatePack(absPathPack.GetAbsolutePathname(), files,
+                                    compressionRules))
     {
         std::cout << "Success!\n";
         return EXIT_SUCCESS;
@@ -158,9 +148,8 @@ ResourceArchive::CompressionType ToPackType(
             return pair.second;
         }
     }
-    Logger::Error(
-        "can't convert: \"%s\" into any valid compression type, use default\n",
-        value.c_str());
+    std::cerr << "can't convert: \"" << value
+              << "\" into any valid compression type, use default\n";
     return defaultVal;
 }
 
@@ -175,7 +164,7 @@ bool ParsePackRules(const ProgramOptions& packOptions,
         size_t dotPos = str.find('.');
         if (dotPos == String::npos)
         {
-            Logger::Error("incorrect option: %s\n", str.c_str());
+            std::cerr << "incorrect option: " << str << '\n';
             return false;
         }
         String ext = str.substr(0, dotPos);
@@ -183,6 +172,41 @@ bool ParsePackRules(const ProgramOptions& packOptions,
         ResourceArchive::CompressionType packType =
             ToPackType(compressionType, defaultPackTypa);
         outputRules.push_back({ext, packType});
+    }
+    return true;
+}
+
+bool UnpackFile(const ResourceArchive& ra,
+                const ResourceArchive::FileInfo& fileInfo)
+{
+    ResourceArchive::ContentAndSize file;
+    if (!ra.LoadFile(fileInfo.name, file))
+    {
+        std::cerr << "can't load file: " << fileInfo.name << " from archive\n";
+        return false;
+    }
+    String filePath(fileInfo.name);
+    FilePath fullPath = filePath;
+    FilePath dirPath = fullPath.GetDirectory();
+    FileSystem::eCreateDirectoryResult result =
+        FileSystem::Instance()->CreateDirectory(dirPath, true);
+    if (FileSystem::DIRECTORY_CANT_CREATE == result)
+    {
+        std::cerr << "can't create unpack path dir: "
+                  << dirPath.GetAbsolutePathname() << '\n';
+        return false;
+    }
+    RefPtr<File> f(File::Create(fullPath, File::CREATE | File::WRITE));
+    if (!f)
+    {
+        std::cerr << "can't create file: " << fileInfo.name << '\n';
+        return false;
+    }
+    uint32 writeOk = f->Write(file.content.get(), file.size);
+    if (writeOk < file.size)
+    {
+        std::cerr << "can't write into file: " << fileInfo.name << '\n';
+        return false;
     }
     return true;
 }
@@ -195,13 +219,13 @@ int UnpackPackfileIntoDirectory(const String& pak, const String& dir)
         std::cerr << "can't create FileSystem\n";
         return EXIT_FAILURE;
     }
-    String programmPath = fs->GetCurrentWorkingDirectory().GetAbsolutePathname();
+    String cwd = fs->GetCurrentWorkingDirectory().GetAbsolutePathname();
 
     std::cout << "===================================================\n"
-        << "=== Unpacker started\n"
-        << "=== Unpack directory: " << dir << '\n'
-        << "=== Unpack archiveName: " << pak << '\n'
-        << "===================================================\n";
+              << "=== Unpacker started\n"
+              << "=== Unpack directory: " << dir << '\n'
+              << "=== Unpack archiveName: " << pak << '\n'
+              << "===================================================\n";
 
     fs->CreateDirectory(dir);
     if (!fs->SetCurrentWorkingDirectory(dir + '/'))
@@ -210,37 +234,20 @@ int UnpackPackfileIntoDirectory(const String& pak, const String& dir)
         return EXIT_FAILURE;
     }
 
-    std::unique_ptr<ResourceArchive, Deleter<ResourceArchive>> ra(
-        new ResourceArchive(), [](ResourceArchive* ptr)
-    {
-        SafeRelease(ptr);
-    });
+    RefPtr<ResourceArchive> ra(new ResourceArchive());
 
-    String pathArchiveNameDir = programmPath + pak;
-    if (!ra->Open(pathArchiveNameDir))
+    String absPathPackFile = cwd + pak;
+    if (!ra->Open(absPathPackFile))
     {
-        std::cerr << "can't open archive: " << pathArchiveNameDir << '\n';
+        std::cerr << "can't open archive: " << absPathPackFile << '\n';
         return EXIT_FAILURE;
     }
 
     for (auto& fileInfo : ra->GetFilesInfo())
     {
-        ResourceArchive::ContentAndSize contentAndSize;
-        if (!ra->LoadFile(fileInfo.name, contentAndSize))
+        std::cout << "start unpaking: " << fileInfo.name << '\n';
+        if (!UnpackFile(*ra, fileInfo))
         {
-            std::cerr << "can't load file: " << fileInfo.name << " from archive\n";
-            return EXIT_FAILURE;
-        }
-        RefPtr<File> f(File::Create(String(fileInfo.name), File::WRITE));
-        if (!f)
-        {
-            std::cerr << "can't create file: " << fileInfo.name << '\n';
-            return EXIT_FAILURE;
-        }
-        uint32 writeOk = f->Write(contentAndSize.content.get(), contentAndSize.size);
-        if (writeOk < 0)
-        {
-            std::cerr << "can't write into file: " << fileInfo.name << '\n';
             return EXIT_FAILURE;
         }
     }
@@ -250,8 +257,6 @@ int UnpackPackfileIntoDirectory(const String& pak, const String& dir)
 
 int main(int argc, char* argv[])
 {
-    RefPtr<Logger> logger(new Logger());
-
     ProgramOptions packOptions("pack");
     packOptions.AddOption("--compression", VariantType(String("lz4hc")),
                           "default compression method, lz4hc - default");
@@ -296,7 +301,6 @@ int main(int argc, char* argv[])
     {
         packOptions.PrintUsage();
         unpackOptions.PrintUsage();
+        return EXIT_FAILURE;
     }
-
-    return EXIT_SUCCESS;
 }

@@ -96,7 +96,7 @@ public:
 
     bool Open(const String& file_name)
     {
-        file.Set(File::Create(file_name, File::OPEN));
+        file.Set(File::Create(file_name, File::OPEN | File::READ));
         if (!file)
         {
             Logger::Error("can't Open file: %s\n", file_name.c_str());
