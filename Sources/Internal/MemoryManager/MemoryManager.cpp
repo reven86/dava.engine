@@ -371,7 +371,7 @@ void MemoryManager::Deallocate(void* ptr)
     }
 }
 
-void* MemoryManager::InternalAllocate(size_t size) DAVA_NOEXCEPT
+void* MemoryManager::InternalAllocate(size_t size)
 {
     const size_t totalSize = sizeof(InternalMemoryBlock) + size;
     InternalMemoryBlock* block = static_cast<InternalMemoryBlock*>(MallocHook::Malloc(totalSize));
@@ -393,7 +393,7 @@ void* MemoryManager::InternalAllocate(size_t size) DAVA_NOEXCEPT
     return nullptr;
 }
 
-void MemoryManager::InternalDeallocate(void* ptr) DAVA_NOEXCEPT
+void MemoryManager::InternalDeallocate(void* ptr)
 {
     if (ptr != nullptr)
     {

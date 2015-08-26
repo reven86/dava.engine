@@ -132,12 +132,12 @@ private:
     MemoryManager& operator = (MemoryManager&&) = delete;
 
     // Methods for memory allocating for internal data structures
-    void* InternalAllocate(size_t size) DAVA_NOEXCEPT;
-    void InternalDeallocate(void* ptr) DAVA_NOEXCEPT;
+    void* InternalAllocate(size_t size);
+    void InternalDeallocate(void* ptr);
 
     // Make these functions friends to allow access to InternalAllocate and InternalDeallocate methods
-    friend void* InternalAlloc(size_t size) DAVA_NOEXCEPT;
-    friend void InternalDealloc(void* ptr) DAVA_NOEXCEPT;
+    friend void* InternalAlloc(size_t size);
+    friend void InternalDealloc(void* ptr);
 
 private:
     void InsertBlock(MemoryBlock* block);
