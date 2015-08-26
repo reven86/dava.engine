@@ -51,6 +51,10 @@ set( ANDROID_ICO                ${CMAKE_CURRENT_LIST_DIR}/android/ic_launcher-we
 set( ADDED_SRC                  ${IOS_ADD_SRC} )
 set( LIBRARIES                  )
 
+if ( WINDOWS_UAP )
+    set ( WIN_STORE_MANIFEST_PACKAGE_GUID "5B2576F2-B514-432B-BD8B-0665D4F96BC2" )
+endif ()
+
 setup_main_executable()
 
 if (IOS)

@@ -192,6 +192,7 @@ bool SceneEditor2::Load(const DAVA::FilePath &path)
 		commandStack.SetClean(true);
     }
 
+	SceneValidator::ExtractEmptyRenderObjectsAndShowErrors(this);
     SceneValidator::Instance()->ValidateSceneAndShowErrors(this, path);
     
 	SceneSignals::Instance()->EmitLoaded(this);
