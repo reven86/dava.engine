@@ -32,13 +32,34 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Infrastructure/BaseScreen.h"
 
+namespace DAVA
+{
+    class UITextField;
+}
+
+class TextDelegate1;
+class TextDelegate2;
+class TextDelegateMulti;
+
 class MultilineTest : public BaseScreen
 {
 public:
-    MultilineTest ();
+    MultilineTest();
 
     void LoadResources() override;
+    void UnloadResources() override;
 
+private:
+    DAVA::UIButton* CreateUIButton(DAVA::Font* font, const DAVA::Rect& rect, const DAVA::String& text,
+                             void (MultilineTest::*onClick)(DAVA::BaseObject*, void*, void*));
+
+private:
+    DAVA::UITextField* textField1 = nullptr;
+    DAVA::UITextField* textField2 = nullptr;
+    DAVA::UITextField* textFieldMulti = nullptr;
+
+    TextDelegate1* textDelegate1 = nullptr;
+    TextDelegate2* textDelegate2 = nullptr;
 };
 
 #endif //__MULTILINETEST_TEST_H__
