@@ -27,30 +27,37 @@
 =====================================================================================*/
 
 
-#ifndef __DDS_EXTRACTOR_TOOL_H__
-#define __DDS_EXTRACTOR_TOOL_H__
+#ifndef __DUMP_TOOL_H__
+#define __DUMP_TOOL_H__
 
-#include "../CommandLineTool.h"
+#include "CommandLine/CommandLineTool.h"
 
-class DDSExtractorTool: public CommandLineTool
+class DumpTool: public CommandLineTool
 {
+    enum eAction
+    {
+        ACTION_NONE = -1,
+        
+        ACTION_DUMP_LINKS,
+    };
+    
 public:
 
 	DAVA::String GetCommandLineKey() const override;
 	bool InitializeFromCommandLine() override;
 	void Process() override;
 	void PrintUsage() const override;
+	void DumpParams() const override;
+	DAVA::FilePath GetQualityConfigPath() const override;
 
 protected:
-	
-	void ExtractImagesFromFile(const DAVA::FilePath& path);
-	void SaveImageAsPNG(const DAVA::FilePath& originalName, DAVA::Image* imageToSave, bool addMipmapsIntoName);
-	
-	void GetFilesFromFolderRecursively(const DAVA::FilePath& path, DAVA::List<DAVA::FilePath>& filesList);
-		
-	DAVA::FilePath	sourcePath;
-	DAVA::uint32	mipmapNumber;
+
+    eAction commandAction;
+    DAVA::String filename;
+    DAVA::FilePath inFolder;
+	DAVA::FilePath outFile;
+	DAVA::FilePath qualityPathname;
 };
 
 
-#endif // __DDS_EXTRACTOR_TOOL_H__
+#endif // __DUMP_TOOL_H__

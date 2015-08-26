@@ -27,30 +27,46 @@
 =====================================================================================*/
 
 
-#ifndef __DDS_EXTRACTOR_TOOL_H__
-#define __DDS_EXTRACTOR_TOOL_H__
+#ifndef __SCENE_DUMPER_H__
+#define __SCENE_DUMPER_H__
 
-#include "../CommandLineTool.h"
+#include "Base/BaseTypes.h"
+#include "FileSystem/FilePath.h"
 
-class DDSExtractorTool: public CommandLineTool
+namespace DAVA
+{
+	class Scene;
+	class Entity;
+	class RenderObject;
+	class KeyedArchive;
+	class ParticleEffectComponent;
+	class ParticleEmitter;
+}
+
+class SceneDumper
 {
 public:
 
-	DAVA::String GetCommandLineKey() const override;
-	bool InitializeFromCommandLine() override;
-	void Process() override;
-	void PrintUsage() const override;
+	using SceneLinks = DAVA::Set < DAVA::FilePath >;
 
-protected:
-	
-	void ExtractImagesFromFile(const DAVA::FilePath& path);
-	void SaveImageAsPNG(const DAVA::FilePath& originalName, DAVA::Image* imageToSave, bool addMipmapsIntoName);
-	
-	void GetFilesFromFolderRecursively(const DAVA::FilePath& path, DAVA::List<DAVA::FilePath>& filesList);
-		
-	DAVA::FilePath	sourcePath;
-	DAVA::uint32	mipmapNumber;
+	static SceneLinks DumpLinks(const DAVA::FilePath &scenePath, DAVA::Set<DAVA::String> &errorLog);
+
+private:
+
+	SceneDumper(const DAVA::FilePath &scenePath, DAVA::Set<DAVA::String> &errorLog);
+	~SceneDumper();
+
+	void DumpLinksRecursive(DAVA::Entity *entity, SceneLinks &links) const;
+
+	void DumpCustomProperties(DAVA::KeyedArchive *properties, SceneLinks &links) const;
+	void DumpRenderObject(DAVA::RenderObject *renderObject, SceneLinks &links) const;
+	void DumpEffect(DAVA::ParticleEffectComponent *effect, SceneLinks &links) const;
+	void DumpEmitter(DAVA::ParticleEmitter *emitter, SceneLinks &links, SceneLinks &gfxFolders) const;
+
+private:
+	DAVA::Scene *scene = nullptr;
+    DAVA::FilePath scenePathname;
 };
 
 
-#endif // __DDS_EXTRACTOR_TOOL_H__
+#endif // __SCENE_DUMPER_H__
