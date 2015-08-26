@@ -42,7 +42,7 @@ namespace DAVA
 	public:
         using CollectionT = C<T, A>;
 
-		InspCollImpl(const char *_name, const InspDesc &_desc, const int _offset, const MetaInfo *_type, int _flags = 0)
+		InspCollImpl(const char *_name, const InspDesc &_desc, const size_t _offset, const MetaInfo *_type, int _flags = 0)
 			: InspColl(_name, _desc, _offset, _type, _flags)
 		{ }
 
@@ -60,7 +60,7 @@ namespace DAVA
 		{
 			int size = 0;
 
-			if(NULL != object)
+			if(nullptr != object)
 			{
 				size = static_cast<int>(((CollectionT *) object)->size());
 			}
@@ -70,9 +70,9 @@ namespace DAVA
 
 		Iterator Begin(void *object) const
 		{
-			Iterator i = NULL;
+			Iterator i = nullptr;
 
-			if(NULL != object)
+			if(nullptr != object)
 			{
                 CollectionT *collection = (CollectionT *) object;
 
@@ -96,14 +96,14 @@ namespace DAVA
 		{
 			CollectionPos* pos = (CollectionPos *) i;
 
-			if(NULL != pos)
+			if(nullptr != pos)
 			{
 				pos->curPos++;
 
 				if(pos->curPos == pos->endPos)
 				{
 					delete pos;
-					i = NULL;
+					i = nullptr;
 				}
 			}
 
@@ -113,7 +113,7 @@ namespace DAVA
 		void Finish(Iterator i) const
 		{
 			CollectionPos* pos = (CollectionPos *) i;
-			if(NULL != pos)
+			if(nullptr != pos)
 			{
 				delete pos;
 			}
@@ -122,7 +122,7 @@ namespace DAVA
 		void ItemValueGet(Iterator i, void *itemDst) const
 		{
 			CollectionPos* pos = (CollectionPos *) i;
-			if(NULL != pos)
+			if(nullptr != pos)
 			{
 				T *dstT = (T*) itemDst;
 				*dstT = *(pos->curPos);
@@ -132,7 +132,7 @@ namespace DAVA
 		void ItemValueSet(Iterator i, void *itemSrc)
 		{
 			CollectionPos* pos = (CollectionPos *) i;
-			if(NULL != pos)
+			if(nullptr != pos)
 			{
 				T *srcT = (T*) itemSrc;
 				*(pos->curPos) = *srcT;
@@ -141,10 +141,10 @@ namespace DAVA
 
 		void* ItemPointer(Iterator i) const 
 		{
-			void *p = NULL;
+			void *p = nullptr;
 			CollectionPos* pos = (CollectionPos *) i;
 
-			if(NULL != pos)
+			if(nullptr != pos)
 			{
 				p = &(*(pos->curPos));
 			}
@@ -166,17 +166,17 @@ namespace DAVA
 
 		MetaInfo* ItemKeyType() const
 		{
-			return NULL;
+			return nullptr;
 		}
 
 		const void* ItemKeyPointer(Iterator i) const
 		{
-			return NULL;
+			return nullptr;
 		}
 
 		const void* ItemKeyData(Iterator i) const
 		{
-			return NULL;
+			return nullptr;
 		}
 
 		const InspColl* Collection() const
@@ -198,7 +198,7 @@ namespace DAVA
 	public:
         using CollectionT = C<K, V, A>;
 
-		InspKeyedCollImpl(const char *_name, const InspDesc &_desc, const int _offset, const MetaInfo *_type, int _flags = 0)
+		InspKeyedCollImpl(const char *_name, const InspDesc &_desc, const size_t _offset, const MetaInfo *_type, int _flags = 0)
 			: InspColl(_name, _desc, _offset, _type, _flags)
 		{ }
 
@@ -216,7 +216,7 @@ namespace DAVA
 		{
 			int size = 0;
 
-			if(NULL != object)
+			if(nullptr != object)
 			{
 				size = ((CollectionT *)object)->size();
 			}
@@ -226,9 +226,9 @@ namespace DAVA
 
 		Iterator Begin(void *object) const
 		{
-			Iterator i = NULL;
+			Iterator i = nullptr;
 
-			if(NULL != object)
+			if(nullptr != object)
 			{
 				CollectionT *collection = (CollectionT *)object;
 
@@ -252,14 +252,14 @@ namespace DAVA
 		{
 			CollectionPos* pos = (CollectionPos *)i;
 
-			if(NULL != pos)
+			if(nullptr != pos)
 			{
 				pos->curPos++;
 
 				if(pos->curPos == pos->endPos)
 				{
 					delete pos;
-					i = NULL;
+					i = nullptr;
 				}
 			}
 
@@ -269,7 +269,7 @@ namespace DAVA
 		void Finish(Iterator i) const
 		{
 			CollectionPos* pos = (CollectionPos *)i;
-			if(NULL != pos)
+			if(nullptr != pos)
 			{
 				delete pos;
 			}
@@ -278,7 +278,7 @@ namespace DAVA
 		void ItemValueGet(Iterator i, void *itemDst) const
 		{
 			CollectionPos* pos = (CollectionPos *)i;
-			if(NULL != pos)
+			if(nullptr != pos)
 			{
 				V *dstT = (V*) itemDst;
 				*dstT = pos->curPos->second;
@@ -288,7 +288,7 @@ namespace DAVA
 		void ItemValueSet(Iterator i, void *itemSrc)
 		{
 			CollectionPos* pos = (CollectionPos *)i;
-			if(NULL != pos)
+			if(nullptr != pos)
 			{
 				V *srcT = (V*) itemSrc;
 				pos->curPos->second = *srcT;
@@ -297,10 +297,10 @@ namespace DAVA
 
 		void* ItemPointer(Iterator i) const
 		{
-			void *p = NULL;
+			void *p = nullptr;
 			CollectionPos* pos = (CollectionPos *)i;
 
-			if(NULL != pos)
+			if(nullptr != pos)
 			{
 				p = &pos->curPos->second;
 			}
@@ -310,7 +310,7 @@ namespace DAVA
 
 		const char* ItemName(Iterator i) const
 		{
-			return NULL;
+			return nullptr;
 		}
 
 		void* ItemData(Iterator i) const
@@ -332,10 +332,10 @@ namespace DAVA
 
 		const void* ItemKeyPointer(Iterator i) const
 		{
-			const void *p = NULL;
+			const void *p = nullptr;
 			CollectionPos* pos = (CollectionPos *)i;
 
-			if(NULL != pos)
+			if(nullptr != pos)
 			{
 				p = &(pos->curPos->first);
 			}
@@ -370,13 +370,13 @@ namespace DAVA
 
 	// Функция создает IntrospectionCollection, типы выводятся автоматически
 	template<template <typename, typename> class Container, class T, class A>
-	static InspColl* CreateInspColl(Container<T, A> *t, const char *_name, const InspDesc &_desc, const int _offset, const MetaInfo *_type, int _flags)
+	static InspColl* CreateInspColl(Container<T, A> *t, const char *_name, const InspDesc &_desc, const size_t _offset, const MetaInfo *_type, int _flags)
 	{
 		return new InspCollImpl<Container, T, A>(_name, _desc, _offset, _type, _flags);
 	}
 
 	template<template <typename, typename, typename> class Container, class K, class V, class A>
-	static InspColl* CreateInspColl(Container<K, V, A> *t, const char *_name, const InspDesc &_desc, const int _offset, const MetaInfo *_type, int _flags)
+	static InspColl* CreateInspColl(Container<K, V, A> *t, const char *_name, const InspDesc &_desc, const size_t _offset, const MetaInfo *_type, int _flags)
 	{
 		return new InspKeyedCollImpl<Container, K, V, A>(_name, _desc, _offset, _type, _flags);
 	}

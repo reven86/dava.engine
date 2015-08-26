@@ -166,7 +166,7 @@ void DeinitApplication()
 	{
 		core->Quit();
 		core->ReleaseSingletons();
-		core = NULL;
+		core = nullptr;
 	}
 
 	SafeDelete(androidDelegate);
@@ -488,10 +488,10 @@ void Java_com_dava_framework_JNIRenderer_nativeResize(JNIEnv * env, jobject clas
 
 void Java_com_dava_framework_JNIRenderer_nativeRender(JNIEnv * env, jobject classthis)
 {
-	if(core)
-	{
-		core->RepaintView();
-	}
+    if(core)
+    {
+        core->RepaintView();
+    }
 }
 
 void Java_com_dava_framework_JNIRenderer_nativeRenderRecreated(JNIEnv * env, jobject classthis)

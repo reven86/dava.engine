@@ -89,6 +89,9 @@ void CheckeredCanvas::DrawAfterChilds( const UIGeometricData &geometricData )
 
 bool CheckeredCanvas::SystemInput(UIEvent *currentInput)
 {
+    if (emulationMode)
+        return UIControl::SystemInput(currentInput);
+    
     DAVA::List<std::pair<UIControl*, UIControl*> > selectedControls;
     if (currentInput->phase == UIEvent::PHASE_BEGAN || currentInput->phase == UIEvent::PHASE_DRAG)
     {
@@ -173,6 +176,10 @@ void CheckeredCanvas::RemoveControlSelectionListener(ControlSelectionListener *l
     }
 }
 
+void CheckeredCanvas::SetEmulationMode(bool newMode)
+{
+    emulationMode = newMode;
+}
 
 PackageCanvas::PackageCanvas()
     : UIControl()

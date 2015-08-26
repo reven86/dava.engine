@@ -1090,7 +1090,7 @@ bool LibDdsHelper::WriteAtcFile(const FilePath & fileNameOriginal, const Vector<
     int32 bufSize = 0;
     Vector<int32> mipSize;
     mipSize.resize(imageSet.size());
-    int32 dataCount = imageSet.size();
+    uint32 dataCount = static_cast<uint32>(imageSet.size());
     if(imageSet.size() == 0)
     {
         Logger::Error("[LibDdsHelper::WriteAtcFile] Empty income image vector.");
@@ -1099,7 +1099,7 @@ bool LibDdsHelper::WriteAtcFile(const FilePath & fileNameOriginal, const Vector<
 
     auto pixelSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(imageSet[0]->format);
     auto atcFormat = QualcommHelper::GetQualcommFormat(imageSet[0]->format);
-    for(int32 i = 0; i < dataCount; ++i)
+    for(uint32 i = 0; i < dataCount; ++i)
     {
         TQonvertImage srcImg = {0};
 
@@ -1130,7 +1130,7 @@ bool LibDdsHelper::WriteAtcFile(const FilePath & fileNameOriginal, const Vector<
     unsigned char* buffer = new unsigned char[bufSize];
     unsigned char* tmpBuffer = buffer;
 
-    for(int32 i = 0; i < dataCount; ++i)
+    for(uint32 i = 0; i < dataCount; ++i)
     {
         TQonvertImage srcImg = { 0 };
 
@@ -1276,15 +1276,15 @@ bool LibDdsHelper::WriteDxtFile(const DAVA::FilePath &fileNameOriginal, const Ve
     
     nvtt::TextureType textureType = isCubemap ? nvtt::TextureType_Cube : nvtt::TextureType_2D;
     
-    int32 facesCount = workingImages.size();
-    int32 mipmapsCount = workingImages[0].size();
+    int facesCount = static_cast<int>(workingImages.size());
+    int mipmapsCount = static_cast<int>(workingImages[0].size());
     InputOptions inputOptions;
     inputOptions.setTextureLayout(textureType, workingImages[0][0]->width, workingImages[0][0]->height);
     inputOptions.setMipmapGeneration(mipmapsCount > 1, mipmapsCount - 1);
     
-    for(int32 f = 0; f < facesCount; ++f)
+    for(int f = 0; f < facesCount; ++f)
     {
-        for(int32 m = 0; m < mipmapsCount; ++m)
+        for(int m = 0; m < mipmapsCount; ++m)
         {
             Image *image = workingImages[f][m];
             ImageConvert::SwapRedBlueChannels(image);
@@ -1351,8 +1351,8 @@ bool LibDdsHelper::WriteAtcFileAsCubemap(const DAVA::FilePath &fileNameOriginal,
 
     
     //VI: calculate image buffer size
-    const int32 facesCount = imageSet.size();
-    const int32 mipmapsCount = imageSet[0].size();
+    const int facesCount = static_cast<int>(imageSet.size());
+    const int mipmapsCount = static_cast<int>(imageSet[0].size());
     
     int32 bufSize = 0;
     Vector<Vector<int32> > mipSize;

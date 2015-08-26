@@ -441,6 +441,25 @@ public class JNIWebView {
             }
         });
     }
+    
+    public static void WillDraw(final int id) {
+        final JNIActivity activity = JNIActivity.GetActivity();
+        if (null == activity || activity.GetIsPausing())
+            return;
+
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (!views.containsKey(id)) {
+                    Log.e(TAG, String.format("Unknown view id %d", id));
+                    return;
+                }
+                WebViewWrapper view = views.get(id);
+                InternalViewClientV14 client = view.getInternalViewClient();
+                client.updateVisible(view);
+            }
+        });
+    }
 
     public static void setRenderToTexture(final int id,
             final boolean renderToTexture) {

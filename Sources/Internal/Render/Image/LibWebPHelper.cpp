@@ -63,7 +63,7 @@ eErrorCode LibWebPHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int3
     }
 
     infile->Seek(0, File::SEEK_FROM_START);
-    size_t dataSize = infile->GetSize();
+    uint32 dataSize = infile->GetSize();
     uint8_t *data = new uint8_t[dataSize];
     SCOPE_EXIT
     {
@@ -140,15 +140,15 @@ eErrorCode LibWebPHelper::WriteFile(const FilePath & fileName, const Vector<Imag
     {
         SafeDeleteArray(outData);
     };
-    size_t outSize;
+    uint32 outSize;
     int stride = width * sizeof(*imageData);
     if (FORMAT_RGB888 == format)
     {
-        outSize = WebPEncodeRGB(imageData, width, height, stride * PixelFormatDescriptor::GetPixelFormatSizeInBytes(format), quality, &outData);
+        outSize = static_cast<uint32>(WebPEncodeRGB(imageData, width, height, stride * PixelFormatDescriptor::GetPixelFormatSizeInBytes(format), quality, &outData));
     }
     else
     {
-        outSize = WebPEncodeRGBA(imageData, width, height, stride * PixelFormatDescriptor::GetPixelFormatSizeInBytes(format), quality, &outData);
+        outSize = static_cast<uint32>(WebPEncodeRGBA(imageData, width, height, stride * PixelFormatDescriptor::GetPixelFormatSizeInBytes(format), quality, &outData));
     }
 
     if (nullptr == outData)
@@ -183,7 +183,7 @@ DAVA::ImageInfo LibWebPHelper::GetImageInfo(File *infile) const
     WebPBitstreamFeatures* const bitstream = &config.input;
 
     infile->Seek(0, File::SEEK_FROM_START);
-    size_t dataSize = infile->GetSize();
+    uint32 dataSize = infile->GetSize();
     uint8_t *data = new uint8_t[dataSize];
     SCOPE_EXIT
     {

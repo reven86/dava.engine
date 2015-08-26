@@ -58,8 +58,8 @@ ComponentPropertiesSection::ComponentPropertiesSection(DAVA::UIControl *aControl
     {
         const InspMember *member = insp->Member(j);
         
-        const ValueProperty *sourceProp = sourceSection == NULL ? NULL : sourceSection->FindProperty(member);
-        ValueProperty *prop = new IntrospectionProperty(component, member, dynamic_cast<const IntrospectionProperty *>(sourceProp), cloneType);
+        const IntrospectionProperty *sourceProp = sourceSection == nullptr ? nullptr : sourceSection->FindProperty(member);
+        IntrospectionProperty *prop = new IntrospectionProperty(component, member, sourceProp, cloneType);
         AddProperty(prop);
         SafeRelease(prop);
     }

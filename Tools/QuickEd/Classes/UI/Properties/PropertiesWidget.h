@@ -49,22 +49,32 @@ public slots:
     void OnDataChanged(const QByteArray &role);
 
     void OnAddComponent(QAction *action);
-    void OnRemoveComponent();
+    void OnAddStyleProperty(QAction *action);
+    void OnAddStyleSelector();
+    void OnRemove();
+    
     void OnSelectionChanged(const QItemSelection &selected,
                             const QItemSelection &deselected);
 
 private:
+    QAction *CreateAddComponentAction();
+    QAction *CreateAddStyleSelectorAction();
+    QAction *CreateAddStylePropertyAction();
+    QAction *CreateRemoveAction();
+    QAction *CreateSeparator();
+
     ControlNode *GetSelectedControlNode() const;
     StyleSheetNode *GetSelectedStyleSheetNode() const;
+    
     void UpdateSelection();
     void UpdateActions();
     
 private:
     SharedData *sharedData;
     QAction *addComponentAction;
-    QAction *removeComponentAction;
-    int selectedComponentType;
-    int selectedComponentIndex;
+    QAction *addStylePropertyAction;
+    QAction *addStyleSelectorAction;
+    QAction *removeAction;
 };
 
 #endif //__QUICKED_PROPERTIES_WIDGET_H__
