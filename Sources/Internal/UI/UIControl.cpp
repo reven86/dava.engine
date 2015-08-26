@@ -1095,7 +1095,11 @@ namespace DAVA
 
         RemoveAllComponents();
         for (UIComponent *srcComponent : srcControl->components)
-            AddComponent(srcComponent->Clone());
+        {
+            UIComponent *dest = srcComponent->Clone();
+            AddComponent(dest);
+            SafeRelease(dest);
+        }
         
         RemoveAllControls();
         if (inputEnabled)
