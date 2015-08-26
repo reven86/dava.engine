@@ -79,6 +79,9 @@ public:
     void RemoveComponentPropertiesSection(DAVA::uint32 componentType, DAVA::uint32 componentIndex);
     void RemoveComponentPropertiesSection(ComponentPropertiesSection *section);
 
+    void AttachPrototypeComponent(ComponentPropertiesSection *section, ComponentPropertiesSection *prototypeSection);
+    void DetachPrototypeComponent(ComponentPropertiesSection *section, ComponentPropertiesSection *prototypeSection);
+
     const DAVA::Vector<BackgroundPropertiesSection*> &GetBackgroundProperties() const;
     BackgroundPropertiesSection *GetBackgroundPropertiesSection(int num) const;
 

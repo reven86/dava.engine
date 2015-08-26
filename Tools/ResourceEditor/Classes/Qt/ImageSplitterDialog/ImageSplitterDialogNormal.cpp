@@ -116,7 +116,7 @@ DAVA::Image * ImageSplitterDialogNormal::CreateMergedImage(DAVA::Image *firstIma
     auto pixelSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_RGBA8888);
     DVASSERT(CHANNELS_COUNT == pixelSize);
     
-    for(auto i = 0; i < size; ++i)
+    for (auto i = 0; i < size; ++i)
     {
         auto offset = i * pixelSize;
         

@@ -496,8 +496,10 @@ void SerializationContext::AddLoadedPolygonGroup(PolygonGroup *group, uint32 dat
 }
 void SerializationContext::AddRequestedPolygonGroupFormat(PolygonGroup *group, int32 format)
 {
-    DVASSERT(loadedPolygonGroups.find(group)!=loadedPolygonGroups.end());
-    loadedPolygonGroups[group].requestedFormat|=format;
+    auto foundGroup = loadedPolygonGroups.find(group);
+    DVASSERT(foundGroup!=loadedPolygonGroups.end());
+    foundGroup->second.requestedFormat |= format;
+    foundGroup->second.onScene = true;
 }
 
 void SerializationContext::LoadPolygonGroupData(File *file)
@@ -505,11 +507,14 @@ void SerializationContext::LoadPolygonGroupData(File *file)
     int32 prerequiredVertexFormat = QualitySettingsSystem::Instance()->GetPrerequiredVertexFormat();
     for (Map<PolygonGroup*, PolygonGroupLoadInfo>::iterator it = loadedPolygonGroups.begin(), e = loadedPolygonGroups.end(); it!=e; ++it)
     {
-        file->Seek(it->second.filePos, File::SEEK_FROM_START);
-        KeyedArchive * archive = new KeyedArchive();
-        archive->Load(file);        
-        it->first->LoadPolygonData(archive, this, it->second.requestedFormat | prerequiredVertexFormat);
-        SafeRelease(archive);        
+        if (it->second.onScene)
+        {
+            file->Seek(it->second.filePos, File::SEEK_FROM_START);
+            KeyedArchive * archive = new KeyedArchive();
+            archive->Load(file);
+            it->first->LoadPolygonData(archive, this, it->second.requestedFormat | prerequiredVertexFormat);
+            SafeRelease(archive);
+        }
     }
 }
 }

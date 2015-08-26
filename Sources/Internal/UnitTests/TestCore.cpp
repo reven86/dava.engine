@@ -94,7 +94,7 @@ void TestCore::RunOnlyTheseTestClasses(const String& testClassNames)
             auto iter = std::find_if(testClasses.begin(), testClasses.end(), [&testName](const TestClassInfo& testClassInfo) -> bool {
                 return testClassInfo.name == testName;
             });
-            DVASSERT(iter != testClasses.end());
+            DVASSERT(iter != testClasses.end() && "Test classname is not found among registered tests");
             if (iter != testClasses.end())
             {
                 iter->runTest = true;
@@ -116,7 +116,7 @@ void TestCore::DisableTheseTestClasses(const String& testClassNames)
             auto iter = std::find_if(testClasses.begin(), testClasses.end(), [&testName](const TestClassInfo& testClassInfo) -> bool {
                 return testClassInfo.name == testName;
             });
-            DVASSERT(iter != testClasses.end());
+            DVASSERT(iter != testClasses.end() && "Test classname is not found among registered tests");
             if (iter != testClasses.end())
             {
                 iter->runTest = false;

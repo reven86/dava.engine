@@ -151,6 +151,13 @@ T Atomic<T>::Get() const DAVA_NOEXCEPT
 }
 
 template <typename T>
+T Atomic<T>::GetRelaxed() const DAVA_NOEXCEPT
+{
+    volatile T val = value;
+    return val;
+}
+
+template <typename T>
 T Atomic<T>::Increment() DAVA_NOEXCEPT
 {
     using Type = typename Detail::TypeSelector<sizeof(T)>::Type;

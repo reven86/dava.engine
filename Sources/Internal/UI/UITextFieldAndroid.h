@@ -167,7 +167,8 @@ protected:
     WideString TruncateText(const WideString& text, int32 maxLength);
 
 private:
-	UITextField* textField;
+    std::shared_ptr<JniTextField> jniTextField;
+	UITextField* textField = nullptr;
 	static uint32_t sId;
 	static Map<uint32_t, UITextFieldAndroid*> controls;
 	uint32_t id;

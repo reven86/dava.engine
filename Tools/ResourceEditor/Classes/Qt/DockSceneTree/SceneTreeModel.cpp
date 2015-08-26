@@ -46,6 +46,7 @@
 //mime data
 #include "Tools/MimeData/MimeDataHelper2.h"
 
+
 SceneTreeModel::SceneTreeModel(QObject* parent /*= 0*/ )
 	: QStandardItemModel(parent)
 	, curScene(NULL)
@@ -220,7 +221,7 @@ QModelIndex SceneTreeModel::GetIndex(DAVA::ParticleLayer *layer) const
 
 QModelIndex SceneTreeModel::GetIndex(DAVA::ParticleEmitter *emitter) const
 {
-    return indexesCacheEmitters.value(emitter, QModelIndex());
+	return indexesCacheEmitters.value(emitter, QModelIndex());
 }
 
 QModelIndex SceneTreeModel::GetIndex(DAVA::ParticleForce *force) const
@@ -230,7 +231,7 @@ QModelIndex SceneTreeModel::GetIndex(DAVA::ParticleForce *force) const
 
 SceneTreeItem* SceneTreeModel::GetItem(const QModelIndex &index) const
 {
-	return (SceneTreeItem *) itemFromIndex(index);
+	return (SceneTreeItem *)itemFromIndex(index);
 }
 
 Qt::DropActions SceneTreeModel::supportedDropActions() const
@@ -644,13 +645,13 @@ void SceneTreeModel::ResyncStructure(QStandardItem *item, DAVA::Entity *entity)
 
 void SceneTreeModel::SetFilter(const QString& text)
 {
-    filterText = text;
+	filterText = text;
     ReloadFilter();
 }
 
 void SceneTreeModel::ReloadFilter()
 {
-    ResetFilter();
+	ResetFilter();
 
     if (!filterText.isEmpty())
     {
@@ -843,23 +844,22 @@ int SceneTreeModel::GetDropType(const QMimeData *data) const
 
 Qt::ItemFlags SceneTreeModel::flags ( const QModelIndex & index ) const
 {
-    const Qt::ItemFlags f = QStandardItemModel::flags(index);
-    
+	const Qt::ItemFlags f = QStandardItemModel::flags(index);
     DAVA::Entity *entity = SceneTreeItemEntity::GetEntity(GetItem(index));
     if(NULL != entity)
     {
-        if(!curScene->selectionSystem->IsEntitySelectable(entity))
+		if (!curScene->selectionSystem->IsEntitySelectable(entity))
         {
             return (f & ~Qt::ItemIsSelectable);
         }
     }
 
-    return f;
+	return f;
 }
 
 QVariant SceneTreeModel::data(const QModelIndex &_index, int role) const
 {
-    switch (role)
+	switch (role)
     {
     case Qt::BackgroundRole:
         {
@@ -867,7 +867,8 @@ QVariant SceneTreeModel::data(const QModelIndex &_index, int role) const
             ParticleEmitter *emitter = SceneTreeItemParticleEmitter::GetEmitterStrict(item);
             if (nullptr != emitter && emitter->shortEffect)
             {
-                return QBrush(QColor(255, 0, 0, 20));
+				static const QVariant brush(QBrush(QColor(255, 0, 0, 20)));
+                return brush;
             }
         }
         break;
@@ -888,7 +889,7 @@ SceneTreeFilteringModel::SceneTreeFilteringModel(SceneTreeModel *_treeModel, QOb
 
 bool SceneTreeFilteringModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
 {
-    if (!treeModel->IsFilterSet())
+	if (!treeModel->IsFilterSet())
         return true;
 
     const QModelIndex& _index = treeModel->index(sourceRow, 0, sourceParent);
@@ -900,7 +901,7 @@ bool SceneTreeFilteringModel::filterAcceptsRow(int sourceRow, const QModelIndex 
 
 QVariant SceneTreeFilteringModel::data(const QModelIndex& _index, int role) const
 {
-    if (!treeModel->IsFilterSet())
+	if (!treeModel->IsFilterSet())
         return QSortFilterProxyModel::data(_index, role);
 
     switch ( role )
@@ -910,7 +911,8 @@ QVariant SceneTreeFilteringModel::data(const QModelIndex& _index, int role) cons
             SceneTreeItem *item = treeModel->GetItem(mapToSource(_index));
             if (item->IsHighlighed())
             {
-                return QBrush(QColor(0, 255, 0, 20));
+				static const QVariant brush(QBrush(QColor(0, 255, 0, 20)));
+				return brush;
             }
         }
         break;

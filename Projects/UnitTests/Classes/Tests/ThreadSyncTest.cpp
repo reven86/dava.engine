@@ -168,4 +168,26 @@ DAVA_TESTCLASS(ThreadSyncTest)
                 break;
         }
     }
+
+    static void StackHurtFunc()
+    {
+        const int theGreatestNumber = 42;
+        volatile char data[1 * 1024 * 1024]; //1 MB
+        volatile int sum = 0;
+
+        for (auto& x : data)
+        {
+            sum += theGreatestNumber;
+            x = sum;
+        }
+    }
+
+    //if stack size is not set, app will crash
+    DAVA_TEST(StackHurtTest)
+    {
+        auto stackHurtThread = RefPtr<Thread>(Thread::Create(StackHurtFunc));
+        stackHurtThread->SetStackSize(2 * 1024 * 1024); //2 MB
+        stackHurtThread->Start();
+        stackHurtThread->Join();
+    }
 };

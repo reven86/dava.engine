@@ -105,10 +105,7 @@ void QtPropertyDataDavaVariant::InitFlags()
 	case DAVA::VariantType::TYPE_VECTOR3:
 	case DAVA::VariantType::TYPE_VECTOR4:
 	case DAVA::VariantType::TYPE_FASTNAME:
-		break;
-
-	case DAVA::VariantType::TYPE_FILEPATH:
-		SetIcon(QIcon(":/QtIcons/file.png"));
+    case DAVA::VariantType::TYPE_FILEPATH:
 		break;
 
 	default:
@@ -142,7 +139,7 @@ void QtPropertyDataDavaVariant::SetVariantValue(const DAVA::VariantType& value)
 	switch(curVariantValue.type)
 	{
 		case DAVA::VariantType::TYPE_COLOR:
-			SetColorIcon();
+			UpdateColorButtonIcon();
 			break;
 
 		default:
@@ -163,7 +160,7 @@ void QtPropertyDataDavaVariant::AddAllowedValue(const DAVA::VariantType& realVal
 		allowedButton->eventsPassThrought = true;
 		allowedButton->overlayed = true;
 
-		QObject::connect(allowedButton, SIGNAL(released()), this, SLOT(AllowedOWPressed()));
+		QObject::connect(allowedButton, &QtPropertyToolButton::released, this, &QtPropertyDataDavaVariant::AllowedOWPressed);
 	}
 
 	av.realValue = realValue;
@@ -467,7 +464,8 @@ void QtPropertyDataDavaVariant::ChildsCreate()
 			colorBtn->setIcon(QIcon(":/QtIcons/color.png"));
 			colorBtn->setIconSize(QSize(12, 12));
 			colorBtn->setAutoRaise(true);
-			QObject::connect(colorBtn, SIGNAL(released()), this, SLOT(ColorOWPressed()));
+            colorBtn->setObjectName("colorButton");
+            QObject::connect(colorBtn, &QToolButton::clicked, this, &QtPropertyDataDavaVariant::ColorOWPressed);
 
             DAVA::Color color = curVariantValue.AsColor();
             SubValueAdd("R", DAVA::VariantType(color.r));
@@ -494,7 +492,7 @@ void QtPropertyDataDavaVariant::ChildsCreate()
 			filePathBtn->setIcon(QIcon(":/QtIcons/openscene.png"));
 			filePathBtn->setIconSize(QSize(14, 14));
 			filePathBtn->setAutoRaise(true);
-			QObject::connect(filePathBtn, SIGNAL(released()), this, SLOT(FilePathOWPressed()));
+			connect(filePathBtn, &QToolButton::clicked, this, &QtPropertyDataDavaVariant::FilePathOWPressed);
 		}
 		break;
     case DAVA::VariantType::TYPE_STRING:
@@ -636,7 +634,7 @@ void QtPropertyDataDavaVariant::MeSetFromChilds()
             {
                 curVariantValue.SetColor(color);
                 SetValue(FromColor(color), QtPropertyData::VALUE_EDITED);
-                SetColorIcon();
+                UpdateColorButtonIcon();
             }
         }
         break;
@@ -940,10 +938,10 @@ void QtPropertyDataDavaVariant::ToColor(const QVariant &value)
         curVariantValue.SetColor(DAVA::Color(v.x, v.y, v.z, v.w));
     }
 
-    SetColorIcon();
+    UpdateColorButtonIcon();
 }
 
-void QtPropertyDataDavaVariant::SetColorIcon()
+void QtPropertyDataDavaVariant::UpdateColorButtonIcon()
 {
 	if(curVariantValue.type == DAVA::VariantType::TYPE_COLOR)
 	{
@@ -966,7 +964,7 @@ void QtPropertyDataDavaVariant::SetColorIcon()
 		p.setBrush(QBrush(c));
 		p.drawRect(QRect(0, 0, 15, 15));
 
-		SetIcon(QIcon(pix));
+		SetColorButtonIcon(QIcon(pix));
 	}
 }
 
@@ -1131,7 +1129,7 @@ void QtPropertyDataDavaVariant::ColorOWPressed()
 	    SetValue(str, VALUE_EDITED);
 	}
 
-    SetColorIcon();
+    UpdateColorButtonIcon();
 }
 
 void QtPropertyDataDavaVariant::OnColorChanging()

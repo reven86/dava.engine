@@ -92,7 +92,7 @@ inline void DavaDebugBreak()
     raise(SIGTRAP);
 
 #else //PLATFORMS
-    //other platforms
+#   error "DavaDebugBreak: undefined platform"
 #endif //PLATFORMS
 }
 

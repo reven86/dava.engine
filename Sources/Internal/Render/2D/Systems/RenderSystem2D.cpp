@@ -520,7 +520,7 @@ void RenderSystem2D::UpdateClip()
 {
     if (clipChanged)
     {
-        if (currentClip.dx < 0.f || currentClip.dx < 0.f) //disable clip
+        if (currentClip.dx < 0.f || currentClip.dy < 0.f) //disable clip
         {
             RenderManager::Instance()->SetClip(currentClip);
         }

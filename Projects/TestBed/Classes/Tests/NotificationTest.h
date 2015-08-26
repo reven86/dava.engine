@@ -29,7 +29,7 @@
 #ifndef __NOTIFICATION_SCREEN_H__
 #define __NOTIFICATION_SCREEN_H__
 
-#include "BaseScreen.h"
+#include "Infrastructure/BaseScreen.h"
 
 using namespace DAVA;
 

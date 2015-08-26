@@ -18,7 +18,7 @@ if( NOT ANDROID_COMMAND )
     message( FATAL_ERROR "Please set the correct path to ANDROID_SDK in file DavaConfig.in"  )
 endif()
 
-find_program( JAVACOMPILER_COMMAND NAMES javac $ENV{JAVA_HOME}/bin/javac )
+find_program( JAVACOMPILER_COMMAND NAMES javac $ENV{JAVA_HOME}/bin/javac /usr/bin/javac )
 
 if ( NOT JAVACOMPILER_COMMAND )
     message( FATAL_ERROR "Can't find javac tool, please point JAVA_HOME to JDK directory" )

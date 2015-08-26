@@ -37,6 +37,7 @@ using namespace DAVA;
 ValueProperty::ValueProperty(const DAVA::String &propName)
     : name(propName)
     , replaced(false)
+    , prototypeProperty(nullptr) // weak
 {
 
 }
@@ -46,6 +47,8 @@ ValueProperty::~ValueProperty()
     for (auto child : children)
         child->Release();
     children.clear();
+    
+    prototypeProperty = nullptr; // weak
 }
 
 int ValueProperty::GetCount() const
@@ -60,8 +63,45 @@ AbstractProperty *ValueProperty::GetProperty(int index) const
 
 void ValueProperty::Refresh()
 {
+    if (prototypeProperty)
+        SetDefaultValue(prototypeProperty->GetValue());
+
     for (SubValueProperty *prop : children)
         prop->Refresh();
+}
+
+void ValueProperty::AttachPrototypeProperty(const ValueProperty *property)
+{
+    if (prototypeProperty == nullptr)
+    {
+        prototypeProperty = property;
+    }
+    else
+    {
+        DVASSERT(false);
+    }
+}
+
+void ValueProperty::DetachPrototypeProperty(const ValueProperty *property)
+{
+    if (prototypeProperty == property)
+    {
+        prototypeProperty = nullptr;
+    }
+    else
+    {
+        DVASSERT(false);
+    }
+}
+
+const ValueProperty *ValueProperty::GetPrototypeProperty() const
+{
+    return prototypeProperty;
+}
+
+AbstractProperty *ValueProperty::FindPropertyByPrototype(AbstractProperty *prototype)
+{
+    return prototype == prototypeProperty ? this : nullptr;
 }
 
 bool ValueProperty::HasChanges() const

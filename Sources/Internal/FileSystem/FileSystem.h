@@ -153,7 +153,7 @@ public:
      */
 	virtual const FilePath GetPublicDocumentsPath();
 
-#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)  
+#if defined(__DAVAENGINE_APPLE__)  
     /**
         \brief Function to retrieve user’s home path
         \returns user’s home path

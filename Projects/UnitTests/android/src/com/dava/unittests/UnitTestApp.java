@@ -10,6 +10,7 @@ public class UnitTestApp extends JNIApplication {
 	}
 	
 	static {
+		System.loadLibrary("gnustl_shared");
 		System.loadLibrary("UnitTests");
 	}
 }

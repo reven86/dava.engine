@@ -157,7 +157,7 @@ bool DFFontInternalData::InitFromConfig(const DAVA::FilePath &path)
             for (auto i = charKerningMap.begin(); i != charKerningMap.end(); ++i)
             {
                 int32 secondCharId = atoi(i->first.c_str());
-                float32 kerning = iter->second->AsFloat();
+                float32 kerning = i->second->AsFloat();
                 charIter->second.kerning[secondCharId] = kerning;
             }
         }

@@ -44,7 +44,6 @@ protected:
     
 public:
     void Refresh() override;
-    AbstractProperty *FindPropertyByPrototype(AbstractProperty *prototype) override;
     void Accept(PropertyVisitor *visitor) override;
     
     bool IsReadOnly() const override;
@@ -61,7 +60,6 @@ protected:
     
 protected:
     ControlNode *control; // weak
-    const NameProperty *prototypeProperty;
 };
 
 #endif // __QUICKED_NAME_PROPERTY_H__

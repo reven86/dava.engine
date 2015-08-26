@@ -96,17 +96,6 @@ void NetLogger::Output(Logger::eLogLevel ll, const char8* text)
         DoOutput(ll, text);
 }
 
-void NetLogger::Output(Logger::eLogLevel ll, const char16* text)
-{
-    // Logging of wide characters is not supported on Android for now
-    // see PlatformLog in LoggerAndroid.cpp :)
-    DVASSERT(0 && "Do not log wide strings");
-    if(text)
-    {
-        DoOutput(ll, UTF8Utils::EncodeToUTF8(WideString(text)).c_str());
-    }
-}
-
 void NetLogger::DoOutput(Logger::eLogLevel ll, const char8* text)
 {
     // if queue has been previously empty then start sending

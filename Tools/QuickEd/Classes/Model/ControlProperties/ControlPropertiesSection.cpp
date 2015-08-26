@@ -33,6 +33,7 @@
 #include "ValueProperty.h"
 #include "LocalizedTextValueProperty.h"
 #include "FontValueProperty.h"
+#include "DependedOnLayoutProperty.h"
 
 #include "UI/UIControl.h"
 
@@ -40,6 +41,8 @@ using namespace DAVA;
 
 namespace
 {
+const FastName PROPERTY_NAME_SIZE("size");
+const FastName PROPERTY_NAME_POSITION("position");
 const FastName PROPERTY_NAME_TEXT("text");
 const FastName PROPERTY_NAME_FONT("font");
 }
@@ -57,7 +60,11 @@ ControlPropertiesSection::ControlPropertiesSection(DAVA::UIControl *aControl, co
 
             ValueProperty *prop = nullptr;
             //TODO: move it to fabric class
-            if (member->Name() == PROPERTY_NAME_TEXT)
+            if (member->Name() == PROPERTY_NAME_SIZE || member->Name() == PROPERTY_NAME_POSITION)
+            {
+                prop = new DependedOnLayoutProperty(control, member, dynamic_cast<DependedOnLayoutProperty*>(sourceProperty), cloneType);
+            }
+            else if (member->Name() == PROPERTY_NAME_TEXT)
             {
                 prop = new LocalizedTextValueProperty(control, member, dynamic_cast<LocalizedTextValueProperty*>(sourceProperty), cloneType);
             }

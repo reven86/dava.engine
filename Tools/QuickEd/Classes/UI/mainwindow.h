@@ -43,9 +43,9 @@ class PropertiesWidget;
 class LibraryWidget;
 class PreviewWidget;
 
+class DavaGLWidget;
 class LocalizationEditorDialog;
 class DialogReloadSprites;
-class DavaGLWidget;
 
 class MainWindow : public QMainWindow, public Ui::MainWindow
 {
@@ -71,7 +71,7 @@ public:
     int AddTab(const DAVA::FilePath &scenePath);
     void OnCleanChanged(int index, bool val);
     DavaGLWidget *GetGLWidget() const;
-
+    DialogReloadSprites *GetDialogReloadSprites() const;
 protected:
     void closeEvent(QCloseEvent *event) override;
 signals:
@@ -85,6 +85,7 @@ signals:
     void SaveDocument(int index);
     void CurrentTabChanged(int index);
     void CloseRequested();
+    void RtlChanged(bool isRtl);
     void ReloadSprites(DAVA::eGPUFamily gpu);
 public slots:
     void OnProjectIsOpenChanged(bool arg);
@@ -103,9 +104,12 @@ private slots:
 
     // Pixelization.
     void OnPixelizationStateChanged();
+    
+    void OnRtlChanged(int arg);
 private:
     void InitLanguageBox();
-    void InitMenu();
+    void InitRtlBox();
+	void InitMenu();
     void SetupViewMenu();
     void DisableActions();
     void UpdateProjectSettings(const QString& filename);

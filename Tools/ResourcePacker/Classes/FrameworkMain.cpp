@@ -73,20 +73,11 @@ bool CheckPosition(int32 commandPosition)
 void DumpCommandLine()
 {
     const Vector<String> & commandLine = Core::Instance()->GetCommandLine();
-    int32 count = CommandLineParser::GetCommandsCount();
-    for(int32 i = 0; i < count; ++i)
-    {
-        String command = CommandLineParser::GetCommand(i);
-        Logger::FrameworkDebug("command: %s, param: %s", command.c_str(), CommandLineParser::GetCommandParam(command).c_str());
-    }
     
     Logger::FrameworkDebug("");
-    
-    count = commandLine.size();
-    for(int32 i = 0; i < count; ++i)
+    for(auto& param : commandLine)
     {
-        String command = commandLine[i];
-        Logger::FrameworkDebug("command: %s", command.c_str());
+        Logger::FrameworkDebug("parameter: %s", param.c_str());
     }
     Logger::FrameworkDebug("");
 }

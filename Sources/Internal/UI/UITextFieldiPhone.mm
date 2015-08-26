@@ -62,7 +62,8 @@ namespace DAVA
         DVASSERT(textFieldHolder->textCtrl != nullptr);
         
         [textFieldHolder setTextField:&davaTextField];
-
+        [textFieldHolder dropCachedText];
+        
         objcClassPtr = textFieldHolder;
         
         prevRect = tf.GetRect();
@@ -84,9 +85,13 @@ namespace DAVA
 
         if (!isSingleLine)
         {
+            textFieldHolder->textField.userInteractionEnabled = NO;
             // destroy UITextView and restore textFild back
             [textFieldHolder->textCtrl removeFromSuperview];
+            
             textFieldHolder->textCtrl = textFieldHolder->textField;
+            [backgroundView PrepareView: textFieldHolder->textCtrl];
+            [textFieldHolder addSubview:textFieldHolder->textCtrl];
             
         }
         
@@ -101,6 +106,8 @@ namespace DAVA
         UIColor* col = [UIColor colorWithRed:color.r green:color.g blue:color.b alpha:color.a];
         UIView* view = textFieldHolder->textCtrl;
         [view setValue:col forKey:@"textColor"];
+        
+        isNeedToUpdateTexture = true;
     }
     void UITextFieldiPhone::SetFontSize(float size)
     {
@@ -111,6 +118,8 @@ namespace DAVA
         UIView* view = textFieldHolder->textCtrl;
         UIFont* font = [UIFont systemFontOfSize:scaledSize];
         [view setValue:font forKey:@"font"];
+        
+        isNeedToUpdateTexture = true;
     }
     
     void UITextFieldiPhone::SetTextAlign(DAVA::int32 align)
@@ -154,6 +163,8 @@ namespace DAVA
                 default:
                     break;
             }
+
+            isNeedToUpdateTexture = true;
         } else
         {
             DAVA::Logger::Error("UITextField::SetTextAlign not supported in multiline");
@@ -210,6 +221,7 @@ namespace DAVA
 	{
 		UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         [textFieldHolder setUseRtlAlign:useRtlAlign];
+        isNeedToUpdateTexture = true;
 	}
 	
 	bool UITextFieldiPhone::GetTextUseRtlAlign() const
@@ -228,7 +240,8 @@ namespace DAVA
     void UITextFieldiPhone::CloseKeyboard()
     {
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
-        if (isSingleLine) {
+        if (isSingleLine)
+        {
             textFieldHolder->textCtrl.userInteractionEnabled = NO;
         }
         [textFieldHolder->textCtrl resignFirstResponder];
@@ -240,6 +253,7 @@ namespace DAVA
 
         DVASSERT([textFieldHolder superview] != nil);
         [textFieldHolder setHidden:NO];
+        [textFieldHolder->textCtrl setHidden:NO];
         
         // Attach to "keyboard shown/keyboard hidden" notifications.
 		NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
@@ -322,7 +336,7 @@ namespace DAVA
     void UITextFieldiPhone::UpdateRect(const Rect & rect)
     {
         UpdateNativeRect(rect, deltaMoveControl);
-        if (rect.dx != prevRect.dx || rect.dy != prevRect.dy)
+        if (rect.dx != prevRect.dx || rect.dy != prevRect.dy || isNeedToUpdateTexture)
         {
             UpdateStaticTexture();
         }
@@ -344,18 +358,14 @@ namespace DAVA
         bool textChanged = ![textInField isEqualToString:truncatedText];
         
         [view setValue:truncatedText forKey:@"text"];
+        // Drop cached text in text field holder for correct dispatching OnTextChanged event
+        [textFieldHolder dropCachedText];
         
         [textFieldHolder->textCtrl.undoManager removeAllActions];
 
-        // Notify UITextFieldDelegate::TextFieldOnTextChanged event
-        if ([view respondsToSelector:@selector(sendActionsForControlEvents)])
-        {
-            [(id)view sendActionsForControlEvents:UIControlEventEditingChanged];
-        }
-        
         if(textChanged || string.empty())
         {
-            UpdateStaticTexture();
+            isNeedToUpdateTexture = true;
         }
     }
 	
@@ -376,7 +386,7 @@ namespace DAVA
 	{
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
 		[textFieldHolder setIsPassword: isPassword];
-        UpdateStaticTexture();
+        isNeedToUpdateTexture = true;
 	}
 
 	void UITextFieldiPhone::SetInputEnabled(bool value)
@@ -569,6 +579,7 @@ namespace DAVA
     void UITextFieldiPhone::SetVisible(bool value)
     {
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+        
         [textFieldHolder setHidden: value == false];
     }
 
@@ -605,6 +616,7 @@ namespace DAVA
                 // set backgroud image into davaTextField control
                 WebViewControl::SetImageAsSpriteToControl(image, davaTextField);
             }
+            isNeedToUpdateTexture = false;
         }
         else
         {
@@ -639,6 +651,11 @@ namespace DAVA
 
             // replace textField with new textView and apply current properties
             ::UITextView* textView = [[UITextView alloc] initWithFrame:rect textContainer:nil];
+            
+            HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
+            BackgroundView* backgroundView = [appDelegate glController].backgroundView;
+            [backgroundView PrepareView: textFieldHolder->textCtrl];
+            
             [textFieldHolder addSubview:textView];
             
             textFieldHolder->textCtrl = textView;
@@ -662,6 +679,7 @@ namespace DAVA
             
             textView.scrollEnabled = YES;
             
+            [textView release];
             // Workaround! in multiline mode always listen for user
             // touches
             SetRenderToTexture(false);
@@ -691,7 +709,7 @@ namespace DAVA
             textFieldHolder->textField = nullptr;
             [textFieldHolder addSubview:textField];
             [textView setHidden:isHidden];
-            [textView release];
+            
             textView = nullptr;
             
             textFieldHolder->textCtrl = textField;

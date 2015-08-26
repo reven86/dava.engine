@@ -88,7 +88,7 @@ public:
     virtual void SetLogPathname(const FilePath & filepath);
 
     //! Returns the current set log level.
-    virtual eLogLevel GetLogLevel();
+    virtual eLogLevel GetLogLevel() const;
 
     //! Sets a new log level. With this value, texts which are sent to
     //! the logger are filtered out. For example setting this value to
@@ -106,8 +106,8 @@ public:
     //! is just an informational text, set it to ELL_INFORMATION. Texts are
     //! filtered with these levels. If you want to be a text displayed,
     //! independent on what level filter is set, use ELL_NONE.
-    virtual void Log(eLogLevel ll, const char8* text, ...);
-    virtual void Logv(eLogLevel ll, const char8* text, va_list li);
+    virtual void Log(eLogLevel ll, const char8* text, ...) const;
+    virtual void Logv(eLogLevel ll, const char8* text, va_list li) const;
 
     static void FrameworkDebug(const char8 * text, ...);
     static void Debug(const char8 * text, ...);
@@ -124,14 +124,14 @@ public:
 
     void EnableConsoleMode();
 
-    const char8 * GetLogLevelString(eLogLevel ll);
+    const char8 * GetLogLevelString(eLogLevel ll) const;
 
 private:
-    void PlatformLog(eLogLevel ll, const char8* text);
-    void FileLog(eLogLevel ll, const char8* text);
-    void CustomLog(eLogLevel ll, const char8* text);
-    void ConsoleLog(eLogLevel ll, const char8* text);
-    void Output(eLogLevel ll, const char8* formatedMsg);
+    void PlatformLog(eLogLevel ll, const char8* text) const;
+    void FileLog(eLogLevel ll, const char8* text) const;
+    void CustomLog(eLogLevel ll, const char8* text) const;
+    void ConsoleLog(eLogLevel ll, const char8* text) const;
+    void Output(eLogLevel ll, const char8* formatedMsg) const;
 
     eLogLevel logLevel;
     FilePath logFilename;

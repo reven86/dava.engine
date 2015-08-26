@@ -82,6 +82,51 @@ DAVA::uint32 ComponentPropertiesSection::GetComponentType() const
     return component->GetType();
 }
 
+void ComponentPropertiesSection::AttachPrototypeSection(ComponentPropertiesSection *section)
+{
+    if (prototypeSection == nullptr)
+    {
+        prototypeSection = section;
+        const InspInfo *insp = component->GetTypeInfo();
+        for (int j = 0; j < insp->MembersCount(); j++)
+        {
+            const InspMember *member = insp->Member(j);
+            ValueProperty *value = FindProperty(member);
+            ValueProperty *prototypeValue = prototypeSection->FindProperty(member);
+            value->AttachPrototypeProperty(prototypeValue);
+        }
+    }
+    else
+    {
+        DVASSERT(false);
+    }
+}
+
+void ComponentPropertiesSection::DetachPrototypeSection(ComponentPropertiesSection *section)
+{
+    if (prototypeSection == section)
+    {
+        prototypeSection = nullptr; // weak
+        for (int i = 0; i < GetCount(); i++)
+        {
+            ValueProperty *value = GetProperty(i);
+            if (value->GetPrototypeProperty())
+            {
+                DVASSERT(value->GetPrototypeProperty()->GetParent() == section);
+                value->DetachPrototypeProperty(value->GetPrototypeProperty());
+            }
+            else
+            {
+                DVASSERT(false);
+            }
+        }
+    }
+    else
+    {
+        DVASSERT(false);
+    }
+}
+
 bool ComponentPropertiesSection::HasChanges() const
 {
     return SectionProperty::HasChanges();
@@ -130,9 +175,6 @@ void ComponentPropertiesSection::RefreshIndex()
     if (component->GetControl() == control)
     {
         index = control->GetComponentIndex(component);
-        
-        Logger::Debug("Refresh %s, %d, %d", control->GetName().c_str(), component->GetType(), index);
-
         RefreshName();
     }
 }

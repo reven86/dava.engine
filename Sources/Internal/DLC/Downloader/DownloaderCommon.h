@@ -199,10 +199,13 @@ inline Downloader *DownloadPart::GetDownloader() const
     return downloader;
 }
 
-struct DataChunkInfo : public BaseObject
+class DataChunkInfo : public BaseObject
 {
-    DataChunkInfo(uint32 size);
+protected:
     ~DataChunkInfo();
+
+public:
+    DataChunkInfo(uint32 size);
 
     char8 *buffer;
     uint32 bufferSize;

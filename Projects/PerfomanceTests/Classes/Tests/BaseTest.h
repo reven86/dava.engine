@@ -30,6 +30,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define __BASE_TEST_H__
 
 #include "Infrastructure/Screen/BaseScreen.h"
+#include "Infrastructure/Utils/ControlHelpers.h"
 #include "MemoryManager/MemoryProfiler.h"
 #include "TeamCityTestsOutput.h"
 
@@ -49,18 +50,23 @@ public:
     {
         TestParams() 
             :   targetTime(0)
+            ,   startTime(0)
+            ,   endTime(0)
             ,   targetFramesCount(0)
             ,   targetFrameDelta(0.0f)
             ,   frameForDebug(0)
             ,   maxDelta(0.0f)  
             {} 
 
-        uint32 targetTime;
-
-        uint32 targetFramesCount;
+        int32 targetTime;
+        
+        int32 startTime;
+        int32 endTime;
+        
+        int32 targetFramesCount;
         float32 targetFrameDelta;
 
-        uint32 frameForDebug;
+        int32 frameForDebug;
 
         // stop test logic when frameDelta greater than maxDelta
         float32 maxDelta;
@@ -68,30 +74,29 @@ public:
     
     BaseTest(const String& testName, const TestParams& testParams);
     
-    void SetParams(const TestParams& testParams);
     void OnStart() override;
     void OnFinish() override;
-    
-    void SetDebuggable(bool value);
-    bool IsDebuggable() const;
-    bool IsFinished() const override;
     
     void BeginFrame() override;
     void EndFrame() override;
     void SystemUpdate(float32 timeElapsed) override;
     
-    const Vector<FrameInfo>& GetFramesInfo() const;
+    void ShowUI(bool visible);
+    bool IsUIVisible() const;
+    
     const String& GetName() const;
     
-    float32 GetTestTime() const;
-    float32 GetFixedDelta() const;
+    bool IsFinished() const override;
+    
+    void SetParams(const TestParams& testParams);
+    const TestParams& GetParams() const;
+    
+    float32 GetOverallTestTime() const;
     uint64 GetElapsedTime() const;
-    uint32 GetFrameNumber() const; 
-    uint32 GetDebugFrame() const;
-
-    float32 GetTargetTestTime() const;
+    uint32 GetFrameNumber() const;
     
     Scene* GetScene() const;
+    const Vector<FrameInfo>& GetFramesInfo() const;
     
     static const float32 FRAME_OFFSET;
     
@@ -102,7 +107,11 @@ protected:
     void LoadResources() override;
     void UnloadResources() override;
 
+    virtual void CreateUI();
+    virtual void UpdateUI();
+    
     size_t GetAllocatedMemory();
+    DAVA::UIControl* GetUIRoot() const;
     
     virtual void PerformTestLogic(float32 timeElapsed) = 0;
     
@@ -111,23 +120,32 @@ private:
     Vector<FrameInfo> frames;
     String testName;
     
+    TestParams testParams;
+    
     uint32 frameNumber;
-    float32 testTime;
     uint64 startTime;
     uint64 elapsedTime;
     
-    uint32 targetTestTime;
-    uint32 targetFramesCount;
-    float32 targetFrameDelta;
-    float32 maxDelta;
+    float32 overallTestTime;
     
-    uint32 frameForDebug;
+    float32 minDelta;
+    float32 maxDelta;
+    float32 currentFrameDelta;
     
     Scene* scene;
     UI3DView* sceneView;
     
+    DAVA::UIControl* uiRoot;
+    
+    UIStaticText* testNameText;
+    UIStaticText* maxFPSText;
+    UIStaticText* minFPSText;
+    UIStaticText* fpsText;
+    UIStaticText* testTimeText;
+    UIStaticText* elapsedTimeText;
+    UIStaticText* framesRenderedText;
+    
     size_t maxAllocatedMemory;
-    bool debuggable;
 };
 
 inline const Vector<BaseTest::FrameInfo>& BaseTest::GetFramesInfo() const
@@ -142,11 +160,11 @@ inline Scene* BaseTest::GetScene() const
 
 inline bool BaseTest::IsFinished() const
 {
-    if (targetFramesCount > 0 && frameNumber >= (targetFramesCount + FRAME_OFFSET))
+    if (testParams.targetFramesCount > 0 && frameNumber >= (testParams.targetFramesCount + FRAME_OFFSET))
     {
         return true;
     }
-    if (targetTestTime > 0 && (testTime * 1000) >= targetTestTime)
+    if (testParams.targetTime > 0 && (overallTestTime * 1000) >= testParams.targetTime)
     {
         return true;
     }
@@ -164,14 +182,9 @@ inline uint64 BaseTest::GetElapsedTime() const
     return elapsedTime;
 }
 
-inline float32 BaseTest::GetTestTime() const
+inline float32 BaseTest::GetOverallTestTime() const
 {
-    return testTime;
-}
-
-inline uint32 BaseTest::GetDebugFrame() const
-{
-    return frameForDebug;
+    return overallTestTime;
 }
 
 inline uint32 BaseTest::GetFrameNumber() const
@@ -179,33 +192,31 @@ inline uint32 BaseTest::GetFrameNumber() const
     return frameNumber;
 }
 
-inline bool BaseTest::IsDebuggable() const
+inline void BaseTest::SetParams(const TestParams& _testParams)
 {
-    return debuggable;
+    DVASSERT_MSG(frameNumber == 0, "Can't set params after test started");
+    
+    this->testParams = _testParams;
 }
 
-inline void BaseTest::SetDebuggable(bool value)
+inline const BaseTest::TestParams& BaseTest::GetParams() const
 {
-    debuggable = value;
+    return testParams;
 }
 
-inline float32 BaseTest::GetFixedDelta() const
+inline DAVA::UIControl* BaseTest::GetUIRoot() const
 {
-    return targetFrameDelta;
+    return uiRoot;
 }
 
-inline float32 BaseTest::GetTargetTestTime() const
+inline void BaseTest::ShowUI(bool visible)
 {
-    return targetTestTime / 1000.0f;
+    GetUIRoot()->SetVisible(visible);
 }
 
-inline void BaseTest::SetParams(const TestParams& testParams)
+inline bool BaseTest::IsUIVisible() const
 {
-    targetFrameDelta = testParams.targetFrameDelta;
-    targetFramesCount = testParams.targetFramesCount;
-    targetTestTime = testParams.targetTime;
-    frameForDebug = testParams.frameForDebug;
-    maxDelta = testParams.maxDelta;
+    return GetUIRoot()->GetVisible();
 }
 
 #endif

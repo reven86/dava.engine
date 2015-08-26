@@ -43,10 +43,7 @@ protected:
     virtual ~IntrospectionProperty();
     
 public:
-    void Refresh();
-    AbstractProperty *FindPropertyByPrototype(AbstractProperty *prototype) override;
     void Accept(PropertyVisitor *visitor) override;
-    
 
     ePropertyType GetType() const override;
     DAVA::uint32 GetFlags() const  override;
@@ -72,7 +69,6 @@ protected:
 
 protected:
     DAVA::BaseObject *object;
-    const IntrospectionProperty *prototypeProperty;
     const DAVA::InspMember *member;
 };
 

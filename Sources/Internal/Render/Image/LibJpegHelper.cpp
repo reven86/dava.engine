@@ -44,8 +44,6 @@
 #include "libjpeg/jerror.h"
 #include <setjmp.h>
 
-#define QUALITY 100 //0..100
-
 namespace DAVA
 {
 
@@ -79,8 +77,9 @@ void jpegErrorExit (j_common_ptr cinfo)
 LibJpegHelper::LibJpegHelper()
 {
     name.assign("JPG");
-    supportedExtensions.push_back(".jpeg");
-    supportedExtensions.push_back(".jpg");
+    supportedExtensions.emplace_back(".jpg");
+    supportedExtensions.emplace_back(".jpeg");
+    supportedFormats = { { FORMAT_RGB888, FORMAT_A8 } };
 }
     
 bool LibJpegHelper::IsMyImage(File *infile) const
@@ -184,13 +183,13 @@ eErrorCode LibJpegHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int3
     return eErrorCode::SUCCESS;
 }
 
-eErrorCode LibJpegHelper::WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat) const
+eErrorCode LibJpegHelper::WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat, ImageQuality quality) const
 {
     Logger::Error("[LibJpegHelper::WriteFileAsCubeMap] For jpeg cubeMaps are not supported");
     return eErrorCode::ERROR_WRITE_FAIL;
 }
     
-eErrorCode LibJpegHelper::WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const
+eErrorCode LibJpegHelper::WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat, ImageQuality quality) const
 {
     DVASSERT(imageSet.size());
     const Image* original = imageSet[0];
@@ -265,7 +264,7 @@ eErrorCode LibJpegHelper::WriteFile(const FilePath & fileName, const Vector<Imag
     cinfo.dct_method = JDCT_FLOAT;
     
     //The quality value ranges from 0..100. If "force_baseline" is TRUE, the computed quantization table entries are limited to 1..255 for JPEG baseline compatibility.
-    jpeg_set_quality(&cinfo, QUALITY, TRUE);
+    jpeg_set_quality(&cinfo, quality, TRUE);
 
     jpeg_start_compress( &cinfo, TRUE );
     while( cinfo.next_scanline < cinfo.image_height )
@@ -282,8 +281,6 @@ eErrorCode LibJpegHelper::WriteFile(const FilePath & fileName, const Vector<Imag
    
 DAVA::ImageInfo LibJpegHelper::GetImageInfo(File *infile) const
 {
-    ImageInfo info;
-
     jpeg_decompress_struct cinfo;
     jpegErrorManager jerr;
 
@@ -299,8 +296,7 @@ DAVA::ImageInfo LibJpegHelper::GetImageInfo(File *infile) const
         jpeg_destroy_decompress(&cinfo);
         SafeDeleteArray(fileBuffer);
         infile->Seek(0, File::SEEK_FROM_START);
-        Logger::Error("[LibJpegHelper::GetImageInfo] File %s has wrong jpeg header", infile->GetFilename().GetAbsolutePathname().c_str());
-        return info;
+        return ImageInfo();
     }
 
     jpeg_create_decompress(&cinfo);
@@ -308,6 +304,7 @@ DAVA::ImageInfo LibJpegHelper::GetImageInfo(File *infile) const
     jpeg_read_header(&cinfo, TRUE);
     infile->Seek(0, File::SEEK_FROM_START);
 
+    ImageInfo info;
     info.width = cinfo.image_width;
     info.height = cinfo.image_height;
     switch (cinfo.out_color_space)
@@ -329,5 +326,5 @@ DAVA::ImageInfo LibJpegHelper::GetImageInfo(File *infile) const
 
     return info;
 }
-    
+
 };

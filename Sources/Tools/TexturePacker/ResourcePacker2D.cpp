@@ -434,7 +434,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
         {
             FileSystem::Instance()->DeleteDirectoryFiles(outputPath, false);
         }
-    	for (int fi = 0; fi < fileList->GetCount() && running; ++fi)
+    	for (int fi = 0; fi < fileList->GetCount(); ++fi)
     	{
     		if (!fileList->IsDirectory(fi))
     		{
@@ -527,7 +527,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
     }
     definitionFileList.clear();
     
-    for (int fi = 0; fi < fileList->GetCount() && running; ++fi)
+    for (int fi = 0; fi < fileList->GetCount(); ++fi)
     {
     	if (fileList->IsDirectory(fi))
     	{

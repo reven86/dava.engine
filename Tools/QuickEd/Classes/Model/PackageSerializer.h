@@ -42,6 +42,9 @@ class ValueProperty;
 class PackageSerializer : private PackageVisitor, private PropertyVisitor
 {
 public:
+    static const DAVA::int32 CURRENT_VERSION = 1;
+    
+public:
     PackageSerializer();
     virtual ~PackageSerializer();
     

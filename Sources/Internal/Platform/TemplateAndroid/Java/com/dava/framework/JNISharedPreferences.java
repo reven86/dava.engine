@@ -53,6 +53,7 @@ public class JNISharedPreferences {
 	public void Clear()
 	{
 		editor.clear();
+		editor.apply();
 	}
 	
 	public void Push()

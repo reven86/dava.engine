@@ -39,9 +39,6 @@
 #include "Infrastructure/Controller/SingleTestFlowController.h"
 #include "Infrastructure/Settings/GraphicsDetect.h"
 
-#include "Tests/GlobalPerformanceTest.h"
-#include "Tests/AsiaPerformanceTest.h"
-
 #include <fstream>
 
 class GameCore : public ApplicationCore
@@ -72,6 +69,7 @@ public:
 private:
     void InitScreenController();
 	void RegisterTests();
+    
     String GetDeviceName();
 
 	Vector<BaseTest*> testChain;

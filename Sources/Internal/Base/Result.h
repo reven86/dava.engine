@@ -27,8 +27,8 @@
 =====================================================================================*/
 
 
-#ifndef QUICKED_RESULT_H_
-#define QUICKED_RESULT_H_
+#ifndef __DAVAENGINE_RESULT_H_
+#define __DAVAENGINE_RESULT_H_
 
 #include "Base/BaseTypes.h"
 #include "FileSystem/VariantType.h"
@@ -44,7 +44,7 @@ struct Result
         RESULT_FAILURE,
         RESULT_ERROR
     };
-    Result(const ResultType type = RESULT_SUCCESS, const String &message = String(), const VariantType &data = VariantType());
+    Result(const ResultType type = RESULT_SUCCESS, const String &message = String());
     Result(const Result &result) = default;
     Result(Result &&result);
     Result& operator = (const Result &result) = default;
@@ -52,7 +52,6 @@ struct Result
     operator bool() const;
     ResultType type = RESULT_SUCCESS;
     String message;
-    VariantType data;
 };
 
 inline Result::operator bool() const
@@ -77,7 +76,7 @@ public:
     ResultList& operator << (Result &&result);
     ResultList &AddResult(const Result &result);
     ResultList &AddResult(Result &&result);
-    ResultList &AddResult(const Result::ResultType type = Result::RESULT_SUCCESS, const String &message = String(), const VariantType &data = VariantType());
+    ResultList &AddResult(const Result::ResultType type = Result::RESULT_SUCCESS, const String &message = String());
     ResultList &AddResultList(const ResultList &resultList);
     ResultList &AddResultList(ResultList &&resultList);
     
@@ -104,4 +103,4 @@ inline const Deque<Result> &ResultList::GetResults() const
 }
 
 }
-#endif // QUICKED_RESULT_H_
+#endif // __DAVAENGINE_RESULT_H_

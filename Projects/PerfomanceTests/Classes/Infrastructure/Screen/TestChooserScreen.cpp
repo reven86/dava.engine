@@ -29,10 +29,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 TestChooserScreen::TestChooserScreen(const Vector<BaseTest*>& _testChain)
-    :   testForRun(nullptr)
-    ,   testChain(_testChain)
+    :   testChain(_testChain)
+    ,   testForRun(nullptr)
     ,   chooserFont(nullptr)
-    
 {
 }
 
@@ -75,8 +74,6 @@ void TestChooserScreen::OnButtonPressed(BaseObject *obj, void *data, void *calle
 void TestChooserScreen::CreateChooserUI()
 {
     chooserFont = FTFont::Create("./Data/Fonts/korinna.ttf");
-    
-    uint32 offsetY = 150;
     uint32 testNumber = 0;
     
     for (BaseTest* test : testChain)

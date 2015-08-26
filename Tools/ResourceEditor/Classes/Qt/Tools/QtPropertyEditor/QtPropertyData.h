@@ -224,6 +224,8 @@ protected:
     QVariant tooltipValue;
 
 	void SetModel(QtPropertyModel *model);
+    void SetColorButtonIcon(const QIcon &icon);
+
     void BuildCurrentValue();
     void SetTempValue(const QVariant &value);
 

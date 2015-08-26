@@ -41,8 +41,9 @@ class UIComponent : public BaseObject
 public:
     enum eType
     {
-        FAKE_COMPONENT,
-        FAKE_MULTI_COMPONENT,
+        LINEAR_LAYOUT_COMPONENT,
+        SIZE_POLICY_COMPONENT,
+        ANCHOR_COMPONENT,
         
         COMPONENT_COUNT
     };
@@ -59,7 +60,7 @@ public:
     void SetControl(UIControl* _control);
     UIControl* GetControl() const;
 
-    virtual UIComponent* Clone() = 0;
+    virtual UIComponent* Clone() const = 0;
 
 private:
     UIControl* control;

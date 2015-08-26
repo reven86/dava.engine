@@ -38,6 +38,7 @@
 #include "Debug/Replay.h"
 #include "Debug/Stats.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "UI/Layouts/UILayoutSystem.h"
 
 namespace DAVA 
 {
@@ -49,9 +50,11 @@ UIControlSystem::~UIControlSystem()
 	SafeRelease(currentScreen); 
 	SafeRelease(popupContainer);
     SafeDelete(styleSheetSystem);
+    SafeDelete(layoutSystem);
 }
 	
 UIControlSystem::UIControlSystem()
+    : layoutSystem(nullptr)
 {
 	screenLockCount = 0;
 	frameSkip = 0;
@@ -81,6 +84,7 @@ UIControlSystem::UIControlSystem()
 
     ui3DViewCount = 0;
 
+    layoutSystem = new UILayoutSystem();
     styleSheetSystem = new UIStyleSheetSystem();
 }
 	
@@ -121,6 +125,8 @@ void UIControlSystem::ReplaceScreen(UIScreen *newMainControl)
 	prevScreen = currentScreen;
 	currentScreen = newMainControl;
     NotifyListenersDidSwitch(currentScreen);
+    
+    layoutSystem->SetDirty();
 }
 
 	
@@ -684,6 +690,7 @@ UIControl *UIControlSystem::GetExclusiveInputLocker()
 void UIControlSystem::ScreenSizeChanged()
 {
     popupContainer->SystemScreenSizeDidChanged(VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect());
+    layoutSystem->SetDirty();
 }
 
 void UIControlSystem::SetHoveredControl(UIControl *newHovered)
@@ -831,7 +838,22 @@ void UIControlSystem::UI3DViewRemoved()
     ui3DViewCount--;
 }
 
-UIStyleSheetSystem* UIControlSystem::GetStyleSheetSystem()
+bool UIControlSystem::IsRtl() const
+{
+    return layoutSystem->IsRtl();
+}
+
+void UIControlSystem::SetRtl(bool rtl)
+{
+    layoutSystem->SetRtl(rtl);
+}
+
+UILayoutSystem *UIControlSystem::GetLayoutSystem() const
+{
+    return layoutSystem;
+}
+
+UIStyleSheetSystem* UIControlSystem::GetStyleSheetSystem() const
 {
     return styleSheetSystem;
 }

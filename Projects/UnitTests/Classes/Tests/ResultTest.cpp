@@ -44,9 +44,9 @@ DAVA_TESTCLASS(ResultTest)
         TEST_VERIFY(!GetResultFunction(Result::RESULT_ERROR).IsSuccess());
 
         Deque<Result> results;
-        results.emplace_back(Result::RESULT_SUCCESS, "this is ", VariantType(1));
-        results.emplace_back(Result::RESULT_FAILURE, "result ", VariantType(2));
-        results.emplace_back(Result::RESULT_ERROR, "test.", VariantType(3));
+        results.emplace_back(Result::RESULT_SUCCESS, "this is ");
+        results.emplace_back(Result::RESULT_FAILURE, "result ");
+        results.emplace_back(Result::RESULT_ERROR, "test.");
         ResultList resultList;
         for (const auto &result : results)
         {

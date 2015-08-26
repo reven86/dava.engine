@@ -37,6 +37,8 @@
 #include "UI/UIStaticText.h"
 #include "UI/UIControlHelpers.h"
 #include "UI/UIPackage.h"
+#include "UI/Components/UIComponent.h"
+#include "UI/Layouts/UIAnchorComponent.h"
 #include "StringUtils.h"
 
 using namespace DAVA;
@@ -45,6 +47,7 @@ namespace
 {
 const FastName PROPERTY_NAME_MULTILINE("multiline");
 const FastName PROPERTY_NAME_SIZE("size");
+const FastName PROPERTY_NAME_TEXT_USE_RTL_ALIGN("textUseRtlAlign");
 }
 
 LegacyEditorUIPackageLoader::LegacyEditorUIPackageLoader(LegacyControlData *data)
@@ -81,6 +84,20 @@ LegacyEditorUIPackageLoader::LegacyEditorUIPackageLoader(LegacyControlData *data
 
     baseClasses["UIButton"] = "UIControl";
     baseClasses["UIListCell"] = "UIButton";
+    
+    legacyAlignsMap["leftAnchorEnabled"] = "leftAlignEnabled";
+    legacyAlignsMap["leftAnchor"] = "leftAlign";
+    legacyAlignsMap["hCenterAnchorEnabled"] = "hcenterAlignEnabled";
+    legacyAlignsMap["hCenterAnchor"] = "hcenterAlign";
+    legacyAlignsMap["rightAnchorEnabled"] = "rightAlignEnabled";
+    legacyAlignsMap["rightAnchor"] = "rightAlign";
+    legacyAlignsMap["topAnchorEnabled"] = "topAlignEnabled";
+    legacyAlignsMap["topAnchor"] = "topAlign";
+    legacyAlignsMap["vCenterAnchorEnabled"] = "vcenterAlignEnabled";
+    legacyAlignsMap["vCenterAnchor"] = "vcenterAlign";
+    legacyAlignsMap["bottomAnchorEnabled"] = "bottomAlignEnabled";
+    legacyAlignsMap["bottomAnchor"] = "bottomAlign";
+
 }
 
 LegacyEditorUIPackageLoader::~LegacyEditorUIPackageLoader()
@@ -183,7 +200,8 @@ void LegacyEditorUIPackageLoader::LoadControl(const DAVA::String &name, const Ya
         LoadControlPropertiesFromYamlNode(control, control->GetTypeInfo(), node, builder);
         LoadBgPropertiesFromYamlNode(control, node, builder);
         LoadInternalControlPropertiesFromYamlNode(control, node, builder);
-        
+        ProcessLegacyAligns(control, node, builder);
+
         // load children
         if (loadChildren)
         {
@@ -202,7 +220,6 @@ void LegacyEditorUIPackageLoader::LoadControl(const DAVA::String &name, const Ya
         }
         
         control->LoadFromYamlNodeCompleted();
-        control->ApplyAlignSettingsForChildren();
     }
     builder->EndControl(false);
 }
@@ -227,17 +244,6 @@ void LegacyEditorUIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl *c
             res = ReadVariantTypeFromYamlNode(member, node, -1, oldPropertyName);
         
         builder->ProcessProperty(member, res);
-        if (res.GetType() != VariantType::TYPE_NONE)
-        {
-            String memberName(member->Name().c_str());
-            if (memberName.find("Align") != String::npos)
-            {
-                String enabledProp = memberName + "Enabled";
-                const InspMember *m = typeInfo->Member(FastName(enabledProp.c_str()));
-                if (m)
-                    builder->ProcessProperty(m, VariantType(true));
-            }
-        }
     }
     builder->EndControlPropertiesSection();
 }
@@ -319,6 +325,45 @@ void LegacyEditorUIPackageLoader::LoadInternalControlPropertiesFromYamlNode(UICo
     }
 }
 
+void LegacyEditorUIPackageLoader::ProcessLegacyAligns(UIControl *control, const YamlNode *node, AbstractUIPackageBuilder *builder)
+{
+    bool hasAnchorProperties = false;
+    for (const auto &it : legacyAlignsMap)
+    {
+        if (node->Get(it.second))
+        {
+            hasAnchorProperties = true;
+            break;
+        }
+    }
+    
+    if (hasAnchorProperties)
+    {
+        UIComponent *component = builder->BeginComponentPropertiesSection(UIComponent::ANCHOR_COMPONENT, 0);
+        if (component)
+        {
+            const InspInfo *insp = component->GetTypeInfo();
+            for (int32 j = 0; j < insp->MembersCount(); j++)
+            {
+                const InspMember *member = insp->Member(j);
+                String name = legacyAlignsMap[String(member->Name().c_str())];
+                VariantType res = ReadVariantTypeFromYamlNode(member, node, -1, name);
+                if (name.find("Enabled") != String::npos)
+                {
+                    String anchorName = name.substr(0, name.length() - String("Enabled").length());
+                    if (node->Get(anchorName) != nullptr)
+                    {
+                        res = VariantType(true);
+                    }
+                }
+                builder->ProcessProperty(member, res);
+            }
+        }
+        
+        builder->EndComponentPropertiesSection();
+    }
+}
+
 VariantType LegacyEditorUIPackageLoader::ReadVariantTypeFromYamlNode(const InspMember *member, const YamlNode *node, int32 subNodeIndex, const String &propertyName)
 {
     const YamlNode *valueNode = node->Get(propertyName);
@@ -366,6 +411,10 @@ VariantType LegacyEditorUIPackageLoader::ReadVariantTypeFromYamlNode(const InspM
                     {
                         return VariantType(UIStaticText::MULTILINE_DISABLED);
                     }
+                }
+                else if (member->Name() == PROPERTY_NAME_TEXT_USE_RTL_ALIGN)
+                {
+                    return VariantType(static_cast<int32>(valueNode->AsBool() ? TextBlock::RTL_USE_BY_CONTENT : TextBlock::RTL_DONT_USE));
                 }
                 else if (textFieldEnums.find(propertyName) != textFieldEnums.end())
                 {

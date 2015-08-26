@@ -251,6 +251,18 @@ void PreviewModel::OnControlSelected(const DAVA::List<std::pair<DAVA::UIControl 
     if (!resultList)
     {
         emit ErrorOccurred(resultList);
+        for (const auto &result : resultList.GetResults())
+        {
+            if (!result.message.empty())
+            {
+                switch (result.type)
+                {
+                case Result::RESULT_SUCCESS: Logger::FrameworkDebug("%s", result.message.c_str()); break;
+                case Result::RESULT_FAILURE: Logger::Warning("%s", result.message.c_str());  break;
+                case Result::RESULT_ERROR: Logger::Error("%s", result.message.c_str()); break;
+                }
+            }
+        }
     }
 }
 

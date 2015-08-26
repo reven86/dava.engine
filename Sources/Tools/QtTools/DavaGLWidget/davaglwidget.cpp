@@ -43,7 +43,6 @@
 #include <QOpenGLContext>
 #include <QBoxLayout>
 
-
 namespace
 {
     const QSize cMinSize = QSize( 180, 180 );

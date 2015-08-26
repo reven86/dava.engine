@@ -29,15 +29,18 @@
 
 #include "DefaultUIPackageBuilder.h"
 
-#include "UIPackage.h"
-#include "UIPackageLoader.h"
+#include "UI/UIPackage.h"
+#include "UI/UIPackageLoader.h"
+#include "UI/UIControlSystem.h"
+#include "UI/Layouts/UILayoutSystem.h"
+
 #include "Base/ObjectFactory.h"
 #include "UI/UIControl.h"
 #include "UI/UIControlPackageContext.h"
 #include "UI/UIControlHelpers.h"
 #include "UI/Components/UIComponent.h"
 #include "FileSystem/LocalizationSystem.h"
-#include "UIPackagesCache.h"
+#include "UI/UIPackagesCache.h"
 #include "UI/Styles/UIStyleSheet.h"
 #include "UI/Styles/UIStyleSheetYamlLoader.h"
 
@@ -269,7 +272,9 @@ void DefaultUIPackageBuilder::EndControl(bool isRoot)
     {
         if (controlsStack.empty() || isRoot)
         {
-            package->AddControl(lastDescr->control.Get());
+            UIControl *control = lastDescr->control.Get();
+            UIControlSystem::Instance()->GetLayoutSystem()->ApplyLayout(control);
+            package->AddControl(control);
         }
         else
         {
@@ -293,10 +298,14 @@ void DefaultUIPackageBuilder::EndControlPropertiesSection()
     
 UIComponent *DefaultUIPackageBuilder::BeginComponentPropertiesSection(uint32 componentType, uint32 componentIndex)
 {
-    UIComponent *component = UIComponent::CreateByType(componentType);
     UIControl *control = controlsStack.back()->control.Get();
-    control->AddComponent(component);
-    component->Release();
+    UIComponent *component = control->GetComponent(componentType, componentIndex);
+    if (component == nullptr)
+    {
+        component = UIComponent::CreateByType(componentType);
+        control->AddComponent(component);
+        component->Release();
+    }
     currentObject = component;
     return component;
 }

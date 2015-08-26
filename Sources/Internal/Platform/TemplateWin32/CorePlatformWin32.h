@@ -33,8 +33,8 @@
 #include "Base/Platform.h"
 #if defined(__DAVAENGINE_WIN32__)
 
-#include "DAVAEngine.h"
 #include "CoreWin32PlatformBase.h"
+#include "UI/UIEvent.h"
 
 namespace DAVA {
 

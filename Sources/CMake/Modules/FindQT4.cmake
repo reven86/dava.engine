@@ -30,7 +30,7 @@ if ( QT4_FOUND )
     return ()
 endif ()
 
-if ( MSVC )
+if ( WIN32 )
     set( CMAKE_PREFIX_PATH    "${QT4_PATH_WIN}")
     set( QT_MOC_EXECUTABLE    "${QT4_PATH_WIN}/bin/moc.exe" )
     set( QT_RCC_EXECUTABLE    "${QT4_PATH_WIN}/bin/rcc.exe" )

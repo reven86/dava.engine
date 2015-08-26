@@ -155,14 +155,18 @@ public:
     static List<StorageInfo> GetStoragesList();
     static int32 GetCpuCount();
 
-
+#if defined (__DAVAENGINE_WIN_UAP__)
+    // it's a temporary decision
+    static void InitializeScreenInfo(int32 width, int32 height);
+#else 
     static void InitializeScreenInfo();
+#endif
 
 private:
     static ScreenInfo screenInfo;
 
 #if defined (__DAVAENGINE_WIN_UAP__)
-	static void UpdateScreenInfo();
+    static bool IsRunningOnEmulator();
 #endif //  (__DAVAENGINE_WIN_UAP__)
 };
 

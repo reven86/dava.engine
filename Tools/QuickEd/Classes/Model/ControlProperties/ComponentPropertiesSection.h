@@ -49,6 +49,9 @@ public:
     DAVA::UIComponent *GetComponent() const;
     DAVA::uint32 GetComponentType() const;
     
+    void AttachPrototypeSection(ComponentPropertiesSection *section);
+    void DetachPrototypeSection(ComponentPropertiesSection *section);
+    
     bool HasChanges() const override;
     DAVA::uint32 GetFlags() const override;
     

@@ -46,6 +46,7 @@ public:
 	BASE_OBJECT * operator->() const;
 	operator BASE_OBJECT*() const;
     BASE_OBJECT* get() const;
+    void reset(BASE_OBJECT* p = nullptr);
     explicit operator bool() const;
 	
 	//protection from 'delete ScopedObject'
@@ -128,6 +129,16 @@ template<typename BASE_OBJECT>
 BASE_OBJECT* ScopedPtr<BASE_OBJECT>::get() const
 {
     return object;
+}
+
+template<typename BASE_OBJECT>
+void ScopedPtr<BASE_OBJECT>::reset(BASE_OBJECT* p)
+{
+    if (p != object)
+    {
+        SafeRelease(object);
+        object = p;
+    }
 }
 
 template<typename BASE_OBJECT>

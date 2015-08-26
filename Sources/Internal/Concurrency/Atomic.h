@@ -61,6 +61,7 @@ public:
 
     void Set(T val) DAVA_NOEXCEPT;
     T Get() const DAVA_NOEXCEPT;
+    T GetRelaxed() const DAVA_NOEXCEPT;
 
     T Increment() DAVA_NOEXCEPT;
     T Decrement() DAVA_NOEXCEPT;
@@ -126,6 +127,12 @@ template <typename T>
 T Atomic<T>::Get() const DAVA_NOEXCEPT
 {
     return value;
+}
+
+template <typename T>
+T Atomic<T>::GetRelaxed() const DAVA_NOEXCEPT
+{
+    return value.load(std::memory_order_relaxed);
 }
 
 template <typename T>

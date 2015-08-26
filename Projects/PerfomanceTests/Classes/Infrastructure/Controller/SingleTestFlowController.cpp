@@ -28,20 +28,22 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "SingleTestFlowController.h"
 
-SingleTestFlowController::SingleTestFlowController()
-    :   testForRun(nullptr)
+SingleTestFlowController::SingleTestFlowController(bool _showUI)
+    :   showUI(_showUI)
+    ,   testForRun(nullptr)
     ,   testChooserScreen(nullptr)
     ,   currentScreen(nullptr)
 
 {
 }
 
-SingleTestFlowController::SingleTestFlowController(const String& _testName, const BaseTest::TestParams& _testParams)
-    :   testForRun(nullptr)
-    ,   testChooserScreen(nullptr)
-    ,   currentScreen(nullptr)
+SingleTestFlowController::SingleTestFlowController(const String& _testName, const BaseTest::TestParams& _testParams, bool _showUI)
+    :   showUI(_showUI)
     ,   testForRunName(_testName)
     ,   testParams(_testParams)
+    ,   testForRun(nullptr)
+    ,   testChooserScreen(nullptr)
+    ,   currentScreen(nullptr)
 
 {
 }
@@ -62,12 +64,8 @@ void SingleTestFlowController::Init(const Vector<BaseTest*>& _testChain)
             if (test->GetName() == testForRunName)
             {
                 testForRun = test;
+                testForRun->ShowUI(showUI);
                 testForRun->SetParams(testParams);
-                
-                if (testParams.frameForDebug > 0 || testParams.maxDelta > 0.001f)
-                {
-                    testForRun->SetDebuggable(true);
-                }
             }
         }
 
@@ -100,6 +98,7 @@ void SingleTestFlowController::EndFrame()
         if (testChooserScreen->IsFinished())
         {
             testForRun = testChooserScreen->GetTestForRun();
+            testForRun->ShowUI(showUI);
             currentScreen = testForRun;
         }
     }
