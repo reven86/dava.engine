@@ -1060,6 +1060,7 @@ void EmitterLayerWidget::Update(bool updateMinimized)
 
     blockSignals = false;
 	
+	adjustSize();
 }
 
 void EmitterLayerWidget::UpdateTooltip()
