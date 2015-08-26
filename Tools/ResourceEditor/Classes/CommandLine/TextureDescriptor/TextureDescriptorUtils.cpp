@@ -141,15 +141,20 @@ void TextureDescriptorUtils::CreateDescriptorsForFolder(const FilePath &folderPa
 }
 
 
-bool TextureDescriptorUtils::CreateDescriptorIfNeed(const FilePath &pngPathname)
+bool TextureDescriptorUtils::CreateDescriptorIfNeed(const FilePath &originalPathname)
 {
-    FilePath descriptorPathname = TextureDescriptor::GetDescriptorPathname(pngPathname);
+	FilePath descriptorPathname = TextureDescriptor::GetDescriptorPathname(originalPathname);
     if(false == FileSystem::Instance()->IsFile(descriptorPathname))
     {
         auto descriptor = new TextureDescriptor();
         
-        descriptor->dataSettings.sourceFileExtension = pngPathname.GetExtension();;
-        descriptor->dataSettings.sourceFileFormat = ImageSystem::Instance()->GetImageFormatForExtension(descriptor->dataSettings.sourceFileExtension);
+		const String extension = originalPathname.GetExtension();
+		const ImageFormat sourceFormat = ImageSystem::Instance()->GetImageFormatForExtension(extension);
+		if (sourceFormat != IMAGE_FORMAT_UNKNOWN)
+		{
+			descriptor->dataSettings.sourceFileFormat = sourceFormat;
+			descriptor->dataSettings.sourceFileExtension = extension;
+		}
         
         descriptor->Save(descriptorPathname);
 		delete descriptor;
