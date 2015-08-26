@@ -152,11 +152,6 @@ void RunConsole( int argc, char *argv[], CommandLineManager& cmdLine )
     RenderManager::Instance()->Init( 0, 0 );
 
     cmdLine.InitalizeTool();
-
-	Logger::Warning("Emitting OpenGL error...");
-	RENDER_VERIFY(glGetIntegerv(GL_TRIANGLES, nullptr));
-	Logger::Warning("OpenGL error emitted.");
-
     if ( !cmdLine.IsToolInitialized() )
     {
 		cmdLine.PrintResults();
