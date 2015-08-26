@@ -891,16 +891,23 @@ NativeColorRGBA( float red, float green, float blue, float alpha )
     switch( HostApi() )
     {
         case RHI_DX9 :
-        case RHI_DX11 :
-            color = ((uint32)((((a)&0xFF)<<24)|(((r)&0xFF)<<16)|(((g)&0xFF)<<8)|((b)&0xFF)));
+            color = ((uint32)((((a)& 0xFF) << 24) | (((r)& 0xFF) << 16) | (((g)& 0xFF) << 8) | ((b)& 0xFF)));
+            break;
+
+        case RHI_DX11:
+#if defined(__DAVAENGINE_WIN_UAP__)
+            color = ((uint32)((((a)& 0xFF) << 24) | (((b)& 0xFF) << 16) | (((g)& 0xFF) << 8) | ((r)& 0xFF)));
+#else
+            color = ((uint32)((((a)& 0xFF) << 24) | (((r)& 0xFF) << 16) | (((g)& 0xFF) << 8) | ((b)& 0xFF)));
+#endif
             break;
 
         case RHI_GLES2 :
-            color = ((uint32)((((a)&0xFF)<<24)|(((b)&0xFF)<<16)|(((g)&0xFF)<<8)|((r)&0xFF)));
+            color = ((uint32)((((a)& 0xFF) << 24) | (((b)& 0xFF) << 16) | (((g)& 0xFF) << 8) | ((r)& 0xFF)));
             break;
         
         case RHI_METAL :
-            color = ((uint32)((((a)&0xFF)<<24)|(((r)&0xFF)<<16)|(((g)&0xFF)<<8)|((b)&0xFF)));
+            color = ((uint32)((((a)& 0xFF) << 24) | (((r)& 0xFF) << 16) | (((g)& 0xFF) << 8) | ((b)& 0xFF)));
             break;
     }
 
