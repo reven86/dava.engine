@@ -393,7 +393,7 @@ dx11_CommandBuffer_Begin( Handle cmdBuf )
     if( ds_view )
     {
         if( clear_depth )
-            context->ClearDepthStencilView( ds_view, D3D11_CLEAR_DEPTH, cb->passCfg.depthStencilBuffer.clearDepth, 0 );
+            context->ClearDepthStencilView( ds_view, D3D11_CLEAR_DEPTH|D3D11_CLEAR_STENCIL, cb->passCfg.depthStencilBuffer.clearDepth, cb->passCfg.depthStencilBuffer.clearStencil );
                         
         ds_view->Release();
     }
