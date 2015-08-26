@@ -2721,9 +2721,6 @@
     <ClCompile Include="..\..\Sources\Internal\UI\UISpinner.cpp">
       <Filter>Internal\UI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Utils\UTF8UtilsWin32.cpp">
-      <Filter>Internal\Utils</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\UISwitch.cpp">
       <Filter>Internal\UI</Filter>
     </ClCompile>
@@ -3411,6 +3408,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIPriorityStyleSheet.cpp">
       <Filter>Internal\UI\Styles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Utils\UTF8Utils.cpp">
+      <Filter>Internal\Utils</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
