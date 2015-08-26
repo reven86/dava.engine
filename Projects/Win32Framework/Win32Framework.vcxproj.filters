@@ -1924,7 +1924,7 @@
     <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIPriorityStyleSheet.h">
       <Filter>Internal\UI\Styles</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNet\MMAnotherService.h">
+    <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNet\MMBigDataTransferService.h">
       <Filter>Internal\Network\Services\MMNet</Filter>
     </ClInclude>
   </ItemGroup>
@@ -3412,7 +3412,7 @@
     <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIPriorityStyleSheet.cpp">
       <Filter>Internal\UI\Styles</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Network\Services\MMNet\MMAnotherService.cpp">
+    <ClCompile Include="..\..\Sources\Internal\Network\Services\MMNet\MMBigDataTransferService.cpp">
       <Filter>Internal\Network\Services\MMNet</Filter>
     </ClCompile>
   </ItemGroup>
