@@ -163,9 +163,7 @@ void Core::CreateSingletons()
     
     new LocalNotificationController();
 
-#if !defined (__DAVAENGINE_WIN_UAP__)
     DeviceInfo::InitializeScreenInfo();
-#endif
     
     RegisterDAVAClasses();
 
