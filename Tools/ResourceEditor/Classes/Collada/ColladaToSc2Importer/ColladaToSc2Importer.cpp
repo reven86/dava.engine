@@ -30,8 +30,10 @@
 #include "stdafx.h"
 #include "Scene3D/Entity.h"
 #include "Scene3D/Scene.h"
+#include "Scene3D/AnimationData.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Scene3D/Components/LodComponent.h"
+#include "Scene3D/Components/AnimationComponent.h"
 #include "Scene3D/Components/RenderComponent.h"
 #include "Scene3D/Components/TransformComponent.h"
 #include "Render/Material/NMaterial.h"
@@ -332,6 +334,12 @@ void CollapseLodsIntoOneEntity(Entity *forRootNode)
             if (nullptr != ln)
             {
                 CollapseRenderBatchesRecursive(ln, i, newMesh);
+                AnimationComponent * ac = GetAnimationComponent(ln);
+                if (ac)
+                {
+                    ln->DetachComponent(ac);
+                    newNodeWithLods->AddComponent(ac);
+                }
                 oldParent->RemoveNode(ln);
             }
         }
@@ -440,7 +448,26 @@ void ColladaToSc2Importer::BuildSceneAsCollada(Entity * root, ColladaSceneNode *
     
     if (nullptr != colladaNode->animation)
     {
+        AnimationComponent *ac = new AnimationComponent();
+        ac->SetEntity(nodeEntity);
         
+        AnimationData * animation = new AnimationData();
+        ac->SetAnimation(animation);
+        
+        SceneNodeAnimation *colladaAnim = colladaNode->animation;
+        
+        animation->SetDuration(colladaAnim->duration);
+        
+        if (nullptr != colladaAnim->keys)
+        {
+            for (uint32 keyNo = 0; keyNo < colladaAnim->keyCount; ++keyNo)
+            {
+                SceneNodeAnimationKey key = colladaAnim->keys[keyNo];
+                animation->AddKey(key);
+            }
+        }
+        
+        nodeEntity->AddComponent(ac);
     }
     
     TransformComponent * tc = GetTransformComponent(nodeEntity);
