@@ -58,5 +58,5 @@ void GridVisualizer::DrawGridIfNeeded(const Rect& rect, UniqueHandle renderState
         return;
     }
 
-    RenderSystem2D::Instance()->DrawGrid(rect, gridSize, gridColor, RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL);
+    RenderSystem2D::Instance()->DrawGrid(rect, gridSize, gridColor);
 }
