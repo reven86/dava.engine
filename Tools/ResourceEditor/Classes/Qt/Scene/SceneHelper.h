@@ -52,7 +52,10 @@ public:
 
     static DAVA::Entity * CloneEntityWithMaterials(DAVA::Entity *fromNode);
 
+    static void BuildMaterialList(DAVA::Entity *forNode, DAVA::Set<DAVA::NMaterial*>& materialList, bool includeGlobalMaterial = true, bool includeRuntime = true);
+
 protected:
+    
 	static void CollectTextures(const DAVA::NMaterial *material, DAVA::TexturesMap &textures, TexturesEnumerateMode mode);
 };
 

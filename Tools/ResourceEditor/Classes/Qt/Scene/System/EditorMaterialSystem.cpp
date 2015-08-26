@@ -31,7 +31,6 @@
 #include "Settings/SettingsManager.h"
 #include "Project/ProjectManager.h"
 #include "Scene3D/Scene.h"
-#include "Scene3D/Systems/MaterialSystem.h"
 #include "Commands2/Command2.h"
 #include "Commands2/CommandBatch.h"
 #include "Commands2/DeleteRenderBatchCommand.h"

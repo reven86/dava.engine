@@ -42,7 +42,6 @@
 #include "Render/TextureDescriptor.h"
 #include "Debug/Stats.h"
 #include "Render/Material/NMaterial.h"
-#include "Scene3D/Systems/MaterialSystem.h"
 #include "Scene3D/Systems/FoliageSystem.h"
 #include "Render/Material/NMaterialNames.h"
 #include "Render/Renderer.h"

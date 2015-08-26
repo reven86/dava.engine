@@ -30,28 +30,46 @@
 #include "SceneHelper.h"
 #include "Deprecated/SceneValidator.h"
 
-#include "Scene3D/Systems/MaterialSystem.h"
-
 void SceneHelper::EnumerateSceneTextures(DAVA::Scene *forScene, DAVA::TexturesMap &textureCollection, TexturesEnumerateMode mode)
 {
     EnumerateEntityTextures(forScene, forScene, textureCollection, mode);
 }
 
+
+void SceneHelper::BuildMaterialList(DAVA::Entity *forNode, Set<NMaterial*>& materialList, bool includeGlobalMaterial, bool includeRuntime)
+{
+    if(nullptr == forNode) return;
+    
+    List<NMaterial*> materials;
+    forNode->GetDataNodes(materials);
+    
+    for(auto & mat: materials)
+    {
+        if(!includeRuntime && mat->IsRuntime())
+        {
+            continue;
+        }
+        
+
+//        if(!includeGlobalMaterial && mat->IsGlobal())
+//        {
+//            continue;
+//        }
+        
+        materialList.insert(mat);
+    }
+}
+
+
 void SceneHelper::EnumerateEntityTextures(DAVA::Scene *forScene, DAVA::Entity *forNode, DAVA::TexturesMap &textureCollection, TexturesEnumerateMode mode)
 {
     if(!forNode || !forScene) return;
     
-    DAVA::MaterialSystem *matSystem = forScene->GetMaterialSystem();
-    
     DAVA::Set<DAVA::NMaterial *> materials;
-#if RHI_COMPLETE_EDITOR
-    matSystem->BuildMaterialList(forNode, materials);
-#endif // RHI_COMPLETE_EDITOR    
-    Set<NMaterial *>::const_iterator endIt = materials.end();
-    for(Set<NMaterial *>::const_iterator it = materials.begin(); it != endIt; ++it)
+    BuildMaterialList(forNode, materials);
+
+    for(auto & mat : materials)
     {
-        DAVA::NMaterial *mat = *it;
-        
         String materialName = mat->GetMaterialName().c_str();
         String parentName = mat->GetParent() ? mat->GetParent()->GetMaterialName().c_str() : String() ;
         
@@ -60,7 +78,7 @@ void SceneHelper::EnumerateEntityTextures(DAVA::Scene *forScene, DAVA::Entity *f
             continue;
         }
         
-        CollectTextures(*it, textureCollection, mode);
+        CollectTextures(mat, textureCollection, mode);
     }
 
 }
@@ -71,20 +89,17 @@ int32 SceneHelper::EnumerateModifiedTextures(DAVA::Scene *forScene, DAVA::Map<DA
 	textures.clear();
 	TexturesMap allTextures;
 	EnumerateSceneTextures(forScene, allTextures, EXCLUDE_NULL);
-	for(TexturesMap::iterator it = allTextures.begin(); it != allTextures.end(); ++it)
-	{
-		DAVA::Texture * texture = it->second;
-		if(NULL == texture)
+    
+    for(auto & it: allTextures)
+    {
+		DAVA::Texture * texture = it.second;
+		if(nullptr == texture)
 		{
 			continue;
 		}
 		
 		DAVA::TextureDescriptor *descriptor = texture->GetDescriptor();
-		if(NULL == descriptor)
-		{
-			continue;
-		}
-
+        DVASSERT(descriptor);
 		DVASSERT(descriptor->compression);
 
 		DAVA::Vector< DAVA::eGPUFamily> markedGPUs;
@@ -113,6 +128,7 @@ void SceneHelper::CollectTextures(const DAVA::NMaterial *material, DAVA::Texture
 {
 #if RHI_COMPLETE_EDITOR
     DAVA::uint32 texCount = material->GetTextureCount();
+    
     for(DAVA::uint32 t = 0; t < texCount; ++t)
     {
         DAVA::FilePath texturePath = material->GetTexturePath(material->GetTextureName(t));

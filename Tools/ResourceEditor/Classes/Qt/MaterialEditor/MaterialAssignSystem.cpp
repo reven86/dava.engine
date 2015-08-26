@@ -36,7 +36,6 @@
 #include "Tools/MimeData/MimeDataHelper2.h"
 
 #include "Base/BaseTypes.h"
-#include "Scene3D/Systems/MaterialSystem.h"
 
 //Qt
 #include <QMessageBox>

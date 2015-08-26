@@ -127,7 +127,7 @@ public:
         SCENE_SYSTEM_ACTION_UPDATE_FLAG     = 1 << 9,
         
         SCENE_SYSTEM_STATIC_OCCLUSION_FLAG  = 1 << 11,
-        SCENE_SYSTEM_MATERIAL_FLAG          = 1 << 12,
+//        SCENE_SYSTEM_MATERIAL_FLAG          = 1 << 12,
         SCENE_SYSTEM_FOLIAGE_FLAG           = 1 << 13,
         SCENE_SYSTEM_SPEEDTREE_UPDATE_FLAG  = 1 << 14,
         SCENE_SYSTEM_WIND_UPDATE_FLAG       = 1 << 15,
@@ -188,7 +188,6 @@ public:
 	SoundUpdateSystem * soundSystem;
 	ActionUpdateSystem* actionSystem;	
 	StaticOcclusionSystem * staticOcclusionSystem;
-    MaterialSystem *materialSystem;
     SpeedTreeUpdateSystem* speedTreeUpdateSystem;
     FoliageSystem* foliageSystem;
     VersionInfo::SceneVersion version;
@@ -241,7 +240,6 @@ public:
 
 	EventSystem * GetEventSystem() const;
 	RenderSystem * GetRenderSystem() const;
-    MaterialSystem * GetMaterialSystem() const;
     AnimationSystem * GetAnimationSystem() const;
 
     SceneFileV2::eError LoadScene(const DAVA::FilePath & pathname);

@@ -28,23 +28,21 @@
 
 
 #include "SceneValidator.h"
-#include "Qt/Settings/SettingsManager.h"
-#include "Project/ProjectManager.h"
 #include "Render/Image/LibPVRHelper.h"
 #include "Render/TextureDescriptor.h"
-
-#include "Qt/Main/QtUtils.h"
-#include "StringConstants.h"
+#include "Render/Material/NMaterialNames.h"
 
 #include "Scene3D/Components/ComponentHelpers.h"
 
+#include "Main/QtUtils.h"
+#include "Project/ProjectManager.h"
+#include "Scene/SceneEditor2.h"
+#include "Scene/SceneHelper.h"
+#include "Settings/SettingsManager.h"
+#include "StringConstants.h"
+
 #include "CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
 
-#include "Scene/SceneEditor2.h"
-
-#include "Scene3D/Systems/MaterialSystem.h"
-
-#include "Render/Material/NMaterialNames.h"
 
 SceneValidator::SceneValidator()
 {
@@ -290,10 +288,8 @@ void SceneValidator::ValidateRenderBatch(Entity *ownerNode, RenderBatch *renderB
 
 void SceneValidator::ValidateMaterials(DAVA::Scene *scene, Set<String> &errorsLog)
 {
-	DAVA::MaterialSystem *matSystem = scene->GetMaterialSystem();
 	Set<DAVA::NMaterial *> materials;
-	matSystem->BuildMaterialList(materials, false, false);
-
+    SceneHelper::BuildMaterialList(scene, materials, false, false);
 
     const QVector<ProjectManager::AvailableMaterialTemplate> *materialTemplates = 0;
     if (ProjectManager::Instance() != nullptr)

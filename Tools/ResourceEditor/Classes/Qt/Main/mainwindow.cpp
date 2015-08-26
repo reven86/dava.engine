@@ -97,7 +97,6 @@
 
 #include "Scene3D/Components/ActionComponent.h"
 #include "Scene3D/Components/Waypoint/PathComponent.h"
-#include "Scene3D/Systems/MaterialSystem.h"
 
 #include "Classes/Constants.h"
 

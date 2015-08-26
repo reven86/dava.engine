@@ -28,7 +28,6 @@
 
 
 #include "SceneCache.h"
-#include "Scene3D/Systems/MaterialSystem.h"
 #include "Scene3D/Systems/ParticleEffectSystem.h"
 
 namespace DAVA
