@@ -219,7 +219,11 @@ RegExp::compile( const TCHAR *pattern, const TCHAR* attributes )
 
     if (!this->_is_ref)
     free(this->_pattern);
+#if defined(__DAVAENGINE_WIN_UAP__)
     this->_pattern = _strdup(pattern);
+#else
+    this->_pattern = _tcsdup(pattern);
+#endif
     this->_is_ref = _is_ref;
     _tcscpy(flags, attributes);
 

@@ -33,7 +33,7 @@
         #define WIN32_LEAN_AND_MEAN
     #endif    
     #pragma warning( disable: 4005 )
-#if defined(__DAVAENGINE_WIN32__)
+#if !defined(__DAVAENGINE_WIN_UAP__)
     #define _WIN32_WINNT 0x0601
 #endif
     #include <windows.h>

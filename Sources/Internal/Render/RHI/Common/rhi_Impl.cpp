@@ -29,10 +29,12 @@
 
     #include "rhi_Impl.h"
 
-    #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_WIN_UAP__)
+    #if defined(__DAVAENGINE_WIN32__)
         #include "../DX9/rhi_DX9.h"
         #include "../DX11/rhi_DX11.h"
         #include "../GLES2/rhi_GLES2.h"
+    #elif defined(__DAVAENGINE_WIN_UAP__)
+        #include "../DX11/rhi_DX11.h"
     #elif defined(__DAVAENGINE_MACOS__)
         #include "../GLES2/rhi_GLES2.h"
     #elif defined(__DAVAENGINE_IPHONE__)

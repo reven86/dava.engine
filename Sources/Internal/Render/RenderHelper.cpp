@@ -596,6 +596,4 @@ namespace DAVA
         rhi::EndPacketList(emptyPacketList);
         rhi::EndRenderPass(clearPass);
     }
-#if RHI_COMPLETE
-#endif //RHI_COMPLETE
 };
