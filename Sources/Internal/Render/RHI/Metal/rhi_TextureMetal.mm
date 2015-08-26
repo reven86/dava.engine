@@ -67,8 +67,8 @@ public:
     uint32          is_cubemap:1;
 };
 
-typedef ResourcePool<TextureMetal_t,RESOURCE_TEXTURE>    TextureMetalPool;
-RHI_IMPL_POOL(TextureMetal_t,RESOURCE_TEXTURE);
+typedef ResourcePool<TextureMetal_t,RESOURCE_TEXTURE,Texture::Descriptor,false> TextureMetalPool;
+RHI_IMPL_POOL(TextureMetal_t,RESOURCE_TEXTURE,Texture::Descriptor,false);
 
 
 //------------------------------------------------------------------------------

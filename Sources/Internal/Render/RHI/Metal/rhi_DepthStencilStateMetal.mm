@@ -49,8 +49,8 @@ DepthStencilStateMetal_t
     uint8                       stencilRefValue;
 };
 
-typedef ResourcePool<DepthStencilStateMetal_t,RESOURCE_DEPTHSTENCIL_STATE>    DepthStencilStateMetalPool;
-RHI_IMPL_POOL(DepthStencilStateMetal_t,RESOURCE_DEPTHSTENCIL_STATE);
+typedef ResourcePool<DepthStencilStateMetal_t,RESOURCE_DEPTHSTENCIL_STATE,DepthStencilState::Descriptor,false>  DepthStencilStateMetalPool;
+RHI_IMPL_POOL(DepthStencilStateMetal_t,RESOURCE_DEPTHSTENCIL_STATE,DepthStencilState::Descriptor,false);
 
     
 static MTLStencilOperation

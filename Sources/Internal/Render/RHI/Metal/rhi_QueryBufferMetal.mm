@@ -52,8 +52,8 @@ public:
     id<MTLBuffer>   uid;
 };
 
-typedef ResourcePool<QueryBufferMetal_t,RESOURCE_QUERY_BUFFER>  QueryBufferMetalPool;
-RHI_IMPL_POOL(QueryBufferMetal_t,RESOURCE_QUERY_BUFFER);
+typedef ResourcePool<QueryBufferMetal_t,RESOURCE_QUERY_BUFFER,QueryBuffer::Descriptor,false>  QueryBufferMetalPool;
+RHI_IMPL_POOL(QueryBufferMetal_t,RESOURCE_QUERY_BUFFER,QueryBuffer::Descriptor,false);
 
 
 //==============================================================================

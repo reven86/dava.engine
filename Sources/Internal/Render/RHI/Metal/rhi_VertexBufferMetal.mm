@@ -58,8 +58,8 @@ VertexBufferMetal_t
     id<MTLBuffer>   uid;
 };
 
-typedef ResourcePool<VertexBufferMetal_t,RESOURCE_VERTEX_BUFFER> VertexBufferMetalPool;
-RHI_IMPL_POOL(VertexBufferMetal_t,RESOURCE_VERTEX_BUFFER);
+typedef ResourcePool<VertexBufferMetal_t,RESOURCE_VERTEX_BUFFER,VertexBuffer::Descriptor,false> VertexBufferMetalPool;
+RHI_IMPL_POOL(VertexBufferMetal_t,RESOURCE_VERTEX_BUFFER,VertexBuffer::Descriptor,false);
 
 
 //==============================================================================
