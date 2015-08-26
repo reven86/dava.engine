@@ -683,9 +683,10 @@ void main()
         #else
             float fogB = cameraPosition.z - fogHalfspaceHeight;
             float fogBExp = exp(-fogHalfspaceFalloff * fogB);
-            float fogZ = float(viewDirectionInWorldSpace.z == 0.0) + viewDirectionInWorldSpace.z;
+            float fogZ = viewDirectionInWorldSpace.z;
+            float fogInvZ = clamp(1.0 / fogZ, -1.0, 1.0);
             float fogKExp = exp(-fogHalfspaceFalloff * fogZ);
-            float halfSpaceFogAmoung = (fogHalfspaceDensity * fogDistance / fogZ) * (fogBExp - fogBExp * fogKExp);
+            float halfSpaceFogAmoung = (fogHalfspaceDensity * fogDistance * fogInvZ) * (fogBExp - fogBExp * fogKExp);
         #endif
         varFogAmoung = varFogAmoung + clamp(halfSpaceFogAmoung, 0.0, fogHalfspaceLimit);
     #endif
