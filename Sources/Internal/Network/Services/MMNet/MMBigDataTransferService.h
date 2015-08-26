@@ -53,7 +53,7 @@ class NetController;
 class ServiceRegistrar;
 struct IController;
 
-class MMAnotherService : public NetService
+class MMBigDataTransferService : public NetService
 {
     struct SnapshotInfo
     {
@@ -84,8 +84,8 @@ public:
     using SnapshotCallback = Function<void(uint32 totalSize, uint32 chunkOffset, uint32 chunkSize, const uint8* chunk)>;
 
 public:
-    MMAnotherService(eNetworkRole role);
-    virtual ~MMAnotherService();
+    MMBigDataTransferService(eNetworkRole role);
+    virtual ~MMBigDataTransferService();
 
     void Start(bool newSession, uint32 connToken, const IPAddress& addr = IPAddress());
     void Stop();

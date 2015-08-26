@@ -42,7 +42,7 @@ namespace DAVA
 namespace Net
 {
 
-class MMAnotherService;
+class MMBigDataTransferService;
 
 class MMNetClient : public NetService
 {
@@ -85,8 +85,8 @@ private:
     ConnLostCallback connLostCallback;
     StatCallback statCallback;
 
-    List<MMNetProto::Packet> packetQueue;               // Queue of outgoing packets
-    std::unique_ptr<MMAnotherService> anotherService;   // Special service for downloading memory snapshots and other big data
+    List<MMNetProto::Packet> packetQueue;                       // Queue of outgoing packets
+    std::unique_ptr<MMBigDataTransferService> transferService;  // Special service for downloading memory snapshots and other big data
 };
 
 }   // namespace Net

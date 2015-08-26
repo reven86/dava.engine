@@ -45,7 +45,7 @@ namespace DAVA
 namespace Net
 {
 
-class MMAnotherService;
+class MMBigDataTransferService;
 
 class MMNetServer : public NetService
 {
@@ -103,8 +103,8 @@ private:
     uint32 statItemSize = 0;                        // Size of MemoryManager's memory statistics item
     uint32 configSize = 0;                          // Size of MemoryManager's configuration block
 
-    List<MMNetProto::Packet> packetQueue;               // Queue of outgoing packets
-    std::unique_ptr<MMAnotherService> anotherService;   // Special service for uploading memory snapshots and other big data
+    List<MMNetProto::Packet> packetQueue;                       // Queue of outgoing packets
+    std::unique_ptr<MMBigDataTransferService> transferService;  // Special service for uploading memory snapshots and other big data
 };
 
 }   // namespace Net

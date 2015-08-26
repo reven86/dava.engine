@@ -44,7 +44,7 @@
 #include "MemoryManager/MemoryManager.h"
 
 #include "Network/Services/MMNet/MMNetServer.h"
-#include "Network/Services/MMNet/MMAnotherService.h"
+#include "Network/Services/MMNet/MMBigDataTransferService.h"
 
 namespace DAVA
 {
@@ -55,7 +55,7 @@ MMNetServer::MMNetServer()
     : NetService()
     , connToken(Random::Instance()->Rand())
     , baseTimePoint(SystemTimer::Instance()->AbsoluteMS())
-    , anotherService(new MMAnotherService(SERVER_ROLE))
+    , transferService(new MMBigDataTransferService(SERVER_ROLE))
 {
     MemoryManager::Instance()->SetCallbacks(MakeFunction(this, &MMNetServer::OnUpdate),
                                             MakeFunction(this, &MMNetServer::OnTag));
@@ -106,7 +106,7 @@ void MMNetServer::ChannelClosed(const char8* /*message*/)
         p = std::move(MMNetProto::Packet());
     }
     packetQueue.clear();
-    anotherService->Stop();
+    transferService->Stop();
 }
 
 void MMNetServer::PacketReceived(const void* packet, size_t length)
@@ -133,7 +133,7 @@ void MMNetServer::ProcessRequestToken(const MMNetProto::PacketHeader* inHeader, 
 {
     bool newSession = inHeader->token != connToken;
     SendPacket(CreateReplyTokenPacket(newSession));
-    anotherService->Start(newSession, connToken);
+    transferService->Start(newSession, connToken);
 }
 
 void MMNetServer::ProcessRequestSnapshot(const MMNetProto::PacketHeader* inHeader, const void* packetData, size_t dataLength)
@@ -300,7 +300,7 @@ bool MMNetServer::GetAndSaveSnapshot(uint64 curTimestamp)
             if (MemoryManager::Instance()->GetMemorySnapshot(curTimestamp, file.get(), nullptr))
             {
                 file.reset(nullptr);
-                anotherService->TransferSnapshot(filePath);
+                transferService->TransferSnapshot(filePath);
                 result = true;
             }
             erase = !result;

@@ -40,35 +40,35 @@
 #include "Network/Base/IOLoop.h"
 #include "Network/Private/NetController.h"
 #include "Network/Services/MMNet/MMNetProto.h"
-#include "Network/Services/MMNet/MMAnotherService.h"
+#include "Network/Services/MMNet/MMBigDataTransferService.h"
 
 namespace DAVA
 {
 namespace Net
 {
 
-MMAnotherService::MMAnotherService(eNetworkRole role_)
+MMBigDataTransferService::MMBigDataTransferService(eNetworkRole role_)
     : role(role_)
     , ioLoop(new IOLoop(false))
     , registrar(new ServiceRegistrar)
     , ioThread(Thread::Create([this]() { IOThread(); }))
 {
-    registrar->Register(SERVICE_ID, MakeFunction(this, &MMAnotherService::NetServiceCreator),
-                                    MakeFunction(this, &MMAnotherService::NetServiceDeleter));
+    registrar->Register(SERVICE_ID, MakeFunction(this, &MMBigDataTransferService::NetServiceCreator),
+                                    MakeFunction(this, &MMBigDataTransferService::NetServiceDeleter));
     ioThread->Start();
 }
 
-MMAnotherService::~MMAnotherService()
+MMBigDataTransferService::~MMBigDataTransferService()
 {
     if (netController != nullptr)
     {
-        netController->Stop(MakeFunction(this, &MMAnotherService::OnNetControllerStopped));
+        netController->Stop(MakeFunction(this, &MMBigDataTransferService::OnNetControllerStopped));
     }
     ioLoop->PostQuit();
     ioThread->Join();
 }
 
-void MMAnotherService::Start(bool newSession, uint32 connToken_, const IPAddress& addr)
+void MMBigDataTransferService::Start(bool newSession, uint32 connToken_, const IPAddress& addr)
 {
     connToken = connToken_;
     if (newSession && SERVER_ROLE == role)
@@ -92,22 +92,22 @@ void MMAnotherService::Start(bool newSession, uint32 connToken_, const IPAddress
     netController->Start();
 }
 
-void MMAnotherService::Stop()
+void MMBigDataTransferService::Stop()
 {
     if (netController != nullptr)
     {
-        netController->Stop(MakeFunction(this, &MMAnotherService::OnNetControllerStopped));
+        netController->Stop(MakeFunction(this, &MMBigDataTransferService::OnNetControllerStopped));
     }
 }
 
-void MMAnotherService::TransferSnapshot(const FilePath& snapshotFile)
+void MMBigDataTransferService::TransferSnapshot(const FilePath& snapshotFile)
 {
     DVASSERT(SERVER_ROLE == role);
 
-    ioLoop->Post(Bind(MakeFunction(this, &MMAnotherService::DoTransferSnapshot), snapshotFile));
+    ioLoop->Post(Bind(MakeFunction(this, &MMBigDataTransferService::DoTransferSnapshot), snapshotFile));
 }
 
-void MMAnotherService::SetSnapshotCallback(SnapshotCallback callback)
+void MMBigDataTransferService::SetSnapshotCallback(SnapshotCallback callback)
 {
     DVASSERT(CLIENT_ROLE == role);
     DVASSERT(callback != 0);
@@ -115,11 +115,11 @@ void MMAnotherService::SetSnapshotCallback(SnapshotCallback callback)
     snapshotCallback = callback;
 }
 
-void MMAnotherService::ChannelOpen()
+void MMBigDataTransferService::ChannelOpen()
 {
 }
 
-void MMAnotherService::ChannelClosed(const char8* /*message*/)
+void MMBigDataTransferService::ChannelClosed(const char8* /*message*/)
 {
     SafeRelease(fileHandle);
     if (!snapshotQueue.empty())
@@ -130,7 +130,7 @@ void MMAnotherService::ChannelClosed(const char8* /*message*/)
     }
 }
 
-void MMAnotherService::PacketReceived(const void* packet, size_t length)
+void MMBigDataTransferService::PacketReceived(const void* packet, size_t length)
 {
     if (CLIENT_ROLE == role)
     {
@@ -138,7 +138,7 @@ void MMAnotherService::PacketReceived(const void* packet, size_t length)
     }
 }
 
-void MMAnotherService::PacketDelivered()
+void MMBigDataTransferService::PacketDelivered()
 {
     if (SERVER_ROLE == role)
     {
@@ -146,7 +146,7 @@ void MMAnotherService::PacketDelivered()
     }
 }
 
-void MMAnotherService::ServerPacketDelivered()
+void MMBigDataTransferService::ServerPacketDelivered()
 {
     DVASSERT(!snapshotQueue.empty());
 
@@ -177,7 +177,7 @@ void MMAnotherService::ServerPacketDelivered()
     }
 }
 
-void MMAnotherService::DoTransferSnapshot(const FilePath& snapshotFile)
+void MMBigDataTransferService::DoTransferSnapshot(const FilePath& snapshotFile)
 {
     bool wasEmpty = snapshotQueue.empty();
     snapshotQueue.emplace_back(SnapshotInfo(snapshotFile));
@@ -188,7 +188,7 @@ void MMAnotherService::DoTransferSnapshot(const FilePath& snapshotFile)
     }
 }
 
-void MMAnotherService::SendNextChunk(SnapshotInfo* snapshot)
+void MMBigDataTransferService::SendNextChunk(SnapshotInfo* snapshot)
 {
     MMNetProto::PacketHeader* hdr = OffsetPointer<MMNetProto::PacketHeader>(outbuf.data(), 0);
     MMNetProto::PacketParamSnapshot* param = OffsetPointer<MMNetProto::PacketParamSnapshot>(outbuf.data(), sizeof(MMNetProto::PacketHeader));
@@ -225,7 +225,7 @@ void MMAnotherService::SendNextChunk(SnapshotInfo* snapshot)
     Send(outbuf.data(), hdr->length);
 }
 
-bool MMAnotherService::BeginNextSnapshot(SnapshotInfo* snapshot)
+bool MMBigDataTransferService::BeginNextSnapshot(SnapshotInfo* snapshot)
 {
     fileHandle = File::Create(snapshot->filename, File::OPEN | File::READ);
     if (fileHandle != nullptr)
@@ -241,7 +241,7 @@ bool MMAnotherService::BeginNextSnapshot(SnapshotInfo* snapshot)
     return false;
 }
 
-void MMAnotherService::ClientPacketRecieved(const void* packet, size_t length)
+void MMBigDataTransferService::ClientPacketRecieved(const void* packet, size_t length)
 {
     const size_t dataLength = length - sizeof(MMNetProto::PacketHeader);
     const MMNetProto::PacketHeader* header = static_cast<const MMNetProto::PacketHeader*>(packet);
@@ -258,7 +258,7 @@ void MMAnotherService::ClientPacketRecieved(const void* packet, size_t length)
     }
 }
 
-void MMAnotherService::ProcessAutoReplySnapshot(const MMNetProto::PacketHeader* inHeader, const void* packetData, size_t dataLength)
+void MMBigDataTransferService::ProcessAutoReplySnapshot(const MMNetProto::PacketHeader* inHeader, const void* packetData, size_t dataLength)
 {
     uint32 totalSize = 0;
     uint32 chunkOffset = 0;
@@ -276,17 +276,17 @@ void MMAnotherService::ProcessAutoReplySnapshot(const MMNetProto::PacketHeader* 
     snapshotCallback(totalSize, chunkOffset, chunkSize, chunk);
 }
 
-void MMAnotherService::IOThread()
+void MMBigDataTransferService::IOThread()
 {
     ioLoop->Run();
 }
 
-void MMAnotherService::OnNetControllerStopped(IController* controller)
+void MMBigDataTransferService::OnNetControllerStopped(IController* controller)
 {
     netController.reset();
 }
 
-IChannelListener* MMAnotherService::NetServiceCreator(uint32 serviceId, void* context)
+IChannelListener* MMBigDataTransferService::NetServiceCreator(uint32 serviceId, void* context)
 {
     if (!netServiceInUse)
     {
@@ -296,7 +296,7 @@ IChannelListener* MMAnotherService::NetServiceCreator(uint32 serviceId, void* co
     return nullptr;
 }
 
-void MMAnotherService::NetServiceDeleter(IChannelListener* service, void* context)
+void MMBigDataTransferService::NetServiceDeleter(IChannelListener* service, void* context)
 {
     netServiceInUse = false;
 }

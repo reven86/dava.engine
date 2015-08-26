@@ -36,7 +36,7 @@
 
 #include "Network/Base/Endpoint.h"
 #include "Network/Services/MMNet/MMNetClient.h"
-#include "Network/Services/MMNet/MMAnotherService.h"
+#include "Network/Services/MMNet/MMBigDataTransferService.h"
 
 namespace DAVA
 {
@@ -45,7 +45,7 @@ namespace Net
 
 MMNetClient::MMNetClient()
     : NetService()
-    , anotherService(new MMAnotherService(CLIENT_ROLE))
+    , transferService(new MMBigDataTransferService(CLIENT_ROLE))
 {
 }
 
@@ -56,7 +56,7 @@ void MMNetClient::InstallCallbacks(ConnEstablishedCallback connEstablishedCallba
     connEstablishedCallback = connEstablishedCallback_;
     connLostCallback = connLostCallback_;
     statCallback = statCallback_;
-    anotherService->SetSnapshotCallback(snapshotCallback_);
+    transferService->SetSnapshotCallback(snapshotCallback_);
 }
 
 void MMNetClient::RequestSnapshot()
@@ -79,7 +79,7 @@ void MMNetClient::ChannelClosed(const char8* message)
     tokenRequested = false;
     
     packetQueue.clear();
-    anotherService->Stop();
+    transferService->Stop();
     connLostCallback(message);
 }
 
@@ -133,7 +133,7 @@ void MMNetClient::ProcessReplyToken(const MMNetProto::PacketHeader* inHeader, co
         connEstablishedCallback(true, nullptr);
     }
     tokenRequested = true;
-    anotherService->Start(newSession, connToken, channel->RemoteEndpoint().Address());
+    transferService->Start(newSession, connToken, channel->RemoteEndpoint().Address());
 }
 
 void MMNetClient::ProcessReplySnapshot(const MMNetProto::PacketHeader* inHeader, const void* packetData, size_t dataLength)
