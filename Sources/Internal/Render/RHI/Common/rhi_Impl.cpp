@@ -84,7 +84,7 @@ Initialize( Api api, const InitParam& param )
             break;
 #endif
             
-#if defined(__DAVAENGINE_WIN32__)  ||  defined(__DAVAENGINE_MACOS__)
+#if !defined(__DAVAENGINE_WIN_UAP__)
         case RHI_GLES2 :
             gles2_Initialize( param );
             break;
