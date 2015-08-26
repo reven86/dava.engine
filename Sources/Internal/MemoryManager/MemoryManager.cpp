@@ -159,6 +159,11 @@ MemoryManager* MemoryManager::Instance()
     return &mm;
 }
 
+void MemoryManager::EnableLightWeightMode()
+{
+    lightWeightMode = true;
+}
+
 void MemoryManager::SetCallbacks(Function<void()> updateCallback_, Function<void(uint32, bool)> tagCallback_)
 {
     updateCallback = updateCallback_;
@@ -167,13 +172,11 @@ void MemoryManager::SetCallbacks(Function<void()> updateCallback_, Function<void
 
 void MemoryManager::Update()
 {
-#if !defined(DAVA_MEMORY_PROFILING_LIGHTWEIGHT_MODE)
     if (nullptr == symbolCollectorThread)
     {
         symbolCollectorThread = Thread::Create(Message(this, &MemoryManager::SymbolCollectorThread));
         symbolCollectorThread->Start();
     }
-#endif
 
     if (updateCallback != 0)
     {
@@ -221,7 +224,7 @@ DAVA_NOINLINE void* MemoryManager::Allocate(size_t size, uint32 poolIndex)
             LockType lock(statMutex);
             UpdateStatAfterAlloc(block);
         }
-#if !defined(DAVA_MEMORY_PROFILING_LIGHTWEIGHT_MODE)
+        if (!lightWeightMode)
         {
             Backtrace backtrace;
             CollectBacktrace(&backtrace, 1);
@@ -230,7 +233,6 @@ DAVA_NOINLINE void* MemoryManager::Allocate(size_t size, uint32 poolIndex)
             LockType lock(bktraceMutex);
             InsertBacktrace(backtrace);
         }
-#endif
         return static_cast<void*>(block + 1);
     }
     return nullptr;
@@ -288,7 +290,7 @@ DAVA_NOINLINE void* MemoryManager::AlignedAllocate(size_t size, size_t align, ui
             LockType lock(statMutex);
             UpdateStatAfterAlloc(block);
         }
-#if !defined(DAVA_MEMORY_PROFILING_LIGHTWEIGHT_MODE)
+        if (!lightWeightMode)
         {
             Backtrace backtrace;
             CollectBacktrace(&backtrace, 1);
@@ -297,7 +299,6 @@ DAVA_NOINLINE void* MemoryManager::AlignedAllocate(size_t size, size_t align, ui
             LockType lock(bktraceMutex);
             InsertBacktrace(backtrace);
         }
-#endif
         return reinterpret_cast<void*>(aligned);
     }
     return nullptr;
@@ -346,12 +347,11 @@ void MemoryManager::Deallocate(void* ptr)
                 LockType lock(statMutex);
                 UpdateStatAfterDealloc(block);
             }
-#if !defined(DAVA_MEMORY_PROFILING_LIGHTWEIGHT_MODE)
+            if (!lightWeightMode)
             {
                 LockType lock(bktraceMutex);
                 RemoveBacktrace(block->bktraceHash);
             }
-#endif
 
             // Tracked memory block consists of header (of type struct MemoryBlock) and data block that returned to app.
             // Tracked memory blocks are distinguished by special mark in header.
@@ -658,7 +658,6 @@ void MemoryManager::UpdateStatAfterGPUDealloc(MemoryBlock* block)
     }
 }
 
-#if !defined(DAVA_MEMORY_PROFILING_LIGHTWEIGHT_MODE)
 void MemoryManager::InsertBacktrace(Backtrace& backtrace)
 {
     if (nullptr == bktraceMap)
@@ -809,7 +808,6 @@ void MemoryManager::ObtainBacktraceSymbols(const Backtrace* backtrace)
     }
 #endif
 }
-#endif  // !defined(DAVA_MEMORY_PROFILING_LIGHTWEIGHT_MODE)
 
 uint32 MemoryManager::CalcStatConfigSize() const
 {
@@ -875,14 +873,15 @@ void MemoryManager::GetCurStat(uint64 timestamp, void* buffer, uint32 bufSize) c
 
 bool MemoryManager::GetMemorySnapshot(uint64 timestamp, File* file, uint32* snapshotSize)
 {
-#if defined(DAVA_MEMORY_PROFILING_LIGHTWEIGHT_MODE)
-    // In lightweight mode snapshot has no sense as it doesn't contains backtraces and symbols
-    if (snapshotSize != nullptr)
-    {
-        *snapshotSize = 0;
+    if (lightWeightMode)
+    {   // In lightweight mode snapshot has no sense as it doesn't contains backtraces and symbols
+        if (snapshotSize != nullptr)
+        {
+            *snapshotSize = 0;
+        }
+        return false;
     }
-    return false;
-#else
+
     assert(file != nullptr);
 
     const uint32 BUF_SIZE = 64 * 1024;
@@ -1005,10 +1004,8 @@ bool MemoryManager::GetMemorySnapshot(uint64 timestamp, File* file, uint32* snap
     if (file->Write(&snapshot) != sizeof(MMSnapshot))
         return false;
     return true;
-#endif  // defined(DAVA_MEMORY_PROFILING_LIGHTWEIGHT_MODE)
 }
 
-#if !defined(DAVA_MEMORY_PROFILING_LIGHTWEIGHT_MODE)
 void MemoryManager::SymbolCollectorThread(BaseObject*, void*, void*)
 {
     const size_t BUF_CAPACITY = 1000;   // Select some reasonable buffer for backtraces
@@ -1050,7 +1047,6 @@ void MemoryManager::SymbolCollectorThread(BaseObject*, void*, void*)
         }
     }
 }
-#endif  // !defined(DAVA_MEMORY_PROFILING_LIGHTWEIGHT_MODE)
 
 }   // namespace DAVA
 

@@ -34,9 +34,6 @@
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
 
-// Define DAVA_MEMORY_PROFILING_LIGHTWEIGHT_MODE for lightweight memory profiling
-// In lightweight mode backtraces and symbols are not collected and snapshots are disabled
-
 #include <type_traits>
 
 #include "Base/Function.h"
@@ -93,6 +90,7 @@ public:
     static void RegisterAllocPoolName(uint32 index, const char8* name);
     static void RegisterTagName(uint32 tagMask, const char8* name);
 
+    void EnableLightWeightMode();
     void SetCallbacks(Function<void()> updateCallback, Function<void(uint32, bool)> tagCallback);
     void Update();
 
@@ -151,7 +149,6 @@ private:
 
     uint64 PackGPUKey(uint32 id, uint32 allocPool) const;
 
-#if !defined(DAVA_MEMORY_PROFILING_LIGHTWEIGHT_MODE)
     void InsertBacktrace(Backtrace& backtrace);
     void RemoveBacktrace(uint32 hash);
 
@@ -159,7 +156,6 @@ private:
     void ObtainBacktraceSymbols(const Backtrace* backtrace);
 
     void SymbolCollectorThread(BaseObject*, void*, void*);
-#endif  // !defined(DAVA_MEMORY_PROFILING_LIGHTWEIGHT_MODE)
 
 private:
     MemoryBlock* head = nullptr;                        // Linked list of tracked memory blocks
@@ -179,7 +175,6 @@ private:
 
     GpuBlockMap* gpuBlockMap = nullptr;
 
-#if !defined(DAVA_MEMORY_PROFILING_LIGHTWEIGHT_MODE)
     using InternalString = std::basic_string<char8, std::char_traits<char8>, InternalAllocator<char8>>;
     using BacktraceMap = std::unordered_map<uint32, Backtrace, std::hash<uint32>, std::equal_to<uint32>, InternalAllocator<std::pair<const uint32, Backtrace>>>;
     using SymbolMap = std::unordered_map<void*, InternalString, std::hash<void*>, std::equal_to<void*>, InternalAllocator<std::pair<void* const, InternalString>>>;
@@ -193,7 +188,7 @@ private:
     ConditionVariable symbolCollectorCondVar;
     Mutex symbolCollectorMutex;
     size_t bktraceGrowDelta = 0;
-#endif  // !defined(DAVA_MEMORY_PROFILING_LIGHTWEIGHT_MODE)
+    bool lightWeightMode = false;       // Flag enabling lightweight mode: no backtrace and symbols, should increase performance
 
     Function<void()> updateCallback;
     Function<void(uint32, bool)> tagCallback;
