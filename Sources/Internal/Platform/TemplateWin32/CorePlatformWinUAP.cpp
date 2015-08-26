@@ -33,7 +33,10 @@
 #include "Utils/Utils.h"
 
 #include "Platform/TemplateWin32/CorePlatformWinUAP.h"
+#include "Platform/TemplateWin32/WinUAPXamlApp.h"
+#include "Platform/TemplateWin32/DispatcherWinUAP.h"
 
+using namespace Windows::UI::Core;
 using namespace Windows::UI::Xaml;
 using namespace Windows::UI::ViewManagement;
 
@@ -51,7 +54,22 @@ int Core::Run(int /*argc*/, char* /*argv*/[], AppHandle /*handle*/)
 //////////////////////////////////////////////////////////////////////////
 void CorePlatformWinUAP::InitArgs()
 {
-    SetCommandLine(WStringToString(::GetCommandLineW()));
+    int argc = 0;
+    LPWSTR *szArglist = ::CommandLineToArgvW(::GetCommandLineW(), &argc);
+
+    if (argc > 0 && NULL != szArglist)
+    {
+        Vector<String> args;
+        args.reserve(argc);
+        for (int i = 0; i < argc; ++i)
+        {
+            args.emplace_back(WStringToString(szArglist[i]));
+        }
+
+        SetCommandLine(std::move(args));
+    }
+
+    ::LocalFree(szArglist);
 }
 
 void CorePlatformWinUAP::Run()
@@ -115,6 +133,47 @@ void CorePlatformWinUAP::SetCursorPinning(bool isPinning)
         xamlApp->SetCursorPinning(isPinning);
         xamlApp->SetCursorVisible(!isPinning);
     });
+}
+
+bool CorePlatformWinUAP::IsUIThread() const
+{
+    return xamlApp->UIThreadDispatcher()->HasThreadAccess;
+}
+
+void CorePlatformWinUAP::RunOnUIThread(std::function<void()>&& fn, bool blocked)
+{
+    if (!blocked)
+    {
+        xamlApp->UIThreadDispatcher()->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler(std::forward<std::function<void()>>(fn)));
+    }
+    else
+    {
+        DispatcherWinUAP::BlockingTaskWrapper wrapper = xamlApp->MainThreadDispatcher()->GetBlockingTaskWrapper(std::forward<std::function<void()>>(fn));
+        RunOnUIThread([&wrapper]() { wrapper.RunTask(); });
+        wrapper.WaitTaskComplete();
+    }
+}
+
+void CorePlatformWinUAP::RunOnMainThread(std::function<void()>&& fn, bool blocked)
+{
+    if (!blocked)
+    {
+        xamlApp->MainThreadDispatcher()->RunAsync(std::forward<std::function<void()>>(fn));
+    }
+    else
+    {
+        xamlApp->MainThreadDispatcher()->RunAsyncAndWait(std::forward<std::function<void()>>(fn));
+    }
+}
+
+// temporary decision, need change when signal will be enabled
+DeviceInfo::HIDCallBackFunc MainThreadRedirector(DeviceInfo::HIDCallBackFunc func)
+{
+    return [=](DeviceInfo::eHIDType type, bool b) {
+        CorePlatformWinUAP* core = static_cast<CorePlatformWinUAP*>(Core::Instance());
+        DVASSERT(nullptr != core && "In MainThreadRedirector() function CorePlatformWinUAP* = nullptr");
+        core->RunOnMainThread([=]() { func(type, b); });
+    };
 }
 
 }   // namespace DAVA

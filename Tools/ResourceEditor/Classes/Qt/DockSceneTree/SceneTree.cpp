@@ -250,7 +250,8 @@ void SceneTree::SceneStructureChanged(SceneEditor2 *scene, DAVA::Entity *parent)
         filteringProxyModel->invalidate();
 
 		SyncSelectionToTree();
-		
+		EmitParticleSignals(QItemSelection());
+
 		if (treeModel->IsFilterSet())
         {
             ExpandFilteredItems();
