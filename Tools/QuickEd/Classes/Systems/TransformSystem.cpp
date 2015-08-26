@@ -92,7 +92,7 @@ void TransformSystem::SelectionWasChanged(const SelectedControls &selected, cons
     SubstractNodes(deselected, selectedControls);
 }
 
-bool TransformSystem::ProcessKey(const DAVA::int32 key)
+bool TransformSystem::ProcessKey(const int32 key)
 {
     if(!selectedControls.empty())
     {
@@ -115,7 +115,7 @@ bool TransformSystem::ProcessKey(const DAVA::int32 key)
     return false;
 }
 
-bool TransformSystem::ProcessDrag(const DAVA::Vector2 &pos)
+bool TransformSystem::ProcessDrag(const Vector2 &pos)
 {
     if(activeArea == NO_AREA)
     {
@@ -174,7 +174,7 @@ bool TransformSystem::ProcessDrag(const DAVA::Vector2 &pos)
     return retval;
 }
 
-void TransformSystem::MoveAllSelectedControls(const DAVA::Vector2 &delta)
+void TransformSystem::MoveAllSelectedControls(const Vector2 &delta)
 {
     for( auto &controlNode : selectedControls)
     {
@@ -185,7 +185,7 @@ void TransformSystem::MoveAllSelectedControls(const DAVA::Vector2 &delta)
     }
 }
 
-void TransformSystem::MoveConrol(const DAVA::Vector2& pos)
+void TransformSystem::MoveConrol(const Vector2& pos)
 {
     Vector2 delta = pos - prevPos;
     auto gd =  activeControl->GetControl()->GetGeometricData();
@@ -209,12 +209,46 @@ void TransformSystem::MoveConrol(const DAVA::Vector2& pos)
     AdjustProperty(activeControl, "Position", realDelta);
 }
 
-void TransformSystem::ResizeControl(const DAVA::Vector2& pos, bool withPivot, bool rateably)
+void TransformSystem::ResizeControl(const Vector2& pos, bool withPivot, bool rateably)
 {
     DVASSERT(activeArea != NO_AREA);
     Vector2 delta = pos - prevPos;
     auto gd = activeControl->GetControl()->GetGeometricData();
     Vector2 realDelta = delta / gd.scale;
+
+    switch (activeArea)
+    {
+    default:
+        DVASSERT_MSG(false, "wrong parameter passed to function");
+    case TOP_LEFT:
+        ResizeTopLeft(realDelta, withPivot, rateably);
+        break;
+    case TOP_CENTER:
+        ResizeTopCenter(realDelta, withPivot, rateably);
+        break;
+    case TOP_RIGHT:
+        ResizeTopRight(realDelta, withPivot, rateably);
+        break;
+    case CENTER_LEFT:
+        ResizeLeftCenter(realDelta, withPivot, rateably);
+        break;
+    case CENTER_RIGHT:
+        ResizeRightCenter(realDelta, withPivot, rateably);
+        break;
+    case BOTTOM_LEFT:
+        ResizeBottomLeft(realDelta, withPivot, rateably);
+        break;
+    case BOTTOM_CENTER:
+        ResizeBottomCenter(realDelta, withPivot, rateably);
+        break;
+    case BOTTOM_RIGHT:
+        ResizeBottomRight(realDelta, withPivot, rateably);
+        break;
+    }
+}
+
+void TransformSystem::ResizeTopLeft(Vector2& realDelta, bool withPivot, bool rateably)
+{
     if (rateably)
     {
         const Vector2 &size = activeControl->GetControl()->GetSize();
@@ -229,94 +263,242 @@ void TransformSystem::ResizeControl(const DAVA::Vector2& pos, bool withPivot, bo
     auto pivotProp = document->GetPropertyByName(activeControl, "Pivot");
     DVASSERT(nullptr != pivotProp);
     Vector2 pivot = pivotProp->GetValue().AsVector2();
-
-    switch (activeArea)
+    if (withPivot)
     {
-    default:
-        DVASSERT_MSG(false, "wrong parameter passed to function");
-    case TOP_LEFT:
-            if (withPivot)
-            {
-                deltaSize /= pivot;
-                deltaPosition.SetZero();
-            }
-            else
-            {
-                deltaPosition *= Vector2(1, 1) - pivot;
-            }
-        AdjustProperty(activeControl, "Position", deltaPosition);
-        AdjustProperty(activeControl, "Size", deltaSize * -1);
-        break;
-    case TOP_CENTER:
-        if (withPivot)
-        {
-            deltaSize /= pivot;
-            deltaPosition.SetZero();
-        }
-        else
-        {
-            deltaPosition *= Vector2(1, 1) - pivot;
-        }
-        if(!rateably)
-        {
-            deltaPosition.x = 0;
-            deltaSize.x = 0;
-        }
-        AdjustProperty(activeControl, "Position", deltaPosition);
-        AdjustProperty(activeControl, "Size", deltaSize * -1);
-        break;
-    case TOP_RIGHT:
-            if (withPivot)
-            {
-                deltaSize /= pivot;
-                deltaPosition.SetZero();
-            }
-            else
-            {
-                deltaPosition *= Vector2(0, 1) - pivot;
-                deltaPosition.x *= -1;
-            }
-        deltaSize.y = deltaSize.y * -1;
-        AdjustProperty(activeControl, "Position", deltaPosition);
-        AdjustProperty(activeControl, "Size", deltaSize);
-        break;
-    case CENTER_LEFT:
-        if (withPivot)
-        {
-            deltaSize /= pivot;
-            deltaPosition.SetZero();
-        }
-        else
-        {
-            deltaPosition *= Vector2(1, 1) - pivot;
-        }
-        if(!rateably)
-        {
-            deltaPosition.y = 0;
-            deltaSize.y = 0;
-        }
-        AdjustProperty(activeControl, "Position", deltaPosition);
-        AdjustProperty(activeControl, "Size", deltaSize * -1);
-        break;
-    case CENTER_RIGHT:
-        deltaSize.y = 0;
-        AdjustProperty(activeControl, "Size", deltaSize);
-        break;
-    case BOTTOM_LEFT:
-        deltaPosition.y = 0;
-        deltaSize.x *= -1;
-        AdjustProperty(activeControl, "Position", deltaPosition);
-        AdjustProperty(activeControl, "Size", deltaSize);
-        break;
-    case BOTTOM_CENTER:
-        deltaSize.x = 0;
-        AdjustProperty(activeControl, "Size", deltaSize);
-        break;
-    case BOTTOM_RIGHT:
-        AdjustProperty(activeControl, "Size", deltaSize);
-        break;
+        deltaSize /= pivot;
+        deltaPosition.SetZero();
     }
+    else
+    {
+        deltaPosition *= Vector2(1, 1) - pivot;
+    }
+    AdjustProperty(activeControl, "Position", deltaPosition);
+    AdjustProperty(activeControl, "Size", deltaSize * -1);
 }
+
+void TransformSystem::ResizeTopCenter(Vector2& realDelta, bool withPivot, bool rateably)
+{
+    if (rateably)
+    {
+        const Vector2 &size = activeControl->GetControl()->GetSize();
+        float perc = size.x / size.y;
+        realDelta.x = realDelta.y * perc;
+    }
+    Vector2 deltaPosition = realDelta;
+    Vector2 deltaSize = realDelta;
+    auto pivotProp = document->GetPropertyByName(activeControl, "Pivot");
+    DVASSERT(nullptr != pivotProp);
+    Vector2 pivot = pivotProp->GetValue().AsVector2();
+    if (withPivot)
+    {
+        deltaSize /= pivot;
+        deltaPosition.SetZero();
+    }
+    else
+    {
+        deltaPosition *= Vector2(1, 1) - pivot;
+    }
+    if (!rateably)
+    {
+        deltaPosition.x = 0;
+        deltaSize.x = 0;
+    }
+    AdjustProperty(activeControl, "Position", deltaPosition);
+    AdjustProperty(activeControl, "Size", deltaSize * -1);
+}
+
+void TransformSystem::ResizeTopRight(Vector2& realDelta, bool withPivot, bool rateably)
+{
+    if (rateably)
+    {
+        const Vector2 &size = activeControl->GetControl()->GetSize();
+        float perc = size.x / size.y;
+        if (fabs(realDelta.y) > fabs(realDelta.x))
+            realDelta.x = realDelta.y * perc * -1;
+        else
+            realDelta.y = realDelta.x / perc * -1;
+    }
+    Vector2 deltaPosition = realDelta;
+    Vector2 deltaSize = realDelta;
+    auto pivotProp = document->GetPropertyByName(activeControl, "Pivot");
+    DVASSERT(nullptr != pivotProp);
+    Vector2 pivot = pivotProp->GetValue().AsVector2();
+    if (withPivot)
+    {
+        deltaSize.x /= (1 - pivot.x);
+        deltaSize.y /= pivot.y;
+        deltaPosition.SetZero();
+    }
+    else
+    {
+        deltaPosition *= Vector2(0, 1) - pivot;
+        deltaPosition.x *= -1;
+    }
+    deltaSize.y = deltaSize.y * -1;
+    AdjustProperty(activeControl, "Position", deltaPosition);
+    AdjustProperty(activeControl, "Size", deltaSize);
+}
+
+void TransformSystem::ResizeLeftCenter(Vector2& realDelta, bool withPivot, bool rateably)
+{
+    if (rateably)
+    {
+        const Vector2 &size = activeControl->GetControl()->GetSize();
+        float perc = size.x / size.y;
+        realDelta.y = realDelta.x / perc;
+    }
+    Vector2 deltaPosition = realDelta;
+    Vector2 deltaSize = realDelta;
+    auto pivotProp = document->GetPropertyByName(activeControl, "Pivot");
+    DVASSERT(nullptr != pivotProp);
+    Vector2 pivot = pivotProp->GetValue().AsVector2();
+    if (withPivot)
+    {
+        deltaSize.y /= (1 - pivot.y);
+        deltaSize.x /= pivot.x;
+        deltaPosition.SetZero();
+    }
+    else
+    {
+        deltaPosition *= Vector2(1, 1) - pivot;
+    }
+    if (!rateably)
+    {
+        deltaPosition.y = 0;
+        deltaSize.y = 0;
+    }
+    AdjustProperty(activeControl, "Position", deltaPosition);
+    AdjustProperty(activeControl, "Size", deltaSize * -1);
+}
+
+void TransformSystem::ResizeRightCenter(Vector2& realDelta, bool withPivot, bool rateably)
+{
+    if (rateably)
+    {
+        const Vector2 &size = activeControl->GetControl()->GetSize();
+        float perc = size.x / size.y;
+        realDelta.y = realDelta.x / perc;
+    }
+    Vector2 deltaPosition = realDelta;
+    Vector2 deltaSize = realDelta;
+    auto pivotProp = document->GetPropertyByName(activeControl, "Pivot");
+    DVASSERT(nullptr != pivotProp);
+    Vector2 pivot = pivotProp->GetValue().AsVector2();
+    if (withPivot)
+    {
+        deltaSize.x /= (1 - pivot.x);
+        deltaSize.y /= (1 - pivot.y);
+        deltaPosition.SetZero();
+    }
+    else
+    {
+        deltaPosition *= Vector2(1, 1) - pivot;
+    }
+    if (!rateably)
+    {
+        deltaPosition.y = 0;
+        deltaSize.y = 0;
+    }
+    AdjustProperty(activeControl, "Position", deltaPosition);
+    AdjustProperty(activeControl, "Size", deltaSize);
+}
+
+void TransformSystem::ResizeBottomLeft(Vector2& realDelta, bool withPivot, bool rateably)
+{
+    if (rateably)
+    {
+        const Vector2 &size = activeControl->GetControl()->GetSize();
+        float perc = size.x / size.y;
+        if (fabs(realDelta.y) > fabs(realDelta.x))
+            realDelta.x = realDelta.y * perc * -1;
+        else
+            realDelta.y = realDelta.x / perc * -1;
+    }
+    Vector2 deltaPosition = realDelta;
+    Vector2 deltaSize = realDelta;
+    auto pivotProp = document->GetPropertyByName(activeControl, "Pivot");
+    DVASSERT(nullptr != pivotProp);
+    Vector2 pivot = pivotProp->GetValue().AsVector2();
+    deltaSize.x *= -1;
+
+    if (withPivot)
+    {
+        deltaSize.y /= (1 - pivot.y);
+        deltaSize.x /= pivot.x;
+        deltaPosition.SetZero();
+    }
+    else
+    {
+        deltaPosition *= Vector2(1, 0) - pivot;
+        deltaPosition.y *= -1;
+    }
+    AdjustProperty(activeControl, "Position", deltaPosition);
+    AdjustProperty(activeControl, "Size", deltaSize);
+}
+
+void TransformSystem::ResizeBottomCenter(Vector2& realDelta, bool withPivot, bool rateably)
+{
+    if (rateably)
+    {
+        const Vector2 &size = activeControl->GetControl()->GetSize();
+        float perc = size.x / size.y;
+        realDelta.x = realDelta.y * perc;
+    }
+    Vector2 deltaPosition = realDelta;
+    Vector2 deltaSize = realDelta;
+    auto pivotProp = document->GetPropertyByName(activeControl, "Pivot");
+    DVASSERT(nullptr != pivotProp);
+    Vector2 pivot = pivotProp->GetValue().AsVector2();
+    if (withPivot)
+    {
+        deltaSize.y /= (1 - pivot.y);
+        deltaSize.x /= pivot.x;
+        deltaPosition.SetZero();
+    }
+    else
+    {
+        deltaPosition *= Vector2(1, 0) - pivot;
+        deltaPosition.y *= -1;
+    }
+    if (!rateably)
+    {
+        deltaPosition.x = 0;
+        deltaSize.x = 0;
+    }
+    AdjustProperty(activeControl, "Position", deltaPosition);
+    AdjustProperty(activeControl, "Size", deltaSize);
+}
+
+void TransformSystem::ResizeBottomRight(Vector2& realDelta, bool withPivot, bool rateably)
+{
+    if (rateably)
+    {
+        const Vector2 &size = activeControl->GetControl()->GetSize();
+        float perc = size.x / size.y;
+        if (fabs(realDelta.y) > fabs(realDelta.x))
+            realDelta.x = realDelta.y * perc ;
+        else
+            realDelta.y = realDelta.x / perc ;
+    }
+    Vector2 deltaPosition = realDelta;
+    Vector2 deltaSize = realDelta;
+    auto pivotProp = document->GetPropertyByName(activeControl, "Pivot");
+    DVASSERT(nullptr != pivotProp);
+    Vector2 pivot = pivotProp->GetValue().AsVector2();
+    if (withPivot)
+    {
+        deltaSize.y /= (1 - pivot.y);
+        deltaSize.x /= (1 - pivot.x);
+        deltaPosition.SetZero();
+    }
+    else
+    {
+        deltaPosition *= pivot;
+    }
+    AdjustProperty(activeControl, "Position", deltaPosition);
+    AdjustProperty(activeControl, "Size", deltaSize);
+}
+
 
 template <typename T>
 void TransformSystem::AdjustProperty(ControlNode *node, const String &propertyName, const T &delta)
