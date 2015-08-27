@@ -176,12 +176,12 @@ private:
     bool isLeftButtonPressed = false;
     bool isMiddleButtonPressed = false;
 
-    float32 swapChainScaleX = 1.f;
-    float32 swapChainScaleY = 1.f;
-    int32 swapChainWidth = DisplayMode::DEFAULT_WIDTH;
-    int32 swapChainHeight = DisplayMode::DEFAULT_HEIGHT;
-    int32 physicalWidth = static_cast<int32>(swapChainWidth * swapChainScaleX);
-    int32 physicalHeight = static_cast<int32>(swapChainHeight * swapChainScaleY);
+    float32 viewScaleX = 1.f;
+    float32 viewScaleY = 1.f;
+    int32 viewWidth = DisplayMode::DEFAULT_WIDTH;
+    int32 viewHeight = DisplayMode::DEFAULT_HEIGHT;
+    int32 physicalWidth = static_cast<int32>(viewWidth * viewScaleX);
+    int32 physicalHeight = static_cast<int32>(viewHeight * viewScaleY);
 
     Windows::Graphics::Display::DisplayOrientations displayOrientation = ::Windows::Graphics::Display::DisplayOrientations::None;
 };
