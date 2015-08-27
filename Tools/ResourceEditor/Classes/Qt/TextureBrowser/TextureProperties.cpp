@@ -231,23 +231,24 @@ void TextureProperties::ReloadEnumFormats()
 
 void TextureProperties::ReloadEnumFilters()
 {
-	const EnumMap *globalFormats = GlobalEnumMap<rhi::TextureFilter>::Instance();
+	const EnumMap *filterFormats = GlobalEnumMap<rhi::TextureFilter>::Instance();
+    const EnumMap *mipFormats = GlobalEnumMap<rhi::TextureMipFilter>::Instance();
 
 	enumFiltersMag.UnregistelAll();
 	enumFiltersMin.UnregistelAll();
     enumFiltersMip.UnregistelAll();
 
 	// Mag
-    enumFiltersMag.Register(rhi::TEXFILTER_NEAREST, globalFormats->ToString(rhi::TEXFILTER_NEAREST));
-    enumFiltersMag.Register(rhi::TEXFILTER_LINEAR, globalFormats->ToString(rhi::TEXFILTER_LINEAR));
+    enumFiltersMag.Register(rhi::TEXFILTER_NEAREST, filterFormats->ToString(rhi::TEXFILTER_NEAREST));
+    enumFiltersMag.Register(rhi::TEXFILTER_LINEAR, filterFormats->ToString(rhi::TEXFILTER_LINEAR));
 
 	// Min
-    enumFiltersMin.Register(rhi::TEXFILTER_NEAREST, globalFormats->ToString(rhi::TEXFILTER_NEAREST));
-    enumFiltersMin.Register(rhi::TEXFILTER_LINEAR, globalFormats->ToString(rhi::TEXFILTER_LINEAR));
+    enumFiltersMin.Register(rhi::TEXFILTER_NEAREST, filterFormats->ToString(rhi::TEXFILTER_NEAREST));
+    enumFiltersMin.Register(rhi::TEXFILTER_LINEAR, filterFormats->ToString(rhi::TEXFILTER_LINEAR));
 
-    enumFiltersMin.Register(rhi::TEXMIPFILTER_NONE, globalFormats->ToString(rhi::TEXMIPFILTER_NONE));
-    enumFiltersMin.Register(rhi::TEXMIPFILTER_NEAREST, globalFormats->ToString(rhi::TEXMIPFILTER_NEAREST));
-    enumFiltersMin.Register(rhi::TEXMIPFILTER_LINEAR, globalFormats->ToString(rhi::TEXMIPFILTER_LINEAR));
+    enumFiltersMip.Register(rhi::TEXMIPFILTER_NONE, mipFormats->ToString(rhi::TEXMIPFILTER_NONE));
+    enumFiltersMip.Register(rhi::TEXMIPFILTER_NEAREST, mipFormats->ToString(rhi::TEXMIPFILTER_NEAREST));
+    enumFiltersMip.Register(rhi::TEXMIPFILTER_LINEAR, mipFormats->ToString(rhi::TEXMIPFILTER_LINEAR));
 }
 
 void TextureProperties::ReloadEnumWrap()

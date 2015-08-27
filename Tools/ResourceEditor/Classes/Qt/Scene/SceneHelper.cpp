@@ -49,12 +49,15 @@ void SceneHelper::BuildMaterialList(DAVA::Entity *forNode, Set<NMaterial*>& mate
         {
             continue;
         }
+       
+#if RHI_COMPLETE_EDITOR
+        //TODO: skip global if need
+        //        if(!includeGlobalMaterial && mat->IsGlobal())
+        //        {
+        //            continue;
+        //        }
+#endif //RHI_COMPLETE_EDITOR
         
-
-//        if(!includeGlobalMaterial && mat->IsGlobal())
-//        {
-//            continue;
-//        }
         
         materialList.insert(mat);
     }
@@ -63,11 +66,15 @@ void SceneHelper::BuildMaterialList(DAVA::Entity *forNode, Set<NMaterial*>& mate
 
 void SceneHelper::EnumerateEntityTextures(DAVA::Scene *forScene, DAVA::Entity *forNode, DAVA::TexturesMap &textureCollection, TexturesEnumerateMode mode)
 {
-    if(!forNode || !forScene) return;
+    if(nullptr == forNode || nullptr == forScene)
+    {
+        return;
+    }
     
     DAVA::Set<DAVA::NMaterial *> materials;
     BuildMaterialList(forNode, materials);
 
+    Set<MaterialTextureInfo *> materialTextures;
     for(auto & mat : materials)
     {
         String materialName = mat->GetMaterialName().c_str();
@@ -78,9 +85,28 @@ void SceneHelper::EnumerateEntityTextures(DAVA::Scene *forScene, DAVA::Entity *f
             continue;
         }
         
-        CollectTextures(mat, textureCollection, mode);
+        
+        mat->CollectLocalTextures(materialTextures);
     }
 
+    
+    for(auto const & matTex: materialTextures)
+    {
+        const DAVA::FilePath & texturePath = matTex->path;
+        Texture * texture = matTex->texture;
+        
+        if(texturePath.IsEmpty() || !SceneValidator::Instance()->IsPathCorrectForProject(texturePath))
+        {
+            continue;
+        }
+        
+        if((TexturesEnumerateMode::EXCLUDE_NULL == mode) && (nullptr == texture || texture->isRenderTarget))
+        {
+            continue;
+        }
+        
+        textureCollection[FILEPATH_MAP_KEY(texturePath)] = texture;
+    }
 }
 
 int32 SceneHelper::EnumerateModifiedTextures(DAVA::Scene *forScene, DAVA::Map<DAVA::Texture *, DAVA::Vector< DAVA::eGPUFamily> > &textures)
@@ -88,7 +114,7 @@ int32 SceneHelper::EnumerateModifiedTextures(DAVA::Scene *forScene, DAVA::Map<DA
 	int32 retValue = 0;
 	textures.clear();
 	TexturesMap allTextures;
-	EnumerateSceneTextures(forScene, allTextures, EXCLUDE_NULL);
+    EnumerateSceneTextures(forScene, allTextures, TexturesEnumerateMode::EXCLUDE_NULL);
     
     for(auto & it: allTextures)
     {
@@ -124,44 +150,6 @@ int32 SceneHelper::EnumerateModifiedTextures(DAVA::Scene *forScene, DAVA::Map<DA
 	return retValue;
 }
 
-void SceneHelper::CollectTextures(const DAVA::NMaterial *material, DAVA::TexturesMap &textures, TexturesEnumerateMode mode)
-{
-#if RHI_COMPLETE_EDITOR
-    DAVA::uint32 texCount = material->GetTextureCount();
-    
-    for(DAVA::uint32 t = 0; t < texCount; ++t)
-    {
-        DAVA::FilePath texturePath = material->GetTexturePath(material->GetTextureName(t));
-        if(!texturePath.IsEmpty() && SceneValidator::Instance()->IsPathCorrectForProject(texturePath)&&!NMaterial::IsRuntimeTexture(material->GetTextureName(t)))
-        {
-            if(mode == EXCLUDE_NULL)
-            {
-                DAVA::Texture *texture = material->GetTexture(t);
-                if(texture && !texture->isRenderTarget)
-                {
-                    const DAVA::FilePath & path = texture->texDescriptor->pathname;
-
-                    if(path != texturePath)
-                    {
-                        DAVA::Logger::Error("texture path: \"%s\"\n material (%s) path: \"%s\"\n", path.GetAbsolutePathname().c_str(), material->GetMaterialName().c_str(), texturePath.GetAbsolutePathname().c_str());
-                        DVASSERT(path == texturePath);
-                    }
-
-                    textures[FILEPATH_MAP_KEY(path)] = texture;
-                }
-            }
-            else if(mode == INCLUDE_NULL)
-            {
-                textures[FILEPATH_MAP_KEY(texturePath)] = material->GetTexture(t);
-            }
-            else
-            {
-                DVASSERT(0 && "Unknown enumeration mode");
-            }
-        }
-    }
-#endif // RHI_COMPLETE_EDITOR
-}
 
 void SceneHelper::EnumerateMaterialInstances(DAVA::Entity *forNode, DAVA::Vector<DAVA::NMaterial *> &materials)
 {

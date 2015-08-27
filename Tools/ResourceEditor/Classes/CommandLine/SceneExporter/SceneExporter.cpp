@@ -320,22 +320,21 @@ bool SceneExporter::ExportDescriptors(DAVA::Scene *scene, Set<String> &errorLog)
 {
     bool allDescriptorsWereExported = true;
     
-    DAVA::TexturesMap textures;
-    SceneHelper::EnumerateSceneTextures(scene, textures, SceneHelper::INCLUDE_NULL);
+    DAVA::TexturesMap sceneTextures;
+    SceneHelper::EnumerateSceneTextures(scene, sceneTextures, SceneHelper::TexturesEnumerateMode::INCLUDE_NULL);
 
-    auto endIt = textures.end();
-    for(auto it = textures.begin(); it != endIt; ++it)
+    for(const auto & scTex: sceneTextures)
     {
-        DAVA::FilePath pathname = it->first;
-        if((pathname.GetType() == DAVA::FilePath::PATH_IN_MEMORY) || pathname.IsEmpty())
+        const DAVA::FilePath & path = scTex.first;
+        if(path.GetType() == DAVA::FilePath::PATH_IN_MEMORY)
         {
             continue;
         }
-
-        allDescriptorsWereExported &= ExportTextureDescriptor(it->first, errorLog);
+        
+        DVASSERT(path.IsEmpty() == false);
+        
+        allDescriptorsWereExported &= ExportTextureDescriptor(path, errorLog);
     }
-
-    textures.clear();
     
     return allDescriptorsWereExported;
 }
