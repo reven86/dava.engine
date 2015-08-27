@@ -55,7 +55,7 @@ int AddRequest::SendRequest()
 		ScopedPtr<File> file(File::Create(path, File::OPEN | File::READ));
 		if (file)
 		{
-			std::shared_ptr<Vector<uint8> >  data = std::make_shared<Vector<uint8>>();
+			std::shared_ptr<Vector<uint8>>  data = std::make_shared<Vector<uint8>>();
 
 			auto dataSize = file->GetSize();
 			data.get()->resize(dataSize);

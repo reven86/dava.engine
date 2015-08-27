@@ -41,7 +41,7 @@ namespace DAVA {
 namespace AssetCache {
 
 ClientNetProxy::ClientNetProxy() 
-    : addressResolver(Net::NetCore::Instance()->Loop())
+    : addressResolver(nullptr)
 {
 }
 
@@ -50,6 +50,7 @@ bool ClientNetProxy::Connect(const String &ip, uint16 port)
     DVASSERT(nullptr == netClient);
     DVASSERT(nullptr == openedChannel);
 
+    addressResolver.SetIOLoop(Net::NetCore::Instance()->Loop());
     return addressResolver.AsyncResolve(ip.c_str(), port, MakeFunction(this, &ClientNetProxy::OnAddressResolved));
 }
 

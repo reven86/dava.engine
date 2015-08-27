@@ -86,7 +86,7 @@ uint32 StaticMemoryFile::Read(void * pointerToData, uint32 dataSize)
 	}
 
     uint32 read = GetRWOperationSize(dataSize);
-    if (currentPos < memoryBufferSize - 1)
+    if (read > 0)
     {
         Memcpy(pointerToData, memoryBuffer + currentPos, read);
         currentPos += read;
@@ -103,7 +103,7 @@ uint32 StaticMemoryFile::GetRWOperationSize(uint32 dataSize) const
         return 0;
     }
 
-    if (currentPos < memoryBufferSize - 1)
+    if (currentPos < memoryBufferSize)
     {
         uint32 tailSpace = memoryBufferSize - currentPos;
         return Min(tailSpace, dataSize);

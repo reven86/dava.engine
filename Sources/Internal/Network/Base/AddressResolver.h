@@ -51,6 +51,8 @@ public:
     explicit AddressResolver(IOLoop* loop);
     ~AddressResolver();
 
+    void SetIOLoop(IOLoop* loop);
+    
     bool AsyncResolve(const char8* address, uint16 port, ResolverCallbackFn cbk);
     void Cancel();
 

@@ -37,8 +37,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace DAVA {
 namespace Net {
 
-AddressResolver::AddressResolver(IOLoop* loop_) 
-    : loop(loop_)
+AddressResolver::AddressResolver(IOLoop* _loop)
+    : loop(_loop)
 {
 }
 
@@ -46,6 +46,12 @@ AddressResolver::~AddressResolver()
 {
     Cancel();
 }
+    
+void AddressResolver::SetIOLoop(IOLoop* _loop)
+{
+    loop = _loop;
+}
+
 
 bool AddressResolver::AsyncResolve(const char8* address, uint16 port, ResolverCallbackFn cbk)
 {
