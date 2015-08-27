@@ -27,52 +27,46 @@
 =====================================================================================*/
 
 
-#ifndef __HTTP_DOWNLOADER_H__
-#define __HTTP_DOWNLOADER_H__
-
+#ifndef __SCENE_DUMPER_H__
+#define __SCENE_DUMPER_H__
 
 #include "Base/BaseTypes.h"
-#include "Base/BaseObject.h"
 #include "FileSystem/FilePath.h"
 
-
-namespace DAVA 
+namespace DAVA
 {
-	
+	class Scene;
+	class Entity;
+	class RenderObject;
+	class KeyedArchive;
+	class ParticleEffectComponent;
+	class ParticleEmitter;
+}
 
-class HTTPDownloaderDelegate
+class SceneDumper
 {
 public:
-	/*
-		VB: Надо убрать HTTPDownloaderDelegate из названия функций потому-что 
-	 void MyClass::HTTPDownloaderDelegate::DidFailWithErrorMessage(String & error)
-	 {
-	 
-	 }
-	*/
-	virtual void HTTPDownloaderDelegateDidFailWithErrorMessage(String &errorMessage) = 0;
-	virtual void HTTPDownloaderDelegateDidFinish(const unsigned char *bytes, int length) = 0;
-};
-	
-class HTTPDownloader : public BaseObject 
-{
-public:
-	
-	HTTPDownloader();
-	
-	void DownloadFile(const String &address, HTTPDownloaderDelegate *delegate);
-	
+
+	using SceneLinks = DAVA::Set < DAVA::FilePath >;
+
+	static SceneLinks DumpLinks(const DAVA::FilePath &scenePath, DAVA::Set<DAVA::String> &errorLog);
+
 private:
-	void*downloader;
 
-protected:
-	
-	~HTTPDownloader();
-};
-	
-	
-bool DownloadFileFromURLToDocuments(const String & url, const FilePath & documentsPathname);
-	
+	SceneDumper(const DAVA::FilePath &scenePath, DAVA::Set<DAVA::String> &errorLog);
+	~SceneDumper();
+
+	void DumpLinksRecursive(DAVA::Entity *entity, SceneLinks &links) const;
+
+	void DumpCustomProperties(DAVA::KeyedArchive *properties, SceneLinks &links) const;
+	void DumpRenderObject(DAVA::RenderObject *renderObject, SceneLinks &links) const;
+	void DumpEffect(DAVA::ParticleEffectComponent *effect, SceneLinks &links) const;
+	void DumpEmitter(DAVA::ParticleEmitter *emitter, SceneLinks &links, SceneLinks &gfxFolders) const;
+
+private:
+	DAVA::Scene *scene = nullptr;
+    DAVA::FilePath scenePathname;
 };
 
-#endif // __HTTP_DOWNLOADER_H__
+
+#endif // __SCENE_DUMPER_H__

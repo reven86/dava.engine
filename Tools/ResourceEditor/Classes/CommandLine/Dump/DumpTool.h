@@ -27,40 +27,37 @@
 =====================================================================================*/
 
 
-#include "Utils/HTTPDownloader.h"
+#ifndef __DUMP_TOOL_H__
+#define __DUMP_TOOL_H__
 
-#if defined(__DAVAENGINE_ANDROID__) 
+#include "CommandLine/CommandLineTool.h"
 
-#include "Platform/TemplateAndroid/CorePlatformAndroid.h"
-
-namespace DAVA 
+class DumpTool: public CommandLineTool
 {
+    enum eAction
+    {
+        ACTION_NONE = -1,
+        
+        ACTION_DUMP_LINKS,
+    };
+    
+public:
 
-	HTTPDownloader::HTTPDownloader()
-	{
-		downloader = NULL;
-	}
+	DAVA::String GetCommandLineKey() const override;
+	bool InitializeFromCommandLine() override;
+	void Process() override;
+	void PrintUsage() const override;
+	void DumpParams() const override;
+	DAVA::FilePath GetQualityConfigPath() const override;
 
-	HTTPDownloader::~HTTPDownloader()
-	{
+protected:
 
-	}
-
-	void HTTPDownloader::DownloadFile(const String &address, HTTPDownloaderDelegate *delegate)
-	{
-	}
-
-	bool DownloadFileFromURLToDocuments(const String & url, const String & documentsPathname)
-	{
-		CorePlatformAndroid *core = (CorePlatformAndroid *)Core::Instance();
-		if(core)
-		{
-//			return core->DownloadHttpFile(url, documentsPathname);
-		}
-
-		return false;
-	}
-
+    eAction commandAction;
+    DAVA::String filename;
+    DAVA::FilePath inFolder;
+	DAVA::FilePath outFile;
+	DAVA::FilePath qualityPathname;
 };
 
-#endif //#if defined(__DAVAENGINE_ANDROID__)
+
+#endif // __DUMP_TOOL_H__
