@@ -31,7 +31,7 @@
 #include "QtTools/RunGuard/RunGuard.h"
 
 #include "ServerCore.h"
-#include "MainWindow.h"
+#include "AssetCacheServerWindow.h"
 
 
 #include <QApplication>
@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
 		DAVA::Logger::Instance()->SetLogLevel(DAVA::Logger::LEVEL_FRAMEWORK);
 
 		ServerCore server;
-		MainWindow mainWindow(server);
+		AssetCacheServerWindow mainWindow(server);
 
 		if (server.Settings().IsFirstLaunch())
 		{

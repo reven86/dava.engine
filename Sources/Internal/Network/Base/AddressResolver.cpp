@@ -81,8 +81,11 @@ bool AddressResolver::AsyncResolve(const char8* address, uint16 port, ResolverCa
 
 void AddressResolver::Cancel()
 {
-    uv_cancel(reinterpret_cast<uv_req_t *>(handle));
-    handle = nullptr;
+    if (nullptr != handle)
+    {
+        uv_cancel(reinterpret_cast<uv_req_t *>(handle));
+        handle = nullptr;
+    }
 }
 
 void AddressResolver::GetAddrInfoCallback(uv_getaddrinfo_t* handle, int status, struct addrinfo* response)

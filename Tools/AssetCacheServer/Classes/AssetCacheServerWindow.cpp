@@ -27,8 +27,8 @@
 =====================================================================================*/
 
 
-#include "MainWindow.h"
-#include "ui_MainWindow.h"
+#include "AssetCacheServerWindow.h"
+#include "ui_AssetCacheServerWidget.h"
 
 #include "AssetCache/AssetCacheConstants.h"
 
@@ -54,15 +54,15 @@ namespace {
     uint16 DEFAULT_REMOTE_PORT = DAVA::AssetCache::ASSET_SERVER_PORT;
 }
 
-MainWindow::MainWindow(ServerCore& core, QWidget *parent)
+AssetCacheServerWindow::AssetCacheServerWindow(ServerCore& core, QWidget *parent)
     : QMainWindow(parent)
-    , ui(new Ui::MainWindow)
+    , ui(new Ui::AssetCacheServerWidget)
     , serverCore(core)
 {
     ui->setupUi(this);
 
-    connect(ui->cacheFolderLineEdit, &QLineEdit::textChanged, this, &MainWindow::OnFolderTextChanged);
-    connect(ui->selectFolderButton, &QPushButton::clicked, this, &MainWindow::OnFolderSelected);
+    connect(ui->cacheFolderLineEdit, &QLineEdit::textChanged, this, &AssetCacheServerWindow::OnFolderTextChanged);
+    connect(ui->selectFolderButton, &QPushButton::clicked, this, &AssetCacheServerWindow::OnFolderSelected);
     connect(ui->clearDirectoryButton, &QPushButton::clicked, ui->cacheFolderLineEdit, &QLineEdit::clear);
     connect(ui->cacheSizeSpinBox, SIGNAL(valueChanged(double)), this, SLOT(OnCacheSizeChanged(double)));
     connect(ui->numberOfFilesSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnNumberOfFilesChanged(int)));
@@ -70,10 +70,10 @@ MainWindow::MainWindow(ServerCore& core, QWidget *parent)
     connect(ui->portSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnPortChanged(int)));
     connect(ui->autoStartCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnAutoStartChanged(int)));
 
-    connect(ui->addNewServerButton, &QPushButton::clicked, this, &MainWindow::OnRemoteServerAdded);
+    connect(ui->addNewServerButton, &QPushButton::clicked, this, &AssetCacheServerWindow::OnRemoteServerAdded);
 
-    connect(ui->applyButton, &QPushButton::clicked, this, &MainWindow::OnApplyButtonClicked);
-    connect(ui->closeButton, &QPushButton::clicked, this, &MainWindow::OnCloseButtonClicked);
+    connect(ui->applyButton, &QPushButton::clicked, this, &AssetCacheServerWindow::OnApplyButtonClicked);
+    connect(ui->closeButton, &QPushButton::clicked, this, &AssetCacheServerWindow::OnCloseButtonClicked);
 
     serversBoxLayout = new QVBoxLayout();
     ui->scrollAreaWidgetContents->setLayout(serversBoxLayout);
@@ -83,12 +83,12 @@ MainWindow::MainWindow(ServerCore& core, QWidget *parent)
 
     ChangeSettingsState(NOT_EDITED);
 
-    connect(&serverCore, &ServerCore::ServerStateChanged, this, &MainWindow::OnServerStateChanged);
+    connect(&serverCore, &ServerCore::ServerStateChanged, this, &AssetCacheServerWindow::OnServerStateChanged);
     LoadSettings();
     OnServerStateChanged(&serverCore);
 }
 
-MainWindow::~MainWindow()
+AssetCacheServerWindow::~AssetCacheServerWindow()
 {
     if (trayIcon)
     {
@@ -97,16 +97,16 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::CreateTrayIcon()
+void AssetCacheServerWindow::CreateTrayIcon()
 {
     startAction = new QAction("Start server", this);
-    connect(startAction, &QAction::triggered, this, &MainWindow::OnStartAction);
+    connect(startAction, &QAction::triggered, this, &AssetCacheServerWindow::OnStartAction);
 
     stopAction = new QAction("Stop server", this);
-    connect(stopAction, &QAction::triggered, this, &MainWindow::OnStopAction);
+    connect(stopAction, &QAction::triggered, this, &AssetCacheServerWindow::OnStopAction);
 
     QAction *editAction = new QAction("Edit settings", this);
-    connect(editAction, &QAction::triggered, this, &MainWindow::OnEditAction);
+    connect(editAction, &QAction::triggered, this, &AssetCacheServerWindow::OnEditAction);
 
     QAction *quitAction = new QAction("Quit", this);
     connect(quitAction, &QAction::triggered, qApp, QApplication::quit);
@@ -133,10 +133,10 @@ void MainWindow::CreateTrayIcon()
     trayIcon->setContextMenu(trayActionsMenu);
     trayIcon->show();
 
-    connect(trayIcon, &QSystemTrayIcon::activated, this, &MainWindow::OnTrayIconActivated);
+    connect(trayIcon, &QSystemTrayIcon::activated, this, &AssetCacheServerWindow::OnTrayIconActivated);
 }
 
-void MainWindow::closeEvent(QCloseEvent *e)
+void AssetCacheServerWindow::closeEvent(QCloseEvent *e)
 {
     hide();
     e->ignore();
@@ -147,13 +147,13 @@ void MainWindow::closeEvent(QCloseEvent *e)
     }
 }
 
-void MainWindow::ChangeSettingsState(SettingsState newState)
+void AssetCacheServerWindow::ChangeSettingsState(SettingsState newState)
 {
     settingsState = newState;
     ui->applyButton->setEnabled(settingsState == EDITED);
 }
 
-void MainWindow::OnTrayIconActivated(QSystemTrayIcon::ActivationReason reason)
+void AssetCacheServerWindow::OnTrayIconActivated(QSystemTrayIcon::ActivationReason reason)
 {
     switch (reason)
     {
@@ -169,7 +169,7 @@ void MainWindow::OnTrayIconActivated(QSystemTrayIcon::ActivationReason reason)
     }
 }
 
-void MainWindow::OnFolderSelected()
+void AssetCacheServerWindow::OnFolderSelected()
 {
     QString directory = FileDialog::getExistingDirectory(this, "Choose directory", QDir::currentPath(),
                                                          QFileDialog::ShowDirsOnly);
@@ -178,45 +178,45 @@ void MainWindow::OnFolderSelected()
     VerifyData();
 }
 
-void MainWindow::OnFolderTextChanged()
+void AssetCacheServerWindow::OnFolderTextChanged()
 {
     ui->clearDirectoryButton->setEnabled(!ui->cacheFolderLineEdit->text().isEmpty());
     ui->cacheFolderLineEdit->setFocus();
     VerifyData();
 }
 
-void MainWindow::OnCacheSizeChanged(double)
+void AssetCacheServerWindow::OnCacheSizeChanged(double)
 {
     VerifyData();
 }
 
-void MainWindow::OnNumberOfFilesChanged(int)
+void AssetCacheServerWindow::OnNumberOfFilesChanged(int)
 {
     VerifyData();
 }
 
-void MainWindow::OnAutoSaveTimeoutChanged(int)
+void AssetCacheServerWindow::OnAutoSaveTimeoutChanged(int)
 {
     VerifyData();
 }
 
-void MainWindow::OnPortChanged(int)
+void AssetCacheServerWindow::OnPortChanged(int)
 {
     VerifyData();
 }
 
-void MainWindow::OnAutoStartChanged(int)
+void AssetCacheServerWindow::OnAutoStartChanged(int)
 {
     VerifyData();
 }
 
-void MainWindow::OnRemoteServerAdded()
+void AssetCacheServerWindow::OnRemoteServerAdded()
 {
     AddRemoteServer(ServerData(DEFAULT_REMOTE_IP, DEFAULT_REMOTE_PORT, false));
     VerifyData();
 }
 
-void MainWindow::OnRemoteServerRemoved()
+void AssetCacheServerWindow::OnRemoteServerRemoved()
 {
     RemoteServerWidget *remoteServer = qobject_cast<RemoteServerWidget *>(sender());
     remoteServers.remove(remoteServer);
@@ -225,12 +225,12 @@ void MainWindow::OnRemoteServerRemoved()
     VerifyData();
 }
 
-void MainWindow::OnRemoteServerEdited()
+void AssetCacheServerWindow::OnRemoteServerEdited()
 {
     VerifyData();
 }
 
-void MainWindow::OnRemoteServerChecked(bool checked)
+void AssetCacheServerWindow::OnRemoteServerChecked(bool checked)
 {
     if (checked)
     {
@@ -248,29 +248,29 @@ void MainWindow::OnRemoteServerChecked(bool checked)
     VerifyData();
 }
 
-void MainWindow::OnEditAction()
+void AssetCacheServerWindow::OnEditAction()
 {
     show();
     raise();
 }
 
-void MainWindow::OnStartAction()
+void AssetCacheServerWindow::OnStartAction()
 {
     serverCore.Start();
 }
 
-void MainWindow::OnStopAction()
+void AssetCacheServerWindow::OnStopAction()
 {
     serverCore.Stop();
 }
 
-void MainWindow::AddRemoteServer(const ServerData & newServer)
+void AssetCacheServerWindow::AddRemoteServer(const ServerData & newServer)
 {
     RemoteServerWidget *server = new RemoteServerWidget(newServer, this);
     remoteServers.push_back(server);
 
-    connect(server, &RemoteServerWidget::RemoveLater, this, &MainWindow::OnRemoteServerRemoved);
-    connect(server, &RemoteServerWidget::ParametersChanged, this, &MainWindow::OnRemoteServerEdited);
+    connect(server, &RemoteServerWidget::RemoveLater, this, &AssetCacheServerWindow::OnRemoteServerRemoved);
+    connect(server, &RemoteServerWidget::ParametersChanged, this, &AssetCacheServerWindow::OnRemoteServerEdited);
     connect(server, SIGNAL(ServerChecked(bool)), this, SLOT(OnRemoteServerChecked(bool)));
 
     serversBoxLayout->insertWidget(serversBoxLayout->count() - 1, server);
@@ -278,7 +278,7 @@ void MainWindow::AddRemoteServer(const ServerData & newServer)
     VerifyData();
 }
 
-void MainWindow::RemoveServers()
+void AssetCacheServerWindow::RemoveServers()
 {
     while (!remoteServers.empty())
     {
@@ -287,17 +287,17 @@ void MainWindow::RemoveServers()
     }
 }
 
-void MainWindow::VerifyData()
+void AssetCacheServerWindow::VerifyData()
 {
     ChangeSettingsState(EDITED);
 }
 
-void MainWindow::OnApplyButtonClicked()
+void AssetCacheServerWindow::OnApplyButtonClicked()
 {
     SaveSettings();
 }
 
-void MainWindow::OnCloseButtonClicked()
+void AssetCacheServerWindow::OnCloseButtonClicked()
 {
     hide();
 
@@ -307,7 +307,7 @@ void MainWindow::OnCloseButtonClicked()
     }
 }
 
-void MainWindow::SaveSettings()
+void AssetCacheServerWindow::SaveSettings()
 {
     serverCore.Settings().SetFolder(ui->cacheFolderLineEdit->text().toStdString());
     serverCore.Settings().SetCacheSizeGb(ui->cacheSizeSpinBox->value());
@@ -326,7 +326,7 @@ void MainWindow::SaveSettings()
     ChangeSettingsState(NOT_EDITED);
 }
 
-void MainWindow::LoadSettings()
+void AssetCacheServerWindow::LoadSettings()
 {
     bool blocked = blockSignals(true);
 
@@ -349,7 +349,7 @@ void MainWindow::LoadSettings()
     ChangeSettingsState(NOT_EDITED);
 }
 
-void MainWindow::OnServerStateChanged(const ServerCore* server)
+void AssetCacheServerWindow::OnServerStateChanged(const ServerCore* server)
 {
     DVASSERT(&serverCore == server);
 

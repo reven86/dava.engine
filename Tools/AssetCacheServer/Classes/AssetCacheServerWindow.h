@@ -27,8 +27,8 @@
 =====================================================================================*/
 
 
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#ifndef __ASSETCACHESERVER_WINDOW_H__
+#define __ASSETCACHESERVER_WINDOW_H__
 
 #include <memory>
 #include <QMainWindow>
@@ -45,17 +45,17 @@ struct ServerData;
 
 namespace Ui
 {
-    class MainWindow;
+    class AssetCacheServerWidget;
 }
 
 
-class MainWindow : public QMainWindow
+class AssetCacheServerWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    explicit MainWindow(ServerCore& core, QWidget *parent = nullptr);
-    ~MainWindow() override;
+    explicit AssetCacheServerWindow(ServerCore& core, QWidget *parent = nullptr);
+    ~AssetCacheServerWindow() override;
 
 protected:
     void closeEvent(QCloseEvent *e) override;
@@ -104,7 +104,7 @@ private:
     void ChangeSettingsState(SettingsState newState);
 
 private:
-    Ui::MainWindow *ui = nullptr;
+    Ui::AssetCacheServerWidget *ui = nullptr;
     QAction *startAction = nullptr;
     QAction *stopAction = nullptr;
     QSystemTrayIcon* trayIcon = nullptr;
@@ -121,4 +121,4 @@ private:
     SettingsState settingsState = NOT_EDITED;
 };
 
-#endif // MAINWINDOW_H
+#endif // __ASSETCACHESERVER_WINDOW_H__
