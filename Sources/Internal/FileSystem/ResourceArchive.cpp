@@ -605,7 +605,8 @@ static bool CopyTmpfileToPackfile(RefPtr<File> packFileOutput,
 
 bool ResourceArchive::CreatePack(const String& pacName,
                                  const Vector<String>& sortedFileNames,
-                                 const Rules& compressionRules)
+                                 const Rules& compressionRules,
+                                 void (*onPackOneFile)(const FileInfo&))
 {
     bool result = false;
 
@@ -638,11 +639,12 @@ bool ResourceArchive::CreatePack(const String& pacName,
         File::Create(packedFileTmp, File::CREATE | File::WRITE), [](File* f)
         {
             auto name = f->GetFilename().GetAbsolutePathname();
+            SafeRelease(f);
             if (0 != std::remove(name.c_str()))
             {
                 Logger::Error("can't delete tmp file: %s", name.c_str());
             }
-            SafeRelease(f);
+
         });
 
     if (!outTmpFile)
@@ -664,6 +666,15 @@ bool ResourceArchive::CreatePack(const String& pacName,
                           Logger::Info("can't pack file: %s, skip it\n",
                                        fileName.c_str());
                           skippedFiles.insert(fileName);
+                      }
+                      else if (onPackOneFile != nullptr)
+                      {
+                          FileTableEntry& last = fileTable.back();
+                          FileInfo info = {fileName.c_str(),
+                                           last.original,
+                                           last.compressed,
+                                           last.packType};
+                          onPackOneFile(info);
                       }
                   });
     outTmpFile->Flush();

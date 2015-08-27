@@ -1924,11 +1924,8 @@
     <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIPriorityStyleSheet.h">
       <Filter>Internal\UI\Styles</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\External\lz4\lz4.h">
-      <Filter>External</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\External\lz4\lz4hc.h">
-      <Filter>External</Filter>
+    <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UIIgnoreLayoutComponent.h">
+      <Filter>Internal\UI\Layouts</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -3415,11 +3412,8 @@
     <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIPriorityStyleSheet.cpp">
       <Filter>Internal\UI\Styles</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\External\lz4\lz4.c">
-      <Filter>External</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\External\lz4\lz4hc.c">
-      <Filter>External</Filter>
+    <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UIIgnoreLayoutComponent.cpp">
+      <Filter>Internal\UI\Layouts</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

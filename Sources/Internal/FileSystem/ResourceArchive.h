@@ -85,7 +85,8 @@ public:
 
     static bool CreatePack(const String& pacName,
                            const Vector<String>& sortedFileNames,
-                           const Rules& compressionRules);
+                           const Rules& compressionRules,
+                           void (*onPackOneFile)(const FileInfo&));
 
 private:
     std::unique_ptr<ResourceArchiveImpl> impl;

@@ -46,7 +46,7 @@ void FrameworkWillTerminate()
 }
 
 void CollectAllFilesInDirectory(const String& pathDirName,
-                                Vector<String>& fileNameList)
+                                Vector<String>& output)
 {
     FilePath pathToDir = pathDirName;
     bool includeHidden = false;
@@ -61,7 +61,7 @@ void CollectAllFilesInDirectory(const String& pathDirName,
                 String subDir = pathDirName == "."
                                     ? directoryName + '/'
                                     : pathDirName + directoryName + '/';
-                CollectAllFilesInDirectory(subDir, fileNameList);
+                CollectAllFilesInDirectory(subDir, output);
             }
         }
         else
@@ -69,9 +69,46 @@ void CollectAllFilesInDirectory(const String& pathDirName,
             String filename = fileList->GetFilename(file);
             String pathname =
                 (pathDirName == "." ? filename : pathDirName + filename);
-            fileNameList.push_back(pathname);
+            output.push_back(pathname);
         }
     }
+}
+
+ResourceArchive::CompressionType ToPackType(
+    const String& value,
+    ResourceArchive::CompressionType defaultVal)
+{
+    const Vector<std::pair<String, ResourceArchive::CompressionType>>
+        packTypes = {{"lz4", ResourceArchive::CompressionType::Lz4},
+                     {"lz4hc", ResourceArchive::CompressionType::Lz4HC},
+                     {"none", ResourceArchive::CompressionType::None}};
+    for (auto& pair : packTypes)
+    {
+        if (pair.first == value)
+        {
+            return pair.second;
+        }
+    }
+    std::cerr << "can't convert: \"" << value
+              << "\" into any valid compression type, use default\n";
+    return defaultVal;
+}
+
+String ToString(ResourceArchive::CompressionType packType)
+{
+    Vector<const char*> packTypes = {"none", "lz4", "lz4hc"};
+
+    size_t index = static_cast<size_t>(packType);
+
+    return packTypes.at(index);
+}
+
+void OnOneFilePacked(const ResourceArchive::FileInfo& info)
+{
+    std::cout << "packing file: " << info.name
+              << " compressed: " << info.compressedSize
+              << " original: " << info.originalSize
+              << " packingType: " << ToString(info.compressionType) << '\n';
 }
 
 int PackDirectoryIntoPakfile(const String& dir,
@@ -101,7 +138,11 @@ int PackDirectoryIntoPakfile(const String& dir,
         }
     }
 
-    fileSystem->SetCurrentWorkingDirectory(dirWithSlash);
+    if (!fileSystem->SetCurrentWorkingDirectory(dirWithSlash))
+    {
+        std::cerr << "can't set CWD to: " << dirWithSlash << '\n';
+        return EXIT_FAILURE;
+    }
 
     Vector<String> files;
 
@@ -115,13 +156,9 @@ int PackDirectoryIntoPakfile(const String& dir,
 
     std::stable_sort(begin(files), end(files));
 
-    std::for_each(begin(files), end(files), [](const String& f)
-                  {
-                      std::cout << f << '\n';
-                  });
     std::cout << "start paking...\n";
     if (ResourceArchive::CreatePack(absPathPack.GetAbsolutePathname(), files,
-                                    compressionRules))
+                                    compressionRules, OnOneFilePacked))
     {
         std::cout << "Success!\n";
         return EXIT_SUCCESS;
@@ -131,26 +168,6 @@ int PackDirectoryIntoPakfile(const String& dir,
         std::cout << "Failed!\n";
         return EXIT_FAILURE;
     }
-}
-
-ResourceArchive::CompressionType ToPackType(
-    const String& value,
-    ResourceArchive::CompressionType defaultVal)
-{
-    const Vector<std::pair<String, ResourceArchive::CompressionType>>
-        packTypes = {{"lz4", ResourceArchive::CompressionType::Lz4},
-                     {"lz4hc", ResourceArchive::CompressionType::Lz4HC},
-                     {"none", ResourceArchive::CompressionType::None}};
-    for (auto& pair : packTypes)
-    {
-        if (pair.first == value)
-        {
-            return pair.second;
-        }
-    }
-    std::cerr << "can't convert: \"" << value
-              << "\" into any valid compression type, use default\n";
-    return defaultVal;
 }
 
 bool ParsePackRules(const ProgramOptions& packOptions,
@@ -245,7 +262,11 @@ int UnpackPackfileIntoDirectory(const String& pak, const String& dir)
 
     for (auto& fileInfo : ra->GetFilesInfo())
     {
-        std::cout << "start unpaking: " << fileInfo.name << '\n';
+        std::cout << "start unpaking: " << fileInfo.name
+                  << " compressed: " << fileInfo.compressedSize
+                  << " original: " << fileInfo.originalSize
+                  << " packingType: " << ToString(fileInfo.compressionType)
+                  << '\n';
         if (!UnpackFile(*ra, fileInfo))
         {
             return EXIT_FAILURE;
@@ -282,6 +303,7 @@ int main(int argc, char* argv[])
 
         if (!ParsePackRules(packOptions, defaultPackTypa, compressionRules))
         {
+            std::cerr << "can't parse paking rules\n";
             return EXIT_FAILURE;
         }
 

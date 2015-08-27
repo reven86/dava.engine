@@ -44,6 +44,13 @@ namespace DAVA
 class Vector2
 {
 public:
+    enum eAxis
+    {
+        AXIS_X = 0,
+        AXIS_Y = 1,
+        AXIS_COUNT = 2
+    };
+
     static const Vector2 UnitX;
     static const Vector2 UnitY;
 
@@ -56,7 +63,7 @@ public:
         {
             float32 dx, dy;
         };
-        float32 data[2];
+        float32 data[AXIS_COUNT];
 	};
 	
 	//! Basic
@@ -133,7 +140,15 @@ class Vector4;
 
 class Vector3
 {
- public:
+public:
+    enum eAxis
+    {
+        AXIS_X = 0,
+        AXIS_Y = 1,
+        AXIS_Z = 2,
+        AXIS_COUNT = 3
+    };
+
     static const Vector3 UnitX;
     static const Vector3 UnitY;
     static const Vector3 UnitZ;
@@ -143,7 +158,7 @@ class Vector3
 		{
 			float32 x, y, z;
 		};
-        float32 data[3];
+        float32 data[AXIS_COUNT];
 	};
 
 	inline Vector3();
@@ -224,12 +239,21 @@ inline Vector3 Reflect(const Vector3 & v, const Vector3 & n);
 class Vector4
 {
 public:
+    enum eAxis
+    {
+        AXIS_X = 0,
+        AXIS_Y = 1,
+        AXIS_Z = 2,
+        AXIS_W = 3,
+        AXIS_COUNT = 4
+    };
+    
 	union{
 		struct
 		{
 			float32 x, y, z, w;
 		};
-        float32 data[4];
+        float32 data[AXIS_COUNT];
 	};
 
 	inline Vector4();
