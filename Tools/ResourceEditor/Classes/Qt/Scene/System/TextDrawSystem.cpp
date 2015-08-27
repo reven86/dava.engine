@@ -48,7 +48,7 @@ TextDrawSystem::TextDrawSystem(Scene * scene, SceneCameraSystem *_cameraSystem) 
 
 	if (font->GetFontType() == Font::TYPE_DISTANCE)
 	{
-		float32 cachedSpread = 0.0f;
+		float32 cachedSpread = font->GetSpread();
 		fontMaterial = new NMaterial();
 		fontMaterial->SetFXName(FastName("~res:/Materials/2d.DistanceFont.material"));
 		fontMaterial->SetMaterialName(FastName("DistanceFontMaterial"));
