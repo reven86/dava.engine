@@ -117,6 +117,7 @@ void SceneDumper::DumpCustomProperties(DAVA::KeyedArchive *properties, SceneLink
 
 void SceneDumper::DumpRenderObject(DAVA::RenderObject *renderObject, SceneLinks &links) const
 {
+#if RHI_COMPLETE_EDITOR
 	if (nullptr == renderObject) return;
 
 	switch (renderObject->GetType())
@@ -192,6 +193,7 @@ void SceneDumper::DumpRenderObject(DAVA::RenderObject *renderObject, SceneLinks 
 			material = material->GetParent();
 		}
 	}
+#endif // RHI_COMPLETE_EDITOR
 }
 
 void SceneDumper::DumpEffect(ParticleEffectComponent *effect, SceneLinks &links) const
