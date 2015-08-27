@@ -240,6 +240,8 @@ protected:
     
     void OnSceneSaveAsInternal(bool saveWithCompressed);
     
+    bool SaveAllSceneEmitters(SceneEditor2 *scene);
+
     
 private slots:
 	void ProjectOpened(const QString &path);
