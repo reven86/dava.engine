@@ -745,6 +745,8 @@ void PrivateTextFieldWinUAP::PositionNative(const Rect& rectInVirtualCoordinates
     }
 
     // 3. set control's position and size
+    nativeControl->MinHeight = 0.0;     // Force minimum control sizes to zero to
+    nativeControl->MinWidth = 0.0;      // allow setting any control sizes
     nativeControl->Width = controlRect.dx;
     nativeControl->Height = controlRect.dy;
     core->XamlApplication()->PositionUIElement(nativeControl, controlRect.x, controlRect.y);
