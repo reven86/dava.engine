@@ -47,8 +47,8 @@ public:
 	virtual void Prepare(Texture *texture = nullptr);
 	virtual void Draw(const Color& textColor, const Vector2* offset);
 
-	static const uint16* GetSharedIndexBuffer();
-	static const size_t GetSharedIndexBufferCapacity();
+	inline static const uint16* GetSharedIndexBuffer();
+	inline static const uint32 GetSharedIndexBufferCapacity();
 	
 protected:
 	virtual Font::StringMetrics DrawTextSL(const WideString& drawText, int32 x, int32 y, int32 w);
@@ -72,6 +72,16 @@ private:
     NMaterial* dfMaterial;
     float32 cachedSpread;
 };
+
+inline const uint16* TextBlockGraphicRender::GetSharedIndexBuffer()
+{
+	return indexBuffer;
+}
+
+inline const uint32 TextBlockGraphicRender::GetSharedIndexBufferCapacity()
+{
+	return GRAPHIC_FONT_INDEX_BUFFER_SIZE;
+}
 
 }; //end of namespace
 

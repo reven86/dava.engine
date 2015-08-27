@@ -39,7 +39,7 @@
 class TextDrawSystem : public DAVA::SceneSystem
 {
 public:
-	enum Align
+	enum class Align : DAVA::uint8
 	{
 		TopLeft,
 		TopCenter,
@@ -58,8 +58,8 @@ public:
 
 	DAVA::Vector2 ToPos2d(const DAVA::Vector3 &pos3d) const;
 
-	void DrawText(int x, int y, const DAVA::String &text, const DAVA::Color &color, Align align = TopLeft);
-	void DrawText(DAVA::Vector2 pos2d, const DAVA::String &text, const DAVA::Color &color, Align align = TopLeft);
+	void DrawText(DAVA::int32 x, DAVA::int32 y, const DAVA::String &text, const DAVA::Color &color, Align align = Align::TopLeft);
+	void DrawText(const DAVA::Vector2 &pos2d, const DAVA::String &text, const DAVA::Color &color, Align align = Align::TopLeft);
 
     DAVA::GraphicFont * GetFont() const;
 
@@ -75,13 +75,13 @@ protected:
 		Align align;
 	};
 
-	typedef DAVA::Vector<DAVA::GraphicFont::GraphicFontVertex> GraphicFontVertexVector;
+	using GraphicFontVertexVector = DAVA::Vector<DAVA::GraphicFont::GraphicFontVertex>;
 
 protected:
 	void Draw();
 
 	void AdjustPositionBasedOnAlign(DAVA::float32& x, DAVA::float32& y, const DAVA::Size2i& size, Align align);
-	void pushNextBatch(const DAVA::Color& color);
+	void PushNextBatch(const DAVA::Color& color);
 
 private:
 	friend class SceneEditor2;
@@ -98,4 +98,4 @@ inline DAVA::GraphicFont * TextDrawSystem::GetFont() const
     return font;
 }
 
-#endif
+#endif // GUARD

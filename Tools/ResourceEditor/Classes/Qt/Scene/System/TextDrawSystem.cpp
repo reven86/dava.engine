@@ -70,7 +70,7 @@ TextDrawSystem::~TextDrawSystem()
 Vector2 TextDrawSystem::ToPos2d(const Vector3 &pos3d) const
 {
 	Vector3 pos2ddepth = cameraSystem->GetScreenPosAndDepth(pos3d);
-	return (pos2ddepth.z >= 0) ? Vector2(pos2ddepth.x, pos2ddepth.y) : Vector2(-1, -1);
+	return (pos2ddepth.z >= 0) ? Vector2(pos2ddepth.x, pos2ddepth.y) : Vector2(-1.0f, -1.0f);
 }
 
 void TextDrawSystem::Draw()
@@ -91,14 +91,14 @@ void TextDrawSystem::Draw()
 			int32 charactersDrawn = 0;
 			font->DrawStringToBuffer(wStr, static_cast<int>(x), static_cast<int>(y), vertices.data(), charactersDrawn);
 
-			pushNextBatch(textToDraw.color);
+			PushNextBatch(textToDraw.color);
 		}
 	}
 
 	textToDraw.clear();
 }
 
-void TextDrawSystem::pushNextBatch(const Color& color)
+void TextDrawSystem::PushNextBatch(const Color& color)
 {
 	size_t vertexCount = vertices.size();
 	size_t indexCount = 6 * vertexCount / 4;
@@ -106,7 +106,7 @@ void TextDrawSystem::pushNextBatch(const Color& color)
 	RenderSystem2D::BatchDescriptor batchDescriptor;
     batchDescriptor.singleColor = color;
     batchDescriptor.vertexCount = vertexCount;
-    batchDescriptor.indexCount = std::min(TextBlockGraphicRender::GetSharedIndexBufferCapacity(), indexCount);
+    batchDescriptor.indexCount = DAVA::Min(TextBlockGraphicRender::GetSharedIndexBufferCapacity(), indexCount);
     batchDescriptor.vertexPointer = vertices.front().position.data;
     batchDescriptor.vertexStride = 5;
     batchDescriptor.texCoordPointer = vertices.front().texCoord.data;
@@ -118,14 +118,14 @@ void TextDrawSystem::pushNextBatch(const Color& color)
     RenderSystem2D::Instance()->PushBatch(batchDescriptor);
 }
 
-void TextDrawSystem::DrawText(int x, int y, const String &text, const Color &color, Align align)
+void TextDrawSystem::DrawText(int32 x, int32 y, const String &text, const Color &color, Align align)
 {
 	DrawText(Vector2((float32)x, (float32)y), text, color);
 }
 
-void TextDrawSystem::DrawText(Vector2 pos2d, const String &text, const Color &color, Align align)
+void TextDrawSystem::DrawText(const Vector2 &pos2d, const String &text, const Color &color, Align align)
 {
-	if ((pos2d.x >= 0) && (pos2d.y >= 0))
+	if ((pos2d.x >= 0.0f) && (pos2d.y >= 0.0f))
 		textToDraw.emplace_back(pos2d, text, color, align);
 }
 
@@ -133,41 +133,41 @@ void TextDrawSystem::AdjustPositionBasedOnAlign(float32& x, float32& y, const Si
 {
 	switch (align)
 	{
-	case TopLeft:
+	case Align::TopLeft:
 		break;
 
-	case TopCenter:
+	case Align::TopCenter:
 		x -= (sSize.dx / 2);
 		break;
 
-	case TopRight:
+	case Align::TopRight:
 		x -= sSize.dx;
 		break;
 
-	case Left:
+	case Align::Left:
 		y -= (sSize.dy / 2);
 		break;
 
-	case Center:
+	case Align::Center:
 		x -= (sSize.dx / 2);
 		y -= (sSize.dy / 2);
 		break;
 
-	case Right:
+	case Align::Right:
 		x -= sSize.dx;
 		y -= (sSize.dy / 2);
 		break;
 
-	case BottomLeft:
+	case Align::BottomLeft:
 		y -= sSize.dy;
 		break;
 
-	case BottomCenter:
+	case Align::BottomCenter:
 		x -= (sSize.dx / 2);
 		y -= sSize.dy;
 		break;
 
-	case BottomRight:
+	case Align::BottomRight:
 		x -= sSize.dx;
 		y -= sSize.dy;
 		break;

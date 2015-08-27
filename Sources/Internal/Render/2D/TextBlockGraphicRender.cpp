@@ -212,14 +212,5 @@ Font::StringMetrics TextBlockGraphicRender::InternalDrawText(const WideString& d
 	return metrics;
 }
 
-const uint16* TextBlockGraphicRender::GetSharedIndexBuffer()
-{
-	return indexBuffer;
-}
-
-const size_t TextBlockGraphicRender::GetSharedIndexBufferCapacity()
-{
-	return GRAPHIC_FONT_INDEX_BUFFER_SIZE;
-}
 
 };
