@@ -59,21 +59,40 @@ protected:
     const ControlAreaInterface::eArea area = ControlAreaInterface::NO_AREA;
 };
 
+class Container : public ControlContainer
+{
+public:
+    explicit Container(UIControl *container)
+        : ControlContainer(container, ControlAreaInterface::FRAME)
+    {
+        SetSize(Vector2(30, 30));
+        SetDebugDraw(true);
+        SetDebugDrawColor(Color(0.0f, 0.0f, 1.0f, 1.0f));
+    }
+private:
+    void Draw(const UIGeometricData &geometricData) override
+    {
+        const UIGeometricData &gd = control->GetGeometricData();
+        SetAbsoluteRect(gd.GetUnrotatedRect());
+        SetAngle(gd.angle);
+        SetPivotPoint(gd.pivotPoint);
+    }
+};
+
 class FrameControl : public ControlContainer
 {
 public:
     explicit FrameControl(UIControl *container)
         : ControlContainer(container, ControlAreaInterface::FRAME)
-    { }
+    {
+        SetDebugDraw(true);
+        SetDebugDrawColor(Color(1.0f, 0.0f, 0.0f, 1.f));
+    }
 private:
     void Draw(const UIGeometricData &geometricData) override
     {
-        Rect rect(control->GetGeometricData().GetAABBox());
+        Rect rect(control->GetGeometricData().GetUnrotatedRect());
         SetAbsoluteRect(rect);
-        Color oldColor = RenderManager::Instance()->GetColor();
-        RenderManager::Instance()->SetColor(Color(1.0f, 0.0f, 0.0f, 1.f));
-        RenderHelper::Instance()->DrawRect(GetAbsoluteRect(), RenderState::RENDERSTATE_2D_BLEND);
-        RenderManager::Instance()->SetColor(oldColor);
     }
 };
 
@@ -82,23 +101,21 @@ class FrameRectControl : public ControlContainer
 public:
     explicit FrameRectControl(UIControl *container, const ControlAreaInterface::eArea area_)
         : ControlContainer(container, area_)
-    { }
+    {
+        SetDebugDraw(true);
+        SetDebugDrawColor(Color(0.0f, 1.0f, 0.0f, 1.f));
+    }
 private:
     void Draw(const UIGeometricData &geometricData) override
     {
         Rect rect(0, 0, 8, 8);
         rect.SetCenter(GetPos());
         SetAbsoluteRect(rect);
-
-        Color oldColor = RenderManager::Instance()->GetColor();
-        RenderManager::Instance()->SetColor(Color(0.0f, 1.0f, 0.0f, 1.f));
-        RenderHelper::Instance()->FillRect(GetAbsoluteRect(), RenderState::RENDERSTATE_2D_BLEND);
-        RenderManager::Instance()->SetColor(oldColor);
     }
 
     Vector2 GetPos() const
     {
-        Rect rect = control->GetGeometricData().GetAABBox();
+        Rect rect = control->GetGeometricData().GetUnrotatedRect();
         Vector2 retVal = rect.GetPosition();
         switch (area)
         {
@@ -123,19 +140,17 @@ public:
         , pivotProperty(pivotProperty_)
     {
         DVASSERT(pivotProperty != nullptr);
+        SetDebugDraw(true);
+        SetDebugDrawColor(Color(0.0f, 0.0f, 1.0f, 1.f));
     }
 private:
     void Draw(const UIGeometricData &geometricData) override
     {
-        Color oldColor = RenderManager::Instance()->GetColor();
-        RenderManager::Instance()->SetColor(Color(0.0f, 0.0f, 1.0f, 1.f));
         Rect rect(0, 0, 5, 5);
         Vector2 pivot = pivotProperty->GetValue().AsVector2();
-        const Rect &controlRect = control->GetGeometricData().GetAABBox();
+        const Rect &controlRect = control->GetGeometricData().GetUnrotatedRect();
         rect.SetCenter(controlRect.GetPosition() + controlRect.GetSize() * pivot);
         SetAbsoluteRect(rect);
-        RenderHelper::Instance()->FillRect(GetAbsoluteRect(), RenderState::RENDERSTATE_2D_BLEND);
-        RenderManager::Instance()->SetColor(oldColor);
     }
     AbstractProperty *pivotProperty;
 };
@@ -145,18 +160,17 @@ class RotateControl : public ControlContainer
 public:
     explicit RotateControl(UIControl *container)
         : ControlContainer(container, ControlAreaInterface::ROTATE)
-    { }
+    {
+        SetDebugDraw(true);
+        SetDebugDrawColor(Color(1.0f, 1.0f, 0.0f, 1.0f));
+    }
 private:
     void Draw(const UIGeometricData &geometricData) override
     {
-        Color oldColor = RenderManager::Instance()->GetColor();
-        RenderManager::Instance()->SetColor(Color(1.0f, 1.0f, 0.0f, 1.0f));
         Rect rect(0, 0, 20, 20);
-        Rect controlRect = control->GetGeometricData().GetAABBox();
+        Rect controlRect = control->GetGeometricData().GetUnrotatedRect();
         rect.SetCenter(Vector2(controlRect.GetPosition().x + controlRect.dx / 2.0f, controlRect.GetPosition().y - 20));
         SetAbsoluteRect(rect);
-        RenderHelper::Instance()->FillRect(GetAbsoluteRect(), RenderState::RENDERSTATE_2D_BLEND);
-        RenderManager::Instance()->SetColor(oldColor);
     }
 };
 
@@ -313,7 +327,9 @@ void HUDSystem::SetNewArea(ControlNode* node, const ControlAreaInterface::eArea 
 HUDSystem::HUD::HUD(const Document *document, ControlNode *node_, UIControl* hudControl)
     : node(node_)
     , control(node_->GetControl())
+    , container(new Container(control))
 {
+    hudControl->AddControl(container);
     hudControls.emplace_back(new PivotPointControl(control, document->GetPropertyByName(node, "Pivot")));
     hudControls.emplace_back(new RotateControl(control));
     for (int i = ControlAreaInterface::TOP_LEFT; i < ControlAreaInterface::CORNER_COUNT; ++i)
@@ -322,14 +338,16 @@ HUDSystem::HUD::HUD(const Document *document, ControlNode *node_, UIControl* hud
         hudControls.emplace_back(new FrameRectControl(control, area));
     }
     hudControls.emplace_back(new FrameControl(control));
+
     for (auto iter = hudControls.rbegin(); iter != hudControls.rend(); ++iter)
     {
-        hudControl->AddControl(*iter);
+        container->AddControl(*iter);
     }
 }
 
 HUDSystem::HUD::~HUD()
 {
+    container->RemoveFromParent();
     for (auto control : hudControls)
     {
         control->RemoveFromParent();

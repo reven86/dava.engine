@@ -67,6 +67,7 @@ private:
         ~HUD();
         ControlNode *node = nullptr;
         DAVA::UIControl *control = nullptr;
+        DAVA::ScopedPtr<DAVA::UIControl> container;
         DAVA::Vector < DAVA::ScopedPtr<DAVA::UIControl> > hudControls;
     };
     DAVA::Map<ControlNode*, HUD> hudMap;

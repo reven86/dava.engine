@@ -67,6 +67,14 @@ private:
     SelectedControls selectedControls;
     DAVA::Vector2 prevPos;
     DAVA::Vector2 beginPos;
+    enum
+    {
+        X_AXIS,
+        Y_AXIS,
+        AXIS_COUNT
+    };
+    DAVA::UnorderedMap<eArea, DAVA::Array<int, AXIS_COUNT>> cornersDirection;
+    void InitCornersDirection();
 };
 
 #endif // __QUICKED_TRANSFORM_SYSTEM_H__
