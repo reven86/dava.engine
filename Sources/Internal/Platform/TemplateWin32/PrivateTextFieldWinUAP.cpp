@@ -564,6 +564,7 @@ void PrivateTextFieldWinUAP::CreateNativeText()
     nativeControl->Background = ref new SolidColorBrush(Colors::Transparent);
     nativeControl->Foreground = ref new SolidColorBrush(Colors::White);
     nativeControl->BorderBrush = ref new SolidColorBrush(Colors::Transparent);
+    nativeControl->Padding = Thickness(0.0);
 
     nativeText->TextAlignment = TextAlignment::Left;
 
@@ -583,6 +584,7 @@ void PrivateTextFieldWinUAP::CreateNativePassword()
     nativeControl->Background = ref new SolidColorBrush(Colors::Transparent);
     nativeControl->Foreground = ref new SolidColorBrush(Colors::White);
     nativeControl->BorderBrush = ref new SolidColorBrush(Colors::Transparent);
+    nativeControl->Padding = Thickness(0.0);
 
     core->XamlApplication()->AddUIElement(nativeControl);
     PositionNative(originalRect, true);
