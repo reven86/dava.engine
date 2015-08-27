@@ -335,6 +335,7 @@ void NMaterial::SetTexture(const FastName& slotName, Texture* texture)
     {
         SafeRelease(texInfo->texture);
         texInfo->texture = SafeRetain(texture);
+        texInfo->path = texture->GetPathname();
         InvalidateTextureBindings();
     }        
 }
