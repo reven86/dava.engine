@@ -75,6 +75,13 @@ ColladaToSc2Importer::ImportLibrary::~ImportLibrary()
     }
     
     polygons.clear();
+    
+    for (auto & pair : materials)
+    {
+        pair.second->Release();
+    }
+    
+    materials.clear();
 }
 
 void InitPolygon(PolygonGroup * davaPolygon, uint32 vertexFormat, Vector<ColladaVertex> &vertices)
@@ -284,15 +291,12 @@ void CollapseRenderBatchesRecursive(Entity * node, uint32 lod, RenderObject * ro
     if (nullptr != lodRenderObject)
     {
         uint32 batchNo = 0;
-        
         while (lodRenderObject->GetRenderBatchCount() > 0)
         {
-            RenderBatch * batch = lodRenderObject->GetRenderBatch(batchNo);
-            
+            ScopedPtr<RenderBatch> batch(lodRenderObject->GetRenderBatch(batchNo));
             batch->Retain();
             lodRenderObject->RemoveRenderBatch(batch);
             ro->AddRenderBatch(batch, lod, -1);
-            batch->Release();
             
             ++batchNo;
         }
@@ -435,10 +439,10 @@ Mesh * ColladaToSc2Importer::GetMeshFromCollada(ColladaMeshInstance * mesh, cons
         }
         
         davaMesh = new Mesh();
-        auto davaMaterial = colladaToDavaLibrary.GetOrCreateMaterial(polygonGroupInstance, isShadow);
+        NMaterial * davaMaterial = colladaToDavaLibrary.GetOrCreateMaterial(polygonGroupInstance, isShadow);
         davaMesh->AddPolygonGroup(davaPolygon, davaMaterial);
     }
-    
+    DVASSERT(nullptr != davaMesh && "Can't create mesh from collada MeshInstance");
     return davaMesh;
 }
 
@@ -449,9 +453,7 @@ void ColladaToSc2Importer::FillMeshes(const Vector<ColladaMeshInstance *> & mesh
     {
         bool isShadowNode = IsShadowNode(node);
         
-        RenderObject * davaMesh = GetMeshFromCollada(meshInstance, isShadowNode);
-        DVASSERT(nullptr != davaMesh && "Can't create mesh from collada MeshInstance");
-
+        ScopedPtr<RenderObject> davaMesh(GetMeshFromCollada(meshInstance, isShadowNode));
         RenderComponent * davaRenderComponent = GetRenderComponent(node);
         if (nullptr == davaRenderComponent)
         {
@@ -471,7 +473,7 @@ void ColladaToSc2Importer::BuildSceneAsCollada(Entity * root, ColladaSceneNode *
         name = Format("Node-%d", num++);
     }
     
-    Entity * nodeEntity = new Entity();
+    ScopedPtr<Entity> nodeEntity(new Entity());
     nodeEntity->SetName(FastName(name));
     
     // take mesh from node and put it into entity's render component
@@ -479,30 +481,30 @@ void ColladaToSc2Importer::BuildSceneAsCollada(Entity * root, ColladaSceneNode *
     
     if (nullptr != colladaNode->animation)
     {
-        AnimationComponent *ac = new AnimationComponent();
-        ac->SetEntity(nodeEntity);
+        auto * animationComponent = new AnimationComponent();
+        animationComponent->SetEntity(nodeEntity);
         
-        AnimationData * animation = new AnimationData();
-        ac->SetAnimation(animation);
+        ScopedPtr<AnimationData> animation(new AnimationData());
+        animationComponent->SetAnimation(animation);
         
-        SceneNodeAnimation *colladaAnim = colladaNode->animation;
+        SceneNodeAnimation * colladaAnimation = colladaNode->animation;
         
-        animation->SetInvPose(colladaAnim->invPose);
-        animation->SetDuration(colladaAnim->duration);
-        if (nullptr != colladaAnim->keys)
+        animation->SetInvPose(colladaAnimation->invPose);
+        animation->SetDuration(colladaAnimation->duration);
+        if (nullptr != colladaAnimation->keys)
         {
-            for (uint32 keyNo = 0; keyNo < colladaAnim->keyCount; ++keyNo)
+            for (uint32 keyNo = 0; keyNo < colladaAnimation->keyCount; ++keyNo)
             {
-                SceneNodeAnimationKey key = colladaAnim->keys[keyNo];
+                SceneNodeAnimationKey key = colladaAnimation->keys[keyNo];
                 animation->AddKey(key);
             }
         }
         
-        nodeEntity->AddComponent(ac);
+        nodeEntity->AddComponent(animationComponent);
     }
     
-    TransformComponent * tc = GetTransformComponent(nodeEntity);
-    tc->SetLocalTransform(&colladaNode->localTransform);
+    auto * transformComponent = GetTransformComponent(nodeEntity);
+    transformComponent->SetLocalTransform(&colladaNode->localTransform);
     
     root->AddNode(nodeEntity);
     

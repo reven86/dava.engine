@@ -46,7 +46,7 @@ AnimationData::~AnimationData()
 	
 void AnimationData::AddKey(const SceneNodeAnimationKey & key)
 {
-	keys.push_back(key);
+	keys.emplace_back(key);
 }
 
 SceneNodeAnimationKey AnimationData::Interpolate(float32 t, uint32& startIdxCache) const
