@@ -726,9 +726,6 @@
     <ClInclude Include="..\..\Sources\Internal\UI\UIYamlLoader.h">
       <Filter>Internal\UI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Utils\HTTPDownloader.h">
-      <Filter>Internal\Utils</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Utils\MD5.h">
       <Filter>Internal\Utils</Filter>
     </ClInclude>

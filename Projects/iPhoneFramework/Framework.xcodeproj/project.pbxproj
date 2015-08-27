@@ -388,7 +388,6 @@
 		02FD80451924997C007762C0 /* DateTime.h in Headers */ = {isa = PBXBuildFile; fileRef = 624C87F118C6160F00E1049D /* DateTime.h */; };
 		02FD80461924997C007762C0 /* UITextFieldiPhone.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3CA6C16B9326E002BD35F /* UITextFieldiPhone.h */; };
 		02FD80471924997C007762C0 /* UIYamlLoader.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3CA6F16B9326E002BD35F /* UIYamlLoader.h */; };
-		02FD80491924997C007762C0 /* HTTPDownloader.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3CA7116B9326E002BD35F /* HTTPDownloader.h */; };
 		02FD804A1924997C007762C0 /* MD5.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3CA7516B9326E002BD35F /* MD5.h */; };
 		02FD804B1924997C007762C0 /* Random.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3CA7616B9326E002BD35F /* Random.h */; };
 		02FD804C1924997C007762C0 /* StringFormat.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3CA7816B9326E002BD35F /* StringFormat.h */; };
@@ -691,7 +690,6 @@
 		02FD819B1924997C007762C0 /* UITextField.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3CA6A16B9326E002BD35F /* UITextField.cpp */; };
 		02FD819C1924997C007762C0 /* UITextFieldiPhone.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8B3CA6D16B9326E002BD35F /* UITextFieldiPhone.mm */; };
 		02FD819D1924997C007762C0 /* UIYamlLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3CA6E16B9326E002BD35F /* UIYamlLoader.cpp */; };
-		02FD819E1924997C007762C0 /* HTTPDownloader.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8B3CA7216B9326E002BD35F /* HTTPDownloader.mm */; };
 		02FD819F1924997C007762C0 /* MD5.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3CA7416B9326E002BD35F /* MD5.cpp */; };
 		02FD81A01924997C007762C0 /* LodToLod2Converter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CCEB54381886FF0C0018491F /* LodToLod2Converter.cpp */; };
 		02FD81A11924997C007762C0 /* StringFormat.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3CA7716B9326E002BD35F /* StringFormat.cpp */; };
@@ -1906,8 +1904,6 @@
 		E8B3CD2516B9326E002BD35F /* UITextFieldiPhone.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8B3CA6D16B9326E002BD35F /* UITextFieldiPhone.mm */; };
 		E8B3CD2616B9326E002BD35F /* UIYamlLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3CA6E16B9326E002BD35F /* UIYamlLoader.cpp */; };
 		E8B3CD2716B9326E002BD35F /* UIYamlLoader.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3CA6F16B9326E002BD35F /* UIYamlLoader.h */; };
-		E8B3CD2816B9326E002BD35F /* HTTPDownloader.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3CA7116B9326E002BD35F /* HTTPDownloader.h */; };
-		E8B3CD2916B9326E002BD35F /* HTTPDownloader.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8B3CA7216B9326E002BD35F /* HTTPDownloader.mm */; };
 		E8B3CD2B16B9326E002BD35F /* MD5.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3CA7416B9326E002BD35F /* MD5.cpp */; };
 		E8B3CD2C16B9326E002BD35F /* MD5.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3CA7516B9326E002BD35F /* MD5.h */; };
 		E8B3CD2D16B9326E002BD35F /* Random.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3CA7616B9326E002BD35F /* Random.h */; };
@@ -2973,8 +2969,6 @@
 		E8B3CA6D16B9326E002BD35F /* UITextFieldiPhone.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = UITextFieldiPhone.mm; sourceTree = "<group>"; };
 		E8B3CA6E16B9326E002BD35F /* UIYamlLoader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIYamlLoader.cpp; sourceTree = "<group>"; };
 		E8B3CA6F16B9326E002BD35F /* UIYamlLoader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIYamlLoader.h; sourceTree = "<group>"; };
-		E8B3CA7116B9326E002BD35F /* HTTPDownloader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HTTPDownloader.h; sourceTree = "<group>"; };
-		E8B3CA7216B9326E002BD35F /* HTTPDownloader.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = HTTPDownloader.mm; sourceTree = "<group>"; };
 		E8B3CA7416B9326E002BD35F /* MD5.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MD5.cpp; sourceTree = "<group>"; };
 		E8B3CA7516B9326E002BD35F /* MD5.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MD5.h; sourceTree = "<group>"; };
 		E8B3CA7616B9326E002BD35F /* Random.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Random.h; sourceTree = "<group>"; };
@@ -4580,8 +4574,6 @@
 				B786014C1A08EB140041F817 /* StringUtils.h */,
 				A6A1E8671785688600AA3A86 /* CRC32.cpp */,
 				A6A1E8681785688600AA3A86 /* CRC32.h */,
-				E8B3CA7116B9326E002BD35F /* HTTPDownloader.h */,
-				E8B3CA7216B9326E002BD35F /* HTTPDownloader.mm */,
 				E8B3CA7416B9326E002BD35F /* MD5.cpp */,
 				E8B3CA7516B9326E002BD35F /* MD5.h */,
 				E8B3CA7616B9326E002BD35F /* Random.h */,
@@ -5042,7 +5034,6 @@
 				02FD80451924997C007762C0 /* DateTime.h in Headers */,
 				02FD80461924997C007762C0 /* UITextFieldiPhone.h in Headers */,
 				02FD80471924997C007762C0 /* UIYamlLoader.h in Headers */,
-				02FD80491924997C007762C0 /* HTTPDownloader.h in Headers */,
 				02FD804A1924997C007762C0 /* MD5.h in Headers */,
 				02E9B4CF19407C6B001DBDDF /* WindComponent.h in Headers */,
 				02FD804B1924997C007762C0 /* Random.h in Headers */,
@@ -5595,7 +5586,6 @@
 				7CBAFE4C1B38458E00F9E9ED /* Mutex.h in Headers */,
 				50F3B8641B1EE34B00976CBC /* TestClass.h in Headers */,
 				E8B3CD2716B9326E002BD35F /* UIYamlLoader.h in Headers */,
-				E8B3CD2816B9326E002BD35F /* HTTPDownloader.h in Headers */,
 				11B155091B2F22B600E0EECE /* UIControlPackageContext.h in Headers */,
 				64493DF819476F4700AB2715 /* TextureSheet.h in Headers */,
 				E8B3CD2C16B9326E002BD35F /* MD5.h in Headers */,
@@ -6104,7 +6094,6 @@
 				02FD819C1924997C007762C0 /* UITextFieldiPhone.mm in Sources */,
 				CC0D7B501A76066700309408 /* PathComponent.cpp in Sources */,
 				02FD819D1924997C007762C0 /* UIYamlLoader.cpp in Sources */,
-				02FD819E1924997C007762C0 /* HTTPDownloader.mm in Sources */,
 				02FD819F1924997C007762C0 /* MD5.cpp in Sources */,
 				02FD81A01924997C007762C0 /* LodToLod2Converter.cpp in Sources */,
 				32B074C219E53C0C0069981A /* UIPackage.cpp in Sources */,
@@ -6562,7 +6551,6 @@
 				E8B3CD2516B9326E002BD35F /* UITextFieldiPhone.mm in Sources */,
 				E8B3CD2616B9326E002BD35F /* UIYamlLoader.cpp in Sources */,
 				32491C551B4D1298004CE811 /* UIAnchorComponent.cpp in Sources */,
-				E8B3CD2916B9326E002BD35F /* HTTPDownloader.mm in Sources */,
 				E8B3CD2B16B9326E002BD35F /* MD5.cpp in Sources */,
 				CCEB543C1886FF0C0018491F /* LodToLod2Converter.cpp in Sources */,
 				E8B3CD2E16B9326E002BD35F /* StringFormat.cpp in Sources */,
