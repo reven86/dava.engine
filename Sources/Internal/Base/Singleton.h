@@ -44,7 +44,13 @@ public:
 		// TODO: Add assertion here DVASSERT(instance == 0 && "Singleton object should be initialized only once");
 		if (instance == nullptr)
 		{
-			instance = reinterpret_cast<T*>(this);
+            // we need here dynamic_cast but can't use because: 
+            // http://en.cppreference.com/w/cpp/language/dynamic_cast
+            // 6 - part
+            // error can appiar if use write: class A: public B, public C, public Singleton<A>
+            // better always use: class A: public Singleton<A>, public B, public C
+            // so if I use static_cast all works
+			instance = static_cast<T*>(this);
 		}
 	}
 	virtual ~Singleton()
