@@ -234,7 +234,7 @@ void
 dx11_Initialize( const InitParam& param )
 {
     _DX11_InitParam = param;
-    InitializeRenderThreadDX11();
+    InitializeRenderThreadDX11( (param.threadedRenderEnabled)?param.threadedRenderFrameCount:0 );
 
     VertexBufferDX11::SetupDispatch( &DispatchDX11 );
     IndexBufferDX11::SetupDispatch( &DispatchDX11 );
