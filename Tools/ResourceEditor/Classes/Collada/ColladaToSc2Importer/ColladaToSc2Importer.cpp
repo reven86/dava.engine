@@ -299,6 +299,22 @@ void CollapseRenderBatchesRecursive(Entity * node, uint32 lod, RenderObject * ro
     }
 }
 
+void CollapseAnimations(Entity * node, Entity * parent)
+{
+    for (auto child : parent->children)
+    {
+        CollapseAnimations(child, parent);
+    }
+    
+    AnimationComponent * ac = GetAnimationComponent(node);
+    if (ac)
+    {
+        node->DetachComponent(ac);
+        parent->AddComponent(ac);
+    }
+
+}
+    
 void CollapseLodsIntoOneEntity(Entity *forRootNode)
 {
     const uint32 maxLodCount = 10;
@@ -334,12 +350,8 @@ void CollapseLodsIntoOneEntity(Entity *forRootNode)
             if (nullptr != ln)
             {
                 CollapseRenderBatchesRecursive(ln, i, newMesh);
-                AnimationComponent * ac = GetAnimationComponent(ln);
-                if (ac)
-                {
-                    ln->DetachComponent(ac);
-                    newNodeWithLods->AddComponent(ac);
-                }
+                CollapseAnimations(ln, newNodeWithLods);
+                
                 oldParent->RemoveNode(ln);
             }
         }
@@ -374,19 +386,38 @@ void BakeTransformsUpToParent(Entity * parent, Entity * currentNode)
         BakeTransformsUpToParent(parent, child);
     }
     
+    // Get actual transformation for current entity
     Matrix4 totalTransform = currentNode->AccamulateTransformUptoFarParent(parent);
     
+    // Bake transforms to geometry
     RenderObject * ro = GetRenderObject(currentNode);
     if (ro)
     {
         ro->BakeGeometry(totalTransform);
     }
     
+    // Set local transform as Ident because transform is already baked up into geometry
     Matrix4 identMatrix;
+    auto transformComponent = GetTransformComponent(currentNode);
+    transformComponent->SetLocalTransform(&identMatrix);
     
-    auto tc = GetTransformComponent(currentNode);
-    tc->SetLocalTransform(&identMatrix);
-    
+    // do same thing with animation keys
+    auto animationComponent = GetAnimationComponent(currentNode);
+    if (animationComponent)
+    {
+        auto * animation = animationComponent->GetAnimation();
+        for (auto & key : animation->keys)
+        {
+            Matrix4 animationMatrix;
+            key.GetMatrix(animationMatrix);
+            
+            Matrix4 inverseTotal;
+            totalTransform.GetInverse(inverseTotal);
+            
+            Matrix4 totalAnimation = inverseTotal * animationMatrix;
+            totalAnimation.Decomposition(key.translation, key.scale, key.rotation);
+        }
+    }
 }
 }
 
@@ -456,8 +487,8 @@ void ColladaToSc2Importer::BuildSceneAsCollada(Entity * root, ColladaSceneNode *
         
         SceneNodeAnimation *colladaAnim = colladaNode->animation;
         
+        animation->SetInvPose(colladaAnim->invPose);
         animation->SetDuration(colladaAnim->duration);
-        
         if (nullptr != colladaAnim->keys)
         {
             for (uint32 keyNo = 0; keyNo < colladaAnim->keyCount; ++keyNo)
