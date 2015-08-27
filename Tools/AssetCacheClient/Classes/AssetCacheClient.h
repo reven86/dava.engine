@@ -35,7 +35,6 @@
 class CacheRequest;
 class AssetCacheClient
 {
-    
 public:
     
     AssetCacheClient();
