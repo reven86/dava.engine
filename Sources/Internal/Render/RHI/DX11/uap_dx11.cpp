@@ -3,7 +3,6 @@
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 
-
 #include <agile.h>
 #include <Windows.ui.xaml.media.dxinterop.h>
 #include <DirectXMath.h>
@@ -658,7 +657,7 @@ void init_device_and_swapchain_uap(void* panel, int width, int height, float32 s
     CreateDeviceResources();
     SetSwapChainPanel(swapChain);
     SetCompositionScale(sx, sy);
-    SetLogicalSize(Windows::Foundation::Size(width, height));
+    SetLogicalSize(Windows::Foundation::Size(static_cast<float>(width), static_cast<float>(height)));
 
     _D3D11_Device = m_d3dDevice.Get();
     _D3D11_ImmediateContext = m_d3dContext.Get();
@@ -677,7 +676,7 @@ void init_device_and_swapchain_uap(void* panel, int width, int height, float32 s
 void reset_swapchain(int width, int height, float32 sx, float32 sy)
 {
     SetCompositionScale(sx, sy);
-    SetLogicalSize(Windows::Foundation::Size(width, height));
+    SetLogicalSize(Windows::Foundation::Size(static_cast<float>(width), static_cast<float>(height)));
 
     _D3D11_SwapChain = m_swapChain.Get();
     _D3D11_SwapChainBuffer = m_swapChainBuffer.Get();

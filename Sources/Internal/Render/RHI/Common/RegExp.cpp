@@ -29,7 +29,6 @@
 
     #include "RegExp.h"
 
-    
 //    #if defined(__DAVAENGINE_WIN32__)
     typedef char TCHAR;
 //    #define
@@ -51,7 +50,7 @@ inline char*        _tcsinc( char* cur )                            { return cur
 inline char*        _tcsdec( char* start, char* cur )               { return (cur>start) ? cur-1 : NULL; }
 inline const char*  _tcsdec( const char* start, const char* cur )   { return (cur>start) ? cur-1 : NULL; }
 inline char         _tcsnextc( const char* str )                    { return *str; }
-#define _tcsdup     strdup
+#define _tcsdup     _strdup
 #define _tcscpy     strcpy
 #define _tcscpy     strcpy
 #define _tcslen     strlen
@@ -219,11 +218,7 @@ RegExp::compile( const TCHAR *pattern, const TCHAR* attributes )
 
     if (!this->_is_ref)
     free(this->_pattern);
-#if defined(__DAVAENGINE_WIN_UAP__)
-    this->_pattern = _strdup(pattern);
-#else
     this->_pattern = _tcsdup(pattern);
-#endif
     this->_is_ref = _is_ref;
     _tcscpy(flags, attributes);
 

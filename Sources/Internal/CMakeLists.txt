@@ -141,7 +141,7 @@ elseif ( WINDOWS_UAP )
     #list ( APPEND LIST_SHARED_LIBRARIES_RELEASE  "" )
     #list ( APPEND LIST_SHARED_LIBRARIES_DEBUG   "" )
 
-    list ( APPEND LIST_SHARED_LIBRARIES    "Wininet.lib" "ws2_32.lib" "winmm.lib" "wldap32.lib" "iphlpapi.lib" "Gdi32.lib" "dbghelp.lib" "d2d1.lib" "d3d11.lib" "d3dcompiler.lib" "dxgi.lib" "windowscodecs.lib" "dwrite.lib" )
+    list ( APPEND LIST_SHARED_LIBRARIES    "Wininet.lib" "ws2_32.lib" "winmm.lib" "wldap32.lib" "iphlpapi.lib" "Gdi32.lib" "dbghelp.lib" "d2d1.lib" "d3d11.lib" "d3dcompiler.lib" "dxgi.lib" "psapi.lib" "dxguid.lib" "windowscodecs.lib" "dwrite.lib" )
     
     #choose target architecture libraries
     if( "${CMAKE_GENERATOR_PLATFORM}" STREQUAL "ARM" )
@@ -157,7 +157,6 @@ elseif ( WINDOWS_UAP )
 
     file ( GLOB RELEASE_LIB_LIST "${DAVA_WIN_STORE_LIBRARIES_PATH}/${LIBS_ARCH_SELECTOR}/Release/*.lib" )
     list ( APPEND LIST_SHARED_LIBRARIES_RELEASE ${RELEASE_LIB_LIST}  )
-    list ( APPEND LIST_SHARED_LIBRARIES         "psapi.lib" "dxguid.lib" )
 
     set ( IGNORED_RHI_FOLDER "DX9" "GLES2" "Metal" )
 
