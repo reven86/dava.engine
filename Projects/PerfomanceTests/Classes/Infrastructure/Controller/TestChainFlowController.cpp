@@ -28,12 +28,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "TestChainFlowController.h"
 
-TestChainFlowController::TestChainFlowController(bool _showUIReport)
-    :   currentScreen(nullptr)
+TestChainFlowController::TestChainFlowController(bool _showUI)
+    :   reportScreen(new ReportScreen())
+    ,   currentScreen(nullptr)
     ,   currentTest(nullptr)
     ,   currentTestIndex(0)
-    ,   showUIReport(_showUIReport)
-    ,   reportCreated(false)
+    ,   showUI(_showUI)
     ,   testsFinished(false)
     
 {
@@ -45,7 +45,7 @@ void TestChainFlowController::Init(const Vector<BaseTest*>& _testChain)
     
     currentTestIndex = 0;
     currentTest = testChain[currentTestIndex];
-    currentTest->ShowUI(showUIReport);
+    currentTest->ShowUI(showUI);
     currentScreen = currentTest;
 }
 
@@ -62,31 +62,36 @@ void TestChainFlowController::BeginFrame()
 
 void TestChainFlowController::EndFrame()
 {
-    if (currentTest->IsFinished() && !testsFinished) 
+    currentScreen->EndFrame();
+    
+    if (!testsFinished)
     {
-        currentTest->OnFinish();
-        currentTestIndex++;
-        
-        testsFinished = testChain.size() == currentTestIndex;
-        
-        if (!testsFinished)
+        if (currentTest->IsFinished())
         {
-            currentTest = testChain[currentTestIndex];
-            currentTest->ShowUI(showUIReport);
-            currentScreen = currentTest;
+            currentTest->OnFinish();
+            currentTestIndex++;
+            
+            testsFinished = testChain.size() == currentTestIndex;
+            
+            if (!testsFinished)
+            {
+                currentTest = testChain[currentTestIndex];
+                currentTest->ShowUI(showUI);
+                currentScreen = currentTest;
+            }
         }
     }
-    
-    if (testsFinished && !reportCreated && showUIReport)
+    else
     {
-        currentScreen = new ReportScreen(testChain);
-        reportCreated = true;
-    }   
-    if (testsFinished && !showUIReport)
-    {
-        Logger::Info("Finish all tests.");
-        Core::Instance()->Quit();
+        if (showUI)
+        {
+            reportScreen->SetTestChain(testChain);
+            currentScreen = reportScreen;
+        }
+        else
+        {
+            Logger::Info("Finish all tests.");
+            Core::Instance()->Quit();
+        }
     }
-    
-    currentScreen->EndFrame();
 }

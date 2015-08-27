@@ -20,14 +20,13 @@ Controls:
     -   class: "UIStaticText"
         name: "TestName"
         position: [10.000000, 10.000000]
-        size: [80.000000, 10.000000]
+        size: [150.000000, 10.000000]
         noInput: true
         text: "TestName"
         font: "korinna"
         textColor: [0.000000, 1.000000, 0.000000, 1.000000]
         textcolorInheritType: "COLOR_REPLACE_ALPHA_ONLY"
         textalign: ["LEFT", "VCENTER"]
-        textUseRtlAlign: false
         components:
             Background:
                 colorInherit: "COLOR_REPLACE_ALPHA_ONLY"
@@ -42,7 +41,6 @@ Controls:
         textColor: [0.000000, 1.000000, 0.000000, 1.000000]
         textcolorInheritType: "COLOR_REPLACE_ALPHA_ONLY"
         textalign: ["LEFT", "VCENTER"]
-        textUseRtlAlign: false
         components:
             Background:
                 colorInherit: "COLOR_REPLACE_ALPHA_ONLY"
@@ -65,7 +63,6 @@ Controls:
             textColor: [0.000000, 1.000000, 0.000000, 1.000000]
             textcolorInheritType: "COLOR_REPLACE_ALPHA_ONLY"
             textalign: ["LEFT", "VCENTER"]
-            textUseRtlAlign: false
         -   class: "UIStaticText"
             name: "MinDeltaValue"
             position: [110.000000, 0.000000]
@@ -76,7 +73,6 @@ Controls:
             textColor: [0.000000, 1.000000, 0.000000, 1.000000]
             textcolorInheritType: "COLOR_REPLACE_ALPHA_ONLY"
             textalign: ["LEFT", "VCENTER"]
-            textUseRtlAlign: false
     -   class: "UIControl"
         name: "MaxDelta"
         position: [10.000000, 55.000000]
@@ -96,7 +92,6 @@ Controls:
             textColor: [0.000000, 1.000000, 0.000000, 1.000000]
             textcolorInheritType: "COLOR_REPLACE_ALPHA_ONLY"
             textalign: ["LEFT", "VCENTER"]
-            textUseRtlAlign: false
         -   class: "UIStaticText"
             name: "MaxDeltaValue"
             position: [110.000000, 0.000000]
@@ -107,7 +102,6 @@ Controls:
             textColor: [0.000000, 1.000000, 0.000000, 1.000000]
             textcolorInheritType: "COLOR_REPLACE_ALPHA_ONLY"
             textalign: ["LEFT", "VCENTER"]
-            textUseRtlAlign: false
     -   class: "UIControl"
         name: "AverageDelta"
         position: [10.000000, 70.000000]
@@ -127,7 +121,6 @@ Controls:
             textColor: [0.000000, 1.000000, 0.000000, 1.000000]
             textcolorInheritType: "COLOR_REPLACE_ALPHA_ONLY"
             textalign: ["LEFT", "VCENTER"]
-            textUseRtlAlign: false
         -   class: "UIStaticText"
             name: "AverageDeltaValue"
             position: [110.000000, 0.000000]
@@ -138,7 +131,6 @@ Controls:
             textColor: [0.000000, 1.000000, 0.000000, 1.000000]
             textcolorInheritType: "COLOR_REPLACE_ALPHA_ONLY"
             textalign: ["LEFT", "VCENTER"]
-            textUseRtlAlign: false
     -   class: "UIControl"
         name: "TestTime"
         position: [10.000000, 85.000000]
@@ -158,7 +150,6 @@ Controls:
             textColor: [0.000000, 1.000000, 0.000000, 1.000000]
             textcolorInheritType: "COLOR_REPLACE_ALPHA_ONLY"
             textalign: ["LEFT", "VCENTER"]
-            textUseRtlAlign: false
         -   class: "UIStaticText"
             name: "TestTimeValue"
             position: [110.000000, 0.000000]
@@ -169,7 +160,6 @@ Controls:
             textColor: [0.000000, 1.000000, 0.000000, 1.000000]
             textcolorInheritType: "COLOR_REPLACE_ALPHA_ONLY"
             textalign: ["LEFT", "VCENTER"]
-            textUseRtlAlign: false
     -   class: "UIControl"
         name: "ElapsedTime"
         position: [10.000000, 100.000000]
@@ -189,7 +179,6 @@ Controls:
             textColor: [0.000000, 1.000000, 0.000000, 1.000000]
             textcolorInheritType: "COLOR_REPLACE_ALPHA_ONLY"
             textalign: ["LEFT", "VCENTER"]
-            textUseRtlAlign: false
         -   class: "UIStaticText"
             name: "ElapsedTimeValue"
             position: [110.000000, 0.000000]
@@ -200,7 +189,6 @@ Controls:
             textColor: [0.000000, 1.000000, 0.000000, 1.000000]
             textcolorInheritType: "COLOR_REPLACE_ALPHA_ONLY"
             textalign: ["LEFT", "VCENTER"]
-            textUseRtlAlign: false
     -   class: "UIControl"
         name: "FramesRendered"
         position: [10.000000, 115.000000]
@@ -220,7 +208,6 @@ Controls:
             textColor: [0.000000, 1.000000, 0.000000, 1.000000]
             textcolorInheritType: "COLOR_REPLACE_ALPHA_ONLY"
             textalign: ["LEFT", "VCENTER"]
-            textUseRtlAlign: false
         -   class: "UIStaticText"
             name: "FramesRenderedValue"
             position: [110.000000, 0.000000]
@@ -231,7 +218,6 @@ Controls:
             textColor: [0.000000, 1.000000, 0.000000, 1.000000]
             textcolorInheritType: "COLOR_REPLACE_ALPHA_ONLY"
             textalign: ["LEFT", "VCENTER"]
-            textUseRtlAlign: false
     -   class: "UIStaticText"
         name: "DownDelimetr"
         position: [5.000000, 130.000000]
@@ -242,7 +228,6 @@ Controls:
         textColor: [0.000000, 1.000000, 0.000000, 1.000000]
         textcolorInheritType: "COLOR_REPLACE_ALPHA_ONLY"
         textalign: ["LEFT", "VCENTER"]
-        textUseRtlAlign: false
         components:
             Background:
                 colorInherit: "COLOR_REPLACE_ALPHA_ONLY"

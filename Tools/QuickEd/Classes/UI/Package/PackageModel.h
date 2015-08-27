@@ -68,13 +68,20 @@ public:
     
 private: // PackageListener
     void ControlPropertyWasChanged(ControlNode *node, AbstractProperty *property) override;
-
+    void StylePropertyWasChanged(StyleSheetNode *node, AbstractProperty *property) override;
+    
     void ControlWillBeAdded(ControlNode *node, ControlsContainerNode *destination, int row) override;
     void ControlWasAdded(ControlNode *node, ControlsContainerNode *destination, int row) override;
     
     void ControlWillBeRemoved(ControlNode *node, ControlsContainerNode *from) override;
     void ControlWasRemoved(ControlNode *node, ControlsContainerNode *from) override;
 
+    void StyleWillBeAdded(StyleSheetNode *node, StyleSheetsNode *destination, int index) override;
+    void StyleWasAdded(StyleSheetNode *node, StyleSheetsNode *destination, int index) override;
+    
+    void StyleWillBeRemoved(StyleSheetNode *node, StyleSheetsNode *from) override;
+    void StyleWasRemoved(StyleSheetNode *node, StyleSheetsNode *from) override;
+    
     void ImportedPackageWillBeAdded(PackageNode *node, ImportedPackagesNode *to, int index) override;
     void ImportedPackageWasAdded(PackageNode *node, ImportedPackagesNode *to, int index) override;
     

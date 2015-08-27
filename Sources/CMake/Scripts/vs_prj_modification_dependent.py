@@ -45,6 +45,6 @@ for neighbor in root.iter( ns+'ItemGroup' ):
                 node.text = 'true'
                 child.append( node  )
 
-if( modified_project ) :
+if( modified_project == 'true' ) :
     tree.write( arg1 )
 

@@ -1388,7 +1388,7 @@ void SceneFileV2::RemoveDeprecatedMaterialFlags(Entity * node)
 void SceneFileV2::ConvertAlphatestValueMaterials(Entity * node)
 {
     static const float32 alphatestThresholdValue = .3f;
-    static const std::array<FastName, 7> alphatestValueMaterials =
+    static const Array<FastName, 7> alphatestValueMaterials =
     {
         FastName("~res:/Materials/NormalizedBlinnPhongPerPixel.Alphatest.material"),
         FastName("~res:/Materials/NormalizedBlinnPhongPerPixel.Alphatest.Alphablend.material"),

@@ -33,6 +33,10 @@
 class AbstractProperty;
 class RootProperty;
 class ComponentPropertiesSection;
+class StyleSheetProperty;
+class StyleSheetPropertiesSection;
+class StyleSheetSelectorProperty;
+class StyleSheetSelectorsSection;
 
 class PropertyListener
 {
@@ -44,6 +48,20 @@ public:
 
     virtual void ComponentPropertiesWillBeRemoved(RootProperty *root, ComponentPropertiesSection *section, int index) = 0;
     virtual void ComponentPropertiesWasRemoved(RootProperty *root, ComponentPropertiesSection *section, int index) = 0;
+    
+    virtual void StylePropertyWillBeAdded(StyleSheetPropertiesSection *section, StyleSheetProperty *property, int index) = 0;
+    virtual void StylePropertyWasAdded(StyleSheetPropertiesSection *section, StyleSheetProperty *property, int index) = 0;
+
+    virtual void StylePropertyWillBeRemoved(StyleSheetPropertiesSection *section, StyleSheetProperty *property, int index) = 0;
+    virtual void StylePropertyWasRemoved(StyleSheetPropertiesSection *section, StyleSheetProperty *property, int index) = 0;
+
+    virtual void StyleSelectorWillBeAdded(StyleSheetSelectorsSection *section, StyleSheetSelectorProperty *property, int index) = 0;
+    virtual void StyleSelectorWasAdded(StyleSheetSelectorsSection *section, StyleSheetSelectorProperty *property, int index) = 0;
+    
+    virtual void StyleSelectorWillBeRemoved(StyleSheetSelectorsSection *section, StyleSheetSelectorProperty *property, int index) = 0;
+    virtual void StyleSelectorWasRemoved(StyleSheetSelectorsSection *section, StyleSheetSelectorProperty *property, int index) = 0;
+
+
 };
 
 #endif // __QUICKED_PROPERTY_LISTENER_H__

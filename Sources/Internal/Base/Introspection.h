@@ -41,7 +41,6 @@
 #include "Base/IntrospectionDynamic.h"
 #include "Base/BaseTypes.h"
 
-
 namespace DAVA
 {
 	// Класс интроспекции. 
@@ -84,8 +83,8 @@ namespace DAVA
 	public:
 		InspInfo(const char *_name, const InspMember **_members, const int _members_count)
 			: name(_name)
-			, meta(NULL)
-			, base_info(NULL)
+			, meta(nullptr)
+			, base_info(nullptr)
 			, members(_members)
 			, members_count(_members_count)
 		{
@@ -94,7 +93,7 @@ namespace DAVA
 
 		InspInfo(const InspInfo *_base, const char *_name, const InspMember **_members, const int _members_count)
 			: name(_name)
-			, meta(NULL)
+			, meta(nullptr)
 			, base_info(_base)
 			, members(_members)
 			, members_count(_members_count)
@@ -122,24 +121,24 @@ namespace DAVA
 			return members_count;
 		}
 
-		// Возвращает указатель на член интроспекции по заданному индексу, или NULL если такой не найден.
+		// Возвращает указатель на член интроспекции по заданному индексу, или nullptr если такой не найден.
 		const InspMember* Member(int index) const
 		{
-			const InspMember *member = NULL;
+			const InspMember *member = nullptr;
 
 			if(index < members_count)
-				if(NULL != members[index])
+				if(nullptr != members[index])
 					member = members[index];
 
 			return member;
 		}
 
-		// Возвращает указатель на член интроспекции по заданному имени, или NULL если такой не найден.
+		// Возвращает указатель на член интроспекции по заданному имени, или nullptr если такой не найден.
 		const InspMember* Member(const FastName& name) const
 		{
 			for(int i = 0; i < members_count; ++i)
 			{
-				if(NULL != members[i])
+				if(nullptr != members[i])
 				{
 					if(members[i]->name == name)
 					{
@@ -148,10 +147,10 @@ namespace DAVA
 				}
 			}
 
-			return NULL;
+			return nullptr;
 		}
 
-		// Возвращает указатель на базовую интроспекцию, или NULL если такой не существует.
+		// Возвращает указатель на базовую интроспекцию, или nullptr если такой не существует.
 		const InspInfo* BaseInfo() const
 		{
 			return base_info;
@@ -188,7 +187,7 @@ namespace DAVA
 			for(int i = 0; i < members_count; ++i)
 			{
 				// Если хоть один не создан, то освобождаем все остальные.
-				if(NULL == members[i])
+				if(nullptr == members[i])
 				{
 					MembersRelease();
 					break;
@@ -204,10 +203,10 @@ namespace DAVA
 		{
 			for(int i = 0; i < members_count; ++i)
 			{
-				if(NULL != members[i])
+				if(nullptr != members[i])
 				{
 					delete members[i];
-					members[i] = NULL;
+					members[i] = nullptr;
 				}
 			}
 			members_count = 0;
@@ -219,7 +218,7 @@ namespace DAVA
 		friend class InspMemberDynamic;
 
 	public:
-		InspInfoDynamic() : memberDynamic(NULL) {};
+		InspInfoDynamic() : memberDynamic(nullptr) {};
 		virtual ~InspInfoDynamic() {};
 
 		virtual Vector<FastName> MembersList(void *object) const = 0;
@@ -268,7 +267,7 @@ namespace DAVA
 
 // Определение обычного члена интроспекции. Доступ к нему осуществляется непосредственно.
 #define MEMBER(_name, _desc, _flags) \
-	new DAVA::InspMember(#_name, _desc, (int) ((long int) &((ObjectT *) 0)->_name), DAVA::MetaInfo::Instance(&ObjectT::_name), _flags),
+	new DAVA::InspMember(#_name, _desc, (ptrdiff_t) ((intptr_t) &((ObjectT *) 0)->_name), DAVA::MetaInfo::Instance(&ObjectT::_name), _flags),
 
 // Определение члена интроспекции, как свойства. Доступ к нему осуществляется через функци Get/Set. 
 #define PROPERTY(_name, _desc, _getter, _setter, _flags) \
@@ -276,10 +275,10 @@ namespace DAVA
 
 // Определение члена интроспекции, как коллекции. Доступ - см. IntrospectionCollection
 #define COLLECTION(_name, _desc, _flags) \
-	DAVA::CreateInspColl(&((ObjectT *) 0)->_name, #_name, _desc, (int) ((long int) &((ObjectT *) 0)->_name), DAVA::MetaInfo::Instance(&ObjectT::_name), _flags),
+	DAVA::CreateInspColl(&((ObjectT *) 0)->_name, #_name, _desc, (ptrdiff_t) ((intptr_t) &((ObjectT *) 0)->_name), DAVA::MetaInfo::Instance(&ObjectT::_name), _flags),
 
 // Определение члена интроспекции с динамической структурой. Структуру определяет _dynamic, импементирующая интерфейс InspDynamicInfo
 #define DYNAMIC(_name, _desc, _dynamic, _flags) \
-	new DAVA::InspMemberDynamic(#_name, _desc, (int)((long int)&((ObjectT *)0)->_name), DAVA::MetaInfo::Instance(&ObjectT::_name), _flags, _dynamic),
+	new DAVA::InspMemberDynamic(#_name, _desc, (ptrdiff_t) ((intptr_t) &((ObjectT *) 0)->_name), DAVA::MetaInfo::Instance(&ObjectT::_name), _flags, _dynamic),
 
 #endif // __DAVAENGINE_INTROSPECTION_H__
