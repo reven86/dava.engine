@@ -70,7 +70,7 @@ TextDrawSystem::~TextDrawSystem()
 Vector2 TextDrawSystem::ToPos2d(const Vector3 &pos3d) const
 {
 	Vector3 pos2ddepth = cameraSystem->GetScreenPosAndDepth(pos3d);
-	return (pos2ddepth.z >= 0) ? Vector2(pos2ddepth.x, pos2ddepth.y) : Vector2(-1.0f, -1.0f);
+	return (pos2ddepth.z >= 0.0f) ? Vector2(pos2ddepth.x, pos2ddepth.y) : Vector2(-1.0f, -1.0f);
 }
 
 void TextDrawSystem::Draw()
@@ -108,9 +108,9 @@ void TextDrawSystem::PushNextBatch(const Color& color)
     batchDescriptor.vertexCount = vertexCount;
     batchDescriptor.indexCount = DAVA::Min(TextBlockGraphicRender::GetSharedIndexBufferCapacity(), indexCount);
     batchDescriptor.vertexPointer = vertices.front().position.data;
-    batchDescriptor.vertexStride = 5;
+    batchDescriptor.vertexStride = TextBlockGraphicRender::TextVerticesDefaultStride;
     batchDescriptor.texCoordPointer = vertices.front().texCoord.data;
-    batchDescriptor.texCoordStride = 5;
+    batchDescriptor.texCoordStride = TextBlockGraphicRender::TextVerticesDefaultStride;
     batchDescriptor.indexPointer = TextBlockGraphicRender::GetSharedIndexBuffer();
     batchDescriptor.material = fontMaterial;
     batchDescriptor.textureSetHandle = font->GetTextureHandler();
@@ -137,7 +137,7 @@ void TextDrawSystem::AdjustPositionBasedOnAlign(float32& x, float32& y, const Si
 		break;
 
 	case Align::TopCenter:
-		x -= (sSize.dx / 2);
+		x -= sSize.dx / 2;
 		break;
 
 	case Align::TopRight:
@@ -145,17 +145,17 @@ void TextDrawSystem::AdjustPositionBasedOnAlign(float32& x, float32& y, const Si
 		break;
 
 	case Align::Left:
-		y -= (sSize.dy / 2);
+		y -= sSize.dy / 2;
 		break;
 
 	case Align::Center:
-		x -= (sSize.dx / 2);
-		y -= (sSize.dy / 2);
+		x -= sSize.dx / 2;
+		y -= sSize.dy / 2;
 		break;
 
 	case Align::Right:
 		x -= sSize.dx;
-		y -= (sSize.dy / 2);
+		y -= sSize.dy / 2;
 		break;
 
 	case Align::BottomLeft:
@@ -163,7 +163,7 @@ void TextDrawSystem::AdjustPositionBasedOnAlign(float32& x, float32& y, const Si
 		break;
 
 	case Align::BottomCenter:
-		x -= (sSize.dx / 2);
+		x -= sSize.dx / 2;
 		y -= sSize.dy;
 		break;
 
