@@ -41,11 +41,20 @@ namespace DAVA
 class TextBlockGraphicRender: public TextBlockRender
 {
 public:
+	enum
+	{
+		TextVerticesDefaultStride = 5
+	};
+
+public:
 	TextBlockGraphicRender(TextBlock*);
 	~TextBlockGraphicRender();
 	
 	virtual void Prepare(Texture *texture = nullptr);
 	virtual void Draw(const Color& textColor, const Vector2* offset);
+
+	static const uint16* GetSharedIndexBuffer();
+	static const uint32 GetSharedIndexBufferCapacity();
 	
 protected:
 	virtual Font::StringMetrics DrawTextSL(const WideString& drawText, int32 x, int32 y, int32 w);
