@@ -319,7 +319,7 @@ bool QtMainWindow::SaveSceneAs(SceneEditor2 *scene)
     return false;
 }
 
-bool QtMainWindow::SaveAllSceneEmitters(SceneEditor2 *scene)
+bool QtMainWindow::SaveAllSceneEmitters(SceneEditor2 *scene) const
 {
     DVASSERT(nullptr != scene);
 
@@ -328,9 +328,9 @@ bool QtMainWindow::SaveAllSceneEmitters(SceneEditor2 *scene)
     if (effectEntities.empty())
         return true;
 
-    auto GetSaveFolder = []()
+    const auto GetSaveFolder = []()
     {
-        FilePath defaultPath = SettingsManager::GetValue(Settings::Internal_ParticleLastEmitterDir).AsFilePath();
+        const FilePath defaultPath = SettingsManager::GetValue(Settings::Internal_ParticleLastEmitterDir).AsFilePath();
         QString particlesPath;
         if (defaultPath.IsEmpty())
         {
