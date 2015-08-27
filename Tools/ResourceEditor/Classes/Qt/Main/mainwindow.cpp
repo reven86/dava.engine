@@ -319,6 +319,23 @@ bool QtMainWindow::SaveSceneAs(SceneEditor2 *scene)
     return false;
 }
 
+
+QString GetSaveFolderForEmitters()
+{
+    const FilePath defaultPath = SettingsManager::GetValue(Settings::Internal_ParticleLastEmitterDir).AsFilePath();
+    QString particlesPath;
+    if (defaultPath.IsEmpty())
+    {
+        particlesPath = QString::fromStdString(ProjectManager::Instance()->CurProjectDataParticles().GetAbsolutePathname());
+    }
+    else
+    {
+        particlesPath = QString::fromStdString(defaultPath.GetAbsolutePathname());
+    }
+
+    return particlesPath;
+}
+
 bool QtMainWindow::SaveAllSceneEmitters(SceneEditor2 *scene) const
 {
     DVASSERT(nullptr != scene);
@@ -327,23 +344,6 @@ bool QtMainWindow::SaveAllSceneEmitters(SceneEditor2 *scene) const
     scene->GetChildEntitiesWithComponent(effectEntities, Component::PARTICLE_EFFECT_COMPONENT);
     if (effectEntities.empty())
         return true;
-
-    const auto GetSaveFolder = []()
-    {
-        const FilePath defaultPath = SettingsManager::GetValue(Settings::Internal_ParticleLastEmitterDir).AsFilePath();
-        QString particlesPath;
-        if (defaultPath.IsEmpty())
-        {
-            particlesPath = QString::fromStdString(ProjectManager::Instance()->CurProjectDataParticles().GetAbsolutePathname());
-        }
-        else
-        {
-            particlesPath = QString::fromStdString(defaultPath.GetAbsolutePathname());
-        }
-
-        return particlesPath;
-    };
-
 
     uint32 emitterSaveIndex = 0;
     for (auto & entityWithEffect: effectEntities)
@@ -374,7 +374,7 @@ bool QtMainWindow::SaveAllSceneEmitters(SceneEditor2 *scene) const
                 FilePath yamlPath = savedEmitter->configPath;
                 if (yamlPath.IsEmpty())
                 {
-                    QString particlesPath = GetSaveFolder();
+                    QString particlesPath = GetSaveFolderForEmitters();
 
                     FileSystem::Instance()->CreateDirectory(FilePath(particlesPath.toStdString()), true); //to ensure that folder is created
 
