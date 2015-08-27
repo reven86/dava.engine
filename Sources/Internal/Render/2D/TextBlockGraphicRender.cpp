@@ -83,21 +83,25 @@ TextBlockGraphicRender::~TextBlockGraphicRender()
 	
 void TextBlockGraphicRender::Prepare(Texture *texture /*= nullptr*/)
 {
-    uint32 charCount = 0;
+    size_t charCount = 0;
     if (!textBlock->isMultilineEnabled || textBlock->treatMultilineAsSingleLine)
     {
-        charCount = static_cast<uint32>(textBlock->visualText.length());
+        charCount = textBlock->visualText.length();
     }
     else
     {
-        int32 stringsCnt = (int32)textBlock->multilineStrings.size();
-		for (int32 line = 0; line < stringsCnt; ++line)
+        size_t stringsCnt = textBlock->multilineStrings.size();
+        for (size_t line = 0; line < stringsCnt; ++line)
+        {
             charCount += textBlock->multilineStrings[line].length();
+        }
     }
-    uint32 vertexCount = charCount * 4;
+    size_t vertexCount = charCount * 4;
     
-    if((uint32)vertexBuffer.size() != vertexCount)
+    if (vertexBuffer.size() != vertexCount)
+    {
         vertexBuffer.resize(vertexCount);
+    }
     
     charDrawed = 0;
     renderRect = Rect(0, 0, 0, 0);

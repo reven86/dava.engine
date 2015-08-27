@@ -100,17 +100,24 @@ public:
 
     void Insert(BacktraceTreeNode * head, Backtrace * backtrace, uint32 depth)
     {
-        uint32 size = (uint32)head->children.size();
-        for (uint32 k = 0; k < size; ++k)
-        {
-            if (head->children[k]->pointer == backtrace->array[depth])
+    	if(depth == 0)
+    	{
+            head->Insert(backtrace->array[depth]);
+    	}
+    	else
+    	{
+            uint32 size = (uint32)head->children.size();
+            for (uint32 k = 0; k < size; ++k)
             {
-                Insert(head->children[k], backtrace, depth - 1);
+                if (head->children[k]->pointer == backtrace->array[depth])
+                {
+                    Insert(head->children[k], backtrace, depth - 1);
+                }
             }
-        }
 
-        head->Insert(backtrace->array[depth]);
-        Insert(head->children[(uint32)head->children.size() - 1], backtrace, depth - 1);
+            head->Insert(backtrace->array[depth]);
+            Insert(head->children[(uint32)head->children.size() - 1], backtrace, depth - 1);
+    	}
     }
 
     Backtrace* GetBacktraceByTreeNode(BacktraceTreeNode * node)

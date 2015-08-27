@@ -68,8 +68,7 @@ void CheckeredCanvas::DrawAfterChilds( const UIGeometricData &geometricData )
         Color gridColor = EditorSettings::Instance()->GetGrigColor();
         RenderSystem2D::Instance()->DrawGrid(geometricData.GetUnrotatedRect(),
                                              Vector2(GetScale().x, GetScale().x),
-                                             gridColor,
-                                             RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL);
+                                             gridColor);
     }
     
     for (auto &control : selectionControls)
@@ -77,17 +76,19 @@ void CheckeredCanvas::DrawAfterChilds( const UIGeometricData &geometricData )
         UIControl *parent = control->GetParent();
         if (parent && parent != this)
         {
-            RenderSystem2D::Instance()->DrawRect(parent->GetGeometricData().GetUnrotatedRect(),
-                                                 RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL,
+            RenderSystem2D::Instance()->DrawRect(parent->GetGeometricData().GetUnrotatedRect(),                                                 
                                                  Color(0.5f, 0.5f, 0.5f, 1.f));
         }
         
-        RenderSystem2D::Instance()->DrawRect(control->GetGeometricData().GetUnrotatedRect(), RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL, Color(1.f, 0.f, 0.f, 1.f));
+        RenderSystem2D::Instance()->DrawRect(control->GetGeometricData().GetUnrotatedRect(), Color(1.f, 0.f, 0.f, 1.f));
     }
 }
 
 bool CheckeredCanvas::SystemInput(UIEvent *currentInput)
 {
+    if (emulationMode)
+        return UIControl::SystemInput(currentInput);
+    
     DAVA::List<std::pair<UIControl*, UIControl*> > selectedControls;
     if (currentInput->phase == UIEvent::PHASE_BEGAN || currentInput->phase == UIEvent::PHASE_DRAG)
     {
@@ -172,6 +173,10 @@ void CheckeredCanvas::RemoveControlSelectionListener(ControlSelectionListener *l
     }
 }
 
+void CheckeredCanvas::SetEmulationMode(bool newMode)
+{
+    emulationMode = newMode;
+}
 
 PackageCanvas::PackageCanvas()
     : UIControl()

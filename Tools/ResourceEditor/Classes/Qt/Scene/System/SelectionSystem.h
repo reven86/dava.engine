@@ -68,11 +68,12 @@ public:
     SceneSelectionSystem(DAVA::Scene * scene, SceneCollisionSystem *collSys, HoodSystem *hoodSys);
 	~SceneSelectionSystem();
 
-	void SetSelection(const EntityGroup &newSelection);
-	
 	void SetSelection(DAVA::Entity *entity);
+    void SetSelection(const EntityGroup &newSelection);
 	void AddSelection(DAVA::Entity *entity);
+    void AddSelection(const EntityGroup &entities);
 	void RemSelection(DAVA::Entity *entity);
+    void RemSelection(const EntityGroup &entities);
 	void Clear();
     
     bool IsEntitySelectable(DAVA::Entity *entity) const;

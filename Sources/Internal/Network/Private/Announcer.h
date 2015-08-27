@@ -73,7 +73,7 @@ private:
     UDPSocket socket;
     DeadlineTimer timer;
     Endpoint endpoint;
-    char8 endpAsString[30];
+    Array<char8, 30> endpAsString;
     uint32 announcePeriod;
     bool isTerminating;
     size_t runningObjects;

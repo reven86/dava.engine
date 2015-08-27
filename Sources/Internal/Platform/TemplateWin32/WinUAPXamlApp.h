@@ -34,6 +34,7 @@
 #if defined(__DAVAENGINE_WIN_UAP__)
 
 #include <agile.h>
+#include <concrt.h>
 
 #include "Core/Core.h"
 #include "Core/DisplayMode.h"
@@ -44,6 +45,7 @@ namespace DAVA
 {
 
 class CorePlatformWinUAP;
+class DispatcherWinUAP;
 
 /************************************************************************
  Class WinUAPXamlApp represents WinRT XAML application with embedded framework's render loop
@@ -60,6 +62,7 @@ ref class WinUAPXamlApp sealed : public ::Windows::UI::Xaml::Application
 public:
     // Deleted and defaulted functions are not supported in WinRT classes
     WinUAPXamlApp();
+    virtual ~WinUAPXamlApp();
 
     Windows::Graphics::Display::DisplayOrientations GetDisplayOrientation();
     Windows::UI::ViewManagement::ApplicationViewWindowingMode GetScreenMode();
@@ -69,13 +72,17 @@ public:
     void SetCursorVisible(bool isVisible);
 
     Windows::UI::Core::CoreDispatcher^ UIThreadDispatcher();
-    Windows::UI::Core::CoreDispatcher^ MainThreadDispatcher();
 
+internal:   // Only internal methods of ref class can return pointers to non-ref objects
+    DispatcherWinUAP* MainThreadDispatcher();
+
+public:
     void SetQuitFlag();
 
     void AddUIElement(Windows::UI::Xaml::UIElement^ uiElement);
     void RemoveUIElement(Windows::UI::Xaml::UIElement^ uiElement);
     void PositionUIElement(Windows::UI::Xaml::UIElement^ uiElement, float32 x, float32 y);
+    void UnfocusUIElement();
 
 protected:
     void OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^ args) override;
@@ -91,15 +98,18 @@ private:    // Event handlers
     // Windows state change handlers
     void OnWindowActivationChanged(::Windows::UI::Core::CoreWindow^ sender, ::Windows::UI::Core::WindowActivatedEventArgs^ args);
     void OnWindowVisibilityChanged(::Windows::UI::Core::CoreWindow^ sender, ::Windows::UI::Core::VisibilityChangedEventArgs^ args);
-    void OnWindowSizeChanged(::Windows::UI::Core::CoreWindow^ sender, ::Windows::UI::Core::WindowSizeChangedEventArgs^ args);
+    
+    // Swap chain panel state change handlers
+    void OnSwapChainPanelSizeChanged(Platform::Object^ sender, Windows::UI::Xaml::SizeChangedEventArgs^ e);
+    void OnSwapChainPanelScaleChanged(Windows::UI::Xaml::Controls::SwapChainPanel^ panel, Platform::Object^ args);
 
     // Mouse and touch handlers
-    void OnPointerPressed(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ args);
-    void OnPointerReleased(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ args);
-    void OnPointerMoved(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ args);
-    void OnPointerEntered(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ args);
-    void OnPointerExited(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ args);
-    void OnPointerWheel(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ args);
+    void OnPointerPressed(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args);
+    void OnPointerReleased(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args);
+    void OnPointerMoved(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args);
+    void OnPointerEntered(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args);
+    void OnPointerExited(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args);
+    void OnPointerWheel(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args);
     void OnHardwareBackButtonPressed(Platform::Object^ sender, Windows::Phone::UI::Input::BackPressedEventArgs ^args);
 
     // Keyboard handlers
@@ -107,36 +117,37 @@ private:    // Event handlers
     void OnKeyUp(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ args);
     void OnMouseMoved(Windows::Devices::Input::MouseDevice^ mouseDevice, Windows::Devices::Input::MouseEventArgs^ args);
 
-    void DAVATouchEvent(UIEvent::eInputPhase phase, Windows::Foundation::Point position, int32 id);
+    void DAVATouchEvent(UIEvent::eInputPhase phase, float32 x, float32 y, int32 id);
 
 private:
     void SetupEventHandlers();
-    void SetupRenderLoopEventHandlers();
     void CreateBaseXamlUI();
 
     void SetTitleName();
     void SetDisplayOrientations();
 
-    void InitInput();
-
-    void InitRender();
-    void ReInitRender();
+    void ResetRender();
 
     void InitCoordinatesSystem();
     void ReInitCoordinatesSystem();
 
     void PrepareScreenSize();
-    void UpdateScreenSize(float32 width, float32 height);
+    void UpdateScreenSize(int32 width, int32 height);
+    void UpdateScreenScale(float32 scaleX, float32 scaleY);
     void SetFullScreen(bool isFullScreenFlag);
-    void SetPreferredSize(int32 width, int32 height);
-
+    // in units of effective (view) pixels
+    void SetPreferredSize(float32 width, float32 height);
+    void HideAsyncTaskBar();
+    
 private:
+    Concurrency::critical_section criticalSection;
     CorePlatformWinUAP* core;
     Windows::UI::Core::CoreDispatcher^ uiThreadDispatcher = nullptr;
-    Windows::UI::Core::CoreIndependentInputSource^ mainThreadInputSource = nullptr;
+    std::unique_ptr<DispatcherWinUAP> dispatcher = nullptr;
 
     Windows::UI::Xaml::Controls::SwapChainPanel^ swapChainPanel = nullptr;
     Windows::UI::Xaml::Controls::Canvas^ canvas = nullptr;
+    Windows::UI::Xaml::Controls::Button^ controlThatTakesFocus = nullptr;
 
     Windows::Foundation::IAsyncAction^ renderLoopWorker = nullptr;
 
@@ -151,6 +162,7 @@ private:
     bool isWindowVisible = true;
     bool isWindowClosed = false;
     bool isFullscreen = false;
+    bool isRenderCreated = false;
     DisplayMode windowedMode = DisplayMode(DisplayMode::DEFAULT_WIDTH,
                                            DisplayMode::DEFAULT_HEIGHT,
                                            DisplayMode::DEFAULT_BITS_PER_PIXEL,
@@ -164,8 +176,12 @@ private:
     bool isLeftButtonPressed = false;
     bool isMiddleButtonPressed = false;
 
-    float32 windowWidth = static_cast<float32>(DisplayMode::DEFAULT_WIDTH);
-    float32 windowHeight = static_cast<float32>(DisplayMode::DEFAULT_HEIGHT);
+    float32 swapChainScaleX = 1.f;
+    float32 swapChainScaleY = 1.f;
+    int32 swapChainWidth = DisplayMode::DEFAULT_WIDTH;
+    int32 swapChainHeight = DisplayMode::DEFAULT_HEIGHT;
+    int32 physicalWidth = static_cast<int32>(swapChainWidth * swapChainScaleX);
+    int32 physicalHeight = static_cast<int32>(swapChainHeight * swapChainScaleY);
 
     Windows::Graphics::Display::DisplayOrientations displayOrientation = ::Windows::Graphics::Display::DisplayOrientations::None;
 };
@@ -176,9 +192,9 @@ inline Windows::UI::Core::CoreDispatcher^ WinUAPXamlApp::UIThreadDispatcher()
     return uiThreadDispatcher;
 }
 
-inline Windows::UI::Core::CoreDispatcher^ WinUAPXamlApp::MainThreadDispatcher()
+inline DispatcherWinUAP* WinUAPXamlApp::MainThreadDispatcher()
 {
-    return mainThreadInputSource->Dispatcher;
+    return dispatcher.get();
 }
 
 inline void WinUAPXamlApp::SetQuitFlag()

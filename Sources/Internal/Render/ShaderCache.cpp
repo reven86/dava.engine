@@ -185,8 +185,8 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
         shaderSourceCodes[name] = sourceCode;
     }
 
-    rhi::ShaderSource vSource(sourceCode.vertexProgSourcePath.GetAbsolutePathname().c_str());
-    rhi::ShaderSource fSource(sourceCode.fragmentProgSourcePath.GetAbsolutePathname().c_str());
+    rhi::ShaderSource vSource(sourceCode.vertexProgSourcePath.GetFrameworkPath().c_str());
+    rhi::ShaderSource fSource(sourceCode.fragmentProgSourcePath.GetFrameworkPath().c_str());
     vSource.Construct(rhi::PROG_VERTEX, sourceCode.vertexProgText, progDefines);
     fSource.Construct(rhi::PROG_FRAGMENT, sourceCode.fragmentProgText, progDefines);    
     //vSource.Dump();

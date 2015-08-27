@@ -69,11 +69,13 @@ public:
 private:
     void InitScreenController();
 	void RegisterTests();
+    void ReadSingleTestParams(BaseTest::TestParams& params);
+    void LoadMaps(const String& testName, Vector<std::pair<String, String>>& maps);
     
     String GetDeviceName();
 
 	Vector<BaseTest*> testChain;
-	TestFlowController* testFlowController;
+    std::unique_ptr<TestFlowController> testFlowController;
 
     TeamcityTestsOutput teamCityOutput;
     BaseTest::TestParams defaultTestParams;

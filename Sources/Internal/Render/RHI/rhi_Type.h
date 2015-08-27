@@ -885,14 +885,14 @@ void Trace( const char* format, ... );
 
 
 
-#if defined(__DAVAENGINE_IPHONE__)  ||  defined(__DAVAENGINE_MACOS__)
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
 
 #define stricmp     strcasecmp
 #define strnicmp    strncasecmp
 
 #endif
 
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_WIN_UAP__)
 
     #define stricmp _strcmpi
 

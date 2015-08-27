@@ -134,7 +134,6 @@ gles2_TextureFormatSupported( TextureFormat format )
         case TEXTURE_FORMAT_ETC2_R8G8B8A1 :
             supported = ETC2_Supported;
             break;
-            break;
 
         case TEXTURE_FORMAT_EAC_R11_UNSIGNED :
         case TEXTURE_FORMAT_EAC_R11_SIGNED :
@@ -221,6 +220,9 @@ gles2_Reset( const ResetParam& param )
 {
     _GLES2_DefaultFrameBuffer_Width  = param.width;
     _GLES2_DefaultFrameBuffer_Height = param.height;
+#if defined(__DAVAENGINE_ANDROID__)
+    android_gl_reset();
+#endif
 }
 
 
@@ -518,6 +520,62 @@ gles2_Initialize(const InitParam& param)
     stat_SET_PS = StatSet::AddStat("rhi'set-ps", "set-ps");
     stat_SET_TEX = StatSet::AddStat("rhi'set-tex", "set-tex");
     stat_SET_CB = StatSet::AddStat("rhi'set-cb", "set-cb");
+}
+
+#elif defined(__DAVAENGINE_ANDROID__)
+
+void
+gles2_Initialize( const InitParam& param )
+{
+    _GLES2_AcquireContext = &android_gl_acquire_context;
+    _GLES2_ReleaseContext = &android_gl_release_context;
+
+    _GLES2_DefaultFrameBuffer_Width  = param.width;
+    _GLES2_DefaultFrameBuffer_Height = param.height;
+
+	android_gl_init(param.window);
+
+    ConstBufferGLES2::InitializeRingBuffer(4 * 1024 * 1024); // CRAP: hardcoded default const ring-buf size
+
+    _Inited = true;
+
+    Logger::Info("GL inited");
+    Logger::Info("  GL version   : %s", glGetString(GL_VERSION));
+    Logger::Info("  GPU vendor   : %s", glGetString(GL_VENDOR));
+    Logger::Info("  GPU          : %s", glGetString(GL_RENDERER));
+    Logger::Info("  GLSL version : %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
+
+    VertexBufferGLES2::SetupDispatch( &DispatchGLES2 );
+    IndexBufferGLES2::SetupDispatch( &DispatchGLES2 );
+    QueryBufferGLES2::SetupDispatch( &DispatchGLES2 );
+    TextureGLES2::SetupDispatch( &DispatchGLES2 );
+    PipelineStateGLES2::SetupDispatch( &DispatchGLES2 );
+    ConstBufferGLES2::SetupDispatch( &DispatchGLES2 );
+    DepthStencilStateGLES2::SetupDispatch( &DispatchGLES2 );
+    SamplerStateGLES2::SetupDispatch( &DispatchGLES2 );
+    RenderPassGLES2::SetupDispatch( &DispatchGLES2 );
+    CommandBufferGLES2::SetupDispatch( &DispatchGLES2 );
+
+    DispatchGLES2.impl_Reset                    = &gles2_Reset;
+    DispatchGLES2.impl_Uninitialize             = &gles2_Uninitialize;
+    DispatchGLES2.impl_HostApi                  = &gles2_HostApi;
+    DispatchGLES2.impl_TextureFormatSupported   = &gles2_TextureFormatSupported;
+
+    SetDispatchTable(DispatchGLES2);
+
+    InitializeRenderThread();
+
+    #if 0
+    glEnable(GL_DEBUG_OUTPUT);
+    glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE);
+    glDebugMessageCallback(&_OGLErrorCallback, 0);
+    #endif
+
+    stat_DIP     = StatSet::AddStat("rhi'dip", "dip");
+    stat_DP      = StatSet::AddStat("rhi'dp", "dp");
+    stat_SET_PS  = StatSet::AddStat("rhi'set-ps", "set-ps");
+    stat_SET_TEX = StatSet::AddStat("rhi'set-tex", "set-tex");
+    stat_SET_CB  = StatSet::AddStat("rhi'set-cb", "set-cb");
 }
 
 #endif

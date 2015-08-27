@@ -66,8 +66,14 @@ MainWindow::MainWindow(QWidget *parent)
     toolBarPlugins->addAction(actionReloadSprites);
 
     actionLocalizationManager->setEnabled(false);
+    toolBarPlugins->addSeparator();
     InitLanguageBox();
+    toolBarPlugins->addSeparator();
     InitRtlBox();
+    toolBarPlugins->addSeparator();
+    InitGlobalClasses();
+    toolBarPlugins->addSeparator();
+    InitEmulationMode();
 
     tabBar->setElideMode(Qt::ElideNone);
     setWindowTitle(ResourcesManageHelper::GetProjectTitle());
@@ -252,6 +258,38 @@ void MainWindow::InitRtlBox()
     wrapper->setLayout(layout);
     toolBarPlugins->addWidget(wrapper);
     connect(rtlBox, &QCheckBox::stateChanged, this, &MainWindow::OnRtlChanged);
+}
+
+void MainWindow::InitGlobalClasses()
+{
+    QLineEdit *classesEdit = new QLineEdit();
+    classesEdit->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
+    QLabel *label = new QLabel(tr("global classes"));
+    label->setBuddy(classesEdit);
+    QHBoxLayout *layout = new QHBoxLayout;
+    layout->setMargin(0);
+    layout->addWidget(label);
+    layout->addWidget(classesEdit);
+    QWidget *wrapper = new QWidget();
+    wrapper->setLayout(layout);
+    toolBarPlugins->addWidget(wrapper);
+    connect(classesEdit, &QLineEdit::textChanged, this, &MainWindow::OnGlobalClassesChanged);
+}
+
+void MainWindow::InitEmulationMode()
+{
+    QCheckBox *emulationBox = new QCheckBox();
+    emulationBox->setCheckState(Qt::Unchecked);
+    QLabel *label = new QLabel(tr("Emulation"));
+    label->setBuddy(emulationBox);
+    QHBoxLayout *layout = new QHBoxLayout;
+    layout->setMargin(0);
+    layout->addWidget(label);
+    layout->addWidget(emulationBox);
+    QWidget *wrapper = new QWidget();
+    wrapper->setLayout(layout);
+    toolBarPlugins->addWidget(wrapper);
+    connect(emulationBox, &QCheckBox::stateChanged, this, &MainWindow::OnEmulationModeChanged);
 }
 
 void MainWindow::InitMenu()
@@ -475,6 +513,16 @@ void MainWindow::OnPixelizationStateChanged()
 void MainWindow::OnRtlChanged(int arg)
 {
     emit RtlChanged(arg == Qt::Checked);
+}
+
+void MainWindow::OnEmulationModeChanged(int arg)
+{
+    previewWidget->SetEmulationMode(arg == Qt::Checked);
+}
+
+void MainWindow::OnGlobalClassesChanged(const QString &str)
+{
+    emit GlobalStyleClassesChanged(str);
 }
 
 void MainWindow::SetBackgroundColorMenuTriggered(QAction* action)

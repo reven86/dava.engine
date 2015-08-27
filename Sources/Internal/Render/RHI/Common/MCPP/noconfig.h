@@ -29,7 +29,7 @@
 
 /* Define host compiler.            */
 //#if defined(__DAVAENGINE_MACOS__)  ||  defined(__DAVAENGINE_IPHONE__)
-#if defined(__GNUC__) && ( defined(__APPLE_CPP__) || defined(__APPLE_CC__) || defined(__MACOS_CLASSIC__) )
+#if defined(__GNUC__) && ( defined(__APPLE_CPP__) || defined(__APPLE_CC__) || defined(__MACOS_CLASSIC__) || defined(__ANDROID__) || defined(ANDROID))
 #define HOST_COMPILER       GNUC
 #else
 #define HOST_COMPILER       MSC

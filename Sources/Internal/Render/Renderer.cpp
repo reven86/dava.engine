@@ -99,8 +99,8 @@ void Uninitialize()
 
 void Reset(const rhi::ResetParam & params)
 {
-    framebufferWidth = params.width;
-    framebufferHeight = params.height;
+    framebufferWidth = params.width * params.scaleX;
+    framebufferHeight = params.height * params.scaleY;
 
     rhi::Reset(params);
 }

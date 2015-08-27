@@ -107,6 +107,11 @@ DavaGLWidget *PreviewWidget::GetDavaGLWidget()
     return davaGLWidget;
 }
 
+void PreviewWidget::SetEmulationMode(bool emulationMode)
+{
+    model->SetEmulationMode(emulationMode);
+}
+
 void PreviewWidget::OnDocumentChanged(SharedData *data)
 {
     if (sharedData == data)

@@ -31,23 +31,32 @@
 #include "PackageVisitor.h"
 
 #include "Model/ControlProperties/StyleSheetRootProperty.h"
+#include "Model/ControlProperties/StyleSheetSelectorProperty.h"
+#include "Model/ControlProperties/StyleSheetProperty.h"
+#include "Model/ControlProperties/SectionProperty.h"
 
 #include "UI/Styles/UIStyleSheet.h"
 
 using namespace DAVA;
 
-StyleSheetNode::StyleSheetNode(UIStyleSheet *aStyleSheet)
+StyleSheetNode::StyleSheetNode(const DAVA::Vector<DAVA::UIStyleSheetSelectorChain> &selectorChains, const DAVA::Vector<DAVA::UIStyleSheetProperty> &properties)
     : PackageBaseNode(nullptr)
-    , styleSheet(SafeRetain(aStyleSheet))
-    , rootProperty(new StyleSheetRootProperty(this))
+    , rootProperty(nullptr)
 {
-    
+    rootProperty = new StyleSheetRootProperty(this, selectorChains, properties);
+    name = rootProperty->GetSelectorsAsString();
 }
 
 StyleSheetNode::~StyleSheetNode()
 {
-    SafeRelease(styleSheet);
     SafeRelease(rootProperty);
+}
+
+StyleSheetNode *StyleSheetNode::Clone() const
+{
+    Vector<UIStyleSheetSelectorChain> selectors = rootProperty->CollectStyleSheetSelectors();
+    Vector<UIStyleSheetProperty> properties = rootProperty->CollectStyleSheetProperties();
+    return new StyleSheetNode(selectors, properties);
 }
 
 int StyleSheetNode::GetCount() const
@@ -67,15 +76,25 @@ void StyleSheetNode::Accept(PackageVisitor *visitor)
 
 String StyleSheetNode::GetName() const
 {
-    return styleSheet->GetSelectorChain().ToString();
+    return name;
+}
+
+void StyleSheetNode::UpdateName()
+{
+    name = rootProperty->GetSelectorsAsString();
+}
+
+bool StyleSheetNode::CanRemove() const
+{
+    return !IsReadOnly();
+}
+
+bool StyleSheetNode::CanCopy() const
+{
+    return true;
 }
 
 StyleSheetRootProperty *StyleSheetNode::GetRootProperty() const
 {
     return rootProperty;
-}
-
-UIStyleSheet *StyleSheetNode::GetStyleSheet() const
-{
-    return styleSheet;
 }

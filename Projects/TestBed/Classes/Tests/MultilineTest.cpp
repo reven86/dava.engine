@@ -31,31 +31,127 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using namespace DAVA;
 
+class TextDelegate1 : public UITextFieldDelegate
+{
+public:
+    virtual ~TextDelegate1() = default;
+    bool TextFieldKeyPressed(UITextField* /*textField*/, int32 replacementLocation, int32 replacementLength, WideString& replacementString) override
+    {
+        // Allow only small caps letters
+        bool accept = true;
+        for (size_t i = 0, n = replacementString.length();i < n && accept;++i)
+        {
+            accept = 'a' <= replacementString[i] && replacementString[i] <= 'z';
+        }
+        Logger::Debug("****** TextDelegate2::TextFieldKeyPressed: accepted=%d", accept);
+        return accept;
+    }
+    void TextFieldOnTextChanged(UITextField* /*textField*/, const WideString& newText, const WideString& oldText) override
+    {
+        Logger::Debug("****** TextDelegate1::TextFieldOnTextChanged: new=%s, old=%s", WStringToString(newText).c_str(), WStringToString(oldText).c_str());
+    }
+    void TextFieldShouldReturn(UITextField* textField)
+    {
+        textField->CloseKeyboard();
+    }
+};
+
+class TextDelegate2 : public UITextFieldDelegate
+{
+public:
+    virtual ~TextDelegate2() = default;
+    bool TextFieldKeyPressed(UITextField* /*textField*/, int32 replacementLocation, int32 replacementLength, WideString& replacementString) override
+    {
+        // Allow only numbers
+        bool accept = true;
+        for (size_t i = 0, n = replacementString.length();i < n && accept;++i)
+        {
+            accept = '0' <= replacementString[i] && replacementString[i] <= '9';
+        }
+        Logger::Debug("****** TextDelegate1::TextFieldKeyPressed: accepted=%d", accept);
+        return accept;
+    }
+    void TextFieldOnTextChanged(UITextField* /*textField*/, const WideString& newText, const WideString& oldText) override
+    {
+        Logger::Debug("****** TextDelegate2::TextFieldOnTextChanged: new=%s, old=%s", WStringToString(newText).c_str(), WStringToString(oldText).c_str());
+    }
+};
+
+class TextDelegateMulti : public UITextFieldDelegate
+{
+public:
+    virtual ~TextDelegateMulti() = default;
+};
+
 MultilineTest::MultilineTest ()
-: BaseScreen("MultilineTest")
+    : BaseScreen("MultilineTest")
 {
 }
 
 void MultilineTest::LoadResources()
 {
-    BaseScreen::LoadResources();
-
-    UITextField* textField = new UITextField(Rect(10, 10, 300, 200));
-#if defined(__DAVAENGINE_WINDOWS__) || defined(__DAVAENGINE_MACOS__)
     Font *font = FTFont::Create("~res:/Fonts/korinna.ttf");
     DVASSERT(font);
     font->SetSize(14);
-    textField->SetFont(font);
-#endif
 
-    textField->SetText(L"Hello World");
-    textField->SetDebugDraw(true);
-    textField->SetTextColor(Color(0.0, 1.0, 0.0, 1.0));
+    textDelegate1 = new TextDelegate1;
+    textDelegate2 = new TextDelegate2;
 
-    static UITextFieldDelegate delegate;
+    textField1 = new UITextField(Rect(5, 10, 400, 60));
+    textField1->SetFont(font);
+    textField1->SetText(L"Hello World");
+    textField1->SetDebugDraw(true);
+    textField1->SetTextColor(Color(0.0, 1.0, 0.0, 1.0));
+    textField1->SetDelegate(textDelegate1);
+    textField1->SetTextAlign(ALIGN_LEFT | ALIGN_TOP);
 
-    textField->SetDelegate(&delegate);
-    textField->SetMultiline(true);
-    textField->SetTextAlign(ALIGN_LEFT | ALIGN_TOP);
-    AddControl(textField);
+    textField2 = new UITextField(Rect(5, 80, 400, 60));
+    textField2->SetIsPassword(true);
+    textField2->SetFont(font);
+    textField2->SetText(L"Die my darling");
+    textField2->SetDebugDraw(true);
+    textField2->SetTextColor(Color(0.0, 0.0, 1.0, 1.0));
+    textField2->SetKeyboardType(UITextField::eKeyboardType::KEYBOARD_TYPE_NUMBER_PAD);
+    textField2->SetDelegate(textDelegate2);
+    textField2->SetTextAlign(ALIGN_RIGHT | ALIGN_TOP);
+
+    textFieldMulti = new UITextField(Rect(450, 10, 400, 120));
+    textFieldMulti->SetFont(font);
+    textFieldMulti->SetText(L"Multiline text field");
+    textFieldMulti->SetDebugDraw(true);
+    textFieldMulti->SetTextColor(Color(0.0, 0.0, 1.0, 1.0));
+    textFieldMulti->SetMultiline(true);
+    textFieldMulti->SetTextAlign(ALIGN_HCENTER | ALIGN_TOP);
+
+    AddControl(textField1);
+    AddControl(textField2);
+    AddControl(textFieldMulti);
+
+    SafeRelease(font);
+    BaseScreen::LoadResources();
+}
+
+void MultilineTest::UnloadResources()
+{
+    RemoveAllControls();
+
+    SafeRelease(textField1);
+    SafeRelease(textField2);
+    SafeRelease(textFieldMulti);
+
+    SafeDelete(textDelegate1);
+    SafeDelete(textDelegate2);
+}
+
+UIButton* MultilineTest::CreateUIButton(Font* font, const Rect& rect, const String& text,
+                                        void (MultilineTest::*onClick)(BaseObject*, void*, void*))
+{
+    UIButton* button = new UIButton(rect);
+    button->SetStateFont(0xFF, font);
+    button->SetStateText(0xFF, StringToWString(text));
+    button->SetStateFontColor(0xFF, Color::White);
+    button->SetDebugDraw(true);
+    button->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, onClick));
+    AddControl(button);
+    return button;
 }

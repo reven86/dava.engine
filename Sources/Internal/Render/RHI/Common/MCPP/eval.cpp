@@ -1348,7 +1348,7 @@ static VAL_SIGN *   eval_eval(
             if (warn_level & 8)
                 cwarn( zero_div, NULL, 0L, non_eval);
             valp->sign = sign1;
-            valp->val = (expr_t) EXPR_MAX;
+            valp->val = -1;
             return  valp;
         }
     }

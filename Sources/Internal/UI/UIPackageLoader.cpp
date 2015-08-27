@@ -41,6 +41,7 @@
 #include "UI/UIPackage.h"
 #include "UI/Components/UIComponent.h"
 #include "UI/Layouts/UIAnchorComponent.h"
+#include "Utils/Utils.h"
 
 namespace DAVA
 {
@@ -132,7 +133,7 @@ bool UIPackageLoader::LoadPackage(const YamlNode *rootNode, const FilePath &pack
     const YamlNode *styleSheetsNode = rootNode->Get("StyleSheets");
     if (styleSheetsNode)
     {
-        builder->ProcessStyleSheets(styleSheetsNode);
+        LoadStyleSheets(styleSheetsNode, builder);
     }
 
     const YamlNode *controlsNode = rootNode->Get("Controls");
@@ -196,6 +197,81 @@ bool UIPackageLoader::LoadControlByName(const String &name, AbstractUIPackageBui
         }
     }
     return false;
+}
+
+void UIPackageLoader::LoadStyleSheets(const YamlNode *styleSheetsNode, AbstractUIPackageBuilder *builder)
+{
+    const Vector<YamlNode*> &styleSheetMap = styleSheetsNode->AsVector();
+    const UIStyleSheetPropertyDataBase* propertyDB = UIStyleSheetPropertyDataBase::Instance();
+    
+    for (YamlNode *styleSheetNode : styleSheetMap)
+    {
+        const MultiMap<String, YamlNode*> &styleSheet = styleSheetNode->AsMap();
+        
+        auto propertiesSectionIter = styleSheet.find("properties");
+        
+        if (propertiesSectionIter != styleSheet.end())
+        {
+            Vector<UIStyleSheetProperty> propertiesToSet;
+            
+            for (const auto& propertyIter : propertiesSectionIter->second->AsMap())
+            {
+                uint32 index = propertyDB->GetStyleSheetPropertyIndex(FastName(propertyIter.first));
+                const UIStyleSheetPropertyDescriptor& propertyDescr = propertyDB->GetStyleSheetPropertyByIndex(index);
+                if (!propertyDescr.targetMembers.empty())
+                {
+                    const YamlNode *propertyNode = propertyIter.second;
+                    const YamlNode *valueNode = propertyNode;
+                    if (propertyNode->GetType() == YamlNode::TYPE_MAP)
+                        valueNode = propertyNode->Get("value");
+                    
+                    if (valueNode)
+                    {
+                        VariantType value(valueNode->AsVariantType(propertyDescr.targetMembers[0].memberInfo));
+                        
+                        UIStyleSheetProperty property{ index, value };
+                        
+                        if (propertyNode->GetType() == YamlNode::TYPE_MAP)
+                        {
+                            const YamlNode *transitionTime = propertyNode->Get("transitionTime");
+                            if (transitionTime)
+                            {
+                                property.transition = true;
+                                property.transitionTime = transitionTime->AsFloat();
+
+                                const YamlNode *transitionFunction = propertyNode->Get("transitionFunction");
+                                if (transitionFunction)
+                                {
+                                    int32 transitionFunctionType = Interpolation::LINEAR;
+                                    GlobalEnumMap<Interpolation::FuncType>::Instance()->ToValue(transitionFunction->AsString().c_str(), transitionFunctionType);
+                                    property.transitionFunction = (Interpolation::FuncType)transitionFunctionType;
+                                }
+                            }
+                        }
+                        
+                        propertiesToSet.push_back(property);
+                    }
+                    else
+                    {
+                        DVASSERT(valueNode);
+                    }
+                }
+            }
+            
+            Vector<String> selectorList;
+            Split(styleSheet.find("selector")->second->AsString(), ",", selectorList);
+            Vector<UIStyleSheetSelectorChain> selectorChains;
+            selectorChains.reserve(selectorList.size());
+            
+            for (const String& selectorString : selectorList)
+            {
+                selectorChains.push_back(UIStyleSheetSelectorChain(selectorString));
+            }
+            
+            builder->ProcessStyleSheet(selectorChains, propertiesToSet);
+        }
+    }
+    
 }
 
 void UIPackageLoader::LoadControl(const YamlNode *node, bool root, AbstractUIPackageBuilder *builder)

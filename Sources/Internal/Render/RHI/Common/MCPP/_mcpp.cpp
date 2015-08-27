@@ -32,11 +32,11 @@ static FILE* const              _HandleBase     = (FILE*)(0x1000);
 void
 mcpp__set_cur_file( const char* filename )
 {
-    DAVA::PathManip   path(filename);
+	DAVA::FilePath fileDir = DAVA::FilePath(filename).GetDirectory();
 
     IncludeSearchPath.clear();
-    IncludeSearchPath.push_back( path.GetPath() );
-    IncludeSearchPath.push_back( DAVA::FilePath("~res:/Materials/Shaders").GetAbsolutePathname() );
+    IncludeSearchPath.push_back( fileDir.IsEmpty() ? std::string() : fileDir.GetFrameworkPath() );
+    IncludeSearchPath.push_back( DAVA::FilePath("~res:/Materials/Shaders/").MakeDirectoryPathname().GetFrameworkPath() );
 }
 
 
@@ -89,7 +89,11 @@ mcpp__fopen( const char* filename, const char* mode )
     {
         for( std::vector<std::string>::const_iterator p=IncludeSearchPath.begin(),p_end=IncludeSearchPath.end(); p!=p_end; ++p )
         {
-            std::string name = *p + filename;
+            std::string name = *p;
+            if(filename[0] == '/')
+            	name += (filename+1);
+            else
+            	name += filename;
 
             if( DAVA::FileSystem::Instance()->IsFile( name.c_str() ) )
             {
@@ -208,7 +212,11 @@ mcpp__stat( const char* path, stat_t* buffer )
     if( strcmp( path, MCPP_Text ) != 0 )
     {
         memset( buffer, 0, sizeof(stat_t) );
-        buffer->st_mode = S_IFREG | S_IREAD;
+        buffer->st_mode = S_IFREG
+#if defined(__DAVAENGINE_ANDROID__)
+			| S_IRUSR
+#endif
+			;
         ret = 0;
     }
 

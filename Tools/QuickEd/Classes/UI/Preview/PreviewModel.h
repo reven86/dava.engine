@@ -63,6 +63,8 @@ public:
 
     void SetRootControls(const QList<ControlNode*> &activatedControls);
     void SetSelectedControls(const QList<ControlNode *> &selectedControls);
+    
+    void SetEmulationMode(bool emulationMode);
 
     // ControlSelectionListener
     virtual void OnControlSelected(const DAVA::List<std::pair<DAVA::UIControl *, DAVA::UIControl*> > &selectedPairs) override;
@@ -85,6 +87,7 @@ private:
     DAVA::UIControl *view;
 
     DAVA::Map<DAVA::UIControl*, ControlNode*> rootNodes;
+    bool emulationMode;
 };
 
 inline DAVA::UIControl *PreviewModel::GetViewControl() const 

@@ -461,7 +461,7 @@ void Texture::FlushDataToRenderer(Vector<Image *> * images)
     for (Image * img : (*images))
         descriptor.levelCount = Max(descriptor.levelCount, img->mipmapLevel + 1);
 
-    DVASSERT(descriptor.format != -1);//unsupported format
+    DVASSERT(descriptor.format != ((rhi::TextureFormat) - 1));//unsupported format
     handle = rhi::CreateTexture(descriptor);
     DVASSERT(handle != rhi::InvalidHandle);
 
@@ -665,7 +665,7 @@ Texture * Texture::CreateFBO(uint32 w, uint32 h, PixelFormat format, rhi::Textur
     descriptor.isRenderTarget = true;
     descriptor.type = requestedType;
     descriptor.format = formatDescriptor.format;
-    DVASSERT(descriptor.format != -1);//unsupported format
+    DVASSERT(descriptor.format != ((rhi::TextureFormat)-1));//unsupported format
     tx->handle = rhi::CreateTexture(descriptor);
 
     tx->isRenderTarget = true;
@@ -692,7 +692,7 @@ void Texture::DumpTextures()
 	for(TexturesMap::iterator it = textureMap.begin(); it != textureMap.end(); ++it)
 	{
 		Texture *t = it->second;
-		Logger::FrameworkDebug("%s with id %d (%dx%d) retainCount: %d debug: %s format: %s", t->texDescriptor->pathname.GetAbsolutePathname().c_str(), t->handle, t->width, t->height, 
+		Logger::FrameworkDebug("%s with id %d (%dx%d) retainCount: %d debug: %s format: %s", t->texDescriptor->pathname.GetAbsolutePathname().c_str(), (uint32)(t->handle), t->width, t->height,
 								t->GetRetainCount(), t->debugInfo.c_str(), PixelFormatDescriptor::GetPixelFormatString(t->texDescriptor->format));
 		cnt++;
         
@@ -729,7 +729,7 @@ void Texture::Lost()
 void Texture::Invalidate()
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
-
+#if RHI_COMPLETE
 	RenderResource::Invalidate();
 	
 	DVASSERT(id == 0 && "Texture always invalidated");
@@ -762,6 +762,7 @@ void Texture::Invalidate()
             MakePink();
         }
     }
+#endif
 }
 #endif //#if defined(__DAVAENGINE_ANDROID__)
 

@@ -1817,7 +1817,7 @@ static char *   read_a_comment(
  */
 {
     int         c;
-    char *      saved_sp;
+    char *      saved_sp = NULL;
     int         cat_line = 0;       /* Number of catenated lines    */
 
     if (keep_spaces) {
@@ -1956,7 +1956,7 @@ static char *   get_line(
                 cfatal( "Too long logical line"             /* _F_  */
                         , NULL, 0L, NULL);
         }
-        if (*(ptr + len - 1) != '\n')   /* Unterminated source line */
+        if ((!len)||(*(ptr + len - 1) != '\n'))   /* Unterminated source line */
             break;
         if (len >= 2 && *(ptr + len - 2) == '\r') {         /* [CR+LF]      */
             *(ptr + len - 2) = '\n';

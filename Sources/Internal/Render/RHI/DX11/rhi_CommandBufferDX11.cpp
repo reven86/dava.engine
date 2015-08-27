@@ -1064,6 +1064,15 @@ CommandBufferDX11_t::Execute()
 {
 SCOPED_FUNCTION_TIMING();
 
+    context->Release();
+    context = nullptr;
+
+    if (contextAnnotation)
+    {
+        contextAnnotation->Release();
+        contextAnnotation = nullptr;
+    }
+    
     _D3D11_ImmediateContext->ExecuteCommandList( commandList, FALSE );
     commandList->Release();
     commandList = nullptr;

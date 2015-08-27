@@ -295,7 +295,9 @@ void RenderSystem2D::IntersectClipRect(const Rect &rect)
     if (currentClip.dx < 0 || currentClip.dy < 0)
     {
         //RHI_COMPLETE - Mikhail please review this
-        Rect screen(0.0f, 0.0f, IsRenderTargetPass() ? renderTargetWidth : VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx, IsRenderTargetPass() ? renderTargetHeight : VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy);
+        Rect screen(0.0f, 0.0f, 
+			IsRenderTargetPass() ? (float32)renderTargetWidth : VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx, 
+			IsRenderTargetPass() ? (float32)renderTargetHeight : VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy);
         Rect res = screen.Intersection(rect);
         if (res.dx == 0)
         {
@@ -493,7 +495,7 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
         currentPacket.baseVertex = vertexBuffer.baseVertex;
         currentPacket.indexBuffer = indexBuffer.buffer;
         currentIndexBase = indexBuffer.baseIndex;
-    }
+}
     // End create vertex and index buffers
 
     // Begin define draw color
@@ -929,7 +931,7 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * drawState, const 
         }
 
         spriteVertexCount = sprite->clipPolygon->GetPointCount();
-        DVASSERT(spriteVertexCount >= 2);
+        DVASSERT(spriteVertexCount > 2); // Clip polygon should contain 3 points or more
         spriteIndexCount = (spriteVertexCount - 2) * 3;
 
         spriteClippedIndecex.clear();

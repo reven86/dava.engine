@@ -1,7 +1,7 @@
 RenderTechnique:
     RenderPass:
         Name: "2d"
-        Shader: "~res:/Materials/Shaders/2d/2dColor"
+        Shader: "~res:/Materials/Shaders/2d/2d"
         UniqueDefines: []
         RenderState:
             alphaFunc: "CMP_ALWAYS"

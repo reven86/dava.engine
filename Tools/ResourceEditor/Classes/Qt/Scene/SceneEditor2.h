@@ -33,7 +33,7 @@
 #include <QObject>
 #include "UI/UIEvent.h"
 #include "Scene3D/Scene.h"
-#include "Scene3D/Systems/StaticOcclusionSystem.h"
+#include "Scene3D/Systems/StaticOcclusionBuildSystem.h"
 #include "Base/StaticSingleton.h"
 
 #include "Main/Request.h"

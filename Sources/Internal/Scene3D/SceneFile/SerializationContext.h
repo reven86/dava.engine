@@ -54,7 +54,8 @@ namespace DAVA
         {            
             uint32 filePos;
             int32 requestedFormat;
-            PolygonGroupLoadInfo():filePos(0), requestedFormat(0){}
+            bool onScene;
+            PolygonGroupLoadInfo():filePos(0), requestedFormat(0), onScene(false) {}
         };
 	private:
 		

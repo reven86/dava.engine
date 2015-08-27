@@ -127,7 +127,11 @@ void ViewSceneScreen::LoadResources()
     scene->AddSystem(wasdSystem, MAKE_COMPONENT_MASK(Component::CAMERA_COMPONENT) | MAKE_COMPONENT_MASK(Component::WASD_CONTROLLER_COMPONENT),
         Scene::SCENE_SYSTEM_REQUIRE_PROCESS);
 
-    const Rect screenRect = GetRect();
+    Rect screenRect = GetRect();
+    Size2i screenSize = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize();
+    screenRect.dx = screenSize.dx;
+    screenRect.dy = screenSize.dy;
+    SetRect(screenRect);
     ScopedPtr<UI3DView> sceneView(new UI3DView(screenRect));
     sceneView->SetScene(scene);
     AddControl(sceneView);
@@ -154,8 +158,11 @@ void ViewSceneScreen::LoadResources()
 
 void ViewSceneScreen::UnloadResources()
 {
-    scene->RemoveSystem(wasdSystem);
-    scene->RemoveSystem(rotationControllerSystem);
+    if (scene)
+    {
+        scene->RemoveSystem(wasdSystem);
+        scene->RemoveSystem(rotationControllerSystem);
+    }
     SafeDelete(wasdSystem);
     SafeDelete(rotationControllerSystem);
 
