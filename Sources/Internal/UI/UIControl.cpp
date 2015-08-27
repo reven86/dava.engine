@@ -32,6 +32,8 @@
 #include "UI/UIControlPackageContext.h"
 #include "UI/UIYamlLoader.h"
 #include "UI/UIControlHelpers.h"
+#include "UI/Layouts/UIAnchorComponent.h"
+#include "UI/Layouts/UILayoutSystem.h"
 #include "UI/Styles/UIStyleSheetSystem.h"
 #include "Animation/LinearAnimation.h"
 #include "Animation/AnimationManager.h"
@@ -106,20 +108,6 @@ namespace DAVA
         scale = Vector2(1.0f, 1.0f);
         angle = 0;
 
-        leftAlign = 0;
-        hcenterAlign = 0;
-        rightAlign = 0;
-        topAlign = 0;
-        vcenterAlign = 0;
-        bottomAlign = 0;
-
-        leftAlignEnabled = false;
-        hcenterAlignEnabled = false;
-        rightAlignEnabled = false;
-        topAlignEnabled = false;
-        vcenterAlignEnabled = false;
-        bottomAlignEnabled = false;
-
         tag = 0;
 
         multiInput = false;
@@ -130,8 +118,6 @@ namespace DAVA
 
 
         SetRect(rect, rectInAbsoluteCoordinates);
-
-        initialState = STATE_NORMAL;
     }
 
     UIControl::~UIControl()
@@ -375,186 +361,136 @@ namespace DAVA
         background->SetAlign(align);
     }
 
-    void UIControl::SetLeftAlign(float32 align, bool applyAlign/* = true*/)
+    void UIControl::SetLeftAlign(float32 align)
     {
-        // Set a property value
-        leftAlign = align;
-
-        if (leftAlignEnabled && applyAlign)
-        {
-            ApplyAlignSettings();
-        }
+        GetOrCreateComponent<UIAnchorComponent>()->SetLeftAnchor(align);
     }
 
     float32 UIControl::GetLeftAlign() const
     {
-        return leftAlign;
+        UIAnchorComponent *anchor = GetComponent<UIAnchorComponent>();
+        return anchor != nullptr ? anchor->GetLeftAnchor() : 0.0f;
     }
 
-    void UIControl::SetHCenterAlign(float32 align, bool applyAlign/* = true*/)
+    void UIControl::SetHCenterAlign(float32 align)
     {
-        hcenterAlign = align;
-
-        if (hcenterAlignEnabled && applyAlign)
-        {
-            ApplyAlignSettings();
-        }
+        GetOrCreateComponent<UIAnchorComponent>()->SetHCenterAnchor(align);
     }
 
     float32 UIControl::GetHCenterAlign() const
     {
-        return hcenterAlign;
+        UIAnchorComponent *anchor = GetComponent<UIAnchorComponent>();
+        return anchor != nullptr ? anchor->GetHCenterAnchor() : 0.0f;
     }
 
-    void UIControl::SetRightAlign(float32 align, bool applyAlign/* = true*/)
+    void UIControl::SetRightAlign(float32 align)
     {
-        rightAlign = align;
-
-        if (rightAlignEnabled && applyAlign)
-        {
-            ApplyAlignSettings();
-        }
+        GetOrCreateComponent<UIAnchorComponent>()->SetRightAnchor(align);
     }
 
     float32 UIControl::GetRightAlign() const
     {
-        return rightAlign;
+        UIAnchorComponent *anchor = GetComponent<UIAnchorComponent>();
+        return anchor != nullptr ? anchor->GetRightAnchor() : 0.0f;
     }
 
-    void UIControl::SetTopAlign(float32 align, bool applyAlign/* = true*/)
+    void UIControl::SetTopAlign(float32 align)
     {
-        topAlign = align;
-
-        if (topAlignEnabled && applyAlign)
-        {
-            ApplyAlignSettings();
-        }
+        GetOrCreateComponent<UIAnchorComponent>()->SetTopAnchor(align);
     }
 
     float32 UIControl::GetTopAlign() const
     {
-        return topAlign;
+        UIAnchorComponent *anchor = GetComponent<UIAnchorComponent>();
+        return anchor != nullptr ? anchor->GetTopAnchor() : 0.0f;
     }
 
-    void UIControl::SetVCenterAlign(float32 align, bool applyAlign/* = true*/)
+    void UIControl::SetVCenterAlign(float32 align)
     {
-        vcenterAlign = align;
-
-        if (vcenterAlignEnabled && applyAlign)
-        {
-            ApplyAlignSettings();
-        }
+        GetOrCreateComponent<UIAnchorComponent>()->SetVCenterAnchor(align);
     }
 
     float32 UIControl::GetVCenterAlign() const
     {
-        return vcenterAlign;
+        UIAnchorComponent *anchor = GetComponent<UIAnchorComponent>();
+        return anchor != nullptr ? anchor->GetVCenterAnchor() : 0.0f;
     }
 
-    void UIControl::SetBottomAlign(float32 align, bool applyAlign/* = true*/)
+    void UIControl::SetBottomAlign(float32 align)
     {
-        bottomAlign = align;
-
-        if (bottomAlignEnabled && applyAlign)
-        {
-            ApplyAlignSettings();
-        }
+        GetOrCreateComponent<UIAnchorComponent>()->SetBottomAnchor(align);
     }
 
     float32 UIControl::GetBottomAlign() const
     {
-        return bottomAlign;
+        UIAnchorComponent *anchor = GetComponent<UIAnchorComponent>();
+        return anchor != nullptr ? anchor->GetBottomAnchor() : 0.0f;
     }
 
-    // Enable align options methods
-    void UIControl::SetLeftAlignEnabled(bool isEnabled, bool applyAlign/* = true*/)
+    void UIControl::SetLeftAlignEnabled(bool isEnabled)
     {
-        leftAlignEnabled = isEnabled;
-
-        if (applyAlign)
-        {
-            ApplyAlignSettings();
-        }
+        GetOrCreateComponent<UIAnchorComponent>()->SetLeftAnchorEnabled(isEnabled);
     }
 
     bool UIControl::GetLeftAlignEnabled() const
     {
-        return leftAlignEnabled;
+        UIAnchorComponent *anchor = GetComponent<UIAnchorComponent>();
+        return anchor != nullptr ? anchor->IsLeftAnchorEnabled() : false;
     }
 
-    void UIControl::SetHCenterAlignEnabled(bool isEnabled, bool applyAlign/* = true*/)
+    void UIControl::SetHCenterAlignEnabled(bool isEnabled)
     {
-        hcenterAlignEnabled = isEnabled;
-
-        if (applyAlign)
-        {
-            ApplyAlignSettings();
-        }
+        GetOrCreateComponent<UIAnchorComponent>()->SetHCenterAnchorEnabled(isEnabled);
     }
 
     bool UIControl::GetHCenterAlignEnabled() const
     {
-        return hcenterAlignEnabled;
+        UIAnchorComponent *anchor = GetComponent<UIAnchorComponent>();
+        return anchor != nullptr ? anchor->IsHCenterAnchorEnabled() : false;
     }
 
-    void UIControl::SetRightAlignEnabled(bool isEnabled, bool applyAlign/* = true*/)
+    void UIControl::SetRightAlignEnabled(bool isEnabled)
     {
-        rightAlignEnabled = isEnabled;
-
-        if (applyAlign)
-        {
-            ApplyAlignSettings();
-        }
+        GetOrCreateComponent<UIAnchorComponent>()->SetRightAnchorEnabled(isEnabled);
     }
 
     bool UIControl::GetRightAlignEnabled() const
     {
-        return rightAlignEnabled;
+        UIAnchorComponent *anchor = GetComponent<UIAnchorComponent>();
+        return anchor != nullptr ? anchor->IsRightAnchorEnabled() : false;
     }
 
-    void UIControl::SetTopAlignEnabled(bool isEnabled, bool applyAlign/* = true*/)
+    void UIControl::SetTopAlignEnabled(bool isEnabled)
     {
-        topAlignEnabled = isEnabled;
-
-        if (applyAlign)
-        {
-            ApplyAlignSettings();
-        }
+        GetOrCreateComponent<UIAnchorComponent>()->SetTopAnchorEnabled(isEnabled);
     }
 
     bool UIControl::GetTopAlignEnabled() const
     {
-        return topAlignEnabled;
+        UIAnchorComponent *anchor = GetComponent<UIAnchorComponent>();
+        return anchor != nullptr ? anchor->IsTopAnchorEnabled() : false;
     }
 
-    void UIControl::SetVCenterAlignEnabled(bool isEnabled, bool applyAlign/* = true*/)
+    void UIControl::SetVCenterAlignEnabled(bool isEnabled)
     {
-        vcenterAlignEnabled = isEnabled;
-
-        if (applyAlign)
-        {
-            ApplyAlignSettings();
-        }
+        GetOrCreateComponent<UIAnchorComponent>()->SetVCenterAnchorEnabled(isEnabled);
     }
 
     bool UIControl::GetVCenterAlignEnabled() const
     {
-        return vcenterAlignEnabled;
+        UIAnchorComponent *anchor = GetComponent<UIAnchorComponent>();
+        return anchor != nullptr ? anchor->IsVCenterAnchorEnabled() : false;
     }
 
-    void UIControl::SetBottomAlignEnabled(bool isEnabled, bool applyAlign/* = true*/)
+    void UIControl::SetBottomAlignEnabled(bool isEnabled)
     {
-        bottomAlignEnabled = isEnabled;
-
-        if (applyAlign)
-        {
-            ApplyAlignSettings();
-        }
+        GetOrCreateComponent<UIAnchorComponent>()->SetBottomAnchorEnabled(isEnabled);
     }
 
     bool UIControl::GetBottomAlignEnabled() const
     {
-        return bottomAlignEnabled;
+        UIAnchorComponent *anchor = GetComponent<UIAnchorComponent>();
+        return anchor != nullptr ? anchor->IsBottomAnchorEnabled() : false;
     }
 
     void UIControl::SetBackground(UIControlBackground *newBg)
@@ -655,8 +591,6 @@ namespace DAVA
         Vector2 oldPivot = GetPivot();
         size = newSize;
         SetPivot(oldPivot);
-        // Update size and align of childs
-        UpdateChildrenLayout();
     }
 
     void UIControl::SetAngle(float32 angleInRad)
@@ -686,9 +620,6 @@ namespace DAVA
     {
         SetSize(rect.GetSize());
         SetPosition(rect.GetPosition() + GetPivotPoint());
-
-        // Update aligns if control was resized manually
-        CalculateAlignSettings();
     }
 
     void UIControl::SetAbsoluteRect(const Rect &rect)
@@ -732,6 +663,20 @@ namespace DAVA
             scale.y = rect.dy / (size.y * gd.scale.y);
             SetPosition(Vector2(rect.x + pivotPoint.x * scale.x, rect.y + pivotPoint.y * scale.y), rectInAbsoluteCoordinates);
         }
+    }
+
+    Vector2 UIControl::GetContentPreferredSize(const Vector2 &constraints) const
+    {
+        if (background != nullptr && background->GetSprite() != nullptr)
+        {
+            return background->GetSprite()->GetSize();
+        }
+        return Vector2(0.0f, 0.0f);
+    }
+    
+    bool UIControl::IsHeightDependsOnWidth() const
+    {
+        return false;
     }
 
     void UIControl::SetVisible(bool isVisible)
@@ -1120,20 +1065,6 @@ namespace DAVA
         SafeRelease(background);
         background = srcControl->background->Clone();
 
-        leftAlign = srcControl->leftAlign;
-        hcenterAlign = srcControl->hcenterAlign;
-        rightAlign = srcControl->rightAlign;
-        topAlign = srcControl->topAlign;
-        vcenterAlign = srcControl->vcenterAlign;
-        bottomAlign = srcControl->bottomAlign;
-
-        leftAlignEnabled = srcControl->leftAlignEnabled;
-        hcenterAlignEnabled = srcControl->hcenterAlignEnabled;
-        rightAlignEnabled = srcControl->rightAlignEnabled;
-        topAlignEnabled = srcControl->topAlignEnabled;
-        vcenterAlignEnabled = srcControl->vcenterAlignEnabled;
-        bottomAlignEnabled = srcControl->bottomAlignEnabled;
-
         tag = srcControl->GetTag();
         name = srcControl->name;
         fastName = srcControl->fastName;
@@ -1144,12 +1075,12 @@ namespace DAVA
         inputEnabled = srcControl->inputEnabled;
         clipContents = srcControl->clipContents;
 
-        initialState = srcControl->GetInitialState();
         drawPivotPointMode = srcControl->drawPivotPointMode;
         debugDrawColor = srcControl->debugDrawColor;
         debugDrawEnabled = srcControl->debugDrawEnabled;
 
         classes = srcControl->classes;
+        localProperties = srcControl->localProperties;
         styleSheetRebuildNeeded = srcControl->styleSheetRebuildNeeded;
         styleSheetInitialized = false;
 
@@ -1162,6 +1093,14 @@ namespace DAVA
                                    , srcControl->GetName().c_str());
         }
 
+        RemoveAllComponents();
+        for (UIComponent *srcComponent : srcControl->components)
+        {
+            UIComponent *dest = srcComponent->Clone();
+            AddComponent(dest);
+            SafeRelease(dest);
+        }
+        
         RemoveAllControls();
         if (inputEnabled)
         {
@@ -1171,7 +1110,7 @@ namespace DAVA
         {
             inputProcessorsCount = 0;
         }
-
+        
         // Yuri Coder, 2012/11/30. Use Real Children List to avoid copying
         // unnecessary children we have on the for example UIButton.
         const List<UIControl*>& realChildren = srcControl->GetRealChildren();
@@ -1976,11 +1915,6 @@ namespace DAVA
         {
             node->Set("tag", GetTag());
         }
-        // Initial state.
-        if (baseControl->GetInitialState() != GetInitialState())
-        {
-            node->Set("initialState", GetInitialState());
-        }
 
         // Anchor data
         // Left Align
@@ -2141,60 +2075,52 @@ namespace DAVA
             SetTag(tagNode->AsInt32());
         }
 
-        const YamlNode * initialStateNode = node->Get("initialState");
-        if (initialStateNode)
-        {
-            int32 newInitialState = initialStateNode->AsInt32();
-            SetInitialState(newInitialState);
-            SetState(newInitialState);
-        }
-
         const YamlNode * leftAlignNode = node->Get("leftAlign");
         if (leftAlignNode)
         {
             float32 leftAlign = leftAlignNode->AsFloat();
-            SetLeftAlignEnabled(true, false);
-            SetLeftAlign(leftAlign, false);
+            SetLeftAlignEnabled(true);
+            SetLeftAlign(leftAlign);
         }
 
         const YamlNode * hcenterAlignNode = node->Get("hcenterAlign");
         if (hcenterAlignNode)
         {
             float32 hcenterAlign = hcenterAlignNode->AsFloat();
-            SetHCenterAlignEnabled(true, false);
-            SetHCenterAlign(hcenterAlign, false);
+            SetHCenterAlignEnabled(true);
+            SetHCenterAlign(hcenterAlign);
         }
 
         const YamlNode * rightAlignNode = node->Get("rightAlign");
         if (rightAlignNode)
         {
             float32 rightAlign = rightAlignNode->AsFloat();
-            SetRightAlignEnabled(true, false);
-            SetRightAlign(rightAlign, false);
+            SetRightAlignEnabled(true);
+            SetRightAlign(rightAlign);
         }
 
         const YamlNode * topAlignNode = node->Get("topAlign");
         if (topAlignNode)
         {
             float32 topAlign = topAlignNode->AsFloat();
-            SetTopAlignEnabled(true, false);
-            SetTopAlign(topAlign, false);
+            SetTopAlignEnabled(true);
+            SetTopAlign(topAlign);
         }
 
         const YamlNode * vcenterAlignNode = node->Get("vcenterAlign");
         if (vcenterAlignNode)
         {
             float32 vcenterAlign = vcenterAlignNode->AsFloat();
-            SetVCenterAlignEnabled(true, false);
-            SetVCenterAlign(vcenterAlign, false);
+            SetVCenterAlignEnabled(true);
+            SetVCenterAlign(vcenterAlign);
         }
 
         const YamlNode * bottomAlignNode = node->Get("bottomAlign");
         if (bottomAlignNode)
         {
             float32 bottomAlign = bottomAlignNode->AsFloat();
-            SetBottomAlignEnabled(true, false);
-            SetBottomAlign(bottomAlign, false);
+            SetBottomAlignEnabled(true);
+            SetBottomAlign(bottomAlign);
         }
 
         const YamlNode * visibleNode = node->Get("visible");
@@ -2495,159 +2421,9 @@ namespace DAVA
         }
     }
 
-    void UIControl::CalculateAlignSettings()
-    {
-        if (!parent)
-            return;
-
-        const Rect &rect = GetRect();
-        const Vector2 &parentSize = parent->GetSize();
-
-        if (GetLeftAlignEnabled() || GetHCenterAlignEnabled() || GetRightAlignEnabled())
-        {
-            GetAlignDataByAxisData(rect.dx, rect.x, parentSize.x,
-                GetLeftAlignEnabled(), GetHCenterAlignEnabled(), GetRightAlignEnabled(),
-                leftAlign, hcenterAlign, rightAlign);
-
-            SetLeftAlign(leftAlign);
-            SetHCenterAlign(hcenterAlign);
-            SetRightAlign(rightAlign);
-        }
-
-        if (GetTopAlignEnabled() || GetVCenterAlignEnabled() || GetBottomAlignEnabled())
-        {
-            GetAlignDataByAxisData(rect.dy, rect.y, parentSize.y,
-                GetTopAlignEnabled(), GetVCenterAlignEnabled(), GetBottomAlignEnabled(),
-                topAlign, vcenterAlign, bottomAlign);
-
-            SetTopAlign(topAlign);
-            SetVCenterAlign(vcenterAlign);
-            SetBottomAlign(bottomAlign);
-        }
-    }
-
-    void UIControl::ApplyAlignSettings()
-    {
-        if (!parent)
-            return;
-
-        const Rect &rect = GetRect();
-        const Vector2 &parentSize = parent->GetSize();
-
-        Rect newRect = rect;
-
-        if (GetLeftAlignEnabled() || GetHCenterAlignEnabled() || GetRightAlignEnabled())
-        {
-            GetAxisDataByAlignData(rect.dx, parentSize.x,
-                GetLeftAlignEnabled(), leftAlign,
-                GetHCenterAlignEnabled(), hcenterAlign,
-                GetRightAlignEnabled(), rightAlign,
-                newRect.x, newRect.dx);
-
-        }
-        if (GetTopAlignEnabled() || GetVCenterAlignEnabled() || GetBottomAlignEnabled())
-        {
-            GetAxisDataByAlignData(rect.dy, parentSize.y,
-                GetTopAlignEnabled(), topAlign,
-                GetVCenterAlignEnabled(), vcenterAlign,
-                GetBottomAlignEnabled(), bottomAlign,
-                newRect.y, newRect.dy);
-        }
-
-        if (rect == newRect)
-            return;
-
-        SetSize(newRect.GetSize());
-        SetPosition(newRect.GetPosition() + GetPivotPoint());
-    }
-
-    void UIControl::GetAxisDataByAlignData(float32 size, float32 parentSize,
-        bool firstSideAlignEnabled, float32 firstSideAlign,
-        bool centerAlignEnabled, float32 centerAlign,
-        bool secondSideAlignEnabled, float32 secondSideAlign,
-        float32 &newPos, float32 &newSize)
-    {
-        if (firstSideAlignEnabled && secondSideAlignEnabled)
-        {
-            newPos = firstSideAlign;
-            newSize = parentSize - (firstSideAlign + secondSideAlign);
-        }
-        else if (firstSideAlignEnabled && centerAlignEnabled)
-        {
-            newPos = firstSideAlign;
-            newSize = parentSize / 2.0f - (firstSideAlign - centerAlign);
-        }
-        else if (centerAlignEnabled && secondSideAlignEnabled)
-        {
-            newPos = parentSize / 2.0f + centerAlign;
-            newSize = parentSize / 2.0f - (centerAlign + secondSideAlign);
-        }
-        else if (firstSideAlignEnabled)
-        {
-            newPos = firstSideAlign;
-            newSize = size;
-        }
-        else if (secondSideAlignEnabled)
-        {
-            newPos = parentSize - (size + secondSideAlign);
-            newSize = size;
-        }
-        else if (centerAlignEnabled)
-        {
-            newPos = (parentSize - size) / 2.0f + centerAlign;
-            newSize = size;
-        }
-    }
-
-    void UIControl::GetAlignDataByAxisData(float32 size, float32 pos, float32 parentSize, bool firstSideAlignEnabled, bool centerAlignEnabled, bool secondSideAlignEnabled, float32 &firstSideAlign, float32 &centerAlign, float32 &secondSideAlign)
-    {
-        if (firstSideAlignEnabled && secondSideAlignEnabled)
-        {
-            firstSideAlign = pos;
-            secondSideAlign = parentSize - (pos + size);
-        }
-        else if (firstSideAlignEnabled && centerAlignEnabled)
-        {
-            firstSideAlign = pos;
-            centerAlign = pos + size - parentSize / 2.0f;
-        }
-        else if (centerAlignEnabled && secondSideAlignEnabled)
-        {
-            centerAlign = pos - parentSize / 2.0f;
-            secondSideAlign = parentSize - (pos + size);
-        }
-        else if (firstSideAlignEnabled)
-        {
-            firstSideAlign = pos;
-        }
-        else if (secondSideAlignEnabled)
-        {
-            secondSideAlign = parentSize - (pos + size);
-        }
-        else if (centerAlignEnabled)
-        {
-            centerAlign = pos - parentSize / 2.0f + size / 2.0f;
-        }
-    }
-
-    void UIControl::ApplyAlignSettingsForChildren()
-    {
-        UpdateChildrenLayout();
-    }
-
     void UIControl::SetPreferredNodeType(YamlNode* node, const String& nodeTypeName)
     {
         node->Set("type", nodeTypeName);
-    }
-
-    int32 UIControl::GetInitialState() const
-    {
-        return initialState;
-    }
-
-    void UIControl::SetInitialState(int32 newState)
-    {
-        initialState = newState;
     }
 
     void UIControl::RegisterInputProcessor()
@@ -2795,20 +2571,11 @@ namespace DAVA
 
     void UIControl::UpdateLayout()
     {
-        ApplyAlignSettings();
+        UIControlSystem::Instance()->GetLayoutSystem()->ApplyLayout(this);
     }
-
-    void UIControl::UpdateChildrenLayout()
+    
+    void UIControl::OnSizeChanged()
     {
-        const List<UIControl*>& realChildren = this->GetChildren();//YZ recalculate size for all controls
-        for(List<UIControl*>::const_iterator iter = realChildren.begin(); iter != realChildren.end(); ++iter)
-        {
-            UIControl* child = (*iter);
-            if (child)
-            {
-                child->UpdateLayout();
-            }
-        }
     }
 
     /* Components */
@@ -3002,6 +2769,11 @@ namespace DAVA
     const UIStyleSheetPropertySet& UIControl::GetLocalPropertySet() const
     {
         return localProperties;
+    }
+
+    void UIControl::SetLocalPropertySet(const UIStyleSheetPropertySet &set)
+    {
+        localProperties = set;
     }
 
     void UIControl::SetPropertyLocalFlag(uint32 propertyIndex, bool value)

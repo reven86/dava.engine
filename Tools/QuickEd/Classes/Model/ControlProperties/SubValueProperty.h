@@ -56,7 +56,7 @@ public:
     DAVA::VariantType GetDefaultValue() const override;
     void SetDefaultValue(const DAVA::VariantType &newValue) override;
     void ResetValue() override;
-    bool IsReplaced() const override;
+    bool IsOverriddenLocally() const override;
 
 private:
     ValueProperty *GetValueProperty() const;

@@ -254,7 +254,8 @@ private:
     bool IsDataLoadNeeded();
     
 private:
-    
+    uint32 MapCellSquareToResolutionIndex(uint32 cellSquare);
+
     Heightmap* heightmap;
     Vector3 worldSize;
     Vector<Vector2> unitWorldSize;
@@ -427,7 +428,7 @@ inline void VegetationRenderObject::SetLightmap(const FilePath& filePath)
     if(vegetationGeometry != NULL)
     {
         KeyedArchive* props = new KeyedArchive();
-        props->SetString(VegetationPropertyNames::UNIFORM_SAMPLER_VEGETATIONMAP.c_str(), lightmapTexturePath.GetAbsolutePathname());
+        props->SetString(VegetationPropertyNames::UNIFORM_SAMPLER_VEGETATIONMAP.c_str(), lightmapTexturePath.GetStringValue());
         
         vegetationGeometry->OnVegetationPropertiesChanged(renderData, props);
         
@@ -467,7 +468,7 @@ inline void VegetationRenderObject::SetVegetationTexture(const FilePath& texture
     if(vegetationGeometry != NULL)
     {
         KeyedArchive* props = new KeyedArchive();
-        props->SetString(NMaterial::TEXTURE_ALBEDO.c_str(), albedoTexturePath.GetAbsolutePathname());
+        props->SetString(NMaterial::TEXTURE_ALBEDO.c_str(), albedoTexturePath.GetStringValue());
         
         vegetationGeometry->OnVegetationPropertiesChanged(renderData, props);
         

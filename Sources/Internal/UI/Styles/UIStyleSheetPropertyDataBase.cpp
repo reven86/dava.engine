@@ -32,8 +32,9 @@
 #include "UI/UIStaticText.h"
 #include "UI/UITextField.h"
 #include "UI/UIControlBackground.h"
-#include "UI/Components/UIFakeComponent.h"
-#include "UI/Components/UIFakeMultiComponent.h"
+#include "UI/Layouts/UIAnchorComponent.h"
+#include "UI/Layouts/UILinearLayoutComponent.h"
+#include "UI/Layouts/UISizePolicyComponent.h"
 
 namespace DAVA
 {
@@ -41,20 +42,9 @@ namespace DAVA
 UIStyleSheetPropertyDataBase::UIStyleSheetPropertyDataBase() :
     properties({ {
         { FastName("angle"), VariantType(0.0f) },
+        { FastName("size"), VariantType(Vector2(0.0f, 0.0f)) },
         { FastName("scale"), VariantType(Vector2(1.0f, 1.0f)) },
         { FastName("visible"), VariantType(true) },
-        { FastName("leftAlignEnabled"), VariantType(false) },
-        { FastName("rightAlignEnabled"), VariantType(false) },
-        { FastName("bottomAlignEnabled"), VariantType(false) },
-        { FastName("topAlignEnabled"), VariantType(false) },
-        { FastName("hcenterAlignEnabled"), VariantType(false) },
-        { FastName("vcenterAlignEnabled"), VariantType(false) },
-        { FastName("leftAlign"), VariantType(0.0f) },
-        { FastName("rightAlign"), VariantType(0.0f) },
-        { FastName("bottomAlign"), VariantType(0.0f) },
-        { FastName("topAlign"), VariantType(0.0f) },
-        { FastName("hcenterAlign"), VariantType(0.0f) },
-        { FastName("vcenterAlign"), VariantType(0.0f) },
 
         { FastName("drawType"), VariantType(UIControlBackground::DRAW_ALIGNED) },
         { FastName("sprite"), VariantType(FilePath()) },
@@ -70,7 +60,27 @@ UIStyleSheetPropertyDataBase::UIStyleSheetPropertyDataBase() :
         { FastName("textcolorInheritType"), VariantType(UIControlBackground::COLOR_MULTIPLY_ON_PARENT) },
         { FastName("shadowoffset"), VariantType(Vector2(0.0f, 0.0f)) },
         { FastName("shadowcolor"), VariantType(Color::White) },
-        { FastName("textalign"), VariantType(ALIGN_HCENTER | ALIGN_VCENTER) } } })
+        { FastName("textalign"), VariantType(ALIGN_HCENTER | ALIGN_VCENTER) },
+    
+        { FastName("leftAnchorEnabled"), VariantType(false) },
+        { FastName("leftAnchor"), VariantType(0.0f) },
+
+        { FastName("rightAnchorEnabled"), VariantType(false) },
+        { FastName("rightAnchor"), VariantType(0.0f) },
+
+        { FastName("bottomAnchorEnabled"), VariantType(false) },
+        { FastName("bottomAnchor"), VariantType(0.0f) },
+
+        { FastName("topAnchorEnabled"), VariantType(false) },
+        { FastName("topAnchor"), VariantType(0.0f) },
+
+        { FastName("hCenterAnchorEnabled"), VariantType(false) },
+        { FastName("hCenterAnchor"), VariantType(0.0f) },
+
+        { FastName("vCenterAnchorEnabled"), VariantType(false) },
+        { FastName("vCenterAnchor"), VariantType(0.0f) },
+        
+    } })
 {
 
     for (uint32_t i = 0; i < STYLE_SHEET_PROPERTY_COUNT; ++i)
@@ -78,8 +88,9 @@ UIStyleSheetPropertyDataBase::UIStyleSheetPropertyDataBase() :
         propertyNameToIndexMap[properties[i].name] = i;
     }
 
-    ProcessComponentIntrospection<UIFakeComponent>();
-    ProcessComponentIntrospection<UIFakeMultiComponent>();
+    ProcessComponentIntrospection<UIAnchorComponent>();
+    ProcessComponentIntrospection<UILinearLayoutComponent>();
+    ProcessComponentIntrospection<UISizePolicyComponent>();
     ProcessControlIntrospection<UIControl>();
     ProcessControlIntrospection<UIButton>();
     ProcessControlIntrospection<UIStaticText>();

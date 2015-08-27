@@ -122,7 +122,7 @@ DAVA::eErrorCode LibTgaHelper::ReadTgaHeader(const FilePath& filepath, TgaInfo& 
 DAVA::eErrorCode LibTgaHelper::ReadTgaHeader(File *infile, TgaInfo& tgaInfo) const
 {
     Array<uint8, 18> fields;
-    size_t bytesRead = infile->Read(&fields, fields.size());
+    size_t bytesRead = infile->Read(&fields, static_cast<uint32>(fields.size()));
     if (bytesRead != fields.size())
         return eErrorCode::ERROR_READ_FAIL;
 
@@ -492,8 +492,9 @@ DAVA::eErrorCode LibTgaHelper::WriteTgaHeader(File *dstFile, const TgaInfo& tgaI
     fields[bppOffset] = tgaInfo.bytesPerPixel << 3;
     fields[descriptorOffset] = tgaInfo.alphaBits | (tgaInfo.origin_corner & 0x03) << 4;
 
-    auto bytesWritten = dstFile->Write(&fields, fields.size());
-    return (bytesWritten == fields.size()) ? eErrorCode::SUCCESS : eErrorCode::ERROR_WRITE_FAIL;
+    uint32 fieldsCount = static_cast<uint32>(fields.size());
+    auto bytesWritten = dstFile->Write(&fields, fieldsCount);
+    return (bytesWritten == fieldsCount) ? eErrorCode::SUCCESS : eErrorCode::ERROR_WRITE_FAIL;
 }
 
 eErrorCode LibTgaHelper::WriteUncompressedTga(File *dstFile, const TgaInfo& tgaInfo, const uint8* data) const

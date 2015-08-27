@@ -96,3 +96,12 @@ String StyleSheetsNode::GetName() const
     return "Style Sheets";
 }
 
+bool StyleSheetsNode::IsInsertingStylesSupported() const
+{
+    return true;
+}
+
+bool StyleSheetsNode::CanInsertStyle(StyleSheetNode *node, DAVA::int32 pos) const
+{
+    return !IsReadOnly();
+}

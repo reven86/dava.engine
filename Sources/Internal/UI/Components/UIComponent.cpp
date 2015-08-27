@@ -30,8 +30,10 @@
 #include "UIComponent.h"
 #include "UI/UIControl.h"
 
-#include "UIFakeComponent.h"
-#include "UIFakeMultiComponent.h"
+#include "UI/Layouts/UILinearLayoutComponent.h"
+#include "UI/Layouts/UIIgnoreLayoutComponent.h"
+#include "UI/Layouts/UISizePolicyComponent.h"
+#include "UI/Layouts/UIAnchorComponent.h"
 
 namespace DAVA
 {
@@ -49,11 +51,17 @@ UIComponent * UIComponent::CreateByType(uint32 componentType)
 {
     switch (componentType)
     {
-        case FAKE_COMPONENT:
-            return new UIFakeComponent();
-
-        case FAKE_MULTI_COMPONENT:
-            return new UIFakeMultiComponent();
+        case LINEAR_LAYOUT_COMPONENT:
+            return new UILinearLayoutComponent();
+            
+        case IGNORE_LAYOUT_COMPONENT:
+            return new UIIgnoreLayoutComponent();
+            
+        case SIZE_POLICY_COMPONENT:
+            return new UISizePolicyComponent();
+            
+        case ANCHOR_COMPONENT:
+            return new UIAnchorComponent();
             
         default:
             DVASSERT(false);
@@ -66,11 +74,17 @@ bool UIComponent::IsMultiple(uint32 componentType)
 {
     switch (componentType)
     {
-        case FAKE_COMPONENT:
+        case LINEAR_LAYOUT_COMPONENT:
             return false;
             
-        case FAKE_MULTI_COMPONENT:
-            return true;
+        case IGNORE_LAYOUT_COMPONENT:
+            return false;
+            
+        case SIZE_POLICY_COMPONENT:
+            return false;
+            
+        case ANCHOR_COMPONENT:
+            return false;
             
         default:
             DVASSERT(false);

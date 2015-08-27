@@ -78,6 +78,7 @@ private:
     void LoadControlPropertiesFromYamlNode(DAVA::UIControl *control, const DAVA::InspInfo *typeInfo, const DAVA::YamlNode *node, DAVA::AbstractUIPackageBuilder *builder);
     void LoadBgPropertiesFromYamlNode(DAVA::UIControl *control, const DAVA::YamlNode *node, DAVA::AbstractUIPackageBuilder *builder);
     void LoadInternalControlPropertiesFromYamlNode(DAVA::UIControl *control, const DAVA::YamlNode *node, DAVA::AbstractUIPackageBuilder *builder);
+    void ProcessLegacyAligns(DAVA::UIControl *control, const DAVA::YamlNode *node, DAVA::AbstractUIPackageBuilder *builder);
     
 protected:
     virtual DAVA::VariantType ReadVariantTypeFromYamlNode(const DAVA::InspMember *member, const DAVA::YamlNode *node, DAVA::int32 subNodeIndex, const DAVA::String &propertyName);
@@ -90,7 +91,8 @@ private:
 private:
     DAVA::Map<DAVA::String, DAVA::Map<DAVA::String, DAVA::String> > propertyNamesMap;
     DAVA::Map<DAVA::String, DAVA::String> baseClasses;
-    
+    DAVA::Map<DAVA::String, DAVA::String> legacyAlignsMap;
+
 private:
     LegacyControlData *legacyData;
     bool storeAggregatorName;

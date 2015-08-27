@@ -35,13 +35,7 @@
 
 #include "Base/BaseTypes.h"
 #include "Core/Core.h"
-#include "Concurrency/Mutex.h"
-#include "Concurrency/ConditionVariable.h"
-#include "Concurrency/LockGuard.h"
-
-#include "Platform/TemplateWin32/WinUAPXamlApp.h"
-
-#include <ppltasks.h>
+#include "Platform/DeviceInfo.h"
 
 namespace DAVA
 {
@@ -76,17 +70,21 @@ public:
 
     // Run specified function on UI thread
     template<typename F>
-    void RunOnUIThread(F fn);
+    void RunOnUIThread(F&& fn);
     // Run specified function on UI thread and block calling thread until function finishes
     template<typename F>
-    void RunOnUIThreadBlocked(F fn);
+    void RunOnUIThreadBlocked(F&& fn);
 
     // Run specified function on main thread
     template<typename F>
-    void RunOnMainThread(F fn);
+    void RunOnMainThread(F&& fn);
     // Run specified function on main thread and block calling thread until function finishes
     template<typename F>
-    void RunOnMainThreadBlocked(F fn);
+    void RunOnMainThreadBlocked(F&& fn);
+
+private:
+    void RunOnUIThread(std::function<void()>&& fn, bool blocked);
+    void RunOnMainThread(std::function<void()>&& fn, bool blocked);
 
 private:
     WinUAPXamlApp^ xamlApp = nullptr;
@@ -98,13 +96,8 @@ inline WinUAPXamlApp^ CorePlatformWinUAP::XamlApplication() DAVA_NOEXCEPT
     return xamlApp;
 }
 
-inline bool CorePlatformWinUAP::IsUIThread() const
-{
-    return xamlApp->UIThreadDispatcher()->HasThreadAccess;
-}
-
 template<typename F>
-void CorePlatformWinUAP::RunOnUIThread(F fn)
+void CorePlatformWinUAP::RunOnUIThread(F&& fn)
 {
     if (IsUIThread())
     {
@@ -112,13 +105,12 @@ void CorePlatformWinUAP::RunOnUIThread(F fn)
     }
     else
     {
-        using namespace Windows::UI::Core;
-        xamlApp->UIThreadDispatcher()->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler(fn));
+        RunOnUIThread(std::function<void()>(std::forward<F>(fn)), false);
     }
 }
 
 template<typename F>
-void CorePlatformWinUAP::RunOnUIThreadBlocked(F fn)
+void CorePlatformWinUAP::RunOnUIThreadBlocked(F&& fn)
 {
     if (IsUIThread())
     {
@@ -126,58 +118,24 @@ void CorePlatformWinUAP::RunOnUIThreadBlocked(F fn)
     }
     else
     {
-        using namespace Windows::UI::Core;
-
-        Mutex mutex;
-        ConditionVariable cv;
-
-        bool jobDone = false;
-        auto wrapper = [&cv, &mutex, &jobDone, &fn]()
-        {
-            fn();
-            {
-                LockGuard<Mutex> guard(mutex);
-                jobDone = true;
-            }
-            cv.NotifyOne();
-        };
-
-        UniqueLock<Mutex> lock(mutex);
-        xamlApp->UIThreadDispatcher()->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler(wrapper));
-        cv.Wait(lock, [&jobDone]() -> bool { return jobDone; });
+        RunOnUIThread(std::function<void()>(std::forward<F>(fn)), true);
     }
 }
 
 template<typename F>
-void CorePlatformWinUAP::RunOnMainThread(F fn)
+void CorePlatformWinUAP::RunOnMainThread(F&& fn)
 {
-    using namespace Windows::UI::Core;
-    xamlApp->MainThreadDispatcher()->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler(fn));
+    RunOnMainThread(std::function<void()>(std::forward<F>(fn)), false);
 }
 
 template<typename F>
-void CorePlatformWinUAP::RunOnMainThreadBlocked(F fn)
+void CorePlatformWinUAP::RunOnMainThreadBlocked(F&& fn)
 {
-    using namespace Windows::UI::Core;
-
-    Mutex mutex;
-    ConditionVariable cv;
-
-    bool jobDone = false;
-    auto wrapper = [&cv, &mutex, &jobDone, &fn]()
-    {
-        fn();
-        {
-            LockGuard<Mutex> guard(mutex);
-            jobDone = true;
-        }
-        cv.NotifyOne();
-    };
-
-    UniqueLock<Mutex> lock(mutex);
-    xamlApp->MainThreadDispatcher()->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler(wrapper));
-    cv.Wait(lock, [&jobDone]() -> bool { return jobDone; });
+    RunOnMainThread(std::function<void()>(std::forward<F>(fn)), true);
 }
+
+// temporary decision, need delete when signal will be enabled
+DeviceInfo::HIDCallBackFunc MainThreadRedirector(DeviceInfo::HIDCallBackFunc func);
 
 }   // namespace DAVA
 

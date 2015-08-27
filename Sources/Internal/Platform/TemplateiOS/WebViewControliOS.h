@@ -83,7 +83,7 @@ public:
     int32 GetDataDetectorTypes() const override;
     
     void SetRenderToTexture(bool value) override;
-    bool IsRenderToTexture() const override {return isRenderToTexture;}
+    bool IsRenderToTexture() const override {return pendingRenderToTexture;}
     
     void WillDraw() override;
     
@@ -115,7 +115,9 @@ private:
     
     bool gesturesEnabled;
     bool isRenderToTexture;
+    bool pendingRenderToTexture;
     bool isVisible;
+    bool pendingVisible;
     
     UIWebView& uiWebView;
 };
