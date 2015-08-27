@@ -248,7 +248,7 @@ void Scene::SetGlobalMaterial(NMaterial *globalMaterial)
 
     if (nullptr != particleEffectSystem)
         particleEffectSystem->SetGlobalMaterial(sceneGlobalMaterial);
-    
+
     ImportShadowColor(this);
 }
 
@@ -748,7 +748,7 @@ void Scene::Draw()
     if (sceneGlobalMaterial && sceneGlobalMaterial->HasLocalProperty(DAVA::NMaterialParamName::DEPRECATED_SHADOW_COLOR_PARAM))
     {
         const float32 * propDataPtr = sceneGlobalMaterial->GetLocalPropValue(DAVA::NMaterialParamName::DEPRECATED_SHADOW_COLOR_PARAM);
-        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_SHADOW_COLOR, propDataPtr, (pointer_size)sceneGlobalMaterial);
+        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_SHADOW_COLOR, propDataPtr, (pointer_size)propDataPtr);
     }
     else
     {
