@@ -97,12 +97,12 @@ void DispatcherWinUAP::BlockingTaskWrapper::RunTask()
 
 void DispatcherWinUAP::BlockingTaskWrapper::WaitTaskComplete()
 {
-    DVASSERT(dispatcher->boundThreadId == Thread::GetCurrentId());
+    bool foreignThread = dispatcher->boundThreadId != Thread::GetCurrentId();
 
     UniqueLock<Mutex> lock(dispatcher->mutex);
     while (!taskDone)
     {
-        if (!dispatcher->taskQueue.empty())
+        if (!foreignThread && !dispatcher->taskQueue.empty())
         {
             // While waiting task completion process other scheduled tasks to avoid deadlocks
             // Deadlock can occur in the following circumstances:
