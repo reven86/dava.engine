@@ -112,11 +112,15 @@ public:
     //! return true if end of file reached and false in another case
     bool IsEof() const override;
 
+private:
+
+    uint32 GetRWOperationSize(uint32 dataSize) const;
+
 protected:
 
     uint8 *memoryBuffer = nullptr;
     uint32 memoryBufferSize = 0;
-    uint32 currentPtr = 0;
+    uint32 currentPos = 0;
 
     uint32 fileAttributes = File::READ | File::OPEN;
     bool isEof = false;
@@ -129,7 +133,7 @@ inline const uint8* StaticMemoryFile::GetData() const
 
 inline uint32 StaticMemoryFile::GetPos() const
 {
-    return currentPtr;
+    return currentPos;
 }
 
 inline uint32 StaticMemoryFile::GetSize() const

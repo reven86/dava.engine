@@ -83,7 +83,7 @@ public:
     // Data packet with given ID has been delivered to other side
     void OnPacketDelivered(Net::IChannel* channel, uint32 packetId) override {};
 
-    void OnAddressResolved(std::unique_ptr<Net::Endpoint>& endpoint);
+    void OnAddressResolved(const Net::Endpoint& endpoint, int32 status);
 
     void StateChanged();
 

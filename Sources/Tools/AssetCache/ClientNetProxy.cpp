@@ -50,25 +50,25 @@ bool ClientNetProxy::Connect(const String &ip, uint16 port)
     DVASSERT(nullptr == netClient);
     DVASSERT(nullptr == openedChannel);
 
-    return addressResolver.StartResolving(ip.c_str(), port, MakeFunction(this, &ClientNetProxy::OnAddressResolved));
+    return addressResolver.AsyncResolve(ip.c_str(), port, MakeFunction(this, &ClientNetProxy::OnAddressResolved));
 }
 
 
 void ClientNetProxy::Disconnect()
 {
-    addressResolver.Stop();
+    addressResolver.Cancel();
     netClient.reset();
     openedChannel = nullptr;
 }
 
-void ClientNetProxy::OnAddressResolved(std::unique_ptr<Net::Endpoint>& endpoint)
+void ClientNetProxy::OnAddressResolved(const Net::Endpoint& endpoint, int32 status)
 {
     DVASSERT(!netClient);
     DVASSERT(nullptr == openedChannel);
 
-    if (endpoint)
+    if (0 == status)
     {
-        netClient.reset(new Connection(Net::CLIENT_ROLE, *endpoint, this));
+        netClient.reset(new Connection(Net::CLIENT_ROLE, endpoint, this));
     }
 }
 

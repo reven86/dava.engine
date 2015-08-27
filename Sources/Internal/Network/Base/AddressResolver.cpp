@@ -29,6 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Network/Base/AddressResolver.h"
 #include "Network/Base/Endpoint.h"
 #include "Network/Base/IOLoop.h"
+#include "Network/Base/NetworkUtils.h"
 #include "FileSystem/Logger.h"
 #include "Debug/DVAssert.h"
 
@@ -38,16 +39,15 @@ namespace Net {
 
 AddressResolver::AddressResolver(IOLoop* loop_) 
     : loop(loop_)
-    , handle(nullptr)
 {
 }
 
 AddressResolver::~AddressResolver()
 {
-    Stop();
+    Cancel();
 }
 
-bool AddressResolver::StartResolving(const char8* address, uint16 port, ResolverCallbackFn cbk)
+bool AddressResolver::AsyncResolve(const char8* address, uint16 port, ResolverCallbackFn cbk)
 {
     DVASSERT(loop != nullptr);
     DVASSERT(handle == nullptr);
@@ -58,70 +58,57 @@ bool AddressResolver::StartResolving(const char8* address, uint16 port, Resolver
     hints.ai_flags = 0;
     hints.ai_protocol = IPPROTO_TCP;
 
-    uv_getaddrinfo_t* handle = new uv_getaddrinfo_t;
+    handle = new uv_getaddrinfo_t;
     handle->data = this;
 
     Array<char, 6> portstring;
     Snprintf(portstring.data(), portstring.size(), "%u", port);
 
-    int res = uv_getaddrinfo(loop->Handle(), handle, AddressResolver::GetAddrInfoCallback, address, portstring.data(), &hints);
-
-    if (!res)
+    int32 res = uv_getaddrinfo(loop->Handle(), handle, &AddressResolver::GetAddrInfoCallback, address, portstring.data(), &hints);
+    if (0 == res)
     {
         resolverCallbackFn = cbk;
         return true;
     }
     else
     {
-        delete handle;
-        const char* err = uv_err_name(res);
-        Logger::Error("[AddressResolver::StartResolving] Can't get addr info: %s", err);
+        SafeDelete(handle);
+
+        Logger::Error("[AddressResolver::StartResolving] Can't get addr info: %s", Net::ErrorToString(res));
         return false;
     }
 }
 
-void AddressResolver::Stop()
+void AddressResolver::Cancel()
 {
-    if (handle)
-    {
-        handle->data = nullptr;
-        handle = nullptr;
-    }
+    uv_cancel(reinterpret_cast<uv_req_t *>(handle));
+    handle = nullptr;
 }
 
 void AddressResolver::GetAddrInfoCallback(uv_getaddrinfo_t* handle, int status, struct addrinfo* response)
 {
     AddressResolver* resolver = static_cast<AddressResolver*>(handle->data);
 
-    if (resolver != nullptr)
+    if (nullptr != resolver)
     {
         resolver->GotAddrInfo(status, response);
-        resolver->Stop();
+        resolver->Cancel();
     }
-    else
-    {
-        delete handle;
-    }
+
+    SafeDelete(handle);
 
     uv_freeaddrinfo(response);
 }
 
 void AddressResolver::GotAddrInfo(int status, struct addrinfo* response)
 {
-    EndpointPtr endpoint;
-
-    if (status == 0)
+    Endpoint endpoint;
+    if (0 == status)
     {
-         endpoint.reset(new Endpoint(response->ai_addr));
-    }
-    else
-    {
-        const char* err = uv_err_name(status);
-        Logger::Error("[AddressResolver::GotAddrInfo] Can't get addr info: %s", err);
-        endpoint.reset();
+         endpoint = Endpoint(response->ai_addr);
     }
 
-    resolverCallbackFn(endpoint);
+    resolverCallbackFn(endpoint, status);
 }
 
 }};

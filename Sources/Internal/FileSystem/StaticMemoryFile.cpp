@@ -54,7 +54,7 @@ StaticMemoryFile::~StaticMemoryFile()
 {
     memoryBuffer = nullptr;
     memoryBufferSize = 0;
-    currentPtr = 0;
+    currentPos = 0;
 }
 	
 uint32 StaticMemoryFile::Write(const void * pointerToData, uint32 dataSize)
@@ -65,16 +65,12 @@ uint32 StaticMemoryFile::Write(const void * pointerToData, uint32 dataSize)
 	{
 		return 0;
 	}
-	
-    uint32 written = 0;
-	if(dataSize > 0)
-	{
-        uint32 freeSpace = memoryBufferSize - currentPtr;
-        written = (freeSpace >= dataSize) ? dataSize : freeSpace;
 
- 		Memcpy(memoryBuffer + currentPtr, pointerToData, written);
-        
-        currentPtr += written;
+    uint32 written = GetRWOperationSize(dataSize);
+	if(written > 0)
+	{
+ 		Memcpy(memoryBuffer + currentPos, pointerToData, written);
+        currentPos += written;
 	}
 	
     return written;
@@ -89,20 +85,32 @@ uint32 StaticMemoryFile::Read(void * pointerToData, uint32 dataSize)
 		return 0;
 	}
 
-    uint32 read = 0;
-    if (dataSize > 0)
+    uint32 read = GetRWOperationSize(dataSize);
+    if (currentPos < memoryBufferSize - 1)
     {
-        uint32 space = memoryBufferSize - currentPtr;
-        read = (space >= dataSize) ? dataSize : space;
-
-        Memcpy(pointerToData, memoryBuffer + currentPtr, read);
-
-        currentPtr += read;
+        Memcpy(pointerToData, memoryBuffer + currentPos, read);
+        currentPos += read;
     }
 
     return read;
 }
 
+
+uint32 StaticMemoryFile::GetRWOperationSize(uint32 dataSize) const
+{
+    if (0 == dataSize || 0 == memoryBufferSize)
+    {
+        return 0;
+    }
+
+    if (currentPos < memoryBufferSize - 1)
+    {
+        uint32 tailSpace = memoryBufferSize - currentPos;
+        return Min(tailSpace, dataSize);
+    }
+
+    return 0;
+}
 
 bool StaticMemoryFile::Seek(int32 position, uint32 seekType)
 {
@@ -128,7 +136,7 @@ bool StaticMemoryFile::Seek(int32 position, uint32 seekType)
     }
 
     // behavior taken from std::FILE - don't move pointer to less than 0 value
-    currentPtr = pos;
+    currentPos = pos;
 
     // like in std::FILE
     // The end-of-file internal indicator of the stream is cleared after a successful call to this function

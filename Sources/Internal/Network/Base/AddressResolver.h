@@ -45,23 +45,22 @@ class Endpoint;
 class AddressResolver
 {
 public:
-    using EndpointPtr = std::unique_ptr < Net::Endpoint > ;
-    using ResolverCallbackFn = Function < void(EndpointPtr&) >;
+    using ResolverCallbackFn = Function < void(const Endpoint&, int32) >;
 
 public:
     explicit AddressResolver(IOLoop* loop);
     ~AddressResolver();
 
-    bool StartResolving(const char8* address, uint16 port, ResolverCallbackFn cbk);
-    void Stop();
+    bool AsyncResolve(const char8* address, uint16 port, ResolverCallbackFn cbk);
+    void Cancel();
 
 private:
     static void GetAddrInfoCallback(uv_getaddrinfo_t* handle, int status, addrinfo* response);
     void GotAddrInfo(int status, addrinfo* response);
 
 private:
-    IOLoop* loop;
-    uv_getaddrinfo_t* handle;
+    IOLoop* loop = nullptr;
+    uv_getaddrinfo_t* handle = nullptr;
     ResolverCallbackFn resolverCallbackFn;
 };
 
@@ -69,4 +68,5 @@ private:
 }
 }
 
-#endif
+#endif //__DAVAENGINE_ADDRESS_RESOLVER_H__
+
