@@ -452,7 +452,6 @@
 		176DEA08174B5561007A983B /* UIStaticText.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989D8516BD24E500732C04 /* UIStaticText.h */; };
 		176DEA09174B5561007A983B /* UITextField.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989D8716BD24E500732C04 /* UITextField.h */; };
 		176DEA0A174B5561007A983B /* UIYamlLoader.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989D8B16BD24E500732C04 /* UIYamlLoader.h */; };
-		176DEA0B174B5561007A983B /* HTTPDownloader.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989D8D16BD24E500732C04 /* HTTPDownloader.h */; };
 		176DEA0C174B5561007A983B /* MD5.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989D9116BD24E500732C04 /* MD5.h */; };
 		176DEA0D174B5561007A983B /* Random.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989D9216BD24E500732C04 /* Random.h */; };
 		176DEA0E174B5561007A983B /* StringFormat.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989D9416BD24E500732C04 /* StringFormat.h */; };
@@ -693,7 +692,6 @@
 		176DEB24174B5561007A983B /* UIStaticText.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989D8416BD24E500732C04 /* UIStaticText.cpp */; };
 		176DEB25174B5561007A983B /* UITextField.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989D8616BD24E500732C04 /* UITextField.cpp */; };
 		176DEB26174B5561007A983B /* UIYamlLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989D8A16BD24E500732C04 /* UIYamlLoader.cpp */; };
-		176DEB27174B5561007A983B /* HTTPDownloader.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8989D8E16BD24E500732C04 /* HTTPDownloader.mm */; };
 		176DEB28174B5561007A983B /* MD5.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989D9016BD24E500732C04 /* MD5.cpp */; };
 		176DEB29174B5561007A983B /* StringFormat.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989D9316BD24E500732C04 /* StringFormat.cpp */; };
 		176DEB2A174B5561007A983B /* Utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989D9716BD24E500732C04 /* Utils.cpp */; };
@@ -2128,8 +2126,6 @@
 		E898A03F16BD24E500732C04 /* UITextField.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989D8716BD24E500732C04 /* UITextField.h */; };
 		E898A04216BD24E500732C04 /* UIYamlLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989D8A16BD24E500732C04 /* UIYamlLoader.cpp */; };
 		E898A04316BD24E500732C04 /* UIYamlLoader.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989D8B16BD24E500732C04 /* UIYamlLoader.h */; };
-		E898A04416BD24E500732C04 /* HTTPDownloader.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989D8D16BD24E500732C04 /* HTTPDownloader.h */; };
-		E898A04516BD24E500732C04 /* HTTPDownloader.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8989D8E16BD24E500732C04 /* HTTPDownloader.mm */; };
 		E898A04716BD24E500732C04 /* MD5.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989D9016BD24E500732C04 /* MD5.cpp */; };
 		E898A04816BD24E500732C04 /* MD5.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989D9116BD24E500732C04 /* MD5.h */; };
 		E898A04916BD24E500732C04 /* Random.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989D9216BD24E500732C04 /* Random.h */; };
@@ -2370,7 +2366,6 @@
 		E898A19116BD265400732C04 /* UIStaticText.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989D8516BD24E500732C04 /* UIStaticText.h */; };
 		E898A19216BD265400732C04 /* UITextField.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989D8716BD24E500732C04 /* UITextField.h */; };
 		E898A19316BD265400732C04 /* UIYamlLoader.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989D8B16BD24E500732C04 /* UIYamlLoader.h */; };
-		E898A19416BD265400732C04 /* HTTPDownloader.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989D8D16BD24E500732C04 /* HTTPDownloader.h */; };
 		E898A19516BD265400732C04 /* MD5.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989D9116BD24E500732C04 /* MD5.h */; };
 		E898A19616BD265400732C04 /* Random.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989D9216BD24E500732C04 /* Random.h */; };
 		E898A19716BD265400732C04 /* StringFormat.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989D9416BD24E500732C04 /* StringFormat.h */; };
@@ -2564,7 +2559,6 @@
 		E898A2A716BD265400732C04 /* UIStaticText.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989D8416BD24E500732C04 /* UIStaticText.cpp */; };
 		E898A2A816BD265400732C04 /* UITextField.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989D8616BD24E500732C04 /* UITextField.cpp */; };
 		E898A2A916BD265400732C04 /* UIYamlLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989D8A16BD24E500732C04 /* UIYamlLoader.cpp */; };
-		E898A2AA16BD265400732C04 /* HTTPDownloader.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8989D8E16BD24E500732C04 /* HTTPDownloader.mm */; };
 		E898A2AB16BD265400732C04 /* MD5.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989D9016BD24E500732C04 /* MD5.cpp */; };
 		E898A2AC16BD265400732C04 /* StringFormat.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989D9316BD24E500732C04 /* StringFormat.cpp */; };
 		E898A2AE16BD265400732C04 /* Utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989D9716BD24E500732C04 /* Utils.cpp */; };
@@ -3799,8 +3793,6 @@
 		E8989D8716BD24E500732C04 /* UITextField.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UITextField.h; sourceTree = "<group>"; };
 		E8989D8A16BD24E500732C04 /* UIYamlLoader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIYamlLoader.cpp; sourceTree = "<group>"; };
 		E8989D8B16BD24E500732C04 /* UIYamlLoader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIYamlLoader.h; sourceTree = "<group>"; };
-		E8989D8D16BD24E500732C04 /* HTTPDownloader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HTTPDownloader.h; sourceTree = "<group>"; };
-		E8989D8E16BD24E500732C04 /* HTTPDownloader.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = HTTPDownloader.mm; sourceTree = "<group>"; };
 		E8989D9016BD24E500732C04 /* MD5.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MD5.cpp; sourceTree = "<group>"; };
 		E8989D9116BD24E500732C04 /* MD5.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MD5.h; sourceTree = "<group>"; };
 		E8989D9216BD24E500732C04 /* Random.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Random.h; sourceTree = "<group>"; };
@@ -5457,8 +5449,6 @@
 				B79723FC1A1260E9009421F3 /* BiDiHelper.h */,
 				B78601371A08B6170041F817 /* StringUtils.cpp */,
 				B78601381A08B6170041F817 /* StringUtils.h */,
-				E8989D8D16BD24E500732C04 /* HTTPDownloader.h */,
-				E8989D8E16BD24E500732C04 /* HTTPDownloader.mm */,
 				74A909A91701FA51003FDB31 /* CRC32.cpp */,
 				74A909AA1701FA51003FDB31 /* CRC32.h */,
 				E8989D9016BD24E500732C04 /* MD5.cpp */,
@@ -5911,7 +5901,6 @@
 				176DEA08174B5561007A983B /* UIStaticText.h in Headers */,
 				176DEA09174B5561007A983B /* UITextField.h in Headers */,
 				176DEA0A174B5561007A983B /* UIYamlLoader.h in Headers */,
-				176DEA0B174B5561007A983B /* HTTPDownloader.h in Headers */,
 				644C86DB19476A7100964F91 /* VegetationCustomSLGeometry.h in Headers */,
 				02A03DAC1871C49C00FA72CE /* SpeedTreeObject.h in Headers */,
 				176DEA0C174B5561007A983B /* MD5.h in Headers */,
@@ -6414,7 +6403,6 @@
 				E898A03F16BD24E500732C04 /* UITextField.h in Headers */,
 				E898A04316BD24E500732C04 /* UIYamlLoader.h in Headers */,
 				C172EC0D18C9F1E9004309CF /* TextBlockDistanceRender.h in Headers */,
-				E898A04416BD24E500732C04 /* HTTPDownloader.h in Headers */,
 				5043DDAB18706828005E3584 /* VisibilityArray.h in Headers */,
 				50C16DA81A52D7B9003C307A /* Endpoint.h in Headers */,
 				E898A04816BD24E500732C04 /* MD5.h in Headers */,
@@ -6918,7 +6906,6 @@
 				E898A19216BD265400732C04 /* UITextField.h in Headers */,
 				E898A19316BD265400732C04 /* UIYamlLoader.h in Headers */,
 				B723648F1A8CEEF0009940BE /* UIComponent.h in Headers */,
-				E898A19416BD265400732C04 /* HTTPDownloader.h in Headers */,
 				E898A19516BD265400732C04 /* MD5.h in Headers */,
 				E898A19616BD265400732C04 /* Random.h in Headers */,
 				E8FC12FA1869726A0095D8FE /* QualitySettingsSystem.h in Headers */,
@@ -7433,7 +7420,6 @@
 				176DEB26174B5561007A983B /* UIYamlLoader.cpp in Sources */,
 				024BD5A01A2C8371000BECC1 /* VirtualCoordinatesSystem.cpp in Sources */,
 				02FD8266192A3859007762C0 /* WaveSystem.cpp in Sources */,
-				176DEB27174B5561007A983B /* HTTPDownloader.mm in Sources */,
 				176DEB28174B5561007A983B /* MD5.cpp in Sources */,
 				176DEB29174B5561007A983B /* StringFormat.cpp in Sources */,
 				176DEB2A174B5561007A983B /* Utils.cpp in Sources */,
@@ -7894,7 +7880,6 @@
 				E898A03C16BD24E500732C04 /* UIStaticText.cpp in Sources */,
 				E898A03E16BD24E500732C04 /* UITextField.cpp in Sources */,
 				E898A04216BD24E500732C04 /* UIYamlLoader.cpp in Sources */,
-				E898A04516BD24E500732C04 /* HTTPDownloader.mm in Sources */,
 				E898A04716BD24E500732C04 /* MD5.cpp in Sources */,
 				E898A04A16BD24E500732C04 /* StringFormat.cpp in Sources */,
 				E898A04E16BD24E500732C04 /* Utils.cpp in Sources */,
@@ -8340,7 +8325,6 @@
 				E89EDE641A2E16FA0036E993 /* KeyedArchive_wrap.cxx in Sources */,
 				176395AA1863373D00EADDA2 /* GamepadDevice.cpp in Sources */,
 				E898A2A916BD265400732C04 /* UIYamlLoader.cpp in Sources */,
-				E898A2AA16BD265400732C04 /* HTTPDownloader.mm in Sources */,
 				E898A2AB16BD265400732C04 /* MD5.cpp in Sources */,
 				1174B6291B42C550002E3472 /* UIStyleSheetSelectorChain.cpp in Sources */,
 				E898A2AC16BD265400732C04 /* StringFormat.cpp in Sources */,

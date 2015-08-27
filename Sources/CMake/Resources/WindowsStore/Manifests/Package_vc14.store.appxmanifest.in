@@ -5,22 +5,24 @@
   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
   IgnorableNamespaces="uap mp">
 
-  <Identity Name="@PACKAGE_GUID@" Publisher="CN=DAVA" Version="1.1.0.0" />
-  <mp:PhoneIdentity PhoneProductId="@PACKAGE_GUID@" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
+  <Identity Name="@WIN_STORE_MANIFEST_PACKAGE_GUID@" Publisher="CN=Empty Games" Version="1.0.0.0" />
+  <mp:PhoneIdentity PhoneProductId="@WIN_STORE_MANIFEST_PACKAGE_GUID@" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
     <DisplayName>@SHORT_NAME@</DisplayName>
-    <PublisherDisplayName>mgong</PublisherDisplayName>
+    <PublisherDisplayName>Empty Games</PublisherDisplayName>
     <Logo>Assets/StoreLogo.png</Logo>
   </Properties>
 
   <Dependencies>
-    <TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.10042.0" MaxVersionTested="10.0.65535.65535" />
+    <TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.0.0" MaxVersionTested="10.0.65535.65535" />
   </Dependencies>
 
   <Capabilities>
     <uap:Capability Name="removableStorage" />
     <Capability Name="internetClient" />
+    <Capability Name="internetClientServer" />
+    <Capability Name="privateNetworkClientServer" />
   </Capabilities>
 
   <Resources>
@@ -49,6 +51,6 @@
         </uap:Extension>
       </Extensions>
 
-	</Application>
+    </Application>
   </Applications>
 </Package>

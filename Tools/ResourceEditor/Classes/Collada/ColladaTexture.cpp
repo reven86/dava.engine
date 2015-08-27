@@ -32,11 +32,12 @@
 #include "ColladaTexture.h"
 #include "FileSystem/Logger.h"
 #include "Render/Image/Image.h"
+#include "Render/Image/ImageSystem.h"
 #include "FileSystem/FileSystem.h"
 #include "Utils/Utils.h"
-#include "../Qt/Main/QtUtils.h"
+#include "Qt/Main/QtUtils.h"
 
-#include "Classes/CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
+#include "CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
 
 ///*
 // INCLUDE DevIL
@@ -99,9 +100,17 @@ ColladaTexture::ColladaTexture(FCDImage * _image)
 	const wchar_t * origTmp = &orig[0];
 	wcsnrtombs( nstring, &origTmp, 512, 256, NULL);
 #endif
-	texturePathName =  nstring;
-    
-    TextureDescriptorUtils::CreateDescriptorIfNeed(String(texturePathName));
+	texturePathName = nstring;
+
+	{	//Prepare correct texture descriptor for image
+		FilePath texturePath(texturePathName);
+		auto imageFormat = ImageSystem::Instance()->GetImageFormatForExtension(texturePath.GetExtension());
+		if (imageFormat == IMAGE_FORMAT_UNKNOWN)
+		{
+			texturePath = TextureDescriptor::GetDescriptorPathname(texturePath);
+		}
+		TextureDescriptorUtils::CreateDescriptorIfNeed(texturePath);
+	}
     
  	/*try 
 	{
