@@ -153,11 +153,11 @@ dx9_Reset( const ResetParam& param )
 //------------------------------------------------------------------------------
 
 static bool
-dx9_NeedReloadResources()
+dx9_NeedRestoreResources()
 {
-    bool    needReload = TextureDX9::NeedReloadCount()  ||  VertexBufferDX9::NeedReloadCount()  ||  IndexBufferDX9::NeedReloadCount();
+    bool    needRestore = TextureDX9::NeedRestoreCount()  ||  VertexBufferDX9::NeedRestoreCount()  ||  IndexBufferDX9::NeedRestoreCount();
 
-    return needReload;
+    return needRestore;
 }
 
 
@@ -357,7 +357,7 @@ void
 dx9_Initialize( const InitParam& param )
 {
     _DX9_InitParam = param;
-    InitializeRenderThreadDX9();
+    InitializeRenderThreadDX9( (param.threadedRenderEnabled)?param.threadedRenderFrameCount:0 );
 
 
     VertexBufferDX9::SetupDispatch( &DispatchDX9 );
@@ -374,7 +374,7 @@ dx9_Initialize( const InitParam& param )
     DispatchDX9.impl_Uninitialize           = &dx9_Uninitialize;
     DispatchDX9.impl_Reset                  = &dx9_Reset;
     DispatchDX9.impl_HostApi                = &dx9_HostApi;
-    DispatchDX9.impl_NeedReloadResources    = &dx9_NeedReloadResources;
+    DispatchDX9.impl_NeedRestoreResources   = &dx9_NeedRestoreResources;
     DispatchDX9.impl_TextureFormatSupported = &dx9_TextureFormatSupported;
 
     SetDispatchTable( DispatchDX9 );

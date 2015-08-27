@@ -235,6 +235,9 @@ public:
     ConstBuf
     {
     public:
+        
+        struct Desc {};
+
                     ConstBuf();
                     ~ConstBuf();
     
@@ -329,11 +332,11 @@ public:
     DWORD               colorMask;
 };
 
-typedef ResourcePool<PipelineStateDX9_t,RESOURCE_PIPELINE_STATE>            PipelineStateDX9Pool;
-typedef ResourcePool<PipelineStateDX9_t::ConstBuf,RESOURCE_CONST_BUFFER>    ConstBufDX9Pool;
+typedef ResourcePool<PipelineStateDX9_t,RESOURCE_PIPELINE_STATE,PipelineState::Descriptor,true>         PipelineStateDX9Pool;
+typedef ResourcePool<PipelineStateDX9_t::ConstBuf,RESOURCE_CONST_BUFFER,PipelineStateDX9_t::ConstBuf::Desc,false> ConstBufDX9Pool;
 
-RHI_IMPL_POOL(PipelineStateDX9_t,RESOURCE_PIPELINE_STATE);
-RHI_IMPL_POOL_SIZE(PipelineStateDX9_t::ConstBuf,RESOURCE_CONST_BUFFER,8*1024);
+RHI_IMPL_POOL(PipelineStateDX9_t,RESOURCE_PIPELINE_STATE,PipelineState::Descriptor,true);
+RHI_IMPL_POOL_SIZE(PipelineStateDX9_t::ConstBuf,RESOURCE_CONST_BUFFER,PipelineStateDX9_t::ConstBuf::Desc,false,8*1024);
 
 
 //------------------------------------------------------------------------------

@@ -43,6 +43,7 @@ namespace rhi
 
 class
 IndexBufferDX9_t
+  : public ResourceImpl<IndexBufferDX9_t,IndexBuffer::Descriptor>
 {
 public:
                             IndexBufferDX9_t();
@@ -55,14 +56,11 @@ public:
     unsigned                size;
     IDirect3DIndexBuffer9*  buffer;
     unsigned                isMapped:1;
-    unsigned                needReload:1;
-
-    static unsigned         NeedReloadCount;
 };
-unsigned    IndexBufferDX9_t::NeedReloadCount = 0;
+RHI_IMPL_RESOURCE(IndexBufferDX9_t,IndexBuffer::Descriptor);
 
-typedef ResourcePool<IndexBufferDX9_t,RESOURCE_INDEX_BUFFER>    IndexBufferDX9Pool;
-RHI_IMPL_POOL(IndexBufferDX9_t,RESOURCE_INDEX_BUFFER);
+typedef ResourcePool<IndexBufferDX9_t,RESOURCE_INDEX_BUFFER,IndexBuffer::Descriptor,true>    IndexBufferDX9Pool;
+RHI_IMPL_POOL(IndexBufferDX9_t,RESOURCE_INDEX_BUFFER,IndexBuffer::Descriptor,true);
 
 
 //==============================================================================
@@ -150,6 +148,7 @@ dx9_IndexBuffer_Create( const IndexBuffer::Descriptor& desc )
     
     if( ib->Create( desc ) )
     {
+        ib->UpdateCreationDesc( desc );
     }
     else
     {
@@ -201,12 +200,7 @@ dx9_IndexBuffer_Update( Handle ib, const void* data, unsigned offset, unsigned s
             ExecDX9( &cmd2, 1 );
             success = true;
             
-            if( self->needReload )
-            {
-                self->needReload = false;
-                DVASSERT(IndexBufferDX9_t::NeedReloadCount);
-                --IndexBufferDX9_t::NeedReloadCount;
-            }
+            self->MarkRestored();            
         }
     }
 
@@ -249,13 +243,7 @@ dx9_IndexBuffer_Unmap( Handle ib )
     if( SUCCEEDED(cmd.retval) )
     {
         self->isMapped = false;
-        
-        if( self->needReload )
-        {
-            self->needReload = false;
-            DVASSERT(IndexBufferDX9_t::NeedReloadCount);
-            --IndexBufferDX9_t::NeedReloadCount;
-        }
+        self->MarkRestored();        
     }
 }
 
@@ -263,7 +251,7 @@ dx9_IndexBuffer_Unmap( Handle ib )
 //------------------------------------------------------------------------------
 
 static bool
-dx9_IndexBuffer_NeedReload( Handle ib )
+dx9_IndexBuffer_NeedRestore( Handle ib )
 {
     IndexBufferDX9_t*   self = IndexBufferDX9Pool::Get( ib );
     
@@ -285,7 +273,7 @@ SetupDispatch( Dispatch* dispatch )
     dispatch->impl_IndexBuffer_Update       = &dx9_IndexBuffer_Update;
     dispatch->impl_IndexBuffer_Map          = &dx9_IndexBuffer_Map;
     dispatch->impl_IndexBuffer_Unmap        = &dx9_IndexBuffer_Unmap;
-    dispatch->impl_IndexBuffer_NeedReload   = &dx9_IndexBuffer_NeedReload;
+    dispatch->impl_IndexBuffer_NeedRestore  = &dx9_IndexBuffer_NeedRestore;
 }
 
 void 
@@ -303,22 +291,13 @@ SetToRHI( Handle ib )
 void
 ReCreateAll()
 {
-    for( IndexBufferDX9Pool::Iterator b=IndexBufferDX9Pool::Begin(),b_end=IndexBufferDX9Pool::End(); b!=b_end; ++b )
-    {
-        IndexBuffer::Descriptor desc(b->size);
-        
-        b->Destroy( true );
-        b->Create( desc, true );
-        b->needReload = true;
-
-        ++IndexBufferDX9_t::NeedReloadCount;
-    }
+    IndexBufferDX9Pool::ReCreateAll();
 }
 
 unsigned
-NeedReloadCount()
+NeedRestoreCount()
 {
-    return IndexBufferDX9_t::NeedReloadCount;
+    return IndexBufferDX9_t::NeedRestoreCount();
 }
 
 }

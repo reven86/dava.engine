@@ -46,10 +46,14 @@ namespace rhi
 
 class
 TextureGLES2_t
+  : public ResourceImpl<TextureGLES2_t,Texture::Descriptor>
 {
 public:
 
                     TextureGLES2_t();
+
+    bool            Create( const Texture::Descriptor& desc, bool force_immediate=false );
+    void            Destroy( bool force_immediate=false );
 
 
     unsigned        uid;
@@ -80,7 +84,7 @@ public:
     SamplerState::Descriptor::Sampler   samplerState;
     uint32                              forceSetSamplerState:1;
 };
-
+RHI_IMPL_RESOURCE(TextureGLES2_t,Texture::Descriptor);
 
 TextureGLES2_t::TextureGLES2_t()
   : uid(0),
@@ -97,83 +101,16 @@ TextureGLES2_t::TextureGLES2_t()
 {
 }
 
-typedef ResourcePool<TextureGLES2_t,RESOURCE_TEXTURE>   TextureGLES2Pool;
-RHI_IMPL_POOL(TextureGLES2_t,RESOURCE_TEXTURE);
-
 
 //------------------------------------------------------------------------------
 
-static void
-gles2_Texture_Delete( Handle tex )
-{
-    if( tex != InvalidHandle )
-    {
-        TextureGLES2_t* self    = TextureGLES2Pool::Get( tex );
-        GLCommand       cmd[16];
-        unsigned        cmd_cnt = 1;
-
-        if( self->isRenderTarget )
-        {
-            DVASSERT(self->fbo.size() <= countof(cmd)-1);
-            for( unsigned i=0; i!=self->fbo.size(); ++i )
-            {
-                cmd[1+i].func   = GLCommand::DELETE_FRAMEBUFFERS;
-                cmd[1+i].arg[0] = 1;
-                cmd[1+i].arg[1] = uint64(&(self->fbo[i].frameBuffer));
-            }
-
-            cmd_cnt += self->fbo.size();
-            self->fbo.clear();
-        }
-        else if( self->isRenderBuffer )
-        {
-            cmd[0].func   = GLCommand::DELETE_RENDERBUFFERS;
-            cmd[0].arg[0] = 1;
-            cmd[0].arg[1] = uint64(&(self->uid));
-
-            if( self->uid2 )
-            {
-                cmd[1].func   = GLCommand::DELETE_RENDERBUFFERS;
-                cmd[1].arg[0] = 1;
-                cmd[1].arg[1] = uint64(&(self->uid2));
-            }
-        }
-        else
-        {
-            cmd[0].func   = GLCommand::DELETE_TEXTURES;
-            cmd[0].arg[0] = 1;
-            cmd[0].arg[1] = uint64(&(self->uid));
-        }
-
-        ExecGL( cmd, cmd_cnt );
-
-
-
-        DVASSERT(!self->isMapped);
-        
-        if( self->mappedData )
-        {
-            ::free( self->mappedData );
-            
-            self->mappedData = nullptr;
-            self->width      = 0;
-            self->height     = 0;
-        }
-
-        TextureGLES2Pool::Free( tex );
-    }
-}
-
-
-//------------------------------------------------------------------------------
-
-static Handle
-gles2_Texture_Create( const Texture::Descriptor& desc )
+bool
+TextureGLES2_t::Create( const Texture::Descriptor& desc, bool force_immediate )
 {
     DVASSERT(desc.levelCount);
 
-    Handle      handle       = InvalidHandle;
-    GLuint      uid[2]        = { InvalidIndex, InvalidIndex };
+    bool        success      = false;
+    GLuint      uid[2]       = { InvalidIndex, InvalidIndex };
     bool        is_depth     = desc.format == TEXTURE_FORMAT_D16  ||  desc.format == TEXTURE_FORMAT_D24S8;
     bool        need_stencil = desc.format == TEXTURE_FORMAT_D24S8;
     
@@ -202,14 +139,14 @@ gles2_Texture_Create( const Texture::Descriptor& desc )
                 cmd2[5].func = GLCommand::NOP;
             }
 
-            ExecGL( cmd2, countof(cmd2) );
+            ExecGL( cmd2, countof(cmd2), force_immediate );
         }
     }
     else
     {
         GLCommand   cmd1 = { GLCommand::GEN_TEXTURES, { 1, (uint64)(uid) } };
 
-        ExecGL( &cmd1, 1 );
+        ExecGL( &cmd1, 1, force_immediate );
 
         if(     cmd1.status == GL_NO_ERROR 
             &&  (desc.autoGenMipmaps  &&  !desc.isRenderTarget)
@@ -224,33 +161,28 @@ gles2_Texture_Create( const Texture::Descriptor& desc )
                 { GLCommand::RESTORE_TEXTURE0, {} }
             };
             
-            ExecGL( cmd2, countof(cmd2) );
+            ExecGL( cmd2, countof(cmd2), force_immediate );
         }
     }
 
 
     if( uid[0] != InvalidIndex )
     {
-        TextureGLES2_t* self = nullptr;
-        
-        handle = TextureGLES2Pool::Alloc();
-        self   = TextureGLES2Pool::Get( handle );
-
-        self->uid                   = uid[0];
-        self->mappedData            = nullptr;
-        self->width                 = desc.width;
-        self->height                = desc.height;
-        self->format                = desc.format;
-        self->isCubeMap             = desc.type == TEXTURE_TYPE_CUBE;
-        self->isMapped              = false;
-        self->isRenderTarget		= false;
-        self->isRenderBuffer        = is_depth;
-        self->forceSetSamplerState  = true;
+        this->uid            = uid[0];
+        mappedData           = nullptr;
+        width                = desc.width;
+        height               = desc.height;
+        format               = desc.format;
+        isCubeMap            = desc.type == TEXTURE_TYPE_CUBE;
+        isMapped             = false;
+        isRenderTarget       = false;
+        isRenderBuffer       = is_depth;
+        forceSetSamplerState = true;
         
         if( desc.isRenderTarget )
         {
-            self->isRenderTarget        = true;
-            self->forceSetSamplerState  = false;
+            isRenderTarget        = true;
+            forceSetSamplerState  = false;
 
             GLCommand   cmd3[] =
             {
@@ -262,14 +194,114 @@ gles2_Texture_Create( const Texture::Descriptor& desc )
                 { GLCommand::RESTORE_TEXTURE0, {} }
             };
 
-            ExecGL( cmd3, countof(cmd3) );
+            ExecGL( cmd3, countof(cmd3), force_immediate );
         }
         else
         {
-            self->isRenderTarget = false;
+            isRenderTarget = false;
         }
+
+        success = true;
     }
 
+    return success;
+}
+
+
+//------------------------------------------------------------------------------
+
+void
+TextureGLES2_t::Destroy( bool force_immediate )
+{
+    GLCommand       cmd[16];
+    unsigned        cmd_cnt = 1;
+
+    if( isRenderTarget )
+    {
+        DVASSERT(fbo.size() <= countof(cmd)-1);
+        for( unsigned i=0; i!=fbo.size(); ++i )
+        {
+            cmd[1+i].func   = GLCommand::DELETE_FRAMEBUFFERS;
+            cmd[1+i].arg[0] = 1;
+            cmd[1+i].arg[1] = uint64(&(fbo[i].frameBuffer));
+        }
+
+        cmd_cnt += fbo.size();
+        fbo.clear();
+    }
+    else if( isRenderBuffer )
+    {
+        cmd[0].func   = GLCommand::DELETE_RENDERBUFFERS;
+        cmd[0].arg[0] = 1;
+        cmd[0].arg[1] = uint64(&(uid));
+
+        if( uid2 )
+        {
+            cmd[1].func   = GLCommand::DELETE_RENDERBUFFERS;
+            cmd[1].arg[0] = 1;
+            cmd[1].arg[1] = uint64(&(uid2));
+        }
+    }
+    else
+    {
+        cmd[0].func   = GLCommand::DELETE_TEXTURES;
+        cmd[0].arg[0] = 1;
+        cmd[0].arg[1] = uint64(&(uid));
+    }
+
+    ExecGL( cmd, cmd_cnt );
+
+
+
+    DVASSERT(!isMapped);
+        
+    if( mappedData )
+    {
+        ::free( mappedData );
+            
+        mappedData = nullptr;
+        width      = 0;
+        height     = 0;
+    }
+}
+
+typedef ResourcePool<TextureGLES2_t,RESOURCE_TEXTURE,Texture::Descriptor,true>   TextureGLES2Pool;
+RHI_IMPL_POOL(TextureGLES2_t,RESOURCE_TEXTURE,Texture::Descriptor,true);
+
+
+//------------------------------------------------------------------------------
+
+static void
+gles2_Texture_Delete( Handle tex )
+{
+    if( tex != InvalidHandle )
+    {
+        TextureGLES2_t* self = TextureGLES2Pool::Get( tex );
+
+        self->Destroy();
+        TextureGLES2Pool::Free( tex );
+    }
+}
+
+
+//------------------------------------------------------------------------------
+
+static Handle
+gles2_Texture_Create( const Texture::Descriptor& desc )
+{
+    Handle          handle = TextureGLES2Pool::Alloc();
+    TextureGLES2_t* tex    = TextureGLES2Pool::Get( handle );
+
+    if( tex->Create( desc ) )
+    {
+        tex->UpdateCreationDesc( desc );
+    }
+    else
+    {
+        TextureGLES2Pool::Free( handle );
+        handle = InvalidHandle;
+    }
+    
     return handle;
 }
 
@@ -434,6 +466,17 @@ gles2_Texture_Update( Handle tex, const void* data, uint32 level, TextureFace fa
 }
 
 
+//------------------------------------------------------------------------------
+
+static bool
+gles2_Texture_NeedRestore( Handle tex )
+{
+    TextureGLES2_t* self = TextureGLES2Pool::Get( tex );
+    
+    return self->NeedRestore();
+}
+
+
 
 //==============================================================================
 
@@ -446,8 +489,8 @@ SamplerStateGLES2_t
     uint32                              vertexSamplerCount;
 };
 
-typedef ResourcePool<SamplerStateGLES2_t,RESOURCE_SAMPLER_STATE>    SamplerStateGLES2Pool;
-RHI_IMPL_POOL(SamplerStateGLES2_t,RESOURCE_SAMPLER_STATE);
+typedef ResourcePool<SamplerStateGLES2_t,RESOURCE_SAMPLER_STATE,SamplerState::Descriptor,false>    SamplerStateGLES2Pool;
+RHI_IMPL_POOL(SamplerStateGLES2_t,RESOURCE_SAMPLER_STATE,SamplerState::Descriptor,false);
 static const SamplerStateGLES2_t*                           _CurSamplerState = nullptr;
 
 
@@ -582,11 +625,12 @@ namespace TextureGLES2
 void
 SetupDispatch( Dispatch* dispatch )
 {
-    dispatch->impl_Texture_Create = &gles2_Texture_Create;
-    dispatch->impl_Texture_Delete = &gles2_Texture_Delete;
-    dispatch->impl_Texture_Map    = &gles2_Texture_Map;
-    dispatch->impl_Texture_Unmap  = &gles2_Texture_Unmap;
-    dispatch->impl_Texture_Update = &gles2_Texture_Update;
+    dispatch->impl_Texture_Create       = &gles2_Texture_Create;
+    dispatch->impl_Texture_Delete       = &gles2_Texture_Delete;
+    dispatch->impl_Texture_Map          = &gles2_Texture_Map;
+    dispatch->impl_Texture_Unmap        = &gles2_Texture_Unmap;
+    dispatch->impl_Texture_Update       = &gles2_Texture_Update;
+    dispatch->impl_Texture_NeedRestore  = &gles2_Texture_NeedRestore;
 }
 
 void

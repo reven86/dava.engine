@@ -277,8 +277,8 @@ public:
     GLboolean           maskA;
 };
 
-typedef ResourcePool<PipelineStateGLES2_t,RESOURCE_PIPELINE_STATE>  PipelineStateGLES2Pool;
-RHI_IMPL_POOL(PipelineStateGLES2_t,RESOURCE_PIPELINE_STATE);
+typedef ResourcePool<PipelineStateGLES2_t,RESOURCE_PIPELINE_STATE,PipelineState::Descriptor,false>  PipelineStateGLES2Pool;
+RHI_IMPL_POOL(PipelineStateGLES2_t,RESOURCE_PIPELINE_STATE,PipelineState::Descriptor,false);
 
 
 //------------------------------------------------------------------------------

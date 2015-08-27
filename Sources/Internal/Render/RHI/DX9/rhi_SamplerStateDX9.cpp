@@ -62,8 +62,8 @@ SamplerStateDX9_t
     uint32      vertexSamplerCount;
 };
 
-typedef ResourcePool<SamplerStateDX9_t,RESOURCE_SAMPLER_STATE>  SamplerStateDX9Pool;
-RHI_IMPL_POOL(SamplerStateDX9_t,RESOURCE_SAMPLER_STATE);
+typedef ResourcePool<SamplerStateDX9_t,RESOURCE_SAMPLER_STATE,SamplerState::Descriptor,false>   SamplerStateDX9Pool;
+RHI_IMPL_POOL(SamplerStateDX9_t,RESOURCE_SAMPLER_STATE,SamplerState::Descriptor,false);
 
 
 //------------------------------------------------------------------------------

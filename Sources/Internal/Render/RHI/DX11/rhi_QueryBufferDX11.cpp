@@ -45,14 +45,15 @@ class
 QueryBufferDX11_t
 {
 public:
+
                                 QueryBufferDX11_t();
                                 ~QueryBufferDX11_t();
 
     std::vector<ID3D11Query*>   query;
 };
 
-typedef ResourcePool<QueryBufferDX11_t,RESOURCE_QUERY_BUFFER>   QueryBufferDX11Pool;
-RHI_IMPL_POOL(QueryBufferDX11_t,RESOURCE_QUERY_BUFFER);
+typedef ResourcePool<QueryBufferDX11_t,RESOURCE_QUERY_BUFFER,QueryBuffer::Descriptor,false>   QueryBufferDX11Pool;
+RHI_IMPL_POOL(QueryBufferDX11_t,RESOURCE_QUERY_BUFFER,QueryBuffer::Descriptor,false);
 
 
 //==============================================================================
@@ -154,7 +155,7 @@ dx11_QueryBuffer_Value( Handle handle, uint32 objectIndex )
             
             if( hr == S_OK )
             {
-                value = val;
+                value = int(val);
             }
         }
     }

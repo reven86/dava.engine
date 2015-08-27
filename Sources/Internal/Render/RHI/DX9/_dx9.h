@@ -49,7 +49,7 @@ struct InitParam;
 
 D3DFORMAT           DX9_TextureFormat( TextureFormat format );
 
-void                InitializeRenderThreadDX9();
+void                InitializeRenderThreadDX9( uint32 frameCount );
 void                UninitializeRenderThreadDX9();
 
 

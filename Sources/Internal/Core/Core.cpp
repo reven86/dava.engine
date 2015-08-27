@@ -192,6 +192,12 @@ void Core::CreateRenderer()
 {
     DVASSERT(options->IsKeyExists("renderer"));    
     rhi::Api renderer = (rhi::Api)options->GetInt32("renderer");
+
+    if( options->IsKeyExists("rhi_threaded_frame_count") )
+    {
+        rendererParams.threadedRenderEnabled    = true;
+        rendererParams.threadedRenderFrameCount = options->GetInt32("rhi_threaded_frame_count");
+    }
     
     Renderer::Initialize(renderer, rendererParams);
 }

@@ -208,7 +208,7 @@ _OGLErrorCallback( GLenum source, GLenum type, GLuint id, GLenum severity, GLsiz
 void
 gles2_Uninitialize()
 {
-    UninitializeRenderThread();
+    UninitializeRenderThreadGLES2();
 }
 
 
@@ -410,7 +410,7 @@ gles2_Initialize( const InitParam& param )
         _GLES2_DefaultFrameBuffer_Width  = rc.right - rc.left;
         _GLES2_DefaultFrameBuffer_Height = rc.bottom - rc.top;
 
-        InitializeRenderThread();
+        InitializeRenderThreadGLES2( (param.threadedRenderEnabled)?param.threadedRenderFrameCount:0 );
 
         _Inited = true;
     }
@@ -454,7 +454,7 @@ gles2_Initialize( const InitParam& param )
 
     SetDispatchTable(DispatchGLES2);
 
-    InitializeRenderThread();
+    InitializeRenderThreadGLES2( (param.threadedRenderEnabled)?param.threadedRenderFrameCount:0 );
 
     #if 0
     glEnable(GL_DEBUG_OUTPUT);
@@ -507,7 +507,7 @@ gles2_Initialize(const InitParam& param)
 
     SetDispatchTable(DispatchGLES2);
 
-    InitializeRenderThread();
+    InitializeRenderThreadGLES2( (param.threadedRenderEnabled)?param.threadedRenderFrameCount:0 );
 
 #if 0
     glEnable(GL_DEBUG_OUTPUT);

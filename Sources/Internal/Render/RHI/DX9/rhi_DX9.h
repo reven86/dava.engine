@@ -46,7 +46,7 @@ namespace VertexBufferDX9
 void        SetupDispatch( Dispatch* dispatch );
 void        SetToRHI( Handle vb, unsigned stream_i, unsigned offset, unsigned stride );
 void        ReCreateAll();
-unsigned    NeedReloadCount();
+unsigned    NeedRestoreCount();
 }
 
 namespace IndexBufferDX9
@@ -54,7 +54,7 @@ namespace IndexBufferDX9
 void        SetupDispatch( Dispatch* dispatch );
 void        SetToRHI( Handle vb );
 void        ReCreateAll();
-unsigned    NeedReloadCount();
+unsigned    NeedRestoreCount();
 }
 
 namespace QueryBufferDX9
@@ -89,7 +89,7 @@ void        SetToRHI( Handle tex, unsigned unitIndex );
 void        SetAsRenderTarget( Handle tex );
 void        SetAsDepthStencil( Handle tex );
 void        ReCreateAll();
-unsigned    NeedReloadCount();
+unsigned    NeedRestoreCount();
 }
 
 

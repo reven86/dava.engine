@@ -110,8 +110,8 @@ void        SetupDispatch( Dispatch* dispatch );
 }
 
 
-void        InitializeRenderThread();
-void        UninitializeRenderThread();
+void        InitializeRenderThreadGLES2( uint32 frameCount );
+void        UninitializeRenderThreadGLES2();
 
 struct
 GLCommand

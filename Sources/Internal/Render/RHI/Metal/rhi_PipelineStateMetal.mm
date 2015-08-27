@@ -97,6 +97,7 @@ public:
     {
     public:
         
+        struct Desc {};
         enum ProgType { PROG_VERTEX, PROG_FRAGMENT };
 
                             ConstBuf()
@@ -184,11 +185,11 @@ public:
     std::vector<state_t>            altState;
 };
 
-typedef ResourcePool<PipelineStateMetal_t,RESOURCE_PIPELINE_STATE>          PipelineStateMetalPool;
-typedef ResourcePool<PipelineStateMetal_t::ConstBuf,RESOURCE_CONST_BUFFER>  ConstBufMetalPool;
+typedef ResourcePool<PipelineStateMetal_t,RESOURCE_PIPELINE_STATE,PipelineState::Descriptor,false>                      PipelineStateMetalPool;
+typedef ResourcePool<PipelineStateMetal_t::ConstBuf,RESOURCE_CONST_BUFFER,PipelineStateMetal_t::ConstBuf::Desc,false>   ConstBufMetalPool;
 
-RHI_IMPL_POOL(PipelineStateMetal_t,RESOURCE_PIPELINE_STATE);
-RHI_IMPL_POOL(PipelineStateMetal_t::ConstBuf,RESOURCE_CONST_BUFFER);
+RHI_IMPL_POOL(PipelineStateMetal_t,RESOURCE_PIPELINE_STATE,PipelineState::Descriptor,false);
+RHI_IMPL_POOL(PipelineStateMetal_t::ConstBuf,RESOURCE_CONST_BUFFER,PipelineStateMetal_t::ConstBuf::Desc,false);
 
 
 static RingBufferMetal  DefaultConstRingBuffer;

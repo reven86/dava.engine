@@ -114,7 +114,6 @@ class
 RenderPassDX11_t
 {
 public:
-
     std::vector<Handle> cmdBuf;
     int                 priority;
 };
@@ -127,13 +126,13 @@ SyncObjectDX11_t
     uint32  is_signaled:1;
 };
 
-typedef ResourcePool<CommandBufferDX11_t,RESOURCE_COMMAND_BUFFER>   CommandBufferPool;
-typedef ResourcePool<RenderPassDX11_t,RESOURCE_RENDER_PASS>         RenderPassPool;
-typedef ResourcePool<SyncObjectDX11_t,RESOURCE_SYNC_OBJECT>         SyncObjectPool;
+typedef ResourcePool<CommandBufferDX11_t,RESOURCE_COMMAND_BUFFER,CommandBuffer::Descriptor,false>   CommandBufferPool;
+typedef ResourcePool<RenderPassDX11_t,RESOURCE_RENDER_PASS,RenderPassConfig,false>            RenderPassPool;
+typedef ResourcePool<SyncObjectDX11_t,RESOURCE_SYNC_OBJECT,SyncObject::Descriptor,false>            SyncObjectPool;
 
-RHI_IMPL_POOL(CommandBufferDX11_t,RESOURCE_COMMAND_BUFFER);
-RHI_IMPL_POOL(RenderPassDX11_t,RESOURCE_RENDER_PASS);
-RHI_IMPL_POOL(SyncObjectDX11_t,RESOURCE_SYNC_OBJECT);
+RHI_IMPL_POOL(CommandBufferDX11_t,RESOURCE_COMMAND_BUFFER,CommandBuffer::Descriptor,false);
+RHI_IMPL_POOL(RenderPassDX11_t,RESOURCE_RENDER_PASS,RenderPassConfig,false);
+RHI_IMPL_POOL(SyncObjectDX11_t,RESOURCE_SYNC_OBJECT,SyncObject::Descriptor,false);
 
 
 
@@ -394,7 +393,7 @@ dx11_CommandBuffer_Begin( Handle cmdBuf )
     if( ds_view )
     {
         if( clear_depth )
-            context->ClearDepthStencilView( ds_view, D3D11_CLEAR_DEPTH, cb->passCfg.depthStencilBuffer.clearDepth, 0 );
+            context->ClearDepthStencilView( ds_view, D3D11_CLEAR_DEPTH|D3D11_CLEAR_STENCIL, cb->passCfg.depthStencilBuffer.clearDepth, cb->passCfg.depthStencilBuffer.clearStencil );
                         
         ds_view->Release();
     }

@@ -43,6 +43,7 @@ namespace rhi
 
 struct
 VertexBufferGLES2_t
+  : public ResourceImpl<VertexBufferGLES2_t,VertexBuffer::Descriptor>
 {
                 VertexBufferGLES2_t()
                   : size(0),
@@ -53,6 +54,9 @@ VertexBufferGLES2_t
                 ~VertexBufferGLES2_t()
                 {}
 
+    bool        Create( const VertexBuffer::Descriptor& desc, bool force_immediate=false );
+    void        Destroy( bool force_immediate=false);
+
 
     uint32      size;
     void*       data;
@@ -60,18 +64,18 @@ VertexBufferGLES2_t
     GLenum      usage;
     uint32      mapped:1;
 };
+RHI_IMPL_RESOURCE(VertexBufferGLES2_t,VertexBuffer::Descriptor);
 
-typedef ResourcePool<VertexBufferGLES2_t,RESOURCE_VERTEX_BUFFER>   VertexBufferGLES2Pool;
-RHI_IMPL_POOL(VertexBufferGLES2_t,RESOURCE_VERTEX_BUFFER);
-
-
-//==============================================================================
+typedef ResourcePool<VertexBufferGLES2_t,RESOURCE_VERTEX_BUFFER,VertexBuffer::Descriptor,true>   VertexBufferGLES2Pool;
+RHI_IMPL_POOL(VertexBufferGLES2_t,RESOURCE_VERTEX_BUFFER,VertexBuffer::Descriptor,true);
 
 
-static Handle
-gles2_VertexBuffer_Create( const VertexBuffer::Descriptor& desc )
+//------------------------------------------------------------------------------
+
+bool
+VertexBufferGLES2_t::Create( const VertexBuffer::Descriptor& desc, bool force_immediate )
 {
-    Handle  handle = InvalidHandle;
+    bool    success = false;
 
     DVASSERT(desc.size);
     if( desc.size )
@@ -79,7 +83,7 @@ gles2_VertexBuffer_Create( const VertexBuffer::Descriptor& desc )
         GLuint      b    = 0;
         GLCommand   cmd1 = { GLCommand::GEN_BUFFERS, {1,(uint64)(&b)} };
         
-        ExecGL( &cmd1, 1 );
+        ExecGL( &cmd1, 1, force_immediate );
         if( cmd1.status == GL_NO_ERROR )
         {
             GLCommand   cmd2[] =
@@ -88,33 +92,75 @@ gles2_VertexBuffer_Create( const VertexBuffer::Descriptor& desc )
                 { GLCommand::RESTORE_VERTEX_BUFFER, {} }
             };
 
-            ExecGL( cmd2, countof(cmd2) );
+            ExecGL( cmd2, countof(cmd2), force_immediate );
             
             if( cmd2[0].status == GL_NO_ERROR )
             {
-                void*   data = malloc( desc.size );
+                void*   d = malloc( desc.size );
 
-                if( data )
+                if( d )
                 {
-                    handle = VertexBufferGLES2Pool::Alloc();
-                    VertexBufferGLES2_t*    vb = VertexBufferGLES2Pool::Get( handle );
-
-                    vb->data   = data;
-                    vb->size   = desc.size;
-                    vb->uid    = b;
-                    vb->mapped = false;
+                    data   = d;
+                    size   = desc.size;
+                    uid    = b;
+                    mapped = false;
 
                     switch( desc.usage )
                     {
-                        case USAGE_DEFAULT      : vb->usage = GL_STATIC_DRAW; break;
-                        case USAGE_STATICDRAW   : vb->usage = GL_STATIC_DRAW; break;
-                        case USAGE_DYNAMICDRAW  : vb->usage = GL_DYNAMIC_DRAW; break;
+                        case USAGE_DEFAULT      : usage = GL_STATIC_DRAW; break;
+                        case USAGE_STATICDRAW   : usage = GL_STATIC_DRAW; break;
+                        case USAGE_DYNAMICDRAW  : usage = GL_DYNAMIC_DRAW; break;
                     }
+                    
+                    success = true;
                 }
             }
         }
     }
 
+    return success;
+}
+
+
+//------------------------------------------------------------------------------
+
+void
+VertexBufferGLES2_t::Destroy( bool force_immediate )
+{
+    if( data )
+    {
+        GLCommand   cmd = { GLCommand::DELETE_BUFFERS, { 1, (uint64)(&uid) } };
+        ExecGL( &cmd, 1, force_immediate );
+
+        free( data );
+
+        data = nullptr;
+        size = 0;
+        uid  = 0;
+    }
+}
+
+
+
+//==============================================================================
+
+
+static Handle
+gles2_VertexBuffer_Create( const VertexBuffer::Descriptor& desc )
+{
+    Handle                  handle = VertexBufferGLES2Pool::Alloc();
+    VertexBufferGLES2_t*    vb     = VertexBufferGLES2Pool::Get( handle );
+
+    if( vb->Create( desc ) )
+    {
+        vb->UpdateCreationDesc( desc );
+    }
+    else
+    {
+        VertexBufferGLES2Pool::Free( handle );
+        handle = InvalidHandle;
+    }
+    
     return handle;
 }
 
@@ -128,18 +174,7 @@ gles2_VertexBuffer_Delete( Handle vb )
 
     if( self )
     {
-        if( self->data )
-        {
-            GLCommand   cmd = { GLCommand::DELETE_BUFFERS, { 1, (uint64)(&self->uid) } };
-            ExecGL( &cmd, 1 );
-
-            free( self->data );
-
-            self->data = nullptr;
-            self->size = 0;
-            self->uid  = 0;
-        }
-
+        self->Destroy();
         VertexBufferGLES2Pool::Free( vb );
     }
 }
@@ -167,6 +202,7 @@ gles2_VertexBuffer_Update( Handle vb, const void* data, uint32 offset, uint32 si
         memcpy( ((uint8*)self->data)+offset, data, size );
         ExecGL( cmd, countof(cmd) );
         success = cmd[1].status == GL_NO_ERROR;
+        self->MarkRestored();
     }
 
     return success;
@@ -207,6 +243,18 @@ gles2_VertexBuffer_Unmap( Handle vb )
 
     ExecGL( cmd, countof(cmd) );
     self->mapped = false;
+    self->MarkRestored();
+}
+
+
+//------------------------------------------------------------------------------
+
+static bool
+gles2_VertexBuffer_NeedRestore( Handle vb )
+{
+    VertexBufferGLES2_t*    self = VertexBufferGLES2Pool::Get( vb );
+    
+    return self->NeedRestore();
 }
 
 
@@ -217,11 +265,12 @@ namespace VertexBufferGLES2
 void
 SetupDispatch( Dispatch* dispatch )
 {
-    dispatch->impl_VertexBuffer_Create  = &gles2_VertexBuffer_Create;
-    dispatch->impl_VertexBuffer_Delete  = &gles2_VertexBuffer_Delete;
-    dispatch->impl_VertexBuffer_Update  = &gles2_VertexBuffer_Update;
-    dispatch->impl_VertexBuffer_Map     = &gles2_VertexBuffer_Map;
-    dispatch->impl_VertexBuffer_Unmap   = &gles2_VertexBuffer_Unmap;
+    dispatch->impl_VertexBuffer_Create      = &gles2_VertexBuffer_Create;
+    dispatch->impl_VertexBuffer_Delete      = &gles2_VertexBuffer_Delete;
+    dispatch->impl_VertexBuffer_Update      = &gles2_VertexBuffer_Update;
+    dispatch->impl_VertexBuffer_Map         = &gles2_VertexBuffer_Map;
+    dispatch->impl_VertexBuffer_Unmap       = &gles2_VertexBuffer_Unmap;
+    dispatch->impl_VertexBuffer_NeedRestore = &gles2_VertexBuffer_NeedRestore;
 }
 
 void

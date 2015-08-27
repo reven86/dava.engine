@@ -420,7 +420,7 @@ Descriptor
     Pool    pool;
     Usage   usage;
             
-            Descriptor( uint32 sz ) 
+            Descriptor( uint32 sz=0 ) 
               : size(sz),
                 pool(POOL_DEFAULT),
                 usage(USAGE_DEFAULT) 
@@ -437,7 +437,7 @@ Descriptor
     Pool    pool;
     Usage   usage;
             
-            Descriptor( uint32 sz ) 
+            Descriptor( uint32 sz=0 ) 
               : size(sz),
                 pool(POOL_DEFAULT),
                 usage(USAGE_DEFAULT) 
@@ -779,6 +779,42 @@ RenderPassConfig
 							invertCulling(0)
                         {}
 };
+
+////////////////////////////////////////////////////////////////////////////////
+// query-buffer
+
+namespace
+QueryBuffer
+{
+struct
+Descriptor
+{
+};
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// sync-object
+
+namespace
+SyncObject
+{
+struct
+Descriptor
+{
+};
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// command-buffer
+
+namespace
+CommandBuffer
+{
+struct
+Descriptor
+{
+};
+}
 
 
 //------------------------------------------------------------------------------

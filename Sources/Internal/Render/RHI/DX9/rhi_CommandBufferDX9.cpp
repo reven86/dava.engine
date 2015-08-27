@@ -43,10 +43,7 @@
 
     #include "_dx9.h"
     namespace rhi { extern void _InitDX9(); }
-    #include <vector>
-
-    #define RHI__USE_DX9_RENDER_THREAD          1
-    #define RHI__DX9_MAX_PREPARED_FRAME_COUNT   2
+    #include <vector>    
 
 
 namespace rhi
@@ -55,26 +52,6 @@ namespace rhi
 
 static bool _ResetPending   = false;
 
-void    
-AcquireDevice()
-{
-#if RHI__USE_DX9_RENDER_THREAD
-#else
-    // do NOTHING
-#endif
-}
-
-void
-ReleaseDevice()
-{
-#if RHI__USE_DX9_RENDER_THREAD
-#else
-    // do NOTHING
-#endif
-}
-
-
-//- static std::vector<Handle>  _CmdQueue;
 struct
 FrameDX9
 {
@@ -93,12 +70,11 @@ static DAVA::Mutex              _FrameSync;
 static void _ExecuteQueuedCommands();
 
 
-#if RHI__USE_DX9_RENDER_THREAD
 static DAVA::Thread*        _DX9_RenderThread               = nullptr;
+static unsigned             _DX9_RenderThreadFrameCount     = 0;
 static bool                 _DX9_RenderThreadExitPending    = false;
 static DAVA::Spinlock       _DX9_RenderThreadExitSync;
 static DAVA::Semaphore      _DX9_RenderThreadStartedSync    (0);
-#endif
 
 static DX9Command*          _DX9_PendingImmediateCmd        = nullptr;
 static uint32               _DX9_PendingImmediateCmdCount   = 0;
@@ -143,7 +119,6 @@ class
 RenderPassDX9_t
 {
 public:
-
     std::vector<Handle> cmdBuf;
     int                 priority;
 };
@@ -193,13 +168,13 @@ SyncObjectDX9_t
     uint32  is_used:1;
 };
 
-typedef ResourcePool<CommandBufferDX9_t,RESOURCE_COMMAND_BUFFER>    CommandBufferPool;
-typedef ResourcePool<RenderPassDX9_t,RESOURCE_RENDER_PASS>          RenderPassPool;
-typedef ResourcePool<SyncObjectDX9_t,RESOURCE_SYNC_OBJECT>          SyncObjectPool;
+typedef ResourcePool<CommandBufferDX9_t,RESOURCE_COMMAND_BUFFER,CommandBuffer::Descriptor,false> CommandBufferPool;
+typedef ResourcePool<RenderPassDX9_t,RESOURCE_RENDER_PASS,RenderPassConfig,false>               RenderPassPool;
+typedef ResourcePool<SyncObjectDX9_t,RESOURCE_SYNC_OBJECT,SyncObject::Descriptor,false>         SyncObjectPool;
 
-RHI_IMPL_POOL(CommandBufferDX9_t,RESOURCE_COMMAND_BUFFER);
-RHI_IMPL_POOL(RenderPassDX9_t,RESOURCE_RENDER_PASS);
-RHI_IMPL_POOL(SyncObjectDX9_t,RESOURCE_SYNC_OBJECT);
+RHI_IMPL_POOL(CommandBufferDX9_t,RESOURCE_COMMAND_BUFFER,CommandBuffer::Descriptor,false);
+RHI_IMPL_POOL(RenderPassDX9_t,RESOURCE_RENDER_PASS,RenderPassConfig,false);
+RHI_IMPL_POOL(SyncObjectDX9_t,RESOURCE_SYNC_OBJECT,SyncObject::Descriptor,false);
 
     
 const uint64   CommandBufferDX9_t::EndCmd = 0xFFFFFFFF;
@@ -1008,47 +983,45 @@ SCOPED_FUNCTION_TIMING();
 static void
 dx9_Present(Handle sync)
 {
-#if RHI__USE_DX9_RENDER_THREAD
-
+    if( _DX9_RenderThreadFrameCount )
+    {
 Trace("rhi-dx9.present\n");
+        _FrameSync.Lock(); 
+        {   
+            if( _Frame.size() )
+            {
+                _Frame.back().readyToExecute = true;
+                _Frame.back().sync = sync;
+                _FrameStarted = false;
+Trace("\n\n-------------------------------\nframe %u generated\n",_Frame.back().number);
+            }
 
-    _FrameSync.Lock(); 
-    {   
+    //        _FrameStarted = false;
+        }
+        _FrameSync.Unlock();
+
+        unsigned frame_cnt = 0;
+
+        do
+        {
+        _FrameSync.Lock();
+        frame_cnt = _Frame.size();
+    //Trace("rhi-gl.present frame-cnt= %u\n",frame_cnt);
+        _FrameSync.Unlock();
+        }
+        while( frame_cnt >= _DX9_RenderThreadFrameCount );
+    }
+    else
+    {    
         if( _Frame.size() )
         {
             _Frame.back().readyToExecute = true;
             _Frame.back().sync = sync;
             _FrameStarted = false;
-Trace("\n\n-------------------------------\nframe %u generated\n",_Frame.back().number);
         }
 
-//        _FrameStarted = false;
+        _ExecuteQueuedCommands(); 
     }
-    _FrameSync.Unlock();
-
-    unsigned frame_cnt = 0;
-
-    do
-    {
-    _FrameSync.Lock();
-    frame_cnt = _Frame.size();
-//Trace("rhi-gl.present frame-cnt= %u\n",frame_cnt);
-    _FrameSync.Unlock();
-    }
-    while( frame_cnt >= RHI__DX9_MAX_PREPARED_FRAME_COUNT );
-
-#else
-    
-    if( _Frame.size() )
-    {
-        _Frame.back().readyToExecute = true;
-        _Frame.back().sync = sync;
-        _FrameStarted = false;
-    }
-
-    _ExecuteQueuedCommands(); 
-
-#endif
 
     ConstBufferDX9::InvalidateAllConstBufferInstances();
 }
@@ -1066,7 +1039,7 @@ Trace("rhi-dx9.exec-queued-cmd\n");
     unsigned                        frame_n   = 0;
     bool                            do_render = true;
 
-    if( _ResetPending )
+    if( _ResetPending  ||  NeedRestoreResources() )
         _Frame.clear();
 
     _FrameSync.Lock();
@@ -1102,9 +1075,9 @@ Trace("rhi-dx9.exec-queued-cmd\n");
     {
         SyncObjectDX9_t*  sync = SyncObjectPool::Get(_Frame.begin()->sync);
 
-        sync->frame = frame_n;
+        sync->frame       = frame_n;
         sync->is_signaled = false;
-        sync->is_used = true;
+        sync->is_used     = true;
     }
     _FrameSync.Unlock();
 
@@ -1128,7 +1101,7 @@ Trace("\n\n-------------------------------\nexecuting frame %u\n",frame_n);
 
                     sync->frame       = frame_n;
                     sync->is_signaled = false;
-                    sync->is_used = true;
+                    sync->is_used     = true;
                 }
 
                 CommandBufferPool::Free( cb_h );
@@ -1148,6 +1121,7 @@ Trace("\n\n-------------------------------\nframe %u executed(submitted to GPU)\
         _FrameSync.Unlock();
     }
     
+
     // do flip, reset/restore device if necessary
 
     HRESULT hr;
@@ -1361,9 +1335,7 @@ Trace("exec %i\n",int(cmd->func));
 void
 ExecDX9( DX9Command* command, uint32 cmdCount, bool force_immediate )
 {
-#if RHI__USE_DX9_RENDER_THREAD
-
-    if( force_immediate )
+    if( force_immediate  ||  !_DX9_RenderThreadFrameCount )
     {
         _ExecDX9( command, cmdCount );
     }
@@ -1396,18 +1368,11 @@ ExecDX9( DX9Command* command, uint32 cmdCount, bool force_immediate )
             _DX9_PendingImmediateCmdSync.Unlock();
         } while( !executed );
     }
-
-#else
-
-    _ExecDX9( command, cmdCount );
-
-#endif
 }
 
 
 //------------------------------------------------------------------------------
 
-#if RHI__USE_DX9_RENDER_THREAD
 static void
 _RenderFuncDX9( DAVA::BaseObject* obj, void*, void* )
 {
@@ -1460,23 +1425,23 @@ Trace("exec-imm-cmd done\n");
 
     Trace( "RHI render-thread stopped\n" );
 }
-#endif
 
 void
-InitializeRenderThreadDX9()
+InitializeRenderThreadDX9( uint32 frameCount )
 {
-#if RHI__USE_DX9_RENDER_THREAD
+    _DX9_RenderThreadFrameCount = frameCount;
 
-    _DX9_RenderThread = DAVA::Thread::Create( DAVA::Message(&_RenderFuncDX9) );
-    _DX9_RenderThread->SetName( "RHI.dx9-render" );
-    _DX9_RenderThread->Start();    
-    _DX9_RenderThreadStartedSync.Wait();
-
-#else
-
-    _InitDX9();
-
-#endif
+    if( _DX9_RenderThreadFrameCount )
+    {
+        _DX9_RenderThread = DAVA::Thread::Create( DAVA::Message(&_RenderFuncDX9) );
+        _DX9_RenderThread->SetName( "RHI.dx9-render" );
+        _DX9_RenderThread->Start();    
+        _DX9_RenderThreadStartedSync.Wait();
+    }
+    else
+    {
+        _InitDX9();
+    }
 }
 
 
@@ -1485,13 +1450,14 @@ InitializeRenderThreadDX9()
 void
 UninitializeRenderThreadDX9()
 {
-#if RHI__USE_DX9_RENDER_THREAD
-    _DX9_RenderThreadExitSync.Lock();
-    _DX9_RenderThreadExitPending = true;
-    _DX9_RenderThreadExitSync.Unlock();
+    if( _DX9_RenderThreadFrameCount )
+    {
+        _DX9_RenderThreadExitSync.Lock();
+        _DX9_RenderThreadExitPending = true;
+        _DX9_RenderThreadExitSync.Unlock();
 
-    _DX9_RenderThread->Join();
-#endif
+        _DX9_RenderThread->Join();
+    }
 }
 
 

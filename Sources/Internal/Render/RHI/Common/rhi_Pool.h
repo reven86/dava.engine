@@ -52,7 +52,7 @@ enum
 
 #define RHI_HANDLE_INDEX(h) ((h&HANDLE_INDEX_MASK) >> HANDLE_INDEX_SHIFT)
 
-template <class T, ResourceType RT>
+template <class T, ResourceType RT, typename DT, bool need_restore=false>
 class
 ResourcePool
 {
@@ -63,6 +63,8 @@ public:
     static void     Free( Handle h );
 
     static T*       Get( Handle h );
+
+    static unsigned ReCreateAll();
 
     class
     Iterator
@@ -76,7 +78,7 @@ public:
         bool    operator!=( const Iterator& i ) { return i.entry != this->entry; }
 
     private:
-    friend class ResourcePool<T,RT>;
+    friend class ResourcePool<T,RT,DT,need_restore>;
 
             Iterator( Entry* e, Entry* e_end ) : entry(e), end(e_end) {}
 
@@ -103,22 +105,22 @@ private:
     static DAVA::Spinlock   ObjectSync;
 };
 
-#define RHI_IMPL_POOL(T,RT) \
-template<> rhi::ResourcePool<T,RT>::Entry*  rhi::ResourcePool<T,RT>::Object      = 0; \
-template<> unsigned                         rhi::ResourcePool<T,RT>::ObjectCount = 2048; \
-template<> DAVA::Spinlock                   rhi::ResourcePool<T,RT>::ObjectSync  = {};  \
+#define RHI_IMPL_POOL(T,RT,DT,nr) \
+template<> rhi::ResourcePool<T,RT,DT,nr>::Entry*    rhi::ResourcePool<T,RT,DT,nr>::Object      = 0;    \
+template<> unsigned                                 rhi::ResourcePool<T,RT,DT,nr>::ObjectCount = 2048; \
+template<> DAVA::Spinlock                           rhi::ResourcePool<T,RT,DT,nr>::ObjectSync  = {};   \
 
-#define RHI_IMPL_POOL_SIZE(T,RT,sz) \
-template<> rhi::ResourcePool<T,RT>::Entry*  rhi::ResourcePool<T,RT>::Object      = 0; \
-template<> unsigned                         rhi::ResourcePool<T,RT>::ObjectCount = sz; \
-template<> DAVA::Spinlock                   rhi::ResourcePool<T,RT>::ObjectSync  = {};  \
+#define RHI_IMPL_POOL_SIZE(T,RT,DT,nr,sz) \
+template<> rhi::ResourcePool<T,RT,DT,nr>::Entry*    rhi::ResourcePool<T,RT,DT,nr>::Object      = 0;    \
+template<> unsigned                                 rhi::ResourcePool<T,RT,DT,nr>::ObjectCount = sz;   \
+template<> DAVA::Spinlock                           rhi::ResourcePool<T,RT,DT,nr>::ObjectSync  = {};   \
 
 
 //------------------------------------------------------------------------------
 
-template <class T, ResourceType RT>
+template <class T, ResourceType RT, class DT, bool nr>
 inline Handle
-ResourcePool<T,RT>::Alloc()
+ResourcePool<T,RT,DT,nr>::Alloc()
 {
     uint32  handle = InvalidHandle;
 
@@ -160,9 +162,9 @@ ResourcePool<T,RT>::Alloc()
 
 //------------------------------------------------------------------------------
 
-template <class T, ResourceType RT>
+template <class T, ResourceType RT, typename DT, bool nr>
 inline void
-ResourcePool<T,RT>::Free( Handle h )
+ResourcePool<T,RT,DT,nr>::Free( Handle h )
 {
     uint32  index = (h&HANDLE_INDEX_MASK) >> HANDLE_INDEX_SHIFT;    
     uint32  type  = (h&HANDLE_TYPE_MASK) >> HANDLE_TYPE_SHIFT;    
@@ -179,9 +181,9 @@ ResourcePool<T,RT>::Free( Handle h )
 
 //------------------------------------------------------------------------------
 
-template <class T, ResourceType RT>
+template <class T, ResourceType RT, typename DT, bool nr>
 inline T*
-ResourcePool<T,RT>::Get( Handle h )
+ResourcePool<T,RT,DT,nr>::Get( Handle h )
 {
     T*  object = 0;
 
@@ -206,9 +208,9 @@ ResourcePool<T,RT>::Get( Handle h )
 
 //------------------------------------------------------------------------------
 
-template <class T, ResourceType RT>
-inline typename ResourcePool<T,RT>::Iterator
-ResourcePool<T,RT>::Begin()
+template <class T, ResourceType RT, typename DT, bool nr>
+inline typename ResourcePool<T,RT,DT,nr>::Iterator
+ResourcePool<T,RT,DT,nr>::Begin()
 {
     return (Object)  ? Iterator(Object,Object+ObjectCount)  : Iterator(nullptr,nullptr);
 }
@@ -216,13 +218,93 @@ ResourcePool<T,RT>::Begin()
 
 //------------------------------------------------------------------------------
 
-template <class T, ResourceType RT>
-inline typename ResourcePool<T,RT>::Iterator
-ResourcePool<T,RT>::End()
+template <class T, ResourceType RT, typename DT, bool nr>
+inline typename ResourcePool<T,RT,DT,nr>::Iterator
+ResourcePool<T,RT,DT,nr>::End()
 {
     return (Object)  ? Iterator(Object+ObjectCount,Object+ObjectCount)  : Iterator(nullptr,nullptr);
 }
 
+
+//------------------------------------------------------------------------------
+
+template <class T, ResourceType RT, typename DT, bool nr>
+inline unsigned
+ResourcePool<T,RT,DT,nr>::ReCreateAll()
+{
+    unsigned    count = 0;
+
+    for( Iterator i=Begin(),i_end=End(); i!=i_end; ++i )
+    {
+        DT  desc = i->CreationDesc();
+
+        i->Destroy( true );
+        i->Create( desc, true );
+        i->MarkNeedRestore();
+        ++count;
+    }
+
+    return count;
+}
+
+
+//------------------------------------------------------------------------------
+
+template <class T,class DT>
+class
+ResourceImpl
+{
+public:
+                    ResourceImpl()
+                      : needRestore(false)
+                    {}
+
+    bool            NeedRestore() const
+                    {
+                        return needRestore;
+                    }
+    const DT&       CreationDesc() const
+                    {
+                        return creationDesc;
+                    }
+    
+    void            UpdateCreationDesc( const DT& desc )
+                    {
+                        creationDesc = desc;
+                    }
+    void            MarkNeedRestore()
+                    {
+                        if( !needRestore )
+                        {
+                            needRestore = true;
+                            ++needRestoreCount;
+                        }
+                    }
+    void            MarkRestored()
+                    {
+                        if( needRestore )
+                        {
+                            needRestore = false;
+                            DVASSERT(needRestoreCount);
+                            --needRestoreCount;
+                        }
+                    }
+
+    static unsigned NeedRestoreCount()
+                    {
+                        return needRestoreCount;
+                    }
+
+
+private:
+    
+    DT              creationDesc;
+    bool            needRestore;
+    static unsigned needRestoreCount;
+};
+
+#define RHI_IMPL_RESOURCE(T,DT)                                     \
+template<> unsigned rhi::ResourceImpl<T,DT>::needRestoreCount = 0;  \
 
 
 } // namespace rhi

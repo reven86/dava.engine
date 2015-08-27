@@ -51,8 +51,8 @@ public:
     std::vector<GLuint> query;
 };
 
-typedef ResourcePool<QueryBufferGLES2_t,RESOURCE_QUERY_BUFFER>  QueryBufferGLES2Pool;
-RHI_IMPL_POOL(QueryBufferGLES2_t,RESOURCE_QUERY_BUFFER);
+typedef ResourcePool<QueryBufferGLES2_t,RESOURCE_QUERY_BUFFER,QueryBuffer::Descriptor,false>  QueryBufferGLES2Pool;
+RHI_IMPL_POOL(QueryBufferGLES2_t,RESOURCE_QUERY_BUFFER,QueryBuffer::Descriptor,false);
 
 
 //==============================================================================

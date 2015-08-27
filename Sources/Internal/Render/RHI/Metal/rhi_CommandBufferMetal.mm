@@ -73,13 +73,13 @@ SyncObjectMetal_t
     uint32  is_signaled:1;
 };
 
-typedef ResourcePool<CommandBufferMetal_t,RESOURCE_COMMAND_BUFFER>  CommandBufferPool;
-typedef ResourcePool<RenderPassMetal_t,RESOURCE_RENDER_PASS>        RenderPassPool;
-typedef ResourcePool<SyncObjectMetal_t,RESOURCE_SYNC_OBJECT>        SyncObjectPool;
+typedef ResourcePool<CommandBufferMetal_t,RESOURCE_COMMAND_BUFFER,CommandBuffer::Descriptor,false>  CommandBufferPool;
+typedef ResourcePool<RenderPassMetal_t,RESOURCE_RENDER_PASS,RenderPassConfig,false>                 RenderPassPool;
+typedef ResourcePool<SyncObjectMetal_t,RESOURCE_SYNC_OBJECT,SyncObject::Descriptor,false>           SyncObjectPool;
 
-RHI_IMPL_POOL(CommandBufferMetal_t,RESOURCE_COMMAND_BUFFER);
-RHI_IMPL_POOL(RenderPassMetal_t,RESOURCE_RENDER_PASS);
-RHI_IMPL_POOL(SyncObjectMetal_t,RESOURCE_SYNC_OBJECT);
+RHI_IMPL_POOL(CommandBufferMetal_t,RESOURCE_COMMAND_BUFFER,CommandBuffer::Descriptor,false);
+RHI_IMPL_POOL(RenderPassMetal_t,RESOURCE_RENDER_PASS,RenderPassConfig,false);
+RHI_IMPL_POOL(SyncObjectMetal_t,RESOURCE_SYNC_OBJECT,SyncObject::Descriptor,false);
 
 static id<CAMetalDrawable>      _CurDrawable = nil;    
 static std::vector<Handle>      _CmdQueue;

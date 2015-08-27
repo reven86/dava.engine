@@ -57,8 +57,8 @@ public:
     id<MTLBuffer>   uid;
 };
 
-typedef ResourcePool<IndexBufferMetal_t,RESOURCE_INDEX_BUFFER>    IndexBufferMetalPool;
-RHI_IMPL_POOL(IndexBufferMetal_t,RESOURCE_INDEX_BUFFER);
+typedef ResourcePool<IndexBufferMetal_t,RESOURCE_INDEX_BUFFER,IndexBuffer::Descriptor,false>    IndexBufferMetalPool;
+RHI_IMPL_POOL(IndexBufferMetal_t,RESOURCE_INDEX_BUFFER,IndexBuffer::Descriptor,false);
 
 
 //==============================================================================

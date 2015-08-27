@@ -43,9 +43,6 @@
 
     #include "_gl.h"
 
-    #define USE_RENDER_THREAD               0
-    #define RHI_MAX_PREPARED_FRAME_COUNT    2
-
 
 namespace rhi
 {
@@ -135,13 +132,13 @@ SyncObjectGLES2_t
 };
 
 
-typedef ResourcePool<CommandBufferGLES2_t,RESOURCE_COMMAND_BUFFER>  CommandBufferPool;
-typedef ResourcePool<RenderPassGLES2_t,RESOURCE_RENDER_PASS>        RenderPassPool;
-typedef ResourcePool<SyncObjectGLES2_t,RESOURCE_SYNC_OBJECT>        SyncObjectPool;
+typedef ResourcePool<CommandBufferGLES2_t,RESOURCE_COMMAND_BUFFER,CommandBuffer::Descriptor,false>  CommandBufferPool;
+typedef ResourcePool<RenderPassGLES2_t,RESOURCE_RENDER_PASS,RenderPassConfig,false>                 RenderPassPool;
+typedef ResourcePool<SyncObjectGLES2_t,RESOURCE_SYNC_OBJECT,SyncObject::Descriptor,false>           SyncObjectPool;
 
-RHI_IMPL_POOL(CommandBufferGLES2_t,RESOURCE_COMMAND_BUFFER);
-RHI_IMPL_POOL(RenderPassGLES2_t,RESOURCE_RENDER_PASS);
-RHI_IMPL_POOL(SyncObjectGLES2_t,RESOURCE_SYNC_OBJECT);
+RHI_IMPL_POOL(CommandBufferGLES2_t,RESOURCE_COMMAND_BUFFER,CommandBuffer::Descriptor,false);
+RHI_IMPL_POOL(RenderPassGLES2_t,RESOURCE_RENDER_PASS,RenderPassConfig,false);
+RHI_IMPL_POOL(SyncObjectGLES2_t,RESOURCE_SYNC_OBJECT,SyncObject::Descriptor,false);
     
 const uint64   CommandBufferGLES2_t::EndCmd = 0xFFFFFFFF;
 
@@ -156,9 +153,8 @@ static bool                 _GLES2_RenderThreadExitPending  = false;
 static DAVA::Spinlock       _GLES2_RenderThreadExitSync;
 static DAVA::Semaphore      _GLES2_RenderThredStartedSync   (1);
 
-#if USE_RENDER_THREAD 
 static DAVA::Thread*        _GLES2_RenderThread             = nullptr;
-#endif
+static unsigned             _GLES2_RenderThreadFrameCount   = 0;
 
 struct
 FrameGLES2
@@ -1254,77 +1250,6 @@ Trace("\n\n-------------------------------\nframe %u executed(submitted to GPU)\
     _FrameSync.Unlock();
 
 
-
-/*
-    static std::vector<uint32>  queue_i;
-    
-    _CmdQueueSync.Lock();
-    _CurRenderQueueSize = _RenderQueue.size();
-    queue_i.clear();
-    queue_i.swap( _RenderQueue );
-    _CmdQueueSync.Unlock();
-
-    _CmdBufIsBeingExecutedSync.Lock();
-    _CmdBufIsBeingExecuted = true;
-    _CmdBufIsBeingExecutedSync.Unlock();
-
-    for( unsigned i=0; i!=queue_i.size(); ++i )
-    {
-        std::vector<Handle>*                    cmd_queue = _CmdQueue + queue_i[i];
-        static std::vector<RenderPassGLES2_t*>  pass;
-
-
-        // sort cmd-lists by priority
-
-        pass.clear();
-        for( unsigned i=0; i!=cmd_queue->size(); ++i )
-        {
-            RenderPassGLES2_t*  rp     = RenderPassPool::Get( (*cmd_queue)[i] );
-            bool                do_add = true;
-        
-            for( std::vector<RenderPassGLES2_t*>::iterator p=pass.begin(),p_end=pass.end(); p!=p_end; ++p )
-            {
-                if( rp->priority > (*p)->priority )
-                {
-                    pass.insert( p, 1, rp );
-                    do_add = false;
-                    break;
-                }
-            }
-
-            if( do_add )
-                pass.push_back( rp );
-        }
-    
-        
-        // execute command-lists
-        
-        for( std::vector<RenderPassGLES2_t*>::iterator p=pass.begin(),p_end=pass.end(); p!=p_end; ++p )
-        {
-            for( unsigned b=0; b!=(*p)->cmdBuf.size(); ++b )
-            {
-                Handle                  cb_h = (*p)->cmdBuf[b];
-                CommandBufferGLES2_t*   cb   = CommandBufferPool::Get( cb_h );
-
-                cb->Execute();
-                CommandBufferPool::Free( cb_h );
-            }
-        }
-    
-        for( unsigned i=0; i!=cmd_queue->size(); ++i )
-            RenderPassPool::Free( (*cmd_queue)[i] );
-        cmd_queue->clear();
-    }
-    
-    _CmdBufIsBeingExecutedSync.Lock();
-    _CmdBufIsBeingExecuted = false;
-    _CmdBufIsBeingExecutedSync.Unlock();
-
-    _CmdQueueSync.Lock();
-    _CurRenderQueueSize = 0;
-    _CmdQueueSync.Unlock();
-*/
-
     if( _GLES2_Context )
     {
 #if defined(__DAVAENGINE_WIN32__)
@@ -1358,47 +1283,47 @@ Trace("rhi-gl.swap-buffers done\n");
 static void
 gles2_Present(Handle sync)
 {    
-#if USE_RENDER_THREAD
-
+    if( _GLES2_RenderThreadFrameCount )
+    {
 Trace("rhi-gl.present\n");
 
-    _FrameSync.Lock(); 
-    {   
+        _FrameSync.Lock(); 
+        {   
+            if( _Frame.size() )
+            {
+                _Frame.back().readyToExecute = true;
+                _Frame.back().sync = sync;
+                _FrameStarted = false;
+Trace("\n\n-------------------------------\nframe %u generated\n",_Frame.back().number);
+            }
+
+    //        _FrameStarted = false;
+        }
+        _FrameSync.Unlock();
+
+        unsigned frame_cnt = 0;
+
+        do
+        {
+        _FrameSync.Lock();
+        frame_cnt = _Frame.size();
+    //Trace("rhi-gl.present frame-cnt= %u\n",frame_cnt);
+        _FrameSync.Unlock();
+        }
+        while( frame_cnt >= _GLES2_RenderThreadFrameCount );
+
+    }
+    else
+    {
         if( _Frame.size() )
         {
             _Frame.back().readyToExecute = true;
             _Frame.back().sync = sync;
             _FrameStarted = false;
-Trace("\n\n-------------------------------\nframe %u generated\n",_Frame.back().number);
         }
 
-//        _FrameStarted = false;
+        _ExecuteQueuedCommands(); 
     }
-    _FrameSync.Unlock();
-
-    unsigned frame_cnt = 0;
-
-    do
-    {
-    _FrameSync.Lock();
-    frame_cnt = _Frame.size();
-//Trace("rhi-gl.present frame-cnt= %u\n",frame_cnt);
-    _FrameSync.Unlock();
-    }
-    while( frame_cnt >= RHI_MAX_PREPARED_FRAME_COUNT );
-
-#else
-
-    if( _Frame.size() )
-    {
-        _Frame.back().readyToExecute = true;
-        _Frame.back().sync = sync;
-        _FrameStarted = false;
-    }
-
-    _ExecuteQueuedCommands(); 
-
-#endif
 
     ProgGLES2::InvalidateAllConstBufferInstances();
 }
@@ -1461,33 +1386,36 @@ _RenderFunc( DAVA::BaseObject* obj, void*, void* )
 }
 
 void
-InitializeRenderThread()
+InitializeRenderThreadGLES2( uint32 frameCount )
 {
-#if USE_RENDER_THREAD
+    _GLES2_RenderThreadFrameCount = frameCount;
 
-    DVASSERT(_GLES2_ReleaseContext);
-    _GLES2_ReleaseContext();
+    if( _GLES2_RenderThreadFrameCount )
+    {
+        DVASSERT(_GLES2_ReleaseContext);
+        _GLES2_ReleaseContext();
 
-    _GLES2_RenderThread = DAVA::Thread::Create( DAVA::Message(&_RenderFunc) );
-    _GLES2_RenderThread->SetName( "RHI.gl-render" );
-    _GLES2_RenderThread->Start();    
-    _GLES2_RenderThredStartedSync.Wait();
-#endif
+        _GLES2_RenderThread = DAVA::Thread::Create( DAVA::Message(&_RenderFunc) );
+        _GLES2_RenderThread->SetName( "RHI.gl-render" );
+        _GLES2_RenderThread->Start();    
+        _GLES2_RenderThredStartedSync.Wait();
+    }
 }
 
 
 //------------------------------------------------------------------------------
 
 void
-UninitializeRenderThread()
+UninitializeRenderThreadGLES2()
 {
-#if USE_RENDER_THREAD
-    _GLES2_RenderThreadExitSync.Lock();
-    _GLES2_RenderThreadExitPending = true;
-    _GLES2_RenderThreadExitSync.Unlock();
+    if( _GLES2_RenderThreadFrameCount )
+    {
+        _GLES2_RenderThreadExitSync.Lock();
+        _GLES2_RenderThreadExitPending = true;
+        _GLES2_RenderThreadExitSync.Unlock();
 
-    _GLES2_RenderThread->Join();
-#endif
+        _GLES2_RenderThread->Join();
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -1807,9 +1735,7 @@ _ExecGL( GLCommand* command, uint32 cmdCount )
 void
 ExecGL( GLCommand* command, uint32 cmdCount, bool force_immediate )
 {
-#if USE_RENDER_THREAD
-
-    if( force_immediate )
+    if( force_immediate  ||  !_GLES2_RenderThreadFrameCount )
     {
         _ExecGL( command, cmdCount );
     }
@@ -1842,12 +1768,6 @@ ExecGL( GLCommand* command, uint32 cmdCount, bool force_immediate )
             _GLES2_PendingImmediateCmdSync.Unlock();
         } while( !executed );
     }
-
-#else
-
-    _ExecGL( command, cmdCount );
-
-#endif
 }
 
 

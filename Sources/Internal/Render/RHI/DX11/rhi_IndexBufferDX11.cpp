@@ -55,9 +55,9 @@ public:
     unsigned        isMapped:1;
 };
 
-typedef ResourcePool<IndexBufferDX11_t,RESOURCE_VERTEX_BUFFER>  IndexBufferDX11Pool;
+typedef ResourcePool<IndexBufferDX11_t,RESOURCE_VERTEX_BUFFER,IndexBuffer::Descriptor,true>  IndexBufferDX11Pool;
 
-RHI_IMPL_POOL(IndexBufferDX11_t,RESOURCE_VERTEX_BUFFER);
+RHI_IMPL_POOL(IndexBufferDX11_t,RESOURCE_VERTEX_BUFFER,IndexBuffer::Descriptor,true);
 
 
 IndexBufferDX11_t::IndexBufferDX11_t()
