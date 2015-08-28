@@ -259,14 +259,12 @@
     <ClInclude Include="..\..\Sources\Internal\Autotesting\GameAPI.h" />
     <ClInclude Include="..\..\Sources\Internal\Autotesting\MongodbUpdateObject.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\AllocatorFactory.h" />
-    <ClInclude Include="..\..\Sources\Internal\Base\Atomic.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Bind.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Data.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\EnumMap.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\FastName.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\FastNameMap.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\FixedSizePoolAllocator.h" />
-    <ClInclude Include="..\..\Sources\Internal\Base\Function.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\GlobalEnum.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Hash.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\HashMap.h" />
@@ -298,6 +296,10 @@
     <ClInclude Include="..\..\Sources\Internal\Concurrency\Thread.h" />
     <ClInclude Include="..\..\Sources\Internal\Concurrency\ThreadLocalPtr.h" />
     <ClInclude Include="..\..\Sources\Internal\Concurrency\UniqueLock.h" />
+    <ClInclude Include="..\..\Sources\Internal\Functional\Function.h" />
+    <ClInclude Include="..\..\Sources\Internal\Functional\Functional.h" />
+    <ClInclude Include="..\..\Sources\Internal\Functional\Signal.h" />
+    <ClInclude Include="..\..\Sources\Internal\Functional\SignalBase.h" />
     <ClInclude Include="..\..\Sources\Internal\Core\PerformanceSettings.h" />
     <ClInclude Include="..\..\Sources\Internal\Database\MongodbClient.h" />
     <ClInclude Include="..\..\Sources\Internal\Database\MongodbObject.h" />
@@ -446,6 +448,7 @@
     <ClInclude Include="..\..\Sources\Internal\Network\Private\TCPClientTransport.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Private\TCPServerTransport.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\ServiceRegistrar.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNet\MMBigDataTransferService.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNet\MMNetClient.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNet\MMNetProto.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNet\MMNetServer.h" />
@@ -972,6 +975,7 @@
     <ClCompile Include="..\..\Sources\Internal\Network\Private\TCPServerTransport.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\ServiceRegistrar.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\Services\LogConsumer.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Network\Services\MMNet\MMBigDataTransferService.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\Services\MMNet\MMNetClient.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\Services\MMNet\MMNetServer.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\Services\NetLogger.cpp" />

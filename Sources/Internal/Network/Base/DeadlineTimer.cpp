@@ -45,7 +45,7 @@ DeadlineTimer::DeadlineTimer(IOLoop* loop) : DeadlineTimerTemplate<DeadlineTimer
 
 int32 DeadlineTimer::Wait(uint32 timeout, WaitHandlerType handler)
 {
-    DVASSERT(handler != 0);
+    DVASSERT(handler != nullptr);
     waitHandler = handler;
     return DoWait(timeout);
 }
@@ -59,7 +59,7 @@ void DeadlineTimer::Close(CloseHandlerType handler)
 
 void DeadlineTimer::HandleClose()
 {
-    if (closeHandler != 0)
+    if (closeHandler != nullptr)
     {
         closeHandler(this);
     }
