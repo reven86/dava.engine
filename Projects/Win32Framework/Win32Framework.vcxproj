@@ -712,6 +712,7 @@
     <ClInclude Include="..\..\Sources\Internal\UI\Components\UIControlFamily.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\DefaultUIPackageBuilder.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UIAnchorComponent.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UIIgnoreLayoutComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UILayoutSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UILinearLayoutComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UISizePolicyComponent.h" />
@@ -775,7 +776,6 @@
     <ClInclude Include="..\..\Sources\Internal\UnitTests\UnitTests.h" />
     <ClInclude Include="..\..\Sources\Internal\Utils\BiDiHelper.h" />
     <ClInclude Include="..\..\Sources\Internal\Utils\CRC32.h" />
-    <ClInclude Include="..\..\Sources\Internal\Utils\HTTPDownloader.h" />
     <ClInclude Include="..\..\Sources\Internal\Utils\MD5.h" />
     <ClInclude Include="..\..\Sources\Internal\Utils\Random.h" />
     <ClInclude Include="..\..\Sources\Internal\Utils\StringFormat.h" />
@@ -1219,6 +1219,7 @@
     <ClCompile Include="..\..\Sources\Internal\UI\Components\UIControlFamily.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\DefaultUIPackageBuilder.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UIAnchorComponent.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UIIgnoreLayoutComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UILayoutSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UILinearLayoutComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UISizePolicyComponent.cpp" />

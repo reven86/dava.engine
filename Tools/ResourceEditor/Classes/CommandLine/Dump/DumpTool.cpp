@@ -27,45 +27,44 @@
 =====================================================================================*/
 
 
-#include "SceneSaverTool.h"
-#include "SceneSaver.h"
-
+#include "CommandLine/Dump/DumpTool.h"
+#include "CommandLine/Dump/SceneDumper.h"
 #include "TexturePacker/CommandLineParser.h"
+#include "FileSystem/FilePath.h"
+#include "FileSystem/FileSystem.h"
 
 using namespace DAVA;
 
-void SceneSaverTool::PrintUsage() const
+void DumpTool::PrintUsage() const
 {
     printf("\n");
-    printf("-scenesaver -save [-indir [directory]] [-outdir [directory]] [-processfile [directory]] [-copyconverted]\n");
-    printf("-scenesaver -resave [-indir [directory]] [-processfile [directory]] [-forceclose] [-copyconverted]\n");
-    printf("\twill save scene file from DataSource/3d to any Data or DataSource folder\n");
-    printf("\t-save - will save level to selected Data/3d/\n");
-    printf("\t-resave - will open and save level\n");
+    printf("-dump -links [-indir] [-processfile] [-outfile] [-qualitycfgpath]\n");
+    printf("\twill save all pathnames from scene file to out file\n");
+    printf("\t-links - will dump pathnames\n");
     printf("\t-indir - path for Poject/DataSource/3d/ folder \n");
-    printf("\t-outdir - path for Poject/Data/3d/ folder\n");
     printf("\t-processfile - filename from DataSource/3d/ for saving\n");
-    printf("\t-copyconverted - copy *.pvr and *.dds files too\n");
+    printf("\t-outfile - path to file for dumping of pathnames\n");
+	printf("\t-qualitycfgpath - path for quality.yaml file\n");
 
     printf("\n");
     printf("Samples:\n");
-    printf("-scenesaver -save -indir /Users/User/Project/DataSource/3d -outdir /Users/User/Project/Data/3d/ -processfile Maps/level.sc2 -forceclose -copyconverted\n");
-    printf("-scenesaver -resave -indir /Users/User/Project/DataSource/3d -processfile Maps/level.sc2 -forceclose\n");
+    printf("-dump -links -indir /Users/User/Project/DataSource/3d -processfile Maps/level.sc2 -outfile /Users/User/links.txt \n");
+	printf("-dump -links -indir /Users/User/Project/DataSource/3d -processfile Maps/level.sc2 -outfile /Users/User/links.txt -qualitycfgpath /Users/User/quality.yaml\n");
 }
 
-DAVA::String SceneSaverTool::GetCommandLineKey() const
+DAVA::String DumpTool::GetCommandLineKey() const
 {
-    return "-scenesaver";
+    return "-dump";
 }
 
-bool SceneSaverTool::InitializeFromCommandLine()
+bool DumpTool::InitializeFromCommandLine()
 {
     commandAction = ACTION_NONE;
     
     inFolder = CommandLineParser::GetCommandParam(String("-indir"));
     if(inFolder.IsEmpty())
     {
-        errors.insert("[SceneSaverTool] Incorrect indir parameter");
+        errors.insert("[DumpTool] Incorrect indir parameter");
         return false;
     }
     inFolder.MakeDirectoryPathname();
@@ -73,26 +72,21 @@ bool SceneSaverTool::InitializeFromCommandLine()
     filename = CommandLineParser::GetCommandParam(String("-processfile"));
     if(filename.empty())
     {
-        errors.insert("[SceneSaverTool] Filename is not set");
+        errors.insert("[DumpTool] Filename is not set");
         return false;
     }
     
-    if(CommandLineParser::CommandIsFound(String("-save")))
+	qualityPathname = CommandLineParser::GetCommandParam(String("-qualitycfgpath"));
+
+    if(CommandLineParser::CommandIsFound(String("-links")))
     {
-        commandAction = ACTION_SAVE;
-        outFolder = CommandLineParser::GetCommandParam(String("-outdir"));
-        if(outFolder.IsEmpty())
+        commandAction = ACTION_DUMP_LINKS;
+		outFile = CommandLineParser::GetCommandParam(String("-outfile"));
+		if (outFile.IsEmpty())
         {
-            errors.insert("[SceneSaverTool] Incorrect outdir parameter");
+            errors.insert("[DumpTool] Incorrect outFile parameter");
             return false;
         }
-        outFolder.MakeDirectoryPathname();
-
-        copyConverted = CommandLineParser::CommandIsFound(String("-copyconverted"));
-    }
-    else if(CommandLineParser::CommandIsFound(String("-resave")))
-    {
-        commandAction = ACTION_RESAVE;
     }
     else
     {
@@ -103,30 +97,40 @@ bool SceneSaverTool::InitializeFromCommandLine()
     return true;
 }
 
-void SceneSaverTool::DumpParams() const
+void DumpTool::DumpParams() const
 {
-    Logger::Info("SceneSaver started with params:\n\tIn folder: %s\n\tOut folder: %s\n\tFilename: %s\n\tCopy converted: %d", inFolder.GetStringValue().c_str(), outFolder.GetStringValue().c_str(),filename.c_str(), copyConverted);
+	Logger::Info("DumpTool started with params:\n\tIn folder: %s\n\tFilename: %s\n\tOut file: %s\n\tQuality file: %s\n",
+		inFolder.GetStringValue().c_str(), filename.c_str(), outFile.GetStringValue().c_str(), qualityPathname.GetStringValue().c_str());
 }
 
-void SceneSaverTool::Process() 
+void DumpTool::Process() 
 {
-    SceneSaver saver;
+    if(commandAction == ACTION_DUMP_LINKS)
+    {
+		auto links = SceneDumper::DumpLinks(inFolder + filename, errors);
 
-    saver.SetInFolder(inFolder);
-    if(commandAction == ACTION_SAVE)
-    {
-        saver.SetOutFolder(outFolder);
-        saver.EnableCopyConverted(copyConverted);
-        saver.SaveFile(filename, errors);
-    }
-    else if(commandAction == ACTION_RESAVE)
-    {
-        saver.ResaveFile(filename, errors);
+        FileSystem::Instance()->CreateDirectory(outFile.GetDirectory(), true);
+		ScopedPtr<File> file(File::Create(outFile, File::WRITE | File::CREATE));
+		if (file)
+		{
+			for (const auto &link : links)
+			{
+				if (!link.IsEmpty() && link.GetType() != FilePath::PATH_IN_MEMORY)
+				{
+					file->WriteLine(link.GetAbsolutePathname());
+				}
+			}
+		}
     }
 }
 
-DAVA::FilePath SceneSaverTool::GetQualityConfigPath() const
+DAVA::FilePath DumpTool::GetQualityConfigPath() const
 {
-    return CreateQualityConfigPath(inFolder);
+	if (qualityPathname.IsEmpty())
+	{
+		return CreateQualityConfigPath(inFolder);
+	}
+
+	return qualityPathname;
 }
 

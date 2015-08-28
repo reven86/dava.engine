@@ -30,20 +30,17 @@
 #define __DAVAENGINE_UI_LAYOUT_SYSTEM_H__
 
 #include "Base/BaseTypes.h"
+#include "Math/Vector.h"
 
 namespace DAVA
 {
 class UIControl;
 class UILinearLayoutComponent;
+class UIFlowLayoutComponent;
 class UISizePolicyComponent;
 
 class UILayoutSystem
 {
-public:
-    static const int32 AXIS_X = 0;
-    static const int32 AXIS_Y = 1;
-    static const int32 AXIS_COUNT = 2;
-    
 public:
     UILayoutSystem();
     virtual ~UILayoutSystem();
@@ -59,17 +56,12 @@ public:
     void ApplyLayout(UIControl *control);
     
 private:
-    void DoMeasurePhase(UIControl *control);
-    void DoLayoutPhase(UIControl *control);
+    void DoMeasurePhase(UIControl *control, Vector2::eAxis axis);
+    void DoLayoutPhase(UIControl *control, Vector2::eAxis axis);
     
-private: // measuring
-    void MeasureControl(UIControl *control, UISizePolicyComponent *sizeHint);
-    
-private: // linear layout
-    void ApplyLinearLayout(UIControl *control, UILinearLayoutComponent *linearLayoutComponent);
-    
-private: // anchor layout
-    void ApplyAnchorLayout(UIControl *control, bool allowHorizontal, bool allowVertical);
+    void MeasureControl(UIControl *control, UISizePolicyComponent *sizeHint, Vector2::eAxis axis);
+    void ApplyLinearLayout(UIControl *control, UILinearLayoutComponent *linearLayoutComponent, Vector2::eAxis axis);
+    void ApplyAnchorLayout(UIControl *control, Vector2::eAxis axis, bool onlyForIgnoredControls);
     void GetAxisDataByAnchorData(float32 size, float32 parentSize,
                                  bool firstSideAnchorEnabled, float32 firstSideAnchor,
                                  bool centerAnchorEnabled, float32 centerAnchor,
@@ -77,11 +69,14 @@ private: // anchor layout
                                  float32 &newPos, float32 &newSize);
     void GetAnchorDataByAxisData(float32 size, float32 pos, float32 parentSize, bool firstSideAnchorEnabled, bool centerAnchorEnabled, bool secondSideAnchorEnabled, float32 &firstSideAnchor, float32 &centerAnchor, float32 &secondSideAnchor);
 
+    bool HaveToSkipControl(UIControl *control, bool skipInvisible) const;
+    
 private:
     bool isRtl = false;
     bool dirty = true;
+
+    DAVA::Set<UIControl*> changedControls;
     DAVA::int32 indexOfSizeProperty;
-    DAVA::Vector<UIControl*> changedControls;
 };
 
 
