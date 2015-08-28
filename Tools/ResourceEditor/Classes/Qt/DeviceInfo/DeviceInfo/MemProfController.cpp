@@ -32,7 +32,6 @@
 
 #include <Utils/UTF8Utils.h>
 
-#include "Base/FunctionTraits.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/Logger.h"
 #include "Platform/DateTime.h"

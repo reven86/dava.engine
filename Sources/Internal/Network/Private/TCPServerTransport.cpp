@@ -27,7 +27,7 @@
 =====================================================================================*/
 
 
-#include <Base/FunctionTraits.h>
+#include <Functional/Function.h>
 #include <Debug/DVAssert.h>
 
 #include <Network/Base/IOLoop.h>
