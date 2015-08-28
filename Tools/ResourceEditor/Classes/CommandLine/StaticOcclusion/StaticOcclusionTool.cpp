@@ -34,7 +34,7 @@
 
 using namespace DAVA;
 
-void StaticOcclusionTool::PrintUsage()
+void StaticOcclusionTool::PrintUsage() const
 {
     printf("\n");
     printf("-staticocclusion -build [-processfile]\n");
@@ -47,7 +47,7 @@ void StaticOcclusionTool::PrintUsage()
     printf("-staticocclusion -build -processfile /Users/User/Project/DataSource/3dMaps/level.sc2\n");
 }
 
-DAVA::String StaticOcclusionTool::GetCommandLineKey()
+DAVA::String StaticOcclusionTool::GetCommandLineKey() const
 {
     return "-staticocclusion";
 }
@@ -75,12 +75,12 @@ bool StaticOcclusionTool::InitializeFromCommandLine()
     return true;
 }
 
-void StaticOcclusionTool::DumpParams()
-{
+void StaticOcclusionTool::DumpParams() const
+{ 
     Logger::Info("StaticOcclusionTool started with params:\n\tFilename: %s", scenePathname.GetStringValue().c_str());
 }
 
-void StaticOcclusionTool::Process()
+void StaticOcclusionTool::Process() 
 {
     if(commandAction == ACTION_BUILD)
     {

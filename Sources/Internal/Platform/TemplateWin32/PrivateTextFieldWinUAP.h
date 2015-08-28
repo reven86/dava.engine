@@ -35,6 +35,7 @@
 
 #include "Base/BaseTypes.h"
 #include "Math/Rect.h"
+#include "Concurrency/Mutex.h"
 
 namespace DAVA
 {
@@ -77,7 +78,7 @@ public:
     void SetTextUseRtlAlign(bool useRtlAlign);
     bool GetTextUseRtlAlign() const;
 
-    void SetFontSize(float32 size);
+    void SetFontSize(float32 virtualFontSize);
 
     void SetDelegate(UITextFieldDelegate* textFieldDelegate);
 
@@ -109,7 +110,7 @@ private:
     void SetVisibilityNative(bool show);
     void SetAlignmentNative(int32 alignment);
     void InvertTextAlignmentDependingOnRtlAlignment();
-    void PositionNative(const Rect& rect, bool offScreen);
+    void PositionNative(const Rect& rectInVirtualCoordinates, bool offScreen);
 
     void RenderToTexture();
     Sprite* CreateSpriteFromPreviewData(const uint8* imageData, int32 width, int32 height) const;
@@ -125,7 +126,8 @@ private:    // Event handlers
     // PasswordBox specific events
     void OnPasswordChanged();
 
-    bool ProcessTextChanged(const WideString& newText);
+    bool HasFocus() const;
+    bool ProcessTextChanged(const WideString& curText, const WideString& newText);
 
     void OnKeyboardHiding();
     void OnKeyboardShowing();
@@ -148,6 +150,8 @@ private:
     bool pendingTextureUpdate = false;      // Flag indicating that texture image should be recreated
 
     WideString curText;
+    mutable Mutex textMutex;
+
     bool ignoreTextChange = false;
     int32 caretPosition = 0;                // Current caret position
     int32 savedCaretPosition = 0;           // Saved caret position to restore it when delegate declines text changing

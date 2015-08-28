@@ -35,6 +35,8 @@
 
 #include "Math/Color.h"
 
+#include "Concurrency/LockGuard.h"
+
 #include "UI/UITextField.h"
 
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
@@ -205,14 +207,15 @@ void PrivateTextFieldWinUAP::Init()
 PrivateTextFieldWinUAP::PrivateTextFieldWinUAP(UITextField* uiTextField_)
     : core(static_cast<CorePlatformWinUAP*>(Core::Instance()))
     , uiTextField(uiTextField_)
-{}
+{
+}
 
 PrivateTextFieldWinUAP::~PrivateTextFieldWinUAP()
 {
     if (nativeControl != nullptr)
     {
         Control^ p = nativeControl;
-        core->RunOnUIThreadBlocked([p]() { // We don't need blocking call here
+        core->RunOnUIThread([p]() { // We don't need blocking call here
             static_cast<CorePlatformWinUAP*>(Core::Instance())->XamlApplication()->RemoveUIElement(p);
         });
         nativeControl = nullptr;
@@ -285,8 +288,6 @@ void PrivateTextFieldWinUAP::OpenKeyboard()
     auto self{shared_from_this()};
     core->RunOnUIThread([this, self]()
     {
-        if (!multiline)
-            PositionNative(originalRect, false);
         nativeControl->Focus(FocusState::Pointer);
     });
 }
@@ -295,8 +296,12 @@ void PrivateTextFieldWinUAP::CloseKeyboard()
 {
     // Hide keyboard through unfocusing native control
     auto self{shared_from_this()};
-    core->RunOnUIThread([this, self](){
-        core->XamlApplication()->UnfocusUIElement();
+    core->RunOnUIThread([this, self]()
+    {
+        if (HasFocus())
+        {
+            core->XamlApplication()->UnfocusUIElement();
+        }
     });
 }
 
@@ -316,8 +321,8 @@ void PrivateTextFieldWinUAP::UpdateRect(const Rect& rect)
         core->RunOnUIThread([this, self, sizeChanged]()
         {
             if (sizeChanged)
-                PositionNative(originalRect, !multiline);
-            if (pendingTextureUpdate && !multiline)
+                PositionNative(originalRect, !multiline && !HasFocus());
+            if (pendingTextureUpdate && !multiline && !HasFocus())
                 RenderToTexture();
             pendingTextureUpdate = false;
         });
@@ -327,10 +332,14 @@ void PrivateTextFieldWinUAP::UpdateRect(const Rect& rect)
 void PrivateTextFieldWinUAP::SetText(const WideString& text)
 {
     Platform::String^ str = ref new Platform::String(text.c_str());
+    {
+        LockGuard<Mutex> guard(textMutex);
+        curText = text;
+    }
+
     auto self{shared_from_this()};
     core->RunOnUIThread([this, self, str]()
     {
-        curText = str->Data();
         if (nativeText != nullptr)
             nativeText->Text = str;
         else if (nativePassword != nullptr)
@@ -341,13 +350,8 @@ void PrivateTextFieldWinUAP::SetText(const WideString& text)
 
 void PrivateTextFieldWinUAP::GetText(WideString& text) const
 {
-    core->RunOnUIThreadBlocked([this, &text]()
-    {
-        if (nativeText != nullptr)
-            text = nativeText->Text->Data();
-        else if (nativePassword != nullptr)
-            text = nativePassword->Password->Data();
-    });
+    LockGuard<Mutex> guard(textMutex);
+    text = curText;
 }
 
 void PrivateTextFieldWinUAP::SetTextColor(const Color& color)
@@ -407,15 +411,19 @@ void PrivateTextFieldWinUAP::SetTextUseRtlAlign(bool useRtlAlign)
     }
 }
 
-void PrivateTextFieldWinUAP::SetFontSize(float32 size)
+void PrivateTextFieldWinUAP::SetFontSize(float32 virtualFontSize)
 {
+    const float32 scaleFactor = core->GetScreenScaleFactor();
+    float32 fontSize = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(virtualFontSize);
+    fontSize /= scaleFactor;
+
     auto self{shared_from_this()};
-    core->RunOnUIThread([this, self, size]()
+    core->RunOnUIThread([this, self, fontSize]()
     {
         if (nativeText != nullptr)
-            nativeText->FontSize = size;
+            nativeText->FontSize = fontSize;
         else if (nativePassword != nullptr)
-            nativePassword->FontSize = size;
+            nativePassword->FontSize = fontSize;
         pendingTextureUpdate = true;
     });
 }
@@ -550,30 +558,37 @@ void PrivateTextFieldWinUAP::SetCursorPos(uint32 pos)
 void PrivateTextFieldWinUAP::CreateNativeText()
 {
     nativeText = ref new TextBox();
+    nativeControl = nativeText;
+    nativeControl->Visibility = Visibility::Collapsed;
+    nativeControl->BorderThickness = Thickness(0.0);
+    nativeControl->Background = ref new SolidColorBrush(Colors::Transparent);
+    nativeControl->Foreground = ref new SolidColorBrush(Colors::White);
+    nativeControl->BorderBrush = ref new SolidColorBrush(Colors::Transparent);
+
     nativeText->TextAlignment = TextAlignment::Left;
 
-    nativeText->Background = ref new SolidColorBrush(Colors::Transparent);
-    nativeText->BorderBrush = ref new SolidColorBrush(Colors::Transparent);
-
-    nativeControl = nativeText;
     core->XamlApplication()->AddUIElement(nativeControl);
     PositionNative(originalRect, true);
 
     InstallTextEventHandlers();
+    nativeControl->Visibility = Visibility::Visible;
 }
 
 void PrivateTextFieldWinUAP::CreateNativePassword()
 {
     nativePassword = ref new PasswordBox();
-
-    nativePassword->Background = ref new SolidColorBrush(Colors::Transparent);
-    nativePassword->BorderBrush = ref new SolidColorBrush(Colors::Transparent);
-
     nativeControl = nativePassword;
+    nativeControl->Visibility = Visibility::Collapsed;
+    nativeControl->BorderThickness = Thickness(0.0);
+    nativeControl->Background = ref new SolidColorBrush(Colors::Transparent);
+    nativeControl->Foreground = ref new SolidColorBrush(Colors::White);
+    nativeControl->BorderBrush = ref new SolidColorBrush(Colors::Transparent);
+
     core->XamlApplication()->AddUIElement(nativeControl);
     PositionNative(originalRect, true);
 
     InstallPasswordEventHandlers();
+    nativeControl->Visibility = Visibility::Visible;
 }
 
 void PrivateTextFieldWinUAP::DeleteNativeControl()
@@ -642,6 +657,13 @@ void PrivateTextFieldWinUAP::InstallPasswordEventHandlers()
             OnKeyDown(args->Key);
         }
     });
+    auto gotFocus = ref new RoutedEventHandler([this, self_weak](Object^, RoutedEventArgs^) {
+        auto self = self_weak.lock();
+        if (self != nullptr)
+        {
+            OnGotFocus();
+        }
+    });
     auto lostFocus = ref new RoutedEventHandler([this, self_weak](Object^, RoutedEventArgs^) {
         auto self = self_weak.lock();
         if (self != nullptr)
@@ -657,6 +679,7 @@ void PrivateTextFieldWinUAP::InstallPasswordEventHandlers()
         }
     });
     nativePassword->KeyDown += keyDown;
+    nativePassword->GotFocus += gotFocus;
     nativePassword->LostFocus += lostFocus;
     nativePassword->PasswordChanged += passwordChanged;
 }
@@ -700,24 +723,31 @@ void PrivateTextFieldWinUAP::InvertTextAlignmentDependingOnRtlAlignment()
     }
 }
 
-void PrivateTextFieldWinUAP::PositionNative(const Rect& rect, bool offScreen)
+void PrivateTextFieldWinUAP::PositionNative(const Rect& rectInVirtualCoordinates, bool offScreen)
 {
-    VirtualCoordinatesSystem* coordSys = VirtualCoordinatesSystem::Instance();
+    VirtualCoordinatesSystem* coordSystem = VirtualCoordinatesSystem::Instance();
 
-    Rect physRect = coordSys->ConvertVirtualToPhysical(rect);
-    const Vector2 physOffset = coordSys->GetPhysicalDrawOffset();
+    // 1. map virtual to physical
+    Rect controlRect = coordSystem->ConvertVirtualToPhysical(rectInVirtualCoordinates);
+    controlRect += coordSystem->GetPhysicalDrawOffset();
 
-    float32 width = physRect.dx + physOffset.x;
-    float32 height = physRect.dy + physOffset.y;
+    // 2. map physical to window
+    const float32 scaleFactor = core->GetScreenScaleFactor();
+    controlRect.x /= scaleFactor;
+    controlRect.y /= scaleFactor;
+    controlRect.dx /= scaleFactor;
+    controlRect.dy /= scaleFactor;
 
     if (offScreen)
     {
-        physRect.x = -width;
-        physRect.y = -height;
+        controlRect.x = -controlRect.dx;
+        controlRect.y = -controlRect.dy;
     }
-    nativeControl->Width = width;
-    nativeControl->Height = height;
-    core->XamlApplication()->PositionUIElement(nativeControl, physRect.x, physRect.y);
+
+    // 3. set control's position and size
+    nativeControl->Width = controlRect.dx;
+    nativeControl->Height = controlRect.dy;
+    core->XamlApplication()->PositionUIElement(nativeControl, controlRect.x, controlRect.y);
 }
 
 void PrivateTextFieldWinUAP::OnKeyDown(Windows::System::VirtualKey virtualKey)
@@ -758,11 +788,28 @@ void PrivateTextFieldWinUAP::OnKeyDown(Windows::System::VirtualKey virtualKey)
 
 void PrivateTextFieldWinUAP::OnGotFocus()
 {
-    nativeText->SelectionStart = nativeText->Text->Length();
+    nativeControl->BorderThickness = Thickness(0.5);
+    if (nativeText != nullptr)
+    {
+        nativeText->SelectionStart = nativeText->Text->Length();
+    }
+    if (!multiline)
+    {
+        PositionNative(originalRect, false);
+        auto self{shared_from_this()};
+        core->RunOnMainThread([this, self]()
+        {
+            if (uiTextField != nullptr)
+            {
+                uiTextField->SetSprite(nullptr, 0);
+            }
+        });
+    }
 }
 
 void PrivateTextFieldWinUAP::OnLostFocus()
 {
+    nativeControl->BorderThickness = Thickness(0.0);
     if (!multiline)
     {
         PositionNative(originalRect, true);
@@ -783,13 +830,24 @@ void PrivateTextFieldWinUAP::OnTextChanged()
         return;
     }
 
-    WideString newText(nativeText->Text->Data());
-    if (ProcessTextChanged(newText))
+    WideString curTextCopy;
     {
-        nativeText->Text = ref new Platform::String(curText.c_str());
+        LockGuard<Mutex> guard(textMutex);
+        curTextCopy = curText;
+    }
+    WideString newText(nativeText->Text->Data());
+    bool textDeclined = ProcessTextChanged(curTextCopy, newText);
+    if (textDeclined)
+    {
+        nativeText->Text = ref new Platform::String(curTextCopy.c_str());
         // Restore caret position to position before text has been changed
         nativeText->SelectionStart = savedCaretPosition;
         ignoreTextChange = true;
+    }
+    else
+    {
+        LockGuard<Mutex> guard(textMutex);
+        curText = std::move(newText);
     }
 }
 
@@ -801,15 +859,31 @@ void PrivateTextFieldWinUAP::OnPasswordChanged()
         return;
     }
 
-    WideString newText(nativePassword->Password->Data());
-    if (ProcessTextChanged(newText))
+    WideString curTextCopy;
     {
-        nativePassword->Password = ref new Platform::String(curText.c_str());
+        LockGuard<Mutex> guard(textMutex);
+        curTextCopy = curText;
+    }
+    WideString newText(nativePassword->Password->Data());
+    bool textDeclined = ProcessTextChanged(curTextCopy, newText);
+    if (textDeclined)
+    {
+        nativePassword->Password = ref new Platform::String(curTextCopy.c_str());
         ignoreTextChange = true;
+    }
+    else
+    {
+        LockGuard<Mutex> guard(textMutex);
+        curText = std::move(newText);
     }
 }
 
-bool PrivateTextFieldWinUAP::ProcessTextChanged(const WideString& newText)
+bool PrivateTextFieldWinUAP::HasFocus() const
+{
+    return FocusState::Unfocused != nativeControl->FocusState;
+}
+
+bool PrivateTextFieldWinUAP::ProcessTextChanged(const WideString& curText, const WideString& newText)
 {
     StringDiffResult diffR;
     StringDiff(curText, newText, diffR);
@@ -832,14 +906,11 @@ bool PrivateTextFieldWinUAP::ProcessTextChanged(const WideString& newText)
 
     if (accept)
     {
-        WideString curTextCopy = curText;
-        WideString newTextCopy = newText;
-        core->RunOnMainThread([this, self, curTextCopy, newTextCopy]()
+        core->RunOnMainThread([this, self, curText, newText]()
         {
             if (textFieldDelegate != nullptr)
-                textFieldDelegate->TextFieldOnTextChanged(uiTextField, newTextCopy, curTextCopy);
+                textFieldDelegate->TextFieldOnTextChanged(uiTextField, curText, newText);
         });
-        curText = newText;
     }
     return !accept;
 }
@@ -874,16 +945,10 @@ void PrivateTextFieldWinUAP::OnKeyboardShowing()
 
 void PrivateTextFieldWinUAP::RenderToTexture()
 {
-    // Temporal workaround, may be in future we will get rid of such conversion
-    // TODO: don't forget
-    using namespace Windows::Graphics::Display;
-    float32 scale = static_cast<float32>(DisplayInformation::GetForCurrentView()->RawPixelsPerViewPixel);
-    int scaledWidth = static_cast<int>(originalRect.dx / scale);
-    int scaledHeight = static_cast<int>(originalRect.dy / scale);
-
     auto self{shared_from_this()};
     RenderTargetBitmap^ renderTarget = ref new RenderTargetBitmap;
-    auto renderTask = create_task(renderTarget->RenderAsync(nativeControl, scaledWidth, scaledHeight)).then([this, self, renderTarget]()
+
+    auto renderTask = create_task(renderTarget->RenderAsync(nativeControl)).then([this, self, renderTarget]()
     {
         return renderTarget->GetPixelsAsync();
     }).then([this, self, renderTarget](IBuffer^ renderBuffer)
@@ -894,7 +959,7 @@ void PrivateTextFieldWinUAP::RenderToTexture()
         DataReader^ reader = DataReader::FromBuffer(renderBuffer);
 
         size_t index = 0;
-        std::vector<uint8> buf(streamSize, 0);
+        Vector<uint8> buf(streamSize, 0);
         while (reader->UnconsumedBufferLength > 0)
         {
             buf[index] = reader->ReadByte();
@@ -926,13 +991,7 @@ void PrivateTextFieldWinUAP::RenderToTexture()
 Sprite* PrivateTextFieldWinUAP::CreateSpriteFromPreviewData(const uint8* imageData, int32 width, int32 height) const
 {
     RefPtr<Image> imgSrc(Image::CreateFromData(width, height, FORMAT_RGBA8888, imageData));
-    RefPtr<Image> imgDst(Image::Create(width, height, FORMAT_RGB888));
-    if (imgSrc.Valid() && imgDst.Valid())
-    {
-        ImageConvert::ConvertImageDirect(imgSrc.Get(), imgDst.Get());
-        return Sprite::CreateFromImage(imgDst.Get());
-    }
-    return nullptr;
+    return Sprite::CreateFromImage(imgSrc.Get(), true, false);
 }
 
 }   // namespace DAVA
