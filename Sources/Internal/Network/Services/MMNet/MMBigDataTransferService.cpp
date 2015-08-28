@@ -26,8 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "Base/FunctionTraits.h"
-#include "Base/Bind.h"
+#include "Functional/Function.h"
 
 #include "FileSystem/File.h"
 #include "FileSystem/FileSystem.h"
@@ -110,7 +109,7 @@ void MMBigDataTransferService::TransferSnapshot(const FilePath& snapshotFile)
 void MMBigDataTransferService::SetSnapshotCallback(SnapshotCallback callback)
 {
     DVASSERT(CLIENT_ROLE == role);
-    DVASSERT(callback != 0);
+    DVASSERT(callback != nullptr);
 
     snapshotCallback = callback;
 }
