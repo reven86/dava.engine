@@ -75,7 +75,7 @@ private:
     ConcurrentList<ConnectionCallback> onConnectCallbacks;
     ConcurrentList<DataReceiveCallback> onDataReceiveCallbacks;
     ConcurrentList<ConnectionCloseCallback> onConnectionCloseCallbacks;
-    Atomic<bool> waitSuccessfulConnection = false;
+    Atomic<bool> waitSuccessfulConnection { false };
 };
 
 }  // namespace Net

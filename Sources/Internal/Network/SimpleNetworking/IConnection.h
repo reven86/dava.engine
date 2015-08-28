@@ -64,7 +64,7 @@ inline bool WriteArrayInConnection(IConnection* connection, const T* array, size
 {
     const char* data = reinterpret_cast<const char*>(array);
     size_t len = elements * sizeof(T);
-    size_r wrote = connection->Write(data, len);
+    size_t wrote = connection->Write(data, len);
     
     return wrote == len;
 }

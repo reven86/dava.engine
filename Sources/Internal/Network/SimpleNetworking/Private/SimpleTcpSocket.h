@@ -31,6 +31,7 @@
 #define __DAVAENGINE_SIMPLE_TCP_SOCKET_H__
 
 #include "Network/Base/Endpoint.h"
+#include "Network/SimpleNetworking/Private/Common.h"
 #include "Network/SimpleNetworking/Private/SimpleAbstractSocket.h"
 
 namespace DAVA
@@ -51,14 +52,14 @@ public:
     size_t Recv(char* buf, size_t bufSize, bool recvAll = false) override;
     bool IsConnectionEstablished() override { return connectionEstablished; }
 
-    bool IsValid() override { return socketId != INVALID_SOCKET; }
+    bool IsValid() override { return socketId != DV_INVALID_SOCKET; }
     
 protected:
     void Close();
     
     bool connectionEstablished = false;
     Endpoint socketEndPoint;
-    SOCKET socketId;
+    socket_t socketId;
 };
 
 }  // namespace Net

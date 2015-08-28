@@ -36,7 +36,8 @@ namespace DAVA
 {
 
 /// reference pointer wrapper for BaseObject refcounted classes.
-template <class T> class RefPtr
+template <typename T>
+class RefPtr
 {
 public:
 	RefPtr() DAVA_NOEXCEPT : _ptr(nullptr) {}
@@ -70,10 +71,10 @@ public:
         std::swap(_ptr, rp._ptr);
     }
 	
-	template <class Other> RefPtr(RefPtr < Other > & rp) DAVA_NOEXCEPT
+	template <typename Other>
+    RefPtr(const RefPtr<Other>& rp) DAVA_NOEXCEPT
 	{
 		_ptr = rp.Get();
-		
 		SafeRetain(_ptr);
 	}
 	

@@ -49,7 +49,7 @@ SimpleNetServicePrivate::SimpleNetServicePrivate(size_t serviceId,
     , channelAdapter(netService.get())
 {
     listener.AddConnectionCallback(
-        [this] (IConnectionPtr& conn)
+        [this] (IConnectionPtr conn)
         {
             if (conn)
             {

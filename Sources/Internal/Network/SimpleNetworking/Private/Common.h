@@ -27,32 +27,48 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_LOG_NETWORK_ERROR_H__
-#define __DAVAENGINE_LOG_NETWORK_ERROR_H__
+#ifndef __DAVAENGINE_SIMPLE_NETWORKING_COMMON_H__
+#define __DAVAENGINE_SIMPLE_NETWORKING_COMMON_H__
 
-#include "Debug/DVAssert.h"
-#include <libuv/uv.h>
+#include "Base/Platform.h"
 
 namespace DAVA
 {
 
-inline void LogNetworkError(const String& str)
-{
-    int error_num = 0;
 #ifdef __DAVAENGINE_WINDOWS__
-    error_num = WSAGetLastError();
-#else
-    error_num = errno;
-#endif
 
-    if (error_num == 0)
-        return;
+using socket_t = SOCKET;
+#define DV_SD_BOTH SD_BOTH
+#define DV_INVALID_SOCKET INVALID_SOCKET
 
-    String error = std::to_string(error_num);
-    String message = str + " (error " + error + ")";
-    DVASSERT_MSG(false, message.c_str());
+inline bool CheckSocketResult(int result)
+{
+    return result != SOCKET_ERROR;
 }
 
+inline void CloseSocket(socket_t sock)
+{
+    ::closesocket(sock);
+}
+
+#else
+
+using socket_t = int;
+#define DV_SD_BOTH SHUT_RDWR
+#define DV_INVALID_SOCKET -1
+
+inline bool CheckSocketResult(int result)
+{
+    return result == 0;
+}
+
+inline void CloseSocket(socket_t sock)
+{
+    ::close(sock);
+}
+
+#endif
+    
 }  // namespace DAVA
 
-#endif  // __DAVAENGINE_LOG_NETWORK_ERROR_H__
+#endif  // __DAVAENGINE_SIMPLE_NETWORKING_COMMON_H__

@@ -43,7 +43,7 @@ SimpleTcpServer::SimpleTcpServer(const Endpoint& endPoint)
 
 bool SimpleTcpServer::Listen()
 {
-    if (socketId == INVALID_SOCKET)
+    if (socketId == DV_INVALID_SOCKET)
     {
         DVASSERT_MSG(false, "Unable to listen server - it is invalid");
         return false;
@@ -55,31 +55,31 @@ bool SimpleTcpServer::Listen()
     }
     
     int listenRes = ::listen(socketId, 1);
-    if (listenRes == SOCKET_ERROR)
+    if (!CheckSocketResult(listenRes))
     {   
         LogNetworkError("Failed to listen socket");
         Close();
     }
     
-    return listenRes != SOCKET_ERROR;
+    return CheckSocketResult(listenRes);
 }
 
 bool SimpleTcpServer::Accept()
 {
-    if (socketId == INVALID_SOCKET)
+    if (socketId == DV_INVALID_SOCKET)
     {
         DVASSERT_MSG(false, "Unable to accept server - it is invalid");
         return false;
     }
     
-    SOCKET acceptSocket = ::accept(socketId, nullptr, nullptr);
-    if (acceptSocket == INVALID_SOCKET)
+    socket_t acceptSocket = ::accept(socketId, nullptr, nullptr);
+    if (acceptSocket == DV_INVALID_SOCKET)
     {
         LogNetworkError("Failed to accept socket");
         return false;
     }
     
-    ::closesocket(socketId);
+    CloseSocket(socketId);
     socketId = acceptSocket;
     connectionEstablished = true;
 
@@ -91,13 +91,13 @@ bool SimpleTcpServer::Bind()
     const sockaddr* addr = reinterpret_cast<const sockaddr*>(socketEndPoint.CastToSockaddrIn());
 
     int bindRes = ::bind(socketId, addr, socketEndPoint.Size());
-    if (bindRes == SOCKET_ERROR)
+    if (!CheckSocketResult(bindRes))
     {
         LogNetworkError("Failed to bind socket");
         Close();
     }
 
-    return bindRes != SOCKET_ERROR;
+    return CheckSocketResult(bindRes);
 }
     
 }  // namespace Net

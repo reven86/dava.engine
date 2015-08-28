@@ -41,7 +41,7 @@ SimpleTcpSocket::SimpleTcpSocket(const Endpoint& endPoint)
 {
     socketId = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     
-    if (socketId == INVALID_SOCKET)
+    if (socketId == DV_INVALID_SOCKET)
     {
         LogNetworkError("Failed to create socket");
     }
@@ -57,7 +57,7 @@ bool SimpleTcpSocket::Shutdown()
 {
     if (!IsConnectionEstablished())
     {
-        if (socketId != INVALID_SOCKET)
+        if (socketId != DV_INVALID_SOCKET)
         {
             Close();
             return true;
@@ -65,14 +65,14 @@ bool SimpleTcpSocket::Shutdown()
         return false;
     }
 
-    if (socketId == INVALID_SOCKET)
+    if (socketId == DV_INVALID_SOCKET)
     {
         DVASSERT_MSG(false, "Unable to shutdown server - it is invalid");
         return false;
     }
     
-    int res = ::shutdown(socketId, SD_BOTH);
-    if (res == SOCKET_ERROR)
+    int res = ::shutdown(socketId, DV_SD_BOTH);
+    if (!CheckSocketResult(res))
     {
         LogNetworkError("Failed to shutdown connection");
     }
@@ -88,7 +88,7 @@ size_t SimpleTcpSocket::Send(const char* buf, size_t bufSize)
 
     int size = ::send(socketId, buf, bufSize, 0);
     
-    if (size == SOCKET_ERROR)
+    if (!CheckSocketResult(size))
     {
         LogNetworkError("Failed to send data");
         Close();
@@ -107,7 +107,7 @@ size_t SimpleTcpSocket::Recv(char* buf, size_t bufSize, bool recvAll)
     int flags = recvAll ? MSG_WAITALL : 0;
     int size = ::recv(socketId, buf, bufSize, flags);
     
-    if (size == SOCKET_ERROR)
+    if (!CheckSocketResult(size))
     {
         LogNetworkError("Failed to receive data");
         Close();
@@ -120,14 +120,14 @@ size_t SimpleTcpSocket::Recv(char* buf, size_t bufSize, bool recvAll)
 
 void SimpleTcpSocket::Close()
 {
-    if (socketId != INVALID_SOCKET)
+    if (socketId != DV_INVALID_SOCKET)
     {
-        SOCKET socket = socketId;
-        socketId = INVALID_SOCKET;
+        socket_t socket = socketId;
+        socketId = DV_INVALID_SOCKET;
         connectionEstablished = false;
         socketEndPoint = Endpoint();
 
-        ::closesocket(socket);
+        CloseSocket(socket);
     }
 }
     

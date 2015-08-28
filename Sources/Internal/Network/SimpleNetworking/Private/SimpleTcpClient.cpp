@@ -42,7 +42,7 @@ SimpleTcpClient::SimpleTcpClient(const Endpoint& endPoint)
 
 bool SimpleTcpClient::Connect()
 {
-    if (socketId == INVALID_SOCKET)
+    if (socketId == DV_INVALID_SOCKET)
     {
         DVASSERT_MSG(false, "Unable to connect to server - socket is invalid");
         return false;
@@ -51,13 +51,13 @@ bool SimpleTcpClient::Connect()
     const sockaddr* addr = reinterpret_cast<const sockaddr*>(socketEndPoint.CastToSockaddrIn());
 
     int connectRes = ::connect(socketId, addr, socketEndPoint.Size());
-    if (connectRes == SOCKET_ERROR)
+    if (!CheckSocketResult(connectRes))
     {
         LogNetworkError("Failed to connect socket");
         Close();
     }
 
-    connectionEstablished = connectRes != SOCKET_ERROR;
+    connectionEstablished = CheckSocketResult(connectRes);
     return connectionEstablished;
 }
     
