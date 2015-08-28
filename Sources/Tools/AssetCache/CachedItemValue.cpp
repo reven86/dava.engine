@@ -97,7 +97,7 @@ void CachedItemValue::Serialize(KeyedArchive * archieve, bool serializeData) con
     archieve->SetUInt32("data_count", count);
     
     int32 index = 0;
-    for(auto & dc : dataContainer)
+    for(const auto & dc : dataContainer)
     {
         archieve->SetString(Format("name_%d", index), dc.first);
 
@@ -128,7 +128,7 @@ void CachedItemValue::Deserialize(KeyedArchive * archieve)
 
         auto key = Format("data_%d", i);
         auto size = archieve->GetByteArraySize(key);
-        if(size)
+        if(size > 0)
         {
             isFetched = true;
 
@@ -151,7 +151,7 @@ bool CachedItemValue::Serialize(File* buffer) const
     if (buffer->Write(&count) != sizeof(count))
         return false;
 
-    for (auto &entry : dataContainer)
+    for (const auto &entry : dataContainer)
     {
         if (buffer->WriteString(entry.first) == false)
             return false;
@@ -184,11 +184,11 @@ bool CachedItemValue::Deserialize(File* file)
     if (file->Read(&size) != sizeof(size))
         return false;
 
-    uint64 count;
+    uint64 count = 0;
     if (file->Read(&count) != sizeof(count))
         return false;
 
-    for (; count; --count)
+    for (; count > 0; --count)
     {
         String name;
         if (!file->ReadString(name))
@@ -216,7 +216,17 @@ bool CachedItemValue::Deserialize(File* file)
 
 bool CachedItemValue::operator == (const CachedItemValue &right) const
 {
-    return (dataContainer == right.dataContainer) && (isFetched == right.isFetched) && (size == right.size);
+    if ((isFetched == right.isFetched) && (size == right.size) && (dataContainer.size() == right.dataContainer.size()))
+    {
+        return std::equal(dataContainer.cbegin(), dataContainer.cend(), right.dataContainer.cbegin(),
+            [](const ValueDataContainer::value_type &left, const ValueDataContainer::value_type &right) -> bool
+        {
+            return left.first == right.first;
+        }
+        );
+    }
+
+    return false;
 }
 
 CachedItemValue & CachedItemValue::operator=(const CachedItemValue &right)
@@ -284,7 +294,7 @@ void CachedItemValue::Export(const FilePath & folder) const
     
     FileSystem::Instance()->CreateDirectory(folder, true);
     
-    for (auto & dc : dataContainer)
+    for (const auto & dc : dataContainer)
     {
         if(IsDataLoaded(dc.second) == false)
         {

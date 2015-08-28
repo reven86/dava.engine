@@ -31,7 +31,6 @@
 #include "AssetCache/Connection.h"
 #include "AssetCache/AssetCacheConstants.h"
 
-#include "Base/FunctionTraits.h"
 #include "Debug/DVAssert.h"
 #include "FileSystem/KeyedArchive.h"
 #include "FileSystem/Logger.h"

@@ -123,7 +123,7 @@ void ServerLogics::OnChannelClosed(DAVA::Net::IChannel *channel, const DAVA::cha
 
 void ServerLogics::OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey &key, DAVA::AssetCache::CachedItemValue &&value)
 {
-    if(nullptr != dataBase && !value.IsEmtpy())
+    if(nullptr != dataBase && !value.IsEmpty())
     {
         dataBase->Insert(key, value);
     }

@@ -40,6 +40,7 @@ namespace Net {
 AddressResolver::AddressResolver(IOLoop* _loop)
     : loop(_loop)
 {
+    DVASSERT(nullptr != loop);
 }
 
 AddressResolver::~AddressResolver()
@@ -47,10 +48,6 @@ AddressResolver::~AddressResolver()
     Cancel();
 }
     
-void AddressResolver::SetIOLoop(IOLoop* _loop)
-{
-    loop = _loop;
-}
 
 
 bool AddressResolver::AsyncResolve(const char8* address, uint16 port, ResolverCallbackFn cbk)
@@ -68,7 +65,7 @@ bool AddressResolver::AsyncResolve(const char8* address, uint16 port, ResolverCa
     handle->data = this;
 
     Array<char, 6> portstring;
-    Snprintf(portstring.data(), portstring.size(), "%u", port);
+    Snprintf(portstring.data(), portstring.size(), "%hu", port);
 
     int32 res = uv_getaddrinfo(loop->Handle(), handle, &AddressResolver::GetAddrInfoCallback, address, portstring.data(), &hints);
     if (0 == res)
@@ -97,11 +94,9 @@ void AddressResolver::Cancel()
 void AddressResolver::GetAddrInfoCallback(uv_getaddrinfo_t* handle, int status, struct addrinfo* response)
 {
     AddressResolver* resolver = static_cast<AddressResolver*>(handle->data);
-
     if (nullptr != resolver)
     {
         resolver->GotAddrInfo(status, response);
-        resolver->Cancel();
     }
 
     SafeDelete(handle);
@@ -120,4 +115,5 @@ void AddressResolver::GotAddrInfo(int status, struct addrinfo* response)
     resolverCallbackFn(endpoint, status);
 }
 
-}};
+} // end of namespace Net
+} // end of namespace DAVA

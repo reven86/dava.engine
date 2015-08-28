@@ -68,7 +68,7 @@ class CachePacket
 public:
     virtual ~CachePacket() {};  // this is base class for asset cache network packets
 
-    static std::unique_ptr<CachePacket> Create(uint8* buffer, uint32 length);
+    static std::unique_ptr<CachePacket> Create(const uint8* buffer, uint32 length);
 
     bool SendTo(Net::IChannel* channel);
     static void PacketSent(const uint8* buffer, size_t length);
@@ -86,7 +86,7 @@ public:
     ScopedPtr<DynamicMemoryFile> serializationBuffer;
 
 private:
-    static List<ScopedPtr<DynamicMemoryFile> > sendingPackets;
+    static List<ScopedPtr<DynamicMemoryFile>> sendingPackets;
 };
 
 
@@ -160,6 +160,7 @@ public:
     CacheItemKey key;
 };
 
-}}
+} // end of namespace AssetCache
+} // end of namespace DAVA
 
 #endif

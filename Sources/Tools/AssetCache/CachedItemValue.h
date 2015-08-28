@@ -53,14 +53,18 @@ class CachedItemValue final
 public:
     
     CachedItemValue() = default;
+    ~CachedItemValue();
+
     CachedItemValue(const CachedItemValue & right);
     CachedItemValue(CachedItemValue && right);
     
-    ~CachedItemValue();
-    
+    CachedItemValue & operator=(const CachedItemValue &right);
+    CachedItemValue & operator=(CachedItemValue &&right);
+
+
     void Add(const String &name, ValueData data);
     
-    bool IsEmtpy() const;
+    bool IsEmpty() const;
     bool IsFetched() const;
     uint64 GetSize() const;
 
@@ -71,8 +75,6 @@ public:
     bool Deserialize(File* file);
     
     bool operator== (const CachedItemValue &right) const;
-    CachedItemValue & operator=(const CachedItemValue &right);
-    CachedItemValue & operator=(CachedItemValue &&right);
     
     void Fetch(const FilePath & folder);
     void Free();
@@ -93,7 +95,7 @@ private:
 };
 
 
-inline bool CachedItemValue::IsEmtpy() const
+inline bool CachedItemValue::IsEmpty() const
 {
     return dataContainer.empty();
 }
@@ -114,8 +116,8 @@ inline uint64 CachedItemValue::GetSize() const
     return size;
 }
 
-}; // end of namespace AssetCache
-}; // end of namespace DAVA
+} // end of namespace AssetCache
+} // end of namespace DAVA
 
 #endif // __DAVAENGINE_ASSET_CACHE_CACHED_ITEM_VALUE_H__
 

@@ -35,6 +35,12 @@ namespace DAVA
 
 StaticMemoryFile * StaticMemoryFile::Create(uint8 *data, uint32 dataSize, uint32 attributes)
 {
+    if (attributes & File::APPEND)
+    {
+        Logger::Warning("[StaticMemoryFile::Create] Cannot append static memory file");
+        return nullptr;
+    }
+
     StaticMemoryFile *fl = new StaticMemoryFile(data, dataSize, attributes);
 	fl->filename = Format("memoryfile_%p", static_cast<void*>(fl));
 	
@@ -60,8 +66,7 @@ StaticMemoryFile::~StaticMemoryFile()
 uint32 StaticMemoryFile::Write(const void * pointerToData, uint32 dataSize)
 {
     DVASSERT(nullptr != pointerToData);
-
-	if (!(fileAttributes & File::WRITE) && !(fileAttributes & File::APPEND))
+	if ((fileAttributes & File::WRITE) == 0)
 	{
 		return 0;
 	}
@@ -72,6 +77,8 @@ uint32 StaticMemoryFile::Write(const void * pointerToData, uint32 dataSize)
  		Memcpy(memoryBuffer + currentPos, pointerToData, written);
         currentPos += written;
 	}
+
+    isEof = (dataSize != written);
 	
     return written;
 }
@@ -79,8 +86,7 @@ uint32 StaticMemoryFile::Write(const void * pointerToData, uint32 dataSize)
 uint32 StaticMemoryFile::Read(void * pointerToData, uint32 dataSize)
 {
     DVASSERT(nullptr != pointerToData);
-
-	if (!(fileAttributes & File::READ))
+	if ((fileAttributes & File::READ) == 0)
 	{
 		return 0;
 	}
@@ -91,6 +97,7 @@ uint32 StaticMemoryFile::Read(void * pointerToData, uint32 dataSize)
         Memcpy(pointerToData, memoryBuffer + currentPos, read);
         currentPos += read;
     }
+    isEof = (dataSize != read);
 
     return read;
 }
@@ -147,4 +154,4 @@ bool StaticMemoryFile::Seek(int32 position, uint32 seekType)
 }
 
 
-};
+} // end of namespace DAVA

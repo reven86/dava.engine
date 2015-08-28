@@ -35,14 +35,14 @@
 #include "FileSystem/KeyedArchive.h"
 #include "Debug/DVAssert.h"
 #include "FileSystem/DynamicMemoryFile.h"
-#include "Base/FunctionTraits.h"
 
 namespace DAVA {
 namespace AssetCache {
 
 ClientNetProxy::ClientNetProxy() 
-    : addressResolver(nullptr)
+    : addressResolver(Net::NetCore::Instance()->Loop())
 {
+    DVASSERT(nullptr != Net::NetCore::Instance());
 }
 
 bool ClientNetProxy::Connect(const String &ip, uint16 port)
@@ -50,7 +50,6 @@ bool ClientNetProxy::Connect(const String &ip, uint16 port)
     DVASSERT(nullptr == netClient);
     DVASSERT(nullptr == openedChannel);
 
-    addressResolver.SetIOLoop(Net::NetCore::Instance()->Loop());
     return addressResolver.AsyncResolve(ip.c_str(), port, MakeFunction(this, &ClientNetProxy::OnAddressResolved));
 }
 
@@ -70,6 +69,10 @@ void ClientNetProxy::OnAddressResolved(const Net::Endpoint& endpoint, int32 stat
     if (0 == status)
     {
         netClient.reset(new Connection(Net::CLIENT_ROLE, endpoint, this));
+    }
+    else
+    {
+        Logger::Error("[ClientNetProxy::OnAddressResolved] address cannot resolved with error %d", status);
     }
 }
 
@@ -138,7 +141,7 @@ void ClientNetProxy::OnPacketReceived(DAVA::Net::IChannel* channel, const void* 
     DVASSERT(openedChannel == channel);
     if(length > 0)
     {
-        std::unique_ptr<CachePacket> packet = CachePacket::Create(const_cast<uint8 *>(static_cast<const uint8 *>(packetData)), length);
+        std::unique_ptr<CachePacket> packet = CachePacket::Create(static_cast<const uint8 *>(packetData), length);
         if(packet != nullptr)
         {
             switch (packet->type)

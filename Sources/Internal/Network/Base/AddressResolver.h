@@ -31,7 +31,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define __DAVAENGINE_ADDRESS_RESOLVER_H__
 
 #include "Base/BaseTypes.h"
-#include "Base/Function.h"
+#include "Functional/Function.h"
+#include "Network/Base/Endpoint.h"
 #include <libuv/uv.h>
 
 
@@ -39,7 +40,6 @@ namespace DAVA {
 namespace Net {
 
 class IOLoop;
-class Endpoint;
 
 
 class AddressResolver
@@ -51,8 +51,6 @@ public:
     explicit AddressResolver(IOLoop* loop);
     ~AddressResolver();
 
-    void SetIOLoop(IOLoop* loop);
-    
     bool AsyncResolve(const char8* address, uint16 port, ResolverCallbackFn cbk);
     void Cancel();
 
