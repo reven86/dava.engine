@@ -322,6 +322,7 @@ void CacheDB::Insert(const CacheItemKey &key, ServerCacheEntry &&entry)
     }
     
     const FilePath savedPath = CreateFolderPath(key);
+    FileSystem::Instance()->DeleteDirectoryFiles(savedPath);
     entryForFastCache->GetValue().Export(savedPath);
     usedSize += newSize;
     

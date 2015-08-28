@@ -70,18 +70,19 @@ void ReleaseDAVA()
 
 int main (int argc, char * argv[]) 
 {
+    CreateDAVA();
+
     AssetCacheClient cacheClient;
     bool parsed = cacheClient.ParseCommandLine(argc, argv);
     if(parsed)
     {
-        CreateDAVA();
-        
         DAVA::Logger::Instance()->SetLogLevel(DAVA::Logger::LEVEL_FRAMEWORK);
         cacheClient.Process();
         
-        ReleaseDAVA();
     }
     
     int exitCode = cacheClient.GetExitCode();
+
+    ReleaseDAVA();
     return exitCode;
 }

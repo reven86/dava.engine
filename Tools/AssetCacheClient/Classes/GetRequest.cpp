@@ -71,7 +71,7 @@ int GetRequest::CheckOptionsInternal() const
 void GetRequest::OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey &key, DAVA::AssetCache::CachedItemValue &&value)
 {
     requestResult.recieved = true;
-    requestResult.succeed = (value.IsEmtpy() == false);
+    requestResult.succeed = (value.IsEmpty() == false);
     
     if(requestResult.succeed)
     {
