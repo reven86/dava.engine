@@ -451,6 +451,19 @@ bool FileSystem::IsFile(const FilePath & pathToCheck)
 	if (IsAPKPath(path))
 		return (fileSet.find(path) != fileSet.end());
 #endif
+
+    if (pathToCheck.GetType() == FilePath::PATH_IN_RESOURCES)
+    {
+        String relative = pathToCheck.GetStringValue().substr(strlen("~res:/"));
+        for (auto& archive : resourceArchiveList)
+        {
+            if (archive.archive->HasFile(relative))
+            {
+                return true;
+            }
+        }
+    }
+
 	struct stat s;
 
     const String& cs = pathToCheck.GetAbsolutePathname();

@@ -205,6 +205,9 @@
     <Filter Include="Internal\UI\Layouts">
       <UniqueIdentifier>{35e9d1cc-cb7d-4460-b271-1e7012178889}</UniqueIdentifier>
     </Filter>
+    <Filter Include="External\lz4">
+      <UniqueIdentifier>{7ee5d22e-a428-4d98-b152-59054b70f95f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\External\Box2D\Box2D.h">
@@ -1927,6 +1930,15 @@
     <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UIIgnoreLayoutComponent.h">
       <Filter>Internal\UI\Layouts</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\External\lz4\lz4.h">
+      <Filter>External\lz4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\External\lz4\lz4hc.h">
+      <Filter>External\lz4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\FileSystem\ReadOnlyArchiveFile.h">
+      <Filter>Internal\FileSystem</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.cpp">
@@ -3414,6 +3426,15 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UIIgnoreLayoutComponent.cpp">
       <Filter>Internal\UI\Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\External\lz4\lz4.c">
+      <Filter>External\lz4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\External\lz4\lz4hc.c">
+      <Filter>External\lz4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\FileSystem\ReadOnlyArchiveFile.cpp">
+      <Filter>Internal\FileSystem</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

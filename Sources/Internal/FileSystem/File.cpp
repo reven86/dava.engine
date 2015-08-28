@@ -30,7 +30,7 @@
 #include "FileSystem/File.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/ResourceArchive.h"
-#include "FileSystem/DynamicMemoryFile.h"
+#include "FileSystem/ReadOnlyArchiveFile.h"
 
 #include "Utils/StringFormat.h"
 
@@ -84,8 +84,7 @@ File * File::CreateFromSystemPath(const FilePath &filename, uint32 attributes)
 			{
 				return 0;
 			}
-		    const uint8* data = reinterpret_cast<uint8*>(contentAndSize.content.get());
-		    DynamicMemoryFile * file =  DynamicMemoryFile::Create(data, contentAndSize.size, attributes);
+		    auto * file =  ReadOnlyArchiveFile::Create(contentAndSize, filename);
 			return file;
 		}
 	}

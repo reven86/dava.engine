@@ -46,10 +46,10 @@ void FrameworkWillTerminate()
 }
 
 void CollectAllFilesInDirectory(const String& pathDirName,
+                                bool includeHidden,
                                 Vector<String>& output)
 {
     FilePath pathToDir = pathDirName;
-    bool includeHidden = false;
     RefPtr<FileList> fileList(new FileList(pathToDir, includeHidden));
     for (auto file = 0; file < fileList->GetCount(); ++file)
     {
@@ -61,7 +61,7 @@ void CollectAllFilesInDirectory(const String& pathDirName,
                 String subDir = pathDirName == "."
                                     ? directoryName + '/'
                                     : pathDirName + directoryName + '/';
-                CollectAllFilesInDirectory(subDir, output);
+                CollectAllFilesInDirectory(subDir, includeHidden, output);
             }
         }
         else
@@ -113,7 +113,8 @@ void OnOneFilePacked(const ResourceArchive::FileInfo& info)
 
 int PackDirectoryIntoPakfile(const String& dir,
                              const String& pakfileName,
-                             const ResourceArchive::Rules& compressionRules)
+                             const ResourceArchive::Rules& compressionRules,
+                             bool includeHidden)
 {
     std::cout << "===================================================\n"
               << "=== Packer started\n"
@@ -146,7 +147,7 @@ int PackDirectoryIntoPakfile(const String& dir,
 
     Vector<String> files;
 
-    CollectAllFilesInDirectory(".", files);
+    CollectAllFilesInDirectory(".", includeHidden, files);
 
     if (files.empty())
     {
@@ -281,6 +282,8 @@ int main(int argc, char* argv[])
     ProgramOptions packOptions("pack");
     packOptions.AddOption("--compression", VariantType(String("lz4hc")),
                           "default compression method, lz4hc - default");
+    packOptions.AddOption("--add_hidden", VariantType(String("false")),
+                          "add hidden files to packlist (false or true)");
     // dafault rule pack all files into lz4hc
     packOptions.AddOption("--rule", VariantType(String(".lz4hc")),
                           "rule to select compression type like: --rule "
@@ -309,8 +312,10 @@ int main(int argc, char* argv[])
 
         auto dirName = packOptions.GetArgument("directory");
         auto pakFile = packOptions.GetArgument("pakfile");
+        auto addHidden = packOptions.GetOption("--add_hidden").AsString();
 
-        return PackDirectoryIntoPakfile(dirName, pakFile, compressionRules);
+        return PackDirectoryIntoPakfile(dirName, pakFile, compressionRules,
+                                        addHidden == "true");
     }
     else if (unpackOptions.Parse(argc, argv))
     {

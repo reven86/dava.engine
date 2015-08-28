@@ -110,6 +110,14 @@ void Core::CreateSingletons()
 	new AllocatorFactory();
 	new JobManager();
 	new FileSystem();
+
+    String defaultArchive{ "data.pakfile" };
+    auto fs = FileSystem::Instance();
+    if (fs->IsFile(defaultArchive))
+    {
+        fs->AttachArchive(defaultArchive, "~res:/");
+    }
+
     FilePath::InitializeBundleName();
 	
 	FileSystem::Instance()->SetDefaultDocumentsDirectory();
