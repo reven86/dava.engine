@@ -88,6 +88,13 @@ ColladaToSc2Importer::ImportLibrary::~ImportLibrary()
         DVASSERT(0 == refCount);
     }
     materialParents.clear();
+    
+    for (auto pair : animations)
+    {
+        uint32 refCount = pair.second->Release();
+        DVASSERT(0 == refCount);
+    }
+    animations.clear();
 }
 
 void InitPolygon(PolygonGroup * davaPolygon, uint32 vertexFormat, Vector<ColladaVertex> &vertices)
@@ -175,6 +182,30 @@ PolygonGroup * ColladaToSc2Importer::ImportLibrary::GetOrCreatePolygon(ColladaPo
     }
         
     return davaPolygon;
+}
+
+AnimationData * ColladaToSc2Importer::ImportLibrary::GetOrCreateAnimation(SceneNodeAnimation * colladaAnimation)
+{
+    AnimationData * animation = animations[colladaAnimation];
+    if (nullptr == animation)
+    {
+        animation = new AnimationData();
+        
+        animation->SetInvPose(colladaAnimation->invPose);
+        animation->SetDuration(colladaAnimation->duration);
+        if (nullptr != colladaAnimation->keys)
+        {
+            for (uint32 keyNo = 0; keyNo < colladaAnimation->keyCount; ++keyNo)
+            {
+                SceneNodeAnimationKey key = colladaAnimation->keys[keyNo];
+                animation->AddKey(key);
+            }
+        }
+        
+        animations[colladaAnimation] = animation;
+    }
+    
+    return animation;
 }
 
 namespace
@@ -488,23 +519,9 @@ void ColladaToSc2Importer::BuildSceneAsCollada(Entity * root, ColladaSceneNode *
     {
         auto * animationComponent = new AnimationComponent();
         animationComponent->SetEntity(nodeEntity);
-        
-        ScopedPtr<AnimationData> animation(new AnimationData());
+
+        AnimationData * animation = colladaToDavaLibrary.GetOrCreateAnimation(colladaNode->animation);
         animationComponent->SetAnimation(animation);
-        
-        SceneNodeAnimation * colladaAnimation = colladaNode->animation;
-        
-        animation->SetInvPose(colladaAnimation->invPose);
-        animation->SetDuration(colladaAnimation->duration);
-        if (nullptr != colladaAnimation->keys)
-        {
-            for (uint32 keyNo = 0; keyNo < colladaAnimation->keyCount; ++keyNo)
-            {
-                SceneNodeAnimationKey key = colladaAnimation->keys[keyNo];
-                animation->AddKey(key);
-            }
-        }
-        
         nodeEntity->AddComponent(animationComponent);
     }
     
@@ -528,12 +545,28 @@ void ColladaToSc2Importer::LoadMaterialParents(ColladaScene * colladaScene)
     }
 }
     
+void ColladaToSc2Importer::LoadAnimations(ColladaScene * colladaScene)
+{
+    for (auto canimation : colladaScene->colladaAnimations)
+    {
+        for (auto & pair : canimation->animations)
+        {
+            SceneNodeAnimation * colladaAnimation = pair.second;
+            AnimationData * animation = colladaToDavaLibrary.GetOrCreateAnimation(colladaAnimation);
+            DVASSERT(nullptr != animation);
+        }
+    }
+}
+    
 void ColladaToSc2Importer::SaveSC2(ColladaScene * colladaScene, const FilePath & scenePath, const String & sceneName)
 {
     ScopedPtr<Scene> scene(new Scene());
 
     // Load scene global materials.
     LoadMaterialParents(colladaScene);
+    
+    // Load scene global animations
+    LoadAnimations(colladaScene);
     
     // iterate recursive over collada scene and build Dava Scene with same ierarchy
     BuildSceneAsCollada(scene, colladaScene->rootNode);

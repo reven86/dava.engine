@@ -49,11 +49,13 @@ private:
         PolygonGroup * GetOrCreatePolygon(ColladaPolygonGroupInstance * colladaPGI);
         NMaterial * GetOrCreateMaterial(ColladaPolygonGroupInstance * colladaPolyGroupInst, const bool isShadow);
         NMaterial * GetOrCreateMaterialParent(ColladaMaterial * colladaMaterial, const bool isShadow);
+        AnimationData * GetOrCreateAnimation(SceneNodeAnimation * colladaSceneNode);
 
     private:
         Map<ColladaPolygonGroupInstance *, PolygonGroup *> polygons;
         Map<FastName, NMaterial *> materialParents;
         Map<FastName, NMaterial *> materials;
+        Map<SceneNodeAnimation *, AnimationData *> animations;
     };
 
 public:
@@ -61,6 +63,7 @@ public:
 
 private:
     void LoadMaterialParents(ColladaScene * colladaScene);
+    void LoadAnimations(ColladaScene * colladaScene);
     void FillMeshes(const Vector<ColladaMeshInstance *> & meshInstances, Entity * node);
     void BuildSceneAsCollada(Entity * root, ColladaSceneNode * colladaNode);
     Mesh * GetMeshFromCollada(ColladaMeshInstance * mesh, const bool isShadow);
