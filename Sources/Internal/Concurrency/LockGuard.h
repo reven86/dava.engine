@@ -30,6 +30,8 @@
 #ifndef __DAVAENGINE_LOCK_GUARD_H__
 #define __DAVAENGINE_LOCK_GUARD_H__
 
+#include "Base/Platform.h"
+
 namespace DAVA
 {
 
