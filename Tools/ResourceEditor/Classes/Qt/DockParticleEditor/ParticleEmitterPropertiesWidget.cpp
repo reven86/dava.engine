@@ -170,6 +170,7 @@ void ParticleEmitterPropertiesWidget::OnEmitterPositionChanged()
 
     DVASSERT(activeScene != 0);
     activeScene->Exec(commandUpdateEmitter);
+	activeScene->MarkAsChanged();
 
     Init(activeScene, effect, emitter, false, false);
     emit ValueChanged();
@@ -234,6 +235,7 @@ void ParticleEmitterPropertiesWidget::OnValueChanged()
 
 	DVASSERT(activeScene != 0);
 	activeScene->Exec(commandUpdateEmitter);
+	activeScene->MarkAsChanged();
 
 	Init(activeScene, effect, emitter, false, initEmittersByDef);
 	emit ValueChanged();

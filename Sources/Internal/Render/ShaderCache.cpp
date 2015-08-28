@@ -102,7 +102,7 @@ Shader * ShaderAsset::Compile(const FastNameSet & defines)
                                             fragmentShaderDataSize,
                                             defines);
 	
-		Function<void()> fn = DAVA::Bind(MakeFunction(this, &ShaderAsset::CompileShaderInternal), shader, defines);
+		Function<void()> fn = Bind(&ShaderAsset::CompileShaderInternal, this, shader, defines);
 		uint32 jobId = JobManager::Instance()->CreateMainJob(fn);
 		JobManager::Instance()->WaitMainJobID(jobId);
 	}
@@ -121,7 +121,7 @@ void ShaderAsset::ReloadShaders()
 		Shader *shader = it->second;
 		shader->Reload(vertexShaderData, fragmentShaderData, vertexShaderDataStart, vertexShaderDataSize, fragmentShaderDataStart, fragmentShaderDataSize);
 
-		Function<void()> fn = DAVA::Bind(MakeFunction(this, &ShaderAsset::ReloadShaderInternal), shader);
+		Function<void()> fn = Bind(&ShaderAsset::ReloadShaderInternal, this, shader);
 		uint32 jobId = JobManager::Instance()->CreateMainJob(fn);
 		JobManager::Instance()->WaitMainJobID(jobId);
 	}

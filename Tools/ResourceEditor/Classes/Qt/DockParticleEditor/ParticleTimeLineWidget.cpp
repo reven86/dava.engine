@@ -469,11 +469,14 @@ void ParticleTimeLineWidget::paintEvent(QPaintEvent *e)
 			float32 currentStartTime = line.endTime;
 			float32 currentEndTime;
 			
-			bool useDeltaTime = (line.deltaTime > 0);
+			bool useDeltaTime = (line.deltaTime > 0.0f);
+			bool useDurationTime = (durationTime > 0.0f);
+			bool timeCanBeIncremented = useDeltaTime || useDurationTime;
+
 			Qt::PenStyle lineStyle;
 			QColor lineColor;
-			
-			while (currentStartTime < loopEndTime)
+						
+			while (timeCanBeIncremented && (currentStartTime < loopEndTime))
 			{
 				// Use gray color for layer which has time variations.
 				if (line.hasLoopVariation)
@@ -498,6 +501,7 @@ void ParticleTimeLineWidget::paintEvent(QPaintEvent *e)
 					lineStyle = Qt::SolidLine;
 					useDeltaTime = (line.deltaTime > 0);
 				}
+
 				// We should not exceed loopEnd time
 				currentEndTime = Min(currentEndTime, loopEndTime);
 							
@@ -836,6 +840,7 @@ void ParticleTimeLineWidget::OnValueChanged(int lineId)
 		CommandUpdateParticleLayerTime* cmd = new CommandUpdateParticleLayerTime(iter->second.layer);
 		cmd->Init(iter->second.startTime, iter->second.endTime);
 		activeScene->Exec(cmd);
+		activeScene->MarkAsChanged();
 	}
 
 	emit ValueChanged();

@@ -4,17 +4,14 @@ namespace DAVA
 {
 UILinearLayoutComponent::UILinearLayoutComponent()
 {
-    
+    SetEnabled(true);
+    SetSkipInvisibleControls(true);
 }
 
 UILinearLayoutComponent::UILinearLayoutComponent(const UILinearLayoutComponent &src)
-    : orientation(src.orientation)
+    : flags(src.flags)
     , padding(src.padding)
     , spacing(src.spacing)
-    , dynamicPadding(src.dynamicPadding)
-    , dynamicSpacing(src.dynamicSpacing)
-    , useRtl(src.useRtl)
-    , skipInvisibleControls(src.skipInvisibleControls)
 {
     
 }
@@ -29,14 +26,29 @@ UILinearLayoutComponent* UILinearLayoutComponent::Clone() const
     return new UILinearLayoutComponent(*this);
 }
 
+bool UILinearLayoutComponent::IsEnabled() const
+{
+    return flags.test(FLAG_ENABLED);
+}
+
+void UILinearLayoutComponent::SetEnabled(bool enabled)
+{
+    flags.set(FLAG_ENABLED, enabled);
+}
+
 UILinearLayoutComponent::eOrientation UILinearLayoutComponent::GetOrientation() const
 {
-    return orientation;
+    return flags.test(FLAG_ORIENTATION_VERTICAL) ? VERTICAL : HORIZONTAL;
 }
 
 void UILinearLayoutComponent::SetOrientation(eOrientation newOrientation)
 {
-    orientation = newOrientation;
+    flags.set(FLAG_ORIENTATION_VERTICAL, newOrientation == VERTICAL);
+}
+
+Vector2::eAxis UILinearLayoutComponent::GetAxis() const
+{
+    return flags.test(FLAG_ORIENTATION_VERTICAL) ? Vector2::AXIS_Y : Vector2::AXIS_X;
 }
 
 int32 UILinearLayoutComponent::GetOrientationAsInt() const
@@ -48,7 +60,6 @@ void UILinearLayoutComponent::SetOrientationFromInt(int32 orientation)
 {
     SetOrientation(static_cast<eOrientation>(orientation));
 }
-
 
 float32 UILinearLayoutComponent::GetPadding() const
 {
@@ -72,42 +83,42 @@ void UILinearLayoutComponent::SetSpacing(float32 newSpacing)
 
 bool UILinearLayoutComponent::IsDynamicPadding() const
 {
-    return dynamicPadding;
+    return flags.test(FLAG_DYNAMIC_PADDING);
 }
 
 void UILinearLayoutComponent::SetDynamicPadding(bool dynamic)
 {
-    dynamicPadding = dynamic;
+    flags.set(FLAG_DYNAMIC_PADDING, dynamic);
 }
 
 bool UILinearLayoutComponent::IsDynamicSpacing() const
 {
-    return dynamicSpacing;
+    return flags.test(FLAG_DYNAMIC_SPACING);
 }
 
 void UILinearLayoutComponent::SetDynamicSpacing(bool dynamic)
 {
-    dynamicSpacing = dynamic;
+    flags.set(FLAG_DYNAMIC_SPACING, dynamic);
 }
 
 bool UILinearLayoutComponent::IsSkipInvisibleControls() const
 {
-    return skipInvisibleControls;
+    return flags.test(FLAG_SKIP_INVISIBLE_CONTROLS);
 }
 
 void UILinearLayoutComponent::SetSkipInvisibleControls(bool skip)
 {
-    skipInvisibleControls = skip;
+    flags.set(FLAG_SKIP_INVISIBLE_CONTROLS, skip);
 }
 
 bool UILinearLayoutComponent::IsUseRtl() const
 {
-    return useRtl;
+    return flags.test(FLAG_RTL);
 }
 
 void UILinearLayoutComponent::SetUseRtl(bool use)
 {
-    useRtl = use;
+    flags.set(FLAG_RTL, use);
 }
 
 }
