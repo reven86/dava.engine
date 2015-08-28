@@ -944,9 +944,6 @@ void QtMainWindow::EnableSceneActions(bool enable)
 
 	ui->actionBeastAndSave->setEnabled(enable);
 
-	ui->actionDynamicBlendModeAlpha->setEnabled(enable);
-	ui->actionDynamicBlendModeMultiply->setEnabled(enable);
-
 	ui->actionHangingObjects->setEnabled(enable);
 
 	ui->menuExport->setEnabled(enable);

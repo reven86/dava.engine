@@ -1482,22 +1482,6 @@
     <string>Cubemap Editor</string>
    </property>
   </action>
-  <action name="actionDynamicBlendModeAlpha">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Alpha</string>
-   </property>
-  </action>
-  <action name="actionDynamicBlendModeMultiply">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Multiply</string>
-   </property>
-  </action>
   <action name="actionReloadSprites">
    <property name="icon">
     <iconset resource="QtIcons.qrc">

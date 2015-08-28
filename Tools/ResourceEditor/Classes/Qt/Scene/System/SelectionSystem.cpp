@@ -270,8 +270,8 @@ void SceneSelectionSystem::SetSelection(const EntityGroup &newSelection)
 	{
 		Clear();
 
-		auto count = newSelection.Size();
-		for (decltype(count) i = 0; i < count; ++i)
+		uint32 count = newSelection.Size();
+		for (uint32 i = 0; i < count; ++i)
 		{
 			auto entity = newSelection.GetEntity(i);
 			if (IsEntitySelectable(entity) && !curSelections.ContainsEntity(entity))
