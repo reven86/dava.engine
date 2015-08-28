@@ -952,6 +952,8 @@
 		5022951F186DD1BC00F55478 /* RenderPassManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 5022951B186DD1BC00F55478 /* RenderPassManager.h */; };
 		50229520186DD1BC00F55478 /* RenderPassManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 5022951B186DD1BC00F55478 /* RenderPassManager.h */; };
 		50229521186DD1BC00F55478 /* RenderPassManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 5022951B186DD1BC00F55478 /* RenderPassManager.h */; };
+		50320B6D1B8DA55C00F7123B /* MMBigDataTransferService.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50320B6B1B8DA55C00F7123B /* MMBigDataTransferService.cpp */; };
+		50320B6E1B8DA55C00F7123B /* MMBigDataTransferService.h in Headers */ = {isa = PBXBuildFile; fileRef = 50320B6C1B8DA55C00F7123B /* MMBigDataTransferService.h */; };
 		5041C3671B0E272C00BC0BE3 /* AllocatorBridge.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5041C3621B0E272C00BC0BE3 /* AllocatorBridge.cpp */; };
 		5041C3681B0E272C00BC0BE3 /* AllocatorBridge.h in Headers */ = {isa = PBXBuildFile; fileRef = 5041C3631B0E272C00BC0BE3 /* AllocatorBridge.h */; };
 		5041C3691B0E272C00BC0BE3 /* InternalAllocator.h in Headers */ = {isa = PBXBuildFile; fileRef = 5041C3641B0E272C00BC0BE3 /* InternalAllocator.h */; };
@@ -3000,6 +3002,8 @@
 		501981BF1B0B90F800C14292 /* MemoryProfiler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MemoryProfiler.h; sourceTree = "<group>"; };
 		5022951A186DD1BC00F55478 /* RenderPassManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RenderPassManager.cpp; sourceTree = "<group>"; };
 		5022951B186DD1BC00F55478 /* RenderPassManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenderPassManager.h; sourceTree = "<group>"; };
+		50320B6B1B8DA55C00F7123B /* MMBigDataTransferService.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MMBigDataTransferService.cpp; path = MMNet/MMBigDataTransferService.cpp; sourceTree = "<group>"; };
+		50320B6C1B8DA55C00F7123B /* MMBigDataTransferService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MMBigDataTransferService.h; path = MMNet/MMBigDataTransferService.h; sourceTree = "<group>"; };
 		5041C3621B0E272C00BC0BE3 /* AllocatorBridge.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AllocatorBridge.cpp; sourceTree = "<group>"; };
 		5041C3631B0E272C00BC0BE3 /* AllocatorBridge.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AllocatorBridge.h; sourceTree = "<group>"; };
 		5041C3641B0E272C00BC0BE3 /* InternalAllocator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InternalAllocator.h; sourceTree = "<group>"; };
@@ -4117,6 +4121,8 @@
 		5015AF3C1B15E5320062C971 /* MMNet */ = {
 			isa = PBXGroup;
 			children = (
+				50320B6B1B8DA55C00F7123B /* MMBigDataTransferService.cpp */,
+				50320B6C1B8DA55C00F7123B /* MMBigDataTransferService.h */,
 				5015AF3D1B15E5400062C971 /* MMNetClient.cpp */,
 				5015AF3E1B15E5400062C971 /* MMNetClient.h */,
 				5015AF3F1B15E5400062C971 /* MMNetProto.h */,
@@ -6394,6 +6400,7 @@
 				D7C556791A7A158600175ED9 /* DataStorage.h in Headers */,
 				E8990B511A288C8F00FF71A1 /* SnapToLandscapeControllerSystem.h in Headers */,
 				E8989FDF16BD24E500732C04 /* LodSystem.h in Headers */,
+				50320B6E1B8DA55C00F7123B /* MMBigDataTransferService.h in Headers */,
 				E8989FE116BD24E500732C04 /* ParticleEffectSystem.h in Headers */,
 				50FB9DA91A92446700BDB8A2 /* MemoryManager.h in Headers */,
 				76C741AD1A48374B00184019 /* CorePlatformWin32Qt.h in Headers */,
@@ -7716,6 +7723,7 @@
 				E8989EE216BD24E500732C04 /* Sprite.cpp in Sources */,
 				84CB671B191FC8850086483D /* Image.mm in Sources */,
 				026A1DD019DAF1B700813AEF /* SkinnedMesh.cpp in Sources */,
+				50320B6D1B8DA55C00F7123B /* MMBigDataTransferService.cpp in Sources */,
 				B4C29D3F199B592D001B83FE /* SceneCache.cpp in Sources */,
 				E8989EE416BD24E500732C04 /* TextBlock.cpp in Sources */,
 				76C741AF1A48374B00184019 /* QtLayerWin32.cpp in Sources */,

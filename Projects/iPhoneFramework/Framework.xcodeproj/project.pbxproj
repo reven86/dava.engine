@@ -1010,6 +1010,8 @@
 		50194DCE1A52D92600557DAB /* NetLogger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50194D9C1A52D92600557DAB /* NetLogger.cpp */; };
 		50194DCF1A52D92600557DAB /* NetLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = 50194D9D1A52D92600557DAB /* NetLogger.h */; };
 		501981B51B0B908A00C14292 /* MemoryProfiler.h in Headers */ = {isa = PBXBuildFile; fileRef = 501981B41B0B908A00C14292 /* MemoryProfiler.h */; };
+		50320B751B8DA57B00F7123B /* MMBigDataTransferService.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50320B731B8DA57B00F7123B /* MMBigDataTransferService.cpp */; };
+		50320B761B8DA57B00F7123B /* MMBigDataTransferService.h in Headers */ = {isa = PBXBuildFile; fileRef = 50320B741B8DA57B00F7123B /* MMBigDataTransferService.h */; };
 		5041C3581B0E1A9000BC0BE3 /* AllocatorBridge.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5041C3531B0E1A9000BC0BE3 /* AllocatorBridge.cpp */; };
 		5041C3591B0E1A9000BC0BE3 /* AllocatorBridge.h in Headers */ = {isa = PBXBuildFile; fileRef = 5041C3541B0E1A9000BC0BE3 /* AllocatorBridge.h */; };
 		5041C35A1B0E1A9000BC0BE3 /* InternalAllocator.h in Headers */ = {isa = PBXBuildFile; fileRef = 5041C3551B0E1A9000BC0BE3 /* InternalAllocator.h */; };
@@ -2197,6 +2199,8 @@
 		50194D9D1A52D92600557DAB /* NetLogger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NetLogger.h; sourceTree = "<group>"; };
 		50194DD01A52D94B00557DAB /* libuv_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libuv_ios.a; path = ../../Libs/libs/libuv_ios.a; sourceTree = "<group>"; };
 		501981B41B0B908A00C14292 /* MemoryProfiler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MemoryProfiler.h; sourceTree = "<group>"; };
+		50320B731B8DA57B00F7123B /* MMBigDataTransferService.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MMBigDataTransferService.cpp; path = MMNet/MMBigDataTransferService.cpp; sourceTree = "<group>"; };
+		50320B741B8DA57B00F7123B /* MMBigDataTransferService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MMBigDataTransferService.h; path = MMNet/MMBigDataTransferService.h; sourceTree = "<group>"; };
 		5041C3531B0E1A9000BC0BE3 /* AllocatorBridge.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AllocatorBridge.cpp; sourceTree = "<group>"; };
 		5041C3541B0E1A9000BC0BE3 /* AllocatorBridge.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AllocatorBridge.h; sourceTree = "<group>"; };
 		5041C3551B0E1A9000BC0BE3 /* InternalAllocator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InternalAllocator.h; sourceTree = "<group>"; };
@@ -3233,6 +3237,8 @@
 		5015AF2C1B15E4C80062C971 /* MMNet */ = {
 			isa = PBXGroup;
 			children = (
+				50320B731B8DA57B00F7123B /* MMBigDataTransferService.cpp */,
+				50320B741B8DA57B00F7123B /* MMBigDataTransferService.h */,
 				5015AF2D1B15E4D80062C971 /* MMNetClient.cpp */,
 				5015AF2E1B15E4D80062C971 /* MMNetClient.h */,
 				5015AF2F1B15E4D80062C971 /* MMNetProto.h */,
@@ -5420,6 +5426,7 @@
 				E8B3CC0016B9326E002BD35F /* RenderPass.h in Headers */,
 				150353971A02D5AA00C90B4F /* AbstractUIPackageBuilder.h in Headers */,
 				F3E441E81B7A50CD001FF7F1 /* Functional.h in Headers */,
+				50320B761B8DA57B00F7123B /* MMBigDataTransferService.h in Headers */,
 				E8B3CC0216B9326E002BD35F /* RenderSystem.h in Headers */,
 				E8B3CC0416B9326E002BD35F /* ShadowRect.h in Headers */,
 				E8B3CC0616B9326E002BD35F /* ShadowVolume.h in Headers */,
@@ -6461,6 +6468,7 @@
 				32491C611B4D1298004CE811 /* UISizePolicyComponent.cpp in Sources */,
 				E8B3CC5E16B9326E002BD35F /* TextGameObject.cpp in Sources */,
 				E8B3CC6016B9326E002BD35F /* BillboardNode.cpp in Sources */,
+				50320B751B8DA57B00F7123B /* MMBigDataTransferService.cpp in Sources */,
 				15D311901982861500919AAA /* YamlEmitter.cpp in Sources */,
 				E8B3CC6216B9326E002BD35F /* BoneNode.cpp in Sources */,
 				E8B3CC6816B9326E002BD35F /* BulletComponent.cpp in Sources */,

@@ -37,36 +37,38 @@ namespace DAVA
 namespace Net
 {
 
-TCPClientTransport::TCPClientTransport(IOLoop* aLoop)
+TCPClientTransport::TCPClientTransport(IOLoop* aLoop, uint32 readTimeout_)
     : loop(aLoop)
     , endpoint()
     , runningObjects(0)
     , socket(aLoop)
     , timer(aLoop)
     , listener(NULL)
-    , readTimeout(DEFAULT_READ_TIMEOUT)
+    , readTimeout(readTimeout_)
     , isInitiator(false)
     , isTerminating(false)
     , isConnected(false)
     , sendBufferCount(0)
 {
     DVASSERT(aLoop != NULL);
+    DVASSERT(readTimeout > 0);
 }
 
-TCPClientTransport::TCPClientTransport(IOLoop* aLoop, const Endpoint& aEndpoint)
+TCPClientTransport::TCPClientTransport(IOLoop* aLoop, const Endpoint& aEndpoint, uint32 readTimeout_)
     : loop(aLoop)
     , endpoint(aEndpoint)
     , runningObjects(0)
     , socket(aLoop)
     , timer(aLoop)
     , listener(NULL)
-    , readTimeout(DEFAULT_READ_TIMEOUT)
+    , readTimeout(readTimeout_)
     , isInitiator(true)
     , isTerminating(false)
     , isConnected(false)
     , sendBufferCount(0)
 {
     DVASSERT(aLoop != NULL);
+    DVASSERT(readTimeout > 0);
 }
 
 TCPClientTransport::~TCPClientTransport()
