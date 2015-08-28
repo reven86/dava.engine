@@ -47,6 +47,7 @@
 #include "Collada/ColladaMeshInstance.h"
 #include "Collada/ColladaSceneNode.h"
 #include "Collada/ColladaScene.h"
+#include "FileSystem/FileSystem.h"
 
 #include "Collada/ColladaToSc2Importer/ColladaToSc2Importer.h"
 
@@ -282,6 +283,15 @@ NMaterial * ColladaToSc2Importer::ImportLibrary::GetOrCreateMaterialParent(Colla
     FilePath texturePath;
     GetTextureTypeAndPathFromCollada(colladaMaterial, textureType, texturePath);
     davaMaterialParent->SetTexture(textureType, texturePath);
+    
+    // Try to load normalmap texture
+    String ext = texturePath.GetExtension();
+    String path = texturePath.GetStringValue();
+    path.insert(path.length()-ext.length(), "_NM");
+    if (FileSystem::Instance()->IsFile(path))
+    {
+        davaMaterialParent->SetTexture(NMaterial::TEXTURE_NORMAL, path);
+    }
     
     return davaMaterialParent;
 }
