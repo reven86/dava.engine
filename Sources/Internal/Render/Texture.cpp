@@ -248,8 +248,9 @@ void Texture::ReleaseTextureData()
 #endif
 
 	state = STATE_INVALID;
+    uint32 tt = textureType;
 
-	Function<void()> fn = DAVA::Bind(MakeFunction(this, &Texture::ReleaseTextureDataInternal), textureType, id, fboID, rboID, platformStencilRboID);
+    Function<void()> fn = Bind(&Texture::ReleaseTextureDataInternal, this, tt, id, fboID, rboID, platformStencilRboID);
 	JobManager::Instance()->CreateMainJob(fn);
 
     id = 0;
@@ -728,7 +729,7 @@ void Texture::SetParamsFromImages(const Vector<Image *> * images)
 
 void Texture::FlushDataToRenderer(Vector<Image *> * images)
 {
-    Function<void()> fn = Bind(MakeFunction(PointerWrapper<Texture>::WrapRetainRelease(this), &Texture::FlushDataToRendererInternal), images);
+    Function<void()> fn = Bind(MakeFunction(MakeSharedObject(this), &Texture::FlushDataToRendererInternal), images);
 	JobManager::Instance()->CreateMainJob(fn);
 }
 
@@ -988,7 +989,7 @@ Texture * Texture::CreateFBO(uint32 w, uint32 h, PixelFormat format, DepthFormat
 #if defined(__DAVAENGINE_OPENGL__)
 void Texture::HWglCreateFBOBuffers()
 {
-    JobManager::Instance()->CreateMainJob(MakeFunction(PointerWrapper<Texture>::WrapRetainRelease(this), &Texture::HWglCreateFBOBuffersInternal));
+    JobManager::Instance()->CreateMainJob(MakeFunction(MakeSharedObject(this), &Texture::HWglCreateFBOBuffersInternal));
 }
 
 void Texture::HWglCreateFBOBuffersInternal()

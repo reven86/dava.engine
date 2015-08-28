@@ -171,7 +171,7 @@ void MemoryManager::Update()
         symbolCollectorThread->Start();
     }
 
-    if (updateCallback != 0)
+    if (updateCallback != nullptr)
     {
         updateCallback();
     }
@@ -432,7 +432,7 @@ void MemoryManager::EnterTagScope(uint32 tag)
         statGeneral.activeTags |= tag;
         statGeneral.activeTagCount += 1;
     }
-    if (tagCallback != 0)
+    if (tagCallback != nullptr)
     {
         tagCallback(tag, true);
     }
@@ -448,7 +448,7 @@ void MemoryManager::LeaveTagScope(uint32 tag)
         statGeneral.activeTags &= ~tag;
         statGeneral.activeTagCount -= 1;
     }
-    if (tagCallback != 0)
+    if (tagCallback != nullptr)
     {
         tagCallback(tag, false);
     }

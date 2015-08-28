@@ -31,7 +31,7 @@
 #define __DAVAENGINE_SERVICEREGISTRAR_H__
 
 #include <Base/BaseTypes.h>
-#include <Base/Function.h>
+#include <Functional/Function.h>
 
 namespace DAVA
 {

@@ -26,78 +26,77 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __DAVA_SIGNAL_BASE_H__
+#define __DAVA_SIGNAL_BASE_H__
 
-#ifndef __DAVA_SIGNAL_H__
-#define __DAVA_SIGNAL_H__
+#include "Base/BaseTypes.h"
 
-#include "Function.h"
-#include "FunctionTraits.h"
-#include <vector> 
+namespace DAVA {
 
-namespace DAVA
+using SigConnectionID = size_t;
+
+class TrackedObject;
+class SignalBase
 {
-	template<typename F>
-	struct SignalBase
-	{
-        using FunctionType = typename FuncTraits<F>::FunctionType;
-        using ParamType1 = typename FunctionType::ParamType1;
-        using ParamType2 = typename FunctionType::ParamType2;
-        using ParamType3 = typename FunctionType::ParamType3;
-        using ParamType4 = typename FunctionType::ParamType4;
-        using ParamType5 = typename FunctionType::ParamType5;
-        using ParamType6 = typename FunctionType::ParamType6;
-        using ParamType7 = typename FunctionType::ParamType7;
-        using ParamType8 = typename FunctionType::ParamType8;
+public:
+    virtual ~SignalBase() = default;
+    virtual void Disconnect(TrackedObject*) = 0;
 
-		void Connect(FunctionType &fn) 
-		{
-			slots.push_back(fn);
-		}
+    static SigConnectionID GetUniqueConnectionID()
+    {
+        static Atomic<SigConnectionID> counter = { 0 };
+        return ++counter;
+    }
+};
 
-		void Disconect(FunctionType &fn)
-		{
-			for (int i = 0; i < slots.size(); ++i)
-			{
-			}
-		}
+class TrackedObject
+{
+public:
+    void Track(SignalBase *signal)
+    {
+        trackedSignals.insert(signal);
+    }
 
-	protected:
-		std::vector<FunctionType> slots;
-	};
+    void Untrack(SignalBase *signal)
+    {
+        trackedSignals.erase(signal);
+    }
+    
+    template<typename T>
+    static TrackedObject* Cast(T *t)
+    {
+        return Detail<std::is_base_of<TrackedObject, T>::value>::Cast(t);
+    }
 
-	template<typename T>
-	struct Signal
-	{
-	};
+protected:
+    Set<SignalBase*> trackedSignals;
 
-	template<typename R>
-	struct Signal<R()> : SignalBase< Function<R()> >
-	{
-        using Base = SignalBase<Function<void ()>>;
+    template<bool is_derived_from_tracked_obj>
+    struct Detail;
 
-		void Emit() 
-		{ 
-			for (size_t i = 0; i < Base::slots.size(); ++i)
-			{
-				Base::slots[i]();
-			}
-		}
-	};
+    ~TrackedObject()
+    {
+        while (trackedSignals.size() > 0)
+        {
+            auto it = trackedSignals.begin();
+            (*it)->Disconnect(this);
+        }
+    }
+};
+    
+template<>
+struct TrackedObject::Detail<false>
+{
+    static TrackedObject* Cast(void* t) { return nullptr; }
+};
 
-	template<typename R, typename P1, typename P2, typename P3>
-	struct Signal<R(P1, P2, P3)> : SignalBase< Function<R(P1, P2, P3)> >
-	{
-        using Base = SignalBase<Function<R (P1, P2, P3)>>;
+template<>
+struct TrackedObject::Detail<true>
+{
+    template<typename T>
+    static TrackedObject* Cast(T* t) { return static_cast<TrackedObject *>(t); }
+};
 
-		void Emit(P1 p1, P2 p2, P3 p3)
-		{
-			for (size_t i = 0; i < Base::slots.size(); ++i)
-			{
-				Base::slots[i](p1, p2, p3);
-			}
-		}
-	};
+} // namespace DAVA
 
-}
-
-#endif // __DAVA_SIGNAL_H__
+#endif // __DAVA_SIGNAL_BASE_H__
