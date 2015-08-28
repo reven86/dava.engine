@@ -64,7 +64,16 @@ PackageOptions ParseCommandLine()
 
 void ShowUsage()
 {
+    String message = 
+        "UWPRunner is a utility for installing, running and collection output "
+        "of universal windows applications.\n"
+        "UWPRunner may need administrative rights for configuring of IpOverUsb service\n"
+        "Usage: \n"
+        "    --package [path to appx package]\n"
+        "    --dependencies [path to package dependencies dir]\n"
+        "    --profile (local/phone) [target device for package]";
 
+    std::cout << message;
 }
 
 bool CheckPackageOption(const Optional<String>& package)
