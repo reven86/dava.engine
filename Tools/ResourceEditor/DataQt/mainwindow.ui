@@ -36,7 +36,16 @@
     <property name="spacing">
      <number>3</number>
     </property>
-    <property name="margin">
+    <property name="leftMargin">
+     <number>1</number>
+    </property>
+    <property name="topMargin">
+     <number>1</number>
+    </property>
+    <property name="rightMargin">
+     <number>1</number>
+    </property>
+    <property name="bottomMargin">
      <number>1</number>
     </property>
     <item>
@@ -69,7 +78,16 @@
      <property name="spacing">
       <number>3</number>
      </property>
-     <property name="margin">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
       <number>0</number>
      </property>
      <item>
@@ -96,7 +114,16 @@
         <property name="spacing">
          <number>3</number>
         </property>
-        <property name="margin">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
          <number>0</number>
         </property>
        </layout>
@@ -114,7 +141,16 @@
         <property name="spacing">
          <number>1</number>
         </property>
-        <property name="margin">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
          <number>0</number>
         </property>
         <item>
@@ -177,7 +213,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -348,13 +384,6 @@
     <property name="title">
      <string>Scene</string>
     </property>
-    <widget class="QMenu" name="menuDynamicShadowBlendMode">
-     <property name="title">
-      <string>Dynamic Shadow Blend Mode</string>
-     </property>
-     <addaction name="actionDynamicBlendModeAlpha"/>
-     <addaction name="actionDynamicBlendModeMultiply"/>
-    </widget>
     <widget class="QMenu" name="menuLandscape_2">
      <property name="title">
       <string>Landscape save</string>
@@ -383,8 +412,6 @@
     <addaction name="actionReloadSprites"/>
     <addaction name="actionReloadShader"/>
     <addaction name="actionConvertModifiedTextures"/>
-    <addaction name="separator"/>
-    <addaction name="menuDynamicShadowBlendMode"/>
     <addaction name="separator"/>
     <addaction name="actionHeightMapEditor"/>
     <addaction name="actionTileMapEditor"/>
@@ -514,7 +541,16 @@
      <property name="spacing">
       <number>3</number>
      </property>
-     <property name="margin">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
       <number>0</number>
      </property>
      <item>
@@ -560,7 +596,16 @@
      <property name="spacing">
       <number>2</number>
      </property>
-     <property name="margin">
+     <property name="leftMargin">
+      <number>1</number>
+     </property>
+     <property name="topMargin">
+      <number>1</number>
+     </property>
+     <property name="rightMargin">
+      <number>1</number>
+     </property>
+     <property name="bottomMargin">
       <number>1</number>
      </property>
      <item>
@@ -592,7 +637,16 @@
         <property name="spacing">
          <number>3</number>
         </property>
-        <property name="margin">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
          <number>0</number>
         </property>
         <item>
@@ -647,7 +701,16 @@
    </attribute>
    <widget class="QWidget" name="dockLODEditorContent">
     <layout class="QVBoxLayout" name="verticalLayout_2">
-     <property name="margin">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
       <number>0</number>
      </property>
      <item>
@@ -661,7 +724,7 @@
           <x>0</x>
           <y>0</y>
           <width>256</width>
-          <height>92</height>
+          <height>90</height>
          </rect>
         </property>
        </widget>
@@ -768,7 +831,16 @@
    </attribute>
    <widget class="QWidget" name="dockLandscapeEditorControlsContent">
     <layout class="QVBoxLayout" name="verticalLayout_3">
-     <property name="margin">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
       <number>0</number>
      </property>
      <item>
@@ -782,7 +854,7 @@
           <x>0</x>
           <y>0</y>
           <width>256</width>
-          <height>92</height>
+          <height>90</height>
          </rect>
         </property>
        </widget>
@@ -1408,22 +1480,6 @@
    </property>
    <property name="text">
     <string>Cubemap Editor</string>
-   </property>
-  </action>
-  <action name="actionDynamicBlendModeAlpha">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Alpha</string>
-   </property>
-  </action>
-  <action name="actionDynamicBlendModeMultiply">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Multiply</string>
    </property>
   </action>
   <action name="actionReloadSprites">

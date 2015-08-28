@@ -88,7 +88,6 @@
 #include "Classes/Commands2/VisibilityToolActions.h"
 #include "Classes/Commands2/AddComponentCommand.h"
 #include "Classes/Commands2/RemoveComponentCommand.h"
-#include "Classes/Commands2/DynamicShadowCommands.h"
 
 #include "Classes/Qt/Tools/QtLabelWithActions/QtLabelWithActions.h"
 
@@ -726,11 +725,6 @@ void QtMainWindow::SetupActions()
 			
 	QObject::connect(ui->actionShowSettings, SIGNAL(triggered()), this, SLOT(OnShowSettings()));
 	
-	QObject::connect(ui->actionDynamicBlendModeAlpha, SIGNAL(triggered()), this, SLOT(OnShadowBlendModeAlpha()));
-	QObject::connect(ui->actionDynamicBlendModeMultiply, SIGNAL(triggered()), this, SLOT(OnShadowBlendModeMultiply()));
-	QObject::connect(ui->menuDynamicShadowBlendMode, SIGNAL(aboutToShow()), this, SLOT(OnShadowBlendModeWillShow()));
-
-    
 	QObject::connect(ui->actionSaveHeightmapToPNG, SIGNAL(triggered()), this, SLOT(OnSaveHeightmapToImage()));
 	QObject::connect(ui->actionSaveTiledTexture, SIGNAL(triggered()), this, SLOT(OnSaveTiledTexture()));
 	
@@ -849,7 +843,6 @@ void QtMainWindow::SceneActivated(SceneEditor2 *scene)
 	LoadUndoRedoState(scene);
 	LoadModificationState(scene);
 	LoadEditorLightState(scene);
-	LoadShadowBlendModeState(scene);
 	LoadLandscapeEditorState(scene);
 	LoadObjectTypes(scene);
 	LoadHangingObjects(scene);
@@ -950,9 +943,6 @@ void QtMainWindow::EnableSceneActions(bool enable)
 	ui->actionSaveTiledTexture->setEnabled(enable);
 
 	ui->actionBeastAndSave->setEnabled(enable);
-
-	ui->actionDynamicBlendModeAlpha->setEnabled(enable);
-	ui->actionDynamicBlendModeMultiply->setEnabled(enable);
 
 	ui->actionHangingObjects->setEnabled(enable);
 
@@ -1875,20 +1865,6 @@ void QtMainWindow::LoadEditorLightState(SceneEditor2 *scene)
 	}
 }
 
-void QtMainWindow::LoadShadowBlendModeState(SceneEditor2* scene)
-{
-#if RHI_COMPLETE_EDITOR
-	if(nullptr != scene)
-	{
-		const ShadowPassBlendMode::eBlend blend = scene->GetShadowBlendMode();
-
-		ui->actionDynamicBlendModeAlpha->setChecked(blend == ShadowPassBlendMode::MODE_BLEND_ALPHA);
-		ui->actionDynamicBlendModeMultiply->setChecked(blend == ShadowPassBlendMode::MODE_BLEND_MULTIPLY);
-	}
-#endif
-}
-
-
 void QtMainWindow::LoadGPUFormat()
 {
 	int curGPU = GetGPUFormat();
@@ -1921,41 +1897,6 @@ void QtMainWindow::LoadMaterialLightViewMode()
 void QtMainWindow::LoadLandscapeEditorState(SceneEditor2* scene)
 {
 	OnLandscapeEditorToggled(scene);
-}
-
-void QtMainWindow::OnShadowBlendModeWillShow()
-{
-	SceneEditor2* scene = GetCurrentScene();
-    if(!scene) return;
-
-    LoadShadowBlendModeState(scene);
-}
-
-void QtMainWindow::OnShadowBlendModeAlpha()
-{
-	SceneEditor2* scene = GetCurrentScene();
-    if(!scene) return;
-
-	if(nullptr == FindLandscape(scene))
-	{
-		ShowErrorDialog(ResourceEditor::NO_LANDSCAPE_ERROR_MESSAGE);
-		return;
-	}
-	
-    scene->Exec(new ChangeDynamicShadowModeCommand(scene));
-}
-
-void QtMainWindow::OnShadowBlendModeMultiply()
-{
-	SceneEditor2* scene = GetCurrentScene();
-    if(!scene) return;
-	if(nullptr == FindLandscape(scene))
-	{
-		ShowErrorDialog(ResourceEditor::NO_LANDSCAPE_ERROR_MESSAGE);
-		return;
-	}
-	
-	scene->Exec(new ChangeDynamicShadowModeCommand(scene));
 }
 
 void QtMainWindow::OnSaveHeightmapToImage()
