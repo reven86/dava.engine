@@ -65,9 +65,26 @@ bool IsShadowNode(const String & nodeName)
     size_t fp = nodeName.find("_shadow");
     return fp != String::npos;
 }
-}
+} // unnamed namespace
 
-ColladaToSc2Importer::ImportLibrary::~ImportLibrary()
+class ImportLibrary
+{
+public:
+    ~ImportLibrary();
+    
+    PolygonGroup * GetOrCreatePolygon(ColladaPolygonGroupInstance * colladaPGI);
+    NMaterial * GetOrCreateMaterial(ColladaPolygonGroupInstance * colladaPolyGroupInst, const bool isShadow);
+    NMaterial * GetOrCreateMaterialParent(ColladaMaterial * colladaMaterial, const bool isShadow);
+    AnimationData * GetOrCreateAnimation(SceneNodeAnimation * colladaSceneNode);
+    
+private:
+    Map<ColladaPolygonGroupInstance *, PolygonGroup *> polygons;
+    Map<FastName, NMaterial *> materialParents;
+    Map<FastName, NMaterial *> materials;
+    Map<SceneNodeAnimation *, AnimationData *> animations;
+};
+    
+ImportLibrary::~ImportLibrary()
 {
     for (auto & pair : polygons)
     {
@@ -144,7 +161,7 @@ void InitPolygon(PolygonGroup * davaPolygon, uint32 vertexFormat, Vector<Collada
     }
 }
     
-PolygonGroup * ColladaToSc2Importer::ImportLibrary::GetOrCreatePolygon(ColladaPolygonGroupInstance * colladaPGI)
+PolygonGroup * ImportLibrary::GetOrCreatePolygon(ColladaPolygonGroupInstance * colladaPGI)
 {
     // Try to take polygon from library
     PolygonGroup * davaPolygon = polygons[colladaPGI];
@@ -185,7 +202,7 @@ PolygonGroup * ColladaToSc2Importer::ImportLibrary::GetOrCreatePolygon(ColladaPo
     return davaPolygon;
 }
 
-AnimationData * ColladaToSc2Importer::ImportLibrary::GetOrCreateAnimation(SceneNodeAnimation * colladaAnimation)
+AnimationData * ImportLibrary::GetOrCreateAnimation(SceneNodeAnimation * colladaAnimation)
 {
     AnimationData * animation = animations[colladaAnimation];
     if (nullptr == animation)
@@ -254,9 +271,18 @@ void GetTextureTypeAndPathFromCollada(ColladaMaterial * material, FastName & typ
         return;
     }
 }
+    
+FilePath GetNormalMapTexturePath(const FilePath & originalTexturePath)
+{
+    String ext = originalTexturePath.GetExtension();
+    String path = originalTexturePath.GetStringValue();
+    path.insert(path.length()-ext.length(), "_NM");
+    return FilePath(path);
 }
 
-NMaterial * ColladaToSc2Importer::ImportLibrary::GetOrCreateMaterialParent(ColladaMaterial * colladaMaterial, const bool isShadow)
+} // unnamed namespace
+
+NMaterial * ImportLibrary::GetOrCreateMaterialParent(ColladaMaterial * colladaMaterial, const bool isShadow)
 {
     FastName parentMaterialTemplate;
     FastName parentMaterialName;
@@ -284,19 +310,16 @@ NMaterial * ColladaToSc2Importer::ImportLibrary::GetOrCreateMaterialParent(Colla
     GetTextureTypeAndPathFromCollada(colladaMaterial, textureType, texturePath);
     davaMaterialParent->SetTexture(textureType, texturePath);
     
-    // Try to load normalmap texture
-    String ext = texturePath.GetExtension();
-    String path = texturePath.GetStringValue();
-    path.insert(path.length()-ext.length(), "_NM");
-    if (FileSystem::Instance()->IsFile(path))
+    FilePath normalMap = GetNormalMapTexturePath(texturePath);
+    if (FileSystem::Instance()->IsFile(normalMap))
     {
-        davaMaterialParent->SetTexture(NMaterial::TEXTURE_NORMAL, path);
+        davaMaterialParent->SetTexture(NMaterial::TEXTURE_NORMAL, normalMap);
     }
     
     return davaMaterialParent;
 }
     
-NMaterial * ColladaToSc2Importer::ImportLibrary::GetOrCreateMaterial(ColladaPolygonGroupInstance * colladaPolyGroupInst, const bool isShadow)
+NMaterial * ImportLibrary::GetOrCreateMaterial(ColladaPolygonGroupInstance * colladaPolyGroupInst, const bool isShadow)
 {
     ColladaMaterial * colladaMaterial = colladaPolyGroupInst->material;
     DVASSERT(nullptr != colladaMaterial && "Empty material");
@@ -469,7 +492,7 @@ void BakeTransformsUpToParent(Entity * parent, Entity * currentNode)
         }
     }
 }
-}
+} // unnamed namespace
 
 // Creates Dava::Mesh from ColladaMeshInstance and puts it
 Mesh * ColladaToSc2Importer::GetMeshFromCollada(ColladaMeshInstance * mesh, const bool isShadow)
@@ -477,7 +500,7 @@ Mesh * ColladaToSc2Importer::GetMeshFromCollada(ColladaMeshInstance * mesh, cons
     Mesh * davaMesh = nullptr;
     for (auto polygonGroupInstance : mesh->polyGroupInstances)
     {
-        PolygonGroup * davaPolygon = colladaToDavaLibrary.GetOrCreatePolygon(polygonGroupInstance);
+        PolygonGroup * davaPolygon = library->GetOrCreatePolygon(polygonGroupInstance);
 
         if (isShadow)
         {
@@ -485,7 +508,7 @@ Mesh * ColladaToSc2Importer::GetMeshFromCollada(ColladaMeshInstance * mesh, cons
         }
         
         davaMesh = new Mesh();
-        NMaterial * davaMaterial = colladaToDavaLibrary.GetOrCreateMaterial(polygonGroupInstance, isShadow);
+        NMaterial * davaMaterial = library->GetOrCreateMaterial(polygonGroupInstance, isShadow);
         davaMesh->AddPolygonGroup(davaPolygon, davaMaterial);
     }
     DVASSERT(nullptr != davaMesh && "Can't create mesh from collada MeshInstance");
@@ -530,7 +553,7 @@ void ColladaToSc2Importer::BuildSceneAsCollada(Entity * root, ColladaSceneNode *
         auto * animationComponent = new AnimationComponent();
         animationComponent->SetEntity(nodeEntity);
 
-        AnimationData * animation = colladaToDavaLibrary.GetOrCreateAnimation(colladaNode->animation);
+        AnimationData * animation = library->GetOrCreateAnimation(colladaNode->animation);
         animationComponent->SetAnimation(animation);
         nodeEntity->AddComponent(animationComponent);
     }
@@ -550,7 +573,7 @@ void ColladaToSc2Importer::LoadMaterialParents(ColladaScene * colladaScene)
 {
     for (auto cmaterial : colladaScene->colladaMaterials)
     {
-        NMaterial * globalMaterial = colladaToDavaLibrary.GetOrCreateMaterialParent(cmaterial, false);
+        NMaterial * globalMaterial = library->GetOrCreateMaterialParent(cmaterial, false);
         DVASSERT(nullptr != globalMaterial);
     }
 }
@@ -562,10 +585,19 @@ void ColladaToSc2Importer::LoadAnimations(ColladaScene * colladaScene)
         for (auto & pair : canimation->animations)
         {
             SceneNodeAnimation * colladaAnimation = pair.second;
-            AnimationData * animation = colladaToDavaLibrary.GetOrCreateAnimation(colladaAnimation);
+            AnimationData * animation = library->GetOrCreateAnimation(colladaAnimation);
             DVASSERT(nullptr != animation);
         }
     }
+}
+
+ColladaToSc2Importer::ColladaToSc2Importer()
+{
+    library = std::make_unique<ImportLibrary>();
+}
+    
+ColladaToSc2Importer::~ColladaToSc2Importer()
+{
 }
     
 void ColladaToSc2Importer::SaveSC2(ColladaScene * colladaScene, const FilePath & scenePath, const String & sceneName)

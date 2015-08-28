@@ -33,32 +33,15 @@
 namespace DAVA
 {
 
-class NMaterial;
-class PolygonGroup;
 class Entity;
-class ColladaPolygonGroupInstance;
 class ColladaSceneNode;
+class ImportLibrary;
 
 class ColladaToSc2Importer
 {
-private:
-    struct ImportLibrary
-    {
-        ~ImportLibrary();
-        
-        PolygonGroup * GetOrCreatePolygon(ColladaPolygonGroupInstance * colladaPGI);
-        NMaterial * GetOrCreateMaterial(ColladaPolygonGroupInstance * colladaPolyGroupInst, const bool isShadow);
-        NMaterial * GetOrCreateMaterialParent(ColladaMaterial * colladaMaterial, const bool isShadow);
-        AnimationData * GetOrCreateAnimation(SceneNodeAnimation * colladaSceneNode);
-
-    private:
-        Map<ColladaPolygonGroupInstance *, PolygonGroup *> polygons;
-        Map<FastName, NMaterial *> materialParents;
-        Map<FastName, NMaterial *> materials;
-        Map<SceneNodeAnimation *, AnimationData *> animations;
-    };
-
 public:
+    ColladaToSc2Importer();
+    ~ColladaToSc2Importer();
     void SaveSC2(ColladaScene * colladaScene, const FilePath & scenePath, const String & sceneName);
 
 private:
@@ -69,7 +52,7 @@ private:
     Mesh * GetMeshFromCollada(ColladaMeshInstance * mesh, const bool isShadow);
 
 private:
-    ImportLibrary colladaToDavaLibrary;
+    std::unique_ptr<ImportLibrary> library;
 };
 
 };
