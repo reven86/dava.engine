@@ -176,7 +176,7 @@ protected:
     lua_State* luaState; //TODO: multiple lua states
     
     //TODO: write a copy of localization system for autotesting
-    LocalizationSystem* autotestingLocalizationSystem;
+//    LocalizationSystem* autotestingLocalizationSystem;
     
 #endif //SWIG
 private:
