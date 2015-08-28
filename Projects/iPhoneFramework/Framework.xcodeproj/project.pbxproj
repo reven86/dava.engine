@@ -929,6 +929,10 @@
 		32B074C619E53C0C0069981A /* UIPackageLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32B074BB19E53C0C0069981A /* UIPackageLoader.cpp */; };
 		32B074C719E53C0C0069981A /* UIPackageLoader.h in Headers */ = {isa = PBXBuildFile; fileRef = 32B074BC19E53C0C0069981A /* UIPackageLoader.h */; };
 		32B074C819E53C0C0069981A /* UIPackageLoader.h in Headers */ = {isa = PBXBuildFile; fileRef = 32B074BC19E53C0C0069981A /* UIPackageLoader.h */; };
+		32B14A5E1B837B1300F8C026 /* UIIgnoreLayoutComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32B14A5C1B837B1300F8C026 /* UIIgnoreLayoutComponent.cpp */; };
+		32B14A5F1B837B1300F8C026 /* UIIgnoreLayoutComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32B14A5C1B837B1300F8C026 /* UIIgnoreLayoutComponent.cpp */; };
+		32B14A601B837B1300F8C026 /* UIIgnoreLayoutComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 32B14A5D1B837B1300F8C026 /* UIIgnoreLayoutComponent.h */; };
+		32B14A611B837B1300F8C026 /* UIIgnoreLayoutComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 32B14A5D1B837B1300F8C026 /* UIIgnoreLayoutComponent.h */; };
 		32E91F5B1B7B3097008325F9 /* UIPriorityStyleSheet.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32E91F591B7B3097008325F9 /* UIPriorityStyleSheet.cpp */; };
 		32E91F5C1B7B3097008325F9 /* UIPriorityStyleSheet.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32E91F591B7B3097008325F9 /* UIPriorityStyleSheet.cpp */; };
 		32E91F5D1B7B3097008325F9 /* UIPriorityStyleSheet.h in Headers */ = {isa = PBXBuildFile; fileRef = 32E91F5A1B7B3097008325F9 /* UIPriorityStyleSheet.h */; };
@@ -937,8 +941,6 @@
 		32F29AB61A7B733800EB2325 /* UIPackagesCache.h in Headers */ = {isa = PBXBuildFile; fileRef = 32F29AB41A7B733800EB2325 /* UIPackagesCache.h */; };
 		496526D0167F173400107C70 /* libdxt_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 496526CF167F173400107C70 /* libdxt_ios.a */; };
 		497BF6E216F751ED00AC57C6 /* DeviceInfoiOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 497BF6E116F751ED00AC57C6 /* DeviceInfoiOS.mm */; };
-		4F25831019BDC94000C28926 /* Bind.h in Headers */ = {isa = PBXBuildFile; fileRef = 4F25830A19BDC94000C28926 /* Bind.h */; };
-		4F25831119BDC94000C28926 /* FunctionTraits.h in Headers */ = {isa = PBXBuildFile; fileRef = 4F25830B19BDC94000C28926 /* FunctionTraits.h */; };
 		4F25831219BDC94000C28926 /* NullType.h in Headers */ = {isa = PBXBuildFile; fileRef = 4F25830C19BDC94000C28926 /* NullType.h */; };
 		4F25831319BDC94000C28926 /* TypeHolders.h in Headers */ = {isa = PBXBuildFile; fileRef = 4F25830D19BDC94000C28926 /* TypeHolders.h */; };
 		4F25831419BDC94000C28926 /* TypeList.h in Headers */ = {isa = PBXBuildFile; fileRef = 4F25830E19BDC94000C28926 /* TypeList.h */; };
@@ -1951,6 +1953,10 @@
 		EAAC98BF1937354800549BAD /* MeshUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = EAAC98BB1937354800549BAD /* MeshUtils.h */; };
 		EAADA0051892A48E001E1AA2 /* UIParticles.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EAADA0031892A48E001E1AA2 /* UIParticles.cpp */; };
 		EAADA0061892A48E001E1AA2 /* UIParticles.h in Headers */ = {isa = PBXBuildFile; fileRef = EAADA0041892A48E001E1AA2 /* UIParticles.h */; };
+		F3E441E71B7A50CD001FF7F1 /* Function.h in Headers */ = {isa = PBXBuildFile; fileRef = F3E441E31B7A50CD001FF7F1 /* Function.h */; };
+		F3E441E81B7A50CD001FF7F1 /* Functional.h in Headers */ = {isa = PBXBuildFile; fileRef = F3E441E41B7A50CD001FF7F1 /* Functional.h */; };
+		F3E441E91B7A50CD001FF7F1 /* Signal.h in Headers */ = {isa = PBXBuildFile; fileRef = F3E441E51B7A50CD001FF7F1 /* Signal.h */; };
+		F3E441EA1B7A50CD001FF7F1 /* SignalBase.h in Headers */ = {isa = PBXBuildFile; fileRef = F3E441E61B7A50CD001FF7F1 /* SignalBase.h */; };
 		FEA1D3D41ADF9CB5006B981A /* LibTgaHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FEA1D3D21ADF9CB5006B981A /* LibTgaHelper.cpp */; };
 		FEA1D3D51ADF9CB5006B981A /* LibTgaHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = FEA1D3D31ADF9CB5006B981A /* LibTgaHelper.h */; };
 		FED4C08D1B31AD54006D0379 /* libwebp_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 72C84EB51B29C98B003A52E0 /* libwebp_ios.a */; };
@@ -2118,14 +2124,14 @@
 		32B074BA19E53C0C0069981A /* UIPackage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIPackage.h; sourceTree = "<group>"; };
 		32B074BB19E53C0C0069981A /* UIPackageLoader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIPackageLoader.cpp; sourceTree = "<group>"; };
 		32B074BC19E53C0C0069981A /* UIPackageLoader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIPackageLoader.h; sourceTree = "<group>"; };
+		32B14A5C1B837B1300F8C026 /* UIIgnoreLayoutComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIIgnoreLayoutComponent.cpp; sourceTree = "<group>"; };
+		32B14A5D1B837B1300F8C026 /* UIIgnoreLayoutComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIIgnoreLayoutComponent.h; sourceTree = "<group>"; };
 		32E91F591B7B3097008325F9 /* UIPriorityStyleSheet.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = UIPriorityStyleSheet.cpp; path = Styles/UIPriorityStyleSheet.cpp; sourceTree = "<group>"; };
 		32E91F5A1B7B3097008325F9 /* UIPriorityStyleSheet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UIPriorityStyleSheet.h; path = Styles/UIPriorityStyleSheet.h; sourceTree = "<group>"; };
 		32F29AB31A7B733800EB2325 /* UIPackagesCache.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIPackagesCache.cpp; sourceTree = "<group>"; };
 		32F29AB41A7B733800EB2325 /* UIPackagesCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIPackagesCache.h; sourceTree = "<group>"; };
 		496526CF167F173400107C70 /* libdxt_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libdxt_ios.a; path = ../../Libs/libs/libdxt_ios.a; sourceTree = "<group>"; };
 		497BF6E116F751ED00AC57C6 /* DeviceInfoiOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = DeviceInfoiOS.mm; sourceTree = "<group>"; };
-		4F25830A19BDC94000C28926 /* Bind.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Bind.h; sourceTree = "<group>"; };
-		4F25830B19BDC94000C28926 /* FunctionTraits.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FunctionTraits.h; sourceTree = "<group>"; };
 		4F25830C19BDC94000C28926 /* NullType.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NullType.h; sourceTree = "<group>"; };
 		4F25830D19BDC94000C28926 /* TypeHolders.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TypeHolders.h; sourceTree = "<group>"; };
 		4F25830E19BDC94000C28926 /* TypeList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TypeList.h; sourceTree = "<group>"; };
@@ -3016,6 +3022,10 @@
 		EAAC98BB1937354800549BAD /* MeshUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MeshUtils.h; sourceTree = "<group>"; };
 		EAADA0031892A48E001E1AA2 /* UIParticles.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIParticles.cpp; sourceTree = "<group>"; };
 		EAADA0041892A48E001E1AA2 /* UIParticles.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIParticles.h; sourceTree = "<group>"; };
+		F3E441E31B7A50CD001FF7F1 /* Function.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Function.h; path = Functional/Function.h; sourceTree = "<group>"; };
+		F3E441E41B7A50CD001FF7F1 /* Functional.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Functional.h; path = Functional/Functional.h; sourceTree = "<group>"; };
+		F3E441E51B7A50CD001FF7F1 /* Signal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Signal.h; path = Functional/Signal.h; sourceTree = "<group>"; };
+		F3E441E61B7A50CD001FF7F1 /* SignalBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SignalBase.h; path = Functional/SignalBase.h; sourceTree = "<group>"; };
 		FEA1D3D21ADF9CB5006B981A /* LibTgaHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = LibTgaHelper.cpp; path = Image/LibTgaHelper.cpp; sourceTree = "<group>"; };
 		FEA1D3D31ADF9CB5006B981A /* LibTgaHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LibTgaHelper.h; path = Image/LibTgaHelper.h; sourceTree = "<group>"; };
 		FED4C0991B31BCA9006D0379 /* LibJpegHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = LibJpegHelper.cpp; path = Image/LibJpegHelper.cpp; sourceTree = "<group>"; };
@@ -3204,6 +3214,8 @@
 		32491C4C1B4D1298004CE811 /* Layouts */ = {
 			isa = PBXGroup;
 			children = (
+				32B14A5C1B837B1300F8C026 /* UIIgnoreLayoutComponent.cpp */,
+				32B14A5D1B837B1300F8C026 /* UIIgnoreLayoutComponent.h */,
 				32491C4D1B4D1298004CE811 /* UIAnchorComponent.cpp */,
 				32491C4E1B4D1298004CE811 /* UIAnchorComponent.h */,
 				32491C4F1B4D1298004CE811 /* UILayoutSystem.cpp */,
@@ -3679,7 +3691,6 @@
 				E8B3C7C216B9326D002BD35F /* BaseObjectChecker.cpp */,
 				E8B3C7C316B9326D002BD35F /* BaseObjectChecker.h */,
 				E8B3C7C416B9326D002BD35F /* BaseTypes.h */,
-				4F25830A19BDC94000C28926 /* Bind.h */,
 				E8B3C7C516B9326D002BD35F /* Data.cpp */,
 				E8B3C7C616B9326D002BD35F /* Data.h */,
 				E8B3C7C716B9326D002BD35F /* DynamicObjectCache.cpp */,
@@ -3694,7 +3705,6 @@
 				E8B3C7CE16B9326D002BD35F /* FastNameMap.h */,
 				E8B3C7CF16B9326D002BD35F /* FixedSizePoolAllocator.cpp */,
 				E8B3C7D016B9326D002BD35F /* FixedSizePoolAllocator.h */,
-				4F25830B19BDC94000C28926 /* FunctionTraits.h */,
 				E867917A175F620400C5A6A2 /* GlobalEnum.cpp */,
 				E867917B175F620400C5A6A2 /* GlobalEnum.h */,
 				E8B3C7D116B9326D002BD35F /* Hash.h */,
@@ -4598,6 +4608,17 @@
 			path = Utils;
 			sourceTree = "<group>";
 		};
+		F3E441E21B7A50BA001FF7F1 /* Functional */ = {
+			isa = PBXGroup;
+			children = (
+				F3E441E31B7A50CD001FF7F1 /* Function.h */,
+				F3E441E41B7A50CD001FF7F1 /* Functional.h */,
+				F3E441E51B7A50CD001FF7F1 /* Signal.h */,
+				F3E441E61B7A50CD001FF7F1 /* SignalBase.h */,
+			);
+			name = Functional;
+			sourceTree = "<group>";
+		};
 		FECFB1D912E5904400C71562 /* External */ = {
 			isa = PBXGroup;
 			children = (
@@ -4609,6 +4630,7 @@
 		FECFB32D12E5904400C71562 /* Internal */ = {
 			isa = PBXGroup;
 			children = (
+				F3E441E21B7A50BA001FF7F1 /* Functional */,
 				E8B3C7A116B9326D002BD35F /* Animation */,
 				E8B3C7B116B9326D002BD35F /* Autotesting */,
 				E8B3C7BD16B9326D002BD35F /* Base */,
@@ -4757,6 +4779,7 @@
 				02FD7F581924997C007762C0 /* FileSystem.h in Headers */,
 				02FD7F5A1924997C007762C0 /* KeyedArchive.h in Headers */,
 				02FD7F5B1924997C007762C0 /* KeyedArchiver.h in Headers */,
+				32B14A611B837B1300F8C026 /* UIIgnoreLayoutComponent.h in Headers */,
 				02FD7F5C1924997C007762C0 /* KeyedUnarchiver.h in Headers */,
 				02FD7F5D1924997C007762C0 /* LocalizationIPhone.h in Headers */,
 				D7FEF15819864E5C00B2C7AF /* BSDiff.h in Headers */,
@@ -5155,7 +5178,6 @@
 				E8B3CA8516B9326E002BD35F /* BezierSplineAnimation.h in Headers */,
 				029BAE581859B81700478671 /* SoundEvent.h in Headers */,
 				E8B3CA8716B9326E002BD35F /* Interpolation.h in Headers */,
-				4F25831019BDC94000C28926 /* Bind.h in Headers */,
 				1174B6001B41A60C002E3472 /* LinearPropertyAnimation.h in Headers */,
 				E8B3CA8916B9326E002BD35F /* KeyframeAnimation.h in Headers */,
 				7CBAFE541B38458E00F9E9ED /* Spinlock.h in Headers */,
@@ -5168,6 +5190,7 @@
 				E8B3CA9516B9326E002BD35F /* MongodbUpdateObject.h in Headers */,
 				B7464C811AEA705E00D3AB13 /* TextLayout.h in Headers */,
 				E8B3CA9916B9326E002BD35F /* BaseMath.h in Headers */,
+				F3E441EA1B7A50CD001FF7F1 /* SignalBase.h in Headers */,
 				E8525D161A30910400FDF76E /* RotationControllerComponent.h in Headers */,
 				E8B3CA9B16B9326E002BD35F /* BaseObject.h in Headers */,
 				50194DAD1A52D92600557DAB /* TCPAcceptor.h in Headers */,
@@ -5206,6 +5229,7 @@
 				E8B3CAB416B9326E002BD35F /* Message.h in Headers */,
 				E8B3CAB516B9326E002BD35F /* Meta.h in Headers */,
 				E8B3CAB616B9326E002BD35F /* ObjectCreator.h in Headers */,
+				32B14A601B837B1300F8C026 /* UIIgnoreLayoutComponent.h in Headers */,
 				32491C5B1B4D1298004CE811 /* UILayoutSystem.h in Headers */,
 				E8B3CAB816B9326E002BD35F /* ObjectFactory.h in Headers */,
 				32E91F5D1B7B3097008325F9 /* UIPriorityStyleSheet.h in Headers */,
@@ -5381,7 +5405,6 @@
 				E8B3CBDC16B9326E002BD35F /* ColorOnlyEffect.h in Headers */,
 				E8B3CBDE16B9326E002BD35F /* MultiTextureEffect.h in Headers */,
 				E8FC1304186972B60095D8FE /* QualitySettingsComponent.h in Headers */,
-				4F25831119BDC94000C28926 /* FunctionTraits.h in Headers */,
 				E8B3CBE016B9326E002BD35F /* TextureMulColorAlphaTestEffect.h in Headers */,
 				FED4C09D1B31BCA9006D0379 /* LibJpegHelper.h in Headers */,
 				E8B3CBE216B9326E002BD35F /* TextureMulColorEffect.h in Headers */,
@@ -5405,6 +5428,7 @@
 				E8B3CBFE16B9326E002BD35F /* RenderObject.h in Headers */,
 				E8B3CC0016B9326E002BD35F /* RenderPass.h in Headers */,
 				150353971A02D5AA00C90B4F /* AbstractUIPackageBuilder.h in Headers */,
+				F3E441E81B7A50CD001FF7F1 /* Functional.h in Headers */,
 				E8B3CC0216B9326E002BD35F /* RenderSystem.h in Headers */,
 				E8B3CC0416B9326E002BD35F /* ShadowRect.h in Headers */,
 				E8B3CC0616B9326E002BD35F /* ShadowVolume.h in Headers */,
@@ -5535,6 +5559,7 @@
 				D7FEF13D19864E5C00B2C7AF /* DLC.h in Headers */,
 				64493DF419476F4700AB2715 /* RenderBatchPool.h in Headers */,
 				E8B3CCC916B9326E002BD35F /* RenderUpdateSystem.h in Headers */,
+				F3E441E71B7A50CD001FF7F1 /* Function.h in Headers */,
 				50194DC91A52D92600557DAB /* TCPServerTransport.h in Headers */,
 				E8B3CCCB16B9326E002BD35F /* SwitchSystem.h in Headers */,
 				E8B3CCCD16B9326E002BD35F /* TransformSystem.h in Headers */,
@@ -5659,6 +5684,7 @@
 				17816B8117B2748900B067E1 /* AllocatorFactory.h in Headers */,
 				E8586C4119F8FEBA004FD709 /* BackgroundView.h in Headers */,
 				A679102A17B3CF2D000AA2F2 /* SkyboxRenderObject.h in Headers */,
+				F3E441E91B7A50CD001FF7F1 /* Signal.h in Headers */,
 				5015AF361B15E4D80062C971 /* MMNetServer.h in Headers */,
 				17D7E5F617A6C06B00861981 /* UIDismissionHandlerAlertView.h in Headers */,
 				EA56555417CE00E100426EB8 /* PerformanceSettings.h in Headers */,
@@ -6088,6 +6114,7 @@
 				02FD818F1924997C007762C0 /* UILoadingTransition.cpp in Sources */,
 				02FD81901924997C007762C0 /* UIMoveInTransition.cpp in Sources */,
 				E8525D281A30911400FDF76E /* RotationControllerSystem.cpp in Sources */,
+				32B14A5F1B837B1300F8C026 /* UIIgnoreLayoutComponent.cpp in Sources */,
 				02FD81911924997C007762C0 /* UIPopup.cpp in Sources */,
 				02FD81921924997C007762C0 /* UIScreen.cpp in Sources */,
 				02FD81931924997C007762C0 /* UIScreenManageriPhone.mm in Sources */,
@@ -6418,6 +6445,7 @@
 				E8B3CC3416B9326E002BD35F /* RenderOptions.cpp in Sources */,
 				E8B3CC3616B9326E002BD35F /* RenderResource.cpp in Sources */,
 				32B074C519E53C0C0069981A /* UIPackageLoader.cpp in Sources */,
+				32B14A5E1B837B1300F8C026 /* UIIgnoreLayoutComponent.cpp in Sources */,
 				E8B3CC3B16B9326E002BD35F /* Shader.cpp in Sources */,
 				E8B3CC3D16B9326E002BD35F /* ShaderDX.cpp in Sources */,
 				E8B3CC3E16B9326E002BD35F /* ShaderGL.cpp in Sources */,

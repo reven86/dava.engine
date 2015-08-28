@@ -135,7 +135,7 @@ DAVA_TESTCLASS(MemoryManagerTest)
     {
         const uint32 TAG = 1;
 
-        MemoryManager::Instance()->SetCallbacks(0, MakeFunction(this, &MemoryManagerTest::TagCallback));
+        MemoryManager::Instance()->SetCallbacks(nullptr, MakeFunction(this, &MemoryManagerTest::TagCallback));
 
         DAVA_MEMORY_PROFILER_ENTER_TAG(TAG);
         DAVA_MEMORY_PROFILER_LEAVE_TAG(TAG);

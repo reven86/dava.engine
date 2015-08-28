@@ -26,72 +26,10 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __DAVA_FUNCTIONAL_H__
+#define __DAVA_FUNCTIONAL_H__
 
-#include "UIComponent.h"
-#include "UI/UIControl.h"
+#include "Functional/Function.h"
+#include "Functional/Signal.h"
 
-#include "UI/Layouts/UILinearLayoutComponent.h"
-#include "UI/Layouts/UIIgnoreLayoutComponent.h"
-#include "UI/Layouts/UISizePolicyComponent.h"
-#include "UI/Layouts/UIAnchorComponent.h"
-
-namespace DAVA
-{
-
-UIComponent::UIComponent()
-    : control(NULL)
-{
-}
-
-UIComponent::~UIComponent()
-{
-}
-
-UIComponent * UIComponent::CreateByType(uint32 componentType)
-{
-    switch (componentType)
-    {
-        case LINEAR_LAYOUT_COMPONENT:
-            return new UILinearLayoutComponent();
-            
-        case IGNORE_LAYOUT_COMPONENT:
-            return new UIIgnoreLayoutComponent();
-            
-        case SIZE_POLICY_COMPONENT:
-            return new UISizePolicyComponent();
-            
-        case ANCHOR_COMPONENT:
-            return new UIAnchorComponent();
-            
-        default:
-            DVASSERT(false);
-            return nullptr;
-    }
-    
-}
-    
-bool UIComponent::IsMultiple(uint32 componentType)
-{
-    switch (componentType)
-    {
-        case LINEAR_LAYOUT_COMPONENT:
-            return false;
-            
-        case IGNORE_LAYOUT_COMPONENT:
-            return false;
-            
-        case SIZE_POLICY_COMPONENT:
-            return false;
-            
-        case ANCHOR_COMPONENT:
-            return false;
-            
-        default:
-            DVASSERT(false);
-            return false;
-    }
-    
-}
-
-
-}
+#endif // __DAVA_FUNCTIONAL_H__
