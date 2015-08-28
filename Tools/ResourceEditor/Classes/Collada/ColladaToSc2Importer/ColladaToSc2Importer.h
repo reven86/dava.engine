@@ -48,8 +48,6 @@ private:
         
         PolygonGroup * GetOrCreatePolygon(ColladaPolygonGroupInstance * colladaPGI);
         NMaterial * GetOrCreateMaterial(ColladaPolygonGroupInstance * colladaPolyGroupInst, const bool isShadow);
-
-    private:
         NMaterial * GetOrCreateMaterialParent(ColladaMaterial * colladaMaterial, const bool isShadow);
 
     private:
@@ -62,6 +60,7 @@ public:
     void SaveSC2(ColladaScene * colladaScene, const FilePath & scenePath, const String & sceneName);
 
 private:
+    void LoadMaterialParents(ColladaScene * colladaScene);
     void FillMeshes(const Vector<ColladaMeshInstance *> & meshInstances, Entity * node);
     void BuildSceneAsCollada(Entity * root, ColladaSceneNode * colladaNode);
     Mesh * GetMeshFromCollada(ColladaMeshInstance * mesh, const bool isShadow);

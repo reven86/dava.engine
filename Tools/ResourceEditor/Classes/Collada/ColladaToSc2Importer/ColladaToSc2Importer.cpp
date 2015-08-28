@@ -59,10 +59,9 @@ void FlipTexCoords(Vector2 & v)
     v.y = 1.0f - v.y;
 }
 
-bool IsShadowNode(Entity * node)
+bool IsShadowNode(const String & nodeName)
 {
-    String name(node->GetName().c_str());
-    size_t fp = name.find("_shadow");
+    size_t fp = nodeName.find("_shadow");
     return fp != String::npos;
 }
 }
@@ -457,7 +456,7 @@ void ColladaToSc2Importer::FillMeshes(const Vector<ColladaMeshInstance *> & mesh
     DVASSERT(1 >= meshInstances.size() && "Should be only one meshInstance in one collada node");
     for (auto meshInstance : meshInstances)
     {
-        bool isShadowNode = IsShadowNode(node);
+        bool isShadowNode = IsShadowNode(node->GetName().c_str());
         
         ScopedPtr<RenderObject> davaMesh(GetMeshFromCollada(meshInstance, isShadowNode));
         RenderComponent * davaRenderComponent = GetRenderComponent(node);
@@ -520,9 +519,21 @@ void ColladaToSc2Importer::BuildSceneAsCollada(Entity * root, ColladaSceneNode *
     }
 }
 
+void ColladaToSc2Importer::LoadMaterialParents(ColladaScene * colladaScene)
+{
+    for (auto cmaterial : colladaScene->colladaMaterials)
+    {
+        NMaterial * globalMaterial = colladaToDavaLibrary.GetOrCreateMaterialParent(cmaterial, false);
+        DVASSERT(nullptr != globalMaterial);
+    }
+}
+    
 void ColladaToSc2Importer::SaveSC2(ColladaScene * colladaScene, const FilePath & scenePath, const String & sceneName)
 {
     ScopedPtr<Scene> scene(new Scene());
+
+    // Load scene global materials.
+    LoadMaterialParents(colladaScene);
     
     // iterate recursive over collada scene and build Dava Scene with same ierarchy
     BuildSceneAsCollada(scene, colladaScene->rootNode);
