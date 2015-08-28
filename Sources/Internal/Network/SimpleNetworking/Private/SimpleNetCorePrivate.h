@@ -54,7 +54,7 @@ public:
         IConnectionManager::ConnectionRole role,
         const Endpoint& endPoint,
         const String& serviceName,
-        NotificationType notifType);
+        bool waitSuccessfulConnection);
 
     void UnregisterAllServices();
 

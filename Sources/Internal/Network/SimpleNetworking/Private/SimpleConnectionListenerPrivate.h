@@ -51,10 +51,9 @@ class ConnectionListenerPrivate
 {
 public:
     ConnectionListenerPrivate(const ConnectionWaitFunction& connWaiter,
-                              const Endpoint& endPoint,
-                              NotificationType notifType);
+                              const Endpoint& endPoint);
 
-    ConnectionListenerPrivate(IConnectionPtr& conn, NotificationType notifType);
+    ConnectionListenerPrivate(IConnectionPtr& conn);
     ~ConnectionListenerPrivate();
 
     IConnectionPtr GetConnection() const;
@@ -64,8 +63,8 @@ public:
 
     void Start();
 
-    void SetRestartable(bool restart) { restartable = restart; }
-    bool IsRestartable() const { return restartable.Get(); }
+    void WaitSuccessfulConnection(bool wait) { waitSuccessfulConnection = wait; }
+    bool IsWaitingForSuccessfulConnection() const { return waitSuccessfulConnection.Get(); }
 
 private:
     void Start(const ConnectionWaitFunction& connectionWaiter, const Endpoint& endPoint);
@@ -76,8 +75,7 @@ private:
     ConcurrentList<ConnectionCallback> onConnectCallbacks;
     ConcurrentList<DataReceiveCallback> onDataReceiveCallbacks;
     ConcurrentList<ConnectionCloseCallback> onConnectionCloseCallbacks;
-    NotificationType notificationType;
-    Atomic<bool> restartable = false;
+    Atomic<bool> waitSuccessfulConnection = false;
 };
 
 }  // namespace Net

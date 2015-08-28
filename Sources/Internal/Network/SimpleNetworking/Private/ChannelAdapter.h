@@ -30,6 +30,7 @@
 #ifndef __DAVAENGINE_CHANNEL_ADAPTER_H__
 #define __DAVAENGINE_CHANNEL_ADAPTER_H__
 
+#include "Concurrency/Mutex.h"
 #include "Network/IChannel.h"
 #include "Network/SimpleNetworking/IConnection.h"
 
@@ -55,6 +56,7 @@ public:
     bool IsSessionEnded() const;
 
 private:
+    mutable RecursiveMutex mutex;
     IConnectionPtr connection;
     IChannelListener* channelListener;
     bool connectionWasHere = false;

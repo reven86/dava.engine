@@ -51,10 +51,15 @@ public:
     bool ReadAll(char* buffer, size_t bufSize) override;
     size_t Write(const char* buffer, size_t bufSize) override;
 
+    size_t ReadBytesCount() override;
+    size_t WrittenBytesCount() override;
+
 private:
     ISimpleAbstractSocketPtr socket;
     Mutex recvMutex;
     Mutex sendMutex;
+    size_t readBytesCount = 0;
+    size_t writtenBytesCount = 0;
 };
 
 }  // namespace Net

@@ -58,9 +58,10 @@ const SimpleNetService* SimpleNetCore::RegisterService(
     IConnectionManager::ConnectionRole role,
     const Endpoint& endPoint,
     const String& serviceName,
-    NotificationType notifType)
+    bool waitSuccessfulConnection)
 {
-    return pimpl->RegisterService(std::move(service), role, endPoint, serviceName, notifType);
+    return pimpl->RegisterService(std::forward<std::unique_ptr<NetService>>(service), 
+        role, endPoint, serviceName, waitSuccessfulConnection);
 }
 
 void SimpleNetCore::UnregisterAllServices()

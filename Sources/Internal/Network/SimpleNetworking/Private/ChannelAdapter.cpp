@@ -27,6 +27,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
 
+#include "Concurrency/LockGuard.h"
 #include "Network/SimpleNetworking/Private/ChannelAdapter.h"
 
 namespace DAVA
@@ -42,6 +43,8 @@ ChannelAdapter::ChannelAdapter(IChannelListener* listener)
 
 void ChannelAdapter::SetConnection(IConnectionPtr& conn)
 {
+    LockGuard<RecursiveMutex> guard(mutex);
+
     connection = conn;
     connectionWasHere = true;
     channelListener->OnChannelOpen(this);
@@ -49,12 +52,18 @@ void ChannelAdapter::SetConnection(IConnectionPtr& conn)
 
 void ChannelAdapter::RemoveConnection()
 {
+    LockGuard<RecursiveMutex> guard(mutex);
+    if (!connection)
+        return;
+    
     connection.Reset();
     channelListener->OnChannelClosed(this, "");
 }
 
 bool ChannelAdapter::Send(const void* data, size_t length, uint32 /*flags*/, uint32* packetId)
 {
+    LockGuard<RecursiveMutex> guard(mutex);
+
     if (!connection)
         return false;
 
@@ -72,17 +81,20 @@ bool ChannelAdapter::Send(const void* data, size_t length, uint32 /*flags*/, uin
 
 void ChannelAdapter::Receive(const void* data, size_t length)
 {
+    LockGuard<RecursiveMutex> guard(mutex);
     channelListener->OnPacketReceived(this, data, length);
 }
 
 const Endpoint& ChannelAdapter::RemoteEndpoint() const
 {
+    LockGuard<RecursiveMutex> guard(mutex);
     return connection->GetEndpoint();
 }
 
 bool ChannelAdapter::IsSessionEnded() const 
 { 
-    return connectionWasHere && !IsConnectionEstablished(); 
+    LockGuard<RecursiveMutex> guard(mutex);
+    return connectionWasHere && !IsConnectionEstablished();
 }
 
 }  // namespace Net

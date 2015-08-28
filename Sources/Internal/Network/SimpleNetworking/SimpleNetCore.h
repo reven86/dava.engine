@@ -43,21 +43,17 @@ namespace DAVA
 namespace Net
 {
 
-enum class NotificationType
-{
-    kMainThread,
-    kAnyThread
-};
-    
 struct IConnectionManager
 {
     enum ConnectionRole
     {
-        kServerRole = 0x1,
-        kClientRole = 0x2
+        ServerRole = 0x1,
+        ClientRole = 0x2
     };
     virtual IConnectionPtr CreateConnection(ConnectionRole role,
                                             const Endpoint& endPoint) = 0;
+
+    virtual ~IConnectionManager() {}
 };
 
 class SimpleNetService;
@@ -65,6 +61,11 @@ class SimpleNetService;
 class SimpleNetCore : public Singleton<SimpleNetCore>
 {
 public:
+    //Port number for connecting to UWP app on local machine
+    static const uint16 UWPLocalPort = 777;
+    //Port number for connecting to UWP app on mobile device (via IpOverUSB service)
+    static const uint16 UWPRemotePort = 1911; //0x777
+
     SimpleNetCore();
     ~SimpleNetCore();
     
@@ -78,7 +79,7 @@ public:
         IConnectionManager::ConnectionRole role,
         const Endpoint& endPoint,
         const String& serviceName,
-        NotificationType notifType = NotificationType::kAnyThread);
+        bool waitSuccessfulConnection = false);
 
     void UnregisterAllServices();
 

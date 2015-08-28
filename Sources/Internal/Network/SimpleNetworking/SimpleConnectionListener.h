@@ -50,16 +50,12 @@ class ConnectionListener
 public:
     enum class State
     {
-        kConnectionEstablishing,
-        kConnectionListening
+        ConnectionEstablishing,
+        ConnectionListening
     };
 
-    ConnectionListener(const ConnectionWaitFunction& connWaiter,
-                       const Endpoint& endPoint,
-                       NotificationType notifType = NotificationType::kAnyThread);
-
-    ConnectionListener(IConnectionPtr& conn,
-                       NotificationType notifType = NotificationType::kAnyThread);
+    ConnectionListener(const ConnectionWaitFunction& connWaiter, const Endpoint& endPoint);
+    ConnectionListener(IConnectionPtr& conn);
 
     ConnectionListener(const ConnectionListener&) = delete;
     ConnectionListener(ConnectionListener&& other);
@@ -72,8 +68,8 @@ public:
 
     void Start();
     
-    void SetRestartable(bool restartable);
-    bool IsRestartable() const;
+    void WaitSuccessfulConnection(bool wait);
+    bool IsWaitingForSuccessfulConnection() const;
 
 private:
     std::unique_ptr<class ConnectionListenerPrivate> pimpl;

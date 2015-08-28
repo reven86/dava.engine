@@ -36,15 +36,14 @@ namespace Net
 {
 
 ConnectionListener::ConnectionListener(const ConnectionWaitFunction& connWaiter,
-                                       const Endpoint& endPoint,
-                                       NotificationType notifType)
+                                       const Endpoint& endPoint)
 {
-    pimpl = std::make_unique<ConnectionListenerPrivate>(connWaiter, endPoint, notifType);
+    pimpl = std::make_unique<ConnectionListenerPrivate>(connWaiter, endPoint);
 }
 
-ConnectionListener::ConnectionListener(IConnectionPtr& conn, NotificationType notifType)
+ConnectionListener::ConnectionListener(IConnectionPtr& conn)
 {
-    pimpl = std::make_unique<ConnectionListenerPrivate>(conn, notifType);
+    pimpl = std::make_unique<ConnectionListenerPrivate>(conn);
 }
 
 ConnectionListener::ConnectionListener(ConnectionListener&& other) 
@@ -82,14 +81,14 @@ void ConnectionListener::Start()
     pimpl->Start();
 }
 
-void ConnectionListener::SetRestartable(bool restartable)
+void ConnectionListener::WaitSuccessfulConnection(bool wait)
 {
-    pimpl->SetRestartable(restartable);
+    pimpl->WaitSuccessfulConnection(wait);
 }
 
-bool ConnectionListener::IsRestartable() const
+bool ConnectionListener::IsWaitingForSuccessfulConnection() const
 {
-    return pimpl->IsRestartable();
+    return pimpl->IsWaitingForSuccessfulConnection();
 }
 
 }  // namespace Net

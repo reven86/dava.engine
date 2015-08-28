@@ -43,6 +43,7 @@ namespace Net
 struct IConnection : public IReadOnlyConnection
 {
     virtual size_t Write(const char* buffer, size_t bufSize) = 0;
+    virtual size_t WrittenBytesCount() = 0;
     
     template <typename T>
     bool Write(const T& value);

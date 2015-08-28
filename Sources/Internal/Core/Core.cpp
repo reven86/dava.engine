@@ -629,26 +629,37 @@ void Core::InitializeNetwork()
 #ifdef __DAVAENGINE_WIN_UAP__
 
     //Initialize a simple net core and start NetLogger service
+    bool isMobileDevice = DeviceInfo::GetPlatform() == DeviceInfo::PLATFORM_PHONE_WIN_UAP;
+    uint16 port;
+    Net::IConnectionManager::ConnectionRole role;
+
+    if (isMobileDevice)
+    {
+        port = Net::SimpleNetCore::UWPRemotePort;
+        role = Net::IConnectionManager::ServerRole;
+    }
+    else
+    {
+        port = Net::SimpleNetCore::UWPLocalPort;
+        role = Net::IConnectionManager::ClientRole;
+    }
+    Net::Endpoint endPoint("127.0.0.1", port);
+
+    auto netLoggerService = std::make_unique<Net::NetLogger>(true, 100, false);
+
     Net::SimpleNetCore* simpleNetCore = new Net::SimpleNetCore();
-
-    //TODO: recognize if current machine is phone and make a normal end point!
-    Net::Endpoint endPoint("127.0.0.1", 1911);
-    //Net::Endpoint endPoint("127.0.0.1", 777);
-    auto netLoggerService = std::make_unique<Net::NetLogger>();
-
-    //TODO: make a normal service name
     const Net::SimpleNetService* service = simpleNetCore->RegisterService(
-        std::move(netLoggerService), Net::IConnectionManager::kClientRole, endPoint, "NetLogger");
+        std::move(netLoggerService), role, endPoint, "RawNetLogger");
 
-    DVASSERT_MSG(service != 0, "Failed to create a NetLogger service");
+    DVASSERT_MSG(service != nullptr, "Failed to create a NetLogger service");
     
 #endif  // __DAVAENGINE_WIN_UAP__
 }
 
 void Core::DeInitializeNetwork()
 {
-    // Finish network infrastructure
-    // As I/O event loop runs in main thread so NetCore should run out loop to make graceful shutdown
+    //Finish network infrastructure
+    //As I/O event loop runs in main thread so NetCore should run out loop to make graceful shutdown
     Net::NetCore::Instance()->Finish(true);
     Net::NetCore::Instance()->Release();
 

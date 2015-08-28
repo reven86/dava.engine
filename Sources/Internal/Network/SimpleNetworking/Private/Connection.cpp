@@ -49,7 +49,7 @@ Connection::Connection(const ISimpleAbstractSocketPtr& abstractSocket)
 IReadOnlyConnection::ChannelState Connection::GetChannelState()
 {
     bool connectionEstablished = socket->IsConnectionEstablished();
-    return connectionEstablished ? ChannelState::kConnected : ChannelState::kDisconnected;
+    return connectionEstablished ? ChannelState::Connected : ChannelState::Disconnected;
 }
 
 const Endpoint& Connection::GetEndpoint()
@@ -62,6 +62,7 @@ size_t Connection::ReadSome(char* buffer, size_t bufSize)
     LockGuard<Mutex> lock(recvMutex);
 
     size_t read = socket->Recv(buffer, bufSize, false);
+    readBytesCount += read;
     return read;
 }
 
@@ -70,6 +71,7 @@ bool Connection::ReadAll(char* buffer, size_t bufSize)
     LockGuard<Mutex> lock(recvMutex);
 
     size_t read = socket->Recv(buffer, bufSize, true);
+    readBytesCount += read;
     return read > 0;
 }
 
@@ -78,7 +80,20 @@ size_t Connection::Write(const char* buffer, size_t bufSize)
     LockGuard<Mutex> lock(sendMutex);
 
     size_t written = socket->Send(buffer, bufSize);
+    writtenBytesCount += written;
     return written;
+}
+
+size_t Connection::ReadBytesCount()
+{
+    LockGuard<Mutex> lock(recvMutex);
+    return readBytesCount;
+}
+
+size_t Connection::WrittenBytesCount()
+{
+    LockGuard<Mutex> lock(sendMutex);
+    return writtenBytesCount;
 }
     
 }  // namespace Net

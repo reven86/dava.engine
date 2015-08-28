@@ -47,7 +47,7 @@ const SimpleNetService* SimpleNetCorePrivate::RegisterService(
     IConnectionManager::ConnectionRole role,
     const Endpoint& endPoint,
     const String& serviceName,
-    NotificationType notifType)
+    bool waitSuccessfulConnection)
 {
     if (serviceName.empty())
         return nullptr;
@@ -66,9 +66,10 @@ const SimpleNetService* SimpleNetCorePrivate::RegisterService(
     };
 
     //create net service
-    ConnectionListener connListener(connWaiter, endPoint, notifType);
-    SimpleNetService netService
-        (serviceId, std::move(service), endPoint, serviceName, std::move(connListener));
+    ConnectionListener connListener(connWaiter, endPoint);
+    connListener.WaitSuccessfulConnection(waitSuccessfulConnection);
+    SimpleNetService netService(serviceId, std::forward<std::unique_ptr<NetService>>(service), 
+        endPoint, serviceName, std::move(connListener));
 
     auto iter = services.emplace(serviceId, std::move(netService));
     return &iter.first->second;

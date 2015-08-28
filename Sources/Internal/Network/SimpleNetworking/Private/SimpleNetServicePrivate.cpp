@@ -51,7 +51,10 @@ SimpleNetServicePrivate::SimpleNetServicePrivate(size_t serviceId,
     listener.AddConnectionCallback(
         [this] (IConnectionPtr& conn)
         {
-            channelAdapter.SetConnection(conn);
+            if (conn)
+            {
+                channelAdapter.SetConnection(conn);
+            }
         });
     listener.AddDataReceiveCallback(
         [this] (const DataBuffer& buf)
@@ -61,6 +64,11 @@ SimpleNetServicePrivate::SimpleNetServicePrivate(size_t serviceId,
     listener.AddConnectionCloseCallback([this] { channelAdapter.RemoveConnection(); });
 
     listener.Start();
+}
+
+bool SimpleNetServicePrivate::IsActive() const
+{
+    return !channelAdapter.IsSessionEnded() || listener.IsWaitingForSuccessfulConnection();
 }
 
 }  // namespace Net

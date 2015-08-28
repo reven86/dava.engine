@@ -34,10 +34,17 @@ namespace DAVA
 namespace Net
 {
 
+template <typename Container, typename ... Arg>
+void Notify(const Container& container, const Arg&... args)
+{
+    for (const auto& cb : container)
+    {
+        cb(args...);
+    }
+}
+
 ConnectionListenerPrivate::ConnectionListenerPrivate(const ConnectionWaitFunction& connWaiter,
-                                                     const Endpoint& endPoint,
-                                                     NotificationType notifType)
-    : notificationType(notifType)
+                                                     const Endpoint& endPoint)
 {
     ConnectionWaitFunction connWaiterLocal = connWaiter;
     Endpoint endPointLocal = endPoint;
@@ -55,9 +62,7 @@ ConnectionListenerPrivate::~ConnectionListenerPrivate()
     thread->Join();
 }
 
-ConnectionListenerPrivate::ConnectionListenerPrivate(IConnectionPtr& conn, 
-                                                     NotificationType notifType) 
-    : notificationType(notifType)
+ConnectionListenerPrivate::ConnectionListenerPrivate(IConnectionPtr& conn)
 {
     auto threadFunc = [this](IConnectionPtr& connection) { Start(connection); };
     thread = RefPtr<Thread>(Thread::Create(std::bind(threadFunc, IConnectionPtr(conn))));
@@ -99,37 +104,38 @@ void ConnectionListenerPrivate::Start(const ConnectionWaitFunction& connectionWa
     do
     {
         IConnectionPtr connection = connectionWaiter(endPoint);
-        for (const auto& cb : *onConnectCallbacks.GetAccessor())
+        if (connection)
         {
-            cb(connection);
+            Notify(*onConnectCallbacks.GetAccessor(), connection);
+            Start(connection);
         }
 
-        Start(connection);
-    } 
-    while (IsRestartable());
+        Thread::Sleep(500);
+    }
+    while (waitSuccessfulConnection && !thread->IsCancelling());
 }
 
 void ConnectionListenerPrivate::Start(IConnectionPtr& conn) 
 {
     Array<char, 1024> buffer;
 
-    while (conn && conn->GetChannelState() == IReadOnlyConnection::ChannelState::kConnected)
+    while (conn && 
+           conn->GetChannelState() == IReadOnlyConnection::ChannelState::Connected &&
+           !thread->IsCancelling())
     {
         size_t read = conn->ReadSome(buffer.data(), buffer.size());
         if (read == 0)
             break;
 
         DataBuffer buf(buffer.data(), buffer.data() + read);
-        for (const auto& cb : *onDataReceiveCallbacks.GetAccessor())
-        {
-            cb(buf);
-        }
+        Notify(*onDataReceiveCallbacks.GetAccessor(), buf);
     }
 
-    for (const auto& cb : *onConnectionCloseCallbacks.GetAccessor())
+    if (conn && (conn->ReadBytesCount() != 0 || conn->WrittenBytesCount() != 0))
     {
-        cb();
+        waitSuccessfulConnection = false;
     }
+    Notify(*onConnectionCloseCallbacks.GetAccessor());
 }
 
 }  // namespace Net

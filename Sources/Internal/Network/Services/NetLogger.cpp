@@ -39,8 +39,9 @@ namespace DAVA
 namespace Net
 {
 
-NetLogger::NetLogger(bool selfInstallFlag, size_t queueSize)
+NetLogger::NetLogger(bool selfInstallFlag, size_t queueSize, bool writeTimestampFlag)
     : selfInstall(selfInstallFlag)
+    , writeTimestamp(writeTimestampFlag)
     , isInstalled(false)
     , maxQueueSize(queueSize > 1 ? queueSize : 100)
 {
@@ -106,7 +107,12 @@ void NetLogger::DoOutput(Logger::eLogLevel ll, const char8* text)
 void NetLogger::SendNextRecord()
 {
     LogRecord record;
-    if (IsChannelOpen() && true == GetFirstMessage(record))
+    if (!IsChannelOpen() || !GetFirstMessage(record))
+    {
+        return;
+    }
+
+    if (writeTimestamp)
     {
         String timeStr = TimestampToString(record.timestamp);
         const char* levelStr = Logger::Instance()->GetLogLevelString(record.level);
@@ -115,6 +121,14 @@ void NetLogger::SendNextRecord()
         char8* buf = new char8[n + 1];  // this will be deleted in OnChannelSendComplete callback
         Snprintf(buf, n + 1, "%s %s %s", timeStr.c_str(), levelStr, record.message.c_str());
         Send(buf, n - 1);   // remove trailing '\n'
+    }
+    else
+    {
+        size_t n = record.message.size();
+        char8* buf = new char8[n + 1];
+        Snprintf(buf, n + 1, "%s", record.message.c_str());
+
+        Send(buf, n - 1); // remove trailing '\n'
     }
 }
 

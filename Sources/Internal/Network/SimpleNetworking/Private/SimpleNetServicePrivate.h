@@ -48,7 +48,10 @@ public:
                             const String& serviceName,
                             ConnectionListener&& connectionListener);
 
-    bool IsActive() const { return !channelAdapter.IsSessionEnded(); }
+    SimpleNetServicePrivate(const SimpleNetServicePrivate&) = delete;
+    SimpleNetServicePrivate(SimpleNetServicePrivate&&) = delete;
+
+    bool IsActive() const;
 
     NetService* GetNetService() { return netService.get(); }
     String GetServiceName() const { return servName; }

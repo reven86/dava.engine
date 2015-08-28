@@ -53,14 +53,16 @@ struct IReadOnlyConnection : public RefCounter
     
     enum class ChannelState
     {
-        kDisconnected,
-        kConnected
+        Disconnected,
+        Connected
     };
     virtual ChannelState GetChannelState() = 0;
     virtual const Endpoint& GetEndpoint() = 0;
 
     virtual size_t ReadSome(char* buffer, size_t bufSize) = 0;
     virtual bool ReadAll(char* buffer, size_t bufSize) = 0;
+
+    virtual size_t ReadBytesCount() = 0;
     
     template <typename T>
     bool Read(T& value);
@@ -82,7 +84,7 @@ bool IReadOnlyConnection::Read(T& value)
 template <typename Container>
 void IReadOnlyConnection::Read(Container& container, size_t count)
 {
-    using value_type = Container::value_type;
+    using value_type = typename Container::value_type;
     static_assert(std::is_pod<value_type>::value, 
                   "Container::value_type must be POD-type");
 
