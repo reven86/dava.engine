@@ -382,7 +382,7 @@ void Scene::CreateSystems()
     {
         transformSystem = new TransformSystem(this);
         AddSystem(transformSystem, MAKE_COMPONENT_MASK(Component::TRANSFORM_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
-    }
+    } 
 
     if(SCENE_SYSTEM_LOD_FLAG & systemsMask)
     {

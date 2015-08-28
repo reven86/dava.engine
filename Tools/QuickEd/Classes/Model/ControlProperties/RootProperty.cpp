@@ -46,8 +46,6 @@
 #include "CustomClassProperty.h"
 
 #include "../PackageHierarchy/ControlNode.h"
-
-#include "Base/FunctionTraits.h"
 #include "UI/UIControl.h"
 
 using namespace DAVA;

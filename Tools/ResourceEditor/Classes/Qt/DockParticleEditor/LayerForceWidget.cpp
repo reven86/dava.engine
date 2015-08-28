@@ -140,6 +140,7 @@ void LayerForceWidget::OnValueChanged()
 	
 	DVASSERT(activeScene);
 	activeScene->Exec(updateForceCmd);
+	activeScene->MarkAsChanged();
 
 	Init(activeScene, layer, forceIndex, false);
 	emit ValueChanged();
