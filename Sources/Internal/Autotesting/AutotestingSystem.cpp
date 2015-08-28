@@ -100,7 +100,6 @@ namespace DAVA
 		DVASSERT(nullptr == luaSystem);
 		luaSystem = new AutotestingSystemLua();
 		luaSystem->SetDelegate(_delegate);
-        
 	}
 
     String AutotestingSystem::ResolvePathToAutomation(const String &automationPath)
@@ -395,7 +394,7 @@ namespace DAVA
 
 	void AutotestingSystem::OnScreenShot(Image *image)
 	{
-		Function<void()> fn = Bind(&AutotestingSystem::OnScreenShotInternal, this, SafeRetain(image));
+        Function<void()> fn = Bind(&AutotestingSystem::OnScreenShotInternal, this, SafeRetain(image));
 		JobManager::Instance()->CreateWorkerJob(fn);
 	}
 
