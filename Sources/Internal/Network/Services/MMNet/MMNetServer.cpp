@@ -30,7 +30,7 @@
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
 
-#include "Base/FunctionTraits.h"
+#include "Functional/Function.h"
 #include "Debug/DVAssert.h"
 #include "DLC/Patcher/ZLibStream.h"
 #include "Platform/SystemTimer.h"

@@ -30,7 +30,7 @@
 #define __DAVAENGINE_MMNetClient_H__
 
 #include "Base/BaseTypes.h"
-#include "Base/Function.h"
+#include "Functional/Function.h"
 
 #include "Network/NetService.h"
 #include "Network/Services/MMNet/MMNetProto.h"

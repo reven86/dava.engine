@@ -541,7 +541,7 @@ void Shader::RecompileInternal(bool silentDelete)
 
 bool Shader::Recompile(bool silentDelete)
 {
-	Function<void()> fn = DAVA::Bind(MakeFunction(this, &Shader::RecompileInternal), silentDelete);
+	Function<void()> fn = DAVA::Bind(&Shader::RecompileInternal, this, silentDelete);
 	uint32 id = JobManager::Instance()->CreateMainJob(fn);
 	JobManager::Instance()->WaitMainJobID(id);
 
@@ -879,7 +879,7 @@ void Shader::DeleteShaders()
     //DVASSERT(fragmentShader != 0);
     //DVASSERT(program != 0);
     
-	Function<void()> fn = DAVA::Bind(MakeFunction(this, &Shader::DeleteShadersInternal), program, vertexShader, fragmentShader);
+	Function<void()> fn = DAVA::Bind(&Shader::DeleteShadersInternal, this, program, vertexShader, fragmentShader);
 	JobManager::Instance()->CreateMainJob(fn);
 
     vertexShader = 0;

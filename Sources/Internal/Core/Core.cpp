@@ -163,9 +163,7 @@ void Core::CreateSingletons()
     
     new LocalNotificationController();
 
-#if !defined (__DAVAENGINE_WIN_UAP__)
     DeviceInfo::InitializeScreenInfo();
-#endif
     
     RegisterDAVAClasses();
 
@@ -572,6 +570,11 @@ uint32 Core::GetGlobalFrameIndex()
 void Core::SetCommandLine(int argc, char *argv[])
 {
     commandLine.assign(argv, argv + argc);
+}
+
+void Core::SetCommandLine(Vector<String>&& args)
+{
+    commandLine = std::move(args);
 }
 
 void Core::SetCommandLine(const DAVA::String& cmdLine)

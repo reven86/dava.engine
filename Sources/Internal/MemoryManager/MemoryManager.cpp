@@ -89,7 +89,7 @@ struct MemoryManager::Backtrace
     size_t nref;
     uint32 hash;
     bool symbolsCollected;
-    void* frames[BACKTRACE_DEPTH];
+    Array<void*, BACKTRACE_DEPTH> frames;
 };
 
 struct MemoryManager::AllocScopeItem
@@ -178,7 +178,7 @@ void MemoryManager::Update()
         symbolCollectorThread->Start();
     }
 
-    if (updateCallback != 0)
+    if (updateCallback != nullptr)
     {
         updateCallback();
     }
@@ -364,7 +364,7 @@ void MemoryManager::Deallocate(void* ptr)
         {
             LockType lock(statMutex);
             statGeneral.ghostBlockCount += 1;
-            statGeneral.ghostSize += MallocHook::MallocSize(ptr);
+            statGeneral.ghostSize += static_cast<uint32>(MallocHook::MallocSize(ptr));
             ptrToFree = ptr;
         }
         MallocHook::Free(ptrToFree);
@@ -447,7 +447,7 @@ void MemoryManager::EnterTagScope(uint32 tag)
         statGeneral.activeTags |= tag;
         statGeneral.activeTagCount += 1;
     }
-    if (tagCallback != 0)
+    if (tagCallback != nullptr)
     {
         tagCallback(tag, true);
     }
@@ -463,7 +463,7 @@ void MemoryManager::LeaveTagScope(uint32 tag)
         statGeneral.activeTags &= ~tag;
         statGeneral.activeTagCount -= 1;
     }
-    if (tagCallback != 0)
+    if (tagCallback != nullptr)
     {
         tagCallback(tag, false);
     }
@@ -732,21 +732,22 @@ _Unwind_Reason_Code UnwindCallback(struct _Unwind_Context* context, void* arg)
 DAVA_NOINLINE void MemoryManager::CollectBacktrace(Backtrace* backtrace, size_t nskip)
 {
     const size_t EXTRA_FRAMES = 5;
-    void* frames[BACKTRACE_DEPTH + EXTRA_FRAMES] = {nullptr};
+    const size_t FRAMES_COUNT = BACKTRACE_DEPTH + EXTRA_FRAMES;
+    void* frames[FRAMES_COUNT] = {nullptr};
     Memset(backtrace, 0, sizeof(Backtrace));
 #if defined(__DAVAENGINE_WINDOWS__)
-    CaptureStackBackTrace(0, COUNT_OF(frames), frames, nullptr);
+    CaptureStackBackTrace(0, FRAMES_COUNT, frames, nullptr);
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
-    ::backtrace(frames, COUNT_OF(frames));
+    ::backtrace(frames, FRAMES_COUNT);
 #elif defined(__DAVAENGINE_ANDROID__)
-    BacktraceState state = {frames, frames + COUNT_OF(frames)};
+    BacktraceState state = {frames, frames + FRAMES_COUNT};
     _Unwind_Backtrace(&UnwindCallback, &state);
 #endif
     for (size_t idst = 0, isrc = nskip + 1;idst < BACKTRACE_DEPTH;++idst, ++isrc)
     {
         backtrace->frames[idst] = frames[isrc];
     }
-    backtrace->hash = HashValue_N(reinterpret_cast<const char*>(backtrace->frames), sizeof(backtrace->frames));
+    backtrace->hash = HashValue_N(reinterpret_cast<const char*>(backtrace->frames.data()), static_cast<uint32>(backtrace->frames.size()));
     backtrace->nref = 1;
     backtrace->symbolsCollected = false;
 }
@@ -760,7 +761,7 @@ void MemoryManager::ObtainBacktraceSymbols(const Backtrace* backtrace)
     }
 
     const size_t NAME_BUFFER_SIZE = 4 * 1024;
-    static char8 nameBuffer[NAME_BUFFER_SIZE];
+    static Array<char8, NAME_BUFFER_SIZE> nameBuffer;
     
 #if defined(__DAVAENGINE_WINDOWS__)
     HANDLE hprocess = GetCurrentProcess();
@@ -772,11 +773,11 @@ void MemoryManager::ObtainBacktraceSymbols(const Backtrace* backtrace)
         symInited = true;
     }
 
-    SYMBOL_INFO* symInfo = reinterpret_cast<SYMBOL_INFO*>(nameBuffer);
+    SYMBOL_INFO* symInfo = reinterpret_cast<SYMBOL_INFO*>(nameBuffer.data());
     symInfo->SizeOfStruct = sizeof(SYMBOL_INFO);
     symInfo->MaxNameLen = NAME_BUFFER_SIZE - sizeof(SYMBOL_INFO);
 
-    for (size_t i = 0;i < COUNT_OF(backtrace->frames);++i)
+    for (size_t i = 0;i < backtrace->frames.size();++i)
     {
         if (backtrace->frames[i] != nullptr && symbolMap->find(backtrace->frames[i]) == symbolMap->cend())
         {
@@ -787,7 +788,7 @@ void MemoryManager::ObtainBacktraceSymbols(const Backtrace* backtrace)
         }
     }
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-    for (size_t i = 0;i < COUNT_OF(backtrace->frames);++i)
+    for (size_t i = 0;i < backtrace->frames.size();++i)
     {
         if (backtrace->frames[i] != nullptr && symbolMap->find(backtrace->frames[i]) == symbolMap->cend())
         {
@@ -800,9 +801,9 @@ void MemoryManager::ObtainBacktraceSymbols(const Backtrace* backtrace)
             if (dladdr(backtrace->frames[i], &dlinfo) != 0 && dlinfo.dli_sname != nullptr)
             {
                 int status = 0;
-                size_t n = COUNT_OF(nameBuffer);
-                abi::__cxa_demangle(dlinfo.dli_sname, nameBuffer, &n, &status);
-                symbolMap->emplace(backtrace->frames[i], 0 == status ? InternalString(nameBuffer) : InternalString(dlinfo.dli_sname));
+                size_t n = nameBuffer.size();
+                abi::__cxa_demangle(dlinfo.dli_sname, nameBuffer.data(), &n, &status);
+                symbolMap->emplace(backtrace->frames[i], 0 == status ? InternalString(nameBuffer.data()) : InternalString(dlinfo.dli_sname));
             }
         }
     }

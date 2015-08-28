@@ -40,7 +40,6 @@
 
 #include "Qt/DeviceInfo/DeviceInfo/DeviceLogController.h"
 #include "Qt/DeviceInfo/MemoryTool/MemProfController.h"
-#include <Base/FunctionTraits.h>
 
 #include <Network/NetworkCommon.h>
 #include <Network/PeerDesription.h>
@@ -185,7 +184,7 @@ void DeviceListController::ConnectDeviceInternal(QModelIndex& index, size_t ifIn
         NetConfig config = peer.NetworkConfig().Mirror(addr);
         const Vector<uint32>& servIds = config.Services();
 
-        // Chech whether remote device is under memory profiler and increase read timeout
+        // Check whether remote device is under memory profiler and increase read timeout
         // Else leave it zero to allow underlying network system to choose timeout itself
         bool deviceUnderMemoryProfiler = std::find(servIds.begin(), servIds.end(), SERVICE_MEMPROF) != servIds.end();
         uint32 readTimeout = deviceUnderMemoryProfiler ? 120 * 1000 : Net::DEFAULT_READ_TIMEOUT;

@@ -47,7 +47,7 @@ namespace DAVA
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 
-
+using namespace ::Windows::Graphics::Display;
 
 void RenderManager::Create(Windows::UI::Xaml::Controls::SwapChainPanel^ swapChainPanel)
 {
@@ -132,10 +132,30 @@ void RenderManager::Create(Windows::UI::Xaml::Controls::SwapChainPanel^ swapChai
         EGL_ANGLE_SURFACE_RENDER_TO_BACK_BUFFER, EGL_TRUE,
         EGL_NONE
     };
-
     PropertySet^ surfaceCreationProperties = ref new PropertySet();
+    Windows::UI::Core::CoreWindow^ coreWindow = Windows::UI::Xaml::Window::Current->CoreWindow;
+    if (nullptr != coreWindow)
+    {
+        Windows::Foundation::Size surfaceSize(0, 0);
+        Windows::Graphics::Display::DisplayInformation^ currentDisplayInformation = Windows::Graphics::Display::DisplayInformation::GetForCurrentView();
+        float32 rawPixelsPerViewPixel(1.0f);
+        if (nullptr != currentDisplayInformation)
+        {
+            rawPixelsPerViewPixel = static_cast<float32>(currentDisplayInformation->RawPixelsPerViewPixel);
+        }
+        float32 width = coreWindow->Bounds.Width;
+        float32 height = coreWindow->Bounds.Height;
+        DisplayOrientations orient = DisplayInformation::GetForCurrentView()->CurrentOrientation;
+        if (DisplayOrientations::Portrait == orient || DisplayOrientations::PortraitFlipped == orient)
+        {
+            std::swap(width, height);
+        }
+        surfaceSize.Width = width * rawPixelsPerViewPixel;
+        surfaceSize.Height = height * rawPixelsPerViewPixel;
+        Logger::FrameworkDebug("Initialize Angle render with size: Width = %d, Height = %d.", surfaceSize.Width, surfaceSize.Height);
+        surfaceCreationProperties->Insert(ref new Platform::String(EGLRenderSurfaceSizeProperty), Windows::Foundation::PropertyValue::CreateSize(surfaceSize));
+    }
     surfaceCreationProperties->Insert(ref new Platform::String(EGLNativeWindowTypeProperty), swapChainPanel);
-
     eglSurface = eglCreateWindowSurface(eglDisplay, eglConfig, reinterpret_cast<IInspectable*>(surfaceCreationProperties), surfaceAttributes);
     if (eglSurface == EGL_NO_SURFACE)
         throw Exception::CreateException(E_FAIL, L"Failed to create EGL surface");

@@ -383,13 +383,13 @@ fltDec( float f )
 static void
 DumpInternal( const std::vector<CounterInfo>& result, bool showPercents=false )
 {
-    unsigned    max_name_len = 0;
+    size_t max_name_len = 0;
     
     for( size_t i=0,i_end=result.size(); i!=i_end; ++i )
     {
         uint32  pi      = result[i].parentIndex;
         uint32  indent  = 0;
-        uint32  len     = 0;
+        size_t  len     = 0;
 
         while( pi != InvalidIndex )
         {
@@ -419,7 +419,7 @@ DumpInternal( const std::vector<CounterInfo>& result, bool showPercents=false )
             ++indent;
         }
 
-        int  text_len = 0;       
+        size_t text_len = 0;       
 
         if( result[i].name )
             text_len = Snprintf( text+indent*2, sizeof(text)-indent*2, "%s", result[i].name );

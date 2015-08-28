@@ -32,7 +32,13 @@
 
 #include "Commands2/CommandAction.h"
 #include "Scene/EntityGroup.h"
-#include "DAVAEngine.h"
+
+#include "FileSystem/FilePath.h"
+
+namespace DAVA
+{
+class Entity;
+}
 
 class SaveEntityAsAction: public CommandAction
 {
@@ -41,6 +47,11 @@ public:
 	~SaveEntityAsAction();
 
 	virtual void Redo();
+
+protected:
+
+	void RemoveLightmapsRecursive(DAVA::Entity *entity) const;
+
 
 protected:
 	const EntityGroup *entities;
