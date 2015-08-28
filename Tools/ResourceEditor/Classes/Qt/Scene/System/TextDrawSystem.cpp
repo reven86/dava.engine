@@ -100,8 +100,8 @@ void TextDrawSystem::Draw()
 
 void TextDrawSystem::PushNextBatch(const Color& color)
 {
-	size_t vertexCount = vertices.size();
-	size_t indexCount = 6 * vertexCount / 4;
+	uint32 vertexCount = static_cast<uint32> (vertices.size());
+	uint32 indexCount = 6 * vertexCount / 4;
 
 	RenderSystem2D::BatchDescriptor batchDescriptor;
     batchDescriptor.singleColor = color;

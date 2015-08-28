@@ -720,7 +720,6 @@ void QtMainWindow::SetupActions()
 	QObject::connect(ui->actionExpandSceneTree, SIGNAL(triggered()), ui->sceneTree, SLOT(expandAll()));
 	QObject::connect(ui->actionCollapseSceneTree, SIGNAL(triggered()), ui->sceneTree, SLOT(CollapseAll()));
     QObject::connect(ui->actionAddLandscape, SIGNAL(triggered()), this, SLOT(OnAddLandscape()));
-    QObject::connect(ui->actionAddSkybox, SIGNAL(triggered()), this, SLOT(OnAddSkybox()));
 	QObject::connect(ui->actionAddWind, SIGNAL(triggered()), this, SLOT(OnAddWindEntity()));
     QObject::connect(ui->actionAddVegetation, SIGNAL(triggered()), this, SLOT(OnAddVegetation()));
     QObject::connect(ui->actionAddPath, SIGNAL(triggered()), this, SLOT(OnAddPathEntity()));
@@ -1625,22 +1624,6 @@ void QtMainWindow::OnAddLandscape()
     SafeRelease(entityToProcess);
 }
 
-void QtMainWindow::OnAddSkybox()
-{
-#if RHI_COMPLETE_EDITOR
-    SceneEditor2* sceneEditor = GetCurrentScene();
-    if(!sceneEditor)
-    {
-        return;
-    }
-    Entity* skyboxEntity = sceneEditor->skyboxSystem->AddSkybox();
-    skyboxEntity->Retain();
-    
-    skyboxEntity->GetParent()->RemoveNode(skyboxEntity);
-    sceneEditor->Exec(new EntityAddCommand(skyboxEntity, sceneEditor));
-    skyboxEntity->Release();
-#endif
-}
 
 void QtMainWindow::OnAddVegetation()
 {

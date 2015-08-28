@@ -36,16 +36,7 @@
     <property name="spacing">
      <number>3</number>
     </property>
-    <property name="leftMargin">
-     <number>1</number>
-    </property>
-    <property name="topMargin">
-     <number>1</number>
-    </property>
-    <property name="rightMargin">
-     <number>1</number>
-    </property>
-    <property name="bottomMargin">
+    <property name="margin">
      <number>1</number>
     </property>
     <item>
@@ -78,16 +69,7 @@
      <property name="spacing">
       <number>3</number>
      </property>
-     <property name="leftMargin">
-      <number>0</number>
-     </property>
-     <property name="topMargin">
-      <number>0</number>
-     </property>
-     <property name="rightMargin">
-      <number>0</number>
-     </property>
-     <property name="bottomMargin">
+     <property name="margin">
       <number>0</number>
      </property>
      <item>
@@ -114,16 +96,7 @@
         <property name="spacing">
          <number>3</number>
         </property>
-        <property name="leftMargin">
-         <number>0</number>
-        </property>
-        <property name="topMargin">
-         <number>0</number>
-        </property>
-        <property name="rightMargin">
-         <number>0</number>
-        </property>
-        <property name="bottomMargin">
+        <property name="margin">
          <number>0</number>
         </property>
        </layout>
@@ -141,16 +114,7 @@
         <property name="spacing">
          <number>1</number>
         </property>
-        <property name="leftMargin">
-         <number>0</number>
-        </property>
-        <property name="topMargin">
-         <number>0</number>
-        </property>
-        <property name="rightMargin">
-         <number>0</number>
-        </property>
-        <property name="bottomMargin">
+        <property name="margin">
          <number>0</number>
         </property>
         <item>
@@ -213,7 +177,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -281,7 +245,6 @@
      <addaction name="actionSwitchNode"/>
      <addaction name="actionParticleEffectNode"/>
      <addaction name="actionAddLandscape"/>
-     <addaction name="actionAddSkybox"/>
      <addaction name="actionAddWind"/>
      <addaction name="actionAddVegetation"/>
      <addaction name="actionAddPath"/>
@@ -551,16 +514,7 @@
      <property name="spacing">
       <number>3</number>
      </property>
-     <property name="leftMargin">
-      <number>0</number>
-     </property>
-     <property name="topMargin">
-      <number>0</number>
-     </property>
-     <property name="rightMargin">
-      <number>0</number>
-     </property>
-     <property name="bottomMargin">
+     <property name="margin">
       <number>0</number>
      </property>
      <item>
@@ -606,16 +560,7 @@
      <property name="spacing">
       <number>2</number>
      </property>
-     <property name="leftMargin">
-      <number>1</number>
-     </property>
-     <property name="topMargin">
-      <number>1</number>
-     </property>
-     <property name="rightMargin">
-      <number>1</number>
-     </property>
-     <property name="bottomMargin">
+     <property name="margin">
       <number>1</number>
      </property>
      <item>
@@ -647,16 +592,7 @@
         <property name="spacing">
          <number>3</number>
         </property>
-        <property name="leftMargin">
-         <number>0</number>
-        </property>
-        <property name="topMargin">
-         <number>0</number>
-        </property>
-        <property name="rightMargin">
-         <number>0</number>
-        </property>
-        <property name="bottomMargin">
+        <property name="margin">
          <number>0</number>
         </property>
         <item>
@@ -711,16 +647,7 @@
    </attribute>
    <widget class="QWidget" name="dockLODEditorContent">
     <layout class="QVBoxLayout" name="verticalLayout_2">
-     <property name="leftMargin">
-      <number>0</number>
-     </property>
-     <property name="topMargin">
-      <number>0</number>
-     </property>
-     <property name="rightMargin">
-      <number>0</number>
-     </property>
-     <property name="bottomMargin">
+     <property name="margin">
       <number>0</number>
      </property>
      <item>
@@ -734,7 +661,7 @@
           <x>0</x>
           <y>0</y>
           <width>256</width>
-          <height>88</height>
+          <height>92</height>
          </rect>
         </property>
        </widget>
@@ -841,16 +768,7 @@
    </attribute>
    <widget class="QWidget" name="dockLandscapeEditorControlsContent">
     <layout class="QVBoxLayout" name="verticalLayout_3">
-     <property name="leftMargin">
-      <number>0</number>
-     </property>
-     <property name="topMargin">
-      <number>0</number>
-     </property>
-     <property name="rightMargin">
-      <number>0</number>
-     </property>
-     <property name="bottomMargin">
+     <property name="margin">
       <number>0</number>
      </property>
      <item>
@@ -864,7 +782,7 @@
           <x>0</x>
           <y>0</y>
           <width>256</width>
-          <height>89</height>
+          <height>92</height>
          </rect>
         </property>
        </widget>
@@ -1492,16 +1410,6 @@
     <string>Cubemap Editor</string>
    </property>
   </action>
-  <action name="actionSkyboxNode">
-   <property name="text">
-    <string>Skybox Node</string>
-   </property>
-  </action>
-  <action name="actionSetupSkybox">
-   <property name="text">
-    <string>Setup Skybox</string>
-   </property>
-  </action>
   <action name="actionDynamicBlendModeAlpha">
    <property name="checkable">
     <bool>true</bool>
@@ -1861,21 +1769,6 @@
    </property>
    <property name="toolTip">
     <string>Add landscape</string>
-   </property>
-  </action>
-  <action name="actionAddSkybox">
-   <property name="icon">
-    <iconset resource="QtIcons.qrc">
-     <normaloff>:/QtIcons/cloud.png</normaloff>:/QtIcons/cloud.png</iconset>
-   </property>
-   <property name="text">
-    <string>Skybox</string>
-   </property>
-   <property name="toolTip">
-    <string>Add skybox</string>
-   </property>
-   <property name="visible">
-    <bool>false</bool>
    </property>
   </action>
   <action name="actionCustomQuality">

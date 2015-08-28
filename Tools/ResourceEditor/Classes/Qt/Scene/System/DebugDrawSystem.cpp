@@ -281,8 +281,8 @@ void DebugDrawSystem::DrawHangingObjects( DAVA::Entity *entity )
 	{
         return;
     }
-    //skyBox should not be marked as hanging object
-	if (entity->GetParent() != GetScene())
+
+    if (entity->GetParent() != GetScene())
     {
 		return;
     }

@@ -448,7 +448,6 @@ void VisibilityToolSystem::ExcludeEntities(EntityGroup *entities) const
                 switch (ro->GetType())
                 {
                     case RenderObject::TYPE_LANDSCAPE:
-                    case RenderObject::TYPE_SKYBOX:
                     case RenderObject::TYPE_SPEED_TREE:
                     case RenderObject::TYPE_SPRITE:
                     case RenderObject::TYPE_VEGETATION:

@@ -333,8 +333,6 @@ void SceneInfo::CollectSceneData(SceneEditor2 *scene)
     if(scene)
     {
         scene->GetChildNodes(nodesAtScene);
-		//VI: remove skybox materials so they not to appear in the lists
-		//MaterialHelper::FilterMaterialsByType(materialsAtScene, DAVA::Material::MATERIAL_SKYBOX);
 
         SceneHelper::EnumerateSceneTextures(activeScene, sceneTextures, SceneHelper::TexturesEnumerateMode::EXCLUDE_NULL);
         sceneTexturesSize = CalculateTextureSize(sceneTextures);
