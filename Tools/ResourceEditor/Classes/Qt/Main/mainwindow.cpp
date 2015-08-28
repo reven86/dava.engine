@@ -1994,14 +1994,11 @@ void QtMainWindow::OnSaveHeightmapToImage()
 
 void QtMainWindow::OnSaveTiledTexture()
 {
-#if RHI_COMPLETE_EDITOR
-	if (!IsSavingAllowed())
+    SceneEditor2* scene = GetCurrentScene();
+	if (!IsSavingAllowed() || (nullptr == scene))
 	{
 		return;
 	}
-
-	SceneEditor2* scene = GetCurrentScene();
-    if(!scene) return;
 
 	LandscapeEditorDrawSystem::eErrorType varifLandscapeError = scene->landscapeEditorDrawSystem->VerifyLandscape();
 	if (varifLandscapeError != LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
@@ -2011,13 +2008,15 @@ void QtMainWindow::OnSaveTiledTexture()
 	}
 
     Landscape *landscape = FindLandscape(scene);
-    if(!landscape) return;
+    if(nullptr == landscape)
+    {
+        return;
+    }
 
-	Texture* landscapeTexture = landscape->CreateLandscapeTexture();
+    ScopedPtr<Texture> landscapeTexture(landscape->CreateLandscapeTexture());
 	if (landscapeTexture)
 	{
-		FilePath pathToSave;
-		pathToSave = landscape->GetTextureName(Landscape::TEXTURE_COLOR);
+        FilePath pathToSave = landscape->GetMaterial()->GetEffectiveTexture(DAVA::Landscape::TEXTURE_COLOR)->GetPathname();
 		if (pathToSave.IsEmpty())
 		{
 			FilePath scenePath = scene->GetScenePath().GetDirectory();
@@ -2026,7 +2025,6 @@ void QtMainWindow::OnSaveTiledTexture()
 														 PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter);
 			if (selectedPath.isEmpty())
 			{
-				SafeRelease(landscapeTexture);
 				return;
 			}
 
@@ -2037,16 +2035,12 @@ void QtMainWindow::OnSaveTiledTexture()
 			pathToSave.ReplaceExtension(".thumbnail.png");
 		}
 
-		Image *image = landscapeTexture->CreateImageFromMemory(RenderState::RENDERSTATE_2D_OPAQUE);
+        ScopedPtr<Image> image(landscapeTexture->CreateImageFromMemory());
 		if(image)
 		{
             ImageSystem::Instance()->Save(pathToSave, image);
-			SafeRelease(image);
 		}
-
-		SafeRelease(landscapeTexture);
 	}
-#endif // RHI_COMPLETE_EDITOR
 }
 
 void QtMainWindow::OnConvertModifiedTextures()
