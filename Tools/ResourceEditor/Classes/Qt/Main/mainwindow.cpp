@@ -345,56 +345,68 @@ bool QtMainWindow::SaveAllSceneEmitters(SceneEditor2 *scene) const
     if (effectEntities.empty())
         return true;
 
-    uint32 emitterSaveIndex = 0;
-    for (auto & entityWithEffect: effectEntities)
+    struct EmitterDescriptor
     {
-        ParticleEffectComponent *effect = GetEffectComponent(entityWithEffect);
-        for (int32 i = 0, sz = effect->GetEmittersCount(); i != sz; ++i)
+        EmitterDescriptor(ParticleEmitter * _emitter, ParticleLayer *layer, FilePath path, String name)
+            : emitter(_emitter), ownerLayer(layer), yamlPath(path), entityName(name)
         {
-            List<ParticleEmitter *> emittersForSave;
-
-            {   //enumerate emitters: first inner emitters
-                
-                ParticleEmitter* emitter = effect->GetEmitter(i);
-                for (auto & layer : emitter->layers)
-                {
-                    if (nullptr != layer->innerEmitter)
-                    {
-                        emittersForSave.push_back(layer->innerEmitter);
-                    }
-                }
-
-                emittersForSave.push_back(emitter);
-            }
-
-            //save emitters
-
-            for (auto & savedEmitter : emittersForSave)
-            {
-                FilePath yamlPath = savedEmitter->configPath;
-                if (yamlPath.IsEmpty())
-                {
-                    QString particlesPath = GetSaveFolderForEmitters();
-
-                    FileSystem::Instance()->CreateDirectory(FilePath(particlesPath.toStdString()), true); //to ensure that folder is created
-
-                    QString emitterPathname = particlesPath + QString("%1_%2_%3.yaml").arg(entityWithEffect->GetName().c_str()).arg(savedEmitter->name.c_str()).arg(++emitterSaveIndex);
-                    QString filePath = FileDialog::getSaveFileName(NULL, QString("Save Particle Emitter ") + QString(savedEmitter->name.c_str()),
-                        emitterPathname, QString("YAML File (*.yaml)"));
-
-                    if (filePath.isEmpty())
-                    {
-                        return false;
-                    }
-
-                    yamlPath = FilePath(filePath.toStdString());
-
-                    SettingsManager::SetValue(Settings::Internal_ParticleLastEmitterDir, VariantType(yamlPath.GetDirectory()));
-                }
-
-                savedEmitter->SaveToYaml(yamlPath);
-            }
         }
+
+        ParticleEmitter * emitter = nullptr;
+        ParticleLayer *ownerLayer = nullptr;
+        FilePath yamlPath;
+        String entityName;
+    };
+
+    DAVA::List<EmitterDescriptor> emittersForSave;
+    for (auto & entityWithEffect : effectEntities)
+    {
+        const DAVA::String entityName = entityWithEffect->GetName().c_str();
+        ParticleEffectComponent *effect = GetEffectComponent(entityWithEffect);
+        for (int32 i = 0, sz = effect->GetEmittersCount(); i < sz; ++i)
+        {
+            ParticleEmitter* emitter = effect->GetEmitter(i);
+            for (auto & layer : emitter->layers)
+            {
+                if (nullptr != layer->innerEmitter)
+                {
+                    emittersForSave.emplace_back(EmitterDescriptor(layer->innerEmitter, layer, layer->innerEmitterPath, entityName));
+                }
+            }
+
+            emittersForSave.emplace_back(EmitterDescriptor(emitter, nullptr, emitter->configPath, entityName));
+        }
+    }
+
+    for (auto & descriptor : emittersForSave)
+    {
+        ParticleEmitter *emitter = descriptor.emitter;
+        const String & entityName = descriptor.entityName;
+
+        FilePath yamlPathForSaving = descriptor.yamlPath;
+        if (yamlPathForSaving.IsEmpty())
+        {
+            QString particlesPath = GetSaveFolderForEmitters();
+
+            FileSystem::Instance()->CreateDirectory(FilePath(particlesPath.toStdString()), true); //to ensure that folder is created
+
+            QString emitterPathname = particlesPath + QString("%1_%2.yaml").arg(entityName.c_str()).arg(emitter->name.c_str());
+            QString filePath = FileDialog::getSaveFileName(NULL, QString("Save Particle Emitter ") + QString(emitter->name.c_str()), emitterPathname, QString("YAML File (*.yaml)"));
+
+            if (filePath.isEmpty())
+            {
+                continue;
+            }
+
+            yamlPathForSaving = FilePath(filePath.toStdString());
+            SettingsManager::SetValue(Settings::Internal_ParticleLastEmitterDir, VariantType(yamlPathForSaving.GetDirectory()));
+        }
+
+        if (nullptr != descriptor.ownerLayer)
+        {
+            descriptor.ownerLayer->innerEmitterPath = yamlPathForSaving;
+        }
+        emitter->SaveToYaml(yamlPathForSaving);
     }
 
     return true;
