@@ -34,7 +34,7 @@
 #include "TexturePacker/CommandLineParser.h"
 #include "Utils/Utils.h"
 
-#include "uwp_runner.h"
+#include "UWPRunner.h"
 
 using namespace DAVA;
 

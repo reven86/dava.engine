@@ -293,7 +293,7 @@ bool AppxPhoneEngine::installPackage(IAppxManifestReader *reader, const QString 
     _bstr_t deploymentFlagsAsGenre(wchar(deploymentFlags));
     const QString packageType = QString::number(isFramework ? PhoneTools::Framework : PhoneTools::Main);
     _bstr_t packageTypeAsIconPath(wchar(packageType));
-    _bstr_t packagePath(wchar(QDir::toNativeSeparators(filePath + QStringLiteral("2"))));
+    _bstr_t packagePath(wchar(QDir::toNativeSeparators(filePath)));
 
     hr = connection->InstallApplication(productId, productId, deploymentFlagsAsGenre,
                                         packageTypeAsIconPath, packagePath);
@@ -442,20 +442,6 @@ bool AppxPhoneEngine::waitForFinished(int secs)
     g_handleCtrl = true;
     int time = 0;
     forever {
-
-        //SAFEARRAY arr;
-        QString devPath = devicePath(QStringLiteral(""));
-        //HRESULT hr = d->connection->SearchFileSystem(L"*.*", L"%FOLDERID_APPID_ISOROOT%", &arr);
-
-        ::FileInfo tempFileInfo;
-        auto x = devPath.toStdWString();
-        BSTR directoryName = L"D:/Acyvl"; //(BSTR) x.c_str();
-        HRESULT hr = d->connection->GetFileInfo(directoryName,&tempFileInfo);
-        bool IsDirectory = ((tempFileInfo.m_FileAttributes &
-        FILE_ATTRIBUTE_DIRECTORY)>0)?true :false;
-
-        qCWarning(lcWinRtRunner) << qt_error_string(hr);
-
         ++time;
         if ((secs && time > secs) || g_ctrlReceived) {
             g_handleCtrl = false;
@@ -524,22 +510,4 @@ bool AppxPhoneEngine::receiveFile(const QString &deviceFile, const QString &loca
     RETURN_FALSE_IF_FAILED("Failed to receive the file");
 
     return true;
-}
-
-bool AppxPhoneEngine::isFileExist(const QString &deviceFile)
-{
-    Q_D(const AppxPhoneEngine);
-    qCDebug(lcWinRtRunner) << __FUNCTION__;
-
-    QTemporaryDir tempDir;
-    QString inputPath = devicePath(deviceFile);
-    QString outputPath = tempDir.path() + QStringLiteral("/") + deviceFile;
-
-    HRESULT hr = d->connection->ReceiveFile(_bstr_t(wchar(inputPath)),
-                                            _bstr_t(wchar(outputPath)), uint(2));
-
-
-
-    RETURN_FALSE_IF_FAILED("Failed to receive the file");
-    return SUCCEEDED(hr);
 }

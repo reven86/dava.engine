@@ -30,7 +30,7 @@
 #include "FileSystem/File.h"
 #include "FileSystem/FileSystem.h"
 
-#include "uwp_runner.h"
+#include "UWPRunner.h"
 
 using namespace DAVA;
 

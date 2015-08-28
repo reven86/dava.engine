@@ -27,27 +27,50 @@
 =====================================================================================*/
 
 
-#ifndef UWP_RUNNER_H
-#define UWP_RUNNER_H
+#ifndef __DAVAENGINE_REGKEY_H__
+#define __DAVAENGINE_REGKEY_H__
 
 #include "Base/BaseTypes.h"
 #include "Base/Optional.h"
-#include "FileSystem/FilePath.h"
 
-using DAVA::Optional;
-using DAVA::String;
-using DAVA::FilePath;
-
-struct PackageOptions
+namespace DAVA
 {
-    Optional<String> package;
-    Optional<String> profile;
-    Optional<String> dependencies; //?
+
+class RegKey
+{
+public:
+    RegKey(HKEY scope, const char* keyName, bool createIfNotExist = false);
+
+    bool IsExist() const { return isExist; }
+    bool IsCreated() const { return isCreated; }
+
+    Optional<String> QueryString(const char* valueName) const;
+    bool SetValue(const String& valName, const String& val);
+
+    Optional<DWORD> QueryDWORD(const char* valueName) const;
+    bool SetValue(const String& valName, DWORD val);
+
+    template <typename T>
+    Optional<T> QueryValue(const char* valueName);
+
+private:
+    bool isExist = false;
+    bool isCreated = false;
+    HKEY key;
 };
 
-PackageOptions ParseCommandLine();
-bool CheckOptions(const PackageOptions& options);
+template <>
+inline Optional<String> RegKey::QueryValue<String>(const char* valueName)
+{
+    return QueryString(valueName);
+}
 
-FilePath ExtractManifest(const FilePath& package);
+template <>
+inline Optional<DWORD> RegKey::QueryValue<DWORD>(const char* valueName)
+{
+    return QueryDWORD(valueName);
+}
 
-#endif  // UWP_RUNNER_H
+}  // namespace DAVA
+
+#endif  // __DAVAENGINE_REGKEY_H__

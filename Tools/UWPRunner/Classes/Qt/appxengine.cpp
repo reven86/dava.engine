@@ -263,13 +263,14 @@ bool AppxEngine::installDependencies()
     QDirIterator dit(dependenciesDir, QStringList() << QStringLiteral("*.appx"),
                      QDir::Files,
                      QDirIterator::Subdirectories);
+
     while (dit.hasNext()) {
         dit.next();
 
         HRESULT hr;
         ComPtr<IStream> inputStream;
         hr = SHCreateStreamOnFileEx(wchar(dit.filePath()),
-                                    STGM_READ | STGM_SHARE_EXCLUSIVE,
+                                    STGM_READ | STGM_SHARE_DENY_WRITE,
                                     0, FALSE, NULL, &inputStream);
         CHECK_RESULT("Failed to create input stream for package in ExtensionSdkDir.", continue);
 

@@ -71,7 +71,6 @@ private:
     explicit AppxPhoneEngine(Runner *runner);
     ~AppxPhoneEngine();
 
-    bool isFileExist(const QString &deviceFile);
     bool installPackage(IAppxManifestReader *reader, const QString &filePath) Q_DECL_OVERRIDE;
     bool connect();
 

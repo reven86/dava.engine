@@ -27,6 +27,8 @@
 =====================================================================================*/
 
 
+#include "Concurrency/LockGuard.h"
+#include "Concurrency/Mutex.h"
 #include "Concurrency/Thread.h"
 #include "Debug/DVAssert.h"
 #include "FileSystem/FileSystem.h"
@@ -35,8 +37,10 @@
 #include "Network/SimpleNetworking/SimpleNetService.h"
 
 #include <Objbase.h>
+#include "SvcHelper.h"
 #include "runner.h"
-#include "uwp_runner.h"
+#include "RegKey.h"
+#include "UWPRunner.h"
 
 using namespace DAVA;
 
@@ -45,7 +49,8 @@ const Net::SimpleNetService* gNetLogger = nullptr;
 void Run(Runner& runner);
 void Start(Runner& runner);
 
-bool InitializeNetwork(bool useIPviaUSB);
+bool InitializeNetwork(bool isMobileDevice);
+bool ConfigureIpOverUsb();
 void WaitApp();
 
 void FrameworkDidLaunched()
@@ -76,26 +81,17 @@ void FrameworkDidLaunched()
                   profile);
 
     //Check runner state
-    if (!runner.isValid())
-    {
-        DVASSERT_MSG(false, "Runner core is not valid");
-        return;
-    }
-
+    DVASSERT_MSG_RET(runner.isValid(), "Runner core is not valid");
     Run(runner);
 }
 
 void Run(Runner& runner)
 {
     //figure out if app should be started on mobile device
-    bool useIPviaUSB = runner.profile() == QStringLiteral("appxphone");
+    bool isMobileDevice = runner.profile() == QStringLiteral("appxphone");
 
     //Init network
-    if (!InitializeNetwork(useIPviaUSB))
-    {
-        DVASSERT_MSG(false, "Unable to initialize network");
-        return;
-    }
+    DVASSERT_MSG_RET(InitializeNetwork(isMobileDevice), "Unable to initialize network");
 
     //Start app
     Start(runner);
@@ -104,37 +100,35 @@ void Run(Runner& runner)
     WaitApp();
 
     //remove app package after working
-    if (!runner.remove())
-    {
-        DVASSERT_MSG(false, "Unable to remove package");
-        return;
-    }
+    DVASSERT_MSG_RET(runner.remove(), "Unable to remove package");
 }
 
 void Start(Runner& runner)
 {
-    if (!runner.install(true))
-    {
-        DVASSERT_MSG(false, "Can't install application package");
-        return;
-    }
-
-    if (!runner.start())
-    {
-        DVASSERT_MSG(false, "Can't start application");
-        return;
-    }
+    DVASSERT_MSG_RET(runner.install(true), "Can't install application package");
+    DVASSERT_MSG_RET(runner.start(), "Can't install application package");
 }
 
-bool InitializeNetwork(bool useIPviaUSB)
+bool InitializeNetwork(bool isMobileDevice)
 {
-    if (useIPviaUSB)
+    if (isMobileDevice)
     {
-        //TODO: configure IP via USB service
+        DVASSERT_MSG_RET(ConfigureIpOverUsb(), "Can't configure IpOverUsb service", false);
     }
 
-    uint16 port = useIPviaUSB ? 1911 : 777;
-    Net::SimpleNetCore* netcore = new Net::SimpleNetCore;
+    uint16 port;
+    Net::IConnectionManager::ConnectionRole role;
+
+    if (isMobileDevice)
+    {
+        port = Net::SimpleNetCore::UWPRemotePort;
+        role = Net::IConnectionManager::ClientRole;
+    }
+    else
+    {
+        port = Net::SimpleNetCore::UWPLocalPort;
+        role = Net::IConnectionManager::ServerRole;
+    }
     Net::Endpoint endPoint("127.0.0.1", port);
 
     Net::LogConsumer::Options options;
@@ -142,8 +136,9 @@ bool InitializeNetwork(bool useIPviaUSB)
     options.writeToConsole = true;
     auto logConsumer = std::make_unique<Net::LogConsumer>(std::cref(options));
 
-    gNetLogger = netcore->RegisterService(std::move(logConsumer), 
-        Net::IConnectionManager::kClientRole, endPoint, "LogConsumer");
+    Net::SimpleNetCore* netcore = new Net::SimpleNetCore;
+    gNetLogger = netcore->RegisterService(
+        std::move(logConsumer), role, endPoint, "RawLogConsumer", isMobileDevice);
 
     return gNetLogger != nullptr;
 }
@@ -164,4 +159,85 @@ void FrameworkWillTerminate()
 {
     //cleanup network
     Net::SimpleNetCore::Instance()->Release();
+}
+
+Optional<bool> UpdateIpOverUsbConfig(RegKey& key)
+{
+    const String desiredDestAddr = "127.0.0.1";
+    const DWORD  desiredDestPort = Net::SimpleNetCore::UWPRemotePort;
+    const String desiredLocalAddr = desiredDestAddr;
+    const DWORD  desiredLocalPort = desiredDestPort;
+    bool changed = false;
+
+    Optional<String> address = key.QueryString("DestinationAddress");
+    if (address != desiredDestAddr)
+    {
+        DVASSERT_MSG_RET(key.SetValue("DestinationAddress", desiredDestAddr),
+                         "Unable to set DestinationAddress", EmptyOptional());
+        changed |= true;
+    }
+
+    Optional<DWORD> port = key.QueryDWORD("DestinationPort");
+    if (port != desiredDestPort)
+    {
+        DVASSERT_MSG_RET(key.SetValue("DestinationPort", desiredDestPort),
+                         "Unable to set DestinationPort", EmptyOptional());
+        changed |= true;
+    }
+
+    address = key.QueryString("LocalAddress");
+    if (address != desiredLocalAddr)
+    {
+        DVASSERT_MSG_RET(key.SetValue("LocalAddress", desiredLocalAddr),
+                         "Unable to set LocalAddress", EmptyOptional());
+        changed |= true;
+    }
+
+    port = key.QueryDWORD("LocalPort");
+    if (port != desiredLocalPort)
+    {
+        DVASSERT_MSG_RET(key.SetValue("LocalPort", desiredLocalPort),
+                         "Unable to set LocalPort", EmptyOptional());
+        changed |= true;
+    }
+
+    return changed;
+}
+
+bool RestartIpOverUsb()
+{
+    //open service
+    SvcHelper service("IpOverUsbSvc");
+    DVASSERT_MSG_RET(service.IsInstalled(), "Can't open IpOverUsb service", false);
+
+    //stop it
+    DVASSERT_MSG_RET(service.Stop(), "Can't stop IpOverUsb service", false);
+    
+    //start it
+    DVASSERT_MSG_RET(service.Start(), "Can't start IpOverUsb service", false);
+
+    //waiting for service starting
+    Thread::Sleep(1000);
+
+    return true;
+}
+
+bool ConfigureIpOverUsb()
+{
+    bool needRestart = false;
+
+    //open or create key
+    RegKey key(HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\IpOverUsb\\DavaDebugging", true);
+    DVASSERT_MSG_RET(key.IsExist(), "Can't open or create key", false);
+    needRestart |= key.IsCreated();
+
+    //update config values
+    Optional<bool> result = UpdateIpOverUsbConfig(key);
+    DVASSERT_MSG_RET(result.IsSet(), "Unable to update IpOverUsb service config", false);
+    needRestart |= result.Get();
+
+    //restart service to applying new config
+    if (needRestart)
+        return RestartIpOverUsb();
+    return true;
 }
