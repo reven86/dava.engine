@@ -1490,7 +1490,7 @@ namespace DAVA
         {
             return false;
         }
-        if (customSystemProcessInput != 0 && customSystemProcessInput(this, currentInput))
+        if (customSystemProcessInput != nullptr && customSystemProcessInput(this, currentInput))
         {
         	return true;
         }

@@ -205,6 +205,9 @@
     <Filter Include="Internal\UI\Layouts">
       <UniqueIdentifier>{35e9d1cc-cb7d-4460-b271-1e7012178889}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Internal\Functional">
+      <UniqueIdentifier>{1ed60acd-379f-473d-95ba-060107948670}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\External\Box2D\Box2D.h">
@@ -1507,9 +1510,6 @@
     <ClInclude Include="..\..\Sources\Internal\Base\Bind.h">
       <Filter>Internal\Base</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Base\Function.h">
-      <Filter>Internal\Base</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\DLC\DLC.h">
       <Filter>Internal\DLC</Filter>
     </ClInclude>
@@ -1920,6 +1920,18 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UISizePolicyComponent.h">
       <Filter>Internal\UI\Layouts</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Functional\Function.h">
+      <Filter>Internal\Functional</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Functional\Functional.h">
+      <Filter>Internal\Functional</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Functional\Signal.h">
+      <Filter>Internal\Functional</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Functional\SignalBase.h">
+      <Filter>Internal\Functional</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIPriorityStyleSheet.h">
       <Filter>Internal\UI\Styles</Filter>

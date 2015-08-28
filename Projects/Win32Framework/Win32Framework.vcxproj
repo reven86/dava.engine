@@ -264,7 +264,6 @@
     <ClInclude Include="..\..\Sources\Internal\Base\FastName.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\FastNameMap.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\FixedSizePoolAllocator.h" />
-    <ClInclude Include="..\..\Sources\Internal\Base\Function.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\GlobalEnum.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Hash.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\HashMap.h" />
@@ -296,6 +295,10 @@
     <ClInclude Include="..\..\Sources\Internal\Concurrency\Thread.h" />
     <ClInclude Include="..\..\Sources\Internal\Concurrency\ThreadLocalPtr.h" />
     <ClInclude Include="..\..\Sources\Internal\Concurrency\UniqueLock.h" />
+    <ClInclude Include="..\..\Sources\Internal\Functional\Function.h" />
+    <ClInclude Include="..\..\Sources\Internal\Functional\Functional.h" />
+    <ClInclude Include="..\..\Sources\Internal\Functional\Signal.h" />
+    <ClInclude Include="..\..\Sources\Internal\Functional\SignalBase.h" />
     <ClInclude Include="..\..\Sources\Internal\Core\PerformanceSettings.h" />
     <ClInclude Include="..\..\Sources\Internal\Database\MongodbClient.h" />
     <ClInclude Include="..\..\Sources\Internal\Database\MongodbObject.h" />

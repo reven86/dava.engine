@@ -40,7 +40,6 @@
 
 #include "Classes/Qt/DeviceInfo/DeviceInfo/DeviceLogController.h"
 #include "Classes/Qt/DeviceInfo/DeviceInfo/MemProfController.h"
-#include <Base/FunctionTraits.h>
 
 #include <Network/PeerDesription.h>
 
