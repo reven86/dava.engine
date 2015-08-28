@@ -71,17 +71,24 @@ ColladaToSc2Importer::ImportLibrary::~ImportLibrary()
 {
     for (auto & pair : polygons)
     {
-        pair.second->Release();
+        uint32 refCount = pair.second->Release();
+        DVASSERT(0 == refCount);
     }
-    
     polygons.clear();
-    
+ 
     for (auto & pair : materials)
     {
-        pair.second->Release();
+        uint32 refCount = pair.second->Release();
+        DVASSERT(0 == refCount);
     }
-    
     materials.clear();
+
+    for (auto & pair : materialParents)
+    {
+        uint32 refCount = pair.second->Release();
+        DVASSERT(0 == refCount);
+    }
+    materialParents.clear();
 }
 
 void InitPolygon(PolygonGroup * davaPolygon, uint32 vertexFormat, Vector<ColladaVertex> &vertices)
@@ -221,25 +228,24 @@ void GetTextureTypeAndPathFromCollada(ColladaMaterial * material, FastName & typ
 NMaterial * ColladaToSc2Importer::ImportLibrary::GetOrCreateMaterialParent(ColladaMaterial * colladaMaterial, const bool isShadow)
 {
     FastName parentMaterialTemplate;
-    String parentMaterialName;
+    FastName parentMaterialName;
 
     if (isShadow)
     {
-        parentMaterialName = "Shadow_Material";
+        parentMaterialName = FastName("Shadow_Material");
         parentMaterialTemplate = NMaterialName::SHADOW_VOLUME;
     }
     else
     {
-        parentMaterialName = colladaMaterial->material->GetDaeId().c_str();
+        parentMaterialName = FastName(colladaMaterial->material->GetDaeId().c_str());
         parentMaterialTemplate = NMaterialName::TEXTURED_OPAQUE;
     }
     
-    String parentMaterialKey = parentMaterialName + "Parent";
-    NMaterial * davaMaterialParent = materials[FastName(parentMaterialKey)];
+    NMaterial * davaMaterialParent = materialParents[parentMaterialName];
     if (nullptr == davaMaterialParent)
     {
-        davaMaterialParent = (NMaterial::CreateMaterial(FastName(parentMaterialName), parentMaterialTemplate, NMaterial::DEFAULT_QUALITY_NAME));
-        materials[FastName(parentMaterialKey)] = davaMaterialParent;
+        davaMaterialParent = (NMaterial::CreateMaterial(parentMaterialName, parentMaterialTemplate, NMaterial::DEFAULT_QUALITY_NAME));
+        materialParents[parentMaterialName] = davaMaterialParent;
     }
     
     FastName textureType;

@@ -54,6 +54,7 @@ private:
 
     private:
         Map<ColladaPolygonGroupInstance *, PolygonGroup *> polygons;
+        Map<FastName, NMaterial *> materialParents;
         Map<FastName, NMaterial *> materials;
     };
 
