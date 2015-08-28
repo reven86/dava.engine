@@ -690,8 +690,6 @@ namespace DAVA
 	bool AutotestingSystemLua::CheckMsgText(UIControl* control, const String &key)
 	{
 		WideString expectedText = StringToWString(key);
-		//TODO: check key in localized strings for Lua
-//		expectedText = autotestingLocalizationSystem->GetLocalizedString(expectedText);
 
 		UIStaticText *uiStaticText = dynamic_cast<UIStaticText*>(control);
 		if (uiStaticText)
