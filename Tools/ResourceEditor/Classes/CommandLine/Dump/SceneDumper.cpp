@@ -139,11 +139,6 @@ void SceneDumper::DumpRenderObject(DAVA::RenderObject *renderObject, SceneLinks 
 
             descriptorPathnames.insert(vegetation->GetLightmapPath());
             descriptorPathnames.insert(vegetation->GetVegetationTexture());
-            
-#if RHI_COMPLETE_EDITOR
-			descriptorPathnames.insert(vegetation->GetTextureSheetPath());
-#endif //RHI_COMPLETE_EDITOR
-            
 			break;
 		}
 
