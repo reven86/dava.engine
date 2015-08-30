@@ -123,6 +123,8 @@ bool TransformSystem::ProcessDrag(const Vector2 &pos)
     }
     const auto &keyBoard = InputSystem::Instance()->GetKeyboard();
     bool retval = true;
+    auto gd =  activeControl->GetControl()->GetGeometricData();
+
     switch(activeArea)
     {
         case FRAME:
@@ -146,22 +148,18 @@ bool TransformSystem::ProcessDrag(const Vector2 &pos)
         {
             auto control = activeControl->GetControl();
             Vector2 delta = pos - prevPos;
-            auto gd =  activeControl->GetControl()->GetGeometricData();
-            Vector2 realDelta = delta / gd.scale;
-            auto angleProp = document->GetPropertyByName(activeControl, "Angle");
-            float32 angle = angleProp->GetValue().AsFloat();
-            Vector2 angledDelta = realDelta;
-
-            Vector2 pivot(angledDelta / control->GetSize()); //pivot is half of pos / size
+            AdjustProperty(activeControl, "Position", delta / gd.scale);
+            Vector2 angeledDelta(delta.x * gd.cosA + delta.y * gd.sinA,
+                        delta.x * -gd.sinA + delta.y * gd.cosA);
+            Vector2 pivot((angeledDelta / gd.scale) / control->GetSize()); //pivot is half of pos / size
             AdjustProperty(activeControl, "Pivot", pivot);
-            AdjustProperty(activeControl, "Position", angledDelta);
         }
             break;
         case ROTATE:
         {
             auto control = activeControl->GetControl();
-            Vector2 pivotPoint = control->GetGeometricData().GetUnrotatedRect().GetPosition() + control->GetPivotPoint();
-            
+            const Rect &ur = gd.GetUnrotatedRect();
+            Vector2 pivotPoint = ur.GetPosition() + ur.GetSize() * control->GetPivot();
             Vector2 rotatePoint = pivotPoint;
             Vector2 l1(prevPos.x - rotatePoint.x, prevPos.y - rotatePoint.y);
             Vector2 l2(pos.x - rotatePoint.x, pos.y - rotatePoint.y);
@@ -212,74 +210,146 @@ void TransformSystem::MoveConrol(const Vector2& pos)
     AdjustProperty(activeControl, "Position", realDelta);
 }
 
+void TransformSystem::ResizeWithPivot(const Vector2 &pos, bool rateably)
+{
+    Vector2 delta = pos - prevPos;
+    if(delta.x == 0.0f && delta.y == 0.0f)
+    {
+        return;
+    }
+    auto gd = activeControl->GetControl()->GetGeometricData();
+    DVASSERT(gd.scale.x != 0 && gd.scale.y != 0);
+    Vector2 angeledDelta(delta.x * cosf(gd.angle) + delta.y * sinf(gd.angle),
+                         delta.x * -sinf(gd.angle) + delta.y * cosf(gd.angle));
+    Vector2 sizeDelta = angeledDelta / gd.scale;
+    const auto invertX = cornersDirection[activeArea][X_AXIS];
+    const auto invertY = cornersDirection[activeArea][Y_AXIS];
+    Vector2 deltaSize(sizeDelta.x * invertX, sizeDelta.y * invertY);
+    
+    auto pivotProp = document->GetPropertyByName(activeControl, "Pivot");
+    DVASSERT(nullptr != pivotProp);
+    Vector2 pivot = pivotProp->GetValue().AsVector2();
+    
+    auto pivotDeltaX = invertX == -1 ? pivot.x : 1 - pivot.x;
+    if (pivotDeltaX != 0)
+    {
+        deltaSize.x /= pivotDeltaX;
+    }
+    auto pivotDeltaY = invertY == -1 ? pivot.y : 1 - pivot.y;
+    if (pivotDeltaY != 0)
+    {
+        deltaSize.y /= pivotDeltaY;
+    }
+    if (rateably)
+    {
+        if(invertX != 0 && invertY != 0)
+        {
+            if(fabs(angeledDelta.x) > 0 && fabs(angeledDelta.y) > 0)
+            {
+                bool canNotResize = (angeledDelta.x * invertX > 0) ^ (angeledDelta.y * invertY > 0);
+                if(canNotResize)
+                {
+                    return;
+                }
+            }
+        }
+        const Vector2 &size = activeControl->GetControl()->GetSize();
+        float proportion = size.y != 0  ? size.x / size.y : 0;
+        if (proportion != 0)
+        {
+            if (fabs(angeledDelta.y) > fabs(angeledDelta.x))
+            {
+                deltaSize.x = deltaSize.y * proportion;
+            }
+            else
+            {
+                deltaSize.y = deltaSize.x / proportion;
+            }
+        }
+    }
+    AdjustProperty(activeControl, "Size", deltaSize);
+}
+
 void TransformSystem::ResizeControl(const Vector2& pos, bool withPivot, bool rateably)
 {
     DVASSERT(activeArea != NO_AREA);
+    if(withPivot)
+    {
+        return ResizeWithPivot(pos, rateably);
+    }
     Vector2 delta = pos - prevPos;
-    auto gd = activeControl->GetControl()->GetGeometricData();
-    DVASSERT(gd.scale.x != 0 && gd.scale.y != 0);
-    Vector2 realDelta = delta / gd.scale;
-    Vector2 deltaPosition = realDelta;
-
+    if(delta.x == 0.0f && delta.y == 0.0f)
+    {
+        return;
+    }
     const auto invertX = cornersDirection[activeArea][X_AXIS];
     const auto invertY = cornersDirection[activeArea][Y_AXIS];
-    realDelta.x *= invertX; 
-    realDelta.y *= invertY;
-    if (invertX == 0)
-    {
-        deltaPosition.x = 0; 
-    }
-    if (invertY == 0)
-    {
-        deltaPosition.y = 0;
-    }
-    Vector2 deltaSize = realDelta;
+
+    auto gd = activeControl->GetControl()->GetGeometricData();
+    Vector2 angeledDelta(delta.x * cosf(gd.angle) + delta.y * sinf(gd.angle),
+                         delta.x * -sinf(gd.angle) + delta.y * cosf(gd.angle));
+    DVASSERT(gd.scale.x != 0 && gd.scale.y != 0);
+    Vector2 deltaPosition = angeledDelta / gd.scale;
+    Vector2 deltaSize = angeledDelta / gd.scale;
+    
+    deltaSize.x *= invertX;
+    deltaSize.y *= invertY;
 
     auto pivotProp = document->GetPropertyByName(activeControl, "Pivot");
     DVASSERT(nullptr != pivotProp);
     Vector2 pivot = pivotProp->GetValue().AsVector2();
 
-    if (withPivot)
-    {
-        auto pivotDeltaX = invertX == -1 ? pivot.x : 1 - pivot.x;
-        if (pivotDeltaX != 0)
-        {
-            deltaSize.x /= pivotDeltaX;
-        }
-        auto pivotDeltaY = invertY == -1 ? pivot.y : 1 - pivot.y;
-        if (pivotDeltaY != 0)
-        {
-            deltaSize.y /= pivotDeltaY;
-        }
-        deltaPosition.SetZero();
-    }
+    deltaPosition.x *= invertX == -1 ? 1 - pivot.x : pivot.x;
+    deltaPosition.y *= invertY == -1 ? 1 - pivot.y : pivot.y;
+    DVASSERT(gd.scale.x != 0.0f && gd.scale.y != 0.0f);
+
     if (rateably)
     {
+        if(invertX != 0 && invertY != 0)
+        {
+            if(fabs(angeledDelta.x) > 0 && fabs(angeledDelta.y) > 0)
+            {
+                bool canNotResize = (angeledDelta.x * invertX > 0) ^ (angeledDelta.y * invertY > 0);
+                if(canNotResize)
+                {
+                    static int counter;
+                    DAVA::Logger::Info("%d skipped", counter++);
+                    return;
+                }
+            }
+        }
+
         const Vector2 &size = activeControl->GetControl()->GetSize();
         float proportion = size.y != 0  ? size.x / size.y : 0;
         if (proportion != 0)
         {
-            if (fabs(realDelta.y) > fabs(realDelta.x))
+            if (fabs(angeledDelta.y) > fabs(angeledDelta.x))
             {
                 deltaSize.x = deltaSize.y * proportion;
-                deltaPosition.x = deltaPosition.y * proportion * invertX * (invertY == -1 ? -1 : 1);
+                deltaPosition.x = deltaPosition.y * proportion;
             }
             else
             {
-
                 deltaSize.y = deltaSize.x / proportion;
-                deltaPosition.y = deltaPosition.x / proportion * invertY * (invertX == -1 ? -1 : 1);
+                deltaPosition.y = deltaPosition.x / proportion;
+            }
+            if(invertY == 0)
+            {
+                deltaPosition.y = 0.0f;
+            }
+            if(invertX == 0)
+            {
+                deltaPosition.x = 0.0f;
             }
         }
     }
-    if (!withPivot)
-    {
-        deltaPosition.x *= invertX == -1 ? 1 - pivot.x : pivot.x;
-        deltaPosition.y *= invertY == -1 ? 1 - pivot.y : pivot.y;
-    }
-    AdjustProperty(activeControl, "Position", deltaPosition);
-    AdjustProperty(activeControl, "Size", deltaSize);
+    Vector2 rotatedPosition;
+    rotatedPosition.x = deltaPosition.x * cosf(-gd.angle) + deltaPosition.y * sinf(-gd.angle);
+    rotatedPosition.y = deltaPosition.x * -sinf(-gd.angle) + deltaPosition.y * cosf(-gd.angle);
+    AdjustProperty(activeControl, "Position", rotatedPosition);
+    
 
+    AdjustProperty(activeControl, "Size", deltaSize);
 }
 
 template <typename T>
@@ -308,12 +378,12 @@ void TransformSystem::AdjustProperty(ControlNode *node, const String &propertyNa
 
 void TransformSystem::InitCornersDirection()
 {
-    cornersDirection[TOP_LEFT] = { -1, -1 };
-    cornersDirection[TOP_CENTER] = { 0, -1 };
-    cornersDirection[TOP_RIGHT] = { 1, -1 };
-    cornersDirection[CENTER_LEFT] = { -1, 0 };
-    cornersDirection[CENTER_RIGHT] = { 1, 0 };
-    cornersDirection[BOTTOM_LEFT] = { -1, 1 };
-    cornersDirection[BOTTOM_CENTER] = { 0, 1 };
-    cornersDirection[BOTTOM_RIGHT] = { 1, 1 };
+    cornersDirection[TOP_LEFT] = {{ -1, -1 }};
+    cornersDirection[TOP_CENTER] = {{ 0, -1 }};
+    cornersDirection[TOP_RIGHT] = {{ 1, -1 }};
+    cornersDirection[CENTER_LEFT] = {{ -1, 0 }};
+    cornersDirection[CENTER_RIGHT] = {{ 1, 0 }};
+    cornersDirection[BOTTOM_LEFT] = {{ -1, 1 }};
+    cornersDirection[BOTTOM_CENTER] = {{ 0, 1 }};
+    cornersDirection[BOTTOM_RIGHT] = {{ 1, 1 }};
 }

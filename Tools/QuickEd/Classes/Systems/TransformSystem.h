@@ -51,14 +51,8 @@ private:
     void MoveAllSelectedControls(const DAVA::Vector2 &delta);
     void MoveConrol(const DAVA::Vector2 &pos);
     void ResizeControl(const DAVA::Vector2 &pos, bool withPivot, bool rateably);
-    void ResizeTopLeft(DAVA::Vector2 &realDelta, bool withPivot, bool rateably);
-    void ResizeTopCenter(DAVA::Vector2 &realDelta, bool withPivot, bool rateably);
-    void ResizeTopRight(DAVA::Vector2 &realDelta, bool withPivot, bool rateably);
-    void ResizeLeftCenter(DAVA::Vector2 &realDelta, bool withPivot, bool rateably);
-    void ResizeRightCenter(DAVA::Vector2 &realDelta, bool withPivot, bool rateably);
-    void ResizeBottomLeft(DAVA::Vector2 &realDelta, bool withPivot, bool rateably);
-    void ResizeBottomCenter(DAVA::Vector2 &realDelta, bool withPivot, bool rateably);
-    void ResizeBottomRight(DAVA::Vector2 &realDelta, bool withPivot, bool rateably);
+    void ResizeWithPivot(const DAVA::Vector2 &pos, bool rateably);
+
     template <typename T>
     void AdjustProperty(ControlNode *node, const DAVA::String &propertyName, const T &value);
     Document *document = nullptr;

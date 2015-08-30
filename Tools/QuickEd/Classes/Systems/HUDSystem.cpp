@@ -36,7 +36,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Render/RenderState.h"
 #include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
-#include "Model/ControlProperties/ValueProperty.h"
 
 using namespace DAVA;
 
@@ -73,9 +72,9 @@ private:
     void Draw(const UIGeometricData &geometricData) override
     {
         const UIGeometricData &gd = control->GetGeometricData();
+        SetPivot(control->GetPivot());
         SetAbsoluteRect(gd.GetUnrotatedRect());
         SetAngle(gd.angle);
-        SetPivotPoint(gd.pivotPoint);
     }
 };
 
@@ -135,24 +134,20 @@ private:
 class PivotPointControl : public ControlContainer
 {
 public:
-    explicit PivotPointControl(UIControl *container, AbstractProperty *pivotProperty_)
+    explicit PivotPointControl(UIControl *container)
         : ControlContainer(container, ControlAreaInterface::PIVOT_POINT)
-        , pivotProperty(pivotProperty_)
     {
-        DVASSERT(pivotProperty != nullptr);
         SetDebugDraw(true);
-        SetDebugDrawColor(Color(0.0f, 0.0f, 1.0f, 1.f));
+        SetDebugDrawColor(Color(1.0f, 0.0f, 0.0f, 1.f));
     }
 private:
     void Draw(const UIGeometricData &geometricData) override
     {
         Rect rect(0, 0, 5, 5);
-        Vector2 pivot = pivotProperty->GetValue().AsVector2();
         const Rect &controlRect = control->GetGeometricData().GetUnrotatedRect();
-        rect.SetCenter(controlRect.GetPosition() + controlRect.GetSize() * pivot);
+        rect.SetCenter(controlRect.GetPosition() + controlRect.GetSize() * control->GetPivot());
         SetAbsoluteRect(rect);
     }
-    AbstractProperty *pivotProperty;
 };
 
 class RotateControl : public ControlContainer
@@ -330,7 +325,7 @@ HUDSystem::HUD::HUD(const Document *document, ControlNode *node_, UIControl* hud
     , container(new Container(control))
 {
     hudControl->AddControl(container);
-    hudControls.emplace_back(new PivotPointControl(control, document->GetPropertyByName(node, "Pivot")));
+    hudControls.emplace_back(new PivotPointControl(control));
     hudControls.emplace_back(new RotateControl(control));
     for (int i = ControlAreaInterface::TOP_LEFT; i < ControlAreaInterface::CORNER_COUNT; ++i)
     {
