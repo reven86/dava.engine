@@ -52,7 +52,7 @@ private:
     void MoveConrol(const DAVA::Vector2 &pos);
     void ResizeControl(const DAVA::Vector2 &pos, bool withPivot, bool rateably);
     void ResizeWithPivot(const DAVA::Vector2 &pos, bool rateably);
-
+    void ResizeRateably(const DAVA::Vector2 &pos);
     template <typename T>
     void AdjustProperty(ControlNode *node, const DAVA::String &propertyName, const T &value);
     Document *document = nullptr;
