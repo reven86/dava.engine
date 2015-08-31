@@ -7,19 +7,13 @@
     <x>0</x>
     <y>0</y>
     <width>420</width>
-    <height>416</height>
+    <height>454</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
     <width>420</width>
     <height>0</height>
-   </size>
-  </property>
-  <property name="maximumSize">
-   <size>
-    <width>420</width>
-    <height>498</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -277,9 +271,6 @@
        </item>
        <item>
         <widget class="QScrollArea" name="scrollArea">
-         <property name="sizeAdjustPolicy">
-          <enum>QAbstractScrollArea::AdjustToContents</enum>
-         </property>
          <property name="widgetResizable">
           <bool>true</bool>
          </property>
@@ -288,8 +279,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>380</width>
-            <height>121</height>
+            <width>364</width>
+            <height>76</height>
            </rect>
           </property>
          </widget>
