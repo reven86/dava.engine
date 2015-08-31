@@ -148,10 +148,14 @@ bool TransformSystem::ProcessDrag(const Vector2 &pos)
         {
             auto control = activeControl->GetControl();
             Vector2 delta = pos - prevPos;
-            AdjustProperty(activeControl, "Position", delta / gd.scale);
-            Vector2 angeledDelta(delta.x * gd.cosA + delta.y * gd.sinA,
-                        delta.x * -gd.sinA + delta.y * gd.cosA);
-            Vector2 pivot((angeledDelta / gd.scale) / control->GetSize()); //pivot is half of pos / size
+            DVASSERT(gd.scale.x != 0.0f && gd.scale.y != 0.0f);
+            Vector2 scaledDelta = delta / gd.scale;
+            //position calculates in absolute coordinates
+            AdjustProperty(activeControl, "Position", scaledDelta);
+            //pivot point calculate in rotate coordinates
+            Vector2 angeledDelta(scaledDelta.x * gd.cosA + scaledDelta.y * gd.sinA,
+                        scaledDelta.x * -gd.sinA + scaledDelta.y * gd.cosA);
+            Vector2 pivot(angeledDelta / control->GetSize());
             AdjustProperty(activeControl, "Pivot", pivot);
         }
             break;
@@ -166,6 +170,7 @@ bool TransformSystem::ProcessDrag(const Vector2 &pos)
             float angleRad = atan2(l2.y, l2.x) - atan2(l1.y, l1.x);
             float angle = angleRad * 180.0f / PI;
             AdjustProperty(activeControl, "Angle", static_cast<float32>(round(angle)));
+        
         }
             break;
         default:
@@ -210,175 +215,9 @@ void TransformSystem::MoveConrol(const Vector2& pos)
     AdjustProperty(activeControl, "Position", realDelta);
 }
 
-void TransformSystem::ResizeWithPivot(const Vector2 &pos, bool rateably)
-{
-    Vector2 delta = pos - prevPos;
-    if(delta.x == 0.0f && delta.y == 0.0f)
-    {
-        return;
-    }
-    auto gd = activeControl->GetControl()->GetGeometricData();
-    DVASSERT(gd.scale.x != 0 && gd.scale.y != 0);
-    Vector2 angeledDelta(delta.x * cosf(gd.angle) + delta.y * sinf(gd.angle),
-                         delta.x * -sinf(gd.angle) + delta.y * cosf(gd.angle));
-    Vector2 sizeDelta = angeledDelta / gd.scale;
-    const auto invertX = cornersDirection[activeArea][X_AXIS];
-    const auto invertY = cornersDirection[activeArea][Y_AXIS];
-    Vector2 deltaSize(sizeDelta.x * invertX, sizeDelta.y * invertY);
-    
-    auto pivotProp = document->GetPropertyByName(activeControl, "Pivot");
-    DVASSERT(nullptr != pivotProp);
-    Vector2 pivot = pivotProp->GetValue().AsVector2();
-    
-    auto pivotDeltaX = invertX == -1 ? pivot.x : 1 - pivot.x;
-    if (pivotDeltaX != 0)
-    {
-        deltaSize.x /= pivotDeltaX;
-    }
-    auto pivotDeltaY = invertY == -1 ? pivot.y : 1 - pivot.y;
-    if (pivotDeltaY != 0)
-    {
-        deltaSize.y /= pivotDeltaY;
-    }
-    if (rateably)
-    {
-        if(invertX != 0 && invertY != 0)
-        {
-            if(fabs(angeledDelta.x) > 0 && fabs(angeledDelta.y) > 0)
-            {
-                bool canNotResize = (angeledDelta.x * invertX > 0) ^ (angeledDelta.y * invertY > 0);
-                if(canNotResize)
-                {
-                    return;
-                }
-            }
-        }
-        const Vector2 &size = activeControl->GetControl()->GetSize();
-        float proportion = size.y != 0  ? size.x / size.y : 0;
-        if (proportion != 0)
-        {
-            if (fabs(angeledDelta.y) > fabs(angeledDelta.x))
-            {
-                deltaSize.x = deltaSize.y * proportion;
-            }
-            else
-            {
-                deltaSize.y = deltaSize.x / proportion;
-            }
-        }
-    }
-    AdjustProperty(activeControl, "Size", deltaSize);
-}
-
-void TransformSystem::ResizeRateably(const DAVA::Vector2 &pos)
-{
-    DVASSERT(activeArea != NO_AREA);
-    Vector2 delta = pos - prevPos;
-    if(delta.x == 0.0f && delta.y == 0.0f)
-    {
-        return;
-    }
-    const auto invertX = cornersDirection[activeArea][X_AXIS];
-    const auto invertY = cornersDirection[activeArea][Y_AXIS];
-    
-    auto gd = activeControl->GetControl()->GetGeometricData();
-    Vector2 angeledDelta(delta.x * cosf(gd.angle) + delta.y * sinf(gd.angle),
-                         delta.x * -sinf(gd.angle) + delta.y * cosf(gd.angle));
-    DVASSERT(gd.scale.x != 0 && gd.scale.y != 0);
-    //scale rotated delta
-    DVASSERT(gd.scale.x != 0 && gd.scale.y != 0);
-    Vector2 realDelta(angeledDelta / gd.scale);
-    Vector2 deltaPosition(realDelta);
-    Vector2 deltaSize(realDelta);
-    //make resize absolutely
-    deltaSize.x *= invertX;
-    deltaSize.y *= invertY;
-    //disable move if not accepted
-    if(invertX == 0)
-    {
-        deltaPosition.x = 0;
-    }
-    if(invertY == 0)
-    {
-        deltaPosition.y = 0;
-    }
-
-    auto pivotProp = document->GetPropertyByName(activeControl, "Pivot");
-    DVASSERT(nullptr != pivotProp);
-    Vector2 pivot = pivotProp->GetValue().AsVector2();
-    
-    deltaPosition.x *= invertX == -1 ? 1 - pivot.x : pivot.x;
-    deltaPosition.y *= invertY == -1 ? 1 - pivot.y : pivot.y;
-    DVASSERT(gd.scale.x != 0.0f && gd.scale.y != 0.0f);
-    
-    //check situation when we try to resize up and down simultaneously
-    if(invertX != 0 && invertY != 0) //actual only for corners
-    {
-        if(fabs(angeledDelta.x) > 0 && fabs(angeledDelta.y) > 0) //only if up and down requested
-        {
-            bool canNotResize = (angeledDelta.x * invertX > 0) ^ (angeledDelta.y * invertY > 0);
-            if(canNotResize) // and they have different sign for corner
-            {
-                float prop = fabs(angeledDelta.x) / fabs(angeledDelta.y);
-                if(prop > 0.48 && prop < 0.52) // like "resize 10 to up and 10 to down rateably"
-                {
-                    return;
-                }
-            }
-        }
-    }
-    
-    const Vector2 &size = activeControl->GetControl()->GetSize();
-    float proportion = size.y != 0  ? size.x / size.y : 0;
-    if (proportion != 0)
-    {
-        if (fabs(angeledDelta.y) > fabs(angeledDelta.x))
-        {
-            deltaSize.x = deltaSize.y * proportion;
-            deltaPosition.x = deltaSize.y * proportion;
-            if(invertX == 0)
-            {
-                deltaPosition.x *= (0.5 - pivot.x) * -1; //rainbow unicorn was here and add -1 to the right.
-            }
-            else
-            {
-                deltaPosition.x *= (invertX == -1 ? 1 - pivot.x : pivot.x) * invertX;
-            }
-        }
-        else
-        {
-            deltaSize.y = deltaSize.x / proportion;
-            deltaPosition.y =  deltaSize.x / proportion;
-            if(invertY == 0)
-            {
-                deltaPosition.y *= (0.5 - pivot.y) * -1; // another rainbow unicorn adds -1 here.
-            }
-            else
-            {
-                deltaPosition.y *= (invertY == -1 ? 1 - pivot.y : pivot.y) * invertY;
-            }
-        }
-    }
-    
-    Vector2 rotatedPosition;
-    rotatedPosition.x = deltaPosition.x * cosf(-gd.angle) + deltaPosition.y * sinf(-gd.angle);
-    rotatedPosition.y = deltaPosition.x * -sinf(-gd.angle) + deltaPosition.y * cosf(-gd.angle);
-    AdjustProperty(activeControl, "Position", rotatedPosition);
-    
-    AdjustProperty(activeControl, "Size", deltaSize);
-}
-
 void TransformSystem::ResizeControl(const Vector2& pos, bool withPivot, bool rateably)
 {
     DVASSERT(activeArea != NO_AREA);
-    if(withPivot)
-    {
-        return ResizeWithPivot(pos, rateably); //TODO: refactor it
-    }
-    else if(rateably)
-    {
-        return ResizeRateably(pos); //TODO:refactor it
-    }
     Vector2 delta = pos - prevPos;
     if(delta.x == 0.0f && delta.y == 0.0f)
     {
@@ -415,7 +254,99 @@ void TransformSystem::ResizeControl(const Vector2& pos, bool withPivot, bool rat
     //calculate new positionp
     deltaPosition.x *= invertX == -1 ? 1 - pivot.x : pivot.x;
     deltaPosition.y *= invertY == -1 ? 1 - pivot.y : pivot.y;
-    DVASSERT(gd.scale.x != 0.0f && gd.scale.y != 0.0f);
+    
+    //modify if pivot modificator selected
+    if(withPivot)
+    {
+        deltaPosition.SetZero();
+        auto pivotDeltaX = invertX == -1 ? pivot.x : 1 - pivot.x;
+        if (pivotDeltaX != 0)
+        {
+            deltaSize.x /= pivotDeltaX;
+        }
+        auto pivotDeltaY = invertY == -1 ? pivot.y : 1 - pivot.y;
+        if (pivotDeltaY != 0)
+        {
+            deltaSize.y /= pivotDeltaY;
+        }
+
+    }
+    //check situation when we try to resize up and down simultaneously
+    if(invertX != 0 && invertY != 0) //actual only for corners
+    {
+        if(fabs(angeledDelta.x) > 0 && fabs(angeledDelta.y) > 0) //only if up and down requested
+        {
+            bool canNotResize = (angeledDelta.x * invertX > 0) ^ (angeledDelta.y * invertY > 0);
+            if(canNotResize) // and they have different sign for corner
+            {
+                float prop = fabs(angeledDelta.x) / fabs(angeledDelta.y);
+                if(prop > 0.48 && prop < 0.52) // like "resize 10 to up and 10 to down rateably"
+                {
+                    return;
+                }
+            }
+        }
+    }
+    //modify rateably
+    if(rateably)
+    {
+        //check situation when we try to resize up and down simultaneously
+        if(invertX != 0 && invertY != 0) //actual only for corners
+        {
+            if(fabs(angeledDelta.x) > 0 && fabs(angeledDelta.y) > 0) //only if up and down requested
+            {
+                bool canNotResize = (angeledDelta.x * invertX > 0) ^ (angeledDelta.y * invertY > 0);
+                if(canNotResize) // and they have different sign for corner
+                {
+                    float prop = fabs(angeledDelta.x) / fabs(angeledDelta.y);
+                    if(prop > 0.48 && prop < 0.52) // like "resize 10 to up and 10 to down rateably"
+                    {
+                        return;
+                    }
+                }
+            }
+        }
+        //calculate proportion of control
+        const Vector2 &size = activeControl->GetControl()->GetSize();
+        float proportion = size.y != 0  ? size.x / size.y : 0;
+        if (proportion != 0)
+        {
+            //get current drag direction
+            if (fabs(angeledDelta.y) > fabs(angeledDelta.x))
+            {
+                deltaSize.x = deltaSize.y * proportion;
+                if(!withPivot)
+                {
+                    deltaPosition.x = deltaSize.y * proportion;
+                    if(invertX == 0)
+                    {
+                        deltaPosition.x *= (0.5 - pivot.x) * -1; //rainbow unicorn was here and add -1 to the right.
+                    }
+                    else
+                    {
+                        deltaPosition.x *= (invertX == -1 ? 1 - pivot.x : pivot.x) * invertX;
+                    }
+                }
+            }
+            else
+            {
+                deltaSize.y = deltaSize.x / proportion;
+                if(!withPivot)
+                {
+                    deltaPosition.y =  deltaSize.x / proportion;
+                    if(invertY == 0)
+                    {
+                        deltaPosition.y *= (0.5 - pivot.y) * -1; // another rainbow unicorn adds -1 here.
+                    }
+                    else
+                    {
+                        deltaPosition.y *= (invertY == -1 ? 1 - pivot.y : pivot.y) * invertY;
+                    }
+                }
+            }
+        }
+    }
+    
     //rotate delta position backwards, because SetPosition require absolute coordinates
     Vector2 rotatedPosition;
     rotatedPosition.x = deltaPosition.x * cosf(-gd.angle) + deltaPosition.y * sinf(-gd.angle);
