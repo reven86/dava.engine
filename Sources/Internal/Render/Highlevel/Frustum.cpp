@@ -288,7 +288,7 @@ Frustum::eFrustumResult Frustum::Classify(const AABBox3 & box) const
 
 Frustum::eFrustumResult Frustum::Classify(const AABBox3 & box, uint8 &planeMask, uint8 &startId) const
 {
-	const float32* verts[2] = {box.min.data, box.max.data};
+    const float32* verts[2] = { box.min.data, box.max.data };
 	Frustum::eFrustumResult result = EFR_INSIDE;	
 	uint8 k;
 	const Plane *plane, *startPlane;
@@ -312,7 +312,7 @@ Frustum::eFrustumResult Frustum::Classify(const AABBox3 & box, uint8 &planeMask,
 		{	
 			if (plane->DistanceToPoint(verts[currPlaneAccess&1][0], verts[(currPlaneAccess>>1)&1][1], verts[(currPlaneAccess>>2)&1][2]) > 0.0f)
 			{
-				startId = plane-planeArray;
+				startId = static_cast<uint8>(plane-planeArray);
 				return EFR_OUTSIDE;
 			}
 			invPlaneAccess=~currPlaneAccess;
@@ -328,7 +328,7 @@ Frustum::eFrustumResult Frustum::Classify(const AABBox3 & box, uint8 &planeMask,
 
 bool Frustum::IsInside(const AABBox3 & box, uint8 planeMask, uint8& startClippingPlane)const
 {
-	const float32* verts[2] = {box.min.data, box.max.data};
+    const float32* verts[2] = { box.min.data, box.max.data };
 	uint8 k;
 	const Plane *plane, *startPlane;
 	startPlane = planeArray+startClippingPlane;
@@ -345,7 +345,7 @@ bool Frustum::IsInside(const AABBox3 & box, uint8 planeMask, uint8& startClippin
 		{			
 			if (plane->DistanceToPoint(verts[currPlaneAccess&1][0], verts[(currPlaneAccess>>1)&1][1], verts[(currPlaneAccess>>2)&1][2]) > 0.0f)			
 			{
-				startClippingPlane = plane-planeArray;
+				startClippingPlane = static_cast<uint8>(plane-planeArray);
 				return false;
 			}
 		}
