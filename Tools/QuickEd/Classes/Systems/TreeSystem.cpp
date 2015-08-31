@@ -41,7 +41,7 @@
 using namespace DAVA;
 
 TreeSystem::TreeSystem(Document* parent)
-    : document(parent)
+    : BaseSystemClass(parent)
 {
 
 }
@@ -102,7 +102,7 @@ void TreeSystem::OnCopy()
         return;
     }
     YamlPackageSerializer serializer;
-    serializer.SerializePackageNodes(document->GetPackage(), nodesToCopy);
+    //serializer.SerializePackageNodes(document->GetPackage(), nodesToCopy);
     String str = serializer.WriteToString();
     QApplication::clipboard()->setText(QString::fromStdString(str));
 }
@@ -136,6 +136,6 @@ void TreeSystem::OnDelete()
     }
     if (!nodesToRemove.empty())
     {
-        document->GetCommandExecutor()->RemoveControls(nodesToRemove);
+        //document->GetCommandExecutor()->RemoveControls(nodesToRemove);
     }
 }

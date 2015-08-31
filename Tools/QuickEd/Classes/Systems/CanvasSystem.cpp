@@ -51,9 +51,9 @@ private:
 CheckeredCanvas::CheckeredCanvas()
     : UIControl()
 {
-    GetBackground()->SetSprite("~res:/Gfx/CheckeredBg", 0);
-    GetBackground()->SetDrawType(UIControlBackground::DRAW_TILED);
-    GetBackground()->SetShader(SafeRetain(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR));
+    background->SetSprite("~res:/Gfx/CheckeredBg", 0);
+    background->SetDrawType(UIControlBackground::DRAW_TILED);
+    background->SetShader(SafeRetain(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR));
 }
 
 void CheckeredCanvas::Draw(const UIGeometricData &geometricData)
@@ -67,7 +67,7 @@ void CheckeredCanvas::Draw(const UIGeometricData &geometricData)
 }
 
 CanvasSystem::CanvasSystem(Document *parent)
-    : document(parent)
+    : BaseSystemClass(parent)
     , canvas(new UIControl())
 {
 }

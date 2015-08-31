@@ -62,7 +62,7 @@ class Container : public ControlContainer
 {
 public:
     explicit Container(UIControl *container)
-        : ControlContainer(container, ControlAreaInterface::FRAME)
+        : ControlContainer(container, ControlAreaInterface::FRAME_AREA)
     {
         SetSize(Vector2(30, 30));
         SetDebugDraw(true);
@@ -82,7 +82,7 @@ class FrameControl : public ControlContainer
 {
 public:
     explicit FrameControl(UIControl *container)
-        : ControlContainer(container, ControlAreaInterface::FRAME)
+        : ControlContainer(container, ControlAreaInterface::FRAME_AREA)
     {
         SetDebugDraw(true);
         SetDebugDrawColor(Color(1.0f, 0.0f, 0.0f, 1.f));
@@ -118,14 +118,14 @@ private:
         Vector2 retVal = rect.GetPosition();
         switch (area)
         {
-        case ControlAreaInterface::TOP_LEFT: return retVal;
-        case ControlAreaInterface::TOP_CENTER: return retVal + Vector2(rect.dx / 2.0f, 0);
-        case ControlAreaInterface::TOP_RIGHT: return retVal + Vector2(rect.dx, 0);
-        case ControlAreaInterface::CENTER_LEFT: return retVal + Vector2(0, rect.dy / 2.0f);
-        case ControlAreaInterface::CENTER_RIGHT: return retVal + Vector2(rect.dx, rect.dy / 2.0f);
-        case ControlAreaInterface::BOTTOM_LEFT: return retVal + Vector2(0, rect.dy);
-        case ControlAreaInterface::BOTTOM_CENTER: return retVal + Vector2(rect.dx / 2.0f, rect.dy);
-        case ControlAreaInterface::BOTTOM_RIGHT: return retVal + Vector2(rect.dx, rect.dy);
+        case ControlAreaInterface::TOP_LEFT_AREA: return retVal;
+        case ControlAreaInterface::TOP_CENTER_AREA: return retVal + Vector2(rect.dx / 2.0f, 0);
+        case ControlAreaInterface::TOP_RIGHT_AREA: return retVal + Vector2(rect.dx, 0);
+        case ControlAreaInterface::CENTER_LEFT_AREA: return retVal + Vector2(0, rect.dy / 2.0f);
+        case ControlAreaInterface::CENTER_RIGHT_AREA: return retVal + Vector2(rect.dx, rect.dy / 2.0f);
+        case ControlAreaInterface::BOTTOM_LEFT_AREA: return retVal + Vector2(0, rect.dy);
+        case ControlAreaInterface::BOTTOM_CENTER_AREA: return retVal + Vector2(rect.dx / 2.0f, rect.dy);
+        case ControlAreaInterface::BOTTOM_RIGHT_AREA: return retVal + Vector2(rect.dx, rect.dy);
         default: DVASSERT_MSG(false, "what are you doing here?!"); return Vector2(0, 0);
         }
     }
@@ -135,7 +135,7 @@ class PivotPointControl : public ControlContainer
 {
 public:
     explicit PivotPointControl(UIControl *container)
-        : ControlContainer(container, ControlAreaInterface::PIVOT_POINT)
+        : ControlContainer(container, ControlAreaInterface::PIVOT_POINT_AREA)
     {
         SetDebugDraw(true);
         SetDebugDrawColor(Color(1.0f, 0.0f, 0.0f, 1.f));
@@ -154,7 +154,7 @@ class RotateControl : public ControlContainer
 {
 public:
     explicit RotateControl(UIControl *container)
-        : ControlContainer(container, ControlAreaInterface::ROTATE)
+        : ControlContainer(container, ControlAreaInterface::ROTATE_AREA)
     {
         SetDebugDraw(true);
         SetDebugDrawColor(Color(1.0f, 1.0f, 0.0f, 1.0f));
@@ -170,7 +170,7 @@ private:
 };
 
 HUDSystem::HUDSystem(Document *document_)
-    : document(document_)
+    : BaseSystemClass(document_)
     , hudControl(new UIControl())
     , selectionRect(new UIControl())
 {
@@ -188,9 +188,16 @@ void HUDSystem::Attach(UIControl* root)
     root->AddControl(hudControl);
 }
 
+void HUDSystem::Attach()
+{
+    
+}
+
 void HUDSystem::Detach()
 {
     hudControl->RemoveFromParent();
+    canDrawRect = false;
+    selectionRect->SetSize(Vector2(0, 0));
 }
 
 void HUDSystem::SelectionWasChanged(const SelectedControls& selected, const SelectedControls& deselected)
@@ -327,7 +334,7 @@ HUDSystem::HUD::HUD(const Document *document, ControlNode *node_, UIControl* hud
     hudControl->AddControl(container);
     hudControls.emplace_back(new PivotPointControl(control));
     hudControls.emplace_back(new RotateControl(control));
-    for (int i = ControlAreaInterface::TOP_LEFT; i < ControlAreaInterface::CORNER_COUNT; ++i)
+    for (int i = ControlAreaInterface::TOP_LEFT_AREA; i < ControlAreaInterface::CORNER_COUNT; ++i)
     {
         ControlAreaInterface::eArea area = static_cast<ControlAreaInterface::eArea>(i);
         hudControls.emplace_back(new FrameRectControl(control, area));

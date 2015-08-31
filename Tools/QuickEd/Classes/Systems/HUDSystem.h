@@ -34,7 +34,7 @@
 #include "Base/ScopedPtr.h"
 #include "Math/Vector.h"
 #include "UI/UIControl.h"
-#include "Math/Vector.h"
+#include "Systems/BaseSystemClass.h"
 
 class Document;
 namespace DAVA
@@ -42,19 +42,19 @@ namespace DAVA
     struct Rect;
 }
  
-class HUDSystem final : public SelectionInterface, public InputInterface
+class HUDSystem final : public BaseSystemClass, public SelectionInterface, public InputInterface
 {
 public:
     HUDSystem(Document *document);
     ~HUDSystem() = default;
     void Attach(DAVA::UIControl *root);
-    void Detach();
+    void Attach() override;
+    void Detach() override;
     void SelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected) override;
     bool OnInput(DAVA::UIEvent *currentInput) override;
     void AddListener(ControlAreaInterface *listener);
     void RemoveListener(ControlAreaInterface *listener);
 private:
-    Document *document = nullptr;
     void ProcessCursor(const DAVA::Vector2& pos);
     void GetControlArea(ControlNode *&node, ControlAreaInterface::eArea &area, const DAVA::Vector2 &pos);
     ControlAreaInterface::eArea activeArea = ControlAreaInterface::NO_AREA;

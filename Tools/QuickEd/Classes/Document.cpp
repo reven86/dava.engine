@@ -176,19 +176,19 @@ ControlNode* Document::GetControlNodeByPos(const Vector2& pos, ControlNode* node
     return nullptr;
 }
 
-AbstractProperty* Document::GetPropertyByName(const ControlNode *node, const DAVA::String &name) const
+AbstractProperty* Document::GetPropertyByName(const ControlNode *node, const String &name) const
 {
     RootProperty *propertiesRoot = node->GetRootProperty();
     int propertiesCount = propertiesRoot->GetCount();
     for (int index = 0; index < propertiesCount; ++index)
     {
-        SectionProperty *section = dynamic_cast<SectionProperty*>(propertiesRoot->GetProperty(index));
-        if (section)
+        auto rootProperty = propertiesRoot->GetProperty(index);
+        if (nullptr != rootProperty)
         {
-            int sectionCount = section->GetCount();
+            int sectionCount = rootProperty->GetCount();
             for (int prop = 0; prop < sectionCount; ++prop)
             {
-                ValueProperty *valueProperty = dynamic_cast<ValueProperty*>(section->GetProperty(prop));
+                AbstractProperty *valueProperty = rootProperty->GetProperty(prop);
                 if (nullptr != valueProperty && valueProperty->GetName() == name)
                 {
                     return valueProperty;

@@ -30,13 +30,14 @@
 #ifndef __QUICKED_TRANSFORM_SYSTEM_H__
 #define __QUICKED_TRANSFORM_SYSTEM_H__
 
+#include "Systems/BaseSystemClass.h"
 #include "Systems/Interfaces.h"
 #include "Base/BaseTypes.h"
 #include "Math/Vector.h"
 
 class Document;
 
-class TransformSystem final : public InputInterface, public ControlAreaInterface, public SelectionInterface
+class TransformSystem final : public BaseSystemClass, public InputInterface, public ControlAreaInterface, public SelectionInterface
 {   
 public:
     explicit TransformSystem(Document *parent);
@@ -45,6 +46,7 @@ public:
     void MouseLeaveArea() override;
     bool OnInput(DAVA::UIEvent *currentInput) override;
     void SelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected) override;
+    void Detach() override;
 private:
     bool ProcessKey(const DAVA::int32 key);
     bool ProcessDrag(const DAVA::Vector2 &pos);
@@ -53,7 +55,6 @@ private:
     void ResizeControl(const DAVA::Vector2 &pos, bool withPivot, bool rateably);
     template <typename T>
     void AdjustProperty(ControlNode *node, const DAVA::String &propertyName, const T &value);
-    Document *document = nullptr;
     eArea activeArea = NO_AREA;
     ControlNode *activeControl = nullptr;
     SelectedControls selectedControls;
@@ -65,8 +66,21 @@ private:
         Y_AXIS,
         AXIS_COUNT
     };
-    DAVA::UnorderedMap<eArea, DAVA::Array<int, AXIS_COUNT>> cornersDirection;
+    const DAVA::UnorderedMap<eArea, DAVA::Array<int, AXIS_COUNT>> cornersDirection;
     void InitCornersDirection();
+
+    enum ACCUMULATE_OPERATIONS
+    {
+        ROTATE_OPERATION,
+        MOVE_OPERATION,
+        RESIZE_OPERATION,
+        OPERATIONS_COUNT
+    };
+    const DAVA::Array<int, OPERATIONS_COUNT> steps; //to transform with fixed step
+
+    DAVA::Array<DAVA::Array<int, AXIS_COUNT>, OPERATIONS_COUNT> accumulates;
+
+    void AccumulateOperation(ACCUMULATE_OPERATIONS operation, DAVA::Vector2 &delta);
 };
 
 #endif // __QUICKED_TRANSFORM_SYSTEM_H__

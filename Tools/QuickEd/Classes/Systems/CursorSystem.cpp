@@ -38,14 +38,9 @@ CursorSystem::CursorSystem(Document* doc)
     
 }
 
-void CursorSystem::Attach()
-{
-
-}
-
 void CursorSystem::Detach()
 {
-    
+    MouseLeaveArea();
 }
 
 void CursorSystem::MouseEnterArea(ControlNode* targetNode, const eArea area)
@@ -73,23 +68,23 @@ QCursor CursorSystem::GetCursorByArea(const eArea area) const
 {
     switch (area)
     {
-    case FRAME:
+    case FRAME_AREA:
         return Qt::SizeAllCursor;
-    case PIVOT_POINT:
+    case PIVOT_POINT_AREA:
         return Qt::CrossCursor;
-    case TOP_LEFT:
-    case BOTTOM_RIGHT:
+    case TOP_LEFT_AREA:
+    case BOTTOM_RIGHT_AREA:
         return Qt::SizeFDiagCursor;
-    case TOP_RIGHT:
-    case BOTTOM_LEFT:
+    case TOP_RIGHT_AREA:
+    case BOTTOM_LEFT_AREA:
         return Qt::SizeBDiagCursor;
-    case TOP_CENTER:
-    case BOTTOM_CENTER:
+    case TOP_CENTER_AREA:
+    case BOTTOM_CENTER_AREA:
         return Qt::SizeVerCursor;
-    case CENTER_LEFT:
-    case CENTER_RIGHT:
+    case CENTER_LEFT_AREA:
+    case CENTER_RIGHT_AREA:
         return Qt::SizeHorCursor;
-    case ROTATE:
+    case ROTATE_AREA:
         return Qt::CrossCursor;
     default:
         DVASSERT_MSG(false, "unexpected enum value");

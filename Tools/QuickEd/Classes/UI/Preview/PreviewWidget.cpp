@@ -53,13 +53,23 @@ public:
     }
     bool SystemInput(UIEvent *currentInput) override
     {
-        if (nullptr != activeDocument)
+        if (!emulationMode && nullptr != activeDocument)
         {
             return activeDocument->OnInput(currentInput);
         }
         return UIControl::SystemInput(currentInput);
     }
+    void SetEmulationMode(bool arg)
+    {
+        emulationMode = arg;
+    }
+    bool GetEmulationMode() const
+    {
+        return emulationMode;
+    }
+private:
     Document *activeDocument = nullptr;
+    bool emulationMode = false;
 };
 
 PreviewWidget::PreviewWidget(QWidget *parent)
@@ -115,6 +125,20 @@ PreviewWidget::PreviewWidget(QWidget *parent)
     UpdateScrollArea();
 }
 
+void PreviewWidget::SetEmulationMode(bool emulationMode)
+{
+    auto root = static_cast<RootControl*>(rootControl);
+    root->SetEmulationMode(emulationMode);
+    if (emulationMode)
+    {
+        document->GetHUDSystem()->Detach();
+    }
+    else
+    {
+        document->GetHUDSystem()->Attach(rootControl);
+    }
+}
+
 DavaGLWidget *PreviewWidget::GetDavaGLWidget()
 {
     return davaGLWidget;
@@ -123,13 +147,17 @@ DavaGLWidget *PreviewWidget::GetDavaGLWidget()
 void PreviewWidget::OnDocumentChanged(Document *arg)
 {
     document = arg;
+    auto root = static_cast<RootControl*>(rootControl);
     if (nullptr != document)
     {
         document->GetCanvasSystem()->Attach(scalableContent);
-        document->GetHUDSystem()->Attach(rootControl);
+        if (!root->GetEmulationMode())
+        {
+            document->GetHUDSystem()->Attach(rootControl);
+        }
         scrollAreaController->UpdateCanvasContentSize();
     }
-    static_cast<RootControl*>(rootControl)->SetActiveDocument(document);
+    root->SetActiveDocument(document);
 }
 
 void PreviewWidget::OnSelectedNodesChanged(const SelectedNodes &selected, const SelectedNodes &deselected)

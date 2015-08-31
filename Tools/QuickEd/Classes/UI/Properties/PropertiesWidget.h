@@ -47,7 +47,6 @@ public:
 public slots:
     void OnDocumentChanged(Document *doc);
     void OnSelectedNodesChanged(const SelectedNodes &selected, const SelectedNodes &deselected);
-    void OnDataChanged(const QByteArray &role);
 
     void OnAddComponent(QAction *action);
     void OnAddStyleProperty(QAction *action);

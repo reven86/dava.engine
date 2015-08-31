@@ -487,7 +487,7 @@ DAVA::eErrorCode LibTgaHelper::WriteTgaHeader(File *dstFile, const TgaInfo& tgaI
     fields[imageTypeOffset] = static_cast<uint8>(tgaInfo.imageType);
     Uint16ToLowEndian(tgaInfo.width, &fields[widthOffset]);
     Uint16ToLowEndian(tgaInfo.height, &fields[heightOffset]);
-    fields[originYOffset] = fields[heightOffset]; // for TOP_LEFT, originX = 0, originY = height
+    fields[originYOffset] = fields[heightOffset]; // for TOP_LEFT_AREA, originX = 0, originY = height
     fields[originYOffset + 1] = fields[heightOffset + 1];
     fields[bppOffset] = tgaInfo.bytesPerPixel << 3;
     fields[descriptorOffset] = tgaInfo.alphaBits | (tgaInfo.origin_corner & 0x03) << 4;

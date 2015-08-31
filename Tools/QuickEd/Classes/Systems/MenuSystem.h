@@ -39,7 +39,7 @@ public:
     explicit MenuSystem(Document *parent);
     void Attach() override; //restore system state
     void Detach() override; //detach system
-    bool OnInput(DAVA::UIEvent *currentInput);
+    bool OnInput(DAVA::UIEvent *currentInput) override;
     void SelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected) override;
 };
 

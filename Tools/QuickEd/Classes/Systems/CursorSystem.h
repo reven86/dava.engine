@@ -39,7 +39,6 @@ class CursorSystem final : public BaseSystemClass, public ControlAreaInterface
 public:
     explicit CursorSystem(Document *doc);
     ~CursorSystem() override = default;
-    void Attach() override;
     void Detach() override;
     void MouseEnterArea(ControlNode *targetNode, const eArea area) override;
     void MouseLeaveArea() override;

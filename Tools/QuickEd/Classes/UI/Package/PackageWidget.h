@@ -32,20 +32,16 @@
 
 #include <QWidget>
 #include <QDockWidget>
-#include <QPointer>
-#include <QItemSelectionModel>
-#include "UI/Package/FilteredPackageModel.h"
-#include "UI/Package/PackageModel.h"
-#include "DAVAEngine.h"
 #include "ui_PackageWidget.h"
+#include "Defines.h"
 
-namespace Ui {
-    class PackageWidget;
-}
-
-class SharedData;
+class Document;
 class ControlNode;
 class StyleSheetNode;
+class PackageNode;
+class FilteredPackageModel;
+class PackageModel;
+class QItemSelection;
 
 class PackageWidget : public QDockWidget, public Ui::PackageWidget
 {
@@ -54,9 +50,11 @@ public:
     explicit PackageWidget(QWidget *parent = 0);
     ~PackageWidget() = default;
 
+signals:
+    void SelectedNodesChanged(const SelectedNodes &selected, const SelectedNodes &deselected);
 public slots:
-    void OnDocumentChanged(SharedData *context);
-    void OnDataChanged(const QByteArray &role);
+    void OnDocumentChanged(Document *context);
+    void OnSelectedNodesChanged(const SelectedNodes &selected, const SelectedNodes &deselected);
 private:
     void LoadContext();
     void SaveContext();
@@ -64,7 +62,7 @@ private:
     
     void OnControlSelectedInEditor(const QList<ControlNode *> &node);
 
-    void RefreshActions(const QList<PackageBaseNode*> &indexList);
+    void RefreshActions();
     void RefreshAction(QAction *action, bool enabled, bool visible);
     void CollectSelectedControls(DAVA::Vector<ControlNode*> &nodes, bool forCopy, bool forRemove);
     void CollectSelectedStyles(DAVA::Vector<StyleSheetNode*> &nodes, bool forCopy, bool forRemove);
@@ -89,20 +87,21 @@ private slots:
     void OnAddStyle();
 
 private:
+    void SetSelectedNodes(const SelectedNodes &selected, const SelectedNodes &deselected);
+
     QAction *CreateSeparator();
+    Document *document = nullptr;
+    QAction *importPackageAction = nullptr;
+    QAction *copyAction = nullptr;
+    QAction *pasteAction = nullptr;
+    QAction *cutAction = nullptr;
+    QAction *delAction = nullptr;
+    QAction *renameAction = nullptr;
+    QAction *addStyleAction = nullptr;
     
-private:
-    SharedData *sharedData;
-    QAction *importPackageAction;
-    QAction *copyAction;
-    QAction *pasteAction;
-    QAction *cutAction;
-    QAction *delAction;
-    QAction *renameAction;
-    QAction *addStyleAction;
-    
-    QPointer<FilteredPackageModel> filteredPackageModel;
-    QPointer<PackageModel> packageModel;
+    FilteredPackageModel* filteredPackageModel;
+    PackageModel* packageModel;
+    SelectedNodes selectedNodes;
 };
 
 #endif // __UI_EDITOR_UI_PACKAGE_WIDGET__

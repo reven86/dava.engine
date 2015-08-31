@@ -37,7 +37,7 @@
 using namespace DAVA;
 
 SelectionSystem::SelectionSystem(Document* doc)
-    : document(doc)
+    : BaseSystemClass(doc)
 {
     
 }

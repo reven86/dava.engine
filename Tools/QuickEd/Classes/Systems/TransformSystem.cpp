@@ -42,8 +42,10 @@
 using namespace DAVA;
 
 TransformSystem::TransformSystem(Document *parent)
-    : document(parent)
+    : BaseSystemClass(parent)
+    , steps({ { 10, 20, 20 } }) //10 for rotate and 20 for move/resize
 {
+    accumulates.fill({ { 0, 0 } });
     InitCornersDirection();
 }
 
@@ -76,7 +78,8 @@ bool TransformSystem::OnInput(UIEvent* currentInput)
             return ProcessDrag(currentInput->point);
         case UIEvent::PHASE_ENDED:
         {
-            bool retVal = activeArea == FRAME && beginPos == currentInput->point;
+            accumulates.fill({ { 0, 0 } });
+            bool retVal = activeArea == FRAME_AREA && beginPos == currentInput->point;
             beginPos = Vector2(-1, -1);
             return !retVal;
         }
@@ -90,6 +93,11 @@ void TransformSystem::SelectionWasChanged(const SelectedControls &selected, cons
 {
     UniteNodes(selected, selectedControls);
     SubstractNodes(deselected, selectedControls);
+}
+
+void TransformSystem::Detach()
+{
+    accumulates.fill({ { 0, 0 } });
 }
 
 bool TransformSystem::ProcessKey(const int32 key)
@@ -127,24 +135,24 @@ bool TransformSystem::ProcessDrag(const Vector2 &pos)
 
     switch(activeArea)
     {
-        case FRAME:
+        case FRAME_AREA:
             MoveConrol(pos);
             break;
-        case TOP_LEFT:
-        case TOP_CENTER:
-        case TOP_RIGHT:
-        case CENTER_LEFT:
-        case CENTER_RIGHT:
-        case BOTTOM_LEFT:
-        case BOTTOM_CENTER:
-        case BOTTOM_RIGHT:
+        case TOP_LEFT_AREA:
+        case TOP_CENTER_AREA:
+        case TOP_RIGHT_AREA:
+        case CENTER_LEFT_AREA:
+        case CENTER_RIGHT_AREA:
+        case BOTTOM_LEFT_AREA:
+        case BOTTOM_CENTER_AREA:
+        case BOTTOM_RIGHT_AREA:
         {
             bool withPivot = keyBoard.IsKeyPressed(DVKEY_ALT);
             bool rateably = keyBoard.IsKeyPressed(DVKEY_SHIFT);
             ResizeControl(pos, withPivot, rateably);
         }
         break;
-        case PIVOT_POINT:
+        case PIVOT_POINT_AREA:
         {
             auto control = activeControl->GetControl();
             Vector2 delta = pos - prevPos;
@@ -159,7 +167,7 @@ bool TransformSystem::ProcessDrag(const Vector2 &pos)
             AdjustProperty(activeControl, "Pivot", pivot);
         }
             break;
-        case ROTATE:
+        case ROTATE_AREA:
         {
             auto control = activeControl->GetControl();
             const Rect &ur = gd.GetUnrotatedRect();
@@ -169,7 +177,17 @@ bool TransformSystem::ProcessDrag(const Vector2 &pos)
             Vector2 l2(pos.x - rotatePoint.x, pos.y - rotatePoint.y);
             float angleRad = atan2(l2.y, l2.x) - atan2(l1.y, l1.x);
             float angle = angleRad * 180.0f / PI;
-            AdjustProperty(activeControl, "Angle", static_cast<float32>(round(angle)));
+            if (InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_SHIFT))
+            {
+                Vector2 angle2(angle, angle);
+                AccumulateOperation(ROTATE_OPERATION, angle2);
+                angle = angle2.dx;
+            }
+            else
+            {
+                angle = round(angle);
+            }
+            AdjustProperty(activeControl, "Angle", static_cast<float32>(angle));
         
         }
             break;
@@ -198,19 +216,7 @@ void TransformSystem::MoveConrol(const Vector2& pos)
     Vector2 realDelta = delta / gd.scale;
     if (InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_SHIFT))
     {
-        const int step = 20;
-        static int x, y;
-        if (abs(x) < step)
-        {
-            x += realDelta.x;
-        }
-        if (abs(y) < step)
-        {
-            y += realDelta.y;
-        }
-        realDelta = Vector2(x - x % step, y - y % step);
-        x -= realDelta.x;
-        y -= realDelta.y;
+        AccumulateOperation(MOVE_OPERATION, realDelta);
     }
     AdjustProperty(activeControl, "Position", realDelta);
 }
@@ -223,8 +229,8 @@ void TransformSystem::ResizeControl(const Vector2& pos, bool withPivot, bool rat
     {
         return;
     }
-    const auto invertX = cornersDirection[activeArea][X_AXIS];
-    const auto invertY = cornersDirection[activeArea][Y_AXIS];
+    const auto invertX = cornersDirection.at(activeArea)[X_AXIS];
+    const auto invertY = cornersDirection.at(activeArea)[Y_AXIS];
 
     auto gd = activeControl->GetControl()->GetGeometricData();
     Vector2 angeledDelta(delta.x * cosf(gd.angle) + delta.y * sinf(gd.angle),
@@ -382,12 +388,31 @@ void TransformSystem::AdjustProperty(ControlNode *node, const String &propertyNa
 
 void TransformSystem::InitCornersDirection()
 {
-    cornersDirection[TOP_LEFT] = {{ -1, -1 }};
-    cornersDirection[TOP_CENTER] = {{ 0, -1 }};
-    cornersDirection[TOP_RIGHT] = {{ 1, -1 }};
-    cornersDirection[CENTER_LEFT] = {{ -1, 0 }};
-    cornersDirection[CENTER_RIGHT] = {{ 1, 0 }};
-    cornersDirection[BOTTOM_LEFT] = {{ -1, 1 }};
-    cornersDirection[BOTTOM_CENTER] = {{ 0, 1 }};
-    cornersDirection[BOTTOM_RIGHT] = {{ 1, 1 }};
+    auto directions = const_cast<UnorderedMap<eArea, Array<int, AXIS_COUNT>>*>(&cornersDirection);
+    directions->operator[](TOP_LEFT_AREA) = { { -1, -1 } };
+    directions->operator[](TOP_CENTER_AREA) = { { 0, -1 } };
+    directions->operator[](TOP_RIGHT_AREA) = {{ 1, -1 }};
+    directions->operator[](CENTER_LEFT_AREA) = {{ -1, 0 }};
+    directions->operator[](CENTER_RIGHT_AREA) = {{ 1, 0 }};
+    directions->operator[](BOTTOM_LEFT_AREA) = {{ -1, 1 }};
+    directions->operator[](BOTTOM_CENTER_AREA) = {{ 0, 1 }};
+    directions->operator[](BOTTOM_RIGHT_AREA) = {{ 1, 1 }};
+}
+
+void TransformSystem::AccumulateOperation(ACCUMULATE_OPERATIONS operation, DAVA::Vector2& delta)
+{
+    const int step = steps[operation];
+    int &x = accumulates[operation][X_AXIS];
+    int &y = accumulates[operation][Y_AXIS];
+    if (abs(x) < step)
+    {
+        x += delta.x;
+    }
+    if (abs(y) < step)
+    {
+        y += delta.y;
+    }
+    delta = Vector2(x - x % step, y - y % step);
+    x -= delta.x;
+    y -= delta.y;
 }

@@ -30,6 +30,7 @@
 #ifndef __QUICKED_CANVAS_SYSTEM_H__
 #define __QUICKED_CANVAS_SYSTEM_H__
 
+#include "BaseSystemClass.h"
 #include "Interfaces.h"
 #include "Defines.h"
 
@@ -38,20 +39,19 @@
 
 class Document;
 
-class CanvasSystem final : public SelectionInterface
+class CanvasSystem final : public BaseSystemClass, public SelectionInterface
 {
 public:
     CanvasSystem(Document *parent);
-    ~CanvasSystem() = default;
+    ~CanvasSystem() override = default;
     void Attach(DAVA::UIControl *root);
-    void Detach();
+    void Detach() override;
     void SelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected) override;
 
 private:
     void SetRootControls(const SelectedNodes &controls);
     void LayoutCanvas();
-    Document *document = nullptr;
-    DAVA::UIControl *attachedRoot;
+    DAVA::UIControl *attachedRoot = nullptr;
     DAVA::ScopedPtr<DAVA::UIControl> canvas;
     SelectedControls selectedControls;
 };

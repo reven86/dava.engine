@@ -31,11 +31,12 @@
 #define __QUICKED_TREE_SYSTEM_H__
 
 #include "Systems/Interfaces.h"
+#include "Systems/BaseSystemClass.h"
 
 class Document;
 class ControlNode;
 
-class TreeSystem final : public InputInterface, public SelectionInterface
+class TreeSystem final : public BaseSystemClass, public InputInterface, public SelectionInterface
 {   
 public:
     explicit TreeSystem(Document *parent);
@@ -48,7 +49,6 @@ private:
     void OnPaste();
     void OnDelete();
     
-    Document *document;
     SelectedControls selectionList;
 };
 

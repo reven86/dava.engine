@@ -56,21 +56,21 @@ class ControlAreaInterface
 public:
     enum eArea
     {
-        TOP_LEFT,
-        TOP_CENTER,
-        TOP_RIGHT,
-        CENTER_LEFT,
-        CENTER_RIGHT,
-        BOTTOM_LEFT,
-        BOTTOM_CENTER,
-        BOTTOM_RIGHT,
-        FRAME,
-        PIVOT_POINT,
-        ROTATE,
+        TOP_LEFT_AREA,
+        TOP_CENTER_AREA,
+        TOP_RIGHT_AREA,
+        CENTER_LEFT_AREA,
+        CENTER_RIGHT_AREA,
+        BOTTOM_LEFT_AREA,
+        BOTTOM_CENTER_AREA,
+        BOTTOM_RIGHT_AREA,
+        FRAME_AREA,
+        PIVOT_POINT_AREA,
+        ROTATE_AREA,
         NO_AREA
     };
-    static const int CORNER_COUNT = FRAME - TOP_LEFT;
-    static const int AREAS_COuNT = NO_AREA - TOP_LEFT;
+    static const int CORNER_COUNT = FRAME_AREA - TOP_LEFT_AREA;
+    static const int AREAS_COuNT = NO_AREA - TOP_LEFT_AREA;
     virtual void MouseEnterArea(ControlNode *targetNode, const eArea area) = 0;
     virtual void MouseLeaveArea() = 0;
 };
