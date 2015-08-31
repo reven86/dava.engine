@@ -66,7 +66,7 @@ bool LodToLod2Converter::MergeLod(Entity * entity)
 
     Set<Entity*> entitiesToRemove;
 
-    LodComponent * lod = GetLodComponent( entity );
+    LodComponent* lod = GetLodComponent(entity);
     if (nullptr != lod)
     {
         RenderComponent * rc = GetRenderComponent(entity);
