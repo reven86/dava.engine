@@ -109,14 +109,14 @@ void SceneValidator::ValidateScene(Scene *scene, const DAVA::FilePath &scenePath
     }
     else 
     {
-		PushLogMessage(errorsLog, nullptr, "Scene in NULL!");
+		PushLogMessage(errorsLog, nullptr, "Scene is not initialized!");
     }
 }
 
 void SceneValidator::ValidateScales(Scene *scene, Set<String> &errorsLog)
 {
 	if (nullptr == scene)
-		PushLogMessage(errorsLog, nullptr, "Scene in NULL!");
+		PushLogMessage(errorsLog, nullptr, "Scene is not initializedr!");
 	else 
 		ValidateScalesInternal(scene, errorsLog);
 }
