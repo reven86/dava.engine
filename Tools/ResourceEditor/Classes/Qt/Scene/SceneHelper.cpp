@@ -54,6 +54,20 @@ void SceneHelper::BuildMaterialList(DAVA::Entity *forNode, Set<NMaterial*>& mate
     }
 }
 
+void SceneHelper::InvalidateMaterialBindings(DAVA::Entity *forNode, bool includeRuntime)
+{
+    if (nullptr == forNode) return;
+
+    Set<NMaterial*> materialList;
+    BuildMaterialList(forNode, materialList, includeRuntime);
+
+    for (auto & mat : materialList)
+    {
+        mat->InvalidateTextureBindings();
+    }
+}
+
+
 
 void SceneHelper::EnumerateEntityTextures(DAVA::Scene *forScene, DAVA::Entity *forNode, DAVA::TexturesMap &textureCollection, TexturesEnumerateMode mode)
 {

@@ -344,6 +344,13 @@ void QtMainWindow::SetGPUFormat(DAVA::eGPUFamily gpu)
 				WaitSetValue(progress++);
 			}
 
+            DAVA::Set<DAVA::NMaterial*> materialList;
+            for (int tab = 0; tab < GetSceneWidget()->GetTabCount(); ++tab)
+            {
+                SceneEditor2 *scene = GetSceneWidget()->GetTabScene(tab);
+                SceneHelper::InvalidateMaterialBindings(scene);
+            }
+
             emit TexturesReloaded();
             
 			WaitStop();
