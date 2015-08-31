@@ -70,7 +70,7 @@ bool LodToLod2Converter::MergeLod(Entity * entity)
     if (nullptr != lod)
     {
         RenderComponent* rc = GetRenderComponent(entity);
-        RenderObject * ro = nullptr;
+        RenderObject* ro = nullptr;
         if (nullptr == rc)
         {
             ro = new Mesh();
