@@ -442,9 +442,6 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
 
 	spriteUpdateTimer = new QTimer(this);
 	connect(spriteUpdateTimer, SIGNAL(timeout()), this, SLOT(OnSpriteUpdateTimerExpired()));
-
-	sprite = nullptr;
-	blockSignals = false;
 }
 
 EmitterLayerWidget::~EmitterLayerWidget()
@@ -579,10 +576,9 @@ void EmitterLayerWidget::Init(SceneEditor2* scene, ParticleEffectComponent* effe
     this->effect = effect;
 	this->emitter = emitter;
 	this->layer = layer;
+
 	SetActiveScene(scene);
-	
 	Update(updateMinimized);
-	
 }
 
 void EmitterLayerWidget::RestoreVisualState(KeyedArchive* visualStateProps)
@@ -855,9 +851,8 @@ void EmitterLayerWidget::OnSpriteUpdateTimerExpired()
 
 	if (rhi::SyncObjectSignaled(spriteUpdateTexturesStack.top().first))
 	{
-		Image* image = spriteUpdateTexturesStack.top().second->CreateImageFromMemory();
+		ScopedPtr<Image> image(spriteUpdateTexturesStack.top().second->CreateImageFromMemory());
 		spriteLabel->setPixmap(QPixmap::fromImage(ImageTools::FromDavaImage(image)));
-		SafeRelease(image);
 
 		while (!spriteUpdateTexturesStack.empty())
 		{
@@ -912,7 +907,7 @@ void EmitterLayerWidget::Update(bool updateMinimized)
 		}
 		RenderSystem2D::Instance()->EndRenderTargetPass();
 		spriteUpdateTexturesStack.push({rhi::GetCurrentFrameSyncObject(), renderTarget});
-		spriteUpdateTimer->start(1);
+		spriteUpdateTimer->start(0);
     }
     else
     {
