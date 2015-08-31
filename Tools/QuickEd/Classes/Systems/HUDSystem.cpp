@@ -178,8 +178,8 @@ HUDSystem::HUDSystem(Document *document_)
     selectionRect->SetDebugDrawColor(Color(1.0f, 1.0f, 0.0f, 1.0f));
     hudControl->AddControl(selectionRect);
     hudControl->SetName("hud");
-    hudControl->SetDebugDraw(true);
-    hudControl->SetDebugDrawColor(Color(0.0f, 1.0f, 0.0f, 1.0f));
+    //hudControl->SetDebugDraw(true);
+    //hudControl->SetDebugDrawColor(Color(0.0f, 1.0f, 0.0f, 1.0f));
     hudControl->SetSize(Vector2(10, 10));
 }
 

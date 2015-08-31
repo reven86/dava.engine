@@ -68,7 +68,7 @@ void CursorSystem::MouseLeaveArea()
 QPixmap CursorSystem::CreatePixmapForArea(float angle, const eArea area) const
 {
     QTransform transform;
-    transform.rotateRadians(angle);
+    transform.rotateRadiansde(angle);
     QPixmap pixmap;
     switch (area)
     {
