@@ -43,6 +43,7 @@
 #include <QLineEdit>
 #include <QCheckBox>
 #include <QComboBox>
+#include <QTimer>
 
 using namespace DAVA;
 
@@ -79,6 +80,7 @@ protected slots:
 	void OnSpritePathChanged(const QString& text);
 	
 	void OnPivotPointReset();
+	void OnSpriteUpdateTimerExpired(); 
 	
 private:
 	void InitWidget(QWidget* );
@@ -86,8 +88,6 @@ private:
 	
 	void FillLayerTypes();
 	int32 LayerTypeToIndex(ParticleLayer::eType layerType);
-
-	
 
 private:
 	ParticleLayer* layer;
@@ -177,7 +177,10 @@ private:
 	QLabel* deltaVariationSpinLabel;
 	QLabel* loopEndSpinLabel;
 	QLabel* loopVariationSpinLabel;
-	
+
+	QTimer* spriteUpdateTimer;
+	DAVA::Stack<std::pair<rhi::HSyncObject, Texture*>> spriteUpdateTexturesStack;
+
 	bool blockSignals;
 
 	struct LayerTypeMap
