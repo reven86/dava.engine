@@ -4,7 +4,6 @@ import os
 import errno
 
 def main(): 
-	os.mkdir('../.git/hooks')
 	try:
 		os.mkdir('../.git/hooks')
 	except OSError as exc: 
