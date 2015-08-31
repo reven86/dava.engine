@@ -71,6 +71,7 @@ protected slots:
     void UpdateLanguage();
    
     void OnRtlChanged(bool isRtl);
+    void OnGlobalStyleClassesChanged(const QString &classesStr);
 
 protected:
     void OpenProject(const QString &path);

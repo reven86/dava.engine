@@ -54,13 +54,15 @@ struct SerializedGeneralInfo
     int32 screenWidth;
     int32 screenHeight;
     int32 screenScale;
-    char8 platform[16];
-    char8 version[16];
-    char8 manufacturer[16];
-    char8 model[32];
-    char8 udid[64];
-    char8 name[32];
+    Array<char8, 16> platform;
+    Array<char8, 16> version;
+    Array<char8, 16> manufacturer;
+    Array<char8, 32> model;
+    Array<char8, 64> udid;
+    Array<char8, 32> name;
 };
+// make sure that sizeof SerializedGeneralInfo with arrays like char8 arr[] is same as witn std::array 
+static_assert(196 == sizeof(SerializedGeneralInfo), "invalid SerializedGeneralInfo size.");
 
 struct SerializedIfAddress
 {
@@ -152,18 +154,18 @@ size_t PeerDescription::Serialize(void* dstBuffer, size_t buflen) const
     general->screenWidth = screenInfo.width;
     general->screenHeight = screenInfo.height;
     general->screenScale = static_cast<int32>(screenInfo.scale);
-    strncpy(general->platform, platform.c_str(), COUNT_OF(general->platform));
-    general->platform[COUNT_OF(general->platform) - 1] = '\0';
-    strncpy(general->version, version.c_str(), COUNT_OF(general->version));
-    general->version[COUNT_OF(general->version) - 1] = '\0';
-    strncpy(general->manufacturer, manufacturer.c_str(), COUNT_OF(general->manufacturer));
-    general->manufacturer[COUNT_OF(general->manufacturer) - 1] = '\0';
-    strncpy(general->model, model.c_str(), COUNT_OF(general->model));
-    general->model[COUNT_OF(general->model) - 1] = '\0';
-    strncpy(general->udid, udid.c_str(), COUNT_OF(general->udid));
-    general->udid[COUNT_OF(general->udid) - 1] = '\0';
-    strncpy(general->name, name.c_str(), COUNT_OF(general->name));
-    general->name[COUNT_OF(general->name) - 1] = '\0';
+    strncpy(general->platform.data(), platform.c_str(), general->platform.size());
+    general->platform[general->platform.size() - 1] = '\0';
+    strncpy(general->version.data(), version.c_str(), general->version.size());
+    general->version[general->version.size() - 1] = '\0';
+    strncpy(general->manufacturer.data(), manufacturer.c_str(), general->manufacturer.size());
+    general->manufacturer[general->manufacturer.size() - 1] = '\0';
+    strncpy(general->model.data(), model.c_str(), general->model.size());
+    general->model[general->model.size() - 1] = '\0';
+    strncpy(general->udid.data(), udid.c_str(), general->udid.size());
+    general->udid[general->udid.size() - 1] = '\0';
+    strncpy(general->name.data(), name.c_str(), general->name.size());
+    general->name[general->name.size() - 1] = '\0';
 
     SerializedIfAddress* ifa = reinterpret_cast<SerializedIfAddress*>(general + 1);
     for (size_t i = 0, n = ifaddr.size();i < n;++i)
@@ -212,12 +214,12 @@ size_t PeerDescription::Deserialize(const void* srcBuffer, size_t buflen)
     temp.platformType = IntToPlatform(general->platfromType);
     temp.gpuFamily = IntToGPUFamily(general->gpuFamily);
     temp.screenInfo = DeviceInfo::ScreenInfo(general->screenWidth, general->screenHeight, static_cast<float32>(general->screenScale));
-    temp.platform = general->platform;
-    temp.version = general->version;
-    temp.manufacturer = general->manufacturer;
-    temp.model = general->model;
-    temp.udid = general->udid;
-    temp.name = general->name;
+    temp.platform = general->platform.data();
+    temp.version = general->version.data();
+    temp.manufacturer = general->manufacturer.data();
+    temp.model = general->model.data();
+    temp.udid = general->udid.data();
+    temp.name = general->name.data();
 
     const SerializedIfAddress* ifa = reinterpret_cast<const SerializedIfAddress*>(general + 1);
     for (uint32 i = 0;i < header->ifadrCount;++i)

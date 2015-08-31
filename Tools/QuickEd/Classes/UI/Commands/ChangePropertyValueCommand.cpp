@@ -40,7 +40,7 @@ ChangePropertyValueCommand::ChangePropertyValueCommand(PackageNode *_root, Contr
     , property(SafeRetain(prop))
     , newValue(newVal)
 {
-    if (property->IsReplaced())
+    if (property->IsOverriddenLocally())
     {
         oldValue = property->GetValue();
     }
@@ -53,7 +53,7 @@ ChangePropertyValueCommand::ChangePropertyValueCommand(PackageNode *_root, Contr
     , node(SafeRetain(_node))
     , property(SafeRetain(prop))
 {
-    if (property->IsReplaced())
+    if (property->IsOverriddenLocally())
     {
         oldValue = property->GetValue();
     }

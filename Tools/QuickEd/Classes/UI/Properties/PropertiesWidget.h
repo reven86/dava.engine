@@ -32,7 +32,7 @@
 
 #include <QDockWidget>
 #include "ui_PropertiesWidget.h"
-#include "Defines.h"
+#include "Classes/Defines.h"
 
 class ControlNode;
 class StyleSheetNode;
@@ -45,27 +45,37 @@ public:
     PropertiesWidget(QWidget *parent = NULL);
 
 public slots:
-    void OnDocumentChanged(Document *document);
+    void OnDocumentChanged(Document *doc);
     void OnSelectedNodesChanged(const SelectedNodes &selected, const SelectedNodes &deselected);
-private slots:
+    void OnDataChanged(const QByteArray &role);
+
     void OnAddComponent(QAction *action);
-    void OnRemoveComponent();
+    void OnAddStyleProperty(QAction *action);
+    void OnAddStyleSelector();
+    void OnRemove();
+    
     void OnSelectionChanged(const QItemSelection &selected,
                             const QItemSelection &deselected);
     void OnModelChanged();
 private:
+    QAction *CreateAddComponentAction();
+    QAction *CreateAddStyleSelectorAction();
+    QAction *CreateAddStylePropertyAction();
+    QAction *CreateRemoveAction();
+    QAction *CreateSeparator();
+
     ControlNode *GetSelectedControlNode() const;
     StyleSheetNode *GetSelectedStyleSheetNode() const;
+    
     void UpdateSelection();
     void UpdateActions();
     
-private:
     Document *document = nullptr;
     SelectedNodes selectedNodes;
     QAction *addComponentAction = nullptr;
-    QAction *removeComponentAction = nullptr;
-    int selectedComponentType = -1;
-    int selectedComponentIndex = -1;
+    QAction *addStylePropertyAction = nullptr;
+    QAction *addStyleSelectorAction = nullptr;
+    QAction *removeAction = nullptr;
 };
 
 #endif //__QUICKED_PROPERTIES_WIDGET_H__

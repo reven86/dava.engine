@@ -31,7 +31,7 @@
 
 using namespace DAVA;
 
-FontValueProperty::FontValueProperty(DAVA::BaseObject *object, const DAVA::InspMember *member, FontValueProperty *sourceProperty, eCloneType copyType)
+FontValueProperty::FontValueProperty(DAVA::BaseObject *object, const DAVA::InspMember *member, const IntrospectionProperty *sourceProperty, eCloneType copyType)
     : IntrospectionProperty(object, member, sourceProperty, copyType)
 {
     ApplyValue(member->Value(object));
@@ -42,26 +42,17 @@ FontValueProperty::~FontValueProperty()
     
 }
 
-int FontValueProperty::GetCount() const
+void FontValueProperty::Refresh(DAVA::int32 refreshFlags)
 {
-    return 0;
-}
-
-AbstractProperty *FontValueProperty::GetProperty(int index) const
-{
-    return nullptr;
-}
-
-void FontValueProperty::Refresh()
-{
-    IntrospectionProperty::Refresh();
+    IntrospectionProperty::Refresh(refreshFlags);
     
-    member->SetValue(GetBaseObject(), VariantType(presetName));
+    if (refreshFlags & REFRESH_FONT)
+        member->SetValue(GetBaseObject(), VariantType(presetName));
 }
 
 VariantType FontValueProperty::GetValue() const
 {
-    return VariantType(presetName);
+    return member->Value(object);
 }
 
 void FontValueProperty::ApplyValue(const DAVA::VariantType &value)

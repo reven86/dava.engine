@@ -40,14 +40,14 @@ public:
 
 	BeastCommandLineTool();
 
-    virtual DAVA::String GetCommandLineKey();
-    virtual bool InitializeFromCommandLine();
-    virtual void Process();
-    virtual void PrintUsage();
+	DAVA::String GetCommandLineKey() const override;
+	bool InitializeFromCommandLine() override;
+	void Process() override;
+	void PrintUsage() const override;
+	DAVA::FilePath GetQualityConfigPath() const override;
 
     const DAVA::FilePath & GetScenePathname() const;
     
-    virtual DAVA::FilePath GetQualityConfigPath() const;
 
 protected:
     DAVA::FilePath scenePathname;

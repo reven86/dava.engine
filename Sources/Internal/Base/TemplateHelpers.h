@@ -36,6 +36,7 @@
 #include <typeinfo>
 #include <type_traits>
 #include <utility>
+#include <cassert>
 
 namespace DAVA
 {
@@ -242,11 +243,7 @@ C DynamicTypeCheck(O* pObject)
     if(!pObject) return static_cast<C>(pObject);
         
     C c = dynamic_cast<C>(pObject);
-    if (!c)
-    {//assert emulation )
-        int *i = 0;
-        *(i) = 0;
-    }
+    assert(c != nullptr);
     return c;
 #else
     return static_cast<C>(pObject);

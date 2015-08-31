@@ -46,8 +46,6 @@
 #include "CustomClassProperty.h"
 
 #include "../PackageHierarchy/ControlNode.h"
-
-#include "Base/FunctionTraits.h"
 #include "UI/UIControl.h"
 
 using namespace DAVA;
@@ -375,18 +373,18 @@ void RootProperty::ResetProperty(AbstractProperty *property)
         listener->PropertyChanged(property);
 }
 
-void RootProperty::RefreshProperty(AbstractProperty *property)
+void RootProperty::RefreshProperty(AbstractProperty *property, DAVA::int32 refreshFlags)
 {
-    property->Refresh();
+    property->Refresh(refreshFlags);
 
     for (PropertyListener *listener : listeners)
         listener->PropertyChanged(property);
 }
 
-void RootProperty::Refresh()
+void RootProperty::Refresh(DAVA::int32 refreshFlags)
 {
     for (int32 i = 0; i < GetCount(); i++)
-        GetProperty(i)->Refresh();
+        GetProperty(i)->Refresh(refreshFlags);
 }
 
 void RootProperty::Accept(PropertyVisitor *visitor)

@@ -31,6 +31,7 @@
 #include <QLineEdit>
 
 #include "Model/PackageHierarchy/PackageNode.h"
+#include "Model/PackageHierarchy/ImportedPackagesNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/ControlProperties/RootProperty.h"
@@ -100,7 +101,7 @@ const FilePath &Document::GetPackageFilePath() const
 
 void Document::RefreshLayout()
 {
-    package->RefreshLayout();
+    package->RefreshPackageStylesAndLayout(true);
 }
 
 WidgetContext* Document::GetContext(QObject* requester) const

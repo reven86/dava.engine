@@ -28,6 +28,7 @@ public class InternalViewClientV14 extends WebViewClient {
 
         volatile boolean isRenderToTexture = false;
         volatile boolean isVisible = true;
+        volatile boolean pendingVisible = true;
 
         // precache as much as possible
         Bitmap bitmapCache = null;
@@ -38,19 +39,30 @@ public class InternalViewClientV14 extends WebViewClient {
 
         public boolean isVisible()
         {
-            return isVisible;
+            return pendingVisible;
         }
 
         public void setVisible(WebViewWrapper view, boolean isVisible)
         {
-            this.isVisible = isVisible;
-            if (isVisible)
-            {
-                view.setVisibility(View.VISIBLE);
+            this.pendingVisible = isVisible;
+            
+            // Workaround: call updateVisible instantly because it will not be called on SystemDraw
+            if(!isVisible) {
+                updateVisible(view);
             }
-            else
-            {
-                view.setVisibility(View.GONE);
+        }
+        
+        public void updateVisible(WebViewWrapper view) {
+            if(isVisible != pendingVisible) {
+                isVisible = pendingVisible;
+                if (isVisible)
+                {
+                    view.setVisibility(View.VISIBLE);
+                }
+                else
+                {
+                    view.setVisibility(View.GONE);
+                }
             }
         }
 

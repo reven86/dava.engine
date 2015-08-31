@@ -39,7 +39,7 @@ public:
     virtual ~BaseSystemClass() = default;
     virtual void Attach(); //restore system state
     virtual void Detach(); //detach system
-private:
+protected:
     Document *document = nullptr;
 };
 

@@ -118,8 +118,6 @@ namespace DAVA
 
 
         SetRect(rect, rectInAbsoluteCoordinates);
-
-        initialState = STATE_NORMAL;
     }
 
     UIControl::~UIControl()
@@ -667,13 +665,18 @@ namespace DAVA
         }
     }
 
-    Vector2 UIControl::GetContentPreferredSize() const
+    Vector2 UIControl::GetContentPreferredSize(const Vector2 &constraints) const
     {
         if (background != nullptr && background->GetSprite() != nullptr)
         {
             return background->GetSprite()->GetSize();
         }
         return Vector2(0.0f, 0.0f);
+    }
+    
+    bool UIControl::IsHeightDependsOnWidth() const
+    {
+        return false;
     }
 
     void UIControl::SetVisible(bool isVisible)
@@ -1072,12 +1075,12 @@ namespace DAVA
         inputEnabled = srcControl->inputEnabled;
         clipContents = srcControl->clipContents;
 
-        initialState = srcControl->GetInitialState();
         drawPivotPointMode = srcControl->drawPivotPointMode;
         debugDrawColor = srcControl->debugDrawColor;
         debugDrawEnabled = srcControl->debugDrawEnabled;
 
         classes = srcControl->classes;
+        localProperties = srcControl->localProperties;
         styleSheetRebuildNeeded = srcControl->styleSheetRebuildNeeded;
         styleSheetInitialized = false;
 
@@ -1092,7 +1095,11 @@ namespace DAVA
 
         RemoveAllComponents();
         for (UIComponent *srcComponent : srcControl->components)
-            AddComponent(srcComponent->Clone());
+        {
+            UIComponent *dest = srcComponent->Clone();
+            AddComponent(dest);
+            SafeRelease(dest);
+        }
         
         RemoveAllControls();
         if (inputEnabled)
@@ -1483,7 +1490,7 @@ namespace DAVA
         {
             return false;
         }
-        if (customSystemProcessInput != 0 && customSystemProcessInput(this, currentInput))
+        if (customSystemProcessInput != nullptr && customSystemProcessInput(this, currentInput))
         {
         	return true;
         }
@@ -1908,11 +1915,6 @@ namespace DAVA
         {
             node->Set("tag", GetTag());
         }
-        // Initial state.
-        if (baseControl->GetInitialState() != GetInitialState())
-        {
-            node->Set("initialState", GetInitialState());
-        }
 
         // Anchor data
         // Left Align
@@ -2071,14 +2073,6 @@ namespace DAVA
         if (tagNode)
         {
             SetTag(tagNode->AsInt32());
-        }
-
-        const YamlNode * initialStateNode = node->Get("initialState");
-        if (initialStateNode)
-        {
-            int32 newInitialState = initialStateNode->AsInt32();
-            SetInitialState(newInitialState);
-            SetState(newInitialState);
         }
 
         const YamlNode * leftAlignNode = node->Get("leftAlign");
@@ -2432,16 +2426,6 @@ namespace DAVA
         node->Set("type", nodeTypeName);
     }
 
-    int32 UIControl::GetInitialState() const
-    {
-        return initialState;
-    }
-
-    void UIControl::SetInitialState(int32 newState)
-    {
-        initialState = newState;
-    }
-
     void UIControl::RegisterInputProcessor()
     {
         inputProcessorsCount++;
@@ -2785,6 +2769,11 @@ namespace DAVA
     const UIStyleSheetPropertySet& UIControl::GetLocalPropertySet() const
     {
         return localProperties;
+    }
+
+    void UIControl::SetLocalPropertySet(const UIStyleSheetPropertySet &set)
+    {
+        localProperties = set;
     }
 
     void UIControl::SetPropertyLocalFlag(uint32 propertyIndex, bool value)

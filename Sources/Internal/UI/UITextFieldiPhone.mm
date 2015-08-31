@@ -85,9 +85,13 @@ namespace DAVA
 
         if (!isSingleLine)
         {
+            textFieldHolder->textField.userInteractionEnabled = NO;
             // destroy UITextView and restore textFild back
             [textFieldHolder->textCtrl removeFromSuperview];
+            
             textFieldHolder->textCtrl = textFieldHolder->textField;
+            [backgroundView PrepareView: textFieldHolder->textCtrl];
+            [textFieldHolder addSubview:textFieldHolder->textCtrl];
             
         }
         
@@ -236,7 +240,8 @@ namespace DAVA
     void UITextFieldiPhone::CloseKeyboard()
     {
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
-        if (isSingleLine) {
+        if (isSingleLine)
+        {
             textFieldHolder->textCtrl.userInteractionEnabled = NO;
         }
         [textFieldHolder->textCtrl resignFirstResponder];
@@ -248,6 +253,7 @@ namespace DAVA
 
         DVASSERT([textFieldHolder superview] != nil);
         [textFieldHolder setHidden:NO];
+        [textFieldHolder->textCtrl setHidden:NO];
         
         // Attach to "keyboard shown/keyboard hidden" notifications.
 		NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
@@ -573,6 +579,7 @@ namespace DAVA
     void UITextFieldiPhone::SetVisible(bool value)
     {
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+        
         [textFieldHolder setHidden: value == false];
     }
 
@@ -644,6 +651,11 @@ namespace DAVA
 
             // replace textField with new textView and apply current properties
             ::UITextView* textView = [[UITextView alloc] initWithFrame:rect textContainer:nil];
+            
+            HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
+            BackgroundView* backgroundView = [appDelegate glController].backgroundView;
+            [backgroundView PrepareView: textFieldHolder->textCtrl];
+            
             [textFieldHolder addSubview:textView];
             
             textFieldHolder->textCtrl = textView;
@@ -667,6 +679,7 @@ namespace DAVA
             
             textView.scrollEnabled = YES;
             
+            [textView release];
             // Workaround! in multiline mode always listen for user
             // touches
             SetRenderToTexture(false);
@@ -696,7 +709,7 @@ namespace DAVA
             textFieldHolder->textField = nullptr;
             [textFieldHolder addSubview:textField];
             [textView setHidden:isHidden];
-            [textView release];
+            
             textView = nullptr;
             
             textFieldHolder->textCtrl = textField;

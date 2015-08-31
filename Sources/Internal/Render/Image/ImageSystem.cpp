@@ -185,7 +185,7 @@ ImageFormatInterface* ImageSystem::GetImageFormatInterface(File *file) const
             return wrapper;
         }
     }
-    DVASSERT(0);
+    DVASSERT(false);
 
     return nullptr;
 }

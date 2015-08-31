@@ -52,6 +52,8 @@ public:
     explicit PreviewWidget(QWidget *parent = nullptr);
     ~PreviewWidget() = default;
     DavaGLWidget *GetDavaGLWidget();
+    void SetEmulationMode(bool emulationMode);
+    
 public slots:
     void OnDocumentChanged(Document *document);
     void OnSelectedNodesChanged(const SelectedNodes &selected, const SelectedNodes &deselected);
