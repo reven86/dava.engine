@@ -43,6 +43,7 @@
 #include "Systems/CursorSystem.h"
 #include "Systems/TransformSystem.h"
 
+
 struct WidgetContext
 {
     virtual ~WidgetContext() = default;
@@ -60,7 +61,7 @@ class PackageModel;
 class ControlNode;
 class AbstractProperty;
 
-class Document final : public QObject, public SelectionInterface, InputInterface
+class Document final : public QObject, InputInterface
 {
     Q_OBJECT
 public:
@@ -77,7 +78,7 @@ public:
     void RefreshLayout();
     WidgetContext* GetContext(QObject* requester) const;
     void SetContext(QObject* requester, WidgetContext* widgetContext);
-    void SelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected) override;
+    void OnSelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected);
     bool OnInput(DAVA::UIEvent *currentInput) override;
     ControlNode* GetControlNodeByPos(const DAVA::Vector2 &pos, ControlNode *node = nullptr) const;
     AbstractProperty* GetPropertyByName(const ControlNode* node, const DAVA::String &name) const;
@@ -101,6 +102,7 @@ private:
     CursorSystem cursorSystem;
     TransformSystem transformSystem;
     QList<InputInterface*> inputListeners;
+    QList<BaseSystemClass*> systems;
 };
 
 inline QUndoStack *Document::GetUndoStack() const

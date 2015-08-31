@@ -36,14 +36,14 @@
 class Document;
 class ControlNode;
 
-class TreeSystem final : public BaseSystemClass, public InputInterface, public SelectionInterface
+class TreeSystem final : public BaseSystemClass, public InputInterface
 {   
 public:
     explicit TreeSystem(Document *parent);
     ~TreeSystem() = default;
     
     bool OnInput(DAVA::UIEvent *currentInput) override final;
-    void SelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected) override;
+    void OnSelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected);
 private:
     void OnCopy();
     void OnPaste();

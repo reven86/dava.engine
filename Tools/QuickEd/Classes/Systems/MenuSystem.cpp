@@ -50,7 +50,7 @@ bool MenuSystem::OnInput(UIEvent *currentInput)
     return false;
 }
 
-void MenuSystem::SelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected)
+void MenuSystem::OnSelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected)
 {
     
 }

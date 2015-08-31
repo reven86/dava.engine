@@ -39,14 +39,14 @@
 
 class Document;
 
-class CanvasSystem final : public BaseSystemClass, public SelectionInterface
+class CanvasSystem final : public BaseSystemClass
 {
 public:
     CanvasSystem(Document *parent);
     ~CanvasSystem() override = default;
     void Attach(DAVA::UIControl *root);
     void Detach() override;
-    void SelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected) override;
+    void OnSelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected);
 
 private:
     void SetRootControls(const SelectedNodes &controls);

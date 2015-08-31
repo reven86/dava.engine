@@ -33,28 +33,27 @@
 #include "Systems/Interfaces.h"
 #include "Systems/BaseSystemClass.h"
 #include "Model/PackageHierarchy/PackageListener.h"
+#include "Functional/Signal.h"
 
 class Document;
 namespace DAVA {
     class Vector2;
 }
 
-class SelectionSystem final : public BaseSystemClass, public SelectionInterface, public InputInterface, public PackageListener
+class SelectionSystem final : public BaseSystemClass, public DAVA::TrackedObject, public InputInterface, public PackageListener
 {
 public:
     SelectionSystem(Document *doc);
     ~SelectionSystem() override = default;
     bool OnInput(DAVA::UIEvent *currentInput) override;
     void ControlWasRemoved(ControlNode *node, ControlsContainerNode *from) override;
-    void SelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected) override;
-    void AddListener(SelectionInterface *listener);
-    void RemoveListener(SelectionInterface *listener);
+    void OnSelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected);
+    DAVA::Signal<const SelectedControls &/*selected*/, const SelectedControls &/*deselected*/> SelectionWasChanged;
 
 private:
     bool ProcessMousePress(const DAVA::Vector2 &point);
     void SetSelectedControls(const SelectedControls &selected, const SelectedControls &deselected);
     SelectedControls selectedControls;
-    DAVA::Vector<SelectionInterface*> listeners;
 };
 
 #endif // __QUICKED_SELECTION_SYSTEM_H__

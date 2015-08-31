@@ -39,7 +39,6 @@ using namespace DAVA;
 SelectionSystem::SelectionSystem(Document* doc)
     : BaseSystemClass(doc)
 {
-    
 }
 
 bool SelectionSystem::OnInput(UIEvent* currentInput)
@@ -76,35 +75,9 @@ void SelectionSystem::ControlWasRemoved(ControlNode *node, ControlsContainerNode
     }
 }
 
-void SelectionSystem::SelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected)
+void SelectionSystem::OnSelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected)
 {
     SetSelectedControls(selected, deselected);
-}
-
-void SelectionSystem::AddListener(SelectionInterface *listener)
-{
-    auto it = std::find(listeners.begin(), listeners.end(), listener);
-    if (it == listeners.end())
-    {
-        listeners.push_back(listener);
-    }
-    else
-    {
-        DVASSERT_MSG(false, "listener has already attached");
-    }
-}
-
-void SelectionSystem::RemoveListener(SelectionInterface *listener)
-{
-    auto it = std::find(listeners.begin(), listeners.end(), listener);
-    if (it != listeners.end())
-    {
-        listeners.erase(it);
-    }
-    else
-    {
-        DVASSERT_MSG(false, "listener was not attached");
-    }
 }
 
 bool SelectionSystem::ProcessMousePress(const DAVA::Vector2 &point)
@@ -148,9 +121,6 @@ void SelectionSystem::SetSelectedControls(const SelectedControls &selected, cons
     if (selectedControls != tmpSelected)
     {
         selectedControls = tmpSelected;
-        for (auto listener : listeners)
-        {
-            listener->SelectionWasChanged(selected, deselected);
-        }
+        SelectionWasChanged.Emit(selected, deselected);
     }
 }

@@ -76,7 +76,7 @@ void CanvasSystem::Attach(UIControl* root)
 {
     attachedRoot = root;
     attachedRoot->AddControl(canvas);
-    SelectionWasChanged(SelectedControls(), SelectedControls());
+    OnSelectionWasChanged(SelectedControls(), SelectedControls());
 }
 
 void CanvasSystem::Detach()
@@ -84,7 +84,7 @@ void CanvasSystem::Detach()
     canvas->RemoveFromParent();
 }
 
-void CanvasSystem::SelectionWasChanged(const SelectedControls& selected, const SelectedControls& deselected)
+void CanvasSystem::OnSelectionWasChanged(const SelectedControls& selected, const SelectedControls& deselected)
 {
     UniteNodes(selected, selectedControls);
     SubstractNodes(deselected, selectedControls);

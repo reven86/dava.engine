@@ -44,12 +44,7 @@ public:
     virtual bool OnInput(DAVA::UIEvent *currentInput) = 0;
 };
 
-class SelectionInterface
-{
-public:
-    using SelectedControls = DAVA::Set < ControlNode* >;
-    virtual void SelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected) = 0;
-};
+using SelectedControls = DAVA::Set < ControlNode* >;
 
 class ControlAreaInterface
 {

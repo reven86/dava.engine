@@ -123,7 +123,7 @@ public:
                 }
                 else
                 {
-                    it++;
+                    ++it;
                 }
             }
         }

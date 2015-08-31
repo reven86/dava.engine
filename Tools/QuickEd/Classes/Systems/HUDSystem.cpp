@@ -200,7 +200,7 @@ void HUDSystem::Detach()
     selectionRect->SetSize(Vector2(0, 0));
 }
 
-void HUDSystem::SelectionWasChanged(const SelectedControls& selected, const SelectedControls& deselected)
+void HUDSystem::OnSelectionWasChanged(const SelectedControls& selected, const SelectedControls& deselected)
 {
     for (auto control : deselected)
     {

@@ -37,7 +37,7 @@
 
 class Document;
 
-class TransformSystem final : public BaseSystemClass, public InputInterface, public ControlAreaInterface, public SelectionInterface
+class TransformSystem final : public BaseSystemClass, public InputInterface, public ControlAreaInterface
 {   
 public:
     explicit TransformSystem(Document *parent);
@@ -45,7 +45,7 @@ public:
     void MouseEnterArea(ControlNode *targetNode, const eArea area) override;
     void MouseLeaveArea() override;
     bool OnInput(DAVA::UIEvent *currentInput) override;
-    void SelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected) override;
+    void OnSelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected);
     void Detach() override;
 private:
     bool ProcessKey(const DAVA::int32 key);

@@ -33,14 +33,14 @@
 #include "Systems/BaseSystemClass.h"
 #include "Systems/Interfaces.h"
 
-class MenuSystem final : public BaseSystemClass, InputInterface, SelectionInterface
+class MenuSystem final : public BaseSystemClass, InputInterface
 {   
 public:
     explicit MenuSystem(Document *parent);
     void Attach() override; //restore system state
     void Detach() override; //detach system
     bool OnInput(DAVA::UIEvent *currentInput) override;
-    void SelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected) override;
+    void OnSelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected);
 };
 
 #endif // __QUICKED_MENU_SYSTEM_CLASS_H__

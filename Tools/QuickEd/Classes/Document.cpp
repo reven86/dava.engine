@@ -31,11 +31,9 @@
 #include <QLineEdit>
 
 #include "Model/PackageHierarchy/PackageNode.h"
-#include "Model/PackageHierarchy/ImportedPackagesNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/ControlProperties/RootProperty.h"
-#include "Model/ControlProperties/SectionProperty.h"
 
 #include "Ui/QtModelPackageCommandExecutor.h"
 #include "EditorCore.h"
@@ -52,11 +50,13 @@ Document::Document(PackageNode *_package, QObject *parent)
     , cursorSystem(this)
     , transformSystem(this)
 {
+    systems << &selectionSystem << &canvasSystem << &hudSystem << &treeSystem << &cursorSystem << &transformSystem;
     inputListeners << &selectionSystem << &hudSystem << &treeSystem << &transformSystem;
-    selectionSystem.AddListener(this);
-    selectionSystem.AddListener(&canvasSystem);
-    selectionSystem.AddListener(&hudSystem);
-    selectionSystem.AddListener(&transformSystem);
+    selectionSystem.SelectionWasChanged.Connect(this, &Document::OnSelectionWasChanged);
+    selectionSystem.SelectionWasChanged.Connect(&canvasSystem, &CanvasSystem::OnSelectionWasChanged);
+    selectionSystem.SelectionWasChanged.Connect(&hudSystem, &HUDSystem::OnSelectionWasChanged);
+    selectionSystem.SelectionWasChanged.Connect(&transformSystem, &TransformSystem::OnSelectionWasChanged);
+
     hudSystem.AddListener(&cursorSystem);
     hudSystem.AddListener(&transformSystem);
     connect(GetEditorFontSystem(), &EditorFontSystem::UpdateFontPreset, this, &Document::RefreshAllControlProperties);
@@ -74,13 +74,19 @@ using namespace DAVA;
 
 void Document::Detach()
 {
-    hudSystem.Detach();
-    canvasSystem.Detach();
+    for (auto system : systems)
+    {
+        system->Detach();
+    }
     emit SelectedNodesChanged(SelectedNodes(), selectedNodes);
 }
 
 void Document::Attach()
 {
+    for (auto system : systems)
+    {
+        system->Attach();
+    }
     emit SelectedNodesChanged(selectedNodes, SelectedNodes());
 }
 
@@ -119,7 +125,7 @@ void Document::SetContext(QObject* requester, WidgetContext* widgetContext)
     contexts.insert(requester, widgetContext);
 }
 
-void Document::SelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected)
+void Document::OnSelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected)
 {
     SelectedNodes selected_(selected.begin(), selected.end());
     SelectedNodes deselected_(deselected.begin(), deselected.end());
@@ -241,7 +247,7 @@ void Document::SetSelectedNodes(const SelectedNodes& selected, const SelectedNod
         }
         if (!selectedControls.empty() || !deselectedControls.empty())
         {
-            selectionSystem.SelectionWasChanged(selectedControls, deselectedControls);
+            selectionSystem.OnSelectionWasChanged(selectedControls, deselectedControls);
         }
         emit SelectedNodesChanged(selected, deselected);
     }

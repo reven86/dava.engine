@@ -89,7 +89,7 @@ bool TransformSystem::OnInput(UIEvent* currentInput)
     }
 }
 
-void TransformSystem::SelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected)
+void TransformSystem::OnSelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected)
 {
     UniteNodes(selected, selectedControls);
     SubstractNodes(deselected, selectedControls);

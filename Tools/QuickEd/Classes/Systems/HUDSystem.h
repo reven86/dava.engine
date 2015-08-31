@@ -42,7 +42,7 @@ namespace DAVA
     struct Rect;
 }
  
-class HUDSystem final : public BaseSystemClass, public SelectionInterface, public InputInterface
+class HUDSystem final : public BaseSystemClass, public InputInterface
 {
 public:
     HUDSystem(Document *document);
@@ -50,7 +50,7 @@ public:
     void Attach(DAVA::UIControl *root);
     void Attach() override;
     void Detach() override;
-    void SelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected) override;
+    void OnSelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected);
     bool OnInput(DAVA::UIEvent *currentInput) override;
     void AddListener(ControlAreaInterface *listener);
     void RemoveListener(ControlAreaInterface *listener);

@@ -81,7 +81,7 @@ bool TreeSystem::OnInput(UIEvent *currentInput)
     return false;
 }
 
-void TreeSystem::SelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected)
+void TreeSystem::OnSelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected)
 {
     selectionList.insert(selected.begin(), selected.end());
     selectionList.erase(deselected.begin(), deselected.end());
