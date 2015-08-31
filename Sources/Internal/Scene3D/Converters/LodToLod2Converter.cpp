@@ -69,7 +69,7 @@ bool LodToLod2Converter::MergeLod(Entity * entity)
     LodComponent* lod = GetLodComponent(entity);
     if (nullptr != lod)
     {
-        RenderComponent * rc = GetRenderComponent(entity);
+        RenderComponent* rc = GetRenderComponent(entity);
         RenderObject * ro = nullptr;
         if (nullptr == rc)
         {
