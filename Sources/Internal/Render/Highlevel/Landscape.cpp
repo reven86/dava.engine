@@ -42,7 +42,6 @@
 #include "Render/TextureDescriptor.h"
 #include "Debug/Stats.h"
 #include "Render/Material/NMaterial.h"
-#include "Scene3D/Systems/MaterialSystem.h"
 #include "Scene3D/Systems/FoliageSystem.h"
 #include "Render/Material/NMaterialNames.h"
 #include "Render/Renderer.h"
@@ -65,9 +64,9 @@ const uint32 LANDSCAPE_BATCHES_POOL_SIZE = 32;
 
 Landscape::Landscape()
     : indices(0)
-    , landscapeMaterial(NULL)
-    , foliageSystem(NULL)
     , vertexLayoutUID(rhi::VertexLayout::InvalidUID)
+    , landscapeMaterial(nullptr)
+    , foliageSystem(nullptr)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
@@ -291,6 +290,7 @@ void Landscape::AllocateGeometryData()
     if (!landscapeMaterial)
     {
         landscapeMaterial = new NMaterial();
+        landscapeMaterial->SetMaterialName(FastName("Landscape_TileMask_Material"));
         landscapeMaterial->SetFXName(NMaterialName::TILE_MASK);
     }
 

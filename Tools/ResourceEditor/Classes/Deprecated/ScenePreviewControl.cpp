@@ -70,9 +70,6 @@ void ScenePreviewControl::RecreateScene()
     }
     
     editorScene = new Scene();
-#if RHI_COMPLETE_EDITOR
-    editorScene->SetClearBuffers(RenderManager::DEPTH_BUFFER | RenderManager::STENCIL_BUFFER);
-#endif RHI_COMPLETE_EDITOR
 
     rotationSystem = new RotationControllerSystem(editorScene);
     rotationSystem->SetRotationSpeeed(0.10f);

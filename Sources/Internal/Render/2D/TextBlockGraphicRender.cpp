@@ -37,7 +37,6 @@
 namespace DAVA 
 {
     
-    
 static uint16* InitIndexBuffer()
 {
     static uint16 buffer[GRAPHIC_FONT_INDEX_BUFFER_SIZE];
@@ -171,8 +170,8 @@ void TextBlockGraphicRender::Draw(const Color& textColor, const Vector2* offset)
     RenderSystem2D::BatchDescriptor batch;
     batch.material = dfMaterial; // RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL;
     batch.singleColor = textColor;
-    batch.vertexStride = 5;
-    batch.texCoordStride = 5;
+    batch.vertexStride = TextVerticesDefaultStride;
+    batch.texCoordStride = TextVerticesDefaultStride;
     batch.vertexPointer = vertexBuffer[0].position.data;
     batch.texCoordPointer = vertexBuffer[0].texCoord.data;
     batch.textureSetHandle = graphicFont->GetTextureHandler();
@@ -211,5 +210,15 @@ Font::StringMetrics TextBlockGraphicRender::InternalDrawText(const WideString& d
 	this->charDrawed += lastDrawed;
 	return metrics;
 }
-	
+
+const uint16* TextBlockGraphicRender::GetSharedIndexBuffer()
+{
+	return indexBuffer;
+}
+
+const uint32 TextBlockGraphicRender::GetSharedIndexBufferCapacity()
+{
+	return GRAPHIC_FONT_INDEX_BUFFER_SIZE;
+}
+
 };

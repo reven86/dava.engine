@@ -193,6 +193,20 @@ Texture* NMaterial::GetEffectiveTexture(const FastName& slotName)
     }
     return nullptr;
 }
+    
+void NMaterial::CollectLocalTextures(Set<MaterialTextureInfo *> &collection) const
+{
+    for(const auto &lc: localTextures)
+    {
+        const auto & path = lc.second->path;
+        if(!path.IsEmpty())
+        {
+            collection.emplace(lc.second);
+        }
+    }
+}
+
+    
 
 void NMaterial::SetFXName(const FastName & fx)
 {

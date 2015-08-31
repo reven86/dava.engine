@@ -32,7 +32,6 @@
 
 #include "Scene3D/Scene.h"
 #include "Render/Highlevel/RenderSystem.h"
-#include "Scene3D/Systems/MaterialSystem.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 #include "Render/Material/NMaterial.h"
 

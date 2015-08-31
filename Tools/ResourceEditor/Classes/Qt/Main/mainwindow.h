@@ -148,7 +148,6 @@ public slots:
     void OnImageSplitter();
 	
 	void OnAddLandscape();
-    void OnAddSkybox();
     void OnAddVegetation();
 	void OnLightDialog();
 	void OnCameraDialog();
@@ -165,10 +164,6 @@ public slots:
 	
 	void OnShowSettings();
 	void OnOpenHelp();
-
-	void OnShadowBlendModeWillShow();
-	void OnShadowBlendModeAlpha();
-	void OnShadowBlendModeMultiply();
 
 	void OnSaveHeightmapToImage();
 	void OnSaveTiledTexture();
@@ -285,7 +280,6 @@ private:
 	void LoadUndoRedoState(SceneEditor2 *scene);
 	void LoadModificationState(SceneEditor2 *scene);
 	void LoadEditorLightState(SceneEditor2 *scene);
-	void LoadShadowBlendModeState(SceneEditor2* scene);
 	void LoadGPUFormat();
 	void LoadLandscapeEditorState(SceneEditor2* scene);
 	void LoadObjectTypes(SceneEditor2 *scene);

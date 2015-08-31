@@ -137,6 +137,8 @@ public:
     const float32* GetLocalPropValue(const FastName& propName);
     const float32* GetEffectivePropValue(const FastName& propName);
 
+
+
     /*textures*/
     void AddTexture(const FastName& slotName, Texture *texture);
     void RemoveTexture(const FastName& slotName);
@@ -144,6 +146,7 @@ public:
     bool HasLocalTexture(const FastName& slotName);
     Texture* GetLocalTexture(const FastName& slotName);
     Texture* GetEffectiveTexture(const FastName& slotName);
+    void CollectLocalTextures(Set<MaterialTextureInfo *> &collection) const;
 
     /*flags*/
     void AddFlag(const FastName& flagName, int32 value);

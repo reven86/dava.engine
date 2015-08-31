@@ -88,7 +88,6 @@
 #include "Classes/Commands2/VisibilityToolActions.h"
 #include "Classes/Commands2/AddComponentCommand.h"
 #include "Classes/Commands2/RemoveComponentCommand.h"
-#include "Classes/Commands2/DynamicShadowCommands.h"
 
 #include "Classes/Qt/Tools/QtLabelWithActions/QtLabelWithActions.h"
 
@@ -97,7 +96,6 @@
 
 #include "Scene3D/Components/ActionComponent.h"
 #include "Scene3D/Components/Waypoint/PathComponent.h"
-#include "Scene3D/Systems/MaterialSystem.h"
 
 #include "Classes/Constants.h"
 
@@ -323,7 +321,7 @@ void QtMainWindow::SetGPUFormat(DAVA::eGPUFamily gpu)
 		for(int tab = 0; tab < GetSceneWidget()->GetTabCount(); ++tab)
 		{
 			SceneEditor2 *scene = GetSceneWidget()->GetTabScene(tab);
-			SceneHelper::EnumerateSceneTextures(scene, allScenesTextures, SceneHelper::EXCLUDE_NULL);
+			SceneHelper::EnumerateSceneTextures(scene, allScenesTextures, SceneHelper::TexturesEnumerateMode::EXCLUDE_NULL);
 		}
 
 		if(allScenesTextures.size() > 0)
@@ -721,18 +719,12 @@ void QtMainWindow::SetupActions()
 	QObject::connect(ui->actionExpandSceneTree, SIGNAL(triggered()), ui->sceneTree, SLOT(expandAll()));
 	QObject::connect(ui->actionCollapseSceneTree, SIGNAL(triggered()), ui->sceneTree, SLOT(CollapseAll()));
     QObject::connect(ui->actionAddLandscape, SIGNAL(triggered()), this, SLOT(OnAddLandscape()));
-    QObject::connect(ui->actionAddSkybox, SIGNAL(triggered()), this, SLOT(OnAddSkybox()));
 	QObject::connect(ui->actionAddWind, SIGNAL(triggered()), this, SLOT(OnAddWindEntity()));
     QObject::connect(ui->actionAddVegetation, SIGNAL(triggered()), this, SLOT(OnAddVegetation()));
     QObject::connect(ui->actionAddPath, SIGNAL(triggered()), this, SLOT(OnAddPathEntity()));
 			
 	QObject::connect(ui->actionShowSettings, SIGNAL(triggered()), this, SLOT(OnShowSettings()));
 	
-	QObject::connect(ui->actionDynamicBlendModeAlpha, SIGNAL(triggered()), this, SLOT(OnShadowBlendModeAlpha()));
-	QObject::connect(ui->actionDynamicBlendModeMultiply, SIGNAL(triggered()), this, SLOT(OnShadowBlendModeMultiply()));
-	QObject::connect(ui->menuDynamicShadowBlendMode, SIGNAL(aboutToShow()), this, SLOT(OnShadowBlendModeWillShow()));
-
-    
 	QObject::connect(ui->actionSaveHeightmapToPNG, SIGNAL(triggered()), this, SLOT(OnSaveHeightmapToImage()));
 	QObject::connect(ui->actionSaveTiledTexture, SIGNAL(triggered()), this, SLOT(OnSaveTiledTexture()));
 	
@@ -851,7 +843,6 @@ void QtMainWindow::SceneActivated(SceneEditor2 *scene)
 	LoadUndoRedoState(scene);
 	LoadModificationState(scene);
 	LoadEditorLightState(scene);
-	LoadShadowBlendModeState(scene);
 	LoadLandscapeEditorState(scene);
 	LoadObjectTypes(scene);
 	LoadHangingObjects(scene);
@@ -952,9 +943,6 @@ void QtMainWindow::EnableSceneActions(bool enable)
 	ui->actionSaveTiledTexture->setEnabled(enable);
 
 	ui->actionBeastAndSave->setEnabled(enable);
-
-	ui->actionDynamicBlendModeAlpha->setEnabled(enable);
-	ui->actionDynamicBlendModeMultiply->setEnabled(enable);
 
 	ui->actionHangingObjects->setEnabled(enable);
 
@@ -1599,15 +1587,11 @@ void QtMainWindow::UnmodalDialogFinished(int)
 
 void QtMainWindow::OnAddLandscape()
 {
-
     Entity* entityToProcess = new Entity();
     entityToProcess->SetName(ResourceEditor::LANDSCAPE_NODE_NAME);
     entityToProcess->SetLocked(true);
     
     Landscape* newLandscape = new Landscape();
-#if RHI_COMPLETE_EDITOR
-    newLandscape->Create();
-#endif // RHI_COMPLETE_EDITOR
 
     RenderComponent* component = new RenderComponent();
     component->SetRenderObject(newLandscape);
@@ -1630,22 +1614,6 @@ void QtMainWindow::OnAddLandscape()
     SafeRelease(entityToProcess);
 }
 
-void QtMainWindow::OnAddSkybox()
-{
-#if RHI_COMPLETE_EDITOR
-    SceneEditor2* sceneEditor = GetCurrentScene();
-    if(!sceneEditor)
-    {
-        return;
-    }
-    Entity* skyboxEntity = sceneEditor->skyboxSystem->AddSkybox();
-    skyboxEntity->Retain();
-    
-    skyboxEntity->GetParent()->RemoveNode(skyboxEntity);
-    sceneEditor->Exec(new EntityAddCommand(skyboxEntity, sceneEditor));
-    skyboxEntity->Release();
-#endif
-}
 
 void QtMainWindow::OnAddVegetation()
 {
@@ -1897,20 +1865,6 @@ void QtMainWindow::LoadEditorLightState(SceneEditor2 *scene)
 	}
 }
 
-void QtMainWindow::LoadShadowBlendModeState(SceneEditor2* scene)
-{
-#if RHI_COMPLETE_EDITOR
-	if(nullptr != scene)
-	{
-		const ShadowPassBlendMode::eBlend blend = scene->GetShadowBlendMode();
-
-		ui->actionDynamicBlendModeAlpha->setChecked(blend == ShadowPassBlendMode::MODE_BLEND_ALPHA);
-		ui->actionDynamicBlendModeMultiply->setChecked(blend == ShadowPassBlendMode::MODE_BLEND_MULTIPLY);
-	}
-#endif
-}
-
-
 void QtMainWindow::LoadGPUFormat()
 {
 	int curGPU = GetGPUFormat();
@@ -1943,41 +1897,6 @@ void QtMainWindow::LoadMaterialLightViewMode()
 void QtMainWindow::LoadLandscapeEditorState(SceneEditor2* scene)
 {
 	OnLandscapeEditorToggled(scene);
-}
-
-void QtMainWindow::OnShadowBlendModeWillShow()
-{
-	SceneEditor2* scene = GetCurrentScene();
-    if(!scene) return;
-
-    LoadShadowBlendModeState(scene);
-}
-
-void QtMainWindow::OnShadowBlendModeAlpha()
-{
-	SceneEditor2* scene = GetCurrentScene();
-    if(!scene) return;
-
-	if(nullptr == FindLandscape(scene))
-	{
-		ShowErrorDialog(ResourceEditor::NO_LANDSCAPE_ERROR_MESSAGE);
-		return;
-	}
-	
-    scene->Exec(new ChangeDynamicShadowModeCommand(scene));
-}
-
-void QtMainWindow::OnShadowBlendModeMultiply()
-{
-	SceneEditor2* scene = GetCurrentScene();
-    if(!scene) return;
-	if(nullptr == FindLandscape(scene))
-	{
-		ShowErrorDialog(ResourceEditor::NO_LANDSCAPE_ERROR_MESSAGE);
-		return;
-	}
-	
-	scene->Exec(new ChangeDynamicShadowModeCommand(scene));
 }
 
 void QtMainWindow::OnSaveHeightmapToImage()
@@ -2016,14 +1935,11 @@ void QtMainWindow::OnSaveHeightmapToImage()
 
 void QtMainWindow::OnSaveTiledTexture()
 {
-#if RHI_COMPLETE_EDITOR
-	if (!IsSavingAllowed())
+    SceneEditor2* scene = GetCurrentScene();
+	if (!IsSavingAllowed() || (nullptr == scene))
 	{
 		return;
 	}
-
-	SceneEditor2* scene = GetCurrentScene();
-    if(!scene) return;
 
 	LandscapeEditorDrawSystem::eErrorType varifLandscapeError = scene->landscapeEditorDrawSystem->VerifyLandscape();
 	if (varifLandscapeError != LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
@@ -2033,13 +1949,15 @@ void QtMainWindow::OnSaveTiledTexture()
 	}
 
     Landscape *landscape = FindLandscape(scene);
-    if(!landscape) return;
+    if(nullptr == landscape)
+    {
+        return;
+    }
 
-	Texture* landscapeTexture = landscape->CreateLandscapeTexture();
+    ScopedPtr<Texture> landscapeTexture(landscape->CreateLandscapeTexture());
 	if (landscapeTexture)
 	{
-		FilePath pathToSave;
-		pathToSave = landscape->GetTextureName(Landscape::TEXTURE_COLOR);
+        FilePath pathToSave = landscape->GetMaterial()->GetEffectiveTexture(DAVA::Landscape::TEXTURE_COLOR)->GetPathname();
 		if (pathToSave.IsEmpty())
 		{
 			FilePath scenePath = scene->GetScenePath().GetDirectory();
@@ -2048,7 +1966,6 @@ void QtMainWindow::OnSaveTiledTexture()
 														 PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter);
 			if (selectedPath.isEmpty())
 			{
-				SafeRelease(landscapeTexture);
 				return;
 			}
 
@@ -2059,16 +1976,12 @@ void QtMainWindow::OnSaveTiledTexture()
 			pathToSave.ReplaceExtension(".thumbnail.png");
 		}
 
-		Image *image = landscapeTexture->CreateImageFromMemory(RenderState::RENDERSTATE_2D_OPAQUE);
+        ScopedPtr<Image> image(landscapeTexture->CreateImageFromMemory());
 		if(image)
 		{
             ImageSystem::Instance()->Save(pathToSave, image);
-			SafeRelease(image);
 		}
-
-		SafeRelease(landscapeTexture);
 	}
-#endif // RHI_COMPLETE_EDITOR
 }
 
 void QtMainWindow::OnConvertModifiedTextures()
