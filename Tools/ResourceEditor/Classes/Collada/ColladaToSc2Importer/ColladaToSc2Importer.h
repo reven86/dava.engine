@@ -45,9 +45,10 @@ public:
     void SaveSC2(ColladaScene * colladaScene, const FilePath & scenePath, const String & sceneName);
 
 private:
+    void ImportAnimation(ColladaSceneNode * colladaNode, Entity * nodeEntity);
     void LoadMaterialParents(ColladaScene * colladaScene);
     void LoadAnimations(ColladaScene * colladaScene);
-    void FillMeshes(const Vector<ColladaMeshInstance *> & meshInstances, Entity * node);
+    void ImportMeshes(const Vector<ColladaMeshInstance *> & meshInstances, Entity * node);
     void BuildSceneAsCollada(Entity * root, ColladaSceneNode * colladaNode);
     Mesh * GetMeshFromCollada(ColladaMeshInstance * mesh, const bool isShadow);
 

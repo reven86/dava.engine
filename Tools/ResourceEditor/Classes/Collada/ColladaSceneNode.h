@@ -51,6 +51,7 @@ public:
 	static SceneNodeAnimationKey ExportAnimationKey(FCDSceneNode * originalNode, float32 t);
 	static SceneNodeAnimation * ExportNodeAnimation(FCDSceneNode * originalNode, float32 startTime, float32 endTime, float32 fps);
 	static FMMatrix44 CalculateTransformForTime(FCDSceneNode * originalNode, float32 time);
+    Matrix4 AccamulateTransformUptoFarParent(ColladaSceneNode * farParent);
 	static bool IsAnimated(FCDSceneNode * originalNode);
 	
 	ColladaSceneNode * FindNode(const fstring & daeId);

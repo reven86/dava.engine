@@ -53,6 +53,16 @@
 
 namespace DAVA
 {
+    
+namespace ImportSettings
+{
+    static const String lodNamePattern("_lod%d");
+    static const String dummyLodNamePattern("_lod%ddummy");
+    static const String shadowNamePattern("_shadow");
+    static const String normalMapPattern("_NM");
+    static const FastName shadowMaterialName("Shadow_Material");
+}
+    
 namespace
 {
 void FlipTexCoords(Vector2 & v)
@@ -62,7 +72,7 @@ void FlipTexCoords(Vector2 & v)
 
 bool IsShadowNode(const String & nodeName)
 {
-    size_t fp = nodeName.find("_shadow");
+    size_t fp = nodeName.find(ImportSettings::shadowNamePattern);
     return fp != String::npos;
 }
 } // unnamed namespace
@@ -120,7 +130,7 @@ void InitPolygon(PolygonGroup * davaPolygon, uint32 vertexFormat, Vector<Collada
     size_t vertexCount = vertices.size();
     for (uint32 vertexNo = 0; vertexNo < vertexCount; ++vertexNo)
     {
-        auto & vertex = vertices[vertexNo];
+        const auto & vertex = vertices[vertexNo];
         
         if (vertexFormat & EVF_VERTEX)
         {
@@ -140,27 +150,31 @@ void InitPolygon(PolygonGroup * davaPolygon, uint32 vertexFormat, Vector<Collada
         }
         if (vertexFormat & EVF_TEXCOORD0)
         {
-            FlipTexCoords(vertex.texCoords[0]);
-            davaPolygon->SetTexcoord(0, vertexNo, vertex.texCoords[0]);
+            Vector2 coord = vertex.texCoords[0];
+            FlipTexCoords(coord);
+            davaPolygon->SetTexcoord(0, vertexNo, coord);
         }
         if (vertexFormat & EVF_TEXCOORD1)
         {
-            FlipTexCoords(vertex.texCoords[1]);
-            davaPolygon->SetTexcoord(1, vertexNo, vertex.texCoords[1]);
+            Vector2 coord = vertex.texCoords[1];
+            FlipTexCoords(coord);
+            davaPolygon->SetTexcoord(1, vertexNo, coord);
         }
         if (vertexFormat & EVF_TEXCOORD2)
         {
-            FlipTexCoords(vertex.texCoords[2]);
-            davaPolygon->SetTexcoord(2, vertexNo, vertex.texCoords[2]);
+            Vector2 coord = vertex.texCoords[2];
+            FlipTexCoords(coord);
+            davaPolygon->SetTexcoord(2, vertexNo, coord);
         }
         if (vertexFormat & EVF_TEXCOORD3)
         {
-            FlipTexCoords(vertex.texCoords[3]);
-            davaPolygon->SetTexcoord(3, vertexNo, vertex.texCoords[3]);
+            Vector2 coord = vertex.texCoords[3];
+            FlipTexCoords(coord);
+            davaPolygon->SetTexcoord(3, vertexNo, coord);
         }
     }
 }
-    
+
 PolygonGroup * ImportLibrary::GetOrCreatePolygon(ColladaPolygonGroupInstance * colladaPGI)
 {
     // Try to take polygon from library
@@ -198,6 +212,8 @@ PolygonGroup * ImportLibrary::GetOrCreatePolygon(ColladaPolygonGroupInstance * c
         // Put polygon to the library
         polygons[colladaPGI] = davaPolygon;
     }
+    
+    // TO VERIFY: polygon
         
     return davaPolygon;
 }
@@ -270,13 +286,15 @@ void GetTextureTypeAndPathFromCollada(ColladaMaterial * material, FastName & typ
         
         return;
     }
+    
+    DVASSERT(false && "There is no texture!");
 }
     
 FilePath GetNormalMapTexturePath(const FilePath & originalTexturePath)
 {
     String ext = originalTexturePath.GetExtension();
     String path = originalTexturePath.GetStringValue();
-    path.insert(path.length()-ext.length(), "_NM");
+    path.insert(path.length()-ext.length(), ImportSettings::normalMapPattern);
     return FilePath(path);
 }
 
@@ -289,7 +307,7 @@ NMaterial * ImportLibrary::GetOrCreateMaterialParent(ColladaMaterial * colladaMa
 
     if (isShadow)
     {
-        parentMaterialName = FastName("Shadow_Material");
+        parentMaterialName = ImportSettings::shadowMaterialName;
         parentMaterialTemplate = NMaterialName::SHADOW_VOLUME;
     }
     else
@@ -343,7 +361,7 @@ NMaterial * ImportLibrary::GetOrCreateMaterial(ColladaPolygonGroupInstance * col
 
         materials[materialKey] = material;
     }
-
+    
     return material;
 }
 
@@ -388,16 +406,28 @@ void CollapseAnimations(Entity * node, Entity * parent)
 
 }
     
+String LodNameForIndex(const String & pattern, uint32 lodIndex)
+{
+    return Format(pattern.c_str(), lodIndex);
+}
+
 void CollapseLodsIntoOneEntity(Entity *forRootNode)
 {
     const uint32 maxLodCount = 10;
     List<Entity *> lodNodes;
-    forRootNode->FindNodesByNamePart("_lod0", lodNodes);
+    
+    const String lod0 = LodNameForIndex(ImportSettings::lodNamePattern, 0);
+    if (!forRootNode->FindNodesByNamePart(lod0, lodNodes))
+    {
+        // There is no lods.
+        return;
+    }
     
     for (Entity * oneLodNode : lodNodes)
     {
         // node name which contains lods
-        String nodeWithLodsName(String(oneLodNode->GetName().c_str()), 0, oneLodNode->GetName().find("_lod0"));
+        const String lodName(oneLodNode->GetName().c_str());
+        const String nodeWithLodsName(lodName, 0, lodName.find(lod0));
         
         Entity * oldParent = oneLodNode->GetParent();
 
@@ -408,18 +438,24 @@ void CollapseLodsIntoOneEntity(Entity *forRootNode)
         
         for (int i = 0; i < maxLodCount; ++i)
         {
-            // try to find node with same name but with other lod
-            Entity *ln = oldParent->FindByName(Format("%s_lod%d", nodeWithLodsName.c_str(), i).c_str());
+            
+            // Remove dummy nodes
+            // Try to find node with same name but with other lod
+            const FastName lodIName(nodeWithLodsName + LodNameForIndex(ImportSettings::lodNamePattern, i));
+            Entity * ln = oldParent->FindByName(lodIName.c_str());
+            
             if (nullptr == ln)
-            {//if layer is dummy
-                ln = oldParent->FindByName(Format("%s_lod%ddummy", nodeWithLodsName.c_str(), i).c_str());
+            {
+                const FastName dummyLodName(nodeWithLodsName + LodNameForIndex(ImportSettings::dummyLodNamePattern, i));
+                ln = oldParent->FindByName(dummyLodName.c_str());
+                
                 if (nullptr != ln)
                 {
                     ln->SetVisible(false);
                     ln->RemoveAllChildren();
                 }
             }
-
+            
             if (nullptr != ln)
             {
                 CollapseRenderBatchesRecursive(ln, i, newMesh);
@@ -427,6 +463,7 @@ void CollapseLodsIntoOneEntity(Entity *forRootNode)
                 
                 oldParent->RemoveNode(ln);
             }
+
         }
         
         LodComponent *lc = new LodComponent();
@@ -473,24 +510,6 @@ void BakeTransformsUpToParent(Entity * parent, Entity * currentNode)
     Matrix4 identMatrix;
     auto transformComponent = GetTransformComponent(currentNode);
     transformComponent->SetLocalTransform(&identMatrix);
-    
-    // do same thing with animation keys
-    auto animationComponent = GetAnimationComponent(currentNode);
-    if (animationComponent)
-    {
-        auto * animation = animationComponent->GetAnimation();
-        for (auto & key : animation->keys)
-        {
-            Matrix4 animationMatrix;
-            key.GetMatrix(animationMatrix);
-            
-            Matrix4 inverseTotal;
-            totalTransform.GetInverse(inverseTotal);
-            
-            Matrix4 totalAnimation = inverseTotal * animationMatrix;
-            totalAnimation.Decomposition(key.translation, key.scale, key.rotation);
-        }
-    }
 }
 } // unnamed namespace
 
@@ -515,7 +534,7 @@ Mesh * ColladaToSc2Importer::GetMeshFromCollada(ColladaMeshInstance * mesh, cons
     return davaMesh;
 }
 
-void ColladaToSc2Importer::FillMeshes(const Vector<ColladaMeshInstance *> & meshInstances, Entity * node)
+void ColladaToSc2Importer::ImportMeshes(const Vector<ColladaMeshInstance *> & meshInstances, Entity * node)
 {
     DVASSERT(1 >= meshInstances.size() && "Should be only one meshInstance in one collada node");
     for (auto meshInstance : meshInstances)
@@ -532,7 +551,24 @@ void ColladaToSc2Importer::FillMeshes(const Vector<ColladaMeshInstance *> & mesh
         davaRenderComponent->SetRenderObject(davaMesh);
     }
 }
-    
+
+void ColladaToSc2Importer::ImportAnimation(ColladaSceneNode * colladaNode, Entity * nodeEntity)
+{
+    if (nullptr != colladaNode->animation)
+    {
+        auto * animationComponent = new AnimationComponent();
+        animationComponent->SetEntity(nodeEntity);
+        nodeEntity->AddComponent(animationComponent);
+        
+        // Calculate actual transform and bake it into animation keys.
+        // NOTE: for now usage of the same animation more than once is bad idea
+        AnimationData * animation = library->GetOrCreateAnimation(colladaNode->animation);
+        Matrix4 totalTransform = colladaNode->AccamulateTransformUptoFarParent(colladaNode->scene->rootNode);
+        animation->BakeTransform(totalTransform);
+        animationComponent->SetAnimation(animation);
+    }
+}
+
 void ColladaToSc2Importer::BuildSceneAsCollada(Entity * root, ColladaSceneNode * colladaNode)
 {
     String name(colladaNode->originalNode->GetName());
@@ -546,23 +582,16 @@ void ColladaToSc2Importer::BuildSceneAsCollada(Entity * root, ColladaSceneNode *
     nodeEntity->SetName(FastName(name));
     
     // take mesh from node and put it into entity's render component
-    FillMeshes(colladaNode->meshInstances, nodeEntity);
-    
-    if (nullptr != colladaNode->animation)
-    {
-        auto * animationComponent = new AnimationComponent();
-        animationComponent->SetEntity(nodeEntity);
+    ImportMeshes(colladaNode->meshInstances, nodeEntity);
 
-        AnimationData * animation = library->GetOrCreateAnimation(colladaNode->animation);
-        animationComponent->SetAnimation(animation);
-        nodeEntity->AddComponent(animationComponent);
-    }
+    // Import animation
+    ImportAnimation(colladaNode, nodeEntity);
     
     auto * transformComponent = GetTransformComponent(nodeEntity);
     transformComponent->SetLocalTransform(&colladaNode->localTransform);
     
     root->AddNode(nodeEntity);
-    
+
     for (auto childNode : colladaNode->childs)
     {
         BuildSceneAsCollada(nodeEntity, childNode);
@@ -610,7 +639,7 @@ void ColladaToSc2Importer::SaveSC2(ColladaScene * colladaScene, const FilePath &
     // Load scene global animations
     LoadAnimations(colladaScene);
     
-    // iterate recursive over collada scene and build Dava Scene with same ierarchy
+    // Iterate recursive over collada scene and build Dava Scene with same ierarchy
     BuildSceneAsCollada(scene, colladaScene->rootNode);
     
     // Apply transforms to render batches and use identity local transforms

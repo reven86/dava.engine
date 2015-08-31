@@ -395,6 +395,15 @@ FMMatrix44 ColladaSceneNode::CalculateTransformForTime(FCDSceneNode * originalNo
 	}
 	return colladaLocalMatrix;
 }
+    
+Matrix4 ColladaSceneNode::AccamulateTransformUptoFarParent(ColladaSceneNode * farParent)
+{
+    if (farParent == this)
+    {
+        return Matrix4::IDENTITY;
+    }
+    return localTransform * parent->AccamulateTransformUptoFarParent(farParent);
+}
 
 SceneNodeAnimationKey ColladaSceneNode::ExportAnimationKey(FCDSceneNode * originalNode, float32 time)
 {
