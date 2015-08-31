@@ -137,6 +137,8 @@ public:
     const float32* GetLocalPropValue(const FastName& propName);
     const float32* GetEffectivePropValue(const FastName& propName);
 
+
+
     /*textures*/
     void AddTexture(const FastName& slotName, Texture *texture);
     void RemoveTexture(const FastName& slotName);

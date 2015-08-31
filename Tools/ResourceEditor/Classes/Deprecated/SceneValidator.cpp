@@ -289,7 +289,13 @@ void SceneValidator::ValidateRenderBatch(Entity *ownerNode, RenderBatch *renderB
 void SceneValidator::ValidateMaterials(DAVA::Scene *scene, Set<String> &errorsLog)
 {
 	Set<DAVA::NMaterial *> materials;
-    SceneHelper::BuildMaterialList(scene, materials, false, false);
+    SceneHelper::BuildMaterialList(scene, materials, false);
+    auto globalMaterial = scene->GetGlobalMaterial();
+    if (nullptr != globalMaterial)
+    {
+        materials.erase(globalMaterial);
+    }
+
 
     const QVector<ProjectManager::AvailableMaterialTemplate> *materialTemplates = 0;
     if (ProjectManager::Instance() != nullptr)
@@ -314,11 +320,6 @@ void SceneValidator::ValidateMaterials(DAVA::Scene *scene, Set<String> &errorsLo
 	{
         for (const FastName & textureName : textureNames)
         {
-            if ((*it)->HasLocalTexture(NMaterialTextureName::TEXTURE_HEIGHTMAP))
-            {
-                int32 a = 0;
-            }
-
             if ((*it)->HasLocalTexture(textureName))
             {
                 Texture *tex = (*it)->GetLocalTexture(textureName);

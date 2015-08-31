@@ -36,7 +36,7 @@ void SceneHelper::EnumerateSceneTextures(DAVA::Scene *forScene, DAVA::TexturesMa
 }
 
 
-void SceneHelper::BuildMaterialList(DAVA::Entity *forNode, Set<NMaterial*>& materialList, bool includeGlobalMaterial, bool includeRuntime)
+void SceneHelper::BuildMaterialList(DAVA::Entity *forNode, Set<NMaterial*>& materialList, bool includeRuntime)
 {
     if(nullptr == forNode) return;
     
@@ -50,15 +50,6 @@ void SceneHelper::BuildMaterialList(DAVA::Entity *forNode, Set<NMaterial*>& mate
             continue;
         }
        
-#if RHI_COMPLETE_EDITOR
-        //TODO: skip global if need
-        //        if(!includeGlobalMaterial && mat->IsGlobal())
-        //        {
-        //            continue;
-        //        }
-#endif //RHI_COMPLETE_EDITOR
-        
-        
         materialList.insert(mat);
     }
 }
@@ -170,7 +161,6 @@ DAVA::Entity * SceneHelper::CloneEntityWithMaterials(DAVA::Entity *fromNode)
 {
     Entity * newEntity = fromNode->Clone();
 
-#if RHI_COMPLETE_EDITOR
     Vector<NMaterial *> materialInstances;
     EnumerateMaterialInstances(newEntity, materialInstances);
 
@@ -192,7 +182,6 @@ DAVA::Entity * SceneHelper::CloneEntityWithMaterials(DAVA::Entity *fromNode)
         NMaterial * parent = material->GetParent();
         material->SetParent(clonedParents[parent]);
     }
-#endif // RHI_COMPLETE_EDITOR
 
     return newEntity;
 }
