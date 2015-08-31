@@ -29,8 +29,14 @@
 #include "Systems/CursorSystem.h"
 #include <QApplication>
 #include "Debug/DVAssert.h"
+#include "Model/PackageHierarchy/ControlNode.h"
+#include "UI/UIControl.h"
+#include <QPixmap>
+#include <QTransform>
 
 using namespace DAVA;
+
+QMap<QString, QPixmap> CursorSystem::cursorpixes;
 
 CursorSystem::CursorSystem(Document* doc)
     : BaseSystemClass(doc)
@@ -45,49 +51,66 @@ void CursorSystem::Detach()
 
 void CursorSystem::MouseEnterArea(ControlNode* targetNode, const eArea area)
 {
-    QCursor cursor = GetCursorByArea(area);
-    if (shape == cursor.shape() && shapesCount)
-    {
-        return;
-    }
-    shape = cursor.shape();
-    shapesCount++;
-    qApp->setOverrideCursor(cursor);
+    auto control = targetNode->GetControl();
+    float angle = control->GetGeometricData().angle;
+    QPixmap pixmap = CreatePixmapForArea(angle, area);
+    qApp->setOverrideCursor(QCursor(pixmap));
 }
 
 void CursorSystem::MouseLeaveArea()
 {
-    while (shapesCount)
+    while (qApp->overrideCursor() != nullptr)
     {
-        shapesCount--;
         qApp->restoreOverrideCursor();
     }
 }
 
-QCursor CursorSystem::GetCursorByArea(const eArea area) const
+QPixmap CursorSystem::CreatePixmapForArea(float angle, const eArea area) const
 {
+    QTransform transform;
+    transform.rotateRadians(angle);
+    QPixmap pixmap;
     switch (area)
     {
     case FRAME_AREA:
-        return Qt::SizeAllCursor;
+        return CreatePixmap(":/Cursors/moveCursor.png");
     case PIVOT_POINT_AREA:
-        return Qt::CrossCursor;
+        return CreatePixmap(":/Cursors/linkCursor.png");
     case TOP_LEFT_AREA:
     case BOTTOM_RIGHT_AREA:
-        return Qt::SizeFDiagCursor;
+        pixmap = CreatePixmap(":/Cursors/northWestSouthEastResizeCursor.png");
+        return pixmap.transformed(transform);
     case TOP_RIGHT_AREA:
     case BOTTOM_LEFT_AREA:
-        return Qt::SizeBDiagCursor;
+        pixmap = CreatePixmap(":/Cursors/northEastSouthWestResizeCursor.png");
+        return pixmap.transformed(transform);
     case TOP_CENTER_AREA:
     case BOTTOM_CENTER_AREA:
-        return Qt::SizeVerCursor;
+        pixmap = CreatePixmap(":/Cursors/northSouthResizeCursor.png");
+        return pixmap.transformed(transform);
     case CENTER_LEFT_AREA:
     case CENTER_RIGHT_AREA:
-        return Qt::SizeHorCursor;
+        pixmap = CreatePixmap(":/Cursors/eastWestResizeCursor.png");
+        return pixmap.transformed(transform);
     case ROTATE_AREA:
-        return Qt::CrossCursor;
+        return CreatePixmap(":/Cursors/cursorRotate.png");
     default:
         DVASSERT_MSG(false, "unexpected enum value");
-        return QCursor();
+        return QPixmap();
+    }
+}
+
+QPixmap CursorSystem::CreatePixmap(const QString &address) const
+{
+    if(cursorpixes.contains(address))
+    {
+        return cursorpixes[address];
+    }
+    else
+    {
+        QPixmap pixmap(address);
+        DVASSERT(!pixmap.isNull());
+        cursorpixes.insert(address, pixmap);
+        return pixmap;
     }
 }

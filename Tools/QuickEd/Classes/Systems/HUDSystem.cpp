@@ -58,10 +58,10 @@ protected:
     const ControlAreaInterface::eArea area = ControlAreaInterface::NO_AREA;
 };
 
-class Container : public ControlContainer
+class HUDContainer : public ControlContainer
 {
 public:
-    explicit Container(UIControl *container)
+    explicit HUDContainer(UIControl *container)
         : ControlContainer(container, ControlAreaInterface::FRAME_AREA)
     {
         SetSize(Vector2(30, 30));
@@ -329,7 +329,7 @@ void HUDSystem::SetNewArea(ControlNode* node, const ControlAreaInterface::eArea 
 HUDSystem::HUD::HUD(const Document *document, ControlNode *node_, UIControl* hudControl)
     : node(node_)
     , control(node_->GetControl())
-    , container(new Container(control))
+    , container(new HUDContainer(control))
 {
     hudControl->AddControl(container);
     hudControls.emplace_back(new PivotPointControl(control));
