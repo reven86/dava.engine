@@ -394,19 +394,17 @@ Sprite* Sprite::CreateFromSourceData(const uint8* data, uint32 size, bool conten
 
 String Sprite::GetPathString( const Sprite *sprite )
 {
-    if (!sprite)
-    {
-        return "";
-    }
+    if (nullptr == sprite)
+        return String();
 
     FilePath path(sprite->GetRelativePathname());
-    String pathName = "";
+
+    String pathName;
     if (!path.IsEmpty())
     {
         path.TruncateExtension();
         pathName = path.GetFrameworkPath();
     }
-
     return pathName;
 }
 
