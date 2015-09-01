@@ -213,6 +213,7 @@ TextureSetDescriptor
 HTextureSet     AcquireTextureSet( const TextureSetDescriptor& desc );
 HTextureSet     CopyTextureSet( HTextureSet ts );
 void            ReleaseTextureSet(HTextureSet ts, bool forceImmediate = false);
+void            ReplaceTextureInAllTextureSets( HTexture oldHandle, HTexture newHandle );
 
 
 ////////////////////////////////////////////////////////////////////////////////
