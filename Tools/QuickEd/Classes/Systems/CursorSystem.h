@@ -33,6 +33,7 @@
 #include "Systems/BaseSystemClass.h"
 #include "Systems/Interfaces.h"
 #include <QCursor>
+#include <QMap>
 
 class CursorSystem final : public BaseSystemClass, public ControlAreaInterface
 {   
@@ -43,9 +44,9 @@ public:
     void MouseEnterArea(ControlNode *targetNode, const eArea area) override;
     void MouseLeaveArea() override;
 private:
-    QCursor GetCursorByArea(const eArea area) const;
-    Qt::CursorShape shape = Qt::CustomCursor;
-    int shapesCount = 0;
+    QPixmap CreatePixmapForArea(float angle, const eArea area) const;
+    QPixmap CreatePixmap(const QString &address) const;
+    static QMap<QString, QPixmap> cursorpixes;
 };
 
 #endif // __QUICKED_TREE_SYSTEM_H__

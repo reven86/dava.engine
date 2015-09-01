@@ -40,9 +40,9 @@ ScrollAreaController::ScrollAreaController(UIControl *root_, UIControl *scalable
 {
     backgroundControl = new UIControl();
     backgroundControl->AddControl(rootControl);
-    backgroundControl->SetDebugDraw(true);
-    backgroundControl->SetDebugDrawColor(Color(0.0f, 0.0f, 1.0f, 1.0f));
-    rootControl->SetDebugDraw(true);
+    //backgroundControl->SetDebugDraw(true);
+    //backgroundControl->SetDebugDrawColor(Color(0.0f, 0.0f, 1.0f, 1.0f));
+    //rootControl->SetDebugDraw(true);
     rootControl->SetPosition(Vector2(Margin, Margin));
 
     ScopedPtr<UIScreen> davaUIScreen(new UIScreen());
