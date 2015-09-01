@@ -60,7 +60,7 @@ void UIScreenshoter::OnFrame()
     {
         if (rhi::SyncObjectSignaled(it->syncObj))
         {
-            if (it->callback != 0)
+            if (it->callback != nullptr)
             {
                 it->callback(it->texture);
             }
@@ -80,7 +80,7 @@ Texture* UIScreenshoter::MakeScreenshot(UIControl* control, const PixelFormat fo
     const Vector2 size(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(control->GetSize()));
     Texture * screenshot(Texture::CreateFBO((int32)size.dx, (int32)size.dy, format));
     
-    MakeScreenshotInternal(control, screenshot, 0);
+    MakeScreenshotInternal(control, screenshot, nullptr);
     
     return screenshot;
 }
@@ -97,7 +97,7 @@ void UIScreenshoter::MakeScreenshot(UIControl* control, const PixelFormat format
 
 void UIScreenshoter::MakeScreenshot(UIControl* control, Texture* screenshot)
 {
-    MakeScreenshotInternal(control, screenshot, 0);
+    MakeScreenshotInternal(control, screenshot, nullptr);
 }
 
 void UIScreenshoter::MakeScreenshot(UIControl* control, Texture* screenshot, Function<void(Texture*)> callback)

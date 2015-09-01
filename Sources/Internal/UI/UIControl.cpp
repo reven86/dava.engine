@@ -665,13 +665,18 @@ namespace DAVA
         }
     }
 
-    Vector2 UIControl::GetContentPreferredSize() const
+    Vector2 UIControl::GetContentPreferredSize(const Vector2 &constraints) const
     {
         if (background != nullptr && background->GetSprite() != nullptr)
         {
             return background->GetSprite()->GetSize();
         }
         return Vector2(0.0f, 0.0f);
+    }
+    
+    bool UIControl::IsHeightDependsOnWidth() const
+    {
+        return false;
     }
 
     void UIControl::SetVisible(bool isVisible)
@@ -1090,7 +1095,11 @@ namespace DAVA
 
         RemoveAllComponents();
         for (UIComponent *srcComponent : srcControl->components)
-            AddComponent(srcComponent->Clone());
+        {
+            UIComponent *dest = srcComponent->Clone();
+            AddComponent(dest);
+            SafeRelease(dest);
+        }
         
         RemoveAllControls();
         if (inputEnabled)
@@ -1472,7 +1481,7 @@ namespace DAVA
         {
             return false;
         }
-        if (customSystemProcessInput != 0 && customSystemProcessInput(this, currentInput))
+        if (customSystemProcessInput != nullptr && customSystemProcessInput(this, currentInput))
         {
         	return true;
         }

@@ -259,7 +259,7 @@ void AndroidCrashReport::SignalHandler(int signal, struct siginfo *siginfo, void
     {
         //LOGE("FRAME_STACK backtracing %d %d",sigcontext,siginfo);
         //backtraceProvider->Backtrace(&AndroidCrashReport::onStackFrame,sigcontext,siginfo);
-        backtraceProvider->Backtrace(AndroidCrashReport::OnStackFrame
+        backtraceProvider->Backtrace(&AndroidCrashReport::OnStackFrame
                 ,sigcontext,siginfo);
     }
     else

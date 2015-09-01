@@ -239,9 +239,14 @@ const Vector2 & UIStaticText::GetTextSize()
     return textBlock->GetTextSize();
 }
 
-Vector2 UIStaticText::GetContentPreferredSize() const
+Vector2 UIStaticText::GetContentPreferredSize(const Vector2 &constraints) const
 {
-    return textBlock->GetPreferredSize();
+    return textBlock->GetPreferredSizeForWidth(constraints.x);
+}
+    
+bool UIStaticText::IsHeightDependsOnWidth() const
+{
+    return textBlock->GetMultiline();
 }
 
 const Color &UIStaticText::GetTextColor() const
@@ -584,7 +589,7 @@ const Vector<int32> & UIStaticText::GetStringSizes() const
     
 void UIStaticText::PrepareSprite()
 {
-	JobManager::Instance()->CreateMainJob(MakeFunction(PointerWrapper<UIStaticText>::WrapRetainRelease(this), &UIStaticText::PrepareSpriteInternal));
+	JobManager::Instance()->CreateMainJob(MakeFunction(MakeSharedObject(this), &UIStaticText::PrepareSpriteInternal));
 }
 
 void UIStaticText::PrepareSpriteInternal()
