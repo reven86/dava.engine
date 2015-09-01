@@ -28,7 +28,6 @@
 
 
 #include "Document.h"
-#include <QLineEdit>
 
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
@@ -46,12 +45,11 @@ Document::Document(PackageNode *_package, QObject *parent)
     , selectionSystem(this)
     , canvasSystem(this)
     , hudSystem(this)
-    , treeSystem(this)
     , cursorSystem(this)
     , transformSystem(this)
 {
-    systems << &selectionSystem << &canvasSystem << &hudSystem << &treeSystem << &cursorSystem << &transformSystem;
-    inputListeners << &selectionSystem << &hudSystem << &treeSystem << &transformSystem;
+    systems << &selectionSystem << &canvasSystem << &hudSystem << &cursorSystem << &transformSystem;
+    inputListeners << &selectionSystem << &hudSystem << &transformSystem;
     selectionSystem.SelectionWasChanged.Connect(this, &Document::OnSelectionWasChanged);
     selectionSystem.SelectionWasChanged.Connect(&canvasSystem, &CanvasSystem::OnSelectionWasChanged);
     selectionSystem.SelectionWasChanged.Connect(&hudSystem, &HUDSystem::OnSelectionWasChanged);

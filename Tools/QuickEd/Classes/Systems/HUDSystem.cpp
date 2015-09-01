@@ -64,9 +64,6 @@ public:
     explicit HUDContainer(UIControl *container)
         : ControlContainer(container, ControlAreaInterface::FRAME_AREA)
     {
-        SetSize(Vector2(30, 30));
-        SetDebugDraw(true);
-        SetDebugDrawColor(Color(0.0f, 0.0f, 1.0f, 1.0f));
     }
 private:
     void Draw(const UIGeometricData &geometricData) override
@@ -85,7 +82,7 @@ public:
         : ControlContainer(container, ControlAreaInterface::FRAME_AREA)
     {
         SetDebugDraw(true);
-        SetDebugDrawColor(Color(1.0f, 0.0f, 0.0f, 1.f));
+        SetDebugDrawColor(Color(0.0f, 0.0f, 1.0f, 1.0f));
     }
 private:
     void Draw(const UIGeometricData &geometricData) override
@@ -332,7 +329,7 @@ HUDSystem::HUD::HUD(const Document *document, ControlNode *node_, UIControl* hud
     hudControl->AddControl(container);
     hudControls.emplace_back(new PivotPointControl(control));
     hudControls.emplace_back(new RotateControl(control));
-    for (int i = ControlAreaInterface::TOP_LEFT_AREA; i < ControlAreaInterface::CORNER_COUNT; ++i)
+    for (int i = ControlAreaInterface::TOP_LEFT_AREA; i < ControlAreaInterface::CORNERS_COUNT; ++i)
     {
         ControlAreaInterface::eArea area = static_cast<ControlAreaInterface::eArea>(i);
         hudControls.emplace_back(new FrameRectControl(control, area));

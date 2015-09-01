@@ -39,7 +39,6 @@
 #include "Systems/SelectionSystem.h"
 #include "Systems/CanvasSystem.h"
 #include "Systems/HUDSystem.h"
-#include "Systems/TreeSystem.h"
 #include "Systems/CursorSystem.h"
 #include "Systems/TransformSystem.h"
 
@@ -98,7 +97,6 @@ private:
     SelectionSystem selectionSystem;
     CanvasSystem canvasSystem;
     HUDSystem hudSystem;
-    TreeSystem treeSystem;
     CursorSystem cursorSystem;
     TransformSystem transformSystem;
     QList<InputInterface*> inputListeners;

@@ -49,6 +49,7 @@ using SelectedControls = DAVA::Set < ControlNode* >;
 class ControlAreaInterface
 {
 public:
+
     enum eArea
     {
         TOP_LEFT_AREA,
@@ -62,10 +63,10 @@ public:
         FRAME_AREA,
         PIVOT_POINT_AREA,
         ROTATE_AREA,
-        NO_AREA
+        NO_AREA,
+        CORNERS_COUNT = FRAME_AREA - TOP_LEFT_AREA,
+        AREAS_COUNT = NO_AREA - TOP_LEFT_AREA
     };
-    static const int CORNER_COUNT = FRAME_AREA - TOP_LEFT_AREA;
-    static const int AREAS_COuNT = NO_AREA - TOP_LEFT_AREA;
     virtual void MouseEnterArea(ControlNode *targetNode, const eArea area) = 0;
     virtual void MouseLeaveArea() = 0;
 };
