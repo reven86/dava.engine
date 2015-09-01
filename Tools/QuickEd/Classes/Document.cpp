@@ -56,7 +56,6 @@ Document::Document(PackageNode *_package, QObject *parent)
     selectionSystem.SelectionWasChanged.Connect(&canvasSystem, &CanvasSystem::OnSelectionWasChanged);
     selectionSystem.SelectionWasChanged.Connect(&hudSystem, &HUDSystem::OnSelectionWasChanged);
     selectionSystem.SelectionWasChanged.Connect(&transformSystem, &TransformSystem::OnSelectionWasChanged);
-
     hudSystem.AddListener(&cursorSystem);
     hudSystem.AddListener(&transformSystem);
     connect(GetEditorFontSystem(), &EditorFontSystem::UpdateFontPreset, this, &Document::RefreshAllControlProperties);

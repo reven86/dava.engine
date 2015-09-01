@@ -40,7 +40,7 @@ namespace DAVA {
     class Vector2;
 }
 
-class SelectionSystem final : public BaseSystemClass, public DAVA::TrackedObject, public InputInterface, public PackageListener
+class SelectionSystem final : public BaseSystemClass, public InputInterface, public PackageListener
 {
 public:
     SelectionSystem(Document *doc);

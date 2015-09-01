@@ -39,6 +39,7 @@ using namespace DAVA;
 SelectionSystem::SelectionSystem(Document* doc)
     : BaseSystemClass(doc)
 {
+    
 }
 
 bool SelectionSystem::OnInput(UIEvent* currentInput)
