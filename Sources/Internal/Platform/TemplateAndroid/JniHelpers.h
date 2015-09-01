@@ -35,8 +35,7 @@
 #include <jni.h>
 #include "Platform/TemplateAndroid/ExternC/AndroidLayer.h"
 #include "Debug/DVAssert.h"
-#include "Base/Function.h"
-#include "Base/Bind.h"
+#include "Functional/Function.h"
 #include "Math/Rect.h"
 
 #define DAVA_JNI_EXCEPTION_CHECK \
