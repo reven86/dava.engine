@@ -53,7 +53,7 @@ private:
     Mesh * GetMeshFromCollada(ColladaMeshInstance * mesh, const bool isShadow);
 
 private:
-    std::unique_ptr<ImportLibrary> library;
+    ImportLibrary * library;
 };
 
 };

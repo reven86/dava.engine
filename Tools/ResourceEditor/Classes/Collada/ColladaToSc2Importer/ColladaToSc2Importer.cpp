@@ -253,38 +253,7 @@ void GetTextureTypeAndPathFromCollada(ColladaMaterial * material, FastName & typ
         
         return;
     }
-    
-    ColladaTexture * lightmap = material->lightmapTexture;
-    bool useLightmapTexture = nullptr != lightmap && material->hasLightmapTexture;
-    if (useLightmapTexture)
-    {
-        type = NMaterial::TEXTURE_LIGHTMAP;
-        path = lightmap->texturePathName.c_str();
-        
-        return;
-    }
-    
-    ColladaTexture * reflective = material->reflectiveTexture;
-    bool useReflectiveTexture = nullptr != reflective && material->hasReflectiveTexture;
-    if (useReflectiveTexture)
-    {
-        type = NMaterial::TEXTURE_DYNAMIC_REFLECTION;
-        path = reflective->texturePathName.c_str();
-        
-        return;
-    }
-    
-    ColladaTexture * transparent = material->transparentTexture;
-    bool useTransparentTexture = nullptr != transparent && material->hasTransparentTexture;
-    if (useTransparentTexture)
-    {
-        // TO DO: are we support it?
-        type = NMaterial::TEXTURE_ALBEDO;
-        path = transparent->texturePathName.c_str();
-        
-        return;
-    }
-    
+
     DVASSERT(false && "There is no texture!");
 }
     
@@ -627,12 +596,14 @@ void ColladaToSc2Importer::LoadAnimations(ColladaScene * colladaScene)
 
 ColladaToSc2Importer::ColladaToSc2Importer()
 {
-    library = std::make_unique<ImportLibrary>();
+    library = new ImportLibrary();
 }
-    
+
 ColladaToSc2Importer::~ColladaToSc2Importer()
 {
+    SafeDelete(library);
 }
+    
     
 SceneFileV2::eError ColladaToSc2Importer::SaveSC2(ColladaScene * colladaScene, const FilePath & scenePath, const String & sceneName)
 {

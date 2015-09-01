@@ -150,7 +150,7 @@ bool ColladaDocument::ExportNodeAnimations(FCDocument * exportDoc, FCDSceneNode 
 	FCDAnimationLibrary * animationLibrary = exportDoc->GetAnimationLibrary();
 	if (animationLibrary->GetEntityCount() == 0)
 	{
-		DAVA::Logger::Error("*** Can't find any animations in this file: %s\n", exportDoc->GetFileUrl().c_str());
+		DAVA::Logger::Warning("*** Can't find any animations in this file: %s\n", exportDoc->GetFileUrl().c_str());
 		return false;
 	}
 	
