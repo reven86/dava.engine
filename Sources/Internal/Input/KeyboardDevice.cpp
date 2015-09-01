@@ -42,7 +42,7 @@ KeyboardDevice::~KeyboardDevice()
 {
 }
     
-bool KeyboardDevice::IsKeyPressed(const int32 keyCode) const
+bool KeyboardDevice::IsKeyPressed(int32 keyCode) const
 {
     DVASSERT( keyCode < DVKEY_COUNT );
 
@@ -64,14 +64,14 @@ bool KeyboardDevice::IsKeyPressed(const int32 keyCode) const
     return keyStatus[keyCode];
 }
 
-void KeyboardDevice::OnKeyPressed(const int32 keyCode)
+void KeyboardDevice::OnKeyPressed(int32 keyCode)
 {
     DVASSERT(keyCode < DVKEY_COUNT);
     keyStatus[keyCode] = true;
     realKeyStatus[keyCode] = true;
 }
 
-void KeyboardDevice::OnKeyUnpressed(const int32 keyCode)
+void KeyboardDevice::OnKeyUnpressed(int32 keyCode)
 {
     DVASSERT(keyCode < DVKEY_COUNT);
     realKeyStatus[keyCode] = false;
@@ -89,13 +89,13 @@ void KeyboardDevice::OnAfterUpdate()
     }
 }
     
-int32 KeyboardDevice::GetDavaKeyForSystemKey(const int32 systemKeyCode) const
+int32 KeyboardDevice::GetDavaKeyForSystemKey(int32 systemKeyCode) const
 {
     DVASSERT(systemKeyCode < MAX_KEYS);
     return keyTranslator[systemKeyCode];
 }
 
-void KeyboardDevice::OnSystemKeyPressed(const int32 systemKeyCode)
+void KeyboardDevice::OnSystemKeyPressed(int32 systemKeyCode)
 {
     DVASSERT(systemKeyCode < MAX_KEYS);
     OnKeyPressed(keyTranslator[systemKeyCode]);

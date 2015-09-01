@@ -28,21 +28,17 @@
 
 
 #include "ScrollAreaController.h"
-#include "UI/UIControl.h"
 #include "UI/UIScreenManager.h"
 
 using namespace DAVA;
 
 ScrollAreaController::ScrollAreaController(UIControl *root_, UIControl *scalableContent_, QObject *parent)
     : QObject(parent)
+    , backgroundControl(new UIControl)
     , rootControl(root_)
     , scalableContent(scalableContent_)
 {
-    backgroundControl = new UIControl();
     backgroundControl->AddControl(rootControl);
-    //backgroundControl->SetDebugDraw(true);
-    //backgroundControl->SetDebugDrawColor(Color(0.0f, 0.0f, 1.0f, 1.0f));
-    //rootControl->SetDebugDraw(true);
     rootControl->SetPosition(Vector2(Margin, Margin));
 
     ScopedPtr<UIScreen> davaUIScreen(new UIScreen());

@@ -192,18 +192,18 @@ protected:
 			
 public:
     
-    bool IsKeyPressed(const int32 keyCode) const;
+    bool IsKeyPressed(int32 keyCode) const;
     
-    int32 GetDavaKeyForSystemKey(const int32 systemKeyCode) const;
+    int32 GetDavaKeyForSystemKey(int32 systemKeyCode) const;
     
-    void OnKeyPressed(const int32 keyCode);
-    void OnKeyUnpressed(const int32 keyCode);
+    void OnKeyPressed(int32 keyCode);
+    void OnKeyUnpressed(int32 keyCode);
 
     void OnBeforeUpdate();
     void OnAfterUpdate();
     
-    void OnSystemKeyPressed(const int32 systemKeyCode);
-    void OnSystemKeyUnpressed(const int32 systemKeyCode);
+    void OnSystemKeyPressed(int32 systemKeyCode);
+    void OnSystemKeyUnpressed(int32 systemKeyCode);
 
 	void ClearAllKeys();
 

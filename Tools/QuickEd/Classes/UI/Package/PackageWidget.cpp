@@ -472,6 +472,7 @@ void PackageWidget::SetSelectedNodes(const SelectedNodes& selected, const Select
     if (selectedNodes != tmpSelected)
     {
         selectedNodes = tmpSelected;
+        bool wasBlocked = treeView->selectionModel()->signalsBlocked();
         treeView->selectionModel()->blockSignals(true);
         for (auto &node : deselected)
         {
@@ -486,7 +487,7 @@ void PackageWidget::SetSelectedNodes(const SelectedNodes& selected, const Select
             treeView->selectionModel()->select(dstIndex, QItemSelectionModel::Select);
             treeView->scrollTo(dstIndex);
         }
-        treeView->selectionModel()->blockSignals(false);
+        treeView->selectionModel()->blockSignals(wasBlocked);
         emit SelectedNodesChanged(selected, deselected);
     }
 }

@@ -91,9 +91,9 @@ private:
     void SetSelectedNodes(const SelectedNodes &selected, const SelectedNodes &deselected);
     QMap < QObject*, WidgetContext* > contexts;
     SelectedNodes selectedNodes;
-    PackageNode *package;
-    QtModelPackageCommandExecutor *commandExecutor;
-    QUndoStack *undoStack;
+    PackageNode *package = nullptr;
+    QtModelPackageCommandExecutor *commandExecutor = nullptr;
+    QUndoStack *undoStack = nullptr;
 
     SelectionSystem selectionSystem;
     CanvasSystem canvasSystem;

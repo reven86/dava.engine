@@ -34,9 +34,11 @@
 #include <QPoint>
 #include <QSize>
 
+#include "Base/ScopedPtr.h"
+#include "UI/UIControl.h"
+
 namespace DAVA{
     class Vector2;
-    class UIControl;
 }
 
 class ScrollAreaController : public QObject
@@ -67,7 +69,7 @@ signals:
     void PositionChanged(const QPoint &position);
 private:
     void UpdatePosition();
-    DAVA::UIControl *backgroundControl = nullptr;
+    DAVA::ScopedPtr<DAVA::UIControl> backgroundControl;
     DAVA::UIControl *rootControl = nullptr;
     DAVA::UIControl *scalableContent = nullptr;
     QSize canvasSize = QSize(0, 0);

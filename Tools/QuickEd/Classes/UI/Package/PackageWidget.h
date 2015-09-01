@@ -55,13 +55,19 @@ signals:
 public slots:
     void OnDocumentChanged(Document *context);
     void OnSelectedNodesChanged(const SelectedNodes &selected, const SelectedNodes &deselected);
+    private slots:
+    void OnSelectionChanged(const QItemSelection &proxySelected, const QItemSelection &proxyDeselected);
+    void filterTextChanged(const QString &);
+    void OnImport();
+    void OnCopy();
+    void OnPaste();
+    void OnCut();
+    void OnDelete();
+    void OnRename();
+    void OnAddStyle();
 private:
     void LoadContext();
     void SaveContext();
-private:
-    
-    void OnControlSelectedInEditor(const QList<ControlNode *> &node);
-
     void RefreshActions();
     void RefreshAction(QAction *action, bool enabled, bool visible);
     void CollectSelectedControls(DAVA::Vector<ControlNode*> &nodes, bool forCopy, bool forRemove);
@@ -74,19 +80,6 @@ private:
 
     QList<QPersistentModelIndex> GetExpandedIndexes() const;
     
-
-private slots:
-    void OnSelectionChanged(const QItemSelection &proxySelected, const QItemSelection &proxyDeselected);
-    void filterTextChanged(const QString &);
-    void OnImport();
-    void OnCopy();
-    void OnPaste();
-    void OnCut();
-    void OnDelete();
-    void OnRename();
-    void OnAddStyle();
-
-private:
     void SetSelectedNodes(const SelectedNodes &selected, const SelectedNodes &deselected);
 
     QAction *CreateSeparator();
@@ -99,8 +92,8 @@ private:
     QAction *renameAction = nullptr;
     QAction *addStyleAction = nullptr;
     
-    FilteredPackageModel* filteredPackageModel;
-    PackageModel* packageModel;
+    FilteredPackageModel* filteredPackageModel = nullptr;
+    PackageModel* packageModel = nullptr;
     SelectedNodes selectedNodes;
 };
 
