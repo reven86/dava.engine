@@ -42,7 +42,7 @@ class ColladaToSc2Importer
 public:
     ColladaToSc2Importer();
     ~ColladaToSc2Importer();
-    void SaveSC2(ColladaScene * colladaScene, const FilePath & scenePath, const String & sceneName);
+    SceneFileV2::eError SaveSC2(ColladaScene * colladaScene, const FilePath & scenePath, const String & sceneName);
 
 private:
     void ImportAnimation(ColladaSceneNode * colladaNode, Entity * nodeEntity);

@@ -634,7 +634,7 @@ ColladaToSc2Importer::~ColladaToSc2Importer()
 {
 }
     
-void ColladaToSc2Importer::SaveSC2(ColladaScene * colladaScene, const FilePath & scenePath, const String & sceneName)
+SceneFileV2::eError ColladaToSc2Importer::SaveSC2(ColladaScene * colladaScene, const FilePath & scenePath, const String & sceneName)
 {
     ScopedPtr<Scene> scene(new Scene());
 
@@ -653,7 +653,7 @@ void ColladaToSc2Importer::SaveSC2(ColladaScene * colladaScene, const FilePath &
     // post process Entities and create Lod nodes.
     CombineLods(scene);
     
-    scene->SaveScene(scenePath + sceneName);
+    return scene->SaveScene(scenePath + sceneName);
 }
 
 };

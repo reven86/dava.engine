@@ -56,7 +56,7 @@ public:
 	
 	bool	IsEmptyNode(ColladaSceneNode * node);
 	
-    void    SaveSC2( const FilePath & scenePath, const String & sceneName );
+    SceneFileV2::eError SaveSC2( const FilePath & scenePath, const String & sceneName );
 	void	SaveScene(const FilePath & scenePath, const String & sceneName);
     String  GetTextureName(const FilePath & scenePath, ColladaTexture * texture);
 
