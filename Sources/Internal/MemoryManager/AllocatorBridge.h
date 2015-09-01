@@ -43,8 +43,8 @@ void* TrackingAlloc(size_t size, int poolIndex);
 void TrackingDealloc(void* ptr);
 
 // For internal use by MemoryManager
-void* InternalAlloc(size_t size) DAVA_NOEXCEPT;
-void InternalDealloc(void* ptr) DAVA_NOEXCEPT;
+void* InternalAlloc(size_t size);
+void InternalDealloc(void* ptr);
 
 }   // namespace DAVA
 

@@ -736,7 +736,7 @@ void VegetationRenderObject::InitHeightTextureFromHeightmap(Heightmap* heightMap
         heightmapScale = Vector2((1.0f * heightmap->Size()) / pow2Size,
                                  (1.0f * heightmap->Size()) / pow2Size);
         
-        Function<void()> fn = Bind(MakeFunction(this, &VegetationRenderObject::SetupHeightmapParameters), tx);
+        Function<void()> fn = Bind(&VegetationRenderObject::SetupHeightmapParameters, this, tx);
         uint32 jobID = JobManager::Instance()->CreateMainJob(fn);
         JobManager::Instance()->WaitMainJobID(jobID);
 

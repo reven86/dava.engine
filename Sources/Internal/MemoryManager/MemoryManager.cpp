@@ -50,6 +50,8 @@
 #include "Concurrency/Thread.h"
 #include "Math/MathHelpers.h"
 
+#include "FileSystem/File.h"
+
 #include "MemoryManager/MallocHook.h"
 #include "MemoryManager/MemoryManager.h"
 
@@ -101,8 +103,8 @@ struct MemoryManager::AllocScopeItem
 MMItemName MemoryManager::tagNames[MAX_TAG_COUNT];
 MMItemName MemoryManager::allocPoolNames[MAX_ALLOC_POOL_COUNT];
 
-size_t MemoryManager::registeredTagCount = 0;
-size_t MemoryManager::registeredAllocPoolCount = 0;
+uint32 MemoryManager::registeredTagCount = 0;
+uint32 MemoryManager::registeredAllocPoolCount = 0;
 
 void MemoryManager::RegisterAllocPoolName(uint32 index, const char8* name)
 {
@@ -157,6 +159,11 @@ MemoryManager* MemoryManager::Instance()
     return &mm;
 }
 
+void MemoryManager::EnableLightWeightMode()
+{
+    lightWeightMode = true;
+}
+
 void MemoryManager::SetCallbacks(Function<void()> updateCallback_, Function<void(uint32, bool)> tagCallback_)
 {
     updateCallback = updateCallback_;
@@ -171,7 +178,7 @@ void MemoryManager::Update()
         symbolCollectorThread->Start();
     }
 
-    if (updateCallback != 0)
+    if (updateCallback != nullptr)
     {
         updateCallback();
     }
@@ -191,15 +198,12 @@ DAVA_NOINLINE void* MemoryManager::Allocate(size_t size, uint32 poolIndex)
     MemoryBlock* block = static_cast<MemoryBlock*>(MallocHook::Malloc(totalSize));
     if (block != nullptr)
     {
-        Backtrace backtrace;
-        CollectBacktrace(&backtrace, 1);
-
         block->mark = BLOCK_MARK;
         block->pool = poolIndex;
         block->realBlockStart = static_cast<void*>(block);
         block->allocByApp = static_cast<uint32>(size);
         block->allocTotal = static_cast<uint32>(MallocHook::MallocSize(block->realBlockStart));
-        block->bktraceHash = backtrace.hash;
+        block->bktraceHash = 0;
 
         if (tlsAllocScopeStack.IsCreated())
         {
@@ -220,7 +224,12 @@ DAVA_NOINLINE void* MemoryManager::Allocate(size_t size, uint32 poolIndex)
             LockType lock(statMutex);
             UpdateStatAfterAlloc(block);
         }
+        if (!lightWeightMode)
         {
+            Backtrace backtrace;
+            CollectBacktrace(&backtrace, 1);
+            block->bktraceHash = backtrace.hash;
+
             LockType lock(bktraceMutex);
             InsertBacktrace(backtrace);
         }
@@ -254,16 +263,13 @@ DAVA_NOINLINE void* MemoryManager::AlignedAllocate(size_t size, size_t align, ui
         uintptr_t aligned = uintptr_t(realPtr) + sizeof(MemoryBlock);
         aligned += align - (aligned & (align - 1));
 
-        Backtrace backtrace;
-        CollectBacktrace(&backtrace, 1);
-
         MemoryBlock* block = reinterpret_cast<MemoryBlock*>(aligned - sizeof(MemoryBlock));
         block->mark = BLOCK_MARK;
         block->pool = poolIndex;
         block->realBlockStart = realPtr;
         block->allocByApp = static_cast<uint32>(size);
         block->allocTotal = static_cast<uint32>(MallocHook::MallocSize(block->realBlockStart));
-        block->bktraceHash = backtrace.hash;
+        block->bktraceHash = 0;
 
         if (tlsAllocScopeStack.IsCreated())
         {
@@ -284,7 +290,12 @@ DAVA_NOINLINE void* MemoryManager::AlignedAllocate(size_t size, size_t align, ui
             LockType lock(statMutex);
             UpdateStatAfterAlloc(block);
         }
+        if (!lightWeightMode)
         {
+            Backtrace backtrace;
+            CollectBacktrace(&backtrace, 1);
+            block->bktraceHash = backtrace.hash;
+
             LockType lock(bktraceMutex);
             InsertBacktrace(backtrace);
         }
@@ -336,6 +347,7 @@ void MemoryManager::Deallocate(void* ptr)
                 LockType lock(statMutex);
                 UpdateStatAfterDealloc(block);
             }
+            if (!lightWeightMode)
             {
                 LockType lock(bktraceMutex);
                 RemoveBacktrace(block->bktraceHash);
@@ -359,7 +371,7 @@ void MemoryManager::Deallocate(void* ptr)
     }
 }
 
-void* MemoryManager::InternalAllocate(size_t size) DAVA_NOEXCEPT
+void* MemoryManager::InternalAllocate(size_t size)
 {
     const size_t totalSize = sizeof(InternalMemoryBlock) + size;
     InternalMemoryBlock* block = static_cast<InternalMemoryBlock*>(MallocHook::Malloc(totalSize));
@@ -381,7 +393,7 @@ void* MemoryManager::InternalAllocate(size_t size) DAVA_NOEXCEPT
     return nullptr;
 }
 
-void MemoryManager::InternalDeallocate(void* ptr) DAVA_NOEXCEPT
+void MemoryManager::InternalDeallocate(void* ptr)
 {
     if (ptr != nullptr)
     {
@@ -405,7 +417,7 @@ void MemoryManager::InternalDeallocate(void* ptr) DAVA_NOEXCEPT
 uint32 MemoryManager::GetSystemMemoryUsage() const
 {
 #if defined(__DAVAENGINE_WIN32__)
-#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
+#elif defined(__DAVAENGINE_APPLE__)
     struct task_basic_info info;
     mach_msg_type_number_t size = sizeof(info);
     if (KERN_SUCCESS == task_info(mach_task_self(), TASK_BASIC_INFO, (task_info_t)&info, &size))
@@ -417,9 +429,12 @@ uint32 MemoryManager::GetSystemMemoryUsage() const
     return 0;
 }
 
-uint32 MemoryManager::GetTrackedMemoryUsage() const
+uint32 MemoryManager::GetTrackedMemoryUsage(uint32 poolIndex) const
 {
-    return statAllocPool[ALLOC_POOL_TOTAL].allocByApp;
+    assert(ALLOC_POOL_TOTAL < poolIndex && poolIndex < MAX_ALLOC_POOL_COUNT);
+
+    LockType lock(statMutex);
+    return statAllocPool[poolIndex].allocByApp;
 }
 
 void MemoryManager::EnterTagScope(uint32 tag)
@@ -432,7 +447,7 @@ void MemoryManager::EnterTagScope(uint32 tag)
         statGeneral.activeTags |= tag;
         statGeneral.activeTagCount += 1;
     }
-    if (tagCallback != 0)
+    if (tagCallback != nullptr)
     {
         tagCallback(tag, true);
     }
@@ -448,7 +463,7 @@ void MemoryManager::LeaveTagScope(uint32 tag)
         statGeneral.activeTags &= ~tag;
         statGeneral.activeTagCount -= 1;
     }
-    if (tagCallback != 0)
+    if (tagCallback != nullptr)
     {
         tagCallback(tag, false);
     }
@@ -795,16 +810,16 @@ void MemoryManager::ObtainBacktraceSymbols(const Backtrace* backtrace)
 #endif
 }
 
-size_t MemoryManager::CalcStatConfigSize() const
+uint32 MemoryManager::CalcStatConfigSize() const
 {
     return sizeof(MMStatConfig)
         + sizeof(MMItemName) * registeredAllocPoolCount
         + sizeof(MMItemName) * registeredTagCount;
 }
 
-void MemoryManager::GetStatConfig(void* buffer, size_t bufSize) const
+void MemoryManager::GetStatConfig(void* buffer, uint32 bufSize) const
 {
-    const size_t requiredSize = CalcStatConfigSize();
+    const uint32 requiredSize = CalcStatConfigSize();
     DVASSERT(requiredSize <= bufSize);
 
     MMStatConfig* config = static_cast<MMStatConfig*>(buffer);
@@ -814,157 +829,181 @@ void MemoryManager::GetStatConfig(void* buffer, size_t bufSize) const
     config->bktraceDepth = BACKTRACE_DEPTH;
 
     MMItemName* names = OffsetPointer<MMItemName>(config, sizeof(MMStatConfig));
-    for (size_t i = 0;i < registeredAllocPoolCount;++i, ++names)
+    for (uint32 i = 0;i < registeredAllocPoolCount;++i, ++names)
     {
         *names = allocPoolNames[i];
     }
-    for (size_t i = 0;i < registeredTagCount;++i, ++names)
+    for (uint32 i = 0;i < registeredTagCount;++i, ++names)
     {
         *names = tagNames[i];
     }
 }
 
-size_t MemoryManager::CalcCurStatSize() const
+uint32 MemoryManager::CalcCurStatSize() const
 {
     return sizeof(MMCurStat)
         + sizeof(AllocPoolStat) * registeredAllocPoolCount
         + sizeof(TagAllocStat) * registeredTagCount;
 }
 
-void MemoryManager::GetCurStat(void* buffer, size_t bufSize) const
+void MemoryManager::GetCurStat(uint64 timestamp, void* buffer, uint32 bufSize) const
 {
-    const size_t requiredSize = CalcCurStatSize();
+    const uint32 requiredSize = CalcCurStatSize();
     DVASSERT(requiredSize <= bufSize);
 
     LockType lockAlloc(allocMutex);
     LockType lockStat(statMutex);
 
     MMCurStat* curStat = static_cast<MMCurStat*>(buffer);
-    curStat->timestamp = 0;
+    curStat->timestamp = timestamp;
     curStat->size = static_cast<uint32>(requiredSize);
     curStat->statGeneral = statGeneral;
 
     AllocPoolStat* pools = OffsetPointer<AllocPoolStat>(curStat, sizeof(MMCurStat));
-    for (size_t i = 0;i < registeredAllocPoolCount;++i)
+    for (uint32 i = 0;i < registeredAllocPoolCount;++i)
     {
         pools[i] = statAllocPool[i];
     }
 
     TagAllocStat* tags = OffsetPointer<TagAllocStat>(pools, sizeof(AllocPoolStat) * registeredAllocPoolCount);
-    for (size_t i = 0;i < registeredTagCount;++i)
+    for (uint32 i = 0;i < registeredTagCount;++i)
     {
         tags[i] = statTag[i];
     }
 }
 
-bool MemoryManager::GetMemorySnapshot(FILE* file, uint64 curTimestamp, size_t* snapshotSize)
+bool MemoryManager::GetMemorySnapshot(uint64 timestamp, File* file, uint32* snapshotSize)
 {
-    assert(file != nullptr && snapshotSize != nullptr);
-    
-    const size_t BUF_SIZE = 64 * 1024;
-    void* buffer = InternalAllocate(BUF_SIZE);
+    if (lightWeightMode)
+    {   // In lightweight mode snapshot has no sense as it doesn't contains backtraces and symbols
+        if (snapshotSize != nullptr)
+        {
+            *snapshotSize = 0;
+        }
+        return false;
+    }
 
-    {
+    assert(file != nullptr);
+
+    const uint32 BUF_SIZE = 64 * 1024;
+    std::vector<uint8, InternalAllocator<uint8>> v(BUF_SIZE);   // For automatic memory management
+    void* buffer = static_cast<void*>(&*v.begin());             // For convenience
+
+    const uint32 bktraceSize = sizeof(MMBacktrace) + sizeof(uint64) * BACKTRACE_DEPTH;
+
+    MMSnapshot snapshot{};
+    snapshot.timestamp = timestamp;
+    snapshot.dataOffset = sizeof(MMSnapshot);
+    snapshot.bktraceDepth = BACKTRACE_DEPTH;
+
+    // Write empty header to force file internal buffer allocation to exclude
+    // memory allocations under allocMutex (primarily for Win32 release builds)
+    if (file->Write(&snapshot) != sizeof(MMSnapshot))
+        return false;
+
+    {   // Store memory blocks into file
         LockType lock(allocMutex);
 
-        const size_t blockCount = statAllocPool[ALLOC_POOL_TOTAL].blockCount;
-        const size_t symbolCount = symbolMap->size();
-        const size_t bktraceCount = bktraceMap->size();
+        const uint32 BLOCKS_IN_BUF = BUF_SIZE / sizeof(MMBlock);
+        MMBlock* destBegin = static_cast<MMBlock*>(buffer);
 
-        const size_t statSize = CalcCurStatSize();
-        const size_t bktraceSize = sizeof(MMBacktrace) + sizeof(uint64) * BACKTRACE_DEPTH;
-        const size_t size = sizeof(MMSnapshot)
-                          + statSize
-                          + sizeof(MMBlock) * blockCount
-                          + sizeof(MMSymbol) * symbolCount
-                          + bktraceSize * bktraceCount;
-        *snapshotSize = size;
-
-        MMSnapshot snapshot{};
-        snapshot.timestamp = curTimestamp;
-        snapshot.size = static_cast<uint32>(size);
-        snapshot.statItemSize = static_cast<uint32>(statSize);
-        snapshot.blockCount = static_cast<uint32>(blockCount);
-        snapshot.bktraceCount = static_cast<uint32>(bktraceCount);
-        snapshot.symbolCount = static_cast<uint32>(symbolCount);
-        snapshot.bktraceDepth = BACKTRACE_DEPTH;
-
-        fwrite(&snapshot, sizeof(MMSnapshot), 1, file);
-
+        MemoryBlock* curBlock = head;
+        while (curBlock != nullptr)
         {
-            MMCurStat* curStat = static_cast<MMCurStat*>(buffer);
-            Memset(curStat, 0, statSize);
-            curStat->size = static_cast<uint32>(statSize);
-            fwrite(buffer, 1, statSize, file);
-        }
-        {
-            const size_t BLOCKS_IN_BUF = BUF_SIZE / sizeof(MMBlock);
-            MMBlock* blocks = static_cast<MMBlock*>(buffer);
-
-            MemoryBlock* curBlock = head;
-            for (size_t i = 0, n = blockCount;i < n;)
+            uint32 k = 0;
+            for (;k < BLOCKS_IN_BUF && curBlock != nullptr;++k)
             {
-                size_t k = 0;
-                for (;k < BLOCKS_IN_BUF && i < n;++k, ++i)
-                {
-                    MMBlock& dstBlock = blocks[k];
-                    dstBlock.orderNo = curBlock->orderNo;
-                    dstBlock.allocByApp = curBlock->allocByApp;
-                    dstBlock.allocTotal = curBlock->allocTotal;
-                    dstBlock.bktraceHash = curBlock->bktraceHash;
-                    dstBlock.pool = curBlock->pool;
-                    dstBlock.tags = curBlock->tags;
+                MMBlock& dstBlock = destBegin[k];
+                dstBlock.orderNo = curBlock->orderNo;
+                dstBlock.allocByApp = curBlock->allocByApp;
+                dstBlock.allocTotal = curBlock->allocTotal;
+                dstBlock.bktraceHash = curBlock->bktraceHash;
+                dstBlock.pool = curBlock->pool;
+                dstBlock.tags = curBlock->tags;
 
-                    curBlock = curBlock->next;
-                }
-                fwrite(buffer, sizeof(MMBlock), k, file);
+                curBlock = curBlock->next;
             }
-        }
-        {
-            const size_t SYMBOLS_IN_BUF = BUF_SIZE / sizeof(MMSymbol);
-            MMSymbol* symbols = static_cast<MMSymbol*>(buffer);
-
-            for (auto i = symbolMap->begin(), e = symbolMap->end();i != e;)
-            {
-                size_t k = 0;
-                for (;k < SYMBOLS_IN_BUF && i != e;++k, ++i)
-                {
-                    void* addr = i->first;
-                    auto& name = i->second;
-
-                    MMSymbol& dstSymbol = symbols[k];
-                    dstSymbol.addr = reinterpret_cast<uint64>(addr);
-                    strncpy(dstSymbol.name, name.c_str(), MMSymbol::NAME_LENGTH);
-                    dstSymbol.name[MMSymbol::NAME_LENGTH - 1] = '\0';
-                }
-                fwrite(buffer, sizeof(MMSymbol), k, file);
-            }
-        }
-        {
-            const size_t BKTRACE_IN_BUF = BUF_SIZE / bktraceSize;
-            MMBacktrace* bktrace = static_cast<MMBacktrace*>(buffer);
-
-            for (auto i = bktraceMap->begin(), e = bktraceMap->end();i != e;)
-            {
-                size_t k = 0;
-                for (;k < BKTRACE_IN_BUF && i != e;++k, ++i)
-                {
-                    auto& o = i->second;
-
-                    bktrace->hash = o.hash;
-                    uint64* frames = OffsetPointer<uint64>(bktrace, sizeof(MMBacktrace));
-                    for (size_t i = 0;i < BACKTRACE_DEPTH;++i)
-                    {
-                        frames[i] = reinterpret_cast<uint64>(o.frames[i]);
-                    }
-                    bktrace = OffsetPointer<MMBacktrace>(bktrace, bktraceSize);
-                }
-                fwrite(buffer, 1, bktraceSize * k, file);
-                bktrace = static_cast<MMBacktrace*>(buffer);
-            }
+            snapshot.blockCount += k;
+            if (file->Write(buffer, sizeof(MMBlock) * k) != sizeof(MMBlock) * k)
+                return false;
         }
     }
-    InternalDeallocate(buffer);
+    {   // Store function names into file
+        LockType lock(bktraceMutex);
+
+        const size_t SYMBOLS_IN_BUF = BUF_SIZE / sizeof(MMSymbol);
+        MMSymbol* symbols = static_cast<MMSymbol*>(buffer);
+
+        auto itBegin = symbolMap->cbegin();
+        auto itEnd = symbolMap->cend();
+        while (itBegin != itEnd)
+        {
+            uint32 k = 0;
+            for (;k < SYMBOLS_IN_BUF && itBegin != itEnd;++k)
+            {
+                void* addr = itBegin->first;
+                auto& name = itBegin->second;
+
+                MMSymbol& dstSymbol = symbols[k];
+                dstSymbol.addr = reinterpret_cast<uint64>(addr);
+                strncpy(dstSymbol.name, name.c_str(), MMSymbol::NAME_LENGTH);
+                dstSymbol.name[MMSymbol::NAME_LENGTH - 1] = '\0';
+
+                ++itBegin;
+            }
+            snapshot.symbolCount += k;
+            if (file->Write(buffer, sizeof(MMSymbol) * k) != sizeof(MMSymbol) * k)
+                return false;
+        }
+    }
+    {   // Store backtraces into file
+        LockType lock(bktraceMutex);
+
+        const size_t BKTRACE_IN_BUF = BUF_SIZE / bktraceSize;
+        MMBacktrace* bktrace = static_cast<MMBacktrace*>(buffer);
+
+        auto itBegin = bktraceMap->cbegin();
+        auto itEnd = bktraceMap->cend();
+        while (itBegin != itEnd)
+        {
+            uint32 k = 0;
+            for (;k < BKTRACE_IN_BUF && itBegin != itEnd;++k)
+            {
+                auto& o = itBegin->second;
+
+                bktrace->hash = o.hash;
+                uint64* frames = OffsetPointer<uint64>(bktrace, sizeof(MMBacktrace));
+                for (size_t i = 0;i < BACKTRACE_DEPTH;++i)
+                {
+                    frames[i] = reinterpret_cast<uint64>(o.frames[i]);
+                }
+
+                bktrace = OffsetPointer<MMBacktrace>(bktrace, bktraceSize);
+                ++itBegin;
+            }
+            snapshot.bktraceCount += k;
+            if (file->Write(buffer, bktraceSize * k) != bktraceSize * k)
+                return false;
+            bktrace = static_cast<MMBacktrace*>(buffer);
+        }
+    }
+
+    // Write down header
+    const uint32 totalSize = sizeof(MMSnapshot)
+                           + sizeof(MMBlock) * snapshot.blockCount
+                           + sizeof(MMSymbol) * snapshot.symbolCount
+                           + bktraceSize * snapshot.bktraceCount;
+    if (snapshotSize != nullptr)
+    {
+        *snapshotSize = totalSize;
+    }
+    snapshot.size = totalSize;
+
+    assert(file->GetPos() == totalSize);
+
+    file->Seek(0, File::SEEK_FROM_START);
+    if (file->Write(&snapshot) != sizeof(MMSnapshot))
+        return false;
     return true;
 }
 
