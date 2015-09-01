@@ -45,12 +45,12 @@ void TrackingDealloc(void* ptr)
     MemoryManager::Instance()->Deallocate(ptr);
 }
 
-void* InternalAlloc(size_t size) DAVA_NOEXCEPT
+void* InternalAlloc(size_t size)
 {
     return MemoryManager::Instance()->InternalAllocate(size);
 }
 
-void InternalDealloc(void* ptr) DAVA_NOEXCEPT
+void InternalDealloc(void* ptr)
 {
     MemoryManager::Instance()->InternalDeallocate(ptr);
 }

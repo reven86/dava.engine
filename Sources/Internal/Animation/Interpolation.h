@@ -31,7 +31,7 @@
 #define __DAVAENGINE_INTERPOLATION_H__
 
 #include "Base/BaseTypes.h"
-#include "Base/Function.h"
+#include "Functional/Function.h"
 
 namespace DAVA
 {
