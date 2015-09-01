@@ -30,15 +30,16 @@
 #ifndef __DAVAENGINE_NETCORE_H__
 #define __DAVAENGINE_NETCORE_H__
 
-#include <Base/BaseTypes.h>
-#include <Functional/Function.h>
-#include <Base/Singleton.h>
+#include "Base/BaseTypes.h"
+#include "Functional/Function.h"
+#include "Base/Singleton.h"
 
-#include <Network/Base/IOLoop.h>
-#include <Network/Base/IfAddress.h>
-#include <Network/Base/Endpoint.h>
-#include <Network/ServiceRegistrar.h>
-#include <Network/IController.h>
+#include "Network/Base/IOLoop.h"
+#include "Network/Base/IfAddress.h"
+#include "Network/Base/Endpoint.h"
+#include "Network/ServiceRegistrar.h"
+#include "Network/IController.h"
+#include "Network/NetworkCommon.h"
 
 namespace DAVA
 {
@@ -63,7 +64,7 @@ public:
     bool IsServiceRegistered(uint32 serviceId) const;
     const char8* ServiceName(uint32 serviceId) const;
 
-    TrackId CreateController(const NetConfig& config, void* context = NULL);
+    TrackId CreateController(const NetConfig& config, void* context = nullptr, uint32 readTimeout = DEFAULT_READ_TIMEOUT);
     TrackId CreateAnnouncer(const Endpoint& endpoint, uint32 sendPeriod, Function<size_t (size_t, void*)> needDataCallback);
     TrackId CreateDiscoverer(const Endpoint& endpoint, Function<void (size_t, const void*, const Endpoint&)> dataReadyCallback);
     void DestroyController(TrackId id);

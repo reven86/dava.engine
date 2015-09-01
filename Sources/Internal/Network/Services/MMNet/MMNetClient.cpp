@@ -34,7 +34,9 @@
 #include "DLC/Patcher/ZLibStream.h"
 #include "MemoryManager/MemoryManager.h"
 
-#include "MMNetClient.h"
+#include "Network/Base/Endpoint.h"
+#include "Network/Services/MMNet/MMNetClient.h"
+#include "Network/Services/MMNet/MMBigDataTransferService.h"
 
 namespace DAVA
 {
@@ -43,44 +45,41 @@ namespace Net
 
 MMNetClient::MMNetClient()
     : NetService()
-    , snapshotTotalSize(0)
-    , snapshotRecvSize(0)
-{
-
-}
-
-MMNetClient::~MMNetClient()
+    , transferService(new MMBigDataTransferService(CLIENT_ROLE))
 {
 }
+
+MMNetClient::~MMNetClient() = default;
 
 void MMNetClient::InstallCallbacks(ConnEstablishedCallback connEstablishedCallback_, ConnLostCallback connLostCallback_, StatCallback statCallback_, SnapshotCallback snapshotCallback_)
 {
     connEstablishedCallback = connEstablishedCallback_;
     connLostCallback = connLostCallback_;
     statCallback = statCallback_;
-    snapshotCallback = snapshotCallback_;
+    transferService->SetSnapshotCallback(snapshotCallback_);
 }
 
 void MMNetClient::RequestSnapshot()
 {
     if (tokenRequested && canRequestSnapshot)
     {
-        canRequestSnapshot = false;
-        FastRequest(MMNetProto::TYPE_REQUEST_SNAPSHOT);
+        canRequestSnapshot = false; // Do not permit to request next snapshot until snapshot reply is received
+        SendPacket(CreateHeaderOnlyPacket(MMNetProto::TYPE_REQUEST_SNAPSHOT, MMNetProto::STATUS_SUCCESS));
     }
 }
 
 void MMNetClient::ChannelOpen()
 {
-    FastRequest(MMNetProto::TYPE_REQUEST_TOKEN);
+    canRequestSnapshot = true;
+    SendPacket(CreateHeaderOnlyPacket(MMNetProto::TYPE_REQUEST_TOKEN, MMNetProto::STATUS_SUCCESS));
 }
 
 void MMNetClient::ChannelClosed(const char8* message)
 {
     tokenRequested = false;
-    canRequestSnapshot = true;
     
-    Cleanup();
+    packetQueue.clear();
+    transferService->Stop();
     connLostCallback(message);
 }
 
@@ -101,18 +100,28 @@ void MMNetClient::PacketReceived(const void* packet, size_t length)
             case MMNetProto::TYPE_AUTO_STAT:
                 ProcessAutoReplyStat(header, static_cast<const void*>(header + 1), dataLength);
                 break;
-            case MMNetProto::TYPE_AUTO_SNAPSHOT:
-                ProcessAutoReplySnapshot(header, static_cast<const void*>(header + 1), dataLength);
-                break;
             default:
                 break;
         }
     }
 }
 
+void MMNetClient::PacketDelivered()
+{
+    DVASSERT(!packetQueue.empty());
+
+    packetQueue.pop_front();
+    if (!packetQueue.empty())
+    {
+        MMNetProto::Packet& x = packetQueue.front();
+        Send(x.PlainBytes(), x.Header()->length);
+    }
+}
+
 void MMNetClient::ProcessReplyToken(const MMNetProto::PacketHeader* inHeader, const void* packetData, size_t dataLength)
 {
-    if (dataLength > 0)     // Config has come, new profiling session
+    bool newSession = dataLength > 0;
+    if (newSession)     // Config has come, new profiling session
     {
         connToken = inHeader->token;
         const MMStatConfig* config = static_cast<const MMStatConfig*>(packetData);
@@ -124,6 +133,7 @@ void MMNetClient::ProcessReplyToken(const MMNetProto::PacketHeader* inHeader, co
         connEstablishedCallback(true, nullptr);
     }
     tokenRequested = true;
+    transferService->Start(newSession, connToken, channel->RemoteEndpoint().Address());
 }
 
 void MMNetClient::ProcessReplySnapshot(const MMNetProto::PacketHeader* inHeader, const void* packetData, size_t dataLength)
@@ -136,91 +146,28 @@ void MMNetClient::ProcessAutoReplyStat(const MMNetProto::PacketHeader* inHeader,
     statCallback(static_cast<const MMCurStat*>(packetData), inHeader->itemCount);
 }
 
-void MMNetClient::ProcessAutoReplySnapshot(const MMNetProto::PacketHeader* inHeader, const void* packetData, size_t dataLength)
+void MMNetClient::SendPacket(MMNetProto::Packet&& packet)
 {
-    if (inHeader->status == MMNetProto::STATUS_SUCCESS)
-    {
-        const MMNetProto::PacketParamSnapshot* param = static_cast<const MMNetProto::PacketParamSnapshot*>(packetData);
-        const void* data = static_cast<const void*>(param + 1);
-        
-        if (0 == snapshotTotalSize)
-        {
-            snapshotRecvSize = 0;
-            snapshotTotalSize = param->snapshotSize;
-            snapshotData.resize(snapshotTotalSize);
-
-            snapshotCallback(SNAPSHOT_STAGE_STARTED, snapshotTotalSize, 0, nullptr);
-        }
-        
-        Memcpy(&*snapshotData.begin() + snapshotRecvSize, data, param->chunkSize);
-        snapshotRecvSize += param->chunkSize;
-
-        if (snapshotRecvSize == snapshotTotalSize)
-        {
-            snapshotCallback(SNAPSHOT_STAGE_FINISHED, snapshotTotalSize, snapshotRecvSize, static_cast<const void*>(snapshotData.data()));
-
-            snapshotTotalSize = 0;
-            snapshotRecvSize = 0;
-            snapshotData.clear();
-        }
-        else
-        {
-            snapshotCallback(SNAPSHOT_STAGE_PROGRESS, snapshotTotalSize, snapshotRecvSize, nullptr);
-        }
-    }
-    else
-    {
-        snapshotCallback(SNAPSHOT_STAGE_ERROR, 0, 0, nullptr);
-
-        snapshotTotalSize = 0;
-        snapshotRecvSize = 0;
-        snapshotData.clear();
-    }
-}
-    
-void MMNetClient::FastRequest(uint16 type)
-{
-    ParcelEx parcel(0);
-    parcel.header->length = uint32(sizeof(MMNetProto::PacketHeader));
-    parcel.header->type = type;
-    parcel.header->status = MMNetProto::STATUS_SUCCESS;
-    parcel.header->itemCount = 0;
-    parcel.header->token = connToken;
-    
-    EnqueueParcel(parcel);
-}
-
-void MMNetClient::EnqueueParcel(ParcelEx& parcel)
-{
-    bool wasEmpty = queue.empty();
-    queue.emplace_back(std::forward<ParcelEx>(parcel));
+    bool wasEmpty = packetQueue.empty();
+    packetQueue.emplace_back(std::forward<MMNetProto::Packet>(packet));
     if (wasEmpty)
     {
-        SendParcel(queue.front());
+        MMNetProto::Packet& x = packetQueue.front();
+        Send(x.PlainBytes(), x.Header()->length);
     }
 }
 
-void MMNetClient::SendParcel(ParcelEx& parcel)
+MMNetProto::Packet MMNetClient::CreateHeaderOnlyPacket(uint16 type, uint16 status)
 {
-    Send(parcel.buffer, parcel.header->length);
-}
+    MMNetProto::Packet packet(0);
 
-void MMNetClient::Cleanup()
-{
-    queue.clear();
-}
-
-void MMNetClient::PacketDelivered()
-{
-    DVASSERT(!queue.empty());
-    
-    ParcelEx parcel = std::move(queue.front());
-    queue.pop_front();
-    
-    if (!queue.empty())
-    {
-        SendParcel(queue.front());
-    }
+    MMNetProto::PacketHeader* header = packet.Header();
+    header->length = sizeof(MMNetProto::PacketHeader);
+    header->type = type;
+    header->status = status;
+    header->itemCount = 0;
+    header->token = connToken;
+    return packet;
 }
 
 }   // namespace Net
