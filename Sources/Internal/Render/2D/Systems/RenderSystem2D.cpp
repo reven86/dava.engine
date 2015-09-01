@@ -628,6 +628,9 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
     case rhi::PRIMITIVE_TRIANGLELIST:
         currentPacket.primitiveCount += batchDesc.indexCount / 3;
         break;
+    case rhi::PRIMITIVE_TRIANGLESTRIP:
+    	currentPacket.primitiveCount += batchDesc.indexCount - 2;
+    	break;
     }
 
     indexIndex += batchDesc.indexCount;
