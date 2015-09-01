@@ -312,6 +312,25 @@ private:
 
     RecentMenuItems recentFiles;
     RecentMenuItems recentProjects;
+
+private:
+
+    struct EmitterDescriptor
+    {
+        EmitterDescriptor(ParticleEmitter * _emitter, ParticleLayer *layer, FilePath path, String name)
+            : emitter(_emitter), ownerLayer(layer), yamlPath(path), entityName(name)
+        {
+        }
+
+        ParticleEmitter * emitter = nullptr;
+        ParticleLayer *ownerLayer = nullptr;
+        FilePath yamlPath;
+        String entityName;
+    };
+
+    void CollectEmittersForSave(ParticleEmitter *topLevelEmitter, DAVA::List<EmitterDescriptor> &emitters, const String &entityName) const;
+
+
 };
 
 
