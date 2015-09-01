@@ -27,33 +27,44 @@
 =====================================================================================*/
 
 
-#ifndef __CREATE_PLANE_LOD_COOMAND_H__
-#define __CREATE_PLANE_LOD_COOMAND_H__
+#ifndef __CREATE_PLANE_LOD_COOMAND_HELPER_H__
+#define __CREATE_PLANE_LOD_COOMAND_HELPER_H__
 
-#include "Commands2/Command2.h"
-#include "CreatePlaneLODCommandHelper.h"
 #include "DAVAEngine.h"
 
-class CreatePlaneLODCommand : public Command2
+class CreatePlaneLODCommandHelper
 {
 public:
-	CreatePlaneLODCommand(const CreatePlaneLODCommandHelper::RequestPointer& request);
+	struct Request : public DAVA::RefCounter
+	{
+		DAVA::LodComponent* lodComponent = nullptr;
+	    DAVA::RenderBatch* planeBatch = nullptr;
+		DAVA::Image* planeImage = nullptr;
+		DAVA::int32 fromLodLayer = 0;
+		DAVA::int32 newLodIndex = 0;
+		DAVA::uint32 textureSize = 0;
+		DAVA::FilePath texturePath;
+	    DAVA::Vector<DAVA::LodComponent::LodDistance> savedDistances;
 
-    virtual void Undo() override;
-	virtual void Redo() override;
-	virtual DAVA::Entity* GetEntity() const override;
+		DAVA::Texture* targetTexture = nullptr;
+		rhi::HSyncObject syncObject;
+	};
+	using RequestPointer = DAVA::RefPtr<Request>;
 
-    DAVA::RenderBatch * GetRenderBatch() const;
-    
-protected:
-    void CreateTextureFiles();
-    void DeleteTextureFiles();
+public:
+	RequestPointer RequestRenderToTexture(DAVA::LodComponent* lodComponent, DAVA::int32 fromLodLayer, 
+		DAVA::uint32 textureSize, const DAVA::FilePath& texturePath);
 
-    static bool IsHorisontalMesh(const DAVA::AABBox3 & bbox);
+	bool RequestCompleted(RequestPointer);
 
 private:
-	CreatePlaneLODCommandHelper::RequestPointer request;
-};
+	bool IsHorisontalMesh(const DAVA::AABBox3& bbox);
 
+    void CreatePlaneImageForRequest(RequestPointer&);
+    void CreatePlaneBatchForRequest(RequestPointer&);
+
+    void DrawToTextureForRequest(RequestPointer&, DAVA::Entity* entity, DAVA::Camera* camera, DAVA::Texture* toTexture,
+		DAVA::int32 fromLodLayer = -1, const DAVA::Rect & viewport = DAVA::Rect(0, 0, -1, -1), bool clearTarget = true);
+};
 
 #endif // #ifndef __CREATE_PLANE_LOD_COOMAND_H__
