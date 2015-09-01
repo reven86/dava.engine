@@ -56,6 +56,8 @@ public:
     static DAVA::Entity * CloneEntityWithMaterials(DAVA::Entity *fromNode);
 
     static void BuildMaterialList(DAVA::Entity *forNode, DAVA::Set<DAVA::NMaterial*>& materialList, bool includeRuntime = true);
+
+    static void InvalidateMaterialBindings(DAVA::Entity *forNode, DAVA::Texture *texture);
     static void InvalidateMaterialBindings(DAVA::Entity *forNode, bool includeRuntime = true);
 };
 

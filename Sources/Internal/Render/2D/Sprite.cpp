@@ -885,6 +885,10 @@ void Sprite::ReloadSprites()
 	for(SpriteMap::iterator it = spriteMap.begin(); it != spriteMap.end(); ++it)
 	{
         (it->second)->Reload();
+#if RHI_COMPLETE_EDITOR
+        //        TODO:: invalidate texture bindings
+#endif //#if RHI_COMPLETE_EDITOR
+
 	}
 }
 
@@ -978,6 +982,11 @@ void Sprite::ReloadExistingTextures()
             if(textures[i]->GetPathname().Exists())
             {
                 textures[i]->Reload();
+                DVASSERT(false && "Not implemented")
+#if RHI_COMPLETE_EDITOR
+                //        TODO:: invalidate texture bindings
+#endif //#if RHI_COMPLETE_EDITOR
+
             }
         }
         else

@@ -104,6 +104,11 @@ void ImageSplitterDialogNormal::SaveAndReloadNormal(const DAVA::FilePath &pathna
     if(texture)
     {
         texture->Reload();
+        DVASSERT(false && "Not implemented");
+#if RHI_COMPLETE_EDITOR
+        //        TODO:: invalidate texture bindings
+#endif //#if RHI_COMPLETE_EDITOR
+        
         texture->Release();
     }
 }

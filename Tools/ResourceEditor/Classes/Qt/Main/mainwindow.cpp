@@ -421,44 +421,39 @@ void QtMainWindow::SetGPUFormat(DAVA::eGPUFamily gpu)
 		SettingsManager::SetValue(Settings::Internal_TextureViewGPU, VariantType(gpu));
 		DAVA::Texture::SetDefaultGPU(gpu);
 
-		DAVA::TexturesMap allScenesTextures;
-		for(int tab = 0; tab < GetSceneWidget()->GetTabCount(); ++tab)
-		{
-			SceneEditor2 *scene = GetSceneWidget()->GetTabScene(tab);
-			SceneHelper::EnumerateSceneTextures(scene, allScenesTextures, SceneHelper::TexturesEnumerateMode::EXCLUDE_NULL);
-		}
+        for(int tab = 0; tab < GetSceneWidget()->GetTabCount(); ++tab)
+        {
+            SceneEditor2 *scene = GetSceneWidget()->GetTabScene(tab);
+        
+            DAVA::TexturesMap allScenesTextures;
+            SceneHelper::EnumerateSceneTextures(scene, allScenesTextures, SceneHelper::TexturesEnumerateMode::EXCLUDE_NULL);
 
-		if(allScenesTextures.size() > 0)
-		{
-			int progress = 0;
-			WaitStart("Reloading textures...", "", 0, allScenesTextures.size());
-
-			DAVA::TexturesMap::const_iterator it = allScenesTextures.begin();
-			DAVA::TexturesMap::const_iterator end = allScenesTextures.end();
-
-			for(; it != end; ++it)
-			{
-				it->second->ReloadAs(gpu);
+            if(allScenesTextures.size() > 0)
+            {
+                int progress = 0;
+                WaitStart(QString("Reloading textures for scene %1").arg(scene->GetScenePath().GetFilename().c_str()), "", 0, allScenesTextures.size());
+                
+                for(auto & texItem: allScenesTextures)
+                {
+                    Texture *texture = texItem.second;
+                    texture->ReloadAs(gpu);
+                    
+                    SceneHelper::InvalidateMaterialBindings(scene, texture);
 
 #if defined(USE_FILEPATH_IN_MAP)
-				WaitSetMessage(it->first.GetAbsolutePathname().c_str());
+                    WaitSetMessage(texItem.first.GetAbsolutePathname().c_str());
 #else //#if defined(USE_FILEPATH_IN_MAP)
-				WaitSetMessage(it->first.c_str());
+                    WaitSetMessage(texItem.first.c_str());
 #endif //#if defined(USE_FILEPATH_IN_MAP)
-				WaitSetValue(progress++);
-			}
-
-            DAVA::Set<DAVA::NMaterial*> materialList;
-            for (int tab = 0; tab < GetSceneWidget()->GetTabCount(); ++tab)
-            {
-                SceneEditor2 *scene = GetSceneWidget()->GetTabScene(tab);
-                SceneHelper::InvalidateMaterialBindings(scene);
+                    WaitSetValue(progress++);
+                }
+                
+                
+                WaitStop();
             }
-
-            emit TexturesReloaded();
-            
-			WaitStop();
-		}
+        }
+        
+        emit TexturesReloaded();
 	}
 	LoadGPUFormat();
 }
@@ -2145,6 +2140,9 @@ void QtMainWindow::OnConvertModifiedTextures()
 			WaitSetValue(++convretedNumber);
 		}
 	}
+    
+    SceneHelper::InvalidateMaterialBindings(scene);
+    
 	WaitStop();
 }
 

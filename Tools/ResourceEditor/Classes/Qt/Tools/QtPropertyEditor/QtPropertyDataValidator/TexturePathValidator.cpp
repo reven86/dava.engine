@@ -79,6 +79,11 @@ void TexturePathValidator::FixupInternal(QVariant& v) const
 				if(found != texturesMap.end())
 				{
                     found->second->Reload();
+                    DVASSERT(false && "Not implemented");
+#if RHI_COMPLETE_EDITOR
+                    //        TODO:: invalidate texture bindings
+#endif //#if RHI_COMPLETE_EDITOR
+
 				}
 
                 v = QVariant(QString::fromStdString(texFile.GetAbsolutePathname()));

@@ -75,11 +75,16 @@ void CreatePlaneLODCommand::Redo()
     t->Reload();
     
     DAVA::Entity *entity = GetEntity();
-    DAVA::RenderObject *ro = DAVA::GetRenderObject(entity);
+    DVASSERT(nullptr != entity);
     
+    DAVA::RenderObject *ro = DAVA::GetRenderObject(entity);
+    DVASSERT(nullptr != ro);
+
     ro->AddRenderBatch(planeBatch, newLodIndex, newSwitchIndex);
     
     lodComponent->SetLodLayerDistance(newLodIndex, lodComponent->GetLodLayerDistance(newLodIndex-1) * 2);
+    
+    SceneHelper::InvalidateMaterialBindings(entity->GetScene(), t);
 }
 
 void CreatePlaneLODCommand::Undo()
