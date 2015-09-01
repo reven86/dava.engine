@@ -26,8 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#include "stdafx.h"
 #include "Scene3D/Entity.h"
 #include "Scene3D/Scene.h"
 #include "Scene3D/AnimationData.h"
@@ -413,7 +411,6 @@ String LodNameForIndex(const String & pattern, uint32 lodIndex)
 
 void CollapseLodsIntoOneEntity(Entity *forRootNode)
 {
-    const uint32 maxLodCount = 10;
     List<Entity *> lodNodes;
     
     const String lod0 = LodNameForIndex(ImportSettings::lodNamePattern, 0);
@@ -436,7 +433,8 @@ void CollapseLodsIntoOneEntity(Entity *forRootNode)
         
         ScopedPtr<Mesh> newMesh(new Mesh());
         
-        for (int i = 0; i < maxLodCount; ++i)
+        uint32 lodCount = 0;
+        for (int i = 0; i < LodComponent::MAX_LOD_LAYERS; ++i)
         {
             
             // Remove dummy nodes
@@ -462,12 +460,21 @@ void CollapseLodsIntoOneEntity(Entity *forRootNode)
                 CollapseAnimations(ln, newNodeWithLods);
                 
                 oldParent->RemoveNode(ln);
+                ++lodCount;
             }
 
         }
         
-        LodComponent *lc = new LodComponent();
-        newNodeWithLods->AddComponent(lc);
+        if (0 < lodCount)
+        {
+            LodComponent *lc = new LodComponent();
+            newNodeWithLods->AddComponent(lc);
+            if (lodCount < LodComponent::MAX_LOD_LAYERS && lodCount > LodComponent::INVALID_LOD_LAYER)
+            {
+                // Fix max lod distance for max used lod index
+                lc->SetLodLayerDistance(lodCount, LodComponent::MAX_LOD_DISTANCE);
+            }
+        }
         
         RenderComponent * rc = new RenderComponent();
         rc->SetRenderObject(newMesh);
@@ -477,7 +484,6 @@ void CollapseLodsIntoOneEntity(Entity *forRootNode)
         
         DVASSERT(oldParent->GetScene());
         DVASSERT(newNodeWithLods->GetScene());
-
     }
 }
     
@@ -507,16 +513,15 @@ void BakeTransformsUpToParent(Entity * parent, Entity * currentNode)
     }
     
     // Set local transform as Ident because transform is already baked up into geometry
-    Matrix4 identMatrix;
     auto transformComponent = GetTransformComponent(currentNode);
-    transformComponent->SetLocalTransform(&identMatrix);
+    transformComponent->SetLocalTransform(&Matrix4::IDENTITY);
 }
 } // unnamed namespace
 
 // Creates Dava::Mesh from ColladaMeshInstance and puts it
 Mesh * ColladaToSc2Importer::GetMeshFromCollada(ColladaMeshInstance * mesh, const bool isShadow)
 {
-    Mesh * davaMesh = nullptr;
+    Mesh * davaMesh = new Mesh();
     for (auto polygonGroupInstance : mesh->polyGroupInstances)
     {
         PolygonGroup * davaPolygon = library->GetOrCreatePolygon(polygonGroupInstance);
@@ -525,12 +530,12 @@ Mesh * ColladaToSc2Importer::GetMeshFromCollada(ColladaMeshInstance * mesh, cons
         {
             davaPolygon = DAVA::MeshUtils::CreateShadowPolygonGroup(davaPolygon);
         }
-        
-        davaMesh = new Mesh();
+
         NMaterial * davaMaterial = library->GetOrCreateMaterial(polygonGroupInstance, isShadow);
         davaMesh->AddPolygonGroup(davaPolygon, davaMaterial);
     }
-    DVASSERT(nullptr != davaMesh && "Can't create mesh from collada MeshInstance");
+    // TO VERIFY?
+    DVASSERT(0 < davaMesh->GetPolygonGroupCount() && "Empty mesh");
     return davaMesh;
 }
 
