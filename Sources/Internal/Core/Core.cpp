@@ -111,14 +111,31 @@ void Core::CreateSingletons()
 	new JobManager();
 	new FileSystem();
 
-    String defaultArchive{ "data.pakfile" };
-    auto fs = FileSystem::Instance();
-    if (fs->IsFile(defaultArchive))
+	int i = 5;
+    while(i > 0)
     {
-        fs->AttachArchive(defaultArchive, "~res:/");
+        Thread::Sleep(1000);
+        i--;
     }
 
     FilePath::InitializeBundleName();
+
+	//FileSystem::Instance()->Init();
+
+    String defaultArchive{ "data.pakfile" };
+    FilePath archivePath( localResourcesPath + defaultArchive);
+    Logger::Info("archivePath: %s", archivePath.GetAbsolutePathname().c_str());
+    auto fs = FileSystem::Instance();
+
+    if (fs->IsFile(archivePath))
+    {
+        auto archiveName = archivePath.GetAbsolutePathname();
+        fs->AttachArchive(archiveName, "~res:/");
+        fs->AttachArchive(archiveName, "/mnt/sdcard/DavaProject/Data/");
+    } else
+    {
+        Logger::Info("can't find data.pakfile");
+    }
 	
 	FileSystem::Instance()->SetDefaultDocumentsDirectory();
     FileSystem::Instance()->CreateDirectory(FileSystem::Instance()->GetCurrentDocumentsDirectory(), true);

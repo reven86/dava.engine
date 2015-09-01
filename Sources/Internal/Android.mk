@@ -214,6 +214,7 @@ DV_LOCAL_EXPORT_LDLIBS := $(LOCAL_LDLIBS)
 
 # set included libraries
 DV_LOCAL_STATIC_LIBRARIES := libbox2d
+DV_LOCAL_STATIC_LIBRARIES += liblz4
 
 ifeq ($(DAVA_PROFILE), true)
 ifeq ($(TARGET_ARCH_ABI), armeabi-v7a)
@@ -386,6 +387,7 @@ include $(BUILD_STATIC_LIBRARY)
 $(call import-add-path,$(DAVA_ROOT)/..)
 $(call import-add-path,$(DAVA_ROOT)/../External)
 $(call import-add-path,$(DAVA_ROOT)/../External/Box2D)
+$(call import-add-path,$(DAVA_ROOT)/../External/lz4)
 $(call import-add-path,$(DAVA_ROOT))
 
 ifeq ($(DAVA_PROFILE), true)
@@ -396,4 +398,5 @@ endif
 endif
 
 $(call import-module,Box2D)
+$(call import-module,lz4)
 $(call import-module,android/cpufeatures)

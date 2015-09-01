@@ -446,23 +446,42 @@ bool FileSystem::SetCurrentWorkingDirectory(const FilePath & newWorkingDirectory
   
 bool FileSystem::IsFile(const FilePath & pathToCheck)
 {
-#if defined(__DAVAENGINE_ANDROID__)
-	const String& path = pathToCheck.GetAbsolutePathname();
-	if (IsAPKPath(path))
-		return (fileSet.find(path) != fileSet.end());
-#endif
-
-    if (pathToCheck.GetType() == FilePath::PATH_IN_RESOURCES)
+    if (pathToCheck.GetType() == FilePath::PATH_IN_RESOURCES ||
+        pathToCheck.GetType() == FilePath::PATH_IN_FILESYSTEM)
     {
-        String relative = pathToCheck.GetStringValue().substr(strlen("~res:/"));
-        for (auto& archive : resourceArchiveList)
+        const String& str = pathToCheck.GetStringValue();
+        auto start = str.find("~res:/");
+        String relative;
+        if (start == 0)
         {
-            if (archive.archive->HasFile(relative))
+            relative = str.substr(6);
+        } else
+        {
+            start = str.find(localResourcesPath);
+            if (start == 0)
             {
-                return true;
+                relative = str.substr(strlen(localResourcesPath));
+            }
+        }
+        if (!relative.empty())
+        {
+            for (auto& archive : resourceArchiveList)
+            {
+                if (archive.archive->HasFile(relative))
+                {
+                    return true;
+                }
             }
         }
     }
+
+#if defined(__DAVAENGINE_ANDROID__)
+    const String& path = pathToCheck.GetAbsolutePathname();
+    if (IsAPKPath(path))
+    {
+        return (fileSet.find(path) != fileSet.end());
+    }
+#endif
 
 	struct stat s;
 
@@ -733,6 +752,7 @@ const FilePath FileSystem::GetPublicDocumentsPath()
     
 String FileSystem::ReadFileContents(const FilePath & pathname)
 {
+    String fileContents;
     File * fp = File::Create(pathname, File::OPEN|File::READ);
 	if (!fp)
 	{
@@ -741,7 +761,8 @@ String FileSystem::ReadFileContents(const FilePath & pathname)
 	}
 	uint32 fileSize = fp->GetSize();
 
-    String fileContents;
+	fileContents.reserve(fileSize);
+
     uint32 dataRead = fp->ReadString(fileContents);
     
 	if (dataRead != fileSize)
@@ -849,7 +870,7 @@ bool FileSystem::IsAPKPath(const String& path) const
 void FileSystem::Init()
 {
 #ifdef USE_LOCAL_RESOURCES
-	YamlParser* parser = YamlParser::Create("~zip:/fileSystem.yaml");
+	YamlParser* parser = YamlParser::Create("~res:/fileSystem.yaml");
 #else
 	YamlParser* parser = YamlParser::Create("~res:/fileSystem.yaml");
 #endif

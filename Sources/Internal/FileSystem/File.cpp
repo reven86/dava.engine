@@ -87,6 +87,19 @@ File * File::CreateFromSystemPath(const FilePath &filename, uint32 attributes)
 		    auto * file =  ReadOnlyArchiveFile::Create(contentAndSize, filename);
 			return file;
 		}
+		pos = filenamecpp.find(localResourcesPath);
+		if (pos == 0)
+		{
+		    String relfilename = filenamecpp.substr(strlen(localResourcesPath));
+            ResourceArchive::ContentAndSize contentAndSize;
+			bool isLoaded = item.archive->LoadFile(relfilename, contentAndSize);
+			if (!isLoaded)
+			{
+				return 0;
+			}
+		    auto * file =  ReadOnlyArchiveFile::Create(contentAndSize, filename);
+			return file;
+		}
 	}
     
     bool isDirectory = FileSystem::Instance()->IsDirectory(filename);

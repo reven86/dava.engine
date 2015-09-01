@@ -621,7 +621,7 @@ bool ResourceArchive::CreatePack(const String& pacName,
 
     if (!packFileOutput)
     {
-        Logger::Error("can't create packfile, can't Open: %s\n", pacName);
+        Logger::Error("can't create packfile, can't Open: %s\n", pacName.c_str());
         return false;
     }
 

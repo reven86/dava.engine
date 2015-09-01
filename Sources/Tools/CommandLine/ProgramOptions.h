@@ -79,6 +79,9 @@ public:
         if (argIndex < argCount && commandName == argv[argIndex])
         {
             argIndex++;
+        } else
+        {
+            return false;
         }
         
         while(ret && argIndex < argCount)

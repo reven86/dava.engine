@@ -74,17 +74,13 @@ File * ZipFile::CreateFromAPK(const FilePath &filePath, uint32 attributes)
 		if (0 == pos)
 		{
 			String relfilename = filenamecpp.substr(item.attachPath.length());
-			int32 size = item.archive->LoadResource(relfilename, 0);
-			if (-1 == size)
+			ResourceArchive::ContentAndSize file;
+			if(!item.archive->LoadFile(relfilename, file))
 			{
-				return 0;
+			    return nullptr;
 			}
-            
-			uint8 * buffer = new uint8[size];
-			item.archive->LoadResource(relfilename, buffer);
-
-			ZipFile *fileInstance = CreateFromData(relfilename, buffer, size, attributes);
-            SafeDeleteArray(buffer);
+			ZipFile *fileInstance = CreateFromData(relfilename,
+			        reinterpret_cast<uint8*>(file.content.get()), file.size, attributes);
 			return fileInstance;
 		}
 	}

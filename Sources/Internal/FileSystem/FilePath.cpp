@@ -311,7 +311,7 @@ String FilePath::ResolveResourcesPath() const
     String::size_type find = absolutePathname.find("~res:");
     if(find != String::npos)
     {
-        String relativePathname = "Data" + absolutePathname.substr(5);
+        String relativePathname = /*"Data" + */absolutePathname.substr(6);
         FilePath path;
 
         if(resourceFolders.size() == 1) // optimization to avoid call path.Exists()

@@ -129,16 +129,6 @@ int PackDirectoryIntoPakfile(const String& dir,
     FilePath absPathPack =
         fileSystem->GetCurrentWorkingDirectory() + pakfileName;
 
-    if (fileSystem->IsFile(absPathPack))
-    {
-        std::cerr << "pakfile already exist! Delete it.\n";
-        if (0 != std::remove(absPathPack.GetAbsolutePathname().c_str()))
-        {
-            std::cerr << "can't remove existing pakfile.\n";
-            return EXIT_FAILURE;
-        }
-    }
-
     if (!fileSystem->SetCurrentWorkingDirectory(dirWithSlash))
     {
         std::cerr << "can't set CWD to: " << dirWithSlash << '\n';
@@ -153,6 +143,16 @@ int PackDirectoryIntoPakfile(const String& dir,
     {
         std::cerr << "no files found in: " << dir << '\n';
         return EXIT_FAILURE;
+    }
+
+    if (fileSystem->IsFile(absPathPack))
+    {
+        std::cerr << "pakfile already exist! Delete it.\n";
+        if (0 != std::remove(absPathPack.GetAbsolutePathname().c_str()))
+        {
+            std::cerr << "can't remove existing pakfile.\n";
+            return EXIT_FAILURE;
+        }
     }
 
     std::stable_sort(begin(files), end(files));
@@ -277,6 +277,29 @@ int UnpackPackfileIntoDirectory(const String& pak, const String& dir)
     return EXIT_SUCCESS;
 }
 
+int ListPackFileContent(const String& pakfile)
+{
+    RefPtr<FileSystem> fs(new FileSystem());
+    if (!fs)
+    {
+        std::cerr << "can't create FileSystem\n";
+        return EXIT_FAILURE;
+    }
+    RefPtr<ResourceArchive> ra(new ResourceArchive());
+    if (!ra->Open(pakfile))
+    {
+        return EXIT_FAILURE;
+    }
+
+    for (auto& info : ra->GetFilesInfo())
+    {
+        std::cout << info.name << " compressed: " << info.compressedSize
+                  << " original: " << info.originalSize
+                  << " type: " << ToString(info.compressionType) << '\n';
+    }
+    return EXIT_SUCCESS;
+}
+
 int main(int argc, char* argv[])
 {
     ProgramOptions packOptions("pack");
@@ -295,6 +318,9 @@ int main(int argc, char* argv[])
     ProgramOptions unpackOptions("unpack");
     unpackOptions.AddArgument("pakfile");
     unpackOptions.AddArgument("directory");
+
+    ProgramOptions listOptions("list");
+    listOptions.AddArgument("pakfile");
 
     if (packOptions.Parse(argc, argv))
     {
@@ -324,10 +350,16 @@ int main(int argc, char* argv[])
 
         return UnpackPackfileIntoDirectory(pakFile, dirName);
     }
+    else if (listOptions.Parse(argc, argv))
+    {
+        auto pakFile = listOptions.GetArgument("pakfile");
+        return ListPackFileContent(pakFile);
+    }
     else
     {
         packOptions.PrintUsage();
         unpackOptions.PrintUsage();
+        listOptions.PrintUsage();
         return EXIT_FAILURE;
     }
 }
