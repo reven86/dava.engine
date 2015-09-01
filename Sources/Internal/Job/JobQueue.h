@@ -31,7 +31,7 @@
 #define __DAVAENGINE_JOB_QUEUE_H__
 
 #include "Base/BaseTypes.h"
-#include "Base/Function.h"
+#include "Functional/Function.h"
 #include "Concurrency/ConditionVariable.h"
 #include "Concurrency/Mutex.h"
 #include "Concurrency/Spinlock.h"

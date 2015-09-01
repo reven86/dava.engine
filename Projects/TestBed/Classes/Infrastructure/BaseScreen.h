@@ -47,12 +47,13 @@ public:
     void SystemScreenSizeDidChanged(const DAVA::Rect &newFullScreenSize) override;
 
 protected:
+    UIButton *exitButton;
+
     void LoadResources() override;
     void UnloadResources() override;
     bool SystemInput(DAVA::UIEvent *currentInput) override;
 
-private:
-    void OnExitButton(DAVA::BaseObject *obj, void *data, void *callerData);
+    virtual void OnExitButton(DAVA::BaseObject *obj, void *data, void *callerData);
     
 private:
     static DAVA::int32 globalScreenId; // 1, on create of screen increment  

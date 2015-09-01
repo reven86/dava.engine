@@ -90,7 +90,7 @@ void TeamcityOutput::PlatformOutput(const String &text) const
 #elif  defined(__DAVAENGINE_ANDROID__)
     __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "%s", text.c_str());
 #else
-    std::cout << text << std::endl;
+    std::cout << text << std::endl << std::flush;
 #endif
 }
     
