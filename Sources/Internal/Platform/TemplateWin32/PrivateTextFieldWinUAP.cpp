@@ -972,7 +972,7 @@ void PrivateTextFieldWinUAP::RenderToTexture()
             index += 1;
         }
 
-        RefPtr<Sprite> sprite(CreateSpriteFromPreviewData(buf.data(), imageWidth, imageHeight));
+        RefPtr<Sprite> sprite(CreateSpriteFromPreviewData(&buf[0], imageWidth, imageHeight));
         if (sprite.Valid())
         {
             core->RunOnMainThread([this, self, sprite]() {
@@ -994,8 +994,10 @@ void PrivateTextFieldWinUAP::RenderToTexture()
     });
 }
 
-Sprite* PrivateTextFieldWinUAP::CreateSpriteFromPreviewData(const uint8* imageData, int32 width, int32 height) const
+Sprite* PrivateTextFieldWinUAP::CreateSpriteFromPreviewData(uint8* imageData, int32 width, int32 height) const
 {
+    const uint32 pitch = 4 * width;
+    ImageConvert::ConvertImageDirect(FORMAT_BGRA8888, FORMAT_RGBA8888, imageData, width, height, pitch, imageData, width, height, pitch);
     RefPtr<Image> imgSrc(Image::CreateFromData(width, height, FORMAT_RGBA8888, imageData));
     return Sprite::CreateFromImage(imgSrc.Get(), true, false);
 }
