@@ -370,7 +370,7 @@ bool QtMainWindow::SaveAllSceneEmitters(SceneEditor2 *scene) const
             {
                 if (nullptr != layer->innerEmitter)
                 {
-                    emittersForSave.emplace_back(EmitterDescriptor(layer->innerEmitter, layer, layer->innerEmitterPath, entityName));
+                    emittersForSave.emplace_back(EmitterDescriptor(layer->innerEmitter, layer, layer->innerEmitter->configPath, entityName));
                 }
             }
 
