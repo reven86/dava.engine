@@ -200,21 +200,6 @@ elseif ( WINDOWS_UAP )
 	list ( APPEND UAP_DEPLOYMENT_CONTENT ${ADDITIONAL_CONTENT} )
 	add_content_win_uap ( "${UAP_DEPLOYMENT_CONTENT}" )
 	list( APPEND ADDED_SRC ${ADDED_CONTENT_SRC} )
-    
-    #custom target for decreasing of target min version
-    set ( VERSION_FIXER_TARGET_NAME ${PROJECT_NAME}_TGT_MIN_VERSION_FIXER )
-    
-    if ( ${PROJECT_NAME} STREQUAL ${CMAKE_PROJECT_NAME} )
-        set ( VERSION_FIXER_TARGET_DIR ${CMAKE_BINARY_DIR} )
-    else ()
-        set ( VERSION_FIXER_TARGET_DIR ${CMAKE_BINARY_DIR}/${PROJECT_NAME} )
-    endif ()
-    
-    add_custom_target ( ${VERSION_FIXER_TARGET_NAME} ALL  
-            COMMAND python.exe ${DAVA_SCRIPTS_FILES_PATH}/vs_prj_min_version_fix.py   
-                               ${VERSION_FIXER_TARGET_DIR}/${PROJECT_NAME}.vcxproj 
-    )
-    set_property( TARGET ${VERSION_FIXER_TARGET_NAME} PROPERTY FOLDER "CMAKE")
 
 elseif( WIN32 )
     list( APPEND RESOURCES_LIST  ${WIN32_RESOURCES} )

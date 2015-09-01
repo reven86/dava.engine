@@ -232,15 +232,12 @@ void Java_com_dava_framework_JNIApplication_OnTerminate(JNIEnv * env, jobject cl
 // END OF JNIApplication
 
 // CALLED FROM JNIActivity
-#include "Utils/HTTPDownloader.h"
 void Java_com_dava_framework_JNIActivity_nativeOnCreate(JNIEnv * env, jobject classthis, jboolean isFirstRun)
 {
 //	LOGI("___ ON CREATE ___ %p, %d;  isFirstRun = %d", env, classthis, isFirstRun);
 	if(core)
 	{
 		core->OnCreateActivity();
-
-//		DAVA::DownloadFileFromURLToDocuments("http://seriouswheels.com/pics-2011/def/2011-Edo-Competition-Mercedes-Benz-SLR-Black-Arrow-Exhaust-1024x768.jpg", "~doc:/device.yaml");
 	}
 }
 

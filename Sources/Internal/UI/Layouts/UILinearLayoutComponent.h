@@ -37,8 +37,8 @@ class UILinearLayoutComponent : public UIComponent
 {
 public:
     enum eOrientation {
-        HORIZONTAL = 0, // UILayoutSystem::AXIS_X
-        VERTICAL = 1    // UILayoutSystem::AXIS_Y
+        HORIZONTAL = 0,
+        VERTICAL = 1
     };
     
 public:
@@ -56,8 +56,13 @@ private:
 public:
     virtual UILinearLayoutComponent* Clone() const override;
     
+    bool IsEnabled() const;
+    void SetEnabled(bool enabled);
+    
     eOrientation GetOrientation() const;
     void SetOrientation(eOrientation orientation);
+    
+    Vector2::eAxis GetAxis() const;
     
     float32 GetPadding() const;
     void SetPadding(float32 padding);
@@ -81,16 +86,25 @@ private:
     void SetOrientationFromInt(int32 type);
     
 private:
-    eOrientation orientation = HORIZONTAL;
+    enum eFlags
+    {
+        FLAG_ENABLED,
+        FLAG_ORIENTATION_VERTICAL,
+        FLAG_ORIENTATION_INVERSE,
+        FLAG_DYNAMIC_PADDING,
+        FLAG_DYNAMIC_SPACING,
+        FLAG_RTL,
+        FLAG_SKIP_INVISIBLE_CONTROLS,
+        FLAG_COUNT
+    };
+    
+    Bitset<eFlags::FLAG_COUNT> flags;
     float32 padding = 0.0f;
     float32 spacing = 0.0f;
-    bool dynamicPadding = false;
-    bool dynamicSpacing = false;
-    bool useRtl = false;
-    bool skipInvisibleControls = true;
     
 public:
     INTROSPECTION_EXTEND(UILinearLayoutComponent, UIComponent,
+                         PROPERTY("enabled", "Enabled", IsEnabled, SetEnabled, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("orientation", InspDesc("Orientation", GlobalEnumMap<eOrientation>::Instance()), GetOrientationAsInt, SetOrientationFromInt, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("padding", "Padding", GetPadding, SetPadding, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("dynamicPadding", "Dynamic Padding", IsDynamicPadding, SetDynamicPadding, I_SAVE | I_VIEW | I_EDIT)
