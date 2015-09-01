@@ -137,10 +137,7 @@ String DeviceInfoPrivate::GetRegion()
 
 String DeviceInfoPrivate::GetTimeZone()
 {
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
-    // TODO: uncomment after add Windows.System.SystemManagementContract
-    // RTStringToString(Windows::System::TimeZoneSettings::CurrentTimeZoneDisplayName);
-    return "Not yet implemented";
+    return RTStringToString(Windows::System::TimeZoneSettings::CurrentTimeZoneDisplayName);
 }
 
 String DeviceInfoPrivate::GetHTTPProxyHost()
