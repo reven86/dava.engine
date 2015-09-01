@@ -36,10 +36,10 @@ class CleanFolderTool: public CommandLineTool
 {
 public:
 
-    virtual DAVA::String GetCommandLineKey();
-    virtual bool InitializeFromCommandLine();
-    virtual void Process();
-    virtual void PrintUsage();
+	DAVA::String GetCommandLineKey() const override;
+	bool InitializeFromCommandLine() override;
+	void Process() override;
+	void PrintUsage() const override;
 
 protected:
 

@@ -29,22 +29,34 @@
 
 #include "UISizePolicyComponent.h"
 
-#include "UILayoutSystem.h"
+#include "Math/Vector.h"
 
 namespace DAVA
 {
 UISizePolicyComponent::UISizePolicyComponent()
 {
+    const float32 DEFAULT_VALUE = 100.0f;
+    const float32 MIN_LIMIT = 0.0f;
+    const float32 MAX_LIMIT = 99999.0f;
     
+    for (int32 i = 0; i < Vector2::AXIS_COUNT; i++)
+    {
+        policy[i].policy = IGNORE_SIZE;
+        policy[i].value = DEFAULT_VALUE;
+        policy[i].min = MIN_LIMIT;
+        policy[i].max = MAX_LIMIT;
+    }
 }
 
 UISizePolicyComponent::UISizePolicyComponent(const UISizePolicyComponent &src)
-    : horizontalPolicy(src.horizontalPolicy)
-    , horizontalValue(src.horizontalValue)
-    , verticalPolicy(src.verticalPolicy)
-    , verticalValue(src.verticalValue)
 {
-    
+    for (int32 i = 0; i < Vector2::AXIS_COUNT; i++)
+    {
+        policy[i].policy = src.policy[i].policy;
+        policy[i].value = src.policy[i].value;
+        policy[i].min = src.policy[i].min;
+        policy[i].max = src.policy[i].max;
+    }
 }
 
 UISizePolicyComponent::~UISizePolicyComponent()
@@ -59,74 +71,106 @@ UISizePolicyComponent* UISizePolicyComponent::Clone() const
 
 UISizePolicyComponent::eSizePolicy UISizePolicyComponent::GetHorizontalPolicy() const
 {
-    return horizontalPolicy;
+    return policy[Vector2::AXIS_X].policy;
 }
 
-void UISizePolicyComponent::SetHorizontalPolicy(eSizePolicy policy)
+void UISizePolicyComponent::SetHorizontalPolicy(eSizePolicy newPolicy)
 {
-    horizontalPolicy = policy;
+    policy[Vector2::AXIS_X].policy = newPolicy;
 }
 
 float32 UISizePolicyComponent::GetHorizontalValue() const
 {
-    return horizontalValue;
+    return policy[Vector2::AXIS_X].value;
 }
 
 void UISizePolicyComponent::SetHorizontalValue(float32 value)
 {
-    horizontalValue = value;
+    policy[Vector2::AXIS_X].value = value;
+}
+
+float32 UISizePolicyComponent::GetHorizontalMinValue() const
+{
+    return policy[Vector2::AXIS_X].min;
+}
+
+void UISizePolicyComponent::SetHorizontalMinValue(float32 value)
+{
+    policy[Vector2::AXIS_X].min = value;
+}
+
+float32 UISizePolicyComponent::GetHorizontalMaxValue() const
+{
+    return policy[Vector2::AXIS_X].max;
+}
+
+void UISizePolicyComponent::SetHorizontalMaxValue(float32 value)
+{
+    policy[Vector2::AXIS_X].max = value;
 }
 
 UISizePolicyComponent::eSizePolicy UISizePolicyComponent::GetVerticalPolicy() const
 {
-    return verticalPolicy;
+    return policy[Vector2::AXIS_Y].policy;
 }
 
-void UISizePolicyComponent::SetVerticalPolicy(eSizePolicy policy)
+void UISizePolicyComponent::SetVerticalPolicy(eSizePolicy newPolicy)
 {
-    verticalPolicy = policy;
+    policy[Vector2::AXIS_Y].policy = newPolicy;
 }
 
 float32 UISizePolicyComponent::GetVerticalValue() const
 {
-    return verticalValue;
+    return policy[Vector2::AXIS_Y].value;
 }
 
 void UISizePolicyComponent::SetVerticalValue(float32 value)
 {
-    verticalValue = value;
+    policy[Vector2::AXIS_Y].value = value;
+}
+
+float32 UISizePolicyComponent::GetVerticalMinValue() const
+{
+    return policy[Vector2::AXIS_Y].min;
+}
+
+void UISizePolicyComponent::SetVerticalMinValue(float32 value)
+{
+    policy[Vector2::AXIS_Y].min = value;
+}
+
+float32 UISizePolicyComponent::GetVerticalMaxValue() const
+{
+    return policy[Vector2::AXIS_Y].max;
+}
+
+void UISizePolicyComponent::SetVerticalMaxValue(float32 value)
+{
+    policy[Vector2::AXIS_Y].max = value;
 }
 
 UISizePolicyComponent::eSizePolicy UISizePolicyComponent::GetPolicyByAxis(int32 axis) const
 {
-    switch (axis)
-    {
-        case UILayoutSystem::AXIS_X:
-            return horizontalPolicy;
-            
-        case UILayoutSystem::AXIS_Y:
-            return verticalPolicy;
-            
-        default:
-            DVASSERT(false);
-            return FIXED_SIZE;
-    }
+    DVASSERT(0 <= axis && axis < Vector2::AXIS_COUNT);
+    return policy[axis].policy;
 }
 
 float32 UISizePolicyComponent::GetValueByAxis(int32 axis) const
 {
-    switch (axis)
-    {
-        case UILayoutSystem::AXIS_X:
-            return horizontalValue;
-            
-        case UILayoutSystem::AXIS_Y:
-            return verticalValue;
-            
-        default:
-            DVASSERT(false);
-            return 0.0f;
-    }
+    DVASSERT(0 <= axis && axis < Vector2::AXIS_COUNT);
+    return policy[axis].value;
+}
+    
+float32 UISizePolicyComponent::GetMinValueByAxis(int32 axis) const
+{
+    DVASSERT(0 <= axis && axis < Vector2::AXIS_COUNT);
+    return policy[axis].min;
+}
+
+float32 UISizePolicyComponent::GetMaxValueByAxis(int32 axis) const
+{
+    DVASSERT(0 <= axis && axis < Vector2::AXIS_COUNT);
+    return policy[axis].max;
 }
 
 int32 UISizePolicyComponent::GetHorizontalPolicyAsInt() const

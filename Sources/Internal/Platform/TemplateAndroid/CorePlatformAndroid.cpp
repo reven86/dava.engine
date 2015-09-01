@@ -101,6 +101,7 @@ namespace DAVA
 	    Logger::Debug("[CorePlatformAndroid::Quit]");
 	    QuitAction();
 
+	    renderIsActive = false;
 	    // finish java activity
 	    JNI::JavaClass javaClass("com/dava/framework/JNIActivity");
 	    Function<void()> finishActivity = javaClass.GetStaticMethod<void>("finishActivity");
