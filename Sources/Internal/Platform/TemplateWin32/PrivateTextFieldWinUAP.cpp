@@ -558,6 +558,8 @@ void PrivateTextFieldWinUAP::SetCursorPos(uint32 pos)
 void PrivateTextFieldWinUAP::CreateNativeText()
 {
     nativeText = ref new TextBox();
+    core->XamlApplication()->SetTextBoxCustomStyle(nativeText);
+
     nativeControl = nativeText;
     nativeControl->Visibility = Visibility::Collapsed;
     nativeControl->BorderThickness = Thickness(0.0);
@@ -578,6 +580,8 @@ void PrivateTextFieldWinUAP::CreateNativeText()
 void PrivateTextFieldWinUAP::CreateNativePassword()
 {
     nativePassword = ref new PasswordBox();
+    core->XamlApplication()->SetPasswordBoxCustomStyle(nativePassword);
+
     nativeControl = nativePassword;
     nativeControl->Visibility = Visibility::Collapsed;
     nativeControl->BorderThickness = Thickness(0.0);
@@ -792,7 +796,6 @@ void PrivateTextFieldWinUAP::OnKeyDown(Windows::System::VirtualKey virtualKey)
 
 void PrivateTextFieldWinUAP::OnGotFocus()
 {
-    nativeControl->BorderThickness = Thickness(0.5);
     if (nativeText != nullptr)
     {
         nativeText->SelectionStart = nativeText->Text->Length();
@@ -813,7 +816,6 @@ void PrivateTextFieldWinUAP::OnGotFocus()
 
 void PrivateTextFieldWinUAP::OnLostFocus()
 {
-    nativeControl->BorderThickness = Thickness(0.0);
     if (!multiline)
     {
         PositionNative(originalRect, true);
