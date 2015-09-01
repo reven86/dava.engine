@@ -282,7 +282,7 @@ void UnpackHelpDoc()
         }
         DAVA::SafeRelease( helpRA );
     }
-    SettingsManager::SetValue( Settings::Internal_EditorVersion, VariantType( String( RESOURCE_EDITOR_VERSION ) ) );
+    SettingsManager::SetValue( Settings::Internal_EditorVersion, VariantType( String( APPLICATION_VERSION ) ) );
 }
 
 void FixOSXFonts()
