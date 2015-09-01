@@ -63,8 +63,8 @@ private:
     void CreatePlaneImageForRequest(RequestPointer&);
     void CreatePlaneBatchForRequest(RequestPointer&);
 
-    void DrawToTextureForRequest(RequestPointer&, DAVA::Entity* entity, DAVA::Camera* camera, DAVA::Texture* toTexture,
-		DAVA::int32 fromLodLayer = -1, const DAVA::Rect & viewport = DAVA::Rect(0, 0, -1, -1), bool clearTarget = true);
+    void DrawToTextureForRequest(RequestPointer&, DAVA::Entity* entity, DAVA::Camera* camera,
+		DAVA::Texture* toTexture, DAVA::int32 fromLodLayer, const rhi::Viewport& viewport, bool clearTarget);
 };
 
 #endif // #ifndef __CREATE_PLANE_LOD_COOMAND_H__

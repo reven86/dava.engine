@@ -47,7 +47,6 @@ CreatePlaneLODCommandHelper::RequestPointer CreatePlaneLODCommandHelper::Request
 	result->textureSize = textureSize;
 	result->texturePath = texturePath;
 	result->savedDistances = lodComponent->lodLayersArray;
-	result->syncObject = rhi::CreateSyncObject();
 
     result->newLodIndex = GetLodLayersCount(lodComponent);
     DVASSERT(result->newLodIndex > 0);
@@ -93,31 +92,33 @@ void CreatePlaneLODCommandHelper::CreatePlaneImageForRequest(RequestPointer& req
 	float32 textureSize = static_cast<float>(request->textureSize);
     float32 halfSizef = 0.5f * textureSize;
    
-    Rect firstSideViewport, secondSideViewport;
-    if (isMeshHorizontal) // bushes
+    rhi::Viewport firstSideViewport;
+	rhi::Viewport secondSideViewport;
+    if (isMeshHorizontal)
     {
-        firstSideViewport = Rect(0, 0, textureSize, halfSizef);
-        secondSideViewport = Rect(0, halfSizef, textureSize, halfSizef);
+		firstSideViewport = rhi::Viewport(0, 0, textureSize, halfSizef);
+        secondSideViewport = rhi::Viewport(0, halfSizef, textureSize, halfSizef);
     }
-    else // trees
+    else
     {
-        firstSideViewport = Rect(0, 0, halfSizef, textureSize);
-        secondSideViewport = Rect(halfSizef, 0, halfSizef, textureSize);
+        firstSideViewport = rhi::Viewport(0, 0, halfSizef, textureSize);
+        secondSideViewport = rhi::Viewport(halfSizef, 0, halfSizef, textureSize);
     }
     
+	request->syncObject = rhi::GetCurrentFrameSyncObject();
     request->targetTexture = Texture::CreateFBO(textureSize, textureSize, FORMAT_RGBA8888);
 
     // draw 1st side
     float32 depth = max.y - min.y;
- 	camera->Setup(min.x, max.x, max.z, min.z, -depth, depth * 2);
-    camera->SetPosition(Vector3(0.f, min.y, 0.f));
+ 	camera->Setup(min.x, max.x, max.z, min.z, -depth, 2.0f * depth);
+    camera->SetPosition(Vector3(0.0f, min.y, 0.0f));
     DrawToTextureForRequest(request, fromEntity, camera, request->targetTexture, 
 		request->fromLodLayer, firstSideViewport, true);
     
     // draw 2nd side
     depth = max.x - min.x;
-	camera->Setup(min.y, max.y, max.z, min.z, -depth, depth * 2);
-    camera->SetPosition(Vector3(max.x, 0.f, 0.f));
+	camera->Setup(min.y, max.y, max.z, min.z, -depth, 2.0f * depth);
+    camera->SetPosition(Vector3(max.x, 0.0f, 0.0f));
     DrawToTextureForRequest(request, fromEntity, camera, request->targetTexture,
 		request->fromLodLayer, secondSideViewport, false);
 }
@@ -177,7 +178,7 @@ void CreatePlaneLODCommandHelper::CreatePlaneBatchForRequest(RequestPointer& req
 
     Vector2 txCoordPlane2Offset;
     Vector2 txCoordPlaneScale;
-    if(isMeshHorizontal)
+    if (isMeshHorizontal)
     {
         txCoordPlane2Offset = Vector2(0.f, .5f);
         txCoordPlaneScale = Vector2(1.f, .5f);
@@ -277,49 +278,34 @@ void CreatePlaneLODCommandHelper::CreatePlaneBatchForRequest(RequestPointer& req
 }
 
 void CreatePlaneLODCommandHelper::DrawToTextureForRequest(RequestPointer& request, DAVA::Entity* fromEntity, DAVA::Camera* camera,
-	DAVA::Texture* toTexture, DAVA::int32 fromLodLayer, const DAVA::Rect & viewport, bool clearTarget)
+	DAVA::Texture* toTexture, DAVA::int32 fromLodLayer, const rhi::Viewport& viewport, bool clearTarget)
 {
+#if (RELOAD_TEXTURES_TO_ORIGIN_GPU)
     DAVA::TexturesMap textures;
-
     SceneHelper::EnumerateEntityTextures(fromEntity->GetScene(), fromEntity, textures, 
 		SceneHelper::TexturesEnumerateMode::EXCLUDE_NULL);
-
-    Rect newViewport = viewport;
-
-    if(newViewport.dx == -1)
-        newViewport.dx = (float32)toTexture->GetWidth();
-
-    if(newViewport.dy == -1)
-        newViewport.dy = (float32)toTexture->GetHeight();
-
-#if (RELOAD_TEXTURES_TO_ORIGIN_GPU)
 	for (auto& tex : textures)
         tex.second->ReloadAs(GPU_ORIGIN);
 #endif
 
-	rhi::RenderPassConfig renderPassConfig = { };
-	renderPassConfig.colorBuffer[0].loadAction = clearTarget ? rhi::LOADACTION_CLEAR : rhi::LOADACTION_NONE;
-	renderPassConfig.colorBuffer[0].texture = toTexture->handle;
-	renderPassConfig.viewport.x = newViewport.x;
-	renderPassConfig.viewport.y = newViewport.y;
-	renderPassConfig.viewport.width = newViewport.dx;
-	renderPassConfig.viewport.height = newViewport.dy;
-	renderPassConfig.priority = eDefaultPassPriority::PRIORITY_SERVICE_3D;
-
-	rhi::HPacketList packetList = { };
-	auto renderPass = rhi::AllocateRenderPass(renderPassConfig, 1, &packetList);
-	rhi::BeginRenderPass(renderPass);
-	rhi::BeginPacketList(packetList);
-
     ScopedPtr<Scene> tempScene(new Scene());
+
+	rhi::RenderPassConfig& renderPassConfig = tempScene->GetMainPassConfig();
+	renderPassConfig.colorBuffer[0].texture = toTexture->handle;
+	renderPassConfig.colorBuffer[0].loadAction = clearTarget ? rhi::LOADACTION_CLEAR : rhi::LOADACTION_NONE;
+	renderPassConfig.colorBuffer[0].storeAction = rhi::STOREACTION_NONE;
+	renderPassConfig.priority = eDefaultPassPriority::PRIORITY_SERVICE_3D;
+	renderPassConfig.viewport = viewport;
+	memset(renderPassConfig.colorBuffer[0].clearColor, 0, sizeof(renderPassConfig.colorBuffer[0].clearColor));
+
     NMaterial* globalMaterial = fromEntity->GetScene()->GetGlobalMaterial();
     if (globalMaterial)
         tempScene->SetGlobalMaterial(globalMaterial->Clone());
 
-    ScopedPtr<Entity> entity(SceneHelper::CloneEntityWithMaterials(fromEntity));
-	entity->SetLocalTransform(DAVA::Matrix4::IDENTITY);
+    ScopedPtr<Entity> clonedEnity(SceneHelper::CloneEntityWithMaterials(fromEntity));
+	clonedEnity->SetLocalTransform(DAVA::Matrix4::IDENTITY);
 
-    SpeedTreeObject* treeObejct = GetSpeedTreeObject(entity);
+    SpeedTreeObject* treeObejct = GetSpeedTreeObject(clonedEnity);
     if (treeObejct)
     {
         Vector<Vector3> fakeSH(9, Vector3());
@@ -327,17 +313,16 @@ void CreatePlaneLODCommandHelper::DrawToTextureForRequest(RequestPointer& reques
         treeObejct->SetSphericalHarmonics(fakeSH);
     }
 
-    tempScene->AddNode(entity);
+    tempScene->AddNode(clonedEnity);
     tempScene->AddCamera(camera);
     tempScene->SetCurrentCamera(camera);
 	camera->SetupDynamicParameters(false);
-	GetLodComponent(entity)->SetForceLodLayer(fromLodLayer);
-	entity->SetVisible(true);
-	tempScene->Update(0.1f);
-    tempScene->Draw();
 
-	rhi::EndPacketList(packetList, request->syncObject);
-	rhi::EndRenderPass(renderPass);
+	GetLodComponent(clonedEnity)->SetForceLodLayer(fromLodLayer);
+	clonedEnity->SetVisible(true);
+
+	tempScene->Update(1.0f / 60.0f);
+    tempScene->Draw();
 
 #if (RELOAD_TEXTURES_TO_ORIGIN_GPU)
     DAVA::eGPUFamily currentGPU = (DAVA::eGPUFamily) SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsInt32();
