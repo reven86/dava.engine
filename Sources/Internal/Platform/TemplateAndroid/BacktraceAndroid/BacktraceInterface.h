@@ -30,7 +30,7 @@
 #ifndef BACKTRACEINTERFACE_H_
 #define BACKTRACEINTERFACE_H_
 #include "Base/BaseTypes.h"
-#include "Base/Function.h"
+#include "Functional/Function.h"
 namespace DAVA
 {
 // Can't use heap allocations inside crash handlers,

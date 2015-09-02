@@ -282,3 +282,5 @@ void SaveImageToFile(DAVA::Image * image, const DAVA::FilePath & path)
     DAVA::ImageSystem::Instance()->Save(path, image);
 }
 
+
+
