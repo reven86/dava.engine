@@ -236,12 +236,10 @@ SceneEditor2* QtMainWindow::GetCurrentScene()
 
 bool QtMainWindow::SaveScene( SceneEditor2 *scene )
 {
-	bool sceneWasSaved = false;
-
 	DAVA::FilePath scenePath = scene->GetScenePath();
 	if(!scene->IsLoaded() || scenePath.IsEmpty())
 	{
-		sceneWasSaved = SaveSceneAs(scene);
+		return SaveSceneAs(scene);
 	} 
 	else
 	{
@@ -251,57 +249,163 @@ bool QtMainWindow::SaveScene( SceneEditor2 *scene )
 		// 
 		//if(scene->IsChanged())
 		{
-			if(DAVA::SceneFileV2::ERROR_NO_ERROR != scene->Save(scenePath))
-			{
-				QMessageBox::warning(this, "Save error", "An error occurred while saving the scene. See log for more info.", QMessageBox::Ok);
-			}
-            else
+            bool saved = SaveAllSceneEmitters(scene);
+            if (saved)
             {
-                sceneWasSaved = true;
+                SceneFileV2::eError ret = scene->Save(scenePath);
+                if (DAVA::SceneFileV2::ERROR_NO_ERROR != ret)
+                {
+                    QMessageBox::warning(this, "Save error", "An error occurred while saving the scene. See log for more info.", QMessageBox::Ok);
+                }
+                else
+                {
+                    return true;
+                }
             }
 		}
 	}
 
-	return sceneWasSaved;
+	return false;
 }
 
 
 bool QtMainWindow::SaveSceneAs(SceneEditor2 *scene)
 {
-	bool ret = false;
+    if (nullptr == scene)
+    {
+        return false;
+    }
 
-	if(nullptr != scene)
-	{
-		DAVA::FilePath saveAsPath = scene->GetScenePath();
-		if(!saveAsPath.Exists())
-		{
-            DAVA::FilePath dataSourcePath = ProjectManager::Instance()->CurProjectDataSourcePath();
-			saveAsPath = dataSourcePath.MakeDirectoryPathname() + scene->GetScenePath().GetFilename();
-		}
+    DAVA::FilePath saveAsPath = scene->GetScenePath();
+    if (!saveAsPath.Exists())
+    {
+        DAVA::FilePath dataSourcePath = ProjectManager::Instance()->CurProjectDataSourcePath();
+        saveAsPath = dataSourcePath.MakeDirectoryPathname() + scene->GetScenePath().GetFilename();
+    }
 
-		QString selectedPath = FileDialog::getSaveFileName(this, "Save scene as", saveAsPath.GetAbsolutePathname().c_str(), "DAVA Scene V2 (*.sc2)");
-		if(!selectedPath.isEmpty())
-		{
-			DAVA::FilePath scenePath = DAVA::FilePath(selectedPath.toStdString());
-			if(!scenePath.IsEmpty())
-			{
-				scene->SetScenePath(scenePath);
-				ret = scene->Save(scenePath);
+    QString selectedPath = FileDialog::getSaveFileName(this, "Save scene as", saveAsPath.GetAbsolutePathname().c_str(), "DAVA Scene V2 (*.sc2)");
+    if (selectedPath.isEmpty())
+    {
+        return false;
+    }
 
-				if(DAVA::SceneFileV2::ERROR_NO_ERROR != ret)
-				{
-					QMessageBox::warning(this, "Save error", "An error occurred while saving the scene. Please, see logs for more info.", QMessageBox::Ok);
-				}
-				else
-				{
-					ret = true;
-                    recentFiles.Add(scenePath.GetAbsolutePathname());
-				}
-			}
-		}
-	}
+    DAVA::FilePath scenePath = DAVA::FilePath(selectedPath.toStdString());
+    if (scenePath.IsEmpty())
+    {
+        return false;
+    }
 
-	return ret;
+    scene->SetScenePath(scenePath);
+
+    bool saved = SaveAllSceneEmitters(scene);
+    if (saved)
+    {
+        SceneFileV2::eError ret = scene->Save(scenePath);
+        if (DAVA::SceneFileV2::ERROR_NO_ERROR != ret)
+        {
+            QMessageBox::warning(this, "Save error", "An error occurred while saving the scene. Please, see logs for more info.", QMessageBox::Ok);
+        }
+        else
+        {
+            recentFiles.Add(scenePath.GetAbsolutePathname());
+            return true;
+        }
+    }
+
+    return false;
+}
+
+
+QString GetSaveFolderForEmitters()
+{
+    const FilePath defaultPath = SettingsManager::GetValue(Settings::Internal_ParticleLastEmitterDir).AsFilePath();
+    QString particlesPath;
+    if (defaultPath.IsEmpty())
+    {
+        particlesPath = QString::fromStdString(ProjectManager::Instance()->CurProjectDataParticles().GetAbsolutePathname());
+    }
+    else
+    {
+        particlesPath = QString::fromStdString(defaultPath.GetAbsolutePathname());
+    }
+
+    return particlesPath;
+}
+
+bool QtMainWindow::SaveAllSceneEmitters(SceneEditor2 *scene) const
+{
+    DVASSERT(nullptr != scene);
+
+    List<Entity *> effectEntities;
+    scene->GetChildEntitiesWithComponent(effectEntities, Component::PARTICLE_EFFECT_COMPONENT);
+    if (effectEntities.empty())
+        return true;
+
+    struct EmitterDescriptor
+    {
+        EmitterDescriptor(ParticleEmitter * _emitter, ParticleLayer *layer, FilePath path, String name)
+            : emitter(_emitter), ownerLayer(layer), yamlPath(path), entityName(name)
+        {
+        }
+
+        ParticleEmitter * emitter = nullptr;
+        ParticleLayer *ownerLayer = nullptr;
+        FilePath yamlPath;
+        String entityName;
+    };
+
+    DAVA::List<EmitterDescriptor> emittersForSave;
+    for (auto & entityWithEffect : effectEntities)
+    {
+        const DAVA::String entityName = entityWithEffect->GetName().c_str();
+        ParticleEffectComponent *effect = GetEffectComponent(entityWithEffect);
+        for (int32 i = 0, sz = effect->GetEmittersCount(); i < sz; ++i)
+        {
+            ParticleEmitter* emitter = effect->GetEmitter(i);
+            for (auto & layer : emitter->layers)
+            {
+                if (nullptr != layer->innerEmitter)
+                {
+                    emittersForSave.emplace_back(EmitterDescriptor(layer->innerEmitter, layer, layer->innerEmitterPath, entityName));
+                }
+            }
+
+            emittersForSave.emplace_back(EmitterDescriptor(emitter, nullptr, emitter->configPath, entityName));
+        }
+    }
+
+    for (auto & descriptor : emittersForSave)
+    {
+        ParticleEmitter *emitter = descriptor.emitter;
+        const String & entityName = descriptor.entityName;
+
+        FilePath yamlPathForSaving = descriptor.yamlPath;
+        if (yamlPathForSaving.IsEmpty())
+        {
+            QString particlesPath = GetSaveFolderForEmitters();
+
+            FileSystem::Instance()->CreateDirectory(FilePath(particlesPath.toStdString()), true); //to ensure that folder is created
+
+            QString emitterPathname = particlesPath + QString("%1_%2.yaml").arg(entityName.c_str()).arg(emitter->name.c_str());
+            QString filePath = FileDialog::getSaveFileName(NULL, QString("Save Particle Emitter ") + QString(emitter->name.c_str()), emitterPathname, QString("YAML File (*.yaml)"));
+
+            if (filePath.isEmpty())
+            {
+                continue;
+            }
+
+            yamlPathForSaving = FilePath(filePath.toStdString());
+            SettingsManager::SetValue(Settings::Internal_ParticleLastEmitterDir, VariantType(yamlPathForSaving.GetDirectory()));
+        }
+
+        if (nullptr != descriptor.ownerLayer)
+        {
+            descriptor.ownerLayer->innerEmitterPath = yamlPathForSaving;
+        }
+        emitter->SaveToYaml(yamlPathForSaving);
+    }
+
+    return true;
 }
 
 DAVA::eGPUFamily QtMainWindow::GetGPUFormat()
@@ -317,44 +421,39 @@ void QtMainWindow::SetGPUFormat(DAVA::eGPUFamily gpu)
 		SettingsManager::SetValue(Settings::Internal_TextureViewGPU, VariantType(gpu));
 		DAVA::Texture::SetDefaultGPU(gpu);
 
-		DAVA::TexturesMap allScenesTextures;
-		for(int tab = 0; tab < GetSceneWidget()->GetTabCount(); ++tab)
-		{
-			SceneEditor2 *scene = GetSceneWidget()->GetTabScene(tab);
-			SceneHelper::EnumerateSceneTextures(scene, allScenesTextures, SceneHelper::TexturesEnumerateMode::EXCLUDE_NULL);
-		}
+        for(int tab = 0; tab < GetSceneWidget()->GetTabCount(); ++tab)
+        {
+            SceneEditor2 *scene = GetSceneWidget()->GetTabScene(tab);
+        
+            DAVA::TexturesMap allScenesTextures;
+            SceneHelper::EnumerateSceneTextures(scene, allScenesTextures, SceneHelper::TexturesEnumerateMode::EXCLUDE_NULL);
 
-		if(allScenesTextures.size() > 0)
-		{
-			int progress = 0;
-			WaitStart("Reloading textures...", "", 0, allScenesTextures.size());
-
-			DAVA::TexturesMap::const_iterator it = allScenesTextures.begin();
-			DAVA::TexturesMap::const_iterator end = allScenesTextures.end();
-
-			for(; it != end; ++it)
-			{
-				it->second->ReloadAs(gpu);
+            if(allScenesTextures.size() > 0)
+            {
+                int progress = 0;
+                WaitStart(QString("Reloading textures for scene %1").arg(scene->GetScenePath().GetFilename().c_str()), "", 0, allScenesTextures.size());
+                
+                for(auto & texItem: allScenesTextures)
+                {
+                    Texture *texture = texItem.second;
+                    texture->ReloadAs(gpu);
+                    
+                    SceneHelper::InvalidateMaterialBindings(scene, texture);
 
 #if defined(USE_FILEPATH_IN_MAP)
-				WaitSetMessage(it->first.GetAbsolutePathname().c_str());
+                    WaitSetMessage(texItem.first.GetAbsolutePathname().c_str());
 #else //#if defined(USE_FILEPATH_IN_MAP)
-				WaitSetMessage(it->first.c_str());
+                    WaitSetMessage(texItem.first.c_str());
 #endif //#if defined(USE_FILEPATH_IN_MAP)
-				WaitSetValue(progress++);
-			}
-
-            DAVA::Set<DAVA::NMaterial*> materialList;
-            for (int tab = 0; tab < GetSceneWidget()->GetTabCount(); ++tab)
-            {
-                SceneEditor2 *scene = GetSceneWidget()->GetTabScene(tab);
-                SceneHelper::InvalidateMaterialBindings(scene);
+                    WaitSetValue(progress++);
+                }
+                
+                
+                WaitStop();
             }
-
-            emit TexturesReloaded();
-            
-			WaitStop();
-		}
+        }
+        
+        emit TexturesReloaded();
 	}
 	LoadGPUFormat();
 }
@@ -2041,6 +2140,9 @@ void QtMainWindow::OnConvertModifiedTextures()
 			WaitSetValue(++convretedNumber);
 		}
 	}
+    
+    SceneHelper::InvalidateMaterialBindings(scene);
+    
 	WaitStop();
 }
 

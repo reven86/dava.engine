@@ -40,7 +40,7 @@ namespace DAVA
 
 void AnimationManager::AddAnimation(Animation * animation)
 {
-	Function<void()> fn = Bind(MakeFunction(this, &AnimationManager::AddAnimationInternal), animation);
+	Function<void()> fn = Bind(&AnimationManager::AddAnimationInternal, this, animation);
 	JobManager::Instance()->CreateMainJob(fn);
 }
     
@@ -51,7 +51,7 @@ void AnimationManager::AddAnimationInternal(Animation * animation)
 
 void AnimationManager::RemoveAnimation(Animation * animation)
 {
-	Function<void()> fn = Bind(MakeFunction(this, &AnimationManager::RemoveAnimationInternal), animation);
+    Function<void()> fn = Bind(&AnimationManager::RemoveAnimationInternal, this, animation);
 	JobManager::Instance()->CreateMainJob(fn);
 }
     
@@ -86,7 +86,7 @@ void AnimationManager::StopAnimations()
 	
 void AnimationManager::DeleteAnimations(AnimatedObject * owner, int32 track)
 {
-	Function<void()> fn = Bind(MakeFunction(this, &AnimationManager::DeleteAnimationInternal), owner, track);
+    Function<void()> fn = Bind(&AnimationManager::DeleteAnimationInternal, this, owner, track);
 	JobManager::Instance()->CreateMainJob(fn);
 }
     

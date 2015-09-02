@@ -27,7 +27,7 @@
 =====================================================================================*/
 
 
-#include <Base/FunctionTraits.h>
+#include <Functional/Function.h>
 #include <Debug/DVAssert.h>
 
 #include <Network/Private/Announcer.h>
@@ -49,7 +49,7 @@ Announcer::Announcer(IOLoop* ioLoop, const Endpoint& endp, uint32 sendPeriod, Fu
 {
     DVASSERT(true == endpoint.Address().IsMulticast());
     DVVERIFY(true == endpoint.Address().ToString(endpAsString.data(), endpAsString.size()));
-    DVASSERT(loop != NULL && announcePeriod > 0 && dataCallback != 0);
+    DVASSERT(loop != nullptr && announcePeriod > 0 && dataCallback != nullptr);
 }
 
 Announcer::~Announcer()
@@ -66,7 +66,7 @@ void Announcer::Start()
 void Announcer::Stop(Function<void (IController*)> callback)
 {
     DVASSERT(false == isTerminating);
-    DVASSERT(callback != 0);
+    DVASSERT(callback != nullptr);
     isTerminating = true;
     stopCallback = callback;
     loop->Post(MakeFunction(this, &Announcer::DoStop));

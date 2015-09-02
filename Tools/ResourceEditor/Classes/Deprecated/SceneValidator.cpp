@@ -791,7 +791,7 @@ void SceneValidator::ExtractEmptyRenderObjectsAndShowErrors(DAVA::Entity *entity
 void SceneValidator::ExtractEmptyRenderObjects(DAVA::Entity *entity, Set<String> &errorsLog)
 {
 	auto renderObject = GetRenderObject(entity);
-	if ((nullptr != renderObject) && (0 == renderObject->GetRenderBatchCount()))
+	if ((nullptr != renderObject) && (0 == renderObject->GetRenderBatchCount()) && RenderObject::TYPE_MESH == renderObject->GetType())
 	{
 		entity->RemoveComponent(Component::RENDER_COMPONENT);
 		errorsLog.insert(DAVA::Format("Entity %s has empty render object", entity->GetName().c_str()));

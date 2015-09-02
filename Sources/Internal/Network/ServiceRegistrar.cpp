@@ -40,7 +40,7 @@ namespace Net
 
 bool ServiceRegistrar::Register(uint32 serviceId, ServiceCreator creator, ServiceDeleter deleter, const char8* name)
 {
-    DVASSERT(creator != 0 && deleter != 0);
+    DVASSERT(creator != nullptr && deleter != nullptr);
     DVASSERT(!IsRegistered(serviceId));
 
     // Duplicate services are not allowed in registrar
