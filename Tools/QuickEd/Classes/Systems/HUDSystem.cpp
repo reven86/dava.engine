@@ -67,6 +67,7 @@ public:
         : ControlContainer(container, ControlAreaInterface::FRAME_AREA)
     {
     }
+
 private:
     void Draw(const UIGeometricData &geometricData) override
     {
@@ -225,16 +226,13 @@ bool HUDSystem::OnInput(UIEvent *currentInput, bool forUpdate)
         if (forUpdate)
         {
             canDrawRect = false;
+            ProcessCursor(currentInput->point);
         }
         else
         {
             if (InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_CTRL))
             {
                 canDrawRect = true;
-            }
-            else
-            {
-                canDrawRect = document->GetControlNodeByPos(currentInput->point) == nullptr;
             }
             pressedPoint = currentInput->point;
         }

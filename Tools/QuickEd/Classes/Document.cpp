@@ -36,6 +36,9 @@
 
 #include "Ui/QtModelPackageCommandExecutor.h"
 #include "EditorCore.h"
+#include "UI/IconHelper.h"
+#include "UI/MainWindow.h"
+#include "QtTools/DavaGLWidget/DavaGLWidget.h"
 
 Document::Document(PackageNode *_package, QObject *parent)
     : QObject(parent)
@@ -49,7 +52,7 @@ Document::Document(PackageNode *_package, QObject *parent)
     , transformSystem(this)
 {
     systems << &selectionSystem << &canvasSystem << &hudSystem << &cursorSystem << &transformSystem;
-    inputListeners << &selectionSystem << &hudSystem << &transformSystem;
+    inputListeners << &hudSystem << &selectionSystem << &transformSystem;
     selectionSystem.SelectionWasChanged.Connect(this, &Document::OnSelectionWasChanged);
     selectionSystem.SelectionWasChanged.Connect(&canvasSystem, &CanvasSystem::OnSelectionWasChanged);
     selectionSystem.SelectionWasChanged.Connect(&hudSystem, &HUDSystem::OnSelectionWasChanged);
@@ -132,9 +135,26 @@ void Document::SetContext(QObject* requester, WidgetContext* widgetContext)
 
 void Document::OnSelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected)
 {
-    SelectedNodes selected_(selected.begin(), selected.end());
-    SelectedNodes deselected_(deselected.begin(), deselected.end());
-    SetSelectedNodes(selected_, deselected_);
+    SelectedNodes reallySelected(selected.begin(), selected.end());
+    SelectedNodes reallyDeselected(deselected.begin(), deselected.end());
+    for (auto control : deselected)
+    {
+        if (selectedNodes.find(control) == selectedNodes.end())
+        {
+            reallyDeselected.erase(control);
+        }
+    }
+    SubstractSets(reallyDeselected, selectedNodes);
+
+    for (auto control : selected)
+    {
+        if (selectedNodes.find(control) != selectedNodes.end())
+        {
+            reallySelected.erase(control);
+        }
+    }
+    UniteSets(reallySelected, selectedNodes);
+    SetSelectedNodes(reallySelected, reallyDeselected);
 }
 
 bool Document::OnInput(UIEvent *currentInput)
@@ -152,36 +172,54 @@ bool Document::OnInput(UIEvent *currentInput)
     return false;
 }
 
-void Document::GetControlNodesByPos(DAVA::Vector<ControlNode*> &controlNodes, const DAVA::Vector2& pos, ControlNode* node) const
+void Document::GetControlNodesByPos(DAVA::Vector<ControlNode*> &controlNodes, const DAVA::Vector2& pos) const
 {
-    if (node == nullptr)
+    auto controlsNode = package->GetPackageControlsNode();
+    for (int index = 0; index < controlsNode->GetCount(); ++index)
     {
-        auto controlsNode = package->GetPackageControlsNode();
-        for (int index = 0; index < controlsNode->GetCount(); ++index)
-        {
-            auto tmpNode = controlsNode->Get(index);
-            DVASSERT(nullptr != tmpNode);
-            GetControlNodeByPos(pos, tmpNode);
-        }
+        auto tmpNode = controlsNode->Get(index);
+        DVASSERT(nullptr != tmpNode);
+        GetControlNodesByPosImpl(controlNodes, pos, tmpNode);
     }
-    else
+}
+
+void Document::GetControlNodesByRect(Set<ControlNode*>& controlNodes, const Rect& rect) const
+{
+    auto controlsNode = package->GetPackageControlsNode();
+    for (int index = 0; index < controlsNode->GetCount(); ++index)
     {
-        int count = node->GetCount();
-        for (int i = 0; i < count; ++i)
-        {
-            auto retVal = GetControlNodeByPos(pos, node->Get(i));
-            if (nullptr != retVal)
-            {
-                return retVal;
-            }
-        }
-        auto control = node->GetControl();
-        if (control->IsPointInside(pos) && control->GetVisible() && control->GetVisibleForUIEditor())
-        {
-            return node;
-        }
+        auto tmpNode = controlsNode->Get(index);
+        DVASSERT(nullptr != tmpNode);
+        GetControlNodesByRectImpl(controlNodes, rect, tmpNode);
     }
-    return nullptr;
+}
+
+void Document::GetControlNodesByPosImpl(DAVA::Vector<ControlNode*>& controlNodes, const DAVA::Vector2& pos, ControlNode* node) const
+{
+    int count = node->GetCount();
+    auto control = node->GetControl();
+    if (control->IsPointInside(pos) && control->GetVisible() && control->GetVisibleForUIEditor())
+    {
+        controlNodes.push_back(node);
+    }
+    for (int i = 0; i < count; ++i)
+    {
+        GetControlNodesByPosImpl(controlNodes, pos, node->Get(i));
+    }
+}
+
+void Document::GetControlNodesByRectImpl(Set<ControlNode*>& controlNodes, const Rect& rect, ControlNode* node) const
+{
+    int count = node->GetCount();
+    auto control = node->GetControl();
+    if (control->GetVisible() && control->GetVisibleForUIEditor() && rect.RectContains(control->GetGeometricData().GetAABBox()))
+    {
+        controlNodes.insert(node);
+    }
+    for (int i = 0; i < count; ++i)
+    {
+        GetControlNodesByRectImpl(controlNodes, rect, node->Get(i));
+    }
 }
 
 AbstractProperty* Document::GetPropertyByName(const ControlNode *node, const String &name) const
@@ -207,6 +245,44 @@ AbstractProperty* Document::GetPropertyByName(const ControlNode *node, const Str
     return nullptr;
 }
 
+void Document::SelectControlByPos(const Vector<ControlNode*> &nodesUnderPoint, const Vector2 &point)
+{
+    auto view = EditorCore::Instance()->GetMainWindow()->GetGLWidget();
+    QPoint globalPos = view->mapToGlobal(QPoint(point.x, point.y));
+    QMenu menu;
+    QList<QAction*> actions;
+    QAction *defaultAction = nullptr;
+    for (auto it = nodesUnderPoint.rbegin(); it != nodesUnderPoint.rend(); ++it)
+    {
+        ControlNode *controlNode = *it;
+        QString className = QString::fromStdString(controlNode->GetControl()->GetClassName());
+        QIcon icon(IconHelper::GetIconPathForClassName(className));
+        QAction *action = new QAction(icon, QString::fromStdString(controlNode->GetName()), &menu);
+        menu.addAction(action);
+        void* ptr = static_cast<void*>(*it);
+        action->setData(QVariant::fromValue(ptr));
+        actions << action;
+        if (defaultAction == nullptr)
+        {
+            if (selectedNodes.find(*it) != selectedNodes.end())
+            {
+                defaultAction = action;
+            }
+        }
+    }
+    menu.setDefaultAction(defaultAction);
+    QAction *selectedAction = menu.exec(globalPos);
+    if (nullptr != selectedAction)
+    {
+        SelectedNodes deselected = selectedNodes;
+        SelectedNodes selected;
+        void *ptr = selectedAction->data().value<void*>();
+        ControlNode *selectedNode = static_cast<ControlNode*>(ptr);
+        selected.insert(selectedNode);
+        SetSelectedNodes(selected, deselected);
+    }
+}
+
 void Document::RefreshAllControlProperties()
 {
     package->GetPackageControlsNode()->RefreshControlProperties();
@@ -219,19 +295,30 @@ void Document::OnSelectedNodesChanged(const SelectedNodes &selected, const Selec
 
 void Document::SetSelectedNodes(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
-    if (selected.empty() && deselected.empty())
+    SelectedNodes reallySelected = selected;
+    SelectedNodes reallyDeselected = deselected;
+    for (auto node : deselected)
     {
-        return;
+        if (selectedNodes.find(node) == selectedNodes.end())
+        {
+            reallyDeselected.erase(node);
+        }
     }
-    auto tmpSelected = selectedNodes;
-    UniteSets(selected, tmpSelected);
-    SubstractSets(deselected, tmpSelected);
-    if (selectedNodes != tmpSelected)
+    SubstractSets(reallyDeselected, selectedNodes);
+
+    for (auto node : selected)
     {
-        selectedNodes = tmpSelected;
+        if (selectedNodes.find(node) != selectedNodes.end())
+        {
+            reallySelected.erase(node);
+        }
+    }
+    UniteSets(reallySelected, selectedNodes);
+    if (!reallySelected.empty() || !reallyDeselected.empty())
+    {
         SelectedControls selectedControls;
         SelectedControls deselectedControls;
-        for (auto node : selected)
+        for (auto node : reallySelected)
         {
             ControlNode *controlNode = dynamic_cast<ControlNode*>(node);
             if (nullptr != controlNode)
@@ -239,7 +326,7 @@ void Document::SetSelectedNodes(const SelectedNodes& selected, const SelectedNod
                 selectedControls.insert(controlNode);
             }
         }
-        for (auto node : deselected)
+        for (auto node : reallyDeselected)
         {
             ControlNode *controlNode = dynamic_cast<ControlNode*>(node);
             if (nullptr != controlNode)
@@ -251,6 +338,6 @@ void Document::SetSelectedNodes(const SelectedNodes& selected, const SelectedNod
         {
             selectionSystem.OnSelectionWasChanged(selectedControls, deselectedControls);
         }
-        emit SelectedNodesChanged(selected, deselected);
+        emit SelectedNodesChanged(reallySelected, reallyDeselected);
     }
 }

@@ -33,6 +33,7 @@
 #include "UI/UIEvent.h"
 #include "Document.h"
 #include "Defines.h"
+#include <QtWidgets/QMenu>
 
 using namespace DAVA;
 
@@ -63,6 +64,7 @@ bool SelectionSystem::OnInput(UIEvent* currentInput, bool forUpdate)
             return true;
         }
     }
+    default: return false;
     }
     return false;
 }
@@ -83,18 +85,35 @@ void SelectionSystem::OnSelectionWasChanged(const SelectedControls &selected, co
     SetSelectedControls(selected, deselected);
 }
 
-void SelectionSystem::SelectByRect(DAVA::Rect& rect)
+void SelectionSystem::SelectByRect(const Rect& rect)
 {
-    
+    SelectedControls deselected;
+    SelectedControls selected;
+    Set<ControlNode*> areaNodes;
+    document->GetControlNodesByRect(areaNodes, rect);
+    if (!areaNodes.empty())
+    {
+        for (auto node : areaNodes)
+        {
+            selected.insert(node);
+        }
+    }
+    if (!InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_SHIFT))
+    {
+        std::set_difference(selectedControls.begin(), selectedControls.end(), areaNodes.begin(), areaNodes.end(), std::inserter(deselected, deselected.end()));
+    }
+    SetSelectedControls(selected, deselected);
 }
 
 bool SelectionSystem::ProcessMousePress(const DAVA::Vector2 &point)
 {
     SelectedControls selected;
     SelectedControls deselected;
-    auto node = document->GetControlNodeByPos(point);
-    if (nullptr != node)
+    nodesUnderPoint.clear();
+    document->GetControlNodesByPos(nodesUnderPoint, point);
+    if (!nodesUnderPoint.empty())
     {
+        auto node = nodesUnderPoint.back();
         if (InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_SHIFT))
         {
             selected.insert(node);
@@ -110,6 +129,10 @@ bool SelectionSystem::ProcessMousePress(const DAVA::Vector2 &point)
                 selected.insert(node);
             }
         }
+        else if (InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_ALT))
+        {
+            document->SelectControlByPos(nodesUnderPoint, point);
+        }
         else
         {
             deselected = selectedControls;
@@ -118,17 +141,34 @@ bool SelectionSystem::ProcessMousePress(const DAVA::Vector2 &point)
         }
         SetSelectedControls(selected, deselected);
     }
-    return !selected.empty() && !deselected.empty();
+    return !selected.empty() || !deselected.empty();
 }
 
 void SelectionSystem::SetSelectedControls(const SelectedControls &selected, const SelectedControls &deselected)
 {
-    SelectedControls tmpSelected = selectedControls;
-    UniteSets(selected, tmpSelected);
-    SubstractSets(deselected, tmpSelected);
-    if (selectedControls != tmpSelected)
+    SelectedControls reallySelected = selected;
+    SelectedControls reallyDeselected = deselected;  
+    DAVA::Logger::Info("SelectionSystem::SetSelectedControls: selected: %d, deselected: %d", selected.size(), deselected.size());
+    for (auto control : deselected)
     {
-        selectedControls = tmpSelected;
-        SelectionWasChanged.Emit(selected, deselected);
+        if (selectedControls.find(control) == selectedControls.end())
+        {
+            reallyDeselected.erase(control);
+        }
+    }
+    SubstractSets(reallyDeselected, selectedControls);
+
+    for (auto control : selected)
+    {
+        if (selectedControls.find(control) != selectedControls.end())
+        {
+            reallySelected.erase(control);
+        }
+    }
+    UniteSets(reallySelected, selectedControls);
+
+    if (!reallySelected.empty() || !reallyDeselected.empty())
+    {
+        SelectionWasChanged.Emit(reallySelected, reallyDeselected);
     }
 }

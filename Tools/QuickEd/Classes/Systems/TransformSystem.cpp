@@ -86,7 +86,6 @@ bool TransformSystem::OnInput(UIEvent* currentInput, bool forUpdate)
         case UIEvent::PHASE_KEYCHAR:
             return ProcessKey(currentInput->tid);
         case UIEvent::PHASE_BEGAN:
-            beginPos = currentInput->point;
             prevPos = currentInput->point;
             return activeArea != NO_AREA;
         case UIEvent::PHASE_DRAG:
@@ -98,17 +97,6 @@ bool TransformSystem::OnInput(UIEvent* currentInput, bool forUpdate)
             if (dragRequested)
             {
                 dragRequested = false;
-                return true;
-            }
-            //return true if we press some areas, but did not drag
-            bool needToCatch = (beginPos == currentInput->point)
-                &&( activeArea == ROTATE_AREA
-                || activeArea  == PIVOT_POINT_AREA
-                || (activeArea >= TOP_LEFT_AREA
-                && activeArea < FRAME_AREA));
-            beginPos = Vector2(-1, -1);
-            if (needToCatch)
-            {
                 return true;
             }
             return false;

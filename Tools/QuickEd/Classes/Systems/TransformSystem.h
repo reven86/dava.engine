@@ -69,7 +69,6 @@ private:
     ControlNode *activeControl = nullptr;
     SelectedControls selectedControls;
     DAVA::Vector2 prevPos;
-    DAVA::Vector2 beginPos;
     bool dragRequested = false;
     const DAVA::Array<int, OPERATIONS_COUNT> steps; //to transform with fixed step
     DAVA::Array<DAVA::Array<int, DAVA::Vector2::AXIS_COUNT>, OPERATIONS_COUNT> accumulates;

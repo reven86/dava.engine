@@ -33,16 +33,13 @@
 #include "Interfaces.h"
 #include "Base/ScopedPtr.h"
 #include "Math/Vector.h"
+#include "Math/Rect.h"
 #include "UI/UIControl.h"
 #include "Systems/BaseSystemClass.h"
 #include "Functional/Signal.h"
 
 class Document;
-namespace DAVA
-{
-    struct Rect;
-}
- 
+
 class HUDSystem final : public BaseSystemClass, public InputInterface
 {
 public:
@@ -55,7 +52,7 @@ public:
     bool OnInput(DAVA::UIEvent *currentInput, bool forUpdate) override;
     void AddListener(ControlAreaInterface *listener);
     void RemoveListener(ControlAreaInterface *listener);
-    DAVA::Signal<const DAVA::Rect &/*selectionRect*/> SelectionRectChanged;
+    DAVA::Signal<const DAVA::Rect &/*selectionRectControl*/> SelectionRectChanged;
 private:
     void ProcessCursor(const DAVA::Vector2& pos);
     void GetControlArea(ControlNode *&node, ControlAreaInterface::eArea &area, const DAVA::Vector2 &pos);
@@ -73,7 +70,7 @@ private:
         DAVA::Vector < DAVA::ScopedPtr<DAVA::UIControl> > hudControls;
     };
     DAVA::Map<ControlNode*, HUD> hudMap;
-    DAVA::ScopedPtr<DAVA::UIControl> selectionRect;
+    DAVA::ScopedPtr<DAVA::UIControl> selectionRectControl;
     DAVA::List<ControlAreaInterface*> listeners;
     
     DAVA::Vector2 pressedPoint; //corner of selection rect

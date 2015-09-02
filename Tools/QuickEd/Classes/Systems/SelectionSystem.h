@@ -34,6 +34,7 @@
 #include "Systems/BaseSystemClass.h"
 #include "Model/PackageHierarchy/PackageListener.h"
 #include "Functional/Signal.h"
+#include "Math/Rect.h"
 
 class Document;
 namespace DAVA {
@@ -49,11 +50,12 @@ public:
     void ControlWasRemoved(ControlNode *node, ControlsContainerNode *from) override;
     void OnSelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected);
     DAVA::Signal<const SelectedControls &/*selected*/, const SelectedControls &/*deselected*/> SelectionWasChanged;
-    void SelectByRect(DAVA::Rect &rect);
+    void SelectByRect(const DAVA::Rect &rect);
 private:
     bool ProcessMousePress(const DAVA::Vector2 &point);
     void SetSelectedControls(const SelectedControls &selected, const SelectedControls &deselected);
     SelectedControls selectedControls;
+    DAVA::Vector<ControlNode*> nodesUnderPoint;
 };
 
 #endif // __QUICKED_SELECTION_SYSTEM_H__

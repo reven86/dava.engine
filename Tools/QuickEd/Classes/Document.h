@@ -79,8 +79,11 @@ public:
     void SetContext(QObject* requester, WidgetContext* widgetContext);
     void OnSelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected);
     bool OnInput(DAVA::UIEvent *currentInput);
-    void GetControlNodesByPos(DAVA::Vector<ControlNode*> &controlNodes, const DAVA::Vector2 &pos, ControlNode *node = nullptr) const;
+    void GetControlNodesByPos(DAVA::Vector<ControlNode*> &controlNodes, const DAVA::Vector2 &pos) const;
+    void GetControlNodesByRect(DAVA::Set<ControlNode*> &controlNodes, const DAVA::Rect &rect) const;
     AbstractProperty* GetPropertyByName(const ControlNode* node, const DAVA::String &name) const;
+    void SelectControlByPos(const DAVA::Vector<ControlNode*> &nodes, const DAVA::Vector2 &pos) ;
+
 signals:
     void SelectedNodesChanged(const SelectedNodes &selected, const SelectedNodes &deselected);
 public slots:
@@ -88,6 +91,8 @@ public slots:
     void OnSelectedNodesChanged(const SelectedNodes &selected, const SelectedNodes &deselected);
 private:
     void SetSelectedNodes(const SelectedNodes &selected, const SelectedNodes &deselected);
+    void GetControlNodesByPosImpl(DAVA::Vector<ControlNode*> &controlNodes, const DAVA::Vector2 &pos, ControlNode *node) const;
+    void GetControlNodesByRectImpl(DAVA::Set<ControlNode*> &controlNodes, const DAVA::Rect &rect, ControlNode *node) const;
     DAVA::UnorderedMap < QObject*, WidgetContext* > contexts;
     SelectedNodes selectedNodes;
     PackageNode *package = nullptr;
