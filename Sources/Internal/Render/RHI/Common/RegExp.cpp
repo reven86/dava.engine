@@ -28,11 +28,7 @@
 
 
     #include "RegExp.h"
-    #include "Base/Platform.h"
-
-    #if !defined(__DAVAENGINE_WIN32__)
-    typedef char char;
-    #endif
+    #include "Base/Platform.h"    
 
     
     #include <stdio.h>

@@ -36,8 +36,14 @@ namespace DAVA
 namespace 
 {
     Mutex callbackListMutex;
-    Vector<Function<void()>> resourceRestoreCallbacks;
-    //Vector<rhi::HSyncObject, Function<void(rhi::HSyncObject)>> syncCallbacks;
+    Vector<Function<void()>> resourceRestoreCallbacks;    
+
+    struct SyncCallback
+    {
+        rhi::HSyncObject syncObject;
+        Function < void(rhi::HSyncObject) > callback;
+    };
+    Vector<SyncCallback> syncCallbacks;
 }
 
 namespace RenderCallbacks
@@ -65,7 +71,7 @@ void UnRegisterResourceRestoreCallback(Function<void()> callback)
 }
 
 void ProcessFrame()
-{
+{    
     /*if (rhi::NeedRestoreResources())
     {        
         for (auto& callback : resourceRestoreCallbacks)
@@ -75,7 +81,40 @@ void ProcessFrame()
         DVASSERT_MSG(!rhi::NeedRestoreResources(), "some of resorces are still not restored yet marked as requireRestore");
     }*/
 
+    for (size_t i = 0, sz = syncCallbacks.size(); i < sz;)
+    {
+        if (rhi::SyncObjectSignaled(syncCallbacks[i].syncObject))
+        {
+            syncCallbacks[i].callback(syncCallbacks[i].syncObject);
+            RemoveExchangingWithLast(syncCallbacks, i);
+            --sz;
+        }
+        else
+        {
+            ++i;
+        }
+    }
+}
 
+void RegisterSyncCallback(rhi::HSyncObject syncObject, Function<void(rhi::HSyncObject)> callback)
+{
+    syncCallbacks.push_back({ syncObject, callback });
+}
+
+void UnRegisterSyncCallback(Function<void(rhi::HSyncObject)> callback)
+{
+    for (size_t i = 0, sz = syncCallbacks.size(); i < sz;)
+    {
+        if (syncCallbacks[i].callback.Target() == callback.Target())
+        {            
+            RemoveExchangingWithLast(syncCallbacks, i);
+            --sz;
+        }
+        else
+        {
+            ++i;
+        }
+    }
 }
 
 }
