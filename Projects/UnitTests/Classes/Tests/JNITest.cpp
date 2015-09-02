@@ -29,11 +29,11 @@
 #include "DAVAEngine.h"
 #include "UnitTests/UnitTests.h"
 
-using namespace DAVA;
-
 #if defined(__DAVAENGINE_ANDROID__)
 
 #include "Platform/TemplateAndroid/JniHelpers.h"
+
+using namespace DAVA;
 
 DAVA_TESTCLASS(JNITest)
 {
@@ -68,7 +68,7 @@ DAVA_TESTCLASS(JNITest)
         JNIEnv *env = JNI::GetEnv();
 
         // get class reference
-        JNI::JavaClass jtest("com/dava/unittests/JINTest");
+        JNI::JavaClass jtest("com/dava/unittests/JNITest");
         // get Function as Static Method for PassString
         auto passString = jtest.GetStaticMethod<jboolean, jstring>("PassString");
 

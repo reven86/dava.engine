@@ -124,7 +124,8 @@ while continue_process_stdout:
             if line.find("E/AndroidRuntime") != -1:
                 sys.stdout.write(line)
                 sys.stdout.flush()
-            if line.find("Force finishing activity com.dava.unittests") != -1:
+            if line.find("Force finishing activity com.dava.unittests") != -1 or \
+               line.find("end=assert=msg") != -1:
                 app_exit_code = 1
                 sys.stdout.write(line)
                 sys.stdout.flush()

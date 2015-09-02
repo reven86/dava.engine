@@ -429,6 +429,8 @@ void PrivateWebViewWinUAP::PositionWebView(const Rect& rectInVirtualCoordinates,
     }
 
     // 3. set control's position and size
+    nativeWebView->MinHeight = 0.0;     // Force minimum control sizes to zero to
+    nativeWebView->MinWidth = 0.0;      // allow setting any control sizes
     nativeWebView->Width = controlRect.dx;
     nativeWebView->Height = controlRect.dy;
     core->XamlApplication()->PositionUIElement(nativeWebView, controlRect.x, controlRect.y);
