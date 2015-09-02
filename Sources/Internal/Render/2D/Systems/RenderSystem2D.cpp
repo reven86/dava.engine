@@ -1454,6 +1454,8 @@ void RenderSystem2D::DrawTexture(rhi::HTextureSet htextureSet, NMaterial *materi
             destRect.dx = (float32)Renderer::GetFramebufferWidth();
             destRect.dy = (float32)Renderer::GetFramebufferHeight();
         }
+        
+        destRect = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(destRect);
     }
 
     spriteTempVertices[0] = spriteTempVertices[4] = destRect.x;//x1
