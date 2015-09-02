@@ -111,13 +111,13 @@ void UIMovieView::SystemDraw(const UIGeometricData &geometricData)
 {
     UIControl::SystemDraw(geometricData);
 
-#ifdef DRAW_PLACEHOLDER_FOR_STUB_UIMOVIEVIEW
+#if defined(DRAW_PLACEHOLDER_FOR_STUB_UIMOVIEVIEW)
     static Color drawColor(Color(1.0f, 0.4f, 0.8f, 1.0f));
 
-	Rect absRect = GetRect(true);
+    Rect absRect = GetRect(true);
     RenderSystem2D::Instance()->DrawRect(absRect, drawColor);
 
-	float32 minRadius = Min(GetSize().x, GetSize().y);
+    float32 minRadius = Min(GetSize().x, GetSize().y);
     RenderSystem2D::Instance()->DrawCircle(absRect.GetCenter(), minRadius / 2, drawColor);
     RenderSystem2D::Instance()->DrawCircle(absRect.GetCenter(), minRadius / 3, drawColor);
     RenderSystem2D::Instance()->DrawCircle(absRect.GetCenter(), minRadius / 4, drawColor);

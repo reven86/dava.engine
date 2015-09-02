@@ -76,11 +76,6 @@ void SelectSceneScreen::LoadResources()
     ScopedPtr<UIButton> startButton(CreateButton(Rect(0, buttonSize, screenRect.dx, buttonSize), L"Start"));
     startButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &SelectSceneScreen::OnStart));
     
-    UIParticles *particles = new UIParticles(Rect(800, 600, 100, 100));
-    particles->SetEffectPath(FilePath("~doc:/_ui/folder/big_smoke.sc2"));
-    particles->Start();
-    AddControl(particles);
-
     AddControl(fileNameText);
     AddControl(selectButtonRes);
     AddControl(selectButtonDoc);

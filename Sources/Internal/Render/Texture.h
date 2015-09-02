@@ -184,10 +184,9 @@ public:
 
 	inline TextureState GetState() const;
 
-#if defined(__DAVAENGINE_ANDROID__)
-	virtual void Lost();
-	virtual void Invalidate();
-#endif //#if defined(__DAVAENGINE_ANDROID__)
+
+	void RestoreRenderResource();
+
     
     void SetDebugInfo(const String & _debugInfo);
     
@@ -221,6 +220,7 @@ protected:
 	void SetParamsFromImages(const Vector<Image *> * images);
 	
 	void FlushDataToRenderer(Vector<Image *> * images);
+
 	void ReleaseImages(Vector<Image *> * images);
     
     void MakePink(bool checkers = true);	

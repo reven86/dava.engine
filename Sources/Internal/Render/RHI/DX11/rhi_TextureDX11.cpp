@@ -345,16 +345,8 @@ dx11_Texture_Unmap( Handle tex )
         rc_i = self->mappedLevel;
     }
 
-
-    _D3D11_ImmediateContext->UpdateSubresource
-    (
-        self->tex2d,
-        rc_i,
-        NULL,
-        self->mappedData,
-        TextureStride(self->format,Size2i(self->width,self->height),self->mappedLevel),
-        0
-    );
+    DX11Command cmd = { DX11Command::UPDATE_SUBRESOURCE, { uint64(self->tex2d), rc_i, NULL, uint64(self->mappedData), TextureStride(self->format,Size2i(self->width,self->height),self->mappedLevel), 0 } };
+    ExecDX11( &cmd, 1 );
     self->isMapped = false;
 }
 

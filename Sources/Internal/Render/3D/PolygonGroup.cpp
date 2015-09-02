@@ -29,7 +29,7 @@
 
 #include "Render/3D/PolygonGroup.h"
 #include "FileSystem/KeyedArchive.h"
-#include "Render/RenderHelper.h"
+#include "Render/RenderCallbacks.h"
 #include "Scene3D/SceneFileV2.h"
 
 namespace DAVA 
@@ -65,10 +65,12 @@ PolygonGroup::PolygonGroup()
     , baseVertexArray(0)
     , vertexLayoutId(rhi::VertexLayout::InvalidUID)    
 {
+    RenderCallbacks::RegisterResourceRestoreCallback(MakeFunction(this, &PolygonGroup::RestoreBuffers));
 }
 
 PolygonGroup::~PolygonGroup()
-{
+{   
+    RenderCallbacks::UnRegisterResourceRestoreCallback(MakeFunction(this, &PolygonGroup::RestoreBuffers));
 	ReleaseData();
     if (vertexBuffer.IsValid())
         rhi::DeleteVertexBuffer(vertexBuffer);    
@@ -326,6 +328,22 @@ void PolygonGroup::BuildBuffers()
     indexBuffer = rhi::CreateIndexBuffer(indexDataSize);
     rhi::UpdateIndexBuffer(indexBuffer, indexArray, 0, indexDataSize);    
 };
+
+void PolygonGroup::RestoreBuffers()
+{
+    if (vertexBuffer.IsValid() && rhi::NeedRestoreVertexBuffer(vertexBuffer))
+    {
+        uint32 vertexDataSize = vertexStride * vertexCount;
+        rhi::UpdateVertexBuffer(vertexBuffer, meshData, 0, vertexDataSize);
+    }
+    if (indexBuffer.IsValid() && rhi::NeedRestoreIndexBuffer(indexBuffer))
+    {
+        uint32 indexDataSize = indexCount * INDEX_FORMAT_SIZE[indexFormat];        
+        rhi::UpdateIndexBuffer(indexBuffer, indexArray, 0, indexDataSize);
+    }
+
+
+}
 
 
     

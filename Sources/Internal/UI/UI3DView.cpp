@@ -103,6 +103,7 @@ void UI3DView::Draw(const UIGeometricData & geometricData)
 	
     const Rect & viewportRect = geometricData.GetUnrotatedRect();
     viewportRc = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(viewportRect);        
+    viewportRc += VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset();
     scene->SetMainPassViewport(viewportRc);
     
     scene->Draw();        
