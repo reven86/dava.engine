@@ -36,6 +36,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Render/RenderState.h"
 #include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
+#include "Input/InputSystem.h"
+#include "Input/KeyboardDevice.h"
 
 using namespace DAVA;
 
@@ -169,16 +171,16 @@ private:
 HUDSystem::HUDSystem(Document *document_)
     : BaseSystemClass(document_)
     , hudControl(new UIControl())
-    , selectionRect(new UIControl())
+    , selectionRectControl(new UIControl())
 {
-    selectionRect->SetDebugDraw(true);
-    selectionRect->SetDebugDrawColor(Color(1.0f, 1.0f, 0.0f, 1.0f));
-    hudControl->AddControl(selectionRect);
+    selectionRectControl->SetDebugDraw(true);
+    selectionRectControl->SetDebugDrawColor(Color(1.0f, 1.0f, 0.0f, 1.0f));
+    hudControl->AddControl(selectionRectControl);
     hudControl->SetName("hud");
     hudControl->SetSize(Vector2(10, 10));
 }
 
-void HUDSystem::Attach(UIControl* root)
+void HUDSystem::AttachToRoot(UIControl* root)
 {
     root->AddControl(hudControl);
 }
@@ -192,7 +194,7 @@ void HUDSystem::Detach()
 {
     hudControl->RemoveFromParent();
     canDrawRect = false;
-    selectionRect->SetSize(Vector2(0, 0));
+    selectionRectControl->SetSize(Vector2(0, 0));
 }
 
 void HUDSystem::OnSelectionWasChanged(const SelectedControls& selected, const SelectedControls& deselected)
@@ -209,30 +211,49 @@ void HUDSystem::OnSelectionWasChanged(const SelectedControls& selected, const Se
     }
 }
 
-bool HUDSystem::OnInput(UIEvent *currentInput)
+bool HUDSystem::OnInput(UIEvent *currentInput, bool forUpdate)
 {
     switch (currentInput->phase)
     {
     case UIEvent::PHASE_MOVE:
-        ProcessCursor(currentInput->point);
+        if (!forUpdate)
+        {
+            ProcessCursor(currentInput->point);
+        }
         return false;
     case UIEvent::PHASE_BEGAN:
-        canDrawRect = document->GetControlNodeByPos(currentInput->point) == nullptr;
-        pressedPoint = currentInput->point;
-        return false;
+        if (forUpdate)
+        {
+            canDrawRect = false;
+        }
+        else
+        {
+            if (InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_CTRL))
+            {
+                canDrawRect = true;
+            }
+            else
+            {
+                canDrawRect = document->GetControlNodeByPos(currentInput->point) == nullptr;
+            }
+            pressedPoint = currentInput->point;
+        }
+        return canDrawRect;
     case UIEvent::PHASE_DRAG:
         if(canDrawRect)
         {
             Vector2 point(currentInput->point);
             Vector2 size(point - pressedPoint);
-            selectionRect->SetAbsoluteRect(Rect(pressedPoint, size));
+            selectionRectControl->SetAbsoluteRect(Rect(pressedPoint, size));
+            SelectionRectChanged.Emit(selectionRectControl->GetAbsoluteRect());
         }
         return canDrawRect;
     case UIEvent::PHASE_ENDED:
-        if(canDrawRect)
+        ProcessCursor(currentInput->point);
+        if (canDrawRect)
         {
-            //auto rect = selectionRect->GetAbsoluteRect();
-            selectionRect->SetSize(Vector2(0, 0));
+            //auto rect = selectionRectControl->GetAbsoluteRect();
+            selectionRectControl->SetSize(Vector2(0, 0));
         }
         bool retVal = canDrawRect;
         canDrawRect = false;

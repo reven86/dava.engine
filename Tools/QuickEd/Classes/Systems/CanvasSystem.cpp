@@ -44,7 +44,6 @@ class CheckeredCanvas : public UIControl
 public:
     CheckeredCanvas();
 private:
-    ~CheckeredCanvas() override = default;
     void Draw(const UIGeometricData &geometricData) override;
 };
 
@@ -72,7 +71,7 @@ CanvasSystem::CanvasSystem(Document *parent)
 {
 }
 
-void CanvasSystem::Attach(UIControl* root)
+void CanvasSystem::AttachToRoot(UIControl* root)
 {
     attachedRoot = root;
     attachedRoot->AddControl(canvas);
@@ -86,8 +85,8 @@ void CanvasSystem::Detach()
 
 void CanvasSystem::OnSelectionWasChanged(const SelectedControls& selected, const SelectedControls& deselected)
 {
-    UniteNodes(selected, selectedControls);
-    SubstractNodes(deselected, selectedControls);
+    UniteSets(selected, selectedControls);
+    SubstractSets(deselected, selectedControls);
     SelectedNodes rootControls;
     if (selectedControls.empty())
     {

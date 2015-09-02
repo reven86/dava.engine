@@ -35,6 +35,7 @@
 #include "Math/Vector.h"
 #include "UI/UIControl.h"
 #include "Systems/BaseSystemClass.h"
+#include "Functional/Signal.h"
 
 class Document;
 namespace DAVA
@@ -47,13 +48,14 @@ class HUDSystem final : public BaseSystemClass, public InputInterface
 public:
     HUDSystem(Document *document);
     ~HUDSystem() = default;
-    void Attach(DAVA::UIControl *root);
+    void AttachToRoot(DAVA::UIControl *root);
     void Attach() override;
     void Detach() override;
     void OnSelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected);
-    bool OnInput(DAVA::UIEvent *currentInput) override;
+    bool OnInput(DAVA::UIEvent *currentInput, bool forUpdate) override;
     void AddListener(ControlAreaInterface *listener);
     void RemoveListener(ControlAreaInterface *listener);
+    DAVA::Signal<const DAVA::Rect &/*selectionRect*/> SelectionRectChanged;
 private:
     void ProcessCursor(const DAVA::Vector2& pos);
     void GetControlArea(ControlNode *&node, ControlAreaInterface::eArea &area, const DAVA::Vector2 &pos);

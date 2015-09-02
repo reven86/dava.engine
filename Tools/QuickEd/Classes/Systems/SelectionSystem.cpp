@@ -42,13 +42,15 @@ SelectionSystem::SelectionSystem(Document* doc)
     
 }
 
-bool SelectionSystem::OnInput(UIEvent* currentInput)
+bool SelectionSystem::OnInput(UIEvent* currentInput, bool forUpdate)
 {
-    static Vector2 prevPos;
+    if (forUpdate)
+    {
+        return false;
+    }
     switch(currentInput->phase)
     {
     case UIEvent::PHASE_BEGAN:
-        prevPos = currentInput->point;
         return ProcessMousePress(currentInput->point);
     case UIEvent::PHASE_ENDED:
         return ProcessMousePress(currentInput->point);
@@ -79,6 +81,11 @@ void SelectionSystem::ControlWasRemoved(ControlNode *node, ControlsContainerNode
 void SelectionSystem::OnSelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected)
 {
     SetSelectedControls(selected, deselected);
+}
+
+void SelectionSystem::SelectByRect(DAVA::Rect& rect)
+{
+    
 }
 
 bool SelectionSystem::ProcessMousePress(const DAVA::Vector2 &point)
@@ -117,8 +124,8 @@ bool SelectionSystem::ProcessMousePress(const DAVA::Vector2 &point)
 void SelectionSystem::SetSelectedControls(const SelectedControls &selected, const SelectedControls &deselected)
 {
     SelectedControls tmpSelected = selectedControls;
-    UniteNodes(selected, tmpSelected);
-    SubstractNodes(deselected, tmpSelected);
+    UniteSets(selected, tmpSelected);
+    SubstractSets(deselected, tmpSelected);
     if (selectedControls != tmpSelected)
     {
         selectedControls = tmpSelected;

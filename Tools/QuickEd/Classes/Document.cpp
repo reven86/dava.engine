@@ -56,6 +56,7 @@ Document::Document(PackageNode *_package, QObject *parent)
     selectionSystem.SelectionWasChanged.Connect(&transformSystem, &TransformSystem::OnSelectionWasChanged);
     hudSystem.AddListener(&cursorSystem);
     hudSystem.AddListener(&transformSystem);
+    hudSystem.SelectionRectChanged.Connect(&selectionSystem, &SelectionSystem::SelectByRect);
     connect(GetEditorFontSystem(), &EditorFontSystem::UpdateFontPreset, this, &Document::RefreshAllControlProperties);
 }
 
@@ -63,7 +64,7 @@ Document::~Document()
 {
     for (auto context : contexts)
     {
-        delete context;
+        delete context.second;
     }
 }
 
@@ -109,17 +110,24 @@ void Document::RefreshLayout()
 
 WidgetContext* Document::GetContext(QObject* requester) const
 {
-    return contexts.value(requester, nullptr);
+    auto iter = contexts.find(requester);
+    if (iter!= contexts.end())
+    {
+        return iter->second;
+    }
+    return nullptr;
 }
 
 void Document::SetContext(QObject* requester, WidgetContext* widgetContext)
 {
-    if(contexts.contains(requester))
+    auto iter = contexts.find(requester);
+    if (iter != contexts.end())
     {
         DVASSERT_MSG(false, "document already have this context");
-        delete contexts.take(requester);
+        delete iter->second;
+        contexts.erase(iter);
     }
-    contexts.insert(requester, widgetContext);
+    contexts.insert(std::pair<QObject*, WidgetContext*>(requester, widgetContext));
 }
 
 void Document::OnSelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected)
@@ -133,17 +141,18 @@ bool Document::OnInput(UIEvent *currentInput)
 {
     QListIterator<InputInterface*> it(inputListeners);
     it.toBack();
+    bool forUpdate = false;
     while (it.hasPrevious())
     {
-        if (it.previous()->OnInput(currentInput))
+        if (it.previous()->OnInput(currentInput, forUpdate))
         {
-            return true;
+            forUpdate = true;
         }
     }
     return false;
 }
 
-ControlNode* Document::GetControlNodeByPos(const Vector2& pos, ControlNode* node) const
+void Document::GetControlNodesByPos(DAVA::Vector<ControlNode*> &controlNodes, const DAVA::Vector2& pos, ControlNode* node) const
 {
     if (node == nullptr)
     {
@@ -152,11 +161,7 @@ ControlNode* Document::GetControlNodeByPos(const Vector2& pos, ControlNode* node
         {
             auto tmpNode = controlsNode->Get(index);
             DVASSERT(nullptr != tmpNode);
-            auto retVal = GetControlNodeByPos(pos, tmpNode);
-            if (nullptr != retVal)
-            {
-                return retVal;
-            }
+            GetControlNodeByPos(pos, tmpNode);
         }
     }
     else
@@ -219,8 +224,8 @@ void Document::SetSelectedNodes(const SelectedNodes& selected, const SelectedNod
         return;
     }
     auto tmpSelected = selectedNodes;
-    UniteNodes(selected, tmpSelected);
-    SubstractNodes(deselected, tmpSelected);
+    UniteSets(selected, tmpSelected);
+    SubstractSets(deselected, tmpSelected);
     if (selectedNodes != tmpSelected)
     {
         selectedNodes = tmpSelected;

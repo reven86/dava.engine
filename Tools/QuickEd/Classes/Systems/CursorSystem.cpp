@@ -75,7 +75,7 @@ QPixmap CursorSystem::CreatePixmapForArea(float angle, const eArea area) const
     case FRAME_AREA:
         return CreatePixmap(":/Cursors/moveCursor.png");
     case PIVOT_POINT_AREA:
-        return CreatePixmap(":/Cursors/linkCursor.png");
+        return CreatePixmap(":/Cursors/cursorCross.png");
     case TOP_LEFT_AREA:
     case BOTTOM_RIGHT_AREA:
         pixmap = CreatePixmap(":/Cursors/northWestSouthEastResizeCursor.png");

@@ -41,12 +41,26 @@
 
 using namespace DAVA;
 
+namespace
+{
+    const Array<Array<int, Vector2::AXIS_COUNT>, ControlAreaInterface::CORNERS_COUNT> cornersDirection = 
+    { {
+        { -1, -1 }, // TOP_LEFT_AREA
+        { 0, -1 }, // TOP_CENTER_AREA
+        { 1, -1 }, //TOP_RIGHT_AREA
+        { -1, 0 }, //CENTER_LEFT_AREA
+        { 1, 0 }, //CENTER_RIGHT_AREA
+        { -1, 1 }, //BOTTOM_LEFT_AREA
+        { 0, 1 }, //BOTTOM_CENTER_AREA
+        { 1, 1 }  //BOTTOM_RIGHT_AREA    
+    } };
+}
+
 TransformSystem::TransformSystem(Document *parent)
     : BaseSystemClass(parent)
     , steps({ { 10, 20, 20 } }) //10 for rotate and 20 for move/resize
 {
     accumulates.fill({ { 0, 0 } });
-    InitCornersDirection();
 }
 
 void TransformSystem::MouseEnterArea(ControlNode *targetNode, const eArea area)
@@ -61,27 +75,43 @@ void TransformSystem::MouseLeaveArea()
     activeArea = NO_AREA;
 }
 
-bool TransformSystem::OnInput(UIEvent* currentInput)
+bool TransformSystem::OnInput(UIEvent* currentInput, bool forUpdate)
 {
+    if (forUpdate)
+    {
+        return false;
+    }
     switch(currentInput->phase)
     {
         case UIEvent::PHASE_KEYCHAR:
             return ProcessKey(currentInput->tid);
         case UIEvent::PHASE_BEGAN:
-            if(activeArea != NO_AREA)
-            {
-                beginPos = currentInput->point;
-                prevPos = currentInput->point;
-            }
+            beginPos = currentInput->point;
+            prevPos = currentInput->point;
             return activeArea != NO_AREA;
         case UIEvent::PHASE_DRAG:
             return ProcessDrag(currentInput->point);
         case UIEvent::PHASE_ENDED:
         {
             accumulates.fill({ { 0, 0 } });
-            bool retVal = activeArea == FRAME_AREA && beginPos == currentInput->point;
+            //return true if we did transformation
+            if (dragRequested)
+            {
+                dragRequested = false;
+                return true;
+            }
+            //return true if we press some areas, but did not drag
+            bool needToCatch = (beginPos == currentInput->point)
+                &&( activeArea == ROTATE_AREA
+                || activeArea  == PIVOT_POINT_AREA
+                || (activeArea >= TOP_LEFT_AREA
+                && activeArea < FRAME_AREA));
             beginPos = Vector2(-1, -1);
-            return !retVal;
+            if (needToCatch)
+            {
+                return true;
+            }
+            return false;
         }
         default:
             return false;
@@ -91,8 +121,8 @@ bool TransformSystem::OnInput(UIEvent* currentInput)
 
 void TransformSystem::OnSelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected)
 {
-    UniteNodes(selected, selectedControls);
-    SubstractNodes(deselected, selectedControls);
+    UniteSets(selected, selectedControls);
+    SubstractSets(deselected, selectedControls);
 }
 
 void TransformSystem::Detach()
@@ -118,6 +148,8 @@ bool TransformSystem::ProcessKey(const int32 key)
             case DVKEY_DOWN:
                 MoveAllSelectedControls(Vector2(0, 1));
                 return true;
+            default:
+                return false;
         }
     }
     return false;
@@ -129,6 +161,7 @@ bool TransformSystem::ProcessDrag(const Vector2 &pos)
     {
         return false;
     }
+    dragRequested = true;
     const auto &keyBoard = InputSystem::Instance()->GetKeyboard();
     bool retval = true;
     auto gd =  activeControl->GetControl()->GetGeometricData();
@@ -229,8 +262,8 @@ void TransformSystem::ResizeControl(const Vector2& pos, bool withPivot, bool rat
     {
         return;
     }
-    const auto invertX = cornersDirection.at(activeArea)[X_AXIS];
-    const auto invertY = cornersDirection.at(activeArea)[Y_AXIS];
+    const auto invertX = cornersDirection.at(activeArea)[Vector2::AXIS_X];
+    const auto invertY = cornersDirection.at(activeArea)[Vector2::AXIS_Y];
 
     auto gd = activeControl->GetControl()->GetGeometricData();
     Vector2 angeledDelta(delta.x * cosf(gd.angle) + delta.y * sinf(gd.angle),
@@ -386,24 +419,11 @@ void TransformSystem::AdjustProperty(ControlNode *node, const String &propertyNa
     document->GetCommandExecutor()->ChangeProperty(node, property, var);
 }
 
-void TransformSystem::InitCornersDirection()
-{
-    auto directions = const_cast<UnorderedMap<eArea, Array<int, AXIS_COUNT>>*>(&cornersDirection);
-    directions->operator[](TOP_LEFT_AREA) = { { -1, -1 } };
-    directions->operator[](TOP_CENTER_AREA) = { { 0, -1 } };
-    directions->operator[](TOP_RIGHT_AREA) = {{ 1, -1 }};
-    directions->operator[](CENTER_LEFT_AREA) = {{ -1, 0 }};
-    directions->operator[](CENTER_RIGHT_AREA) = {{ 1, 0 }};
-    directions->operator[](BOTTOM_LEFT_AREA) = {{ -1, 1 }};
-    directions->operator[](BOTTOM_CENTER_AREA) = {{ 0, 1 }};
-    directions->operator[](BOTTOM_RIGHT_AREA) = {{ 1, 1 }};
-}
-
 void TransformSystem::AccumulateOperation(ACCUMULATE_OPERATIONS operation, DAVA::Vector2& delta)
 {
     const int step = steps[operation];
-    int &x = accumulates[operation][X_AXIS];
-    int &y = accumulates[operation][Y_AXIS];
+    int &x = accumulates[operation][Vector2::AXIS_X];
+    int &y = accumulates[operation][Vector2::AXIS_Y];
     if (abs(x) < step)
     {
         x += delta.x;

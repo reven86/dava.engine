@@ -44,31 +44,11 @@ public:
     ~TransformSystem() = default;
     void MouseEnterArea(ControlNode *targetNode, const eArea area) override;
     void MouseLeaveArea() override;
-    bool OnInput(DAVA::UIEvent *currentInput) override;
+    bool OnInput(DAVA::UIEvent *currentInput, bool forInput) override;
     void OnSelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected);
     void Detach() override;
-private:
-    bool ProcessKey(const DAVA::int32 key);
-    bool ProcessDrag(const DAVA::Vector2 &pos);
-    void MoveAllSelectedControls(const DAVA::Vector2 &delta);
-    void MoveConrol(const DAVA::Vector2 &pos);
-    void ResizeControl(const DAVA::Vector2 &pos, bool withPivot, bool rateably);
-    template <typename T>
-    void AdjustProperty(ControlNode *node, const DAVA::String &propertyName, const T &value);
-    eArea activeArea = NO_AREA;
-    ControlNode *activeControl = nullptr;
-    SelectedControls selectedControls;
-    DAVA::Vector2 prevPos;
-    DAVA::Vector2 beginPos;
-    enum
-    {
-        X_AXIS,
-        Y_AXIS,
-        AXIS_COUNT
-    };
-    const DAVA::UnorderedMap<eArea, DAVA::Array<int, AXIS_COUNT>> cornersDirection;
-    void InitCornersDirection();
 
+private:
     enum ACCUMULATE_OPERATIONS
     {
         ROTATE_OPERATION,
@@ -76,11 +56,23 @@ private:
         RESIZE_OPERATION,
         OPERATIONS_COUNT
     };
-    const DAVA::Array<int, OPERATIONS_COUNT> steps; //to transform with fixed step
-
-    DAVA::Array<DAVA::Array<int, AXIS_COUNT>, OPERATIONS_COUNT> accumulates;
-
+    bool ProcessKey(const DAVA::int32 key);
+    bool ProcessDrag(const DAVA::Vector2 &pos);
+    void MoveAllSelectedControls(const DAVA::Vector2 &delta);
+    void MoveConrol(const DAVA::Vector2 &pos);
+    void ResizeControl(const DAVA::Vector2 &pos, bool withPivot, bool rateably);
+    template <typename T>
+    void AdjustProperty(ControlNode *node, const DAVA::String &propertyName, const T &value);
     void AccumulateOperation(ACCUMULATE_OPERATIONS operation, DAVA::Vector2 &delta);
+
+    eArea activeArea = NO_AREA;
+    ControlNode *activeControl = nullptr;
+    SelectedControls selectedControls;
+    DAVA::Vector2 prevPos;
+    DAVA::Vector2 beginPos;
+    bool dragRequested = false;
+    const DAVA::Array<int, OPERATIONS_COUNT> steps; //to transform with fixed step
+    DAVA::Array<DAVA::Array<int, DAVA::Vector2::AXIS_COUNT>, OPERATIONS_COUNT> accumulates;
 };
 
 #endif // __QUICKED_TRANSFORM_SYSTEM_H__

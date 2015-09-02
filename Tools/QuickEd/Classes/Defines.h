@@ -40,7 +40,7 @@ class PackageBaseNode;
 using SelectedNodes = DAVA::Set < PackageBaseNode* > ;
 
 template <typename T>
-void UniteNodes(const DAVA::Set<T>& from, DAVA::Set<T> &to)
+void UniteSets(const DAVA::Set<T>& from, DAVA::Set<T> &to)
 {
     if (!from.empty())
     {
@@ -49,7 +49,7 @@ void UniteNodes(const DAVA::Set<T>& from, DAVA::Set<T> &to)
 }
 
 template <typename T>
-void SubstractNodes(const DAVA::Set<T> &nodes, DAVA::Set<T> &from)
+void SubstractSets(const DAVA::Set<T> &nodes, DAVA::Set<T> &from)
 {
     for (auto node : nodes)
     {

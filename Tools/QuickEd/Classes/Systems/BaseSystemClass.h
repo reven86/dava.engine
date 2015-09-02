@@ -37,8 +37,8 @@ class BaseSystemClass
 public:
     explicit BaseSystemClass(Document *parent);
     virtual ~BaseSystemClass() = default;
-    virtual void Attach(); //restore system state
-    virtual void Detach(); //detach system
+    virtual void Attach(); //attach system to active scene
+    virtual void Detach(); //detach system from active scene
 protected:
     Document *document = nullptr;
 };

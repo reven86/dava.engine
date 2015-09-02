@@ -45,7 +45,7 @@ void MenuSystem::Detach()
     
 }
 
-bool MenuSystem::OnInput(UIEvent *currentInput)
+bool MenuSystem::OnInput(UIEvent *currentInput, bool forUpdate)
 {
     return false;
 }

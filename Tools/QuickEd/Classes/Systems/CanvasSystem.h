@@ -44,7 +44,7 @@ class CanvasSystem final : public BaseSystemClass
 public:
     CanvasSystem(Document *parent);
     ~CanvasSystem() override = default;
-    void Attach(DAVA::UIControl *root);
+    void AttachToRoot(DAVA::UIControl *root);
     void Detach() override;
     void OnSelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected);
 

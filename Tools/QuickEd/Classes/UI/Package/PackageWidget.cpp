@@ -467,8 +467,8 @@ void PackageWidget::SetSelectedNodes(const SelectedNodes& selected, const Select
         return;
     }
     SelectedNodes tmpSelected = selectedNodes;
-    SubstractNodes(deselected, tmpSelected);
-    UniteNodes(selected, tmpSelected);
+    SubstractSets(deselected, tmpSelected);
+    UniteSets(selected, tmpSelected);
     if (selectedNodes != tmpSelected)
     {
         selectedNodes = tmpSelected;

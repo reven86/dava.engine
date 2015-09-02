@@ -82,8 +82,8 @@ void PropertiesWidget::OnDocumentChanged(Document *arg)
 
 void PropertiesWidget::OnSelectedNodesChanged(const SelectedNodes &selected, const SelectedNodes &deselected)
 {
-    UniteNodes(selected, selectedNodes);
-    SubstractNodes(deselected, selectedNodes);
+    UniteSets(selected, selectedNodes);
+    SubstractSets(deselected, selectedNodes);
     UpdateSelection();
 }
 

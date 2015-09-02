@@ -135,7 +135,7 @@ void PreviewWidget::SetEmulationMode(bool emulationMode)
     }
     else
     {
-        document->GetHUDSystem()->Attach(rootControl);
+        document->GetHUDSystem()->AttachToRoot(rootControl);
     }
 }
 
@@ -150,10 +150,10 @@ void PreviewWidget::OnDocumentChanged(Document *arg)
     auto root = static_cast<RootControl*>(rootControl);
     if (nullptr != document)
     {
-        document->GetCanvasSystem()->Attach(scalableContent);
+        document->GetCanvasSystem()->AttachToRoot(scalableContent);
         if (!root->GetEmulationMode())
         {
-            document->GetHUDSystem()->Attach(rootControl);
+            document->GetHUDSystem()->AttachToRoot(rootControl);
         }
         scrollAreaController->UpdateCanvasContentSize();
     }

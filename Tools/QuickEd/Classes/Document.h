@@ -60,7 +60,7 @@ class PackageModel;
 class ControlNode;
 class AbstractProperty;
 
-class Document final : public QObject, InputInterface
+class Document final : public QObject
 {
     Q_OBJECT
 public:
@@ -78,8 +78,8 @@ public:
     WidgetContext* GetContext(QObject* requester) const;
     void SetContext(QObject* requester, WidgetContext* widgetContext);
     void OnSelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected);
-    bool OnInput(DAVA::UIEvent *currentInput) override;
-    ControlNode* GetControlNodeByPos(const DAVA::Vector2 &pos, ControlNode *node = nullptr) const;
+    bool OnInput(DAVA::UIEvent *currentInput);
+    void GetControlNodesByPos(DAVA::Vector<ControlNode*> &controlNodes, const DAVA::Vector2 &pos, ControlNode *node = nullptr) const;
     AbstractProperty* GetPropertyByName(const ControlNode* node, const DAVA::String &name) const;
 signals:
     void SelectedNodesChanged(const SelectedNodes &selected, const SelectedNodes &deselected);
@@ -88,7 +88,7 @@ public slots:
     void OnSelectedNodesChanged(const SelectedNodes &selected, const SelectedNodes &deselected);
 private:
     void SetSelectedNodes(const SelectedNodes &selected, const SelectedNodes &deselected);
-    QMap < QObject*, WidgetContext* > contexts;
+    DAVA::UnorderedMap < QObject*, WidgetContext* > contexts;
     SelectedNodes selectedNodes;
     PackageNode *package = nullptr;
     QtModelPackageCommandExecutor *commandExecutor = nullptr;
