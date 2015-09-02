@@ -2085,12 +2085,14 @@ void    at_start( void)
      * LC_ALL, LC_CTYPE and LANG -- with preference in this order.
      */
     if (! mb_changed) {                     /* -m option precedes   */
-        if ((env = getenv( "LC_ALL")) != NULL)
+#if !defined(__DAVAENGINE_WIN_UAP__)
+		if ((env = getenv( "LC_ALL")) != NULL)
             set_encoding( env, (char*)"LC_ALL", 0);
         else if ((env = getenv( (char*)"LC_CTYPE")) != NULL)
             set_encoding( env, (char*)"LC_CTYPE", 0);
         else if ((env = getenv( (char*)"LANG")) != NULL)
             set_encoding( env, (char*)"LANG", 0);
+#endif 
     }
 
 #if COMPILER == GNUC || COMPILER == MSC
@@ -2189,13 +2191,14 @@ static void set_env_dirs( void)
  */
 {
     const char *    env;
-
+#if !defined(__DAVAENGINE_WIN_UAP__)
     if (cplus_val) {
         if ((env = getenv( ENV_CPLUS_INCLUDE_DIR)) != NULL)
             parse_env( env);
     }
     if ((env = getenv( ENV_C_INCLUDE_DIR)) != NULL)
         parse_env( env);
+#endif 
 }
 
 static void parse_env(

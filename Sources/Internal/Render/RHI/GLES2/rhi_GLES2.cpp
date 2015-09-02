@@ -571,11 +571,11 @@ gles2_Initialize( const InitParam& param )
     glDebugMessageCallback(&_OGLErrorCallback, 0);
     #endif
 
-    stat_DIP = StatSet::AddStat("rhi'dip", "dip");
-    stat_DP = StatSet::AddStat("rhi'dp", "dp");
-    stat_SET_PS = StatSet::AddStat("rhi'set-ps", "set-ps");
+    stat_DIP     = StatSet::AddStat("rhi'dip", "dip");
+    stat_DP      = StatSet::AddStat("rhi'dp", "dp");
+    stat_SET_PS  = StatSet::AddStat("rhi'set-ps", "set-ps");
     stat_SET_TEX = StatSet::AddStat("rhi'set-tex", "set-tex");
-    stat_SET_CB = StatSet::AddStat("rhi'set-cb", "set-cb");
+    stat_SET_CB  = StatSet::AddStat("rhi'set-cb", "set-cb");
 }
 
 #endif

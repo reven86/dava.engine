@@ -295,7 +295,9 @@ void RenderSystem2D::IntersectClipRect(const Rect &rect)
     if (currentClip.dx < 0 || currentClip.dy < 0)
     {
         //RHI_COMPLETE - Mikhail please review this
-        Rect screen(0.0f, 0.0f, IsRenderTargetPass() ? renderTargetWidth : VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx, IsRenderTargetPass() ? renderTargetHeight : VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy);
+        Rect screen(0.0f, 0.0f, 
+			IsRenderTargetPass() ? (float32)renderTargetWidth : VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx, 
+			IsRenderTargetPass() ? (float32)renderTargetHeight : VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy);
         Rect res = screen.Intersection(rect);
         if (res.dx == 0)
         {

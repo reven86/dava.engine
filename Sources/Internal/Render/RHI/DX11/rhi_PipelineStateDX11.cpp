@@ -519,7 +519,7 @@ desc.vertexLayout.Dump();
         #else
         "vs_4_0",
         #endif
-        D3D10_SHADER_OPTIMIZATION_LEVEL2,
+        D3DCOMPILE_OPTIMIZATION_LEVEL2,
         0, // no effect compile flags
         &vp_code,
         &vp_err
@@ -595,7 +595,7 @@ desc.vertexLayout.Dump();
         #else
         "ps_4_0",
         #endif
-        D3D10_SHADER_OPTIMIZATION_LEVEL2,
+        D3DCOMPILE_OPTIMIZATION_LEVEL2,
         0, // no effect compile flags
         &fp_code,
         &fp_err

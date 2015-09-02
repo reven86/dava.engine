@@ -152,14 +152,17 @@ dx11_VertexBuffer_Update( Handle vb, const void* data, unsigned offset, unsigned
 
     if( offset+size <= self->size )
     {
-        D3D11_MAPPED_SUBRESOURCE    rc = {0};
+        D3D11_MAPPED_SUBRESOURCE    rc   = {0};
+        DX11Command                 cmd1 = { DX11Command::MAP, { uint64(self->buffer), 0, D3D11_MAP_WRITE_DISCARD, 0, uint64(&rc) } };
         
-        _D3D11_ImmediateContext->Map( self->buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &rc );
+        ExecDX11( &cmd1, 1 );
         
         if( rc.pData )
         {            
+            DX11Command cmd2 = { DX11Command::UNMAP, { uint64(self->buffer), 0 } };
+            
             memcpy( ((uint8*)(rc.pData))+offset, data, size );            
-            _D3D11_ImmediateContext->Unmap( self->buffer, 0 );
+            ExecDX11( &cmd2, 1 );
             success = true;
         }
     }
@@ -176,9 +179,10 @@ dx11_VertexBuffer_Map( Handle vb, unsigned offset, unsigned size )
     void*                       ptr  = nullptr;
     VertexBufferDX11_t*         self = VertexBufferDX11Pool::Get( vb );
     D3D11_MAPPED_SUBRESOURCE    rc   = {0};
+    DX11Command                 cmd  = { DX11Command::MAP, { uint64(self->buffer), 0, D3D11_MAP_WRITE_DISCARD, 0, uint64(&rc) } };
 
     DVASSERT(!self->isMapped);
-    _D3D11_ImmediateContext->Map( self->buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &rc );
+    ExecDX11( &cmd, 1 );
 
     if( rc.pData )
     {
@@ -196,9 +200,10 @@ static void
 dx11_VertexBuffer_Unmap( Handle vb )
 {
     VertexBufferDX11_t* self = VertexBufferDX11Pool::Get( vb );
+    DX11Command         cmd  = { DX11Command::UNMAP, { uint64(self->buffer), 0 } };
     
     DVASSERT(self->isMapped);
-    _D3D11_ImmediateContext->Unmap( self->buffer, 0 );
+    ExecDX11( &cmd, 1 );
     self->isMapped = false;
 }
 

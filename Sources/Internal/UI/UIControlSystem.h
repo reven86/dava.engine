@@ -304,7 +304,6 @@ public:
     void SetRtl(bool rtl);
     UILayoutSystem *GetLayoutSystem() const;
     UIStyleSheetSystem* GetStyleSheetSystem() const;
-
     UIScreenshoter* GetScreenshoter();
 
 private:
