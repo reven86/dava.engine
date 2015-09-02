@@ -109,6 +109,8 @@ public:
 	String GetCurrentTimeMsString();
 
 	inline AutotestingSystemLua* GetLuaSystem() { return luaSystem; };
+    
+    static String ResolvePathToAutomation(const String &automationPath);
 protected:
 
 	void OnScreenShotInternal(Image *image);
