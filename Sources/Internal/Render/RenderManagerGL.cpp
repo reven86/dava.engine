@@ -302,7 +302,6 @@ void RenderManager::DetectRenderingCapabilities()
     caps.isFloat32Supported = IsGLExtensionSupported("GL_OES_texture_float");
 	caps.isATCSupported = IsGLExtensionSupported("GL_AMD_compressed_ATC_texture");
 #elif defined(__DAVAENGINE_WIN_UAP__)
-    caps.isETCSupported = true;
     caps.isDXTSupported = IsGLExtensionSupported("GL_ANGLE_texture_compression_dxt5");
 #elif defined(__DAVAENGINE_ANDROID__)
     //TODO: added correct
