@@ -170,7 +170,7 @@ FilePath DLC::GetMetaStorePath() const
     
 void DLC::PostEvent(DLCEvent event)
 {
-    Function<void()> fn = Bind(MakeFunction(this, &DLC::FSM), event);
+    Function<void()> fn = Bind(&DLC::FSM, this, event);
 	JobManager::Instance()->CreateMainJob(fn);
 }
 
@@ -711,16 +711,19 @@ void DLC::StepDownloadPatchBegin()
         SafeRelease(downloadInfoFile);
     }
 
-    // save URL that we gonna download
-    downloadInfoFile = File::Create(dlcContext.downloadInfoStorePath, File::CREATE | File::WRITE);
-    if(NULL != downloadInfoFile)
+    if (donwloadType != RESUMED)//if 'RESUMED' downloadInfoFile contains correct info and we don't want to recreate it to prevent issues when disk is full
     {
-        String sizeStr = Format("%u", dlcContext.remotePatchSize);
-        downloadInfoFile->WriteString(sizeStr);
-        downloadInfoFile->WriteString(dlcContext.remotePatchUrl);
-        SafeRelease(downloadInfoFile);
+        // save URL that we gonna download
+        downloadInfoFile = File::Create(dlcContext.downloadInfoStorePath, File::CREATE | File::WRITE);
+        if(NULL != downloadInfoFile)
+        {
+            String sizeStr = Format("%u", dlcContext.remotePatchSize);
+            downloadInfoFile->WriteString(sizeStr);
+            downloadInfoFile->WriteString(dlcContext.remotePatchUrl);
+            SafeRelease(downloadInfoFile);
+        }
     }
-
+    
     Logger::Info("DLC: Downloading patch-file\n\tfrom: %s\n\tto: %s", dlcContext.remotePatchUrl.c_str(), dlcContext.remotePatchStorePath.GetAbsolutePathname().c_str());
 
     // start download and notify about download status into StepDownloadPatchFinish

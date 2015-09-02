@@ -41,12 +41,16 @@
 
 #include "Model/ControlProperties/AbstractProperty.h"
 #include "Model/ControlProperties/RootProperty.h"
+#include "Model/ControlProperties/SectionProperty.h"
 #include "Model/ControlProperties/StyleSheetRootProperty.h"
+#include "Model/ControlProperties/StyleSheetProperty.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/StyleSheetNode.h"
 #include "Utils/QtDavaConvertion.h"
 #include "UI/Commands/ChangePropertyValueCommand.h"
 #include "UI/QtModelPackageCommandExecutor.h"
+
+#include "UI/UIControl.h"
 
 using namespace DAVA;
 
@@ -148,8 +152,18 @@ QVariant PropertiesModel::data(const QModelIndex &index, int role) const
             {
                 if (index.column() == 0)
                     return QVariant(property->GetName().c_str());
-
-                return makeQVariant(property);
+                else if (index.column() == 1)
+                {
+                    QString res = makeQVariant(property);
+                    
+                    StyleSheetProperty *p = dynamic_cast<StyleSheetProperty*>(property);
+                    if (p && p->HasTransition())
+                    {
+                        const char *interp = GlobalEnumMap<Interpolation::FuncType>::Instance()->ToString(p->GetTransitionFunction());
+                        res += QString(" (") + QVariant(p->GetTransitionTime()).toString() + " sec., " + interp + ")";
+                    }
+                    return res;
+                }
             }
             break;
 
@@ -178,10 +192,10 @@ QVariant PropertiesModel::data(const QModelIndex &index, int role) const
             
         case Qt::FontRole:
             {
-                if (property->IsReplaced() || property->IsReadOnly())
+                if (property->IsOverriddenLocally() || property->IsReadOnly())
                 {
                     QFont myFont;
-                    myFont.setBold(property->IsReplaced());
+                    myFont.setBold(property->IsOverriddenLocally());
                     myFont.setItalic(property->IsReadOnly());
                     return myFont;
                 }
@@ -189,7 +203,19 @@ QVariant PropertiesModel::data(const QModelIndex &index, int role) const
             break;
             
         case Qt::TextColorRole:
+        {
+            if (controlNode)
+            {
+                int32 propertyIndex = property->GetStylePropertyIndex();
+                if (propertyIndex != -1)
+                {
+                    bool setByStyle = controlNode->GetControl()->GetStyledPropertySet().test(propertyIndex);
+                    if (setByStyle)
+                        return QColor(Qt::darkGreen);
+                }
+            }
             return (flags & AbstractProperty::EF_INHERITED) != 0 ? QColor(Qt::blue) : QColor(Qt::black);
+        }
 
     }
 
@@ -279,9 +305,8 @@ void PropertiesModel::PropertyChanged(AbstractProperty *property)
 
 void PropertiesModel::ComponentPropertiesWillBeAdded(RootProperty *root, ComponentPropertiesSection *section, int index)
 {
-    int32 sectionRow = root->GetIndexOfCompoentPropertiesSection(section);
     QModelIndex parentIndex = indexByProperty(root, 0);
-    beginInsertRows(parentIndex, sectionRow, sectionRow);
+    beginInsertRows(parentIndex, index, index);
 }
 
 void PropertiesModel::ComponentPropertiesWasAdded(RootProperty *root, ComponentPropertiesSection *section, int index)
@@ -291,12 +316,56 @@ void PropertiesModel::ComponentPropertiesWasAdded(RootProperty *root, ComponentP
 
 void PropertiesModel::ComponentPropertiesWillBeRemoved(RootProperty *root, ComponentPropertiesSection *section, int index)
 {
-    int32 sectionRow = root->GetIndexOfCompoentPropertiesSection(section);
     QModelIndex parentIndex = indexByProperty(root, 0);
-    beginRemoveRows(parentIndex, sectionRow, sectionRow);
+    beginRemoveRows(parentIndex, index, index);
 }
 
 void PropertiesModel::ComponentPropertiesWasRemoved(RootProperty *root, ComponentPropertiesSection *section, int index)
+{
+    endRemoveRows();
+}
+
+void PropertiesModel::StylePropertyWillBeAdded(StyleSheetPropertiesSection *section, StyleSheetProperty *property, int index)
+{
+    QModelIndex parentIndex = indexByProperty(section, 0);
+    beginInsertRows(parentIndex, index, index);
+}
+
+void PropertiesModel::StylePropertyWasAdded(StyleSheetPropertiesSection *section, StyleSheetProperty *property, int index)
+{
+    endInsertRows();
+}
+
+void PropertiesModel::StylePropertyWillBeRemoved(StyleSheetPropertiesSection *section, StyleSheetProperty *property, int index)
+{
+    QModelIndex parentIndex = indexByProperty(section, 0);
+    beginRemoveRows(parentIndex, index, index);
+}
+
+void PropertiesModel::StylePropertyWasRemoved(StyleSheetPropertiesSection *section, StyleSheetProperty *property, int index)
+{
+    endRemoveRows();
+}
+
+void PropertiesModel::StyleSelectorWillBeAdded(StyleSheetSelectorsSection *section, StyleSheetSelectorProperty *property, int index)
+{
+    QModelIndex parentIndex = indexByProperty(section, 0);
+    beginInsertRows(parentIndex, index, index);
+
+}
+
+void PropertiesModel::StyleSelectorWasAdded(StyleSheetSelectorsSection *section, StyleSheetSelectorProperty *property, int index)
+{
+    endInsertRows();
+}
+
+void PropertiesModel::StyleSelectorWillBeRemoved(StyleSheetSelectorsSection *section, StyleSheetSelectorProperty *property, int index)
+{
+    QModelIndex parentIndex = indexByProperty(section, 0);
+    beginRemoveRows(parentIndex, index, index);
+}
+
+void PropertiesModel::StyleSelectorWasRemoved(StyleSheetSelectorsSection *section, StyleSheetSelectorProperty *property, int index)
 {
     endRemoveRows();
 }
@@ -323,10 +392,6 @@ void PropertiesModel::ResetProperty(AbstractProperty *property)
     {
         commandExecutor->ResetProperty(controlNode, property);
     }
-    else if (styleSheet)
-    {
-        commandExecutor->ResetProperty(styleSheet, property);
-    }
     else
     {
         DVASSERT(false);
@@ -342,7 +407,7 @@ QModelIndex PropertiesModel::indexByProperty(AbstractProperty *property, int col
     return createIndex(parent->GetIndex(property), column, property);
 }
 
-QVariant PropertiesModel::makeQVariant(const AbstractProperty *property) const
+QString PropertiesModel::makeQVariant(const AbstractProperty *property) const
 {
     const VariantType &val = property->GetValue();
     switch (val.GetType())

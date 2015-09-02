@@ -70,9 +70,9 @@ set( LIBRARIES_RELEASE    )
 set( LIBRARIES_DEBUG      )
 set( ADDED_BINARY_DIR     )
 
-if( WIN32 )
-    set( RES_EDITOR_BINARY   "${RES_EDITOR_PATH}/ResourceEditor.exe")
-else()
+if( ${CMAKE_SYSTEM_NAME} STREQUAL "Windows" )
+    set( RES_EDITOR_BINARY   "${RES_EDITOR_PATH}/ResourceEditor.exe")       
+else()            
     set( RES_EDITOR_BINARY   "${RES_EDITOR_PATH}/ResourceEditor.app/Contents/MacOS/ResourceEditor")
 endif()
 

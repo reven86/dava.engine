@@ -29,6 +29,8 @@
 
 #include "Platform/DPIHelper.h"
 
+//temporary decision
+#include "Platform/TemplateWin32/CorePlatformWinUAP.h"
 
 namespace DAVA
 {
@@ -66,40 +68,55 @@ namespace DAVA
 
     uint32 DPIHelper::GetScreenDPI()
     {
-        __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-
-        using namespace Windows::Graphics::Display;
-        return uint32(DisplayInformation::GetForCurrentView()->LogicalDpi);
+#if defined(__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__)
+        CorePlatformWinUAP* core = static_cast<CorePlatformWinUAP*>(Core::Instance());
+        uint32 d(0);
+        auto func = [&d]()
+        {
+            using namespace Windows::Graphics::Display;
+            d = uint32(DisplayInformation::GetForCurrentView()->RawDpiX);
+            Logger::FrameworkDebug("[DPIHelper] GetScreenDPI = %d", d);
+        };
+        core->RunOnUIThreadBlocked(func);
+        return d;
+#else
+        return 0;
+#endif //  (__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__)
     }
 
     float64 DPIHelper::GetDpiScaleFactor(int32 /*screenId*/)
     {
-        __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-
-        using namespace Windows::Graphics::Display;
-        ResolutionScale scale = DisplayInformation::GetForCurrentView()->ResolutionScale;
-
-        switch (scale)
+#if defined(__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__)
+        float64 scaleFactor = 0.0;
+        CorePlatformWinUAP* core = static_cast<CorePlatformWinUAP*>(Core::Instance());
+        core->RunOnUIThreadBlocked([&scaleFactor]()
         {
-        case ResolutionScale::Scale120Percent: return 1.2;
-        case ResolutionScale::Scale140Percent: return 1.4;
-        case ResolutionScale::Scale150Percent: return 1.5;
-        case ResolutionScale::Scale160Percent: return 1.6;
-        case ResolutionScale::Scale180Percent: return 1.8;
-        case ResolutionScale::Scale225Percent: return 2.25;
-        case ResolutionScale::Invalid:
-        case ResolutionScale::Scale100Percent:
-        default:
-            return 1.0;
-        }
+            using Windows::Graphics::Display::DisplayInformation;
+            DisplayInformation^ displayInfo = DisplayInformation::GetForCurrentView();
+            scaleFactor = displayInfo->RawPixelsPerViewPixel;
+        });
+        return scaleFactor;
+#else
+            return 0;
+#endif //  (__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__)
     }
 
     Size2i DPIHelper::GetScreenSize()
     {
-        __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-
-        auto winBounds = Windows::UI::Core::CoreWindow::GetForCurrentThread()->Bounds;
-        return Size2i(uint32(winBounds.X), uint32(winBounds.Y));
+#if defined(__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__)
+        CorePlatformWinUAP* core = static_cast<CorePlatformWinUAP*>(Core::Instance());
+        uint32 w(0), h(0);
+        auto func = [&w, &h]()
+        {
+            auto winBounds = Windows::UI::Core::CoreWindow::GetForCurrentThread()->Bounds;
+            w = static_cast<uint32>(winBounds.Width);
+            h = static_cast<uint32>(winBounds.Height);
+        };
+        core->RunOnUIThreadBlocked(func);
+        return Size2i(w, h);
+#else
+        return Size2i(0, 0);
+#endif //  (__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__)
     }
 
 #endif

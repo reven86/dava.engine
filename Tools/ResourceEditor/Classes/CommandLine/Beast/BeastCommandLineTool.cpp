@@ -45,7 +45,7 @@ BeastCommandLineTool::BeastCommandLineTool()
 {
 }
 
-void BeastCommandLineTool::PrintUsage()
+void BeastCommandLineTool::PrintUsage() const
 {
     printf("\n");
     printf("-beast -file <file> -output <output_path>\n");
@@ -58,7 +58,7 @@ void BeastCommandLineTool::PrintUsage()
 
 }
 
-DAVA::String BeastCommandLineTool::GetCommandLineKey()
+DAVA::String BeastCommandLineTool::GetCommandLineKey() const
 {
     return "-beast";
 }
@@ -82,7 +82,7 @@ bool BeastCommandLineTool::InitializeFromCommandLine()
     return true;
 }
 
-void BeastCommandLineTool::Process()
+void BeastCommandLineTool::Process() 
 {
 	SceneEditor2 *scene = new SceneEditor2();
 	if(scene->Load(scenePathname))

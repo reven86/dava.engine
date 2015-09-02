@@ -38,6 +38,7 @@ extern void FrameworkWillTerminate();
 
 #include "Platform/DeviceInfo.h"
 #include "Input/InputSystem.h"
+#include "UI/UIEvent.h"
 #include "FileSystem/FileSystem.h"
 #include "Scene3D/SceneCache.h"
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
@@ -97,13 +98,14 @@ namespace DAVA
 
 	void CorePlatformAndroid::Quit()
 	{
-		Logger::Debug("[CorePlatformAndroid::Quit]");
-		QuitAction();
+	    Logger::Debug("[CorePlatformAndroid::Quit]");
+	    QuitAction();
 
-		// finish java activity, never return back
-		JNI::JavaClass javaClass("com/dava/framework/JNIActivity");
-		Function<void()> finishActivity = javaClass.GetStaticMethod<void>("finishActivity");
-		finishActivity();
+	    renderIsActive = false;
+	    // finish java activity
+	    JNI::JavaClass javaClass("com/dava/framework/JNIActivity");
+	    Function<void()> finishActivity = javaClass.GetStaticMethod<void>("finishActivity");
+	    finishActivity();
 	}
 
 	void CorePlatformAndroid::QuitAction()
@@ -112,6 +114,7 @@ namespace DAVA
 
 		if(Core::Instance())
 		{
+		    // will call gameCore->onAppFinished() destroy game singletons
 			Core::Instance()->SystemAppFinished();
 		}
 
@@ -212,16 +215,16 @@ namespace DAVA
 			wasCreated = true;
 
 			Logger::Debug("[CorePlatformAndroid::] before create renderer");
-			const GLubyte* glVersion = glGetString(GL_VERSION);
-			Logger::Debug("RENDERER glVersion %s",(const char*)glVersion);
-			if ((NULL != glVersion))
+			const char* glVersion = reinterpret_cast<const char*>(glGetString(GL_VERSION));
+			Logger::Debug("RENDERER glVersion %s", glVersion);
+			if (nullptr != glVersion)
 			{
-				String ver((const char*)glVersion);
-				std::size_t found = ver.find_first_of(".");
-				if (found!=std::string::npos && found > 0)
+				String ver(glVersion);
+				auto found = ver.find_first_of(".");
+				if (found != String::npos && found > 0)
 				{
 					char cv = ver.at(found-1);
-					int major = atoi(&cv);
+					int major = cv - '0';
 					if(major >= 3)
 					{
 						RenderManager::Create(Core::RENDERER_OPENGL_ES_3_0);
@@ -379,7 +382,7 @@ namespace DAVA
 		InputSystem::Instance()->GetGamepadDevice().OnTriggersAvailable(isAvailable);
 	}
 
-	void CorePlatformAndroid::OnInput(int32 action, int32 source, Vector< UIEvent >& activeInputs, Vector< UIEvent >& allInputs)
+	void CorePlatformAndroid::OnInput(int32 action, int32 source, Vector<UIEvent>& activeInputs, Vector<UIEvent>& allInputs)
 	{
 		DVASSERT(!allInputs.empty());
 		if (!allInputs.empty())

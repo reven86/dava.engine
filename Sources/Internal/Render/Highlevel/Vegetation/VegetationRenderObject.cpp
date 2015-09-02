@@ -66,35 +66,28 @@ static const float32 DENSITY_THRESHOLD = 0.0f;
 static Vector3 LOD_RANGES_SCALE = Vector3(0.0f, 2.0f, 6.0f);
 //static Vector3 LOD_RANGES_SCALE = Vector3(0.0f, 2.0f, 6.0f);
 
-static float32 RESOLUTION_SCALE[] =
+static Vector<float32> RESOLUTION_SCALE =
 {
     1.0f,
     2.0f,
     4.0f,
 };
 
-static uint32 RESOLUTION_INDEX[] =
-{
-    0,
-    1,
-    2
-};
-
-static uint32 RESOLUTION_CELL_SQUARE[] =
+static Vector<uint32> RESOLUTION_CELL_SQUARE =
 {
     1,
     4,
     16
 };
 
-static uint32 RESOLUTION_TILES_PER_ROW[] =
+static Vector<uint32> RESOLUTION_TILES_PER_ROW =
 {
     4,
     2,
     1
 };
 
-static uint32 RESOLUTION_CLUSTER_STRIDE[] =
+static Vector<uint32> RESOLUTION_CLUSTER_STRIDE =
 {
     1,
     2,
@@ -103,7 +96,7 @@ static uint32 RESOLUTION_CLUSTER_STRIDE[] =
 
 //#define VEGETATION_DRAW_LOD_COLOR
 
-static Color RESOLUTION_COLOR[] =
+static Vector<Color> RESOLUTION_COLOR =
 {
     Color(0.5f, 0.0f, 0.0f, 1.0f),
     Color(0.0f, 0.5f, 0.0f, 1.0f),
@@ -113,24 +106,6 @@ static Color RESOLUTION_COLOR[] =
 #ifdef VEGETATION_DRAW_LOD_COLOR
 static const FastName UNIFORM_LOD_COLOR = FastName("lodColor");
 #endif
-
-inline uint32 MapCellSquareToResolutionIndex(uint32 cellSquare)
-{
-    uint32 index = 0;
-    uint32 resolutionCount = COUNT_OF(RESOLUTION_CELL_SQUARE);
-    for(uint32 i = 0; i < resolutionCount; ++i)
-    {
-        if(cellSquare == RESOLUTION_CELL_SQUARE[i])
-        {
-            index = RESOLUTION_INDEX[i];
-            break;
-        }
-    }
-    
-    return index;
-}
-
-
     
 VegetationRenderObject::VegetationRenderObject() :
     heightmap(NULL),
@@ -161,8 +136,8 @@ VegetationRenderObject::VegetationRenderObject() :
     AddFlag(RenderObject::ALWAYS_CLIPPING_VISIBLE);
     AddFlag(RenderObject::CUSTOM_PREPARE_TO_RENDER);
     
-    unitWorldSize.resize(COUNT_OF(RESOLUTION_SCALE));
-    resolutionRanges.resize(COUNT_OF(RESOLUTION_INDEX));
+    unitWorldSize.resize(RESOLUTION_SCALE.size());
+    resolutionRanges.resize(RESOLUTION_CELL_SQUARE.size());
     
     maxVisibleQuads = MAX_RENDER_CELLS;
     lodRanges = LOD_RANGES_SCALE;
@@ -691,14 +666,14 @@ void VegetationRenderObject::BuildSpatialQuad(AbstractQuadTreeNode<VegetationSpa
     node->data.x = x;
     node->data.y = y;
     
-    if(width <= RESOLUTION_SCALE[COUNT_OF(RESOLUTION_SCALE) - 1])
+    if(width <= RESOLUTION_SCALE[RESOLUTION_SCALE.size() - 1])
     {
         node->data.width = width;
         node->data.height = height;
         node->data.isVisible = !IsNodeEmpty(node,
                                             densityMap);
         
-        if(width == RESOLUTION_SCALE[COUNT_OF(RESOLUTION_SCALE) - 1])
+        if(width == RESOLUTION_SCALE[RESOLUTION_SCALE.size() - 1])
         {
             firstRenderableParent = node;
             node->data.rdoIndex = 0;
@@ -772,7 +747,7 @@ void VegetationRenderObject::BuildVisibleCellList(const Vector3& cameraPoint,
                                                   Vector<AbstractQuadTreeNode<VegetationSpatialData>*>& cellList,
                                                   bool evaluateVisibility)
 {
-    static Vector3 corners[4];
+    static Array<Vector3, 4> corners;
     if(node)
     {
         Frustum::eFrustumResult result = Frustum::EFR_INSIDE;
@@ -803,7 +778,8 @@ void VegetationRenderObject::BuildVisibleCellList(const Vector3& cameraPoint,
                 float32& refDistance = node->data.cameraDistance;
                 
                 refDistance = FLT_MAX;
-                for(uint32 cornerIndex = 0; cornerIndex < COUNT_OF(corners); ++cornerIndex)
+                size_t cornersCount = corners.size();
+                for(uint32 cornerIndex = 0; cornerIndex < cornersCount; ++cornerIndex)
                 {
                     float32 cornerDistance = (cameraPoint - corners[cornerIndex]).SquareLength();
                     if(cornerDistance < refDistance)
@@ -885,7 +861,7 @@ void VegetationRenderObject::InitHeightTextureFromHeightmap(Heightmap* heightMap
         heightmapScale = Vector2((1.0f * heightmap->Size()) / pow2Size,
                                  (1.0f * heightmap->Size()) / pow2Size);
         
-        Function<void()> fn = Bind(MakeFunction(this, &VegetationRenderObject::SetupHeightmapParameters), tx);
+        Function<void()> fn = Bind(&VegetationRenderObject::SetupHeightmapParameters, this, tx);
         uint32 jobID = JobManager::Instance()->CreateMainJob(fn);
         JobManager::Instance()->WaitMainJobID(jobID);
 
@@ -943,7 +919,8 @@ bool VegetationRenderObject::IsHardwareCapableToRenderVegetation()
 bool VegetationRenderObject::IsValidGeometryData() const
 {
      return (worldSize.Length() > 0 &&
-             heightmap != NULL &&
+             heightmap != nullptr &&
+             heightmap->Size() > 0 && 
              densityMap.size() > 0 &&
              (!textureSheetPath.IsEmpty() || customGeometryData));
 }
@@ -951,7 +928,8 @@ bool VegetationRenderObject::IsValidGeometryData() const
 bool VegetationRenderObject::IsValidSpatialData() const
 {
     return (worldSize.Length() > 0 &&
-            heightmap != NULL &&
+            heightmap != nullptr &&
+            heightmap->Size() > 0 &&
             densityMap.size() > 0);
 }
 
@@ -959,7 +937,8 @@ void VegetationRenderObject::UpdateVegetationSetup()
 {
     if(densityMap.size() > 0)
     {
-        for(size_t i = 0; i < COUNT_OF(RESOLUTION_SCALE); ++i)
+        size_t resolutionScaleSize = RESOLUTION_SCALE.size();
+        for(size_t i = 0; i < resolutionScaleSize; ++i)
         {
             unitWorldSize[i] = GetVegetationUnitWorldSize(RESOLUTION_SCALE[i]);
         }
@@ -1020,9 +999,9 @@ void VegetationRenderObject::GetDataNodes(Set<DataNode*> & dataNodes)
     if(customGeometryData)
     {
         size_t layerCount = customGeometryData->GetLayerCount();
-        for(size_t i = 0; i < layerCount; ++i)
+        for(uint32 i = 0; i < layerCount; ++i)
         {
-            dataNodes.insert(customGeometryData->GetMaterial(static_cast<uint32>(i)));
+            dataNodes.insert(customGeometryData->GetMaterial(i));
         }
     }
 }
@@ -1094,12 +1073,9 @@ void VegetationRenderObject::InitWithFixedGeometry(FastNameSet& materialFlags)
                                                      GetVegetationUnitWorldSize(RESOLUTION_SCALE[0]),
                                                      textureSheetPath,
                                                      RESOLUTION_CELL_SQUARE,
-                                                     COUNT_OF(RESOLUTION_CELL_SQUARE),
                                                      RESOLUTION_SCALE,
-                                                     COUNT_OF(RESOLUTION_SCALE),
                                                      resolutionRanges,
                                                      RESOLUTION_TILES_PER_ROW,
-                                                     COUNT_OF(RESOLUTION_TILES_PER_ROW),
                                                      worldSize);
     
     materialFlags.Insert(VegetationPropertyNames::FLAG_BILLBOARD_DRAW);
@@ -1113,14 +1089,8 @@ void VegetationRenderObject::InitWithCustomGeometry(FastNameSet& materialFlags)
                                                       MAX_DENSITY_LEVELS,
                                                       GetVegetationUnitWorldSize(RESOLUTION_SCALE[0]),
                                                       customGeometryPath,
-                                                      RESOLUTION_CELL_SQUARE,
-                                                      COUNT_OF(RESOLUTION_CELL_SQUARE),
-                                                      RESOLUTION_SCALE,
-                                                      COUNT_OF(RESOLUTION_SCALE),
                                                       RESOLUTION_TILES_PER_ROW,
-                                                      COUNT_OF(RESOLUTION_TILES_PER_ROW),
                                                       RESOLUTION_CLUSTER_STRIDE,
-                                                      COUNT_OF(RESOLUTION_CLUSTER_STRIDE),
                                                       worldSize,
                                                       customGeometryData);
     
@@ -1406,7 +1376,7 @@ void VegetationRenderObject::CollectMetrics(VegetationMetrics& metrics)
         metrics.renderBatchCount = static_cast<uint32>(visibleCells.size() * renderDataCount);
         metrics.totalQuadTreeLeafCount = static_cast<uint32>(visibleCellCount);
         
-        uint32 maxLodCount = COUNT_OF(RESOLUTION_INDEX);
+        size_t maxLodCount = RESOLUTION_CELL_SQUARE.size();
         metrics.quadTreeLeafCountPerLOD.resize(maxLodCount, 0);
         metrics.instanceCountPerLOD.resize(maxLodCount, 0);
         metrics.polyCountPerLOD.resize(maxLodCount, 0);
@@ -1614,4 +1584,21 @@ void VegetationRenderObject::SetDensityMap(const Vector<bool>& densityBits)
     UpdateVegetationSetup();
 }
 
+uint32 VegetationRenderObject::MapCellSquareToResolutionIndex(uint32 cellSquare)
+{
+    uint32 index = 0;
+    size_t resolutionCount = RESOLUTION_CELL_SQUARE.size();
+    for(uint32 i = 0; i < resolutionCount; ++i)
+    {
+        if(cellSquare == RESOLUTION_CELL_SQUARE[i])
+        {
+            index = i;
+            break;
+        }
+    }
+    
+    return index;
+}
+    
+    
 };

@@ -62,13 +62,10 @@ public:
                             uint32 _maxLayerTypes,
                             Vector2 _unitSize,
                             const FilePath& textureSheetPath,
-                            uint32* _resolutionCellSquare,
-                            uint32 resolutionCellSquareCount,
-                            float32* _resolutionScale,
-                            uint32 resolutionScaleCount,
-                            const Vector<Vector2>& _resolutionRanges,
-                            uint32* _resolutionTilesPerRow,
-                            uint32 resolutionTilesPerRowCount,
+                            const Vector<uint32> & _resolutionCellSquare,
+                            const Vector<float32> & _resolutionScale,
+                            const Vector<Vector2> & _resolutionRanges,
+                            const Vector<uint32> & _resolutionTilesPerRow,
                             Vector3 _worldSize);
         
     virtual void Build(Vector<VegetationRenderData*>& renderDataArray, const FastNameSet& materialFlags);
@@ -129,10 +126,10 @@ private:
     uint32 maxDensityLevels;
     uint32 maxLayerTypes;
     TextureSheet textureSheet;
-    Vector<uint32> resolutionCellSquare;
-    Vector<float32> resolutionScale;
-    Vector<Vector2> resolutionRanges;
-    Vector<uint32> resolutionTilesPerRow;
+    const Vector<uint32> & resolutionCellSquare;
+    const Vector<float32> & resolutionScale;
+    const Vector<Vector2> & resolutionRanges;
+    const Vector<uint32> & resolutionTilesPerRow;
     Vector2 unitSize;
     Vector3 worldSize;
 };
