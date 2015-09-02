@@ -78,7 +78,7 @@ DeviceInfoPrivate::DeviceInfoPrivate()
     modelName = RTStringToString(deviceInfo.FriendlyName);
     productName = WideString(deviceInfo.SystemProductName->Data());
     gpu = GPUFamily();
-    uDID = RTStringToString(deviceInfo.Id.ToString());
+    uDID = RTStringToString(Windows::System::UserProfile::AdvertisingManager::AdvertisingId);
     cpuCount = static_cast<int32>(std::thread::hardware_concurrency());
     if (0 == cpuCount)
     {
