@@ -31,6 +31,7 @@
 #define __CREATE_PLANE_LOD_COOMAND_HELPER_H__
 
 #include "DAVAEngine.h"
+#include "Base/TypeHolders.h"
 
 class CreatePlaneLODCommandHelper
 {
