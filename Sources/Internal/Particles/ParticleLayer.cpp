@@ -604,22 +604,17 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
     blending = BLENDING_ALPHABLEND; //default
 
     //read blend node for backward compatibility with old effect files
-    eBlendMode srcBlendFactor = BLEND_NONE;
-    eBlendMode dstBlendFactor = BLEND_NONE;
-
 	const YamlNode * blend = node->Get("blend");
 	if (blend)
 	{
 		if (blend->AsString() == "alpha")
 		{
-			srcBlendFactor = BLEND_SRC_ALPHA;
-			dstBlendFactor = BLEND_ONE_MINUS_SRC_ALPHA;
+			blending = BLENDING_ALPHABLEND;
 		}
 		if (blend->AsString() == "add")
 		{
-			srcBlendFactor = BLEND_SRC_ALPHA;
-			dstBlendFactor = BLEND_ONE;
-		}			
+            blending = BLENDING_ALPHA_ADDITIVE;
+		}
 	}
 	
 	const YamlNode * blendSrcNode = node->Get("srcBlendFactor");
@@ -627,12 +622,9 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
 
     if (blendSrcNode && blendDestNode)
     {
-        srcBlendFactor = GetBlendModeByName(blendSrcNode->AsString());
-        dstBlendFactor = GetBlendModeByName(blendDestNode->AsString());
-    }
-
-    if (srcBlendFactor != BLEND_NONE && dstBlendFactor != BLEND_NONE)
-    {
+        eBlendMode srcBlendFactor = GetBlendModeByName(blendSrcNode->AsString());
+        eBlendMode dstBlendFactor = GetBlendModeByName(blendDestNode->AsString());
+  
         if ((srcBlendFactor == BLEND_ONE) && (dstBlendFactor == BLEND_ONE))
             blending = BLENDING_ADDITIVE;
         else if ((srcBlendFactor == BLEND_SRC_ALPHA) && (dstBlendFactor == BLEND_ONE))
@@ -643,8 +635,6 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
             blending = BLENDING_MULTIPLICATIVE;
         else if ((srcBlendFactor == BLEND_DST_COLOR) && (dstBlendFactor == BLEND_SRC_COLOR))
             blending = BLENDING_STRONG_MULTIPLICATIVE;
-        else if ((srcBlendFactor == BLEND_SRC_ALPHA) && (dstBlendFactor == BLEND_ONE_MINUS_SRC_ALPHA))
-            blending = BLENDING_ALPHABLEND;
     }
 
     //end of legacy
