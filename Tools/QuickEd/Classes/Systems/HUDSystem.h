@@ -40,6 +40,19 @@
 
 class Document;
 
+class ControlContainer : public DAVA::UIControl
+{
+public:
+    explicit ControlContainer(DAVA::UIControl *container, const ControlAreaInterface::eArea area);
+    ControlAreaInterface::eArea GetArea() const;
+    virtual void InitFromControl() = 0;
+    void SetGeometricData(DAVA::UIGeometricData *gd_);
+protected:
+    const DAVA::UIControl *control = nullptr;
+    const ControlAreaInterface::eArea area = ControlAreaInterface::NO_AREA;
+    DAVA::UIGeometricData *gd = nullptr;
+};
+
 class HUDSystem final : public BaseSystemClass, public InputInterface
 {
 public:
@@ -66,8 +79,8 @@ private:
         ~HUD();
         ControlNode *node = nullptr;
         DAVA::UIControl *control = nullptr;
-        DAVA::ScopedPtr<DAVA::UIControl> container;
-        DAVA::Vector < DAVA::ScopedPtr<DAVA::UIControl> > hudControls;
+        DAVA::ScopedPtr<ControlContainer> container;
+        DAVA::Vector < DAVA::ScopedPtr<ControlContainer> > hudControls;
     };
     DAVA::Map<ControlNode*, HUD> hudMap;
     DAVA::ScopedPtr<DAVA::UIControl> selectionRectControl;

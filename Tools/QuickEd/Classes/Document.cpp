@@ -52,7 +52,7 @@ Document::Document(PackageNode *_package, QObject *parent)
     , transformSystem(this)
 {
     systems << &selectionSystem << &canvasSystem << &hudSystem << &cursorSystem << &transformSystem;
-    inputListeners << &hudSystem << &selectionSystem << &transformSystem;
+    inputListeners << &selectionSystem << &hudSystem << &transformSystem;
     selectionSystem.SelectionWasChanged.Connect(this, &Document::OnSelectionWasChanged);
     selectionSystem.SelectionWasChanged.Connect(&canvasSystem, &CanvasSystem::OnSelectionWasChanged);
     selectionSystem.SelectionWasChanged.Connect(&hudSystem, &HUDSystem::OnSelectionWasChanged);
@@ -247,8 +247,8 @@ AbstractProperty* Document::GetPropertyByName(const ControlNode *node, const Str
 
 void Document::SelectControlByPos(const Vector<ControlNode*> &nodesUnderPoint, const Vector2 &point)
 {
-    auto view = EditorCore::Instance()->GetMainWindow()->GetGLWidget();
-    QPoint globalPos = view->mapToGlobal(QPoint(point.x, point.y));
+    auto view = EditorCore::Instance()->GetMainWindow()->GetGLWidget()->GetGLWindow();
+    QPoint globalPos = view->mapToGlobal(QPoint(point.x, point.y)/ view->devicePixelRatio());
     QMenu menu;
     QList<QAction*> actions;
     QAction *defaultAction = nullptr;

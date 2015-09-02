@@ -139,16 +139,20 @@ bool SelectionSystem::ProcessMousePress(const DAVA::Vector2 &point)
             deselected.erase(node);
             selected.insert(node);
         }
-        SetSelectedControls(selected, deselected);
     }
+    else if(!InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_SHIFT))
+    {
+        deselected = selectedControls;
+    }
+    SetSelectedControls(selected, deselected);
     return !selected.empty() || !deselected.empty();
 }
 
 void SelectionSystem::SetSelectedControls(const SelectedControls &selected, const SelectedControls &deselected)
 {
     SelectedControls reallySelected = selected;
-    SelectedControls reallyDeselected = deselected;  
-    DAVA::Logger::Info("SelectionSystem::SetSelectedControls: selected: %d, deselected: %d", selected.size(), deselected.size());
+    SelectedControls reallyDeselected = deselected;
+    
     for (auto control : deselected)
     {
         if (selectedControls.find(control) == selectedControls.end())
