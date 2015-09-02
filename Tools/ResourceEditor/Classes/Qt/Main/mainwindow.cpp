@@ -3213,24 +3213,27 @@ void QtMainWindow::OnConsoleItemClicked(const QString &data)
     PointerSerializer conv(data.toStdString());
     if (conv.CanConvert<Entity*>())
     {
-        if (nullptr != GetCurrentScene())
+		auto currentScene = GetCurrentScene();
+        if (nullptr != currentScene)
         {
             auto vec = conv.GetPointers<Entity*>();
             if (!vec.empty())
             {
                 EntityGroup entityGroup;
                 DAVA::Vector<Entity *> allEntities;
-                GetCurrentScene()->GetChildNodes(allEntities);
+                currentScene->GetChildNodes(allEntities);
                 for (auto entity : vec)
                 {
                     if (std::find(allEntities.begin(), allEntities.end(), entity) != allEntities.end())
                     {
-                        entityGroup.Add(entity);
+                        entityGroup.Add(entity, currentScene->selectionSystem->GetSelectionAABox(entity));
                     }
                 }
-                if (entityGroup.Size() != 0)
+
+                if (entityGroup.Size() > 0)
                 {
-                    GetCurrentScene()->selectionSystem->SetSelection(entityGroup);
+                    currentScene->selectionSystem->SetSelection(entityGroup);
+					currentScene->cameraSystem->LookAt(entityGroup.GetCommonBbox());
                 }
             }
         }

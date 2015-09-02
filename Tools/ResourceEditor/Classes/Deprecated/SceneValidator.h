@@ -133,7 +133,7 @@ protected:
     void ValidateRenderBatch(Entity *ownerNode, RenderBatch *renderBatch, Set<String> &errorsLog);
 
     void ValidateParticleEffectComponent(Entity *ownerNode, Set<String> &errorsLog) const;
-    void ValidateParticleEmitter(ParticleEmitter *emitter, Set<String> &errorsLog) const;
+    void ValidateParticleEmitter(ParticleEmitter *emitter, Set<String> &errorsLog, DAVA::Entity* owner) const;
 
 	void ValidateLandscapeTexture(Landscape *landscape, Landscape::eTextureLevel texLevel, Set<String> &errorsLog);
 	void ValidateCustomColorsTexture(Entity *landscapeEntity, Set<String> &errorsLog);
