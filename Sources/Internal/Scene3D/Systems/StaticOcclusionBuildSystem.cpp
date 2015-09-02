@@ -267,7 +267,7 @@ void StaticOcclusionBuildSystem::OcclusionBuildStep(BaseObject * bo, void * mess
         RestoreOcclusionMaterials();
     }    
 }
-#endif RHI_COMPLETE
+#endif //RHI_COMPLETE
     
 void StaticOcclusionBuildSystem::FinishBuildOcclusion()
 {
