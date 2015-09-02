@@ -41,6 +41,7 @@
 #include "Render/Highlevel/Mesh.h"
 #include "Render/3D/MeshUtils.h"
 #include "Render/3D/PolygonGroup.h"
+#include "Render/TextureDescriptor.h"
 #include "Collada/ColladaPolygonGroup.h"
 #include "Collada/ColladaMeshInstance.h"
 #include "Collada/ColladaSceneNode.h"
@@ -115,7 +116,7 @@ ImportLibrary::~ImportLibrary()
     }
     materialParents.clear();
     
-    for (auto pair : animations)
+    for (auto & pair : animations)
     {
         uint32 refCount = pair.second->Release();
         DVASSERT(0 == refCount);
@@ -125,7 +126,7 @@ ImportLibrary::~ImportLibrary()
 
 void InitPolygon(PolygonGroup * davaPolygon, uint32 vertexFormat, Vector<ColladaVertex> &vertices)
 {
-    size_t vertexCount = vertices.size();
+    uint32 vertexCount = static_cast<uint32>(vertices.size());
     for (uint32 vertexNo = 0; vertexNo < vertexCount; ++vertexNo)
     {
         const auto & vertex = vertices[vertexNo];
@@ -187,10 +188,10 @@ PolygonGroup * ImportLibrary::GetOrCreatePolygon(ColladaPolygonGroupInstance * c
         DVASSERT(nullptr != colladaPolygon && "Empty collada polyton group instance.");
 
         auto vertices = colladaPolygon->GetVertices();
-        size_t vertexCount = vertices.size();
+        uint32 vertexCount = static_cast<uint32>(vertices.size());
         auto vertexFormat = colladaPolygon->GetVertexFormat();
         auto indecies = colladaPolygon->GetIndices();
-        size_t indexCount = indecies.size();
+        uint32 indexCount = static_cast<uint32>(indecies.size());
 
         // Allocate data buffers before fill them
         davaPolygon->AllocateData(vertexFormat, vertexCount, indexCount);
@@ -204,8 +205,16 @@ PolygonGroup * ImportLibrary::GetOrCreatePolygon(ColladaPolygonGroupInstance * c
         
         // Take collada vertices and set to polygon group
         InitPolygon(davaPolygon, vertexFormat, vertices);
-        
-        davaPolygon->BuildBuffers();
+
+        bool rebuildTangentSpace = false;
+#ifdef REBUILD_TANGENT_SPACE_ON_IMPORT
+        rebuildTangentSpace = true;
+#endif
+        const int32 prerequiredFormat = EVF_TANGENT | EVF_BINORMAL | EVF_NORMAL;
+        if (rebuildTangentSpace&&((davaPolygon->GetFormat()&prerequiredFormat) == prerequiredFormat))
+            MeshUtils::RebuildMeshTangentSpace(davaPolygon, true);
+        else
+            davaPolygon->BuildBuffers();
         
         // Put polygon to the library
         polygons[colladaPGI] = davaPolygon;
@@ -242,7 +251,7 @@ AnimationData * ImportLibrary::GetOrCreateAnimation(SceneNodeAnimation * collada
 
 namespace
 {
-void GetTextureTypeAndPathFromCollada(ColladaMaterial * material, FastName & type, FilePath & path)
+bool GetTextureTypeAndPathFromCollada(ColladaMaterial * material, FastName & type, FilePath & path)
 {
     ColladaTexture * diffuse = material->diffuseTexture;
     bool useDiffuseTexture = nullptr != diffuse && material->hasDiffuseTexture;
@@ -250,19 +259,16 @@ void GetTextureTypeAndPathFromCollada(ColladaMaterial * material, FastName & typ
     {
         type = NMaterial::TEXTURE_ALBEDO;
         path = diffuse->texturePathName.c_str();
-        
-        return;
+        return true;
     }
-
-    DVASSERT(false && "There is no texture!");
+    return false;
 }
     
 FilePath GetNormalMapTexturePath(const FilePath & originalTexturePath)
 {
-    String ext = originalTexturePath.GetExtension();
-    String path = originalTexturePath.GetStringValue();
-    path.insert(path.length()-ext.length(), ImportSettings::normalMapPattern);
-    return FilePath(path);
+    FilePath path = originalTexturePath.GetStringValue();
+    path.ReplaceBasename(path.GetBasename() + ImportSettings::normalMapPattern);
+    return path;
 }
 
 } // unnamed namespace
@@ -286,21 +292,28 @@ NMaterial * ImportLibrary::GetOrCreateMaterialParent(ColladaMaterial * colladaMa
     NMaterial * davaMaterialParent = materialParents[parentMaterialName];
     if (nullptr == davaMaterialParent)
     {
-        davaMaterialParent = (NMaterial::CreateMaterial(parentMaterialName, parentMaterialTemplate, NMaterial::DEFAULT_QUALITY_NAME));
+        davaMaterialParent = NMaterial::CreateMaterial(parentMaterialName, parentMaterialTemplate, NMaterial::DEFAULT_QUALITY_NAME);
         materialParents[parentMaterialName] = davaMaterialParent;
     }
     
     FastName textureType;
     FilePath texturePath;
-    GetTextureTypeAndPathFromCollada(colladaMaterial, textureType, texturePath);
-    davaMaterialParent->SetTexture(textureType, texturePath);
-    
-    FilePath normalMap = GetNormalMapTexturePath(texturePath);
-    if (FileSystem::Instance()->IsFile(normalMap))
+    bool hasTexture = GetTextureTypeAndPathFromCollada(colladaMaterial, textureType, texturePath);
+    if (hasTexture)
     {
-        davaMaterialParent->SetTexture(NMaterial::TEXTURE_NORMAL, normalMap);
-    }
+        TextureDescriptor * descr = TextureDescriptor::CreateFromFile(texturePath);
+        descr->Save();
+        texturePath = descr->pathname;
+        SafeDelete(descr);
+        
+        davaMaterialParent->SetTexture(textureType, texturePath);
     
+        FilePath normalMap = GetNormalMapTexturePath(texturePath);
+        if (FileSystem::Instance()->IsFile(normalMap))
+        {
+            davaMaterialParent->SetTexture(NMaterial::TEXTURE_NORMAL, normalMap);
+        }
+    }
     return davaMaterialParent;
 }
     
@@ -347,11 +360,11 @@ void CollapseRenderBatchesRecursive(Entity * node, uint32 lod, RenderObject * ro
         uint32 batchNo = 0;
         while (lodRenderObject->GetRenderBatchCount() > 0)
         {
-            ScopedPtr<RenderBatch> batch(lodRenderObject->GetRenderBatch(batchNo));
+            RenderBatch * batch = lodRenderObject->GetRenderBatch(batchNo);
             batch->Retain();
             lodRenderObject->RemoveRenderBatch(batch);
             ro->AddRenderBatch(batch, lod, -1);
-            
+            batch->Release();
             ++batchNo;
         }
     }
@@ -471,13 +484,12 @@ void BakeTransformsUpToParent(Entity * parent, Entity * currentNode)
         BakeTransformsUpToParent(parent, child);
     }
     
-    // Get actual transformation for current entity
-    Matrix4 totalTransform = currentNode->AccamulateTransformUptoFarParent(parent);
-    
     // Bake transforms to geometry
     RenderObject * ro = GetRenderObject(currentNode);
     if (ro)
     {
+        // Get actual transformation for current entity
+        Matrix4 totalTransform = currentNode->AccamulateTransformUptoFarParent(parent);
         ro->BakeGeometry(totalTransform);
     }
     
@@ -537,7 +549,7 @@ void ColladaToSc2Importer::ImportAnimation(ColladaSceneNode * colladaNode, Entit
         // Calculate actual transform and bake it into animation keys.
         // NOTE: for now usage of the same animation more than once is bad idea
         AnimationData * animation = library->GetOrCreateAnimation(colladaNode->animation);
-        Matrix4 totalTransform = colladaNode->AccamulateTransformUptoFarParent(colladaNode->scene->rootNode);
+        Matrix4 totalTransform = colladaNode->AccumulateTransformUptoFarParent(colladaNode->scene->rootNode);
         animation->BakeTransform(totalTransform);
         animationComponent->SetAnimation(animation);
     }
