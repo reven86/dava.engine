@@ -193,7 +193,7 @@ void CreatePlaneLODCommandHelper::CreatePlaneBatchForRequest(RequestPointer& req
 
     Vector2 cellCenterTxCoordOffset = Vector2(.5f / gridSizeX, .5f / gridSizeY) * txCoordPlaneScale;
 
-    PolygonGroup * planePG = new PolygonGroup();
+    ScopedPtr<PolygonGroup>planePG(new PolygonGroup());
     planePG->AllocateData(EVF_VERTEX | EVF_TEXCOORD0, vxCount, indCount);
 
     int32 currentIndex = 0;
@@ -228,7 +228,7 @@ void CreatePlaneLODCommandHelper::CreatePlaneBatchForRequest(RequestPointer& req
             planePG->SetCoord(vxIndex2, coord2);
             planePG->SetTexcoord(0, vxIndex2, txCoord2);
 
-            //cell center vertices
+            // cell center vertices
             if(z != gridSizeY && xy != gridSizeX)
             {
                 int32 centerVxIndex1 = vxIndex1 + cellCenterVxIndexOffset;
@@ -263,10 +263,6 @@ void CreatePlaneLODCommandHelper::CreatePlaneBatchForRequest(RequestPointer& req
         }
     }
     
-    request->planeBatch = new RenderBatch();
-    request->planeBatch->SetPolygonGroup(planePG);
-    SafeRelease(planePG);
-
 	Texture* fileTexture = Texture::CreateFromFile(TextureDescriptor::GetDescriptorPathname(request->texturePath));
 
 	ScopedPtr<NMaterial> material(new NMaterial());
@@ -274,6 +270,9 @@ void CreatePlaneLODCommandHelper::CreatePlaneBatchForRequest(RequestPointer& req
 	material->SetQualityGroup(NMaterialQualityName::DEFAULT_QUALITY_NAME);
 	material->AddTexture(NMaterialTextureName::TEXTURE_ALBEDO, fileTexture);
 	material->SetTexture(NMaterialTextureName::TEXTURE_ALBEDO, fileTexture);
+
+    request->planeBatch = new RenderBatch();
+    request->planeBatch->SetPolygonGroup(planePG);
     request->planeBatch->SetMaterial(material);
 }
 
@@ -309,7 +308,7 @@ void CreatePlaneLODCommandHelper::DrawToTextureForRequest(RequestPointer& reques
     if (treeObejct)
     {
         Vector<Vector3> fakeSH(9, Vector3());
-        fakeSH[0].x = fakeSH[0].y = fakeSH[0].z = 1.f/0.564188f; // fake SH value to make original object color
+        fakeSH[0].x = fakeSH[0].y = fakeSH[0].z = 1.0f / 0.564188f; // fake SH value to make original object color
         treeObejct->SetSphericalHarmonics(fakeSH);
     }
 
@@ -336,4 +335,15 @@ bool CreatePlaneLODCommandHelper::IsHorisontalMesh(const AABBox3 & bbox)
     const Vector3 & min = bbox.min;
     const Vector3 & max = bbox.max;
     return ((max.x - min.x) / (max.z - min.z) > 1.f || (max.y - min.y) / (max.z - min.z) > 1.f);
+}
+
+/*
+ * Request methods
+ */
+
+CreatePlaneLODCommandHelper::Request::~Request()
+{
+	SafeRelease(planeBatch);
+	SafeRelease(planeImage);
+	SafeRelease(targetTexture);
 }
