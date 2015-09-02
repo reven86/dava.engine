@@ -54,22 +54,7 @@ int Core::Run(int /*argc*/, char* /*argv*/[], AppHandle /*handle*/)
 //////////////////////////////////////////////////////////////////////////
 void CorePlatformWinUAP::InitArgs()
 {
-    int argc = 0;
-    LPWSTR *szArglist = ::CommandLineToArgvW(::GetCommandLineW(), &argc);
-
-    if (argc > 0 && NULL != szArglist)
-    {
-        Vector<String> args;
-        args.reserve(argc);
-        for (int i = 0; i < argc; ++i)
-        {
-            args.emplace_back(WStringToString(szArglist[i]));
-        }
-
-        SetCommandLine(std::move(args));
-    }
-
-    ::LocalFree(szArglist);
+    SetCommandLine(WStringToString(::GetCommandLineW()));
 }
 
 void CorePlatformWinUAP::Run()
