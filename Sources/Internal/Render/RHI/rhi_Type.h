@@ -890,7 +890,7 @@ void Trace( const char* format, ... );
 
 #endif
 
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_WIN_UAP__)
 
     #define stricmp _strcmpi
 

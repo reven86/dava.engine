@@ -549,6 +549,48 @@ ReleaseTextureSet(HTextureSet tsh, bool forceImmediate)
 
 //------------------------------------------------------------------------------
 
+void
+ReplaceTextureInAllTextureSets( HTexture oldHandle, HTexture newHandle )
+{
+	for( std::vector<TextureSetInfo>::iterator s=_TextureSetInfo.begin(), s_end=_TextureSetInfo.end(); s!=s_end; ++s )
+	{
+        // update texture-set itself
+
+        TextureSet_t*   ts  = TextureSetPool::Get( s->handle );
+
+        if( ts )
+        {
+            for( unsigned i=0; i!=ts->fragmentTextureCount; ++i )
+            {
+                if( ts->fragmentTexture[i] == oldHandle )
+                    ts->fragmentTexture[i] = newHandle;
+            }
+            for( unsigned i=0; i!=ts->vertexTextureCount; ++i )
+            {
+                if( ts->vertexTexture[i] == oldHandle )
+                    ts->vertexTexture[i] = newHandle;
+            }
+        }                                                
+
+        
+        // update desc as well
+
+		for( uint32 t=0; t!=s->desc.fragmentTextureCount; ++t )
+        {
+            if( s->desc.fragmentTexture[t] == oldHandle )
+                s->desc.fragmentTexture[t] = newHandle;
+        }
+		for( uint32 t=0; t!=s->desc.vertexTextureCount; ++t )
+        {
+            if( s->desc.vertexTexture[t] == oldHandle )
+                s->desc.vertexTexture[t] = newHandle;
+        }
+	}
+}
+
+
+//------------------------------------------------------------------------------
+
 HDepthStencilState
 AcquireDepthStencilState( const DepthStencilState::Descriptor& desc )
 {

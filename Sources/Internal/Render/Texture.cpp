@@ -578,6 +578,7 @@ void Texture::Reload()
     
 void Texture::ReloadAs(eGPUFamily gpuFamily)
 {
+    rhi::HTexture oldHandle = handle;
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     DVASSERT(isRenderTarget == false);
@@ -609,6 +610,7 @@ void Texture::ReloadAs(eGPUFamily gpuFamily)
         Logger::Error("[Texture::ReloadAs] Cannot reload from file %s", texDescriptor->pathname.GetAbsolutePathname().c_str());
         MakePink();
     }
+    rhi::ReplaceTextureInAllTextureSets(oldHandle, handle);
 }
 
     
@@ -713,31 +715,12 @@ void Texture::SetDebugInfo(const String & _debugInfo)
 #if defined(__DAVAENGINE_DEBUG__)
 	debugInfo = FastName(_debugInfo.c_str());
 #endif
-}
-	
-#if defined(__DAVAENGINE_ANDROID__)
-	
-void Texture::Lost()
+}	
+
+void Texture::RestoreRenderResource()
 {
-    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
-
-    RenderResource::Lost();
-    
-    ReleaseTextureData();
-}
-
-void Texture::Invalidate()
-{
-    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
-#if RHI_COMPLETE
-	RenderResource::Invalidate();
-	
-	DVASSERT(id == 0 && "Texture always invalidated");
-	if (id)
-	{
-		return;
-	}
-
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();	
+		
 	if (invalidater)
     {
         invalidater->InvalidateTexture(this);
@@ -762,9 +745,8 @@ void Texture::Invalidate()
             MakePink();
         }
     }
-#endif
 }
-#endif //#if defined(__DAVAENGINE_ANDROID__)
+
 
 Image * Texture::CreateImageFromMemory()
 {

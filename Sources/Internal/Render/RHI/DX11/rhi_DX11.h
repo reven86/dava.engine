@@ -112,6 +112,25 @@ namespace CommandBufferDX11
 void        SetupDispatch( Dispatch* dispatch );
 }
 
+struct
+DX11Command
+{
+    enum 
+    Func
+    {
+        NOP                 = 0,
+        
+        MAP                 = 1,
+        UNMAP               = 2,
+        UPDATE_SUBRESOURCE  = 3
+    };
+
+    Func    func;
+    uint64  arg[12];
+    long    retval;
+};
+
+void     ExecDX11( DX11Command* cmd, uint32 cmdCount, bool force_immediate=false );
 
 
 //==============================================================================
