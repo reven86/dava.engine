@@ -34,8 +34,6 @@
 #include "Scene/SceneHelper.h"
 #include "Render/Material/NMaterialNames.h"
 
-#define RELOAD_TEXTURES_TO_ORIGIN_GPU 0 // temporary workaround
-
 using namespace DAVA;
 
 CreatePlaneLODCommandHelper::RequestPointer CreatePlaneLODCommandHelper::RequestRenderToTexture(DAVA::LodComponent* lodComponent, 
@@ -193,7 +191,7 @@ void CreatePlaneLODCommandHelper::CreatePlaneBatchForRequest(RequestPointer& req
 
     Vector2 cellCenterTxCoordOffset = Vector2(.5f / gridSizeX, .5f / gridSizeY) * txCoordPlaneScale;
 
-    ScopedPtr<PolygonGroup>planePG(new PolygonGroup());
+    ScopedPtr<PolygonGroup> planePG(new PolygonGroup());
     planePG->AllocateData(EVF_VERTEX | EVF_TEXCOORD0, vxCount, indCount);
 
     int32 currentIndex = 0;
@@ -279,13 +277,11 @@ void CreatePlaneLODCommandHelper::CreatePlaneBatchForRequest(RequestPointer& req
 void CreatePlaneLODCommandHelper::DrawToTextureForRequest(RequestPointer& request, DAVA::Entity* fromEntity, DAVA::Camera* camera,
 	DAVA::Texture* toTexture, DAVA::int32 fromLodLayer, const rhi::Viewport& viewport, bool clearTarget)
 {
-#if (RELOAD_TEXTURES_TO_ORIGIN_GPU)
     DAVA::TexturesMap textures;
     SceneHelper::EnumerateEntityTextures(fromEntity->GetScene(), fromEntity, textures, 
 		SceneHelper::TexturesEnumerateMode::EXCLUDE_NULL);
 	for (auto& tex : textures)
         tex.second->ReloadAs(GPU_ORIGIN);
-#endif
 
     ScopedPtr<Scene> tempScene(new Scene());
 
@@ -323,11 +319,9 @@ void CreatePlaneLODCommandHelper::DrawToTextureForRequest(RequestPointer& reques
 	tempScene->Update(1.0f / 60.0f);
     tempScene->Draw();
 
-#if (RELOAD_TEXTURES_TO_ORIGIN_GPU)
     DAVA::eGPUFamily currentGPU = (DAVA::eGPUFamily) SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsInt32();
 	for (auto& tex : textures)
         tex.second->ReloadAs(currentGPU);
-#endif
 }
 
 bool CreatePlaneLODCommandHelper::IsHorisontalMesh(const AABBox3 & bbox)
