@@ -136,7 +136,7 @@ void AddSwitchEntityDialog::accept()
 		{
 			canCreateSwitch = false;
 			Logger::Error("Can't create switch in switch: %s%s", vector[i]->GetName().c_str(),
-				PointerSerializer::FromPointer(vector[i]));
+				PointerSerializer::FromPointer(vector[i]).c_str());
             ShowErrorDialog(ResourceEditor::ADD_SWITCH_NODE_DIALOG_DENY_SRC_SWITCH);
 			return;
 		}
@@ -144,7 +144,7 @@ void AddSwitchEntityDialog::accept()
         {
             canCreateSwitch = false;
             Logger::Error("Entity '%s' hasn't mesh render objects%s", vector[i]->GetName().c_str(),
-				PointerSerializer::FromPointer(vector[i]));
+				PointerSerializer::FromPointer(vector[i]).c_str());
             ShowErrorDialog(ResourceEditor::ADD_SWITCH_NODE_DIALOG_NO_RENDER_OBJECTS);
             return;
         }
