@@ -35,7 +35,7 @@
 namespace DAVA
 {
 
-#ifdef __DAVAENGINE_WIN32__
+#ifdef __DAVAENGINE_WINDOWS__
 
 static_assert(sizeof(wchar_t) == 2, "check size of wchar_t on current platform");
 
