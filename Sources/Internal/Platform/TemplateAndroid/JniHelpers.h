@@ -58,6 +58,9 @@
     }\
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wclass-varargs"
+
 // placed into the Global namespace and not in JNI to use it like a jstring
 class jstringArray
 {
@@ -824,6 +827,8 @@ Function<Ret(P1, P2, P3, P4, P5, P6)> JavaClass::GetStaticMethod(String name) co
 
 } // end namespace JNI
 } // end namespace DAVA
+
+#pragma clang diagnostic pop
 
 #endif
 
