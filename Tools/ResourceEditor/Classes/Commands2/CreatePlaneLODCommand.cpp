@@ -31,7 +31,6 @@
 #include "Qt/Scene/SceneHelper.h"
 #include "Qt/Settings/SettingsManager.h"
 #include "Classes/CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
-#include "Scene/SceneHelper.h"
 
 #include "Render/Material/NMaterialNames.h"
 
@@ -83,8 +82,6 @@ void CreatePlaneLODCommand::Redo()
     ro->AddRenderBatch(planeBatch, newLodIndex, newSwitchIndex);
     
     lodComponent->SetLodLayerDistance(newLodIndex, lodComponent->GetLodLayerDistance(newLodIndex-1) * 2);
-    
-    SceneHelper::InvalidateMaterialBindings(entity->GetScene(), t);
 }
 
 void CreatePlaneLODCommand::Undo()
