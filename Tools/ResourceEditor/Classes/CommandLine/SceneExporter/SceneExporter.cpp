@@ -449,12 +449,6 @@ void SceneExporter::CompressTextureIfNeed(const TextureDescriptor * descriptor, 
         {
             DAVA::Texture *tex = found->second;
             tex->Reload();
-            
-            DVASSERT(false && "Not implemented bindings. May be need to move them after export in GUI ?");
-#if RHI_COMPLETE_EDITOR
-            //        TODO:: invalidate texture bindings
-#endif //#if RHI_COMPLETE_EDITOR
-
         }
     }
 }
