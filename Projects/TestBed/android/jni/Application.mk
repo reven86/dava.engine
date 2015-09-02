@@ -1,5 +1,5 @@
-APP_STL := gnustl_static
-APP_GNUSTL_FORCE_CPP_FEATURES := rtti
+APP_STL := gnustl_shared
+APP_CPPFLAGS := -frtti -fexceptions
 
 #APP_CFLAGS := -marm
 

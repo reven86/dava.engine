@@ -47,8 +47,6 @@ public:
     void SystemScreenSizeDidChanged(const DAVA::Rect &newFullScreenSize) override;
 
 protected:
-    UIButton *exitButton;
-
     void LoadResources() override;
     void UnloadResources() override;
     bool SystemInput(DAVA::UIEvent *currentInput) override;
