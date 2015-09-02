@@ -154,7 +154,10 @@ void EditorMaterialSystem::AddEntity(DAVA::Entity * entity)
             for (auto & dt: dataNodes)
             {
                 DAVA::NMaterial *material = dynamic_cast<DAVA::NMaterial *>(dt);
-                AddMaterial(material, entity, nullptr);
+                if(nullptr != material)
+                {
+                    AddMaterial(material, entity, nullptr);
+                }
             }
         }
         
@@ -181,10 +184,12 @@ void EditorMaterialSystem::RemoveEntity(DAVA::Entity * entity)
             for (auto & dt: dataNodes)
             {
                 DAVA::NMaterial *material = dynamic_cast<DAVA::NMaterial *>(dt);
-                RemoveMaterial(material);
+                if(nullptr != material)
+                {
+                    RemoveMaterial(material);
+                }
             }
         }
-
         
 		for(DAVA::uint32 i = 0; i < ro->GetRenderBatchCount(); ++i)
 		{
