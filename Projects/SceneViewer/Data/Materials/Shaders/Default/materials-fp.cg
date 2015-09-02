@@ -59,6 +59,10 @@ FPROG_IN_BEGIN
         
     #endif
     
+    #if VERTEX_COLOR || SPHERICAL_LIT
+        FPROG_IN_COLOR1(varVertexColor,4)
+    #endif
+
     #if VERTEX_FOG
         FPROG_IN_TEXCOORD5(varFog,4)
 //        varying lowp float varFogAmoung;
@@ -69,9 +73,6 @@ FPROG_IN_BEGIN
         varying lowp float varLightmapSize;
     #endif
     
-    #if VERTEX_COLOR || SPHERICAL_LIT
-        FPROG_IN_COLOR1(varVertexColor,4)
-    #endif
 
     #if FRAME_BLEND
         FPROG_IN_TEXCOORD3(varTime, 1)
