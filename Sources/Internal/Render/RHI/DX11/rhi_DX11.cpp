@@ -40,7 +40,10 @@
 
     #include <vector>
 
-
+#if defined(__DAVAENGINE_WIN_UAP__)
+	#include "uap_dx11.h"
+#endif
+	
 
 namespace rhi
 {
@@ -131,6 +134,11 @@ dx11_Uninitialize()
 static void
 dx11_Reset( const ResetParam& param )
 {
+#if defined(__DAVAENGINE_WIN_UAP__)
+    reset_swapchain(param.width, param.height, param.scaleX, param.scaleY);
+#else
+    //Not implemented
+#endif
 }
 
 
@@ -139,6 +147,11 @@ dx11_Reset( const ResetParam& param )
 void
 _InitDX11()
 {
+#if defined(__DAVAENGINE_WIN_UAP__)
+
+    init_device_and_swapchain_uap(_DX11_InitParam.window, _DX11_InitParam.width, _DX11_InitParam.height, _DX11_InitParam.scaleX, _DX11_InitParam.scaleY);
+
+#else
     HRESULT                 hr;
     DWORD                   flags           = 0;
     #if RHI__FORCE_DX11_91
@@ -210,6 +223,8 @@ _InitDX11()
         hr = _D3D11_Device->CreateTexture2D( &ds_desc, 0, &_D3D11_DepthStencilBuffer );        
         hr = _D3D11_Device->CreateDepthStencilView( _D3D11_DepthStencilBuffer, 0, &_D3D11_DepthStencilView );
     }
+
+#endif
 }
 
 
@@ -219,7 +234,7 @@ void
 dx11_Initialize( const InitParam& param )
 {
     _DX11_InitParam = param;
-    InitializeRenderThreadDX11();
+    InitializeRenderThreadDX11( (param.threadedRenderEnabled)?param.threadedRenderFrameCount:0 );
 
     VertexBufferDX11::SetupDispatch( &DispatchDX11 );
     IndexBufferDX11::SetupDispatch( &DispatchDX11 );
