@@ -602,14 +602,37 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
 
 	
     blending = BLENDING_ALPHABLEND; //default
+
+    //read blend node for backward compatibility with old effect files
+    eBlendMode srcBlendFactor = BLEND_NONE;
+    eBlendMode dstBlendFactor = BLEND_NONE;
+
+	const YamlNode * blend = node->Get("blend");
+	if (blend)
+	{
+		if (blend->AsString() == "alpha")
+		{
+			srcBlendFactor = BLEND_SRC_ALPHA;
+			dstBlendFactor = BLEND_ONE_MINUS_SRC_ALPHA;
+		}
+		if (blend->AsString() == "add")
+		{
+			srcBlendFactor = BLEND_SRC_ALPHA;
+			dstBlendFactor = BLEND_ONE;
+		}			
+	}
 	
-    //read blending factors directly for backward compatibility with old legacy effect files
 	const YamlNode * blendSrcNode = node->Get("srcBlendFactor");
 	const YamlNode * blendDestNode = node->Get("dstBlendFactor");
-    if(blendSrcNode && blendDestNode)
-	{
-		eBlendMode srcBlendFactor = GetBlendModeByName(blendSrcNode->AsString());
-        eBlendMode dstBlendFactor = GetBlendModeByName(blendDestNode->AsString());
+
+    if (blendSrcNode && blendDestNode)
+    {
+        srcBlendFactor = GetBlendModeByName(blendSrcNode->AsString());
+        dstBlendFactor = GetBlendModeByName(blendDestNode->AsString());
+    }
+
+    if (srcBlendFactor != BLEND_NONE && dstBlendFactor != BLEND_NONE)
+    {
         if ((srcBlendFactor == BLEND_ONE) && (dstBlendFactor == BLEND_ONE))
             blending = BLENDING_ADDITIVE;
         else if ((srcBlendFactor == BLEND_SRC_ALPHA) && (dstBlendFactor == BLEND_ONE))
@@ -619,8 +642,11 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
         else if ((srcBlendFactor == BLEND_DST_COLOR) && (dstBlendFactor == BLEND_ZERO))
             blending = BLENDING_MULTIPLICATIVE;
         else if ((srcBlendFactor == BLEND_DST_COLOR) && (dstBlendFactor == BLEND_SRC_COLOR))
-            blending = BLENDING_STRONG_MULTIPLICATIVE;                
-	}
+            blending = BLENDING_STRONG_MULTIPLICATIVE;
+        else if ((srcBlendFactor == BLEND_SRC_ALPHA) && (dstBlendFactor == BLEND_ONE_MINUS_SRC_ALPHA))
+            blending = BLENDING_ALPHABLEND;
+    }
+
     //end of legacy
 
     const YamlNode * blendingNode = node->Get("blending");
