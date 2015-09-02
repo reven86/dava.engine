@@ -578,6 +578,7 @@ void Texture::Reload()
     
 void Texture::ReloadAs(eGPUFamily gpuFamily)
 {
+    rhi::HTexture oldHandle = handle;
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     DVASSERT(isRenderTarget == false);
@@ -609,6 +610,7 @@ void Texture::ReloadAs(eGPUFamily gpuFamily)
         Logger::Error("[Texture::ReloadAs] Cannot reload from file %s", texDescriptor->pathname.GetAbsolutePathname().c_str());
         MakePink();
     }
+    rhi::ReplaceTextureInAllTextureSets(oldHandle, handle);
 }
 
     
