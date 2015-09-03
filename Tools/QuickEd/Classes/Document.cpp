@@ -144,12 +144,11 @@ bool Document::OnInput(UIEvent *currentInput)
 {
     QListIterator<InputInterface*> it(inputListeners);
     it.toBack();
-    bool forUpdate = false;
     while (it.hasPrevious())
     {
-        if (it.previous()->OnInput(currentInput, forUpdate))
+        if (it.previous()->OnInput(currentInput))
         {
-            forUpdate = true;
+            return true;
         }
     }
     return false;

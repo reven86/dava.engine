@@ -75,12 +75,8 @@ void TransformSystem::MouseLeaveArea()
     activeArea = NO_AREA;
 }
 
-bool TransformSystem::OnInput(UIEvent* currentInput, bool forUpdate)
+bool TransformSystem::OnInput(UIEvent* currentInput)
 {
-    if (forUpdate)
-    {
-        return false;
-    }
     switch(currentInput->phase)
     {
         case UIEvent::PHASE_KEYCHAR:
@@ -125,16 +121,16 @@ bool TransformSystem::ProcessKey(const int32 key)
         switch(key)
         {
             case DVKEY_LEFT:
-                MoveAllSelectedControls(Vector2(-1, 0));
+                MoveAllSelectedControls(Vector2(-1.0f, 0.0f));
                 return true;
             case DVKEY_UP:
-                MoveAllSelectedControls(Vector2(0, -1));
+                MoveAllSelectedControls(Vector2(0.0f, -1.0f));
                 return true;
             case DVKEY_RIGHT:
-                MoveAllSelectedControls(Vector2(1, 0));
+                MoveAllSelectedControls(Vector2(1.0f, 0.0f));
                 return true;
             case DVKEY_DOWN:
-                MoveAllSelectedControls(Vector2(0, 1));
+                MoveAllSelectedControls(Vector2(0.0f, 1.0f));
                 return true;
             default:
                 return false;
@@ -196,8 +192,8 @@ bool TransformSystem::ProcessDrag(const Vector2 &pos)
             Vector2 rotatePoint = pivotPoint;
             Vector2 l1(prevPos.x - rotatePoint.x, prevPos.y - rotatePoint.y);
             Vector2 l2(pos.x - rotatePoint.x, pos.y - rotatePoint.y);
-            float angleRad = atan2(l2.y, l2.x) - atan2(l1.y, l1.x);
-            float angle = angleRad * 180.0f / PI;
+            float32 angleRad = atan2(l2.y, l2.x) - atan2(l1.y, l1.x);
+            float32 angle = angleRad * 180.0f / PI;
             if (InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_SHIFT))
             {
                 Vector2 angle2(angle, angle);
@@ -208,7 +204,7 @@ bool TransformSystem::ProcessDrag(const Vector2 &pos)
             {
                 angle = round(angle);
             }
-            AdjustProperty(activeControl, "Angle", static_cast<float32>(angle));
+            AdjustProperty(activeControl, "Angle", angle);
         
         }
             break;
@@ -257,7 +253,7 @@ void TransformSystem::ResizeControl(const Vector2& pos, bool withPivot, bool rat
     Vector2 angeledDelta(delta.x * cosf(gd.angle) + delta.y * sinf(gd.angle),
                          delta.x * -sinf(gd.angle) + delta.y * cosf(gd.angle)); //rotate delta
      //scale rotated delta
-    DVASSERT(gd.scale.x != 0 && gd.scale.y != 0);
+    DVASSERT(gd.scale.x != 0.0f && gd.scale.y != 0.0f);
     Vector2 realDelta(angeledDelta / gd.scale);
     Vector2 deltaPosition(realDelta);
     Vector2 deltaSize(realDelta);
@@ -267,11 +263,11 @@ void TransformSystem::ResizeControl(const Vector2& pos, bool withPivot, bool rat
     //disable move if not accepted
     if(invertX == 0)
     {
-        deltaPosition.x = 0;
+        deltaPosition.x = 0.0f;
     }
     if(invertY == 0)
     {
-        deltaPosition.y = 0;
+        deltaPosition.y = 0.0f;
     }
 
     auto pivotProp = document->GetPropertyByName(activeControl, "Pivot");
@@ -286,13 +282,13 @@ void TransformSystem::ResizeControl(const Vector2& pos, bool withPivot, bool rat
     if(withPivot)
     {
         deltaPosition.SetZero();
-        auto pivotDeltaX = invertX == -1 ? pivot.x : 1 - pivot.x;
-        if (pivotDeltaX != 0)
+        auto pivotDeltaX = invertX == -1 ? pivot.x : 1.0f - pivot.x;
+        if (pivotDeltaX != 0.0f)
         {
             deltaSize.x /= pivotDeltaX;
         }
-        auto pivotDeltaY = invertY == -1 ? pivot.y : 1 - pivot.y;
-        if (pivotDeltaY != 0)
+        auto pivotDeltaY = invertY == -1 ? pivot.y : 1.0f - pivot.y;
+        if (pivotDeltaY != 0.0f)
         {
             deltaSize.y /= pivotDeltaY;
         }
@@ -301,13 +297,13 @@ void TransformSystem::ResizeControl(const Vector2& pos, bool withPivot, bool rat
     //check situation when we try to resize up and down simultaneously
     if(invertX != 0 && invertY != 0) //actual only for corners
     {
-        if(fabs(angeledDelta.x) > 0 && fabs(angeledDelta.y) > 0) //only if up and down requested
+        if(fabs(angeledDelta.x) > 0.0f && fabs(angeledDelta.y) > 0.0f) //only if up and down requested
         {
-            bool canNotResize = (angeledDelta.x * invertX > 0) ^ (angeledDelta.y * invertY > 0);
+            bool canNotResize = ((angeledDelta.x * invertX) > 0.0f) ^ ((angeledDelta.y * invertY) > 0.0f);
             if(canNotResize) // and they have different sign for corner
             {
                 float prop = fabs(angeledDelta.x) / fabs(angeledDelta.y);
-                if(prop > 0.48 && prop < 0.52) // like "resize 10 to up and 10 to down rateably"
+                if(prop > 0.48f && prop < 0.52f) // like "resize 10 to up and 10 to down rateably"
                 {
                     return;
                 }
@@ -320,13 +316,13 @@ void TransformSystem::ResizeControl(const Vector2& pos, bool withPivot, bool rat
         //check situation when we try to resize up and down simultaneously
         if(invertX != 0 && invertY != 0) //actual only for corners
         {
-            if(fabs(angeledDelta.x) > 0 && fabs(angeledDelta.y) > 0) //only if up and down requested
+            if(fabs(angeledDelta.x) > 0.0f && fabs(angeledDelta.y) > 0.0f) //only if up and down requested
             {
-                bool canNotResize = (angeledDelta.x * invertX > 0) ^ (angeledDelta.y * invertY > 0);
+                bool canNotResize = ((angeledDelta.x * invertX) > 0.0f) ^ ((angeledDelta.y * invertY) > 0.0f);
                 if(canNotResize) // and they have different sign for corner
                 {
                     float prop = fabs(angeledDelta.x) / fabs(angeledDelta.y);
-                    if(prop > 0.48 && prop < 0.52) // like "resize 10 to up and 10 to down rateably"
+                    if(prop > 0.48f && prop < 0.52f) // like "resize 10 to up and 10 to down rateably"
                     {
                         return;
                     }
@@ -335,8 +331,8 @@ void TransformSystem::ResizeControl(const Vector2& pos, bool withPivot, bool rat
         }
         //calculate proportion of control
         const Vector2 &size = activeControl->GetControl()->GetSize();
-        float proportion = size.y != 0  ? size.x / size.y : 0;
-        if (proportion != 0)
+        float proportion = size.y != 0.0f  ? size.x / size.y : 0.0f;
+        if (proportion != 0.0f)
         {
             //get current drag direction
             if (fabs(angeledDelta.y) > fabs(angeledDelta.x))
@@ -347,11 +343,11 @@ void TransformSystem::ResizeControl(const Vector2& pos, bool withPivot, bool rat
                     deltaPosition.x = deltaSize.y * proportion;
                     if(invertX == 0)
                     {
-                        deltaPosition.x *= (0.5 - pivot.x) * -1; //rainbow unicorn was here and add -1 to the right.
+                        deltaPosition.x *= (0.5f - pivot.x) * -1.0f; //rainbow unicorn was here and add -1 to the right.
                     }
                     else
                     {
-                        deltaPosition.x *= (invertX == -1 ? 1 - pivot.x : pivot.x) * invertX;
+                        deltaPosition.x *= (invertX == -1 ? 1.0f - pivot.x : pivot.x) * invertX;
                     }
                 }
             }
@@ -363,11 +359,11 @@ void TransformSystem::ResizeControl(const Vector2& pos, bool withPivot, bool rat
                     deltaPosition.y =  deltaSize.x / proportion;
                     if(invertY == 0)
                     {
-                        deltaPosition.y *= (0.5 - pivot.y) * -1; // another rainbow unicorn adds -1 here.
+                        deltaPosition.y *= (0.5f - pivot.y) * -1.0f; // another rainbow unicorn adds -1 here.
                     }
                     else
                     {
-                        deltaPosition.y *= (invertY == -1 ? 1 - pivot.y : pivot.y) * invertY;
+                        deltaPosition.y *= (invertY == -1 ? 1.0f - pivot.y : pivot.y) * invertY;
                     }
                 }
             }

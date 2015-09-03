@@ -46,7 +46,7 @@ class SelectionSystem final : public BaseSystemClass, public InputInterface, pub
 public:
     SelectionSystem(Document *doc);
     ~SelectionSystem() override = default;
-    bool OnInput(DAVA::UIEvent *currentInput, bool forUpdate) override;
+    bool OnInput(DAVA::UIEvent *currentInput) override;
     void ControlWasRemoved(ControlNode *node, ControlsContainerNode *from) override;
     void OnSelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected);
     DAVA::Signal<const SelectedControls &/*selected*/, const SelectedControls &/*deselected*/> SelectionWasChanged;
@@ -56,6 +56,7 @@ private:
     void SetSelectedControls(const SelectedControls &selected, const SelectedControls &deselected);
     SelectedControls selectedControls;
     DAVA::Vector<ControlNode*> nodesUnderPoint;
+    bool mousePressed = false;
 };
 
 #endif // __QUICKED_SELECTION_SYSTEM_H__

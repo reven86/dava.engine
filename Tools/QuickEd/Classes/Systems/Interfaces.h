@@ -41,7 +41,7 @@ class ControlNode;
 class InputInterface
 {
 public:
-    virtual bool OnInput(DAVA::UIEvent *currentInput, bool forUpdate) = 0;
+    virtual bool OnInput(DAVA::UIEvent *currentInput) = 0;
 };
 
 using SelectedControls = DAVA::Set < ControlNode* >;

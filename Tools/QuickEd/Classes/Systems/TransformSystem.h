@@ -44,7 +44,7 @@ public:
     ~TransformSystem() = default;
     void MouseEnterArea(ControlNode *targetNode, const eArea area) override;
     void MouseLeaveArea() override;
-    bool OnInput(DAVA::UIEvent *currentInput, bool forInput) override;
+    bool OnInput(DAVA::UIEvent *currentInput) override;
     void OnSelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected);
     void Detach() override;
 

@@ -43,18 +43,20 @@ SelectionSystem::SelectionSystem(Document* doc)
     
 }
 
-bool SelectionSystem::OnInput(UIEvent* currentInput, bool forUpdate)
+bool SelectionSystem::OnInput(UIEvent* currentInput)
 {
-    if (forUpdate)
-    {
-        return false;
-    }
     switch(currentInput->phase)
     {
     case UIEvent::PHASE_BEGAN:
+        mousePressed = true;
         return ProcessMousePress(currentInput->point);
     case UIEvent::PHASE_ENDED:
-        return ProcessMousePress(currentInput->point);
+        if(!mousePressed)
+        {
+            return ProcessMousePress(currentInput->point);
+        }
+        mousePressed = false;
+        return false;
     case UIEvent::PHASE_KEYCHAR:
     {
         if (currentInput->tid == DVKEY_TAB)

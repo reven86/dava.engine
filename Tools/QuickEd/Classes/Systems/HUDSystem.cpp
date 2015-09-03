@@ -225,30 +225,16 @@ void HUDSystem::OnSelectionWasChanged(const SelectedControls& selected, const Se
     }
 }
 
-bool HUDSystem::OnInput(UIEvent *currentInput, bool forUpdate)
+bool HUDSystem::OnInput(UIEvent *currentInput)
 {
     switch (currentInput->phase)
     {
     case UIEvent::PHASE_MOVE:
-        if (!forUpdate)
-        {
-            ProcessCursor(currentInput->point);
-        }
+        ProcessCursor(currentInput->point);
         return false;
     case UIEvent::PHASE_BEGAN:
-        if (forUpdate)
-        {
-            canDrawRect = false;
-            ProcessCursor(currentInput->point);
-        }
-        else
-        {
-            if (InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_CTRL))
-            {
-                canDrawRect = true;
-            }
-            pressedPoint = currentInput->point;
-        }
+        canDrawRect = InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_CTRL);
+        pressedPoint = currentInput->point;
         return canDrawRect;
     case UIEvent::PHASE_DRAG:
         if(canDrawRect)

@@ -62,7 +62,7 @@ public:
     void Attach() override;
     void Detach() override;
     void OnSelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected);
-    bool OnInput(DAVA::UIEvent *currentInput, bool forUpdate) override;
+    bool OnInput(DAVA::UIEvent *currentInput) override;
     void AddListener(ControlAreaInterface *listener);
     void RemoveListener(ControlAreaInterface *listener);
     DAVA::Signal<const DAVA::Rect &/*selectionRectControl*/> SelectionRectChanged;
