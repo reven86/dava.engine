@@ -111,14 +111,14 @@ bool SelectionSystem::ProcessMousePress(const DAVA::Vector2 &point)
     SelectedControls deselected;
     nodesUnderPoint.clear();
     document->GetControlNodesByPos(nodesUnderPoint, point);
+    if(!InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_SHIFT))
+    {
+        deselected = selectedControls;
+    }
     if (!nodesUnderPoint.empty())
     {
         auto node = nodesUnderPoint.back();
-        if (InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_SHIFT))
-        {
-            selected.insert(node);
-        }
-        else if (InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_CTRL))
+        if (InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_CTRL))
         {
             if (selectedControls.find(node) != selectedControls.end())
             {
@@ -131,18 +131,20 @@ bool SelectionSystem::ProcessMousePress(const DAVA::Vector2 &point)
         }
         else if (InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_ALT))
         {
-            document->SelectControlByPos(nodesUnderPoint, point);
+            auto controlNode = document->GetControlByMenu(nodesUnderPoint, point);
+            if(nullptr != controlNode)
+            {
+                selected.insert(controlNode);
+            }
         }
         else
         {
-            deselected = selectedControls;
-            deselected.erase(node);
             selected.insert(node);
         }
     }
-    else if(!InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_SHIFT))
+    for(auto controlNode : selected)
     {
-        deselected = selectedControls;
+        deselected.erase(controlNode);
     }
     SetSelectedControls(selected, deselected);
     return !selected.empty() || !deselected.empty();
@@ -154,9 +156,9 @@ void SelectionSystem::SetSelectedControls(const SelectedControls &selected, cons
     SelectedControls reallyDeselected;
     
     std::set_intersection(selectedControls.begin(), selectedControls.end(), deselected.begin(), deselected.end(), std::inserter(reallyDeselected, reallyDeselected.end()));
-    SubstractSets(reallyDeselected, selectedControls);
 
     std::set_difference(selected.begin(), selected.end(), selectedControls.begin(), selectedControls.end(), std::inserter(reallySelected, reallySelected.end()));
+    SubstractSets(reallyDeselected, selectedControls);
     UniteSets(reallySelected, selectedControls);
 
     if (!reallySelected.empty() || !reallyDeselected.empty())

@@ -228,13 +228,11 @@ AbstractProperty* Document::GetPropertyByName(const ControlNode *node, const Str
     return nullptr;
 }
 
-void Document::SelectControlByPos(const Vector<ControlNode*> &nodesUnderPoint, const Vector2 &point)
+ControlNode* Document::GetControlByMenu(const Vector<ControlNode*> &nodesUnderPoint, const Vector2 &point) const
 {
     auto view = EditorCore::Instance()->GetMainWindow()->GetGLWidget()->GetGLWindow();
     QPoint globalPos = view->mapToGlobal(QPoint(point.x, point.y)/ view->devicePixelRatio());
     QMenu menu;
-    QList<QAction*> actions;
-    QAction *defaultAction = nullptr;
     for (auto it = nodesUnderPoint.rbegin(); it != nodesUnderPoint.rend(); ++it)
     {
         ControlNode *controlNode = *it;
@@ -242,28 +240,23 @@ void Document::SelectControlByPos(const Vector<ControlNode*> &nodesUnderPoint, c
         QIcon icon(IconHelper::GetIconPathForClassName(className));
         QAction *action = new QAction(icon, QString::fromStdString(controlNode->GetName()), &menu);
         menu.addAction(action);
-        void* ptr = static_cast<void*>(*it);
+        void* ptr = static_cast<void*>(controlNode);
         action->setData(QVariant::fromValue(ptr));
-        actions << action;
-        if (defaultAction == nullptr)
+        if (selectedNodes.find(controlNode) != selectedNodes.end())
         {
-            if (selectedNodes.find(*it) != selectedNodes.end())
-            {
-                defaultAction = action;
-            }
+            auto font = action->font();
+            font.setBold(true);
+            action->setFont(font);
         }
     }
-    menu.setDefaultAction(defaultAction);
     QAction *selectedAction = menu.exec(globalPos);
     if (nullptr != selectedAction)
     {
-        SelectedNodes deselected = selectedNodes;
-        SelectedNodes selected;
         void *ptr = selectedAction->data().value<void*>();
         ControlNode *selectedNode = static_cast<ControlNode*>(ptr);
-        selected.insert(selectedNode);
-        SetSelectedNodes(selected, deselected);
+        return selectedNode;
     }
+    return nullptr;
 }
 
 void Document::RefreshAllControlProperties()
@@ -282,9 +275,9 @@ void Document::SetSelectedNodes(const SelectedNodes& selected, const SelectedNod
     SelectedNodes reallyDeselected;
     
     std::set_intersection(selectedNodes.begin(), selectedNodes.end(), deselected.begin(), deselected.end(), std::inserter(reallyDeselected, reallyDeselected.end()));
-    SubstractSets(reallyDeselected, selectedNodes);
-    
     std::set_difference(selected.begin(), selected.end(), selectedNodes.begin(), selectedNodes.end(), std::inserter(reallySelected, reallySelected.end()));
+    
+    SubstractSets(reallyDeselected, selectedNodes);
     UniteSets(reallySelected, selectedNodes);
     
     if (!reallySelected.empty() || !reallyDeselected.empty())

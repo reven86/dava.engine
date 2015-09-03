@@ -464,15 +464,14 @@ void PackageWidget::SetSelectedNodes(const SelectedNodes& selected, const Select
     SelectedNodes reallyDeselected;
     
     std::set_intersection(selectedNodes.begin(), selectedNodes.end(), deselected.begin(), deselected.end(), std::inserter(reallyDeselected, reallyDeselected.end()));
-    SubstractSets(reallyDeselected, selectedNodes);
     
     std::set_difference(selected.begin(), selected.end(), selectedNodes.begin(), selectedNodes.end(), std::inserter(reallySelected, reallySelected.end()));
+    
+    SubstractSets(reallyDeselected, selectedNodes);
     UniteSets(reallySelected, selectedNodes);
     
     if (!reallySelected.empty() || !reallyDeselected.empty())
     {
-        bool wasBlocked = treeView->selectionModel()->signalsBlocked();
-        treeView->selectionModel()->blockSignals(true);
         for (auto &node : reallyDeselected)
         {
             QModelIndex srcIndex = packageModel->indexByNode(node);
@@ -486,7 +485,6 @@ void PackageWidget::SetSelectedNodes(const SelectedNodes& selected, const Select
             treeView->selectionModel()->select(dstIndex, QItemSelectionModel::Select);
             treeView->scrollTo(dstIndex);
         }
-        treeView->selectionModel()->blockSignals(wasBlocked);
         emit SelectedNodesChanged(reallySelected, reallyDeselected);
     }
 }
