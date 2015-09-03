@@ -134,11 +134,9 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved)
 		return -1;
 	}
 
-	DAVA::Thread::InitMainThread();
-
 	androidDelegate = new AndroidDelegate(vm);
 
-	 DAVA::AndroidCrashReport::Init(env);
+	DAVA::AndroidCrashReport::Init(env);
 
 	return JNI_VERSION_1_6;
 }
@@ -193,6 +191,8 @@ void Java_com_dava_framework_JNIApplication_OnCreateApplication(JNIEnv* env, job
 	bool retCreatePackageName = DAVA::JNI::CreateStringFromJni(env, packageName, androidPackageName);
 	DAVA::String commandLine;
 	DAVA::JNI::CreateStringFromJni(env, commandLineParams, commandLine);
+
+	DAVA::Thread::InitMainThread();
 
 	InitApplication(env, commandLine);
 

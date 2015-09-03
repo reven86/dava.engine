@@ -49,9 +49,6 @@ public:
 	virtual void Process(DAVA::float32 timeElapsed);
 	virtual void Input(DAVA::UIEvent *event);
 
-	void SetLineWidth(int32 width);
-	int32 GetLineWidth();
-
 	float32 GetLength();
 	float32 GetPreviewLength();
 
@@ -62,7 +59,6 @@ protected:
 	uint32 curToolSize;
 	Texture* toolImageTexture;
 
-	int32 lineWidth;
 	List<Vector2> linePoints;
 	List<float32> lengths;
 	Vector2 previewPoint;
