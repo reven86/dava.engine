@@ -140,7 +140,9 @@ FPROG_OUT_END
 #if (VERTEX_LIT || PIXEL_LIT ) && (!SKYOBJECT)
     property float3 lightAmbientColor0 : dynamic,a : ;
     property float3 lightColor0 : dynamic,a : ;
-    property float inGlossiness : static,a : ;
+    #if NORMALIZED_BLINN_PHONG && VIEW_SPECULAR
+        property float inGlossiness : static,a : ;
+    #endif
 #endif
 
 
