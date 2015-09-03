@@ -85,10 +85,6 @@ public:
         }
     }
 private:
-    void Draw(const UIGeometricData &gd) override
-    {
-        InitFromControl();
-    }
     DAVA::Vector<ControlContainer*> childs;
 };
 
@@ -154,6 +150,11 @@ public:
         SetDebugDrawColor(Color(1.0f, 0.0f, 0.0f, 1.f));
     }
 private:
+    void Draw(const UIGeometricData &gd) override
+    {
+        //TODO: refactor it! we need to use it because Pivot Point draws first, before parent container and other controls
+        static_cast<ControlContainer*>(GetParent())->InitFromControl();
+    }
     void InitFromControl() override
     {
         Rect rect(0, 0, 5, 5);
