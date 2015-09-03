@@ -350,7 +350,7 @@ void UIControlSystem::Draw()
     viewport.x = viewport.y = 0U;
     viewport.width = (uint32)Renderer::GetFramebufferWidth();
     viewport.height = (uint32)Renderer::GetFramebufferHeight();
-    RenderHelper::CreateClearPass(rhi::HTexture(), PRIORITY_CLEAR, Color(.3f, .3f, .3f, 1.f), viewport);
+    RenderHelper::CreateClearPass(rhi::HTexture(), PRIORITY_CLEAR, Color::Clear, viewport);
 
 	if (currentScreen)
 	{
