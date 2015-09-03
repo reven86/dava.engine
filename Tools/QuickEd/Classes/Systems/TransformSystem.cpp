@@ -190,8 +190,8 @@ bool TransformSystem::ProcessDrag(const Vector2 &pos)
             const Rect &ur = gd.GetUnrotatedRect();
             Vector2 pivotPoint = ur.GetPosition() + ur.GetSize() * control->GetPivot();
             Vector2 rotatePoint = pivotPoint;
-            Vector2 l1(prevPos.x - rotatePoint.x, prevPos.y - rotatePoint.y);
-            Vector2 l2(pos.x - rotatePoint.x, pos.y - rotatePoint.y);
+            Vector2 l1(prevPos - rotatePoint);
+            Vector2 l2(pos - rotatePoint);
             float32 angleRad = atan2(l2.y, l2.x) - atan2(l1.y, l1.x);
             float32 angle = angleRad * 180.0f / PI;
             if (InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_SHIFT))
