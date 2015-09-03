@@ -701,8 +701,11 @@ void NMaterial::RebuildTextureBindings()
         for (size_t i = 0, sz = textureDescr.vertexTextureCount; i < sz; ++i)
         {
             Texture *tex = GetEffectiveTexture(vertexSamplerList[i].uid);
-            DVASSERT(tex);
-            textureDescr.vertexTexture[i] = tex->handle;
+            if (tex)
+                textureDescr.vertexTexture[i] = tex->handle;
+            else
+                textureDescr.vertexTexture[i] = Renderer::GetRuntimeTextures().GetPinkTexture(vertexSamplerList[i].type);
+
         }                            
 
 
