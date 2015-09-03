@@ -58,6 +58,7 @@ _CreateInputLayout( const VertexLayout& layout, const void* code, unsigned code_
     D3D11_INPUT_ELEMENT_DESC    elem[32];
     uint32                      elemCount = 0;
 
+//Logger::Info("create-dx11-layout");
     DVASSERT(layout.ElementCount() < countof(elem));
     for( unsigned i=0; i!=layout.ElementCount(); ++i )
     {
@@ -109,7 +110,7 @@ _CreateInputLayout( const VertexLayout& layout, const void* code, unsigned code_
                 
             case VS_BLENDINDEX :
             {
-                elem[elemCount].SemanticName = "BLENDINDEX";
+                elem[elemCount].SemanticName = "BLENDINDICES";                
             }   break;
         }
 
@@ -132,7 +133,146 @@ _CreateInputLayout( const VertexLayout& layout, const void* code, unsigned code_
             elem[elemCount].Format = DXGI_FORMAT_R8G8B8A8_UNORM;
         }
 
+//Logger::Info( "elem[%u] %s", elemCount, elem[elemCount].SemanticName );
         ++elemCount;
+    }
+
+    HRESULT hr = _D3D11_Device->CreateInputLayout( elem, elemCount, code, code_sz, &vdecl );
+
+    if( FAILED(hr) )
+    {
+    }
+
+    return vdecl;
+}
+
+
+//------------------------------------------------------------------------------
+
+ID3D11InputLayout*
+_CreateCompatibleInputLayout( const VertexLayout& vbLayout, const VertexLayout& vprogLayout, const void* code, unsigned code_sz )
+{
+    ID3D11InputLayout*          vdecl     = nullptr;
+    D3D11_INPUT_ELEMENT_DESC    elem[32];
+    uint32                      elemCount = 0;
+
+//Logger::Info("create-compatible-dx11-layout");
+    DVASSERT(vbLayout.ElementCount() < countof(elem));
+    for( unsigned i=0; i!=vprogLayout.ElementCount(); ++i )
+    {
+        DVASSERT( vprogLayout.ElementSemantics(i) != VS_PAD );
+        
+        unsigned    vb_elem_i = InvalidIndex;
+
+        for( unsigned k=0; k!=vbLayout.ElementCount(); ++k )
+        {
+            if(     vbLayout.ElementSemantics(k) == vprogLayout.ElementSemantics(i) 
+                &&  vbLayout.ElementSemanticsIndex(k) == vprogLayout.ElementSemanticsIndex(i)
+              )
+            {
+                vb_elem_i = k;
+                break;
+            }
+        }
+
+        if( vb_elem_i != InvalidIndex )
+        {
+            elem[elemCount].AlignedByteOffset    = (UINT)(vbLayout.ElementOffset( vb_elem_i ));
+            elem[elemCount].SemanticIndex        = vprogLayout.ElementSemanticsIndex( i );
+            elem[elemCount].InputSlot            = 0;
+            elem[elemCount].InputSlotClass       = D3D11_INPUT_PER_VERTEX_DATA;
+            elem[elemCount].InstanceDataStepRate = 0;
+
+            switch( vbLayout.ElementSemantics(vb_elem_i) )
+            {
+                case VS_POSITION : 
+                {
+                    elem[elemCount].SemanticName = "POSITION"; 
+                }   break;
+
+                case VS_NORMAL : 
+                {
+                    elem[elemCount].SemanticName = "NORMAL"; 
+                }   break;
+
+                case VS_COLOR : 
+                {
+                    elem[elemCount].SemanticName = "COLOR";
+                }   break;
+
+                case VS_TEXCOORD : 
+                {
+                    elem[elemCount].SemanticName = "TEXCOORD";
+                }   break;
+
+                case VS_TANGENT :
+                {
+                    elem[elemCount].SemanticName = "TANGENT";
+                }   break;
+
+                case VS_BINORMAL: 
+                {
+                    elem[elemCount].SemanticName = "BINORMAL";
+                }   break;
+
+                case VS_BLENDWEIGHT : 
+                {
+                    elem[elemCount].SemanticName = "BLENDWEIGHT";
+                }   break;
+                
+                case VS_BLENDINDEX :
+                {
+                    elem[elemCount].SemanticName = "BLENDINDICES";                
+                }   break;
+            }
+
+            switch( vbLayout.ElementDataType(vb_elem_i) )
+            {
+                case VDT_FLOAT :
+                {
+                    switch( vbLayout.ElementDataCount(vb_elem_i) )
+                    {
+                        case 4 : elem[elemCount].Format = DXGI_FORMAT_R32G32B32A32_FLOAT; break;
+                        case 3 : elem[elemCount].Format = DXGI_FORMAT_R32G32B32_FLOAT; break;
+                        case 2 : elem[elemCount].Format = DXGI_FORMAT_R32G32_FLOAT; break;
+                        case 1 : elem[elemCount].Format = DXGI_FORMAT_R32_FLOAT; break;
+                    }
+                }   break;
+            }
+
+            if( vbLayout.ElementSemantics(vb_elem_i) == VS_COLOR )
+            {
+                elem[elemCount].Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+            }
+        }
+        else
+        {
+DVASSERT(!"kaboom!");
+//            Logger::Error();
+        }
+
+//Logger::Info( "elem[%u] %s/%u", elemCount, elem[elemCount].SemanticName, elem[elemCount].SemanticIndex );
+        ++elemCount;
+    }
+
+    if( vprogLayout.Stride() < vbLayout.Stride() )
+    {
+        const unsigned  padCnt = vbLayout.Stride() - vprogLayout.Stride();
+
+        DVASSERT(padCnt%4 == 0);
+        for( unsigned p=0; p!=padCnt/4; ++p )
+        {
+            elem[elemCount].AlignedByteOffset    = D3D11_APPEND_ALIGNED_ELEMENT;//vprogLayout.Stride() + p;
+            elem[elemCount].SemanticIndex        = p;
+            elem[elemCount].SemanticName         = "PAD";
+            elem[elemCount].InputSlot            = 0;
+            elem[elemCount].InputSlotClass       = D3D11_INPUT_PER_VERTEX_DATA;
+            elem[elemCount].InstanceDataStepRate = 0;
+            elem[elemCount].Format               = DXGI_FORMAT_R8G8B8A8_UNORM;
+//Logger::Info( "elem[%u] %s/%u", elemCount, elem[elemCount].SemanticName, elem[elemCount].SemanticIndex );
+            
+            ++elemCount;
+        }
     }
 
     HRESULT hr = _D3D11_Device->CreateInputLayout( elem, elemCount, code, code_sz, &vdecl );
@@ -432,6 +572,8 @@ public:
 
     Handle  CreateConstBuffer( ProgType type, unsigned buf_i );
 
+    PipelineState::Descriptor   desc;
+
     ID3D10Blob*         vpCode;
     ID3D11VertexShader* vertexShader;
     unsigned            vertexBufCount;
@@ -506,7 +648,6 @@ desc.vertexLayout.Dump();
 
     // create vertex-shader
 
-
     hr = D3DCompile
     (
         (const char*)(&vprog_bin[0]), vprog_bin.size(),
@@ -519,7 +660,7 @@ desc.vertexLayout.Dump();
         #else
         "vs_4_0",
         #endif
-        D3D10_SHADER_OPTIMIZATION_LEVEL2,
+        D3DCOMPILE_OPTIMIZATION_LEVEL2,
         0, // no effect compile flags
         &vp_code,
         &vp_err
@@ -595,7 +736,7 @@ desc.vertexLayout.Dump();
         #else
         "ps_4_0",
         #endif
-        D3D10_SHADER_OPTIMIZATION_LEVEL2,
+        D3DCOMPILE_OPTIMIZATION_LEVEL2,
         0, // no effect compile flags
         &fp_code,
         &fp_err
@@ -682,6 +823,8 @@ desc.vertexLayout.Dump();
     bs_desc.RenderTarget[0].BlendOpAlpha            = D3D11_BLEND_OP_ADD;
 
     hr = _D3D11_Device->CreateBlendState( &bs_desc, &(ps->blendState) );
+
+    ps->desc = desc;
 
     return handle;
 }
@@ -791,14 +934,33 @@ SetToRHI( Handle ps, uint32 layoutUID, ID3D11DeviceContext* context )
         
         if( !layout11 )
         {
-            const VertexLayout*             layout = VertexLayout::Get( layoutUID );
+            const VertexLayout*             vbLayout = VertexLayout::Get( layoutUID );
             PipelineStateDX11_t::LayoutInfo info;
+            VertexLayout                    layout;
+/*            
+Logger::Info("create-dx11-alt-layout:");
+Logger::Info("vb-layout:");
+vbLayout->Dump();
+Logger::Info("vprog-layout:");
+ps11->vertexLayout.Dump();
+*/
+            layout11 = _CreateCompatibleInputLayout( *vbLayout, ps11->vertexLayout, ps11->vpCode->GetBufferPointer(), ps11->vpCode->GetBufferSize() );
 
-            layout11 = _CreateInputLayout( *layout, ps11->vpCode->GetBufferPointer(), ps11->vpCode->GetBufferSize() );
+            if( layout11 )
+            {
             
-            info.inputLayout = layout11;                    ;
-            info.layoutUID   = layoutUID;
-            ps11->altLayout.push_back( info );
+                info.inputLayout = layout11;
+                info.layoutUID   = layoutUID;
+                ps11->altLayout.push_back( info );
+            }
+            else
+            {
+                Logger::Error( "can't create compatible vertex-layout" );
+                Logger::Info( "vprog-layout:" );
+                ps11->vertexLayout.Dump();
+                Logger::Info( "custom-layout:" );
+                vbLayout->Dump();
+            }
         }
     }
 
@@ -816,7 +978,7 @@ VertexLayoutStride( Handle ps )
     return ps11->vertexLayout.Stride();
 }
 
-} // namespace PipelineStateDX9
+} // namespace PipelineStateDX11
 
 
 

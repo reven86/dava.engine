@@ -46,8 +46,6 @@
     #include <vector>
 
     
-    #define RHI__USE_DX11_RENDER_THREAD         0
-    #define RHI__DX11_MAX_PREPARED_FRAME_COUNT  2
 
 
 namespace rhi
@@ -151,15 +149,19 @@ static unsigned                 _FrameNumber    = 1;
 //static DAVA::Spinlock       _FrameSync;
 static DAVA::Mutex              _FrameSync;
 
-static void _ExecuteQueuedCommands();
+static void _ExecuteQueuedCommandsDX11();
 
 
-#if RHI__USE_DX11_RENDER_THREAD
 static DAVA::Thread*        _DX11_RenderThread              = nullptr;
+static unsigned             _DX11_RenderThreadFrameCount    = 0;
 static bool                 _DX11_RenderThreadExitPending   = false;
 static DAVA::Spinlock       _DX11_RenderThreadExitSync;
 static DAVA::Semaphore      _DX11_RenderThreadStartedSync   (0);
-#endif
+
+
+static DX11Command*         _DX11_PendingImmediateCmd       = nullptr;
+static uint32               _DX11_PendingImmediateCmdCount  = 0;
+static DAVA::Mutex          _DX11_PendingImmediateCmdSync;
 
 
 //------------------------------------------------------------------------------
@@ -903,7 +905,91 @@ Trace("\n\n-------------------------------\nframe %u executed(submitted to GPU)\
 
 //------------------------------------------------------------------------------
 
-#if RHI__USE_DX11_RENDER_THREAD
+static void
+_ExecDX11( DX11Command* command, uint32 cmdCount )
+{
+#if 1
+    #define CHECK_HR(hr) \
+    if( FAILED(hr) ) \
+        Logger::Error( "%s", D3D11ErrorText(hr) );
+#else
+    CHECK_HR(hr)
+#endif
+
+    for( DX11Command* cmd=command,*cmdEnd=command+cmdCount; cmd!=cmdEnd; ++cmd )
+    {
+        const uint64*   arg = cmd->arg;
+
+Trace("exec %i\n",int(cmd->func));
+        switch( cmd->func )
+        {
+            case DX11Command::NOP :
+                break;
+            
+            case DX11Command::MAP :
+                cmd->retval = _D3D11_ImmediateContext->Map( (ID3D11Resource*)(arg[0]), UINT(arg[1]), D3D11_MAP(arg[2]), UINT(arg[3]), (D3D11_MAPPED_SUBRESOURCE*)(arg[4]) );
+                break;
+            
+            case DX11Command::UNMAP :
+                _D3D11_ImmediateContext->Unmap( (ID3D11Resource*)(arg[0]), UINT(arg[1]) );
+                break;
+            
+            case DX11Command::UPDATE_SUBRESOURCE :
+                _D3D11_ImmediateContext->UpdateSubresource( (ID3D11Resource*)(arg[0]), UINT(arg[1]), (const D3D11_BOX*)(arg[2]), (const void*)(arg[3]), UINT(arg[4]), UINT(arg[5]) );
+                break;
+
+            default:
+                DVASSERT(!"unknown DX11-cmd");
+        }
+    }
+
+    #undef CHECK_HR
+}
+
+
+//------------------------------------------------------------------------------
+
+void
+ExecDX11( DX11Command* command, uint32 cmdCount, bool force_immediate )
+{
+    if( force_immediate  ||  !_DX11_RenderThreadFrameCount )
+    {
+        _ExecDX11( command, cmdCount );
+    }
+    else
+    {
+        bool    scheduled = false;
+        bool    executed  = false;
+    
+        // CRAP: busy-wait
+        do
+        {
+            _DX11_PendingImmediateCmdSync.Lock();
+            if( !_DX11_PendingImmediateCmd )
+            {
+                _DX11_PendingImmediateCmd      = command;
+                _DX11_PendingImmediateCmdCount = cmdCount;
+                scheduled                     = true;
+            }
+            _DX11_PendingImmediateCmdSync.Unlock();
+        } while( !scheduled );
+
+        // CRAP: busy-wait
+        do
+        {
+            _DX11_PendingImmediateCmdSync.Lock();
+            if( !_DX11_PendingImmediateCmd )
+            {
+                executed = true;
+            }
+            _DX11_PendingImmediateCmdSync.Unlock();
+        } while( !executed );
+    }
+}
+
+
+//------------------------------------------------------------------------------
+
 static void
 _RenderFuncDX11( DAVA::BaseObject* obj, void*, void* )
 {
@@ -917,9 +1003,9 @@ _RenderFuncDX11( DAVA::BaseObject* obj, void*, void* )
         bool    do_wait = true;
         bool    do_exit = false;
         
-        // CRAP: busy-wait
         do
         {
+            // CRAP: busy-wait
             _DX11_RenderThreadExitSync.Lock();
             do_exit = _DX11_RenderThreadExitPending;
             _DX11_RenderThreadExitSync.Unlock();
@@ -927,7 +1013,6 @@ _RenderFuncDX11( DAVA::BaseObject* obj, void*, void* )
             if( do_exit )
                 break;
 
-            
             _DX11_PendingImmediateCmdSync.Lock();
             if( _DX11_PendingImmediateCmd )
             {
@@ -938,11 +1023,7 @@ Trace("exec imm cmd (%u)\n",_DX11_PendingImmediateCmdCount);
 Trace("exec-imm-cmd done\n");
             }
             _DX11_PendingImmediateCmdSync.Unlock();
-
-
-//            _CmdQueueSync.Lock();
-//            cnt = _RenderQueue.size();
-//            _CmdQueueSync.Unlock();
+            
             _FrameSync.Lock();
             do_wait = !( _Frame.size()  &&  _Frame.begin()->readyToExecute );
             _FrameSync.Unlock();
@@ -951,28 +1032,28 @@ Trace("exec-imm-cmd done\n");
         if( do_exit )
             break;
 
-        _ExecuteQueuedCommands();
+        _ExecuteQueuedCommandsDX11();
     }
 
     Trace( "RHI render-thread stopped\n" );
 }
-#endif
 
 void
-InitializeRenderThreadDX11()
+InitializeRenderThreadDX11( uint32 frameCount )
 {
-#if RHI__USE_DX11_RENDER_THREAD
+    _DX11_RenderThreadFrameCount = frameCount;
 
-    _DX11_RenderThread = DAVA::Thread::Create( DAVA::Message(&_RenderFuncDX11) );
-    _DX11_RenderThread->SetName( "RHI.dx11-render" );
-    _DX11_RenderThread->Start();    
-    _DX11_RenderThreadStartedSync.Wait();
-
-#else
-
-    _InitDX11();
-
-#endif
+    if( _DX11_RenderThreadFrameCount )
+    {
+        _DX11_RenderThread = DAVA::Thread::Create( DAVA::Message(&_RenderFuncDX11) );
+        _DX11_RenderThread->SetName( "RHI.dx11-render" );
+        _DX11_RenderThread->Start();    
+        _DX11_RenderThreadStartedSync.Wait();
+    }
+    else
+    {
+        _InitDX11();
+    }
 }
 
 
@@ -981,13 +1062,14 @@ InitializeRenderThreadDX11()
 void
 UninitializeRenderThreadDX11()
 {
-#if RHI__USE_DX11_RENDER_THREAD
-    _DX11_RenderThreadExitSync.Lock();
-    _DX11_RenderThreadExitPending = true;
-    _DX11_RenderThreadExitSync.Unlock();
+    if( _DX11_RenderThreadFrameCount )
+    {
+        _DX11_RenderThreadExitSync.Lock();
+        _DX11_RenderThreadExitPending = true;
+        _DX11_RenderThreadExitSync.Unlock();
 
-    _DX11_RenderThread->Join();
-#endif
+        _DX11_RenderThread->Join();
+    }
 }
 
 
@@ -996,45 +1078,41 @@ UninitializeRenderThreadDX11()
 static void
 dx11_Present(Handle sync)
 {
-#if RHI__USE_DX11_RENDER_THREAD
-
+    if( _DX11_RenderThreadFrameCount )
+    {
 Trace("rhi-dx11.present\n");
+        _FrameSync.Lock(); 
+        {   
+            if( _Frame.size() )
+            {
+                _Frame.back().readyToExecute = true;
+                _FrameStarted = false;
+Trace("\n\n-------------------------------\nframe %u generated\n",_Frame.back().number);
+            }
+        }
+        _FrameSync.Unlock();
 
-    _FrameSync.Lock(); 
-    {   
+        unsigned frame_cnt = 0;
+
+        do
+        {
+        _FrameSync.Lock();
+        frame_cnt = _Frame.size();
+//Trace("rhi-gl.present frame-cnt= %u\n",frame_cnt);
+        _FrameSync.Unlock();
+        }
+        while( frame_cnt >= _DX11_RenderThreadFrameCount );
+    }
+    else
+    {
         if( _Frame.size() )
         {
             _Frame.back().readyToExecute = true;
             _FrameStarted = false;
-Trace("\n\n-------------------------------\nframe %u generated\n",_Frame.back().number);
         }
 
-//        _FrameStarted = false;
+        _ExecuteQueuedCommandsDX11(); 
     }
-    _FrameSync.Unlock();
-
-    unsigned frame_cnt = 0;
-
-    do
-    {
-    _FrameSync.Lock();
-    frame_cnt = _Frame.size();
-//Trace("rhi-gl.present frame-cnt= %u\n",frame_cnt);
-    _FrameSync.Unlock();
-    }
-    while( frame_cnt >= RHI__DX11_MAX_PREPARED_FRAME_COUNT );
-
-#else
-    
-    if( _Frame.size() )
-    {
-        _Frame.back().readyToExecute = true;
-        _FrameStarted = false;
-    }
-
-    _ExecuteQueuedCommandsDX11(); 
-
-#endif
 
     ConstBufferDX11::InvalidateAllConstBufferInstances();
 }
@@ -1064,6 +1142,15 @@ CommandBufferDX11_t::Execute()
 {
 SCOPED_FUNCTION_TIMING();
 
+    context->Release();
+    context = nullptr;
+
+    if (contextAnnotation)
+    {
+        contextAnnotation->Release();
+        contextAnnotation = nullptr;
+    }
+    
     _D3D11_ImmediateContext->ExecuteCommandList( commandList, FALSE );
     commandList->Release();
     commandList = nullptr;

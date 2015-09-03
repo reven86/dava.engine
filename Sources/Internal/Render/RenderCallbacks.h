@@ -26,57 +26,28 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __DAVAENGINE_RENDER_CALLBACKS_H__
+#define __DAVAENGINE_RENDER_CALLBACKS_H__
 
-#include "Base/BaseTypes.h"
-
-#if defined(__DAVAENGINE_WIN_UAP__)
-
-#include "FileSystem/FileSystem.h"
-#include "Render/Cursor.h"
-#include "Platform/TemplateWin32/CorePlatformWinUAP.h"
+#include "Functional/Function.h"
+#include "Render/RHI/rhi_Public.h"
 
 namespace DAVA
 {
-
-void Cursor::SetCursorPinning(bool pin)
+namespace RenderCallbacks
 {
-    CorePlatformWinUAP* winCore = static_cast<CorePlatformWinUAP*>(Core::Instance());
-    winCore->SetCursorPinning(pin);
+    void RegisterResourceRestoreCallback(Function<void()> callback);
+    void UnRegisterResourceRestoreCallback(Function<void()> callback);
+
+    //can register same callback for multiple objects, callback is removed after sync callback
+    void RegisterSyncCallback(rhi::HSyncObject syncObject, Function<void(rhi::HSyncObject)> callback);
+    
+    //unregister for all sync objects
+    void UnRegisterSyncCallback(Function<void(rhi::HSyncObject)> callback);
+
+
+    void ProcessFrame();
+}
 }
 
-Cursor* Cursor::Create(const FilePath & cursorPathname, const Vector2 & hotSpot)
-{
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-    Cursor * cursor = new Cursor();
-    return cursor;
-}
-
-Cursor::Cursor() : show(true)
-{
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-}
-	
-Cursor::~Cursor()
-{
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-}
-
-void Cursor::HardwareSet()
-{
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-}
-
-void Cursor::Show(bool _show)
-{
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-}
-
-DAVA::Vector2 Cursor::GetPosition()
-{
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-        return DAVA::Vector2();
-}
-
-};
-
-#endif //  (__DAVAENGINE_WIN_UAP__)
+#endif
