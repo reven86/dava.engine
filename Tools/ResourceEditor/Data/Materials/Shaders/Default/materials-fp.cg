@@ -32,6 +32,9 @@ FPROG_IN_BEGIN
     #if TILED_DECAL_MASK
          FPROG_IN_TEXCOORD2(varDecalTileTexCoord,2)
     #endif
+    #if MATERIAL_DETAIL
+        FPROG_IN_TEXCOORD2(varDetailTexCoord,2)
+    #endif
 
     #if VERTEX_LIT
 
@@ -232,7 +235,7 @@ FPROG_BEGIN
     
     
     #if MATERIAL_DETAIL
-        float3 detailTextureColor = FP_TEXTURE2D( detail, varDetailTexCoord ).rgb;
+        float3 detailTextureColor = FP_TEXTURE2D( detail, FP_IN(varDetailTexCoord) ).rgb;
     #endif
 
 
