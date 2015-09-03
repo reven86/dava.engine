@@ -56,9 +56,9 @@ class TextureDescriptor
 
     static const int32 DATE_BUFFER_SIZE = 20;
     static const int32 LINE_SIZE = 256;
-    static const int8 CURRENT_VERSION = 9;
-    
-	enum eSignatures
+    static const int8 CURRENT_VERSION = 10;
+
+    enum eSignatures
 	{
 		COMPRESSED_FILE = 0x00EEEE00,
 		NOTCOMPRESSED_FILE = 0x00EE00EE
@@ -127,7 +127,7 @@ public:
 
     struct Compression: public InspBase
     {
-        int32 format;
+        uint32 format;
         mutable uint32 sourceFileCrc;
         int32 compressToWidth;
         int32 compressToHeight;
@@ -219,7 +219,9 @@ protected:
     void LoadVersion7(File *file);
     void LoadVersion8(File *file);
     void LoadVersion9(File *file);
-    
+    DAVA_DEPRECATED(void FixCompressionFormat());
+    void LoadVersion10(File* file);
+
     void RecalculateCompressionSourceCRC();
 	uint32 ReadSourceCRC() const;
     uint32 ReadSourceCRC_V8_or_less() const;
