@@ -156,10 +156,13 @@ inline bool Rect::RectContains(const Rect& rect, bool proper) const
     else
         r2 = rect.x + rect.dx;
 
-    if (proper) {
+    if (proper)
+    {
         if (l2 <= l1 || r2 >= r1)
             return false;
-    } else {
+    }
+    else
+    {
         if (l2 < l1 || r2 > r1)
             return false;
     }
@@ -178,10 +181,13 @@ inline bool Rect::RectContains(const Rect& rect, bool proper) const
     else
         b2 = rect.y + rect.dy;
 
-    if (proper) {
+    if (proper)
+    {
         if (t2 <= t1 || b2 >= b1)
             return false;
-    } else {
+    }
+    else
+    {
         if (t2 < t1 || b2 > b1)
             return false;
     }

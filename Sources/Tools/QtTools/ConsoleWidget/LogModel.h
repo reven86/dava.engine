@@ -39,6 +39,8 @@ public:
 public slots:
     void AddMessage(DAVA::Logger::eLogLevel ll, const QString &text);
     void Clear();
+private slots:
+    void OnTimeout();
 private:
     void createIcons();
     struct LogItem
@@ -52,6 +54,8 @@ private:
 
     QVector<QPixmap> icons;
     mutable QMutex mutex;
+    size_t registerCount = 0;
+    QTimer *timer;
     ConvertFunc func;
 };
 

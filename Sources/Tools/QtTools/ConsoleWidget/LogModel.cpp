@@ -1,7 +1,10 @@
 #include "LogModel.h"
 
 #include <QPainter>
-
+#include <QModelIndex>
+#include <QAbstractItemModel>
+#include <QRegularExpression>
+#include "Utils/UTF8Utils.h"
 #include "Base/GlobalEnum.h"
 #include "Debug/DVAssert.h"
 
@@ -15,6 +18,10 @@ LogModel::LogModel(QObject* parent)
     };
     qRegisterMetaType<DAVA::Logger::eLogLevel>("DAVA::Logger::eLogLevel");
     DAVA::Logger::AddCustomOutput(this);
+    timer = new QTimer(this);
+    timer->setSingleShot(true);
+    timer->setInterval(0);
+    connect(timer, &QTimer::timeout, this, &LogModel::OnTimeout);
 }
 
 LogModel::~LogModel()
@@ -59,31 +66,41 @@ QVariant LogModel::data(const QModelIndex &index, int role) const
 
 int LogModel::rowCount(const QModelIndex &parent) const
 {
-    QMutexLocker locker(&mutex);
-    return items.size();
+    return registerCount;
 }
 
 void LogModel::AddMessage(DAVA::Logger::eLogLevel ll, const QString& text)
 {
-    int count = rowCount();
-    emit beginInsertRows(QModelIndex(), count, count);
     {
         QMutexLocker locker(&mutex);
         items.append(LogItem(ll,
             QString::fromStdString(func(text.toStdString())),
             text));
     }
-    emit endInsertRows();
+    QMetaObject::invokeMethod(timer, "start", Qt::QueuedConnection);
 }
 
 void LogModel::Clear()
 {
     beginRemoveRows(QModelIndex(), 0, rowCount() - 1);
+    registerCount = 0;
+    items.clear();
+    endRemoveRows();
+}
+
+void LogModel::OnTimeout()
+{
+    int newSize;
     {
         QMutexLocker locker(&mutex);
-        items.clear();
+        newSize = items.size();
     }
-    endRemoveRows();
+    if (newSize != registerCount)
+    {
+        emit beginInsertRows(QModelIndex(), registerCount, newSize - 1);
+        registerCount = newSize;
+        emit endInsertRows();
+    }
 }
 
 void LogModel::createIcons()
