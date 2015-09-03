@@ -160,7 +160,7 @@ void PreviewWidget::OnDocumentChanged(Document *arg)
     root->SetActiveDocument(document);
 }
 
-void PreviewWidget::OnSelectedNodesChanged(const SelectedNodes &selected, const SelectedNodes &deselected)
+void PreviewWidget::OnSelectedNodesChanged(const Set<PackageBaseNode*> &selected, const Set<PackageBaseNode*> &deselected)
 {
     scrollAreaController->UpdateCanvasContentSize();
 }

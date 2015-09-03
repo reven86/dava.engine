@@ -31,7 +31,6 @@
 
 #include "Systems/TransformSystem.h"
 #include "Document.h"
-#include "Defines.h"
 #include "UI/UIEvent.h"
 #include "Input/KeyboardDevice.h"
 #include "Model/PackageHierarchy/ControlNode.h"
@@ -105,8 +104,14 @@ bool TransformSystem::OnInput(UIEvent* currentInput)
 
 void TransformSystem::OnSelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected)
 {
-    UniteSets(selected, selectedControls);
-    SubstractSets(deselected, selectedControls);
+    for(const auto &controlNode : deselected)
+    {
+        selectedControls.erase(controlNode);
+    }
+    for(const auto &controlNode : selected)
+    {
+        selectedControls.insert(controlNode);
+    }
 }
 
 void TransformSystem::Detach()

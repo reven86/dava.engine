@@ -32,9 +32,10 @@
 
 #include <QObject>
 #include <QUndoGroup>
-#include "Defines.h"
+#include "Base/BaseTypes.h"
 
 class Document;
+class PackageBaseNode;
 
 class DocumentGroup : public QObject
 {
@@ -50,11 +51,11 @@ public:
     const QUndoGroup* GetUndoGroup() const;
 public slots:
     void SetActiveDocument(Document* document);
-    void OnSelectedNodesChanged(const SelectedNodes &selected, const SelectedNodes &deselected);
+    void OnSelectedNodesChanged(const DAVA::Set<PackageBaseNode*> &selected, const DAVA::Set<PackageBaseNode*> &deselected);
 
 signals:
     void ActiveDocumentChanged(Document*);
-    void SelectedNodesChanged(const SelectedNodes &selected, const SelectedNodes &deselected);
+    void SelectedNodesChanged(const DAVA::Set<PackageBaseNode*> &selected, const DAVA::Set<PackageBaseNode*> &deselected);
 protected:
     Document *active;
     QList<Document*> documentList;

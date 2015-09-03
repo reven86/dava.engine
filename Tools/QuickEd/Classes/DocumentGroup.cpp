@@ -104,7 +104,7 @@ void DocumentGroup::SetActiveDocument(Document* document)
     }
 }
 
-void DocumentGroup::OnSelectedNodesChanged(const SelectedNodes &selected, const SelectedNodes &deselected)
+void DocumentGroup::OnSelectedNodesChanged(const DAVA::Set<PackageBaseNode*> &selected, const DAVA::Set<PackageBaseNode*> &deselected)
 {
     if(nullptr != active)
     {

@@ -32,12 +32,12 @@
 
 #include "BaseSystemClass.h"
 #include "Interfaces.h"
-#include "Defines.h"
 
 #include "Base/ScopedPtr.h"
 #include "UI/UIControl.h"
 
 class Document;
+class PackageBaseNode;
 
 class CanvasSystem final : public BaseSystemClass
 {
@@ -49,7 +49,7 @@ public:
     void OnSelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected);
 
 private:
-    void SetRootControls(const SelectedNodes &controls);
+    void SetRootControls(const DAVA::Set<PackageBaseNode*> &controls);
     void LayoutCanvas();
     DAVA::UIControl *attachedRoot = nullptr;
     DAVA::ScopedPtr<DAVA::UIControl> canvas;

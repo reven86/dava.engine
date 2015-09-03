@@ -79,7 +79,7 @@ void Document::Detach()
     {
         system->Detach();
     }
-    emit SelectedNodesChanged(SelectedNodes(), selectedNodes);
+    emit SelectedNodesChanged(Set<PackageBaseNode*>(), selectedNodes);
 }
 
 void Document::Attach()
@@ -88,7 +88,7 @@ void Document::Attach()
     {
         system->Attach();
     }
-    emit SelectedNodesChanged(selectedNodes, SelectedNodes());
+    emit SelectedNodesChanged(selectedNodes, Set<PackageBaseNode*>());
 }
 
 CanvasSystem* Document::GetCanvasSystem()
@@ -135,8 +135,8 @@ void Document::SetContext(QObject* requester, WidgetContext* widgetContext)
 
 void Document::OnSelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected)
 {
-    SelectedNodes selectedNodes_(selected.begin(), selected.end());
-    SelectedNodes deselectedNodes(deselected.begin(), deselected.end());
+    Set<PackageBaseNode*> selectedNodes_(selected.begin(), selected.end());
+    Set<PackageBaseNode*> deselectedNodes(deselected.begin(), deselected.end());
     SetSelectedNodes(selectedNodes_, deselectedNodes);
 }
 
@@ -263,27 +263,33 @@ void Document::RefreshAllControlProperties()
     package->GetPackageControlsNode()->RefreshControlProperties();
 }
 
-void Document::OnSelectedNodesChanged(const SelectedNodes &selected, const SelectedNodes &deselected)
+void Document::OnSelectedNodesChanged(const Set<PackageBaseNode*> &selected, const Set<PackageBaseNode*> &deselected)
 {
     SetSelectedNodes(selected, deselected);
 }
 
-void Document::SetSelectedNodes(const SelectedNodes& selected, const SelectedNodes& deselected)
+void Document::SetSelectedNodes(const Set<PackageBaseNode*>& selected, const Set<PackageBaseNode*>& deselected)
 {
-    SelectedNodes reallySelected;
-    SelectedNodes reallyDeselected;
+    Set<PackageBaseNode*> reallySelected;
+    Set<PackageBaseNode*> reallyDeselected;
     
     std::set_intersection(selectedNodes.begin(), selectedNodes.end(), deselected.begin(), deselected.end(), std::inserter(reallyDeselected, reallyDeselected.end()));
     std::set_difference(selected.begin(), selected.end(), selectedNodes.begin(), selectedNodes.end(), std::inserter(reallySelected, reallySelected.end()));
     
-    SubstractSets(reallyDeselected, selectedNodes);
-    UniteSets(reallySelected, selectedNodes);
+    for(const auto &node : reallyDeselected)
+    {
+        selectedNodes.erase(node);
+    }
+    for(const auto &node : reallySelected)
+    {
+        selectedNodes.insert(node);
+    }
     
     if (!reallySelected.empty() || !reallyDeselected.empty())
     {
         SelectedControls selectedControls;
         SelectedControls deselectedControls;
-        for (auto node : reallySelected)
+        for (auto &node : reallySelected)
         {
             ControlNode *controlNode = dynamic_cast<ControlNode*>(node);
             if (nullptr != controlNode)
@@ -291,7 +297,7 @@ void Document::SetSelectedNodes(const SelectedNodes& selected, const SelectedNod
                 selectedControls.insert(controlNode);
             }
         }
-        for (auto node : reallyDeselected)
+        for (auto &node : reallyDeselected)
         {
             ControlNode *controlNode = dynamic_cast<ControlNode*>(node);
             if (nullptr != controlNode)

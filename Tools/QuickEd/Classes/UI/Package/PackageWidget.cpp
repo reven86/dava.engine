@@ -290,8 +290,8 @@ void PackageWidget::OnSelectionChanged(const QItemSelection &proxySelected, cons
     }
 
     RefreshActions();
-    SelectedNodes selected;
-    SelectedNodes deselected;
+    Set<PackageBaseNode*> selected;
+    Set<PackageBaseNode*> deselected;
 
     QItemSelection selectedIndexes = filteredPackageModel->mapSelectionToSource(proxySelected);
     QItemSelection deselectedIndexes = filteredPackageModel->mapSelectionToSource(proxyDeselected);
@@ -430,7 +430,7 @@ void PackageWidget::filterTextChanged(const QString &filterText)
     }
 }
 
-void PackageWidget::OnSelectedNodesChanged(const SelectedNodes &selected, const SelectedNodes &deselected)
+void PackageWidget::OnSelectedNodesChanged(const Set<PackageBaseNode*> &selected, const Set<PackageBaseNode*> &deselected)
 {
     SetSelectedNodes(selected, deselected);
 }
@@ -458,27 +458,33 @@ QAction *PackageWidget::CreateSeparator()
     return separator;
 }
 
-void PackageWidget::SetSelectedNodes(const SelectedNodes& selected, const SelectedNodes& deselected)
+void PackageWidget::SetSelectedNodes(const Set<PackageBaseNode*>& selected, const Set<PackageBaseNode*>& deselected)
 {
-    SelectedNodes reallySelected;
-    SelectedNodes reallyDeselected;
+    Set<PackageBaseNode*> reallySelected;
+    Set<PackageBaseNode*> reallyDeselected;
     
     std::set_intersection(selectedNodes.begin(), selectedNodes.end(), deselected.begin(), deselected.end(), std::inserter(reallyDeselected, reallyDeselected.end()));
     
     std::set_difference(selected.begin(), selected.end(), selectedNodes.begin(), selectedNodes.end(), std::inserter(reallySelected, reallySelected.end()));
     
-    SubstractSets(reallyDeselected, selectedNodes);
-    UniteSets(reallySelected, selectedNodes);
+    for(auto &node : reallyDeselected)
+    {
+        selectedNodes.erase(node);
+    }
+    for(auto &node : reallySelected)
+    {
+        selectedNodes.insert(node);
+    }
     
     if (!reallySelected.empty() || !reallyDeselected.empty())
     {
-        for (auto &node : reallyDeselected)
+        for (const auto &node : reallyDeselected)
         {
             QModelIndex srcIndex = packageModel->indexByNode(node);
             QModelIndex dstIndex = filteredPackageModel->mapFromSource(srcIndex);
             treeView->selectionModel()->select(dstIndex, QItemSelectionModel::Deselect);
         }
-        for (auto &node : reallySelected)
+        for (const auto &node : reallySelected)
         {
             QModelIndex srcIndex = packageModel->indexByNode(node);
             QModelIndex dstIndex = filteredPackageModel->mapFromSource(srcIndex);

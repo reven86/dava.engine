@@ -34,7 +34,6 @@
 #include <QMap>
 #include "Model/PackageHierarchy/PackageBaseNode.h"
 #include "Systems/Interfaces.h"
-#include "Defines.h"
 
 #include "Systems/SelectionSystem.h"
 #include "Systems/CanvasSystem.h"
@@ -85,16 +84,16 @@ public:
     ControlNode* GetControlByMenu(const DAVA::Vector<ControlNode*> &nodes, const DAVA::Vector2 &pos) const;
 
 signals:
-    void SelectedNodesChanged(const SelectedNodes &selected, const SelectedNodes &deselected);
+    void SelectedNodesChanged(const DAVA::Set<PackageBaseNode*> &selected, const DAVA::Set<PackageBaseNode*> &deselected);
 public slots:
     void RefreshAllControlProperties();
-    void OnSelectedNodesChanged(const SelectedNodes &selected, const SelectedNodes &deselected);
+    void OnSelectedNodesChanged(const DAVA::Set<PackageBaseNode*> &selected, const DAVA::Set<PackageBaseNode*> &deselected);
 private:
-    void SetSelectedNodes(const SelectedNodes &selected, const SelectedNodes &deselected);
+    void SetSelectedNodes(const DAVA::Set<PackageBaseNode*> &selected, const DAVA::Set<PackageBaseNode*> &deselected);
     void GetControlNodesByPosImpl(DAVA::Vector<ControlNode*> &controlNodes, const DAVA::Vector2 &pos, ControlNode *node) const;
     void GetControlNodesByRectImpl(DAVA::Set<ControlNode*> &controlNodes, const DAVA::Rect &rect, ControlNode *node) const;
     DAVA::UnorderedMap < QObject*, WidgetContext* > contexts;
-    SelectedNodes selectedNodes;
+    DAVA::Set<PackageBaseNode*> selectedNodes;
     PackageNode *package = nullptr;
     QtModelPackageCommandExecutor *commandExecutor = nullptr;
     QUndoStack *undoStack = nullptr;

@@ -33,17 +33,16 @@
 #include <QWidget>
 #include "ui_PreviewWidget.h"
 #include <UI/UIControl.h>
-#include "Defines.h"
 
 namespace Ui {
     class PreviewWidget;
-    class UIControl;
 }
 
 class Document;
 class DavaGLWidget;
 class ControlNode;
 class ScrollAreaController;
+class PackageBaseNode;
 
 class PreviewWidget : public QWidget, public Ui::PreviewWidget
 {
@@ -56,7 +55,7 @@ public:
     
 public slots:
     void OnDocumentChanged(Document *document);
-    void OnSelectedNodesChanged(const SelectedNodes &selected, const SelectedNodes &deselected);
+    void OnSelectedNodesChanged(const DAVA::Set<PackageBaseNode*> &selected, const DAVA::Set<PackageBaseNode*> &deselected);
 
 private slots:
     // Zoom.

@@ -32,8 +32,6 @@
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "UI/UIEvent.h"
 #include "Document.h"
-#include "Defines.h"
-#include <QtWidgets/QMenu>
 
 using namespace DAVA;
 
@@ -160,8 +158,15 @@ void SelectionSystem::SetSelectedControls(const SelectedControls &selected, cons
     std::set_intersection(selectedControls.begin(), selectedControls.end(), deselected.begin(), deselected.end(), std::inserter(reallyDeselected, reallyDeselected.end()));
 
     std::set_difference(selected.begin(), selected.end(), selectedControls.begin(), selectedControls.end(), std::inserter(reallySelected, reallySelected.end()));
-    SubstractSets(reallyDeselected, selectedControls);
-    UniteSets(reallySelected, selectedControls);
+    
+    for(const auto &controlNode : reallyDeselected)
+    {
+        selectedControls.erase(controlNode);
+    }
+    for(const auto &controlNode : reallySelected)
+    {
+        selectedControls.insert(controlNode);
+    }
 
     if (!reallySelected.empty() || !reallyDeselected.empty())
     {

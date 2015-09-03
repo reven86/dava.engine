@@ -31,12 +31,13 @@
 #define __QUICKED_PROPERTIES_WIDGET_H__
 
 #include <QDockWidget>
+#include "Base/BaseTypes.h"
 #include "ui_PropertiesWidget.h"
-#include "Classes/Defines.h"
 
 class ControlNode;
 class StyleSheetNode;
 class Document;
+class PackageBaseNode;
 
 class PropertiesWidget : public QDockWidget, public Ui::PropertiesWidget
 {
@@ -46,7 +47,7 @@ public:
 
 public slots:
     void OnDocumentChanged(Document *doc);
-    void OnSelectedNodesChanged(const SelectedNodes &selected, const SelectedNodes &deselected);
+    void OnSelectedNodesChanged(const DAVA::Set<PackageBaseNode*> &selected, const DAVA::Set<PackageBaseNode*> &deselected);
 
     void OnAddComponent(QAction *action);
     void OnAddStyleProperty(QAction *action);
@@ -70,7 +71,7 @@ private:
     void UpdateActions();
     
     Document *document = nullptr;
-    SelectedNodes selectedNodes;
+    DAVA::Set<PackageBaseNode*> selectedNodes;
     QAction *addComponentAction = nullptr;
     QAction *addStylePropertyAction = nullptr;
     QAction *addStyleSelectorAction = nullptr;

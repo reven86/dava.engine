@@ -85,9 +85,15 @@ void CanvasSystem::Detach()
 
 void CanvasSystem::OnSelectionWasChanged(const SelectedControls& selected, const SelectedControls& deselected)
 {
-    UniteSets(selected, selectedControls);
-    SubstractSets(deselected, selectedControls);
-    SelectedNodes rootControls;
+    for(const auto &controlNode : deselected)
+    {
+        selectedControls.erase(controlNode);
+    }
+    for(const auto &controlNode : selected)
+    {
+        selectedControls.insert(controlNode);
+    }
+    DAVA::Set<PackageBaseNode*> rootControls;
     if (selectedControls.empty())
     {
         auto controlsNode = document->GetPackage()->GetPackageControlsNode();
@@ -114,7 +120,7 @@ void CanvasSystem::OnSelectionWasChanged(const SelectedControls& selected, const
     SetRootControls(rootControls);
 }
 
-void CanvasSystem::SetRootControls(const SelectedNodes& controls)
+void CanvasSystem::SetRootControls(const Set<PackageBaseNode*> &controls)
 {
     canvas->RemoveAllControls();
     for(auto node : controls)
