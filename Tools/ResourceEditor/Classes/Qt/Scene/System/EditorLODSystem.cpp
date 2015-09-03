@@ -333,14 +333,16 @@ bool EditorLODSystem::CanCreatePlaneLOD() const
 bool EditorLODSystem::CreatePlaneLOD(DAVA::int32 fromLayer, DAVA::uint32 textureSize, const DAVA::FilePath & texturePath)
 {
     if (GetCurrentLODs().empty())
+	{
         return false;
+	}
 
     SceneEditor2* sceneEditor2 = static_cast<SceneEditor2*>(GetScene());
 
 
     auto lods = GetCurrentLODs();
     for (auto& lod : lods)
-		planeLODRequests.push_back(createPlaneLODHelper.RequestRenderToTexture(lod, fromLayer, textureSize, texturePath));
+		planeLODRequests.push_back(CreatePlaneLODCommandHelper::RequestRenderToTexture(lod, fromLayer, textureSize, texturePath));
 
     return true;
 }
@@ -351,7 +353,11 @@ void EditorLODSystem::Process(DAVA::float32 elapsedTime)
 
 	for (const auto& req : planeLODRequests)
 	{
-		if (!createPlaneLODHelper.RequestCompleted(req))
+		if (req->completed)
+		{
+			CreatePlaneLODCommandHelper::ProcessCompletedRequest(req);
+		}
+		else 
 		{
 			allRequestsProcessed = false;
 			break;
@@ -363,7 +369,9 @@ void EditorLODSystem::Process(DAVA::float32 elapsedTime)
 		SceneEditor2* sceneEditor2 = static_cast<SceneEditor2*>(GetScene());
 		sceneEditor2->BeginBatch("LOD Added");
 		for (const auto& req : planeLODRequests)
+		{
 			sceneEditor2->Exec(new CreatePlaneLODCommand(req));
+		}
 		sceneEditor2->EndBatch();
 
 		planeLODRequests.clear();

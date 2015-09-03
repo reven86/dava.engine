@@ -33,8 +33,20 @@
 #include "Classes/CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
 #include "Scene/SceneHelper.h"
 #include "Render/Material/NMaterialNames.h"
+#include "Render/RenderCallbacks.h"
 
 using namespace DAVA;
+
+namespace CreatePlaneLODCommandHelper
+{
+	bool IsHorisontalMesh(const DAVA::AABBox3& bbox);
+
+    void CreatePlaneImageForRequest(RequestPointer&);
+    void CreatePlaneBatchForRequest(RequestPointer&);
+
+    void DrawToTextureForRequest(RequestPointer&, DAVA::Entity* entity, DAVA::Camera* camera,
+		DAVA::Texture* toTexture, DAVA::int32 fromLodLayer, const rhi::Viewport& viewport, bool clearTarget);
+}
 
 CreatePlaneLODCommandHelper::RequestPointer CreatePlaneLODCommandHelper::RequestRenderToTexture(DAVA::LodComponent* lodComponent, 
 	DAVA::int32 fromLodLayer, DAVA::uint32 textureSize, const DAVA::FilePath& texturePath)
@@ -58,15 +70,11 @@ CreatePlaneLODCommandHelper::RequestPointer CreatePlaneLODCommandHelper::Request
 	return result;
 }
 
-bool CreatePlaneLODCommandHelper::RequestCompleted(RequestPointer request)
+void CreatePlaneLODCommandHelper::ProcessCompletedRequest(RequestPointer request)
 {
-	if (!rhi::SyncObjectSignaled(request->syncObject))
-		return false;
-
+	DVASSERT(request->completed)
     request->planeImage = request->targetTexture->CreateImageFromMemory();
     SafeRelease(request->targetTexture);
-
-	return true;
 }
 
 void CreatePlaneLODCommandHelper::CreatePlaneImageForRequest(RequestPointer& request)
@@ -103,8 +111,8 @@ void CreatePlaneLODCommandHelper::CreatePlaneImageForRequest(RequestPointer& req
         secondSideViewport = rhi::Viewport(halfSizef, 0, halfSizef, textureSize);
     }
     
-	request->syncObject = rhi::GetCurrentFrameSyncObject();
     request->targetTexture = Texture::CreateFBO(textureSize, textureSize, FORMAT_RGBA8888);
+	request->RegisterRenderCallback();
 
     // draw 1st side
     float32 depth = max.y - min.y;
@@ -119,6 +127,7 @@ void CreatePlaneLODCommandHelper::CreatePlaneImageForRequest(RequestPointer& req
     camera->SetPosition(Vector3(max.x, 0.0f, 0.0f));
     DrawToTextureForRequest(request, fromEntity, camera, request->targetTexture,
 		request->fromLodLayer, secondSideViewport, false);
+
 }
 
 void CreatePlaneLODCommandHelper::CreatePlaneBatchForRequest(RequestPointer& request)
@@ -269,9 +278,7 @@ void CreatePlaneLODCommandHelper::CreatePlaneBatchForRequest(RequestPointer& req
 	material->SetFXName(NMaterialName::TEXTURED_ALPHATEST);
 	material->SetQualityGroup(NMaterialQualityName::DEFAULT_QUALITY_NAME);
 	material->AddTexture(NMaterialTextureName::TEXTURE_ALBEDO, fileTexture);
-	material->SetTexture(NMaterialTextureName::TEXTURE_ALBEDO, fileTexture);
 
-    request->planeBatch = new RenderBatch();
     request->planeBatch->SetPolygonGroup(planePG);
     request->planeBatch->SetMaterial(material);
 }
@@ -337,9 +344,25 @@ bool CreatePlaneLODCommandHelper::IsHorisontalMesh(const AABBox3 & bbox)
  * Request methods
  */
 
+CreatePlaneLODCommandHelper::Request::Request()
+{
+    planeBatch = new RenderBatch();
+}
+
 CreatePlaneLODCommandHelper::Request::~Request()
 {
 	SafeRelease(planeBatch);
 	SafeRelease(planeImage);
 	SafeRelease(targetTexture);
+}
+
+void CreatePlaneLODCommandHelper::Request::RegisterRenderCallback()
+{
+	RenderCallbacks::RegisterSyncCallback(rhi::GetCurrentFrameSyncObject(),
+		MakeFunction(this, &CreatePlaneLODCommandHelper::Request::OnRenderCallback));
+}
+
+void CreatePlaneLODCommandHelper::Request::OnRenderCallback(rhi::HSyncObject object)
+{
+	completed = true;
 }

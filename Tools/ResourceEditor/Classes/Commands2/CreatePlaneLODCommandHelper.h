@@ -33,40 +33,32 @@
 #include "DAVAEngine.h"
 #include "Base/TypeHolders.h"
 
-class CreatePlaneLODCommandHelper
+namespace CreatePlaneLODCommandHelper
 {
-public:
 	struct Request : public DAVA::RefCounter
 	{
 		DAVA::LodComponent* lodComponent = nullptr;
 	    DAVA::RenderBatch* planeBatch = nullptr;
 		DAVA::Image* planeImage = nullptr;
 		DAVA::Texture* targetTexture = nullptr;
-
 		DAVA::int32 fromLodLayer = 0;
 		DAVA::int32 newLodIndex = 0;
 		DAVA::uint32 textureSize = 0;
 		DAVA::FilePath texturePath;
 	    DAVA::Vector<DAVA::LodComponent::LodDistance> savedDistances;
-		rhi::HSyncObject syncObject;
+		DAVA::Atomic<bool> completed = false;
+
+		Request();
 		~Request();
+		void RegisterRenderCallback();
+		void OnRenderCallback(rhi::HSyncObject object);
 	};
 	using RequestPointer = DAVA::RefPtr<Request>;
 
-public:
 	RequestPointer RequestRenderToTexture(DAVA::LodComponent* lodComponent, DAVA::int32 fromLodLayer, 
 		DAVA::uint32 textureSize, const DAVA::FilePath& texturePath);
 
-	bool RequestCompleted(RequestPointer);
-
-private:
-	bool IsHorisontalMesh(const DAVA::AABBox3& bbox);
-
-    void CreatePlaneImageForRequest(RequestPointer&);
-    void CreatePlaneBatchForRequest(RequestPointer&);
-
-    void DrawToTextureForRequest(RequestPointer&, DAVA::Entity* entity, DAVA::Camera* camera,
-		DAVA::Texture* toTexture, DAVA::int32 fromLodLayer, const rhi::Viewport& viewport, bool clearTarget);
+	void ProcessCompletedRequest(RequestPointer);
 };
 
 #endif // #ifndef __CREATE_PLANE_LOD_COOMAND_H__

@@ -133,7 +133,6 @@ private:
     DAVA::UnorderedMap<DAVA::LodComponent*, ForceData> sceneLODs;
     DAVA::List<DAVA::LodComponent*> selectedLODs;
 
-	CreatePlaneLODCommandHelper createPlaneLODHelper;
 	std::vector<CreatePlaneLODCommandHelper::RequestPointer> planeLODRequests;
 
     bool forceDistanceEnabled = false;
