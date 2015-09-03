@@ -83,7 +83,7 @@ namespace DAVA
 	{
 		Logger::Info("AutotestingDB::GetStringTestParameter deviceName=%s, parameter=%s", deviceName.c_str(), parameter.c_str());
 		String result = DB_ERROR_STR_VALUE;
-		if (nullptr != dbClient)
+		if (dbClient)
 		{
 			RefPtr<MongodbUpdateObject> dbUpdateObject(new MongodbUpdateObject);
 			KeyedArchive *currentRunArchive = FindBuildArchive(dbUpdateObject.Get(), "autotesting_system");
@@ -110,7 +110,7 @@ namespace DAVA
 		Logger::Info("AutotestingDB::GetIntTestParameter deviceName=%s, parameter=%s", deviceName.c_str(), parameter.c_str());
 		KeyedArchive *deviceArchive = nullptr;
 		int32 result = DB_ERROR_INT_VALUE;
-		if (nullptr != dbClient)
+		if (dbClient)
 		{
 			RefPtr<MongodbUpdateObject> dbUpdateObject(new MongodbUpdateObject);
 			KeyedArchive *currentRunArchive = FindBuildArchive(dbUpdateObject.Get(), "autotesting_system");
