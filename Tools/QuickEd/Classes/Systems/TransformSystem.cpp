@@ -294,22 +294,6 @@ void TransformSystem::ResizeControl(const Vector2& pos, bool withPivot, bool rat
         }
 
     }
-    //check situation when we try to resize up and down simultaneously
-    if(invertX != 0 && invertY != 0) //actual only for corners
-    {
-        if(fabs(angeledDelta.x) > 0.0f && fabs(angeledDelta.y) > 0.0f) //only if up and down requested
-        {
-            bool canNotResize = ((angeledDelta.x * invertX) > 0.0f) ^ ((angeledDelta.y * invertY) > 0.0f);
-            if(canNotResize) // and they have different sign for corner
-            {
-                float prop = fabs(angeledDelta.x) / fabs(angeledDelta.y);
-                if(prop > 0.48f && prop < 0.52f) // like "resize 10 to up and 10 to down rateably"
-                {
-                    return;
-                }
-            }
-        }
-    }
     //modify rateably
     if(rateably)
     {
