@@ -583,7 +583,7 @@ namespace DAVA
         clearPassConfig.colorBuffer[0].clearColor[2] = clearColor.b;
         clearPassConfig.colorBuffer[0].clearColor[3] = clearColor.a;
         clearPassConfig.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
-        clearPassConfig.colorBuffer[0].storeAction = rhi::STOREACTION_NONE;
+        clearPassConfig.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
         clearPassConfig.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
         clearPassConfig.depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
         clearPassConfig.viewport = viewport;

@@ -288,7 +288,7 @@ metal_CommandBuffer_SetScissorRect( Handle cmdBuf, ScissorRect rect )
     if( !(rect.x==0  &&  rect.y==0  &&  rect.width==0  &&  rect.height==0) )
     {
         rc.x      = rect.x;
-        rc.x      = rect.y;
+        rc.y      = rect.y;
         rc.width  = rect.width;
         rc.height = rect.height;
     }
@@ -579,7 +579,7 @@ metal_SyncObject_IsSignaled( Handle obj )
 //------------------------------------------------------------------------------
 
 static void
-metal_Present( Handle sync)
+metal_Present( Handle syncObject)
 {
 SCOPED_NAMED_TIMING("rhi.draw-present");
 
@@ -606,9 +606,20 @@ SCOPED_NAMED_TIMING("rhi.draw-present");
         if( do_add )
             pass.push_back( rp );
     }
-
-
-//-    for( unsigned p=0; p!=_CmdQueue.size(); ++p )
+    
+    if( syncObject != InvalidHandle && pass.size() && pass.back()->cmdBuf.size())
+    {
+        Handle                  last_cb_h = pass.back()->cmdBuf.back();
+        CommandBufferMetal_t*   last_cb   = CommandBufferPool::Get( last_cb_h );
+        
+        [last_cb->buf addCompletedHandler:^(id <MTLCommandBuffer> cmdb)
+         {
+             SyncObjectMetal_t*  sync = SyncObjectPool::Get( syncObject );
+             
+             sync->is_signaled = true;
+         }];
+    }
+    
     for( std::vector<RenderPassMetal_t*>::iterator p=pass.begin(),p_end=pass.end(); p!=p_end; ++p )
     {
         RenderPassMetal_t*  pass = *p;
@@ -616,19 +627,12 @@ SCOPED_NAMED_TIMING("rhi.draw-present");
         for( unsigned b=0; b!=pass->cmdBuf.size(); ++b )
         {
             Handle                  cb_h = pass->cmdBuf[b];
-            CommandBufferMetal_t*   cb   = CommandBufferPool::Get( cb_h );
-        
+            
             CommandBufferPool::Free( cb_h );
         }
         
         [pass->buf presentDrawable:_CurDrawable];
         [pass->buf commit];
-        // force CPU-GPU sync
-//        [pass->buf waitUntilCompleted];
-        
-        if( pass->cmdBuf.size() > 1 )
-        {
-        }
     }
 
     for( unsigned i=0; i!=_CmdQueue.size(); ++i )

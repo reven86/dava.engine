@@ -647,9 +647,9 @@ metal_PipelineState_Create( const PipelineState::Descriptor& desc )
                     switch( desc.vertexLayout.ElementDataCount(i) )
                     {
                             //                                    case 1 : fmt = MTLVertexFormatUCharNormalized; break;
-                        case 2 : fmt = MTLVertexFormatUChar2; break;
-                        case 3 : fmt = MTLVertexFormatUChar3; break;
-                        case 4 : fmt = MTLVertexFormatUChar4; break;
+                        case 2 : fmt = MTLVertexFormatUChar2Normalized; break;
+                        case 3 : fmt = MTLVertexFormatUChar3Normalized; break;
+                        case 4 : fmt = MTLVertexFormatUChar4Normalized; break;
                     }
                 }   break;
             }
