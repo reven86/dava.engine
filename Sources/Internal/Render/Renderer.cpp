@@ -168,11 +168,11 @@ void RequestGLScreenShot(ScreenShotCallbackDelegate *_screenShotCallback)
 void BeginFrame()
 {
     DynamicBufferAllocator::BeginFrame();
-    
     RenderCallbacks::ProcessFrame();
+    
 }
 void EndFrame()
-{
+{    
     DynamicBufferAllocator::EndFrame();
     rhi::Present();
 }
