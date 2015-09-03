@@ -55,8 +55,7 @@ struct Rect
 	inline bool PointInside(const Vector2 & point) const; 
 	inline Rect Intersection(const Rect & rect) const;
 	inline bool RectIntersects(const Rect & rect) const;
-    //If proper is true, this function only returns true if the rectangle is entirely inside this rectangle (not on the edge).
-    inline bool RectContains(const Rect &rect, bool proper = false) const;
+    inline bool RectContains(const Rect &rect) const;
 	inline void ClampToRect(Vector2 & point) const;
 	inline void ClampToRect(Rect& rect) const;
 	inline Rect Combine(const Rect& rect) const;
@@ -141,81 +140,36 @@ inline bool Rect::RectIntersects(const Rect & rect) const
 	return(true);
 }
 
-inline bool Rect::RectContains(const Rect& rect, bool proper) const
+inline bool Rect::RectContains(const Rect& rect) const
 {
-    float32 l1 = x;
-    float32 r1 = x;
+    float32 l = x;
+    float32 r = x;
     if (dx < 0.0f)
     {
-        l1 = x + dx;
+        l += dx;
     }
     else
     {
-        r1 = dx + x;
+        r += dx;
     }
-    float32 l2 = rect.x;
-    float32 r2 = rect.x;
-    if (rect.dx < 0.0f)
+    if (l == r || rect.x < l || rect.x > r)
     {
-        l2 = rect.x + rect.dx;
+        return false;
     }
-    else
-    {
-        r2 = rect.x + rect.dx;
-    }
-
-    if (proper)
-    {
-        if (l2 <= l1 || r2 >= r1)
-        {
-            return false;
-        }
-    }
-    else
-    {
-        if (l2 < l1 || r2 > r1)
-        {
-            return false;
-        }
-    }
-
-    float32 t1 = y;
-    float32 b1 = y;
+    float32 t = y;
+    float32 b = y;
     if (dy < 0.0f)
     {
-        t1 = y + dy;
+        t += dy;
     }
     else
     {
-        b1 = y + dy;
+        b += dy;
     }
-
-    float32 t2 = rect.y;
-    float32 b2 = rect.y;
-    if (rect.dy < 0.0f)
+    if (t == b || rect.y < t || rect.y > b)
     {
-        t2 = rect.y + rect.dy;
+        return false;
     }
-    else
-    {
-        b2 = rect.y + rect.dy;
-    }
-
-    if (proper)
-    {
-        if (t2 <= t1 || b2 >= b1)
-        {
-            return false;
-        }
-    }
-    else
-    {
-        if (t2 < t1 || b2 > b1)
-        {
-            return false;
-        }
-    }
-
     return true;
 }
 
