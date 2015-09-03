@@ -59,6 +59,7 @@ QColor TextureBrowser::gpuColor_PVR_Android = QColor(0, 0, 200, 255);
 QColor TextureBrowser::gpuColor_Tegra = QColor(0, 200, 200, 255);
 QColor TextureBrowser::gpuColor_MALI = QColor(200, 200, 0, 255);
 QColor TextureBrowser::gpuColor_Adreno = QColor(200, 0, 200, 255);
+QColor TextureBrowser::gpuColor_DX11 = QColor(200, 200, 200, 255);
 QColor TextureBrowser::errorColor = QColor(255, 0, 0, 255);
 
 TextureBrowser::TextureBrowser(QWidget *parent)
@@ -583,7 +584,13 @@ void TextureBrowser::setupTextureViewTabBar()
 	ui->viewTabBar->setTabData(tabIndex, GPU_ADRENO);
 	ui->viewTabBar->setTabIcon(tabIndex, QIcon(pix));
 
-	QObject::connect(ui->viewTabBar,  SIGNAL(currentChanged(int)), this, SLOT(textureViewChanged(int)));
+        p.setBrush(QBrush(gpuColor_DX11));
+        p.drawRect(QRect(0, 0, 15, 15));
+        tabIndex = ui->viewTabBar->addTab("DX11");
+        ui->viewTabBar->setTabData(tabIndex, GPU_DX11);
+        ui->viewTabBar->setTabIcon(tabIndex, QIcon(pix));
+
+        QObject::connect(ui->viewTabBar,  SIGNAL(currentChanged(int)), this, SLOT(textureViewChanged(int)));
 }
 
 void TextureBrowser::resetTextureInfo()

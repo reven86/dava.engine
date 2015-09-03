@@ -385,7 +385,7 @@ void TextureDescriptor::LoadVersion6(DAVA::File *file)
     }
     else
     {
-        static_assert(GPU_DEVICE_COUNT == 5, "GPU_DEVICE_COUNT is changed, texture descriptor load routine should be altered");
+        static_assert(GPU_DEVICE_COUNT == 6, "GPU_DEVICE_COUNT is changed, texture descriptor load routine should be altered");
         for(auto i = 0; i < GPU_DEVICE_COUNT; ++i)
         {
             int8 format;
@@ -420,7 +420,7 @@ void TextureDescriptor::LoadVersion7(DAVA::File *file)
     }
     else
     {
-        static_assert(GPU_DEVICE_COUNT == 5, "GPU_DEVICE_COUNT is changed, texture descriptor load routine should be altered");
+        static_assert(GPU_DEVICE_COUNT == 6, "GPU_DEVICE_COUNT is changed, texture descriptor load routine should be altered");
         for(int32 i = 0; i < GPU_DEVICE_COUNT; ++i)
         {
             int8 format;
@@ -460,7 +460,7 @@ void TextureDescriptor::LoadVersion8(File *file)
     {
         uint8 compressionsCount = 0;
         file->Read(&compressionsCount);
-        static_assert(GPU_FAMILY_COUNT == 6, "GPU_FAMILY_COUNT is changed, texture descriptor load routine should be altered");
+        static_assert(GPU_FAMILY_COUNT == 7, "GPU_FAMILY_COUNT is changed, texture descriptor load routine should be altered");
         for (auto i = 0; i < GPU_FAMILY_COUNT; ++i)
         {
             int8 format;
@@ -517,7 +517,7 @@ void TextureDescriptor::LoadVersion9(File *file)
     //compression
     uint8 compressionsCount = 0;
     file->Read(&compressionsCount);
-    static_assert(GPU_FAMILY_COUNT == 6, "GPU_FAMILY_COUNT is changed, texture descriptor load routine should be altered");
+    static_assert(GPU_FAMILY_COUNT == 7, "GPU_FAMILY_COUNT is changed, texture descriptor load routine should be altered");
     for (auto i = 0; i < compressionsCount; ++i)
     {
         auto &nextCompression = compression[i];

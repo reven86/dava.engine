@@ -212,20 +212,21 @@ enum PixelFormat
 };
     
 // Please update JniDeviceInfo.java if change eGPUFamily enum
-enum eGPUFamily
+enum eGPUFamily : uint8
 {
-    GPU_POWERVR_IOS     =   0,
+    GPU_POWERVR_IOS = 0,
     GPU_POWERVR_ANDROID,
     GPU_TEGRA,
     GPU_MALI,
     GPU_ADRENO,
-    GPU_ORIGIN,
+    GPU_DX11,
+    GPU_ORIGIN, // not a device - for development only
     GPU_FAMILY_COUNT,
-    
+
     GPU_DEVICE_COUNT = GPU_ORIGIN,
-    GPU_INVALID = 0x07
+    GPU_INVALID = 0xFF,
 };
-    
+
 #if defined(__DAVAENGINE_OPENGL__)
 extern const GLint BLEND_MODE_MAP[BLEND_MODE_COUNT];
 #elif defined(__DAVAENGINE_DIRECTX9__)
