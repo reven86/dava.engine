@@ -56,7 +56,7 @@ namespace
 }
 
 TransformSystem::TransformSystem(Document *parent)
-    : BaseSystemClass(parent)
+    : BaseSystem(parent)
     , steps({ { 10, 20, 20 } }) //10 for rotate and 20 for move/resize
 {
     accumulates.fill({ { 0, 0 } });

@@ -35,7 +35,7 @@
 #include "Math/Vector.h"
 #include "Math/Rect.h"
 #include "UI/UIControl.h"
-#include "Systems/BaseSystemClass.h"
+#include "Systems/BaseSystem.h"
 #include "Functional/Signal.h"
 
 class Document;
@@ -53,7 +53,7 @@ protected:
     DAVA::UIGeometricData *gd = nullptr;
 };
 
-class HUDSystem final : public BaseSystemClass, public InputInterface
+class HUDSystem final : public BaseSystem, public InputInterface
 {
 public:
     HUDSystem(Document *document);

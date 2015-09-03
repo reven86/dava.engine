@@ -39,7 +39,7 @@ using namespace DAVA;
 QMap<QString, QPixmap> CursorSystem::cursorpixes;
 
 CursorSystem::CursorSystem(Document* doc)
-    : BaseSystemClass(doc)
+    : BaseSystem(doc)
 {
     
 }

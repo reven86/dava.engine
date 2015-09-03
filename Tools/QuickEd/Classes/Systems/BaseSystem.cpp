@@ -26,21 +26,20 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
+#include "Systems/BaseSystem.h"
 
-#ifndef __QUICKED_BASE_SYSTEM_CLASS_H__
-#define __QUICKED_BASE_SYSTEM_CLASS_H__
+BaseSystem::BaseSystem(Document *parent)
+    : document(parent)
+{
+    
+}
 
-class Document;
+void BaseSystem::Attach()
+{
+    
+}
 
-class BaseSystemClass
-{   
-public:
-    explicit BaseSystemClass(Document *parent);
-    virtual ~BaseSystemClass() = default;
-    virtual void Attach(); //attach system to active scene
-    virtual void Detach(); //detach system from active scene
-protected:
-    Document *document = nullptr;
-};
-
-#endif // __QUICKED_BASE_SYSTEM_CLASS_H__
+void BaseSystem::Detach()
+{
+    
+}

@@ -75,7 +75,7 @@ using namespace DAVA;
 
 void Document::Detach()
 {
-    for (auto system : systems)
+    for (auto &system : systems)
     {
         system->Detach();
     }
@@ -136,8 +136,8 @@ void Document::SetContext(QObject* requester, WidgetContext* widgetContext)
 void Document::OnSelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected)
 {
     Set<PackageBaseNode*> selectedNodes_(selected.begin(), selected.end());
-    Set<PackageBaseNode*> deselectedNodes(deselected.begin(), deselected.end());
-    SetSelectedNodes(selectedNodes_, deselectedNodes);
+    Set<PackageBaseNode*> deselectedNodes_(deselected.begin(), deselected.end());
+    SetSelectedNodes(selectedNodes_, deselectedNodes_);
 }
 
 bool Document::OnInput(UIEvent *currentInput)

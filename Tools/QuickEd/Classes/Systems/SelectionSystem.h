@@ -31,7 +31,7 @@
 #define __QUICKED_SELECTION_SYSTEM_H__
 
 #include "Systems/Interfaces.h"
-#include "Systems/BaseSystemClass.h"
+#include "Systems/BaseSystem.h"
 #include "Model/PackageHierarchy/PackageListener.h"
 #include "Functional/Signal.h"
 #include "Math/Rect.h"
@@ -41,7 +41,7 @@ namespace DAVA {
     class Vector2;
 }
 
-class SelectionSystem final : public BaseSystemClass, public InputInterface, public PackageListener
+class SelectionSystem final : public BaseSystem, public InputInterface, public PackageListener
 {
 public:
     SelectionSystem(Document *doc);

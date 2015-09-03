@@ -66,7 +66,7 @@ void CheckeredCanvas::Draw(const UIGeometricData &geometricData)
 }
 
 CanvasSystem::CanvasSystem(Document *parent)
-    : BaseSystemClass(parent)
+    : BaseSystem(parent)
     , canvas(new UIControl())
 {
 }

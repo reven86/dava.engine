@@ -184,7 +184,7 @@ private:
 };
 
 HUDSystem::HUDSystem(Document *document_)
-    : BaseSystemClass(document_)
+    : BaseSystem(document_)
     , hudControl(new UIControl())
     , selectionRectControl(new UIControl())
 {

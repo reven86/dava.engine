@@ -30,7 +30,7 @@
 #ifndef __QUICKED_CANVAS_SYSTEM_H__
 #define __QUICKED_CANVAS_SYSTEM_H__
 
-#include "BaseSystemClass.h"
+#include "BaseSystem.h"
 #include "Interfaces.h"
 
 #include "Base/ScopedPtr.h"
@@ -39,7 +39,7 @@
 class Document;
 class PackageBaseNode;
 
-class CanvasSystem final : public BaseSystemClass
+class CanvasSystem final : public BaseSystem
 {
 public:
     CanvasSystem(Document *parent);

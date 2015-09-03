@@ -30,12 +30,12 @@
 #ifndef __QUICKED_CURSOR_SYSTEM_H__
 #define __QUICKED_CURSOR_SYSTEM_H__
 
-#include "Systems/BaseSystemClass.h"
+#include "Systems/BaseSystem.h"
 #include "Systems/Interfaces.h"
 #include <QCursor>
 #include <QMap>
 
-class CursorSystem final : public BaseSystemClass, public ControlAreaInterface
+class CursorSystem final : public BaseSystem, public ControlAreaInterface
 {   
 public:
     explicit CursorSystem(Document *doc);

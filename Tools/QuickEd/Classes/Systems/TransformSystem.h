@@ -30,14 +30,14 @@
 #ifndef __QUICKED_TRANSFORM_SYSTEM_H__
 #define __QUICKED_TRANSFORM_SYSTEM_H__
 
-#include "Systems/BaseSystemClass.h"
+#include "Systems/BaseSystem.h"
 #include "Systems/Interfaces.h"
 #include "Base/BaseTypes.h"
 #include "Math/Vector.h"
 
 class Document;
 
-class TransformSystem final : public BaseSystemClass, public InputInterface, public ControlAreaInterface
+class TransformSystem final : public BaseSystem, public InputInterface, public ControlAreaInterface
 {   
 public:
     explicit TransformSystem(Document *parent);

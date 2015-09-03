@@ -158,6 +158,8 @@ void ControlMapper::wheelEvent(QWheelEvent *event)
     //if ( event->phase() != QScrollEvent::ScrollUpdated )
     //    return;
 
+    const auto currentDPR = static_cast<int>( window->devicePixelRatio() );
+
     DAVA::UIEvent davaEvent;
     davaEvent.point = DAVA::Vector2( event->pixelDelta().x(), event->pixelDelta().y() );
     davaEvent.timestamp = 0;

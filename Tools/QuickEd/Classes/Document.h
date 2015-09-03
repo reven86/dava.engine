@@ -104,7 +104,7 @@ private:
     CursorSystem cursorSystem;
     TransformSystem transformSystem;
     QList<InputInterface*> inputListeners;
-    QList<BaseSystemClass*> systems;
+    QList<BaseSystem*> systems;
 };
 
 inline QUndoStack *Document::GetUndoStack() const
