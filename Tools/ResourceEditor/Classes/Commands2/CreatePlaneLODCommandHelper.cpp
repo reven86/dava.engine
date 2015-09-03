@@ -127,13 +127,10 @@ void CreatePlaneLODCommandHelper::CreatePlaneImageForRequest(RequestPointer& req
     camera->SetPosition(Vector3(max.x, 0.0f, 0.0f));
     DrawToTextureForRequest(request, fromEntity, camera, request->targetTexture,
 		request->fromLodLayer, secondSideViewport, false);
-
 }
 
 void CreatePlaneLODCommandHelper::CreatePlaneBatchForRequest(RequestPointer& request)
 {
-    DVASSERT(request->planeBatch == nullptr);
-    
     DAVA::Entity *fromEntity = request->lodComponent->GetEntity();
 
     AABBox3 bbox = GetRenderObject(fromEntity)->GetBoundingBox();
