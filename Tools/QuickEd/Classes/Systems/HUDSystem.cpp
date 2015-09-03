@@ -200,11 +200,6 @@ void HUDSystem::AttachToRoot(UIControl* root)
     root->AddControl(hudControl);
 }
 
-void HUDSystem::Attach()
-{
-    
-}
-
 void HUDSystem::Detach()
 {
     hudControl->RemoveFromParent();

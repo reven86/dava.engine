@@ -59,7 +59,6 @@ public:
     HUDSystem(Document *document);
     ~HUDSystem() = default;
     void AttachToRoot(DAVA::UIControl *root);
-    void Attach() override;
     void Detach() override;
     void OnSelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected);
     bool OnInput(DAVA::UIEvent *currentInput) override;
