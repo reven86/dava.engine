@@ -43,6 +43,9 @@
 #include "UI/Layouts/UILinearLayoutComponent.h"
 #include "FileSystem/Logger.h"
 
+
+#include "Render/RHI/rhi_type.h"
+
 using namespace DAVA;
 
 ENUM_DECLARE(eGPUFamily)
@@ -305,6 +308,7 @@ ENUM_DECLARE(UITextField::eReturnKeyType)
 ENUM_DECLARE(UIComponent::eType)
 {
     ENUM_ADD_DESCR(UIComponent::LINEAR_LAYOUT_COMPONENT, "LinearLayout");
+    ENUM_ADD_DESCR(UIComponent::IGNORE_LAYOUT_COMPONENT, "IgnoreLayout");
     ENUM_ADD_DESCR(UIComponent::SIZE_POLICY_COMPONENT, "SizePolicy");
     ENUM_ADD_DESCR(UIComponent::ANCHOR_COMPONENT, "Anchor");
 };
@@ -329,22 +333,22 @@ ENUM_DECLARE(UILinearLayoutComponent::eOrientation)
 
 ENUM_DECLARE(rhi::TextureAddrMode)
 {
-    ENUM_ADD(rhi::TEXADDR_WRAP);
-    ENUM_ADD(rhi::TEXADDR_CLAMP);
-    ENUM_ADD(rhi::TEXADDR_MIRROR);
+    ENUM_ADD_DESCR(rhi::TEXADDR_WRAP, "Wrap");
+    ENUM_ADD_DESCR(rhi::TEXADDR_CLAMP, "Clamp");
+    ENUM_ADD_DESCR(rhi::TEXADDR_MIRROR, "Mirror");
 };
 
 ENUM_DECLARE(rhi::TextureFilter)
 {
-    ENUM_ADD(rhi::TEXFILTER_NEAREST);
-    ENUM_ADD(rhi::TEXFILTER_LINEAR);
+    ENUM_ADD_DESCR(rhi::TEXFILTER_NEAREST, "Nearest");
+    ENUM_ADD_DESCR(rhi::TEXFILTER_LINEAR, "Linear");
 };
 
 ENUM_DECLARE(rhi::TextureMipFilter)
 {
-    ENUM_ADD(rhi::TEXMIPFILTER_NONE);
-    ENUM_ADD(rhi::TEXMIPFILTER_NEAREST);
-    ENUM_ADD(rhi::TEXMIPFILTER_LINEAR);
+    ENUM_ADD_DESCR(rhi::TEXMIPFILTER_NONE, "None");
+    ENUM_ADD_DESCR(rhi::TEXMIPFILTER_NEAREST, "Nearest");
+    ENUM_ADD_DESCR(rhi::TEXMIPFILTER_LINEAR, "Linear");
 };
 
 ENUM_DECLARE(rhi::PrimitiveType)
@@ -353,6 +357,8 @@ ENUM_DECLARE(rhi::PrimitiveType)
     ENUM_ADD(rhi::PRIMITIVE_TRIANGLESTRIP);
     ENUM_ADD(rhi::PRIMITIVE_LINELIST);
 };
+
+
 
 /*
 void f()

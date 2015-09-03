@@ -28,7 +28,6 @@
 
 
 #include "Render/Highlevel/SpriteObject.h"
-#include "Scene3D/Systems/MaterialSystem.h"
 
 #include "Render/Material/NMaterialNames.h"
 

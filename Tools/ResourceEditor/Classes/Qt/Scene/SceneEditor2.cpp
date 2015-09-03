@@ -71,11 +71,6 @@ SceneEditor2::SceneEditor2()
     , isLoaded(false)
     , isHUDVisible(true)
 {
-#if RHI_COMPLETE_EDITOR
-    SetClearBuffers(RenderManager::DEPTH_BUFFER | RenderManager::STENCIL_BUFFER);
-    renderStats.Clear();
-#endif // RHI_COMPLETE_EDITOR	
-
     EditorCommandNotify *notify = new EditorCommandNotify(this);
     commandStack.SetNotify(notify);
     SafeRelease(notify);

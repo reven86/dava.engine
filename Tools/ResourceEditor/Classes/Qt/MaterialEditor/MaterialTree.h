@@ -57,7 +57,6 @@ public:
 
     int getFilterType() const;
     void setFilterType( int filterType );
-    void AssignMaterialToSelection( DAVA::NMaterial *material );
 
 signals:
     void Updated();
@@ -69,7 +68,6 @@ public slots:
 	void OnStructureChanged(SceneEditor2 *scene, DAVA::Entity *parent);
 	void OnSelectionChanged(SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected);
 	void OnSelectEntities();
-    void OnAssignToSelection();
 
 protected:
 	MaterialFilteringModel *treeModel;

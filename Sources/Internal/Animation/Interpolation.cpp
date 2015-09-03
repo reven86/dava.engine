@@ -30,7 +30,6 @@
 #include "Base/BaseMath.h"
 #include "Animation/Interpolation.h"
 #include "Math/MathConstants.h"
-#include "Base/FunctionTraits.h"
 
 namespace DAVA
 {
@@ -38,22 +37,22 @@ Interpolation::Func Interpolation::GetFunction(FuncType type)
 {
     static Interpolation::Func functions[] =
     {
-        MakeFunction<float32 (*)(float32)>(&Interpolation::Linear),
-        MakeFunction<float32 (*)(float32)>(&Interpolation::EaseIn),
-        MakeFunction<float32 (*)(float32)>(&Interpolation::EaseOut),
-        MakeFunction<float32 (*)(float32)>(&Interpolation::EaseInEaseOut),
-        MakeFunction(&Interpolation::SineIn),
-        MakeFunction(&Interpolation::SineOut),
-        MakeFunction(&Interpolation::SineInSineOut),
-        MakeFunction(&Interpolation::ElasticIn),
-        MakeFunction(&Interpolation::ElasticOut),
-        MakeFunction(&Interpolation::ElasticInElasticOut),
-        MakeFunction(&Interpolation::BounceIn),
-        MakeFunction(&Interpolation::BounceOut),
-        MakeFunction(&Interpolation::BounceInBounceOut),
-        MakeFunction<float32 (*)(float32)>(&Interpolation::EaseIn),
-        MakeFunction<float32 (*)(float32)>(&Interpolation::EaseOut),
-        MakeFunction<float32 (*)(float32)>(&Interpolation::EaseInEaseOut)
+        static_cast<float32(*)(float32)>(&Interpolation::Linear),
+        static_cast<float32(*)(float32)>(&Interpolation::EaseIn),
+        static_cast<float32(*)(float32)>(&Interpolation::EaseOut),
+        static_cast<float32(*)(float32)>(&Interpolation::EaseInEaseOut),
+        &Interpolation::SineIn,
+        &Interpolation::SineOut,
+        &Interpolation::SineInSineOut,
+        &Interpolation::ElasticIn,
+        &Interpolation::ElasticOut,
+        &Interpolation::ElasticInElasticOut,
+        &Interpolation::BounceIn,
+        &Interpolation::BounceOut,
+        &Interpolation::BounceInBounceOut,
+        static_cast<float32(*)(float32)>(&Interpolation::EaseIn),
+        static_cast<float32(*)(float32)>(&Interpolation::EaseOut),
+        static_cast<float32(*)(float32)>(&Interpolation::EaseInEaseOut)
     };
     
     DVASSERT(type < FUNC_TYPE_COUNT);

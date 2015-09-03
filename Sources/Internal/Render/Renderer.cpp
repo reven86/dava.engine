@@ -33,6 +33,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Render/Material/FXCache.h"
 #include "Render/DynamicBufferAllocator.h"
 #include "Render/GPUFamilyDescriptor.h"
+#include "Render/RenderCallbacks.h"
 
 namespace DAVA
 {
@@ -167,6 +168,8 @@ void RequestGLScreenShot(ScreenShotCallbackDelegate *_screenShotCallback)
 void BeginFrame()
 {
     DynamicBufferAllocator::BeginFrame();
+    
+    RenderCallbacks::ProcessFrame();
 }
 void EndFrame()
 {

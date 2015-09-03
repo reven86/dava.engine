@@ -43,8 +43,7 @@
 
     #include "_dx9.h"
     namespace rhi { extern void _InitDX9(); }
-    #include <vector>
-
+    #include <vector>    
 
 
 namespace rhi

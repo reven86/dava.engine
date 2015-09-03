@@ -142,7 +142,7 @@ void            UnmapIndexBuffer( HIndexBuffer ib );
 
 void            UpdateIndexBuffer( HIndexBuffer ib, const void* data, uint32 offset, uint32 size );
 
-bool            NeedRestoreIndexBuffer( HVertexBuffer vb );
+bool            NeedRestoreIndexBuffer(HIndexBuffer vb);
 
 
 ////////////////////////////////////////////////////////////////////////////////

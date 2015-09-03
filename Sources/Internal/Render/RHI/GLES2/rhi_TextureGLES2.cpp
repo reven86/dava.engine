@@ -175,6 +175,7 @@ TextureGLES2_t::Create( const Texture::Descriptor& desc, bool force_immediate )
         format               = desc.format;
         isCubeMap            = desc.type == TEXTURE_TYPE_CUBE;
         isMapped             = false;
+        isRenderTarget       = false;
         isRenderBuffer       = is_depth;
         forceSetSamplerState = true;
         

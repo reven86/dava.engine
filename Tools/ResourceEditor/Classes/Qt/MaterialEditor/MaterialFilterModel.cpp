@@ -37,7 +37,6 @@
 #include "Commands2/MaterialSwitchParentCommand.h"
 
 #include "Scene3D/Scene.h"
-#include "Scene3D/Systems/MaterialSystem.h"
 
 #include <QTimer>
 #include <QDebug>

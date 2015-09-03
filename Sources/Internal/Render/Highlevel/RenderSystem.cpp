@@ -38,7 +38,6 @@
 #include "Render/Highlevel/Frustum.h"
 #include "Render/Highlevel/Camera.h"
 #include "Render/Highlevel/Light.h"
-#include "Scene3D/Systems/MaterialSystem.h"
 #include "Render/Highlevel/SpatialTree.h"
 #include "Render/ShaderCache.h"
 

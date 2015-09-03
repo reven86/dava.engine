@@ -823,6 +823,8 @@ void EmitterLayerWidget::OnValueChanged()
 
 	DVASSERT(activeScene);
 	activeScene->Exec(updateLayerCmd);
+	activeScene->MarkAsChanged();
+
     Update(false);
     if (superemitterStatusChanged)
     {
@@ -844,6 +846,7 @@ void EmitterLayerWidget::OnLodsChanged()
 	}
 	CommandUpdateParticleLayerLods * updateLodsCmd = new CommandUpdateParticleLayerLods(layer, lods);
 	activeScene->Exec(updateLodsCmd);
+	activeScene->MarkAsChanged();
 	emit ValueChanged();
 }
 

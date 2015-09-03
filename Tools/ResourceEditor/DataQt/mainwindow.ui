@@ -281,7 +281,6 @@
      <addaction name="actionSwitchNode"/>
      <addaction name="actionParticleEffectNode"/>
      <addaction name="actionAddLandscape"/>
-     <addaction name="actionAddSkybox"/>
      <addaction name="actionAddWind"/>
      <addaction name="actionAddVegetation"/>
      <addaction name="actionAddPath"/>
@@ -385,13 +384,6 @@
     <property name="title">
      <string>Scene</string>
     </property>
-    <widget class="QMenu" name="menuDynamicShadowBlendMode">
-     <property name="title">
-      <string>Dynamic Shadow Blend Mode</string>
-     </property>
-     <addaction name="actionDynamicBlendModeAlpha"/>
-     <addaction name="actionDynamicBlendModeMultiply"/>
-    </widget>
     <widget class="QMenu" name="menuLandscape_2">
      <property name="title">
       <string>Landscape save</string>
@@ -420,8 +412,6 @@
     <addaction name="actionReloadSprites"/>
     <addaction name="actionReloadShader"/>
     <addaction name="actionConvertModifiedTextures"/>
-    <addaction name="separator"/>
-    <addaction name="menuDynamicShadowBlendMode"/>
     <addaction name="separator"/>
     <addaction name="actionHeightMapEditor"/>
     <addaction name="actionTileMapEditor"/>
@@ -734,7 +724,7 @@
           <x>0</x>
           <y>0</y>
           <width>256</width>
-          <height>88</height>
+          <height>90</height>
          </rect>
         </property>
        </widget>
@@ -864,7 +854,7 @@
           <x>0</x>
           <y>0</y>
           <width>256</width>
-          <height>89</height>
+          <height>90</height>
          </rect>
         </property>
        </widget>
@@ -1492,32 +1482,6 @@
     <string>Cubemap Editor</string>
    </property>
   </action>
-  <action name="actionSkyboxNode">
-   <property name="text">
-    <string>Skybox Node</string>
-   </property>
-  </action>
-  <action name="actionSetupSkybox">
-   <property name="text">
-    <string>Setup Skybox</string>
-   </property>
-  </action>
-  <action name="actionDynamicBlendModeAlpha">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Alpha</string>
-   </property>
-  </action>
-  <action name="actionDynamicBlendModeMultiply">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Multiply</string>
-   </property>
-  </action>
   <action name="actionReloadSprites">
    <property name="icon">
     <iconset resource="QtIcons.qrc">
@@ -1861,21 +1825,6 @@
    </property>
    <property name="toolTip">
     <string>Add landscape</string>
-   </property>
-  </action>
-  <action name="actionAddSkybox">
-   <property name="icon">
-    <iconset resource="QtIcons.qrc">
-     <normaloff>:/QtIcons/cloud.png</normaloff>:/QtIcons/cloud.png</iconset>
-   </property>
-   <property name="text">
-    <string>Skybox</string>
-   </property>
-   <property name="toolTip">
-    <string>Add skybox</string>
-   </property>
-   <property name="visible">
-    <bool>false</bool>
    </property>
   </action>
   <action name="actionCustomQuality">

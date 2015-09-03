@@ -242,8 +242,11 @@ void DebugDrawSystem::DrawSelectedSoundNode(DAVA::Entity *entity)
             SoundEvent * sEvent = sc->GetSoundEvent(i);
             float32 distance = sEvent->GetMaxDistance();
 
-            sceneEditor->GetRenderSystem()->GetDebugDrawer()->DrawIcosahedron(position, distance, settings->GetValue(Settings::Scene_Sound_SoundObjectSphereColor).AsColor(), RenderHelper::DRAW_SOLID_DEPTH);
-            sceneEditor->textDrawSystem->DrawText(sceneEditor->textDrawSystem->ToPos2d(position) - Vector2(0.f, fontHeight - 2.f) * i, sEvent->GetEventName(), Color::White, TextDrawSystem::Center);
+            sceneEditor->GetRenderSystem()->GetDebugDrawer()->DrawIcosahedron(position, distance, 
+				settings->GetValue(Settings::Scene_Sound_SoundObjectSphereColor).AsColor(), RenderHelper::DRAW_SOLID_DEPTH);
+
+            sceneEditor->textDrawSystem->DrawText(sceneEditor->textDrawSystem->ToPos2d(position) - Vector2(0.f, fontHeight - 2.f) * i, 
+				sEvent->GetEventName(), Color::White, TextDrawSystem::Align::Center);
 
             if(sEvent->IsDirectional())
             {
@@ -278,8 +281,8 @@ void DebugDrawSystem::DrawHangingObjects( DAVA::Entity *entity )
 	{
         return;
     }
-    //skyBox should not be marked as hanging object
-	if (entity->GetParent() != GetScene())
+
+    if (entity->GetParent() != GetScene())
     {
 		return;
     }

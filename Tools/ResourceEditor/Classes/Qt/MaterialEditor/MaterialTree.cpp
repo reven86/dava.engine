@@ -74,7 +74,6 @@ void MaterialTree::SetScene(SceneEditor2 *sceneEditor)
 	{
 		EntityGroup curSelection = sceneEditor->selectionSystem->GetSelection();
         OnSelectionChanged( sceneEditor, &curSelection, NULL );
-		//treeModel->SetSelection(&curSelection);
 	}
 	else
 	{
@@ -85,17 +84,6 @@ void MaterialTree::SetScene(SceneEditor2 *sceneEditor)
     setSortingEnabled(true);
 }
 
-void MaterialTree::AssignMaterialToSelection( DAVA::NMaterial *material )
-{
-#if RHI_COMPLETE_EDITOR
-    SceneEditor2 *curScene = treeModel->GetScene();
-    Q_ASSERT( curScene );
-    if ( !curScene )
-        return ;
-    EntityGroup selection = curScene->selectionSystem->GetSelection();
-    MaterialAssignSystem::AssignMaterialToGroup(curScene, &selection, material);
-#endif
-}
 
 DAVA::NMaterial* MaterialTree::GetMaterial(const QModelIndex &index) const
 {
@@ -167,58 +155,10 @@ void MaterialTree::ShowContextMenu(const QPoint &pos)
 
 	contextMenu.addAction(QIcon(":/QtIcons/zoom.png"), "Select entities", this, SLOT(OnSelectEntities()));
 
-    // "Assign to Selection" item
-    {
-#if RHI_COMPLETE_EDITOR
-        const QModelIndexList& selection = selectionModel()->selectedRows();
-        int nMaterials = selection.count();
-
-        DAVA::NMaterial *globalMaterial = nullptr;
-        SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
-        if (nullptr != curScene)
-        {
-            globalMaterial = curScene->GetGlobalMaterial();
-        }
-
-        if (nMaterials > 0)
-        {
-            const QModelIndex first = selection[0];
-            DAVA::NMaterial *material = treeModel->GetMaterial(first);
-            QVariant materialAsVariant = QVariant::fromValue<DAVA::NMaterial *>(material);
-            QAction * actionAssign = contextMenu.addAction("Assign to Selection", this, SLOT(OnAssignToSelection()));
-
-            if (material != globalMaterial && 1 == nMaterials)
-            {
-                actionAssign->setData(materialAsVariant);
-                actionAssign->setEnabled(true);
-            }
-            else
-            {
-                actionAssign->setEnabled(false);
-            }
-        }
-#endif
-    }
-
     emit ContextMenuPrepare(&contextMenu);
 	contextMenu.exec(mapToGlobal(pos));
 }
 
-void MaterialTree::OnAssignToSelection()
-{
-#if RHI_COMPLETE_EDITOR
-    QAction *act = qobject_cast<QAction *>(sender());
-    if ( !act )
-        return ;
-    QVariant indexAsVariant = act->data();
-    if ( !indexAsVariant.isValid() )
-        return ;
-    DAVA::NMaterial *material = indexAsVariant.value<DAVA::NMaterial *>();
-    if ( !material )
-        return ;
-    AssignMaterialToSelection( material );
-#endif
-}
 
 void MaterialTree::dragEnterEvent(QDragEnterEvent * event)
 {

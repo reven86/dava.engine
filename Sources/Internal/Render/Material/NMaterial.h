@@ -128,6 +128,11 @@ public:
 
     uint32 GetRequiredVertexFormat();
 
+
+    void InvalidateBufferBindings();
+    void InvalidateTextureBindings();
+    void InvalidateRenderVariants();
+
     /*properties*/
     void AddProperty(const FastName& propName, const float32 *propData, rhi::ShaderProp::Type type, uint32 arraySize = 1);
     void RemoveProperty(const FastName& propName);
@@ -137,6 +142,8 @@ public:
     const float32* GetLocalPropValue(const FastName& propName);
     const float32* GetEffectivePropValue(const FastName& propName);
 
+
+
     /*textures*/
     void AddTexture(const FastName& slotName, Texture *texture);
     void RemoveTexture(const FastName& slotName);
@@ -144,6 +151,7 @@ public:
     bool HasLocalTexture(const FastName& slotName);
     Texture* GetLocalTexture(const FastName& slotName);
     Texture* GetEffectiveTexture(const FastName& slotName);
+    void CollectLocalTextures(Set<MaterialTextureInfo *> &collection) const;
 
     /*flags*/
     void AddFlag(const FastName& flagName, int32 value);
@@ -166,11 +174,7 @@ public:
     bool PreBuildMaterial(const FastName& passName); //later add engine flags here
 
 private:
-    void LoadOldNMaterial(KeyedArchive * archive, SerializationContext * serializationContext);
-
-    void InvalidateBufferBindings();
-    void InvalidateTextureBindings();
-    void InvalidateRenderVariants();
+    void LoadOldNMaterial(KeyedArchive * archive, SerializationContext * serializationContext);    
 
     void RebuildBindings();
     void RebuildTextureBindings();

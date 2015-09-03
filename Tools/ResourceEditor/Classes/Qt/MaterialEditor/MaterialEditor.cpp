@@ -832,37 +832,35 @@ void MaterialEditor::onContextMenuPrepare(QMenu *menu)
 void MaterialEditor::OnMaterialPropertyEditorContextMenuRequest(const QPoint & pos)
 {
     SceneEditor2 *sceneEditor = QtMainWindow::Instance()->GetCurrentScene();
-    if(NULL != sceneEditor && curMaterials.size() == 1)
+    if(nullptr != sceneEditor && curMaterials.size() == 1)
     {
         DAVA::NMaterial *globalMaterial = sceneEditor->GetGlobalMaterial();
         DAVA::NMaterial *material = curMaterials[0];
 
         QModelIndex index = ui->materialProperty->indexAt(pos);
 
-        if(globalMaterial != material && index.column() == 0)
+        if (globalMaterial != material && index.column() == 0 && (nullptr != globalMaterial))
         {
             QtPropertyData *data = ui->materialProperty->GetProperty(index);
-            if(NULL != data && data->Parent() == propertiesRoot)
+            if (nullptr != data && data->Parent() == propertiesRoot)
             {
                 QtPropertyDataInspDynamic *dynamicData = (QtPropertyDataInspDynamic *) data;
-                if(NULL != dynamicData)
+                if (nullptr != dynamicData)
                 {
-                    DAVA::FastName propertyName = dynamicData->name;
-#if RHI_COMPLETE_EDITOR
-                    DAVA::NMaterialProperty *property = material->GetMaterialProperty(propertyName);
-                    if(NULL != property && NULL != globalMaterial)
+                    const DAVA::FastName & propertyName = dynamicData->name;
+                    bool hasProperty = material->HasLocalProperty(propertyName);
+                    if (hasProperty)
                     {
                         QMenu menu;
                         menu.addAction("Add to Global Material");
                         QAction *resultAction = menu.exec(ui->materialProperty->viewport()->mapToGlobal(pos));
 
-                        if(NULL != resultAction)
+                        if (nullptr != resultAction)
                         {
-                            globalMaterial->SetPropertyValue(propertyName, property->type, property->size, property->data);
+                            globalMaterial->SetPropertyValue(propertyName, material->GetLocalPropValue(propertyName));
                             sceneEditor->SetChanged(true);
                         }
                     }
-#endif // RHI_COMPLETE_EDITOR
                 }
             }
         }

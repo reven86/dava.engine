@@ -74,8 +74,6 @@
 #include "Scene3D/Systems/StaticOcclusionSystem.h"
 #include "Scene3D/Systems/FoliageSystem.h"
 
-#include "Scene3D/Systems/MaterialSystem.h"
-
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Scene3D/Components/TransformComponent.h"
 #include "Scene3D/SceneCache.h"
@@ -205,16 +203,15 @@ Scene::Scene(uint32 _systemsMask /* = SCENE_SYSTEM_ALL_MASK */)
     , soundSystem(0)
     , actionSystem(0)
     , staticOcclusionSystem(0)
-	, materialSystem(0)
     , foliageSystem(0)
     , windSystem(0)
     , animationSystem(0)
     , staticOcclusionDebugDrawSystem(0)    
     , systemsMask(_systemsMask)
+    , maxEntityIDCounter(0)
     , sceneGlobalMaterial(0)
     , mainCamera(0)
     , drawCamera(0)
-    , maxEntityIDCounter(0)
 {
     static uint32 idCounter = 0;
     sceneId = ++idCounter;
@@ -248,7 +245,7 @@ void Scene::SetGlobalMaterial(NMaterial *globalMaterial)
 
     if (nullptr != particleEffectSystem)
         particleEffectSystem->SetGlobalMaterial(sceneGlobalMaterial);
-    
+
     ImportShadowColor(this);
 }
 
@@ -283,7 +280,7 @@ void Scene::CreateSystems()
     {
         transformSystem = new TransformSystem(this);
         AddSystem(transformSystem, MAKE_COMPONENT_MASK(Component::TRANSFORM_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
-    }
+    } 
 
     if(SCENE_SYSTEM_LOD_FLAG & systemsMask)
     {
@@ -334,12 +331,6 @@ void Scene::CreateSystems()
         AddSystem(actionSystem, MAKE_COMPONENT_MASK(Component::ACTION_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
     }
     
-
-    if(SCENE_SYSTEM_MATERIAL_FLAG & systemsMask)
-    {
-        materialSystem = new MaterialSystem(this);
-        AddSystem(materialSystem, MAKE_COMPONENT_MASK(Component::RENDER_COMPONENT));
-    }
 
     if(SCENE_SYSTEM_DEBUG_RENDER_FLAG & systemsMask)
     {
@@ -417,7 +408,6 @@ Scene::~Scene()
     soundSystem = 0;
     actionSystem = 0;
     staticOcclusionSystem = 0;
-    materialSystem = 0;
     speedTreeUpdateSystem = 0;
     foliageSystem = 0;
     windSystem = 0;
@@ -748,7 +738,7 @@ void Scene::Draw()
     if (sceneGlobalMaterial && sceneGlobalMaterial->HasLocalProperty(DAVA::NMaterialParamName::DEPRECATED_SHADOW_COLOR_PARAM))
     {
         const float32 * propDataPtr = sceneGlobalMaterial->GetLocalPropValue(DAVA::NMaterialParamName::DEPRECATED_SHADOW_COLOR_PARAM);
-        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_SHADOW_COLOR, propDataPtr, (pointer_size)sceneGlobalMaterial);
+        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_SHADOW_COLOR, propDataPtr, (pointer_size)propDataPtr);
     }
     else
     {
@@ -944,11 +934,6 @@ RenderSystem * Scene::GetRenderSystem() const
 	return renderSystem;
 }
 
-MaterialSystem * Scene::GetMaterialSystem() const
-{
-    return materialSystem;
-}
-
 AnimationSystem * Scene::GetAnimationSystem() const
 {
     return animationSystem;
@@ -1015,20 +1000,19 @@ SceneFileV2::eError Scene::SaveScene(const DAVA::FilePath & pathname, bool saveF
     
 void Scene::OptimizeBeforeExport()
 {
-    Set<NMaterial*> materials;
-    materialSystem->BuildMaterialList(materials);
+    List<NMaterial*> materials;
+    GetDataNodes(materials);
     
-    Set<NMaterial *>::const_iterator endIt = materials.end();
-    for (Set<NMaterial *>::const_iterator it = materials.begin(); it != endIt; ++it)
+    for(auto & mat: materials)
     {
-        if ((*it)->HasLocalFlag(NMaterialFlagName::FLAG_ILLUMINATION_USED))
-            (*it)->RemoveFlag(NMaterialFlagName::FLAG_ILLUMINATION_USED);
-
-        if ((*it)->HasLocalFlag(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_CASTER))
-            (*it)->RemoveFlag(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_CASTER);
-
-        if ((*it)->HasLocalFlag(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_RECEIVER))
-            (*it)->RemoveFlag(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_RECEIVER);
+        if (mat->HasLocalFlag(NMaterialFlagName::FLAG_ILLUMINATION_USED))
+            mat->RemoveFlag(NMaterialFlagName::FLAG_ILLUMINATION_USED);
+        
+        if (mat->HasLocalFlag(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_CASTER))
+            mat->RemoveFlag(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_CASTER);
+        
+        if (mat->HasLocalFlag(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_RECEIVER))
+            mat->RemoveFlag(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_RECEIVER);
     }
 
     ImportShadowColor(this);

@@ -28,7 +28,6 @@
 
 
 #include "Debug/Backtrace.h"
-#   include "Base/Bind.h"
 #   include "FileSystem/Logger.h"
 #if defined(__DAVAENGINE_APPLE__)
 #   include <execinfo.h>
@@ -331,7 +330,7 @@ void PrintBackTraceToLog(Logger::eLogLevel logLevel )
     {
         Function<void (Logger::eLogLevel,pointer_size,const char * )> onStackFrame = &OnStackFrame;
         Logger::FrameworkDebug("DAVA BACKTRACE PRINTING");
-        backtraceProvider->PrintableBacktrace(  Bind(onStackFrame, logLevel,_1,_2),nullptr,0);
+        backtraceProvider->PrintableBacktrace(Bind(onStackFrame, logLevel, _1, _2),nullptr,0);
     }
     else
     {

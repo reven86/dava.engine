@@ -30,87 +30,27 @@
 #define __DAVAENGINE_MMNetClient_H__
 
 #include "Base/BaseTypes.h"
-#include "Base/Function.h"
+#include "Functional/Function.h"
 
 #include "Network/NetService.h"
+#include "Network/Services/MMNet/MMNetProto.h"
+
 #include "MemoryManager/MemoryManagerTypes.h"
-#include "MMNetProto.h"
 
 namespace DAVA
 {
 namespace Net
 {
 
+class MMBigDataTransferService;
+
 class MMNetClient : public NetService
 {
-    struct ParcelEx
-    {
-        ParcelEx()
-            : bufferSize(0)
-            , buffer(nullptr)
-            , header(nullptr)
-            , data(nullptr)
-        {}
-        ParcelEx(size_t dataSize)
-            : bufferSize(sizeof(MMNetProto::PacketHeader) + dataSize)
-            , buffer(::operator new(bufferSize))
-            , header(static_cast<MMNetProto::PacketHeader*>(buffer))
-            , data(static_cast<void*>(header + 1))
-        {}
-        ParcelEx(ParcelEx&& other)
-            : bufferSize(other.bufferSize)
-            , buffer(other.buffer)
-            , header(other.header)
-            , data(other.data)
-        {
-            other.bufferSize = 0;
-            other.buffer = nullptr;
-            other.header = nullptr;
-            other.data = nullptr;
-        }
-        ParcelEx& operator = (ParcelEx&& other)
-        {
-            if (this != &other)
-            {
-                ::operator delete(buffer);
-
-                bufferSize = other.bufferSize;
-                buffer = other.buffer;
-                header = other.header;
-                data = other.data;
-
-                other.bufferSize = 0;
-                other.buffer = nullptr;
-                other.header = nullptr;
-                other.data = nullptr;
-            }
-            return *this;
-        }
-        ParcelEx(const ParcelEx& other) = delete;
-        ParcelEx& operator = (const ParcelEx&) = delete;
-        ~ParcelEx()
-        {
-            ::operator delete(buffer);
-        }
-        
-        size_t bufferSize;
-        void* buffer;
-        MMNetProto::PacketHeader* header;
-        void* data;
-    };
-    
 public:
-    enum {
-        SNAPSHOT_STAGE_STARTED = 0,
-        SNAPSHOT_STAGE_PROGRESS,
-        SNAPSHOT_STAGE_FINISHED,
-        SNAPSHOT_STAGE_ERROR
-    };
-
-    using ConnEstablishedCallback = Function<void (bool, const MMStatConfig*)>;
-    using ConnLostCallback = Function<void (const char8*)>;
-    using StatCallback = Function<void (const MMCurStat*, size_t)>;
-    using SnapshotCallback = Function<void (int, size_t, size_t, const void*)>;
+    using ConnEstablishedCallback = Function<void (bool, const MMStatConfig* config)>;
+    using ConnLostCallback = Function<void (const char8* message)>;
+    using StatCallback = Function<void(const MMCurStat* stat, uint32 itemCount)>;
+    using SnapshotCallback = Function<void(uint32 totalSize, uint32 chunkOffset, uint32 chunkSize, const uint8* chunk)>;
 
 public:
     MMNetClient();
@@ -130,30 +70,23 @@ private:
     void ProcessReplyToken(const MMNetProto::PacketHeader* inHeader, const void* packetData, size_t dataLength);
     void ProcessReplySnapshot(const MMNetProto::PacketHeader* inHeader, const void* packetData, size_t dataLength);
     void ProcessAutoReplyStat(const MMNetProto::PacketHeader* inHeader, const void* packetData, size_t dataLength);
-    void ProcessAutoReplySnapshot(const MMNetProto::PacketHeader* inHeader, const void* packetData, size_t dataLength);
-    
-    void FastRequest(uint16 type);
-    
-    void EnqueueParcel(ParcelEx& parcel);
-    void SendParcel(ParcelEx& parcel);
-    
-    void Cleanup();
+
+    void SendPacket(MMNetProto::Packet&& packet);
+
+    MMNetProto::Packet CreateHeaderOnlyPacket(uint16 type, uint16 status);
 
 private:
-    uint32 connToken = 0;
     bool tokenRequested = false;
+    uint32 connToken = 0;
     
-    List<ParcelEx> queue;
-
-    bool canRequestSnapshot = true;
-    size_t snapshotTotalSize = 0;
-    size_t snapshotRecvSize = 0;
-    std::vector<uint8> snapshotData;
+    bool canRequestSnapshot = false;
 
     ConnEstablishedCallback connEstablishedCallback;
     ConnLostCallback connLostCallback;
     StatCallback statCallback;
-    SnapshotCallback snapshotCallback;
+
+    List<MMNetProto::Packet> packetQueue;                       // Queue of outgoing packets
+    std::unique_ptr<MMBigDataTransferService> transferService;  // Special service for downloading memory snapshots and other big data
 };
 
 }   // namespace Net

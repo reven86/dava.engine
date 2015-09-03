@@ -177,7 +177,8 @@ public:
     
     
     
-    void    BuildBuffers();        
+    void BuildBuffers();
+    void RestoreBuffers();
            
     
     void Save(KeyedArchive * keyedArchive, SerializationContext * serializationContext);    

@@ -31,7 +31,6 @@
 #include "Settings/SettingsManager.h"
 #include "Project/ProjectManager.h"
 #include "Scene3D/Scene.h"
-#include "Scene3D/Systems/MaterialSystem.h"
 #include "Commands2/Command2.h"
 #include "Commands2/CommandBatch.h"
 #include "Commands2/DeleteRenderBatchCommand.h"
@@ -185,30 +184,70 @@ void EditorMaterialSystem::ApplyViewMode()
 
 void EditorMaterialSystem::ApplyViewMode(DAVA::NMaterial *material)
 {
-#if RHI_COMPLETE_EDITOR
-    DAVA::NMaterial::eFlagValue flag;
-
-    (curViewMode & LIGHTVIEW_ALBEDO) ? flag = DAVA::NMaterial::FlagOn : flag = DAVA::NMaterial::FlagOff;
-    material->SetFlag(DAVA::NMaterial::FLAG_VIEWALBEDO, flag);
-
-    //if(NULL != material->GetTexture(NMaterial::TEXTURE_LIGHTMAP))
+    auto SetMaterialFlag = [](DAVA::NMaterial *material, const DAVA::FastName &flagName, DAVA::int32 value)
     {
-        (curViewMode & LIGHTVIEW_ALBEDO) ? flag = DAVA::NMaterial::FlagOff : flag = DAVA::NMaterial::FlagOn;
-        material->SetFlag(DAVA::NMaterial::FLAG_LIGHTMAPONLY, flag);
+        if(value == 0)
+        {
+            if(material->HasLocalFlag(flagName))
+            {
+                material->RemoveFlag(flagName);
+            }
+        }
+        else
+        {
+            if(material->HasLocalFlag(flagName))
+            {
+                material->SetFlag(flagName, value);
+            }
+            else
+            {
+                material->AddFlag(flagName, value);
+            }
+        }
+    };
+    
+    
+    
+    //if(NULL != material->GetTexture(NMaterial::TEXTURE_LIGHTMAP))
+    {	//special cases for lightmap
 
-        (showLightmapCanvas) ? flag = DAVA::NMaterial::FlagOn : flag = DAVA::NMaterial::FlagOff;
-        material->SetFlag(DAVA::NMaterial::FLAG_SETUPLIGHTMAP, flag);
+        if(curViewMode & LIGHTVIEW_ALBEDO)
+        {
+            SetMaterialFlag(material, DAVA::NMaterialFlagName::FLAG_LIGHTMAPONLY, 0);
+        }
+        else
+        {
+            SetMaterialFlag(material, DAVA::NMaterialFlagName::FLAG_LIGHTMAPONLY, 1);
+        }
+            
+        if(showLightmapCanvas)
+        {
+            SetMaterialFlag(material, DAVA::NMaterialFlagName::FLAG_SETUPLIGHTMAP, 1);
+        }
+        else
+        {
+            SetMaterialFlag(material, DAVA::NMaterialFlagName::FLAG_SETUPLIGHTMAP, 0);
+        }
     }
 
-    (curViewMode & LIGHTVIEW_DIFFUSE) ? flag = DAVA::NMaterial::FlagOn : flag = DAVA::NMaterial::FlagOff;
-    material->SetFlag(DAVA::NMaterial::FLAG_VIEWDIFFUSE, flag);
-
-    (curViewMode & LIGHTVIEW_SPECULAR) ? flag = DAVA::NMaterial::FlagOn : flag = DAVA::NMaterial::FlagOff;
-    material->SetFlag(DAVA::NMaterial::FLAG_VIEWSPECULAR, flag);
-
-    (curViewMode & LIGHTVIEW_AMBIENT) ? flag = DAVA::NMaterial::FlagOn : flag = DAVA::NMaterial::FlagOff;
-    material->SetFlag(DAVA::NMaterial::FLAG_VIEWAMBIENT, flag);
-#endif // RHI_COMPLETE_EDITOR
+    
+    //materials
+    auto UpdateFlags = [this, SetMaterialFlag](DAVA::NMaterial *material, DAVA::int32 mode, const DAVA::FastName &flagName)
+    {
+        if (curViewMode & mode)
+        {
+            SetMaterialFlag(material, flagName, 1);
+        }
+        else
+        {
+            SetMaterialFlag(material, flagName, 0);
+        }
+    };
+    
+    UpdateFlags(material, LIGHTVIEW_ALBEDO, DAVA::NMaterialFlagName::FLAG_VIEWALBEDO);
+    UpdateFlags(material, LIGHTVIEW_DIFFUSE, DAVA::NMaterialFlagName::FLAG_VIEWDIFFUSE);
+    UpdateFlags(material, LIGHTVIEW_SPECULAR, DAVA::NMaterialFlagName::FLAG_VIEWSPECULAR);
+    UpdateFlags(material, LIGHTVIEW_AMBIENT, DAVA::NMaterialFlagName::FLAG_VIEWAMBIENT);
 }
 
 

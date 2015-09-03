@@ -29,7 +29,7 @@
 
 #include <algorithm>
 
-#include <Base/FunctionTraits.h>
+#include <Functional/Function.h>
 #include <Debug/DVAssert.h>
 
 #include <Network/Base/IOLoop.h>
@@ -48,13 +48,14 @@ namespace DAVA
 namespace Net
 {
 
-NetController::NetController(IOLoop* aLoop, const ServiceRegistrar& aRegistrar, void* aServiceContext)
+NetController::NetController(IOLoop* aLoop, const ServiceRegistrar& aRegistrar, void* aServiceContext, uint32 readTimeout_)
     : loop(aLoop)
     , role(SERVER_ROLE)
     , registrar(aRegistrar)
     , serviceContext(aServiceContext)
     , runningObjects(0)
     , isTerminating(false)
+    , readTimeout(readTimeout_)
 {
     DVASSERT(loop != NULL);
 }
@@ -121,7 +122,7 @@ void NetController::Start()
 
 void NetController::Stop(Function<void (IController*)> handler)
 {
-    DVASSERT(false == isTerminating && handler != 0);
+    DVASSERT(false == isTerminating && handler != nullptr);
     isTerminating = true;
     stopHandler = handler;
     SERVER_ROLE == role ? loop->Post(MakeFunction(this, &NetController::DoStopServers))
@@ -283,7 +284,7 @@ IServerTransport* NetController::CreateServerTransport(eTransportType type, cons
     switch(type)
     {
     case TRANSPORT_TCP:
-        return new TCPServerTransport(loop, endpoint);
+        return new TCPServerTransport(loop, endpoint, readTimeout);
     default:
         DVASSERT(0 && "Unknown transport type");
         return NULL;
@@ -295,7 +296,7 @@ IClientTransport* NetController::CreateClientTransport(eTransportType type, cons
     switch(type)
     {
     case TRANSPORT_TCP:
-        return new TCPClientTransport(loop, endpoint);
+        return new TCPClientTransport(loop, endpoint, readTimeout);
     default:
         DVASSERT(0 && "Unknown transport type");
         return NULL;

@@ -28,23 +28,21 @@
 
 
 #include "SceneValidator.h"
-#include "Qt/Settings/SettingsManager.h"
-#include "Project/ProjectManager.h"
 #include "Render/Image/LibPVRHelper.h"
 #include "Render/TextureDescriptor.h"
-
-#include "Qt/Main/QtUtils.h"
-#include "StringConstants.h"
+#include "Render/Material/NMaterialNames.h"
 
 #include "Scene3D/Components/ComponentHelpers.h"
 
+#include "Main/QtUtils.h"
+#include "Project/ProjectManager.h"
+#include "Scene/SceneEditor2.h"
+#include "Scene/SceneHelper.h"
+#include "Settings/SettingsManager.h"
+#include "StringConstants.h"
+
 #include "CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
 
-#include "Scene/SceneEditor2.h"
-
-#include "Scene3D/Systems/MaterialSystem.h"
-
-#include "Render/Material/NMaterialNames.h"
 
 SceneValidator::SceneValidator()
 {
@@ -290,9 +288,13 @@ void SceneValidator::ValidateRenderBatch(Entity *ownerNode, RenderBatch *renderB
 
 void SceneValidator::ValidateMaterials(DAVA::Scene *scene, Set<String> &errorsLog)
 {
-	DAVA::MaterialSystem *matSystem = scene->GetMaterialSystem();
 	Set<DAVA::NMaterial *> materials;
-	matSystem->BuildMaterialList(materials, false, false);
+    SceneHelper::BuildMaterialList(scene, materials, false);
+    auto globalMaterial = scene->GetGlobalMaterial();
+    if (nullptr != globalMaterial)
+    {
+        materials.erase(globalMaterial);
+    }
 
 
     const QVector<ProjectManager::AvailableMaterialTemplate> *materialTemplates = 0;
@@ -318,11 +320,6 @@ void SceneValidator::ValidateMaterials(DAVA::Scene *scene, Set<String> &errorsLo
 	{
         for (const FastName & textureName : textureNames)
         {
-            if ((*it)->HasLocalTexture(NMaterialTextureName::TEXTURE_HEIGHTMAP))
-            {
-                int32 a = 0;
-            }
-
             if ((*it)->HasLocalTexture(textureName))
             {
                 Texture *tex = (*it)->GetLocalTexture(textureName);
@@ -794,7 +791,7 @@ void SceneValidator::ExtractEmptyRenderObjectsAndShowErrors(DAVA::Entity *entity
 void SceneValidator::ExtractEmptyRenderObjects(DAVA::Entity *entity, Set<String> &errorsLog)
 {
 	auto renderObject = GetRenderObject(entity);
-	if ((nullptr != renderObject) && (0 == renderObject->GetRenderBatchCount()))
+	if ((nullptr != renderObject) && (0 == renderObject->GetRenderBatchCount()) && RenderObject::TYPE_MESH == renderObject->GetType())
 	{
 		entity->RemoveComponent(Component::RENDER_COMPONENT);
 		errorsLog.insert(DAVA::Format("Entity %s has empty render object", entity->GetName().c_str()));

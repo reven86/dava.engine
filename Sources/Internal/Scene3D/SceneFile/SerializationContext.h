@@ -41,7 +41,6 @@ namespace DAVA
 
 	class Scene;
 	class DataNode;
-	class MaterialSystem;
 	class NMaterial;
 	class Texture;
 	class NMaterial;

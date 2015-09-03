@@ -88,7 +88,6 @@
 #include "Classes/Commands2/VisibilityToolActions.h"
 #include "Classes/Commands2/AddComponentCommand.h"
 #include "Classes/Commands2/RemoveComponentCommand.h"
-#include "Classes/Commands2/DynamicShadowCommands.h"
 
 #include "Classes/Qt/Tools/QtLabelWithActions/QtLabelWithActions.h"
 
@@ -97,7 +96,6 @@
 
 #include "Scene3D/Components/ActionComponent.h"
 #include "Scene3D/Components/Waypoint/PathComponent.h"
-#include "Scene3D/Systems/MaterialSystem.h"
 
 #include "Classes/Constants.h"
 
@@ -238,12 +236,10 @@ SceneEditor2* QtMainWindow::GetCurrentScene()
 
 bool QtMainWindow::SaveScene( SceneEditor2 *scene )
 {
-	bool sceneWasSaved = false;
-
 	DAVA::FilePath scenePath = scene->GetScenePath();
 	if(!scene->IsLoaded() || scenePath.IsEmpty())
 	{
-		sceneWasSaved = SaveSceneAs(scene);
+		return SaveSceneAs(scene);
 	} 
 	else
 	{
@@ -253,57 +249,163 @@ bool QtMainWindow::SaveScene( SceneEditor2 *scene )
 		// 
 		//if(scene->IsChanged())
 		{
-			if(DAVA::SceneFileV2::ERROR_NO_ERROR != scene->Save(scenePath))
-			{
-				QMessageBox::warning(this, "Save error", "An error occurred while saving the scene. See log for more info.", QMessageBox::Ok);
-			}
-            else
+            bool saved = SaveAllSceneEmitters(scene);
+            if (saved)
             {
-                sceneWasSaved = true;
+                SceneFileV2::eError ret = scene->Save(scenePath);
+                if (DAVA::SceneFileV2::ERROR_NO_ERROR != ret)
+                {
+                    QMessageBox::warning(this, "Save error", "An error occurred while saving the scene. See log for more info.", QMessageBox::Ok);
+                }
+                else
+                {
+                    return true;
+                }
             }
 		}
 	}
 
-	return sceneWasSaved;
+	return false;
 }
 
 
 bool QtMainWindow::SaveSceneAs(SceneEditor2 *scene)
 {
-	bool ret = false;
+    if (nullptr == scene)
+    {
+        return false;
+    }
 
-	if(nullptr != scene)
-	{
-		DAVA::FilePath saveAsPath = scene->GetScenePath();
-		if(!saveAsPath.Exists())
-		{
-            DAVA::FilePath dataSourcePath = ProjectManager::Instance()->CurProjectDataSourcePath();
-			saveAsPath = dataSourcePath.MakeDirectoryPathname() + scene->GetScenePath().GetFilename();
-		}
+    DAVA::FilePath saveAsPath = scene->GetScenePath();
+    if (!saveAsPath.Exists())
+    {
+        DAVA::FilePath dataSourcePath = ProjectManager::Instance()->CurProjectDataSourcePath();
+        saveAsPath = dataSourcePath.MakeDirectoryPathname() + scene->GetScenePath().GetFilename();
+    }
 
-		QString selectedPath = FileDialog::getSaveFileName(this, "Save scene as", saveAsPath.GetAbsolutePathname().c_str(), "DAVA Scene V2 (*.sc2)");
-		if(!selectedPath.isEmpty())
-		{
-			DAVA::FilePath scenePath = DAVA::FilePath(selectedPath.toStdString());
-			if(!scenePath.IsEmpty())
-			{
-				scene->SetScenePath(scenePath);
-				ret = scene->Save(scenePath);
+    QString selectedPath = FileDialog::getSaveFileName(this, "Save scene as", saveAsPath.GetAbsolutePathname().c_str(), "DAVA Scene V2 (*.sc2)");
+    if (selectedPath.isEmpty())
+    {
+        return false;
+    }
 
-				if(DAVA::SceneFileV2::ERROR_NO_ERROR != ret)
-				{
-					QMessageBox::warning(this, "Save error", "An error occurred while saving the scene. Please, see logs for more info.", QMessageBox::Ok);
-				}
-				else
-				{
-					ret = true;
-                    recentFiles.Add(scenePath.GetAbsolutePathname());
-				}
-			}
-		}
-	}
+    DAVA::FilePath scenePath = DAVA::FilePath(selectedPath.toStdString());
+    if (scenePath.IsEmpty())
+    {
+        return false;
+    }
 
-	return ret;
+    scene->SetScenePath(scenePath);
+
+    bool saved = SaveAllSceneEmitters(scene);
+    if (saved)
+    {
+        SceneFileV2::eError ret = scene->Save(scenePath);
+        if (DAVA::SceneFileV2::ERROR_NO_ERROR != ret)
+        {
+            QMessageBox::warning(this, "Save error", "An error occurred while saving the scene. Please, see logs for more info.", QMessageBox::Ok);
+        }
+        else
+        {
+            recentFiles.Add(scenePath.GetAbsolutePathname());
+            return true;
+        }
+    }
+
+    return false;
+}
+
+
+QString GetSaveFolderForEmitters()
+{
+    const FilePath defaultPath = SettingsManager::GetValue(Settings::Internal_ParticleLastEmitterDir).AsFilePath();
+    QString particlesPath;
+    if (defaultPath.IsEmpty())
+    {
+        particlesPath = QString::fromStdString(ProjectManager::Instance()->CurProjectDataParticles().GetAbsolutePathname());
+    }
+    else
+    {
+        particlesPath = QString::fromStdString(defaultPath.GetAbsolutePathname());
+    }
+
+    return particlesPath;
+}
+
+bool QtMainWindow::SaveAllSceneEmitters(SceneEditor2 *scene) const
+{
+    DVASSERT(nullptr != scene);
+
+    List<Entity *> effectEntities;
+    scene->GetChildEntitiesWithComponent(effectEntities, Component::PARTICLE_EFFECT_COMPONENT);
+    if (effectEntities.empty())
+        return true;
+
+    struct EmitterDescriptor
+    {
+        EmitterDescriptor(ParticleEmitter * _emitter, ParticleLayer *layer, FilePath path, String name)
+            : emitter(_emitter), ownerLayer(layer), yamlPath(path), entityName(name)
+        {
+        }
+
+        ParticleEmitter * emitter = nullptr;
+        ParticleLayer *ownerLayer = nullptr;
+        FilePath yamlPath;
+        String entityName;
+    };
+
+    DAVA::List<EmitterDescriptor> emittersForSave;
+    for (auto & entityWithEffect : effectEntities)
+    {
+        const DAVA::String entityName = entityWithEffect->GetName().c_str();
+        ParticleEffectComponent *effect = GetEffectComponent(entityWithEffect);
+        for (int32 i = 0, sz = effect->GetEmittersCount(); i < sz; ++i)
+        {
+            ParticleEmitter* emitter = effect->GetEmitter(i);
+            for (auto & layer : emitter->layers)
+            {
+                if (nullptr != layer->innerEmitter)
+                {
+                    emittersForSave.emplace_back(EmitterDescriptor(layer->innerEmitter, layer, layer->innerEmitterPath, entityName));
+                }
+            }
+
+            emittersForSave.emplace_back(EmitterDescriptor(emitter, nullptr, emitter->configPath, entityName));
+        }
+    }
+
+    for (auto & descriptor : emittersForSave)
+    {
+        ParticleEmitter *emitter = descriptor.emitter;
+        const String & entityName = descriptor.entityName;
+
+        FilePath yamlPathForSaving = descriptor.yamlPath;
+        if (yamlPathForSaving.IsEmpty())
+        {
+            QString particlesPath = GetSaveFolderForEmitters();
+
+            FileSystem::Instance()->CreateDirectory(FilePath(particlesPath.toStdString()), true); //to ensure that folder is created
+
+            QString emitterPathname = particlesPath + QString("%1_%2.yaml").arg(entityName.c_str()).arg(emitter->name.c_str());
+            QString filePath = FileDialog::getSaveFileName(NULL, QString("Save Particle Emitter ") + QString(emitter->name.c_str()), emitterPathname, QString("YAML File (*.yaml)"));
+
+            if (filePath.isEmpty())
+            {
+                continue;
+            }
+
+            yamlPathForSaving = FilePath(filePath.toStdString());
+            SettingsManager::SetValue(Settings::Internal_ParticleLastEmitterDir, VariantType(yamlPathForSaving.GetDirectory()));
+        }
+
+        if (nullptr != descriptor.ownerLayer)
+        {
+            descriptor.ownerLayer->innerEmitterPath = yamlPathForSaving;
+        }
+        emitter->SaveToYaml(yamlPathForSaving);
+    }
+
+    return true;
 }
 
 DAVA::eGPUFamily QtMainWindow::GetGPUFormat()
@@ -323,7 +425,7 @@ void QtMainWindow::SetGPUFormat(DAVA::eGPUFamily gpu)
 		for(int tab = 0; tab < GetSceneWidget()->GetTabCount(); ++tab)
 		{
 			SceneEditor2 *scene = GetSceneWidget()->GetTabScene(tab);
-			SceneHelper::EnumerateSceneTextures(scene, allScenesTextures, SceneHelper::EXCLUDE_NULL);
+			SceneHelper::EnumerateSceneTextures(scene, allScenesTextures, SceneHelper::TexturesEnumerateMode::EXCLUDE_NULL);
 		}
 
 		if(allScenesTextures.size() > 0)
@@ -721,18 +823,12 @@ void QtMainWindow::SetupActions()
 	QObject::connect(ui->actionExpandSceneTree, SIGNAL(triggered()), ui->sceneTree, SLOT(expandAll()));
 	QObject::connect(ui->actionCollapseSceneTree, SIGNAL(triggered()), ui->sceneTree, SLOT(CollapseAll()));
     QObject::connect(ui->actionAddLandscape, SIGNAL(triggered()), this, SLOT(OnAddLandscape()));
-    QObject::connect(ui->actionAddSkybox, SIGNAL(triggered()), this, SLOT(OnAddSkybox()));
 	QObject::connect(ui->actionAddWind, SIGNAL(triggered()), this, SLOT(OnAddWindEntity()));
     QObject::connect(ui->actionAddVegetation, SIGNAL(triggered()), this, SLOT(OnAddVegetation()));
     QObject::connect(ui->actionAddPath, SIGNAL(triggered()), this, SLOT(OnAddPathEntity()));
 			
 	QObject::connect(ui->actionShowSettings, SIGNAL(triggered()), this, SLOT(OnShowSettings()));
 	
-	QObject::connect(ui->actionDynamicBlendModeAlpha, SIGNAL(triggered()), this, SLOT(OnShadowBlendModeAlpha()));
-	QObject::connect(ui->actionDynamicBlendModeMultiply, SIGNAL(triggered()), this, SLOT(OnShadowBlendModeMultiply()));
-	QObject::connect(ui->menuDynamicShadowBlendMode, SIGNAL(aboutToShow()), this, SLOT(OnShadowBlendModeWillShow()));
-
-    
 	QObject::connect(ui->actionSaveHeightmapToPNG, SIGNAL(triggered()), this, SLOT(OnSaveHeightmapToImage()));
 	QObject::connect(ui->actionSaveTiledTexture, SIGNAL(triggered()), this, SLOT(OnSaveTiledTexture()));
 	
@@ -851,7 +947,6 @@ void QtMainWindow::SceneActivated(SceneEditor2 *scene)
 	LoadUndoRedoState(scene);
 	LoadModificationState(scene);
 	LoadEditorLightState(scene);
-	LoadShadowBlendModeState(scene);
 	LoadLandscapeEditorState(scene);
 	LoadObjectTypes(scene);
 	LoadHangingObjects(scene);
@@ -952,9 +1047,6 @@ void QtMainWindow::EnableSceneActions(bool enable)
 	ui->actionSaveTiledTexture->setEnabled(enable);
 
 	ui->actionBeastAndSave->setEnabled(enable);
-
-	ui->actionDynamicBlendModeAlpha->setEnabled(enable);
-	ui->actionDynamicBlendModeMultiply->setEnabled(enable);
 
 	ui->actionHangingObjects->setEnabled(enable);
 
@@ -1599,15 +1691,11 @@ void QtMainWindow::UnmodalDialogFinished(int)
 
 void QtMainWindow::OnAddLandscape()
 {
-
     Entity* entityToProcess = new Entity();
     entityToProcess->SetName(ResourceEditor::LANDSCAPE_NODE_NAME);
     entityToProcess->SetLocked(true);
     
     Landscape* newLandscape = new Landscape();
-#if RHI_COMPLETE_EDITOR
-    newLandscape->Create();
-#endif // RHI_COMPLETE_EDITOR
 
     RenderComponent* component = new RenderComponent();
     component->SetRenderObject(newLandscape);
@@ -1630,22 +1718,6 @@ void QtMainWindow::OnAddLandscape()
     SafeRelease(entityToProcess);
 }
 
-void QtMainWindow::OnAddSkybox()
-{
-#if RHI_COMPLETE_EDITOR
-    SceneEditor2* sceneEditor = GetCurrentScene();
-    if(!sceneEditor)
-    {
-        return;
-    }
-    Entity* skyboxEntity = sceneEditor->skyboxSystem->AddSkybox();
-    skyboxEntity->Retain();
-    
-    skyboxEntity->GetParent()->RemoveNode(skyboxEntity);
-    sceneEditor->Exec(new EntityAddCommand(skyboxEntity, sceneEditor));
-    skyboxEntity->Release();
-#endif
-}
 
 void QtMainWindow::OnAddVegetation()
 {
@@ -1897,20 +1969,6 @@ void QtMainWindow::LoadEditorLightState(SceneEditor2 *scene)
 	}
 }
 
-void QtMainWindow::LoadShadowBlendModeState(SceneEditor2* scene)
-{
-#if RHI_COMPLETE_EDITOR
-	if(nullptr != scene)
-	{
-		const ShadowPassBlendMode::eBlend blend = scene->GetShadowBlendMode();
-
-		ui->actionDynamicBlendModeAlpha->setChecked(blend == ShadowPassBlendMode::MODE_BLEND_ALPHA);
-		ui->actionDynamicBlendModeMultiply->setChecked(blend == ShadowPassBlendMode::MODE_BLEND_MULTIPLY);
-	}
-#endif
-}
-
-
 void QtMainWindow::LoadGPUFormat()
 {
 	int curGPU = GetGPUFormat();
@@ -1943,41 +2001,6 @@ void QtMainWindow::LoadMaterialLightViewMode()
 void QtMainWindow::LoadLandscapeEditorState(SceneEditor2* scene)
 {
 	OnLandscapeEditorToggled(scene);
-}
-
-void QtMainWindow::OnShadowBlendModeWillShow()
-{
-	SceneEditor2* scene = GetCurrentScene();
-    if(!scene) return;
-
-    LoadShadowBlendModeState(scene);
-}
-
-void QtMainWindow::OnShadowBlendModeAlpha()
-{
-	SceneEditor2* scene = GetCurrentScene();
-    if(!scene) return;
-
-	if(nullptr == FindLandscape(scene))
-	{
-		ShowErrorDialog(ResourceEditor::NO_LANDSCAPE_ERROR_MESSAGE);
-		return;
-	}
-	
-    scene->Exec(new ChangeDynamicShadowModeCommand(scene));
-}
-
-void QtMainWindow::OnShadowBlendModeMultiply()
-{
-	SceneEditor2* scene = GetCurrentScene();
-    if(!scene) return;
-	if(nullptr == FindLandscape(scene))
-	{
-		ShowErrorDialog(ResourceEditor::NO_LANDSCAPE_ERROR_MESSAGE);
-		return;
-	}
-	
-	scene->Exec(new ChangeDynamicShadowModeCommand(scene));
 }
 
 void QtMainWindow::OnSaveHeightmapToImage()
@@ -2016,14 +2039,11 @@ void QtMainWindow::OnSaveHeightmapToImage()
 
 void QtMainWindow::OnSaveTiledTexture()
 {
-#if RHI_COMPLETE_EDITOR
-	if (!IsSavingAllowed())
+    SceneEditor2* scene = GetCurrentScene();
+	if (!IsSavingAllowed() || (nullptr == scene))
 	{
 		return;
 	}
-
-	SceneEditor2* scene = GetCurrentScene();
-    if(!scene) return;
 
 	LandscapeEditorDrawSystem::eErrorType varifLandscapeError = scene->landscapeEditorDrawSystem->VerifyLandscape();
 	if (varifLandscapeError != LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
@@ -2033,13 +2053,15 @@ void QtMainWindow::OnSaveTiledTexture()
 	}
 
     Landscape *landscape = FindLandscape(scene);
-    if(!landscape) return;
+    if(nullptr == landscape)
+    {
+        return;
+    }
 
-	Texture* landscapeTexture = landscape->CreateLandscapeTexture();
+    ScopedPtr<Texture> landscapeTexture(landscape->CreateLandscapeTexture());
 	if (landscapeTexture)
 	{
-		FilePath pathToSave;
-		pathToSave = landscape->GetTextureName(Landscape::TEXTURE_COLOR);
+        FilePath pathToSave = landscape->GetMaterial()->GetEffectiveTexture(DAVA::Landscape::TEXTURE_COLOR)->GetPathname();
 		if (pathToSave.IsEmpty())
 		{
 			FilePath scenePath = scene->GetScenePath().GetDirectory();
@@ -2048,7 +2070,6 @@ void QtMainWindow::OnSaveTiledTexture()
 														 PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter);
 			if (selectedPath.isEmpty())
 			{
-				SafeRelease(landscapeTexture);
 				return;
 			}
 
@@ -2059,16 +2080,12 @@ void QtMainWindow::OnSaveTiledTexture()
 			pathToSave.ReplaceExtension(".thumbnail.png");
 		}
 
-		Image *image = landscapeTexture->CreateImageFromMemory(RenderState::RENDERSTATE_2D_OPAQUE);
+        ScopedPtr<Image> image(landscapeTexture->CreateImageFromMemory());
 		if(image)
 		{
             ImageSystem::Instance()->Save(pathToSave, image);
-			SafeRelease(image);
 		}
-
-		SafeRelease(landscapeTexture);
 	}
-#endif // RHI_COMPLETE_EDITOR
 }
 
 void QtMainWindow::OnConvertModifiedTextures()

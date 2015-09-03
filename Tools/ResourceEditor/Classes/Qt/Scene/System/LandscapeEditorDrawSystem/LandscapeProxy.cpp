@@ -49,10 +49,20 @@ LandscapeProxy::LandscapeProxy(Landscape* landscape, Entity* node)
     
 	baseLandscape = SafeRetain(landscape);
     
-    Texture * tiletexture = baseLandscape->GetMaterial()->GetEffectiveTexture(Landscape::TEXTURE_TILEMASK);
-    sourceTilemaskPath = tiletexture->GetDescriptor()->GetSourceTexturePathname();
+    Texture * tiletexture = nullptr;
+    NMaterial * material = baseLandscape->GetMaterial();
+    if(nullptr != material)
+    {
+        tiletexture = material->GetEffectiveTexture(Landscape::TEXTURE_TILEMASK);
+    }
+
+    if(nullptr != tiletexture)
+    {
+        sourceTilemaskPath = tiletexture->GetDescriptor()->GetSourceTexturePathname();
+    }
     
     landscapeEditorMaterial = new NMaterial();
+    landscapeEditorMaterial->SetMaterialName(FastName("Landscape.Tool.Material"));
     landscapeEditorMaterial->SetFXName(FastName("~res:/Materials/Landscape.Tool.material"));
     landscapeEditorMaterial->AddFlag(LANSDCAPE_FLAG_TOOL, 0);
     landscapeEditorMaterial->AddFlag(LANSDCAPE_FLAG_CURSOR, 0);

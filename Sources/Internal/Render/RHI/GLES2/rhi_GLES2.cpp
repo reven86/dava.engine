@@ -563,7 +563,7 @@ gles2_Initialize( const InitParam& param )
 
     SetDispatchTable(DispatchGLES2);
 
-    InitializeRenderThread();
+    InitializeRenderThreadGLES2( (param.threadedRenderEnabled)?param.threadedRenderFrameCount:0 );
 
     #if 0
     glEnable(GL_DEBUG_OUTPUT);
