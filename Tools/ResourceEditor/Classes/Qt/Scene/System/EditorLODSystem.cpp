@@ -339,10 +339,12 @@ bool EditorLODSystem::CreatePlaneLOD(DAVA::int32 fromLayer, DAVA::uint32 texture
 
     SceneEditor2* sceneEditor2 = static_cast<SceneEditor2*>(GetScene());
 
-
     auto lods = GetCurrentLODs();
     for (auto& lod : lods)
-		planeLODRequests.push_back(CreatePlaneLODCommandHelper::RequestRenderToTexture(lod, fromLayer, textureSize, texturePath));
+	{
+		auto request = CreatePlaneLODCommandHelper::RequestRenderToTexture(lod, fromLayer, textureSize, texturePath);
+		planeLODRequests.push_back(request);
+	}
 
     return true;
 }
