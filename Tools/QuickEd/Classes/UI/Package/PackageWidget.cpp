@@ -282,8 +282,6 @@ void PackageWidget::CollectSelectedNodes(const QItemSelection &selected, Vector<
     }
 }
 
-
-
 void PackageWidget::OnSelectionChanged(const QItemSelection &proxySelected, const QItemSelection &proxyDeselected)
 {
     if (nullptr == filteredPackageModel)
@@ -462,25 +460,26 @@ QAction *PackageWidget::CreateSeparator()
 
 void PackageWidget::SetSelectedNodes(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
-    if (deselected.empty() && selected.empty())
+    SelectedNodes reallySelected;
+    SelectedNodes reallyDeselected;
+    
+    std::set_intersection(selectedNodes.begin(), selectedNodes.end(), deselected.begin(), deselected.end(), std::inserter(reallyDeselected, reallyDeselected.end()));
+    SubstractSets(reallyDeselected, selectedNodes);
+    
+    std::set_difference(selected.begin(), selected.end(), selectedNodes.begin(), selectedNodes.end(), std::inserter(reallySelected, reallySelected.end()));
+    UniteSets(reallySelected, selectedNodes);
+    
+    if (!reallySelected.empty() || !reallyDeselected.empty())
     {
-        return;
-    }
-    SelectedNodes tmpSelected = selectedNodes;
-    SubstractSets(deselected, tmpSelected);
-    UniteSets(selected, tmpSelected);
-    if (selectedNodes != tmpSelected)
-    {
-        selectedNodes = tmpSelected;
         bool wasBlocked = treeView->selectionModel()->signalsBlocked();
         treeView->selectionModel()->blockSignals(true);
-        for (auto &node : deselected)
+        for (auto &node : reallyDeselected)
         {
             QModelIndex srcIndex = packageModel->indexByNode(node);
             QModelIndex dstIndex = filteredPackageModel->mapFromSource(srcIndex);
             treeView->selectionModel()->select(dstIndex, QItemSelectionModel::Deselect);
         }
-        for (auto &node : selected)
+        for (auto &node : reallySelected)
         {
             QModelIndex srcIndex = packageModel->indexByNode(node);
             QModelIndex dstIndex = filteredPackageModel->mapFromSource(srcIndex);
@@ -488,6 +487,6 @@ void PackageWidget::SetSelectedNodes(const SelectedNodes& selected, const Select
             treeView->scrollTo(dstIndex);
         }
         treeView->selectionModel()->blockSignals(wasBlocked);
-        emit SelectedNodesChanged(selected, deselected);
+        emit SelectedNodesChanged(reallySelected, reallyDeselected);
     }
 }

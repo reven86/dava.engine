@@ -150,25 +150,13 @@ bool SelectionSystem::ProcessMousePress(const DAVA::Vector2 &point)
 
 void SelectionSystem::SetSelectedControls(const SelectedControls &selected, const SelectedControls &deselected)
 {
-    SelectedControls reallySelected = selected;
-    SelectedControls reallyDeselected = deselected;
+    SelectedControls reallySelected;
+    SelectedControls reallyDeselected;
     
-    for (auto control : deselected)
-    {
-        if (selectedControls.find(control) == selectedControls.end())
-        {
-            reallyDeselected.erase(control);
-        }
-    }
+    std::set_intersection(selectedControls.begin(), selectedControls.end(), deselected.begin(), deselected.end(), std::inserter(reallyDeselected, reallyDeselected.end()));
     SubstractSets(reallyDeselected, selectedControls);
 
-    for (auto control : selected)
-    {
-        if (selectedControls.find(control) != selectedControls.end())
-        {
-            reallySelected.erase(control);
-        }
-    }
+    std::set_difference(selected.begin(), selected.end(), selectedControls.begin(), selectedControls.end(), std::inserter(reallySelected, reallySelected.end()));
     UniteSets(reallySelected, selectedControls);
 
     if (!reallySelected.empty() || !reallyDeselected.empty())

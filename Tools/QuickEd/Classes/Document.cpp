@@ -135,26 +135,9 @@ void Document::SetContext(QObject* requester, WidgetContext* widgetContext)
 
 void Document::OnSelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected)
 {
-    SelectedNodes reallySelected(selected.begin(), selected.end());
-    SelectedNodes reallyDeselected(deselected.begin(), deselected.end());
-    for (auto control : deselected)
-    {
-        if (selectedNodes.find(control) == selectedNodes.end())
-        {
-            reallyDeselected.erase(control);
-        }
-    }
-    SubstractSets(reallyDeselected, selectedNodes);
-
-    for (auto control : selected)
-    {
-        if (selectedNodes.find(control) != selectedNodes.end())
-        {
-            reallySelected.erase(control);
-        }
-    }
-    UniteSets(reallySelected, selectedNodes);
-    SetSelectedNodes(reallySelected, reallyDeselected);
+    SelectedNodes selectedNodes_(selected.begin(), selected.end());
+    SelectedNodes deselectedNodes(deselected.begin(), deselected.end());
+    SetSelectedNodes(selectedNodes_, deselectedNodes);
 }
 
 bool Document::OnInput(UIEvent *currentInput)
@@ -295,25 +278,15 @@ void Document::OnSelectedNodesChanged(const SelectedNodes &selected, const Selec
 
 void Document::SetSelectedNodes(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
-    SelectedNodes reallySelected = selected;
-    SelectedNodes reallyDeselected = deselected;
-    for (auto node : deselected)
-    {
-        if (selectedNodes.find(node) == selectedNodes.end())
-        {
-            reallyDeselected.erase(node);
-        }
-    }
+    SelectedNodes reallySelected;
+    SelectedNodes reallyDeselected;
+    
+    std::set_intersection(selectedNodes.begin(), selectedNodes.end(), deselected.begin(), deselected.end(), std::inserter(reallyDeselected, reallyDeselected.end()));
     SubstractSets(reallyDeselected, selectedNodes);
-
-    for (auto node : selected)
-    {
-        if (selectedNodes.find(node) != selectedNodes.end())
-        {
-            reallySelected.erase(node);
-        }
-    }
+    
+    std::set_difference(selected.begin(), selected.end(), selectedNodes.begin(), selectedNodes.end(), std::inserter(reallySelected, reallySelected.end()));
     UniteSets(reallySelected, selectedNodes);
+    
     if (!reallySelected.empty() || !reallyDeselected.empty())
     {
         SelectedControls selectedControls;
