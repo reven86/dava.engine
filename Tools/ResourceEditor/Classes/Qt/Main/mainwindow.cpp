@@ -2052,39 +2052,42 @@ void QtMainWindow::OnSaveTiledTexture()
 		return;
 	}
 
-    Landscape *landscape = FindLandscape(scene);
-    if(nullptr == landscape)
+    Landscape* landscape = FindLandscape(scene);
+    if (nullptr == landscape)
     {
         return;
     }
 
-    ScopedPtr<Texture> landscapeTexture(landscape->CreateLandscapeTexture());
-	if (landscapeTexture)
+	landscape->SetCreatedLandscapeTextureHandler(MakeFunction(this, &QtMainWindow::OnTiledTextureRetreived));
+	landscape->CreateLandscapeTexture();
+}
+
+void QtMainWindow::OnTiledTextureRetreived(DAVA::Landscape* landscape, DAVA::Texture* landscapeTexture)
+{
+    SceneEditor2* scene = GetCurrentScene();
+    FilePath pathToSave = landscape->GetMaterial()->GetEffectiveTexture(DAVA::Landscape::TEXTURE_COLOR)->GetPathname();
+	if (pathToSave.IsEmpty())
 	{
-        FilePath pathToSave = landscape->GetMaterial()->GetEffectiveTexture(DAVA::Landscape::TEXTURE_COLOR)->GetPathname();
-		if (pathToSave.IsEmpty())
-		{
-			FilePath scenePath = scene->GetScenePath().GetDirectory();
-			QString selectedPath = FileDialog::getSaveFileName(this, "Save landscape texture as",
-														 scenePath.GetAbsolutePathname().c_str(),
-														 PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter);
-			if (selectedPath.isEmpty())
-			{
-				return;
-			}
+		FilePath scenePath = scene->GetScenePath().GetDirectory();
+		QString selectedPath = FileDialog::getSaveFileName(this, "Save landscape texture as",
+			scenePath.GetAbsolutePathname().c_str(), PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter);
 
-			pathToSave = FilePath(selectedPath.toStdString());
-		}
-		else
+		if (selectedPath.isEmpty())
 		{
-			pathToSave.ReplaceExtension(".thumbnail.png");
+			return;
 		}
 
-        ScopedPtr<Image> image(landscapeTexture->CreateImageFromMemory());
-		if(image)
-		{
-            ImageSystem::Instance()->Save(pathToSave, image);
-		}
+		pathToSave = FilePath(selectedPath.toStdString());
+	}
+	else
+	{
+		pathToSave.ReplaceExtension(".thumbnail.png");
+	}
+
+    ScopedPtr<Image> image(landscapeTexture->CreateImageFromMemory());
+	if(image)
+	{
+        ImageSystem::Instance()->Save(pathToSave, image);
 	}
 }
 
