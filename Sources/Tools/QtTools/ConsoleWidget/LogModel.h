@@ -51,7 +51,7 @@ private:
     QVector<LogItem> items;
 
     QVector<QPixmap> icons;
-    mutable QMutex mutex;
+    Qt::HANDLE currentThreadID;
     ConvertFunc func;
 };
 

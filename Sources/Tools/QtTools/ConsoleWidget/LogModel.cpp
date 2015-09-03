@@ -1,12 +1,15 @@
 #include "LogModel.h"
 
 #include <QPainter>
+#include <QThread>
+#include <QMetaObject>
 
 #include "Base/GlobalEnum.h"
 #include "Debug/DVAssert.h"
 
 LogModel::LogModel(QObject* parent)
     : QAbstractListModel(parent)
+    , currentThreadID(QThread::currentThreadId())
 {
     createIcons();
     func = [](const DAVA::String &str)
@@ -29,7 +32,8 @@ void LogModel::SetConvertFunction(ConvertFunc func_)
 
 void LogModel::Output(DAVA::Logger::eLogLevel ll, const DAVA::char8* text)
 {
-    AddMessage(ll, text);
+    auto connectType = QThread::currentThreadId() == currentThreadID ? Qt::DirectConnection : Qt::QueuedConnection;
+    QMetaObject::invokeMethod(this, "AddMessage", connectType, Q_ARG(DAVA::Logger::eLogLevel, ll), Q_ARG(const QString &, text));
 }
 
 QVariant LogModel::data(const QModelIndex &index, int role) const
@@ -38,7 +42,6 @@ QVariant LogModel::data(const QModelIndex &index, int role) const
     {
         return QVariant();
     }
-    QMutexLocker locker(&mutex);
     const auto &item = items.at(index.row());
     switch (role)
     {
@@ -59,30 +62,23 @@ QVariant LogModel::data(const QModelIndex &index, int role) const
 
 int LogModel::rowCount(const QModelIndex &parent) const
 {
-    QMutexLocker locker(&mutex);
     return items.size();
 }
 
 void LogModel::AddMessage(DAVA::Logger::eLogLevel ll, const QString& text)
 {
-    int count = rowCount();
-    emit beginInsertRows(QModelIndex(), count, count);
-    {
-        QMutexLocker locker(&mutex);
-        items.append(LogItem(ll,
-            QString::fromStdString(func(text.toStdString())),
-            text));
-    }
+    DVASSERT(QThread::currentThreadId() == currentThreadID);
+    emit beginInsertRows(QModelIndex(), rowCount(), rowCount());
+    items.append(LogItem(ll,
+        QString::fromStdString(func(text.toStdString())),
+        text));
     emit endInsertRows();
 }
 
 void LogModel::Clear()
 {
     beginRemoveRows(QModelIndex(), 0, rowCount() - 1);
-    {
-        QMutexLocker locker(&mutex);
-        items.clear();
-    }
+    items.clear();
     endRemoveRows();
 }
 
