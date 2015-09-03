@@ -115,7 +115,6 @@ public:
 //        Insert(head->children[(uint32)head->children.size() - 1], backtrace, depth - 1);
     }
 
-    }
     Backtrace* GetBacktraceByTreeNode(BacktraceTreeNode * node)
     {
         Backtrace * backtrace = (Backtrace*)malloc(sizeof(Backtrace));
