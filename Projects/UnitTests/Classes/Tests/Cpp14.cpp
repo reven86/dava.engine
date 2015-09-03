@@ -30,6 +30,11 @@
 
 #include "UnitTests/UnitTests.h"
 
+#include <memory>
+
+// disable for now
+#if __cplusplus >= 201500L
+
 using namespace DAVA;
 
 auto f() -> int;
@@ -55,4 +60,17 @@ DAVA_TESTCLASS(Cpp14Test)
         }
         TEST_VERIFY(1 == i);
     }
+
+    DAVA_TEST(MakeUnique)
+    {
+    	std::unique_ptr<int> ptr = std::make_unique<int>();
+    	*ptr = 10;
+    	TEST_VERIFY(10 == *(ptr.get()));
+
+    	int* raw_ptr = ptr.release();
+    	TEST_VERIFY(10 == *raw_ptr);
+    	delete raw_ptr;
+    }
 };
+
+#endif

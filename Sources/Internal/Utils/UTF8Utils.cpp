@@ -1,4 +1,4 @@
-﻿/*==================================================================================
+/*==================================================================================
     Copyright (c) 2008, binaryzebra
     All rights reserved.
 
@@ -28,57 +28,55 @@
 
 
 #include "Utils/UTF8Utils.h"
-#include "FileSystem/Logger.h"
 #include "Debug/DVAssert.h"
 
-#if defined(__DAVAENGINE_WINDOWS__)
-
-#include <Windows.h>
+#include <utf8.h>
 
 namespace DAVA
 {
 
-void  UTF8Utils::EncodeToWideString(const uint8 * string, size_t size, WideString & resultString)
+#ifdef __DAVAENGINE_WINDOWS__
+
+static_assert(sizeof(wchar_t) == 2, "check size of wchar_t on current platform");
+
+void UTF8Utils::EncodeToWideString(const uint8 * string, size_t size, WideString & result)
 {
-	resultString = L"";
-
-	int32 wstringLen = MultiByteToWideChar(CP_UTF8, 0, (LPCSTR)string, static_cast<int>(size), NULL, NULL);
-	if (!wstringLen)
-	{
-		return;
-	}
-
-	wchar_t* buf = new wchar_t[wstringLen];
-	int32 convertRes = MultiByteToWideChar(CP_UTF8, 0, (LPCSTR)string, static_cast<int>(size), buf, wstringLen);
-	if (convertRes)
-	{
-		resultString = WideString(buf, wstringLen);
-	}
-
-	delete[] buf;
+	DVASSERT(nullptr != string);
+	result.clear();
+	result.reserve(size); // minimum they will be same
+    utf8::utf8to16(string, string + size, std::back_inserter(result));
 };
 
 String UTF8Utils::EncodeToUTF8(const WideString& wstring)
 {
-    return EncodeToUTF8(wstring.c_str());
+	String result;
+	result.reserve(wstring.size()); // minimum they will be same
+	utf8::utf16to8(wstring.begin(), wstring.end(), std::back_inserter(result));
+	return result;
 };
 
-String UTF8Utils::EncodeToUTF8(const wchar_t* wideString)
+#else
+
+static_assert(sizeof(wchar_t) == 4, "check size of wchar_t on current platform");
+
+void UTF8Utils::EncodeToWideString(const uint8 * string, size_t size, WideString & result)
 {
-    DVASSERT(wideString != nullptr);
+	DVASSERT(nullptr != string);
+	result.clear();
+	result.reserve(size); // minimum they will be same
+    utf8::utf8to32(string, string + size, std::back_inserter(result));
+};
 
-    String result;
-    // Note: WideCharToMultiByte makes room for zero terminator in resulting string if wideString length is set to -1
-    int bufSize = WideCharToMultiByte(CP_UTF8, 0, wideString, -1, 0, 0, nullptr, nullptr);
-    if (bufSize > 0)
-    {
-        result.resize(bufSize);
-        WideCharToMultiByte(CP_UTF8, 0, wideString, -1, &*result.begin(), bufSize, nullptr, nullptr);
-        result.pop_back();  // Get rid of extra zero terminator appended by WideCharToMultiByte
-    }
-    return result;
-}
-
-}   // namespace DAVA
-
+String UTF8Utils::EncodeToUTF8(const WideString& wstring)
+{
+	String result;
+	result.reserve(wstring.size()); // minimum they will be same
+	utf8::utf32to8(wstring.begin(), wstring.end(), std::back_inserter(result));
+	return result;
+};
 #endif
+
+
+
+} // namespace DAVA
+

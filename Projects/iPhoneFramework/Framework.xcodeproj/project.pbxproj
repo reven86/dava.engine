@@ -719,7 +719,6 @@
 		02FD81BD1924997C007762C0 /* UISpinner.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E95B4C5A16DF78EE00880713 /* UISpinner.cpp */; };
 		02FD81BE1924997C007762C0 /* SpeedTreeObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6AFDEFA1871C3D1006E43A1 /* SpeedTreeObject.cpp */; };
 		02FD81BF1924997C007762C0 /* NMaterialNames.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6DBFA7C1887E3D5006BE11C /* NMaterialNames.cpp */; };
-		02FD81C01924997C007762C0 /* UTF8UtilsMac.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8CBDFC616EE10EE00F70C8F /* UTF8UtilsMac.mm */; };
 		02FD81C11924997C007762C0 /* UISwitch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E9E7982D16F0B45100745AF5 /* UISwitch.cpp */; };
 		02FD81C21924997C007762C0 /* Frustum.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CCC7A49A16F1D80C0061EA5D /* Frustum.cpp */; };
 		02FD81C31924997C007762C0 /* Landscape.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CCC7A49C16F1D80C0061EA5D /* Landscape.cpp */; };
@@ -785,6 +784,7 @@
 		02FD82041924997C007762C0 /* libBox2D_iPhone.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FEF4D38612C91A3A004B850E /* libBox2D_iPhone.a */; };
 		02FD82051924997C007762C0 /* libfreetype_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EA7DEDD9144854E900D9E652 /* libfreetype_ios.a */; };
 		02FD82061924997C007762C0 /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9A0118E18AC6866222998E4C /* GameController.framework */; };
+		03DE06DA1B71F6E70084F198 /* UTF8Utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 03DE06D91B71F6E70084F198 /* UTF8Utils.cpp */; };
 		1146E10819D00649009E5FAB /* AnimationSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1146E10619D00649009E5FAB /* AnimationSystem.cpp */; };
 		1146E10919D00649009E5FAB /* AnimationSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 1146E10719D00649009E5FAB /* AnimationSystem.h */; };
 		1146E10A19D0064B009E5FAB /* AnimationSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1146E10619D00649009E5FAB /* AnimationSystem.cpp */; };
@@ -1923,7 +1923,6 @@
 		E8C0A6FB17D5D8B300F8F93C /* UIScrollView.h in Headers */ = {isa = PBXBuildFile; fileRef = E8C0A6F917D5D8B300F8F93C /* UIScrollView.h */; };
 		E8C0A6FE17D5D8EC00F8F93C /* UIScrollViewContainer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8C0A6FC17D5D8EC00F8F93C /* UIScrollViewContainer.cpp */; };
 		E8C0A6FF17D5D8EC00F8F93C /* UIScrollViewContainer.h in Headers */ = {isa = PBXBuildFile; fileRef = E8C0A6FD17D5D8EC00F8F93C /* UIScrollViewContainer.h */; };
-		E8CBDFC716EE10EE00F70C8F /* UTF8UtilsMac.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8CBDFC616EE10EE00F70C8F /* UTF8UtilsMac.mm */; };
 		E8CC1BFC16C10A5A009B49BF /* IntrospectionBase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8CC1BFB16C10A5A009B49BF /* IntrospectionBase.cpp */; };
 		E8F21DD016C1971F007F957A /* GlobalEventSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8F21DCE16C1971F007F957A /* GlobalEventSystem.cpp */; };
 		E8F21DD116C1971F007F957A /* GlobalEventSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = E8F21DCF16C1971F007F957A /* GlobalEventSystem.h */; };
@@ -2051,6 +2050,7 @@
 		02FD7EC119237D43007762C0 /* WindSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WindSystem.cpp; sourceTree = "<group>"; };
 		02FD7EC219237D43007762C0 /* WindSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WindSystem.h; sourceTree = "<group>"; };
 		02FD820C1924997C007762C0 /* libFrameworkTesting.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libFrameworkTesting.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		03DE06D91B71F6E70084F198 /* UTF8Utils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UTF8Utils.cpp; sourceTree = "<group>"; };
 		1146E10619D00649009E5FAB /* AnimationSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AnimationSystem.cpp; sourceTree = "<group>"; };
 		1146E10719D00649009E5FAB /* AnimationSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AnimationSystem.h; sourceTree = "<group>"; };
 		1146E10C19D0066F009E5FAB /* AnimationComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AnimationComponent.cpp; sourceTree = "<group>"; };
@@ -2994,7 +2994,6 @@
 		E8C0A6F917D5D8B300F8F93C /* UIScrollView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIScrollView.h; sourceTree = "<group>"; };
 		E8C0A6FC17D5D8EC00F8F93C /* UIScrollViewContainer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIScrollViewContainer.cpp; sourceTree = "<group>"; };
 		E8C0A6FD17D5D8EC00F8F93C /* UIScrollViewContainer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIScrollViewContainer.h; sourceTree = "<group>"; };
-		E8CBDFC616EE10EE00F70C8F /* UTF8UtilsMac.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = UTF8UtilsMac.mm; sourceTree = "<group>"; };
 		E8CC1BFB16C10A5A009B49BF /* IntrospectionBase.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IntrospectionBase.cpp; sourceTree = "<group>"; };
 		E8F21DCE16C1971F007F957A /* GlobalEventSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GlobalEventSystem.cpp; sourceTree = "<group>"; };
 		E8F21DCF16C1971F007F957A /* GlobalEventSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GlobalEventSystem.h; sourceTree = "<group>"; };
@@ -4584,6 +4583,7 @@
 		E8B3CA7016B9326E002BD35F /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				03DE06D91B71F6E70084F198 /* UTF8Utils.cpp */,
 				B79723EC1A125F96009421F3 /* BiDiHelper.cpp */,
 				B79723ED1A125F96009421F3 /* BiDiHelper.h */,
 				B786014B1A08EB140041F817 /* StringUtils.cpp */,
@@ -4595,7 +4595,6 @@
 				E8B3CA7616B9326E002BD35F /* Random.h */,
 				E8B3CA7716B9326E002BD35F /* StringFormat.cpp */,
 				E8B3CA7816B9326E002BD35F /* StringFormat.h */,
-				E8CBDFC616EE10EE00F70C8F /* UTF8UtilsMac.mm */,
 				E8B3CA7A16B9326E002BD35F /* UTF8Utils.h */,
 				E8B3CA7B16B9326E002BD35F /* Utils.cpp */,
 				E8B3CA7C16B9326E002BD35F /* Utils.h */,
@@ -6165,7 +6164,7 @@
 				D7CC267219C517E500A3B754 /* LocalNotificationProgress.cpp in Sources */,
 				02FD81BF1924997C007762C0 /* NMaterialNames.cpp in Sources */,
 				17675C1D19472C1400054F8F /* Image.mm in Sources */,
-				02FD81C01924997C007762C0 /* UTF8UtilsMac.mm in Sources */,
+				FED4C09C1B31BCA9006D0379 /* LibJpegHelper.cpp in Sources */,
 				02FD81C11924997C007762C0 /* UISwitch.cpp in Sources */,
 				02FD81C21924997C007762C0 /* Frustum.cpp in Sources */,
 				02FD81C31924997C007762C0 /* Landscape.cpp in Sources */,
@@ -6452,6 +6451,7 @@
 				E8B3CC4216B9326E002BD35F /* StaticIndexBuffer.cpp in Sources */,
 				E8B3CC4416B9326E002BD35F /* StaticVertexBuffer.cpp in Sources */,
 				E8B3CC4616B9326E002BD35F /* Texture.cpp in Sources */,
+				03DE06DA1B71F6E70084F198 /* UTF8Utils.cpp in Sources */,
 				E8B3CC4816B9326E002BD35F /* TextureDescriptor.cpp in Sources */,
 				E8B3CC4B16B9326E002BD35F /* UberShader.cpp in Sources */,
 				E8B3CC4E16B9326E002BD35F /* Box2DDebugDraw.cpp in Sources */,
@@ -6631,7 +6631,6 @@
 				1174B61A1B42C518002E3472 /* UIStyleSheetSelectorChain.cpp in Sources */,
 				A6AFDEFC1871C3D1006E43A1 /* SpeedTreeObject.cpp in Sources */,
 				A6DBFA7E1887E3D5006BE11C /* NMaterialNames.cpp in Sources */,
-				E8CBDFC716EE10EE00F70C8F /* UTF8UtilsMac.mm in Sources */,
 				E9E7982F16F0B45100745AF5 /* UISwitch.cpp in Sources */,
 				CCC7A49F16F1D80C0061EA5D /* Frustum.cpp in Sources */,
 				CCC7A4A116F1D80C0061EA5D /* Landscape.cpp in Sources */,

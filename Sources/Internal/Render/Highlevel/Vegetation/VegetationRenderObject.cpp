@@ -793,7 +793,8 @@ bool VegetationRenderObject::IsHardwareCapableToRenderVegetation()
 bool VegetationRenderObject::IsValidGeometryData() const
 {
      return (worldSize.Length() > 0 &&
-             heightmap != NULL &&
+             heightmap != nullptr &&
+             heightmap->Size() > 0 && 
              densityMap.size() > 0 &&
              customGeometryData);
 }
@@ -801,7 +802,8 @@ bool VegetationRenderObject::IsValidGeometryData() const
 bool VegetationRenderObject::IsValidSpatialData() const
 {
     return (worldSize.Length() > 0 &&
-            heightmap != NULL &&
+            heightmap != nullptr &&
+            heightmap->Size() > 0 &&
             densityMap.size() > 0);
 }
 
