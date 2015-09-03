@@ -211,10 +211,14 @@ PolygonGroup * ImportLibrary::GetOrCreatePolygon(ColladaPolygonGroupInstance * c
         rebuildTangentSpace = true;
 #endif
         const int32 prerequiredFormat = EVF_TANGENT | EVF_BINORMAL | EVF_NORMAL;
-        if (rebuildTangentSpace&&((davaPolygon->GetFormat()&prerequiredFormat) == prerequiredFormat))
+        if (rebuildTangentSpace && (davaPolygon->GetFormat() & prerequiredFormat) == prerequiredFormat)
+        {
             MeshUtils::RebuildMeshTangentSpace(davaPolygon, true);
+        }
         else
+        {
             davaPolygon->BuildBuffers();
+        }
         
         // Put polygon to the library
         polygons[colladaPGI] = davaPolygon;
@@ -266,7 +270,7 @@ bool GetTextureTypeAndPathFromCollada(ColladaMaterial * material, FastName & typ
     
 FilePath GetNormalMapTexturePath(const FilePath & originalTexturePath)
 {
-    FilePath path = originalTexturePath.GetStringValue();
+    FilePath path = originalTexturePath;
     path.ReplaceBasename(path.GetBasename() + ImportSettings::normalMapPattern);
     return path;
 }
@@ -301,14 +305,18 @@ NMaterial * ImportLibrary::GetOrCreateMaterialParent(ColladaMaterial * colladaMa
     bool hasTexture = GetTextureTypeAndPathFromCollada(colladaMaterial, textureType, texturePath);
     if (hasTexture)
     {
-        TextureDescriptor * descr = TextureDescriptor::CreateFromFile(texturePath);
-        descr->Save();
-        texturePath = descr->pathname;
-        SafeDelete(descr);
+        FilePath descriptorPathname = TextureDescriptor::GetDescriptorPathname(texturePath);
         
-        davaMaterialParent->SetTexture(textureType, texturePath);
+        TextureDescriptor * descr = TextureDescriptor::CreateFromFile(descriptorPathname);
+        if (nullptr != descr)
+        {
+            descr->Save();
+            texturePath = descr->pathname;
+            SafeDelete(descr);
+        }
+        davaMaterialParent->SetTexture(textureType, descriptorPathname);
     
-        FilePath normalMap = GetNormalMapTexturePath(texturePath);
+        FilePath normalMap = GetNormalMapTexturePath(descriptorPathname);
         if (FileSystem::Instance()->IsFile(normalMap))
         {
             davaMaterialParent->SetTexture(NMaterial::TEXTURE_NORMAL, normalMap);
