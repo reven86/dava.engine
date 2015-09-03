@@ -117,15 +117,16 @@ kkk
         varying lowp float varLightmapSize;
     #endif
     
+    #if VERTEX_COLOR || SPHERICAL_LIT
+        VPROG_OUT_COLOR1(varVertexColor,4)
+    #endif
+
     #if VERTEX_FOG
         VPROG_OUT_TEXCOORD5(varFog,4)
 //        varying lowp float varFogAmoung;
 //        varying lowp vec3 varFogColor;
     #endif
 
-    #if VERTEX_COLOR || SPHERICAL_LIT
-        VPROG_OUT_COLOR1(varVertexColor,4)
-    #endif
     
     #if FRAME_BLEND
         VPROG_OUT_TEXCOORD3(varTime,1)        
