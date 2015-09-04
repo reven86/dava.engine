@@ -431,7 +431,7 @@ uint32 MemoryManager::GetSystemMemoryUsage() const
 
 uint32 MemoryManager::GetTrackedMemoryUsage(uint32 poolIndex) const
 {
-    assert(ALLOC_POOL_TOTAL < poolIndex && poolIndex < MAX_ALLOC_POOL_COUNT);
+    assert(ALLOC_POOL_TOTAL <= poolIndex && poolIndex < MAX_ALLOC_POOL_COUNT);
 
     LockType lock(statMutex);
     return statAllocPool[poolIndex].allocByApp;
