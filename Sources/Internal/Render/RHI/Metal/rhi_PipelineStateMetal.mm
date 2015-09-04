@@ -35,6 +35,7 @@
     #include "FileSystem/Logger.h"
     using DAVA::Logger;
     #include "Debug/Profiler.h"
+#include "FileSystem/File.h"
 
     #include "_metal.h"
 
@@ -84,6 +85,7 @@ _VertexAttribIndex( VertexSemantics s, uint32 i )
 }
 
 
+//------------------------------------------------------------------------------
 
 class
 PipelineStateMetal_t
@@ -189,7 +191,7 @@ typedef ResourcePool<PipelineStateMetal_t,RESOURCE_PIPELINE_STATE,PipelineState:
 typedef ResourcePool<PipelineStateMetal_t::ConstBuf,RESOURCE_CONST_BUFFER,PipelineStateMetal_t::ConstBuf::Desc,false>   ConstBufMetalPool;
 
 RHI_IMPL_POOL(PipelineStateMetal_t,RESOURCE_PIPELINE_STATE,PipelineState::Descriptor,false);
-RHI_IMPL_POOL(PipelineStateMetal_t::ConstBuf,RESOURCE_CONST_BUFFER,PipelineStateMetal_t::ConstBuf::Desc,false);
+RHI_IMPL_POOL_SIZE(PipelineStateMetal_t::ConstBuf,RESOURCE_CONST_BUFFER,PipelineStateMetal_t::ConstBuf::Desc,false,8*1024);
 
 
 static RingBufferMetal  DefaultConstRingBuffer;
@@ -462,6 +464,10 @@ metal_PipelineState_Create( const PipelineState::Descriptor& desc )
     rhi::ShaderCache::GetProg( desc.vprogUid, &vprog_bin );
     rhi::ShaderCache::GetProg( desc.fprogUid, &fprog_bin );
 
+//Logger::Info("metal_PipelineState_Create");
+//Logger::Info("  vprogUid= %s",desc.vprogUid.c_str());
+//Logger::Info("  fprogUid= %s",desc.fprogUid.c_str());
+
 
     // compile vprog
 
@@ -484,6 +490,7 @@ metal_PipelineState_Create( const PipelineState::Descriptor& desc )
     {
         Logger::Error( "FAILED to compile vprog \"%s\" :", desc.vprogUid.c_str() );
         Logger::Error( "  %s", (vp_err!=nil) ? vp_err.localizedDescription.UTF8String : "<unknown error>" );
+//Logger::Info( vp_src.UTF8String );
     }
     
     if( vp_err != nil )
@@ -614,14 +621,6 @@ metal_PipelineState_Create( const PipelineState::Descriptor& desc )
         if( desc.blending.rtBlend[0].writeMask & COLORMASK_A )
             rp_desc.colorAttachments[0].writeMask |= MTLColorWriteMaskAlpha;
 
-/*
-        for( unsigned i=0; i!=VATTR_COUNT; ++i )
-        {
-            rp_desc.vertexDescriptor.attributes[i].bufferIndex = 0;
-            rp_desc.vertexDescriptor.attributes[i].offset      = 0;
-            rp_desc.vertexDescriptor.attributes[i].format      = MTLVertexFormatInvalid;//MTLVertexFormatFloat;
-        }
-*/
 
         for( unsigned i=0; i!=desc.vertexLayout.ElementCount(); ++i )
         {
@@ -647,9 +646,9 @@ metal_PipelineState_Create( const PipelineState::Descriptor& desc )
                     switch( desc.vertexLayout.ElementDataCount(i) )
                     {
                             //                                    case 1 : fmt = MTLVertexFormatUCharNormalized; break;
-                        case 2 : fmt = MTLVertexFormatUChar2; break;
-                        case 3 : fmt = MTLVertexFormatUChar3; break;
-                        case 4 : fmt = MTLVertexFormatUChar4; break;
+                        case 2 : fmt = MTLVertexFormatUChar2Normalized; break;
+                        case 3 : fmt = MTLVertexFormatUChar3Normalized; break;
+                        case 4 : fmt = MTLVertexFormatUChar4Normalized; break;
                     }
                 }   break;
             }
@@ -782,16 +781,18 @@ SetupDispatch( Dispatch* dispatch )
     dispatch->impl_PipelineState_CreateFragmentConstBuffer  = &metal_PipelineState_CreateFragmentConstBuffer;
 }
 
-void
+uint32
 SetToRHI( Handle ps, uint32 layoutUID, id<MTLRenderCommandEncoder> ce )
 {
-    PipelineStateMetal_t* psm = PipelineStateMetalPool::Get( ps );
+    uint32                stride = 0;
+    PipelineStateMetal_t* psm    = PipelineStateMetalPool::Get( ps );
 
     DVASSERT(psm);
 
     if( layoutUID == VertexLayout::InvalidUID )
     {
         [ce setRenderPipelineState:psm->state];
+        stride = psm->layout.Stride();
     }
     else
     {
@@ -822,13 +823,6 @@ SetToRHI( Handle ps, uint32 layoutUID, id<MTLRenderCommandEncoder> ce )
             rp_desc.sampleCount                 = 1;
             rp_desc.vertexFunction              = psm->desc.vertexFunction;
             rp_desc.fragmentFunction            = psm->desc.fragmentFunction;
-
-            for( unsigned i=0; i!=VATTR_COUNT; ++i )
-            {
-                rp_desc.vertexDescriptor.attributes[i].bufferIndex = 0;
-                rp_desc.vertexDescriptor.attributes[i].offset      = 0;
-                rp_desc.vertexDescriptor.attributes[i].format      = MTLVertexFormatFloat;
-            }
             
             for( unsigned i=0; i!=psm->layout.ElementCount(); ++i )
             {
@@ -867,6 +861,7 @@ SetToRHI( Handle ps, uint32 layoutUID, id<MTLRenderCommandEncoder> ce )
                             }   break;
                         }
 
+
                         rp_desc.vertexDescriptor.attributes[attr_i].bufferIndex = 0 ;
                         rp_desc.vertexDescriptor.attributes[attr_i].offset      = layout->ElementOffset(j);
                         rp_desc.vertexDescriptor.attributes[attr_i].format      = fmt;
@@ -885,13 +880,25 @@ SetToRHI( Handle ps, uint32 layoutUID, id<MTLRenderCommandEncoder> ce )
             state.layoutUID = layoutUID;
             state.state     = [_Metal_Device newRenderPipelineStateWithDescriptor:rp_desc options:MTLPipelineOptionNone reflection:&ps_info error:&rs_err];
             
-            si = psm->altState.size();
-            psm->altState.push_back( state );
+            if( state.state != nil )
+            {
+                si = psm->altState.size();
+                psm->altState.push_back( state );
+            }
+            else
+            {
+                if( rs_err != nil )
+                    Logger::Error( "failed to create alt-ps : %s", rs_err.localizedDescription.UTF8String );
+            }
+            
+            stride = layout->Stride();
         }
     
         DVASSERT(si != InvalidIndex);
         [ce setRenderPipelineState:psm->altState[si].state];
     }
+    
+    return stride;
 }
 
 } // namespace PipelineStateMetal
