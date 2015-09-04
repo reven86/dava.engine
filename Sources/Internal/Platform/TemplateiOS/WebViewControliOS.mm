@@ -191,7 +191,15 @@
 @end
 
 DAVA::WebViewControl::WebViewControl(DAVA::UIWebView& uiWeb)
-    : webViewPtr(0), webViewURLDelegatePtr(0), rightSwipeGesturePtr(0), leftSwipeGesturePtr(0), gesturesEnabled(false), isRenderToTexture(false), pendingRenderToTexture(false), isVisible(true), uiWebView(uiWeb)
+    : webViewPtr(0)
+    , webViewURLDelegatePtr(0)
+    , rightSwipeGesturePtr(0)
+    , leftSwipeGesturePtr(0)
+    , gesturesEnabled(false)
+    , isRenderToTexture(false)
+    , pendingRenderToTexture(false)
+    , isVisible(true)
+    , uiWebView(uiWeb)
 {
     HelperAppDelegate* appDelegate = [[UIApplication sharedApplication]
                                                                     delegate];
