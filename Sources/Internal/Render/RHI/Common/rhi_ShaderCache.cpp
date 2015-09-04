@@ -226,6 +226,7 @@ static const char* _ShaderHeader_Metal =
 "inline float4 lerp( float4 a, float4 b, float t ) { return mix( a, b, t ); }\n"
 
 "#define FP_DISCARD_FRAGMENT discard_fragment()\n"
+"#define FP_A8(t) t.a\n"
 
 "#define STEP(edge,x) ((x)<(edge)) ? 0.0 : 1.0\n"
 ;
@@ -451,6 +452,7 @@ static const char* _ShaderHeader_GLES2 =
 "#define lerp(a,b,t) mix( (a), (b), (t) )\n"
 
 "#define FP_DISCARD_FRAGMENT discard\n"
+"#define FP_A8(t) t.a\n"
 
 "#define STEP(edge,x) step( (edge), (x) )\n"
 ;
@@ -595,6 +597,7 @@ static const char* _ShaderHeader_DX9 =
 "#define half1                  half\n"
 
 "#define FP_DISCARD_FRAGMENT discard\n"
+"#define FP_A8(t) t.a\n"
 
 "#define STEP(edge,x) step( (edge), (x) )\n"
 ;
@@ -738,6 +741,7 @@ static const char* _ShaderHeader_DX11 =
 "#define half1                  half\n"
 
 "#define FP_DISCARD_FRAGMENT discard\n"
+"#define FP_A8(t) t.r\n"
 
 "#define STEP(edge,x) step( (edge), (x) )\n"
 ;
