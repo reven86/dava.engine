@@ -274,6 +274,8 @@ bool TextureDescriptor::Load(const FilePath &filePathname)
     }
     }
 
+    FixCompressionFormat();
+
     return true;
 }
 
@@ -393,8 +395,8 @@ void TextureDescriptor::LoadVersion6(DAVA::File *file)
             int8 format;
 			file->Read(&format);
             compression[i].format = static_cast<PixelFormat>(format);
-            
-			file->Read(&compression[i].compressToWidth);
+
+            file->Read(&compression[i].compressToWidth);
 			file->Read(&compression[i].compressToHeight);
 			file->Read(&compression[i].sourceFileCrc);
         }
@@ -427,7 +429,7 @@ void TextureDescriptor::LoadVersion7(DAVA::File *file)
             int8 format;
             file->Read(&format);
             compression[i].format = static_cast<PixelFormat>(format);
-            
+
             file->Read(&compression[i].compressToWidth);
             file->Read(&compression[i].compressToHeight);
             file->Read(&compression[i].sourceFileCrc);
@@ -560,9 +562,6 @@ void TextureDescriptor::LoadVersion10(File* file)
 {
     // has no changes in format
     LoadVersion9(file);
-
-    // but for now we need to do some magic
-    FixCompressionFormat();
 }
 
 void TextureDescriptor::WriteCompression(File *file, const Compression *compression) const
