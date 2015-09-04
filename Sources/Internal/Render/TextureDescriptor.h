@@ -219,8 +219,8 @@ protected:
     void LoadVersion7(File *file);
     void LoadVersion8(File *file);
     void LoadVersion9(File *file);
-    DAVA_DEPRECATED(void FixCompressionFormat());
     void LoadVersion10(File* file);
+    DAVA_DEPRECATED(void FixCompressionFormat());
 
     void RecalculateCompressionSourceCRC();
 	uint32 ReadSourceCRC() const;

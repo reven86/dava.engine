@@ -584,13 +584,13 @@ void TextureBrowser::setupTextureViewTabBar()
 	ui->viewTabBar->setTabData(tabIndex, GPU_ADRENO);
 	ui->viewTabBar->setTabIcon(tabIndex, QIcon(pix));
 
-        p.setBrush(QBrush(gpuColor_DX11));
-        p.drawRect(QRect(0, 0, 15, 15));
-        tabIndex = ui->viewTabBar->addTab("DX11");
-        ui->viewTabBar->setTabData(tabIndex, GPU_DX11);
-        ui->viewTabBar->setTabIcon(tabIndex, QIcon(pix));
+    p.setBrush(QBrush(gpuColor_DX11));
+    p.drawRect(QRect(0, 0, 15, 15));
+    tabIndex = ui->viewTabBar->addTab("DX11");
+    ui->viewTabBar->setTabData(tabIndex, GPU_DX11);
+    ui->viewTabBar->setTabIcon(tabIndex, QIcon(pix));
 
-        QObject::connect(ui->viewTabBar,  SIGNAL(currentChanged(int)), this, SLOT(textureViewChanged(int)));
+    QObject::connect(ui->viewTabBar,  SIGNAL(currentChanged(int)), this, SLOT(textureViewChanged(int)));
 }
 
 void TextureBrowser::resetTextureInfo()

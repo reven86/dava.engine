@@ -325,7 +325,7 @@ public:							// properties for fast access
 	uint32		height:16;			// texture height
 
     eGPUFamily loadedAsFile;
-    TextureState state : 2;
+    TextureState state:2;
     uint32		textureType:2;
 	DepthFormat depthFormat:2;
 	bool		isRenderTarget:1;

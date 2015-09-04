@@ -165,7 +165,7 @@ enum ImageFormat : uint8
     IMAGE_FORMAT_UNKNOWN = 127
 };
 
-enum PixelFormat : uint8
+enum PixelFormat : int8
 {
     FORMAT_INVALID = 0,
     FORMAT_RGBA8888 = 1,
@@ -212,7 +212,7 @@ enum PixelFormat : uint8
 };
 
 // Please update JniDeviceInfo.java if change eGPUFamily enum
-enum eGPUFamily : uint8
+enum eGPUFamily : int8
 {
     GPU_POWERVR_IOS = 0,
     GPU_POWERVR_ANDROID,

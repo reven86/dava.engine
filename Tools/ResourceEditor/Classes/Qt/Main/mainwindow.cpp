@@ -750,8 +750,8 @@ void QtMainWindow::SetupActions()
 	ui->actionReloadTegra->setData(GPU_TEGRA);
 	ui->actionReloadMali->setData(GPU_MALI);
 	ui->actionReloadAdreno->setData(GPU_ADRENO);
-        ui->actionReloadDX11->setData(GPU_DX11);
-        ui->actionReloadPNG->setData(GPU_ORIGIN);
+    ui->actionReloadDX11->setData(GPU_DX11);
+    ui->actionReloadPNG->setData(GPU_ORIGIN);
 
     QActionGroup *reloadGroup = new QActionGroup(this);
     QList<QAction *> reloadActions = ui->menuTexturesForGPU->actions();
