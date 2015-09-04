@@ -60,7 +60,6 @@ public slots:
 private:
     void LoadContext();
     void SaveContext();
-private:
     
     void OnControlSelectedInEditor(const QList<ControlNode *> &node);
 
@@ -75,7 +74,7 @@ private:
     void CollectSelectedNodes(const QItemSelection &selected, DAVA::Vector<NodeType*> &nodes, bool forCopy, bool forRemove);
 
     QList<QPersistentModelIndex> GetExpandedIndexes() const;
-    
+    void RestoreExpandedIndexes(const QList<QPersistentModelIndex> &indexes);
 
 private slots:
     void OnSelectionChanged(const QItemSelection &proxySelected, const QItemSelection &proxyDeselected);
@@ -103,6 +102,8 @@ private:
     
     QPointer<FilteredPackageModel> filteredPackageModel;
     QPointer<PackageModel> packageModel;
+    QString lastFilterText;
+    QList<QPersistentModelIndex> expandedIndexes;
 };
 
 #endif // __UI_EDITOR_UI_PACKAGE_WIDGET__

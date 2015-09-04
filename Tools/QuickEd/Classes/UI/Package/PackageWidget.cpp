@@ -176,13 +176,7 @@ void PackageWidget::LoadContext()
         treeView->expandToDepth(0);
         connect(treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &PackageWidget::OnSelectionChanged);
         //restore expanded indexes
-        for (const auto &index : context->expandedIndexes)
-        {
-            if (index.isValid())
-            {
-                treeView->setExpanded(index, true);
-            }
-        }
+        RestoreExpandedIndexes(context->expandedIndexes);
         //restore selection
         treeView->selectionModel()->select(context->selection, QItemSelectionModel::ClearAndSelect);
         //restore filter line
@@ -431,8 +425,22 @@ void PackageWidget::filterTextChanged(const QString &filterText)
 {
     if (nullptr != sharedData)
     {
+        if (lastFilterText.isEmpty())
+        {
+            expandedIndexes = GetExpandedIndexes();
+        }
         static_cast<QSortFilterProxyModel*>(treeView->model())->setFilterFixedString(filterText);
-        treeView->expandAll();
+
+        if (filterText.isEmpty())
+        {
+            treeView->collapseAll();
+            RestoreExpandedIndexes(expandedIndexes);
+        }
+        else
+        {
+            treeView->expandAll();
+        }
+        lastFilterText = filterText;
     }
 }
 
@@ -463,6 +471,17 @@ QList<QPersistentModelIndex> PackageWidget::GetExpandedIndexes() const
     }
 
     return retval;
+}
+
+void PackageWidget::RestoreExpandedIndexes(const QList<QPersistentModelIndex>& indexes)
+{
+    for (const auto &index : indexes)
+    {
+        if (index.isValid())
+        {
+            treeView->setExpanded(index, true);
+        }
+    }
 }
 
 QAction *PackageWidget::CreateSeparator()
