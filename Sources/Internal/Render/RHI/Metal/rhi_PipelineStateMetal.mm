@@ -183,6 +183,7 @@ public:
     {
         uint32                      layoutUID;
         id<MTLRenderPipelineState>  state;
+        uint32                      stride;
     };
     std::vector<state_t>            altState;
 };
@@ -879,6 +880,7 @@ SetToRHI( Handle ps, uint32 layoutUID, id<MTLRenderCommandEncoder> ce )
             
             state.layoutUID = layoutUID;
             state.state     = [_Metal_Device newRenderPipelineStateWithDescriptor:rp_desc options:MTLPipelineOptionNone reflection:&ps_info error:&rs_err];
+            state.stride    = layout->Stride();
             
             if( state.state != nil )
             {
@@ -890,12 +892,11 @@ SetToRHI( Handle ps, uint32 layoutUID, id<MTLRenderCommandEncoder> ce )
                 if( rs_err != nil )
                     Logger::Error( "failed to create alt-ps : %s", rs_err.localizedDescription.UTF8String );
             }
-            
-            stride = layout->Stride();
         }
     
         DVASSERT(si != InvalidIndex);
         [ce setRenderPipelineState:psm->altState[si].state];
+        stride = psm->altState[si].stride;
     }
     
     return stride;
