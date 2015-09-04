@@ -62,6 +62,7 @@ const FastName Landscape::TEXTURE_TILEMASK("tileMask");
 const FastName Landscape::TEXTURE_SPECULAR("specularMap");
 
 const uint32 LANDSCAPE_BATCHES_POOL_SIZE = 32;
+const uint32 TEXTURE_TILE_FULL_SIZE = 2048;
 
 Landscape::Landscape()
     : indices(0)
@@ -1208,25 +1209,18 @@ void Landscape::CreateLandscapeTexture()
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-    // Set indexes
     Vector<Vector3> ftVertexes;
-    Vector<Vector2> ftTextureCoords;
-    
-    float32 x0 = 0.0f;
-    float32 y0 = 0.0f;
-    float32 x1 = 1.0f;
-    float32 y1 = 1.0f;
-    // 0, 0
-    ftVertexes.emplace_back(x0, y0, 0.0f);
+	ftVertexes.reserve(4);
+	ftVertexes.emplace_back(-1.0f, -1.0f, 0.0f);
+    ftVertexes.emplace_back( 1.0f, -1.0f, 0.0f);
+    ftVertexes.emplace_back(-1.0f,  1.0f, 0.0f);
+    ftVertexes.emplace_back( 1.0f,  1.0f, 0.0f);
+
+	Vector<Vector2> ftTextureCoords;
+	ftTextureCoords.reserve(4);
     ftTextureCoords.emplace_back(0.0f, 0.0f);
-	// 1, 0
-    ftVertexes.emplace_back(x1, y0, 0.0f);
     ftTextureCoords.emplace_back(1.0f, 0.0f);
-    // 0, 1
-    ftVertexes.emplace_back(x0, y1, 0.0f);
     ftTextureCoords.emplace_back(0.0f, 1.0f);
-    // 1, 1
-    ftVertexes.emplace_back(x1, y1, 0.0f);
     ftTextureCoords.emplace_back(1.0f, 1.0f);
 
 	ScopedPtr<PolygonGroup> renderData(new PolygonGroup());
@@ -1245,58 +1239,8 @@ void Landscape::CreateLandscapeTexture()
 	renderData->SetIndex(5, 3);
 	renderData->BuildBuffers();
 
-	const uint32 TEXTURE_TILE_FULL_SIZE = 2048;
 	renderTarget = Texture::CreateFBO(TEXTURE_TILE_FULL_SIZE, TEXTURE_TILE_FULL_SIZE, FORMAT_RGBA8888);
 
-    // MAGIC: 
-	// This magic code is workaround for situation when fbo textures are present in tileMaskMaterial with pathname. 
-	// Because NMaterial::Clone() use pathnames for cloning textures.
-
-	ScopedPtr<NMaterial> material(GetMaterial()->GetParent()->Clone());
-	material->PreBuildMaterial(PASS_FORWARD);
-	/*
-	material->SetQualityGroup(NMaterialQualityName::DEFAULT_QUALITY_NAME);
-	material->SetFXName(NMaterialName::TILE_MASK);
-
-	if (material->HasLocalFlag(NMaterialFlagName::FLAG_VERTEXFOG))
-		material->RemoveFlag(NMaterialFlagName::FLAG_VERTEXFOG);
-
-	if (GetMaterial()->HasLocalTexture(NMaterialTextureName::TEXTURE_HEIGHTMAP))
-	{
-		material->AddTexture(NMaterialTextureName::TEXTURE_HEIGHTMAP, 
-			GetMaterial()->GetLocalTexture(NMaterialTextureName::TEXTURE_HEIGHTMAP));
-	}
-	if (GetMaterial()->HasLocalTexture(NMaterialTextureName::TEXTURE_ALBEDO))
-	{
-		material->AddTexture(NMaterialTextureName::TEXTURE_ALBEDO, 
-			GetMaterial()->GetLocalTexture(NMaterialTextureName::TEXTURE_ALBEDO));
-	}
-	if (GetMaterial()->HasLocalTexture(NMaterialTextureName::TEXTURE_DETAIL))
-	{
-		material->AddTexture(NMaterialTextureName::TEXTURE_DETAIL, 
-			GetMaterial()->GetLocalTexture(NMaterialTextureName::TEXTURE_DETAIL));
-	}
-	if (GetMaterial()->HasLocalTexture(NMaterialTextureName::TEXTURE_LIGHTMAP))
-	{
-		material->AddTexture(NMaterialTextureName::TEXTURE_LIGHTMAP, 
-			GetMaterial()->GetLocalTexture(NMaterialTextureName::TEXTURE_LIGHTMAP));
-	}
-	if (GetMaterial()->HasLocalTexture(NMaterialTextureName::TEXTURE_DECAL))
-	{
-		material->AddTexture(NMaterialTextureName::TEXTURE_DECAL, 
-			GetMaterial()->GetLocalTexture(NMaterialTextureName::TEXTURE_DECAL));
-	}
-	if (GetMaterial()->HasLocalTexture(NMaterialTextureName::TEXTURE_DECALMASK))
-	{
-		material->AddTexture(NMaterialTextureName::TEXTURE_DECALMASK, 
-			GetMaterial()->GetLocalTexture(NMaterialTextureName::TEXTURE_DECALMASK));
-	}
-	if (GetMaterial()->HasLocalTexture(NMaterialTextureName::TEXTURE_DECALTEXTURE))
-	{
-		material->AddTexture(NMaterialTextureName::TEXTURE_DECALTEXTURE, 
-			GetMaterial()->GetLocalTexture(NMaterialTextureName::TEXTURE_DECALTEXTURE));
-	}
-	*/
 	rhi::HSyncObject syncObject = rhi::CreateSyncObject();
 	RenderCallbacks::RegisterSyncCallback(syncObject, MakeFunction(this, &Landscape::OnCreateLandscapeTextureCompleted));
 
@@ -1309,28 +1253,38 @@ void Landscape::CreateLandscapeTexture()
     packet.primitiveCount = GetPrimitiveCount(renderData->indexCount, renderData->primitiveType);
     packet.vertexLayoutUID = renderData->vertexLayoutId;
 
-	material->BindParams(packet);
+	Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, 
+		&Matrix4::IDENTITY, DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
+	Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_VIEW, 
+		&Matrix4::IDENTITY, DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
+	Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_PROJ, 
+		&Matrix4::IDENTITY, DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
 
-	ScopedPtr<Camera> localCamera(new Camera());
-	localCamera->SetIsOrtho(true);
-	localCamera->Setup(0.0f, 1.0f, 0.0f, 1.0f, -1.0f, 1.0f);
-	localCamera->SetPosition(Vector3(0.0f, 0.0f, -1.0f));
-	localCamera->SetTarget(Vector3(0.0f, 0.0f, 0.0f));
-	localCamera->SetUp(Vector3(0.0f, 1.0f, 0.0f));
-	localCamera->PrepareDynamicParameters(false);
-	localCamera->SetupDynamicParameters(false);
+	ScopedPtr<NMaterial> material(new NMaterial());
+
+	auto assignMaterialTexture = [this, &material](const FastName& textureId)
+	{
+		auto texture = GetMaterial()->GetEffectiveTexture(textureId);
+		if (texture != nullptr)
+			material->AddTexture(textureId, texture);
+	};
+
+	assignMaterialTexture(Landscape::TEXTURE_COLOR);
+	assignMaterialTexture(Landscape::TEXTURE_SPECULAR);
+	assignMaterialTexture(Landscape::TEXTURE_TILE);
+	assignMaterialTexture(Landscape::TEXTURE_TILEMASK);
+
+	material->SetMaterialName(FastName("Landscape_Tilemask_Temp_Material"));
+	material->SetFXName(NMaterialName::TILE_MASK);
+	material->SetQualityGroup(NMaterialQualityName::DEFAULT_QUALITY_NAME);
+	material->PreBuildMaterial(PASS_FORWARD);
+	material->BindParams(packet);
 
 	rhi::RenderPassConfig passDesc = { };
 	passDesc.colorBuffer[0].texture = renderTarget->handle;
-	passDesc.colorBuffer[0].clearColor[0] = 1.00f;
-	passDesc.colorBuffer[0].clearColor[1] = 0.75f;
-	passDesc.colorBuffer[0].clearColor[2] = 0.50f;
-	passDesc.colorBuffer[0].clearColor[3] = 1.00f;
 	passDesc.priority = PRIORITY_SERVICE_3D;
-	passDesc.viewport.x = 0;
-	passDesc.viewport.y = 0;
-	passDesc.viewport.width = 2048;
-	passDesc.viewport.height = 2048;
+	passDesc.viewport.width = TEXTURE_TILE_FULL_SIZE;
+	passDesc.viewport.height = TEXTURE_TILE_FULL_SIZE;
 
 	rhi::HPacketList packetList = { };
 	rhi::HRenderPass renderPass = rhi::AllocateRenderPass(passDesc, 1, &packetList);
@@ -1339,59 +1293,7 @@ void Landscape::CreateLandscapeTexture()
 	rhi::AddPacket(packetList, packet);
 	rhi::EndPacketList(packetList, syncObject);
 	rhi::EndRenderPass(renderPass);
-
-	/*
-    RenderManager::Instance()->SetRenderTarget(fullTiled);
-    RenderManager::Instance()->SetViewport(Rect(0.f, 0.f, (float32)fullTiled->GetWidth(), (float32)fullTiled->GetHeight()));
-    RenderManager::Instance()->SetClip(Rect(0.f, 0.f, -1.f, -1.f));
-	RenderManager::Instance()->ClearWithColor(1.f, 0.f, 1.f, 1.f);
-	RenderManager::Instance()->SetRenderData(ftRenderData);
-	RenderManager::Instance()->AttachRenderData();
-	RenderManager::Instance()->HWDrawArrays(PRIMITIVETYPE_TRIANGLESTRIP, 0, 4);
-    RenderManager::Instance()->SetRenderTarget(0);
-	RenderManager::Instance()->SetViewport(oldViewport);
-    SafeRelease(ftRenderData);
-	*/
 }
-
-//FilePath Landscape::SaveFullTiledTexture()
-//{
-//    FilePath pathToSave;
-//    
-//    if(textures[TEXTURE_TILE_FULL])
-//    {
-//        if(textures[TEXTURE_TILE_FULL]->isRenderTarget)
-//        {
-//            pathToSave = GetTextureName(TEXTURE_COLOR);
-//            pathToSave.ReplaceExtension(".thumbnail.png");
-//            Image *image = textures[TEXTURE_TILE_FULL]->CreateImageFromMemory();
-//            if(image)
-//            {
-//                ImageLoader::Save(image, pathToSave);
-//                SafeRelease(image);
-//            }
-//        }
-//        else
-//        {
-//            pathToSave = textureNames[TEXTURE_TILE_FULL];
-//        }
-//    }
-//    
-//    Logger::FrameworkDebug("[LN] SaveFullTiledTexture: %s", pathToSave.GetAbsolutePathname().c_str());
-//    return pathToSave;
-//}
-//    
-//void Landscape::UpdateFullTiledTexture()
-//{
-//	//TODO: WTF? this method is called during load phase when not all properties have been initialized potentially!
-//    if(textureNames[TEXTURE_TILE_FULL].IsEmpty())
-//    {
-//        Texture *t = CreateFullTiledTexture();
-//        t->GenerateMipmaps();
-//        SetTexture(TEXTURE_TILE_FULL, t);
-//        SafeRelease(t);
-//    }
-//}
 
 RenderObject * Landscape::Clone( RenderObject *newObject )
 {
@@ -1500,4 +1402,3 @@ void Landscape::UpdatePart(Heightmap* fromHeightmap, const Rect2i & rect)
 }
     
 };
-
