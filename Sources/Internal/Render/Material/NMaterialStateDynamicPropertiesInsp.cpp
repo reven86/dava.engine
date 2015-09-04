@@ -47,6 +47,8 @@ FastNameMap<NMaterialStateDynamicPropertiesInsp::PropData>* NMaterialStateDynami
         FXDescriptor fxDescriptor = FXCache::GetFXDescriptor(material->fxName, flags, material->qualityGroup);
         for (auto& descriptor : fxDescriptor.renderPassDescriptors)
         {
+            if (descriptor.shader == nullptr)
+                continue;
             for (auto& buff : descriptor.shader->GetConstBufferDescriptors())
             {
                 const rhi::ShaderPropList& props = ShaderDescriptor::GetProps(buff.propertyLayoutId);

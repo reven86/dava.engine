@@ -100,7 +100,7 @@ void NMaterial::BindParams(rhi::Packet& target)
 {
     //Logger::Info( "bind-params" );
     DVASSERT(activeVariantInstance);       //trying to bind material that was not staged to render
-
+    DVASSERT(activeVariantInstance->shader); //should have returned false on PreBuild!
     /*set pipeline state*/
     target.renderPipelineState = activeVariantInstance->shader->GetPiplineState();
     target.depthStencilState = activeVariantInstance->depthState;
@@ -727,7 +727,7 @@ bool NMaterial::PreBuildMaterial(const FastName& passName)
     if (needRebuildTextures)
         RebuildTextureBindings();
     
-    bool res = (activeVariantInstance != nullptr);
+    bool res = (activeVariantInstance != nullptr) && (activeVariantInstance->shader != nullptr);
     if (activeVariantName != passName)
     {
         RenderVariantInstance *targetVariant = renderVariants[passName];
@@ -736,7 +736,8 @@ bool NMaterial::PreBuildMaterial(const FastName& passName)
         {
             activeVariantName = passName;
             activeVariantInstance = targetVariant;
-            res = true;
+            
+            res = (activeVariantInstance->shader != nullptr);
         }
         else
         {
