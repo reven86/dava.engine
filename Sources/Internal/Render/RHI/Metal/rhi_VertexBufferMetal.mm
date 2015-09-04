@@ -156,14 +156,14 @@ SetupDispatch( Dispatch* dispatch )
     dispatch->impl_VertexBuffer_Unmap   = &metal_VertexBuffer_Unmap;
 }
 
-    void
-SetToRHI( Handle vb, id<MTLRenderCommandEncoder> ce )
+id<MTLBuffer> 
+GetBuffer( Handle vb )
 {
-    VertexBufferMetal_t*    self = VertexBufferMetalPool::Get( vb );
+    VertexBufferMetal_t* self = VertexBufferMetalPool::Get( vb );
 
-    [ce setVertexBuffer:self->uid offset:0 atIndex:0 ]; // CRAP: assuming vdata is buffer#0
-     
+    return (self)  ? self->uid  : nil;
 }
+
 }
 
 

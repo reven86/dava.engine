@@ -781,16 +781,18 @@ SetupDispatch( Dispatch* dispatch )
     dispatch->impl_PipelineState_CreateFragmentConstBuffer  = &metal_PipelineState_CreateFragmentConstBuffer;
 }
 
-void
+uint32
 SetToRHI( Handle ps, uint32 layoutUID, id<MTLRenderCommandEncoder> ce )
 {
-    PipelineStateMetal_t* psm = PipelineStateMetalPool::Get( ps );
+    uint32                stride = 0;
+    PipelineStateMetal_t* psm    = PipelineStateMetalPool::Get( ps );
 
     DVASSERT(psm);
 
     if( layoutUID == VertexLayout::InvalidUID )
     {
         [ce setRenderPipelineState:psm->state];
+        stride = psm->layout.Stride();
     }
     else
     {
@@ -888,11 +890,15 @@ SetToRHI( Handle ps, uint32 layoutUID, id<MTLRenderCommandEncoder> ce )
                 if( rs_err != nil )
                     Logger::Error( "failed to create alt-ps : %s", rs_err.localizedDescription.UTF8String );
             }
+            
+            stride = layout->Stride();
         }
     
         DVASSERT(si != InvalidIndex);
         [ce setRenderPipelineState:psm->altState[si].state];
     }
+    
+    return stride;
 }
 
 } // namespace PipelineStateMetal
