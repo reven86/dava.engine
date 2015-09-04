@@ -63,13 +63,13 @@ private slots:
     void OnLoadSceneAction();
 
 private:
-    Ui::MainWindow *ui;
+    Ui::MainWindow * ui = nullptr;
 
-    DavaGLWidget *glWidget;
-    QFileSystemModel * model;
-    DAVA::UI3DView * view;
+    DavaGLWidget * glWidget = nullptr;
+    QFileSystemModel * model = nullptr;
+    DAVA::UI3DView * view = nullptr;
 
-    static const quint8 NUMBER_OF_SCREEN;
+    static const quint8 NUMBER_OF_SCREEN = 0;
 };
 
 #endif // MAINWINDOW_H

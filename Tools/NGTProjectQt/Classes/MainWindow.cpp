@@ -43,8 +43,6 @@
 #include <QFileDialog>
 #include <QFileSystemModel>
 
-const quint8 MainWindow::NUMBER_OF_SCREEN(0);
-
 namespace
 {
 
@@ -84,6 +82,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
+    SafeRelease(view);
     delete ui;
 }
 
@@ -104,6 +103,7 @@ void MainWindow::LoadScene(QString const & scenePath)
     using namespace DAVA;
 
     DVASSERT(!scenePath.isEmpty());
+    DVASSERT(nullptr != view);
 
     ScopedPtr<Scene> scene(new Scene());
     SceneFileV2::eError result = scene->LoadScene(FilePath(scenePath.toStdString()));
@@ -120,13 +120,13 @@ void MainWindow::LoadScene(QString const & scenePath)
         uint32 rotationProcessFlag = Scene::SCENE_SYSTEM_REQUIRE_PROCESS | Scene::SCENE_SYSTEM_REQUIRE_INPUT;
         scene->AddSystem(rotationSystem, rotationComponentFlag, rotationProcessFlag);
 
-        Camera * camera = new Camera();
+        ScopedPtr<Camera> camera(new Camera());
         camera->SetUp(Vector3(0.0f, 0.0f, 1.0f));
         camera->SetPosition(Vector3(-50.0f, 0.0f, 50.0f));
         camera->SetTarget(Vector3(0.0f, 1.0f, 0.0f));
         camera->SetupPerspective(70.0f, 320.0f / 480.0f, 1.0f, 5000.0f);
 
-        Entity *cameraEntity = new Entity();
+        ScopedPtr<Entity> cameraEntity(new Entity());
         cameraEntity->SetName("single-camera");
         cameraEntity->AddComponent(new CameraComponent(camera));
         cameraEntity->AddComponent(new WASDControllerComponent());
@@ -135,7 +135,6 @@ void MainWindow::LoadScene(QString const & scenePath)
 
         scene->AddCamera(camera);
         scene->SetCurrentCamera(camera);
-        SafeRelease(camera);
 
         view->SetScene(scene);
         statusBar()->showMessage(scenePath);
@@ -147,6 +146,7 @@ void MainWindow::OnGlInitialized()
     using namespace DAVA;
 
     ScopedPtr<UIScreen> screen(new UIScreen());
+    DVASSERT(nullptr == view);
     view = new DAVA::UI3DView(screen->GetRect(), true);
     view->SetInputEnabled(true, true);
 
