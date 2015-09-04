@@ -736,8 +736,8 @@ void QtMainWindow::SetupActions()
 	ui->actionExportTegra->setData(GPU_TEGRA);
 	ui->actionExportMali->setData(GPU_MALI);
 	ui->actionExportAdreno->setData(GPU_ADRENO);
-        ui->actionExportDX11->setData(GPU_DX11);
-        ui->actionExportPNG->setData(GPU_ORIGIN);
+    ui->actionExportDX11->setData(GPU_DX11);
+    ui->actionExportPNG->setData(GPU_ORIGIN);
 	
 	// import
 #ifdef __DAVAENGINE_SPEEDTREE__
