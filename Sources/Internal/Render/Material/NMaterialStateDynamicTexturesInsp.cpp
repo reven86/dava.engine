@@ -54,9 +54,11 @@ Set<FastName>* NMaterialStateDynamicTexturesInsp::FindMaterialTextures(NMaterial
         material->CollectMaterialFlags(flags);
 
         // shader data
-        FXDescriptor fxDescriptor = FXCache::GetFXDescriptor(material->fxName, flags, material->qualityGroup);
+        FXDescriptor fxDescriptor = FXCache::GetFXDescriptor(material->fxName, flags, material->qualityGroup);        
         for (auto& descriptor : fxDescriptor.renderPassDescriptors)
         {
+            if (descriptor.shader == nullptr)
+                continue;
             const rhi::ShaderSamplerList& samplers = descriptor.shader->GetFragmentSamplerList();
             for (auto &samp : samplers)
             {

@@ -100,7 +100,7 @@ void NMaterial::BindParams(rhi::Packet& target)
 {
     //Logger::Info( "bind-params" );
     DVASSERT(activeVariantInstance);       //trying to bind material that was not staged to render
-
+    DVASSERT(activeVariantInstance->shader); //should have returned false on PreBuild!
     /*set pipeline state*/
     target.renderPipelineState = activeVariantInstance->shader->GetPiplineState();
     target.depthStencilState = activeVariantInstance->depthState;
@@ -701,8 +701,11 @@ void NMaterial::RebuildTextureBindings()
         for (size_t i = 0, sz = textureDescr.vertexTextureCount; i < sz; ++i)
         {
             Texture *tex = GetEffectiveTexture(vertexSamplerList[i].uid);
-            DVASSERT(tex);
-            textureDescr.vertexTexture[i] = tex->handle;
+            if (tex)
+                textureDescr.vertexTexture[i] = tex->handle;
+            else
+                textureDescr.vertexTexture[i] = Renderer::GetRuntimeTextures().GetPinkTexture(vertexSamplerList[i].type);
+
         }                            
 
 
@@ -724,7 +727,7 @@ bool NMaterial::PreBuildMaterial(const FastName& passName)
     if (needRebuildTextures)
         RebuildTextureBindings();
     
-    bool res = (activeVariantInstance != nullptr);
+    bool res = (activeVariantInstance != nullptr) && (activeVariantInstance->shader != nullptr);
     if (activeVariantName != passName)
     {
         RenderVariantInstance *targetVariant = renderVariants[passName];
@@ -733,7 +736,8 @@ bool NMaterial::PreBuildMaterial(const FastName& passName)
         {
             activeVariantName = passName;
             activeVariantInstance = targetVariant;
-            res = true;
+            
+            res = (activeVariantInstance->shader != nullptr);
         }
         else
         {

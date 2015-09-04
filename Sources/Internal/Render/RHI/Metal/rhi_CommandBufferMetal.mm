@@ -106,7 +106,14 @@ SCOPED_NAMED_TIMING("rhi.mtl-vsync");
     if( passConf.colorBuffer[0].texture != InvalidHandle )
         TextureMetal::SetAsRenderTarget( passConf.colorBuffer[0].texture, desc );
     
-    desc.colorAttachments[0].loadAction     = (passConf.colorBuffer[0].loadAction==LOADACTION_CLEAR) ? MTLLoadActionClear : MTLLoadActionDontCare;
+    switch( passConf.colorBuffer[0].loadAction )
+    {
+        case LOADACTION_CLEAR : desc.colorAttachments[0].loadAction = MTLLoadActionClear; break;
+        case LOADACTION_LOAD  : desc.colorAttachments[0].loadAction = MTLLoadActionLoad; break;
+        default               : desc.colorAttachments[0].loadAction = MTLLoadActionDontCare;
+    }
+    
+//    desc.colorAttachments[0].loadAction     = (passConf.colorBuffer[0].loadAction==LOADACTION_CLEAR) ? MTLLoadActionClear : MTLLoadActionDontCare;
     desc.colorAttachments[0].storeAction    = MTLStoreActionStore;
     desc.colorAttachments[0].clearColor     = MTLClearColorMake(passConf.colorBuffer[0].clearColor[0],passConf.colorBuffer[0].clearColor[1],passConf.colorBuffer[0].clearColor[2],passConf.colorBuffer[0].clearColor[3]);
 
