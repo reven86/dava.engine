@@ -48,7 +48,7 @@ void        metal_Initialize( const InitParam& param );
 
 namespace VertexBufferMetal
 {
-void    SetToRHI( Handle vb, id<MTLRenderCommandEncoder> ce );
+id<MTLBuffer> GetBuffer( Handle ib );
 }
 
 namespace IndexBufferMetal
@@ -73,7 +73,7 @@ void    SetAsDepthStencil( Handle tex, MTLRenderPassDescriptor* desc );
 
 namespace PipelineStateMetal
 {
-void    SetToRHI( Handle ps, uint32 layoutUID, id<MTLRenderCommandEncoder> ce );
+uint32    SetToRHI( Handle ps, uint32 layoutUID, id<MTLRenderCommandEncoder> ce );
 }
 
 namespace DepthStencilStateMetal

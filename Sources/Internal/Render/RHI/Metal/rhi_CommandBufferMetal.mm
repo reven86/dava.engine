@@ -64,6 +64,8 @@ CommandBufferMetal_t
 
     id<MTLTexture>              rt;
     Handle                      cur_ib;
+    Handle                      cur_vb;
+    uint32                      cur_stride;
 };
 
 
@@ -143,6 +145,7 @@ SCOPED_NAMED_TIMING("rhi.mtl-vsync");
         cb->buf          = pass->buf;
         cb->rt           = desc.colorAttachments[0].texture;
         cb->cur_ib       = InvalidHandle;
+        cb->cur_vb       = InvalidHandle;
         
         pass->cmdBuf[0] = cb_h;        
         cmdBuf[0]       = cb_h;
@@ -162,6 +165,7 @@ SCOPED_NAMED_TIMING("rhi.mtl-vsync");
             cb->buf         = pass->buf;
             cb->rt          = desc.colorAttachments[0].texture;
             cb->cur_ib      = InvalidHandle;
+            cb->cur_vb      = InvalidHandle;
             
             pass->cmdBuf[i] = cb_h;        
             cmdBuf[i]       = cb_h;
@@ -244,7 +248,7 @@ metal_CommandBuffer_SetPipelineState( Handle cmdBuf, Handle ps, uint32 layoutUID
 {
     CommandBufferMetal_t*   cb = CommandBufferPool::Get( cmdBuf );
 
-    PipelineStateMetal::SetToRHI( ps, layoutUID, cb->encoder );
+    cb->cur_stride = PipelineStateMetal::SetToRHI( ps, layoutUID, cb->encoder );
     StatSet::IncStat( stat_SET_PS, 1 );
 }
 
@@ -343,7 +347,7 @@ metal_CommandBuffer_SetVertexData( Handle cmdBuf, Handle vb, uint32 streamIndex 
 {
     CommandBufferMetal_t*   cb = CommandBufferPool::Get( cmdBuf );
 
-    VertexBufferMetal::SetToRHI( vb, cb->encoder );
+    cb->cur_vb = vb;
 }
 
 
@@ -467,6 +471,7 @@ metal_CommandBuffer_DrawPrimitive( Handle cmdBuf, PrimitiveType type, uint32 cou
     CommandBufferMetal_t*   cb    = CommandBufferPool::Get( cmdBuf );
     MTLPrimitiveType        ptype = MTLPrimitiveTypeTriangle;
     unsigned                v_cnt = 0;
+    id<MTLBuffer>           vb    = VertexBufferMetal::GetBuffer( cb->cur_vb );
     
     switch( type )
     {
@@ -486,6 +491,7 @@ metal_CommandBuffer_DrawPrimitive( Handle cmdBuf, PrimitiveType type, uint32 cou
             break;
     }    
 
+    [cb->encoder setVertexBuffer:vb offset:0 atIndex:0 ]; // CRAP: assuming vdata is buffer#0
     [cb->encoder drawPrimitives:ptype vertexStart:0 vertexCount:v_cnt];
     StatSet::IncStat( stat_DP, 1 );
 }
@@ -494,12 +500,13 @@ metal_CommandBuffer_DrawPrimitive( Handle cmdBuf, PrimitiveType type, uint32 cou
 //------------------------------------------------------------------------------
 
 static void
-metal_CommandBuffer_DrawIndexedPrimitive( Handle cmdBuf, PrimitiveType type, uint32 count, uint32 /*vertexCount*/, uint32 /*firstVertex*/, uint32 startIndex )
+metal_CommandBuffer_DrawIndexedPrimitive( Handle cmdBuf, PrimitiveType type, uint32 count, uint32 /*vertexCount*/, uint32 firstVertex, uint32 startIndex )
 {
     CommandBufferMetal_t*   cb    = CommandBufferPool::Get( cmdBuf );
     MTLPrimitiveType        ptype = MTLPrimitiveTypeTriangle;
     unsigned                i_cnt = 0;
     id<MTLBuffer>           ib    = IndexBufferMetal::GetBuffer( cb->cur_ib );
+    id<MTLBuffer>           vb    = VertexBufferMetal::GetBuffer( cb->cur_vb );
     
     switch( type )
     {
@@ -519,6 +526,7 @@ metal_CommandBuffer_DrawIndexedPrimitive( Handle cmdBuf, PrimitiveType type, uin
             break;
     }    
 
+    [cb->encoder setVertexBuffer:vb offset:firstVertex*cb->cur_stride atIndex:0 ]; // CRAP: assuming vdata is buffer#0
     [cb->encoder drawIndexedPrimitives:ptype indexCount:i_cnt indexType:MTLIndexTypeUInt16 indexBuffer:ib indexBufferOffset:startIndex*sizeof(uint16) ];
     StatSet::IncStat( stat_DIP, 1 );
 }
