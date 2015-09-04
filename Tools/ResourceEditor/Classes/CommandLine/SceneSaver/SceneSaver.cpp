@@ -371,15 +371,10 @@ void SceneSaver::ResaveYamlFilesRecursive(const FilePath & folder, Set<String> &
         {
             if (pathname.IsEqualToExtension(".yaml"))
             {
-                ScopedPtr<YamlParser> parser(YamlParser::Create(pathname));
-                if (parser && nullptr != parser->GetRootNode())
-                {
-                    YamlEmitter::SaveToYamlFile(pathname, parser->GetRootNode());
-                }
-                else
-                {
-                    errorLog.emplace(Format("ParticleEmitter::LoadFromYaml failed (%s)", pathname.GetStringValue().c_str()));
-                }
+                ParticleEmitter *emitter = new ParticleEmitter();
+                emitter->LoadFromYaml(pathname);
+                emitter->SaveToYaml(pathname);
+                SafeRelease(emitter);
             }
         }
     }
