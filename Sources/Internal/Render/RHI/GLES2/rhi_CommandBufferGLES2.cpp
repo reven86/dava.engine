@@ -1272,7 +1272,7 @@ Trace("rhi-gl.swap-buffers done\n");
 
     for( SyncObjectPool::Iterator s=SyncObjectPool::Begin(),s_end=SyncObjectPool::End(); s!=s_end; ++s )
     {
-        if (s->is_used && (frame_n - s->frame > 3))        
+        if (s->is_used && (frame_n - s->frame >= 2))        
             s->is_signaled = true;                    
     }
 }

@@ -466,7 +466,7 @@ VPROG_BEGIN
         float3 toCameraDir = normalize(-eyeCoordsPosition);
         float3 H = normalize(toLightDir + toCameraDir);
         float nDotHV = max(0.0, dot(normal, H));
-        varSpecularColor = pow(nDotHV, materialSpecularShininess);
+        VP_OUT(varSpecularColor) = pow(nDotHV, materialSpecularShininess);
         
     #elif NORMALIZED_BLINN_PHONG
         
