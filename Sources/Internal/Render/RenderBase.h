@@ -153,7 +153,7 @@ enum ImageQuality : uint8
     DEFAULT_IMAGE_QUALITY = MAX_IMAGE_QUALITY
 };
 
-enum ImageFormat : uint8
+enum ImageFormat
 {
     IMAGE_FORMAT_PNG = 0,
     IMAGE_FORMAT_DDS,
@@ -165,7 +165,7 @@ enum ImageFormat : uint8
     IMAGE_FORMAT_UNKNOWN = 127
 };
 
-enum PixelFormat : int8
+enum PixelFormat
 {
     FORMAT_INVALID = 0,
     FORMAT_RGBA8888 = 1,
@@ -212,7 +212,7 @@ enum PixelFormat : int8
 };
 
 // Please update JniDeviceInfo.java if change eGPUFamily enum
-enum eGPUFamily : int8
+enum eGPUFamily
 {
     GPU_POWERVR_IOS = 0,
     GPU_POWERVR_ANDROID,
@@ -224,7 +224,7 @@ enum eGPUFamily : int8
     GPU_FAMILY_COUNT,
 
     GPU_DEVICE_COUNT = GPU_ORIGIN,
-    GPU_INVALID = 127,
+    GPU_INVALID = 127
 };
 
 #if defined(__DAVAENGINE_OPENGL__)

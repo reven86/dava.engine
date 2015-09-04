@@ -127,7 +127,7 @@ public:
 
     struct Compression: public InspBase
     {
-        uint32 format;
+        int32 format;
         mutable uint32 sourceFileCrc;
         int32 compressToWidth;
         int32 compressToHeight;
@@ -241,7 +241,7 @@ public:
 	TextureDataSettings dataSettings;
 	Compression compression[GPU_FAMILY_COUNT];
 
-    PixelFormat format; // texture format
+    PixelFormat format:8; // texture format
     //Binary only
     int8 exportedAsGpuFamily;
 	
