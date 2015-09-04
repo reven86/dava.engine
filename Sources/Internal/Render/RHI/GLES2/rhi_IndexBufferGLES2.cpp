@@ -163,6 +163,7 @@ gles2_IndexBuffer_Delete( Handle ib )
 
     if( self )
     {
+        self->MarkRestored();
         self->Destroy();
         IndexBufferGLES2Pool::Free( ib );
     }

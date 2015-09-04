@@ -302,6 +302,7 @@ dx9_Texture_Delete( Handle tex )
     {
         TextureDX9_t* self = TextureDX9Pool::Get( tex );
 
+        self->MarkRestored();
         self->Destroy();        
         TextureDX9Pool::Free( tex );
     }

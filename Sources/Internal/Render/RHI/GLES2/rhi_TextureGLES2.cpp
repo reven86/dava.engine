@@ -278,6 +278,7 @@ gles2_Texture_Delete( Handle tex )
     {
         TextureGLES2_t* self = TextureGLES2Pool::Get( tex );
 
+        self->MarkRestored();
         self->Destroy();
         TextureGLES2Pool::Free( tex );
     }

@@ -169,6 +169,7 @@ dx9_IndexBuffer_Delete( Handle ib )
     
     if( self )
     {
+        self->MarkRestored();
         self->Destroy();
         IndexBufferDX9Pool::Free( ib );
     }    

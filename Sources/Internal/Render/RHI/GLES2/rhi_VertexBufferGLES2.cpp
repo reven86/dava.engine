@@ -174,6 +174,7 @@ gles2_VertexBuffer_Delete( Handle vb )
 
     if( self )
     {
+        self->MarkRestored();
         self->Destroy();
         VertexBufferGLES2Pool::Free( vb );
     }
