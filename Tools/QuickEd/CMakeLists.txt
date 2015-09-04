@@ -66,10 +66,3 @@ if( WIN32 AND NOT DAVA_MEGASOLUTION )
     endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
 
 endif()
-
-get_filename_component(version_file "../../gitTime.txt" ABSOLUTE)
-if( EXISTS ${version_file})
-    file (STRINGS ${version_file} BUILD_VERION)
-    add_definitions( -DUI_EDITOR_VERSION=\"${BUILD_VERION}\" )   
-
-endif()
