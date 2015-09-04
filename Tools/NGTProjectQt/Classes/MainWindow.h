@@ -32,7 +32,11 @@
 
 #include <QMainWindow>
 
+class QFileSystemModel;
+class QItemSelection;
 class DavaGLWidget;
+
+namespace DAVA { class UI3DView; }
 
 namespace Ui
 {
@@ -54,11 +58,16 @@ private:
 private slots:
     void OnGlInitialized();
     void OnGlWidgedResized(int width, int height, int dpr);
+    void OnFileSelectionChanged(QItemSelection const & selected, QItemSelection const & deselected);
+    void OnLoadSceneButton();
+    void OnLoadSceneAction();
 
 private:
     Ui::MainWindow *ui;
 
     DavaGLWidget *glWidget;
+    QFileSystemModel * model;
+    DAVA::UI3DView * view;
 
     static const quint8 NUMBER_OF_SCREEN;
 };
