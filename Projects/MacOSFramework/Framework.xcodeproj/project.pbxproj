@@ -1630,6 +1630,7 @@
 		D738BD731B01F1BC00989C29 /* RawTimer.h in Headers */ = {isa = PBXBuildFile; fileRef = D738BD6F1B01F1BC00989C29 /* RawTimer.h */; };
 		D738BD741B01F1BC00989C29 /* RawTimer.h in Headers */ = {isa = PBXBuildFile; fileRef = D738BD6F1B01F1BC00989C29 /* RawTimer.h */; };
 		D738BD751B01F1BC00989C29 /* RawTimer.h in Headers */ = {isa = PBXBuildFile; fileRef = D738BD6F1B01F1BC00989C29 /* RawTimer.h */; };
+		D780599C1B99AAFB00BBAE06 /* UTF8Utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D780599B1B99AAFB00BBAE06 /* UTF8Utils.cpp */; };
 		D7C1C1D619CAD2FB00E79D84 /* LocalNotificationImpl.h in Headers */ = {isa = PBXBuildFile; fileRef = D7C1C1D519CAD2FB00E79D84 /* LocalNotificationImpl.h */; };
 		D7C1C1D719CAD2FB00E79D84 /* LocalNotificationImpl.h in Headers */ = {isa = PBXBuildFile; fileRef = D7C1C1D519CAD2FB00E79D84 /* LocalNotificationImpl.h */; };
 		D7C1C1D819CAD2FB00E79D84 /* LocalNotificationImpl.h in Headers */ = {isa = PBXBuildFile; fileRef = D7C1C1D519CAD2FB00E79D84 /* LocalNotificationImpl.h */; };
@@ -3339,6 +3340,7 @@
 		D2F7E8BE07B2D77200F64583 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = /System/Library/Frameworks/CoreData.framework; sourceTree = "<absolute>"; };
 		D738BD6E1B01F1BC00989C29 /* RawTimer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RawTimer.cpp; path = Timer/RawTimer.cpp; sourceTree = "<group>"; };
 		D738BD6F1B01F1BC00989C29 /* RawTimer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RawTimer.h; path = Timer/RawTimer.h; sourceTree = "<group>"; };
+		D780599B1B99AAFB00BBAE06 /* UTF8Utils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UTF8Utils.cpp; sourceTree = "<group>"; };
 		D7C1C1D519CAD2FB00E79D84 /* LocalNotificationImpl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocalNotificationImpl.h; sourceTree = "<group>"; };
 		D7C556671A7A158600175ED9 /* DataStorage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DataStorage.h; sourceTree = "<group>"; };
 		D7C5566D1A7A158600175ED9 /* DataStorageMacOS.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DataStorageMacOS.cpp; sourceTree = "<group>"; };
@@ -5476,6 +5478,7 @@
 				E8989D9216BD24E500732C04 /* Random.h */,
 				E8989D9316BD24E500732C04 /* StringFormat.cpp */,
 				E8989D9416BD24E500732C04 /* StringFormat.h */,
+				D780599B1B99AAFB00BBAE06 /* UTF8Utils.cpp */,
 				E8989D9616BD24E500732C04 /* UTF8Utils.h */,
 				E8989D9716BD24E500732C04 /* Utils.cpp */,
 				E8989D9816BD24E500732C04 /* Utils.h */,
@@ -7938,6 +7941,7 @@
 				E8FC12F61869726A0095D8FE /* QualitySettingsSystem.cpp in Sources */,
 				C151B17916D3747E00E09BAF /* DVAssertMessageApple.mm in Sources */,
 				32C147621B4C15AD00892B98 /* UISizePolicyComponent.cpp in Sources */,
+				D780599C1B99AAFB00BBAE06 /* UTF8Utils.cpp in Sources */,
 				32B14A551B837AFB00F8C026 /* UIIgnoreLayoutComponent.cpp in Sources */,
 				C151B17D16D3755000E09BAF /* WebViewControlMacOS.mm in Sources */,
 				E89EDE691A2E16FA0036E993 /* MongodbUpdateObject.cpp in Sources */,
