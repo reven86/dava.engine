@@ -30,7 +30,6 @@
     #include "RegExp.h"
     #include "Base/Platform.h"    
 
-    
     #include <stdio.h>
     #include <string.h>
     #include <stdlib.h>
@@ -63,12 +62,6 @@ inline char         _tcsnextc( const char* str )                    { return *st
 #define _istlower   islower
 
 
-/*
-#else
-    #include <char.h>
-    #include <malloc.h>
-#endif
-*/
 
 //==============================================================================
 //
@@ -77,7 +70,6 @@ inline char         _tcsnextc( const char* str )                    { return *st
 #pragma warning( push, 3 )
 #pragma warning( disable: 174 )
 #pragma warning( disable: 193 )
-//#pragma warning( disable: 810 2259 ) // non-pointer conversion  may lose significant bits
 
 
 // Disable debugging printf's
