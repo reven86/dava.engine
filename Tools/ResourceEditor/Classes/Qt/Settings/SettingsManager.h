@@ -81,6 +81,7 @@ namespace Settings
     static const DAVA::FastName Scene_AutoselectNewEntities("Scene/AutoselectNewEnities");
     static const DAVA::FastName Scene_RefreshLodForNonSolid("Scene/RefreshLodForNonSolid");
     static const DAVA::FastName Scene_RememberForceParameters("Scene/RememberForceParameters");
+    static const DAVA::FastName Scene_SaveEmitters("Scene/SaveEmittersWithScene");
 
     static const DAVA::FastName Scene_Sound_SoundObjectDraw("Scene/Sound/SoundObjectDraw");
     static const DAVA::FastName Scene_Sound_SoundObjectBoxColor("Scene/Sound/SoundObjectBoxColor");
