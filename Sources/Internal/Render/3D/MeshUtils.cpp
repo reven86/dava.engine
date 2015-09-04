@@ -485,6 +485,8 @@ PolygonGroup * CreateShadowPolygonGroup(PolygonGroup * oldPolygonGroup)
     newPolygonGroup->AllocateData(EVF_VERTEX | EVF_NORMAL, oldIndexCount, oldIndexCount + numEdges*3);
     int32 nextIndex = 0;
 
+    bool indefiniteNormals = false;
+
     int32 facesCount = oldIndexCount/3;
     for(int32 f = 0; f < facesCount; ++f)
     {
@@ -511,6 +513,15 @@ PolygonGroup * CreateShadowPolygonGroup(PolygonGroup * oldPolygonGroup)
         Vector3 v1 = oldPos2 - oldPos0;
         Vector3 normal = v0.CrossProduct(v1);
         normal.Normalize();
+
+        // check normals 
+        if (std::isnan(normal.x) || std::isnan(normal.y) || std::isnan(normal.z))
+        {
+            indefiniteNormals = true;
+
+            // temporary fix indefinite normal. normal length must be equals 1
+            normal.Set(1.0f, 0.0f, 0.0f);
+        }
 
         newPolygonGroup->SetNormal(f*3+0, normal);
         newPolygonGroup->SetNormal(f*3+1, normal);
@@ -707,6 +718,15 @@ PolygonGroup * CreateShadowPolygonGroup(PolygonGroup * oldPolygonGroup)
                                 Vector3 normal = v0.CrossProduct(v1);
                                 normal.Normalize();
 
+                                // check normals 
+                                if (std::isnan(normal.x) || std::isnan(normal.y) || std::isnan(normal.z))
+                                {
+                                    indefiniteNormals = true;
+
+                                    // temporary fix indefinite normal. normal length must be equals 1
+                                    normal.Set(1.0f, 0.0f, 0.0f);
+                                }
+
                                 newPolygonGroup->SetNormal(nextVertex+0, normal);
                                 newPolygonGroup->SetNormal(nextVertex+1, normal);
                                 newPolygonGroup->SetNormal(nextVertex+2, normal);
@@ -782,6 +802,11 @@ PolygonGroup * CreateShadowPolygonGroup(PolygonGroup * oldPolygonGroup)
     SafeRelease(newPolygonGroup);
     SafeDeleteArray(adjacency);
     SafeDeleteArray(mapping);
+
+    if (indefiniteNormals)
+    {
+        Logger::Error("Shadow data source has indefinite normals. Fix triangles with identical vertices.");
+    }
 
     return shadowDataSource;
 }

@@ -29,6 +29,8 @@
 
 #include "AndroidBacktraceChooser.h"
 
+#if defined(CRASH_HANDLER_CUSTOMSIGNALS)
+
 namespace DAVA 
 {
 BacktraceInterface * AndroidBacktraceChooser::backtraceProvider = nullptr;
@@ -62,3 +64,5 @@ void AndroidBacktraceChooser::ReleaseBacktraceInterface()
 	SafeDelete(backtraceProvider);
 }
 }
+
+#endif // defined(CRASH_HANDLER_CUSTOMSIGNALS)
