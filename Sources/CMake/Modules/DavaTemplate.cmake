@@ -131,7 +131,9 @@ elseif ( WINDOWS_UAP )
 	
 	set ( WIN_UAP_CONF_DIR      "${DAVA_ROOT_DIR}/Sources/CMake/Resources/WindowsStore" )
 	set ( WIN_UAP_MANIFESTS_DIR "${WIN_UAP_CONF_DIR}/Manifests" )
-	set ( WIN_UAP_ASSETS_DIR    "${WIN_UAP_CONF_DIR}/Assets" )
+    if ( NOT WIN_UAP_ASSETS_DIR )
+        set ( WIN_UAP_ASSETS_DIR    "${WIN_UAP_CONF_DIR}/Assets" )
+    endif ()
 	file( GLOB ASSET_FILES      "${WIN_UAP_ASSETS_DIR}/*.png" )
 	source_group ("Content\\Assets" FILES ${ASSET_FILES})
 	
