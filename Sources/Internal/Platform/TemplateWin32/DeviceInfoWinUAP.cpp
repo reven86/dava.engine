@@ -131,7 +131,10 @@ String DeviceInfoPrivate::GetRegion()
 
 String DeviceInfoPrivate::GetTimeZone()
 {
+#pragma warning(push)
+#pragma warning(disable: 4691) // some assembly reference warning
     return RTStringToString(Windows::System::TimeZoneSettings::CurrentTimeZoneDisplayName);
+#pragma warning(pop)
 }
 
 String DeviceInfoPrivate::GetHTTPProxyHost()
