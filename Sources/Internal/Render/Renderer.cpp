@@ -65,8 +65,8 @@ void Initialize(rhi::Api _api, const rhi::InitParam & params)
 
     api = _api;
     
-    framebufferWidth = params.width;
-    framebufferHeight = params.height;
+    framebufferWidth = static_cast<int32>(params.width * params.scaleX);
+    framebufferHeight = static_cast<int32>(params.height * params.scaleY);
     
     rhi::Initialize(api, params);
     rhi::ShaderCache::Initialize();
@@ -100,8 +100,8 @@ void Uninitialize()
 
 void Reset(const rhi::ResetParam & params)
 {
-    framebufferWidth = params.width * params.scaleX;
-    framebufferHeight = params.height * params.scaleY;
+    framebufferWidth = static_cast<int32>(params.width * params.scaleX);
+    framebufferHeight = static_cast<int32>(params.height * params.scaleY);
 
     rhi::Reset(params);
 }
