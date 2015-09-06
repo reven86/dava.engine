@@ -153,7 +153,7 @@ enum ImageQuality : uint8
     DEFAULT_IMAGE_QUALITY = MAX_IMAGE_QUALITY
 };
 
-enum ImageFormat
+enum ImageFormat : int8
 {
     IMAGE_FORMAT_PNG = 0,
     IMAGE_FORMAT_DDS,
