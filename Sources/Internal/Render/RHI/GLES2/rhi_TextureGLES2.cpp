@@ -278,6 +278,7 @@ gles2_Texture_Delete( Handle tex )
     {
         TextureGLES2_t* self = TextureGLES2Pool::Get( tex );
 
+        self->MarkRestored();
         self->Destroy();
         TextureGLES2Pool::Free( tex );
     }
@@ -743,6 +744,18 @@ Size( Handle tex )
     TextureGLES2_t* self = TextureGLES2Pool::Get( tex );
     
     return Size2i( self->width, self->height );
+}
+
+void
+ReCreateAll()
+{
+    TextureGLES2Pool::ReCreateAll();
+}
+
+unsigned
+NeedRestoreCount()
+{
+    return TextureGLES2_t::NeedRestoreCount();
 }
 
 

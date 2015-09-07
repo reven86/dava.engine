@@ -163,6 +163,7 @@ gles2_IndexBuffer_Delete( Handle ib )
 
     if( self )
     {
+        self->MarkRestored();
         self->Destroy();
         IndexBufferGLES2Pool::Free( ib );
     }
@@ -273,6 +274,18 @@ SetToRHI( Handle ib )
 Trace("set-ib %p  sz= %u\n",self->data,self->size);
     GL_CALL(glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, self->uid ));
     _GLES2_LastSetIB = self->uid;
+}
+
+void
+ReCreateAll()
+{
+    IndexBufferGLES2Pool::ReCreateAll();
+}
+
+unsigned
+NeedRestoreCount()
+{
+    return IndexBufferGLES2_t::NeedRestoreCount();
 }
 
 

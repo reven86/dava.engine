@@ -172,6 +172,7 @@ dx9_VertexBuffer_Delete( Handle vb )
 
     if( self )
     {
+        self->MarkRestored();
         self->Destroy();
         VertexBufferDX9Pool::Free( vb );
     }
