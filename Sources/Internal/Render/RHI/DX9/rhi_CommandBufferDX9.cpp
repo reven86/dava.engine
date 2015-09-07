@@ -1071,7 +1071,8 @@ Trace("rhi-dx9.exec-queued-cmd\n");
     {
         do_render = false;
     }
-    if (_Frame.begin()->sync != InvalidHandle)
+    
+    if( _Frame.size()  &&  _Frame.begin()->sync != InvalidHandle )
     {
         SyncObjectDX9_t*  sync = SyncObjectPool::Get(_Frame.begin()->sync);
 
@@ -1132,17 +1133,30 @@ Trace("\n\n-------------------------------\nframe %u executed(submitted to GPU)\
 
         if( hr == D3DERR_DEVICENOTRESET )
         {
-            HRESULT hr = _D3D9_Device->Reset( &_DX9_PresentParam );
+            D3DPRESENT_PARAMETERS   param = _DX9_PresentParam;
+            
+            param.BackBufferFormat = (_DX9_PresentParam.Windowed)  ? D3DFMT_UNKNOWN  : D3DFMT_A8B8G8R8;
+            
+            TextureDX9::ReleaseAll();
+            VertexBufferDX9::ReleaseAll();
+            IndexBufferDX9::ReleaseAll();
 
+            hr = _D3D9_Device->Reset( &param );
+
+            Logger::Info( "trying device reset\n");
             if( SUCCEEDED(hr) )
             {
+                Logger::Info( "device reset\n");
+
                 TextureDX9::ReCreateAll();
                 VertexBufferDX9::ReCreateAll();
                 IndexBufferDX9::ReCreateAll();
                 _ResetPending = false;
             }
-
-            _ResetPending = false;
+            else
+            {
+                Logger::Info("device reset failed (%08X) : %s",hr,D3D9ErrorText(hr));
+            }
         }
         else
         {

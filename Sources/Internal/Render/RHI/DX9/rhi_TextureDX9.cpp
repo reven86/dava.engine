@@ -559,6 +559,15 @@ SetAsDepthStencil( Handle tex )
 }
 
 void
+ReleaseAll()
+{
+    for( TextureDX9Pool::Iterator t=TextureDX9Pool::Begin(),t_end=TextureDX9Pool::End(); t!=t_end; ++t )
+    {
+        t->Destroy( true );
+    }
+}
+
+void
 ReCreateAll()
 {
     TextureDX9Pool::ReCreateAll();

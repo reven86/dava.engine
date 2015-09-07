@@ -290,6 +290,15 @@ SetToRHI( Handle ib )
 }
 
 void
+ReleaseAll()
+{
+    for( IndexBufferDX9Pool::Iterator b=IndexBufferDX9Pool::Begin(),b_end=IndexBufferDX9Pool::End(); b!=b_end; ++b )
+    {
+        b->Destroy( true );
+    }
+}
+
+void
 ReCreateAll()
 {
     IndexBufferDX9Pool::ReCreateAll();
