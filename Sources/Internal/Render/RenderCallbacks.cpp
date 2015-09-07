@@ -72,14 +72,15 @@ void UnRegisterResourceRestoreCallback(Function<void()> callback)
 
 void ProcessFrame()
 {    
-    /*if (rhi::NeedRestoreResources())
+    if (rhi::NeedRestoreResources())
     {        
+        Logger::Debug("Restore!!!");
         for (auto& callback : resourceRestoreCallbacks)
         {
             callback();
         }
         DVASSERT_MSG(!rhi::NeedRestoreResources(), "some of resorces are still not restored yet marked as requireRestore");
-    }*/
+    }
 
     for (size_t i = 0, sz = syncCallbacks.size(); i < sz;)
     {

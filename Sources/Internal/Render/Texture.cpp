@@ -39,6 +39,7 @@
 #include "FileSystem/FileSystem.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 #include "Render/RenderHelper.h"
+#include "Render/RenderCallbacks.h"
 
 #if defined(__DAVAENGINE_IPHONE__) 
 #include <CoreGraphics/CoreGraphics.h>
@@ -179,10 +180,12 @@ Texture::Texture()
 ,	invalidater(NULL)
 {
     texDescriptor = new TextureDescriptor;
+    RenderCallbacks::RegisterResourceRestoreCallback(MakeFunction(this, &Texture::RestoreRenderResource));
 }
 
 Texture::~Texture()
 {
+    RenderCallbacks::UnRegisterResourceRestoreCallback(MakeFunction(this, &Texture::RestoreRenderResource));
     if(invalidater)
     {
         invalidater->RemoveTexture(this);
@@ -721,29 +724,53 @@ void Texture::RestoreRenderResource()
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();	
 		
+    if ((!handle.IsValid()) || (!NeedRestoreTexture(handle)))
+        return;
+
 	if (invalidater)
     {
         invalidater->InvalidateTexture(this);
     }
     else
     {
+        Vector<Image *> images;
+
         const FilePath& relativePathname = texDescriptor->GetSourceTexturePathname();
         if (relativePathname.GetType() == FilePath::PATH_IN_FILESYSTEM ||
             relativePathname.GetType() == FilePath::PATH_IN_RESOURCES ||
             relativePathname.GetType() == FilePath::PATH_IN_DOCUMENTS)
-        {
-            Reload();
+        {            
+            eGPUFamily gpuForLoading = GetGPUForLoading(loadedAsFile, texDescriptor);            
+            LoadImages(gpuForLoading, &images);                        
         }
-        else if (relativePathname.GetType() == FilePath::PATH_IN_MEMORY)
+        else 
         {
-            // Make it pink, to prevent craches
-            Logger::Debug("[Texture::Invalidate] - invalidater is null");
-            MakePink();
-        }
-        else if (isPink)
+            if (relativePathname.GetType() == FilePath::PATH_IN_MEMORY)            
+                Logger::Debug("[Texture::Invalidate] - invalidater is null");
+
+            if (texDescriptor->IsCubeMap())
+            {
+                for (uint32 i = 0; i < Texture::CUBE_FACE_COUNT; ++i)
+                {
+                    Image *img = Image::CreatePinkPlaceholder(true);
+                    img->cubeFaceID = i;
+                    img->mipmapLevel = 0;
+                    images.push_back(img);
+                }
+            }
+            else
+            {
+                images.push_back(Image::CreatePinkPlaceholder(true));
+            }
+        }        
+
+        for (uint32 i = 0; i < (uint32)images.size(); ++i)
         {
-            MakePink();
+            Image *img = images[i];
+            TexImage((img->mipmapLevel != (uint32)-1) ? img->mipmapLevel : i, img->width, img->height, img->data, img->dataSize, img->cubeFaceID);
         }
+
+        ReleaseImages(&images);        
     }
 }
 
