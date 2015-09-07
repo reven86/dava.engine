@@ -149,6 +149,7 @@ void RenderSystem2D::BeginFrame()
     rhi::RenderPassConfig renderPass2DConfig;
     renderPass2DConfig.priority = PRIORITY_MAIN_2D;
     renderPass2DConfig.colorBuffer[0].loadAction = rhi::LOADACTION_NONE;
+    renderPass2DConfig.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
     renderPass2DConfig.viewport.x = renderPass2DConfig.viewport.y = 0;
     renderPass2DConfig.viewport.width = Renderer::GetFramebufferWidth();
     renderPass2DConfig.viewport.height = Renderer::GetFramebufferHeight();
@@ -190,6 +191,7 @@ void RenderSystem2D::BeginRenderTargetPass(Texture * target, bool needClear /* =
     renderTargetPassConfig.priority = priority;
     renderTargetPassConfig.viewport.width = target->GetWidth();
     renderTargetPassConfig.viewport.height = target->GetHeight();
+    renderTargetPassConfig.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
     if(needClear)
         renderTargetPassConfig.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
     else

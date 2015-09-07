@@ -909,7 +909,7 @@ NativeColorRGBA( float red, float green, float blue, float alpha )
             break;
         
         case RHI_METAL :
-            color = ((uint32)((((a)& 0xFF) << 24) | (((r)& 0xFF) << 16) | (((g)& 0xFF) << 8) | ((b)& 0xFF)));
+            color = ((uint32)((((a)& 0xFF) << 24) | (((b)& 0xFF) << 16) | (((g)& 0xFF) << 8) | ((r)& 0xFF)));
             break;
     }
 
