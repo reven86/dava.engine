@@ -107,7 +107,7 @@ void SettingsManager::Init()
     CreateValue( Settings::General_Mouse_WheelMoveCamera, DAVA::VariantType( true ) );
     CreateValue( Settings::General_Mouse_InvertWheel, DAVA::VariantType( false ) );
 
-    CreateValue(Settings::Internal_TextureViewGPU, DAVA::VariantType(DAVA::GPU_ORIGIN));
+    CreateValue(Settings::Internal_TextureViewGPU, DAVA::VariantType(static_cast<DAVA::uint32>(DAVA::GPU_ORIGIN)));
     CreateValue(Settings::Internal_LastProjectPath, DAVA::VariantType(DAVA::FilePath()));
 	CreateValue(Settings::Internal_EditorVersion, DAVA::VariantType(DAVA::String("local build")));
 	CreateValue(Settings::Internal_CubemapLastFaceDir, DAVA::VariantType(DAVA::FilePath()));
@@ -172,6 +172,16 @@ DAVA::FastName SettingsManager::GetSettingsName(size_t index)
     return SettingsManager::Instance()->settingsOrder[index];
 }
 
+bool SettingsManager::CustomTextureViewGPULoad(const DAVA::String & paramName, const DAVA::VariantType & src_value, DAVA::VariantType & dstValue)
+{
+    if (DAVA::VariantType::TYPE_INT32 == src_value.GetType() && paramName == Settings::Internal_TextureViewGPU.c_str())
+    {
+        dstValue.SetVariant(DAVA::VariantType(static_cast<DAVA::eGPUFamily>(src_value.AsInt32())));
+        return true;
+    }
+    return false;
+}
+
 void SettingsManager::Load()
 {
 	DAVA::KeyedArchive* toLoad = new DAVA::KeyedArchive();
@@ -187,9 +197,15 @@ void SettingsManager::Load()
             if(toLoad->IsKeyExists(name))
             {
                 DAVA::VariantType* sourceValue = toLoad->GetVariant(name);
-                if(sourceValue->type == node->value.type)
+
+                // try to set texture view gpu custom way.
+                if (!CustomTextureViewGPULoad(name, *sourceValue, node->value))
                 {
-                    node->value.SetVariant(*sourceValue);
+                    // Not setted. Use general setter.
+                    if (sourceValue->type == node->value.type)
+                    {
+                        node->value.SetVariant(*sourceValue);
+                    }
                 }
             }
         }
@@ -239,7 +255,7 @@ void SettingsManager::ResetToDefault()
 void SettingsManager::UpdateGPUSettings()
 {
     DAVA::VariantType oldGpu = GetValue(Settings::Internal_TextureViewGPU);
-    DAVA::VariantType newGpu = DAVA::VariantType(DAVA::GPUFamilyDescriptor::ConvertValueToGPU(oldGpu.AsInt32()));
+    DAVA::VariantType newGpu = DAVA::VariantType(DAVA::GPUFamilyDescriptor::ConvertValueToGPU(oldGpu.AsUInt32()));
     SetValue(Settings::Internal_TextureViewGPU, newGpu);
 }
 
