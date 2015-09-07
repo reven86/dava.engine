@@ -295,21 +295,26 @@ static const char* _ShaderDefine_Metal =
 
 "#define VPROG_BEGIN             vertex VP_Output vp_main"
 "("
-//"    constant VP_Input*  in    [[ buffer(0) ]]"
 "    VP_Input  in    [[ stage_in ]]"
 "    VPROG_IN_BUFFER_0 "
 "    VPROG_IN_BUFFER_1 "
 "    VPROG_IN_BUFFER_2 "
 "    VPROG_IN_BUFFER_3 "
-//"    ,uint                vid   [[ vertex_id ]]"
+"    VPROG_IN_BUFFER_4 "
+"    VPROG_IN_BUFFER_5 "
+"    VPROG_IN_BUFFER_6 "
+"    VPROG_IN_BUFFER_7 "
 ")"
 "{"
 "    VPROG_BUFFER_0 "
 "    VPROG_BUFFER_1 "
 "    VPROG_BUFFER_2 "
 "    VPROG_BUFFER_3 "
+"    VPROG_BUFFER_4 "
+"    VPROG_BUFFER_5 "
+"    VPROG_BUFFER_6 "
+"    VPROG_BUFFER_7 "
 "    VP_Output   OUT;"
-//"    VP_Input    IN  = in[vid];\n"
 "    VP_Input    IN  = in;\n"
 
 "#define VPROG_END               return OUT;"
@@ -395,6 +400,10 @@ static const char* _ShaderDefine_Metal =
 "    FPROG_IN_BUFFER_1 "
 "    FPROG_IN_BUFFER_2 "
 "    FPROG_IN_BUFFER_3 "
+"    FPROG_IN_BUFFER_4 "
+"    FPROG_IN_BUFFER_5 "
+"    FPROG_IN_BUFFER_6 "
+"    FPROG_IN_BUFFER_7 "
 "    FPROG_IN_TEXTURE_0 "
 "    FPROG_IN_TEXTURE_1 "
 "    FPROG_IN_TEXTURE_2 "
@@ -409,6 +418,10 @@ static const char* _ShaderDefine_Metal =
 "    FPROG_BUFFER_1 "
 "    FPROG_BUFFER_2 "
 "    FPROG_BUFFER_3 "
+"    FPROG_BUFFER_4 "
+"    FPROG_BUFFER_5 "
+"    FPROG_BUFFER_6 "
+"    FPROG_BUFFER_7 "
 "    FPROG_SAMPLER_0 "
 "    FPROG_SAMPLER_1 "
 "    FPROG_SAMPLER_2 "
@@ -886,7 +899,7 @@ static const char* _ShaderDefine_DX11 =
 static void
 PreProcessSource( Api targetApi, const char* srcText, std::string* preprocessedText )
 {
-    char    src[64*1024] = "";
+    char    src[256*1024] = "";
     int     src_len      = 0;
 
     // inject vattr definitions

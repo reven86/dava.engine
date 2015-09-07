@@ -174,6 +174,7 @@ gles2_VertexBuffer_Delete( Handle vb )
 
     if( self )
     {
+        self->MarkRestored();
         self->Destroy();
         VertexBufferGLES2Pool::Free( vb );
     }
@@ -282,6 +283,18 @@ SetToRHI( Handle vb )
 Trace("set-vb %p  sz= %u\n",self->data,self->size);
     GL_CALL(glBindBuffer( GL_ARRAY_BUFFER, self->uid ));
     _GLES2_LastSetVB = self->uid;
+}
+
+void
+ReCreateAll()
+{
+    VertexBufferGLES2Pool::ReCreateAll();
+}
+
+unsigned
+NeedRestoreCount()
+{
+    return VertexBufferGLES2_t::NeedRestoreCount();
 }
 
 }

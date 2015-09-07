@@ -228,6 +228,17 @@ gles2_Reset( const ResetParam& param )
 
 //------------------------------------------------------------------------------
 
+static bool
+gles2_NeedRestoreResources()
+{
+    bool    needRestore = TextureGLES2::NeedRestoreCount()  ||  VertexBufferGLES2::NeedRestoreCount()  ||  IndexBufferGLES2::NeedRestoreCount();
+
+    return needRestore;
+}
+
+
+//------------------------------------------------------------------------------
+
 #if defined(__DAVAENGINE_WIN32__)
 
 void

@@ -172,6 +172,7 @@ dx9_VertexBuffer_Delete( Handle vb )
 
     if( self )
     {
+        self->MarkRestored();
         self->Destroy();
         VertexBufferDX9Pool::Free( vb );
     }
@@ -292,6 +293,14 @@ SetToRHI( Handle vb, unsigned stream_i, unsigned offset, unsigned stride  )
         Logger::Error( "SetStreamSource failed:\n%s\n", D3D9ErrorText(hr) );
 }
 
+void
+ReleaseAll()
+{
+    for( VertexBufferDX9Pool::Iterator b=VertexBufferDX9Pool::Begin(),b_end=VertexBufferDX9Pool::End(); b!=b_end; ++b )
+    {
+        b->Destroy( true );
+    }
+}
 
 void
 ReCreateAll()

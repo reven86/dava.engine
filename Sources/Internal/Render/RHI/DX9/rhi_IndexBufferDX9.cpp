@@ -169,6 +169,7 @@ dx9_IndexBuffer_Delete( Handle ib )
     
     if( self )
     {
+        self->MarkRestored();
         self->Destroy();
         IndexBufferDX9Pool::Free( ib );
     }    
@@ -286,6 +287,15 @@ SetToRHI( Handle ib )
 
     if( FAILED(hr) )    
         Logger::Error( "SetIndices failed:\n%s\n", D3D9ErrorText(hr) );
+}
+
+void
+ReleaseAll()
+{
+    for( IndexBufferDX9Pool::Iterator b=IndexBufferDX9Pool::Begin(),b_end=IndexBufferDX9Pool::End(); b!=b_end; ++b )
+    {
+        b->Destroy( true );
+    }
 }
 
 void
