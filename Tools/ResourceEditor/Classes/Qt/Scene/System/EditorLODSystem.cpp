@@ -43,8 +43,8 @@ EditorLODSystem::ForceData::ForceData(DAVA::int32 newForceLayer /* = -1 */, DAVA
 {
 }
 
-EditorLODSystem::EditorLODSystem(DAVA::Scene *scene) : 
-	DAVA::SceneSystem(scene)
+EditorLODSystem::EditorLODSystem(DAVA::Scene *scene) 
+	: DAVA::SceneSystem(scene)
 {
 }
 
@@ -354,17 +354,7 @@ void EditorLODSystem::Process(DAVA::float32 elapsedTime)
 	bool allRequestsProcessed = !planeLODRequests.empty();
 
 	for (const auto& req : planeLODRequests)
-	{
-		if (req->completed)
-		{
-			CreatePlaneLODCommandHelper::ProcessCompletedRequest(req);
-		}
-		else 
-		{
-			allRequestsProcessed = false;
-			break;
-		}
-	}
+		allRequestsProcessed = allRequestsProcessed && req->completed;
 
 	if (allRequestsProcessed)
 	{

@@ -45,7 +45,7 @@ namespace CreatePlaneLODCommandHelper
     void CreatePlaneBatchForRequest(RequestPointer&);
 
     void DrawToTextureForRequest(RequestPointer&, DAVA::Entity* entity, DAVA::Camera* camera,
-		DAVA::Texture* toTexture, DAVA::int32 fromLodLayer, const rhi::Viewport& viewport, bool clearTarget);
+		DAVA::int32 fromLodLayer, const rhi::Viewport& viewport, bool clearTarget);
 }
 
 CreatePlaneLODCommandHelper::RequestPointer CreatePlaneLODCommandHelper::RequestRenderToTexture(DAVA::LodComponent* lodComponent, 
@@ -68,13 +68,6 @@ CreatePlaneLODCommandHelper::RequestPointer CreatePlaneLODCommandHelper::Request
     CreatePlaneBatchForRequest(result);
 
 	return result;
-}
-
-void CreatePlaneLODCommandHelper::ProcessCompletedRequest(RequestPointer request)
-{
-	DVASSERT(request->completed)
-    request->planeImage = request->targetTexture->CreateImageFromMemory();
-    SafeRelease(request->targetTexture);
 }
 
 void CreatePlaneLODCommandHelper::CreatePlaneImageForRequest(RequestPointer& request)
@@ -110,23 +103,29 @@ void CreatePlaneLODCommandHelper::CreatePlaneImageForRequest(RequestPointer& req
         firstSideViewport = rhi::Viewport(0, 0, halfSizef, textureSize);
         secondSideViewport = rhi::Viewport(halfSizef, 0, halfSizef, textureSize);
     }
-    
+
+	rhi::Texture::Descriptor descriptor = { };
+    descriptor.width = textureSize;
+    descriptor.height = textureSize;
+    descriptor.autoGenMipmaps = false;
+    descriptor.type = rhi::TEXTURE_TYPE_2D;
+    descriptor.format = rhi::TEXTURE_FORMAT_D24S8;
+
     request->targetTexture = Texture::CreateFBO(textureSize, textureSize, FORMAT_RGBA8888);
+	request->depthTexture = rhi::CreateTexture(descriptor);
 	request->RegisterRenderCallback();
 
     // draw 1st side
     float32 depth = max.y - min.y;
  	camera->Setup(min.x, max.x, max.z, min.z, -depth, 2.0f * depth);
     camera->SetPosition(Vector3(0.0f, min.y, 0.0f));
-    DrawToTextureForRequest(request, fromEntity, camera, request->targetTexture, 
-		request->fromLodLayer, firstSideViewport, true);
+    DrawToTextureForRequest(request, fromEntity, camera,request->fromLodLayer, firstSideViewport, true);
     
     // draw 2nd side
     depth = max.x - min.x;
 	camera->Setup(min.y, max.y, max.z, min.z, -depth, 2.0f * depth);
     camera->SetPosition(Vector3(max.x, 0.0f, 0.0f));
-    DrawToTextureForRequest(request, fromEntity, camera, request->targetTexture,
-		request->fromLodLayer, secondSideViewport, false);
+    DrawToTextureForRequest(request, fromEntity, camera, request->fromLodLayer, secondSideViewport, false);
 }
 
 void CreatePlaneLODCommandHelper::CreatePlaneBatchForRequest(RequestPointer& request)
@@ -281,7 +280,7 @@ void CreatePlaneLODCommandHelper::CreatePlaneBatchForRequest(RequestPointer& req
 }
 
 void CreatePlaneLODCommandHelper::DrawToTextureForRequest(RequestPointer& request, DAVA::Entity* fromEntity, DAVA::Camera* camera,
-	DAVA::Texture* toTexture, DAVA::int32 fromLodLayer, const rhi::Viewport& viewport, bool clearTarget)
+	DAVA::int32 fromLodLayer, const rhi::Viewport& viewport, bool clearTarget)
 {
     DAVA::TexturesMap textures;
     SceneHelper::EnumerateEntityTextures(fromEntity->GetScene(), fromEntity, textures, 
@@ -292,11 +291,11 @@ void CreatePlaneLODCommandHelper::DrawToTextureForRequest(RequestPointer& reques
     ScopedPtr<Scene> tempScene(new Scene());
 
 	rhi::RenderPassConfig& renderPassConfig = tempScene->GetMainPassConfig();
-	renderPassConfig.colorBuffer[0].texture = toTexture->handle;
+	renderPassConfig.colorBuffer[0].texture = request->targetTexture->handle;
 	renderPassConfig.colorBuffer[0].loadAction = clearTarget ? rhi::LOADACTION_CLEAR : rhi::LOADACTION_NONE;
-	renderPassConfig.colorBuffer[0].storeAction = rhi::STOREACTION_NONE;
 	renderPassConfig.priority = eDefaultPassPriority::PRIORITY_SERVICE_3D;
 	renderPassConfig.viewport = viewport;
+	renderPassConfig.depthStencilBuffer.texture = request->depthTexture;
 	memset(renderPassConfig.colorBuffer[0].clearColor, 0, sizeof(renderPassConfig.colorBuffer[0].clearColor));
 
     NMaterial* globalMaterial = fromEntity->GetScene()->GetGlobalMaterial();
@@ -324,10 +323,6 @@ void CreatePlaneLODCommandHelper::DrawToTextureForRequest(RequestPointer& reques
 
 	tempScene->Update(1.0f / 60.0f);
     tempScene->Draw();
-
-    DAVA::eGPUFamily currentGPU = (DAVA::eGPUFamily) SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsInt32();
-	for (auto& tex : textures)
-        tex.second->ReloadAs(currentGPU);
 }
 
 bool CreatePlaneLODCommandHelper::IsHorisontalMesh(const AABBox3 & bbox)
@@ -351,6 +346,7 @@ CreatePlaneLODCommandHelper::Request::~Request()
 	SafeRelease(planeBatch);
 	SafeRelease(planeImage);
 	SafeRelease(targetTexture);
+	rhi::DeleteTexture(depthTexture);
 }
 
 void CreatePlaneLODCommandHelper::Request::RegisterRenderCallback()
@@ -362,4 +358,20 @@ void CreatePlaneLODCommandHelper::Request::RegisterRenderCallback()
 void CreatePlaneLODCommandHelper::Request::OnRenderCallback(rhi::HSyncObject object)
 {
 	completed = true;
+
+    planeImage = targetTexture->CreateImageFromMemory();
+    SafeRelease(targetTexture);
+
+	auto sourceEntity = lodComponent->GetEntity();
+
+    DAVA::TexturesMap textures;
+
+    SceneHelper::EnumerateEntityTextures(sourceEntity->GetScene(), sourceEntity, textures,  
+		SceneHelper::TexturesEnumerateMode::EXCLUDE_NULL);
+
+    DAVA::eGPUFamily currentGPU = static_cast<DAVA::eGPUFamily>(
+		SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsInt32());
+
+	for (auto& tex : textures)
+        tex.second->ReloadAs(currentGPU);
 }

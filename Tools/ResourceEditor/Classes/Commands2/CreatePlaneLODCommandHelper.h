@@ -47,6 +47,7 @@ namespace CreatePlaneLODCommandHelper
 		DAVA::FilePath texturePath;
 	    DAVA::Vector<DAVA::LodComponent::LodDistance> savedDistances;
 		DAVA::Atomic<bool> completed = false;
+		rhi::HTexture depthTexture;
 
 		Request();
 		~Request();
@@ -57,8 +58,6 @@ namespace CreatePlaneLODCommandHelper
 
 	RequestPointer RequestRenderToTexture(DAVA::LodComponent* lodComponent, DAVA::int32 fromLodLayer, 
 		DAVA::uint32 textureSize, const DAVA::FilePath& texturePath);
-
-	void ProcessCompletedRequest(RequestPointer);
 };
 
 #endif // #ifndef __CREATE_PLANE_LOD_COOMAND_H__
