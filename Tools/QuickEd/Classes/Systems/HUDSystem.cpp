@@ -41,12 +41,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using namespace DAVA;
 
-ControlContainer::ControlContainer(DAVA::UIControl *container, const ControlAreaInterface::eArea area_)
+ControlContainer::ControlContainer(const ControlAreaInterface::eArea area_)
     : UIControl()
-    , control(container)
     , area(area_)
 {
-    DVASSERT(container != nullptr && area != ControlAreaInterface::NO_AREA);
 }
 
 ControlAreaInterface::eArea ControlContainer::GetArea() const
@@ -54,16 +52,12 @@ ControlAreaInterface::eArea ControlContainer::GetArea() const
     return area;
 }
 
-void ControlContainer::SetGeometricData(DAVA::UIGeometricData *gd_)
-{
-    gd = gd_;
-}
-
 class HUDContainer : public ControlContainer
 {
 public:
     explicit HUDContainer(UIControl *container)
-        : ControlContainer(container, ControlAreaInterface::FRAME_AREA)
+        : ControlContainer(ControlAreaInterface::NO_AREA)
+        , control(container)
     {
     }
     void AddChild(ControlContainer *container)
@@ -71,59 +65,63 @@ public:
         AddControl(container);
         childs.push_back(container);
     }
-    void InitFromControl() override
+    void InitFromGD(const UIGeometricData &geometricData) override
     {
-        const auto gd_ = &control->GetGeometricData();
-        SetGeometricData(const_cast<UIGeometricData*>(gd_));
         SetPivot(control->GetPivot());
-        SetAbsoluteRect(gd->GetUnrotatedRect());
-        SetAngle(gd->angle);
-        for(auto child : childs)
+        SetAbsoluteRect(geometricData.GetUnrotatedRect());
+        SetAngle(geometricData.angle);
+        for (auto child : childs)
         {
-            child->SetGeometricData(gd);
-            child->InitFromControl();
+            child->InitFromGD(geometricData);
         }
     }
+
+    void SystemDraw(const UIGeometricData &geometricData) override
+    {
+        InitFromGD(control->GetGeometricData());
+        UIControl::SystemDraw(geometricData);
+    }
 private:
-    DAVA::Vector<ControlContainer*> childs;
+    UIControl *control = nullptr;
+    Vector<ControlContainer*> childs;
 };
 
 class FrameControl : public ControlContainer
 {
 public:
-    explicit FrameControl(UIControl *container)
-        : ControlContainer(container, ControlAreaInterface::FRAME_AREA)
+    explicit FrameControl()
+        : ControlContainer(ControlAreaInterface::FRAME_AREA)
     {
         SetDebugDraw(true);
         SetDebugDrawColor(Color(0.0f, 0.0f, 1.0f, 1.0f));
     }
 private:
-    void InitFromControl() override
+    void InitFromGD(const UIGeometricData &geometricData) override
     {
-        SetAbsoluteRect(gd->GetUnrotatedRect());
+        SetAbsoluteRect(geometricData.GetUnrotatedRect());
     }
 };
 
 class FrameRectControl : public ControlContainer
 {
 public:
-    explicit FrameRectControl(UIControl *container, const ControlAreaInterface::eArea area_)
-        : ControlContainer(container, area_)
+    explicit FrameRectControl(const ControlAreaInterface::eArea area_)
+        : ControlContainer(area_)
     {
         SetDebugDraw(true);
         SetDebugDrawColor(Color(0.0f, 1.0f, 0.0f, 1.f));
     }
 private:
-    void InitFromControl() override
+    void InitFromGD(const UIGeometricData &geometricData) override
     {
         Rect rect(0, 0, 8, 8);
-        rect.SetCenter(GetPos());
+        rect.SetCenter(GetPos(geometricData));
         SetAbsoluteRect(rect);
     }
 
-    Vector2 GetPos() const
+    Vector2 GetPos(const UIGeometricData &geometricData) const
     {
-        Rect rect = gd->GetUnrotatedRect();
+        Rect rect = geometricData.GetUnrotatedRect();
         Vector2 retVal = rect.GetPosition();
         switch (area)
         {
@@ -143,23 +141,18 @@ private:
 class PivotPointControl : public ControlContainer
 {
 public:
-    explicit PivotPointControl(UIControl *container)
-        : ControlContainer(container, ControlAreaInterface::PIVOT_POINT_AREA)
+    explicit PivotPointControl()
+        : ControlContainer(ControlAreaInterface::PIVOT_POINT_AREA)
     {
         SetDebugDraw(true);
         SetDebugDrawColor(Color(1.0f, 0.0f, 0.0f, 1.f));
     }
 private:
-    void Draw(const UIGeometricData &gd) override
-    {
-        //TODO: refactor it! we need to use it because Pivot Point draws first, before parent container and other controls
-        static_cast<ControlContainer*>(GetParent())->InitFromControl();
-    }
-    void InitFromControl() override
+    void InitFromGD(const UIGeometricData &geometricData) override
     {
         Rect rect(0, 0, 5, 5);
-        const Rect &controlRect = gd->GetUnrotatedRect();
-        rect.SetCenter(controlRect.GetPosition() + controlRect.GetSize() * control->GetPivot());
+        const Rect &controlRect = geometricData.GetUnrotatedRect();
+        rect.SetCenter(controlRect.GetPosition() + geometricData.pivotPoint);
         SetAbsoluteRect(rect);
     }
 };
@@ -167,17 +160,17 @@ private:
 class RotateControl : public ControlContainer
 {
 public:
-    explicit RotateControl(UIControl *container)
-        : ControlContainer(container, ControlAreaInterface::ROTATE_AREA)
+    explicit RotateControl()
+        : ControlContainer(ControlAreaInterface::ROTATE_AREA)
     {
         SetDebugDraw(true);
         SetDebugDrawColor(Color(1.0f, 1.0f, 0.0f, 1.0f));
     }
 private:
-    void InitFromControl() override
+    void InitFromGD(const UIGeometricData &geometricData) override
     {
         Rect rect(0, 0, 20, 20);
-        Rect controlRect = gd->GetUnrotatedRect();
+        Rect controlRect = geometricData.GetUnrotatedRect();
         rect.SetCenter(Vector2(controlRect.GetPosition().x + controlRect.dx / 2.0f, controlRect.GetPosition().y - 20));
         SetAbsoluteRect(rect);
     }
@@ -339,14 +332,14 @@ HUDSystem::HUD::HUD(const Document *document, ControlNode *node_, UIControl* hud
     , control(node_->GetControl())
     , container(new HUDContainer(control))
 {
-    hudControls.emplace_back(new PivotPointControl(control));
-    hudControls.emplace_back(new RotateControl(control));
+    hudControls.emplace_back(new PivotPointControl);
+    hudControls.emplace_back(new RotateControl);
     for (int i = ControlAreaInterface::TOP_LEFT_AREA; i < ControlAreaInterface::CORNERS_COUNT; ++i)
     {
         ControlAreaInterface::eArea area = static_cast<ControlAreaInterface::eArea>(i);
-        hudControls.emplace_back(new FrameRectControl(control, area));
+        hudControls.emplace_back(new FrameRectControl(area));
     }
-    hudControls.emplace_back(new FrameControl(control));
+    hudControls.emplace_back(new FrameControl);
 
     hudControl->AddControl(container);
     auto hudContainer = static_cast<HUDContainer*>(container.get());
@@ -354,7 +347,7 @@ HUDSystem::HUD::HUD(const Document *document, ControlNode *node_, UIControl* hud
     {
         hudContainer->AddChild((*iter).get());
     }
-    hudContainer->InitFromControl();
+    container->InitFromGD(control->GetGeometricData());
 }
 
 HUDSystem::HUD::~HUD()

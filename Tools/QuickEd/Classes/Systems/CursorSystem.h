@@ -40,12 +40,16 @@ class CursorSystem final : public BaseSystem, public ControlAreaInterface
 public:
     explicit CursorSystem(Document *doc);
     ~CursorSystem() override = default;
+
     void Detach() override;
+
     void MouseEnterArea(ControlNode *targetNode, const eArea area) override;
     void MouseLeaveArea() override;
+
 private:
     QPixmap CreatePixmapForArea(float angle, const eArea area) const;
     QPixmap CreatePixmap(const QString &address) const;
+
     static QMap<QString, QPixmap> cursorpixes;
 };
 

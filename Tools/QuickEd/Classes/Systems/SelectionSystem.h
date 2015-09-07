@@ -46,14 +46,19 @@ class SelectionSystem final : public BaseSystem, public InputInterface, public P
 public:
     SelectionSystem(Document *doc);
     ~SelectionSystem() override = default;
+
     bool OnInput(DAVA::UIEvent *currentInput) override;
+
     void ControlWasRemoved(ControlNode *node, ControlsContainerNode *from) override;
     void OnSelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected);
-    DAVA::Signal<const SelectedControls &/*selected*/, const SelectedControls &/*deselected*/> SelectionWasChanged;
     void SelectByRect(const DAVA::Rect &rect);
+
+    DAVA::Signal<const SelectedControls &/*selected*/, const SelectedControls &/*deselected*/> SelectionWasChanged;
 private:
+
     bool ProcessMousePress(const DAVA::Vector2 &point);
     void SetSelectedControls(const SelectedControls &selected, const SelectedControls &deselected);
+
     SelectedControls selectedControls;
     DAVA::Vector<ControlNode*> nodesUnderPoint;
     bool mousePressed = false;

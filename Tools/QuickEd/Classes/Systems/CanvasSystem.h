@@ -44,13 +44,16 @@ class CanvasSystem final : public BaseSystem
 public:
     CanvasSystem(Document *parent);
     ~CanvasSystem() override = default;
+
     void AttachToRoot(DAVA::UIControl *root);
     void Detach() override;
+
     void OnSelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected);
 
 private:
     void SetRootControls(const DAVA::Set<PackageBaseNode*> &controls);
     void LayoutCanvas();
+
     DAVA::UIControl *attachedRoot = nullptr;
     DAVA::ScopedPtr<DAVA::UIControl> canvas;
     SelectedControls selectedControls;

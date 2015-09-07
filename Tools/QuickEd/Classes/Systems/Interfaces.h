@@ -67,6 +67,7 @@ public:
         CORNERS_COUNT = FRAME_AREA - TOP_LEFT_AREA,
         AREAS_COUNT = NO_AREA - TOP_LEFT_AREA
     };
+
     virtual void MouseEnterArea(ControlNode *targetNode, const eArea area) = 0;
     virtual void MouseLeaveArea() = 0;
 };

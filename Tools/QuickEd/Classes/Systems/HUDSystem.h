@@ -43,14 +43,13 @@ class Document;
 class ControlContainer : public DAVA::UIControl
 {
 public:
-    explicit ControlContainer(DAVA::UIControl *container, const ControlAreaInterface::eArea area);
+    explicit ControlContainer(const ControlAreaInterface::eArea area);
+
     ControlAreaInterface::eArea GetArea() const;
-    virtual void InitFromControl() = 0;
-    void SetGeometricData(DAVA::UIGeometricData *gd_);
+    virtual void InitFromGD(const DAVA::UIGeometricData &gd_) = 0;
+
 protected:
-    const DAVA::UIControl *control = nullptr;
     const ControlAreaInterface::eArea area = ControlAreaInterface::NO_AREA;
-    DAVA::UIGeometricData *gd = nullptr;
 };
 
 class HUDSystem final : public BaseSystem, public InputInterface
@@ -60,18 +59,30 @@ public:
     ~HUDSystem() = default;
     void AttachToRoot(DAVA::UIControl *root);
     void Detach() override;
+
     void OnSelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected);
     bool OnInput(DAVA::UIEvent *currentInput) override;
+
     void AddListener(ControlAreaInterface *listener);
     void RemoveListener(ControlAreaInterface *listener);
+
     DAVA::Signal<const DAVA::Rect &/*selectionRectControl*/> SelectionRectChanged;
+
 private:
     void ProcessCursor(const DAVA::Vector2& pos);
     void GetControlArea(ControlNode *&node, ControlAreaInterface::eArea &area, const DAVA::Vector2 &pos);
+    void SetNewArea(ControlNode* node, const ControlAreaInterface::eArea area);
+
     ControlAreaInterface::eArea activeArea = ControlAreaInterface::NO_AREA;
     ControlNode *activeControl = nullptr;
-    void SetNewArea(ControlNode* node, const ControlAreaInterface::eArea area);
+
     DAVA::ScopedPtr<DAVA::UIControl> hudControl;
+
+    DAVA::Vector2 pressedPoint; //corner of selection rect
+    bool canDrawRect = false; //selection rect state
+
+    DAVA::List<ControlAreaInterface*> listeners;
+
     struct HUD
     {
         HUD(const Document *doc, ControlNode *node, DAVA::UIControl *hudControl);
@@ -83,10 +94,6 @@ private:
     };
     DAVA::Map<ControlNode*, HUD> hudMap;
     DAVA::ScopedPtr<DAVA::UIControl> selectionRectControl;
-    DAVA::List<ControlAreaInterface*> listeners;
-    
-    DAVA::Vector2 pressedPoint; //corner of selection rect
-    bool canDrawRect = false; //selection rect state
 };
 
 #endif // __QUICKED_HUD_SYSTEM_H__

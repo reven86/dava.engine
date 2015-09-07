@@ -42,10 +42,13 @@ class TransformSystem final : public BaseSystem, public InputInterface, public C
 public:
     explicit TransformSystem(Document *parent);
     ~TransformSystem() = default;
+
     void MouseEnterArea(ControlNode *targetNode, const eArea area) override;
     void MouseLeaveArea() override;
+
     bool OnInput(DAVA::UIEvent *currentInput) override;
     void OnSelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected);
+
     void Detach() override;
 
 private:
@@ -57,12 +60,16 @@ private:
         OPERATIONS_COUNT
     };
     bool ProcessKey(const DAVA::int32 key);
+
     bool ProcessDrag(const DAVA::Vector2 &pos);
-    void MoveAllSelectedControls(const DAVA::Vector2 &delta);
-    void MoveConrol(const DAVA::Vector2 &pos);
     void ResizeControl(const DAVA::Vector2 &pos, bool withPivot, bool rateably);
+
+    void MoveConrol(const DAVA::Vector2 &pos);
+    void MoveAllSelectedControls(const DAVA::Vector2 &delta);
+
     template <typename T>
     void AdjustProperty(ControlNode *node, const DAVA::String &propertyName, const T &value);
+
     void AccumulateOperation(ACCUMULATE_OPERATIONS operation, DAVA::Vector2 &delta);
 
     eArea activeArea = NO_AREA;
