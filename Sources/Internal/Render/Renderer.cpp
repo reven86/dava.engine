@@ -100,8 +100,8 @@ void Uninitialize()
 
 void Reset(const rhi::ResetParam & params)
 {
-    framebufferWidth = static_cast<int>(params.width * params.scaleX);
-    framebufferHeight = static_cast<int>(params.height * params.scaleY);
+    framebufferWidth = static_cast<int32>(params.width * params.scaleX);
+    framebufferHeight = static_cast<int32>(params.height * params.scaleY);
 
     rhi::Reset(params);
 }

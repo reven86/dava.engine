@@ -208,8 +208,8 @@ public:
     //RHI_COMPLETE need remove this
     void UpdatePart(Heightmap* fromHeightmap, const Rect2i & rect);
     
-    void CreateLandscapeTexture();
-	void SetCreatedLandscapeTextureHandler(DAVA::Function<void(Landscape*, Texture*)> handler);
+	using LandscapeThumbnailCallback = DAVA::Function<void(Landscape*, Texture*, const FilePath&)>;
+    void CreateLandscapeTexture(const FilePath& destinationFile, LandscapeThumbnailCallback callback);
 
 protected:
 
@@ -280,8 +280,10 @@ private:
     Heightmap *heightmap = nullptr;
 	NMaterial* landscapeMaterial = nullptr;
     FoliageSystem* foliageSystem = nullptr;
-	Texture* renderTarget = nullptr;
-	DAVA::Function<void(Landscape*, Texture*)> createdLandscapeTextureHandler;
+
+	Texture* thumbnailRenderTarget = nullptr;
+	LandscapeThumbnailCallback createdLandscapeTextureCallback;
+	FilePath thumbnailDestinationFile;
 
     uint16* indices = nullptr;
     uint16* queueDrawIndices = nullptr;

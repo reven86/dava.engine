@@ -2053,22 +2053,20 @@ void QtMainWindow::OnSaveTiledTexture()
 	}
 
     Landscape* landscape = FindLandscape(scene);
-    if (nullptr == landscape)
-    {
-        return;
-    }
-
-	landscape->SetCreatedLandscapeTextureHandler(MakeFunction(this, &QtMainWindow::OnTiledTextureRetreived));
-	landscape->CreateLandscapeTexture();
+    if (landscape)
+	{
+	    SceneEditor2* scene = GetCurrentScene();
+		landscape->CreateLandscapeTexture(scene->GetScenePath().GetDirectory(),
+			MakeFunction(this, &QtMainWindow::OnTiledTextureRetreived));
+	}
 }
 
-void QtMainWindow::OnTiledTextureRetreived(DAVA::Landscape* landscape, DAVA::Texture* landscapeTexture)
+void QtMainWindow::OnTiledTextureRetreived(DAVA::Landscape* landscape, DAVA::Texture* landscapeTexture, 
+	const DAVA::FilePath& scenePath)
 {
-    SceneEditor2* scene = GetCurrentScene();
     FilePath pathToSave = landscape->GetMaterial()->GetEffectiveTexture(DAVA::Landscape::TEXTURE_COLOR)->GetPathname();
 	if (pathToSave.IsEmpty())
 	{
-		FilePath scenePath = scene->GetScenePath().GetDirectory();
 		QString selectedPath = FileDialog::getSaveFileName(this, "Save landscape texture as",
 			scenePath.GetAbsolutePathname().c_str(), PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter);
 
@@ -2084,11 +2082,7 @@ void QtMainWindow::OnTiledTextureRetreived(DAVA::Landscape* landscape, DAVA::Tex
 		pathToSave.ReplaceExtension(".thumbnail.png");
 	}
 
-    ScopedPtr<Image> image(landscapeTexture->CreateImageFromMemory());
-	if(image)
-	{
-        ImageSystem::Instance()->Save(pathToSave, image);
-	}
+	SaveTextureToFile(landscapeTexture, pathToSave);
 }
 
 void QtMainWindow::OnConvertModifiedTextures()

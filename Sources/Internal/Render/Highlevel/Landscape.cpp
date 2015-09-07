@@ -1194,20 +1194,18 @@ void Landscape::SetMaterial(NMaterial * material)
         GetRenderBatch(i)->SetMaterial(landscapeMaterial);
 }
 
-void Landscape::SetCreatedLandscapeTextureHandler(DAVA::Function<void(Landscape*, Texture*)> handler)
-{
-	createdLandscapeTextureHandler = handler;
-}
-
 void Landscape::OnCreateLandscapeTextureCompleted(rhi::HSyncObject syncObject)
 {
-	createdLandscapeTextureHandler(this, renderTarget);
-	SafeRelease(renderTarget);
+	createdLandscapeTextureCallback(this, thumbnailRenderTarget, thumbnailDestinationFile);
+	SafeRelease(thumbnailRenderTarget);
 }
 
-void Landscape::CreateLandscapeTexture()
+void Landscape::CreateLandscapeTexture(const FilePath& destinationFile, LandscapeThumbnailCallback handler)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
+	thumbnailDestinationFile = destinationFile;
+	createdLandscapeTextureCallback = handler;
 
     Vector<Vector3> ftVertexes;
 	ftVertexes.reserve(4);
@@ -1239,7 +1237,7 @@ void Landscape::CreateLandscapeTexture()
 	renderData->SetIndex(5, 3);
 	renderData->BuildBuffers();
 
-	renderTarget = Texture::CreateFBO(TEXTURE_TILE_FULL_SIZE, TEXTURE_TILE_FULL_SIZE, FORMAT_RGBA8888);
+	thumbnailRenderTarget = Texture::CreateFBO(TEXTURE_TILE_FULL_SIZE, TEXTURE_TILE_FULL_SIZE, FORMAT_RGBA8888);
 
 	rhi::HSyncObject syncObject = rhi::CreateSyncObject();
 	RenderCallbacks::RegisterSyncCallback(syncObject, MakeFunction(this, &Landscape::OnCreateLandscapeTextureCompleted));
@@ -1281,7 +1279,7 @@ void Landscape::CreateLandscapeTexture()
 	material->BindParams(packet);
 
 	rhi::RenderPassConfig passDesc = { };
-	passDesc.colorBuffer[0].texture = renderTarget->handle;
+	passDesc.colorBuffer[0].texture = thumbnailRenderTarget->handle;
 	passDesc.priority = PRIORITY_SERVICE_3D;
 	passDesc.viewport.width = TEXTURE_TILE_FULL_SIZE;
 	passDesc.viewport.height = TEXTURE_TILE_FULL_SIZE;
