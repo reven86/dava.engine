@@ -455,7 +455,7 @@ void TextureDescriptor::LoadVersion8(File *file)
         file->Read(&exportedAsGpuFamily);
         exportedAsGpuFamily = GPUFamilyDescriptor::ConvertValueToGPU(exportedAsGpuFamily);
 
-        int8 exportedAsPixelFormat = FORMAT_INVALID;
+        uint8 exportedAsPixelFormat = FORMAT_INVALID;
         file->Read(&exportedAsPixelFormat);
         format = static_cast<PixelFormat>(exportedAsPixelFormat);
     }
@@ -465,7 +465,7 @@ void TextureDescriptor::LoadVersion8(File *file)
         file->Read(&compressionsCount);
         for (auto i = 0; i < 6; ++i)
         {
-            int8 format;
+            uint8 format;
             file->Read(&format);
             compression[i].format = (PixelFormat)format;
 
@@ -536,8 +536,8 @@ void TextureDescriptor::LoadVersion9(File *file)
     //export data
     file->Read(&exportedAsGpuFamily);
     exportedAsGpuFamily = GPUFamilyDescriptor::ConvertValueToGPU(exportedAsGpuFamily);
-    
-    int8 exportedAsPixelFormat = FORMAT_INVALID;
+
+    uint8 exportedAsPixelFormat = FORMAT_INVALID;
     file->Read(&exportedAsPixelFormat);
     format = static_cast<PixelFormat>(exportedAsPixelFormat);
 }

@@ -107,8 +107,8 @@ void SettingsManager::Init()
     CreateValue( Settings::General_Mouse_WheelMoveCamera, DAVA::VariantType( true ) );
     CreateValue( Settings::General_Mouse_InvertWheel, DAVA::VariantType( false ) );
 
-    CreateValue(Settings::Internal_TextureViewGPU, DAVA::VariantType(static_cast<DAVA::int32>(DAVA::GPU_ORIGIN)));
-	CreateValue(Settings::Internal_LastProjectPath, DAVA::VariantType(DAVA::FilePath()));
+    CreateValue(Settings::Internal_TextureViewGPU, DAVA::VariantType(DAVA::GPU_ORIGIN));
+    CreateValue(Settings::Internal_LastProjectPath, DAVA::VariantType(DAVA::FilePath()));
 	CreateValue(Settings::Internal_EditorVersion, DAVA::VariantType(DAVA::String("local build")));
 	CreateValue(Settings::Internal_CubemapLastFaceDir, DAVA::VariantType(DAVA::FilePath()));
 	CreateValue(Settings::Internal_CubemapLastProjDir, DAVA::VariantType(DAVA::FilePath()));

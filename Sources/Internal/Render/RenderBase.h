@@ -165,7 +165,7 @@ enum ImageFormat : uint8
     IMAGE_FORMAT_UNKNOWN = 127
 };
 
-enum PixelFormat
+enum PixelFormat : uint8
 {
     FORMAT_INVALID = 0,
     FORMAT_RGBA8888 = 1,

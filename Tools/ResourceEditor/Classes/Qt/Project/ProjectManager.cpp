@@ -150,7 +150,7 @@ void ProjectManager::UpdateParticleSprites()
     useDelayInitialization = false;
     if (!isParticleSpritesUpdated)
     {
-        SpritePackerHelper::Instance()->UpdateParticleSprites( static_cast<eGPUFamily>(SettingsManager::GetValue( Settings::Internal_TextureViewGPU ).AsUInt32()) );
+        SpritePackerHelper::Instance()->UpdateParticleSprites(static_cast<eGPUFamily>(SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsInt32()));
         isParticleSpritesUpdated = true;
     }
 }
