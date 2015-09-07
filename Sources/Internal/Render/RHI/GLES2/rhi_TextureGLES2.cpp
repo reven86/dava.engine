@@ -746,6 +746,18 @@ Size( Handle tex )
     return Size2i( self->width, self->height );
 }
 
+void
+ReCreateAll()
+{
+    TextureGLES2Pool::ReCreateAll();
+}
+
+unsigned
+NeedRestoreCount()
+{
+    return TextureGLES2_t::NeedRestoreCount();
+}
+
 
 } // namespace TextureGLES2
 

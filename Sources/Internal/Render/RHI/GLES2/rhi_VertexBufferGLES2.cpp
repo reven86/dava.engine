@@ -285,6 +285,18 @@ Trace("set-vb %p  sz= %u\n",self->data,self->size);
     _GLES2_LastSetVB = self->uid;
 }
 
+void
+ReCreateAll()
+{
+    VertexBufferGLES2Pool::ReCreateAll();
+}
+
+unsigned
+NeedRestoreCount()
+{
+    return VertexBufferGLES2_t::NeedRestoreCount();
+}
+
 }
 
 

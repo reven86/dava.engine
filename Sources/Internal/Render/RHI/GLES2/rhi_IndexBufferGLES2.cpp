@@ -276,6 +276,18 @@ Trace("set-ib %p  sz= %u\n",self->data,self->size);
     _GLES2_LastSetIB = self->uid;
 }
 
+void
+ReCreateAll()
+{
+    IndexBufferGLES2Pool::ReCreateAll();
+}
+
+unsigned
+NeedRestoreCount()
+{
+    return IndexBufferGLES2_t::NeedRestoreCount();
+}
+
 
 } // namespace IndexBufferGLES
 
