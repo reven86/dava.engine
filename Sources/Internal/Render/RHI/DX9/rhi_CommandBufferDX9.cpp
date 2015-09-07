@@ -1071,7 +1071,7 @@ Trace("rhi-dx9.exec-queued-cmd\n");
     {
         do_render = false;
     }
-    if (_Frame.begin()->sync != InvalidHandle)
+    if (_Frame.size() && (_Frame.begin()->sync != InvalidHandle))
     {
         SyncObjectDX9_t*  sync = SyncObjectPool::Get(_Frame.begin()->sync);
 
@@ -1135,7 +1135,7 @@ Trace("\n\n-------------------------------\nframe %u executed(submitted to GPU)\
             HRESULT hr = _D3D9_Device->Reset( &_DX9_PresentParam );
 
             if( SUCCEEDED(hr) )
-            {
+            {                
                 TextureDX9::ReCreateAll();
                 VertexBufferDX9::ReCreateAll();
                 IndexBufferDX9::ReCreateAll();
@@ -1157,7 +1157,7 @@ Trace("\n\n-------------------------------\nframe %u executed(submitted to GPU)\
             Logger::Error( "present() failed:\n%s\n", D3D9ErrorText(hr) );
 
         if( hr == D3DERR_DEVICELOST )
-        {
+        {            
             _ResetPending = true;
             _Frame.clear();
         }
