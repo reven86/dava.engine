@@ -80,7 +80,6 @@ public:
     bool OnInput(DAVA::UIEvent *currentInput);
     void GetControlNodesByPos(DAVA::Vector<ControlNode*> &controlNodes, const DAVA::Vector2 &pos) const;
     void GetControlNodesByRect(DAVA::Set<ControlNode*> &controlNodes, const DAVA::Rect &rect) const;
-    AbstractProperty* GetPropertyByName(const ControlNode* node, const DAVA::String &name) const;
     ControlNode* GetControlByMenu(const DAVA::Vector<ControlNode*> &nodes, const DAVA::Vector2 &pos) const;
 
 signals:

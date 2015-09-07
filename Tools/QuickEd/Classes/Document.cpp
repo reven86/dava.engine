@@ -204,29 +204,6 @@ void Document::GetControlNodesByRectImpl(Set<ControlNode*>& controlNodes, const 
     }
 }
 
-AbstractProperty* Document::GetPropertyByName(const ControlNode *node, const String &name) const
-{
-    RootProperty *propertiesRoot = node->GetRootProperty();
-    int propertiesCount = propertiesRoot->GetCount();
-    for (int index = 0; index < propertiesCount; ++index)
-    {
-        auto rootProperty = propertiesRoot->GetProperty(index);
-        if (nullptr != rootProperty)
-        {
-            int sectionCount = rootProperty->GetCount();
-            for (int prop = 0; prop < sectionCount; ++prop)
-            {
-                AbstractProperty *valueProperty = rootProperty->GetProperty(prop);
-                if (nullptr != valueProperty && valueProperty->GetName() == name)
-                {
-                    return valueProperty;
-                }
-            }
-        }
-    }
-    return nullptr;
-}
-
 ControlNode* Document::GetControlByMenu(const Vector<ControlNode*> &nodesUnderPoint, const Vector2 &point) const
 {
     auto view = EditorCore::Instance()->GetMainWindow()->GetGLWidget()->GetGLWindow();

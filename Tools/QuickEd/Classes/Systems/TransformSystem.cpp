@@ -275,7 +275,7 @@ void TransformSystem::ResizeControl(const Vector2& pos, bool withPivot, bool rat
         deltaPosition.y = 0.0f;
     }
 
-    auto pivotProp = document->GetPropertyByName(activeControl, "Pivot");
+    auto pivotProp = activeControl->GetRootProperty()->GetPropertyByName("Pivot");
     DVASSERT(nullptr != pivotProp);
     Vector2 pivot = pivotProp->GetValue().AsVector2();
 
@@ -371,8 +371,7 @@ void TransformSystem::ResizeControl(const Vector2& pos, bool withPivot, bool rat
 template <typename T>
 void TransformSystem::AdjustProperty(ControlNode *node, const String &propertyName, const T &delta)
 {
-
-    AbstractProperty *property = document->GetPropertyByName(node, propertyName);
+    AbstractProperty *property = node->GetRootProperty()->GetPropertyByName(propertyName);
     DVASSERT(nullptr != property);
     VariantType var(delta);
     

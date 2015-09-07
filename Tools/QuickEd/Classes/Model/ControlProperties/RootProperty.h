@@ -95,6 +95,7 @@ public:
     void SetDefaultProperty(AbstractProperty *property, const DAVA::VariantType &newValue);
     void ResetProperty(AbstractProperty *property);
     void RefreshProperty(AbstractProperty *property, DAVA::int32 refreshFlags);
+    AbstractProperty* GetPropertyByName(const DAVA::String &name) const;
 
     void Refresh(DAVA::int32 refreshFlags) override;
     void Accept(PropertyVisitor *visitor) override;
@@ -102,7 +103,6 @@ public:
 
     const DAVA::String &GetName() const override;
     ePropertyType GetType() const override;
-
 private:
     void AddBaseProperties(DAVA::UIControl *control, const RootProperty *sourceProperties, eCloneType cloneType);
     void MakeControlPropertiesSection(DAVA::UIControl *control, const DAVA::InspInfo *typeInfo, const RootProperty *sourceProperties, eCloneType cloneType);
