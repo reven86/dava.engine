@@ -91,7 +91,7 @@ bool TextureDescriptor::TextureDataSettings::GetIsNormalMap() const
 
 void TextureDescriptor::TextureDataSettings::EnableFlag( bool enable, int8 flag )
 {
-	if(enable)
+	if (enable)
 	{
 		textureFlags |= flag;
 	}
@@ -133,17 +133,15 @@ TextureDescriptor::~TextureDescriptor()
 
 TextureDescriptor * TextureDescriptor::CreateFromFile(const FilePath &filePathname)
 {
-	if(filePathname.IsEmpty() || filePathname.GetType() == FilePath::PATH_IN_MEMORY)
-		return NULL;
+	if (filePathname.IsEmpty() || (filePathname.GetType() == FilePath::PATH_IN_MEMORY))
+		return nullptr;
 
 	TextureDescriptor *descriptor = new TextureDescriptor();
-	bool initialized = descriptor->Initialize(filePathname);
-	if(!initialized)
+	if (!descriptor->Initialize(filePathname))
 	{
 		Logger::Error("[TextureDescriptor::CreateFromFile(]: there are no descriptor file (%s).", filePathname.GetAbsolutePathname().c_str());
 		delete descriptor;
-
-		return NULL;
+		return nullptr;
 	}
 
     return descriptor;
@@ -165,7 +163,7 @@ void TextureDescriptor::SetDefaultValues()
 
 	drawSettings.SetDefaultValues();
 	dataSettings.SetDefaultValues();
-	for(int32 i = 0; i < GPU_FAMILY_COUNT; ++i)
+	for (int32 i = 0; i < GPU_FAMILY_COUNT; ++i)
 	{
 		compression[i].Clear();
 	}
@@ -204,14 +202,14 @@ bool TextureDescriptor::UpdateCrcForFormat(eGPUFamily forGPU) const
     const Compression *compression = GetCompressionParams(forGPU);
 
 	uint32 sourceCRC = ReadSourceCRC();
-	if(compression->sourceFileCrc != sourceCRC)
+	if (compression->sourceFileCrc != sourceCRC)
 	{
 		compression->sourceFileCrc = sourceCRC;
 		wasUpdated = true;
 	}
     
     uint32 convertedCRC = GetConvertedCRC(forGPU);
-	if(compression->convertedFileCrc != convertedCRC)
+	if (compression->convertedFileCrc != convertedCRC)
 	{
 		compression->convertedFileCrc = convertedCRC;
 		wasUpdated = true;
@@ -223,7 +221,7 @@ bool TextureDescriptor::UpdateCrcForFormat(eGPUFamily forGPU) const
 bool TextureDescriptor::Load(const FilePath &filePathname)
 {
     ScopedPtr<File> file(File::Create(filePathname, File::READ | File::OPEN));
-    if(!file)
+    if (!file)
     {
         Logger::Error("[TextureDescriptor::Load] Can't open file: %s", filePathname.GetAbsolutePathname().c_str());
         return false;
@@ -287,7 +285,7 @@ void TextureDescriptor::Save() const
 void TextureDescriptor::Save(const FilePath &filePathname) const
 {
     File *file = File::Create(filePathname, File::WRITE | File::CREATE);
-    if(!file)
+    if (!file)
     {
         Logger::Error("[TextureDescriptor::Save] Can't open file: %s", filePathname.GetAbsolutePathname().c_str());
         return;
@@ -301,7 +299,7 @@ void TextureDescriptor::Save(const FilePath &filePathname) const
 void TextureDescriptor::Export(const FilePath &filePathname) const
 {
     File *file = File::Create(filePathname, File::WRITE | File::OPEN | File::CREATE);
-    if(!file)
+    if (!file)
     {
         Logger::Error("[TextureDescriptor::Export] Can't open file: %s", filePathname.GetAbsolutePathname().c_str());
         return;
@@ -381,7 +379,7 @@ void TextureDescriptor::LoadVersion6(DAVA::File *file)
 
     ConvertV9orLessToV10();
 
-    if(isCompressedFile)
+    if (isCompressedFile)
     {
 		file->Read(&exportedAsGpuFamily);
         exportedAsGpuFamily = GPUFamilyDescriptor::ConvertValueToGPU(exportedAsGpuFamily);
@@ -418,7 +416,7 @@ void TextureDescriptor::LoadVersion7(DAVA::File *file)
     
     ConvertV9orLessToV10();
 
-    if(isCompressedFile)
+    if (isCompressedFile)
     {
         file->Read(&exportedAsGpuFamily);
         exportedAsGpuFamily = GPUFamilyDescriptor::ConvertValueToGPU(exportedAsGpuFamily);
@@ -707,7 +705,7 @@ FilePath TextureDescriptor::GetDescriptorPathname(const FilePath &texturePathnam
 {
     DVASSERT(!texturePathname.IsEmpty());
     
-    if(0 == CompareCaseInsensitive(texturePathname.GetExtension(), GetDescriptorExtension()))
+    if (0 == CompareCaseInsensitive(texturePathname.GetExtension(), GetDescriptorExtension()))
     {
         return texturePathname;
     }
@@ -816,7 +814,7 @@ uint32 TextureDescriptor::ReadSourceCRC_V8_or_less() const
     uint32 crc = 0;
 
     DAVA::File *f = DAVA::File::Create(GetSourceTexturePathname(), DAVA::File::OPEN | DAVA::File::READ);
-    if (NULL != f)
+    if (f != nullptr)
     {
         uint8 buffer[8];
 
@@ -854,7 +852,7 @@ uint32 TextureDescriptor::ReadSourceCRC() const
     
 uint32 TextureDescriptor::GetConvertedCRC(eGPUFamily forGPU) const  
 {
-	if(compression[forGPU].format == FORMAT_INVALID) return 0;
+	if (compression[forGPU].format == FORMAT_INVALID) return 0;
 
     ImageFormat imageFormat = GetImageFormatForGPU(forGPU);
     FilePath filePath = CreateCompressedTexturePathname(forGPU, imageFormat);
@@ -870,7 +868,7 @@ uint32 TextureDescriptor::GetConvertedCRC(eGPUFamily forGPU) const
         return helper.GetCRCFromFile(filePath) + GenerateDescriptorCRC();
 #endif
 	}
-	else if(imageFormat == IMAGE_FORMAT_DDS)
+	else if (imageFormat == IMAGE_FORMAT_DDS)
 	{
         LibDdsHelper helper;
 		return helper.GetCRCFromFile(filePath) + GenerateDescriptorCRC();
@@ -936,7 +934,7 @@ ImageFormat TextureDescriptor::GetImageFormatForGPU(const eGPUFamily gpuFamily) 
     
 PixelFormat TextureDescriptor::GetPixelFormatForGPU(eGPUFamily forGPU) const
 {
-	if(forGPU == GPU_INVALID)
+	if (forGPU == GPU_INVALID)
 		return FORMAT_INVALID;
 
     DVASSERT(0 <= forGPU && forGPU < GPU_FAMILY_COUNT);
@@ -954,7 +952,7 @@ void TextureDescriptor::Initialize(rhi::TextureAddrMode wrap, bool generateMipma
     drawSettings.minFilter = rhi::TEXFILTER_LINEAR;
     drawSettings.magFilter = rhi::TEXFILTER_LINEAR;
 
-	if(generateMipmaps)
+	if (generateMipmaps)
 	{
         drawSettings.mipFilter = rhi::TEXMIPFILTER_LINEAR;		
 	}
@@ -966,7 +964,7 @@ void TextureDescriptor::Initialize(rhi::TextureAddrMode wrap, bool generateMipma
 
 void TextureDescriptor::Initialize( const TextureDescriptor *descriptor )
 {
-	if(!descriptor)
+	if (!descriptor)
 	{
 		SetDefaultValues();
 		return;
@@ -1004,7 +1002,7 @@ void TextureDescriptor::SetGenerateMipmaps( bool generateMipmaps )
 
 bool TextureDescriptor::Reload()
 {
-	if((pathname.IsEmpty() == false) && pathname.Exists())
+	if ((pathname.IsEmpty() == false) && pathname.Exists())
 	{
 		FilePath descriptorPathname = pathname;
 		SetDefaultValues();
