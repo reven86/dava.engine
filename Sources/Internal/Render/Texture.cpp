@@ -173,7 +173,7 @@ Texture::Texture()
 ,	textureType(rhi::TEXTURE_TYPE_2D)
 ,	isRenderTarget(false)
 ,	isPink(false)
-,	invalidater(NULL)
+,	invalidater(nullptr)
 {
     texDescriptor = new TextureDescriptor;
 }
@@ -183,7 +183,7 @@ Texture::~Texture()
     if (invalidater)
     {
         invalidater->RemoveTexture(this);
-        invalidater = NULL;
+        invalidater = nullptr;
     }
     ReleaseTextureData();
 	SafeDelete(texDescriptor);
@@ -233,7 +233,8 @@ Texture * Texture::CreateFromData(PixelFormat _format, const uint8 *_data, uint3
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
 	Image *image = Image::CreateFromData(_width, _height, _format, _data);
-	if (!image) return NULL;
+	if (nullptr == image) 
+		return nullptr;
 
 	Texture * texture = new Texture();
 	texture->texDescriptor->Initialize(rhi::TEXADDR_CLAMP, generateMipMaps);
@@ -303,7 +304,7 @@ Texture * Texture::CreateFromImage(TextureDescriptor *descriptor, eGPUFamily gpu
 
         SafeDelete(images);
 		SafeRelease(texture);
-		return NULL;
+		return nullptr;
 	}
 
 	texture->SetParamsFromImages(images);
@@ -498,7 +499,7 @@ Texture * Texture::CreateFromFile(const FilePath & pathName, const FastName &gro
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
 	Texture* texture = PureCreate(pathName, group);
-	if (texture == nullptr)
+	if (nullptr == texture)
 	{
         TextureDescriptor *descriptor = TextureDescriptor::CreateFromFile(pathName);
         if (descriptor)
@@ -537,7 +538,7 @@ Texture * Texture::PureCreate(const FilePath & pathName, const FastName &group)
 		return texture;
     
     TextureDescriptor* descriptor(TextureDescriptor::CreateFromFile(descriptorPathname));
-    if (descriptor == nullptr)
+    if (nullptr == descriptor)
 		return nullptr;
     
     descriptor->SetQualityGroup(group);
@@ -751,10 +752,10 @@ Image * Texture::CreateImageFromMemory()
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-    Image *image = NULL;
+    Image* image = nullptr;
     
-    void * mappedData = rhi::MapTexture(handle);
-    image = Image::CreateFromData(width, height, texDescriptor->format, (uint8 *)mappedData);
+    void* mappedData = rhi::MapTexture(handle);
+    image = Image::CreateFromData(width, height, texDescriptor->format, (uint8*)mappedData);
     rhi::UnmapTexture(handle);
     
     return image;
@@ -852,12 +853,14 @@ void Texture::SetInvalidater(TextureInvalidater* invalidater)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-    if (this->invalidater)
+    if (nullptr != invalidater)
     {
-        this->invalidater->RemoveTexture(this);
+        invalidater->RemoveTexture(this);
     }
-	this->invalidater = invalidater;
-    if (invalidater != NULL)
+
+	invalidater = invalidater;
+
+    if (nullptr != invalidater)
     {
         invalidater->AddTexture(this);
     }
@@ -923,7 +926,7 @@ int32 Texture::GetBaseMipMap() const
     if (texDescriptor->GetQualityGroup().IsValid())
     {
         const TextureQuality *curTxQuality = QualitySettingsSystem::Instance()->GetTxQuality(QualitySettingsSystem::Instance()->GetCurTextureQuality());
-        if (NULL != curTxQuality)
+        if (nullptr != curTxQuality)
         {
             return static_cast<int32>(curTxQuality->albedoBaseMipMapLevel);
         }
