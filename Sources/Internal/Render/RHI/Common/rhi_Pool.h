@@ -274,7 +274,7 @@ public:
                     }
     void            MarkNeedRestore()
                     {
-                        if( !needRestore )
+                        if( !needRestore  &&  creationDesc.needRestore )
                         {
                             needRestore = true;
                             ++needRestoreCount;
