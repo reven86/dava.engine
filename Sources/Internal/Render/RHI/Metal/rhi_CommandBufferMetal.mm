@@ -64,6 +64,8 @@ CommandBufferMetal_t
 
     id<MTLTexture>              rt;
     Handle                      cur_ib;
+    Handle                      cur_vb;
+    uint32                      cur_stride;
 };
 
 
@@ -104,7 +106,14 @@ SCOPED_NAMED_TIMING("rhi.mtl-vsync");
     if( passConf.colorBuffer[0].texture != InvalidHandle )
         TextureMetal::SetAsRenderTarget( passConf.colorBuffer[0].texture, desc );
     
-    desc.colorAttachments[0].loadAction     = (passConf.colorBuffer[0].loadAction==LOADACTION_CLEAR) ? MTLLoadActionClear : MTLLoadActionDontCare;
+    switch( passConf.colorBuffer[0].loadAction )
+    {
+        case LOADACTION_CLEAR : desc.colorAttachments[0].loadAction = MTLLoadActionClear; break;
+        case LOADACTION_LOAD  : desc.colorAttachments[0].loadAction = MTLLoadActionLoad; break;
+        default               : desc.colorAttachments[0].loadAction = MTLLoadActionDontCare;
+    }
+    
+//    desc.colorAttachments[0].loadAction     = (passConf.colorBuffer[0].loadAction==LOADACTION_CLEAR) ? MTLLoadActionClear : MTLLoadActionDontCare;
     desc.colorAttachments[0].storeAction    = MTLStoreActionStore;
     desc.colorAttachments[0].clearColor     = MTLClearColorMake(passConf.colorBuffer[0].clearColor[0],passConf.colorBuffer[0].clearColor[1],passConf.colorBuffer[0].clearColor[2],passConf.colorBuffer[0].clearColor[3]);
 
@@ -143,6 +152,7 @@ SCOPED_NAMED_TIMING("rhi.mtl-vsync");
         cb->buf          = pass->buf;
         cb->rt           = desc.colorAttachments[0].texture;
         cb->cur_ib       = InvalidHandle;
+        cb->cur_vb       = InvalidHandle;
         
         pass->cmdBuf[0] = cb_h;        
         cmdBuf[0]       = cb_h;
@@ -162,6 +172,7 @@ SCOPED_NAMED_TIMING("rhi.mtl-vsync");
             cb->buf         = pass->buf;
             cb->rt          = desc.colorAttachments[0].texture;
             cb->cur_ib      = InvalidHandle;
+            cb->cur_vb      = InvalidHandle;
             
             pass->cmdBuf[i] = cb_h;        
             cmdBuf[i]       = cb_h;
@@ -244,7 +255,7 @@ metal_CommandBuffer_SetPipelineState( Handle cmdBuf, Handle ps, uint32 layoutUID
 {
     CommandBufferMetal_t*   cb = CommandBufferPool::Get( cmdBuf );
 
-    PipelineStateMetal::SetToRHI( ps, layoutUID, cb->encoder );
+    cb->cur_stride = PipelineStateMetal::SetToRHI( ps, layoutUID, cb->encoder );
     StatSet::IncStat( stat_SET_PS, 1 );
 }
 
@@ -288,7 +299,7 @@ metal_CommandBuffer_SetScissorRect( Handle cmdBuf, ScissorRect rect )
     if( !(rect.x==0  &&  rect.y==0  &&  rect.width==0  &&  rect.height==0) )
     {
         rc.x      = rect.x;
-        rc.x      = rect.y;
+        rc.y      = rect.y;
         rc.width  = rect.width;
         rc.height = rect.height;
     }
@@ -343,7 +354,7 @@ metal_CommandBuffer_SetVertexData( Handle cmdBuf, Handle vb, uint32 streamIndex 
 {
     CommandBufferMetal_t*   cb = CommandBufferPool::Get( cmdBuf );
 
-    VertexBufferMetal::SetToRHI( vb, cb->encoder );
+    cb->cur_vb = vb;
 }
 
 
@@ -467,6 +478,7 @@ metal_CommandBuffer_DrawPrimitive( Handle cmdBuf, PrimitiveType type, uint32 cou
     CommandBufferMetal_t*   cb    = CommandBufferPool::Get( cmdBuf );
     MTLPrimitiveType        ptype = MTLPrimitiveTypeTriangle;
     unsigned                v_cnt = 0;
+    id<MTLBuffer>           vb    = VertexBufferMetal::GetBuffer( cb->cur_vb );
     
     switch( type )
     {
@@ -486,6 +498,7 @@ metal_CommandBuffer_DrawPrimitive( Handle cmdBuf, PrimitiveType type, uint32 cou
             break;
     }    
 
+    [cb->encoder setVertexBuffer:vb offset:0 atIndex:0 ]; // CRAP: assuming vdata is buffer#0
     [cb->encoder drawPrimitives:ptype vertexStart:0 vertexCount:v_cnt];
     StatSet::IncStat( stat_DP, 1 );
 }
@@ -494,12 +507,13 @@ metal_CommandBuffer_DrawPrimitive( Handle cmdBuf, PrimitiveType type, uint32 cou
 //------------------------------------------------------------------------------
 
 static void
-metal_CommandBuffer_DrawIndexedPrimitive( Handle cmdBuf, PrimitiveType type, uint32 count, uint32 /*vertexCount*/, uint32 /*firstVertex*/, uint32 startIndex )
+metal_CommandBuffer_DrawIndexedPrimitive( Handle cmdBuf, PrimitiveType type, uint32 count, uint32 /*vertexCount*/, uint32 firstVertex, uint32 startIndex )
 {
     CommandBufferMetal_t*   cb    = CommandBufferPool::Get( cmdBuf );
     MTLPrimitiveType        ptype = MTLPrimitiveTypeTriangle;
     unsigned                i_cnt = 0;
     id<MTLBuffer>           ib    = IndexBufferMetal::GetBuffer( cb->cur_ib );
+    id<MTLBuffer>           vb    = VertexBufferMetal::GetBuffer( cb->cur_vb );
     
     switch( type )
     {
@@ -519,6 +533,7 @@ metal_CommandBuffer_DrawIndexedPrimitive( Handle cmdBuf, PrimitiveType type, uin
             break;
     }    
 
+    [cb->encoder setVertexBuffer:vb offset:firstVertex*cb->cur_stride atIndex:0 ]; // CRAP: assuming vdata is buffer#0
     [cb->encoder drawIndexedPrimitives:ptype indexCount:i_cnt indexType:MTLIndexTypeUInt16 indexBuffer:ib indexBufferOffset:startIndex*sizeof(uint16) ];
     StatSet::IncStat( stat_DIP, 1 );
 }
@@ -579,7 +594,7 @@ metal_SyncObject_IsSignaled( Handle obj )
 //------------------------------------------------------------------------------
 
 static void
-metal_Present( Handle sync)
+metal_Present( Handle syncObject)
 {
 SCOPED_NAMED_TIMING("rhi.draw-present");
 
@@ -606,9 +621,20 @@ SCOPED_NAMED_TIMING("rhi.draw-present");
         if( do_add )
             pass.push_back( rp );
     }
-
-
-//-    for( unsigned p=0; p!=_CmdQueue.size(); ++p )
+    
+    if( syncObject != InvalidHandle && pass.size() && pass.back()->cmdBuf.size())
+    {
+        Handle                  last_cb_h = pass.back()->cmdBuf.back();
+        CommandBufferMetal_t*   last_cb   = CommandBufferPool::Get( last_cb_h );
+        
+        [last_cb->buf addCompletedHandler:^(id <MTLCommandBuffer> cmdb)
+         {
+             SyncObjectMetal_t*  sync = SyncObjectPool::Get( syncObject );
+             
+             sync->is_signaled = true;
+         }];
+    }
+    
     for( std::vector<RenderPassMetal_t*>::iterator p=pass.begin(),p_end=pass.end(); p!=p_end; ++p )
     {
         RenderPassMetal_t*  pass = *p;
@@ -616,19 +642,12 @@ SCOPED_NAMED_TIMING("rhi.draw-present");
         for( unsigned b=0; b!=pass->cmdBuf.size(); ++b )
         {
             Handle                  cb_h = pass->cmdBuf[b];
-            CommandBufferMetal_t*   cb   = CommandBufferPool::Get( cb_h );
-        
+            
             CommandBufferPool::Free( cb_h );
         }
         
         [pass->buf presentDrawable:_CurDrawable];
         [pass->buf commit];
-        // force CPU-GPU sync
-//        [pass->buf waitUntilCompleted];
-        
-        if( pass->cmdBuf.size() > 1 )
-        {
-        }
     }
 
     for( unsigned i=0; i!=_CmdQueue.size(); ++i )

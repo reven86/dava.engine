@@ -80,24 +80,27 @@ MetalTextureFormat( TextureFormat format )
     {
 //        case TEXTURE_FORMAT_R8G8B8      : return MTLPixelFormatBGRA8Unorm;
 //        case TEXTURE_FORMAT_A8R8G8B8    : return MTLPixelFormatBGRA8Unorm;
-        case TEXTURE_FORMAT_R8G8B8A8    : return MTLPixelFormatRGBA8Unorm;
+        case TEXTURE_FORMAT_R8G8B8A8            : return MTLPixelFormatRGBA8Unorm;
 //        TEXTURE_FORMAT_X8R8G8B8,
 
-        case TEXTURE_FORMAT_R5G5B5A1    : return MTLPixelFormatA1BGR5Unorm;
-        case TEXTURE_FORMAT_R5G6B5      : return MTLPixelFormatB5G6R5Unorm;
+        case TEXTURE_FORMAT_R5G5B5A1            : return MTLPixelFormatA1BGR5Unorm;
+        case TEXTURE_FORMAT_R5G6B5              : return MTLPixelFormatB5G6R5Unorm;
 
-        case TEXTURE_FORMAT_R4G4B4A4    : return MTLPixelFormatABGR4Unorm;
+        case TEXTURE_FORMAT_R4G4B4A4            : return MTLPixelFormatABGR4Unorm;
 
 //        TEXTURE_FORMAT_A16R16G16B16,
 //        TEXTURE_FORMAT_A32R32G32B32,
 
-//        TEXTURE_FORMAT_R8,
+        case TEXTURE_FORMAT_R8                  : return MTLPixelFormatA8Unorm;
 //        TEXTURE_FORMAT_R16,
 
-        case TEXTURE_FORMAT_PVRTC2_4BPP_RGB     : return MTLPixelFormatPVRTC_RGB_4BPP;
-        case TEXTURE_FORMAT_PVRTC2_4BPP_RGBA    : return MTLPixelFormatPVRTC_RGBA_4BPP;
-        case TEXTURE_FORMAT_PVRTC2_2BPP_RGB     : return MTLPixelFormatPVRTC_RGB_2BPP;
-        case TEXTURE_FORMAT_PVRTC2_2BPP_RGBA    : return MTLPixelFormatPVRTC_RGBA_2BPP;
+        case TEXTURE_FORMAT_PVRTC_4BPP_RGBA  : return MTLPixelFormatPVRTC_RGBA_4BPP;
+        case TEXTURE_FORMAT_PVRTC_2BPP_RGBA  : return MTLPixelFormatPVRTC_RGBA_2BPP;
+            
+        case TEXTURE_FORMAT_PVRTC2_4BPP_RGB  : return MTLPixelFormatPVRTC_RGB_4BPP;
+        case TEXTURE_FORMAT_PVRTC2_4BPP_RGBA : return MTLPixelFormatPVRTC_RGBA_4BPP;
+        case TEXTURE_FORMAT_PVRTC2_2BPP_RGB  : return MTLPixelFormatPVRTC_RGB_2BPP;
+        case TEXTURE_FORMAT_PVRTC2_2BPP_RGBA : return MTLPixelFormatPVRTC_RGBA_2BPP;
 
 //        TEXTURE_FORMAT_ATC_RGB,
 //        TEXTURE_FORMAT_ATC_RGBA_EXPLICIT,

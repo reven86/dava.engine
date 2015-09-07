@@ -399,8 +399,8 @@ enum
 LoadAction
 {
     LOADACTION_NONE     = 0,
-    LOADACTION_CLEAR    = 1
-//    LOADACTION_LOAD    = 2
+    LOADACTION_CLEAR    = 1,
+    LOADACTION_LOAD     = 2
 };
 
 enum

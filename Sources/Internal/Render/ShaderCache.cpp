@@ -82,7 +82,7 @@ void ClearDynamicBindigs()
 {
     DVASSERT(initialized);
     for (auto &it : shaderDescriptors)
-    {
+    {        
         it.second->ClearDynamicBindings();
     }
 }
@@ -205,13 +205,15 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
     psDesc.vertexLayout = vSource.ShaderVertexLayout();
     psDesc.blending = fSource.Blending();
     rhi::HPipelineState piplineState = rhi::AcquireRenderPipelineState(psDesc);
-    
-    ShaderDescriptor *res = new ShaderDescriptor(&vSource, &fSource, piplineState);    
-    res->sourceName = name;
-    res->defines = defines;
-    res->requiredVertexFormat = GetVertexLayoutRequiredFormat(psDesc.vertexLayout);
-    shaderDescriptors[key] = res;
-
+    ShaderDescriptor *res = nullptr;
+    if (piplineState.IsValid())
+    {
+        res = new ShaderDescriptor(&vSource, &fSource, piplineState);
+        res->sourceName = name;
+        res->defines = defines;
+        res->requiredVertexFormat = GetVertexLayoutRequiredFormat(psDesc.vertexLayout);
+        shaderDescriptors[key] = res;
+    }    
     return res;
 }
 
