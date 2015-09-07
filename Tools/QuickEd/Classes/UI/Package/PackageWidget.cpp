@@ -64,7 +64,7 @@ namespace
         }
         PackageModel *packageModel;
         FilteredPackageModel *filteredPackageModel;
-        QList<QPersistentModelIndex> expandedIndexes;
+        PackageWidget::ExpandedNodes expandedIndexes;
         QItemSelection selection;
         QString filterString;
     };
@@ -182,7 +182,6 @@ void PackageWidget::LoadContext()
         //restore filter line
         filterLine->setText(context->filterString);
     }
-
 }
 
 void PackageWidget::SaveContext()
@@ -429,7 +428,7 @@ void PackageWidget::filterTextChanged(const QString &filterText)
         {
             expandedIndexes = GetExpandedIndexes();
         }
-        static_cast<QSortFilterProxyModel*>(treeView->model())->setFilterFixedString(filterText);
+        filteredPackageModel->setFilterFixedString(filterText);
 
         if (filterText.isEmpty())
         {
@@ -457,29 +456,30 @@ void PackageWidget::OnControlSelectedInEditor(const QList<ControlNode *> &select
     }
 }
 
-QList<QPersistentModelIndex> PackageWidget::GetExpandedIndexes() const
+PackageWidget::ExpandedNodes PackageWidget::GetExpandedIndexes() const
 {
-    QList<QPersistentModelIndex> retval;
+    ExpandedNodes retval;
     QModelIndex index = treeView->model()->index(0, 0);
     while (index.isValid())
     {
         if (treeView->isExpanded(index))
         {
-            retval << QPersistentModelIndex(index);
+            retval << filteredPackageModel->mapToSource(index);
         }
         index = treeView->indexBelow(index);
     }
-
+    
     return retval;
 }
 
-void PackageWidget::RestoreExpandedIndexes(const QList<QPersistentModelIndex>& indexes)
+void PackageWidget::RestoreExpandedIndexes(const ExpandedNodes& indexes)
 {
-    for (const auto &index : indexes)
+    for (auto &index : indexes)
     {
-        if (index.isValid())
+        QModelIndex mappedIndex = filteredPackageModel->mapFromSource(index);
+        if (mappedIndex.isValid())
         {
-            treeView->setExpanded(index, true);
+            treeView->setExpanded(mappedIndex, true);
         }
     }
 }
