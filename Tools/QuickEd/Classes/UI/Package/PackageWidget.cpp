@@ -68,7 +68,6 @@ namespace
         QItemSelection selection;
         QString filterString;
     };
-    
 }
 
 PackageWidget::PackageWidget(QWidget *parent)
