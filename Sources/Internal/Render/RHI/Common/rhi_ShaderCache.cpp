@@ -226,6 +226,9 @@ static const char* _ShaderHeader_Metal =
 "inline float4 lerp( float4 a, float4 b, float t ) { return mix( a, b, t ); }\n"
 
 "#define FP_DISCARD_FRAGMENT discard_fragment()\n"
+"#define FP_A8(t) t.a\n"
+
+"#define STEP(edge,x) ((x)<(edge)) ? 0.0 : 1.0\n"
 ;
     
 static const char* _ShaderDefine_Metal =
@@ -245,9 +248,12 @@ static const char* _ShaderDefine_Metal =
 "#define VPROG_IN_TEXCOORD5(sz)  float##sz texcoord5 [[ attribute(VATTR_TEXCOORD_5) ]] ; \n"
 "#define VPROG_IN_TEXCOORD6(sz)  float##sz texcoord6 [[ attribute(VATTR_TEXCOORD_6) ]] ; \n"
 "#define VPROG_IN_TEXCOORD7(sz)  float##sz texcoord7 [[ attribute(VATTR_TEXCOORD_7) ]] ; \n"
-"#define VPROG_IN_COLOR          uchar4 color0 [[ attribute(VATTR_COLOR_0) ]] ; \n"
-"#define VPROG_IN_COLOR0         uchar4 color0 [[ attribute(VATTR_COLOR_0) ]] ; \n"
-"#define VPROG_IN_COLOR1         uchar4 color1 [[ attribute(VATTR_COLOR_1) ]] ; \n"
+//"#define VPROG_IN_COLOR          uchar4 color0 [[ attribute(VATTR_COLOR_0) ]] ; \n"
+//"#define VPROG_IN_COLOR0         uchar4 color0 [[ attribute(VATTR_COLOR_0) ]] ; \n"
+//"#define VPROG_IN_COLOR1         uchar4 color1 [[ attribute(VATTR_COLOR_1) ]] ; \n"
+"#define VPROG_IN_COLOR          float4 color0 [[ attribute(VATTR_COLOR_0) ]] ; \n"
+"#define VPROG_IN_COLOR0         float4 color0 [[ attribute(VATTR_COLOR_0) ]] ; \n"
+"#define VPROG_IN_COLOR1         float4 color1 [[ attribute(VATTR_COLOR_1) ]] ; \n"
 "#define VPROG_IN_TANGENT        float3 tangent [[ attribute(VATTR_TANGENT) ]] ; \n"
 "#define VPROG_IN_BINORMAL       float3 binormal [[ attribute(VATTR_BINORMAL) ]] ; \n"
 "#define VPROG_IN_BLENDWEIGHT    float3 blendweight [[ attribute(VATTR_BLENDWEIGHT) ]] ; \n"
@@ -446,6 +452,9 @@ static const char* _ShaderHeader_GLES2 =
 "#define lerp(a,b,t) mix( (a), (b), (t) )\n"
 
 "#define FP_DISCARD_FRAGMENT discard\n"
+"#define FP_A8(t) t.a\n"
+
+"#define STEP(edge,x) step( (edge), (x) )\n"
 ;
 
 static const char* _ShaderDefine_GLES2 =
@@ -588,6 +597,9 @@ static const char* _ShaderHeader_DX9 =
 "#define half1                  half\n"
 
 "#define FP_DISCARD_FRAGMENT discard\n"
+"#define FP_A8(t) t.a\n"
+
+"#define STEP(edge,x) step( (edge), (x) )\n"
 ;
 
 static const char* _ShaderDefine_DX9 =
@@ -729,6 +741,9 @@ static const char* _ShaderHeader_DX11 =
 "#define half1                  half\n"
 
 "#define FP_DISCARD_FRAGMENT discard\n"
+"#define FP_A8(t) t.r\n"
+
+"#define STEP(edge,x) step( (edge), (x) )\n"
 ;
 
 static const char* _ShaderDefine_DX11 =
