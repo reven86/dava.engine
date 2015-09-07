@@ -176,7 +176,9 @@ bool SettingsManager::CustomTextureViewGPULoad(const DAVA::String & paramName, c
 {
     if (DAVA::VariantType::TYPE_INT32 == src_value.GetType() && paramName == Settings::Internal_TextureViewGPU.c_str())
     {
-        dstValue.SetVariant(DAVA::VariantType(static_cast<DAVA::eGPUFamily>(src_value.AsInt32())));
+        DAVA::eGPUFamily gpuFamilyRead = static_cast<DAVA::eGPUFamily>(src_value.AsInt32());
+        DAVA::uint32 valueToVariant = static_cast<DAVA::uint32>(gpuFamilyRead);
+        dstValue.SetVariant(DAVA::VariantType(valueToVariant));
         return true;
     }
     return false;
@@ -199,13 +201,14 @@ void SettingsManager::Load()
                 DAVA::VariantType* sourceValue = toLoad->GetVariant(name);
 
                 // try to set texture view gpu custom way.
-                if (!CustomTextureViewGPULoad(name, *sourceValue, node->value))
+                if (CustomTextureViewGPULoad(name, *sourceValue, node->value))
                 {
-                    // Not setted. Use general setter.
-                    if (sourceValue->type == node->value.type)
-                    {
-                        node->value.SetVariant(*sourceValue);
-                    }
+                    continue;
+                }
+                // Not setted. Use general setter.
+                if (sourceValue->type == node->value.type)
+                {
+                    node->value.SetVariant(*sourceValue);
                 }
             }
         }
@@ -254,8 +257,9 @@ void SettingsManager::ResetToDefault()
 
 void SettingsManager::UpdateGPUSettings()
 {
-    DAVA::VariantType oldGpu = GetValue(Settings::Internal_TextureViewGPU);
-    DAVA::VariantType newGpu = DAVA::VariantType(DAVA::GPUFamilyDescriptor::ConvertValueToGPU(oldGpu.AsUInt32()));
+    DAVA::uint32 oldGpu = GetValue(Settings::Internal_TextureViewGPU).AsUInt32();
+    DAVA::uint32 newValue = DAVA::GPUFamilyDescriptor::ConvertValueToGPU(oldGpu);
+    DAVA::VariantType newGpu = DAVA::VariantType(newValue);
     SetValue(Settings::Internal_TextureViewGPU, newGpu);
 }
 
