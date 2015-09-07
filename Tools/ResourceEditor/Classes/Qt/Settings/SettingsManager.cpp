@@ -149,7 +149,6 @@ void SettingsManager::SetValue(const DAVA::FastName& path, const DAVA::VariantTy
 {
     DAVA::FastNameMap<SettingsNode>::iterator i = SettingsManager::Instance()->settingsMap.find(path);
     DVASSERT(i != SettingsManager::Instance()->settingsMap.end() && "No such setting path");
-    DVASSERT(i->second.value.type == value.type && "Setting different type");
 
     i->second.value.SetVariant(value);
 

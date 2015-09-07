@@ -412,7 +412,7 @@ bool QtMainWindow::SaveAllSceneEmitters(SceneEditor2 *scene) const
 
 DAVA::eGPUFamily QtMainWindow::GetGPUFormat()
 {
-    return GPUFamilyDescriptor::ConvertValueToGPU(SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsInt32());
+    return GPUFamilyDescriptor::ConvertValueToGPU(SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsUInt32());
 }
 
 void QtMainWindow::SetGPUFormat(DAVA::eGPUFamily gpu)
