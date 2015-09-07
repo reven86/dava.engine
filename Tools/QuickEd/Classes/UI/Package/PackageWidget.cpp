@@ -64,7 +64,7 @@ namespace
         }
         PackageModel *packageModel;
         FilteredPackageModel *filteredPackageModel;
-        PackageWidget::ExpandedNodes expandedIndexes;
+        PackageWidget::ExpandedIndexes expandedIndexes;
         QItemSelection selection;
         QString filterString;
     };
@@ -455,9 +455,9 @@ void PackageWidget::OnControlSelectedInEditor(const QList<ControlNode *> &select
     }
 }
 
-PackageWidget::ExpandedNodes PackageWidget::GetExpandedIndexes() const
+PackageWidget::ExpandedIndexes PackageWidget::GetExpandedIndexes() const
 {
-    ExpandedNodes retval;
+    ExpandedIndexes retval;
     QModelIndex index = treeView->model()->index(0, 0);
     while (index.isValid())
     {
@@ -471,7 +471,7 @@ PackageWidget::ExpandedNodes PackageWidget::GetExpandedIndexes() const
     return retval;
 }
 
-void PackageWidget::RestoreExpandedIndexes(const ExpandedNodes& indexes)
+void PackageWidget::RestoreExpandedIndexes(const ExpandedIndexes& indexes)
 {
     for (auto &index : indexes)
     {

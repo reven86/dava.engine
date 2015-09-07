@@ -53,7 +53,7 @@ class PackageWidget : public QDockWidget, public Ui::PackageWidget
 public:
     explicit PackageWidget(QWidget *parent = 0);
     ~PackageWidget() = default; 
-    using ExpandedNodes = QModelIndexList ;
+    using ExpandedIndexes = QModelIndexList ;
 public slots:
     void OnDocumentChanged(SharedData *context);
     void OnDataChanged(const QByteArray &role);
@@ -73,8 +73,8 @@ private:
     template <typename NodeType>
     void CollectSelectedNodes(const QItemSelection &selected, DAVA::Vector<NodeType*> &nodes, bool forCopy, bool forRemove);
 
-    ExpandedNodes GetExpandedIndexes() const;
-    void RestoreExpandedIndexes(const ExpandedNodes &indexes);
+    ExpandedIndexes GetExpandedIndexes() const;
+    void RestoreExpandedIndexes(const ExpandedIndexes &indexes);
 
 private slots:
     void OnSelectionChanged(const QItemSelection &proxySelected, const QItemSelection &proxyDeselected);
@@ -103,7 +103,7 @@ private:
     QPointer<FilteredPackageModel> filteredPackageModel;
     QPointer<PackageModel> packageModel;
     QString lastFilterText;
-    ExpandedNodes expandedIndexes;
+    ExpandedIndexes expandedIndexes;
 };
 
 #endif // __UI_EDITOR_UI_PACKAGE_WIDGET__
