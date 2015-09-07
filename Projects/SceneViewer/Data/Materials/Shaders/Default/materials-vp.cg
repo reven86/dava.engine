@@ -117,15 +117,16 @@ kkk
         varying lowp float varLightmapSize;
     #endif
     
+    #if VERTEX_COLOR || SPHERICAL_LIT
+        VPROG_OUT_COLOR1(varVertexColor,4)
+    #endif
+
     #if VERTEX_FOG
         VPROG_OUT_TEXCOORD5(varFog,4)
 //        varying lowp float varFogAmoung;
 //        varying lowp vec3 varFogColor;
     #endif
 
-    #if VERTEX_COLOR || SPHERICAL_LIT
-        VPROG_OUT_COLOR1(varVertexColor,4)
-    #endif
     
     #if FRAME_BLEND
         VPROG_OUT_TEXCOORD3(varTime,1)        
@@ -465,7 +466,7 @@ VPROG_BEGIN
         float3 toCameraDir = normalize(-eyeCoordsPosition);
         float3 H = normalize(toLightDir + toCameraDir);
         float nDotHV = max(0.0, dot(normal, H));
-        varSpecularColor = pow(nDotHV, materialSpecularShininess);
+        VP_OUT(varSpecularColor) = pow(nDotHV, materialSpecularShininess);
         
     #elif NORMALIZED_BLINN_PHONG
         

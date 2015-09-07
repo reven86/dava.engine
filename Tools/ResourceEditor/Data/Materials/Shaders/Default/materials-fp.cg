@@ -32,6 +32,9 @@ FPROG_IN_BEGIN
     #if TILED_DECAL_MASK
          FPROG_IN_TEXCOORD2(varDecalTileTexCoord,2)
     #endif
+    #if MATERIAL_DETAIL
+        FPROG_IN_TEXCOORD2(varDetailTexCoord,2)
+    #endif
 
     #if VERTEX_LIT
 
@@ -59,6 +62,10 @@ FPROG_IN_BEGIN
         
     #endif
     
+    #if VERTEX_COLOR || SPHERICAL_LIT
+        FPROG_IN_COLOR1(varVertexColor,4)
+    #endif
+
     #if VERTEX_FOG
         FPROG_IN_TEXCOORD5(varFog,4)
 //        varying lowp float varFogAmoung;
@@ -69,9 +76,6 @@ FPROG_IN_BEGIN
         varying lowp float varLightmapSize;
     #endif
     
-    #if VERTEX_COLOR || SPHERICAL_LIT
-        FPROG_IN_COLOR1(varVertexColor,4)
-    #endif
 
     #if FRAME_BLEND
         FPROG_IN_TEXCOORD3(varTime, 1)
@@ -139,7 +143,9 @@ FPROG_OUT_END
 #if (VERTEX_LIT || PIXEL_LIT ) && (!SKYOBJECT)
     property float3 lightAmbientColor0 : dynamic,a : ;
     property float3 lightColor0 : dynamic,a : ;
-    property float inGlossiness : static,a : ;
+    #if NORMALIZED_BLINN_PHONG && VIEW_SPECULAR
+        property float inGlossiness : static,a : ;
+    #endif
 #endif
 
 
@@ -229,7 +235,7 @@ FPROG_BEGIN
     
     
     #if MATERIAL_DETAIL
-        float3 detailTextureColor = FP_TEXTURE2D( detail, varDetailTexCoord ).rgb;
+        float3 detailTextureColor = FP_TEXTURE2D( detail, FP_IN(varDetailTexCoord) ).rgb;
     #endif
 
 

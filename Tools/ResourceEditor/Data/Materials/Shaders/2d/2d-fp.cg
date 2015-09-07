@@ -33,7 +33,7 @@ FPROG_BEGIN
     float2 in_uv = FP_IN(uv);
 
 #if ALPHA8
-    float4 resColor = float4( 1.0, 1.0, 1.0, FP_TEXTURE2D( tex, in_uv )[0] );
+    float4 resColor = float4( 1.0, 1.0, 1.0, FP_TEXTURE2D( tex, in_uv )[3] );
 #else
     float4 resColor = FP_TEXTURE2D( tex, in_uv );
 #endif
