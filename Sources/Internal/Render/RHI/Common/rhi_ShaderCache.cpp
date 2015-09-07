@@ -899,7 +899,7 @@ static const char* _ShaderDefine_DX11 =
 static void
 PreProcessSource( Api targetApi, const char* srcText, std::string* preprocessedText )
 {
-    char    src[64*1024] = "";
+    char    src[256*1024] = "";
     int     src_len      = 0;
 
     // inject vattr definitions
