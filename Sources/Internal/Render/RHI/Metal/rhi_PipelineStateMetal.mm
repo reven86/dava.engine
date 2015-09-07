@@ -430,7 +430,7 @@ PipelineStateMetal_t::ConstBuf::SetToRHI( unsigned bufIndex, id<MTLRenderCommand
 
         memcpy( inst, data, count*4*sizeof(float) );
     }
-
+    
     if( type == PROG_VERTEX )
         [ce setVertexBuffer:buf offset:inst_offset atIndex:1+bufIndex]; // CRAP: vprog-buf#0 assumed to be vdata
     else
@@ -832,7 +832,8 @@ SetToRHI( Handle ps, uint32 layoutUID, id<MTLRenderCommandEncoder> ce )
                 
                 for( unsigned j=0; j!=layout->ElementCount(); ++j )
                 {
-                    if( layout->ElementSemantics(j) == psm->layout.ElementSemantics(i) )
+                    if( layout->ElementSemantics(j) == psm->layout.ElementSemantics(i)
+                       && layout->ElementSemanticsIndex(j) == psm->layout.ElementSemanticsIndex(i))
                     {
                         MTLVertexFormat fmt = MTLVertexFormatInvalid;
                         
