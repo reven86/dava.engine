@@ -71,7 +71,13 @@ QPoint ScrollAreaController::GetPosition() const
 
 void ScrollAreaController::UpdateCanvasContentSize()
 {
-    Vector2 contentSize(scalableContent->GetGeometricData().GetUnrotatedRect().GetSize());
+    const auto childs = scalableContent->GetChildren();
+    UIControl* canvas = !childs.empty() ? childs.front() : nullptr;
+    Vector2 contentSize;
+    if (nullptr != canvas)
+    {
+        contentSize = canvas->GetGeometricData().GetAABBox().GetSize();
+    }
     Vector2 marginsSize(Margin * 2, Margin * 2);
     Vector2 tmpSize = contentSize + marginsSize;
     backgroundControl->SetSize(tmpSize);

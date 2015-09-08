@@ -33,13 +33,17 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "UI/UIEvent.h"
 #include "Base/BaseTypes.h"
 #include "Model/PackageHierarchy/ControlNode.h"
-#include "Render/RenderState.h"
-#include "Render/RenderManager.h"
-#include "Render/RenderHelper.h"
 #include "Input/InputSystem.h"
 #include "Input/KeyboardDevice.h"
 
 using namespace DAVA;
+
+namespace
+{
+    const Vector2 PIVOT_CONTROL_SIZE(5.0f, 5.0f);
+    const Vector2 FRAME_RECT_SIZE(10.0f, 10.0f);
+    const Vector2 ROTATE_CONTROL_SIZE(20.0f, 20.0f);
+}
 
 ControlContainer::ControlContainer(const ControlAreaInterface::eArea area_)
     : UIControl()
@@ -114,7 +118,7 @@ public:
 private:
     void InitFromGD(const UIGeometricData &geometricData) override
     {
-        Rect rect(0, 0, 8, 8);
+        Rect rect(Vector2(0.0f, 0.0f), FRAME_RECT_SIZE);
         rect.SetCenter(GetPos(geometricData));
         SetAbsoluteRect(rect);
     }
@@ -126,14 +130,14 @@ private:
         switch (area)
         {
         case ControlAreaInterface::TOP_LEFT_AREA: return retVal;
-        case ControlAreaInterface::TOP_CENTER_AREA: return retVal + Vector2(rect.dx / 2.0f, 0);
-        case ControlAreaInterface::TOP_RIGHT_AREA: return retVal + Vector2(rect.dx, 0);
+        case ControlAreaInterface::TOP_CENTER_AREA: return retVal + Vector2(rect.dx / 2.0f, 0.0f);
+        case ControlAreaInterface::TOP_RIGHT_AREA: return retVal + Vector2(rect.dx, 0.0f);
         case ControlAreaInterface::CENTER_LEFT_AREA: return retVal + Vector2(0, rect.dy / 2.0f);
         case ControlAreaInterface::CENTER_RIGHT_AREA: return retVal + Vector2(rect.dx, rect.dy / 2.0f);
         case ControlAreaInterface::BOTTOM_LEFT_AREA: return retVal + Vector2(0, rect.dy);
         case ControlAreaInterface::BOTTOM_CENTER_AREA: return retVal + Vector2(rect.dx / 2.0f, rect.dy);
         case ControlAreaInterface::BOTTOM_RIGHT_AREA: return retVal + Vector2(rect.dx, rect.dy);
-        default: DVASSERT_MSG(false, "what are you doing here?!"); return Vector2(0, 0);
+        default: DVASSERT_MSG(false, "what are you doing here?!"); return Vector2(0.0f, 0.0f);
         }
     }
 };
@@ -150,7 +154,7 @@ public:
 private:
     void InitFromGD(const UIGeometricData &geometricData) override
     {
-        Rect rect(0, 0, 5, 5);
+        Rect rect(Vector2(0.0f, 0.0f), PIVOT_CONTROL_SIZE);
         const Rect &controlRect = geometricData.GetUnrotatedRect();
         rect.SetCenter(controlRect.GetPosition() + geometricData.pivotPoint);
         SetAbsoluteRect(rect);
@@ -169,7 +173,7 @@ public:
 private:
     void InitFromGD(const UIGeometricData &geometricData) override
     {
-        Rect rect(0, 0, 20, 20);
+        Rect rect(Vector2(0.0f, 0.0f), ROTATE_CONTROL_SIZE);
         Rect controlRect = geometricData.GetUnrotatedRect();
         rect.SetCenter(Vector2(controlRect.GetPosition().x + controlRect.dx / 2.0f, controlRect.GetPosition().y - 20));
         SetAbsoluteRect(rect);
@@ -185,19 +189,18 @@ HUDSystem::HUDSystem(Document *document_)
     selectionRectControl->SetDebugDrawColor(Color(1.0f, 1.0f, 0.0f, 1.0f));
     hudControl->AddControl(selectionRectControl);
     hudControl->SetName("hud");
-    hudControl->SetSize(Vector2(10, 10));
 }
 
-void HUDSystem::AttachToRoot(UIControl* root)
+UIControl* HUDSystem::GetHudControl()
 {
-    root->AddControl(hudControl);
+    return hudControl.get();
 }
 
 void HUDSystem::Detach()
 {
     hudControl->RemoveFromParent();
     canDrawRect = false;
-    selectionRectControl->SetSize(Vector2(0, 0));
+    selectionRectControl->SetSize(Vector2(0.0f, 0.0f));
 }
 
 void HUDSystem::OnSelectionWasChanged(const SelectedControls& selected, const SelectedControls& deselected)
@@ -210,7 +213,7 @@ void HUDSystem::OnSelectionWasChanged(const SelectedControls& selected, const Se
     {
         hudMap.emplace(std::piecewise_construct, 
             std::forward_as_tuple(control),
-            std::forward_as_tuple(document, control, hudControl));
+            std::forward_as_tuple(control, hudControl));
     }
 }
 
@@ -327,7 +330,7 @@ void HUDSystem::SetNewArea(ControlNode* node, const ControlAreaInterface::eArea 
     }
 }
 
-HUDSystem::HUD::HUD(const Document *document, ControlNode *node_, UIControl* hudControl)
+HUDSystem::HUD::HUD(ControlNode *node_, UIControl* hudControl)
     : node(node_)
     , control(node_->GetControl())
     , container(new HUDContainer(control))

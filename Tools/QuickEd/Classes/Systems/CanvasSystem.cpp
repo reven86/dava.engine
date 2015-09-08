@@ -71,10 +71,14 @@ CanvasSystem::CanvasSystem(Document *parent)
 {
 }
 
+UIControl* CanvasSystem::GetCanvasControl()
+{
+    return canvas.get();
+}
+
 void CanvasSystem::AttachToRoot(UIControl* root)
 {
-    attachedRoot = root;
-    attachedRoot->AddControl(canvas);
+    root->AddControl(canvas);
     OnSelectionWasChanged(SelectedControls(), SelectedControls());
 }
 
@@ -135,6 +139,10 @@ void CanvasSystem::SetRootControls(const Set<PackageBaseNode*> &controls)
 
 void CanvasSystem::LayoutCanvas()
 {
+    if (nullptr == canvas->GetParent())
+    {
+        return;
+    }
     float32 maxWidth = 0.0f;
     float32 totalHeight = 0.0f;
     const int spacing = 5;
@@ -149,7 +157,6 @@ void CanvasSystem::LayoutCanvas()
         totalHeight += spacing * (childrenCount - 1);
     }
     Vector2 size(maxWidth, totalHeight);
-    attachedRoot->SetSize(size);
     canvas->SetSize(size);
     float32 curY = 0.0f;
     for (auto control : canvas->GetChildren())

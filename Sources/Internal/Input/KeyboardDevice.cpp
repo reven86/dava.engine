@@ -101,7 +101,7 @@ void KeyboardDevice::OnSystemKeyPressed(int32 systemKeyCode)
     OnKeyPressed(keyTranslator[systemKeyCode]);
 }
 
-void KeyboardDevice::OnSystemKeyUnpressed(const int32 systemKeyCode)
+void KeyboardDevice::OnSystemKeyUnpressed(int32 systemKeyCode)
 {
     DVASSERT(systemKeyCode < MAX_KEYS);
     OnKeyUnpressed(keyTranslator[systemKeyCode]);

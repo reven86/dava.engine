@@ -49,8 +49,6 @@ public:
     bool OnInput(DAVA::UIEvent *currentInput) override;
     void OnSelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected);
 
-    void Detach() override;
-
 private:
     enum ACCUMULATE_OPERATIONS
     {
@@ -64,7 +62,7 @@ private:
     bool ProcessDrag(const DAVA::Vector2 &pos);
     void ResizeControl(const DAVA::Vector2 &pos, bool withPivot, bool rateably);
 
-    void MoveConrol(const DAVA::Vector2 &pos);
+    void MoveControl(const DAVA::Vector2 &pos);
     void MoveAllSelectedControls(const DAVA::Vector2 &delta);
 
     template <typename T>

@@ -57,7 +57,9 @@ class HUDSystem final : public BaseSystem, public InputInterface
 public:
     HUDSystem(Document *document);
     ~HUDSystem() = default;
-    void AttachToRoot(DAVA::UIControl *root);
+
+    DAVA::UIControl *GetHudControl();
+
     void Detach() override;
 
     void OnSelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected);
@@ -67,7 +69,6 @@ public:
     void RemoveListener(ControlAreaInterface *listener);
 
     DAVA::Signal<const DAVA::Rect &/*selectionRectControl*/> SelectionRectChanged;
-
 private:
     void ProcessCursor(const DAVA::Vector2& pos);
     void GetControlArea(ControlNode *&node, ControlAreaInterface::eArea &area, const DAVA::Vector2 &pos);
@@ -85,7 +86,7 @@ private:
 
     struct HUD
     {
-        HUD(const Document *doc, ControlNode *node, DAVA::UIControl *hudControl);
+        HUD(ControlNode *node, DAVA::UIControl *hudControl);
         ~HUD();
         ControlNode *node = nullptr;
         DAVA::UIControl *control = nullptr;

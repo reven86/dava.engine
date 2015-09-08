@@ -59,7 +59,7 @@ TransformSystem::TransformSystem(Document *parent)
     : BaseSystem(parent)
     , steps({ { 10, 20, 20 } }) //10 for rotate and 20 for move/resize
 {
-    accumulates.fill({ { 0, 0 } });
+    accumulates.fill({ { 0.0f, 0.0f } });
 }
 
 void TransformSystem::MouseEnterArea(ControlNode *targetNode, const eArea area)
@@ -80,14 +80,19 @@ bool TransformSystem::OnInput(UIEvent* currentInput)
     {
         case UIEvent::PHASE_KEYCHAR:
             return ProcessKey(currentInput->tid);
+
         case UIEvent::PHASE_BEGAN:
             prevPos = currentInput->point;
             return activeArea != NO_AREA;
+
         case UIEvent::PHASE_DRAG:
-            return ProcessDrag(currentInput->point);
-        case UIEvent::PHASE_ENDED:
         {
-            accumulates.fill({ { 0, 0 } });
+            bool ret = ProcessDrag(currentInput->point);
+            prevPos = currentInput->point;
+            return ret;
+        }
+        case UIEvent::PHASE_ENDED:
+            accumulates.fill({ { 0.0f, 0.0f } });
             //return true if we did transformation
             if (dragRequested)
             {
@@ -95,10 +100,8 @@ bool TransformSystem::OnInput(UIEvent* currentInput)
                 return true;
             }
             return false;
-        }
         default:
             return false;
-            
     }
 }
 
@@ -112,11 +115,6 @@ void TransformSystem::OnSelectionWasChanged(const SelectedControls &selected, co
     {
         selectedControls.insert(controlNode);
     }
-}
-
-void TransformSystem::Detach()
-{
-    accumulates.fill({ { 0, 0 } });
 }
 
 bool TransformSystem::ProcessKey(const int32 key)
@@ -150,16 +148,16 @@ bool TransformSystem::ProcessDrag(const Vector2 &pos)
     {
         return false;
     }
+
     dragRequested = true;
     const auto &keyBoard = InputSystem::Instance()->GetKeyboard();
-    bool retval = true;
     auto gd =  activeControl->GetControl()->GetGeometricData();
 
     switch(activeArea)
     {
         case FRAME_AREA:
-            MoveConrol(pos);
-            break;
+            MoveControl(pos);
+            return true;
         case TOP_LEFT_AREA:
         case TOP_CENTER_AREA:
         case TOP_RIGHT_AREA:
@@ -173,7 +171,7 @@ bool TransformSystem::ProcessDrag(const Vector2 &pos)
             bool rateably = keyBoard.IsKeyPressed(DVKEY_SHIFT);
             ResizeControl(pos, withPivot, rateably);
         }
-        break;
+        return true;
         case PIVOT_POINT_AREA:
         {
             auto control = activeControl->GetControl();
@@ -185,10 +183,12 @@ bool TransformSystem::ProcessDrag(const Vector2 &pos)
             //pivot point calculate in rotate coordinates
             Vector2 angeledDelta(scaledDelta.x * gd.cosA + scaledDelta.y * gd.sinA,
                         scaledDelta.x * -gd.sinA + scaledDelta.y * gd.cosA);
-            Vector2 pivot(angeledDelta / control->GetSize());
+            const Vector2 &size = control->GetSize();
+            DVASSERT(size.x != 0.0f && size.y != 0.0f);
+            Vector2 pivot(angeledDelta / size);
             AdjustProperty(activeControl, "Pivot", pivot);
         }
-            break;
+        return true;
         case ROTATE_AREA:
         {
             auto control = activeControl->GetControl();
@@ -198,7 +198,7 @@ bool TransformSystem::ProcessDrag(const Vector2 &pos)
             Vector2 l1(prevPos - rotatePoint);
             Vector2 l2(pos - rotatePoint);
             float32 angleRad = atan2(l2.y, l2.x) - atan2(l1.y, l1.x);
-            float32 angle = angleRad * 180.0f / PI;
+            float32 angle = RadToDeg(angleRad);
             if (InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_SHIFT))
             {
                 Vector2 angle2(angle, angle);
@@ -210,14 +210,11 @@ bool TransformSystem::ProcessDrag(const Vector2 &pos)
                 angle = round(angle);
             }
             AdjustProperty(activeControl, "Angle", angle);
-        
         }
-            break;
+        return true;
         default:
-            retval = false;
+            return false;
     }
-    prevPos = pos;
-    return retval;
 }
 
 void TransformSystem::MoveAllSelectedControls(const Vector2 &delta)
@@ -231,10 +228,11 @@ void TransformSystem::MoveAllSelectedControls(const Vector2 &delta)
     }
 }
 
-void TransformSystem::MoveConrol(const Vector2& pos)
+void TransformSystem::MoveControl(const Vector2& pos)
 {
     Vector2 delta = pos - prevPos;
     auto gd =  activeControl->GetControl()->GetGeometricData();
+    DVASSERT(gd.scale.x != 0.0f && gd.scale.y != 0.0f);
     Vector2 realDelta = delta / gd.scale;
     if (InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_SHIFT))
     {
@@ -396,14 +394,17 @@ void TransformSystem::AccumulateOperation(ACCUMULATE_OPERATIONS operation, DAVA:
     const int step = steps[operation];
     int &x = accumulates[operation][Vector2::AXIS_X];
     int &y = accumulates[operation][Vector2::AXIS_Y];
+
     if (abs(x) < step)
     {
         x += delta.x;
     }
+
     if (abs(y) < step)
     {
         y += delta.y;
     }
+
     delta = Vector2(x - x % step, y - y % step);
     x -= delta.x;
     y -= delta.y;
