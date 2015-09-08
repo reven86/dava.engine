@@ -332,13 +332,11 @@ void SceneValidator::ValidateMaterials(DAVA::Scene *scene, Set<String> &errorsLo
                 Texture *tex = (*it)->GetLocalTexture(textureName);
                 if ((*it)->GetParent())
                 {
-                    texturesMap[tex] = Format("Material: %s (parent - %s). Texture %s.", (*it)->GetMaterialName().c_str(), (*it)->GetParent()->GetMaterialName().c_str(), textureName.c_str());
-							(*it)->GetParent()->GetMaterialName().c_str(), (*it)->GetTextureName(t).c_str());
+                    texturesMap[tex] = Format("Material: %s (parent - %s). Texture %s.", (*it)->GetMaterialName().c_str(), (*it)->GetParent()->GetMaterialName().c_str(), textureName.c_str());							
                 }
                 else
                 {
-                    texturesMap[tex] = Format("Material: %s. Texture %s.", (*it)->GetMaterialName().c_str(), textureName.c_str());
-							(*it)->GetMaterialName().c_str(), (*it)->GetTextureName(t).c_str());
+                    texturesMap[tex] = Format("Material: %s. Texture %s.", (*it)->GetMaterialName().c_str(), textureName.c_str());							
                 }
             }
         }
@@ -362,8 +360,7 @@ void SceneValidator::ValidateMaterials(DAVA::Scene *scene, Set<String> &errorsLo
 
             if (!qualityGroupIsOk)
             {
-                errorsLog.insert(Format("Material \"%s\" has unknown quality group \"%s\"", (*it)->GetMaterialName().c_str(), materialGroup.c_str()));
-							(*it)->GetMaterialName().c_str(), materialGroup.c_str());
+                errorsLog.insert(Format("Material \"%s\" has unknown quality group \"%s\"", (*it)->GetMaterialName().c_str(), materialGroup.c_str()));							
             }
         }
 
