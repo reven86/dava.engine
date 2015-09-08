@@ -167,7 +167,7 @@ public slots:
 
 	void OnSaveHeightmapToImage();
 	void OnSaveTiledTexture();
-	void OnTiledTextureRetreived(DAVA::Landscape* landscape, DAVA::Texture* landscapeTexture, const DAVA::FilePath& scenePath);
+	void OnTiledTextureRetreived(DAVA::Landscape* landscape, DAVA::Texture* landscapeTexture);
 
 	void OnConvertModifiedTextures();
     
