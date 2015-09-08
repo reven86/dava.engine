@@ -228,7 +228,7 @@ VariantType NMaterialStateDynamicPropertiesInsp::MemberValueGet(const DynamicDat
     FastNameMap<PropData>* members = (FastNameMap<PropData>*) ddata.data.get();
     DVASSERT(members);
 
-    if(members->count(key))
+    if (members->count(key))
     {
         const PropData &prop = members->at(key);
         const float32* value = material->GetEffectivePropValue(key);
@@ -236,6 +236,9 @@ VariantType NMaterialStateDynamicPropertiesInsp::MemberValueGet(const DynamicDat
         if (nullptr == value)
         {
             value = prop.defaultValue;
+
+			if (nullptr == value)
+				return ret;
         }
 
         switch (prop.type)

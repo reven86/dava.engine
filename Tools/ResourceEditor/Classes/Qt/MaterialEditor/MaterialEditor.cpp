@@ -970,6 +970,7 @@ void MaterialEditor::OnMaterialLoad(bool checked)
                 materialContext.SetScene(curScene);
                 materialContext.SetScenePath(ProjectManager::Instance()->CurProjectPath());
                 material->Load(materialArchive, &materialContext);
+				materialContext.ResolveMaterialBindings();
             }
 
             curScene->SetChanged(true);

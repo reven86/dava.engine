@@ -30,23 +30,22 @@
 #include "Render/Material/NMaterial.h"
 
 #include "Scene3D/Systems/QualitySettingsSystem.h"
+#include "Scene3D/SceneFile/SerializationContext.h"
+
 #include "Render/Material/NMaterialNames.h"
-
 #include "Render/Highlevel/Landscape.h"
-
 #include "Render/Material/FXCache.h"
 #include "Render/Shader.h"
 #include "Render/Texture.h"
-#include "Scene3D/SceneFile/SerializationContext.h"
 
 #include "Utils/Utils.h"
 #include "Utils/StringFormat.h"
 #include "FileSystem/YamlParser.h"
 
-
-
 namespace DAVA
 {
+
+const DAVA::String kSerializationContextVersion = "serializationContextVersion";
 
 uint32 NMaterialProperty::globalPropertyUpdateSemanticCounter = 0;
 
@@ -62,16 +61,11 @@ RenderVariantInstance::~RenderVariantInstance()
 }
 
 NMaterial::NMaterial()
-    : parent(nullptr)
-    , localProperties(16, nullptr)
+    : localProperties(16, nullptr)
     , localConstBuffers(16, nullptr)
     , localTextures(8, nullptr)
     , localFlags(16, 0)
     , renderVariants(4, nullptr)
-    , needRebuildBindings(true)
-    , needRebuildTextures(true)
-    , needRebuildVariants(true)
-    , activeVariantInstance(nullptr)
 {
 }
 
@@ -756,6 +750,7 @@ NMaterial* NMaterial::Clone()
 
     for (auto prop : localProperties)
         clonedMaterial->AddProperty(prop.first, prop.second->data.get(), prop.second->type, prop.second->arraySize);
+
     for (auto tex : localTextures)
     {
         MaterialTextureInfo *res = new MaterialTextureInfo();
@@ -769,7 +764,7 @@ NMaterial* NMaterial::Clone()
 
     clonedMaterial->SetParent(parent);
 
-    //DataNode properties
+    // DataNode properties
     clonedMaterial->id = 0;
     clonedMaterial->scene = scene;
     clonedMaterial->isRuntime = isRuntime;
@@ -780,6 +775,7 @@ NMaterial* NMaterial::Clone()
 void NMaterial::Save(KeyedArchive * archive, SerializationContext * serializationContext)
 {
     DataNode::Save(archive, serializationContext);
+	archive->SetUInt32(kSerializationContextVersion, serializationContext->GetVersion());
 
     if (parent)
         archive->SetUInt64("parentMaterialKey", parent->GetNodeID());
@@ -838,12 +834,19 @@ void NMaterial::Load(KeyedArchive * archive, SerializationContext * serializatio
 {
     DataNode::Load(archive, serializationContext);
 
-    if (serializationContext->GetVersion() < RHI_SCENE_VERSION)
+	uint32 contextVersion = serializationContext->GetVersion();
+	if (archive->IsKeyExists(kSerializationContextVersion))
+	{
+		auto contextVersionVariant = archive->GetVariant(kSerializationContextVersion);
+		if (contextVersionVariant->GetType() == VariantType::eVariantType::TYPE_UINT32)
+			contextVersion = archive->GetUInt32(kSerializationContextVersion);
+	}
+
+    if (contextVersion < RHI_SCENE_VERSION)
     {
         LoadOldNMaterial(archive, serializationContext);
         return;
     }
-
 
     if (archive->IsKeyExists("materialName"))
     {
@@ -885,8 +888,13 @@ void NMaterial::Load(KeyedArchive * archive, SerializationContext * serializatio
             const uint8* ptr = propVariant->AsByteArray();
 
             FastName propName = FastName(it->first);
-            uint8 propType = *ptr; ptr += sizeof(uint8);
-            uint32 propSize = *(uint32*)ptr; ptr += sizeof(uint32);
+
+            uint8 propType = *ptr; 
+			ptr += sizeof(uint8);
+
+            uint32 propSize = *(uint32*)ptr;
+			ptr += sizeof(uint32);
+
             float32 *data = (float32*)ptr;
 
             AddProperty(propName, data, (rhi::ShaderProp::Type)propType, propSize);
