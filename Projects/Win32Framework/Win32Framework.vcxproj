@@ -1279,7 +1279,7 @@
     <ClCompile Include="..\..\Sources\Internal\Utils\MD5.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Utils\StringFormat.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Utils\StringUtils.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Utils\UTF8UtilsWin32.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Utils\UTF8Utils.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Utils\Utils.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Utils\UtilsWin32.cpp" />
   </ItemGroup>

@@ -28,77 +28,55 @@
 
 
 #include "Utils/UTF8Utils.h"
-#include "Utils/Utils.h"
-#include "FileSystem/Logger.h"
+#include "Debug/DVAssert.h"
 
-#if defined(__DAVAENGINE_ANDROID__)
+#include <utf8.h>
 
-#include "iconv/iconv.h"
-#include "Platform/TemplateAndroid/CorePlatformAndroid.h"
-
-namespace DAVA 
+namespace DAVA
 {
 
-void UTF8Utils::EncodeToWideString(const uint8 * string, size_t size, WideString & resultString)
+#ifdef __DAVAENGINE_WINDOWS__
+
+static_assert(sizeof(wchar_t) == 2, "check size of wchar_t on current platform");
+
+void UTF8Utils::EncodeToWideString(const uint8 * string, size_t size, WideString & result)
 {
-	resultString = L"";
-
-	iconv_t cd = iconv_open("UTF-32LE", "UTF-8");
-	if (cd == (iconv_t)(-1))
-	{
-		Logger::Debug("Error converting");
-		return;
-	}
-
-	size_t inSize = (size_t)size;
-	wchar_t* outBuf = new wchar_t[inSize + 1];
-	size_t outSize = (inSize + 1) * sizeof(wchar_t);
-	memset(outBuf, 0, outSize);
-
-	char* buf = (char*)outBuf;
-	errno = 0;
-	size_t k = iconv(cd, (char**)&string, &inSize, (char**)&buf, &outSize);
-	int err = errno;
-	resultString = outBuf;
-
-	delete [] outBuf;
-	//Logger::Debug("Converted: %u,error=%d\n", (unsigned) k, err );
-
-	iconv_close(cd);
+	DVASSERT(nullptr != string);
+	result.clear();
+	result.reserve(size); // minimum they will be same
+    utf8::utf8to16(string, string + size, std::back_inserter(result));
 };
 
 String UTF8Utils::EncodeToUTF8(const WideString& wstring)
 {
-    return EncodeToUTF8(wstring.c_str());
-}
+	String result;
+	result.reserve(wstring.size()); // minimum they will be same
+	utf8::utf16to8(wstring.begin(), wstring.end(), std::back_inserter(result));
+	return result;
+};
 
-String UTF8Utils::EncodeToUTF8(const wchar_t* wstring)
+#else
+
+static_assert(sizeof(wchar_t) == 4, "check size of wchar_t on current platform");
+
+void UTF8Utils::EncodeToWideString(const uint8 * string, size_t size, WideString & result)
 {
-	String resultString = "";
-
-	iconv_t cd = iconv_open("UTF-8", "UTF-32LE");
-	if (cd == (iconv_t)(-1))
-	{
-		Logger::Debug("Error converting");
-		return resultString;
-	}
-
-	WideString inString = wstring;
-	char* inBuf = (char*)inString.c_str();
-	size_t inSize = inString.length() * sizeof(wchar_t);
-	size_t outSize = (inString.length() + 1) * sizeof(wchar_t);
-	char* outString = new char[outSize];
-	char* outBuf = outString;
-	memset(outBuf, 0, outSize);
-	iconv (cd, (char **) &inBuf, &inSize, (char**)&outBuf, &outSize);
-
-	resultString = outString;
-	delete [] outString;
-	iconv_close(cd);
-
-	return resultString;
+	DVASSERT(nullptr != string);
+	result.clear();
+	result.reserve(size); // minimum they will be same
+    utf8::utf8to32(string, string + size, std::back_inserter(result));
 };
 
+String UTF8Utils::EncodeToUTF8(const WideString& wstring)
+{
+	String result;
+	result.reserve(wstring.size()); // minimum they will be same
+	utf8::utf32to8(wstring.begin(), wstring.end(), std::back_inserter(result));
+	return result;
 };
-
 #endif
+
+
+
+} // namespace DAVA
+

@@ -182,7 +182,7 @@ int16 Landscape::AllocateQuadVertexBuffer(LandscapeQuad * quad)
     vertexBuffers.push_back(vertexBuffer);
     
 #if defined(__DAVAENGINE_IPHONE__)
-    SafeDeleteArray(landscapeVertices);
+    SafeDeleteArray(landscapeVertices);  ///RHI_COMPLETE !!! this code will leak now as vertices are not deleted!!!!!!
 #endif
 
     return (int16)(vertexBuffers.size() - 1);
@@ -1378,28 +1378,6 @@ void Landscape::UpdatePart(Heightmap* fromHeightmap, const Rect2i & rect)
         {
             rhi::HVertexBuffer vertexBuffer = vertexBuffers[node->data.rdoQuad];
 
-/*
-            LandscapeVertex * rowVertices = new LandscapeVertex[intersect.dx + 1];
-            for (int32 y = intersect.y; y < intersect.y + intersect.dy + 1; ++y)
-            {
-                int32 index = 0;
-                for (int32 x = intersect.x; x < intersect.x + intersect.dx + 1; ++x)
-                {
-                    rowVertices[index].position = GetPoint(x, y, fromHeightmap->Data()[y * fromHeightmap->Size() + x]);
-                    
-                    Vector2 texCoord = Vector2((float32)(x) / (float32)(fromHeightmap->Size() - 1), 1.0f - (float32)(y) / (float32)(fromHeightmap->Size() - 1));
-                    rowVertices[index].texCoord = texCoord;
-                    
-                    index++;
-                }
-                
-                uint32 vBufferUpdateSize = (intersect.dx + 1) * sizeof(LandscapeVertex);
-                uint32 vBufferOffset = 0; //TODO
-                rhi::UpdateVertexBuffer(vertexBuffer, 0, vBufferOffset, vBufferUpdateSize);
-            }
-            SafeDeleteArray(rowVertices);
- */
-            
             uint32 verticesCount = (node->data.size + 1) * (node->data.size + 1);
             LandscapeVertex * quadVertices = new LandscapeVertex[verticesCount];
             
@@ -1419,6 +1397,8 @@ void Landscape::UpdatePart(Heightmap* fromHeightmap, const Rect2i & rect)
             
             uint32 vBufferSize = verticesCount * sizeof(LandscapeVertex);
             rhi::UpdateVertexBuffer(vertexBuffer, quadVertices, 0, vBufferSize);
+
+            SafeDeleteArray(quadVertices);
         }
     }
 }

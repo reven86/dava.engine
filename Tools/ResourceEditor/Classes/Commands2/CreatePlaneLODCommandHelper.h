@@ -1,4 +1,4 @@
-﻿/*==================================================================================
+/*==================================================================================
     Copyright (c) 2008, binaryzebra
     All rights reserved.
 
@@ -27,58 +27,37 @@
 =====================================================================================*/
 
 
-#include "Utils/UTF8Utils.h"
-#include "FileSystem/Logger.h"
-#include "Debug/DVAssert.h"
+#ifndef __CREATE_PLANE_LOD_COOMAND_HELPER_H__
+#define __CREATE_PLANE_LOD_COOMAND_HELPER_H__
 
-#if defined(__DAVAENGINE_WINDOWS__)
+#include "DAVAEngine.h"
+#include "Base/TypeHolders.h"
 
-#include <Windows.h>
-
-namespace DAVA
+namespace CreatePlaneLODCommandHelper
 {
-
-void  UTF8Utils::EncodeToWideString(const uint8 * string, size_t size, WideString & resultString)
-{
-	resultString = L"";
-
-	int32 wstringLen = MultiByteToWideChar(CP_UTF8, 0, (LPCSTR)string, static_cast<int>(size), NULL, NULL);
-	if (!wstringLen)
+	struct Request : public DAVA::RefCounter
 	{
-		return;
-	}
+		DAVA::LodComponent* lodComponent = nullptr;
+	    DAVA::RenderBatch* planeBatch = nullptr;
+		DAVA::Image* planeImage = nullptr;
+		DAVA::Texture* targetTexture = nullptr;
+		DAVA::int32 fromLodLayer = 0;
+		DAVA::int32 newLodIndex = 0;
+		DAVA::uint32 textureSize = 0;
+		DAVA::FilePath texturePath;
+	    DAVA::Vector<DAVA::LodComponent::LodDistance> savedDistances;
+		DAVA::Atomic<bool> completed = false;
+		rhi::HTexture depthTexture;
 
-	wchar_t* buf = new wchar_t[wstringLen];
-	int32 convertRes = MultiByteToWideChar(CP_UTF8, 0, (LPCSTR)string, static_cast<int>(size), buf, wstringLen);
-	if (convertRes)
-	{
-		resultString = WideString(buf, wstringLen);
-	}
+		Request();
+		~Request();
+		void RegisterRenderCallback();
+		void OnRenderCallback(rhi::HSyncObject object);
+	};
+	using RequestPointer = DAVA::RefPtr<Request>;
 
-	delete[] buf;
+	RequestPointer RequestRenderToTexture(DAVA::LodComponent* lodComponent, DAVA::int32 fromLodLayer, 
+		DAVA::uint32 textureSize, const DAVA::FilePath& texturePath);
 };
 
-String UTF8Utils::EncodeToUTF8(const WideString& wstring)
-{
-    return EncodeToUTF8(wstring.c_str());
-};
-
-String UTF8Utils::EncodeToUTF8(const wchar_t* wideString)
-{
-    DVASSERT(wideString != nullptr);
-
-    String result;
-    // Note: WideCharToMultiByte makes room for zero terminator in resulting string if wideString length is set to -1
-    int bufSize = WideCharToMultiByte(CP_UTF8, 0, wideString, -1, 0, 0, nullptr, nullptr);
-    if (bufSize > 0)
-    {
-        result.resize(bufSize);
-        WideCharToMultiByte(CP_UTF8, 0, wideString, -1, &*result.begin(), bufSize, nullptr, nullptr);
-        result.pop_back();  // Get rid of extra zero terminator appended by WideCharToMultiByte
-    }
-    return result;
-}
-
-}   // namespace DAVA
-
-#endif
+#endif // #ifndef __CREATE_PLANE_LOD_COOMAND_H__

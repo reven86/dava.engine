@@ -255,7 +255,8 @@ _InitDX9()
         // create device
 
         // CRAP: hardcoded params
-
+        
+        _DX9_PresentParam.hDeviceWindow          = wnd;
         _DX9_PresentParam.Windowed               = TRUE;
         _DX9_PresentParam.BackBufferFormat       = D3DFMT_UNKNOWN;
         _DX9_PresentParam.BackBufferWidth        = backbuf_width;

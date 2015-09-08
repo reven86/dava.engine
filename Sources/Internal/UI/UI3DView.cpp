@@ -132,23 +132,6 @@ UIControl* UI3DView::Clone()
     ui3DView->CopyDataFrom(this);
     return ui3DView;
 }
-
-void UI3DView::WillBecomeVisible()
-{
-    if (!registeredInUIControlSystem)
-    {
-        registeredInUIControlSystem = true;
-        UIControlSystem::Instance()->UI3DViewAdded();
-    }
-}
-void UI3DView::WillBecomeInvisible()
-{
-    if (registeredInUIControlSystem)
-    {
-        registeredInUIControlSystem = false;
-        UIControlSystem::Instance()->UI3DViewRemoved();
-    }
-}
     
 void UI3DView::Input(UIEvent *currentInput)
 {

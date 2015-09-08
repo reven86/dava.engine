@@ -42,6 +42,7 @@
 #endif
 
 #include <cstdlib>
+#include <cassert>
 
 namespace DAVA
 {
@@ -99,24 +100,19 @@ public:
 
     void Insert(BacktraceTreeNode * head, Backtrace * backtrace, uint32 depth)
     {
-    	if(depth == 0)
-    	{
-            head->Insert(backtrace->array[depth]);
-    	}
-    	else
-    	{
-            uint32 size = (uint32)head->children.size();
-            for (uint32 k = 0; k < size; ++k)
-            {
-                if (head->children[k]->pointer == backtrace->array[depth])
-                {
-                    Insert(head->children[k], backtrace, depth - 1);
-                }
-            }
-
-            head->Insert(backtrace->array[depth]);
-            Insert(head->children[(uint32)head->children.size() - 1], backtrace, depth - 1);
-    	}
+        assert(false && "old not working code");
+        // remove old infinite recursion
+//        uint32 size = (uint32)head->children.size();
+//        for (uint32 k = 0; k < size; ++k)
+//        {
+//        	if (head->children[k]->pointer == backtrace->array[depth])
+//        	{
+//        		Insert(head->children[k], backtrace, depth - 1);
+//        	}
+//        }
+//
+//        head->Insert(backtrace->array[depth]);
+//        Insert(head->children[(uint32)head->children.size() - 1], backtrace, depth - 1);
     }
 
     Backtrace* GetBacktraceByTreeNode(BacktraceTreeNode * node)
@@ -275,22 +271,25 @@ void ReleaseBacktraceLog(BacktraceLog * log)
 }
 
 #if defined(__DAVAENGINE_ANDROID__)
-void OnStackFrame(Logger::eLogLevel logLevel,pointer_size addr,const char * functName)
-{
-    DAVA::BacktraceInterface * backtraceProvider = DAVA::AndroidBacktraceChooser::ChooseBacktraceAndroid();
-    const char * libName = nullptr;
-    pointer_size relAddres = 0;
-    backtraceProvider->GetMemoryMap()->Resolve(addr,&libName,&relAddres);
+	void OnStackFrame(Logger::eLogLevel logLevel,pointer_size addr,const char * functName)
+	{
+#if defined(CRASH_HANDLER_CUSTOMSIGNALS)
+        DAVA::BacktraceInterface * backtraceProvider = DAVA::AndroidBacktraceChooser::ChooseBacktraceAndroid();
+        const char * libName = nullptr;
+        pointer_size relAddres = 0;
+        backtraceProvider->GetMemoryMap()->Resolve(addr,&libName,&relAddres);
         
     int     status;
     char   * realname = nullptr;
 
     //returns allocated string with malloc
     realname = abi::__cxa_demangle(functName, 0, 0, &status);
-         
-    Logger::Instance()->Log(logLevel,"DAVA BACKTRACE:%p : %s (%s)\n", relAddres, libName,realname);
-    free(realname);
-         
+        if (realname)
+        {
+            Logger::Instance()->Log(logLevel,"DAVA BACKTRACE:%p : %s (%s)\n", relAddres, libName,realname);
+        }
+        free(realname);
+#endif // defined(CRASH_HANDLER_CUSTOMSIGNALS)
 }
 #endif
 
@@ -323,7 +322,7 @@ void PrintBackTraceToLog(Logger::eLogLevel logLevel )
 #endif
        
 
-#if defined(__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_ANDROID__) && defined(CRASH_HANDLER_CUSTOMSIGNALS)
     BacktraceInterface * backtraceProvider = AndroidBacktraceChooser::ChooseBacktraceAndroid();
        
     if(backtraceProvider != nullptr)

@@ -332,6 +332,26 @@ QString GetSaveFolderForEmitters()
     return particlesPath;
 }
 
+
+
+void QtMainWindow::CollectEmittersForSave(ParticleEmitter *topLevelEmitter, DAVA::List<EmitterDescriptor> &emitters, const String &entityName) const
+{
+    DVASSERT(topLevelEmitter != nullptr);
+
+    for (auto & layer : topLevelEmitter->layers)
+    {
+        if (nullptr != layer->innerEmitter)
+        {
+            CollectEmittersForSave(layer->innerEmitter, emitters, entityName);
+            emitters.emplace_back(EmitterDescriptor(layer->innerEmitter, layer, layer->innerEmitter->configPath, entityName));
+        }
+    }
+
+    emitters.emplace_back(EmitterDescriptor(topLevelEmitter, nullptr, topLevelEmitter->configPath, entityName));
+}
+
+
+
 bool QtMainWindow::SaveAllSceneEmitters(SceneEditor2 *scene) const
 {
     DVASSERT(nullptr != scene);
@@ -341,19 +361,6 @@ bool QtMainWindow::SaveAllSceneEmitters(SceneEditor2 *scene) const
     if (effectEntities.empty())
         return true;
 
-    struct EmitterDescriptor
-    {
-        EmitterDescriptor(ParticleEmitter * _emitter, ParticleLayer *layer, FilePath path, String name)
-            : emitter(_emitter), ownerLayer(layer), yamlPath(path), entityName(name)
-        {
-        }
-
-        ParticleEmitter * emitter = nullptr;
-        ParticleLayer *ownerLayer = nullptr;
-        FilePath yamlPath;
-        String entityName;
-    };
-
     DAVA::List<EmitterDescriptor> emittersForSave;
     for (auto & entityWithEffect : effectEntities)
     {
@@ -361,16 +368,7 @@ bool QtMainWindow::SaveAllSceneEmitters(SceneEditor2 *scene) const
         ParticleEffectComponent *effect = GetEffectComponent(entityWithEffect);
         for (int32 i = 0, sz = effect->GetEmittersCount(); i < sz; ++i)
         {
-            ParticleEmitter* emitter = effect->GetEmitter(i);
-            for (auto & layer : emitter->layers)
-            {
-                if (nullptr != layer->innerEmitter)
-                {
-                    emittersForSave.emplace_back(EmitterDescriptor(layer->innerEmitter, layer, layer->innerEmitterPath, entityName));
-                }
-            }
-
-            emittersForSave.emplace_back(EmitterDescriptor(emitter, nullptr, emitter->configPath, entityName));
+            CollectEmittersForSave(effect->GetEmitter(i), emittersForSave, entityName);
         }
     }
 
@@ -3100,24 +3098,27 @@ void QtMainWindow::OnConsoleItemClicked(const QString &data)
     PointerSerializer conv(data.toStdString());
     if (conv.CanConvert<Entity*>())
     {
-        if (nullptr != GetCurrentScene())
+		auto currentScene = GetCurrentScene();
+        if (nullptr != currentScene)
         {
             auto vec = conv.GetPointers<Entity*>();
             if (!vec.empty())
             {
                 EntityGroup entityGroup;
                 DAVA::Vector<Entity *> allEntities;
-                GetCurrentScene()->GetChildNodes(allEntities);
+                currentScene->GetChildNodes(allEntities);
                 for (auto entity : vec)
                 {
                     if (std::find(allEntities.begin(), allEntities.end(), entity) != allEntities.end())
                     {
-                        entityGroup.Add(entity);
+                        entityGroup.Add(entity, currentScene->selectionSystem->GetSelectionAABox(entity));
                     }
                 }
-                if (entityGroup.Size() != 0)
+
+                if (entityGroup.Size() > 0)
                 {
-                    GetCurrentScene()->selectionSystem->SetSelection(entityGroup);
+                    currentScene->selectionSystem->SetSelection(entityGroup);
+					currentScene->cameraSystem->LookAt(entityGroup.GetCommonBbox());
                 }
             }
         }

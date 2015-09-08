@@ -40,12 +40,12 @@ public:
     void LoadResources() override;
     void UnloadResources() override;
 
-    UIButton *runButton;
-    UIStaticText *runResult;
+    DAVA::UIButton *runButton;
+    DAVA::UIStaticText *runResult;
 
 protected:
-    void OnButtonPress(BaseObject *obj, void *data, void *callerData);
-    void OnExitButton(BaseObject *obj, void *data, void *callerData) override;
+    void OnButtonPress(DAVA::BaseObject *obj, void *data, void *callerData);
+    void OnExitButton(DAVA::BaseObject *obj, void *data, void *callerData) override;
 };
 
 #endif //__FUNCTIONSIGNAL_TEST_H__

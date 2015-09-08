@@ -40,6 +40,7 @@
 #include "Classes/CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
 
 #include "QtTools/FileDialog/FileDialog.h"
+#include "QtTools/ConsoleWidget/PointerSerializer.h"
 
 #include "DAVAEngine.h"
 #include <QProcess>
@@ -112,29 +113,62 @@ DAVA::Image * CreateTopLevelImage(const DAVA::FilePath &imagePathname)
 
 void ShowErrorDialog(const DAVA::Set<DAVA::String> &errors)
 {
-    if(errors.empty())
-        return;
-    
-    String errorMessage = String("");
-    Set<String>::const_iterator endIt = errors.end();
-    for(Set<String>::const_iterator it = errors.begin(); it != endIt; ++it)
-    {
-		Logger::Error((*it).c_str());
+    if (errors.empty()) return;
 
-        errorMessage += *it + String("\n");
-    }
+	const uint32 maxErrorsPerDialog = 6;
+	uint32 totalErrors = errors.size();
+	uint32 processedDialogs = 0;
+	uint32 firstError = 1;
+	uint32 errorCounter = 0;
+
+	auto cleanUpEntityInfo = [](const DAVA::String& input) 
+	{
+		QRegularExpression re(PointerSerializer::GetRegex());
+		QString qText = QString::fromStdString(input);
+		qText.replace(re, QString());
+		return qText.toStdString();
+	};
     
-    ShowErrorDialog(errorMessage);
+	auto getDialogTitle = [&firstError, &errorCounter, &totalErrors]() -> DAVA::String
+	{
+		if (totalErrors < 2) 
+			return "Error";
+
+		if (errorCounter < 2)
+			return Format("Error %u from %u\n\n", firstError, totalErrors);
+
+		return Format("Errors %u-%u from %u\n\n", firstError, firstError + errorCounter - 1, totalErrors);
+	};
+
+	const String errorDivideLine("\n--------------------\n");
+
+	String errorMessage;
+	for (const auto& message : errors)
+	{
+		errorMessage += cleanUpEntityInfo(message) + errorDivideLine;
+		errorCounter++;
+
+		if (errorCounter == maxErrorsPerDialog)
+		{
+		    ShowErrorDialog(errorMessage, getDialogTitle());
+			firstError += errorCounter;
+			errorMessage.clear();
+			errorCounter = 0;
+		}
+	}
+
+	if (!errorMessage.empty())
+	    ShowErrorDialog(errorMessage, getDialogTitle());
 }
 
-void ShowErrorDialog(const DAVA::String &errorMessage)
+void ShowErrorDialog(const DAVA::String &errorMessage, const DAVA::String &title)
 {
     bool forceClose = CommandLineParser::CommandIsFound(String("-force")) || 
 		CommandLineParser::CommandIsFound(String("-forceclose"));
 
     if (!forceClose && !Core::Instance()->IsConsoleMode())
     {
-        QMessageBox::critical(QApplication::activeWindow(), "Error", errorMessage.c_str());
+        QMessageBox::critical(QApplication::activeWindow(), title.c_str(), errorMessage.c_str());
     }
 }
 

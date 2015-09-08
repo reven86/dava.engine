@@ -1,0 +1,4 @@
+#!/bin/sh
+
+python codeformat/git-clang-format.py --binary codeformat/clang-format --style file
+git add -u
