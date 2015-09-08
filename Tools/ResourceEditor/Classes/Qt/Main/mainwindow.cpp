@@ -2063,7 +2063,7 @@ void QtMainWindow::OnTiledTextureRetreived(DAVA::Landscape* landscape, DAVA::Tex
 	if (pathToSave.IsEmpty())
 	{
 		QString selectedPath = FileDialog::getSaveFileName(this, "Save landscape texture as",
-			pathToSave.GetDirectory().GetAbsolutePathname().c_str(), 
+			ProjectManager::Instance()->CurProjectDataSourcePath().GetAbsolutePathname().c_str(), 
 			PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter);
 
 		if (selectedPath.isEmpty())
