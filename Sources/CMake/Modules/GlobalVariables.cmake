@@ -1,7 +1,7 @@
 #
-macro ( load_config CONFIG_FILE )
+function ( load_config CONFIG_FILE )
 
-    file( STRINGS "${CONFIG_FILE}" ConfigContents )
+    file( STRINGS ${CONFIG_FILE} ConfigContents )
     foreach( NameAndValue ${ConfigContents} )
         string( REGEX REPLACE "^[ ]+" "" NameAndValue ${NameAndValue} )
         string( REGEX MATCH "^[^=]+" Name ${NameAndValue} ) 
@@ -14,7 +14,7 @@ macro ( load_config CONFIG_FILE )
         #  message("---" [${Name}] "  " [${Value}] )
     endforeach()
 
-endmacro ()
+endfunction ()
 
 # Only interpret ``if()`` arguments as variables or keywords when unquoted.
 if(NOT (CMAKE_VERSION VERSION_LESS 3.1))
