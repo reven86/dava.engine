@@ -117,12 +117,17 @@ SCOPED_NAMED_TIMING("rhi.mtl-vsync");
     desc.colorAttachments[0].storeAction    = MTLStoreActionStore;
     desc.colorAttachments[0].clearColor     = MTLClearColorMake(passConf.colorBuffer[0].clearColor[0],passConf.colorBuffer[0].clearColor[1],passConf.colorBuffer[0].clearColor[2],passConf.colorBuffer[0].clearColor[3]);
 
-    desc.depthAttachment.texture            = _Metal_DefDepthBuf;
+//    desc.depthAttachment.texture            = _Metal_DefDepthBuf;
     desc.depthAttachment.loadAction         = (passConf.depthStencilBuffer.loadAction==LOADACTION_CLEAR) ? MTLLoadActionClear : MTLLoadActionDontCare;
     desc.depthAttachment.storeAction        = (passConf.depthStencilBuffer.storeAction==STOREACTION_STORE) ? MTLStoreActionStore : MTLStoreActionDontCare;
     desc.depthAttachment.clearDepth         = passConf.depthStencilBuffer.clearDepth;
 
-    desc.stencilAttachment.texture          = _Metal_DefStencilBuf;
+    if( passConf.depthStencilBuffer.texture == rhi::DefaultDepthBuffer )
+        desc.stencilAttachment.texture = _Metal_DefStencilBuf;
+    else if( passConf.depthStencilBuffer.texture != rhi::InvalidHandle )
+        desc.stencilAttachment.texture = passConf.depthStencilBuffer.texture;
+
+
     desc.stencilAttachment.loadAction       = (passConf.depthStencilBuffer.loadAction==LOADACTION_CLEAR) ? MTLLoadActionClear : MTLLoadActionDontCare;
     desc.stencilAttachment.storeAction      = (passConf.depthStencilBuffer.storeAction==STOREACTION_STORE) ? MTLStoreActionStore : MTLStoreActionDontCare;
     desc.stencilAttachment.clearStencil     = passConf.depthStencilBuffer.clearStencil;

@@ -346,7 +346,9 @@ dx11_CommandBuffer_Begin( Handle cmdBuf )
     cb->def_viewport.MaxDepth   = 1.0f;
 
 
-    if( cb->passCfg.colorBuffer[0].texture != rhi::InvalidHandle )
+    if(     cb->passCfg.colorBuffer[0].texture != rhi::InvalidHandle
+        &&  cb->passCfg.colorBuffer[0].texture != rhi::DefaultDepthBuffer
+      )
     {
         Size2i  sz = TextureDX11::Size( cb->passCfg.colorBuffer[0].texture );
                         

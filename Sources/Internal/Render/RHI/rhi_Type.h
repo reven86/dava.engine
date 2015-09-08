@@ -47,7 +47,8 @@ using DAVA::Size2i;
 
 
 typedef uint32 Handle;
-static const uint32 InvalidHandle = 0;
+static const uint32 InvalidHandle       = 0;
+static const uint32 DefaultDepthBuffer  = (uint32)(-2);
 
 enum
 ResourceType
@@ -762,7 +763,7 @@ RenderPassConfig
         uint32      clearStencil;
 
                     DepthStencilBuffer()
-                      : texture(InvalidHandle),
+                      : texture(DefaultDepthBuffer),
                         loadAction(LOADACTION_CLEAR),
                         storeAction(STOREACTION_NONE),
                         clearDepth(1.0f),
