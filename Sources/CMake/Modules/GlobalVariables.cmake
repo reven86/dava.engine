@@ -1,7 +1,7 @@
 #
 macro ( load_config CONFIG_FILE )
 
-    file( STRINGS ${CONFIG_FILE} ConfigContents )
+    file( STRINGS "${CONFIG_FILE}" ConfigContents )
     foreach( NameAndValue ${ConfigContents} )
         string( REGEX REPLACE "^[ ]+" "" NameAndValue ${NameAndValue} )
         string( REGEX MATCH "^[^=]+" Name ${NameAndValue} ) 
