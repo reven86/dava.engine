@@ -37,47 +37,23 @@ struct RenderCaps
 {
     RenderCaps()
     {
-        isHardwareCursorSupported = false;
-
-        isPVRTC2Supported = false;
         isOpenGLES3Supported = false;
-
-        isFramebufferFetchSupported = isPVRTCSupported = isETCSupported = isDXTSupported = isATCSupported = false;
-        isVertexTextureUnitsSupported = isBGRA8888Supported = isFloat16Supported = isFloat32Supported = false;
-
-#if defined(__DAVAENGINE_ANDROID__)
-        isGlDepth24Stencil8Supported = isGlDepthNvNonLinearSupported = false;
-#endif
+        isFramebufferFetchSupported = false;
+        isVertexTextureUnitsSupported = false;
+        
+        upperLeftRTOrigin = false;
+        zeroBaseClipRange = false;
         isCenterPixelMapping = false;
 
         // RHI_COMPLETE: fix Render Caps
         {
-#if defined(__DAVAENGINE_IPHONE__)
-            isPVRTCSupported = isPVRTC2Supported = true;
-#elif defined(__DAVAENGINE_ANDROID__)
-            isETCSupported = isDXTSupported = isATCSupported = true;
-#endif
             isVertexTextureUnitsSupported = true; // for grass rendering
         }
     }
-    bool isHardwareCursorSupported;
-    bool isPVRTCSupported;
-    bool isPVRTC2Supported;
-    bool isETCSupported;
+
     bool isOpenGLES3Supported;
-    bool isBGRA8888Supported;
-    bool isFloat16Supported;
-    bool isFloat32Supported;
-    bool isDXTSupported;
-    bool isATCSupported;
     bool isVertexTextureUnitsSupported;
     bool isFramebufferFetchSupported;
-
-#if defined(__DAVAENGINE_ANDROID__)
-    bool isGlDepth24Stencil8Supported;
-    bool isGlDepthNvNonLinearSupported;
-#endif
-
 
     bool upperLeftRTOrigin;
     bool zeroBaseClipRange;
