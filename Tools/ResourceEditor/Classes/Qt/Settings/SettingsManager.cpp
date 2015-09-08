@@ -149,6 +149,7 @@ void SettingsManager::SetValue(const DAVA::FastName& path, const DAVA::VariantTy
 {
     DAVA::FastNameMap<SettingsNode>::iterator i = SettingsManager::Instance()->settingsMap.find(path);
     DVASSERT(i != SettingsManager::Instance()->settingsMap.end() && "No such setting path");
+    DVASSERT(i->second.value.type == value.type && "Setting different type");
 
     i->second.value.SetVariant(value);
 
@@ -176,7 +177,7 @@ bool SettingsManager::CustomTextureViewGPULoad(const DAVA::String & paramName, c
 {
     if (DAVA::VariantType::TYPE_INT32 == src_value.GetType() && paramName == Settings::Internal_TextureViewGPU.c_str())
     {
-        DAVA::eGPUFamily gpuFamilyRead = static_cast<DAVA::eGPUFamily>(src_value.AsInt32());
+        DAVA::eGPUFamily gpuFamilyRead = DAVA::GPUFamilyDescriptor::ConvertValueToGPU(src_value.AsInt32());
         DAVA::uint32 valueToVariant = static_cast<DAVA::uint32>(gpuFamilyRead);
         dstValue.SetVariant(DAVA::VariantType(valueToVariant));
         return true;
