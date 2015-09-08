@@ -53,7 +53,8 @@ id<MTLBuffer> GetBuffer( Handle ib );
 
 namespace IndexBufferMetal
 {
-id<MTLBuffer> GetBuffer( Handle ib );
+id<MTLBuffer>   GetBuffer( Handle ib );
+MTLIndexType    GetType( Handle ib );
 }
 
 namespace QueryBufferMetal
