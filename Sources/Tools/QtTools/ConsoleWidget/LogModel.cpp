@@ -34,7 +34,7 @@ void LogModel::SetConvertFunction(ConvertFunc func_)
 void LogModel::Output(DAVA::Logger::eLogLevel ll, const DAVA::char8* text)
 {
     DVASSERT_MSG(thread() == qApp->thread(), "don't move this model to the separate thread!");
-    auto connectType = QThread::currentThreadId() == qApp->thread() ? Qt::DirectConnection : Qt::QueuedConnection;
+    auto connectType = QThread::currentThread() == qApp->thread() ? Qt::DirectConnection : Qt::QueuedConnection;
     QMetaObject::invokeMethod(this, "AddMessage", connectType, Q_ARG(DAVA::Logger::eLogLevel, ll), Q_ARG(const QString &, text));
 }
 
