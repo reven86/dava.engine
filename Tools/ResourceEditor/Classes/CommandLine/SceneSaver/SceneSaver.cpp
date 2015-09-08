@@ -35,7 +35,9 @@
 #include "Classes/StringConstants.h"
 #include "Classes/Qt/Main/QtUtils.h"
 
+#include "FileSystem/FileList.h"
 #include "Scene3D/Components/CustomPropertiesComponent.h"
+
 #include "CommandLine/CommandLineTool.h"
 
 using namespace DAVA;
@@ -313,7 +315,6 @@ void SceneSaver::CopyEmitter( ParticleEmitter *emitter)
 			psdPath.ReplaceExtension(".psd");
 			sceneUtils.AddFile(psdPath);
             
-            
             effectFolders.insert(psdPath.GetDirectory());
 		}
 	}
@@ -350,4 +351,30 @@ void SceneSaver::CopyCustomColorTexture(Scene *scene, const FilePath & sceneFold
     
     //save new path to custom colors texture
     customProps->SetString(ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP, newTexPathname.GetRelativePathname(newProjectPathname));
+}
+
+void SceneSaver::ResaveYamlFilesRecursive(const FilePath& folder, Set<String>& errorLog) const
+{
+    ScopedPtr<FileList> fileList(new FileList(folder));
+    for (int32 i = 0; i < fileList->GetCount(); ++i)
+    {
+        const FilePath& pathname = fileList->GetPathname(i);
+        if (fileList->IsDirectory(i))
+        {
+            if (!fileList->IsNavigationDirectory(i))
+            {
+                ResaveYamlFilesRecursive(pathname, errorLog);
+            }
+        }
+        else
+        {
+            if (pathname.IsEqualToExtension(".yaml"))
+            {
+                ParticleEmitter* emitter = new ParticleEmitter();
+                emitter->LoadFromYaml(pathname);
+                emitter->SaveToYaml(pathname);
+                SafeRelease(emitter);
+            }
+        }
+    }
 }

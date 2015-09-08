@@ -49,7 +49,9 @@ public:
     void SaveScene(Scene *scene, const FilePath &fileName, Set<String> &errorLog);
     
     void EnableCopyConverted(bool enabled);
-    
+
+    void ResaveYamlFilesRecursive(const DAVA::FilePath& folder, DAVA::Set<DAVA::String>& errorLog) const;
+
 protected:
     
     void ReleaseTextures();

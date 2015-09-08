@@ -26,5 +26,4 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#define RESOURCE_EDITOR_VERSION "local build"
+#define APPLICATION_VERSION "local build"

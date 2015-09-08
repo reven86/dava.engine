@@ -42,7 +42,7 @@ void CleanFolderTool::PrintUsage() const
 
     printf("\n");
     printf("Sample:\n");
-    printf("-cleanfolder -folder /Users/User/Project/Data/3d -forceclose\n");
+    printf("-cleanfolder -folder /Users/User/Project/Data/3d\n");
 }
 
 DAVA::String CleanFolderTool::GetCommandLineKey() const

@@ -26,8 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#include "TeamcityTestsOutput.h"
+#include "TeamCityTestsOutput.h"
 #include "Utils/Utils.h"
 
 namespace DAVA
