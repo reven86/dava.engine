@@ -35,32 +35,53 @@ using namespace DAVA;
 
 DAVA_TESTCLASS(RectTest)
 {
+    //this test from Qt: void tst_QRect::containsRectF_data()
     DAVA_TEST(RectContainsTest)
     {
-        Rect nullRect(0.0f, 0.0f, 0.0f, 0.0f);
-        Rect centeredRect(-5.0f, -5.0f, 10.0f, 10.0f);
-        Rect invertedCenteredRect(5.0f, 5.0f, -10.0f, -10.0f);
-        
-        //rects for test
-        DAVA::Array<Rect, Vector2::AXIS_COUNT * 2 + 2> testRects = { //2- null rect and center rect
-            Rect(0.0f, 0.0f, 0.0f, 0.0f),
-            Rect(-0.5f, -0.5f, 1.0f, 1.0f),
-            Rect(1.0f, 1.0f, 1.0f, 1.0f),
-            Rect(1.0f, -1.0f, 1.0f, -1.0f),
-            Rect(-1.0f, -1.0f, -1.0f, -1.0f),
-            Rect(-1.0f, 1.0f, -1.0f, 1.0f)
-        };
-        for(const auto &testRect : testRects)
-        {
-            TEST_VERIFY(!nullRect.RectContains(testRect));
-        }
-        for(const auto &testRect : testRects)
-        {
-            TEST_VERIFY(centeredRect.RectContains(testRect));
-        }
-        for(const auto &testRect : testRects)
-        {
-            TEST_VERIFY(invertedCenteredRect.RectContains(testRect));
-        }
+        TEST_VERIFY(Rect(0.0f, 0.0f, 10.0f, 10.0f).RectContains(Rect(2.0f, 2.0f, 6.0f, 6.0f)));
+        TEST_VERIFY(Rect(0.0f, 0.0f, 10.0f, 10.0f).RectContains(Rect(0.0f, 0.0f, 10.0f, 10.0f)));
+        TEST_VERIFY(!Rect(0.0f, 0.0f, 10.0f, 10.0f).RectContains(Rect(2.0f, 2.0f, 10.0f, 10.0f)));
+        TEST_VERIFY(!Rect(0.0f, 0.0f, 10.0f, 10.0f).RectContains(Rect(20.0f, 20.0f, 10.0f, 10.0f)));
+
+        TEST_VERIFY(!Rect(10.0f, 10.0f, -10.0f, -10.0f).RectContains(Rect(2.0f, 2.0f, 6.0f, 6.0f)));
+        TEST_VERIFY(!Rect(10.0f, 10.0f, -10.0f, -10.0f).RectContains(Rect(0.0f, 0.0f, 10.0f, 10.0f)));
+        TEST_VERIFY(!Rect(10.0f, 10.0f, -10.0f, -10.0f).RectContains(Rect(2.0f, 2.0f, 10.0f, 10.0f)));
+        TEST_VERIFY(!Rect(10.0f, 10.0f, -10.0f, -10.0f).RectContains(Rect(20.0f, 20.0f, 10.0f, 10.0f)));
+
+        TEST_VERIFY(!Rect(0.0f, 0.0f, 10.0f, 10.0f).RectContains(Rect(8.0f, 8.0f, -6.0f, -6.0f)));
+        TEST_VERIFY(!Rect(0.0f, 0.0f, 10.0f, 10.0f).RectContains(Rect(10.0f, 10.0f, -10.0f, -10.0f)));
+        TEST_VERIFY(!Rect(0.0f, 0.0f, 10.0f, 10.0f).RectContains(Rect(12.0f, 12.0f, -10.0f, -10.0f)));
+        TEST_VERIFY(!Rect(0.0f, 0.0f, 10.0f, 10.0f).RectContains(Rect(30.0f, 30.0f, -10.0f, -10.0f)));
+
+        TEST_VERIFY(!Rect(-1.0f, 1.0f, 10.0f, 10.0f).RectContains(Rect()));
+        TEST_VERIFY(!Rect().RectContains(Rect(0.0f, 0.0f, 10.0f, 10.0f)));
+        TEST_VERIFY(!Rect().RectContains( Rect()));
+    }
+
+    //this test from Qt: void tst_QRect::intersectsRectF_data()
+    DAVA_TEST(RectIntersectsTest)
+    {
+        TEST_VERIFY(Rect(0, 0, 10, 10).RectIntersects(Rect(2, 2, 6, 6)));
+        TEST_VERIFY(Rect(0, 0, 10, 10).RectIntersects(Rect(0, 0, 10, 10)));
+        TEST_VERIFY(Rect(0, 0, 10, 10).RectIntersects(Rect(2, 2, 10, 10)));
+        TEST_VERIFY(!Rect(0, 0, 10, 10).RectIntersects(Rect(20, 20, 10, 10)));
+
+        TEST_VERIFY(!Rect(10, 10, -10, -10).RectIntersects(Rect(2, 2, 6, 6)));
+        TEST_VERIFY(!Rect(10, 10, -10, -10).RectIntersects(Rect(0, 0, 10, 10)));
+        TEST_VERIFY(!Rect(10, 10, -10, -10).RectIntersects(Rect(2, 2, 10, 10)));
+        TEST_VERIFY(!Rect(10, 10, -10, -10).RectIntersects(Rect(20, 20, 10, 10)));
+
+        TEST_VERIFY(!Rect(0, 0, 10, 10).RectIntersects(Rect(8, 8, -6, -6)));
+        TEST_VERIFY(!Rect(0, 0, 10, 10).RectIntersects(Rect(10, 10, -10, -10)));
+        TEST_VERIFY(!Rect(0, 0, 10, 10).RectIntersects(Rect(12, 12, -10, -10)));
+        TEST_VERIFY(!Rect(0, 0, 10, 10).RectIntersects(Rect(30, 30, -10, -10)));
+
+        TEST_VERIFY(!Rect().RectIntersects(Rect(10, 10, 10, 10)));
+        TEST_VERIFY(!Rect(10, 10, 10, 10).RectIntersects(Rect()));
+        TEST_VERIFY(!Rect().RectIntersects(Rect()));
+
+        TEST_VERIFY(Rect(0, 0, 10, 10).RectIntersects(Rect(10, 10, 10, 10)));
+        TEST_VERIFY(Rect(0, 0, 10, 10).RectIntersects(Rect(0, 10, 10, 10)));
+        TEST_VERIFY(Rect(0, 0, 10, 10).RectIntersects(Rect(10, 0, 10, 10)));
     }
 };
