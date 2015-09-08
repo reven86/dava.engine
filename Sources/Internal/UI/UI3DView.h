@@ -55,9 +55,6 @@ public:
     virtual void Update(float32 timeElapsed);
     virtual void Draw(const UIGeometricData &geometricData);
 
-    virtual void WillBecomeVisible(); 	
-	virtual void WillBecomeInvisible();
-
 	inline const Rect & GetLastViewportRect()
 	{
 		return viewportRc;
