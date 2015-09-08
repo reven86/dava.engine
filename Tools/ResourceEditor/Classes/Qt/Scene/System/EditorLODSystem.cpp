@@ -43,15 +43,8 @@ EditorLODSystem::ForceData::ForceData(DAVA::int32 newForceLayer /* = -1 */, DAVA
 {
 }
 
-EditorLODSystem::EditorLODSystem(DAVA::Scene *scene)
-    : DAVA::SceneSystem(scene)
-    , currentLodsLayersCount(0)
-    , forceDistanceEnabled(false)
-    , forceDistance(DAVA::LodComponent::MIN_LOD_DISTANCE)
-    , forceLayer(DAVA::LodComponent::INVALID_LOD_LAYER)
-    , allSceneModeEnabled(false)
-    , allSceneForceLayer(DAVA::LodComponent::MAX_LOD_LAYERS)
-    , allSceneForceDistance(DAVA::LodComponent::INVALID_DISTANCE)
+EditorLODSystem::EditorLODSystem(DAVA::Scene *scene) 
+	: DAVA::SceneSystem(scene)
 {
 }
 
@@ -183,7 +176,7 @@ void EditorLODSystem::ResetForceState(DAVA::LodComponent *lodComponent)
 void EditorLODSystem::CollectLODDataFromScene()
 {
     currentLodsLayersCount = 0;
-    std::fill(lodDistances.begin(), lodDistances.end(), 0);
+    std::fill(lodDistances.begin(), lodDistances.end(), 0.0f);
     std::fill(lodTrianglesCount.begin(), lodTrianglesCount.end(), 0);
     std::array<DAVA::int32, DAVA::LodComponent::MAX_LOD_LAYERS> lodsComponentsCount = { 0 };
 
@@ -340,21 +333,41 @@ bool EditorLODSystem::CanCreatePlaneLOD() const
 bool EditorLODSystem::CreatePlaneLOD(DAVA::int32 fromLayer, DAVA::uint32 textureSize, const DAVA::FilePath & texturePath)
 {
     if (GetCurrentLODs().empty())
-    {
+	{
         return false;
-    }
+	}
 
     SceneEditor2* sceneEditor2 = static_cast<SceneEditor2*>(GetScene());
 
-    sceneEditor2->BeginBatch("LOD Added");
-
     auto lods = GetCurrentLODs();
-    for (auto &lod : lods)
-    {
-        sceneEditor2->Exec(new CreatePlaneLODCommand(lod, fromLayer, textureSize, texturePath));
-    }
-    sceneEditor2->EndBatch();
+    for (auto& lod : lods)
+	{
+		auto request = CreatePlaneLODCommandHelper::RequestRenderToTexture(lod, fromLayer, textureSize, texturePath);
+		planeLODRequests.push_back(request);
+	}
+
     return true;
+}
+
+void EditorLODSystem::Process(DAVA::float32 elapsedTime)
+{
+	bool allRequestsProcessed = !planeLODRequests.empty();
+
+	for (const auto& req : planeLODRequests)
+		allRequestsProcessed = allRequestsProcessed && req->completed;
+
+	if (allRequestsProcessed)
+	{
+		SceneEditor2* sceneEditor2 = static_cast<SceneEditor2*>(GetScene());
+		sceneEditor2->BeginBatch("LOD Added");
+		for (const auto& req : planeLODRequests)
+		{
+			sceneEditor2->Exec(new CreatePlaneLODCommand(req));
+		}
+		sceneEditor2->EndBatch();
+
+		planeLODRequests.clear();
+	}
 }
 
 bool EditorLODSystem::CopyLastLodToLod0()

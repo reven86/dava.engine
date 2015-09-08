@@ -708,17 +708,15 @@ CullMode
 struct
 Viewport
 {
-    uint32  x;
-    uint32  y;
-    uint32  width;
-    uint32  height;
+    uint32  x = 0;
+    uint32  y = 0;
+    uint32  width = 0;
+    uint32  height = 0;
 
-            Viewport()
-              : x(0),
-                y(0),
-                width(0),
-                height(0)
-            {}
+	Viewport() = default;
+
+	Viewport(uint32 x_, uint32 y_, uint32 w_, uint32 h_ )
+		: x(x_), y(y_), width(w_), height(h_) { }
 };
 
 

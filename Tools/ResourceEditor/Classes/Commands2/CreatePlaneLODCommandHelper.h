@@ -27,62 +27,37 @@
 =====================================================================================*/
 
 
-#include "OwnersSignatureSystem.h"
-#include "Classes/StringConstants.h"
-#include "Qt/Settings/SettingsManager.h"
-#include "Scene/SceneSignals.h"
+#ifndef __CREATE_PLANE_LOD_COOMAND_HELPER_H__
+#define __CREATE_PLANE_LOD_COOMAND_HELPER_H__
 
-const DAVA::int32 OwnersSignatureSystem::validIDs[] =
+#include "DAVAEngine.h"
+#include "Base/TypeHolders.h"
+
+namespace CreatePlaneLODCommandHelper
 {
-	CMDID_ENTITY_ADD,
-	CMDID_ENTITY_CHANGE_PARENT,
-	CMDID_TRANSFORM
+	struct Request : public DAVA::RefCounter
+	{
+		DAVA::LodComponent* lodComponent = nullptr;
+	    DAVA::RenderBatch* planeBatch = nullptr;
+		DAVA::Image* planeImage = nullptr;
+		DAVA::Texture* targetTexture = nullptr;
+		DAVA::int32 fromLodLayer = 0;
+		DAVA::int32 newLodIndex = 0;
+		DAVA::uint32 textureSize = 0;
+		DAVA::FilePath texturePath;
+	    DAVA::Vector<DAVA::LodComponent::LodDistance> savedDistances;
+		DAVA::Atomic<bool> completed = false;
+		rhi::HTexture depthTexture;
+
+		Request();
+		~Request();
+		void RegisterRenderCallback();
+		void OnRenderCallback(rhi::HSyncObject object);
+	};
+	using RequestPointer = DAVA::RefPtr<Request>;
+
+	RequestPointer RequestRenderToTexture(DAVA::LodComponent* lodComponent, DAVA::int32 fromLodLayer, 
+		DAVA::uint32 textureSize, const DAVA::FilePath& texturePath);
 };
 
-OwnersSignatureSystem::OwnersSignatureSystem(DAVA::Scene* scene):SceneSystem(scene)
-{}
-
-OwnersSignatureSystem::~OwnersSignatureSystem()
-{}
-
-void OwnersSignatureSystem::ProcessCommand(const Command2 *command, bool redo)
-{
-	if(IsCommandIdValid(command->GetId()))
-	{
-		KeyedArchive* properties = GetCustomPropertiesArchieve(command->GetEntity());
-		if(NULL != properties)
-		{
-			UpdateEntityOwner(properties);
-		}
-	}
-}
-
-bool OwnersSignatureSystem::IsCommandIdValid(int _id)
-{
-	for (size_t i = 0; i < COUNT_OF(validIDs); ++i)
-	{
-		if(validIDs[i] == _id)
-		{
-			return true;
-		}
-	}
-	return false;
-}
-
-DAVA::String OwnersSignatureSystem::GetCurrentTime()
-{
-	time_t now = time(0);
-    tm* utcTime = localtime(&now);
-	
-	DAVA::String timeString = Format("%04d.%02d.%02d_%02d_%02d_%02d",
-							   utcTime->tm_year + 1900, utcTime->tm_mon + 1, utcTime->tm_mday,
-							   utcTime->tm_hour, utcTime->tm_min, utcTime->tm_sec);
-	
-	return timeString;
-}
-
-void OwnersSignatureSystem::UpdateEntityOwner(DAVA::KeyedArchive *customProperties)
-{
-	customProperties->SetString(ResourceEditor::SCENE_NODE_DESIGNER_NAME_PROPERTY_NAME, SettingsManager::GetValue(Settings::General_DesinerName).AsString());
-	customProperties->SetString(ResourceEditor::SCENE_NODE_MODIFICATION_DATA_PROPERTY_NAME, GetCurrentTime());
-}
+#endif // #ifndef __CREATE_PLANE_LOD_COOMAND_H__
