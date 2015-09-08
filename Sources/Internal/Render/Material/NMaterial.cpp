@@ -152,9 +152,11 @@ uint32 NMaterial::GetRequiredVertexFormat()
     uint32 res = 0;
     for (auto& variant : renderVariants)
     {
-        res |= variant.second->shader->GetRequiredVertexFormat();
+		if (nullptr != variant.second->shader)
+		{
+			res |= variant.second->shader->GetRequiredVertexFormat();
+		}
     }
-
     return res;
 }
 
