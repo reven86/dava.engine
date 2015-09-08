@@ -964,7 +964,7 @@ void TextureDescriptor::Initialize(rhi::TextureAddrMode wrap, bool generateMipma
 
 void TextureDescriptor::Initialize( const TextureDescriptor *descriptor )
 {
-	if (!descriptor)
+	if (nullptr == descriptor)
 	{
 		SetDefaultValues();
 		return;
