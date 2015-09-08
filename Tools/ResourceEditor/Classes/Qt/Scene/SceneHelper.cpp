@@ -166,22 +166,20 @@ DAVA::Entity * SceneHelper::CloneEntityWithMaterials(DAVA::Entity *fromNode)
     Vector<NMaterial *> materialInstances;
     EnumerateMaterialInstances(newEntity, materialInstances);
 
-    Set<NMaterial *> materialParentsSet;
+    Set<NMaterial*> materialParentsSet;
     uint32 instancesCount = materialInstances.size();
     for(uint32 i = 0; i < instancesCount; ++i)
         materialParentsSet.insert(materialInstances[i]->GetParent());
 
-    Map<NMaterial *, NMaterial *> clonedParents;
+    Map<NMaterial*, NMaterial*> clonedParents;
 
-    Set<NMaterial *>::const_iterator it = materialParentsSet.begin();
-    Set<NMaterial *>::const_iterator itEnd = materialParentsSet.end();
-    for(; it != itEnd; ++it)
-        clonedParents[(*it)] = (*it)->Clone();
+	for (auto& mp : materialParentsSet)
+        clonedParents[mp] = mp ? mp->Clone() : nullptr;
 
     for(uint32 i = 0; i < instancesCount; ++i)
     {
-        NMaterial * material = materialInstances[i];
-        NMaterial * parent = material->GetParent();
+        NMaterial* material = materialInstances[i];
+        NMaterial* parent = material->GetParent();
         material->SetParent(clonedParents[parent]);
     }
 

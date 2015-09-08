@@ -36,7 +36,6 @@
 
 #include "QtTools/FileDialog/FileDialog.h"
 
-
 #include <QHBoxLayout>
 #include <QGraphicsWidget>
 #include <QFile>
@@ -441,8 +440,8 @@ EmitterLayerWidget::EmitterLayerWidget(QWidget *parent) :
     }
 	spritePathLabel->installEventFilter(this);
 
-	sprite = NULL;
-	blockSignals = false;
+	spriteUpdateTimer = new QTimer(this);
+	connect(spriteUpdateTimer, SIGNAL(timeout()), this, SLOT(OnSpriteUpdateTimerExpired()));
 }
 
 EmitterLayerWidget::~EmitterLayerWidget()
@@ -577,10 +576,9 @@ void EmitterLayerWidget::Init(SceneEditor2* scene, ParticleEffectComponent* effe
     this->effect = effect;
 	this->emitter = emitter;
 	this->layer = layer;
+
 	SetActiveScene(scene);
-	
 	Update(updateMinimized);
-	
 }
 
 void EmitterLayerWidget::RestoreVisualState(KeyedArchive* visualStateProps)
@@ -850,6 +848,25 @@ void EmitterLayerWidget::OnLodsChanged()
 	emit ValueChanged();
 }
 
+void EmitterLayerWidget::OnSpriteUpdateTimerExpired()
+{
+	DVASSERT(!spriteUpdateTexturesStack.empty());
+
+	if (rhi::SyncObjectSignaled(spriteUpdateTexturesStack.top().first))
+	{
+		ScopedPtr<Image> image(spriteUpdateTexturesStack.top().second->CreateImageFromMemory());
+		spriteLabel->setPixmap(QPixmap::fromImage(ImageTools::FromDavaImage(image)));
+
+		while (!spriteUpdateTexturesStack.empty())
+		{
+			SafeRelease(spriteUpdateTexturesStack.top().second);
+			spriteUpdateTexturesStack.pop();
+		}
+
+		spriteUpdateTimer->stop();
+	}
+}
+
 void EmitterLayerWidget::Update(bool updateMinimized)
 {
     blockSignals = true;
@@ -884,22 +901,16 @@ void EmitterLayerWidget::Update(bool updateMinimized)
 
     if (sprite)
     {
-#if RHI_COMPLETE_EDITOR
-        Texture * renderTexture = Texture::CreateFBO(SPRITE_SIZE, SPRITE_SIZE, FORMAT_RGBA8888, Texture::DEPTH_NONE);
-        RenderHelper::Instance()->Set2DRenderTarget(renderTexture);
-        RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
-
-        Sprite::DrawState drawState;
-        drawState.SetScaleSize(SPRITE_SIZE, SPRITE_SIZE, sprite->GetWidth(), sprite->GetHeight());
-        RenderSystem2D::Instance()->Draw(sprite, &drawState);
-        RenderSystem2D::Instance()->Flush();
-
-        RenderManager::Instance()->SetRenderTarget(0);
-        Image* image = renderTexture->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND);
-        spriteLabel->setPixmap(QPixmap::fromImage(ImageTools::FromDavaImage(image)));
-        SafeRelease(image);
-        SafeRelease(renderTexture);
-#endif // RHI_COMPLETE_EDITOR
+		Texture* renderTarget = Texture::CreateFBO(SPRITE_SIZE, SPRITE_SIZE, FORMAT_RGBA8888);
+		RenderSystem2D::Instance()->BeginRenderTargetPass(renderTarget);
+		{
+			Sprite::DrawState drawState = { };
+			drawState.SetScaleSize(SPRITE_SIZE, SPRITE_SIZE, sprite->GetWidth(), sprite->GetHeight());
+			RenderSystem2D::Instance()->Draw(sprite, &drawState, Color::White);
+		}
+		RenderSystem2D::Instance()->EndRenderTargetPass();
+		spriteUpdateTexturesStack.push({rhi::GetCurrentFrameSyncObject(), renderTarget});
+		spriteUpdateTimer->start(0);
     }
     else
     {

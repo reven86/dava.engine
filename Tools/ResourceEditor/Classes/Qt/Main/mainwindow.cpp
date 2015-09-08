@@ -413,45 +413,45 @@ DAVA::eGPUFamily QtMainWindow::GetGPUFormat()
 
 void QtMainWindow::SetGPUFormat(DAVA::eGPUFamily gpu)
 {
-	// before reloading textures we should save tilemask texture for all opened scenes
-	if(SaveTilemask())
-	{
-		SettingsManager::SetValue(Settings::Internal_TextureViewGPU, VariantType(gpu));
-		DAVA::Texture::SetDefaultGPU(gpu);
+	// before reloading textures we should save tile-mask texture for all opened scenes
+    if (SaveTilemask())
+    {
+        SettingsManager::SetValue(Settings::Internal_TextureViewGPU, VariantType(gpu));
+        DAVA::Texture::SetDefaultGPU(gpu);
 
-		DAVA::TexturesMap allScenesTextures;
-		for(int tab = 0; tab < GetSceneWidget()->GetTabCount(); ++tab)
-		{
-			SceneEditor2 *scene = GetSceneWidget()->GetTabScene(tab);
-			SceneHelper::EnumerateSceneTextures(scene, allScenesTextures, SceneHelper::TexturesEnumerateMode::EXCLUDE_NULL);
-		}
+        DAVA::TexturesMap allScenesTextures;
+        for (int tab = 0; tab < GetSceneWidget()->GetTabCount(); ++tab)
+        {
+            SceneEditor2 *scene = GetSceneWidget()->GetTabScene(tab);
+            SceneHelper::EnumerateSceneTextures(scene, allScenesTextures, SceneHelper::TexturesEnumerateMode::EXCLUDE_NULL);
+        }
 
-		if(allScenesTextures.size() > 0)
-		{
-			int progress = 0;
-			WaitStart("Reloading textures...", "", 0, allScenesTextures.size());
+        if (allScenesTextures.size() > 0)
+        {
+            int progress = 0;
+            WaitStart("Reloading textures...", "", 0, allScenesTextures.size());
 
-			DAVA::TexturesMap::const_iterator it = allScenesTextures.begin();
-			DAVA::TexturesMap::const_iterator end = allScenesTextures.end();
+            DAVA::TexturesMap::const_iterator it = allScenesTextures.begin();
+            DAVA::TexturesMap::const_iterator end = allScenesTextures.end();
 
-			for(; it != end; ++it)
-			{
-				it->second->ReloadAs(gpu);
+            for (; it != end; ++it)
+            {
+                it->second->ReloadAs(gpu);
 
 #if defined(USE_FILEPATH_IN_MAP)
-				WaitSetMessage(it->first.GetAbsolutePathname().c_str());
+                WaitSetMessage(it->first.GetAbsolutePathname().c_str());
 #else //#if defined(USE_FILEPATH_IN_MAP)
-				WaitSetMessage(it->first.c_str());
+                WaitSetMessage(it->first.c_str());
 #endif //#if defined(USE_FILEPATH_IN_MAP)
-				WaitSetValue(progress++);
-			}
+                WaitSetValue(progress++);
+            }
 
             emit TexturesReloaded();
-            
-			WaitStop();
-		}
-	}
-	LoadGPUFormat();
+
+            WaitStop();
+        }
+    }
+    LoadGPUFormat();
 }
 
 void QtMainWindow::WaitStart(const QString &title, const QString &message, int min /* = 0 */, int max /* = 100 */)
@@ -2136,6 +2136,7 @@ void QtMainWindow::OnConvertModifiedTextures()
 			WaitSetValue(++convretedNumber);
 		}
 	}
+    
 	WaitStop();
 }
 
