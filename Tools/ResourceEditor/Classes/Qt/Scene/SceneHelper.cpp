@@ -141,6 +141,8 @@ int32 SceneHelper::EnumerateModifiedTextures(DAVA::Scene *forScene, DAVA::Map<DA
 	return retValue;
 }
 
+							path.GetAbsolutePathname().c_str(), material->GetMaterialName().c_str(),
+							texturePath.GetAbsolutePathname().c_str());
 
 void SceneHelper::EnumerateMaterialInstances(DAVA::Entity *forNode, DAVA::Vector<DAVA::NMaterial *> &materials)
 {

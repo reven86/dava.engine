@@ -124,8 +124,7 @@ public class JNIApplication extends Application
 	}
 	
 	static {
-	    System.loadLibrary("gnustl_shared");
-		System.loadLibrary("iconv_android");
+		System.loadLibrary("gnustl_shared");
 		System.loadLibrary("fmodex");
 		System.loadLibrary("fmodevent");
 	}
