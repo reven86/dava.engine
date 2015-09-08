@@ -39,8 +39,14 @@ namespace DAVA
 {
 
 UIComponent::UIComponent()
-    : control(NULL)
+    : control(nullptr)
 {
+}
+
+UIComponent::UIComponent(const UIComponent &src)
+    : control(nullptr)
+{
+    
 }
 
 UIComponent::~UIComponent()

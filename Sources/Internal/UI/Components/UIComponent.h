@@ -51,6 +51,7 @@ public:
     
 public:
     UIComponent();
+    UIComponent(const UIComponent &src);
     virtual ~UIComponent();
 
     static UIComponent * CreateByType(uint32 componentType);
