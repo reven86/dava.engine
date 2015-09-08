@@ -2,6 +2,7 @@
 
 #include <QPainter>
 #include <QThread>
+#include <QApplication>
 #include <QMetaObject>
 
 #include "Base/GlobalEnum.h"
@@ -9,8 +10,8 @@
 
 LogModel::LogModel(QObject* parent)
     : QAbstractListModel(parent)
-    , currentThreadID(QThread::currentThreadId())
 {
+    DVASSERT_MSG(thread() == qApp->thread(), "don't create this model in the separate thread!");
     createIcons();
     func = [](const DAVA::String &str)
     {
@@ -32,7 +33,8 @@ void LogModel::SetConvertFunction(ConvertFunc func_)
 
 void LogModel::Output(DAVA::Logger::eLogLevel ll, const DAVA::char8* text)
 {
-    auto connectType = QThread::currentThreadId() == currentThreadID ? Qt::DirectConnection : Qt::QueuedConnection;
+    DVASSERT_MSG(thread() == qApp->thread(), "don't move this model to the separate thread!");
+    auto connectType = QThread::currentThreadId() == qApp->thread() ? Qt::DirectConnection : Qt::QueuedConnection;
     QMetaObject::invokeMethod(this, "AddMessage", connectType, Q_ARG(DAVA::Logger::eLogLevel, ll), Q_ARG(const QString &, text));
 }
 
@@ -67,7 +69,7 @@ int LogModel::rowCount(const QModelIndex &parent) const
 
 void LogModel::AddMessage(DAVA::Logger::eLogLevel ll, const QString& text)
 {
-    DVASSERT(QThread::currentThreadId() == currentThreadID);
+    DVASSERT(thread() == qApp->thread());
     emit beginInsertRows(QModelIndex(), rowCount(), rowCount());
     items.append(LogItem(ll,
         QString::fromStdString(func(text.toStdString())),

@@ -51,7 +51,6 @@ private:
     QVector<LogItem> items;
 
     QVector<QPixmap> icons;
-    Qt::HANDLE currentThreadID;
     ConvertFunc func;
 };
 
