@@ -431,22 +431,32 @@ Descriptor
 };
 }
 
+enum
+IndexSize
+{
+    INDEX_SIZE_16BIT    = 0,
+    INDEX_SIZE_32BIT    = 1
+};
+
 namespace IndexBuffer
 {
+
 struct
 Descriptor
 {
-    uint32  size;
-    Pool    pool;
-    Usage   usage;
-    uint32  needRestore:1;
+    uint32      size;
+    IndexSize   indexSize;
+    Pool        pool;
+    Usage       usage;
+    uint32      needRestore:1;
             
-            Descriptor( uint32 sz=0 ) 
-              : size(sz),
-                pool(POOL_DEFAULT),
-                usage(USAGE_DEFAULT),
-                needRestore(true)
-            {}
+                Descriptor( uint32 sz=0 ) 
+                  : size(sz),
+                    indexSize(INDEX_SIZE_16BIT),
+                    pool(POOL_DEFAULT),
+                    usage(USAGE_DEFAULT),
+                    needRestore(true)
+                {}
 };
 }
 
