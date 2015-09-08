@@ -180,7 +180,7 @@ int16 Landscape::AllocateQuadVertexBuffer(LandscapeQuad * quad)
     vertexBuffers.push_back(vertexBuffer);
     
 #if defined(__DAVAENGINE_IPHONE__)
-    SafeDeleteArray(landscapeVertices);
+    SafeDeleteArray(landscapeVertices);  ///RHI_COMPLETE !!! this code will leak now as vertices are not deleted!!!!!!
 #endif
 
     return (int16)(vertexBuffers.size() - 1);

@@ -171,10 +171,10 @@ public:
         BufInfo         cbuf[MAX_CONST_BUFFER_COUNT];
     };
 
-    VertexProg      vprog;
-    FragmentProg    fprog;
+    VertexProg                      vprog;
+    FragmentProg                    fprog;
 
-    id<MTLRenderPipelineState>  state;
+    id<MTLRenderPipelineState>      state;
 
     VertexLayout                    layout;
     MTLRenderPipelineDescriptor*    desc;
@@ -229,6 +229,13 @@ PipelineStateMetal_t::FragmentProg::GetBufferInfo( MTLRenderPipelineReflection* 
                         
                         cbuf[i].index = i;
                         cbuf[i].count = arr.arrayLength;
+                        cbuf[i].used  = true;
+                        break;
+                    }
+                    else if( member.dataType == MTLDataTypeFloat4 )
+                    {
+                        cbuf[i].index = i;
+                        cbuf[i].count = 1;
                         cbuf[i].used  = true;
                         break;
                     }
@@ -300,7 +307,15 @@ PipelineStateMetal_t::VertexProg::GetBufferInfo( MTLRenderPipelineReflection* in
                         cbuf[i].used  = true;
                         break;
                     }
+                    else if( member.dataType == MTLDataTypeFloat4 )
+                    {
+                        cbuf[i].index = i;
+                        cbuf[i].count = 1;
+                        cbuf[i].used  = true;
+                        break;
+                    }
                 }
+                
                 break;
             }
         }
@@ -430,7 +445,7 @@ PipelineStateMetal_t::ConstBuf::SetToRHI( unsigned bufIndex, id<MTLRenderCommand
 
         memcpy( inst, data, count*4*sizeof(float) );
     }
-
+    
     if( type == PROG_VERTEX )
         [ce setVertexBuffer:buf offset:inst_offset atIndex:1+bufIndex]; // CRAP: vprog-buf#0 assumed to be vdata
     else
@@ -465,9 +480,9 @@ metal_PipelineState_Create( const PipelineState::Descriptor& desc )
     rhi::ShaderCache::GetProg( desc.vprogUid, &vprog_bin );
     rhi::ShaderCache::GetProg( desc.fprogUid, &fprog_bin );
 
-//Logger::Info("metal_PipelineState_Create");
-//Logger::Info("  vprogUid= %s",desc.vprogUid.c_str());
-//Logger::Info("  fprogUid= %s",desc.fprogUid.c_str());
+Logger::Info("metal_PipelineState_Create");
+Logger::Info("  vprogUid= %s",desc.vprogUid.c_str());
+Logger::Info("  fprogUid= %s",desc.fprogUid.c_str());
 
 
     // compile vprog
@@ -832,7 +847,8 @@ SetToRHI( Handle ps, uint32 layoutUID, id<MTLRenderCommandEncoder> ce )
                 
                 for( unsigned j=0; j!=layout->ElementCount(); ++j )
                 {
-                    if( layout->ElementSemantics(j) == psm->layout.ElementSemantics(i) )
+                    if( layout->ElementSemantics(j) == psm->layout.ElementSemantics(i)
+                       && layout->ElementSemanticsIndex(j) == psm->layout.ElementSemanticsIndex(i))
                     {
                         MTLVertexFormat fmt = MTLVertexFormatInvalid;
                         
