@@ -46,7 +46,7 @@ namespace CreatePlaneLODCommandHelper
 		DAVA::uint32 textureSize = 0;
 		DAVA::FilePath texturePath;
 	    DAVA::Vector<DAVA::LodComponent::LodDistance> savedDistances;
-		DAVA::Atomic<bool> completed = false;
+		DAVA::Atomic<bool> completed;
 		rhi::HTexture depthTexture;
 
 		Request();
