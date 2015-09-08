@@ -63,6 +63,7 @@ CommandBufferMetal_t
     id<MTLCommandBuffer>        buf;
 
     id<MTLTexture>              rt;
+    bool                        ds_used;
     Handle                      cur_ib;
     Handle                      cur_vb;
     uint32                      cur_stride;
@@ -92,9 +93,10 @@ metal_RenderPass_Allocate( const RenderPassConfig& passConf, uint32 cmdBufCount,
 {
     DVASSERT(cmdBufCount);
 
-    Handle                      pass_h = RenderPassPool::Alloc();
-    RenderPassMetal_t*          pass   = RenderPassPool::Get( pass_h );
-    MTLRenderPassDescriptor*    desc   = [MTLRenderPassDescriptor renderPassDescriptor];
+    Handle                      pass_h  = RenderPassPool::Alloc();
+    RenderPassMetal_t*          pass    = RenderPassPool::Get( pass_h );
+    MTLRenderPassDescriptor*    desc    = [MTLRenderPassDescriptor renderPassDescriptor];
+    bool                        ds_used = true;
     
     if( !_CurDrawable )
     {
@@ -113,27 +115,31 @@ SCOPED_NAMED_TIMING("rhi.mtl-vsync");
         default               : desc.colorAttachments[0].loadAction = MTLLoadActionDontCare;
     }
     
-//    desc.colorAttachments[0].loadAction     = (passConf.colorBuffer[0].loadAction==LOADACTION_CLEAR) ? MTLLoadActionClear : MTLLoadActionDontCare;
     desc.colorAttachments[0].storeAction    = MTLStoreActionStore;
     desc.colorAttachments[0].clearColor     = MTLClearColorMake(passConf.colorBuffer[0].clearColor[0],passConf.colorBuffer[0].clearColor[1],passConf.colorBuffer[0].clearColor[2],passConf.colorBuffer[0].clearColor[3]);
 
-//    desc.depthAttachment.texture            = _Metal_DefDepthBuf;
-    desc.depthAttachment.loadAction         = (passConf.depthStencilBuffer.loadAction==LOADACTION_CLEAR) ? MTLLoadActionClear : MTLLoadActionDontCare;
-    desc.depthAttachment.storeAction        = (passConf.depthStencilBuffer.storeAction==STOREACTION_STORE) ? MTLStoreActionStore : MTLStoreActionDontCare;
-    desc.depthAttachment.clearDepth         = passConf.depthStencilBuffer.clearDepth;
-
     if( passConf.depthStencilBuffer.texture == rhi::DefaultDepthBuffer )
-        desc.stencilAttachment.texture = _Metal_DefStencilBuf;
+    {
+        desc.depthAttachment.texture    = _Metal_DefDepthBuf;
+        desc.stencilAttachment.texture  = _Metal_DefStencilBuf;
+        ds_used = true;
+    }
     else if( passConf.depthStencilBuffer.texture != rhi::InvalidHandle )
-        desc.stencilAttachment.texture = passConf.depthStencilBuffer.texture;
-
-
-    desc.stencilAttachment.loadAction       = (passConf.depthStencilBuffer.loadAction==LOADACTION_CLEAR) ? MTLLoadActionClear : MTLLoadActionDontCare;
-    desc.stencilAttachment.storeAction      = (passConf.depthStencilBuffer.storeAction==STOREACTION_STORE) ? MTLStoreActionStore : MTLStoreActionDontCare;
-    desc.stencilAttachment.clearStencil     = passConf.depthStencilBuffer.clearStencil;
-
-    if( passConf.depthStencilBuffer.texture != InvalidHandle )
+    {
         TextureMetal::SetAsDepthStencil( passConf.depthStencilBuffer.texture, desc );
+        ds_used = true;
+    }
+
+    if( ds_used )
+    {
+        desc.depthAttachment.loadAction         = (passConf.depthStencilBuffer.loadAction==LOADACTION_CLEAR) ? MTLLoadActionClear : MTLLoadActionDontCare;
+        desc.depthAttachment.storeAction        = (passConf.depthStencilBuffer.storeAction==STOREACTION_STORE) ? MTLStoreActionStore : MTLStoreActionDontCare;
+        desc.depthAttachment.clearDepth         = passConf.depthStencilBuffer.clearDepth;
+        
+        desc.stencilAttachment.loadAction       = (passConf.depthStencilBuffer.loadAction==LOADACTION_CLEAR) ? MTLLoadActionClear : MTLLoadActionDontCare;
+        desc.stencilAttachment.storeAction      = (passConf.depthStencilBuffer.storeAction==STOREACTION_STORE) ? MTLStoreActionStore : MTLStoreActionDontCare;
+        desc.stencilAttachment.clearStencil     = passConf.depthStencilBuffer.clearStencil;
+    }
     
     if( passConf.queryBuffer != InvalidHandle )
     {
@@ -150,12 +156,12 @@ SCOPED_NAMED_TIMING("rhi.mtl-vsync");
         
         pass->desc      = desc;
         pass->encoder   = nil;
-//        pass->buf       = [_Metal_DefCmdQueue commandBuffer];
-        pass->buf       = [_Metal_DefCmdQueue commandBufferWithUnretainedReferences]; 
+        pass->buf       = [_Metal_DefCmdQueue commandBufferWithUnretainedReferences];
 
         cb->encoder      = [pass->buf renderCommandEncoderWithDescriptor:desc];
         cb->buf          = pass->buf;
         cb->rt           = desc.colorAttachments[0].texture;
+        cb->ds_used      = ds_used;
         cb->cur_ib       = InvalidHandle;
         cb->cur_vb       = InvalidHandle;
         
@@ -176,6 +182,7 @@ SCOPED_NAMED_TIMING("rhi.mtl-vsync");
             cb->encoder     = [pass->encoder renderCommandEncoder];
             cb->buf         = pass->buf;
             cb->rt          = desc.colorAttachments[0].texture;
+            cb->ds_used     = ds_used;
             cb->cur_ib      = InvalidHandle;
             cb->cur_vb      = InvalidHandle;
             
@@ -260,7 +267,7 @@ metal_CommandBuffer_SetPipelineState( Handle cmdBuf, Handle ps, uint32 layoutUID
 {
     CommandBufferMetal_t*   cb = CommandBufferPool::Get( cmdBuf );
 
-    cb->cur_stride = PipelineStateMetal::SetToRHI( ps, layoutUID, cb->encoder );
+    cb->cur_stride = PipelineStateMetal::SetToRHI( ps, layoutUID, cb->ds_used, cb->encoder );
     StatSet::IncStat( stat_SET_PS, 1 );
 }
 
