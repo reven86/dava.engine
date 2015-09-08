@@ -53,6 +53,11 @@ UIComponent::~UIComponent()
 {
 }
 
+UIComponent &UIComponent::operator=(const UIComponent &src)
+{
+    return *this;
+}
+
 UIComponent * UIComponent::CreateByType(uint32 componentType)
 {
     switch (componentType)
