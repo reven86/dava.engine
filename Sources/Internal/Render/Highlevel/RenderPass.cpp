@@ -47,7 +47,7 @@ RenderPass::RenderPass(const FastName & _name) : passName(_name)
 {
     renderLayers.reserve(RenderLayer::RENDER_LAYER_ID_COUNT);
     
-    passConfig.colorBuffer[0].loadAction = rhi::LOADACTION_NONE;
+    passConfig.colorBuffer[0].loadAction = rhi::LOADACTION_LOAD;
     passConfig.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
     passConfig.colorBuffer[0].clearColor[0] = 0.0f;
     passConfig.colorBuffer[0].clearColor[1] = 0.0f;

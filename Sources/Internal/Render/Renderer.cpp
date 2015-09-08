@@ -82,8 +82,8 @@ void Initialize(rhi::Api _api, const rhi::InitParam & params)
 
 void InitCaps()
 {
-    renderCaps.zeroBaseClipRange = (api == rhi::RHI_DX9) || (api == rhi::RHI_DX11);
-    renderCaps.upperLeftRTOrigin = (api == rhi::RHI_DX9) || (api == rhi::RHI_DX11);
+    renderCaps.zeroBaseClipRange = (api == rhi::RHI_DX9) || (api == rhi::RHI_DX11) || (api == rhi::RHI_METAL);
+    renderCaps.upperLeftRTOrigin = (api == rhi::RHI_DX9) || (api == rhi::RHI_DX11) || (api == rhi::RHI_METAL);
     renderCaps.isCenterPixelMapping = (api == rhi::RHI_DX9) || (api == rhi::RHI_DX11);
 }
 

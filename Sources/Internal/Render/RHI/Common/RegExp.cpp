@@ -46,7 +46,7 @@ inline char*        _tcsinc( char* cur )                            { return cur
 inline char*        _tcsdec( char* start, char* cur )               { return (cur>start) ? cur-1 : NULL; }
 inline const char*  _tcsdec( const char* start, const char* cur )   { return (cur>start) ? cur-1 : NULL; }
 inline char         _tcsnextc( const char* str )                    { return *str; }
-#if defined(__DAVAENGINE_IPHONE__)
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
 #define _tcsdup     strdup
 #else
 #define _tcsdup     _strdup
