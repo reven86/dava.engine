@@ -420,8 +420,8 @@ void QtMainWindow::SetGPUFormat(DAVA::eGPUFamily gpu)
 	// before reloading textures we should save tilemask texture for all opened scenes
 	if(SaveTilemask())
 	{
-		SettingsManager::SetValue(Settings::Internal_TextureViewGPU, VariantType(gpu));
-		DAVA::Texture::SetDefaultGPU(gpu);
+        SettingsManager::SetValue(Settings::Internal_TextureViewGPU, VariantType(static_cast<uint32>(gpu)));
+        DAVA::Texture::SetDefaultGPU(gpu);
 
 		DAVA::TexturesMap allScenesTextures;
 		for(int tab = 0; tab < GetSceneWidget()->GetTabCount(); ++tab)
