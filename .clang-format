@@ -44,7 +44,7 @@ SpacesBeforeTrailingComments: 1
 Cpp11BracedListStyle: true
 Standard: Cpp11 
 IndentWidth: 4
-TabWidth: 8
+TabWidth: 4
 UseTab: Never
 BreakBeforeBraces: Allman
 SpacesInParentheses: false
@@ -55,7 +55,7 @@ SpacesInCStyleCastParentheses: false
 SpaceAfterCStyleCast: false
 SpacesInContainerLiterals: true
 SpaceBeforeAssignmentOperators: true
-ContinuationIndentWidth: 4
+ContinuationIndentWidth: 0
 CommentPragmas: ''
 ForEachMacros:   [ foreach, Q_FOREACH, BOOST_FOREACH ]
 SpaceBeforeParens: ControlStatements
