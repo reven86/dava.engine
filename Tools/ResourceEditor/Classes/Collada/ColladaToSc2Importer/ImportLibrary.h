@@ -26,39 +26,48 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef  __DAVAENGINE_IMPORT_LIBRARY_H
+#define __DAVAENGINE_IMPORT_LIBRARY_H
 
-#ifndef __COLLADA_TO_SC2_IMPORTER_H__
-#define __COLLADA_TO_SC2_IMPORTER_H__
+#include "Base/FastName.h"
 
 namespace DAVA
 {
 
-class Entity;
-class ColladaSceneNode;
-class ImportLibrary;
-
-class ColladaToSc2Importer
+class NMaterial;
+class PolygonGroup;
+class ColladaPolygonGroupInstance;
+class AnimationData;
+class ColladaMaterial;
+class SceneNodeAnimation;
+    
+class ImportLibrary
 {
 public:
-    ColladaToSc2Importer();
-    ~ColladaToSc2Importer();
-    SceneFileV2::eError SaveSC2(ColladaScene * colladaScene, const FilePath & scenePath, const String & sceneName);
+    ~ImportLibrary();
     
-    static void CollapseRenderBatchesRecursiveAsLod(Entity * node, uint32 lod, RenderObject * ro);
-    static void CollapseAnimationsUpToFarParent(Entity * node, Entity * parent);
-
+    PolygonGroup * GetOrCreatePolygon(ColladaPolygonGroupInstance * colladaPGI);
+    NMaterial * GetOrCreateMaterial(ColladaPolygonGroupInstance * colladaPolyGroupInst, const bool isShadow);
+    NMaterial * GetOrCreateMaterialParent(ColladaMaterial * colladaMaterial, const bool isShadow);
+    AnimationData * GetOrCreateAnimation(SceneNodeAnimation * colladaSceneNode);
+    
 private:
-    void ImportAnimation(ColladaSceneNode * colladaNode, Entity * nodeEntity);
-    void LoadMaterialParents(ColladaScene * colladaScene);
-    void LoadAnimations(ColladaScene * colladaScene);
-    void ImportMeshes(const Vector<ColladaMeshInstance *> & meshInstances, Entity * node);
-    void BuildSceneAsCollada(Entity * root, ColladaSceneNode * colladaNode);
-    Mesh * GetMeshFromCollada(ColladaMeshInstance * mesh, const bool isShadow);
-
+    void InitPolygon(PolygonGroup * davaPolygon, uint32 vertexFormat, Vector<ColladaVertex> & vertices);
+    bool GetTextureTypeAndPathFromCollada(ColladaMaterial * material, FastName & type, FilePath & path);
+    FilePath GetNormalMapTexturePath(const FilePath & originalTexturePath);
+    inline void FlipTexCoords(Vector2 & v);
 private:
-    ImportLibrary * library;
+    Map<ColladaPolygonGroupInstance *, PolygonGroup *> polygons;
+    Map<FastName, NMaterial *> materialParents;
+    Map<FastName, NMaterial *> materials;
+    Map<SceneNodeAnimation *, AnimationData *> animations;
 };
+    
+inline void ImportLibrary::FlipTexCoords(Vector2 & v)
+{
+    v.y = 1.0f - v.y;
+}
+    
+}
 
-};
-
-#endif 
+#endif //IMPORT_LIBRARY_H

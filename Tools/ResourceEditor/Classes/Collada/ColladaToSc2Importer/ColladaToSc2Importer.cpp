@@ -50,349 +50,13 @@
 
 #include "Collada/ColladaToSc2Importer/ColladaToSc2Importer.h"
 
+#include "Collada/ColladaToSc2Importer/ImportSettings.h"
+#include "Collada/ColladaToSc2Importer/ImportLibrary.h"
+
 namespace DAVA
 {
-    
-namespace ImportSettings
-{
-    static const String lodNamePattern("_lod%d");
-    static const String dummyLodNamePattern("_lod%ddummy");
-    static const String shadowNamePattern("_shadow");
-    static const String normalMapPattern("_NM");
-    static const FastName shadowMaterialName("Shadow_Material");
-}
-    
 namespace
 {
-void FlipTexCoords(Vector2 & v)
-{
-    v.y = 1.0f - v.y;
-}
-
-bool IsShadowNode(const String & nodeName)
-{
-    size_t fp = nodeName.find(ImportSettings::shadowNamePattern);
-    return fp != String::npos;
-}
-} // unnamed namespace
-
-class ImportLibrary
-{
-public:
-    ~ImportLibrary();
-    
-    PolygonGroup * GetOrCreatePolygon(ColladaPolygonGroupInstance * colladaPGI);
-    NMaterial * GetOrCreateMaterial(ColladaPolygonGroupInstance * colladaPolyGroupInst, const bool isShadow);
-    NMaterial * GetOrCreateMaterialParent(ColladaMaterial * colladaMaterial, const bool isShadow);
-    AnimationData * GetOrCreateAnimation(SceneNodeAnimation * colladaSceneNode);
-    
-private:
-    Map<ColladaPolygonGroupInstance *, PolygonGroup *> polygons;
-    Map<FastName, NMaterial *> materialParents;
-    Map<FastName, NMaterial *> materials;
-    Map<SceneNodeAnimation *, AnimationData *> animations;
-};
-    
-ImportLibrary::~ImportLibrary()
-{
-    for (auto & pair : polygons)
-    {
-        uint32 refCount = pair.second->Release();
-        DVASSERT(0 == refCount);
-    }
-    polygons.clear();
- 
-    for (auto & pair : materials)
-    {
-        uint32 refCount = pair.second->Release();
-        DVASSERT(0 == refCount);
-    }
-    materials.clear();
-
-    for (auto & pair : materialParents)
-    {
-        uint32 refCount = pair.second->Release();
-        DVASSERT(0 == refCount);
-    }
-    materialParents.clear();
-    
-    for (auto & pair : animations)
-    {
-        uint32 refCount = pair.second->Release();
-        DVASSERT(0 == refCount);
-    }
-    animations.clear();
-}
-
-void InitPolygon(PolygonGroup * davaPolygon, uint32 vertexFormat, Vector<ColladaVertex> &vertices)
-{
-    uint32 vertexCount = static_cast<uint32>(vertices.size());
-    for (uint32 vertexNo = 0; vertexNo < vertexCount; ++vertexNo)
-    {
-        const auto & vertex = vertices[vertexNo];
-        
-        if (vertexFormat & EVF_VERTEX)
-        {
-            davaPolygon->SetCoord(vertexNo, vertex.position);
-        }
-        if (vertexFormat & EVF_NORMAL)
-        {
-            davaPolygon->SetNormal(vertexNo, vertex.normal);
-        }
-        if (vertexFormat & EVF_TANGENT)
-        {
-            davaPolygon->SetTangent(vertexNo, vertex.tangent);
-        }
-        if (vertexFormat & EVF_BINORMAL)
-        {
-            davaPolygon->SetBinormal(vertexNo, vertex.binormal);
-        }
-        if (vertexFormat & EVF_TEXCOORD0)
-        {
-            Vector2 coord = vertex.texCoords[0];
-            FlipTexCoords(coord);
-            davaPolygon->SetTexcoord(0, vertexNo, coord);
-        }
-        if (vertexFormat & EVF_TEXCOORD1)
-        {
-            Vector2 coord = vertex.texCoords[1];
-            FlipTexCoords(coord);
-            davaPolygon->SetTexcoord(1, vertexNo, coord);
-        }
-        if (vertexFormat & EVF_TEXCOORD2)
-        {
-            Vector2 coord = vertex.texCoords[2];
-            FlipTexCoords(coord);
-            davaPolygon->SetTexcoord(2, vertexNo, coord);
-        }
-        if (vertexFormat & EVF_TEXCOORD3)
-        {
-            Vector2 coord = vertex.texCoords[3];
-            FlipTexCoords(coord);
-            davaPolygon->SetTexcoord(3, vertexNo, coord);
-        }
-    }
-}
-
-PolygonGroup * ImportLibrary::GetOrCreatePolygon(ColladaPolygonGroupInstance * colladaPGI)
-{
-    // Try to take polygon from library
-    PolygonGroup * davaPolygon = polygons[colladaPGI];
-    
-    // there is no polygon, so create new one
-    if (nullptr == davaPolygon)
-    {
-        davaPolygon = new PolygonGroup();
-        
-        ColladaPolygonGroup *colladaPolygon = colladaPGI->polyGroup;
-        DVASSERT(nullptr != colladaPolygon && "Empty collada polyton group instance.");
-
-        auto vertices = colladaPolygon->GetVertices();
-        uint32 vertexCount = static_cast<uint32>(vertices.size());
-        auto vertexFormat = colladaPolygon->GetVertexFormat();
-        auto indecies = colladaPolygon->GetIndices();
-        uint32 indexCount = static_cast<uint32>(indecies.size());
-
-        // Allocate data buffers before fill them
-        davaPolygon->AllocateData(vertexFormat, vertexCount, indexCount);
-        davaPolygon->triangleCount = colladaPolygon->GetTriangleCount();
-        
-        // Fill index array
-        for(uint32 indexNo = 0; indexNo < indexCount; ++indexNo)
-        {
-            davaPolygon->indexArray[indexNo] = indecies[indexNo];
-        }
-        
-        // Take collada vertices and set to polygon group
-        InitPolygon(davaPolygon, vertexFormat, vertices);
-
-        bool rebuildTangentSpace = false;
-#ifdef REBUILD_TANGENT_SPACE_ON_IMPORT
-        rebuildTangentSpace = true;
-#endif
-        const int32 prerequiredFormat = EVF_TANGENT | EVF_BINORMAL | EVF_NORMAL;
-        if (rebuildTangentSpace && (davaPolygon->GetFormat() & prerequiredFormat) == prerequiredFormat)
-        {
-            MeshUtils::RebuildMeshTangentSpace(davaPolygon, true);
-        }
-        else
-        {
-            davaPolygon->BuildBuffers();
-        }
-        
-        // Put polygon to the library
-        polygons[colladaPGI] = davaPolygon;
-    }
-    
-    // TO VERIFY: polygon
-        
-    return davaPolygon;
-}
-
-AnimationData * ImportLibrary::GetOrCreateAnimation(SceneNodeAnimation * colladaAnimation)
-{
-    AnimationData * animation = animations[colladaAnimation];
-    if (nullptr == animation)
-    {
-        animation = new AnimationData();
-        
-        animation->SetInvPose(colladaAnimation->invPose);
-        animation->SetDuration(colladaAnimation->duration);
-        if (nullptr != colladaAnimation->keys)
-        {
-            for (uint32 keyNo = 0; keyNo < colladaAnimation->keyCount; ++keyNo)
-            {
-                SceneNodeAnimationKey key = colladaAnimation->keys[keyNo];
-                animation->AddKey(key);
-            }
-        }
-        
-        animations[colladaAnimation] = animation;
-    }
-    
-    return animation;
-}
-
-namespace
-{
-bool GetTextureTypeAndPathFromCollada(ColladaMaterial * material, FastName & type, FilePath & path)
-{
-    ColladaTexture * diffuse = material->diffuseTexture;
-    bool useDiffuseTexture = nullptr != diffuse && material->hasDiffuseTexture;
-    if (useDiffuseTexture)
-    {
-        type = NMaterial::TEXTURE_ALBEDO;
-        path = diffuse->texturePathName.c_str();
-        return true;
-    }
-    return false;
-}
-    
-FilePath GetNormalMapTexturePath(const FilePath & originalTexturePath)
-{
-    FilePath path = originalTexturePath;
-    path.ReplaceBasename(path.GetBasename() + ImportSettings::normalMapPattern);
-    return path;
-}
-
-} // unnamed namespace
-
-NMaterial * ImportLibrary::GetOrCreateMaterialParent(ColladaMaterial * colladaMaterial, const bool isShadow)
-{
-    FastName parentMaterialTemplate;
-    FastName parentMaterialName;
-
-    if (isShadow)
-    {
-        parentMaterialName = ImportSettings::shadowMaterialName;
-        parentMaterialTemplate = NMaterialName::SHADOW_VOLUME;
-    }
-    else
-    {
-        parentMaterialName = FastName(colladaMaterial->material->GetDaeId().c_str());
-        parentMaterialTemplate = NMaterialName::TEXTURED_OPAQUE;
-    }
-    
-    NMaterial * davaMaterialParent = materialParents[parentMaterialName];
-    if (nullptr == davaMaterialParent)
-    {
-        davaMaterialParent = NMaterial::CreateMaterial(parentMaterialName, parentMaterialTemplate, NMaterial::DEFAULT_QUALITY_NAME);
-        materialParents[parentMaterialName] = davaMaterialParent;
-    }
-    
-    FastName textureType;
-    FilePath texturePath;
-    bool hasTexture = GetTextureTypeAndPathFromCollada(colladaMaterial, textureType, texturePath);
-    if (hasTexture)
-    {
-        FilePath descriptorPathname = TextureDescriptor::GetDescriptorPathname(texturePath);
-        
-        TextureDescriptor * descr = TextureDescriptor::CreateFromFile(descriptorPathname);
-        if (nullptr != descr)
-        {
-            descr->Save();
-            texturePath = descr->pathname;
-            SafeDelete(descr);
-        }
-        davaMaterialParent->SetTexture(textureType, descriptorPathname);
-    
-        FilePath normalMap = GetNormalMapTexturePath(descriptorPathname);
-        if (FileSystem::Instance()->IsFile(normalMap))
-        {
-            davaMaterialParent->SetTexture(NMaterial::TEXTURE_NORMAL, normalMap);
-        }
-    }
-    return davaMaterialParent;
-}
-    
-NMaterial * ImportLibrary::GetOrCreateMaterial(ColladaPolygonGroupInstance * colladaPolyGroupInst, const bool isShadow)
-{
-    ColladaMaterial * colladaMaterial = colladaPolyGroupInst->material;
-    DVASSERT(nullptr != colladaMaterial && "Empty material");
-
-    NMaterial * davaMaterialParent = GetOrCreateMaterialParent(colladaMaterial, isShadow);
-
-    // Use daeId + parentMaterialName to make unique key for material in the library
-    String daeId = colladaMaterial->material->GetDaeId().c_str();
-    String parentMaterialName(davaMaterialParent->GetMaterialName().c_str());
-    FastName materialKey = FastName(daeId + parentMaterialName.c_str());
-
-    // Try to get material from library
-    NMaterial * material = materials[materialKey];
-    
-    // There is no material in the library, so create new one
-    if (nullptr == material)
-    {
-        material = NMaterial::CreateMaterialInstance();
-        material->SetMaterialName(FastName(daeId));
-        material->SetParent(davaMaterialParent);
-
-        materials[materialKey] = material;
-    }
-    
-    return material;
-}
-
-namespace
-{
-void CollapseRenderBatchesRecursive(Entity * node, uint32 lod, RenderObject * ro)
-{
-    for (auto child : node->children)
-    {
-        CollapseRenderBatchesRecursive(child, lod, ro);
-    }
-    
-    RenderObject * lodRenderObject = GetRenderObject(node);
-    if (nullptr != lodRenderObject)
-    {
-        uint32 batchNo = 0;
-        while (lodRenderObject->GetRenderBatchCount() > 0)
-        {
-            RenderBatch * batch = lodRenderObject->GetRenderBatch(batchNo);
-            batch->Retain();
-            lodRenderObject->RemoveRenderBatch(batch);
-            ro->AddRenderBatch(batch, lod, -1);
-            batch->Release();
-            ++batchNo;
-        }
-    }
-}
-
-void CollapseAnimations(Entity * node, Entity * parent)
-{
-    for (auto child : parent->children)
-    {
-        CollapseAnimations(child, parent);
-    }
-    
-    AnimationComponent * ac = GetAnimationComponent(node);
-    if (ac)
-    {
-        node->DetachComponent(ac);
-        parent->AddComponent(ac);
-    }
-
-}
     
 String LodNameForIndex(const String & pattern, uint32 lodIndex)
 {
@@ -424,17 +88,17 @@ void CollapseLodsIntoOneEntity(Entity *forRootNode)
         ScopedPtr<Mesh> newMesh(new Mesh());
         
         uint32 lodCount = 0;
-        for (int i = 0; i < LodComponent::MAX_LOD_LAYERS; ++i)
+        for (int lodNo = 0; lodNo < LodComponent::MAX_LOD_LAYERS; ++lodNo)
         {
             
             // Remove dummy nodes
             // Try to find node with same name but with other lod
-            const FastName lodIName(nodeWithLodsName + LodNameForIndex(ImportSettings::lodNamePattern, i));
+            const FastName lodIName(nodeWithLodsName + LodNameForIndex(ImportSettings::lodNamePattern, lodNo));
             Entity * ln = oldParent->FindByName(lodIName.c_str());
             
             if (nullptr == ln)
             {
-                const FastName dummyLodName(nodeWithLodsName + LodNameForIndex(ImportSettings::dummyLodNamePattern, i));
+                const FastName dummyLodName(nodeWithLodsName + LodNameForIndex(ImportSettings::dummyLodNamePattern, lodNo));
                 ln = oldParent->FindByName(dummyLodName.c_str());
                 
                 if (nullptr != ln)
@@ -446,8 +110,8 @@ void CollapseLodsIntoOneEntity(Entity *forRootNode)
             
             if (nullptr != ln)
             {
-                CollapseRenderBatchesRecursive(ln, i, newMesh);
-                CollapseAnimations(ln, newNodeWithLods);
+                ColladaToSc2Importer::CollapseRenderBatchesRecursiveAsLod(ln, lodNo, newMesh);
+                ColladaToSc2Importer::CollapseAnimationsUpToFarParent(ln, newNodeWithLods);
                 
                 oldParent->RemoveNode(ln);
                 ++lodCount;
@@ -533,7 +197,7 @@ void ColladaToSc2Importer::ImportMeshes(const Vector<ColladaMeshInstance *> & me
     DVASSERT(1 >= meshInstances.size() && "Should be only one meshInstance in one collada node");
     for (auto meshInstance : meshInstances)
     {
-        bool isShadowNode = IsShadowNode(node->GetName().c_str());
+        bool isShadowNode = String::npos != node->GetName().find(ImportSettings::shadowNamePattern);
         
         ScopedPtr<RenderObject> davaMesh(GetMeshFromCollada(meshInstance, isShadowNode));
         RenderComponent * davaRenderComponent = GetRenderComponent(node);
@@ -645,6 +309,44 @@ SceneFileV2::eError ColladaToSc2Importer::SaveSC2(ColladaScene * colladaScene, c
     CombineLods(scene);
     
     return scene->SaveScene(scenePath + sceneName);
+}
+
+void ColladaToSc2Importer::CollapseRenderBatchesRecursiveAsLod(Entity * node, uint32 lod, RenderObject * ro)
+{
+    for (auto child : node->children)
+    {
+        CollapseRenderBatchesRecursiveAsLod(child, lod, ro);
+    }
+    
+    RenderObject * lodRenderObject = GetRenderObject(node);
+    if (nullptr != lodRenderObject)
+    {
+        uint32 batchNo = 0;
+        while (lodRenderObject->GetRenderBatchCount() > 0)
+        {
+            RenderBatch * batch = lodRenderObject->GetRenderBatch(batchNo);
+            batch->Retain();
+            lodRenderObject->RemoveRenderBatch(batch);
+            ro->AddRenderBatch(batch, lod, -1);
+            batch->Release();
+            ++batchNo;
+        }
+    }
+}
+
+void ColladaToSc2Importer::CollapseAnimationsUpToFarParent(Entity * node, Entity * parent)
+{
+    for (auto child : parent->children)
+    {
+        CollapseAnimationsUpToFarParent(child, parent);
+    }
+    
+    Component * ac = GetAnimationComponent(node);
+    if (ac)
+    {
+        node->DetachComponent(ac);
+        parent->AddComponent(ac);
+    }
 }
 
 };

@@ -26,39 +26,24 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __DAVAENGINE_IMPORT_SETTINGS_H
+#define __DAVAENGINE_IMPORT_SETTINGS_H
 
-#ifndef __COLLADA_TO_SC2_IMPORTER_H__
-#define __COLLADA_TO_SC2_IMPORTER_H__
+#include "Base/FastName.h"
+#include "Base/BaseTypes.h"
 
 namespace DAVA
 {
-
-class Entity;
-class ColladaSceneNode;
-class ImportLibrary;
-
-class ColladaToSc2Importer
-{
-public:
-    ColladaToSc2Importer();
-    ~ColladaToSc2Importer();
-    SceneFileV2::eError SaveSC2(ColladaScene * colladaScene, const FilePath & scenePath, const String & sceneName);
     
-    static void CollapseRenderBatchesRecursiveAsLod(Entity * node, uint32 lod, RenderObject * ro);
-    static void CollapseAnimationsUpToFarParent(Entity * node, Entity * parent);
+namespace ImportSettings
+{
+    static const String lodNamePattern("_lod%d");
+    static const String dummyLodNamePattern("_lod%ddummy");
+    static const String shadowNamePattern("_shadow");
+    static const String normalMapPattern("_NM");
+    static const FastName shadowMaterialName("Shadow_Material");
+}
 
-private:
-    void ImportAnimation(ColladaSceneNode * colladaNode, Entity * nodeEntity);
-    void LoadMaterialParents(ColladaScene * colladaScene);
-    void LoadAnimations(ColladaScene * colladaScene);
-    void ImportMeshes(const Vector<ColladaMeshInstance *> & meshInstances, Entity * node);
-    void BuildSceneAsCollada(Entity * root, ColladaSceneNode * colladaNode);
-    Mesh * GetMeshFromCollada(ColladaMeshInstance * mesh, const bool isShadow);
+}
 
-private:
-    ImportLibrary * library;
-};
-
-};
-
-#endif 
+#endif //IMPORT_SETTINGS_H
