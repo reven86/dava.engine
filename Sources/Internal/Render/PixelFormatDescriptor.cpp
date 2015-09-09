@@ -91,7 +91,7 @@ void PixelFormatDescriptor::InitializePixelFormatDescriptors()
     SetPixelDescription(FORMAT_ETC2_RGB_A1, FastName("ETC2_RGB_A1"), 4, rhi::TEXTURE_FORMAT_ETC2_R8G8B8A1);
 
 #if defined (__DAVAENGINE_WIN32__)
-    SetPixelDescription(FORMAT_BGR888, FastName("BGR888"), 24, UNSUPPORTED_FORMAT, false);
+    SetPixelDescription(FORMAT_BGR888, FastName("BGR888"), 24, UNSUPPORTED_FORMAT);
 #endif
 }
 
