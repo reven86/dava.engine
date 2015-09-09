@@ -81,6 +81,17 @@ ResetParam
     {}
 };
 
+struct
+RenderDeviceCaps
+{
+    bool is32BitIndicesSupported = false;
+    bool isVertexTextureUnitsSupported = false;
+    bool isFramebufferFetchSupported = false;
+    
+    bool isUpperLeftRTOrigin = false;
+    bool isZeroBaseClipRange = false;
+    bool isCenterPixelMapping = false;
+};
 
 void    Initialize( Api api, const InitParam& param );
 void    Uninitialize();
@@ -91,7 +102,7 @@ void    Present(); // execute all submitted command-buffers & do flip/present
 
 Api     HostApi();
 bool    TextureFormatSupported( TextureFormat format );
-
+const RenderDeviceCaps & DeviceCaps();
 
 ////////////////////////////////////////////////////////////////////////////////
 // resource-handle

@@ -233,25 +233,25 @@ void RenderSystem2D::Setup2DMatrices()
 {
     if (IsRenderTargetPass())
     {
-        if (Renderer::GetCaps().upperLeftRTOrigin)
+        if (rhi::DeviceCaps().isUpperLeftRTOrigin)
         {
             projMatrix.glOrtho(0.0f, (float32)renderTargetWidth,
                 (float32)renderTargetHeight, 0.f,
-                -1.0f, 1.0f, Renderer::GetCaps().zeroBaseClipRange);
+                -1.0f, 1.0f, rhi::DeviceCaps().isZeroBaseClipRange);
         }
         else
         {
             projMatrix.glOrtho(0.0f, (float32)renderTargetWidth,
                 0.0f, (float32)renderTargetHeight,
-                -1.0f, 1.0f, Renderer::GetCaps().zeroBaseClipRange);
+                -1.0f, 1.0f, rhi::DeviceCaps().isZeroBaseClipRange);
         }
     }
     else
     {
-        projMatrix.glOrtho(0.0f, (float32)Renderer::GetFramebufferWidth(), (float32)Renderer::GetFramebufferHeight(), 0.0f, -1.0f, 1.0f, Renderer::GetCaps().zeroBaseClipRange);
+        projMatrix.glOrtho(0.0f, (float32)Renderer::GetFramebufferWidth(), (float32)Renderer::GetFramebufferHeight(), 0.0f, -1.0f, 1.0f, rhi::DeviceCaps().isZeroBaseClipRange);
     }
 
-    if (Renderer::GetCaps().isCenterPixelMapping)
+    if (rhi::DeviceCaps().isCenterPixelMapping)
     {
         // Make translation by half pixel for DirectX systems
         static Matrix4 pixelMappingMatrix = Matrix4::MakeTranslation(Vector3(-0.5f, -0.5f, 0.f));

@@ -48,7 +48,8 @@
 namespace rhi
 {
 Dispatch        DispatchMetal       = {0};
-
+    
+RenderDeviceCaps _metal_DeviceCaps;
     
 //------------------------------------------------------------------------------
 
@@ -119,6 +120,14 @@ metal_Reset( const ResetParam& param )
 
 //------------------------------------------------------------------------------
 
+static const RenderDeviceCaps &
+metal_DeviceCaps()
+{
+    return _metal_DeviceCaps;
+}
+    
+//------------------------------------------------------------------------------
+    
 void
 metal_Initialize( const InitParam& param )
 {
@@ -198,8 +207,16 @@ metal_Initialize( const InitParam& param )
     DispatchMetal.impl_Uninitialize             = &metal_Uninitialize;
     DispatchMetal.impl_HostApi                  = &metal_HostApi;
     DispatchMetal.impl_TextureFormatSupported   = &metal_TextureFormatSupported;
+    DispatchMetal.impl_DeviceCaps               = &metal_DeviceCaps;
     
     SetDispatchTable( DispatchMetal );
+    
+    _metal_DeviceCaps.is32BitIndicesSupported = true;
+    _metal_DeviceCaps.isFramebufferFetchSupported = true;
+    _metal_DeviceCaps.isVertexTextureUnitsSupported = true;
+    _metal_DeviceCaps.isZeroBaseClipRange = true;
+    _metal_DeviceCaps.isUpperLeftRTOrigin = true;
+    _metal_DeviceCaps.isCenterPixelMapping = false;
 }
 
 

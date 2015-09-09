@@ -74,6 +74,7 @@ static bool     EAC_Supported       = false;
 static bool     Float_Supported     = false;
 static bool     Half_Supported      = false;
 
+static RenderDeviceCaps _GLES2_DeviceCaps = {};
 
 //------------------------------------------------------------------------------
 
@@ -82,7 +83,13 @@ gles2_HostApi()
 {
     return RHI_GLES2;
 }
-
+    
+//------------------------------------------------------------------------------
+    
+static const RenderDeviceCaps & gles2_DeviceCaps()
+{
+    return _GLES2_DeviceCaps;
+}
 
 //------------------------------------------------------------------------------
 
@@ -170,6 +177,19 @@ gles_check_GL_extensions()
         EAC_Supported = ETC2_Supported;
         Float_Supported = strstr(ext, "GL_OES_texture_float") != nullptr;
         Half_Supported = strstr(ext, "GL_OES_texture_half_float") != nullptr;
+        
+        _GLES2_DeviceCaps.is32BitIndicesSupported = strstr(ext, "GL_OES_element_index_uint") != nullptr;
+        _GLES2_DeviceCaps.isVertexTextureUnitsSupported = strstr(ext, "GL_EXT_shader_texture_lod") != nullptr;
+        _GLES2_DeviceCaps.isFramebufferFetchSupported = strstr(ext, "GL_EXT_shader_framebuffer_fetch") != nullptr;
+    }
+    
+    const char* version = (const char*)glGetString(GL_VERSION);
+    if(!IsEmptyString(version))
+    {
+        if( strstr(version, "OpenGL ES 3.0") || !strstr(version, "OpenGL ES") )
+        {
+            _GLES2_DeviceCaps.is32BitIndicesSupported = true;
+        }
     }
 }
     
@@ -395,10 +415,11 @@ gles2_Initialize( const InitParam& param )
         RenderPassGLES2::SetupDispatch(&DispatchGLES2);
         CommandBufferGLES2::SetupDispatch(&DispatchGLES2);
 
-        DispatchGLES2.impl_Reset = &gles2_Reset;
-        DispatchGLES2.impl_Uninitialize = &gles2_Uninitialize;
-        DispatchGLES2.impl_HostApi = &gles2_HostApi;
-        DispatchGLES2.impl_TextureFormatSupported = &gles2_TextureFormatSupported;
+        DispatchGLES2.impl_Reset                    = &gles2_Reset;
+        DispatchGLES2.impl_Uninitialize             = &gles2_Uninitialize;
+        DispatchGLES2.impl_HostApi                  = &gles2_HostApi;
+        DispatchGLES2.impl_TextureFormatSupported   = &gles2_TextureFormatSupported;
+        DispatchGLES2.impl_DeviceCaps               = &gles2_DeviceCaps;
 
         SetDispatchTable(DispatchGLES2);
 
@@ -471,6 +492,7 @@ gles2_Initialize( const InitParam& param )
     DispatchGLES2.impl_Uninitialize             = &gles2_Uninitialize;
     DispatchGLES2.impl_HostApi                  = &gles2_HostApi;
     DispatchGLES2.impl_TextureFormatSupported   = &gles2_TextureFormatSupported;
+    DispatchGLES2.impl_DeviceCaps               = &gles2_DeviceCaps;
 
     SetDispatchTable(DispatchGLES2);
 
@@ -526,6 +548,7 @@ gles2_Initialize(const InitParam& param)
     DispatchGLES2.impl_Uninitialize             = &gles2_Uninitialize;
     DispatchGLES2.impl_HostApi                  = &gles2_HostApi;
     DispatchGLES2.impl_TextureFormatSupported   = &gles2_TextureFormatSupported;
+    DispatchGLES2.impl_DeviceCaps               = &gles2_DeviceCaps;
 
     SetDispatchTable(DispatchGLES2);
 
@@ -584,6 +607,7 @@ gles2_Initialize( const InitParam& param )
     DispatchGLES2.impl_Uninitialize             = &gles2_Uninitialize;
     DispatchGLES2.impl_HostApi                  = &gles2_HostApi;
     DispatchGLES2.impl_TextureFormatSupported   = &gles2_TextureFormatSupported;
+    DispatchGLES2.impl_DeviceCaps               = &gles2_DeviceCaps;
 
     SetDispatchTable(DispatchGLES2);
 

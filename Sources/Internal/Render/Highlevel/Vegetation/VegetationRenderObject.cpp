@@ -777,16 +777,9 @@ float32 VegetationRenderObject::SampleHeight(int16 x, int16 y)
 
 bool VegetationRenderObject::IsHardwareCapableToRenderVegetation()
 {
-    const RenderCaps& deviceCaps = Renderer::GetCaps();
-    bool result = deviceCaps.isVertexTextureUnitsSupported;
-
-#if defined(__DAVAENGINE_IPHONE__)  || defined(__DAVAENGINE_ANDROID__)
-
-    //VI: vegetation can only be rendered on ES 3.0 devices
-    result = result && deviceCaps.isOpenGLES3Supported;
-
-#endif
-
+    const rhi::RenderDeviceCaps& deviceCaps = rhi::DeviceCaps();
+    bool result = deviceCaps.isVertexTextureUnitsSupported && deviceCaps.is32BitIndicesSupported;
+    
     return result;
 }
 
