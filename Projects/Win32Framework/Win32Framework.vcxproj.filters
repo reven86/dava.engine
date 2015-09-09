@@ -3423,7 +3423,7 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UIIgnoreLayoutComponent.cpp">
       <Filter>Internal\UI\Layouts</Filter>
-    </ClComplipe>
+    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Utils\UTF8Utils.cpp">
       <Filter>Internal\Utils</Filter>
     </ClCompile>
