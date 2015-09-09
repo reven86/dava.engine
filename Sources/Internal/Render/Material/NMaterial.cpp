@@ -152,7 +152,10 @@ uint32 NMaterial::GetRequiredVertexFormat()
     uint32 res = 0;
     for (auto& variant : renderVariants)
     {
-		if (nullptr != variant.second->shader)
+		bool shaderValid = nullptr != variant.second->shader;
+		DVASSERT_MSG(shaderValid, "Shader is invalid. Check log for details.");
+
+		if (shaderValid)
 		{
 			res |= variant.second->shader->GetRequiredVertexFormat();
 		}
