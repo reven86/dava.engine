@@ -137,6 +137,7 @@ public:
 	int32 controlState;//!< input state relative to control (outside, inside). Used for point inputs only(mouse, touch)
 	int32 tapCount;//!< count of the continuous inputs (clicks for mouse)
 	char16 keyChar;//!< unicode/translated character produced by key using current language, caps etc. Used only with PHASE_KEYCHAR.
+    uint32 deviceId; // can be mouse, touch screen,
 
     inline void SetInputHandledType(eInputHandledType value)
     {
@@ -150,17 +151,19 @@ public:
     eInputHandledType GetInputHandledType() { return inputHandledType; };
     void ResetInputHandledType() { inputHandledType = INPUT_NOT_HANDLED; };
 
-	UIEvent() :
-        tid(0),
-        timestamp(0.f),
-        phase(0),
-        touchLocker(NULL),
-        activeState(ACTIVITY_STATE_INACTIVE),
-        controlState(CONTROL_STATE_RELEASED),
-        tapCount(0),
-        keyChar(0),
-        inputHandledType(INPUT_NOT_HANDLED)
-	{ }
+    UIEvent()
+        : tid(0)
+        , timestamp(0.f)
+        , phase(0)
+        , touchLocker(nullptr)
+        , activeState(ACTIVITY_STATE_INACTIVE)
+        , controlState(CONTROL_STATE_RELEASED)
+        , tapCount(0)
+        , keyChar(0)
+        , deviceId(0)
+        , inputHandledType(INPUT_NOT_HANDLED)
+    {
+    }
 
     eInputSource GetInputSource()
     {

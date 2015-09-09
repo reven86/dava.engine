@@ -422,7 +422,7 @@ void WinUAPXamlApp::OnPointerWheel(Windows::UI::Core::CoreWindow^ sender, Window
         newTouch.physPoint.y = static_cast<float32>(wheelDelta / WHEEL_DELTA);
         newTouch.phase = UIEvent::PHASE_WHEEL;
         touches.push_back(newTouch);
-        UIControlSystem::Instance()->OnInput(UIEvent::PHASE_WHEEL, touches, allTouches);
+        UIControlSystem::Instance()->OnInput(UIEvent::PHASE_WHEEL, touches, events);
     });
 }
 
@@ -436,9 +436,9 @@ void WinUAPXamlApp::OnHardwareBackButtonPressed(Platform::Object^ sender, Window
         ev.phase = UIEvent::PHASE_KEYCHAR;
         ev.tid = DVKEY_BACK;
         Vector<UIEvent> touches = { ev };
-        UIControlSystem::Instance()->OnInput(0, touches, allTouches);
+        UIControlSystem::Instance()->OnInput(0, touches, events);
         touches.pop_back();
-        UIControlSystem::Instance()->OnInput(0, touches, allTouches);
+        UIControlSystem::Instance()->OnInput(0, touches, events);
         InputSystem::Instance()->GetKeyboard().OnKeyUnpressed(static_cast<int32>(DVKEY_BACK));
     });
     args->Handled = true;
@@ -465,9 +465,9 @@ void WinUAPXamlApp::OnKeyDown(Windows::UI::Core::CoreWindow^ sender, Windows::UI
         ev.tid = InputSystem::Instance()->GetKeyboard().GetDavaKeyForSystemKey(static_cast<int32>(key));
 
         Vector<UIEvent> touches = { ev };
-        UIControlSystem::Instance()->OnInput(0, touches, allTouches);
+        UIControlSystem::Instance()->OnInput(0, touches, events);
         touches.pop_back();
-        UIControlSystem::Instance()->OnInput(0, touches, allTouches);
+        UIControlSystem::Instance()->OnInput(0, touches, events);
         InputSystem::Instance()->GetKeyboard().OnSystemKeyPressed(static_cast<int32>(key));
     });
 
@@ -523,7 +523,7 @@ void WinUAPXamlApp::DAVATouchEvent(UIEvent::eInputPhase phase, float32 x, float3
 {
     Vector<DAVA::UIEvent> touches;
     bool isFind = false;
-    for (auto it = allTouches.begin(), end = allTouches.end(); it != end; ++it)
+    for (auto it = events.begin(), end = events.end(); it != end; ++it)
     {
         if (it->tid == id)
         {
@@ -541,24 +541,24 @@ void WinUAPXamlApp::DAVATouchEvent(UIEvent::eInputPhase phase, float32 x, float3
         newTouch.physPoint.x = x;
         newTouch.physPoint.y = y;
         newTouch.phase = phase;
-        allTouches.push_back(newTouch);
+        events.push_back(newTouch);
     }
-    for (auto it = allTouches.begin(), end = allTouches.end(); it != end; ++it)
+    for (auto it = events.begin(), end = events.end(); it != end; ++it)
     {
         touches.push_back(*it);
     }
     if (phase == UIEvent::PHASE_ENDED)
     {
-        for (Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); ++it)
+        for (Vector<DAVA::UIEvent>::iterator it = events.begin(); it != events.end(); ++it)
         {
             if (it->tid == id)
             {
-                allTouches.erase(it);
+                events.erase(it);
                 break;
             }
         }
     }
-    UIControlSystem::Instance()->OnInput(phase, touches, allTouches);
+    UIControlSystem::Instance()->OnInput(phase, touches, events);
 }
 
 void WinUAPXamlApp::SetupEventHandlers()

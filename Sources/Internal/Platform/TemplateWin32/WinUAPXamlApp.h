@@ -152,7 +152,7 @@ private:
 
     volatile bool quitFlag = false;
 
-    Vector<UIEvent> allTouches;
+    Vector<UIEvent> events;
 
     bool isMouseDetected = false;
     bool isTouchDetected = false;

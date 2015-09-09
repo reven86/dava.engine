@@ -425,8 +425,8 @@ namespace DAVA
 		SendMessage(hWindow, WM_SETICON, ICON_BIG, (LPARAM)smallIcon);
 	}
 
-	int32 CoreWin32Platform::MoveTouchsToVector(USHORT buttsFlags, WPARAM wParam, LPARAM lParam, Vector<UIEvent> *outTouches)
-	{
+    int32 CoreWin32Platform::MoveTouchsToVector(uint32 deviceId, USHORT buttsFlags, WPARAM wParam, LPARAM lParam, Vector<UIEvent>* outTouches)
+    {
 		int button = 0;
         int phase = -1;
 
@@ -487,8 +487,8 @@ namespace DAVA
             return phase;
 
 		bool isFind = false;
-		for(Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
-		{
+        for (Vector<DAVA::UIEvent>::iterator it = events.begin(); it != events.end(); it++)
+        {
 			if(it->tid == button)
 			{
 				isFind = true;
@@ -508,22 +508,23 @@ namespace DAVA
 			newTouch.physPoint.x = (float32)GET_X_LPARAM(lParam);
 			newTouch.physPoint.y = (float32)GET_Y_LPARAM(lParam);
 			newTouch.phase = phase;
-			allTouches.push_back(newTouch);
-		}
+            newTouch.deviceId = deviceId;
+            events.push_back(newTouch);
+        }
 
-		for(Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
-		{
+        for (Vector<DAVA::UIEvent>::iterator it = events.begin(); it != events.end(); it++)
+        {
 			outTouches->push_back(*it);
 		}
 
 		if(phase == UIEvent::PHASE_ENDED || phase == UIEvent::PHASE_MOVE)
 		{
-			for(Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
-			{
+            for (Vector<DAVA::UIEvent>::iterator it = events.begin(); it != events.end(); it++)
+            {
 				if(it->tid == button)
 				{
-					allTouches.erase(it);
-					break;
+                    events.erase(it);
+                    break;
 				}
 			}
 		}
@@ -588,7 +589,7 @@ namespace DAVA
 		}
 	}
 
-	void CoreWin32Platform::OnMouseEvent(USHORT buttsFlags, WPARAM wParam, LPARAM lParam, USHORT buttonData)
+    void CoreWin32Platform::OnMouseEvent(uint32 deviceId, USHORT buttsFlags, WPARAM wParam, LPARAM lParam, USHORT buttonData)
     {
         Vector<DAVA::UIEvent> touches;
         int32 touchPhase = -1;
@@ -600,31 +601,37 @@ namespace DAVA
 
         if(buttsFlags & RI_MOUSE_WHEEL)
         {
+            touchPhase = UIEvent::PHASE_WHEEL;
+
             UIEvent newTouch;
             newTouch.tid = 0;
             newTouch.physPoint.x = 0;
             newTouch.physPoint.y = ((SHORT)buttonData) / (float32)(WHEEL_DELTA);
-            newTouch.phase = touchPhase = UIEvent::PHASE_WHEEL;
+            newTouch.phase = UIEvent::PHASE_WHEEL;
+            newTouch.deviceId = deviceId;
+
             touches.push_back(newTouch);
         }
         else
 		{
             if(HIWORD(wParam) || mouseButtonsDownMask > 0) // HIWORD(wParam) - isPoint inside window
 			{
-			    touchPhase = MoveTouchsToVector(buttsFlags, wParam, lParam, &touches);
-			}
+                touchPhase = MoveTouchsToVector(deviceId, buttsFlags, wParam, lParam, &touches);
+            }
 		}
 
-        if(touchPhase != -1)
-            UIControlSystem::Instance()->OnInput(touchPhase, touches, allTouches);
+        if (touchPhase != -1)
+        {
+            UIControlSystem::Instance()->OnInput(touches, events);
+        }
 
-		if (RenderManager::Instance()->GetCursor() != 0 && mouseCursorShown)
-		{
+        if (RenderManager::Instance()->GetCursor() != nullptr && mouseCursorShown)
+        {
 			ShowCursor(false);
 			mouseCursorShown = false;
 		}
-		if (RenderManager::Instance()->GetCursor() == 0 && !mouseCursorShown)			
-		{
+        if (RenderManager::Instance()->GetCursor() == nullptr && !mouseCursorShown)
+        {
 			ShowCursor(false);
 			mouseCursorShown = false;
 		}
@@ -632,8 +639,30 @@ namespace DAVA
 		HandleMouseButtonsReleased(buttsFlags);
 	}
 
-	LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-	{
+    struct MouseDevice
+    {
+        uint32 which; // mouse index
+        String name; // name for debug
+    };
+
+    String CoreWin32Platform::GetMouseDeviceName(const RAWINPUT& inp)
+    {
+        std::array<char, 1024> buffer;
+        UINT size = static_cast<UINT>(buffer.size());
+        int resultSize = GetRawInputDeviceInfoA(inp.header.hDevice, RIDI_DEVICENAME, &buffer[0], &size);
+        if (resultSize > 0)
+        {
+            return String(buffer.data(), static_cast<size_t>(resultSize));
+        }
+        else
+        {
+            DVASSERT(false && "can't get mouse device name");
+            return String("Error: during reciving name of device");
+        }
+    }
+
+    LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+    {
 		CoreWin32Platform* core = static_cast< CoreWin32Platform* >(Core::Instance());
 #ifndef WM_MOUSEWHEEL
 #define WM_MOUSEWHEEL 0x020A
@@ -642,15 +671,16 @@ namespace DAVA
 #define WHEEL_DELTA 120
 #endif
 
-		switch (message) 
+        KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
+
+        switch (message) 
 		{
 		case WM_ERASEBKGND:
 				return 0;
-
 		case WM_KEYUP:
 			{
-				InputSystem::Instance()->GetKeyboard().OnSystemKeyUnpressed((int32)wParam);
-			};
+                keyboard.OnSystemKeyUnpressed(static_cast<int32>(wParam));
+            };
 			break;
 
 		case WM_KEYDOWN:
@@ -670,16 +700,16 @@ namespace DAVA
 				ev.keyChar = 0;
 				ev.phase = DAVA::UIEvent::PHASE_KEYCHAR;
 				ev.tapCount = 1;
-				ev.tid = InputSystem::Instance()->GetKeyboard().GetDavaKeyForSystemKey((int32)wParam);
+                ev.tid = keyboard.GetDavaKeyForSystemKey(static_cast<int32>(wParam));
 
-				touches.push_back(ev);
+                touches.push_back(ev);
 
-				UIControlSystem::Instance()->OnInput(0, touches, core->allTouches);
-				touches.pop_back();
-				UIControlSystem::Instance()->OnInput(0, touches, core->allTouches);
+                UIControlSystem::Instance()->OnInput(touches, core->events);
+                touches.pop_back();
+                UIControlSystem::Instance()->OnInput(touches, core->events);
 
-				InputSystem::Instance()->GetKeyboard().OnSystemKeyPressed((int32)wParam);
-			};
+                keyboard.OnSystemKeyPressed((int32)wParam);
+            };
 			break;
 
 		case WM_CHAR:
@@ -696,33 +726,25 @@ namespace DAVA
 
 				touches.push_back(ev);
 
-				UIControlSystem::Instance()->OnInput(0, touches, core->allTouches);
-				touches.pop_back();
-				UIControlSystem::Instance()->OnInput(0, touches, core->allTouches);
-			}
+                UIControlSystem::Instance()->OnInput(touches, core->events);
+                touches.pop_back();
+                UIControlSystem::Instance()->OnInput(touches, core->events);
+            }
 		}
 		break;
 
         case WM_INPUT:
         {
-            UINT dwSize;
+            HRAWINPUT hRawInput = reinterpret_cast<HRAWINPUT>(lParam);
+            RAWINPUT inp;
+            UINT dwSize = sizeof(inp);
 
-            GetRawInputData((HRAWINPUT)lParam, RID_INPUT, NULL, &dwSize, 
-                sizeof(RAWINPUTHEADER));
-            LPBYTE lpb = new BYTE[dwSize];
-            if (lpb == NULL)
-                return 0;
+            GetRawInputData(hRawInput, RID_INPUT, &inp, &dwSize, sizeof(RAWINPUTHEADER));
 
-            if (GetRawInputData((HRAWINPUT)lParam, RID_INPUT, lpb, &dwSize, 
-                sizeof(RAWINPUTHEADER)) != dwSize )
-                OutputDebugString (TEXT("GetRawInputData does not return correct size !\n")); 
-
-            RAWINPUT* raw = (RAWINPUT*)lpb;
-
-            if(raw->header.dwType == RIM_TYPEMOUSE && raw->data.mouse.usFlags == 0)
+            if (inp.header.dwType == RIM_TYPEMOUSE && inp.data.mouse.usFlags == 0)
             {
-                LONG x = raw->data.mouse.lLastX;
-                LONG y = raw->data.mouse.lLastY;
+                LONG x = inp.data.mouse.lLastX;
+                LONG y = inp.data.mouse.lLastY;
 
                 bool isMove = x || y;
 
@@ -744,11 +766,20 @@ namespace DAVA
 
                 bool isInside = (x > clientRect.left && x < clientRect.right && y > clientRect.top && y < clientRect.bottom) || InputSystem::Instance()->IsCursorPining();
 
-                core->OnMouseEvent(raw->data.mouse.usButtonFlags, MAKEWPARAM(isMove, isInside), MAKELPARAM(x, y), raw->data.mouse.usButtonData); // only move, drag and wheel events
+                static Map<HANDLE, MouseDevice> mice;
+
+                if (mice.find(inp.header.hDevice) == mice.end())
+                {
+                    MouseDevice mouse;
+                    mouse.which = static_cast<uint32>(mice.size());
+                    mouse.name = GetMouseDeviceName(inp);
+                    mice[inp.header.hDevice] = mouse;
+                }
+
+                uint32 miceId = mice[inp.header.hDevice].which;
+
+                core->OnMouseEvent(miceId, inp.data.mouse.usButtonFlags, MAKEWPARAM(isMove, isInside), MAKELPARAM(x, y), inp.data.mouse.usButtonData); // only move, drag and wheel events
             }
-
-            SafeDeleteArray(lpb);
-
             break;
         }
 		case WM_MOUSEMOVE:
