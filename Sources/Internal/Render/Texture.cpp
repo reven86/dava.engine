@@ -881,7 +881,7 @@ eGPUFamily Texture::GetGPUForLoading(const eGPUFamily requestedGPU, const Textur
     return requestedGPU;
 }
 
-void Texture::SetInvalidater(TextureInvalidater* invalidater)
+void Texture::SetInvalidater(TextureInvalidater* invalidater_)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
@@ -890,15 +890,13 @@ void Texture::SetInvalidater(TextureInvalidater* invalidater)
         invalidater->RemoveTexture(this);
     }
 
-	invalidater = invalidater;
+	invalidater = invalidater_;
 
     if (nullptr != invalidater)
     {
         invalidater->AddTexture(this);
     }
 }
-
-
 
 const FilePath & Texture::GetPathname() const
 {
