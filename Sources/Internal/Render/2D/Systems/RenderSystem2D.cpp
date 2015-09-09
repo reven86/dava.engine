@@ -1434,7 +1434,6 @@ void RenderSystem2D::FillPolygon(const Polygon2 & polygon, const Color& color)
         batch.vertexStride = 2;
         batch.texCoordStride = 2;
         batch.indexPointer = indices.data();
-        batch.primitiveType = rhi::PRIMITIVE_LINELIST;
         PushBatch(batch);
     }
 }
