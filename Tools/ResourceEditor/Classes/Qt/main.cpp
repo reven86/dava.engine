@@ -272,7 +272,7 @@ void UnpackHelpDoc()
 {
     DAVA::String editorVer = SettingsManager::GetValue( Settings::Internal_EditorVersion ).AsString();
     DAVA::FilePath docsPath = FilePath( ResourceEditor::DOCUMENTATION_PATH );
-    if ( editorVer != RESOURCE_EDITOR_VERSION || !docsPath.Exists() )
+    if ( editorVer != APPLICATION_VERSION || !docsPath.Exists() )
     {
         DAVA::Logger::FrameworkDebug( "Unpacking Help..." );
         DAVA::ResourceArchive * helpRA = new DAVA::ResourceArchive();
@@ -284,7 +284,7 @@ void UnpackHelpDoc()
         }
         DAVA::SafeRelease( helpRA );
     }
-    SettingsManager::SetValue( Settings::Internal_EditorVersion, VariantType( String( RESOURCE_EDITOR_VERSION ) ) );
+    SettingsManager::SetValue( Settings::Internal_EditorVersion, VariantType( String( APPLICATION_VERSION ) ) );
 }
 
 void FixOSXFonts()
