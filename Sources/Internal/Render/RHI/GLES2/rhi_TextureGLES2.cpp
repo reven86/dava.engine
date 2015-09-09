@@ -110,7 +110,7 @@ TextureGLES2_t::Create( const Texture::Descriptor& desc, bool force_immediate )
     DVASSERT(desc.levelCount);
 
     bool        success      = false;
-    GLuint      uid[2]       = { InvalidIndex, InvalidIndex };
+    GLuint      uid[2]       = { 0, 0 };
     bool        is_depth     = desc.format == TEXTURE_FORMAT_D16  ||  desc.format == TEXTURE_FORMAT_D24S8;
     bool        need_stencil = desc.format == TEXTURE_FORMAT_D24S8;
     
@@ -125,20 +125,25 @@ TextureGLES2_t::Create( const Texture::Descriptor& desc, bool force_immediate )
             GLCommand   cmd2[] =
             {
                 { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, uid[0] } },
-                { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, desc.width, desc.height } },
+                { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, desc.width, desc.height } },
+                { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, 0 } }
+/*
+                { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, uid[0] } },
+                { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, (need_stencil)?GL_DEPTH_COMPONENT24:GL_DEPTH_COMPONENT16, desc.width, desc.height } },
                 { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, 0 } },
                 { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, uid[1] } },
                 { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, GL_STENCIL_INDEX8, desc.width, desc.height } },
                 { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, 0 } },
+*/            
             };
-
+/*
             if( !need_stencil )
             {
                 cmd2[3].func = GLCommand::NOP;
                 cmd2[4].func = GLCommand::NOP;
                 cmd2[5].func = GLCommand::NOP;
             }
-
+*/
             ExecGL( cmd2, countof(cmd2), force_immediate );
         }
     }
@@ -166,9 +171,10 @@ TextureGLES2_t::Create( const Texture::Descriptor& desc, bool force_immediate )
     }
 
 
-    if( uid[0] != InvalidIndex )
+    if( uid[0] )
     {
         this->uid            = uid[0];
+        this->uid2           = uid[1];
         mappedData           = nullptr;
         width                = desc.width;
         height               = desc.height;
@@ -707,10 +713,13 @@ SetAsRenderTarget( Handle tex, Handle depth )
             glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, self->uid, 0 );
             if( ds )
             {
+                glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, ds->uid );
+/*
                 glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, ds->uid );
                 
                 if( ds->uid2 )
                     glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, ds->uid2 );
+*/            
             }
             #if defined __DAVAENGINE_IPHONE__
             #else
