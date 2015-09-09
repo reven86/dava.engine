@@ -12,7 +12,7 @@ import platform;
 import re;
 import codecs;
   
-excludeDirs = ["Box2D", "Freetype", "Yaml", "ColladaConverter", "ThirdPartyLibs", "Libs", "yaml-cpp", "PSDTool", "IMagickHelperLib", "bullet", "libuv", "freetype", "ThirdParty"]
+excludeDirs = ["Freetype", "Yaml", "ColladaConverter", "ThirdPartyLibs", "Libs", "yaml-cpp", "PSDTool", "IMagickHelperLib", "bullet", "libuv", "freetype", "ThirdParty"]
 excludeFiles = ["Classes/Tests/TextSizeTest.cpp"]
 includePaths = {}
 

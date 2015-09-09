@@ -11,7 +11,7 @@ import subprocess;
 import platform;
 import re;
 
-excludeDirs = ["Box2D", "External\Freetype"]
+excludeDirs = ["External\Freetype"]
 includePaths = {}
 export_script_dir = os.getcwd() + "/../../Sources/";
 
