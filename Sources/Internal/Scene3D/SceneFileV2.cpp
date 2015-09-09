@@ -243,7 +243,9 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath & filename, DAVA::Scen
 
     // do we need to save globalmaterial?
     NMaterial *globalMaterial = scene->GetGlobalMaterial();
-    if (nullptr != globalMaterial)
+	bool nodesIncludesGlobalMaterial = nodes.count(globalMaterial) > 0;
+
+    if ((nullptr != globalMaterial) && !nodesIncludesGlobalMaterial)
     {
         serializableNodesCount++;
     }
@@ -254,12 +256,20 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath & filename, DAVA::Scen
     // save global material on top of datanodes
     if (nullptr != globalMaterial)
     {
-        if(globalMaterial->GetNodeID() == DataNode::INVALID_ID)
+        if (globalMaterial->GetNodeID() == DataNode::INVALID_ID)
         {
             globalMaterial->SetNodeID(++maxDataNodeID);
         }
         SaveDataNode(globalMaterial, file);
+
+		if (nodesIncludesGlobalMaterial)
+		{
+			// avoid saving global material twice
+			// here and later through the nodes
+			nodes.erase(globalMaterial);
+		}
     }
+
     // sort in ascending ID order 
     Set<DataNode*, std::function<bool(DataNode *, DataNode *)>> orderedNodes(nodes.begin(), nodes.end(),
         [](DataNode* a, DataNode* b) { return a->GetNodeID() < b->GetNodeID(); });
@@ -275,7 +285,7 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath & filename, DAVA::Scen
     
 
     // save global material settings
-    if(scene->GetGlobalMaterial())
+    if (nullptr != globalMaterial)
     {
         KeyedArchive * archive = new KeyedArchive();
         uint64 globalMaterialId = scene->GetGlobalMaterial()->GetNodeID();
