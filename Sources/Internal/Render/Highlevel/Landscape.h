@@ -206,10 +206,6 @@ public:
     NMaterial * GetMaterial();
     void SetMaterial(NMaterial * material);
 
-//    virtual void UpdateFullTiledTexture();
-//    FilePath SaveFullTiledTexture();
-    Texture *CreateLandscapeTexture();
-    
 	virtual RenderObject * Clone(RenderObject *newObject);
     virtual void RecalcBoundingBox();
 
@@ -220,6 +216,9 @@ public:
     //RHI_COMPLETE need remove this
     void UpdatePart(Heightmap* fromHeightmap, const Rect2i & rect);
     
+	using LandscapeThumbnailCallback = DAVA::Function<void(Landscape*, Texture*)>;
+    void CreateLandscapeTexture(LandscapeThumbnailCallback callback);
+
 protected:
 
     static const uint32 TEXTURE_SIZE_FULL_TILED = 2048;
@@ -269,56 +268,49 @@ protected:
     void RestoreGeometry();
     
     void SetLandscapeSize(const Vector3 & newSize);
-    
-    Vector<rhi::HVertexBuffer> vertexBuffers;
-    CircularIndexBufferArray indexBuffers;
-    rhi::HIndexBuffer currentIndexBuffer;
 
-    Vector<LanscapeBufferData> bufferRestoreData;
-
-    uint16 * indices;
-    uint32 vertexLayoutUID;
-
-    int32 lodLevelsCount;
-    float32 lodDistance[8]; //
-    float32 lodSqDistance[8];
-    
-    LandQuadTreeNode<LandscapeQuad> quadTreeHead;
-
-    Vector<LandQuadTreeNode<LandscapeQuad>*> fans;
-    
-    int32 allocatedMemoryForQuads;
-
-    Frustum *frustum;
-        
-    int16 queueRdoQuad;
-    int32 queueIndexCount;
-    int32 queueIndexOffset;
-    uint16 * queueDrawIndices;
-    
     void FlushQueue();
     void ClearQueue();
-    
     bool BuildHeightmap();
     void BuildLandscape();
-    Heightmap *heightmap;
+
+	void OnCreateLandscapeTextureCompleted(rhi::HSyncObject);
+	void UnregisterCreateTextureCallback();
+
+private:
+    LandQuadTreeNode<LandscapeQuad> quadTreeHead;
+    Vector<LandQuadTreeNode<LandscapeQuad>*> fans;
+    Vector<LandQuadTreeNode<LandscapeQuad>*> lod0quads;
+    Vector<LandQuadTreeNode<LandscapeQuad>*> lodNot0quads;
+    Vector<rhi::HVertexBuffer> vertexBuffers;
+    Vector<LanscapeBufferData> bufferRestoreData;
+    rhi::HIndexBuffer currentIndexBuffer;
+    CircularIndexBufferArray indexBuffers;
     FilePath heightmapPath;
-    
-    Vector<LandQuadTreeNode<LandscapeQuad> *>lod0quads;
-    Vector<LandQuadTreeNode<LandscapeQuad> *>lodNot0quads;
 
-    int32 prevLodLayer;
-    
-    int32 flushQueueCounter;
-    
-    int32 nearLodIndex;
-    int32 farLodIndex;
-    
-	NMaterial* landscapeMaterial;
-	
-	uint32 drawIndices;
+    Frustum *frustum = nullptr;
+    Heightmap *heightmap = nullptr;
+	NMaterial* landscapeMaterial = nullptr;
+    FoliageSystem* foliageSystem = nullptr;
 
-    FoliageSystem* foliageSystem;
+	Texture* thumbnailRenderTarget = nullptr;
+	LandscapeThumbnailCallback createdLandscapeTextureCallback;
+    
+    uint16* indices = nullptr;
+    uint16* queueDrawIndices = nullptr;
+    float32 lodDistance[8];
+    float32 lodSqDistance[8];
+
+    uint32 vertexLayoutUID = 0;
+    int32 lodLevelsCount = 0;
+    int32 allocatedMemoryForQuads = 0;
+    int32 queueIndexCount = 0;
+    int32 queueIndexOffset = 0;
+    int32 flushQueueCounter = 0;
+    int32 nearLodIndex = 0;
+    int32 farLodIndex = 0;
+	uint32 drawIndices = 0;
+    int16 queueRdoQuad = 0;
 
 public:
    
@@ -332,8 +324,3 @@ public:
 };
 
 #endif // __DAVAENGINE_LANDSCAPE_NODE_H__
-
-
-
-
-

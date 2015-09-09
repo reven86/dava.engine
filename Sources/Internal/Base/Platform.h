@@ -29,7 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef __DAVAENGINE_PLATFORM__
 #define __DAVAENGINE_PLATFORM__
 
-#include "DavaConfig.h"
+#include "DAVAConfig.h"
 
 //-------------------------------------------------------------------------------------
 //Compiler features

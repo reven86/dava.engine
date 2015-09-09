@@ -27,25 +27,27 @@
 =====================================================================================*/
 
 
+#include "Debug/Stats.h"
+#include "Platform/SystemTimer.h"
+#include "FileSystem/FileSystem.h"
+#include "Scene3D/Scene.h"
+#include "Scene3D/SceneFileV2.h"
+#include "Scene3D/Systems/FoliageSystem.h"
 #include "Render/Highlevel/Landscape.h"
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageSystem.h"
 #include "Render/RenderHelper.h"
 #include "Render/Texture.h"
-#include "Scene3D/Scene.h"
-#include "Render/Shader.h"
-#include "Platform/SystemTimer.h"
-#include "Utils/StringFormat.h"
-#include "Scene3D/SceneFileV2.h"
-#include "Render/Highlevel/Heightmap.h"
-#include "FileSystem/FileSystem.h"
-#include "Render/TextureDescriptor.h"
-#include "Debug/Stats.h"
-#include "Render/Material/NMaterial.h"
-#include "Scene3D/Systems/FoliageSystem.h"
-#include "Render/Material/NMaterialNames.h"
+#include "Render/RenderCallbacks.h"
 #include "Render/Renderer.h"
+#include "Render/Shader.h"
+#include "Render/ShaderCache.h"
+#include "Render/TextureDescriptor.h"
+#include "Render/Highlevel/Heightmap.h"
 #include "Render/Highlevel/RenderPassNames.h"
+#include "Render/Material/NMaterial.h"
+#include "Render/Material/NMaterialNames.h"
+#include "Utils/StringFormat.h"
 #include "Render/RenderCallbacks.h"
 
 namespace DAVA
@@ -62,6 +64,7 @@ const FastName Landscape::TEXTURE_TILEMASK("tileMask");
 const FastName Landscape::TEXTURE_SPECULAR("specularMap");
 
 const uint32 LANDSCAPE_BATCHES_POOL_SIZE = 32;
+const uint32 TEXTURE_TILE_FULL_SIZE = 2048;
 
 
 Landscape::Landscape()
@@ -82,9 +85,8 @@ Landscape::Landscape()
     farLodIndex = 0;
     
     heightmap = new Heightmap;
-    prevLodLayer = -1;
-
-    AddFlag(RenderObject::CUSTOM_PREPARE_TO_RENDER);
+    
+	AddFlag(RenderObject::CUSTOM_PREPARE_TO_RENDER);
 
     rhi::VertexLayout vLayout;
     vLayout.AddElement(rhi::VS_POSITION, 0, rhi::VDT_FLOAT, 3);
@@ -251,7 +253,7 @@ void Landscape::BuildLandscapeFromHeightmapImage(const FilePath & heightmapPathn
 
     BuildLandscape();
     
-    if(foliageSystem)
+    if (foliageSystem)
     {
         foliageSystem->SyncFoliageWithLandscape();
     }
@@ -268,11 +270,11 @@ bool Landscape::BuildHeightmap()
 
     bool retValue = false;
 
-    if(DAVA::TextureDescriptor::IsSourceTextureExtension(heightmapPath.GetExtension()))
+    if (DAVA::TextureDescriptor::IsSourceTextureExtension(heightmapPath.GetExtension()))
     {
         Vector<Image *> imageSet;
         ImageSystem::Instance()->Load(heightmapPath, imageSet);
-        if(0 != imageSet.size())
+        if (0 != imageSet.size())
         {
             if ((imageSet[0]->GetPixelFormat() != FORMAT_A8) && (imageSet[0]->GetPixelFormat() != FORMAT_A16))
             {
@@ -288,7 +290,7 @@ bool Landscape::BuildHeightmap()
             for_each(imageSet.begin(), imageSet.end(), SafeRelease<Image>);
         }
     }
-    else if(heightmapPath.IsEqualToExtension(Heightmap::FileExtension()))
+    else if (heightmapPath.IsEqualToExtension(Heightmap::FileExtension()))
     {
         retValue = heightmap->Load(heightmapPath);
     }
@@ -355,7 +357,7 @@ void Landscape::BuildLandscape()
  
     allocatedMemoryForQuads = 0;
 
-    if(heightmap->Size())
+    if (heightmap->Size())
     {
         quadTreeHead.data.size = heightmap->Size() - 1;
         
@@ -391,7 +393,7 @@ bool Landscape::PlacePoint(const Vector3 & point, Vector3 & result, Vector3 * no
 		return false;
 	}
 	
-	if(heightmap->Data() == NULL)
+	if (heightmap->Data() == NULL)
 	{
 		Logger::Error("[Landscape::PlacePoint] Trying to place point on empty heightmap data!");
 		return false;
@@ -567,7 +569,8 @@ void Landscape::RecursiveBuild(LandQuadTreeNode<LandscapeQuad> * currentNode, in
     *********
  */
 
-LandQuadTreeNode<Landscape::LandscapeQuad> * Landscape::FindNodeWithXY(LandQuadTreeNode<LandscapeQuad> * currentNode, int16 quadX, int16 quadY, int16 quadSize)
+LandQuadTreeNode<Landscape::LandscapeQuad>* Landscape::FindNodeWithXY(LandQuadTreeNode<LandscapeQuad>* currentNode, 
+	int16 quadX, int16 quadY, int16 quadSize)
 {
     if ((currentNode->data.x <= quadX) && (quadX < currentNode->data.x + currentNode->data.size))
         if ((currentNode->data.y <= quadY) && (quadY < currentNode->data.y + currentNode->data.size))
@@ -590,10 +593,17 @@ LandQuadTreeNode<Landscape::LandscapeQuad> * Landscape::FindNodeWithXY(LandQuadT
     
 void Landscape::FindNeighbours(LandQuadTreeNode<LandscapeQuad> * currentNode)
 {
-    currentNode->neighbours[LEFT] = FindNodeWithXY(&quadTreeHead, currentNode->data.x - 1, currentNode->data.y, currentNode->data.size);
-    currentNode->neighbours[RIGHT] = FindNodeWithXY(&quadTreeHead, currentNode->data.x + currentNode->data.size, currentNode->data.y, currentNode->data.size);
-    currentNode->neighbours[TOP] = FindNodeWithXY(&quadTreeHead, currentNode->data.x, currentNode->data.y - 1, currentNode->data.size);
-    currentNode->neighbours[BOTTOM] = FindNodeWithXY(&quadTreeHead, currentNode->data.x, currentNode->data.y + currentNode->data.size, currentNode->data.size);
+    currentNode->neighbours[LEFT] = FindNodeWithXY(&quadTreeHead, currentNode->data.x - 1,
+		currentNode->data.y, currentNode->data.size);
+
+    currentNode->neighbours[RIGHT] = FindNodeWithXY(&quadTreeHead, currentNode->data.x + currentNode->data.size, 
+		currentNode->data.y, currentNode->data.size);
+
+    currentNode->neighbours[TOP] = FindNodeWithXY(&quadTreeHead, currentNode->data.x, 
+		currentNode->data.y - 1, currentNode->data.size);
+
+    currentNode->neighbours[BOTTOM] = FindNodeWithXY(&quadTreeHead, currentNode->data.x,
+		currentNode->data.y + currentNode->data.size, currentNode->data.size);
     
     if (currentNode->children)
     {
@@ -684,8 +694,11 @@ void Landscape::GenQuad(LandQuadTreeNode<LandscapeQuad> * currentNode, int8 lod)
     
     queueRdoQuad = currentNode->data.rdoQuad;
     
-    for (uint16 y = (currentNode->data.y & RENDER_QUAD_AND); y < (currentNode->data.y & RENDER_QUAD_AND) + currentNode->data.size; y += step)
-        for (uint16 x = (currentNode->data.x & RENDER_QUAD_AND); x < (currentNode->data.x & RENDER_QUAD_AND) + currentNode->data.size; x += step)
+	auto startY = currentNode->data.y & RENDER_QUAD_AND;
+	auto startX = currentNode->data.x & RENDER_QUAD_AND;
+    for (uint16 y = startY; y < startY + currentNode->data.size; y += step)
+	{
+        for (uint16 x = startX; x < startX + currentNode->data.size; x += step)
         {
             *queueDrawIndices++ = x + y * RENDER_QUAD_WIDTH;
             *queueDrawIndices++ = (x + step) + y * RENDER_QUAD_WIDTH;
@@ -697,6 +710,7 @@ void Landscape::GenQuad(LandQuadTreeNode<LandscapeQuad> * currentNode, int8 lod)
  
             queueIndexCount += 6;
         }
+	}
 }
     
 void Landscape::GenFans()
@@ -866,7 +880,8 @@ void Landscape::GenLods(LandQuadTreeNode<LandscapeQuad> * currentNode, uint8 cli
 //    }
     
     
-    if ((minLod == maxLod) && (/*frustum->IsFullyInside(currentNode->data.bbox)*/(frustumRes == Frustum::EFR_INSIDE) || currentNode->data.size <= (1 << maxLod) + 1) )
+    if ((minLod == maxLod) && (/*frustum->IsFullyInside(currentNode->data.bbox)*/
+		(frustumRes == Frustum::EFR_INSIDE) || currentNode->data.size <= (1 << maxLod) + 1))
     {
         //Logger::FrameworkDebug("lod: %d depth: %d pos(%d, %d)", minLod, currentNode->data.lod, currentNode->data.x, currentNode->data.y);
         
@@ -883,7 +898,7 @@ void Landscape::GenLods(LandQuadTreeNode<LandscapeQuad> * currentNode, uint8 cli
         GenQuad(currentNode, maxLod);
 #else //#if defined (DRAW_OLD_STYLE)        
         currentNode->data.lod = maxLod;
-        if(maxLod)
+        if (maxLod)
         {
             lodNot0quads.push_back(currentNode);
         }
@@ -942,7 +957,7 @@ void Landscape::PrepareToRender(Camera * camera)
 	
 	drawIndices = 0;
 
-	if(!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::LANDSCAPE_DRAW))
+	if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::LANDSCAPE_DRAW))
 	{
 		return;
 	}
@@ -971,8 +986,10 @@ void Landscape::PrepareToRender(Camera * camera)
 	GenLods(&quadTreeHead);
 #else //#if defined (DRAW_OLD_STYLE)   
     
-    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
-	if(Renderer::GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_LANDSCAPE_LODS))
+    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, &Matrix4::IDENTITY,
+		(pointer_size)&Matrix4::IDENTITY);
+
+	if (Renderer::GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_LANDSCAPE_LODS))
 	{
 		fans.clear();
 		lod0quads.clear();
@@ -1024,7 +1041,11 @@ bool Landscape::GetGeometry(Vector<LandscapeVertex> & landscapeVertices, Vector<
 		for (int32 x = quad->x; x < quad->x + quad->size + 1; ++x)
 		{
 			landscapeVertices[index].position = GetPoint(x, y, heightmap->Data()[y * heightmap->Size() + x]);
-			landscapeVertices[index].texCoord = Vector2((float32)x / (float32)(heightmap->Size() - 1), 1.0f - (float32)y / (float32)(heightmap->Size() - 1));
+
+			landscapeVertices[index].texCoord = Vector2(
+				(float32)x / (float32)(heightmap->Size() - 1),
+				1.0f - (float32)y / (float32)(heightmap->Size() - 1));
+
 			index++;
 		}
 	}
@@ -1059,7 +1080,7 @@ void Landscape::SetHeightmapPathname(const FilePath & newHeightMapPath)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-	if(newHeightMapPath == heightmapPath)
+	if (newHeightMapPath == heightmapPath)
 	{
 		return;
 	}
@@ -1096,11 +1117,11 @@ void Landscape::SetLandscapeSize(const Vector3 & newLandscapeSize)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-    if(newLandscapeSize.z < 0.0f || newLandscapeSize.x <0 || newLandscapeSize.y < 0)
+    if (newLandscapeSize.z < 0.0f || newLandscapeSize.x <0 || newLandscapeSize.y < 0)
 	{
 		return;
 	}
-    if(newLandscapeSize == bbox.GetSize())
+    if (newLandscapeSize == bbox.GetSize())
 	{
 		return;
 	}
@@ -1109,7 +1130,7 @@ void Landscape::SetLandscapeSize(const Vector3 & newLandscapeSize)
 	bbox.AddPoint(Vector3(newLandscapeSize.x/2.f, newLandscapeSize.y/2.f, newLandscapeSize.z));
     BuildLandscape();
     
-    if(foliageSystem)
+    if (foliageSystem)
     {
         foliageSystem->SyncFoliageWithLandscape();
     }
@@ -1141,7 +1162,7 @@ void Landscape::Save(KeyedArchive * archive, SerializationContext * serializatio
     archive->SetUInt64("matname", matKey);
 
     //TODO: remove code in future. Need for transition from *.png to *.heightmap
-    if(!heightmapPath.IsEqualToExtension(Heightmap::FileExtension()))
+    if (!heightmapPath.IsEqualToExtension(Heightmap::FileExtension()))
     {
         heightmapPath.ReplaceExtension(Heightmap::FileExtension());
     }
@@ -1218,160 +1239,114 @@ void Landscape::SetMaterial(NMaterial * material)
         GetRenderBatch(i)->SetMaterial(landscapeMaterial);
 }
 
-Texture * Landscape::CreateLandscapeTexture()
+void Landscape::OnCreateLandscapeTextureCompleted(rhi::HSyncObject syncObject)
 {
-    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
-
-#if RHI_COMPLETE
-    //Set indexes
-    Vector<float32> ftVertexes;
-    Vector<float32> ftTextureCoords;
-    
-    float32 x0 = 0.f;
-    float32 y0 = 0.f;
-    float32 x1 = 1.f;
-    float32 y1 = 1.f;
-    
-    //triangle 1
-    //0, 0
-    ftVertexes.push_back(x0);
-    ftVertexes.push_back(y0);
-    ftVertexes.push_back(0);
-    ftTextureCoords.push_back(0);
-    ftTextureCoords.push_back(0);
-    
-    
-    //1, 0
-    ftVertexes.push_back(x1);
-    ftVertexes.push_back(y0);
-    ftVertexes.push_back(0);
-    ftTextureCoords.push_back(1);
-    ftTextureCoords.push_back(0);
-    
-    
-    //0, 1
-    ftVertexes.push_back(x0);
-    ftVertexes.push_back(y1);
-    ftVertexes.push_back(0);
-    ftTextureCoords.push_back(0);
-    ftTextureCoords.push_back(1);
-    
-    //1, 1
-    ftVertexes.push_back(x1);
-    ftVertexes.push_back(y1);
-    ftVertexes.push_back(0);
-    ftTextureCoords.push_back(1);
-    ftTextureCoords.push_back(1);
-    
-    RenderDataObject *ftRenderData = new RenderDataObject();
-    ftRenderData->SetStream(EVF_VERTEX, TYPE_FLOAT, 3, 0, &ftVertexes.front());
-    ftRenderData->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, 0, &ftTextureCoords.front());
-
-    //Draw landscape to texture
-    Rect oldViewport = RenderManager::Instance()->GetViewport();
-    
-    Texture *fullTiled = Texture::CreateFBO(TEXTURE_TILE_FULL_SIZE, TEXTURE_TILE_FULL_SIZE, FORMAT_RGBA8888, Texture::DEPTH_NONE);
-    RenderManager::Instance()->SetRenderTarget(fullTiled);
-    RenderManager::Instance()->SetViewport(Rect(0.f, 0.f, (float32)fullTiled->GetWidth(), (float32)fullTiled->GetHeight()));
-    RenderManager::Instance()->SetClip(Rect(0.f, 0.f, -1.f, -1.f));
-
-	RenderManager::Instance()->ClearWithColor(1.f, 0.f, 1.f, 1.f);
- 
-    Renderer::GetDynamicBindings().SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
-    Renderer::GetDynamicBindings().SetDynamicParam(PARAM_VIEW, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
-    Matrix4 projection;
-    projection.glOrtho(0.f, 1.f, 0.f, 1.f, -1.f, 1.f);
-    
-    Matrix4 *oldProjection = (Matrix4*)RenderManager::GetDynamicParam(PARAM_PROJ);
-    Renderer::GetDynamicBindings().SetDynamicParam(PARAM_PROJ, &projection, DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
-    
-    prevLodLayer = -1;
-
-    NMaterial* tmpLandscapeParent = NMaterial::CreateMaterial(FastName("Landscape_Tilemask_Material_TMP"), FastName("~res:/Materials/TileMask.material"), NMaterialQualityName::DEFAULT_QUALITY_NAME);
-    NMaterial* tmpTileMaskMaterial = landscapeMaterial->Clone();
-    
-
-    //MAGIC: This magic code is workaround for situation when fbo textures are present in tileMaskMaterial with pathname. Because NMaterial::Clone() use pathnames for cloning textures.
-    const uint32 texturesCount = landscapeMaterial->GetTextureCount();
-    for(uint32 t = 0; t < texturesCount; ++t)
-    {
-        FastName tName = landscapeMaterial->GetTextureName(t);
-        Texture *tex = landscapeMaterial->GetTexture(t);
-        if(tex && tex->isRenderTarget)
-        {
-            tmpTileMaskMaterial->SetTexture(tName, tex);
-        }
-    }
-    //END of MAGIC
-    
-    tmpTileMaskMaterial->SetFlag(NMaterialFlagName::FLAG_VERTEXFOG, NMaterial::FlagOff);
-    tmpTileMaskMaterial->SetParent(tmpLandscapeParent);
-    tmpTileMaskMaterial->BindMaterialTechnique(TECHNIQUE_TILEMASK_NAME, NULL);
-
-	RenderManager::Instance()->SetRenderData(ftRenderData);
-	RenderManager::Instance()->AttachRenderData();
-	RenderManager::Instance()->HWDrawArrays(PRIMITIVETYPE_TRIANGLESTRIP, 0, 4);
-
-    RenderManager::Instance()->SetRenderTarget(0);
-    
-    Renderer::GetDynamicBindings().SetDynamicParam(PARAM_PROJ, &oldProjection, DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
-	RenderManager::Instance()->SetViewport(oldViewport);
-    SafeRelease(ftRenderData);
-
-    SafeRelease(tmpTileMaskMaterial);
-    SafeRelease(tmpLandscapeParent);
-    
-    return fullTiled;
-#else
-    return nullptr;
-#endif
+	createdLandscapeTextureCallback(this, thumbnailRenderTarget);
+	SafeRelease(thumbnailRenderTarget);
 }
 
+void Landscape::UnregisterCreateTextureCallback()
+{
+	RenderCallbacks::UnRegisterSyncCallback(MakeFunction(this, &Landscape::OnCreateLandscapeTextureCompleted));
+}
 
-//FilePath Landscape::SaveFullTiledTexture()
-//{
-//    FilePath pathToSave;
-//    
-//    if(textures[TEXTURE_TILE_FULL])
-//    {
-//        if(textures[TEXTURE_TILE_FULL]->isRenderTarget)
-//        {
-//            pathToSave = GetTextureName(TEXTURE_COLOR);
-//            pathToSave.ReplaceExtension(".thumbnail.png");
-//            Image *image = textures[TEXTURE_TILE_FULL]->CreateImageFromMemory();
-//            if(image)
-//            {
-//                ImageLoader::Save(image, pathToSave);
-//                SafeRelease(image);
-//            }
-//        }
-//        else
-//        {
-//            pathToSave = textureNames[TEXTURE_TILE_FULL];
-//        }
-//    }
-//    
-//    Logger::FrameworkDebug("[LN] SaveFullTiledTexture: %s", pathToSave.GetAbsolutePathname().c_str());
-//    return pathToSave;
-//}
-//    
-//void Landscape::UpdateFullTiledTexture()
-//{
-//	//TODO: WTF? this method is called during load phase when not all properties have been initialized potentially!
-//    if(textureNames[TEXTURE_TILE_FULL].IsEmpty())
-//    {
-//        Texture *t = CreateFullTiledTexture();
-//        t->GenerateMipmaps();
-//        SetTexture(TEXTURE_TILE_FULL, t);
-//        SafeRelease(t);
-//    }
-//}
-
-RenderObject * Landscape::Clone( RenderObject *newObject )
+void Landscape::CreateLandscapeTexture(LandscapeThumbnailCallback handler)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-	if(!newObject)
+	createdLandscapeTextureCallback = handler;
+
+    Vector<Vector3> ftVertexes;
+	ftVertexes.reserve(4);
+	ftVertexes.emplace_back(-1.0f, -1.0f, 0.0f);
+    ftVertexes.emplace_back( 1.0f, -1.0f, 0.0f);
+    ftVertexes.emplace_back(-1.0f,  1.0f, 0.0f);
+    ftVertexes.emplace_back( 1.0f,  1.0f, 0.0f);
+
+	Vector<Vector2> ftTextureCoords;
+	ftTextureCoords.reserve(4);
+    ftTextureCoords.emplace_back(0.0f, 0.0f);
+    ftTextureCoords.emplace_back(1.0f, 0.0f);
+    ftTextureCoords.emplace_back(0.0f, 1.0f);
+    ftTextureCoords.emplace_back(1.0f, 1.0f);
+
+	ScopedPtr<PolygonGroup> renderData(new PolygonGroup());
+	renderData->AllocateData(EVF_VERTEX | EVF_TEXCOORD0, 4, 6);
+	renderData->SetPrimitiveType(rhi::PrimitiveType::PRIMITIVE_TRIANGLELIST);
+	for (int32 i = 0, e = static_cast<int32>(ftVertexes.size()); i < e; ++i)
+	{
+		renderData->SetCoord(i, ftVertexes.at(i));
+		renderData->SetTexcoord(0, i, ftTextureCoords.at(i));
+	}
+	renderData->SetIndex(0, 0);
+	renderData->SetIndex(1, 1);
+	renderData->SetIndex(2, 2);
+	renderData->SetIndex(3, 2);
+	renderData->SetIndex(4, 1);
+	renderData->SetIndex(5, 3);
+	renderData->BuildBuffers();
+
+	thumbnailRenderTarget = Texture::CreateFBO(TEXTURE_TILE_FULL_SIZE, TEXTURE_TILE_FULL_SIZE, FORMAT_RGBA8888);
+
+	rhi::HSyncObject syncObject = rhi::CreateSyncObject();
+	RenderCallbacks::RegisterSyncCallback(syncObject, MakeFunction(this, &Landscape::OnCreateLandscapeTextureCompleted));
+
+	rhi::Packet packet = { };
+    packet.vertexStreamCount = 1;
+    packet.vertexStream[0] = renderData->vertexBuffer;
+    packet.vertexCount = renderData->vertexCount;
+    packet.indexBuffer = renderData->indexBuffer;
+    packet.primitiveType = renderData->primitiveType;
+    packet.primitiveCount = GetPrimitiveCount(renderData->indexCount, renderData->primitiveType);
+    packet.vertexLayoutUID = renderData->vertexLayoutId;
+
+	DAVA::ShaderDescriptorCache::ClearDynamicBindigs();
+	
+	const auto identityMatrix = &Matrix4::IDENTITY;
+	Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, identityMatrix, (pointer_size)(identityMatrix));
+	Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_VIEW, identityMatrix, (pointer_size)(identityMatrix));
+	Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_PROJ, identityMatrix, (pointer_size)(identityMatrix));
+
+	ScopedPtr<NMaterial> material(new NMaterial());
+
+	auto assignMaterialTexture = [this, &material](const FastName& textureId)
+	{
+		auto texture = GetMaterial()->GetEffectiveTexture(textureId);
+		if (texture != nullptr)
+			material->AddTexture(textureId, texture);
+	};
+
+	assignMaterialTexture(Landscape::TEXTURE_COLOR);
+	assignMaterialTexture(Landscape::TEXTURE_SPECULAR);
+	assignMaterialTexture(Landscape::TEXTURE_TILE);
+	assignMaterialTexture(Landscape::TEXTURE_TILEMASK);
+
+	material->SetMaterialName(FastName("Landscape_Tilemask_Temp_Material"));
+	material->SetFXName(NMaterialName::TILE_MASK);
+	material->SetQualityGroup(NMaterialQualityName::DEFAULT_QUALITY_NAME);
+	material->PreBuildMaterial(PASS_FORWARD);
+	material->BindParams(packet);
+
+	rhi::RenderPassConfig passDesc = { };
+	passDesc.colorBuffer[0].texture = thumbnailRenderTarget->handle;
+	passDesc.priority = PRIORITY_SERVICE_3D;
+	passDesc.viewport.width = TEXTURE_TILE_FULL_SIZE;
+	passDesc.viewport.height = TEXTURE_TILE_FULL_SIZE;
+
+	rhi::HPacketList packetList = { };
+	rhi::HRenderPass renderPass = rhi::AllocateRenderPass(passDesc, 1, &packetList);
+	rhi::BeginRenderPass(renderPass);
+	rhi::BeginPacketList(packetList);
+	rhi::AddPacket(packetList, packet);
+	rhi::EndPacketList(packetList, syncObject);
+	rhi::EndRenderPass(renderPass);
+}
+
+RenderObject * Landscape::Clone(RenderObject *newObject)
+{
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
+	if (!newObject)
 	{
 		DVASSERT_MSG(IsPointerToExactClass<Landscape>(this), "Can clone only Landscape");
 		newObject = new Landscape();
@@ -1397,16 +1372,16 @@ void Landscape::SetFoliageSystem(FoliageSystem* _foliageSystem)
 }
     
 void Landscape::CollectNodesRecursive(LandQuadTreeNode<LandscapeQuad> * currentNode, int16 nodeSize,
-                                                 Vector< LandQuadTreeNode<LandscapeQuad> * > & nodes)
+	Vector<LandQuadTreeNode<LandscapeQuad>*> & nodes)
 {
-    if(currentNode->data.size == nodeSize)
+    if (currentNode->data.size == nodeSize)
     {
         nodes.push_back(currentNode);
     }
     
-    if(currentNode->children)
+    if (currentNode->children)
     {
-        for(int32 i = 0; i < 4; ++i)
+        for (int32 i = 0; i < 4; ++i)
         {
             CollectNodesRecursive(&currentNode->children[i], nodeSize, nodes);
         }
@@ -1424,7 +1399,7 @@ void Landscape::UpdatePart(Heightmap* fromHeightmap, const Rect2i & rect)
     {
         Rect2i nodeRect(node->data.x, node->data.y, node->data.size, node->data.size);
         Rect2i intersect = nodeRect.Intersection(rect);
-        if(intersect.dx || intersect.dy)
+        if (intersect.dx || intersect.dy)
         {
             rhi::HVertexBuffer vertexBuffer = vertexBuffers[node->data.rdoQuad];
 
@@ -1454,4 +1429,3 @@ void Landscape::UpdatePart(Heightmap* fromHeightmap, const Rect2i & rect)
 }
     
 };
-

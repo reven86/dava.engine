@@ -337,8 +337,10 @@ bool CreatePlaneLODCommandHelper::IsHorisontalMesh(const AABBox3 & bbox)
  */
 
 CreatePlaneLODCommandHelper::Request::Request()
+    : RefCounter()
+    , planeBatch(new RenderBatch())
+    , completed(false)
 {
-    planeBatch = new RenderBatch();
 }
 
 CreatePlaneLODCommandHelper::Request::~Request()
