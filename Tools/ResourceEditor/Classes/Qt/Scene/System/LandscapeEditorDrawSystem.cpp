@@ -58,16 +58,10 @@ LandscapeEditorDrawSystem::LandscapeEditorDrawSystem(Scene* scene)
 ,	customDrawRequestCount(0)
 ,   sourceTilemaskPath("")
 {
-    textured2DAdditiveMaterial = new NMaterial();
-    textured2DAdditiveMaterial->SetParent(RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL);
-    textured2DAdditiveMaterial->AddFlag(NMaterialFlagName::FLAG_BLENDING, BLENDING_ALPHA_ADDITIVE);
-    textured2DAdditiveMaterial->PreBuildMaterial(RenderSystem2D::RENDER_PASS_NAME);
 }
 
 LandscapeEditorDrawSystem::~LandscapeEditorDrawSystem()
 {
-    SafeRelease(textured2DAdditiveMaterial);
-    
 	SafeRelease(baseLandscape);
 	SafeRelease(landscapeProxy);
 	SafeRelease(heightmapProxy);
@@ -707,8 +701,4 @@ bool LandscapeEditorDrawSystem::UpdateTilemaskPathname()
     return false;
 }
 
-NMaterial * LandscapeEditorDrawSystem::GetTexturedMaterial() const
-{
-    return textured2DAdditiveMaterial;
-}
 

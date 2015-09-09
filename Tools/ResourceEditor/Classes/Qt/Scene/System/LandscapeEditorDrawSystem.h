@@ -125,8 +125,6 @@ public:
 	
 	static String GetDescriptionByError(eErrorType error);
 
-    NMaterial * GetTexturedMaterial() const;
-    
 protected:
     
     void UpdateBaseLandscapeHeightmap();
@@ -151,8 +149,6 @@ protected:
 	uint32 customDrawRequestCount;
 
     FilePath sourceTilemaskPath;
-    
-    NMaterial *textured2DAdditiveMaterial = nullptr;
 };
 
 #endif /* defined(__RESOURCEEDITORQT__LANDSCAPEEDITORDRAWSYSTEM__) */
