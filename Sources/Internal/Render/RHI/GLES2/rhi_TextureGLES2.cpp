@@ -116,8 +116,13 @@ TextureGLES2_t::Create( const Texture::Descriptor& desc, bool force_immediate )
     
     if( is_depth )
     {
-        GLCommand   cmd1 = { GLCommand::GEN_RENDERBUFFERS, { uint64((need_stencil)?2:1), (uint64)(uid) } };
-
+        GLCommand   cmd1  = { GLCommand::GEN_RENDERBUFFERS, { uint64((need_stencil)?2:1), (uint64)(uid) } };
+        #if defined(__DAVAENGINE_IPHONE__)
+        int         gl_ds = GL_DEPTH24_STENCIL8_OES;
+        #else
+        int         gl_ds = GL_DEPTH24_STENCIL8;
+        #endif
+        
         ExecGL( &cmd1, 1 );
 
         if( cmd1.status == GL_NO_ERROR )
@@ -125,7 +130,7 @@ TextureGLES2_t::Create( const Texture::Descriptor& desc, bool force_immediate )
             GLCommand   cmd2[] =
             {
                 { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, uid[0] } },
-                { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, desc.width, desc.height } },
+                { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, uint64(gl_ds), desc.width, desc.height } },
                 { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, 0 } }
 /*
                 { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, uid[0] } },
@@ -713,7 +718,13 @@ SetAsRenderTarget( Handle tex, Handle depth )
             glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, self->uid, 0 );
             if( ds )
             {
-                glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, ds->uid );
+                #if defined(__DAVAENGINE_IPHONE__)
+                int att = GL_DEPTH_STENCIL_OES;
+                #else
+                int att = GL_DEPTH_STENCIL_ATTACHMENT;
+                #endif
+                
+                glFramebufferRenderbuffer( GL_FRAMEBUFFER, att, GL_RENDERBUFFER, ds->uid );
 /*
                 glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, ds->uid );
                 
