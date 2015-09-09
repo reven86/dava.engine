@@ -57,11 +57,17 @@ LandscapeEditorDrawSystem::LandscapeEditorDrawSystem(Scene* scene)
 ,	rulerToolProxy(nullptr)
 ,	customDrawRequestCount(0)
 ,   sourceTilemaskPath("")
-{	
+{
+    textured2DAdditiveMaterial = new NMaterial();
+    textured2DAdditiveMaterial->SetParent(RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL);
+    textured2DAdditiveMaterial->AddFlag(NMaterialFlagName::FLAG_BLENDING, BLENDING_ALPHA_ADDITIVE);
+    textured2DAdditiveMaterial->PreBuildMaterial(RenderSystem2D::RENDER_PASS_NAME);
 }
 
 LandscapeEditorDrawSystem::~LandscapeEditorDrawSystem()
 {
+    SafeRelease(textured2DAdditiveMaterial);
+    
 	SafeRelease(baseLandscape);
 	SafeRelease(landscapeProxy);
 	SafeRelease(heightmapProxy);
@@ -178,7 +184,7 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::EnableNotPassab
 	notPassableTerrainProxy->Enable();
 	notPassableTerrainProxy->UpdateTexture(heightmapProxy, landscapeProxy->GetLandscapeBoundingBox(), updateRect);
 	
-    landscapeProxy->SetToolTexture(notPassableTerrainProxy->GetTexture());
+    landscapeProxy->SetToolTexture(notPassableTerrainProxy->GetTexture(), false);
     
 	return LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
 }
@@ -191,7 +197,7 @@ void LandscapeEditorDrawSystem::DisableNotPassableTerrain()
 	}
 	
 	notPassableTerrainProxy->Disable();
-	landscapeProxy->SetToolTexture(nullptr);
+	landscapeProxy->SetToolTexture(nullptr, false);
     
 	DisableCustomDraw();
 }
@@ -700,3 +706,9 @@ bool LandscapeEditorDrawSystem::UpdateTilemaskPathname()
     
     return false;
 }
+
+NMaterial * LandscapeEditorDrawSystem::GetTexturedMaterial() const
+{
+    return textured2DAdditiveMaterial;
+}
+

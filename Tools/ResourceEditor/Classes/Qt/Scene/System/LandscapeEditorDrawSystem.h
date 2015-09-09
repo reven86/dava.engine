@@ -125,6 +125,8 @@ public:
 	
 	static String GetDescriptionByError(eErrorType error);
 
+    NMaterial * GetTexturedMaterial() const;
+    
 protected:
     
     void UpdateBaseLandscapeHeightmap();
@@ -137,18 +139,20 @@ protected:
     
     bool UpdateTilemaskPathname();
     
-    Entity* landscapeNode;
-	Landscape* baseLandscape;
-	LandscapeProxy* landscapeProxy;
-	HeightmapProxy* heightmapProxy;
-	NotPassableTerrainProxy* notPassableTerrainProxy;
-	CustomColorsProxy* customColorsProxy;
-	VisibilityToolProxy* visibilityToolProxy;
-	RulerToolProxy* rulerToolProxy;
+    Entity* landscapeNode = nullptr;
+	Landscape* baseLandscape = nullptr;
+	LandscapeProxy* landscapeProxy = nullptr;
+	HeightmapProxy* heightmapProxy = nullptr;
+	NotPassableTerrainProxy* notPassableTerrainProxy = nullptr;
+	CustomColorsProxy* customColorsProxy = nullptr;
+	VisibilityToolProxy* visibilityToolProxy = nullptr;
+	RulerToolProxy* rulerToolProxy = nullptr;
 
 	uint32 customDrawRequestCount;
 
     FilePath sourceTilemaskPath;
+    
+    NMaterial *textured2DAdditiveMaterial = nullptr;
 };
 
 #endif /* defined(__RESOURCEEDITORQT__LANDSCAPEEDITORDRAWSYSTEM__) */
