@@ -108,7 +108,7 @@ void RenderPass::SetupCameraParams(Camera* mainCamera, Camera* drawCamera, Vecto
     
     bool isRT = (passConfig.colorBuffer[0].texture != rhi::InvalidHandle)||
                 (passConfig.colorBuffer[1].texture != rhi::InvalidHandle)||
-                (passConfig.depthStencilBuffer.texture != rhi::InvalidHandle);
+                ((passConfig.depthStencilBuffer.texture != rhi::InvalidHandle && passConfig.depthStencilBuffer.texture != rhi::DefaultDepthBuffer));
 
     bool needInvertCamera = isRT && (!rhi::DeviceCaps().isUpperLeftRTOrigin);
 

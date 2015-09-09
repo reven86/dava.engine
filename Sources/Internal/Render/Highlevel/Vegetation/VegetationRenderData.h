@@ -40,7 +40,7 @@
 namespace DAVA
 {
 
-typedef uint16 VegetationIndex;
+typedef uint32 VegetationIndex;
 
 struct VegetationVertex
 {

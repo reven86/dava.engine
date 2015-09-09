@@ -186,9 +186,15 @@ gles_check_GL_extensions()
     const char* version = (const char*)glGetString(GL_VERSION);
     if(!IsEmptyString(version))
     {
-        if( strstr(version, "OpenGL ES 3.0") || !strstr(version, "OpenGL ES") )
+        if( strstr(version, "OpenGL ES 3.0") )
         {
             _GLES2_DeviceCaps.is32BitIndicesSupported = true;
+        }
+        else if (!strstr(version, "OpenGL ES"))
+        {
+            _GLES2_DeviceCaps.is32BitIndicesSupported = true;
+            _GLES2_DeviceCaps.isVertexTextureUnitsSupported = true;
+            _GLES2_DeviceCaps.isFramebufferFetchSupported = true;
         }
     }
 }
