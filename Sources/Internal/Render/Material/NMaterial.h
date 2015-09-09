@@ -143,6 +143,7 @@ public:
     void SetPropertyValue(const FastName& propName, const float32 *propData);    
     bool HasLocalProperty(const FastName& propName);   
     rhi::ShaderProp::Type GetLocalPropType(const FastName& propName);
+    uint32 GetLocalPropArraySize(const FastName& propName);
     const float32* GetLocalPropValue(const FastName& propName);
     const float32* GetEffectivePropValue(const FastName& propName);
 

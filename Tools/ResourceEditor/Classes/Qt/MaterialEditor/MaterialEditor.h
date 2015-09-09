@@ -103,6 +103,12 @@ private slots:
     void onContextMenuPrepare(QMenu *menu);
     void autoExpand();
 
+	void StoreMaterialToPreset(DAVA::NMaterial* material, DAVA::KeyedArchive* preset, 
+		DAVA::SerializationContext* context);
+
+	void UpdateMaterialFromPresetWithOptions(DAVA::NMaterial* material, DAVA::KeyedArchive* preset,
+		DAVA::SerializationContext* context, uint32 options);
+
 private:
     enum 
     {

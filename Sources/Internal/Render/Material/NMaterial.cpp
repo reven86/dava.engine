@@ -45,8 +45,6 @@
 namespace DAVA
 {
 
-const DAVA::String kSerializationContextVersion = "serializationContextVersion";
-
 uint32 NMaterialProperty::globalPropertyUpdateSemanticCounter = 0;
 
 RenderVariantInstance::RenderVariantInstance() :shader(nullptr)
@@ -284,11 +282,19 @@ rhi::ShaderProp::Type NMaterial::GetLocalPropType(const FastName& propName)
     DVASSERT(prop != nullptr);
     return prop->type;
 }
+
 const float32* NMaterial::GetLocalPropValue(const FastName& propName)
 {
     NMaterialProperty *prop = localProperties.at(propName);
     DVASSERT(prop != nullptr);
     return prop->data.get();
+}
+
+uint32 NMaterial::GetLocalPropArraySize(const FastName& propName)
+{
+    NMaterialProperty *prop = localProperties.at(propName);
+    DVASSERT(prop != nullptr);
+    return prop->arraySize;
 }
 
 const float32* NMaterial::GetEffectivePropValue(const FastName& propName)
@@ -833,15 +839,7 @@ void NMaterial::Load(KeyedArchive * archive, SerializationContext * serializatio
 {
     DataNode::Load(archive, serializationContext);
 
-	uint32 contextVersion = serializationContext->GetVersion();
-	if (archive->IsKeyExists(kSerializationContextVersion))
-	{
-		auto contextVersionVariant = archive->GetVariant(kSerializationContextVersion);
-		if (contextVersionVariant->GetType() == VariantType::eVariantType::TYPE_UINT32)
-			contextVersion = archive->GetUInt32(kSerializationContextVersion);
-	}
-
-    if (contextVersion < RHI_SCENE_VERSION)
+    if (serializationContext->GetVersion() < RHI_SCENE_VERSION)
     {
         LoadOldNMaterial(archive, serializationContext);
         return;
@@ -920,10 +918,7 @@ void NMaterial::Load(KeyedArchive * archive, SerializationContext * serializatio
         const Map<String, VariantType*>& flagsMap = archive->GetArchive("flags")->GetArchieveData();
         for (Map<String, VariantType*>::const_iterator it = flagsMap.begin(); it != flagsMap.end(); ++it)
         {
-			if (HasLocalFlag(FastName(it->first)))
-				SetFlag(FastName(it->first), it->second->AsInt32());
-			else 
-				AddFlag(FastName(it->first), it->second->AsInt32());
+			AddFlag(FastName(it->first), it->second->AsInt32());
         }
     }
 }
