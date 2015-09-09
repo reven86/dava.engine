@@ -113,6 +113,8 @@ void EditorCore::OnCleanChanged(bool clean)
 
 void EditorCore::OnOpenPackageFile(const QString &path)
 {
+    UIControl::DumpControls(false);
+
     if (!path.isEmpty())
     {
         int index = GetIndexByPackagePath(path);
@@ -126,6 +128,8 @@ void EditorCore::OnOpenPackageFile(const QString &path)
         }
         mainWindow->SetCurrentTab(index);
     }
+
+    UIControl::DumpControls(false);
 }
 
 void EditorCore::OnProjectPathChanged(const QString &projectPath)
@@ -325,6 +329,8 @@ bool EditorCore::CloseProject()
 
 void EditorCore::CloseDocument(int index)
 {
+    UIControl::DumpControls(false);
+
     DVASSERT(index >= 0);
     DVASSERT(index < documents.size());
     int newIndex = mainWindow->CloseTab(index);
@@ -334,6 +340,8 @@ void EditorCore::CloseDocument(int index)
     documentGroup->SetActiveDocument(newIndex == -1 ? nullptr : documents.at(newIndex));
     documentGroup->RemoveDocument(detached);
     delete detached; //some widgets hold this document inside :(
+
+    UIControl::DumpControls(false);
 }
 
 int EditorCore::CreateDocument(PackageNode *package)

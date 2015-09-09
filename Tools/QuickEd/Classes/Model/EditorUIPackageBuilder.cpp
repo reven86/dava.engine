@@ -131,6 +131,8 @@ UIControl *EditorUIPackageBuilder::BeginControlWithClass(const String &className
     }
 
     controlsStack.push_back(ControlDescr(ControlNode::CreateFromControl(control), true));
+    control->Release();
+
     return control;
 }
 
@@ -146,6 +148,8 @@ UIControl *EditorUIPackageBuilder::BeginControlWithCustomClass(const String &cus
     ControlNode *node = ControlNode::CreateFromControl(control);
     node->GetRootProperty()->GetCustomClassProperty()->SetValue(VariantType(customClassName));
     controlsStack.push_back(ControlDescr(node, true));
+
+    control->Release();
     return control;
 }
 

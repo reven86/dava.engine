@@ -38,6 +38,8 @@
 
 using namespace DAVA;
 
+static int32 counter = 0;
+
 ControlNode::ControlNode(UIControl *control, bool recursively)
     : ControlsContainerNode(nullptr)
     , control(SafeRetain(control))
@@ -58,6 +60,9 @@ ControlNode::ControlNode(UIControl *control, bool recursively)
             nodes.push_back(childNode);
         }
     }
+
+    ++counter;
+    Logger::Info("--create CN: %d", counter);
 }
 
 ControlNode::ControlNode(ControlNode *node, eCreationType _creationType)
@@ -91,6 +96,9 @@ ControlNode::ControlNode(ControlNode *node, eCreationType _creationType)
         ScopedPtr<ControlNode> childNode(new ControlNode(sourceChild, childCreationType));
         Add(childNode);
     }
+
+    ++counter;
+    Logger::Info("--create CN: %d", counter);
 }
 
 ControlNode::~ControlNode()
@@ -107,6 +115,9 @@ ControlNode::~ControlNode()
     SafeRelease(prototype);
     
     DVASSERT(instances.empty());
+
+    --counter;
+    Logger::Info("--delete CN: %d", counter);
 }
 
 ControlNode *ControlNode::CreateFromControl(DAVA::UIControl *control)

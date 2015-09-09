@@ -2842,4 +2842,15 @@ namespace DAVA
     }
 
     /* Styles */
+
+
+    void UIControl::Retain()
+    {
+        BaseObject::Retain();
+    }
+
+    int32 UIControl::Release()
+    {
+        return BaseObject::Release();
+    }
 }
