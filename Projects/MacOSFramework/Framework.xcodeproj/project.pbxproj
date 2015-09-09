@@ -707,7 +707,6 @@
 		176DEB34174B5561007A983B /* WebViewControlMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = C151B17B16D3755000E09BAF /* WebViewControlMacOS.mm */; };
 		176DEB37174B5561007A983B /* UserComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC24800616DD174E00183D40 /* UserComponent.cpp */; };
 		176DEB38174B5561007A983B /* UISpinner.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E9EA496A16DF93FA00C44B6F /* UISpinner.cpp */; };
-		176DEB39174B5561007A983B /* UTF8UtilsMac.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8B4F8CE16EF377D0072442A /* UTF8UtilsMac.mm */; };
 		176DEB3A174B5561007A983B /* UISwitch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E9E798A716F0BE7600745AF5 /* UISwitch.cpp */; };
 		176DEB3B174B5561007A983B /* Camera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CCC7A3FA16F1D6170061EA5D /* Camera.cpp */; };
 		176DEB3C174B5561007A983B /* CullingSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CCC7A3FC16F1D6170061EA5D /* CullingSystem.cpp */; };
@@ -1631,6 +1630,7 @@
 		D738BD731B01F1BC00989C29 /* RawTimer.h in Headers */ = {isa = PBXBuildFile; fileRef = D738BD6F1B01F1BC00989C29 /* RawTimer.h */; };
 		D738BD741B01F1BC00989C29 /* RawTimer.h in Headers */ = {isa = PBXBuildFile; fileRef = D738BD6F1B01F1BC00989C29 /* RawTimer.h */; };
 		D738BD751B01F1BC00989C29 /* RawTimer.h in Headers */ = {isa = PBXBuildFile; fileRef = D738BD6F1B01F1BC00989C29 /* RawTimer.h */; };
+		D780599C1B99AAFB00BBAE06 /* UTF8Utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D780599B1B99AAFB00BBAE06 /* UTF8Utils.cpp */; };
 		D7C1C1D619CAD2FB00E79D84 /* LocalNotificationImpl.h in Headers */ = {isa = PBXBuildFile; fileRef = D7C1C1D519CAD2FB00E79D84 /* LocalNotificationImpl.h */; };
 		D7C1C1D719CAD2FB00E79D84 /* LocalNotificationImpl.h in Headers */ = {isa = PBXBuildFile; fileRef = D7C1C1D519CAD2FB00E79D84 /* LocalNotificationImpl.h */; };
 		D7C1C1D819CAD2FB00E79D84 /* LocalNotificationImpl.h in Headers */ = {isa = PBXBuildFile; fileRef = D7C1C1D519CAD2FB00E79D84 /* LocalNotificationImpl.h */; };
@@ -2710,8 +2710,6 @@
 		E8ADAEBC18CA1226000B251C /* PixelFormatDescriptor.h in Headers */ = {isa = PBXBuildFile; fileRef = E8ADAEB818CA1226000B251C /* PixelFormatDescriptor.h */; };
 		E8ADAEBD18CA1226000B251C /* PixelFormatDescriptor.h in Headers */ = {isa = PBXBuildFile; fileRef = E8ADAEB818CA1226000B251C /* PixelFormatDescriptor.h */; };
 		E8ADAEBE18CA1226000B251C /* PixelFormatDescriptor.h in Headers */ = {isa = PBXBuildFile; fileRef = E8ADAEB818CA1226000B251C /* PixelFormatDescriptor.h */; };
-		E8B4F8CF16EF377D0072442A /* UTF8UtilsMac.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8B4F8CE16EF377D0072442A /* UTF8UtilsMac.mm */; };
-		E8B4F8D016EF377D0072442A /* UTF8UtilsMac.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8B4F8CE16EF377D0072442A /* UTF8UtilsMac.mm */; };
 		E8B6B3B01705DB26004F665E /* DeviceInfo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 840D24201703311400267C58 /* DeviceInfo.cpp */; };
 		E8B6B3B11705DB26004F665E /* DeviceInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 840D24211703311400267C58 /* DeviceInfo.h */; };
 		E8B6B3BB1705DD59004F665E /* DeviceInfoMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8B6B3BA1705DD59004F665E /* DeviceInfoMacOS.mm */; };
@@ -3342,6 +3340,7 @@
 		D2F7E8BE07B2D77200F64583 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = /System/Library/Frameworks/CoreData.framework; sourceTree = "<absolute>"; };
 		D738BD6E1B01F1BC00989C29 /* RawTimer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RawTimer.cpp; path = Timer/RawTimer.cpp; sourceTree = "<group>"; };
 		D738BD6F1B01F1BC00989C29 /* RawTimer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RawTimer.h; path = Timer/RawTimer.h; sourceTree = "<group>"; };
+		D780599B1B99AAFB00BBAE06 /* UTF8Utils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UTF8Utils.cpp; sourceTree = "<group>"; };
 		D7C1C1D519CAD2FB00E79D84 /* LocalNotificationImpl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocalNotificationImpl.h; sourceTree = "<group>"; };
 		D7C556671A7A158600175ED9 /* DataStorage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DataStorage.h; sourceTree = "<group>"; };
 		D7C5566D1A7A158600175ED9 /* DataStorageMacOS.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DataStorageMacOS.cpp; sourceTree = "<group>"; };
@@ -3857,7 +3856,6 @@
 		E89EDE411A2E16FA0036E993 /* VectorSwig.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VectorSwig.cpp; sourceTree = "<group>"; };
 		E8ADAEB718CA1226000B251C /* PixelFormatDescriptor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PixelFormatDescriptor.cpp; sourceTree = "<group>"; };
 		E8ADAEB818CA1226000B251C /* PixelFormatDescriptor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PixelFormatDescriptor.h; sourceTree = "<group>"; };
-		E8B4F8CE16EF377D0072442A /* UTF8UtilsMac.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = UTF8UtilsMac.mm; sourceTree = "<group>"; };
 		E8B6B3BA1705DD59004F665E /* DeviceInfoMacOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = DeviceInfoMacOS.mm; sourceTree = "<group>"; };
 		E8BAD5AE185213F100C98C8D /* IntrospectionDynamic.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IntrospectionDynamic.cpp; sourceTree = "<group>"; };
 		E8BAD5AF185213F100C98C8D /* IntrospectionDynamic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IntrospectionDynamic.h; sourceTree = "<group>"; };
@@ -5480,7 +5478,7 @@
 				E8989D9216BD24E500732C04 /* Random.h */,
 				E8989D9316BD24E500732C04 /* StringFormat.cpp */,
 				E8989D9416BD24E500732C04 /* StringFormat.h */,
-				E8B4F8CE16EF377D0072442A /* UTF8UtilsMac.mm */,
+				D780599B1B99AAFB00BBAE06 /* UTF8Utils.cpp */,
 				E8989D9616BD24E500732C04 /* UTF8Utils.h */,
 				E8989D9716BD24E500732C04 /* Utils.cpp */,
 				E8989D9816BD24E500732C04 /* Utils.h */,
@@ -7486,7 +7484,6 @@
 				E8990B501A288C8F00FF71A1 /* SnapToLandscapeControllerSystem.cpp in Sources */,
 				176DEB38174B5561007A983B /* UISpinner.cpp in Sources */,
 				1174B6301B42C550002E3472 /* UIStyleSheetStructs.cpp in Sources */,
-				176DEB39174B5561007A983B /* UTF8UtilsMac.mm in Sources */,
 				E8990B3D1A288C2000FF71A1 /* WASDControllerComponent.cpp in Sources */,
 				11B1551C1B2F26B200E0EECE /* UIControlPackageContext.cpp in Sources */,
 				176DEB3A174B5561007A983B /* UISwitch.cpp in Sources */,
@@ -7944,6 +7941,7 @@
 				E8FC12F61869726A0095D8FE /* QualitySettingsSystem.cpp in Sources */,
 				C151B17916D3747E00E09BAF /* DVAssertMessageApple.mm in Sources */,
 				32C147621B4C15AD00892B98 /* UISizePolicyComponent.cpp in Sources */,
+				D780599C1B99AAFB00BBAE06 /* UTF8Utils.cpp in Sources */,
 				32B14A551B837AFB00F8C026 /* UIIgnoreLayoutComponent.cpp in Sources */,
 				C151B17D16D3755000E09BAF /* WebViewControlMacOS.mm in Sources */,
 				E89EDE691A2E16FA0036E993 /* MongodbUpdateObject.cpp in Sources */,
@@ -7951,7 +7949,6 @@
 				E9EA496C16DF93FA00C44B6F /* UISpinner.cpp in Sources */,
 				D738BD701B01F1BC00989C29 /* RawTimer.cpp in Sources */,
 				02141407181984D600925E51 /* DAVAClassRegistrator.cpp in Sources */,
-				E8B4F8CF16EF377D0072442A /* UTF8UtilsMac.mm in Sources */,
 				E9E798A916F0BE7600745AF5 /* UISwitch.cpp in Sources */,
 				D7E6C5AA198255BF00B96D1A /* Downloader.cpp in Sources */,
 				CCC7A42516F1D6170061EA5D /* Camera.cpp in Sources */,
@@ -8390,7 +8387,6 @@
 				84E975C0191FCDF10054CCF9 /* Image.cpp in Sources */,
 				644C86D719476A7100964F91 /* VegetationCustomSLGeometry.cpp in Sources */,
 				4F53ED2A19A23BE700D3869D /* Downloader.cpp in Sources */,
-				E8B4F8D016EF377D0072442A /* UTF8UtilsMac.mm in Sources */,
 				E9E798AA16F0BE7600745AF5 /* UISwitch.cpp in Sources */,
 				A6D82799187716F30006A5DD /* Color.cpp in Sources */,
 				D7CC264719C43C7C00A3B754 /* LocalNotificationText.cpp in Sources */,

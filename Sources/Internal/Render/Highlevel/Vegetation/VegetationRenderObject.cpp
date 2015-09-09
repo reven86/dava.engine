@@ -42,6 +42,7 @@
 
 #include "Render/Highlevel/Vegetation/VegetationGeometry.h"
 #include "Render/Highlevel/RenderPassNames.h"
+#include "Render/RenderCallbacks.h"
 
 namespace DAVA
 {
@@ -144,6 +145,7 @@ VegetationRenderObject::VegetationRenderObject() :
     maxVisibleQuads = MAX_RENDER_CELLS;
     lodRanges = LOD_RANGES_SCALE;
     ResetVisibilityDistance();
+    RenderCallbacks::RegisterResourceRestoreCallback(MakeFunction(this, &VegetationRenderObject::RestoreRenderData));
 }
 
 VegetationRenderObject::~VegetationRenderObject()
@@ -159,6 +161,7 @@ VegetationRenderObject::~VegetationRenderObject()
 
     SafeRelease(heightmap);
     SafeRelease(heightmapTexture);
+    RenderCallbacks::UnRegisterResourceRestoreCallback(MakeFunction(this, &VegetationRenderObject::RestoreRenderData));
 }
 
 RenderBatch * VegetationRenderObject::CreateRenderBatch()
@@ -786,7 +789,8 @@ bool VegetationRenderObject::IsHardwareCapableToRenderVegetation()
 bool VegetationRenderObject::IsValidGeometryData() const
 {
      return (worldSize.Length() > 0 &&
-             heightmap != NULL &&
+             heightmap != nullptr &&
+             heightmap->Size() > 0 && 
              densityMap.size() > 0 &&
              customGeometryData);
 }
@@ -794,7 +798,8 @@ bool VegetationRenderObject::IsValidGeometryData() const
 bool VegetationRenderObject::IsValidSpatialData() const
 {
     return (worldSize.Length() > 0 &&
-            heightmap != NULL &&
+            heightmap != nullptr &&
+            heightmap->Size() > 0 &&
             densityMap.size() > 0);
 }
 
@@ -951,6 +956,28 @@ void VegetationRenderObject::CreateRenderData()
     vertexLayoutUID = rhi::VertexLayout::UniqueId(vertexLayout);
 
     ClearRenderBatches();
+}
+
+void VegetationRenderObject::RestoreRenderData()
+{
+#if defined(__DAVAENGINE_IPHONE__)
+    DVASSERT_MSG(false, "Should not even try to restore on iphone - render data is released");
+#endif
+    if (!renderData)
+        return;
+    
+    if (rhi::NeedRestoreVertexBuffer(vertexBuffer))
+    {
+        const Vector<VegetationVertex>& vertexData = renderData->GetVertices();
+        uint32 vertexBufferSize = vertexData.size() * sizeof(VegetationVertex);
+        rhi::UpdateVertexBuffer(vertexBuffer, &vertexData.front(), 0, vertexBufferSize);
+    }
+    if (rhi::NeedRestoreIndexBuffer(indexBuffer))
+    {
+        const Vector<VegetationIndex>& indexData = renderData->GetIndices();
+        uint32 indexBufferSize = indexData.size() * sizeof(VegetationIndex);
+        rhi::UpdateIndexBuffer(indexBuffer, &indexData.front(), 0, indexBufferSize);
+    }
 }
 
 bool VegetationRenderObject::ReadyToRender()

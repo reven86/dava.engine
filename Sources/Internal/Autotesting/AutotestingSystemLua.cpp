@@ -77,12 +77,11 @@ namespace DAVA
 
 	AutotestingSystemLua::AutotestingSystemLua() : delegate(nullptr), luaState(nullptr), memoryPool(nullptr), memorySpace(nullptr)
 	{
-		autotestingLocalizationSystem = new LocalizationSystem();
+
 	}
 
 	AutotestingSystemLua::~AutotestingSystemLua()
 	{
-		SafeRelease(autotestingLocalizationSystem);
 
 		if (!luaState)
 		{
@@ -109,9 +108,6 @@ namespace DAVA
 		}
 
 		Logger::Debug("AutotestingSystemLua::InitFromFile luaFilePath=%s", luaFilePath.c_str());
-		autotestingLocalizationSystem->SetDirectory("~res:/Autotesting/Strings/");
-		autotestingLocalizationSystem->SetCurrentLocale(LocalizationSystem::Instance()->GetCurrentLocale());
-		autotestingLocalizationSystem->Init();
 
 		memoryPool = malloc(LUA_MEMORY_POOL_SIZE);
 		memset(memoryPool, 0, LUA_MEMORY_POOL_SIZE);
@@ -130,14 +126,14 @@ namespace DAVA
 		{
 			AutotestingSystem::Instance()->ForceQuit("Load wrapped lua objects was failed.");
 		}
-
-		if (!RunScriptFromFile("~res:/Autotesting/Scripts/autotesting_api.lua"))
+        String automationAPIStrPath = AutotestingSystem::ResolvePathToAutomation("/Autotesting/Scripts/autotesting_api.lua");
+		if (automationAPIStrPath.empty() || !RunScriptFromFile(automationAPIStrPath))
 		{
 			AutotestingSystem::Instance()->ForceQuit("Initialization of 'autotesting_api.lua' was failed.");
 		}
 
 		lua_getglobal(luaState, "SetPackagePath");
-		lua_pushstring(luaState, "~res:/Autotesting/");
+		lua_pushstring(luaState,  AutotestingSystem::ResolvePathToAutomation("/Autotesting/").c_str());
 		if (lua_pcall(luaState, 1, 1, 0))
 		{
 			const char* err = lua_tostring(luaState, -1);
@@ -694,8 +690,6 @@ namespace DAVA
 	bool AutotestingSystemLua::CheckMsgText(UIControl* control, const String &key)
 	{
 		WideString expectedText = StringToWString(key);
-		//TODO: check key in localized strings for Lua
-		expectedText = autotestingLocalizationSystem->GetLocalizedString(expectedText);
 
 		UIStaticText *uiStaticText = dynamic_cast<UIStaticText*>(control);
 		if (uiStaticText)

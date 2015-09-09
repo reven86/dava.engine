@@ -163,8 +163,7 @@ dx9_Reset( const ResetParam& param )
 static bool
 dx9_NeedRestoreResources()
 {
-    bool    needRestore = TextureDX9::NeedRestoreCount()  ||  VertexBufferDX9::NeedRestoreCount()  ||  IndexBufferDX9::NeedRestoreCount();
-
+    bool    needRestore = TextureDX9::NeedRestoreCount()  ||  VertexBufferDX9::NeedRestoreCount()  ||  IndexBufferDX9::NeedRestoreCount();    
     return needRestore;
 }
 

@@ -59,8 +59,10 @@ public:
     static const FastName LANDSCAPE_TEXTURE_CURSOR; //should use clamp wrap mode
     static const FastName LANSDCAPE_FLAG_CURSOR;
     static const FastName LANSDCAPE_FLAG_TOOL;
+    static const FastName LANSDCAPE_FLAG_TOOL_MIX;
     static const FastName LANDSCAPE_PARAM_CURSOR_COORD_SIZE; //x,y - cursor position [0...1] (in landscape space); z,w - cursor size [0...1] (fraction of landscape)
 
+    
 protected:
 	virtual ~LandscapeProxy();
 public:
@@ -73,7 +75,7 @@ public:
 	Color GetLandscapeTileColor(const FastName& level);
 	void SetLandscapeTileColor(const FastName& level, const Color& color);
 
-    void SetToolTexture(Texture * texture);
+    void SetToolTexture(Texture * texture, bool mixColors);
 	void SetTilemaskTexture(Texture* texture);
     Texture * GetTilemaskTexture();
 
@@ -111,22 +113,22 @@ protected:
 		TEXTURE_TYPES_COUNT
 	};
 
-	Image* tilemaskImageCopy;
-	Texture* tilemaskDrawTextures[TILEMASK_TEXTURE_COUNT];
+	Image* tilemaskImageCopy = nullptr;
+    Array<Texture *, TILEMASK_TEXTURE_COUNT > tilemaskDrawTextures;
 
-	int32 tilemaskWasChanged;
+	int32 tilemaskWasChanged = 0;
 
     FilePath sourceTilemaskPath;
     
-	Landscape* baseLandscape;
-    NMaterial* landscapeEditorMaterial;
+	Landscape* baseLandscape = nullptr;
+    NMaterial *landscapeEditorMaterial = nullptr;
     Vector4 cursorCoordSize;
 
-    eLandscapeMode mode;
+    eLandscapeMode mode = MODE_ORIGINAL_LANDSCAPE;
 	
 	void UpdateDisplayedTexture();
 	
-	Texture* cursorTexture;
+	Texture* cursorTexture = nullptr;
 };
 
 #endif /* defined(__RESOURCEEDITORQT__LANDSCAPEPROXY__) */

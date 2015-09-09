@@ -112,13 +112,6 @@ void QtLayer::ProcessFrame()
 #endif // RHI_COMPLETE_EDITOR
 }
     
-void QtLayer::InitializeGlWindow(uint64 glContextId)
-{
-#if RHI_COMPLETE_EDITOR
-    RenderManager::Instance()->SetRenderContextId(glContextId);
-#endif //RHI_COMPLETE_EDITOR
-}
-
 
 void QtLayer::Resize(int32 width, int32 height)
 {

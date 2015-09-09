@@ -100,7 +100,7 @@ void BeastAction::Redo()
 
     Finish(canceled);
 
-	if(NULL != waitDialog)
+	if (waitDialog != nullptr)
 	{
 		waitDialog->Reset();
 	}

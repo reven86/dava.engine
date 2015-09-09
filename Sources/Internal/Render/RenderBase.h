@@ -349,6 +349,8 @@ inline uint32 GetPrimitiveCount(uint32 indexCount, rhi::PrimitiveType primitiveT
         return indexCount / 3;
     case rhi::PRIMITIVE_LINELIST:
         return indexCount / 2;
+	case rhi::PRIMITIVE_TRIANGLESTRIP:
+		return indexCount - 2;
     default:
         DVASSERT_MSG(false, "Unknown primitive type");
     }

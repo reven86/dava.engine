@@ -76,7 +76,6 @@
 
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Scene3D/Components/TransformComponent.h"
-#include "Scene3D/SceneCache.h"
 #include "UI/UIEvent.h"
 #include "Render/Highlevel/RenderPass.h"
 
@@ -222,8 +221,6 @@ Scene::Scene(uint32 _systemsMask /* = SCENE_SYSTEM_ALL_MASK */)
     // this will force scene to create hidden global material
     SetGlobalMaterial(nullptr);
     
-    SceneCache::Instance()->InsertScene(this);
-
     RenderOptions * options = Renderer::GetOptions();
     options->AddObserver(this);
 }
@@ -373,8 +370,6 @@ Scene::~Scene()
 {
     Renderer::GetOptions()->RemoveObserver(this);
 
-    SceneCache::Instance()->RemoveScene(this);
-    
 	for (Vector<AnimatedMesh*>::iterator t = animatedMeshes.begin(); t != animatedMeshes.end(); ++t)
 	{
 		AnimatedMesh * obj = *t;

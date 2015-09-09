@@ -42,7 +42,7 @@ void DDSExtractorTool::PrintUsage() const
 
     printf("\n");
     printf("Sample:\n");
-    printf("-extract -path /Users/User/Project/Data/3d -mipmap 2 -forceclose\n");
+    printf("-extract -path /Users/User/Project/Data/3d -mipmap 2\n");
 }
 
 DAVA::String DDSExtractorTool::GetCommandLineKey() const

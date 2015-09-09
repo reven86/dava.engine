@@ -246,6 +246,8 @@ void PrivateMovieViewWinUAP::PositionMovieView(const Rect& rectInVirtualCoordina
     controlRect.dy /= scaleFactor;
 
     // 3. set control's position and size
+    nativeMovieView->MinHeight = 0.0;       // Force minimum control sizes to zero to
+    nativeMovieView->MinWidth = 0.0;        // allow setting any control sizes
     nativeMovieView->Width = controlRect.dx;
     nativeMovieView->Height = controlRect.dy;
     core->XamlApplication()->PositionUIElement(nativeMovieView, controlRect.x, controlRect.y);

@@ -184,11 +184,12 @@ struct ConvertRGBA5551toRGBA8888
 	{
 		uint16 pixel = *input;
 
-		uint32 r = (((pixel >> 11) & 0x01F) << 3);
-		uint32 g = (((pixel >> 6) & 0x01F) << 3);
-		uint32 b = (((pixel >> 1) & 0x01F) << 3);
-		uint32 a = ((pixel) & 0x0001) ? 0x00FF : 0;
-		*output = (r) | (g << 8) | (b << 16) | (a << 24);
+        uint32 a = ((pixel >> 15) & 0x01) ? 0x00FF: 0;
+		uint32 b = (((pixel >> 10) & 0x01F) << 3);
+		uint32 g = (((pixel >> 5) & 0x01F) << 3);
+		uint32 r = (((pixel >> 0) & 0x01F) << 3);
+        
+        *output = (r) | (g << 8) | (b << 16) | (a << 24);
 	}
 };
 
@@ -197,10 +198,10 @@ struct ConvertRGBA4444toRGBA8888
 	inline void operator()(const uint16 * input, uint32 *output)
 	{
 		uint16 pixel = *input;
-		uint32 r = (((pixel >> 12) & 0x0F) << 4);
-		uint32 g = (((pixel >> 8) & 0x0F) << 4);
-		uint32 b = (((pixel >> 4) & 0x0F) << 4);
-		uint32 a = (((pixel >> 0) & 0x0F) << 4);
+		uint32 a = (((pixel >> 12) & 0x0F) << 4);
+		uint32 b = (((pixel >> 8) & 0x0F) << 4);
+		uint32 g = (((pixel >> 4) & 0x0F) << 4);
+		uint32 r = (((pixel >> 0) & 0x0F) << 4);
         
         *output = (r) | (g << 8) | (b << 16) | (a << 24);
 	}
