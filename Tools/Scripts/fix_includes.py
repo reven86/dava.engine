@@ -11,7 +11,7 @@ import subprocess;
 import platform;
 import re;
 
-excludeDirs = ["Freetype", "FileSystem/Yaml", ]
+excludeDirs = ["Box2D", "Freetype", "FileSystem/Yaml", ]
 includePaths = {}
 
 
