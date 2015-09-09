@@ -47,7 +47,8 @@ using DAVA::Size2i;
 
 
 typedef uint32 Handle;
-static const uint32 InvalidHandle = 0;
+static const uint32 InvalidHandle       = 0;
+static const uint32 DefaultDepthBuffer  = (uint32)(-2);
 
 enum
 ResourceType
@@ -419,29 +420,43 @@ Descriptor
     uint32  size;
     Pool    pool;
     Usage   usage;
+    uint32  needRestore:1;
             
             Descriptor( uint32 sz=0 ) 
               : size(sz),
                 pool(POOL_DEFAULT),
-                usage(USAGE_DEFAULT) 
+                usage(USAGE_DEFAULT),
+                needRestore(true)
             {}
 };
 }
 
+enum
+IndexSize
+{
+    INDEX_SIZE_16BIT    = 0,
+    INDEX_SIZE_32BIT    = 1
+};
+
 namespace IndexBuffer
 {
+
 struct
 Descriptor
 {
-    uint32  size;
-    Pool    pool;
-    Usage   usage;
+    uint32      size;
+    IndexSize   indexSize;
+    Pool        pool;
+    Usage       usage;
+    uint32      needRestore:1;
             
-            Descriptor( uint32 sz=0 ) 
-              : size(sz),
-                pool(POOL_DEFAULT),
-                usage(USAGE_DEFAULT) 
-            {}
+                Descriptor( uint32 sz=0 ) 
+                  : size(sz),
+                    indexSize(INDEX_SIZE_16BIT),
+                    pool(POOL_DEFAULT),
+                    usage(USAGE_DEFAULT),
+                    needRestore(true)
+                {}
 };
 }
 
@@ -459,6 +474,7 @@ Descriptor
     uint32          levelCount;
     uint32          isRenderTarget:1;
     uint32          autoGenMipmaps:1;
+    uint32          needRestore:1;
     
                     Descriptor( uint32 w, uint32 h, TextureFormat fmt )
                       : type(TEXTURE_TYPE_2D),
@@ -467,7 +483,8 @@ Descriptor
                         format(fmt),
                         levelCount(1),
                         isRenderTarget(false),
-                        autoGenMipmaps(false)
+                        autoGenMipmaps(false),
+                        needRestore(true)
                     {}
                     Descriptor()
                       : type(TEXTURE_TYPE_2D),
@@ -476,7 +493,8 @@ Descriptor
                         format(TEXTURE_FORMAT_R8G8B8A8),
                         levelCount(1),
                         isRenderTarget(false),
-                        autoGenMipmaps(false)
+                        autoGenMipmaps(false),
+                        needRestore(true)
                     {}
 
 };
@@ -755,7 +773,7 @@ RenderPassConfig
         uint32      clearStencil;
 
                     DepthStencilBuffer()
-                      : texture(InvalidHandle),
+                      : texture(DefaultDepthBuffer),
                         loadAction(LOADACTION_CLEAR),
                         storeAction(STOREACTION_NONE),
                         clearDepth(1.0f),

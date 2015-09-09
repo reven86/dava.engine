@@ -420,6 +420,7 @@ gles2_Initialize( const InitParam& param )
         DispatchGLES2.impl_HostApi                  = &gles2_HostApi;
         DispatchGLES2.impl_TextureFormatSupported   = &gles2_TextureFormatSupported;
         DispatchGLES2.impl_DeviceCaps               = &gles2_DeviceCaps;
+        DispatchGLES2.impl_NeedRestoreResources     = &gles2_NeedRestoreResources;
 
         SetDispatchTable(DispatchGLES2);
 
@@ -549,6 +550,7 @@ gles2_Initialize(const InitParam& param)
     DispatchGLES2.impl_HostApi                  = &gles2_HostApi;
     DispatchGLES2.impl_TextureFormatSupported   = &gles2_TextureFormatSupported;
     DispatchGLES2.impl_DeviceCaps               = &gles2_DeviceCaps;
+    DispatchGLES2.impl_NeedRestoreResources     = &gles2_NeedRestoreResources;
 
     SetDispatchTable(DispatchGLES2);
 
@@ -608,6 +610,7 @@ gles2_Initialize( const InitParam& param )
     DispatchGLES2.impl_HostApi                  = &gles2_HostApi;
     DispatchGLES2.impl_TextureFormatSupported   = &gles2_TextureFormatSupported;
     DispatchGLES2.impl_DeviceCaps               = &gles2_DeviceCaps;
+    DispatchGLES2.impl_NeedRestoreResources     = &gles2_NeedRestoreResources;
 
     SetDispatchTable(DispatchGLES2);
 
