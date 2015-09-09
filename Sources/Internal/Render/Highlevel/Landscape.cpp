@@ -46,6 +46,7 @@
 #include "Render/Material/NMaterialNames.h"
 #include "Render/Renderer.h"
 #include "Render/Highlevel/RenderPassNames.h"
+#include "Render/RenderCallbacks.h"
 
 namespace DAVA
 {
@@ -61,6 +62,7 @@ const FastName Landscape::TEXTURE_TILEMASK("tileMask");
 const FastName Landscape::TEXTURE_SPECULAR("specularMap");
 
 const uint32 LANDSCAPE_BATCHES_POOL_SIZE = 32;
+
 
 Landscape::Landscape()
     : indices(0)
@@ -92,6 +94,8 @@ Landscape::Landscape()
     vLayout.AddElement(rhi::VS_TANGENT, 0, rhi::VDT_FLOAT, 3);
 #endif
     vertexLayoutUID = rhi::VertexLayout::UniqueId(vLayout);
+
+    RenderCallbacks::RegisterResourceRestoreCallback(MakeFunction(this, &Landscape::RestoreGeometry));
 }
 
 Landscape::~Landscape()
@@ -101,6 +105,7 @@ Landscape::~Landscape()
     SafeRelease(heightmap);
 		
 	SafeRelease(landscapeMaterial);
+    RenderCallbacks::UnRegisterResourceRestoreCallback(MakeFunction(this, &Landscape::RestoreGeometry));
 }
     
 
@@ -180,10 +185,22 @@ int16 Landscape::AllocateQuadVertexBuffer(LandscapeQuad * quad)
     vertexBuffers.push_back(vertexBuffer);
     
 #if defined(__DAVAENGINE_IPHONE__)
-    SafeDeleteArray(landscapeVertices);  ///RHI_COMPLETE !!! this code will leak now as vertices are not deleted!!!!!!
+    SafeDeleteArray(landscapeVertices);  
+#else
+    bufferRestoreData.push_back({ vertexBuffer, landscapeVertices, vBufferSize });
 #endif
 
     return (int16)(vertexBuffers.size() - 1);
+}
+
+void Landscape::RestoreGeometry()
+{    
+    Logger::Debug("landscape : restore %d buffers", bufferRestoreData.size());
+    for (auto& restoreData : bufferRestoreData)
+    {
+        if (rhi::NeedRestoreVertexBuffer(restoreData.buffer))
+            rhi::UpdateVertexBuffer(restoreData.buffer, restoreData.data, 0, restoreData.dataSize);
+    }
 }
 
 void Landscape::ReleaseGeometryData()
@@ -202,6 +219,10 @@ void Landscape::ReleaseGeometryData()
     for (rhi::HVertexBuffer handle : vertexBuffers)
         rhi::DeleteVertexBuffer(handle);
     vertexBuffers.clear();
+
+    for (auto& restoreData : bufferRestoreData)
+        SafeDeleteArray(restoreData.data);
+    bufferRestoreData.clear();
 }
 
 void Landscape::SetLods(const Vector4 & lods)
@@ -306,8 +327,12 @@ void Landscape::AllocateGeometryData()
         batch->vertexCount = RENDER_QUAD_WIDTH * RENDER_QUAD_WIDTH;
     }
 
+    rhi::IndexBuffer::Descriptor descr;
+    descr.size = INDEX_ARRAY_COUNT * 2;
+    descr.usage = rhi::USAGE_DYNAMICDRAW;
+    descr.needRestore = false;
     for (auto & handle : indexBuffers.elements)
-        handle = rhi::CreateIndexBuffer(INDEX_ARRAY_COUNT * 2);
+        handle = rhi::CreateIndexBuffer(descr);
 
     currentIndexBuffer = indexBuffers.Next();
 

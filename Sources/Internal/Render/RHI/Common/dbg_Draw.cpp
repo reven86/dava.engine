@@ -271,7 +271,9 @@ DbgDraw::Buffer<Vertex,Prim>::_grow()
 
     for( unsigned i=0; i<countof(_vb); ++i )
     {
-        vb[i] = rhi::CreateVertexBuffer( vb_sz );
+        rhi::VertexBuffer::Descriptor descr = rhi::VertexBuffer::Descriptor(vb_sz);
+        descr.needRestore = false;
+        vb[i] = rhi::CreateVertexBuffer(descr);
 
         if( !vb[i].IsValid() )
         {
@@ -989,7 +991,9 @@ DbgDraw::_init()
 
     // init small-font texture
     {
-        _tex_small_font = rhi::CreateTexture( rhi::Texture::Descriptor(FontTextureSize,FontTextureSize,rhi::TEXTURE_FORMAT_R8G8B8A8) );
+        rhi::Texture::Descriptor descr = rhi::Texture::Descriptor(FontTextureSize, FontTextureSize, rhi::TEXTURE_FORMAT_R8G8B8A8);
+        descr.needRestore = false; //hmm
+        _tex_small_font = rhi::CreateTexture(descr  );
         
         if( _tex_small_font )
         {
@@ -1009,7 +1013,9 @@ DbgDraw::_init()
 
     // init normal-font texture
     {
-        _tex_normal_font = rhi::CreateTexture( rhi::Texture::Descriptor(FontTextureSize,FontTextureSize,rhi::TEXTURE_FORMAT_R8G8B8A8) );
+        rhi::Texture::Descriptor descr = rhi::Texture::Descriptor(FontTextureSize, FontTextureSize, rhi::TEXTURE_FORMAT_R8G8B8A8);
+        descr.needRestore = false; //hmm
+        _tex_normal_font = rhi::CreateTexture(descr );
         
         if( _tex_normal_font )
         {

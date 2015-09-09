@@ -747,12 +747,15 @@ void Texture::RestoreRenderResource()
         {
             if (relativePathname.GetType() == FilePath::PATH_IN_MEMORY)            
                 Logger::Debug("[Texture::Invalidate] - invalidater is null");
+            if (relativePathname.GetType() == FilePath::PATH_EMPTY)
+                Logger::Debug("[Texture::Invalidate] - empty path");
 
             if (texDescriptor->IsCubeMap())
             {
                 for (uint32 i = 0; i < Texture::CUBE_FACE_COUNT; ++i)
                 {
-                    Image *img = Image::CreatePinkPlaceholder(true);
+                    Image *img = Image::Create(width, height, FORMAT_RGBA8888);
+                    img->MakePink(false);
                     img->cubeFaceID = i;
                     img->mipmapLevel = 0;
                     images.push_back(img);
@@ -760,7 +763,9 @@ void Texture::RestoreRenderResource()
             }
             else
             {
-                images.push_back(Image::CreatePinkPlaceholder(true));
+                Image *img = Image::Create(width, height, FORMAT_RGBA8888);
+                img->MakePink(false);
+                images.push_back(img);
             }
         }        
 
