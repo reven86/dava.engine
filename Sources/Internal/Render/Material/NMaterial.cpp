@@ -775,7 +775,6 @@ NMaterial* NMaterial::Clone()
 void NMaterial::Save(KeyedArchive * archive, SerializationContext * serializationContext)
 {
     DataNode::Save(archive, serializationContext);
-	archive->SetUInt32(kSerializationContextVersion, serializationContext->GetVersion());
 
     if (parent)
         archive->SetUInt64("parentMaterialKey", parent->GetNodeID());
@@ -897,6 +896,9 @@ void NMaterial::Load(KeyedArchive * archive, SerializationContext * serializatio
 
             float32 *data = (float32*)ptr;
 
+			if (HasLocalProperty(propName))
+				RemoveProperty(propName);
+
             AddProperty(propName, data, (rhi::ShaderProp::Type)propType, propSize);
         }
     }
@@ -918,7 +920,10 @@ void NMaterial::Load(KeyedArchive * archive, SerializationContext * serializatio
         const Map<String, VariantType*>& flagsMap = archive->GetArchive("flags")->GetArchieveData();
         for (Map<String, VariantType*>::const_iterator it = flagsMap.begin(); it != flagsMap.end(); ++it)
         {
-            AddFlag(FastName(it->first), it->second->AsInt32());
+			if (HasLocalFlag(FastName(it->first)))
+				SetFlag(FastName(it->first), it->second->AsInt32());
+			else 
+				AddFlag(FastName(it->first), it->second->AsInt32());
         }
     }
 }
