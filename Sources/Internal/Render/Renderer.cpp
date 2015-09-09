@@ -82,8 +82,8 @@ void Initialize(rhi::Api _api, const rhi::InitParam & params)
 
 void InitCaps()
 {
-    renderCaps.zeroBaseClipRange = (api == rhi::RHI_DX9) || (api == rhi::RHI_DX11);
-    renderCaps.upperLeftRTOrigin = (api == rhi::RHI_DX9) || (api == rhi::RHI_DX11);
+    renderCaps.zeroBaseClipRange = (api == rhi::RHI_DX9) || (api == rhi::RHI_DX11) || (api == rhi::RHI_METAL);
+    renderCaps.upperLeftRTOrigin = (api == rhi::RHI_DX9) || (api == rhi::RHI_DX11) || (api == rhi::RHI_METAL);
     renderCaps.isCenterPixelMapping = (api == rhi::RHI_DX9) || (api == rhi::RHI_DX11);
 }
 
@@ -100,8 +100,8 @@ void Uninitialize()
 
 void Reset(const rhi::ResetParam & params)
 {
-    framebufferWidth = params.width;
-    framebufferHeight = params.height;
+    framebufferWidth = params.width * params.scaleX;
+    framebufferHeight = params.height * params.scaleY;
 
     rhi::Reset(params);
 }
@@ -166,13 +166,13 @@ void RequestGLScreenShot(ScreenShotCallbackDelegate *_screenShotCallback)
 }
 
 void BeginFrame()
-{
+{    
     DynamicBufferAllocator::BeginFrame();
-    
     RenderCallbacks::ProcessFrame();
+    
 }
 void EndFrame()
-{
+{        
     DynamicBufferAllocator::EndFrame();
     rhi::Present();
 }

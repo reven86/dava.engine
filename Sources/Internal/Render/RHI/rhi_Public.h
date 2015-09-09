@@ -43,6 +43,8 @@ InitParam
 {
     uint32  width;
     uint32  height;
+    float32 scaleX;
+    float32 scaleY;
     void*   window;
     uint32  threadedRenderEnabled:1;
     uint32  threadedRenderFrameCount;
@@ -53,6 +55,8 @@ InitParam
             InitParam()
               : width(0),
                 height(0),
+                scaleX(1.f),
+                scaleY(1.f),
                 window(nullptr),
                 threadedRenderEnabled(false),
                 threadedRenderFrameCount(2),
@@ -66,6 +70,15 @@ ResetParam
 {
     uint32  width;
     uint32  height;
+    float32 scaleX;
+    float32 scaleY;
+
+    ResetParam()
+        : width(0)
+        , height(0)
+        , scaleX(1.f)
+        , scaleY(1.f)
+    {}
 };
 
 
@@ -200,6 +213,7 @@ TextureSetDescriptor
 HTextureSet     AcquireTextureSet( const TextureSetDescriptor& desc );
 HTextureSet     CopyTextureSet( HTextureSet ts );
 void            ReleaseTextureSet(HTextureSet ts, bool forceImmediate = false);
+void            ReplaceTextureInAllTextureSets( HTexture oldHandle, HTexture newHandle );
 
 
 ////////////////////////////////////////////////////////////////////////////////

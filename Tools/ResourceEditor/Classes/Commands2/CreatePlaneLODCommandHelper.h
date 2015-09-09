@@ -27,43 +27,37 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_QT_LAYER_WIN32_H__
-#define __DAVAENGINE_QT_LAYER_WIN32_H__
+#ifndef __CREATE_PLANE_LOD_COOMAND_HELPER_H__
+#define __CREATE_PLANE_LOD_COOMAND_HELPER_H__
 
 #include "DAVAEngine.h"
-#include "Platform/Qt4/QtLayer.h"
+#include "Base/TypeHolders.h"
 
-#if defined(__DAVAENGINE_WIN32__)
-
-namespace DAVA 
+namespace CreatePlaneLODCommandHelper
 {
-class QtLayerWin32: public QtLayer
-{
-public:
-    
-    QtLayerWin32();
-    virtual ~QtLayerWin32();
-    
-    virtual void WidgetCreated();
-    virtual void WidgetDestroyed();
-    
-    virtual void OnSuspend();
-    virtual void OnResume();
-	
-    virtual void AppStarted();
-    virtual void AppFinished();
- 
-	virtual void Resize(int32 width, int32 height);
-	virtual void Move(int32 x, int32 y);
-    virtual void ProcessFrame();
+	struct Request : public DAVA::RefCounter
+	{
+		DAVA::LodComponent* lodComponent = nullptr;
+	    DAVA::RenderBatch* planeBatch = nullptr;
+		DAVA::Image* planeImage = nullptr;
+		DAVA::Texture* targetTexture = nullptr;
+		DAVA::int32 fromLodLayer = 0;
+		DAVA::int32 newLodIndex = 0;
+		DAVA::uint32 textureSize = 0;
+		DAVA::FilePath texturePath;
+	    DAVA::Vector<DAVA::LodComponent::LodDistance> savedDistances;
+		DAVA::Atomic<bool> completed = false;
+		rhi::HTexture depthTexture;
 
-    virtual void LockKeyboardInput(bool locked);
+		Request();
+		~Request();
+		void RegisterRenderCallback();
+		void OnRenderCallback(rhi::HSyncObject object);
+	};
+	using RequestPointer = DAVA::RefPtr<Request>;
 
-	void SetWindow(HINSTANCE hInstance, HWND hWindow, int32 width, int32 height);
-};	
-
+	RequestPointer RequestRenderToTexture(DAVA::LodComponent* lodComponent, DAVA::int32 fromLodLayer, 
+		DAVA::uint32 textureSize, const DAVA::FilePath& texturePath);
 };
 
-#endif //#if defined(__DAVAENGINE_WIN32__)
-
-#endif // __DAVAENGINE_QT_LAYER_WIN32_H__
+#endif // #ifndef __CREATE_PLANE_LOD_COOMAND_H__

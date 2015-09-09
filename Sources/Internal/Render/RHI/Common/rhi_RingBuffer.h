@@ -131,7 +131,7 @@ RingBuffer::Alloc( unsigned cnt, unsigned align )
     uint8*      buf = cur + sz;
     uint8*      p   = cur;
 
-    if( buf > dataPtr + size )
+    if( buf >= dataPtr + size )
     {
         buf = dataPtr + sz;
         p   = dataPtr;

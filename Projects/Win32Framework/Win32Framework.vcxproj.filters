@@ -2127,9 +2127,6 @@
     <ClCompile Include="..\..\Sources\Internal\Math\Spline.cpp">
       <Filter>Internal\Math</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Particles\Particle.cpp">
-      <Filter>Internal\Particles</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Particles\ParticleEmitter.cpp">
       <Filter>Internal\Particles</Filter>
     </ClCompile>

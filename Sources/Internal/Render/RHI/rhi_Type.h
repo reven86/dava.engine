@@ -399,8 +399,8 @@ enum
 LoadAction
 {
     LOADACTION_NONE     = 0,
-    LOADACTION_CLEAR    = 1
-//    LOADACTION_LOAD    = 2
+    LOADACTION_CLEAR    = 1,
+    LOADACTION_LOAD     = 2
 };
 
 enum
@@ -419,11 +419,13 @@ Descriptor
     uint32  size;
     Pool    pool;
     Usage   usage;
+    uint32  needRestore:1;
             
             Descriptor( uint32 sz=0 ) 
               : size(sz),
                 pool(POOL_DEFAULT),
-                usage(USAGE_DEFAULT) 
+                usage(USAGE_DEFAULT),
+                needRestore(true)
             {}
 };
 }
@@ -436,11 +438,13 @@ Descriptor
     uint32  size;
     Pool    pool;
     Usage   usage;
+    uint32  needRestore:1;
             
             Descriptor( uint32 sz=0 ) 
               : size(sz),
                 pool(POOL_DEFAULT),
-                usage(USAGE_DEFAULT) 
+                usage(USAGE_DEFAULT),
+                needRestore(true)
             {}
 };
 }
@@ -459,6 +463,7 @@ Descriptor
     uint32          levelCount;
     uint32          isRenderTarget:1;
     uint32          autoGenMipmaps:1;
+    uint32          needRestore:1;
     
                     Descriptor( uint32 w, uint32 h, TextureFormat fmt )
                       : type(TEXTURE_TYPE_2D),
@@ -467,7 +472,8 @@ Descriptor
                         format(fmt),
                         levelCount(1),
                         isRenderTarget(false),
-                        autoGenMipmaps(false)
+                        autoGenMipmaps(false),
+                        needRestore(true)
                     {}
                     Descriptor()
                       : type(TEXTURE_TYPE_2D),
@@ -476,7 +482,8 @@ Descriptor
                         format(TEXTURE_FORMAT_R8G8B8A8),
                         levelCount(1),
                         isRenderTarget(false),
-                        autoGenMipmaps(false)
+                        autoGenMipmaps(false),
+                        needRestore(true)
                     {}
 
 };
@@ -708,17 +715,15 @@ CullMode
 struct
 Viewport
 {
-    uint32  x;
-    uint32  y;
-    uint32  width;
-    uint32  height;
+    uint32  x = 0;
+    uint32  y = 0;
+    uint32  width = 0;
+    uint32  height = 0;
 
-            Viewport()
-              : x(0),
-                y(0),
-                width(0),
-                height(0)
-            {}
+	Viewport() = default;
+
+	Viewport(uint32 x_, uint32 y_, uint32 w_, uint32 h_ )
+		: x(x_), y(y_), width(w_), height(h_) { }
 };
 
 
@@ -892,7 +897,7 @@ void Trace( const char* format, ... );
 
 #endif
 
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_WIN_UAP__)
 
     #define stricmp _strcmpi
 

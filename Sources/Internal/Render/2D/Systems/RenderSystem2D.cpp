@@ -148,7 +148,10 @@ void RenderSystem2D::BeginFrame()
 
     rhi::RenderPassConfig renderPass2DConfig;
     renderPass2DConfig.priority = PRIORITY_MAIN_2D;
-    renderPass2DConfig.colorBuffer[0].loadAction = rhi::LOADACTION_NONE;
+    renderPass2DConfig.colorBuffer[0].loadAction = rhi::LOADACTION_LOAD;
+    renderPass2DConfig.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
+    renderPass2DConfig.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
+    renderPass2DConfig.depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
     renderPass2DConfig.viewport.x = renderPass2DConfig.viewport.y = 0;
     renderPass2DConfig.viewport.width = Renderer::GetFramebufferWidth();
     renderPass2DConfig.viewport.height = Renderer::GetFramebufferHeight();
@@ -190,6 +193,7 @@ void RenderSystem2D::BeginRenderTargetPass(Texture * target, bool needClear /* =
     renderTargetPassConfig.priority = priority;
     renderTargetPassConfig.viewport.width = target->GetWidth();
     renderTargetPassConfig.viewport.height = target->GetHeight();
+    renderTargetPassConfig.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
     if(needClear)
         renderTargetPassConfig.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
     else
@@ -295,7 +299,9 @@ void RenderSystem2D::IntersectClipRect(const Rect &rect)
     if (currentClip.dx < 0 || currentClip.dy < 0)
     {
         //RHI_COMPLETE - Mikhail please review this
-        Rect screen(0.0f, 0.0f, IsRenderTargetPass() ? renderTargetWidth : VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx, IsRenderTargetPass() ? renderTargetHeight : VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy);
+        Rect screen(0.0f, 0.0f, 
+			IsRenderTargetPass() ? (float32)renderTargetWidth : VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx, 
+			IsRenderTargetPass() ? (float32)renderTargetHeight : VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy);
         Rect res = screen.Intersection(rect);
         if (res.dx == 0)
         {
@@ -628,6 +634,9 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
     case rhi::PRIMITIVE_TRIANGLELIST:
         currentPacket.primitiveCount += batchDesc.indexCount / 3;
         break;
+    case rhi::PRIMITIVE_TRIANGLESTRIP:
+    	currentPacket.primitiveCount += batchDesc.indexCount - 2;
+    	break;
     }
 
     indexIndex += batchDesc.indexCount;
@@ -1451,6 +1460,8 @@ void RenderSystem2D::DrawTexture(rhi::HTextureSet htextureSet, NMaterial *materi
             destRect.dx = (float32)Renderer::GetFramebufferWidth();
             destRect.dy = (float32)Renderer::GetFramebufferHeight();
         }
+        
+        destRect = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(destRect);
     }
 
     spriteTempVertices[0] = spriteTempVertices[4] = destRect.x;//x1

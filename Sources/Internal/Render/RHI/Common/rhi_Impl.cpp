@@ -33,6 +33,8 @@
         #include "../DX9/rhi_DX9.h"
         #include "../DX11/rhi_DX11.h"
         #include "../GLES2/rhi_GLES2.h"
+    #elif defined(__DAVAENGINE_WIN_UAP__)
+        #include "../DX11/rhi_DX11.h"
     #elif defined(__DAVAENGINE_MACOS__)
         #include "../GLES2/rhi_GLES2.h"
     #elif defined(__DAVAENGINE_IPHONE__)
@@ -74,17 +76,19 @@ Initialize( Api api, const InitParam& param )
         case RHI_DX9 :
             dx9_Initialize( param );
             break;
+#endif
 
+#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_WIN_UAP__)
         case RHI_DX11 :
             dx11_Initialize( param );
             break;
 #endif
             
-//#if defined(__DAVAENGINE_WIN32__)  ||  defined(__DAVAENGINE_MACOS__)
+#if !defined(__DAVAENGINE_WIN_UAP__)
         case RHI_GLES2 :
             gles2_Initialize( param );
             break;
-//#endif
+#endif
 
 #if defined(__DAVAENGINE_IPHONE__)
         case RHI_METAL :
@@ -889,16 +893,23 @@ NativeColorRGBA( float red, float green, float blue, float alpha )
     switch( HostApi() )
     {
         case RHI_DX9 :
-        case RHI_DX11 :
-            color = ((uint32)((((a)&0xFF)<<24)|(((r)&0xFF)<<16)|(((g)&0xFF)<<8)|((b)&0xFF)));
+            color = ((uint32)((((a)& 0xFF) << 24) | (((r)& 0xFF) << 16) | (((g)& 0xFF) << 8) | ((b)& 0xFF)));
+            break;
+
+        case RHI_DX11:
+#if defined(__DAVAENGINE_WIN_UAP__)
+            color = ((uint32)((((a)& 0xFF) << 24) | (((b)& 0xFF) << 16) | (((g)& 0xFF) << 8) | ((r)& 0xFF)));
+#else
+            color = ((uint32)((((a)& 0xFF) << 24) | (((r)& 0xFF) << 16) | (((g)& 0xFF) << 8) | ((b)& 0xFF)));
+#endif
             break;
 
         case RHI_GLES2 :
-            color = ((uint32)((((a)&0xFF)<<24)|(((b)&0xFF)<<16)|(((g)&0xFF)<<8)|((r)&0xFF)));
+            color = ((uint32)((((a)& 0xFF) << 24) | (((b)& 0xFF) << 16) | (((g)& 0xFF) << 8) | ((r)& 0xFF)));
             break;
         
         case RHI_METAL :
-            color = ((uint32)((((a)&0xFF)<<24)|(((r)&0xFF)<<16)|(((g)&0xFF)<<8)|((b)&0xFF)));
+            color = ((uint32)((((a)& 0xFF) << 24) | (((b)& 0xFF) << 16) | (((g)& 0xFF) << 8) | ((r)& 0xFF)));
             break;
     }
 

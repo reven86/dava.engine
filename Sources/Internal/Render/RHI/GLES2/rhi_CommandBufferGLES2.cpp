@@ -1201,7 +1201,7 @@ Trace("rhi-gl.exec-queued-cmd\n");
     {
         do_exit = true;
     }
-    if (_Frame.begin()->sync != InvalidHandle)
+    if (_Frame.size() && (_Frame.begin()->sync != InvalidHandle))
     {
         SyncObjectGLES2_t*  sync = SyncObjectPool::Get(_Frame.begin()->sync);
 
@@ -1272,7 +1272,7 @@ Trace("rhi-gl.swap-buffers done\n");
 
     for( SyncObjectPool::Iterator s=SyncObjectPool::Begin(),s_end=SyncObjectPool::End(); s!=s_end; ++s )
     {
-        if (s->is_used && (frame_n - s->frame > 3))        
+        if (s->is_used && (frame_n - s->frame >= 2))        
             s->is_signaled = true;                    
     }
 }

@@ -34,6 +34,7 @@
 #if defined(__DAVAENGINE_WIN_UAP__)
 
 #include <agile.h>
+#include <concrt.h>
 
 #include "Core/Core.h"
 #include "Core/DisplayMode.h"
@@ -99,7 +100,10 @@ private:    // Event handlers
     // Windows state change handlers
     void OnWindowActivationChanged(::Windows::UI::Core::CoreWindow^ sender, ::Windows::UI::Core::WindowActivatedEventArgs^ args);
     void OnWindowVisibilityChanged(::Windows::UI::Core::CoreWindow^ sender, ::Windows::UI::Core::VisibilityChangedEventArgs^ args);
-    void OnWindowSizeChanged(::Windows::UI::Core::CoreWindow^ sender, ::Windows::UI::Core::WindowSizeChangedEventArgs^ args);
+    
+    // Swap chain panel state change handlers
+    void OnSwapChainPanelSizeChanged(Platform::Object^ sender, Windows::UI::Xaml::SizeChangedEventArgs^ e);
+    void OnSwapChainPanelScaleChanged(Windows::UI::Xaml::Controls::SwapChainPanel^ panel, Platform::Object^ args);
 
     // Mouse and touch handlers
     void OnPointerPressed(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args);
@@ -124,20 +128,21 @@ private:
     void SetTitleName();
     void SetDisplayOrientations();
 
-    void InitRender();
-    void ReInitRender();
+    void ResetRender();
 
     void InitCoordinatesSystem();
     void ReInitCoordinatesSystem();
 
     void PrepareScreenSize();
-    void UpdateScreenSize(float32 width, float32 height);
+    void UpdateScreenSize(int32 width, int32 height);
+    void UpdateScreenScale(float32 scaleX, float32 scaleY);
     void SetFullScreen(bool isFullScreenFlag);
     // in units of effective (view) pixels
     void SetPreferredSize(float32 width, float32 height);
     void HideAsyncTaskBar();
-
+    
 private:
+    Concurrency::critical_section criticalSection;
     CorePlatformWinUAP* core;
     Windows::UI::Core::CoreDispatcher^ uiThreadDispatcher = nullptr;
     std::unique_ptr<DispatcherWinUAP> dispatcher = nullptr;
@@ -175,11 +180,12 @@ private:
     bool isLeftButtonPressed = false;
     bool isMiddleButtonPressed = false;
 
-    float64 rawPixelsPerViewPixel = 1.0;
-    int32 viewWidth = DisplayMode::DEFAULT_WIDTH;
-    int32 viewHeight = DisplayMode::DEFAULT_HEIGHT;
-    int32 physicalWidth = static_cast<int32>(viewWidth * rawPixelsPerViewPixel);
-    int32 physicalHeight = static_cast<int32>(viewHeight * rawPixelsPerViewPixel);
+    float32 swapChainScaleX = 1.f;
+    float32 swapChainScaleY = 1.f;
+    int32 swapChainWidth = DisplayMode::DEFAULT_WIDTH;
+    int32 swapChainHeight = DisplayMode::DEFAULT_HEIGHT;
+    int32 physicalWidth = static_cast<int32>(swapChainWidth * swapChainScaleX);
+    int32 physicalHeight = static_cast<int32>(swapChainHeight * swapChainScaleY);
 
     Windows::Graphics::Display::DisplayOrientations displayOrientation = ::Windows::Graphics::Display::DisplayOrientations::None;
 

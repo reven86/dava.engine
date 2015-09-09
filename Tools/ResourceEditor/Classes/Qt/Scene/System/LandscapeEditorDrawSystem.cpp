@@ -43,6 +43,8 @@
 
 #include "CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
 
+#include "Scene/SceneHelper.h"
+
 LandscapeEditorDrawSystem::LandscapeEditorDrawSystem(Scene* scene)
 :	SceneSystem(scene)
 ,	landscapeNode(nullptr)

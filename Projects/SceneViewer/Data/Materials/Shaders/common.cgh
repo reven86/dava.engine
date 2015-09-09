@@ -300,7 +300,7 @@ CalculateVertexFog( FogParam param )
         #if FOG_HALFSPACE_LINEAR
             // view http://www.terathon.com/lengyel/Lengyel-UnifiedFog.pdf
             // to get more clear understanding about this calculations
-            float fogK = step(cameraPosition.z, fogHalfspaceHeight);
+            float fogK = STEP( cameraPosition.z, fogHalfspaceHeight );
             float fogFdotP = viewPointInWorldSpace.z - fogHalfspaceHeight;
             float fogFdotC = cameraPosition.z - fogHalfspaceHeight;
             

@@ -1030,6 +1030,44 @@ Trace("\n\n-------------------------------\nframe %u generated\n",_Frame.back().
 //------------------------------------------------------------------------------
 
 static void
+_RejectAllFrames()
+{
+    for( std::vector<FrameDX9>::iterator f=_Frame.begin(),f_end=_Frame.end(); f!=f_end; ++f )
+    {
+        if (f->sync != InvalidHandle)
+        {
+            SyncObjectDX9_t*    s = SyncObjectPool::Get(f->sync);
+            s->is_signaled = true;
+            s->is_used = true;
+        }
+        for( std::vector<Handle>::iterator p=f->pass.begin(),p_end=f->pass.end(); p!=p_end; ++p )
+        {
+            RenderPassDX9_t*    pp = RenderPassPool::Get( *p );
+            
+            for( std::vector<Handle>::iterator c=pp->cmdBuf.begin(),c_end=pp->cmdBuf.end(); c!=c_end; ++c )
+            {
+                CommandBufferDX9_t* cc = CommandBufferPool::Get( *c );
+                if (cc->sync != InvalidHandle)
+                {
+                    SyncObjectDX9_t*    s = SyncObjectPool::Get(cc->sync);
+                    s->is_signaled = true;
+                    s->is_used = true;
+                }                
+
+                CommandBufferPool::Free( *c ); 
+            }
+
+            RenderPassPool::Free( *p );
+        }
+    }
+
+    _Frame.clear();
+}
+
+
+//------------------------------------------------------------------------------
+
+static void
 _ExecuteQueuedCommands()
 {
 Trace("rhi-dx9.exec-queued-cmd\n");
@@ -1040,7 +1078,7 @@ Trace("rhi-dx9.exec-queued-cmd\n");
     bool                            do_render = true;
 
     if( _ResetPending  ||  NeedRestoreResources() )
-        _Frame.clear();
+        _RejectAllFrames();
 
     _FrameSync.Lock();
     if( _Frame.size() )
@@ -1071,7 +1109,8 @@ Trace("rhi-dx9.exec-queued-cmd\n");
     {
         do_render = false;
     }
-    if (_Frame.begin()->sync != InvalidHandle)
+    
+    if( _Frame.size()  &&  _Frame.begin()->sync != InvalidHandle )
     {
         SyncObjectDX9_t*  sync = SyncObjectPool::Get(_Frame.begin()->sync);
 
@@ -1132,17 +1171,30 @@ Trace("\n\n-------------------------------\nframe %u executed(submitted to GPU)\
 
         if( hr == D3DERR_DEVICENOTRESET )
         {
-            HRESULT hr = _D3D9_Device->Reset( &_DX9_PresentParam );
+            D3DPRESENT_PARAMETERS   param = _DX9_PresentParam;
+            
+            param.BackBufferFormat = (_DX9_PresentParam.Windowed)  ? D3DFMT_UNKNOWN  : D3DFMT_A8B8G8R8;
+            
+            TextureDX9::ReleaseAll();
+            VertexBufferDX9::ReleaseAll();
+            IndexBufferDX9::ReleaseAll();
 
+            hr = _D3D9_Device->Reset( &param );
+
+            Logger::Info( "trying device reset\n");
             if( SUCCEEDED(hr) )
-            {
+            {                
+                Logger::Info( "device reset\n");
+
                 TextureDX9::ReCreateAll();
                 VertexBufferDX9::ReCreateAll();
                 IndexBufferDX9::ReCreateAll();
                 _ResetPending = false;
             }
-
-            _ResetPending = false;
+            else
+            {
+                Logger::Info("device reset failed (%08X) : %s",hr,D3D9ErrorText(hr));
+            }
         }
         else
         {
@@ -1157,9 +1209,9 @@ Trace("\n\n-------------------------------\nframe %u executed(submitted to GPU)\
             Logger::Error( "present() failed:\n%s\n", D3D9ErrorText(hr) );
 
         if( hr == D3DERR_DEVICELOST )
-        {
+        {            
             _ResetPending = true;
-            _Frame.clear();
+            _RejectAllFrames();
         }
     }    
 
@@ -1168,7 +1220,7 @@ Trace("\n\n-------------------------------\nframe %u executed(submitted to GPU)\
 
     for( SyncObjectPool::Iterator s=SyncObjectPool::Begin(),s_end=SyncObjectPool::End(); s!=s_end; ++s )
     {
-        if (s->is_used && ( frame_n - s->frame > 3 ))
+        if (s->is_used && (frame_n - s->frame >= 2))
             s->is_signaled = true;
     }
 }

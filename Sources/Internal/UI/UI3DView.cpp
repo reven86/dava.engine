@@ -103,6 +103,7 @@ void UI3DView::Draw(const UIGeometricData & geometricData)
 	
     const Rect & viewportRect = geometricData.GetUnrotatedRect();
     viewportRc = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(viewportRect);        
+    viewportRc += VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset();
     scene->SetMainPassViewport(viewportRc);
     
     scene->Draw();        
@@ -130,23 +131,6 @@ UIControl* UI3DView::Clone()
     UI3DView* ui3DView = new UI3DView(GetRect());
     ui3DView->CopyDataFrom(this);
     return ui3DView;
-}
-
-void UI3DView::WillBecomeVisible()
-{
-    if (!registeredInUIControlSystem)
-    {
-        registeredInUIControlSystem = true;
-        UIControlSystem::Instance()->UI3DViewAdded();
-    }
-}
-void UI3DView::WillBecomeInvisible()
-{
-    if (registeredInUIControlSystem)
-    {
-        registeredInUIControlSystem = false;
-        UIControlSystem::Instance()->UI3DViewRemoved();
-    }
 }
     
 void UI3DView::Input(UIEvent *currentInput)

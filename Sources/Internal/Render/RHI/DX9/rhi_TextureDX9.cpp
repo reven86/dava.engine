@@ -302,6 +302,7 @@ dx9_Texture_Delete( Handle tex )
     {
         TextureDX9_t* self = TextureDX9Pool::Get( tex );
 
+        self->MarkRestored();
         self->Destroy();        
         TextureDX9Pool::Free( tex );
     }
@@ -555,6 +556,15 @@ SetAsDepthStencil( Handle tex )
     TextureDX9_t*   self = TextureDX9Pool::Get( tex );
     
     DX9_CALL(_D3D9_Device->SetDepthStencilSurface( self->surf9 ),"SetDepthStencilSurface");
+}
+
+void
+ReleaseAll()
+{
+    for( TextureDX9Pool::Iterator t=TextureDX9Pool::Begin(),t_end=TextureDX9Pool::End(); t!=t_end; ++t )
+    {
+        t->Destroy( true );
+    }
 }
 
 void
