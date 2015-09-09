@@ -40,26 +40,61 @@
 #include "UI/MainWindow.h"
 #include "QtTools/DavaGLWidget/DavaGLWidget.h"
 
+#include "Systems/SelectionSystem.h"
+#include "Systems/CanvasSystem.h"
+#include "Systems/CursorSystem.h"
+#include "Systems/HUDSystem.h"
+#include "Systems/TransformSystem.h"
+
+using namespace DAVA;
+
+class RootControl : public UIControl
+{
+public:
+    void SetActiveDocument(Document *doc)
+    {
+        activeDocument = doc;
+    }
+    bool SystemInput(UIEvent *currentInput) override
+    {
+        if (!emulationMode && nullptr != activeDocument)
+        {
+            return activeDocument->OnInput(currentInput);
+        }
+        return UIControl::SystemInput(currentInput);
+    }
+    void SetEmulationMode(bool arg)
+    {
+        emulationMode = arg;
+    }
+    bool GetEmulationMode() const
+    {
+        return emulationMode;
+    }
+private:
+    Document *activeDocument = nullptr;
+    bool emulationMode = false;
+};
+
 Document::Document(PackageNode *_package, QObject *parent)
     : QObject(parent)
+    , rootControl(new RootControl())
+    , scalableControl(new UIControl())
     , package(SafeRetain(_package))
     , commandExecutor(new QtModelPackageCommandExecutor(this))
     , undoStack(new QUndoStack(this))
-    , selectionSystem(this)
-    , canvasSystem(this)
-    , hudSystem(this)
-    , cursorSystem(this)
-    , transformSystem(this)
 {
-    systems << &selectionSystem << &canvasSystem << &hudSystem << &cursorSystem << &transformSystem;
-    inputListeners << &selectionSystem << &hudSystem << &transformSystem;
-    selectionSystem.SelectionWasChanged.Connect(this, &Document::OnSelectionWasChanged);
-    selectionSystem.SelectionWasChanged.Connect(&canvasSystem, &CanvasSystem::OnSelectionWasChanged);
-    selectionSystem.SelectionWasChanged.Connect(&hudSystem, &HUDSystem::OnSelectionWasChanged);
-    selectionSystem.SelectionWasChanged.Connect(&transformSystem, &TransformSystem::OnSelectionWasChanged);
-    hudSystem.AddListener(&cursorSystem);
-    hudSystem.AddListener(&transformSystem);
-    hudSystem.SelectionRectChanged.Connect(&selectionSystem, &SelectionSystem::SelectByRect);
+    rootControl->SetName("rootControl");
+    rootControl->AddControl(scalableControl);
+    scalableControl->SetName("scalableContent");
+    SelectionChanged.Connect(this, &Document::SetSelectedControls);
+
+    systems << new SelectionSystem(this)
+        << new CanvasSystem(this)
+        << new HUDSystem(this)
+        << new CursorSystem(this)
+        << new ::TransformSystem(this);
+
     connect(GetEditorFontSystem(), &EditorFontSystem::UpdateFontPreset, this, &Document::RefreshAllControlProperties);
 }
 
@@ -69,36 +104,30 @@ Document::~Document()
     {
         delete context.second;
     }
-}
-
-using namespace DAVA;
-
-void Document::Detach()
-{
     for (auto &system : systems)
     {
-        system->Detach();
+        delete system;
     }
-    emit SelectedNodesChanged(Set<PackageBaseNode*>(), selectedNodes);
 }
 
-void Document::Attach()
+int Document::GetScale() const
 {
-    for (auto system : systems)
-    {
-        system->Attach();
-    }
-    emit SelectedNodesChanged(selectedNodes, Set<PackageBaseNode*>());
+    return scale;
 }
 
-CanvasSystem* Document::GetCanvasSystem()
+bool Document::IsInEmulationMode() const
 {
-    return &canvasSystem;
+    return emulationMode;
 }
 
-HUDSystem* Document::GetHUDSystem()
+UIControl* Document::GetRootControl()
 {
-    return &hudSystem;
+    return rootControl;
+}
+
+DAVA::UIControl* Document::GetScalableControl()
+{
+    return scalableControl;
 }
 
 const FilePath &Document::GetPackageFilePath() const
@@ -106,19 +135,47 @@ const FilePath &Document::GetPackageFilePath() const
     return package->GetPath();
 }
 
-void Document::RefreshLayout()
+QUndoStack *Document::GetUndoStack()
 {
-    package->RefreshPackageStylesAndLayout(true);
+    return undoStack;
+}
+
+PackageNode *Document::GetPackage()
+{
+    return package;
+}
+
+QtModelPackageCommandExecutor *Document::GetCommandExecutor()
+{
+    return commandExecutor;
 }
 
 WidgetContext* Document::GetContext(QObject* requester) const
 {
     auto iter = contexts.find(requester);
-    if (iter!= contexts.end())
+    if (iter != contexts.end())
     {
         return iter->second;
     }
     return nullptr;
+}
+
+void Document::Deactivate()
+{
+    for (auto &system : systems)
+    {
+        system->Deactivate();
+    }
+    emit SelectedNodesChanged(Set<PackageBaseNode*>(), selectedNodes);
+}
+
+void Document::Activate()
+{
+    for (auto system : systems)
+    {
+        system->Activate();
+    }
+    emit SelectedNodesChanged(selectedNodes, Set<PackageBaseNode*>());
 }
 
 void Document::SetContext(QObject* requester, WidgetContext* widgetContext)
@@ -133,7 +190,7 @@ void Document::SetContext(QObject* requester, WidgetContext* widgetContext)
     contexts.insert(std::pair<QObject*, WidgetContext*>(requester, widgetContext));
 }
 
-void Document::OnSelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected)
+void Document::SetSelectedControls(const SelectedControls &selected, const SelectedControls &deselected)
 {
     Set<PackageBaseNode*> selectedNodes_(selected.begin(), selected.end());
     Set<PackageBaseNode*> deselectedNodes_(deselected.begin(), deselected.end());
@@ -142,7 +199,7 @@ void Document::OnSelectionWasChanged(const SelectedControls &selected, const Sel
 
 bool Document::OnInput(UIEvent *currentInput)
 {
-    QListIterator<InputInterface*> it(inputListeners);
+    QListIterator<BaseSystem*> it(systems);
     it.toBack();
     while (it.hasPrevious())
     {
@@ -152,6 +209,11 @@ bool Document::OnInput(UIEvent *currentInput)
         }
     }
     return false;
+}
+
+void Document::RefreshLayout()
+{
+    package->RefreshPackageStylesAndLayout(true);
 }
 
 void Document::GetControlNodesByPos(DAVA::Vector<ControlNode*> &controlNodes, const DAVA::Vector2& pos) const
@@ -235,6 +297,38 @@ ControlNode* Document::GetControlByMenu(const Vector<ControlNode*> &nodesUnderPo
     return nullptr;
 }
 
+void Document::SetScale(int arg)
+{
+    if (scale != arg)
+    {
+        scale = arg;
+        emit ScaleChanged(scale);
+    }
+}
+
+void Document::ResetScale()
+{
+    SetScale(defaultScale);
+}
+
+void Document::SetEmulationMode(bool arg)
+{
+    if (emulationMode != arg)
+    {
+        emulationMode = arg;
+
+        auto root = static_cast<RootControl*>(rootControl);
+        root->SetEmulationMode(emulationMode);
+        EmulationModeChangedSignal.Emit(std::move(emulationMode));
+        emit ScaleChanged(emulationMode);
+    }
+}
+
+void Document::ClearEmulationMode()
+{
+    SetEmulationMode(emulationByDefault);
+}
+
 void Document::RefreshAllControlProperties()
 {
     package->GetPackageControlsNode()->RefreshControlProperties();
@@ -284,7 +378,7 @@ void Document::SetSelectedNodes(const Set<PackageBaseNode*>& selected, const Set
         }
         if (!selectedControls.empty() || !deselectedControls.empty())
         {
-            selectionSystem.OnSelectionWasChanged(selectedControls, deselectedControls);
+            //selectionSystem.OnSelectionWasChanged(selectedControls, deselectedControls);
         }
         emit SelectedNodesChanged(reallySelected, reallyDeselected);
     }

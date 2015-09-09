@@ -31,23 +31,20 @@
 #define __QUICKED_TRANSFORM_SYSTEM_H__
 
 #include "Systems/BaseSystem.h"
-#include "Systems/Interfaces.h"
 #include "Base/BaseTypes.h"
 #include "Math/Vector.h"
+#include "Document.h"
 
-class Document;
-
-class TransformSystem final : public BaseSystem, public InputInterface, public ControlAreaInterface
+class TransformSystem final : public BaseSystem, public SelectionTracker<SelectedControls>
 {   
 public:
     explicit TransformSystem(Document *parent);
     ~TransformSystem() = default;
 
-    void MouseEnterArea(ControlNode *targetNode, const eArea area) override;
-    void MouseLeaveArea() override;
+    void SetNewArea(const HUDareaInfo &areaInfo);
 
     bool OnInput(DAVA::UIEvent *currentInput) override;
-    void OnSelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected);
+    void SetSelection(const SelectedControls &selected, const SelectedControls &deselected);
 
 private:
     enum ACCUMULATE_OPERATIONS
@@ -70,9 +67,8 @@ private:
 
     void AccumulateOperation(ACCUMULATE_OPERATIONS operation, DAVA::Vector2 &delta);
 
-    eArea activeArea = NO_AREA;
-    ControlNode *activeControl = nullptr;
-    SelectedControls selectedControls;
+    HUDareaInfo::eArea activeArea = HUDareaInfo::NO_AREA;
+    ControlNode *activeControlNode = nullptr;
     DAVA::Vector2 prevPos;
     bool dragRequested = false;
     const DAVA::Array<int, OPERATIONS_COUNT> steps; //to transform with fixed step

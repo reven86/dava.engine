@@ -31,32 +31,31 @@
 #define __QUICKED_CANVAS_SYSTEM_H__
 
 #include "BaseSystem.h"
-#include "Interfaces.h"
 
 #include "Base/ScopedPtr.h"
 #include "UI/UIControl.h"
+#include "SelectionTracker.h"
 
 class Document;
 class PackageBaseNode;
 
-class CanvasSystem final : public BaseSystem
+class CanvasSystem final : public BaseSystem, public SelectionTracker<SelectedControls>
 {
 public:
     CanvasSystem(Document *parent);
     ~CanvasSystem() override = default;
     DAVA::UIControl* GetCanvasControl();
 
-    void AttachToRoot(DAVA::UIControl *root);
-    void Detach() override;
+    void Activate() override;
+    void Deactivate() override;
 
-    void OnSelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected);
+    void SetSelection(const SelectedControls &selected, const SelectedControls &deselected);
 
 private:
     void SetRootControls(const DAVA::Set<PackageBaseNode*> &controls);
     void LayoutCanvas();
 
     DAVA::ScopedPtr<DAVA::UIControl> canvas;
-    SelectedControls selectedControls;
 };
 
 #endif // __QUICKED_CANVAS_SYSTEM_H__

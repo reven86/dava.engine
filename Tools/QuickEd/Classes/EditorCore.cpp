@@ -173,7 +173,7 @@ bool EditorCore::CloseOneDocument(int index)
 {
     DVASSERT(index >= 0);
     DVASSERT(index < documents.size());
-    const Document *document = documents.at(index);
+    Document *document = documents.at(index);
     QUndoStack *undoStack = document->GetUndoStack();
     if (!undoStack->isClean())
     {

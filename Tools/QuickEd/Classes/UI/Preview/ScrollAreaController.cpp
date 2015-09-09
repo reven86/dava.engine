@@ -32,15 +32,10 @@
 
 using namespace DAVA;
 
-ScrollAreaController::ScrollAreaController(UIControl *root_, UIControl *scalableContent_, QObject *parent)
+ScrollAreaController::ScrollAreaController(QObject *parent)
     : QObject(parent)
     , backgroundControl(new UIControl)
-    , rootControl(root_)
-    , scalableContent(scalableContent_)
 {
-    backgroundControl->AddControl(rootControl);
-    rootControl->SetPosition(Vector2(Margin, Margin));
-
     ScopedPtr<UIScreen> davaUIScreen(new UIScreen());
     davaUIScreen->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
     davaUIScreen->GetBackground()->SetColor(Color(0.3f, 0.3f, 0.3f, 1.0f));
@@ -59,25 +54,13 @@ QSize ScrollAreaController::GetViewSize() const
     return viewSize;
 }
 
-int ScrollAreaController::GetScale() const
-{
-    return scale;
-}
-
 QPoint ScrollAreaController::GetPosition() const
 {
     return position;
 }
 
-void ScrollAreaController::UpdateCanvasContentSize()
+void ScrollAreaController::UpdateCanvasContentSize(const Vector2 &contentSize)
 {
-    const auto childs = scalableContent->GetChildren();
-    UIControl* canvas = !childs.empty() ? childs.front() : nullptr;
-    Vector2 contentSize;
-    if (nullptr != canvas)
-    {
-        contentSize = canvas->GetGeometricData().GetAABBox().GetSize();
-    }
     Vector2 marginsSize(Margin * 2, Margin * 2);
     Vector2 tmpSize = contentSize + marginsSize;
     backgroundControl->SetSize(tmpSize);
@@ -95,19 +78,6 @@ void ScrollAreaController::SetViewSize(const QSize& viewSize_)
         UIScreenManager::Instance()->GetScreen()->SetSize(newSize);
         UpdatePosition();
         emit ViewSizeChanged(viewSize_);
-    }
-}
-
-void ScrollAreaController::SetScale(int scale_)
-{
-    if (scale_ != scale)
-    {
-        scale = scale_;
-        double uiScale = scale / 100.0f;
-        Vector2 newScale(uiScale, uiScale);
-        scalableContent->SetScale(newScale);
-        UpdateCanvasContentSize();
-        emit ScaleChanged(scale_);
     }
 }
 

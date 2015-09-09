@@ -44,43 +44,10 @@
 
 using namespace DAVA;
 
-class RootControl : public UIControl
-{
-public:
-    void SetActiveDocument(Document *doc)
-    {
-        activeDocument = doc;
-    }
-    bool SystemInput(UIEvent *currentInput) override
-    {
-        if (!emulationMode && nullptr != activeDocument)
-        {
-            return activeDocument->OnInput(currentInput);
-        }
-        return UIControl::SystemInput(currentInput);
-    }
-    void SetEmulationMode(bool arg)
-    {
-        emulationMode = arg;
-    }
-    bool GetEmulationMode() const
-    {
-        return emulationMode;
-    }
-private:
-    Document *activeDocument = nullptr;
-    bool emulationMode = false;
-};
-
 PreviewWidget::PreviewWidget(QWidget *parent)
     : QWidget(parent)
-    , rootControl(new RootControl())
-    , scalableContent(new UIControl())
-    , scrollAreaController(new ScrollAreaController(rootControl, scalableContent, this))
+    , scrollAreaController(new ScrollAreaController(this))
 {
-    rootControl->SetName("rootControl");
-    rootControl->AddControl(scalableContent);
-    scalableContent->SetName("scalableContent");
     percentages << 10 << 25 << 50 << 75 << 100 << 125
         << 150 << 175 << 200 << 250 << 400 << 800;
     setupUi(this);
@@ -98,7 +65,6 @@ PreviewWidget::PreviewWidget(QWidget *parent)
     }
     connect(scrollAreaController, &ScrollAreaController::ViewSizeChanged, this, &PreviewWidget::UpdateScrollArea);
     connect(scrollAreaController, &ScrollAreaController::CanvasSizeChanged, this, &PreviewWidget::UpdateScrollArea);
-    connect(scrollAreaController, &ScrollAreaController::ScaleChanged, this, &PreviewWidget::UpdateScrollArea);
 
     connect(scaleCombo, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &PreviewWidget::OnScaleByComboIndex);
     connect(scaleCombo->lineEdit(), &QLineEdit::editingFinished, this, &PreviewWidget::OnScaleByComboText);
@@ -114,21 +80,6 @@ PreviewWidget::PreviewWidget(QWidget *parent)
     UpdateScrollArea();
 }
 
-void PreviewWidget::SetEmulationMode(bool emulationMode)
-{
-    auto root = static_cast<RootControl*>(rootControl);
-    root->SetEmulationMode(emulationMode);
-    if (emulationMode)
-    {
-        document->GetHUDSystem()->Detach();
-    }
-    else
-    {
-        UIControl* hudControl = document->GetHUDSystem()->GetHudControl();
-        rootControl->AddControl(hudControl);
-    }
-}
-
 DavaGLWidget *PreviewWidget::GetDavaGLWidget()
 {
     return davaGLWidget;
@@ -137,24 +88,23 @@ DavaGLWidget *PreviewWidget::GetDavaGLWidget()
 void PreviewWidget::OnDocumentChanged(Document *arg)
 {
     document = arg;
-    auto root = static_cast<RootControl*>(rootControl);
     if (nullptr != document)
     {
-        document->GetCanvasSystem()->AttachToRoot(scalableContent);
+        /*//!scalableContent->AddControl(document->GetCanvasSystem()->GetCanvasControl());
+        document->GetCanvasSystem()->OnSelectionWasChanged(SelectedControls(), SelectedControls());
         if (!root->GetEmulationMode())
         {
             UIControl* hudControl = document->GetHUDSystem()->GetHudControl();
             DVASSERT(nullptr != hudControl);
             rootControl->AddControl(hudControl);
         }
-        scrollAreaController->UpdateCanvasContentSize();
+        scrollAreaController->UpdateCanvasContentSize();*/
     }
-    root->SetActiveDocument(document);
 }
 
 void PreviewWidget::OnSelectedNodesChanged(const Set<PackageBaseNode*> &selected, const Set<PackageBaseNode*> &deselected)
 {
-    scrollAreaController->UpdateCanvasContentSize();
+    //!scrollAreaController->UpdateCanvasContentSize();
 }
 
 void PreviewWidget::OnMonitorChanged()
@@ -195,7 +145,7 @@ void PreviewWidget::OnScaleByComboIndex(int index)
     DVASSERT(index >= 0);
     auto dpr = static_cast<int>( davaGLWidget->GetGLWindow()->devicePixelRatio() );
     auto scaleValue = percentages.at(index) * dpr;
-    scrollAreaController->SetScale(scaleValue);
+//!    scrollAreaController->SetScale(scaleValue);
 }
 
 void PreviewWidget::OnScaleByComboText()

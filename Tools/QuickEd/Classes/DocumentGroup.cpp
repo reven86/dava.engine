@@ -82,7 +82,7 @@ void DocumentGroup::SetActiveDocument(Document* document)
     }
     if (nullptr != active) 
     {
-        active->Detach();
+        active->Deactivate();
         disconnect(active, &Document::SelectedNodesChanged, this, &DocumentGroup::SelectedNodesChanged);
     }
     
@@ -100,7 +100,7 @@ void DocumentGroup::SetActiveDocument(Document* document)
     emit ActiveDocumentChanged(document);
     if (nullptr != active)
     {
-        active->Attach();
+        active->Activate();
     }
 }
 

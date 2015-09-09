@@ -45,13 +45,13 @@ namespace
     const Vector2 ROTATE_CONTROL_SIZE(20.0f, 20.0f);
 }
 
-ControlContainer::ControlContainer(const ControlAreaInterface::eArea area_)
+ControlContainer::ControlContainer(const HUDareaInfo::eArea area_)
     : UIControl()
     , area(area_)
 {
 }
 
-ControlAreaInterface::eArea ControlContainer::GetArea() const
+HUDareaInfo::eArea ControlContainer::GetArea() const
 {
     return area;
 }
@@ -60,7 +60,7 @@ class HUDContainer : public ControlContainer
 {
 public:
     explicit HUDContainer(UIControl *container)
-        : ControlContainer(ControlAreaInterface::NO_AREA)
+        : ControlContainer(HUDareaInfo::NO_AREA)
         , control(container)
     {
     }
@@ -94,7 +94,7 @@ class FrameControl : public ControlContainer
 {
 public:
     explicit FrameControl()
-        : ControlContainer(ControlAreaInterface::FRAME_AREA)
+        : ControlContainer(HUDareaInfo::FRAME_AREA)
     {
         SetDebugDraw(true);
         SetDebugDrawColor(Color(0.0f, 0.0f, 1.0f, 1.0f));
@@ -109,7 +109,7 @@ private:
 class FrameRectControl : public ControlContainer
 {
 public:
-    explicit FrameRectControl(const ControlAreaInterface::eArea area_)
+    explicit FrameRectControl(const HUDareaInfo::eArea area_)
         : ControlContainer(area_)
     {
         SetDebugDraw(true);
@@ -129,14 +129,14 @@ private:
         Vector2 retVal = rect.GetPosition();
         switch (area)
         {
-        case ControlAreaInterface::TOP_LEFT_AREA: return retVal;
-        case ControlAreaInterface::TOP_CENTER_AREA: return retVal + Vector2(rect.dx / 2.0f, 0.0f);
-        case ControlAreaInterface::TOP_RIGHT_AREA: return retVal + Vector2(rect.dx, 0.0f);
-        case ControlAreaInterface::CENTER_LEFT_AREA: return retVal + Vector2(0, rect.dy / 2.0f);
-        case ControlAreaInterface::CENTER_RIGHT_AREA: return retVal + Vector2(rect.dx, rect.dy / 2.0f);
-        case ControlAreaInterface::BOTTOM_LEFT_AREA: return retVal + Vector2(0, rect.dy);
-        case ControlAreaInterface::BOTTOM_CENTER_AREA: return retVal + Vector2(rect.dx / 2.0f, rect.dy);
-        case ControlAreaInterface::BOTTOM_RIGHT_AREA: return retVal + Vector2(rect.dx, rect.dy);
+        case HUDareaInfo::TOP_LEFT_AREA: return retVal;
+        case HUDareaInfo::TOP_CENTER_AREA: return retVal + Vector2(rect.dx / 2.0f, 0.0f);
+        case HUDareaInfo::TOP_RIGHT_AREA: return retVal + Vector2(rect.dx, 0.0f);
+        case HUDareaInfo::CENTER_LEFT_AREA: return retVal + Vector2(0, rect.dy / 2.0f);
+        case HUDareaInfo::CENTER_RIGHT_AREA: return retVal + Vector2(rect.dx, rect.dy / 2.0f);
+        case HUDareaInfo::BOTTOM_LEFT_AREA: return retVal + Vector2(0, rect.dy);
+        case HUDareaInfo::BOTTOM_CENTER_AREA: return retVal + Vector2(rect.dx / 2.0f, rect.dy);
+        case HUDareaInfo::BOTTOM_RIGHT_AREA: return retVal + Vector2(rect.dx, rect.dy);
         default: DVASSERT_MSG(false, "what are you doing here?!"); return Vector2(0.0f, 0.0f);
         }
     }
@@ -146,7 +146,7 @@ class PivotPointControl : public ControlContainer
 {
 public:
     explicit PivotPointControl()
-        : ControlContainer(ControlAreaInterface::PIVOT_POINT_AREA)
+        : ControlContainer(HUDareaInfo::PIVOT_POINT_AREA)
     {
         SetDebugDraw(true);
         SetDebugDrawColor(Color(1.0f, 0.0f, 0.0f, 1.f));
@@ -165,7 +165,7 @@ class RotateControl : public ControlContainer
 {
 public:
     explicit RotateControl()
-        : ControlContainer(ControlAreaInterface::ROTATE_AREA)
+        : ControlContainer(HUDareaInfo::ROTATE_AREA)
     {
         SetDebugDraw(true);
         SetDebugDrawColor(Color(1.0f, 1.0f, 0.0f, 1.0f));
@@ -189,21 +189,25 @@ HUDSystem::HUDSystem(Document *document_)
     selectionRectControl->SetDebugDrawColor(Color(1.0f, 1.0f, 0.0f, 1.0f));
     hudControl->AddControl(selectionRectControl);
     hudControl->SetName("hud");
+    document->SelectionChanged.Connect(this, &HUDSystem::SetSelection);
 }
 
-UIControl* HUDSystem::GetHudControl()
+void HUDSystem::Activate()
 {
-    return hudControl.get();
+    if (!document->IsInEmulationMode())
+    {
+        document->GetRootControl()->AddControl(hudControl);
+    }
 }
 
-void HUDSystem::Detach()
+void HUDSystem::Deactivate()
 {
     hudControl->RemoveFromParent();
     canDrawRect = false;
     selectionRectControl->SetSize(Vector2(0.0f, 0.0f));
 }
 
-void HUDSystem::OnSelectionWasChanged(const SelectedControls& selected, const SelectedControls& deselected)
+void HUDSystem::SetSelection(const SelectedControls& selected, const SelectedControls& deselected)
 {
     for (auto control : deselected)
     {
@@ -234,7 +238,7 @@ bool HUDSystem::OnInput(UIEvent *currentInput)
             Vector2 point(currentInput->point);
             Vector2 size(point - pressedPoint);
             selectionRectControl->SetAbsoluteRect(Rect(pressedPoint, size));
-            SelectionRectChanged.Emit(selectionRectControl->GetAbsoluteRect());
+            document->SelectionRectChanged.Emit(selectionRectControl->GetAbsoluteRect());
         }
         return canDrawRect;
     case UIEvent::PHASE_ENDED:
@@ -250,42 +254,26 @@ bool HUDSystem::OnInput(UIEvent *currentInput)
     return false;
 }
 
-void HUDSystem::AddListener(ControlAreaInterface *listener)
+void HUDSystem::OnEmulationModeChanged(bool emulationMode)
 {
-    auto it = std::find(listeners.begin(), listeners.end(), listener);
-    if (it == listeners.end())
+    if (emulationMode)
     {
-        listeners.push_back(listener);
+        document->GetRootControl()->RemoveControl(hudControl);
     }
     else
     {
-        DVASSERT_MSG(false, "listener has already attached");
-    }
-}
-
-void HUDSystem::RemoveListener(ControlAreaInterface *listener)
-{
-    auto it = std::find(listeners.begin(), listeners.end(), listener);
-    if (it != listeners.end())
-    {
-        listeners.erase(it);
-    }
-    else
-    {
-        DVASSERT_MSG(false, "listener was not attached");
+        document->GetRootControl()->AddControl(hudControl);
     }
 }
 
 void HUDSystem::ProcessCursor(const Vector2& pos)
 {
-    ControlNode *node = nullptr;
-    ControlAreaInterface::eArea area = ControlAreaInterface::NO_AREA;
-    GetControlArea(node, area, pos);
-    SetNewArea(node, area);
+    SetNewArea(GetControlArea(pos));
 }
 
-void HUDSystem::GetControlArea(ControlNode*& node, ControlAreaInterface::eArea& area, const Vector2 &pos)
+HUDareaInfo HUDSystem::GetControlArea(const Vector2 &pos)
 {
+    HUDareaInfo areaInfo;
     for (const auto &iter : hudMap)
     {
         auto &hud = iter.second;
@@ -294,39 +282,24 @@ void HUDSystem::GetControlArea(ControlNode*& node, ControlAreaInterface::eArea& 
             if (hudControl->IsPointInside(pos))
             {
                 auto container = hudControl.get();
-                node = hud.node;
-                area = container->GetArea();
-                DVASSERT_MSG(area != ControlAreaInterface::NO_AREA && node != nullptr
+                areaInfo.owner = hud.node;
+                areaInfo.area = container->GetArea();
+                DVASSERT_MSG(areaInfo.area != HUDareaInfo::NO_AREA && areaInfo.owner != nullptr
                              , "no control node for area");
-                return;
+                return areaInfo;
             }
         }
     }
-    node = nullptr;
-    area = ControlAreaInterface::NO_AREA;
-    return;
+    return areaInfo;
 }
 
-void HUDSystem::SetNewArea(ControlNode* node, const ControlAreaInterface::eArea area)
+void HUDSystem::SetNewArea(const HUDareaInfo &areaInfo)
 {
-    if (activeControl != node || activeArea != area)
+    if (activeAreaInfo.area != areaInfo.area
+        && activeAreaInfo.owner != activeAreaInfo.owner)
     {
-        activeControl = node;
-        activeArea = area;
-        if (area != ControlAreaInterface::NO_AREA)
-        {
-            for (auto listener : listeners)
-            {
-                listener->MouseEnterArea(node, area);
-            }
-        }
-        else
-        {
-            for (auto listener : listeners)
-            {
-                listener->MouseLeaveArea();
-            }
-        }
+        activeAreaInfo = areaInfo;
+        document->ActiveAreaChanged.Emit(activeAreaInfo);
     }
 }
 
@@ -337,9 +310,9 @@ HUDSystem::HUD::HUD(ControlNode *node_, UIControl* hudControl)
 {
     hudControls.emplace_back(new PivotPointControl);
     hudControls.emplace_back(new RotateControl);
-    for (int i = ControlAreaInterface::TOP_LEFT_AREA; i < ControlAreaInterface::CORNERS_COUNT; ++i)
+    for (int i = HUDareaInfo::TOP_LEFT_AREA; i < HUDareaInfo::CORNERS_COUNT; ++i)
     {
-        ControlAreaInterface::eArea area = static_cast<ControlAreaInterface::eArea>(i);
+        HUDareaInfo::eArea area = static_cast<HUDareaInfo::eArea>(i);
         hudControls.emplace_back(new FrameRectControl(area));
     }
     hudControls.emplace_back(new FrameControl);

@@ -31,23 +31,23 @@
 #define __QUICKED_CURSOR_SYSTEM_H__
 
 #include "Systems/BaseSystem.h"
-#include "Systems/Interfaces.h"
-#include <QCursor>
+#include "Document.h"
 #include <QMap>
+#include <QPixmap>
+#include <QString>
 
-class CursorSystem final : public BaseSystem, public ControlAreaInterface
+class CursorSystem final : public BaseSystem
 {   
 public:
     explicit CursorSystem(Document *doc);
     ~CursorSystem() override = default;
 
-    void Detach() override;
+    void Deactivate() override;
 
-    void MouseEnterArea(ControlNode *targetNode, const eArea area) override;
-    void MouseLeaveArea() override;
+    void SetActiveArea(const HUDareaInfo &areaInfo);
 
 private:
-    QPixmap CreatePixmapForArea(float angle, const eArea area) const;
+    QPixmap CreatePixmapForArea(float angle, const HUDareaInfo::eArea area) const;
     QPixmap CreatePixmap(const QString &address) const;
 
     static QMap<QString, QPixmap> cursorpixes;

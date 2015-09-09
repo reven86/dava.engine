@@ -289,7 +289,7 @@ void MainWindow::InitEmulationMode()
     QWidget *wrapper = new QWidget();
     wrapper->setLayout(layout);
     toolBarPlugins->addWidget(wrapper);
-    connect(emulationBox, &QCheckBox::stateChanged, this, &MainWindow::OnEmulationModeChanged);
+    //!connect(emulationBox, &QCheckBox::stateChanged, this, &MainWindow::OnEmulationModeChanged);
 }
 
 void MainWindow::InitMenu()
@@ -513,11 +513,6 @@ void MainWindow::OnPixelizationStateChanged()
 void MainWindow::OnRtlChanged(int arg)
 {
     emit RtlChanged(arg == Qt::Checked);
-}
-
-void MainWindow::OnEmulationModeChanged(int arg)
-{
-    previewWidget->SetEmulationMode(arg == Qt::Checked);
 }
 
 void MainWindow::OnGlobalClassesChanged(const QString &str)

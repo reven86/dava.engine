@@ -32,6 +32,7 @@
 #include "Systems/TransformSystem.h"
 #include "Document.h"
 #include "UI/UIEvent.h"
+#include "UI/UIControl.h"
 #include "Input/KeyboardDevice.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/ControlProperties/RootProperty.h"
@@ -42,7 +43,7 @@ using namespace DAVA;
 
 namespace
 {
-    const Array<Array<int, Vector2::AXIS_COUNT>, ControlAreaInterface::CORNERS_COUNT> cornersDirection = 
+    const Array<Array<int, Vector2::AXIS_COUNT>, HUDareaInfo::CORNERS_COUNT> cornersDirection = 
     { {
         {{ -1, -1 }}, // TOP_LEFT_AREA
         {{ 0, -1 }}, // TOP_CENTER_AREA
@@ -57,21 +58,16 @@ namespace
 
 TransformSystem::TransformSystem(Document *parent)
     : BaseSystem(parent)
-    , steps({ { 10, 20, 20 } }) //10 for rotate and 20 for move/resize
+    , steps({ { 10, 20, 20 } }) //10 grad for rotate and 20 pix for move/resize
 {
     accumulates.fill({ { 0.0f, 0.0f } });
+    document->ActiveAreaChanged.Connect(this, &TransformSystem::SetNewArea);
 }
 
-void TransformSystem::MouseEnterArea(ControlNode *targetNode, const eArea area)
+void TransformSystem::SetNewArea(const HUDareaInfo& areaInfo)
 {
-    activeControl = targetNode;
-    activeArea = area;
-}
-
-void TransformSystem::MouseLeaveArea()
-{
-    activeControl = nullptr;
-    activeArea = NO_AREA;
+    activeArea = areaInfo.area;
+    activeControlNode = areaInfo.owner;
 }
 
 bool TransformSystem::OnInput(UIEvent* currentInput)
@@ -83,7 +79,7 @@ bool TransformSystem::OnInput(UIEvent* currentInput)
 
         case UIEvent::PHASE_BEGAN:
             prevPos = currentInput->point;
-            return activeArea != NO_AREA;
+            return activeArea != HUDareaInfo::NO_AREA;
 
         case UIEvent::PHASE_DRAG:
         {
@@ -105,21 +101,14 @@ bool TransformSystem::OnInput(UIEvent* currentInput)
     }
 }
 
-void TransformSystem::OnSelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected)
+void TransformSystem::SetSelection(const SelectedControls &selected, const SelectedControls &deselected)
 {
-    for(const auto &controlNode : deselected)
-    {
-        selectedControls.erase(controlNode);
-    }
-    for(const auto &controlNode : selected)
-    {
-        selectedControls.insert(controlNode);
-    }
+    MergeSelection(selected, deselected);
 }
 
 bool TransformSystem::ProcessKey(const int32 key)
 {
-    if(!selectedControls.empty())
+    if(!selectedItems.empty())
     {
         switch(key)
         {
@@ -144,54 +133,54 @@ bool TransformSystem::ProcessKey(const int32 key)
 
 bool TransformSystem::ProcessDrag(const Vector2 &pos)
 {
-    if(activeArea == NO_AREA)
+    if(activeArea == HUDareaInfo::NO_AREA)
     {
         return false;
     }
 
     dragRequested = true;
     const auto &keyBoard = InputSystem::Instance()->GetKeyboard();
-    auto gd =  activeControl->GetControl()->GetGeometricData();
+    auto gd = activeControlNode->GetControl()->GetGeometricData();
 
     switch(activeArea)
     {
-        case FRAME_AREA:
+        case HUDareaInfo::FRAME_AREA:
             MoveControl(pos);
             return true;
-        case TOP_LEFT_AREA:
-        case TOP_CENTER_AREA:
-        case TOP_RIGHT_AREA:
-        case CENTER_LEFT_AREA:
-        case CENTER_RIGHT_AREA:
-        case BOTTOM_LEFT_AREA:
-        case BOTTOM_CENTER_AREA:
-        case BOTTOM_RIGHT_AREA:
+        case HUDareaInfo::TOP_LEFT_AREA:
+        case HUDareaInfo::TOP_CENTER_AREA:
+        case HUDareaInfo::TOP_RIGHT_AREA:
+        case HUDareaInfo::CENTER_LEFT_AREA:
+        case HUDareaInfo::CENTER_RIGHT_AREA:
+        case HUDareaInfo::BOTTOM_LEFT_AREA:
+        case HUDareaInfo::BOTTOM_CENTER_AREA:
+        case HUDareaInfo::BOTTOM_RIGHT_AREA:
         {
             bool withPivot = keyBoard.IsKeyPressed(DVKEY_ALT);
             bool rateably = keyBoard.IsKeyPressed(DVKEY_SHIFT);
             ResizeControl(pos, withPivot, rateably);
         }
         return true;
-        case PIVOT_POINT_AREA:
+        case HUDareaInfo::PIVOT_POINT_AREA:
         {
-            auto control = activeControl->GetControl();
+            auto control = activeControlNode->GetControl();
             Vector2 delta = pos - prevPos;
             DVASSERT(gd.scale.x != 0.0f && gd.scale.y != 0.0f);
             Vector2 scaledDelta = delta / gd.scale;
             //position calculates in absolute coordinates
-            AdjustProperty(activeControl, "Position", scaledDelta);
+            AdjustProperty(activeControlNode, "Position", scaledDelta);
             //pivot point calculate in rotate coordinates
             Vector2 angeledDelta(scaledDelta.x * gd.cosA + scaledDelta.y * gd.sinA,
                         scaledDelta.x * -gd.sinA + scaledDelta.y * gd.cosA);
             const Vector2 &size = control->GetSize();
             DVASSERT(size.x != 0.0f && size.y != 0.0f);
             Vector2 pivot(angeledDelta / size);
-            AdjustProperty(activeControl, "Pivot", pivot);
+            AdjustProperty(activeControlNode, "Pivot", pivot);
         }
         return true;
-        case ROTATE_AREA:
+        case HUDareaInfo::ROTATE_AREA:
         {
-            auto control = activeControl->GetControl();
+            auto control = activeControlNode->GetControl();
             const Rect &ur = gd.GetUnrotatedRect();
             Vector2 pivotPoint = ur.GetPosition() + ur.GetSize() * control->GetPivot();
             Vector2 rotatePoint = pivotPoint;
@@ -209,7 +198,7 @@ bool TransformSystem::ProcessDrag(const Vector2 &pos)
             {
                 angle = round(angle);
             }
-            AdjustProperty(activeControl, "Angle", angle);
+            AdjustProperty(activeControlNode, "Angle", angle);
         }
         return true;
         default:
@@ -219,7 +208,7 @@ bool TransformSystem::ProcessDrag(const Vector2 &pos)
 
 void TransformSystem::MoveAllSelectedControls(const Vector2 &delta)
 {
-    for( auto &controlNode : selectedControls)
+    for( auto &controlNode : selectedItems)
     {
         if(controlNode->IsEditingSupported())
         {
@@ -231,19 +220,19 @@ void TransformSystem::MoveAllSelectedControls(const Vector2 &delta)
 void TransformSystem::MoveControl(const Vector2& pos)
 {
     Vector2 delta = pos - prevPos;
-    auto gd =  activeControl->GetControl()->GetGeometricData();
+    auto gd =  activeControlNode->GetControl()->GetGeometricData();
     DVASSERT(gd.scale.x != 0.0f && gd.scale.y != 0.0f);
     Vector2 realDelta = delta / gd.scale;
     if (InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_SHIFT))
     {
         AccumulateOperation(MOVE_OPERATION, realDelta);
     }
-    AdjustProperty(activeControl, "Position", realDelta);
+    AdjustProperty(activeControlNode, "Position", realDelta);
 }
 
 void TransformSystem::ResizeControl(const Vector2& pos, bool withPivot, bool rateably)
 {
-    DVASSERT(activeArea != NO_AREA);
+    DVASSERT(activeArea != HUDareaInfo::NO_AREA);
     Vector2 delta = pos - prevPos;
     if(delta.x == 0.0f && delta.y == 0.0f)
     {
@@ -252,7 +241,7 @@ void TransformSystem::ResizeControl(const Vector2& pos, bool withPivot, bool rat
     const auto invertX = cornersDirection.at(activeArea)[Vector2::AXIS_X];
     const auto invertY = cornersDirection.at(activeArea)[Vector2::AXIS_Y];
 
-    auto gd = activeControl->GetControl()->GetGeometricData();
+    auto gd = activeControlNode->GetControl()->GetGeometricData();
     Vector2 angeledDelta(delta.x * cosf(gd.angle) + delta.y * sinf(gd.angle),
                          delta.x * -sinf(gd.angle) + delta.y * cosf(gd.angle)); //rotate delta
      //scale rotated delta
@@ -273,7 +262,7 @@ void TransformSystem::ResizeControl(const Vector2& pos, bool withPivot, bool rat
         deltaPosition.y = 0.0f;
     }
 
-    auto pivotProp = activeControl->GetRootProperty()->GetPropertyByName("Pivot");
+    auto pivotProp = activeControlNode->GetRootProperty()->GetPropertyByName("Pivot");
     DVASSERT(nullptr != pivotProp);
     Vector2 pivot = pivotProp->GetValue().AsVector2();
 
@@ -317,7 +306,7 @@ void TransformSystem::ResizeControl(const Vector2& pos, bool withPivot, bool rat
             }
         }
         //calculate proportion of control
-        const Vector2 &size = activeControl->GetControl()->GetSize();
+        const Vector2 &size = activeControlNode->GetControl()->GetSize();
         float proportion = size.y != 0.0f  ? size.x / size.y : 0.0f;
         if (proportion != 0.0f)
         {
@@ -361,9 +350,9 @@ void TransformSystem::ResizeControl(const Vector2& pos, bool withPivot, bool rat
     Vector2 rotatedPosition;
     rotatedPosition.x = deltaPosition.x * cosf(-gd.angle) + deltaPosition.y * sinf(-gd.angle);
     rotatedPosition.y = deltaPosition.x * -sinf(-gd.angle) + deltaPosition.y * cosf(-gd.angle);
-    AdjustProperty(activeControl, "Position", rotatedPosition);
+    AdjustProperty(activeControlNode, "Position", rotatedPosition);
 
-    AdjustProperty(activeControl, "Size", deltaSize);
+    AdjustProperty(activeControlNode, "Size", deltaSize);
 }
 
 template <typename T>

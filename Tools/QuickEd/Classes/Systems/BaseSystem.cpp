@@ -34,12 +34,17 @@ BaseSystem::BaseSystem(Document *parent)
     
 }
 
-void BaseSystem::Attach()
+void BaseSystem::Activate()
 {
     
 }
 
-void BaseSystem::Detach()
+void BaseSystem::Deactivate()
 {
     
+}
+
+bool BaseSystem::OnInput(DAVA::UIEvent* /*currentInput*/)
+{
+    return false;
 }

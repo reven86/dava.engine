@@ -30,60 +30,48 @@
 #ifndef __QUICKED_HUD_SYSTEM_H__
 #define __QUICKED_HUD_SYSTEM_H__
 
-#include "Interfaces.h"
 #include "Base/ScopedPtr.h"
 #include "Math/Vector.h"
 #include "Math/Rect.h"
 #include "UI/UIControl.h"
 #include "Systems/BaseSystem.h"
-#include "Functional/Signal.h"
-
-class Document;
+#include "Document.h"
 
 class ControlContainer : public DAVA::UIControl
 {
 public:
-    explicit ControlContainer(const ControlAreaInterface::eArea area);
+    explicit ControlContainer(const HUDareaInfo::eArea area);
 
-    ControlAreaInterface::eArea GetArea() const;
+    HUDareaInfo::eArea GetArea() const;
     virtual void InitFromGD(const DAVA::UIGeometricData &gd_) = 0;
 
 protected:
-    const ControlAreaInterface::eArea area = ControlAreaInterface::NO_AREA;
+    const HUDareaInfo::eArea area = HUDareaInfo::NO_AREA;
 };
 
-class HUDSystem final : public BaseSystem, public InputInterface
+class HUDSystem final : public BaseSystem
 {
 public:
     HUDSystem(Document *document);
     ~HUDSystem() = default;
 
-    DAVA::UIControl *GetHudControl();
+    void Activate() override;
+    void Deactivate() override;
 
-    void Detach() override;
-
-    void OnSelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected);
+    void SetSelection(const SelectedControls &selected, const SelectedControls &deselected);
     bool OnInput(DAVA::UIEvent *currentInput) override;
-
-    void AddListener(ControlAreaInterface *listener);
-    void RemoveListener(ControlAreaInterface *listener);
-
-    DAVA::Signal<const DAVA::Rect &/*selectionRectControl*/> SelectionRectChanged;
+    void OnEmulationModeChanged(bool emulationMode);
 private:
     void ProcessCursor(const DAVA::Vector2& pos);
-    void GetControlArea(ControlNode *&node, ControlAreaInterface::eArea &area, const DAVA::Vector2 &pos);
-    void SetNewArea(ControlNode* node, const ControlAreaInterface::eArea area);
+    HUDareaInfo GetControlArea(const DAVA::Vector2 &pos);
+    void SetNewArea(const HUDareaInfo& hudAreaInfo);
 
-    ControlAreaInterface::eArea activeArea = ControlAreaInterface::NO_AREA;
-    ControlNode *activeControl = nullptr;
+    HUDareaInfo activeAreaInfo;
 
     DAVA::ScopedPtr<DAVA::UIControl> hudControl;
 
     DAVA::Vector2 pressedPoint; //corner of selection rect
     bool canDrawRect = false; //selection rect state
-
-    DAVA::List<ControlAreaInterface*> listeners;
-
     struct HUD
     {
         HUD(ControlNode *node, DAVA::UIControl *hudControl);

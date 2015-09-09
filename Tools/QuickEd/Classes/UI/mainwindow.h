@@ -107,7 +107,6 @@ private slots:
     void OnPixelizationStateChanged();
     
     void OnRtlChanged(int arg);
-    void OnEmulationModeChanged(int arg);
     void OnGlobalClassesChanged(const QString &str);
 private:
     void InitLanguageBox();

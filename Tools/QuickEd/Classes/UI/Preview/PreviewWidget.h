@@ -51,7 +51,6 @@ public:
     explicit PreviewWidget(QWidget *parent = nullptr);
     ~PreviewWidget() = default;
     DavaGLWidget *GetDavaGLWidget();
-    void SetEmulationMode(bool emulationMode);
     
 public slots:
     void OnDocumentChanged(Document *document);
@@ -76,8 +75,6 @@ private slots:
 private:
     void OnScaleByZoom(int scaleDelta); 
 
-    DAVA::UIControl *rootControl = nullptr;
-    DAVA::UIControl *scalableContent = nullptr;
     Document *document = nullptr;
     DavaGLWidget *davaGLWidget = nullptr;
     ScrollAreaController *scrollAreaController = nullptr;

@@ -27,49 +27,44 @@
 =====================================================================================*/
 
 
-#ifndef __QUICKED_INTERFACES_H__
-#define __QUICKED_INTERFACES_H__
+#ifndef __QUICKED_SELECTION_TRACKER_H__
+#define __QUICKED_SELECTION_TRACKER_H__
 
 #include "Base/BaseTypes.h"
 
-namespace DAVA{
-    class UIEvent;
-}
-
+class PackageBaseNode;
 class ControlNode;
 
-class InputInterface
-{
-public:
-    virtual bool OnInput(DAVA::UIEvent *currentInput) = 0;
-};
-
+using SelectedNodes = DAVA::Set < PackageBaseNode* > ;
 using SelectedControls = DAVA::Set < ControlNode* >;
 
-class ControlAreaInterface
+template <typename SelectionType>
+class SelectionTracker
 {
 public:
-
-    enum eArea
+    void GetNotExistedItems(const SelectionType &in, SelectionType &out)
     {
-        TOP_LEFT_AREA,
-        TOP_CENTER_AREA,
-        TOP_RIGHT_AREA,
-        CENTER_LEFT_AREA,
-        CENTER_RIGHT_AREA,
-        BOTTOM_LEFT_AREA,
-        BOTTOM_CENTER_AREA,
-        BOTTOM_RIGHT_AREA,
-        FRAME_AREA,
-        PIVOT_POINT_AREA,
-        ROTATE_AREA,
-        NO_AREA,
-        CORNERS_COUNT = FRAME_AREA - TOP_LEFT_AREA,
-        AREAS_COUNT = NO_AREA - TOP_LEFT_AREA
-    };
+        std::set_difference(in.begin(), in.end(), selectedItems.begin(), selectedItems.end(), std::inserter(out, out.end()));
+    }
 
-    virtual void MouseEnterArea(ControlNode *targetNode, const eArea area) = 0;
-    virtual void MouseLeaveArea() = 0;
+    void GetOnlyExistedItems(const SelectionType &in, SelectionType &out)
+    {
+        std::set_intersection(selectedItems.begin(), selectedItems.end(), in.begin(), in.end(), std::inserter(out, out.end()));
+    }
+
+    void MergeSelection(const SelectionType &selected, const SelectionType &deselected)
+    {
+        for (const auto &item : deselected)
+        {
+            selectedItems.erase(item);
+        }
+        for (const auto &item : selected)
+        {
+            selectedItems.insert(item);
+        }
+    }
+protected:
+    SelectionType selectedItems;
 };
 
-#endif // __QUICKED_INTERFACES_H__
+#endif // __QUICKED_SELECTION_TRACKER_H__

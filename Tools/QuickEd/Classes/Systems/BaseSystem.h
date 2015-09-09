@@ -30,19 +30,29 @@
 #ifndef __QUICKED_BASE_SYSTEM_H__
 #define __QUICKED_BASE_SYSTEM_H__
 
+namespace DAVA{
+    class UIEvent;
+}
+
 class Document;
 
 class BaseSystem
 {   
 public:
     explicit BaseSystem(Document *parent);
-    virtual ~BaseSystem() = default;
+    virtual ~BaseSystem() = 0;
 
-    virtual void Attach(); //attach system to active scene
-    virtual void Detach(); //detach system from active scene
+    virtual void Activate(); 
+    virtual void Deactivate();
 
+    virtual bool OnInput(DAVA::UIEvent *currentInput);
 protected:
     Document *document = nullptr;
 };
+
+inline BaseSystem::~BaseSystem()
+{
+    
+}
 
 #endif // __QUICKED_BASE_SYSTEM_H__

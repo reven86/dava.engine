@@ -38,7 +38,7 @@ using namespace DAVA;
 SelectionSystem::SelectionSystem(Document* doc)
     : BaseSystem(doc)
 {
-    
+    document->SelectionChanged.Connect(this, &SelectionSystem::SetSelection);
 }
 
 bool SelectionSystem::OnInput(UIEvent* currentInput)
@@ -59,7 +59,7 @@ bool SelectionSystem::OnInput(UIEvent* currentInput)
     {
         if (currentInput->tid == DVKEY_TAB)
         {
-            SetSelectedControls(SelectedControls(), selectedControls);
+            SetSelection(SelectedControls(), selectedItems);
             //TODO: select next control
             return true;
         }
@@ -71,18 +71,9 @@ bool SelectionSystem::OnInput(UIEvent* currentInput)
 
 void SelectionSystem::ControlWasRemoved(ControlNode *node, ControlsContainerNode *from)
 {
-    auto iter = std::find(selectedControls.begin(), selectedControls.end(), node);
-    if (iter != selectedControls.end())
-    {
-        SelectedControls deselected;
-        deselected.insert(*iter);
-        SetSelectedControls(SelectedControls(), deselected);
-    }
-}
-
-void SelectionSystem::OnSelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected)
-{
-    SetSelectedControls(selected, deselected);
+    SelectedControls deselected;
+    deselected.insert(node);
+    SetSelection(SelectedControls(), deselected);
 }
 
 void SelectionSystem::SelectByRect(const Rect& rect)
@@ -100,9 +91,10 @@ void SelectionSystem::SelectByRect(const Rect& rect)
     }
     if (!InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_SHIFT))
     {
-        std::set_difference(selectedControls.begin(), selectedControls.end(), areaNodes.begin(), areaNodes.end(), std::inserter(deselected, deselected.end()));
+        //deselect all not selected by rect 
+        std::set_difference(selectedItems.begin(), selectedItems.end(), areaNodes.begin(), areaNodes.end(), std::inserter(deselected, deselected.end()));
     }
-    SetSelectedControls(selected, deselected);
+    SetSelection(selected, deselected);
 }
 
 bool SelectionSystem::ProcessMousePress(const DAVA::Vector2 &point)
@@ -113,14 +105,14 @@ bool SelectionSystem::ProcessMousePress(const DAVA::Vector2 &point)
     document->GetControlNodesByPos(nodesUnderPoint, point);
     if(!InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_SHIFT))
     {
-        deselected = selectedControls;
+        deselected = selectedItems;
     }
     if (!nodesUnderPoint.empty())
     {
         auto node = nodesUnderPoint.back();
         if (InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_CTRL))
         {
-            if (selectedControls.find(node) != selectedControls.end())
+            if (selectedItems.find(node) != selectedItems.end())
             {
                 deselected.insert(node);
             }
@@ -146,30 +138,20 @@ bool SelectionSystem::ProcessMousePress(const DAVA::Vector2 &point)
     {
         deselected.erase(controlNode);
     }
-    SetSelectedControls(selected, deselected);
+    SetSelection(selected, deselected);
     return !selected.empty() || !deselected.empty();
 }
 
-void SelectionSystem::SetSelectedControls(const SelectedControls &selected, const SelectedControls &deselected)
+void SelectionSystem::SetSelection(const SelectedControls &selected, const SelectedControls &deselected)
 {
     SelectedControls reallySelected;
     SelectedControls reallyDeselected;
-    
-    std::set_intersection(selectedControls.begin(), selectedControls.end(), deselected.begin(), deselected.end(), std::inserter(reallyDeselected, reallyDeselected.end()));
-
-    std::set_difference(selected.begin(), selected.end(), selectedControls.begin(), selectedControls.end(), std::inserter(reallySelected, reallySelected.end()));
-    
-    for(const auto &controlNode : reallyDeselected)
-    {
-        selectedControls.erase(controlNode);
-    }
-    for(const auto &controlNode : reallySelected)
-    {
-        selectedControls.insert(controlNode);
-    }
+    GetOnlyExistedItems(deselected, reallyDeselected);
+    GetNotExistedItems(selected, reallySelected);
+    MergeSelection(reallySelected, reallyDeselected);
 
     if (!reallySelected.empty() || !reallyDeselected.empty())
     {
-        SelectionWasChanged.Emit(reallySelected, reallyDeselected);
+        document->SelectionChanged.Emit(reallySelected, reallyDeselected);
     }
 }

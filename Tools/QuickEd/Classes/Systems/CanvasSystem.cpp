@@ -44,7 +44,7 @@ class CheckeredCanvas : public UIControl
 public:
     CheckeredCanvas();
 private:
-    void Draw(const UIGeometricData &geometricData) override;
+    void SystemDraw(const UIGeometricData &geometricData) override;
 };
 
 CheckeredCanvas::CheckeredCanvas()
@@ -55,7 +55,7 @@ CheckeredCanvas::CheckeredCanvas()
     background->SetShader(SafeRetain(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR));
 }
 
-void CheckeredCanvas::Draw(const UIGeometricData &geometricData)
+void CheckeredCanvas::SystemDraw(const UIGeometricData &geometricData)
 {
     float32 invScale = 1.0f / geometricData.scale.x;
     UIGeometricData unscaledGd;
@@ -69,6 +69,7 @@ CanvasSystem::CanvasSystem(Document *parent)
     : BaseSystem(parent)
     , canvas(new UIControl())
 {
+    document->SelectionChanged.Connect(this, &CanvasSystem::SetSelection);
 }
 
 UIControl* CanvasSystem::GetCanvasControl()
@@ -76,29 +77,21 @@ UIControl* CanvasSystem::GetCanvasControl()
     return canvas.get();
 }
 
-void CanvasSystem::AttachToRoot(UIControl* root)
+void CanvasSystem::Activate()
 {
-    root->AddControl(canvas);
-    OnSelectionWasChanged(SelectedControls(), SelectedControls());
+    document->GetScalableControl()->AddControl(canvas);
 }
 
-void CanvasSystem::Detach()
+void CanvasSystem::Deactivate()
 {
     canvas->RemoveFromParent();
 }
 
-void CanvasSystem::OnSelectionWasChanged(const SelectedControls& selected, const SelectedControls& deselected)
+void CanvasSystem::SetSelection(const SelectedControls& selected, const SelectedControls& deselected)
 {
-    for(const auto &controlNode : deselected)
-    {
-        selectedControls.erase(controlNode);
-    }
-    for(const auto &controlNode : selected)
-    {
-        selectedControls.insert(controlNode);
-    }
+    MergeSelection(selected, deselected);
     DAVA::Set<PackageBaseNode*> rootControls;
-    if (selectedControls.empty())
+    if (selectedItems.empty())
     {
         auto controlsNode = document->GetPackage()->GetPackageControlsNode();
         for (int index = 0; index < controlsNode->GetCount(); ++index)
@@ -108,7 +101,7 @@ void CanvasSystem::OnSelectionWasChanged(const SelectedControls& selected, const
     }
     else
     {
-        for (auto &node : selectedControls)
+        for (auto &node : selectedItems)
         {
             if (nullptr != node->GetControl())
             {
@@ -157,6 +150,7 @@ void CanvasSystem::LayoutCanvas()
         totalHeight += spacing * (childrenCount - 1);
     }
     Vector2 size(maxWidth, totalHeight);
+    document->GetScalableControl()->SetSize(size);
     canvas->SetSize(size);
     float32 curY = 0.0f;
     for (auto control : canvas->GetChildren())

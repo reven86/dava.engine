@@ -30,10 +30,9 @@
 #ifndef __QUICKED_SELECTION_SYSTEM_H__
 #define __QUICKED_SELECTION_SYSTEM_H__
 
-#include "Systems/Interfaces.h"
+#include "SelectionTracker.h"
 #include "Systems/BaseSystem.h"
 #include "Model/PackageHierarchy/PackageListener.h"
-#include "Functional/Signal.h"
 #include "Math/Rect.h"
 
 class Document;
@@ -41,7 +40,7 @@ namespace DAVA {
     class Vector2;
 }
 
-class SelectionSystem final : public BaseSystem, public InputInterface, public PackageListener
+class SelectionSystem final : public BaseSystem, public PackageListener, public SelectionTracker<SelectedControls>
 {
 public:
     SelectionSystem(Document *doc);
@@ -50,16 +49,13 @@ public:
     bool OnInput(DAVA::UIEvent *currentInput) override;
 
     void ControlWasRemoved(ControlNode *node, ControlsContainerNode *from) override;
-    void OnSelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected);
+    void SetSelection(const SelectedControls &selected, const SelectedControls &deselected);
     void SelectByRect(const DAVA::Rect &rect);
 
-    DAVA::Signal<const SelectedControls &/*selected*/, const SelectedControls &/*deselected*/> SelectionWasChanged;
 private:
 
     bool ProcessMousePress(const DAVA::Vector2 &point);
-    void SetSelectedControls(const SelectedControls &selected, const SelectedControls &deselected);
 
-    SelectedControls selectedControls;
     DAVA::Vector<ControlNode*> nodesUnderPoint;
     bool mousePressed = false;
 };

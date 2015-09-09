@@ -31,15 +31,10 @@
 #define __QUICKED_DOCUMENT_H__
 
 #include <QUndoStack>
-#include <QMap>
 #include "Model/PackageHierarchy/PackageBaseNode.h"
-#include "Systems/Interfaces.h"
-
-#include "Systems/SelectionSystem.h"
-#include "Systems/CanvasSystem.h"
-#include "Systems/HUDSystem.h"
-#include "Systems/CursorSystem.h"
-#include "Systems/TransformSystem.h"
+#include "Functional/Signal.h"
+#include "SelectionTracker.h"
+#include "Math/Rect.h"
 
 
 struct WidgetContext
@@ -47,10 +42,36 @@ struct WidgetContext
     virtual ~WidgetContext() = default;
 };
 
+struct HUDareaInfo
+{
+    enum eArea
+    {
+        TOP_LEFT_AREA,
+        TOP_CENTER_AREA,
+        TOP_RIGHT_AREA,
+        CENTER_LEFT_AREA,
+        CENTER_RIGHT_AREA,
+        BOTTOM_LEFT_AREA,
+        BOTTOM_CENTER_AREA,
+        BOTTOM_RIGHT_AREA,
+        FRAME_AREA,
+        PIVOT_POINT_AREA,
+        ROTATE_AREA,
+        NO_AREA,
+        CORNERS_COUNT = FRAME_AREA - TOP_LEFT_AREA,
+        AREAS_COUNT = NO_AREA - TOP_LEFT_AREA
+    };
+    ControlNode *owner = nullptr;
+    eArea area = NO_AREA;
+};
+
 namespace DAVA {
     class FilePath;
+    class UIControl;
+    class UIEvent;
 }
 
+class BaseSystem;
 class PackageNode;
 class QtModelPackageCommandExecutor;
 
@@ -62,63 +83,75 @@ class AbstractProperty;
 class Document final : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(int scale READ GetScale WRITE SetScale NOTIFY ScaleChanged RESET ResetScale);
+    Q_PROPERTY(bool emulationMode READ IsInEmulationMode WRITE SetEmulationMode NOTIFY EmulationModeChanged RESET ClearEmulationMode)
 public:
     explicit Document(PackageNode *package, QObject *parent = nullptr);
     ~Document();
-    void Detach();
-    void Attach();
-    CanvasSystem *GetCanvasSystem();
-    HUDSystem *GetHUDSystem();
+
+    int GetScale() const;
+    bool IsInEmulationMode() const;
+    DAVA::UIControl* GetRootControl();
+    DAVA::UIControl* GetScalableControl();
     const DAVA::FilePath &GetPackageFilePath() const;
-    QUndoStack *GetUndoStack() const;
-    PackageNode *GetPackage() const;
-    QtModelPackageCommandExecutor *GetCommandExecutor() const;
-    void RefreshLayout();
+    QUndoStack *GetUndoStack();
+    PackageNode *GetPackage();
+    QtModelPackageCommandExecutor *GetCommandExecutor();
     WidgetContext* GetContext(QObject* requester) const;
+
+    void Deactivate();
+    void Activate();
+
     void SetContext(QObject* requester, WidgetContext* widgetContext);
-    void OnSelectionWasChanged(const SelectedControls &selected, const SelectedControls &deselected);
+
+    void SetSelectedControls(const SelectedControls &selected, const SelectedControls &deselected);
     bool OnInput(DAVA::UIEvent *currentInput);
+
+    void RefreshLayout();
+
     void GetControlNodesByPos(DAVA::Vector<ControlNode*> &controlNodes, const DAVA::Vector2 &pos) const;
     void GetControlNodesByRect(DAVA::Set<ControlNode*> &controlNodes, const DAVA::Rect &rect) const;
     ControlNode* GetControlByMenu(const DAVA::Vector<ControlNode*> &nodes, const DAVA::Vector2 &pos) const;
 
+    DAVA::Signal<const SelectedControls &/*selected*/, const SelectedControls &/*deselected*/> SelectionChanged;
+    DAVA::Signal<const HUDareaInfo &/*areaInfo*/> ActiveAreaChanged;
+    DAVA::Signal<const DAVA::Rect &/*selectionRectControl*/> SelectionRectChanged;
+    DAVA::Signal<bool> EmulationModeChangedSignal;
 signals:
+    void ScaleChanged(int scale);
+    void EmulationModeChanged(bool emulationMode);
     void SelectedNodesChanged(const DAVA::Set<PackageBaseNode*> &selected, const DAVA::Set<PackageBaseNode*> &deselected);
+
 public slots:
+    void SetScale(int scale);
+    void ResetScale();
+    void SetEmulationMode(bool emulationMode);
+    void ClearEmulationMode();
     void RefreshAllControlProperties();
     void OnSelectedNodesChanged(const DAVA::Set<PackageBaseNode*> &selected, const DAVA::Set<PackageBaseNode*> &deselected);
+
 private:
     void SetSelectedNodes(const DAVA::Set<PackageBaseNode*> &selected, const DAVA::Set<PackageBaseNode*> &deselected);
     void GetControlNodesByPosImpl(DAVA::Vector<ControlNode*> &controlNodes, const DAVA::Vector2 &pos, ControlNode *node) const;
     void GetControlNodesByRectImpl(DAVA::Set<ControlNode*> &controlNodes, const DAVA::Rect &rect, ControlNode *node) const;
+    static const int defaultScale = 100;
+    int scale = defaultScale;
+    static const bool emulationByDefault = false;
+    bool emulationMode = emulationByDefault;
+
+    DAVA::UIControl *rootControl = nullptr;
+    DAVA::UIControl *scalableControl = nullptr;
+
     DAVA::UnorderedMap < QObject*, WidgetContext* > contexts;
+
     DAVA::Set<PackageBaseNode*> selectedNodes;
     PackageNode *package = nullptr;
     QtModelPackageCommandExecutor *commandExecutor = nullptr;
     QUndoStack *undoStack = nullptr;
 
-    SelectionSystem selectionSystem;
-    CanvasSystem canvasSystem;
-    HUDSystem hudSystem;
-    CursorSystem cursorSystem;
-    TransformSystem transformSystem;
-    QList<InputInterface*> inputListeners;
     QList<BaseSystem*> systems;
+
+    
 };
-
-inline QUndoStack *Document::GetUndoStack() const
-{
-    return undoStack;
-}
-
-inline PackageNode *Document::GetPackage() const
-{
-    return package;
-}
-
-inline QtModelPackageCommandExecutor *Document::GetCommandExecutor() const
-{
-    return commandExecutor;
-}
 
 #endif // __QUICKED_DOCUMENT_H__
