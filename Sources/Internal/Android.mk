@@ -215,7 +215,7 @@ DV_LOCAL_EXPORT_CFLAGS := $(LOCAL_CFLAGS)
 DV_LOCAL_EXPORT_LDLIBS := $(LOCAL_LDLIBS)
 
 # set included libraries
-DV_LOCAL_STATIC_LIBRARIES := libbox2d
+DV_LOCAL_STATIC_LIBRARIES := fmodex-prebuild
 
 ifeq ($(DAVA_PROFILE), true)
 ifeq ($(TARGET_ARCH_ABI), armeabi-v7a)
@@ -223,7 +223,6 @@ DV_LOCAL_STATIC_LIBRARIES += android-ndk-profiler
 endif
 endif
 
-DV_LOCAL_SHARED_LIBRARIES += fmodex-prebuild
 DV_LOCAL_SHARED_LIBRARIES += fmodevent-prebuild
 
 DV_LOCAL_STATIC_LIBRARIES += xml_android
@@ -386,7 +385,6 @@ include $(BUILD_STATIC_LIBRARY)
 # include modules
 $(call import-add-path,$(DAVA_ROOT)/..)
 $(call import-add-path,$(DAVA_ROOT)/../External)
-$(call import-add-path,$(DAVA_ROOT)/../External/Box2D)
 $(call import-add-path,$(DAVA_ROOT))
 
 ifeq ($(DAVA_PROFILE), true)
@@ -396,5 +394,4 @@ $(call import-module,android-ndk-profiler)
 endif
 endif
 
-$(call import-module,Box2D)
 $(call import-module,android/cpufeatures)
