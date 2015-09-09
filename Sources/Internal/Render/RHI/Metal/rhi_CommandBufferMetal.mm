@@ -96,7 +96,7 @@ metal_RenderPass_Allocate( const RenderPassConfig& passConf, uint32 cmdBufCount,
     Handle                      pass_h  = RenderPassPool::Alloc();
     RenderPassMetal_t*          pass    = RenderPassPool::Get( pass_h );
     MTLRenderPassDescriptor*    desc    = [MTLRenderPassDescriptor renderPassDescriptor];
-    bool                        ds_used = true;
+    bool                        ds_used = false;
     
     if( !_CurDrawable )
     {
