@@ -259,7 +259,7 @@ dx9_VertexBuffer_NeedRestore( Handle vb )
 {
     VertexBufferDX9_t*  self = VertexBufferDX9Pool::Get( vb );
     
-    return false;
+    return self->NeedRestore();
 }
 
 

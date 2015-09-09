@@ -256,7 +256,7 @@ dx9_IndexBuffer_NeedRestore( Handle ib )
 {
     IndexBufferDX9_t*   self = IndexBufferDX9Pool::Get( ib );
     
-    return false;
+    return self->NeedRestore();
 }
 
 
