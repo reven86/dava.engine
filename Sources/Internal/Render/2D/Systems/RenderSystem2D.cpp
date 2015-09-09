@@ -193,11 +193,12 @@ void RenderSystem2D::BeginRenderTargetPass(Texture * target, bool needClear /* =
     renderTargetPassConfig.priority = priority;
     renderTargetPassConfig.viewport.width = target->GetWidth();
     renderTargetPassConfig.viewport.height = target->GetHeight();
+    renderTargetPassConfig.depthStencilBuffer.texture = rhi::InvalidHandle;
     renderTargetPassConfig.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
     if(needClear)
         renderTargetPassConfig.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
     else
-        renderTargetPassConfig.colorBuffer[0].loadAction = rhi::LOADACTION_NONE;
+        renderTargetPassConfig.colorBuffer[0].loadAction = rhi::LOADACTION_LOAD;
     
     passTargetHandle = rhi::AllocateRenderPass(renderTargetPassConfig, 1, &currentPacketListHandle);
 
