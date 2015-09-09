@@ -243,11 +243,19 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath & filename, DAVA::Scen
 
     // do we need to save globalmaterial?
     NMaterial *globalMaterial = scene->GetGlobalMaterial();
-	bool nodesIncludesGlobalMaterial = nodes.count(globalMaterial) > 0;
-
-    if ((nullptr != globalMaterial) && !nodesIncludesGlobalMaterial)
+    if (nullptr != globalMaterial)
     {
-        serializableNodesCount++;
+		if (nodes.count(globalMaterial) > 0)
+		{
+			// remove global material from set, 
+			// as it should be saved exclusively
+			// on the top of data nodes
+			nodes.erase(globalMaterial);
+		}
+		else 
+		{
+			serializableNodesCount++;
+		}
     }
 
     // save datanodes count
@@ -261,13 +269,6 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath & filename, DAVA::Scen
             globalMaterial->SetNodeID(++maxDataNodeID);
         }
         SaveDataNode(globalMaterial, file);
-
-		if (nodesIncludesGlobalMaterial)
-		{
-			// avoid saving global material twice
-			// here and later through the nodes
-			nodes.erase(globalMaterial);
-		}
     }
 
     // sort in ascending ID order 
