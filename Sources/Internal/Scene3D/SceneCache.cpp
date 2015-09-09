@@ -69,19 +69,21 @@ void SceneCache::InvalidateSceneMaterials()
         Set<NMaterial *> materialList;
         MaterialSystem *matSystem = scene->GetMaterialSystem();
         matSystem->BuildMaterialList(scene, materialList, NMaterial::MATERIALTYPE_NONE, true);
-        
-        const Map<uint32, NMaterial *> & particleInstances = scene->particleEffectSystem->GetMaterialInstances();
-        Map<uint32, NMaterial *>::const_iterator endParticleIt = particleInstances.end();
-        Map<uint32, NMaterial *>::const_iterator particleIt = particleInstances.begin();
-        for(; particleIt != endParticleIt; ++particleIt)
+
+        ParticleEffectSystem* partEffectSys = scene->particleEffectSystem;
+        if (partEffectSys != nullptr)
         {
-            materialList.insert(particleIt->second);
-            if(particleIt->second->GetParent())
+            const Map<uint32, NMaterial*>& particleInstances = partEffectSys->GetMaterialInstances();
+            for (const auto& particle : particleInstances)
             {
-                materialList.insert(particleIt->second->GetParent());
+                materialList.insert(particle.second);
+                if (particle.second->GetParent())
+                {
+                    materialList.insert(particle.second->GetParent());
+                }
             }
         }
-        
+
         if(scene->GetGlobalMaterial())
         {
             materialList.insert(scene->GetGlobalMaterial());
