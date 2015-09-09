@@ -645,10 +645,12 @@ DbgDraw::Text2D( int x, int y, uint32 color, const char* format, ... )
     switch( rhi::HostApi() )
     {
         case rhi::RHI_DX9 :
-        case rhi::RHI_DX11 :
             left  += 0.5f;
             top   += 0.5f;
             break;
+
+        case rhi::RHI_DX11 :
+            break; // DO NOT do half-pixel offset 
             
         case rhi::RHI_GLES2 :
 //            left  -= 0.5f;

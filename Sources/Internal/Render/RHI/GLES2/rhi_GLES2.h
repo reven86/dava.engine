@@ -53,7 +53,7 @@ unsigned    NeedRestoreCount();
 namespace IndexBufferGLES2
 {
 void        SetupDispatch( Dispatch* dispatch );
-void        SetToRHI( Handle vb );
+IndexSize   SetToRHI( Handle ib );
 void        ReCreateAll();
 unsigned    NeedRestoreCount();
 }

@@ -55,6 +55,7 @@ public:
     unsigned        size;
     void*           data;
     id<MTLBuffer>   uid;
+    MTLIndexType    type;
 };
 
 typedef ResourcePool<IndexBufferMetal_t,RESOURCE_INDEX_BUFFER,IndexBuffer::Descriptor,false>    IndexBufferMetalPool;
@@ -74,10 +75,10 @@ metal_IndexBuffer_Create( const IndexBuffer::Descriptor& desc )
         handle = IndexBufferMetalPool::Alloc();
         IndexBufferMetal_t*    ib = IndexBufferMetalPool::Get( handle );
 
-        ib->data   = [uid contents];
-        ib->size   = desc.size;
-        ib->uid    = uid;
-
+        ib->data = [uid contents];
+        ib->size = desc.size;
+        ib->uid  = uid;
+        ib->type = (desc.indexSize == INDEX_SIZE_32BIT)  ? MTLIndexTypeUInt32 : MTLIndexTypeUInt16;
     }
 
     return handle;
@@ -159,6 +160,14 @@ GetBuffer( Handle ib )
     IndexBufferMetal_t* self = IndexBufferMetalPool::Get( ib );
 
     return (self)  ? self->uid  : nil;
+}
+
+MTLIndexType
+GetType( Handle ib )
+{
+    IndexBufferMetal_t* self = IndexBufferMetalPool::Get( ib );
+    
+    return self->type;
 }
 
 
