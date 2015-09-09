@@ -700,7 +700,7 @@ SetAsRenderTarget( Handle tex, Handle depth )
             
         if( fb )
         {
-            TextureGLES2_t* ds   = (depth != InvalidHandle)  ? TextureGLES2Pool::Get( depth )  : nullptr;
+            TextureGLES2_t* ds   = (depth != InvalidHandle  &&  depth != DefaultDepthBuffer)  ? TextureGLES2Pool::Get( depth )  : nullptr;
             GLenum          b[1] = { GL_COLOR_ATTACHMENT0 };
                 
             glBindFramebuffer( GL_FRAMEBUFFER, fb );
