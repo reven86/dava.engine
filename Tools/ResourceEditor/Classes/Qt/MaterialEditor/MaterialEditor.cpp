@@ -919,19 +919,25 @@ void MaterialEditor::OnMaterialLoad(bool checked)
             ScopedPtr<DAVA::KeyedArchive> presetArchive(new DAVA::KeyedArchive());
             presetArchive->Load(lastSavePath);
 
-			DAVA::KeyedArchive* materialArchive = presetArchive->IsKeyExists("content") ? 
-				presetArchive->GetArchive("content") : materialArchive;
-
-            DAVA::uint32 userChoiseWhatToLoad = ExecMaterialLoadingDialog(lastCheckState, inputFile);
-
-			DAVA::SerializationContext materialContext;
-			materialContext.SetScene(curScene);
-			materialContext.SetScenePath(ProjectManager::Instance()->CurProjectPath());
-			materialContext.SetVersion(VersionInfo::Instance()->GetCurrentVersion().version);
-			UpdateMaterialFromPresetWithOptions(curMaterials.front(), materialArchive, &materialContext, userChoiseWhatToLoad);
-			materialContext.ResolveMaterialBindings();
-
-            curScene->SetChanged(true);
+			// not checking version right now
+			// version info is reserved for future use
+			if (presetArchive->IsKeyExists("content"))
+			{
+				DAVA::KeyedArchive* materialArchive = presetArchive->GetArchive("content");
+				DAVA::uint32 userChoiseWhatToLoad = ExecMaterialLoadingDialog(lastCheckState, inputFile);
+				DAVA::SerializationContext materialContext;
+				materialContext.SetScene(curScene);
+				materialContext.SetScenePath(ProjectManager::Instance()->CurProjectPath());
+				materialContext.SetVersion(VersionInfo::Instance()->GetCurrentVersion().version);
+				UpdateMaterialFromPresetWithOptions(curMaterials.front(), materialArchive, &materialContext, userChoiseWhatToLoad);
+				materialContext.ResolveMaterialBindings();
+				curScene->SetChanged(true);
+			}
+			else 
+			{
+		        QMessageBox::warning(this, "Material preset not supported",
+					"Material preset you are trying to open is either old or invalid.");
+			}
         }
     }
 
@@ -1084,12 +1090,32 @@ void MaterialEditor::StoreMaterialToPreset(DAVA::NMaterial* material, DAVA::Keye
 	archive->SetArchive("flags", flagsArchive);
 	archive->SetArchive("textures", texturesArchive);
 	archive->SetArchive("properties", propertiesArchive);
+
+	auto fxName = material->GetLocalFXName();
+	if (fxName.IsValid())
+		archive->SetString("fxname", fxName.c_str());
+	
+	auto qualityGroup = material->GetQualityGroup();
+	if (qualityGroup.IsValid())
+		archive->SetString("group", qualityGroup.c_str());
 }
 
 void MaterialEditor::UpdateMaterialFromPresetWithOptions(DAVA::NMaterial* material, DAVA::KeyedArchive* preset,
 	DAVA::SerializationContext* context, uint32 options)
 {
-	if (preset->IsKeyExists("flags"))
+	if ((options & CHECKED_GROUP) && preset->IsKeyExists("group"))
+	{
+		FastName qualityGroup(preset->GetString("materialGroup").c_str());
+		material->SetQualityGroup(qualityGroup);
+	}
+
+	if ((options & CHECKED_TEMPLATE) && preset->IsKeyExists("fxname"))
+	{
+		FastName fxName(preset->GetString("fxname").c_str());
+		material->SetFXName(fxName);
+	}
+
+	if ((options & CHECKED_PROPERTIES) && preset->IsKeyExists("flags"))
 	{
 		const auto flags = preset->GetArchive("flags")->GetArchieveData();
 		for (const auto& fm : flags)
@@ -1101,7 +1127,7 @@ void MaterialEditor::UpdateMaterialFromPresetWithOptions(DAVA::NMaterial* materi
 		}
 	}
 
-    if (preset->IsKeyExists("properties"))
+    if ((options & CHECKED_PROPERTIES) && preset->IsKeyExists("properties"))
     {
         const auto properties = preset->GetArchive("properties")->GetArchieveData();
         for (const auto& pm : properties)
@@ -1116,11 +1142,37 @@ void MaterialEditor::UpdateMaterialFromPresetWithOptions(DAVA::NMaterial* materi
             
 			if (material->HasLocalProperty(propName))
 			{
+				auto existingType = material->GetLocalPropType(propName);
+				auto existingSize = material->GetLocalPropArraySize(propName);
 
+				// do we need this check?
+				if ((existingType == propType) && (existingSize == propSize))
+				{
+					material->SetPropertyValue(propName, propData);
+				}
 			}
 			else 
 			{
 	            material->AddProperty(propName, propData, propType, propSize);
+			}
+        }
+    }
+
+    if ((options & CHECKED_TEXTURES) && preset->IsKeyExists("textures"))
+    {
+        const auto& texturesMap = preset->GetArchive("textures")->GetArchieveData();
+        for (const auto& tm : texturesMap)
+        {
+			FastName textureName(tm.first);
+			auto pathToTexture = context->GetScenePath() + tm.second->AsString();
+			auto texture = Texture::CreateFromFile(pathToTexture);
+			if (material->HasLocalTexture(textureName))
+			{
+				material->SetTexture(textureName, texture);
+			}
+			else 
+			{
+				material->AddTexture(textureName, texture);
 			}
         }
     }
