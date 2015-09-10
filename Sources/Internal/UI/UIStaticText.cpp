@@ -589,11 +589,6 @@ const Vector<int32> & UIStaticText::GetStringSizes() const
     
 void UIStaticText::PrepareSprite()
 {
-	JobManager::Instance()->CreateMainJob(MakeFunction(MakeSharedObject(this), &UIStaticText::PrepareSpriteInternal));
-}
-
-void UIStaticText::PrepareSpriteInternal()
-{
     if (textBlock->IsSpriteReady())
     {
         Sprite *sprite = textBlock->GetSprite();
@@ -601,7 +596,7 @@ void UIStaticText::PrepareSpriteInternal()
         textBg->SetSprite(sprite, 0);
 
         Texture *tex = sprite->GetTexture();
-        if(tex && tex->GetFormat() == FORMAT_A8)
+        if (tex && tex->GetFormat() == FORMAT_A8)
         {
             textBg->SetMaterial(RenderSystem2D::DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL);
             shadowBg->SetMaterial(RenderSystem2D::DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL);
@@ -618,6 +613,7 @@ void UIStaticText::PrepareSpriteInternal()
         textBg->SetSprite(NULL, 0);
     }
 }
+
 
 Rect UIStaticText::CalculateTextBlockRect(const UIGeometricData &geometricData) const
 {
