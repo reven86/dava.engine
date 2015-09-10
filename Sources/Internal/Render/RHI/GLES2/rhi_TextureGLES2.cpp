@@ -229,6 +229,10 @@ TextureGLES2_t::Destroy( bool force_immediate )
 
     if( isRenderTarget )
     {
+        cmd[0].func   = GLCommand::DELETE_TEXTURES;
+        cmd[0].arg[0] = 1;
+        cmd[0].arg[1] = uint64(&(uid));
+
         DVASSERT(fbo.size() <= countof(cmd)-1);
         for( unsigned i=0; i!=fbo.size(); ++i )
         {
