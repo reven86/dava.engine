@@ -562,6 +562,8 @@ metal_CommandBuffer_SetMarker( Handle cmdBuf, const char* text )
     NSString*               txt = [[NSString alloc] initWithUTF8String:text];
 
     [cb->encoder insertDebugSignpost:txt];
+    
+    [txt release];
 }
 
 
