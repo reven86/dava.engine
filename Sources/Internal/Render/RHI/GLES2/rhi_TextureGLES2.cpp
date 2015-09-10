@@ -112,16 +112,11 @@ TextureGLES2_t::Create( const Texture::Descriptor& desc, bool force_immediate )
     bool        success      = false;
     GLuint      uid[2]       = { 0, 0 };
     bool        is_depth     = desc.format == TEXTURE_FORMAT_D16  ||  desc.format == TEXTURE_FORMAT_D24S8;
-    bool        need_stencil = desc.format == TEXTURE_FORMAT_D24S8;
+//    bool        need_stencil = desc.format == TEXTURE_FORMAT_D24S8;
     
     if( is_depth )
     {
-        GLCommand   cmd1  = { GLCommand::GEN_RENDERBUFFERS, { uint64((need_stencil)?2:1), (uint64)(uid) } };
-        #if defined(__DAVAENGINE_IPHONE__)
-        int         gl_ds = GL_DEPTH24_STENCIL8_OES;
-        #else
-        int         gl_ds = GL_DEPTH24_STENCIL8;
-        #endif
+        GLCommand   cmd1  = { GLCommand::GEN_RENDERBUFFERS, { 1, (uint64)(uid) } };
         
         ExecGL( &cmd1, 1 );
 
@@ -130,7 +125,7 @@ TextureGLES2_t::Create( const Texture::Descriptor& desc, bool force_immediate )
             GLCommand   cmd2[] =
             {
                 { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, uid[0] } },
-                { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, uint64(gl_ds), desc.width, desc.height } },
+                { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, desc.width, desc.height } },
                 { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, 0 } }
 /*
                 { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, uid[0] } },
@@ -150,6 +145,8 @@ TextureGLES2_t::Create( const Texture::Descriptor& desc, bool force_immediate )
             }
 */
             ExecGL( cmd2, countof(cmd2), force_immediate );
+            
+            uid[1] = uid[0];
         }
     }
     else
@@ -716,25 +713,18 @@ SetAsRenderTarget( Handle tex, Handle depth )
         if( fb )
         {
             TextureGLES2_t* ds   = (depth != InvalidHandle  &&  depth != DefaultDepthBuffer)  ? TextureGLES2Pool::Get( depth )  : nullptr;
-            GLenum          b[1] = { GL_COLOR_ATTACHMENT0 };
                 
             glBindFramebuffer( GL_FRAMEBUFFER, fb );
             glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, self->uid, 0 );
             if( ds )
             {
-                #if defined(__DAVAENGINE_IPHONE__)
-                int att = GL_DEPTH_STENCIL_OES;
-                #else
-                int att = GL_DEPTH_STENCIL_ATTACHMENT;
-                #endif
-                
-                glFramebufferRenderbuffer( GL_FRAMEBUFFER, att, GL_RENDERBUFFER, ds->uid );
-/*
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
                 glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, ds->uid );
-                
                 if( ds->uid2 )
                     glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, ds->uid2 );
-*/            
+#else
+                glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, ds->uid );
+#endif
             }
             #if defined __DAVAENGINE_IPHONE__
             #else
