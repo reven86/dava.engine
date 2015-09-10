@@ -198,9 +198,11 @@ namespace DAVA
 
 			ResizeView(w, h);
 
-			rhi::ResetParam params = {(uint32)width, (uint32)height};
-			Renderer::Reset(params);
-
+		    rhi::ResetParam resetParams;
+			resetParams.width = width;
+    		resetParams.height = height;
+		    Renderer::Reset(resetParams);
+ 
 //			RenderManager::Instance()->Invalidate();   RHI_COMPLETE
 			RenderResource::InvalidateAllResources();
 //			SceneCache::Instance()->InvalidateSceneMaterials();   RHI_COMPLETE

@@ -712,7 +712,7 @@ SetAsRenderTarget( Handle tex, Handle depth )
                 if( ds->uid2 )
                     glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, ds->uid2 );
             }
-            #if defined __DAVAENGINE_IPHONE__
+            #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
             #else
             glDrawBuffers( 1, b );
             #endif

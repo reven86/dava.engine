@@ -172,6 +172,10 @@
 #define GL_DEPTH_COMPONENT24 GL_DEPTH_COMPONENT24_OES
 #endif
 
+#if !defined(GL_BGRA)
+#define GL_BGRA GL_BGRA_EXT
+#endif
+
 #if 0
 #define GL_CALL(expr) \
 { \
