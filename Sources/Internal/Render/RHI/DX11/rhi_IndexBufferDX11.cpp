@@ -53,6 +53,7 @@ public:
     unsigned        size;
     ID3D11Buffer*   buffer;
     unsigned        isMapped:1;
+    unsigned        is32bit:1;
 };
 
 typedef ResourcePool<IndexBufferDX11_t,RESOURCE_VERTEX_BUFFER,IndexBuffer::Descriptor,true>  IndexBufferDX11Pool;
@@ -63,6 +64,7 @@ RHI_IMPL_POOL(IndexBufferDX11_t,RESOURCE_VERTEX_BUFFER,IndexBuffer::Descriptor,t
 IndexBufferDX11_t::IndexBufferDX11_t()
   : size(0),
     buffer(nullptr),
+    is32bit(false),
     isMapped(false)
 {
 }
@@ -106,6 +108,7 @@ dx11_IndexBuffer_Create( const IndexBuffer::Descriptor& desc )
 
             vb->size     = desc.size;
             vb->buffer   = buf;
+            vb->is32bit  = desc.indexSize == INDEX_SIZE_32BIT;
             vb->isMapped = false;
         }
         else
@@ -231,7 +234,7 @@ SetToRHI( Handle ibh, unsigned offset, ID3D11DeviceContext* context )
     IndexBufferDX11_t*  self = IndexBufferDX11Pool::Get( ibh );    
     
 ///    DVASSERT(!self->isMapped);
-    context->IASetIndexBuffer( self->buffer, DXGI_FORMAT_R16_UINT, offset );
+    context->IASetIndexBuffer( self->buffer, (self->is32bit)?DXGI_FORMAT_R32_UINT:DXGI_FORMAT_R16_UINT, offset );
 }
 
 }

@@ -44,15 +44,9 @@
 
 CustomColorsSystem::CustomColorsSystem(Scene* scene)
 :	LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.tex")
-,	toolImageTexture(NULL)
 ,	drawColor(Color(0.f, 0.f, 0.f, 0.f))
-,	colorIndex(0)
-,	editingIsEnabled(false)
-,	originalImage(nullptr)
-,   loadedTexture(nullptr)
 {
     curToolSize = 120;
-
     SetColor(colorIndex);
 }
 
@@ -110,7 +104,7 @@ LandscapeEditorDrawSystem::eErrorType CustomColorsSystem::EnableLandscapeEditing
     SetBrushSize(curToolSize);
 	
 	Texture* customColorsTexture = drawSystem->GetCustomColorsProxy()->GetTexture();
-	drawSystem->GetLandscapeProxy()->SetToolTexture(customColorsTexture);
+	drawSystem->GetLandscapeProxy()->SetToolTexture(customColorsTexture, true);
 	
 	if (!toolImageTexture)
 	{
@@ -149,7 +143,7 @@ bool CustomColorsSystem::DisableLandscapeEdititing( bool saveNeeded)
 	drawSystem->DisableCursor();
 	drawSystem->DisableCustomDraw();
     
-	drawSystem->GetLandscapeProxy()->SetToolTexture(nullptr);
+	drawSystem->GetLandscapeProxy()->SetToolTexture(nullptr, true);
 	enabled = false;
 	
     if(toolImageTexture)
@@ -266,7 +260,7 @@ void CustomColorsSystem::UpdateBrushTool()
     updatedRect.SetPosition(spritePos);
     updatedRect.SetSize(spriteSize);
     AddRectToAccumulator(updatedRect);
-
+    
     RenderSystem2D::Instance()->BeginRenderTargetPass(colorTexture, false);
     RenderSystem2D::Instance()->DrawTexture(toolTextureSet, RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL, drawColor, updatedRect);
     RenderSystem2D::Instance()->EndRenderTargetPass();

@@ -176,6 +176,10 @@
 #define GL_BGRA GL_BGRA_EXT
 #endif
 
+#if !defined(GL_DEPTH24_STENCIL8)
+#define GL_DEPTH24_STENCIL8 GL_DEPTH24_STENCIL8_OES
+#endif
+
 #if 0
 #define GL_CALL(expr) \
 { \

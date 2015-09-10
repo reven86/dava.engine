@@ -308,11 +308,7 @@ bool NvttHelper::ReadDxtFile(nvtt::Decompressor & dec, Vector<Image*> &imageSet,
     }
     
     //check hardware support, in case of rgb use nvtt to reorder bytes
-    bool isHardwareSupport = false;
-    if (IsAtcFormat(format))
-        isHardwareSupport = Renderer::GetCaps().isATCSupported;
-    else
-        isHardwareSupport = Renderer::GetCaps().isDXTSupported;
+    bool isHardwareSupport = PixelFormatDescriptor::GetPixelFormatDescriptor(GetPixelFormatByNVTTFormat(format)).isHardwareSupported;
     
     if (!forceSoftwareConvertation && isHardwareSupport)
     {

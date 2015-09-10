@@ -81,7 +81,7 @@ void RenderSystem2D::Init()
     DEFAULT_2D_TEXTURE_MATERIAL = new NMaterial();
     DEFAULT_2D_TEXTURE_MATERIAL->SetFXName(FastName("~res:/Materials/2d.Textured.material"));
     DEFAULT_2D_TEXTURE_MATERIAL->PreBuildMaterial(RENDER_PASS_NAME);
-
+    
     DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL = new NMaterial();
     DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL->SetFXName(FastName("~res:/Materials/2d.Textured.material"));
     DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL->AddFlag(NMaterialFlagName::FLAG_BLENDING, BLENDING_NONE);
@@ -130,6 +130,7 @@ RenderSystem2D::~RenderSystem2D()
 {
     SafeRelease(DEFAULT_2D_COLOR_MATERIAL);
     SafeRelease(DEFAULT_2D_TEXTURE_MATERIAL);
+    SafeRelease(DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL);
     SafeRelease(DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL);
     SafeRelease(DEFAULT_2D_TEXTURE_GRAYSCALE_MATERIAL);
 
@@ -193,11 +194,12 @@ void RenderSystem2D::BeginRenderTargetPass(Texture * target, bool needClear /* =
     renderTargetPassConfig.priority = priority;
     renderTargetPassConfig.viewport.width = target->GetWidth();
     renderTargetPassConfig.viewport.height = target->GetHeight();
+    renderTargetPassConfig.depthStencilBuffer.texture = rhi::InvalidHandle;
     renderTargetPassConfig.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
     if(needClear)
         renderTargetPassConfig.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
     else
-        renderTargetPassConfig.colorBuffer[0].loadAction = rhi::LOADACTION_NONE;
+        renderTargetPassConfig.colorBuffer[0].loadAction = rhi::LOADACTION_LOAD;
     
     passTargetHandle = rhi::AllocateRenderPass(renderTargetPassConfig, 1, &currentPacketListHandle);
 
@@ -233,25 +235,25 @@ void RenderSystem2D::Setup2DMatrices()
 {
     if (IsRenderTargetPass())
     {
-        if (Renderer::GetCaps().upperLeftRTOrigin)
+        if (rhi::DeviceCaps().isUpperLeftRTOrigin)
         {
             projMatrix.glOrtho(0.0f, (float32)renderTargetWidth,
                 (float32)renderTargetHeight, 0.f,
-                -1.0f, 1.0f, Renderer::GetCaps().zeroBaseClipRange);
+                -1.0f, 1.0f, rhi::DeviceCaps().isZeroBaseClipRange);
         }
         else
         {
             projMatrix.glOrtho(0.0f, (float32)renderTargetWidth,
                 0.0f, (float32)renderTargetHeight,
-                -1.0f, 1.0f, Renderer::GetCaps().zeroBaseClipRange);
+                -1.0f, 1.0f, rhi::DeviceCaps().isZeroBaseClipRange);
         }
     }
     else
     {
-        projMatrix.glOrtho(0.0f, (float32)Renderer::GetFramebufferWidth(), (float32)Renderer::GetFramebufferHeight(), 0.0f, -1.0f, 1.0f, Renderer::GetCaps().zeroBaseClipRange);
+        projMatrix.glOrtho(0.0f, (float32)Renderer::GetFramebufferWidth(), (float32)Renderer::GetFramebufferHeight(), 0.0f, -1.0f, 1.0f, rhi::DeviceCaps().isZeroBaseClipRange);
     }
 
-    if (Renderer::GetCaps().isCenterPixelMapping)
+    if (rhi::DeviceCaps().isCenterPixelMapping)
     {
         // Make translation by half pixel for DirectX systems
         static Matrix4 pixelMappingMatrix = Matrix4::MakeTranslation(Vector3(-0.5f, -0.5f, 0.f));
@@ -1433,7 +1435,6 @@ void RenderSystem2D::FillPolygon(const Polygon2 & polygon, const Color& color)
         batch.vertexStride = 2;
         batch.texCoordStride = 2;
         batch.indexPointer = indices.data();
-        batch.primitiveType = rhi::PRIMITIVE_LINELIST;
         PushBatch(batch);
     }
 }

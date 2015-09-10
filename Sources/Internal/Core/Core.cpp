@@ -49,7 +49,6 @@
 #include "Render/2D/FTFont.h"
 #include "Scene3D/SceneFile/VersionInfo.h"
 #include "Render/Image/ImageSystem.h"
-#include "Scene3D/SceneCache.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "DLC/Downloader/DownloadManager.h"
@@ -146,7 +145,6 @@ void Core::CreateSingletons()
     new PerformanceSettings();
     new VersionInfo();
     new ImageSystem();
-    new SceneCache();
     new FrameOcclusionQueryManager();
     
     new VirtualCoordinatesSystem();
@@ -239,7 +237,6 @@ void Core::ReleaseSingletons()
     AllocatorFactory::Instance()->Release();
     Logger::Instance()->Release();
     ImageSystem::Instance()->Release();
-    SceneCache::Instance()->Release();
 
 #if defined(__DAVAENGINE_ANDROID__)
     AssetsManager::Instance()->Release();

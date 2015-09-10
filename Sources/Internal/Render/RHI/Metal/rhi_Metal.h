@@ -53,7 +53,8 @@ id<MTLBuffer> GetBuffer( Handle ib );
 
 namespace IndexBufferMetal
 {
-id<MTLBuffer> GetBuffer( Handle ib );
+id<MTLBuffer>   GetBuffer( Handle ib );
+MTLIndexType    GetType( Handle ib );
 }
 
 namespace QueryBufferMetal
@@ -73,7 +74,7 @@ void    SetAsDepthStencil( Handle tex, MTLRenderPassDescriptor* desc );
 
 namespace PipelineStateMetal
 {
-uint32    SetToRHI( Handle ps, uint32 layoutUID, id<MTLRenderCommandEncoder> ce );
+uint32    SetToRHI( Handle ps, uint32 layoutUID, bool ds_used, id<MTLRenderCommandEncoder> ce );
 }
 
 namespace DepthStencilStateMetal

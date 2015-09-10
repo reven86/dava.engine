@@ -707,11 +707,15 @@ SCOPED_FUNCTION_TIMING();
                         TextureDX9::SetAsRenderTarget( passCfg.colorBuffer[0].texture );                        
                     }
 
-                    if( passCfg.depthStencilBuffer.texture != rhi::InvalidHandle )
+                    if(     passCfg.depthStencilBuffer.texture != rhi::InvalidHandle 
+                        &&  passCfg.depthStencilBuffer.texture != DefaultDepthBuffer
+                      )
                     {
                         DVASSERT(!_D3D9_DepthBuf);
                         _D3D9_Device->GetDepthStencilSurface( &_D3D9_DepthBuf );
-                        TextureDX9::SetAsDepthStencil( passCfg.depthStencilBuffer.texture );
+
+                        if( passCfg.depthStencilBuffer.texture != rhi::InvalidHandle )
+                            TextureDX9::SetAsDepthStencil( passCfg.depthStencilBuffer.texture );
                     }
                     
                     // update default viewport
@@ -1053,7 +1057,7 @@ _RejectAllFrames()
                     s->is_signaled = true;
                     s->is_used = true;
                 }                
-
+                cc->_cmd.clear();
                 CommandBufferPool::Free( *c ); 
             }
 

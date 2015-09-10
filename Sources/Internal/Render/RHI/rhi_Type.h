@@ -47,7 +47,8 @@ using DAVA::Size2i;
 
 
 typedef uint32 Handle;
-static const uint32 InvalidHandle = 0;
+static const uint32 InvalidHandle       = 0;
+static const uint32 DefaultDepthBuffer  = (uint32)(-2);
 
 enum
 ResourceType
@@ -430,22 +431,32 @@ Descriptor
 };
 }
 
+enum
+IndexSize
+{
+    INDEX_SIZE_16BIT    = 0,
+    INDEX_SIZE_32BIT    = 1
+};
+
 namespace IndexBuffer
 {
+
 struct
 Descriptor
 {
-    uint32  size;
-    Pool    pool;
-    Usage   usage;
-    uint32  needRestore:1;
+    uint32      size;
+    IndexSize   indexSize;
+    Pool        pool;
+    Usage       usage;
+    uint32      needRestore:1;
             
-            Descriptor( uint32 sz=0 ) 
-              : size(sz),
-                pool(POOL_DEFAULT),
-                usage(USAGE_DEFAULT),
-                needRestore(true)
-            {}
+                Descriptor( uint32 sz=0 ) 
+                  : size(sz),
+                    indexSize(INDEX_SIZE_16BIT),
+                    pool(POOL_DEFAULT),
+                    usage(USAGE_DEFAULT),
+                    needRestore(true)
+                {}
 };
 }
 
@@ -760,7 +771,7 @@ RenderPassConfig
         uint32      clearStencil;
 
                     DepthStencilBuffer()
-                      : texture(InvalidHandle),
+                      : texture(DefaultDepthBuffer),
                         loadAction(LOADACTION_CLEAR),
                         storeAction(STOREACTION_NONE),
                         clearDepth(1.0f),

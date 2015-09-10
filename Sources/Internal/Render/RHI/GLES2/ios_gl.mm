@@ -74,7 +74,12 @@ ios_gl_init(void * nativeLayer)
 {
     _GLES2_Native_Window = nativeLayer;
     
-    _GLES2_Context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
+    _GLES2_Context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES3];
+    if (_GLES2_Context == nil)
+    {
+        _GLES2_Context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
+    }
+    
     [EAGLContext setCurrentContext:(EAGLContext*)_GLES2_Context];
     
     glGenFramebuffers( 1, &_GLES2_Default_FrameBuffer );

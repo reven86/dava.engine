@@ -66,6 +66,7 @@ static bool     _Inited             = false;
 Dispatch        DispatchGLES2       = {0};
 
 static bool     ATC_Supported       = false;
+static bool     PVRTC_Supported     = false;
 static bool     PVRTC2_Supported    = false;
 static bool     ETC1_Supported      = false;
 static bool     ETC2_Supported      = false;
@@ -73,6 +74,7 @@ static bool     EAC_Supported       = false;
 static bool     Float_Supported     = false;
 static bool     Half_Supported      = false;
 
+static RenderDeviceCaps _GLES2_DeviceCaps = {};
 
 //------------------------------------------------------------------------------
 
@@ -81,7 +83,13 @@ gles2_HostApi()
 {
     return RHI_GLES2;
 }
-
+    
+//------------------------------------------------------------------------------
+    
+static const RenderDeviceCaps & gles2_DeviceCaps()
+{
+    return _GLES2_DeviceCaps;
+}
 
 //------------------------------------------------------------------------------
 
@@ -114,7 +122,12 @@ gles2_TextureFormatSupported( TextureFormat format )
 
         case TEXTURE_FORMAT_PVRTC_4BPP_RGBA :
         case TEXTURE_FORMAT_PVRTC_2BPP_RGBA :
+            supported = PVRTC_Supported;
+            break;
+            
+        case TEXTURE_FORMAT_PVRTC2_4BPP_RGB  :
         case TEXTURE_FORMAT_PVRTC2_4BPP_RGBA :
+        case TEXTURE_FORMAT_PVRTC2_2BPP_RGB  :
         case TEXTURE_FORMAT_PVRTC2_2BPP_RGBA :
             supported = PVRTC2_Supported;
             break;
@@ -149,6 +162,42 @@ gles2_TextureFormatSupported( TextureFormat format )
     return supported;
 }
 
+static void
+gles_check_GL_extensions()
+{
+    const char* ext = (const char*)glGetString(GL_EXTENSIONS);
+    
+    if (!IsEmptyString(ext))
+    {
+        ATC_Supported = strstr(ext, "GL_AMD_compressed_ATC_texture") != nullptr;
+        PVRTC_Supported = strstr(ext, "GL_IMG_texture_compression_pvrtc") != nullptr;
+        PVRTC2_Supported = strstr(ext, "GL_IMG_texture_compression_pvrtc2") != nullptr;
+        ETC1_Supported = strstr(ext, "GL_OES_compressed_ETC1_RGB8_texture") != nullptr;
+        ETC2_Supported = strstr(ext, "GL_OES_compressed_ETC2_RGB8_texture") != nullptr;
+        EAC_Supported = ETC2_Supported;
+        Float_Supported = strstr(ext, "GL_OES_texture_float") != nullptr;
+        Half_Supported = strstr(ext, "GL_OES_texture_half_float") != nullptr;
+        
+        _GLES2_DeviceCaps.is32BitIndicesSupported = strstr(ext, "GL_OES_element_index_uint") != nullptr;
+        _GLES2_DeviceCaps.isVertexTextureUnitsSupported = strstr(ext, "GL_EXT_shader_texture_lod") != nullptr;
+        _GLES2_DeviceCaps.isFramebufferFetchSupported = strstr(ext, "GL_EXT_shader_framebuffer_fetch") != nullptr;
+    }
+    
+    const char* version = (const char*)glGetString(GL_VERSION);
+    if(!IsEmptyString(version))
+    {
+        if( strstr(version, "OpenGL ES 3.0") )
+        {
+            _GLES2_DeviceCaps.is32BitIndicesSupported = true;
+        }
+        else if (!strstr(version, "OpenGL ES"))
+        {
+            _GLES2_DeviceCaps.is32BitIndicesSupported = true;
+            _GLES2_DeviceCaps.isVertexTextureUnitsSupported = true;
+            _GLES2_DeviceCaps.isFramebufferFetchSupported = true;
+        }
+    }
+}
     
 //------------------------------------------------------------------------------
 #if defined(__DAVAENGINE_WIN32__)
@@ -376,25 +425,12 @@ gles2_Initialize( const InitParam& param )
         DispatchGLES2.impl_Uninitialize             = &gles2_Uninitialize;
         DispatchGLES2.impl_HostApi                  = &gles2_HostApi;
         DispatchGLES2.impl_TextureFormatSupported   = &gles2_TextureFormatSupported;
+        DispatchGLES2.impl_DeviceCaps               = &gles2_DeviceCaps;
         DispatchGLES2.impl_NeedRestoreResources     = &gles2_NeedRestoreResources;
 
         SetDispatchTable(DispatchGLES2);
 
-        // check GL extensions
-        {
-            const char* ext = (const char*)glGetString(GL_EXTENSIONS);
-
-            if (!IsEmptyString(ext))
-            {
-                ATC_Supported = strstr(ext, "GL_AMD_compressed_ATC_texture") != nullptr;
-                PVRTC2_Supported = strstr(ext, "GL_IMG_texture_compression_pvrtc2") != nullptr;
-                ETC1_Supported = strstr(ext, "GL_OES_compressed_ETC1_RGB8_texture") != nullptr;
-                ETC2_Supported = strstr(ext, "GL_OES_compressed_ETC2_RGB8_texture") != nullptr;
-                EAC_Supported = ETC2_Supported;
-                Float_Supported = strstr(ext, "GL_OES_texture_float") != nullptr;
-                Half_Supported = strstr(ext, "GL_OES_texture_half_float") != nullptr;
-            }
-        }
+        gles_check_GL_extensions();
 
         ConstBufferGLES2::InitializeRingBuffer(4 * 1024 * 1024); // CRAP: hardcoded default const ring-buf size
 
@@ -463,9 +499,13 @@ gles2_Initialize( const InitParam& param )
     DispatchGLES2.impl_Uninitialize             = &gles2_Uninitialize;
     DispatchGLES2.impl_HostApi                  = &gles2_HostApi;
     DispatchGLES2.impl_TextureFormatSupported   = &gles2_TextureFormatSupported;
+    DispatchGLES2.impl_DeviceCaps               = &gles2_DeviceCaps;
+    DispatchGLES2.impl_NeedRestoreResources     = &gles2_NeedRestoreResources;
 
     SetDispatchTable(DispatchGLES2);
 
+    gles_check_GL_extensions();
+    
     InitializeRenderThreadGLES2( (param.threadedRenderEnabled)?param.threadedRenderFrameCount:0 );
 
     #if 0
@@ -516,10 +556,13 @@ gles2_Initialize(const InitParam& param)
     DispatchGLES2.impl_Uninitialize             = &gles2_Uninitialize;
     DispatchGLES2.impl_HostApi                  = &gles2_HostApi;
     DispatchGLES2.impl_TextureFormatSupported   = &gles2_TextureFormatSupported;
+    DispatchGLES2.impl_DeviceCaps               = &gles2_DeviceCaps;
     DispatchGLES2.impl_NeedRestoreResources     = &gles2_NeedRestoreResources;
 
     SetDispatchTable(DispatchGLES2);
 
+    gles_check_GL_extensions();
+    
     InitializeRenderThreadGLES2( (param.threadedRenderEnabled)?param.threadedRenderFrameCount:0 );
 
 #if 0
@@ -573,10 +616,13 @@ gles2_Initialize( const InitParam& param )
     DispatchGLES2.impl_Uninitialize             = &gles2_Uninitialize;
     DispatchGLES2.impl_HostApi                  = &gles2_HostApi;
     DispatchGLES2.impl_TextureFormatSupported   = &gles2_TextureFormatSupported;
+    DispatchGLES2.impl_DeviceCaps               = &gles2_DeviceCaps;
     DispatchGLES2.impl_NeedRestoreResources     = &gles2_NeedRestoreResources;
 
     SetDispatchTable(DispatchGLES2);
 
+    gles_check_GL_extensions();
+    
     InitializeRenderThreadGLES2( (param.threadedRenderEnabled)?param.threadedRenderFrameCount:0 );
 
     #if 0
@@ -593,60 +639,6 @@ gles2_Initialize( const InitParam& param )
 }
 
 #endif
-
-GLint
-GL_TextureFormat( TextureFormat format )
-{
-    GLint   fmt = 0;
-    
-    switch( format ) 
-    {
-        case TEXTURE_FORMAT_R8G8B8      : fmt = GL_RGB; break;
-        case TEXTURE_FORMAT_R8G8B8A8    : fmt = GL_RGBA; break;
-/*
-        TEXTURE_FORMAT_A1R5G5B5,
-        TEXTURE_FORMAT_R5G6B5,
-
-
-        TEXTURE_FORMAT_A16R16G16B16,
-        TEXTURE_FORMAT_A32R32G32B32,
-
-        TEXTURE_FORMAT_R8,
-        TEXTURE_FORMAT_R16,
-
-        TEXTURE_FORMAT_DXT1,
-        TEXTURE_FORMAT_DXT3,
-        TEXTURE_FORMAT_DXT5,
-
-        TEXTURE_FORMAT_PVRTC2_4BPP_RGB,
-        TEXTURE_FORMAT_PVRTC2_4BPP_RGBA,
-        TEXTURE_FORMAT_PVRTC2_2BPP_RGB,
-        TEXTURE_FORMAT_PVRTC2_2BPP_RGBA,
-
-        TEXTURE_FORMAT_ATC_RGB,
-        TEXTURE_FORMAT_ATC_RGBA_EXPLICIT,
-        TEXTURE_FORMAT_ATC_RGBA_INTERPOLATED,
-
-        TEXTURE_FORMAT_ETC1,
-        TEXTURE_FORMAT_ETC2_R8G8B8,
-        TEXTURE_FORMAT_ETC2_R8G8B8A8,
-        TEXTURE_FORMAT_ETC2_R8G8B8A1,
-
-        TEXTURE_FORMAT_EAC_R11_UNSIGNED,
-        TEXTURE_FORMAT_EAC_R11_SIGNED,
-        TEXTURE_FORMAT_EAC_R11G11_UNSIGNED,
-        TEXTURE_FORMAT_EAC_R11G11_SIGNED,
-
-        TEXTURE_FORMAT_D16,
-        TEXTURE_FORMAT_D24S8
-*/    
-        default :
-            {}
-    }
-
-    return fmt;
-}
-    
    
 } // namespace rhi
 

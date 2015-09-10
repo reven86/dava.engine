@@ -207,6 +207,8 @@ private:
     
     void CreateRenderData();
     
+    void RestoreRenderData();
+    
     bool ReadyToRender();
     
     size_t SelectDirectionIndex(const Vector3& cameraDirection, Vector<VegetationSortedBufferItem>& buffers);
