@@ -34,7 +34,9 @@
 
 class CommandLineTool
 {    
-    
+public:
+	using EngineHelperCallback = DAVA::Function<void()>;
+
 public:
     
 	CommandLineTool();
@@ -44,7 +46,7 @@ public:
     
     virtual bool InitializeFromCommandLine() = 0;
   
-    virtual void Process() = 0;
+    virtual void Process(EngineHelperCallback) = 0;
 
 	virtual void PrintUsage() const = 0;
     

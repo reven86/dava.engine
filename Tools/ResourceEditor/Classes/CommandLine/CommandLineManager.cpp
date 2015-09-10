@@ -198,9 +198,9 @@ void CommandLineManager::FindActiveTool()
     }
 }
 
-void CommandLineManager::Process()
+void CommandLineManager::Process(CommandLineTool::EngineHelperCallback engineHelperCallback)
 {
-    if(activeTool)
+    if (activeTool)
     {
         const FilePath qualitySettings = activeTool->GetQualityConfigPath();
         if(!qualitySettings.IsEmpty())
@@ -208,7 +208,7 @@ void CommandLineManager::Process()
             QualitySettingsSystem::Instance()->Load(activeTool->GetQualityConfigPath());
         }
 
-        activeTool->Process();
+        activeTool->Process(engineHelperCallback);
     }
 }
 

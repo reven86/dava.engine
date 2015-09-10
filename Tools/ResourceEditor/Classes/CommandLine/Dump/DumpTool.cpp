@@ -103,7 +103,7 @@ void DumpTool::DumpParams() const
 		inFolder.GetStringValue().c_str(), filename.c_str(), outFile.GetStringValue().c_str(), qualityPathname.GetStringValue().c_str());
 }
 
-void DumpTool::Process() 
+void DumpTool::Process(CommandLineTool::EngineHelperCallback cb) 
 {
     if(commandAction == ACTION_DUMP_LINKS)
     {

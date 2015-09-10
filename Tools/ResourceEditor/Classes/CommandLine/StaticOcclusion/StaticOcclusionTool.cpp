@@ -80,7 +80,7 @@ void StaticOcclusionTool::DumpParams() const
     Logger::Info("StaticOcclusionTool started with params:\n\tFilename: %s", scenePathname.GetStringValue().c_str());
 }
 
-void StaticOcclusionTool::Process() 
+void StaticOcclusionTool::Process(CommandLineTool::EngineHelperCallback cb) 
 {
     if(commandAction == ACTION_BUILD)
     {

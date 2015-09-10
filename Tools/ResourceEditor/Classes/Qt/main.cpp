@@ -115,6 +115,18 @@ int main(int argc, char *argv[])
     return 0;
 }
 
+/*
+ * Temporary (hopefully!) solution for deferred deletion in RHI
+ * command line tools will time to time call this function
+ * in order to release resources
+ */
+void EngineHelperCallback()
+{
+	static const rhi::HTexture nullTexture;
+	static const rhi::Viewport nullViewport(0, 0, 1, 1);
+	RenderHelper::CreateClearPass(nullTexture, 0, DAVA::Color::Clear, nullViewport);
+	rhi::Present();
+}
 
 void RunConsole( int argc, char *argv[], CommandLineManager& cmdLine )
 {
@@ -149,10 +161,6 @@ void RunConsole( int argc, char *argv[], CommandLineManager& cmdLine )
 #endif
     glWidget->hide();
 
-#if RHI_COMPLETE_EDITOR //x3
-    RenderManager::Instance()->Init( 0, 0 );
-#endif // RHI_COMPLETE_EDITOR
-
     cmdLine.InitalizeTool();
     if ( !cmdLine.IsToolInitialized() )
     {
@@ -165,7 +173,7 @@ void RunConsole( int argc, char *argv[], CommandLineManager& cmdLine )
         VirtualCoordinatesSystem::Instance()->UnregisterAllAvailableResourceSizes();
         VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize( 1, 1, "Gfx" );
 
-        cmdLine.Process();
+		cmdLine.Process(&EngineHelperCallback);
         cmdLine.PrintResults();
     }
 

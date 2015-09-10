@@ -82,7 +82,7 @@ bool BeastCommandLineTool::InitializeFromCommandLine()
     return true;
 }
 
-void BeastCommandLineTool::Process() 
+void BeastCommandLineTool::Process(CommandLineTool::EngineHelperCallback cb) 
 {
 	SceneEditor2 *scene = new SceneEditor2();
 	if(scene->Load(scenePathname))

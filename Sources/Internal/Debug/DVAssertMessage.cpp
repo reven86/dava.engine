@@ -38,7 +38,7 @@ void* DVAssertMessage::messageBoxPtr = NULL;
 
 bool DVAssertMessage::ShowMessage(eModalType modalType, const char8 * text, ...)
 {
-    bool userClickBreak = false;
+    bool userClickBreak = true;
 	// we don't need to show assert window for console mode
 	if(Core::Instance()->IsConsoleMode()) return userClickBreak; // TODO what to do here? is loging only in console mode?
 

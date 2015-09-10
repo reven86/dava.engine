@@ -42,7 +42,8 @@
 
 using namespace DAVA;
 
-SceneExporter::SceneExporter()
+SceneExporter::SceneExporter(CommandLineTool::EngineHelperCallback engineCallback_) 
+	: engineCallback(engineCallback_)
 {
     exportForGPU = GPU_ORIGIN;
 	quality = TextureConverter::ECQ_DEFAULT;
@@ -70,7 +71,6 @@ void SceneExporter::SetGPUForExporting(const eGPUFamily newGPU)
     exportForGPU = newGPU;
 }
 
-
 void SceneExporter::ExportSceneFolder(const String &folderName, Set<String> &errorLog)
 {
     FilePath folderPathname = sceneUtils.dataSourceFolder + folderName;
@@ -86,6 +86,7 @@ void SceneExporter::ExportSceneFolder(const String &folderName, Set<String> &err
             {
                 String workingPathname = pathname.GetRelativePathname(sceneUtils.dataSourceFolder);
                 ExportSceneFolder(workingPathname, errorLog);
+				engineCallback();
             }
         }
         else
@@ -101,6 +102,7 @@ void SceneExporter::ExportSceneFolder(const String &folderName, Set<String> &err
                 
                 String workingPathname = pathname.GetRelativePathname(sceneUtils.dataSourceFolder);
                 ExportSceneFile(workingPathname, errorLog);
+				engineCallback();
             }
         }
     }
@@ -196,6 +198,7 @@ void SceneExporter::ExportScene(Scene *scene, const FilePath &fileName, Set<Stri
     bool sceneWasExportedCorrectly = ExportDescriptors(scene, errorLog);
     uint64 exportDescriptorsTime = SystemTimer::Instance()->AbsoluteMS() - exportDescriptorsStart;
 
+	engineCallback();
     
     uint64 validationStart = SystemTimer::Instance()->AbsoluteMS();
     FilePath oldPath = SceneValidator::Instance()->SetPathForChecking(sceneUtils.dataSourceFolder);
@@ -203,10 +206,13 @@ void SceneExporter::ExportScene(Scene *scene, const FilePath &fileName, Set<Stri
 	//SceneValidator::Instance()->ValidateScales(scene, errorLog);
     uint64 validationTime = SystemTimer::Instance()->AbsoluteMS() - validationStart;
 
+	engineCallback();
     
     uint64 landscapeStart = SystemTimer::Instance()->AbsoluteMS();
     sceneWasExportedCorrectly &= ExportLandscape(scene, errorLog);
     uint64 landscapeTime = SystemTimer::Instance()->AbsoluteMS() - landscapeStart;
+
+	engineCallback();
 
     //save scene to new place
     uint64 saveStart = SystemTimer::Instance()->AbsoluteMS();
@@ -214,6 +220,7 @@ void SceneExporter::ExportScene(Scene *scene, const FilePath &fileName, Set<Stri
     scene->SaveScene(tempSceneName, optimizeOnExport);
     uint64 saveTime = SystemTimer::Instance()->AbsoluteMS() - saveStart;
 
+	engineCallback();
     
     uint64 moveStart = SystemTimer::Instance()->AbsoluteMS();
     bool moved = FileSystem::Instance()->MoveFile(tempSceneName, sceneUtils.dataFolder + relativeFilename, true);

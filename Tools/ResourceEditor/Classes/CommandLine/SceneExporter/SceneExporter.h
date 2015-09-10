@@ -30,7 +30,7 @@
 #ifndef __SCENE_EXPORTER_H__
 #define __SCENE_EXPORTER_H__
 
-#include "DAVAEngine.h"
+#include "CommandLine/CommandLineTool.h"
 #include "CommandLine/SceneUtils/SceneUtils.h"
 #include "TextureCompression/TextureConverter.h"
 
@@ -40,7 +40,7 @@ class SceneExporter
 {
 public:
 
-	SceneExporter();
+	SceneExporter(CommandLineTool::EngineHelperCallback intermediateCallback);
 	virtual ~SceneExporter();
     
     void SetGPUForExporting(const eGPUFamily newGPU);
@@ -73,13 +73,11 @@ protected:
     bool ExportLandscape(Scene *scene, Set<String> &errorLog);
     
 protected:
-    
+    CommandLineTool::EngineHelperCallback engineCallback;
     SceneUtils sceneUtils;
-
-    eGPUFamily exportForGPU;
-	bool optimizeOnExport;
-
-	TextureConverter::eConvertQuality quality;
+    eGPUFamily exportForGPU = eGPUFamily::GPU_ORIGIN;
+	TextureConverter::eConvertQuality quality = TextureConverter::eConvertQuality::ECQ_DEFAULT;
+	bool optimizeOnExport = false;
 };
 
 

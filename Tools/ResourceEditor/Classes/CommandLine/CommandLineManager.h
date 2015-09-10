@@ -30,9 +30,8 @@
 #ifndef __COMMAND_LINE_MANAGER_H__
 #define __COMMAND_LINE_MANAGER_H__
 
-#include "DAVAEngine.h"
+#include "CommandLineTool.h"
 
-class CommandLineTool;
 class CommandLineManager
 {    
 public:
@@ -43,7 +42,7 @@ public:
     bool IsToolInitialized() { return isToolInitialized; };
     
 	void InitalizeTool();
-    void Process();
+    void Process(CommandLineTool::EngineHelperCallback engineHelperCallback);
     void PrintResults();
 	void PrintUsage();
 	void PrintUsageForActiveTool();

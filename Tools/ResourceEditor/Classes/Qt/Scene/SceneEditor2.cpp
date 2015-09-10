@@ -262,7 +262,8 @@ SceneFileV2::eError SceneEditor2::Save()
 
 bool SceneEditor2::Export(const DAVA::eGPUFamily newGPU)
 {
-	SceneExporter exporter;
+	CommandLineTool::EngineHelperCallback nullCallback = [](){};
+	SceneExporter exporter(nullCallback);
 	
 	FilePath projectPath(ProjectManager::Instance()->CurProjectPath());
 	
