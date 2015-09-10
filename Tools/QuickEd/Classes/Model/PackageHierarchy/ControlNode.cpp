@@ -38,8 +38,6 @@
 
 using namespace DAVA;
 
-static int32 counter = 0;
-
 ControlNode::ControlNode(UIControl *control, bool recursively)
     : ControlsContainerNode(nullptr)
     , control(SafeRetain(control))
@@ -60,9 +58,6 @@ ControlNode::ControlNode(UIControl *control, bool recursively)
             nodes.push_back(childNode);
         }
     }
-
-    ++counter;
-    Logger::Info("--create CN: %d", counter);
 }
 
 ControlNode::ControlNode(ControlNode *node, eCreationType _creationType)
@@ -96,9 +91,6 @@ ControlNode::ControlNode(ControlNode *node, eCreationType _creationType)
         ScopedPtr<ControlNode> childNode(new ControlNode(sourceChild, childCreationType));
         Add(childNode);
     }
-
-    ++counter;
-    Logger::Info("--create CN: %d", counter);
 }
 
 ControlNode::~ControlNode()
@@ -115,9 +107,6 @@ ControlNode::~ControlNode()
     SafeRelease(prototype);
     
     DVASSERT(instances.empty());
-
-    --counter;
-    Logger::Info("--delete CN: %d", counter);
 }
 
 ControlNode *ControlNode::CreateFromControl(DAVA::UIControl *control)
@@ -156,7 +145,7 @@ void ControlNode::Add(ControlNode *node)
 
 void ControlNode::InsertAtIndex(int index, ControlNode *node)
 {
-    if (index >= nodes.size())
+    if (index >= static_cast<int>(nodes.size()))
     {
         Add(node);
     }
@@ -278,7 +267,7 @@ bool ControlNode::CanInsertControl(ControlNode *node, DAVA::int32 pos) const
     if (IsReadOnly())
         return false;
     
-    if (pos < nodes.size() && nodes[pos]->GetCreationType() == CREATED_FROM_PROTOTYPE_CHILD)
+    if (pos < static_cast<int32>(nodes.size()) && nodes[pos]->GetCreationType() == CREATED_FROM_PROTOTYPE_CHILD)
         return false;
     
     if (node && node->IsInstancedFrom(this))
