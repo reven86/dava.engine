@@ -894,7 +894,7 @@ void MaterialEditor::OnMaterialSave(bool checked)
             ScopedPtr<DAVA::KeyedArchive> presetArchive(new DAVA::KeyedArchive());
 			presetArchive->SetUInt32("serializationContextVersion", materialContext.GetVersion());
 			presetArchive->SetArchive("content", materialArchive);
-            presetArchive->Save(lastSavePath);
+            presetArchive->SaveToYamlFile(lastSavePath);
         }
     }
     else
@@ -917,7 +917,7 @@ void MaterialEditor::OnMaterialLoad(bool checked)
             lastSavePath = inputFile.toLatin1().data();
 
             ScopedPtr<DAVA::KeyedArchive> presetArchive(new DAVA::KeyedArchive());
-            presetArchive->Load(lastSavePath);
+            presetArchive->LoadFromYamlFile(lastSavePath);
 
 			// not checking version right now
 			// version info is reserved for future use
@@ -935,7 +935,7 @@ void MaterialEditor::OnMaterialLoad(bool checked)
 			}
 			else 
 			{
-		        QMessageBox::warning(this, "Material preset not supported",
+		        QMessageBox::warning(this, "Material preset is not supported",
 					"Material preset you are trying to open is either old or invalid.");
 			}
         }
@@ -1093,11 +1093,72 @@ void MaterialEditor::StoreMaterialToPreset(DAVA::NMaterial* material, DAVA::Keye
 
 	auto fxName = material->GetLocalFXName();
 	if (fxName.IsValid())
-		archive->SetString("fxname", fxName.c_str());
+		archive->SetFastName("fxname", fxName);
 	
 	auto qualityGroup = material->GetQualityGroup();
 	if (qualityGroup.IsValid())
-		archive->SetString("group", qualityGroup.c_str());
+		archive->SetFastName("group", qualityGroup);
+}
+
+void MaterialEditor::UpdateMaterialPropertiesFromPreset(DAVA::NMaterial* material, DAVA::KeyedArchive* properitesArchive)
+{
+	const auto properties = properitesArchive->GetArchieveData();
+	for (const auto& pm : properties)
+	{
+		DVASSERT(VariantType::TYPE_KEYED_ARCHIVE == pm.second->type);
+
+		FastName propName(pm.first);
+		KeyedArchive* propertyArchive = pm.second->AsKeyedArchive();
+		rhi::ShaderProp::Type propType = static_cast<rhi::ShaderProp::Type>(propertyArchive->GetUInt32("type"));
+		uint32 propSize = propertyArchive->GetUInt32("size");
+		const float32* propData = reinterpret_cast<const float32*>(propertyArchive->GetByteArray("data"));
+
+		if (material->HasLocalProperty(propName))
+		{
+			auto existingType = material->GetLocalPropType(propName);
+			auto existingSize = material->GetLocalPropArraySize(propName);
+			if ((existingType == propType) && (existingSize == propSize))
+			{
+				material->SetPropertyValue(propName, propData);
+			}
+		}
+		else
+		{
+			material->AddProperty(propName, propData, propType, propSize);
+		}
+	}
+}
+
+void MaterialEditor::UpdateMaterialFlagsFromPreset(DAVA::NMaterial* material, DAVA::KeyedArchive* flagsArchive)
+{
+	const auto flags = flagsArchive->GetArchieveData();
+	for (const auto& fm : flags)
+	{
+		if (material->HasLocalFlag(FastName(fm.first)))
+			material->SetFlag(FastName(fm.first), fm.second->AsInt32());
+		else
+			material->AddFlag(FastName(fm.first), fm.second->AsInt32());
+	}
+}
+
+void MaterialEditor::UpdateMaterialTexturesFromPreset(DAVA::NMaterial* material, DAVA::KeyedArchive* texturesArchive,
+	const DAVA::FilePath& scenePath)
+{
+	const auto& texturesMap = texturesArchive->GetArchieveData();
+	for (const auto& tm : texturesMap)
+	{
+		auto texture = Texture::CreateFromFile(scenePath + tm.second->AsString());
+
+		FastName textureName(tm.first);
+		if (material->HasLocalTexture(textureName))
+		{
+			material->SetTexture(textureName, texture);
+		}
+		else
+		{
+			material->AddTexture(textureName, texture);
+		}
+	}
 }
 
 void MaterialEditor::UpdateMaterialFromPresetWithOptions(DAVA::NMaterial* material, DAVA::KeyedArchive* preset,
@@ -1105,75 +1166,26 @@ void MaterialEditor::UpdateMaterialFromPresetWithOptions(DAVA::NMaterial* materi
 {
 	if ((options & CHECKED_GROUP) && preset->IsKeyExists("group"))
 	{
-		FastName qualityGroup(preset->GetString("materialGroup").c_str());
-		material->SetQualityGroup(qualityGroup);
+		material->SetQualityGroup(preset->GetFastName("materialGroup"));
 	}
 
 	if ((options & CHECKED_TEMPLATE) && preset->IsKeyExists("fxname"))
 	{
-		FastName fxName(preset->GetString("fxname").c_str());
-		material->SetFXName(fxName);
+		material->SetFXName(preset->GetFastName("fxname"));
 	}
 
 	if ((options & CHECKED_PROPERTIES) && preset->IsKeyExists("flags"))
 	{
-		const auto flags = preset->GetArchive("flags")->GetArchieveData();
-		for (const auto& fm : flags)
-		{
-			if (material->HasLocalFlag(FastName(fm.first)))
-				material->SetFlag(FastName(fm.first), fm.second->AsInt32());
-			else
-				material->AddFlag(FastName(fm.first), fm.second->AsInt32());
-		}
+		UpdateMaterialFlagsFromPreset(material,  preset->GetArchive("flags"));
 	}
 
     if ((options & CHECKED_PROPERTIES) && preset->IsKeyExists("properties"))
-    {
-        const auto properties = preset->GetArchive("properties")->GetArchieveData();
-        for (const auto& pm : properties)
-        {
-            DVASSERT(VariantType::TYPE_KEYED_ARCHIVE == pm.second->type);
-
-            FastName propName(pm.first);
-			KeyedArchive* propertyArchive = pm.second->AsKeyedArchive();
-			rhi::ShaderProp::Type propType = static_cast<rhi::ShaderProp::Type>(propertyArchive->GetUInt32("type"));
-			uint32 propSize = propertyArchive->GetUInt32("size");
-			const float32* propData = reinterpret_cast<const float32*>(propertyArchive->GetByteArray("data"));
-            
-			if (material->HasLocalProperty(propName))
-			{
-				auto existingType = material->GetLocalPropType(propName);
-				auto existingSize = material->GetLocalPropArraySize(propName);
-
-				// do we need this check?
-				if ((existingType == propType) && (existingSize == propSize))
-				{
-					material->SetPropertyValue(propName, propData);
-				}
-			}
-			else 
-			{
-	            material->AddProperty(propName, propData, propType, propSize);
-			}
-        }
-    }
+	{
+		UpdateMaterialPropertiesFromPreset(material,  preset->GetArchive("properties"));
+	}
 
     if ((options & CHECKED_TEXTURES) && preset->IsKeyExists("textures"))
-    {
-        const auto& texturesMap = preset->GetArchive("textures")->GetArchieveData();
-        for (const auto& tm : texturesMap)
-        {
-			FastName textureName(tm.first);
-			auto pathToTexture = context->GetScenePath() + tm.second->AsString();
-			auto texture = Texture::CreateFromFile(pathToTexture);
-			if (material->HasLocalTexture(textureName))
-			{
-				material->SetTexture(textureName, texture);
-			}
-			else 
-			{
-				material->AddTexture(textureName, texture);
-			}
-        }
-    }
+	{
+		UpdateMaterialTexturesFromPreset(material,  preset->GetArchive("textures"), context->GetScenePath());
+	}
 }

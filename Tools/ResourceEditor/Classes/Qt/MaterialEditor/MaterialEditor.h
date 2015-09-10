@@ -108,6 +108,10 @@ private slots:
 
 	void UpdateMaterialFromPresetWithOptions(DAVA::NMaterial* material, DAVA::KeyedArchive* preset,
 		DAVA::SerializationContext* context, uint32 options);
+	void UpdateMaterialPropertiesFromPreset(DAVA::NMaterial* material, DAVA::KeyedArchive* properitesArchive);
+	void UpdateMaterialFlagsFromPreset(DAVA::NMaterial* material, DAVA::KeyedArchive* flagsArchive);
+	void UpdateMaterialTexturesFromPreset(DAVA::NMaterial* material, DAVA::KeyedArchive* texturesArchive, 
+		const DAVA::FilePath& scenePath);
 
 private:
     enum 
