@@ -34,12 +34,12 @@ BaseSystem::BaseSystem(Document *parent)
     
 }
 
-void BaseSystem::Activate()
+void BaseSystem::OnActivated()
 {
     
 }
 
-void BaseSystem::Deactivate()
+void BaseSystem::OnDeactivated()
 {
     
 }

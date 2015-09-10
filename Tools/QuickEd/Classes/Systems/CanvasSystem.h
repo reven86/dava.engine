@@ -46,8 +46,8 @@ public:
     ~CanvasSystem() override = default;
     DAVA::UIControl* GetCanvasControl();
 
-    void Activate() override;
-    void Deactivate() override;
+    void OnActivated() override;
+    void OnDeactivated() override;
 
     void SetSelection(const SelectedControls &selected, const SelectedControls &deselected);
 

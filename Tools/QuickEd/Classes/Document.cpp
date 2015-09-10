@@ -162,7 +162,7 @@ void Document::Deactivate()
 {
     for (auto &system : systems)
     {
-        system->Deactivate();
+        system->OnDeactivated();
     }
     emit SelectedNodesChanged(SelectedNodes(), selectedItems);
 }
@@ -171,7 +171,7 @@ void Document::Activate()
 {
     for (auto system : systems)
     {
-        system->Activate();
+        system->OnActivated();
     }
     emit SelectedNodesChanged(selectedItems, SelectedNodes());
     emit ScaleChanged(scale);

@@ -42,7 +42,7 @@ public:
     explicit CursorSystem(Document *doc);
     ~CursorSystem() override = default;
 
-    void Deactivate() override;
+    void OnDeactivated() override;
 
     void SetActiveArea(const HUDareaInfo &areaInfo);
 

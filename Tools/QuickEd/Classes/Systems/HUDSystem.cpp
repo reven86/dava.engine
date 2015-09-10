@@ -192,7 +192,7 @@ HUDSystem::HUDSystem(Document *document_)
     document->SelectionChanged.Connect(this, &HUDSystem::SetSelection);
 }
 
-void HUDSystem::Activate()
+void HUDSystem::OnActivated()
 {
     if (!document->IsInEmulationMode())
     {
@@ -200,7 +200,7 @@ void HUDSystem::Activate()
     }
 }
 
-void HUDSystem::Deactivate()
+void HUDSystem::OnDeactivated()
 {
     hudControl->RemoveFromParent();
     canDrawRect = false;

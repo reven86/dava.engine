@@ -42,8 +42,8 @@ public:
     explicit BaseSystem(Document *parent);
     virtual ~BaseSystem() = 0;
 
-    virtual void Activate(); 
-    virtual void Deactivate();
+    virtual void OnActivated(); 
+    virtual void OnDeactivated();
 
     virtual bool OnInput(DAVA::UIEvent *currentInput);
 protected:

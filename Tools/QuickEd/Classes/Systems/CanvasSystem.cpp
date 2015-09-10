@@ -80,14 +80,14 @@ UIControl* CanvasSystem::GetCanvasControl()
     return canvas.get();
 }
 
-void CanvasSystem::Activate()
+void CanvasSystem::OnActivated()
 {
     document->GetScalableControl()->AddControl(canvas);
     SetSelection(SelectedControls(), SelectedControls());
 
 }
 
-void CanvasSystem::Deactivate()
+void CanvasSystem::OnDeactivated()
 {
     canvas->RemoveFromParent();
 }

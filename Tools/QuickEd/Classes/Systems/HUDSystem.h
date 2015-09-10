@@ -55,8 +55,8 @@ public:
     HUDSystem(Document *document);
     ~HUDSystem() = default;
 
-    void Activate() override;
-    void Deactivate() override;
+    void OnActivated() override;
+    void OnDeactivated() override;
 
     void SetSelection(const SelectedControls &selected, const SelectedControls &deselected);
     bool OnInput(DAVA::UIEvent *currentInput) override;

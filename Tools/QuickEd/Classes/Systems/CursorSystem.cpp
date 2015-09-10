@@ -44,7 +44,7 @@ CursorSystem::CursorSystem(Document* doc)
     document->ActiveAreaChanged.Connect(this, &CursorSystem::SetActiveArea);
 }
 
-void CursorSystem::Deactivate()
+void CursorSystem::OnDeactivated()
 {
     SetActiveArea(HUDareaInfo());
 }
