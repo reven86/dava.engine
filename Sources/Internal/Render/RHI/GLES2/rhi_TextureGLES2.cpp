@@ -728,6 +728,8 @@ SetAsRenderTarget( Handle tex, Handle depth )
             }
             #if defined __DAVAENGINE_IPHONE__
             #else
+            GLenum          b[1] = { GL_COLOR_ATTACHMENT0 };
+            
             glDrawBuffers( 1, b );
             #endif
             
