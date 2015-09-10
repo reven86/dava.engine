@@ -1057,7 +1057,7 @@ _RejectAllFrames()
                     s->is_signaled = true;
                     s->is_used = true;
                 }                
-
+                cc->_cmd.clear();
                 CommandBufferPool::Free( *c ); 
             }
 
