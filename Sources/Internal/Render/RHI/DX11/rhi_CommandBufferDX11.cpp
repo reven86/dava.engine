@@ -528,7 +528,7 @@ dx11_CommandBuffer_SetVertexConstBuffer( Handle cmdBuf, uint32 bufIndex, Handle 
 {
     CommandBufferDX11_t*    cb = CommandBufferPool::Get( cmdBuf );
 
-    ConstBufferDX11::SetToRHI( buffer, ConstBufferDX11::InstData(buffer), cb->context );
+    ConstBufferDX11::SetToRHI( buffer, cb->context );
 }
 
 
@@ -584,7 +584,7 @@ dx11_CommandBuffer_SetFragmentConstBuffer( Handle cmdBuf, uint32 bufIndex, Handl
 {
     CommandBufferDX11_t*    cb = CommandBufferPool::Get( cmdBuf );
 
-    ConstBufferDX11::SetToRHI( buffer, ConstBufferDX11::InstData(buffer), cb->context );
+    ConstBufferDX11::SetToRHI( buffer, cb->context );
 }
 
 
@@ -1115,8 +1115,6 @@ Trace("\n\n-------------------------------\nframe %u generated\n",_Frame.back().
 
         _ExecuteQueuedCommandsDX11(); 
     }
-
-    ConstBufferDX11::InvalidateAllConstBufferInstances();
 }
 
 

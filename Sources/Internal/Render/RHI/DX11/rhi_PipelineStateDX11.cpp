@@ -301,12 +301,10 @@ public:
     void        Destroy();
 
     unsigned    ConstCount() const;
-    const void* InstData() const;
-    void        InvalidateInst();
 
     bool        SetConst( unsigned const_i, unsigned count, const float* data );
     bool        SetConst( unsigned const_i, unsigned const_sub_i, const float* data, unsigned dataCount );
-    void        SetToRHI( const void* inst_data, ID3D11DeviceContext* context ) const;
+    void        SetToRHI( ID3D11DeviceContext* context ) const;
 
 
 private:
@@ -316,7 +314,6 @@ private:
     ProgType        progType;
     ID3D11Buffer*   buf;
     mutable float*  value;
-    mutable float*  inst;
     unsigned        buf_i;
     unsigned        regCount;
 };
@@ -329,7 +326,6 @@ static RingBuffer   _DefConstRingBuf;
 ConstBufDX11::ConstBufDX11()
   : buf(nullptr),
     value(nullptr),
-    inst(nullptr),
     buf_i(InvalidIndex),
     regCount(0)
 {
@@ -387,7 +383,6 @@ ConstBufDX11::Construct( ProgType ptype, unsigned bufIndex, unsigned regCnt )
     {
         progType = ptype;
         value    = (float*)(malloc( regCnt*4*sizeof(float) ));
-        inst     = nullptr;
         buf_i    = bufIndex;
         regCount = regCnt;
     }
@@ -432,30 +427,6 @@ ConstBufDX11::ConstCount() const
 
 //------------------------------------------------------------------------------
 
-const void*
-ConstBufDX11::InstData() const
-{
-    if( !inst )
-    {
-        inst = _DefConstRingBuf.Alloc( 4*regCount );
-        memcpy( inst, value, regCount*4*sizeof(float) );
-    }
-
-    return inst;    
-}
-
-
-//------------------------------------------------------------------------------
-
-void
-ConstBufDX11::InvalidateInst()
-{
-    inst = nullptr;
-}
-
-
-//------------------------------------------------------------------------------
-
 bool
 ConstBufDX11::SetConst( unsigned const_i, unsigned const_count, const float* data )
 {
@@ -464,7 +435,6 @@ ConstBufDX11::SetConst( unsigned const_i, unsigned const_count, const float* dat
     if( const_i + const_count <= regCount )
     {
         memcpy( value + const_i*4, data, const_count*4*sizeof(float) );
-        inst    = nullptr;
         success = true;
     }
     
@@ -482,7 +452,6 @@ ConstBufDX11::SetConst( unsigned const_i, unsigned const_sub_i, const float* dat
     if( const_i <= regCount  &&  const_sub_i < 4 )
     {
         memcpy( value + const_i*4 + const_sub_i, data, dataCount*sizeof(float) );
-        inst    = nullptr;
         success = true;
     }
     
@@ -493,9 +462,9 @@ ConstBufDX11::SetConst( unsigned const_i, unsigned const_sub_i, const float* dat
 //------------------------------------------------------------------------------
 
 void
-ConstBufDX11::SetToRHI( const void* inst_data, ID3D11DeviceContext* context ) const
+ConstBufDX11::SetToRHI( ID3D11DeviceContext* context ) const
 {
-    context->UpdateSubresource( buf, 0, NULL, inst_data, regCount*4*sizeof(float), 0 );
+    context->UpdateSubresource( buf, 0, NULL, value, regCount*4*sizeof(float), 0 );
 
     ID3D11Buffer*   cb[1] = { buf };
 
@@ -1001,28 +970,11 @@ SetupDispatch( Dispatch* dispatch )
 }
 
 void
-SetToRHI( Handle cb, const void* inst_data, ID3D11DeviceContext* context )
+SetToRHI( Handle cb, ID3D11DeviceContext* context )
 {
     ConstBufDX11*   cb11 = ConstBufDX11Pool::Get( cb );
     
-    cb11->SetToRHI( inst_data, context );
-}
-
-const void* 
-InstData( Handle cb )
-{
-    ConstBufDX11*   cb11 = ConstBufDX11Pool::Get( cb );
-    
-    return cb11->InstData();
-}
-
-void
-InvalidateAllConstBufferInstances()
-{
-    for( ConstBufDX11Pool::Iterator b=ConstBufDX11Pool::Begin(),b_end=ConstBufDX11Pool::End(); b!=b_end; ++b )
-    {
-        b->InvalidateInst();
-    }
+    cb11->SetToRHI( context );
 }
 
 void
