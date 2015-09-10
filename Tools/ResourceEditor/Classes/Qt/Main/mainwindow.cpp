@@ -2050,40 +2050,35 @@ void QtMainWindow::OnSaveTiledTexture()
 		return;
 	}
 
-    Landscape *landscape = FindLandscape(scene);
-    if(nullptr == landscape)
-    {
-        return;
-    }
-
-    ScopedPtr<Texture> landscapeTexture(landscape->CreateLandscapeTexture());
-	if (landscapeTexture)
+    Landscape* landscape = FindLandscape(scene);
+    if (nullptr != landscape)
 	{
-        FilePath pathToSave = landscape->GetMaterial()->GetEffectiveTexture(DAVA::Landscape::TEXTURE_COLOR)->GetPathname();
-		if (pathToSave.IsEmpty())
-		{
-			FilePath scenePath = scene->GetScenePath().GetDirectory();
-			QString selectedPath = FileDialog::getSaveFileName(this, "Save landscape texture as",
-														 scenePath.GetAbsolutePathname().c_str(),
-														 PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter);
-			if (selectedPath.isEmpty())
-			{
-				return;
-			}
-
-			pathToSave = FilePath(selectedPath.toStdString());
-		}
-		else
-		{
-			pathToSave.ReplaceExtension(".thumbnail.png");
-		}
-
-        ScopedPtr<Image> image(landscapeTexture->CreateImageFromMemory());
-		if(image)
-		{
-            ImageSystem::Instance()->Save(pathToSave, image);
-		}
+		landscape->CreateLandscapeTexture(MakeFunction(this, &QtMainWindow::OnTiledTextureRetreived));
 	}
+}
+
+void QtMainWindow::OnTiledTextureRetreived(DAVA::Landscape* landscape, DAVA::Texture* landscapeTexture)
+{
+    FilePath pathToSave = landscape->GetMaterial()->GetEffectiveTexture(DAVA::Landscape::TEXTURE_COLOR)->GetPathname();
+	if (pathToSave.IsEmpty())
+	{
+		QString selectedPath = FileDialog::getSaveFileName(this, "Save landscape texture as",
+			ProjectManager::Instance()->CurProjectDataSourcePath().GetAbsolutePathname().c_str(), 
+			PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter);
+
+		if (selectedPath.isEmpty())
+		{
+			return;
+		}
+
+		pathToSave = FilePath(selectedPath.toStdString());
+	}
+	else
+	{
+		pathToSave.ReplaceExtension(".thumbnail.png");
+	}
+
+	SaveTextureToFile(landscapeTexture, pathToSave);
 }
 
 void QtMainWindow::OnConvertModifiedTextures()

@@ -72,19 +72,13 @@ DeviceInfoPrivate::DeviceInfoPrivate()
     platform = isMobileMode ? DeviceInfo::PLATFORM_PHONE_WIN_UAP : DeviceInfo::PLATFORM_DESKTOP_WIN_UAP;
     platformString = GlobalEnumMap<DeviceInfo::ePlatform>::Instance()->ToString(GetPlatform());
 
-    try
-    {
-        EasClientDeviceInformation deviceInfo;
-        version = RTStringToString(deviceInfo.SystemFirmwareVersion);
-        manufacturer = RTStringToString(deviceInfo.SystemManufacturer);
-        modelName = RTStringToString(deviceInfo.FriendlyName);
-        productName = WideString(deviceInfo.SystemProductName->Data());
-        gpu = GPUFamily();
-        uDID = RTStringToString(deviceInfo.Id.ToString());
-    }
-    catch (Platform::Exception^ e)
-    {
-    }
+    EasClientDeviceInformation deviceInfo;
+    version = RTStringToString(deviceInfo.SystemFirmwareVersion);
+    manufacturer = RTStringToString(deviceInfo.SystemManufacturer);
+    modelName = RTStringToString(deviceInfo.FriendlyName);
+    productName = WideString(deviceInfo.SystemProductName->Data());
+    gpu = GPUFamily();
+    uDID = RTStringToString(Windows::System::UserProfile::AdvertisingManager::AdvertisingId);
     cpuCount = static_cast<int32>(std::thread::hardware_concurrency());
     if (0 == cpuCount)
     {
@@ -137,10 +131,7 @@ String DeviceInfoPrivate::GetRegion()
 
 String DeviceInfoPrivate::GetTimeZone()
 {
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
-    // TODO: uncomment after add Windows.System.SystemManagementContract
-    // RTStringToString(Windows::System::TimeZoneSettings::CurrentTimeZoneDisplayName);
-    return "Not yet implemented";
+    return RTStringToString(Windows::System::TimeZoneSettings::CurrentTimeZoneDisplayName);
 }
 
 String DeviceInfoPrivate::GetHTTPProxyHost()
