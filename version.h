@@ -1,1 +1,0 @@
-#define APPLICATION_VERSION ""44567456_"for_qa"
