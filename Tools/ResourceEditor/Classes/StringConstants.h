@@ -118,7 +118,6 @@ namespace ResourceEditor
 	static const String VISIBILITY_TOOL_SET_POINT_CAPTION	= "Set Visibility Point";
 	static const String VISIBILITY_TOOL_SAVE_TEXTURE_CAPTION= "Save Texture";
 
-	static const String RULER_TOOL_LINE_WIDTH_CAPTION		= "Line\nwidth:";
 	static const String RULER_TOOL_LENGTH_CAPTION			= "Length:";
 	static const String RULER_TOOL_PREVIEW_LENGTH_CAPTION	= "Preview length:";
 	static const String RULER_TOOL_ENABLE_ERROR				= "Error enabling Ruler Tool. Make sure there is valid landscape at the scene.";

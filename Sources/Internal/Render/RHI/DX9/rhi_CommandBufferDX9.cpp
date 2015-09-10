@@ -1038,17 +1038,25 @@ _RejectAllFrames()
 {
     for( std::vector<FrameDX9>::iterator f=_Frame.begin(),f_end=_Frame.end(); f!=f_end; ++f )
     {
+        if (f->sync != InvalidHandle)
+        {
+            SyncObjectDX9_t*    s = SyncObjectPool::Get(f->sync);
+            s->is_signaled = true;
+            s->is_used = true;
+        }
         for( std::vector<Handle>::iterator p=f->pass.begin(),p_end=f->pass.end(); p!=p_end; ++p )
         {
             RenderPassDX9_t*    pp = RenderPassPool::Get( *p );
             
-            for( std::vector<Handle>::iterator c=pp->cmdBuf.begin(),c_end=pp->cmdBuf.begin(); c!=c_end; ++c )
+            for( std::vector<Handle>::iterator c=pp->cmdBuf.begin(),c_end=pp->cmdBuf.end(); c!=c_end; ++c )
             {
                 CommandBufferDX9_t* cc = CommandBufferPool::Get( *c );
-                SyncObjectDX9_t*    s  = SyncObjectPool::Get( cc->sync );
-                
-                s->is_signaled = true;
-                s->is_used     = true;
+                if (cc->sync != InvalidHandle)
+                {
+                    SyncObjectDX9_t*    s = SyncObjectPool::Get(cc->sync);
+                    s->is_signaled = true;
+                    s->is_used = true;
+                }                
 
                 CommandBufferPool::Free( *c ); 
             }
@@ -1179,7 +1187,7 @@ Trace("\n\n-------------------------------\nframe %u executed(submitted to GPU)\
 
             Logger::Info( "trying device reset\n");
             if( SUCCEEDED(hr) )
-            {
+            {                
                 Logger::Info( "device reset\n");
 
                 TextureDX9::ReCreateAll();
@@ -1205,7 +1213,7 @@ Trace("\n\n-------------------------------\nframe %u executed(submitted to GPU)\
             Logger::Error( "present() failed:\n%s\n", D3D9ErrorText(hr) );
 
         if( hr == D3DERR_DEVICELOST )
-        {
+        {            
             _ResetPending = true;
             _RejectAllFrames();
         }

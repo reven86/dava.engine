@@ -40,6 +40,7 @@
 #include "Classes/CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
 
 #include "QtTools/FileDialog/FileDialog.h"
+#include "QtTools/ConsoleWidget/PointerSerializer.h"
 
 #include "DAVAEngine.h"
 #include <QProcess>
@@ -74,11 +75,11 @@ DAVA::String SizeInBytesToString(DAVA::float32 size)
 {
     DAVA::String retString = "";
     
-    if(1000000 < size)
+    if (1000000 < size)
     {
         retString = Format("%0.2f MB", size / (1024 * 1024) );
     }
-    else if(1000 < size)
+    else if (1000 < size)
     {
         retString = Format("%0.2f KB", size / 1024);
     }
@@ -112,28 +113,62 @@ DAVA::Image * CreateTopLevelImage(const DAVA::FilePath &imagePathname)
 
 void ShowErrorDialog(const DAVA::Set<DAVA::String> &errors)
 {
-    if(errors.empty())
-        return;
-    
-    String errorMessage = String("");
-    Set<String>::const_iterator endIt = errors.end();
-    for(Set<String>::const_iterator it = errors.begin(); it != endIt; ++it)
-    {
-		Logger::Error((*it).c_str());
+    if (errors.empty()) return;
 
-        errorMessage += *it + String("\n");
-    }
+	const uint32 maxErrorsPerDialog = 6;
+	uint32 totalErrors = errors.size();
+	uint32 processedDialogs = 0;
+	uint32 firstError = 1;
+	uint32 errorCounter = 0;
+
+	auto cleanUpEntityInfo = [](const DAVA::String& input) 
+	{
+		QRegularExpression re(PointerSerializer::GetRegex());
+		QString qText = QString::fromStdString(input);
+		qText.replace(re, QString());
+		return qText.toStdString();
+	};
     
-    ShowErrorDialog(errorMessage);
+	auto getDialogTitle = [&firstError, &errorCounter, &totalErrors]() -> DAVA::String
+	{
+		if (totalErrors < 2) 
+			return "Error";
+
+		if (errorCounter < 2)
+			return Format("Error %u from %u\n\n", firstError, totalErrors);
+
+		return Format("Errors %u-%u from %u\n\n", firstError, firstError + errorCounter - 1, totalErrors);
+	};
+
+	const String errorDivideLine("\n--------------------\n");
+
+	String errorMessage;
+	for (const auto& message : errors)
+	{
+		errorMessage += cleanUpEntityInfo(message) + errorDivideLine;
+		errorCounter++;
+
+		if (errorCounter == maxErrorsPerDialog)
+		{
+		    ShowErrorDialog(errorMessage, getDialogTitle());
+			firstError += errorCounter;
+			errorMessage.clear();
+			errorCounter = 0;
+		}
+	}
+
+	if (!errorMessage.empty())
+	    ShowErrorDialog(errorMessage, getDialogTitle());
 }
 
-void ShowErrorDialog(const DAVA::String &errorMessage)
+void ShowErrorDialog(const DAVA::String &errorMessage, const DAVA::String &title)
 {
-    bool forceClose = CommandLineParser::CommandIsFound(String("-force"))
-                      || CommandLineParser::CommandIsFound(String("-forceclose"));
+    bool forceClose = CommandLineParser::CommandIsFound(String("-force")) || 
+		CommandLineParser::CommandIsFound(String("-forceclose"));
+
     if (!forceClose && !Core::Instance()->IsConsoleMode())
     {
-        QMessageBox::critical(QApplication::activeWindow(), "Error", errorMessage.c_str());
+        QMessageBox::critical(QApplication::activeWindow(), title.c_str(), errorMessage.c_str());
     }
 }
 
@@ -166,25 +201,19 @@ DAVA::Color QColorToColor(const QColor &qcolor)
 int ShowQuestion(const DAVA::String &header, const DAVA::String &question, int buttons, int defaultButton)
 {
     int answer = QMessageBox::question(NULL, QString::fromStdString(header), QString::fromStdString(question),
-                                       (QMessageBox::StandardButton)buttons, (QMessageBox::StandardButton)defaultButton);
+		(QMessageBox::StandardButton)buttons, (QMessageBox::StandardButton)defaultButton);
+
     return answer;
 }
 
 void ShowActionWithText(QToolBar *toolbar, QAction *action, bool showText)
 {
-	if(NULL != toolbar && NULL != action)
+	if (NULL != toolbar && NULL != action)
 	{
 		QToolButton *toolBnt = dynamic_cast<QToolButton *>(toolbar->widgetForAction(action));
-		if(NULL != toolBnt)
+		if (NULL != toolBnt)
 		{
-			if(showText)
-			{
-				toolBnt->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-			}
-			else
-			{
-				toolBnt->setToolButtonStyle(Qt::ToolButtonIconOnly);
-			}
+			toolBnt->setToolButtonStyle(showText ? Qt::ToolButtonTextBesideIcon : Qt::ToolButtonIconOnly);
 		}
 	}
 }
@@ -192,7 +221,7 @@ void ShowActionWithText(QToolBar *toolbar, QAction *action, bool showText)
 DAVA::String ReplaceInString(const DAVA::String & sourceString, const DAVA::String & what, const DAVA::String & on)
 {
 	String::size_type pos = sourceString.find(what);
-	if(pos != String::npos)
+	if (pos != String::npos)
 	{
 		String newString = sourceString;
 		newString = newString.replace(pos, what.length(), on);
@@ -227,7 +256,7 @@ void ShowFileInExplorer(const QString& path)
 
 void SaveSpriteToFile(DAVA::Sprite * sprite, const DAVA::FilePath & path)
 {
-    if(sprite)
+    if (sprite)
     {
         SaveTextureToFile(sprite->GetTexture(), path);
     }
@@ -235,7 +264,7 @@ void SaveSpriteToFile(DAVA::Sprite * sprite, const DAVA::FilePath & path)
 
 void SaveTextureToFile(DAVA::Texture * texture, const DAVA::FilePath & path)
 {
-    if(texture)
+    if (texture)
     {
         DAVA::Image * img = texture->CreateImageFromMemory();
         SaveImageToFile(img, path);

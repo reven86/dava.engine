@@ -144,8 +144,23 @@ bool EditorMaterialSystem::IsLightmapCanvasVisible() const
 void EditorMaterialSystem::AddEntity(DAVA::Entity * entity)
 {
 	DAVA::RenderObject *ro = GetRenderObject(entity);
-	if(NULL != ro)
+	if(nullptr != ro)
 	{
+//         if(ro->GetType() == DAVA::RenderObject::TYPE_VEGETATION)
+//         {
+//             DAVA::Set<DAVA::DataNode *> dataNodes;
+//             ro->GetDataNodes(dataNodes);
+//             
+//             for (auto & dt: dataNodes)
+//             {
+//                 DAVA::NMaterial *material = dynamic_cast<DAVA::NMaterial *>(dt);
+//                 if(nullptr != material)
+//                 {
+//                     AddMaterial(material, entity, nullptr);
+//                 }
+//             }
+//         }
+        
         for(DAVA::uint32 i = 0; i < ro->GetRenderBatchCount(); ++i)
 		{
 			DAVA::RenderBatch *rb  = ro->GetRenderBatch(i);
@@ -161,6 +176,21 @@ void EditorMaterialSystem::RemoveEntity(DAVA::Entity * entity)
 	DAVA::RenderObject *ro = GetRenderObject(entity);
 	if(NULL != ro)
 	{
+//         if(ro->GetType() == DAVA::RenderObject::TYPE_VEGETATION)
+//         {
+//             DAVA::Set<DAVA::DataNode *> dataNodes;
+//             ro->GetDataNodes(dataNodes);
+//             
+//             for (auto & dt: dataNodes)
+//             {
+//                 DAVA::NMaterial *material = dynamic_cast<DAVA::NMaterial *>(dt);
+//                 if(nullptr != material)
+//                 {
+//                     RemoveMaterial(material);
+//                 }
+//             }
+//         }
+        
 		for(DAVA::uint32 i = 0; i < ro->GetRenderBatchCount(); ++i)
 		{
 			DAVA::RenderBatch *rb = ro->GetRenderBatch(i);

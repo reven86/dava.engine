@@ -88,8 +88,8 @@ void Uninitialize()
 
 void Reset(const rhi::ResetParam & params)
 {
-    framebufferWidth = params.width * params.scaleX;
-    framebufferHeight = params.height * params.scaleY;
+    framebufferWidth = static_cast<int32>(params.width * params.scaleX);
+    framebufferHeight = static_cast<int32>(params.height * params.scaleY);
 
     rhi::Reset(params);
 }
@@ -149,13 +149,13 @@ void RequestGLScreenShot(ScreenShotCallbackDelegate *_screenShotCallback)
 }
 
 void BeginFrame()
-{
+{    
     DynamicBufferAllocator::BeginFrame();
     RenderCallbacks::ProcessFrame();
     
 }
 void EndFrame()
-{    
+{        
     DynamicBufferAllocator::EndFrame();
     rhi::Present();
 }

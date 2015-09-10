@@ -252,8 +252,6 @@ void DavaGLWidget::OnWindowExposed()
 {
     disconnect( openGlWindow.data(), &OpenGLWindow::Exposed, this, &DavaGLWidget::OnWindowExposed );
 
-    const auto contextId = FrameworkLoop::Instance()->GetRenderContextId();
-    DAVA::QtLayer::Instance()->InitializeGlWindow(contextId);
     isInitialized = true;
 
     emit Initialized();

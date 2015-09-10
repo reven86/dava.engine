@@ -113,7 +113,7 @@ private:
     void PositionNative(const Rect& rectInVirtualCoordinates, bool offScreen);
 
     void RenderToTexture();
-    Sprite* CreateSpriteFromPreviewData(const uint8* imageData, int32 width, int32 height) const;
+    Sprite* CreateSpriteFromPreviewData(uint8* imageData, int32 width, int32 height) const;
 
 private:    // Event handlers
     void OnKeyDown(Windows::System::VirtualKey virtualKey);

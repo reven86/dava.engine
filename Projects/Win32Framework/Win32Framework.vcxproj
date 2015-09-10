@@ -979,7 +979,6 @@
     <ClCompile Include="..\..\Sources\Internal\Notification\LocalNotificationNotImplemented.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Notification\LocalNotificationProgress.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Notification\LocalNotificationText.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Particles\Particle.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Particles\ParticleEmitter.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Particles\ParticleForce.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Particles\ParticleLayer.cpp" />
@@ -1280,7 +1279,7 @@
     <ClCompile Include="..\..\Sources\Internal\Utils\MD5.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Utils\StringFormat.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Utils\StringUtils.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Utils\UTF8UtilsWin32.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Utils\UTF8Utils.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Utils\Utils.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Utils\UtilsWin32.cpp" />
   </ItemGroup>

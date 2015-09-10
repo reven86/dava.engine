@@ -558,12 +558,15 @@ void PrivateTextFieldWinUAP::SetCursorPos(uint32 pos)
 void PrivateTextFieldWinUAP::CreateNativeText()
 {
     nativeText = ref new TextBox();
+    core->XamlApplication()->SetTextBoxCustomStyle(nativeText);
+
     nativeControl = nativeText;
     nativeControl->Visibility = Visibility::Collapsed;
     nativeControl->BorderThickness = Thickness(0.0);
     nativeControl->Background = ref new SolidColorBrush(Colors::Transparent);
     nativeControl->Foreground = ref new SolidColorBrush(Colors::White);
     nativeControl->BorderBrush = ref new SolidColorBrush(Colors::Transparent);
+    nativeControl->Padding = Thickness(0.0);
 
     nativeText->TextAlignment = TextAlignment::Left;
 
@@ -577,12 +580,15 @@ void PrivateTextFieldWinUAP::CreateNativeText()
 void PrivateTextFieldWinUAP::CreateNativePassword()
 {
     nativePassword = ref new PasswordBox();
+    core->XamlApplication()->SetPasswordBoxCustomStyle(nativePassword);
+
     nativeControl = nativePassword;
     nativeControl->Visibility = Visibility::Collapsed;
     nativeControl->BorderThickness = Thickness(0.0);
     nativeControl->Background = ref new SolidColorBrush(Colors::Transparent);
     nativeControl->Foreground = ref new SolidColorBrush(Colors::White);
     nativeControl->BorderBrush = ref new SolidColorBrush(Colors::Transparent);
+    nativeControl->Padding = Thickness(0.0);
 
     core->XamlApplication()->AddUIElement(nativeControl);
     PositionNative(originalRect, true);
@@ -745,6 +751,8 @@ void PrivateTextFieldWinUAP::PositionNative(const Rect& rectInVirtualCoordinates
     }
 
     // 3. set control's position and size
+    nativeControl->MinHeight = 0.0;     // Force minimum control sizes to zero to
+    nativeControl->MinWidth = 0.0;      // allow setting any control sizes
     nativeControl->Width = controlRect.dx;
     nativeControl->Height = controlRect.dy;
     core->XamlApplication()->PositionUIElement(nativeControl, controlRect.x, controlRect.y);
@@ -788,7 +796,6 @@ void PrivateTextFieldWinUAP::OnKeyDown(Windows::System::VirtualKey virtualKey)
 
 void PrivateTextFieldWinUAP::OnGotFocus()
 {
-    nativeControl->BorderThickness = Thickness(0.5);
     if (nativeText != nullptr)
     {
         nativeText->SelectionStart = nativeText->Text->Length();
@@ -809,7 +816,6 @@ void PrivateTextFieldWinUAP::OnGotFocus()
 
 void PrivateTextFieldWinUAP::OnLostFocus()
 {
-    nativeControl->BorderThickness = Thickness(0.0);
     if (!multiline)
     {
         PositionNative(originalRect, true);
@@ -966,7 +972,7 @@ void PrivateTextFieldWinUAP::RenderToTexture()
             index += 1;
         }
 
-        RefPtr<Sprite> sprite(CreateSpriteFromPreviewData(buf.data(), imageWidth, imageHeight));
+        RefPtr<Sprite> sprite(CreateSpriteFromPreviewData(&buf[0], imageWidth, imageHeight));
         if (sprite.Valid())
         {
             core->RunOnMainThread([this, self, sprite]() {
@@ -988,8 +994,10 @@ void PrivateTextFieldWinUAP::RenderToTexture()
     });
 }
 
-Sprite* PrivateTextFieldWinUAP::CreateSpriteFromPreviewData(const uint8* imageData, int32 width, int32 height) const
+Sprite* PrivateTextFieldWinUAP::CreateSpriteFromPreviewData(uint8* imageData, int32 width, int32 height) const
 {
+    const uint32 pitch = 4 * width;
+    ImageConvert::ConvertImageDirect(FORMAT_BGRA8888, FORMAT_RGBA8888, imageData, width, height, pitch, imageData, width, height, pitch);
     RefPtr<Image> imgSrc(Image::CreateFromData(width, height, FORMAT_RGBA8888, imageData));
     return Sprite::CreateFromImage(imgSrc.Get(), true, false);
 }
