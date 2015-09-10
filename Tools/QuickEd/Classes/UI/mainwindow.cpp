@@ -172,14 +172,19 @@ void MainWindow::RestoreMainWindowState()
     }
 }
 
-DavaGLWidget* MainWindow::GetGLWidget() const
+DavaGLWidget* MainWindow::GetGLWidget()
 {
     return previewWidget->GetDavaGLWidget();
 }
 
-DialogReloadSprites* MainWindow::GetDialogReloadSprites() const
+DialogReloadSprites* MainWindow::GetDialogReloadSprites()
 {
     return dialogReloadSprites;
+}
+
+QCheckBox* MainWindow::GetCheckboxEmulation()
+{
+    return emulationBox;
 }
 
 void MainWindow::OnCurrentIndexChanged(int arg)
@@ -278,7 +283,7 @@ void MainWindow::InitGlobalClasses()
 
 void MainWindow::InitEmulationMode()
 {
-    QCheckBox *emulationBox = new QCheckBox();
+    emulationBox = new QCheckBox();
     emulationBox->setCheckState(Qt::Unchecked);
     QLabel *label = new QLabel(tr("Emulation"));
     label->setBuddy(emulationBox);
@@ -289,7 +294,6 @@ void MainWindow::InitEmulationMode()
     QWidget *wrapper = new QWidget();
     wrapper->setLayout(layout);
     toolBarPlugins->addWidget(wrapper);
-    //!connect(emulationBox, &QCheckBox::stateChanged, this, &MainWindow::OnEmulationModeChanged);
 }
 
 void MainWindow::InitMenu()

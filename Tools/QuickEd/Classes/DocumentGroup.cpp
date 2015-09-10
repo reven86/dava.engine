@@ -84,6 +84,9 @@ void DocumentGroup::SetActiveDocument(Document* document)
     {
         active->Deactivate();
         disconnect(active, &Document::SelectedNodesChanged, this, &DocumentGroup::SelectedNodesChanged);
+        disconnect(active, &Document::EmulationModeChanged, this, &DocumentGroup::EmulationModeChanged);
+        disconnect(active, &Document::ScaleChanged, this, &DocumentGroup::ScaleChanged);
+        disconnect(active, &Document::CanvasSizeChanged, this, &DocumentGroup::CanvasSizeChanged);
     }
     
     active = document;
@@ -95,6 +98,10 @@ void DocumentGroup::SetActiveDocument(Document* document)
     else
     {
         connect(active, &Document::SelectedNodesChanged, this, &DocumentGroup::SelectedNodesChanged);
+        connect(active, &Document::EmulationModeChanged, this, &DocumentGroup::EmulationModeChanged);
+        connect(active, &Document::ScaleChanged, this, &DocumentGroup::ScaleChanged);
+        connect(active, &Document::CanvasSizeChanged, this, &DocumentGroup::CanvasSizeChanged);
+
         undoGroup->setActiveStack(active->GetUndoStack());
     }
     emit ActiveDocumentChanged(document);
@@ -104,11 +111,27 @@ void DocumentGroup::SetActiveDocument(Document* document)
     }
 }
 
-void DocumentGroup::OnSelectedNodesChanged(const DAVA::Set<PackageBaseNode*> &selected, const DAVA::Set<PackageBaseNode*> &deselected)
+void DocumentGroup::SetSelectedNodes(const SelectedNodes &selected, const SelectedNodes &deselected)
 {
     if(nullptr != active)
     {
-        active->OnSelectedNodesChanged(selected, deselected);
+        active->SetSelectedNodes(selected, deselected);
+    }
+}
+
+void DocumentGroup::SetEmulationMode(bool emulationMode)
+{
+    if(nullptr != active)
+    {
+        active->SetEmulationMode(emulationMode);
+    }
+}
+
+void DocumentGroup::SetScale(int scale)
+{
+    if(nullptr != active)
+    {
+        active->SetScale(scale);
     }
 }
 

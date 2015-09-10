@@ -300,7 +300,7 @@ void PropertiesModel::PropertyChanged(AbstractProperty *property)
 {
     QModelIndex nameIndex = indexByProperty(property, 0);
     QModelIndex valueIndex = nameIndex.sibling(nameIndex.row(), 1);
-    emit dataChanged(nameIndex, valueIndex);
+    emit dataChanged(nameIndex, valueIndex, QVector<int>() << Qt::DisplayRole);
 }
 
 void PropertiesModel::ComponentPropertiesWillBeAdded(RootProperty *root, ComponentPropertiesSection *section, int index)

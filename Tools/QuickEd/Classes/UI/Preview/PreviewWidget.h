@@ -32,6 +32,7 @@
 
 #include <QWidget>
 #include "ui_PreviewWidget.h"
+#include "SelectionTracker.h"
 #include <UI/UIControl.h>
 
 namespace Ui {
@@ -44,18 +45,18 @@ class ControlNode;
 class ScrollAreaController;
 class PackageBaseNode;
 
-class PreviewWidget : public QWidget, public Ui::PreviewWidget
+class PreviewWidget : public QWidget, public Ui::PreviewWidget, public SelectionTracker<SelectedNodes>
 {
     Q_OBJECT
 public:
     explicit PreviewWidget(QWidget *parent = nullptr);
     ~PreviewWidget() = default;
     DavaGLWidget *GetDavaGLWidget();
+    ScrollAreaController *GetScrollAreaController();
     
 public slots:
     void OnDocumentChanged(Document *document);
-    void OnSelectedNodesChanged(const DAVA::Set<PackageBaseNode*> &selected, const DAVA::Set<PackageBaseNode*> &deselected);
-
+    
 private slots:
     // Zoom.
 	void OnScaleByComboIndex(int value);

@@ -49,10 +49,10 @@ public:
     bool OnInput(DAVA::UIEvent *currentInput) override;
 
     void ControlWasRemoved(ControlNode *node, ControlsContainerNode *from) override;
-    void SetSelection(const SelectedControls &selected, const SelectedControls &deselected);
     void SelectByRect(const DAVA::Rect &rect);
 
 private:
+    void SetSelection(const SelectedControls &selected, const SelectedControls &deselected);
 
     bool ProcessMousePress(const DAVA::Vector2 &point);
 

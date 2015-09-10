@@ -44,18 +44,19 @@ class CheckeredCanvas : public UIControl
 public:
     CheckeredCanvas();
 private:
-    void SystemDraw(const UIGeometricData &geometricData) override;
+    void Draw(const UIGeometricData &geometricData) override;
 };
 
 CheckeredCanvas::CheckeredCanvas()
     : UIControl()
 {
+    SetName("CheckeredCanvas");
     background->SetSprite("~res:/Gfx/CheckeredBg", 0);
     background->SetDrawType(UIControlBackground::DRAW_TILED);
     background->SetShader(SafeRetain(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR));
 }
 
-void CheckeredCanvas::SystemDraw(const UIGeometricData &geometricData)
+void CheckeredCanvas::Draw(const UIGeometricData &geometricData)
 {
     float32 invScale = 1.0f / geometricData.scale.x;
     UIGeometricData unscaledGd;
@@ -69,6 +70,7 @@ CanvasSystem::CanvasSystem(Document *parent)
     : BaseSystem(parent)
     , canvas(new UIControl())
 {
+    canvas->SetName("Canvas");
     document->SelectionChanged.Connect(this, &CanvasSystem::SetSelection);
 }
 
@@ -80,6 +82,8 @@ UIControl* CanvasSystem::GetCanvasControl()
 void CanvasSystem::Activate()
 {
     document->GetScalableControl()->AddControl(canvas);
+    SetSelection(SelectedControls(), SelectedControls());
+
 }
 
 void CanvasSystem::Deactivate()
@@ -123,8 +127,9 @@ void CanvasSystem::SetRootControls(const Set<PackageBaseNode*> &controls)
     for(auto node : controls)
     {
         ScopedPtr<CheckeredCanvas> checkeredCanvas(new CheckeredCanvas());
-        checkeredCanvas->AddControl(node->GetControl());
-        checkeredCanvas->SetSize(node->GetControl()->GetSize());
+        auto control = node->GetControl();
+        checkeredCanvas->AddControl(control);
+        checkeredCanvas->SetSize(control->GetSize());
         canvas->AddControl(checkeredCanvas);
     }
     LayoutCanvas();
@@ -132,10 +137,6 @@ void CanvasSystem::SetRootControls(const Set<PackageBaseNode*> &controls)
 
 void CanvasSystem::LayoutCanvas()
 {
-    if (nullptr == canvas->GetParent())
-    {
-        return;
-    }
     float32 maxWidth = 0.0f;
     float32 totalHeight = 0.0f;
     const int spacing = 5;
@@ -150,7 +151,6 @@ void CanvasSystem::LayoutCanvas()
         totalHeight += spacing * (childrenCount - 1);
     }
     Vector2 size(maxWidth, totalHeight);
-    document->GetScalableControl()->SetSize(size);
     canvas->SetSize(size);
     float32 curY = 0.0f;
     for (auto control : canvas->GetChildren())
@@ -162,4 +162,7 @@ void CanvasSystem::LayoutCanvas()
 
         curY += rect.dy + 5;
     }
+    
+    document->GetRootControl()->SetSize(size);
+    document->CanvasSizeChanged();
 }

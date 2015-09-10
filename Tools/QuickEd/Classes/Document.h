@@ -39,8 +39,13 @@
 
 struct WidgetContext
 {
-    virtual ~WidgetContext() = default;
+    virtual ~WidgetContext() = 0;
 };
+
+inline WidgetContext::~WidgetContext()
+{
+    
+}
 
 struct HUDareaInfo
 {
@@ -80,11 +85,12 @@ class PackageModel;
 class ControlNode;
 class AbstractProperty;
 
-class Document final : public QObject
+class Document final : public QObject, public SelectionTracker<SelectedNodes>
 {
     Q_OBJECT
     Q_PROPERTY(int scale READ GetScale WRITE SetScale NOTIFY ScaleChanged RESET ResetScale);
     Q_PROPERTY(bool emulationMode READ IsInEmulationMode WRITE SetEmulationMode NOTIFY EmulationModeChanged RESET ClearEmulationMode)
+    
 public:
     explicit Document(PackageNode *package, QObject *parent = nullptr);
     ~Document();
@@ -110,28 +116,28 @@ public:
     void RefreshLayout();
 
     void GetControlNodesByPos(DAVA::Vector<ControlNode*> &controlNodes, const DAVA::Vector2 &pos) const;
-    void GetControlNodesByRect(DAVA::Set<ControlNode*> &controlNodes, const DAVA::Rect &rect) const;
+    void GetControlNodesByRect(SelectedControls &controlNodes, const DAVA::Rect &rect) const;
     ControlNode* GetControlByMenu(const DAVA::Vector<ControlNode*> &nodes, const DAVA::Vector2 &pos) const;
 
     DAVA::Signal<const SelectedControls &/*selected*/, const SelectedControls &/*deselected*/> SelectionChanged;
     DAVA::Signal<const HUDareaInfo &/*areaInfo*/> ActiveAreaChanged;
     DAVA::Signal<const DAVA::Rect &/*selectionRectControl*/> SelectionRectChanged;
     DAVA::Signal<bool> EmulationModeChangedSignal;
+    
 signals:
     void ScaleChanged(int scale);
     void EmulationModeChanged(bool emulationMode);
-    void SelectedNodesChanged(const DAVA::Set<PackageBaseNode*> &selected, const DAVA::Set<PackageBaseNode*> &deselected);
-
+    void SelectedNodesChanged(const SelectedNodes &selected, const SelectedNodes &deselected);
+    void CanvasSizeChanged();
 public slots:
     void SetScale(int scale);
     void ResetScale();
     void SetEmulationMode(bool emulationMode);
     void ClearEmulationMode();
     void RefreshAllControlProperties();
-    void OnSelectedNodesChanged(const DAVA::Set<PackageBaseNode*> &selected, const DAVA::Set<PackageBaseNode*> &deselected);
+    void SetSelectedNodes(const SelectedNodes &selected, const SelectedNodes &deselected);
 
 private:
-    void SetSelectedNodes(const DAVA::Set<PackageBaseNode*> &selected, const DAVA::Set<PackageBaseNode*> &deselected);
     void GetControlNodesByPosImpl(DAVA::Vector<ControlNode*> &controlNodes, const DAVA::Vector2 &pos, ControlNode *node) const;
     void GetControlNodesByRectImpl(DAVA::Set<ControlNode*> &controlNodes, const DAVA::Rect &rect, ControlNode *node) const;
     static const int defaultScale = 100;
@@ -144,7 +150,6 @@ private:
 
     DAVA::UnorderedMap < QObject*, WidgetContext* > contexts;
 
-    DAVA::Set<PackageBaseNode*> selectedNodes;
     PackageNode *package = nullptr;
     QtModelPackageCommandExecutor *commandExecutor = nullptr;
     QUndoStack *undoStack = nullptr;

@@ -290,8 +290,8 @@ void PackageWidget::OnSelectionChanged(const QItemSelection &proxySelected, cons
     }
 
     RefreshActions();
-    Set<PackageBaseNode*> selected;
-    Set<PackageBaseNode*> deselected;
+    SelectedNodes selected;
+    SelectedNodes deselected;
 
     QItemSelection selectedIndexes = filteredPackageModel->mapSelectionToSource(proxySelected);
     QItemSelection deselectedIndexes = filteredPackageModel->mapSelectionToSource(proxyDeselected);
@@ -430,11 +430,6 @@ void PackageWidget::filterTextChanged(const QString &filterText)
     }
 }
 
-void PackageWidget::OnSelectedNodesChanged(const Set<PackageBaseNode*> &selected, const Set<PackageBaseNode*> &deselected)
-{
-    SetSelectedNodes(selected, deselected);
-}
-
 QList<QPersistentModelIndex> PackageWidget::GetExpandedIndexes() const
 {
     QList<QPersistentModelIndex> retval;
@@ -458,23 +453,14 @@ QAction *PackageWidget::CreateSeparator()
     return separator;
 }
 
-void PackageWidget::SetSelectedNodes(const Set<PackageBaseNode*>& selected, const Set<PackageBaseNode*>& deselected)
+void PackageWidget::SetSelectedNodes(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
-    Set<PackageBaseNode*> reallySelected;
-    Set<PackageBaseNode*> reallyDeselected;
+    SelectedNodes reallySelected;
+    SelectedNodes reallyDeselected;
     
-    std::set_intersection(selectedNodes.begin(), selectedNodes.end(), deselected.begin(), deselected.end(), std::inserter(reallyDeselected, reallyDeselected.end()));
-    
-    std::set_difference(selected.begin(), selected.end(), selectedNodes.begin(), selectedNodes.end(), std::inserter(reallySelected, reallySelected.end()));
-    
-    for(auto &node : reallyDeselected)
-    {
-        selectedNodes.erase(node);
-    }
-    for(auto &node : reallySelected)
-    {
-        selectedNodes.insert(node);
-    }
+    GetOnlyExistedItems(deselected, reallyDeselected);
+    GetNotExistedItems(selected, reallySelected);
+    MergeSelection(reallySelected, reallyDeselected);
     
     if (!reallySelected.empty() || !reallyDeselected.empty())
     {

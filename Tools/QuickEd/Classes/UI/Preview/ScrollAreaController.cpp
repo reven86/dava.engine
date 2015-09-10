@@ -29,6 +29,7 @@
 
 #include "ScrollAreaController.h"
 #include "UI/UIScreenManager.h"
+#include <QSizeF>
 
 using namespace DAVA;
 
@@ -36,12 +37,23 @@ ScrollAreaController::ScrollAreaController(QObject *parent)
     : QObject(parent)
     , backgroundControl(new UIControl)
 {
+    backgroundControl->SetName("background control");
     ScopedPtr<UIScreen> davaUIScreen(new UIScreen());
     davaUIScreen->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
     davaUIScreen->GetBackground()->SetColor(Color(0.3f, 0.3f, 0.3f, 1.0f));
     UIScreenManager::Instance()->RegisterScreen(0, davaUIScreen);
     UIScreenManager::Instance()->SetFirst(0);
     UIScreenManager::Instance()->GetScreen()->AddControl(backgroundControl);
+}
+
+void ScrollAreaController::SetNestedControl(DAVA::UIControl *arg)
+{
+    nestedControl = arg;
+}
+
+UIControl* ScrollAreaController::GetBackgroundControl()
+{
+    return backgroundControl;
 }
 
 QSize ScrollAreaController::GetCanvasSize() const
@@ -59,8 +71,20 @@ QPoint ScrollAreaController::GetPosition() const
     return position;
 }
 
-void ScrollAreaController::UpdateCanvasContentSize(const Vector2 &contentSize)
+int ScrollAreaController::GetScale() const
 {
+    return scale;
+}
+
+void ScrollAreaController::UpdateCanvasContentSize()
+{
+    Vector2 contentSize;
+    if(nullptr != nestedControl)
+    {
+        const auto &gd = nestedControl->GetGeometricData();
+        
+        contentSize = gd.GetAABBox().GetSize() * (scale / 100.0f);
+    }
     Vector2 marginsSize(Margin * 2, Margin * 2);
     Vector2 tmpSize = contentSize + marginsSize;
     backgroundControl->SetSize(tmpSize);
@@ -77,7 +101,7 @@ void ScrollAreaController::SetViewSize(const QSize& viewSize_)
         auto newSize = Vector2(viewSize_.width(), viewSize_.height());
         UIScreenManager::Instance()->GetScreen()->SetSize(newSize);
         UpdatePosition();
-        emit ViewSizeChanged(viewSize_);
+        emit ViewSizeChanged(viewSize);
     }
 }
 
@@ -88,20 +112,33 @@ void ScrollAreaController::SetPosition(const QPoint &position_)
         position = position_;
         auto newPos = Vector2(position.x(), position.y());
         backgroundControl->SetPosition(newPos);
-        emit PositionChanged(position_);
+        emit PositionChanged(position);
+    }
+}
+
+void ScrollAreaController::SetScale(int arg)
+{
+    if(arg != scale)
+    {
+        scale = arg;
+        UpdateCanvasContentSize();
+        emit ScaleChanged(scale);
     }
 }
 
 void ScrollAreaController::UpdatePosition()
 {
-    QPoint position(0, 0);
-    if (viewSize.width() > canvasSize.width())
+    if(nullptr != nestedControl)
     {
-        position.setX((viewSize.width() - canvasSize.width()) / 2.0f);
+        Vector2 position(Margin, Margin);
+        if (viewSize.width() > canvasSize.width())
+        {
+            position.x += (viewSize.width() - canvasSize.width()) / 2.0f;
+        }
+        if (viewSize.height() > (canvasSize.height() + Margin * 2))
+        {
+            position.y += (viewSize.height() - canvasSize.height()) / 2.0f;
+        }
+        nestedControl->SetPosition(position);
     }
-    if (viewSize.height() > canvasSize.height())
-    {
-        position.setY((viewSize.height() - canvasSize.height()) / 2.0f);
-    }
-    SetPosition(position);
 }

@@ -32,6 +32,7 @@
 
 #include <QWidget>
 #include <QDockWidget>
+#include "SelectionTracker.h"
 #include "Base/BaseTypes.h"
 #include "ui_PackageWidget.h"
 
@@ -44,7 +45,7 @@ class FilteredPackageModel;
 class PackageModel;
 class QItemSelection;
 
-class PackageWidget : public QDockWidget, public Ui::PackageWidget
+class PackageWidget : public QDockWidget, public Ui::PackageWidget, public SelectionTracker<SelectedNodes>
 {
     Q_OBJECT
 public:
@@ -52,11 +53,13 @@ public:
     ~PackageWidget() = default;
 
 signals:
-    void SelectedNodesChanged(const DAVA::Set<PackageBaseNode*> &selected, const DAVA::Set<PackageBaseNode*> &deselected);
+    void SelectedNodesChanged(const SelectedNodes &selected, const SelectedNodes &deselected);
+    
 public slots:
     void OnDocumentChanged(Document *context);
-    void OnSelectedNodesChanged(const DAVA::Set<PackageBaseNode*> &selected, const DAVA::Set<PackageBaseNode*> &deselected);
-    private slots:
+    void SetSelectedNodes(const SelectedNodes &selected, const SelectedNodes &deselected);
+    
+private slots:
     void OnSelectionChanged(const QItemSelection &proxySelected, const QItemSelection &proxyDeselected);
     void filterTextChanged(const QString &);
     void OnImport();
@@ -66,6 +69,7 @@ public slots:
     void OnDelete();
     void OnRename();
     void OnAddStyle();
+    
 private:
     void LoadContext();
     void SaveContext();
@@ -81,8 +85,6 @@ private:
 
     QList<QPersistentModelIndex> GetExpandedIndexes() const;
     
-    void SetSelectedNodes(const DAVA::Set<PackageBaseNode*> &selected, const DAVA::Set<PackageBaseNode*> &deselected);
-
     QAction *CreateSeparator();
     Document *document = nullptr;
     QAction *importPackageAction = nullptr;
@@ -95,7 +97,6 @@ private:
     
     FilteredPackageModel* filteredPackageModel = nullptr;
     PackageModel* packageModel = nullptr;
-    DAVA::Set<PackageBaseNode*> selectedNodes;
 };
 
 #endif // __UI_EDITOR_UI_PACKAGE_WIDGET__

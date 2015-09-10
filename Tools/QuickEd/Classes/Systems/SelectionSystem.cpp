@@ -38,7 +38,10 @@ using namespace DAVA;
 SelectionSystem::SelectionSystem(Document* doc)
     : BaseSystem(doc)
 {
-    document->SelectionChanged.Connect(this, &SelectionSystem::SetSelection);
+    document->SelectionChanged.Connect([this](const SelectedControls &selected, const SelectedControls &deselected)
+        {
+            this->MergeSelection(selected, deselected);
+        });
 }
 
 bool SelectionSystem::OnInput(UIEvent* currentInput)

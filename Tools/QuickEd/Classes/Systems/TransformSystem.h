@@ -44,7 +44,6 @@ public:
     void SetNewArea(const HUDareaInfo &areaInfo);
 
     bool OnInput(DAVA::UIEvent *currentInput) override;
-    void SetSelection(const SelectedControls &selected, const SelectedControls &deselected);
 
 private:
     enum ACCUMULATE_OPERATIONS

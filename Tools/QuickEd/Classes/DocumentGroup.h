@@ -33,6 +33,7 @@
 #include <QObject>
 #include <QUndoGroup>
 #include "Base/BaseTypes.h"
+#include "SelectionTracker.h"
 
 class Document;
 class PackageBaseNode;
@@ -49,13 +50,19 @@ public:
     QList<Document*> GetDocuments() const;
     Document* GetActiveDocument() const;
     const QUndoGroup* GetUndoGroup() const;
-public slots:
-    void SetActiveDocument(Document* document);
-    void OnSelectedNodesChanged(const DAVA::Set<PackageBaseNode*> &selected, const DAVA::Set<PackageBaseNode*> &deselected);
 
 signals:
     void ActiveDocumentChanged(Document*);
-    void SelectedNodesChanged(const DAVA::Set<PackageBaseNode*> &selected, const DAVA::Set<PackageBaseNode*> &deselected);
+    void SelectedNodesChanged(const SelectedNodes &selected, const SelectedNodes &deselected);
+    void EmulationModeChanged(bool emulationMode);
+    void ScaleChanged(int scale);
+    void CanvasSizeChanged();
+    
+public slots:
+    void SetActiveDocument(Document* document);
+    void SetSelectedNodes(const SelectedNodes &selected, const SelectedNodes &deselected);
+    void SetEmulationMode(bool emulationMode);
+    void SetScale(int scale);
 protected:
     Document *active;
     QList<Document*> documentList;

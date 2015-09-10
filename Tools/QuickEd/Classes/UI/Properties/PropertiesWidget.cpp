@@ -80,16 +80,9 @@ void PropertiesWidget::OnDocumentChanged(Document *arg)
     document = arg;
 }
 
-void PropertiesWidget::OnSelectedNodesChanged(const Set<PackageBaseNode*> &selected, const Set<PackageBaseNode*> &deselected)
+void PropertiesWidget::SetSelectedNodes(const SelectedNodes &selected, const SelectedNodes &deselected)
 {
-    for(const auto &node : deselected)
-    {
-        selectedNodes.erase(node);
-    }
-    for(const auto &node : selected)
-    {
-        selectedNodes.insert(node);
-    }
+    MergeSelection(selected, deselected);
     UpdateSelection();
 }
 
@@ -254,28 +247,23 @@ void PropertiesWidget::OnModelChanged()
 
 ControlNode *PropertiesWidget::GetSelectedControlNode() const
 {
-    if (document == nullptr)
-        return nullptr;
-    
-    for (const auto &node : selectedNodes)
+    for (const auto &node : selectedItems)
     {
         ControlNode *control = dynamic_cast<ControlNode*>(node);
-        if (control)
-            if (nullptr != control)
-                return control;
+        if (nullptr != control)
+        {
+            return control;
+        }
     }
     return nullptr;
 }
 
 StyleSheetNode *PropertiesWidget::GetSelectedStyleSheetNode() const
 {
-    if (nullptr == document)
-        return nullptr;
-    
-    for (PackageBaseNode *node : selectedNodes)
+    for (PackageBaseNode *node : selectedItems)
     {
         StyleSheetNode *styleSheet = dynamic_cast<StyleSheetNode*>(node);
-        if (styleSheet)
+        if (nullptr != styleSheet)
         {
             return styleSheet;
         }
@@ -294,7 +282,7 @@ void PropertiesWidget::UpdateSelection()
     }
     else
     {
-        for (PackageBaseNode *node : selectedNodes)
+        for (PackageBaseNode *node : selectedItems)
         {
             control = dynamic_cast<ControlNode*>(node);
             if (nullptr != control)

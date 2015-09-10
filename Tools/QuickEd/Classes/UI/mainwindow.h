@@ -70,8 +70,9 @@ public:
     void OnProjectOpened(const DAVA::ResultList &resultList, QString projectPath);
     int AddTab(const DAVA::FilePath &scenePath);
     void OnCleanChanged(int index, bool val);
-    DavaGLWidget *GetGLWidget() const;
-    DialogReloadSprites *GetDialogReloadSprites() const;
+    DavaGLWidget* GetGLWidget();
+    DialogReloadSprites* GetDialogReloadSprites();
+    QCheckBox* GetCheckboxEmulation();
 protected:
     void closeEvent(QCloseEvent *event) override;
 signals:
@@ -124,10 +125,11 @@ private:
 private:
     // Background Frame Color menu actions.
     QList<QAction*> backgroundFramePredefinedColorActions;
-    QAction* backgroundFrameUseCustomColorAction;
-    QAction* backgroundFrameSelectCustomColorAction;
-    LocalizationEditorDialog *localizationEditorDialog;
-    DialogReloadSprites *dialogReloadSprites;
+    QAction* backgroundFrameUseCustomColorAction = nullptr;
+    QAction* backgroundFrameSelectCustomColorAction = nullptr;
+    LocalizationEditorDialog *localizationEditorDialog = nullptr;
+    DialogReloadSprites *dialogReloadSprites = nullptr;
+    QCheckBox *emulationBox = nullptr;
 };
 
 Q_DECLARE_METATYPE(MainWindow::TabState*);

@@ -188,7 +188,7 @@ HUDSystem::HUDSystem(Document *document_)
     selectionRectControl->SetDebugDraw(true);
     selectionRectControl->SetDebugDrawColor(Color(1.0f, 1.0f, 0.0f, 1.0f));
     hudControl->AddControl(selectionRectControl);
-    hudControl->SetName("hud");
+    hudControl->SetName("hudControl");
     document->SelectionChanged.Connect(this, &HUDSystem::SetSelection);
 }
 
@@ -296,7 +296,7 @@ HUDareaInfo HUDSystem::GetControlArea(const Vector2 &pos)
 void HUDSystem::SetNewArea(const HUDareaInfo &areaInfo)
 {
     if (activeAreaInfo.area != areaInfo.area
-        && activeAreaInfo.owner != activeAreaInfo.owner)
+        || activeAreaInfo.owner != areaInfo.owner)
     {
         activeAreaInfo = areaInfo;
         document->ActiveAreaChanged.Emit(activeAreaInfo);

@@ -60,8 +60,12 @@ TransformSystem::TransformSystem(Document *parent)
     : BaseSystem(parent)
     , steps({ { 10, 20, 20 } }) //10 grad for rotate and 20 pix for move/resize
 {
-    accumulates.fill({ { 0.0f, 0.0f } });
+    accumulates.fill({ { 0, 0 } });
     document->ActiveAreaChanged.Connect(this, &TransformSystem::SetNewArea);
+    document->SelectionChanged.Connect([this](const SelectedControls &selected, const SelectedControls &deselected)
+                                       {
+                                           this->MergeSelection(selected, deselected);
+                                       });
 }
 
 void TransformSystem::SetNewArea(const HUDareaInfo& areaInfo)
@@ -88,7 +92,7 @@ bool TransformSystem::OnInput(UIEvent* currentInput)
             return ret;
         }
         case UIEvent::PHASE_ENDED:
-            accumulates.fill({ { 0.0f, 0.0f } });
+            accumulates.fill({ { 0, 0 } });
             //return true if we did transformation
             if (dragRequested)
             {
@@ -99,12 +103,7 @@ bool TransformSystem::OnInput(UIEvent* currentInput)
         default:
             return false;
     }
-}
-
-void TransformSystem::SetSelection(const SelectedControls &selected, const SelectedControls &deselected)
-{
-    MergeSelection(selected, deselected);
-}
+} 
 
 bool TransformSystem::ProcessKey(const int32 key)
 {

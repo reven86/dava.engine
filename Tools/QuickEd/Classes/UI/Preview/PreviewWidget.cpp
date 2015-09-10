@@ -44,6 +44,14 @@
 
 using namespace DAVA;
 
+namespace
+{
+    QString ScaleFromInt(int scale)
+    {
+        return QString("%1 %").arg(scale);
+    }
+}
+
 PreviewWidget::PreviewWidget(QWidget *parent)
     : QWidget(parent)
     , scrollAreaController(new ScrollAreaController(this))
@@ -61,7 +69,7 @@ PreviewWidget::PreviewWidget(QWidget *parent)
     // Setup the Scale Combo.
     for (auto percentage : percentages)
     {
-        scaleCombo->addItem(QString("%1 %").arg(percentage));
+        scaleCombo->addItem(ScaleFromInt(percentage));
     }
     connect(scrollAreaController, &ScrollAreaController::ViewSizeChanged, this, &PreviewWidget::UpdateScrollArea);
     connect(scrollAreaController, &ScrollAreaController::CanvasSizeChanged, this, &PreviewWidget::UpdateScrollArea);
@@ -85,26 +93,24 @@ DavaGLWidget *PreviewWidget::GetDavaGLWidget()
     return davaGLWidget;
 }
 
+ScrollAreaController* PreviewWidget::GetScrollAreaController()
+{
+    return scrollAreaController;
+}
+
 void PreviewWidget::OnDocumentChanged(Document *arg)
 {
+    scrollAreaController->GetBackgroundControl()->RemoveAllControls();
     document = arg;
     if (nullptr != document)
     {
-        /*//!scalableContent->AddControl(document->GetCanvasSystem()->GetCanvasControl());
-        document->GetCanvasSystem()->OnSelectionWasChanged(SelectedControls(), SelectedControls());
-        if (!root->GetEmulationMode())
-        {
-            UIControl* hudControl = document->GetHUDSystem()->GetHudControl();
-            DVASSERT(nullptr != hudControl);
-            rootControl->AddControl(hudControl);
-        }
-        scrollAreaController->UpdateCanvasContentSize();*/
+        auto root = document->GetRootControl();
+        DVASSERT(nullptr != root);
+        scrollAreaController->GetBackgroundControl()->AddControl(root);
+        scrollAreaController->SetNestedControl(root);
+        
+        scaleCombo->lineEdit()->setText(ScaleFromInt(document->GetScale()));
     }
-}
-
-void PreviewWidget::OnSelectedNodesChanged(const Set<PackageBaseNode*> &selected, const Set<PackageBaseNode*> &deselected)
-{
-    //!scrollAreaController->UpdateCanvasContentSize();
 }
 
 void PreviewWidget::OnMonitorChanged()
@@ -114,25 +120,15 @@ void PreviewWidget::OnMonitorChanged()
 
 void PreviewWidget::UpdateScrollArea()
 {
-    QSize maxPos(scrollAreaController->GetCanvasSize() - scrollAreaController->GetViewSize());
-    if (maxPos.height() < 0)
-    {
-        maxPos.setHeight(0);
-    }
-    if (maxPos.width() < 0)
-    {
-        maxPos.setWidth(0);
-    }
-    if (verticalScrollBar->maximum() != maxPos.height())
-    {
-        verticalScrollBar->setMaximum(maxPos.height());
-        verticalScrollBar->setPageStep(scrollAreaController->GetViewSize().height());
-    }
-    if (horizontalScrollBar->maximum() != maxPos.width())
-    {
-        horizontalScrollBar->setMaximum(maxPos.width());
-        horizontalScrollBar->setPageStep(scrollAreaController->GetViewSize().width());
-    }
+    QSize areaSize = scrollAreaController->GetViewSize();
+    QSize contentSize = scrollAreaController->GetCanvasSize();
+
+    verticalScrollBar->setPageStep(areaSize.height());
+    horizontalScrollBar->setPageStep(areaSize.width());
+    
+    verticalScrollBar->setRange(0, contentSize.height() - areaSize.height());
+    horizontalScrollBar->setRange(0, contentSize.width() - areaSize.width());
+
 }
 
 void PreviewWidget::OnScaleByZoom(int scaleDelta)
@@ -143,9 +139,8 @@ void PreviewWidget::OnScaleByZoom(int scaleDelta)
 void PreviewWidget::OnScaleByComboIndex(int index)
 {   
     DVASSERT(index >= 0);
-    auto dpr = static_cast<int>( davaGLWidget->GetGLWindow()->devicePixelRatio() );
-    auto scaleValue = percentages.at(index) * dpr;
-//!    scrollAreaController->SetScale(scaleValue);
+    int scale = percentages.at(index);
+    scrollAreaController->SetScale(scale);
 }
 
 void PreviewWidget::OnScaleByComboText()
@@ -164,6 +159,7 @@ void PreviewWidget::OnScaleByComboText()
 		// Try to parse the value.
 		scaleValue = curTextValue.toFloat();
 	}
+    scrollAreaController->SetScale(scaleValue);
 }
 
 void PreviewWidget::OnZoomInRequested()

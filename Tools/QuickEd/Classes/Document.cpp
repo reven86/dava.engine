@@ -51,15 +51,17 @@ using namespace DAVA;
 class RootControl : public UIControl
 {
 public:
-    void SetActiveDocument(Document *doc)
+    RootControl(Document *doc)
+    : UIControl()
+    , document(doc)
     {
-        activeDocument = doc;
+        DVASSERT(nullptr != document);
     }
     bool SystemInput(UIEvent *currentInput) override
     {
-        if (!emulationMode && nullptr != activeDocument)
+        if (!emulationMode && nullptr != document)
         {
-            return activeDocument->OnInput(currentInput);
+            return document->OnInput(currentInput);
         }
         return UIControl::SystemInput(currentInput);
     }
@@ -67,18 +69,14 @@ public:
     {
         emulationMode = arg;
     }
-    bool GetEmulationMode() const
-    {
-        return emulationMode;
-    }
 private:
-    Document *activeDocument = nullptr;
+    Document *document = nullptr;
     bool emulationMode = false;
 };
 
 Document::Document(PackageNode *_package, QObject *parent)
     : QObject(parent)
-    , rootControl(new RootControl())
+    , rootControl(new RootControl(this))
     , scalableControl(new UIControl())
     , package(SafeRetain(_package))
     , commandExecutor(new QtModelPackageCommandExecutor(this))
@@ -166,7 +164,7 @@ void Document::Deactivate()
     {
         system->Deactivate();
     }
-    emit SelectedNodesChanged(Set<PackageBaseNode*>(), selectedNodes);
+    emit SelectedNodesChanged(SelectedNodes(), selectedItems);
 }
 
 void Document::Activate()
@@ -175,7 +173,8 @@ void Document::Activate()
     {
         system->Activate();
     }
-    emit SelectedNodesChanged(selectedNodes, Set<PackageBaseNode*>());
+    emit SelectedNodesChanged(selectedItems, SelectedNodes());
+    emit ScaleChanged(scale);
 }
 
 void Document::SetContext(QObject* requester, WidgetContext* widgetContext)
@@ -192,8 +191,8 @@ void Document::SetContext(QObject* requester, WidgetContext* widgetContext)
 
 void Document::SetSelectedControls(const SelectedControls &selected, const SelectedControls &deselected)
 {
-    Set<PackageBaseNode*> selectedNodes_(selected.begin(), selected.end());
-    Set<PackageBaseNode*> deselectedNodes_(deselected.begin(), deselected.end());
+    SelectedNodes selectedNodes_(selected.begin(), selected.end());
+    SelectedNodes deselectedNodes_(deselected.begin(), deselected.end());
     SetSelectedNodes(selectedNodes_, deselectedNodes_);
 }
 
@@ -280,7 +279,7 @@ ControlNode* Document::GetControlByMenu(const Vector<ControlNode*> &nodesUnderPo
         menu.addAction(action);
         void* ptr = static_cast<void*>(controlNode);
         action->setData(QVariant::fromValue(ptr));
-        if (selectedNodes.find(controlNode) != selectedNodes.end())
+        if (selectedItems.find(controlNode) != selectedItems.end())
         {
             auto font = action->font();
             font.setBold(true);
@@ -302,7 +301,10 @@ void Document::SetScale(int arg)
     if (scale != arg)
     {
         scale = arg;
+        DAVA::float32 realScale = scale / 100.0f;
+        scalableControl->SetScale(Vector2(realScale, realScale));
         emit ScaleChanged(scale);
+        emit CanvasSizeChanged();
     }
 }
 
@@ -334,27 +336,14 @@ void Document::RefreshAllControlProperties()
     package->GetPackageControlsNode()->RefreshControlProperties();
 }
 
-void Document::OnSelectedNodesChanged(const Set<PackageBaseNode*> &selected, const Set<PackageBaseNode*> &deselected)
+void Document::SetSelectedNodes(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
-    SetSelectedNodes(selected, deselected);
-}
-
-void Document::SetSelectedNodes(const Set<PackageBaseNode*>& selected, const Set<PackageBaseNode*>& deselected)
-{
-    Set<PackageBaseNode*> reallySelected;
-    Set<PackageBaseNode*> reallyDeselected;
+    SelectedNodes reallySelected;
+    SelectedNodes reallyDeselected;
     
-    std::set_intersection(selectedNodes.begin(), selectedNodes.end(), deselected.begin(), deselected.end(), std::inserter(reallyDeselected, reallyDeselected.end()));
-    std::set_difference(selected.begin(), selected.end(), selectedNodes.begin(), selectedNodes.end(), std::inserter(reallySelected, reallySelected.end()));
-    
-    for(const auto &node : reallyDeselected)
-    {
-        selectedNodes.erase(node);
-    }
-    for(const auto &node : reallySelected)
-    {
-        selectedNodes.insert(node);
-    }
+    GetOnlyExistedItems(deselected, reallyDeselected);
+    GetNotExistedItems(selected, reallySelected);
+    MergeSelection(reallySelected, reallyDeselected);
     
     if (!reallySelected.empty() || !reallyDeselected.empty())
     {
@@ -378,7 +367,7 @@ void Document::SetSelectedNodes(const Set<PackageBaseNode*>& selected, const Set
         }
         if (!selectedControls.empty() || !deselectedControls.empty())
         {
-            //selectionSystem.OnSelectionWasChanged(selectedControls, deselectedControls);
+            SelectionChanged.Emit(selectedControls, deselectedControls);
         }
         emit SelectedNodesChanged(reallySelected, reallyDeselected);
     }

@@ -33,13 +33,14 @@
 #include <QDockWidget>
 #include "Base/BaseTypes.h"
 #include "ui_PropertiesWidget.h"
+#include "SelectionTracker.h"
 
 class ControlNode;
 class StyleSheetNode;
 class Document;
 class PackageBaseNode;
 
-class PropertiesWidget : public QDockWidget, public Ui::PropertiesWidget
+class PropertiesWidget : public QDockWidget, public Ui::PropertiesWidget, public SelectionTracker<SelectedNodes>
 {
     Q_OBJECT
 public:
@@ -47,7 +48,7 @@ public:
 
 public slots:
     void OnDocumentChanged(Document *doc);
-    void OnSelectedNodesChanged(const DAVA::Set<PackageBaseNode*> &selected, const DAVA::Set<PackageBaseNode*> &deselected);
+    void SetSelectedNodes(const SelectedNodes &selected, const SelectedNodes &deselected);
 
     void OnAddComponent(QAction *action);
     void OnAddStyleProperty(QAction *action);
@@ -71,7 +72,6 @@ private:
     void UpdateActions();
     
     Document *document = nullptr;
-    DAVA::Set<PackageBaseNode*> selectedNodes;
     QAction *addComponentAction = nullptr;
     QAction *addStylePropertyAction = nullptr;
     QAction *addStyleSelectorAction = nullptr;
