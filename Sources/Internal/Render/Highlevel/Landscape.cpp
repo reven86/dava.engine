@@ -196,8 +196,7 @@ int16 Landscape::AllocateQuadVertexBuffer(LandscapeQuad * quad)
 }
 
 void Landscape::RestoreGeometry()
-{    
-    Logger::Debug("landscape : restore %d buffers", bufferRestoreData.size());
+{        
     for (auto& restoreData : bufferRestoreData)
     {
         if (rhi::NeedRestoreVertexBuffer(restoreData.buffer))

@@ -562,6 +562,7 @@ void Texture::ReloadFromData(PixelFormat format, uint8 * data, uint32 _width, ui
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
+    rhi::HTexture oldHandle = handle;
     ReleaseTextureData();
     
     Image *image = Image::CreateFromData(_width, _height, format, data);
@@ -572,6 +573,7 @@ void Texture::ReloadFromData(PixelFormat format, uint8 * data, uint32 _width, ui
 	
     SetParamsFromImages(images);
 	FlushDataToRenderer(images);
+    rhi::ReplaceTextureInAllTextureSets(oldHandle, handle);
 }
     
 void Texture::Reload()
