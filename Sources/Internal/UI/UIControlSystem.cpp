@@ -421,9 +421,9 @@ void UIControlSystem::OnInput(const Vector<UIEvent>& activeInputs, const Vector<
 
             std::for_each(begin(activeInputs), end(activeInputs), [](const UIEvent& e)
                           {
-                UIEvent ev = e;
-                ev.point = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(ev.physPoint);
-                Replay::Instance()->RecordEvent(&ev);
+                              UIEvent ev = e;
+                              ev.point = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(ev.physPoint);
+                              Replay::Instance()->RecordEvent(&ev);
                           });
 
             count = static_cast<int32>(allInputs.size());

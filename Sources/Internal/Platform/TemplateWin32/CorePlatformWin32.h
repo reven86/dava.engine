@@ -69,7 +69,8 @@ private:
 	static const uint32 FULLSCREEN_STYLE = WS_VISIBLE | WS_POPUP;
 
     void OnMouseEvent(uint32 deviceId, USHORT buttsFlags, WPARAM wParam, LPARAM lParam, USHORT buttonData);
-    static String GetMouseDeviceName(const RAWINPUT& inp);
+    void OnTouchEvent(UIEvent::eInputPhase phase, uint32 deviceId, uint32 fingerId, float32 x, float32 y, float presure);
+    static String GetDeviceName(HANDLE hDevice);
     static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
     RECT GetWindowedRectForDisplayMode(DisplayMode & dm);
@@ -81,6 +82,7 @@ private:
 	bool isLeftButtonPressed;
 	bool isMiddleButtonPressed;
     Vector<DAVA::UIEvent> events;
+    Vector<TOUCHINPUT> inputTouchBuffer;
 };
 
 } // end namespace DAVA

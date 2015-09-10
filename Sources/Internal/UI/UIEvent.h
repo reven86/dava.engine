@@ -46,7 +46,6 @@ class UIControl;
 class UIEvent
 {
 public:
-
     enum eInputSource
     {
         INPUT_UNDEFINED,
@@ -56,10 +55,10 @@ public:
         INPUT_SOURCE_GAMEPAD
     };
 
-	/**
+    /**
 	 \enum Control state bits.
 	 */
-	enum eInputPhase
+    enum eInputPhase
 	{
 			PHASE_BEGAN = 0	//!<Screen touch or mouse button press is began.
 		,	PHASE_DRAG		//!<User moves mouse with presset button or finger over the screen.
@@ -75,17 +74,17 @@ public:
 	/**
 	 \enum Internal Control Sytem event activity state.
 	 */
-	enum eInputActivityState
-	{
-			ACTIVITY_STATE_INACTIVE	=	0	
-		,	ACTIVITY_STATE_ACTIVE
-		,	ACTIVITY_STATE_CHANGED
-	};
-	
-	/**
+    enum eInputActivityState
+    {
+        ACTIVITY_STATE_INACTIVE = 0,
+        ACTIVITY_STATE_ACTIVE,
+        ACTIVITY_STATE_CHANGED
+    };
+
+    /**
 	 \enum Input state accordingly to control.
 	 */
-	enum eControlInputState
+    enum eControlInputState
 	{
 			CONTROL_STATE_RELEASED	=	0	//!<Input is released
 		,	CONTROL_STATE_INSIDE			//!<Input processed inside control rerct for now
@@ -104,40 +103,39 @@ public:
 
 	friend class UIControlSystem;
 
-	enum eButtonID 
-	{
-			BUTTON_NONE	= 0
-		,	BUTTON_1
-		,	BUTTON_2
-		,	BUTTON_3
-	};
-	
-	enum eJoystickAxisID
-	{
-			JOYSTICK_AXIS_X = 0
-		,	JOYSTICK_AXIS_Y
-		,	JOYSTICK_AXIS_Z
-		,	JOYSTICK_AXIS_RX
-		,	JOYSTICK_AXIS_RY
-		,	JOYSTICK_AXIS_RZ
-		,	JOYSTICK_AXIS_LTRIGGER
-		,	JOYSTICK_AXIS_RTRIGGER
-		,	JOYSTICK_AXIS_HAT_X
-		,	JOYSTICK_AXIS_HAT_Y
-	};
+    enum eButtonID
+    {
+        BUTTON_NONE = 0,
+        BUTTON_1,
+        BUTTON_2,
+        BUTTON_3
+    };
 
+    enum eJoystickAxisID
+    {
+        JOYSTICK_AXIS_X = 0,
+        JOYSTICK_AXIS_Y,
+        JOYSTICK_AXIS_Z,
+        JOYSTICK_AXIS_RX,
+        JOYSTICK_AXIS_RY,
+        JOYSTICK_AXIS_RZ,
+        JOYSTICK_AXIS_LTRIGGER,
+        JOYSTICK_AXIS_RTRIGGER,
+        JOYSTICK_AXIS_HAT_X,
+        JOYSTICK_AXIS_HAT_Y
+    };
 
-	int32 tid;//!< event id, for the platforms with mouse this id means mouse button id, key codes for keys, axis id for joystick
-	Vector2 point;//!< point of pressure in virtual coordinates
-	Vector2 physPoint;//!< point of pressure in physical coordinates
-	float64 timestamp;//!< time stemp of the event occurrence
-	int32 phase;//!< began, ended, moved. See eInputPhase
-	UIControl *touchLocker;//!< control that handles this input
-	int32 activeState;//!< state of input in control system (active, inactive, changed)
-	int32 controlState;//!< input state relative to control (outside, inside). Used for point inputs only(mouse, touch)
-	int32 tapCount;//!< count of the continuous inputs (clicks for mouse)
-	char16 keyChar;//!< unicode/translated character produced by key using current language, caps etc. Used only with PHASE_KEYCHAR.
-    uint32 deviceId; // can be mouse, touch screen,
+    int32 tid; //!< event id, for the platforms with mouse this id means mouse button id, key codes for keys, axis id for joystick
+    Vector2 point; //!< point of pressure in virtual coordinates
+    Vector2 physPoint; //!< point of pressure in physical coordinates
+    float64 timestamp; //!< time stemp of the event occurrence
+    int32 phase; //!< began, ended, moved. See eInputPhase
+    UIControl* touchLocker; //!< control that handles this input
+    int32 activeState; //!< state of input in control system (active, inactive, changed)
+    int32 controlState; //!< input state relative to control (outside, inside). Used for point inputs only(mouse, touch)
+    int32 tapCount; //!< count of the continuous inputs (clicks for mouse)
+    char16 keyChar; //!< unicode/translated character produced by key using current language, caps etc. Used only with PHASE_KEYCHAR.
+    uint32 which; // index of mouse or touch surface in system
 
     inline void SetInputHandledType(eInputHandledType value)
     {
@@ -160,7 +158,7 @@ public:
         , controlState(CONTROL_STATE_RELEASED)
         , tapCount(0)
         , keyChar(0)
-        , deviceId(0)
+        , which(0)
         , inputHandledType(INPUT_NOT_HANDLED)
     {
     }
