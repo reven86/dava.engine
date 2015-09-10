@@ -47,7 +47,6 @@ namespace //for private variables
     int32 desiredFPS = 0;
     
     RenderOptions renderOptions;
-    RenderCaps renderCaps;
     DynamicBindings dynamicBindings;
     RuntimeTextures runtimeTextures;
 
@@ -56,8 +55,6 @@ namespace //for private variables
 
     ScreenShotCallbackDelegate * screenshotCallback = nullptr;
 }
-
-void InitCaps();
 
 void Initialize(rhi::Api _api, const rhi::InitParam & params)
 {
@@ -74,17 +71,8 @@ void Initialize(rhi::Api _api, const rhi::InitParam & params)
     FXCache::Initialize();
     PixelFormatDescriptor::InitializePixelFormatDescriptors();
     GPUFamilyDescriptor::SetupGPUParameters();
-           
-    InitCaps();
+
     ininialized = true;
-}
-
-
-void InitCaps()
-{
-    renderCaps.zeroBaseClipRange = (api == rhi::RHI_DX9) || (api == rhi::RHI_DX11) || (api == rhi::RHI_METAL);
-    renderCaps.upperLeftRTOrigin = (api == rhi::RHI_DX9) || (api == rhi::RHI_DX11) || (api == rhi::RHI_METAL);
-    renderCaps.isCenterPixelMapping = (api == rhi::RHI_DX9) || (api == rhi::RHI_DX11);
 }
 
 void Uninitialize()
@@ -132,11 +120,6 @@ RenderOptions *GetOptions()
 {
     DVASSERT(ininialized);
     return &renderOptions;
-}
-
-const RenderCaps & GetCaps()
-{
-    return renderCaps;
 }
 
 DynamicBindings& GetDynamicBindings()

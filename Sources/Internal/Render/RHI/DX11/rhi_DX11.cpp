@@ -51,7 +51,7 @@ namespace rhi
 
 static Dispatch     DispatchDX11 = {0};
 
-
+static RenderDeviceCaps _DeviceCaps = {};
 
 //------------------------------------------------------------------------------
 
@@ -61,6 +61,13 @@ dx11_HostApi()
     return RHI_DX11;
 }
 
+//------------------------------------------------------------------------------
+
+static const RenderDeviceCaps &
+dx11_DeviceCaps()
+{
+	return _DeviceCaps;
+}
 
 //------------------------------------------------------------------------------
 
@@ -251,6 +258,7 @@ dx11_Initialize( const InitParam& param )
     DispatchDX11.impl_Reset                  = &dx11_Reset;
     DispatchDX11.impl_HostApi                = &dx11_HostApi;
     DispatchDX11.impl_TextureFormatSupported = &dx11_TextureFormatSupported;
+	DispatchDX11.impl_DeviceCaps			 = &dx11_DeviceCaps;
 
     SetDispatchTable( DispatchDX11 );
 
@@ -263,6 +271,13 @@ dx11_Initialize( const InitParam& param )
     stat_SET_PS     = StatSet::AddStat( "rhi'set-ps", "set-ps" );
     stat_SET_TEX    = StatSet::AddStat( "rhi'set-tex", "set-tex" );
     stat_SET_CB     = StatSet::AddStat( "rhi'set-cb", "set-cb" );
+
+	_DeviceCaps.is32BitIndicesSupported = true;
+	_DeviceCaps.isFramebufferFetchSupported = true;
+	_DeviceCaps.isVertexTextureUnitsSupported = true;
+	_DeviceCaps.isUpperLeftRTOrigin = true;
+	_DeviceCaps.isZeroBaseClipRange = true;
+	_DeviceCaps.isCenterPixelMapping = true;
 }
 
 

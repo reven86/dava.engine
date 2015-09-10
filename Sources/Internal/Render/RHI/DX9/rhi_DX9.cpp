@@ -50,6 +50,7 @@ namespace rhi
 
 Dispatch    DispatchDX9 = {0};
 
+static RenderDeviceCaps _DeviceCaps = {};
 
 //==============================================================================
 
@@ -74,6 +75,13 @@ dx9_HostApi()
     return RHI_DX9;
 }
 
+//------------------------------------------------------------------------------
+
+static const RenderDeviceCaps & 
+dx9_DeviceCaps()
+{
+	return _DeviceCaps;
+}
 
 //------------------------------------------------------------------------------
 
@@ -378,6 +386,7 @@ dx9_Initialize( const InitParam& param )
     DispatchDX9.impl_HostApi                = &dx9_HostApi;
     DispatchDX9.impl_NeedRestoreResources   = &dx9_NeedRestoreResources;
     DispatchDX9.impl_TextureFormatSupported = &dx9_TextureFormatSupported;
+	DispatchDX9.impl_DeviceCaps             = &dx9_DeviceCaps;
 
     SetDispatchTable( DispatchDX9 );
 
@@ -390,6 +399,13 @@ dx9_Initialize( const InitParam& param )
     stat_SET_PS     = StatSet::AddStat( "rhi'set-ps", "set-ps" );
     stat_SET_TEX    = StatSet::AddStat( "rhi'set-tex", "set-tex" );
     stat_SET_CB     = StatSet::AddStat( "rhi'set-cb", "set-cb" );
+
+	_DeviceCaps.is32BitIndicesSupported = true;
+	_DeviceCaps.isFramebufferFetchSupported = true;
+	_DeviceCaps.isVertexTextureUnitsSupported = true;
+	_DeviceCaps.isUpperLeftRTOrigin = true;
+	_DeviceCaps.isZeroBaseClipRange = true;
+	_DeviceCaps.isCenterPixelMapping = true;
 }
 
 

@@ -780,16 +780,9 @@ float32 VegetationRenderObject::SampleHeight(int16 x, int16 y)
 
 bool VegetationRenderObject::IsHardwareCapableToRenderVegetation()
 {
-    const RenderCaps& deviceCaps = Renderer::GetCaps();
-    bool result = deviceCaps.isVertexTextureUnitsSupported;
-
-#if defined(__DAVAENGINE_IPHONE__)  || defined(__DAVAENGINE_ANDROID__)
-
-    //VI: vegetation can only be rendered on ES 3.0 devices
-    result = result && deviceCaps.isOpenGLES3Supported;
-
-#endif
-
+    const rhi::RenderDeviceCaps& deviceCaps = rhi::DeviceCaps();
+    bool result = deviceCaps.isVertexTextureUnitsSupported && deviceCaps.is32BitIndicesSupported;
+    
     return result;
 }
 
@@ -931,7 +924,10 @@ void VegetationRenderObject::CreateRenderData()
     rhi::UpdateVertexBuffer(vertexBuffer, &vertexData.front(), 0, vertexBufferSize);
 
     uint32 indexBufferSize = indexData.size() * sizeof(VegetationIndex);
-    indexBuffer = rhi::CreateIndexBuffer(indexBufferSize);
+    rhi::IndexBuffer::Descriptor indexDesc;
+    indexDesc.size = indexBufferSize;
+    indexDesc.indexSize = rhi::INDEX_SIZE_32BIT;
+    indexBuffer = rhi::CreateIndexBuffer(indexDesc);
     rhi::UpdateIndexBuffer(indexBuffer, &indexData.front(), 0, indexBufferSize);
 
 #if defined(__DAVAENGINE_IPHONE__)
