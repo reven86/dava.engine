@@ -211,7 +211,10 @@ DbgDraw::Buffer<Vertex,Prim>::construct( unsigned max_vertex_count )
     {
         if( _vb[i] == rhi::InvalidHandle )
         {
-            _vb[i] = rhi::CreateVertexBuffer( max_vertex_count*sizeof(Vertex) );
+            
+            rhi::VertexBuffer::Descriptor descr = rhi::VertexBuffer::Descriptor(max_vertex_count*sizeof(Vertex));
+            descr.needRestore = false;
+            _vb[i] = rhi::CreateVertexBuffer( descr );
 
             success = _vb[i] != rhi::InvalidHandle;
         }
