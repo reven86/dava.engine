@@ -95,7 +95,7 @@ template <typename ValueType>
 inline void SectionProperty<ValueType>::InsertProperty(ValueType *property, DAVA::int32 index)
 {
     DVASSERT(property->GetParent() == nullptr);
-    if (0 <= index && index <= static_cast<int32>(children.size()))
+    if (0 <= index && index <= static_cast<DAVA::int32>(children.size()))
     {
         property->SetParent(this);
         children.insert(children.begin() + index, SafeRetain(property));

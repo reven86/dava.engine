@@ -151,7 +151,7 @@ DAVA::int32 RootProperty::GetControlPropertiesSectionsCount() const
 
 ControlPropertiesSection *RootProperty::GetControlPropertiesSection(DAVA::int32 index) const
 {
-    if (index >= 0 && index < static_cast<int>(controlProperties.size()))
+    if (index >= 0 && index < static_cast<DAVA::int32>(controlProperties.size()))
     {
         return controlProperties[index];
     }
