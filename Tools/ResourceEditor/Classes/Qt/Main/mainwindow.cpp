@@ -336,6 +336,26 @@ QString GetSaveFolderForEmitters()
     return particlesPath;
 }
 
+
+
+void QtMainWindow::CollectEmittersForSave(ParticleEmitter *topLevelEmitter, DAVA::List<EmitterDescriptor> &emitters, const String &entityName) const
+{
+    DVASSERT(topLevelEmitter != nullptr);
+
+    for (auto & layer : topLevelEmitter->layers)
+    {
+        if (nullptr != layer->innerEmitter)
+        {
+            CollectEmittersForSave(layer->innerEmitter, emitters, entityName);
+            emitters.emplace_back(EmitterDescriptor(layer->innerEmitter, layer, layer->innerEmitter->configPath, entityName));
+        }
+    }
+
+    emitters.emplace_back(EmitterDescriptor(topLevelEmitter, nullptr, topLevelEmitter->configPath, entityName));
+}
+
+
+
 bool QtMainWindow::SaveAllSceneEmitters(SceneEditor2 *scene) const
 {
     DVASSERT(nullptr != scene);
@@ -345,56 +365,46 @@ bool QtMainWindow::SaveAllSceneEmitters(SceneEditor2 *scene) const
     if (effectEntities.empty())
         return true;
 
-    uint32 emitterSaveIndex = 0;
-    for (auto & entityWithEffect: effectEntities)
+    DAVA::List<EmitterDescriptor> emittersForSave;
+    for (auto & entityWithEffect : effectEntities)
     {
+        const DAVA::String entityName = entityWithEffect->GetName().c_str();
         ParticleEffectComponent *effect = GetEffectComponent(entityWithEffect);
-        for (int32 i = 0, sz = effect->GetEmittersCount(); i != sz; ++i)
+        for (int32 i = 0, sz = effect->GetEmittersCount(); i < sz; ++i)
         {
-            List<ParticleEmitter *> emittersForSave;
-
-            {   //enumerate emitters: first inner emitters
-                
-                ParticleEmitter* emitter = effect->GetEmitter(i);
-                for (auto & layer : emitter->layers)
-                {
-                    if (nullptr != layer->innerEmitter)
-                    {
-                        emittersForSave.push_back(layer->innerEmitter);
-                    }
-                }
-
-                emittersForSave.push_back(emitter);
-            }
-
-            //save emitters
-
-            for (auto & savedEmitter : emittersForSave)
-            {
-                FilePath yamlPath = savedEmitter->configPath;
-                if (yamlPath.IsEmpty())
-                {
-                    QString particlesPath = GetSaveFolderForEmitters();
-
-                    FileSystem::Instance()->CreateDirectory(FilePath(particlesPath.toStdString()), true); //to ensure that folder is created
-
-                    QString emitterPathname = particlesPath + QString("%1_%2_%3.yaml").arg(entityWithEffect->GetName().c_str()).arg(savedEmitter->name.c_str()).arg(++emitterSaveIndex);
-                    QString filePath = FileDialog::getSaveFileName(NULL, QString("Save Particle Emitter ") + QString(savedEmitter->name.c_str()),
-                        emitterPathname, QString("YAML File (*.yaml)"));
-
-                    if (filePath.isEmpty())
-                    {
-                        return false;
-                    }
-
-                    yamlPath = FilePath(filePath.toStdString());
-
-                    SettingsManager::SetValue(Settings::Internal_ParticleLastEmitterDir, VariantType(yamlPath.GetDirectory()));
-                }
-
-                savedEmitter->SaveToYaml(yamlPath);
-            }
+            CollectEmittersForSave(effect->GetEmitter(i), emittersForSave, entityName);
         }
+    }
+
+    for (auto & descriptor : emittersForSave)
+    {
+        ParticleEmitter *emitter = descriptor.emitter;
+        const String & entityName = descriptor.entityName;
+
+        FilePath yamlPathForSaving = descriptor.yamlPath;
+        if (yamlPathForSaving.IsEmpty())
+        {
+            QString particlesPath = GetSaveFolderForEmitters();
+
+            FileSystem::Instance()->CreateDirectory(FilePath(particlesPath.toStdString()), true); //to ensure that folder is created
+
+            QString emitterPathname = particlesPath + QString("%1_%2.yaml").arg(entityName.c_str()).arg(emitter->name.c_str());
+            QString filePath = FileDialog::getSaveFileName(NULL, QString("Save Particle Emitter ") + QString(emitter->name.c_str()), emitterPathname, QString("YAML File (*.yaml)"));
+
+            if (filePath.isEmpty())
+            {
+                continue;
+            }
+
+            yamlPathForSaving = FilePath(filePath.toStdString());
+            SettingsManager::SetValue(Settings::Internal_ParticleLastEmitterDir, VariantType(yamlPathForSaving.GetDirectory()));
+        }
+
+        if (nullptr != descriptor.ownerLayer)
+        {
+            descriptor.ownerLayer->innerEmitterPath = yamlPathForSaving;
+        }
+        emitter->SaveToYaml(yamlPathForSaving);
     }
 
     return true;
@@ -3203,24 +3213,27 @@ void QtMainWindow::OnConsoleItemClicked(const QString &data)
     PointerSerializer conv(data.toStdString());
     if (conv.CanConvert<Entity*>())
     {
-        if (nullptr != GetCurrentScene())
+		auto currentScene = GetCurrentScene();
+        if (nullptr != currentScene)
         {
             auto vec = conv.GetPointers<Entity*>();
             if (!vec.empty())
             {
                 EntityGroup entityGroup;
                 DAVA::Vector<Entity *> allEntities;
-                GetCurrentScene()->GetChildNodes(allEntities);
+                currentScene->GetChildNodes(allEntities);
                 for (auto entity : vec)
                 {
                     if (std::find(allEntities.begin(), allEntities.end(), entity) != allEntities.end())
                     {
-                        entityGroup.Add(entity);
+                        entityGroup.Add(entity, currentScene->selectionSystem->GetSelectionAABox(entity));
                     }
                 }
-                if (entityGroup.Size() != 0)
+
+                if (entityGroup.Size() > 0)
                 {
-                    GetCurrentScene()->selectionSystem->SetSelection(entityGroup);
+                    currentScene->selectionSystem->SetSelection(entityGroup);
+					currentScene->cameraSystem->LookAt(entityGroup.GetCommonBbox());
                 }
             }
         }

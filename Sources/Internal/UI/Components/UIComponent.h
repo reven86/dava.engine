@@ -51,7 +51,10 @@ public:
     
 public:
     UIComponent();
+    UIComponent(const UIComponent &src);
     virtual ~UIComponent();
+    
+    UIComponent &operator=(const UIComponent &src);
 
     static UIComponent * CreateByType(uint32 componentType);
     static bool IsMultiple(uint32 componentType);

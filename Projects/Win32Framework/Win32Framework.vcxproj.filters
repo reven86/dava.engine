@@ -2733,9 +2733,6 @@
     <ClCompile Include="..\..\Sources\Internal\UI\UISpinner.cpp">
       <Filter>Internal\UI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Utils\UTF8UtilsWin32.cpp">
-      <Filter>Internal\Utils</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\UISwitch.cpp">
       <Filter>Internal\UI</Filter>
     </ClCompile>
@@ -3426,6 +3423,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UIIgnoreLayoutComponent.cpp">
       <Filter>Internal\UI\Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Utils\UTF8Utils.cpp">
+      <Filter>Internal\Utils</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Network\Services\MMNet\MMBigDataTransferService.cpp">
       <Filter>Internal\Network\Services\MMNet</Filter>

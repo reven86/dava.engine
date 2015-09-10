@@ -27,6 +27,6 @@
 =====================================================================================*/
 
 
-#if !defined(UI_EDITOR_VERSION)
-#define UI_EDITOR_VERSION "local build"
+#if !defined(APPLICATION_VERSION)
+#define APPLICATION_VERSION "local build"
 #endif
