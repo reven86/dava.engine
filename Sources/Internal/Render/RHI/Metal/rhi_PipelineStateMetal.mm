@@ -839,7 +839,7 @@ SetToRHI( Handle ps, uint32 layoutUID, bool ds_used, id<MTLRenderCommandEncoder>
 
         for( unsigned i=0; i!=psm->altState.size(); ++i )
         {
-            if( psm->altState[i].layoutUID == layoutUID  &&  psm->altState[i].ds_used )
+            if( psm->altState[i].layoutUID == layoutUID  &&  psm->altState[i].ds_used == ds_used )
             {
                 si     = i;
                 do_add = false;

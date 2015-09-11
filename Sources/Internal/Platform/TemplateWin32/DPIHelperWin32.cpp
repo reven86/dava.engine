@@ -87,41 +87,15 @@ namespace DAVA
     float64 DPIHelper::GetDpiScaleFactor(int32 /*screenId*/)
     {
 #if defined(__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__)
+        float64 scaleFactor = 0.0;
         CorePlatformWinUAP* core = static_cast<CorePlatformWinUAP*>(Core::Instance());
-        float64 d(0.0f);
-        auto func = [&d]()
+        core->RunOnUIThreadBlocked([&scaleFactor]()
         {
-            using namespace Windows::Graphics::Display;
-            ResolutionScale scale = DisplayInformation::GetForCurrentView()->ResolutionScale;
-
-            switch (scale)
-            {
-            case ResolutionScale::Scale120Percent:
-                d = 1.2;
-                break;
-            case ResolutionScale::Scale140Percent:
-                d = 1.4;
-                break;
-            case ResolutionScale::Scale150Percent:
-                d = 1.5;
-                break;
-            case ResolutionScale::Scale160Percent:
-                d = 1.6;
-                break;
-            case ResolutionScale::Scale180Percent:
-                d = 1.8;
-                break;
-            case ResolutionScale::Scale225Percent:
-                d = 2.25;
-                break;
-            case ResolutionScale::Invalid:
-            case ResolutionScale::Scale100Percent:
-            default:
-                d = 1.0;
-            }
-        };
-        core->RunOnUIThreadBlocked(func);
-        return d;
+            using Windows::Graphics::Display::DisplayInformation;
+            DisplayInformation^ displayInfo = DisplayInformation::GetForCurrentView();
+            scaleFactor = displayInfo->RawPixelsPerViewPixel;
+        });
+        return scaleFactor;
 #else
             return 0;
 #endif //  (__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__)

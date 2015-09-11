@@ -38,10 +38,12 @@ void SceneSaverTool::PrintUsage() const
 {
     printf("\n");
     printf("-scenesaver -save [-indir [directory]] [-outdir [directory]] [-processfile [directory]] [-copyconverted]\n");
-    printf("-scenesaver -resave [-indir [directory]] [-processfile [directory]] [-forceclose] [-copyconverted]\n");
+    printf("-scenesaver -resave [-indir [directory]] [-processfile [directory]] [-copyconverted]\n");
+    printf("-scenesaver -resave -yaml [-indir [directory]]\n");
     printf("\twill save scene file from DataSource/3d to any Data or DataSource folder\n");
     printf("\t-save - will save level to selected Data/3d/\n");
     printf("\t-resave - will open and save level\n");
+    printf("\t-yaml - will open and save yaml file\n");
     printf("\t-indir - path for Poject/DataSource/3d/ folder \n");
     printf("\t-outdir - path for Poject/Data/3d/ folder\n");
     printf("\t-processfile - filename from DataSource/3d/ for saving\n");
@@ -49,8 +51,9 @@ void SceneSaverTool::PrintUsage() const
 
     printf("\n");
     printf("Samples:\n");
-    printf("-scenesaver -save -indir /Users/User/Project/DataSource/3d -outdir /Users/User/Project/Data/3d/ -processfile Maps/level.sc2 -forceclose -copyconverted\n");
-    printf("-scenesaver -resave -indir /Users/User/Project/DataSource/3d -processfile Maps/level.sc2 -forceclose\n");
+    printf("-scenesaver -save -indir /Users/User/Project/DataSource/3d -outdir /Users/User/Project/Data/3d/ -processfile Maps/level.sc2 -copyconverted\n");
+    printf("-scenesaver -resave -indir /Users/User/Project/DataSource/3d -processfile Maps/level.sc2\n");
+    printf("-scenesaver -resave -yaml -indir /Users/User/Project/Data/Configs/Particles/\n");
 }
 
 DAVA::String SceneSaverTool::GetCommandLineKey() const
@@ -60,43 +63,51 @@ DAVA::String SceneSaverTool::GetCommandLineKey() const
 
 bool SceneSaverTool::InitializeFromCommandLine()
 {
-    commandAction = ACTION_NONE;
+    commandAction = eAction::ACTION_NONE;
     
     inFolder = CommandLineParser::GetCommandParam(String("-indir"));
-    if(inFolder.IsEmpty())
+    if (inFolder.IsEmpty())
     {
-        errors.insert("[SceneSaverTool] Incorrect indir parameter");
+        errors.emplace("[SceneSaverTool] Incorrect indir parameter");
         return false;
     }
     inFolder.MakeDirectoryPathname();
-    
-    filename = CommandLineParser::GetCommandParam(String("-processfile"));
-    if(filename.empty())
+
+    if (CommandLineParser::CommandIsFound(String("-save")))
     {
-        errors.insert("[SceneSaverTool] Filename is not set");
-        return false;
-    }
-    
-    if(CommandLineParser::CommandIsFound(String("-save")))
-    {
-        commandAction = ACTION_SAVE;
+        commandAction = eAction::ACTION_SAVE;
         outFolder = CommandLineParser::GetCommandParam(String("-outdir"));
-        if(outFolder.IsEmpty())
+        if (outFolder.IsEmpty())
         {
-            errors.insert("[SceneSaverTool] Incorrect outdir parameter");
+            errors.emplace("[SceneSaverTool] Incorrect outdir parameter");
             return false;
         }
         outFolder.MakeDirectoryPathname();
 
         copyConverted = CommandLineParser::CommandIsFound(String("-copyconverted"));
     }
-    else if(CommandLineParser::CommandIsFound(String("-resave")))
+    else if (CommandLineParser::CommandIsFound(String("-resave")))
     {
-        commandAction = ACTION_RESAVE;
+        if (CommandLineParser::CommandIsFound("-yaml"))
+        {
+            commandAction = eAction::ACTION_RESAVE_YAML;
+        }
+        else
+        {
+            commandAction = eAction::ACTION_RESAVE_SCENE;
+        }
     }
     else
     {
-        errors.insert("[SceneSaverTool] Incorrect action");
+        errors.emplace("[SceneSaverTool] Incorrect action");
+        return false;
+    }
+
+    
+    filename = CommandLineParser::GetCommandParam(String("-processfile"));
+    if (filename.empty() && (commandAction != eAction::ACTION_RESAVE_YAML))
+    {
+        errors.emplace("[SceneSaverTool] Filename is not set");
         return false;
     }
     
@@ -110,18 +121,35 @@ void SceneSaverTool::DumpParams() const
 
 void SceneSaverTool::Process() 
 {
-    SceneSaver saver;
-
-    saver.SetInFolder(inFolder);
-    if(commandAction == ACTION_SAVE)
+    switch (commandAction)
     {
+    case SceneSaverTool::eAction::ACTION_SAVE:
+    {
+        SceneSaver saver;
+        saver.SetInFolder(inFolder);
         saver.SetOutFolder(outFolder);
         saver.EnableCopyConverted(copyConverted);
         saver.SaveFile(filename, errors);
+
+        break;
     }
-    else if(commandAction == ACTION_RESAVE)
+    case SceneSaverTool::eAction::ACTION_RESAVE_SCENE:
     {
+        SceneSaver saver;
+        saver.SetInFolder(inFolder);
         saver.ResaveFile(filename, errors);
+        break;
+    }
+    case SceneSaverTool::eAction::ACTION_RESAVE_YAML:
+    {
+        SceneSaver saver;
+        saver.ResaveYamlFilesRecursive(inFolder, errors);
+        break;
+    }
+
+    default:
+        DVASSERT(false);
+        break;
     }
 }
 

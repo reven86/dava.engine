@@ -1211,7 +1211,7 @@ Trace("rhi-gl.exec-queued-cmd\n");
     {
         do_exit = true;
     }
-    if (_Frame.begin()->sync != InvalidHandle)
+    if (_Frame.size() && (_Frame.begin()->sync != InvalidHandle))
     {
         SyncObjectGLES2_t*  sync = SyncObjectPool::Get(_Frame.begin()->sync);
 

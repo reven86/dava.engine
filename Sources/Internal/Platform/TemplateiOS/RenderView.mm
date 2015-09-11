@@ -130,31 +130,16 @@ static DAVA::uint32 KEYBOARD_FPS_LIMIT = 20;
     }
     
     DAVA::Core::Instance()->SystemProcessFrame();
-
-    currFPS = 60;
-
-//  if(currFPS != DAVA::RenderManager::Instance()->GetFPS())
-    {
-//      currFPS = DAVA::RenderManager::Instance()->GetFPS();
-        float interval = 60.0f / currFPS;
-        if(interval < 1.0f)
-        {
-            interval = 1.0f;
-        }
-        [self setAnimationFrameInterval:(int)interval];
-    }
-	
-    DAVA::int32 targetFPS = 60;
+    
+    DAVA::int32 targetFPS = 0;
     if (limitKeyboardFps)
     {
         targetFPS = KEYBOARD_FPS_LIMIT;
     }
-#if RHI_COMPLETE
     else
     {
-        targetFPS = DAVA::RenderManager::Instance()->GetFPS();
+        targetFPS = DAVA::Renderer::GetDesiredFPS();
     }
-#endif //RHI_COMPLETE
     
 	if(currFPS != targetFPS)
 	{

@@ -224,6 +224,7 @@ JniCrashReporter::CrashStep AndroidCrashReport::FormatTeamcityIdStep(int32 addr)
 }
 void AndroidCrashReport::OnStackFrame(pointer_size addr)
 {
+#if defined(CRASH_HANDLER_CUSTOMSIGNALS)
     if(crashSteps.size() >= maxStackSize) return;
 
     const char * libName = nullptr;
@@ -243,7 +244,7 @@ void AndroidCrashReport::OnStackFrame(pointer_size addr)
     step.function = functionString[crashSteps.size()];
     step.fileLine = relAddres;
     crashSteps.push_back(step);
-
+#endif // defined(CRASH_HANDLER_CUSTOMSIGNALS)
 }
 void AndroidCrashReport::SignalHandler(int signal, struct siginfo *siginfo, void *sigcontext)
 {
@@ -253,7 +254,7 @@ void AndroidCrashReport::SignalHandler(int signal, struct siginfo *siginfo, void
     }
     alarm(500);
     //kill the app if it freezes
-    
+#if defined(CRASH_HANDLER_CUSTOMSIGNALS)
     BacktraceInterface * backtraceProvider = AndroidBacktraceChooser::ChooseBacktraceAndroid();
     if(backtraceProvider != nullptr)
     {
@@ -269,6 +270,7 @@ void AndroidCrashReport::SignalHandler(int signal, struct siginfo *siginfo, void
         crashSteps.push_back(step);
     }
     crashReporter->ThrowJavaExpetion(crashSteps);
+#endif // defined(CRASH_HANDLER_CUSTOMSIGNALS)
 }
 void AndroidCrashReport::Unload()
 {

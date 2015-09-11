@@ -60,8 +60,6 @@ public:
     void AppStarted();
     void AppFinished();
 
-    void InitializeGlWindow(uint64 glContextId);
-    
 	void Resize(int32 width, int32 height);
     void ProcessFrame();
 

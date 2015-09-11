@@ -62,20 +62,20 @@ public:
 protected:
 	
 	int32 curToolSize;
-	Texture* toolImageTexture;
+	Texture* toolImageTexture = nullptr;
     rhi::HTextureSet toolTextureSet;
 
-    Texture * loadedTexture;
+    Texture * loadedTexture = nullptr;
     rhi::HTextureSet loadedTextureSet;
     
 	Color drawColor;
-	int32 colorIndex;
+	int32 colorIndex = 0;
 
 	Rect updatedRectAccumulator;
 	
-	bool editingIsEnabled;
+	bool editingIsEnabled = false;
 	
-	Image* originalImage;
+	Image* originalImage = nullptr;
 	
 	void UpdateToolImage(bool force = false);
 	void UpdateBrushTool();

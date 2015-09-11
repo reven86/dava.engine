@@ -37,6 +37,7 @@ namespace rhi
 {
 
 struct ResetParam;
+struct RenderDeviceCaps;
 
 struct
 Dispatch
@@ -48,6 +49,8 @@ Dispatch
     Api     (*impl_HostApi)();
     bool    (*impl_NeedRestoreResources)();
     bool    (*impl_TextureFormatSupported)( TextureFormat );
+
+    const RenderDeviceCaps & (*impl_DeviceCaps)();
 
     Handle  (*impl_VertexBuffer_Create)( const VertexBuffer::Descriptor& desc );
     void    (*impl_VertexBuffer_Delete)( Handle );
