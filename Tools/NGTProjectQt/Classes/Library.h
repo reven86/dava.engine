@@ -1,10 +1,10 @@
 /*==================================================================================
     Copyright (c) 2008, binaryzebra
     All rights reserved.
-
+ 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are met:
-
+ 
     * Redistributions of source code must retain the above copyright
     notice, this list of conditions and the following disclaimer.
     * Redistributions in binary form must reproduce the above copyright
@@ -13,7 +13,7 @@
     * Neither the name of the binaryzebra nor the
     names of its contributors may be used to endorse or promote products
     derived from this software without specific prior written permission.
-
+ 
     THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
     ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -26,59 +26,54 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef DAVAPLUGIN_LIBRARY_H
+#define DAVAPLUGIN_LIBRARY_H
 
-#include <QApplication>
+#include <memory>
 
-#include "MainWindow.h"
+#include "core_data_model/i_tree_model.hpp"
 
-#include "DAVAEngine.h"
-#include "QtTools/FrameworkBinding/FrameworkLoop.h"
-#include "QtTools/DavaGLWidget/davaglwidget.h"
+#include "core_ui_framework/i_action.hpp"
+#include "core_ui_framework/i_view.hpp"
+#include "core_ui_framework/i_ui_framework.hpp"
+#include "core_ui_framework/i_ui_application.hpp"
 
-void RunGui(int argc, char *argv[]);
+#include <QObject>
+#include <QVariant>
 
-int main(int argc, char *argv[])
+class FileSystemModel;
+
+class Library : public QObject
 {
-#if defined (__DAVAENGINE_MACOS__)
-    DAVA::Core::Run(argc, argv);
-#elif defined (__DAVAENGINE_WIN32__)
-    HINSTANCE hInstance = (HINSTANCE)::GetModuleHandle(nullptr);
-    DAVA::Core::Run(argc, argv, hInstance);
-#else
-    DVASSERT(false && "Wrong platform")
-#endif
+    Q_OBJECT
+public:
+    Library();
 
-    RunGui(argc, argv);
+    void Initialize(IUIFramework & uiFramework, IUIApplication & uiApplication);
+    void Finilize();
 
-    return 0;
-}
+    IView & GetView();
+    Q_SIGNAL void OpenScene(std::string const & scenePath);
 
-void RunGui(int argc, char *argv[])
-{
-    new DAVA::QtLayer();
+    Q_PROPERTY(bool canBeLoaded READ CanBeLoaded NOTIFY CanBeLoadedChanged);
 
-#ifdef Q_OS_MAC
-    // Must be called before creating QApplication instance
-    DAVA::QtLayer::MakeAppForeground(false);
-    QTimer::singleShot(0, []{DAVA::QtLayer::MakeAppForeground();});
-    QTimer::singleShot(0, []{DAVA::QtLayer::RestoreMenuBar(););
-#endif
+    Q_SIGNAL void CanBeLoadedChanged();
 
-    new DavaLoop();
-    new FrameworkLoop();
+    Q_INVOKABLE bool CanBeLoaded() const;
+    Q_INVOKABLE void OnOpenSceneButton();
+    Q_INVOKABLE void OnSelectionChanged(const QList<QVariant> & selections);
+    Q_INVOKABLE QVariant GetFileSystemModel();
 
-    QApplication a(argc, argv);
+private:
+    void OnOpenSceneMenu();
 
-    MainWindow *w = new MainWindow();
-    w->show();
+private:
+    std::unique_ptr<IAction> openSceneAction;
+    std::unique_ptr<IView> libraryView;
 
-    DavaLoop::Instance()->StartLoop(FrameworkLoop::Instance());
+    std::string selectedScene;
 
-    QApplication::exec();
+    FileSystemModel * model = nullptr;
+};
 
-    FrameworkLoop::Instance()->Release();
-    DAVA::QtLayer::Instance()->Release();
-    DavaLoop::Instance()->Release();
-
-    delete w;
-}
+#endif // DAVAPLUGIN_LIBRARY_H

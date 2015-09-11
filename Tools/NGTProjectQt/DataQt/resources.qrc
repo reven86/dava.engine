@@ -1,0 +1,7 @@
+<RCC>
+  <qresource prefix="default">
+    <file>MainWindow.ui</file>
+    <file>actions.xml</file>
+    <file alias="Library.qml">Library.qml</file>
+  </qresource>
+</RCC>

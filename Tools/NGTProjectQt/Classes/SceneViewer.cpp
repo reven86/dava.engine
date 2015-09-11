@@ -1,10 +1,10 @@
 /*==================================================================================
     Copyright (c) 2008, binaryzebra
     All rights reserved.
-
+ 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are met:
-
+ 
     * Redistributions of source code must retain the above copyright
     notice, this list of conditions and the following disclaimer.
     * Redistributions in binary form must reproduce the above copyright
@@ -13,7 +13,7 @@
     * Neither the name of the binaryzebra nor the
     names of its contributors may be used to endorse or promote products
     derived from this software without specific prior written permission.
-
+ 
     THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
     ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -26,87 +26,61 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "SceneViewer.h"
 
-#include "MainWindow.h"
-#include "ui_mainwindow.h"
-
-#include "DAVAEngine.h"
-#include "Scene3D/Scene.h"
+#include "Debug/DVAssert.h"
 #include "Scene3D/Systems/Controller/WASDControllerSystem.h"
 #include "Scene3D/Systems/Controller/RotationControllerSystem.h"
-#include "QtTools/DavaGLWidget/davaglwidget.h"
-#include "QtTools/FrameworkBinding/FrameworkLoop.h"
+#include "UI/UIScreen.h"
+#include "UI/UIScreenManager.h"
 
-#include <QAbstractButton>
-#include <QDir>
-#include <QItemSelectionModel>
-#include <QFileDialog>
-#include <QFileSystemModel>
+#include "QtTools/FrameworkBinding/FrameworkLoop.h"
+#include "GLWidget.h"
+
 
 namespace
 {
 
-char const * SCENE_EXTENSION = ".sc2";
-char const * SCENE_FILE_FILTER = "Scene (*.sc2)";
-char const * FILE_SYSTEM_ROOT = "d:\\dev\\dava.test\\SmokeTest\\";
+int NUMBER_OF_SCREEN = 0;
 
-} // namespace
+}
 
-MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent)
-    , ui(new Ui::MainWindow)
-    , model(new QFileSystemModel(this))
+SceneViewer::SceneViewer()
 {
-    ui->setupUi(this);
-
-    QItemSelectionModel * selectionModel = new QItemSelectionModel(model);
-    DVVERIFY(QObject::connect(selectionModel, &QItemSelectionModel::selectionChanged,
-                              this, &MainWindow::OnFileSelectionChanged));
-    DVVERIFY(QObject::connect(ui->loadSceneButton, &QAbstractButton::clicked,
-                              this, &MainWindow::OnLoadSceneButton));
-    DVVERIFY(QObject::connect(ui->actionOpen_Scene, &QAction::triggered,
-                              this, &MainWindow::OnLoadSceneAction));
-
-    model->setRootPath(FILE_SYSTEM_ROOT);
-    ui->treeView->setModel(model);
-    ui->treeView->setRootIndex(model->index(FILE_SYSTEM_ROOT));
-    ui->treeView->setSelectionModel(selectionModel);
-
-    for (int i = 1; i < model->columnCount(QModelIndex()); ++i)
-        ui->treeView->hideColumn(i);
+    glWidget.reset(new PluginGLWidget());
+    DavaGLWidget * davaGl = glWidget.get();
+    DVVERIFY(QObject::connect(davaGl, &DavaGLWidget::Initialized, this, &SceneViewer::OnGlInitialized, Qt::QueuedConnection));
+    DVVERIFY(QObject::connect(davaGl, &DavaGLWidget::Resized, this, &SceneViewer::OnGlResized));
     
-    setWindowTitle("Template Project Qt");
-
-    CreateGlWidget();
+    FrameworkLoop::Instance()->SetOpenGLWindow(glWidget.get());
 }
 
-MainWindow::~MainWindow()
+SceneViewer::~SceneViewer()
 {
-    SafeRelease(view);
-    delete ui;
+    DVASSERT(uiView == nullptr);
+    glWidget.reset();
 }
 
-void MainWindow::CreateGlWidget()
+void SceneViewer::Finalise()
 {
-    using namespace DAVA;
-
-    DavaGLWidget *glWidget = new DavaGLWidget(this);
-    connect(glWidget, &DavaGLWidget::Initialized, this, &MainWindow::OnGlInitialized, Qt::QueuedConnection);
-    connect(glWidget, &DavaGLWidget::Resized, this, &MainWindow::OnGlWidgedResized);
-    FrameworkLoop::Instance()->SetOpenGLWindow(glWidget);
-
-    ui->verticalLayout->addWidget(glWidget);
+    SafeRelease(uiView);
 }
 
-void MainWindow::LoadScene(QString const & scenePath)
+IView & SceneViewer::GetView()
+{
+    DVASSERT(glWidget != nullptr);
+    return *glWidget;
+}
+
+void SceneViewer::OnOpenScene(std::string const & scenePath)
 {
     using namespace DAVA;
 
-    DVASSERT(!scenePath.isEmpty());
-    DVASSERT(nullptr != view);
+    DVASSERT(!scenePath.empty());
+    DVASSERT(nullptr != uiView);
 
     ScopedPtr<Scene> scene(new Scene());
-    SceneFileV2::eError result = scene->LoadScene(FilePath(scenePath.toStdString()));
+    SceneFileV2::eError result = scene->LoadScene(FilePath(scenePath));
     if (result == DAVA::SceneFileV2::ERROR_NO_ERROR)
     {
         WASDControllerSystem * wasdSystem = new WASDControllerSystem(scene);
@@ -136,66 +110,41 @@ void MainWindow::LoadScene(QString const & scenePath)
         scene->AddCamera(camera);
         scene->SetCurrentCamera(camera);
 
-        view->SetScene(scene);
-        statusBar()->showMessage(scenePath);
+        uiView->SetScene(scene);
+        //statusBar()->showMessage(scenePath);
     }
 }
 
-void MainWindow::OnGlInitialized()
+void SceneViewer::OnGlInitialized()
 {
     using namespace DAVA;
-
+    
     ScopedPtr<UIScreen> screen(new UIScreen());
-    DVASSERT(nullptr == view);
-    view = new DAVA::UI3DView(screen->GetRect(), true);
-    view->SetInputEnabled(true, true);
-
-    screen->AddControl(view);
+    DVASSERT(nullptr == uiView);
+    uiView = new DAVA::UI3DView(screen->GetRect(), true);
+    uiView->SetInputEnabled(true, true);
+    
+    screen->AddControl(uiView);
     screen->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
-    screen->GetBackground()->SetColor(DAVA::Color(0.65f, 0.65f, 0.65f, 1.f));
-
+    screen->GetBackground()->SetColor(DAVA::Color(1.0f, 0.65f, 0.65f, 1.f));
+    screen->GetBackground()->SetDrawColor(DAVA::Color(0.65f, 0.65f, 0.65f, 1.f));
+    
     UIScreenManager::Instance()->RegisterScreen(NUMBER_OF_SCREEN, screen);
     UIScreenManager::Instance()->SetFirst(NUMBER_OF_SCREEN);
 }
 
-void MainWindow::OnGlWidgedResized(int width, int height, int dpr)
+void SceneViewer::OnGlResized(int width, int height, int dpr)
 {
     using namespace DAVA;
-    UIScreen *screen = UIScreenManager::Instance()->GetScreen(NUMBER_OF_SCREEN);
+    UIScreen * screen = UIScreenManager::Instance()->GetScreen(NUMBER_OF_SCREEN);
     if (screen == nullptr)
     {
         return;
     }
-
+    
     qint64 scaleWidth = width * dpr;
     qint64 scaleHeight = height * dpr;
     screen->SetSize(Vector2(scaleWidth, scaleHeight));
+    uiView->SetSize(Vector2(scaleWidth, scaleHeight));
 }
 
-void MainWindow::OnFileSelectionChanged(QItemSelection const & selected, QItemSelection const & deselected)
-{
-    DVASSERT(!selected.indexes().isEmpty());
-    ui->loadSceneButton->setEnabled(model->fileName(selected.indexes().first()).endsWith(SCENE_EXTENSION));
-}
-
-void MainWindow::OnLoadSceneButton()
-{
-    QItemSelectionModel * selectionModel = ui->treeView->selectionModel();
-    DVASSERT(nullptr != selectionModel);
-    QItemSelection selection = selectionModel->selection();
-    DVASSERT(!selection.indexes().isEmpty());
-    QString scenePath = model->filePath(selection.indexes().first());
-    DVASSERT(scenePath.endsWith(SCENE_EXTENSION));
-
-    LoadScene(scenePath);
-}
-
-void MainWindow::OnLoadSceneAction()
-{
-    QString scenePath = QFileDialog::getOpenFileName(this, QStringLiteral("Choose your destiny"),
-                                                     QString(FILE_SYSTEM_ROOT), QString(SCENE_FILE_FILTER));
-    if (scenePath.isEmpty())
-        return;
-
-    LoadScene(scenePath);
-}

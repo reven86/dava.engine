@@ -1,10 +1,10 @@
 /*==================================================================================
     Copyright (c) 2008, binaryzebra
     All rights reserved.
-
+ 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are met:
-
+ 
     * Redistributions of source code must retain the above copyright
     notice, this list of conditions and the following disclaimer.
     * Redistributions in binary form must reproduce the above copyright
@@ -13,7 +13,7 @@
     * Neither the name of the binaryzebra nor the
     names of its contributors may be used to endorse or promote products
     derived from this software without specific prior written permission.
-
+ 
     THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
     ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -26,50 +26,38 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef DAVAPLUGIN_SCENEVIEWER_H
+#define DAVAPLUGIN_SCENEVIEWER_H
 
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#include "core_ui_framework/i_view.hpp"
 
-#include <QMainWindow>
+#include <memory>
 
-class QFileSystemModel;
-class QItemSelection;
-class DavaGLWidget;
+#include <QObject>
+
+class PluginGLWidget;
 
 namespace DAVA { class UI3DView; }
 
-namespace Ui
-{
-    class MainWindow;
-}
-
-class MainWindow : public QMainWindow
+class SceneViewer : public QObject
 {
     Q_OBJECT
-
 public:
-    explicit MainWindow(QWidget *parent = 0);
-    ~MainWindow();
+    SceneViewer();
+    ~SceneViewer();
+
+    void Finalise();
+
+    IView & GetView();
+    Q_SLOT void OnOpenScene(std::string const & scenePath);
 
 private:
-    void CreateGlWidget();
-    void LoadScene(QString const & scenePath);
-
-private slots:
-    void OnGlInitialized();
-    void OnGlWidgedResized(int width, int height, int dpr);
-    void OnFileSelectionChanged(QItemSelection const & selected, QItemSelection const & deselected);
-    void OnLoadSceneButton();
-    void OnLoadSceneAction();
+    Q_SLOT void OnGlInitialized();
+    Q_SLOT void OnGlResized(int width, int height, int dpr);
 
 private:
-    Ui::MainWindow * ui = nullptr;
-
-    DavaGLWidget * glWidget = nullptr;
-    QFileSystemModel * model = nullptr;
-    DAVA::UI3DView * view = nullptr;
-
-    static const quint8 NUMBER_OF_SCREEN = 0;
+    std::unique_ptr<PluginGLWidget> glWidget;
+    DAVA::UI3DView * uiView = nullptr;
 };
 
-#endif // MAINWINDOW_H
+#endif // DAVAPLUGIN_SCENEVIEWER_H

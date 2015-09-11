@@ -1,10 +1,14 @@
 cmake_minimum_required (VERSION 3.0)
-project               ( TemplateProjectQt ) # to change the project name
+project               ( DAVAPlugin ) # to change the project name
 
 set                   ( DAVA_USE_QT_WIDGETS true )
 
 set                   ( FRAMEWORK_PATH "${CMAKE_CURRENT_LIST_DIR}/../../" ) # path to framework
 set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${FRAMEWORK_PATH}/Sources/CMake/Modules/" )
+set                   ( USE_DYNAMIC_CRT 1)
+
+find_package          ( NGT REQUIRED)
+
 include               ( CMake-common )
 
 find_package          ( QT5           REQUIRED )
@@ -18,7 +22,7 @@ include_directories   ( ${CMAKE_CURRENT_BINARY_DIR} )
 include_directories   (.)
 include_directories   ( "Classes" )
 
-add_definitions       ( 
+add_definitions       (
 -DQT_GUI_LIB
 -DQT_NETWORK_LIB
 -DQT_CORE_LIB
@@ -29,6 +33,7 @@ add_definitions       (
 -DQT_HAVE_SSE2
 -DQT_THREAD_SUPPORT
 -DDAVA_QT
+-DNGT_INTEGRATION
 )
 
 
@@ -51,7 +56,15 @@ generate_source_groups_project ( SRC_ROOT "Classes" "DataQt" Generated UiList)
 set( MACOS_PLIST          ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/Info.plist )
 set( MACOS_ICO            ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/icon.icns )
 set( ADDED_SRC            ${MOC_APP_SRCS} ${UI_APP_HDRS} ${RCC_APP_SRCS} )
-set( LIBRARIES            ${QT_LIBRARIES} )
+set( LIBRARIES            ${QT_LIBRARIES})
+
+list(APPEND TARGET_LIBRARIES core_generic_plugin
+                                        core_qt_common
+                                        core_ui_framework)
+
 set( ADDED_BINARY_DIR     ${QT5_PATH_WIN}/bin )
 
-setup_main_executable()
+string(CONCAT DEPLOY_DIR ${NGT_ROOT_DIR} "/bin/DAVAPlugin/win32/plugins/")
+set(CMAKE_DEBUG_POSTFIX _d)
+
+setup_main_dynlib()
