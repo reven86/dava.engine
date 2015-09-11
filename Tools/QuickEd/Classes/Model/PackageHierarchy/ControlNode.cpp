@@ -145,7 +145,7 @@ void ControlNode::Add(ControlNode *node)
 
 void ControlNode::InsertAtIndex(int index, ControlNode *node)
 {
-    if (index >= nodes.size())
+    if (index >= static_cast<int>(nodes.size()))
     {
         Add(node);
     }
@@ -267,7 +267,7 @@ bool ControlNode::CanInsertControl(ControlNode *node, DAVA::int32 pos) const
     if (IsReadOnly())
         return false;
     
-    if (pos < nodes.size() && nodes[pos]->GetCreationType() == CREATED_FROM_PROTOTYPE_CHILD)
+    if (pos < static_cast<int32>(nodes.size()) && nodes[pos]->GetCreationType() == CREATED_FROM_PROTOTYPE_CHILD)
         return false;
     
     if (node && node->IsInstancedFrom(this))

@@ -34,13 +34,13 @@
 
 using namespace DAVA;
 
+
 ValueProperty::ValueProperty(const DAVA::String &propName)
     : name(propName)
     , stylePropertyIndex(-1)
     , overridden(false)
     , prototypeProperty(nullptr) // weak
 {
-
 }
 
 ValueProperty::~ValueProperty()
@@ -50,6 +50,7 @@ ValueProperty::~ValueProperty()
     children.clear();
     
     prototypeProperty = nullptr; // weak
+
 }
 
 int ValueProperty::GetCount() const

@@ -27,57 +27,37 @@
 =====================================================================================*/
 
 
-#include "ClassProperty.h"
+#include "DebugTools/DebugTools.h"
 
-#include "PropertyVisitor.h"
-#include "../PackageHierarchy/ControlNode.h"
-
+#include "Render/2D/Sprite.h"
+#include "Render/Texture.h"
 #include "UI/UIControl.h"
 
-using namespace DAVA;
+#include <QObject>
 
-ClassProperty::ClassProperty(ControlNode *aControl)
-    : ValueProperty("Class")
-    , control(aControl) // weak
+namespace DebugTools
 {
+
+void ConnectToUI(Ui::MainWindow *ui)
+{
+    QObject::connect(ui->actionDump_Controls, &QAction::triggered, [] {
+        DAVA::UIControl::DumpControls(false);
+    });
+
+#if !defined(__DAVAENGINE_DEBUG__)
+    ui->actionDump_Controls->setVisible(false);
+#endif //#if !defined(__DAVAENGINE_DEBUG__)
+
+
+
+    QObject::connect(ui->actionDump_Textures, &QAction::triggered, [] {
+        DAVA::Texture::DumpTextures();
+    });
+
+    QObject::connect(ui->actionDump_Sprites, &QAction::triggered, [] {
+        DAVA::Sprite::DumpSprites();
+    });
 }
 
-ClassProperty::~ClassProperty()
-{
-    control = nullptr; // weak
-}
 
-void ClassProperty::Accept(PropertyVisitor *visitor)
-{
-    visitor->VisitClassProperty(this);
-}
-
-bool ClassProperty::IsReadOnly() const
-{
-    return true;
-}
-
-ClassProperty::ePropertyType ClassProperty::GetType() const
-{
-    return TYPE_VARIANT;
-}
-
-DAVA::uint32 ClassProperty::GetFlags() const
-{
-    return EF_AFFECTS_STYLES;
-}
-
-VariantType ClassProperty::GetValue() const
-{
-    return VariantType(control->GetControl()->GetClassName());
-}
-
-const String &ClassProperty::GetClassName() const
-{
-    return control->GetControl()->GetClassName();
-}
-
-ControlNode *ClassProperty::GetControlNode() const
-{
-    return control;
 }

@@ -51,6 +51,8 @@ class PackageWidget : public QDockWidget, public Ui::PackageWidget
 public:
     explicit PackageWidget(QWidget *parent = 0);
     ~PackageWidget() = default;
+    
+    using ExpandedIndexes = QModelIndexList ;
 
 signals:
     void SelectedNodesChanged(const SelectedNodes &selected, const SelectedNodes &deselected);
@@ -74,6 +76,9 @@ private:
     void LoadContext();
     void SaveContext();
     void RefreshActions();
+    
+    void OnControlSelectedInEditor(const QList<ControlNode *> &node);
+
     void RefreshAction(QAction *action, bool enabled, bool visible);
     void CollectSelectedControls(DAVA::Vector<ControlNode*> &nodes, bool forCopy, bool forRemove);
     void CollectSelectedStyles(DAVA::Vector<StyleSheetNode*> &nodes, bool forCopy, bool forRemove);
@@ -83,8 +88,10 @@ private:
     template <typename NodeType>
     void CollectSelectedNodes(const QItemSelection &selected, DAVA::Vector<NodeType*> &nodes, bool forCopy, bool forRemove);
 
-    QList<QPersistentModelIndex> GetExpandedIndexes() const;
-    
+    ExpandedIndexes GetExpandedIndexes() const;
+    void RestoreExpandedIndexes(const ExpandedIndexes &indexes);
+
+private:
     QAction *CreateSeparator();
     Document *document = nullptr;
     QAction *importPackageAction = nullptr;
@@ -97,6 +104,9 @@ private:
     
     FilteredPackageModel* filteredPackageModel = nullptr;
     PackageModel* packageModel = nullptr;
+
+    QString lastFilterText;
+    ExpandedIndexes expandedIndexes;
 
     SelectionTracker selectionTracker;
 };

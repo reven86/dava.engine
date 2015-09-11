@@ -64,10 +64,9 @@ namespace
         }
         PackageModel *packageModel;
         FilteredPackageModel *filteredPackageModel;
-        QList<QPersistentModelIndex> expandedIndexes;
+        PackageWidget::ExpandedIndexes expandedIndexes;
         QString filterString;
     };
-    
 }
 
 PackageWidget::PackageWidget(QWidget *parent)
@@ -164,17 +163,10 @@ void PackageWidget::LoadContext()
         treeView->expandToDepth(0);
         connect(treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &PackageWidget::OnSelectionChanged);
         //restore expanded indexes
-        for (const auto &index : context->expandedIndexes)
-        {
-            if (index.isValid())
-            {
-                treeView->setExpanded(index, true);
-            }
-        }
+        RestoreExpandedIndexes(context->expandedIndexes);
         //restore filter line
         filterLine->setText(context->filterString);
     }
-
 }
 
 void PackageWidget::SaveContext()
@@ -425,25 +417,64 @@ void PackageWidget::filterTextChanged(const QString &filterText)
 {
     if (nullptr != document)
     {
-        static_cast<QSortFilterProxyModel*>(treeView->model())->setFilterFixedString(filterText);
-        treeView->expandAll();
+        if (lastFilterText.isEmpty())
+        {
+            expandedIndexes = GetExpandedIndexes();
+        }
+        filteredPackageModel->setFilterFixedString(filterText);
+
+        if (filterText.isEmpty())
+        {
+            treeView->collapseAll();
+            RestoreExpandedIndexes(expandedIndexes);
+        }
+        else
+        {
+            treeView->expandAll();
+        }
+        lastFilterText = filterText;
     }
 }
 
-QList<QPersistentModelIndex> PackageWidget::GetExpandedIndexes() const
+void PackageWidget::OnControlSelectedInEditor(const QList<ControlNode *> &selectedNodes)
 {
-    QList<QPersistentModelIndex> retval;
+    treeView->selectionModel()->clear();
+    for (auto &node : selectedNodes)
+    {
+        QModelIndex srcIndex = packageModel->indexByNode(node);
+        QModelIndex dstIndex = filteredPackageModel->mapFromSource(srcIndex);
+        treeView->selectionModel()->select(dstIndex, QItemSelectionModel::Select);
+        treeView->expand(dstIndex);
+        treeView->scrollTo(dstIndex);
+    }
+}
+
+PackageWidget::ExpandedIndexes PackageWidget::GetExpandedIndexes() const
+{
+    ExpandedIndexes retval;
     QModelIndex index = treeView->model()->index(0, 0);
     while (index.isValid())
     {
         if (treeView->isExpanded(index))
         {
-            retval << QPersistentModelIndex(index);
+            retval << filteredPackageModel->mapToSource(index);
         }
         index = treeView->indexBelow(index);
     }
-
+    
     return retval;
+}
+
+void PackageWidget::RestoreExpandedIndexes(const ExpandedIndexes& indexes)
+{
+    for (auto &index : indexes)
+    {
+        QModelIndex mappedIndex = filteredPackageModel->mapFromSource(index);
+        if (mappedIndex.isValid())
+        {
+            treeView->setExpanded(mappedIndex, true);
+        }
+    }
 }
 
 QAction *PackageWidget::CreateSeparator()

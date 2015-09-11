@@ -69,7 +69,6 @@ template <typename ValueType>
 inline SectionProperty<ValueType>::SectionProperty(const DAVA::String &sectionName)
 : name(sectionName)
 {
-    
 }
 
 template <typename ValueType>
@@ -96,7 +95,7 @@ template <typename ValueType>
 inline void SectionProperty<ValueType>::InsertProperty(ValueType *property, DAVA::int32 index)
 {
     DVASSERT(property->GetParent() == nullptr);
-    if (0 <= index && index <= children.size())
+    if (0 <= index && index <= static_cast<DAVA::int32>(children.size()))
     {
         property->SetParent(this);
         children.insert(children.begin() + index, SafeRetain(property));
@@ -133,7 +132,7 @@ inline int SectionProperty<ValueType>::GetCount() const
 template <typename ValueType>
 inline ValueType *SectionProperty<ValueType>::GetProperty(int index) const
 {
-    if (0 <= index && index < children.size())
+    if (0 <= index && index < static_cast<int>(children.size()))
         return children[index];
     
     DVASSERT(false);
