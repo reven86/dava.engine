@@ -39,7 +39,7 @@ LogWidget::LogWidget(QWidget* parent)
     connect(ui->log, &QListView::clicked, this, &LogWidget::OnItemClicked);
     scrollTimer = new QTimer(this);
     scrollTimer->setSingleShot(true);
-    scrollTimer->setInterval(0);
+    scrollTimer->setInterval(1);
     connect(scrollTimer, &QTimer::timeout, this, &LogWidget::UpdateScroll);
 }
 
