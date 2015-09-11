@@ -2513,7 +2513,7 @@ namespace DAVA
             Logger::FrameworkDebug("class:\"%s\" name:\"%s\" count:%d", control->GetClassName().c_str(), control->GetName().c_str(), control->GetRetainCount());
         }
 
-        Logger::FrameworkDebug("All controls count: %d, orphans count: %d", allCount, orphansCount);
+        Logger::FrameworkDebug("Total controls count: %d, orphans count: %d", allCount, orphansCount);
         Logger::FrameworkDebug("============================================================");
     }
 
