@@ -329,7 +329,7 @@ void Landscape::AllocateGeometryData()
     }
 
     rhi::IndexBuffer::Descriptor descr;
-    descr.size = INDEX_ARRAY_COUNT * 2;
+    descr.size = INDEX_ARRAY_COUNT * sizeof(uint16);
     descr.usage = rhi::USAGE_DYNAMICDRAW;
     descr.needRestore = false;
     for (auto & handle : indexBuffers.elements)
