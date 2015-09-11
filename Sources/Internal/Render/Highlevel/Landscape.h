@@ -160,6 +160,14 @@ public:
 #endif
 	};
 
+    struct LanscapeBufferData
+    {
+        rhi::HVertexBuffer buffer;
+        LandscapeVertex *data;
+        uint32 dataSize;
+
+    };
+
     void PrepareToRender(Camera * camera) override;
 
 	/**
@@ -256,6 +264,8 @@ protected:
     int16 AllocateQuadVertexBuffer(LandscapeQuad * quad);
     void AllocateGeometryData();
     void ReleaseGeometryData();
+
+    void RestoreGeometry();
     
     void SetLandscapeSize(const Vector3 & newSize);
 
@@ -273,6 +283,7 @@ private:
     Vector<LandQuadTreeNode<LandscapeQuad>*> lod0quads;
     Vector<LandQuadTreeNode<LandscapeQuad>*> lodNot0quads;
     Vector<rhi::HVertexBuffer> vertexBuffers;
+    Vector<LanscapeBufferData> bufferRestoreData;
     rhi::HIndexBuffer currentIndexBuffer;
     CircularIndexBufferArray indexBuffers;
     FilePath heightmapPath;
@@ -284,7 +295,7 @@ private:
 
 	Texture* thumbnailRenderTarget = nullptr;
 	LandscapeThumbnailCallback createdLandscapeTextureCallback;
-
+    
     uint16* indices = nullptr;
     uint16* queueDrawIndices = nullptr;
     float32 lodDistance[8];

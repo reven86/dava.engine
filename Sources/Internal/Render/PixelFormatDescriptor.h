@@ -69,7 +69,7 @@ public:
 	static const PixelFormatDescriptor & GetPixelFormatDescriptor(const PixelFormat formatID);	
 
 protected:
-	static void SetPixelDescription(const PixelFormat formatID, const FastName & name, uint8 size, rhi::TextureFormat format, bool hardwareSupported = false);
+	static void SetPixelDescription(const PixelFormat formatID, const FastName & name, uint8 size, rhi::TextureFormat format);
 
 protected:
 	static PixelFormatDescriptor pixelDescriptors[FORMAT_COUNT];

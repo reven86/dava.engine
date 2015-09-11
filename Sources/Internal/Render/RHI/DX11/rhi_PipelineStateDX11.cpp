@@ -810,17 +810,24 @@ desc.vertexLayout.Dump();
     // create blend-state
     
     D3D11_BLEND_DESC    bs_desc;
+    UINT8               mask    = 0;
+
+    if( desc.blending.rtBlend[0].writeMask & COLORMASK_R )  mask |= D3D11_COLOR_WRITE_ENABLE_RED;
+    if( desc.blending.rtBlend[0].writeMask & COLORMASK_G )  mask |= D3D11_COLOR_WRITE_ENABLE_GREEN;
+    if( desc.blending.rtBlend[0].writeMask & COLORMASK_B )  mask |= D3D11_COLOR_WRITE_ENABLE_BLUE;
+    if( desc.blending.rtBlend[0].writeMask & COLORMASK_A )  mask |= D3D11_COLOR_WRITE_ENABLE_ALPHA;
 
     bs_desc.AlphaToCoverageEnable                   = FALSE;
     bs_desc.IndependentBlendEnable                  = FALSE;
     bs_desc.RenderTarget[0].BlendEnable             = desc.blending.rtBlend[0].blendEnabled;
-    bs_desc.RenderTarget[0].RenderTargetWriteMask   = D3D11_COLOR_WRITE_ENABLE_ALL;
+    bs_desc.RenderTarget[0].RenderTargetWriteMask   = mask;
     bs_desc.RenderTarget[0].SrcBlend                = _BlendOpDX11( BlendOp(desc.blending.rtBlend[0].colorSrc) );
     bs_desc.RenderTarget[0].DestBlend               = _BlendOpDX11( BlendOp(desc.blending.rtBlend[0].colorDst) );
     bs_desc.RenderTarget[0].BlendOp                 = D3D11_BLEND_OP_ADD;
-    bs_desc.RenderTarget[0].SrcBlendAlpha           = _BlendOpDX11( BlendOp(desc.blending.rtBlend[0].alphaSrc) );
-    bs_desc.RenderTarget[0].DestBlendAlpha          = _BlendOpDX11( BlendOp(desc.blending.rtBlend[0].alphaDst) );
+    bs_desc.RenderTarget[0].SrcBlendAlpha           = D3D11_BLEND_ONE;
+    bs_desc.RenderTarget[0].DestBlendAlpha          = D3D11_BLEND_ZERO;
     bs_desc.RenderTarget[0].BlendOpAlpha            = D3D11_BLEND_OP_ADD;
+
 
     hr = _D3D11_Device->CreateBlendState( &bs_desc, &(ps->blendState) );
 

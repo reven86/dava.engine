@@ -562,6 +562,7 @@ void Texture::ReloadFromData(PixelFormat format, uint8 * data, uint32 _width, ui
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
+    rhi::HTexture oldHandle = handle;
     ReleaseTextureData();
     
     Image *image = Image::CreateFromData(_width, _height, format, data);
@@ -572,6 +573,7 @@ void Texture::ReloadFromData(PixelFormat format, uint8 * data, uint32 _width, ui
 	
     SetParamsFromImages(images);
 	FlushDataToRenderer(images);
+    rhi::ReplaceTextureInAllTextureSets(oldHandle, handle);
 }
     
 void Texture::Reload()
@@ -747,12 +749,15 @@ void Texture::RestoreRenderResource()
         {
             if (relativePathname.GetType() == FilePath::PATH_IN_MEMORY)            
                 Logger::Debug("[Texture::Invalidate] - invalidater is null");
+            if (relativePathname.GetType() == FilePath::PATH_EMPTY)
+                Logger::Debug("[Texture::Invalidate] - empty path");
 
             if (texDescriptor->IsCubeMap())
             {
                 for (uint32 i = 0; i < Texture::CUBE_FACE_COUNT; ++i)
                 {
-                    Image *img = Image::CreatePinkPlaceholder(true);
+                    Image *img = Image::Create(width, height, FORMAT_RGBA8888);
+                    img->MakePink(false);
                     img->cubeFaceID = i;
                     img->mipmapLevel = 0;
                     images.push_back(img);
@@ -760,7 +765,9 @@ void Texture::RestoreRenderResource()
             }
             else
             {
-                images.push_back(Image::CreatePinkPlaceholder(true));
+                Image *img = Image::Create(width, height, FORMAT_RGBA8888);
+                img->MakePink(false);
+                images.push_back(img);
             }
         }        
 
@@ -876,7 +883,7 @@ eGPUFamily Texture::GetGPUForLoading(const eGPUFamily requestedGPU, const Textur
     return requestedGPU;
 }
 
-void Texture::SetInvalidater(TextureInvalidater* invalidater)
+void Texture::SetInvalidater(TextureInvalidater* invalidater_)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
@@ -885,15 +892,13 @@ void Texture::SetInvalidater(TextureInvalidater* invalidater)
         invalidater->RemoveTexture(this);
     }
 
-	invalidater = invalidater;
+	invalidater = invalidater_;
 
     if (nullptr != invalidater)
     {
         invalidater->AddTexture(this);
     }
 }
-
-
 
 const FilePath & Texture::GetPathname() const
 {

@@ -78,6 +78,7 @@ void RuntimeTextures::InitDynamicTexture(eDynamicTextureSemantic semantic)
         descriptor.height = REFLECTION_TEX_SIZE;
         descriptor.autoGenMipmaps = false;
         descriptor.isRenderTarget = true;
+        descriptor.needRestore = false;
         descriptor.type = rhi::TEXTURE_TYPE_2D;
         descriptor.format = rhi::TEXTURE_FORMAT_R5G6B5;                
         dynamicTextures[semantic] = rhi::CreateTexture(descriptor);
@@ -87,6 +88,7 @@ void RuntimeTextures::InitDynamicTexture(eDynamicTextureSemantic semantic)
         descriptor.height = REFRACTION_TEX_SIZE;
         descriptor.autoGenMipmaps = false;
         descriptor.isRenderTarget = true;
+        descriptor.needRestore = false;
         descriptor.type = rhi::TEXTURE_TYPE_2D;
         descriptor.format = rhi::TEXTURE_FORMAT_R5G6B5;
         dynamicTextures[semantic] = rhi::CreateTexture(descriptor);
@@ -97,6 +99,7 @@ void RuntimeTextures::InitDynamicTexture(eDynamicTextureSemantic semantic)
         descriptor.width = size;
         descriptor.height = size;
         descriptor.autoGenMipmaps = false;        
+        descriptor.needRestore = false;
         descriptor.type = rhi::TEXTURE_TYPE_2D;
         descriptor.format = rhi::TEXTURE_FORMAT_D24S8;
         dynamicTextures[semantic] = rhi::CreateTexture(descriptor);

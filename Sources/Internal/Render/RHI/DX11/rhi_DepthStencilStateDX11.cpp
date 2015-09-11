@@ -131,7 +131,7 @@ dx11_DepthStencilState_Create( const DepthStencilState::Descriptor& desc )
 
     if( SUCCEEDED(hr) )
     {
-        state->stencilRef = 0;
+        state->stencilRef = desc.stencilFront.refValue;
     }
     else
     {
