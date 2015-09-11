@@ -201,11 +201,11 @@ private:
     float32 SampleHeight(int16 x, int16 y);
     
     void UpdateVegetationSetup();
-    void InitLodRanges();
-    
-	void SetupHeightmapParameters(Texture* tx);
+    void InitLodRanges();	
     
     void CreateRenderData();
+    
+    void RestoreRenderData();
     
     bool ReadyToRender();
     

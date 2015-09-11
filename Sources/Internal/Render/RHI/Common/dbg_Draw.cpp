@@ -211,7 +211,10 @@ DbgDraw::Buffer<Vertex,Prim>::construct( unsigned max_vertex_count )
     {
         if( _vb[i] == rhi::InvalidHandle )
         {
-            _vb[i] = rhi::CreateVertexBuffer( max_vertex_count*sizeof(Vertex) );
+            
+            rhi::VertexBuffer::Descriptor descr = rhi::VertexBuffer::Descriptor(max_vertex_count*sizeof(Vertex));
+            descr.needRestore = false;
+            _vb[i] = rhi::CreateVertexBuffer( descr );
 
             success = _vb[i] != rhi::InvalidHandle;
         }
@@ -271,7 +274,9 @@ DbgDraw::Buffer<Vertex,Prim>::_grow()
 
     for( unsigned i=0; i<countof(_vb); ++i )
     {
-        vb[i] = rhi::CreateVertexBuffer( vb_sz );
+        rhi::VertexBuffer::Descriptor descr = rhi::VertexBuffer::Descriptor(vb_sz);
+        descr.needRestore = false;
+        vb[i] = rhi::CreateVertexBuffer(descr);
 
         if( !vb[i].IsValid() )
         {
@@ -643,10 +648,12 @@ DbgDraw::Text2D( int x, int y, uint32 color, const char* format, ... )
     switch( rhi::HostApi() )
     {
         case rhi::RHI_DX9 :
-        case rhi::RHI_DX11 :
             left  += 0.5f;
             top   += 0.5f;
             break;
+
+        case rhi::RHI_DX11 :
+            break; // DO NOT do half-pixel offset 
             
         case rhi::RHI_GLES2 :
 //            left  -= 0.5f;
@@ -989,7 +996,9 @@ DbgDraw::_init()
 
     // init small-font texture
     {
-        _tex_small_font = rhi::CreateTexture( rhi::Texture::Descriptor(FontTextureSize,FontTextureSize,rhi::TEXTURE_FORMAT_R8G8B8A8) );
+        rhi::Texture::Descriptor descr = rhi::Texture::Descriptor(FontTextureSize, FontTextureSize, rhi::TEXTURE_FORMAT_R8G8B8A8);
+        descr.needRestore = false; //hmm
+        _tex_small_font = rhi::CreateTexture(descr  );
         
         if( _tex_small_font )
         {
@@ -1009,7 +1018,9 @@ DbgDraw::_init()
 
     // init normal-font texture
     {
-        _tex_normal_font = rhi::CreateTexture( rhi::Texture::Descriptor(FontTextureSize,FontTextureSize,rhi::TEXTURE_FORMAT_R8G8B8A8) );
+        rhi::Texture::Descriptor descr = rhi::Texture::Descriptor(FontTextureSize, FontTextureSize, rhi::TEXTURE_FORMAT_R8G8B8A8);
+        descr.needRestore = false; //hmm
+        _tex_normal_font = rhi::CreateTexture(descr );
         
         if( _tex_normal_font )
         {

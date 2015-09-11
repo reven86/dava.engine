@@ -110,14 +110,14 @@ TextureGLES2_t::Create( const Texture::Descriptor& desc, bool force_immediate )
     DVASSERT(desc.levelCount);
 
     bool        success      = false;
-    GLuint      uid[2]       = { InvalidIndex, InvalidIndex };
+    GLuint      uid[2]       = { 0, 0 };
     bool        is_depth     = desc.format == TEXTURE_FORMAT_D16  ||  desc.format == TEXTURE_FORMAT_D24S8;
-    bool        need_stencil = desc.format == TEXTURE_FORMAT_D24S8;
+//    bool        need_stencil = desc.format == TEXTURE_FORMAT_D24S8;
     
     if( is_depth )
     {
-        GLCommand   cmd1 = { GLCommand::GEN_RENDERBUFFERS, { uint64((need_stencil)?2:1), (uint64)(uid) } };
-
+        GLCommand   cmd1  = { GLCommand::GEN_RENDERBUFFERS, { 1, (uint64)(uid) } };
+        
         ExecGL( &cmd1, 1 );
 
         if( cmd1.status == GL_NO_ERROR )
@@ -125,21 +125,28 @@ TextureGLES2_t::Create( const Texture::Descriptor& desc, bool force_immediate )
             GLCommand   cmd2[] =
             {
                 { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, uid[0] } },
-                { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, desc.width, desc.height } },
+                { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, desc.width, desc.height } },
+                { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, 0 } }
+/*
+                { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, uid[0] } },
+                { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, (need_stencil)?GL_DEPTH_COMPONENT24:GL_DEPTH_COMPONENT16, desc.width, desc.height } },
                 { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, 0 } },
                 { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, uid[1] } },
                 { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, GL_STENCIL_INDEX8, desc.width, desc.height } },
                 { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, 0 } },
+*/            
             };
-
+/*
             if( !need_stencil )
             {
                 cmd2[3].func = GLCommand::NOP;
                 cmd2[4].func = GLCommand::NOP;
                 cmd2[5].func = GLCommand::NOP;
             }
-
+*/
             ExecGL( cmd2, countof(cmd2), force_immediate );
+            
+            uid[1] = uid[0];
         }
     }
     else
@@ -166,9 +173,10 @@ TextureGLES2_t::Create( const Texture::Descriptor& desc, bool force_immediate )
     }
 
 
-    if( uid[0] != InvalidIndex )
+    if( uid[0] )
     {
         this->uid            = uid[0];
+        this->uid2           = uid[1];
         mappedData           = nullptr;
         width                = desc.width;
         height               = desc.height;
@@ -218,6 +226,10 @@ TextureGLES2_t::Destroy( bool force_immediate )
 
     if( isRenderTarget )
     {
+        cmd[0].func   = GLCommand::DELETE_TEXTURES;
+        cmd[0].arg[0] = 1;
+        cmd[0].arg[1] = uint64(&(uid));
+
         DVASSERT(fbo.size() <= countof(cmd)-1);
         for( unsigned i=0; i!=fbo.size(); ++i )
         {
@@ -700,20 +712,24 @@ SetAsRenderTarget( Handle tex, Handle depth )
             
         if( fb )
         {
-            TextureGLES2_t* ds   = (depth != InvalidHandle)  ? TextureGLES2Pool::Get( depth )  : nullptr;
-            GLenum          b[1] = { GL_COLOR_ATTACHMENT0 };
+            TextureGLES2_t* ds   = (depth != InvalidHandle  &&  depth != DefaultDepthBuffer)  ? TextureGLES2Pool::Get( depth )  : nullptr;
                 
             glBindFramebuffer( GL_FRAMEBUFFER, fb );
             glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, self->uid, 0 );
             if( ds )
             {
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
                 glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, ds->uid );
-                
                 if( ds->uid2 )
                     glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, ds->uid2 );
+#else
+                glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, ds->uid );
+#endif
             }
             #if defined __DAVAENGINE_IPHONE__
             #else
+            GLenum          b[1] = { GL_COLOR_ATTACHMENT0 };
+            
             glDrawBuffers( 1, b );
             #endif
             

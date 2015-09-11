@@ -32,7 +32,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Core/Core.h"
 #include "RenderBase.h"
 #include "RenderOptions.h"
-#include "RenderCaps.h"
 #include "DynamicBindings.h"
 #include "RuntimeTextures.h"
 #include "RHI/rhi_Public.h"
@@ -45,7 +44,6 @@ struct ScreenShotCallbackDelegate;
 
 namespace Renderer
 {
-
     //init
     void Initialize(rhi::Api api, const rhi::InitParam & params);
     void Uninitialize();
@@ -62,9 +60,6 @@ namespace Renderer
     //frame management
     void BeginFrame();
     void EndFrame();
-
-    //caps
-    const RenderCaps & GetCaps();
 
     //misc
     int32 GetFramebufferWidth();
