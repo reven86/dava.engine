@@ -190,6 +190,7 @@ HUDSystem::HUDSystem(Document *document_)
     hudControl->AddControl(selectionRectControl);
     hudControl->SetName("hudControl");
     document->SelectionChanged.Connect(this, &HUDSystem::SetSelection);
+    document->EmulationModeChangedSignal.Connect(this, &HUDSystem::OnEmulationModeChanged);
 }
 
 void HUDSystem::OnActivated()

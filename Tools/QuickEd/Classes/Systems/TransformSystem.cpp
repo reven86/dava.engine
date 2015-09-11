@@ -134,6 +134,7 @@ bool TransformSystem::ProcessDrag(const Vector2 &pos)
 
     const auto &keyBoard = InputSystem::Instance()->GetKeyboard();
     auto gd = activeControlNode->GetControl()->GetGeometricData();
+    auto control = activeControlNode->GetControl();
 
     switch(activeArea)
     {
@@ -156,24 +157,24 @@ bool TransformSystem::ProcessDrag(const Vector2 &pos)
         return true;
         case HUDareaInfo::PIVOT_POINT_AREA:
         {
-            auto control = activeControlNode->GetControl();
-            Vector2 delta = pos - prevPos;
-            DVASSERT(gd.scale.x != 0.0f && gd.scale.y != 0.0f);
-            Vector2 scaledDelta = delta / gd.scale;
-            //position calculates in absolute coordinates
-            AdjustProperty(activeControlNode, "Position", scaledDelta);
-            //pivot point calculate in rotate coordinates
-            Vector2 angeledDelta(scaledDelta.x * gd.cosA + scaledDelta.y * gd.sinA,
-                        scaledDelta.x * -gd.sinA + scaledDelta.y * gd.cosA);
             const Vector2 &size = control->GetSize();
-            DVASSERT(size.x != 0.0f && size.y != 0.0f);
-            Vector2 pivot(angeledDelta / size);
-            AdjustProperty(activeControlNode, "Pivot", pivot);
+            if(size.x != 0.0f && size.y != 0.0f
+               && gd.scale.x != 0.0f && gd.scale.y != 0.0f)
+            {
+                Vector2 delta = pos - prevPos;
+                Vector2 scaledDelta = delta / gd.scale;
+                //position calculates in absolute coordinates
+                AdjustProperty(activeControlNode, "Position", scaledDelta);
+                //pivot point calculate in rotate coordinates
+                Vector2 angeledDelta(scaledDelta.x * gd.cosA + scaledDelta.y * gd.sinA,
+                            scaledDelta.x * -gd.sinA + scaledDelta.y * gd.cosA);
+                Vector2 pivot(angeledDelta / size);
+                AdjustProperty(activeControlNode, "Pivot", pivot);
+            }
         }
         return true;
         case HUDareaInfo::ROTATE_AREA:
         {
-            auto control = activeControlNode->GetControl();
             const Rect &ur = gd.GetUnrotatedRect();
             Vector2 pivotPoint = ur.GetPosition() + ur.GetSize() * control->GetPivot();
             Vector2 rotatePoint = pivotPoint;
@@ -214,13 +215,15 @@ void TransformSystem::MoveControl(const Vector2& pos)
 {
     Vector2 delta = pos - prevPos;
     auto gd =  activeControlNode->GetControl()->GetGeometricData();
-    DVASSERT(gd.scale.x != 0.0f && gd.scale.y != 0.0f);
-    Vector2 realDelta = delta / gd.scale;
-    if (InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_SHIFT))
+    if(gd.scale.x != 0.0f && gd.scale.y != 0.0f)
     {
-        AccumulateOperation(MOVE_OPERATION, realDelta);
+        Vector2 realDelta = delta / gd.scale;
+        if (InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_SHIFT))
+        {
+            AccumulateOperation(MOVE_OPERATION, realDelta);
+        }
+        AdjustProperty(activeControlNode, "Position", realDelta);
     }
-    AdjustProperty(activeControlNode, "Position", realDelta);
 }
 
 void TransformSystem::ResizeControl(const Vector2& pos, bool withPivot, bool rateably)
@@ -235,10 +238,13 @@ void TransformSystem::ResizeControl(const Vector2& pos, bool withPivot, bool rat
     const auto invertY = cornersDirection.at(activeArea)[Vector2::AXIS_Y];
 
     auto gd = activeControlNode->GetControl()->GetGeometricData();
+    if(gd.scale.x == 0.0f || gd.scale.y != 0.0f)
+    {
+        return;
+    }
     Vector2 angeledDelta(delta.x * cosf(gd.angle) + delta.y * sinf(gd.angle),
                          delta.x * -sinf(gd.angle) + delta.y * cosf(gd.angle)); //rotate delta
      //scale rotated delta
-    DVASSERT(gd.scale.x != 0.0f && gd.scale.y != 0.0f);
     Vector2 realDelta(angeledDelta / gd.scale);
     Vector2 deltaPosition(realDelta);
     Vector2 deltaSize(realDelta);

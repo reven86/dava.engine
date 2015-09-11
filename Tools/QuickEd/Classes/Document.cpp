@@ -175,6 +175,7 @@ void Document::Activate()
     }
     emit SelectedNodesChanged(selectionTracker.selectedNodes, SelectedNodes());
     emit ScaleChanged(scale);
+    emit EmulationModeChanged(emulationMode);
 }
 
 void Document::SetContext(QObject* requester, WidgetContext* widgetContext)
@@ -325,7 +326,7 @@ void Document::SetEmulationMode(bool arg)
         auto root = static_cast<RootControl*>(rootControl);
         root->SetEmulationMode(emulationMode);
         EmulationModeChangedSignal.Emit(std::move(emulationMode));
-        emit ScaleChanged(emulationMode);
+        emit EmulationModeChanged(emulationMode);
     }
 }
 
