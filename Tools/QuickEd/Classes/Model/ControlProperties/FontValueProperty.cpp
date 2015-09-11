@@ -39,7 +39,6 @@ FontValueProperty::FontValueProperty(DAVA::BaseObject *object, const DAVA::InspM
 
 FontValueProperty::~FontValueProperty()
 {
-    
 }
 
 void FontValueProperty::Refresh(DAVA::int32 refreshFlags)
