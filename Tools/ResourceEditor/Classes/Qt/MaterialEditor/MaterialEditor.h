@@ -103,16 +103,6 @@ private slots:
     void onContextMenuPrepare(QMenu *menu);
     void autoExpand();
 
-	void StoreMaterialToPreset(DAVA::NMaterial* material, DAVA::KeyedArchive* preset, 
-		DAVA::SerializationContext* context);
-
-	void UpdateMaterialFromPresetWithOptions(DAVA::NMaterial* material, DAVA::KeyedArchive* preset,
-		DAVA::SerializationContext* context, uint32 options);
-	void UpdateMaterialPropertiesFromPreset(DAVA::NMaterial* material, DAVA::KeyedArchive* properitesArchive);
-	void UpdateMaterialFlagsFromPreset(DAVA::NMaterial* material, DAVA::KeyedArchive* flagsArchive);
-	void UpdateMaterialTexturesFromPreset(DAVA::NMaterial* material, DAVA::KeyedArchive* texturesArchive, 
-		const DAVA::FilePath& scenePath);
-
 private:
     enum 
     {
@@ -126,12 +116,30 @@ private:
         CHECKED_ALL = 0xff
     };
 
-    void initActions();
-    void initTemplates();
-    void setTemplatePlaceholder( const QString& text );
     QString GetTemplatePath(int index) const;
     DAVA::uint32 ExecMaterialLoadingDialog(DAVA::uint32 initialState, const QString &inputFile);
 
+    void initActions();
+    void initTemplates();
+    void setTemplatePlaceholder( const QString& text );
+
+	void StoreMaterialToPreset(DAVA::NMaterial* material, DAVA::KeyedArchive* preset, 
+		DAVA::SerializationContext* context);
+	void StoreMaterialTextures(DAVA::NMaterial* material, const DAVA::InspMember* materialMember,
+		DAVA::KeyedArchive* texturesArchive, DAVA::SerializationContext* context);
+	void StoreMaterialFlags(DAVA::NMaterial* material, const DAVA::InspMember* materialMember, 
+		DAVA::KeyedArchive* flagsArchive);
+	void StoreMaterialProperties(DAVA::NMaterial* material, const DAVA::InspMember* materialMember, 
+		DAVA::KeyedArchive* propertiesArchive);
+
+	void UpdateMaterialFromPresetWithOptions(DAVA::NMaterial* material, DAVA::KeyedArchive* preset,
+		DAVA::SerializationContext* context, uint32 options);
+	void UpdateMaterialPropertiesFromPreset(DAVA::NMaterial* material, DAVA::KeyedArchive* properitesArchive);
+	void UpdateMaterialFlagsFromPreset(DAVA::NMaterial* material, DAVA::KeyedArchive* flagsArchive);
+	void UpdateMaterialTexturesFromPreset(DAVA::NMaterial* material, DAVA::KeyedArchive* texturesArchive, 
+		const DAVA::FilePath& scenePath);
+
+private:
 	Ui::MaterialEditor *ui;
 	QtPosSaver posSaver;
 

@@ -41,13 +41,14 @@
 
 namespace DAVA
 {
+struct MaterialBufferBinding;
 
 struct NMaterialProperty
 {
     FastName name;
-    rhi::ShaderProp::Type type = rhi::ShaderProp::Type::TYPE_FLOAT1;
-    uint32 arraySize = 0;
-    uint32 updateSemantic = 0;
+    rhi::ShaderProp::Type type;
+    uint32 arraySize;
+    uint32 updateSemantic;
     std::unique_ptr<float32[]> data;
 
     inline void SetPropertyValue(const float32 *newValue);
@@ -57,22 +58,6 @@ struct NMaterialProperty
 
 private:
     static uint32 globalPropertyUpdateSemanticCounter;
-};
-
-struct MaterialPropertyBinding
-{
-    rhi::ShaderProp::Type type = rhi::ShaderProp::Type::TYPE_FLOAT1;
-    uint32 reg = 0;
-    uint32 regCount = 0; //offset for props less than 1 reg size
-    uint32 updateSemantic = 0;
-    NMaterialProperty *source = nullptr;
-};
-
-struct MaterialBufferBinding
-{
-    rhi::HConstBuffer constBuffer;
-    Vector<MaterialPropertyBinding> propBindings;
-    uint32 lastValidPropertySemantic = 0;
 };
 
 struct MaterialTextureInfo

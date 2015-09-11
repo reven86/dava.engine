@@ -45,6 +45,26 @@
 namespace DAVA
 {
 
+struct MaterialPropertyBinding
+{
+	rhi::ShaderProp::Type type;
+	uint32 reg;
+	uint32 regCount;
+	uint32 updateSemantic;
+	NMaterialProperty* source;
+	MaterialPropertyBinding(rhi::ShaderProp::Type type_, uint32 reg_, uint32 regCount_, uint32 updateSemantic_, NMaterialProperty* source_) : 
+			type(type_), reg(reg_), regCount(regCount_), updateSemantic(updateSemantic_), source(source_) 
+	{
+	}
+};
+
+struct MaterialBufferBinding
+{
+	rhi::HConstBuffer constBuffer;
+	Vector<MaterialPropertyBinding> propBindings;
+	uint32 lastValidPropertySemantic = 0;
+};
+
 uint32 NMaterialProperty::globalPropertyUpdateSemanticCounter = 0;
 
 RenderVariantInstance::RenderVariantInstance() :shader(nullptr)
@@ -594,14 +614,10 @@ void NMaterial::RebuildBindings()
                         {
                             DVASSERT(prop->type == propDescr.type);
 
-                            //create property binding
-                            MaterialPropertyBinding binding;
-                            binding.type = propDescr.type;
-                            binding.reg = propDescr.bufferReg;
-                            binding.regCount = propDescr.bufferRegCount;
-                            binding.updateSemantic = 0; //mark as dirty - set it on next draw request
-                            binding.source = prop;
-                            bufferBinding->propBindings.push_back(binding);
+                            // create property binding
+
+                            bufferBinding->propBindings.emplace_back(propDescr.type, 
+								propDescr.bufferReg, propDescr.bufferRegCount, 0, prop);
                         }
                         else
                         {
@@ -898,10 +914,6 @@ void NMaterial::Load(KeyedArchive * archive, SerializationContext * serializatio
 			ptr += sizeof(uint32);
 
             float32 *data = (float32*)ptr;
-
-			if (HasLocalProperty(propName))
-				RemoveProperty(propName);
-
             AddProperty(propName, data, (rhi::ShaderProp::Type)propType, propSize);
         }
     }

@@ -1016,76 +1016,88 @@ DAVA::uint32 MaterialEditor::ExecMaterialLoadingDialog(DAVA::uint32 initialState
     return ret;
 }
 
+void MaterialEditor::StoreMaterialTextures(DAVA::NMaterial* material, const DAVA::InspMember* materialMember, 
+	DAVA::KeyedArchive* texturesArchive, DAVA::SerializationContext* context)
+{
+	DAVA::InspInfoDynamic* dynamicInfo = materialMember->Dynamic()->GetDynamicInfo();
+	DAVA::InspInfoDynamic::DynamicData ddata = dynamicInfo->Prepare(material, false);
+
+	DAVA::Vector<DAVA::FastName> membersList = dynamicInfo->MembersList(ddata);
+	for (const auto& texName : membersList)
+	{
+		if (material->HasLocalTexture(texName))
+		{
+			auto texturePath = material->GetLocalTexture(texName)->GetPathname();
+			if (!texturePath.IsEmpty())
+			{
+				String textureRelativePath = texturePath.GetRelativePathname(context->GetScenePath());
+				if (textureRelativePath.size() > 0)
+				{
+					texturesArchive->SetString(texName.c_str(), textureRelativePath);
+				}
+			}
+		}
+	}
+}
+
+void MaterialEditor::StoreMaterialFlags(DAVA::NMaterial* material, const DAVA::InspMember* materialMember,
+	DAVA::KeyedArchive* flagsArchive)
+{
+	DAVA::InspInfoDynamic* dynamicInfo = materialMember->Dynamic()->GetDynamicInfo();
+	DAVA::InspInfoDynamic::DynamicData ddata = dynamicInfo->Prepare(material, false);
+	DAVA::Vector<DAVA::FastName> membersList = dynamicInfo->MembersList(ddata);
+	for (const auto& flagName : membersList)
+	{
+		if (material->HasLocalFlag(flagName))
+		{
+			flagsArchive->SetInt32(flagName.c_str(), material->GetLocalFlagValue(flagName));
+		}
+	}
+}
+
+void MaterialEditor::StoreMaterialProperties(DAVA::NMaterial* material, const DAVA::InspMember* materialMember,
+	DAVA::KeyedArchive* propertiesArchive)
+{
+	DAVA::InspInfoDynamic* dynamicInfo = materialMember->Dynamic()->GetDynamicInfo();
+	DAVA::InspInfoDynamic::DynamicData ddata = dynamicInfo->Prepare(material, false);
+	DAVA::Vector<DAVA::FastName> membersList = dynamicInfo->MembersList(ddata);
+	for (const auto& propertyName : membersList)
+	{
+		if (material->HasLocalProperty(propertyName))
+		{
+			auto propertyType = material->GetLocalPropType(propertyName);
+			auto propertyValue = material->GetLocalPropValue(propertyName);
+			auto arraySize = material->GetLocalPropArraySize(propertyName);
+			auto dataSize = sizeof(float32) * DAVA::ShaderDescriptor::CalculateDataSize(propertyType, 1);
+
+			ScopedPtr<KeyedArchive> prop(new KeyedArchive());
+			prop->SetUInt32("type", static_cast<uint32>(propertyType));
+			prop->SetUInt32("size", arraySize);
+			prop->SetByteArray("data", reinterpret_cast<const uint8*>(propertyValue), dataSize);
+			propertiesArchive->SetArchive(propertyName.c_str(), prop);
+		}
+	}
+}
+
 void MaterialEditor::StoreMaterialToPreset(DAVA::NMaterial* material, DAVA::KeyedArchive* archive, DAVA::SerializationContext* context)
 {
     const DAVA::InspInfo* info = material->GetTypeInfo();
 
 	ScopedPtr<DAVA::KeyedArchive> texturesArchive(new DAVA::KeyedArchive());
-	ScopedPtr<DAVA::KeyedArchive> propertiesArchive(new DAVA::KeyedArchive());
 	ScopedPtr<DAVA::KeyedArchive> flagsArchive(new DAVA::KeyedArchive());
+	ScopedPtr<DAVA::KeyedArchive> propertiesArchive(new DAVA::KeyedArchive());
 
     const DAVA::InspMember* materialMember = info->Member(FastName("localTextures"));
     if ((nullptr != materialMember) && (nullptr != materialMember->Dynamic()))
-    {
-        DAVA::InspInfoDynamic* dynamicInfo = materialMember->Dynamic()->GetDynamicInfo();
-	    DAVA::InspInfoDynamic::DynamicData ddata = dynamicInfo->Prepare(material, false);
-
-	    DAVA::Vector<DAVA::FastName> membersList = dynamicInfo->MembersList(ddata); 
-		for (const auto& texName : membersList)
-		{
-			if (material->HasLocalTexture(texName))
-			{
-				auto texturePath = material->GetLocalTexture(texName)->GetPathname();
-				if (!texturePath.IsEmpty())
-				{
-					String textureRelativePath = texturePath.GetRelativePathname(context->GetScenePath());
-					if (textureRelativePath.size() > 0)
-					{
-						texturesArchive->SetString(texName.c_str(), textureRelativePath);
-					}
-				}
-			}
-		}
-	}
+		StoreMaterialTextures(material, materialMember, texturesArchive, context);
 
     materialMember = info->Member(FastName("localFlags"));
     if ((nullptr != materialMember) && (nullptr != materialMember->Dynamic()))
-    {
-        DAVA::InspInfoDynamic* dynamicInfo = materialMember->Dynamic()->GetDynamicInfo();
-	    DAVA::InspInfoDynamic::DynamicData ddata = dynamicInfo->Prepare(material, false);
-	    DAVA::Vector<DAVA::FastName> membersList = dynamicInfo->MembersList(ddata); 
-		for (const auto& flagName : membersList)
-		{
-			if (material->HasLocalFlag(flagName))
-			{
-				flagsArchive->SetInt32(flagName.c_str(), material->GetLocalFlagValue(flagName));
-			}
-		}
-	}
+		StoreMaterialFlags(material, materialMember, flagsArchive);
 
     materialMember = info->Member(FastName("localProperties"));
     if ((nullptr != materialMember) && (nullptr != materialMember->Dynamic()))
-    {
-        DAVA::InspInfoDynamic* dynamicInfo = materialMember->Dynamic()->GetDynamicInfo();
-	    DAVA::InspInfoDynamic::DynamicData ddata = dynamicInfo->Prepare(material, false);
-	    DAVA::Vector<DAVA::FastName> membersList = dynamicInfo->MembersList(ddata); 
-		for (const auto& propertyName : membersList)
-		{
-			if (material->HasLocalProperty(propertyName))
-			{
-				auto propertyType = material->GetLocalPropType(propertyName);
-				auto propertyValue = material->GetLocalPropValue(propertyName);
-				auto arraySize = material->GetLocalPropArraySize(propertyName);
-				auto dataSize = sizeof(float32) * DAVA::ShaderDescriptor::CalculateDataSize(propertyType, 1);
-
-				ScopedPtr<KeyedArchive> prop(new KeyedArchive());
-				prop->SetUInt32("type", static_cast<uint32>(propertyType));
-				prop->SetUInt32("size", arraySize);
-				prop->SetByteArray("data", reinterpret_cast<const uint8*>(propertyValue), dataSize);
-				propertiesArchive->SetArchive(propertyName.c_str(), prop);
-			}
-		}
-	}
+		StoreMaterialProperties(material, materialMember, propertiesArchive);
 
 	archive->SetArchive("flags", flagsArchive);
 	archive->SetArchive("textures", texturesArchive);
