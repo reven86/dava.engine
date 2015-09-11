@@ -41,7 +41,6 @@ LocalizedTextValueProperty::LocalizedTextValueProperty(DAVA::BaseObject *anObjec
 
 LocalizedTextValueProperty::~LocalizedTextValueProperty()
 {
-    
 }
 
 void LocalizedTextValueProperty::Refresh(DAVA::int32 refreshFlags)

@@ -75,6 +75,7 @@ UIControlSystem::UIControlSystem()
 	//mainControl = 0;
 
 	popupContainer = new UIControl(Rect(0, 0, 1, 1));
+    popupContainer->SetName("UIControlSystem_popupContainer");
 	popupContainer->SetInputEnabled(false);
 	
 	exclusiveInputLocker = NULL;
