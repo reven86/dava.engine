@@ -44,6 +44,12 @@ void ConnectToUI(Ui::MainWindow *ui)
         DAVA::UIControl::DumpControls(false);
     });
 
+#if !defined(__DAVAENGINE_DEBUG__)
+    ui->actionDump_Controls->setVisible(false);
+#endif //#if !defined(__DAVAENGINE_DEBUG__)
+
+
+
     QObject::connect(ui->actionDump_Textures, &QAction::triggered, [] {
         DAVA::Texture::DumpTextures();
     });
