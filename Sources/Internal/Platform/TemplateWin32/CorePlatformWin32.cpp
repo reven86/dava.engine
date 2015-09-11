@@ -710,58 +710,57 @@ namespace DAVA
         case WM_ERASEBKGND:
             return 1; // https://msdn.microsoft.com/en-us/library/windows/desktop/ms648055%28v=vs.85%29.aspx
         case WM_KEYUP:
-            keyboard.OnSystemKeyUnpressed(static_cast<int32>(wParam));
-            break;
+        {
+            DAVA::UIEvent ev;
+            ev.keyChar = 0;
+            ev.phase = DAVA::UIEvent::PHASE_KEYCHAR_RELEASE;
+            ev.tapCount = 1;
+
+            int32 system_key_code = static_cast<int32>(wParam);
+            ev.tid = keyboard.GetDavaKeyForSystemKey(system_key_code);
+
+            Vector<DAVA::UIEvent> touches;
+            touches.push_back(ev);
+
+            UIControlSystem::Instance()->OnInput(touches, core->events);
+
+            keyboard.OnSystemKeyUnpressed(system_key_code);
+        }
+        break;
 
         case WM_KEYDOWN:
-            {
-				BYTE allKeys[256];
-				GetKeyboardState(allKeys);
-	
-				if ((allKeys[VK_MENU] & 0x80)
-					&& (allKeys[VK_TAB] & 0x80))
-				{
-					ShowWindow(hWnd, SW_MINIMIZE);
-				}
+        {
+            DAVA::UIEvent ev;
+            ev.keyChar = 0;
+            ev.phase = DAVA::UIEvent::PHASE_KEYCHAR;
+            ev.tapCount = 1;
 
-				Vector<DAVA::UIEvent> touches;
+            int32 system_key_code = static_cast<int32>(wParam);
+            ev.tid = keyboard.GetDavaKeyForSystemKey(system_key_code);
 
-				DAVA::UIEvent ev;
-				ev.keyChar = 0;
-				ev.phase = DAVA::UIEvent::PHASE_KEYCHAR;
-				ev.tapCount = 1;
-                ev.tid = keyboard.GetDavaKeyForSystemKey(static_cast<int32>(wParam));
+            Vector<DAVA::UIEvent> touches;
+            touches.push_back(ev);
 
-                touches.push_back(ev);
+            UIControlSystem::Instance()->OnInput(touches, core->events);
 
-                UIControlSystem::Instance()->OnInput(touches, core->events);
-                touches.pop_back();
-                UIControlSystem::Instance()->OnInput(touches, core->events);
+            keyboard.OnSystemKeyPressed(system_key_code);
+        };
+        break;
 
-                keyboard.OnSystemKeyPressed((int32)wParam);
-            };
-			break;
+        case WM_CHAR:
+        {
+            DAVA::UIEvent ev;
+            ev.keyChar = static_cast<char16>(wParam);
+            ev.phase = DAVA::UIEvent::PHASE_KEYCHAR;
+            ev.tapCount = 1;
+            ev.tid = 0;
 
-		case WM_CHAR:
-		{
-			if(wParam > 27) //TODO: remove this elegant check
-			{
-				Vector<DAVA::UIEvent> touches;
+            Vector<DAVA::UIEvent> touches;
+            touches.push_back(ev);
 
-				DAVA::UIEvent ev;
-				ev.keyChar = (char16)wParam;
-				ev.phase = DAVA::UIEvent::PHASE_KEYCHAR;
-				ev.tapCount = 1;
-				ev.tid = 0;
-
-				touches.push_back(ev);
-
-                UIControlSystem::Instance()->OnInput(touches, core->events);
-                touches.pop_back();
-                UIControlSystem::Instance()->OnInput(touches, core->events);
-            }
-		}
-		break;
+            UIControlSystem::Instance()->OnInput(touches, core->events);
+        }
+        break;
 
         case WM_INPUT:
         {

@@ -59,19 +59,27 @@ public:
 	 \enum Control state bits.
 	 */
     enum eInputPhase
-	{
-			PHASE_BEGAN = 0	//!<Screen touch or mouse button press is began.
-		,	PHASE_DRAG		//!<User moves mouse with presset button or finger over the screen.
-		,	PHASE_ENDED		//!<Screen touch or mouse button press is ended.
-		,	PHASE_MOVE		//!<Mouse move event. Mouse moves without pressing any buttons. Works only with mouse controller.
-        ,   PHASE_WHEEL     //!<Mouse wheel event. MacOS & Win32 only
-		,	PHASE_CANCELLED	//!<Event was cancelled by the platform or by the control system for the some reason.  
+    {
+        PHASE_BEGAN = 0 //!<Screen touch or mouse button press is began.
+        ,
+        PHASE_DRAG //!<User moves mouse with presset button or finger over the screen.
+        ,
+        PHASE_ENDED //!<Screen touch or mouse button press is ended.
+        ,
+        PHASE_MOVE //!<Mouse move event. Mouse moves without pressing any buttons. Works only with mouse controller.
+        ,
+        PHASE_WHEEL //!<Mouse wheel event. MacOS & Win32 only
+        ,
+        PHASE_CANCELLED //!<Event was cancelled by the platform or by the control system for the some reason.
 
-		,	PHASE_KEYCHAR	//!<Event is a keyboard key pressing event.
-		,	PHASE_JOYSTICK
-	};
-	
-	/**
+        ,
+        PHASE_KEYCHAR //!<Event is a keyboard key pressing event.
+        ,
+        PHASE_JOYSTICK,
+        PHASE_KEYCHAR_RELEASE
+    };
+
+    /**
 	 \enum Internal Control Sytem event activity state.
 	 */
     enum eInputActivityState
@@ -173,6 +181,7 @@ public:
             case PHASE_CANCELLED:
                 return INPUT_SOURCE_TOUCHSCREEN;
             case PHASE_KEYCHAR:
+            case PHASE_KEYCHAR_RELEASE:
                 return INPUT_SOURCE_KEYBOARD;
 #if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
 			case PHASE_MOVE:
