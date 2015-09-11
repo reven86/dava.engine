@@ -83,8 +83,7 @@ UIControl* CanvasSystem::GetCanvasControl()
 void CanvasSystem::OnActivated()
 {
     document->GetScalableControl()->AddControl(canvas);
-    SetSelection(SelectedControls(), SelectedControls());
-
+    SetSelection(SelectedNodes(), SelectedNodes());
 }
 
 void CanvasSystem::OnDeactivated()
@@ -92,11 +91,12 @@ void CanvasSystem::OnDeactivated()
     canvas->RemoveFromParent();
 }
 
-void CanvasSystem::SetSelection(const SelectedControls& selected, const SelectedControls& deselected)
+void CanvasSystem::SetSelection(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
-    MergeSelection(selected, deselected);
+    selectionTracker.MergeSelection(selected, deselected);
+    Set<ControlNode*> selectedControls = selectionTracker.GetSetTFromNodes<SelectedControls>();
     DAVA::Set<PackageBaseNode*> rootControls;
-    if (selectedItems.empty())
+    if (selectedControls.empty())
     {
         auto controlsNode = document->GetPackage()->GetPackageControlsNode();
         for (int index = 0; index < controlsNode->GetCount(); ++index)
@@ -106,7 +106,7 @@ void CanvasSystem::SetSelection(const SelectedControls& selected, const Selected
     }
     else
     {
-        for (auto &node : selectedItems)
+        for (auto& node : selectedControls)
         {
             if (nullptr != node->GetControl())
             {

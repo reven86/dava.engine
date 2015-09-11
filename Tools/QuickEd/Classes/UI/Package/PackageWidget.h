@@ -45,7 +45,7 @@ class FilteredPackageModel;
 class PackageModel;
 class QItemSelection;
 
-class PackageWidget : public QDockWidget, public Ui::PackageWidget, public SelectionTracker<SelectedNodes>
+class PackageWidget : public QDockWidget, public Ui::PackageWidget
 {
     Q_OBJECT
 public:
@@ -97,6 +97,8 @@ private:
     
     FilteredPackageModel* filteredPackageModel = nullptr;
     PackageModel* packageModel = nullptr;
+
+    SelectionTracker selectionTracker;
 };
 
 #endif // __UI_EDITOR_UI_PACKAGE_WIDGET__

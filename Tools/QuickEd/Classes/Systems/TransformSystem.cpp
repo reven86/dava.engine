@@ -62,9 +62,10 @@ TransformSystem::TransformSystem(Document *parent)
 {
     accumulates.fill({ { 0, 0 } });
     document->ActiveAreaChanged.Connect(this, &TransformSystem::SetNewArea);
-    document->SelectionChanged.Connect([this](const SelectedControls &selected, const SelectedControls &deselected)
+    document->SelectionChanged.Connect([this](const SelectedNodes& selected, const SelectedNodes& deselected)
                                        {
-                                           this->MergeSelection(selected, deselected);
+                                           selectionTracker.MergeSelection(selected, deselected);
+                                           selectedControlNodes = selectionTracker.GetSetTFromNodes<SelectedControls>();
                                        });
 }
 
@@ -93,12 +94,6 @@ bool TransformSystem::OnInput(UIEvent* currentInput)
         }
         case UIEvent::PHASE_ENDED:
             accumulates.fill({ { 0, 0 } });
-            //return true if we did transformation
-            if (dragRequested)
-            {
-                dragRequested = false;
-                return true;
-            }
             return false;
         default:
             return false;
@@ -107,7 +102,7 @@ bool TransformSystem::OnInput(UIEvent* currentInput)
 
 bool TransformSystem::ProcessKey(const int32 key)
 {
-    if(!selectedItems.empty())
+    if (!selectedControlNodes.empty())
     {
         switch(key)
         {
@@ -137,7 +132,6 @@ bool TransformSystem::ProcessDrag(const Vector2 &pos)
         return false;
     }
 
-    dragRequested = true;
     const auto &keyBoard = InputSystem::Instance()->GetKeyboard();
     auto gd = activeControlNode->GetControl()->GetGeometricData();
 
@@ -207,7 +201,7 @@ bool TransformSystem::ProcessDrag(const Vector2 &pos)
 
 void TransformSystem::MoveAllSelectedControls(const Vector2 &delta)
 {
-    for( auto &controlNode : selectedItems)
+    for (auto& controlNode : selectedControlNodes)
     {
         if(controlNode->IsEditingSupported())
         {

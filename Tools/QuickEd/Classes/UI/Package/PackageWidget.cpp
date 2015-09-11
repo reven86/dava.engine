@@ -457,11 +457,11 @@ void PackageWidget::SetSelectedNodes(const SelectedNodes& selected, const Select
 {
     SelectedNodes reallySelected;
     SelectedNodes reallyDeselected;
-    
-    GetOnlyExistedItems(deselected, reallyDeselected);
-    GetNotExistedItems(selected, reallySelected);
-    MergeSelection(reallySelected, reallyDeselected);
-    
+
+    selectionTracker.GetOnlyExistedItems(deselected, reallyDeselected);
+    selectionTracker.GetNotExistedItems(selected, reallySelected);
+    selectionTracker.MergeSelection(reallySelected, reallyDeselected);
+
     if (!reallySelected.empty() || !reallyDeselected.empty())
     {
         for (const auto &node : reallyDeselected)

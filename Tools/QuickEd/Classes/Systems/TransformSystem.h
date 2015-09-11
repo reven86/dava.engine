@@ -35,7 +35,7 @@
 #include "Math/Vector.h"
 #include "Document.h"
 
-class TransformSystem final : public BaseSystem, public SelectionTracker<SelectedControls>
+class TransformSystem final : public BaseSystem
 {   
 public:
     explicit TransformSystem(Document *parent);
@@ -69,9 +69,11 @@ private:
     HUDareaInfo::eArea activeArea = HUDareaInfo::NO_AREA;
     ControlNode *activeControlNode = nullptr;
     DAVA::Vector2 prevPos;
-    bool dragRequested = false;
     const DAVA::Array<int, OPERATIONS_COUNT> steps; //to transform with fixed step
     DAVA::Array<DAVA::Array<int, DAVA::Vector2::AXIS_COUNT>, OPERATIONS_COUNT> accumulates;
+
+    SelectionTracker selectionTracker;
+    SelectedControls selectedControlNodes;
 };
 
 #endif // __QUICKED_TRANSFORM_SYSTEM_H__

@@ -40,11 +40,11 @@ class StyleSheetNode;
 class Document;
 class PackageBaseNode;
 
-class PropertiesWidget : public QDockWidget, public Ui::PropertiesWidget, public SelectionTracker<SelectedNodes>
+class PropertiesWidget : public QDockWidget, public Ui::PropertiesWidget
 {
     Q_OBJECT
 public:
-    PropertiesWidget(QWidget *parent = NULL);
+    PropertiesWidget(QWidget* parent = nullptr);
 
 public slots:
     void OnDocumentChanged(Document *doc);
@@ -76,6 +76,8 @@ private:
     QAction *addStylePropertyAction = nullptr;
     QAction *addStyleSelectorAction = nullptr;
     QAction *removeAction = nullptr;
+
+    SelectionTracker selectionTracker;
 };
 
 #endif //__QUICKED_PROPERTIES_WIDGET_H__

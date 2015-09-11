@@ -85,7 +85,7 @@ Document::Document(PackageNode *_package, QObject *parent)
     rootControl->SetName("rootControl");
     rootControl->AddControl(scalableControl);
     scalableControl->SetName("scalableContent");
-    SelectionChanged.Connect(this, &Document::SetSelectedControls);
+    SelectionChanged.Connect(this, &Document::SetSelectedNodes);
 
     systems << new SelectionSystem(this)
         << new CanvasSystem(this)
@@ -164,7 +164,7 @@ void Document::Deactivate()
     {
         system->OnDeactivated();
     }
-    emit SelectedNodesChanged(SelectedNodes(), selectedItems);
+    emit SelectedNodesChanged(SelectedNodes(), selectionTracker.selectedNodes);
 }
 
 void Document::Activate()
@@ -173,7 +173,7 @@ void Document::Activate()
     {
         system->OnActivated();
     }
-    emit SelectedNodesChanged(selectedItems, SelectedNodes());
+    emit SelectedNodesChanged(selectionTracker.selectedNodes, SelectedNodes());
     emit ScaleChanged(scale);
 }
 
@@ -187,13 +187,6 @@ void Document::SetContext(QObject* requester, WidgetContext* widgetContext)
         contexts.erase(iter);
     }
     contexts.insert(std::pair<QObject*, WidgetContext*>(requester, widgetContext));
-}
-
-void Document::SetSelectedControls(const SelectedControls &selected, const SelectedControls &deselected)
-{
-    SelectedNodes selectedNodes_(selected.begin(), selected.end());
-    SelectedNodes deselectedNodes_(deselected.begin(), deselected.end());
-    SetSelectedNodes(selectedNodes_, deselectedNodes_);
 }
 
 bool Document::OnInput(UIEvent *currentInput)
@@ -222,18 +215,26 @@ void Document::GetControlNodesByPos(DAVA::Vector<ControlNode*> &controlNodes, co
     {
         auto tmpNode = controlsNode->Get(index);
         DVASSERT(nullptr != tmpNode);
-        GetControlNodesByPosImpl(controlNodes, pos, tmpNode);
+        auto control = tmpNode->GetControl();
+        if (control->GetParent() != nullptr)
+        {
+            GetControlNodesByPosImpl(controlNodes, pos, tmpNode);
+        }
     }
 }
 
-void Document::GetControlNodesByRect(Set<ControlNode*>& controlNodes, const Rect& rect) const
+void Document::GetControlNodesByRect(SelectedControls& controlNodes, const Rect& rect) const
 {
     auto controlsNode = package->GetPackageControlsNode();
     for (int index = 0; index < controlsNode->GetCount(); ++index)
     {
         auto tmpNode = controlsNode->Get(index);
         DVASSERT(nullptr != tmpNode);
-        GetControlNodesByRectImpl(controlNodes, rect, tmpNode);
+        auto control = tmpNode->GetControl();
+        if (control->GetParent() != nullptr)
+        {
+            GetControlNodesByRectImpl(controlNodes, rect, tmpNode);
+        }
     }
 }
 
@@ -251,7 +252,7 @@ void Document::GetControlNodesByPosImpl(DAVA::Vector<ControlNode*>& controlNodes
     }
 }
 
-void Document::GetControlNodesByRectImpl(Set<ControlNode*>& controlNodes, const Rect& rect, ControlNode* node) const
+void Document::GetControlNodesByRectImpl(SelectedControls& controlNodes, const Rect& rect, ControlNode* node) const
 {
     int count = node->GetCount();
     auto control = node->GetControl();
@@ -270,6 +271,7 @@ ControlNode* Document::GetControlByMenu(const Vector<ControlNode*> &nodesUnderPo
     auto view = EditorCore::Instance()->GetMainWindow()->GetGLWidget()->GetGLWindow();
     QPoint globalPos = view->mapToGlobal(QPoint(point.x, point.y)/ view->devicePixelRatio());
     QMenu menu;
+    auto selectedControlNodes = selectionTracker.GetSetTFromNodes<SelectedControls>();
     for (auto it = nodesUnderPoint.rbegin(); it != nodesUnderPoint.rend(); ++it)
     {
         ControlNode *controlNode = *it;
@@ -279,7 +281,8 @@ ControlNode* Document::GetControlByMenu(const Vector<ControlNode*> &nodesUnderPo
         menu.addAction(action);
         void* ptr = static_cast<void*>(controlNode);
         action->setData(QVariant::fromValue(ptr));
-        if (selectedItems.find(controlNode) != selectedItems.end())
+
+        if (selectedControlNodes.find(controlNode) != selectedControlNodes.end())
         {
             auto font = action->font();
             font.setBold(true);
@@ -340,35 +343,14 @@ void Document::SetSelectedNodes(const SelectedNodes& selected, const SelectedNod
 {
     SelectedNodes reallySelected;
     SelectedNodes reallyDeselected;
-    
-    GetOnlyExistedItems(deselected, reallyDeselected);
-    GetNotExistedItems(selected, reallySelected);
-    MergeSelection(reallySelected, reallyDeselected);
-    
+
+    selectionTracker.GetOnlyExistedItems(deselected, reallyDeselected);
+    selectionTracker.GetNotExistedItems(selected, reallySelected);
+    selectionTracker.MergeSelection(reallySelected, reallyDeselected);
+
     if (!reallySelected.empty() || !reallyDeselected.empty())
     {
-        SelectedControls selectedControls;
-        SelectedControls deselectedControls;
-        for (auto &node : reallySelected)
-        {
-            ControlNode *controlNode = dynamic_cast<ControlNode*>(node);
-            if (nullptr != controlNode)
-            {
-                selectedControls.insert(controlNode);
-            }
-        }
-        for (auto &node : reallyDeselected)
-        {
-            ControlNode *controlNode = dynamic_cast<ControlNode*>(node);
-            if (nullptr != controlNode)
-            {
-                deselectedControls.insert(controlNode);
-            }
-        }
-        if (!selectedControls.empty() || !deselectedControls.empty())
-        {
-            SelectionChanged.Emit(selectedControls, deselectedControls);
-        }
+        SelectionChanged.Emit(reallySelected, reallyDeselected);
         emit SelectedNodesChanged(reallySelected, reallyDeselected);
     }
 }

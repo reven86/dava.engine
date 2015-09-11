@@ -207,13 +207,16 @@ void HUDSystem::OnDeactivated()
     selectionRectControl->SetSize(Vector2(0.0f, 0.0f));
 }
 
-void HUDSystem::SetSelection(const SelectedControls& selected, const SelectedControls& deselected)
+void HUDSystem::SetSelection(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
-    for (auto control : deselected)
+    Set<ControlNode*> deselectedControls = SelectionTracker::GetSetTFromSetU<Set<ControlNode*>>(deselected);
+    for (auto control : deselectedControls)
     {
         hudMap.erase(control);
     }
-    for (auto control : selected)
+
+    Set<ControlNode*> selectedControls = SelectionTracker::GetSetTFromSetU<Set<ControlNode*>>(selected);
+    for (auto control : selectedControls)
     {
         hudMap.emplace(std::piecewise_construct, 
             std::forward_as_tuple(control),
@@ -233,6 +236,7 @@ bool HUDSystem::OnInput(UIEvent *currentInput)
         pressedPoint = currentInput->point;
         return canDrawRect;
     case UIEvent::PHASE_DRAG:
+        dragRequested = true;
         if(canDrawRect)
         {
             Vector2 point(currentInput->point);
@@ -247,7 +251,7 @@ bool HUDSystem::OnInput(UIEvent *currentInput)
         {
             selectionRectControl->SetSize(Vector2(0, 0));
         }
-        bool retVal = canDrawRect;
+        bool retVal = canDrawRect || dragRequested;
         canDrawRect = false;
         return retVal;
     }

@@ -45,7 +45,7 @@ class ControlNode;
 class ScrollAreaController;
 class PackageBaseNode;
 
-class PreviewWidget : public QWidget, public Ui::PreviewWidget, public SelectionTracker<SelectedNodes>
+class PreviewWidget : public QWidget, public Ui::PreviewWidget
 {
     Q_OBJECT
 public:

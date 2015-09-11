@@ -36,35 +36,56 @@ class PackageBaseNode;
 class ControlNode;
 
 using SelectedNodes = DAVA::Set < PackageBaseNode* > ;
-using SelectedControls = DAVA::Set < ControlNode* >;
+using SelectedControls = DAVA::Set<ControlNode*>;
 
-template <typename SelectionType>
-class SelectionTracker
+struct SelectionTracker
 {
-public:
-    void GetNotExistedItems(const SelectionType &in, SelectionType &out)
+    template <typename ContainerIn, typename ContainerOut>
+    void GetNotExistedItems(const ContainerIn& in, ContainerOut& out)
     {
-        std::set_difference(in.begin(), in.end(), selectedItems.begin(), selectedItems.end(), std::inserter(out, out.end()));
+        std::set_difference(in.begin(), in.end(), selectedNodes.begin(), selectedNodes.end(), std::inserter(out, out.end()));
     }
 
-    void GetOnlyExistedItems(const SelectionType &in, SelectionType &out)
+    template <typename ContainerIn, typename ContainerOut>
+    void GetOnlyExistedItems(const ContainerIn& in, ContainerOut& out)
     {
-        std::set_intersection(selectedItems.begin(), selectedItems.end(), in.begin(), in.end(), std::inserter(out, out.end()));
+        std::set_intersection(selectedNodes.begin(), selectedNodes.end(), in.begin(), in.end(), std::inserter(out, out.end()));
     }
 
-    void MergeSelection(const SelectionType &selected, const SelectionType &deselected)
+    void MergeSelection(const SelectedNodes& selected, const SelectedNodes& deselected)
     {
         for (const auto &item : deselected)
         {
-            selectedItems.erase(item);
+            selectedNodes.erase(item);
         }
         for (const auto &item : selected)
         {
-            selectedItems.insert(item);
+            selectedNodes.insert(item);
         }
     }
-protected:
-    SelectionType selectedItems;
+
+    template <typename SetT, typename SetU>
+    static SetT GetSetTFromSetU(const SetU& in)
+    {
+        using T = typename std::remove_reference<SetT>::type::value_type;
+        SetT retVal;
+        for (auto& u : in)
+        {
+            auto tmp = dynamic_cast<T>(u);
+            if (nullptr != tmp)
+            {
+                retVal.insert(tmp);
+            }
+        }
+        return retVal;
+    }
+
+    template <typename SetT>
+    SetT GetSetTFromNodes() const
+    {
+        return GetSetTFromSetU<SetT>(selectedNodes);
+    }
+    SelectedNodes selectedNodes;
 };
 
 #endif // __QUICKED_SELECTION_TRACKER_H__

@@ -85,7 +85,7 @@ class PackageModel;
 class ControlNode;
 class AbstractProperty;
 
-class Document final : public QObject, public SelectionTracker<SelectedNodes>
+class Document final : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(int scale READ GetScale WRITE SetScale NOTIFY ScaleChanged RESET ResetScale);
@@ -110,7 +110,6 @@ public:
 
     void SetContext(QObject* requester, WidgetContext* widgetContext);
 
-    void SetSelectedControls(const SelectedControls &selected, const SelectedControls &deselected);
     bool OnInput(DAVA::UIEvent *currentInput);
 
     void RefreshLayout();
@@ -119,7 +118,7 @@ public:
     void GetControlNodesByRect(SelectedControls &controlNodes, const DAVA::Rect &rect) const;
     ControlNode* GetControlByMenu(const DAVA::Vector<ControlNode*> &nodes, const DAVA::Vector2 &pos) const;
 
-    DAVA::Signal<const SelectedControls &/*selected*/, const SelectedControls &/*deselected*/> SelectionChanged;
+    DAVA::Signal<const SelectedNodes& /*selected*/, const SelectedNodes& /*deselected*/> SelectionChanged;
     DAVA::Signal<const HUDareaInfo &/*areaInfo*/> ActiveAreaChanged;
     DAVA::Signal<const DAVA::Rect &/*selectionRectControl*/> SelectionRectChanged;
     DAVA::Signal<bool> EmulationModeChangedSignal;
@@ -156,7 +155,7 @@ private:
 
     QList<BaseSystem*> systems;
 
-    
+    SelectionTracker selectionTracker;
 };
 
 #endif // __QUICKED_DOCUMENT_H__

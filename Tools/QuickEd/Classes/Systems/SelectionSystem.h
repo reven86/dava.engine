@@ -40,7 +40,7 @@ namespace DAVA {
     class Vector2;
 }
 
-class SelectionSystem final : public BaseSystem, public PackageListener, public SelectionTracker<SelectedControls>
+class SelectionSystem final : public BaseSystem, public PackageListener
 {
 public:
     SelectionSystem(Document *doc);
@@ -52,12 +52,13 @@ public:
     void SelectByRect(const DAVA::Rect &rect);
 
 private:
-    void SetSelection(const SelectedControls &selected, const SelectedControls &deselected);
+    void SetSelection(const SelectedNodes& selected, const SelectedNodes& SelectedNodes);
 
     bool ProcessMousePress(const DAVA::Vector2 &point);
 
     DAVA::Vector<ControlNode*> nodesUnderPoint;
     bool mousePressed = false;
+    SelectionTracker selectionTracker;
 };
 
 #endif // __QUICKED_SELECTION_SYSTEM_H__

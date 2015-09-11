@@ -58,7 +58,7 @@ public:
     void OnActivated() override;
     void OnDeactivated() override;
 
-    void SetSelection(const SelectedControls &selected, const SelectedControls &deselected);
+    void SetSelection(const SelectedNodes& selected, const SelectedNodes& deselected);
     bool OnInput(DAVA::UIEvent *currentInput) override;
     void OnEmulationModeChanged(bool emulationMode);
 private:
@@ -83,6 +83,7 @@ private:
     };
     DAVA::Map<ControlNode*, HUD> hudMap;
     DAVA::ScopedPtr<DAVA::UIControl> selectionRectControl;
+    bool dragRequested;
 };
 
 #endif // __QUICKED_HUD_SYSTEM_H__

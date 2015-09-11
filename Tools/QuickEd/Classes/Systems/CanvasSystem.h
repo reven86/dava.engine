@@ -39,7 +39,7 @@
 class Document;
 class PackageBaseNode;
 
-class CanvasSystem final : public BaseSystem, public SelectionTracker<SelectedControls>
+class CanvasSystem final : public BaseSystem
 {
 public:
     CanvasSystem(Document *parent);
@@ -49,13 +49,14 @@ public:
     void OnActivated() override;
     void OnDeactivated() override;
 
-    void SetSelection(const SelectedControls &selected, const SelectedControls &deselected);
+    void SetSelection(const SelectedNodes& selected, const SelectedNodes& deselected);
 
 private:
     void SetRootControls(const DAVA::Set<PackageBaseNode*> &controls);
     void LayoutCanvas();
 
     DAVA::ScopedPtr<DAVA::UIControl> canvas;
+    SelectionTracker selectionTracker;
 };
 
 #endif // __QUICKED_CANVAS_SYSTEM_H__
