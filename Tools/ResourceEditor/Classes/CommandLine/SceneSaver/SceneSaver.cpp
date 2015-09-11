@@ -43,8 +43,8 @@
 
 using namespace DAVA;
 
-SceneSaver::SceneSaver()
-    : copyConverted(false)
+SceneSaver::SceneSaver(CommandLineTool::EngineHelperCallback cb) : 
+	helperCallback(cb)
 {
 }
 
@@ -79,6 +79,7 @@ void SceneSaver::SaveFile(const String &fileName, Set<String> &errorLog)
     Scene *scene = new Scene();
     if(SceneFileV2::ERROR_NO_ERROR == scene->LoadScene(filePath))
     {
+		helperCallback();
 		SaveScene(scene, filePath, errorLog);
     }
 	else
@@ -99,7 +100,9 @@ void SceneSaver::ResaveFile(const String &fileName, Set<String> &errorLog)
     Scene *scene = new Scene();
     if(SceneFileV2::ERROR_NO_ERROR == scene->LoadScene(sc2Filename))
     {
+		helperCallback();
         scene->SaveScene(sc2Filename, false);
+		helperCallback();
 	}
 	else
 	{
@@ -130,6 +133,7 @@ void SceneSaver::SaveScene(Scene *scene, const FilePath &fileName, Set<String> &
 
     CopyTextures(scene);
 	ReleaseTextures();
+	helperCallback();
 
 	Landscape *landscape = FindLandscape(scene);
     if (landscape)
@@ -148,8 +152,13 @@ void SceneSaver::SaveScene(Scene *scene, const FilePath &fileName, Set<String> &
     }
 
 	CopyReferencedObject(scene);
+	helperCallback();
+
 	CopyEffects(scene);
+	helperCallback();
+
 	CopyCustomColorTexture(scene, fileName.GetDirectory(), errorLog);
+	helperCallback();
 
     //save scene to new place
     FilePath tempSceneName = sceneUtils.dataSourceFolder + relativeFilename;
@@ -157,6 +166,7 @@ void SceneSaver::SaveScene(Scene *scene, const FilePath &fileName, Set<String> &
     
     sceneUtils.CopyFiles(errorLog);
     scene->SaveScene(tempSceneName, false);
+	helperCallback();
 
     bool moved = FileSystem::Instance()->MoveFile(tempSceneName, sceneUtils.dataFolder + relativeFilename, true);
 	if(!moved)

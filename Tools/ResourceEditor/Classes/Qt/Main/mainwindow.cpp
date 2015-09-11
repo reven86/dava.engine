@@ -1240,7 +1240,8 @@ void QtMainWindow::OnSceneSaveAsInternal(bool saveWithCompressed)
     FilePath folder = PathnameToDAVAStyle(path);
     folder.MakeDirectoryPathname();
     
-    SceneSaver sceneSaver;
+	CommandLineTool::EngineHelperCallback nullCallback = [](){};
+    SceneSaver sceneSaver(nullCallback);
     sceneSaver.SetInFolder(scene->GetScenePath().GetDirectory());
     sceneSaver.SetOutFolder(folder);
     sceneSaver.EnableCopyConverted(saveWithCompressed);

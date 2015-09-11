@@ -30,7 +30,7 @@
 #ifndef __SCENE_SAVER_H__
 #define __SCENE_SAVER_H__
 
-#include "DAVAEngine.h"
+#include "CommandLine/CommandLineTool.h"
 #include "CommandLine/SceneUtils/SceneUtils.h"
 
 using namespace DAVA;
@@ -38,7 +38,7 @@ using namespace DAVA;
 class SceneSaver
 {
 public:
-	SceneSaver();
+	SceneSaver(CommandLineTool::EngineHelperCallback);
 	virtual ~SceneSaver();
     
     void SetInFolder(const FilePath &folderPathname);
@@ -54,7 +54,6 @@ public:
 
     
 protected:
-    
     void ReleaseTextures();
 
     void CopyTextures(Scene *scene);
@@ -67,13 +66,11 @@ protected:
 	void CopyCustomColorTexture(Scene *scene, const FilePath & sceneFolder, Set<String> &errorLog);
 
 protected:
-    
     SceneUtils sceneUtils;
-    
     TexturesMap texturesForSave;
-    bool copyConverted;
-    
     DAVA::Set<DAVA::FilePath> effectFolders;
+	CommandLineTool::EngineHelperCallback helperCallback;
+    bool copyConverted = false;
 };
 
 

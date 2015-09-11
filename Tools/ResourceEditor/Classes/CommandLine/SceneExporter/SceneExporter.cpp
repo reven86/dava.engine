@@ -175,6 +175,8 @@ void SceneExporter::ExportTextureFile(const String &fileName, Set<String> &error
 void SceneExporter::ExportScene(Scene *scene, const FilePath &fileName, Set<String> &errorLog)
 {
     uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
+
+	scene->Update(1.0f / 30.0f);
     
     //Create destination folder
     String relativeFilename = fileName.GetRelativePathname(sceneUtils.dataSourceFolder);
