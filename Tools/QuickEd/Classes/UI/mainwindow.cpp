@@ -41,6 +41,8 @@
 #include "QtTools/FileDialog/FileDialog.h"
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"
 
+#include "DebugTools/DebugTools.h"
+
 namespace
 {
     const QString APP_GEOMETRY = "geometry";
@@ -59,6 +61,8 @@ MainWindow::MainWindow(QWidget *parent)
     , dialogReloadSprites(new DialogReloadSprites(this))
 {
     setupUi(this);
+
+    DebugTools::ConnectToUI(this);
 
     // Relod Sprites
     QAction* actionReloadSprites = dialogReloadSprites->GetActionReloadSprites();

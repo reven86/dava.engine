@@ -27,57 +27,20 @@
 =====================================================================================*/
 
 
-#include "ClassProperty.h"
+#ifndef __QUICKED_DEBUG_TOOLS__H__
+#define __QUICKED_DEBUG_TOOLS__H__
 
-#include "PropertyVisitor.h"
-#include "../PackageHierarchy/ControlNode.h"
+#include "ui_mainwindow.h"
 
-#include "UI/UIControl.h"
-
-using namespace DAVA;
-
-ClassProperty::ClassProperty(ControlNode *aControl)
-    : ValueProperty("Class")
-    , control(aControl) // weak
+namespace DebugTools
 {
+
+void ConnectToUI(Ui::MainWindow * ui);
+
+
 }
 
-ClassProperty::~ClassProperty()
-{
-    control = nullptr; // weak
-}
 
-void ClassProperty::Accept(PropertyVisitor *visitor)
-{
-    visitor->VisitClassProperty(this);
-}
 
-bool ClassProperty::IsReadOnly() const
-{
-    return true;
-}
+#endif //#ifndef __QUICKED_DEBUG_TOOLS__H__
 
-ClassProperty::ePropertyType ClassProperty::GetType() const
-{
-    return TYPE_VARIANT;
-}
-
-DAVA::uint32 ClassProperty::GetFlags() const
-{
-    return EF_AFFECTS_STYLES;
-}
-
-VariantType ClassProperty::GetValue() const
-{
-    return VariantType(control->GetControl()->GetClassName());
-}
-
-const String &ClassProperty::GetClassName() const
-{
-    return control->GetControl()->GetClassName();
-}
-
-ControlNode *ClassProperty::GetControlNode() const
-{
-    return control;
-}
