@@ -617,7 +617,6 @@ void TextureBrowser::reloadTextureToScene(DAVA::Texture *texture, const DAVA::Te
 		// or if given texture format if not a file (will happened if some common texture params changed - mipmap/filtering etc.)
 		if(!GPUFamilyDescriptor::IsGPUForDevice(gpu) || gpu == curEditorImageGPUForTextures)
 		{
-			descriptor->Save(); //TODO: it's kostil for broken logic. We need to remove this code during refactoring of texture browser
 			texture->ReloadAs(curEditorImageGPUForTextures);
 		}
 	}
@@ -702,9 +701,11 @@ void TextureBrowser::texturePropertyChanged(int type)
 	// other settings don't need texture to reconvert
 	else
 	{
-		// new texture can be applied to scene immediately
-		reloadTextureToScene(curTexture, ui->textureProperties->getTextureDescriptor(), DAVA::GPU_ORIGIN);
-	}
+        const DAVA::TextureDescriptor* descriptor = ui->textureProperties->getTextureDescriptor();
+        descriptor->Save();
+        // new texture can be applied to scene immediately
+        reloadTextureToScene(curTexture, descriptor, DAVA::GPU_ORIGIN);
+    }
 
 	// update warning message
 	updatePropertiesWarning();
@@ -751,7 +752,8 @@ void TextureBrowser::textureReadyConverted(const DAVA::TextureDescriptor *descri
 		DAVA::Texture *texture = textureListModel->getTexture(descriptor);
 		if(NULL != texture)
 		{
-			// reload this texture into scene
+            descriptor->Save();
+            // reload this texture into scene
 			reloadTextureToScene(texture, descriptor, gpu);
 		}
 	}
