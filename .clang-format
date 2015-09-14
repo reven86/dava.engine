@@ -20,7 +20,7 @@ BreakConstructorInitializersBeforeComma: true
 BinPackParameters: true
 BinPackArguments: true
 ColumnLimit: 0
-ConstructorInitializerAllOnOneLineOrOnePerLine: true
+ConstructorInitializerAllOnOneLineOrOnePerLine: false
 ConstructorInitializerIndentWidth: 4
 DerivePointerAlignment: false
 ExperimentalAutoDetectBinPacking: false
