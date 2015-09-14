@@ -175,9 +175,6 @@ protected:
 	AutotestingSystemLuaDelegate* delegate;
     lua_State* luaState; //TODO: multiple lua states
     
-    //TODO: write a copy of localization system for autotesting
-    LocalizationSystem* autotestingLocalizationSystem;
-    
 #endif //SWIG
 private:
     void* memoryPool;

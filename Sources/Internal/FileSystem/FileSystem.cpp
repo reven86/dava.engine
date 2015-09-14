@@ -236,7 +236,7 @@ bool FileSystem::MoveFile(const FilePath & existingFile, const FilePath & newFil
     bool error = (0 != result);
     if (error)
     {
-        const char* errorReason = std::strerror(errno);
+        const char* errorReason = strerror(errno);
         Logger::Error("rename failed (\"%s\" -> \"%s\") with error: %s",
             fromFile.c_str(), toFile.c_str(), errorReason);
     }
@@ -703,26 +703,26 @@ const FilePath FileSystem::GetPublicDocumentsPath()
     
 String FileSystem::ReadFileContents(const FilePath & pathname)
 {
-    File * fp = File::Create(pathname, File::OPEN|File::READ);
+	String fileContents;
+    RefPtr<File> fp(File::Create(pathname, File::OPEN|File::READ));
 	if (!fp)
 	{
 		Logger::Error("Failed to open file: %s", pathname.GetAbsolutePathname().c_str());
-		return 0;
-	}
-	uint32 fileSize = fp->GetSize();
-
-    String fileContents;
-    uint32 dataRead = fp->ReadString(fileContents);
-    
-	if (dataRead != fileSize)
+	} else
 	{
-		Logger::Error("Failed to read data from file: %s", pathname.GetAbsolutePathname().c_str());
-		return 0;
+		uint32 fileSize = fp->GetSize();
+
+		fileContents.resize(fileSize);
+
+		uint32 dataRead = fp->Read(&fileContents[0], fileSize);
+
+		if (dataRead != fileSize)
+		{
+			Logger::Error("Failed to read data from file: %s", pathname.GetAbsolutePathname().c_str());
+			fileContents.clear();
+		}
 	}
-    
-	SafeRelease(fp);
     return fileContents;
-    
 }
 
 

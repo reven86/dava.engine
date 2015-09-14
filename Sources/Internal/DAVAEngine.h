@@ -192,10 +192,6 @@
 #include "Scene2D/GameObject.h"
 #include "Scene2D/GameObjectManager.h"
 #include "Collision/CollisionObject2.h"
-#include "Scene2D/Box2DGameObjectManager.h"
-#include "Scene2D/Box2DGameObject.h"
-#include "Scene2D/Box2DTileCollider.h"
-#include "Scene2D/Box2DHelper.h"
 
 // Sound & Music
 #include "Sound/SoundEvent.h"

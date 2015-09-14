@@ -64,6 +64,7 @@ PreviewWidget::PreviewWidget(QWidget *parent)
     frame->layout()->addWidget(davaGLWidget);
 
     ScopedPtr<UIScreen> davaUIScreen(new DAVA::UIScreen());
+    davaUIScreen->SetName("davaUIScreen");
     davaUIScreen->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
     davaUIScreen->GetBackground()->SetColor(DAVA::Color(0.3f, 0.3f, 0.3f, 1.0f));
     UIScreenManager::Instance()->RegisterScreen(EDIT_SCREEN, davaUIScreen);

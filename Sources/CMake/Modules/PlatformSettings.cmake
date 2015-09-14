@@ -42,14 +42,19 @@ elseif ( MACOS )
 elseif ( WIN32 )
     #dynamic runtime on windows store
     if ( WINDOWS_UAP )
-	    set ( CRT_TYPE_DEBUG "/MDd" )
-		set ( CRT_TYPE_RELEASE "/MD" )
-		#consume windows runtime extension (C++/CX)
-		set ( ADDITIONAL_CXX_FLAGS "/ZW")
-	else ()
-	    set ( CRT_TYPE_DEBUG "/MTd" )
-		set ( CRT_TYPE_RELEASE "/MT" )
-	endif ()
+        set ( CRT_TYPE_DEBUG "/MDd" )
+        set ( CRT_TYPE_RELEASE "/MD" )
+        #consume windows runtime extension (C++/CX)
+        set ( ADDITIONAL_CXX_FLAGS "/ZW")
+        
+        #turning on SAFESEH option on UAP x86
+        if ( NOT CMAKE_GENERATOR_PLATFORM OR ${CMAKE_GENERATOR_PLATFORM} STREQUAL "Win32" )
+            set ( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /SAFESEH" )
+        endif ()
+    else ()
+        set ( CRT_TYPE_DEBUG "/MTd" )
+        set ( CRT_TYPE_RELEASE "/MT" )
+    endif ()
     
     # ignorance of linker warnings
     set ( CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /IGNORE:4099,4221,4264" )
@@ -122,16 +127,21 @@ if( WARNINGS_AS_ERRORS )
 -Wno-delete-non-virtual-dtor \
 -Wno-header-hygiene \
 -Wno-old-style-cast \
--Wno-unknown-warning-option")
+-Wno-unknown-warning-option \
+-Wno-unreachable-code-return \
+-Wno-unreachable-code-break")
+
 
     if( ANDROID )
+        set( LOCAL_DISABLED_WARNINGS "${LOCAL_DISABLED_WARNINGS} \
+-Wno-reserved-id-macro \
+-Wno-unused-local-typedef \
+-Wno-inconsistent-missing-override")
         set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${LOCAL_DISABLED_WARNINGS}" ) # warnings as errors
     elseif( APPLE )
         set( LOCAL_DISABLED_WARNINGS "${LOCAL_DISABLED_WARNINGS} \
 -Wno-cstring-format-directive \
 -Wno-duplicate-enum \
--Wno-unreachable-code-break \
--Wno-unreachable-code-return \
 -Wno-infinite-recursion \
 -Wno-objc-interface-ivars \
 -Wno-direct-ivar-access \

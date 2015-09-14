@@ -367,11 +367,6 @@
 		176DE9B0174B5561007A983B /* TextureDescriptor.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989CA716BD24E500732C04 /* TextureDescriptor.h */; };
 		176DE9B1174B5561007A983B /* UberShader.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989CAA16BD24E500732C04 /* UberShader.h */; };
 		176DE9B2174B5561007A983B /* VertexBuffer.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989CAB16BD24E500732C04 /* VertexBuffer.h */; };
-		176DE9B3174B5561007A983B /* Box2DDebugDraw.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989CAE16BD24E500732C04 /* Box2DDebugDraw.h */; };
-		176DE9B4174B5561007A983B /* Box2DGameObject.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989CB016BD24E500732C04 /* Box2DGameObject.h */; };
-		176DE9B5174B5561007A983B /* Box2DGameObjectManager.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989CB216BD24E500732C04 /* Box2DGameObjectManager.h */; };
-		176DE9B6174B5561007A983B /* Box2DHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989CB416BD24E500732C04 /* Box2DHelper.h */; };
-		176DE9B7174B5561007A983B /* Box2DTileCollider.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989CB616BD24E500732C04 /* Box2DTileCollider.h */; };
 		176DE9B8174B5561007A983B /* GameObject.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989CB816BD24E500732C04 /* GameObject.h */; };
 		176DE9B9174B5561007A983B /* GameObjectAnimations.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989CBA16BD24E500732C04 /* GameObjectAnimations.h */; };
 		176DE9BA174B5561007A983B /* GameObjectManager.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989CBC16BD24E500732C04 /* GameObjectManager.h */; };
@@ -610,11 +605,6 @@
 		176DEACE174B5561007A983B /* Texture.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989CA416BD24E500732C04 /* Texture.cpp */; };
 		176DEACF174B5561007A983B /* TextureDescriptor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989CA616BD24E500732C04 /* TextureDescriptor.cpp */; };
 		176DEAD0174B5561007A983B /* UberShader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989CA916BD24E500732C04 /* UberShader.cpp */; };
-		176DEAD1174B5561007A983B /* Box2DDebugDraw.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989CAD16BD24E500732C04 /* Box2DDebugDraw.cpp */; };
-		176DEAD2174B5561007A983B /* Box2DGameObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989CAF16BD24E500732C04 /* Box2DGameObject.cpp */; };
-		176DEAD3174B5561007A983B /* Box2DGameObjectManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989CB116BD24E500732C04 /* Box2DGameObjectManager.cpp */; };
-		176DEAD4174B5561007A983B /* Box2DHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989CB316BD24E500732C04 /* Box2DHelper.cpp */; };
-		176DEAD5174B5561007A983B /* Box2DTileCollider.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989CB516BD24E500732C04 /* Box2DTileCollider.cpp */; };
 		176DEAD6174B5561007A983B /* GameObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989CB716BD24E500732C04 /* GameObject.cpp */; };
 		176DEAD7174B5561007A983B /* GameObjectAnimations.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989CB916BD24E500732C04 /* GameObjectAnimations.cpp */; };
 		176DEAD8174B5561007A983B /* GameObjectManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989CBB16BD24E500732C04 /* GameObjectManager.cpp */; };
@@ -706,7 +696,6 @@
 		176DEB34174B5561007A983B /* WebViewControlMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = C151B17B16D3755000E09BAF /* WebViewControlMacOS.mm */; };
 		176DEB37174B5561007A983B /* UserComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC24800616DD174E00183D40 /* UserComponent.cpp */; };
 		176DEB38174B5561007A983B /* UISpinner.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E9EA496A16DF93FA00C44B6F /* UISpinner.cpp */; };
-		176DEB39174B5561007A983B /* UTF8UtilsMac.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8B4F8CE16EF377D0072442A /* UTF8UtilsMac.mm */; };
 		176DEB3A174B5561007A983B /* UISwitch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E9E798A716F0BE7600745AF5 /* UISwitch.cpp */; };
 		176DEB3B174B5561007A983B /* Camera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CCC7A3FA16F1D6170061EA5D /* Camera.cpp */; };
 		176DEB3C174B5561007A983B /* CullingSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CCC7A3FC16F1D6170061EA5D /* CullingSystem.cpp */; };
@@ -746,7 +735,6 @@
 		176DEB66174B5561007A983B /* libyaml_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C97965914E3F09F00FFFA14 /* libyaml_macos.a */; };
 		176DEB67174B5561007A983B /* libxml_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C42C98314E3AFA400EB3F53 /* libxml_macos.a */; };
 		176DEB68174B5561007A983B /* libpng_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C77AB7C14C7509D00E92D28 /* libpng_macos.a */; };
-		176DEB69174B5561007A983B /* libBox2D_MacOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FEF4E22C12CD3BED004B850E /* libBox2D_MacOS.a */; };
 		176DEB6A174B5561007A983B /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */; };
 		176DEB6B174B5561007A983B /* ApplicationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE444329114D8DF600F5EFD6 /* ApplicationServices.framework */; };
 		176DEB6D174B5561007A983B /* libogg_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FE578C5D1327927C0081BDE9 /* libogg_macos.a */; };
@@ -951,6 +939,8 @@
 		5022951F186DD1BC00F55478 /* RenderPassManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 5022951B186DD1BC00F55478 /* RenderPassManager.h */; };
 		50229520186DD1BC00F55478 /* RenderPassManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 5022951B186DD1BC00F55478 /* RenderPassManager.h */; };
 		50229521186DD1BC00F55478 /* RenderPassManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 5022951B186DD1BC00F55478 /* RenderPassManager.h */; };
+		50320B6D1B8DA55C00F7123B /* MMBigDataTransferService.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50320B6B1B8DA55C00F7123B /* MMBigDataTransferService.cpp */; };
+		50320B6E1B8DA55C00F7123B /* MMBigDataTransferService.h in Headers */ = {isa = PBXBuildFile; fileRef = 50320B6C1B8DA55C00F7123B /* MMBigDataTransferService.h */; };
 		5041C3671B0E272C00BC0BE3 /* AllocatorBridge.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5041C3621B0E272C00BC0BE3 /* AllocatorBridge.cpp */; };
 		5041C3681B0E272C00BC0BE3 /* AllocatorBridge.h in Headers */ = {isa = PBXBuildFile; fileRef = 5041C3631B0E272C00BC0BE3 /* AllocatorBridge.h */; };
 		5041C3691B0E272C00BC0BE3 /* InternalAllocator.h in Headers */ = {isa = PBXBuildFile; fileRef = 5041C3641B0E272C00BC0BE3 /* InternalAllocator.h */; };
@@ -1623,6 +1613,7 @@
 		D738BD731B01F1BC00989C29 /* RawTimer.h in Headers */ = {isa = PBXBuildFile; fileRef = D738BD6F1B01F1BC00989C29 /* RawTimer.h */; };
 		D738BD741B01F1BC00989C29 /* RawTimer.h in Headers */ = {isa = PBXBuildFile; fileRef = D738BD6F1B01F1BC00989C29 /* RawTimer.h */; };
 		D738BD751B01F1BC00989C29 /* RawTimer.h in Headers */ = {isa = PBXBuildFile; fileRef = D738BD6F1B01F1BC00989C29 /* RawTimer.h */; };
+		D780599C1B99AAFB00BBAE06 /* UTF8Utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D780599B1B99AAFB00BBAE06 /* UTF8Utils.cpp */; };
 		D7C1C1D619CAD2FB00E79D84 /* LocalNotificationImpl.h in Headers */ = {isa = PBXBuildFile; fileRef = D7C1C1D519CAD2FB00E79D84 /* LocalNotificationImpl.h */; };
 		D7C1C1D719CAD2FB00E79D84 /* LocalNotificationImpl.h in Headers */ = {isa = PBXBuildFile; fileRef = D7C1C1D519CAD2FB00E79D84 /* LocalNotificationImpl.h */; };
 		D7C1C1D819CAD2FB00E79D84 /* LocalNotificationImpl.h in Headers */ = {isa = PBXBuildFile; fileRef = D7C1C1D519CAD2FB00E79D84 /* LocalNotificationImpl.h */; };
@@ -1961,16 +1952,6 @@
 		E8989F6716BD24E500732C04 /* UberShader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989CA916BD24E500732C04 /* UberShader.cpp */; };
 		E8989F6816BD24E500732C04 /* UberShader.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989CAA16BD24E500732C04 /* UberShader.h */; };
 		E8989F6916BD24E500732C04 /* VertexBuffer.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989CAB16BD24E500732C04 /* VertexBuffer.h */; };
-		E8989F6A16BD24E500732C04 /* Box2DDebugDraw.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989CAD16BD24E500732C04 /* Box2DDebugDraw.cpp */; };
-		E8989F6B16BD24E500732C04 /* Box2DDebugDraw.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989CAE16BD24E500732C04 /* Box2DDebugDraw.h */; };
-		E8989F6C16BD24E500732C04 /* Box2DGameObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989CAF16BD24E500732C04 /* Box2DGameObject.cpp */; };
-		E8989F6D16BD24E500732C04 /* Box2DGameObject.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989CB016BD24E500732C04 /* Box2DGameObject.h */; };
-		E8989F6E16BD24E500732C04 /* Box2DGameObjectManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989CB116BD24E500732C04 /* Box2DGameObjectManager.cpp */; };
-		E8989F6F16BD24E500732C04 /* Box2DGameObjectManager.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989CB216BD24E500732C04 /* Box2DGameObjectManager.h */; };
-		E8989F7016BD24E500732C04 /* Box2DHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989CB316BD24E500732C04 /* Box2DHelper.cpp */; };
-		E8989F7116BD24E500732C04 /* Box2DHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989CB416BD24E500732C04 /* Box2DHelper.h */; };
-		E8989F7216BD24E500732C04 /* Box2DTileCollider.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989CB516BD24E500732C04 /* Box2DTileCollider.cpp */; };
-		E8989F7316BD24E500732C04 /* Box2DTileCollider.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989CB616BD24E500732C04 /* Box2DTileCollider.h */; };
 		E8989F7416BD24E500732C04 /* GameObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989CB716BD24E500732C04 /* GameObject.cpp */; };
 		E8989F7516BD24E500732C04 /* GameObject.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989CB816BD24E500732C04 /* GameObject.h */; };
 		E8989F7616BD24E500732C04 /* GameObjectAnimations.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989CB916BD24E500732C04 /* GameObjectAnimations.cpp */; };
@@ -2282,11 +2263,6 @@
 		E898A12716BD265400732C04 /* TextureDescriptor.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989CA716BD24E500732C04 /* TextureDescriptor.h */; };
 		E898A12816BD265400732C04 /* UberShader.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989CAA16BD24E500732C04 /* UberShader.h */; };
 		E898A12916BD265400732C04 /* VertexBuffer.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989CAB16BD24E500732C04 /* VertexBuffer.h */; };
-		E898A12A16BD265400732C04 /* Box2DDebugDraw.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989CAE16BD24E500732C04 /* Box2DDebugDraw.h */; };
-		E898A12B16BD265400732C04 /* Box2DGameObject.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989CB016BD24E500732C04 /* Box2DGameObject.h */; };
-		E898A12C16BD265400732C04 /* Box2DGameObjectManager.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989CB216BD24E500732C04 /* Box2DGameObjectManager.h */; };
-		E898A12D16BD265400732C04 /* Box2DHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989CB416BD24E500732C04 /* Box2DHelper.h */; };
-		E898A12E16BD265400732C04 /* Box2DTileCollider.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989CB616BD24E500732C04 /* Box2DTileCollider.h */; };
 		E898A12F16BD265400732C04 /* GameObject.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989CB816BD24E500732C04 /* GameObject.h */; };
 		E898A13016BD265400732C04 /* GameObjectAnimations.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989CBA16BD24E500732C04 /* GameObjectAnimations.h */; };
 		E898A13116BD265400732C04 /* GameObjectManager.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989CBC16BD24E500732C04 /* GameObjectManager.h */; };
@@ -2478,11 +2454,6 @@
 		E898A24116BD265400732C04 /* Texture.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989CA416BD24E500732C04 /* Texture.cpp */; };
 		E898A24216BD265400732C04 /* TextureDescriptor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989CA616BD24E500732C04 /* TextureDescriptor.cpp */; };
 		E898A24316BD265400732C04 /* UberShader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989CA916BD24E500732C04 /* UberShader.cpp */; };
-		E898A24416BD265400732C04 /* Box2DDebugDraw.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989CAD16BD24E500732C04 /* Box2DDebugDraw.cpp */; };
-		E898A24516BD265400732C04 /* Box2DGameObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989CAF16BD24E500732C04 /* Box2DGameObject.cpp */; };
-		E898A24616BD265400732C04 /* Box2DGameObjectManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989CB116BD24E500732C04 /* Box2DGameObjectManager.cpp */; };
-		E898A24716BD265400732C04 /* Box2DHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989CB316BD24E500732C04 /* Box2DHelper.cpp */; };
-		E898A24816BD265400732C04 /* Box2DTileCollider.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989CB516BD24E500732C04 /* Box2DTileCollider.cpp */; };
 		E898A24916BD265400732C04 /* GameObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989CB716BD24E500732C04 /* GameObject.cpp */; };
 		E898A24A16BD265400732C04 /* GameObjectAnimations.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989CB916BD24E500732C04 /* GameObjectAnimations.cpp */; };
 		E898A24B16BD265400732C04 /* GameObjectManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989CBB16BD24E500732C04 /* GameObjectManager.cpp */; };
@@ -2570,7 +2541,6 @@
 		E898A2B516BD265400732C04 /* libyaml_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C97965914E3F09F00FFFA14 /* libyaml_macos.a */; };
 		E898A2B616BD265400732C04 /* libxml_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C42C98314E3AFA400EB3F53 /* libxml_macos.a */; };
 		E898A2B716BD265400732C04 /* libpng_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C77AB7C14C7509D00E92D28 /* libpng_macos.a */; };
-		E898A2B816BD265400732C04 /* libBox2D_MacOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FEF4E22C12CD3BED004B850E /* libBox2D_MacOS.a */; };
 		E898A2B916BD265400732C04 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */; };
 		E898A2BA16BD265400732C04 /* ApplicationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE444329114D8DF600F5EFD6 /* ApplicationServices.framework */; };
 		E898A2BC16BD265400732C04 /* libogg_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FE578C5D1327927C0081BDE9 /* libogg_macos.a */; };
@@ -2699,8 +2669,6 @@
 		E8ADAEBC18CA1226000B251C /* PixelFormatDescriptor.h in Headers */ = {isa = PBXBuildFile; fileRef = E8ADAEB818CA1226000B251C /* PixelFormatDescriptor.h */; };
 		E8ADAEBD18CA1226000B251C /* PixelFormatDescriptor.h in Headers */ = {isa = PBXBuildFile; fileRef = E8ADAEB818CA1226000B251C /* PixelFormatDescriptor.h */; };
 		E8ADAEBE18CA1226000B251C /* PixelFormatDescriptor.h in Headers */ = {isa = PBXBuildFile; fileRef = E8ADAEB818CA1226000B251C /* PixelFormatDescriptor.h */; };
-		E8B4F8CF16EF377D0072442A /* UTF8UtilsMac.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8B4F8CE16EF377D0072442A /* UTF8UtilsMac.mm */; };
-		E8B4F8D016EF377D0072442A /* UTF8UtilsMac.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8B4F8CE16EF377D0072442A /* UTF8UtilsMac.mm */; };
 		E8B6B3B01705DB26004F665E /* DeviceInfo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 840D24201703311400267C58 /* DeviceInfo.cpp */; };
 		E8B6B3B11705DB26004F665E /* DeviceInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 840D24211703311400267C58 /* DeviceInfo.h */; };
 		E8B6B3BB1705DD59004F665E /* DeviceInfoMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8B6B3BA1705DD59004F665E /* DeviceInfoMacOS.mm */; };
@@ -2797,39 +2765,7 @@
 		FECAA1CF1B7358B4008BC3FC /* LibWebPHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84CB6713191FC8850086483D /* LibWebPHelper.cpp */; };
 		FED4C0C91B3AA41F006D0379 /* LibJpegHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FED4C0C71B3AA41E006D0379 /* LibJpegHelper.cpp */; };
 		FED4C0CA1B3AA41F006D0379 /* LibJpegHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = FED4C0C81B3AA41E006D0379 /* LibJpegHelper.h */; };
-		FEF4E23212CD3C1F004B850E /* libBox2D_MacOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FEF4E22C12CD3BED004B850E /* libBox2D_MacOS.a */; };
 /* End PBXBuildFile section */
-
-/* Begin PBXContainerItemProxy section */
-		176DE8F7174B5561007A983B /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = FEF4E22712CD3BED004B850E /* Box2D_MacOS.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = D2AAC07D0554694100DB518D;
-			remoteInfo = Box2D_MacOS;
-		};
-		E898A05316BD265400732C04 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = FEF4E22712CD3BED004B850E /* Box2D_MacOS.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = D2AAC07D0554694100DB518D;
-			remoteInfo = Box2D_MacOS;
-		};
-		FEF4E22B12CD3BED004B850E /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = FEF4E22712CD3BED004B850E /* Box2D_MacOS.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = D2AAC07E0554694100DB518D;
-			remoteInfo = Box2D_MacOS;
-		};
-		FEF4E23312CD3C2B004B850E /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = FEF4E22712CD3BED004B850E /* Box2D_MacOS.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = D2AAC07D0554694100DB518D;
-			remoteInfo = Box2D_MacOS;
-		};
-/* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
 		02E9E464173A452400C501BC /* CopyFiles */ = {
@@ -3002,6 +2938,8 @@
 		501981BF1B0B90F800C14292 /* MemoryProfiler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MemoryProfiler.h; sourceTree = "<group>"; };
 		5022951A186DD1BC00F55478 /* RenderPassManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RenderPassManager.cpp; sourceTree = "<group>"; };
 		5022951B186DD1BC00F55478 /* RenderPassManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenderPassManager.h; sourceTree = "<group>"; };
+		50320B6B1B8DA55C00F7123B /* MMBigDataTransferService.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MMBigDataTransferService.cpp; path = MMNet/MMBigDataTransferService.cpp; sourceTree = "<group>"; };
+		50320B6C1B8DA55C00F7123B /* MMBigDataTransferService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MMBigDataTransferService.h; path = MMNet/MMBigDataTransferService.h; sourceTree = "<group>"; };
 		5041C3621B0E272C00BC0BE3 /* AllocatorBridge.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AllocatorBridge.cpp; sourceTree = "<group>"; };
 		5041C3631B0E272C00BC0BE3 /* AllocatorBridge.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AllocatorBridge.h; sourceTree = "<group>"; };
 		5041C3641B0E272C00BC0BE3 /* InternalAllocator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InternalAllocator.h; sourceTree = "<group>"; };
@@ -3340,6 +3278,7 @@
 		D2F7E8BE07B2D77200F64583 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = /System/Library/Frameworks/CoreData.framework; sourceTree = "<absolute>"; };
 		D738BD6E1B01F1BC00989C29 /* RawTimer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RawTimer.cpp; path = Timer/RawTimer.cpp; sourceTree = "<group>"; };
 		D738BD6F1B01F1BC00989C29 /* RawTimer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RawTimer.h; path = Timer/RawTimer.h; sourceTree = "<group>"; };
+		D780599B1B99AAFB00BBAE06 /* UTF8Utils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UTF8Utils.cpp; sourceTree = "<group>"; };
 		D7C1C1D519CAD2FB00E79D84 /* LocalNotificationImpl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocalNotificationImpl.h; sourceTree = "<group>"; };
 		D7C556671A7A158600175ED9 /* DataStorage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DataStorage.h; sourceTree = "<group>"; };
 		D7C5566D1A7A158600175ED9 /* DataStorageMacOS.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DataStorageMacOS.cpp; sourceTree = "<group>"; };
@@ -3642,16 +3581,6 @@
 		E8989CA916BD24E500732C04 /* UberShader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UberShader.cpp; sourceTree = "<group>"; };
 		E8989CAA16BD24E500732C04 /* UberShader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UberShader.h; sourceTree = "<group>"; };
 		E8989CAB16BD24E500732C04 /* VertexBuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VertexBuffer.h; sourceTree = "<group>"; };
-		E8989CAD16BD24E500732C04 /* Box2DDebugDraw.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Box2DDebugDraw.cpp; sourceTree = "<group>"; };
-		E8989CAE16BD24E500732C04 /* Box2DDebugDraw.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Box2DDebugDraw.h; sourceTree = "<group>"; };
-		E8989CAF16BD24E500732C04 /* Box2DGameObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Box2DGameObject.cpp; sourceTree = "<group>"; };
-		E8989CB016BD24E500732C04 /* Box2DGameObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Box2DGameObject.h; sourceTree = "<group>"; };
-		E8989CB116BD24E500732C04 /* Box2DGameObjectManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Box2DGameObjectManager.cpp; sourceTree = "<group>"; };
-		E8989CB216BD24E500732C04 /* Box2DGameObjectManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Box2DGameObjectManager.h; sourceTree = "<group>"; };
-		E8989CB316BD24E500732C04 /* Box2DHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Box2DHelper.cpp; sourceTree = "<group>"; };
-		E8989CB416BD24E500732C04 /* Box2DHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Box2DHelper.h; sourceTree = "<group>"; };
-		E8989CB516BD24E500732C04 /* Box2DTileCollider.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Box2DTileCollider.cpp; sourceTree = "<group>"; };
-		E8989CB616BD24E500732C04 /* Box2DTileCollider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Box2DTileCollider.h; sourceTree = "<group>"; };
 		E8989CB716BD24E500732C04 /* GameObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GameObject.cpp; sourceTree = "<group>"; };
 		E8989CB816BD24E500732C04 /* GameObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GameObject.h; sourceTree = "<group>"; };
 		E8989CB916BD24E500732C04 /* GameObjectAnimations.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GameObjectAnimations.cpp; sourceTree = "<group>"; };
@@ -3855,7 +3784,6 @@
 		E89EDE411A2E16FA0036E993 /* VectorSwig.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VectorSwig.cpp; sourceTree = "<group>"; };
 		E8ADAEB718CA1226000B251C /* PixelFormatDescriptor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PixelFormatDescriptor.cpp; sourceTree = "<group>"; };
 		E8ADAEB818CA1226000B251C /* PixelFormatDescriptor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PixelFormatDescriptor.h; sourceTree = "<group>"; };
-		E8B4F8CE16EF377D0072442A /* UTF8UtilsMac.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = UTF8UtilsMac.mm; sourceTree = "<group>"; };
 		E8B6B3BA1705DD59004F665E /* DeviceInfoMacOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = DeviceInfoMacOS.mm; sourceTree = "<group>"; };
 		E8BAD5AE185213F100C98C8D /* IntrospectionDynamic.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IntrospectionDynamic.cpp; sourceTree = "<group>"; };
 		E8BAD5AF185213F100C98C8D /* IntrospectionDynamic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IntrospectionDynamic.h; sourceTree = "<group>"; };
@@ -3897,7 +3825,6 @@
 		FEA1D3CD1ADF9B88006B981A /* LibTgaHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LibTgaHelper.h; path = Image/LibTgaHelper.h; sourceTree = "<group>"; };
 		FED4C0C71B3AA41E006D0379 /* LibJpegHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = LibJpegHelper.cpp; path = Image/LibJpegHelper.cpp; sourceTree = "<group>"; };
 		FED4C0C81B3AA41E006D0379 /* LibJpegHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LibJpegHelper.h; path = Image/LibJpegHelper.h; sourceTree = "<group>"; };
-		FEF4E22712CD3BED004B850E /* Box2D_MacOS.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Box2D_MacOS.xcodeproj; path = ../../Libs/Box2D/Projects/Box2D_MacOS/Box2D_MacOS.xcodeproj; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -3913,7 +3840,6 @@
 				176DEB66174B5561007A983B /* libyaml_macos.a in Frameworks */,
 				176DEB67174B5561007A983B /* libxml_macos.a in Frameworks */,
 				176DEB68174B5561007A983B /* libpng_macos.a in Frameworks */,
-				176DEB69174B5561007A983B /* libBox2D_MacOS.a in Frameworks */,
 				176DEB6A174B5561007A983B /* Cocoa.framework in Frameworks */,
 				176DEB6B174B5561007A983B /* ApplicationServices.framework in Frameworks */,
 				176DEB6D174B5561007A983B /* libogg_macos.a in Frameworks */,
@@ -3943,7 +3869,6 @@
 				5C97965A14E3F09F00FFFA14 /* libyaml_macos.a in Frameworks */,
 				5C42C98414E3AFA400EB3F53 /* libxml_macos.a in Frameworks */,
 				5C77AB7D14C7509D00E92D28 /* libpng_macos.a in Frameworks */,
-				FEF4E23212CD3C1F004B850E /* libBox2D_MacOS.a in Frameworks */,
 				D2AAC088055469A000DB518D /* Cocoa.framework in Frameworks */,
 				FE44432A114D8DF600F5EFD6 /* ApplicationServices.framework in Frameworks */,
 				FE578C601327927C0081BDE9 /* libogg_macos.a in Frameworks */,
@@ -3968,7 +3893,6 @@
 				E898A2B616BD265400732C04 /* libxml_macos.a in Frameworks */,
 				B7BEB94819CB1A47005B4BC7 /* libfribidi_macos.a in Frameworks */,
 				E898A2B716BD265400732C04 /* libpng_macos.a in Frameworks */,
-				E898A2B816BD265400732C04 /* libBox2D_MacOS.a in Frameworks */,
 				E898A2B916BD265400732C04 /* Cocoa.framework in Frameworks */,
 				E898A2BA16BD265400732C04 /* ApplicationServices.framework in Frameworks */,
 				E898A2BC16BD265400732C04 /* libogg_macos.a in Frameworks */,
@@ -4036,8 +3960,6 @@
 				5C42C98314E3AFA400EB3F53 /* libxml_macos.a */,
 				5C6BF78214C85A2A009297F7 /* libz.dylib */,
 				5C77AB7C14C7509D00E92D28 /* libpng_macos.a */,
-				FEF4E22712CD3BED004B850E /* Box2D_MacOS.xcodeproj */,
-				FECFABB612E58B7800C71562 /* External */,
 				FECFC0A512E87E3000C71562 /* Internal */,
 				32C88DFF0371C24200C91783 /* Other Sources */,
 				0867D69AFE84028FC02AAC07 /* External Frameworks and Libraries */,
@@ -4121,6 +4043,8 @@
 		5015AF3C1B15E5320062C971 /* MMNet */ = {
 			isa = PBXGroup;
 			children = (
+				50320B6B1B8DA55C00F7123B /* MMBigDataTransferService.cpp */,
+				50320B6C1B8DA55C00F7123B /* MMBigDataTransferService.h */,
 				5015AF3D1B15E5400062C971 /* MMNetClient.cpp */,
 				5015AF3E1B15E5400062C971 /* MMNetClient.h */,
 				5015AF3F1B15E5400062C971 /* MMNetProto.h */,
@@ -5157,16 +5081,6 @@
 		E8989CAC16BD24E500732C04 /* Scene2D */ = {
 			isa = PBXGroup;
 			children = (
-				E8989CAD16BD24E500732C04 /* Box2DDebugDraw.cpp */,
-				E8989CAE16BD24E500732C04 /* Box2DDebugDraw.h */,
-				E8989CAF16BD24E500732C04 /* Box2DGameObject.cpp */,
-				E8989CB016BD24E500732C04 /* Box2DGameObject.h */,
-				E8989CB116BD24E500732C04 /* Box2DGameObjectManager.cpp */,
-				E8989CB216BD24E500732C04 /* Box2DGameObjectManager.h */,
-				E8989CB316BD24E500732C04 /* Box2DHelper.cpp */,
-				E8989CB416BD24E500732C04 /* Box2DHelper.h */,
-				E8989CB516BD24E500732C04 /* Box2DTileCollider.cpp */,
-				E8989CB616BD24E500732C04 /* Box2DTileCollider.h */,
 				E8989CB716BD24E500732C04 /* GameObject.cpp */,
 				E8989CB816BD24E500732C04 /* GameObject.h */,
 				E8989CB916BD24E500732C04 /* GameObjectAnimations.cpp */,
@@ -5480,7 +5394,7 @@
 				E8989D9216BD24E500732C04 /* Random.h */,
 				E8989D9316BD24E500732C04 /* StringFormat.cpp */,
 				E8989D9416BD24E500732C04 /* StringFormat.h */,
-				E8B4F8CE16EF377D0072442A /* UTF8UtilsMac.mm */,
+				D780599B1B99AAFB00BBAE06 /* UTF8Utils.cpp */,
 				E8989D9616BD24E500732C04 /* UTF8Utils.h */,
 				E8989D9716BD24E500732C04 /* Utils.cpp */,
 				E8989D9816BD24E500732C04 /* Utils.h */,
@@ -5528,14 +5442,6 @@
 			name = Functional;
 			sourceTree = "<group>";
 		};
-		FECFABB612E58B7800C71562 /* External */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = External;
-			path = ../../Sources/External;
-			sourceTree = SOURCE_ROOT;
-		};
 		FECFC0A512E87E3000C71562 /* Internal */ = {
 			isa = PBXGroup;
 			children = (
@@ -5578,14 +5484,6 @@
 			name = Internal;
 			path = ../../Sources/Internal;
 			sourceTree = SOURCE_ROOT;
-		};
-		FEF4E22812CD3BED004B850E /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				FEF4E22C12CD3BED004B850E /* libBox2D_MacOS.a */,
-			);
-			name = Products;
-			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
@@ -5817,12 +5715,7 @@
 				176DE9B0174B5561007A983B /* TextureDescriptor.h in Headers */,
 				176DE9B1174B5561007A983B /* UberShader.h in Headers */,
 				176DE9B2174B5561007A983B /* VertexBuffer.h in Headers */,
-				176DE9B3174B5561007A983B /* Box2DDebugDraw.h in Headers */,
-				176DE9B4174B5561007A983B /* Box2DGameObject.h in Headers */,
-				176DE9B5174B5561007A983B /* Box2DGameObjectManager.h in Headers */,
 				155D77DD197DD22E006AEBCD /* YamlNode.h in Headers */,
-				176DE9B6174B5561007A983B /* Box2DHelper.h in Headers */,
-				176DE9B7174B5561007A983B /* Box2DTileCollider.h in Headers */,
 				17FB4BB61923B97F00F3E3BC /* UIScrollViewContainer.h in Headers */,
 				176DE9B8174B5561007A983B /* GameObject.h in Headers */,
 				1166AC181A8CDF2D00F1618D /* dlmalloc.h in Headers */,
@@ -6311,20 +6204,15 @@
 				E8989F6816BD24E500732C04 /* UberShader.h in Headers */,
 				CC84B01F18211A9000934482 /* JobManager.h in Headers */,
 				E8989F6916BD24E500732C04 /* VertexBuffer.h in Headers */,
-				E8989F6B16BD24E500732C04 /* Box2DDebugDraw.h in Headers */,
 				D7E6C5B4198255C000B96D1A /* BSDiff.h in Headers */,
 				50C16DC11A52D7B9003C307A /* NetService.h in Headers */,
 				62D1C35E1922624A00B8143B /* CRCAdditionInterface.h in Headers */,
 				50C16DAA1A52D7B9003C307A /* IfAddress.h in Headers */,
 				50C16DB81A52D7B9003C307A /* UDPSocket.h in Headers */,
-				E8989F6D16BD24E500732C04 /* Box2DGameObject.h in Headers */,
 				7C007E121B384DAC000003DB /* Thread.h in Headers */,
-				E8989F6F16BD24E500732C04 /* Box2DGameObjectManager.h in Headers */,
 				644C86D319476A7100964F91 /* VegetationCustomGeometrySerializationData.h in Headers */,
-				E8989F7116BD24E500732C04 /* Box2DHelper.h in Headers */,
 				322FFD4719C042880000ED71 /* UIControlHelpers.h in Headers */,
 				7C007E1E1B384DAC000003DB /* UniqueLock.h in Headers */,
-				E8989F7316BD24E500732C04 /* Box2DTileCollider.h in Headers */,
 				E8FC12F91869726A0095D8FE /* QualitySettingsSystem.h in Headers */,
 				7C007DE81B384DAC000003DB /* AtomicGNU.h in Headers */,
 				E8989F7516BD24E500732C04 /* GameObject.h in Headers */,
@@ -6400,6 +6288,7 @@
 				D7C556791A7A158600175ED9 /* DataStorage.h in Headers */,
 				E8990B511A288C8F00FF71A1 /* SnapToLandscapeControllerSystem.h in Headers */,
 				E8989FDF16BD24E500732C04 /* LodSystem.h in Headers */,
+				50320B6E1B8DA55C00F7123B /* MMBigDataTransferService.h in Headers */,
 				E8989FE116BD24E500732C04 /* ParticleEffectSystem.h in Headers */,
 				50FB9DA91A92446700BDB8A2 /* MemoryManager.h in Headers */,
 				76C741AD1A48374B00184019 /* CorePlatformWin32Qt.h in Headers */,
@@ -6822,11 +6711,6 @@
 				3281F3101B2990A100D12AC5 /* UILayoutSystem.h in Headers */,
 				E8BAD5B4185213F100C98C8D /* IntrospectionDynamic.h in Headers */,
 				76C741AA1A48374B00184019 /* QtLayer.h in Headers */,
-				E898A12A16BD265400732C04 /* Box2DDebugDraw.h in Headers */,
-				E898A12B16BD265400732C04 /* Box2DGameObject.h in Headers */,
-				E898A12C16BD265400732C04 /* Box2DGameObjectManager.h in Headers */,
-				E898A12D16BD265400732C04 /* Box2DHelper.h in Headers */,
-				E898A12E16BD265400732C04 /* Box2DTileCollider.h in Headers */,
 				E898A12F16BD265400732C04 /* GameObject.h in Headers */,
 				7C007DFB1B384DAC000003DB /* LockGuard.h in Headers */,
 				E898A13016BD265400732C04 /* GameObjectAnimations.h in Headers */,
@@ -7064,7 +6948,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				176DE8F6174B5561007A983B /* PBXTargetDependency */,
 			);
 			name = FrameworkNPAPI;
 			productName = Framework;
@@ -7083,7 +6966,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				FEF4E23412CD3C2B004B850E /* PBXTargetDependency */,
 			);
 			name = Framework;
 			productName = Framework;
@@ -7101,7 +6983,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				E898A05216BD265400732C04 /* PBXTargetDependency */,
 			);
 			name = FrameworkQt;
 			productName = Framework;
@@ -7129,12 +7010,6 @@
 			mainGroup = 0867D691FE84028FC02AAC07 /* Framework */;
 			productRefGroup = 034768DFFF38A50411DB9C8B /* Products */;
 			projectDirPath = "";
-			projectReferences = (
-				{
-					ProductGroup = FEF4E22812CD3BED004B850E /* Products */;
-					ProjectRef = FEF4E22712CD3BED004B850E /* Box2D_MacOS.xcodeproj */;
-				},
-			);
 			projectRoot = "";
 			targets = (
 				D2AAC07D0554694100DB518D /* Framework */,
@@ -7143,16 +7018,6 @@
 			);
 		};
 /* End PBXProject section */
-
-/* Begin PBXReferenceProxy section */
-		FEF4E22C12CD3BED004B850E /* libBox2D_MacOS.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libBox2D_MacOS.a;
-			remoteRef = FEF4E22B12CD3BED004B850E /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-/* End PBXReferenceProxy section */
 
 /* Begin PBXSourcesBuildPhase section */
 		176DEA41174B5561007A983B /* Sources */ = {
@@ -7330,14 +7195,9 @@
 				176DEACF174B5561007A983B /* TextureDescriptor.cpp in Sources */,
 				D7CC262A19C43C7C00A3B754 /* LocalNotification.cpp in Sources */,
 				176DEAD0174B5561007A983B /* UberShader.cpp in Sources */,
-				176DEAD1174B5561007A983B /* Box2DDebugDraw.cpp in Sources */,
 				E89EDE4A1A2E16FA0036E993 /* AutotestingSystem_wrap.cxx in Sources */,
-				176DEAD2174B5561007A983B /* Box2DGameObject.cpp in Sources */,
 				644C86D219476A7100964F91 /* VegetationCustomGeometrySerializationData.cpp in Sources */,
 				024BD59A1A2C8371000BECC1 /* RenderSystem2D.cpp in Sources */,
-				176DEAD3174B5561007A983B /* Box2DGameObjectManager.cpp in Sources */,
-				176DEAD4174B5561007A983B /* Box2DHelper.cpp in Sources */,
-				176DEAD5174B5561007A983B /* Box2DTileCollider.cpp in Sources */,
 				176DEAD6174B5561007A983B /* GameObject.cpp in Sources */,
 				176DEAD7174B5561007A983B /* GameObjectAnimations.cpp in Sources */,
 				176DEAD8174B5561007A983B /* GameObjectManager.cpp in Sources */,
@@ -7483,7 +7343,6 @@
 				E8990B501A288C8F00FF71A1 /* SnapToLandscapeControllerSystem.cpp in Sources */,
 				176DEB38174B5561007A983B /* UISpinner.cpp in Sources */,
 				1174B6301B42C550002E3472 /* UIStyleSheetStructs.cpp in Sources */,
-				176DEB39174B5561007A983B /* UTF8UtilsMac.mm in Sources */,
 				E8990B3D1A288C2000FF71A1 /* WASDControllerComponent.cpp in Sources */,
 				11B1551C1B2F26B200E0EECE /* UIControlPackageContext.cpp in Sources */,
 				176DEB3A174B5561007A983B /* UISwitch.cpp in Sources */,
@@ -7718,6 +7577,7 @@
 				E8989EE216BD24E500732C04 /* Sprite.cpp in Sources */,
 				84CB671B191FC8850086483D /* Image.mm in Sources */,
 				026A1DD019DAF1B700813AEF /* SkinnedMesh.cpp in Sources */,
+				50320B6D1B8DA55C00F7123B /* MMBigDataTransferService.cpp in Sources */,
 				B4C29D3F199B592D001B83FE /* SceneCache.cpp in Sources */,
 				E8989EE416BD24E500732C04 /* TextBlock.cpp in Sources */,
 				76C741AF1A48374B00184019 /* QtLayerWin32.cpp in Sources */,
@@ -7777,16 +7637,11 @@
 				1166AC131A8CDF2D00F1618D /* dlmalloc.c in Sources */,
 				3281F30C1B2990A100D12AC5 /* UILayoutSystem.cpp in Sources */,
 				E8989F6716BD24E500732C04 /* UberShader.cpp in Sources */,
-				E8989F6A16BD24E500732C04 /* Box2DDebugDraw.cpp in Sources */,
 				644C86F119476A7100964F91 /* VegetationRenderData.cpp in Sources */,
-				E8989F6C16BD24E500732C04 /* Box2DGameObject.cpp in Sources */,
 				1146E11D19D00887009E5FAB /* AnimationSystem.cpp in Sources */,
 				D7E6C5A6198255BF00B96D1A /* DLC.cpp in Sources */,
 				5016206D1A5ED5B100E5A914 /* PeerDesriptionSerialize.cpp in Sources */,
-				E8989F6E16BD24E500732C04 /* Box2DGameObjectManager.cpp in Sources */,
 				644C86EB19476A7100964F91 /* VegetationPropertyNames.cpp in Sources */,
-				E8989F7016BD24E500732C04 /* Box2DHelper.cpp in Sources */,
-				E8989F7216BD24E500732C04 /* Box2DTileCollider.cpp in Sources */,
 				E8990B481A288C8F00FF71A1 /* RotationControllerSystem.cpp in Sources */,
 				E8989F7416BD24E500732C04 /* GameObject.cpp in Sources */,
 				11B1551A1B2F26B200E0EECE /* UIControlPackageContext.cpp in Sources */,
@@ -7938,6 +7793,7 @@
 				E8FC12F61869726A0095D8FE /* QualitySettingsSystem.cpp in Sources */,
 				C151B17916D3747E00E09BAF /* DVAssertMessageApple.mm in Sources */,
 				32C147621B4C15AD00892B98 /* UISizePolicyComponent.cpp in Sources */,
+				D780599C1B99AAFB00BBAE06 /* UTF8Utils.cpp in Sources */,
 				32B14A551B837AFB00F8C026 /* UIIgnoreLayoutComponent.cpp in Sources */,
 				C151B17D16D3755000E09BAF /* WebViewControlMacOS.mm in Sources */,
 				E89EDE691A2E16FA0036E993 /* MongodbUpdateObject.cpp in Sources */,
@@ -7945,7 +7801,6 @@
 				E9EA496C16DF93FA00C44B6F /* UISpinner.cpp in Sources */,
 				D738BD701B01F1BC00989C29 /* RawTimer.cpp in Sources */,
 				02141407181984D600925E51 /* DAVAClassRegistrator.cpp in Sources */,
-				E8B4F8CF16EF377D0072442A /* UTF8UtilsMac.mm in Sources */,
 				E9E798A916F0BE7600745AF5 /* UISwitch.cpp in Sources */,
 				D7E6C5AA198255BF00B96D1A /* Downloader.cpp in Sources */,
 				CCC7A42516F1D6170061EA5D /* Camera.cpp in Sources */,
@@ -8238,14 +8093,9 @@
 				E8FC12F71869726A0095D8FE /* QualitySettingsSystem.cpp in Sources */,
 				B4C29D40199B592D001B83FE /* SceneCache.cpp in Sources */,
 				E898A24316BD265400732C04 /* UberShader.cpp in Sources */,
-				E898A24416BD265400732C04 /* Box2DDebugDraw.cpp in Sources */,
-				E898A24516BD265400732C04 /* Box2DGameObject.cpp in Sources */,
-				E898A24616BD265400732C04 /* Box2DGameObjectManager.cpp in Sources */,
-				E898A24716BD265400732C04 /* Box2DHelper.cpp in Sources */,
 				D7C556861A7A158600175ED9 /* DataStorageMacOS.cpp in Sources */,
 				02FD7EDA19237D96007762C0 /* WindSystem.cpp in Sources */,
 				11B155591B32D85400E0EECE /* UIStyleSheetSystem.cpp in Sources */,
-				E898A24816BD265400732C04 /* Box2DTileCollider.cpp in Sources */,
 				E898A24916BD265400732C04 /* GameObject.cpp in Sources */,
 				026A1DC919DAF0A300813AEF /* SkeletonSystem.cpp in Sources */,
 				15D31181198285C800919AAA /* YamlEmitter.cpp in Sources */,
@@ -8382,7 +8232,6 @@
 				84E975C0191FCDF10054CCF9 /* Image.cpp in Sources */,
 				644C86D719476A7100964F91 /* VegetationCustomSLGeometry.cpp in Sources */,
 				4F53ED2A19A23BE700D3869D /* Downloader.cpp in Sources */,
-				E8B4F8D016EF377D0072442A /* UTF8UtilsMac.mm in Sources */,
 				E9E798AA16F0BE7600745AF5 /* UISwitch.cpp in Sources */,
 				A6D82799187716F30006A5DD /* Color.cpp in Sources */,
 				D7CC264719C43C7C00A3B754 /* LocalNotificationText.cpp in Sources */,
@@ -8473,24 +8322,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
-
-/* Begin PBXTargetDependency section */
-		176DE8F6174B5561007A983B /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = Box2D_MacOS;
-			targetProxy = 176DE8F7174B5561007A983B /* PBXContainerItemProxy */;
-		};
-		E898A05216BD265400732C04 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = Box2D_MacOS;
-			targetProxy = E898A05316BD265400732C04 /* PBXContainerItemProxy */;
-		};
-		FEF4E23412CD3C2B004B850E /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = Box2D_MacOS;
-			targetProxy = FEF4E23312CD3C2B004B850E /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		176DEB75174B5561007A983B /* Debug */ = {
