@@ -33,7 +33,6 @@
 #include "Model/ControlProperties/ValueProperty.h"
 
 class ValueProperty;
-class IntrospectionProperty;
 
 class StyleSheetNode;
 

@@ -236,7 +236,7 @@ bool FileSystem::MoveFile(const FilePath & existingFile, const FilePath & newFil
     bool error = (0 != result);
     if (error)
     {
-        const char* errorReason = std::strerror(errno);
+        const char* errorReason = strerror(errno);
         Logger::Error("rename failed (\"%s\" -> \"%s\") with error: %s",
             fromFile.c_str(), toFile.c_str(), errorReason);
     }
