@@ -88,9 +88,9 @@ bool TransformSystem::OnInput(UIEvent* currentInput)
 
         case UIEvent::PHASE_DRAG:
         {
-            bool ret = ProcessDrag(currentInput->point);
+            ProcessDrag(currentInput->point);
             prevPos = currentInput->point;
-            return ret;
+            return false;
         }
         case UIEvent::PHASE_ENDED:
             accumulates.fill({ { 0, 0 } });
@@ -238,7 +238,7 @@ void TransformSystem::ResizeControl(const Vector2& pos, bool withPivot, bool rat
     const auto invertY = cornersDirection.at(activeArea)[Vector2::AXIS_Y];
 
     auto gd = activeControlNode->GetControl()->GetGeometricData();
-    if(gd.scale.x == 0.0f || gd.scale.y != 0.0f)
+    if(gd.scale.x == 0.0f || gd.scale.y == 0.0f)
     {
         return;
     }

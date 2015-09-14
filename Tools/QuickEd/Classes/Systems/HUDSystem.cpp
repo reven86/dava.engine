@@ -245,7 +245,7 @@ bool HUDSystem::OnInput(UIEvent *currentInput)
             selectionRectControl->SetAbsoluteRect(Rect(pressedPoint, size));
             document->SelectionRectChanged.Emit(selectionRectControl->GetAbsoluteRect());
         }
-        return canDrawRect;
+        return true;
     case UIEvent::PHASE_ENDED:
         ProcessCursor(currentInput->point);
         if (canDrawRect)
@@ -254,6 +254,7 @@ bool HUDSystem::OnInput(UIEvent *currentInput)
         }
         bool retVal = canDrawRect || dragRequested;
         canDrawRect = false;
+        dragRequested = false;
         return retVal;
     }
     return false;
