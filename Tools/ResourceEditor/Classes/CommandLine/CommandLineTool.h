@@ -45,10 +45,14 @@ public:
 	virtual DAVA::String GetCommandLineKey() const = 0;
     
     virtual bool InitializeFromCommandLine() = 0;
-  
-    virtual void Process(EngineHelperCallback) = 0;
 
 	virtual void PrintUsage() const = 0;
+
+	virtual bool ProcessRequiresHelperCallback() const { return false; }
+
+	virtual void Process() { }
+
+	virtual void ProcessWithCallback(EngineHelperCallback) { }
     
     virtual DAVA::FilePath GetQualityConfigPath() const {return DAVA::FilePath(); };
     
@@ -60,7 +64,6 @@ public:
 
     static DAVA::FilePath CreateProjectPathFromPath(const DAVA::FilePath & pathname);
 
-    
 protected:
     
     DAVA::FilePath CreateQualityConfigPath(const DAVA::FilePath & path) const;

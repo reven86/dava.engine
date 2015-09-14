@@ -89,7 +89,7 @@ bool ImageSplitterTool::InitializeFromCommandLine()
     return true;
 }
 
-void ImageSplitterTool::Process(CommandLineTool::EngineHelperCallback cb) 
+void ImageSplitterTool::Process() 
 {
     if(commandAction == ACTION_SPLIT)
     {

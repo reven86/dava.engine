@@ -67,7 +67,7 @@ bool DDSExtractorTool::InitializeFromCommandLine()
 	return true;
 }
 
-void DDSExtractorTool::Process(CommandLineTool::EngineHelperCallback cb) 
+void DDSExtractorTool::Process() 
 {
 	if (DAVA::FileSystem::Instance()->IsFile(sourcePath))
 	{

@@ -163,7 +163,7 @@ void TextureDescriptorTool::ReadCompressionParams()
 }
 
 
-void TextureDescriptorTool::Process(CommandLineTool::EngineHelperCallback cb) 
+void TextureDescriptorTool::Process() 
 {
     switch(commandAction)
     {

@@ -208,7 +208,10 @@ void CommandLineManager::Process(CommandLineTool::EngineHelperCallback engineHel
             QualitySettingsSystem::Instance()->Load(activeTool->GetQualityConfigPath());
         }
 
-        activeTool->Process(engineHelperCallback);
+		if (activeTool->ProcessRequiresHelperCallback())
+	        activeTool->ProcessWithCallback(engineHelperCallback);
+		else 
+			activeTool->Process();
     }
 }
 

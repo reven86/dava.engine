@@ -116,9 +116,9 @@ int main(int argc, char *argv[])
 }
 
 /*
- * Temporary (hopefully!) solution for deferred deletion in RHI
- * command line tools will time to time call this function
- * in order to release resources
+ * Temporary (hopefully!) solution for deferred deletion in RHI.
+ * Certain command line tools will time to time call 
+ * this function in order to release resources.
  */
 void EngineHelperCallback()
 {

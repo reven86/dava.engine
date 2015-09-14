@@ -54,7 +54,10 @@ public:
 
 	DAVA::String GetCommandLineKey() const override;
 	bool InitializeFromCommandLine() override;
-	void Process(EngineHelperCallback) override;
+
+	bool ProcessRequiresHelperCallback() const override { return true; }
+	void ProcessWithCallback(EngineHelperCallback) override;
+
 	void PrintUsage() const override;
 	void DumpParams() const override;
 	DAVA::FilePath GetQualityConfigPath() const override;

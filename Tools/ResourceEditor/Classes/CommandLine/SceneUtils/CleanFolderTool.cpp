@@ -64,7 +64,7 @@ bool CleanFolderTool::InitializeFromCommandLine()
     return true;
 }
 
-void CleanFolderTool::Process(CommandLineTool::EngineHelperCallback cb) 
+void CleanFolderTool::Process() 
 {
     bool ret = FileSystem::Instance()->DeleteDirectory(foldername);
     if(!ret)

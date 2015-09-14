@@ -42,7 +42,7 @@ public:
 
 	DAVA::String GetCommandLineKey() const override;
 	bool InitializeFromCommandLine() override;
-	void Process(CommandLineTool::EngineHelperCallback cb) override;
+	void Process() override;
 	void PrintUsage() const override;
 	DAVA::FilePath GetQualityConfigPath() const override;
 
