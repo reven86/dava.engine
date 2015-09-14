@@ -1017,7 +1017,7 @@ DAVA::uint32 MaterialEditor::ExecMaterialLoadingDialog(DAVA::uint32 initialState
 }
 
 void MaterialEditor::StoreMaterialTextures(DAVA::NMaterial* material, const DAVA::InspMember* materialMember, 
-	DAVA::KeyedArchive* texturesArchive, DAVA::SerializationContext* context)
+	DAVA::KeyedArchive* texturesArchive, DAVA::SerializationContext* context) const
 {
 	DAVA::InspInfoDynamic* dynamicInfo = materialMember->Dynamic()->GetDynamicInfo();
 	DAVA::InspInfoDynamic::DynamicData ddata = dynamicInfo->Prepare(material, false);
@@ -1041,7 +1041,7 @@ void MaterialEditor::StoreMaterialTextures(DAVA::NMaterial* material, const DAVA
 }
 
 void MaterialEditor::StoreMaterialFlags(DAVA::NMaterial* material, const DAVA::InspMember* materialMember,
-	DAVA::KeyedArchive* flagsArchive)
+	DAVA::KeyedArchive* flagsArchive) const
 {
 	DAVA::InspInfoDynamic* dynamicInfo = materialMember->Dynamic()->GetDynamicInfo();
 	DAVA::InspInfoDynamic::DynamicData ddata = dynamicInfo->Prepare(material, false);
@@ -1056,7 +1056,7 @@ void MaterialEditor::StoreMaterialFlags(DAVA::NMaterial* material, const DAVA::I
 }
 
 void MaterialEditor::StoreMaterialProperties(DAVA::NMaterial* material, const DAVA::InspMember* materialMember,
-	DAVA::KeyedArchive* propertiesArchive)
+	DAVA::KeyedArchive* propertiesArchive) const
 {
 	DAVA::InspInfoDynamic* dynamicInfo = materialMember->Dynamic()->GetDynamicInfo();
 	DAVA::InspInfoDynamic::DynamicData ddata = dynamicInfo->Prepare(material, false);
@@ -1079,7 +1079,8 @@ void MaterialEditor::StoreMaterialProperties(DAVA::NMaterial* material, const DA
 	}
 }
 
-void MaterialEditor::StoreMaterialToPreset(DAVA::NMaterial* material, DAVA::KeyedArchive* archive, DAVA::SerializationContext* context)
+void MaterialEditor::StoreMaterialToPreset(DAVA::NMaterial* material, DAVA::KeyedArchive* archive, 
+	DAVA::SerializationContext* context) const
 {
     const DAVA::InspInfo* info = material->GetTypeInfo();
 
