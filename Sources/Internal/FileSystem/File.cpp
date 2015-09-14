@@ -168,8 +168,6 @@ uint32 File::Write(const void * pointerToData, uint32 dataSize)
 
 	size += lSize;
 
-    DVASSERT(lSize == dataSize);
-
     return lSize;
 }
 
