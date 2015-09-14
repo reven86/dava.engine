@@ -744,7 +744,9 @@ void TextureBrowser::textureReadyConverted(const DAVA::TextureDescriptor *descri
 {
 	if(NULL != descriptor)
 	{
-		if(curDescriptor == descriptor && curTextureView == gpu)
+        descriptor->Save();
+
+        if(curDescriptor == descriptor && curTextureView == gpu)
 		{
 			updateConvertedImageAndInfo(images.images, *curDescriptor);
 		}
@@ -752,7 +754,6 @@ void TextureBrowser::textureReadyConverted(const DAVA::TextureDescriptor *descri
 		DAVA::Texture *texture = textureListModel->getTexture(descriptor);
 		if(NULL != texture)
 		{
-            descriptor->Save();
             // reload this texture into scene
 			reloadTextureToScene(texture, descriptor, gpu);
 		}
