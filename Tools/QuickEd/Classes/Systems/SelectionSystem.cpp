@@ -105,7 +105,7 @@ bool SelectionSystem::ProcessMousePress(const DAVA::Vector2 &point)
 {
     SelectedNodes selected;
     SelectedNodes deselected;
-    nodesUnderPoint.clear();
+    DAVA::Vector<ControlNode*> nodesUnderPoint;
     document->GetControlNodesByPos(nodesUnderPoint, point);
     if(!InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_SHIFT))
     {

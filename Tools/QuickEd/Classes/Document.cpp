@@ -98,7 +98,7 @@ Document::Document(PackageNode *_package, QObject *parent)
 
 Document::~Document()
 {
-    for (auto context : contexts)
+    for (auto &context : contexts)
     {
         delete context.second;
     }

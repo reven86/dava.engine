@@ -43,7 +43,7 @@ using namespace DAVA;
 
 namespace
 {
-    const Array<Array<int, Vector2::AXIS_COUNT>, HUDareaInfo::CORNERS_COUNT> cornersDirection = 
+    const Array<Array<int, Vector2::AXIS_COUNT>, HUDAreaInfo::CORNERS_COUNT> cornersDirection =
     { {
         {{ -1, -1 }}, // TOP_LEFT_AREA
         {{ 0, -1 }}, // TOP_CENTER_AREA
@@ -69,7 +69,7 @@ TransformSystem::TransformSystem(Document *parent)
                                        });
 }
 
-void TransformSystem::SetNewArea(const HUDareaInfo& areaInfo)
+void TransformSystem::SetNewArea(const HUDAreaInfo& areaInfo)
 {
     activeArea = areaInfo.area;
     activeControlNode = areaInfo.owner;
@@ -84,7 +84,7 @@ bool TransformSystem::OnInput(UIEvent* currentInput)
 
         case UIEvent::PHASE_BEGAN:
             prevPos = currentInput->point;
-            return activeArea != HUDareaInfo::NO_AREA;
+            return activeArea != HUDAreaInfo::NO_AREA;
 
         case UIEvent::PHASE_DRAG:
         {
@@ -127,7 +127,7 @@ bool TransformSystem::ProcessKey(const int32 key)
 
 bool TransformSystem::ProcessDrag(const Vector2 &pos)
 {
-    if(activeArea == HUDareaInfo::NO_AREA)
+    if(activeArea == HUDAreaInfo::NO_AREA)
     {
         return false;
     }
@@ -138,24 +138,24 @@ bool TransformSystem::ProcessDrag(const Vector2 &pos)
 
     switch(activeArea)
     {
-        case HUDareaInfo::FRAME_AREA:
+        case HUDAreaInfo::FRAME_AREA:
             MoveControl(pos);
             return true;
-        case HUDareaInfo::TOP_LEFT_AREA:
-        case HUDareaInfo::TOP_CENTER_AREA:
-        case HUDareaInfo::TOP_RIGHT_AREA:
-        case HUDareaInfo::CENTER_LEFT_AREA:
-        case HUDareaInfo::CENTER_RIGHT_AREA:
-        case HUDareaInfo::BOTTOM_LEFT_AREA:
-        case HUDareaInfo::BOTTOM_CENTER_AREA:
-        case HUDareaInfo::BOTTOM_RIGHT_AREA:
+        case HUDAreaInfo::TOP_LEFT_AREA:
+        case HUDAreaInfo::TOP_CENTER_AREA:
+        case HUDAreaInfo::TOP_RIGHT_AREA:
+        case HUDAreaInfo::CENTER_LEFT_AREA:
+        case HUDAreaInfo::CENTER_RIGHT_AREA:
+        case HUDAreaInfo::BOTTOM_LEFT_AREA:
+        case HUDAreaInfo::BOTTOM_CENTER_AREA:
+        case HUDAreaInfo::BOTTOM_RIGHT_AREA:
         {
             bool withPivot = keyBoard.IsKeyPressed(DVKEY_ALT);
             bool rateably = keyBoard.IsKeyPressed(DVKEY_SHIFT);
             ResizeControl(pos, withPivot, rateably);
         }
         return true;
-        case HUDareaInfo::PIVOT_POINT_AREA:
+        case HUDAreaInfo::PIVOT_POINT_AREA:
         {
             const Vector2 &size = control->GetSize();
             if(size.x != 0.0f && size.y != 0.0f
@@ -173,7 +173,7 @@ bool TransformSystem::ProcessDrag(const Vector2 &pos)
             }
         }
         return true;
-        case HUDareaInfo::ROTATE_AREA:
+        case HUDAreaInfo::ROTATE_AREA:
         {
             const Rect &ur = gd.GetUnrotatedRect();
             Vector2 pivotPoint = ur.GetPosition() + ur.GetSize() * control->GetPivot();
@@ -228,7 +228,7 @@ void TransformSystem::MoveControl(const Vector2& pos)
 
 void TransformSystem::ResizeControl(const Vector2& pos, bool withPivot, bool rateably)
 {
-    DVASSERT(activeArea != HUDareaInfo::NO_AREA);
+    DVASSERT(activeArea != HUDAreaInfo::NO_AREA);
     Vector2 delta = pos - prevPos;
     if(delta.x == 0.0f && delta.y == 0.0f)
     {

@@ -45,13 +45,13 @@ namespace
     const Vector2 ROTATE_CONTROL_SIZE(20.0f, 20.0f);
 }
 
-ControlContainer::ControlContainer(const HUDareaInfo::eArea area_)
+ControlContainer::ControlContainer(const HUDAreaInfo::eArea area_)
     : UIControl()
     , area(area_)
 {
 }
 
-HUDareaInfo::eArea ControlContainer::GetArea() const
+HUDAreaInfo::eArea ControlContainer::GetArea() const
 {
     return area;
 }
@@ -60,7 +60,7 @@ class HUDContainer : public ControlContainer
 {
 public:
     explicit HUDContainer(UIControl *container)
-        : ControlContainer(HUDareaInfo::NO_AREA)
+        : ControlContainer(HUDAreaInfo::NO_AREA)
         , control(container)
     {
     }
@@ -94,7 +94,7 @@ class FrameControl : public ControlContainer
 {
 public:
     explicit FrameControl()
-        : ControlContainer(HUDareaInfo::FRAME_AREA)
+        : ControlContainer(HUDAreaInfo::FRAME_AREA)
     {
         SetDebugDraw(true);
         SetDebugDrawColor(Color(0.0f, 0.0f, 1.0f, 1.0f));
@@ -109,7 +109,7 @@ private:
 class FrameRectControl : public ControlContainer
 {
 public:
-    explicit FrameRectControl(const HUDareaInfo::eArea area_)
+    explicit FrameRectControl(const HUDAreaInfo::eArea area_)
         : ControlContainer(area_)
     {
         SetDebugDraw(true);
@@ -129,14 +129,14 @@ private:
         Vector2 retVal = rect.GetPosition();
         switch (area)
         {
-        case HUDareaInfo::TOP_LEFT_AREA: return retVal;
-        case HUDareaInfo::TOP_CENTER_AREA: return retVal + Vector2(rect.dx / 2.0f, 0.0f);
-        case HUDareaInfo::TOP_RIGHT_AREA: return retVal + Vector2(rect.dx, 0.0f);
-        case HUDareaInfo::CENTER_LEFT_AREA: return retVal + Vector2(0, rect.dy / 2.0f);
-        case HUDareaInfo::CENTER_RIGHT_AREA: return retVal + Vector2(rect.dx, rect.dy / 2.0f);
-        case HUDareaInfo::BOTTOM_LEFT_AREA: return retVal + Vector2(0, rect.dy);
-        case HUDareaInfo::BOTTOM_CENTER_AREA: return retVal + Vector2(rect.dx / 2.0f, rect.dy);
-        case HUDareaInfo::BOTTOM_RIGHT_AREA: return retVal + Vector2(rect.dx, rect.dy);
+        case HUDAreaInfo::TOP_LEFT_AREA: return retVal;
+        case HUDAreaInfo::TOP_CENTER_AREA: return retVal + Vector2(rect.dx / 2.0f, 0.0f);
+        case HUDAreaInfo::TOP_RIGHT_AREA: return retVal + Vector2(rect.dx, 0.0f);
+        case HUDAreaInfo::CENTER_LEFT_AREA: return retVal + Vector2(0, rect.dy / 2.0f);
+        case HUDAreaInfo::CENTER_RIGHT_AREA: return retVal + Vector2(rect.dx, rect.dy / 2.0f);
+        case HUDAreaInfo::BOTTOM_LEFT_AREA: return retVal + Vector2(0, rect.dy);
+        case HUDAreaInfo::BOTTOM_CENTER_AREA: return retVal + Vector2(rect.dx / 2.0f, rect.dy);
+        case HUDAreaInfo::BOTTOM_RIGHT_AREA: return retVal + Vector2(rect.dx, rect.dy);
         default: DVASSERT_MSG(false, "what are you doing here?!"); return Vector2(0.0f, 0.0f);
         }
     }
@@ -146,7 +146,7 @@ class PivotPointControl : public ControlContainer
 {
 public:
     explicit PivotPointControl()
-        : ControlContainer(HUDareaInfo::PIVOT_POINT_AREA)
+        : ControlContainer(HUDAreaInfo::PIVOT_POINT_AREA)
     {
         SetDebugDraw(true);
         SetDebugDrawColor(Color(1.0f, 0.0f, 0.0f, 1.f));
@@ -165,7 +165,7 @@ class RotateControl : public ControlContainer
 {
 public:
     explicit RotateControl()
-        : ControlContainer(HUDareaInfo::ROTATE_AREA)
+        : ControlContainer(HUDAreaInfo::ROTATE_AREA)
     {
         SetDebugDraw(true);
         SetDebugDrawColor(Color(1.0f, 1.0f, 0.0f, 1.0f));
@@ -276,9 +276,9 @@ void HUDSystem::ProcessCursor(const Vector2& pos)
     SetNewArea(GetControlArea(pos));
 }
 
-HUDareaInfo HUDSystem::GetControlArea(const Vector2 &pos)
+HUDAreaInfo HUDSystem::GetControlArea(const Vector2 &pos)
 {
-    HUDareaInfo areaInfo;
+    HUDAreaInfo areaInfo;
     for (const auto &iter : hudMap)
     {
         auto &hud = iter.second;
@@ -289,7 +289,7 @@ HUDareaInfo HUDSystem::GetControlArea(const Vector2 &pos)
                 auto container = hudControl.get();
                 areaInfo.owner = hud.node;
                 areaInfo.area = container->GetArea();
-                DVASSERT_MSG(areaInfo.area != HUDareaInfo::NO_AREA && areaInfo.owner != nullptr
+                DVASSERT_MSG(areaInfo.area != HUDAreaInfo::NO_AREA && areaInfo.owner != nullptr
                              , "no control node for area");
                 return areaInfo;
             }
@@ -298,7 +298,7 @@ HUDareaInfo HUDSystem::GetControlArea(const Vector2 &pos)
     return areaInfo;
 }
 
-void HUDSystem::SetNewArea(const HUDareaInfo &areaInfo)
+void HUDSystem::SetNewArea(const HUDAreaInfo &areaInfo)
 {
     if (activeAreaInfo.area != areaInfo.area
         || activeAreaInfo.owner != areaInfo.owner)
@@ -315,9 +315,9 @@ HUDSystem::HUD::HUD(ControlNode *node_, UIControl* hudControl)
 {
     hudControls.emplace_back(new PivotPointControl);
     hudControls.emplace_back(new RotateControl);
-    for (int i = HUDareaInfo::TOP_LEFT_AREA; i < HUDareaInfo::CORNERS_COUNT; ++i)
+    for (int i = HUDAreaInfo::TOP_LEFT_AREA; i < HUDAreaInfo::CORNERS_COUNT; ++i)
     {
-        HUDareaInfo::eArea area = static_cast<HUDareaInfo::eArea>(i);
+        HUDAreaInfo::eArea area = static_cast<HUDAreaInfo::eArea>(i);
         hudControls.emplace_back(new FrameRectControl(area));
     }
     hudControls.emplace_back(new FrameControl);

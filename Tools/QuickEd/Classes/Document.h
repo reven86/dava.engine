@@ -47,7 +47,7 @@ inline WidgetContext::~WidgetContext()
     
 }
 
-struct HUDareaInfo
+struct HUDAreaInfo
 {
     enum eArea
     {
@@ -119,7 +119,7 @@ public:
     ControlNode* GetControlByMenu(const DAVA::Vector<ControlNode*> &nodes, const DAVA::Vector2 &pos) const;
 
     DAVA::Signal<const SelectedNodes& /*selected*/, const SelectedNodes& /*deselected*/> SelectionChanged;
-    DAVA::Signal<const HUDareaInfo &/*areaInfo*/> ActiveAreaChanged;
+    DAVA::Signal<const HUDAreaInfo &/*areaInfo*/> ActiveAreaChanged;
     DAVA::Signal<const DAVA::Rect &/*selectionRectControl*/> SelectionRectChanged;
     DAVA::Signal<bool> EmulationModeChangedSignal;
     

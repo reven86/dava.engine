@@ -40,13 +40,13 @@
 class ControlContainer : public DAVA::UIControl
 {
 public:
-    explicit ControlContainer(const HUDareaInfo::eArea area);
+    explicit ControlContainer(const HUDAreaInfo::eArea area);
 
-    HUDareaInfo::eArea GetArea() const;
+    HUDAreaInfo::eArea GetArea() const;
     virtual void InitFromGD(const DAVA::UIGeometricData &gd_) = 0;
 
 protected:
-    const HUDareaInfo::eArea area = HUDareaInfo::NO_AREA;
+    const HUDAreaInfo::eArea area = HUDAreaInfo::NO_AREA;
 };
 
 class HUDSystem final : public BaseSystem
@@ -63,10 +63,10 @@ public:
     void OnEmulationModeChanged(bool emulationMode);
 private:
     void ProcessCursor(const DAVA::Vector2& pos);
-    HUDareaInfo GetControlArea(const DAVA::Vector2 &pos);
-    void SetNewArea(const HUDareaInfo& hudAreaInfo);
+    HUDAreaInfo GetControlArea(const DAVA::Vector2 &pos);
+    void SetNewArea(const HUDAreaInfo& HUDAreaInfo);
 
-    HUDareaInfo activeAreaInfo;
+    HUDAreaInfo activeAreaInfo;
 
     DAVA::ScopedPtr<DAVA::UIControl> hudControl;
 

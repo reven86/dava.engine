@@ -56,7 +56,6 @@ private:
 
     bool ProcessMousePress(const DAVA::Vector2 &point);
 
-    DAVA::Vector<ControlNode*> nodesUnderPoint;
     bool mousePressed = false;
     SelectionTracker selectionTracker;
 };

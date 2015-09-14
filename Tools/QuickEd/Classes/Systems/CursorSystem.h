@@ -44,10 +44,10 @@ public:
 
     void OnDeactivated() override;
 
-    void SetActiveArea(const HUDareaInfo &areaInfo);
+    void SetActiveArea(const HUDAreaInfo &areaInfo);
 
 private:
-    QPixmap CreatePixmapForArea(float angle, const HUDareaInfo::eArea area) const;
+    QPixmap CreatePixmapForArea(float angle, const HUDAreaInfo::eArea area) const;
     QPixmap CreatePixmap(const QString &address) const;
 
     static QMap<QString, QPixmap> cursorpixes;

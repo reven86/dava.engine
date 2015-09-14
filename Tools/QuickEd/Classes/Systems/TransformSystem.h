@@ -41,7 +41,7 @@ public:
     explicit TransformSystem(Document *parent);
     ~TransformSystem() = default;
 
-    void SetNewArea(const HUDareaInfo &areaInfo);
+    void SetNewArea(const HUDAreaInfo &areaInfo);
 
     bool OnInput(DAVA::UIEvent *currentInput) override;
 
@@ -66,7 +66,7 @@ private:
 
     void AccumulateOperation(ACCUMULATE_OPERATIONS operation, DAVA::Vector2 &delta);
 
-    HUDareaInfo::eArea activeArea = HUDareaInfo::NO_AREA;
+    HUDAreaInfo::eArea activeArea = HUDAreaInfo::NO_AREA;
     ControlNode *activeControlNode = nullptr;
     DAVA::Vector2 prevPos;
     const DAVA::Array<int, OPERATIONS_COUNT> steps; //to transform with fixed step

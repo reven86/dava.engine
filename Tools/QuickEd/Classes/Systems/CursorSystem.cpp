@@ -46,12 +46,12 @@ CursorSystem::CursorSystem(Document* doc)
 
 void CursorSystem::OnDeactivated()
 {
-    SetActiveArea(HUDareaInfo());
+    SetActiveArea(HUDAreaInfo());
 }
 
-void CursorSystem::SetActiveArea(const HUDareaInfo &areaInfo)
+void CursorSystem::SetActiveArea(const HUDAreaInfo &areaInfo)
 {
-    if (areaInfo.area == HUDareaInfo::NO_AREA)
+    if (areaInfo.area == HUDAreaInfo::NO_AREA)
     {
         while (qApp->overrideCursor() != nullptr)
         {
@@ -67,34 +67,34 @@ void CursorSystem::SetActiveArea(const HUDareaInfo &areaInfo)
     }
 }
 
-QPixmap CursorSystem::CreatePixmapForArea(float angle, const HUDareaInfo::eArea area) const
+QPixmap CursorSystem::CreatePixmapForArea(float angle, const HUDAreaInfo::eArea area) const
 {
     QTransform transform;
     transform.rotateRadians(angle);
     QPixmap pixmap;
     switch (area)
     {
-    case HUDareaInfo::FRAME_AREA:
+    case HUDAreaInfo::FRAME_AREA:
         return CreatePixmap(":/Cursors/moveCursor.png");
-    case HUDareaInfo::PIVOT_POINT_AREA:
+    case HUDAreaInfo::PIVOT_POINT_AREA:
         return CreatePixmap(":/Cursors/cursorCross.png");
-    case HUDareaInfo::TOP_LEFT_AREA:
-    case HUDareaInfo::BOTTOM_RIGHT_AREA:
+    case HUDAreaInfo::TOP_LEFT_AREA:
+    case HUDAreaInfo::BOTTOM_RIGHT_AREA:
         pixmap = CreatePixmap(":/Cursors/northWestSouthEastResizeCursor.png");
         return pixmap.transformed(transform);
-    case HUDareaInfo::TOP_RIGHT_AREA:
-    case HUDareaInfo::BOTTOM_LEFT_AREA:
+    case HUDAreaInfo::TOP_RIGHT_AREA:
+    case HUDAreaInfo::BOTTOM_LEFT_AREA:
         pixmap = CreatePixmap(":/Cursors/northEastSouthWestResizeCursor.png");
         return pixmap.transformed(transform);
-    case HUDareaInfo::TOP_CENTER_AREA:
-    case HUDareaInfo::BOTTOM_CENTER_AREA:
+    case HUDAreaInfo::TOP_CENTER_AREA:
+    case HUDAreaInfo::BOTTOM_CENTER_AREA:
         pixmap = CreatePixmap(":/Cursors/northSouthResizeCursor.png");
         return pixmap.transformed(transform);
-    case HUDareaInfo::CENTER_LEFT_AREA:
-    case HUDareaInfo::CENTER_RIGHT_AREA:
+    case HUDAreaInfo::CENTER_LEFT_AREA:
+    case HUDAreaInfo::CENTER_RIGHT_AREA:
         pixmap = CreatePixmap(":/Cursors/eastWestResizeCursor.png");
         return pixmap.transformed(transform);
-    case HUDareaInfo::ROTATE_AREA:
+    case HUDAreaInfo::ROTATE_AREA:
         return CreatePixmap(":/Cursors/cursorRotate.png");
     default:
         DVASSERT_MSG(false, "unexpected enum value");
