@@ -333,7 +333,7 @@ extern void FrameworkWillTerminate();
 
     DAVA::InputSystem* input = DAVA::InputSystem::Instance();
     DAVA::KeyboardDevice& keyboard = input->GetKeyboard();
-    int32 keyCode = event->data.key.keyCode;
+    DAVA::int32 keyCode = event->data.key.keyCode;
 
     time_t timestamp = time(NULL);
 
@@ -342,7 +342,7 @@ extern void FrameworkWillTerminate();
 	ev.phase = DAVA::UIEvent::PHASE_KEYCHAR;
 	ev.timestamp = timestamp;
 	ev.tapCount = 1;
-    ev.tid = keyboard.GetDavaKeyForSystemKey();
+    ev.tid = keyboard.GetDavaKeyForSystemKey(keyCode);
 
     DAVA::Vector<DAVA::UIEvent> touches;
     touches.push_back(ev);
@@ -359,7 +359,7 @@ extern void FrameworkWillTerminate();
 
     DAVA::InputSystem* input = DAVA::InputSystem::Instance();
     DAVA::KeyboardDevice& keyboard = input->GetKeyboard();
-    int32 keyCode = event->data.key.keyCode;
+    DAVA::int32 keyCode = event->data.key.keyCode;
 
     time_t timestamp = time(NULL);
 
@@ -368,7 +368,7 @@ extern void FrameworkWillTerminate();
     ev.phase = DAVA::UIEvent::PHASE_KEYCHAR_RELEASE;
     ev.timestamp = timestamp;
     ev.tapCount = 1;
-    ev.tid = keyboard.GetDavaKeyForSystemKey();
+    ev.tid = keyboard.GetDavaKeyForSystemKey(keyCode);
 
     DAVA::Vector<DAVA::UIEvent> touches;
     touches.push_back(ev);
