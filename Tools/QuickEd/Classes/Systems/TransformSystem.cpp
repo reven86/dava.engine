@@ -61,12 +61,12 @@ TransformSystem::TransformSystem(SystemManager *parent)
     , steps({ { 10, 20, 20 } }) //10 grad for rotate and 20 pix for move/resize
 {
     accumulates.fill({ { 0, 0 } });
-    //!systemManager->ActiveAreaChanged.Connect(this, &TransformSystem::SetNewArea);
-    //!systemManager->SelectionChanged.Connect([this](const SelectedNodes& selected, const SelectedNodes& deselected)
-       ///                                {
-          //                                 selectionTracker.MergeSelection(selected, deselected);
-              //                             selectedControlNodes = selectionTracker.GetSetTFromNodes<SelectedControls>();
-            //                           });
+    systemManager->ActiveAreaChanged.Connect(this, &TransformSystem::SetNewArea);
+    systemManager->SelectionChanged.Connect([this](const SelectedNodes& selected, const SelectedNodes& deselected)
+                                       {
+                                           selectionTracker.MergeSelection(selected, deselected);
+                                           selectedControlNodes = selectionTracker.GetSetTFromNodes<SelectedControls>();
+                                       });
 }
 
 void TransformSystem::SetNewArea(const HUDAreaInfo& areaInfo)
