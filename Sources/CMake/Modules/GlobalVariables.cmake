@@ -1,4 +1,20 @@
 #
+function ( load_config CONFIG_FILE )
+
+    file( STRINGS ${CONFIG_FILE} ConfigContents )
+    foreach( NameAndValue ${ConfigContents} )
+        string( REGEX REPLACE "^[ ]+" "" NameAndValue ${NameAndValue} )
+        string( REGEX MATCH "^[^=]+" Name ${NameAndValue} ) 
+        string( REPLACE "${Name}=" "" Value ${NameAndValue} )
+        string( REGEX REPLACE " " "" Name   "${Name}" )
+        string( REGEX REPLACE " " "" Value  "${Value}" )
+        if( NOT ${Name} )
+            set( ${Name} "${Value}" PARENT_SCOPE )
+        endif()
+        #  message("---" [${Name}] "  " [${Value}] )
+    endforeach()
+
+endfunction ()
 
 # Only interpret ``if()`` arguments as variables or keywords when unquoted.
 if(NOT (CMAKE_VERSION VERSION_LESS 3.1))
@@ -100,16 +116,4 @@ else()
 
 endif()
 
-file( STRINGS ${DAVA_CONFIG_PATH} ConfigContents )
-foreach( NameAndValue ${ConfigContents} )
-  string( REGEX REPLACE "^[ ]+" "" NameAndValue ${NameAndValue} )
-  string( REGEX MATCH "^[^=]+" Name ${NameAndValue} ) 
-  string( REPLACE "${Name}=" "" Value ${NameAndValue} )
-  string( REGEX REPLACE " " "" Name   "${Name}" )
-  string( REGEX REPLACE " " "" Value  "${Value}" )
-  if( NOT ${Name} )
-      set( ${Name} "${Value}" )
-  endif()
-#  message("---" [${Name}] "  " [${Value}] )
-endforeach()   
-
+load_config ( ${DAVA_CONFIG_PATH} )

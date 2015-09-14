@@ -2496,13 +2496,24 @@ namespace DAVA
         Logger::FrameworkDebug("============================================================");
         Logger::FrameworkDebug("--------------- Currently allocated controls ----------------");
 
+        uint32 allCount = static_cast<uint32>(controlsList.size());
+        uint32 orphansCount = 0;
         for (auto control : controlsList)
         {
+            if (control->GetParent() == nullptr)
+            {
+                ++orphansCount;
+            }
+
             if (onlyOrphans && control->GetParent() != nullptr)
+            {
                 continue;
+            }
+
             Logger::FrameworkDebug("class:\"%s\" name:\"%s\" count:%d", control->GetClassName().c_str(), control->GetName().c_str(), control->GetRetainCount());
         }
 
+        Logger::FrameworkDebug("Total controls count: %d, orphans count: %d", allCount, orphansCount);
         Logger::FrameworkDebug("============================================================");
     }
 

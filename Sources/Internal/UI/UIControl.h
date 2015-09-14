@@ -521,6 +521,7 @@ public:
     inline float32 GetAngle() const;
     inline float32 GetAngleInDegrees() const;
     
+
     /**
      \brief Sets contol rotation angle in radians.
         Control rotates around the pivot point.
