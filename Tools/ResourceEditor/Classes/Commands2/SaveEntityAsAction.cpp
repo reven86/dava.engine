@@ -116,14 +116,10 @@ void SaveEntityAsAction::RemoveLightmapsRecursive(Entity *entity) const
 		const uint32 batchCount = renderObject->GetRenderBatchCount();
 		for (uint32 b = 0; b < batchCount; ++b)
 		{
-			NMaterial *material = renderObject->GetRenderBatch(b)->GetMaterial();
-			if (nullptr != material)
+			NMaterial* material = renderObject->GetRenderBatch(b)->GetMaterial();
+			if ((nullptr != material) && material->HasLocalTexture(NMaterialTextureName::TEXTURE_LIGHTMAP))
 			{
-				auto texture = material->GetLocalTexture(NMaterialTextureName::TEXTURE_LIGHTMAP);
-				if (nullptr != texture)
-				{
-					material->RemoveTexture(NMaterialTextureName::TEXTURE_LIGHTMAP);
-				}
+				material->RemoveTexture(NMaterialTextureName::TEXTURE_LIGHTMAP);
 			}
 		}
 	}
