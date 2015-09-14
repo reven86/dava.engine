@@ -31,7 +31,7 @@
 #define __QUICKED_CURSOR_SYSTEM_H__
 
 #include "Systems/BaseSystem.h"
-#include "Document.h"
+#include "SystemManager.h"
 #include <QMap>
 #include <QPixmap>
 #include <QString>
@@ -39,7 +39,7 @@
 class CursorSystem final : public BaseSystem
 {   
 public:
-    explicit CursorSystem(Document *doc);
+    explicit CursorSystem(SystemManager *doc);
     ~CursorSystem() override = default;
 
     void OnDeactivated() override;

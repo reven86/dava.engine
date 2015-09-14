@@ -26,7 +26,7 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "Document.h"
+
 #include "HUDSystem.h"
 
 #include "UI/UIControl.h"
@@ -137,7 +137,7 @@ private:
         case HUDAreaInfo::BOTTOM_LEFT_AREA: return retVal + Vector2(0, rect.dy);
         case HUDAreaInfo::BOTTOM_CENTER_AREA: return retVal + Vector2(rect.dx / 2.0f, rect.dy);
         case HUDAreaInfo::BOTTOM_RIGHT_AREA: return retVal + Vector2(rect.dx, rect.dy);
-        default: DVASSERT_MSG(false, "what are you doing here?!"); return Vector2(0.0f, 0.0f);
+        default: DVASSERT(!"wrong area passed to hud control"); return Vector2(0.0f, 0.0f);
         }
     }
 };
@@ -180,8 +180,8 @@ private:
     }
 };
 
-HUDSystem::HUDSystem(Document *document_)
-    : BaseSystem(document_)
+HUDSystem::HUDSystem(SystemManager *parent)
+    : BaseSystem(parent)
     , hudControl(new UIControl())
     , selectionRectControl(new UIControl())
 {
@@ -189,15 +189,15 @@ HUDSystem::HUDSystem(Document *document_)
     selectionRectControl->SetDebugDrawColor(Color(1.0f, 1.0f, 0.0f, 1.0f));
     hudControl->AddControl(selectionRectControl);
     hudControl->SetName("hudControl");
-    document->SelectionChanged.Connect(this, &HUDSystem::SetSelection);
-    document->EmulationModeChangedSignal.Connect(this, &HUDSystem::OnEmulationModeChanged);
+    systemManager->SelectionChanged.Connect(this, &HUDSystem::SetSelection);
+    systemManager->EmulationModeChangedSignal.Connect(this, &HUDSystem::OnEmulationModeChanged);
 }
 
 void HUDSystem::OnActivated()
 {
-    if (!document->IsInEmulationMode())
+    if (!systemManager->IsInEmulationMode())
     {
-        document->GetRootControl()->AddControl(hudControl);
+        systemManager->GetRootControl()->AddControl(hudControl);
     }
 }
 
@@ -243,7 +243,7 @@ bool HUDSystem::OnInput(UIEvent *currentInput)
             Vector2 point(currentInput->point);
             Vector2 size(point - pressedPoint);
             selectionRectControl->SetAbsoluteRect(Rect(pressedPoint, size));
-            document->SelectionRectChanged.Emit(selectionRectControl->GetAbsoluteRect());
+            systemManager->SelectionRectChanged.Emit(selectionRectControl->GetAbsoluteRect());
         }
         return true;
     case UIEvent::PHASE_ENDED:
@@ -264,11 +264,11 @@ void HUDSystem::OnEmulationModeChanged(bool emulationMode)
 {
     if (emulationMode)
     {
-        document->GetRootControl()->RemoveControl(hudControl);
+        systemManager->GetRootControl()->RemoveControl(hudControl);
     }
     else
     {
-        document->GetRootControl()->AddControl(hudControl);
+        systemManager->GetRootControl()->AddControl(hudControl);
     }
 }
 
@@ -305,7 +305,7 @@ void HUDSystem::SetNewArea(const HUDAreaInfo &areaInfo)
         || activeAreaInfo.owner != areaInfo.owner)
     {
         activeAreaInfo = areaInfo;
-        document->ActiveAreaChanged.Emit(activeAreaInfo);
+        systemManager->ActiveAreaChanged.Emit(activeAreaInfo);
     }
 }
 

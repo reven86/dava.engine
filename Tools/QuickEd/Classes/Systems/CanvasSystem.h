@@ -36,22 +36,22 @@
 #include "UI/UIControl.h"
 #include "SelectionTracker.h"
 
-class Document;
+class SystemManager;
 class PackageBaseNode;
 
 class CanvasSystem final : public BaseSystem
 {
 public:
-    CanvasSystem(Document *parent);
+    CanvasSystem(SystemManager *parent);
     ~CanvasSystem() override = default;
     DAVA::UIControl* GetCanvasControl();
 
     void OnActivated() override;
     void OnDeactivated() override;
 
-    void SetSelection(const SelectedNodes& selected, const SelectedNodes& deselected);
-
 private:
+    void SetSelection(const SelectedNodes& selected, const SelectedNodes& deselected);
+    
     void SetRootControls(const DAVA::Set<PackageBaseNode*> &controls);
     void LayoutCanvas();
 

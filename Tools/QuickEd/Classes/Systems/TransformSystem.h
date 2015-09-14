@@ -38,7 +38,7 @@
 class TransformSystem final : public BaseSystem
 {   
 public:
-    explicit TransformSystem(Document *parent);
+    explicit TransformSystem(SystemManager *parent);
     ~TransformSystem() = default;
 
     void SetNewArea(const HUDAreaInfo &areaInfo);

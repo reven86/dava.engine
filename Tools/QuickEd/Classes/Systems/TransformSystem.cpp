@@ -30,7 +30,7 @@
 #include "Input/KeyboardDevice.h"
 
 #include "Systems/TransformSystem.h"
-#include "Document.h"
+#include "SystemManager.h"
 #include "UI/UIEvent.h"
 #include "UI/UIControl.h"
 #include "Input/KeyboardDevice.h"
@@ -56,17 +56,17 @@ namespace
     } };
 }
 
-TransformSystem::TransformSystem(Document *parent)
+TransformSystem::TransformSystem(SystemManager *parent)
     : BaseSystem(parent)
     , steps({ { 10, 20, 20 } }) //10 grad for rotate and 20 pix for move/resize
 {
     accumulates.fill({ { 0, 0 } });
-    document->ActiveAreaChanged.Connect(this, &TransformSystem::SetNewArea);
-    document->SelectionChanged.Connect([this](const SelectedNodes& selected, const SelectedNodes& deselected)
-                                       {
-                                           selectionTracker.MergeSelection(selected, deselected);
-                                           selectedControlNodes = selectionTracker.GetSetTFromNodes<SelectedControls>();
-                                       });
+    //!systemManager->ActiveAreaChanged.Connect(this, &TransformSystem::SetNewArea);
+    //!systemManager->SelectionChanged.Connect([this](const SelectedNodes& selected, const SelectedNodes& deselected)
+       ///                                {
+          //                                 selectionTracker.MergeSelection(selected, deselected);
+              //                             selectedControlNodes = selectionTracker.GetSetTFromNodes<SelectedControls>();
+            //                           });
 }
 
 void TransformSystem::SetNewArea(const HUDAreaInfo& areaInfo)
@@ -373,8 +373,7 @@ void TransformSystem::AdjustProperty(ControlNode *node, const String &propertyNa
             DVASSERT_MSG(false, "unexpected type");
             break;
     }
-    
-    document->GetCommandExecutor()->ChangeProperty(node, property, var);
+    systemManager->PropertyChanged.Emit(std::move(node), std::move(property), var);
 }
 
 void TransformSystem::AccumulateOperation(ACCUMULATE_OPERATIONS operation, DAVA::Vector2& delta)

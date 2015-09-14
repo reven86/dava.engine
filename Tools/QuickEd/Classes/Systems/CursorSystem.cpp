@@ -38,10 +38,10 @@ using namespace DAVA;
 
 QMap<QString, QPixmap> CursorSystem::cursorpixes;
 
-CursorSystem::CursorSystem(Document* doc)
-    : BaseSystem(doc)
+CursorSystem::CursorSystem(SystemManager* parent)
+    : BaseSystem(parent)
 {
-    document->ActiveAreaChanged.Connect(this, &CursorSystem::SetActiveArea);
+    systemManager->ActiveAreaChanged.Connect(this, &CursorSystem::SetActiveArea);
 }
 
 void CursorSystem::OnDeactivated()

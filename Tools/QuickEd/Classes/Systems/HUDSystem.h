@@ -35,7 +35,7 @@
 #include "Math/Rect.h"
 #include "UI/UIControl.h"
 #include "Systems/BaseSystem.h"
-#include "Document.h"
+#include "SystemManager.h"
 
 class ControlContainer : public DAVA::UIControl
 {
@@ -52,7 +52,7 @@ protected:
 class HUDSystem final : public BaseSystem
 {
 public:
-    HUDSystem(Document *document);
+    HUDSystem(SystemManager *parent);
     ~HUDSystem() = default;
 
     void OnActivated() override;

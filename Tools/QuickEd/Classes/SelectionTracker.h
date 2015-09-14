@@ -32,8 +32,8 @@
 
 #include "Base/BaseTypes.h"
 
-class PackageBaseNode;
-class ControlNode;
+#include "Model/PackageHierarchy/PackageBaseNode.h"
+#include "Model/PackageHierarchy/ControlNode.h"
 
 using SelectedNodes = DAVA::Set < PackageBaseNode* > ;
 using SelectedControls = DAVA::Set<ControlNode*>;

@@ -32,6 +32,7 @@
 
 #include <QUndoStack>
 #include "Model/PackageHierarchy/PackageBaseNode.h"
+#include "SystemManager.h"
 #include "Functional/Signal.h"
 #include "SelectionTracker.h"
 #include "Math/Rect.h"
@@ -47,36 +48,12 @@ inline WidgetContext::~WidgetContext()
     
 }
 
-struct HUDAreaInfo
-{
-    enum eArea
-    {
-        TOP_LEFT_AREA,
-        TOP_CENTER_AREA,
-        TOP_RIGHT_AREA,
-        CENTER_LEFT_AREA,
-        CENTER_RIGHT_AREA,
-        BOTTOM_LEFT_AREA,
-        BOTTOM_CENTER_AREA,
-        BOTTOM_RIGHT_AREA,
-        FRAME_AREA,
-        PIVOT_POINT_AREA,
-        ROTATE_AREA,
-        NO_AREA,
-        CORNERS_COUNT = FRAME_AREA - TOP_LEFT_AREA,
-        AREAS_COUNT = NO_AREA - TOP_LEFT_AREA
-    };
-    ControlNode *owner = nullptr;
-    eArea area = NO_AREA;
-};
-
 namespace DAVA {
     class FilePath;
     class UIControl;
     class UIEvent;
 }
 
-class BaseSystem;
 class PackageNode;
 class QtModelPackageCommandExecutor;
 
@@ -89,39 +66,29 @@ class Document final : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(int scale READ GetScale WRITE SetScale NOTIFY ScaleChanged RESET ResetScale);
-    Q_PROPERTY(bool emulationMode READ IsInEmulationMode WRITE SetEmulationMode NOTIFY EmulationModeChanged RESET ClearEmulationMode)
+    Q_PROPERTY(bool emulationMode READ IsInEmulationMode WRITE SetEmulationMode NOTIFY EmulationModeChanged)
     
 public:
     explicit Document(PackageNode *package, QObject *parent = nullptr);
     ~Document();
 
+    void Activate();
+    void Deactivate();
+    
     int GetScale() const;
     bool IsInEmulationMode() const;
-    DAVA::UIControl* GetRootControl();
-    DAVA::UIControl* GetScalableControl();
+    SystemManager *GetSystemManager();
     const DAVA::FilePath &GetPackageFilePath() const;
     QUndoStack *GetUndoStack();
     PackageNode *GetPackage();
     QtModelPackageCommandExecutor *GetCommandExecutor();
     WidgetContext* GetContext(QObject* requester) const;
 
-    void Deactivate();
-    void Activate();
-
     void SetContext(QObject* requester, WidgetContext* widgetContext);
-
-    bool OnInput(DAVA::UIEvent *currentInput);
 
     void RefreshLayout();
 
-    void GetControlNodesByPos(DAVA::Vector<ControlNode*> &controlNodes, const DAVA::Vector2 &pos) const;
-    void GetControlNodesByRect(SelectedControls &controlNodes, const DAVA::Rect &rect) const;
-    ControlNode* GetControlByMenu(const DAVA::Vector<ControlNode*> &nodes, const DAVA::Vector2 &pos) const;
-
-    DAVA::Signal<const SelectedNodes& /*selected*/, const SelectedNodes& /*deselected*/> SelectionChanged;
-    DAVA::Signal<const HUDAreaInfo &/*areaInfo*/> ActiveAreaChanged;
-    DAVA::Signal<const DAVA::Rect &/*selectionRectControl*/> SelectionRectChanged;
-    DAVA::Signal<bool> EmulationModeChangedSignal;
+    void SelectControlByMenu(const DAVA::Vector<ControlNode*> &nodes, const DAVA::Vector2 &pos, ControlNode* &selectedNode);
     
 signals:
     void ScaleChanged(int scale);
@@ -132,20 +99,12 @@ public slots:
     void SetScale(int scale);
     void ResetScale();
     void SetEmulationMode(bool emulationMode);
-    void ClearEmulationMode();
     void RefreshAllControlProperties();
     void SetSelectedNodes(const SelectedNodes &selected, const SelectedNodes &deselected);
 
 private:
-    void GetControlNodesByPosImpl(DAVA::Vector<ControlNode*> &controlNodes, const DAVA::Vector2 &pos, ControlNode *node) const;
-    void GetControlNodesByRectImpl(DAVA::Set<ControlNode*> &controlNodes, const DAVA::Rect &rect, ControlNode *node) const;
     static const int defaultScale = 100;
     int scale = defaultScale;
-    static const bool emulationByDefault = false;
-    bool emulationMode = emulationByDefault;
-
-    DAVA::UIControl *rootControl = nullptr;
-    DAVA::UIControl *scalableControl = nullptr;
 
     DAVA::UnorderedMap < QObject*, WidgetContext* > contexts;
 
@@ -153,8 +112,7 @@ private:
     QtModelPackageCommandExecutor *commandExecutor = nullptr;
     QUndoStack *undoStack = nullptr;
 
-    QList<BaseSystem*> systems;
-
+    SystemManager systemManager;
     SelectionTracker selectionTracker;
 };
 

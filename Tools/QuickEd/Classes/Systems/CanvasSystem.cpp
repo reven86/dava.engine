@@ -27,7 +27,7 @@
 =====================================================================================*/
 
 #include "CanvasSystem.h"
-#include "Document.h"
+#include "SystemManager.h"
 #include "UI/UIControl.h"
 #include "Base/BaseTypes.h"
 #include "Model/PackageHierarchy/PackageBaseNode.h"
@@ -70,12 +70,12 @@ void CheckeredCanvas::Draw(const UIGeometricData &geometricData)
     }
 }
 
-CanvasSystem::CanvasSystem(Document *parent)
+CanvasSystem::CanvasSystem(SystemManager *parent)
     : BaseSystem(parent)
     , canvas(new UIControl())
 {
     canvas->SetName("Canvas");
-    document->SelectionChanged.Connect(this, &CanvasSystem::SetSelection);
+    systemManager->SelectionChanged.Connect(this, &CanvasSystem::SetSelection);
 }
 
 UIControl* CanvasSystem::GetCanvasControl()
@@ -85,7 +85,7 @@ UIControl* CanvasSystem::GetCanvasControl()
 
 void CanvasSystem::OnActivated()
 {
-    document->GetScalableControl()->AddControl(canvas);
+    systemManager->GetScalableControl()->AddControl(canvas);
     SetSelection(SelectedNodes(), SelectedNodes());
 }
 
@@ -101,7 +101,7 @@ void CanvasSystem::SetSelection(const SelectedNodes& selected, const SelectedNod
     DAVA::Set<PackageBaseNode*> rootControls;
     if (selectedControls.empty())
     {
-        auto controlsNode = document->GetPackage()->GetPackageControlsNode();
+        auto controlsNode = systemManager->GetPackage()->GetPackageControlsNode();
         for (int index = 0; index < controlsNode->GetCount(); ++index)
         {
             rootControls.insert(controlsNode->Get(index));
@@ -167,6 +167,6 @@ void CanvasSystem::LayoutCanvas()
         curY += rect.dy + spacing;
     }
     
-    document->GetRootControl()->SetSize(size);
-    document->CanvasSizeChanged();
+    systemManager->GetRootControl()->SetSize(size);
+    systemManager->CanvasSizeChanged.Emit();
 }

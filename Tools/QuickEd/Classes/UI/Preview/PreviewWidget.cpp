@@ -104,7 +104,7 @@ void PreviewWidget::OnDocumentChanged(Document *arg)
     document = arg;
     if (nullptr != document)
     {
-        auto root = document->GetRootControl();
+        auto root = document->GetSystemManager()->GetRootControl();
         DVASSERT(nullptr != root);
         scrollAreaController->GetBackgroundControl()->AddControl(root);
         scrollAreaController->SetNestedControl(root);

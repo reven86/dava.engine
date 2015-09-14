@@ -28,8 +28,8 @@
 
 #include "Systems/BaseSystem.h"
 
-BaseSystem::BaseSystem(Document *parent)
-    : document(parent)
+BaseSystem::BaseSystem(SystemManager *parent)
+    : systemManager(parent)
 {
     
 }

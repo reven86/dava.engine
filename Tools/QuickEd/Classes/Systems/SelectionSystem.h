@@ -35,7 +35,7 @@
 #include "Model/PackageHierarchy/PackageListener.h"
 #include "Math/Rect.h"
 
-class Document;
+class SystemManager;
 namespace DAVA {
     class Vector2;
 }
@@ -43,7 +43,7 @@ namespace DAVA {
 class SelectionSystem final : public BaseSystem, public PackageListener
 {
 public:
-    SelectionSystem(Document *doc);
+    SelectionSystem(SystemManager *doc);
     ~SelectionSystem() override = default;
 
     bool OnInput(DAVA::UIEvent *currentInput) override;

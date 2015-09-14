@@ -31,18 +31,15 @@
 #include "Systems/SelectionSystem.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "UI/UIEvent.h"
-#include "Document.h"
+#include "SystemManager.h"
 
 using namespace DAVA;
 
-SelectionSystem::SelectionSystem(Document* doc)
-    : BaseSystem(doc)
+SelectionSystem::SelectionSystem(SystemManager* systemManager)
+    : BaseSystem(systemManager)
 {
-    document->SelectionChanged.Connect([this](const SelectedNodes& selected, const SelectedNodes& deselected)
-                                       {
-
-            selectionTracker.MergeSelection(selected, deselected);
-                                       });
+    systemManager->SelectionChanged.Connect(MakeFunction(&selectionTracker, &SelectionTracker::MergeSelection));
+    systemManager->SelectionRectChanged.Connect(this, &SelectionSystem::SelectByRect);
 }
 
 bool SelectionSystem::OnInput(UIEvent* currentInput)
@@ -85,7 +82,7 @@ void SelectionSystem::SelectByRect(const Rect& rect)
     SelectedNodes deselected;
     SelectedNodes selected;
     Set<ControlNode*> areaNodes;
-    document->GetControlNodesByRect(areaNodes, rect);
+    systemManager->GetControlNodesByRect(areaNodes, rect);
     if (!areaNodes.empty())
     {
         for (auto node : areaNodes)
@@ -106,7 +103,7 @@ bool SelectionSystem::ProcessMousePress(const DAVA::Vector2 &point)
     SelectedNodes selected;
     SelectedNodes deselected;
     DAVA::Vector<ControlNode*> nodesUnderPoint;
-    document->GetControlNodesByPos(nodesUnderPoint, point);
+    systemManager->GetControlNodesByPos(nodesUnderPoint, point);
     if(!InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_SHIFT))
     {
         deselected = selectionTracker.selectedNodes;
@@ -127,10 +124,11 @@ bool SelectionSystem::ProcessMousePress(const DAVA::Vector2 &point)
         }
         else if (InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_ALT))
         {
-            auto controlNode = document->GetControlByMenu(nodesUnderPoint, point);
-            if(nullptr != controlNode)
+            ControlNode *selectedNode = nullptr;
+            systemManager->SelectionByMenuRequested.Emit(nodesUnderPoint, point, selectedNode);
+            if(nullptr != selectedNode)
             {
-                selected.insert(controlNode);
+                selected.insert(selectedNode);
             }
         }
         else
@@ -156,6 +154,6 @@ void SelectionSystem::SetSelection(const SelectedNodes& selected, const Selected
 
     if (!reallySelected.empty() || !reallyDeselected.empty())
     {
-        document->SelectionChanged.Emit(reallySelected, reallyDeselected);
+        systemManager->SelectionChanged.Emit(reallySelected, reallyDeselected);
     }
 }
