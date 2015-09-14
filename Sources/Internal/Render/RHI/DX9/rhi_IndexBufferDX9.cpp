@@ -56,6 +56,8 @@ public:
     unsigned                size;
     IDirect3DIndexBuffer9*  buffer;
     unsigned                isMapped:1;
+
+    IDirect3DIndexBuffer9* prevBuffer;
 };
 RHI_IMPL_RESOURCE(IndexBufferDX9_t,IndexBuffer::Descriptor);
 
@@ -69,7 +71,8 @@ RHI_IMPL_POOL(IndexBufferDX9_t,RESOURCE_INDEX_BUFFER,IndexBuffer::Descriptor,tru
 IndexBufferDX9_t::IndexBufferDX9_t()
   : size(0),
     buffer(nullptr),
-    isMapped(false)
+    isMapped(false),
+    prevBuffer(nullptr)
 {
 }
 
@@ -130,6 +133,7 @@ IndexBufferDX9_t::Destroy( bool force_immediate )
     {
         DX9Command  cmd[] = { DX9Command::RELEASE, { uint64_t(static_cast<IUnknown*>(buffer)) } };
 
+        prevBuffer = buffer;
         ExecDX9( cmd, countof(cmd), force_immediate );
         buffer = nullptr;
     }
@@ -308,6 +312,26 @@ unsigned
 NeedRestoreCount()
 {
     return IndexBufferDX9_t::NeedRestoreCount();
+}
+
+void
+PatchCommands( DX9Command* command, uint32 cmdCount )
+{
+    for( IndexBufferDX9Pool::Iterator b=IndexBufferDX9Pool::Begin(),b_end=IndexBufferDX9Pool::End(); b!=b_end; ++b )
+    {
+        if( b->prevBuffer )
+        {
+            for( DX9Command* cmd=command,*cmd_end=command+cmdCount; cmd!=cmd_end; ++cmd )
+            {
+                if(     cmd->func == DX9Command::LOCK_INDEX_BUFFER 
+                    &&  (IDirect3DIndexBuffer9*)(cmd->arg[0]) == b->prevBuffer
+                  )
+                {
+                    cmd->arg[0] = uint64(b->buffer);
+                }                    
+            }
+        }
+    }
 }
 
 }

@@ -74,9 +74,7 @@ namespace ConstBufferDX11
 {
 void        SetupDispatch( Dispatch* dispatch );
 void        InitializeRingBuffer( uint32 size );
-void        SetToRHI( Handle cb, const void* inst_data, ID3D11DeviceContext* context );
-const void* InstData( Handle cb );
-void        InvalidateAllConstBufferInstances();
+void        SetToRHI( Handle cb, ID3D11DeviceContext* context );
 }
 
 namespace TextureDX11
