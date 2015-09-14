@@ -32,6 +32,8 @@
 #include "Utils/BiDiHelper.h"
 #include "Render/2D/TextLayout.h"
 
+#include <float.h>
+
 using namespace DAVA;
 
 static const Vector<String> files = {
