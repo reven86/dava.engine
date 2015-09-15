@@ -213,40 +213,31 @@ public:
 	
     void SetFoliageSystem(FoliageSystem* _foliageSystem);
 
-    //RHI_COMPLETE need remove this
     void UpdatePart(Heightmap* fromHeightmap, const Rect2i & rect);
     
 	using LandscapeThumbnailCallback = DAVA::Function<void(Landscape*, Texture*)>;
     void CreateLandscapeTexture(LandscapeThumbnailCallback callback);
 
 protected:
+	enum : int32
+	{
+		TEXTURE_SIZE_FULL_TILED = 2048,
+		RENDER_QUAD_WIDTH = 129,
+		RENDER_QUAD_AND = RENDER_QUAD_WIDTH - 2,
+		INDEX_ARRAY_COUNT = 10000 * 6 // 10k triangles max
+	};
 
-    static const uint32 TEXTURE_SIZE_FULL_TILED = 2048;
-
-    class LandscapeQuad
+    struct LandscapeQuad
     {
-    public:
-        LandscapeQuad()
-        {
-            x = y = size = lod = 0;
-            rdoQuad = -1;
-            frame = 0;
-			startClipPlane = 0;
-        }
-        
-        int16   x, y;
-        //int16   xbuf, ybuf;
-        int16   size;
-        int8    lod;
-        int16   rdoQuad;
         AABBox3 bbox;
-		uint8 startClipPlane;
-        uint32  frame;
+        int16 x = 0;
+		int16 y = 0;
+        int16 size = 0;
+        int16 rdoQuad = -1;
+        uint32 frame = 0;
+		uint8 startClipPlane = 0;
+        int8 lod = 0;
     };
-   
-    static const int32 RENDER_QUAD_WIDTH = 129;
-    static const int32 RENDER_QUAD_AND = RENDER_QUAD_WIDTH - 2;
-    static const int32 INDEX_ARRAY_COUNT = 10000 * 6; //10k triangles max
     
     //RHI_COMPLETE need remove this
     void CollectNodesRecursive(LandQuadTreeNode<LandscapeQuad> * currentNode, int16 nodeSize,
@@ -276,6 +267,8 @@ protected:
 
 	void OnCreateLandscapeTextureCompleted(rhi::HSyncObject);
 	void UnregisterCreateTextureCallback();
+
+	void UpdateNodeChildrenBoundingBoxesRecursive(LandQuadTreeNode<LandscapeQuad>& root, Heightmap* fromHeightmap);
 
 private:
     LandQuadTreeNode<LandscapeQuad> quadTreeHead;

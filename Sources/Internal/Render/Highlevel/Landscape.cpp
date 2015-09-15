@@ -795,20 +795,19 @@ void Landscape::GenLods(LandQuadTreeNode<LandscapeQuad> * currentNode, uint8 cli
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-    //Frustum * frustum = scene->GetClipCamera()->GetFrustum();
-    // if (!frustum->IsInside(currentNode->data.bbox))return;
     Frustum::eFrustumResult frustumRes = Frustum::EFR_INSIDE; 
     
     if (currentNode->data.size >= 2)
-		if (clippingFlags)
+	{
+		if (clippingFlags != 0)
+		{
 			frustumRes = frustum->Classify(currentNode->data.bbox, clippingFlags, currentNode->data.startClipPlane);		
+		}
+	}
     
-    if (frustumRes == Frustum::EFR_OUTSIDE)return;
+    if (frustumRes == Frustum::EFR_OUTSIDE) return;
     
-    /*
-        If current quad do not have geometry just traverse it childs. 
-        Magic starts when we have a geometry
-     */
+	// If current quad do not have geometry just traverse it childs. 
     if (currentNode->data.rdoQuad == -1)
     {
         if (currentNode->children)
@@ -821,22 +820,8 @@ void Landscape::GenLods(LandQuadTreeNode<LandscapeQuad> * currentNode, uint8 cli
         }
         return;
     }
-    /*
-        // UNCOMMENT THIS TO CHECK GEOMETRY WITH 0 LEVEL OF DETAIL
-        else
-        {
-            DrawQuad(currentNode, 0);
-            return;
-        }
-     */
     
-    /*
-        We can be here only if we have a geometry in the node. 
-        Here we use Geomipmaps rendering algorithm. 
-        These quads are 129x129.
-     */
-//    Camera * cam = clipCamera;
-    
+	// We can be here only if we have a geometry in the node. 
     Vector3 corners[8];
     currentNode->data.bbox.GetCorners(corners);
     
@@ -863,41 +848,10 @@ void Landscape::GenLods(LandQuadTreeNode<LandscapeQuad> * currentNode, uint8 cli
             maxLod = k + 1;
     }
     
-    // debug block
-#if 1
-    if (currentNode == &quadTreeHead)
+    if ((minLod == maxLod) && (currentNode->data.size <= (1 << maxLod) + 1))
     {
-        //Logger::FrameworkDebug("== draw start ==");
-    }
-    //Logger::FrameworkDebug("%f %f %d %d", minDist, maxDist, minLod, maxLod);
-#endif
-
-//    if (frustum->IsFullyInside(currentNode->data.bbox))
-//    {
-//        RenderSystem2D::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
-//        RenderHelper::Instance()->DrawBox(currentNode->data.bbox);
-//    }
-    
-    
-    if ((minLod == maxLod) && (/*frustum->IsFullyInside(currentNode->data.bbox)*/
-		(frustumRes == Frustum::EFR_INSIDE) || currentNode->data.size <= (1 << maxLod) + 1))
-    {
-        //Logger::FrameworkDebug("lod: %d depth: %d pos(%d, %d)", minLod, currentNode->data.lod, currentNode->data.x, currentNode->data.y);
-        
-//        if (currentNode->data.size <= (1 << maxLod))
-//            RenderSystem2D::Instance()->SetColor(0.0f, 1.0f, 0.0f, 1.0f);
-//        if (frustum->IsFullyInside(currentNode->data.bbox))
-//            RenderSystem2D::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
-        //if (frustum->IsFullyInside(currentNode->data.bbox) && (currentNode->data.size <= (1 << maxLod)))
-        //    RenderSystem2D::Instance()->SetColor(1.0f, 1.0f, 0.0f, 1.0f);
-
-            
-        //RenderSystem2D::Instance()->SetColor(0.0f, 1.0f, 0.0f, 1.0f);
-#if defined (DRAW_OLD_STYLE)        
-        GenQuad(currentNode, maxLod);
-#else //#if defined (DRAW_OLD_STYLE)        
         currentNode->data.lod = maxLod;
-        if (maxLod)
+        if (maxLod > 0)
         {
             lodNot0quads.push_back(currentNode);
         }
@@ -905,55 +859,33 @@ void Landscape::GenLods(LandQuadTreeNode<LandscapeQuad> * currentNode, uint8 cli
         {
             lod0quads.push_back(currentNode);
         }
-#endif //#if defined (DRAW_OLD_STYLE)
-        
-        //RenderSystem2D::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
-        //RenderHelper::Instance()->DrawBox(currentNode->data.bbox);
-
         return;
     }
-
     
     if ((minLod != maxLod) && (currentNode->data.size <= (1 << maxLod) + 1))
     {
-//        RenderSystem2D::Instance()->SetColor(0.0f, 0.0f, 1.0f, 1.0f);
-        //DrawQuad(currentNode, minLod);
-        //RenderSystem2D::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
-        //RenderHelper::Instance()->DrawBox(currentNode->data.bbox);
         fans.push_back(currentNode);
         return;
     }
-    
-    //
-    // Check performance and identify do we need a sorting here. 
-    // Probably sorting algorithm can be helpfull to render on Mac / Windows, but will be useless for iOS and Android
-    //
-    
+
+    if (nullptr != currentNode->children)
     {
-        if (currentNode->children)
+        for (int32 index = 0; index < 4; ++index)
         {
-            for (int32 index = 0; index < 4; ++index)
-            {
-                LandQuadTreeNode<LandscapeQuad> * child = &currentNode->children[index];
-                GenLods(child, clippingFlags, camera);
-            }
+            LandQuadTreeNode<LandscapeQuad> * child = &currentNode->children[index];
+            GenLods(child, clippingFlags, camera);
         }
-        /* EXPERIMENTAL => reduce level of quadtree, results was not successfull 
-         else
-        {
-            DrawQuad(currentNode, maxLod);  
-        }*/
     }
 }
 
 void Landscape::PrepareToRender(Camera * camera)
 {
-    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+	DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-    RenderObject::PrepareToRender(camera);
+	RenderObject::PrepareToRender(camera);
 
-    TIME_PROFILE("LandscapeNode.PrepareToRender");
-	
+	TIME_PROFILE("LandscapeNode.PrepareToRender");
+
 	drawIndices = 0;
 
 	if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::LANDSCAPE_DRAW))
@@ -961,31 +893,13 @@ void Landscape::PrepareToRender(Camera * camera)
 		return;
 	}
 
-    ClearQueue();
+	ClearQueue();
 
-/*
-    Boroda: I do not understand why, but this code breaks frustrum culling on landscape.
-    I've spent an hour, trying to understand what's going on, without luck. 
- */
-    
-//	Matrix4 prevMatrix = RenderManager::Instance()->GetMatrix(RenderManager::MATRIX_MODELVIEW);
-//	Matrix4 meshFinalMatrix = worldTransform * prevMatrix;
-//    //frustum->Set(meshFinalMatrix * RenderManager::Instance()->GetMatrix(RenderManager::MATRIX_PROJECTION));
-//    cameraPos = scene->GetClipCamera()->GetPosition() * worldTransform;
-//
-//    RenderManager::Instance()->SetMatrix(RenderManager::MATRIX_MODELVIEW, meshFinalMatrix);
-//    frustum->Set();
+	frustum = camera->GetFrustum();
 
-    frustum = camera->GetFrustum();    
-    
-    flushQueueCounter = 0;
-    
-#if defined (DRAW_OLD_STYLE)    
-    BindMaterial(0);
-	GenLods(&quadTreeHead);
-#else //#if defined (DRAW_OLD_STYLE)   
-    
-    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, &Matrix4::IDENTITY,
+	flushQueueCounter = 0;
+
+	Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, &Matrix4::IDENTITY,
 		(pointer_size)&Matrix4::IDENTITY);
 
 	if (Renderer::GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_LANDSCAPE_LODS))
@@ -993,31 +907,28 @@ void Landscape::PrepareToRender(Camera * camera)
 		fans.clear();
 		lod0quads.clear();
 		lodNot0quads.clear();
-        activeRenderBatchArray.clear();
-
+		activeRenderBatchArray.clear();
 		GenLods(&quadTreeHead, 0x3f, camera);
 	}
 
-    int32 count0 = static_cast<int32>(lod0quads.size());
-    for(int32 i = 0; i < count0; ++i)
-    {
-        GenQuad(lod0quads[i], 0);
-    }
+	int32 count0 = static_cast<int32>(lod0quads.size());
+	for (int32 i = 0; i < count0; ++i)
+	{
+		GenQuad(lod0quads[i], 0);
+	}
 	FlushQueue();
 
-    int32 countNot0 = static_cast<int32>(lodNot0quads.size());
-    for(int32 i = 0; i < countNot0; ++i)
-    {
-        GenQuad(lodNot0quads[i], lodNot0quads[i]->data.lod);
-    }
-#endif //#if defined (DRAW_OLD_STYLE)    
-    
-	FlushQueue();
+	int32 countNot0 = static_cast<int32>(lodNot0quads.size());
+	for (int32 i = 0; i < countNot0; ++i)
+	{
+		GenQuad(lodNot0quads[i], lodNot0quads[i]->data.lod);
+	}
 
+	FlushQueue();
 	GenFans();
 
-    rhi::UpdateIndexBuffer(currentIndexBuffer, indices, 0, queueIndexCount * sizeof(uint16));
-    currentIndexBuffer = indexBuffers.Next();
+	rhi::UpdateIndexBuffer(currentIndexBuffer, indices, 0, queueIndexCount * sizeof(uint16));
+	currentIndexBuffer = indexBuffers.Next();
 }
 
 
@@ -1386,45 +1297,81 @@ void Landscape::CollectNodesRecursive(LandQuadTreeNode<LandscapeQuad> * currentN
         }
     }
 }
-    
+
+void Landscape::UpdateNodeChildrenBoundingBoxesRecursive(LandQuadTreeNode<LandscapeQuad>& root, Heightmap* fromHeightmap)
+{
+	root.data.bbox.Empty();
+
+	for (int32 y = root.data.y; y < root.data.y + root.data.size + 1; ++y)
+	{
+		for (int32 x = root.data.x; x < root.data.x + root.data.size + 1; ++x)
+		{
+			root.data.bbox.AddPoint(GetPoint(x, y, fromHeightmap->Data()[x + y * fromHeightmap->Size()]));
+		}
+	}
+
+	if (nullptr != root.children)
+	{
+		for (int i = 0; i < 4; ++i)
+		{
+			UpdateNodeChildrenBoundingBoxesRecursive(root.children[i], fromHeightmap);
+		}
+	}
+}
+   
 void Landscape::UpdatePart(Heightmap* fromHeightmap, const Rect2i & rect)
 {
-    DVASSERT(heightmap->Size() == fromHeightmap->Size());
-    
-    Vector<LandQuadTreeNode<LandscapeQuad> * > nodes;
-    CollectNodesRecursive(&quadTreeHead, RENDER_QUAD_WIDTH - 1, nodes);
-    
-    for(LandQuadTreeNode<LandscapeQuad> * node : nodes)
-    {
-        Rect2i nodeRect(node->data.x, node->data.y, node->data.size, node->data.size);
-        Rect2i intersect = nodeRect.Intersection(rect);
-        if (intersect.dx || intersect.dy)
-        {
-            rhi::HVertexBuffer vertexBuffer = vertexBuffers[node->data.rdoQuad];
+	int32 heightmapSize = fromHeightmap->Size();
+	DVASSERT(heightmap->Size() == heightmapSize);
 
-            uint32 verticesCount = (node->data.size + 1) * (node->data.size + 1);
-            LandscapeVertex * quadVertices = new LandscapeVertex[verticesCount];
-            
-            int32 index = 0;
-            for (int32 y = node->data.y; y < node->data.y + node->data.size + 1; ++y)
-            {
-                for (int32 x = node->data.x; x < node->data.x + node->data.size + 1; ++x)
-                {
-                    quadVertices[index].position = GetPoint(x, y, fromHeightmap->Data()[y * fromHeightmap->Size() + x]);
-                    
-                    Vector2 texCoord = Vector2((float32)(x) / (float32)(fromHeightmap->Size() - 1), 1.0f - (float32)(y) / (float32)(fromHeightmap->Size() - 1));
-                    quadVertices[index].texCoord = texCoord;
-                    
-                    index++;
-                }
-            }
-            
-            uint32 vBufferSize = verticesCount * sizeof(LandscapeVertex);
-            rhi::UpdateVertexBuffer(vertexBuffer, quadVertices, 0, vBufferSize);
+	Vector<LandQuadTreeNode<LandscapeQuad>*> nodes;
+	CollectNodesRecursive(&quadTreeHead, RENDER_QUAD_WIDTH - 1, nodes);
 
-            SafeDeleteArray(quadVertices);
-        }
-    }
+	for (LandQuadTreeNode<LandscapeQuad> * node : nodes)
+	{
+		Rect2i nodeRect(node->data.x, node->data.y, node->data.size, node->data.size);
+		Rect2i intersect = nodeRect.Intersection(rect);
+		if (intersect.dx || intersect.dy)
+		{
+			node->data.bbox.Empty();
+			rhi::HVertexBuffer vertexBuffer = vertexBuffers[node->data.rdoQuad];
+
+			uint32 verticesCount = (node->data.size + 1) * (node->data.size + 1);
+			LandscapeVertex * quadVertices = new LandscapeVertex[verticesCount];
+
+			int32 index = 0;
+			for (int32 y = node->data.y; y < node->data.y + node->data.size + 1; ++y)
+			{
+				for (int32 x = node->data.x; x < node->data.x + node->data.size + 1; ++x)
+				{
+					quadVertices[index].position = 
+						GetPoint(x, y, fromHeightmap->Data()[x + y * heightmapSize]);
+
+					quadVertices[index].texCoord = Vector2
+					(
+						(float32)(x) / (float32)(heightmapSize - 1), 
+						1.0f - (float32)(y) / (float32)(heightmapSize - 1)
+					);
+
+					node->data.bbox.AddPoint(quadVertices[index].position);
+
+					++index;
+				}
+			}
+
+			if (nullptr != node->children)
+			{
+				for (int i = 0; i < 4; ++i)
+				{
+					UpdateNodeChildrenBoundingBoxesRecursive(node->children[i], fromHeightmap);
+				}
+			}
+
+			uint32 vBufferSize = verticesCount * sizeof(LandscapeVertex);
+			rhi::UpdateVertexBuffer(vertexBuffer, quadVertices, 0, vBufferSize);
+			SafeDeleteArray(quadVertices);
+		}
+	}
 }
     
 };
