@@ -506,9 +506,9 @@ namespace DAVA
 			{
 				isFind = true;
 
-				it->physPoint.x = (float32)GET_X_LPARAM(lParam);
-				it->physPoint.y = (float32)GET_Y_LPARAM(lParam);
-				it->phase = phase;
+                it->physPoint.x = static_cast<float32>(GET_X_LPARAM(lParam));
+                it->physPoint.y = static_cast<float32>(GET_Y_LPARAM(lParam));
+                it->phase = phase;
 
 				break;
 			}
@@ -518,10 +518,10 @@ namespace DAVA
 		{
 			UIEvent newTouch;
 			newTouch.tid = button;
-			newTouch.physPoint.x = (float32)GET_X_LPARAM(lParam);
-			newTouch.physPoint.y = (float32)GET_Y_LPARAM(lParam);
-			newTouch.phase = phase;
-            newTouch.which = deviceId;
+            newTouch.physPoint.x = static_cast<float32>(GET_X_LPARAM(lParam));
+            newTouch.physPoint.y = static_cast<float32>(GET_Y_LPARAM(lParam));
+            newTouch.phase = phase;
+            newTouch.deviceIndex = deviceId;
             events.push_back(newTouch);
         }
 
@@ -621,7 +621,7 @@ namespace DAVA
             newTouch.physPoint.x = 0;
             newTouch.physPoint.y = ((SHORT)buttonData) / (float32)(WHEEL_DELTA);
             newTouch.phase = UIEvent::PHASE_WHEEL;
-            newTouch.which = deviceId;
+            newTouch.deviceIndex = deviceId;
 
             touches.push_back(newTouch);
         }
@@ -659,7 +659,7 @@ namespace DAVA
         newTouch.physPoint.x = x;
         newTouch.physPoint.y = y;
         newTouch.phase = phase;
-        newTouch.which = deviceId;
+        newTouch.deviceIndex = deviceId;
 
         Vector<UIEvent> touches;
         touches.push_back(newTouch);
