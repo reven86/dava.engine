@@ -60,21 +60,13 @@ public:
 	 */
     enum eInputPhase
     {
-        PHASE_BEGAN = 0 //!<Screen touch or mouse button press is began.
-        ,
-        PHASE_DRAG //!<User moves mouse with presset button or finger over the screen.
-        ,
-        PHASE_ENDED //!<Screen touch or mouse button press is ended.
-        ,
-        PHASE_MOVE //!<Mouse move event. Mouse moves without pressing any buttons. Works only with mouse controller.
-        ,
-        PHASE_WHEEL //!<Mouse wheel event. MacOS & Win32 only
-        ,
-        PHASE_CANCELLED //!<Event was cancelled by the platform or by the control system for the some reason.
-
-        ,
-        PHASE_KEYCHAR //!<Event is a keyboard key pressing event.
-        ,
+        PHASE_BEGAN = 0, //!<Screen touch or mouse button press is began.
+        PHASE_DRAG, //!<User moves mouse with presset button or finger over the screen.
+        PHASE_ENDED, //!<Screen touch or mouse button press is ended.
+        PHASE_MOVE, //!<Mouse move event. Mouse moves without pressing any buttons. Works only with mouse controller.
+        PHASE_WHEEL, //!<Mouse wheel event. MacOS & Win32 only
+        PHASE_CANCELLED, //!<Event was cancelled by the platform or by the control system for the some reason.
+        PHASE_KEYCHAR, //!<Event is a keyboard key pressing event.
         PHASE_JOYSTICK,
         PHASE_KEYCHAR_RELEASE
     };
@@ -93,16 +85,16 @@ public:
 	 \enum Input state accordingly to control.
 	 */
     enum eControlInputState
-	{
-			CONTROL_STATE_RELEASED	=	0	//!<Input is released
-		,	CONTROL_STATE_INSIDE			//!<Input processed inside control rerct for now
-		,	CONTROL_STATE_OUTSIDE			//!<Input processed outside of the control rerct for now
-	};
-	
-	/**
+    {
+        CONTROL_STATE_RELEASED = 0, //!<Input is released
+        CONTROL_STATE_INSIDE, //!<Input processed inside control rerct for now
+        CONTROL_STATE_OUTSIDE //!<Input processed outside of the control rerct for now
+    };
+
+    /**
 	 \ Input can be handled in the different ways.
 	 */
-	enum eInputHandledType
+    enum eInputHandledType
 	{
 		INPUT_NOT_HANDLED		= 0,//!<Input is not handled at all.
 		INPUT_HANDLED_SOFT		= 1,//!<Input is handled, but input control can be changed by UIControlSystem::Instance()->SwitchInputToControl() method.
@@ -133,17 +125,17 @@ public:
         JOYSTICK_AXIS_HAT_Y
     };
 
-    int32 tid; //!< event id, for the platforms with mouse this id means mouse button id, key codes for keys, axis id for joystick
-    Vector2 point; //!< point of pressure in virtual coordinates
-    Vector2 physPoint; //!< point of pressure in physical coordinates
-    float64 timestamp; //!< time stemp of the event occurrence
-    int32 phase; //!< began, ended, moved. See eInputPhase
-    UIControl* touchLocker; //!< control that handles this input
-    int32 activeState; //!< state of input in control system (active, inactive, changed)
-    int32 controlState; //!< input state relative to control (outside, inside). Used for point inputs only(mouse, touch)
-    int32 tapCount; //!< count of the continuous inputs (clicks for mouse)
-    char16 keyChar; //!< unicode/translated character produced by key using current language, caps etc. Used only with PHASE_KEYCHAR.
-    uint32 which; // index of mouse or touch surface in system
+    int32 tid = 0; // event id, for the platforms with mouse this id means mouse button id, key codes for keys, axis id for joystick
+    Vector2 point; // point of pressure in virtual coordinates
+    Vector2 physPoint; // point of pressure in physical coordinates
+    float64 timestamp = 0.0; // time stemp of the event occurrence
+    int32 phase = 0; // began, ended, moved. See eInputPhase
+    UIControl* touchLocker = nullptr; // control that handles this input
+    int32 activeState = ACTIVITY_STATE_INACTIVE; // state of input in control system (active, inactive, changed)
+    int32 controlState = CONTROL_STATE_RELEASED; // input state relative to control (outside, inside). Used for point inputs only(mouse, touch)
+    int32 tapCount = 0; // count of the continuous inputs (clicks for mouse)
+    char16 keyChar = 0; // unicode/translated character produced by key using current language, caps etc. Used only with PHASE_KEYCHAR.
+    uint32 deviceIndex = 0; // index of mouse or touch surface in system
 
     inline void SetInputHandledType(eInputHandledType value)
     {
@@ -157,19 +149,7 @@ public:
     eInputHandledType GetInputHandledType() { return inputHandledType; };
     void ResetInputHandledType() { inputHandledType = INPUT_NOT_HANDLED; };
 
-    UIEvent()
-        : tid(0)
-        , timestamp(0.f)
-        , phase(0)
-        , touchLocker(nullptr)
-        , activeState(ACTIVITY_STATE_INACTIVE)
-        , controlState(CONTROL_STATE_RELEASED)
-        , tapCount(0)
-        , keyChar(0)
-        , which(0)
-        , inputHandledType(INPUT_NOT_HANDLED)
-    {
-    }
+    UIEvent() = default;
 
     eInputSource GetInputSource()
     {

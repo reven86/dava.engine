@@ -689,8 +689,8 @@ namespace DAVA
             return String(buffer.data(), static_cast<size_t>(resultSize));
         }
 
-        DVASSERT(false && "can't get device name");
-        return String("Error: during reciving name of device");
+        DVASSERT(false && "Failed to get device name");
+        return String();
     }
 
     LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
