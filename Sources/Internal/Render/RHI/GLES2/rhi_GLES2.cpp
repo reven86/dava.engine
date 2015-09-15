@@ -188,7 +188,7 @@ gles_check_GL_extensions()
     {
     	if(strstr(version, "OpenGL ES"))
     	{
-			char * dotChar = strchr(version, '.');
+			const char * dotChar = strchr(version, '.');
 			if(dotChar && dotChar != version)
 			{
 				int majorVersion = atoi(dotChar-1);
