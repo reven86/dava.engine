@@ -28,7 +28,7 @@
 
 #include "Systems/BaseSystem.h"
 
-BaseSystem::BaseSystem(SystemManager *parent)
+BaseSystem::BaseSystem(SystemsManager* parent)
     : systemManager(parent)
 {
     

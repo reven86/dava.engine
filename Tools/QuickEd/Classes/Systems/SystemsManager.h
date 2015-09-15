@@ -26,13 +26,12 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#ifndef __QUICKED_SYSTEM_MANAGER_H__
-#define __QUICKED_SYSTEM_MANAGER_H__
+#ifndef __QUICKED_SYSTEMS_MANAGER_H__
+#define __QUICKED_SYSTEMS_MANAGER_H__
 
 #include "Base/BaseTypes.h"
 #include "Functional/Signal.h"
-#include "SelectionTracker.h"
+#include "Systems/SelectionContainer.h"
 #include "Math/Rect.h"
 #include "Math/Vector.h"
 
@@ -55,62 +54,63 @@ struct HUDAreaInfo
         CORNERS_COUNT = FRAME_AREA - TOP_LEFT_AREA,
         AREAS_COUNT = NO_AREA - TOP_LEFT_AREA
     };
-    ControlNode *owner = nullptr;
+    ControlNode* owner = nullptr;
     eArea area = NO_AREA;
 };
 
-namespace DAVA {
-    class UIControl;
-    class UIEvent;
-    class VariantType;
+namespace DAVA
+{
+class UIControl;
+class UIEvent;
+class VariantType;
 }
 
 class BaseSystem;
 class AbstractProperty;
 class PackageNode;
 
-class SystemManager
+class SystemsManager
 {
-    
 public:
-    explicit SystemManager(PackageNode *package);
-    ~SystemManager();
-    
-    PackageNode *GetPackage();
+    explicit SystemsManager(PackageNode* package);
+    ~SystemsManager();
+
+    PackageNode* GetPackage();
 
     DAVA::UIControl* GetRootControl();
     DAVA::UIControl* GetScalableControl();
-    
+
     void Deactivate();
     void Activate();
 
-    bool OnInput(DAVA::UIEvent *currentInput);
-    
+    bool OnInput(DAVA::UIEvent* currentInput);
+
     bool IsInEmulationMode() const;
     void SetEmulationMode(bool emulationMode);
- 
-    void GetControlNodesByPos(DAVA::Vector<ControlNode*> &controlNodes, const DAVA::Vector2 &pos) const;
-    void GetControlNodesByRect(SelectedControls &controlNodes, const DAVA::Rect &rect) const;
+
+    void GetControlNodesByPos(DAVA::Vector<ControlNode*>& controlNodes, const DAVA::Vector2& pos) const;
+    void GetControlNodesByRect(SelectedControls& controlNodes, const DAVA::Rect& rect) const;
 
     DAVA::Signal<const SelectedNodes& /*selected*/, const SelectedNodes& /*deselected*/> SelectionChanged;
-    DAVA::Signal<const HUDAreaInfo &/*areaInfo*/> ActiveAreaChanged;
-    DAVA::Signal<const DAVA::Rect &/*selectionRectControl*/> SelectionRectChanged;
+    DAVA::Signal<const HUDAreaInfo& /*areaInfo*/> ActiveAreaChanged;
+    DAVA::Signal<const DAVA::Rect& /*selectionRectControl*/> SelectionRectChanged;
     DAVA::Signal<bool> EmulationModeChangedSignal;
     DAVA::Signal<> CanvasSizeChanged;
-    DAVA::Signal<ControlNode */*node*/, AbstractProperty */*prop*/, const DAVA::VariantType &/*value*/> PropertyChanged;
-    DAVA::Signal<const DAVA::Vector<ControlNode*>& /*nodes*/, const DAVA::Vector2 &/*pos*/, ControlNode* &/*selectedNode*/> SelectionByMenuRequested;
-private:
-    void GetControlNodesByPosImpl(DAVA::Vector<ControlNode*> &controlNodes, const DAVA::Vector2 &pos, ControlNode *node) const;
-    void GetControlNodesByRectImpl(SelectedControls &controlNodes, const DAVA::Rect &rect, ControlNode *node) const;
+    DAVA::Signal<ControlNode* /*node*/, AbstractProperty* /*prop*/, const DAVA::VariantType& /*value*/> PropertyChanged;
+    DAVA::Signal<const DAVA::Vector<ControlNode*>& /*nodes*/, const DAVA::Vector2& /*pos*/, ControlNode*& /*selectedNode*/> SelectionByMenuRequested;
 
-    DAVA::UIControl *rootControl = nullptr;
-    DAVA::UIControl *scalableControl = nullptr;
+private:
+    void GetControlNodesByPosImpl(DAVA::Vector<ControlNode*>& controlNodes, const DAVA::Vector2& pos, ControlNode* node) const;
+    void GetControlNodesByRectImpl(SelectedControls& controlNodes, const DAVA::Rect& rect, ControlNode* node) const;
+
+    DAVA::UIControl* rootControl = nullptr;
+    DAVA::UIControl* scalableControl = nullptr;
 
     DAVA::List<BaseSystem*> systems;
-    
-    PackageNode *package = nullptr;
+
+    PackageNode* package = nullptr;
     static const bool emulationByDefault = false;
     bool emulationMode = emulationByDefault;
 };
 
-#endif // __QUICKED_SYSTEM_MANAGER_H__
+#endif // __QUICKED_SYSTEMS_MANAGER_H__

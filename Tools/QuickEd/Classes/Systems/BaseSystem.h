@@ -34,12 +34,12 @@ namespace DAVA{
     class UIEvent;
 }
 
-class SystemManager;
+class SystemsManager;
 
 class BaseSystem
 {   
 public:
-    explicit BaseSystem(SystemManager *parent);
+    explicit BaseSystem(SystemsManager* parent);
     virtual ~BaseSystem() = 0;
 
     virtual void OnActivated(); 
@@ -47,7 +47,7 @@ public:
 
     virtual bool OnInput(DAVA::UIEvent *currentInput);
 protected:
-    SystemManager *systemManager = nullptr;
+    SystemsManager* systemManager = nullptr;
 };
 
 inline BaseSystem::~BaseSystem()

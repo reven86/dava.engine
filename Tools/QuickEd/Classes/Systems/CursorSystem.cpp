@@ -38,7 +38,7 @@ using namespace DAVA;
 
 QMap<QString, QPixmap> CursorSystem::cursorpixes;
 
-CursorSystem::CursorSystem(SystemManager* parent)
+CursorSystem::CursorSystem(SystemsManager* parent)
     : BaseSystem(parent)
 {
     systemManager->ActiveAreaChanged.Connect(this, &CursorSystem::SetActiveArea);

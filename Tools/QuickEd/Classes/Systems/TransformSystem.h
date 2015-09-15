@@ -38,7 +38,7 @@
 class TransformSystem final : public BaseSystem
 {   
 public:
-    explicit TransformSystem(SystemManager *parent);
+    explicit TransformSystem(SystemsManager* parent);
     ~TransformSystem() = default;
 
     void SetNewArea(const HUDAreaInfo &areaInfo);
@@ -72,7 +72,6 @@ private:
     const DAVA::Array<int, OPERATIONS_COUNT> steps; //to transform with fixed step
     DAVA::Array<DAVA::Array<int, DAVA::Vector2::AXIS_COUNT>, OPERATIONS_COUNT> accumulates;
 
-    SelectionTracker selectionTracker;
     SelectedControls selectedControlNodes;
 };
 

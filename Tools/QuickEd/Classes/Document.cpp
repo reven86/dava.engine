@@ -28,8 +28,7 @@
 
 
 #include "Document.h"
-#include "SystemManager.h"
-
+#include "Systems/SystemsManager.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"
@@ -79,7 +78,7 @@ bool Document::IsInEmulationMode() const
     return systemManager.IsInEmulationMode();
 }
 
-SystemManager *Document::GetSystemManager()
+SystemsManager* Document::GetSystemManager()
 {
     return &systemManager;
 }
@@ -152,7 +151,6 @@ void Document::SelectControlByMenu(const Vector<ControlNode*> &nodesUnderPoint, 
     auto view = EditorCore::Instance()->GetMainWindow()->GetGLWidget()->GetGLWindow();
     QPoint globalPos = view->mapToGlobal(QPoint(point.x, point.y)/ view->devicePixelRatio());
     QMenu menu;
-    auto selectedControlNodes = selectionTracker.GetSetTFromNodes<SelectedControls>();
     for (auto it = nodesUnderPoint.rbegin(); it != nodesUnderPoint.rend(); ++it)
     {
         ControlNode *controlNode = *it;
@@ -162,8 +160,8 @@ void Document::SelectControlByMenu(const Vector<ControlNode*> &nodesUnderPoint, 
         menu.addAction(action);
         void* ptr = static_cast<void*>(controlNode);
         action->setData(QVariant::fromValue(ptr));
-
-        if (selectedControlNodes.find(controlNode) != selectedControlNodes.end())
+        auto selectedNodes = selectionTracker.selectedNodes;
+        if (selectedNodes.find(controlNode) != selectedNodes.end())
         {
             auto font = action->font();
             font.setBold(true);

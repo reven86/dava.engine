@@ -32,7 +32,7 @@
 
 #include <QWidget>
 #include "ui_PreviewWidget.h"
-#include "SelectionTracker.h"
+#include "Systems/SelectionContainer.h"
 #include <UI/UIControl.h>
 
 namespace Ui {

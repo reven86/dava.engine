@@ -30,12 +30,12 @@
 #ifndef __QUICKED_SELECTION_SYSTEM_H__
 #define __QUICKED_SELECTION_SYSTEM_H__
 
-#include "SelectionTracker.h"
+#include "Systems/SelectionContainer.h"
 #include "Systems/BaseSystem.h"
 #include "Model/PackageHierarchy/PackageListener.h"
 #include "Math/Rect.h"
 
-class SystemManager;
+class SystemsManager;
 namespace DAVA {
     class Vector2;
 }
@@ -43,7 +43,7 @@ namespace DAVA {
 class SelectionSystem final : public BaseSystem, public PackageListener
 {
 public:
-    SelectionSystem(SystemManager *doc);
+    SelectionSystem(SystemsManager* doc);
     ~SelectionSystem() override = default;
 
     bool OnInput(DAVA::UIEvent *currentInput) override;
@@ -57,7 +57,7 @@ private:
     bool ProcessMousePress(const DAVA::Vector2 &point);
 
     bool mousePressed = false;
-    SelectionTracker selectionTracker;
+    SelectionContainer selectionTracker;
 };
 
 #endif // __QUICKED_SELECTION_SYSTEM_H__

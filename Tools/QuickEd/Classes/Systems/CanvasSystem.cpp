@@ -27,7 +27,7 @@
 =====================================================================================*/
 
 #include "CanvasSystem.h"
-#include "SystemManager.h"
+#include "Systems/SystemsManager.h"
 #include "UI/UIControl.h"
 #include "Base/BaseTypes.h"
 #include "Model/PackageHierarchy/PackageBaseNode.h"
@@ -70,7 +70,7 @@ void CheckeredCanvas::Draw(const UIGeometricData &geometricData)
     }
 }
 
-CanvasSystem::CanvasSystem(SystemManager *parent)
+CanvasSystem::CanvasSystem(SystemsManager* parent)
     : BaseSystem(parent)
     , canvas(new UIControl())
 {
@@ -96,10 +96,9 @@ void CanvasSystem::OnDeactivated()
 
 void CanvasSystem::SetSelection(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
-    selectionTracker.MergeSelection(selected, deselected);
-    Set<ControlNode*> selectedControls = selectionTracker.GetSetTFromNodes<SelectedControls>();
+    SelectionContainer::MergeSelectionAndContainer(selected, deselected, selectedControlNodes);
     DAVA::Set<PackageBaseNode*> rootControls;
-    if (selectedControls.empty())
+    if (selectedControlNodes.empty())
     {
         auto controlsNode = systemManager->GetPackage()->GetPackageControlsNode();
         for (int index = 0; index < controlsNode->GetCount(); ++index)
@@ -109,7 +108,7 @@ void CanvasSystem::SetSelection(const SelectedNodes& selected, const SelectedNod
     }
     else
     {
-        for (auto& node : selectedControls)
+        for (auto& node : selectedControlNodes)
         {
             if (nullptr != node->GetControl())
             {

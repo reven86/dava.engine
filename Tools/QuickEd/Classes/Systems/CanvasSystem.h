@@ -34,15 +34,15 @@
 
 #include "Base/ScopedPtr.h"
 #include "UI/UIControl.h"
-#include "SelectionTracker.h"
+#include "Systems/SelectionContainer.h"
 
-class SystemManager;
+class SystemsManager;
 class PackageBaseNode;
 
 class CanvasSystem final : public BaseSystem
 {
 public:
-    CanvasSystem(SystemManager *parent);
+    CanvasSystem(SystemsManager* parent);
     ~CanvasSystem() override = default;
     DAVA::UIControl* GetCanvasControl();
 
@@ -56,7 +56,7 @@ private:
     void LayoutCanvas();
 
     DAVA::ScopedPtr<DAVA::UIControl> canvas;
-    SelectionTracker selectionTracker;
+    SelectedControls selectedControlNodes;
 };
 
 #endif // __QUICKED_CANVAS_SYSTEM_H__

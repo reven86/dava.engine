@@ -31,14 +31,14 @@
 #include "Systems/SelectionSystem.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "UI/UIEvent.h"
-#include "SystemManager.h"
+#include "Systems/SystemsManager.h"
 
 using namespace DAVA;
 
-SelectionSystem::SelectionSystem(SystemManager* systemManager)
+SelectionSystem::SelectionSystem(SystemsManager* systemManager)
     : BaseSystem(systemManager)
 {
-    systemManager->SelectionChanged.Connect(MakeFunction(&selectionTracker, &SelectionTracker::MergeSelection));
+    systemManager->SelectionChanged.Connect(MakeFunction(&selectionTracker, &SelectionContainer::MergeSelection));
     systemManager->SelectionRectChanged.Connect(this, &SelectionSystem::SelectByRect);
 }
 

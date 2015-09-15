@@ -26,8 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#include "SystemManager.h"
+#include "Systems/SystemsManager.h"
 
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
@@ -44,17 +43,16 @@ using namespace DAVA;
 
 namespace
 {
-    
 class RootControl : public UIControl
 {
 public:
-    RootControl(SystemManager *arg)
-    : UIControl()
-    , systemManager(arg)
+    RootControl(SystemsManager* arg)
+        : UIControl()
+        , systemManager(arg)
     {
         DVASSERT(nullptr != systemManager);
     }
-    bool SystemInput(UIEvent *currentInput) override
+    bool SystemInput(UIEvent* currentInput) override
     {
         if (!emulationMode && nullptr != systemManager)
         {
@@ -66,14 +64,14 @@ public:
     {
         emulationMode = arg;
     }
+
 private:
-    SystemManager *systemManager = nullptr;
+    SystemsManager* systemManager = nullptr;
     bool emulationMode = false;
 };
-    
 };
 
-SystemManager::SystemManager(PackageNode *_package)
+SystemsManager::SystemsManager(PackageNode* _package)
     : rootControl(new RootControl(this))
     , scalableControl(new UIControl())
     , package(SafeRetain(_package))
@@ -89,43 +87,43 @@ SystemManager::SystemManager(PackageNode *_package)
     systems.push_back(new ::TransformSystem(this));
 }
 
-SystemManager::~SystemManager()
+SystemsManager::~SystemsManager()
 {
-    for (auto &system : systems)
+    for (auto& system : systems)
     {
         delete system;
     }
 }
 
-PackageNode* SystemManager::GetPackage()
+PackageNode* SystemsManager::GetPackage()
 {
     return package;
 }
 
-bool SystemManager::IsInEmulationMode() const
+bool SystemsManager::IsInEmulationMode() const
 {
     return emulationMode;
 }
 
-UIControl* SystemManager::GetRootControl()
+UIControl* SystemsManager::GetRootControl()
 {
     return rootControl;
 }
 
-DAVA::UIControl* SystemManager::GetScalableControl()
+DAVA::UIControl* SystemsManager::GetScalableControl()
 {
     return scalableControl;
 }
 
-void SystemManager::Deactivate()
+void SystemsManager::Deactivate()
 {
-    for (auto &system : systems)
+    for (auto& system : systems)
     {
         system->OnDeactivated();
     }
 }
 
-void SystemManager::Activate()
+void SystemsManager::Activate()
 {
     for (auto system : systems)
     {
@@ -133,9 +131,9 @@ void SystemManager::Activate()
     }
 }
 
-bool SystemManager::OnInput(UIEvent *currentInput)
+bool SystemsManager::OnInput(UIEvent* currentInput)
 {
-    for(auto it = systems.rbegin(); it != systems.rend(); ++it)
+    for (auto it = systems.rbegin(); it != systems.rend(); ++it)
     {
         if ((*it)->OnInput(currentInput))
         {
@@ -145,7 +143,7 @@ bool SystemManager::OnInput(UIEvent *currentInput)
     return false;
 }
 
-void SystemManager::GetControlNodesByPos(DAVA::Vector<ControlNode*> &controlNodes, const DAVA::Vector2& pos) const
+void SystemsManager::GetControlNodesByPos(DAVA::Vector<ControlNode*>& controlNodes, const DAVA::Vector2& pos) const
 {
     auto controlsNode = package->GetPackageControlsNode();
     for (int index = 0; index < controlsNode->GetCount(); ++index)
@@ -160,7 +158,7 @@ void SystemManager::GetControlNodesByPos(DAVA::Vector<ControlNode*> &controlNode
     }
 }
 
-void SystemManager::GetControlNodesByRect(SelectedControls& controlNodes, const Rect& rect) const
+void SystemsManager::GetControlNodesByRect(SelectedControls& controlNodes, const Rect& rect) const
 {
     auto controlsNode = package->GetPackageControlsNode();
     for (int index = 0; index < controlsNode->GetCount(); ++index)
@@ -175,7 +173,7 @@ void SystemManager::GetControlNodesByRect(SelectedControls& controlNodes, const 
     }
 }
 
-void SystemManager::GetControlNodesByPosImpl(DAVA::Vector<ControlNode*>& controlNodes, const DAVA::Vector2& pos, ControlNode* node) const
+void SystemsManager::GetControlNodesByPosImpl(DAVA::Vector<ControlNode*>& controlNodes, const DAVA::Vector2& pos, ControlNode* node) const
 {
     int count = node->GetCount();
     auto control = node->GetControl();
@@ -189,7 +187,7 @@ void SystemManager::GetControlNodesByPosImpl(DAVA::Vector<ControlNode*>& control
     }
 }
 
-void SystemManager::GetControlNodesByRectImpl(SelectedControls& controlNodes, const Rect& rect, ControlNode* node) const
+void SystemsManager::GetControlNodesByRectImpl(SelectedControls& controlNodes, const Rect& rect, ControlNode* node) const
 {
     int count = node->GetCount();
     auto control = node->GetControl();
@@ -203,7 +201,7 @@ void SystemManager::GetControlNodesByRectImpl(SelectedControls& controlNodes, co
     }
 }
 
-void SystemManager::SetEmulationMode(bool arg)
+void SystemsManager::SetEmulationMode(bool arg)
 {
     if (emulationMode != arg)
     {

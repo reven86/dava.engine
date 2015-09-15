@@ -26,81 +26,63 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#ifndef __QUICKED_SELECTION_TRACKER_H__
-#define __QUICKED_SELECTION_TRACKER_H__
+#ifndef __QUICKED_SELECTION_CONTAINER_H__
+#define __QUICKED_SELECTION_CONTAINER_H__
 
 #include "Base/BaseTypes.h"
 
 #include "Model/PackageHierarchy/PackageBaseNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 
-using SelectedNodes = DAVA::Set < PackageBaseNode* > ;
+using SelectedNodes = DAVA::Set<PackageBaseNode*>;
 using SelectedControls = DAVA::Set<ControlNode*>;
 
-struct SelectionTracker
+struct SelectionContainer
 {
-    template <typename ContainerIn, typename ContainerOut>
-    void GetNotExistedItems(const ContainerIn& in, ContainerOut& out);
+    void GetNotExistedItems(const SelectedNodes& in, SelectedNodes& out);
 
-    template <typename ContainerIn, typename ContainerOut>
-    void GetOnlyExistedItems(const ContainerIn& in, ContainerOut& out);
+    void GetOnlyExistedItems(const SelectedNodes& in, SelectedNodes& out);
 
     void MergeSelection(const SelectedNodes& selected, const SelectedNodes& deselected);
 
-    template <typename SetT, typename SetU>
-    static SetT GetSetTFromSetU(const SetU& in);
+    template <typename ContainerOut>
+    static void MergeSelectionAndContainer(const SelectedNodes& selected, const SelectedNodes& deselected, ContainerOut& out);
 
-    template <typename SetT>
-    SetT GetSetTFromNodes() const;
-    
     SelectedNodes selectedNodes;
 };
 
-template <typename ContainerIn, typename ContainerOut>
-void SelectionTracker::GetNotExistedItems(const ContainerIn& in, ContainerOut& out)
+inline void SelectionContainer::GetNotExistedItems(const SelectedNodes& in, SelectedNodes& out)
 {
     std::set_difference(in.begin(), in.end(), selectedNodes.begin(), selectedNodes.end(), std::inserter(out, out.end()));
 }
 
-template <typename ContainerIn, typename ContainerOut>
-void SelectionTracker::GetOnlyExistedItems(const ContainerIn& in, ContainerOut& out)
+inline void SelectionContainer::GetOnlyExistedItems(const SelectedNodes& in, SelectedNodes& out)
 {
     std::set_intersection(selectedNodes.begin(), selectedNodes.end(), in.begin(), in.end(), std::inserter(out, out.end()));
 }
 
-inline void SelectionTracker::MergeSelection(const SelectedNodes& selected, const SelectedNodes& deselected)
+inline void SelectionContainer::MergeSelection(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
-    for (const auto &item : deselected)
-    {
-        selectedNodes.erase(item);
-    }
-    for (const auto &item : selected)
-    {
-        selectedNodes.insert(item);
-    }
+    MergeSelectionAndContainer(selected, deselected, selectedNodes);
 }
 
-template <typename SetT, typename SetU>
-SetT SelectionTracker::GetSetTFromSetU(const SetU& in)
+template <typename ContainerOut>
+inline void SelectionContainer::MergeSelectionAndContainer(const SelectedNodes& selected, const SelectedNodes& deselected, ContainerOut& out)
 {
-    using T = typename std::remove_reference<SetT>::type::value_type;
-    SetT retVal;
-    for (auto& u : in)
+    using T = typename std::remove_reference<ContainerOut>::type::value_type;
+    for (const auto& node : deselected)
     {
-        auto tmp = dynamic_cast<T>(u);
-        if (nullptr != tmp)
+        T item = dynamic_cast<T>(node);
+        out.erase(item);
+    }
+    for (const auto& node : selected)
+    {
+        T item = dynamic_cast<T>(node);
+        if (nullptr != item)
         {
-            retVal.insert(tmp);
+            out.insert(item);
         }
     }
-    return retVal;
 }
 
-template <typename SetT>
-SetT SelectionTracker::GetSetTFromNodes() const
-{
-    return GetSetTFromSetU<SetT>(selectedNodes);
-}
-
-#endif // __QUICKED_SELECTION_TRACKER_H__
+#endif // __QUICKED_SELECTION_CONTAINER_H__

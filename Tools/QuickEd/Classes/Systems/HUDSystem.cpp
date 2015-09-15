@@ -180,7 +180,7 @@ private:
     }
 };
 
-HUDSystem::HUDSystem(SystemManager *parent)
+HUDSystem::HUDSystem(SystemsManager* parent)
     : BaseSystem(parent)
     , hudControl(new UIControl())
     , selectionRectControl(new UIControl())
@@ -210,18 +210,21 @@ void HUDSystem::OnDeactivated()
 
 void HUDSystem::SetSelection(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
-    Set<ControlNode*> deselectedControls = SelectionTracker::GetSetTFromSetU<Set<ControlNode*>>(deselected);
-    for (auto control : deselectedControls)
+    for (auto node : deselected)
     {
-        hudMap.erase(control);
+        ControlNode* controlNode = dynamic_cast<ControlNode*>(node);
+        hudMap.erase(controlNode);
     }
 
-    Set<ControlNode*> selectedControls = SelectionTracker::GetSetTFromSetU<Set<ControlNode*>>(selected);
-    for (auto control : selectedControls)
+    for (auto node : selected)
     {
-        hudMap.emplace(std::piecewise_construct, 
-            std::forward_as_tuple(control),
-            std::forward_as_tuple(control, hudControl));
+        ControlNode* controlNode = dynamic_cast<ControlNode*>(node);
+        if (nullptr != controlNode)
+        {
+            hudMap.emplace(std::piecewise_construct,
+                           std::forward_as_tuple(controlNode),
+                           std::forward_as_tuple(controlNode, hudControl));
+        }
     }
 }
 

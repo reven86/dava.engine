@@ -30,7 +30,7 @@
 #include "Input/KeyboardDevice.h"
 
 #include "Systems/TransformSystem.h"
-#include "SystemManager.h"
+#include "Systems/SystemsManager.h"
 #include "UI/UIEvent.h"
 #include "UI/UIControl.h"
 #include "Input/KeyboardDevice.h"
@@ -56,17 +56,16 @@ namespace
     } };
 }
 
-TransformSystem::TransformSystem(SystemManager *parent)
+TransformSystem::TransformSystem(SystemsManager* parent)
     : BaseSystem(parent)
-    , steps({ { 10, 20, 20 } }) //10 grad for rotate and 20 pix for move/resize
+    , steps({{10, 20, 20}}) //10 grad for rotate and 20 pix for move/resize
 {
     accumulates.fill({ { 0, 0 } });
     systemManager->ActiveAreaChanged.Connect(this, &TransformSystem::SetNewArea);
     systemManager->SelectionChanged.Connect([this](const SelectedNodes& selected, const SelectedNodes& deselected)
-                                       {
-                                           selectionTracker.MergeSelection(selected, deselected);
-                                           selectedControlNodes = selectionTracker.GetSetTFromNodes<SelectedControls>();
-                                       });
+                                            {
+                                           SelectionContainer::MergeSelectionAndContainer(selected, deselected, selectedControlNodes);
+                                            });
 }
 
 void TransformSystem::SetNewArea(const HUDAreaInfo& areaInfo)

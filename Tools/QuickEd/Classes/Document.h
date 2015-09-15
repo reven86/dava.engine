@@ -32,9 +32,9 @@
 
 #include <QUndoStack>
 #include "Model/PackageHierarchy/PackageBaseNode.h"
-#include "SystemManager.h"
+#include "Systems/SystemsManager.h"
 #include "Functional/Signal.h"
-#include "SelectionTracker.h"
+#include "Systems/SelectionContainer.h"
 #include "Math/Rect.h"
 
 
@@ -77,7 +77,7 @@ public:
     
     int GetScale() const;
     bool IsInEmulationMode() const;
-    SystemManager *GetSystemManager();
+    SystemsManager* GetSystemManager();
     const DAVA::FilePath &GetPackageFilePath() const;
     QUndoStack *GetUndoStack();
     PackageNode *GetPackage();
@@ -112,8 +112,8 @@ private:
     QtModelPackageCommandExecutor *commandExecutor = nullptr;
     QUndoStack *undoStack = nullptr;
 
-    SystemManager systemManager;
-    SelectionTracker selectionTracker;
+    SystemsManager systemManager;
+    SelectionContainer selectionTracker;
 };
 
 #endif // __QUICKED_DOCUMENT_H__

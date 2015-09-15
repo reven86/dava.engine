@@ -33,7 +33,7 @@
 #include <QDockWidget>
 #include "Base/BaseTypes.h"
 #include "ui_PropertiesWidget.h"
-#include "SelectionTracker.h"
+#include "Systems/SelectionContainer.h"
 
 class ControlNode;
 class StyleSheetNode;
@@ -77,7 +77,7 @@ private:
     QAction *addStyleSelectorAction = nullptr;
     QAction *removeAction = nullptr;
 
-    SelectionTracker selectionTracker;
+    SelectionContainer selectionTracker;
 };
 
 #endif //__QUICKED_PROPERTIES_WIDGET_H__
