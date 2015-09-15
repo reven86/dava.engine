@@ -147,6 +147,7 @@ protected:
     void Save();
 	void Load();
     void CreateValue(const DAVA::FastName& path, const DAVA::VariantType &defaultValue, const DAVA::InspDesc &description = DAVA::InspDesc(""));
+    DAVA_DEPRECATED(bool CustomTextureViewGPULoad(const DAVA::String & paramName, const DAVA::VariantType & src_value, DAVA::VariantType & dstValue));
 };
 
 #endif /* defined(__RESOURCEEDITORQT__SETTINGS_MANAGER__) */
