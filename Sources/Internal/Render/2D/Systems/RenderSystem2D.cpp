@@ -96,6 +96,9 @@ void RenderSystem2D::Init()
     DEFAULT_2D_TEXTURE_GRAYSCALE_MATERIAL->PreBuildMaterial(RENDER_PASS_NAME);
 
     rhi::SamplerState::Descriptor samplerDesc;
+    samplerDesc.fragmentSampler[0].addrU = rhi::TEXADDR_CLAMP;
+    samplerDesc.fragmentSampler[0].addrV = rhi::TEXADDR_CLAMP;
+    samplerDesc.fragmentSampler[0].addrW = rhi::TEXADDR_CLAMP;
     samplerDesc.fragmentSampler[0].magFilter = rhi::TEXFILTER_LINEAR;
     samplerDesc.fragmentSampler[0].minFilter = rhi::TEXFILTER_LINEAR;
     samplerDesc.fragmentSampler[0].mipFilter = rhi::TEXMIPFILTER_NONE;
