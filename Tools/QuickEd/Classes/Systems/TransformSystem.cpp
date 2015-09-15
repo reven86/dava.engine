@@ -162,19 +162,17 @@ bool TransformSystem::ProcessDrag(const Vector2 &pos)
             if(size.x != 0.0f && size.y != 0.0f
                && gd.scale.x != 0.0f && gd.scale.y != 0.0f)
             {
-                Vector<std::pair<AbstractProperty*, const Vector2&>> propertiesDelta;
+                Vector<std::pair<String, const Vector2&>> propertiesDelta;
 
                 const Vector2 delta = pos - prevPos;
                 const Vector2 scaledDelta = delta / gd.scale;
                 //position calculates in absolute
-                AbstractProperty* prop = activeControlNode->GetRootProperty()->GetPropertyByName("Position");
-                propertiesDelta.emplace_back(std::make_pair(prop, scaledDelta));
+                propertiesDelta.emplace_back(std::make_pair("Position", scaledDelta));
                 //pivot point calculate in rotate coordinates
                 const Vector2 angeledDelta(scaledDelta.x * gd.cosA + scaledDelta.y * gd.sinA,
                                            scaledDelta.x * -gd.sinA + scaledDelta.y * gd.cosA);
                 const Vector2 pivot(angeledDelta / size);
-                prop = activeControlNode->GetRootProperty()->GetPropertyByName("Pivot");
-                propertiesDelta.emplace_back(std::make_pair(prop, pivot));
+                propertiesDelta.emplace_back(std::make_pair("Pivot", pivot));
 
                 AdjustProperty(activeControlNode, propertiesDelta);
             }
@@ -363,43 +361,27 @@ void TransformSystem::ResizeControl(const Vector2& pos, bool withPivot, bool rat
     rotatedPosition.x = deltaPosition.x * cosf(-gd.angle) + deltaPosition.y * sinf(-gd.angle);
     rotatedPosition.y = deltaPosition.x * -sinf(-gd.angle) + deltaPosition.y * cosf(-gd.angle);
 
-    Vector<std::pair<AbstractProperty*, const Vector2&>> propertiesDelta;
-    AbstractProperty* prop = activeControlNode->GetRootProperty()->GetPropertyByName("Position");
-    propertiesDelta.emplace_back(std::make_pair(prop, rotatedPosition));
-    prop = activeControlNode->GetRootProperty()->GetPropertyByName("Size");
-    propertiesDelta.emplace_back(std::make_pair(prop, deltaSize));
+    Vector<std::pair<String, const Vector2&>> propertiesDelta;
+    propertiesDelta.emplace_back(std::make_pair("Position", rotatedPosition));
+    propertiesDelta.emplace_back(std::make_pair("Size", deltaSize));
     AdjustProperty(activeControlNode, propertiesDelta);
 }
 
 template <typename T>
 void TransformSystem::AdjustProperty(ControlNode *node, const String &propertyName, const T &delta)
 {
-    AbstractProperty *property = node->GetRootProperty()->GetPropertyByName(propertyName);
-    DVASSERT(nullptr != property);
-    VariantType var(delta);
-    
-    switch(var.GetType())
-    {
-        case VariantType::TYPE_VECTOR2:
-            var = VariantType(property->GetValue().AsVector2() + delta);
-            break;
-        case VariantType::TYPE_FLOAT:
-            var = VariantType(property->GetValue().AsFloat() + delta);
-            break;
-        default:
-            DVASSERT_MSG(false, "unexpected type");
-            break;
-    }
-    systemManager->PropertyChanged.Emit(std::move(node), std::move(property), var);
+    Vector<std::pair<String /*propertyName*/, const T& /*delta*/>> propertiesDelta;
+    propertiesDelta.emplace_back(std::make_pair(propertyName, delta));
+    AdjustProperty(node, propertiesDelta);
 }
 
 template <typename T>
-void TransformSystem::AdjustProperty(ControlNode* node, const Vector<std::pair<AbstractProperty* /*property*/, const T& /*delta*/>>& propertiesDelta)
+void TransformSystem::AdjustProperty(ControlNode* node, const Vector<std::pair<String /*propertyName*/, const T& /*delta*/>>& propertiesDelta)
 {
     Vector<std::pair<AbstractProperty*, VariantType>> propertiesToChange;
     for (const auto& pair : propertiesDelta)
     {
-        AbstractProperty* property = pair.first;
+        AbstractProperty* property = activeControlNode->GetRootProperty()->GetPropertyByName(pair.first);
         DVASSERT(nullptr != property);
         const T& delta = pair.second;
         VariantType var(delta);
