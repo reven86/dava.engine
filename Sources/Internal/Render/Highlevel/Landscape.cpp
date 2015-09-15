@@ -848,7 +848,7 @@ void Landscape::GenLods(LandQuadTreeNode<LandscapeQuad> * currentNode, uint8 cli
             maxLod = k + 1;
     }
     
-    if ((minLod == maxLod) && (currentNode->data.size <= (1 << maxLod) + 1))
+    if ((minLod == maxLod) && ((frustumRes == Frustum::EFR_INSIDE) || (currentNode->data.size <= (1 << maxLod) + 1)))
     {
         currentNode->data.lod = maxLod;
         if (maxLod > 0)
