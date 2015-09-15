@@ -27,17 +27,41 @@
 =====================================================================================*/
 
 
-#include <QCoreApplication>
-#include "Core/Core.h"
+#ifndef __DAVAENGINE_APPX_BUNDLE_HELPER_H__
+#define __DAVAENGINE_APPX_BUNDLE_HELPER_H__
 
-#include <objbase.h>
+#include "Base/BaseTypes.h"
+#include "FileSystem/FilePath.h"
 
-#if defined(__DAVAENGINE_WIN32__)
-
-int main(int argc, char* argv[])
+namespace DAVA
 {
-    QCoreApplication appl(argc, argv);
-    return DAVA::Core::RunCmdTool(0, 0, 0);
+
+class AppxBundleHelper
+{
+public:
+    struct PackageInfo
+    {
+        String name;
+        String architecture;
+    };
+
+    AppxBundleHelper(const FilePath &fileName);
+    ~AppxBundleHelper();
+
+    static bool IsBundle(const FilePath &fileName);
+    const Vector<PackageInfo>& GetApplications() const;
+    
+    FilePath ExtractApplication(const String& name);
+    FilePath ExtractApplicationForArchitecture(const String& name);
+
+private:
+    void ParseBundleManifest();
+
+    FilePath bundlePackage;
+    Set<FilePath> extractedPackages;
+    Vector<PackageInfo> storedPackages;
+};
+
 }
 
-#endif // defined(__DAVAENGINE_WIN32__)
+#endif  // __DAVAENGINE_APPX_BUNDLE_HELPER_H__

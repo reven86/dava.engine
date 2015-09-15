@@ -27,6 +27,9 @@
 =====================================================================================*/
 
 
+#include <QFile>
+#include <QXmlStreamReader>
+
 #include "Concurrency/LockGuard.h"
 #include "Concurrency/Mutex.h"
 #include "Concurrency/Thread.h"
@@ -37,6 +40,9 @@
 #include "Network/SimpleNetworking/SimpleNetService.h"
 
 #include <Objbase.h>
+
+#include "AppxBundleHelper.h"
+#include "ArchiveExtraction.h"
 #include "SvcHelper.h"
 #include "runner.h"
 #include "RegKey.h"
@@ -53,6 +59,13 @@ bool InitializeNetwork(bool isMobileDevice);
 bool ConfigureIpOverUsb();
 void WaitApp();
 
+void LaunchPackage(const PackageOptions& opt);
+void LaunchPackage(const FilePath& package, const PackageOptions& opt);
+
+String GetCurrentArchitecture();
+QString GetQtWinRTRunnerProfile(const Optional<String>& profile, const FilePath& manifest);
+FilePath ExtractManifest(const FilePath& package);
+
 void FrameworkDidLaunched()
 {
     //Parse arguments
@@ -62,26 +75,82 @@ void FrameworkDidLaunched()
         return;
     }
 
+    LaunchPackage(commandLineOptions);
+}
+
+void LaunchPackage(const PackageOptions& opt)
+{
+    FilePath package = opt.package.Get();
+
+    //if package is bundle, extract concrete package from it
+    if (AppxBundleHelper::IsBundle(package))
+    {
+        Logger::Instance()->Info("Extracting package from bundle...");
+        AppxBundleHelper bundle(package);
+
+        //try to extract package for specified architecture
+        if (opt.architecture.IsSet())
+        {
+            package = bundle.ExtractApplicationForArchitecture(opt.architecture.Get());
+            if (package.IsEmpty())
+            {
+                DVASSERT_MSG(false, "Can't extract package for specified architecture from bundle");
+            }
+        }
+        //try to extract package for current architecture
+        else
+        {
+            package = bundle.ExtractApplicationForArchitecture(GetCurrentArchitecture());
+
+            //try to extract package for any architecture
+            if (package.IsEmpty())
+            {
+                Vector<AppxBundleHelper::PackageInfo> applications = bundle.GetApplications();
+                package = bundle.ExtractApplication(applications.at(0).name);
+            }
+        }
+
+        if (!package.IsEmpty())
+        {
+            LaunchPackage(package, opt);
+        }
+    }
+    else
+    {
+        LaunchPackage(package, opt);
+    }
+}
+
+void LaunchPackage(const FilePath& package, const PackageOptions& opt)
+{
     //Extract manifest from package
-    FilePath manifest = ExtractManifest(commandLineOptions.package.Get());
+    Logger::Instance()->Info("Extracting manifest...");
+    FilePath manifest = ExtractManifest(package);
+    if (manifest.IsEmpty())
+    {
+        DVASSERT_MSG(false, "Can't extract manifest file from package");
+        return;
+    }
+
     SCOPE_EXIT
     {
-        if (manifest.Exists())
-            FileSystem::Instance()->DeleteFile(manifest);
+        FileSystem::Instance()->DeleteFile(manifest);
     };
-    
-    //Convert profile to qt winrt runner profile
-    QString profile = commandLineOptions.profile == "local" ? QStringLiteral("appx") 
-                                                            : QStringLiteral("appxphone");
+
     //Create Qt runner
-    Runner runner(QString::fromStdString(commandLineOptions.package.Get()),
-                  QString::fromStdString(manifest.GetAbsolutePathname()),
-                  QString::fromStdString(commandLineOptions.dependencies.Get()),
-                  QStringList(), 
-                  profile);
+    Logger::Instance()->Info("Preparing...");
+    Runner runner(QString::fromStdString(package.GetAbsolutePathname()),
+        QString::fromStdString(manifest.GetAbsolutePathname()),
+        QString::fromStdString(opt.dependencies.Get()),
+        QStringList(),
+        GetQtWinRTRunnerProfile(opt.profile, manifest));
 
     //Check runner state
-    DVASSERT_MSG_RET(runner.isValid(), "Runner core is not valid");
+    if (runner.isValid())
+    {
+        DVASSERT_MSG(false, "Runner core is not valid");
+        return;
+    }
     Run(runner);
 }
 
@@ -91,6 +160,7 @@ void Run(Runner& runner)
     bool isMobileDevice = runner.profile() == QStringLiteral("appxphone");
 
     //Init network
+    Logger::Instance()->Info("Initializing network...");
     DVASSERT_MSG_RET(InitializeNetwork(isMobileDevice), "Unable to initialize network");
 
     //Start app
@@ -105,7 +175,10 @@ void Run(Runner& runner)
 
 void Start(Runner& runner)
 {
+    Logger::Instance()->Info("Installing package...");
     DVASSERT_MSG_RET(runner.install(true), "Can't install application package");
+
+    Logger::Instance()->Info("Starting application...");
     DVASSERT_MSG_RET(runner.start(), "Can't install application package");
 }
 
@@ -145,6 +218,8 @@ bool InitializeNetwork(bool isMobileDevice)
 
 void WaitApp()
 {
+    Logger::Instance()->Info("Waiting app exit...");
+
     while (true)
     {
         Thread::Sleep(1000);
@@ -240,4 +315,66 @@ bool ConfigureIpOverUsb()
     if (needRestart)
         return RestartIpOverUsb();
     return true;
+}
+
+String GetCurrentArchitecture()
+{
+    return sizeof(void*) == 4 ? "x86" : "x64";
+}
+
+QString GetQtWinRTRunnerProfile(const Optional<String>& profile, const FilePath& manifest)
+{
+    //if profile is set, just convert it
+    if (profile.IsSet())
+    {
+        return profile == "local" ? QStringLiteral("appx") : QStringLiteral("appxphone");
+    }
+
+    //else try to find out profile from manifest
+    QFile file(QString::fromStdString(manifest.GetAbsolutePathname()));
+    file.open(QIODevice::ReadOnly | QIODevice::Text);
+    QXmlStreamReader xml(&file);
+
+    while (!xml.atEnd() && !xml.hasError())
+    {
+        QXmlStreamReader::TokenType token = xml.readNext();
+        if (token != QXmlStreamReader::StartElement ||
+            xml.name() != QStringLiteral("Identity"))
+        {
+            continue;
+        }
+
+        QXmlStreamAttributes attributes = xml.attributes();
+        for (const auto& attribute : attributes)
+        {
+            if (attribute.name() == QStringLiteral("ProcessorArchitecture"))
+            {
+                QString arch = attribute.value().toString().toLower();
+                if (arch == QStringLiteral("arm"))
+                {
+                    return QStringLiteral("appxphone");
+                }
+                else
+                {
+                    return QStringLiteral("appx");
+                }
+            }
+        }
+    }
+
+    return "";
+}
+
+FilePath ExtractManifest(const FilePath& package)
+{
+    FilePath manifestFilePath = GetTempFileName();
+
+    //extract manifest from appx
+    if (ExtractFileFromArchive(package.GetAbsolutePathname(),
+                               "AppxManifest.xml",
+                               manifestFilePath.GetAbsolutePathname()))
+    {
+        return manifestFilePath;
+    }
+    return FilePath();
 }

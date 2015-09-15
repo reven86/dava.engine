@@ -27,26 +27,13 @@
 =====================================================================================*/
 
 
-#ifndef UWP_RUNNER_H
-#define UWP_RUNNER_H
+#include "Core/Core.h"
 
-#include "Base/BaseTypes.h"
-#include "Base/Optional.h"
-#include "FileSystem/FilePath.h"
+#if defined(__DAVAENGINE_WIN32__)
 
-using DAVA::Optional;
-using DAVA::String;
-using DAVA::FilePath;
-
-struct PackageOptions
+int main(int argc, char* argv[])
 {
-    Optional<String> package;
-    Optional<String> architecture;
-    Optional<String> profile;
-    Optional<String> dependencies;
-};
+    return DAVA::Core::RunCmdTool(0, 0, 0);
+}
 
-PackageOptions ParseCommandLine();
-bool CheckOptions(const PackageOptions& options);
-
-#endif  // UWP_RUNNER_H
+#endif // defined(__DAVAENGINE_WIN32__)

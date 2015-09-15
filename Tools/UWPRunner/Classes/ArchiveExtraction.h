@@ -1,4 +1,4 @@
-/*==================================================================================
+﻿/*==================================================================================
     Copyright (c) 2008, binaryzebra
     All rights reserved.
 
@@ -27,26 +27,17 @@
 =====================================================================================*/
 
 
-#ifndef UWP_RUNNER_H
-#define UWP_RUNNER_H
+#ifndef __DAVAENGINE_ARCHIVE_EXTRACTION_H__
+#define __DAVAENGINE_ARCHIVE_EXTRACTION_H__
 
 #include "Base/BaseTypes.h"
-#include "Base/Optional.h"
-#include "FileSystem/FilePath.h"
 
-using DAVA::Optional;
-using DAVA::String;
-using DAVA::FilePath;
-
-struct PackageOptions
+namespace DAVA
 {
-    Optional<String> package;
-    Optional<String> architecture;
-    Optional<String> profile;
-    Optional<String> dependencies;
-};
 
-PackageOptions ParseCommandLine();
-bool CheckOptions(const PackageOptions& options);
+String GetTempFileName();
+bool ExtractFileFromArchive(const String& zipFile, const String& file, const String& outFile);
 
-#endif  // UWP_RUNNER_H
+}  // namespace DAVA
+
+#endif  // __DAVAENGINE_ARCHIVE_EXTRACTION_H__

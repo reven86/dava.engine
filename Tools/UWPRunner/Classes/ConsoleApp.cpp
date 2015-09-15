@@ -38,16 +38,61 @@
 
 using namespace DAVA;
 
+void ShowUsage();
+PackageOptions ParseShortFormArgs(const String& packagePath);
+PackageOptions ParseLongFormArgs(const Vector<String>& arguments);
+
 PackageOptions ParseCommandLine()
+{
+    const Vector<String>& arguments = Core::Instance()->GetCommandLine();
+
+    //no args
+    if (arguments.size() == 1)
+    {
+        ShowUsage();
+        return PackageOptions();
+    }
+    //short form (only file)
+    else if (arguments.size() == 2)
+    {
+        return ParseShortFormArgs(arguments[1]);
+    }
+    //long form
+    else
+    {
+        return ParseLongFormArgs(arguments);
+    }
+}
+
+PackageOptions ParseShortFormArgs(const String& packagePath)
+{
+    Vector<String> packageInfo;
+    Split(FilePath(packagePath).GetBasename(), "_", packageInfo);
+
+    PackageOptions options;
+    options.package = packagePath;
+    options.dependencies = FilePath(packagePath).GetDirectory().GetAbsolutePathname();
+
+    return options;
+}
+
+PackageOptions ParseLongFormArgs(const Vector<String>& arguments)
 {
     PackageOptions out;
 
     CommandLineParser parser;
-    parser.SetArguments(Core::Instance()->GetCommandLine());
+    parser.SetArguments(arguments);
 
-    //parse parameters 'package', 'profile' and 'dependencies'
+    //parse parameters 'arch', 'package', 'profile' and 'dependencies'
+    if (parser.IsFlagSet("--arch"))
+    {
+        out.architecture = parser.GetParamForFlag("--arch");
+    }
+
     if (parser.IsFlagSet("--package"))
+    {
         out.package = parser.GetParamForFlag("--package");
+    }
 
     if (parser.IsFlagSet("--profile"))
     {
@@ -57,7 +102,13 @@ PackageOptions ParseCommandLine()
     }
 
     if (parser.IsFlagSet("--dependencies"))
+    {
         out.dependencies = parser.GetParamForFlag("--dependencies");
+    }
+    else if (out.package.IsSet())
+    {
+        out.dependencies = FilePath(out.package.Get()).GetDirectory().GetAbsolutePathname();
+    }
 
     return out;
 }
@@ -90,18 +141,8 @@ bool CheckPackageOption(const Optional<String>& package)
         std::cout << "Cannot find the specified file: " << package.Get();
         return false;
     }
-    else if (FilePath(package.Get()).GetExtension() != ".appx")
-    {
-        std::cout << "File is not a UWP package: " << package.Get();
-        return false;
-    }
 
     return true;
-}
-
-bool CheckProfileOption(const Optional<String>& profile)
-{
-    return profile == "local" || profile == "phone";
 }
 
 bool CheckDependenciesOption(const Optional<String>& dependencies)
@@ -125,10 +166,9 @@ bool CheckDependenciesOption(const Optional<String>& dependencies)
 bool CheckOptions(const PackageOptions& options)
 {
     bool packageIsOk = CheckPackageOption(options.package);
-    bool profileIsOk = CheckProfileOption(options.profile);
     bool dependenciesIsOk = CheckDependenciesOption(options.dependencies);
 
-    bool allIsOk = packageIsOk && profileIsOk && dependenciesIsOk;
+    bool allIsOk = packageIsOk && dependenciesIsOk;
 
     if (!allIsOk)
         ShowUsage();

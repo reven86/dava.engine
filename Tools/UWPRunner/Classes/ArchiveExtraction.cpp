@@ -27,44 +27,35 @@
 =====================================================================================*/
 
 
+#include "ArchiveExtraction.h"
+
 #include "FileSystem/File.h"
 #include "FileSystem/FileSystem.h"
 
-#include "UWPRunner.h"
+namespace DAVA
+{
 
-using namespace DAVA;
-
-bool ExtractManifestFromPackage(const String& zipFile, const String& outFile);
-
-FilePath ExtractManifest(const FilePath& package)
+String GetTempFileName()
 {
     Array<char, 128> tempPath {};
-    GetTempPathA(tempPath.size(), tempPath.data());
+    ::GetTempPathA(tempPath.size(), tempPath.data());
 
     Array<char, MAX_PATH> tempFilePath {};
-    GetTempFileNameA(tempPath.data(), "manifest", 0, tempFilePath.data());
+    ::GetTempFileNameA(tempPath.data(), "DAVA", 0, tempFilePath.data());
 
-    FilePath manifestFilePath = tempFilePath.data();
-
-    if (!ExtractManifestFromPackage(package.GetAbsolutePathname(), 
-                                    manifestFilePath.GetAbsolutePathname()))
-    {
-        return FilePath();
-    }
-    return manifestFilePath;
+    return tempFilePath.data();
 }
-
 
 //We don't have any API for working with ZIP, so we use Python for extracting manifest
 //https://upload.wikimedia.org/wikipedia/ru/7/78/Trollface.svg
-bool ExtractManifestFromPackage(const String& zipFile, const String& outFile)
+bool ExtractFileFromArchive(const String& zipFile, const String& file, const String& outFile)
 {
     FileSystem* fs = FileSystem::Instance();
     FilePath scriptFilePath(fs->GetCurrentExecutableDirectory(), "extraction.py");
 
     String script = "import zipfile                         \n"
                     "zf = zipfile.ZipFile('" + zipFile + "')\n"
-                    "data = zf.read('AppxManifest.xml')     \n"
+                    "data = zf.read('" + file + "')         \n"
                     "file = open('" + outFile + "', 'w')    \n"
                     "file.write(data)                       \n";
 
@@ -80,3 +71,5 @@ bool ExtractManifestFromPackage(const String& zipFile, const String& outFile)
     
     return fs->IsFile(outFile);
 }
+
+}  // namespace DAVA
