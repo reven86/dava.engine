@@ -664,6 +664,7 @@ Texture * Texture::CreateFBO(uint32 w, uint32 h, PixelFormat format, rhi::Textur
     descriptor.height = tx->height;
     descriptor.autoGenMipmaps = false;
     descriptor.isRenderTarget = true;
+    descriptor.needRestore = false;
     descriptor.type = requestedType;
     descriptor.format = formatDescriptor.format;
     DVASSERT(descriptor.format != ((rhi::TextureFormat)-1));//unsupported format

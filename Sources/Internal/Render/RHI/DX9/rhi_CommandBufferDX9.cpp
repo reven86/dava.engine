@@ -219,6 +219,7 @@ dx9_RenderPass_Begin( Handle pass )
     {
         _Frame.push_back( FrameDX9() );
         _Frame.back().number         = _FrameNumber;
+        _Frame.back().sync = rhi::InvalidHandle;
         _Frame.back().readyToExecute = false;
 
 Trace("\n\n-------------------------------\nframe %u started\n",_FrameNumber);
@@ -1036,6 +1037,7 @@ Trace("\n\n-------------------------------\nframe %u generated\n",_Frame.back().
 static void
 _RejectAllFrames()
 {
+    _FrameSync.Lock();
     for( std::vector<FrameDX9>::iterator f=_Frame.begin(),f_end=_Frame.end(); f!=f_end; ++f )
     {
         if (f->sync != InvalidHandle)
@@ -1066,6 +1068,8 @@ _RejectAllFrames()
     }
 
     _Frame.clear();
+    _FrameStarted = false;
+    _FrameSync.Unlock();
 }
 
 

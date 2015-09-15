@@ -106,6 +106,9 @@ void TextBlockSoftwareRender::Restore()
     Texture* tex = sprite->GetTexture();
     if (!tex)
         return;
+    if (!rhi::NeedRestoreTexture(tex->handle))
+        return;
+
     int32 width = Max(textBlock->cacheDx, 1);
     int32 height = Max(textBlock->cacheDy, 1);
     int32 bsz = width * height;
