@@ -1619,6 +1619,8 @@
 		D738BD731B01F1BC00989C29 /* RawTimer.h in Headers */ = {isa = PBXBuildFile; fileRef = D738BD6F1B01F1BC00989C29 /* RawTimer.h */; };
 		D738BD741B01F1BC00989C29 /* RawTimer.h in Headers */ = {isa = PBXBuildFile; fileRef = D738BD6F1B01F1BC00989C29 /* RawTimer.h */; };
 		D738BD751B01F1BC00989C29 /* RawTimer.h in Headers */ = {isa = PBXBuildFile; fileRef = D738BD6F1B01F1BC00989C29 /* RawTimer.h */; };
+		D78059AD1BA7F33400BBAE06 /* SceneUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D78059AB1BA7F33400BBAE06 /* SceneUtils.cpp */; };
+		D78059AE1BA7F33400BBAE06 /* SceneUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = D78059AC1BA7F33400BBAE06 /* SceneUtils.h */; };
 		D7C1C1D619CAD2FB00E79D84 /* LocalNotificationImpl.h in Headers */ = {isa = PBXBuildFile; fileRef = D7C1C1D519CAD2FB00E79D84 /* LocalNotificationImpl.h */; };
 		D7C1C1D719CAD2FB00E79D84 /* LocalNotificationImpl.h in Headers */ = {isa = PBXBuildFile; fileRef = D7C1C1D519CAD2FB00E79D84 /* LocalNotificationImpl.h */; };
 		D7C1C1D819CAD2FB00E79D84 /* LocalNotificationImpl.h in Headers */ = {isa = PBXBuildFile; fileRef = D7C1C1D519CAD2FB00E79D84 /* LocalNotificationImpl.h */; };
@@ -3324,6 +3326,8 @@
 		D2F7E8BE07B2D77200F64583 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = /System/Library/Frameworks/CoreData.framework; sourceTree = "<absolute>"; };
 		D738BD6E1B01F1BC00989C29 /* RawTimer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RawTimer.cpp; path = Timer/RawTimer.cpp; sourceTree = "<group>"; };
 		D738BD6F1B01F1BC00989C29 /* RawTimer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RawTimer.h; path = Timer/RawTimer.h; sourceTree = "<group>"; };
+		D78059AB1BA7F33400BBAE06 /* SceneUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SceneUtils.cpp; sourceTree = "<group>"; };
+		D78059AC1BA7F33400BBAE06 /* SceneUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SceneUtils.h; sourceTree = "<group>"; };
 		D7C1C1D519CAD2FB00E79D84 /* LocalNotificationImpl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocalNotificationImpl.h; sourceTree = "<group>"; };
 		D7C556671A7A158600175ED9 /* DataStorage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DataStorage.h; sourceTree = "<group>"; };
 		D7C5566D1A7A158600175ED9 /* DataStorageMacOS.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DataStorageMacOS.cpp; sourceTree = "<group>"; };
@@ -5156,6 +5160,8 @@
 		E8989CBF16BD24E500732C04 /* Scene3D */ = {
 			isa = PBXGroup;
 			children = (
+				D78059AB1BA7F33400BBAE06 /* SceneUtils.cpp */,
+				D78059AC1BA7F33400BBAE06 /* SceneUtils.h */,
 				CCF00D391A42F21B00A577C2 /* EntityFamily.cpp */,
 				CCF00D3A1A42F21B00A577C2 /* EntityFamily.h */,
 				CC931B1D188EC934000375F9 /* Converters */,
@@ -6485,6 +6491,7 @@
 				74A909AC1701FA51003FDB31 /* CRC32.h in Headers */,
 				840D24231703311400267C58 /* DeviceInfo.h in Headers */,
 				CC931B28188EC95F000375F9 /* SwitchToRenerObjectConverter.h in Headers */,
+				D78059AE1BA7F33400BBAE06 /* SceneUtils.h in Headers */,
 				CC0D7B3F1A76055A00309408 /* WaypointComponent.h in Headers */,
 				7410E81D17144C160028AAAA /* UIAggregatorControl.h in Headers */,
 				E8951B761738FEEC00755339 /* GPUFamilyDescriptor.h in Headers */,
@@ -7558,7 +7565,7 @@
 				50C16DAF1A52D7B9003C307A /* NetworkUtils.cpp in Sources */,
 				7C007E1B1B384DAC000003DB /* ThreadWin32.cpp in Sources */,
 				E8989DB816BD24E500732C04 /* BaseObjectChecker.cpp in Sources */,
-				84CB6722191FC8850086483D /* LibJpegHelper.cpp in Sources */,
+				84CB6722191FC8850086483D /* LibWebPHelper.cpp in Sources */,
 				84CB6722191FC8850086483D /* LibWebPHelper.cpp in Sources */,
 				84CB6722191FC8850086483D /* LibWebPHelper.cpp in Sources */,
 				7C007E0F1B384DAC000003DB /* Thread.cpp in Sources */,
@@ -7692,6 +7699,7 @@
 				E8989EF716BD24E500732C04 /* ColorOnlyEffect.cpp in Sources */,
 				5015AF451B15E5400062C971 /* MMNetServer.cpp in Sources */,
 				E8989EF916BD24E500732C04 /* MultiTextureEffect.cpp in Sources */,
+				D78059AD1BA7F33400BBAE06 /* SceneUtils.cpp in Sources */,
 				50C16DA91A52D7B9003C307A /* IfAddress.cpp in Sources */,
 				02FD8264192A3859007762C0 /* WaveSystem.cpp in Sources */,
 				D7CC263419C43C7C00A3B754 /* LocalNotificationController.cpp in Sources */,

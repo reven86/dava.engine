@@ -28,25 +28,18 @@
 
 #include "Scene3D/Entity.h"
 #include "Scene3D/Scene.h"
+#include "Scene3D/SceneUtils.h"
 #include "Scene3D/AnimationData.h"
 #include "Scene3D/Components/ComponentHelpers.h"
-#include "Scene3D/Components/LodComponent.h"
 #include "Scene3D/Components/AnimationComponent.h"
 #include "Scene3D/Components/RenderComponent.h"
 #include "Scene3D/Components/TransformComponent.h"
-#include "Render/Material/NMaterial.h"
-#include "Render/Material/NMaterialNames.h"
-#include "Render/Highlevel/RenderObject.h"
-#include "Render/Highlevel/RenderBatch.h"
 #include "Render/Highlevel/Mesh.h"
 #include "Render/3D/MeshUtils.h"
 #include "Render/3D/PolygonGroup.h"
-#include "Render/TextureDescriptor.h"
-#include "Collada/ColladaPolygonGroup.h"
 #include "Collada/ColladaMeshInstance.h"
 #include "Collada/ColladaSceneNode.h"
 #include "Collada/ColladaScene.h"
-#include "FileSystem/FileSystem.h"
 
 #include "Collada/ColladaToSc2Importer/ColladaToSc2Importer.h"
 
@@ -55,121 +48,6 @@
 
 namespace DAVA
 {
-namespace
-{
-    
-String LodNameForIndex(const String & pattern, uint32 lodIndex)
-{
-    return Format(pattern.c_str(), lodIndex);
-}
-
-void CollapseLodsIntoOneEntity(Entity *forRootNode)
-{
-    List<Entity *> lodNodes;
-    
-    const String lod0 = LodNameForIndex(ImportSettings::lodNamePattern, 0);
-    if (!forRootNode->FindNodesByNamePart(lod0, lodNodes))
-    {
-        // There is no lods.
-        return;
-    }
-    
-    for (Entity * oneLodNode : lodNodes)
-    {
-        // node name which contains lods
-        const String lodName(oneLodNode->GetName().c_str());
-        const String nodeWithLodsName(lodName, 0, lodName.find(lod0));
-        
-        Entity * oldParent = oneLodNode->GetParent();
-
-        ScopedPtr<Entity> newNodeWithLods(new Entity());
-        newNodeWithLods->SetName(nodeWithLodsName.c_str());
-        
-        ScopedPtr<Mesh> newMesh(new Mesh());
-        
-        uint32 lodCount = 0;
-        for (int lodNo = 0; lodNo < LodComponent::MAX_LOD_LAYERS; ++lodNo)
-        {
-            
-            // Remove dummy nodes
-            // Try to find node with same name but with other lod
-            const FastName lodIName(nodeWithLodsName + LodNameForIndex(ImportSettings::lodNamePattern, lodNo));
-            Entity * ln = oldParent->FindByName(lodIName.c_str());
-            
-            if (nullptr == ln)
-            {
-                const FastName dummyLodName(nodeWithLodsName + LodNameForIndex(ImportSettings::dummyLodNamePattern, lodNo));
-                ln = oldParent->FindByName(dummyLodName.c_str());
-                
-                if (nullptr != ln)
-                {
-                    ln->SetVisible(false);
-                    ln->RemoveAllChildren();
-                }
-            }
-            
-            if (nullptr != ln)
-            {
-                ColladaToSc2Importer::CollapseRenderBatchesRecursiveAsLod(ln, lodNo, newMesh);
-                ColladaToSc2Importer::CollapseAnimationsUpToFarParent(ln, newNodeWithLods);
-                
-                oldParent->RemoveNode(ln);
-                ++lodCount;
-            }
-
-        }
-        
-        if (0 < lodCount)
-        {
-            LodComponent *lc = new LodComponent();
-            newNodeWithLods->AddComponent(lc);
-            if (lodCount < LodComponent::MAX_LOD_LAYERS && lodCount > LodComponent::INVALID_LOD_LAYER)
-            {
-                // Fix max lod distance for max used lod index
-                lc->SetLodLayerDistance(lodCount, LodComponent::MAX_LOD_DISTANCE);
-            }
-        }
-        
-        RenderComponent * rc = new RenderComponent();
-        rc->SetRenderObject(newMesh);
-
-        newNodeWithLods->AddComponent(rc);
-        oldParent->AddNode(newNodeWithLods);
-        
-        DVASSERT(oldParent->GetScene());
-        DVASSERT(newNodeWithLods->GetScene());
-    }
-}
-    
-void CombineLods(Entity * root)
-{
-    for (auto child : root->children)
-    {
-        CollapseLodsIntoOneEntity(child);
-    }
-}
-
-void BakeTransformsUpToParent(Entity * parent, Entity * currentNode)
-{
-    for (auto child : currentNode->children)
-    {
-        BakeTransformsUpToParent(parent, child);
-    }
-    
-    // Bake transforms to geometry
-    RenderObject * ro = GetRenderObject(currentNode);
-    if (ro)
-    {
-        // Get actual transformation for current entity
-        Matrix4 totalTransform = currentNode->AccamulateTransformUptoFarParent(parent);
-        ro->BakeGeometry(totalTransform);
-    }
-    
-    // Set local transform as Ident because transform is already baked up into geometry
-    auto transformComponent = GetTransformComponent(currentNode);
-    transformComponent->SetLocalTransform(&Matrix4::IDENTITY);
-}
-} // unnamed namespace
 
 // Creates Dava::Mesh from ColladaMeshInstance and puts it
 Mesh * ColladaToSc2Importer::GetMeshFromCollada(ColladaMeshInstance * mesh, const bool isShadow)
@@ -303,50 +181,12 @@ SceneFileV2::eError ColladaToSc2Importer::SaveSC2(ColladaScene * colladaScene, c
     BuildSceneAsCollada(scene, colladaScene->rootNode);
     
     // Apply transforms to render batches and use identity local transforms
-    BakeTransformsUpToParent(scene, scene);
+    SceneUtils::BakeTransformsUpToFarParent(scene, scene);
     
     // post process Entities and create Lod nodes.
-    CombineLods(scene);
+    SceneUtils::CombineLods(scene);
     
     return scene->SaveScene(scenePath + sceneName);
-}
-
-void ColladaToSc2Importer::CollapseRenderBatchesRecursiveAsLod(Entity * node, uint32 lod, RenderObject * ro)
-{
-    for (auto child : node->children)
-    {
-        CollapseRenderBatchesRecursiveAsLod(child, lod, ro);
-    }
-    
-    RenderObject * lodRenderObject = GetRenderObject(node);
-    if (nullptr != lodRenderObject)
-    {
-        uint32 batchNo = 0;
-        while (lodRenderObject->GetRenderBatchCount() > 0)
-        {
-            RenderBatch * batch = lodRenderObject->GetRenderBatch(batchNo);
-            batch->Retain();
-            lodRenderObject->RemoveRenderBatch(batch);
-            ro->AddRenderBatch(batch, lod, -1);
-            batch->Release();
-            ++batchNo;
-        }
-    }
-}
-
-void ColladaToSc2Importer::CollapseAnimationsUpToFarParent(Entity * node, Entity * parent)
-{
-    for (auto child : parent->children)
-    {
-        CollapseAnimationsUpToFarParent(child, parent);
-    }
-    
-    Component * ac = GetAnimationComponent(node);
-    if (ac)
-    {
-        node->DetachComponent(ac);
-        parent->AddComponent(ac);
-    }
 }
 
 };

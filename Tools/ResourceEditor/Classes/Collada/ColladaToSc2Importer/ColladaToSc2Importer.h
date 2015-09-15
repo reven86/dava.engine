@@ -43,9 +43,6 @@ public:
     ColladaToSc2Importer();
     ~ColladaToSc2Importer();
     SceneFileV2::eError SaveSC2(ColladaScene * colladaScene, const FilePath & scenePath, const String & sceneName);
-    
-    static void CollapseRenderBatchesRecursiveAsLod(Entity * node, uint32 lod, RenderObject * ro);
-    static void CollapseAnimationsUpToFarParent(Entity * node, Entity * parent);
 
 private:
     void ImportAnimation(ColladaSceneNode * colladaNode, Entity * nodeEntity);
