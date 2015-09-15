@@ -68,13 +68,13 @@ private:
 	static const uint32 WINDOWED_STYLE = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
 	static const uint32 FULLSCREEN_STYLE = WS_VISIBLE | WS_POPUP;
 
-    void OnMouseEvent(uint32 deviceId, USHORT buttsFlags, WPARAM wParam, LPARAM lParam, USHORT buttonData);
-    void OnTouchEvent(UIEvent::eInputPhase phase, uint32 deviceId, uint32 fingerId, float32 x, float32 y, float presure);
+    void OnMouseEvent(UIEvent::PointerDeviceID deviceId, USHORT buttsFlags, WPARAM wParam, LPARAM lParam, USHORT buttonData);
+    void OnTouchEvent(UIEvent::eInputPhase phase, UIEvent::PointerDeviceID deviceId, uint32 fingerId, float32 x, float32 y, float presure);
     static String GetDeviceName(HANDLE hDevice);
     static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
     RECT GetWindowedRectForDisplayMode(DisplayMode & dm);
-    int32 MoveTouchsToVector(uint32 deviceId, USHORT buttsFlags, WPARAM wParam, LPARAM lParam, Vector<UIEvent>* outTouches);
+    int32 MoveTouchsToVector(UIEvent::PointerDeviceID deviceId, USHORT buttsFlags, WPARAM wParam, LPARAM lParam, Vector<UIEvent>* outTouches);
 
     bool willQuit;
 

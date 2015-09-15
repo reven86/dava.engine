@@ -438,7 +438,7 @@ namespace DAVA
 		SendMessage(hWindow, WM_SETICON, ICON_BIG, (LPARAM)smallIcon);
 	}
 
-    int32 CoreWin32Platform::MoveTouchsToVector(uint32 deviceId, USHORT buttsFlags, WPARAM wParam, LPARAM lParam, Vector<UIEvent>* outTouches)
+    int32 CoreWin32Platform::MoveTouchsToVector(UIEvent::PointerDeviceID deviceId, USHORT buttsFlags, WPARAM wParam, LPARAM lParam, Vector<UIEvent>* outTouches)
     {
 		int button = 0;
         int phase = -1;
@@ -521,7 +521,7 @@ namespace DAVA
             newTouch.physPoint.x = static_cast<float32>(GET_X_LPARAM(lParam));
             newTouch.physPoint.y = static_cast<float32>(GET_Y_LPARAM(lParam));
             newTouch.phase = phase;
-            newTouch.deviceIndex = deviceId;
+            newTouch.deviceId = deviceId;
             events.push_back(newTouch);
         }
 
@@ -602,7 +602,7 @@ namespace DAVA
 		}
 	}
 
-    void CoreWin32Platform::OnMouseEvent(uint32 deviceId, USHORT buttsFlags, WPARAM wParam, LPARAM lParam, USHORT buttonData)
+    void CoreWin32Platform::OnMouseEvent(UIEvent::PointerDeviceID deviceId, USHORT buttsFlags, WPARAM wParam, LPARAM lParam, USHORT buttonData)
     {
         Vector<DAVA::UIEvent> touches;
         int32 touchPhase = -1;
@@ -621,7 +621,7 @@ namespace DAVA
             newTouch.physPoint.x = 0;
             newTouch.physPoint.y = ((SHORT)buttonData) / (float32)(WHEEL_DELTA);
             newTouch.phase = UIEvent::PHASE_WHEEL;
-            newTouch.deviceIndex = deviceId;
+            newTouch.deviceId = deviceId;
 
             touches.push_back(newTouch);
         }
@@ -652,14 +652,14 @@ namespace DAVA
 		HandleMouseButtonsReleased(buttsFlags);
 	}
 
-    void CoreWin32Platform::OnTouchEvent(UIEvent::eInputPhase phase, uint32 deviceId, uint32 fingerId, float32 x, float32 y, float presure)
+    void CoreWin32Platform::OnTouchEvent(UIEvent::eInputPhase phase, UIEvent::PointerDeviceID deviceId, uint32 fingerId, float32 x, float32 y, float presure)
     {
         UIEvent newTouch;
         newTouch.tid = 0;
         newTouch.physPoint.x = x;
         newTouch.physPoint.y = y;
         newTouch.phase = phase;
-        newTouch.deviceIndex = deviceId;
+        newTouch.deviceId = deviceId;
 
         Vector<UIEvent> touches;
         touches.push_back(newTouch);
@@ -795,19 +795,7 @@ namespace DAVA
 
                 bool isInside = (x > clientRect.left && x < clientRect.right && y > clientRect.top && y < clientRect.bottom) || InputSystem::Instance()->IsCursorPining();
 
-                static Map<HANDLE, MouseDevice> mice;
-
-                if (mice.find(inp.header.hDevice) == mice.end())
-                {
-                    MouseDevice mouse;
-                    mouse.which = static_cast<uint32>(mice.size());
-                    mouse.name = GetDeviceName(inp.header.hDevice);
-                    mice[inp.header.hDevice] = mouse;
-                }
-
-                uint32 miceId = mice[inp.header.hDevice].which;
-
-                core->OnMouseEvent(miceId, inp.data.mouse.usButtonFlags, MAKEWPARAM(isMove, isInside), MAKELPARAM(x, y), inp.data.mouse.usButtonData); // only move, drag and wheel events
+                core->OnMouseEvent(UIEvent::PointerDeviceID::MOUSE, inp.data.mouse.usButtonFlags, MAKEWPARAM(isMove, isInside), MAKELPARAM(x, y), inp.data.mouse.usButtonData); // only move, drag and wheel events
             }
             break;
         }
@@ -832,32 +820,20 @@ namespace DAVA
 
                 for (TOUCHINPUT& input : core->inputTouchBuffer)
                 {
-                    static Map<HANDLE, TouchDevice> touchDevices;
-
-                    if (touchDevices.find(input.hSource) == touchDevices.end())
-                    {
-                        TouchDevice surface;
-                        surface.which = touchDevices.size();
-                        surface.name = GetDeviceName(input.hSource);
-                        touchDevices[input.hSource] = surface;
-                    }
-
-                    uint32 surfaceId = touchDevices[input.hSource].which;
-
                     float x_pixel = (input.x - rect.left) / 100.f;
                     float y_pixel = (input.y - rect.top) / 100.f;
 
                     if (input.dwFlags & TOUCHEVENTF_DOWN)
                     {
-                        core->OnTouchEvent(UIEvent::PHASE_BEGAN, surfaceId, input.dwID, x_pixel, y_pixel, 1.0f);
+                        core->OnTouchEvent(UIEvent::PHASE_BEGAN, UIEvent::PointerDeviceID::TOUCH, input.dwID, x_pixel, y_pixel, 1.0f);
                     }
                     else if (input.dwFlags & TOUCHEVENTF_MOVE)
                     {
-                        core->OnTouchEvent(UIEvent::PHASE_MOVE, surfaceId, input.dwID, x_pixel, y_pixel, 1.0f);
+                        core->OnTouchEvent(UIEvent::PHASE_MOVE, UIEvent::PointerDeviceID::TOUCH, input.dwID, x_pixel, y_pixel, 1.0f);
                     }
                     else if (input.dwFlags & TOUCHEVENTF_UP)
                     {
-                        core->OnTouchEvent(UIEvent::PHASE_ENDED, surfaceId, input.dwID, x_pixel, y_pixel, 1.0f);
+                        core->OnTouchEvent(UIEvent::PHASE_ENDED, UIEvent::PointerDeviceID::TOUCH, input.dwID, x_pixel, y_pixel, 1.0f);
                     }
                 }
             }

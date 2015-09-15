@@ -125,6 +125,13 @@ public:
         JOYSTICK_AXIS_HAT_Y
     };
 
+    enum class PointerDeviceID : uint32
+    {
+        MOUSE = 0,
+        TOUCH = 1,
+        PEN = 2
+    };
+
     int32 tid = 0; // event id, for the platforms with mouse this id means mouse button id, key codes for keys, axis id for joystick
     Vector2 point; // point of pressure in virtual coordinates
     Vector2 physPoint; // point of pressure in physical coordinates
@@ -135,7 +142,7 @@ public:
     int32 controlState = CONTROL_STATE_RELEASED; // input state relative to control (outside, inside). Used for point inputs only(mouse, touch)
     int32 tapCount = 0; // count of the continuous inputs (clicks for mouse)
     char16 keyChar = 0; // unicode/translated character produced by key using current language, caps etc. Used only with PHASE_KEYCHAR.
-    uint32 deviceIndex = 0; // index of mouse or touch surface in system
+    PointerDeviceID deviceId = PointerDeviceID::MOUSE;
 
     inline void SetInputHandledType(eInputHandledType value)
     {
