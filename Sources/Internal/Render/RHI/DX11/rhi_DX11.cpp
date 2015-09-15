@@ -69,6 +69,16 @@ dx11_DeviceCaps()
 	return _DeviceCaps;
 }
 
+
+//------------------------------------------------------------------------------
+
+static bool
+dx11_NeedRestoreResources()
+{
+    return false;
+}
+
+
 //------------------------------------------------------------------------------
 
 static bool
@@ -266,6 +276,7 @@ dx11_Initialize( const InitParam& param )
     DispatchDX11.impl_HostApi                = &dx11_HostApi;
     DispatchDX11.impl_TextureFormatSupported = &dx11_TextureFormatSupported;
 	DispatchDX11.impl_DeviceCaps			 = &dx11_DeviceCaps;
+    DispatchDX11.impl_NeedRestoreResources   = &dx11_NeedRestoreResources;
 
     SetDispatchTable( DispatchDX11 );
 
