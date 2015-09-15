@@ -58,7 +58,7 @@ public:
     void OnActivated() override;
     void OnDeactivated() override;
 
-    void SetSelection(const SelectedNodes& selected, const SelectedNodes& deselected);
+    void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     bool OnInput(DAVA::UIEvent *currentInput) override;
     void OnEmulationModeChanged(bool emulationMode);
 private:

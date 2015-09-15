@@ -41,7 +41,7 @@ public:
     explicit TransformSystem(SystemsManager* parent);
     ~TransformSystem() = default;
 
-    void SetNewArea(const HUDAreaInfo &areaInfo);
+    void OnActiveAreaChanged(const HUDAreaInfo& areaInfo);
 
     bool OnInput(DAVA::UIEvent *currentInput) override;
 

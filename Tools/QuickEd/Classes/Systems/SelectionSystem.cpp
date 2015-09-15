@@ -39,7 +39,7 @@ SelectionSystem::SelectionSystem(SystemsManager* systemManager)
     : BaseSystem(systemManager)
 {
     systemManager->SelectionChanged.Connect(MakeFunction(&selectionTracker, &SelectionContainer::MergeSelection));
-    systemManager->SelectionRectChanged.Connect(this, &SelectionSystem::SelectByRect);
+    systemManager->SelectionRectChanged.Connect(this, &SelectionSystem::OnSelectByRect);
 }
 
 bool SelectionSystem::OnInput(UIEvent* currentInput)
@@ -77,7 +77,7 @@ void SelectionSystem::ControlWasRemoved(ControlNode *node, ControlsContainerNode
     SetSelection(SelectedNodes(), deselected);
 }
 
-void SelectionSystem::SelectByRect(const Rect& rect)
+void SelectionSystem::OnSelectByRect(const Rect& rect)
 {
     SelectedNodes deselected;
     SelectedNodes selected;

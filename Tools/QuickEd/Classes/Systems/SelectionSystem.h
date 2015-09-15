@@ -49,7 +49,7 @@ public:
     bool OnInput(DAVA::UIEvent *currentInput) override;
 
     void ControlWasRemoved(ControlNode *node, ControlsContainerNode *from) override;
-    void SelectByRect(const DAVA::Rect &rect);
+    void OnSelectByRect(const DAVA::Rect& rect);
 
 private:
     void SetSelection(const SelectedNodes& selected, const SelectedNodes& SelectedNodes);

@@ -189,7 +189,7 @@ HUDSystem::HUDSystem(SystemsManager* parent)
     selectionRectControl->SetDebugDrawColor(Color(1.0f, 1.0f, 0.0f, 1.0f));
     hudControl->AddControl(selectionRectControl);
     hudControl->SetName("hudControl");
-    systemManager->SelectionChanged.Connect(this, &HUDSystem::SetSelection);
+    systemManager->SelectionChanged.Connect(this, &HUDSystem::OnSelectionChanged);
     systemManager->EmulationModeChangedSignal.Connect(this, &HUDSystem::OnEmulationModeChanged);
 }
 
@@ -208,7 +208,7 @@ void HUDSystem::OnDeactivated()
     selectionRectControl->SetSize(Vector2(0.0f, 0.0f));
 }
 
-void HUDSystem::SetSelection(const SelectedNodes& selected, const SelectedNodes& deselected)
+void HUDSystem::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
     for (auto node : deselected)
     {

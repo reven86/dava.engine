@@ -41,15 +41,15 @@ QMap<QString, QPixmap> CursorSystem::cursorpixes;
 CursorSystem::CursorSystem(SystemsManager* parent)
     : BaseSystem(parent)
 {
-    systemManager->ActiveAreaChanged.Connect(this, &CursorSystem::SetActiveArea);
+    systemManager->ActiveAreaChanged.Connect(this, &CursorSystem::OnActiveAreaChanged);
 }
 
 void CursorSystem::OnDeactivated()
 {
-    SetActiveArea(HUDAreaInfo());
+    OnActiveAreaChanged(HUDAreaInfo());
 }
 
-void CursorSystem::SetActiveArea(const HUDAreaInfo &areaInfo)
+void CursorSystem::OnActiveAreaChanged(const HUDAreaInfo& areaInfo)
 {
     if (areaInfo.area == HUDAreaInfo::NO_AREA)
     {

@@ -75,7 +75,7 @@ CanvasSystem::CanvasSystem(SystemsManager* parent)
     , canvas(new UIControl())
 {
     canvas->SetName("Canvas");
-    systemManager->SelectionChanged.Connect(this, &CanvasSystem::SetSelection);
+    systemManager->SelectionChanged.Connect(this, &CanvasSystem::OnSelectionChanged);
 }
 
 UIControl* CanvasSystem::GetCanvasControl()
@@ -86,7 +86,7 @@ UIControl* CanvasSystem::GetCanvasControl()
 void CanvasSystem::OnActivated()
 {
     systemManager->GetScalableControl()->AddControl(canvas);
-    SetSelection(SelectedNodes(), SelectedNodes());
+    OnSelectionChanged(SelectedNodes(), SelectedNodes());
 }
 
 void CanvasSystem::OnDeactivated()
@@ -94,7 +94,7 @@ void CanvasSystem::OnDeactivated()
     canvas->RemoveFromParent();
 }
 
-void CanvasSystem::SetSelection(const SelectedNodes& selected, const SelectedNodes& deselected)
+void CanvasSystem::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
     SelectionContainer::MergeSelectionAndContainer(selected, deselected, selectedControlNodes);
     DAVA::Set<PackageBaseNode*> rootControls;

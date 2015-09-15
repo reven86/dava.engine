@@ -50,8 +50,8 @@ public:
     void OnDeactivated() override;
 
 private:
-    void SetSelection(const SelectedNodes& selected, const SelectedNodes& deselected);
-    
+    void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
+
     void SetRootControls(const DAVA::Set<PackageBaseNode*> &controls);
     void LayoutCanvas();
 

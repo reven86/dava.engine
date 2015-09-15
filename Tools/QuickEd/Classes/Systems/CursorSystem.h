@@ -44,7 +44,7 @@ public:
 
     void OnDeactivated() override;
 
-    void SetActiveArea(const HUDAreaInfo &areaInfo);
+    void OnActiveAreaChanged(const HUDAreaInfo& areaInfo);
 
 private:
     QPixmap CreatePixmapForArea(float angle, const HUDAreaInfo::eArea area) const;

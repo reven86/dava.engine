@@ -49,15 +49,14 @@ Document::Document(PackageNode *_package, QObject *parent)
     , undoStack(new QUndoStack(this))
     , systemManager(_package)
 {
-    systemManager.SelectionChanged.Connect(this, &Document::SetSelectedNodes);
+    systemManager.SelectionChanged.Connect(this, &Document::OnSelectionChanged);
     systemManager.EmulationModeChangedSignal.Connect(this, &Document::EmulationModeChanged);
     systemManager.CanvasSizeChanged.Connect(this, &Document::CanvasSizeChanged);
-    systemManager.SelectionByMenuRequested.Connect(this, &Document::SelectControlByMenu);
+    systemManager.SelectionByMenuRequested.Connect(this, &Document::OnSelectControlByMenu);
     systemManager.PropertyChanged.Connect([this](ControlNode *node, AbstractProperty *property, const DAVA::VariantType &value) {
         commandExecutor->ChangeProperty(node, property, value);
     });
     connect(GetEditorFontSystem(), &EditorFontSystem::UpdateFontPreset, this, &Document::RefreshAllControlProperties);
-    
 }
 
 Document::~Document()
@@ -145,7 +144,7 @@ void Document::RefreshLayout()
     package->RefreshPackageStylesAndLayout(true);
 }
 
-void Document::SelectControlByMenu(const Vector<ControlNode*> &nodesUnderPoint, const Vector2 &point, ControlNode *&selectedNode)
+void Document::OnSelectControlByMenu(const Vector<ControlNode*>& nodesUnderPoint, const Vector2& point, ControlNode*& selectedNode)
 {
     selectedNode = nullptr;
     auto view = EditorCore::Instance()->GetMainWindow()->GetGLWidget()->GetGLWindow();
@@ -207,7 +206,7 @@ void Document::RefreshAllControlProperties()
     package->GetPackageControlsNode()->RefreshControlProperties();
 }
 
-void Document::SetSelectedNodes(const SelectedNodes& selected, const SelectedNodes& deselected)
+void Document::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
     SelectedNodes reallySelected;
     SelectedNodes reallyDeselected;

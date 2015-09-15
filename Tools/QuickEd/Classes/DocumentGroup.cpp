@@ -115,7 +115,7 @@ void DocumentGroup::SetSelectedNodes(const SelectedNodes &selected, const Select
 {
     if(nullptr != active)
     {
-        active->SetSelectedNodes(selected, deselected);
+        active->OnSelectionChanged(selected, deselected);
     }
 }
 

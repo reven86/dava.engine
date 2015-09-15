@@ -88,8 +88,8 @@ public:
 
     void RefreshLayout();
 
-    void SelectControlByMenu(const DAVA::Vector<ControlNode*> &nodes, const DAVA::Vector2 &pos, ControlNode* &selectedNode);
-    
+    void OnSelectControlByMenu(const DAVA::Vector<ControlNode*>& nodes, const DAVA::Vector2& pos, ControlNode*& selectedNode);
+
 signals:
     void ScaleChanged(int scale);
     void EmulationModeChanged(bool emulationMode);
@@ -100,7 +100,7 @@ public slots:
     void ResetScale();
     void SetEmulationMode(bool emulationMode);
     void RefreshAllControlProperties();
-    void SetSelectedNodes(const SelectedNodes &selected, const SelectedNodes &deselected);
+    void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
 
 private:
     static const int defaultScale = 100;
