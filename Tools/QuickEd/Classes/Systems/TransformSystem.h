@@ -62,7 +62,10 @@ private:
     void MoveAllSelectedControls(const DAVA::Vector2 &delta);
 
     template <typename T>
-    void AdjustProperty(ControlNode *node, const DAVA::String &propertyName, const T &value);
+    void AdjustProperty(ControlNode* node, const DAVA::String& propertyName, const T& delta);
+
+    template <typename T>
+    void AdjustProperty(ControlNode* node, const DAVA::Vector<std::pair<AbstractProperty* /*property*/, const T& /*delta*/>>& propertiesDelta);
 
     void AccumulateOperation(ACCUMULATE_OPERATIONS operation, DAVA::Vector2 &delta);
 

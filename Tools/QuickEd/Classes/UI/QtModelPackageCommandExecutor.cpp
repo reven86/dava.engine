@@ -162,7 +162,20 @@ void QtModelPackageCommandExecutor::RemoveImportedPackagesFromPackage(const DAVA
     }
 }
 
-void QtModelPackageCommandExecutor::ChangeProperty(ControlNode *node, AbstractProperty *property, const DAVA::VariantType &value)
+void QtModelPackageCommandExecutor::ChangeProperty(ControlNode* node, const Vector<std::pair<AbstractProperty*, VariantType>>& properties)
+{
+    Vector<std::pair<AbstractProperty*, VariantType>> propertiesToChange;
+    for (const auto& pair : properties)
+    {
+        if (!pair.first->IsReadOnly())
+        {
+            propertiesToChange.emplace_back(pair);
+        }
+    }
+    PushCommand(new ChangePropertyValueCommand(document->GetPackage(), node, propertiesToChange));
+}
+
+void QtModelPackageCommandExecutor::ChangeProperty(ControlNode* node, AbstractProperty* property, const VariantType& value)
 {
     if (!property->IsReadOnly())
     {
