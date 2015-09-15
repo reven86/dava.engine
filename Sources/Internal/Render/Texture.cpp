@@ -174,7 +174,6 @@ Texture::Texture()
 ,	textureType(rhi::TEXTURE_TYPE_2D)
 ,	isRenderTarget(false)
 ,	isPink(false)
-,	invalidater(nullptr)
 {
     texDescriptor = new TextureDescriptor;
     RenderCallbacks::RegisterResourceRestoreCallback(MakeFunction(this, &Texture::RestoreRenderResource));
@@ -182,12 +181,7 @@ Texture::Texture()
 
 Texture::~Texture()
 {
-    RenderCallbacks::UnRegisterResourceRestoreCallback(MakeFunction(this, &Texture::RestoreRenderResource));
-    if(invalidater)
-    {
-        invalidater->RemoveTexture(this);
-        invalidater = nullptr;
-    }
+    RenderCallbacks::UnRegisterResourceRestoreCallback(MakeFunction(this, &Texture::RestoreRenderResource));    
     ReleaseTextureData();
 	SafeDelete(texDescriptor);
 }
@@ -728,11 +722,7 @@ void Texture::RestoreRenderResource()
 		
     if ((!handle.IsValid()) || (!NeedRestoreTexture(handle)))
         return;
-
-	if (invalidater)
-    {
-        invalidater->InvalidateTexture(this);
-    }
+	
     else
     {
         Vector<Image *> images;
@@ -883,22 +873,6 @@ eGPUFamily Texture::GetGPUForLoading(const eGPUFamily requestedGPU, const Textur
     return requestedGPU;
 }
 
-void Texture::SetInvalidater(TextureInvalidater* invalidater_)
-{
-    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
-
-    if (nullptr != invalidater)
-    {
-        invalidater->RemoveTexture(this);
-    }
-
-	invalidater = invalidater_;
-
-    if (nullptr != invalidater)
-    {
-        invalidater->AddTexture(this);
-    }
-}
 
 const FilePath & Texture::GetPathname() const
 {

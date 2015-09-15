@@ -249,7 +249,8 @@ public:
         AXIS_W = 3,
         AXIS_COUNT = 4
     };
-    
+    static const Vector4 Zero;
+
 	union{
 		struct
 		{

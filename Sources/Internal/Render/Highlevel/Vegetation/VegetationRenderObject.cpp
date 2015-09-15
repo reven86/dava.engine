@@ -739,9 +739,8 @@ void VegetationRenderObject::InitHeightTextureFromHeightmap(Heightmap* heightMap
         heightmapScale = Vector2((1.0f * heightmap->Size()) / pow2Size,
                                  (1.0f * heightmap->Size()) / pow2Size);
         
-        Function<void()> fn = Bind(&VegetationRenderObject::SetupHeightmapParameters, this, tx);
-        uint32 jobID = JobManager::Instance()->CreateMainJob(fn);
-        JobManager::Instance()->WaitMainJobID(jobID);
+        tx->SetWrapMode(rhi::TEXADDR_CLAMP, rhi::TEXADDR_CLAMP);
+        tx->SetMinMagFilter(rhi::TEXFILTER_NEAREST, rhi::TEXFILTER_NEAREST, rhi::TEXMIPFILTER_NONE);
 
         heightmapTexture = SafeRetain(tx);
         
@@ -877,11 +876,7 @@ void VegetationRenderObject::GetDataNodes(Set<DataNode*> & dataNodes)
     }
 }
 
-void VegetationRenderObject::SetupHeightmapParameters(Texture* tx)
-{
-    tx->SetWrapMode(rhi::TEXADDR_CLAMP, rhi::TEXADDR_CLAMP);
-    tx->SetMinMagFilter(rhi::TEXFILTER_NEAREST, rhi::TEXFILTER_NEAREST, rhi::TEXMIPFILTER_NONE);
-}
+
 
 void VegetationRenderObject::CreateRenderData()
 {
@@ -977,6 +972,31 @@ void VegetationRenderObject::RestoreRenderData()
         const Vector<VegetationIndex>& indexData = renderData->GetIndices();
         uint32 indexBufferSize = indexData.size() * sizeof(VegetationIndex);
         rhi::UpdateIndexBuffer(indexBuffer, &indexData.front(), 0, indexBufferSize);
+    }
+    if (heightmap && heightmapTexture) //RHI_COMPLETE later change it to normal restoration and change init heightmap texture to normal logic
+
+    {
+        Image* originalImage = Image::CreateFromData(heightmap->Size(), heightmap->Size(), FORMAT_A16, (uint8*)heightmap->Data());
+        int32 pow2Size = heightmap->Size();
+        if (!IsPowerOf2(heightmap->Size()))
+        {
+            EnsurePowerOf2(pow2Size);
+
+            if (pow2Size > heightmap->Size())
+            {
+                pow2Size = pow2Size >> 1;
+            }
+        }        
+        if (pow2Size != heightmap->Size())
+        {
+            Image* croppedImage = Image::CopyImageRegion(originalImage, pow2Size, pow2Size);
+            heightmapTexture->TexImage(0, pow2Size, pow2Size, croppedImage->GetData(), croppedImage->dataSize, 0);
+            SafeRelease(croppedImage);
+        }
+        else
+        {
+            heightmapTexture->TexImage(0, pow2Size, pow2Size, originalImage->GetData(), originalImage->dataSize, 0);
+        }
     }
 }
 
