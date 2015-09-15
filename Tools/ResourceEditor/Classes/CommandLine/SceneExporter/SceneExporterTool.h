@@ -55,8 +55,7 @@ public:
 	DAVA::String GetCommandLineKey() const override;
 	bool InitializeFromCommandLine() override;
 
-	bool ProcessRequiresHelperCallback() const override { return true; }
-	void ProcessWithCallback(EngineHelperCallback) override;
+	void Process() override;
 
 	void PrintUsage() const override;
 	void DumpParams() const override;

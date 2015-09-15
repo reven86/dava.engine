@@ -35,9 +35,6 @@
 class CommandLineTool
 {    
 public:
-	using EngineHelperCallback = DAVA::Function<void()>;
-
-public:
     
 	CommandLineTool();
     virtual ~CommandLineTool() {};
@@ -48,12 +45,8 @@ public:
 
 	virtual void PrintUsage() const = 0;
 
-	virtual bool ProcessRequiresHelperCallback() const { return false; }
+	virtual void Process() = 0;
 
-	virtual void Process() { }
-
-	virtual void ProcessWithCallback(EngineHelperCallback) { }
-    
     virtual DAVA::FilePath GetQualityConfigPath() const {return DAVA::FilePath(); };
     
 	virtual void DumpParams() const {};

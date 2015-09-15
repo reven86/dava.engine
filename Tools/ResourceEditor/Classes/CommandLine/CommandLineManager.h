@@ -42,7 +42,7 @@ public:
     bool IsToolInitialized() { return isToolInitialized; };
     
 	void InitalizeTool();
-    void Process(CommandLineTool::EngineHelperCallback engineHelperCallback);
+    void Process();
     void PrintResults();
 	void PrintUsage();
 	void PrintUsageForActiveTool();

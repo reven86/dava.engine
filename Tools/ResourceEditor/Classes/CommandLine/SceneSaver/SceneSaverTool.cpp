@@ -120,13 +120,13 @@ void SceneSaverTool::DumpParams() const
 		inFolder.GetStringValue().c_str(), outFolder.GetStringValue().c_str(),filename.c_str(), copyConverted);
 }
 
-void SceneSaverTool::ProcessWithCallback(CommandLineTool::EngineHelperCallback cb) 
+void SceneSaverTool::Process()
 {
     switch (commandAction)
     {
     case SceneSaverTool::eAction::ACTION_SAVE:
     {
-        SceneSaver saver(cb);
+        SceneSaver saver;
         saver.SetInFolder(inFolder);
         saver.SetOutFolder(outFolder);
         saver.EnableCopyConverted(copyConverted);
@@ -136,14 +136,14 @@ void SceneSaverTool::ProcessWithCallback(CommandLineTool::EngineHelperCallback c
     }
     case SceneSaverTool::eAction::ACTION_RESAVE_SCENE:
     {
-        SceneSaver saver(cb);
+        SceneSaver saver;
         saver.SetInFolder(inFolder);
         saver.ResaveFile(filename, errors);
         break;
     }
     case SceneSaverTool::eAction::ACTION_RESAVE_YAML:
     {
-        SceneSaver saver(cb);
+        SceneSaver saver;
         saver.ResaveYamlFilesRecursive(inFolder, errors);
         break;
     }

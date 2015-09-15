@@ -30,15 +30,14 @@
 #ifndef __SCENE_SAVER_H__
 #define __SCENE_SAVER_H__
 
-#include "CommandLine/CommandLineTool.h"
 #include "CommandLine/SceneUtils/SceneUtils.h"
 
 using namespace DAVA;
 
-class SceneSaver
+class SceneSaver : RenderObjectsFlusher
 {
 public:
-	SceneSaver(CommandLineTool::EngineHelperCallback);
+	SceneSaver();
 	virtual ~SceneSaver();
     
     void SetInFolder(const FilePath &folderPathname);
@@ -69,7 +68,6 @@ protected:
     SceneUtils sceneUtils;
     TexturesMap texturesForSave;
     DAVA::Set<DAVA::FilePath> effectFolders;
-	CommandLineTool::EngineHelperCallback helperCallback;
     bool copyConverted = false;
 };
 

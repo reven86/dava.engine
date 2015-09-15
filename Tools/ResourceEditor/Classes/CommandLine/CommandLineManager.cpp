@@ -198,7 +198,7 @@ void CommandLineManager::FindActiveTool()
     }
 }
 
-void CommandLineManager::Process(CommandLineTool::EngineHelperCallback engineHelperCallback)
+void CommandLineManager::Process()
 {
     if (activeTool)
     {
@@ -208,10 +208,7 @@ void CommandLineManager::Process(CommandLineTool::EngineHelperCallback engineHel
             QualitySettingsSystem::Instance()->Load(activeTool->GetQualityConfigPath());
         }
 
-		if (activeTool->ProcessRequiresHelperCallback())
-	        activeTool->ProcessWithCallback(engineHelperCallback);
-		else 
-			activeTool->Process();
+		activeTool->Process();
     }
 }
 

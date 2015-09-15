@@ -136,9 +136,9 @@ void SceneExporterTool::DumpParams() const
     Logger::Info("Export started with params:\n\tIn folder: %s\n\tOut folder: %s\n\tQuality: %d\n\tGPU: %d\n\tFilename: %s\n\tFoldername: %s", inFolder.GetStringValue().c_str(), outFolder.GetStringValue().c_str(), quality, requestedGPU, filename.c_str(), foldername.c_str());
 }
 
-void SceneExporterTool::ProcessWithCallback(EngineHelperCallback helperCallback)
+void SceneExporterTool::Process()
 {
-    SceneExporter exporter(helperCallback);
+    SceneExporter exporter;
 
     exporter.SetOutFolder(outFolder);
     exporter.SetInFolder(inFolder);

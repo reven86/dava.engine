@@ -65,6 +65,11 @@ public:
     DAVA::Map<DAVA::FilePath, DAVA::FilePath> filesForCopy;
 };
 
+class RenderObjectsFlusher
+{
+protected:
+	void FlushRenderObjects();
+};
 
 
 #endif // __SCENE_UTILS_H__
