@@ -103,6 +103,7 @@ elseif( MACOS )
 
 elseif ( WINDOWS_UAP )
 
+<<<<<<< HEAD
 	if(MSVC_VERSION GREATER 1899)
 		set(COMPILER_VERSION "14")
 	elseif(MSVC_VERSION GREATER 1700)
@@ -168,6 +169,41 @@ elseif ( WINDOWS_UAP )
 
     set(RESOURCE_FILES ${CONTENT_FILES} ${DEBUG_CONTENT_FILES} ${RELEASE_CONTENT_FILES}
         ${ASSET_FILES} ${STRING_FILES} ${CMAKE_CURRENT_BINARY_DIR}/${APP_TEMPKEY_NAME} )
+=======
+    if ( NOT "${CMAKE_SYSTEM_NAME}" STREQUAL "WindowsStore" )
+        message(FATAL_ERROR "This app supports Store / Phone only. Please check the target platform.")
+    endif ()
+
+    #loading config file
+    if ( NOT WINDOWS_UAP_CONFIG_FILE )
+        set ( WINDOWS_UAP_CONFIG_FILE "${DAVA_ROOT_DIR}/Sources/CMake/ConfigureFiles/UWPConfigTemplate.in" )
+    endif ()
+    configure_file( ${WINDOWS_UAP_CONFIG_FILE} ${CMAKE_CURRENT_BINARY_DIR}/UWPConfig.in )
+    load_config ( ${CMAKE_CURRENT_BINARY_DIR}/UWPConfig.in )
+    
+    set ( APP_MANIFEST_NAME "Package.appxmanifest" )
+    set ( APP_CERT_NAME "${PROJECT_NAME}_Key.pfx" )
+    set ( SHORT_NAME ${PROJECT_NAME} )
+    set_property ( GLOBAL PROPERTY USE_FOLDERS ON )
+
+    #search assets 
+    file( GLOB ASSET_FILES "${WINDOWS_UAP_ASSETS_DIR}/*.png" )
+    source_group ( "Content\\Assets" FILES ${ASSET_FILES} )
+
+    #copy manifest
+    configure_file ( ${WINDOWS_UAP_MANIFEST_FILE} ${CMAKE_CURRENT_BINARY_DIR}/${APP_MANIFEST_NAME} @ONLY )
+
+    #copy key file
+    get_filename_component ( CERT_NAME ${WINDOWS_UAP_CERTIFICATE_FILE} NAME )
+    file ( COPY ${WINDOWS_UAP_CERTIFICATE_FILE} DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+    file ( RENAME ${CMAKE_CURRENT_BINARY_DIR}/${CERT_NAME} ${CMAKE_CURRENT_BINARY_DIR}/${APP_CERT_NAME} )
+    
+    set(CONTENT_FILES ${CONTENT_FILES}
+        ${CMAKE_CURRENT_BINARY_DIR}/${APP_MANIFEST_NAME} )
+
+    set(RESOURCE_FILES ${CONTENT_FILES} ${DEBUG_CONTENT_FILES} ${RELEASE_CONTENT_FILES} 
+        ${ASSET_FILES} ${STRING_FILES} ${CMAKE_CURRENT_BINARY_DIR}/${APP_CERT_NAME} )
+>>>>>>> development
     list( APPEND RESOURCES_LIST ${RESOURCE_FILES} )
 
 	#add dll's to project and package
