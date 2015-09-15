@@ -134,8 +134,7 @@ public:
 
     const Vector<int32> & GetStringSizes() const;
     
-protected:
-    void PrepareSpriteInternal();
+protected:    
     Rect CalculateTextBlockRect(const UIGeometricData &geometricData) const;
 #if defined(LOCALIZATION_DEBUG)
     void DrawLocalizationDebug(const UIGeometricData & textGeomData) const;

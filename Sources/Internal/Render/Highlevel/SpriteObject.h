@@ -97,6 +97,9 @@ public:
 
 protected:
 
+    void Restore();
+    void UpdateBufferData(rhi::HVertexBuffer vBuffer, rhi::HIndexBuffer iBuffer);
+
     void Clear();
 	void Init(Sprite *spr, int32 _frame, const Vector2 &reqScale, const Vector2 &pivotPoint);
 	void SetupRenderBatch();
