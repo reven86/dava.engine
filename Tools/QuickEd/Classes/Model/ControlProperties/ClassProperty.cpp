@@ -40,7 +40,6 @@ ClassProperty::ClassProperty(ControlNode *aControl)
     : ValueProperty("Class")
     , control(aControl) // weak
 {
-    
 }
 
 ClassProperty::~ClassProperty()

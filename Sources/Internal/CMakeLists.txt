@@ -46,7 +46,6 @@ if( ANDROID )
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libfmodevent.so"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libfmodex.so"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libTextureConverter_android.a"
-         "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libbox2d.a"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libuv_android.a"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libiconv_android.so"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/liblua_android.a"
