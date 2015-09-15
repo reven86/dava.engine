@@ -60,6 +60,7 @@ IDirect3DDevice9 * RenderState::direct3DDevice = 0;
 #endif
 
 UniqueHandle RenderState::RENDERSTATE_2D_BLEND = InvalidUniqueHandle;
+UniqueHandle RenderState::RENDERSTATE_2D_INVERTED_BLEND = InvalidUniqueHandle;
 UniqueHandle RenderState::RENDERSTATE_2D_OPAQUE = InvalidUniqueHandle;
 UniqueHandle RenderState::RENDERSTATE_3D_BLEND = InvalidUniqueHandle;
 UniqueHandle RenderState::RENDERSTATE_3D_OPAQUE = InvalidUniqueHandle;
@@ -992,15 +993,24 @@ void RenderState::InitDefaultStates()
 	defaultStateData.fillMode = FILLMODE_SOLID;
 	
 	RenderState::RENDERSTATE_2D_BLEND = RenderManager::Instance()->CreateRenderState(defaultStateData);
-	
-	defaultStateData.state = RenderState::DEFAULT_2D_STATE;
+
+    defaultStateData.state = RenderState::DEFAULT_2D_STATE_BLEND;
+    defaultStateData.cullMode = FACE_BACK;
+    defaultStateData.depthFunc = CMP_NEVER;
+    defaultStateData.sourceFactor = BLEND_ONE_MINUS_DST_COLOR;
+    defaultStateData.destFactor = BLEND_ONE_MINUS_SRC_ALPHA;
+    defaultStateData.fillMode = FILLMODE_SOLID;
+
+    RenderState::RENDERSTATE_2D_INVERTED_BLEND = RenderManager::Instance()->CreateRenderState(defaultStateData);
+
+    defaultStateData.state = RenderState::DEFAULT_2D_STATE;
 	defaultStateData.cullMode = FACE_BACK;
 	defaultStateData.depthFunc = CMP_NEVER;
 	defaultStateData.sourceFactor = BLEND_SRC_ALPHA;
 	defaultStateData.destFactor = BLEND_ONE_MINUS_SRC_ALPHA;
 	defaultStateData.fillMode = FILLMODE_SOLID;
-	
-	RenderState::RENDERSTATE_2D_OPAQUE = RenderManager::Instance()->CreateRenderState(defaultStateData);
+
+    RenderState::RENDERSTATE_2D_OPAQUE = RenderManager::Instance()->CreateRenderState(defaultStateData);
 	
     defaultStateData.state = RenderState::DEFAULT_3D_STATE;
 	defaultStateData.cullMode = FACE_BACK;

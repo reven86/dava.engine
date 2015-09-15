@@ -35,13 +35,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Input/InputSystem.h"
 #include "Input/KeyboardDevice.h"
+#include "UI/Layouts/UISizePolicyComponent.h"
+#include "Render/RenderState.h"
+#include "Render/RenderManager.h"
 
 using namespace DAVA;
 
 namespace
 {
-    const Vector2 PIVOT_CONTROL_SIZE(5.0f, 5.0f);
-    const Vector2 FRAME_RECT_SIZE(10.0f, 10.0f);
+const Vector2 PIVOT_CONTROL_SIZE(20.0f, 20.0f);
+const Vector2 FRAME_RECT_SIZE(20.0f, 20.0f);
     const Vector2 ROTATE_CONTROL_SIZE(20.0f, 20.0f);
 }
 
@@ -93,17 +96,61 @@ private:
 class FrameControl : public ControlContainer
 {
 public:
+    enum
+    {
+        BORDER_TOP,
+        BORDER_BOTTOM,
+        BORDER_LEFT,
+        BORDER_RIGHT,
+        BORDERS_COUNT
+    };
     explicit FrameControl()
         : ControlContainer(HUDareaInfo::FRAME_AREA)
     {
-        SetDebugDraw(true);
-        SetDebugDrawColor(Color(0.0f, 0.0f, 1.0f, 1.0f));
+        for (int i = 0; i < BORDERS_COUNT; ++i)
+        {
+            UIControl* control = new UIControl();
+            control->GetBackground()->SetColor(Color(1.0f, 1.0f, 1.0f, 1.0f));
+            control->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
+            control->GetBackground()->SetRenderState(RenderState::RENDERSTATE_2D_INVERTED_BLEND);
+            borders.emplace_back(control);
+        }
     }
 private:
     void InitFromGD(const UIGeometricData &geometricData) override
     {
-        SetAbsoluteRect(geometricData.GetUnrotatedRect());
+        const Rect& rect = geometricData.GetUnrotatedRect();
+        SetAbsoluteRect(rect);
+        for (int i = 0; i < BORDERS_COUNT; ++i)
+        {
+            if (firstInit)
+            {
+                GetParent()->AddControl(borders[i]);
+            }
+            Rect borderRect = CreateFrameBorderRect(i, rect);
+            borders[i]->SetAbsoluteRect(borderRect);
+        }
+        firstInit = false;
     }
+    Rect CreateFrameBorderRect(int border, const Rect& frameRect) const
+    {
+        switch (border)
+        {
+        case BORDER_TOP:
+            return Rect(frameRect.x, frameRect.y, frameRect.dx, 1.0f);
+        case BORDER_BOTTOM:
+            return Rect(frameRect.x, frameRect.y + frameRect.dy, frameRect.dx, 1.0f);
+        case BORDER_LEFT:
+            return Rect(frameRect.x, frameRect.y, 1.0f, frameRect.dy);
+        case BORDER_RIGHT:
+            return Rect(frameRect.x + frameRect.dx, frameRect.y, 1.0f, frameRect.dy);
+        default:
+            DVASSERT("!impossible value for frame control position");
+            return Rect();
+        }
+    }
+    bool firstInit = true;
+    DAVA::Vector<ScopedPtr<UIControl>> borders;
 };
 
 class FrameRectControl : public ControlContainer
@@ -112,8 +159,10 @@ public:
     explicit FrameRectControl(const HUDareaInfo::eArea area_)
         : ControlContainer(area_)
     {
-        SetDebugDraw(true);
-        SetDebugDrawColor(Color(0.0f, 1.0f, 0.0f, 1.f));
+        background->SetSprite("~res:/Gfx/HUDControls/HUDControls", 0);
+        background->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
+        RenderManager::Instance()->GetRenderStateData(RenderState::RENDERSTATE_2D_INVERTED_BLEND);
+        background->SetRenderState(RenderState::RENDERSTATE_2D_INVERTED_BLEND);
     }
 private:
     void InitFromGD(const UIGeometricData &geometricData) override
@@ -148,8 +197,8 @@ public:
     explicit PivotPointControl()
         : ControlContainer(HUDareaInfo::PIVOT_POINT_AREA)
     {
-        SetDebugDraw(true);
-        SetDebugDrawColor(Color(1.0f, 0.0f, 0.0f, 1.f));
+        background->SetSprite("~res:/Gfx/HUDControls/HUDControls", 1);
+        background->SetDrawType(UIControlBackground::DRAW_ALIGNED);
     }
 private:
     void InitFromGD(const UIGeometricData &geometricData) override
@@ -167,8 +216,8 @@ public:
     explicit RotateControl()
         : ControlContainer(HUDareaInfo::ROTATE_AREA)
     {
-        SetDebugDraw(true);
-        SetDebugDrawColor(Color(1.0f, 1.0f, 0.0f, 1.0f));
+        background->SetSprite("~res:/Gfx/HUDControls/HUDControls", 2);
+        background->SetDrawType(UIControlBackground::DRAW_ALIGNED);
     }
 private:
     void InitFromGD(const UIGeometricData &geometricData) override
@@ -245,7 +294,7 @@ bool HUDSystem::OnInput(UIEvent *currentInput)
             selectionRectControl->SetAbsoluteRect(Rect(pressedPoint, size));
             document->SelectionRectChanged.Emit(selectionRectControl->GetAbsoluteRect());
         }
-        return canDrawRect;
+        return true;
     case UIEvent::PHASE_ENDED:
         ProcessCursor(currentInput->point);
         if (canDrawRect)
@@ -254,6 +303,7 @@ bool HUDSystem::OnInput(UIEvent *currentInput)
         }
         bool retVal = canDrawRect || dragRequested;
         canDrawRect = false;
+        dragRequested = false;
         return retVal;
     }
     return false;

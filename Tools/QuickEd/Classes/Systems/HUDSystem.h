@@ -83,7 +83,7 @@ private:
     };
     DAVA::Map<ControlNode*, HUD> hudMap;
     DAVA::ScopedPtr<DAVA::UIControl> selectionRectControl;
-    bool dragRequested;
+    bool dragRequested = false;
 };
 
 #endif // __QUICKED_HUD_SYSTEM_H__
