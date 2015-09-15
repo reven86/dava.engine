@@ -63,7 +63,14 @@ inline void SelectionContainer::GetOnlyExistedItems(const SelectedNodes& in, Sel
 
 inline void SelectionContainer::MergeSelection(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
-    MergeSelectionAndContainer(selected, deselected, selectedNodes);
+    for (const auto& node : deselected)
+    {
+        selectedNodes.erase(node);
+    }
+    for (const auto& node : selected)
+    {
+        selectedNodes.insert(node);
+    }
 }
 
 template <typename ContainerOut>
