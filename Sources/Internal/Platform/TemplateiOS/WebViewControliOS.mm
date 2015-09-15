@@ -190,15 +190,16 @@
 
 @end
 
-DAVA::WebViewControl::WebViewControl(DAVA::UIWebView& uiWeb):
-    webViewPtr(0),
-    webViewURLDelegatePtr(0),
-    rightSwipeGesturePtr(0),
-    leftSwipeGesturePtr(0),
-    gesturesEnabled(false),
-    isRenderToTexture(false),
-    isVisible(true),
-    uiWebView(uiWeb)
+DAVA::WebViewControl::WebViewControl(DAVA::UIWebView& uiWeb)
+    : webViewPtr(0)
+    , webViewURLDelegatePtr(0)
+    , rightSwipeGesturePtr(0)
+    , leftSwipeGesturePtr(0)
+    , gesturesEnabled(false)
+    , isRenderToTexture(false)
+    , pendingRenderToTexture(false)
+    , isVisible(true)
+    , uiWebView(uiWeb)
 {
     HelperAppDelegate* appDelegate = [[UIApplication sharedApplication]
                                                                     delegate];
@@ -511,28 +512,12 @@ void WebViewControl::SetRect(const Rect& rect)
 
 void WebViewControl::SetVisible(bool isVisible, bool hierarchic)
 {
-    this->isVisible = isVisible;
+    pendingVisible = isVisible;
     
-    if (isRenderToTexture)
+    // Workaround: call WillDraw instantly because it will not be called on SystemDraw
+    if(!isVisible)
     {
-        DAVA::Rect r = uiWebView.GetRect();
-        SetRect(r);
-    }
-    else
-    {
-        if(!isVisible)
-        {
-            [(UIWebView *) webViewPtr setHidden:YES];
-        }
-        else
-        {
-            // if we wan't native control to become invisible we ca do it immidiatly
-            // during update process. But when we want it to be visible, it can't be shown
-            // immidiatly, because is cases, when current Update() takes a lot of time and
-            // user will see native webview over old frame during all that time. This can
-            // be treat as webview blinking, so we should care abot it. We will show webview
-            // in next Draw call.
-        }
+        WillDraw();
     }
 }
 
@@ -691,37 +676,40 @@ int32 WebViewControl::GetDataDetectorTypes() const
     
 void WebViewControl::SetRenderToTexture(bool value)
 {
-    isRenderToTexture = value;
-    
-    // hide windows - move to offScreenPos position
-    // so it still can render WebView into
-    DAVA::Rect r = uiWebView.GetRect();
-    SetRect(r);
-    
-    if (isRenderToTexture)
-    {
-        // we have to show window or we can't render web view into texture
-        if ([(UIWebView*)webViewPtr isHidden])
-        {
-            [(UIWebView*)webViewPtr setHidden:NO];
-        }
-        
-        RenderToTextureAndSetAsBackgroundSpriteToControl(uiWebView);
-    } else
-    {
-        if (isVisible)
-        {
-            [(UIWebView*)webViewPtr setHidden:NO];
-        }
-    }
+    pendingRenderToTexture = value;
 }
     
 void WebViewControl::WillDraw()
 {
-    bool isNativeHidden = [(UIWebView *) webViewPtr isHidden];
-    if(isVisible && isNativeHidden)
+    if(isVisible != pendingVisible)
     {
-        [(UIWebView *) webViewPtr setHidden:NO];
+        isVisible = pendingVisible;
+        [(UIWebView *) webViewPtr setHidden:(isVisible ? NO : YES)];
+    }
+    
+    if (isRenderToTexture != pendingRenderToTexture)
+    {
+        isRenderToTexture = pendingVisible;
+        
+        // hide windows - move to offScreenPos position
+        // so it still can render WebView into
+        DAVA::Rect r = uiWebView.GetRect();
+        SetRect(r);
+        
+        if(isRenderToTexture)
+        {
+            // we have to show window or we can't render web view into texture
+            if(!isVisible)
+            {
+                [(UIWebView*)webViewPtr setHidden:NO];
+            }
+            RenderToTextureAndSetAsBackgroundSpriteToControl(uiWebView);
+            if(!isVisible)
+            {
+                [(UIWebView *) webViewPtr setHidden:YES];
+            }
+            
+        }
     }
 }
     

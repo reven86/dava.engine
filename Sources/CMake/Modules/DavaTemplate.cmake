@@ -103,70 +103,41 @@ elseif( MACOS )
 
 elseif ( WINDOWS_UAP )
 
-	if(MSVC_VERSION GREATER 1899)
-		set(COMPILER_VERSION "14")
-	elseif(MSVC_VERSION GREATER 1700)
-		set(COMPILER_VERSION "12")
-	endif()
-	
-	set (APP_MANIFEST_NAME Package.appxmanifest)
-	set (APP_TEMPKEY_NAME "${PROJECT_NAME}_TemporaryKey.pfx" )
-	
-	if("${CMAKE_SYSTEM_NAME}" STREQUAL "WindowsPhone")
-		set(PLATFORM WP)
-		add_definitions("-DPHONE")
-		if("${CMAKE_SYSTEM_VERSION}" STREQUAL "8.0")
-			set(APP_MANIFEST_NAME WMAppManifest.xml)
-			set(WINDOWS_PHONE8 1)
-		endif()
-	elseif("${CMAKE_SYSTEM_NAME}" STREQUAL "WindowsStore")
-		set(PLATFORM STORE)
-	else()
-		set(PLATFORM DESKTOP)
-		message(FATAL_ERROR "This app supports Store / Phone only. Please edit the target platform.")
-	endif()
-	
-	set(SHORT_NAME ${PROJECT_NAME})
-	set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-	set(PACKAGE_GUID "${WINDOWS_UAP_APPLICATION_GUID}")
-	
-	set ( WIN_UAP_CONF_DIR      "${DAVA_ROOT_DIR}/Sources/CMake/Resources/WindowsStore" )
-	set ( WIN_UAP_MANIFESTS_DIR "${WIN_UAP_CONF_DIR}/Manifests" )
-	set ( WIN_UAP_ASSETS_DIR    "${WIN_UAP_CONF_DIR}/Assets" )
-	file( GLOB ASSET_FILES      "${WIN_UAP_ASSETS_DIR}/*.png" )
-	source_group ("Content\\Assets" FILES ${ASSET_FILES})
-	
-	if (NOT "${PLATFORM}" STREQUAL "DESKTOP")
-		configure_file(
-			${WIN_UAP_MANIFESTS_DIR}/Package_vc${COMPILER_VERSION}.${PLATFORM}.appxmanifest.in
-			${CMAKE_CURRENT_BINARY_DIR}/${APP_MANIFEST_NAME}
-			@ONLY)
+    if ( NOT "${CMAKE_SYSTEM_NAME}" STREQUAL "WindowsStore" )
+        message(FATAL_ERROR "This app supports Store / Phone only. Please check the target platform.")
+    endif ()
 
-        file ( COPY ${WIN_UAP_CONF_DIR}/TemporaryKey.pfx DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
-        file ( RENAME ${CMAKE_CURRENT_BINARY_DIR}/TemporaryKey.pfx ${CMAKE_CURRENT_BINARY_DIR}/${APP_TEMPKEY_NAME} )
-	endif()
-	
-	if (WINDOWS_PHONE8)
-	    file( GLOB PHONE_RESOURCES "${WIN_UAP_ASSETS_DIR}/Tiles/*.png" )
-		set( PHONE_RESOURCES "${PHONE_RESOURCES} ${ASSET_FILES}" )
-		
-		# Windows Phone 8.0 needs to copy all the images.
-	    # It doesn't know to use relative paths.
-		file( COPY ${PHONE_RESOURCES} DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
-		
-		set ( PHONE_RESOURCES "${PHONE_RESOURCES} ${CMAKE_CURRENT_BINARY_DIR}/${APP_MANIFEST_NAME}" )
-		set ( CONTENT_FILES "${CONTENT_FILES} ${PHONE_RESOURCES}" )
+    #loading config file
+    if ( NOT WINDOWS_UAP_CONFIG_FILE )
+        set ( WINDOWS_UAP_CONFIG_FILE "${DAVA_ROOT_DIR}/Sources/CMake/ConfigureFiles/UWPConfigTemplate.in" )
+    endif ()
+    configure_file( ${WINDOWS_UAP_CONFIG_FILE} ${CMAKE_CURRENT_BINARY_DIR}/UWPConfig.in )
+    load_config ( ${CMAKE_CURRENT_BINARY_DIR}/UWPConfig.in )
+    
+    set ( APP_MANIFEST_NAME "Package.appxmanifest" )
+    set ( APP_CERT_NAME "${PROJECT_NAME}_Key.pfx" )
+    set ( SHORT_NAME ${PROJECT_NAME} )
+    set_property ( GLOBAL PROPERTY USE_FOLDERS ON )
 
-	elseif (NOT "${PLATFORM}" STREQUAL "DESKTOP")
-	    set(CONTENT_FILES ${CONTENT_FILES}
-		    ${CMAKE_CURRENT_BINARY_DIR}/${APP_MANIFEST_NAME} 
-		)
-	endif()
-	
+    #search assets 
+    file( GLOB ASSET_FILES "${WINDOWS_UAP_ASSETS_DIR}/*.png" )
+    source_group ( "Content\\Assets" FILES ${ASSET_FILES} )
+
+    #copy manifest
+    configure_file ( ${WINDOWS_UAP_MANIFEST_FILE} ${CMAKE_CURRENT_BINARY_DIR}/${APP_MANIFEST_NAME} @ONLY )
+
+    #copy key file
+    get_filename_component ( CERT_NAME ${WINDOWS_UAP_CERTIFICATE_FILE} NAME )
+    file ( COPY ${WINDOWS_UAP_CERTIFICATE_FILE} DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+    file ( RENAME ${CMAKE_CURRENT_BINARY_DIR}/${CERT_NAME} ${CMAKE_CURRENT_BINARY_DIR}/${APP_CERT_NAME} )
+    
+    set(CONTENT_FILES ${CONTENT_FILES}
+        ${CMAKE_CURRENT_BINARY_DIR}/${APP_MANIFEST_NAME} )
+
     set(RESOURCE_FILES ${CONTENT_FILES} ${DEBUG_CONTENT_FILES} ${RELEASE_CONTENT_FILES} 
-        ${ASSET_FILES} ${STRING_FILES} ${CMAKE_CURRENT_BINARY_DIR}/${APP_TEMPKEY_NAME} )
+        ${ASSET_FILES} ${STRING_FILES} ${CMAKE_CURRENT_BINARY_DIR}/${APP_CERT_NAME} )
     list( APPEND RESOURCES_LIST ${RESOURCE_FILES} )
-	
+
 	#add dll's to project and package
 	file ( GLOB DAVA_DEBUG_DLL_LIST   "${DAVA_WIN_UAP_LIBRARIES_PATH_DEBUG}/*.dll" )
 	file ( GLOB DAVA_RELEASE_DLL_LIST "${DAVA_WIN_UAP_LIBRARIES_PATH_RELEASE}/*.dll" )
@@ -314,7 +285,7 @@ else()
 endif()
 
 if( TARGET_FILE_TREE_FOUND )
-    add_dependencies(  ${PROJECT_NAME} FILE_TREE )
+    add_dependencies(  ${PROJECT_NAME} FILE_TREE_${PROJECT_NAME} )
     
 endif()
 
@@ -568,8 +539,24 @@ if( DEPLOY )
             set_target_properties ( ${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${OUTPUT_DIR} )
         endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
 
-    elseif( MACOS )
+    elseif( APPLE )
         set_target_properties( ${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_CONFIGURATION_BUILD_DIR  ${DEPLOY_DIR} )
+
+        if( IOS )
+            set( XCODERUN_PARAM -sdk iphoneos PackageApplication -v ${DEPLOY_DIR}/${PROJECT_NAME}.app -o ${DEPLOY_DIR}/${PROJECT_NAME}.ipa )
+
+            if( DEVELOPER_NAME )
+                list( APPEND XCODERUN_PARAM  --sign ${DEVELOPER_NAME} )
+            endif()
+
+            if( PROVISONING_PROFILE )
+                list( APPEND XCODERUN_PARAM  --embed ${PROVISONING_PROFILE} )
+            endif()
+
+            add_custom_target ( IOS_DEPLOY_${PROJECT_NAME} ALL COMMAND /usr/bin/xcrun ${XCODERUN_PARAM} )
+            add_dependencies(  IOS_DEPLOY_${PROJECT_NAME} ${PROJECT_NAME} )
+
+        endif()
 
     endif() 
 

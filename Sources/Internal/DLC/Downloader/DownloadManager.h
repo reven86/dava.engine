@@ -32,7 +32,7 @@
 
 #include "Base/BaseTypes.h"
 #include "Base/Singleton.h"
-#include "Base/Function.h"
+#include "Functional/Function.h"
 
 #include "DownloaderCommon.h"
 

@@ -32,6 +32,8 @@
 #include "Render/Image/ImageSystem.h"
 #include "Utils/UTF8Utils.h"
 
+using namespace DAVA;
+
 SpeedLoadImagesTest::SpeedLoadImagesTest()
     : BaseScreen("SpeedLoadImagesTest")
     , resultText(nullptr)
@@ -65,8 +67,9 @@ void SpeedLoadImagesTest::LoadResources()
     CreateButton(Rect(500, 10, 450, 60), L"Test JPG", Message(this, &SpeedLoadImagesTest::OnTestJpg));
     CreateButton(Rect(10, 100, 450, 60), L"Test TGA", Message(this, &SpeedLoadImagesTest::OnTestTga));
     CreateButton(Rect(500, 100, 450, 60), L"Test WebP", Message(this, &SpeedLoadImagesTest::OnTestWebP));
+    CreateButton(Rect(10, 190, 450, 60), L"Test PVR", Message(this, &SpeedLoadImagesTest::OnTestPvr));
 
-    resultText = new UIStaticText(Rect(10, 190, 700, 1400));
+    resultText = new UIStaticText(Rect(10, 280, 700, 1400));
     resultText->SetFont(font);
     resultText->SetTextColor(Color(0.0, 1.0, 0.0, 1.0));
     resultText->GetBackground()->SetColor(Color(0.0, 0.0, 0.0, 1.0));
@@ -136,8 +139,23 @@ void SpeedLoadImagesTest::OnTestWebP(BaseObject *obj, void *data, void *callerDa
     TestAndDisplayFormat("webp", qualities);
 }
 
+void SpeedLoadImagesTest::OnTestPvr(BaseObject *obj, void *data, void *callerData)
+{
+    String resultString;
+    resultString.append("Results:");
+    resultText->SetText(UTF8Utils::EncodeToWideString(resultString));
+
+    Vector<String> qualities;
+    qualities.push_back("100");
+    TestAndDisplayFormat("pvr", qualities);
+}
+
 void SpeedLoadImagesTest::TestAndDisplayFormat(String extension, const Vector<String> &qualities)
 {
+    FileSystem::Instance()->CreateDirectory("~doc:/TestData/SpeedLoadImagesTest/", true);
+    FilePath resultsPath(Format("~doc:/TestData/SpeedLoadImagesTest/results_%s.txt", extension.c_str()));
+    ScopedPtr<File> resultsFile(File::Create(resultsPath, File::CREATE | File::WRITE)); 
+    
     String resultString("\n");
     Vector<FilePath> paths;
     CreatePaths(extension, qualities, paths);
@@ -151,7 +169,9 @@ void SpeedLoadImagesTest::TestAndDisplayFormat(String extension, const Vector<St
         {
             uint64 loadTime = GetLoadTime(path);
             auto fileName = path.GetFilename();
-            resultString.append(Format("%s: %s - %d\n", extension.c_str(), fileName.c_str(), loadTime));
+            String str = Format("%s - %d\n", fileName.c_str(), loadTime);
+            resultString.append(str);
+            resultsFile->WriteLine(str);
         }
     }
 
@@ -169,6 +189,12 @@ void SpeedLoadImagesTest::CreatePaths(String extension, const Vector<String> &qu
     fileNames.push_back("_rgba8888_512");
     fileNames.push_back("_rgba8888_1024");
     fileNames.push_back("_rgba8888_2048");
+    fileNames.push_back("_pvr2_512");
+    fileNames.push_back("_pvr2_1024");
+    fileNames.push_back("_pvr2_2048");
+    fileNames.push_back("_pvr4_512");
+    fileNames.push_back("_pvr4_1024");
+    fileNames.push_back("_pvr4_2048");
 
     for (auto &fileName : fileNames)
     {

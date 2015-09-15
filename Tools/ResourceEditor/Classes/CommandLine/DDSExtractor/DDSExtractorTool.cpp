@@ -32,7 +32,7 @@
 #include "TexturePacker/CommandLineParser.h"
 #include "Render/Image/LibDdsHelper.h"
 
-void DDSExtractorTool::PrintUsage()
+void DDSExtractorTool::PrintUsage() const
 {
     printf("\n");
     printf("-extract [-path [path to folder or file] -mipmap [number]]\n");
@@ -42,10 +42,10 @@ void DDSExtractorTool::PrintUsage()
 
     printf("\n");
     printf("Sample:\n");
-    printf("-extract -path /Users/User/Project/Data/3d -mipmap 2 -forceclose\n");
+    printf("-extract -path /Users/User/Project/Data/3d -mipmap 2\n");
 }
 
-DAVA::String DDSExtractorTool::GetCommandLineKey()
+DAVA::String DDSExtractorTool::GetCommandLineKey() const
 {
     return "-extract";
 }
@@ -67,7 +67,7 @@ bool DDSExtractorTool::InitializeFromCommandLine()
 	return true;
 }
 
-void DDSExtractorTool::Process()
+void DDSExtractorTool::Process() 
 {
 	if (DAVA::FileSystem::Instance()->IsFile(sourcePath))
 	{
@@ -90,7 +90,7 @@ void DDSExtractorTool::Process()
 	}
 }
 
-void DDSExtractorTool::ExtractImagesFromFile(const DAVA::FilePath& pathToDDS)
+void DDSExtractorTool::ExtractImagesFromFile(const DAVA::FilePath& pathToDDS) 
 {
 	if(!pathToDDS.IsEqualToExtension(".dds"))
 	{

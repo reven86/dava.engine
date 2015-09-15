@@ -29,7 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef __DAVAENGINE_PLATFORM__
 #define __DAVAENGINE_PLATFORM__
 
-#include "DavaConfig.h"
+#include "DAVAConfig.h"
 
 //-------------------------------------------------------------------------------------
 //Compiler features
@@ -40,10 +40,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #   define DAVA_NOINLINE    __attribute__((noinline))
 #   define DAVA_FORCEINLINE __attribute__((always_inline))
 #   define DAVA_ALIGNOF(x)  alignof(x)
-#   define DAVA_NOEXCEPT    noexcept
 #   define DAVA_CONSTEXPR   constexpr
 #   define DAVA_DEPRECATED(func) func __attribute__ ((deprecated))
 #   define DAVA_ALIGNED(Var, Len) Var __attribute__((aligned(Len)))
+#   define DAVA_NOEXCEPT    noexcept
 
 //Microsoft Visual C++
 #elif defined(_MSC_VER)

@@ -43,15 +43,11 @@
 
 using namespace Windows::System;
 using namespace Windows::Foundation;
-using namespace Windows::Foundation::Collections;
-using namespace Windows::UI;
 using namespace Windows::UI::Xaml;
 using namespace Windows::UI::Xaml::Controls;
 using namespace Windows::UI::Xaml::Media;
-using namespace Windows::UI::Xaml::Media::Imaging;
 using namespace Windows::Storage;
 using namespace Windows::Storage::Streams;
-using namespace Windows::Web;
 using namespace concurrency;
 
 namespace DAVA
@@ -74,7 +70,7 @@ PrivateMovieViewWinUAP::~PrivateMovieViewWinUAP()
     }
 }
 
-void PrivateMovieViewWinUAP::FlyToSunIcarus()
+void PrivateMovieViewWinUAP::OwnerAtPremortem()
 {
     // For now do nothing here
 }
@@ -206,34 +202,55 @@ void PrivateMovieViewWinUAP::Resume()
 
 void PrivateMovieViewWinUAP::InstallEventHandlers()
 {
+    std::weak_ptr<PrivateMovieViewWinUAP> self_weak(shared_from_this());
     // Install event handlers through lambdas as it seems only ref class's member functions can be event handlers directly
-    auto mediaOpened = ref new RoutedEventHandler([this](Platform::Object^, RoutedEventArgs^) {
-        OnMediaOpened();
+    auto mediaOpened = ref new RoutedEventHandler([this, self_weak](Platform::Object^, RoutedEventArgs^) {
+        auto self = self_weak.lock();
+        if (self != nullptr)
+        {
+            OnMediaOpened();
+        }
     });
-    auto mediaEnded = ref new RoutedEventHandler([this](Platform::Object^, RoutedEventArgs^) {
-        OnMediaEnded();
+    auto mediaEnded = ref new RoutedEventHandler([this, self_weak](Platform::Object^, RoutedEventArgs^) {
+        auto self = self_weak.lock();
+        if (self != nullptr)
+        {
+            OnMediaEnded();
+        }
     });
-    auto mediaFailed = ref new ExceptionRoutedEventHandler([this](Platform::Object^, ExceptionRoutedEventArgs^ args) {
-        OnMediaFailed(args);
+    auto mediaFailed = ref new ExceptionRoutedEventHandler([this, self_weak](Platform::Object^, ExceptionRoutedEventArgs^ args) {
+        auto self = self_weak.lock();
+        if (self != nullptr)
+        {
+            OnMediaFailed(args);
+        }
     });
     nativeMovieView->MediaOpened += mediaOpened;
     nativeMovieView->MediaEnded += mediaEnded;
     nativeMovieView->MediaFailed += mediaFailed;
 }
 
-void PrivateMovieViewWinUAP::PositionMovieView(const Rect& rect)
+void PrivateMovieViewWinUAP::PositionMovieView(const Rect& rectInVirtualCoordinates)
 {
-    VirtualCoordinatesSystem* coordSys = VirtualCoordinatesSystem::Instance();
+    VirtualCoordinatesSystem* coordSystem = VirtualCoordinatesSystem::Instance();
 
-    Rect physRect = coordSys->ConvertVirtualToPhysical(rect);
-    const Vector2 physOffset = coordSys->GetPhysicalDrawOffset();
+    // 1. map virtual to physical
+    Rect controlRect = coordSystem->ConvertVirtualToPhysical(rectInVirtualCoordinates);
+    controlRect += coordSystem->GetPhysicalDrawOffset();
 
-    float32 width = physRect.dx + physOffset.x;
-    float32 height = physRect.dy + physOffset.y;
+    // 2. map physical to window
+    const float32 scaleFactor = core->GetScreenScaleFactor();
+    controlRect.x /= scaleFactor;
+    controlRect.y /= scaleFactor;
+    controlRect.dx /= scaleFactor;
+    controlRect.dy /= scaleFactor;
 
-    nativeMovieView->Width = width;
-    nativeMovieView->Height = height;
-    core->XamlApplication()->PositionUIElement(nativeMovieView, physRect.x, physRect.y);
+    // 3. set control's position and size
+    nativeMovieView->MinHeight = 0.0;       // Force minimum control sizes to zero to
+    nativeMovieView->MinWidth = 0.0;        // allow setting any control sizes
+    nativeMovieView->Width = controlRect.dx;
+    nativeMovieView->Height = controlRect.dy;
+    core->XamlApplication()->PositionUIElement(nativeMovieView, controlRect.x, controlRect.y);
 }
 
 IRandomAccessStream^ PrivateMovieViewWinUAP::CreateStreamFromUri(Windows::Foundation::Uri^ uri) const

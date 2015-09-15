@@ -91,9 +91,14 @@ PreviewModel::PreviewModel(QObject *parent)
     : QObject(parent)
     , canvas(nullptr)
     , view(nullptr)
+    , emulationMode(false)
 {
     view = new DAVA::UIControl();
+    view->SetName("PreviewModel_View");
+
     canvas = new PackageCanvas();
+    canvas->SetName("PreviewModel_PackageCanvas");
+
     view->AddControl(canvas);
 }
 
@@ -276,6 +281,7 @@ void PreviewModel::SetRootControls(const QList<ControlNode*> &activatedControls)
         rootNodes[controlNode->GetControl()] = controlNode;
 
         ScopedPtr<CheckeredCanvas> checkeredCanvas(new CheckeredCanvas());
+        checkeredCanvas->SetEmulationMode(emulationMode);
         checkeredCanvas->AddControlSelectionListener(this);
         checkeredCanvas->AddControl(controlNode->GetControl());
         checkeredCanvas->SetSize(controlNode->GetControl()->GetSize());
@@ -315,6 +321,23 @@ void PreviewModel::SetSelectedControls(const QList<ControlNode *> &selectedContr
             rootContainer->SelectControl(control);
     }
 
+}
+
+void PreviewModel::SetEmulationMode(bool aEmulationMode)
+{
+    emulationMode = aEmulationMode;
+    for (UIControl *control : canvas->GetChildren())
+    {
+        CheckeredCanvas *canvas = dynamic_cast<CheckeredCanvas*>(control);
+        if (canvas)
+        {
+            canvas->SetEmulationMode(emulationMode);
+        }
+        else
+        {
+            DVASSERT(false);
+        }
+    }
 }
 
 QPoint PreviewModel::GetCanvasPosition() const

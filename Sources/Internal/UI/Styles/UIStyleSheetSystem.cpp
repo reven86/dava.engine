@@ -125,11 +125,11 @@ void UIStyleSheetSystem::ProcessControl(UIControl* control)
         UIStyleSheetPropertySet appliedProperties;
         const UIStyleSheetPropertySet& localControlProperties = control->GetLocalPropertySet();
         const auto& styleSheets = packageContext->GetSortedStyleSheets();
-        for (const UIStyleSheet* styleSheet : styleSheets)
+        for (const UIPriorityStyleSheet& styleSheet : styleSheets)
         {
-            if (StyleSheetMatchesControl(styleSheet, control))
+            if (StyleSheetMatchesControl(styleSheet.GetStyleSheet(), control))
             {
-                const auto& propertyTable = styleSheet->GetPropertyTable()->GetProperties();
+                const auto& propertyTable = styleSheet.GetStyleSheet()->GetPropertyTable()->GetProperties();
                 for (const auto& iter : propertyTable)
                 {
                     if (!appliedProperties.test(iter.propertyIndex) && !localControlProperties.test(iter.propertyIndex))
@@ -145,7 +145,7 @@ void UIStyleSheetSystem::ProcessControl(UIControl* control)
             }
         }
 
-        const UIStyleSheetPropertySet& propertiesToReset = control->GetStyledPropertySet() & ~appliedProperties;
+        const UIStyleSheetPropertySet& propertiesToReset = control->GetStyledPropertySet() & (~appliedProperties) & (~localControlProperties);
         if (propertiesToReset.any())
         {
             for (uint32 propertyIndex = 0; propertyIndex < UIStyleSheetPropertyDataBase::STYLE_SHEET_PROPERTY_COUNT; ++propertyIndex)
@@ -168,7 +168,36 @@ void UIStyleSheetSystem::ProcessControl(UIControl* control)
         ProcessControl(child);
     }
 }
+    
+void UIStyleSheetSystem::AddGlobalClass(const FastName &clazz)
+{
+    if (find(globalClasses.begin(), globalClasses.end(), clazz) == globalClasses.end())
+    {
+        globalClasses.push_back(clazz);
+    }
+}
 
+void UIStyleSheetSystem::RemoveGlobalClass(const FastName &clazz)
+{
+    auto iter = find(globalClasses.begin(), globalClasses.end(), clazz);
+    
+    if (iter != globalClasses.end())
+    {
+        *iter = globalClasses.back();
+        globalClasses.pop_back();
+    }
+}
+    
+bool UIStyleSheetSystem::HasGlobalClass(const FastName &clazz) const
+{
+    return find(globalClasses.begin(), globalClasses.end(), clazz) != globalClasses.end();
+}
+
+void UIStyleSheetSystem::ClearGlobalFlags()
+{
+    globalClasses.clear();
+}
+    
 bool UIStyleSheetSystem::StyleSheetMatchesControl(const UIStyleSheet* styleSheet, UIControl* control)
 {
     UIControl* currentControl = control;
@@ -194,7 +223,8 @@ bool UIStyleSheetSystem::SelectorMatchesControl(const UIStyleSheetSelector& sele
 
     for (const FastName& clazz : selector.classes)
     {
-        if (!control->HasClass(clazz))
+        if (!control->HasClass(clazz)
+            && !HasGlobalClass(clazz))
             return false;
     }
 

@@ -38,7 +38,7 @@
 
 using namespace DAVA;
 
-ControlNode::ControlNode(UIControl *control)
+ControlNode::ControlNode(UIControl *control, bool recursively)
     : ControlsContainerNode(nullptr)
     , control(SafeRetain(control))
     , rootProperty(nullptr)
@@ -46,6 +46,18 @@ ControlNode::ControlNode(UIControl *control)
     , creationType(CREATED_FROM_CLASS)
 {
     rootProperty = new RootProperty(this, nullptr, AbstractProperty::CT_COPY);
+    
+    if (recursively)
+    {
+        const List<UIControl*> &children = control->GetChildren();
+        for (UIControl *child : children)
+        {
+            ControlNode *childNode(new ControlNode(child, recursively));
+            childNode->SetParent(this);
+            childNode->SetPackageContext(GetPackageContext());
+            nodes.push_back(childNode);
+        }
+    }
 }
 
 ControlNode::ControlNode(ControlNode *node, eCreationType _creationType)
@@ -56,6 +68,7 @@ ControlNode::ControlNode(ControlNode *node, eCreationType _creationType)
     , creationType(_creationType)
 {
     control = ObjectFactory::Instance()->New<UIControl>(node->GetControl()->GetClassName());
+    control->SetLocalPropertySet(node->GetControl()->GetLocalPropertySet());
     
     eCreationType childCreationType;
     if (creationType == CREATED_FROM_CLASS)
@@ -98,7 +111,12 @@ ControlNode::~ControlNode()
 
 ControlNode *ControlNode::CreateFromControl(DAVA::UIControl *control)
 {
-    return new ControlNode(control);
+    return new ControlNode(control, false);
+}
+
+ControlNode *ControlNode::CreateFromControlWithChildren(UIControl *control)
+{
+    return new ControlNode(control, true);
 }
 
 ControlNode *ControlNode::CreateFromPrototype(ControlNode *sourceNode)
@@ -122,12 +140,12 @@ void ControlNode::Add(ControlNode *node)
     node->SetParent(this);
     nodes.push_back(SafeRetain(node));
     control->AddControl(node->GetControl());
-    node->GetControl()->UpdateLayout();
+    node->SetPackageContext(GetPackageContext());
 }
 
 void ControlNode::InsertAtIndex(int index, ControlNode *node)
 {
-    if (index >= nodes.size())
+    if (index >= static_cast<int>(nodes.size()))
     {
         Add(node);
     }
@@ -140,7 +158,7 @@ void ControlNode::InsertAtIndex(int index, ControlNode *node)
         
         nodes.insert(nodes.begin() + index, SafeRetain(node));
         control->InsertChildBelow(node->GetControl(), belowThis);
-        node->GetControl()->UpdateLayout();
+        node->SetPackageContext(GetPackageContext());
     }
 }
 
@@ -153,6 +171,7 @@ void ControlNode::Remove(ControlNode *node)
         node->SetParent(nullptr);
 
         node->GetControl()->RemoveFromParent();
+        node->SetPackageContext(nullptr);
         nodes.erase(it);
         SafeRelease(node);
     }
@@ -197,6 +216,18 @@ UIControl *ControlNode::GetControl() const
     return control;
 }
 
+UIControlPackageContext *ControlNode::GetPackageContext() const
+{
+    return control->GetPackageContext();
+}
+
+void ControlNode::SetPackageContext(UIControlPackageContext *context)
+{
+    control->SetPackageContext(context);
+    for (ControlNode *child : nodes)
+        child->SetPackageContext(context);
+}
+
 ControlNode *ControlNode::GetPrototype() const
 {
     return prototype;
@@ -236,7 +267,7 @@ bool ControlNode::CanInsertControl(ControlNode *node, DAVA::int32 pos) const
     if (IsReadOnly())
         return false;
     
-    if (pos < nodes.size() && nodes[pos]->GetCreationType() == CREATED_FROM_PROTOTYPE_CHILD)
+    if (pos < static_cast<int32>(nodes.size()) && nodes[pos]->GetCreationType() == CREATED_FROM_PROTOTYPE_CHILD)
         return false;
     
     if (node && node->IsInstancedFrom(this))
@@ -257,7 +288,7 @@ bool ControlNode::CanCopy() const
 
 void ControlNode::RefreshProperties()
 {
-    rootProperty->Refresh();
+    rootProperty->Refresh(AbstractProperty::REFRESH_FONT | AbstractProperty::REFRESH_LOCALIZATION);
     for (ControlNode *node : nodes)
         node->RefreshProperties();
 }

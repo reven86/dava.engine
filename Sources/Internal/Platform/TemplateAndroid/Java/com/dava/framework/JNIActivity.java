@@ -598,8 +598,9 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     // return to GLThread back
     public static void finishActivity()
     {
-        final Object mutex = new Object();
+        JNIRenderer.nativeSingletonsDestroyed = true;
         final JNIActivity activity = JNIActivity.GetActivity();
+        
         activity.runOnUiThread(new Runnable(){
             @Override
             public void run() {
@@ -607,15 +608,8 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
                 System.exit(0);
             }
         });
-        // never return back from this function!
-        synchronized(mutex)
-        {
-            try {
-                mutex.wait();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
+        // try NOT to block this GLThread because sometime Main thread
+        // can block and waiting for GLThread
     }
 }
 

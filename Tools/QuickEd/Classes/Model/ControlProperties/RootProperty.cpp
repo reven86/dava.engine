@@ -46,11 +46,10 @@
 #include "CustomClassProperty.h"
 
 #include "../PackageHierarchy/ControlNode.h"
-
-#include "Base/FunctionTraits.h"
 #include "UI/UIControl.h"
 
 using namespace DAVA;
+
 
 RootProperty::RootProperty(ControlNode *_node, const RootProperty *sourceProperties, eCloneType cloneType)
     : node(_node)
@@ -84,6 +83,8 @@ RootProperty::~RootProperty()
     SafeRelease(customClassProperty);
     SafeRelease(prototypeProperty);
     SafeRelease(nameProperty);
+    DVASSERT(baseProperties.size() == 4);
+    baseProperties.clear();
 
     for (ControlPropertiesSection *section : controlProperties)
     {
@@ -105,6 +106,16 @@ RootProperty::~RootProperty()
         section->Release();
     }
     internalControlProperties.clear();
+
+
+    for (ComponentPropertiesSection *section : componentProperties)
+    {
+        section->SetParent(nullptr);
+        section->Release();
+    }
+    componentProperties.clear();
+
+    listeners.clear();
 }
 
 int RootProperty::GetCount() const
@@ -140,7 +151,7 @@ DAVA::int32 RootProperty::GetControlPropertiesSectionsCount() const
 
 ControlPropertiesSection *RootProperty::GetControlPropertiesSection(DAVA::int32 index) const
 {
-    if (index >= 0 && index < controlProperties.size())
+    if (index >= 0 && index < static_cast<DAVA::int32>(controlProperties.size()))
     {
         return controlProperties[index];
     }
@@ -375,18 +386,18 @@ void RootProperty::ResetProperty(AbstractProperty *property)
         listener->PropertyChanged(property);
 }
 
-void RootProperty::RefreshProperty(AbstractProperty *property)
+void RootProperty::RefreshProperty(AbstractProperty *property, DAVA::int32 refreshFlags)
 {
-    property->Refresh();
+    property->Refresh(refreshFlags);
 
     for (PropertyListener *listener : listeners)
         listener->PropertyChanged(property);
 }
 
-void RootProperty::Refresh()
+void RootProperty::Refresh(DAVA::int32 refreshFlags)
 {
     for (int32 i = 0; i < GetCount(); i++)
-        GetProperty(i)->Refresh();
+        GetProperty(i)->Refresh(refreshFlags);
 }
 
 void RootProperty::Accept(PropertyVisitor *visitor)

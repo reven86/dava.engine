@@ -43,7 +43,7 @@ namespace DAVA
 	\brief Class to work with 3 x 3 matrices.
  */
 struct Matrix3
-{
+{ 
 	union
 	{
 		float32 data[9];
@@ -431,8 +431,13 @@ inline void Matrix3::Decomposition(Matrix3 &kQ, Vector3 &kD, Vector3 &kU) const
 	
 inline bool Matrix3::operator == (const Matrix3 & _m) const
 {
-    for (uint8 k = 0; k < COUNT_OF(data); ++k)
-        if (!FLOAT_EQUAL(data[k], _m.data[k]))return false;
+    for (uint8 k = 0; k < 9; ++k)
+    {
+        if (!FLOAT_EQUAL(data[k], _m.data[k]))
+        {
+            return false;
+        }
+    }
     return true;
 }
 
