@@ -50,8 +50,8 @@ public:
 	TextBlockGraphicRender(TextBlock*);
 	~TextBlockGraphicRender();
 	
-	virtual void Prepare(Texture *texture = nullptr);
-	virtual void Draw(const Color& textColor, const Vector2* offset);
+	void Prepare() override;
+	void Draw(const Color& textColor, const Vector2* offset) override;
 
 	static const uint16* GetSharedIndexBuffer();
 	static const uint32 GetSharedIndexBufferCapacity();
