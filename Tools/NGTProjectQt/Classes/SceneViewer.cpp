@@ -27,10 +27,16 @@
 =====================================================================================*/
 
 #include "SceneViewer.h"
+#include "CollisionSystem.h"
+#include "CameraSystem.h"
+#include "SelectionSystem.h"
 
 #include "Debug/DVAssert.h"
 #include "Scene3D/Systems/Controller/WASDControllerSystem.h"
 #include "Scene3D/Systems/Controller/RotationControllerSystem.h"
+#include "Scene3D/Systems/RenderUpdateSystem.h"
+
+#include "SceneUtils.h"
 #include "UI/UIScreen.h"
 #include "UI/UIScreenManager.h"
 
@@ -43,7 +49,19 @@ namespace
 
 int NUMBER_OF_SCREEN = 0;
 
+
 }
+
+class PluginScene : public DAVA::Scene
+{
+public:
+    void Draw() override
+    {
+        Scene::Draw();
+
+        findSystem<SceneSelectionSystem>(this)->Draw();
+    }
+};
 
 SceneViewer::SceneViewer()
 {
@@ -79,7 +97,7 @@ void SceneViewer::OnOpenScene(std::string const & scenePath)
     DVASSERT(!scenePath.empty());
     DVASSERT(nullptr != uiView);
 
-    ScopedPtr<Scene> scene(new Scene());
+    ScopedPtr<PluginScene> scene(new PluginScene());
     SceneFileV2::eError result = scene->LoadScene(FilePath(scenePath));
     if (result == DAVA::SceneFileV2::ERROR_NO_ERROR)
     {
@@ -94,23 +112,20 @@ void SceneViewer::OnOpenScene(std::string const & scenePath)
         uint32 rotationProcessFlag = Scene::SCENE_SYSTEM_REQUIRE_PROCESS | Scene::SCENE_SYSTEM_REQUIRE_INPUT;
         scene->AddSystem(rotationSystem, rotationComponentFlag, rotationProcessFlag);
 
-        ScopedPtr<Camera> camera(new Camera());
-        camera->SetUp(Vector3(0.0f, 0.0f, 1.0f));
-        camera->SetPosition(Vector3(-50.0f, 0.0f, 50.0f));
-        camera->SetTarget(Vector3(0.0f, 1.0f, 0.0f));
-        camera->SetupPerspective(70.0f, 320.0f / 480.0f, 1.0f, 5000.0f);
+        SceneCameraSystem * cameraSystem = new SceneCameraSystem(scene);
+        cameraSystem->SetViewportRect(uiView->GetRect());
+        scene->AddSystem(cameraSystem, MAKE_COMPONENT_MASK(DAVA::Component::CAMERA_COMPONENT), Scene::SCENE_SYSTEM_REQUIRE_PROCESS | Scene::SCENE_SYSTEM_REQUIRE_INPUT, scene->renderUpdateSystem);
 
-        ScopedPtr<Entity> cameraEntity(new Entity());
-        cameraEntity->SetName("single-camera");
-        cameraEntity->AddComponent(new CameraComponent(camera));
-        cameraEntity->AddComponent(new WASDControllerComponent());
-        cameraEntity->AddComponent(new RotationControllerComponent());
-        scene->AddNode(cameraEntity);
+        SceneCollisionSystem * collisionSystem = new SceneCollisionSystem(scene);
+        uint32_t collisionProcessFlag = Scene::SCENE_SYSTEM_REQUIRE_PROCESS | Scene::SCENE_SYSTEM_REQUIRE_INPUT;
+        scene->AddSystem(collisionSystem, 0, collisionProcessFlag);
 
-        scene->AddCamera(camera);
-        scene->SetCurrentCamera(camera);
+        SceneSelectionSystem * selectionSystem = new SceneSelectionSystem(scene, collisionSystem);
+        scene->AddSystem(selectionSystem, 0, Scene::SCENE_SYSTEM_REQUIRE_PROCESS | Scene::SCENE_SYSTEM_REQUIRE_INPUT, scene->renderUpdateSystem);
 
         uiView->SetScene(scene);
+
+        emit SceneLoaded(scene);
         //statusBar()->showMessage(scenePath);
     }
 }
@@ -146,5 +161,7 @@ void SceneViewer::OnGlResized(int width, int height, int dpr)
     qint64 scaleHeight = height * dpr;
     screen->SetSize(Vector2(scaleWidth, scaleHeight));
     uiView->SetSize(Vector2(scaleWidth, scaleHeight));
+    if (uiView->GetScene() != nullptr)
+        findSystem<SceneCameraSystem>(uiView->GetScene())->SetViewportRect(uiView->GetRect());
 }
 

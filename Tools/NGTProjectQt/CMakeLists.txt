@@ -21,6 +21,7 @@ include_directories   ( ${CMAKE_CURRENT_BINARY_DIR}/DavaTools/QtTools )
 include_directories   ( ${CMAKE_CURRENT_BINARY_DIR} )
 include_directories   (.)
 include_directories   ( "Classes" )
+include_directories   ( "Classes/bullet" )
 
 add_definitions       (
 -DQT_GUI_LIB

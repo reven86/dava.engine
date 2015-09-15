@@ -30,6 +30,7 @@
 #include "QtTools/FrameworkBinding/FrameworkLoop.h"
 #include "SceneViewer.h"
 #include "Library.h"
+#include "SceneTree.h"
 
 #include "core_generic_plugin/generic_plugin.hpp"
 
@@ -86,11 +87,16 @@ public:
         new DavaLoop();
         new FrameworkLoop();
 
+        sceneTree.reset(new SceneTree());
+        sceneTree->Initialize(*uiFramework, *uiApplication);
+
         sceneWidget.reset(new SceneViewer());
+        
         library.reset(new Library());
         library->Initialize(*uiFramework, *uiApplication);
 
         DVVERIFY(QObject::connect(library.get(), &Library::OpenScene, sceneWidget.get(), &SceneViewer::OnOpenScene));
+        DVVERIFY(QObject::connect(sceneWidget.get(), &SceneViewer::SceneLoaded, sceneTree.get(), &SceneTree::SetScene));
 
         uiApplication->addWindow(*mainWindow);
         uiApplication->addView(library->GetView());
@@ -103,6 +109,7 @@ public:
 
     bool Finalise(IComponentContext & context) override
     {
+        sceneTree->Finilize();
         sceneWidget->Finalise();
         library->Finilize();
 
@@ -110,6 +117,7 @@ public:
         DAVA::QtLayer::Instance()->Release();
         DavaLoop::Instance()->Release();
 
+        sceneTree.reset();
         sceneWidget.reset();
         library.reset();
         mainWindow.reset();
@@ -125,6 +133,7 @@ private:
     std::unique_ptr<IWindow> mainWindow;
     std::unique_ptr<Library> library;
     std::unique_ptr<SceneViewer> sceneWidget;
+    std::unique_ptr<SceneTree> sceneTree;
 };
 
 PLG_CALLBACK_FUNC(DAVAPlugin)

@@ -37,7 +37,11 @@
 
 class PluginGLWidget;
 
-namespace DAVA { class UI3DView; }
+namespace DAVA
+{
+    class UI3DView;
+    class Scene;
+}
 
 class SceneViewer : public QObject
 {
@@ -50,6 +54,8 @@ public:
 
     IView & GetView();
     Q_SLOT void OnOpenScene(std::string const & scenePath);
+
+    Q_SIGNAL void SceneLoaded(DAVA::Scene * scene);
 
 private:
     Q_SLOT void OnGlInitialized();
