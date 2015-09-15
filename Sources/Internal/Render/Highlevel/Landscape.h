@@ -215,9 +215,6 @@ public:
 
     //RHI_COMPLETE need remove this
     void UpdatePart(Heightmap* fromHeightmap, const Rect2i & rect);
-    
-	using LandscapeThumbnailCallback = DAVA::Function<void(Landscape*, Texture*)>;
-    void CreateLandscapeTexture(LandscapeThumbnailCallback callback);
 
 protected:
 
@@ -274,9 +271,6 @@ protected:
     bool BuildHeightmap();
     void BuildLandscape();
 
-	void OnCreateLandscapeTextureCompleted(rhi::HSyncObject);
-	void UnregisterCreateTextureCallback();
-
 private:
     LandQuadTreeNode<LandscapeQuad> quadTreeHead;
     Vector<LandQuadTreeNode<LandscapeQuad>*> fans;
@@ -293,9 +287,6 @@ private:
 	NMaterial* landscapeMaterial = nullptr;
     FoliageSystem* foliageSystem = nullptr;
 
-	Texture* thumbnailRenderTarget = nullptr;
-	LandscapeThumbnailCallback createdLandscapeTextureCallback;
-    
     uint16* indices = nullptr;
     uint16* queueDrawIndices = nullptr;
     float32 lodDistance[8];

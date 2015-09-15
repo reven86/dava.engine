@@ -64,8 +64,6 @@ const FastName Landscape::TEXTURE_TILEMASK("tileMask");
 const FastName Landscape::TEXTURE_SPECULAR("specularMap");
 
 const uint32 LANDSCAPE_BATCHES_POOL_SIZE = 32;
-const uint32 TEXTURE_TILE_FULL_SIZE = 2048;
-
 
 Landscape::Landscape()
     : indices(0)
@@ -1236,109 +1234,6 @@ void Landscape::SetMaterial(NMaterial * material)
 
     for (uint32 i = 0; i < GetRenderBatchCount(); ++i)
         GetRenderBatch(i)->SetMaterial(landscapeMaterial);
-}
-
-void Landscape::OnCreateLandscapeTextureCompleted(rhi::HSyncObject syncObject)
-{
-	createdLandscapeTextureCallback(this, thumbnailRenderTarget);
-	SafeRelease(thumbnailRenderTarget);
-}
-
-void Landscape::UnregisterCreateTextureCallback()
-{
-	RenderCallbacks::UnRegisterSyncCallback(MakeFunction(this, &Landscape::OnCreateLandscapeTextureCompleted));
-}
-
-void Landscape::CreateLandscapeTexture(LandscapeThumbnailCallback handler)
-{
-    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
-
-	createdLandscapeTextureCallback = handler;
-
-    Vector<Vector3> ftVertexes;
-	ftVertexes.reserve(4);
-	ftVertexes.emplace_back(-1.0f, -1.0f, 0.0f);
-    ftVertexes.emplace_back( 1.0f, -1.0f, 0.0f);
-    ftVertexes.emplace_back(-1.0f,  1.0f, 0.0f);
-    ftVertexes.emplace_back( 1.0f,  1.0f, 0.0f);
-
-	Vector<Vector2> ftTextureCoords;
-	ftTextureCoords.reserve(4);
-    ftTextureCoords.emplace_back(0.0f, 0.0f);
-    ftTextureCoords.emplace_back(1.0f, 0.0f);
-    ftTextureCoords.emplace_back(0.0f, 1.0f);
-    ftTextureCoords.emplace_back(1.0f, 1.0f);
-
-	ScopedPtr<PolygonGroup> renderData(new PolygonGroup());
-	renderData->AllocateData(EVF_VERTEX | EVF_TEXCOORD0, 4, 6);
-	renderData->SetPrimitiveType(rhi::PrimitiveType::PRIMITIVE_TRIANGLELIST);
-	for (int32 i = 0, e = static_cast<int32>(ftVertexes.size()); i < e; ++i)
-	{
-		renderData->SetCoord(i, ftVertexes.at(i));
-		renderData->SetTexcoord(0, i, ftTextureCoords.at(i));
-	}
-	renderData->SetIndex(0, 0);
-	renderData->SetIndex(1, 1);
-	renderData->SetIndex(2, 2);
-	renderData->SetIndex(3, 2);
-	renderData->SetIndex(4, 1);
-	renderData->SetIndex(5, 3);
-	renderData->BuildBuffers();
-
-	thumbnailRenderTarget = Texture::CreateFBO(TEXTURE_TILE_FULL_SIZE, TEXTURE_TILE_FULL_SIZE, FORMAT_RGBA8888);
-
-	rhi::HSyncObject syncObject = rhi::CreateSyncObject();
-	RenderCallbacks::RegisterSyncCallback(syncObject, MakeFunction(this, &Landscape::OnCreateLandscapeTextureCompleted));
-
-	rhi::Packet packet = { };
-    packet.vertexStreamCount = 1;
-    packet.vertexStream[0] = renderData->vertexBuffer;
-    packet.vertexCount = renderData->vertexCount;
-    packet.indexBuffer = renderData->indexBuffer;
-    packet.primitiveType = renderData->primitiveType;
-    packet.primitiveCount = GetPrimitiveCount(renderData->indexCount, renderData->primitiveType);
-    packet.vertexLayoutUID = renderData->vertexLayoutId;
-
-	DAVA::ShaderDescriptorCache::ClearDynamicBindigs();
-	
-	const auto identityMatrix = &Matrix4::IDENTITY;
-	Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, identityMatrix, (pointer_size)(identityMatrix));
-	Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_VIEW, identityMatrix, (pointer_size)(identityMatrix));
-	Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_PROJ, identityMatrix, (pointer_size)(identityMatrix));
-
-	ScopedPtr<NMaterial> material(new NMaterial());
-
-	auto assignMaterialTexture = [this, &material](const FastName& textureId)
-	{
-		auto texture = GetMaterial()->GetEffectiveTexture(textureId);
-		if (texture != nullptr)
-			material->AddTexture(textureId, texture);
-	};
-
-	assignMaterialTexture(Landscape::TEXTURE_COLOR);
-	assignMaterialTexture(Landscape::TEXTURE_SPECULAR);
-	assignMaterialTexture(Landscape::TEXTURE_TILE);
-	assignMaterialTexture(Landscape::TEXTURE_TILEMASK);
-
-	material->SetMaterialName(FastName("Landscape_Tilemask_Temp_Material"));
-	material->SetFXName(NMaterialName::TILE_MASK);
-	material->SetQualityGroup(NMaterialQualityName::DEFAULT_QUALITY_NAME);
-	material->PreBuildMaterial(PASS_FORWARD);
-	material->BindParams(packet);
-
-	rhi::RenderPassConfig passDesc = { };
-	passDesc.colorBuffer[0].texture = thumbnailRenderTarget->handle;
-	passDesc.priority = PRIORITY_SERVICE_3D;
-	passDesc.viewport.width = TEXTURE_TILE_FULL_SIZE;
-	passDesc.viewport.height = TEXTURE_TILE_FULL_SIZE;
-
-	rhi::HPacketList packetList = { };
-	rhi::HRenderPass renderPass = rhi::AllocateRenderPass(passDesc, 1, &packetList);
-	rhi::BeginRenderPass(renderPass);
-	rhi::BeginPacketList(packetList);
-	rhi::AddPacket(packetList, packet);
-	rhi::EndPacketList(packetList, syncObject);
-	rhi::EndRenderPass(renderPass);
 }
 
 RenderObject * Landscape::Clone(RenderObject *newObject)
