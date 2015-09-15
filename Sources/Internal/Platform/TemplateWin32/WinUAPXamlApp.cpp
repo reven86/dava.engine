@@ -423,7 +423,7 @@ void WinUAPXamlApp::OnPointerWheel(Windows::UI::Core::CoreWindow^ sender, Window
         newTouch.physPoint.y = static_cast<float32>(wheelDelta / WHEEL_DELTA);
         newTouch.phase = UIEvent::PHASE_WHEEL;
         touches.push_back(newTouch);
-        UIControlSystem::Instance()->OnInput(UIEvent::PHASE_WHEEL, touches, events);
+        UIControlSystem::Instance()->OnInput(touches, events);
     });
 }
 
@@ -437,9 +437,9 @@ void WinUAPXamlApp::OnHardwareBackButtonPressed(Platform::Object^ sender, Window
         ev.phase = UIEvent::PHASE_KEYCHAR;
         ev.tid = DVKEY_BACK;
         Vector<UIEvent> touches = { ev };
-        UIControlSystem::Instance()->OnInput(0, touches, events);
+        UIControlSystem::Instance()->OnInput(touches, events);
         touches.pop_back();
-        UIControlSystem::Instance()->OnInput(0, touches, events);
+        UIControlSystem::Instance()->OnInput(touches, events);
         InputSystem::Instance()->GetKeyboard().OnKeyUnpressed(static_cast<int32>(DVKEY_BACK));
     });
     args->Handled = true;
@@ -466,9 +466,9 @@ void WinUAPXamlApp::OnKeyDown(Windows::UI::Core::CoreWindow^ sender, Windows::UI
         ev.tid = InputSystem::Instance()->GetKeyboard().GetDavaKeyForSystemKey(static_cast<int32>(key));
 
         Vector<UIEvent> touches = { ev };
-        UIControlSystem::Instance()->OnInput(0, touches, events);
+        UIControlSystem::Instance()->OnInput(touches, events);
         touches.pop_back();
-        UIControlSystem::Instance()->OnInput(0, touches, events);
+        UIControlSystem::Instance()->OnInput(touches, events);
         InputSystem::Instance()->GetKeyboard().OnSystemKeyPressed(static_cast<int32>(key));
     });
 
@@ -559,7 +559,7 @@ void WinUAPXamlApp::DAVATouchEvent(UIEvent::eInputPhase phase, float32 x, float3
             }
         }
     }
-    UIControlSystem::Instance()->OnInput(phase, touches, events);
+    UIControlSystem::Instance()->OnInput(touches, events);
 }
 
 void WinUAPXamlApp::SetupEventHandlers()
