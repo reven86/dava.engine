@@ -127,9 +127,10 @@ public:
 
     enum class PointerDeviceID : uint32
     {
-        MOUSE = 0,
-        TOUCH = 1,
-        PEN = 2
+        NOT_SUPPORTED = 0,
+        MOUSE = 1,
+        TOUCH = 2,
+        PEN = 3
     };
 
     int32 tid = 0; // event id, for the platforms with mouse this id means mouse button id, key codes for keys, axis id for joystick
@@ -142,7 +143,7 @@ public:
     int32 controlState = CONTROL_STATE_RELEASED; // input state relative to control (outside, inside). Used for point inputs only(mouse, touch)
     int32 tapCount = 0; // count of the continuous inputs (clicks for mouse)
     char16 keyChar = 0; // unicode/translated character produced by key using current language, caps etc. Used only with PHASE_KEYCHAR.
-    PointerDeviceID deviceId = PointerDeviceID::MOUSE;
+    PointerDeviceID deviceId = PointerDeviceID::NOT_SUPPORTED;
 
     inline void SetInputHandledType(eInputHandledType value)
     {

@@ -80,7 +80,7 @@ DAVA::UIEvent::PointerDeviceID ToDavaDeviceId(PointerDeviceType type)
         return DAVA::UIEvent::PointerDeviceID::TOUCH;
     default:
         DVASPECT(false && "can't be!");
-        return DAVA::UIEvent::PointerDeviceID::MOUSE;
+        return DAVA::UIEvent::PointerDeviceID::NOT_SUPPORTED;
     }
 }
 }
