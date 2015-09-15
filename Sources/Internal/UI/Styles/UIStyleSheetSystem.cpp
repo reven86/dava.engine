@@ -161,7 +161,7 @@ void UIStyleSheetSystem::ProcessControl(UIControl* control)
         control->SetStyledPropertySet(appliedProperties);
     }
 
-    control->MarkStyleSheetAsUpdated();
+    control->ResetStyleSheetDirty();
 
     for (UIControl* child : control->GetChildren())
     {

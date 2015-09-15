@@ -29,6 +29,7 @@
 
 #include "UISizePolicyComponent.h"
 
+#include "UI/UIControl.h"
 #include "Math/Vector.h"
 
 namespace DAVA
@@ -77,6 +78,9 @@ UISizePolicyComponent::eSizePolicy UISizePolicyComponent::GetHorizontalPolicy() 
 void UISizePolicyComponent::SetHorizontalPolicy(eSizePolicy newPolicy)
 {
     policy[Vector2::AXIS_X].policy = newPolicy;
+    
+    if (GetControl())
+        GetControl()->SetLayoutDirty();
 }
 
 float32 UISizePolicyComponent::GetHorizontalValue() const
@@ -87,6 +91,9 @@ float32 UISizePolicyComponent::GetHorizontalValue() const
 void UISizePolicyComponent::SetHorizontalValue(float32 value)
 {
     policy[Vector2::AXIS_X].value = value;
+    
+    if (GetControl())
+        GetControl()->SetLayoutDirty();
 }
 
 float32 UISizePolicyComponent::GetHorizontalMinValue() const
@@ -97,6 +104,9 @@ float32 UISizePolicyComponent::GetHorizontalMinValue() const
 void UISizePolicyComponent::SetHorizontalMinValue(float32 value)
 {
     policy[Vector2::AXIS_X].min = value;
+    
+    if (GetControl())
+        GetControl()->SetLayoutDirty();
 }
 
 float32 UISizePolicyComponent::GetHorizontalMaxValue() const
@@ -107,6 +117,9 @@ float32 UISizePolicyComponent::GetHorizontalMaxValue() const
 void UISizePolicyComponent::SetHorizontalMaxValue(float32 value)
 {
     policy[Vector2::AXIS_X].max = value;
+    
+    if (GetControl())
+        GetControl()->SetLayoutDirty();
 }
 
 UISizePolicyComponent::eSizePolicy UISizePolicyComponent::GetVerticalPolicy() const
@@ -117,6 +130,9 @@ UISizePolicyComponent::eSizePolicy UISizePolicyComponent::GetVerticalPolicy() co
 void UISizePolicyComponent::SetVerticalPolicy(eSizePolicy newPolicy)
 {
     policy[Vector2::AXIS_Y].policy = newPolicy;
+    
+    if (GetControl())
+        GetControl()->SetLayoutDirty();
 }
 
 float32 UISizePolicyComponent::GetVerticalValue() const
@@ -127,6 +143,9 @@ float32 UISizePolicyComponent::GetVerticalValue() const
 void UISizePolicyComponent::SetVerticalValue(float32 value)
 {
     policy[Vector2::AXIS_Y].value = value;
+    
+    if (GetControl())
+        GetControl()->SetLayoutDirty();
 }
 
 float32 UISizePolicyComponent::GetVerticalMinValue() const
@@ -137,6 +156,9 @@ float32 UISizePolicyComponent::GetVerticalMinValue() const
 void UISizePolicyComponent::SetVerticalMinValue(float32 value)
 {
     policy[Vector2::AXIS_Y].min = value;
+    
+    if (GetControl())
+        GetControl()->SetLayoutDirty();
 }
 
 float32 UISizePolicyComponent::GetVerticalMaxValue() const
@@ -147,6 +169,9 @@ float32 UISizePolicyComponent::GetVerticalMaxValue() const
 void UISizePolicyComponent::SetVerticalMaxValue(float32 value)
 {
     policy[Vector2::AXIS_Y].max = value;
+    
+    if (GetControl())
+        GetControl()->SetLayoutDirty();
 }
 
 UISizePolicyComponent::eSizePolicy UISizePolicyComponent::GetPolicyByAxis(int32 axis) const
@@ -171,6 +196,13 @@ float32 UISizePolicyComponent::GetMaxValueByAxis(int32 axis) const
 {
     DVASSERT(0 <= axis && axis < Vector2::AXIS_COUNT);
     return policy[axis].max;
+}
+
+bool UISizePolicyComponent::IsDependsOnChildren(int32 axis) const
+{
+    DVASSERT(0 <= axis && axis < Vector2::AXIS_COUNT);
+    eSizePolicy p = policy[axis].policy;
+    return p == PERCENT_OF_CHILDREN_SUM || p == PERCENT_OF_MAX_CHILD || p == PERCENT_OF_FIRST_CHILD || p == PERCENT_OF_LAST_CHILD;
 }
 
 int32 UISizePolicyComponent::GetHorizontalPolicyAsInt() const

@@ -49,34 +49,39 @@ public:
     bool IsRtl() const;
     void SetRtl(bool rtl);
 
-    bool IsDirty() const;
-    void SetDirty();
-    void ResetDirty();
-    
     void ApplyLayout(UIControl *control);
+    UIControl *FindControl(UIControl *control) const;
     
 private:
-    void DoMeasurePhase(UIControl *control, Vector2::eAxis axis);
-    void DoLayoutPhase(UIControl *control, Vector2::eAxis axis);
+    static const int32 FLAG_SIZE_CHANGED = 0x01;
+    static const int32 FLAG_POSITION_CHANGED = 0x02;
+    struct ControlDescr
+    {
+        UIControl *control;
+        int32 flags;
+        int32 firstChild;
+        int32 lastChild;
+        Vector2 size;
+        Vector2 position;
+        bool HasChildren() const {
+            return lastChild >= firstChild;
+        }
+    };
+
+private:
+    void CollectControls(UIControl *control);
+    void CollectControlChildren(UIControl *control, int32 parentIndex);
     
-    void MeasureControl(UIControl *control, UISizePolicyComponent *sizeHint, Vector2::eAxis axis);
-    void ApplyLinearLayout(UIControl *control, UILinearLayoutComponent *linearLayoutComponent, Vector2::eAxis axis);
-    void ApplyAnchorLayout(UIControl *control, Vector2::eAxis axis, bool onlyForIgnoredControls);
-    void GetAxisDataByAnchorData(float32 size, float32 parentSize,
-                                 bool firstSideAnchorEnabled, float32 firstSideAnchor,
-                                 bool centerAnchorEnabled, float32 centerAnchor,
-                                 bool secondSideAnchorEnabled, float32 secondSideAnchor,
-                                 float32 &newPos, float32 &newSize);
-    void GetAnchorDataByAxisData(float32 size, float32 pos, float32 parentSize, bool firstSideAnchorEnabled, bool centerAnchorEnabled, bool secondSideAnchorEnabled, float32 &firstSideAnchor, float32 &centerAnchor, float32 &secondSideAnchor);
+    void MeasureControl(ControlDescr &descr, Vector2::eAxis axis);
+    void ApplyLinearLayout(ControlDescr &descr, UILinearLayoutComponent *linearLayoutComponent, Vector2::eAxis axis);
+    void ApplyAnchorLayout(ControlDescr &descr, Vector2::eAxis axis, bool onlyForIgnoredControls);
 
     bool HaveToSkipControl(UIControl *control, bool skipInvisible) const;
     
 private:
     bool isRtl = false;
-    bool dirty = true;
-
-    DAVA::Set<UIControl*> changedControls;
-    DAVA::int32 indexOfSizeProperty;
+    Vector<ControlDescr> controls;
+    int32 indexOfSizeProperty;
 };
 
 

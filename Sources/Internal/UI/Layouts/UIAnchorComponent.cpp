@@ -1,5 +1,7 @@
 #include "UIAnchorComponent.h"
 
+#include "UI/UIControl.h"
+
 namespace DAVA
 {
 UIAnchorComponent::UIAnchorComponent()
@@ -37,6 +39,9 @@ bool UIAnchorComponent::IsLeftAnchorEnabled() const
 void UIAnchorComponent::SetLeftAnchorEnabled(bool enabled)
 {
     flags.set(FLAG_LEFT_ENABLED, enabled);
+    
+    if (GetControl())
+        GetControl()->SetLayoutDirty();
 }
     
 float32 UIAnchorComponent::GetLeftAnchor() const
@@ -47,6 +52,9 @@ float32 UIAnchorComponent::GetLeftAnchor() const
 void UIAnchorComponent::SetLeftAnchor(float32 anchor)
 {
     leftAnchor = anchor;
+    
+    if (GetControl())
+        GetControl()->SetLayoutDirty();
 }
 
 bool UIAnchorComponent::IsHCenterAnchorEnabled() const
@@ -57,6 +65,9 @@ bool UIAnchorComponent::IsHCenterAnchorEnabled() const
 void UIAnchorComponent::SetHCenterAnchorEnabled(bool enabled)
 {
     flags.set(FLAG_HCENTER_ENABLED, enabled);
+    
+    if (GetControl())
+        GetControl()->SetLayoutDirty();
 }
     
 float32 UIAnchorComponent::GetHCenterAnchor() const
@@ -67,6 +78,9 @@ float32 UIAnchorComponent::GetHCenterAnchor() const
 void UIAnchorComponent::SetHCenterAnchor(float32 anchor)
 {
     hCenterAnchor = anchor;
+    
+    if (GetControl())
+        GetControl()->SetLayoutDirty();
 }
 
 bool UIAnchorComponent::IsRightAnchorEnabled() const
@@ -77,6 +91,9 @@ bool UIAnchorComponent::IsRightAnchorEnabled() const
 void UIAnchorComponent::SetRightAnchorEnabled(bool enabled)
 {
     flags.set(FLAG_RIGHT_ENABLED, enabled);
+    
+    if (GetControl())
+        GetControl()->SetLayoutDirty();
 }
     
 float32 UIAnchorComponent::GetRightAnchor() const
@@ -87,6 +104,9 @@ float32 UIAnchorComponent::GetRightAnchor() const
 void UIAnchorComponent::SetRightAnchor(float32 anchor)
 {
     rightAnchor = anchor;
+    
+    if (GetControl())
+        GetControl()->SetLayoutDirty();
 }
 
 bool UIAnchorComponent::IsTopAnchorEnabled() const
@@ -97,6 +117,9 @@ bool UIAnchorComponent::IsTopAnchorEnabled() const
 void UIAnchorComponent::SetTopAnchorEnabled(bool enabled)
 {
     flags.set(FLAG_TOP_ENABLED, enabled);
+    
+    if (GetControl())
+        GetControl()->SetLayoutDirty();
 }
     
 float32 UIAnchorComponent::GetTopAnchor() const
@@ -107,6 +130,9 @@ float32 UIAnchorComponent::GetTopAnchor() const
 void UIAnchorComponent::SetTopAnchor(float32 anchor)
 {
     topAnchor = anchor;
+    
+    if (GetControl())
+        GetControl()->SetLayoutDirty();
 }
 
 bool UIAnchorComponent::IsVCenterAnchorEnabled() const
@@ -117,6 +143,9 @@ bool UIAnchorComponent::IsVCenterAnchorEnabled() const
 void UIAnchorComponent::SetVCenterAnchorEnabled(bool enabled)
 {
     flags.set(FLAG_VCENTER_ENABLED, enabled);
+
+    if (GetControl())
+        GetControl()->SetLayoutDirty();
 }
     
 float32 UIAnchorComponent::GetVCenterAnchor() const
@@ -127,6 +156,9 @@ float32 UIAnchorComponent::GetVCenterAnchor() const
 void UIAnchorComponent::SetVCenterAnchor(float32 anchor)
 {
     vCenterAnchor = anchor;
+    
+    if (GetControl())
+        GetControl()->SetLayoutDirty();
 }
 
 bool UIAnchorComponent::IsBottomAnchorEnabled() const
@@ -137,6 +169,9 @@ bool UIAnchorComponent::IsBottomAnchorEnabled() const
 void UIAnchorComponent::SetBottomAnchorEnabled(bool enabled)
 {
     flags.set(FLAG_BOTTOM_ENABLED, enabled);
+
+    if (GetControl())
+        GetControl()->SetLayoutDirty();
 }
     
 float32 UIAnchorComponent::GetBottomAnchor() const
@@ -147,6 +182,9 @@ float32 UIAnchorComponent::GetBottomAnchor() const
 void UIAnchorComponent::SetBottomAnchor(float32 anchor)
 {
     bottomAnchor = anchor;
+
+    if (GetControl())
+        GetControl()->SetLayoutDirty();
 }
 
 bool UIAnchorComponent::IsUseRtl() const
@@ -157,6 +195,9 @@ bool UIAnchorComponent::IsUseRtl() const
 void UIAnchorComponent::SetUseRtl(bool use)
 {
     flags.set(FLAG_USE_RTL, use);
+
+    if (GetControl())
+        GetControl()->SetLayoutDirty();
 }
 
 }

@@ -1,5 +1,7 @@
 #include "UILinearLayoutComponent.h"
 
+#include "UI/UIControl.h"
+
 namespace DAVA
 {
 UILinearLayoutComponent::UILinearLayoutComponent()
@@ -34,6 +36,9 @@ bool UILinearLayoutComponent::IsEnabled() const
 void UILinearLayoutComponent::SetEnabled(bool enabled)
 {
     flags.set(FLAG_ENABLED, enabled);
+    
+    if (GetControl())
+        GetControl()->SetLayoutDirty();
 }
 
 UILinearLayoutComponent::eOrientation UILinearLayoutComponent::GetOrientation() const
@@ -44,6 +49,9 @@ UILinearLayoutComponent::eOrientation UILinearLayoutComponent::GetOrientation() 
 void UILinearLayoutComponent::SetOrientation(eOrientation newOrientation)
 {
     flags.set(FLAG_ORIENTATION_VERTICAL, newOrientation == VERTICAL);
+    
+    if (GetControl())
+        GetControl()->SetLayoutDirty();
 }
 
 Vector2::eAxis UILinearLayoutComponent::GetAxis() const
@@ -59,6 +67,9 @@ int32 UILinearLayoutComponent::GetOrientationAsInt() const
 void UILinearLayoutComponent::SetOrientationFromInt(int32 orientation)
 {
     SetOrientation(static_cast<eOrientation>(orientation));
+    
+    if (GetControl())
+        GetControl()->SetLayoutDirty();
 }
 
 float32 UILinearLayoutComponent::GetPadding() const
@@ -69,6 +80,9 @@ float32 UILinearLayoutComponent::GetPadding() const
 void UILinearLayoutComponent::SetPadding(float32 newPadding)
 {
     padding = newPadding;
+    
+    if (GetControl())
+        GetControl()->SetLayoutDirty();
 }
 
 float32 UILinearLayoutComponent::GetSpacing() const
@@ -79,6 +93,9 @@ float32 UILinearLayoutComponent::GetSpacing() const
 void UILinearLayoutComponent::SetSpacing(float32 newSpacing)
 {
     spacing = newSpacing;
+    
+    if (GetControl())
+        GetControl()->SetLayoutDirty();
 }
 
 bool UILinearLayoutComponent::IsDynamicPadding() const
@@ -89,6 +106,9 @@ bool UILinearLayoutComponent::IsDynamicPadding() const
 void UILinearLayoutComponent::SetDynamicPadding(bool dynamic)
 {
     flags.set(FLAG_DYNAMIC_PADDING, dynamic);
+    
+    if (GetControl())
+        GetControl()->SetLayoutDirty();
 }
 
 bool UILinearLayoutComponent::IsDynamicSpacing() const
@@ -99,6 +119,9 @@ bool UILinearLayoutComponent::IsDynamicSpacing() const
 void UILinearLayoutComponent::SetDynamicSpacing(bool dynamic)
 {
     flags.set(FLAG_DYNAMIC_SPACING, dynamic);
+    
+    if (GetControl())
+        GetControl()->SetLayoutDirty();
 }
 
 bool UILinearLayoutComponent::IsSkipInvisibleControls() const
@@ -109,6 +132,9 @@ bool UILinearLayoutComponent::IsSkipInvisibleControls() const
 void UILinearLayoutComponent::SetSkipInvisibleControls(bool skip)
 {
     flags.set(FLAG_SKIP_INVISIBLE_CONTROLS, skip);
+    
+    if (GetControl())
+        GetControl()->SetLayoutDirty();
 }
 
 bool UILinearLayoutComponent::IsUseRtl() const
@@ -119,6 +145,9 @@ bool UILinearLayoutComponent::IsUseRtl() const
 void UILinearLayoutComponent::SetUseRtl(bool use)
 {
     flags.set(FLAG_RTL, use);
+    
+    if (GetControl())
+        GetControl()->SetLayoutDirty();
 }
 
 }

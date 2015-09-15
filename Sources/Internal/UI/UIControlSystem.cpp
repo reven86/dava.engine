@@ -125,8 +125,6 @@ void UIControlSystem::ReplaceScreen(UIScreen *newMainControl)
 	prevScreen = currentScreen;
 	currentScreen = newMainControl;
     NotifyListenersDidSwitch(currentScreen);
-    
-    layoutSystem->SetDirty();
 }
 
 	
@@ -690,7 +688,6 @@ UIControl *UIControlSystem::GetExclusiveInputLocker()
 void UIControlSystem::ScreenSizeChanged()
 {
     popupContainer->SystemScreenSizeDidChanged(VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect());
-    layoutSystem->SetDirty();
 }
 
 void UIControlSystem::SetHoveredControl(UIControl *newHovered)
