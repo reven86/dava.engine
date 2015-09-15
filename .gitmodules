@@ -1,0 +1,3 @@
+[submodule "Sources/External/ngt"]
+	path = Sources/External/ngt
+	url = ssh://git@stash.wargaming.net:2222/df/ngt.git
