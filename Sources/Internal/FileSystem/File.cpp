@@ -167,7 +167,8 @@ uint32 File::Write(const void * pointerToData, uint32 dataSize)
 #endif
 
 	size += lSize;
-	return lSize;
+
+    return lSize;
 }
 
 uint32 File::Read(void * pointerToData, uint32 dataSize)
