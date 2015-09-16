@@ -179,10 +179,6 @@ private:
     bool isLeftButtonPressed = false;
     bool isMiddleButtonPressed = false;
 
-    // it's need, because we don't get full screen size
-    float32 fullScreenViewWidth;
-    float32 fullScreenViewHeight;
-
     float32 viewScaleX = 1.f;
     float32 viewScaleY = 1.f;
     int32 viewWidth = DisplayMode::DEFAULT_WIDTH;
