@@ -38,6 +38,7 @@ namespace rhi
 {
 
 struct InitParam;
+struct GLCommand;
 
 void        gles2_Initialize( const InitParam& param );
 
@@ -48,6 +49,7 @@ void        SetupDispatch( Dispatch* dispatch );
 void        SetToRHI( Handle vb );
 void        ReCreateAll();
 unsigned    NeedRestoreCount();
+void		PatchCommands( GLCommand* command, uint32 cmdCount );
 }
 
 namespace IndexBufferGLES2
@@ -56,6 +58,7 @@ void        SetupDispatch( Dispatch* dispatch );
 IndexSize   SetToRHI( Handle ib );
 void        ReCreateAll();
 unsigned    NeedRestoreCount();
+void		PatchCommands( GLCommand* command, uint32 cmdCount );
 }
 
 namespace QueryBufferGLES2
@@ -74,6 +77,7 @@ void        SetAsRenderTarget( Handle tex, Handle depth );
 Size2i      Size( Handle tex );
 void        ReCreateAll();
 unsigned    NeedRestoreCount();
+void		PatchCommands( GLCommand* command, uint32 cmdCount );
 }
 
 namespace SamplerStateGLES2

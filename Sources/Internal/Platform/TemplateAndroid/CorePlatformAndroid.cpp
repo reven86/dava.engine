@@ -192,19 +192,13 @@ namespace DAVA
 
 		if(wasCreated)
 		{
-			RenderResource::SaveAllResourcesToSystemMem();
-			RenderResource::LostAllResources();
-
 			ResizeView(w, h);
 
 			rhi::ResetParam params;
 			params.width = (uint32)width;
 			params.height = (uint32)height;
+			params.window = rendererParams.window;
 			Renderer::Reset(params);
-
-//			RenderManager::Instance()->Invalidate();   RHI_COMPLETE
-			RenderResource::InvalidateAllResources();
-//			SceneCache::Instance()->InvalidateSceneMaterials();   RHI_COMPLETE
         }
 		else
 		{

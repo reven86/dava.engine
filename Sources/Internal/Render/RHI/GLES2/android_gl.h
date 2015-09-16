@@ -6,8 +6,8 @@
 #ifdef __DAVAENGINE_ANDROID__
 
 void    android_gl_init(void * nativeWindow);
-void    android_gl_reset();
-void    android_gl_end_frame();
+void    android_gl_reset(void * nativeWindow);
+bool    android_gl_end_frame();
 void    android_gl_acquire_context();
 void    android_gl_release_context();
 

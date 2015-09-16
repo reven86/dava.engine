@@ -72,12 +72,14 @@ ResetParam
     uint32  height;
     float32 scaleX;
     float32 scaleY;
+    void*   window;
 
     ResetParam()
         : width(0)
         , height(0)
         , scaleX(1.f)
         , scaleY(1.f)
+    	, window(nullptr)
     {}
 };
 
