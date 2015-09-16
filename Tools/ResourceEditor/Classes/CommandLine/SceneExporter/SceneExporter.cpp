@@ -173,7 +173,7 @@ void SceneExporter::ExportScene(Scene *scene, const FilePath &fileName, Set<Stri
     uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
 
 	// update scene once, to compute bounding boxes, etc
-	scene->Update(1.0f / 30.0f);
+	scene->Update(0.1f);
     
     //Create destination folder
     String relativeFilename = fileName.GetRelativePathname(sceneUtils.dataSourceFolder);
