@@ -8,6 +8,10 @@
 #include <DirectXMath.h>
 #include <dxgi1_3.h>
 #include <D3D11SDKLayers.h>
+//this hack need removed, when rhi_dx thread will synchronized with rander::reset
+__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
+#include "Concurrency/Mutex.h"
+#include "Concurrency/UniqueLock.h"
 
 using namespace rhi;
 using namespace Microsoft::WRL;
@@ -511,7 +515,6 @@ void SetLogicalSize(Windows::Foundation::Size logicalSize)
     if (m_logicalSize != logicalSize)
     {
         m_logicalSize = logicalSize;
-        CreateWindowSizeDependentResources();
     }
 }
 
@@ -533,7 +536,6 @@ void SetCompositionScale(float compositionScaleX, float compositionScaleY)
     {
         m_compositionScaleX = compositionScaleX;
         m_compositionScaleY = compositionScaleY;
-        //CreateWindowSizeDependentResources();
     }
 }
 
@@ -658,6 +660,7 @@ void init_device_and_swapchain_uap(void* panel, int width, int height, float32 s
     SetSwapChainPanel(swapChain);
     SetCompositionScale(sx, sy);
     SetLogicalSize(Windows::Foundation::Size(static_cast<float>(width), static_cast<float>(height)));
+    CreateWindowSizeDependentResources();
 
     _D3D11_Device = m_d3dDevice.Get();
     _D3D11_ImmediateContext = m_d3dContext.Get();
@@ -675,8 +678,13 @@ void init_device_and_swapchain_uap(void* panel, int width, int height, float32 s
 
 void reset_swapchain(int width, int height, float32 sx, float32 sy)
 {
+    // this hack need removed, when rhi_dx thread will synchronized with rander::reset
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
+    DAVA::UniqueLock<DAVA::Mutex> lock(need_synchronized);
+
     SetCompositionScale(sx, sy);
     SetLogicalSize(Windows::Foundation::Size(static_cast<float>(width), static_cast<float>(height)));
+    CreateWindowSizeDependentResources();
 
     _D3D11_SwapChain = m_swapChain.Get();
     _D3D11_SwapChainBuffer = m_swapChainBuffer.Get();

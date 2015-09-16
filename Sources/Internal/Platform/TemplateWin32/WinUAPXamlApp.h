@@ -46,6 +46,7 @@ namespace DAVA
 
 class CorePlatformWinUAP;
 class DispatcherWinUAP;
+class DeferredScreenMetricEvents;
 
 /************************************************************************
  Class WinUAPXamlApp represents WinRT XAML application with embedded framework's render loop
@@ -57,6 +58,7 @@ class DispatcherWinUAP;
  To run code on UI thread you should use CorePlatformWinUAP::RunOnUIThread or CorePlatformWinUAP::RunOnUIThreadBlocked
  To run code on main thread you should use CorePlatformWinUAP::RunOnMainThread
 ************************************************************************/
+
 ref class WinUAPXamlApp sealed : public ::Windows::UI::Xaml::Application
 {
 public:
@@ -67,6 +69,7 @@ public:
     Windows::Graphics::Display::DisplayOrientations GetDisplayOrientation();
     Windows::UI::ViewManagement::ApplicationViewWindowingMode GetScreenMode();
     void SetScreenMode(Windows::UI::ViewManagement::ApplicationViewWindowingMode screenMode);
+    void ToggleFullscreen();
     Windows::Foundation::Size GetCurrentScreenSize();
     void SetCursorPinning(bool isPinning);
     void SetCursorVisible(bool isVisible);
@@ -100,8 +103,7 @@ private:    // Event handlers
     void OnWindowVisibilityChanged(::Windows::UI::Core::CoreWindow^ sender, ::Windows::UI::Core::VisibilityChangedEventArgs^ args);
     
     // Swap chain panel state change handlers
-    void OnSwapChainPanelSizeChanged(Platform::Object^ sender, Windows::UI::Xaml::SizeChangedEventArgs^ e);
-    void OnSwapChainPanelScaleChanged(Windows::UI::Xaml::Controls::SwapChainPanel^ panel, Platform::Object^ args);
+    void MetricsScreenUpdated(bool isSizeUpdate, float32 widht, float32 height, bool isScaleUpdate, float32 scaleX, float32 scaleY);
 
     // Mouse and touch handlers
     void OnPointerPressed(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args);
@@ -118,6 +120,7 @@ private:    // Event handlers
     void OnMouseMoved(Windows::Devices::Input::MouseDevice^ mouseDevice, Windows::Devices::Input::MouseEventArgs^ args);
 
     void DAVATouchEvent(UIEvent::eInputPhase phase, float32 x, float32 y, int32 id);
+    void PreStartAppSettings();
 
 private:
     void SetupEventHandlers();
@@ -132,7 +135,7 @@ private:
     void ReInitCoordinatesSystem();
 
     void PrepareScreenSize();
-    void UpdateScreenSize(int32 width, int32 height);
+    void UpdateScreenSize(float32 width, float32 height);
     void UpdateScreenScale(float32 scaleX, float32 scaleY);
     void SetFullScreen(bool isFullScreenFlag);
     // in units of effective (view) pixels
@@ -176,6 +179,10 @@ private:
     bool isLeftButtonPressed = false;
     bool isMiddleButtonPressed = false;
 
+    // it's need, because we don't get full screen size
+    float32 fullScreenViewWidth;
+    float32 fullScreenViewHeight;
+
     float32 viewScaleX = 1.f;
     float32 viewScaleY = 1.f;
     int32 viewWidth = DisplayMode::DEFAULT_WIDTH;
@@ -184,6 +191,7 @@ private:
     int32 physicalHeight = static_cast<int32>(viewHeight * viewScaleY);
 
     Windows::Graphics::Display::DisplayOrientations displayOrientation = ::Windows::Graphics::Display::DisplayOrientations::None;
+    DeferredScreenMetricEvents* deferredSizeScaleEvents;
 };
 
 //////////////////////////////////////////////////////////////////////////

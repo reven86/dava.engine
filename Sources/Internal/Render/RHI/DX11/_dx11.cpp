@@ -38,6 +38,9 @@
 
 namespace rhi
 {
+// this hack need removed, when rhi_dx thread will synchronized with rander::reset
+__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
+DAVA::Mutex need_synchronized;
 
 ID3D11Device*               _D3D11_Device               = nullptr;
 IDXGISwapChain*             _D3D11_SwapChain            = nullptr;
