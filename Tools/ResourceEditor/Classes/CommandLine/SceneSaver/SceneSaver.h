@@ -34,7 +34,7 @@
 
 using namespace DAVA;
 
-class SceneSaver : RenderObjectsFlusher
+class SceneSaver
 {
 public:
 	SceneSaver();

@@ -173,7 +173,7 @@ void SceneUtils::PrepareDestination(DAVA::Set<DAVA::String> &errorLog)
  * when there is no run/render loop in the application
  */
 
-void RenderObjectsFlusher::FlushRenderObjects()
+void RenderObjectsFlusher::Flush()
 {
 	static const rhi::HTexture nullTexture;
 	static const rhi::Viewport nullViewport(0, 0, 1, 1);

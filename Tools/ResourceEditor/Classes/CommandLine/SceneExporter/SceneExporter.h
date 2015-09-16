@@ -35,7 +35,7 @@
 
 using namespace DAVA;
 
-class SceneExporter : RenderObjectsFlusher
+class SceneExporter
 {
 public:
 

@@ -86,7 +86,7 @@ void SceneSaver::SaveFile(const String &fileName, Set<String> &errorLog)
 	}
 
     SafeRelease(scene);
-	FlushRenderObjects();
+	RenderObjectsFlusher::Flush();
 }
 
 void SceneSaver::ResaveFile(const String &fileName, Set<String> &errorLog)
@@ -107,7 +107,7 @@ void SceneSaver::ResaveFile(const String &fileName, Set<String> &errorLog)
 	}
 
 	SafeRelease(scene);
-	FlushRenderObjects();
+	RenderObjectsFlusher::Flush();
 }
 
 void SceneSaver::SaveScene(Scene *scene, const FilePath &fileName, Set<String> &errorLog)
