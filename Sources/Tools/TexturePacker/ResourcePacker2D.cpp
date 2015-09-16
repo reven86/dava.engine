@@ -592,6 +592,10 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
 
 bool ResourcePacker2D::GetFilesFromCache(const AssetCache::CacheItemKey &key, const FilePath & inputPath, const FilePath & outputPath)
 {
+#ifdef __DAVAENGINE_WIN_UAP__
+    //no cache client in win uap
+    return false;
+#else
     if (!IsUsingCache())
     {
         return false;
@@ -661,10 +665,15 @@ bool ResourcePacker2D::GetFilesFromCache(const AssetCache::CacheItemKey &key, co
         Logger::Warning("Can't run process '%s'", cacheClientTool.GetAbsolutePathname().c_str());
         return false;
     }
+#endif
 }
 
 bool ResourcePacker2D::AddFilesToCache(const AssetCache::CacheItemKey &key, const FilePath & inputPath, const FilePath & outputPath)
 {
+#ifdef __DAVAENGINE_WIN_UAP__
+    //no cache client in win uap
+    return false;
+#else
     if (!IsUsingCache())
     {
         return false;
@@ -763,6 +772,7 @@ bool ResourcePacker2D::AddFilesToCache(const AssetCache::CacheItemKey &key, cons
         Logger::FrameworkDebug("Dir [%s] is empty. Nothing to add to cache", outputPath.GetAbsolutePathname().c_str());
         return false;
     }
+#endif
 }
     
 const Set<String>& ResourcePacker2D::GetErrors() const
