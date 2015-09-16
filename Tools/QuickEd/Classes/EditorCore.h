@@ -48,7 +48,6 @@ class EditorCore : public QObject, public DAVA::Singleton<EditorCore>
     Q_OBJECT
 public:
     explicit EditorCore(QObject *parent = nullptr);
-    ~EditorCore();
     void Start();
 
     MainWindow *GetMainWindow() const;

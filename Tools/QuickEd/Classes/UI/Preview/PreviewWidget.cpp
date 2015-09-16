@@ -33,14 +33,15 @@
 
 #include <QLineEdit>
 #include <QScreen>
+#include <QMenu>
 #include "UI/UIControl.h"
 #include "UI/UIScreenManager.h"
 
 #include "QtTools/DavaGLWidget/davaglwidget.h"
 
 #include "Document.h"
-#include "Systems/CanvasSystem.h"
-#include "Systems/HUDSystem.h"
+#include "EditorSystems/CanvasSystem.h"
+#include "EditorSystems/HUDSystem.h"
 
 using namespace DAVA;
 
@@ -96,6 +97,28 @@ DavaGLWidget *PreviewWidget::GetDavaGLWidget()
 ScrollAreaController* PreviewWidget::GetScrollAreaController()
 {
     return scrollAreaController;
+}
+
+void PreviewWidget::OnSelectControlByMenu(const Vector<ControlNode*>& nodesUnderPoint, const Vector2& point, ControlNode*& selectedNode)
+{
+    selectedNode = nullptr;
+    QPoint globalPos = davaGLWidget->mapToGlobal(QPoint(point.x, point.y) / davaGLWidget->devicePixelRatio());
+    QMenu menu;
+    for (auto it = nodesUnderPoint.rbegin(); it != nodesUnderPoint.rend(); ++it)
+    {
+        ControlNode* controlNode = *it;
+        QString className = QString::fromStdString(controlNode->GetControl()->GetClassName());
+        QAction* action = new QAction(QString::fromStdString(controlNode->GetName()), &menu);
+        menu.addAction(action);
+        void* ptr = static_cast<void*>(controlNode);
+        action->setData(QVariant::fromValue(ptr));
+    }
+    QAction* selectedAction = menu.exec(globalPos);
+    if (nullptr != selectedAction)
+    {
+        void* ptr = selectedAction->data().value<void*>();
+        selectedNode = static_cast<ControlNode*>(ptr);
+    }
 }
 
 void PreviewWidget::OnDocumentChanged(Document *arg)

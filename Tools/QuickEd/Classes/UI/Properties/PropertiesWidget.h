@@ -33,7 +33,7 @@
 #include <QDockWidget>
 #include "Base/BaseTypes.h"
 #include "ui_PropertiesWidget.h"
-#include "Systems/SelectionContainer.h"
+#include "EditorSystems/SelectionContainer.h"
 
 class ControlNode;
 class StyleSheetNode;

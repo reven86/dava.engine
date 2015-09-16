@@ -32,9 +32,9 @@
 
 #include <QUndoStack>
 #include "Model/PackageHierarchy/PackageBaseNode.h"
-#include "Systems/SystemsManager.h"
+#include "EditorSystems/EditorSystemsManager.h"
 #include "Functional/Signal.h"
-#include "Systems/SelectionContainer.h"
+#include "EditorSystems/SelectionContainer.h"
 #include "Math/Rect.h"
 
 
@@ -77,7 +77,7 @@ public:
     
     int GetScale() const;
     bool IsInEmulationMode() const;
-    SystemsManager* GetSystemManager();
+    EditorSystemsManager* GetSystemManager();
     const DAVA::FilePath &GetPackageFilePath() const;
     QUndoStack *GetUndoStack();
     PackageNode *GetPackage();
@@ -87,8 +87,6 @@ public:
     void SetContext(QObject* requester, WidgetContext* widgetContext);
 
     void RefreshLayout();
-
-    void OnSelectControlByMenu(const DAVA::Vector<ControlNode*>& nodes, const DAVA::Vector2& pos, ControlNode*& selectedNode);
 
 signals:
     void ScaleChanged(int scale);
@@ -112,8 +110,7 @@ private:
     QtModelPackageCommandExecutor *commandExecutor = nullptr;
     QUndoStack *undoStack = nullptr;
 
-    SystemsManager systemManager;
-    SelectionContainer selectionContainer;
+    EditorSystemsManager systemManager;
 };
 
 #endif // __QUICKED_DOCUMENT_H__

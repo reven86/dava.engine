@@ -99,11 +99,6 @@ EditorCore::EditorCore(QObject *parent)
 
 }
     
-EditorCore::~EditorCore()
-{
-    delete mainWindow;
-}
-
 void EditorCore::Start()
 {
     int32 projectCount = EditorSettings::Instance()->GetLastOpenedCount();

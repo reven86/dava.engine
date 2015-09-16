@@ -26,31 +26,22 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
+#include "EditorSystems/BaseEditorSystem.h"
 
-#ifndef __QUICKED_CURSOR_SYSTEM_H__
-#define __QUICKED_CURSOR_SYSTEM_H__
+BaseEditorSystem::BaseEditorSystem(EditorSystemsManager* parent)
+    : systemManager(parent)
+{
+}
 
-#include "Systems/BaseSystem.h"
-#include "Systems/SystemsManager.h"
-#include <QMap>
-#include <QPixmap>
-#include <QString>
+void BaseEditorSystem::OnActivated()
+{
+}
 
-class CursorSystem final : public BaseSystem
-{   
-public:
-    explicit CursorSystem(SystemsManager* doc);
-    ~CursorSystem() override = default;
+void BaseEditorSystem::OnDeactivated()
+{
+}
 
-    void OnDeactivated() override;
-
-private:
-    void OnActiveAreaChanged(const HUDAreaInfo& areaInfo);
-
-    QPixmap CreatePixmapForArea(float angle, const HUDAreaInfo::eArea area) const;
-    QPixmap CreatePixmap(const QString &address) const;
-
-    static QMap<QString, QPixmap> cursorpixes;
-};
-
-#endif // __QUICKED_TREE_SYSTEM_H__
+bool BaseEditorSystem::OnInput(DAVA::UIEvent* /*currentInput*/)
+{
+    return false;
+}

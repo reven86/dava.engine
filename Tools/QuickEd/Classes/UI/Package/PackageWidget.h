@@ -32,7 +32,7 @@
 
 #include <QWidget>
 #include <QDockWidget>
-#include "Systems/SelectionContainer.h"
+#include "EditorSystems/SelectionContainer.h"
 #include "Base/BaseTypes.h"
 #include "ui_PackageWidget.h"
 

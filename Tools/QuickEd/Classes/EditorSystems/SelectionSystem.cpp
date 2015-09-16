@@ -28,29 +28,40 @@
 
 #include "Input/InputSystem.h"
 #include "Input/KeyboardDevice.h"
-#include "Systems/SelectionSystem.h"
+#include "EditorSystems/SelectionSystem.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "UI/UIEvent.h"
-#include "Systems/SystemsManager.h"
+#include "EditorSystems/EditorSystemsManager.h"
 
 using namespace DAVA;
 
-SelectionSystem::SelectionSystem(SystemsManager* systemManager)
-    : BaseSystem(systemManager)
+SelectionSystem::SelectionSystem(EditorSystemsManager* systemManager)
+    : BaseEditorSystem(systemManager)
 {
-    systemManager->SelectionChanged.Connect(MakeFunction(&selectionContainer, &SelectionContainer::MergeSelection));
     systemManager->SelectionRectChanged.Connect(this, &SelectionSystem::OnSelectByRect);
+}
+
+void SelectionSystem::OnActivated()
+{
+    systemManager->SelectionChanged.Emit(selectionContainer.selectedNodes, SelectedNodes());
+    connectionID = systemManager->SelectionChanged.Connect(this, &SelectionSystem::SetSelection);
+}
+
+void SelectionSystem::OnDeactivated()
+{
+    systemManager->SelectionChanged.Disconnect(connectionID);
+    systemManager->SelectionChanged.Emit(SelectedNodes(), selectionContainer.selectedNodes);
 }
 
 bool SelectionSystem::OnInput(UIEvent* currentInput)
 {
-    switch(currentInput->phase)
+    switch (currentInput->phase)
     {
     case UIEvent::PHASE_BEGAN:
         mousePressed = true;
         return ProcessMousePress(currentInput->point);
     case UIEvent::PHASE_ENDED:
-        if(!mousePressed)
+        if (!mousePressed)
         {
             return ProcessMousePress(currentInput->point);
         }
@@ -65,12 +76,13 @@ bool SelectionSystem::OnInput(UIEvent* currentInput)
             return true;
         }
     }
-    default: return false;
+    default:
+        return false;
     }
     return false;
 }
 
-void SelectionSystem::ControlWasRemoved(ControlNode *node, ControlsContainerNode *from)
+void SelectionSystem::ControlWasRemoved(ControlNode* node, ControlsContainerNode* from)
 {
     SelectedNodes deselected;
     deselected.insert(node);
@@ -98,13 +110,13 @@ void SelectionSystem::OnSelectByRect(const Rect& rect)
     SetSelection(selected, deselected);
 }
 
-bool SelectionSystem::ProcessMousePress(const DAVA::Vector2 &point)
+bool SelectionSystem::ProcessMousePress(const DAVA::Vector2& point)
 {
     SelectedNodes selected;
     SelectedNodes deselected;
     DAVA::Vector<ControlNode*> nodesUnderPoint;
     systemManager->GetControlNodesByPos(nodesUnderPoint, point);
-    if(!InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_SHIFT))
+    if (!InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_SHIFT))
     {
         deselected = selectionContainer.selectedNodes;
     }
@@ -124,9 +136,9 @@ bool SelectionSystem::ProcessMousePress(const DAVA::Vector2 &point)
         }
         else if (InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_ALT))
         {
-            ControlNode *selectedNode = nullptr;
+            ControlNode* selectedNode = nullptr;
             systemManager->SelectionByMenuRequested.Emit(nodesUnderPoint, point, selectedNode);
-            if(nullptr != selectedNode)
+            if (nullptr != selectedNode)
             {
                 selected.insert(selectedNode);
             }
@@ -136,7 +148,7 @@ bool SelectionSystem::ProcessMousePress(const DAVA::Vector2 &point)
             selected.insert(node);
         }
     }
-    for(auto controlNode : selected)
+    for (auto controlNode : selected)
     {
         deselected.erase(controlNode);
     }

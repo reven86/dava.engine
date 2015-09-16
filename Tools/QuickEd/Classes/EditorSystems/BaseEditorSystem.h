@@ -26,53 +26,33 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
+#ifndef __QUICKED_BASE_SYSTEM_H__
+#define __QUICKED_BASE_SYSTEM_H__
 
-#ifndef __QUICKED_TRANSFORM_SYSTEM_H__
-#define __QUICKED_TRANSFORM_SYSTEM_H__
+namespace DAVA
+{
+class UIEvent;
+}
 
-#include "Systems/BaseSystem.h"
-#include "Base/BaseTypes.h"
-#include "Math/Vector.h"
-#include "Document.h"
+class EditorSystemsManager;
 
-class TransformSystem final : public BaseSystem
-{   
+class BaseEditorSystem
+{
 public:
-    explicit TransformSystem(SystemsManager* parent);
-    ~TransformSystem() = default;
+    explicit BaseEditorSystem(EditorSystemsManager* parent);
+    virtual ~BaseEditorSystem() = 0;
 
-    bool OnInput(DAVA::UIEvent *currentInput) override;
+    virtual void OnActivated();
+    virtual void OnDeactivated();
 
-private:
-    void OnActiveAreaChanged(const HUDAreaInfo& areaInfo);
+    virtual bool OnInput(DAVA::UIEvent* currentInput);
 
-    enum ACCUMULATE_OPERATIONS
-    {
-        ROTATE_OPERATION,
-        MOVE_OPERATION,
-        RESIZE_OPERATION,
-        OPERATIONS_COUNT
-    };
-    bool ProcessKey(const DAVA::int32 key);
-
-    bool ProcessDrag(const DAVA::Vector2 &pos);
-    void ResizeControl(const DAVA::Vector2 &pos, bool withPivot, bool rateably);
-
-    void MoveControl(const DAVA::Vector2 &pos);
-    void MoveAllSelectedControls(const DAVA::Vector2 &delta);
-
-    template <typename T>
-    void AdjustProperty(ControlNode *node, const DAVA::String &propertyName, const T &value);
-
-    void AccumulateOperation(ACCUMULATE_OPERATIONS operation, DAVA::Vector2 &delta);
-
-    HUDAreaInfo::eArea activeArea = HUDAreaInfo::NO_AREA;
-    ControlNode *activeControlNode = nullptr;
-    DAVA::Vector2 prevPos;
-    const DAVA::Array<int, OPERATIONS_COUNT> steps; //to transform with fixed step
-    DAVA::Array<DAVA::Array<int, DAVA::Vector2::AXIS_COUNT>, OPERATIONS_COUNT> accumulates;
-
-    SelectedControls selectedControlNodes;
+protected:
+    EditorSystemsManager* systemManager = nullptr;
 };
 
-#endif // __QUICKED_TRANSFORM_SYSTEM_H__
+inline BaseEditorSystem::~BaseEditorSystem()
+{
+}
+
+#endif // __QUICKED_BASE_SYSTEM_H__

@@ -26,7 +26,6 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 #include "HUDSystem.h"
 
 #include "UI/UIControl.h"
@@ -40,9 +39,9 @@ using namespace DAVA;
 
 namespace
 {
-    const Vector2 PIVOT_CONTROL_SIZE(5.0f, 5.0f);
-    const Vector2 FRAME_RECT_SIZE(10.0f, 10.0f);
-    const Vector2 ROTATE_CONTROL_SIZE(20.0f, 20.0f);
+const Vector2 PIVOT_CONTROL_SIZE(5.0f, 5.0f);
+const Vector2 FRAME_RECT_SIZE(10.0f, 10.0f);
+const Vector2 ROTATE_CONTROL_SIZE(20.0f, 20.0f);
 }
 
 ControlContainer::ControlContainer(const HUDAreaInfo::eArea area_)
@@ -59,17 +58,17 @@ HUDAreaInfo::eArea ControlContainer::GetArea() const
 class HUDContainer : public ControlContainer
 {
 public:
-    explicit HUDContainer(UIControl *container)
+    explicit HUDContainer(UIControl* container)
         : ControlContainer(HUDAreaInfo::NO_AREA)
         , control(container)
     {
     }
-    void AddChild(ControlContainer *container)
+    void AddChild(ControlContainer* container)
     {
         AddControl(container);
         childs.push_back(container);
     }
-    void InitFromGD(const UIGeometricData &geometricData) override
+    void InitFromGD(const UIGeometricData& geometricData) override
     {
         SetPivot(control->GetPivot());
         SetAbsoluteRect(geometricData.GetUnrotatedRect());
@@ -80,13 +79,14 @@ public:
         }
     }
 
-    void SystemDraw(const UIGeometricData &geometricData) override
+    void SystemDraw(const UIGeometricData& geometricData) override
     {
         InitFromGD(control->GetGeometricData());
         UIControl::SystemDraw(geometricData);
     }
+
 private:
-    UIControl *control = nullptr;
+    UIControl* control = nullptr;
     Vector<ControlContainer*> childs;
 };
 
@@ -99,8 +99,9 @@ public:
         SetDebugDraw(true);
         SetDebugDrawColor(Color(0.0f, 0.0f, 1.0f, 1.0f));
     }
+
 private:
-    void InitFromGD(const UIGeometricData &geometricData) override
+    void InitFromGD(const UIGeometricData& geometricData) override
     {
         SetAbsoluteRect(geometricData.GetUnrotatedRect());
     }
@@ -115,29 +116,40 @@ public:
         SetDebugDraw(true);
         SetDebugDrawColor(Color(0.0f, 1.0f, 0.0f, 1.f));
     }
+
 private:
-    void InitFromGD(const UIGeometricData &geometricData) override
+    void InitFromGD(const UIGeometricData& geometricData) override
     {
         Rect rect(Vector2(0.0f, 0.0f), FRAME_RECT_SIZE);
         rect.SetCenter(GetPos(geometricData));
         SetAbsoluteRect(rect);
     }
 
-    Vector2 GetPos(const UIGeometricData &geometricData) const
+    Vector2 GetPos(const UIGeometricData& geometricData) const
     {
         Rect rect = geometricData.GetUnrotatedRect();
         Vector2 retVal = rect.GetPosition();
         switch (area)
         {
-        case HUDAreaInfo::TOP_LEFT_AREA: return retVal;
-        case HUDAreaInfo::TOP_CENTER_AREA: return retVal + Vector2(rect.dx / 2.0f, 0.0f);
-        case HUDAreaInfo::TOP_RIGHT_AREA: return retVal + Vector2(rect.dx, 0.0f);
-        case HUDAreaInfo::CENTER_LEFT_AREA: return retVal + Vector2(0, rect.dy / 2.0f);
-        case HUDAreaInfo::CENTER_RIGHT_AREA: return retVal + Vector2(rect.dx, rect.dy / 2.0f);
-        case HUDAreaInfo::BOTTOM_LEFT_AREA: return retVal + Vector2(0, rect.dy);
-        case HUDAreaInfo::BOTTOM_CENTER_AREA: return retVal + Vector2(rect.dx / 2.0f, rect.dy);
-        case HUDAreaInfo::BOTTOM_RIGHT_AREA: return retVal + Vector2(rect.dx, rect.dy);
-        default: DVASSERT(!"wrong area passed to hud control"); return Vector2(0.0f, 0.0f);
+        case HUDAreaInfo::TOP_LEFT_AREA:
+            return retVal;
+        case HUDAreaInfo::TOP_CENTER_AREA:
+            return retVal + Vector2(rect.dx / 2.0f, 0.0f);
+        case HUDAreaInfo::TOP_RIGHT_AREA:
+            return retVal + Vector2(rect.dx, 0.0f);
+        case HUDAreaInfo::CENTER_LEFT_AREA:
+            return retVal + Vector2(0, rect.dy / 2.0f);
+        case HUDAreaInfo::CENTER_RIGHT_AREA:
+            return retVal + Vector2(rect.dx, rect.dy / 2.0f);
+        case HUDAreaInfo::BOTTOM_LEFT_AREA:
+            return retVal + Vector2(0, rect.dy);
+        case HUDAreaInfo::BOTTOM_CENTER_AREA:
+            return retVal + Vector2(rect.dx / 2.0f, rect.dy);
+        case HUDAreaInfo::BOTTOM_RIGHT_AREA:
+            return retVal + Vector2(rect.dx, rect.dy);
+        default:
+            DVASSERT(!"wrong area passed to hud control");
+            return Vector2(0.0f, 0.0f);
         }
     }
 };
@@ -151,11 +163,12 @@ public:
         SetDebugDraw(true);
         SetDebugDrawColor(Color(1.0f, 0.0f, 0.0f, 1.f));
     }
+
 private:
-    void InitFromGD(const UIGeometricData &geometricData) override
+    void InitFromGD(const UIGeometricData& geometricData) override
     {
         Rect rect(Vector2(0.0f, 0.0f), PIVOT_CONTROL_SIZE);
-        const Rect &controlRect = geometricData.GetUnrotatedRect();
+        const Rect& controlRect = geometricData.GetUnrotatedRect();
         rect.SetCenter(controlRect.GetPosition() + geometricData.pivotPoint);
         SetAbsoluteRect(rect);
     }
@@ -170,8 +183,9 @@ public:
         SetDebugDraw(true);
         SetDebugDrawColor(Color(1.0f, 1.0f, 0.0f, 1.0f));
     }
+
 private:
-    void InitFromGD(const UIGeometricData &geometricData) override
+    void InitFromGD(const UIGeometricData& geometricData) override
     {
         Rect rect(Vector2(0.0f, 0.0f), ROTATE_CONTROL_SIZE);
         Rect controlRect = geometricData.GetUnrotatedRect();
@@ -180,8 +194,8 @@ private:
     }
 };
 
-HUDSystem::HUDSystem(SystemsManager* parent)
-    : BaseSystem(parent)
+HUDSystem::HUDSystem(EditorSystemsManager* parent)
+    : BaseEditorSystem(parent)
     , hudControl(new UIControl())
     , selectionRectControl(new UIControl())
 {
@@ -228,7 +242,7 @@ void HUDSystem::OnSelectionChanged(const SelectedNodes& selected, const Selected
     }
 }
 
-bool HUDSystem::OnInput(UIEvent *currentInput)
+bool HUDSystem::OnInput(UIEvent* currentInput)
 {
     switch (currentInput->phase)
     {
@@ -236,12 +250,13 @@ bool HUDSystem::OnInput(UIEvent *currentInput)
         ProcessCursor(currentInput->point);
         return false;
     case UIEvent::PHASE_BEGAN:
-        canDrawRect = InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_CTRL);
+        SetCanDrawRect(InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_CTRL));
         pressedPoint = currentInput->point;
         return canDrawRect;
     case UIEvent::PHASE_DRAG:
         dragRequested = true;
-        if(canDrawRect)
+
+        if (canDrawRect)
         {
             Vector2 point(currentInput->point);
             Vector2 size(point - pressedPoint);
@@ -256,7 +271,7 @@ bool HUDSystem::OnInput(UIEvent *currentInput)
             selectionRectControl->SetSize(Vector2(0, 0));
         }
         bool retVal = canDrawRect || dragRequested;
-        canDrawRect = false;
+        SetCanDrawRect(false);
         dragRequested = false;
         return retVal;
     }
@@ -280,21 +295,20 @@ void HUDSystem::ProcessCursor(const Vector2& pos)
     SetNewArea(GetControlArea(pos));
 }
 
-HUDAreaInfo HUDSystem::GetControlArea(const Vector2 &pos)
+HUDAreaInfo HUDSystem::GetControlArea(const Vector2& pos)
 {
     HUDAreaInfo areaInfo;
-    for (const auto &iter : hudMap)
+    for (const auto& iter : hudMap)
     {
-        auto &hud = iter.second;
-        for (const auto &hudControl : hud.hudControls)
+        auto& hud = iter.second;
+        for (const auto& hudControl : hud.hudControls)
         {
             if (hudControl->IsPointInside(pos))
             {
                 auto container = hudControl.get();
                 areaInfo.owner = hud.node;
                 areaInfo.area = container->GetArea();
-                DVASSERT_MSG(areaInfo.area != HUDAreaInfo::NO_AREA && areaInfo.owner != nullptr
-                             , "no control node for area");
+                DVASSERT_MSG(areaInfo.area != HUDAreaInfo::NO_AREA && areaInfo.owner != nullptr, "no control node for area");
                 return areaInfo;
             }
         }
@@ -302,17 +316,28 @@ HUDAreaInfo HUDSystem::GetControlArea(const Vector2 &pos)
     return areaInfo;
 }
 
-void HUDSystem::SetNewArea(const HUDAreaInfo &areaInfo)
+void HUDSystem::SetNewArea(const HUDAreaInfo& areaInfo)
 {
-    if (activeAreaInfo.area != areaInfo.area
-        || activeAreaInfo.owner != areaInfo.owner)
+    if (activeAreaInfo.area != areaInfo.area || activeAreaInfo.owner != areaInfo.owner)
     {
         activeAreaInfo = areaInfo;
         systemManager->ActiveAreaChanged.Emit(activeAreaInfo);
     }
 }
 
-HUDSystem::HUD::HUD(ControlNode *node_, UIControl* hudControl)
+void HUDSystem::SetCanDrawRect(bool canDrawRect_)
+{
+    if (canDrawRect != canDrawRect_)
+    {
+        canDrawRect = canDrawRect_;
+        if (!canDrawRect)
+        {
+            selectionRectControl->SetSize(Vector2(0.0f, 0.0f));
+        }
+    }
+}
+
+HUDSystem::HUD::HUD(ControlNode* node_, UIControl* hudControl)
     : node(node_)
     , control(node_->GetControl())
     , container(new HUDContainer(control))
