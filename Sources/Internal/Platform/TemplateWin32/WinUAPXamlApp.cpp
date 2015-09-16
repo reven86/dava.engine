@@ -193,8 +193,12 @@ void WinUAPXamlApp::Run()
         SetDisplayOrientations();
         HideAsyncTaskBar();
         
-        UpdateScreenSize(swapChainPanel->ActualWidth, swapChainPanel->ActualHeight);
-        UpdateScreenScale(swapChainPanel->CompositionScaleX, swapChainPanel->CompositionScaleY);
+        int32 w = static_cast<int32>(swapChainPanel->ActualWidth);
+        int32 h = static_cast<int32>(swapChainPanel->ActualHeight);
+        float32 scaleX = static_cast<float32>(swapChainPanel->CompositionScaleX);
+        float32 scaleY = static_cast<float32>(swapChainPanel->CompositionScaleY);
+        UpdateScreenSize(w, h);
+        UpdateScreenScale(scaleX, scaleY);
     });
 
     core->rendererParams.window = reinterpret_cast<void*>(swapChainPanel);
