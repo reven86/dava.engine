@@ -97,8 +97,6 @@ public:
     
 };
 
-using CircularIndexBufferArray = CircularArray<rhi::HIndexBuffer, 3>;
-
 /**    
     \brief Implementation of cdlod algorithm to render landscapes
     This class is base of the landscape code on all platforms
@@ -223,7 +221,7 @@ protected:
 	static const int32 TEXTURE_SIZE_FULL_TILED = 2048;
 	static const int32 RENDER_QUAD_WIDTH = 129;
 	static const int32 RENDER_QUAD_AND = RENDER_QUAD_WIDTH - 2;
-	static const int32 INDEX_ARRAY_COUNT = 10000 * 6; // 10k triangles max
+    static const int32 QUAD_INDICES_COUNT_MAX = 20000;
 
     struct LandscapeQuad
     {
@@ -275,8 +273,6 @@ private:
     Vector<LandQuadTreeNode<LandscapeQuad>*> lodNot0quads;
     Vector<rhi::HVertexBuffer> vertexBuffers;
     Vector<LanscapeBufferData> bufferRestoreData;
-    rhi::HIndexBuffer currentIndexBuffer;
-    CircularIndexBufferArray indexBuffers;
     FilePath heightmapPath;
 
     Frustum *frustum = nullptr;
@@ -296,10 +292,7 @@ private:
     int32 lodLevelsCount = 0;
     int32 allocatedMemoryForQuads = 0;
     int32 queueIndexCount = 0;
-    int32 queueIndexOffset = 0;
     int32 flushQueueCounter = 0;
-    int32 nearLodIndex = 0;
-    int32 farLodIndex = 0;
 	uint32 drawIndices = 0;
     int16 queueRdoQuad = 0;
 

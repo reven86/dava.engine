@@ -1098,7 +1098,7 @@ void
 UpdateProg( Api targetApi, ProgType progType, const DAVA::FastName& uid, const char* srcText )
 {
     std::string         txt;
-    std::vector<uint8>* bin = 0;
+    std::vector<uint8>* bin = nullptr;
 
     PreProcessSource( targetApi, srcText, &txt );
 
@@ -1122,6 +1122,36 @@ UpdateProg( Api targetApi, ProgType progType, const DAVA::FastName& uid, const c
     bin->clear();
     bin->insert( bin->begin(), (const uint8*)(&(txt[0])), (const uint8*)(&(txt[txt.length()-1])+1) );
     bin->push_back( 0 );
+}
+
+
+//------------------------------------------------------------------------------
+
+void
+UpdateProgBinary( Api targetApi, ProgType progType, const DAVA::FastName& uid, const void* bin, unsigned binSize )
+{
+    std::vector<uint8>* pbin = nullptr;
+
+    for( unsigned i=0; i!=_ProgInfo.size(); ++i )
+    {
+        if( _ProgInfo[i].uid == uid )
+        {
+            pbin = &(_ProgInfo[i].bin);
+            break;
+        }
+    }
+
+    if( !pbin )
+    {
+        _ProgInfo.push_back( ProgInfo() );
+        
+        _ProgInfo.back().uid = uid;        
+        pbin = &(_ProgInfo.back().bin);
+    }
+
+    pbin->clear();
+    pbin->insert( pbin->begin(), (const uint8*)(bin), (const uint8*)(bin)+binSize );
+    pbin->push_back( 0 );
 }
 
 

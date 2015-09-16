@@ -101,8 +101,7 @@ TextBlock::TextBlock()
     , cacheDy(0)
     , cacheW(0)
     , cacheOx(0)
-    , cacheOy(0)
-    , textureForInvalidation(NULL)
+    , cacheOy(0)    
 	, angle(0.f)
 {
     font = NULL;
@@ -120,7 +119,6 @@ TextBlock::TextBlock()
     
 	textBlockRender = NULL;
 	needPrepareInternal = false;
-    textureInvalidater = NULL;
 #if defined(LOCALIZATION_DEBUG)
     fittingTypeUsed = FITTING_DISABLED;
     visualTextCroped = false;
@@ -128,10 +126,8 @@ TextBlock::TextBlock()
 }
 
 TextBlock::~TextBlock()
-{
-	SafeRelease(textureForInvalidation);
-    SafeRelease(textBlockRender);
-    SafeDelete(textureInvalidater);
+{	
+    SafeRelease(textBlockRender);  
     SafeRelease(font);
     UnregisterTextBlock(this);
 }
@@ -154,13 +150,11 @@ void TextBlock::SetFont(Font * _font)
     originalFontSize = font->GetSize();
     renderSize = originalFontSize;
     
-    SafeRelease(textBlockRender);
-    SafeDelete(textureInvalidater);
+    SafeRelease(textBlockRender);    
     switch (font->GetFontType()) 
 	{
         case Font::TYPE_FT:
-            textBlockRender = new TextBlockSoftwareRender(this);
-            textureInvalidater = new TextBlockSoftwareTexInvalidater(this);
+            textBlockRender = new TextBlockSoftwareRender(this);           
 			break;
 		case Font::TYPE_GRAPHIC:
         case Font::TYPE_DISTANCE:
@@ -461,7 +455,7 @@ bool TextBlock::IsSpriteReady()
 	return (GetSprite() != NULL);
 }
 
-void TextBlock::Prepare(Texture *texture /*=NULL*/)
+void TextBlock::Prepare()
 {
 	if(!font)
 	{
@@ -470,26 +464,19 @@ void TextBlock::Prepare(Texture *texture /*=NULL*/)
 	
 	CalculateCacheParams();
 
-	{
-		LockGuard<Mutex> guard(mutex);
-		SafeRelease(textureForInvalidation);
-		textureForInvalidation = SafeRetain(texture);
-		needPrepareInternal = true;
-	}
+	
+	needPrepareInternal = true;
+	
 }
 	
 void TextBlock::PrepareInternal()
-{
-	DVASSERT(Thread::IsMainThread());
-
+{	
     needPrepareInternal = false;
     if (textBlockRender)
     {
         font->SetSize(renderSize);
-        textBlockRender->Prepare(textureForInvalidation);
-        font->SetSize(originalFontSize);
-
-        SafeRelease(textureForInvalidation);
+        textBlockRender->Prepare();
+        font->SetSize(originalFontSize);     
     }
 }
 
@@ -1044,10 +1031,6 @@ TextBlock * TextBlock::Clone()
     return block;
 }
 
-void TextBlock::ForcePrepare(Texture *texture)
-{
-    Prepare(texture);
-}
 
 void TextBlock::SetBiDiSupportEnabled(bool value)
 {

@@ -1,5 +1,6 @@
 #include "uap_dx11.h"
 #include "_dx11.h"
+#include "../rhi_Public.h"
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 
@@ -650,14 +651,14 @@ void Present()
 #endif
 }
 
-void init_device_and_swapchain_uap(void* panel, int width, int height, float32 sx, float32 sy)
+void init_device_and_swapchain_uap( void* panel )
 {
     SwapChainPanel^ swapChain = reinterpret_cast<SwapChainPanel^>(panel);
 
     CreateDeviceResources();
     SetSwapChainPanel(swapChain);
-    SetCompositionScale(sx, sy);
-    SetLogicalSize(Windows::Foundation::Size(static_cast<float>(width), static_cast<float>(height)));
+    SetCompositionScale(_DX11_InitParam.scaleX, _DX11_InitParam.scaleY);
+    SetLogicalSize(Windows::Foundation::Size(static_cast<float>(_DX11_InitParam.width), static_cast<float>(_DX11_InitParam.height)));
 
     _D3D11_Device = m_d3dDevice.Get();
     _D3D11_ImmediateContext = m_d3dContext.Get();
@@ -670,10 +671,9 @@ void init_device_and_swapchain_uap(void* panel, int width, int height, float32 s
     _D3D11_RenderTargetView = m_d3dRenderTargetView.Get();
     _D3D11_DepthStencilBuffer = m_d3dDepthStencilBuffer.Get();
     _D3D11_DepthStencilView = m_d3dDepthStencilView.Get();
-
 }
 
-void reset_swapchain(int width, int height, float32 sx, float32 sy)
+void resize_swapchain(int width, int height, float32 sx, float32 sy)
 {
     SetCompositionScale(sx, sy);
     SetLogicalSize(Windows::Foundation::Size(static_cast<float>(width), static_cast<float>(height)));
@@ -683,7 +683,6 @@ void reset_swapchain(int width, int height, float32 sx, float32 sy)
     _D3D11_RenderTargetView = m_d3dRenderTargetView.Get();
     _D3D11_DepthStencilBuffer = m_d3dDepthStencilBuffer.Get();
     _D3D11_DepthStencilView = m_d3dDepthStencilView.Get();
-
 }
 
 #endif

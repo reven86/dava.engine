@@ -126,6 +126,12 @@ metal_DeviceCaps()
     return _metal_DeviceCaps;
 }
     
+static bool
+metal_NeedRestoreResources()
+{
+    return false;
+}
+    
 //------------------------------------------------------------------------------
     
 void
@@ -208,6 +214,7 @@ metal_Initialize( const InitParam& param )
     DispatchMetal.impl_HostApi                  = &metal_HostApi;
     DispatchMetal.impl_TextureFormatSupported   = &metal_TextureFormatSupported;
     DispatchMetal.impl_DeviceCaps               = &metal_DeviceCaps;
+    DispatchMetal.impl_NeedRestoreResources     = &metal_NeedRestoreResources;
     
     SetDispatchTable( DispatchMetal );
     

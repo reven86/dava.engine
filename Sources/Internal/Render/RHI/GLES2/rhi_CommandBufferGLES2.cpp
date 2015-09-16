@@ -215,6 +215,7 @@ gles2_RenderPass_Begin( Handle pass )
     {        
         _Frame.push_back( FrameGLES2() );
         _Frame.back().number         = _FrameNumber;
+        _Frame.back().sync = rhi::InvalidHandle;
         _Frame.back().readyToExecute = false;
 
 Trace("\n\n-------------------------------\nframe %u started\n",_FrameNumber);
