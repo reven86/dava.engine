@@ -370,7 +370,7 @@ public:
                          PROPERTY("drawType", InspDesc("Draw Type", GlobalEnumMap<eDrawType>::Instance()), GetBgDrawType, SetBgDrawType, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("sprite", "Sprite", GetBgSpritePath, SetBgSpriteFromPath, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("frame", "Sprite Frame", GetFrame, SetFrame, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("spriteModification", "Spirte Modification", GetModification, SetModification, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("spriteModification", "Sprite Modification", GetModification, SetModification, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("color", "Color", GetColor, SetColor, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("colorInherit", InspDesc("Color Inherit", GlobalEnumMap<eColorInheritType>::Instance()), GetBgColorInherit, SetBgColorInherit, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("perPixelAccuracy", InspDesc("Per Pixel Accuracy", GlobalEnumMap<ePerPixelAccuracyType>::Instance()), GetBgPerPixelAccuracy, SetBgPerPixelAccuracy, I_SAVE | I_VIEW | I_EDIT)

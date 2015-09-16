@@ -63,6 +63,7 @@ private:
         int32 lastChild;
         Vector2 size;
         Vector2 position;
+        
         bool HasChildren() const {
             return lastChild >= firstChild;
         }

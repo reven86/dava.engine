@@ -7,6 +7,8 @@
 #include "UI/UIControl.h"
 #include "UI/Styles/UIStyleSheetPropertyDataBase.h"
 
+#include "Platform/SystemTimer.h"
+
 namespace DAVA
 {
 UILayoutSystem::UILayoutSystem()
@@ -31,6 +33,7 @@ void UILayoutSystem::SetRtl(bool rtl)
 
 void UILayoutSystem::ApplyLayout(UIControl *workControl)
 {
+    uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
     CollectControls(workControl);
     
     for (int32 axisIndex = 0; axisIndex < Vector2::AXIS_COUNT; axisIndex++)
@@ -58,7 +61,6 @@ void UILayoutSystem::ApplyLayout(UIControl *workControl)
         }
     }
     
-    Logger::Debug("Changed controls: %d", controls.size());
     for (ControlDescr &descr : controls)
     {
         UIControl *control = descr.control;
@@ -77,6 +79,10 @@ void UILayoutSystem::ApplyLayout(UIControl *workControl)
         
         control->ResetLayoutDirty();
     }
+    
+    uint64 endTime = SystemTimer::Instance()->AbsoluteMS();
+    Logger::Debug("Changed controls: %d, time: %llu ms", controls.size(), endTime - startTime);
+
     controls.clear();
     
 }
@@ -87,7 +93,7 @@ void UILayoutSystem::CollectControls(UIControl *control)
     
     ControlDescr descr;
     descr.control = control;
-    descr.position = control->GetPosition();
+    descr.position = control->GetPosition() - control->GetPivotPoint();
     descr.size = control->GetSize();
     controls.emplace_back(descr);
     
@@ -96,16 +102,16 @@ void UILayoutSystem::CollectControls(UIControl *control)
     
 void UILayoutSystem::CollectControlChildren(UIControl *control, int32 parentIndex)
 {
-    int32 index = controls.size();
+    int32 index = static_cast<int32>(controls.size());
     const List<UIControl*> &children = control->GetChildren();
     controls[parentIndex].firstChild = index;
-    controls[parentIndex].lastChild = index + children.size() - 1;
+    controls[parentIndex].lastChild = index + static_cast<int32>(children.size() - 1);
     for (UIControl *child : children)
     {
         ControlDescr descr;
         descr.control = child;
         descr.flags = 0;
-        descr.position = child->GetPosition();
+        descr.position = child->GetPosition() - child->GetPivotPoint();
         descr.size = child->GetSize();
         controls.emplace_back(descr);
     }
@@ -154,13 +160,13 @@ void UILayoutSystem::MeasureControl(ControlDescr &descr, Vector2::eAxis axis)
     
     UISizePolicyComponent::eSizePolicy policy = sizeHint->GetPolicyByAxis(axis);
     float32 hintValue = sizeHint->GetValueByAxis(axis);
-    float32 value = descr.size.data[axis];
+    float32 value = 0;
     int32 processedChildrenCount = 0;
     
     switch (policy)
     {
         case UISizePolicyComponent::IGNORE_SIZE:
-            // ignore
+            value = descr.size.data[axis]; // ignore
             break;
             
         case UISizePolicyComponent::FIXED_SIZE:
@@ -193,7 +199,7 @@ void UILayoutSystem::MeasureControl(ControlDescr &descr, Vector2::eAxis axis)
             break;
 
         case UISizePolicyComponent::PERCENT_OF_FIRST_CHILD:
-            if (descr.lastChild >= descr.firstChild)
+            if (descr.HasChildren())
             {
                 value = controls[descr.firstChild].size.data[axis];
                 processedChildrenCount = 1;
@@ -202,7 +208,7 @@ void UILayoutSystem::MeasureControl(ControlDescr &descr, Vector2::eAxis axis)
             break;
             
         case UISizePolicyComponent::PERCENT_OF_LAST_CHILD:
-            if (descr.lastChild >= descr.firstChild)
+            if (descr.HasChildren())
             {
                 value = controls[descr.lastChild].size.data[axis];
                 processedChildrenCount = 1;
@@ -222,7 +228,7 @@ void UILayoutSystem::MeasureControl(ControlDescr &descr, Vector2::eAxis axis)
         }
             
         case UISizePolicyComponent::PERCENT_OF_PARENT:
-            // ignore
+            value = descr.size.data[axis]; // ignore
             break;
             
         default:
@@ -231,18 +237,12 @@ void UILayoutSystem::MeasureControl(ControlDescr &descr, Vector2::eAxis axis)
             
     }
     
-    if (policy == UISizePolicyComponent::PERCENT_OF_CHILDREN_SUM ||
-        policy == UISizePolicyComponent::PERCENT_OF_MAX_CHILD ||
-        policy == UISizePolicyComponent::PERCENT_OF_FIRST_CHILD ||
-        policy == UISizePolicyComponent::PERCENT_OF_LAST_CHILD)
+    if (sizeHint->IsDependsOnChildren(axis) && linearLayout && linearLayout->GetAxis() == axis)
     {
-        if (linearLayout && linearLayout->GetAxis() == axis)
-        {
-            if (policy == UISizePolicyComponent::PERCENT_OF_CHILDREN_SUM && processedChildrenCount > 0)
-                value += linearLayout->GetSpacing() * (processedChildrenCount - 1);
-            
-            value += linearLayout->GetPadding() * 2.0f;
-        }
+        if (policy == UISizePolicyComponent::PERCENT_OF_CHILDREN_SUM && processedChildrenCount > 0)
+            value += linearLayout->GetSpacing() * (processedChildrenCount - 1);
+        
+        value += linearLayout->GetPadding() * 2.0f;
     }
     
     if (policy != UISizePolicyComponent::PERCENT_OF_PARENT && policy != UISizePolicyComponent::IGNORE_SIZE)
