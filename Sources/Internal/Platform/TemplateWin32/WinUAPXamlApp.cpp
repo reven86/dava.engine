@@ -69,9 +69,9 @@ using namespace ::Windows::Phone::UI::Input;
 namespace DAVA
 {
 
-
 WinUAPXamlApp::WinUAPXamlApp()
-    : core(static_cast<CorePlatformWinUAP*>(Core::Instance())), isPhoneApiDetected(DeviceInfo::ePlatform::PLATFORM_PHONE_WIN_UAP == DeviceInfo::GetPlatform())
+    : core(static_cast<CorePlatformWinUAP*>(Core::Instance()))
+    , isPhoneApiDetected(DeviceInfo::ePlatform::PLATFORM_PHONE_WIN_UAP == DeviceInfo::GetPlatform())
 {}
 
 WinUAPXamlApp::~WinUAPXamlApp() {}
@@ -160,6 +160,16 @@ void WinUAPXamlApp::PositionUIElement(Windows::UI::Xaml::UIElement^ uiElement, f
     // Note: must be called from UI thread
     canvas->SetLeft(uiElement, x);
     canvas->SetTop(uiElement, y);
+}
+
+void WinUAPXamlApp::SetTextBoxCustomStyle(Windows::UI::Xaml::Controls::TextBox^ textBox)
+{
+    textBox->Style = customTextBoxStyle;
+}
+
+void WinUAPXamlApp::SetPasswordBoxCustomStyle(Windows::UI::Xaml::Controls::PasswordBox^ passwordBox)
+{
+    passwordBox->Style = customPasswordBoxStyle;
 }
 
 void WinUAPXamlApp::UnfocusUIElement()
@@ -391,9 +401,10 @@ void WinUAPXamlApp::OnPointerExited(Windows::UI::Core::CoreWindow^ sender, Windo
     }
     else //  PointerDeviceType::Touch == type
     {
-        core->RunOnMainThread([this, x, y, id]() {
-            DAVATouchEvent(UIEvent::PHASE_DRAG, x, y, id);
-        });
+        core->RunOnMainThread([this, x, y, id]()
+                              {
+            DAVATouchEvent(UIEvent::PHASE_ENDED, x, y, id);
+                              });
     }
 }
 
@@ -594,6 +605,20 @@ void WinUAPXamlApp::CreateBaseXamlUI()
     controlThatTakesFocus->Height = 20;
     AddUIElement(controlThatTakesFocus);
     PositionUIElement(controlThatTakesFocus, -100, -100);
+
+    {   // Load custom textbox and password styles that allow transparent background when control has focus
+        using Windows::UI::Xaml::Markup::XamlReader;
+
+        Platform::Object^ obj = XamlReader::Load(ref new Platform::String(xamlTextBoxStyles));
+        ResourceDictionary^ dict = (ResourceDictionary^)obj;
+
+        Resources->MergedDictionaries->Append(dict);
+        Object^ texboxStyleObj = Resources->Lookup(ref new Platform::String(L"dava_custom_textbox"));
+        Object^ passwordStyleObj = Resources->Lookup(ref new Platform::String(L"dava_custom_passwordbox"));
+
+        customTextBoxStyle = (Windows::UI::Xaml::Style^)texboxStyleObj;
+        customPasswordBoxStyle = (Windows::UI::Xaml::Style^)passwordStyleObj;
+    }
 }
 
 void WinUAPXamlApp::SetTitleName()
@@ -766,6 +791,100 @@ void WinUAPXamlApp::HideAsyncTaskBar()
         StatusBar::GetForCurrentView()->HideAsync();
     }
 }
+
+const wchar_t WinUAPXamlApp::xamlTextBoxStyles[] = LR"(
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:App2">
+    <Style x:Key="dava_custom_textbox" TargetType="TextBox">
+        <Setter Property="MinWidth" Value="0" />
+        <Setter Property="MinHeight" Value="0" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="SelectionHighlightColor" Value="{ThemeResource TextSelectionHighlightColorThemeBrush}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
+        <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Hidden" />
+        <Setter Property="ScrollViewer.IsDeferredScrollingEnabled" Value="False" />
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TextBox">
+                    <Grid>
+                        <ContentPresenter x:Name="HeaderContentPresenter"
+                                      Grid.Row="0"
+                                      Margin="0,4,0,4"
+                                      Grid.ColumnSpan="2"
+                                      Content="{TemplateBinding Header}"
+                                      ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                      FontWeight="Semilight" />
+                        <ScrollViewer x:Name="ContentElement"
+                                    Grid.Row="1"
+                                    HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}"
+                                    HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                                    VerticalScrollMode="{TemplateBinding ScrollViewer.VerticalScrollMode}"
+                                    VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
+                                    IsHorizontalRailEnabled="{TemplateBinding ScrollViewer.IsHorizontalRailEnabled}"
+                                    IsVerticalRailEnabled="{TemplateBinding ScrollViewer.IsVerticalRailEnabled}"
+                                    IsDeferredScrollingEnabled="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}"
+                                    Margin="{TemplateBinding BorderThickness}"
+                                    Padding="{TemplateBinding Padding}"
+                                    IsTabStop="False"
+                                    AutomationProperties.AccessibilityView="Raw"
+                                    ZoomMode="Disabled" />
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style x:Key="dava_custom_passwordbox" TargetType="PasswordBox">
+        <Setter Property="MinWidth" Value="0" />
+        <Setter Property="MinHeight" Value="0" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="SelectionHighlightColor" Value="{ThemeResource TextSelectionHighlightColorThemeBrush}" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
+        <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Hidden" />
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="PasswordBox">
+                    <Grid>
+                        <ContentPresenter x:Name="HeaderContentPresenter"
+                                      Grid.Row="0"
+                                      Margin="0,4,0,4"
+                                      Grid.ColumnSpan="2"
+                                      Content="{TemplateBinding Header}"
+                                      ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                      FontWeight="Semilight" />
+                        <ScrollViewer x:Name="ContentElement"
+                            Grid.Row="1"
+                                  HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}"
+                                  HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                                  VerticalScrollMode="{TemplateBinding ScrollViewer.VerticalScrollMode}"
+                                  VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
+                                  IsHorizontalRailEnabled="{TemplateBinding ScrollViewer.IsHorizontalRailEnabled}"
+                                  IsVerticalRailEnabled="{TemplateBinding ScrollViewer.IsVerticalRailEnabled}"
+                                  Margin="{TemplateBinding BorderThickness}"
+                                  Padding="{TemplateBinding Padding}"
+                                  IsTabStop="False"
+                                  ZoomMode="Disabled"
+                                  AutomationProperties.AccessibilityView="Raw"/>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>
+)";
 
 }   // namespace DAVA
 

@@ -36,6 +36,7 @@
 #include "Commands2/CreatePlaneLODCommand.h"
 #include "Commands2/DeleteLODCommand.h"
 #include "Commands2/CopyLastLODCommand.h"
+#include "QtTools/ConsoleWidget/PointerSerializer.h"
 
 EditorLODSystem::ForceData::ForceData(DAVA::int32 newForceLayer /* = -1 */, DAVA::float32 newDistance /* = -1 */)
     : forceLayer(newForceLayer)
@@ -242,7 +243,8 @@ void EditorLODSystem::AddTrianglesInfo(std::array<DAVA::uint32, DAVA::LodCompone
         RenderBatch *rb = ro->GetRenderBatch(i, lodIndex, switchIndex);
         if (lodIndex < 0 || lodIndex >= DAVA::LodComponent::MAX_LOD_LAYERS)
         {
-            Logger::Error("got unexpected lod index (%d) when collecting triangles on entitie %s. Correct values for lod index is %d", lodIndex, en->GetName().c_str(), DAVA::LodComponent::MAX_LOD_LAYERS);
+            Logger::Error("Unexpected lod index (%d) when collecting triangles on entity %s. Max lod index is %d%s", 
+				lodIndex, en->GetName().c_str(), DAVA::LodComponent::MAX_LOD_LAYERS, PointerSerializer::FromPointer(en).c_str());
             continue;
         }
     

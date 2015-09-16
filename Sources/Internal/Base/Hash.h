@@ -170,6 +170,8 @@ template<> struct Hash <DAVA::uint32>
 		return (i1 == i2);
 	}
 };
+    
+    
 
 inline DAVA::uint32 HashValue_N( const char* key, uint32 length ) DAVA_NOEXCEPT
 {
@@ -246,6 +248,32 @@ DAVA_CONSTEXPR uint32 StringHash(const char(&str)[N])
 {
     return HashValue_N(str, N - 1);
 }
+
+inline size_t BufferHash(const DAVA::uint8 *buffer, DAVA::uint32 bufferLength) DAVA_NOEXCEPT
+{
+    //this function was found in gcc49 functional_hash.h
+
+#if defined(__x86_64__) || defined(_WIN64) || defined(__LP64__)
+    static_assert(sizeof(size_t) == 8, "wrong size_t size");
+
+    const size_t basis = 14695981039346656037ULL;
+    const size_t prime = 1099511628211ULL;
+#else
+    static_assert(sizeof(size_t) == 4, "wrong size_t size");
+
+    const size_t basis = 2166136261UL;
+    const size_t prime = 16777619UL;
+#endif
+
+    size_t result = basis;
+    for (; bufferLength; --bufferLength)
+    {
+        result ^= static_cast<size_t>(*buffer++);
+        result *= prime;
+    }
+    return result;
+}
+
 
 };
 

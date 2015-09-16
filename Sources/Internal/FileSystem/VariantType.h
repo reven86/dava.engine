@@ -70,6 +70,7 @@ public:
     static const String TYPENAME_UINT64;    // "uint64"
 
     static const String TYPENAME_FLOAT;     // "float"
+    static const String TYPENAME_FLOAT64;   // "float64"
     static const String TYPENAME_STRING;    // "string"
     static const String TYPENAME_WIDESTRING;// "wideString"
     static const String TYPENAME_BYTE_ARRAY;// "byteArray"
@@ -86,12 +87,14 @@ public:
 	static const String TYPENAME_AABBOX3;     // "AABBox3"
 	static const String TYPENAME_FILEPATH;  // "FilePath"
 
+
 	VariantType();
 	VariantType(const VariantType &value);
 	explicit VariantType(bool value);
 	explicit VariantType(int32 value);
     explicit VariantType(uint32 value);
-	explicit VariantType(float32 value);
+    explicit VariantType(float32 value);
+	explicit VariantType(float64 value);
 	explicit VariantType(const String & value);
 	explicit VariantType(const WideString & value);
 	explicit VariantType(const uint8 *array, int32 arraySizeInBytes);
@@ -134,20 +137,23 @@ public:
         TYPE_FASTNAME,
 		TYPE_AABBOX3,
 		TYPE_FILEPATH,
+        TYPE_FLOAT64,
         
         TYPES_COUNT // every new type should be always added to the end for compatibility with old archives
 	};
 	uint8 type;
+
 	union  
 	{
 		bool    boolValue;
 		int32   int32Value;
         uint32  uint32Value;
 		float32 floatValue;
+        float64 float64Value;
         
-        int64*   int64Value;
-        uint64*  uint64Value;
-        
+        int64    int64Value;
+        uint64   uint64Value;
+
         Vector2* vector2Value;
         Vector3* vector3Value;
         Vector4* vector4Value;
@@ -213,6 +219,12 @@ public:
 		\param[in] value	value to set
 	 */
 	void SetFloat(float32 value);
+
+    /**
+         \brief Function to set float value to variant type variable
+         \param[in] value	value to set
+     */
+    void SetFloat64(float64 value);
 
 	/**
 		\brief Function to set string value to variant type variable
@@ -337,6 +349,12 @@ public:
 		\returns value of variable, or generate assert if variable type is different
 	 */
 	float32 AsFloat() const;
+
+    /**
+         \brief Function to return float value from variable
+         \returns value of variable, or generate assert if variable type is different
+     */
+    float64 AsFloat64() const;
 
 	/**
 		\brief Function to return string value from variable

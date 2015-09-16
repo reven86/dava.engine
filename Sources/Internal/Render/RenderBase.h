@@ -165,7 +165,7 @@ enum ImageFormat : uint8
     IMAGE_FORMAT_UNKNOWN = 127
 };
 
-enum PixelFormat
+enum PixelFormat : uint8
 {
     FORMAT_INVALID = 0,
     FORMAT_RGBA8888 = 1,
@@ -177,32 +177,32 @@ enum PixelFormat
     FORMAT_A16,
     FORMAT_PVR4,
     FORMAT_PVR2,
-    
+
     FORMAT_RGBA16161616,
     FORMAT_RGBA32323232,
 
     FORMAT_DXT1,
-    FORMAT_REMOVED_DXT_1N,  //to use it in
+    FORMAT_REMOVED_DXT_1N, //to use it in
     FORMAT_DXT1A = 14, //back compatibility
     FORMAT_DXT3,
     FORMAT_DXT5,
     FORMAT_DXT5NM,
-	
-	FORMAT_ETC1,
-	
-	FORMAT_ATC_RGB,
-	FORMAT_ATC_RGBA_EXPLICIT_ALPHA,
+
+    FORMAT_ETC1,
+
+    FORMAT_ATC_RGB,
+    FORMAT_ATC_RGBA_EXPLICIT_ALPHA,
     FORMAT_ATC_RGBA_INTERPOLATED_ALPHA,
-    
-	FORMAT_PVR2_2,	//pvrtc2 generation
-	FORMAT_PVR4_2,
-	FORMAT_EAC_R11_UNSIGNED,
-	FORMAT_EAC_R11_SIGNED,
-	FORMAT_EAC_RG11_UNSIGNED,	//2 channels format for normal maps
-	FORMAT_EAC_RG11_SIGNED,	//2 channels format for normal maps
-	FORMAT_ETC2_RGB,
-	FORMAT_ETC2_RGBA,
-	FORMAT_ETC2_RGB_A1,
+
+    FORMAT_PVR2_2, //pvrtc2 generation
+    FORMAT_PVR4_2,
+    FORMAT_EAC_R11_UNSIGNED,
+    FORMAT_EAC_R11_SIGNED,
+    FORMAT_EAC_RG11_UNSIGNED, //2 channels format for normal maps
+    FORMAT_EAC_RG11_SIGNED, //2 channels format for normal maps
+    FORMAT_ETC2_RGB,
+    FORMAT_ETC2_RGBA,
+    FORMAT_ETC2_RGB_A1,
 
     FORMAT_BGR888, // windows BMP format
     FORMAT_BGRA8888, // android web view format only for ImageConvert
@@ -210,22 +210,23 @@ enum PixelFormat
     FORMAT_COUNT,
     FORMAT_CLOSEST = 255 // fit PixelFormat at 8bits (PixelFormat format:8;)
 };
-    
+
 // Please update JniDeviceInfo.java if change eGPUFamily enum
-enum eGPUFamily
+enum eGPUFamily : uint8
 {
-    GPU_POWERVR_IOS     =   0,
+    GPU_POWERVR_IOS = 0,
     GPU_POWERVR_ANDROID,
     GPU_TEGRA,
     GPU_MALI,
     GPU_ADRENO,
-    GPU_ORIGIN,
+    GPU_DX11,
+    GPU_ORIGIN, // not a device - for development only
     GPU_FAMILY_COUNT,
-    
+
     GPU_DEVICE_COUNT = GPU_ORIGIN,
-    GPU_INVALID = 0x07
+    GPU_INVALID = 127
 };
-    
+
 #if defined(__DAVAENGINE_OPENGL__)
 extern const GLint BLEND_MODE_MAP[BLEND_MODE_COUNT];
 #elif defined(__DAVAENGINE_DIRECTX9__)

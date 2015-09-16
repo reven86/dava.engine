@@ -36,6 +36,7 @@
 
 #include "MemoryManager.h"
 
+#define DAVA_MEMORY_PROFILER_ENABLE_LIGHTWEIGHT()               DAVA::MemoryManager::Instance()->EnableLightWeightMode()
 #define DAVA_MEMORY_PROFILER_UPDATE()                           DAVA::MemoryManager::Instance()->Update()
 
 #define DAVA_MEMORY_PROFILER_REGISTER_TAG(index, name)          DAVA::MemoryManager::RegisterTagName(index, name)
@@ -61,6 +62,7 @@ public:                                                                         
 
 #else   // defined(DAVA_MEMORY_PROFILING_ENABLE)
 
+#define DAVA_MEMORY_PROFILER_ENABLE_LIGHTWEIGHT()
 #define DAVA_MEMORY_PROFILER_UPDATE()
 
 #define DAVA_MEMORY_PROFILER_REGISTER_TAG(index, name)
