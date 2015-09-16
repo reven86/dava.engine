@@ -275,7 +275,11 @@ if( ANDROID )
     add_library( ${PROJECT_NAME} SHARED ${PLATFORM_ADDED_SRC} ${ADDED_SRC} ${REMAINING_LIST} )
 
 else()                     
-    add_executable( ${PROJECT_NAME} MACOSX_BUNDLE ${EXECUTABLE_FLAG}
+    if( NOT MAC_DISABLE_BUNDLE )
+        set( BUNDLE_FLAG  MACOSX_BUNDLE )
+    endif()
+    
+    add_executable( ${PROJECT_NAME} ${BUNDLE_FLAG} ${EXECUTABLE_FLAG}
         ${ADDED_SRC}
         ${PLATFORM_ADDED_SRC}
         ${PROJECT_SOURCE_FILES} 
@@ -407,7 +411,7 @@ elseif( MACOS )
 
     set( BINARY_DIR ${OUTPUT_DIR}/MacOS/${PROJECT_NAME} )
     
-    if( DAVA_FOUND )
+    if( DAVA_FOUND AND NOT MAC_DISABLE_BUNDLE )
         ADD_CUSTOM_COMMAND(
         TARGET ${PROJECT_NAME}
         POST_BUILD

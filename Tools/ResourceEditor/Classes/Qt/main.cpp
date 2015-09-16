@@ -49,7 +49,7 @@
 #include "LicenceDialog/LicenceDialog.h"
 
 #include "Qt/Settings/SettingsManager.h"
-#include "Qt/Tools/RunGuard/RunGuard.h"
+#include "QtTools/RunGuard/RunGuard.h"
 
 #include "Deprecated/EditorConfig.h"
 #include "Deprecated/SceneValidator.h"

@@ -1903,6 +1903,10 @@
 		E8C0A6FE17D5D8EC00F8F93C /* UIScrollViewContainer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8C0A6FC17D5D8EC00F8F93C /* UIScrollViewContainer.cpp */; };
 		E8C0A6FF17D5D8EC00F8F93C /* UIScrollViewContainer.h in Headers */ = {isa = PBXBuildFile; fileRef = E8C0A6FD17D5D8EC00F8F93C /* UIScrollViewContainer.h */; };
 		E8CC1BFC16C10A5A009B49BF /* IntrospectionBase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8CC1BFB16C10A5A009B49BF /* IntrospectionBase.cpp */; };
+		E8E6ECCA1B8B4C7500FA81B9 /* StaticMemoryFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8E6ECC81B8B4C7500FA81B9 /* StaticMemoryFile.cpp */; };
+		E8E6ECCB1B8B4C7500FA81B9 /* StaticMemoryFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8E6ECC81B8B4C7500FA81B9 /* StaticMemoryFile.cpp */; };
+		E8E6ECCC1B8B4C7500FA81B9 /* StaticMemoryFile.h in Headers */ = {isa = PBXBuildFile; fileRef = E8E6ECC91B8B4C7500FA81B9 /* StaticMemoryFile.h */; };
+		E8E6ECCD1B8B4C7500FA81B9 /* StaticMemoryFile.h in Headers */ = {isa = PBXBuildFile; fileRef = E8E6ECC91B8B4C7500FA81B9 /* StaticMemoryFile.h */; };
 		E8F21DD016C1971F007F957A /* GlobalEventSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8F21DCE16C1971F007F957A /* GlobalEventSystem.cpp */; };
 		E8F21DD116C1971F007F957A /* GlobalEventSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = E8F21DCF16C1971F007F957A /* GlobalEventSystem.h */; };
 		E8F43E2D186C5D4E006796CB /* MaterialSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8F43E2B186C5D4E006796CB /* MaterialSystem.cpp */; };
@@ -2939,6 +2943,8 @@
 		E8C0A6FC17D5D8EC00F8F93C /* UIScrollViewContainer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIScrollViewContainer.cpp; sourceTree = "<group>"; };
 		E8C0A6FD17D5D8EC00F8F93C /* UIScrollViewContainer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIScrollViewContainer.h; sourceTree = "<group>"; };
 		E8CC1BFB16C10A5A009B49BF /* IntrospectionBase.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IntrospectionBase.cpp; sourceTree = "<group>"; };
+		E8E6ECC81B8B4C7500FA81B9 /* StaticMemoryFile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StaticMemoryFile.cpp; sourceTree = "<group>"; };
+		E8E6ECC91B8B4C7500FA81B9 /* StaticMemoryFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StaticMemoryFile.h; sourceTree = "<group>"; };
 		E8F21DCE16C1971F007F957A /* GlobalEventSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GlobalEventSystem.cpp; sourceTree = "<group>"; };
 		E8F21DCF16C1971F007F957A /* GlobalEventSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GlobalEventSystem.h; sourceTree = "<group>"; };
 		E8F43E2B186C5D4E006796CB /* MaterialSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MaterialSystem.cpp; sourceTree = "<group>"; };
@@ -3801,6 +3807,8 @@
 				E8B3C85616B9326D002BD35F /* Logger.cpp */,
 				E8B3C85716B9326D002BD35F /* Logger.h */,
 				E8B3C85916B9326D002BD35F /* LoggerMacOS.mm */,
+				E8E6ECC81B8B4C7500FA81B9 /* StaticMemoryFile.cpp */,
+				E8E6ECC91B8B4C7500FA81B9 /* StaticMemoryFile.h */,
 				E8B3C85C16B9326D002BD35F /* ResourceArchive.cpp */,
 				E8B3C85D16B9326D002BD35F /* ResourceArchive.h */,
 				E8B3C85E16B9326D002BD35F /* VariantType.cpp */,
@@ -4736,6 +4744,7 @@
 				02FD7F7B1924997C007762C0 /* OOBBox.h in Headers */,
 				64493E1719476F4700AB2715 /* VegetationRenderData.h in Headers */,
 				D7D3A2CF19CAB6C000CD6B51 /* LocalNotificationImpl.h in Headers */,
+				E8E6ECCD1B8B4C7500FA81B9 /* StaticMemoryFile.h in Headers */,
 				02FD7F7C1924997C007762C0 /* Plane.h in Headers */,
 				02FD7F7D1924997C007762C0 /* Polygon2.h in Headers */,
 				02FD7F7E1924997C007762C0 /* Polygon3.h in Headers */,
@@ -5510,6 +5519,7 @@
 				E8B3CD1116B9326E002BD35F /* UIScreenManager.h in Headers */,
 				327343D41ACD3CDC0003F2A8 /* UIControlFamily.h in Headers */,
 				029BAE551859B81700478671 /* musicios.h in Headers */,
+				E8E6ECCC1B8B4C7500FA81B9 /* StaticMemoryFile.h in Headers */,
 				E8B3CD1416B9326E002BD35F /* UIScreenManageriPhone.h in Headers */,
 				E8B3CD1616B9326E002BD35F /* UIScreenManageriPhoneImpl.h in Headers */,
 				A6AFDEFD1871C3D1006E43A1 /* SpeedTreeObject.h in Headers */,
@@ -6085,6 +6095,7 @@
 				CC0D7B4C1A76066700309408 /* EdgeComponent.cpp in Sources */,
 				02FD81D71924997C007762C0 /* CRC32.cpp in Sources */,
 				02FD81D81924997C007762C0 /* MaterialOptimazer.cpp in Sources */,
+				E8E6ECCB1B8B4C7500FA81B9 /* StaticMemoryFile.cpp in Sources */,
 				02FD81D91924997C007762C0 /* SkyboxSystem.cpp in Sources */,
 				02FD81DA1924997C007762C0 /* AllocatorFactory.cpp in Sources */,
 				02FD81DB1924997C007762C0 /* SkyboxRenderObject.cpp in Sources */,
@@ -6429,6 +6440,7 @@
 				B72364A41A8D01D6009940BE /* UIComponent.cpp in Sources */,
 				1174B61E1B42C518002E3472 /* UIStyleSheetStructs.cpp in Sources */,
 				D7CC267119C517E500A3B754 /* LocalNotificationProgress.cpp in Sources */,
+				E8E6ECCA1B8B4C7500FA81B9 /* StaticMemoryFile.cpp in Sources */,
 				E8B3CCF116B9326E002BD35F /* UIControlBackground.cpp in Sources */,
 				64493E1819476F4700AB2715 /* VegetationRenderObject.cpp in Sources */,
 				64493E0219476F4700AB2715 /* VegetationCustomSLGeometry.cpp in Sources */,
