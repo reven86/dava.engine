@@ -108,7 +108,7 @@ private:
     QString lastFilterText;
     ExpandedIndexes expandedIndexes;
 
-    SelectionContainer selectionTracker;
+    SelectionContainer selectionContainer;
 };
 
 #endif // __UI_EDITOR_UI_PACKAGE_WIDGET__

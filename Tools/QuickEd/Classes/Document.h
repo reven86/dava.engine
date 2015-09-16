@@ -113,7 +113,7 @@ private:
     QUndoStack *undoStack = nullptr;
 
     SystemsManager systemManager;
-    SelectionContainer selectionTracker;
+    SelectionContainer selectionContainer;
 };
 
 #endif // __QUICKED_DOCUMENT_H__

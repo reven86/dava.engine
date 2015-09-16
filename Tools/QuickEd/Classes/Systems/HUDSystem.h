@@ -58,10 +58,12 @@ public:
     void OnActivated() override;
     void OnDeactivated() override;
 
-    void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     bool OnInput(DAVA::UIEvent *currentInput) override;
-    void OnEmulationModeChanged(bool emulationMode);
+
 private:
+    void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
+    void OnEmulationModeChanged(bool emulationMode);
+
     void ProcessCursor(const DAVA::Vector2& pos);
     HUDAreaInfo GetControlArea(const DAVA::Vector2 &pos);
     void SetNewArea(const HUDAreaInfo& HUDAreaInfo);

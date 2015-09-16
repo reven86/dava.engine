@@ -41,11 +41,11 @@ public:
     explicit TransformSystem(SystemsManager* parent);
     ~TransformSystem() = default;
 
-    void OnActiveAreaChanged(const HUDAreaInfo& areaInfo);
-
     bool OnInput(DAVA::UIEvent *currentInput) override;
 
 private:
+    void OnActiveAreaChanged(const HUDAreaInfo& areaInfo);
+
     enum ACCUMULATE_OPERATIONS
     {
         ROTATE_OPERATION,

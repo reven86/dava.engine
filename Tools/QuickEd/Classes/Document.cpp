@@ -115,7 +115,7 @@ WidgetContext* Document::GetContext(QObject* requester) const
 void Document::Activate()
 {
     systemManager.Activate();
-    emit SelectedNodesChanged(selectionTracker.selectedNodes, SelectedNodes());
+    emit SelectedNodesChanged(selectionContainer.selectedNodes, SelectedNodes());
     emit ScaleChanged(scale);
     emit EmulationModeChanged(IsInEmulationMode());
 }
@@ -124,7 +124,7 @@ void Document::Activate()
 void Document::Deactivate()
 {
     systemManager.Deactivate();
-    emit SelectedNodesChanged(SelectedNodes(), selectionTracker.selectedNodes);
+    emit SelectedNodesChanged(SelectedNodes(), selectionContainer.selectedNodes);
 }
 
 void Document::SetContext(QObject* requester, WidgetContext* widgetContext)
@@ -159,7 +159,7 @@ void Document::OnSelectControlByMenu(const Vector<ControlNode*>& nodesUnderPoint
         menu.addAction(action);
         void* ptr = static_cast<void*>(controlNode);
         action->setData(QVariant::fromValue(ptr));
-        auto selectedNodes = selectionTracker.selectedNodes;
+        const auto& selectedNodes = selectionContainer.selectedNodes;
         if (selectedNodes.find(controlNode) != selectedNodes.end())
         {
             auto font = action->font();
@@ -211,9 +211,9 @@ void Document::OnSelectionChanged(const SelectedNodes& selected, const SelectedN
     SelectedNodes reallySelected;
     SelectedNodes reallyDeselected;
 
-    selectionTracker.GetOnlyExistedItems(deselected, reallyDeselected);
-    selectionTracker.GetNotExistedItems(selected, reallySelected);
-    selectionTracker.MergeSelection(reallySelected, reallyDeselected);
+    selectionContainer.GetOnlyExistedItems(deselected, reallyDeselected);
+    selectionContainer.GetNotExistedItems(selected, reallySelected);
+    selectionContainer.MergeSelection(reallySelected, reallyDeselected);
 
     if (!reallySelected.empty() || !reallyDeselected.empty())
     {

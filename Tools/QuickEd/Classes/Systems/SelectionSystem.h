@@ -49,15 +49,16 @@ public:
     bool OnInput(DAVA::UIEvent *currentInput) override;
 
     void ControlWasRemoved(ControlNode *node, ControlsContainerNode *from) override;
-    void OnSelectByRect(const DAVA::Rect& rect);
 
 private:
+    void OnSelectByRect(const DAVA::Rect& rect);
+
     void SetSelection(const SelectedNodes& selected, const SelectedNodes& SelectedNodes);
 
     bool ProcessMousePress(const DAVA::Vector2 &point);
 
     bool mousePressed = false;
-    SelectionContainer selectionTracker;
+    SelectionContainer selectionContainer;
 };
 
 #endif // __QUICKED_SELECTION_SYSTEM_H__

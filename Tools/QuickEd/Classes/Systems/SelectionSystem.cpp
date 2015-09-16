@@ -38,7 +38,7 @@ using namespace DAVA;
 SelectionSystem::SelectionSystem(SystemsManager* systemManager)
     : BaseSystem(systemManager)
 {
-    systemManager->SelectionChanged.Connect(MakeFunction(&selectionTracker, &SelectionContainer::MergeSelection));
+    systemManager->SelectionChanged.Connect(MakeFunction(&selectionContainer, &SelectionContainer::MergeSelection));
     systemManager->SelectionRectChanged.Connect(this, &SelectionSystem::OnSelectByRect);
 }
 
@@ -60,7 +60,7 @@ bool SelectionSystem::OnInput(UIEvent* currentInput)
     {
         if (currentInput->tid == DVKEY_TAB)
         {
-            SetSelection(SelectedNodes(), selectionTracker.selectedNodes);
+            SetSelection(SelectedNodes(), selectionContainer.selectedNodes);
             //TODO: select next control
             return true;
         }
@@ -93,7 +93,7 @@ void SelectionSystem::OnSelectByRect(const Rect& rect)
     if (!InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_SHIFT))
     {
         //deselect all not selected by rect
-        std::set_difference(selectionTracker.selectedNodes.begin(), selectionTracker.selectedNodes.end(), areaNodes.begin(), areaNodes.end(), std::inserter(deselected, deselected.end()));
+        std::set_difference(selectionContainer.selectedNodes.begin(), selectionContainer.selectedNodes.end(), areaNodes.begin(), areaNodes.end(), std::inserter(deselected, deselected.end()));
     }
     SetSelection(selected, deselected);
 }
@@ -106,14 +106,14 @@ bool SelectionSystem::ProcessMousePress(const DAVA::Vector2 &point)
     systemManager->GetControlNodesByPos(nodesUnderPoint, point);
     if(!InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_SHIFT))
     {
-        deselected = selectionTracker.selectedNodes;
+        deselected = selectionContainer.selectedNodes;
     }
     if (!nodesUnderPoint.empty())
     {
         auto node = nodesUnderPoint.back();
         if (InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_CTRL))
         {
-            if (selectionTracker.selectedNodes.find(node) != selectionTracker.selectedNodes.end())
+            if (selectionContainer.selectedNodes.find(node) != selectionContainer.selectedNodes.end())
             {
                 deselected.insert(node);
             }
@@ -148,9 +148,9 @@ void SelectionSystem::SetSelection(const SelectedNodes& selected, const Selected
 {
     SelectedNodes reallySelected;
     SelectedNodes reallyDeselected;
-    selectionTracker.GetOnlyExistedItems(deselected, reallyDeselected);
-    selectionTracker.GetNotExistedItems(selected, reallySelected);
-    selectionTracker.MergeSelection(reallySelected, reallyDeselected);
+    selectionContainer.GetOnlyExistedItems(deselected, reallyDeselected);
+    selectionContainer.GetNotExistedItems(selected, reallySelected);
+    selectionContainer.MergeSelection(reallySelected, reallyDeselected);
 
     if (!reallySelected.empty() || !reallyDeselected.empty())
     {

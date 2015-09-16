@@ -77,7 +77,7 @@ private:
     QAction *addStyleSelectorAction = nullptr;
     QAction *removeAction = nullptr;
 
-    SelectionContainer selectionTracker;
+    SelectionContainer selectionContainer;
 };
 
 #endif //__QUICKED_PROPERTIES_WIDGET_H__
