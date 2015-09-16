@@ -137,13 +137,25 @@ void LaunchPackage(const FilePath& package, const PackageOptions& opt)
         FileSystem::Instance()->DeleteFile(manifest);
     };
 
+    //figure out if app should be started on mobile device
+    QString profile = GetQtWinRTRunnerProfile(opt.profile, manifest);
+    bool isMobileDevice = profile == QStringLiteral("appxphone");
+
+    //Init network
+    Logger::Instance()->Info("Initializing network...");
+    if (!InitializeNetwork(isMobileDevice))
+    {
+        DVASSERT_MSG(false, "Unable to initialize network");
+        return;
+    }
+
     //Create Qt runner
-    Logger::Instance()->Info("Preparing...");
+    Logger::Instance()->Info("Preparing to launch...");
     Runner runner(QString::fromStdString(package.GetAbsolutePathname()),
-        QString::fromStdString(manifest.GetAbsolutePathname()),
-        QString::fromStdString(opt.dependencies.Get()),
-        QStringList(),
-        GetQtWinRTRunnerProfile(opt.profile, manifest));
+                  QString::fromStdString(manifest.GetAbsolutePathname()),
+                  QString::fromStdString(opt.dependencies.Get()),
+                  QStringList(),
+                  profile);
 
     //Check runner state
     if (!runner.isValid())
@@ -156,13 +168,6 @@ void LaunchPackage(const FilePath& package, const PackageOptions& opt)
 
 void Run(Runner& runner)
 {
-    //figure out if app should be started on mobile device
-    bool isMobileDevice = runner.profile() == QStringLiteral("appxphone");
-
-    //Init network
-    Logger::Instance()->Info("Initializing network...");
-    DVASSERT_MSG_RET(InitializeNetwork(isMobileDevice), "Unable to initialize network");
-
     //Start app
     Start(runner);
 
