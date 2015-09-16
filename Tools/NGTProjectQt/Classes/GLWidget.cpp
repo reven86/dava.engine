@@ -49,10 +49,6 @@ const LayoutHint & PluginGLWidget::hint() const
     return hints;
 }
 
-void * PluginGLWidget::nativeWindowId()
-{
-    return nullptr;
-}
 
 void PluginGLWidget::update()
 {
