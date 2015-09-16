@@ -312,12 +312,12 @@ bool File::GetNextChar(uint8 *nextChar)
     }
 }
 
-uint32 File::GetPos()
+uint32 File::GetPos() const
 {
     return static_cast<uint32>(ftell(file));
 }
 
-uint32 File::GetSize()
+uint32 File::GetSize() const
 {
     return size;
 }
@@ -348,7 +348,7 @@ bool File::Flush()
     return 0 == fflush(file);
 }
 
-bool File::IsEof()
+bool File::IsEof() const
 {
     return (feof(file) != 0);
 }
