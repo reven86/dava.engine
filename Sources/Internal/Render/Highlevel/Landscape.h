@@ -213,6 +213,7 @@ public:
 	
     void SetFoliageSystem(FoliageSystem* _foliageSystem);
 
+	// RHI_COMPLETE need remove this
     void UpdatePart(Heightmap* fromHeightmap, const Rect2i & rect);
     
 	using LandscapeThumbnailCallback = DAVA::Function<void(Landscape*, Texture*)>;
