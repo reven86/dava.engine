@@ -67,7 +67,9 @@ public:
      \brief returns pointer to the data contained in the memory file
      \returns pointer to the first byte of the file data if file is empty returns NULL
      */
-    void * GetData();
+    const uint8* GetData() const;
+
+    const Vector<uint8>& GetDataVector() const;
 
 
     /**
@@ -89,13 +91,13 @@ public:
     /**
      \brief Get current file position
      */
-    uint32 GetPos() override;
+    uint32 GetPos() const override;
 
     /**
      \brief Get current file size if writing
      \brief and get real file size if file for reading
      */
-    uint32 GetSize() override;
+    uint32 GetSize() const override;
 
     /**
      \brief Set current file position
@@ -106,7 +108,7 @@ public:
     bool Seek(int32 position, uint32 seekType) override;
 
     //! return true if end of file reached and false in another case
-    bool IsEof() override;
+    bool IsEof() const override;
 
 protected:
     uint32 currentPtr;
@@ -114,6 +116,11 @@ protected:
     uint32 fileAttributes;
     bool isEof;
 };
+
+inline const Vector<uint8>& DynamicMemoryFile::GetDataVector() const
+{
+    return data;
+}
 
 };
 
