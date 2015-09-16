@@ -1302,11 +1302,12 @@ void Landscape::UpdateNodeChildrenBoundingBoxesRecursive(LandQuadTreeNode<Landsc
 {
 	root.data.bbox.Empty();
 
-	for (int32 y = root.data.y; y < root.data.y + root.data.size + 1; ++y)
+	for (int32 y = root.data.y, yEnd = root.data.y + root.data.size + 1; y < yEnd; ++y)
 	{
-		for (int32 x = root.data.x; x < root.data.x + root.data.size + 1; ++x)
+		auto row = y * fromHeightmap->Size();
+		for (int32 x = root.data.x, xEnd = root.data.x + root.data.size + 1; x < xEnd; ++x)
 		{
-			root.data.bbox.AddPoint(GetPoint(x, y, fromHeightmap->Data()[x + y * fromHeightmap->Size()]));
+			root.data.bbox.AddPoint(GetPoint(x, y, fromHeightmap->Data()[x + row]));
 		}
 	}
 
@@ -1342,19 +1343,17 @@ void Landscape::UpdatePart(Heightmap* fromHeightmap, const Rect2i & rect)
 			int32 index = 0;
 			for (int32 y = node->data.y; y < node->data.y + node->data.size + 1; ++y)
 			{
+				auto row = y * heightmapSize;
+				auto texCoordV = 1.0f - (float32)(y) / (float32)(heightmapSize - 1);
+
 				for (int32 x = node->data.x; x < node->data.x + node->data.size + 1; ++x)
 				{
-					quadVertices[index].position = 
-						GetPoint(x, y, fromHeightmap->Data()[x + y * heightmapSize]);
+					auto texCoordU = (float32)(x) / (float32)(heightmapSize - 1);
 
-					quadVertices[index].texCoord = Vector2
-					(
-						(float32)(x) / (float32)(heightmapSize - 1), 
-						1.0f - (float32)(y) / (float32)(heightmapSize - 1)
-					);
+					quadVertices[index].position = GetPoint(x, y, fromHeightmap->Data()[x + row]);
+					quadVertices[index].texCoord = Vector2(texCoordU, texCoordV);
 
 					node->data.bbox.AddPoint(quadVertices[index].position);
-
 					++index;
 				}
 			}

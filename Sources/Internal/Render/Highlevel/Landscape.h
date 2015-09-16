@@ -219,13 +219,10 @@ public:
     void CreateLandscapeTexture(LandscapeThumbnailCallback callback);
 
 protected:
-	enum : int32
-	{
-		TEXTURE_SIZE_FULL_TILED = 2048,
-		RENDER_QUAD_WIDTH = 129,
-		RENDER_QUAD_AND = RENDER_QUAD_WIDTH - 2,
-		INDEX_ARRAY_COUNT = 10000 * 6 // 10k triangles max
-	};
+	static const int32 TEXTURE_SIZE_FULL_TILED = 2048;
+	static const int32 RENDER_QUAD_WIDTH = 129;
+	static const int32 RENDER_QUAD_AND = RENDER_QUAD_WIDTH - 2;
+	static const int32 INDEX_ARRAY_COUNT = 10000 * 6; // 10k triangles max
 
     struct LandscapeQuad
     {
