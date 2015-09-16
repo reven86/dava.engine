@@ -34,6 +34,8 @@
     #include "Base/BaseTypes.h"    
     #include "Base/FastName.h"    
 
+namespace DAVA { class File; }
+
 
 namespace rhi
 {
@@ -80,6 +82,8 @@ public:
 
     bool                    Construct( ProgType progType, const char* srcText, const std::vector<std::string>& defines );
     bool                    Construct( ProgType progType, const char* srcText );
+    bool                    Load( DAVA::File* in );
+    bool                    Save( DAVA::File* out ) const;
 
     const char*             SourceCode() const;
     const ShaderPropList&   Properties() const;
@@ -121,6 +125,18 @@ private:
     BlendState                  blending;
 };
 
+
+class
+ShaderSourceCache
+{
+public:
+
+    static const ShaderSource*  Get( FastName uid );
+    static void                 Update( FastName uid, const ShaderSource& source );
+    
+    static void                 Save( const char* fileName );
+    static void                 Load( const char* fileName );
+};
 
 
 } // namespace rhi
