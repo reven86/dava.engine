@@ -31,9 +31,9 @@
 
 using namespace DAVA;
 
+
 AbstractProperty::AbstractProperty() : parent(NULL)
 {
-    
 }
 
 AbstractProperty::~AbstractProperty()

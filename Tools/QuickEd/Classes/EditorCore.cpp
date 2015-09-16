@@ -57,7 +57,15 @@ EditorCore::EditorCore(QObject *parent)
 {
     mainWindow->setWindowIcon(QIcon(":/icon.ico"));
     mainWindow->CreateUndoRedoActions(documentGroup->GetUndoGroup());
-    
+
+    if (EditorSettings::Instance()->IsUsingAssetCache())
+    {
+        dialogReloadSprites->GetSpritesPacker()->SetCacheTool(
+            EditorSettings::Instance()->GetAssetCacheIp(),
+            EditorSettings::Instance()->GetAssetCachePort(),
+            EditorSettings::Instance()->GetAssetCacheTimeoutSec());
+    }
+
     connect(mainWindow->GetDialogReloadSprites(), &DialogReloadSprites::StarPackProcess, this, &EditorCore::CloseAllDocuments);
     connect(project, &Project::ProjectPathChanged, this, &EditorCore::OnProjectPathChanged);
     connect(mainWindow, &MainWindow::TabClosed, this, &EditorCore::CloseOneDocument);
