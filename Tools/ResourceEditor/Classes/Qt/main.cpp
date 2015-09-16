@@ -115,7 +115,6 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-
 void RunConsole( int argc, char *argv[], CommandLineManager& cmdLine )
 {
 #ifdef Q_OS_MAC
@@ -149,10 +148,6 @@ void RunConsole( int argc, char *argv[], CommandLineManager& cmdLine )
 #endif
     glWidget->hide();
 
-#if RHI_COMPLETE_EDITOR //x3
-    RenderManager::Instance()->Init( 0, 0 );
-#endif // RHI_COMPLETE_EDITOR
-
     cmdLine.InitalizeTool();
     if ( !cmdLine.IsToolInitialized() )
     {
@@ -165,7 +160,7 @@ void RunConsole( int argc, char *argv[], CommandLineManager& cmdLine )
         VirtualCoordinatesSystem::Instance()->UnregisterAllAvailableResourceSizes();
         VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize( 1, 1, "Gfx" );
 
-        cmdLine.Process();
+		cmdLine.Process();
         cmdLine.PrintResults();
     }
 

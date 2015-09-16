@@ -30,9 +30,8 @@
 #ifndef __COMMAND_LINE_MANAGER_H__
 #define __COMMAND_LINE_MANAGER_H__
 
-#include "DAVAEngine.h"
+#include "CommandLineTool.h"
 
-class CommandLineTool;
 class CommandLineManager
 {    
 public:
