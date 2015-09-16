@@ -36,8 +36,7 @@ namespace DynamicBufferAllocator
 {
 namespace //for private members
 {
-uint32 defaultPageSize = 131072; //128kb
-
+uint32 pageSize = DEFAULT_PAGE_SIZE;
 
 template <class HBuffer> class BufferProxy
 {
@@ -101,8 +100,10 @@ template <class HBuffer> struct BufferAllocator
     BufferAllocateResult AllocateData(uint32 size, uint32 count)
     {
         DVASSERT(size);
+
         uint32 requiredSize = (size * count);
-        DVASSERT(requiredSize <= defaultPageSize); //assert for now - later allocate as much as possible and return incomplete buffer
+        DVASSERT(requiredSize <= pageSize); //assert for now - later allocate as much as possible and return incomplete buffer
+
         uint32 base = ((currentlyUsedSize + size - 1) / size);
         uint32 offset = base * size;
         //cant fit - start new
@@ -121,8 +122,8 @@ template <class HBuffer> struct BufferAllocator
             else
             {
                 currentlyMappedBuffer = new BufferInfo();
-                currentlyMappedBuffer->allocatedSize = defaultPageSize;
-                currentlyMappedBuffer->buffer = BufferProxy<HBuffer>::CreateBuffer(defaultPageSize);                 
+                currentlyMappedBuffer->allocatedSize = pageSize;
+                currentlyMappedBuffer->buffer = BufferProxy<HBuffer>::CreateBuffer(pageSize);                 
             }
             currentlyMappedData = BufferProxy<HBuffer>::MapBuffer(currentlyMappedBuffer->buffer, 0, currentlyMappedBuffer->allocatedSize); 
             currentlyMappedBuffer->readySync = rhi::GetCurrentFrameSyncObject();
@@ -153,7 +154,10 @@ template <class HBuffer> struct BufferAllocator
         {
             BufferProxy<HBuffer>::DeleteBuffer(b->buffer);
             SafeDelete(b);
-        }            
+        }
+
+        freeBuffers.clear();
+        usedBuffers.clear();
     }
 
     void BeginFrame()
@@ -285,9 +289,10 @@ void Clear()
     vertexBufferAllocator.Clear();
     indexBufferAllocator.Clear();
 }
-void SetDefaultPageSize(uint32 size)
+void SetPageSize(uint32 size)
 {
-    defaultPageSize = size;
+    pageSize = size;
+
     vertexBufferAllocator.Clear();
     indexBufferAllocator.Clear();
 }

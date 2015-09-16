@@ -49,6 +49,7 @@
 #include "Render/Material/NMaterialNames.h"
 #include "Utils/StringFormat.h"
 #include "Render/RenderCallbacks.h"
+#include "Render/DynamicBufferAllocator.h"
 
 namespace DAVA
 {
@@ -80,9 +81,6 @@ Landscape::Landscape()
     type = TYPE_LANDSCAPE;
     
     frustum = 0;
-    
-    nearLodIndex = 0;
-    farLodIndex = 0;
     
     heightmap = new Heightmap;
     
@@ -214,9 +212,6 @@ void Landscape::ReleaseGeometryData()
         batch.renderBatch->Release();
     renderBatchArray.clear();
 
-    for (rhi::HIndexBuffer handle : indexBuffers.elements)
-        rhi::DeleteIndexBuffer(handle);
-
     for (rhi::HVertexBuffer handle : vertexBuffers)
         rhi::DeleteVertexBuffer(handle);
     vertexBuffers.clear();
@@ -328,16 +323,7 @@ void Landscape::AllocateGeometryData()
         batch->vertexCount = RENDER_QUAD_WIDTH * RENDER_QUAD_WIDTH;
     }
 
-    rhi::IndexBuffer::Descriptor descr;
-    descr.size = INDEX_ARRAY_COUNT * 2;
-    descr.usage = rhi::USAGE_DYNAMICDRAW;
-    descr.needRestore = false;
-    for (auto & handle : indexBuffers.elements)
-        handle = rhi::CreateIndexBuffer(descr);
-
-    currentIndexBuffer = indexBuffers.Next();
-
-    indices = new uint16[INDEX_ARRAY_COUNT];
+    indices = new uint16[QUAD_INDICES_COUNT_MAX];
 }
 
 void Landscape::BuildLandscape()
@@ -635,23 +621,27 @@ void Landscape::MarkFrames(LandQuadTreeNode<LandscapeQuad> * currentNode, int32 
     
 void Landscape::FlushQueue()
 {
-    if ((queueIndexCount - queueIndexOffset) == 0) return;
+    if (queueIndexCount == 0) return;
 
 
-    DVASSERT(queueIndexCount < INDEX_ARRAY_COUNT);
+    DVASSERT(queueIndexCount < QUAD_INDICES_COUNT_MAX);
     DVASSERT(flushQueueCounter < (int32)renderBatchArray.size());
     DVASSERT(queueRdoQuad != -1);
 
+    DynamicBufferAllocator::AllocResultIB indexBuffer = DynamicBufferAllocator::AllocateIndexBuffer(queueIndexCount);
+
+    Memcpy(indexBuffer.data, indices, queueIndexCount * sizeof(uint16));
 
     RenderBatch * batch = renderBatchArray[flushQueueCounter].renderBatch;
     activeRenderBatchArray.push_back(batch);
 
-    batch->indexBuffer = currentIndexBuffer;
-    batch->indexCount = queueIndexCount - queueIndexOffset;
-    batch->startIndex = queueIndexOffset;
+    batch->indexBuffer = indexBuffer.buffer;
+    batch->indexCount = queueIndexCount;
+    batch->startIndex = indexBuffer.baseIndex;
     batch->vertexBuffer = vertexBuffers[queueRdoQuad];
 
-    queueIndexOffset = queueIndexCount;
+    queueDrawIndices = indices;
+    queueIndexCount = 0;
     queueRdoQuad = -1;
 
     drawIndices += batch->indexCount;
@@ -661,7 +651,6 @@ void Landscape::FlushQueue()
 void Landscape::ClearQueue()
 {
     queueIndexCount = 0;
-    queueIndexOffset = 0;
     queueRdoQuad = -1;
     queueDrawIndices = indices;
 }
@@ -1015,9 +1004,6 @@ void Landscape::PrepareToRender(Camera * camera)
 	FlushQueue();
 
 	GenFans();
-
-    rhi::UpdateIndexBuffer(currentIndexBuffer, indices, 0, queueIndexCount * sizeof(uint16));
-    currentIndexBuffer = indexBuffers.Next();
 }
 
 

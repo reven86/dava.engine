@@ -73,8 +73,8 @@ protected:
     void DrawLayers(Camera *camera);
     void DrawDebug(Camera *camera, RenderSystem * renderSystem);
 
-    void BeginRender();
-    void EndRender();
+    void BeginRenderPass();
+    void EndRenderPass();
 
     Vector<RenderLayer*> renderLayers;
     std::array< RenderBatchArray, RenderLayer::RENDER_LAYER_ID_COUNT > layersBatchArrays;
