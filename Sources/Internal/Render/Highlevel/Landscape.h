@@ -217,11 +217,13 @@ public:
 	using LandscapeThumbnailCallback = DAVA::Function<void(Landscape*, Texture*)>;
     void CreateLandscapeTexture(LandscapeThumbnailCallback callback);
 
+	void setForceFirstLod(bool force);
+
 protected:
 	static const int32 TEXTURE_SIZE_FULL_TILED = 2048;
 	static const int32 RENDER_QUAD_WIDTH = 129;
 	static const int32 RENDER_QUAD_AND = RENDER_QUAD_WIDTH - 2;
-    static const int32 QUAD_INDICES_COUNT_MAX = 20000;
+    static const int32 INITIAL_INDEX_BUFFER_CAPACITY = 20000;
 
     struct LandscapeQuad
     {
@@ -266,6 +268,8 @@ protected:
 
 	void UpdateNodeChildrenBoundingBoxesRecursive(LandQuadTreeNode<LandscapeQuad>& root, Heightmap* fromHeightmap);
 
+	void ResizeIndicesBufferIfNeeded(DAVA::int32 newSize);
+
 private:
     LandQuadTreeNode<LandscapeQuad> quadTreeHead;
     Vector<LandQuadTreeNode<LandscapeQuad>*> fans;
@@ -283,7 +287,7 @@ private:
 	Texture* thumbnailRenderTarget = nullptr;
 	LandscapeThumbnailCallback createdLandscapeTextureCallback;
     
-    uint16* indices = nullptr;
+    std::vector<uint16> indices;
     uint16* queueDrawIndices = nullptr;
     float32 lodDistance[8];
     float32 lodSqDistance[8];
@@ -294,7 +298,8 @@ private:
     int32 queueIndexCount = 0;
     int32 flushQueueCounter = 0;
 	uint32 drawIndices = 0;
-    int16 queueRdoQuad = 0;
+    int16 queueRdoQuad = 0;	
+	bool forceFirstLod = false;
 
 public:
    

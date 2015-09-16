@@ -69,7 +69,7 @@ const uint32 TEXTURE_TILE_FULL_SIZE = 2048;
 
 
 Landscape::Landscape()
-    : indices(0)
+    : indices(INITIAL_INDEX_BUFFER_CAPACITY, 0)
     , vertexLayoutUID(rhi::VertexLayout::InvalidUID)
     , landscapeMaterial(nullptr)
     , foliageSystem(nullptr)
@@ -206,8 +206,6 @@ void Landscape::ReleaseGeometryData()
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-    SafeDeleteArray(indices);
-
     for (IndexedRenderBatch & batch : renderBatchArray)
         batch.renderBatch->Release();
     renderBatchArray.clear();
@@ -322,8 +320,6 @@ void Landscape::AllocateGeometryData()
         batch->vertexLayoutId = vertexLayoutUID;
         batch->vertexCount = RENDER_QUAD_WIDTH * RENDER_QUAD_WIDTH;
     }
-
-    indices = new uint16[QUAD_INDICES_COUNT_MAX];
 }
 
 void Landscape::BuildLandscape()
@@ -332,7 +328,6 @@ void Landscape::BuildLandscape()
 
     ReleaseGeometryData();
     AllocateGeometryData();
-
 
     quadTreeHead.data.x = quadTreeHead.data.y = quadTreeHead.data.lod = 0;
     //quadTreeHead.data.xbuf = quadTreeHead.data.ybuf = 0;
@@ -623,14 +618,12 @@ void Landscape::FlushQueue()
 {
     if (queueIndexCount == 0) return;
 
-
-    DVASSERT(queueIndexCount < QUAD_INDICES_COUNT_MAX);
     DVASSERT(flushQueueCounter < (int32)renderBatchArray.size());
     DVASSERT(queueRdoQuad != -1);
 
     DynamicBufferAllocator::AllocResultIB indexBuffer = DynamicBufferAllocator::AllocateIndexBuffer(queueIndexCount);
 
-    Memcpy(indexBuffer.data, indices, queueIndexCount * sizeof(uint16));
+    Memcpy(indexBuffer.data, indices.data(), queueIndexCount * sizeof(uint16));
 
     RenderBatch * batch = renderBatchArray[flushQueueCounter].renderBatch;
     activeRenderBatchArray.push_back(batch);
@@ -640,7 +633,7 @@ void Landscape::FlushQueue()
     batch->startIndex = indexBuffer.baseIndex;
     batch->vertexBuffer = vertexBuffers[queueRdoQuad];
 
-    queueDrawIndices = indices;
+    queueDrawIndices = indices.data();
     queueIndexCount = 0;
     queueRdoQuad = -1;
 
@@ -652,7 +645,7 @@ void Landscape::ClearQueue()
 {
     queueIndexCount = 0;
     queueRdoQuad = -1;
-    queueDrawIndices = indices;
+    queueDrawIndices = indices.data();
 }
 
 void Landscape::GenQuad(LandQuadTreeNode<LandscapeQuad> * currentNode, int8 lod)
@@ -663,13 +656,10 @@ void Landscape::GenQuad(LandQuadTreeNode<LandscapeQuad> * currentNode, int8 lod)
     if (depth == 1)
     {
         currentNode->parent->data.frame = Core::Instance()->GetGlobalFrameIndex();
-    }else
+    }
+	else
     {
-        //int32 newdepth = (int)(logf((float)depth) / logf(2.0f) + 0.5f);
         int32 newdepth2 = FastLog2(depth);
-        //Logger::FrameworkDebug("dp: %d %d %d", depth, newdepth, newdepth2);
-        //DVASSERT(newdepth == newdepth2); // Check of math, we should use optimized version with depth2
-        
         MarkFrames(currentNode, newdepth2);
     }
     
@@ -679,6 +669,9 @@ void Landscape::GenQuad(LandQuadTreeNode<LandscapeQuad> * currentNode, int8 lod)
     {
         FlushQueue();
     }
+
+	int32 indicesToAdd = currentNode->data.size * currentNode->data.size * 6;
+	ResizeIndicesBufferIfNeeded(queueIndexCount + indicesToAdd);
     
     queueRdoQuad = currentNode->data.rdoQuad;
     
@@ -724,7 +717,8 @@ void Landscape::GenFans()
         int16 halfSize = (node->data.size >> 1);
         int16 xbuf = node->data.x & RENDER_QUAD_AND;
         int16 ybuf = node->data.y & RENDER_QUAD_AND;
-
+		int32 maxIndicesToAdd = 24; // see ADD_VERTEX below
+		ResizeIndicesBufferIfNeeded(queueIndexCount + maxIndicesToAdd);
 
 #define ADD_VERTEX(index) {*queueDrawIndices++ = (index); queueIndexCount++;}
         
@@ -840,7 +834,7 @@ void Landscape::GenLods(LandQuadTreeNode<LandscapeQuad> * currentNode, uint8 cli
     if ((minLod == maxLod) && (frustumRes == Frustum::EFR_INSIDE) || (currentNode->data.size <= (1 << maxLod) + 1))
     {
         currentNode->data.lod = maxLod;
-        if (maxLod > 0)
+        if ((maxLod > 0) && !forceFirstLod)
         {
             lodNot0quads.push_back(currentNode);
         }
@@ -1358,5 +1352,19 @@ void Landscape::UpdatePart(Heightmap* fromHeightmap, const Rect2i & rect)
 		}
 	}
 }
-    
+
+void Landscape::ResizeIndicesBufferIfNeeded(DAVA::int32 newSize)
+{
+	if (indices.size() < newSize) 
+	{
+		indices.resize(2 * newSize);
+		queueDrawIndices = indices.data() + queueIndexCount;
+	}
 };
+
+void Landscape::setForceFirstLod(bool force)
+{
+	forceFirstLod = force;
+}
+
+}
