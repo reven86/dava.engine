@@ -54,10 +54,13 @@ bool ExtractFileFromArchive(const String& zipFile, const String& file, const Str
     FilePath scriptFilePath(fs->GetCurrentExecutableDirectory(), "extraction.py");
 
     String script = "import zipfile                         \n"
-                    "zf = zipfile.ZipFile('" + zipFile + "')\n"
-                    "data = zf.read('" + file + "')         \n"
-                    "file = open('" + outFile + "', 'w')    \n"
-                    "file.write(data)                       \n";
+                    "zf = zipfile.ZipFile('" +
+    zipFile + "')\n"
+              "data = zf.read('" +
+    file + "')         \n"
+           "file = open('" +
+    outFile + "', 'wb')   \n"
+              "file.write(data)                       \n";
 
     RefPtr<File> scriptFile(File::PureCreate(scriptFilePath, File::CREATE | File::WRITE));
     if (!scriptFile)
@@ -66,10 +69,10 @@ bool ExtractFileFromArchive(const String& zipFile, const String& file, const Str
     scriptFile->WriteString(script);
     scriptFile.Reset();
 
-    ::system(("python.exe " + scriptFilePath.GetAbsolutePathname()).c_str());
+    int res = ::system(("python.exe " + scriptFilePath.GetAbsolutePathname()).c_str());
     fs->DeleteFile(scriptFilePath);
-    
-    return fs->IsFile(outFile);
+
+    return res == 0;
 }
 
 }  // namespace DAVA

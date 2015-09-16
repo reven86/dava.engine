@@ -146,7 +146,7 @@ void LaunchPackage(const FilePath& package, const PackageOptions& opt)
         GetQtWinRTRunnerProfile(opt.profile, manifest));
 
     //Check runner state
-    if (runner.isValid())
+    if (!runner.isValid())
     {
         DVASSERT_MSG(false, "Runner core is not valid");
         return;
