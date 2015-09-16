@@ -1684,6 +1684,8 @@
 		E879E2461988EF8D0026191D /* OGLHelpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E879E2451988EF8D0026191D /* OGLHelpers.cpp */; };
 		E879E2471988EF8D0026191D /* OGLHelpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E879E2451988EF8D0026191D /* OGLHelpers.cpp */; };
 		E879E2481988EF8D0026191D /* OGLHelpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E879E2451988EF8D0026191D /* OGLHelpers.cpp */; };
+		E88E45871BA97346006BC67E /* LibWebPHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84CB6713191FC8850086483D /* LibWebPHelper.cpp */; };
+		E88E45881BA9734A006BC67E /* LibWebPHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84CB6713191FC8850086483D /* LibWebPHelper.cpp */; };
 		E8951B741738FEEC00755339 /* GPUFamilyDescriptor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8951B721738FEEC00755339 /* GPUFamilyDescriptor.cpp */; };
 		E8951B751738FEEC00755339 /* GPUFamilyDescriptor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8951B721738FEEC00755339 /* GPUFamilyDescriptor.cpp */; };
 		E8951B761738FEEC00755339 /* GPUFamilyDescriptor.h in Headers */ = {isa = PBXBuildFile; fileRef = E8951B731738FEEC00755339 /* GPUFamilyDescriptor.h */; };
@@ -2758,9 +2760,7 @@
 		FEA1D3CE1ADF9B88006B981A /* LibTgaHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FEA1D3CC1ADF9B88006B981A /* LibTgaHelper.cpp */; };
 		FEA1D3CF1ADF9B88006B981A /* LibTgaHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = FEA1D3CD1ADF9B88006B981A /* LibTgaHelper.h */; };
 		FECAA1CA1B7358B4008BC3FC /* AbstractQuadTree.h in Headers */ = {isa = PBXBuildFile; fileRef = 6435963718C1FA3200862C31 /* AbstractQuadTree.h */; };
-		FECAA1CB1B7358B4008BC3FC /* LibWebPHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 84CB6714191FC8850086483D /* LibWebPHelper.h */; };
 		FECAA1CC1B7358B4008BC3FC /* FMODUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E9E3AA17296D4200C501BC /* FMODUtils.h */; };
-		FECAA1CD1B7358B4008BC3FC /* LibWebPHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84CB6713191FC8850086483D /* LibWebPHelper.cpp */; };
 		FECAA1CE1B7358B4008BC3FC /* LibWebPHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 84CB6714191FC8850086483D /* LibWebPHelper.h */; };
 		FECAA1CF1B7358B4008BC3FC /* LibWebPHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84CB6713191FC8850086483D /* LibWebPHelper.cpp */; };
 		FED4C0C91B3AA41F006D0379 /* LibJpegHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FED4C0C71B3AA41E006D0379 /* LibJpegHelper.cpp */; };
@@ -6132,7 +6132,6 @@
 				1166AC161A8CDF2D00F1618D /* dlmalloc.h in Headers */,
 				50B429D41A5A704400CEB3D3 /* Discoverer.h in Headers */,
 				50F3B8751B1EE39E00976CBC /* TestClassFactory.h in Headers */,
-				84CB6723191FC8850086483D /* LibWebPHelper.h in Headers */,
 				F3E441D51B7A4DE9001FF7F1 /* SignalBase.h in Headers */,
 				E8989ECD16BD24E500732C04 /* NSFullScreenWindow.h in Headers */,
 				E8989ECF16BD24E500732C04 /* OpenGLView.h in Headers */,
@@ -7347,6 +7346,7 @@
 				11B1551C1B2F26B200E0EECE /* UIControlPackageContext.cpp in Sources */,
 				176DEB3A174B5561007A983B /* UISwitch.cpp in Sources */,
 				176DEB3B174B5561007A983B /* Camera.cpp in Sources */,
+				E88E45881BA9734A006BC67E /* LibWebPHelper.cpp in Sources */,
 				176DEB3C174B5561007A983B /* CullingSystem.cpp in Sources */,
 				C172EC5218CA0AEB004309CF /* DFFont.cpp in Sources */,
 				3281F30E1B2990A100D12AC5 /* UILayoutSystem.cpp in Sources */,
@@ -7459,7 +7459,6 @@
 				50C16DAF1A52D7B9003C307A /* NetworkUtils.cpp in Sources */,
 				7C007E1B1B384DAC000003DB /* ThreadWin32.cpp in Sources */,
 				E8989DB816BD24E500732C04 /* BaseObjectChecker.cpp in Sources */,
-				84CB6722191FC8850086483D /* LibWebPHelper.cpp in Sources */,
 				7C007E0F1B384DAC000003DB /* Thread.cpp in Sources */,
 				7C007DF41B384DAC000003DB /* ConditionVariable.cpp in Sources */,
 				E8989DBB16BD24E500732C04 /* Data.cpp in Sources */,
@@ -7752,6 +7751,7 @@
 				E898A01D16BD24E500732C04 /* UIHoleTransition.cpp in Sources */,
 				A6DBFA6F1887D804006BE11C /* NMaterialNames.cpp in Sources */,
 				11B155581B32D85400E0EECE /* UIStyleSheetSystem.cpp in Sources */,
+				E88E45871BA97346006BC67E /* LibWebPHelper.cpp in Sources */,
 				D7CC264019C43C7C00A3B754 /* LocalNotificationProgress.cpp in Sources */,
 				E898A01F16BD24E500732C04 /* UIJoypad.cpp in Sources */,
 				E898A02116BD24E500732C04 /* UIList.cpp in Sources */,
