@@ -1,30 +1,30 @@
 ﻿/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
+ Copyright (c) 2008, binaryzebra
+ All rights reserved.
+ 
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions are met:
+ 
+ * Redistributions of source code must retain the above copyright
+ notice, this list of conditions and the following disclaimer.
+ * Redistributions in binary form must reproduce the above copyright
+ notice, this list of conditions and the following disclaimer in the
+ documentation and/or other materials provided with the distribution.
+ * Neither the name of the binaryzebra nor the
+ names of its contributors may be used to endorse or promote products
+ derived from this software without specific prior written permission.
+ 
+ THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+ ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+ DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ =====================================================================================*/
 
     #include "../Common/rhi_Pool.h"
     #include "rhi_GLES2.h"
@@ -36,6 +36,7 @@
 
     #include "Debug/DVAssert.h"
     #include "FileSystem/Logger.h"
+
     using DAVA::Logger;
     #include "Concurrency/Thread.h"
     #include "Concurrency/Semaphore.h"
@@ -1174,6 +1175,47 @@ Trace("DIP  mode= %i  v_cnt= %i  start_i= %i\n",int(mode),int(v_cnt),int(startIn
 //------------------------------------------------------------------------------
 
 static void
+_RejectAllFrames()
+{
+	_FrameSync.Lock();
+    for( std::vector<FrameGLES2>::iterator f=_Frame.begin(),f_end=_Frame.end(); f!=f_end; ++f )
+    {
+        if (f->sync != InvalidHandle)
+        {
+            SyncObjectGLES2_t*    s = SyncObjectPool::Get(f->sync);
+            s->is_signaled = true;
+            s->is_used = true;
+        }
+        for( std::vector<Handle>::iterator p=f->pass.begin(),p_end=f->pass.end(); p!=p_end; ++p )
+        {
+            RenderPassGLES2_t*    pp = RenderPassPool::Get( *p );
+
+            for( std::vector<Handle>::iterator c=pp->cmdBuf.begin(),c_end=pp->cmdBuf.end(); c!=c_end; ++c )
+            {
+                CommandBufferGLES2_t* cc = CommandBufferPool::Get( *c );
+                if (cc->sync != InvalidHandle)
+                {
+                    SyncObjectGLES2_t*    s = SyncObjectPool::Get(cc->sync);
+                    s->is_signaled = true;
+                    s->is_used = true;
+                }
+                cc->_cmd.clear();
+                CommandBufferPool::Free( *c );
+            }
+
+            RenderPassPool::Free( *p );
+        }
+    }
+
+    _Frame.clear();
+    _FrameStarted = false;
+    _FrameSync.Unlock();
+}
+
+
+//------------------------------------------------------------------------------
+
+static void
 _ExecuteQueuedCommands()
 {
 Trace("rhi-gl.exec-queued-cmd\n");
@@ -1274,7 +1316,21 @@ Trace("rhi-gl.swap-buffers done\n");
 #elif defined(__DAVAENGINE_IPHONE__)
         ios_gl_end_frame();
 #elif defined(__DAVAENGINE_ANDROID__)
-        android_gl_end_frame();
+
+        bool success = android_gl_end_frame();
+        if(!success) //'false' mean lost context, need restore resources
+        {
+        	_RejectAllFrames();
+
+        	TextureGLES2::ReCreateAll();
+        	VertexBufferGLES2::ReCreateAll();
+        	IndexBufferGLES2::ReCreateAll();
+
+        	VertexBufferGLES2::PatchCommands(_GLES2_PendingImmediateCmd, _GLES2_PendingImmediateCmdCount);
+        	IndexBufferGLES2::PatchCommands(_GLES2_PendingImmediateCmd, _GLES2_PendingImmediateCmdCount);
+        	TextureGLES2::PatchCommands(_GLES2_PendingImmediateCmd, _GLES2_PendingImmediateCmdCount);
+        }
+
 #endif
     }
 
