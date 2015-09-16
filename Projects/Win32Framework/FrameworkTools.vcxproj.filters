@@ -28,6 +28,12 @@
     <Filter Include="TeamcityOutput">
       <UniqueIdentifier>{ad6c97e8-fa9d-4027-9216-7b3a96be2c3e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\AssetCache">
+      <UniqueIdentifier>{c54f3a9f-7306-45a5-9e4d-1bfa06cac95c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\CommandLine">
+      <UniqueIdentifier>{49506135-645d-4426-ae04-2379e6001a9b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
@@ -69,6 +75,15 @@
     <ClInclude Include="..\..\Sources\Tools\TeamcityOutput\TeamCityTestsOutput.h">
       <Filter>TeamcityOutput</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Tools\CommandLine\ProgramOptions.h">
+      <Filter>Source Files\CommandLine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Tools\AssetCache\CacheItemKey.h">
+      <Filter>Source Files\AssetCache</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Tools\AssetCache\DoubleMD5Key.h">
+      <Filter>Source Files\AssetCache</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\Tools\TexturePacker\CommandLineParser.cpp">
@@ -106,6 +121,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Tools\TeamcityOutput\TeamCityTestsOutput.cpp">
       <Filter>TeamcityOutput</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Tools\AssetCache\DoubleMD5Key.cpp">
+      <Filter>Source Files\AssetCache</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

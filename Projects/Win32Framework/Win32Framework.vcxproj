@@ -326,6 +326,7 @@
     <ClInclude Include="..\..\Sources\Internal\FileSystem\LocalizationSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\Logger.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\ResourceArchive.h" />
+    <ClInclude Include="..\..\Sources\Internal\FileSystem\StaticMemoryFile.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\VariantType.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\XMLParser.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\YamlArchive.h" />
@@ -828,6 +829,7 @@
     <ClCompile Include="..\..\Sources\Internal\FileSystem\Logger.cpp" />
     <ClCompile Include="..\..\Sources\Internal\FileSystem\LoggerWin.cpp" />
     <ClCompile Include="..\..\Sources\Internal\FileSystem\ResourceArchive.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\FileSystem\StaticMemoryFile.cpp" />
     <ClCompile Include="..\..\Sources\Internal\FileSystem\VariantType.cpp" />
     <ClCompile Include="..\..\Sources\Internal\FileSystem\XMLParser.cpp" />
     <ClCompile Include="..\..\Sources\Internal\FileSystem\YamlArchive.cpp" />

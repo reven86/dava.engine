@@ -219,13 +219,17 @@ protected:
     
 	void WriteCompression(File *file, const Compression *compression) const;
     
+    //loading
     void LoadVersion6(File *file);
     void LoadVersion7(File *file);
     void LoadVersion8(File *file);
     void LoadVersion9(File *file);
-    void LoadVersion10(File *file);
-    
-    void ConvertV9orLessToV10();
+    void LoadVersion10(File* file);
+    DAVA_DEPRECATED(void FixCompressionFormat());
+
+    void LoadVersion11(File *file);
+    DAVA_DEPRECATED(void ConvertV10orLessToV11());
+    //end of loading
 
     void RecalculateCompressionSourceCRC();
 	uint32 ReadSourceCRC() const;
@@ -245,8 +249,8 @@ public:
 	TextureDrawSettings drawSettings;
 	TextureDataSettings dataSettings;
 	Compression compression[GPU_FAMILY_COUNT];
-    
-	PixelFormat format:8;			// texture format
+
+    PixelFormat format:8; // texture format
     //Binary only
     int8 exportedAsGpuFamily;
 	
