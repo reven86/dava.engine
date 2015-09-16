@@ -59,7 +59,6 @@ CheckeredCanvas::CheckeredCanvas()
 
 void CheckeredCanvas::Draw(const UIGeometricData& geometricData)
 {
-    DVASSERT(0.0f != geometricData.scale.x);
     if (0.0f != geometricData.scale.x)
     {
         float32 invScale = 1.0f / geometricData.scale.x;
