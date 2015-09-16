@@ -112,7 +112,14 @@ void DispatcherWinUAP::BlockingTaskWrapper::WaitTaskComplete()
             dispatcher->ProcessTasks();
             lock.Lock();
         }
-        dispatcher->cv.Wait(lock);
+        // Additional check whether blocking task has completed while dispatcher was processing its own tasks
+        // This check is necessary because of lock releasing:
+        //      RunTask() method can finish blocking task and signal conditional variable before
+        //      this method takes chance to wait on that conditional variable
+        if (!taskDone)
+        {
+            dispatcher->cv.Wait(lock);
+        }
     }
 }
 
