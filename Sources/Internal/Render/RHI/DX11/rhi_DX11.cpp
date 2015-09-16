@@ -69,6 +69,16 @@ dx11_DeviceCaps()
 	return _DeviceCaps;
 }
 
+
+//------------------------------------------------------------------------------
+
+static bool
+dx11_NeedRestoreResources()
+{
+    return false;
+}
+
+
 //------------------------------------------------------------------------------
 
 static bool
@@ -141,11 +151,17 @@ dx11_Uninitialize()
 static void
 dx11_Reset( const ResetParam& param )
 {
+    if( _DX11_InitParam.fullScreen != param.fullScreen )
+    {
+    }
+    else
+    {
 #if defined(__DAVAENGINE_WIN_UAP__)
-    reset_swapchain(param.width, param.height, param.scaleX, param.scaleY);
+    resize_swapchain(param.width, param.height, param.scaleX, param.scaleY);
 #else
     //Not implemented
 #endif
+    }
 }
 
 
@@ -156,9 +172,10 @@ _InitDX11()
 {
 #if defined(__DAVAENGINE_WIN_UAP__)
 
-    init_device_and_swapchain_uap(_DX11_InitParam.window, _DX11_InitParam.width, _DX11_InitParam.height, _DX11_InitParam.scaleX, _DX11_InitParam.scaleY);
+    init_device_and_swapchain_uap( _DX11_InitParam.window );
 
 #else
+
     HRESULT                 hr;
     DWORD                   flags           = 0;
     #if RHI__FORCE_DX11_91
@@ -188,7 +205,7 @@ _InitDX11()
     swapchain_desc.BufferCount                          = 2;
 
     swapchain_desc.OutputWindow                         = (HWND)_DX11_InitParam.window;
-    swapchain_desc.Windowed                             = TRUE;
+    swapchain_desc.Windowed                             = (_DX11_InitParam.fullScreen)  ? TRUE  : FALSE;
 
     swapchain_desc.SwapEffect                           = DXGI_SWAP_EFFECT_DISCARD;
     swapchain_desc.Flags                                = 0;
@@ -259,6 +276,7 @@ dx11_Initialize( const InitParam& param )
     DispatchDX11.impl_HostApi                = &dx11_HostApi;
     DispatchDX11.impl_TextureFormatSupported = &dx11_TextureFormatSupported;
 	DispatchDX11.impl_DeviceCaps			 = &dx11_DeviceCaps;
+    DispatchDX11.impl_NeedRestoreResources   = &dx11_NeedRestoreResources;
 
     SetDispatchTable( DispatchDX11 );
 

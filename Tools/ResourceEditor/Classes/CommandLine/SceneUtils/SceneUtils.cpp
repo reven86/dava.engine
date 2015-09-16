@@ -166,3 +166,22 @@ void SceneUtils::PrepareDestination(DAVA::Set<DAVA::String> &errorLog)
         }
     }
 }
+
+/*
+ * RenderObjectsFlusher implementation
+ * temporary (hopefully!) solution to clean-up RHI's objects
+ * when there is no run/render loop in the application
+ */
+
+DAVA_DEPRECATED(void RenderObjectsFlusher::Flush())
+{
+	static const rhi::HTexture nullTexture;
+	static const rhi::Viewport nullViewport(0, 0, 1, 1);
+
+	auto currentFrame = rhi::GetCurrentFrameSyncObject();
+	while (!rhi::SyncObjectSignaled(currentFrame))
+	{
+		RenderHelper::CreateClearPass(nullTexture, 0, DAVA::Color::Clear, nullViewport);
+		rhi::Present();
+	}
+}

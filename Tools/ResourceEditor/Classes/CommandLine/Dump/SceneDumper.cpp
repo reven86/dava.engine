@@ -28,6 +28,7 @@
 
 
 #include "CommandLine/Dump/SceneDumper.h"
+#include "CommandLine/SceneUtils/SceneUtils.h"
 #include "FileSystem/KeyedArchive.h"
 #include "Render/2D/Sprite.h"
 #include "Render/Highlevel/RenderObject.h"
@@ -67,11 +68,15 @@ SceneDumper::SceneDumper(const FilePath &scenePath, Set<String> &errorLog)
         errorLog.emplace(Format("[SceneDumper::SceneDumper] Can't open file %s", scenePathname.GetStringValue().c_str()));
 		SafeRelease(scene);
 	}
+
+	RenderObjectsFlusher::Flush();
 }
+
 
 SceneDumper::~SceneDumper()
 {
 	SafeRelease(scene);
+	RenderObjectsFlusher::Flush();
 }
 
 void SceneDumper::DumpLinksRecursive(Entity *entity, SceneDumper::SceneLinks &links) const

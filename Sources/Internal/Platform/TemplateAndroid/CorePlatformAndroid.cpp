@@ -39,7 +39,6 @@ extern void FrameworkWillTerminate();
 #include "Input/InputSystem.h"
 #include "UI/UIEvent.h"
 #include "FileSystem/FileSystem.h"
-#include "Scene3D/SceneCache.h"
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Platform/TemplateAndroid/JniHelpers.h"
@@ -198,7 +197,9 @@ namespace DAVA
 
 			ResizeView(w, h);
 
-			rhi::ResetParam params = {(uint32)width, (uint32)height};
+			rhi::ResetParam params;
+			params.width = (uint32)width;
+			params.height = (uint32)height;
 			Renderer::Reset(params);
 
 //			RenderManager::Instance()->Invalidate();   RHI_COMPLETE

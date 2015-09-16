@@ -56,15 +56,6 @@ class TextureDescriptor;
 class File;
 class Texture;
 	
-class TextureInvalidater
-{
-public:
-    virtual ~TextureInvalidater() {};
-	virtual void InvalidateTexture(Texture * texture) = 0;
-    virtual void AddTexture(Texture * texture) = 0;
-    virtual void RemoveTexture(Texture * texture) = 0;
-};
-	
 #ifdef USE_FILEPATH_IN_MAP
     using TexturesMap = Map<FilePath, Texture *>;
 #else //#ifdef USE_FILEPATH_IN_MAP
@@ -178,8 +169,7 @@ public:
 	bool IsPinkPlaceholder();
 
     void Reload();
-    void ReloadAs(eGPUFamily gpuFamily);
-	void SetInvalidater(TextureInvalidater* invalidater);
+    void ReloadAs(eGPUFamily gpuFamily);	
     void ReloadFromData(PixelFormat format, uint8 * data, uint32 width, uint32 height);
 
 	inline TextureState GetState() const;
@@ -246,14 +236,14 @@ public:							// properties for fast access
     uint32		width:16;			// texture width
 	uint32		height:16;			// texture height
 
-    eGPUFamily loadedAsFile:4;
-	TextureState state:2;
-	uint32		textureType:2;	
-	bool		isRenderTarget:1;
+    eGPUFamily loadedAsFile;
+    TextureState state:2;
+    uint32		textureType:2;
+
+    bool		isRenderTarget:1;
 	bool		isPink:1;
 
-    FastName		debugInfo;
-	TextureInvalidater* invalidater;
+    FastName		debugInfo;	
     TextureDescriptor *texDescriptor;
 
     static Mutex textureMapMutex;

@@ -56,11 +56,15 @@ namespace DAVA
     const FastName NMaterialName::VERTEXCOLOR_FRAMEBLEND_OPAQUE = FastName("~res:/Materials/VertexColor.FrameBlend.Opaque.material");
     const FastName NMaterialName::PIXELLIT_ALPHATEST = FastName("~res:/Materials/PixelLit.Alphatest.material");
     const FastName NMaterialName::SPEEDTREE_LEAF = FastName("~res:/Materials/SpeedTreeLeaf.material");
+    const FastName NMaterialName::SPEEDTREE_LEAF_ALPHABLEND = FastName("~res:/Materials/SpeedTreeLeaf.Alphablend.material");
     const FastName NMaterialName::SPHERICLIT_SPEEDTREE_LEAF = FastName("~res:/Materials/SphericalLitAllQualities.SpeedTreeLeaf.material");
+    const FastName NMaterialName::SPHERICLIT_SPEEDTREE_LEAF_ALPHABLEND = FastName("~res:/Materials/SphericalLitAllQualities.SpeedTreeLeaf.Alphablend.material");
     const FastName NMaterialName::SPHERICLIT_TEXTURED_OPAQUE = FastName("~res:/Materials/SphericalLitAllQualities.Textured.Opaque.material");
     const FastName NMaterialName::SPHERICLIT_TEXTURED_ALPHATEST = FastName("~res:/Materials/SphericalLitAllQualities.Textured.Alphatest.material");
+    const FastName NMaterialName::SPHERICLIT_TEXTURED_ALPHABLEND = FastName("~res:/Materials/SphericalLitAllQualities.Textured.Alphablend.material");
     const FastName NMaterialName::SPHERICLIT_TEXTURED_VERTEXCOLOR_OPAQUE = FastName("~res:/Materials/SphericalLitAllQualities.Textured.VertexColor.Opaque.material");
     const FastName NMaterialName::SPHERICLIT_TEXTURED_VERTEXCOLOR_ALPHATEST = FastName("~res:/Materials/SphericalLitAllQualities.Textured.VertexColor.Alphatest.material");
+    const FastName NMaterialName::SPHERICLIT_TEXTURED_VERTEXCOLOR_ALPHABLEND = FastName("~res:/Materials/SphericalLitAllQualities.Textured.VertexColor.Alphablend.material");
     const FastName NMaterialName::VERTEXCOLOR_OPAQUE = FastName("~res:/Materials/VertexColor.Opaque.material");
     const FastName NMaterialName::VERTEXCOLOR_OPAQUE_NODEPTHTEST = FastName("~res:/Materials/VertexColor.Opaque.NoDepthtest.material");
     const FastName NMaterialName::PIXELLIT_OPAQUE = FastName("~res:/Materials/PixelLit.Opaque.material");

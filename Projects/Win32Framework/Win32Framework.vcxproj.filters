@@ -1912,6 +1912,9 @@
     <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIPriorityStyleSheet.h">
       <Filter>Internal\UI\Styles</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\FileSystem\StaticMemoryFile.h">
+      <Filter>Internal\FileSystem</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UIIgnoreLayoutComponent.h">
       <Filter>Internal\UI\Layouts</Filter>
     </ClInclude>
@@ -3396,6 +3399,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIPriorityStyleSheet.cpp">
       <Filter>Internal\UI\Styles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\FileSystem\StaticMemoryFile.cpp">
+      <Filter>Internal\FileSystem</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UIIgnoreLayoutComponent.cpp">
       <Filter>Internal\UI\Layouts</Filter>
