@@ -56,7 +56,7 @@ class TextureDescriptor
 
     static const int32 DATE_BUFFER_SIZE = 20;
     static const int32 LINE_SIZE = 256;
-    static const int8 CURRENT_VERSION = 10;
+    static const int8 CURRENT_VERSION = 11;
     
 	enum eSignatures
 	{
