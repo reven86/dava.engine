@@ -2054,7 +2054,7 @@ void QtMainWindow::OnSaveTiledTexture()
     Landscape* landscape = FindLandscape(scene);
     if (nullptr != landscape)
 	{
-		LandscapeThumbnail::Create(landscape, MakeFunction(this, &QtMainWindow::OnTiledTextureRetreived));
+		LandscapeThumbnails::Create(landscape, MakeFunction(this, &QtMainWindow::OnTiledTextureRetreived));
 	}
 }
 

@@ -38,7 +38,7 @@ namespace DAVA
 	class Texture;
 }
 
-namespace LandscapeThumbnail
+namespace LandscapeThumbnails
 {
 	using Callback = DAVA::Function<void(DAVA::Landscape*, DAVA::Texture*)>;
     void Create(DAVA::Landscape*, Callback callback);

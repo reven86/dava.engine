@@ -28,6 +28,8 @@
 
 
 #include "LandscapeThumbnails.h"
+#include "Base/Platform.h"
+#include "Concurrency/LockGuard.h"
 #include "Render/RenderCallbacks.h"
 #include "Render/ShaderCache.h"
 #include "Render/Highlevel/Landscape.h"
@@ -42,9 +44,9 @@ struct ThumbnailRequest
 	rhi::HSyncObject syncObject;
 	Landscape* landscape = nullptr;
 	Texture* texture = nullptr;
-	LandscapeThumbnail::Callback callback;
+	LandscapeThumbnails::Callback callback;
 
-	ThumbnailRequest(rhi::HSyncObject so, Landscape* l, Texture* tex, LandscapeThumbnail::Callback cb) :
+	ThumbnailRequest(rhi::HSyncObject so, Landscape* l, Texture* tex, LandscapeThumbnails::Callback cb) :
 		syncObject(so), landscape(l), texture(tex), callback(cb) { }
 };
 
@@ -53,7 +55,7 @@ static Vector<ThumbnailRequest> thumbnailRequests;
 
 void OnCreateLandscapeTextureCompleted(rhi::HSyncObject syncObject)
 {
-	requestsMutex.Lock();
+	DAVA::LockGuard<DAVA::Mutex> lock(requestsMutex);
 	auto i = thumbnailRequests.begin();
 	while (i != thumbnailRequests.end())
 	{
@@ -68,12 +70,11 @@ void OnCreateLandscapeTextureCompleted(rhi::HSyncObject syncObject)
 			++i;
 		}
 	}
-	requestsMutex.Unlock();
 }
 
 }
 
-void LandscapeThumbnail::Create(DAVA::Landscape* landscape, LandscapeThumbnail::Callback handler)
+void LandscapeThumbnails::Create(DAVA::Landscape* landscape, LandscapeThumbnails::Callback handler)
 {
 	const uint32 TEXTURE_TILE_FULL_SIZE = 2048;
 
@@ -101,9 +102,8 @@ void LandscapeThumbnail::Create(DAVA::Landscape* landscape, LandscapeThumbnail::
 	rhi::HSyncObject syncObject = rhi::CreateSyncObject();
 	Texture* texture = Texture::CreateFBO(TEXTURE_TILE_FULL_SIZE, TEXTURE_TILE_FULL_SIZE, FORMAT_RGBA8888);
 	{
-		requestsMutex.Lock();
+		DAVA::LockGuard<DAVA::Mutex> lock(requestsMutex);
 		thumbnailRequests.emplace_back(syncObject, landscape, texture, handler);
-		requestsMutex.Unlock();
 	}
 	RenderCallbacks::RegisterSyncCallback(syncObject, MakeFunction(&OnCreateLandscapeTextureCompleted));
 
