@@ -66,8 +66,9 @@ SceneDumper::SceneDumper(const FilePath &scenePath, Set<String> &errorLog)
     if (SceneFileV2::ERROR_NO_ERROR != scene->LoadScene(scenePathname))
 	{
         errorLog.emplace(Format("[SceneDumper::SceneDumper] Can't open file %s", scenePathname.GetStringValue().c_str()));
+		SafeRelease(scene);
 	}
-	SafeRelease(scene);
+
 	RenderObjectsFlusher::Flush();
 }
 
@@ -75,6 +76,7 @@ SceneDumper::SceneDumper(const FilePath &scenePath, Set<String> &errorLog)
 SceneDumper::~SceneDumper()
 {
 	SafeRelease(scene);
+	RenderObjectsFlusher::Flush();
 }
 
 void SceneDumper::DumpLinksRecursive(Entity *entity, SceneDumper::SceneLinks &links) const
