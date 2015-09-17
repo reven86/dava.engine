@@ -55,10 +55,25 @@ void UILayoutSystem::SetRtl(bool rtl)
     isRtl = rtl;
 }
 
-void UILayoutSystem::ApplyLayout(UIControl *workControl)
+void UILayoutSystem::ApplyLayout(UIControl *inputContainer, bool considerDenendenceOnChildren)
 {
+    UIControl *container = inputContainer;
+    if (considerDenendenceOnChildren)
+    {
+        while (container->GetParent())
+        {
+            UISizePolicyComponent *sizePolicy = container->GetParent()->GetComponent<UISizePolicyComponent>();
+            if (sizePolicy && (sizePolicy->IsDependsOnChildren(Vector2::AXIS_X) || sizePolicy->IsDependsOnChildren(Vector2::AXIS_Y)))
+            {
+                container = container->GetParent();
+            }
+            else
+                break;
+        }
+    }
+
     uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
-    CollectControls(workControl);
+    CollectControls(container);
     
     for (int32 axisIndex = 0; axisIndex < Vector2::AXIS_COUNT; axisIndex++)
     {
@@ -147,20 +162,14 @@ void UILayoutSystem::CollectControlChildren(UIControl *control, int32 parentInde
     }
 }
 
-UIControl *UILayoutSystem::FindControl(UIControl *control) const
+bool UILayoutSystem::IsAutoupdatesEnabled() const
 {
-    UIControl *parent = control->GetParent();
-    if (parent == nullptr)
-        return control;
-    
-    UISizePolicyComponent *sizePolicy = parent->GetComponent<UISizePolicyComponent>();
-    if (sizePolicy)
-    {
-        if (sizePolicy->IsDependsOnChildren(Vector2::AXIS_X) || sizePolicy->IsDependsOnChildren(Vector2::AXIS_Y))
-            return FindControl(parent);
-    }
-    
-    return control;
+    return autoupdatesEnabled;
+}
+
+void UILayoutSystem::SetAutoupdatesEnabled(bool enabled)
+{
+    autoupdatesEnabled = enabled;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

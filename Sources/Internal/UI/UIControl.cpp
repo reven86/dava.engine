@@ -1345,7 +1345,10 @@ namespace DAVA
         if (layoutDirty)
         {
             UILayoutSystem *layoutSystem = UIControlSystem::Instance()->GetLayoutSystem();
-            layoutSystem->ApplyLayout(layoutSystem->FindControl(parent ? parent : this));
+            if (layoutSystem->IsAutoupdatesEnabled())
+            {
+                layoutSystem->ApplyLayout(parent ? parent : this, true);
+            }
         }
 
         it = childs.begin();

@@ -49,8 +49,10 @@ public:
     bool IsRtl() const;
     void SetRtl(bool rtl);
 
-    void ApplyLayout(UIControl *control);
-    UIControl *FindControl(UIControl *control) const;
+    void ApplyLayout(UIControl *control, bool considerDenendenceOnChildren = false);
+    
+    bool IsAutoupdatesEnabled() const;
+    void SetAutoupdatesEnabled(bool enabled);
     
 private:
     struct ControlDescr;
@@ -67,6 +69,7 @@ private:
     
 private:
     bool isRtl = false;
+    bool autoupdatesEnabled = true;
     Vector<ControlDescr> controls;
     int32 indexOfSizeProperty;
 };
