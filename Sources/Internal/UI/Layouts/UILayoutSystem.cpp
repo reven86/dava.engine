@@ -72,7 +72,6 @@ void UILayoutSystem::ApplyLayout(UIControl *inputContainer, bool considerDenende
         }
     }
 
-    uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
     CollectControls(container);
     
     for (int32 axisIndex = 0; axisIndex < Vector2::AXIS_COUNT; axisIndex++)
@@ -119,9 +118,6 @@ void UILayoutSystem::ApplyLayout(UIControl *inputContainer, bool considerDenende
         control->ResetLayoutDirty();
     }
     
-    uint64 endTime = SystemTimer::Instance()->AbsoluteMS();
-    Logger::Debug("Changed controls: %d, time: %llu ms", controls.size(), endTime - startTime);
-
     controls.clear();
     
 }
