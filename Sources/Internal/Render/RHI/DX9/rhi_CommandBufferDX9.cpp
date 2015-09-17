@@ -1204,9 +1204,6 @@ Trace("\n\n-------------------------------\nframe %u executed(submitted to GPU)\
                 VertexBufferDX9::ReCreateAll();
                 IndexBufferDX9::ReCreateAll();
 
-//-                VertexBufferDX9::PatchCommands( _DX9_PendingImmediateCmd, _DX9_PendingImmediateCmdCount );
-//-                IndexBufferDX9::PatchCommands( _DX9_PendingImmediateCmd, _DX9_PendingImmediateCmdCount );
-
                 _ResetPending = false;
             }
             else

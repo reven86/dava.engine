@@ -318,27 +318,6 @@ NeedRestoreCount()
     return VertexBufferDX9_t::NeedRestoreCount();
 }
 
-void
-PatchCommands( DX9Command* command, uint32 cmdCount )
-{
-    for( VertexBufferDX9Pool::Iterator b=VertexBufferDX9Pool::Begin(),b_end=VertexBufferDX9Pool::End(); b!=b_end; ++b )
-    {
-        if( b->prevBuffer )
-        {
-            for( DX9Command* cmd=command,*cmd_end=command+cmdCount; cmd!=cmd_end; ++cmd )
-            {
-                if(     cmd->func == DX9Command::LOCK_VERTEX_BUFFER 
-                    &&  (IDirect3DVertexBuffer9*)(cmd->arg[0]) == b->prevBuffer
-                  )
-                {
-                    cmd->arg[0] = uint64(b->buffer);
-                }                    
-            }
-        }
-    }
-}
-
-
 }
 
 

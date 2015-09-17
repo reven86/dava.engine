@@ -314,26 +314,6 @@ NeedRestoreCount()
     return IndexBufferDX9_t::NeedRestoreCount();
 }
 
-void
-PatchCommands( DX9Command* command, uint32 cmdCount )
-{
-    for( IndexBufferDX9Pool::Iterator b=IndexBufferDX9Pool::Begin(),b_end=IndexBufferDX9Pool::End(); b!=b_end; ++b )
-    {
-        if( b->prevBuffer )
-        {
-            for( DX9Command* cmd=command,*cmd_end=command+cmdCount; cmd!=cmd_end; ++cmd )
-            {
-                if(     cmd->func == DX9Command::LOCK_INDEX_BUFFER 
-                    &&  (IDirect3DIndexBuffer9*)(cmd->arg[0]) == b->prevBuffer
-                  )
-                {
-                    cmd->arg[0] = uint64(b->buffer);
-                }                    
-            }
-        }
-    }
-}
-
 }
 
 //==============================================================================
