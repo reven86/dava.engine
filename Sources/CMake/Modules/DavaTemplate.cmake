@@ -119,7 +119,7 @@ elseif ( WINDOWS_UAP )
 	set(SHORT_NAME ${PROJECT_NAME})
 	set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-    #search assets 
+    #search assets
     file( GLOB ASSET_FILES "${WINDOWS_UAP_ASSETS_DIR}/*.png" )
 	source_group ("Content\\Assets" FILES ${ASSET_FILES})
 
@@ -512,6 +512,9 @@ foreach ( FILE ${LIBRARIES_RELEASE} )
     target_link_libraries  ( ${PROJECT_NAME} optimized ${FILE} )
 endforeach ()
 
+if ( QT_LIBRARIES )
+    qt5_use_modules(${PROJECT_NAME} ${QT_LIBRARIES})
+endif()
 
 ###
 
@@ -769,6 +772,10 @@ endforeach ()
 foreach ( FILE ${LIBRARIES_RELEASE} )
     target_link_libraries  ( ${PROJECT_NAME} optimized ${FILE} )
 endforeach ()
+
+if ( QT_LIBRARIES )
+    qt5_use_modules(${PROJECT_NAME} ${QT_LIBRARIES})
+endif()
 
 set( OUTPUT_DIR "${DEPLOY_DIR}" )
 foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )

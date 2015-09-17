@@ -2,19 +2,16 @@ project( QtTools )
 
 find_package( QT5 REQUIRED )
 
-include_directories( ${Qt5Core_INCLUDE_DIRS} )     
+include_directories( ${Qt5Core_INCLUDE_DIRS} )
 include_directories( ${Qt5Gui_INCLUDE_DIRS} )
-include_directories( ${Qt5Widgets_INCLUDE_DIRS} )  
-include_directories( ${CMAKE_CURRENT_BINARY_DIR} )   
-include_directories( "QtTools" )                                      
+include_directories( ${Qt5Widgets_INCLUDE_DIRS} )
+include_directories( ${CMAKE_CURRENT_BINARY_DIR} )
+include_directories( "QtTools" )
 
 
 set( MOC_APP_SRCS )
 set( UI_APP_HDRS  )
 set( RCC_APP_SRCS )
-
-file              ( GLOB_RECURSE QT_LIST "*.h"  )
-qt5_wrap_cpp      ( MOC_APP_SRCS ${QT_LIST} )
 
 file              ( GLOB_RECURSE UI_LIST "*.ui" )
 qt5_wrap_ui       ( UI_APP_HDRS  ${UI_LIST} )

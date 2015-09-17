@@ -37,10 +37,6 @@ add_definitions       (
 -DNGT_INTEGRATION
 )
 
-
-file              ( GLOB_RECURSE QT_LIST "Classes/*.h"  )
-qt5_wrap_cpp      ( MOC_APP_SRCS ${QT_LIST} )
-
 file              ( GLOB UI_LIST "DataQt/*.ui" )
 qt5_wrap_ui       ( UI_APP_HDRS  ${UI_LIST} )
 
