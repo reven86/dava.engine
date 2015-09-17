@@ -279,7 +279,7 @@ gles2_Reset( const ResetParam& param )
     _GLES2_DefaultFrameBuffer_Width  = param.width;
     _GLES2_DefaultFrameBuffer_Height = param.height;
 #if defined(__DAVAENGINE_ANDROID__)
-    android_gl_reset();
+    android_gl_reset(param.window);
 #endif
 }
 
@@ -664,14 +664,6 @@ GetGLTextureFormat( rhi::TextureFormat rhiFormat, GLint* internalFormat, GLint* 
         case TEXTURE_FORMAT_R8G8B8A8 :
             *internalFormat = GL_RGBA;
             *format         = GL_RGBA;
-            *type           = GL_UNSIGNED_BYTE;
-            *compressed     = false;
-            success         = true;
-            break;
-
-        case TEXTURE_FORMAT_R8G8B8 :
-            *internalFormat = GL_RGB; 
-            *format         = GL_RGB;
             *type           = GL_UNSIGNED_BYTE;
             *compressed     = false;
             success         = true;

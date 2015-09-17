@@ -44,6 +44,7 @@
 #include "Render/TextureDescriptor.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "Render/Image/ImageConvert.h"
 
 #define NEW_PPA
 
@@ -384,6 +385,15 @@ Sprite* Sprite::CreateFromSourceData(const uint8* data, uint32 size, bool conten
         return NULL;
     }
 
+    if (images[0]->GetPixelFormat() == PixelFormat::FORMAT_RGB888)
+    {
+        Image * image8888 = Image::Create(images[0]->GetWidth(), images[0]->GetHeight(), FORMAT_RGBA8888);
+        ImageConvert::ConvertImageDirect(images[0], image8888);
+
+        SafeRelease(images[0]);
+        images[0] = image8888;
+    }
+
     Sprite* sprite = CreateFromImage(images[0], contentScaleIncluded, inVirtualSpace);
     
     for_each(images.begin(), images.end(), SafeRelease<Image>);
@@ -421,6 +431,15 @@ Sprite* Sprite::CreateFromSourceFile(const FilePath& path, bool contentScaleIncl
     if (images.size() == 0)
     {
         return NULL;
+    }
+
+    if (images[0]->GetPixelFormat() == PixelFormat::FORMAT_RGB888)
+    {
+        Image * image8888 = Image::Create(images[0]->GetWidth(), images[0]->GetHeight(), FORMAT_RGBA8888);
+        ImageConvert::ConvertImageDirect(images[0], image8888);
+        
+        SafeRelease(images[0]);
+        images[0] = image8888;
     }
 
     sprite = CreateFromImage(images[0], contentScaleIncluded, inVirtualSpace);

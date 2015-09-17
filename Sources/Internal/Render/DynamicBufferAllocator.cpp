@@ -27,6 +27,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
 #include "DynamicBufferAllocator.h"
+#include "Render/RenderCallbacks.h"
+#include "Functional/Function.h"
 
 namespace DAVA
 {
@@ -200,10 +202,12 @@ private:
 BufferAllocator<rhi::HVertexBuffer> vertexBufferAllocator;
 BufferAllocator<rhi::HIndexBuffer>  indexBufferAllocator;
 
+
 rhi::HIndexBuffer currQuadList;
 uint32 currMaxQuadCount = 0;
-}
+bool quadListRestoreRegistered = false;
 
+}
 
 AllocResultVB AllocateVertexBuffer(uint32 vertexSize, uint32 vertexCount)
 {
@@ -217,33 +221,47 @@ AllocResultIB AllocateIndexBuffer(uint32 indexCount)
     return AllocResultIB{ result.buffer, (uint16 *) result.data, result.base, result.count };
 }
 
+const uint32 VERTICES_PER_QUAD = 4;
+const uint32 INDICES_PER_QUAD = 6;
+
+void FillQuadListData()
+{
+    uint32 bufferSize = currMaxQuadCount * INDICES_PER_QUAD * 2; //uint16 = 2 bytes per index
+    uint16 * indices = (uint16*)rhi::MapIndexBuffer(currQuadList, 0, bufferSize);
+    for (uint32 i = 0; i < currMaxQuadCount; ++i)
+    {
+        indices[i*INDICES_PER_QUAD + 0] = i*VERTICES_PER_QUAD + 0;
+        indices[i*INDICES_PER_QUAD + 1] = i*VERTICES_PER_QUAD + 1;
+        indices[i*INDICES_PER_QUAD + 2] = i*VERTICES_PER_QUAD + 2;
+        indices[i*INDICES_PER_QUAD + 3] = i*VERTICES_PER_QUAD + 2;
+        indices[i*INDICES_PER_QUAD + 4] = i*VERTICES_PER_QUAD + 1;
+        indices[i*INDICES_PER_QUAD + 5] = i*VERTICES_PER_QUAD + 3; //preserve order
+    }
+    rhi::UnmapIndexBuffer(currQuadList);
+}
+
+void RestoreQuadList()
+{
+    if (currQuadList.IsValid() && rhi::NeedRestoreIndexBuffer(currQuadList))
+        FillQuadListData();
+}
 
 rhi::HIndexBuffer AllocateQuadListIndexBuffer(uint32 quadCount)
 {
-
+    if (!quadListRestoreRegistered)
+    {
+        RenderCallbacks::RegisterResourceRestoreCallback(MakeFunction(&RestoreQuadList));
+        quadListRestoreRegistered = true;
+    }
     if (quadCount > currMaxQuadCount)
     {        
         if (currQuadList.IsValid())
-            rhi::DeleteIndexBuffer(currQuadList);            
-
-        const uint32 VERTICES_PER_QUAD = 4;
-        const uint32 INDICES_PER_QUAD = 6;
+            rhi::DeleteIndexBuffer(currQuadList);                    
 
         currMaxQuadCount = Max(currMaxQuadCount * 2, quadCount);
         uint32 bufferSize = currMaxQuadCount * INDICES_PER_QUAD * 2; //uint16 = 2 bytes per index
         currQuadList = rhi::CreateIndexBuffer(bufferSize);
-        uint16 * indices = (uint16*)rhi::MapIndexBuffer(currQuadList, 0, bufferSize);        
-        for (uint32 i = 0; i < currMaxQuadCount; ++i)
-        {
-            indices[i*INDICES_PER_QUAD + 0] = i*VERTICES_PER_QUAD + 0;
-            indices[i*INDICES_PER_QUAD + 1] = i*VERTICES_PER_QUAD + 1;
-            indices[i*INDICES_PER_QUAD + 2] = i*VERTICES_PER_QUAD + 2;
-            indices[i*INDICES_PER_QUAD + 3] = i*VERTICES_PER_QUAD + 2;
-            indices[i*INDICES_PER_QUAD + 4] = i*VERTICES_PER_QUAD + 1;
-            indices[i*INDICES_PER_QUAD + 5] = i*VERTICES_PER_QUAD + 3; //preserve order
-        }
-
-        rhi::UnmapIndexBuffer(currQuadList);
+        FillQuadListData();
     }    
     return currQuadList;
 }
@@ -282,3 +300,4 @@ void SetPageSize(uint32 size)
 
 }
 }
+
