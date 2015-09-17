@@ -43,6 +43,7 @@
 #include "QtUtils.h"
 #include "Project/ProjectManager.h"
 #include "Scene/SceneHelper.h"
+#include "Scene/LandscapeThumbnails.h"
 #include "SpritesPacker/SpritePackerHelper.h"
 
 #include "TextureBrowser/TextureBrowser.h"
@@ -2055,7 +2056,7 @@ void QtMainWindow::OnSaveTiledTexture()
     Landscape* landscape = FindLandscape(scene);
     if (nullptr != landscape)
 	{
-		landscape->CreateLandscapeTexture(MakeFunction(this, &QtMainWindow::OnTiledTextureRetreived));
+		LandscapeThumbnails::Create(landscape, MakeFunction(this, &QtMainWindow::OnTiledTextureRetreived));
 	}
 }
 

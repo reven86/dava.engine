@@ -97,6 +97,8 @@ public:
     
 };
 
+using CircularIndexBufferArray = CircularArray<rhi::HIndexBuffer, 3>;
+
 /**    
     \brief Implementation of cdlod algorithm to render landscapes
     This class is base of the landscape code on all platforms
@@ -211,29 +213,37 @@ public:
 	
     void SetFoliageSystem(FoliageSystem* _foliageSystem);
 
-	// RHI_COMPLETE need remove this
+    //RHI_COMPLETE need remove this
     void UpdatePart(Heightmap* fromHeightmap, const Rect2i & rect);
-    
-	using LandscapeThumbnailCallback = DAVA::Function<void(Landscape*, Texture*)>;
-    void CreateLandscapeTexture(LandscapeThumbnailCallback callback);
 
 protected:
-	static const int32 TEXTURE_SIZE_FULL_TILED = 2048;
-	static const int32 RENDER_QUAD_WIDTH = 129;
-	static const int32 RENDER_QUAD_AND = RENDER_QUAD_WIDTH - 2;
-    static const int32 QUAD_INDICES_COUNT_MAX = 20000;
 
-    struct LandscapeQuad
+    static const uint32 TEXTURE_SIZE_FULL_TILED = 2048;
+
+    class LandscapeQuad
     {
+    public:
+        LandscapeQuad()
+        {
+            x = y = size = lod = 0;
+            rdoQuad = -1;
+            frame = 0;
+			startClipPlane = 0;
+        }
+        
+        int16   x, y;
+        //int16   xbuf, ybuf;
+        int16   size;
+        int8    lod;
+        int16   rdoQuad;
         AABBox3 bbox;
-        int16 x = 0;
-		int16 y = 0;
-        int16 size = 0;
-        int16 rdoQuad = -1;
-        uint32 frame = 0;
-		uint8 startClipPlane = 0;
-        int8 lod = 0;
+		uint8 startClipPlane;
+        uint32  frame;
     };
+   
+    static const int32 RENDER_QUAD_WIDTH = 129;
+    static const int32 RENDER_QUAD_AND = RENDER_QUAD_WIDTH - 2;
+    static const int32 INDEX_ARRAY_COUNT = 10000 * 6; //10k triangles max
     
     //RHI_COMPLETE need remove this
     void CollectNodesRecursive(LandQuadTreeNode<LandscapeQuad> * currentNode, int16 nodeSize,
@@ -261,11 +271,6 @@ protected:
     bool BuildHeightmap();
     void BuildLandscape();
 
-	void OnCreateLandscapeTextureCompleted(rhi::HSyncObject);
-	void UnregisterCreateTextureCallback();
-
-	void UpdateNodeChildrenBoundingBoxesRecursive(LandQuadTreeNode<LandscapeQuad>& root, Heightmap* fromHeightmap);
-
 private:
     LandQuadTreeNode<LandscapeQuad> quadTreeHead;
     Vector<LandQuadTreeNode<LandscapeQuad>*> fans;
@@ -273,6 +278,8 @@ private:
     Vector<LandQuadTreeNode<LandscapeQuad>*> lodNot0quads;
     Vector<rhi::HVertexBuffer> vertexBuffers;
     Vector<LanscapeBufferData> bufferRestoreData;
+    rhi::HIndexBuffer currentIndexBuffer;
+    CircularIndexBufferArray indexBuffers;
     FilePath heightmapPath;
 
     Frustum *frustum = nullptr;
@@ -280,9 +287,6 @@ private:
 	NMaterial* landscapeMaterial = nullptr;
     FoliageSystem* foliageSystem = nullptr;
 
-	Texture* thumbnailRenderTarget = nullptr;
-	LandscapeThumbnailCallback createdLandscapeTextureCallback;
-    
     uint16* indices = nullptr;
     uint16* queueDrawIndices = nullptr;
     float32 lodDistance[8];
@@ -292,7 +296,10 @@ private:
     int32 lodLevelsCount = 0;
     int32 allocatedMemoryForQuads = 0;
     int32 queueIndexCount = 0;
+    int32 queueIndexOffset = 0;
     int32 flushQueueCounter = 0;
+    int32 nearLodIndex = 0;
+    int32 farLodIndex = 0;
 	uint32 drawIndices = 0;
     int16 queueRdoQuad = 0;
 
