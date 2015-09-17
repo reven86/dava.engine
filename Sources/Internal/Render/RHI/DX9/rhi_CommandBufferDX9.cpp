@@ -1074,9 +1074,7 @@ _RejectAllFrames()
             ++f;
         }
     }
-
-    _Frame.clear();
-    _FrameStarted = false;
+    
     _FrameSync.Unlock();
 }
 

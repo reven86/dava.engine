@@ -92,8 +92,7 @@ void TextBlockSoftwareRender::Prepare()
 	}
 	
     
-    Texture *tex = Texture::CreateTextFromData(FORMAT_A8, (uint8*)buf, width, height, false, addInfo.c_str());
-    tex->SetExplicitRestore(true);
+    Texture *tex = Texture::CreateTextFromData(FORMAT_A8, (uint8*)buf, width, height, false, addInfo.c_str());    
     sprite = Sprite::CreateFromTexture(tex, 0, 0, textBlock->cacheFinalSize.dx, textBlock->cacheFinalSize.dy);
     SafeRelease(tex);
         
