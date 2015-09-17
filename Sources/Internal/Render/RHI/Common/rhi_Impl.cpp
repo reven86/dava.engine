@@ -144,6 +144,18 @@ const RenderDeviceCaps & DeviceCaps()
     return (*_Impl.impl_DeviceCaps)();
 }
 
+void
+SuspendRendering()
+{
+    (*_Impl.impl_SuspendRendering)();
+}
+
+void
+ResumeRendering()
+{
+    (*_Impl.impl_ResumeRendering)();
+}
+    
 //////////////////////////////////////////////////////////////////////////
 
 namespace VertexBuffer
@@ -722,10 +734,6 @@ TextureSize( TextureFormat format, uint32 width, uint32 height, uint32 level )
         case TEXTURE_FORMAT_R8G8B8A8 :
         case TEXTURE_FORMAT_R8G8B8X8 :
             sz = ext.dx * ext.dy * sizeof(uint32);
-            break;
-        
-        case TEXTURE_FORMAT_R8G8B8 :
-            sz = ext.dx * ext.dy * 3*sizeof(uint8);
             break;
 
         case TEXTURE_FORMAT_R5G5B5A1 :

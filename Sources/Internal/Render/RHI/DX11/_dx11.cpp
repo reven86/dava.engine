@@ -119,7 +119,6 @@ DX11_TextureFormat( TextureFormat format )
     {
         case TEXTURE_FORMAT_R8G8B8A8        : return DXGI_FORMAT_B8G8R8A8_UNORM;
         case TEXTURE_FORMAT_R8G8B8X8        : return DXGI_FORMAT_B8G8R8X8_UNORM;
-//        case TEXTURE_FORMAT_R8G8B8          : return DXGI_FORMAT_R8G8B8_UNORM;
 
         case TEXTURE_FORMAT_R5G5B5A1        : return DXGI_FORMAT_B5G5R5A1_UNORM;
         case TEXTURE_FORMAT_R5G6B5          : return DXGI_FORMAT_B5G6R5_UNORM;

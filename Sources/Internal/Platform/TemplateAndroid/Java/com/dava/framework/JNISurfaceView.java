@@ -204,8 +204,6 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
                 	isScreenLocked = !pm.isScreenOn();
                 
                 nativeOnPause(isScreenLocked);
-
-                frameCounter = 0;
             }
         });
     }
@@ -235,6 +233,8 @@ public class JNISurfaceView extends SurfaceView implements SurfaceHolder.Callbac
             activity.setResumeGLActionOnWindowReady(action);
         }
         isPaused = false;
+
+        frameCounter = 0;
     }
 	
 	public class InputRunnable implements Runnable

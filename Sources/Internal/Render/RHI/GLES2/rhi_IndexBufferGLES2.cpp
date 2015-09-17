@@ -50,6 +50,7 @@ public:
                   : size(0),
                     data(nullptr),
                     uid(0),
+					destroyedUid(0),
                     is_32bit(false),
                     isMapped(false)
                 {}
@@ -60,6 +61,7 @@ public:
     unsigned    size;
     void*       data;
     unsigned    uid;
+    unsigned	destroyedUid;
     unsigned    is_32bit:1;
     unsigned    isMapped:1;
 };
@@ -127,6 +129,8 @@ IndexBufferGLES2_t::Destroy( bool force_immediate )
         ExecGL( &cmd, 1, force_immediate );
         
         ::free( data );
+
+        destroyedUid = uid;
 
         data = nullptr;
         size = 0;
@@ -293,6 +297,23 @@ NeedRestoreCount()
     return IndexBufferGLES2_t::NeedRestoreCount();
 }
 
+void
+PatchCommands( GLCommand* command, uint32 cmdCount )
+{
+    for( IndexBufferGLES2Pool::Iterator b=IndexBufferGLES2Pool::Begin(),b_end=IndexBufferGLES2Pool::End(); b!=b_end; ++b )
+    {
+        if( b->destroyedUid )
+        {
+            for( GLCommand* cmd=command,*cmd_end=command+cmdCount; cmd!=cmd_end; ++cmd )
+            {
+                if(cmd->func == GLCommand::BIND_BUFFER && (unsigned)(cmd->arg[0]) == b->destroyedUid)
+                {
+                    cmd->arg[0] = uint64(b->uid);
+                }
+            }
+        }
+    }
+}
 
 } // namespace IndexBufferGLES
 

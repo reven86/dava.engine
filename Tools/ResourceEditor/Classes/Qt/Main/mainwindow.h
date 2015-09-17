@@ -207,6 +207,8 @@ public slots:
     
     void OnSnapCameraToLandscape(bool);
     
+    void SetupTitle();
+
 protected:
 	virtual bool eventFilter(QObject *object, QEvent *event);
 	void closeEvent(QCloseEvent * e);
@@ -216,7 +218,6 @@ protected:
 	void SetupStatusBar();
 	void SetupDocks();
 	void SetupActions();
-	void SetupTitle();
 	void SetupShortCuts();
 
     void StartGlobalInvalidateTimer();

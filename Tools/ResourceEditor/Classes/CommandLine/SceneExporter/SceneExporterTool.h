@@ -54,7 +54,9 @@ public:
 
 	DAVA::String GetCommandLineKey() const override;
 	bool InitializeFromCommandLine() override;
+
 	void Process() override;
+
 	void PrintUsage() const override;
 	void DumpParams() const override;
 	DAVA::FilePath GetQualityConfigPath() const override;

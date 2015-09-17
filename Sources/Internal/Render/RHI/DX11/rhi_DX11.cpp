@@ -205,7 +205,7 @@ _InitDX11()
     swapchain_desc.BufferCount                          = 2;
 
     swapchain_desc.OutputWindow                         = (HWND)_DX11_InitParam.window;
-    swapchain_desc.Windowed                             = (_DX11_InitParam.fullScreen)  ? TRUE  : FALSE;
+    swapchain_desc.Windowed                             = (_DX11_InitParam.fullScreen)  ? FALSE  : TRUE;
 
     swapchain_desc.SwapEffect                           = DXGI_SWAP_EFFECT_DISCARD;
     swapchain_desc.Flags                                = 0;

@@ -142,7 +142,7 @@ InspInfoDynamic::DynamicData NMaterialStateDynamicPropertiesInsp::Prepare(void *
         checkAndAdd(NMaterialParamName::PARAM_MATERIAL_SPECULAR_SHININESS, rhi::ShaderProp::TYPE_FLOAT1, 1, &defaultFloat05);
 
         checkAndAdd(NMaterialParamName::PARAM_FOG_LIMIT, rhi::ShaderProp::TYPE_FLOAT1, 1, &defaultFloat10);
-        checkAndAdd(NMaterialParamName::PARAM_FOG_COLOR, rhi::ShaderProp::TYPE_FLOAT4, 1, defaultColor.color);
+        checkAndAdd(NMaterialParamName::PARAM_FOG_COLOR, rhi::ShaderProp::TYPE_FLOAT3, 1, defaultColor.color);
         checkAndAdd(NMaterialParamName::PARAM_FOG_DENSITY, rhi::ShaderProp::TYPE_FLOAT1, 1, &defaultFogDensity);
         checkAndAdd(NMaterialParamName::PARAM_FOG_START, rhi::ShaderProp::TYPE_FLOAT1, 1, &defaultFogStart);
         checkAndAdd(NMaterialParamName::PARAM_FOG_END, rhi::ShaderProp::TYPE_FLOAT1, 1, &defaultFogEnd);
@@ -150,8 +150,8 @@ InspInfoDynamic::DynamicData NMaterialStateDynamicPropertiesInsp::Prepare(void *
         checkAndAdd(NMaterialParamName::PARAM_FOG_HALFSPACE_FALLOFF, rhi::ShaderProp::TYPE_FLOAT1, 1, &defaultFogDensity);
         checkAndAdd(NMaterialParamName::PARAM_FOG_HALFSPACE_HEIGHT, rhi::ShaderProp::TYPE_FLOAT1, 1, &defaultFogHeight);
         checkAndAdd(NMaterialParamName::PARAM_FOG_HALFSPACE_LIMIT, rhi::ShaderProp::TYPE_FLOAT1, 1, &defaultFloat10);
-        checkAndAdd(NMaterialParamName::PARAM_FOG_ATMOSPHERE_COLOR_SUN, rhi::ShaderProp::TYPE_FLOAT4, 1, defaultColor.color);
-        checkAndAdd(NMaterialParamName::PARAM_FOG_ATMOSPHERE_COLOR_SKY, rhi::ShaderProp::TYPE_FLOAT4, 1, defaultColor.color);
+        checkAndAdd(NMaterialParamName::PARAM_FOG_ATMOSPHERE_COLOR_SUN, rhi::ShaderProp::TYPE_FLOAT3, 1, defaultColor.color);
+        checkAndAdd(NMaterialParamName::PARAM_FOG_ATMOSPHERE_COLOR_SKY, rhi::ShaderProp::TYPE_FLOAT3, 1, defaultColor.color);
         checkAndAdd(NMaterialParamName::PARAM_FOG_ATMOSPHERE_SCATTERING, rhi::ShaderProp::TYPE_FLOAT1, 1, &defaultFloat10);
         checkAndAdd(NMaterialParamName::PARAM_FOG_ATMOSPHERE_DISTANCE, rhi::ShaderProp::TYPE_FLOAT1, 1, &defaultFogEnd);
 
@@ -161,7 +161,7 @@ InspInfoDynamic::DynamicData NMaterialStateDynamicPropertiesInsp::Prepare(void *
         checkAndAdd(NMaterialParamName::PARAM_UV_SCALE, rhi::ShaderProp::TYPE_FLOAT2, 1, defaultVec2.data);
         checkAndAdd(NMaterialParamName::PARAM_LIGHTMAP_SIZE, rhi::ShaderProp::TYPE_FLOAT1, 1, &defaultLightmapSize);
         checkAndAdd(NMaterialParamName::PARAM_DECAL_TILE_SCALE, rhi::ShaderProp::TYPE_FLOAT2, 1, defaultVec2.data);
-        checkAndAdd(NMaterialParamName::PARAM_DECAL_TILE_COLOR, rhi::ShaderProp::TYPE_FLOAT4, 1, Color::White.color);
+        checkAndAdd(NMaterialParamName::PARAM_DECAL_TILE_COLOR, rhi::ShaderProp::TYPE_FLOAT3, 1, Color::White.color);
         checkAndAdd(NMaterialParamName::PARAM_DETAIL_TILE_SCALE, rhi::ShaderProp::TYPE_FLOAT2, 1, defaultVec2.data);
         checkAndAdd(NMaterialParamName::DEPRECATED_SHADOW_COLOR_PARAM, rhi::ShaderProp::TYPE_FLOAT4, 1, defaultColor.color);
 
@@ -228,7 +228,7 @@ VariantType NMaterialStateDynamicPropertiesInsp::MemberValueGet(const DynamicDat
     FastNameMap<PropData>* members = (FastNameMap<PropData>*) ddata.data.get();
     DVASSERT(members);
 
-    if(members->count(key))
+    if (members->count(key))
     {
         const PropData &prop = members->at(key);
         const float32* value = material->GetEffectivePropValue(key);
@@ -236,6 +236,9 @@ VariantType NMaterialStateDynamicPropertiesInsp::MemberValueGet(const DynamicDat
         if (nullptr == value)
         {
             value = prop.defaultValue;
+
+			if (nullptr == value)
+				return ret;
         }
 
         switch (prop.type)

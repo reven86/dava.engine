@@ -36,6 +36,7 @@
     using DAVA::int8;
     #include "FileSystem/Logger.h"
     using DAVA::Logger;
+    #include "FileSystem/File.h"
 
 
 namespace rhi
@@ -378,6 +379,25 @@ VertexLayout::MakeCompatible( const VertexLayout& vbLayout, const VertexLayout& 
     return success;
 }
 
+
+//------------------------------------------------------------------------------
+
+void
+VertexLayout::Save( DAVA::File* out ) const
+{
+    out->Write( &_elem_count );
+    out->Write( _elem, _elem_count*sizeof(Element) );
+}
+
+
+//------------------------------------------------------------------------------
+
+void
+VertexLayout::Load( DAVA::File* in )
+{
+    in->Read( &_elem_count );
+    in->Read( &_elem, _elem_count*sizeof(Element) );
+}
 
 //==============================================================================
 } // namespace rhi

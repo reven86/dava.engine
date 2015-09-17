@@ -40,6 +40,8 @@
 
     #include "Render/RHI/dbg_Draw.h"
 
+    #include "FileSystem/DynamicMemoryFile.h"
+
 
 using namespace DAVA;
 
@@ -647,20 +649,21 @@ void GameCore::SetupTank()
 
 void GameCore::OnAppStarted()
 {
-/*
+
     struct
     {
         const char* file;
         const char* flag[16];
     } src[]
     {
-        { "../../Tools/ResourceEditor/Data/Materials/Shaders/Default/materials-vp.cg", {"VERTEX_LIT",nullptr} },
+        { "../../Tools/ResourceEditor/Data/Materials/Shaders/Default/materials-vp.cg", {"VERTEX_LIT",nullptr} }/*,
         { "../../Tools/ResourceEditor/Data/Materials/Shaders/Default/materials-vp.cg", {"PIXEL_LIT",nullptr} },
         { "../../Tools/ResourceEditor/Data/Materials/Shaders/Default/materials-vp.cg", {"SKINNING","PIXEL_LIT",nullptr} }
+*/
     };
 
     
-    profiler::Start();    
+//    profiler::Start();    
     
     for( unsigned i=0; i!=countof(src); ++i )
     {
@@ -693,14 +696,25 @@ void GameCore::OnAppStarted()
             }
             if( vp.Construct( rhi::PROG_VERTEX, buf, defines ) )
             {
+uint8       data[128*1024];
+DAVA::File* f = DAVA::DynamicMemoryFile::Create( data, countof(data), DAVA::File::READ|DAVA::File::WRITE );
+
+f->Seek(0,DAVA::File::SEEK_FROM_START);
+vp.Save( f );
+
+f->Seek(0,DAVA::File::SEEK_FROM_START);
+vp.Load( f );
+
+vp.Dump();
+
                 //vp.Dump();
             }
         }
     }
     
-    profiler::Stop();
-    profiler::Dump();
-*/
+//    profiler::Stop();
+//    profiler::Dump();
+
 /*
 {
     File*   file = File::CreateFromSystemPath( "../../Tools/ResourceEditor/Data/Materials/Shaders/Default/materials-vp.cg", File::OPEN|File::READ );
@@ -1075,8 +1089,8 @@ GameCore::Draw()
         
 //    sceneRenderTest->Render();
 //    rhiDraw();
-//    manticoreDraw();
-    rtDraw();
+    manticoreDraw();
+//    rtDraw();
 //    visibilityTestDraw();
 }
 
@@ -1227,7 +1241,7 @@ SCOPED_NAMED_TIMING("app-draw");
 
     DbgDraw::SetScreenSize( VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dx, VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy );
 
-/*
+
     {
     char    title[128] = "RHI Cube  -  ";
 
@@ -1242,7 +1256,7 @@ SCOPED_NAMED_TIMING("app-draw");
 //    DbgDraw::SetSmallTextSize();
     DbgDraw::Text2D( 10, 50, 0xFFFFFFFF, title );
     }
-*/
+
 
     pass_desc.colorBuffer[0].loadAction      = rhi::LOADACTION_CLEAR;
     pass_desc.colorBuffer[0].storeAction     = rhi::STOREACTION_NONE;
@@ -1363,7 +1377,7 @@ STOP_NAMED_TIMING("app.cb--upd");
 
 #endif
 
-///    DbgDraw::FlushBatched( pl[0], view, projection );
+    DbgDraw::FlushBatched( pl[0], view, projection );
 
     rhi::EndPacketList( pl[0] );
 
@@ -1696,7 +1710,7 @@ SCOPED_NAMED_TIMING("GameCore::EndFrame");
 
     
     // rendering stats
-/*
+
     {
     const unsigned id[] = 
     {
@@ -1734,7 +1748,7 @@ SCOPED_NAMED_TIMING("GameCore::EndFrame");
         DbgDraw::Text2D( x1, y, clr, "= %u", StatSet::StatValue(id[i]) );
     }
     }
-*/
+
 }
 
 
