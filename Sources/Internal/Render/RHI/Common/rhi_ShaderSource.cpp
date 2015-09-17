@@ -880,6 +880,188 @@ SCOPED_NAMED_TIMING("ShaderSource::Construct");
 
 //------------------------------------------------------------------------------
 
+static inline uint8  
+ReadUI1( DAVA::File* f ) 
+{ 
+    uint8   x;
+
+    f->Read( &x ); 
+    return x;
+}
+
+static inline uint32  
+ReadUI4( DAVA::File* f ) 
+{ 
+    uint32   x;
+
+    f->Read( &x ); 
+    return x;
+}
+
+static inline void
+ReadS0( DAVA::File* f, std::string* str ) 
+{ 
+    char    s0[128*1024];
+    uint32  sz = ReadUI4( f ); 
+
+    f->Read( s0, sz );
+    *str = s0;
+}
+
+bool
+ShaderSource::Load( DAVA::File* in )
+{
+    bool        success = false;
+    std::string s0;
+    
+    _Reset();
+
+    type = ProgType(ReadUI4( in ));
+    ReadS0( in, &code );
+
+    vdecl.Load( in );
+
+    prop.resize( ReadUI4( in ) );
+    for( unsigned p=0; p!=prop.size(); ++p )
+    {
+        ReadS0( in, &s0 );
+        prop[p].uid = FastName(s0.c_str());
+
+        ReadS0( in, &s0 );
+        prop[p].tag = FastName(s0.c_str());
+
+        prop[p].type            = ShaderProp::Type( ReadUI4( in ) );
+        prop[p].storage         = ShaderProp::Storage( ReadUI4( in ) );
+        prop[p].isBigArray      = ReadUI4( in );
+        prop[p].arraySize       = ReadUI4( in );
+        prop[p].bufferindex     = ReadUI4( in );
+        prop[p].bufferReg       = ReadUI4( in );
+        prop[p].bufferRegCount  = ReadUI4( in );
+
+        in->Read( prop[p].defaultValue, 16*sizeof(float) );                
+    }
+
+    buf.resize( ReadUI4( in ) );
+    for( unsigned b=0; b!=buf.size(); ++b )
+    {
+        buf[b].storage = ShaderProp::Storage( ReadUI4( in ) );
+        
+        ReadS0( in, &s0 );
+        buf[b].tag = FastName(s0.c_str());
+        
+        buf[b].regCount = ReadUI4( in );
+    }
+
+    sampler.resize( ReadUI4( in ) );
+    for( unsigned s=0; s!=sampler.size(); ++s )
+    {
+        sampler[s].type = TextureType( ReadUI4( in ) );
+        
+        ReadS0( in, &s0 );
+        sampler[s].uid = FastName(s0.c_str());
+    }
+
+    blending.rtBlend[0].colorFunc       = ReadUI1(in);
+    blending.rtBlend[0].colorSrc        = ReadUI1(in);
+    blending.rtBlend[0].colorDst        = ReadUI1(in);
+    blending.rtBlend[0].alphaFunc       = ReadUI1(in);
+    blending.rtBlend[0].alphaSrc        = ReadUI1(in);
+    blending.rtBlend[0].alphaDst        = ReadUI1(in);
+    blending.rtBlend[0].writeMask       = ReadUI1(in);
+    blending.rtBlend[0].blendEnabled    = ReadUI1(in);
+    blending.rtBlend[0].alphaToCoverage = ReadUI1(in);
+    in->Seek( 3, DAVA::File::SEEK_FROM_CURRENT );
+
+    return success;
+}
+
+
+//------------------------------------------------------------------------------
+
+static inline void  
+WriteUI1( DAVA::File* f, uint8 x ) 
+{ 
+    f->Write( &x ); 
+}
+
+static inline void  
+WriteUI4( DAVA::File* f, uint32 x ) 
+{ 
+    f->Write( &x ); 
+}
+
+static inline void
+WriteS0( DAVA::File* f, const char* str )  
+{ 
+    char    s0[128*1024];
+    uint32  sz = L_ALIGNED_SIZE( strlen( str)+1, sizeof(uint32) );
+    
+    memset( s0, 0x00, sz );
+    strcpy( s0, str );
+
+    WriteUI4( f, sz );
+    f->Write( s0, sz );
+}
+
+bool
+ShaderSource::Save( DAVA::File* out ) const
+{
+    bool    success = false;
+
+    WriteUI4( out, type );
+    WriteS0( out, code.c_str() );
+
+    vdecl.Save( out );
+
+    WriteUI4( out, prop.size() );
+    for( unsigned p=0; p!=prop.size(); ++p )
+    {
+        WriteS0( out, prop[p].uid.c_str() );
+        WriteS0( out, prop[p].tag.c_str() );
+        WriteUI4( out, prop[p].type );
+        WriteUI4( out, prop[p].storage );
+        WriteUI4( out, prop[p].isBigArray );
+        WriteUI4( out, prop[p].arraySize );
+        WriteUI4( out, prop[p].bufferindex );
+        WriteUI4( out, prop[p].bufferReg );
+        WriteUI4( out, prop[p].bufferRegCount );
+        out->Write( prop[p].defaultValue, 16*sizeof(float) );
+    }
+
+    WriteUI4( out, buf.size() );
+    for( unsigned b=0; b!=buf.size(); ++b )
+    {
+        WriteUI4( out, buf[b].storage );
+        WriteS0( out, buf[b].tag.c_str() );
+        WriteUI4( out, buf[b].regCount );
+    }
+
+    WriteUI4( out, sampler.size() );
+    for( unsigned s=0; s!=sampler.size(); ++s )
+    {
+        WriteUI4( out, sampler[s].type );
+        WriteS0( out, sampler[s].uid.c_str() );
+    }
+
+    WriteUI1( out, blending.rtBlend[0].colorFunc );
+    WriteUI1( out, blending.rtBlend[0].colorSrc );
+    WriteUI1( out, blending.rtBlend[0].colorDst );
+    WriteUI1( out, blending.rtBlend[0].alphaFunc );
+    WriteUI1( out, blending.rtBlend[0].alphaSrc );
+    WriteUI1( out, blending.rtBlend[0].alphaDst );
+    WriteUI1( out, blending.rtBlend[0].writeMask );
+    WriteUI1( out, blending.rtBlend[0].blendEnabled );
+    WriteUI1( out, blending.rtBlend[0].alphaToCoverage );
+    WriteUI1( out, 0 );
+    WriteUI1( out, 0 );
+    WriteUI1( out, 0 );
+
+    return success;
+}
+
+
+//------------------------------------------------------------------------------
+
 const char*
 ShaderSource::SourceCode() const
 {
@@ -1104,6 +1286,41 @@ ShaderSource::Dump() const
     {
         Logger::Info( "  sampler#%u  \"%s\"", s, sampler[s].uid.c_str() );
     }
+}
+
+
+//==============================================================================
+
+const ShaderSource*
+ShaderSourceCache::Get( FastName uid )
+{
+    const ShaderSource* src = nullptr;
+
+    return src;
+}
+
+
+//------------------------------------------------------------------------------
+
+void
+ShaderSourceCache::Update( FastName uid, const ShaderSource& source )
+{
+}
+
+
+//------------------------------------------------------------------------------
+    
+void
+ShaderSourceCache::Save( const char* fileName )
+{
+}
+
+
+//------------------------------------------------------------------------------
+
+void
+ShaderSourceCache::Load( const char* fileName )
+{
 }
 
 

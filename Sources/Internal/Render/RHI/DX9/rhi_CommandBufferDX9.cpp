@@ -1206,8 +1206,8 @@ Trace("\n\n-------------------------------\nframe %u executed(submitted to GPU)\
                 VertexBufferDX9::ReCreateAll();
                 IndexBufferDX9::ReCreateAll();
 
-                VertexBufferDX9::PatchCommands( _DX9_PendingImmediateCmd, _DX9_PendingImmediateCmdCount );
-                IndexBufferDX9::PatchCommands( _DX9_PendingImmediateCmd, _DX9_PendingImmediateCmdCount );
+//-                VertexBufferDX9::PatchCommands( _DX9_PendingImmediateCmd, _DX9_PendingImmediateCmdCount );
+//-                IndexBufferDX9::PatchCommands( _DX9_PendingImmediateCmd, _DX9_PendingImmediateCmdCount );
 
                 _ResetPending = false;
             }
@@ -1277,13 +1277,13 @@ Trace("exec %i\n",int(cmd->func));
             
             case DX9Command::LOCK_VERTEX_BUFFER :
             {
-                cmd->retval = ((IDirect3DVertexBuffer9*)(arg[0]))->Lock( UINT(arg[1]), UINT(arg[2]), (VOID**)(arg[3]), DWORD(arg[4]) );
+                cmd->retval = (*((IDirect3DVertexBuffer9**)arg[0]))->Lock( UINT(arg[1]), UINT(arg[2]), (VOID**)(arg[3]), DWORD(arg[4]) );
                 CHECK_HR(cmd->retval);
             }   break;
             
             case DX9Command::UNLOCK_VERTEX_BUFFER :
             {
-                cmd->retval = ((IDirect3DVertexBuffer9*)(arg[0]))->Unlock();
+                cmd->retval = (*((IDirect3DVertexBuffer9**)arg[0]))->Unlock();
                 CHECK_HR(cmd->retval);
             }   break;
             
@@ -1295,13 +1295,13 @@ Trace("exec %i\n",int(cmd->func));
             
             case DX9Command::LOCK_INDEX_BUFFER :
             {
-                cmd->retval = ((IDirect3DIndexBuffer9*)(arg[0]))->Lock( UINT(arg[1]), UINT(arg[2]), (VOID**)(arg[3]), DWORD(arg[4]) );
+                cmd->retval = (*((IDirect3DIndexBuffer9**)arg[0]))->Lock( UINT(arg[1]), UINT(arg[2]), (VOID**)(arg[3]), DWORD(arg[4]) );
                 CHECK_HR(cmd->retval);
             }   break;
             
             case DX9Command::UNLOCK_INDEX_BUFFER :
             {
-                cmd->retval = ((IDirect3DIndexBuffer9*)(arg[0]))->Unlock();
+                cmd->retval = (*((IDirect3DIndexBuffer9**)arg[0]))->Unlock();
                 CHECK_HR(cmd->retval);
             }   break;
 
