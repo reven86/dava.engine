@@ -259,7 +259,7 @@ void TransformSystem::ResizeControl(const Vector2& pos, bool withPivot, bool rat
         deltaPosition.y = 0.0f;
     }
 
-    auto pivotProp = activeControlNode->GetRootProperty()->FindPropertyByName("Pivot");
+    auto pivotProp = activeControlNode->GetRootProperty()->GetPropertyByName("Pivot");
     DVASSERT(nullptr != pivotProp);
     Vector2 pivot = pivotProp->GetValue().AsVector2();
 
@@ -346,30 +346,15 @@ void TransformSystem::ResizeControl(const Vector2& pos, bool withPivot, bool rat
     Vector2 rotatedPosition;
     rotatedPosition.x = deltaPosition.x * cosf(-gd.angle) + deltaPosition.y * sinf(-gd.angle);
     rotatedPosition.y = deltaPosition.x * -sinf(-gd.angle) + deltaPosition.y * cosf(-gd.angle);
-
-    AbstractProperty* sizeProperty = activeControlNode->GetRootProperty()->FindPropertyByName("Size");
-    Vector2 size = sizeProperty->GetValue().AsVector2();
-    Vector2 resultSize(size + deltaSize);
-    if (resultSize.dx < minimumSize.dx)
-    {
-        deltaSize.dx = 0.0f;
-        rotatedPosition.dx = 0.0f;
-    }
-    if (resultSize.dy < minimumSize.dy)
-    {
-        deltaSize.dy = 0.0f;
-        rotatedPosition.dy = 0.0f;
-    }
+    AdjustProperty(activeControlNode, "Position", rotatedPosition);
 
     AdjustProperty(activeControlNode, "Size", deltaSize);
-
-    AdjustProperty(activeControlNode, "Position", rotatedPosition);
 }
 
 template <typename T>
 void TransformSystem::AdjustProperty(ControlNode* node, const String& propertyName, const T& delta)
 {
-    AbstractProperty* property = node->GetRootProperty()->FindPropertyByName(propertyName);
+    AbstractProperty* property = node->GetRootProperty()->GetPropertyByName(propertyName);
     DVASSERT(nullptr != property);
     VariantType var(delta);
 
