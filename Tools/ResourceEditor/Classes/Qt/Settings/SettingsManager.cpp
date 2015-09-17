@@ -42,6 +42,8 @@
 #include "FileSystem/VariantType.h"
 #include "Render/RenderBase.h"
 
+#include "AssetCache/AssetCache.h"
+
 #define SETTINGS_CONFIG_FILE "~doc:/ResourceEditorOptions.archive"
 
 SettingsManager::SettingsManager()
@@ -74,8 +76,12 @@ void SettingsManager::Init()
     CreateValue(Settings::General_HeighMaskTool_Color0, DAVA::VariantType(DAVA::Color(0.5f, 0.5f, 0.5f, 1.0f)));
     CreateValue(Settings::General_HeighMaskTool_Color1, DAVA::VariantType(DAVA::Color(0.0f, 0.0f, 0.0f, 1.0f)));
 
+    CreateValue(Settings::General_AssetCache_UseCache, DAVA::VariantType(true));
+    CreateValue(Settings::General_AssetCache_Ip, DAVA::VariantType(DAVA::String("")));
+    CreateValue(Settings::General_AssetCache_Port, DAVA::VariantType(DAVA::Format("%d", DAVA::AssetCache::ASSET_SERVER_PORT)));
+    CreateValue(Settings::General_AssetCache_Timeout, DAVA::VariantType(DAVA::String("")));
 
-	CreateValue(Settings::Scene_GridStep, DAVA::VariantType(10.0f));
+    CreateValue(Settings::Scene_GridStep, DAVA::VariantType(10.0f));
 	CreateValue(Settings::Scene_GridSize, DAVA::VariantType(600.0f));
 	CreateValue(Settings::Scene_CameraSpeed0, DAVA::VariantType(35.0f));
 	CreateValue(Settings::Scene_CameraSpeed1, DAVA::VariantType(100.0f));
