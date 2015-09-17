@@ -126,7 +126,7 @@ void SerializationContext::LoadPolygonGroupData(File *file)
     bool cutUnusedStreams = QualitySettingsSystem::Instance()->GetAllowCutUnusedVertexStreams();
     for (Map<PolygonGroup*, PolygonGroupLoadInfo>::iterator it = loadedPolygonGroups.begin(), e = loadedPolygonGroups.end(); it!=e; ++it)
     {
-        if (it->second.onScene)
+	    if (it->second.onScene || !cutUnusedStreams)
         {
             file->Seek(it->second.filePos, File::SEEK_FROM_START);
             KeyedArchive * archive = new KeyedArchive();
