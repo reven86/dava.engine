@@ -96,9 +96,8 @@ EditorCore::EditorCore(QObject *parent)
     connect(project->GetEditorLocalizationSystem(), &EditorLocalizationSystem::LocaleChanged, this, &EditorCore::UpdateLanguage);
 
     qApp->installEventFilter(this);
-
 }
-    
+
 EditorCore::~EditorCore()
 {
     delete mainWindow;

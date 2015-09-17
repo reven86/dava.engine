@@ -26,18 +26,18 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "Systems/SystemsManager.h"
+#include "EditorSystems/EditorSystemsManager.h"
 
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/ControlProperties/RootProperty.h"
 
-#include "Systems/SelectionSystem.h"
-#include "Systems/CanvasSystem.h"
-#include "Systems/CursorSystem.h"
-#include "Systems/HUDSystem.h"
-#include "Systems/TransformSystem.h"
+#include "EditorSystems/SelectionSystem.h"
+#include "EditorSystems/CanvasSystem.h"
+#include "EditorSystems/CursorSystem.h"
+#include "EditorSystems/HUDSystem.h"
+#include "EditorSystems/TransformSystem.h"
 
 using namespace DAVA;
 
@@ -46,7 +46,7 @@ namespace
 class RootControl : public UIControl
 {
 public:
-    RootControl(SystemsManager* arg)
+    RootControl(EditorSystemsManager* arg)
         : UIControl()
         , systemManager(arg)
     {
@@ -66,12 +66,12 @@ public:
     }
 
 private:
-    SystemsManager* systemManager = nullptr;
+    EditorSystemsManager* systemManager = nullptr;
     bool emulationMode = false;
 };
 };
 
-SystemsManager::SystemsManager(PackageNode* _package)
+EditorSystemsManager::EditorSystemsManager(PackageNode* _package)
     : rootControl(new RootControl(this))
     , scalableControl(new UIControl())
     , package(SafeRetain(_package))
@@ -87,7 +87,7 @@ SystemsManager::SystemsManager(PackageNode* _package)
     systems.push_back(new ::TransformSystem(this));
 }
 
-SystemsManager::~SystemsManager()
+EditorSystemsManager::~EditorSystemsManager()
 {
     for (auto& system : systems)
     {
@@ -95,27 +95,27 @@ SystemsManager::~SystemsManager()
     }
 }
 
-PackageNode* SystemsManager::GetPackage()
+PackageNode* EditorSystemsManager::GetPackage()
 {
     return package;
 }
 
-bool SystemsManager::IsInEmulationMode() const
+bool EditorSystemsManager::IsInEmulationMode() const
 {
     return emulationMode;
 }
 
-UIControl* SystemsManager::GetRootControl()
+UIControl* EditorSystemsManager::GetRootControl()
 {
     return rootControl;
 }
 
-DAVA::UIControl* SystemsManager::GetScalableControl()
+DAVA::UIControl* EditorSystemsManager::GetScalableControl()
 {
     return scalableControl;
 }
 
-void SystemsManager::Deactivate()
+void EditorSystemsManager::Deactivate()
 {
     for (auto& system : systems)
     {
@@ -123,7 +123,7 @@ void SystemsManager::Deactivate()
     }
 }
 
-void SystemsManager::Activate()
+void EditorSystemsManager::Activate()
 {
     for (auto system : systems)
     {
@@ -131,7 +131,7 @@ void SystemsManager::Activate()
     }
 }
 
-bool SystemsManager::OnInput(UIEvent* currentInput)
+bool EditorSystemsManager::OnInput(UIEvent* currentInput)
 {
     for (auto it = systems.rbegin(); it != systems.rend(); ++it)
     {
@@ -143,7 +143,7 @@ bool SystemsManager::OnInput(UIEvent* currentInput)
     return false;
 }
 
-void SystemsManager::GetControlNodesByPos(DAVA::Vector<ControlNode*>& controlNodes, const DAVA::Vector2& pos) const
+void EditorSystemsManager::GetControlNodesByPos(DAVA::Vector<ControlNode*>& controlNodes, const DAVA::Vector2& pos) const
 {
     auto controlsNode = package->GetPackageControlsNode();
     for (int index = 0; index < controlsNode->GetCount(); ++index)
@@ -158,7 +158,7 @@ void SystemsManager::GetControlNodesByPos(DAVA::Vector<ControlNode*>& controlNod
     }
 }
 
-void SystemsManager::GetControlNodesByRect(SelectedControls& controlNodes, const Rect& rect) const
+void EditorSystemsManager::GetControlNodesByRect(SelectedControls& controlNodes, const Rect& rect) const
 {
     auto controlsNode = package->GetPackageControlsNode();
     for (int index = 0; index < controlsNode->GetCount(); ++index)
@@ -173,7 +173,7 @@ void SystemsManager::GetControlNodesByRect(SelectedControls& controlNodes, const
     }
 }
 
-void SystemsManager::GetControlNodesByPosImpl(DAVA::Vector<ControlNode*>& controlNodes, const DAVA::Vector2& pos, ControlNode* node) const
+void EditorSystemsManager::GetControlNodesByPosImpl(DAVA::Vector<ControlNode*>& controlNodes, const DAVA::Vector2& pos, ControlNode* node) const
 {
     int count = node->GetCount();
     auto control = node->GetControl();
@@ -187,7 +187,7 @@ void SystemsManager::GetControlNodesByPosImpl(DAVA::Vector<ControlNode*>& contro
     }
 }
 
-void SystemsManager::GetControlNodesByRectImpl(SelectedControls& controlNodes, const Rect& rect, ControlNode* node) const
+void EditorSystemsManager::GetControlNodesByRectImpl(SelectedControls& controlNodes, const Rect& rect, ControlNode* node) const
 {
     int count = node->GetCount();
     auto control = node->GetControl();
@@ -201,7 +201,7 @@ void SystemsManager::GetControlNodesByRectImpl(SelectedControls& controlNodes, c
     }
 }
 
-void SystemsManager::SetEmulationMode(bool arg)
+void EditorSystemsManager::SetEmulationMode(bool arg)
 {
     if (emulationMode != arg)
     {

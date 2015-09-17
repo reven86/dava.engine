@@ -26,29 +26,28 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
-
 #ifndef __QUICKED_CURSOR_SYSTEM_H__
 #define __QUICKED_CURSOR_SYSTEM_H__
 
-#include "Systems/BaseSystem.h"
-#include "Systems/SystemsManager.h"
+#include "EditorSystems/BaseEditorSystem.h"
+#include "EditorSystems/EditorSystemsManager.h"
 #include <QMap>
 #include <QPixmap>
 #include <QString>
 
-class CursorSystem final : public BaseSystem
-{   
+class CursorSystem final : public BaseEditorSystem
+{
 public:
-    explicit CursorSystem(SystemsManager* doc);
+    explicit CursorSystem(EditorSystemsManager* doc);
     ~CursorSystem() override = default;
 
     void OnDeactivated() override;
 
+private:
     void OnActiveAreaChanged(const HUDAreaInfo& areaInfo);
 
-private:
     QPixmap CreatePixmapForArea(float angle, const HUDAreaInfo::eArea area) const;
-    QPixmap CreatePixmap(const QString &address) const;
+    QPixmap CreatePixmap(const QString& address) const;
 
     static QMap<QString, QPixmap> cursorpixes;
 };

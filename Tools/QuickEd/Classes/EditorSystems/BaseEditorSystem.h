@@ -26,33 +26,33 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
-
 #ifndef __QUICKED_BASE_SYSTEM_H__
 #define __QUICKED_BASE_SYSTEM_H__
 
-namespace DAVA{
-    class UIEvent;
+namespace DAVA
+{
+class UIEvent;
 }
 
-class SystemsManager;
+class EditorSystemsManager;
 
-class BaseSystem
-{   
+class BaseEditorSystem
+{
 public:
-    explicit BaseSystem(SystemsManager* parent);
-    virtual ~BaseSystem() = 0;
+    explicit BaseEditorSystem(EditorSystemsManager* parent);
+    virtual ~BaseEditorSystem() = 0;
 
-    virtual void OnActivated(); 
+    virtual void OnActivated();
     virtual void OnDeactivated();
 
-    virtual bool OnInput(DAVA::UIEvent *currentInput);
+    virtual bool OnInput(DAVA::UIEvent* currentInput);
+
 protected:
-    SystemsManager* systemManager = nullptr;
+    EditorSystemsManager* systemManager = nullptr;
 };
 
-inline BaseSystem::~BaseSystem()
+inline BaseEditorSystem::~BaseEditorSystem()
 {
-    
 }
 
 #endif // __QUICKED_BASE_SYSTEM_H__

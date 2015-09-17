@@ -43,7 +43,7 @@ class Project;
 class MainWindow;
 class PackageNode;
 
-class EditorCore : public QObject, public DAVA::Singleton<EditorCore>
+class EditorCore final : public QObject, public DAVA::Singleton<EditorCore>
 {
     Q_OBJECT
 public:

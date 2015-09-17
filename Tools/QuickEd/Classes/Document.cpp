@@ -28,7 +28,7 @@
 
 
 #include "Document.h"
-#include "Systems/SystemsManager.h"
+#include "EditorSystems/EditorSystemsManager.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"
@@ -36,9 +36,10 @@
 
 #include "Ui/QtModelPackageCommandExecutor.h"
 #include "EditorCore.h"
-#include "UI/IconHelper.h"
-#include "UI/MainWindow.h"
-#include "QtTools/DavaGLWidget/DavaGLWidget.h"
+#include "Ui/MainWindow.h"
+#include "Ui/Preview/PreviewWidget.h"
+
+#include <QObject>
 
 using namespace DAVA;
 
@@ -49,10 +50,10 @@ Document::Document(PackageNode *_package, QObject *parent)
     , undoStack(new QUndoStack(this))
     , systemManager(_package)
 {
-    systemManager.SelectionChanged.Connect(this, &Document::OnSelectionChanged);
+    systemManager.SelectionChanged.Connect(this, &Document::SelectedNodesChanged);
     systemManager.EmulationModeChangedSignal.Connect(this, &Document::EmulationModeChanged);
     systemManager.CanvasSizeChanged.Connect(this, &Document::CanvasSizeChanged);
-    systemManager.SelectionByMenuRequested.Connect(this, &Document::OnSelectControlByMenu);
+
     systemManager.PropertyChanged.Connect([this](ControlNode* node, AbstractProperty* property, const DAVA::VariantType& value)
                                           {
         commandExecutor->ChangeProperty(node, property, value);
@@ -61,6 +62,12 @@ Document::Document(PackageNode *_package, QObject *parent)
                                             {
         commandExecutor->ChangeProperty(node, properties);
                                             });
+
+    EditorCore* editorCore = qobject_cast<EditorCore*>(this->parent());
+    DVASSERT(nullptr != editorCore);
+    PreviewWidget* previewWidget = editorCore->GetMainWindow()->previewWidget;
+    systemManager.SelectionByMenuRequested.Connect(previewWidget, &PreviewWidget::OnSelectControlByMenu);
+
     connect(GetEditorFontSystem(), &EditorFontSystem::UpdateFontPreset, this, &Document::RefreshAllControlProperties);
 }
 
@@ -82,7 +89,7 @@ bool Document::IsInEmulationMode() const
     return systemManager.IsInEmulationMode();
 }
 
-SystemsManager* Document::GetSystemManager()
+EditorSystemsManager* Document::GetSystemManager()
 {
     return &systemManager;
 }
@@ -120,7 +127,6 @@ WidgetContext* Document::GetContext(QObject* requester) const
 void Document::Activate()
 {
     systemManager.Activate();
-    emit SelectedNodesChanged(selectionTracker.selectedNodes, SelectedNodes());
     emit ScaleChanged(scale);
     emit EmulationModeChanged(IsInEmulationMode());
 }
@@ -129,7 +135,6 @@ void Document::Activate()
 void Document::Deactivate()
 {
     systemManager.Deactivate();
-    emit SelectedNodesChanged(SelectedNodes(), selectionTracker.selectedNodes);
 }
 
 void Document::SetContext(QObject* requester, WidgetContext* widgetContext)
@@ -147,37 +152,6 @@ void Document::SetContext(QObject* requester, WidgetContext* widgetContext)
 void Document::RefreshLayout()
 {
     package->RefreshPackageStylesAndLayout(true);
-}
-
-void Document::OnSelectControlByMenu(const Vector<ControlNode*>& nodesUnderPoint, const Vector2& point, ControlNode*& selectedNode)
-{
-    selectedNode = nullptr;
-    auto view = EditorCore::Instance()->GetMainWindow()->GetGLWidget()->GetGLWindow();
-    QPoint globalPos = view->mapToGlobal(QPoint(point.x, point.y)/ view->devicePixelRatio());
-    QMenu menu;
-    for (auto it = nodesUnderPoint.rbegin(); it != nodesUnderPoint.rend(); ++it)
-    {
-        ControlNode *controlNode = *it;
-        QString className = QString::fromStdString(controlNode->GetControl()->GetClassName());
-        QIcon icon(IconHelper::GetIconPathForClassName(className));
-        QAction *action = new QAction(icon, QString::fromStdString(controlNode->GetName()), &menu);
-        menu.addAction(action);
-        void* ptr = static_cast<void*>(controlNode);
-        action->setData(QVariant::fromValue(ptr));
-        auto selectedNodes = selectionTracker.selectedNodes;
-        if (selectedNodes.find(controlNode) != selectedNodes.end())
-        {
-            auto font = action->font();
-            font.setBold(true);
-            action->setFont(font);
-        }
-    }
-    QAction *selectedAction = menu.exec(globalPos);
-    if (nullptr != selectedAction)
-    {
-        void *ptr = selectedAction->data().value<void*>();
-        selectedNode = static_cast<ControlNode*>(ptr);
-    }
 }
 
 void Document::SetScale(int arg)
@@ -213,16 +187,5 @@ void Document::RefreshAllControlProperties()
 
 void Document::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
-    SelectedNodes reallySelected;
-    SelectedNodes reallyDeselected;
-
-    selectionTracker.GetOnlyExistedItems(deselected, reallyDeselected);
-    selectionTracker.GetNotExistedItems(selected, reallySelected);
-    selectionTracker.MergeSelection(reallySelected, reallyDeselected);
-
-    if (!reallySelected.empty() || !reallyDeselected.empty())
-    {
-        systemManager.SelectionChanged.Emit(reallySelected, reallyDeselected);
-        emit SelectedNodesChanged(reallySelected, reallyDeselected);
-    }
+    systemManager.SelectionChanged.Emit(selected, deselected);
 }

@@ -26,7 +26,7 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
-#include "Systems/CursorSystem.h"
+#include "EditorSystems/CursorSystem.h"
 #include <QApplication>
 #include "Debug/DVAssert.h"
 #include "Model/PackageHierarchy/ControlNode.h"
@@ -38,8 +38,8 @@ using namespace DAVA;
 
 QMap<QString, QPixmap> CursorSystem::cursorpixes;
 
-CursorSystem::CursorSystem(SystemsManager* parent)
-    : BaseSystem(parent)
+CursorSystem::CursorSystem(EditorSystemsManager* parent)
+    : BaseEditorSystem(parent)
 {
     systemManager->ActiveAreaChanged.Connect(this, &CursorSystem::OnActiveAreaChanged);
 }
@@ -102,9 +102,9 @@ QPixmap CursorSystem::CreatePixmapForArea(float angle, const HUDAreaInfo::eArea 
     }
 }
 
-QPixmap CursorSystem::CreatePixmap(const QString &address) const
+QPixmap CursorSystem::CreatePixmap(const QString& address) const
 {
-    if(cursorpixes.contains(address))
+    if (cursorpixes.contains(address))
     {
         return cursorpixes[address];
     }

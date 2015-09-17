@@ -26,25 +26,22 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
-#include "Systems/BaseSystem.h"
+#include "EditorSystems/BaseEditorSystem.h"
 
-BaseSystem::BaseSystem(SystemsManager* parent)
+BaseEditorSystem::BaseEditorSystem(EditorSystemsManager* parent)
     : systemManager(parent)
 {
-    
 }
 
-void BaseSystem::OnActivated()
+void BaseEditorSystem::OnActivated()
 {
-    
 }
 
-void BaseSystem::OnDeactivated()
+void BaseEditorSystem::OnDeactivated()
 {
-    
 }
 
-bool BaseSystem::OnInput(DAVA::UIEvent* /*currentInput*/)
+bool BaseEditorSystem::OnInput(DAVA::UIEvent* /*currentInput*/)
 {
     return false;
 }

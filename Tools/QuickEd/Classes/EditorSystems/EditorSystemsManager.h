@@ -31,7 +31,7 @@
 
 #include "Base/BaseTypes.h"
 #include "Functional/Signal.h"
-#include "Systems/SelectionContainer.h"
+#include "EditorSystems/SelectionContainer.h"
 #include "Math/Rect.h"
 #include "Math/Vector.h"
 
@@ -65,15 +65,15 @@ class UIEvent;
 class VariantType;
 }
 
-class BaseSystem;
+class BaseEditorSystem;
 class AbstractProperty;
 class PackageNode;
 
-class SystemsManager
+class EditorSystemsManager
 {
 public:
-    explicit SystemsManager(PackageNode* package);
-    ~SystemsManager();
+    explicit EditorSystemsManager(PackageNode* package);
+    ~EditorSystemsManager();
 
     PackageNode* GetPackage();
 
@@ -107,7 +107,7 @@ private:
     DAVA::UIControl* rootControl = nullptr;
     DAVA::UIControl* scalableControl = nullptr;
 
-    DAVA::List<BaseSystem*> systems;
+    DAVA::List<BaseEditorSystem*> systems;
 
     PackageNode* package = nullptr;
     static const bool emulationByDefault = false;

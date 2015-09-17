@@ -32,7 +32,7 @@
 
 #include <QWidget>
 #include "ui_PreviewWidget.h"
-#include "Systems/SelectionContainer.h"
+#include "EditorSystems/SelectionContainer.h"
 #include <UI/UIControl.h>
 
 namespace Ui {
@@ -53,7 +53,9 @@ public:
     ~PreviewWidget() = default;
     DavaGLWidget *GetDavaGLWidget();
     ScrollAreaController *GetScrollAreaController();
-    
+
+    void OnSelectControlByMenu(const DAVA::Vector<ControlNode*>& nodes, const DAVA::Vector2& pos, ControlNode*& selectedNode);
+
 public slots:
     void OnDocumentChanged(Document *document);
     

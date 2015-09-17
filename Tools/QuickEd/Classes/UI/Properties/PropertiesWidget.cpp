@@ -82,7 +82,7 @@ void PropertiesWidget::OnDocumentChanged(Document *arg)
 
 void PropertiesWidget::SetSelectedNodes(const SelectedNodes &selected, const SelectedNodes &deselected)
 {
-    selectionTracker.MergeSelection(selected, deselected);
+    selectionContainer.MergeSelection(selected, deselected);
     UpdateSelection();
 }
 
@@ -247,7 +247,7 @@ void PropertiesWidget::OnModelChanged()
 
 ControlNode *PropertiesWidget::GetSelectedControlNode() const
 {
-    for (const auto& node : selectionTracker.selectedNodes)
+    for (const auto& node : selectionContainer.selectedNodes)
     {
         ControlNode *control = dynamic_cast<ControlNode*>(node);
         if (nullptr != control)
@@ -260,7 +260,7 @@ ControlNode *PropertiesWidget::GetSelectedControlNode() const
 
 StyleSheetNode *PropertiesWidget::GetSelectedStyleSheetNode() const
 {
-    for (PackageBaseNode* node : selectionTracker.selectedNodes)
+    for (PackageBaseNode* node : selectionContainer.selectedNodes)
     {
         StyleSheetNode *styleSheet = dynamic_cast<StyleSheetNode*>(node);
         if (nullptr != styleSheet)
@@ -282,7 +282,7 @@ void PropertiesWidget::UpdateSelection()
     }
     else
     {
-        for (PackageBaseNode* node : selectionTracker.selectedNodes)
+        for (PackageBaseNode* node : selectionContainer.selectedNodes)
         {
             control = dynamic_cast<ControlNode*>(node);
             if (nullptr != control)

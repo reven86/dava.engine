@@ -489,12 +489,14 @@ void PackageWidget::SetSelectedNodes(const SelectedNodes& selected, const Select
     SelectedNodes reallySelected;
     SelectedNodes reallyDeselected;
 
-    selectionTracker.GetOnlyExistedItems(deselected, reallyDeselected);
-    selectionTracker.GetNotExistedItems(selected, reallySelected);
-    selectionTracker.MergeSelection(reallySelected, reallyDeselected);
+    selectionContainer.GetOnlyExistedItems(deselected, reallyDeselected);
+    selectionContainer.GetNotExistedItems(selected, reallySelected);
+    selectionContainer.MergeSelection(reallySelected, reallyDeselected);
 
     if (!reallySelected.empty() || !reallyDeselected.empty())
     {
+        disconnect(treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &PackageWidget::OnSelectionChanged);
+
         for (const auto &node : reallyDeselected)
         {
             QModelIndex srcIndex = packageModel->indexByNode(node);
@@ -508,6 +510,7 @@ void PackageWidget::SetSelectedNodes(const SelectedNodes& selected, const Select
             treeView->selectionModel()->select(dstIndex, QItemSelectionModel::Select);
             treeView->scrollTo(dstIndex);
         }
+        connect(treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &PackageWidget::OnSelectionChanged);
         emit SelectedNodesChanged(reallySelected, reallyDeselected);
     }
 }

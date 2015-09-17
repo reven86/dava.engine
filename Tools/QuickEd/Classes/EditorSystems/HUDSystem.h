@@ -26,37 +26,67 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#ifndef __QUICKED_CANVAS_SYSTEM_H__
-#define __QUICKED_CANVAS_SYSTEM_H__
-
-#include "BaseSystem.h"
+#ifndef __QUICKED_HUD_SYSTEM_H__
+#define __QUICKED_HUD_SYSTEM_H__
 
 #include "Base/ScopedPtr.h"
+#include "Math/Vector.h"
+#include "Math/Rect.h"
 #include "UI/UIControl.h"
-#include "Systems/SelectionContainer.h"
+#include "EditorSystems/BaseEditorSystem.h"
+#include "EditorSystems/EditorSystemsManager.h"
 
-class SystemsManager;
-class PackageBaseNode;
-
-class CanvasSystem final : public BaseSystem
+class ControlContainer : public DAVA::UIControl
 {
 public:
-    CanvasSystem(SystemsManager* parent);
-    ~CanvasSystem() override = default;
-    DAVA::UIControl* GetCanvasControl();
+    explicit ControlContainer(const HUDAreaInfo::eArea area);
+
+    HUDAreaInfo::eArea GetArea() const;
+    virtual void InitFromGD(const DAVA::UIGeometricData& gd_) = 0;
+
+protected:
+    const HUDAreaInfo::eArea area = HUDAreaInfo::NO_AREA;
+};
+
+class HUDSystem final : public BaseEditorSystem
+{
+public:
+    HUDSystem(EditorSystemsManager* parent);
+    ~HUDSystem() = default;
 
     void OnActivated() override;
     void OnDeactivated() override;
 
+    bool OnInput(DAVA::UIEvent* currentInput) override;
+
 private:
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
+    void OnEmulationModeChanged(bool emulationMode);
 
-    void SetRootControls(const DAVA::Set<PackageBaseNode*> &controls);
-    void LayoutCanvas();
+    void ProcessCursor(const DAVA::Vector2& pos);
+    HUDAreaInfo GetControlArea(const DAVA::Vector2& pos);
+    void SetNewArea(const HUDAreaInfo& HUDAreaInfo);
 
-    DAVA::ScopedPtr<DAVA::UIControl> canvas;
-    SelectedControls selectedControlNodes;
+    void SetCanDrawRect(bool canDrawRect_);
+
+    HUDAreaInfo activeAreaInfo;
+
+    DAVA::ScopedPtr<DAVA::UIControl> hudControl;
+
+    DAVA::Vector2 pressedPoint; //corner of selection rect
+    bool canDrawRect = false; //selection rect state
+    struct HUD
+    {
+        HUD(ControlNode* node, DAVA::UIControl* hudControl);
+        ~HUD();
+        ControlNode* node = nullptr;
+        DAVA::UIControl* control = nullptr;
+        DAVA::ScopedPtr<ControlContainer> container;
+        DAVA::Vector<DAVA::ScopedPtr<ControlContainer>> hudControls;
+    };
+    DAVA::Map<ControlNode*, HUD> hudMap;
+    DAVA::ScopedPtr<DAVA::UIControl> selectionRectControl;
+    bool dragRequested = false;
 };
 
-#endif // __QUICKED_CANVAS_SYSTEM_H__
+#endif // __QUICKED_HUD_SYSTEM_H__

@@ -26,26 +26,25 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
-
 #ifndef __QUICKED_TRANSFORM_SYSTEM_H__
 #define __QUICKED_TRANSFORM_SYSTEM_H__
 
-#include "Systems/BaseSystem.h"
+#include "EditorSystems/BaseEditorSystem.h"
 #include "Base/BaseTypes.h"
 #include "Math/Vector.h"
 #include "Document.h"
 
-class TransformSystem final : public BaseSystem
-{   
+class TransformSystem final : public BaseEditorSystem
+{
 public:
-    explicit TransformSystem(SystemsManager* parent);
+    explicit TransformSystem(EditorSystemsManager* parent);
     ~TransformSystem() = default;
 
-    void OnActiveAreaChanged(const HUDAreaInfo& areaInfo);
-
-    bool OnInput(DAVA::UIEvent *currentInput) override;
+    bool OnInput(DAVA::UIEvent* currentInput) override;
 
 private:
+    void OnActiveAreaChanged(const HUDAreaInfo& areaInfo);
+
     enum ACCUMULATE_OPERATIONS
     {
         ROTATE_OPERATION,
@@ -55,11 +54,11 @@ private:
     };
     bool ProcessKey(const DAVA::int32 key);
 
-    bool ProcessDrag(const DAVA::Vector2 &pos);
-    void ResizeControl(const DAVA::Vector2 &pos, bool withPivot, bool rateably);
+    bool ProcessDrag(const DAVA::Vector2& pos);
+    void ResizeControl(const DAVA::Vector2& pos, bool withPivot, bool rateably);
 
-    void MoveControl(const DAVA::Vector2 &pos);
-    void MoveAllSelectedControls(const DAVA::Vector2 &delta);
+    void MoveControl(const DAVA::Vector2& pos);
+    void MoveAllSelectedControls(const DAVA::Vector2& delta);
 
     template <typename T>
     void AdjustProperty(ControlNode* node, const DAVA::String& propertyName, const T& delta);
@@ -67,10 +66,10 @@ private:
     template <typename T>
     void AdjustProperty(ControlNode* node, const DAVA::Vector<std::pair<DAVA::String /*propertyName*/, const T& /*delta*/>>& propertiesDelta);
 
-    void AccumulateOperation(ACCUMULATE_OPERATIONS operation, DAVA::Vector2 &delta);
+    void AccumulateOperation(ACCUMULATE_OPERATIONS operation, DAVA::Vector2& delta);
 
     HUDAreaInfo::eArea activeArea = HUDAreaInfo::NO_AREA;
-    ControlNode *activeControlNode = nullptr;
+    ControlNode* activeControlNode = nullptr;
     DAVA::Vector2 prevPos;
     const DAVA::Array<int, OPERATIONS_COUNT> steps; //to transform with fixed step
     DAVA::Array<DAVA::Array<int, DAVA::Vector2::AXIS_COUNT>, OPERATIONS_COUNT> accumulates;
