@@ -171,10 +171,11 @@ public:
         BufInfo         cbuf[MAX_CONST_BUFFER_COUNT];
     };
 
-    VertexProg      vprog;
-    FragmentProg    fprog;
+    VertexProg                      vprog;
+    FragmentProg                    fprog;
 
-    id<MTLRenderPipelineState>  state;
+    id<MTLRenderPipelineState>      state;
+    id<MTLRenderPipelineState>      state_nodepth;
 
     VertexLayout                    layout;
     MTLRenderPipelineDescriptor*    desc;
@@ -184,6 +185,7 @@ public:
         uint32                      layoutUID;
         id<MTLRenderPipelineState>  state;
         uint32                      stride;
+        uint32                      ds_used:1;
     };
     std::vector<state_t>            altState;
 };
@@ -229,6 +231,13 @@ PipelineStateMetal_t::FragmentProg::GetBufferInfo( MTLRenderPipelineReflection* 
                         
                         cbuf[i].index = i;
                         cbuf[i].count = arr.arrayLength;
+                        cbuf[i].used  = true;
+                        break;
+                    }
+                    else if( member.dataType == MTLDataTypeFloat4 )
+                    {
+                        cbuf[i].index = i;
+                        cbuf[i].count = 1;
                         cbuf[i].used  = true;
                         break;
                     }
@@ -300,7 +309,15 @@ PipelineStateMetal_t::VertexProg::GetBufferInfo( MTLRenderPipelineReflection* in
                         cbuf[i].used  = true;
                         break;
                     }
+                    else if( member.dataType == MTLDataTypeFloat4 )
+                    {
+                        cbuf[i].index = i;
+                        cbuf[i].count = 1;
+                        cbuf[i].used  = true;
+                        break;
+                    }
                 }
+                
                 break;
             }
         }
@@ -430,7 +447,7 @@ PipelineStateMetal_t::ConstBuf::SetToRHI( unsigned bufIndex, id<MTLRenderCommand
 
         memcpy( inst, data, count*4*sizeof(float) );
     }
-
+    
     if( type == PROG_VERTEX )
         [ce setVertexBuffer:buf offset:inst_offset atIndex:1+bufIndex]; // CRAP: vprog-buf#0 assumed to be vdata
     else
@@ -465,9 +482,9 @@ metal_PipelineState_Create( const PipelineState::Descriptor& desc )
     rhi::ShaderCache::GetProg( desc.vprogUid, &vprog_bin );
     rhi::ShaderCache::GetProg( desc.fprogUid, &fprog_bin );
 
-//Logger::Info("metal_PipelineState_Create");
-//Logger::Info("  vprogUid= %s",desc.vprogUid.c_str());
-//Logger::Info("  fprogUid= %s",desc.fprogUid.c_str());
+Logger::Info("metal_PipelineState_Create");
+Logger::Info("  vprogUid= %s",desc.vprogUid.c_str());
+Logger::Info("  fprogUid= %s",desc.fprogUid.c_str());
 
 
     // compile vprog
@@ -646,7 +663,7 @@ metal_PipelineState_Create( const PipelineState::Descriptor& desc )
                 {
                     switch( desc.vertexLayout.ElementDataCount(i) )
                     {
-                            //                                    case 1 : fmt = MTLVertexFormatUCharNormalized; break;
+//                        case 1 : fmt = MTLVertexFormatUCharNormalized; break;
                         case 2 : fmt = MTLVertexFormatUChar2Normalized; break;
                         case 3 : fmt = MTLVertexFormatUChar3Normalized; break;
                         case 4 : fmt = MTLVertexFormatUChar4Normalized; break;
@@ -783,7 +800,7 @@ SetupDispatch( Dispatch* dispatch )
 }
 
 uint32
-SetToRHI( Handle ps, uint32 layoutUID, id<MTLRenderCommandEncoder> ce )
+SetToRHI( Handle ps, uint32 layoutUID, bool ds_used, id<MTLRenderCommandEncoder> ce )
 {
     uint32                stride = 0;
     PipelineStateMetal_t* psm    = PipelineStateMetalPool::Get( ps );
@@ -792,7 +809,27 @@ SetToRHI( Handle ps, uint32 layoutUID, id<MTLRenderCommandEncoder> ce )
 
     if( layoutUID == VertexLayout::InvalidUID )
     {
-        [ce setRenderPipelineState:psm->state];
+        if( ds_used )
+        {
+            [ce setRenderPipelineState:psm->state];
+        }
+        else
+        {
+            if( psm->state_nodepth == nil )
+            {
+                MTLRenderPipelineDescriptor*    rp_desc = [psm->desc copy];
+                MTLRenderPipelineReflection*    ps_info = nil;
+                NSError*                        rs_err  = nil;
+                
+                rp_desc.depthAttachmentPixelFormat   = MTLPixelFormatInvalid;
+                rp_desc.stencilAttachmentPixelFormat = MTLPixelFormatInvalid;
+
+                psm->state_nodepth = [_Metal_Device newRenderPipelineStateWithDescriptor:rp_desc options:MTLPipelineOptionBufferTypeInfo reflection:&ps_info error:&rs_err];
+            }
+            
+            [ce setRenderPipelineState:psm->state_nodepth];
+        }
+        
         stride = psm->layout.Stride();
     }
     else
@@ -802,7 +839,7 @@ SetToRHI( Handle ps, uint32 layoutUID, id<MTLRenderCommandEncoder> ce )
 
         for( unsigned i=0; i!=psm->altState.size(); ++i )
         {
-            if( psm->altState[i].layoutUID == layoutUID )
+            if( psm->altState[i].layoutUID == layoutUID  &&  psm->altState[i].ds_used == ds_used )
             {
                 si     = i;
                 do_add = false;
@@ -818,8 +855,17 @@ SetToRHI( Handle ps, uint32 layoutUID, id<MTLRenderCommandEncoder> ce )
             MTLRenderPipelineReflection*    ps_info = nil;
             NSError*                        rs_err  = nil;
             
-            rp_desc.depthAttachmentPixelFormat  = MTLPixelFormatDepth32Float;
-            rp_desc.stencilAttachmentPixelFormat= MTLPixelFormatStencil8;
+            if( ds_used )
+            {
+                rp_desc.depthAttachmentPixelFormat   = MTLPixelFormatDepth32Float;
+                rp_desc.stencilAttachmentPixelFormat = MTLPixelFormatStencil8;
+            }
+            else
+            {
+                rp_desc.depthAttachmentPixelFormat   = MTLPixelFormatInvalid;
+                rp_desc.stencilAttachmentPixelFormat = MTLPixelFormatInvalid;
+            }
+            
             rp_desc.colorAttachments[0]         = psm->desc.colorAttachments[0];
             rp_desc.sampleCount                 = 1;
             rp_desc.vertexFunction              = psm->desc.vertexFunction;
@@ -832,7 +878,8 @@ SetToRHI( Handle ps, uint32 layoutUID, id<MTLRenderCommandEncoder> ce )
                 
                 for( unsigned j=0; j!=layout->ElementCount(); ++j )
                 {
-                    if( layout->ElementSemantics(j) == psm->layout.ElementSemantics(i) )
+                    if( layout->ElementSemantics(j) == psm->layout.ElementSemantics(i)
+                       && layout->ElementSemanticsIndex(j) == psm->layout.ElementSemanticsIndex(i))
                     {
                         MTLVertexFormat fmt = MTLVertexFormatInvalid;
                         
@@ -880,6 +927,7 @@ SetToRHI( Handle ps, uint32 layoutUID, id<MTLRenderCommandEncoder> ce )
             
             state.layoutUID = layoutUID;
             state.state     = [_Metal_Device newRenderPipelineStateWithDescriptor:rp_desc options:MTLPipelineOptionNone reflection:&ps_info error:&rs_err];
+            state.ds_used   = ds_used;
             state.stride    = layout->Stride();
             
             if( state.state != nil )

@@ -59,6 +59,7 @@ UIControlSystem::~UIControlSystem()
 	
 UIControlSystem::UIControlSystem()
     : layoutSystem(nullptr)
+    , clearColor(Color::Clear)
 {
 	screenLockCount = 0;
 	frameSkip = 0;
@@ -85,8 +86,6 @@ UIControlSystem::UIControlSystem()
 	baseGeometricData.pivotPoint = Vector2(0, 0);
 	baseGeometricData.scale = Vector2(1.0f, 1.0f);
 	baseGeometricData.angle = 0;
-
-    ui3DViewCount = 0;
 
     layoutSystem = new UILayoutSystem();
     styleSheetSystem = new UIStyleSheetSystem();
@@ -350,7 +349,7 @@ void UIControlSystem::Draw()
     viewport.x = viewport.y = 0U;
     viewport.width = (uint32)Renderer::GetFramebufferWidth();
     viewport.height = (uint32)Renderer::GetFramebufferHeight();
-    RenderHelper::CreateClearPass(rhi::HTexture(), PRIORITY_CLEAR, Color::Clear, viewport);
+    RenderHelper::CreateClearPass(rhi::HTexture(), PRIORITY_CLEAR, clearColor, viewport);
 
 	if (currentScreen)
 	{
@@ -833,16 +832,6 @@ void UIControlSystem::CopyTouchData(UIEvent* dst, const UIEvent* src)
     dst->inputHandledType = src->inputHandledType;
 }
 
-void UIControlSystem::UI3DViewAdded()
-{
-    ui3DViewCount++;
-}
-void UIControlSystem::UI3DViewRemoved()
-{
-    DVASSERT(ui3DViewCount);
-    ui3DViewCount--;
-}
-
 bool UIControlSystem::IsRtl() const
 {
     return layoutSystem->IsRtl();
@@ -868,4 +857,9 @@ UIScreenshoter* UIControlSystem::GetScreenshoter()
     return screenshoter;
 }
 
+void UIControlSystem::SetClearColor(const DAVA::Color & _clearColor)
+{
+    clearColor = _clearColor;
+}
+    
 };

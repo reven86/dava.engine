@@ -43,6 +43,8 @@
 
 #include "CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
 
+#include "Scene/SceneHelper.h"
+
 LandscapeEditorDrawSystem::LandscapeEditorDrawSystem(Scene* scene)
 :	SceneSystem(scene)
 ,	landscapeNode(nullptr)
@@ -55,7 +57,7 @@ LandscapeEditorDrawSystem::LandscapeEditorDrawSystem(Scene* scene)
 ,	rulerToolProxy(nullptr)
 ,	customDrawRequestCount(0)
 ,   sourceTilemaskPath("")
-{	
+{
 }
 
 LandscapeEditorDrawSystem::~LandscapeEditorDrawSystem()
@@ -176,7 +178,7 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::EnableNotPassab
 	notPassableTerrainProxy->Enable();
 	notPassableTerrainProxy->UpdateTexture(heightmapProxy, landscapeProxy->GetLandscapeBoundingBox(), updateRect);
 	
-    landscapeProxy->SetToolTexture(notPassableTerrainProxy->GetTexture());
+    landscapeProxy->SetToolTexture(notPassableTerrainProxy->GetTexture(), false);
     
 	return LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
 }
@@ -189,7 +191,7 @@ void LandscapeEditorDrawSystem::DisableNotPassableTerrain()
 	}
 	
 	notPassableTerrainProxy->Disable();
-	landscapeProxy->SetToolTexture(nullptr);
+	landscapeProxy->SetToolTexture(nullptr, false);
     
 	DisableCustomDraw();
 }
@@ -698,3 +700,5 @@ bool LandscapeEditorDrawSystem::UpdateTilemaskPathname()
     
     return false;
 }
+
+

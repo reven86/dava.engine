@@ -555,7 +555,7 @@ void VegetationGeometry::GenerateIndexData(const Vector<CustomGeometryEntityData
         for(size_t i = 0; i < clusterIndexCount; ++i)
         {
             uint32 index = rangeData.vertexStartIndex + vertexIndexOffset + layerGeometry.sourceIndices[i];
-            DVASSERT(index < 65535);
+
             sourceCellIndices.push_back((VegetationIndex)index);
         }
         

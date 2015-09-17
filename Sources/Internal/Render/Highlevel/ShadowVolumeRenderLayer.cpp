@@ -32,6 +32,7 @@
 #include "Render/Highlevel/RenderBatchArray.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 #include "Render/Renderer.h"
+#include "Render/RenderCallbacks.h"
 
 namespace DAVA
 {
@@ -39,26 +40,37 @@ namespace DAVA
 ShadowVolumeRenderLayer::ShadowVolumeRenderLayer(eRenderLayerID id, uint32 sortingFlags) : RenderLayer(id, sortingFlags)
 {
     PrepareRenderData();
+    RenderCallbacks::RegisterResourceRestoreCallback(MakeFunction(this, &ShadowVolumeRenderLayer::Restore));
 }
 
 ShadowVolumeRenderLayer::~ShadowVolumeRenderLayer()
 {
     rhi::DeleteVertexBuffer(quadBuffer);
     SafeRelease(shadowRectMaterial);
+    RenderCallbacks::UnRegisterResourceRestoreCallback(MakeFunction(this, &ShadowVolumeRenderLayer::Restore));
 }
 
-void ShadowVolumeRenderLayer::PrepareRenderData()
+const static uint32 VERTEX_COUNT = 6;
+void ShadowVolumeRenderLayer::UpdtateBufferData()
 {
     std::array<Vector3, 6> quad =
     {
         Vector3(-1.f, -1.f, 1.f), Vector3(-1.f, 1.f, 1.f), Vector3(1.f, -1.f, 1.f),
-        Vector3(-1.f,  1.f, 1.f), Vector3( 1.f, 1.f, 1.f), Vector3(1.f, -1.f, 1.f),
-        //Vector3(0.f, 0.f, 1.f), Vector3(0.f, 1.f, 1.f), Vector3(1.f, 0.f, 1.f),
-        //Vector3(0.f, 1.f, 1.f), Vector3(1.f, 1.f, 1.f), Vector3(1.f, 0.f, 1.f),
+        Vector3(-1.f, 1.f, 1.f), Vector3(1.f, 1.f, 1.f), Vector3(1.f, -1.f, 1.f),        
     };
+    
+    rhi::UpdateVertexBuffer(quadBuffer, quad.data(), 0, sizeof(Vector3) * VERTEX_COUNT);
+}
+void ShadowVolumeRenderLayer::Restore()
+{
+    if (rhi::NeedRestoreVertexBuffer(quadBuffer))
+        UpdtateBufferData();
+}
 
-    quadBuffer = rhi::CreateVertexBuffer(sizeof(quad));
-    rhi::UpdateVertexBuffer(quadBuffer, quad.data(), 0, sizeof(quad));
+void ShadowVolumeRenderLayer::PrepareRenderData()
+{    
+    quadBuffer = rhi::CreateVertexBuffer(sizeof(Vector3) * VERTEX_COUNT);
+    UpdtateBufferData();
 
     rhi::VertexLayout vxLayout;
     vxLayout.AddElement(rhi::VS_POSITION, 0, rhi::VDT_FLOAT, 3);

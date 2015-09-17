@@ -49,13 +49,13 @@ public:
     static void EnumerateEntityTextures(DAVA::Scene *forScene, DAVA::Entity *forNode, DAVA::TexturesMap &textureCollection, TexturesEnumerateMode mode);
     
 	static void EnumerateMaterialInstances(DAVA::Entity *forNode, DAVA::Vector<DAVA::NMaterial *> &materials);
+    
 
 	static DAVA::int32 EnumerateModifiedTextures(DAVA::Scene *forScene, DAVA::Map<DAVA::Texture *, DAVA::Vector< DAVA::eGPUFamily> > &textures);
 
     static DAVA::Entity * CloneEntityWithMaterials(DAVA::Entity *fromNode);
 
     static void BuildMaterialList(DAVA::Entity *forNode, DAVA::Set<DAVA::NMaterial*>& materialList, bool includeRuntime = true);
-    
 };
 
 #endif // __SCENE_HELPER_H__

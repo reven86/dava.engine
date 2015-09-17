@@ -85,6 +85,8 @@ public:
     void AddUIElement(Windows::UI::Xaml::UIElement^ uiElement);
     void RemoveUIElement(Windows::UI::Xaml::UIElement^ uiElement);
     void PositionUIElement(Windows::UI::Xaml::UIElement^ uiElement, float32 x, float32 y);
+    void SetTextBoxCustomStyle(Windows::UI::Xaml::Controls::TextBox^ textBox);
+    void SetPasswordBoxCustomStyle(Windows::UI::Xaml::Controls::PasswordBox^ passwordBox);
     void UnfocusUIElement();
 
 protected:
@@ -151,6 +153,8 @@ private:
     Windows::UI::Xaml::Controls::SwapChainPanel^ swapChainPanel = nullptr;
     Windows::UI::Xaml::Controls::Canvas^ canvas = nullptr;
     Windows::UI::Xaml::Controls::Button^ controlThatTakesFocus = nullptr;
+    Windows::UI::Xaml::Style^ customTextBoxStyle = nullptr;
+    Windows::UI::Xaml::Style^ customPasswordBoxStyle = nullptr;
 
     Windows::Foundation::IAsyncAction^ renderLoopWorker = nullptr;
 
@@ -188,6 +192,10 @@ private:
 
     Windows::Graphics::Display::DisplayOrientations displayOrientation = ::Windows::Graphics::Display::DisplayOrientations::None;
     DeferredScreenMetricEvents* deferredSizeScaleEvents;
+    // Hardcoded styles for TextBox and PasswordBox to apply features:
+    //  - transparent background in focus state
+    //  - removed 'X' button
+    static const wchar_t xamlTextBoxStyles[];
 };
 
 //////////////////////////////////////////////////////////////////////////

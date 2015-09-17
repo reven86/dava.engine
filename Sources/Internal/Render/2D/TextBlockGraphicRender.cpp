@@ -80,7 +80,7 @@ TextBlockGraphicRender::~TextBlockGraphicRender()
     SafeRelease(dfMaterial);
 }
 	
-void TextBlockGraphicRender::Prepare(Texture *texture /*= nullptr*/)
+void TextBlockGraphicRender::Prepare()
 {
     size_t charCount = 0;
     if (!textBlock->isMultilineEnabled || textBlock->treatMultilineAsSingleLine)

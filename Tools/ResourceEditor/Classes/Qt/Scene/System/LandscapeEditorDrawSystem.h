@@ -137,14 +137,14 @@ protected:
     
     bool UpdateTilemaskPathname();
     
-    Entity* landscapeNode;
-	Landscape* baseLandscape;
-	LandscapeProxy* landscapeProxy;
-	HeightmapProxy* heightmapProxy;
-	NotPassableTerrainProxy* notPassableTerrainProxy;
-	CustomColorsProxy* customColorsProxy;
-	VisibilityToolProxy* visibilityToolProxy;
-	RulerToolProxy* rulerToolProxy;
+    Entity* landscapeNode = nullptr;
+	Landscape* baseLandscape = nullptr;
+	LandscapeProxy* landscapeProxy = nullptr;
+	HeightmapProxy* heightmapProxy = nullptr;
+	NotPassableTerrainProxy* notPassableTerrainProxy = nullptr;
+	CustomColorsProxy* customColorsProxy = nullptr;
+	VisibilityToolProxy* visibilityToolProxy = nullptr;
+	RulerToolProxy* rulerToolProxy = nullptr;
 
 	uint32 customDrawRequestCount;
 

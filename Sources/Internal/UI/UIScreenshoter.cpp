@@ -115,6 +115,7 @@ void UIScreenshoter::MakeScreenshotInternal(UIControl* control, Texture* screens
     descriptor.width = screenshot->GetWidth();
     descriptor.height = screenshot->GetHeight();
     descriptor.autoGenMipmaps = false;
+    descriptor.needRestore = false;
     descriptor.type = rhi::TEXTURE_TYPE_2D;
     descriptor.format = rhi::TEXTURE_FORMAT_D24S8;
     rhi::HTexture dephtTexture = rhi::CreateTexture(descriptor);

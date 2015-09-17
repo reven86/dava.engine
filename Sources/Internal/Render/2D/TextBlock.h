@@ -126,8 +126,7 @@ public:
     TextBlock * Clone();
 
     const Vector<int32> & GetStringSizes() const;
-    
-    void ForcePrepare(Texture *texture);
+        
 #if defined(LOCALIZATION_DEBUG)
     int32 GetFittingOptionUsed();
 	bool IsVisualTextCroped();
@@ -153,7 +152,7 @@ protected:
 	TextBlock();
 	virtual ~TextBlock();
 	
- 	void Prepare(Texture *texture = NULL);
+ 	void Prepare();
 	void PrepareInternal();
 	void CalculateCacheParams();
 
@@ -207,9 +206,7 @@ protected:
     friend class TextBlockSoftwareRender;
     friend class TextBlockGraphicRender;
     
-    TextBlockRender* textBlockRender;
-    TextureInvalidater *textureInvalidater;
-	Texture *textureForInvalidation;
+    TextBlockRender* textBlockRender;    	
 
 	float angle;
 	Vector2 pivot;

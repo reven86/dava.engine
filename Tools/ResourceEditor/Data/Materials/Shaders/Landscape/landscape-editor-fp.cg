@@ -41,8 +41,13 @@ FPROG_BEGIN
     
 #if LANDSCAPE_TOOL
     float4 toolColor = FP_TEXTURE2D( toolTexture, FP_IN(texCoord) );
+#if LANDSCAPE_TOOL_MIX
+    outColor.rgb = (outColor.rgb + toolColor.rgb) / 2.0;
+#else
     outColor.rgb *= 1.0 - toolColor.a;
     outColor.rgb += toolColor.rgb * toolColor.a;
+#endif
+
 #endif
     
 #if LANDSCAPE_CURSOR

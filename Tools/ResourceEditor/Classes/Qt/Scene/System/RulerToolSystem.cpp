@@ -42,7 +42,6 @@
 RulerToolSystem::RulerToolSystem(Scene* scene)
 :	LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.tex")
 ,	curToolSize(0)
-,	lineWidth(1)
 ,	previewEnabled(true)
 {
 }
@@ -74,7 +73,7 @@ LandscapeEditorDrawSystem::eErrorType RulerToolSystem::EnableLandscapeEditing()
 	modifSystem->SetLocked(true);
 
 	Texture* rulerToolTexture = drawSystem->GetRulerToolProxy()->GetTexture();
-	drawSystem->GetLandscapeProxy()->SetToolTexture(rulerToolTexture);
+	drawSystem->GetLandscapeProxy()->SetToolTexture(rulerToolTexture, false);
 	landscapeSize = drawSystem->GetHeightmapProxy()->Size();
 
 	previewLength = -1.f;
@@ -101,7 +100,7 @@ bool RulerToolSystem::DisableLandscapeEdititing()
 
 	drawSystem->DisableCustomDraw();
 
-	drawSystem->GetLandscapeProxy()->SetToolTexture(nullptr);
+	drawSystem->GetLandscapeProxy()->SetToolTexture(nullptr, false);
 
 	Clear();
 	previewLength = -1.f;
@@ -350,21 +349,6 @@ void RulerToolSystem::SendUpdatedLength()
 
 	SceneSignals::Instance()->EmitRulerToolLengthChanged(dynamic_cast<SceneEditor2*>(GetScene()),
 														 length, previewLength);
-}
-
-void RulerToolSystem::SetLineWidth(int32 width)
-{
-	if (width > 0)
-	{
-		lineWidth = width;
-	}
-
-	DrawPoints();
-}
-
-int32 RulerToolSystem::GetLineWidth()
-{
-	return lineWidth;
 }
 
 float32 RulerToolSystem::GetLength()

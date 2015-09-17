@@ -48,7 +48,8 @@
 namespace rhi
 {
 Dispatch        DispatchMetal       = {0};
-
+    
+RenderDeviceCaps _metal_DeviceCaps;
     
 //------------------------------------------------------------------------------
 
@@ -70,14 +71,32 @@ metal_TextureFormatSupported( TextureFormat format )
     {
         case TEXTURE_FORMAT_R8G8B8A8 :
         case TEXTURE_FORMAT_R5G5B5A1 :
-        case TEXTURE_FORMAT_R5G6B5 :
+        case TEXTURE_FORMAT_R5G6B5   :
         case TEXTURE_FORMAT_R4G4B4A4 :
-        case TEXTURE_FORMAT_R8 :
-        case TEXTURE_FORMAT_R16 :
+        case TEXTURE_FORMAT_R8       :
+            
+        case TEXTURE_FORMAT_PVRTC_4BPP_RGBA :
+        case TEXTURE_FORMAT_PVRTC_2BPP_RGBA :
+            
+        case TEXTURE_FORMAT_PVRTC2_4BPP_RGB  :
+        case TEXTURE_FORMAT_PVRTC2_4BPP_RGBA :
+        case TEXTURE_FORMAT_PVRTC2_2BPP_RGB  :
+        case TEXTURE_FORMAT_PVRTC2_2BPP_RGBA :
+            
+        case TEXTURE_FORMAT_ETC2_R8G8B8      :
+        case TEXTURE_FORMAT_ETC2_R8G8B8A1    :
+        case TEXTURE_FORMAT_EAC_R11_UNSIGNED :
+        case TEXTURE_FORMAT_EAC_R11_SIGNED   :
+            
+        case TEXTURE_FORMAT_D24S8 :
+        case TEXTURE_FORMAT_D16   :
             supported = true;
             break;
+            
+        default :
+            break;
     }
-
+    
     return supported;
 }
     
@@ -101,6 +120,20 @@ metal_Reset( const ResetParam& param )
 
 //------------------------------------------------------------------------------
 
+static const RenderDeviceCaps &
+metal_DeviceCaps()
+{
+    return _metal_DeviceCaps;
+}
+    
+static bool
+metal_NeedRestoreResources()
+{
+    return false;
+}
+    
+//------------------------------------------------------------------------------
+    
 void
 metal_Initialize( const InitParam& param )
 {
@@ -180,8 +213,17 @@ metal_Initialize( const InitParam& param )
     DispatchMetal.impl_Uninitialize             = &metal_Uninitialize;
     DispatchMetal.impl_HostApi                  = &metal_HostApi;
     DispatchMetal.impl_TextureFormatSupported   = &metal_TextureFormatSupported;
+    DispatchMetal.impl_DeviceCaps               = &metal_DeviceCaps;
+    DispatchMetal.impl_NeedRestoreResources     = &metal_NeedRestoreResources;
     
     SetDispatchTable( DispatchMetal );
+    
+    _metal_DeviceCaps.is32BitIndicesSupported = true;
+    _metal_DeviceCaps.isFramebufferFetchSupported = true;
+    _metal_DeviceCaps.isVertexTextureUnitsSupported = true;
+    _metal_DeviceCaps.isZeroBaseClipRange = true;
+    _metal_DeviceCaps.isUpperLeftRTOrigin = true;
+    _metal_DeviceCaps.isCenterPixelMapping = false;
 }
 
 

@@ -295,21 +295,26 @@ static const char* _ShaderDefine_Metal =
 
 "#define VPROG_BEGIN             vertex VP_Output vp_main"
 "("
-//"    constant VP_Input*  in    [[ buffer(0) ]]"
 "    VP_Input  in    [[ stage_in ]]"
 "    VPROG_IN_BUFFER_0 "
 "    VPROG_IN_BUFFER_1 "
 "    VPROG_IN_BUFFER_2 "
 "    VPROG_IN_BUFFER_3 "
-//"    ,uint                vid   [[ vertex_id ]]"
+"    VPROG_IN_BUFFER_4 "
+"    VPROG_IN_BUFFER_5 "
+"    VPROG_IN_BUFFER_6 "
+"    VPROG_IN_BUFFER_7 "
 ")"
 "{"
 "    VPROG_BUFFER_0 "
 "    VPROG_BUFFER_1 "
 "    VPROG_BUFFER_2 "
 "    VPROG_BUFFER_3 "
+"    VPROG_BUFFER_4 "
+"    VPROG_BUFFER_5 "
+"    VPROG_BUFFER_6 "
+"    VPROG_BUFFER_7 "
 "    VP_Output   OUT;"
-//"    VP_Input    IN  = in[vid];\n"
 "    VP_Input    IN  = in;\n"
 
 "#define VPROG_END               return OUT;"
@@ -395,6 +400,10 @@ static const char* _ShaderDefine_Metal =
 "    FPROG_IN_BUFFER_1 "
 "    FPROG_IN_BUFFER_2 "
 "    FPROG_IN_BUFFER_3 "
+"    FPROG_IN_BUFFER_4 "
+"    FPROG_IN_BUFFER_5 "
+"    FPROG_IN_BUFFER_6 "
+"    FPROG_IN_BUFFER_7 "
 "    FPROG_IN_TEXTURE_0 "
 "    FPROG_IN_TEXTURE_1 "
 "    FPROG_IN_TEXTURE_2 "
@@ -403,12 +412,6 @@ static const char* _ShaderDefine_Metal =
 "    FPROG_IN_TEXTURE_5 "
 "    FPROG_IN_TEXTURE_6 "
 "    FPROG_IN_TEXTURE_7 "
-")"
-"{"
-"    FPROG_BUFFER_0 "
-"    FPROG_BUFFER_1 "
-"    FPROG_BUFFER_2 "
-"    FPROG_BUFFER_3 "
 "    FPROG_SAMPLER_0 "
 "    FPROG_SAMPLER_1 "
 "    FPROG_SAMPLER_2 "
@@ -417,6 +420,16 @@ static const char* _ShaderDefine_Metal =
 "    FPROG_SAMPLER_5 "
 "    FPROG_SAMPLER_6 "
 "    FPROG_SAMPLER_7 "
+")"
+"{"
+"    FPROG_BUFFER_0 "
+"    FPROG_BUFFER_1 "
+"    FPROG_BUFFER_2 "
+"    FPROG_BUFFER_3 "
+"    FPROG_BUFFER_4 "
+"    FPROG_BUFFER_5 "
+"    FPROG_BUFFER_6 "
+"    FPROG_BUFFER_7 "
 //"    const packed_float4* FP_Buffer0 = buf0->data;"
 "    FP_Output   OUT;\n"
 "#define FPROG_END               return OUT; }\n"
@@ -886,7 +899,7 @@ static const char* _ShaderDefine_DX11 =
 static void
 PreProcessSource( Api targetApi, const char* srcText, std::string* preprocessedText )
 {
-    char    src[64*1024] = "";
+    char    src[256*1024] = "";
     int     src_len      = 0;
 
     // inject vattr definitions
@@ -981,7 +994,7 @@ PreProcessSource( Api targetApi, const char* srcText, std::string* preprocessedT
                 sscanf( decl, "DECL_FP_SAMPLER2D(%i,", &i );
 
                 src_len += sprintf( src+src_len, "#define FPROG_IN_TEXTURE_%i  , texture2d<float> fp_tex%i [[ texture(%i) ]]\n", i, i, i );
-                src_len += sprintf( src+src_len, "#define FPROG_SAMPLER_%i    sampler fp_tex%i_sampler; \n", i, i );
+                src_len += sprintf( src+src_len, "#define FPROG_SAMPLER_%i   , sampler fp_tex%i_sampler [[ sampler(%i) ]]\n", i, i, i );
                 fp_tex_declared[i] = true;
 
                 s += strlen("DECL_FP_SAMPLER2D");
@@ -994,7 +1007,7 @@ PreProcessSource( Api targetApi, const char* srcText, std::string* preprocessedT
                 sscanf( decl, "DECL_FP_SAMPLERCUBE(%i,", &i );
 
                 src_len += sprintf( src+src_len, "#define FPROG_IN_TEXTURE_%i  , texturecube<float> fp_tex%i [[ texture(%i) ]]\n", i, i, i );
-                src_len += sprintf( src+src_len, "#define FPROG_SAMPLER_%i    sampler fp_tex%i_sampler; \n", i, i );
+                src_len += sprintf( src+src_len, "#define FPROG_SAMPLER_%i   , sampler fp_tex%i_sampler [[ sampler(%i) ]]\n", i, i, i );
                 fp_tex_declared[i] = true;
 
                 s += strlen("DECL_FP_SAMPLER2D");
@@ -1085,7 +1098,7 @@ void
 UpdateProg( Api targetApi, ProgType progType, const DAVA::FastName& uid, const char* srcText )
 {
     std::string         txt;
-    std::vector<uint8>* bin = 0;
+    std::vector<uint8>* bin = nullptr;
 
     PreProcessSource( targetApi, srcText, &txt );
 
@@ -1109,6 +1122,36 @@ UpdateProg( Api targetApi, ProgType progType, const DAVA::FastName& uid, const c
     bin->clear();
     bin->insert( bin->begin(), (const uint8*)(&(txt[0])), (const uint8*)(&(txt[txt.length()-1])+1) );
     bin->push_back( 0 );
+}
+
+
+//------------------------------------------------------------------------------
+
+void
+UpdateProgBinary( Api targetApi, ProgType progType, const DAVA::FastName& uid, const void* bin, unsigned binSize )
+{
+    std::vector<uint8>* pbin = nullptr;
+
+    for( unsigned i=0; i!=_ProgInfo.size(); ++i )
+    {
+        if( _ProgInfo[i].uid == uid )
+        {
+            pbin = &(_ProgInfo[i].bin);
+            break;
+        }
+    }
+
+    if( !pbin )
+    {
+        _ProgInfo.push_back( ProgInfo() );
+        
+        _ProgInfo.back().uid = uid;        
+        pbin = &(_ProgInfo.back().bin);
+    }
+
+    pbin->clear();
+    pbin->insert( pbin->begin(), (const uint8*)(bin), (const uint8*)(bin)+binSize );
+    pbin->push_back( 0 );
 }
 
 

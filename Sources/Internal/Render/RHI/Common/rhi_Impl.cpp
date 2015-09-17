@@ -139,7 +139,10 @@ TextureFormatSupported( TextureFormat format )
     return (*_Impl.impl_TextureFormatSupported)( format );
 }
 
-
+const RenderDeviceCaps & DeviceCaps()
+{
+    return (*_Impl.impl_DeviceCaps)();
+}
 
 //////////////////////////////////////////////////////////////////////////
 

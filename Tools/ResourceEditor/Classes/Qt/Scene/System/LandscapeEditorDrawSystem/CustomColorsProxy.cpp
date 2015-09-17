@@ -128,6 +128,6 @@ void CustomColorsProxy::UpdateSpriteFromConfig()
     }
     else
     {
-        RenderHelper::CreateClearPass(customColorsRenderTarget->handle, PRIORITY_CLEAR, Color(0.f, 0.f, 0.f, 0.f), viewport);
+        RenderHelper::CreateClearPass(customColorsRenderTarget->handle, PRIORITY_CLEAR, Color::Clear, viewport);
     }
 }

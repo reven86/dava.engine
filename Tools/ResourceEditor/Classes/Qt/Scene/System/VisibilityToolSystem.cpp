@@ -91,7 +91,7 @@ LandscapeEditorDrawSystem::eErrorType VisibilityToolSystem::EnableLandscapeEditi
 	modifSystem->SetLocked(true);
 
 	Texture* visibilityToolTexture = drawSystem->GetVisibilityToolProxy()->GetTexture();
-	drawSystem->GetLandscapeProxy()->SetToolTexture(visibilityToolTexture);
+	drawSystem->GetLandscapeProxy()->SetToolTexture(visibilityToolTexture, false);
 	landscapeSize = visibilityToolTexture->GetWidth();
 
 	drawSystem->EnableCursor();
@@ -120,7 +120,7 @@ bool VisibilityToolSystem::DisableLandscapeEdititing()
 	drawSystem->DisableCursor();
 	drawSystem->DisableCustomDraw();
 
-	drawSystem->GetLandscapeProxy()->SetToolTexture(nullptr);
+	drawSystem->GetLandscapeProxy()->SetToolTexture(nullptr, false);
 
 	enabled = false;
 	return !enabled;

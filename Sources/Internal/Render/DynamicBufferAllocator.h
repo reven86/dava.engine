@@ -36,6 +36,8 @@ namespace DAVA
 {
 namespace DynamicBufferAllocator
 {
+    static const uint32 DEFAULT_PAGE_SIZE = 131072;
+
     struct AllocResultVB
     {
         rhi::HVertexBuffer buffer;
@@ -62,7 +64,7 @@ namespace DynamicBufferAllocator
     void EndFrame();
     void Clear();
 
-    void SetDefaultPageSize(uint32 size);
+    void SetPageSize(uint32 size);
 }
 }
 

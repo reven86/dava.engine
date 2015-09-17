@@ -50,6 +50,7 @@ public:
                   : size(0),
                     data(nullptr),
                     uid(0),
+                    is_32bit(false),
                     isMapped(false)
                 {}
     
@@ -59,6 +60,7 @@ public:
     unsigned    size;
     void*       data;
     unsigned    uid;
+    unsigned    is_32bit:1;
     unsigned    isMapped:1;
 };
 RHI_IMPL_RESOURCE(IndexBufferGLES2_t,IndexBuffer::Descriptor);
@@ -101,6 +103,7 @@ IndexBufferGLES2_t::Create( const IndexBuffer::Descriptor& desc, bool force_imme
                     data     = d;
                     size     = desc.size;
                     uid      = b;
+                    is_32bit = desc.indexSize == INDEX_SIZE_32BIT;
                     isMapped = false;
                     
                     success = true;
@@ -163,6 +166,7 @@ gles2_IndexBuffer_Delete( Handle ib )
 
     if( self )
     {
+        self->MarkRestored();
         self->Destroy();
         IndexBufferGLES2Pool::Free( ib );
     }
@@ -264,7 +268,7 @@ SetupDispatch( Dispatch* dispatch )
     dispatch->impl_IndexBuffer_NeedRestore  = &gles2_IndexBuffer_NeedRestore;
 }
 
-void 
+IndexSize 
 SetToRHI( Handle ib )
 {
     IndexBufferGLES2_t* self = IndexBufferGLES2Pool::Get( ib );
@@ -273,6 +277,20 @@ SetToRHI( Handle ib )
 Trace("set-ib %p  sz= %u\n",self->data,self->size);
     GL_CALL(glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, self->uid ));
     _GLES2_LastSetIB = self->uid;
+
+    return (self->is_32bit)  ? INDEX_SIZE_32BIT  : INDEX_SIZE_16BIT;
+}
+
+void
+ReCreateAll()
+{
+    IndexBufferGLES2Pool::ReCreateAll();
+}
+
+unsigned
+NeedRestoreCount()
+{
+    return IndexBufferGLES2_t::NeedRestoreCount();
 }
 
 

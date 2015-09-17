@@ -42,6 +42,7 @@
 
 #include "Render/Highlevel/Vegetation/VegetationGeometry.h"
 #include "Render/Highlevel/RenderPassNames.h"
+#include "Render/RenderCallbacks.h"
 
 namespace DAVA
 {
@@ -144,6 +145,7 @@ VegetationRenderObject::VegetationRenderObject() :
     maxVisibleQuads = MAX_RENDER_CELLS;
     lodRanges = LOD_RANGES_SCALE;
     ResetVisibilityDistance();
+    RenderCallbacks::RegisterResourceRestoreCallback(MakeFunction(this, &VegetationRenderObject::RestoreRenderData));
 }
 
 VegetationRenderObject::~VegetationRenderObject()
@@ -159,6 +161,7 @@ VegetationRenderObject::~VegetationRenderObject()
 
     SafeRelease(heightmap);
     SafeRelease(heightmapTexture);
+    RenderCallbacks::UnRegisterResourceRestoreCallback(MakeFunction(this, &VegetationRenderObject::RestoreRenderData));
 }
 
 RenderBatch * VegetationRenderObject::CreateRenderBatch()
@@ -736,9 +739,8 @@ void VegetationRenderObject::InitHeightTextureFromHeightmap(Heightmap* heightMap
         heightmapScale = Vector2((1.0f * heightmap->Size()) / pow2Size,
                                  (1.0f * heightmap->Size()) / pow2Size);
         
-        Function<void()> fn = Bind(&VegetationRenderObject::SetupHeightmapParameters, this, tx);
-        uint32 jobID = JobManager::Instance()->CreateMainJob(fn);
-        JobManager::Instance()->WaitMainJobID(jobID);
+        tx->SetWrapMode(rhi::TEXADDR_CLAMP, rhi::TEXADDR_CLAMP);
+        tx->SetMinMagFilter(rhi::TEXFILTER_NEAREST, rhi::TEXFILTER_NEAREST, rhi::TEXMIPFILTER_NONE);
 
         heightmapTexture = SafeRetain(tx);
         
@@ -777,23 +779,17 @@ float32 VegetationRenderObject::SampleHeight(int16 x, int16 y)
 
 bool VegetationRenderObject::IsHardwareCapableToRenderVegetation()
 {
-    const RenderCaps& deviceCaps = Renderer::GetCaps();
-    bool result = deviceCaps.isVertexTextureUnitsSupported;
-
-#if defined(__DAVAENGINE_IPHONE__)  || defined(__DAVAENGINE_ANDROID__)
-
-    //VI: vegetation can only be rendered on ES 3.0 devices
-    result = result && deviceCaps.isOpenGLES3Supported;
-
-#endif
-
+    const rhi::RenderDeviceCaps& deviceCaps = rhi::DeviceCaps();
+    bool result = deviceCaps.isVertexTextureUnitsSupported && deviceCaps.is32BitIndicesSupported;
+    
     return result;
 }
 
 bool VegetationRenderObject::IsValidGeometryData() const
 {
      return (worldSize.Length() > 0 &&
-             heightmap != NULL &&
+             heightmap != nullptr &&
+             heightmap->Size() > 0 && 
              densityMap.size() > 0 &&
              customGeometryData);
 }
@@ -801,7 +797,8 @@ bool VegetationRenderObject::IsValidGeometryData() const
 bool VegetationRenderObject::IsValidSpatialData() const
 {
     return (worldSize.Length() > 0 &&
-            heightmap != NULL &&
+            heightmap != nullptr &&
+            heightmap->Size() > 0 &&
             densityMap.size() > 0);
 }
 
@@ -879,11 +876,7 @@ void VegetationRenderObject::GetDataNodes(Set<DataNode*> & dataNodes)
     }
 }
 
-void VegetationRenderObject::SetupHeightmapParameters(Texture* tx)
-{
-    tx->SetWrapMode(rhi::TEXADDR_CLAMP, rhi::TEXADDR_CLAMP);
-    tx->SetMinMagFilter(rhi::TEXFILTER_NEAREST, rhi::TEXFILTER_NEAREST, rhi::TEXMIPFILTER_NONE);
-}
+
 
 void VegetationRenderObject::CreateRenderData()
 {
@@ -926,7 +919,10 @@ void VegetationRenderObject::CreateRenderData()
     rhi::UpdateVertexBuffer(vertexBuffer, &vertexData.front(), 0, vertexBufferSize);
 
     uint32 indexBufferSize = indexData.size() * sizeof(VegetationIndex);
-    indexBuffer = rhi::CreateIndexBuffer(indexBufferSize);
+    rhi::IndexBuffer::Descriptor indexDesc;
+    indexDesc.size = indexBufferSize;
+    indexDesc.indexSize = rhi::INDEX_SIZE_32BIT;
+    indexBuffer = rhi::CreateIndexBuffer(indexDesc);
     rhi::UpdateIndexBuffer(indexBuffer, &indexData.front(), 0, indexBufferSize);
 
 #if defined(__DAVAENGINE_IPHONE__)
@@ -955,6 +951,53 @@ void VegetationRenderObject::CreateRenderData()
     vertexLayoutUID = rhi::VertexLayout::UniqueId(vertexLayout);
 
     ClearRenderBatches();
+}
+
+void VegetationRenderObject::RestoreRenderData()
+{
+#if defined(__DAVAENGINE_IPHONE__)
+    DVASSERT_MSG(false, "Should not even try to restore on iphone - render data is released");
+#endif
+    if (!renderData)
+        return;
+    
+    if (rhi::NeedRestoreVertexBuffer(vertexBuffer))
+    {
+        const Vector<VegetationVertex>& vertexData = renderData->GetVertices();
+        uint32 vertexBufferSize = vertexData.size() * sizeof(VegetationVertex);
+        rhi::UpdateVertexBuffer(vertexBuffer, &vertexData.front(), 0, vertexBufferSize);
+    }
+    if (rhi::NeedRestoreIndexBuffer(indexBuffer))
+    {
+        const Vector<VegetationIndex>& indexData = renderData->GetIndices();
+        uint32 indexBufferSize = indexData.size() * sizeof(VegetationIndex);
+        rhi::UpdateIndexBuffer(indexBuffer, &indexData.front(), 0, indexBufferSize);
+    }
+    if (heightmap && heightmapTexture) //RHI_COMPLETE later change it to normal restoration and change init heightmap texture to normal logic
+
+    {
+        Image* originalImage = Image::CreateFromData(heightmap->Size(), heightmap->Size(), FORMAT_A16, (uint8*)heightmap->Data());
+        int32 pow2Size = heightmap->Size();
+        if (!IsPowerOf2(heightmap->Size()))
+        {
+            EnsurePowerOf2(pow2Size);
+
+            if (pow2Size > heightmap->Size())
+            {
+                pow2Size = pow2Size >> 1;
+            }
+        }        
+        if (pow2Size != heightmap->Size())
+        {
+            Image* croppedImage = Image::CopyImageRegion(originalImage, pow2Size, pow2Size);
+            heightmapTexture->TexImage(0, pow2Size, pow2Size, croppedImage->GetData(), croppedImage->dataSize, 0);
+            SafeRelease(croppedImage);
+        }
+        else
+        {
+            heightmapTexture->TexImage(0, pow2Size, pow2Size, originalImage->GetData(), originalImage->dataSize, 0);
+        }
+    }
 }
 
 bool VegetationRenderObject::ReadyToRender()

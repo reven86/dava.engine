@@ -283,11 +283,11 @@ void Camera::RebuildProjectionMatrix(bool invertProjection)
         
     if (!ortho) 
     {
-        projMatrix.glFrustum(xMinOrientation, xMaxOrientation, yMinOrientation, yMaxOrientation, znear, zfar, Renderer::GetCaps().zeroBaseClipRange);
+        projMatrix.glFrustum(xMinOrientation, xMaxOrientation, yMinOrientation, yMaxOrientation, znear, zfar, rhi::DeviceCaps().isZeroBaseClipRange);
     }
     else
     {
-        projMatrix.glOrtho(xMinOrientation, xMaxOrientation, yMinOrientation, yMaxOrientation, znear, zfar, Renderer::GetCaps().zeroBaseClipRange);
+        projMatrix.glOrtho(xMinOrientation, xMaxOrientation, yMinOrientation, yMaxOrientation, znear, zfar, rhi::DeviceCaps().isZeroBaseClipRange);
     }
 }
 
@@ -457,7 +457,7 @@ void Camera::PrepareDynamicParameters(bool invertProjection, Vector4 *externalCl
         m.Transpose();
         Vector4 v = Vector4 (Sign(clipPlane.x), Sign(clipPlane.y), 1, 1)*m;
         
-        if (Renderer::GetCaps().zeroBaseClipRange)
+        if (rhi::DeviceCaps().isZeroBaseClipRange)
         {
             Vector4 scaledPlane = clipPlane * (1.0f / v.DotProduct(clipPlane));            
             projMatrix.data[2] = scaledPlane.x;

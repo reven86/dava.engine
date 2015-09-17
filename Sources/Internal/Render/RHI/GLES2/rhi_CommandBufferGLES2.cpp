@@ -215,6 +215,7 @@ gles2_RenderPass_Begin( Handle pass )
     {        
         _Frame.push_back( FrameGLES2() );
         _Frame.back().number         = _FrameNumber;
+        _Frame.back().sync = rhi::InvalidHandle;
         _Frame.back().readyToExecute = false;
 
 Trace("\n\n-------------------------------\nframe %u started\n",_FrameNumber);
@@ -714,6 +715,7 @@ SCOPED_NAMED_TIMING("gl.exec");
     Handle      fp_const[MAX_CONST_BUFFER_COUNT];
     const void* fp_const_data[MAX_CONST_BUFFER_COUNT];
     Handle      cur_vb          = InvalidHandle;
+    IndexSize   idx_size        = INDEX_SIZE_16BIT;
     unsigned    tex_unit_0      =0;
     Handle      cur_query_buf   = InvalidHandle;
     uint32      cur_query_i     = InvalidIndex;
@@ -870,7 +872,7 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
             
             case GLES2__SET_INDICES :
             {
-                IndexBufferGLES2::SetToRHI( (Handle)(arg[0]) );
+                idx_size = IndexBufferGLES2::SetToRHI( (Handle)(arg[0]) );
                 c += 1;
             }   break;
 
@@ -1120,7 +1122,16 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
 //LCP;
 Trace("DIP  mode= %i  v_cnt= %i  start_i= %i\n",int(mode),int(v_cnt),int(startIndex));
 //LCP;
-                GL_CALL(glDrawElements( mode, v_cnt, GL_UNSIGNED_SHORT, (void*)(startIndex*sizeof(uint16)) ));
+                int i_sz  = GL_UNSIGNED_SHORT;
+                int i_off = startIndex*sizeof(uint16);
+
+                if( idx_size == INDEX_SIZE_32BIT )
+                {
+                    i_sz  = GL_UNSIGNED_INT;
+                    i_off = startIndex*sizeof(uint32);
+                }
+
+                GL_CALL(glDrawElements( mode, v_cnt, i_sz, (void*)(i_off) ));
 //LCP;
                 StatSet::IncStat( stat_DIP, 1 );
 //LCP;
@@ -1201,7 +1212,7 @@ Trace("rhi-gl.exec-queued-cmd\n");
     {
         do_exit = true;
     }
-    if (_Frame.begin()->sync != InvalidHandle)
+    if (_Frame.size() && (_Frame.begin()->sync != InvalidHandle))
     {
         SyncObjectGLES2_t*  sync = SyncObjectPool::Get(_Frame.begin()->sync);
 

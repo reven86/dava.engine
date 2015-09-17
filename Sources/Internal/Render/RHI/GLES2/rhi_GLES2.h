@@ -46,12 +46,16 @@ namespace VertexBufferGLES2
 {
 void        SetupDispatch( Dispatch* dispatch );
 void        SetToRHI( Handle vb );
+void        ReCreateAll();
+unsigned    NeedRestoreCount();
 }
 
 namespace IndexBufferGLES2
 {
 void        SetupDispatch( Dispatch* dispatch );
-void        SetToRHI( Handle vb );
+IndexSize   SetToRHI( Handle ib );
+void        ReCreateAll();
+unsigned    NeedRestoreCount();
 }
 
 namespace QueryBufferGLES2
@@ -68,6 +72,8 @@ void        SetupDispatch( Dispatch* dispatch );
 void        SetToRHI( Handle tex, unsigned unit_i, uint32 base_i=InvalidIndex  );
 void        SetAsRenderTarget( Handle tex, Handle depth );
 Size2i      Size( Handle tex );
+void        ReCreateAll();
+unsigned    NeedRestoreCount();
 }
 
 namespace SamplerStateGLES2

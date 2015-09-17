@@ -276,6 +276,7 @@ dx11_RenderPass_Begin( Handle pass )
     {
         _Frame.push_back( FrameDX11() );
         _Frame.back().number         = _FrameNumber;
+        _Frame.back().sync = rhi::InvalidHandle;
         _Frame.back().readyToExecute = false;
 
 Trace("\n\n-------------------------------\nframe %u started\n",_FrameNumber);
@@ -346,7 +347,9 @@ dx11_CommandBuffer_Begin( Handle cmdBuf )
     cb->def_viewport.MaxDepth   = 1.0f;
 
 
-    if( cb->passCfg.colorBuffer[0].texture != rhi::InvalidHandle )
+    if(     cb->passCfg.colorBuffer[0].texture != rhi::InvalidHandle
+        &&  cb->passCfg.colorBuffer[0].texture != rhi::DefaultDepthBuffer
+      )
     {
         Size2i  sz = TextureDX11::Size( cb->passCfg.colorBuffer[0].texture );
                         
@@ -526,7 +529,7 @@ dx11_CommandBuffer_SetVertexConstBuffer( Handle cmdBuf, uint32 bufIndex, Handle 
 {
     CommandBufferDX11_t*    cb = CommandBufferPool::Get( cmdBuf );
 
-    ConstBufferDX11::SetToRHI( buffer, ConstBufferDX11::InstData(buffer), cb->context );
+    ConstBufferDX11::SetToRHI( buffer, cb->context );
 }
 
 
@@ -582,7 +585,7 @@ dx11_CommandBuffer_SetFragmentConstBuffer( Handle cmdBuf, uint32 bufIndex, Handl
 {
     CommandBufferDX11_t*    cb = CommandBufferPool::Get( cmdBuf );
 
-    ConstBufferDX11::SetToRHI( buffer, ConstBufferDX11::InstData(buffer), cb->context );
+    ConstBufferDX11::SetToRHI( buffer, cb->context );
 }
 
 
@@ -1118,8 +1121,6 @@ Trace("\n\n-------------------------------\nframe %u generated\n",_Frame.back().
 
         _ExecuteQueuedCommandsDX11(); 
     }
-
-    ConstBufferDX11::InvalidateAllConstBufferInstances();
 }
 
 

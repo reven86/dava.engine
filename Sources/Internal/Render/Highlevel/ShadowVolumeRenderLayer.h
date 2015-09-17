@@ -48,6 +48,8 @@ public:
     
 private:
     void PrepareRenderData();
+    void UpdtateBufferData();
+    void Restore();
 
     NMaterial * shadowRectMaterial;
     rhi::Packet shadowRectPacket;

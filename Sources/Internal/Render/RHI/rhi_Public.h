@@ -46,6 +46,7 @@ InitParam
     float32 scaleX;
     float32 scaleY;
     void*   window;
+    uint32  fullScreen:1;
     uint32  threadedRenderEnabled:1;
     uint32  threadedRenderFrameCount;
 
@@ -58,6 +59,7 @@ InitParam
                 scaleX(1.f),
                 scaleY(1.f),
                 window(nullptr),
+                fullScreen(false),
                 threadedRenderEnabled(false),
                 threadedRenderFrameCount(2),
                 acquireContextFunc(nullptr),
@@ -72,15 +74,28 @@ ResetParam
     uint32  height;
     float32 scaleX;
     float32 scaleY;
+    uint32  fullScreen:1;
 
     ResetParam()
-        : width(0)
-        , height(0)
-        , scaleX(1.f)
-        , scaleY(1.f)
+      : width(0), 
+        height(0), 
+        scaleX(1.0f), 
+        scaleY(1.0f),
+        fullScreen(false)
     {}
 };
 
+struct
+RenderDeviceCaps
+{
+    bool is32BitIndicesSupported = false;
+    bool isVertexTextureUnitsSupported = false;
+    bool isFramebufferFetchSupported = false;
+    
+    bool isUpperLeftRTOrigin = false;
+    bool isZeroBaseClipRange = false;
+    bool isCenterPixelMapping = false;
+};
 
 void    Initialize( Api api, const InitParam& param );
 void    Uninitialize();
@@ -91,7 +106,7 @@ void    Present(); // execute all submitted command-buffers & do flip/present
 
 Api     HostApi();
 bool    TextureFormatSupported( TextureFormat format );
-
+const RenderDeviceCaps & DeviceCaps();
 
 ////////////////////////////////////////////////////////////////////////////////
 // resource-handle

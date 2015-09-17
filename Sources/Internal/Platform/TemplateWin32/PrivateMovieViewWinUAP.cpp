@@ -157,11 +157,14 @@ void PrivateMovieViewWinUAP::Play()
 {
     if (movieLoaded)
     {
-        moviePlaying = true;
-        auto self{shared_from_this()};
-        core->RunOnUIThread([this, self]() {
-            nativeMovieView->Play();
-        });
+        if (!moviePlaying)
+        {
+            moviePlaying = true;
+            auto self{ shared_from_this() };
+            core->RunOnUIThread([this, self]() {
+                nativeMovieView->Play();
+            });
+        }
     }
     else
     {
@@ -171,15 +174,24 @@ void PrivateMovieViewWinUAP::Play()
 
 void PrivateMovieViewWinUAP::Stop()
 {
-    playRequest = false;
-    moviePlaying = false;
-    if (movieLoaded)
-    {
-        auto self{shared_from_this()};
-        core->RunOnUIThread([this, self]() {
-            nativeMovieView->Stop();
-        });
-    }
+    // Game plays intro movie in the following sequence:
+    //  1. movie->Play();
+    //  2. while (movie->IsPlaying()) {}
+    //  3. movie->Stop();
+    // After Stop() method has been called native control shows first movie frame
+    // so UIMovieView emulates Stop() through Pause()
+    Pause();
+
+    // DO NOT DELETE COMMENTED CODE
+    //playRequest = false;
+    //moviePlaying = false;
+    //if (movieLoaded)
+    //{
+    //    auto self{shared_from_this()};
+    //    core->RunOnUIThread([this, self]() {
+    //        nativeMovieView->Stop();
+    //    });
+    //}
 }
 
 void PrivateMovieViewWinUAP::Pause()
@@ -246,6 +258,8 @@ void PrivateMovieViewWinUAP::PositionMovieView(const Rect& rectInVirtualCoordina
     controlRect.dy /= scaleFactor;
 
     // 3. set control's position and size
+    nativeMovieView->MinHeight = 0.0;       // Force minimum control sizes to zero to
+    nativeMovieView->MinWidth = 0.0;        // allow setting any control sizes
     nativeMovieView->Width = controlRect.dx;
     nativeMovieView->Height = controlRect.dy;
     core->XamlApplication()->PositionUIElement(nativeMovieView, controlRect.x, controlRect.y);
@@ -333,11 +347,14 @@ void PrivateMovieViewWinUAP::OnMediaOpened()
 
 void PrivateMovieViewWinUAP::OnMediaEnded()
 {
+    playRequest = false;
     moviePlaying = false;
 }
 
 void PrivateMovieViewWinUAP::OnMediaFailed(ExceptionRoutedEventArgs^ args)
 {
+    playRequest = false;
+    moviePlaying = false;
     String errMessage = WStringToString(args->ErrorMessage->Data());
     Logger::Error("[MovieView] failed to decode media file: %s", errMessage.c_str());
 }

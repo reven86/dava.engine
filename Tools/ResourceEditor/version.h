@@ -27,4 +27,4 @@
 =====================================================================================*/
 
 
-#define RESOURCE_EDITOR_VERSION "local build"
+#define APPLICATION_VERSION "local build"
