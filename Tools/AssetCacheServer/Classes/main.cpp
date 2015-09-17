@@ -26,12 +26,16 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "Core/Core.h"
+#include "FileSystem/Logger.h"
+#include "QtTools/RunGuard/RunGuard.h"
 
-#include "SingleApplication.h"
+#include "ServerCore.h"
+#include "AssetCacheServerWindow.h"
 
-#include "DAVAEngine.h"
 
-#include "MainWindow.h"
+#include <QApplication>
+#include <QCryptographicHash>
 
 void FrameworkWillTerminate()
 {
@@ -44,14 +48,31 @@ void FrameworkDidLaunched()
 int main(int argc, char *argv[])
 {
     DAVA::Core::Run(argc, argv);
+	QApplication a(argc, argv);
 
-    SingleApplication a(argc, argv);
-    if (a.AlreadyExists())
-    {
-        return 0;
-    }
-    MainWindow w;
-    w.show();
+	const QString appUid = "{AACCAACC-6CE2-459A-B26F-79AAF05E0C6B}";
+	const QString appUidPath = QCryptographicHash::hash((appUid + QApplication::applicationDirPath()).toUtf8(), QCryptographicHash::Sha1).toHex();
+	RunGuard runGuard(appUidPath);
+	if (runGuard.tryToRun())
+	{
+		DAVA::Logger::Instance()->SetLogFilename("AssetCacheServer.txt");
+		DAVA::Logger::Instance()->SetLogLevel(DAVA::Logger::LEVEL_FRAMEWORK);
 
-    return a.exec();
+		ServerCore server;
+		AssetCacheServerWindow mainWindow(server);
+
+		if (server.Settings().IsFirstLaunch())
+		{
+			mainWindow.show();
+		}
+
+		if (server.Settings().IsAutoStart())
+		{
+			server.Start();
+		}
+
+		return a.exec();
+	}
+
+	return -1;
 }

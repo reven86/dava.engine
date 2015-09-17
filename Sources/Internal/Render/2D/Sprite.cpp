@@ -816,6 +816,7 @@ void Sprite::DumpSprites()
 	Logger::FrameworkDebug("--------------- Currently allocated sprites ----------------");
 
     spriteMapMutex.Lock();
+    uint32 spritesCount = static_cast<uint32>(spriteMap.size()); 
 	for(SpriteMap::iterator it = spriteMap.begin(); it != spriteMap.end(); ++it)
 	{
 		Sprite *sp = it->second; //[spriteDict objectForKey:[txKeys objectAtIndex:i]];
@@ -823,7 +824,8 @@ void Sprite::DumpSprites()
 	}
     spriteMapMutex.Unlock();
 
-	Logger::FrameworkDebug("============================================================");
+    Logger::FrameworkDebug("Total spritesCount: %d", spritesCount);
+    Logger::FrameworkDebug("============================================================");
 }
 
 void Sprite::SetClipPolygon(Polygon2 * _clipPolygon)

@@ -30,269 +30,7 @@
 #include "DLC/Patcher/PatchFile.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/VariantType.h"
-
-class ProgramOptions
-{
-public:
-    void AddOption(const char *optionName, const DAVA::VariantType &defaultValue, const char *description = NULL)
-    {
-        Option op;
-        op.name = optionName;
-        op.value = defaultValue;
-    
-        if(NULL != description)
-        {
-            op.descr = description;
-        }
-
-        options.push_back(op);
-    }
-
-    void AddArgument(const char *argumentName, bool required = true)
-    {
-        Argument ar;
-        ar.name = argumentName;
-        ar.required = required;
-        ar.set = false;
-        arguments.push_back(ar);
-    }
-
-    bool Parse(int argc, char *argv[], size_t start = 1)
-    {
-        bool ret = true;
-        size_t curParamPos = 0;
-
-        argValues = argv;
-        argCount = (size_t) argc;
-        argIndex = start;
-        
-        while(ret && argIndex < argCount)
-        {
-            // search if there is options with such name
-            if(!ParseOption())
-            {
-                // set required
-                if(curParamPos < arguments.size())
-                {
-                    arguments[curParamPos].value = argValues[argIndex];
-                    arguments[curParamPos].set = true;
-                    curParamPos++;
-                }
-                else
-                {
-                    printf("Error - unknown argument: %s\n", argValues[argIndex]);
-                    ret = false;
-                }
-            }
-
-            argIndex++;
-        }
-
-        // check if there is all required parameters
-        for(size_t i = 0; i < arguments.size(); ++i)
-        {
-            if(arguments[i].required && !arguments[i].set)
-            {
-                printf("Error - required argument not specified: %s\n", arguments[i].name.c_str());
-                ret = false;
-                break;
-            }
-        }
-
-        return ret;
-    }
-
-    void PrintUsage(const char *executable)
-    {
-        printf("%s ", executable);
-
-        if(options.size() > 0)
-        {
-            printf("[options] ");
-        }
-
-        for(size_t i = 0; i < arguments.size(); ++i)
-        {
-            if(arguments[i].required)
-            {
-                printf("<%s> ", arguments[i].name.c_str());
-            }
-            else
-            {
-                printf("[%s] ", arguments[i].name.c_str());
-            }
-        }
-        printf("\n");
-
-        for(size_t i = 0; i < options.size(); ++i)
-        {
-            printf("\t%s", options[i].name.c_str());
-
-            int optionType = options[i].value.GetType();
-            if(optionType != DAVA::VariantType::TYPE_BOOLEAN)
-            {
-                printf(" <value>\t");
-            }
-            else
-            {
-                printf("\t\t");
-            }
-
-            if(!options[i].descr.empty())
-            {
-                printf("- %s\n", options[i].descr.c_str());
-            }
-            else
-            {
-                printf("\n");
-            }
-        }
-    }
-
-    DAVA::VariantType GetOption(const char *optionName)
-    {
-        DAVA::VariantType v;
-
-        for(size_t i = 0; i < options.size(); ++i)
-        {
-            if(options[i].name == optionName)
-            {
-                v = options[i].value;
-                break;
-            }
-        }
-
-        return v;
-    }
-
-    DAVA::String GetArgument(const char *argumentName)
-    {
-        DAVA::String ret;
-
-        for(size_t i = 0; i < arguments.size(); ++i)
-        {
-            if(arguments[i].name == argumentName)
-            {
-                ret = arguments[i].value;
-                break;
-            }
-        }
-
-        return ret;
-    }
-
-protected:
-    struct Option
-    {
-        DAVA::String name;
-        DAVA::String alias;
-        DAVA::String descr;
-        DAVA::VariantType value;
-    };
-
-    struct Argument
-    {
-        bool required;
-        bool set;
-        DAVA::String name;
-        DAVA::String value;
-    };
-
-    bool ParseOption()
-    {
-        bool ret = false;
-        const char *str = argValues[argIndex];
-
-        for(size_t i = 0; i < options.size(); ++i)
-        {
-            const char *optionName = options[i].name.c_str();
-            size_t optionNameLen = options[i].name.length();
-            size_t index = 0;
-            
-            for(index = 0; index < optionNameLen; ++index)
-            {
-                if(optionName[index] != str[index])
-                {
-                    break;
-                }
-            }
-
-            // found
-            if(index == optionNameLen)
-            {
-                if(optionNameLen == strlen(str))
-                {
-                    if(options[i].value.GetType() == DAVA::VariantType::TYPE_BOOLEAN)
-                    {
-                        // bool option don't need any arguments
-                        options[i].value.SetBool(true);
-                        ret = true;
-                    }
-                    else
-                    {
-                        argIndex++;
-                        if(argIndex < argCount)
-                        {
-                            const char *valueStr = argValues[argIndex];
-
-                            int optionType = options[i].value.GetType();
-                            switch(optionType)
-                            {
-                                case DAVA::VariantType::TYPE_STRING:
-                                case DAVA::VariantType::TYPE_NONE:
-                                    options[i].value.SetString(valueStr);
-                                    break;
-                                case DAVA::VariantType::TYPE_INT32:
-                                    {
-                                        DAVA::int32 value = 0;
-                                        if(1 == sscanf(valueStr, "%d", &value))
-                                        {
-                                            options[i].value.SetInt32(value);
-                                        }
-                                    }
-                                    break;
-                                case DAVA::VariantType::TYPE_UINT32:
-                                    {
-                                        DAVA::uint32 value = 0;
-                                        if(1 == sscanf(valueStr, "%u", &value))
-                                        {
-                                            options[i].value.SetUInt32(value);
-                                        }
-                                    }
-                                    break;
-                                case DAVA::VariantType::TYPE_BOOLEAN:
-                                    if(strcmp(valueStr, "true"))
-                                    {
-                                        options[i].value.SetBool(true);
-                                    }
-                                    else if(strcmp(valueStr, "false"))
-                                    {
-                                        options[i].value.SetBool(false);
-                                    }
-                                    break;
-                                default:
-                                    DVASSERT(0 && "Not implemented")
-                                    break;
-                            }
-
-                            ret = true;
-                            break;
-                        }
-                    }
-                }
-                
-            }
-        }
-
-        return ret;
-    }
-
-    char **argValues;
-    size_t argCount;
-    size_t argIndex;
-    DAVA::Vector<Argument> arguments;
-    DAVA::Vector<Option> options;
-};
+#include "CommandLine/ProgramOptions.h"
 
 void PrintError(DAVA::PatchFileReader::PatchError error)
 {
@@ -345,10 +83,10 @@ int main(int argc, char *argv[])
 {
     int ret = 0;
 
-    ProgramOptions writeOptions;
-    ProgramOptions listOptions;
-    ProgramOptions applyOptions;
-    ProgramOptions applyAllOptions;
+    ProgramOptions writeOptions("write");
+    ProgramOptions listOptions("list");
+    ProgramOptions applyOptions("apply");
+    ProgramOptions applyAllOptions("apply-all");
 
     writeOptions.AddOption("-a", DAVA::VariantType(false), "Append patch to existing file.");
     writeOptions.AddOption("-nc", DAVA::VariantType(false), "Generate uncompressed patch.");
@@ -387,7 +125,7 @@ int main(int argc, char *argv[])
         //DAVA::String command = DAVA::CommandLineParser::Instance()->GetCommand(0);
 
         const char *command = argv[1];
-        if(0 == strcmp(command, "write"))
+        if(command == writeOptions.GetCommand())
         {
             paramsOk = writeOptions.Parse(argc, argv, 2);
             if(paramsOk)
@@ -436,7 +174,7 @@ int main(int argc, char *argv[])
                 }
             }
         }
-        else if(0 == strcmp(command, "list"))
+        else if (command == listOptions.GetCommand())
         {
             paramsOk = listOptions.Parse(argc, argv, 2);
             if(paramsOk)
@@ -481,7 +219,7 @@ int main(int argc, char *argv[])
                 }
             }
         }
-        else if(0 == strcmp(command, "apply"))
+        else if (command == applyOptions.GetCommand())
         {
             paramsOk = applyOptions.Parse(argc, argv, 2);
             if(paramsOk)
@@ -560,7 +298,7 @@ int main(int argc, char *argv[])
                 }
             }
         }
-        else if(0 == strcmp(command, "apply-all"))
+        else if (command == applyAllOptions.GetCommand())
         {
             paramsOk = applyAllOptions.Parse(argc, argv, 2);
             if(paramsOk)
@@ -631,10 +369,10 @@ int main(int argc, char *argv[])
     {
         printf("Usage: ResourcePatcher <command>\n");
         printf("\n Commands: write, list, apply, apply-all\n\n");
-        writeOptions.PrintUsage("  write"); printf("\n");
-        listOptions.PrintUsage("  list"); printf("\n");
-        applyOptions.PrintUsage("  apply"); printf("\n");
-        applyAllOptions.PrintUsage("  apply-all"); printf("\n");
+        writeOptions.PrintUsage(); printf("\n");
+        listOptions.PrintUsage(); printf("\n");
+        applyOptions.PrintUsage(); printf("\n");
+        applyAllOptions.PrintUsage(); printf("\n");
     }
 
     DAVA::FileSystem::Instance()->Release();

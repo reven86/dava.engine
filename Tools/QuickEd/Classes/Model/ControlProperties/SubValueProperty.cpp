@@ -37,12 +37,10 @@ SubValueProperty::SubValueProperty(int anIndex, const DAVA::String &propName)
     : index(anIndex)
     , name(propName)
 {
-    
 }
 
 SubValueProperty::~SubValueProperty()
 {
-    
 }
 
 int SubValueProperty::GetCount() const

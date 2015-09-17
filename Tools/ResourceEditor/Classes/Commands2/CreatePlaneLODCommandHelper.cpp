@@ -372,7 +372,7 @@ void CreatePlaneLODCommandHelper::Request::OnRenderCallback(rhi::HSyncObject obj
 		SceneHelper::TexturesEnumerateMode::EXCLUDE_NULL);
 
     DAVA::eGPUFamily currentGPU = static_cast<DAVA::eGPUFamily>(
-		SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsInt32());
+        SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsUInt32());
 
 	for (auto& tex : textures)
         tex.second->ReloadAs(currentGPU);

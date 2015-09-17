@@ -93,7 +93,6 @@ namespace
 QtModelPackageCommandExecutor::QtModelPackageCommandExecutor(Document *_document)
     : document(_document)
 {
-    
 }
 
 QtModelPackageCommandExecutor::~QtModelPackageCommandExecutor()

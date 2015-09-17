@@ -416,9 +416,10 @@ void WinUAPXamlApp::OnPointerExited(Windows::UI::Core::CoreWindow^ sender, Windo
     }
     else //  PointerDeviceType::Touch == type
     {
-        core->RunOnMainThread([this, x, y, id]() {
-            DAVATouchEvent(UIEvent::PHASE_DRAG, x, y, id);
-        });
+        core->RunOnMainThread([this, x, y, id]()
+                              {
+            DAVATouchEvent(UIEvent::PHASE_ENDED, x, y, id);
+                              });
     }
 }
 

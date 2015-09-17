@@ -51,41 +51,12 @@ namespace DAVA
     public:
         struct PolygonGroupLoadInfo
         {            
-            uint32 filePos;
-            int32 requestedFormat;
-            bool onScene;
-            PolygonGroupLoadInfo():filePos(0), requestedFormat(0), onScene(false) {}
+            uint32 filePos = 0;
+            int32 requestedFormat = 0;
+            bool onScene = false;
         };
-	private:
-		
-		struct MaterialBinding
-		{
-			uint64 parentKey;
-			NMaterial* childMaterial;
-			
-			MaterialBinding()
-			{
-				parentKey = 0;
-				childMaterial = nullptr;
-			}
-		};
-		
-		FilePath rootNodePathName;
-		FilePath scenePath;
-		bool debugLogEnabled;
-		Scene* scene;
-		uint32 lastError;
-		uint32 version;
-		FastName defaultMaterialQuality;
-		Map<uint64, DataNode*> dataBlocks;
-		Map<uint64, NMaterial*> importedMaterials;
-		Vector<MaterialBinding> materialBindings;
-        uint64 globalMaterialKey;
-
-        Map<PolygonGroup*, PolygonGroupLoadInfo> loadedPolygonGroups;
 	
 	public:        
-		
         SerializationContext();
 		~SerializationContext();
 				
@@ -198,6 +169,28 @@ namespace DAVA
         void AddLoadedPolygonGroup(PolygonGroup *group, uint32 dataFilePos);
         void AddRequestedPolygonGroupFormat(PolygonGroup *group, int32 format);
         void LoadPolygonGroupData(File *file);
+
+	private:
+		struct MaterialBinding
+		{
+			uint64 parentKey = 0;
+			NMaterial* childMaterial = nullptr;
+		};
+
+		Map<uint64, DataNode*> dataBlocks;
+		Map<uint64, NMaterial*> importedMaterials;
+		Vector<MaterialBinding> materialBindings;
+        Map<PolygonGroup*, PolygonGroupLoadInfo> loadedPolygonGroups;
+
+		Scene* scene = nullptr;
+		FilePath rootNodePathName;
+		FilePath scenePath;
+		FastName defaultMaterialQuality;
+        uint64 globalMaterialKey = 0;
+		uint32 lastError = 0;
+		uint32 version = 0;
+
+		bool debugLogEnabled = false;
 	};
 };
 

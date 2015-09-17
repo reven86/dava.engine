@@ -234,11 +234,14 @@ public:							// properties for fast access
     uint32		width:16;			// texture width
 	uint32		height:16;			// texture height
 
-    eGPUFamily loadedAsFile:4;
-	TextureState state:2;
-	uint32		textureType:2;	
-	bool		isRenderTarget:1;
-	bool		isPink:1;        
+
+    eGPUFamily loadedAsFile;
+    TextureState state:2;
+    uint32      textureType:2;
+
+    bool        isRenderTarget:1;
+    bool        isPink:1;
+
 
     FastName		debugInfo;	
     TextureDescriptor *texDescriptor;
