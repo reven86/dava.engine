@@ -97,11 +97,13 @@ void LandscapeProxy::SetMode(LandscapeProxy::eLandscapeMode _mode)
         {
             landscapeEditorMaterial->SetParent(baseLandscape->GetMaterial());
             baseLandscape->SetMaterial(landscapeEditorMaterial);
+			baseLandscape->SetForceFirstLod(true);
         }
         else
         {
             baseLandscape->SetMaterial(landscapeEditorMaterial->GetParent());
             landscapeEditorMaterial->SetParent(nullptr);
+			baseLandscape->SetForceFirstLod(false);
         }
     }
 }
