@@ -89,8 +89,8 @@ UITextField::UITextField(const Rect &rect, bool rectInAbsoluteCoordinates/*= fal
     textFieldiPhone = new UITextFieldiPhone(*this);
     textFieldiPhone->SetVisible(false);
 #elif defined(__DAVAENGINE_WIN_UAP__)
-    textFieldWinUAP = new UITextFieldWinUAP(this);
-    textFieldWinUAP->SetVisible(false);
+    edit = new TextFieldPlatformImpl(this);
+    edit->SetVisible(false);
 #else
     edit = new TextFieldPlatformImpl(Rect(0, 0, GetRect().dx, GetRect().dy));
     edit->SetVisible(false);
@@ -133,7 +133,7 @@ UITextField::~UITextField()
 #elif defined (__DAVAENGINE_IPHONE__)
     SafeDelete(textFieldiPhone);
 #elif defined(__DAVAENGINE_WIN_UAP__)
-    SafeDelete(textFieldWinUAP);
+    SafeDelete(edit);
 #else
     SafeRelease(textFont);
 
@@ -149,7 +149,7 @@ void UITextField::OpenKeyboard()
 #elif defined(__DAVAENGINE_ANDROID__)
     textFieldAndroid->OpenKeyboard();
 #elif defined(__DAVAENGINE_WIN_UAP__)
-    textFieldWinUAP->OpenKeyboard();
+    edit->OpenKeyboard();
 #endif
 }
 
@@ -160,7 +160,7 @@ void UITextField::CloseKeyboard()
 #elif defined(__DAVAENGINE_ANDROID__)
     textFieldAndroid->CloseKeyboard();
 #elif defined(__DAVAENGINE_WIN_UAP__)
-    textFieldWinUAP->CloseKeyboard();
+    edit->CloseKeyboard();
 #endif
 }
 
@@ -172,7 +172,7 @@ void UITextField::Update(float32 timeElapsed)
 #elif defined(__DAVAENGINE_ANDROID__)
     textFieldAndroid->UpdateRect(GetGeometricData().GetUnrotatedRect());
 #elif defined(__DAVAENGINE_WIN_UAP__)
-    textFieldWinUAP->UpdateRect(GetGeometricData().GetUnrotatedRect());
+    edit->UpdateRect(GetGeometricData().GetUnrotatedRect());
 #else
     if(this == UIControlSystem::Instance()->GetFocusedControl())
     {
@@ -238,7 +238,7 @@ void UITextField::OnFocused()
 #elif defined(__DAVAENGINE_ANDROID__)
     textFieldAndroid->OpenKeyboard();
 #elif defined(__DAVAENGINE_WIN_UAP__)
-    textFieldWinUAP->OpenKeyboard();
+    edit->OpenKeyboard();
 #endif
 }
 
@@ -255,7 +255,7 @@ void UITextField::OnFocusLost(UIControl *newFocus)
 #elif defined(__DAVAENGINE_ANDROID__)
     textFieldAndroid->CloseKeyboard();
 #elif defined(__DAVAENGINE_WIN_UAP__)
-    textFieldWinUAP->CloseKeyboard();
+    edit->CloseKeyboard();
 #endif
     if (delegate != nullptr)
     {
@@ -301,7 +301,7 @@ void UITextField::SetTextColor(const Color& fontColor)
 #elif defined(__DAVAENGINE_ANDROID__)
     textFieldAndroid->SetTextColor(fontColor);
 #elif defined(__DAVAENGINE_WIN_UAP__)
-    textFieldWinUAP->SetTextColor(fontColor);
+    edit->SetTextColor(fontColor);
 #else
     edit->SetTextColor(fontColor);
 #endif
@@ -328,7 +328,7 @@ void UITextField::SetTextAlign(int32 align)
 #elif defined(__DAVAENGINE_ANDROID__)
     textFieldAndroid->SetTextAlign(align);
 #elif defined(__DAVAENGINE_WIN_UAP__)
-    textFieldWinUAP->SetTextAlign(align);
+    edit->SetTextAlign(align);
 #else
     edit->SetTextAlign(align);
 #endif
@@ -341,7 +341,7 @@ TextBlock::eUseRtlAlign UITextField::GetTextUseRtlAlign() const
 #elif defined(__DAVAENGINE_ANDROID__)
     return (textFieldAndroid && textFieldAndroid->GetTextUseRtlAlign()) ? TextBlock::RTL_USE_BY_CONTENT : TextBlock::RTL_DONT_USE;
 #elif defined(__DAVAENGINE_WIN_UAP__)
-    return textFieldWinUAP->GetTextUseRtlAlign() ? TextBlock::RTL_USE_BY_CONTENT : TextBlock::RTL_DONT_USE;
+    return edit->GetTextUseRtlAlign() ? TextBlock::RTL_USE_BY_CONTENT : TextBlock::RTL_DONT_USE;
 #else
     return edit ? edit->GetTextUseRtlAlign() : TextBlock::RTL_DONT_USE;
 #endif
@@ -354,7 +354,7 @@ void UITextField::SetTextUseRtlAlign(TextBlock::eUseRtlAlign useRtlAlign)
 #elif defined(__DAVAENGINE_ANDROID__)
     textFieldAndroid->SetTextUseRtlAlign(useRtlAlign == TextBlock::RTL_USE_BY_CONTENT);
 #elif defined(__DAVAENGINE_WIN_UAP__)
-    textFieldWinUAP->SetTextUseRtlAlign(useRtlAlign == TextBlock::RTL_USE_BY_CONTENT);
+    edit->SetTextUseRtlAlign(useRtlAlign == TextBlock::RTL_USE_BY_CONTENT);
 #else
     edit->SetTextUseRtlAlign(useRtlAlign);
 #endif
@@ -377,7 +377,7 @@ void UITextField::SetFontSize(float32 size)
 #elif defined(__DAVAENGINE_ANDROID__)
     textFieldAndroid->SetFontSize(size);
 #elif defined(__DAVAENGINE_WIN_UAP__)
-    textFieldWinUAP->SetFontSize(size);
+    edit->SetFontSize(size);
 #endif
 }
 
@@ -385,7 +385,7 @@ void UITextField::SetDelegate(UITextFieldDelegate * _delegate)
 {
     delegate = _delegate;
 #if defined(__DAVAENGINE_WIN_UAP__)
-    textFieldWinUAP->SetDelegate(_delegate);
+    edit->SetDelegate(_delegate);
 #endif
 }
 
@@ -423,7 +423,7 @@ void UITextField::SetMultiline(bool value)
 #elif defined(__DAVAENGINE_ANDROID__)
         textFieldAndroid->SetMultiline(isMultiline_);
 #elif defined(__DAVAENGINE_WIN_UAP__)
-        textFieldWinUAP->SetMultiline(isMultiline_);
+        edit->SetMultiline(isMultiline_);
 #else
         edit->SetMultiline(isMultiline_);
 #endif
@@ -442,7 +442,7 @@ void UITextField::SetText(const WideString& text_)
 #elif defined(__DAVAENGINE_ANDROID__)
     textFieldAndroid->SetText(text_);
 #elif defined(__DAVAENGINE_WIN_UAP__)
-    textFieldWinUAP->SetText(text_);
+    edit->SetText(text_);
 #else
     if (delegate && text != text_)
     {
@@ -461,7 +461,7 @@ const WideString & UITextField::GetText()
 #elif defined(__DAVAENGINE_ANDROID__)
     textFieldAndroid->GetText(text);
 #elif defined(__DAVAENGINE_WIN_UAP__)
-    textFieldWinUAP->GetText(text);
+    edit->GetText(text);
 #endif
     return text;
 }
@@ -509,7 +509,7 @@ int32 UITextField::GetTextAlign() const
 #elif defined(__DAVAENGINE_ANDROID__)
     return textFieldAndroid->GetTextAlign();
 #elif defined(__DAVAENGINE_WIN_UAP__)
-    return textFieldWinUAP->GetTextAlign();
+    return edit->GetTextAlign();
 #else
     return edit->GetTextAlign();
 #endif
@@ -912,7 +912,7 @@ void UITextField::SetIsPassword(bool isPassword_)
 #elif defined(__DAVAENGINE_ANDROID__)
     textFieldAndroid->SetIsPassword(isPassword_);
 #elif defined(__DAVAENGINE_WIN_UAP__)
-    textFieldWinUAP->SetIsPassword(isPassword_);
+    edit->SetIsPassword(isPassword_);
 #endif
 }
     
@@ -942,7 +942,7 @@ void UITextField::SetAutoCapitalizationType(int32 value)
 #elif defined(__DAVAENGINE_ANDROID__)
     textFieldAndroid->SetAutoCapitalizationType(value);
 #elif defined(__DAVAENGINE_WIN_UAP__)
-    textFieldWinUAP->SetAutoCapitalizationType(value);
+    edit->SetAutoCapitalizationType(value);
 #endif
 }
 
@@ -959,7 +959,7 @@ void UITextField::SetAutoCorrectionType(int32 value)
 #elif defined(__DAVAENGINE_ANDROID__)
     textFieldAndroid->SetAutoCorrectionType(value);
 #elif defined(__DAVAENGINE_WIN_UAP__)
-    textFieldWinUAP->SetAutoCorrectionType(value);
+    edit->SetAutoCorrectionType(value);
 #endif
 }
 
@@ -976,7 +976,7 @@ void UITextField::SetSpellCheckingType(int32 value)
 #elif defined(__DAVAENGINE_ANDROID__)
     textFieldAndroid->SetSpellCheckingType(value);
 #elif defined(__DAVAENGINE_WIN_UAP__)
-    textFieldWinUAP->SetSpellCheckingType(value);
+    edit->SetSpellCheckingType(value);
 #endif
 }
 
@@ -993,7 +993,7 @@ void UITextField::SetKeyboardAppearanceType(int32 value)
 #elif defined(__DAVAENGINE_ANDROID__)
     textFieldAndroid->SetKeyboardAppearanceType(value);
 #elif defined(__DAVAENGINE_WIN_UAP__)
-    textFieldWinUAP->SetKeyboardAppearanceType(value);
+    edit->SetKeyboardAppearanceType(value);
 #endif
 }
 
@@ -1010,7 +1010,7 @@ void UITextField::SetKeyboardType(int32 value)
 #elif defined(__DAVAENGINE_ANDROID__)
     textFieldAndroid->SetKeyboardType(value);
 #elif defined(__DAVAENGINE_WIN_UAP__)
-    textFieldWinUAP->SetKeyboardType(value);
+    edit->SetKeyboardType(value);
 #endif
 }
 
@@ -1027,7 +1027,7 @@ void UITextField::SetReturnKeyType(int32 value)
 #elif defined(__DAVAENGINE_ANDROID__)
     textFieldAndroid->SetReturnKeyType(value);
 #elif defined(__DAVAENGINE_WIN_UAP__)
-    textFieldWinUAP->SetReturnKeyType(value);
+    edit->SetReturnKeyType(value);
 #endif
 }
 
@@ -1044,7 +1044,7 @@ void UITextField::SetEnableReturnKeyAutomatically(bool value)
 #elif defined(__DAVAENGINE_ANDROID__)
     textFieldAndroid->SetEnableReturnKeyAutomatically(value);
 #elif defined(__DAVAENGINE_WIN_UAP__)
-    textFieldWinUAP->SetEnableReturnKeyAutomatically(value);
+    edit->SetEnableReturnKeyAutomatically(value);
 #endif
 }
 
@@ -1056,7 +1056,7 @@ void UITextField::SetInputEnabled(bool isEnabled, bool hierarchic)
 #elif defined(__DAVAENGINE_ANDROID__)
     textFieldAndroid->SetInputEnabled(isEnabled);
 #elif defined(__DAVAENGINE_WIN_UAP__)
-    textFieldWinUAP->SetInputEnabled(isEnabled);
+    edit->SetInputEnabled(isEnabled);
 #endif
 }
 
@@ -1073,7 +1073,7 @@ void UITextField::SetRenderToTexture(bool value)
 #elif defined(__DAVAENGINE_IPHONE__)
     textFieldiPhone->SetRenderToTexture(value);
 #elif defined(__DAVAENGINE_WIN_UAP__)
-    textFieldWinUAP->SetRenderToTexture(value);
+    edit->SetRenderToTexture(value);
 #endif
 }
 
@@ -1084,7 +1084,7 @@ bool UITextField::IsRenderToTexture() const
 #elif defined(__DAVAENGINE_IPHONE__)
     return textFieldiPhone->IsRenderToTexture();
 #elif defined(__DAVAENGINE_WIN_UAP__)
-    return textFieldWinUAP->IsRenderToTexture();
+    return edit->IsRenderToTexture();
 #else
     return false;
 #endif
@@ -1097,7 +1097,7 @@ uint32 UITextField::GetCursorPos()
 #elif defined(__DAVAENGINE_ANDROID__)
     return textFieldAndroid->GetCursorPos();
 #elif defined(__DAVAENGINE_WIN_UAP__)
-    return textFieldWinUAP->GetCursorPos();
+    return edit->GetCursorPos();
 #endif
     return 0;
 }
@@ -1109,7 +1109,7 @@ void UITextField::SetCursorPos(uint32 pos)
 #elif defined(__DAVAENGINE_ANDROID__)
     textFieldAndroid->SetCursorPos(pos);
 #elif defined(__DAVAENGINE_WIN_UAP__)
-    textFieldWinUAP->SetCursorPos(pos);
+    edit->SetCursorPos(pos);
 #endif
 }
 
@@ -1121,7 +1121,7 @@ void UITextField::SetMaxLength(int32 newMaxLength)
 #elif defined(__DAVAENGINE_ANDROID__)
     textFieldAndroid->SetMaxLength(maxLength);
 #elif defined(__DAVAENGINE_WIN_UAP__)
-    textFieldWinUAP->SetMaxLength(maxLength);
+    edit->SetMaxLength(maxLength);
 #endif
 }
 
@@ -1139,7 +1139,7 @@ void UITextField::WillBecomeVisible()
 #elif defined(__DAVAENGINE_ANDROID__)
     textFieldAndroid->SetVisible(visible);
 #elif defined(__DAVAENGINE_WIN_UAP__)
-    textFieldWinUAP->SetVisible(visible);
+    edit->SetVisible(visible);
 #else
     edit->SetVisible(visible);
 #endif
@@ -1154,7 +1154,7 @@ void UITextField::WillBecomeInvisible()
 #elif defined(__DAVAENGINE_ANDROID__)
     textFieldAndroid->SetVisible(false);
 #elif defined(__DAVAENGINE_WIN_UAP__)
-    textFieldWinUAP->SetVisible(false);
+    edit->SetVisible(false);
 #else
     edit->SetVisible(false);
 #endif

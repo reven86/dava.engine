@@ -89,9 +89,6 @@ public:
  */
 class UITextField : public UIControl 
 {
-protected:
-    ~UITextField() override;
-
 public:
     // Auto-capitalization type.
     enum eAutoCapitalizationType
@@ -343,6 +340,9 @@ public:
     String GetFontPresetName() const;
 
     void SetFontByPresetName(const String &presetName);
+
+protected:
+    ~UITextField() override;
 
 private:
     void WillBecomeVisible() override;

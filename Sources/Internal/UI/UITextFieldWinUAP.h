@@ -45,11 +45,11 @@ class UITextField;
 class UITextFieldDelegate;
 class PrivateTextFieldWinUAP;
 
-class UITextFieldWinUAP
+class TextFieldPlatformImpl
 {
 public:
-    UITextFieldWinUAP(UITextField* uiTextField);
-    ~UITextFieldWinUAP();
+    TextFieldPlatformImpl(UITextField* uiTextField);
+    ~TextFieldPlatformImpl();
 
     void SetVisible(bool isVisible);
     void SetIsPassword(bool isPassword);
