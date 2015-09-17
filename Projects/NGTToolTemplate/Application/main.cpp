@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "core_generic_plugin_manager/config_plugin_loader.hpp"
 #include "core_generic_plugin_manager/generic_plugin_manager.hpp"
 #include "core_generic_plugin/interfaces/i_application.hpp"
 #include "core_generic_plugin/interfaces/i_plugin_context_manager.hpp"
@@ -37,20 +38,15 @@
 int main(int argc, char ** argv)
 {
     QFileInfo appFileInfo(argv[0]);
-    QString pluginsPath = appFileInfo.absolutePath() + "/plugins";
-    QDir pluginsDir(QDir::toNativeSeparators(pluginsPath));
-
-    QFileInfoList pluginsList = pluginsDir.entryInfoList(QStringList() << "*.dll");
-
-    std::vector<std::wstring> plugins;
-    plugins.reserve(pluginsList.size());
-
-    std::transform(pluginsList.begin(), pluginsList.end(), std::back_inserter(plugins), [](QFileInfo & info)
-    {
-        return info.absoluteFilePath().toStdWString();
-    });
+    QString pluginsPathDesc = appFileInfo.absolutePath() + "/plugins/plugins.txt";
 
     int result = 1;
+    std::vector<std::wstring> plugins;
+    if (!ConfigPluginLoader::getPlugins(plugins, pluginsPathDesc.toStdWString()))
+    {
+        return result;
+    }
+
     GenericPluginManager pluginManager;
 
     pluginManager.loadPlugins(plugins);
