@@ -214,10 +214,7 @@ public:
 	// RHI_COMPLETE need remove this
     void UpdatePart(Heightmap* fromHeightmap, const Rect2i & rect);
     
-	using LandscapeThumbnailCallback = DAVA::Function<void(Landscape*, Texture*)>;
-    void CreateLandscapeTexture(LandscapeThumbnailCallback callback);
-
-	void setForceFirstLod(bool force);
+	void SetForceFirstLod(bool force);
 
 protected:
 	static const int32 TEXTURE_SIZE_FULL_TILED = 2048;
@@ -268,7 +265,7 @@ protected:
 
 	void UpdateNodeChildrenBoundingBoxesRecursive(LandQuadTreeNode<LandscapeQuad>& root, Heightmap* fromHeightmap);
 
-	void ResizeIndicesBufferIfNeeded(DAVA::int32 newSize);
+	void ResizeIndicesBufferIfNeeded(DAVA::uint32 newSize);
 
 private:
     LandQuadTreeNode<LandscapeQuad> quadTreeHead;
@@ -284,9 +281,6 @@ private:
 	NMaterial* landscapeMaterial = nullptr;
     FoliageSystem* foliageSystem = nullptr;
 
-	Texture* thumbnailRenderTarget = nullptr;
-	LandscapeThumbnailCallback createdLandscapeTextureCallback;
-    
     std::vector<uint16> indices;
     uint16* queueDrawIndices = nullptr;
     float32 lodDistance[8];

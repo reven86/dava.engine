@@ -70,7 +70,8 @@ public:
 	static QColor gpuColor_Tegra;
 	static QColor gpuColor_MALI;
 	static QColor gpuColor_Adreno;
-	static QColor errorColor;
+    static QColor gpuColor_DX11;
+    static QColor errorColor;
 
 protected:
 	void closeEvent(QCloseEvent * e) override;

@@ -118,7 +118,21 @@ void GPUFamilyDescriptor::SetupGPUFormats()
     gpuData[GPU_ADRENO].availableFormats[FORMAT_ATC_RGB] = IMAGE_FORMAT_DDS;
 	gpuData[GPU_ADRENO].availableFormats[FORMAT_ATC_RGBA_EXPLICIT_ALPHA] = IMAGE_FORMAT_DDS;
 	gpuData[GPU_ADRENO].availableFormats[FORMAT_ATC_RGBA_INTERPOLATED_ALPHA] = IMAGE_FORMAT_DDS;
-    
+
+    //DX11
+    gpuData[GPU_DX11].availableFormats[FORMAT_RGBA8888] = IMAGE_FORMAT_PVR;
+    gpuData[GPU_DX11].availableFormats[FORMAT_RGBA5551] = IMAGE_FORMAT_PVR;
+    gpuData[GPU_DX11].availableFormats[FORMAT_RGBA4444] = IMAGE_FORMAT_PVR;
+    gpuData[GPU_DX11].availableFormats[FORMAT_RGB888] = IMAGE_FORMAT_PVR;
+    gpuData[GPU_DX11].availableFormats[FORMAT_RGB565] = IMAGE_FORMAT_PVR;
+    gpuData[GPU_DX11].availableFormats[FORMAT_A8] = IMAGE_FORMAT_PVR;
+    gpuData[GPU_DX11].availableFormats[FORMAT_DXT1] = IMAGE_FORMAT_DDS;
+    gpuData[GPU_DX11].availableFormats[FORMAT_DXT1A] = IMAGE_FORMAT_DDS;
+    gpuData[GPU_DX11].availableFormats[FORMAT_DXT3] = IMAGE_FORMAT_DDS;
+    gpuData[GPU_DX11].availableFormats[FORMAT_DXT5] = IMAGE_FORMAT_DDS;
+    gpuData[GPU_DX11].availableFormats[FORMAT_DXT5NM] = IMAGE_FORMAT_DDS;
+
+    //ORIGIN
     gpuData[GPU_ORIGIN].availableFormats[FORMAT_RGBA8888] = IMAGE_FORMAT_UNKNOWN;
     gpuData[GPU_ORIGIN].availableFormats[FORMAT_RGB888] = IMAGE_FORMAT_UNKNOWN;
     gpuData[GPU_ORIGIN].availableFormats[FORMAT_RGBA5551] = IMAGE_FORMAT_UNKNOWN;
@@ -138,6 +152,8 @@ void GPUFamilyDescriptor::SetupGPUPostfixes()
     gpuData[GPU_MALI].prefix = ".mali";
     gpuData[GPU_ADRENO].name = "adreno";
     gpuData[GPU_ADRENO].prefix = ".adreno";
+    gpuData[GPU_DX11].name = "dx11";
+    gpuData[GPU_DX11].prefix = ".dx11";
     gpuData[GPU_ORIGIN].name = "origin";
     gpuData[GPU_ORIGIN].prefix = "";
 }

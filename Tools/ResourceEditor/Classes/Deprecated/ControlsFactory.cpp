@@ -95,7 +95,7 @@ void ControlsFactory::CustomizeButtonExpandable(UIButton *btn)
     
     SafeRelease(expandable);
     
-    Texture::SetDefaultGPU((eGPUFamily) SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsInt32());
+    Texture::SetDefaultGPU( static_cast<eGPUFamily>(SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsUInt32()));
 }
 
 
@@ -444,7 +444,7 @@ void ControlsFactory::SetScrollbar(DAVA::UIList *l)
     SafeRelease(scrollSpr);
     SafeRelease(scrollBar);
     
-    Texture::SetDefaultGPU((eGPUFamily) SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsInt32());
+    Texture::SetDefaultGPU(static_cast<eGPUFamily>(SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsUInt32()));
 }
 
 void ControlsFactory::RemoveScrollbar(UIList *l)
@@ -482,7 +482,7 @@ void ControlsFactory::SetScrollbar(DAVA::UIHierarchy *h)
     SafeRelease(scrollSpr);
     SafeRelease(scrollBar);
     
-    Texture::SetDefaultGPU((eGPUFamily) SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsInt32());
+    Texture::SetDefaultGPU(static_cast<eGPUFamily>(SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsUInt32()));
 }
 
 void ControlsFactory::AddBorder(DAVA::UIControl *c)
