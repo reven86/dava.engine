@@ -33,6 +33,8 @@
 #include "UI/UIControl.h"
 #include <QPixmap>
 #include <QTransform>
+#include "EditorCore.h"
+#include "QtTools/DavaGLWidget/Davaglwidget.h"
 
 using namespace DAVA;
 
@@ -51,19 +53,18 @@ void CursorSystem::OnDeactivated()
 
 void CursorSystem::OnActiveAreaChanged(const HUDAreaInfo& areaInfo)
 {
+    DavaGLWidget* davaGLWidget = EditorCore::Instance()->GetMainWindow()->GetGLWidget();
+    auto view = davaGLWidget->GetGLWindow();
     if (areaInfo.area == HUDAreaInfo::NO_AREA)
     {
-        while (qApp->overrideCursor() != nullptr)
-        {
-            qApp->restoreOverrideCursor();
-        }
+        view->unsetCursor();
     }
     else
     {
         auto control = areaInfo.owner->GetControl();
         float angle = control->GetGeometricData().angle;
         QPixmap pixmap = CreatePixmapForArea(angle, areaInfo.area);
-        qApp->setOverrideCursor(QCursor(pixmap));
+        view->setCursor(QCursor(pixmap));
     }
 }
 
