@@ -91,7 +91,7 @@ public:
         sceneTree->Initialize(*uiFramework, *uiApplication);
 
         sceneWidget.reset(new SceneViewer());
-        
+
         library.reset(new Library());
         library->Initialize(*uiFramework, *uiApplication);
 
@@ -101,7 +101,7 @@ public:
         uiApplication->addWindow(*mainWindow);
         uiApplication->addView(library->GetView());
         uiApplication->addView(sceneWidget->GetView());
-        
+
         mainWindow->show();
 
         DavaLoop::Instance()->StartLoop(FrameworkLoop::Instance());

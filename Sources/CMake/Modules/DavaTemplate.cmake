@@ -777,10 +777,19 @@ if ( QT_LIBRARIES )
     qt5_use_modules(${PROJECT_NAME} ${QT_LIBRARIES})
 endif()
 
-set( OUTPUT_DIR "${DEPLOY_DIR}" )
 foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
-  string( TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG )
-  set_target_properties ( ${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${OUTPUT_DIR} )
+    if( APP_DATA )
+        get_filename_component( DIR_NAME ${APP_DATA} NAME )
+        ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD
+           COMMAND ${CMAKE_COMMAND} -E copy_directory ${APP_DATA}  ${DEPLOY_DIR}/${OUTPUTCONFIG}/${DIR_NAME}/
+            COMMAND ${CMAKE_COMMAND} -E remove  ${DEPLOY_DIR}/${OUTPUTCONFIG}/${PROJECT_NAME}.ilk
+        )
+
+    endif()
+
+    foreach ( ITEM fmodex.dll fmod_event.dll IMagickHelper.dll glew32.dll TextureConverter.dll )
+        execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${DAVA_TOOLS_BIN_DIR}/${ITEM}  ${DEPLOY_DIR}/${OUTPUTCONFIG} )
+    endforeach ()
 endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
 
 endmacro ()

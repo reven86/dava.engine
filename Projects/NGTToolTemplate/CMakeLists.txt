@@ -57,6 +57,10 @@ list( APPEND QT_COMPONENTS
                         UiTools
                         Xml)
 
+add_definitions(
+      -DDAVA_MEMORY_MANAGEMENT
+)
+
 find_package(QT5 REQUIRED COMPONENTS ${QT_COMPONENTS})
 find_package(NGT REQUIRED)
 

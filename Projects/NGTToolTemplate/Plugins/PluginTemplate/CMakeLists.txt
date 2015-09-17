@@ -10,9 +10,7 @@ find_package          ( DavaFramework REQUIRED )
 find_package          ( DavaTools     REQUIRED )
 find_package          ( NGT REQUIRED)
 
-foreach(NGT_LIB ${NGT_LIBS})
-   list(APPEND TARGET_LIBRARIES ${NGT_LIB})
-endforeach()
+list(APPEND TARGET_LIBRARIES  core_generic_plugin core_qt_common core_ui_framework)
 
 include_directories   ( ${CMAKE_CURRENT_BINARY_DIR}/DavaTools/QtTools )
 include_directories   ( "Classes" )
@@ -44,11 +42,11 @@ set               ( UiList ${UI_LIST} )
 define_source_folders          ( SRC_ROOT "Classes" GLOBAL_ERASE_FOLDER )
 generate_source_groups_project ( SRC_ROOT "Classes" "DataQt" Generated UiList)
 
-#set( APP_DATA             ${CMAKE_CURRENT_LIST_DIR}/Data )
-set( MACOS_PLIST          ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/Info.plist )
+set( APP_DATA               ${CMAKE_CURRENT_LIST_DIR}/Data )
+set( MACOS_PLIST        ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/Info.plist )
 set( MACOS_ICO            ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/icon.icns )
-set( ADDED_SRC            ${MOC_APP_SRCS} ${UI_APP_HDRS} ${RCC_APP_SRCS} )
-#set( LIBRARIES            ${QT_LIBRARIES})
+set( ADDED_SRC           ${UI_APP_HDRS} ${RCC_APP_SRCS} )
+set( DEPLOY_DIR          ${BIN_OUTPUT_DIR})
 
 set( ADDED_BINARY_DIR     ${QT5_PATH_WIN}/bin )
 
@@ -58,5 +56,5 @@ SET_PROPERTY( TARGET QtTools  PROPERTY FOLDER "DavaCore")
 
 setup_main_dynlib()
 
-SET_PROPERTY( TARGET DavaPluginTemplate  PROPERTY FOLDER "ToolsPlugin")
+SET_PROPERTY( TARGET ${PROJECT_NAME}  PROPERTY FOLDER "ToolsPlugin")
 set_binary_dir( ${PROJECT_NAME} ${BIN_OUTPUT_DIR} "plugins")
