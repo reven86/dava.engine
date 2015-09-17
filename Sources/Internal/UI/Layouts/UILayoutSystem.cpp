@@ -11,6 +11,30 @@
 
 namespace DAVA
 {
+    
+struct UILayoutSystem::ControlDescr
+{
+    UIControl *control;
+    int32 flags;
+    int32 firstChild;
+    int32 lastChild;
+    Vector2 size;
+    Vector2 position;
+    
+    bool HasChildren() const {
+        return lastChild >= firstChild;
+    }
+};
+
+
+namespace
+{
+    const int32 FLAG_SIZE_CHANGED = 0x01;
+    const int32 FLAG_POSITION_CHANGED = 0x02;
+    const int32 FLAG_X_SIZE_CALCULATED = 0x04;
+    const int32 FLAG_Y_SIZE_CALCULATED = 0x08;
+}
+    
 UILayoutSystem::UILayoutSystem()
     : indexOfSizeProperty(-1)
 {
@@ -301,6 +325,54 @@ void UILayoutSystem::ApplyLinearLayout(ControlDescr &descr, UILinearLayoutCompon
         float32 contentSize = descr.size.data[axis] - padding * 2.0f;
         float32 restSize = contentSize - fixedSize - spacesCount * spacing;
         
+        bool haveToCalculateSizes = true;
+        
+        int32 flagSizeCalculated = axis == Vector2::AXIS_X ? FLAG_X_SIZE_CALCULATED : FLAG_Y_SIZE_CALCULATED;
+        while (haveToCalculateSizes)
+        {
+            haveToCalculateSizes = false;
+            for (int32 i = descr.firstChild; i <= descr.lastChild; i++)
+            {
+                ControlDescr &child = controls[i];
+                
+                if (child.flags & flagSizeCalculated)
+                    continue;
+                
+                if (HaveToSkipControl(child.control, skipInvisible))
+                {
+                    child.flags |= flagSizeCalculated;
+                    continue;
+                }
+                
+                const UISizePolicyComponent *sizeHint = child.control->GetComponent<UISizePolicyComponent>();
+                if (sizeHint && sizeHint->GetPolicyByAxis(axis) == UISizePolicyComponent::PERCENT_OF_PARENT)
+                {
+                    float32 percents = sizeHint->GetValueByAxis(axis);
+                    float32 size = 0.0f;
+                    if (totalPercent > EPSILON)
+                        size = restSize * percents / Max(totalPercent, 100.0f);
+                    
+                    float32 minSize = sizeHint->GetMinValueByAxis(axis);
+                    float32 maxSize = sizeHint->GetMaxValueByAxis(axis);
+                    if (size < minSize || maxSize < size)
+                    {
+                        size = Clamp(size, minSize, maxSize);
+                        child.size.data[axis] = size;
+                        child.flags |= FLAG_SIZE_CHANGED | flagSizeCalculated;
+                        
+                        restSize -= size;
+                        totalPercent -= percents;
+                        
+                        haveToCalculateSizes = true;
+                        break;
+                    }
+                    
+                    child.size.data[axis] = size;
+                    child.flags |= FLAG_SIZE_CHANGED;
+                }
+            }
+        }
+        
         if (totalPercent < 100.0f - EPSILON && restSize > EPSILON)
         {
             bool dynamicPadding = layout->IsDynamicPadding();
@@ -333,21 +405,6 @@ void UILayoutSystem::ApplyLinearLayout(ControlDescr &descr, UILinearLayoutCompon
                 continue;
 
             float32 size = child.size.data[axis];
-            const UISizePolicyComponent *sizeHint = child.control->GetComponent<UISizePolicyComponent>();
-            if (sizeHint)
-            {
-                if (sizeHint->GetPolicyByAxis(axis) == UISizePolicyComponent::PERCENT_OF_PARENT)
-                {
-                    if (totalPercent < EPSILON)
-                        size = 0.0f;
-                    else
-                        size = restSize * sizeHint->GetValueByAxis(axis) / Max(totalPercent, 100.0f);
-                    size = Clamp(size, sizeHint->GetMinValueByAxis(axis), sizeHint->GetMaxValueByAxis(axis));
-                    child.size.data[axis] = size;
-                    child.flags |= FLAG_SIZE_CHANGED;
-                }
-            }
-            
             child.position.data[axis] = inverse ? position - size : position;
             child.flags |= FLAG_POSITION_CHANGED;
             

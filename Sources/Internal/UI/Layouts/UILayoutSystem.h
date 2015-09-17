@@ -53,22 +53,8 @@ public:
     UIControl *FindControl(UIControl *control) const;
     
 private:
-    static const int32 FLAG_SIZE_CHANGED = 0x01;
-    static const int32 FLAG_POSITION_CHANGED = 0x02;
-    struct ControlDescr
-    {
-        UIControl *control;
-        int32 flags;
-        int32 firstChild;
-        int32 lastChild;
-        Vector2 size;
-        Vector2 position;
-        
-        bool HasChildren() const {
-            return lastChild >= firstChild;
-        }
-    };
-
+    struct ControlDescr;
+    
 private:
     void CollectControls(UIControl *control);
     void CollectControlChildren(UIControl *control, int32 parentIndex);
@@ -84,7 +70,6 @@ private:
     Vector<ControlDescr> controls;
     int32 indexOfSizeProperty;
 };
-
 
 }
 

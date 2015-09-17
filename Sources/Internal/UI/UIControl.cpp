@@ -685,14 +685,26 @@ namespace DAVA
     {
         if (background != nullptr && background->GetSprite() != nullptr)
         {
-            return background->GetSprite()->GetSize();
+            if (constraints.dx > 0)
+            {
+                Vector2 size;
+                size.dx = constraints.dx;
+                size.dy = background->GetSprite()->GetHeight() * size.dx / background->GetSprite()->GetWidth();
+                return size;
+            }
+            else
+                return background->GetSprite()->GetSize();
         }
         return Vector2(0.0f, 0.0f);
     }
     
     bool UIControl::IsHeightDependsOnWidth() const
     {
-        return false;
+        if (background == nullptr || background->GetSprite() == nullptr)
+            return false;
+        
+        UIControlBackground::eDrawType dt = background->GetDrawType();
+        return dt == UIControlBackground::DRAW_SCALE_PROPORTIONAL || dt == UIControlBackground::DRAW_SCALE_PROPORTIONAL_ONE;
     }
 
     void UIControl::SetVisible(bool isVisible)
