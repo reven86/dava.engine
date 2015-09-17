@@ -76,7 +76,7 @@ void SettingsManager::Init()
     CreateValue(Settings::General_HeighMaskTool_Color0, DAVA::VariantType(DAVA::Color(0.5f, 0.5f, 0.5f, 1.0f)));
     CreateValue(Settings::General_HeighMaskTool_Color1, DAVA::VariantType(DAVA::Color(0.0f, 0.0f, 0.0f, 1.0f)));
 
-    CreateValue(Settings::General_AssetCache_UseCache, DAVA::VariantType(true));
+    CreateValue(Settings::General_AssetCache_UseCache, DAVA::VariantType(false));
     CreateValue(Settings::General_AssetCache_Ip, DAVA::VariantType(DAVA::String("")));
     CreateValue(Settings::General_AssetCache_Port, DAVA::VariantType(DAVA::Format("%d", DAVA::AssetCache::ASSET_SERVER_PORT)));
     CreateValue(Settings::General_AssetCache_Timeout, DAVA::VariantType(DAVA::String("")));
