@@ -281,7 +281,6 @@ void PackageWidget::OnSelectionChanged(const QItemSelection &proxySelected, cons
         return;
     }
 
-    RefreshActions();
     SelectedNodes selected;
     SelectedNodes deselected;
 
@@ -495,6 +494,8 @@ void PackageWidget::SetSelectedNodes(const SelectedNodes& selected, const Select
 
     if (!reallySelected.empty() || !reallyDeselected.empty())
     {
+        RefreshActions();
+
         disconnect(treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &PackageWidget::OnSelectionChanged);
 
         for (const auto &node : reallyDeselected)
