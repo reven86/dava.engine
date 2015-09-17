@@ -33,6 +33,7 @@
 #include "Network/Base/Endpoint.h"
 #include "Network/NetworkCommon.h"
 #include "Network/NetCore.h"
+#include "Network/IChannel.h"
 
 namespace DAVA
 {
@@ -47,13 +48,20 @@ namespace AssetCache
 
 bool SendArchieve(Net::IChannel* channel, KeyedArchive *archieve);
     
-class Connection final
+class Connection final : public Net::IChannelListener
 {
 public:
     Connection(Net::eNetworkRole role, const Net::Endpoint & endpoint, Net::IChannelListener * listener, Net::eTransportType transport = Net::TRANSPORT_TCP);
     ~Connection();
 
     const Net::Endpoint & GetEndpoint() const;
+
+    // IChannelListener
+    void OnChannelOpen(Net::IChannel* channel) override;
+    void OnChannelClosed(Net::IChannel* channel, const char8* message) override;
+    void OnPacketReceived(Net::IChannel* channel, const void* buffer, size_t length) override;
+    void OnPacketSent(Net::IChannel* channel, const void* buffer, size_t length) override;
+    void OnPacketDelivered(Net::IChannel* channel, uint32 packetId) override;
 
 private:
 

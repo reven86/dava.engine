@@ -116,16 +116,16 @@ void Connection::DisconnectBlocked()
     DVASSERT(Net::NetCore::INVALID_TRACK_ID != controllerId);
     DVASSERT(Net::NetCore::Instance() != nullptr);
 
-    Net::NetCore::Instance()->DestroyControllerBlocked(controllerId);
     listener = nullptr;
+    Net::NetCore::Instance()->DestroyControllerBlocked(controllerId);
     controllerId = Net::NetCore::INVALID_TRACK_ID;
 }
 
 
 Net::IChannelListener * Connection::Create(uint32 serviceId, void* context)
 {
-    auto connection = static_cast<Connection *>(context);
-    return connection->listener;
+    auto connection = static_cast<Net::IChannelListener*>(context);
+    return connection;
 }
 
 void Connection::Delete(Net::IChannelListener* obj, void* context)
@@ -134,6 +134,45 @@ void Connection::Delete(Net::IChannelListener* obj, void* context)
     //listener has external creation and deletion
 }
 
+void Connection::OnChannelOpen(Net::IChannel* channel)
+{
+    if (listener)
+    {
+        listener->OnChannelOpen(channel);
+    }
+}
+
+void Connection::OnChannelClosed(Net::IChannel* channel, const char8* message)
+{
+    if (listener)
+    {
+        listener->OnChannelClosed(channel, message);
+    }
+}
+
+void Connection::OnPacketReceived(Net::IChannel* channel, const void* buffer, size_t length)
+{
+    if (listener)
+    {
+        listener->OnPacketReceived(channel, buffer, length);
+    }
+}
+
+void Connection::OnPacketSent(Net::IChannel* channel, const void* buffer, size_t length)
+{
+    if (listener)
+    {
+        listener->OnPacketSent(channel, buffer, length);
+    }
+}
+
+void Connection::OnPacketDelivered(Net::IChannel* channel, uint32 packetId)
+{
+    if (listener)
+    {
+        listener->OnPacketDelivered(channel, packetId);
+    }
+}
 
 
 
