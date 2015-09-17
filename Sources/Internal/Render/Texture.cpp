@@ -718,9 +718,9 @@ void Texture::SetDebugInfo(const String & _debugInfo)
 }	
 
 void Texture::RestoreRenderResource()
-{
-    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();	
-		
+{    
+    if (explicitRestore)
+        return;
     if ((!handle.IsValid()) || (!NeedRestoreTexture(handle)))
         return;
 	

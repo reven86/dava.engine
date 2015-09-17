@@ -172,11 +172,9 @@ public:
     void ReloadAs(eGPUFamily gpuFamily);	
     void ReloadFromData(PixelFormat format, uint8 * data, uint32 width, uint32 height);
 
-	inline TextureState GetState() const;
+	inline TextureState GetState() const;	
 
-
-	void RestoreRenderResource();
-
+    void SetExplicitRestore(bool explicitRestore);
     
     void SetDebugInfo(const String & _debugInfo);
     
@@ -198,6 +196,8 @@ public:
     int32 GetBaseMipMap() const;
 
 protected:
+
+    void RestoreRenderResource();
     
     void ReleaseTextureData();
 
@@ -241,6 +241,8 @@ public:							// properties for fast access
 	uint32		textureType:2;	
 	bool		isRenderTarget:1;
 	bool		isPink:1;
+    
+    bool        explicitRestore = false;
 
     FastName		debugInfo;	
     TextureDescriptor *texDescriptor;
@@ -269,6 +271,11 @@ inline Texture::TextureState Texture::GetState() const
 inline TextureDescriptor * Texture::GetDescriptor() const
 {
     return texDescriptor;
+}
+
+inline void Texture::SetExplicitRestore(bool _explicitRestore)
+{
+    explicitRestore = _explicitRestore;
 }
 
 
