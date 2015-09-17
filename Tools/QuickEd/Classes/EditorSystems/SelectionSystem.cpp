@@ -32,12 +32,14 @@
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "UI/UIEvent.h"
 #include "EditorSystems/EditorSystemsManager.h"
+#include "Model/PackageHierarchy/PackageNode.h"
 
 using namespace DAVA;
 
-SelectionSystem::SelectionSystem(EditorSystemsManager* systemManager)
-    : BaseEditorSystem(systemManager)
+SelectionSystem::SelectionSystem(EditorSystemsManager* parent)
+    : BaseEditorSystem(parent)
 {
+    systemManager->GetPackage()->AddListener(this);
     systemManager->SelectionRectChanged.Connect(this, &SelectionSystem::OnSelectByRect);
 }
 

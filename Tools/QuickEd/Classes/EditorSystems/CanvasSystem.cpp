@@ -75,6 +75,7 @@ CanvasSystem::CanvasSystem(EditorSystemsManager* parent)
     , canvas(new UIControl())
 {
     canvas->SetName("Canvas");
+    systemManager->GetPackage()->AddListener(this);
 }
 
 UIControl* CanvasSystem::GetCanvasControl()
@@ -85,7 +86,7 @@ UIControl* CanvasSystem::GetCanvasControl()
 void CanvasSystem::OnActivated()
 {
     systemManager->GetScalableControl()->AddControl(canvas);
-    Vector<PackageBaseNode*> rootControls;
+    Vector<ControlNode*> rootControls;
     auto controlsNode = systemManager->GetPackage()->GetPackageControlsNode();
     for (int index = 0; index < controlsNode->GetCount(); ++index)
     {
@@ -99,18 +100,42 @@ void CanvasSystem::OnDeactivated()
     canvas->RemoveFromParent();
 }
 
-void CanvasSystem::SetRootControls(const Vector<PackageBaseNode*>& controls)
+void CanvasSystem::ControlWasRemoved(ControlNode* node, ControlsContainerNode* /*from*/)
+{
+    if (nullptr == node->GetParent())
+    {
+        canvas->RemoveControl(node->GetControl()->GetParent());
+        LayoutCanvas();
+    }
+}
+
+void CanvasSystem::ControlWasAdded(ControlNode* node, ControlsContainerNode* /*destination*/, int /*index*/)
+{
+    auto packageControlsNode = systemManager->GetPackage()->GetPackageControlsNode();
+    if (packageControlsNode == node->GetParent())
+    {
+        AddRootControl(node);
+        LayoutCanvas();
+    }
+}
+
+void CanvasSystem::SetRootControls(const Vector<ControlNode*>& controls)
 {
     canvas->RemoveAllControls();
     for (auto node : controls)
     {
-        ScopedPtr<CheckeredCanvas> checkeredCanvas(new CheckeredCanvas());
-        auto control = node->GetControl();
-        checkeredCanvas->AddControl(control);
-        checkeredCanvas->SetSize(control->GetSize());
-        canvas->AddControl(checkeredCanvas);
+        AddRootControl(node);
     }
     LayoutCanvas();
+}
+
+void CanvasSystem::AddRootControl(ControlNode* controlNode)
+{
+    ScopedPtr<CheckeredCanvas> checkeredCanvas(new CheckeredCanvas());
+    auto control = controlNode->GetControl();
+    checkeredCanvas->AddControl(control);
+    checkeredCanvas->SetSize(control->GetSize());
+    canvas->AddControl(checkeredCanvas);
 }
 
 void CanvasSystem::LayoutCanvas()

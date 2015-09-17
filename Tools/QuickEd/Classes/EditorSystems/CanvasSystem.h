@@ -30,7 +30,7 @@
 #define __QUICKED_CANVAS_SYSTEM_H__
 
 #include "EditorSystems/BaseEditorSystem.h"
-
+#include "Model/PackageHierarchy/PackageListener.h"
 #include "Base/ScopedPtr.h"
 #include "UI/UIControl.h"
 #include "EditorSystems/SelectionContainer.h"
@@ -38,7 +38,7 @@
 class EditorSystemsManager;
 class PackageBaseNode;
 
-class CanvasSystem final : public BaseEditorSystem
+class CanvasSystem final : public BaseEditorSystem, public PackageListener
 {
 public:
     CanvasSystem(EditorSystemsManager* parent);
@@ -48,8 +48,12 @@ public:
     void OnActivated() override;
     void OnDeactivated() override;
 
+    void ControlWasRemoved(ControlNode* node, ControlsContainerNode* /*from*/) override;
+    void ControlWasAdded(ControlNode* node, ControlsContainerNode* /*destination*/, int /*index*/) override;
+
 private:
-    void SetRootControls(const DAVA::Vector<PackageBaseNode*>& controls);
+    void SetRootControls(const DAVA::Vector<ControlNode*>& controls);
+    void AddRootControl(ControlNode* controlNode);
     void LayoutCanvas();
 
     DAVA::ScopedPtr<DAVA::UIControl> canvas;
