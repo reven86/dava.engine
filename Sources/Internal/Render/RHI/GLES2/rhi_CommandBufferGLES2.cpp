@@ -1180,38 +1180,44 @@ Trace("DIP  mode= %i  v_cnt= %i  start_i= %i\n",int(mode),int(v_cnt),int(startIn
 static void
 _RejectAllFrames()
 {
-	_FrameSync.Lock();
-    for( std::vector<FrameGLES2>::iterator f=_Frame.begin(),f_end=_Frame.end(); f!=f_end; ++f )
+    _FrameSync.Lock();
+    for (std::vector<FrameGLES2>::iterator f = _Frame.begin(); f != _Frame.end(); )
     {
-        if (f->sync != InvalidHandle)
+        if (f->readyToExecute)
         {
-            SyncObjectGLES2_t*    s = SyncObjectPool::Get(f->sync);
-            s->is_signaled = true;
-            s->is_used = true;
-        }
-        for( std::vector<Handle>::iterator p=f->pass.begin(),p_end=f->pass.end(); p!=p_end; ++p )
-        {
-            RenderPassGLES2_t*    pp = RenderPassPool::Get( *p );
-
-            for( std::vector<Handle>::iterator c=pp->cmdBuf.begin(),c_end=pp->cmdBuf.end(); c!=c_end; ++c )
+            if (f->sync != InvalidHandle)
             {
-                CommandBufferGLES2_t* cc = CommandBufferPool::Get( *c );
-                if (cc->sync != InvalidHandle)
-                {
-                    SyncObjectGLES2_t*    s = SyncObjectPool::Get(cc->sync);
-                    s->is_signaled = true;
-                    s->is_used = true;
-                }
-                cc->_cmd.clear();
-                CommandBufferPool::Free( *c );
+                SyncObjectGLES2_t*    s = SyncObjectPool::Get(f->sync);
+                s->is_signaled = true;
+                s->is_used = true;
             }
+            for (std::vector<Handle>::iterator p = f->pass.begin(), p_end = f->pass.end(); p != p_end; ++p)
+            {
+                RenderPassGLES2_t*    pp = RenderPassPool::Get(*p);
 
-            RenderPassPool::Free( *p );
+                for (std::vector<Handle>::iterator c = pp->cmdBuf.begin(), c_end = pp->cmdBuf.end(); c != c_end; ++c)
+                {
+                    CommandBufferGLES2_t* cc = CommandBufferPool::Get(*c);
+                    if (cc->sync != InvalidHandle)
+                    {
+                        SyncObjectGLES2_t* s = SyncObjectPool::Get(cc->sync);
+                        s->is_signaled = true;
+                        s->is_used = true;
+                    }
+                    cc->_cmd.clear();
+                    CommandBufferPool::Free(*c);
+                }
+
+                RenderPassPool::Free(*p);
+            }
+            f = _Frame.erase(f);
+        }
+        else
+        {
+            ++f;
         }
     }
 
-    _Frame.clear();
-    _FrameStarted = false;
     _FrameSync.Unlock();
 }
 
@@ -1328,10 +1334,6 @@ Trace("rhi-gl.swap-buffers done\n");
         	TextureGLES2::ReCreateAll();
         	VertexBufferGLES2::ReCreateAll();
         	IndexBufferGLES2::ReCreateAll();
-
-        	VertexBufferGLES2::PatchCommands(_GLES2_PendingImmediateCmd, _GLES2_PendingImmediateCmdCount);
-        	IndexBufferGLES2::PatchCommands(_GLES2_PendingImmediateCmd, _GLES2_PendingImmediateCmdCount);
-        	TextureGLES2::PatchCommands(_GLES2_PendingImmediateCmd, _GLES2_PendingImmediateCmdCount);
         }
 
 #endif
@@ -1576,7 +1578,7 @@ _ExecGL( GLCommand* command, uint32 cmdCount )
 
             case GLCommand::BIND_BUFFER :
             {
-                EXEC_GL(glBindBuffer( (GLenum)(arg[0]), (GLuint)(arg[1]) ));
+                EXEC_GL(glBindBuffer( (GLenum)(arg[0]), *(GLuint*)(arg[1]) ));
                 cmd->status = err;
             }   break;
 
@@ -1630,7 +1632,7 @@ _ExecGL( GLCommand* command, uint32 cmdCount )
 
             case GLCommand::BIND_TEXTURE :
             {
-                EXEC_GL(glBindTexture( (GLenum)(cmd->arg[0]), (GLuint)(cmd->arg[1]) ));
+                EXEC_GL(glBindTexture( (GLenum)(cmd->arg[0]), *(GLuint*)(cmd->arg[1]) ));
                 cmd->status = err;
             }   break;
 
