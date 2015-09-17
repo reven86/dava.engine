@@ -47,6 +47,29 @@ extern void CloseKeyboard();
 #   include "UI/UITextFieldiPhone.h"
 #elif defined(__DAVAENGINE_WIN_UAP__)
 #   include "UI/UITextFieldWinUAP.h"
+#else
+#include "UI/UIStaticText.h"
+namespace DAVA
+{
+class TextFieldPlatformImpl : public UIStaticText
+{
+protected:
+    ~TextFieldPlatformImpl() override = default;
+
+public:
+    TextFieldPlatformImpl(const Rect& rect = Rect(), bool rectInAbsoluteCoordinates = false)
+        : UIStaticText(rect, rectInAbsoluteCoordinates)
+    {
+    }
+
+    TextFieldPlatformImpl* TextFieldPlatformImpl::Clone() override
+    {
+        TextFieldPlatformImpl* t = new TextFieldPlatformImpl(GetRect());
+        t->CopyDataFrom(this);
+        return t;
+    }
+};
+} // end namespace DAVA
 #endif
 
 #if defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_WIN_UAP__)
@@ -69,10 +92,10 @@ UITextField::UITextField(const Rect &rect, bool rectInAbsoluteCoordinates/*= fal
     textFieldWinUAP = new UITextFieldWinUAP(this);
     textFieldWinUAP->SetVisible(false);
 #else
-    staticText = new UIStaticText(Rect(0,0,GetRect().dx, GetRect().dy));
-    staticText->SetVisible(false);
-    AddControl(staticText);
-    staticText->SetSpriteAlign(ALIGN_LEFT | ALIGN_BOTTOM);
+    edit = new TextFieldPlatformImpl(Rect(0, 0, GetRect().dx, GetRect().dy));
+    edit->SetVisible(false);
+    AddControl(edit);
+    edit->SetSpriteAlign(ALIGN_LEFT | ALIGN_BOTTOM);
 #endif
     
     SetupDefaults();
@@ -115,7 +138,7 @@ UITextField::~UITextField()
     SafeRelease(textFont);
 
     RemoveAllControls();
-    SafeRelease(staticText);
+    SafeRelease(edit);
 #endif
 }
 
@@ -166,7 +189,7 @@ void UITextField::Update(float32 timeElapsed)
     if (!needRedraw)
         return;
 
-    // Use NO_REQUIRED_SIZE to notify staticText->SetText that we don't want
+    // Use NO_REQUIRED_SIZE to notify edit->SetText that we don't want
     // to enable of any kind of static text fitting
     static const Vector2 NO_REQUIRED_SIZE = Vector2(-1, -1);
 
@@ -174,11 +197,11 @@ void UITextField::Update(float32 timeElapsed)
     {
         WideString txt = GetVisibleText();
         txt += showCursor ? L"_" : L" ";
-        staticText->SetText(txt, NO_REQUIRED_SIZE);
+        edit->SetText(txt, NO_REQUIRED_SIZE);
     }
     else
     {
-        staticText->SetText(GetVisibleText(), NO_REQUIRED_SIZE);
+        edit->SetText(GetVisibleText(), NO_REQUIRED_SIZE);
     }
     needRedraw = false;
 #endif
@@ -218,7 +241,12 @@ void UITextField::OnFocused()
     textFieldWinUAP->OpenKeyboard();
 #endif
 }
-    
+
+void UITextField::SetFocused()
+{
+    UIControlSystem::Instance()->SetFocusedControl(this, true);
+}
+
 void UITextField::OnFocusLost(UIControl *newFocus)
 {
     SetRenderToTexture(true);
@@ -262,7 +290,7 @@ void UITextField::SetFont(Font * font)
 
     SafeRelease(textFont);
     textFont = SafeRetain(font);
-    staticText->SetFont(textFont);
+    edit->SetFont(textFont);
 #endif  // !defined(DAVA_TEXTFIELD_USE_NATIVE)
 }
 
@@ -275,21 +303,21 @@ void UITextField::SetTextColor(const Color& fontColor)
 #elif defined(__DAVAENGINE_WIN_UAP__)
     textFieldWinUAP->SetTextColor(fontColor);
 #else
-    staticText->SetTextColor(fontColor);
+    edit->SetTextColor(fontColor);
 #endif
 }
 
 void UITextField::SetShadowOffset(const DAVA::Vector2 &offset)
 {
 #if !defined(DAVA_TEXTFIELD_USE_NATIVE)
-    staticText->SetShadowOffset(offset);
+    edit->SetShadowOffset(offset);
 #endif
 }
 
 void UITextField::SetShadowColor(const Color& color)
 {
 #if !defined(DAVA_TEXTFIELD_USE_NATIVE)
-    staticText->SetShadowColor(color);
+    edit->SetShadowColor(color);
 #endif
 }
 
@@ -302,7 +330,7 @@ void UITextField::SetTextAlign(int32 align)
 #elif defined(__DAVAENGINE_WIN_UAP__)
     textFieldWinUAP->SetTextAlign(align);
 #else
-    staticText->SetTextAlign(align);
+    edit->SetTextAlign(align);
 #endif
 }
 
@@ -315,7 +343,7 @@ TextBlock::eUseRtlAlign UITextField::GetTextUseRtlAlign() const
 #elif defined(__DAVAENGINE_WIN_UAP__)
     return textFieldWinUAP->GetTextUseRtlAlign() ? TextBlock::RTL_USE_BY_CONTENT : TextBlock::RTL_DONT_USE;
 #else
-    return staticText ? staticText->GetTextUseRtlAlign() : TextBlock::RTL_DONT_USE;
+    return edit ? edit->GetTextUseRtlAlign() : TextBlock::RTL_DONT_USE;
 #endif
 }
 
@@ -328,7 +356,7 @@ void UITextField::SetTextUseRtlAlign(TextBlock::eUseRtlAlign useRtlAlign)
 #elif defined(__DAVAENGINE_WIN_UAP__)
     textFieldWinUAP->SetTextUseRtlAlign(useRtlAlign == TextBlock::RTL_USE_BY_CONTENT);
 #else
-    staticText->SetTextUseRtlAlign(useRtlAlign);
+    edit->SetTextUseRtlAlign(useRtlAlign);
 #endif
 }
 
@@ -375,7 +403,7 @@ void UITextField::SetSize(const DAVA::Vector2 &newSize)
 {
     UIControl::SetSize(newSize);
 #if !defined(DAVA_TEXTFIELD_USE_NATIVE)
-    staticText->SetSize(newSize);
+    edit->SetSize(newSize);
 #endif
 }
     
@@ -396,8 +424,8 @@ void UITextField::SetMultiline(bool value)
         textFieldAndroid->SetMultiline(isMultiline_);
 #elif defined(__DAVAENGINE_WIN_UAP__)
         textFieldWinUAP->SetMultiline(isMultiline_);
-#else 
-        staticText->SetMultiline(isMultiline_);
+#else
+        edit->SetMultiline(isMultiline_);
 #endif
     }
 }
@@ -452,7 +480,7 @@ const Color &UITextField::GetTextColor() const
 #if defined(DAVA_TEXTFIELD_USE_NATIVE)
     return Color::White;
 #else
-    return staticText ? staticText->GetTextColor() : Color::White;
+    return edit ? edit->GetTextColor() : Color::White;
 #endif
 }
 
@@ -461,7 +489,7 @@ Vector2 UITextField::GetShadowOffset() const
 #if defined(DAVA_TEXTFIELD_USE_NATIVE)
     return Vector2(0, 0);
 #else
-    return staticText ? staticText->GetShadowOffset() : Vector2(0,0);
+    return edit ? edit->GetShadowOffset() : Vector2(0, 0);
 #endif
 }
 
@@ -470,7 +498,7 @@ const Color &UITextField::GetShadowColor() const
 #if defined(DAVA_TEXTFIELD_USE_NATIVE)
     return Color::White;
 #else
-    return staticText ? staticText->GetShadowColor() : Color::White;
+    return edit ? edit->GetShadowColor() : Color::White;
 #endif
 }
 
@@ -483,7 +511,7 @@ int32 UITextField::GetTextAlign() const
 #elif defined(__DAVAENGINE_WIN_UAP__)
     return textFieldWinUAP->GetTextAlign();
 #else
-    return staticText->GetTextAlign();
+    return edit->GetTextAlign();
 #endif
 }
 
@@ -661,9 +689,9 @@ void UITextField::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
     }
 
 #if !defined(DAVA_TEXTFIELD_USE_NATIVE)
-    if (staticText != nullptr)
+    if (edit != nullptr)
     {
-        staticText->SetRect(Rect(0,0,GetRect().dx, GetRect().dy));
+        edit->SetRect(Rect(0, 0, GetRect().dx, GetRect().dy));
 
         const YamlNode * shadowColorNode = node->Get("shadowcolor");
         const YamlNode * shadowOffsetNode = node->Get("shadowoffset");
@@ -826,7 +854,7 @@ List<UIControl*>& UITextField::GetRealChildren()
 {
     List<UIControl*>& realChildren = UIControl::GetRealChildren();
 #if !defined(DAVA_TEXTFIELD_USE_NATIVE)
-    realChildren.remove(staticText);
+    realChildren.remove(edit);
 #endif
     return realChildren;
 }
@@ -841,8 +869,8 @@ UITextField* UITextField::Clone()
 void UITextField::CopyDataFrom(UIControl *srcControl)
 {
     UIControl::CopyDataFrom(srcControl);
-    UITextField* t = (UITextField*) srcControl;
-        
+    UITextField* t = static_cast<UITextField*>(srcControl);
+
     cursorTime = t->cursorTime;
     showCursor = t->showCursor;
     isPassword = t->isPassword;
@@ -851,11 +879,11 @@ void UITextField::CopyDataFrom(UIControl *srcControl)
     
     cursorBlinkingTime = t->cursorBlinkingTime;
 #if !defined(DAVA_TEXTFIELD_USE_NATIVE)
-    SafeRelease(staticText);
-    if (t->staticText != nullptr)
+    SafeRelease(edit);
+    if (t->edit != nullptr)
     {
-        staticText = (UIStaticText*)t->staticText->Clone();
-        AddControl(staticText);
+        edit = t->edit->Clone();
+        AddControl(edit);
     }
     if (t->textFont != nullptr)
     {
@@ -1113,7 +1141,7 @@ void UITextField::WillBecomeVisible()
 #elif defined(__DAVAENGINE_WIN_UAP__)
     textFieldWinUAP->SetVisible(visible);
 #else
-    staticText->SetVisible(visible);
+    edit->SetVisible(visible);
 #endif
 }
 
@@ -1128,7 +1156,7 @@ void UITextField::WillBecomeInvisible()
 #elif defined(__DAVAENGINE_WIN_UAP__)
     textFieldWinUAP->SetVisible(false);
 #else
-    staticText->SetVisible(false);
+    edit->SetVisible(false);
 #endif
 }
 
