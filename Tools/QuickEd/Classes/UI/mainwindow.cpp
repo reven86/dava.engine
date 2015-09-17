@@ -64,8 +64,9 @@ MainWindow::MainWindow(QWidget *parent)
 
     DebugTools::ConnectToUI(this);
 
-    // Relod Sprites
+    // Reload Sprites
     QAction* actionReloadSprites = dialogReloadSprites->GetActionReloadSprites();
+    connect(actionReloadSprites, &QAction::triggered, this, &MainWindow::OnSetupCacheSettingsForPacker);
     menuTools->addAction(actionReloadSprites);
     toolBarPlugins->addAction(actionReloadSprites);
 
@@ -576,4 +577,22 @@ void MainWindow::SetBackgroundColorMenuTriggered(QAction* action)
 
     // In case we don't found current color in predefined ones - select "Custom" menu item.
     backgroundFrameUseCustomColorAction->setChecked(!colorFound);
+}
+
+void MainWindow::OnSetupCacheSettingsForPacker()
+{
+    auto spritesPacker = dialogReloadSprites->GetSpritesPacker();
+    DVASSERT(nullptr != spritesPacker);
+
+    if (EditorSettings::Instance()->IsUsingAssetCache())
+    {
+        spritesPacker->SetCacheTool(
+            EditorSettings::Instance()->GetAssetCacheIp(),
+            EditorSettings::Instance()->GetAssetCachePort(),
+            EditorSettings::Instance()->GetAssetCacheTimeoutSec());
+    }
+    else
+    {
+        spritesPacker->ClearCacheTool();
+    }
 }

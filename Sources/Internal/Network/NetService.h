@@ -46,11 +46,11 @@ public:
     virtual ~NetService() {}
 
     // IChannelListener
-    virtual void OnChannelOpen(IChannel* aChannel);
-    virtual void OnChannelClosed(IChannel* aChannel, const char8* message);
-    virtual void OnPacketReceived(IChannel* aChannel, const void* buffer, size_t length);
-    virtual void OnPacketSent(IChannel* aChannel, const void* buffer, size_t length);
-    virtual void OnPacketDelivered(IChannel* aChannel, uint32 packetId);
+    void OnChannelOpen(IChannel* aChannel) override;
+    void OnChannelClosed(IChannel* aChannel, const char8* message) override;
+    void OnPacketReceived(IChannel* aChannel, const void* buffer, size_t length) override;
+    void OnPacketSent(IChannel* aChannel, const void* buffer, size_t length) override;
+    void OnPacketDelivered(IChannel* aChannel, uint32 packetId) override;
 
     virtual void ChannelOpen() {}
     virtual void ChannelClosed(const char8* message) {}
