@@ -394,7 +394,7 @@ void RootProperty::RefreshProperty(AbstractProperty *property, DAVA::int32 refre
         listener->PropertyChanged(property);
 }
 
-AbstractProperty* RootProperty::GetPropertyByName(const String &name) const
+AbstractProperty* RootProperty::FindPropertyByName(const String& name) const
 {
     int propertiesCount = GetCount();
     for (int index = 0; index < propertiesCount; ++index)

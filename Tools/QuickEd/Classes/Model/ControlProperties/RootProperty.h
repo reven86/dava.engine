@@ -95,7 +95,7 @@ public:
     void SetDefaultProperty(AbstractProperty *property, const DAVA::VariantType &newValue);
     void ResetProperty(AbstractProperty *property);
     void RefreshProperty(AbstractProperty *property, DAVA::int32 refreshFlags);
-    AbstractProperty* GetPropertyByName(const DAVA::String &name) const;
+    AbstractProperty* FindPropertyByName(const DAVA::String& name) const;
 
     void Refresh(DAVA::int32 refreshFlags) override;
     void Accept(PropertyVisitor *visitor) override;

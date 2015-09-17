@@ -38,25 +38,26 @@
 class EditorSystemsManager;
 class PackageBaseNode;
 
-class CanvasSystem final : public BaseEditorSystem, public PackageListener
+class CanvasSystem final : public BaseEditorSystem, private PackageListener
 {
 public:
     CanvasSystem(EditorSystemsManager* parent);
     ~CanvasSystem() override = default;
-    DAVA::UIControl* GetCanvasControl();
 
     void OnActivated() override;
     void OnDeactivated() override;
 
+private:
     void ControlWasRemoved(ControlNode* node, ControlsContainerNode* /*from*/) override;
     void ControlWasAdded(ControlNode* node, ControlsContainerNode* /*destination*/, int /*index*/) override;
 
-private:
     void SetRootControls(const DAVA::Vector<ControlNode*>& controls);
     void AddRootControl(ControlNode* controlNode);
     void LayoutCanvas();
 
-    DAVA::ScopedPtr<DAVA::UIControl> canvas;
+    DAVA::ScopedPtr<DAVA::UIControl> backgroundCanvas;
+    DAVA::ScopedPtr<DAVA::UIControl> controlsCanvas;
+    DAVA::Map<DAVA::UIControl*, DAVA::UIControl*> rootControls;
     SelectedControls selectedControlNodes;
 };
 

@@ -41,7 +41,7 @@ namespace DAVA
 class Vector2;
 }
 
-class SelectionSystem final : public BaseEditorSystem, public PackageListener
+class SelectionSystem final : public BaseEditorSystem, private PackageListener
 {
 public:
     SelectionSystem(EditorSystemsManager* doc);
@@ -52,9 +52,9 @@ public:
 
     bool OnInput(DAVA::UIEvent* currentInput) override;
 
+private:
     void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from) override;
 
-private:
     void OnSelectByRect(const DAVA::Rect& rect);
 
     void SetSelection(const SelectedNodes& selected, const SelectedNodes& SelectedNodes);

@@ -36,25 +36,47 @@
 #include "Model/PackageHierarchy/PackageControlsNode.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/Shader.h"
+#include "Model/ControlProperties/PropertyListener.h"
+#include "Model/ControlProperties/RootProperty.h"
 
 using namespace DAVA;
 
-class CheckeredCanvas : public UIControl
+class CheckeredCanvas : public UIControl, private PropertyListener
 {
 public:
-    CheckeredCanvas();
+    CheckeredCanvas(RootProperty* property);
+    void PropertyChanged(AbstractProperty* property) override;
 
 private:
     void Draw(const UIGeometricData& geometricData) override;
+    AbstractProperty* sizeProperty = nullptr;
+    AbstractProperty* positionProperty = nullptr;
 };
 
-CheckeredCanvas::CheckeredCanvas()
+CheckeredCanvas::CheckeredCanvas(RootProperty* property)
     : UIControl()
 {
+    property->AddListener(this);
+    sizeProperty = property->FindPropertyByName("Size");
+    positionProperty = property->FindPropertyByName("Position");
+    DVASSERT(nullptr != sizeProperty);
+    DVASSERT(nullptr != positionProperty);
     SetName("CheckeredCanvas");
     background->SetSprite("~res:/Gfx/CheckeredBg", 0);
     background->SetDrawType(UIControlBackground::DRAW_TILED);
     background->SetShader(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR);
+}
+
+void CheckeredCanvas::PropertyChanged(AbstractProperty* property)
+{
+    if (property == sizeProperty)
+    {
+        SetSize(sizeProperty->GetValue().AsVector2());
+    }
+    else if (property == positionProperty)
+    {
+        SetPosition(positionProperty->GetValue().AsVector2());
+    }
 }
 
 void CheckeredCanvas::Draw(const UIGeometricData& geometricData)
@@ -72,39 +94,41 @@ void CheckeredCanvas::Draw(const UIGeometricData& geometricData)
 
 CanvasSystem::CanvasSystem(EditorSystemsManager* parent)
     : BaseEditorSystem(parent)
-    , canvas(new UIControl())
+    , backgroundCanvas(new UIControl())
+    , controlsCanvas(new UIControl())
 {
-    canvas->SetName("Canvas");
+    controlsCanvas->SetName("controls canvas");
+    backgroundCanvas->SetName("background checkered canvas");
     systemManager->GetPackage()->AddListener(this);
-}
-
-UIControl* CanvasSystem::GetCanvasControl()
-{
-    return canvas.get();
 }
 
 void CanvasSystem::OnActivated()
 {
-    systemManager->GetScalableControl()->AddControl(canvas);
-    Vector<ControlNode*> rootControls;
+    systemManager->GetScalableControl()->AddControl(backgroundCanvas);
+    systemManager->GetScalableControl()->AddControl(controlsCanvas);
+
     auto controlsNode = systemManager->GetPackage()->GetPackageControlsNode();
     for (int index = 0; index < controlsNode->GetCount(); ++index)
     {
-        rootControls.push_back(controlsNode->Get(index));
+        AddRootControl(controlsNode->Get(index));
     }
-    SetRootControls(rootControls);
+    LayoutCanvas();
 }
 
 void CanvasSystem::OnDeactivated()
 {
-    canvas->RemoveFromParent();
+    backgroundCanvas->RemoveFromParent();
+    controlsCanvas->RemoveFromParent();
 }
 
 void CanvasSystem::ControlWasRemoved(ControlNode* node, ControlsContainerNode* /*from*/)
 {
     if (nullptr == node->GetParent())
     {
-        canvas->RemoveControl(node->GetControl()->GetParent());
+        UIControl* removedControl = node->GetControl()->GetParent();
+        controlsCanvas->RemoveControl(removedControl);
+        DVASSERT(rootControls.find(removedControl) != rootControls.end());
+        backgroundCanvas->RemoveControl(rootControls[removedControl]);
         LayoutCanvas();
     }
 }
@@ -121,21 +145,19 @@ void CanvasSystem::ControlWasAdded(ControlNode* node, ControlsContainerNode* /*d
 
 void CanvasSystem::SetRootControls(const Vector<ControlNode*>& controls)
 {
-    canvas->RemoveAllControls();
     for (auto node : controls)
     {
         AddRootControl(node);
     }
-    LayoutCanvas();
 }
 
 void CanvasSystem::AddRootControl(ControlNode* controlNode)
 {
-    ScopedPtr<CheckeredCanvas> checkeredCanvas(new CheckeredCanvas());
+    ScopedPtr<CheckeredCanvas> checkeredCanvas(new CheckeredCanvas(controlNode->GetRootProperty()));
     auto control = controlNode->GetControl();
-    checkeredCanvas->AddControl(control);
-    checkeredCanvas->SetSize(control->GetSize());
-    canvas->AddControl(checkeredCanvas);
+    rootControls.insert(std::make_pair(control, checkeredCanvas));
+    backgroundCanvas->AddControl(checkeredCanvas);
+    controlsCanvas->AddControl(control);
 }
 
 void CanvasSystem::LayoutCanvas()
@@ -143,29 +165,30 @@ void CanvasSystem::LayoutCanvas()
     float32 maxWidth = 0.0f;
     float32 totalHeight = 0.0f;
     const int spacing = 5;
-    for (auto control : canvas->GetChildren())
-    {
-        maxWidth = Max(maxWidth, control->GetSize().x);
-        totalHeight += control->GetSize().y;
-    }
-    int childrenCount = canvas->GetChildren().size();
+    int childrenCount = controlsCanvas->GetChildren().size();
     if (childrenCount > 1)
     {
         totalHeight += spacing * (childrenCount - 1);
     }
-    Vector2 size(maxWidth, totalHeight);
-    canvas->SetSize(size);
+    for (auto control : controlsCanvas->GetChildren())
+    {
+        maxWidth = Max(maxWidth, control->GetSize().x);
+        totalHeight += control->GetSize().y;
+    }
+
     float32 curY = 0.0f;
-    for (auto control : canvas->GetChildren())
+    for (auto control : controlsCanvas->GetChildren())
     {
         Rect rect = control->GetRect();
         rect.y = curY;
         rect.x = (maxWidth - rect.dx) / 2.0f;
         control->SetRect(rect);
-
+        rootControls[control]->SetRect(rect);
         curY += rect.dy + spacing;
     }
-
+    Vector2 size(maxWidth, totalHeight);
+    controlsCanvas->SetSize(size);
+    backgroundCanvas->SetSize(size);
     systemManager->GetRootControl()->SetSize(size);
     systemManager->CanvasSizeChanged.Emit();
 }

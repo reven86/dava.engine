@@ -72,6 +72,8 @@ private:
     DAVA::Array<DAVA::Array<int, DAVA::Vector2::AXIS_COUNT>, OPERATIONS_COUNT> accumulates;
 
     SelectedControls selectedControlNodes;
+
+    const DAVA::Vector2 minimumSize = DAVA::Vector2(16.0f, 16.0f);
 };
 
 #endif // __QUICKED_TRANSFORM_SYSTEM_H__

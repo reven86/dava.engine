@@ -494,8 +494,6 @@ void PackageWidget::SetSelectedNodes(const SelectedNodes& selected, const Select
 
     if (!reallySelected.empty() || !reallyDeselected.empty())
     {
-        RefreshActions();
-
         disconnect(treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &PackageWidget::OnSelectionChanged);
 
         for (const auto &node : reallyDeselected)
@@ -511,6 +509,8 @@ void PackageWidget::SetSelectedNodes(const SelectedNodes& selected, const Select
             treeView->selectionModel()->select(dstIndex, QItemSelectionModel::Select);
             treeView->scrollTo(dstIndex);
         }
+        RefreshActions();
+
         connect(treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &PackageWidget::OnSelectionChanged);
         emit SelectedNodesChanged(reallySelected, reallyDeselected);
     }
