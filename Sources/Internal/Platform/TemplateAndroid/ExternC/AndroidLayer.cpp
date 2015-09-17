@@ -486,6 +486,11 @@ void Java_com_dava_framework_JNISurfaceView_nativeSurfaceDestroyed(JNIEnv * env,
 	{
 		ANativeWindow_release(nativeWindow);
 		nativeWindow = nullptr;
+
+		if(core)
+		{
+			core->SetNativeWindow(nativeWindow);
+		}
 	}
 }
 
