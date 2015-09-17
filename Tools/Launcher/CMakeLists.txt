@@ -3,21 +3,21 @@ cmake_minimum_required (VERSION 3.0)
 set                   ( CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebinfo" CACHE STRING "limited configs" FORCE )
 
 project               ( Launcher )
-set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
+set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" )
 include               ( CMake-common )
 
 find_package          ( QT5 REQUIRED )
 find_package          ( Qt5Network   )
-find_package          ( Qt5WebKitWidgets   ) 
+find_package          ( Qt5WebKitWidgets   )
 
 add_subdirectory      ( "${CMAKE_CURRENT_LIST_DIR}/ThirdParty/quazip" ${CMAKE_CURRENT_BINARY_DIR}/quazip )
 add_subdirectory      ( "${CMAKE_CURRENT_LIST_DIR}/ThirdParty/yaml" ${CMAKE_CURRENT_BINARY_DIR}/yaml )
 
-include_directories   ( ${DAVA_INCLUDE_DIR} ) 
+include_directories   ( ${DAVA_INCLUDE_DIR} )
 include_directories   ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} )
 include_directories   ( ${CMAKE_CURRENT_BINARY_DIR} )
 
-include_directories   (.)             
+include_directories   (.)
 include_directories   ( "Classes" )
 include_directories   ( "ThirdParty/quazip" )
 include_directories   ( "ThirdParty/yaml/include" )
@@ -32,12 +32,9 @@ if ( WIN32 )
     set( LIB_DEBUG    "msvcrtd.lib" "zlibd.lib"  )
 endif()
 
-file                  ( GLOB_RECURSE QT_LIST "Classes/*.h"  )
-qt5_wrap_cpp          ( MOC_APP_SRCS ${QT_LIST} )
-
 file                  ( GLOB UI_LIST "DataQt/*.ui" )
 qt5_wrap_ui           ( UI_APP_HDRS  ${UI_LIST} )
-                   
+
 file                  ( GLOB RCC_LIST "DataQt/*.qrc" )
 qt5_add_resources     ( RCC_APP_SRCS  ${RCC_LIST} )
 

@@ -1,0 +1,62 @@
+cmake_minimum_required (VERSION 3.0)
+project( DavaPluginTemplate) # to change the project name
+
+set                   ( DAVA_USE_QT_WIDGETS true )
+
+include               ( CMake-common )
+
+find_package          ( QT5           REQUIRED )
+find_package          ( DavaFramework REQUIRED )
+find_package          ( DavaTools     REQUIRED )
+find_package          ( NGT REQUIRED)
+
+foreach(NGT_LIB ${NGT_LIBS})
+   list(APPEND TARGET_LIBRARIES ${NGT_LIB})
+endforeach()
+
+include_directories   ( ${CMAKE_CURRENT_BINARY_DIR}/DavaTools/QtTools )
+include_directories   ( "Classes" )
+include_directories   ( "Classes/bullet" )
+
+add_definitions       (
+-DQT_GUI_LIB
+-DQT_NETWORK_LIB
+-DQT_CORE_LIB
+-DQT_HAVE_MMX
+-DQT_HAVE_3DNOW
+-DQT_HAVE_SSE
+-DQT_HAVE_MMXEXT
+-DQT_HAVE_SSE2
+-DQT_THREAD_SUPPORT
+-DDAVA_QT
+-DNGT_INTEGRATION
+)
+
+file              ( GLOB UI_LIST "DataQt/*.ui" )
+qt5_wrap_ui       ( UI_APP_HDRS  ${UI_LIST} )
+
+file              ( GLOB RCC_LIST "DataQt/*.qrc" )
+qt5_add_resources ( RCC_APP_SRCS  ${RCC_LIST} )
+
+set               ( Generated ${MOC_APP_SRCS} ${UI_APP_HDRS} ${RCC_APP_SRCS} )
+set               ( UiList ${UI_LIST} )
+
+define_source_folders          ( SRC_ROOT "Classes" GLOBAL_ERASE_FOLDER )
+generate_source_groups_project ( SRC_ROOT "Classes" "DataQt" Generated UiList)
+
+#set( APP_DATA             ${CMAKE_CURRENT_LIST_DIR}/Data )
+set( MACOS_PLIST          ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/Info.plist )
+set( MACOS_ICO            ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/icon.icns )
+set( ADDED_SRC            ${MOC_APP_SRCS} ${UI_APP_HDRS} ${RCC_APP_SRCS} )
+#set( LIBRARIES            ${QT_LIBRARIES})
+
+set( ADDED_BINARY_DIR     ${QT5_PATH_WIN}/bin )
+
+SET_PROPERTY( TARGET DavaFramework  PROPERTY FOLDER "DavaCore")
+SET_PROPERTY( TARGET DavaTools  PROPERTY FOLDER "DavaCore")
+SET_PROPERTY( TARGET QtTools  PROPERTY FOLDER "DavaCore")
+
+setup_main_dynlib()
+
+SET_PROPERTY( TARGET DavaPluginTemplate  PROPERTY FOLDER "ToolsPlugin")
+set_binary_dir( ${PROJECT_NAME} ${BIN_OUTPUT_DIR} "plugins")

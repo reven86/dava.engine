@@ -30,6 +30,8 @@
 #ifndef DAVAGLWIDGET_H
 #define DAVAGLWIDGET_H
 
+#include "DAVAEngine.h"
+
 #include <QOpenGLWidget>
 #include <QTimer>
 #include <QMimeData>

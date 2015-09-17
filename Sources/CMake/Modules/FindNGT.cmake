@@ -1,17 +1,37 @@
-include ( GlobalVariables      )
-
 if (NGT_FOUND)
     return()
 endif()
-set(NGT_FOUND 1)
 
-if (NOT NGT_PATH)
-    message(FATAL_ERROR "Please set the correct path to NGT in file DavaConfig.in")
+if (NOT NGT_ROOT)
+    message(FATAL_ERROR "marco define_ngt_pathes have not been called")
 endif()
 
-get_filename_component(NGT_ROOT_DIR ${NGT_PATH} ABSOLUTE)
-set(BW_CMAKE_TARGET DAVA)
-set(Qt5_DIR ${QT5_PATH_WIN})
+set (NGT_FOUND 1)
 
-INCLUDE_DIRECTORIES( ${NGT_ROOT_DIR}/src/core/lib )
-add_subdirectory(${NGT_ROOT_DIR}/src ngt/)
+include (NGTMacro)
+
+get_filename_component(NGT_ABS_CORE_PATH ${NGT_CORE_PATH} ABSOLUTE)
+
+include_directories(${NGT_ABS_CORE_PATH})
+include_directories(${NGT_ABS_CORE_PATH}/interfaces)
+get_subdirs_list(SUBDIRS ${NGT_ABS_CORE_PATH})
+
+foreach(SUBDIR ${SUBDIRS})
+    set(LIB_NAME ${SUBDIR})
+    define_ngt_lib(${NGT_ABS_CORE_PATH}/${SUBDIR} ${LIB_NAME})
+endforeach()
+
+get_filename_component(NGT_ABS_PLUGINS_PATH ${NGT_PLUGINS_PATH} ABSOLUTE)
+get_subdirs_list(SUBDIRS ${NGT_ABS_PLUGINS_PATH})
+
+foreach(SUBDIR ${SUBDIRS})
+    set(LIB_NAME ${SUBDIR})
+    define_ngt_lib(${NGT_ABS_PLUGINS_PATH}/${SUBDIR} ${LIB_NAME})
+endforeach()
+
+set(CMAKE_MODULE_TMP ${CMAKE_MODULE_PATH})
+set(CMAKE_MODULE_PATH ${NGT_ROOT}/build/cmake/)
+
+include (BWMacros)
+
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_TMP})

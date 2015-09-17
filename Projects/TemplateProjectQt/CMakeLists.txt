@@ -18,7 +18,7 @@ include_directories   ( ${CMAKE_CURRENT_BINARY_DIR} )
 include_directories   (.)
 include_directories   ( "Classes" )
 
-add_definitions       ( 
+add_definitions       (
 -DQT_GUI_LIB
 -DQT_NETWORK_LIB
 -DQT_CORE_LIB
@@ -30,10 +30,6 @@ add_definitions       (
 -DQT_THREAD_SUPPORT
 -DDAVA_QT
 )
-
-
-file              ( GLOB_RECURSE QT_LIST "Classes/*.h"  )
-qt5_wrap_cpp      ( MOC_APP_SRCS ${QT_LIST} )
 
 file              ( GLOB UI_LIST "DataQt/*.ui" )
 qt5_wrap_ui       ( UI_APP_HDRS  ${UI_LIST} )

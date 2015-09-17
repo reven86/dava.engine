@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 3.0)
 project               ( AssetCacheServer )
 
 set                   ( DAVA_USE_QT_WIDGETS true )
-set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
+set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" )
 include               ( CMake-common )
 
 find_package          ( QT5           REQUIRED )
@@ -16,7 +16,7 @@ include_directories   ( ${CMAKE_CURRENT_BINARY_DIR} )
 include_directories   (.)
 include_directories   ( "Classes" )
 
-add_definitions       ( 
+add_definitions       (
 -DQT_GUI_LIB
 -DQT_NETWORK_LIB
 -DQT_CORE_LIB
@@ -28,10 +28,6 @@ add_definitions       (
 -DQT_THREAD_SUPPORT
 -DDAVA_QT
 )
-
-
-file              ( GLOB_RECURSE QT_LIST "Classes/*.h"  )
-qt5_wrap_cpp      ( MOC_APP_SRCS ${QT_LIST} )
 
 file              ( GLOB UI_LIST "DataQt/*.ui" )
 qt5_wrap_ui       ( UI_APP_HDRS  ${UI_LIST} )

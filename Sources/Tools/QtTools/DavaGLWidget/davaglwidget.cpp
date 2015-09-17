@@ -26,9 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#include "DAVAEngine.h"
-
 #include "Platform/Qt5/QtLayer.h"
 
 #include "davaglwidget.h"
