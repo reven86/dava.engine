@@ -35,14 +35,14 @@
 namespace DAVA 
 {
 class UITextField;
-    
-class UITextFieldiPhone
+
+class TextFieldPlatformImpl
 {
 public:
-    UITextFieldiPhone(UITextField& tf);
-	virtual ~UITextFieldiPhone();
-	
-	void OpenKeyboard();
+    TextFieldPlatformImpl(UITextField* tf);
+    virtual ~TextFieldPlatformImpl();
+
+    void OpenKeyboard();
 	void CloseKeyboard();
 	void GetText(WideString & string) const;
 	void SetText(const WideString & string);
