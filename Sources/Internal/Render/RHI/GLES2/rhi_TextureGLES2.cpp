@@ -58,6 +58,7 @@ public:
 
     unsigned        uid;
     unsigned        uid2;
+    unsigned		destroyedUid;
 
     unsigned        width;
     unsigned        height;
@@ -89,6 +90,7 @@ RHI_IMPL_RESOURCE(TextureGLES2_t,Texture::Descriptor);
 TextureGLES2_t::TextureGLES2_t()
   : uid(0),
     uid2(0),
+    destroyedUid(0),
     fbo(0),
     width(0),
     height(0),
@@ -270,7 +272,10 @@ TextureGLES2_t::Destroy( bool force_immediate )
 
     ExecGL( cmd, cmd_cnt );
 
+    destroyedUid = uid;
 
+    uid = 0;
+    uid2 = 0;
 
     DVASSERT(!isMapped);
         
@@ -781,6 +786,23 @@ NeedRestoreCount()
     return TextureGLES2_t::NeedRestoreCount();
 }
 
+void
+PatchCommands( GLCommand* command, uint32 cmdCount )
+{
+    for( TextureGLES2Pool::Iterator b=TextureGLES2Pool::Begin(),b_end=TextureGLES2Pool::End(); b!=b_end; ++b )
+    {
+        if( b->destroyedUid )
+        {
+            for( GLCommand* cmd=command,*cmd_end=command+cmdCount; cmd!=cmd_end; ++cmd )
+            {
+                if(cmd->func == GLCommand::BIND_TEXTURE && (uint32)(cmd->arg[0]) == b->destroyedUid)
+                {
+                    cmd->arg[0] = uint64(b->uid);
+                }
+            }
+        }
+    }
+}
 
 } // namespace TextureGLES2
 

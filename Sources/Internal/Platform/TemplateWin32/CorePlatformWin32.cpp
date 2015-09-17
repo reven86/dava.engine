@@ -763,7 +763,6 @@ namespace DAVA
                 if(!loWord || hiWord)
                 {
                     Logger::FrameworkDebug("[PlatformWin32] deactivate application");
-                    RenderResource::SaveAllResourcesToSystemMem();
 					
                     if(core)
 					{

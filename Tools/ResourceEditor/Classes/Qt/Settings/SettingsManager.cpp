@@ -42,6 +42,8 @@
 #include "FileSystem/VariantType.h"
 #include "Render/RenderBase.h"
 
+#include "AssetCache/AssetCache.h"
+
 #define SETTINGS_CONFIG_FILE "~doc:/ResourceEditorOptions.archive"
 
 SettingsManager::SettingsManager()
@@ -74,6 +76,10 @@ void SettingsManager::Init()
     CreateValue(Settings::General_HeighMaskTool_Color0, DAVA::VariantType(DAVA::Color(0.5f, 0.5f, 0.5f, 1.0f)));
     CreateValue(Settings::General_HeighMaskTool_Color1, DAVA::VariantType(DAVA::Color(0.0f, 0.0f, 0.0f, 1.0f)));
 
+    CreateValue(Settings::General_AssetCache_UseCache, DAVA::VariantType(true));
+    CreateValue(Settings::General_AssetCache_Ip, DAVA::VariantType(DAVA::String("")));
+    CreateValue(Settings::General_AssetCache_Port, DAVA::VariantType(DAVA::Format("%d", DAVA::AssetCache::ASSET_SERVER_PORT)));
+    CreateValue(Settings::General_AssetCache_Timeout, DAVA::VariantType(DAVA::String("")));
 
 	CreateValue(Settings::Scene_GridStep, DAVA::VariantType(10.0f));
 	CreateValue(Settings::Scene_GridSize, DAVA::VariantType(600.0f));
@@ -107,8 +113,8 @@ void SettingsManager::Init()
     CreateValue( Settings::General_Mouse_WheelMoveCamera, DAVA::VariantType( true ) );
     CreateValue( Settings::General_Mouse_InvertWheel, DAVA::VariantType( false ) );
 
-    CreateValue(Settings::Internal_TextureViewGPU, DAVA::VariantType(static_cast<DAVA::int32>(DAVA::GPU_ORIGIN)));
-	CreateValue(Settings::Internal_LastProjectPath, DAVA::VariantType(DAVA::FilePath()));
+    CreateValue(Settings::Internal_TextureViewGPU, DAVA::VariantType(static_cast<DAVA::uint32>(DAVA::GPU_ORIGIN)));
+    CreateValue(Settings::Internal_LastProjectPath, DAVA::VariantType(DAVA::FilePath()));
 	CreateValue(Settings::Internal_EditorVersion, DAVA::VariantType(DAVA::String("local build")));
 	CreateValue(Settings::Internal_CubemapLastFaceDir, DAVA::VariantType(DAVA::FilePath()));
 	CreateValue(Settings::Internal_CubemapLastProjDir, DAVA::VariantType(DAVA::FilePath()));
@@ -173,6 +179,18 @@ DAVA::FastName SettingsManager::GetSettingsName(size_t index)
     return SettingsManager::Instance()->settingsOrder[index];
 }
 
+bool SettingsManager::CustomTextureViewGPULoad(const DAVA::String & paramName, const DAVA::VariantType & src_value, DAVA::VariantType & dstValue)
+{
+    if (DAVA::VariantType::TYPE_INT32 == src_value.GetType() && paramName == Settings::Internal_TextureViewGPU.c_str())
+    {
+        DAVA::eGPUFamily gpuFamilyRead = DAVA::GPUFamilyDescriptor::ConvertValueToGPU(src_value.AsInt32());
+        DAVA::uint32 valueToVariant = static_cast<DAVA::uint32>(gpuFamilyRead);
+        dstValue.SetVariant(DAVA::VariantType(valueToVariant));
+        return true;
+    }
+    return false;
+}
+
 void SettingsManager::Load()
 {
 	DAVA::KeyedArchive* toLoad = new DAVA::KeyedArchive();
@@ -188,7 +206,14 @@ void SettingsManager::Load()
             if(toLoad->IsKeyExists(name))
             {
                 DAVA::VariantType* sourceValue = toLoad->GetVariant(name);
-                if(sourceValue->type == node->value.type)
+
+                // try to set texture view gpu custom way.
+                if (CustomTextureViewGPULoad(name, *sourceValue, node->value))
+                {
+                    continue;
+                }
+                // Not setted. Use general setter.
+                if (sourceValue->type == node->value.type)
                 {
                     node->value.SetVariant(*sourceValue);
                 }
@@ -239,8 +264,9 @@ void SettingsManager::ResetToDefault()
 
 void SettingsManager::UpdateGPUSettings()
 {
-    DAVA::VariantType oldGpu = GetValue(Settings::Internal_TextureViewGPU);
-    DAVA::VariantType newGpu = DAVA::VariantType(DAVA::GPUFamilyDescriptor::ConvertValueToGPU(oldGpu.AsInt32()));
+    DAVA::uint32 oldGpu = GetValue(Settings::Internal_TextureViewGPU).AsUInt32();
+    DAVA::uint32 newValue = DAVA::GPUFamilyDescriptor::ConvertValueToGPU(oldGpu);
+    DAVA::VariantType newGpu = DAVA::VariantType(newValue);
     SetValue(Settings::Internal_TextureViewGPU, newGpu);
 }
 

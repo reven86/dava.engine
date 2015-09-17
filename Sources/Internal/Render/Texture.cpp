@@ -718,58 +718,52 @@ void Texture::SetDebugInfo(const String & _debugInfo)
 }	
 
 void Texture::RestoreRenderResource()
-{
-    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();	
-		
+{    
+    
     if ((!handle.IsValid()) || (!NeedRestoreTexture(handle)))
         return;
 	
-    else
+    
+    
+    Vector<Image *> images;
+
+    const FilePath& relativePathname = texDescriptor->GetSourceTexturePathname();
+    if (relativePathname.GetType() == FilePath::PATH_IN_FILESYSTEM ||
+        relativePathname.GetType() == FilePath::PATH_IN_RESOURCES ||
+        relativePathname.GetType() == FilePath::PATH_IN_DOCUMENTS)
     {
-        Vector<Image *> images;
-
-        const FilePath& relativePathname = texDescriptor->GetSourceTexturePathname();
-        if (relativePathname.GetType() == FilePath::PATH_IN_FILESYSTEM ||
-            relativePathname.GetType() == FilePath::PATH_IN_RESOURCES ||
-            relativePathname.GetType() == FilePath::PATH_IN_DOCUMENTS)
-        {            
-            eGPUFamily gpuForLoading = GetGPUForLoading(loadedAsFile, texDescriptor);            
-            LoadImages(gpuForLoading, &images);                        
-        }
-        else 
+        eGPUFamily gpuForLoading = GetGPUForLoading(loadedAsFile, texDescriptor);
+        LoadImages(gpuForLoading, &images);
+    }
+    else if (isPink)
+    {
+        if (texDescriptor->IsCubeMap())
         {
-            if (relativePathname.GetType() == FilePath::PATH_IN_MEMORY)            
-                Logger::Debug("[Texture::Invalidate] - invalidater is null");
-            if (relativePathname.GetType() == FilePath::PATH_EMPTY)
-                Logger::Debug("[Texture::Invalidate] - empty path");
-
-            if (texDescriptor->IsCubeMap())
-            {
-                for (uint32 i = 0; i < Texture::CUBE_FACE_COUNT; ++i)
-                {
-                    Image *img = Image::Create(width, height, FORMAT_RGBA8888);
-                    img->MakePink(false);
-                    img->cubeFaceID = i;
-                    img->mipmapLevel = 0;
-                    images.push_back(img);
-                }
-            }
-            else
+            for (uint32 i = 0; i < Texture::CUBE_FACE_COUNT; ++i)
             {
                 Image *img = Image::Create(width, height, FORMAT_RGBA8888);
                 img->MakePink(false);
+                img->cubeFaceID = i;
+                img->mipmapLevel = 0;
                 images.push_back(img);
             }
-        }        
-
-        for (uint32 i = 0; i < (uint32)images.size(); ++i)
-        {
-            Image *img = images[i];
-            TexImage((img->mipmapLevel != (uint32)-1) ? img->mipmapLevel : i, img->width, img->height, img->data, img->dataSize, img->cubeFaceID);
         }
-
-        ReleaseImages(&images);        
+        else
+        {
+            Image *img = Image::Create(width, height, FORMAT_RGBA8888);
+            img->MakePink(false);
+            images.push_back(img);
+        }
     }
+
+    for (uint32 i = 0; i < (uint32)images.size(); ++i)
+    {
+        Image *img = images[i];
+        TexImage((img->mipmapLevel != (uint32)-1) ? img->mipmapLevel : i, img->width, img->height, img->data, img->dataSize, img->cubeFaceID);
+    }
+
+    ReleaseImages(&images);
+    
 }
 
 

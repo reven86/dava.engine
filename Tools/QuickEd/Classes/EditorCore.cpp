@@ -57,8 +57,9 @@ EditorCore::EditorCore(QObject *parent)
 {
     mainWindow->setWindowIcon(QIcon(":/icon.ico"));
     mainWindow->CreateUndoRedoActions(documentGroup->GetUndoGroup());
-    
+
     connect(mainWindow->GetDialogReloadSprites(), &DialogReloadSprites::StarPackProcess, this, &EditorCore::CloseAllDocuments);
+    connect(project, &Project::ProjectPathChanged, mainWindow, &MainWindow::OnSetupCacheSettingsForPacker);
     connect(project, &Project::ProjectPathChanged, this, &EditorCore::OnProjectPathChanged);
     connect(mainWindow, &MainWindow::TabClosed, this, &EditorCore::CloseOneDocument);
     connect(mainWindow, &MainWindow::CurrentTabChanged, this, &EditorCore::OnCurrentTabChanged);
@@ -132,6 +133,7 @@ void EditorCore::OnProjectPathChanged(const QString &projectPath)
 {
     QRegularExpression searchOption("gfx\\d*$", QRegularExpression::CaseInsensitiveOption);
     auto spritesPacker = mainWindow->GetDialogReloadSprites()->GetSpritesPacker();
+    DVASSERT(nullptr != spritesPacker);
     spritesPacker->ClearTasks();
     QDirIterator it(projectPath + "/DataSource");
     while (it.hasNext())
