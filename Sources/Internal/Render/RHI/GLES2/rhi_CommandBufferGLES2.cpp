@@ -154,6 +154,9 @@ static bool                 _GLES2_RenderThreadExitPending  = false;
 static DAVA::Spinlock       _GLES2_RenderThreadExitSync;
 static DAVA::Semaphore      _GLES2_RenderThredStartedSync   (1);
 
+static DAVA::Mutex          _GLES2_RenderThreadSuspendSync;
+static DAVA::Atomic<bool>   _GLES2_RenderThreadSuspended    (false);
+    
 static DAVA::Thread*        _GLES2_RenderThread             = nullptr;
 static unsigned             _GLES2_RenderThreadFrameCount   = 0;
 
@@ -1409,8 +1412,11 @@ _RenderFunc( DAVA::BaseObject* obj, void*, void* )
 
     while( true )
     {
+        _GLES2_RenderThreadSuspendSync.Lock();
+        
         bool    do_wait = true;
         bool    do_exit = false;
+     
         
         // CRAP: busy-wait
         do
@@ -1439,7 +1445,7 @@ _RenderFunc( DAVA::BaseObject* obj, void*, void* )
 //            cnt = _RenderQueue.size();
 //            _CmdQueueSync.Unlock();
             _FrameSync.Lock();
-            do_wait = !( _Frame.size()  &&  _Frame.begin()->readyToExecute );
+            do_wait = !(_Frame.size() && _Frame.begin()->readyToExecute ) && !_GLES2_RenderThreadSuspended.Get();
             _FrameSync.Unlock();
         } while( do_wait );
 
@@ -1447,6 +1453,8 @@ _RenderFunc( DAVA::BaseObject* obj, void*, void* )
             break;
 
         _ExecuteQueuedCommands();
+        
+        _GLES2_RenderThreadSuspendSync.Unlock();
     }
 
     Trace( "RHI render-thread stopped\n" );
@@ -1484,7 +1492,26 @@ UninitializeRenderThreadGLES2()
         _GLES2_RenderThread->Join();
     }
 }
+    
+//------------------------------------------------------------------------------
+    
+void
+SuspendGLES2()
+{
+    _GLES2_RenderThreadSuspended.Set(true);
+    _GLES2_RenderThreadSuspendSync.Lock();
+    glFinish();
+}
+    
+//------------------------------------------------------------------------------
 
+void
+ResumeGLES2()
+{
+    _GLES2_RenderThreadSuspendSync.Unlock();
+    _GLES2_RenderThreadSuspended.Set(false);
+}
+    
 //------------------------------------------------------------------------------
 
 static void

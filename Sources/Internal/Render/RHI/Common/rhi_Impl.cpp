@@ -144,6 +144,18 @@ const RenderDeviceCaps & DeviceCaps()
     return (*_Impl.impl_DeviceCaps)();
 }
 
+void
+SuspendRendering()
+{
+    (*_Impl.impl_SuspendRendering)();
+}
+
+void
+ResumeRendering()
+{
+    (*_Impl.impl_ResumeRendering)();
+}
+    
 //////////////////////////////////////////////////////////////////////////
 
 namespace VertexBuffer

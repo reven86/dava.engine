@@ -110,6 +110,9 @@ Api     HostApi();
 bool    TextureFormatSupported( TextureFormat format );
 const RenderDeviceCaps & DeviceCaps();
 
+void    SuspendRendering();
+void    ResumeRendering();
+    
 ////////////////////////////////////////////////////////////////////////////////
 // resource-handle
 
