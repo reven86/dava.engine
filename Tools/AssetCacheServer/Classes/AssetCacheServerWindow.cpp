@@ -62,7 +62,7 @@ AssetCacheServerWindow::AssetCacheServerWindow(ServerCore& core, QWidget *parent
     ui->setupUi(this);
 
     connect(ui->cacheFolderLineEdit, &QLineEdit::textChanged, this, &AssetCacheServerWindow::OnFolderTextChanged);
-    connect(ui->selectFolderButton, &QPushButton::clicked, this, &AssetCacheServerWindow::OnFolderSelected);
+    connect(ui->selectFolderButton, &QPushButton::clicked, this, &AssetCacheServerWindow::OnFolderSelection);
     connect(ui->clearDirectoryButton, &QPushButton::clicked, ui->cacheFolderLineEdit, &QLineEdit::clear);
     connect(ui->cacheSizeSpinBox, SIGNAL(valueChanged(double)), this, SLOT(OnCacheSizeChanged(double)));
     connect(ui->numberOfFilesSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnNumberOfFilesChanged(int)));
@@ -169,13 +169,22 @@ void AssetCacheServerWindow::OnTrayIconActivated(QSystemTrayIcon::ActivationReas
     }
 }
 
-void AssetCacheServerWindow::OnFolderSelected()
+void AssetCacheServerWindow::OnFolderSelection()
 {
-    QString directory = FileDialog::getExistingDirectory(this, "Choose directory", QDir::currentPath(),
+    QString startPath = ui->cacheFolderLineEdit->text();
+    if (startPath.isEmpty())
+    {
+        startPath = QDir::currentPath();
+    }
+
+    QString directory = FileDialog::getExistingDirectory(this, "Choose directory", startPath,
                                                          QFileDialog::ShowDirsOnly);
-    ui->cacheFolderLineEdit->setText(directory);
-    
-    VerifyData();
+
+    if (!directory.isEmpty())
+    {
+        ui->cacheFolderLineEdit->setText(directory);
+        VerifyData();
+    }
 }
 
 void AssetCacheServerWindow::OnFolderTextChanged()
