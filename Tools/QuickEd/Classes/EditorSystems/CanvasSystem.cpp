@@ -126,17 +126,18 @@ CanvasSystem::CanvasSystem(EditorSystemsManager* parent)
 {
     controlsCanvas->SetName("controls canvas");
     systemManager->GetPackage()->AddListener(this);
-}
-
-void CanvasSystem::OnActivated()
-{
-    systemManager->GetScalableControl()->AddControl(controlsCanvas);
 
     auto controlsNode = systemManager->GetPackage()->GetPackageControlsNode();
     for (int index = 0; index < controlsNode->GetCount(); ++index)
     {
         AddRootControl(controlsNode->Get(index));
     }
+}
+
+void CanvasSystem::OnActivated()
+{
+    systemManager->GetScalableControl()->AddControl(controlsCanvas);
+
     LayoutCanvas();
 }
 
