@@ -792,10 +792,11 @@ dx11_SyncObject_IsSignaled( Handle obj )
 static void
 _ExecuteQueuedCommandsDX11()
 {
-
+#ifdef __DAVAENGINE_WIN_UAP__
     // this hack need removed, when rhi_dx thread will synchronized with rander::reset
     __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
     DAVA::UniqueLock<DAVA::Mutex> lock(need_synchronized);
+#endif
 
 Trace("rhi-dx11.exec-queued-cmd\n");
 
