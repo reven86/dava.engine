@@ -137,9 +137,14 @@ void WinUAPXamlApp::SetCursorVisible(bool isVisible)
 
 void WinUAPXamlApp::PreStartAppSettings()
 {
-    // default orientation landscape and landscape flipped
-    // will be changed in SetDisplayOrientations()
     DisplayInformation::GetForCurrentView()->AutoRotationPreferences = DisplayOrientations::Landscape | DisplayOrientations::LandscapeFlipped;
+    if (isPhoneApiDetected)
+    {
+        // default orientation landscape and landscape flipped
+        // will be changed in SetDisplayOrientations()
+        StatusBar::GetForCurrentView()->HideAsync();
+        Windows::UI::ViewManagement::ApplicationView::GetForCurrentView()->SuppressSystemOverlays = true;
+    }
 }
 
 void WinUAPXamlApp::OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^ args)
@@ -211,7 +216,6 @@ void WinUAPXamlApp::Run()
         PrepareScreenSize();
         SetTitleName();
         SetDisplayOrientations();
-        HideAsyncTaskBar();
         
         UpdateScreenSize(static_cast<float32>(swapChainPanel->ActualWidth), static_cast<float32>(swapChainPanel->ActualHeight));
         UpdateScreenScale(swapChainPanel->CompositionScaleX, swapChainPanel->CompositionScaleY);
@@ -792,14 +796,6 @@ void WinUAPXamlApp::SetPreferredSize(float32 width, float32 height)
     // MSDN::This property only has an effect when the app is launched on a desktop device that is not in tablet mode.
     ApplicationView::GetForCurrentView()->PreferredLaunchViewSize = Windows::Foundation::Size(width, height);
     ApplicationView::PreferredLaunchWindowingMode = ApplicationViewWindowingMode::PreferredLaunchViewSize;
-}
-
-void WinUAPXamlApp::HideAsyncTaskBar()
-{
-    if (isPhoneApiDetected)
-    {
-        StatusBar::GetForCurrentView()->HideAsync();
-    }
 }
 
 const wchar_t WinUAPXamlApp::xamlTextBoxStyles[] = LR"(

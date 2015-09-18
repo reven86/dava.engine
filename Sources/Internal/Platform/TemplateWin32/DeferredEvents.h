@@ -59,8 +59,8 @@ public:
     void UpdateScale(SwapChainPanel^ scalePanel, Object^ scaleArgs);
 
 private:
-    void SlowpokeTick();
-    DispatcherTimer^ slowpoke;
+    void DeferredTick();
+    DispatcherTimer ^ timer;
     int32 interval = 0;
     
     bool isSizeUpdate = false;
@@ -75,12 +75,14 @@ private:
 
 DeferredScreenMetricEvents::DeferredScreenMetricEvents(int32 interval, UpdateMetricCallback update) : interval(interval), updateCallback(update)
 {
-    slowpoke = ref new DispatcherTimer();
+    timer = ref new DispatcherTimer();
     TimeSpan span;
     span.Duration = interval * 10000; // convert to 100ns ticks
-    slowpoke->Interval = span;
-    auto tick = ref new EventHandler<Platform::Object ^>([this](Object^ sender, Object^ e) { SlowpokeTick(); });
-    slowpoke->Tick += tick;
+    timer->Interval = span;
+    auto tick = ref new EventHandler<Platform::Object ^>([this](Object ^ sender, Object ^ e)
+                                                         { DeferredTick();
+                                                         });
+    timer->Tick += tick;
 }
 
 DeferredScreenMetricEvents::~DeferredScreenMetricEvents()
@@ -90,14 +92,14 @@ DeferredScreenMetricEvents::~DeferredScreenMetricEvents()
 void DeferredScreenMetricEvents::UpdateSize(Object^ sizeSender, SizeChangedEventArgs^ sizeArgs)
 {
     isSizeUpdate = true;
-    if (slowpoke->IsEnabled)
+    if (timer->IsEnabled)
     {
-        slowpoke->Stop();
-        slowpoke->Start();
+        timer->Stop();
+        timer->Start();
     }
     else
     {
-        slowpoke->Start();
+        timer->Start();
     }
     widht = sizeArgs->NewSize.Width;
     height = sizeArgs->NewSize.Height;
@@ -106,22 +108,22 @@ void DeferredScreenMetricEvents::UpdateSize(Object^ sizeSender, SizeChangedEvent
 void DeferredScreenMetricEvents::UpdateScale(SwapChainPanel^ scalePanel, Object^ scaleArgs)
 {
     isScaleUpdate = true;
-    if (slowpoke->IsEnabled)
+    if (timer->IsEnabled)
     {
-        slowpoke->Stop();
-        slowpoke->Start();
+        timer->Stop();
+        timer->Start();
     }
     else
     {
-        slowpoke->Start();
+        timer->Start();
     }
     scaleX = scalePanel->CompositionScaleX;
     scaleY = scalePanel->CompositionScaleY;
 }
 
-void DeferredScreenMetricEvents::SlowpokeTick()
+void DeferredScreenMetricEvents::DeferredTick()
 {
-    slowpoke->Stop();
+    timer->Stop();
     updateCallback(isSizeUpdate, widht, height, isScaleUpdate, scaleX, scaleY);
     isSizeUpdate = false;
     isScaleUpdate = false;
