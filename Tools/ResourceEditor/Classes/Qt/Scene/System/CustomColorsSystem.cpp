@@ -261,6 +261,8 @@ void CustomColorsSystem::UpdateBrushTool()
     updatedRect.SetSize(spriteSize);
     AddRectToAccumulator(updatedRect);
 
+    glLoadIdentity();
+
     auto brushMaterial = drawSystem->GetCustomColorsProxy()->GetBrushMaterial();
     RenderSystem2D::Instance()->BeginRenderTargetPass(colorTexture, false);
     RenderSystem2D::Instance()->DrawTexture(toolTextureSet, brushMaterial, drawColor, updatedRect);

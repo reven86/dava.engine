@@ -46,8 +46,7 @@ CustomColorsProxy::CustomColorsProxy(int32 _size)
 	customColorsRenderTarget = Texture::CreateFBO(size, size, FORMAT_RGBA8888/*, Texture::DEPTH_NONE*/);
 
     brushMaterial->SetMaterialName(FastName("CustomColorsBrushMaterial"));
-    brushMaterial->SetFXName(FastName("~res:/Materials/2d.Textured.material"));
-    brushMaterial->AddFlag(NMaterialFlagName::FLAG_BLENDING, BLENDING_ALPHA_ADDITIVE);
+    brushMaterial->SetFXName(FastName("~res:/Materials/2d.Textured.Alphatest.material"));
     brushMaterial->PreBuildMaterial(RenderSystem2D::RENDER_PASS_NAME);
 }
 
