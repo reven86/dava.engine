@@ -288,11 +288,6 @@ else()
 
 endif()
 
-if( TARGET_FILE_TREE_FOUND )
-    add_dependencies(  ${PROJECT_NAME} FILE_TREE_${PROJECT_NAME} )
-    
-endif()
-
 if ( QT5_FOUND )
     if ( WIN32 )
         set ( QTCONF_DEPLOY_PATH "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/qt.conf" )
@@ -479,6 +474,11 @@ list ( APPEND DAVA_FOLDERS ${FILE_TREE_CHECK_FOLDERS} )
 list ( APPEND DAVA_FOLDERS ${DAVA_THIRD_PARTY_LIBRARIES_PATH} )
 
 file_tree_check( "${DAVA_FOLDERS}" )
+
+if( TARGET_FILE_TREE_FOUND )
+    add_dependencies(  ${PROJECT_NAME} FILE_TREE_${PROJECT_NAME} )
+
+endif()
 
 if( DAVA_FOUND )
     list ( APPEND LIBRARIES ${DAVA_LIBRARY} )
