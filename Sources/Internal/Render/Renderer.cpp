@@ -62,8 +62,8 @@ void Initialize(rhi::Api _api, const rhi::InitParam & params)
 
     api = _api;
     
-    framebufferWidth = params.width;
-    framebufferHeight = params.height;
+    framebufferWidth = static_cast<int32>(params.width * params.scaleX);
+    framebufferHeight = static_cast<int32>(params.height * params.scaleY);
     
     rhi::Initialize(api, params);
     rhi::ShaderCache::Initialize();

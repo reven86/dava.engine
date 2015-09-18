@@ -70,6 +70,10 @@ extern ID3D11DeviceContext*         _D3D11_ImmediateContext;
 extern ID3D11Debug*                 _D3D11_Debug;
 extern ID3DUserDefinedAnnotation*   _D3D11_UserAnnotation;
 
+// this hack need removed, when rhi_dx thread will synchronized with rander::reset
+__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
+extern DAVA::Mutex  need_synchronized;
+ 
 extern InitParam                    _DX11_InitParam;
 
 } // namespace rhi

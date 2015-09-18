@@ -3,19 +3,18 @@ import sys
 import os
 import hashlib
 import timeit
+import argparse
 
-arguments    = sys.argv[1:]
-
-if len(arguments) == 0:
-    print 'Usage: Please enter path to the directory'
-    exit(1)
+parser = argparse.ArgumentParser()
+parser.add_argument( 'dir_list', nargs='+' )
+args   = parser.parse_args()
 
 count      = 0
 array      = []
 tree_hash  = hashlib.md5()
 #time_start = timeit.default_timer()
 
-for arg in sys.argv:
+for arg in args.dir_list:
     for rootdir, dirs, files in os.walk( arg ):
         for file in files:   
             if file.endswith( ('.c','.cpp','.h','.hpp','.m','.mm','.ui','.qrc','.a','.so','.qrc','.lib')  ): 

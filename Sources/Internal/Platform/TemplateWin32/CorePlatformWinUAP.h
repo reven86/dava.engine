@@ -57,6 +57,7 @@ public:
 
     eScreenMode GetScreenMode() override;
     void SwitchScreenToMode(eScreenMode screenMode) override;
+    void ToggleFullscreen() override;
     DisplayMode GetCurrentDisplayMode() override;
     void SetCursorPinning(bool isPinning);
 

@@ -104,6 +104,11 @@ void CorePlatformWinUAP::SwitchScreenToMode(eScreenMode screenMode)
     RunOnUIThread([this, mode]() { xamlApp->SetScreenMode(mode); });
 }
 
+void CorePlatformWinUAP::ToggleFullscreen()
+{
+    RunOnUIThread([this]() { xamlApp->ToggleFullscreen(); });
+}
+
 DisplayMode CorePlatformWinUAP::GetCurrentDisplayMode()
 {
     Windows::Foundation::Size screenSize;
