@@ -32,6 +32,7 @@
 
     #include "rhi_Type.h"
 
+namespace DAVA { class Mutex; }
 
 namespace rhi
 {
@@ -41,30 +42,32 @@ namespace rhi
 struct
 InitParam
 {
-    uint32  width;
-    uint32  height;
-    float32 scaleX;
-    float32 scaleY;
-    void*   window;
-    uint32  fullScreen:1;
-    uint32  threadedRenderEnabled:1;
-    uint32  threadedRenderFrameCount;
+    uint32          width;
+    uint32          height;
+    float32         scaleX;
+    float32         scaleY;
+    void*           window;
+    uint32          fullScreen:1;
+    uint32          threadedRenderEnabled:1;
+    uint32          threadedRenderFrameCount;
+    DAVA::Mutex*    FrameCommandExecutionSync;
 
-    void    (*acquireContextFunc)();
-    void    (*releaseContextFunc)();
+    void            (*acquireContextFunc)();
+    void            (*releaseContextFunc)();
             
-            InitParam()
-              : width(0),
-                height(0),
-                scaleX(1.f),
-                scaleY(1.f),
-                window(nullptr),
-                fullScreen(false),
-                threadedRenderEnabled(false),
-                threadedRenderFrameCount(2),
-                acquireContextFunc(nullptr),
-                releaseContextFunc(nullptr)
-            {}
+                    InitParam()
+                      : width(0),
+                        height(0),
+                        scaleX(1.f),
+                        scaleY(1.f),
+                        window(nullptr),
+                        fullScreen(false),
+                        threadedRenderEnabled(false),
+                        threadedRenderFrameCount(2),
+                        FrameCommandExecutionSync(nullptr),
+                        acquireContextFunc(nullptr),
+                        releaseContextFunc(nullptr)
+                    {}
 };
 
 struct
