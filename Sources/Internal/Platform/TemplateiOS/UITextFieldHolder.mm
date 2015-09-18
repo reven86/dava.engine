@@ -278,6 +278,11 @@
     }
 }
 
+- (void)textViewDidChange:(UITextView*)textView
+{
+    [self eventEditingChanged:textView];
+}
+
 - (BOOL)textFieldShouldBeginEditing:(UITextField *)textField
 {
 	return textInputAllowed;

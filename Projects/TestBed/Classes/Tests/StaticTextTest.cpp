@@ -124,7 +124,8 @@ void StaticTextTest::LoadResources()
     inputText->SetText(L"");
     inputText->SetDebugDraw(true);
     inputText->SetTextAlign(ALIGN_LEFT | ALIGN_TOP);
-    inputText->SetDelegate(inputDelegate = new InputDelegate(this));
+    inputDelegate = new InputDelegate(this);
+    inputText->SetDelegate(inputDelegate);
     inputText->SetMultiline(true);
     AddControl(inputText);
 
