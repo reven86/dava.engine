@@ -232,7 +232,6 @@ public class JNIWebView {
                     Log.d(TAG, String.format("Unknown view id %d", id));
                     return;
                 }
-
                 WebViewWrapper webView = views.get(id);
                 webView.loadUrl(url);
             }
