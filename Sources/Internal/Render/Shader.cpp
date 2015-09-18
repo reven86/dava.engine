@@ -161,7 +161,7 @@ rhi::HConstBuffer ShaderDescriptor::GetDynamicBuffer(ConstBufferDescriptor::Type
 }
 
 
-ShaderDescriptor::ShaderDescriptor(rhi::ShaderSource *vSource, rhi::ShaderSource *fSource, rhi::HPipelineState _pipelineState)
+ShaderDescriptor::ShaderDescriptor(const rhi::ShaderSource *vSource, const rhi::ShaderSource *fSource, rhi::HPipelineState _pipelineState)
     :piplineState(_pipelineState)
 {    
     vertexConstBuffersCount = vSource->ConstBufferCount();

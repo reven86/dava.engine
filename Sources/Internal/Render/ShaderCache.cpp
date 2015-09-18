@@ -185,30 +185,56 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
         shaderSourceCodes[name] = sourceCode;
     }
 
-    rhi::ShaderSource vSource(sourceCode.vertexProgSourcePath.GetFrameworkPath().c_str());
-    rhi::ShaderSource fSource(sourceCode.fragmentProgSourcePath.GetFrameworkPath().c_str());
-    vSource.Construct(rhi::PROG_VERTEX, sourceCode.vertexProgText, progDefines);
-    fSource.Construct(rhi::PROG_FRAGMENT, sourceCode.fragmentProgText, progDefines);    
-    //vSource.Dump();
-    //fSource.Dump();    
-    
     FastName vProgUid, fProgUid;    
     vProgUid = FastName(String("vSource: ") + resName);
     fProgUid = FastName(String("fSource: ") + resName);
 
-    rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_VERTEX, vProgUid, vSource.SourceCode());
-    rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_FRAGMENT, fProgUid, fSource.SourceCode());
+    const rhi::ShaderSource*    vSource = rhi::ShaderSourceCache::Get( vProgUid );
+    const rhi::ShaderSource*    fSource = rhi::ShaderSourceCache::Get( fProgUid );
+    rhi::ShaderSource           vSource2(sourceCode.vertexProgSourcePath.GetFrameworkPath().c_str());
+    rhi::ShaderSource           fSource2(sourceCode.fragmentProgSourcePath.GetFrameworkPath().c_str());
+
+    if( vSource )
+    {
+        Logger::Info( "using cached \"%s\"", vProgUid.c_str() );
+    }
+    else
+    {
+        Logger::Info( "building \"%s\"", vProgUid.c_str() );
+        vSource2.Construct(rhi::PROG_VERTEX, sourceCode.vertexProgText, progDefines);
+        rhi::ShaderSourceCache::Update( vProgUid, vSource2 );
+        vSource = &vSource2;
+    }
+
+    if( fSource )
+    {
+        Logger::Info( "using cached \"%s\"", fProgUid.c_str() );
+    }
+    else
+    {
+        Logger::Info( "building \"%s\"", fProgUid.c_str() );
+        fSource2.Construct(rhi::PROG_FRAGMENT, sourceCode.fragmentProgText, progDefines);
+        rhi::ShaderSourceCache::Update( fProgUid, fSource2 );
+        fSource = &fSource2;
+    }
+
+    //vSource.Dump();
+    //fSource.Dump();    
+    
+
+    rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_VERTEX, vProgUid, vSource->SourceCode());
+    rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_FRAGMENT, fProgUid, fSource->SourceCode());
 
     rhi::PipelineState::Descriptor  psDesc;
     psDesc.vprogUid = vProgUid;
     psDesc.fprogUid = fProgUid;
-    psDesc.vertexLayout = vSource.ShaderVertexLayout();
-    psDesc.blending = fSource.Blending();
+    psDesc.vertexLayout = vSource->ShaderVertexLayout();
+    psDesc.blending = fSource->Blending();
     rhi::HPipelineState piplineState = rhi::AcquireRenderPipelineState(psDesc);
     ShaderDescriptor *res = nullptr;
     if (piplineState.IsValid())
     {
-        res = new ShaderDescriptor(&vSource, &fSource, piplineState);
+        res = new ShaderDescriptor(vSource, fSource, piplineState);
         res->sourceName = name;
         res->defines = defines;
         res->requiredVertexFormat = GetVertexLayoutRequiredFormat(psDesc.vertexLayout);

@@ -79,7 +79,7 @@ public://utility
     static uint32 CalculateDataSize(rhi::ShaderProp::Type type, uint32 arraySize); //return in float  
     
 public:
-    ShaderDescriptor(rhi::ShaderSource *vSource, rhi::ShaderSource *fSource, rhi::HPipelineState pipelineState);
+    ShaderDescriptor(const rhi::ShaderSource *vSource, const rhi::ShaderSource *fSource, rhi::HPipelineState pipelineState);
 
     void UpdateDynamicParams();
     void ClearDynamicBindings();

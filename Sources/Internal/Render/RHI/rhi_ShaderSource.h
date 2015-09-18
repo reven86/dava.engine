@@ -93,7 +93,7 @@ public:
     uint32                  ConstBufferSize( uint32 bufIndex ) const;
 //    ShaderProp::Scope       ConstBufferScope( uint32 bufIndex ) const;
     ShaderProp::Storage     ConstBufferStorage( uint32 bufIndex ) const;
-    BlendState              Blending();
+    BlendState              Blending() const;
 
     void                    Dump() const;
 
@@ -133,9 +133,22 @@ public:
 
     static const ShaderSource*  Get( FastName uid );
     static void                 Update( FastName uid, const ShaderSource& source );
-    
+
+    static void                 Clear();    
     static void                 Save( const char* fileName );
     static void                 Load( const char* fileName );
+
+
+private:
+
+    struct
+    entry_t
+    {
+        FastName        uid;
+        ShaderSource*   src;
+    };
+
+    static std::vector<entry_t> Entry;
 };
 
 
