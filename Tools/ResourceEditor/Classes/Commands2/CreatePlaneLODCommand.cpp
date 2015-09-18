@@ -113,7 +113,7 @@ void CreatePlaneLODCommand::DrawToTexture(DAVA::Entity * fromEntity, DAVA::Camer
 {
     DAVA::TexturesMap textures;
     SceneHelper::EnumerateEntityTextures(fromEntity->GetScene(), fromEntity, textures, SceneHelper::EXCLUDE_NULL);
-    DAVA::eGPUFamily currentGPU = (DAVA::eGPUFamily) SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsInt32();
+    DAVA::eGPUFamily currentGPU = static_cast<DAVA::eGPUFamily>(SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsUInt32());
 
     DAVA::TexturesMap::const_iterator it = textures.begin();
     DAVA::TexturesMap::const_iterator end = textures.end();

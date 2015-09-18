@@ -412,7 +412,7 @@ bool QtMainWindow::SaveAllSceneEmitters(SceneEditor2 *scene) const
 
 DAVA::eGPUFamily QtMainWindow::GetGPUFormat()
 {
-    return GPUFamilyDescriptor::ConvertValueToGPU(SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsInt32());
+    return static_cast<DAVA::eGPUFamily>(GPUFamilyDescriptor::ConvertValueToGPU(SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsUInt32()));
 }
 
 void QtMainWindow::SetGPUFormat(DAVA::eGPUFamily gpu)
@@ -420,10 +420,10 @@ void QtMainWindow::SetGPUFormat(DAVA::eGPUFamily gpu)
 	// before reloading textures we should save tilemask texture for all opened scenes
 	if(SaveTilemask())
 	{
-		SettingsManager::SetValue(Settings::Internal_TextureViewGPU, VariantType(gpu));
-		DAVA::Texture::SetDefaultGPU(gpu);
+        SettingsManager::SetValue(Settings::Internal_TextureViewGPU, VariantType(static_cast<uint32>(gpu)));
+        DAVA::Texture::SetDefaultGPU(gpu);
 
-		DAVA::TexturesMap allScenesTextures;
+        DAVA::TexturesMap allScenesTextures;
 		for(int tab = 0; tab < GetSceneWidget()->GetTabCount(); ++tab)
 		{
 			SceneEditor2 *scene = GetSceneWidget()->GetTabScene(tab);
@@ -736,9 +736,10 @@ void QtMainWindow::SetupActions()
 	ui->actionExportTegra->setData(GPU_TEGRA);
 	ui->actionExportMali->setData(GPU_MALI);
 	ui->actionExportAdreno->setData(GPU_ADRENO);
-	ui->actionExportPNG->setData(GPU_ORIGIN);
-	
-	// import
+    ui->actionExportDX11->setData(GPU_DX11);
+    ui->actionExportPNG->setData(GPU_ORIGIN);
+
+    // import
 #ifdef __DAVAENGINE_SPEEDTREE__
     QObject::connect(ui->actionImportSpeedTreeXML, &QAction::triggered, this, &QtMainWindow::OnImportSpeedTreeXML);
 #endif //__DAVAENGINE_SPEEDTREE__
@@ -749,7 +750,8 @@ void QtMainWindow::SetupActions()
 	ui->actionReloadTegra->setData(GPU_TEGRA);
 	ui->actionReloadMali->setData(GPU_MALI);
 	ui->actionReloadAdreno->setData(GPU_ADRENO);
-	ui->actionReloadPNG->setData(GPU_ORIGIN);
+    ui->actionReloadDX11->setData(GPU_DX11);
+    ui->actionReloadPNG->setData(GPU_ORIGIN);
 
     QActionGroup *reloadGroup = new QActionGroup(this);
     QList<QAction *> reloadActions = ui->menuTexturesForGPU->actions();

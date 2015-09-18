@@ -32,7 +32,7 @@
 
 #include <QWidget>
 #include <QDockWidget>
-#include "SelectionTracker.h"
+#include "EditorSystems/SelectionContainer.h"
 #include "Base/BaseTypes.h"
 #include "ui_PackageWidget.h"
 
@@ -108,7 +108,7 @@ private:
     QString lastFilterText;
     ExpandedIndexes expandedIndexes;
 
-    SelectionTracker selectionTracker;
+    SelectionContainer selectionContainer;
 };
 
 #endif // __UI_EDITOR_UI_PACKAGE_WIDGET__

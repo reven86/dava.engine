@@ -264,12 +264,17 @@ bool TextureDescriptor::Load(const FilePath &filePathname)
     case 9:
         LoadVersion9(file);
         break;
+    case 10:
+        LoadVersion10(file);
+        break;
     default:
     {
         Logger::Error("[TextureDescriptor::Load] Version %d is not supported", version);
         return false;
     }
     }
+
+    FixCompressionFormat();
 
     return true;
 }
@@ -385,15 +390,14 @@ void TextureDescriptor::LoadVersion6(DAVA::File *file)
     }
     else
     {
-        static_assert(GPU_DEVICE_COUNT == 5, "GPU_DEVICE_COUNT is changed, texture descriptor load routine should be altered");
-        for(auto i = 0; i < GPU_DEVICE_COUNT; ++i)
+        for (auto i = 0; i < 5; ++i)
         {
             int8 format;
 			file->Read(&format);
             compression[i].format = static_cast<PixelFormat>(format);
-            
-			file->Read(&compression[i].compressToWidth);
-			file->Read(&compression[i].compressToHeight);
+
+            file->Read(&compression[i].compressToWidth);
+            file->Read(&compression[i].compressToHeight);
 			file->Read(&compression[i].sourceFileCrc);
         }
 
@@ -420,13 +424,12 @@ void TextureDescriptor::LoadVersion7(DAVA::File *file)
     }
     else
     {
-        static_assert(GPU_DEVICE_COUNT == 5, "GPU_DEVICE_COUNT is changed, texture descriptor load routine should be altered");
-        for(int32 i = 0; i < GPU_DEVICE_COUNT; ++i)
+        for (int32 i = 0; i < 5; ++i)
         {
             int8 format;
             file->Read(&format);
             compression[i].format = static_cast<PixelFormat>(format);
-            
+
             file->Read(&compression[i].compressToWidth);
             file->Read(&compression[i].compressToHeight);
             file->Read(&compression[i].sourceFileCrc);
@@ -452,7 +455,7 @@ void TextureDescriptor::LoadVersion8(File *file)
         file->Read(&exportedAsGpuFamily);
         exportedAsGpuFamily = GPUFamilyDescriptor::ConvertValueToGPU(exportedAsGpuFamily);
 
-        int8 exportedAsPixelFormat = FORMAT_INVALID;
+        uint8 exportedAsPixelFormat = FORMAT_INVALID;
         file->Read(&exportedAsPixelFormat);
         format = static_cast<PixelFormat>(exportedAsPixelFormat);
     }
@@ -460,10 +463,9 @@ void TextureDescriptor::LoadVersion8(File *file)
     {
         uint8 compressionsCount = 0;
         file->Read(&compressionsCount);
-        static_assert(GPU_FAMILY_COUNT == 6, "GPU_FAMILY_COUNT is changed, texture descriptor load routine should be altered");
-        for (auto i = 0; i < GPU_FAMILY_COUNT; ++i)
+        for (auto i = 0; i < 6; ++i)
         {
-            int8 format;
+            uint8 format;
             file->Read(&format);
             compression[i].format = (PixelFormat)format;
 
@@ -517,12 +519,11 @@ void TextureDescriptor::LoadVersion9(File *file)
     //compression
     uint8 compressionsCount = 0;
     file->Read(&compressionsCount);
-    static_assert(GPU_FAMILY_COUNT == 6, "GPU_FAMILY_COUNT is changed, texture descriptor load routine should be altered");
     for (auto i = 0; i < compressionsCount; ++i)
     {
         auto &nextCompression = compression[i];
-        
-        int8 format;
+
+        uint8 format;
         file->Read(&format);
         nextCompression.format = static_cast<PixelFormat>(format);
         
@@ -535,10 +536,32 @@ void TextureDescriptor::LoadVersion9(File *file)
     //export data
     file->Read(&exportedAsGpuFamily);
     exportedAsGpuFamily = GPUFamilyDescriptor::ConvertValueToGPU(exportedAsGpuFamily);
-    
-    int8 exportedAsPixelFormat = FORMAT_INVALID;
+
+    uint8 exportedAsPixelFormat = FORMAT_INVALID;
     file->Read(&exportedAsPixelFormat);
     format = static_cast<PixelFormat>(exportedAsPixelFormat);
+}
+
+void TextureDescriptor::FixCompressionFormat()
+{
+    if (!isCompressedFile)
+    {
+        if (compression[GPU_DX11].format == FORMAT_INVALID && compression[GPU_TEGRA].format != FORMAT_INVALID)
+        {
+            compression[GPU_DX11] = compression[GPU_TEGRA];
+
+            if (compression[GPU_DX11].format == FORMAT_ETC1)
+            {
+                compression[GPU_DX11].format = FORMAT_DXT1;
+            }
+        }
+    }
+}
+
+void TextureDescriptor::LoadVersion10(File* file)
+{
+    // has no changes in format
+    LoadVersion9(file);
 }
 
 void TextureDescriptor::WriteCompression(File *file, const Compression *compression) const

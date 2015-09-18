@@ -59,6 +59,7 @@ QColor TextureBrowser::gpuColor_PVR_Android = QColor(0, 0, 200, 255);
 QColor TextureBrowser::gpuColor_Tegra = QColor(0, 200, 200, 255);
 QColor TextureBrowser::gpuColor_MALI = QColor(200, 200, 0, 255);
 QColor TextureBrowser::gpuColor_Adreno = QColor(200, 0, 200, 255);
+QColor TextureBrowser::gpuColor_DX11 = QColor(200, 200, 200, 255);
 QColor TextureBrowser::errorColor = QColor(255, 0, 0, 255);
 
 TextureBrowser::TextureBrowser(QWidget *parent)
@@ -583,7 +584,13 @@ void TextureBrowser::setupTextureViewTabBar()
 	ui->viewTabBar->setTabData(tabIndex, GPU_ADRENO);
 	ui->viewTabBar->setTabIcon(tabIndex, QIcon(pix));
 
-	QObject::connect(ui->viewTabBar,  SIGNAL(currentChanged(int)), this, SLOT(textureViewChanged(int)));
+    p.setBrush(QBrush(gpuColor_DX11));
+    p.drawRect(QRect(0, 0, 15, 15));
+    tabIndex = ui->viewTabBar->addTab("DX11");
+    ui->viewTabBar->setTabData(tabIndex, GPU_DX11);
+    ui->viewTabBar->setTabIcon(tabIndex, QIcon(pix));
+
+    QObject::connect(ui->viewTabBar, SIGNAL(currentChanged(int)), this, SLOT(textureViewChanged(int)));
 }
 
 void TextureBrowser::resetTextureInfo()
@@ -610,7 +617,6 @@ void TextureBrowser::reloadTextureToScene(DAVA::Texture *texture, const DAVA::Te
 		// or if given texture format if not a file (will happened if some common texture params changed - mipmap/filtering etc.)
 		if(!GPUFamilyDescriptor::IsGPUForDevice(gpu) || gpu == curEditorImageGPUForTextures)
 		{
-			descriptor->Save(); //TODO: it's kostil for broken logic. We need to remove this code during refactoring of texture browser
 			texture->ReloadAs(curEditorImageGPUForTextures);
 		}
 	}
@@ -695,11 +701,13 @@ void TextureBrowser::texturePropertyChanged(int type)
 	// other settings don't need texture to reconvert
 	else
 	{
-		// new texture can be applied to scene immediately
-		reloadTextureToScene(curTexture, ui->textureProperties->getTextureDescriptor(), DAVA::GPU_ORIGIN);
-	}
+        const DAVA::TextureDescriptor* descriptor = ui->textureProperties->getTextureDescriptor();
+        descriptor->Save();
+        // new texture can be applied to scene immediately
+        reloadTextureToScene(curTexture, descriptor, DAVA::GPU_ORIGIN);
+    }
 
-	// update warning message
+    // update warning message
 	updatePropertiesWarning();
 }
 
@@ -736,16 +744,18 @@ void TextureBrowser::textureReadyConverted(const DAVA::TextureDescriptor *descri
 {
 	if(NULL != descriptor)
 	{
-		if(curDescriptor == descriptor && curTextureView == gpu)
-		{
+        descriptor->Save();
+
+        if (curDescriptor == descriptor && curTextureView == gpu)
+        {
 			updateConvertedImageAndInfo(images.images, *curDescriptor);
 		}
 
 		DAVA::Texture *texture = textureListModel->getTexture(descriptor);
 		if(NULL != texture)
 		{
-			// reload this texture into scene
-			reloadTextureToScene(texture, descriptor, gpu);
+            // reload this texture into scene
+            reloadTextureToScene(texture, descriptor, gpu);
 		}
 	}
 }

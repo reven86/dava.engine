@@ -85,7 +85,7 @@ void ScrollAreaController::UpdateCanvasContentSize()
         
         contentSize = gd.GetAABBox().GetSize() * (scale / 100.0f);
     }
-    Vector2 marginsSize(Margin * 2, Margin * 2);
+    Vector2 marginsSize(margin * 2, margin * 2);
     Vector2 tmpSize = contentSize + marginsSize;
     backgroundControl->SetSize(tmpSize);
     canvasSize = QSize(tmpSize.dx, tmpSize.dy);
@@ -130,12 +130,12 @@ void ScrollAreaController::UpdatePosition()
 {
     if(nullptr != nestedControl)
     {
-        Vector2 position(Margin, Margin);
+        Vector2 position(margin, margin);
         if (viewSize.width() > canvasSize.width())
         {
             position.x += (viewSize.width() - canvasSize.width()) / 2.0f;
         }
-        if (viewSize.height() > (canvasSize.height() + Margin * 2))
+        if (viewSize.height() > (canvasSize.height() + margin * 2))
         {
             position.y += (viewSize.height() - canvasSize.height()) / 2.0f;
         }

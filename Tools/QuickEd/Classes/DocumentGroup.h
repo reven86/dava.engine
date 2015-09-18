@@ -33,7 +33,7 @@
 #include <QObject>
 #include <QUndoGroup>
 #include "Base/BaseTypes.h"
-#include "SelectionTracker.h"
+#include "EditorSystems/SelectionContainer.h"
 
 class Document;
 class PackageBaseNode;

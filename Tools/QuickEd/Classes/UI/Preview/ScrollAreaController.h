@@ -81,7 +81,7 @@ private:
     QSize viewSize = QSize(0, 0);
     QPoint position = QPoint(0, 0);
     int scale = 100;
-    const int Margin = 50;
+    const int margin = 50;
 };
 
 #endif // __QUICKED_PREVIEW_SCROLL_AREA_CONTROLLER_H__

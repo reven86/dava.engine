@@ -89,7 +89,12 @@ private:
 //////////////////////////////////////////////////////////////////////////
 inline bool PrivateMovieViewWinUAP::IsPlaying()
 {
-    return moviePlaying;
+    // It seems that framework is client of game but not vice versa
+    // Game does not take into account that video playback can take some time after Play() has been called
+    // So assume movie is playing under following conditions:
+    //  - movie is really playing
+    //  - game has called Play() method
+    return moviePlaying || playRequest;
 }
 
 }   // namespace DAVA

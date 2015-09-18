@@ -65,14 +65,17 @@ DynamicMemoryFile::~DynamicMemoryFile()
 {
 	
 }
-	
-void * DynamicMemoryFile::GetData()
+
+const uint8* DynamicMemoryFile::GetData() const
 {
-	if(!data.size())
-	{
-		return NULL;
-	}
-	return &(data[0]);
+    if (!data.empty())
+    {
+        return data.data();
+    }
+    else
+    {
+        return nullptr;
+    }
 }
 
 
@@ -125,12 +128,12 @@ uint32 DynamicMemoryFile::Read(void * pointerToData, uint32 dataSize)
 	return 0;
 }
 
-uint32 DynamicMemoryFile::GetPos()
+uint32 DynamicMemoryFile::GetPos() const
 {
 	return currentPtr;
 }
 
-uint32 DynamicMemoryFile::GetSize()
+uint32 DynamicMemoryFile::GetSize() const
 {
 	return (uint32)data.size();
 }
@@ -169,7 +172,7 @@ bool DynamicMemoryFile::Seek(int32 position, uint32 seekType)
 	
 }
 
-bool DynamicMemoryFile::IsEof()
+bool DynamicMemoryFile::IsEof() const
 {
     return isEof;
 }
