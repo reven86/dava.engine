@@ -285,6 +285,7 @@ void NMaterial::RemoveProperty(const FastName& propName)
     DVASSERT(prop != nullptr);
     localProperties.erase(propName);
     SafeDelete(prop);
+    ClearLocalBuffers(); //RHI_COMPLETE - as local buffers can have binding for this property now just clear them all, later rethink to erease just buffers containing this propertyg
 
     InvalidateBufferBindings();
 }
