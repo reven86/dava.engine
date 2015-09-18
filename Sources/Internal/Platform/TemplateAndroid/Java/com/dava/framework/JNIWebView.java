@@ -221,8 +221,7 @@ public class JNIWebView {
     }
 
     public static void OpenURL(final int id, final String url) {
-    	Log.e(TAG, "Try to open URL: " + url);
-        final JNIActivity activity = JNIActivity.GetActivity();
+    	final JNIActivity activity = JNIActivity.GetActivity();
         if (null == activity || activity.GetIsPausing())
             return;
 
@@ -233,7 +232,7 @@ public class JNIWebView {
                     Log.d(TAG, String.format("Unknown view id %d", id));
                     return;
                 }
-                Log.e(TAG, "Load URL: " + url);
+
                 WebViewWrapper webView = views.get(id);
                 webView.loadUrl(url);
             }
