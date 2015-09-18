@@ -125,8 +125,13 @@ ModifyCustomColorsCommand::ModifyCustomColorsCommand(Image* originalImage, Image
 :	Command2(CMDID_CUSTOM_COLORS_MODIFY, "Custom Colors Modification")
 ,   texture(nullptr)
 {
-	updatedRect = Rect(floorf(_updatedRect.x), floorf(_updatedRect.y), ceilf(_updatedRect.dx), ceilf(_updatedRect.dy));
-	customColorsProxy = SafeRetain(_customColorsProxy);
+    const Vector2 topLeft(floorf(_updatedRect.x), floorf(_updatedRect.y));
+    const Vector2 bottomRight(ceilf(_updatedRect.x + _updatedRect.dx), ceilf(_updatedRect.y + _updatedRect.dy));
+
+//	updatedRect = Rect(floorf(_updatedRect.x), floorf(_updatedRect.y), ceilf(_updatedRect.dx), ceilf(_updatedRect.dy));
+    updatedRect = Rect(topLeft, bottomRight - topLeft);
+
+    customColorsProxy = SafeRetain(_customColorsProxy);
 	
 	undoImage = Image::CopyImageRegion(originalImage, updatedRect);
 	redoImage = Image::CopyImageRegion(currentImage, updatedRect);
