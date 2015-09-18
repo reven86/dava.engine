@@ -43,9 +43,72 @@ using namespace DAVA;
 namespace
 {
 const Vector2 PIVOT_CONTROL_SIZE(20.0f, 20.0f);
-const Vector2 FRAME_RECT_SIZE(20.0f, 20.0f);
+const Vector2 FRAME_RECT_SIZE(15.0f, 15.0f);
 const Vector2 ROTATE_CONTROL_SIZE(20.0f, 20.0f);
 }
+
+class SelectionRect : public UIControl
+{
+public:
+    enum
+    {
+        BORDER_TOP,
+        BORDER_BOTTOM,
+        BORDER_LEFT,
+        BORDER_RIGHT,
+        BORDERS_COUNT
+    };
+    explicit SelectionRect()
+        : UIControl()
+    {
+        for (int i = 0; i < BORDERS_COUNT; ++i)
+        {
+            UIControl* control = new UIControl();
+            UIControlBackground* background = control->GetBackground();
+            background->SetSprite("~res:/Gfx/CheckeredBg2", 0);
+            background->SetDrawType(UIControlBackground::DRAW_TILED);
+
+            borders.emplace_back(control);
+        }
+    }
+
+private:
+    void Draw(const UIGeometricData& geometricData) override
+    {
+        const Rect& rect = geometricData.GetUnrotatedRect();
+        SetAbsoluteRect(rect);
+        for (int i = 0; i < BORDERS_COUNT; ++i)
+        {
+            if (firstInit)
+            {
+                AddControl(borders[i]);
+            }
+            Rect borderRect = CreateFrameBorderRect(i, rect);
+            borders[i]->SetAbsoluteRect(borderRect);
+        }
+        firstInit = false;
+        UIControl::Draw(geometricData);
+    }
+    Rect CreateFrameBorderRect(int border, const Rect& frameRect) const
+    {
+        switch (border)
+        {
+        case BORDER_TOP:
+            return Rect(frameRect.x, frameRect.y, frameRect.dx, 1.0f);
+        case BORDER_BOTTOM:
+            return Rect(frameRect.x, frameRect.y + frameRect.dy, frameRect.dx, 1.0f);
+        case BORDER_LEFT:
+            return Rect(frameRect.x, frameRect.y, 1.0f, frameRect.dy);
+        case BORDER_RIGHT:
+            return Rect(frameRect.x + frameRect.dx, frameRect.y, 1.0f, frameRect.dy);
+        default:
+            DVASSERT("!impossible value for frame control position");
+            return Rect();
+        }
+    }
+    bool firstInit = true;
+    Vector<ScopedPtr<UIControl>> borders;
+};
 
 ControlContainer::ControlContainer(const HUDAreaInfo::eArea area_)
     : UIControl()
@@ -110,8 +173,9 @@ public:
         for (int i = 0; i < BORDERS_COUNT; ++i)
         {
             UIControl* control = new UIControl();
-            control->GetBackground()->SetColor(Color(1.0f, 1.0f, 1.0f, 1.0f));
-            control->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
+            UIControlBackground* background = control->GetBackground();
+            background->SetSprite("~res:/Gfx/CheckeredBg2", 0);
+            background->SetDrawType(UIControlBackground::DRAW_TILED);
             borders.emplace_back(control);
         }
     }
@@ -150,7 +214,7 @@ private:
         }
     }
     bool firstInit = true;
-    DAVA::Vector<ScopedPtr<UIControl>> borders;
+    Vector<ScopedPtr<UIControl>> borders;
 };
 
 class FrameRectControl : public ControlContainer
@@ -243,10 +307,8 @@ private:
 HUDSystem::HUDSystem(EditorSystemsManager* parent)
     : BaseEditorSystem(parent)
     , hudControl(new UIControl())
-    , selectionRectControl(new UIControl())
+    , selectionRectControl(new SelectionRect())
 {
-    selectionRectControl->SetDebugDraw(true);
-    selectionRectControl->SetDebugDrawColor(Color(1.0f, 1.0f, 0.0f, 1.0f));
     hudControl->AddControl(selectionRectControl);
     hudControl->SetName("hudControl");
     systemManager->SelectionChanged.Connect(this, &HUDSystem::OnSelectionChanged);
