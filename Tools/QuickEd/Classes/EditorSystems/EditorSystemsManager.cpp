@@ -143,33 +143,25 @@ bool EditorSystemsManager::OnInput(UIEvent* currentInput)
     return false;
 }
 
-void EditorSystemsManager::GetControlNodesByPos(DAVA::Vector<ControlNode*>& controlNodes, const DAVA::Vector2& pos) const
+void EditorSystemsManager::CollectControlNodesByPos(DAVA::Vector<ControlNode*>& controlNodes, const DAVA::Vector2& pos) const
 {
     auto controlsNode = package->GetPackageControlsNode();
     for (int index = 0; index < controlsNode->GetCount(); ++index)
     {
         auto tmpNode = controlsNode->Get(index);
         DVASSERT(nullptr != tmpNode);
-        auto control = tmpNode->GetControl();
-        if (control->GetParent() != nullptr)
-        {
-            GetControlNodesByPosImpl(controlNodes, pos, tmpNode);
-        }
+        GetControlNodesByPosImpl(controlNodes, pos, tmpNode);
     }
 }
 
-void EditorSystemsManager::GetControlNodesByRect(SelectedControls& controlNodes, const Rect& rect) const
+void EditorSystemsManager::CollectControlNodesByRect(SelectedControls& controlNodes, const Rect& rect) const
 {
     auto controlsNode = package->GetPackageControlsNode();
     for (int index = 0; index < controlsNode->GetCount(); ++index)
     {
         auto tmpNode = controlsNode->Get(index);
         DVASSERT(nullptr != tmpNode);
-        auto control = tmpNode->GetControl();
-        if (control->GetParent() != nullptr)
-        {
-            GetControlNodesByRectImpl(controlNodes, rect, tmpNode);
-        }
+        GetControlNodesByRectImpl(controlNodes, rect, tmpNode);
     }
 }
 

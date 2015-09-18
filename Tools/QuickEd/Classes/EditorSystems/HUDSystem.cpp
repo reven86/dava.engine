@@ -470,9 +470,9 @@ HUDSystem::HUD::HUD(ControlNode* node_, UIControl* hudControl)
 
 HUDSystem::HUD::~HUD()
 {
-    container->RemoveFromParent();
     for (auto control : hudControls)
     {
-        control->RemoveFromParent();
+        container->RemoveControl(control);
     }
+    container->RemoveFromParent();
 }

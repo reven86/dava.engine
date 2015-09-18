@@ -41,10 +41,10 @@
 
 using namespace DAVA;
 
-class CheckeredCanvas : public UIControl, private PropertyListener
+class GridCanvas : public UIControl, private PropertyListener
 {
 public:
-    CheckeredCanvas(RootProperty* property);
+    GridCanvas(RootProperty* property);
     void PropertyChanged(AbstractProperty* property) override;
 
 private:
@@ -53,7 +53,7 @@ private:
     AbstractProperty* positionProperty = nullptr;
 };
 
-CheckeredCanvas::CheckeredCanvas(RootProperty* property)
+GridCanvas::GridCanvas(RootProperty* property)
     : UIControl()
 {
     property->AddListener(this);
@@ -61,25 +61,21 @@ CheckeredCanvas::CheckeredCanvas(RootProperty* property)
     positionProperty = property->FindPropertyByName("Position");
     DVASSERT(nullptr != sizeProperty);
     DVASSERT(nullptr != positionProperty);
-    SetName("CheckeredCanvas");
+    SetName("GridCanvas");
     background->SetSprite("~res:/Gfx/CheckeredBg", 0);
     background->SetDrawType(UIControlBackground::DRAW_TILED);
     background->SetShader(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR);
 }
 
-void CheckeredCanvas::PropertyChanged(AbstractProperty* property)
+void GridCanvas::PropertyChanged(AbstractProperty* property)
 {
     if (property == sizeProperty)
     {
         SetSize(sizeProperty->GetValue().AsVector2());
     }
-    else if (property == positionProperty)
-    {
-        SetPosition(positionProperty->GetValue().AsVector2());
-    }
 }
 
-void CheckeredCanvas::Draw(const UIGeometricData& geometricData)
+void GridCanvas::Draw(const UIGeometricData& geometricData)
 {
     if (0.0f != geometricData.scale.x)
     {
@@ -94,17 +90,14 @@ void CheckeredCanvas::Draw(const UIGeometricData& geometricData)
 
 CanvasSystem::CanvasSystem(EditorSystemsManager* parent)
     : BaseEditorSystem(parent)
-    , backgroundCanvas(new UIControl())
     , controlsCanvas(new UIControl())
 {
     controlsCanvas->SetName("controls canvas");
-    backgroundCanvas->SetName("background checkered canvas");
     systemManager->GetPackage()->AddListener(this);
 }
 
 void CanvasSystem::OnActivated()
 {
-    systemManager->GetScalableControl()->AddControl(backgroundCanvas);
     systemManager->GetScalableControl()->AddControl(controlsCanvas);
 
     auto controlsNode = systemManager->GetPackage()->GetPackageControlsNode();
@@ -117,18 +110,15 @@ void CanvasSystem::OnActivated()
 
 void CanvasSystem::OnDeactivated()
 {
-    backgroundCanvas->RemoveFromParent();
     controlsCanvas->RemoveFromParent();
 }
 
-void CanvasSystem::ControlWasRemoved(ControlNode* node, ControlsContainerNode* /*from*/)
+void CanvasSystem::ControlWillBeRemoved(::ControlNode* node, ControlsContainerNode* from)
 {
     if (nullptr == node->GetParent())
     {
         UIControl* removedControl = node->GetControl()->GetParent();
         controlsCanvas->RemoveControl(removedControl);
-        DVASSERT(rootControls.find(removedControl) != rootControls.end());
-        backgroundCanvas->RemoveControl(rootControls[removedControl]);
         LayoutCanvas();
     }
 }
@@ -153,11 +143,11 @@ void CanvasSystem::SetRootControls(const Vector<ControlNode*>& controls)
 
 void CanvasSystem::AddRootControl(ControlNode* controlNode)
 {
-    ScopedPtr<CheckeredCanvas> checkeredCanvas(new CheckeredCanvas(controlNode->GetRootProperty()));
-    auto control = controlNode->GetControl();
-    rootControls.insert(std::make_pair(control, checkeredCanvas));
-    backgroundCanvas->AddControl(checkeredCanvas);
-    controlsCanvas->AddControl(control);
+    ScopedPtr<GridCanvas> gridControl(new GridCanvas(controlNode->GetRootProperty()));
+    UIControl* control = controlNode->GetControl();
+    gridControl->SetSize(control->GetSize());
+    gridControl->AddControl(control);
+    controlsCanvas->AddControl(gridControl);
 }
 
 void CanvasSystem::LayoutCanvas()
@@ -183,12 +173,10 @@ void CanvasSystem::LayoutCanvas()
         rect.y = curY;
         rect.x = (maxWidth - rect.dx) / 2.0f;
         control->SetRect(rect);
-        rootControls[control]->SetRect(rect);
         curY += rect.dy + spacing;
     }
     Vector2 size(maxWidth, totalHeight);
     controlsCanvas->SetSize(size);
-    backgroundCanvas->SetSize(size);
     systemManager->GetRootControl()->SetSize(size);
     systemManager->CanvasSizeChanged.Emit();
 }

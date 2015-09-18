@@ -88,8 +88,8 @@ public:
     bool IsInEmulationMode() const;
     void SetEmulationMode(bool emulationMode);
 
-    void GetControlNodesByPos(DAVA::Vector<ControlNode*>& controlNodes, const DAVA::Vector2& pos) const;
-    void GetControlNodesByRect(SelectedControls& controlNodes, const DAVA::Rect& rect) const;
+    void CollectControlNodesByPos(DAVA::Vector<ControlNode*>& controlNodes, const DAVA::Vector2& pos) const;
+    void CollectControlNodesByRect(SelectedControls& controlNodes, const DAVA::Rect& rect) const;
 
     DAVA::Signal<const SelectedNodes& /*selected*/, const SelectedNodes& /*deselected*/> SelectionChanged;
     DAVA::Signal<const HUDAreaInfo& /*areaInfo*/> ActiveAreaChanged;

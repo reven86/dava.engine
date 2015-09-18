@@ -96,7 +96,7 @@ void SelectionSystem::OnSelectByRect(const Rect& rect)
     SelectedNodes deselected;
     SelectedNodes selected;
     Set<ControlNode*> areaNodes;
-    systemManager->GetControlNodesByRect(areaNodes, rect);
+    systemManager->CollectControlNodesByRect(areaNodes, rect);
     if (!areaNodes.empty())
     {
         for (auto node : areaNodes)
@@ -117,7 +117,7 @@ bool SelectionSystem::ProcessMousePress(const DAVA::Vector2& point)
     SelectedNodes selected;
     SelectedNodes deselected;
     DAVA::Vector<ControlNode*> nodesUnderPoint;
-    systemManager->GetControlNodesByPos(nodesUnderPoint, point);
+    systemManager->CollectControlNodesByPos(nodesUnderPoint, point);
     if (!InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_SHIFT))
     {
         deselected = selectionContainer.selectedNodes;
