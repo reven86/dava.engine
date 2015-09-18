@@ -2,6 +2,6 @@
 texture.tex
 24 24
 3
-46 0 14 14 5 5 0 frame0
-0 0 22 22 1 1 0 frame1
-23 0 22 22 1 1 0 frame2
+94 17 14 14 5 5 0 frame0
+25 0 22 22 1 1 0 frame1
+48 0 22 22 1 1 0 frame2

@@ -70,9 +70,8 @@ public:
 												  RenderStateData::STATE_COLORMASK_ALL);
     
     static UniqueHandle RENDERSTATE_2D_BLEND;
-    static UniqueHandle RENDERSTATE_2D_INVERTED_BLEND;
     static UniqueHandle RENDERSTATE_2D_OPAQUE;
-	static UniqueHandle RENDERSTATE_3D_BLEND;
+    static UniqueHandle RENDERSTATE_3D_BLEND;
     static UniqueHandle RENDERSTATE_3D_OPAQUE;
 	static UniqueHandle RENDERSTATE_DEFAULT;
     

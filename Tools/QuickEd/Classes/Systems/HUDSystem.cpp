@@ -112,7 +112,6 @@ public:
             UIControl* control = new UIControl();
             control->GetBackground()->SetColor(Color(1.0f, 1.0f, 1.0f, 1.0f));
             control->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
-            control->GetBackground()->SetRenderState(RenderState::RENDERSTATE_2D_INVERTED_BLEND);
             borders.emplace_back(control);
         }
     }
@@ -159,10 +158,8 @@ public:
     explicit FrameRectControl(const HUDareaInfo::eArea area_)
         : ControlContainer(area_)
     {
-        background->SetSprite("~res:/Gfx/HUDControls/HUDControls", 0);
+        background->SetSprite("~res:/Gfx/HUDControls/HUDControls2", 0);
         background->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
-        RenderManager::Instance()->GetRenderStateData(RenderState::RENDERSTATE_2D_INVERTED_BLEND);
-        background->SetRenderState(RenderState::RENDERSTATE_2D_INVERTED_BLEND);
     }
 private:
     void InitFromGD(const UIGeometricData &geometricData) override
@@ -197,7 +194,7 @@ public:
     explicit PivotPointControl()
         : ControlContainer(HUDareaInfo::PIVOT_POINT_AREA)
     {
-        background->SetSprite("~res:/Gfx/HUDControls/HUDControls", 1);
+        background->SetSprite("~res:/Gfx/HUDControls/HUDControls2", 1);
         background->SetDrawType(UIControlBackground::DRAW_ALIGNED);
     }
 private:
@@ -216,7 +213,7 @@ public:
     explicit RotateControl()
         : ControlContainer(HUDareaInfo::ROTATE_AREA)
     {
-        background->SetSprite("~res:/Gfx/HUDControls/HUDControls", 2);
+        background->SetSprite("~res:/Gfx/HUDControls/HUDControls2", 2);
         background->SetDrawType(UIControlBackground::DRAW_ALIGNED);
     }
 private:
