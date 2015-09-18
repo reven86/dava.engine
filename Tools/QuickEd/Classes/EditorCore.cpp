@@ -59,21 +59,21 @@ EditorCore::EditorCore(QObject *parent)
     mainWindow->CreateUndoRedoActions(documentGroup->GetUndoGroup());
 
     connect(mainWindow->GetDialogReloadSprites(), &DialogReloadSprites::StarPackProcess, this, &EditorCore::CloseAllDocuments);
-    connect(project, &Project::ProjectPathChanged, mainWindow, &MainWindow::OnSetupCacheSettingsForPacker);
+    connect(project, &Project::ProjectPathChanged, mainWindow.get(), &MainWindow::OnSetupCacheSettingsForPacker);
     connect(project, &Project::ProjectPathChanged, this, &EditorCore::OnProjectPathChanged);
-    connect(mainWindow, &MainWindow::TabClosed, this, &EditorCore::CloseOneDocument);
-    connect(mainWindow, &MainWindow::CurrentTabChanged, this, &EditorCore::OnCurrentTabChanged);
-    connect(mainWindow, &MainWindow::CloseProject, this, &EditorCore::CloseProject);
-    connect(mainWindow, &MainWindow::ActionExitTriggered, this, &EditorCore::Exit);
-    connect(mainWindow, &MainWindow::CloseRequested, this, &EditorCore::Exit);
-    connect(mainWindow, &MainWindow::RecentMenuTriggered, this, &EditorCore::RecentMenu);
-    connect(mainWindow, &MainWindow::ActionOpenProjectTriggered, this, &EditorCore::OpenProject);
-    connect(mainWindow, &MainWindow::OpenPackageFile, this, &EditorCore::OnOpenPackageFile);
-    connect(mainWindow, &MainWindow::SaveAllDocuments, this, &EditorCore::SaveAllDocuments);
-    connect(mainWindow, &MainWindow::SaveDocument, this, static_cast<void(EditorCore::*)(int)>(&EditorCore::SaveDocument));
-    connect(mainWindow, &MainWindow::RtlChanged, this, &EditorCore::OnRtlChanged);
-    connect(mainWindow, &MainWindow::GlobalStyleClassesChanged, this, &EditorCore::OnGlobalStyleClassesChanged);
-    
+    connect(mainWindow.get(), &MainWindow::TabClosed, this, &EditorCore::CloseOneDocument);
+    connect(mainWindow.get(), &MainWindow::CurrentTabChanged, this, &EditorCore::OnCurrentTabChanged);
+    connect(mainWindow.get(), &MainWindow::CloseProject, this, &EditorCore::CloseProject);
+    connect(mainWindow.get(), &MainWindow::ActionExitTriggered, this, &EditorCore::Exit);
+    connect(mainWindow.get(), &MainWindow::CloseRequested, this, &EditorCore::Exit);
+    connect(mainWindow.get(), &MainWindow::RecentMenuTriggered, this, &EditorCore::RecentMenu);
+    connect(mainWindow.get(), &MainWindow::ActionOpenProjectTriggered, this, &EditorCore::OpenProject);
+    connect(mainWindow.get(), &MainWindow::OpenPackageFile, this, &EditorCore::OnOpenPackageFile);
+    connect(mainWindow.get(), &MainWindow::SaveAllDocuments, this, &EditorCore::SaveAllDocuments);
+    connect(mainWindow.get(), &MainWindow::SaveDocument, this, static_cast<void (EditorCore::*)(int)>(&EditorCore::SaveDocument));
+    connect(mainWindow.get(), &MainWindow::RtlChanged, this, &EditorCore::OnRtlChanged);
+    connect(mainWindow.get(), &MainWindow::GlobalStyleClassesChanged, this, &EditorCore::OnGlobalStyleClassesChanged);
+
     QCheckBox *emulationBox = mainWindow->GetCheckboxEmulation();
     connect(emulationBox, &QCheckBox::clicked, documentGroup, &DocumentGroup::SetEmulationMode);
     connect(documentGroup, &DocumentGroup::EmulationModeChanged, emulationBox, &QCheckBox::setChecked);
@@ -97,11 +97,6 @@ EditorCore::EditorCore(QObject *parent)
     connect(project->GetEditorLocalizationSystem(), &EditorLocalizationSystem::LocaleChanged, this, &EditorCore::UpdateLanguage);
 
     qApp->installEventFilter(this);
-}
-
-EditorCore::~EditorCore()
-{
-    delete mainWindow;
 }
 
 void EditorCore::Start()

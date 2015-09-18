@@ -60,7 +60,7 @@ private:
     DAVA::Vector<DAVA::VariantType> oldValues;
     DAVA::Vector<DAVA::VariantType> newValues;
 
-    int hash;
+    size_t hash = 0;
 };
 
 #endif // __QUICKED_CHANGE_PROPERTY_VALUE_COMMAND_H__

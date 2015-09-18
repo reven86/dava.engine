@@ -161,17 +161,17 @@ bool TransformSystem::ProcessDrag(const Vector2& pos)
         const Vector2& size = control->GetSize();
         if (size.x != 0.0f && size.y != 0.0f && gd.scale.x != 0.0f && gd.scale.y != 0.0f)
         {
-            Vector<std::pair<String, const Vector2&>> propertiesDelta;
+            Vector<PropertyDelta> propertiesDelta;
 
             const Vector2 delta = pos - prevPos;
             const Vector2 scaledDelta = delta / gd.scale;
             //position calculates in absolute
-            propertiesDelta.emplace_back(std::make_pair("Position", scaledDelta));
+            propertiesDelta.emplace_back("Position", VariantType(scaledDelta));
             //pivot point calculate in rotate coordinates
             const Vector2 angeledDelta(scaledDelta.x * gd.cosA + scaledDelta.y * gd.sinA,
                                        scaledDelta.x * -gd.sinA + scaledDelta.y * gd.cosA);
             const Vector2 pivot(angeledDelta / size);
-            propertiesDelta.emplace_back(std::make_pair("Pivot", pivot));
+            propertiesDelta.emplace_back("Pivot", VariantType(pivot));
 
             AdjustProperty(activeControlNode, propertiesDelta);
         }
@@ -188,7 +188,7 @@ bool TransformSystem::ProcessDrag(const Vector2& pos)
         float32 angle = RadToDeg(angleRad);
         if (InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_SHIFT))
         {
-            AbstractProperty* property = activeControlNode->GetRootProperty()->GetPropertyByName("Angle");
+            AbstractProperty* property = activeControlNode->GetRootProperty()->FindPropertyByName("Angle");
             float32 currentAngle = property->GetValue().AsFloat();
             Vector2 newAngle(currentAngle + angle, 0.0f);
             AccumulateOperation(ROTATE_OPERATION, newAngle);
@@ -198,7 +198,7 @@ bool TransformSystem::ProcessDrag(const Vector2& pos)
         {
             angle = round(angle);
         }
-        AdjustProperty(activeControlNode, "Angle", angle);
+        AdjustProperty(activeControlNode, "Angle", VariantType(angle));
         return true;
     }
     default:
@@ -212,7 +212,7 @@ void TransformSystem::MoveAllSelectedControls(const Vector2& delta)
     {
         if (controlNode->IsEditingSupported())
         {
-            AdjustProperty(controlNode, "Position", delta);
+            AdjustProperty(controlNode, "Position", VariantType(delta));
         }
     }
 }
@@ -226,13 +226,13 @@ void TransformSystem::MoveControl(const Vector2& pos)
         Vector2 realDelta = delta / gd.scale;
         if (InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_SHIFT))
         {
-            AbstractProperty* property = activeControlNode->GetRootProperty()->GetPropertyByName("Position");
+            AbstractProperty* property = activeControlNode->GetRootProperty()->FindPropertyByName("Position");
             Vector2 position = property->GetValue().AsVector2();
             Vector2 newPosition(position + realDelta);
             AccumulateOperation(MOVE_OPERATION, newPosition);
             realDelta = newPosition - position;
         }
-        AdjustProperty(activeControlNode, "Position", realDelta);
+        AdjustProperty(activeControlNode, "Position", VariantType(realDelta));
     }
 }
 
@@ -271,7 +271,7 @@ void TransformSystem::ResizeControl(const Vector2& pos, bool withPivot, bool rat
         deltaPosition.y = 0.0f;
     }
 
-    auto pivotProp = activeControlNode->GetRootProperty()->GetPropertyByName("Pivot");
+    auto pivotProp = activeControlNode->GetRootProperty()->FindPropertyByName("Pivot");
     DVASSERT(nullptr != pivotProp);
     Vector2 pivot = pivotProp->GetValue().AsVector2();
 
@@ -359,44 +359,42 @@ void TransformSystem::ResizeControl(const Vector2& pos, bool withPivot, bool rat
     rotatedPosition.x = deltaPosition.x * cosf(-gd.angle) + deltaPosition.y * sinf(-gd.angle);
     rotatedPosition.y = deltaPosition.x * -sinf(-gd.angle) + deltaPosition.y * cosf(-gd.angle);
 
-    Vector<std::pair<String, const Vector2&>> propertiesDelta;
-    propertiesDelta.emplace_back(std::make_pair("Position", rotatedPosition));
-    propertiesDelta.emplace_back(std::make_pair("Size", deltaSize));
+    Vector<PropertyDelta> propertiesDelta;
+    propertiesDelta.emplace_back("Position", VariantType(rotatedPosition));
+    propertiesDelta.emplace_back("Size", VariantType(deltaSize));
     AdjustProperty(activeControlNode, propertiesDelta);
 }
 
-template <typename T>
-void TransformSystem::AdjustProperty(ControlNode* node, const String& propertyName, const T& delta)
+void TransformSystem::AdjustProperty(ControlNode* node, const String& propertyName, const VariantType& delta)
 {
-    Vector<std::pair<String /*propertyName*/, const T& /*delta*/>> propertiesDelta;
-    propertiesDelta.emplace_back(std::make_pair(propertyName, delta));
+    Vector<PropertyDelta> propertiesDelta;
+    propertiesDelta.emplace_back(propertyName, delta);
     AdjustProperty(node, propertiesDelta);
 }
 
-template <typename T>
-void TransformSystem::AdjustProperty(ControlNode* node, const Vector<std::pair<String /*propertyName*/, const T& /*delta*/>>& propertiesDelta)
+void TransformSystem::AdjustProperty(ControlNode* node, const Vector<PropertyDelta>& propertiesDelta)
 {
     Vector<std::pair<AbstractProperty*, VariantType>> propertiesToChange;
     for (const auto& pair : propertiesDelta)
     {
-        AbstractProperty* property = activeControlNode->GetRootProperty()->GetPropertyByName(pair.first);
+        AbstractProperty* property = activeControlNode->GetRootProperty()->FindPropertyByName(pair.first);
         DVASSERT(nullptr != property);
-        const T& delta = pair.second;
+        const VariantType& delta = pair.second;
         VariantType var(delta);
 
-        switch (var.GetType())
+        switch (delta.GetType())
         {
         case VariantType::TYPE_VECTOR2:
-            var = VariantType(property->GetValue().AsVector2() + delta);
+            var = VariantType(property->GetValue().AsVector2() + delta.AsVector2());
             break;
         case VariantType::TYPE_FLOAT:
-            var = VariantType(property->GetValue().AsFloat() + delta);
+            var = VariantType(property->GetValue().AsFloat() + delta.AsFloat());
             break;
         default:
             DVASSERT_MSG(false, "unexpected type");
             break;
         }
-        propertiesToChange.emplace_back(std::make_pair(property, var));
+        propertiesToChange.emplace_back(property, var);
     }
     systemManager->PropertiesChanged.Emit(std::move(node), std::move(propertiesToChange));
 }
@@ -404,8 +402,8 @@ void TransformSystem::AdjustProperty(ControlNode* node, const Vector<std::pair<S
 void TransformSystem::AccumulateOperation(ACCUMULATE_OPERATIONS operation, DAVA::Vector2& delta)
 {
     const int step = steps[operation];
-    int& x = accumulates[operation][Vector2::AXIS_X];
-    int& y = accumulates[operation][Vector2::AXIS_Y];
+    int x = accumulates[operation][Vector2::AXIS_X];
+    int y = accumulates[operation][Vector2::AXIS_Y];
 
     if (abs(x) < step)
     {
@@ -420,4 +418,6 @@ void TransformSystem::AccumulateOperation(ACCUMULATE_OPERATIONS operation, DAVA:
     delta = Vector2(x - x % step, y - y % step);
     x -= delta.x;
     y -= delta.y;
+    accumulates[operation][Vector2::AXIS_X] = x;
+    accumulates[operation][Vector2::AXIS_Y] = y;
 }

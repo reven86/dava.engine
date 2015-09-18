@@ -43,8 +43,7 @@ public:
     bool OnInput(DAVA::UIEvent* currentInput) override;
 
 private:
-    void OnActiveAreaChanged(const HUDAreaInfo& areaInfo);
-
+    using PropertyDelta = std::pair<DAVA::String /*propertyName*/, DAVA::VariantType /*delta*/>;
     enum ACCUMULATE_OPERATIONS
     {
         ROTATE_OPERATION,
@@ -52,6 +51,9 @@ private:
         RESIZE_OPERATION,
         OPERATIONS_COUNT
     };
+
+    void OnActiveAreaChanged(const HUDAreaInfo& areaInfo);
+
     bool ProcessKey(const DAVA::int32 key);
 
     bool ProcessDrag(const DAVA::Vector2& pos);
@@ -60,11 +62,9 @@ private:
     void MoveControl(const DAVA::Vector2& pos);
     void MoveAllSelectedControls(const DAVA::Vector2& delta);
 
-    template <typename T>
-    void AdjustProperty(ControlNode* node, const DAVA::String& propertyName, const T& delta);
+    void AdjustProperty(ControlNode* node, const DAVA::String& propertyName, const DAVA::VariantType& delta);
 
-    template <typename T>
-    void AdjustProperty(ControlNode* node, const DAVA::Vector<std::pair<DAVA::String /*propertyName*/, const T& /*delta*/>>& propertiesDelta);
+    void AdjustProperty(ControlNode* node, const DAVA::Vector<PropertyDelta>& propertiesDelta);
 
     void AccumulateOperation(ACCUMULATE_OPERATIONS operation, DAVA::Vector2& delta);
 

@@ -61,8 +61,8 @@ ChangePropertyValueCommand::ChangePropertyValueCommand(PackageNode* root_, Contr
     , root(SafeRetain(root_))
     , node(SafeRetain(node_))
 {
-    properties.emplace_back(SafeRetain(prop));
-    newValues.emplace_back(DAVA::VariantType());
+    properties.push_back(SafeRetain(prop));
+    newValues.push_back(DAVA::VariantType());
     init();
 }
 
@@ -72,14 +72,14 @@ void ChangePropertyValueCommand::init()
     std::hash<void*> ptrHash;
     for (AbstractProperty* property : properties)
     {
-        hash ^= (ptrHash(property) << 1);
+        hash = ptrHash(property) ^ (hash << 1);
         if (property->IsOverriddenLocally())
         {
-            oldValues.emplace_back(property->GetValue());
+            oldValues.push_back(property->GetValue());
         }
         else
         {
-            oldValues.emplace_back(DAVA::VariantType());
+            oldValues.push_back(DAVA::VariantType());
         }
         text += QString(" %1").arg(property->GetName().c_str());
     }
@@ -127,7 +127,7 @@ void ChangePropertyValueCommand::undo()
 
 int ChangePropertyValueCommand::id() const
 {
-    return hash;
+    return static_cast<int>(hash);
 }
 
 bool ChangePropertyValueCommand::mergeWith(const QUndoCommand* other)
