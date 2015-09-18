@@ -128,7 +128,6 @@ ModifyCustomColorsCommand::ModifyCustomColorsCommand(Image* originalImage, Image
     const Vector2 topLeft(floorf(_updatedRect.x), floorf(_updatedRect.y));
     const Vector2 bottomRight(ceilf(_updatedRect.x + _updatedRect.dx), ceilf(_updatedRect.y + _updatedRect.dy));
 
-//	updatedRect = Rect(floorf(_updatedRect.x), floorf(_updatedRect.y), ceilf(_updatedRect.dx), ceilf(_updatedRect.dy));
     updatedRect = Rect(topLeft, bottomRight - topLeft);
 
     customColorsProxy = SafeRetain(_customColorsProxy);
