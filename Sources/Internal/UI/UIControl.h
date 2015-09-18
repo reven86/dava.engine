@@ -1371,11 +1371,12 @@ public:
     const UIStyleSheetPropertySet& GetStyledPropertySet() const;
     void SetStyledPropertySet(const UIStyleSheetPropertySet &set);
     
-    bool GetStyleSheetInitialized() const;
+    bool IsStyleSheetInitialized() const;
+    void SetStyleSheetInitialized();
 
     void SetStyleSheetDirty();
     void ResetStyleSheetDirty();
-    
+
     void SetLayoutDirty();
     void ResetLayoutDirty();
 

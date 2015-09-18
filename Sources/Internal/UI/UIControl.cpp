@@ -280,7 +280,9 @@ namespace DAVA
     {
         FastName newFastName(_name);
         if (fastName != newFastName)
+        {
             SetStyleSheetDirty();
+        }
 
         name = _name;
         fastName = newFastName;
@@ -340,10 +342,12 @@ namespace DAVA
     void UIControl::SetSprite(const FilePath &spriteName, int32 spriteFrame)
     {
         background->SetSprite(spriteName, spriteFrame);
+        SetLayoutDirty();
     }
     void UIControl::SetSprite(Sprite *newSprite, int32 spriteFrame)
     {
         background->SetSprite(newSprite, spriteFrame);
+        SetLayoutDirty();
     }
     void UIControl::SetSpriteFrame(int32 spriteFrame)
     {
@@ -356,6 +360,7 @@ namespace DAVA
     void UIControl::SetSpriteDrawType(UIControlBackground::eDrawType drawType)
     {
         background->SetDrawType(drawType);
+        SetLayoutDirty();
     }
     void UIControl::SetSpriteAlign(int32 align)
     {
@@ -1347,7 +1352,13 @@ namespace DAVA
             UILayoutSystem *layoutSystem = UIControlSystem::Instance()->GetLayoutSystem();
             if (layoutSystem->IsAutoupdatesEnabled())
             {
-                layoutSystem->ApplyLayout(parent ? parent : this, true);
+                UIControl *dirtyControl = this;
+                if (parent != nullptr)
+                {
+                    dirtyControl = parent;
+                }
+                
+                layoutSystem->ApplyLayout(dirtyControl, true);
             }
         }
 
@@ -2857,11 +2868,16 @@ namespace DAVA
         styledProperties = set;
     }
 
-    bool UIControl::GetStyleSheetInitialized() const
+    bool UIControl::IsStyleSheetInitialized() const
     {
         return styleSheetInitialized;
     }
 
+    void UIControl::SetStyleSheetInitialized()
+    {
+        styleSheetInitialized = true;
+    }
+    
     void UIControl::SetStyleSheetDirty()
     {
         styleSheetDirty = true;
@@ -2870,7 +2886,6 @@ namespace DAVA
     void UIControl::ResetStyleSheetDirty()
     {
         styleSheetDirty = false;
-        styleSheetInitialized = true;
     }
     
     void UIControl::SetLayoutDirty()

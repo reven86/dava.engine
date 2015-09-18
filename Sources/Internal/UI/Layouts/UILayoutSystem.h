@@ -55,23 +55,23 @@ public:
     void SetAutoupdatesEnabled(bool enabled);
     
 private:
-    struct ControlDescr;
+    class ControlLayoutData;
     
 private:
     void CollectControls(UIControl *control);
     void CollectControlChildren(UIControl *control, int32 parentIndex);
     
-    void MeasureControl(ControlDescr &descr, Vector2::eAxis axis);
-    void ApplyLinearLayout(ControlDescr &descr, UILinearLayoutComponent *linearLayoutComponent, Vector2::eAxis axis);
-    void ApplyAnchorLayout(ControlDescr &descr, Vector2::eAxis axis, bool onlyForIgnoredControls);
+    void MeasureControl(ControlLayoutData &data, Vector2::eAxis axis);
+    void ApplyLinearLayout(ControlLayoutData &data, UILinearLayoutComponent *linearLayoutComponent, Vector2::eAxis axis);
+    void ApplyAnchorLayout(ControlLayoutData &data, Vector2::eAxis axis, bool onlyForIgnoredControls);
 
     bool HaveToSkipControl(UIControl *control, bool skipInvisible) const;
     
 private:
     bool isRtl = false;
     bool autoupdatesEnabled = true;
-    Vector<ControlDescr> controls;
-    int32 indexOfSizeProperty;
+    Vector<ControlLayoutData> layoutData;
+    int32 indexOfSizeProperty = -1;
 };
 
 }

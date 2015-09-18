@@ -102,7 +102,9 @@ private:
     
     int32 GetVerticalPolicyAsInt() const;
     void SetVerticalPolicyFromInt(int32 policy);
-    
+
+    void SetLayoutDirty();
+
 private:
     struct AxisPolicy
     {
