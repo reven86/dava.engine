@@ -75,8 +75,8 @@ public:
     bool Deserialize(File* file);
     
     bool operator== (const CachedItemValue &right) const;
-    
-    void Fetch(const FilePath & folder);
+
+    bool Fetch(const FilePath& folder);
     void Free();
     
     void Export(const FilePath & folder) const;

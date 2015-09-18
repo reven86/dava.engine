@@ -96,10 +96,10 @@ void ServerCacheEntry::Deserialize(KeyedArchive * archieve)
     DVASSERT(valueArchieve);
     value.Deserialize(valueArchieve);
 }
-    
-void ServerCacheEntry::Fetch(const FilePath & folder)
+
+bool ServerCacheEntry::Fetch(const FilePath& folder)
 {
-    value.Fetch(folder);
+    return value.Fetch(folder);
 }
     
 void ServerCacheEntry::Free()

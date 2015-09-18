@@ -261,9 +261,7 @@ CachedItemValue & CachedItemValue::operator=(CachedItemValue &&right)
     return (*this);
 }
 
-    
-
-void CachedItemValue::Fetch(const FilePath & folder)
+bool CachedItemValue::Fetch(const FilePath& folder)
 {
     DVASSERT(folder.IsDirectoryPathname());
     DVASSERT(isFetched == false);
@@ -273,7 +271,13 @@ void CachedItemValue::Fetch(const FilePath & folder)
     {
         DVASSERT(IsDataLoaded(dc.second) == false);
         dc.second = LoadFile(folder + dc.first);
+        if (false == IsDataLoaded(dc.second))
+        {
+            Free();
+            return false;
+        }
     }
+    return true;
 }
 
 void CachedItemValue::Free()
@@ -283,7 +287,6 @@ void CachedItemValue::Free()
     isFetched = false;
     for (auto & dc : dataContainer)
     {
-        DVASSERT(IsDataLoaded(dc.second) == true);
         dc.second.reset();
     }
 }
