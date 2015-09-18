@@ -42,6 +42,7 @@
 #include <iostream>
 
 using namespace DAVA;
+using namespace std::chrono;
 
 namespace
 {
@@ -84,9 +85,12 @@ bool TransformSystem::OnInput(UIEvent* currentInput)
         return ProcessKey(currentInput->tid);
 
     case UIEvent::PHASE_BEGAN:
+    {
         prevPos = currentInput->point;
+        milliseconds ms = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
+        currentHash = static_cast<size_t>(ms.count());
         return activeArea != HUDAreaInfo::NO_AREA;
-
+    }
     case UIEvent::PHASE_DRAG:
     {
         ProcessDrag(currentInput->point);
@@ -396,7 +400,7 @@ void TransformSystem::AdjustProperty(ControlNode* node, const Vector<PropertyDel
         }
         propertiesToChange.emplace_back(property, var);
     }
-    systemManager->PropertiesChanged.Emit(std::move(node), std::move(propertiesToChange));
+    systemManager->PropertiesChanged.Emit(std::move(node), std::move(propertiesToChange), std::move(currentHash));
 }
 
 void TransformSystem::AccumulateOperation(ACCUMULATE_OPERATIONS operation, DAVA::Vector2& delta)

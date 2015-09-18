@@ -40,8 +40,8 @@ class AbstractProperty;
 class ChangePropertyValueCommand: public QUndoCommand
 {
 public:
-    ChangePropertyValueCommand(PackageNode* _root, ControlNode* _node, const DAVA::Vector<std::pair<AbstractProperty*, DAVA::VariantType>>& properties, QUndoCommand* parent = nullptr);
-    ChangePropertyValueCommand(PackageNode* _root, ControlNode* _node, AbstractProperty* _property, const DAVA::VariantType& newValue, QUndoCommand* parent = nullptr);
+    ChangePropertyValueCommand(PackageNode* _root, ControlNode* _node, const DAVA::Vector<std::pair<AbstractProperty*, DAVA::VariantType>>& properties, size_t hash = 0, QUndoCommand* parent = nullptr);
+    ChangePropertyValueCommand(PackageNode* _root, ControlNode* _node, AbstractProperty* _property, const DAVA::VariantType& newValue, size_t hash = 0, QUndoCommand* parent = nullptr);
     ChangePropertyValueCommand(PackageNode* _root, ControlNode* _node, AbstractProperty* _property, QUndoCommand* parent = nullptr);
     virtual ~ChangePropertyValueCommand();
 

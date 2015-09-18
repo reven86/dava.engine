@@ -33,10 +33,11 @@
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/ControlProperties/AbstractProperty.h"
 
-ChangePropertyValueCommand::ChangePropertyValueCommand(PackageNode* root_, ControlNode* node_, const DAVA::Vector<std::pair<AbstractProperty*, DAVA::VariantType>>& properties_, QUndoCommand* parent /*= nullptr*/)
+ChangePropertyValueCommand::ChangePropertyValueCommand(PackageNode* root_, ControlNode* node_, const DAVA::Vector<std::pair<AbstractProperty*, DAVA::VariantType>>& properties_, size_t hash_, QUndoCommand* parent /*= nullptr*/)
     : QUndoCommand(parent)
     , root(SafeRetain(root_))
     , node(SafeRetain(node_))
+    , hash(hash_)
 {
     for (auto property : properties_)
     {
@@ -46,10 +47,11 @@ ChangePropertyValueCommand::ChangePropertyValueCommand(PackageNode* root_, Contr
     init();
 }
 
-ChangePropertyValueCommand::ChangePropertyValueCommand(PackageNode* root_, ControlNode* node_, AbstractProperty* prop, const DAVA::VariantType& newVal, QUndoCommand* parent /*= nullptr*/)
+ChangePropertyValueCommand::ChangePropertyValueCommand(PackageNode* root_, ControlNode* node_, AbstractProperty* prop, const DAVA::VariantType& newVal, size_t hash_, QUndoCommand* parent /*= nullptr*/)
     : QUndoCommand(parent)
     , root(SafeRetain(root_))
     , node(SafeRetain(node_))
+    , hash(hash_)
 {
     properties.emplace_back(SafeRetain(prop));
     newValues.emplace_back(newVal);

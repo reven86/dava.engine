@@ -54,13 +54,9 @@ Document::Document(PackageNode* _package, QObject* parent)
     systemManager.EmulationModeChangedSignal.Connect(this, &Document::EmulationModeChanged);
     systemManager.CanvasSizeChanged.Connect(this, &Document::CanvasSizeChanged);
 
-    systemManager.PropertyChanged.Connect([this](ControlNode* node, AbstractProperty* property, const DAVA::VariantType& value)
-                                          {
-        commandExecutor->ChangeProperty(node, property, value);
-                                          });
-    systemManager.PropertiesChanged.Connect([this](ControlNode* node, const Vector<std::pair<AbstractProperty*, VariantType>> properties)
+    systemManager.PropertiesChanged.Connect([this](ControlNode* node, const Vector<std::pair<AbstractProperty*, VariantType>> properties, size_t hash)
                                             {
-        commandExecutor->ChangeProperty(node, properties);
+        commandExecutor->ChangeProperty(node, properties, hash);
                                             });
 
     EditorCore* editorCore = qobject_cast<EditorCore*>(this->parent());

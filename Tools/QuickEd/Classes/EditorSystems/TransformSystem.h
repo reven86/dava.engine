@@ -33,6 +33,7 @@
 #include "Base/BaseTypes.h"
 #include "Math/Vector.h"
 #include "Document.h"
+#include <chrono>
 
 class TransformSystem final : public BaseEditorSystem
 {
@@ -77,6 +78,7 @@ private:
     SelectedControls selectedControlNodes;
 
     const DAVA::Vector2 minimumSize = DAVA::Vector2(16.0f, 16.0f);
+    size_t currentHash = 0;
 };
 
 #endif // __QUICKED_TRANSFORM_SYSTEM_H__

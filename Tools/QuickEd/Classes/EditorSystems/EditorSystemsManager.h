@@ -96,8 +96,7 @@ public:
     DAVA::Signal<const DAVA::Rect& /*selectionRectControl*/> SelectionRectChanged;
     DAVA::Signal<bool> EmulationModeChangedSignal;
     DAVA::Signal<> CanvasSizeChanged;
-    DAVA::Signal<ControlNode* /*node*/, AbstractProperty* /*prop*/, const DAVA::VariantType& /*value*/> PropertyChanged;
-    DAVA::Signal<ControlNode* /*node*/, const DAVA::Vector<std::pair<AbstractProperty*, DAVA::VariantType>>&> PropertiesChanged;
+    DAVA::Signal<ControlNode* /*node*/, const DAVA::Vector<std::pair<AbstractProperty*, DAVA::VariantType>>& /*properties*/, size_t /*hash*/> PropertiesChanged;
     DAVA::Signal<const DAVA::Vector<ControlNode*>& /*nodes*/, const DAVA::Vector2& /*pos*/, ControlNode*& /*selectedNode*/> SelectionByMenuRequested;
 
 private:
