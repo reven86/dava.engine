@@ -47,13 +47,14 @@ public:
     void OnActivated() override;
     void OnDeactivated() override;
 
+    void LayoutCanvas();
+
 private:
     void ControlWillBeRemoved(ControlNode* node, ControlsContainerNode* from) override;
     void ControlWasAdded(ControlNode* node, ControlsContainerNode* /*destination*/, int /*index*/) override;
 
     void SetRootControls(const DAVA::Vector<ControlNode*>& controls);
     void AddRootControl(ControlNode* controlNode);
-    void LayoutCanvas();
 
     DAVA::ScopedPtr<DAVA::UIControl> controlsCanvas;
     SelectedControls selectedControlNodes;

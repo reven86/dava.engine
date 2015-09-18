@@ -44,24 +44,41 @@ using namespace DAVA;
 class GridCanvas : public UIControl, private PropertyListener
 {
 public:
-    GridCanvas(RootProperty* property);
+    GridCanvas(CanvasSystem* canvasSystem, RootProperty* property);
+    void Init();
     void PropertyChanged(AbstractProperty* property) override;
+    UIControl* GetPositionHolder();
 
 private:
     void Draw(const UIGeometricData& geometricData) override;
     AbstractProperty* sizeProperty = nullptr;
     AbstractProperty* positionProperty = nullptr;
+    AbstractProperty* pivotProperty = nullptr;
+    ScopedPtr<UIControl> positionHolder;
+    CanvasSystem* canvasSystem = nullptr;
 };
 
-GridCanvas::GridCanvas(RootProperty* property)
+GridCanvas::GridCanvas(CanvasSystem* canvasSystem_, RootProperty* property)
     : UIControl()
+    , positionHolder(new UIControl())
+    , canvasSystem(canvasSystem_)
 {
     property->AddListener(this);
     sizeProperty = property->FindPropertyByName("Size");
     positionProperty = property->FindPropertyByName("Position");
+    pivotProperty = property->FindPropertyByName("Pivot");
     DVASSERT(nullptr != sizeProperty);
     DVASSERT(nullptr != positionProperty);
+}
+
+void GridCanvas::Init()
+{
     SetName("GridCanvas");
+    positionHolder->SetName("Position holder");
+    positionHolder->SetDebugDraw(true);
+    positionHolder->SetDebugDrawColor(Color(1.0f, 1.0f, 1.0f, 1.0f));
+    AddControl(positionHolder);
+
     background->SetSprite("~res:/Gfx/CheckeredBg", 0);
     background->SetDrawType(UIControlBackground::DRAW_TILED);
     background->SetShader(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR);
@@ -71,8 +88,25 @@ void GridCanvas::PropertyChanged(AbstractProperty* property)
 {
     if (property == sizeProperty)
     {
-        SetSize(sizeProperty->GetValue().AsVector2());
+        Vector2 size = sizeProperty->GetValue().AsVector2();
+        SetSize(size);
+        positionHolder->SetSize(size);
+        canvasSystem->LayoutCanvas();
     }
+    else if (property == positionProperty)
+    {
+        positionHolder->SetPosition(-positionProperty->GetValue().AsVector2());
+    }
+    else if (property == pivotProperty)
+    {
+        Vector2 pivot = pivotProperty->GetValue().AsVector2();
+        positionHolder->SetPivot(-pivot);
+    }
+}
+
+UIControl* GridCanvas::GetPositionHolder()
+{
+    return positionHolder;
 }
 
 void GridCanvas::Draw(const UIGeometricData& geometricData)
@@ -143,10 +177,13 @@ void CanvasSystem::SetRootControls(const Vector<ControlNode*>& controls)
 
 void CanvasSystem::AddRootControl(ControlNode* controlNode)
 {
-    ScopedPtr<GridCanvas> gridControl(new GridCanvas(controlNode->GetRootProperty()));
+    ScopedPtr<GridCanvas> gridControl(new GridCanvas(this, controlNode->GetRootProperty()));
+    gridControl->Init();
     UIControl* control = controlNode->GetControl();
-    gridControl->SetSize(control->GetSize());
-    gridControl->AddControl(control);
+    const Vector2& size = control->GetSize();
+    gridControl->SetSize(size);
+    gridControl->GetPositionHolder()->SetSize(size);
+    gridControl->GetPositionHolder()->AddControl(control);
     controlsCanvas->AddControl(gridControl);
 }
 
