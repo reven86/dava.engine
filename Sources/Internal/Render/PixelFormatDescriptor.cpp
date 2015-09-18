@@ -54,7 +54,7 @@ void PixelFormatDescriptor::InitializePixelFormatDescriptors()
 	SetPixelDescription(FORMAT_RGBA8888, FastName("RGBA8888"), 32, rhi::TEXTURE_FORMAT_R8G8B8A8);
 	SetPixelDescription(FORMAT_RGBA5551, FastName("RGBA5551"), 16, rhi::TEXTURE_FORMAT_R5G5B5A1);
 	SetPixelDescription(FORMAT_RGBA4444, FastName("RGBA4444"), 16, rhi::TEXTURE_FORMAT_R4G4B4A4);
-    SetPixelDescription(FORMAT_RGB888, FastName("RGB888"), 24, rhi::TEXTURE_FORMAT_R8G8B8);
+    SetPixelDescription(FORMAT_RGB888, FastName("RGB888"), 24, UNSUPPORTED_FORMAT);
     SetPixelDescription(FORMAT_RGB565, FastName("RGB565"), 16, rhi::TEXTURE_FORMAT_R5G6B5);
 
     SetPixelDescription(FORMAT_A8, FastName("A8"), 8, rhi::TEXTURE_FORMAT_R8);

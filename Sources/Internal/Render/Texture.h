@@ -172,11 +172,7 @@ public:
     void ReloadAs(eGPUFamily gpuFamily);	
     void ReloadFromData(PixelFormat format, uint8 * data, uint32 width, uint32 height);
 
-	inline TextureState GetState() const;
-
-
-	void RestoreRenderResource();
-
+	inline TextureState GetState() const;	    
     
     void SetDebugInfo(const String & _debugInfo);
     
@@ -198,6 +194,8 @@ public:
     int32 GetBaseMipMap() const;
 
 protected:
+
+    void RestoreRenderResource();
     
     void ReleaseTextureData();
 
@@ -236,12 +234,14 @@ public:							// properties for fast access
     uint32		width:16;			// texture width
 	uint32		height:16;			// texture height
 
+
     eGPUFamily loadedAsFile;
     TextureState state:2;
-    uint32		textureType:2;
+    uint32      textureType:2;
 
-    bool		isRenderTarget:1;
-	bool		isPink:1;
+    bool        isRenderTarget:1;
+    bool        isPink:1;
+
 
     FastName		debugInfo;	
     TextureDescriptor *texDescriptor;

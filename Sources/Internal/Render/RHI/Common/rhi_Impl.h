@@ -50,6 +50,9 @@ Dispatch
     bool    (*impl_NeedRestoreResources)();
     bool    (*impl_TextureFormatSupported)( TextureFormat );
 
+    void    (*impl_SuspendRendering)();
+    void    (*impl_ResumeRendering)();
+    
     const RenderDeviceCaps & (*impl_DeviceCaps)();
 
     Handle  (*impl_VertexBuffer_Create)( const VertexBuffer::Descriptor& desc );

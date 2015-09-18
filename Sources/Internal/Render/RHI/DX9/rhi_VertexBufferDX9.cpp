@@ -196,14 +196,14 @@ dx9_VertexBuffer_Update( Handle vb, const void* data, unsigned offset, unsigned 
     if( offset+size <= self->size )
     {
         void*       ptr  = nullptr;
-        DX9Command  cmd1 = { DX9Command::LOCK_VERTEX_BUFFER, { uint64_t(self->buffer), offset, size, uint64_t(&ptr), 0 } };
+        DX9Command  cmd1 = { DX9Command::LOCK_VERTEX_BUFFER, { uint64_t(&(self->buffer)), offset, size, uint64_t(&ptr), 0 } };
         
         ExecDX9( &cmd1, 1 );
         if( SUCCEEDED(cmd1.retval) )
         {
             memcpy( ptr, data, size );
 
-            DX9Command  cmd2 = { DX9Command::UNLOCK_VERTEX_BUFFER, { uint64_t(self->buffer) } };
+            DX9Command  cmd2 = { DX9Command::UNLOCK_VERTEX_BUFFER, { uint64_t(&(self->buffer)) } };
             
             ExecDX9( &cmd2, 1 );
             success = true;
@@ -223,7 +223,7 @@ dx9_VertexBuffer_Map( Handle vb, unsigned offset, unsigned size )
 {
     void*               ptr  = nullptr;
     VertexBufferDX9_t*  self = VertexBufferDX9Pool::Get( vb );
-    DX9Command          cmd  = { DX9Command::LOCK_VERTEX_BUFFER, { uint64_t(self->buffer), offset, size, uint64_t(&ptr), 0 } };
+    DX9Command          cmd  = { DX9Command::LOCK_VERTEX_BUFFER, { uint64_t(&(self->buffer)), offset, size, uint64_t(&ptr), 0 } };
 
     DVASSERT(!self->isMapped);
     ExecDX9( &cmd, 1 );
@@ -243,7 +243,7 @@ static void
 dx9_VertexBuffer_Unmap( Handle vb )
 {
     VertexBufferDX9_t*  self = VertexBufferDX9Pool::Get( vb );
-    DX9Command          cmd  = { DX9Command::UNLOCK_VERTEX_BUFFER, { uint64_t(self->buffer) } };
+    DX9Command          cmd  = { DX9Command::UNLOCK_VERTEX_BUFFER, { uint64_t(&(self->buffer)) } };
     
     DVASSERT(self->isMapped);
     ExecDX9( &cmd, 1 );
@@ -317,27 +317,6 @@ NeedRestoreCount()
 {
     return VertexBufferDX9_t::NeedRestoreCount();
 }
-
-void
-PatchCommands( DX9Command* command, uint32 cmdCount )
-{
-    for( VertexBufferDX9Pool::Iterator b=VertexBufferDX9Pool::Begin(),b_end=VertexBufferDX9Pool::End(); b!=b_end; ++b )
-    {
-        if( b->prevBuffer )
-        {
-            for( DX9Command* cmd=command,*cmd_end=command+cmdCount; cmd!=cmd_end; ++cmd )
-            {
-                if(     cmd->func == DX9Command::LOCK_VERTEX_BUFFER 
-                    &&  (IDirect3DVertexBuffer9*)(cmd->arg[0]) == b->prevBuffer
-                  )
-                {
-                    cmd->arg[0] = uint64(b->buffer);
-                }                    
-            }
-        }
-    }
-}
-
 
 }
 
