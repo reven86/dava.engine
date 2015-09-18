@@ -75,8 +75,6 @@ void GridCanvas::Init()
 {
     SetName("GridCanvas");
     positionHolder->SetName("Position holder");
-    positionHolder->SetDebugDraw(true);
-    positionHolder->SetDebugDrawColor(Color(1.0f, 1.0f, 1.0f, 1.0f));
     AddControl(positionHolder);
 
     background->SetSprite("~res:/Gfx/CheckeredBg", 0);
