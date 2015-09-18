@@ -53,21 +53,52 @@ namespace DAVA
 {
 class TextFieldPlatformImpl : public UIStaticText
 {
-protected:
-    ~TextFieldPlatformImpl() override = default;
-
 public:
-    TextFieldPlatformImpl(const Rect& rect = Rect(), bool rectInAbsoluteCoordinates = false)
-        : UIStaticText(rect, rectInAbsoluteCoordinates)
+    friend class UITextField;
+    TextFieldPlatformImpl(UITextField* control)
+        : UIStaticText(Rect(0, 0, control->GetRect().dx, control->GetRect().dy))
+        , control_(control)
     {
+        control->AddControl(this);
+        UIStaticText::SetSpriteAlign(ALIGN_LEFT | ALIGN_BOTTOM);
     }
 
     TextFieldPlatformImpl* Clone() override
     {
-        TextFieldPlatformImpl* t = new TextFieldPlatformImpl(GetRect());
+        TextFieldPlatformImpl* t = new TextFieldPlatformImpl(control_);
         t->CopyDataFrom(this);
         return t;
     }
+    void OpenKeyboard()
+    {
+    }
+    void CloseKeyboard()
+    {
+    }
+    void SetRenderToTexture(bool)
+    {
+    }
+    void SetIsPassword(bool)
+    {
+    }
+    void SetFontSize(float32)
+    {
+    }
+
+    using UIStaticText::SetText;
+    void SetText(WideString text_)
+    {
+        if (control_->GetDelegate() && control_->GetText() != text_)
+        {
+            control_->GetDelegate()->TextFieldOnTextChanged(control_, text_, control_->GetText());
+        }
+    }
+
+protected:
+    ~TextFieldPlatformImpl() override = default;
+
+private:
+    UITextField* control_;
 };
 } // end namespace DAVA
 #endif
@@ -82,21 +113,8 @@ namespace DAVA
 UITextField::UITextField(const Rect &rect, bool rectInAbsoluteCoordinates/*= false*/)
     : UIControl(rect, rectInAbsoluteCoordinates)
 {
-#if defined(__DAVAENGINE_ANDROID__)
     edit = new TextFieldPlatformImpl(this);
     edit->SetVisible(false);
-#elif defined(__DAVAENGINE_IPHONE__)
-    edit = new TextFieldPlatformImpl(this);
-    edit->SetVisible(false);
-#elif defined(__DAVAENGINE_WIN_UAP__)
-    edit = new TextFieldPlatformImpl(this);
-    edit->SetVisible(false);
-#else
-    edit = new TextFieldPlatformImpl(Rect(0, 0, GetRect().dx, GetRect().dy));
-    edit->SetVisible(false);
-    AddControl(edit);
-    edit->SetSpriteAlign(ALIGN_LEFT | ALIGN_BOTTOM);
-#endif
     
     SetupDefaults();
 }
@@ -128,50 +146,25 @@ void UITextField::SetupDefaults()
 
 UITextField::~UITextField()
 {
-#if defined (__DAVAENGINE_ANDROID__)
-    SafeDelete(edit);
-#elif defined (__DAVAENGINE_IPHONE__)
-    SafeDelete(edit);
-#elif defined(__DAVAENGINE_WIN_UAP__)
-    SafeDelete(edit);
-#else
+    UIControl::RemoveAllControls();
     SafeRelease(textFont);
-
-    RemoveAllControls();
     SafeRelease(edit);
-#endif
 }
 
 void UITextField::OpenKeyboard()
 {
-#ifdef __DAVAENGINE_IPHONE__
     edit->OpenKeyboard();
-#elif defined(__DAVAENGINE_ANDROID__)
-    edit->OpenKeyboard();
-#elif defined(__DAVAENGINE_WIN_UAP__)
-    edit->OpenKeyboard();
-#endif
 }
 
 void UITextField::CloseKeyboard()
 {
-#ifdef __DAVAENGINE_IPHONE__
     edit->CloseKeyboard();
-#elif defined(__DAVAENGINE_ANDROID__)
-    edit->CloseKeyboard();
-#elif defined(__DAVAENGINE_WIN_UAP__)
-    edit->CloseKeyboard();
-#endif
 }
 
 void UITextField::Update(float32 timeElapsed)
 {
-#ifdef __DAVAENGINE_IPHONE__
+#ifdef DAVA_TEXTFIELD_USE_NATIVE
     // Calling UpdateRect with allowNativeControlMove set to true
-    edit->UpdateRect(GetGeometricData().GetUnrotatedRect());
-#elif defined(__DAVAENGINE_ANDROID__)
-    edit->UpdateRect(GetGeometricData().GetUnrotatedRect());
-#elif defined(__DAVAENGINE_WIN_UAP__)
     edit->UpdateRect(GetGeometricData().GetUnrotatedRect());
 #else
     if(this == UIControlSystem::Instance()->GetFocusedControl())
@@ -233,13 +226,8 @@ void UITextField::WillDisappear()
 void UITextField::OnFocused()
 {
     SetRenderToTexture(false);
-#ifdef __DAVAENGINE_IPHONE__
+
     edit->OpenKeyboard();
-#elif defined(__DAVAENGINE_ANDROID__)
-    edit->OpenKeyboard();
-#elif defined(__DAVAENGINE_WIN_UAP__)
-    edit->OpenKeyboard();
-#endif
 }
 
 void UITextField::SetFocused()
@@ -250,13 +238,9 @@ void UITextField::SetFocused()
 void UITextField::OnFocusLost(UIControl *newFocus)
 {
     SetRenderToTexture(true);
-#ifdef __DAVAENGINE_IPHONE__
+
     edit->CloseKeyboard();
-#elif defined(__DAVAENGINE_ANDROID__)
-    edit->CloseKeyboard();
-#elif defined(__DAVAENGINE_WIN_UAP__)
-    edit->CloseKeyboard();
-#endif
+
     if (delegate != nullptr)
     {
         delegate->TextFieldLostFocus(this);
@@ -296,15 +280,7 @@ void UITextField::SetFont(Font * font)
 
 void UITextField::SetTextColor(const Color& fontColor)
 {
-#ifdef __DAVAENGINE_IPHONE__
     edit->SetTextColor(fontColor);
-#elif defined(__DAVAENGINE_ANDROID__)
-    edit->SetTextColor(fontColor);
-#elif defined(__DAVAENGINE_WIN_UAP__)
-    edit->SetTextColor(fontColor);
-#else
-    edit->SetTextColor(fontColor);
-#endif
 }
 
 void UITextField::SetShadowOffset(const DAVA::Vector2 &offset)
@@ -323,37 +299,21 @@ void UITextField::SetShadowColor(const Color& color)
 
 void UITextField::SetTextAlign(int32 align)
 {
-#if defined(__DAVAENGINE_IPHONE__)
     edit->SetTextAlign(align);
-#elif defined(__DAVAENGINE_ANDROID__)
-    edit->SetTextAlign(align);
-#elif defined(__DAVAENGINE_WIN_UAP__)
-    edit->SetTextAlign(align);
-#else
-    edit->SetTextAlign(align);
-#endif
 }
 
 TextBlock::eUseRtlAlign UITextField::GetTextUseRtlAlign() const
 {
-#ifdef __DAVAENGINE_IPHONE__
-    return (edit && edit->GetTextUseRtlAlign()) ? TextBlock::RTL_USE_BY_CONTENT : TextBlock::RTL_DONT_USE;
-#elif defined(__DAVAENGINE_ANDROID__)
-    return (edit && edit->GetTextUseRtlAlign()) ? TextBlock::RTL_USE_BY_CONTENT : TextBlock::RTL_DONT_USE;
-#elif defined(__DAVAENGINE_WIN_UAP__)
+#ifdef DAVA_TEXTFIELD_USE_NATIVE
     return edit->GetTextUseRtlAlign() ? TextBlock::RTL_USE_BY_CONTENT : TextBlock::RTL_DONT_USE;
 #else
-    return edit ? edit->GetTextUseRtlAlign() : TextBlock::RTL_DONT_USE;
+    return edit->GetTextUseRtlAlign();
 #endif
 }
 
 void UITextField::SetTextUseRtlAlign(TextBlock::eUseRtlAlign useRtlAlign)
 {
-#ifdef __DAVAENGINE_IPHONE__
-    edit->SetTextUseRtlAlign(useRtlAlign == TextBlock::RTL_USE_BY_CONTENT);
-#elif defined(__DAVAENGINE_ANDROID__)
-    edit->SetTextUseRtlAlign(useRtlAlign == TextBlock::RTL_USE_BY_CONTENT);
-#elif defined(__DAVAENGINE_WIN_UAP__)
+#ifdef DAVA_TEXTFIELD_USE_NATIVE
     edit->SetTextUseRtlAlign(useRtlAlign == TextBlock::RTL_USE_BY_CONTENT);
 #else
     edit->SetTextUseRtlAlign(useRtlAlign);
@@ -372,13 +332,12 @@ int32 UITextField::GetTextUseRtlAlignAsInt() const
 
 void UITextField::SetFontSize(float32 size)
 {
-#ifdef __DAVAENGINE_IPHONE__
     edit->SetFontSize(size);
-#elif defined(__DAVAENGINE_ANDROID__)
-    edit->SetFontSize(size);
-#elif defined(__DAVAENGINE_WIN_UAP__)
-    edit->SetFontSize(size);
-#endif
+
+    if (textFont)
+    {
+        textFont->SetSize(size);
+    }
 }
 
 void UITextField::SetDelegate(UITextFieldDelegate * _delegate)
@@ -417,16 +376,7 @@ void UITextField::SetMultiline(bool value)
     if (value != isMultiline_)
     {
         isMultiline_ = value;
-        
-#ifdef __DAVAENGINE_IPHONE__
         edit->SetMultiline(isMultiline_);
-#elif defined(__DAVAENGINE_ANDROID__)
-        edit->SetMultiline(isMultiline_);
-#elif defined(__DAVAENGINE_WIN_UAP__)
-        edit->SetMultiline(isMultiline_);
-#else
-        edit->SetMultiline(isMultiline_);
-#endif
     }
 }
 
@@ -907,13 +857,7 @@ void UITextField::SetIsPassword(bool isPassword_)
     isPassword = isPassword_;
     needRedraw = true;
     
-#ifdef __DAVAENGINE_IPHONE__
     edit->SetIsPassword(isPassword_);
-#elif defined(__DAVAENGINE_ANDROID__)
-    edit->SetIsPassword(isPassword_);
-#elif defined(__DAVAENGINE_WIN_UAP__)
-    edit->SetIsPassword(isPassword_);
-#endif
 }
     
 bool UITextField::IsPassword() const
@@ -1068,13 +1012,8 @@ void UITextField::SetRenderToTexture(bool value)
     {
         value = false;
     }
-#if defined(__DAVAENGINE_ANDROID__)
+
     edit->SetRenderToTexture(value);
-#elif defined(__DAVAENGINE_IPHONE__)
-    edit->SetRenderToTexture(value);
-#elif defined(__DAVAENGINE_WIN_UAP__)
-    edit->SetRenderToTexture(value);
-#endif
 }
 
 bool UITextField::IsRenderToTexture() const
