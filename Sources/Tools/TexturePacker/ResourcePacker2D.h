@@ -112,7 +112,12 @@ private:
 
 inline bool ResourcePacker2D::IsUsingCache() const
 {
+#ifdef __DAVAENGINE_WIN_UAP__
+    //no cache in win uap
+    return false;
+#else
     return (!cacheClientTool.IsEmpty());
+#endif
 }
 
 inline bool ResourcePacker2D::IsRunning() const
