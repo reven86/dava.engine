@@ -4,27 +4,6 @@
     <Filter Include="External">
       <UniqueIdentifier>{4e46aae7-90c4-4fd8-a85a-2d1a2fc60b22}</UniqueIdentifier>
     </Filter>
-    <Filter Include="External\Box2D">
-      <UniqueIdentifier>{243367d4-6971-4ce9-b57f-98bb38b5327d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="External\Box2D\Collision">
-      <UniqueIdentifier>{8751008f-5d5d-41f3-b973-1de0262469c9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="External\Box2D\Collision\Shapes">
-      <UniqueIdentifier>{28292208-57d4-4037-bb1c-15914fefccb9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="External\Box2D\Common">
-      <UniqueIdentifier>{fb5de757-8ccc-492e-9709-dfa38396a4f7}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="External\Box2D\Dynamics">
-      <UniqueIdentifier>{c59a56b8-c802-465e-81fd-0c16a423613f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="External\Box2D\Dynamics\Contacts">
-      <UniqueIdentifier>{4934f1b4-31f7-4dd5-abe6-ea18522a5409}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="External\Box2D\Dynamics\Joints">
-      <UniqueIdentifier>{ce06b154-b8a0-4b9b-a2e1-f330d7eb8340}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Internal">
       <UniqueIdentifier>{ffd93e08-e98d-4f64-85eb-9e318a1b40d2}</UniqueIdentifier>
     </Filter>
@@ -1933,6 +1912,9 @@
     <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIPriorityStyleSheet.h">
       <Filter>Internal\UI\Styles</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\FileSystem\StaticMemoryFile.h">
+      <Filter>Internal\FileSystem</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UIIgnoreLayoutComponent.h">
       <Filter>Internal\UI\Layouts</Filter>
     </ClInclude>
@@ -3421,9 +3403,12 @@
     <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIPriorityStyleSheet.cpp">
       <Filter>Internal\UI\Styles</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\FileSystem\StaticMemoryFile.cpp">
+      <Filter>Internal\FileSystem</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UIIgnoreLayoutComponent.cpp">
       <Filter>Internal\UI\Layouts</Filter>
-    </ClComplipe>
+    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Utils\UTF8Utils.cpp">
       <Filter>Internal\Utils</Filter>
     </ClCompile>

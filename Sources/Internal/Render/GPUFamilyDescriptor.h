@@ -62,7 +62,7 @@ public:
 
     static eGPUFamily GetGPUForPathname(const FilePath &pathname);
     static eGPUFamily GetGPUByName(const String & name);
-    static eGPUFamily ConvertValueToGPU(const int32 value);
+    DAVA_DEPRECATED(static eGPUFamily ConvertValueToGPU(const int32 value));
 
     static bool IsGPUForDevice(const eGPUFamily gpu);
     static bool IsFormatSupported(const eGPUFamily gpu, const PixelFormat format);

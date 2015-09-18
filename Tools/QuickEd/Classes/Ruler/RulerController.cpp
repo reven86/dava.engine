@@ -29,6 +29,8 @@
 
 #include "RulerController.h"
 
+#include <float.h>
+
 using namespace DAVA;
 
 RulerController::RulerController() :

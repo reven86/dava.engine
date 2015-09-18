@@ -42,7 +42,6 @@ if( ANDROID )
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libfmodevent.so"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libfmodex.so"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libTextureConverter_android.a"
-         "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libbox2d.a"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libuv_android.a"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libiconv_android.so"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/liblua_android.a"
@@ -179,4 +178,5 @@ install_libraries( ${PROJECT_NAME} )
 
 if ( WINDOWS_UAP )
     set_property(TARGET ${PROJECT_NAME} PROPERTY VS_MOBILE_EXTENSIONS_VERSION ${WINDOWS_UAP_MOBILE_EXT_SDK_VERSION} )
+    set_property(TARGET ${PROJECT_NAME} PROPERTY VS_IOT_EXTENSIONS_VERSION ${WINDOWS_UAP_IOT_EXT_SDK_VERSION} )
 endif()

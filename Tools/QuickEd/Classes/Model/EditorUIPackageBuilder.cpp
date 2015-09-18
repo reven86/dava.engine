@@ -124,29 +124,31 @@ void EditorUIPackageBuilder::ProcessStyleSheet(const DAVA::Vector<DAVA::UIStyleS
 
 UIControl *EditorUIPackageBuilder::BeginControlWithClass(const String &className)
 {
-    UIControl *control = ObjectFactory::Instance()->New<UIControl>(className);
+    RefPtr<UIControl> control(ObjectFactory::Instance()->New<UIControl>(className));
     if (control && className != EXCEPTION_CLASS_UI_TEXT_FIELD && className != EXCEPTION_CLASS_UI_LIST)//TODO: fix internal staticText for Win\Mac
     {
         control->RemoveAllControls();
     }
 
-    controlsStack.push_back(ControlDescr(ControlNode::CreateFromControl(control), true));
-    return control;
+    controlsStack.push_back(ControlDescr(ControlNode::CreateFromControl(control.Get()), true));
+
+    return control.Get();
 }
 
 UIControl *EditorUIPackageBuilder::BeginControlWithCustomClass(const String &customClassName, const String &className)
 {
-    UIControl *control = ObjectFactory::Instance()->New<UIControl>(className);
+    RefPtr<UIControl> control(ObjectFactory::Instance()->New<UIControl>(className));
 
     if (control && className != EXCEPTION_CLASS_UI_TEXT_FIELD && className != EXCEPTION_CLASS_UI_LIST)//TODO: fix internal staticText for Win\Mac
     {
         control->RemoveAllControls();
     }
 
-    ControlNode *node = ControlNode::CreateFromControl(control);
+    ControlNode *node = ControlNode::CreateFromControl(control.Get());
     node->GetRootProperty()->GetCustomClassProperty()->SetValue(VariantType(customClassName));
     controlsStack.push_back(ControlDescr(node, true));
-    return control;
+
+    return control.Get();
 }
 
 UIControl *EditorUIPackageBuilder::BeginControlWithPrototype(const String &packageName, const String &prototypeName, const String *customClassName, AbstractUIPackageLoader *loader)
