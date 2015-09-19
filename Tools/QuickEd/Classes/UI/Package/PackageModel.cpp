@@ -445,6 +445,12 @@ void PackageModel::ControlPropertyWasChanged(ControlNode *node, AbstractProperty
         QModelIndex index = indexByNode(node);
         emit dataChanged(index, index, QVector<int>() << Qt::DisplayRole);
     }
+
+    else if (property->GetName() == "Custom Class")
+    {
+        QModelIndex index = indexByNode(node);
+        emit dataChanged(index, index, QVector<int>() << Qt::DecorationRole);
+    }
 }
 
 void PackageModel::StylePropertyWasChanged(StyleSheetNode *node, AbstractProperty *property)

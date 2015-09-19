@@ -45,15 +45,17 @@ class GridCanvas : public UIControl, private PropertyListener
 {
 public:
     GridCanvas(CanvasSystem* canvasSystem, RootProperty* property);
-    void Init();
+    void Init(UIControl* control);
     void PropertyChanged(AbstractProperty* property) override;
     UIControl* GetPositionHolder();
 
 private:
+    void UpdateSprite();
     void Draw(const UIGeometricData& geometricData) override;
     AbstractProperty* sizeProperty = nullptr;
     AbstractProperty* positionProperty = nullptr;
     AbstractProperty* pivotProperty = nullptr;
+    AbstractProperty* angleProperty = nullptr;
     ScopedPtr<UIControl> positionHolder;
     CanvasSystem* canvasSystem = nullptr;
 };
@@ -67,11 +69,12 @@ GridCanvas::GridCanvas(CanvasSystem* canvasSystem_, RootProperty* property)
     sizeProperty = property->FindPropertyByName("Size");
     positionProperty = property->FindPropertyByName("Position");
     pivotProperty = property->FindPropertyByName("Pivot");
+    angleProperty = property->FindPropertyByName("Angle");
     DVASSERT(nullptr != sizeProperty);
     DVASSERT(nullptr != positionProperty);
 }
 
-void GridCanvas::Init()
+void GridCanvas::Init(UIControl* control)
 {
     SetName("GridCanvas");
     positionHolder->SetName("Position holder");
@@ -80,6 +83,13 @@ void GridCanvas::Init()
     background->SetSprite("~res:/Gfx/CheckeredBg", 0);
     background->SetDrawType(UIControlBackground::DRAW_TILED);
     background->SetShader(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR);
+
+    SetSize(control->GetSize());
+    positionHolder->SetSize(control->GetSize());
+    positionHolder->SetPosition(-control->GetPosition());
+    positionHolder->SetPivot(-control->GetPivot());
+    positionHolder->SetAngle(-control->GetAngle());
+    UpdateSprite();
 }
 
 void GridCanvas::PropertyChanged(AbstractProperty* property)
@@ -93,18 +103,40 @@ void GridCanvas::PropertyChanged(AbstractProperty* property)
     }
     else if (property == positionProperty)
     {
-        positionHolder->SetPosition(-positionProperty->GetValue().AsVector2());
+        Vector2 position = positionProperty->GetValue().AsVector2();
+        positionHolder->SetPosition(-position);
+        UpdateSprite();
     }
     else if (property == pivotProperty)
     {
         Vector2 pivot = pivotProperty->GetValue().AsVector2();
         positionHolder->SetPivot(-pivot);
+        UpdateSprite();
+    }
+    else if (property == angleProperty)
+    {
+        float32 angle = angleProperty->GetValue().AsFloat();
+        positionHolder->SetAngle(-DegToRad(angle));
+        UpdateSprite();
     }
 }
 
 UIControl* GridCanvas::GetPositionHolder()
 {
     return positionHolder;
+}
+
+void GridCanvas::UpdateSprite()
+{
+    bool transformed = !positionHolder->GetPosition().IsZero() || !positionHolder->GetPivot().IsZero() || positionHolder->GetAngle() != 0;
+    if (transformed)
+    {
+        background->SetSprite("~res:/Gfx/CheckeredBg2", 0);
+    }
+    else
+    {
+        background->SetSprite("~res:/Gfx/CheckeredBg", 0);
+    }
 }
 
 void GridCanvas::Draw(const UIGeometricData& geometricData)
@@ -177,8 +209,8 @@ void CanvasSystem::SetRootControls(const Vector<ControlNode*>& controls)
 void CanvasSystem::AddRootControl(ControlNode* controlNode)
 {
     ScopedPtr<GridCanvas> gridControl(new GridCanvas(this, controlNode->GetRootProperty()));
-    gridControl->Init();
     UIControl* control = controlNode->GetControl();
+    gridControl->Init(control);
     const Vector2& size = control->GetSize();
     gridControl->SetSize(size);
     gridControl->GetPositionHolder()->SetSize(size);
