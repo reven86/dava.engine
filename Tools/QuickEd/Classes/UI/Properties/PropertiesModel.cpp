@@ -298,9 +298,8 @@ QVariant PropertiesModel::headerData(int section, Qt::Orientation /*orientation*
 
 void PropertiesModel::PropertyChanged(AbstractProperty *property)
 {
-    QModelIndex nameIndex = indexByProperty(property, 0);
-    QModelIndex valueIndex = nameIndex.sibling(nameIndex.row(), 1);
-    emit dataChanged(nameIndex, valueIndex, QVector<int>() << Qt::DisplayRole);
+    QModelIndex nameIndex = indexByProperty(property, 1);
+    emit dataChanged(nameIndex, nameIndex, QVector<int>() << Qt::DisplayRole);
 }
 
 void PropertiesModel::ComponentPropertiesWillBeAdded(RootProperty *root, ComponentPropertiesSection *section, int index)
