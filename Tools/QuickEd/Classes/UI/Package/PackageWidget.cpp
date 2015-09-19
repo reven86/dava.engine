@@ -182,24 +182,25 @@ void PackageWidget::SaveContext()
 
 void PackageWidget::RefreshActions()
 {
-    QList<PackageBaseNode*> nodes;
-    QModelIndexList indexes = filteredPackageModel->mapSelectionToSource(treeView->selectionModel()->selection()).indexes();
-    for (const QModelIndex &index : indexes)
-        nodes.push_back(static_cast<PackageBaseNode*>(index.internalPointer()));
-    bool canInsertControls = nodes.size() == 1 && nodes[0]->IsInsertingControlsSupported();
-    bool canInsertPackages = nodes.size() == 1 && nodes[0]->IsInsertingPackagesSupported();
-    bool canInsertStyles = nodes.size() == 1 && nodes[0]->IsInsertingStylesSupported();
+    const SelectedNodes& nodes = selectionContainer.selectedNodes;
+    bool canInsertControls = false;
+    bool canInsertPackages = false;
+    bool canInsertStyles = false;
     bool canRemove = !nodes.empty();
     bool canCopy = false;
-    bool canEdit = nodes.size() == 1 && nodes.first()->IsEditingSupported();
-    
-    for(const PackageBaseNode *node : nodes)
+    bool canEdit = false;
+    if (nodes.size() == 1)
     {
-        canCopy |= node->CanCopy();
-        canRemove |= node->CanRemove();
-
-        if (canCopy && canRemove)
-            break;
+        PackageBaseNode* node = *nodes.begin();
+        canInsertControls = node->IsInsertingControlsSupported();
+        canInsertPackages = node->IsInsertingPackagesSupported();
+        canInsertStyles = node->IsInsertingStylesSupported();
+        canEdit = node->IsEditingSupported();
+    }
+    for (auto iter = nodes.cbegin(); iter != nodes.cend() && (!canCopy || !canRemove); ++iter)
+    {
+        canCopy |= (*iter)->CanCopy();
+        canRemove |= (*iter)->CanRemove();
     }
     
     RefreshAction(copyAction, canCopy, true);
@@ -494,6 +495,8 @@ void PackageWidget::SetSelectedNodes(const SelectedNodes& selected, const Select
 
     if (!reallySelected.empty() || !reallyDeselected.empty())
     {
+        RefreshActions();
+
         disconnect(treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &PackageWidget::OnSelectionChanged);
 
         for (const auto &node : reallyDeselected)
@@ -509,7 +512,6 @@ void PackageWidget::SetSelectedNodes(const SelectedNodes& selected, const Select
             treeView->selectionModel()->select(dstIndex, QItemSelectionModel::Select);
             treeView->scrollTo(dstIndex);
         }
-        RefreshActions();
 
         connect(treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &PackageWidget::OnSelectionChanged);
         emit SelectedNodesChanged(reallySelected, reallyDeselected);
