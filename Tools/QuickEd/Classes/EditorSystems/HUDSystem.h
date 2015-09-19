@@ -35,6 +35,8 @@
 #include "UI/UIControl.h"
 #include "EditorSystems/BaseEditorSystem.h"
 #include "EditorSystems/EditorSystemsManager.h"
+#include "Model/ControlProperties/PropertyListener.h"
+#include "Model/ControlProperties/RootProperty.h"
 
 class ControlContainer : public DAVA::UIControl
 {
@@ -75,10 +77,11 @@ private:
 
     DAVA::Vector2 pressedPoint; //corner of selection rect
     bool canDrawRect = false; //selection rect state
-    struct HUD
+    struct HUD : private PropertyListener
     {
         HUD(ControlNode* node, DAVA::UIControl* hudControl);
         ~HUD();
+        void PropertyChanged(AbstractProperty* property) override;
         ControlNode* node = nullptr;
         DAVA::UIControl* control = nullptr;
         DAVA::ScopedPtr<ControlContainer> container;

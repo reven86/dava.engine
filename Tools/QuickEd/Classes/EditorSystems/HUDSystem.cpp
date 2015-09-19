@@ -450,6 +450,7 @@ HUDSystem::HUD::HUD(ControlNode* node_, UIControl* hudControl)
     , control(node_->GetControl())
     , container(new HUDContainer(control))
 {
+    node->GetRootProperty()->AddListener(this);
     hudControls.emplace_back(new PivotPointControl);
     hudControls.emplace_back(new RotateControl);
     for (int i = HUDAreaInfo::TOP_LEFT_AREA; i < HUDAreaInfo::CORNERS_COUNT; ++i)
@@ -466,13 +467,23 @@ HUDSystem::HUD::HUD(ControlNode* node_, UIControl* hudControl)
         hudContainer->AddChild((*iter).get());
     }
     container->InitFromGD(control->GetGeometricData());
+    container->SetVisible(control->GetVisible() && control->GetVisibleForUIEditor());
 }
 
 HUDSystem::HUD::~HUD()
 {
+    node->GetRootProperty()->RemoveListener(this);
     for (auto control : hudControls)
     {
         container->RemoveControl(control);
     }
     container->RemoveFromParent();
+}
+
+void HUDSystem::HUD::PropertyChanged(AbstractProperty* property)
+{
+    if (property->GetName() == "Visible")
+    {
+        container->SetVisible(property->GetValue().AsBool());
+    }
 }

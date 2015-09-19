@@ -45,6 +45,7 @@ class GridCanvas : public UIControl, private PropertyListener
 {
 public:
     GridCanvas(CanvasSystem* canvasSystem, RootProperty* property);
+    ~GridCanvas() override;
     void Init(UIControl* control);
     void PropertyChanged(AbstractProperty* property) override;
     UIControl* GetPositionHolder();
@@ -52,6 +53,7 @@ public:
 private:
     void UpdateSprite();
     void Draw(const UIGeometricData& geometricData) override;
+    RootProperty* rootProperty = nullptr;
     AbstractProperty* sizeProperty = nullptr;
     AbstractProperty* positionProperty = nullptr;
     AbstractProperty* pivotProperty = nullptr;
@@ -62,6 +64,7 @@ private:
 
 GridCanvas::GridCanvas(CanvasSystem* canvasSystem_, RootProperty* property)
     : UIControl()
+    , rootProperty(property)
     , positionHolder(new UIControl())
     , canvasSystem(canvasSystem_)
 {
@@ -72,6 +75,11 @@ GridCanvas::GridCanvas(CanvasSystem* canvasSystem_, RootProperty* property)
     angleProperty = property->FindPropertyByName("Angle");
     DVASSERT(nullptr != sizeProperty);
     DVASSERT(nullptr != positionProperty);
+}
+
+GridCanvas::~GridCanvas()
+{
+    rootProperty->RemoveListener(this);
 }
 
 void GridCanvas::Init(UIControl* control)
