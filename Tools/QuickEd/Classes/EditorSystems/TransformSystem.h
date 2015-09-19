@@ -30,9 +30,9 @@
 #define __QUICKED_TRANSFORM_SYSTEM_H__
 
 #include "EditorSystems/BaseEditorSystem.h"
+#include "EditorSystems/EditorSystemsManager.h"
 #include "Base/BaseTypes.h"
 #include "Math/Vector.h"
-#include "Document.h"
 #include <chrono>
 
 class TransformSystem final : public BaseEditorSystem
