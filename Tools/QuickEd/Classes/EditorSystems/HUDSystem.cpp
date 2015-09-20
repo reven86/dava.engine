@@ -31,12 +31,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "UI/UIControl.h"
 #include "UI/UIEvent.h"
 #include "Base/BaseTypes.h"
-#include "Model/PackageHierarchy/ControlNode.h"
 #include "Input/InputSystem.h"
 #include "Input/KeyboardDevice.h"
 #include "UI/Layouts/UISizePolicyComponent.h"
 #include "Render/RenderState.h"
 #include "Render/RenderManager.h"
+
+#include "Model/PackageHierarchy/ControlNode.h"
+#include "Model/PackageHierarchy/PackageNode.h"
+#include "Model/PackageHierarchy/ImportedPackagesNode.h"
+#include "Model/PackageHierarchy/PackageControlsNode.h"
 
 using namespace DAVA;
 
@@ -334,14 +338,22 @@ void HUDSystem::OnSelectionChanged(const SelectedNodes& selected, const Selected
 {
     for (auto node : deselected)
     {
-        ControlNode* controlNode = dynamic_cast<ControlNode*>(node);
+        ControlNode* controlNode = DynamicTypeCheck<ControlNode*>(node);
         hudMap.erase(controlNode);
     }
 
     for (auto node : selected)
     {
-        ControlNode* controlNode = dynamic_cast<ControlNode*>(node);
-        if (nullptr != controlNode)
+        ControlNode* controlNode = DynamicTypeCheck<ControlNode*>(node);
+        PackageBaseNode* parent = controlNode->GetParent();
+        const PackageNode* package = systemManager->GetPackage();
+        const ImportedPackagesNode* importedPackagesNode = package->GetImportedPackagesNode();
+        const ControlsContainerNode* controlsContainerNode = package->GetPackageControlsNode();
+        while (nullptr != parent && parent != importedPackagesNode && parent != controlsContainerNode)
+        {
+            parent = parent->GetParent();
+        }
+        if (parent != importedPackagesNode)
         {
             hudMap.emplace(std::piecewise_construct,
                            std::forward_as_tuple(controlNode),
