@@ -45,7 +45,7 @@ class SelectionSystem final : public BaseEditorSystem, private PackageListener
 {
 public:
     SelectionSystem(EditorSystemsManager* doc);
-    ~SelectionSystem() override = default;
+    ~SelectionSystem() override;
 
     void OnActivated() override;
     void OnDeactivated() override;

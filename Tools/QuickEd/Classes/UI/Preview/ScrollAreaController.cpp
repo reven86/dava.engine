@@ -135,7 +135,7 @@ void ScrollAreaController::UpdatePosition()
         {
             position.x += (viewSize.width() - canvasSize.width()) / 2.0f;
         }
-        if (viewSize.height() > (canvasSize.height() + margin * 2))
+        if (viewSize.height() > canvasSize.height())
         {
             position.y += (viewSize.height() - canvasSize.height()) / 2.0f;
         }

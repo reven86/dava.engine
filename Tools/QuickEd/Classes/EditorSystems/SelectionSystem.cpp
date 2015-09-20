@@ -43,6 +43,11 @@ SelectionSystem::SelectionSystem(EditorSystemsManager* parent)
     systemManager->SelectionRectChanged.Connect(this, &SelectionSystem::OnSelectByRect);
 }
 
+SelectionSystem::~SelectionSystem()
+{
+    systemManager->GetPackage()->RemoveListener(this);
+}
+
 void SelectionSystem::OnActivated()
 {
     systemManager->SelectionChanged.Emit(selectionContainer.selectedNodes, SelectedNodes());

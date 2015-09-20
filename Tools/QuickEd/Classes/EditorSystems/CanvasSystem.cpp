@@ -76,8 +76,10 @@ GridCanvas::~GridCanvas()
 void GridCanvas::Init(UIControl* control)
 {
     nestedControl = control;
-    SetName("GridCanvas");
-    positionHolder->SetName("Position holder");
+    String name = control->GetName();
+    name = name.empty() ? "unnamed" : name;
+    SetName("Grid control of " + name);
+    positionHolder->SetName("Position holder of " + name);
     AddControl(positionHolder);
 
     background->SetSprite("~res:/Gfx/CheckeredBg", 0);
@@ -158,14 +160,20 @@ CanvasSystem::CanvasSystem(EditorSystemsManager* parent)
     : BaseEditorSystem(parent)
     , controlsCanvas(new UIControl())
 {
-    controlsCanvas->SetName("controls canvas");
     systemManager->GetPackage()->AddListener(this);
+
+    controlsCanvas->SetName("controls canvas");
 
     auto controlsNode = systemManager->GetPackage()->GetPackageControlsNode();
     for (int index = 0; index < controlsNode->GetCount(); ++index)
     {
         AddRootControl(controlsNode->Get(index));
     }
+}
+
+CanvasSystem::~CanvasSystem()
+{
+    systemManager->GetPackage()->RemoveListener(this);
 }
 
 void CanvasSystem::OnActivated()
@@ -180,12 +188,14 @@ void CanvasSystem::OnDeactivated()
     controlsCanvas->RemoveFromParent();
 }
 
-void CanvasSystem::ControlWillBeRemoved(::ControlNode* node, ControlsContainerNode* from)
+void CanvasSystem::ControlWillBeRemoved(ControlNode* node, ControlsContainerNode* from)
 {
-    if (nullptr == node->GetParent())
+    auto packageControlsNode = systemManager->GetPackage()->GetPackageControlsNode();
+    if (packageControlsNode == node->GetParent())
     {
-        UIControl* removedControl = node->GetControl()->GetParent();
-        controlsCanvas->RemoveControl(removedControl);
+        UIControl* removedControl = node->GetControl();
+        UIControl* grid = removedControl->GetParent()->GetParent(); //grid<-positionHolder<-control
+        controlsCanvas->RemoveControl(grid);
         LayoutCanvas();
     }
 }

@@ -42,7 +42,7 @@ class CanvasSystem final : public BaseEditorSystem, private PackageListener
 {
 public:
     CanvasSystem(EditorSystemsManager* parent);
-    ~CanvasSystem() override = default;
+    ~CanvasSystem() override;
 
     void OnActivated() override;
     void OnDeactivated() override;
