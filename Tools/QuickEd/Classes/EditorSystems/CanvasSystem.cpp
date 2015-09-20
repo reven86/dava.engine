@@ -41,11 +41,11 @@
 
 using namespace DAVA;
 
-class GridCanvas : public UIControl, private PropertyListener
+class GridControl : public UIControl, private PropertyListener
 {
 public:
-    GridCanvas(CanvasSystem* canvasSystem, RootProperty* property);
-    ~GridCanvas() override;
+    GridControl(CanvasSystem* canvasSystem, RootProperty* property);
+    ~GridControl() override;
     void Init(UIControl* control);
     void PropertyChanged(AbstractProperty* property) override;
     UIControl* GetPositionHolder();
@@ -59,7 +59,7 @@ private:
     UIControl* nestedControl = nullptr;
 };
 
-GridCanvas::GridCanvas(CanvasSystem* canvasSystem_, RootProperty* property)
+GridControl::GridControl(CanvasSystem* canvasSystem_, RootProperty* property)
     : UIControl()
     , rootProperty(property)
     , positionHolder(new UIControl())
@@ -68,12 +68,12 @@ GridCanvas::GridCanvas(CanvasSystem* canvasSystem_, RootProperty* property)
     property->AddListener(this);
 }
 
-GridCanvas::~GridCanvas()
+GridControl::~GridControl()
 {
     rootProperty->RemoveListener(this);
 }
 
-void GridCanvas::Init(UIControl* control)
+void GridControl::Init(UIControl* control)
 {
     nestedControl = control;
     String name = control->GetName();
@@ -94,7 +94,7 @@ void GridCanvas::Init(UIControl* control)
     UpdateSprite();
 }
 
-void GridCanvas::PropertyChanged(AbstractProperty* property)
+void GridControl::PropertyChanged(AbstractProperty* property)
 {
     const String& name = property->GetName();
     if (name == "Size" || name == "Scale")
@@ -125,12 +125,12 @@ void GridCanvas::PropertyChanged(AbstractProperty* property)
     }
 }
 
-UIControl* GridCanvas::GetPositionHolder()
+UIControl* GridControl::GetPositionHolder()
 {
     return positionHolder;
 }
 
-void GridCanvas::UpdateSprite()
+void GridControl::UpdateSprite()
 {
     bool transformed = !positionHolder->GetPosition().IsZero() || !positionHolder->GetPivot().IsZero() || positionHolder->GetAngle() != 0;
     if (transformed)
@@ -143,7 +143,7 @@ void GridCanvas::UpdateSprite()
     }
 }
 
-void GridCanvas::Draw(const UIGeometricData& geometricData)
+void GridControl::Draw(const UIGeometricData& geometricData)
 {
     if (0.0f != geometricData.scale.x)
     {
@@ -167,7 +167,7 @@ CanvasSystem::CanvasSystem(EditorSystemsManager* parent)
     auto controlsNode = systemManager->GetPackage()->GetPackageControlsNode();
     for (int index = 0; index < controlsNode->GetCount(); ++index)
     {
-        AddRootControl(controlsNode->Get(index));
+        InsertRootControl(controlsNode->Get(index), index);
     }
 }
 
@@ -200,34 +200,35 @@ void CanvasSystem::ControlWillBeRemoved(ControlNode* node, ControlsContainerNode
     }
 }
 
-void CanvasSystem::ControlWasAdded(ControlNode* node, ControlsContainerNode* /*destination*/, int /*index*/)
+void CanvasSystem::ControlWasAdded(ControlNode* node, ControlsContainerNode* destination, int index)
 {
     auto packageControlsNode = systemManager->GetPackage()->GetPackageControlsNode();
     if (packageControlsNode == node->GetParent())
     {
-        AddRootControl(node);
+        InsertRootControl(node, index);
         LayoutCanvas();
     }
 }
 
-void CanvasSystem::SetRootControls(const Vector<ControlNode*>& controls)
+void CanvasSystem::InsertRootControl(ControlNode* controlNode, int pos)
 {
-    for (auto node : controls)
-    {
-        AddRootControl(node);
-    }
-}
-
-void CanvasSystem::AddRootControl(ControlNode* controlNode)
-{
-    ScopedPtr<GridCanvas> gridControl(new GridCanvas(this, controlNode->GetRootProperty()));
+    ScopedPtr<GridControl> gridControl(new GridControl(this, controlNode->GetRootProperty()));
     UIControl* control = controlNode->GetControl();
     gridControl->Init(control);
     const Vector2& size = control->GetSize();
     gridControl->SetSize(size);
     gridControl->GetPositionHolder()->SetSize(size);
     gridControl->GetPositionHolder()->AddControl(control);
-    controlsCanvas->AddControl(gridControl);
+    if (pos >= controlsCanvas->GetChildren().size())
+    {
+        controlsCanvas->AddControl(gridControl);
+    }
+    else
+    {
+        auto iter = controlsCanvas->GetChildren().begin();
+        std::advance(iter, pos);
+        controlsCanvas->InsertChildBelow(gridControl, *iter);
+    }
 }
 
 void CanvasSystem::LayoutCanvas()

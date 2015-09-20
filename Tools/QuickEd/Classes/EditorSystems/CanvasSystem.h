@@ -54,7 +54,7 @@ private:
     void ControlWasAdded(ControlNode* node, ControlsContainerNode* /*destination*/, int /*index*/) override;
 
     void SetRootControls(const DAVA::Vector<ControlNode*>& controls);
-    void AddRootControl(ControlNode* controlNode);
+    void InsertRootControl(ControlNode* controlNode, int pos);
 
     DAVA::ScopedPtr<DAVA::UIControl> controlsCanvas;
     SelectedControls selectedControlNodes;
