@@ -32,10 +32,9 @@
 #include <QPoint>
 #include <QColor>
 #include <QFont>
+#include <QTimer>
 #include <QVector2D>
 #include <QVector4D>
-#include <QUndoStack>
-
 #include "Document.h"
 #include "Ui/QtModelPackageCommandExecutor.h"
 
@@ -54,13 +53,17 @@
 
 using namespace DAVA;
 
-PropertiesModel::PropertiesModel(ControlNode *_controlNode, QtModelPackageCommandExecutor *_commandExecutor, QObject *parent)
-: QAbstractItemModel(parent)
-, commandExecutor(SafeRetain(_commandExecutor))
+PropertiesModel::PropertiesModel(ControlNode* _controlNode, QtModelPackageCommandExecutor* _commandExecutor, QObject* parent)
+    : QAbstractItemModel(parent)
+    , commandExecutor(SafeRetain(_commandExecutor))
+    , updatePropertyTimer(new QTimer(this))
 {
     controlNode = SafeRetain(_controlNode);
     controlNode->GetRootProperty()->AddListener(this);
     rootProperty = SafeRetain(controlNode->GetRootProperty());
+    updatePropertyTimer->setSingleShot(true);
+    updatePropertyTimer->setInterval(30);
+    connect(updatePropertyTimer, &QTimer::timeout, this, &PropertiesModel::UpdateAllChangedProperties);
 }
 
 PropertiesModel::PropertiesModel(StyleSheetNode *aStyleSheet, QtModelPackageCommandExecutor *_commandExecutor, QObject *parent)
@@ -138,7 +141,6 @@ QVariant PropertiesModel::data(const QModelIndex &index, int role) const
     
     AbstractProperty *property = static_cast<AbstractProperty*>(index.internalPointer());
     uint32 flags = property->GetFlags();
-    
     switch (role)
     {
         case Qt::CheckStateRole:
@@ -296,10 +298,19 @@ QVariant PropertiesModel::headerData(int section, Qt::Orientation /*orientation*
     return QVariant();
 }
 
+void PropertiesModel::UpdateAllChangedProperties()
+{
+    for (auto index : changedIndexes)
+    {
+        emit dataChanged(index, index, QVector<int>() << Qt::DisplayRole);
+    }
+}
+
 void PropertiesModel::PropertyChanged(AbstractProperty *property)
 {
     QModelIndex nameIndex = indexByProperty(property, 1);
-    emit dataChanged(nameIndex, nameIndex, QVector<int>() << Qt::DisplayRole);
+    changedIndexes.insert(nameIndex);
+    updatePropertyTimer->start();
 }
 
 void PropertiesModel::ComponentPropertiesWillBeAdded(RootProperty *root, ComponentPropertiesSection *section, int index)

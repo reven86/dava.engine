@@ -378,7 +378,7 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
         {
             selectionRectControl->SetSize(Vector2(0, 0));
         }
-        bool retVal = canDrawRect || dragRequested;
+        bool retVal = canDrawRect && dragRequested;
         SetCanDrawRect(false);
         dragRequested = false;
         return retVal;

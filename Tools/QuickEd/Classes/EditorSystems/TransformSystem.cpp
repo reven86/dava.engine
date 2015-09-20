@@ -358,6 +358,22 @@ void TransformSystem::ResizeControl(const Vector2& pos, bool withPivot, bool rat
         }
     }
 
+    AbstractProperty* sizeProperty = activeControlNode->GetRootProperty()->FindPropertyByName("Size");
+    Vector2 origSize = sizeProperty->GetValue().AsVector2();
+    Vector2 finalSize(origSize + deltaSize);
+    if (finalSize.dx < minimumSize.dx)
+    {
+        float32 availableDelta = minimumSize.dx - origSize.dx;
+        deltaPosition.dx *= availableDelta / deltaSize.dx;
+        deltaSize.dx = availableDelta;
+    }
+    if (finalSize.dy < minimumSize.dy)
+    {
+        float32 availableDelta = minimumSize.dy - origSize.dy;
+        deltaPosition.dy *= availableDelta / deltaSize.dy;
+        deltaSize.dy = availableDelta;
+    }
+
     //rotate delta position backwards, because SetPosition require absolute coordinates
     Vector2 rotatedPosition;
     rotatedPosition.x = deltaPosition.x * cosf(-gd.angle) + deltaPosition.y * sinf(-gd.angle);
