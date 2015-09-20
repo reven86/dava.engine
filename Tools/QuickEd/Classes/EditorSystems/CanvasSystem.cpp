@@ -54,12 +54,9 @@ private:
     void UpdateSprite();
     void Draw(const UIGeometricData& geometricData) override;
     RootProperty* rootProperty = nullptr;
-    AbstractProperty* sizeProperty = nullptr;
-    AbstractProperty* positionProperty = nullptr;
-    AbstractProperty* pivotProperty = nullptr;
-    AbstractProperty* angleProperty = nullptr;
     ScopedPtr<UIControl> positionHolder;
     CanvasSystem* canvasSystem = nullptr;
+    UIControl* nestedControl = nullptr;
 };
 
 GridCanvas::GridCanvas(CanvasSystem* canvasSystem_, RootProperty* property)
@@ -69,12 +66,6 @@ GridCanvas::GridCanvas(CanvasSystem* canvasSystem_, RootProperty* property)
     , canvasSystem(canvasSystem_)
 {
     property->AddListener(this);
-    sizeProperty = property->FindPropertyByName("Size");
-    positionProperty = property->FindPropertyByName("Position");
-    pivotProperty = property->FindPropertyByName("Pivot");
-    angleProperty = property->FindPropertyByName("Angle");
-    DVASSERT(nullptr != sizeProperty);
-    DVASSERT(nullptr != positionProperty);
 }
 
 GridCanvas::~GridCanvas()
@@ -84,6 +75,7 @@ GridCanvas::~GridCanvas()
 
 void GridCanvas::Init(UIControl* control)
 {
+    nestedControl = control;
     SetName("GridCanvas");
     positionHolder->SetName("Position holder");
     AddControl(positionHolder);
@@ -93,7 +85,7 @@ void GridCanvas::Init(UIControl* control)
     background->SetShader(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR);
 
     SetSize(control->GetSize());
-    positionHolder->SetSize(control->GetSize());
+    positionHolder->SetSize(control->GetSize() * control->GetScale());
     positionHolder->SetPosition(-control->GetPosition());
     positionHolder->SetPivot(-control->GetPivot());
     positionHolder->SetAngle(-control->GetAngle());
@@ -102,28 +94,30 @@ void GridCanvas::Init(UIControl* control)
 
 void GridCanvas::PropertyChanged(AbstractProperty* property)
 {
-    if (property == sizeProperty)
+    const String& name = property->GetName();
+    if (name == "Size" || name == "Scale")
     {
-        Vector2 size = sizeProperty->GetValue().AsVector2();
+        Vector2 size = nestedControl->GetSize();
+        size *= nestedControl->GetScale();
         SetSize(size);
         positionHolder->SetSize(size);
         canvasSystem->LayoutCanvas();
     }
-    else if (property == positionProperty)
+    else if (name == "Position")
     {
-        Vector2 position = positionProperty->GetValue().AsVector2();
+        Vector2 position = property->GetValue().AsVector2();
         positionHolder->SetPosition(-position);
         UpdateSprite();
     }
-    else if (property == pivotProperty)
+    else if (name == "Pivot")
     {
-        Vector2 pivot = pivotProperty->GetValue().AsVector2();
+        Vector2 pivot = property->GetValue().AsVector2();
         positionHolder->SetPivot(-pivot);
         UpdateSprite();
     }
-    else if (property == angleProperty)
+    else if (name == "Angle")
     {
-        float32 angle = angleProperty->GetValue().AsFloat();
+        float32 angle = property->GetValue().AsFloat();
         positionHolder->SetAngle(-DegToRad(angle));
         UpdateSprite();
     }
