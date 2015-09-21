@@ -35,7 +35,7 @@ function(set_binary_dir PROJ_NAME DST_DIR DIR_POSTFIX)
                                                 RUNTIME_OUTPUT_DIRECTORY_${UP_CONF_NAME} ${MODULE_OUTPUT_DIR}
                                                 PDB_OUTPUT_DIRECTORY_${UP_CONF_NAME} ${MODULE_OUTPUT_DIR})
 
-    endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
+    endforeach( CONF_NAME CMAKE_CONFIGURATION_TYPES )
 endfunction()
 
 macro (append_ngt_lib LIB_NAME)
