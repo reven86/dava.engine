@@ -1,10 +1,11 @@
-set( TARGET_FILE_TREE_FOUND false )
 
 MACRO ( FILE_TREE_CHECK arg_folders ) 
     find_package( PythonInterp   )
 
+    set( TARGET_FILE_TREE_FOUND false )
+
     if( PYTHONINTERP_FOUND AND NOT IGNORE_FILE_TREE_CHECK )
-        set( TARGET_FILE_TREE_FOUND true PARENT_SCOPE )
+        set( TARGET_FILE_TREE_FOUND true )
 
         string(REPLACE ";" " " folders "${arg_folders}" )
         string(REPLACE "\"" "" folders "${arg_folders}" )
