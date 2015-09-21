@@ -80,7 +80,7 @@ void GameCore::OnAppStarted()
     viewSceneScreen = new ViewSceneScreen();
 
     //SetScenePath( "~doc:/GB/Cromwell-test.sc2" );
-//    SetScenePath("~doc:/effect.sc2");    
+//    SetScenePath("~doc:/effect.sc2");
     SetScenePath("~doc:/karelia/karelia.sc2");
 //    SetScenePath("~doc:/scene_viewer/test_box/box.sc2");
 //      SetScenePath("~doc:/amigosville/amigosville.sc2");
