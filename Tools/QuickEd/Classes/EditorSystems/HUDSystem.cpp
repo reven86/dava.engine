@@ -338,26 +338,29 @@ void HUDSystem::OnSelectionChanged(const SelectedNodes& selected, const Selected
 {
     for (auto node : deselected)
     {
-        ControlNode* controlNode = DynamicTypeCheck<ControlNode*>(node);
+        ControlNode* controlNode = dynamic_cast<ControlNode*>(node);
         hudMap.erase(controlNode);
     }
 
     for (auto node : selected)
     {
-        ControlNode* controlNode = DynamicTypeCheck<ControlNode*>(node);
-        PackageBaseNode* parent = controlNode->GetParent();
-        const PackageNode* package = systemManager->GetPackage();
-        const ImportedPackagesNode* importedPackagesNode = package->GetImportedPackagesNode();
-        const ControlsContainerNode* controlsContainerNode = package->GetPackageControlsNode();
-        while (nullptr != parent && parent != importedPackagesNode && parent != controlsContainerNode)
+        ControlNode* controlNode = dynamic_cast<ControlNode*>(node);
+        if (nullptr != controlNode)
         {
-            parent = parent->GetParent();
-        }
-        if (parent != importedPackagesNode)
-        {
-            hudMap.emplace(std::piecewise_construct,
-                           std::forward_as_tuple(controlNode),
-                           std::forward_as_tuple(controlNode, hudControl));
+            PackageBaseNode* parent = controlNode->GetParent();
+            const PackageNode* package = systemManager->GetPackage();
+            const ImportedPackagesNode* importedPackagesNode = package->GetImportedPackagesNode();
+            const ControlsContainerNode* controlsContainerNode = package->GetPackageControlsNode();
+            while (nullptr != parent && parent != importedPackagesNode && parent != controlsContainerNode)
+            {
+                parent = parent->GetParent();
+            }
+            if (parent != importedPackagesNode)
+            {
+                hudMap.emplace(std::piecewise_construct,
+                               std::forward_as_tuple(controlNode),
+                               std::forward_as_tuple(controlNode, hudControl));
+            }
         }
     }
 }
@@ -390,7 +393,7 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
         {
             selectionRectControl->SetSize(Vector2(0, 0));
         }
-        bool retVal = canDrawRect && dragRequested;
+        bool retVal = dragRequested;
         SetCanDrawRect(false);
         dragRequested = false;
         return retVal;

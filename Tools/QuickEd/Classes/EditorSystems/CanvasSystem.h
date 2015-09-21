@@ -33,10 +33,10 @@
 #include "Model/PackageHierarchy/PackageListener.h"
 #include "Base/ScopedPtr.h"
 #include "UI/UIControl.h"
-#include "EditorSystems/SelectionContainer.h"
 
 class EditorSystemsManager;
 class PackageBaseNode;
+class GridControl;
 
 class CanvasSystem final : public BaseEditorSystem, private PackageListener
 {
@@ -56,8 +56,8 @@ private:
     void SetRootControls(const DAVA::Vector<ControlNode*>& controls);
     void InsertRootControl(ControlNode* controlNode, int pos);
 
-    DAVA::ScopedPtr<DAVA::UIControl> controlsCanvas;
-    SelectedControls selectedControlNodes;
+    DAVA::ScopedPtr<DAVA::UIControl> controlsCanvas; //to attach or detach from document
+    DAVA::List<GridControl*> gridControls;
 };
 
 #endif // __QUICKED_CANVAS_SYSTEM_H__
