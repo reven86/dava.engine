@@ -73,22 +73,22 @@ public:
         flags |= flag;
     }
     
-    int32 GetFirstChild() const
+    int32 GetFirstChildIndex() const
     {
         return firstChild;
     }
     
-    void SetFirstChild(int32 index)
+    void SetFirstChildIndex(int32 index)
     {
         firstChild = index;
     }
     
-    int32 GetLastChild() const
+    int32 GetLastChildIndex() const
     {
         return lastChild;
     }
     
-    void SetLastChild(int32 index)
+    void SetLastChildIndex(int32 index)
     {
         lastChild = index;
     }
@@ -214,8 +214,8 @@ void UILayoutSystem::CollectControlChildren(UIControl *control, int32 parentInde
     int32 index = static_cast<int32>(layoutData.size());
     const List<UIControl*> &children = control->GetChildren();
     
-    layoutData[parentIndex].SetFirstChild(index);
-    layoutData[parentIndex].SetLastChild(index + static_cast<int32>(children.size() - 1));
+    layoutData[parentIndex].SetFirstChildIndex(index);
+    layoutData[parentIndex].SetLastChildIndex(index + static_cast<int32>(children.size() - 1));
 
     for (UIControl *child : children)
     {
@@ -277,7 +277,7 @@ void UILayoutSystem::MeasureControl(ControlLayoutData &data, Vector2::eAxis axis
             break;
             
         case UISizePolicyComponent::PERCENT_OF_CHILDREN_SUM:
-            for (int32 i = data.GetFirstChild(); i <= data.GetLastChild(); i++)
+            for (int32 i = data.GetFirstChildIndex(); i <= data.GetLastChildIndex(); i++)
             {
                 const ControlLayoutData &childData = layoutData[i];
                 if (!HaveToSkipControl(childData.GetControl(), skipInvisible))
@@ -291,7 +291,7 @@ void UILayoutSystem::MeasureControl(ControlLayoutData &data, Vector2::eAxis axis
             break;
             
         case UISizePolicyComponent::PERCENT_OF_MAX_CHILD:
-            for (int32 i = data.GetFirstChild(); i <= data.GetLastChild(); i++)
+            for (int32 i = data.GetFirstChildIndex(); i <= data.GetLastChildIndex(); i++)
             {
                 const ControlLayoutData &childData = layoutData[i];
                 if (!HaveToSkipControl(childData.GetControl(), skipInvisible))
@@ -306,7 +306,7 @@ void UILayoutSystem::MeasureControl(ControlLayoutData &data, Vector2::eAxis axis
         case UISizePolicyComponent::PERCENT_OF_FIRST_CHILD:
             if (data.HasChildren())
             {
-                value = layoutData[data.GetFirstChild()].GetSize(axis);
+                value = layoutData[data.GetFirstChildIndex()].GetSize(axis);
                 processedChildrenCount = 1;
             }
             value = value * hintValue / 100.0f;
@@ -315,7 +315,7 @@ void UILayoutSystem::MeasureControl(ControlLayoutData &data, Vector2::eAxis axis
         case UISizePolicyComponent::PERCENT_OF_LAST_CHILD:
             if (data.HasChildren())
             {
-                value = layoutData[data.GetLastChild()].GetSize(axis);
+                value = layoutData[data.GetLastChildIndex()].GetSize(axis);
                 processedChildrenCount = 1;
             }
             value = value * hintValue / 100.0f;
@@ -378,7 +378,7 @@ void UILayoutSystem::ApplyLinearLayout(ControlLayoutData &data, UILinearLayoutCo
     const bool skipInvisible = layout->IsSkipInvisibleControls();
 
     int32 childrenCount = 0;
-    for (int32 i = data.GetFirstChild(); i <= data.GetLastChild(); i++)
+    for (int32 i = data.GetFirstChildIndex(); i <= data.GetLastChildIndex(); i++)
     {
         ControlLayoutData &childData = layoutData[i];
         if (HaveToSkipControl(childData.GetControl(), skipInvisible))
@@ -421,7 +421,7 @@ void UILayoutSystem::ApplyLinearLayout(ControlLayoutData &data, UILinearLayoutCo
         while (haveToCalculateSizes)
         {
             haveToCalculateSizes = false;
-            for (int32 i = data.GetFirstChild(); i <= data.GetLastChild(); i++)
+            for (int32 i = data.GetFirstChildIndex(); i <= data.GetLastChildIndex(); i++)
             {
                 ControlLayoutData &childData = layoutData[i];
                 
@@ -502,7 +502,7 @@ void UILayoutSystem::ApplyLinearLayout(ControlLayoutData &data, UILinearLayoutCo
             position = data.GetSize(axis) - padding;
         }
 
-        for (int32 i = data.GetFirstChild(); i <= data.GetLastChild(); i++)
+        for (int32 i = data.GetFirstChildIndex(); i <= data.GetLastChildIndex(); i++)
         {
             ControlLayoutData &childData = layoutData[i];
             if (HaveToSkipControl(childData.GetControl(), skipInvisible))
@@ -532,7 +532,7 @@ void UILayoutSystem::ApplyLinearLayout(ControlLayoutData &data, UILinearLayoutCo
 void UILayoutSystem::ApplyAnchorLayout(ControlLayoutData &data, Vector2::eAxis axis, bool onlyForIgnoredControls)
 {
     
-    for (int32 i = data.GetFirstChild(); i <= data.GetLastChild(); i++)
+    for (int32 i = data.GetFirstChildIndex(); i <= data.GetLastChildIndex(); i++)
     {
         ControlLayoutData &childData = layoutData[i];
         if (onlyForIgnoredControls && childData.HasComponent(UIComponent::IGNORE_LAYOUT_COMPONENT) == 0)
