@@ -93,6 +93,7 @@ bool TransformSystem::OnInput(UIEvent* currentInput)
     case UIEvent::PHASE_DRAG:
     {
         ProcessDrag(currentInput->point);
+        prevPos = currentInput->point;
         return false;
     }
     case UIEvent::PHASE_ENDED:
@@ -135,9 +136,6 @@ bool TransformSystem::ProcessDrag(const Vector2& pos)
         return false;
     }
 
-    const auto& keyBoard = InputSystem::Instance()->GetKeyboard();
-    auto control = activeControlNode->GetControl();
-
     switch (activeArea)
     {
     case HUDAreaInfo::FRAME_AREA:
@@ -152,6 +150,7 @@ bool TransformSystem::ProcessDrag(const Vector2& pos)
     case HUDAreaInfo::BOTTOM_CENTER_AREA:
     case HUDAreaInfo::BOTTOM_RIGHT_AREA:
     {
+        const auto& keyBoard = InputSystem::Instance()->GetKeyboard();
         bool withPivot = keyBoard.IsKeyPressed(DVKEY_ALT);
         bool rateably = keyBoard.IsKeyPressed(DVKEY_SHIFT);
         ResizeControl(pos, withPivot, rateably);
