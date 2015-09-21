@@ -698,7 +698,9 @@ namespace DAVA
                 return size;
             }
             else
+            {
                 return background->GetSprite()->GetSize();
+            }
         }
         return Vector2(0.0f, 0.0f);
     }
@@ -706,7 +708,9 @@ namespace DAVA
     bool UIControl::IsHeightDependsOnWidth() const
     {
         if (background == nullptr || background->GetSprite() == nullptr)
+        {
             return false;
+        }
         
         UIControlBackground::eDrawType dt = background->GetDrawType();
         return dt == UIControlBackground::DRAW_SCALE_PROPORTIONAL || dt == UIControlBackground::DRAW_SCALE_PROPORTIONAL_ONE;

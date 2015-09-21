@@ -176,7 +176,7 @@ void UIAnchorComponent::SetUseRtl(bool use)
 
 void UIAnchorComponent::SetLayoutDirty()
 {
-    if (GetControl())
+    if (GetControl() != nullptr)
     {
         GetControl()->SetLayoutDirty();
     }

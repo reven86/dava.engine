@@ -25,7 +25,7 @@ public:
     };
     
 public:
-    ControlLayoutData(UIControl *control_) : control(control_), flags(0)
+    ControlLayoutData(UIControl *control_) : control(control_)
     {
         position = control->GetPosition() - control->GetPivotPoint();
         size = control->GetSize();

@@ -211,7 +211,7 @@ void UISizePolicyComponent::SetVerticalPolicyFromInt(int32 policy)
 
 void UISizePolicyComponent::SetLayoutDirty()
 {
-    if (GetControl())
+    if (GetControl() != nullptr)
     {
         GetControl()->SetLayoutDirty();
     }

@@ -129,12 +129,11 @@ int32 UILinearLayoutComponent::GetOrientationAsInt() const
 void UILinearLayoutComponent::SetOrientationFromInt(int32 orientation)
 {
     SetOrientation(static_cast<eOrientation>(orientation));
-    SetLayoutDirty();
 }
 
 void UILinearLayoutComponent::SetLayoutDirty()
 {
-    if (GetControl())
+    if (GetControl() != nullptr)
     {
         GetControl()->SetLayoutDirty();
     }
