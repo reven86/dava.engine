@@ -121,7 +121,6 @@ private:
     void CollectRootControlsToRefreshLayout(ControlNode *node, DAVA::Vector<ControlNode*> &roots);
     void RestoreProperties(ControlNode *control);
     void NotifyPropertyChanged(ControlNode *control);
-    DAVA::Vector<PackageListener*> GetListenersCopy() const;
 
 private:
     enum eSection

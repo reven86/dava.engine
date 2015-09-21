@@ -66,7 +66,7 @@ private:
     void OnEmulationModeChanged(bool emulationMode);
 
     void ProcessCursor(const DAVA::Vector2& pos);
-    HUDAreaInfo GetControlArea(const DAVA::Vector2& pos);
+    HUDAreaInfo GetControlArea(const DAVA::Vector2& pos) const;
     void SetNewArea(const HUDAreaInfo& HUDAreaInfo);
 
     void SetCanDrawRect(bool canDrawRect_);
@@ -89,6 +89,7 @@ private:
     };
     DAVA::Map<ControlNode*, HUD> hudMap;
     DAVA::ScopedPtr<DAVA::UIControl> selectionRectControl;
+    DAVA::List<ControlNode*> sortedControlList;
     bool dragRequested = false;
 };
 

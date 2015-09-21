@@ -396,7 +396,7 @@ void TransformSystem::AdjustProperty(ControlNode* node, const Vector<PropertyDel
     Vector<std::pair<AbstractProperty*, VariantType>> propertiesToChange;
     for (const auto& pair : propertiesDelta)
     {
-        AbstractProperty* property = activeControlNode->GetRootProperty()->FindPropertyByName(pair.first);
+        AbstractProperty* property = node->GetRootProperty()->FindPropertyByName(pair.first);
         DVASSERT(nullptr != property);
         const VariantType& delta = pair.second;
         VariantType var(delta);

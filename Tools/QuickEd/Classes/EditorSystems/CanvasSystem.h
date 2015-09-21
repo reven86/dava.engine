@@ -50,11 +50,10 @@ public:
     void LayoutCanvas();
 
 private:
-    void ControlWillBeRemoved(ControlNode* node, ControlsContainerNode* from) override;
+    void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from) override;
     void ControlWasAdded(ControlNode* node, ControlsContainerNode* /*destination*/, int /*index*/) override;
-
-    void SetRootControls(const DAVA::Vector<ControlNode*>& controls);
-    void InsertRootControl(ControlNode* controlNode, int pos);
+    void ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property) override;
+    void CreateAndInsertGrid(ControlNode* controlNode, int pos);
 
     DAVA::ScopedPtr<DAVA::UIControl> controlsCanvas; //to attach or detach from document
     DAVA::List<GridControl*> gridControls;

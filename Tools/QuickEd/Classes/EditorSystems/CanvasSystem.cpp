@@ -41,41 +41,32 @@
 
 using namespace DAVA;
 
-class GridControl : public UIControl, private PackageListener
+class GridControl : public UIControl
 {
 public:
-    GridControl(CanvasSystem* canvasSystem, PackageNode* package);
-    ~GridControl() override;
+    GridControl(CanvasSystem* canvasSystem);
+    ~GridControl() override = default;
     void Init(UIControl* control);
-    void ControlPropertyWasChanged(ControlNode* node, AbstractProperty* propert) override;
-    void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from) override;
-    void ControlWasAdded(ControlNode* node, ControlsContainerNode* /*destination*/, int /*index*/) override;
-    UIControl* GetCounterPoiseControl();
+    void ControlPropertyWasChanged(ControlNode* node, AbstractProperty* propert);
+    void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from);
+    void ControlWasAdded(ControlNode* node, ControlsContainerNode* /*destination*/, int /*index*/);
     void AdjustToNestedControl();
 
 private:
     void UpdateSprite();
     void Draw(const UIGeometricData& geometricData) override;
-    PackageNode* package = nullptr;
     ScopedPtr<UIControl> counterPoiseControl;
     ScopedPtr<UIControl> positionHolderControl;
     CanvasSystem* canvasSystem = nullptr;
     UIControl* nestedControl = nullptr;
 };
 
-GridControl::GridControl(CanvasSystem* canvasSystem_, PackageNode* package_)
+GridControl::GridControl(CanvasSystem* canvasSystem_)
     : UIControl()
-    , package(package_)
     , counterPoiseControl(new UIControl())
     , positionHolderControl(new UIControl())
     , canvasSystem(canvasSystem_)
 {
-    package->AddListener(this);
-}
-
-GridControl::~GridControl()
-{
-    package->RemoveListener(this);
 }
 
 void GridControl::Init(UIControl* control)
@@ -282,7 +273,7 @@ CanvasSystem::CanvasSystem(EditorSystemsManager* parent)
     auto controlsNode = systemManager->GetPackage()->GetPackageControlsNode();
     for (int index = 0; index < controlsNode->GetCount(); ++index)
     {
-        InsertRootControl(controlsNode->Get(index), index);
+        CreateAndInsertGrid(controlsNode->Get(index), index);
     }
 }
 
@@ -303,30 +294,46 @@ void CanvasSystem::OnDeactivated()
     controlsCanvas->RemoveFromParent();
 }
 
-void CanvasSystem::ControlWillBeRemoved(ControlNode* node, ControlsContainerNode* /*from*/)
+void CanvasSystem::ControlWasRemoved(ControlNode* node, ControlsContainerNode* from)
 {
     const PackageControlsNode* packageControlsNode = systemManager->GetPackage()->GetPackageControlsNode();
-    if (packageControlsNode == node->GetParent())
+    if (packageControlsNode == from)
     {
         UIControl* removedControl = node->GetControl();
         UIControl* grid = removedControl->GetParent()->GetParent()->GetParent(); //grid<-positionHolder<-counterPoise<-control
         gridControls.remove(DynamicTypeCheck<GridControl*>(grid));
         controlsCanvas->RemoveControl(grid);
     }
+    for (GridControl* grid : gridControls)
+    {
+        grid->ControlWasRemoved(node, from);
+    }
 }
 
-void CanvasSystem::ControlWasAdded(ControlNode* node, ControlsContainerNode* /*destination*/, int index)
+void CanvasSystem::ControlWasAdded(ControlNode* node, ControlsContainerNode* destination, int index)
 {
     auto packageControlsNode = systemManager->GetPackage()->GetPackageControlsNode();
     if (packageControlsNode == node->GetParent())
     {
-        InsertRootControl(node, index);
+        CreateAndInsertGrid(node, index);
+    }
+    for (GridControl* grid : gridControls)
+    {
+        grid->ControlWasAdded(node, destination, index);
     }
 }
 
-void CanvasSystem::InsertRootControl(ControlNode* controlNode, int pos)
+void CanvasSystem::ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property)
 {
-    ScopedPtr<GridControl> gridControl(new GridControl(this, systemManager->GetPackage()));
+    for (GridControl* grid : gridControls)
+    {
+        grid->ControlPropertyWasChanged(node, property);
+    }
+}
+
+void CanvasSystem::CreateAndInsertGrid(ControlNode* controlNode, int pos)
+{
+    ScopedPtr<GridControl> gridControl(new GridControl(this));
     auto iter = gridControls.begin();
     std::advance(iter, pos);
     gridControls.insert(iter, gridControl.get());

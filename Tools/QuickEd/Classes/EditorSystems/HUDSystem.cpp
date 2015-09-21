@@ -334,18 +334,65 @@ void HUDSystem::OnDeactivated()
     selectionRectControl->SetSize(Vector2(0.0f, 0.0f));
 }
 
+bool CompareByLCA(PackageBaseNode* left, PackageBaseNode* right)
+{
+    DVASSERT(nullptr != left && nullptr != right);
+    PackageBaseNode* parent = left;
+    int depthLeft = 0;
+    while (nullptr != parent->GetParent())
+    {
+        parent = parent->GetParent();
+        ++depthLeft;
+    }
+    int depthRight = 0;
+    parent = right;
+    while (nullptr != parent->GetParent())
+    {
+        parent = parent->GetParent();
+        ++depthRight;
+    }
+
+    while (depthLeft != depthRight)
+    {
+        if (depthLeft > depthRight)
+        {
+            left = left->GetParent();
+            --depthLeft;
+        }
+        else
+        {
+            right = right->GetParent();
+            --depthRight;
+        }
+    }
+    while (true)
+    {
+        PackageBaseNode* leftParent = left->GetParent();
+        PackageBaseNode* rightParent = right->GetParent();
+        DVASSERT(nullptr != leftParent && nullptr != rightParent)
+        if (leftParent == rightParent)
+        {
+            return leftParent->GetIndex(left) > leftParent->GetIndex(right);
+        }
+        left = leftParent;
+        right = rightParent;
+    }
+}
+
 void HUDSystem::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
     for (auto node : deselected)
     {
         ControlNode* controlNode = dynamic_cast<ControlNode*>(node);
         hudMap.erase(controlNode);
+        sortedControlList.remove(controlNode);
     }
-
+    bool wasChanged = false;
     for (auto node : selected)
     {
         ControlNode* controlNode = dynamic_cast<ControlNode*>(node);
-        if (nullptr != controlNode)
+        const PackageControlsNode* packageControlsNode = systemManager->GetPackage()->GetPackageControlsNode();
+        if (nullptr != controlNode && packageControlsNode != controlNode->GetParent())
         {
             PackageBaseNode* parent = controlNode->GetParent();
             const PackageNode* package = systemManager->GetPackage();
@@ -360,8 +407,14 @@ void HUDSystem::OnSelectionChanged(const SelectedNodes& selected, const Selected
                 hudMap.emplace(std::piecewise_construct,
                                std::forward_as_tuple(controlNode),
                                std::forward_as_tuple(controlNode, hudControl));
+                sortedControlList.push_back(controlNode);
+                wasChanged = true;
             }
         }
+    }
+    if (wasChanged)
+    {
+        sortedControlList.sort(CompareByLCA);
     }
 }
 
@@ -418,17 +471,19 @@ void HUDSystem::ProcessCursor(const Vector2& pos)
     SetNewArea(GetControlArea(pos));
 }
 
-HUDAreaInfo HUDSystem::GetControlArea(const Vector2& pos)
+HUDAreaInfo HUDSystem::GetControlArea(const Vector2& pos) const
 {
     HUDAreaInfo areaInfo;
-    for (const auto& iter : hudMap)
+    for (const auto& iter : sortedControlList)
     {
-        auto& hud = iter.second;
+        auto findIter = hudMap.find(iter);
+        DVASSERT_MSG(findIter != hudMap.end(), "hud map corrupted");
+        const HUD& hud = findIter->second;
         for (const auto& hudControl : hud.hudControls)
         {
             if (hudControl->IsPointInside(pos))
             {
-                auto container = hudControl.get();
+                const ControlContainer* container = hudControl.get();
                 areaInfo.owner = hud.node;
                 areaInfo.area = container->GetArea();
                 DVASSERT_MSG(areaInfo.area != HUDAreaInfo::NO_AREA && areaInfo.owner != nullptr, "no control node for area");
