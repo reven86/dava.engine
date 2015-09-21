@@ -141,10 +141,12 @@ DX9Command
         CREATE_VERTEX_BUFFER            = 11,
         LOCK_VERTEX_BUFFER              = 12,
         UNLOCK_VERTEX_BUFFER            = 13,
+        UPDATE_VERTEX_BUFFER            = 14,
 
         CREATE_INDEX_BUFFER             = 21,
         LOCK_INDEX_BUFFER               = 22,
         UNLOCK_INDEX_BUFFER             = 23,
+        UPDATE_INDEX_BUFFER             = 24,
 
         CREATE_TEXTURE                  = 41,
         CREATE_CUBE_TEXTURE             = 42,
@@ -155,6 +157,7 @@ DX9Command
         LOCK_CUBETEXTURE_RECT           = 47,
         UNLOCK_CUBETEXTURE_RECT         = 48,
         GET_RENDERTARGET_DATA           = 49,
+        UPDATE_TEXTURE_LEVEL            = 50,
 
         CREATE_VERTEX_SHADER            = 51,
         CREATE_PIXEL_SHADER             = 52,

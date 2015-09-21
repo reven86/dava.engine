@@ -88,16 +88,23 @@ dx11_VertexBuffer_Create( const VertexBuffer::Descriptor& desc )
     DVASSERT(desc.size);
     if( desc.size )
     {
-        D3D11_BUFFER_DESC   desc11 = {0};
-        ID3D11Buffer*       buf    = nullptr;
+        D3D11_BUFFER_DESC       desc11 = {0};
+        ID3D11Buffer*           buf    = nullptr;
+        D3D11_SUBRESOURCE_DATA  data;
         
         desc11.ByteWidth        = desc.size;        
         desc11.Usage            = D3D11_USAGE_DYNAMIC;
         desc11.CPUAccessFlags   = D3D11_CPU_ACCESS_WRITE;
         desc11.BindFlags        = D3D11_BIND_VERTEX_BUFFER;                
         desc11.MiscFlags        = 0;
-        
-        HRESULT hr = _D3D11_Device->CreateBuffer( &desc11, NULL, &buf );
+
+        if( desc.initialData )
+        {
+            data.pSysMem     = desc.initialData;
+            data.SysMemPitch = desc.size;
+        }
+
+        HRESULT hr = _D3D11_Device->CreateBuffer( &desc11, (desc.initialData) ? &data : NULL, &buf );
 
         if( SUCCEEDED(hr) )
         {

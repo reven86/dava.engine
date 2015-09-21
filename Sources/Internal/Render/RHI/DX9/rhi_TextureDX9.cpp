@@ -123,10 +123,46 @@ TextureDX9_t::Create( const Texture::Descriptor& desc, bool force_immediate )
     {
         case TEXTURE_TYPE_2D :
         {
-            DX9Command  cmd1 = { DX9Command::CREATE_TEXTURE, { desc.width, desc.height, mip_count, usage, fmt, pool, uint64_t(&tex9), 0 } };
+            unsigned    cmd1_cnt = 1;
+            DX9Command  cmd1[32] = 
+            { 
+                DX9Command::CREATE_TEXTURE, { desc.width, desc.height, mip_count, usage, fmt, pool, uint64_t(&tex9), 0 } 
+            };
+
+            DVASSERT(desc.levelCount <= countof(desc.initialData));    
+            for( unsigned m=0; m!=desc.levelCount; ++m )
+            {
+                DX9Command*  cmd = cmd1 + cmd1_cnt;
+
+                if( desc.initialData[m] )
+                {
+                    Size2i  sz      = TextureExtents( Size2i(desc.width,desc.height), m );
+                    void*   data    = desc.initialData[m];
+                    uint32  data_sz = TextureSize( desc.format, sz.dx, sz.dy);
+                    
+                    cmd->func   = DX9Command::UPDATE_TEXTURE_LEVEL;
+                    cmd->arg[0] = uint64_t(&tex9);
+                    cmd->arg[1] = m;
+                    cmd->arg[2] = (uint64)(data);
+                    cmd->arg[3] = data_sz;
+                    
+                    if( desc.format == TEXTURE_FORMAT_R8G8B8A8 )
+                        _SwapRB8( data, data_sz );
+                    else if( desc.format == TEXTURE_FORMAT_R4G4B4A4 )
+                        _SwapRB4( data, data_sz );
+                    else if (desc.format == TEXTURE_FORMAT_R5G5B5A1)
+                        _SwapRB5551( data, data_sz );
+
+                    ++cmd1_cnt;
+                }
+                else
+                {
+                    break;
+                }
+            }
             
-            ExecDX9( &cmd1, 1, force_immediate );
-            hr = cmd1.retval;
+            ExecDX9( cmd1, cmd1_cnt, force_immediate );
+            hr = cmd1[0].retval;
 
             if( SUCCEEDED(hr) )
             {
@@ -159,11 +195,11 @@ TextureDX9_t::Create( const Texture::Descriptor& desc, bool force_immediate )
             {
                 Logger::Error( "failed to create texture:\n%s\n", D3D9ErrorText(hr) );
             }
-
         }   break;
         
         case TEXTURE_TYPE_CUBE :
         {
+DVASSERT(desc.initialData[0]==nullptr);
             IDirect3DCubeTexture9*  cubetex9 = nullptr;
             DX9Command              cmd1     = { DX9Command::CREATE_CUBE_TEXTURE, { desc.width, mip_count, usage, DX9_TextureFormat(desc.format), pool, uint64_t(&cubetex9), NULL } };
             

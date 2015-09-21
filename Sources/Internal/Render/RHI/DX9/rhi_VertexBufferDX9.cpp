@@ -102,10 +102,21 @@ VertexBufferDX9_t::Create( const VertexBuffer::Descriptor& desc, bool force_imme
             case USAGE_STATICDRAW   : usage = D3DUSAGE_WRITEONLY; break;
             case USAGE_DYNAMICDRAW  : usage = D3DUSAGE_WRITEONLY|D3DUSAGE_DYNAMIC; break;
         }
-
-        DX9Command  cmd[] = { { DX9Command::CREATE_VERTEX_BUFFER, { desc.size, usage, 0, D3DPOOL_DEFAULT, uint64_t(&buffer), NULL } } };
         
-        ExecDX9( cmd, countof(cmd), force_immediate );
+        uint32      cmd_cnt = 2;
+        DX9Command  cmd[2]  = 
+        { 
+            { DX9Command::CREATE_VERTEX_BUFFER, { desc.size, usage, 0, D3DPOOL_DEFAULT, uint64_t(&buffer), NULL } },
+            { DX9Command::UPDATE_VERTEX_BUFFER, { uint64_t(&buffer), uint64_t(desc.initialData), desc.size } }
+        };
+
+        if( !desc.initialData )
+        {
+            cmd[1].func = DX9Command::NOP;
+            cmd_cnt     = 1;
+        }
+        
+        ExecDX9( cmd, cmd_cnt, force_immediate );
 
         if( SUCCEEDED(cmd[0].retval) )
         {

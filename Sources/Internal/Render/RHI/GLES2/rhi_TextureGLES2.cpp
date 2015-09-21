@@ -155,20 +155,76 @@ TextureGLES2_t::Create( const Texture::Descriptor& desc, bool force_immediate )
 
         ExecGL( &cmd1, 1, force_immediate );
 
-        if(     cmd1.status == GL_NO_ERROR 
-            &&  (desc.autoGenMipmaps  &&  !desc.isRenderTarget)
-          )
+        if( cmd1.status == GL_NO_ERROR )
         {
-            GLenum      target = (desc.type == TEXTURE_TYPE_CUBE)  ? GL_TEXTURE_CUBE_MAP  : GL_TEXTURE_2D;
-            GLCommand   cmd2[] =
+            GLenum      target   = (desc.type == TEXTURE_TYPE_CUBE)  ? GL_TEXTURE_CUBE_MAP  : GL_TEXTURE_2D;
+            uint32      cmd2_cnt = 2;
+            GLCommand   cmd2[4+countof(desc.initialData)] =
             {
                 { GLCommand::SET_ACTIVE_TEXTURE, { GL_TEXTURE0+0 } },
-                { GLCommand::BIND_TEXTURE, { target, uid[0] } },
-                { GLCommand::GENERATE_MIPMAP, {} },
-                { GLCommand::RESTORE_TEXTURE0, {} }
+                { GLCommand::BIND_TEXTURE, { target, uid[0] } }
             };
+
+            if( desc.autoGenMipmaps  &&  !desc.isRenderTarget )
+            {
+                cmd2[3].func = GLCommand::GENERATE_MIPMAP;
+                ++cmd2_cnt;
+            }
+
+            // process initial-data, if any
+            if( desc.type == TEXTURE_TYPE_CUBE )
+            {
+                GLint   int_fmt;
+                GLint   fmt;
+                GLenum  type;
+                bool    compressed;
+    
+                GetGLTextureFormat( desc.format, &int_fmt, &fmt, &type, &compressed );
+    
+                DVASSERT(desc.levelCount <= countof(desc.initialData));    
+                for( unsigned m=0; m!=desc.levelCount; ++m )
+                {
+                    GLCommand*  cmd = cmd2 + cmd2_cnt;
+
+                    if( desc.initialData[m] )
+                    {
+                        Size2i  sz      = TextureExtents( Size2i(desc.width,desc.height), m );
+                        uint32  data_sz = TextureSize( desc.format, sz.dx, sz.dy);
             
-            ExecGL( cmd2, countof(cmd2), force_immediate );
+                        cmd->func    = GLCommand::TEX_IMAGE2D;
+                        cmd->arg[0]  = target;
+                        cmd->arg[1]  = m;
+                        cmd->arg[2]  = uint64(int_fmt);
+                        cmd->arg[3]  = uint64(sz.dx);
+                        cmd->arg[4]  = uint64(sz.dy);
+                        cmd->arg[5]  = 0;
+                        cmd->arg[6]  = uint64(fmt);
+                        cmd->arg[7]  = type;
+                        cmd->arg[8]  = uint64(data_sz);
+                        cmd->arg[9]  = (uint64)(desc.initialData[m]);
+                        cmd->arg[10] = compressed;
+
+                        if( desc.format == TEXTURE_FORMAT_R4G4B4A4 )
+                            _FlipRGBA4_ABGR4( desc.initialData[m], data_sz );
+                        else if( desc.format == TEXTURE_FORMAT_R5G5B5A1 )
+                            _ABGR1555toRGBA5551( desc.initialData[m], data_sz );
+
+                        ++cmd2_cnt;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                cmd2[cmd2_cnt].func = GLCommand::RESTORE_TEXTURE0;
+                ++cmd2_cnt;
+            }
+            else
+            {
+                DVASSERT(desc.initialData[0]==nullptr);
+            }
+            
+            ExecGL( cmd2, cmd2_cnt, force_immediate );
         }
     }
 
@@ -324,14 +380,14 @@ gles2_Texture_Create( const Texture::Descriptor& desc )
 static void*
 gles2_Texture_Map( Handle tex, unsigned level, TextureFace face )
 {
-    TextureGLES2_t* self = TextureGLES2Pool::Get( tex );
-    void*              mem = nullptr;
-    uint32 textureDataSize = TextureSize(self->format, self->width, self->height, level);
+    TextureGLES2_t* self    = TextureGLES2Pool::Get( tex );
+    void*           data    = nullptr;
+    uint32          data_sz = TextureSize( self->format, self->width, self->height, level );
     
     DVASSERT(!self->isRenderBuffer);
     DVASSERT(!self->isMapped);
 
-    self->mappedData = ::realloc( self->mappedData, textureDataSize );
+    self->mappedData = ::realloc( self->mappedData, data_sz );
     
     if( self->mappedData )
     {
@@ -349,13 +405,13 @@ gles2_Texture_Map( Handle tex, unsigned level, TextureFace face )
 
             ExecGL( cmd, countof(cmd) );            
             
-            mem               = self->mappedData;
+            data              = self->mappedData;
             self->mappedLevel = 0;
             self->isMapped    = true;
         }
         else
         {
-            mem               = self->mappedData;
+            data              = self->mappedData;
             self->mappedLevel = level;
             self->isMapped    = true;
 
@@ -373,14 +429,14 @@ gles2_Texture_Map( Handle tex, unsigned level, TextureFace face )
     
     if( self->format == TEXTURE_FORMAT_R4G4B4A4 )
     {
-        _FlipRGBA4_ABGR4( self->mappedData, textureDataSize );
+        _FlipRGBA4_ABGR4( self->mappedData, data_sz );
     }
     else if (self->format == TEXTURE_FORMAT_R5G5B5A1)
     {
-        _ABGR1555toRGBA5551(self->mappedData, textureDataSize);
+        _ABGR1555toRGBA5551( self->mappedData, data_sz );
     }
 
-    return mem;
+    return data;
 }
 
 

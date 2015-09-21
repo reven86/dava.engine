@@ -89,8 +89,12 @@ IndexBufferGLES2_t::Create( const IndexBuffer::Descriptor& desc, bool force_imme
             GLCommand   cmd2[] =
             {
                 { GLCommand::BIND_BUFFER, { GL_ELEMENT_ARRAY_BUFFER, b } },
+                { GLCommand::BUFFER_DATA, { GL_ELEMENT_ARRAY_BUFFER, desc.size, (uint64)(desc.initialData), GL_STATIC_DRAW } },
                 { GLCommand::RESTORE_INDEX_BUFFER, {} }
             };
+            
+            if( !desc.initialData )
+                cmd2[1].func = GLCommand::NOP;
 
             ExecGL( cmd2, countof(cmd2), force_immediate );
 

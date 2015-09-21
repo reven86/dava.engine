@@ -86,11 +86,22 @@ VertexBufferGLES2_t::Create( const VertexBuffer::Descriptor& desc, bool force_im
         ExecGL( &cmd1, 1, force_immediate );
         if( cmd1.status == GL_NO_ERROR )
         {
+            switch( desc.usage )
+            {
+                case USAGE_DEFAULT      : usage = GL_STATIC_DRAW; break;
+                case USAGE_STATICDRAW   : usage = GL_STATIC_DRAW; break;
+                case USAGE_DYNAMICDRAW  : usage = GL_DYNAMIC_DRAW; break;
+            }
+
             GLCommand   cmd2[] =
             {
                 { GLCommand::BIND_BUFFER, { GL_ARRAY_BUFFER, b } },
+                { GLCommand::BUFFER_DATA, { GL_ARRAY_BUFFER, desc.size, (uint64)(desc.initialData), usage } },
                 { GLCommand::RESTORE_VERTEX_BUFFER, {} }
             };
+
+            if( !desc.initialData )
+                cmd2[1].func = GLCommand::NOP;
 
             ExecGL( cmd2, countof(cmd2), force_immediate );
             
@@ -104,13 +115,6 @@ VertexBufferGLES2_t::Create( const VertexBuffer::Descriptor& desc, bool force_im
                     size   = desc.size;
                     uid    = b;
                     mapped = false;
-
-                    switch( desc.usage )
-                    {
-                        case USAGE_DEFAULT      : usage = GL_STATIC_DRAW; break;
-                        case USAGE_STATICDRAW   : usage = GL_STATIC_DRAW; break;
-                        case USAGE_DYNAMICDRAW  : usage = GL_DYNAMIC_DRAW; break;
-                    }
                     
                     success = true;
                 }
