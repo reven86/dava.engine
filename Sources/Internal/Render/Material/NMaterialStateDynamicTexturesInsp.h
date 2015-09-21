@@ -52,9 +52,11 @@ public:
     VariantType MemberValueGet(const DynamicData& ddata, const FastName &member) const override;
     void MemberValueSet(const DynamicData& ddata, const FastName &member, const VariantType &value) override;
     
-protected:
-    Texture *defaultTexture;
-    Set<FastName>* FindMaterialTextures(NMaterial *state) const;
+private:
+    void FindMaterialTexturesRecursive(NMaterial *state, Set<FastName>& ret) const;
+
+private:
+    Texture* defaultTexture = nullptr;
 };
 };
 

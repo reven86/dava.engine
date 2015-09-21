@@ -1038,37 +1038,43 @@ static void
 _RejectAllFrames()
 {
     _FrameSync.Lock();
-    for( std::vector<FrameDX9>::iterator f=_Frame.begin(),f_end=_Frame.end(); f!=f_end; ++f )
+    for (std::vector<FrameDX9>::iterator f = _Frame.begin(); f != _Frame.end(); )
     {
-        if (f->sync != InvalidHandle)
+        if (f->readyToExecute)
         {
-            SyncObjectDX9_t*    s = SyncObjectPool::Get(f->sync);
-            s->is_signaled = true;
-            s->is_used = true;
-        }
-        for( std::vector<Handle>::iterator p=f->pass.begin(),p_end=f->pass.end(); p!=p_end; ++p )
-        {
-            RenderPassDX9_t*    pp = RenderPassPool::Get( *p );
-            
-            for( std::vector<Handle>::iterator c=pp->cmdBuf.begin(),c_end=pp->cmdBuf.end(); c!=c_end; ++c )
+            if (f->sync != InvalidHandle)
             {
-                CommandBufferDX9_t* cc = CommandBufferPool::Get( *c );
-                if (cc->sync != InvalidHandle)
-                {
-                    SyncObjectDX9_t*    s = SyncObjectPool::Get(cc->sync);
-                    s->is_signaled = true;
-                    s->is_used = true;
-                }                
-                cc->_cmd.clear();
-                CommandBufferPool::Free( *c ); 
+                SyncObjectDX9_t*    s = SyncObjectPool::Get(f->sync);
+                s->is_signaled = true;
+                s->is_used = true;
             }
+            for (std::vector<Handle>::iterator p = f->pass.begin(), p_end = f->pass.end(); p != p_end; ++p)
+            {
+                RenderPassDX9_t*    pp = RenderPassPool::Get(*p);
 
-            RenderPassPool::Free( *p );
+                for (std::vector<Handle>::iterator c = pp->cmdBuf.begin(), c_end = pp->cmdBuf.end(); c != c_end; ++c)
+                {
+                    CommandBufferDX9_t* cc = CommandBufferPool::Get(*c);
+                    if (cc->sync != InvalidHandle)
+                    {
+                        SyncObjectDX9_t*    s = SyncObjectPool::Get(cc->sync);
+                        s->is_signaled = true;
+                        s->is_used = true;
+                    }
+                    cc->_cmd.clear();
+                    CommandBufferPool::Free(*c);
+                }
+
+                RenderPassPool::Free(*p);
+            }
+            f = _Frame.erase(f);
+        }
+        else
+        {
+            ++f;
         }
     }
-
-    _Frame.clear();
-    _FrameStarted = false;
+    
     _FrameSync.Unlock();
 }
 
@@ -1193,13 +1199,10 @@ Trace("\n\n-------------------------------\nframe %u executed(submitted to GPU)\
             if( SUCCEEDED(hr) )
             {                
                 Logger::Info( "device reset\n");
-
+                
                 TextureDX9::ReCreateAll();
                 VertexBufferDX9::ReCreateAll();
                 IndexBufferDX9::ReCreateAll();
-
-                VertexBufferDX9::PatchCommands( _DX9_PendingImmediateCmd, _DX9_PendingImmediateCmdCount );
-                IndexBufferDX9::PatchCommands( _DX9_PendingImmediateCmd, _DX9_PendingImmediateCmdCount );
 
                 _ResetPending = false;
             }
@@ -1269,13 +1272,13 @@ Trace("exec %i\n",int(cmd->func));
             
             case DX9Command::LOCK_VERTEX_BUFFER :
             {
-                cmd->retval = ((IDirect3DVertexBuffer9*)(arg[0]))->Lock( UINT(arg[1]), UINT(arg[2]), (VOID**)(arg[3]), DWORD(arg[4]) );
+                cmd->retval = (*((IDirect3DVertexBuffer9**)arg[0]))->Lock( UINT(arg[1]), UINT(arg[2]), (VOID**)(arg[3]), DWORD(arg[4]) );
                 CHECK_HR(cmd->retval);
             }   break;
             
             case DX9Command::UNLOCK_VERTEX_BUFFER :
             {
-                cmd->retval = ((IDirect3DVertexBuffer9*)(arg[0]))->Unlock();
+                cmd->retval = (*((IDirect3DVertexBuffer9**)arg[0]))->Unlock();
                 CHECK_HR(cmd->retval);
             }   break;
             
@@ -1287,13 +1290,13 @@ Trace("exec %i\n",int(cmd->func));
             
             case DX9Command::LOCK_INDEX_BUFFER :
             {
-                cmd->retval = ((IDirect3DIndexBuffer9*)(arg[0]))->Lock( UINT(arg[1]), UINT(arg[2]), (VOID**)(arg[3]), DWORD(arg[4]) );
+                cmd->retval = (*((IDirect3DIndexBuffer9**)arg[0]))->Lock( UINT(arg[1]), UINT(arg[2]), (VOID**)(arg[3]), DWORD(arg[4]) );
                 CHECK_HR(cmd->retval);
             }   break;
             
             case DX9Command::UNLOCK_INDEX_BUFFER :
             {
-                cmd->retval = ((IDirect3DIndexBuffer9*)(arg[0]))->Unlock();
+                cmd->retval = (*((IDirect3DIndexBuffer9**)arg[0]))->Unlock();
                 CHECK_HR(cmd->retval);
             }   break;
 

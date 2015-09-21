@@ -48,6 +48,7 @@
 
 using namespace DAVA;
 
+
 PackageNode::PackageNode(const FilePath &aPath)
     : PackageBaseNode(nullptr)
     , path(aPath)

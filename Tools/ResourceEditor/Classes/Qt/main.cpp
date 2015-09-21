@@ -49,7 +49,7 @@
 #include "LicenceDialog/LicenceDialog.h"
 
 #include "Qt/Settings/SettingsManager.h"
-#include "Qt/Tools/RunGuard/RunGuard.h"
+#include "QtTools/RunGuard/RunGuard.h"
 
 #include "Deprecated/EditorConfig.h"
 #include "Deprecated/SceneValidator.h"
@@ -115,7 +115,6 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-
 void RunConsole( int argc, char *argv[], CommandLineManager& cmdLine )
 {
 #ifdef Q_OS_MAC
@@ -149,10 +148,6 @@ void RunConsole( int argc, char *argv[], CommandLineManager& cmdLine )
 #endif
     glWidget->hide();
 
-#if RHI_COMPLETE_EDITOR //x3
-    RenderManager::Instance()->Init( 0, 0 );
-#endif // RHI_COMPLETE_EDITOR
-
     cmdLine.InitalizeTool();
     if ( !cmdLine.IsToolInitialized() )
     {
@@ -165,7 +160,7 @@ void RunConsole( int argc, char *argv[], CommandLineManager& cmdLine )
         VirtualCoordinatesSystem::Instance()->UnregisterAllAvailableResourceSizes();
         VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize( 1, 1, "Gfx" );
 
-        cmdLine.Process();
+		cmdLine.Process();
         cmdLine.PrintResults();
     }
 
@@ -209,7 +204,9 @@ void RunGui( int argc, char *argv[], CommandLineManager& cmdLine )
     LocalizationSystem::Instance()->InitWithDirectory( "~res:/Strings/" );
     LocalizationSystem::Instance()->SetCurrentLocale( "en" );
 
-    DAVA::Texture::SetDefaultGPU( static_cast<eGPUFamily>(SettingsManager::GetValue( Settings::Internal_TextureViewGPU ).AsInt32()) );
+    int32 val = SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsUInt32();
+    eGPUFamily family = static_cast<eGPUFamily>(val);
+    DAVA::Texture::SetDefaultGPU(family);
 
     // check and unpack help documents
     UnpackHelpDoc();
@@ -235,9 +232,10 @@ void RunGui( int argc, char *argv[], CommandLineManager& cmdLine )
         FrameworkLoop::Instance()->SetOpenGLWindow( glWidget );
         
         ProjectManager::Instance()->ProjectOpenLast();
-        QObject::connect( glWidget, &DavaGLWidget::Initialized, ProjectManager::Instance(), &ProjectManager::UpdateParticleSprites );
-        QObject::connect( glWidget, &DavaGLWidget::Initialized, ProjectManager::Instance(), &ProjectManager::OnSceneViewInitialized );
-        QObject::connect( glWidget, &DavaGLWidget::Initialized, mainWindow, &QtMainWindow::OnSceneNew, Qt::QueuedConnection );
+        QObject::connect(glWidget, &DavaGLWidget::Initialized, ProjectManager::Instance(), &ProjectManager::UpdateParticleSprites );
+        QObject::connect(glWidget, &DavaGLWidget::Initialized, ProjectManager::Instance(), &ProjectManager::OnSceneViewInitialized );
+        QObject::connect(glWidget, &DavaGLWidget::Initialized, mainWindow, &QtMainWindow::SetupTitle, Qt::QueuedConnection);
+        QObject::connect(glWidget, &DavaGLWidget::Initialized, mainWindow, &QtMainWindow::OnSceneNew, Qt::QueuedConnection);
         
         mainWindow->show();
         

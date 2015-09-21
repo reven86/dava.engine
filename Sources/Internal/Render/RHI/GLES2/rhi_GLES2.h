@@ -122,6 +122,9 @@ void        SetupDispatch( Dispatch* dispatch );
 
 void        InitializeRenderThreadGLES2( uint32 frameCount );
 void        UninitializeRenderThreadGLES2();
+    
+void        SuspendGLES2();
+void        ResumeGLES2();
 
 struct
 GLCommand

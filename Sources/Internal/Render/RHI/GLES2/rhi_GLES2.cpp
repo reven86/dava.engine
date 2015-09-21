@@ -436,6 +436,8 @@ gles2_Initialize( const InitParam& param )
         DispatchGLES2.impl_TextureFormatSupported   = &gles2_TextureFormatSupported;
         DispatchGLES2.impl_DeviceCaps               = &gles2_DeviceCaps;
         DispatchGLES2.impl_NeedRestoreResources     = &gles2_NeedRestoreResources;
+        DispatchGLES2.impl_ResumeRendering          = &ResumeGLES2;
+        DispatchGLES2.impl_SuspendRendering         = &SuspendGLES2;
 
         SetDispatchTable(DispatchGLES2);
 
@@ -510,6 +512,8 @@ gles2_Initialize( const InitParam& param )
     DispatchGLES2.impl_TextureFormatSupported   = &gles2_TextureFormatSupported;
     DispatchGLES2.impl_DeviceCaps               = &gles2_DeviceCaps;
     DispatchGLES2.impl_NeedRestoreResources     = &gles2_NeedRestoreResources;
+    DispatchGLES2.impl_ResumeRendering          = &ResumeGLES2;
+    DispatchGLES2.impl_SuspendRendering         = &SuspendGLES2;
 
     SetDispatchTable(DispatchGLES2);
 
@@ -567,6 +571,8 @@ gles2_Initialize(const InitParam& param)
     DispatchGLES2.impl_TextureFormatSupported   = &gles2_TextureFormatSupported;
     DispatchGLES2.impl_DeviceCaps               = &gles2_DeviceCaps;
     DispatchGLES2.impl_NeedRestoreResources     = &gles2_NeedRestoreResources;
+    DispatchGLES2.impl_ResumeRendering          = &ResumeGLES2;
+    DispatchGLES2.impl_SuspendRendering         = &SuspendGLES2;
 
     SetDispatchTable(DispatchGLES2);
 
@@ -627,6 +633,8 @@ gles2_Initialize( const InitParam& param )
     DispatchGLES2.impl_TextureFormatSupported   = &gles2_TextureFormatSupported;
     DispatchGLES2.impl_DeviceCaps               = &gles2_DeviceCaps;
     DispatchGLES2.impl_NeedRestoreResources     = &gles2_NeedRestoreResources;
+    DispatchGLES2.impl_ResumeRendering          = &ResumeGLES2;
+    DispatchGLES2.impl_SuspendRendering         = &SuspendGLES2;
 
     SetDispatchTable(DispatchGLES2);
 
