@@ -361,12 +361,16 @@ void CreatePlaneLODCommandHelper::Request::ReloadTexturesToGPU(DAVA::eGPUFamily 
     SceneHelper::EnumerateEntityTextures(entity->GetScene(), entity, textures,
                                          SceneHelper::TexturesEnumerateMode::EXCLUDE_NULL);
     for (auto& tex : textures)
+    {
         tex.second->ReloadAs(targetGPU);
+    }
 
     DAVA::Vector<DAVA::NMaterial*> materials;
     SceneHelper::EnumerateMaterialInstances(entity, materials);
     for (auto& mat : materials)
+    {
         mat->InvalidateTextureBindings();
+    }
 }
 
 void CreatePlaneLODCommandHelper::Request::OnRenderCallback(rhi::HSyncObject object)

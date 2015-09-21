@@ -429,7 +429,7 @@ void QtMainWindow::SetGPUFormat(DAVA::eGPUFamily gpu)
 			SceneHelper::EnumerateMaterialInstances(scene, allSceneMaterials);
         }
 
-        if (allScenesTextures.size() > 0)
+        if (!allScenesTextures.empty())
         {
             int progress = 0;
             WaitStart("Reloading textures...", "", 0, allScenesTextures.size());
@@ -454,8 +454,8 @@ void QtMainWindow::SetGPUFormat(DAVA::eGPUFamily gpu)
             WaitStop();
         }
 
-		if (allSceneMaterials.size() > 0)
-		{
+        if (!allSceneMaterials.empty())
+        {
 			for (auto m : allSceneMaterials)
 			{
 				m->InvalidateTextureBindings();
