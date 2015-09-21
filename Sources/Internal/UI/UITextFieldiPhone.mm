@@ -652,6 +652,8 @@ namespace DAVA
             // replace textField with new textView and apply current properties
             ::UITextView* textView = [[UITextView alloc] initWithFrame:rect textContainer:nil];
             
+            textView.contentInset = UIEdgeInsetsMake(-10,-5,0,0); //Fix OS built-in padding on UITextView
+            
             HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
             BackgroundView* backgroundView = [appDelegate glController].backgroundView;
             [backgroundView PrepareView: textFieldHolder->textCtrl];
