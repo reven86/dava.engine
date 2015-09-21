@@ -458,8 +458,6 @@ void QtMainWindow::SetGPUFormat(DAVA::eGPUFamily gpu)
 		{
 			for (auto m : allSceneMaterials)
 			{
-				m->InvalidateRenderVariants();
-				m->InvalidateBufferBindings();
 				m->InvalidateTextureBindings();
 			}
 		}
