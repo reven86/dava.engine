@@ -377,9 +377,9 @@ VariantType YamlNode::AsVariantType() const
             uint8* innerArray = new uint8[size];
             for (int32 i = 0; i < size; ++i)
             {
-                int val = 0;
+                int32 val = 0;
                 int retCode = sscanf(byteArrayNoodes[i]->AsString().c_str(), "%x", &val);
-                if(val > CHAR_MAX || retCode == 0)
+                if ((val < 0) || (val > UCHAR_MAX) || (retCode == 0))
                 {
                     delete [] innerArray;
                     return retValue;
