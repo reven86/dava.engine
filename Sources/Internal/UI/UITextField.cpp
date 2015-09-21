@@ -34,6 +34,10 @@
 #include "Render/2D/FontManager.h"
 #include "FileSystem/YamlNode.h"
 
+// Use NO_REQUIRED_SIZE to notify edit->SetText that we don't want
+// to enable of any kind of static text fitting
+static const DAVA::Vector2 NO_REQUIRED_SIZE = DAVA::Vector2(-1, -1);
+
 #if defined(__DAVAENGINE_ANDROID__)
 #   include "UITextFieldAndroid.h"
 #   include "Utils/UTF8Utils.h"
@@ -84,14 +88,53 @@ public:
     void SetFontSize(float32)
     {
     }
-
-    using UIStaticText::SetText;
-    void SetText(WideString text_)
+    void SetText(const WideString& text_, const Vector2& requestedTextRectSize = Vector2(0, 0)) override
     {
-        if (control_->GetDelegate() && control_->GetText() != text_)
+        WideString prevText = UIStaticText::GetText();
+        UIStaticText::SetText(text_, requestedTextRectSize);
+        if (requestedTextRectSize != NO_REQUIRED_SIZE && control_->GetDelegate() && prevText != text_)
         {
-            control_->GetDelegate()->TextFieldOnTextChanged(control_, text_, control_->GetText());
+            control_->GetDelegate()->TextFieldOnTextChanged(control_, text_, prevText);
         }
+    }
+    void SetAutoCapitalizationType(int32)
+    {
+    }
+    void SetAutoCorrectionType(int32)
+    {
+    }
+    void SetSpellCheckingType(int32)
+    {
+    }
+    void SetKeyboardAppearanceType(int32)
+    {
+    }
+    void SetKeyboardType(int32)
+    {
+    }
+    void SetReturnKeyType(int32)
+    {
+    }
+    void SetEnableReturnKeyAutomatically(int32)
+    {
+    }
+    bool IsRenderToTexture() const
+    {
+        return false;
+    }
+    uint32 GetCursorPos() const
+    {
+        return 0;
+    }
+    void SetCursorPos(int32)
+    {
+    }
+    void SetMaxLength(int32)
+    {
+    }
+    using UIStaticText::GetText;
+    void GetText(WideString&)
+    {
     }
 
 protected:
@@ -146,9 +189,9 @@ void UITextField::SetupDefaults()
 
 UITextField::~UITextField()
 {
-    UIControl::RemoveAllControls();
     SafeRelease(textFont);
     SafeRelease(edit);
+    UIControl::RemoveAllControls();
 }
 
 void UITextField::OpenKeyboard()
@@ -180,11 +223,9 @@ void UITextField::Update(float32 timeElapsed)
     }
     
     if (!needRedraw)
+    {
         return;
-
-    // Use NO_REQUIRED_SIZE to notify edit->SetText that we don't want
-    // to enable of any kind of static text fitting
-    static const Vector2 NO_REQUIRED_SIZE = Vector2(-1, -1);
+    }
 
     if(this == UIControlSystem::Instance()->GetFocusedControl())
     {
@@ -387,18 +428,7 @@ bool UITextField::IsMultiline() const
     
 void UITextField::SetText(const WideString& text_)
 {
-#ifdef __DAVAENGINE_IPHONE__
     edit->SetText(text_);
-#elif defined(__DAVAENGINE_ANDROID__)
-    edit->SetText(text_);
-#elif defined(__DAVAENGINE_WIN_UAP__)
-    edit->SetText(text_);
-#else
-    if (delegate && text != text_)
-    {
-        delegate->TextFieldOnTextChanged(this, text_, text);
-    }
-#endif
     text = text_;
 
     needRedraw = true;
@@ -406,13 +436,7 @@ void UITextField::SetText(const WideString& text_)
 
 const WideString & UITextField::GetText()
 {
-#ifdef __DAVAENGINE_IPHONE__
     edit->GetText(text);
-#elif defined(__DAVAENGINE_ANDROID__)
-    edit->GetText(text);
-#elif defined(__DAVAENGINE_WIN_UAP__)
-    edit->GetText(text);
-#endif
     return text;
 }
     
@@ -430,7 +454,7 @@ const Color &UITextField::GetTextColor() const
 #if defined(DAVA_TEXTFIELD_USE_NATIVE)
     return Color::White;
 #else
-    return edit ? edit->GetTextColor() : Color::White;
+    return edit->GetTextColor();
 #endif
 }
 
@@ -439,7 +463,7 @@ Vector2 UITextField::GetShadowOffset() const
 #if defined(DAVA_TEXTFIELD_USE_NATIVE)
     return Vector2(0, 0);
 #else
-    return edit ? edit->GetShadowOffset() : Vector2(0, 0);
+    return edit->GetShadowOffset();
 #endif
 }
 
@@ -448,21 +472,13 @@ const Color &UITextField::GetShadowColor() const
 #if defined(DAVA_TEXTFIELD_USE_NATIVE)
     return Color::White;
 #else
-    return edit ? edit->GetShadowColor() : Color::White;
+    return edit->GetShadowColor();
 #endif
 }
 
 int32 UITextField::GetTextAlign() const
 {
-#ifdef __DAVAENGINE_IPHONE__
     return edit->GetTextAlign();
-#elif defined(__DAVAENGINE_ANDROID__)
-    return edit->GetTextAlign();
-#elif defined(__DAVAENGINE_WIN_UAP__)
-    return edit->GetTextAlign();
-#else
-    return edit->GetTextAlign();
-#endif
 }
 
 void UITextField::Input(UIEvent *currentInput)
@@ -519,7 +535,7 @@ WideString UITextField::GetAppliedChanges(int32 replacementLocation, int32 repla
     
     if(replacementLocation >= 0)
     {
-        if(replacementLocation <= (int32)txt.length())
+        if (replacementLocation <= static_cast<int32>(txt.length()))
         {
             txt.replace(replacementLocation, replacementLength, replacementString);
         }
@@ -530,42 +546,6 @@ WideString UITextField::GetAppliedChanges(int32 replacementLocation, int32 repla
     }
     
     return txt;
-}
-
-void UITextField::RenderText()
-{
-#ifdef __DAVAENGINE_IPHONE__
-    // nothing to do
-#else
-
-#if 0
-    SafeRelease(textSprite);
-
-    int32 w = GetRect().dx;
-    int32 h = GetRect().dy;
-
-    EnsurePowerOf2(w);
-    EnsurePowerOf2(h);
-
-    int16 * buf;
-    buf = new int16[w * h];
-    memset(buf, 0, w * h * sizeof(int16));
-
-    Size2i ds = textFont->DrawString(text, buf, w, h, 0, 0);
-    String addInfo = WStringToString(Format(L"Text texture: %S", text.c_str()));
-    Texture *tex = Texture::CreateTextFromData(FORMAT_RGBA4444, (uint8*)buf, w, h, addInfo.c_str());
-    delete [] buf;
-
-    textSprite = Sprite::CreateFromTexture(tex, 0, 0, GetRect().dx, GetRect().dy);
-    SafeRelease(tex);
-
-    textSprite->SetDefaultPivotPoint(0.0f, (float32)(textFont->GetBaseline() - h));
-    
-    SetSprite(textSprite, 0);
-
-#endif
-
-#endif
 }
 
 void UITextField::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
@@ -639,20 +619,17 @@ void UITextField::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
     }
 
 #if !defined(DAVA_TEXTFIELD_USE_NATIVE)
-    if (edit != nullptr)
-    {
-        edit->SetRect(Rect(0, 0, GetRect().dx, GetRect().dy));
+    edit->SetRect(Rect(0, 0, GetRect().dx, GetRect().dy));
 
-        const YamlNode * shadowColorNode = node->Get("shadowcolor");
-        const YamlNode * shadowOffsetNode = node->Get("shadowoffset");
-        if(shadowColorNode)
-        {
-            SetShadowColor(shadowColorNode->AsColor());
-        }
-        if(shadowOffsetNode)
-        {
-            SetShadowOffset(shadowOffsetNode->AsVector2());
-        }
+    const YamlNode* shadowColorNode = node->Get("shadowcolor");
+    const YamlNode* shadowOffsetNode = node->Get("shadowoffset");
+    if (shadowColorNode)
+    {
+        SetShadowColor(shadowColorNode->AsColor());
+    }
+    if (shadowOffsetNode)
+    {
+        SetShadowOffset(shadowOffsetNode->AsVector2());
     }
 #endif
 
@@ -680,22 +657,6 @@ void UITextField::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
     {
         SetMaxLength(maxLengthNode->AsInt32());
     }
-
-#if 0
-    const YamlNode * orientNode = node->Get("orientation");
-    if (orientNode)
-    {
-        if (orientNode->AsString() == "Vertical")
-            orientation = ORIENTATION_VERTICAL;
-        else if (orientNode->AsString() == "Horizontal")
-            orientation = ORIENTATION_HORIZONTAL;
-    }
-
-
-
-        // TODO
-    InitAfterYaml();
-#endif
 }
 
 YamlNode * UITextField::SaveToYamlNode(UIYamlLoader * loader)
@@ -868,8 +829,10 @@ bool UITextField::IsPassword() const
 WideString UITextField::GetVisibleText() const
 {
     if (!isPassword)
+    {
         return text;
-    
+    }
+
     return WideString(text.length(), L'*');
 }
     
@@ -880,14 +843,8 @@ int32 UITextField::GetAutoCapitalizationType() const
 
 void UITextField::SetAutoCapitalizationType(int32 value)
 {
-    autoCapitalizationType = (eAutoCapitalizationType)value;
-#if defined(__DAVAENGINE_IPHONE__)
+    autoCapitalizationType = static_cast<eAutoCapitalizationType>(value);
     edit->SetAutoCapitalizationType(value);
-#elif defined(__DAVAENGINE_ANDROID__)
-    edit->SetAutoCapitalizationType(value);
-#elif defined(__DAVAENGINE_WIN_UAP__)
-    edit->SetAutoCapitalizationType(value);
-#endif
 }
 
 int32 UITextField::GetAutoCorrectionType() const
@@ -897,14 +854,8 @@ int32 UITextField::GetAutoCorrectionType() const
 
 void UITextField::SetAutoCorrectionType(int32 value)
 {
-    autoCorrectionType = (eAutoCorrectionType)value;
-#if defined(__DAVAENGINE_IPHONE__)
+    autoCorrectionType = static_cast<eAutoCorrectionType>(value);
     edit->SetAutoCorrectionType(value);
-#elif defined(__DAVAENGINE_ANDROID__)
-    edit->SetAutoCorrectionType(value);
-#elif defined(__DAVAENGINE_WIN_UAP__)
-    edit->SetAutoCorrectionType(value);
-#endif
 }
 
 int32 UITextField::GetSpellCheckingType() const
@@ -914,14 +865,8 @@ int32 UITextField::GetSpellCheckingType() const
 
 void UITextField::SetSpellCheckingType(int32 value)
 {
-    spellCheckingType = (eSpellCheckingType)value;
-#if defined(__DAVAENGINE_IPHONE__)
+    spellCheckingType = static_cast<eSpellCheckingType>(value);
     edit->SetSpellCheckingType(value);
-#elif defined(__DAVAENGINE_ANDROID__)
-    edit->SetSpellCheckingType(value);
-#elif defined(__DAVAENGINE_WIN_UAP__)
-    edit->SetSpellCheckingType(value);
-#endif
 }
 
 int32 UITextField::GetKeyboardAppearanceType() const
@@ -931,14 +876,8 @@ int32 UITextField::GetKeyboardAppearanceType() const
 
 void UITextField::SetKeyboardAppearanceType(int32 value)
 {
-    keyboardAppearanceType = (eKeyboardAppearanceType)value;
-#if defined(__DAVAENGINE_IPHONE__)
+    keyboardAppearanceType = static_cast<eKeyboardAppearanceType>(value);
     edit->SetKeyboardAppearanceType(value);
-#elif defined(__DAVAENGINE_ANDROID__)
-    edit->SetKeyboardAppearanceType(value);
-#elif defined(__DAVAENGINE_WIN_UAP__)
-    edit->SetKeyboardAppearanceType(value);
-#endif
 }
 
 int32 UITextField::GetKeyboardType() const
@@ -948,14 +887,8 @@ int32 UITextField::GetKeyboardType() const
 
 void UITextField::SetKeyboardType(int32 value)
 {
-    keyboardType = (eKeyboardType)value;
-#ifdef __DAVAENGINE_IPHONE__
+    keyboardType = static_cast<eKeyboardType>(value);
     edit->SetKeyboardType(value);
-#elif defined(__DAVAENGINE_ANDROID__)
-    edit->SetKeyboardType(value);
-#elif defined(__DAVAENGINE_WIN_UAP__)
-    edit->SetKeyboardType(value);
-#endif
 }
 
 int32 UITextField::GetReturnKeyType() const
@@ -965,14 +898,8 @@ int32 UITextField::GetReturnKeyType() const
 
 void UITextField::SetReturnKeyType(int32 value)
 {
-    returnKeyType = (eReturnKeyType)value;
-#ifdef __DAVAENGINE_IPHONE__
+    returnKeyType = static_cast<eReturnKeyType>(value);
     edit->SetReturnKeyType(value);
-#elif defined(__DAVAENGINE_ANDROID__)
-    edit->SetReturnKeyType(value);
-#elif defined(__DAVAENGINE_WIN_UAP__)
-    edit->SetReturnKeyType(value);
-#endif
 }
 
 bool UITextField::IsEnableReturnKeyAutomatically() const
@@ -983,25 +910,14 @@ bool UITextField::IsEnableReturnKeyAutomatically() const
 void UITextField::SetEnableReturnKeyAutomatically(bool value)
 {
     enableReturnKeyAutomatically = value;
-#ifdef __DAVAENGINE_IPHONE__
     edit->SetEnableReturnKeyAutomatically(value);
-#elif defined(__DAVAENGINE_ANDROID__)
-    edit->SetEnableReturnKeyAutomatically(value);
-#elif defined(__DAVAENGINE_WIN_UAP__)
-    edit->SetEnableReturnKeyAutomatically(value);
-#endif
 }
 
 void UITextField::SetInputEnabled(bool isEnabled, bool hierarchic)
 {
     UIControl::SetInputEnabled(isEnabled, hierarchic);
-#ifdef __DAVAENGINE_IPHONE__
+
     edit->SetInputEnabled(isEnabled);
-#elif defined(__DAVAENGINE_ANDROID__)
-    edit->SetInputEnabled(isEnabled);
-#elif defined(__DAVAENGINE_WIN_UAP__)
-    edit->SetInputEnabled(isEnabled);
-#endif
 }
 
 void UITextField::SetRenderToTexture(bool value)
@@ -1018,50 +934,23 @@ void UITextField::SetRenderToTexture(bool value)
 
 bool UITextField::IsRenderToTexture() const
 {
-#if defined(__DAVAENGINE_ANDROID__)
     return edit->IsRenderToTexture();
-#elif defined(__DAVAENGINE_IPHONE__)
-    return edit->IsRenderToTexture();
-#elif defined(__DAVAENGINE_WIN_UAP__)
-    return edit->IsRenderToTexture();
-#else
-    return false;
-#endif
 }
 
 uint32 UITextField::GetCursorPos()
 {
-#ifdef __DAVAENGINE_IPHONE__
     return edit->GetCursorPos();
-#elif defined(__DAVAENGINE_ANDROID__)
-    return edit->GetCursorPos();
-#elif defined(__DAVAENGINE_WIN_UAP__)
-    return edit->GetCursorPos();
-#endif
-    return 0;
 }
 
 void UITextField::SetCursorPos(uint32 pos)
 {
-#ifdef __DAVAENGINE_IPHONE__
     edit->SetCursorPos(pos);
-#elif defined(__DAVAENGINE_ANDROID__)
-    edit->SetCursorPos(pos);
-#elif defined(__DAVAENGINE_WIN_UAP__)
-    edit->SetCursorPos(pos);
-#endif
 }
 
 void UITextField::SetMaxLength(int32 newMaxLength)
 {
     maxLength = Max(-1, newMaxLength); //-1 valid value
-#ifdef __DAVAENGINE_IPHONE__
     edit->SetMaxLength(maxLength);
-#elif defined(__DAVAENGINE_ANDROID__)
-    edit->SetMaxLength(maxLength);
-#elif defined(__DAVAENGINE_WIN_UAP__)
-    edit->SetMaxLength(maxLength);
-#endif
 }
 
 int32 UITextField::GetMaxLength() const
@@ -1072,31 +961,13 @@ int32 UITextField::GetMaxLength() const
 void UITextField::WillBecomeVisible()
 {
     UIControl::WillBecomeVisible();
-
-#ifdef __DAVAENGINE_IPHONE__
     edit->SetVisible(visible);
-#elif defined(__DAVAENGINE_ANDROID__)
-    edit->SetVisible(visible);
-#elif defined(__DAVAENGINE_WIN_UAP__)
-    edit->SetVisible(visible);
-#else
-    edit->SetVisible(visible);
-#endif
 }
 
 void UITextField::WillBecomeInvisible()
 {
     UIControl::WillBecomeInvisible();
-
-#ifdef __DAVAENGINE_IPHONE__
     edit->SetVisible(false);
-#elif defined(__DAVAENGINE_ANDROID__)
-    edit->SetVisible(false);
-#elif defined(__DAVAENGINE_WIN_UAP__)
-    edit->SetVisible(false);
-#else
-    edit->SetVisible(false);
-#endif
 }
 
 String UITextField::GetFontPresetName() const
@@ -1121,7 +992,7 @@ void UITextField::SetFontByPresetName(const String &presetName)
     SetFont(font);
     if (font)
     {
-        SetFontSize((float32)font->GetFontHeight());
+        SetFontSize(static_cast<float32>(font->GetFontHeight()));
     }
 }
 
