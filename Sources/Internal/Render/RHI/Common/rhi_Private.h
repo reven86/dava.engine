@@ -230,9 +230,15 @@ void PresentImpl(Handle sync);
 
 extern uint32   stat_DIP;
 extern uint32   stat_DP;
+extern uint32   stat_DTL;
+extern uint32   stat_DTS;
+extern uint32   stat_DLL;
 extern uint32   stat_SET_PS;
+extern uint32   stat_SET_SS;
 extern uint32   stat_SET_TEX;
 extern uint32   stat_SET_CB;
+extern uint32   stat_SET_VB;
+extern uint32   stat_SET_IB;
 
 
 } // namespace rhi

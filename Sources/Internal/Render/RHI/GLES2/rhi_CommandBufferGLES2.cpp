@@ -868,6 +868,9 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
                 {
                     VertexBufferGLES2::SetToRHI( vb );
                     PipelineStateGLES2::SetVertexDeclToRHI( cur_ps, cur_vdecl );
+
+                    StatSet::IncStat(stat_SET_VB, 1);
+
                     cur_vb = vb;
                 }
                 
@@ -876,7 +879,9 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
             
             case GLES2__SET_INDICES :
             {
-                idx_size = IndexBufferGLES2::SetToRHI( (Handle)(arg[0]) );
+                idx_size = IndexBufferGLES2::SetToRHI((Handle)(arg[0]));
+                StatSet::IncStat(stat_SET_IB, 1);
+
                 c += 1;
             }   break;
 
@@ -997,7 +1002,8 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
             
             case GLES2__SET_SAMPLER_STATE :
             {
-                SamplerStateGLES2::SetToRHI( (Handle)(arg[0]) );
+                SamplerStateGLES2::SetToRHI((Handle)(arg[0]));
+                StatSet::IncStat(stat_SET_SS, 1);
                 c += 1;
             }   break;
 
@@ -1078,7 +1084,21 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
                     QueryBufferGLES2::BeginQuery( cur_query_buf, cur_query_i );
                 
                 GL_CALL(glDrawArrays( mode, 0, v_cnt ));
-                StatSet::IncStat( stat_DP, 1 );
+                StatSet::IncStat(stat_DP, 1);
+                switch (mode)
+                {
+                case PRIMITIVE_TRIANGLELIST:
+                    StatSet::IncStat(stat_DTL, 1);
+                    break;
+
+                case PRIMITIVE_TRIANGLESTRIP:
+                    StatSet::IncStat(stat_DTS, 1);
+                    break;
+
+                case PRIMITIVE_LINELIST:
+                    StatSet::IncStat(stat_DLL, 1);
+                    break;
+                }
 //Logger::Info( "  dp" );
                 
                 if( cur_query_i != InvalidIndex )
@@ -1138,6 +1158,20 @@ Trace("DIP  mode= %i  v_cnt= %i  start_i= %i\n",int(mode),int(v_cnt),int(startIn
                 GL_CALL(glDrawElements( mode, v_cnt, i_sz, (void*)(i_off) ));
 //LCP;
                 StatSet::IncStat( stat_DIP, 1 );
+                switch (mode)
+                {
+                case PRIMITIVE_TRIANGLELIST:
+                    StatSet::IncStat(stat_DTL, 1);
+                    break;
+
+                case PRIMITIVE_TRIANGLESTRIP:
+                    StatSet::IncStat(stat_DTS, 1);
+                    break;
+
+                case PRIMITIVE_LINELIST:
+                    StatSet::IncStat(stat_DLL, 1);
+                    break;
+                }
 //LCP;
 
                 if( cur_query_i != InvalidIndex )

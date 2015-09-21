@@ -400,9 +400,7 @@ void SceneEditor2::Draw()
 	
 	Scene::Draw();
     
-#if RHI_COMPLETE_EDITOR
-    renderStats = RenderManager::Instance()->GetStats();
-#endif // RHI_COMPLETE_EDITOR
+    renderStats = Renderer::GetRenderStats();
 
 	if(isHUDVisible)
 	{
@@ -503,12 +501,10 @@ void SceneEditor2::EditorCommandNotify::CleanChanged(bool clean)
 	}
 }
 
-#if RHI_COMPLETE_EDITOR
-const RenderManager::Stats & SceneEditor2::GetRenderStats() const
+const RenderStats & SceneEditor2::GetRenderStats() const
 {
     return renderStats;
 }
-#endif // RHI_COMPLETE_EDITOR
 
 void SceneEditor2::DisableTools(int32 toolFlags, bool saveChanges /*= true*/)
 {
