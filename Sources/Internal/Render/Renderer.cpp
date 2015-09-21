@@ -183,6 +183,8 @@ void EndFrame()
     stats.primitiveTriangleListCount = StatSet::StatValue(rhi::stat_DTL);
     stats.primitiveTriangleStripCount = StatSet::StatValue(rhi::stat_DTS);
     stats.primitiveLineListCount = StatSet::StatValue(rhi::stat_DLL);
+
+    StatSet::ResetAll();
 }
 
 }

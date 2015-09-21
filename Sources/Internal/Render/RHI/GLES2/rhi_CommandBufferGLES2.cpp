@@ -1087,18 +1087,19 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
                 StatSet::IncStat(stat_DP, 1);
                 switch (mode)
                 {
-                case PRIMITIVE_TRIANGLELIST:
+                case GL_TRIANGLES:
                     StatSet::IncStat(stat_DTL, 1);
                     break;
 
-                case PRIMITIVE_TRIANGLESTRIP:
+                case GL_TRIANGLE_STRIP:
                     StatSet::IncStat(stat_DTS, 1);
                     break;
 
-                case PRIMITIVE_LINELIST:
+                case GL_LINES:
                     StatSet::IncStat(stat_DLL, 1);
                     break;
                 }
+
 //Logger::Info( "  dp" );
                 
                 if( cur_query_i != InvalidIndex )
@@ -1160,15 +1161,15 @@ Trace("DIP  mode= %i  v_cnt= %i  start_i= %i\n",int(mode),int(v_cnt),int(startIn
                 StatSet::IncStat( stat_DIP, 1 );
                 switch (mode)
                 {
-                case PRIMITIVE_TRIANGLELIST:
+                case GL_TRIANGLES:
                     StatSet::IncStat(stat_DTL, 1);
                     break;
 
-                case PRIMITIVE_TRIANGLESTRIP:
+                case GL_TRIANGLE_STRIP:
                     StatSet::IncStat(stat_DTS, 1);
                     break;
 
-                case PRIMITIVE_LINELIST:
+                case GL_LINES:
                     StatSet::IncStat(stat_DLL, 1);
                     break;
                 }

@@ -146,14 +146,11 @@ void SceneInfo::Initialize3DDrawSection()
 
     AddChild("Visible Render Object Count", header);
     AddChild("Occluded Object Count",  header);
-    AddChild("ArraysCalls", header);
-    AddChild("ElementsCalls",  header);
-    AddChild("PointsList", header);
+    AddChild("DrawPrimitiveCalls", header);
+    AddChild("DrawIndexedPrimitiveCalls", header);
     AddChild("LineList", header);
-    AddChild("LineStrip", header);
     AddChild("TriangleList", header);
     AddChild("TriangleStrip", header);
-    AddChild("TriangleFan", header);
 
     QtPropertyData* header2 = CreateInfoHeader("Bind Info");
     AddChild("Dynamic Param Bind Count", header2);
