@@ -165,8 +165,8 @@ void SceneInfo::Refresh3DDrawInfo()
 {
     if(!activeScene) return;
     QtPropertyData* header = GetInfoHeader("DrawInfo");
-    
-    const RenderStats & renderStats = Renderer::GetRenderStats();
+
+    const RenderStats& renderStats = activeScene->GetRenderStats();
 
 #if RHI_COMPLETE_EDITOR
     SetChild("Visible Render Object Count", renderStats.visibleRenderObjectCount, header);
