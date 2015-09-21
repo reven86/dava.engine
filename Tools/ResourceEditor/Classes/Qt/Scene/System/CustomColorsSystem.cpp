@@ -43,8 +43,8 @@
 #include "Project/ProjectManager.h"
 
 CustomColorsSystem::CustomColorsSystem(Scene* scene)
-:	LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.tex")
-,	drawColor(Color(0.f, 0.f, 0.f, 0.f))
+    : LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.tex")
+    , drawColor(Color(0.f, 0.f, 0.f, 0.f))
 {
     curToolSize = 120;
     SetColor(colorIndex);
@@ -260,9 +260,12 @@ void CustomColorsSystem::UpdateBrushTool()
     updatedRect.SetPosition(spritePos);
     updatedRect.SetSize(spriteSize);
     AddRectToAccumulator(updatedRect);
-    
+
+    glLoadIdentity();
+
+    auto brushMaterial = drawSystem->GetCustomColorsProxy()->GetBrushMaterial();
     RenderSystem2D::Instance()->BeginRenderTargetPass(colorTexture, false);
-    RenderSystem2D::Instance()->DrawTexture(toolTextureSet, RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL, drawColor, updatedRect);
+    RenderSystem2D::Instance()->DrawTexture(toolTextureSet, brushMaterial, drawColor, updatedRect);
     RenderSystem2D::Instance()->EndRenderTargetPass();
 }
 
@@ -391,8 +394,9 @@ bool CustomColorsSystem::LoadTexture( const DAVA::FilePath &filePath, bool creat
             
             Texture * target = drawSystem->GetCustomColorsProxy()->GetTexture();
             
+            auto brushMaterial = drawSystem->GetCustomColorsProxy()->GetBrushMaterial();
             RenderSystem2D::Instance()->BeginRenderTargetPass(target, false);
-            RenderSystem2D::Instance()->DrawTexture(loadedTextureSet, RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL, Color::White);
+            RenderSystem2D::Instance()->DrawTexture(loadedTextureSet, brushMaterial, Color::White);
             RenderSystem2D::Instance()->EndRenderTargetPass();
         }
 	}
