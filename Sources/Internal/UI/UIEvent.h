@@ -67,8 +67,8 @@ public:
         PHASE_WHEEL, //!<Mouse wheel event. MacOS & Win32 only
         PHASE_CANCELLED, //!<Event was cancelled by the platform or by the control system for the some reason.
         PHASE_KEYCHAR, //!<Event is a keyboard key pressing event.
-        PHASE_JOYSTICK,
-        PHASE_KEYCHAR_RELEASE
+        PHASE_KEYCHAR_RELEASE,
+        PHASE_JOYSTICK
     };
 
     /**

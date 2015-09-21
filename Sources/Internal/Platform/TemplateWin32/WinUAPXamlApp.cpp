@@ -66,27 +66,26 @@ using namespace ::Windows::UI::Xaml::Media;
 using namespace ::Windows::System::Threading;
 using namespace ::Windows::Phone::UI::Input;
 
+namespace DAVA
+{
 namespace
 {
-DAVA::UIEvent::PointerDeviceID ToDavaDeviceId(PointerDeviceType type)
+UIEvent::PointerDeviceID ToDavaDeviceId(PointerDeviceType type)
 {
     switch (type)
     {
     case PointerDeviceType::Mouse:
-        return DAVA::UIEvent::PointerDeviceID::MOUSE;
+        return UIEvent::PointerDeviceID::MOUSE;
     case PointerDeviceType::Pen:
-        return DAVA::UIEvent::PointerDeviceID::PEN;
+        return UIEvent::PointerDeviceID::PEN;
     case PointerDeviceType::Touch:
-        return DAVA::UIEvent::PointerDeviceID::TOUCH;
+        return UIEvent::PointerDeviceID::TOUCH;
     default:
-        DVASPECT(false && "can't be!");
-        return DAVA::UIEvent::PointerDeviceID::NOT_SUPPORTED;
+        DVASSERT(false && "can't be!");
+        return UIEvent::PointerDeviceID::NOT_SUPPORTED;
     }
 }
-}
-
-namespace DAVA
-{
+} // end anonim namespace
 
 WinUAPXamlApp::WinUAPXamlApp()
     : core(static_cast<CorePlatformWinUAP*>(Core::Instance()))
@@ -442,15 +441,15 @@ void WinUAPXamlApp::OnPointerWheel(Windows::UI::Core::CoreWindow^ sender, Window
 
     core->RunOnMainThread([this, wheelDelta, type]()
                           {
-        Vector<DAVA::UIEvent> touches;
-        UIEvent newTouch;
-        newTouch.tid = 0;
-        newTouch.physPoint.x = 0;
-        newTouch.physPoint.y = static_cast<float32>(wheelDelta / WHEEL_DELTA);
-        newTouch.phase = UIEvent::PHASE_WHEEL;
-        newTouch.deviceId = ToDavaDeviceId(type);
-        touches.push_back(newTouch);
-        UIControlSystem::Instance()->OnInput(touches, events);
+                              Vector<DAVA::UIEvent> newEvent;
+                              UIEvent newTouch;
+                              newTouch.tid = 0;
+                              newTouch.physPoint.x = 0;
+                              newTouch.physPoint.y = static_cast<float32>(wheelDelta / WHEEL_DELTA);
+                              newTouch.phase = UIEvent::PHASE_WHEEL;
+                              newTouch.deviceId = ToDavaDeviceId(type);
+                              newEvent.push_back(newTouch);
+                              UIControlSystem::Instance()->OnInput(newEvent, events);
                           });
 }
 
@@ -463,10 +462,10 @@ void WinUAPXamlApp::OnHardwareBackButtonPressed(Platform::Object^ sender, Window
         ev.tapCount = 1;
         ev.phase = UIEvent::PHASE_KEYCHAR;
         ev.tid = DVKEY_BACK;
-        Vector<UIEvent> touches = { ev };
-        UIControlSystem::Instance()->OnInput(touches, events);
-        touches.pop_back();
-        UIControlSystem::Instance()->OnInput(touches, events);
+        Vector<UIEvent> newEvent = {ev};
+        UIControlSystem::Instance()->OnInput(newEvent, events);
+        newEvent.pop_back();
+        UIControlSystem::Instance()->OnInput(newEvent, events);
         InputSystem::Instance()->GetKeyboard().OnKeyUnpressed(static_cast<int32>(DVKEY_BACK));
     });
     args->Handled = true;
@@ -492,10 +491,8 @@ void WinUAPXamlApp::OnKeyDown(Windows::UI::Core::CoreWindow^ sender, Windows::UI
         ev.phase = UIEvent::PHASE_KEYCHAR;
         ev.tid = InputSystem::Instance()->GetKeyboard().GetDavaKeyForSystemKey(static_cast<int32>(key));
 
-        Vector<UIEvent> touches = { ev };
-        UIControlSystem::Instance()->OnInput(touches, events);
-        touches.pop_back();
-        UIControlSystem::Instance()->OnInput(touches, events);
+        Vector<UIEvent> newEvent = {ev};
+        UIControlSystem::Instance()->OnInput(newEvent, events);
         InputSystem::Instance()->GetKeyboard().OnSystemKeyPressed(static_cast<int32>(key));
     });
 
@@ -505,9 +502,18 @@ void WinUAPXamlApp::OnKeyUp(Windows::UI::Core::CoreWindow^ sender, Windows::UI::
 {
     // Note: should be propagated to main thread
     VirtualKey key = args->VirtualKey;
-    core->RunOnMainThread([this, key]() {
+    core->RunOnMainThread([this, key]()
+                          {
+        UIEvent ev;
+        ev.keyChar = 0;
+        ev.tapCount = 1;
+        ev.phase = UIEvent::PHASE_KEYCHAR_RELEASE;
+        ev.tid = InputSystem::Instance()->GetKeyboard().GetDavaKeyForSystemKey(static_cast<int32>(key));
+
+        Vector<UIEvent> newEvent = { ev };
+        UIControlSystem::Instance()->OnInput(newEvent, events);
         InputSystem::Instance()->GetKeyboard().OnSystemKeyUnpressed(static_cast<int32>(key));
-    });
+                          });
 }
 
 void WinUAPXamlApp::OnMouseMoved(MouseDevice^ mouseDevice, MouseEventArgs^ args)
@@ -547,9 +553,9 @@ void WinUAPXamlApp::OnMouseMoved(MouseDevice^ mouseDevice, MouseEventArgs^ args)
     });
 }
 
-void WinUAPXamlApp::DAVATouchEvent(UIEvent::eInputPhase phase, float32 x, float32 y, int32 id, UIEvent::PointerDeviceID deviceIndex)
+void WinUAPXamlApp::DAVATouchEvent(UIEvent::eInputPhase phase, float32 x, float32 y, int32 id, UIEvent::PointerDeviceID deviceId)
 {
-    Vector<DAVA::UIEvent> touches;
+    Vector<DAVA::UIEvent> newEvent;
     bool isFind = false;
     for (auto it = events.begin(), end = events.end(); it != end; ++it)
     {
@@ -569,12 +575,12 @@ void WinUAPXamlApp::DAVATouchEvent(UIEvent::eInputPhase phase, float32 x, float3
         newTouch.physPoint.x = x;
         newTouch.physPoint.y = y;
         newTouch.phase = phase;
-        newTouch.deviceId = deviceIndex;
+        newTouch.deviceId = deviceId;
         events.push_back(newTouch);
     }
     for (auto it = events.begin(), end = events.end(); it != end; ++it)
     {
-        touches.push_back(*it);
+        newEvent.push_back(*it);
     }
     if (phase == UIEvent::PHASE_ENDED)
     {
@@ -587,7 +593,7 @@ void WinUAPXamlApp::DAVATouchEvent(UIEvent::eInputPhase phase, float32 x, float3
             }
         }
     }
-    UIControlSystem::Instance()->OnInput(touches, events);
+    UIControlSystem::Instance()->OnInput(newEvent, events);
 }
 
 void WinUAPXamlApp::SetupEventHandlers()
