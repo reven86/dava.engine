@@ -150,7 +150,7 @@ void EditorSystemsManager::CollectControlNodesByPos(DAVA::Vector<ControlNode*>& 
     {
         auto tmpNode = controlsNode->Get(index);
         DVASSERT(nullptr != tmpNode);
-        GetControlNodesByPosImpl(controlNodes, pos, tmpNode);
+        CollectControlNodesByPosImpl(controlNodes, pos, tmpNode);
     }
 }
 
@@ -161,11 +161,11 @@ void EditorSystemsManager::CollectControlNodesByRect(SelectedControls& controlNo
     {
         auto tmpNode = controlsNode->Get(index);
         DVASSERT(nullptr != tmpNode);
-        GetControlNodesByRectImpl(controlNodes, rect, tmpNode);
+        CollectControlNodesByRectImpl(controlNodes, rect, tmpNode);
     }
 }
 
-void EditorSystemsManager::GetControlNodesByPosImpl(DAVA::Vector<ControlNode*>& controlNodes, const DAVA::Vector2& pos, ControlNode* node) const
+void EditorSystemsManager::CollectControlNodesByPosImpl(DAVA::Vector<ControlNode*>& controlNodes, const DAVA::Vector2& pos, ControlNode* node) const
 {
     int count = node->GetCount();
     auto control = node->GetControl();
@@ -175,11 +175,11 @@ void EditorSystemsManager::GetControlNodesByPosImpl(DAVA::Vector<ControlNode*>& 
     }
     for (int i = 0; i < count; ++i)
     {
-        GetControlNodesByPosImpl(controlNodes, pos, node->Get(i));
+        CollectControlNodesByPosImpl(controlNodes, pos, node->Get(i));
     }
 }
 
-void EditorSystemsManager::GetControlNodesByRectImpl(SelectedControls& controlNodes, const Rect& rect, ControlNode* node) const
+void EditorSystemsManager::CollectControlNodesByRectImpl(SelectedControls& controlNodes, const Rect& rect, ControlNode* node) const
 {
     int count = node->GetCount();
     auto control = node->GetControl();
@@ -189,7 +189,7 @@ void EditorSystemsManager::GetControlNodesByRectImpl(SelectedControls& controlNo
     }
     for (int i = 0; i < count; ++i)
     {
-        GetControlNodesByRectImpl(controlNodes, rect, node->Get(i));
+        CollectControlNodesByRectImpl(controlNodes, rect, node->Get(i));
     }
 }
 

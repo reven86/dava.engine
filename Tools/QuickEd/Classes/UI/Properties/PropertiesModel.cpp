@@ -59,14 +59,11 @@ using namespace DAVA;
 PropertiesModel::PropertiesModel(ControlNode* _controlNode, QtModelPackageCommandExecutor* _commandExecutor, QObject* parent)
     : QAbstractItemModel(parent)
     , commandExecutor(SafeRetain(_commandExecutor))
-    , updatePropertyTimer(new QTimer(this))
 {
     controlNode = SafeRetain(_controlNode);
     controlNode->GetRootProperty()->AddListener(this);
     rootProperty = SafeRetain(controlNode->GetRootProperty());
-    updatePropertyTimer->setSingleShot(true);
-    updatePropertyTimer->setInterval(30);
-    connect(updatePropertyTimer, &QTimer::timeout, this, &PropertiesModel::UpdateAllChangedProperties);
+    Init();
 }
 
 PropertiesModel::PropertiesModel(StyleSheetNode *aStyleSheet, QtModelPackageCommandExecutor *_commandExecutor, QObject *parent)
@@ -76,6 +73,7 @@ PropertiesModel::PropertiesModel(StyleSheetNode *aStyleSheet, QtModelPackageComm
     styleSheet = SafeRetain(aStyleSheet);
     styleSheet->GetRootProperty()->AddListener(this);
     rootProperty = SafeRetain(styleSheet->GetRootProperty());
+    Init();
 }
 
 PropertiesModel::~PropertiesModel()
@@ -90,6 +88,14 @@ PropertiesModel::~PropertiesModel()
     SafeRelease(controlNode);
     SafeRelease(rootProperty);
     SafeRelease(styleSheet);
+}
+
+void PropertiesModel::Init()
+{
+    updatePropertyTimer = new QTimer(this);
+    updatePropertyTimer->setSingleShot(true);
+    updatePropertyTimer->setInterval(30);
+    connect(updatePropertyTimer, &QTimer::timeout, this, &PropertiesModel::UpdateAllChangedProperties, Qt::QueuedConnection);
 }
 
 QModelIndex PropertiesModel::index(int row, int column, const QModelIndex &parent) const

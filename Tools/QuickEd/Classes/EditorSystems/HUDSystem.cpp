@@ -65,6 +65,7 @@ public:
     explicit SelectionRect()
         : UIControl()
     {
+        SetName("Selection Rect");
         for (int i = 0; i < BORDERS_COUNT; ++i)
         {
             UIControl* control = new UIControl();
@@ -132,6 +133,7 @@ public:
         : ControlContainer(HUDAreaInfo::NO_AREA)
         , control(container)
     {
+        SetName("HudContainer of " + container->GetName());
     }
     void AddChild(ControlContainer* container)
     {
@@ -174,6 +176,7 @@ public:
     explicit FrameControl()
         : ControlContainer(HUDAreaInfo::FRAME_AREA)
     {
+        SetName("Frame Control");
         for (int i = 0; i < BORDERS_COUNT; ++i)
         {
             UIControl* control = new UIControl();
@@ -227,6 +230,7 @@ public:
     explicit FrameRectControl(const HUDAreaInfo::eArea area_)
         : ControlContainer(area_)
     {
+        SetName("Frame Rect Control");
         background->SetSprite("~res:/Gfx/HUDControls/HUDControls2", 0);
         background->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
     }
@@ -274,6 +278,7 @@ public:
     explicit PivotPointControl()
         : ControlContainer(HUDAreaInfo::PIVOT_POINT_AREA)
     {
+        SetName("pivot point control");
         background->SetSprite("~res:/Gfx/HUDControls/HUDControls2", 1);
         background->SetDrawType(UIControlBackground::DRAW_ALIGNED);
     }
@@ -294,6 +299,7 @@ public:
     explicit RotateControl()
         : ControlContainer(HUDAreaInfo::ROTATE_AREA)
     {
+        SetName("rotate control");
         background->SetSprite("~res:/Gfx/HUDControls/HUDControls2", 2);
         background->SetDrawType(UIControlBackground::DRAW_ALIGNED);
     }
@@ -415,6 +421,7 @@ void HUDSystem::OnSelectionChanged(const SelectedNodes& selected, const Selected
     if (wasChanged)
     {
         sortedControlList.sort(CompareByLCA);
+        ProcessCursor(pressedPoint);
     }
 }
 
@@ -426,9 +433,14 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
         ProcessCursor(currentInput->point);
         return false;
     case UIEvent::PHASE_BEGAN:
-        SetCanDrawRect(InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_CTRL));
+    {
+        DAVA::Vector<ControlNode*> nodes;
+        systemManager->CollectControlNodesByPos(nodes, currentInput->point);
+        bool hotKeyDetected = InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_CTRL);
+        SetCanDrawRect(hotKeyDetected || nodes.empty());
         pressedPoint = currentInput->point;
         return canDrawRect;
+    }
     case UIEvent::PHASE_DRAG:
         dragRequested = true;
 

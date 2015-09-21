@@ -60,7 +60,7 @@ public:
     PropertiesModel(ControlNode *controlNode, QtModelPackageCommandExecutor *_commandExecutor, QObject *parent = nullptr);
     PropertiesModel(StyleSheetNode *styleSheet, QtModelPackageCommandExecutor *_commandExecutor, QObject *parent = nullptr);
     virtual ~PropertiesModel();
-    
+    void Init();
     ControlNode *GetControlNode() const {return controlNode; }
 
     QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
