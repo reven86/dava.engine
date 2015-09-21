@@ -394,8 +394,9 @@ void PropertiesModel::ChangeProperty(AbstractProperty *property, const DAVA::Var
 {
     if (controlNode)
     {
-        milliseconds ms = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
-        commandExecutor->ChangeProperty(controlNode, property, value, static_cast<size_t>(ms.count()));
+        microseconds us = duration_cast<microseconds>(system_clock::now().time_since_epoch());
+        size_t usCount = static_cast<size_t>(us.count());
+        commandExecutor->ChangeProperty(controlNode, property, value, usCount);
     }
     else if (styleSheet)
     {
