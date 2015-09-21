@@ -71,19 +71,14 @@ QPoint ScrollAreaController::GetPosition() const
     return position;
 }
 
-int ScrollAreaController::GetScale() const
-{
-    return scale;
-}
-
 void ScrollAreaController::UpdateCanvasContentSize()
 {
     Vector2 contentSize;
     if(nullptr != nestedControl)
     {
         const auto &gd = nestedControl->GetGeometricData();
-        
-        contentSize = gd.GetAABBox().GetSize() * (scale / 100.0f);
+
+        contentSize = gd.GetAABBox().GetSize();
     }
     Vector2 marginsSize(margin * 2, margin * 2);
     Vector2 tmpSize = contentSize + marginsSize;
@@ -113,16 +108,6 @@ void ScrollAreaController::SetPosition(const QPoint &position_)
         auto newPos = Vector2(position.x(), position.y());
         backgroundControl->SetPosition(newPos);
         emit PositionChanged(position);
-    }
-}
-
-void ScrollAreaController::SetScale(int arg)
-{
-    if(arg != scale)
-    {
-        scale = arg;
-        UpdateCanvasContentSize();
-        emit ScaleChanged(scale);
     }
 }
 

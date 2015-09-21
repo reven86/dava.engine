@@ -329,10 +329,6 @@ HUDSystem::HUDSystem(EditorSystemsManager* parent)
 
 void HUDSystem::OnActivated()
 {
-    if (!systemManager->IsInEmulationMode())
-    {
-        systemManager->GetRootControl()->AddControl(hudControl);
-    }
 }
 
 void HUDSystem::OnDeactivated()

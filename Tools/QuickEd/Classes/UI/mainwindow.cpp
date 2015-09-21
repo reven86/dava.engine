@@ -28,7 +28,7 @@
 
 
 #include "mainwindow.h"
-
+#include "Document.h"
 //////////////////////////////////////////////////////////////////////////
 #include "fontmanagerdialog.h"
 #include "Helpers/ResourcesManageHelper.h"
@@ -594,5 +594,13 @@ void MainWindow::OnSetupCacheSettingsForPacker()
     else
     {
         spritesPacker->ClearCacheTool();
+    }
+}
+
+void MainWindow::OnDocumentChanged(Document* doc)
+{
+    if (nullptr != doc)
+    {
+        doc->SetEmulationMode(emulationBox->isChecked());
     }
 }

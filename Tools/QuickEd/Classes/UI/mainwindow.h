@@ -46,6 +46,7 @@ class PreviewWidget;
 class DavaGLWidget;
 class LocalizationEditorDialog;
 class DialogReloadSprites;
+class Document;
 
 class MainWindow : public QMainWindow, public Ui::MainWindow
 {
@@ -94,6 +95,7 @@ public slots:
     void OnProjectIsOpenChanged(bool arg);
     void OnCountChanged(int count);
     void OnSetupCacheSettingsForPacker();
+    void OnDocumentChanged(Document* doc);
 
 private slots:
     void OnCurrentIndexChanged(int arg);

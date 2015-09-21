@@ -54,15 +54,14 @@ public:
 signals:
     void ActiveDocumentChanged(Document*);
     void SelectedNodesChanged(const SelectedNodes &selected, const SelectedNodes &deselected);
-    void EmulationModeChanged(bool emulationMode);
-    void ScaleChanged(int scale);
     void CanvasSizeChanged();
     
 public slots:
     void SetActiveDocument(Document* document);
     void SetSelectedNodes(const SelectedNodes &selected, const SelectedNodes &deselected);
     void SetEmulationMode(bool emulationMode);
-    void SetScale(int scale);
+    void SetScale(float scale);
+
 protected:
     Document *active;
     QList<Document*> documentList;

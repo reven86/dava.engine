@@ -85,7 +85,6 @@ public:
 
     bool OnInput(DAVA::UIEvent* currentInput);
 
-    bool IsInEmulationMode() const;
     void SetEmulationMode(bool emulationMode);
 
     void CollectControlNodesByPos(DAVA::Vector<ControlNode*>& controlNodes, const DAVA::Vector2& pos) const;
@@ -109,8 +108,6 @@ private:
     DAVA::List<BaseEditorSystem*> systems;
 
     PackageNode* package = nullptr;
-    static const bool emulationByDefault = false;
-    bool emulationMode = emulationByDefault;
 };
 
 #endif // __QUICKED_SYSTEMS_MANAGER_H__

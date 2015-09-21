@@ -76,8 +76,9 @@ EditorCore::EditorCore(QObject *parent)
 
     QCheckBox *emulationBox = mainWindow->GetCheckboxEmulation();
     connect(emulationBox, &QCheckBox::clicked, documentGroup, &DocumentGroup::SetEmulationMode);
-    connect(documentGroup, &DocumentGroup::EmulationModeChanged, emulationBox, &QCheckBox::setChecked);
-    
+
+    connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow.get(), &MainWindow::OnDocumentChanged);
+
     connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->libraryWidget, &LibraryWidget::OnDocumentChanged);
 
     connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->propertiesWidget, &PropertiesWidget::OnDocumentChanged);
@@ -91,9 +92,7 @@ EditorCore::EditorCore(QObject *parent)
     auto scrollAreaController = previewWidget->GetScrollAreaController();
     connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, previewWidget, &PreviewWidget::OnDocumentChanged);
     connect(documentGroup, &DocumentGroup::CanvasSizeChanged, scrollAreaController, &ScrollAreaController::UpdateCanvasContentSize);
-    connect(documentGroup, &DocumentGroup::ScaleChanged, scrollAreaController, &ScrollAreaController::SetScale);
-    
-    connect(scrollAreaController, &ScrollAreaController::ScaleChanged, documentGroup, &DocumentGroup::SetScale);
+    connect(previewWidget, &PreviewWidget::ScaleChanged, documentGroup, &DocumentGroup::SetScale);
     connect(project->GetEditorLocalizationSystem(), &EditorLocalizationSystem::LocaleChanged, this, &EditorCore::UpdateLanguage);
 
     qApp->installEventFilter(this);
