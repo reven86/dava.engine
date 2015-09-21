@@ -51,6 +51,9 @@
 
 #include "UI/UIControl.h"
 
+#include <chrono>
+
+using namespace std::chrono;
 using namespace DAVA;
 
 PropertiesModel::PropertiesModel(ControlNode* _controlNode, QtModelPackageCommandExecutor* _commandExecutor, QObject* parent)
@@ -385,7 +388,8 @@ void PropertiesModel::ChangeProperty(AbstractProperty *property, const DAVA::Var
 {
     if (controlNode)
     {
-        commandExecutor->ChangeProperty(controlNode, property, value);
+        milliseconds ms = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
+        commandExecutor->ChangeProperty(controlNode, property, value, static_cast<size_t>(ms.count()));
     }
     else if (styleSheet)
     {

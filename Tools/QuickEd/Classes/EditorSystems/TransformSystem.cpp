@@ -38,8 +38,7 @@
 #include "Model/ControlProperties/RootProperty.h"
 #include "Model/ControlProperties/ValueProperty.h"
 #include "UI/QtModelPackageCommandExecutor.h"
-#include <locale>
-#include <iostream>
+#include <chrono>
 
 using namespace DAVA;
 using namespace std::chrono;
