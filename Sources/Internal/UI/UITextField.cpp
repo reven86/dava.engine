@@ -137,6 +137,10 @@ public:
     {
     }
 
+    void SetInputEnabled(bool, bool hierarchic = true) override
+    {
+    }
+
 protected:
     ~TextFieldPlatformImpl() override = default;
 
@@ -267,7 +271,6 @@ void UITextField::WillDisappear()
 void UITextField::OnFocused()
 {
     SetRenderToTexture(false);
-
     edit->OpenKeyboard();
 }
 
@@ -916,7 +919,6 @@ void UITextField::SetEnableReturnKeyAutomatically(bool value)
 void UITextField::SetInputEnabled(bool isEnabled, bool hierarchic)
 {
     UIControl::SetInputEnabled(isEnabled, hierarchic);
-
     edit->SetInputEnabled(isEnabled);
 }
 
