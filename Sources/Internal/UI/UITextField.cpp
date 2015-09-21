@@ -55,22 +55,26 @@ extern void CloseKeyboard();
 #include "UI/UIStaticText.h"
 namespace DAVA
 {
-class TextFieldPlatformImpl : public UIStaticText
+class TextFieldPlatformImpl
 {
 public:
     friend class UITextField;
     TextFieldPlatformImpl(UITextField* control)
-        : UIStaticText(Rect(0, 0, control->GetRect().dx, control->GetRect().dy))
+        : staticText_(new UIStaticText(Rect(0, 0, control->GetRect().dx, control->GetRect().dy)))
         , control_(control)
     {
-        control->AddControl(this);
-        UIStaticText::SetSpriteAlign(ALIGN_LEFT | ALIGN_BOTTOM);
+        control->AddControl(staticText_);
+        staticText_->SetSpriteAlign(ALIGN_LEFT | ALIGN_BOTTOM);
     }
-
-    TextFieldPlatformImpl* Clone() override
+    ~TextFieldPlatformImpl()
+    {
+        SafeRelease(staticText_);
+        control_ = nullptr;
+    }
+    TextFieldPlatformImpl* Clone()
     {
         TextFieldPlatformImpl* t = new TextFieldPlatformImpl(control_);
-        t->CopyDataFrom(this);
+        t->staticText_->CopyDataFrom(staticText_);
         return t;
     }
     void OpenKeyboard()
@@ -88,10 +92,10 @@ public:
     void SetFontSize(float32)
     {
     }
-    void SetText(const WideString& text_, const Vector2& requestedTextRectSize = Vector2(0, 0)) override
+    void SetText(const WideString& text_, const Vector2& requestedTextRectSize = Vector2(0, 0))
     {
-        WideString prevText = UIStaticText::GetText();
-        UIStaticText::SetText(text_, requestedTextRectSize);
+        WideString prevText = staticText_->GetText();
+        staticText_->SetText(text_, requestedTextRectSize);
         if (requestedTextRectSize != NO_REQUIRED_SIZE && control_->GetDelegate() && prevText != text_)
         {
             control_->GetDelegate()->TextFieldOnTextChanged(control_, text_, prevText);
@@ -132,20 +136,77 @@ public:
     void SetMaxLength(int32)
     {
     }
-    using UIStaticText::GetText;
     void GetText(WideString&)
     {
     }
-
-    void SetInputEnabled(bool, bool hierarchic = true) override
+    void SetInputEnabled(bool, bool hierarchic = true)
     {
     }
+    void SetVisible(bool v)
+    {
+        staticText_->SetVisible(v);
+    }
+    void SetFont(Font* f)
+    {
+        staticText_->SetFont(f);
+    }
+    void SetTextColor(Color c)
+    {
+        staticText_->SetTextColor(c);
+    }
+    void SetShadowOffset(const Vector2& v)
+    {
+        staticText_->SetShadowOffset(v);
+    }
+    void SetShadowColor(Color c)
+    {
+        staticText_->SetShadowColor(c);
+    }
+    void SetTextAlign(int32 align)
+    {
+        staticText_->SetTextAlign(align);
+    }
+    TextBlock::eUseRtlAlign GetTextUseRtlAlign()
+    {
+        return staticText_->GetTextUseRtlAlign();
+    }
 
-protected:
-    ~TextFieldPlatformImpl() override = default;
+    void SetTextUseRtlAlign(TextBlock::eUseRtlAlign align)
+    {
+        staticText_->SetTextUseRtlAlign(align);
+    }
+    void SetSize(const Vector2 vector2)
+    {
+        staticText_->SetSize(vector2);
+    }
+    void SetMultiline(bool is_multiline)
+    {
+        staticText_->SetMultiline(is_multiline);
+    }
+    Color GetTextColor()
+    {
+        return staticText_->GetTextColor();
+    }
+    Vector2 GetShadowOffset()
+    {
+        return staticText_->GetShadowOffset();
+    }
+    Color GetShadowColor()
+    {
+        return staticText_->GetShadowColor();
+    }
+    int32 GetTextAlign()
+    {
+        return staticText_->GetTextAlign();
+    }
+    void SetRect(Rect rect)
+    {
+        staticText_->SetRect(rect);
+    }
 
 private:
-    UITextField* control_;
+    UIStaticText* staticText_ = nullptr;
+    UITextField* control_ = nullptr;
 };
 } // end namespace DAVA
 #endif
@@ -194,7 +255,7 @@ void UITextField::SetupDefaults()
 UITextField::~UITextField()
 {
     SafeRelease(textFont);
-    SafeRelease(edit);
+    SafeDelete(edit);
     UIControl::RemoveAllControls();
 }
 
@@ -768,7 +829,7 @@ List<UIControl*>& UITextField::GetRealChildren()
 {
     List<UIControl*>& realChildren = UIControl::GetRealChildren();
 #if !defined(DAVA_TEXTFIELD_USE_NATIVE)
-    realChildren.remove(edit);
+    realChildren.remove(edit->staticText_);
 #endif
     return realChildren;
 }
@@ -793,11 +854,11 @@ void UITextField::CopyDataFrom(UIControl *srcControl)
     
     cursorBlinkingTime = t->cursorBlinkingTime;
 #if !defined(DAVA_TEXTFIELD_USE_NATIVE)
-    SafeRelease(edit);
+    SafeDelete(edit);
     if (t->edit != nullptr)
     {
         edit = t->edit->Clone();
-        AddControl(edit);
+        AddControl(edit->staticText_);
     }
     if (t->textFont != nullptr)
     {
