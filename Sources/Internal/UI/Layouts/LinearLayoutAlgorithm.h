@@ -26,8 +26,8 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
-#ifndef __DAVAENGINE_UI_LAYOUT_SYSTEM_H__
-#define __DAVAENGINE_UI_LAYOUT_SYSTEM_H__
+#ifndef __DAVAENGINE_LINEAR_LAYOUT_ALGORITHM_H__
+#define __DAVAENGINE_LINEAR_LAYOUT_ALGORITHM_H__
 
 #include "Base/BaseTypes.h"
 #include "Math/Vector.h"
@@ -36,42 +36,47 @@
 
 namespace DAVA
 {
+    
 class UIControl;
 class UILinearLayoutComponent;
-class UIFlowLayoutComponent;
 class UISizePolicyComponent;
 
-class UILayoutSystem
+class LinearLayoutAlgorithm
 {
 public:
-    UILayoutSystem();
-    virtual ~UILayoutSystem();
+    LinearLayoutAlgorithm(Vector<ControlLayoutData> &layoutData_, bool isRtl_);
+    ~LinearLayoutAlgorithm();
     
-public:
-    bool IsRtl() const;
-    void SetRtl(bool rtl);
-
-    void ApplyLayout(UIControl *control, bool considerDenendenceOnChildren = false);
-    
-    bool IsAutoupdatesEnabled() const;
-    void SetAutoupdatesEnabled(bool enabled);
+    void Apply(ControlLayoutData &data, Vector2::eAxis axis);
     
 private:
-    void CollectControls(UIControl *control);
-    void CollectControlChildren(UIControl *control, int32 parentIndex);
-    
-    void MeasureControl(ControlLayoutData &data, Vector2::eAxis axis);
-    void ApplyAnchorLayout(ControlLayoutData &data, Vector2::eAxis axis, bool onlyForIgnoredControls);
+    void InitializeParams(ControlLayoutData &data, const UILinearLayoutComponent *layout, Vector2::eAxis axis);
+    void CalculateDependendOnParentSizes(ControlLayoutData &data, Vector2::eAxis axis);
+    bool CalculateChildDependendOnParentSize(ControlLayoutData &data, Vector2::eAxis axis);
+    void CalculateDynamicPaddingAndSpaces(ControlLayoutData &data, const UILinearLayoutComponent *layout, Vector2::eAxis axis);
+    void PlaceChildren(ControlLayoutData &data, Vector2::eAxis axis);
 
-    
 private:
-    bool isRtl = false;
-    bool autoupdatesEnabled = true;
-    Vector<ControlLayoutData> layoutData;
-    int32 indexOfSizeProperty = -1;
+    Vector<ControlLayoutData> &layoutData;
+    bool isRtl;
+    
+    bool inverse = false;
+    bool skipInvisible = true;
+    
+    float32 fixedSize = 0.0f;
+    float32 totalPercent = 0.0f;
+
+    float32 contentSize = 0.0f;
+    float32 restSize = 0.0f;
+
+    int32 childrenCount = 0;
+    int32 spacesCount = 0;
+
+    float32 padding = 0.0f;
+    float32 spacing = 0.0f;
 };
 
 }
 
 
-#endif //__DAVAENGINE_UI_LAYOUT_SYSTEM_H__
+#endif //__DAVAENGINE_LINEAR_LAYOUT_ALGORITHM_H__
