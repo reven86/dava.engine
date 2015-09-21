@@ -53,6 +53,7 @@ public:
     void AdjustToNestedControl();
 
 private:
+    void CalculateTotalRect(UIControl* control, Rect& totalRect, Vector2& rootControlPosition);
     void UpdateSprite();
     void Draw(const UIGeometricData& geometricData) override;
     ScopedPtr<UIControl> counterPoiseControl;
@@ -175,11 +176,15 @@ void CalculateTotalRectImpl(UIControl* control, Rect& totalRect, Vector2& rootCo
     }
 }
 
-void CalculateTotalRect(UIControl* control, Rect& totalRect, Vector2& rootControlPosition)
+void GridControl::CalculateTotalRect(UIControl* control, Rect& totalRect, Vector2& rootControlPosition)
 {
     rootControlPosition.SetZero();
     UIGeometricData gd = control->GetGeometricData();
     gd.position.SetZero();
+
+    Vector2 scale = canvasSystem->systemManager->GetScalableControl()->GetScale();
+    gd.scale /= scale;
+
     totalRect = gd.GetAABBox();
 
     for (const auto& child : control->GetChildren())
