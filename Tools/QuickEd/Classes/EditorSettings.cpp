@@ -189,7 +189,7 @@ void EditorSettings::SetColor(const String& colorName, const Color& color)
 
 bool EditorSettings::IsUsingAssetCache() const
 {
-    return settings->GetBool("editor.usingAssetCache", true);
+    return settings->GetBool("editor.usingAssetCache", false);
 }
 
 String EditorSettings::GetAssetCacheIp() const
