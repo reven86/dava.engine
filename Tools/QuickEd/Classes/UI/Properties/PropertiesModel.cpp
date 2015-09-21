@@ -300,16 +300,17 @@ QVariant PropertiesModel::headerData(int section, Qt::Orientation /*orientation*
 
 void PropertiesModel::UpdateAllChangedProperties()
 {
-    for (auto index : changedIndexes)
+    for (auto pair : changedIndexes)
     {
-        emit dataChanged(index, index, QVector<int>() << Qt::DisplayRole);
+        emit dataChanged(pair.first, pair.second, QVector<int>() << Qt::DisplayRole);
     }
 }
 
 void PropertiesModel::PropertyChanged(AbstractProperty *property)
 {
-    QModelIndex nameIndex = indexByProperty(property, 1);
-    changedIndexes.insert(nameIndex);
+    QModelIndex nameIndex = indexByProperty(property, 0);
+    QModelIndex valueIndex = nameIndex.sibling(nameIndex.row(), 1);
+    changedIndexes.insert(qMakePair(nameIndex, valueIndex));
     updatePropertyTimer->start();
 }
 
