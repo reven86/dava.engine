@@ -142,8 +142,10 @@ public:
     }
     void InitFromGD(const UIGeometricData& geometricData) override
     {
+        const Rect& ur = geometricData.GetUnrotatedRect();
+        SetSize(ur.GetSize());
         SetPivot(control->GetPivot());
-        SetAbsoluteRect(geometricData.GetUnrotatedRect());
+        SetAbsoluteRect(ur);
         SetAngle(geometricData.angle);
         for (auto child : childs)
         {
@@ -434,10 +436,12 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
         return false;
     case UIEvent::PHASE_BEGAN:
     {
-        DAVA::Vector<ControlNode*> nodes;
+        Vector<ControlNode*> nodes;
         systemManager->CollectControlNodesByPos(nodes, currentInput->point);
         bool hotKeyDetected = InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_CTRL);
-        SetCanDrawRect(hotKeyDetected || nodes.empty());
+        const PackageControlsNode* packageNode = systemManager->GetPackage()->GetPackageControlsNode();
+        bool noHudableControls = nodes.empty() || (nodes.size() == 1 && nodes.front()->GetParent() == packageNode);
+        SetCanDrawRect(hotKeyDetected || noHudableControls);
         pressedPoint = currentInput->point;
         return canDrawRect;
     }
