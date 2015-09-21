@@ -50,18 +50,7 @@ namespace DAVA
 {
 
 const String ResourcePacker2D::VERSION = "0.0.1";
-    
-    
 static const String FLAG_RECURSIVE = "--recursive";
-
-ResourcePacker2D::ResourcePacker2D()
-    : isGfxModified(true)
-    , isLightmapsPacking(false)
-    , forceRepack(false)
-    , clearOutputDirectory(true)
-    , quality(TextureConverter::ECQ_VERY_HIGH)
-{
-}
 
 String ResourcePacker2D::GetProcessFolderName()
 {
@@ -657,6 +646,12 @@ bool ResourcePacker2D::GetFilesFromCache(const AssetCache::CacheItemKey &key, co
             {
                 Logger::FrameworkDebug("\nCacheClientLog: %s", procOutput.c_str());
             }
+
+            if (exitCode == 3) // it's timeout. will be no more attempts to use cache
+            {
+                isUsingCache = false;
+            }
+
             return false;
         }
     }
@@ -711,7 +706,7 @@ bool ResourcePacker2D::AddFilesToCache(const AssetCache::CacheItemKey &key, cons
         arguments.push_back(AssetCache::KeyToString(key));
 
         arguments.push_back("-f");
-        arguments.push_back(fileListString);
+        arguments.push_back('\"' + fileListString + '\"');
 
         if (!cacheClientIp.empty())
         {
@@ -758,6 +753,12 @@ bool ResourcePacker2D::AddFilesToCache(const AssetCache::CacheItemKey &key, cons
                 {
                     Logger::FrameworkDebug("\nCacheClientLog: %s", procOutput.c_str());
                 }
+
+                if (exitCode == 3) // it's timeout. will be no more attempts to use cache
+                {
+                    isUsingCache = false;
+                }
+
                 return false;
             }
         }
@@ -792,6 +793,7 @@ void ResourcePacker2D::SetCacheClientTool(const DAVA::FilePath &path, const Stri
     cacheClientIp = ip;
     cacheClientPort = port;
     cacheClientTimeout = timeout;
+    isUsingCache = !cacheClientTool.IsEmpty();
 }
 
 void ResourcePacker2D::ClearCacheClientTool()
@@ -800,6 +802,7 @@ void ResourcePacker2D::ClearCacheClientTool()
     cacheClientIp.clear();
     cacheClientPort.clear();
     cacheClientTimeout.clear();
+    isUsingCache = false;
 }
 
 };
