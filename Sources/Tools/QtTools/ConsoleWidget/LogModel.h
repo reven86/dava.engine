@@ -4,17 +4,23 @@
 
 #include <QObject>
 #include <QAbstractListModel>
-#include <QMap>
-#include <QTimer>
-#include <QMutex>
 #include <functional>
-
+#include <QPointer>
 #include "FileSystem/Logger.h"
 
+class LoggerOutputObject
+: public QObject,
+  public DAVA::LoggerOutput
+{
+    Q_OBJECT
+public:
+    LoggerOutputObject(QObject* parent = nullptr);
+    ~LoggerOutputObject() override = default; //this object deletes by logger
+    void Output(DAVA::Logger::eLogLevel ll, const DAVA::char8* text) override;
+};
 
 class LogModel
     : public QAbstractListModel
-    , public DAVA::LoggerOutput
 {
     Q_OBJECT
 
@@ -31,8 +37,6 @@ public:
     void SetConvertFunction(ConvertFunc func); //provide mechanism to convert data string to string to be displayed
 
     const QPixmap &GetIcon(int ll) const;
-    
-    void Output(DAVA::Logger::eLogLevel ll, const DAVA::char8* text) override;
 
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -52,7 +56,7 @@ private:
 
     QVector<QPixmap> icons;
     ConvertFunc func;
+    QPointer<LoggerOutputObject> loggerOutputObject = nullptr;
 };
-
 
 #endif // __LOGMODEL_H__
