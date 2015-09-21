@@ -335,12 +335,7 @@ TextFieldPlatformImpl::TextFieldPlatformImpl(DAVA::UITextField* tf)
 
     void TextFieldPlatformImpl::UpdateRect(const Rect& rect)
     {
-        UpdateNativeRect(rect, deltaMoveControl);
-        if (rect.dx != prevRect.dx || rect.dy != prevRect.dy || isNeedToUpdateTexture)
-        {
-            UpdateStaticTexture();
-        }
-        prevRect = rect;
+        nextRect = rect;
     }
 
     void TextFieldPlatformImpl::SetText(const WideString& string)
@@ -697,7 +692,6 @@ TextFieldPlatformImpl::TextFieldPlatformImpl(DAVA::UITextField* tf)
             ::UITextView* textView = (::UITextView*)textFieldHolder->textCtrl;
             UIFont* font = textView.font;
             UIColor* color = textView.textColor;
-            CGRect rect = textView.frame;
             BOOL isHidden = textView.isHidden;
             
             // now hide textField and store it for future restore
@@ -738,6 +732,16 @@ TextFieldPlatformImpl::TextFieldPlatformImpl(DAVA::UITextField* tf)
     bool TextFieldPlatformImpl::IsRenderToTexture() const
     {
         return renderToTexture;
+    }
+
+    void TextFieldPlatformImpl::SystemDraw(const UIGeometricData& geometricData)
+    {
+        UpdateNativeRect(nextRect, deltaMoveControl);
+        if (nextRect.dx != prevRect.dx || nextRect.dy != prevRect.dy || isNeedToUpdateTexture)
+        {
+            UpdateStaticTexture();
+        }
+        prevRect = nextRect;
     }
 
     void* TextFieldPlatformImpl::TruncateText(void* text, int maxLength)

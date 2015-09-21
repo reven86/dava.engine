@@ -341,6 +341,8 @@ public:
 
     void SetFontByPresetName(const String &presetName);
 
+    void SystemDraw(const UIGeometricData& geometricData) override;
+
 protected:
     ~UITextField() override;
 

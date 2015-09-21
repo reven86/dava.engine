@@ -1059,4 +1059,10 @@ void UITextField::SetFontByPresetName(const String &presetName)
     }
 }
 
+void UITextField::SystemDraw(const UIGeometricData& geometricData)
+{
+    edit->SystemDraw(geometricData);
+    UIControl::SystemDraw(geometricData);
+}
+
 }   // namespace DAVA
