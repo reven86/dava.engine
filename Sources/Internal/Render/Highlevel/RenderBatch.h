@@ -130,7 +130,7 @@ public:
     rhi::PrimitiveType primitiveType;
     uint32 vertexLayoutId;
 
-protected:
+private:
     PolygonGroup * dataSource;
     
     NMaterial * material;                    // Should be replaced to NMaterial
