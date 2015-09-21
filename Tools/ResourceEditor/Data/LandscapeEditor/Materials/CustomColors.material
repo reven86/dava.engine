@@ -1,8 +1,8 @@
 RenderTechnique:
     RenderPass:
         Name: "2d"
-        Shader: "~res:/Materials/Shaders/2d/2d"
-        UniqueDefines: ["TEXTURED", "ALPHATEST"]
+        Shader: "~res:/LandscapeEditor/Materials/CustomColors/CustomColors"
+        UniqueDefines: []
         RenderState:
             alphaFunc: "CMP_ALWAYS"
             alphaFuncCmpValue: 0.0000

@@ -45,8 +45,8 @@ CustomColorsProxy::CustomColorsProxy(int32 _size)
 {
 	customColorsRenderTarget = Texture::CreateFBO(size, size, FORMAT_RGBA8888/*, Texture::DEPTH_NONE*/);
 
-    brushMaterial->SetMaterialName(FastName("CustomColorsBrushMaterial"));
-    brushMaterial->SetFXName(FastName("~res:/Materials/2d.Textured.Alphatest.material"));
+    brushMaterial->SetMaterialName(FastName("CustomColorsMaterial"));
+    brushMaterial->SetFXName(FastName("~res:/LandscapeEditor/Materials/CustomColors.material"));
     brushMaterial->PreBuildMaterial(RenderSystem2D::RENDER_PASS_NAME);
 }
 
