@@ -26,8 +26,8 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
-#ifndef __DAVAENGINE_UI_LAYOUT_SYSTEM_H__
-#define __DAVAENGINE_UI_LAYOUT_SYSTEM_H__
+#ifndef __DAVAENGINE_SIZE_MEASURING_ALGORITHM_H__
+#define __DAVAENGINE_SIZE_MEASURING_ALGORITHM_H__
 
 #include "Base/BaseTypes.h"
 #include "Math/Vector.h"
@@ -36,40 +36,44 @@
 
 namespace DAVA
 {
-class UIControl;
-class UILinearLayoutComponent;
-class UIFlowLayoutComponent;
 class UISizePolicyComponent;
-
-class UILayoutSystem
+class UIFlowLayoutComponent;
+class UILinearLayoutComponent;
+    
+class SizeMeasuringAlgorithm
 {
 public:
-    UILayoutSystem();
-    virtual ~UILayoutSystem();
+    SizeMeasuringAlgorithm(Vector<ControlLayoutData> &layoutData_);
+    ~SizeMeasuringAlgorithm();
     
-public:
-    bool IsRtl() const;
-    void SetRtl(bool rtl);
+    void Apply(ControlLayoutData &data, Vector2::eAxis axis);
+    
+private:
+    void ProcessIgnoreSizePolicy(ControlLayoutData &data, Vector2::eAxis axis);
+    void ProcessFixedSizePolicy(ControlLayoutData &data, Vector2::eAxis axis);
+    void ProcessPercentOfChildrenSumPolicy(ControlLayoutData &data, Vector2::eAxis axis);
+    void ProcessPercentOfMaxChildPolicy(ControlLayoutData &data, Vector2::eAxis axis);
+    void ProcessPercentOfFirstChildPolicy(ControlLayoutData &data, Vector2::eAxis axis);
+    void ProcessPercentOfLastChildPolicy(ControlLayoutData &data, Vector2::eAxis axis);
+    void ProcessPercentOfContentPolicy(ControlLayoutData &data, Vector2::eAxis axis);
+    void ProcessPercentOfParentPolicy(ControlLayoutData &data, Vector2::eAxis axis);
 
-    void ApplyLayout(UIControl *control, bool considerDenendenceOnChildren = false);
-    
-    bool IsAutoupdatesEnabled() const;
-    void SetAutoupdatesEnabled(bool enabled);
-    
+    void ApplySize(ControlLayoutData &data, float32 value, Vector2::eAxis axis);
+    float32 GetSize(ControlLayoutData &data, Vector2::eAxis axis);
+    float32 GetLayoutPadding(Vector2::eAxis axis);
+    float32 ClampValue(float32 value, Vector2::eAxis axis);
+
 private:
-    void CollectControls(UIControl *control);
-    void CollectControlChildren(UIControl *control, int32 parentIndex);
+    Vector<ControlLayoutData> &layoutData;
     
-    void ApplyAnchorLayout(ControlLayoutData &data, Vector2::eAxis axis, bool onlyForIgnoredControls);
+    UISizePolicyComponent *sizePolicy = nullptr;
+    UILinearLayoutComponent *linearLayout = nullptr;
+    UIFlowLayoutComponent *flowLayout = nullptr;
     
-private:
-    bool isRtl = false;
-    bool autoupdatesEnabled = true;
-    Vector<ControlLayoutData> layoutData;
-    int32 indexOfSizeProperty = -1;
+    bool skipInvisible = false;
 };
 
 }
 
 
-#endif //__DAVAENGINE_UI_LAYOUT_SYSTEM_H__
+#endif //__DAVAENGINE_SIZE_MEASURING_ALGORITHM_H__

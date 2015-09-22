@@ -33,6 +33,7 @@
 #include "UIAnchorComponent.h"
 #include "UISizePolicyComponent.h"
 
+#include "SizeMeasuringAlgorithm.h"
 #include "LinearLayoutAlgorithm.h"
 #include "FlowLayoutAlgorithm.h"
 
@@ -89,7 +90,8 @@ void UILayoutSystem::ApplyLayout(UIControl *inputContainer, bool considerDenende
         // measure phase
         for (auto it = layoutData.rbegin(); it != layoutData.rend(); ++it)
         {
-            MeasureControl(*it, axis);
+            SizeMeasuringAlgorithm alg(layoutData);
+            alg.Apply(*it, axis);
         }
 
         // layout phase
@@ -161,165 +163,6 @@ bool UILayoutSystem::IsAutoupdatesEnabled() const
 void UILayoutSystem::SetAutoupdatesEnabled(bool enabled)
 {
     autoupdatesEnabled = enabled;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// Measuring
-////////////////////////////////////////////////////////////////////////////////
-
-void UILayoutSystem::MeasureControl(ControlLayoutData &data, Vector2::eAxis axis)
-{
-    UISizePolicyComponent *sizeHint = data.GetControl()->GetComponent<UISizePolicyComponent>();
-    if (sizeHint == nullptr)
-    {
-        return;
-    }
-    
-    bool skipInvisible = false;
-    
-    UILinearLayoutComponent *linearLayout = nullptr;
-    UIFlowLayoutComponent *flowLayout = data.GetControl()->GetComponent<UIFlowLayoutComponent>();
-    
-    if (flowLayout && flowLayout->IsEnabled())
-    {
-        skipInvisible = flowLayout->IsSkipInvisibleControls();
-    }
-    else
-    {
-        linearLayout = data.GetControl()->GetComponent<UILinearLayoutComponent>();
-        if (linearLayout != nullptr && linearLayout->IsEnabled())
-        {
-            skipInvisible = linearLayout->IsSkipInvisibleControls();
-        }
-    }
-    
-    UISizePolicyComponent::eSizePolicy policy = sizeHint->GetPolicyByAxis(axis);
-    float32 hintValue = sizeHint->GetValueByAxis(axis);
-    float32 value = 0;
-    int32 processedChildrenCount = 0;
-    
-    switch (policy)
-    {
-        case UISizePolicyComponent::IGNORE_SIZE:
-            value = data.GetSize(axis); // ignore
-            break;
-            
-        case UISizePolicyComponent::FIXED_SIZE:
-            value = hintValue;
-            break;
-            
-        case UISizePolicyComponent::PERCENT_OF_CHILDREN_SUM:
-            if (flowLayout && flowLayout->IsEnabled() && axis == Vector2::AXIS_Y)
-            {
-                float32 spacing = flowLayout->GetVerticalSpacing();
-                
-                float32 lineHeight = 0;
-                for (int32 index = data.GetFirstChildIndex(); index <= data.GetLastChildIndex(); index++)
-                {
-                    ControlLayoutData &childData = layoutData[index];
-                    if (childData.HaveToSkipControl(skipInvisible))
-                        continue;
-                    
-                    if (childData.HasFlag(ControlLayoutData::FLAG_FLOW_LAYOUT_NEW_LINE))
-                    {
-                        value += lineHeight + spacing;
-                        lineHeight = 0;
-                    }
-
-                    lineHeight = Max(lineHeight, childData.GetHeight());
-                }
-                value += lineHeight;
-            }
-            else
-            {
-                for (int32 i = data.GetFirstChildIndex(); i <= data.GetLastChildIndex(); i++)
-                {
-                    const ControlLayoutData &childData = layoutData[i];
-                    if (!childData.HaveToSkipControl(skipInvisible))
-                    {
-                        processedChildrenCount++;
-                        value += childData.GetSize(axis);
-                    }
-                }
-            }
-            value = value * hintValue / 100.0f;
-            break;
-            
-        case UISizePolicyComponent::PERCENT_OF_MAX_CHILD:
-            for (int32 i = data.GetFirstChildIndex(); i <= data.GetLastChildIndex(); i++)
-            {
-                const ControlLayoutData &childData = layoutData[i];
-                if (!childData.HaveToSkipControl(skipInvisible))
-                {
-                    processedChildrenCount = 1;
-                    value = Max(value, childData.GetSize(axis));
-                }
-            }
-            value = value * hintValue / 100.0f;
-            break;
-
-        case UISizePolicyComponent::PERCENT_OF_FIRST_CHILD:
-            if (data.HasChildren())
-            {
-                value = layoutData[data.GetFirstChildIndex()].GetSize(axis);
-                processedChildrenCount = 1;
-            }
-            value = value * hintValue / 100.0f;
-            break;
-            
-        case UISizePolicyComponent::PERCENT_OF_LAST_CHILD:
-            if (data.HasChildren())
-            {
-                value = layoutData[data.GetLastChildIndex()].GetSize(axis);
-                processedChildrenCount = 1;
-            }
-            value = value * hintValue / 100.0f;
-            break;
-            
-        case UISizePolicyComponent::PERCENT_OF_CONTENT:
-        {
-            Vector2 constraints(-1.0f, -1.0f);
-            if (data.GetControl()->IsHeightDependsOnWidth() && axis == Vector2::AXIS_Y)
-            {
-                constraints.x = data.GetSize(Vector2::AXIS_X);
-            }
-            value = data.GetControl()->GetContentPreferredSize(constraints).data[axis] * hintValue / 100.0f;
-            break;
-        }
-            
-        case UISizePolicyComponent::PERCENT_OF_PARENT:
-            value = data.GetSize(axis); // ignore
-            break;
-            
-        default:
-            DVASSERT(false);
-            break;
-            
-    }
-    
-    if (sizeHint->IsDependsOnChildren(axis))
-    {
-        if (flowLayout && flowLayout->IsEnabled())
-        {
-            value += flowLayout->GetPaddingByAxis(axis) * 2.0f;
-        }
-        else if (linearLayout != nullptr && linearLayout->IsEnabled() && linearLayout->GetAxis() == axis)
-        {
-            if (policy == UISizePolicyComponent::PERCENT_OF_CHILDREN_SUM && processedChildrenCount > 0)
-            {
-                value += linearLayout->GetSpacing() * (processedChildrenCount - 1);
-            }
-            
-            value += linearLayout->GetPadding() * 2.0f;
-        }
-    }
-    
-    if (policy != UISizePolicyComponent::PERCENT_OF_PARENT && policy != UISizePolicyComponent::IGNORE_SIZE)
-    {
-        value = Clamp(value, sizeHint->GetMinValueByAxis(axis), sizeHint->GetMaxValueByAxis(axis));
-    }
-    
-    data.SetSize(axis, value);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
