@@ -29,10 +29,12 @@
 #include "UILayoutSystem.h"
 
 #include "UILinearLayoutComponent.h"
+#include "UIFlowLayoutComponent.h"
 #include "UIAnchorComponent.h"
 #include "UISizePolicyComponent.h"
 
 #include "LinearLayoutAlgorithm.h"
+#include "FlowLayoutAlgorithm.h"
 
 #include "UI/UIControl.h"
 #include "UI/Styles/UIStyleSheetPropertyDataBase.h"
@@ -93,17 +95,26 @@ void UILayoutSystem::ApplyLayout(UIControl *inputContainer, bool considerDenende
         // layout phase
         for (auto it = layoutData.begin(); it != layoutData.end(); ++it)
         {
-            UILinearLayoutComponent *linearLayoutComponent = it->GetControl()->GetComponent<UILinearLayoutComponent>();
-            bool anchorOnlyIgnoredControls = false;
-            if (linearLayoutComponent != nullptr && linearLayoutComponent->IsEnabled() && linearLayoutComponent->GetAxis() == axis)
+            UIFlowLayoutComponent *flowLayoutComponent = it->GetControl()->GetComponent<UIFlowLayoutComponent>();
+            if (flowLayoutComponent && flowLayoutComponent->IsEnabled())
             {
-                LinearLayoutAlgorithm alg(isRtl, layoutData);
+                FlowLayoutAlgorithm alg(layoutData, isRtl);
                 alg.Apply(*it, axis);
-                
-                anchorOnlyIgnoredControls = true;
             }
-            
-            ApplyAnchorLayout(*it, axis, anchorOnlyIgnoredControls);
+            else
+            {
+                UILinearLayoutComponent *linearLayoutComponent = it->GetControl()->GetComponent<UILinearLayoutComponent>();
+                bool anchorOnlyIgnoredControls = false;
+                if (linearLayoutComponent != nullptr && linearLayoutComponent->IsEnabled() && linearLayoutComponent->GetAxis() == axis)
+                {
+                    LinearLayoutAlgorithm alg(layoutData, isRtl);
+                    alg.Apply(*it, axis);
+                    
+                    anchorOnlyIgnoredControls = true;
+                }
+                
+                ApplyAnchorLayout(*it, axis, anchorOnlyIgnoredControls);
+            }
         }
     }
     
@@ -167,11 +178,19 @@ void UILayoutSystem::MeasureControl(ControlLayoutData &data, Vector2::eAxis axis
     bool skipInvisible = false;
     
     UILinearLayoutComponent *linearLayout = nullptr;
+    UIFlowLayoutComponent *flowLayout = data.GetControl()->GetComponent<UIFlowLayoutComponent>();
     
-    linearLayout = data.GetControl()->GetComponent<UILinearLayoutComponent>();
-    if (linearLayout != nullptr)
+    if (flowLayout && flowLayout->IsEnabled())
     {
-        skipInvisible = linearLayout->IsSkipInvisibleControls();
+        skipInvisible = flowLayout->IsSkipInvisibleControls();
+    }
+    else
+    {
+        linearLayout = data.GetControl()->GetComponent<UILinearLayoutComponent>();
+        if (linearLayout != nullptr && linearLayout->IsEnabled())
+        {
+            skipInvisible = linearLayout->IsSkipInvisibleControls();
+        }
     }
     
     UISizePolicyComponent::eSizePolicy policy = sizeHint->GetPolicyByAxis(axis);
@@ -190,15 +209,38 @@ void UILayoutSystem::MeasureControl(ControlLayoutData &data, Vector2::eAxis axis
             break;
             
         case UISizePolicyComponent::PERCENT_OF_CHILDREN_SUM:
-            for (int32 i = data.GetFirstChildIndex(); i <= data.GetLastChildIndex(); i++)
+            if (flowLayout && flowLayout->IsEnabled() && axis == Vector2::AXIS_Y)
             {
-                const ControlLayoutData &childData = layoutData[i];
-                if (!childData.HaveToSkipControl(skipInvisible))
-                {
-                    processedChildrenCount++;
-                    value += childData.GetSize(axis);
-                }
+                float32 spacing = flowLayout->GetVerticalSpacing();
                 
+                float32 lineHeight = 0;
+                for (int32 index = data.GetFirstChildIndex(); index <= data.GetLastChildIndex(); index++)
+                {
+                    ControlLayoutData &childData = layoutData[index];
+                    if (childData.HaveToSkipControl(skipInvisible))
+                        continue;
+                    
+                    if (childData.HasFlag(ControlLayoutData::FLAG_FLOW_LAYOUT_NEW_LINE))
+                    {
+                        value += lineHeight + spacing;
+                        lineHeight = 0;
+                    }
+
+                    lineHeight = Max(lineHeight, childData.GetHeight());
+                }
+                value += lineHeight;
+            }
+            else
+            {
+                for (int32 i = data.GetFirstChildIndex(); i <= data.GetLastChildIndex(); i++)
+                {
+                    const ControlLayoutData &childData = layoutData[i];
+                    if (!childData.HaveToSkipControl(skipInvisible))
+                    {
+                        processedChildrenCount++;
+                        value += childData.GetSize(axis);
+                    }
+                }
             }
             value = value * hintValue / 100.0f;
             break;
@@ -255,14 +297,21 @@ void UILayoutSystem::MeasureControl(ControlLayoutData &data, Vector2::eAxis axis
             
     }
     
-    if (sizeHint->IsDependsOnChildren(axis) && linearLayout != nullptr && linearLayout->GetAxis() == axis)
+    if (sizeHint->IsDependsOnChildren(axis))
     {
-        if (policy == UISizePolicyComponent::PERCENT_OF_CHILDREN_SUM && processedChildrenCount > 0)
+        if (flowLayout && flowLayout->IsEnabled())
         {
-            value += linearLayout->GetSpacing() * (processedChildrenCount - 1);
+            value += flowLayout->GetPaddingByAxis(axis) * 2.0f;
         }
-        
-        value += linearLayout->GetPadding() * 2.0f;
+        else if (linearLayout != nullptr && linearLayout->IsEnabled() && linearLayout->GetAxis() == axis)
+        {
+            if (policy == UISizePolicyComponent::PERCENT_OF_CHILDREN_SUM && processedChildrenCount > 0)
+            {
+                value += linearLayout->GetSpacing() * (processedChildrenCount - 1);
+            }
+            
+            value += linearLayout->GetPadding() * 2.0f;
+        }
     }
     
     if (policy != UISizePolicyComponent::PERCENT_OF_PARENT && policy != UISizePolicyComponent::IGNORE_SIZE)

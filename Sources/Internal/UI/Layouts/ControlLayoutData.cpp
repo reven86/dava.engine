@@ -29,7 +29,7 @@
 #include "ControlLayoutData.h"
 
 #include "UI/UIControl.h"
-#include "UI/UIComponent.h"
+#include "UI/Components/UIComponent.h"
 
 namespace DAVA
 {
@@ -117,6 +117,26 @@ namespace DAVA
     {
         position.data[axis] = value;
         flags |= FLAG_POSITION_CHANGED;
+    }
+
+    float32 ControlLayoutData::GetX() const
+    {
+        return position.x;
+    }
+    
+    float32 ControlLayoutData::GetY() const
+    {
+        return position.y;
+    }
+    
+    float32 ControlLayoutData::GetWidth() const
+    {
+        return size.dx;
+    }
+    
+    float32 ControlLayoutData::GetHeight() const
+    {
+        return size.dy;
     }
 
     bool ControlLayoutData::HaveToSkipControl(bool skipInvisible) const

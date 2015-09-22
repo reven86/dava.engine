@@ -26,69 +26,43 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
-#ifndef __DAVAENGINE_CONTROL_LAYOUT_DATA_H__
-#define __DAVAENGINE_CONTROL_LAYOUT_DATA_H__
+#ifndef __DAVAENGINE_FLOW_LAYOUT_ALGORITHM_H__
+#define __DAVAENGINE_FLOW_LAYOUT_ALGORITHM_H__
 
 #include "Base/BaseTypes.h"
 #include "Math/Vector.h"
 
+#include "ControlLayoutData.h"
+
 namespace DAVA
 {
-    class UIControl;
     
-    class ControlLayoutData
-    {
-    public:
-        enum eFlag
-        {
-            FLAG_NONE = 0,
-            FLAG_SIZE_CHANGED = 1 << 0,
-            FLAG_POSITION_CHANGED = 1 << 1,
-            FLAG_LINEAR_LAYOUT_SIZE_CALCULATED = 1 << 2,
-            FLAG_FLOW_LAYOUT_NEW_LINE = 1 << 3,
-        };
-        
-    public:
-        ControlLayoutData(UIControl *control_);
-        
-        void ApplyLayoutToControl(int32 indexOfSizeProperty);
-        
-        UIControl *GetControl() const;
-        
-        bool HasFlag(eFlag flag) const;
-        void SetFlag(eFlag flag);
-        
-        int32 GetFirstChildIndex() const;
-        void SetFirstChildIndex(int32 index);
+class UIControl;
+class UIFlowLayoutComponent;
+class UISizePolicyComponent;
 
-        int32 GetLastChildIndex() const;
-        void SetLastChildIndex(int32 index);
-        
-        bool HasChildren() const;
-        
-        float32 GetSize(Vector2::eAxis axis) const;
-        void SetSize(Vector2::eAxis axis, float32 value);
-        
-        float32 GetPosition(Vector2::eAxis axis) const;
-        void SetPosition(Vector2::eAxis axis, float32 value);
-        
-        float32 GetX() const;
-        float32 GetY() const;
-        float32 GetWidth() const;
-        float32 GetHeight() const;
-        
-        bool HaveToSkipControl(bool skipInvisible) const;
-
-    private:
-        UIControl *control;
-        int32 flags = FLAG_NONE;
-        int32 firstChild = 0;
-        int32 lastChild = -1;
-        Vector2 size;
-        Vector2 position;
-    };
+class FlowLayoutAlgorithm
+{
+public:
+    FlowLayoutAlgorithm(Vector<ControlLayoutData> &layoutData_, bool isRtl_);
+    ~FlowLayoutAlgorithm();
     
+    void Apply(ControlLayoutData &data, Vector2::eAxis axis);
+    
+private:
+    void ProcessXAxis(const ControlLayoutData &data, UIFlowLayoutComponent *component);
+    void ProcessYAxis(const ControlLayoutData &data, UIFlowLayoutComponent *component);
+
+private:
+    Vector<ControlLayoutData> &layoutData;
+    bool isRtl;
+
+    bool inverse = false;
+    bool skipInvisible = true;
+
+};
+
 }
 
 
-#endif //__DAVAENGINE_CONTROL_LAYOUT_DATA_H__
+#endif //__DAVAENGINE_FLOW_LAYOUT_ALGORITHM_H__

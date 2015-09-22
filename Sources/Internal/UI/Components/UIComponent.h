@@ -42,6 +42,7 @@ public:
     enum eType
     {
         LINEAR_LAYOUT_COMPONENT,
+        FLOW_LAYOUT_COMPONENT,
         IGNORE_LAYOUT_COMPONENT,
         SIZE_POLICY_COMPONENT,
         ANCHOR_COMPONENT,
@@ -77,7 +78,7 @@ public:
 };
 
 #define IMPLEMENT_COMPONENT_TYPE(TYPE) \
-    virtual uint32 GetType() const { return TYPE; }; \
+    virtual uint32 GetType() const override { return TYPE; }; \
     static const uint32 C_TYPE = TYPE;
 
 inline void UIComponent::SetControl(UIControl* _control)

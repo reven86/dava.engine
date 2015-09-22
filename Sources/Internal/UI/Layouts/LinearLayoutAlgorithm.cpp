@@ -107,13 +107,12 @@ void LinearLayoutAlgorithm::InitializeParams(ControlLayoutData &data, const UILi
 
 void LinearLayoutAlgorithm::CalculateDependendOnParentSizes(ControlLayoutData &data, Vector2::eAxis axis)
 {
-    ControlLayoutData::eFlag flagSizeCalculated = axis == Vector2::AXIS_X ? ControlLayoutData::FLAG_X_SIZE_CALCULATED : ControlLayoutData::FLAG_Y_SIZE_CALCULATED;
     int32 index = data.GetFirstChildIndex();
     while (index <= data.GetLastChildIndex())
     {
         ControlLayoutData &childData = layoutData[index];
 
-        bool haveToSkip = childData.HasFlag(flagSizeCalculated) || childData.HaveToSkipControl(skipInvisible);
+        bool haveToSkip = childData.HasFlag(ControlLayoutData::FLAG_LINEAR_LAYOUT_SIZE_CALCULATED) || childData.HaveToSkipControl(skipInvisible);
         
         bool needRestart = false;
         if (!haveToSkip)
@@ -122,7 +121,7 @@ void LinearLayoutAlgorithm::CalculateDependendOnParentSizes(ControlLayoutData &d
             if (sizeWasLimited)
             {
                 needRestart = true;
-                childData.SetFlag(flagSizeCalculated);
+                childData.SetFlag(ControlLayoutData::FLAG_LINEAR_LAYOUT_SIZE_CALCULATED);
             }
         }
         
