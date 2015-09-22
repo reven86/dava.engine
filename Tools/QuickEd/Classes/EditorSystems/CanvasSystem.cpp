@@ -238,12 +238,12 @@ void GridControl::ControlWasAdded(ControlNode* /*node*/, ControlsContainerNode* 
 
 void GridControl::UpdateSprite()
 {
-    bool transformed = !counterPoiseControl->GetPosition().IsZero() || !counterPoiseControl->GetPivot().IsZero() || counterPoiseControl->GetAngle() != 0;
+    /*bool transformed = !counterPoiseControl->GetPosition().IsZero() || !counterPoiseControl->GetPivot().IsZero() || counterPoiseControl->GetAngle() != 0;
     if (transformed)
     {
         background->SetSprite("~res:/Gfx/CheckeredBg2", 0);
     }
-    else
+    else*/ //use it to indicate that root control is in invalid state
     {
         background->SetSprite("~res:/Gfx/CheckeredBg", 0);
     }
