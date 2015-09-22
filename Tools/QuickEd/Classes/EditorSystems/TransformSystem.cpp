@@ -62,7 +62,6 @@ TransformSystem::TransformSystem(EditorSystemsManager* parent)
     : BaseEditorSystem(parent)
     , steps({{15, 10, 10}}) //10 grad for rotate and 20 pix for move/resize
 {
-    accumulates.fill({{0, 0}});
     systemManager->ActiveAreaChanged.Connect(this, &TransformSystem::OnActiveAreaChanged);
     systemManager->SelectionChanged.Connect([this](const SelectedNodes& selected, const SelectedNodes& deselected)
                                             {
@@ -98,6 +97,7 @@ bool TransformSystem::OnInput(UIEvent* currentInput)
     }
     case UIEvent::PHASE_ENDED:
         accumulates.fill({{0, 0}});
+        extraDelta.SetZero();
         return false;
     default:
         return false;
@@ -319,21 +319,7 @@ void TransformSystem::ResizeControl(const Vector2& pos, bool withPivot, bool rat
         }
     }
 
-    AbstractProperty* sizeProperty = activeControlNode->GetRootProperty()->FindPropertyByName("Size");
-    Vector2 origSize = sizeProperty->GetValue().AsVector2();
-    Vector2 finalSize(origSize + deltaSize);
-    if (finalSize.dx < minimumSize.dx)
-    {
-        float32 availableDelta = minimumSize.dx - origSize.dx;
-        deltaPosition.dx *= availableDelta / deltaSize.dx;
-        deltaSize.dx = availableDelta;
-    }
-    if (finalSize.dy < minimumSize.dy)
-    {
-        float32 availableDelta = minimumSize.dy - origSize.dy;
-        deltaPosition.dy *= availableDelta / deltaSize.dy;
-        deltaSize.dy = availableDelta;
-    }
+    AdjustResize(deltaSize, deltaPosition);
 
     //rotate delta position backwards, because SetPosition require absolute coordinates
     Vector2 rotatedPosition;
@@ -344,6 +330,62 @@ void TransformSystem::ResizeControl(const Vector2& pos, bool withPivot, bool rat
     propertiesDelta.emplace_back("Position", VariantType(rotatedPosition));
     propertiesDelta.emplace_back("Size", VariantType(deltaSize));
     AdjustProperty(activeControlNode, propertiesDelta);
+}
+
+void TransformSystem::AdjustResize(DAVA::Vector2& deltaSize, DAVA::Vector2& deltaPosition)
+{
+    if (extraDelta.dx != 0.0f)
+    {
+        float overload = extraDelta.dx + deltaSize.dx;
+        if ((overload > 0.0f) ^ (extraDelta.dx > 0.0f)) //overload more than extraDelta
+        {
+            extraDelta.dx = 0.0f;
+            deltaPosition.dx *= overload / deltaSize.dx;
+            deltaSize.dx = overload;
+        }
+        else //delta less than we need to resize
+        {
+            extraDelta.x += deltaSize.dx;
+            deltaSize.dx = 0.0f;
+            deltaPosition.dx = 0.0f;
+        }
+    }
+    if (extraDelta.dy != 0.0f)
+    {
+        float overload = extraDelta.dy + deltaSize.dy;
+        if ((overload > 0.0f) ^ (extraDelta.dy > 0.0f)) //overload more than extraDelta
+        {
+            extraDelta.dy = 0.0f;
+            deltaPosition.dy *= overload / deltaSize.dy;
+            deltaSize.dy = overload;
+        }
+        else
+        {
+            extraDelta.y += deltaSize.dy;
+            deltaSize.dy = 0;
+            deltaPosition.dy = 0;
+        }
+    }
+
+    AbstractProperty* sizeProperty = activeControlNode->GetRootProperty()->FindPropertyByName("Size");
+    Vector2 origSize = sizeProperty->GetValue().AsVector2();
+    Vector2 finalSize(origSize + deltaSize);
+
+    if (finalSize.dx < minimumSize.dx)
+    {
+        float32 availableDelta = minimumSize.dx - origSize.dx;
+        extraDelta.dx += deltaSize.dx - availableDelta;
+        deltaPosition.dx *= availableDelta / deltaSize.dx;
+        deltaSize.dx = availableDelta;
+    }
+    if (finalSize.dy < minimumSize.dy)
+    {
+        float32 availableDelta = minimumSize.dy - origSize.dy;
+        extraDelta.dy += deltaSize.dy - availableDelta;
+        deltaPosition.dy *= availableDelta / deltaSize.dy;
+        deltaSize.dy = availableDelta;
+    }
+
 }
 
 void TransformSystem::MovePivot(const Vector2& pos)

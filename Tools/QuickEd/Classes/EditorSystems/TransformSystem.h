@@ -58,6 +58,7 @@ private:
 
     bool ProcessDrag(const DAVA::Vector2& pos);
     void ResizeControl(const DAVA::Vector2& pos, bool withPivot, bool rateably);
+    void AdjustResize(DAVA::Vector2& deltaSize, DAVA::Vector2& deltaPos);
     void MovePivot(const DAVA::Vector2& pos);
     void Rotate(const DAVA::Vector2& pos);
     void MoveControl(const DAVA::Vector2& pos);
@@ -74,7 +75,7 @@ private:
     DAVA::Vector2 prevPos;
     const DAVA::Array<int, OPERATIONS_COUNT> steps; //to transform with fixed step
     DAVA::Array<DAVA::Array<int, DAVA::Vector2::AXIS_COUNT>, OPERATIONS_COUNT> accumulates;
-
+    DAVA::Vector2 extraDelta;
     SelectedControls selectedControlNodes;
 
     const DAVA::Vector2 minimumSize = DAVA::Vector2(16.0f, 16.0f);
