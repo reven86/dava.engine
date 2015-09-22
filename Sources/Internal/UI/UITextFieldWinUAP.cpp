@@ -184,6 +184,10 @@ void TextFieldPlatformImpl::SetCursorPos(uint32 pos)
     privateImpl->SetCursorPos(pos);
 }
 
+void TextFieldPlatformImpl::SystemDraw(const UIGeometricData&)
+{
+}
+
 }   // namespace DAVA
 
 #endif  // __DAVAENGINE_WIN_UAP__

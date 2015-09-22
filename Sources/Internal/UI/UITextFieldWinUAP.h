@@ -44,6 +44,7 @@ class Color;
 class UITextField;
 class UITextFieldDelegate;
 class PrivateTextFieldWinUAP;
+class UIGeometricData;
 
 class TextFieldPlatformImpl
 {
@@ -90,6 +91,8 @@ public:
 
     uint32 GetCursorPos() const;
     void SetCursorPos(uint32 pos);
+
+    void SystemDraw(const UIGeometricData&);
 
 private:
     std::shared_ptr<PrivateTextFieldWinUAP> privateImpl;
