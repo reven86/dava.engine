@@ -126,8 +126,8 @@ public:
 
     TextBlock * Clone();
 
-    const Vector<int32> & GetStringSizes() const;
-    
+    const Vector<int32>& GetStringSizes();
+
     void ForcePrepare(Texture *texture);
 #if defined(LOCALIZATION_DEBUG)
     int32 GetFittingOptionUsed();
@@ -147,8 +147,8 @@ public:
     static bool IsBiDiSupportEnabled();
     TextBlockRender* GetRenderer(){ return textBlockRender; }
 
-	void SetAngle(const float _angle);
-	void SetPivot(const Vector2 & _pivot);
+    void SetAngle(const float32 _angle);
+    void SetPivot(const Vector2 & _pivot);
 protected:
 
 	TextBlock();
@@ -159,6 +159,7 @@ protected:
 	void CalculateCacheParams();
 
 	int32 GetVisualAlignNoMutexLock() const; // Return align for displaying BiDi-text (w/o mutex lock)
+    void SetFontInternal(Font* _font);
 
     Vector2 scale;
     Vector2 rectSize;
@@ -185,7 +186,6 @@ protected:
 #endif //LOCALIZATION_DEBUG
     int32 align;
     eUseRtlAlign useRtlAlign;
-    bool isRtl;
 
     Font * font;
     WideString logicalText;
@@ -201,6 +201,8 @@ protected:
     bool cacheUseJustify:1;
     bool treatMultilineAsSingleLine:1;
 	bool needPrepareInternal:1;
+    bool isRtl : 1;
+    bool needCalculateCacheParams : 1;
 
     static bool isBiDiSupportEnabled;   //!< true if BiDi transformation support enabled
 
