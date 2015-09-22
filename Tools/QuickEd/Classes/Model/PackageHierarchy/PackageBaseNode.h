@@ -80,6 +80,7 @@ public:
     
 private:
     PackageBaseNode *parent;
+    size_t depth = 0;
 };
 
 #endif // __UI_EDITOR_UI_PACKAGE_MODEL_NODE__
