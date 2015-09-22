@@ -77,7 +77,7 @@ class EditorSystemsManager : private PackageListener
 public:
     explicit EditorSystemsManager(PackageNode* package);
     ~EditorSystemsManager();
-    using SortedRootControls = DAVA::Set<PackageBaseNode*, std::function<bool(PackageBaseNode*, PackageBaseNode*)>>;
+    using SortedPackageBaseNodeSet = DAVA::Set<PackageBaseNode*, std::function<bool(PackageBaseNode*, PackageBaseNode*)>>;
 
     PackageNode* GetPackage();
 
@@ -101,7 +101,7 @@ public:
     DAVA::Signal<> CanvasSizeChanged;
     DAVA::Signal<ControlNode* /*node*/, const DAVA::Vector<std::pair<AbstractProperty*, DAVA::VariantType>>& /*properties*/, size_t /*hash*/> PropertiesChanged;
     DAVA::Signal<const DAVA::Vector<ControlNode*>& /*nodes*/, const DAVA::Vector2& /*pos*/, ControlNode*& /*selectedNode*/> SelectionByMenuRequested;
-    DAVA::Signal<const SortedRootControls&> EditingRootControlsChanged;
+    DAVA::Signal<const SortedPackageBaseNodeSet&> EditingRootControlsChanged;
 
 private:
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
@@ -118,7 +118,7 @@ private:
 
     PackageNode* package = nullptr;
     SelectedControls selectedControlNodes;
-    SortedRootControls editingRootControls;
+    SortedPackageBaseNodeSet editingRootControls;
 };
 
 #endif // __QUICKED_SYSTEMS_MANAGER_H__

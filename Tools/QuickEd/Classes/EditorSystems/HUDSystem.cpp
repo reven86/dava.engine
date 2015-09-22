@@ -320,6 +320,7 @@ HUDSystem::HUDSystem(EditorSystemsManager* parent)
     : BaseEditorSystem(parent)
     , hudControl(new UIControl())
     , selectionRectControl(new SelectionRect())
+    , sortedControlList(CompareByLCA)
 {
     hudControl->AddControl(selectionRectControl);
     hudControl->SetName("hudControl");
@@ -350,7 +351,7 @@ void HUDSystem::OnSelectionChanged(const SelectedNodes& selected, const Selected
     {
         ControlNode* controlNode = dynamic_cast<ControlNode*>(node);
         hudMap.erase(controlNode);
-        sortedControlList.remove(controlNode);
+        sortedControlList.erase(controlNode);
     }
     bool wasChanged = false;
     for (auto node : selected)
@@ -372,14 +373,13 @@ void HUDSystem::OnSelectionChanged(const SelectedNodes& selected, const Selected
                 hudMap.emplace(std::piecewise_construct,
                                std::forward_as_tuple(controlNode),
                                std::forward_as_tuple(controlNode, hudControl));
-                sortedControlList.push_back(controlNode);
+                sortedControlList.insert(controlNode);
                 wasChanged = true;
             }
         }
     }
     if (wasChanged)
     {
-        sortedControlList.sort(CompareByLCA);
         ProcessCursor(pressedPoint);
     }
 }
@@ -432,7 +432,7 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
     return false;
 }
 
-void HUDSystem::OnRootContolsChanged(const EditorSystemsManager::SortedRootControls& rootControls)
+void HUDSystem::OnRootContolsChanged(const EditorSystemsManager::SortedPackageBaseNodeSet& rootControls)
 {
     SetEditingEnabled(rootControls.size() == 1);
 }
@@ -459,7 +459,9 @@ HUDAreaInfo HUDSystem::GetControlArea(const Vector2& pos) const
     HUDAreaInfo areaInfo;
     for (const auto& iter : sortedControlList)
     {
-        auto findIter = hudMap.find(iter);
+        ControlNode* node = dynamic_cast<ControlNode*>(iter);
+        DVASSERT(nullptr != node);
+        auto findIter = hudMap.find(node);
         DVASSERT_MSG(findIter != hudMap.end(), "hud map corrupted");
         const HUD& hud = findIter->second;
         for (const auto& hudControl : hud.hudControls)
@@ -500,16 +502,19 @@ void HUDSystem::SetCanDrawRect(bool canDrawRect_)
 
 void HUDSystem::SetEditingEnabled(bool arg)
 {
-    editingEnabled = arg;
-    if (!editingEnabled)
+    if (editingEnabled != arg)
     {
-        hudMap.clear();
-        sortedControlList.clear();
-        selectionRectControl->SetSize(Vector2());
-    }
-    else
-    {
-        OnSelectionChanged(selectionContainer.selectedNodes, SelectedNodes());
+        editingEnabled = arg;
+        if (!editingEnabled)
+        {
+            hudMap.clear();
+            sortedControlList.clear();
+            selectionRectControl->SetSize(Vector2());
+        }
+        else
+        {
+            OnSelectionChanged(selectionContainer.selectedNodes, SelectedNodes());
+        }
     }
 }
 

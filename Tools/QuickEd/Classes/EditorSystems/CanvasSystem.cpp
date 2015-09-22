@@ -373,7 +373,7 @@ void CanvasSystem::LayoutCanvas()
     systemManager->CanvasSizeChanged.Emit();
 }
 
-void CanvasSystem::OnRootContolsChanged(const EditorSystemsManager::SortedRootControls& rootControls)
+void CanvasSystem::OnRootContolsChanged(const EditorSystemsManager::SortedPackageBaseNodeSet& rootControls)
 {
     gridControls.clear();
     controlsCanvas->RemoveAllControls();

@@ -62,7 +62,7 @@ public:
     bool OnInput(DAVA::UIEvent* currentInput) override;
 
 private:
-    void OnRootContolsChanged(const EditorSystemsManager::SortedRootControls& rootControls);
+    void OnRootContolsChanged(const EditorSystemsManager::SortedPackageBaseNodeSet& rootControls);
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void OnEmulationModeChanged(bool emulationMode);
 
@@ -90,7 +90,7 @@ private:
     };
     DAVA::Map<ControlNode*, HUD> hudMap;
     DAVA::ScopedPtr<DAVA::UIControl> selectionRectControl;
-    DAVA::List<ControlNode*> sortedControlList;
+    EditorSystemsManager::SortedPackageBaseNodeSet sortedControlList;
     bool dragRequested = false;
     bool editingEnabled = false;
     SelectionContainer selectionContainer;

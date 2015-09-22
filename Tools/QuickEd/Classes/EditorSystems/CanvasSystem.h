@@ -53,7 +53,7 @@ public:
     void LayoutCanvas();
 
 private:
-    void OnRootContolsChanged(const EditorSystemsManager::SortedRootControls& rootControls);
+    void OnRootContolsChanged(const EditorSystemsManager::SortedPackageBaseNodeSet& rootControls);
     void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from) override;
     void ControlWasAdded(ControlNode* node, ControlsContainerNode* /*destination*/, int /*index*/) override;
     void ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property) override;
