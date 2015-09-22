@@ -36,7 +36,7 @@ namespace DAVA
 namespace 
 {
     Mutex callbackListMutex;
-    Vector<Function<void()>> resourceRestoreCallbacks;    
+    Vector<Function<void()>> resourceRestoreCallbacks;
     Vector<Function<void()>> postRestoreCallbacks;
 
     struct SyncCallback
@@ -97,7 +97,7 @@ void UnRegisterPostRestoreCallback(Function<void()> callback)
 void ProcessFrame()
 {    
     if (rhi::NeedRestoreResources())
-    {        
+    {
         isInRestore = true;
         LockGuard<Mutex> guard(callbackListMutex);
         for (auto& callback : resourceRestoreCallbacks)
@@ -105,8 +105,8 @@ void ProcessFrame()
             callback();
         }
         Logger::Debug("Resources still need restore: ");
-        rhi::NeedRestoreResources();        
-    }    
+        rhi::NeedRestoreResources();
+    }
     else
     {
         if (isInRestore)

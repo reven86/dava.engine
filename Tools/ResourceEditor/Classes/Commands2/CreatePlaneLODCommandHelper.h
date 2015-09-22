@@ -55,7 +55,7 @@ namespace CreatePlaneLODCommandHelper
 		void OnRenderCallback(rhi::HSyncObject object);
         void ReloadTexturesToGPU(DAVA::eGPUFamily);
     };
-	using RequestPointer = DAVA::RefPtr<Request>;
+    using RequestPointer = DAVA::RefPtr<Request>;
 
 	RequestPointer RequestRenderToTexture(DAVA::LodComponent* lodComponent, DAVA::int32 fromLodLayer, 
 		DAVA::uint32 textureSize, const DAVA::FilePath& texturePath);

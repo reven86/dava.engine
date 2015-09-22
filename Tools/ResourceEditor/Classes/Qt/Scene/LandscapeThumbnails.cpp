@@ -52,37 +52,37 @@ struct ThumbnailRequest
 
 struct Requests
 {
-	DAVA::Mutex mutex;
-	Vector<ThumbnailRequest> list;
+    DAVA::Mutex mutex;
+    Vector<ThumbnailRequest> list;
 };
 
 static Requests requests;
 
 void OnCreateLandscapeTextureCompleted(rhi::HSyncObject syncObject)
 {
-	Vector<ThumbnailRequest> completedRequests;
-	completedRequests.reserve(requests.list.size());
-	{
-		DAVA::LockGuard<DAVA::Mutex> lock(requests.mutex);
-		auto i = requests.list.begin();
-		while (i != requests.list.end())
-		{
-			if (i->syncObject == syncObject)
-			{
-				completedRequests.push_back(*i);
-				i = requests.list.erase(i);
-			}
-			else 
-			{
-				++i;
-			}
-		}
+    Vector<ThumbnailRequest> completedRequests;
+    completedRequests.reserve(requests.list.size());
+    {
+        DAVA::LockGuard<DAVA::Mutex> lock(requests.mutex);
+        auto i = requests.list.begin();
+        while (i != requests.list.end())
+        {
+            if (i->syncObject == syncObject)
+            {
+                completedRequests.push_back(*i);
+                i = requests.list.erase(i);
+            }
+            else
+            {
+                ++i;
+            }
+        }
 	}
 
-	for (const auto& req : completedRequests)
-	{
-		req.callback(req.landscape, req.texture);
-	}
+    for (const auto& req : completedRequests)
+    {
+        req.callback(req.landscape, req.texture);
+    }
 }
 
 }
@@ -115,9 +115,9 @@ void LandscapeThumbnails::Create(DAVA::Landscape* landscape, LandscapeThumbnails
 	rhi::HSyncObject syncObject = rhi::CreateSyncObject();
 	Texture* texture = Texture::CreateFBO(TEXTURE_TILE_FULL_SIZE, TEXTURE_TILE_FULL_SIZE, FORMAT_RGBA8888);
 	{
-		DAVA::LockGuard<DAVA::Mutex> lock(requests.mutex);
-		requests.list.emplace_back(syncObject, landscape, texture, handler);
-	}
+        DAVA::LockGuard<DAVA::Mutex> lock(requests.mutex);
+        requests.list.emplace_back(syncObject, landscape, texture, handler);
+    }
 	RenderCallbacks::RegisterSyncCallback(syncObject, MakeFunction(&OnCreateLandscapeTextureCompleted));
 
 	const auto identityMatrix = &Matrix4::IDENTITY;

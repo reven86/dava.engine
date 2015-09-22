@@ -1146,7 +1146,7 @@ void MaterialEditor::UpdateMaterialPropertiesFromPreset(DAVA::NMaterial* materia
             {
                 material->AddProperty(propName, propData, propType, propSize);
             }
-		}
+        }
 	}
 }
 
