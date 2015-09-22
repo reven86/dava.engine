@@ -61,6 +61,20 @@ static int32 fboCounter = 0;
 
 Mutex Sprite::spriteMapMutex;
 
+namespace SpriteUtils
+{
+ScopedPtr<Image> PrepareImageToCreateSprite(Image* srcImage)
+{
+    if (srcImage->GetPixelFormat() == PixelFormat::FORMAT_RGB888)
+    {
+        ScopedPtr<Image> image8888(Image::Create(srcImage->GetWidth(), srcImage->GetHeight(), FORMAT_RGBA8888));
+        ImageConvert::ConvertImageDirect(srcImage, image8888.get());
+        return image8888;
+    }
+    return ScopedPtr<Image>(SafeRetain(srcImage));
+}
+}
+
 Sprite::DrawState::DrawState()
 {
     Reset();
@@ -335,14 +349,16 @@ Sprite * Sprite::CreateFromTexture(Texture *fromTexture, int32 textureRegionOffs
 
 Sprite* Sprite::CreateFromImage(Image* image, bool contentScaleIncluded /* = false*/, bool inVirtualSpace /* = false */)
 {
+    ScopedPtr<Image> srcImage = SpriteUtils::PrepareImageToCreateSprite(image);
+    image = srcImage.get();
+
     uint32 width = image->GetWidth();
     uint32 height = image->GetHeight();
-    
-    Image *img = ImageSystem::Instance()->EnsurePowerOf2Image(image);
 
-    Texture* texture = Texture::CreateFromData(img, false);
+    ScopedPtr<Image> squareImage(ImageSystem::Instance()->EnsurePowerOf2Image(image));
+    ScopedPtr<Texture> texture(Texture::CreateFromData(squareImage, false));
 
-    Sprite* sprite = NULL;
+    Sprite* sprite = nullptr;
     if (texture)
     {
         Vector2 sprSize((float32)width, (float32)height);
@@ -359,45 +375,29 @@ Sprite* Sprite::CreateFromImage(Image* image, bool contentScaleIncluded /* = fal
         }
     }
 
-    SafeRelease(texture);
-    SafeRelease(img);
-
     return sprite;
 }
 
 Sprite* Sprite::CreateFromSourceData(const uint8* data, uint32 size, bool contentScaleIncluded /* = false*/, bool inVirtualSpace /* = false */)
 {
-    if (data == NULL || size == 0)
+    if (data == nullptr || size == 0)
     {
-        return NULL;
+        return nullptr;
     }
 
-    DynamicMemoryFile* file = DynamicMemoryFile::Create(data, size, File::OPEN | File::READ);
-    if (!file)
-    {
-        return NULL;
-    }
+    ScopedPtr<DynamicMemoryFile> file(DynamicMemoryFile::Create(data, size, File::OPEN | File::READ));
+    DVASSERT(file);
 
     Vector<Image*> images;
     ImageSystem::Instance()->Load(file, images);
     if (images.size() == 0)
     {
-        return NULL;
-    }
-
-    if (images[0]->GetPixelFormat() == PixelFormat::FORMAT_RGB888)
-    {
-        Image * image8888 = Image::Create(images[0]->GetWidth(), images[0]->GetHeight(), FORMAT_RGBA8888);
-        ImageConvert::ConvertImageDirect(images[0], image8888);
-
-        SafeRelease(images[0]);
-        images[0] = image8888;
+        return nullptr;
     }
 
     Sprite* sprite = CreateFromImage(images[0], contentScaleIncluded, inVirtualSpace);
     
     for_each(images.begin(), images.end(), SafeRelease<Image>);
-    SafeRelease(file);
 
     return sprite;
 }
@@ -421,7 +421,7 @@ String Sprite::GetPathString( const Sprite *sprite )
 Sprite* Sprite::CreateFromSourceFile(const FilePath& path, bool contentScaleIncluded /* = false*/, bool inVirtualSpace /* = false */)
 {
     Sprite* sprite = GetSpriteFromMap(path);
-    if (sprite)
+    if (sprite != nullptr)
     {
         return sprite;
     }
@@ -430,16 +430,7 @@ Sprite* Sprite::CreateFromSourceFile(const FilePath& path, bool contentScaleIncl
     ImageSystem::Instance()->Load(path, images);
     if (images.size() == 0)
     {
-        return NULL;
-    }
-
-    if (images[0]->GetPixelFormat() == PixelFormat::FORMAT_RGB888)
-    {
-        Image * image8888 = Image::Create(images[0]->GetWidth(), images[0]->GetHeight(), FORMAT_RGBA8888);
-        ImageConvert::ConvertImageDirect(images[0], image8888);
-        
-        SafeRelease(images[0]);
-        images[0] = image8888;
+        return nullptr;
     }
 
     sprite = CreateFromImage(images[0], contentScaleIncluded, inVirtualSpace);

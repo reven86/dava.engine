@@ -797,12 +797,18 @@ SCOPED_FUNCTION_TIMING();
                                      : PipelineStateDX9::VertexLayoutStride( cur_pipelinestate );
 
                 VertexBufferDX9::SetToRHI( (Handle)(arg[0]), 0, 0, stride );
+
+                StatSet::IncStat(stat_SET_VB, 1);
+
                 c += 2;
             }   break;
             
             case DX9__SET_INDICES :
             {
                 IndexBufferDX9::SetToRHI( (Handle)(arg[0]) );
+
+                StatSet::IncStat(stat_SET_IB, 1);
+
                 c += 1;
             }   break;
 
@@ -907,7 +913,8 @@ SCOPED_FUNCTION_TIMING();
 
             case DX9__SET_SAMPLER_STATE :
             {
-                SamplerStateDX9::SetToRHI( (Handle)(arg[0]) );
+                SamplerStateDX9::SetToRHI((Handle)(arg[0]));
+                StatSet::IncStat(stat_SET_SS, 1);
                 c += 1;
             }   break;
             
@@ -938,8 +945,25 @@ SCOPED_FUNCTION_TIMING();
                     QueryBufferDX9::BeginQuery( cur_query_buf, cur_query_i );
 
                 DX9_CALL(_D3D9_Device->DrawPrimitive( (D3DPRIMITIVETYPE)(arg[0]), /*base_vertex*/0, UINT(arg[1]) ),"DrawPrimitive");
-                StatSet::IncStat( stat_DP, 1 );
-                
+                StatSet::IncStat(stat_DP, 1);
+                switch (arg[0])
+                {
+                case D3DPT_TRIANGLELIST:
+                    StatSet::IncStat(stat_DTL, 1);
+                    break;
+
+                case D3DPT_TRIANGLESTRIP:
+                    StatSet::IncStat(stat_DTS, 1);
+                    break;
+
+                case D3DPT_LINELIST:
+                    StatSet::IncStat(stat_DLL, 1);
+                    break;
+
+                default:
+                    break;
+                }
+
                 if( cur_query_i != InvalidIndex )
                     QueryBufferDX9::EndQuery( cur_query_buf, cur_query_i );
 
@@ -963,6 +987,24 @@ SCOPED_FUNCTION_TIMING();
                     QueryBufferDX9::EndQuery( cur_query_buf, cur_query_i );
                 
                 StatSet::IncStat( stat_DIP, 1 );
+                switch (type)
+                {
+                case D3DPT_TRIANGLELIST:
+                    StatSet::IncStat(stat_DTL, 1);
+                    break;
+
+                case D3DPT_TRIANGLESTRIP:
+                    StatSet::IncStat(stat_DTS, 1);
+                    break;
+
+                case D3DPT_LINELIST:
+                    StatSet::IncStat(stat_DLL, 1);
+                    break;
+
+                default:
+                    break;
+                }
+
                 c += 5;
             }   break;
 

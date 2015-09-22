@@ -60,8 +60,9 @@ public:
 	bool ChangesPresent();
 		
 protected:
-	
-	int32 curToolSize;
+    bool CouldApplyImage(Image* image, const String& imageName) const;
+
+    int32 curToolSize;
 	Texture* toolImageTexture = nullptr;
     rhi::HTextureSet toolTextureSet;
 

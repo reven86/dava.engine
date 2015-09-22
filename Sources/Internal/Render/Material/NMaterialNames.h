@@ -167,6 +167,7 @@ public:
     static const FastName FLAG_SPECULAR;
     static const FastName FLAG_SEPARATE_NORMALMAPS;
 
+    static const FastName FLAG_SPEED_TREE_LEAF;
     static const FastName FLAG_SPHERICAL_LIT;
 
     static const FastName FLAG_TANGENT_SPACE_WATER_REFLECTIONS;

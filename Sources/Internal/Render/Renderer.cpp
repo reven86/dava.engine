@@ -29,6 +29,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Renderer.h"
 #include "Render/PixelFormatDescriptor.h"
 #include "Render/RHI/rhi_ShaderCache.h"
+#include "Render/RHI/Common/dbg_StatSet.h"
+#include "Render/RHI/Common/rhi_Private.h"
 #include "Render/ShaderCache.h"
 #include "Render/Material/FXCache.h"
 #include "Render/DynamicBufferAllocator.h"
@@ -49,6 +51,7 @@ namespace //for private variables
     RenderOptions renderOptions;
     DynamicBindings dynamicBindings;
     RuntimeTextures runtimeTextures;
+    RenderStats stats;
 
     int32 framebufferWidth;
     int32 framebufferHeight;
@@ -132,6 +135,11 @@ RuntimeTextures& GetRuntimeTextures()
     return runtimeTextures;
 }
 
+RenderStats& GetRenderStats()
+{
+    return stats;
+}
+
 int32 GetFramebufferWidth()
 {
     return framebufferWidth;
@@ -149,16 +157,60 @@ void RequestGLScreenShot(ScreenShotCallbackDelegate *_screenShotCallback)
 }
 
 void BeginFrame()
-{    
+{
+    StatSet::ResetAll();
+
     RenderCallbacks::ProcessFrame();
     DynamicBufferAllocator::BeginFrame();        
 }
+
 void EndFrame()
 {        
     DynamicBufferAllocator::EndFrame();
     rhi::Present();
+
+    stats.drawIndexedPrimitive = StatSet::StatValue(rhi::stat_DIP);
+    stats.drawPrimitive = StatSet::StatValue(rhi::stat_DP);
+
+    stats.pipelineStateSet = StatSet::StatValue(rhi::stat_SET_PS);
+    stats.samplerStateSet = StatSet::StatValue(rhi::stat_SET_SS);
+
+    stats.constBufferSet = StatSet::StatValue(rhi::stat_SET_CB);
+    stats.textureSet = StatSet::StatValue(rhi::stat_SET_TEX);
+
+    stats.vertexBufferSet = StatSet::StatValue(rhi::stat_SET_VB);
+    stats.indexBufferSet = StatSet::StatValue(rhi::stat_SET_IB);
+
+    stats.primitiveTriangleListCount = StatSet::StatValue(rhi::stat_DTL);
+    stats.primitiveTriangleStripCount = StatSet::StatValue(rhi::stat_DTS);
+    stats.primitiveLineListCount = StatSet::StatValue(rhi::stat_DLL);
+}
 }
 
+void RenderStats::Reset()
+{
+    drawIndexedPrimitive = 0U;
+    drawPrimitive = 0U;
 
+    pipelineStateSet = 0U;
+    samplerStateSet = 0U;
+
+    constBufferSet = 0U;
+    textureSet = 0U;
+
+    vertexBufferSet = 0U;
+    indexBufferSet = 0U;
+
+    primitiveTriangleListCount = 0U;
+    primitiveTriangleStripCount = 0U;
+    primitiveLineListCount = 0U;
+
+    dynamicParamBindCount = 0U;
+    materialParamBindCount = 0U;
+
+    batches2d = 0U;
+    packets2d = 0U;
+
+    visibleRenderObjects = 0U;
 }
 }

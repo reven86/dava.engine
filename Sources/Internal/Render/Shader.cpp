@@ -135,6 +135,8 @@ void ShaderDescriptor::UpdateDynamicParams()
             }
             
             dynamicBinding.updateSemantic = updateSemantic;
+
+            ++Renderer::GetRenderStats().dynamicParamBindCount;
         }
     }
 }

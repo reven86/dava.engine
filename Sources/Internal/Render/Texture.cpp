@@ -69,7 +69,52 @@
 
 namespace DAVA 
 {
-    
+namespace Validator
+{
+bool IsFormatSupported(PixelFormat format)
+{
+    const auto& formatDescriptor = PixelFormatDescriptor::GetPixelFormatDescriptor(format);
+    return formatDescriptor.isHardwareSupported;
+}
+
+bool AreImagesSquare(const Vector<DAVA::Image*>& imageSet)
+{
+    for (int32 i = 0; i < (int32)imageSet.size(); ++i)
+    {
+        if (!IsPowerOf2(imageSet[i]->GetWidth()) || !IsPowerOf2(imageSet[i]->GetHeight()))
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool AreImagesCorrectForTexture(const Vector<DAVA::Image*>& imageSet)
+{
+    if (0 == imageSet.size())
+    {
+        Logger::Error("[TextureValidator] Loaded images count is zero");
+        return false;
+    }
+
+    auto format = imageSet[0]->format;
+    if (!IsFormatSupported(format))
+    {
+        Logger::Error("[TextureValidator] Format %d is unsupported", format);
+        return false;
+    }
+
+    bool isSizeCorrect = Validator::AreImagesSquare(imageSet);
+    if (!isSizeCorrect)
+    {
+        Logger::Error("[TextureValidator] Size if loaded images is invalid (not power of 2)");
+        return false;
+    }
+
+    return true;
+}
+}
 
 Array<String, Texture::CUBE_FACE_COUNT> Texture::FACE_NAME_SUFFIX =
 {{
@@ -390,20 +435,13 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image *> * images)
         }
     }
 
-    if (0 == images->size())
+    if (!Validator::AreImagesCorrectForTexture(*images))
     {
-        Logger::Error("[Texture::LoadImages] Loaded images count is zero");
+        Logger::Error("[Texture::LoadImages] cannot create texture from images");
+
+        ReleaseImages(images);
         return false;
     }
-
-	bool isSizeCorrect = CheckImageSize(*images);
-	if (!isSizeCorrect)
-	{
-        Logger::Error("[Texture::LoadImages] Size if loaded images is invalid (not power of 2)");
-
-		ReleaseImages(images);
-		return false;
-	}
 
 	isPink = false;
 	state = STATE_DATA_LOADED;
@@ -478,18 +516,6 @@ void Texture::FlushDataToRenderer(Vector<Image *> * images)
     SafeDelete(images);
 }
 
-bool Texture::CheckImageSize(const Vector<DAVA::Image *> &imageSet)
-{
-    for (int32 i = 0; i < (int32)imageSet.size(); ++i)
-    {
-        if (!IsPowerOf2(imageSet[i]->GetWidth()) || !IsPowerOf2(imageSet[i]->GetHeight()))
-        {
-            return false;
-        }
-    }
-    
-    return true;
-}
 
 Texture * Texture::CreateFromFile(const FilePath & pathName, const FastName &group, rhi::TextureType typeHint)
 {

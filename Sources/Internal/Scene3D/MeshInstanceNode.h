@@ -51,26 +51,22 @@ class PolygonGroupWithMaterial : public RenderBatch
 {
 protected:
     virtual ~PolygonGroupWithMaterial();
+
 public:
-    PolygonGroupWithMaterial();
-    
     void Setup(StaticMesh * mesh, int32 polygroupIndex, NMaterial * material, TransformComponent * transform);
+
     virtual uint64 GetSortID();
 
-    
     StaticMesh * GetMesh();
     int32 GetPolygroupIndex();
     PolygonGroup * GetPolygonGroup();
-    NMaterial * GetMaterial();
 
 private:
-    NMaterial * material;
-    TransformComponent *  transform;
-    
-    StaticMesh * mesh;
-    int32 polygroupIndex;
-    
     friend class MeshInstanceNode;
+
+    StaticMesh* mesh = nullptr;
+    TransformComponent* transform = nullptr;
+    int32 polygroupIndex = 0;
 };
 
     

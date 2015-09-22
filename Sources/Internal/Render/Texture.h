@@ -35,7 +35,6 @@
 #include "Base/BaseMath.h"
 #include "Base/BaseObject.h"
 #include "Base/FastName.h"
-#include "Render/RenderResource.h"
 #include "FileSystem/FilePath.h"
 #include "Render/RHI/rhi_Public.h"
 
@@ -62,8 +61,7 @@ class Texture;
     using TexturesMap = Map<String, Texture *>;
 #endif //#ifdef USE_FILEPATH_IN_MAP
 
-
-class Texture : public RenderResource
+    class Texture : public BaseObject
 {
     DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_TEXTURE)
 public:       
@@ -215,8 +213,6 @@ protected:
     	
 	void GenerateMipmapsInternal();
 
-    static bool CheckImageSize(const Vector<Image *> &imageSet);
-    
 	Texture();
 	virtual ~Texture();
     
