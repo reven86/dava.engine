@@ -182,7 +182,7 @@ void GridControl::CalculateTotalRect(UIControl* control, Rect& totalRect, Vector
     rootControlPosition.SetZero();
     UIGeometricData gd = control->GetGeometricData();
     gd.position.SetZero();
-
+    gd.scale /= GetParent()->GetParent()->GetScale(); //grid->canvasControl->scalableControl
     if (scale.x != 0.0f || scale.y != 0.0f)
     {
         totalRect = gd.GetAABBox();
@@ -287,13 +287,14 @@ CanvasSystem::~CanvasSystem()
 void CanvasSystem::OnActivated()
 {
     systemManager->GetScalableControl()->AddControl(controlsCanvas);
-
     LayoutCanvas();
 }
 
 void CanvasSystem::OnDeactivated()
 {
     controlsCanvas->RemoveFromParent();
+    systemManager->GetScalableControl()->SetSize(Vector2());
+    systemManager->CanvasSizeChanged.Emit();
 }
 
 void CanvasSystem::ControlWasRemoved(ControlNode* node, ControlsContainerNode* from)
@@ -327,7 +328,6 @@ void CanvasSystem::CreateAndInsertGrid(PackageBaseNode* node, size_t pos)
     std::advance(iter, pos);
     gridControls.insert(iter, gridControl.get());
     UIControl* control = node->GetControl();
-    gridControl->Init(control);
     if (pos >= controlsCanvas->GetChildren().size())
     {
         controlsCanvas->AddControl(gridControl);
@@ -338,6 +338,7 @@ void CanvasSystem::CreateAndInsertGrid(PackageBaseNode* node, size_t pos)
         std::advance(iterToInsert, pos);
         controlsCanvas->InsertChildBelow(gridControl, *iterToInsert);
     }
+    gridControl->Init(control);
 }
 
 void CanvasSystem::LayoutCanvas()
