@@ -224,6 +224,7 @@ namespace DAVA
 
 	void CorePlatformAndroid::OnCreateActivity()
 	{
+		DAVA::Thread::InitMainThread();
 //		Logger::Debug("[CorePlatformAndroid::OnCreateActivity]");
 	}
 
@@ -261,6 +262,9 @@ namespace DAVA
 			}
 			DAVA::Core::Instance()->GoForeground();
 
+			if(!foreground)
+				rhi::ResumeRendering();
+
 			foreground = true;
 		}
 		Logger::Debug("[CorePlatformAndroid::StartForeground] end");
@@ -280,6 +284,9 @@ namespace DAVA
 			DAVA::Core::Instance()->SetIsActive(false);
 		}
 		DAVA::Core::Instance()->GoBackground(isLock);
+
+		if(foreground)
+			rhi::SuspendRendering();
 
 		foreground = false;
 	}

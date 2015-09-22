@@ -401,6 +401,8 @@ void RenderSystem2D::Flush()
     if (currentPacket.primitiveCount > 0)
     {
         rhi::AddPacket(currentPacketListHandle, currentPacket);
+
+        ++Renderer::GetRenderStats().packets2d;
     }
 
     currentVertexBuffer = nullptr;
@@ -436,6 +438,8 @@ void RenderSystem2D::DrawPacket(rhi::Packet& packet)
         packet.options |= rhi::Packet::OPT_OVERRIDE_SCISSOR;
     }
     rhi::AddPacket(currentPacketListHandle, packet);
+
+    ++Renderer::GetRenderStats().packets2d;
 }
 
 void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
@@ -453,6 +457,8 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
         // For disable clip and this check use Rect(0,0,-1,-1)
         return;
     }
+
+    ++Renderer::GetRenderStats().batches2d;
 
     if ((vertexIndex + batchDesc.vertexCount > MAX_VERTICES) || (indexIndex + batchDesc.indexCount > MAX_INDECES))
     {
@@ -589,6 +595,8 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
         {
             rhi::AddPacket(currentPacketListHandle, currentPacket);
             currentPacket.primitiveCount = 0;
+
+            ++Renderer::GetRenderStats().packets2d;
         }
 
         if (useCustomWorldMatrix)

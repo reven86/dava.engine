@@ -83,9 +83,11 @@ bool android_gl_end_frame()
 		_GLES2_Context = _context = eglCreateContext(_display, _config, EGL_NO_CONTEXT, contextAttribs);
 
 		eglMakeCurrent(_display, _surface, _surface, _context);
+
+		return false;  //if context was lost, return 'false' (need recreate all resources)
 	}
 
-	return ret; //if context was lost, return 'false' (need recreate all resources)
+	return true;
 }
 
 void android_gl_acquire_context()

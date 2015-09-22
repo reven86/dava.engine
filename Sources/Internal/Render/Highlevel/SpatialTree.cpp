@@ -476,7 +476,8 @@ void QuadTree::ProcessNodeClipping(uint16 nodeId, uint8 clippingFlags, Vector<Re
             uint32 flags = obj->GetFlags();
 			if ((flags & currVisibilityCriteria) == currVisibilityCriteria)
             {
-				visibilityArray.push_back(obj);                
+                visibilityArray.push_back(obj);
+                ++Renderer::GetRenderStats().visibleRenderObjects;
             }
 		}
 	}
@@ -491,7 +492,8 @@ void QuadTree::ProcessNodeClipping(uint16 nodeId, uint8 clippingFlags, Vector<Re
 				if (    (flags & RenderObject::ALWAYS_CLIPPING_VISIBLE)
                     ||   currFrustum->IsInside(obj->GetWorldBoundingBox(), clippingFlags, obj->startClippingPlane))
                 {
-					visibilityArray.push_back(obj);                    
+                    visibilityArray.push_back(obj);
+                    ++Renderer::GetRenderStats().visibleRenderObjects;
                 }
 			}
 		}

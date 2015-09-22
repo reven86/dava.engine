@@ -130,21 +130,23 @@ void NMaterial::BindParams(rhi::Packet& target)
         for (auto& materialBinding : materialBufferBinding->propBindings)
         {
             DVASSERT(materialBinding.source)
-                if (materialBinding.updateSemantic != materialBinding.source->updateSemantic)
+            if (materialBinding.updateSemantic != materialBinding.source->updateSemantic)
+            {
+                //Logger::Info( " upd-prop " );
+                if (materialBinding.type < rhi::ShaderProp::TYPE_FLOAT4)
                 {
-                    //Logger::Info( " upd-prop " );                    
-                    if (materialBinding.type < rhi::ShaderProp::TYPE_FLOAT4)
-                    {
-                        DVASSERT(materialBinding.source->arraySize == 1);
-                        rhi::UpdateConstBuffer1fv(materialBufferBinding->constBuffer, materialBinding.reg, materialBinding.regCount, materialBinding.source->data.get(), ShaderDescriptor::CalculateDataSize(materialBinding.type, materialBinding.source->arraySize));
-                    }
-                    else
-                    {
-                        DVASSERT(materialBinding.source->arraySize <= materialBinding.regCount);
-                        rhi::UpdateConstBuffer4fv(materialBufferBinding->constBuffer, materialBinding.reg, materialBinding.source->data.get(), ShaderDescriptor::CalculateRegsCount(materialBinding.type, materialBinding.source->arraySize));
-                    }                                        
-                    materialBinding.updateSemantic = materialBinding.source->updateSemantic;
+                    DVASSERT(materialBinding.source->arraySize == 1);
+                    rhi::UpdateConstBuffer1fv(materialBufferBinding->constBuffer, materialBinding.reg, materialBinding.regCount, materialBinding.source->data.get(), ShaderDescriptor::CalculateDataSize(materialBinding.type, materialBinding.source->arraySize));
                 }
+                else
+                {
+                    DVASSERT(materialBinding.source->arraySize <= materialBinding.regCount);
+                    rhi::UpdateConstBuffer4fv(materialBufferBinding->constBuffer, materialBinding.reg, materialBinding.source->data.get(), ShaderDescriptor::CalculateRegsCount(materialBinding.type, materialBinding.source->arraySize));
+                }
+                materialBinding.updateSemantic = materialBinding.source->updateSemantic;
+
+                ++Renderer::GetRenderStats().materialParamBindCount;
+            }
         }
         materialBufferBinding->lastValidPropertySemantic = NMaterialProperty::GetCurrentUpdateSemantic();
     }

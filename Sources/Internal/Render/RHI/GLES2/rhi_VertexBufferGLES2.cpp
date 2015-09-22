@@ -49,7 +49,6 @@ VertexBufferGLES2_t
                   : size(0),
                     data(nullptr),
                     uid(0),
-					destroyedUid(0),
 					usage(USAGE_DEFAULT),
                     mapped(false)
                 {}
@@ -63,7 +62,6 @@ VertexBufferGLES2_t
     uint32      size;
     void*       data;
     uint32      uid;
-    uint32		destroyedUid;
     GLenum      usage;
     uint32      mapped:1;
 };
@@ -91,7 +89,7 @@ VertexBufferGLES2_t::Create( const VertexBuffer::Descriptor& desc, bool force_im
         {
             GLCommand   cmd2[] =
             {
-                { GLCommand::BIND_BUFFER, { GL_ARRAY_BUFFER, b } },
+                { GLCommand::BIND_BUFFER, { GL_ARRAY_BUFFER, uint64_t(&b) } },
                 { GLCommand::RESTORE_VERTEX_BUFFER, {} }
             };
 
@@ -136,8 +134,6 @@ VertexBufferGLES2_t::Destroy( bool force_immediate )
         ExecGL( &cmd, 1, force_immediate );
 
         free( data );
-
-        destroyedUid = uid;
 
         data = nullptr;
         size = 0;
@@ -200,7 +196,7 @@ gles2_VertexBuffer_Update( Handle vb, const void* data, uint32 offset, uint32 si
     {
         GLCommand   cmd[] = 
         {
-            { GLCommand::BIND_BUFFER, { GL_ARRAY_BUFFER, self->uid } },
+            { GLCommand::BIND_BUFFER, { GL_ARRAY_BUFFER, uint64_t(&self->uid) } },
             { GLCommand::BUFFER_DATA, { GL_ARRAY_BUFFER, self->size, (uint64)(self->data), self->usage } },
             { GLCommand::RESTORE_VERTEX_BUFFER, {} }
         };
@@ -242,7 +238,7 @@ gles2_VertexBuffer_Unmap( Handle vb )
 
     GLCommand   cmd[] = 
     {
-        { GLCommand::BIND_BUFFER, { GL_ARRAY_BUFFER, self->uid } },
+        { GLCommand::BIND_BUFFER, { GL_ARRAY_BUFFER, uint64_t(&self->uid) } },
         { GLCommand::BUFFER_DATA, { GL_ARRAY_BUFFER, self->size, (uint64)(self->data), self->usage } },
         { GLCommand::RESTORE_VERTEX_BUFFER, {} }
     };
@@ -300,24 +296,6 @@ unsigned
 NeedRestoreCount()
 {
     return VertexBufferGLES2_t::NeedRestoreCount();
-}
-
-void
-PatchCommands( GLCommand* command, uint32 cmdCount )
-{
-    for( VertexBufferGLES2Pool::Iterator b=VertexBufferGLES2Pool::Begin(),b_end=VertexBufferGLES2Pool::End(); b!=b_end; ++b )
-    {
-        if( b->destroyedUid )
-        {
-            for( GLCommand* cmd=command,*cmd_end=command+cmdCount; cmd!=cmd_end; ++cmd )
-            {
-                if(cmd->func == GLCommand::BIND_BUFFER && (uint32)(cmd->arg[0]) == b->destroyedUid)
-                {
-                    cmd->arg[0] = uint64(b->uid);
-                }
-            }
-        }
-    }
 }
 
 }
