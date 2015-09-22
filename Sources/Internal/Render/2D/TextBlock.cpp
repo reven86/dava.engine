@@ -1106,6 +1106,7 @@ TextBlock * TextBlock::Clone()
     block->isPredrawed = isPredrawed;
     block->cacheUseJustify = cacheUseJustify;
     block->treatMultilineAsSingleLine = treatMultilineAsSingleLine;
+    block->needCalculateCacheParams = needCalculateCacheParams;
 
 #if defined(LOCALIZATION_DEBUG)
     block->fittingTypeUsed = fittingTypeUsed;
