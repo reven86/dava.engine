@@ -416,8 +416,6 @@ void SceneEditor2::Draw()
 
 		if(structureSystem)
 			structureSystem->Draw();
-
-		materialSystem->Draw();
 	}
  
 	tilemaskEditorSystem->Draw();
