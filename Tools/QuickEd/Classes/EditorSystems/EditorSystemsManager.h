@@ -40,6 +40,10 @@ struct HUDAreaInfo
 {
     enum eArea
     {
+        AREAS_BEGIN,
+        PIVOT_POINT_AREA = AREAS_BEGIN,
+        ROTATE_AREA,
+
         TOP_LEFT_AREA,
         TOP_CENTER_AREA,
         TOP_RIGHT_AREA,
@@ -48,13 +52,18 @@ struct HUDAreaInfo
         BOTTOM_LEFT_AREA,
         BOTTOM_CENTER_AREA,
         BOTTOM_RIGHT_AREA,
+
         FRAME_AREA,
-        PIVOT_POINT_AREA,
-        ROTATE_AREA,
         NO_AREA,
         CORNERS_COUNT = FRAME_AREA - TOP_LEFT_AREA,
-        AREAS_COUNT = NO_AREA - TOP_LEFT_AREA
+        AREAS_COUNT = NO_AREA - AREAS_BEGIN
     };
+    HUDAreaInfo(ControlNode* owner_ = nullptr, eArea area_ = NO_AREA)
+        : owner(owner_)
+        , area(area_)
+    {
+        DVASSERT((owner != nullptr && area != HUDAreaInfo::NO_AREA) || (owner == nullptr && area == HUDAreaInfo::NO_AREA));
+    }
     ControlNode* owner = nullptr;
     eArea area = NO_AREA;
 };

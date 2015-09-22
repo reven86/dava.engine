@@ -221,8 +221,8 @@ void TransformSystem::ResizeControl(const Vector2& pos, bool withPivot, bool rat
     {
         return;
     }
-    const auto invertX = cornersDirection.at(activeArea)[Vector2::AXIS_X];
-    const auto invertY = cornersDirection.at(activeArea)[Vector2::AXIS_Y];
+    const auto invertX = cornersDirection.at(activeArea - HUDAreaInfo::TOP_LEFT_AREA)[Vector2::AXIS_X];
+    const auto invertY = cornersDirection.at(activeArea - HUDAreaInfo::TOP_LEFT_AREA)[Vector2::AXIS_Y];
 
     auto gd = activeControlNode->GetControl()->GetGeometricData();
     if (gd.scale.x == 0.0f || gd.scale.y == 0.0f)

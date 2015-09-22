@@ -74,38 +74,49 @@ private:
 bool CompareByLCA(PackageBaseNode* left, PackageBaseNode* right)
 {
     DVASSERT(nullptr != left && nullptr != right);
-    PackageBaseNode* parent = left;
+    PackageBaseNode* leftParent = left;
     int depthLeft = 0;
-    while (nullptr != parent->GetParent())
+    while (nullptr != leftParent->GetParent())
     {
-        parent = parent->GetParent();
+        leftParent = leftParent->GetParent();
         ++depthLeft;
     }
     int depthRight = 0;
-    parent = right;
-    while (nullptr != parent->GetParent())
+    PackageBaseNode* rightParent = right;
+    while (nullptr != rightParent->GetParent())
     {
-        parent = parent->GetParent();
+        rightParent = rightParent->GetParent();
         ++depthRight;
     }
-
+    leftParent = left;
+    rightParent = right;
     while (depthLeft != depthRight)
     {
         if (depthLeft > depthRight)
         {
-            left = left->GetParent();
+            leftParent = leftParent->GetParent();
             --depthLeft;
         }
         else
         {
-            right = right->GetParent();
+            rightParent = rightParent->GetParent();
             --depthRight;
         }
     }
+    if (leftParent == right)
+    {
+        return false;
+    }
+    if (rightParent == left)
+    {
+        return true;
+    }
+    left = leftParent;
+    right = rightParent;
     while (true)
     {
-        PackageBaseNode* leftParent = left->GetParent();
-        PackageBaseNode* rightParent = right->GetParent();
+        leftParent = left->GetParent();
+        rightParent = right->GetParent();
         DVASSERT(nullptr != leftParent && nullptr != rightParent)
         if (leftParent == rightParent)
         {
