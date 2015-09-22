@@ -77,7 +77,7 @@ private:
     DAVA::Array<DAVA::Array<int, DAVA::Vector2::AXIS_COUNT>, OPERATIONS_COUNT> accumulates;
     DAVA::Vector2 extraDelta;
     SelectedControls selectedControlNodes;
-
+    DAVA::List<ControlNode*> nodesToMove;
     const DAVA::Vector2 minimumSize = DAVA::Vector2(16.0f, 16.0f);
     size_t currentHash = 0;
 };

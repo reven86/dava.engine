@@ -104,6 +104,39 @@ bool TransformSystem::OnInput(UIEvent* currentInput)
 void TransformSystem::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
     SelectionContainer::MergeSelectionAndContainer(selected, deselected, selectedControlNodes);
+    nodesToMove.resize(selectedControlNodes.size());
+    std::copy(selectedControlNodes.begin(), selectedControlNodes.end(), nodesToMove.begin());
+    auto iter = nodesToMove.begin();
+    while (iter != nodesToMove.end())
+    {
+        bool isChild = false;
+        auto iter2 = nodesToMove.begin();
+        while (iter2 != nodesToMove.end() && !isChild)
+        {
+            PackageBaseNode* node1 = *iter;
+            PackageBaseNode* node2 = *iter2;
+            if (iter != iter2)
+            {
+                while (nullptr != node1->GetParent() && nullptr != node1->GetControl() && !isChild)
+                {
+                    if (node1 == node2)
+                    {
+                        isChild = true;
+                    }
+                    node1 = node1->GetParent();
+                }
+            }
+            ++iter2;
+        }
+        if (isChild)
+        {
+            nodesToMove.erase(iter++);
+        }
+        else
+        {
+            ++iter;
+        }
+    }
 }
 
 bool TransformSystem::ProcessKey(const int32 key)
@@ -185,7 +218,7 @@ bool TransformSystem::ProcessDrag(const Vector2& pos)
 
 void TransformSystem::MoveAllSelectedControls(const Vector2& delta)
 {
-    for (auto& controlNode : selectedControlNodes)
+    for (auto& controlNode : nodesToMove)
     {
         if (controlNode->IsEditingSupported())
         {

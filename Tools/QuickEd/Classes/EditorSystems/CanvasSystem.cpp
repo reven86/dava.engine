@@ -183,11 +183,8 @@ void GridControl::CalculateTotalRect(UIControl* control, Rect& totalRect, Vector
     UIGeometricData gd = control->GetGeometricData();
     gd.position.SetZero();
 
-    Vector2 scale = canvasSystem->systemManager->GetScalableControl()->GetScale();
     if (scale.x != 0.0f || scale.y != 0.0f)
     {
-        gd.scale /= scale;
-
         totalRect = gd.GetAABBox();
 
         for (const auto& child : control->GetChildren())
