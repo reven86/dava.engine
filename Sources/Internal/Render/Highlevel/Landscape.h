@@ -282,8 +282,6 @@ private:
     FoliageSystem* foliageSystem = nullptr;
 
     std::vector<uint16> indices;
-    uint16* queueDrawIndices = nullptr;
-    float32 lodDistance[8];
     float32 lodSqDistance[8];
 
     uint32 vertexLayoutUID = 0;

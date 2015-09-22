@@ -42,6 +42,8 @@
 
 #include "Render/Material/NMaterialNames.h"
 
+const float32 VisibilityToolSystem::CROSS_TEXTURE_SIZE = 64.0f;
+
 VisibilityToolSystem::VisibilityToolSystem(Scene* scene)
 :	LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.tex")
 ,	curToolSize(0)
@@ -251,10 +253,10 @@ void VisibilityToolSystem::SetState(eVisibilityToolState newState)
 	{
 		case VT_STATE_SET_POINT:
 			drawSystem->SetCursorTexture(crossTexture);
-			drawSystem->SetCursorSize(cursorSize);
-			break;
+            drawSystem->SetCursorSize(CROSS_TEXTURE_SIZE / landscapeSize);
+            break;
 
-		case VT_STATE_SET_AREA:
+        case VT_STATE_SET_AREA:
 			drawSystem->SetCursorTexture(cursorTexture);
 			drawSystem->SetCursorSize(cursorSize);
 			break;
@@ -503,11 +505,11 @@ void VisibilityToolSystem::DrawVisibilityPoint()
 {
     VisibilityToolProxy* visibilityToolProxy = drawSystem->GetVisibilityToolProxy();
     Texture * visibilityToolTexture = visibilityToolProxy->GetTexture();
-    
-    Vector2 curSize((float32)cursorSize, (float32)cursorSize);
-    
+
+    const Vector2 curSize(CROSS_TEXTURE_SIZE, CROSS_TEXTURE_SIZE);
+
     RenderSystem2D::Instance()->BeginRenderTargetPass(visibilityToolTexture);
-    RenderSystem2D::Instance()->DrawTexture(crossTextureSet, RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL, Color::White, Rect(cursorPosition * landscapeSize - curSize * landscapeSize / 2.f, curSize * landscapeSize));
+    RenderSystem2D::Instance()->DrawTexture(crossTextureSet, RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL, Color::White, Rect(cursorPosition * landscapeSize - curSize / 2.f, curSize));
     RenderSystem2D::Instance()->EndRenderTargetPass();
     
     visibilityToolProxy->UpdateVisibilityPointSet(true);

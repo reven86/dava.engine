@@ -33,22 +33,24 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace DAVA
 {
-namespace 
+namespace
 {
-    Mutex callbackListMutex;
-    Vector<Function<void()>> resourceRestoreCallbacks;    
+Mutex callbackListMutex;
+Vector<Function<void()>> resourceRestoreCallbacks;
+Vector<Function<void()>> postRestoreCallbacks;
 
-    struct SyncCallback
-    {
-        rhi::HSyncObject syncObject;
-        Function < void(rhi::HSyncObject) > callback;
-    };
-    Vector<SyncCallback> syncCallbacks;
+struct SyncCallback
+{
+    rhi::HSyncObject syncObject;
+    Function<void(rhi::HSyncObject)> callback;
+};
+Vector<SyncCallback> syncCallbacks;
+
+bool isInRestore = false;
 }
 
 namespace RenderCallbacks
 {
-
 void RegisterResourceRestoreCallback(Function<void()> callback)
 {
     DVASSERT(callback.IsTrivialTarget());
@@ -70,10 +72,32 @@ void UnRegisterResourceRestoreCallback(Function<void()> callback)
     DVASSERT_MSG(false, "trying to unregister callback that was not perviously registered");
 }
 
+void RegisterPostRestoreCallback(Function<void()> callback)
+{
+    DVASSERT(callback.IsTrivialTarget());
+    LockGuard<Mutex> guard(callbackListMutex);
+    postRestoreCallbacks.push_back(callback);
+}
+void UnRegisterPostRestoreCallback(Function<void()> callback)
+{
+    DVASSERT(callback.IsTrivialTarget());
+    LockGuard<Mutex> guard(callbackListMutex);
+    for (size_t i = 0, sz = postRestoreCallbacks.size(); i < sz; ++i)
+    {
+        if (postRestoreCallbacks[i].Target() == callback.Target())
+        {
+            RemoveExchangingWithLast(postRestoreCallbacks, i);
+            return;
+        }
+    }
+    DVASSERT_MSG(false, "trying to unregister callback that was not perviously registered");
+}
+
 void ProcessFrame()
-{    
+{
     if (rhi::NeedRestoreResources())
-    {        
+    {
+        isInRestore = true;
         LockGuard<Mutex> guard(callbackListMutex);
         for (auto& callback : resourceRestoreCallbacks)
         {
@@ -81,8 +105,19 @@ void ProcessFrame()
         }
         Logger::Debug("Resources still need restore: ");
         rhi::NeedRestoreResources();
-        //DVASSERT_MSG(!rhi::NeedRestoreResources(), "some of resorces are still not restored yet marked as requireRestore");
-    }    
+    }
+    else
+    {
+        if (isInRestore)
+        {
+            isInRestore = false;
+            LockGuard<Mutex> guard(callbackListMutex);
+            for (auto& callback : postRestoreCallbacks)
+            {
+                callback();
+            }
+        }
+    }
 
     for (size_t i = 0, sz = syncCallbacks.size(); i < sz;)
     {
@@ -101,7 +136,7 @@ void ProcessFrame()
 
 void RegisterSyncCallback(rhi::HSyncObject syncObject, Function<void(rhi::HSyncObject)> callback)
 {
-    syncCallbacks.push_back({ syncObject, callback });
+    syncCallbacks.push_back({syncObject, callback});
 }
 
 void UnRegisterSyncCallback(Function<void(rhi::HSyncObject)> callback)
@@ -109,7 +144,7 @@ void UnRegisterSyncCallback(Function<void(rhi::HSyncObject)> callback)
     for (size_t i = 0, sz = syncCallbacks.size(); i < sz;)
     {
         if (syncCallbacks[i].callback.Target() == callback.Target())
-        {            
+        {
             RemoveExchangingWithLast(syncCallbacks, i);
             --sz;
         }
@@ -119,6 +154,5 @@ void UnRegisterSyncCallback(Function<void(rhi::HSyncObject)> callback)
         }
     }
 }
-
 }
 }
