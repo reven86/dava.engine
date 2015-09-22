@@ -30,7 +30,7 @@
 
 #include "FileSystem/KeyedArchive.h"
 
-#include "Platform/SystemTimer.H"
+#include "Platform/SystemTimer.h"
 #include "Debug/DVAssert.h"
 
 namespace DAVA

@@ -320,11 +320,13 @@ HUDSystem::HUDSystem(EditorSystemsManager* parent)
     : BaseEditorSystem(parent)
     , hudControl(new UIControl())
     , selectionRectControl(new SelectionRect())
+    , sortedControlList(CompareByLCA)
 {
     hudControl->AddControl(selectionRectControl);
     hudControl->SetName("hudControl");
     systemManager->SelectionChanged.Connect(this, &HUDSystem::OnSelectionChanged);
     systemManager->EmulationModeChangedSignal.Connect(this, &HUDSystem::OnEmulationModeChanged);
+    systemManager->EditingRootControlsChanged.Connect(this, &HUDSystem::OnRootContolsChanged);
 }
 
 void HUDSystem::OnActivated()
@@ -338,93 +340,48 @@ void HUDSystem::OnDeactivated()
     selectionRectControl->SetSize(Vector2(0.0f, 0.0f));
 }
 
-bool CompareByLCA(PackageBaseNode* left, PackageBaseNode* right)
-{
-    DVASSERT(nullptr != left && nullptr != right);
-    PackageBaseNode* parent = left;
-    int depthLeft = 0;
-    while (nullptr != parent->GetParent())
-    {
-        parent = parent->GetParent();
-        ++depthLeft;
-    }
-    int depthRight = 0;
-    parent = right;
-    while (nullptr != parent->GetParent())
-    {
-        parent = parent->GetParent();
-        ++depthRight;
-    }
-
-    while (depthLeft != depthRight)
-    {
-        if (depthLeft > depthRight)
-        {
-            left = left->GetParent();
-            --depthLeft;
-        }
-        else
-        {
-            right = right->GetParent();
-            --depthRight;
-        }
-    }
-    while (true)
-    {
-        PackageBaseNode* leftParent = left->GetParent();
-        PackageBaseNode* rightParent = right->GetParent();
-        DVASSERT(nullptr != leftParent && nullptr != rightParent)
-        if (leftParent == rightParent)
-        {
-            return leftParent->GetIndex(left) > leftParent->GetIndex(right);
-        }
-        left = leftParent;
-        right = rightParent;
-    }
-}
-
 void HUDSystem::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
+    selectionContainer.MergeSelection(selected, deselected);
+    if (!editingEnabled)
+    {
+        return;
+    }
     for (auto node : deselected)
     {
         ControlNode* controlNode = dynamic_cast<ControlNode*>(node);
         hudMap.erase(controlNode);
-        sortedControlList.remove(controlNode);
+        sortedControlList.erase(controlNode);
+    }
+    if (selectionContainer.selectedNodes.size() == 4)
+    {
+        int d = 0;
     }
     bool wasChanged = false;
     for (auto node : selected)
     {
         ControlNode* controlNode = dynamic_cast<ControlNode*>(node);
-        const PackageControlsNode* packageControlsNode = systemManager->GetPackage()->GetPackageControlsNode();
-        if (nullptr != controlNode && packageControlsNode != controlNode->GetParent())
+        if (nullptr != controlNode && nullptr != controlNode->GetControl())
         {
-            PackageBaseNode* parent = controlNode->GetParent();
-            const PackageNode* package = systemManager->GetPackage();
-            const ImportedPackagesNode* importedPackagesNode = package->GetImportedPackagesNode();
-            const ControlsContainerNode* controlsContainerNode = package->GetPackageControlsNode();
-            while (nullptr != parent && parent != importedPackagesNode && parent != controlsContainerNode)
-            {
-                parent = parent->GetParent();
-            }
-            if (parent != importedPackagesNode)
-            {
-                hudMap.emplace(std::piecewise_construct,
-                               std::forward_as_tuple(controlNode),
-                               std::forward_as_tuple(controlNode, hudControl));
-                sortedControlList.push_back(controlNode);
-                wasChanged = true;
-            }
+            hudMap.emplace(std::piecewise_construct,
+                           std::forward_as_tuple(controlNode),
+                           std::forward_as_tuple(controlNode, hudControl));
+            sortedControlList.insert(controlNode);
+            wasChanged = true;
         }
     }
     if (wasChanged)
     {
-        sortedControlList.sort(CompareByLCA);
         ProcessCursor(pressedPoint);
     }
 }
 
 bool HUDSystem::OnInput(UIEvent* currentInput)
 {
+    if (!editingEnabled)
+    {
+        return false;
+    }
     switch (currentInput->phase)
     {
     case UIEvent::PHASE_MOVE:
@@ -432,11 +389,12 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
         return false;
     case UIEvent::PHASE_BEGAN:
     {
+        //check that we can draw rect
         Vector<ControlNode*> nodes;
         systemManager->CollectControlNodesByPos(nodes, currentInput->point);
-        bool hotKeyDetected = InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_CTRL);
         const PackageControlsNode* packageNode = systemManager->GetPackage()->GetPackageControlsNode();
         bool noHudableControls = nodes.empty() || (nodes.size() == 1 && nodes.front()->GetParent() == packageNode);
+        bool hotKeyDetected = InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_CTRL);
         SetCanDrawRect(hotKeyDetected || noHudableControls);
         pressedPoint = currentInput->point;
         return canDrawRect;
@@ -466,6 +424,11 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
     return false;
 }
 
+void HUDSystem::OnRootContolsChanged(const EditorSystemsManager::SortedPackageBaseNodeSet& rootControls)
+{
+    SetEditingEnabled(rootControls.size() == 1);
+}
+
 void HUDSystem::OnEmulationModeChanged(bool emulationMode)
 {
     if (emulationMode)
@@ -485,25 +448,24 @@ void HUDSystem::ProcessCursor(const Vector2& pos)
 
 HUDAreaInfo HUDSystem::GetControlArea(const Vector2& pos) const
 {
-    HUDAreaInfo areaInfo;
-    for (const auto& iter : sortedControlList)
+    for (int i = HUDAreaInfo::AREAS_BEGIN; i < HUDAreaInfo::AREAS_COUNT; ++i)
     {
-        auto findIter = hudMap.find(iter);
-        DVASSERT_MSG(findIter != hudMap.end(), "hud map corrupted");
-        const HUD& hud = findIter->second;
-        for (const auto& hudControl : hud.hudControls)
+        for (const auto& iter : sortedControlList)
         {
-            if (hudControl->IsPointInside(pos))
+            ControlNode* node = dynamic_cast<ControlNode*>(iter);
+            DVASSERT(nullptr != node);
+            auto findIter = hudMap.find(node);
+            DVASSERT_MSG(findIter != hudMap.end(), "hud map corrupted");
+            const HUD& hud = findIter->second;
+            HUDAreaInfo::eArea area = static_cast<HUDAreaInfo::eArea>(i);
+            ControlContainer* controlContainer = hud.hudControls.find(area)->second.get();
+            if (controlContainer->IsPointInside(pos))
             {
-                const ControlContainer* container = hudControl.get();
-                areaInfo.owner = hud.node;
-                areaInfo.area = container->GetArea();
-                DVASSERT_MSG(areaInfo.area != HUDAreaInfo::NO_AREA && areaInfo.owner != nullptr, "no control node for area");
-                return areaInfo;
+                return HUDAreaInfo(hud.node, area);
             }
         }
     }
-    return areaInfo;
+    return HUDAreaInfo();
 }
 
 void HUDSystem::SetNewArea(const HUDAreaInfo& areaInfo)
@@ -527,27 +489,68 @@ void HUDSystem::SetCanDrawRect(bool canDrawRect_)
     }
 }
 
+void HUDSystem::SetEditingEnabled(bool arg)
+{
+    if (editingEnabled != arg)
+    {
+        editingEnabled = arg;
+        if (!editingEnabled)
+        {
+            hudMap.clear();
+            sortedControlList.clear();
+            selectionRectControl->SetSize(Vector2());
+        }
+        else
+        {
+            OnSelectionChanged(selectionContainer.selectedNodes, SelectedNodes());
+        }
+    }
+}
+
+ControlContainer* CreateControlContainer(HUDAreaInfo::eArea area)
+{
+    switch (area)
+    {
+    case HUDAreaInfo::PIVOT_POINT_AREA:
+        return new PivotPointControl();
+    case HUDAreaInfo::ROTATE_AREA:
+        return new RotateControl();
+    case HUDAreaInfo::TOP_LEFT_AREA:
+    case HUDAreaInfo::TOP_CENTER_AREA:
+    case HUDAreaInfo::TOP_RIGHT_AREA:
+    case HUDAreaInfo::CENTER_LEFT_AREA:
+    case HUDAreaInfo::CENTER_RIGHT_AREA:
+    case HUDAreaInfo::BOTTOM_LEFT_AREA:
+    case HUDAreaInfo::BOTTOM_CENTER_AREA:
+    case HUDAreaInfo::BOTTOM_RIGHT_AREA:
+        return new FrameRectControl(area);
+    case HUDAreaInfo::FRAME_AREA:
+        return new FrameControl();
+    default:
+        DVASSERT("!unacceptable value of area");
+        return nullptr;
+    }
+}
+
 HUDSystem::HUD::HUD(ControlNode* node_, UIControl* hudControl)
     : node(node_)
     , control(node_->GetControl())
     , container(new HUDContainer(control))
 {
     node->GetRootProperty()->AddListener(this);
-    hudControls.emplace_back(new PivotPointControl);
-    hudControls.emplace_back(new RotateControl);
-    for (int i = HUDAreaInfo::TOP_LEFT_AREA; i < HUDAreaInfo::CORNERS_COUNT; ++i)
+    HUDContainer* hudContainer = static_cast<HUDContainer*>(container.get());
+    for (int i = HUDAreaInfo::AREAS_BEGIN; i < HUDAreaInfo::AREAS_COUNT; ++i)
     {
         HUDAreaInfo::eArea area = static_cast<HUDAreaInfo::eArea>(i);
-        hudControls.emplace_back(new FrameRectControl(area));
+        ControlContainer* controlContainer = CreateControlContainer(area);
+        hudContainer->AddChild(controlContainer);
+        hudControls.emplace(std::piecewise_construct,
+                            std::forward_as_tuple(area),
+                            std::forward_as_tuple(controlContainer));
     }
-    hudControls.emplace_back(new FrameControl);
 
     hudControl->AddControl(container);
-    auto hudContainer = static_cast<HUDContainer*>(container.get());
-    for (auto iter = hudControls.rbegin(); iter != hudControls.rend(); ++iter)
-    {
-        hudContainer->AddChild((*iter).get());
-    }
+
     container->InitFromGD(control->GetGeometricData());
     container->SetVisible(control->GetVisible() && control->GetVisibleForUIEditor());
 }
@@ -557,7 +560,7 @@ HUDSystem::HUD::~HUD()
     node->GetRootProperty()->RemoveListener(this);
     for (auto control : hudControls)
     {
-        container->RemoveControl(control);
+        container->RemoveControl(control.second);
     }
     container->RemoveFromParent();
 }
