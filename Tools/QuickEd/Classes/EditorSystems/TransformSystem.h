@@ -51,7 +51,7 @@ private:
         RESIZE_OPERATION,
         OPERATIONS_COUNT
     };
-
+    void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void OnActiveAreaChanged(const HUDAreaInfo& areaInfo);
 
     bool ProcessKey(const DAVA::int32 key);

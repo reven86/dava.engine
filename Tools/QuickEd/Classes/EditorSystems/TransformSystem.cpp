@@ -63,10 +63,7 @@ TransformSystem::TransformSystem(EditorSystemsManager* parent)
     , steps({{15, 10, 10}}) //10 grad for rotate and 20 pix for move/resize
 {
     systemManager->ActiveAreaChanged.Connect(this, &TransformSystem::OnActiveAreaChanged);
-    systemManager->SelectionChanged.Connect([this](const SelectedNodes& selected, const SelectedNodes& deselected)
-                                            {
-                                                SelectionContainer::MergeSelectionAndContainer(selected, deselected, selectedControlNodes);
-                                            });
+    systemManager->SelectionChanged.Connect(this, &TransformSystem::OnSelectionChanged);
 }
 
 void TransformSystem::OnActiveAreaChanged(const HUDAreaInfo& areaInfo)
@@ -104,26 +101,41 @@ bool TransformSystem::OnInput(UIEvent* currentInput)
     }
 }
 
+void TransformSystem::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
+{
+    SelectionContainer::MergeSelectionAndContainer(selected, deselected, selectedControlNodes);
+}
+
 bool TransformSystem::ProcessKey(const int32 key)
 {
     if (!selectedControlNodes.empty())
     {
+        float step = 1.0f;
+        const KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
+        if (keyboard.IsKeyPressed(DVKEY_SHIFT))
+            step = 10.0f;
+        Vector2 deltaPos;
         switch (key)
         {
         case DVKEY_LEFT:
-            MoveAllSelectedControls(Vector2(-1.0f, 0.0f));
-            return true;
+            deltaPos.dx -= step;
+            break;
         case DVKEY_UP:
-            MoveAllSelectedControls(Vector2(0.0f, -1.0f));
-            return true;
+            deltaPos.dy -= step;
+            break;
         case DVKEY_RIGHT:
-            MoveAllSelectedControls(Vector2(1.0f, 0.0f));
-            return true;
+            deltaPos.dx += step;
+            break;
         case DVKEY_DOWN:
-            MoveAllSelectedControls(Vector2(0.0f, 1.0f));
-            return true;
+            deltaPos.dy += step;
+            break;
         default:
-            return false;
+            break;
+        }
+        if (!deltaPos.IsZero())
+        {
+            MoveAllSelectedControls(deltaPos);
+            return true;
         }
     }
     return false;
@@ -197,7 +209,7 @@ void TransformSystem::MoveControl(const Vector2& pos)
             AccumulateOperation(MOVE_OPERATION, newPosition);
             realDelta = newPosition - position;
         }
-        AdjustProperty(activeControlNode, "Position", VariantType(realDelta));
+        MoveAllSelectedControls(realDelta);
     }
 }
 

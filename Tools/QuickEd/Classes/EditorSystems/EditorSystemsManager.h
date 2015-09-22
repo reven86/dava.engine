@@ -34,6 +34,7 @@
 #include "EditorSystems/SelectionContainer.h"
 #include "Math/Rect.h"
 #include "Math/Vector.h"
+#include "Model/PackageHierarchy/PackageListener.h"
 
 struct HUDAreaInfo
 {
@@ -69,11 +70,14 @@ class BaseEditorSystem;
 class AbstractProperty;
 class PackageNode;
 
-class EditorSystemsManager
+bool CompareByLCA(PackageBaseNode* left, PackageBaseNode* right);
+
+class EditorSystemsManager : private PackageListener
 {
 public:
     explicit EditorSystemsManager(PackageNode* package);
     ~EditorSystemsManager();
+    using SortedRootControls = DAVA::Set<PackageBaseNode*, std::function<bool(PackageBaseNode*, PackageBaseNode*)>>;
 
     PackageNode* GetPackage();
 
@@ -97,10 +101,15 @@ public:
     DAVA::Signal<> CanvasSizeChanged;
     DAVA::Signal<ControlNode* /*node*/, const DAVA::Vector<std::pair<AbstractProperty*, DAVA::VariantType>>& /*properties*/, size_t /*hash*/> PropertiesChanged;
     DAVA::Signal<const DAVA::Vector<ControlNode*>& /*nodes*/, const DAVA::Vector2& /*pos*/, ControlNode*& /*selectedNode*/> SelectionByMenuRequested;
+    DAVA::Signal<const SortedRootControls&> EditingRootControlsChanged;
 
 private:
+    void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void CollectControlNodesByPosImpl(DAVA::Vector<ControlNode*>& controlNodes, const DAVA::Vector2& pos, ControlNode* node) const;
     void CollectControlNodesByRectImpl(SelectedControls& controlNodes, const DAVA::Rect& rect, ControlNode* node) const;
+
+    void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from) override;
+    void ControlWasAdded(ControlNode* node, ControlsContainerNode* /*destination*/, int /*index*/) override;
 
     DAVA::UIControl* rootControl = nullptr;
     DAVA::UIControl* scalableControl = nullptr;
@@ -108,6 +117,8 @@ private:
     DAVA::List<BaseEditorSystem*> systems;
 
     PackageNode* package = nullptr;
+    SelectedControls selectedControlNodes;
+    SortedRootControls editingRootControls;
 };
 
 #endif // __QUICKED_SYSTEMS_MANAGER_H__

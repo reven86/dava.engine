@@ -34,6 +34,7 @@
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
+#include "Model/PackageHierarchy/ImportedPackagesNode.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/Shader.h"
 #include "Model/ControlProperties/PropertyListener.h"
@@ -278,11 +279,7 @@ CanvasSystem::CanvasSystem(EditorSystemsManager* parent)
 
     controlsCanvas->SetName("controls canvas");
 
-    auto controlsNode = systemManager->GetPackage()->GetPackageControlsNode();
-    for (int index = 0; index < controlsNode->GetCount(); ++index)
-    {
-        CreateAndInsertGrid(controlsNode->Get(index), index);
-    }
+    systemManager->EditingRootControlsChanged.Connect(this, &CanvasSystem::OnRootContolsChanged);
 }
 
 CanvasSystem::~CanvasSystem()
@@ -304,14 +301,6 @@ void CanvasSystem::OnDeactivated()
 
 void CanvasSystem::ControlWasRemoved(ControlNode* node, ControlsContainerNode* from)
 {
-    const PackageControlsNode* packageControlsNode = systemManager->GetPackage()->GetPackageControlsNode();
-    if (packageControlsNode == from)
-    {
-        UIControl* removedControl = node->GetControl();
-        UIControl* grid = removedControl->GetParent()->GetParent()->GetParent(); //grid<-positionHolder<-counterPoise<-control
-        gridControls.remove(DynamicTypeCheck<GridControl*>(grid));
-        controlsCanvas->RemoveControl(grid);
-    }
     for (GridControl* grid : gridControls)
     {
         grid->ControlWasRemoved(node, from);
@@ -320,11 +309,6 @@ void CanvasSystem::ControlWasRemoved(ControlNode* node, ControlsContainerNode* f
 
 void CanvasSystem::ControlWasAdded(ControlNode* node, ControlsContainerNode* destination, int index)
 {
-    auto packageControlsNode = systemManager->GetPackage()->GetPackageControlsNode();
-    if (packageControlsNode == node->GetParent())
-    {
-        CreateAndInsertGrid(node, index);
-    }
     for (GridControl* grid : gridControls)
     {
         grid->ControlWasAdded(node, destination, index);
@@ -339,13 +323,13 @@ void CanvasSystem::ControlPropertyWasChanged(ControlNode* node, AbstractProperty
     }
 }
 
-void CanvasSystem::CreateAndInsertGrid(ControlNode* controlNode, int pos)
+void CanvasSystem::CreateAndInsertGrid(PackageBaseNode* node, size_t pos)
 {
     ScopedPtr<GridControl> gridControl(new GridControl(this));
     auto iter = gridControls.begin();
     std::advance(iter, pos);
     gridControls.insert(iter, gridControl.get());
-    UIControl* control = controlNode->GetControl();
+    UIControl* control = node->GetControl();
     gridControl->Init(control);
     if (pos >= controlsCanvas->GetChildren().size())
     {
@@ -353,9 +337,9 @@ void CanvasSystem::CreateAndInsertGrid(ControlNode* controlNode, int pos)
     }
     else
     {
-        auto iter = controlsCanvas->GetChildren().begin();
-        std::advance(iter, pos);
-        controlsCanvas->InsertChildBelow(gridControl, *iter);
+        auto iterToInsert = controlsCanvas->GetChildren().begin();
+        std::advance(iterToInsert, pos);
+        controlsCanvas->InsertChildBelow(gridControl, *iterToInsert);
     }
 }
 
@@ -387,4 +371,15 @@ void CanvasSystem::LayoutCanvas()
     Vector2 size(maxWidth, totalHeight);
     systemManager->GetScalableControl()->SetSize(size);
     systemManager->CanvasSizeChanged.Emit();
+}
+
+void CanvasSystem::OnRootContolsChanged(const EditorSystemsManager::SortedRootControls& rootControls)
+{
+    gridControls.clear();
+    controlsCanvas->RemoveAllControls();
+    for (PackageBaseNode* rootControl : rootControls)
+    {
+        CreateAndInsertGrid(rootControl, gridControls.size());
+    }
+    LayoutCanvas();
 }

@@ -71,10 +71,56 @@ private:
 };
 };
 
+bool CompareByLCA(PackageBaseNode* left, PackageBaseNode* right)
+{
+    DVASSERT(nullptr != left && nullptr != right);
+    PackageBaseNode* parent = left;
+    int depthLeft = 0;
+    while (nullptr != parent->GetParent())
+    {
+        parent = parent->GetParent();
+        ++depthLeft;
+    }
+    int depthRight = 0;
+    parent = right;
+    while (nullptr != parent->GetParent())
+    {
+        parent = parent->GetParent();
+        ++depthRight;
+    }
+
+    while (depthLeft != depthRight)
+    {
+        if (depthLeft > depthRight)
+        {
+            left = left->GetParent();
+            --depthLeft;
+        }
+        else
+        {
+            right = right->GetParent();
+            --depthRight;
+        }
+    }
+    while (true)
+    {
+        PackageBaseNode* leftParent = left->GetParent();
+        PackageBaseNode* rightParent = right->GetParent();
+        DVASSERT(nullptr != leftParent && nullptr != rightParent)
+        if (leftParent == rightParent)
+        {
+            return leftParent->GetIndex(left) < leftParent->GetIndex(right);
+        }
+        left = leftParent;
+        right = rightParent;
+    }
+}
+
 EditorSystemsManager::EditorSystemsManager(PackageNode* _package)
     : rootControl(new RootControl(this))
     , scalableControl(new UIControl())
     , package(SafeRetain(_package))
+    , editingRootControls(CompareByLCA)
 {
     rootControl->SetName("rootControl");
     rootControl->AddControl(scalableControl);
@@ -85,6 +131,8 @@ EditorSystemsManager::EditorSystemsManager(PackageNode* _package)
     systems.push_back(new HUDSystem(this));
     systems.push_back(new CursorSystem(this));
     systems.push_back(new ::TransformSystem(this));
+
+    SelectionChanged.Connect(this, &EditorSystemsManager::OnSelectionChanged);
 }
 
 EditorSystemsManager::~EditorSystemsManager()
@@ -105,7 +153,7 @@ UIControl* EditorSystemsManager::GetRootControl()
     return rootControl;
 }
 
-DAVA::UIControl* EditorSystemsManager::GetScalableControl()
+UIControl* EditorSystemsManager::GetScalableControl()
 {
     return scalableControl;
 }
@@ -124,6 +172,15 @@ void EditorSystemsManager::Activate()
     {
         system->OnActivated();
     }
+    if (editingRootControls.empty())
+    {
+        PackageControlsNode* controlsNode = package->GetPackageControlsNode();
+        for (int index = 0; index < controlsNode->GetCount(); ++index)
+        {
+            editingRootControls.insert(controlsNode->Get(index));
+        }
+        EditingRootControlsChanged.Emit(editingRootControls);
+    }
 }
 
 bool EditorSystemsManager::OnInput(UIEvent* currentInput)
@@ -140,24 +197,48 @@ bool EditorSystemsManager::OnInput(UIEvent* currentInput)
 
 void EditorSystemsManager::CollectControlNodesByPos(DAVA::Vector<ControlNode*>& controlNodes, const DAVA::Vector2& pos) const
 {
-    auto controlsNode = package->GetPackageControlsNode();
-    for (int index = 0; index < controlsNode->GetCount(); ++index)
+    for (PackageBaseNode* rootControl : editingRootControls)
     {
-        auto tmpNode = controlsNode->Get(index);
-        DVASSERT(nullptr != tmpNode);
-        CollectControlNodesByPosImpl(controlNodes, pos, tmpNode);
+        ControlNode* controlNode = dynamic_cast<ControlNode*>(rootControl);
+        DVASSERT(nullptr != controlNode);
+        CollectControlNodesByPosImpl(controlNodes, pos, controlNode);
     }
 }
 
 void EditorSystemsManager::CollectControlNodesByRect(SelectedControls& controlNodes, const Rect& rect) const
 {
-    auto controlsNode = package->GetPackageControlsNode();
-    for (int index = 0; index < controlsNode->GetCount(); ++index)
+    for (PackageBaseNode* rootControl : editingRootControls)
     {
-        auto tmpNode = controlsNode->Get(index);
-        DVASSERT(nullptr != tmpNode);
-        CollectControlNodesByRectImpl(controlNodes, rect, tmpNode);
+        ControlNode* controlNode = dynamic_cast<ControlNode*>(rootControl);
+        DVASSERT(nullptr != controlNode);
+        CollectControlNodesByRectImpl(controlNodes, rect, controlNode);
     }
+}
+
+void EditorSystemsManager::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
+{
+    SelectionContainer::MergeSelectionAndContainer(selected, deselected, selectedControlNodes);
+    if (selectedControlNodes.empty())
+    {
+        return;
+    }
+    else
+    {
+        editingRootControls.clear();
+        for (ControlNode* selectedControlNode : selectedControlNodes)
+        {
+            PackageBaseNode* root = static_cast<PackageBaseNode*>(selectedControlNode);
+            while (nullptr != root->GetParent() && nullptr != root->GetParent()->GetControl())
+            {
+                root = root->GetParent();
+            }
+            if (nullptr != root)
+            {
+                editingRootControls.insert(root);
+            }
+        }
+    }
+    EditingRootControlsChanged.Emit(std::move(editingRootControls));
 }
 
 void EditorSystemsManager::CollectControlNodesByPosImpl(DAVA::Vector<ControlNode*>& controlNodes, const DAVA::Vector2& pos, ControlNode* node) const
@@ -185,6 +266,28 @@ void EditorSystemsManager::CollectControlNodesByRectImpl(SelectedControls& contr
     for (int i = 0; i < count; ++i)
     {
         CollectControlNodesByRectImpl(controlNodes, rect, node->Get(i));
+    }
+}
+
+void EditorSystemsManager::ControlWasRemoved(ControlNode* node, ControlsContainerNode* from)
+{
+    if (std::find(editingRootControls.begin(), editingRootControls.end(), node) != editingRootControls.end())
+    {
+        editingRootControls.erase(node);
+        EditingRootControlsChanged.Emit(std::move(editingRootControls));
+    }
+}
+
+void EditorSystemsManager::ControlWasAdded(ControlNode* node, ControlsContainerNode* destination, int)
+{
+    if (selectedControlNodes.empty())
+    {
+        PackageControlsNode* packageControlsNode = package->GetPackageControlsNode();
+        if (destination == packageControlsNode)
+        {
+            editingRootControls.insert(node);
+            EditingRootControlsChanged.Emit(std::move(editingRootControls));
+        }
     }
 }
 

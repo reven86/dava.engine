@@ -325,6 +325,7 @@ HUDSystem::HUDSystem(EditorSystemsManager* parent)
     hudControl->SetName("hudControl");
     systemManager->SelectionChanged.Connect(this, &HUDSystem::OnSelectionChanged);
     systemManager->EmulationModeChangedSignal.Connect(this, &HUDSystem::OnEmulationModeChanged);
+    systemManager->EditingRootControlsChanged.Connect(this, &HUDSystem::OnRootContolsChanged);
 }
 
 void HUDSystem::OnActivated()
@@ -338,53 +339,13 @@ void HUDSystem::OnDeactivated()
     selectionRectControl->SetSize(Vector2(0.0f, 0.0f));
 }
 
-bool CompareByLCA(PackageBaseNode* left, PackageBaseNode* right)
-{
-    DVASSERT(nullptr != left && nullptr != right);
-    PackageBaseNode* parent = left;
-    int depthLeft = 0;
-    while (nullptr != parent->GetParent())
-    {
-        parent = parent->GetParent();
-        ++depthLeft;
-    }
-    int depthRight = 0;
-    parent = right;
-    while (nullptr != parent->GetParent())
-    {
-        parent = parent->GetParent();
-        ++depthRight;
-    }
-
-    while (depthLeft != depthRight)
-    {
-        if (depthLeft > depthRight)
-        {
-            left = left->GetParent();
-            --depthLeft;
-        }
-        else
-        {
-            right = right->GetParent();
-            --depthRight;
-        }
-    }
-    while (true)
-    {
-        PackageBaseNode* leftParent = left->GetParent();
-        PackageBaseNode* rightParent = right->GetParent();
-        DVASSERT(nullptr != leftParent && nullptr != rightParent)
-        if (leftParent == rightParent)
-        {
-            return leftParent->GetIndex(left) > leftParent->GetIndex(right);
-        }
-        left = leftParent;
-        right = rightParent;
-    }
-}
-
 void HUDSystem::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
+    selectionContainer.MergeSelection(selected, deselected);
+    if (!editingEnabled)
+    {
+        return;
+    }
     for (auto node : deselected)
     {
         ControlNode* controlNode = dynamic_cast<ControlNode*>(node);
@@ -425,6 +386,10 @@ void HUDSystem::OnSelectionChanged(const SelectedNodes& selected, const Selected
 
 bool HUDSystem::OnInput(UIEvent* currentInput)
 {
+    if (!editingEnabled)
+    {
+        return false;
+    }
     switch (currentInput->phase)
     {
     case UIEvent::PHASE_MOVE:
@@ -432,11 +397,12 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
         return false;
     case UIEvent::PHASE_BEGAN:
     {
+        //check that we can draw rect
         Vector<ControlNode*> nodes;
         systemManager->CollectControlNodesByPos(nodes, currentInput->point);
-        bool hotKeyDetected = InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_CTRL);
         const PackageControlsNode* packageNode = systemManager->GetPackage()->GetPackageControlsNode();
         bool noHudableControls = nodes.empty() || (nodes.size() == 1 && nodes.front()->GetParent() == packageNode);
+        bool hotKeyDetected = InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_CTRL);
         SetCanDrawRect(hotKeyDetected || noHudableControls);
         pressedPoint = currentInput->point;
         return canDrawRect;
@@ -464,6 +430,11 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
         return retVal;
     }
     return false;
+}
+
+void HUDSystem::OnRootContolsChanged(const EditorSystemsManager::SortedRootControls& rootControls)
+{
+    SetEditingEnabled(rootControls.size() == 1);
 }
 
 void HUDSystem::OnEmulationModeChanged(bool emulationMode)
@@ -524,6 +495,21 @@ void HUDSystem::SetCanDrawRect(bool canDrawRect_)
         {
             selectionRectControl->SetSize(Vector2(0.0f, 0.0f));
         }
+    }
+}
+
+void HUDSystem::SetEditingEnabled(bool arg)
+{
+    editingEnabled = arg;
+    if (!editingEnabled)
+    {
+        hudMap.clear();
+        sortedControlList.clear();
+        selectionRectControl->SetSize(Vector2());
+    }
+    else
+    {
+        OnSelectionChanged(selectionContainer.selectedNodes, SelectedNodes());
     }
 }
 

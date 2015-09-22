@@ -62,6 +62,7 @@ public:
     bool OnInput(DAVA::UIEvent* currentInput) override;
 
 private:
+    void OnRootContolsChanged(const EditorSystemsManager::SortedRootControls& rootControls);
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void OnEmulationModeChanged(bool emulationMode);
 
@@ -70,7 +71,7 @@ private:
     void SetNewArea(const HUDAreaInfo& HUDAreaInfo);
 
     void SetCanDrawRect(bool canDrawRect_);
-
+    void SetEditingEnabled(bool arg);
     HUDAreaInfo activeAreaInfo;
 
     DAVA::ScopedPtr<DAVA::UIControl> hudControl;
@@ -91,6 +92,8 @@ private:
     DAVA::ScopedPtr<DAVA::UIControl> selectionRectControl;
     DAVA::List<ControlNode*> sortedControlList;
     bool dragRequested = false;
+    bool editingEnabled = false;
+    SelectionContainer selectionContainer;
 };
 
 #endif // __QUICKED_HUD_SYSTEM_H__
