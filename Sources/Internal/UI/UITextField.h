@@ -195,7 +195,7 @@ public:
      \brief Returns the text color of control.
      \returns Color color of control's text
      */
-    const Color &GetTextColor() const;
+    Color GetTextColor() const;
     /**
      \brief Returns text shadow offset relative to base text.
      \returns Vector2 with shadow offset for X and Y axis
@@ -205,7 +205,7 @@ public:
      \brief Returns color of text shadow.
      \returns Color of text shadow.
      */
-    const Color &GetShadowColor() const;
+    Color GetShadowColor() const;
 
     int32 GetTextAlign() const;
 

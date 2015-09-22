@@ -516,7 +516,7 @@ Font* UITextField::GetFont() const
 #endif
 }
 
-const Color &UITextField::GetTextColor() const
+Color UITextField::GetTextColor() const
 {
 #if defined(DAVA_TEXTFIELD_USE_NATIVE)
     return Color::White;
@@ -534,7 +534,7 @@ Vector2 UITextField::GetShadowOffset() const
 #endif
 }
 
-const Color &UITextField::GetShadowColor() const
+Color UITextField::GetShadowColor() const
 {
 #if defined(DAVA_TEXTFIELD_USE_NATIVE)
     return Color::White;
