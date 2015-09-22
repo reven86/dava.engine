@@ -1122,23 +1122,31 @@ void MaterialEditor::UpdateMaterialPropertiesFromPreset(DAVA::NMaterial* materia
 
 		FastName propName(pm.first);
 		KeyedArchive* propertyArchive = pm.second->AsKeyedArchive();
-		rhi::ShaderProp::Type propType = static_cast<rhi::ShaderProp::Type>(propertyArchive->GetUInt32("type"));
-		uint32 propSize = propertyArchive->GetUInt32("size");
-		const float32* propData = reinterpret_cast<const float32*>(propertyArchive->GetByteArray("data"));
 
-		if (material->HasLocalProperty(propName))
-		{
-			auto existingType = material->GetLocalPropType(propName);
-			auto existingSize = material->GetLocalPropArraySize(propName);
-			if ((existingType == propType) && (existingSize == propSize))
-			{
-				material->SetPropertyValue(propName, propData);
-			}
-		}
-		else
-		{
-			material->AddProperty(propName, propData, propType, propSize);
-		}
+        /*
+		 * Here we are checking if propData if valid, because yaml parser can 
+		 * completely delete (skip) byte array node if it contains invalid data
+		 */
+        const float32* propData = reinterpret_cast<const float32*>(propertyArchive->GetByteArray("data"));
+        if (nullptr != propData)
+        {
+            rhi::ShaderProp::Type propType = static_cast<rhi::ShaderProp::Type>(propertyArchive->GetUInt32("type"));
+            uint32 propSize = propertyArchive->GetUInt32("size");
+
+            if (material->HasLocalProperty(propName))
+            {
+                auto existingType = material->GetLocalPropType(propName);
+                auto existingSize = material->GetLocalPropArraySize(propName);
+                if ((existingType == propType) && (existingSize == propSize))
+                {
+                    material->SetPropertyValue(propName, propData);
+                }
+            }
+            else
+            {
+                material->AddProperty(propName, propData, propType, propSize);
+            }
+        }
 	}
 }
 
@@ -1194,8 +1202,8 @@ void MaterialEditor::UpdateMaterialFromPresetWithOptions(DAVA::NMaterial* materi
 
     if ((options & CHECKED_PROPERTIES) && preset->IsKeyExists("properties"))
 	{
-		UpdateMaterialPropertiesFromPreset(material,  preset->GetArchive("properties"));
-	}
+        UpdateMaterialPropertiesFromPreset(material, preset->GetArchive("properties"));
+    }
 
     if ((options & CHECKED_TEXTURES) && preset->IsKeyExists("textures"))
 	{
