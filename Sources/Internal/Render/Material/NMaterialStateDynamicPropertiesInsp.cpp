@@ -36,8 +36,6 @@ namespace DAVA
 
 void NMaterialStateDynamicPropertiesInsp::FindMaterialPropertiesRecursive(NMaterial* material, FastNameMap<PropData>& propsMap) const
 {
-    // FastNameMap<PropData>* ret = new FastNameMap<PropData>();
-
     HashMap<FastName, int32> flags;
     material->CollectMaterialFlags(flags);
 
@@ -88,7 +86,9 @@ void NMaterialStateDynamicPropertiesInsp::FindMaterialPropertiesRecursive(NMater
     }
 
     if (material->GetParent())
+    {
         FindMaterialPropertiesRecursive(material->GetParent(), propsMap);
+    }
 }
 
 InspInfoDynamic::DynamicData NMaterialStateDynamicPropertiesInsp::Prepare(void *object, int filter) const
