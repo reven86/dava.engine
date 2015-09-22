@@ -203,6 +203,9 @@ public:
     {
         staticText_->SetRect(rect);
     }
+    void SystemDraw(const UIGeometricData&)
+    {
+    }
 
 private:
     UIStaticText* staticText_ = nullptr;
