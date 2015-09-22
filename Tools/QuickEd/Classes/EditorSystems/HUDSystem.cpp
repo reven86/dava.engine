@@ -329,10 +329,6 @@ HUDSystem::HUDSystem(EditorSystemsManager* parent)
     systemManager->EditingRootControlsChanged.Connect(this, &HUDSystem::OnRootContolsChanged);
 }
 
-void HUDSystem::OnActivated()
-{
-}
-
 void HUDSystem::OnDeactivated()
 {
     hudControl->RemoveFromParent();
@@ -353,11 +349,7 @@ void HUDSystem::OnSelectionChanged(const SelectedNodes& selected, const Selected
         hudMap.erase(controlNode);
         sortedControlList.erase(controlNode);
     }
-    if (selectionContainer.selectedNodes.size() == 4)
-    {
-        int d = 0;
-    }
-    bool wasChanged = false;
+
     for (auto node : selected)
     {
         ControlNode* controlNode = dynamic_cast<ControlNode*>(node);
@@ -367,12 +359,21 @@ void HUDSystem::OnSelectionChanged(const SelectedNodes& selected, const Selected
                            std::forward_as_tuple(controlNode),
                            std::forward_as_tuple(controlNode, hudControl));
             sortedControlList.insert(controlNode);
-            wasChanged = true;
         }
     }
-    if (wasChanged)
+
+    ProcessCursor(pressedPoint);
+    bool showRotate = sortedControlList.size() == 1;
+    for (const auto& iter : sortedControlList)
     {
-        ProcessCursor(pressedPoint);
+        ControlNode* node = dynamic_cast<ControlNode*>(iter);
+        DVASSERT(nullptr != node);
+        auto findIter = hudMap.find(node);
+        DVASSERT_MSG(findIter != hudMap.end(), "hud map corrupted");
+        const HUD& hud = findIter->second;
+        HUDAreaInfo::eArea area = HUDAreaInfo::ROTATE_AREA;
+        ControlContainer* controlContainer = hud.hudControls.find(area)->second.get();
+        controlContainer->SetVisible(showRotate);
     }
 }
 
