@@ -168,11 +168,9 @@ public:
 	//Insert entity to begin of scene hierarchy to display editor entities at one place on top og scene tree
 	void AddEditorEntity(Entity *editorEntity);
 
-#if RHI_COMPLETE_EDITOR
-    const RenderManager::Stats & GetRenderStats() const;
-#endif // RHI_COMPLETE_EDITOR
+    const RenderStats& GetRenderStats() const;
 
-	void DisableTools(int32 toolFlags, bool saveChanges = true);
+    void DisableTools(int32 toolFlags, bool saveChanges = true);
 	bool IsToolsEnabled(int32 toolFlags);
 	int32 GetEnabledTools();
 
@@ -199,11 +197,9 @@ protected:
 
 	DAVA::FilePath curScenePath;
 	CommandStack commandStack;
-#if RHI_COMPLETE_EDITOR
-    RenderManager::Stats renderStats;
-#endif // RHI_COMPLETE_EDITOR
+    RenderStats renderStats;
 
-	DAVA::Vector<DAVA::Entity *> editorEntities;
+    DAVA::Vector<DAVA::Entity *> editorEntities;
 
 	virtual void EditorCommandProcess(const Command2 *command, bool redo);
 	virtual void Draw();

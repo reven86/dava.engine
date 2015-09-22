@@ -530,6 +530,8 @@ dx11_CommandBuffer_SetVertexConstBuffer( Handle cmdBuf, uint32 bufIndex, Handle 
     CommandBufferDX11_t*    cb = CommandBufferPool::Get( cmdBuf );
 
     ConstBufferDX11::SetToRHI( buffer, cb->context );
+
+    StatSet::IncStat(stat_SET_CB, 1);
 }
 
 
@@ -541,6 +543,8 @@ dx11_CommandBuffer_SetVertexTexture( Handle cmdBuf, uint32 unitIndex, Handle tex
     CommandBufferDX11_t*    cb = CommandBufferPool::Get( cmdBuf );
 
     TextureDX11::SetToRHIVertex( tex, unitIndex, cb->context );
+
+    StatSet::IncStat(stat_SET_TEX, 1);
 }
 
 
@@ -586,6 +590,8 @@ dx11_CommandBuffer_SetFragmentConstBuffer( Handle cmdBuf, uint32 bufIndex, Handl
     CommandBufferDX11_t*    cb = CommandBufferPool::Get( cmdBuf );
 
     ConstBufferDX11::SetToRHI( buffer, cb->context );
+
+    StatSet::IncStat(stat_SET_CB, 1);
 }
 
 
@@ -597,6 +603,8 @@ dx11_CommandBuffer_SetFragmentTexture( Handle cmdBuf, uint32 unitIndex, Handle t
     CommandBufferDX11_t*    cb = CommandBufferPool::Get( cmdBuf );
 
     TextureDX11::SetToRHIFragment( tex, unitIndex, cb->context );
+
+    StatSet::IncStat(stat_SET_TEX, 1);
 }
 
 
@@ -619,6 +627,8 @@ dx11_CommandBuffer_SetSamplerState( Handle cmdBuf, const Handle samplerState )
     CommandBufferDX11_t*    cb = CommandBufferPool::Get( cmdBuf );
 
     SamplerStateDX11::SetToRHI( samplerState, cb->context );
+
+    StatSet::IncStat(stat_SET_SS, 1);
 }
 
 
@@ -665,13 +675,31 @@ dx11_CommandBuffer_DrawPrimitive( Handle cmdBuf, PrimitiveType type, uint32 coun
 
     VertexBufferDX11::SetToRHI( cb->cur_vb, 0, 0, cb->cur_vb_stride, ctx );
 
+    StatSet::IncStat(stat_SET_VB, 1);
+
     if( cb->cur_query_i != InvalidIndex )
         QueryBufferDX11::BeginQuery( cb->cur_query_buf, cb->cur_query_i, ctx );
                 
     ctx->Draw( vertexCount, baseVertex );
                 
     if( cb->cur_query_i != InvalidIndex )
-        QueryBufferDX11::EndQuery( cb->cur_query_buf, cb->cur_query_i, ctx );    
+        QueryBufferDX11::EndQuery(cb->cur_query_buf, cb->cur_query_i, ctx);
+
+    StatSet::IncStat(stat_DIP, 1);
+    switch (topo)
+    {
+    case D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST:
+        StatSet::IncStat(stat_DTL, 1);
+        break;
+    case D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP:
+        StatSet::IncStat(stat_DTS, 1);
+        break;
+    case D3D11_PRIMITIVE_TOPOLOGY_LINELIST:
+        StatSet::IncStat(stat_DLL, 1);
+        break;
+    default:
+        break;
+    }
 }
 
 
@@ -717,7 +745,10 @@ dx11_CommandBuffer_DrawIndexedPrimitive( Handle cmdBuf, PrimitiveType type, uint
 
     IndexBufferDX11::SetToRHI( cb->cur_ib, 0, ctx );
     VertexBufferDX11::SetToRHI( cb->cur_vb, 0, 0, cb->cur_vb_stride, ctx );
-                
+
+    StatSet::IncStat(stat_SET_VB, 1);
+    StatSet::IncStat(stat_SET_IB, 1);
+
     if( cb->cur_query_i != InvalidIndex )
         QueryBufferDX11::BeginQuery( cb->cur_query_buf, cb->cur_query_i, ctx );
                 
@@ -725,6 +756,22 @@ dx11_CommandBuffer_DrawIndexedPrimitive( Handle cmdBuf, PrimitiveType type, uint
 
     if( cb->cur_query_i != InvalidIndex )
         QueryBufferDX11::BeginQuery( cb->cur_query_buf, cb->cur_query_i, ctx );
+
+    StatSet::IncStat(stat_DIP, 1);
+    switch (topo)
+    {
+    case D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST:
+        StatSet::IncStat(stat_DTL, 1);
+        break;
+    case D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP:
+        StatSet::IncStat(stat_DTS, 1);
+        break;
+    case D3D11_PRIMITIVE_TOPOLOGY_LINELIST:
+        StatSet::IncStat(stat_DLL, 1);
+        break;
+    default:
+        break;
+    }
 }
 
 
