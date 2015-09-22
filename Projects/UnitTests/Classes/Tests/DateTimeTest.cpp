@@ -69,6 +69,12 @@ DAVA_TESTCLASS(DateTimeTest)
             DateTime dt(2015, 10, 15, 13, 0, 0, 0);
             TEST_VERIFY(FormatDateTime(DateTime::LocalTime(dt.GetTimestamp())) == "2015-10-15 16:00:00+10800");
         }
+        {
+            DateTime date = DateTime::Now();
+            WideString ru_string = date.AsWString(L"%d.%m.%Y"); // ru format
+            WideString en_string = date.AsWString(L"%m/%d/%Y"); // en format
+            TEST_VERIFY(ru_string != en_string);
+        }
     }
 
     void PrintDateTimeContent(const DateTime& inputTime)

@@ -40,7 +40,7 @@ namespace DAVA
         WideString configLocaleWide = StringToWString(configLocale);
 
 		configLocale.replace(configLocale.find("_"), 1, "-");
-		int nchars = GetLocaleInfoEx(configLocaleWide.c_str(), LOCALE_SENGLANGUAGE, NULL, 0);
+        int nchars = GetLocaleInfoEx(configLocaleWide.c_str(), LOCALE_SENGLANGUAGE, nullptr, 0);
         wchar_t languageCode[8] {};
 		GetLocaleInfoEx(configLocaleWide.c_str(), LOCALE_SENGLANGUAGE, languageCode, nchars);
 
@@ -56,7 +56,8 @@ namespace DAVA
         _wcsftime_l(buffer, 256, format, &timeinfo, loc);
 
         DAVA::WideString str(buffer);
-		return str;
+        _free_locale(loc);
+        return str;
     }
 
     int32 DateTime::GetLocalTimeZoneOffset()
