@@ -159,6 +159,8 @@ public:
 	static void TextFieldFocusChanged(uint32_t id, bool hasFocus);
 	static void TextFieldUpdateTexture(uint32_t id, int32* pixels, int width, int height);
 
+    void SystemDraw(const UIGeometricData& geometricData);
+
 private:
 	static TextFieldPlatformImpl* GetUITextFieldAndroid(uint32_t id);
 

@@ -557,3 +557,7 @@ void TextFieldPlatformImpl::TextFieldUpdateTexture(uint32_t id, int32* rawPixels
         }
     }
 }
+
+void TextFieldPlatformImpl::SystemDraw(const UIGeometricData& geometricData)
+{
+}
