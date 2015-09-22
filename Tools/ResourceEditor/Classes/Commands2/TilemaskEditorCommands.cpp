@@ -193,7 +193,7 @@ void ModifyTilemaskCommand::ApplyImageToTexture(Image* image, Texture * dstTex, 
     textureSetHandle[internalHandleIndex] = rhi::AcquireTextureSet(desc);
     
     RenderSystem2D::Instance()->BeginRenderTargetPass(dstTex, false);
-    RenderSystem2D::Instance()->DrawTexture(textureSetHandle[internalHandleIndex], RenderSystem2D::DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL, Color::White, updatedRect);
+    RenderSystem2D::Instance()->DrawTexture(textureSetHandle[internalHandleIndex], texture[internalHandleIndex]->sampleStateHandle, RenderSystem2D::DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL, Color::White, updatedRect);
     RenderSystem2D::Instance()->EndRenderTargetPass();
 }
 
