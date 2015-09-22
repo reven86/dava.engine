@@ -35,7 +35,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace DAVA
 {
 namespace RenderCallbacks
-{    
+{
     void RegisterResourceRestoreCallback(Function<void()> callback);
     void UnRegisterResourceRestoreCallback(Function<void()> callback);
 
