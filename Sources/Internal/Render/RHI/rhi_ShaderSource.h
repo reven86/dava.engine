@@ -131,8 +131,8 @@ ShaderSourceCache
 {
 public:
 
-    static const ShaderSource*  Get( FastName uid );
-    static void                 Update( FastName uid, const ShaderSource& source );
+    static const ShaderSource*  Get( FastName uid, uint32 srcHash );
+    static void                 Update( FastName uid, uint32 srcHash, const ShaderSource& source );
 
     static void                 Clear();    
     static void                 Save( const char* fileName );
@@ -145,10 +145,12 @@ private:
     entry_t
     {
         FastName        uid;
+        uint32          srcHash;
         ShaderSource*   src;
     };
 
     static std::vector<entry_t> Entry;
+    static const uint32         FormatVersion;
 };
 
 
