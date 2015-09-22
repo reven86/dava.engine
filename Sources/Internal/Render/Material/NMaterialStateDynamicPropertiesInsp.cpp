@@ -34,10 +34,8 @@ namespace DAVA
 ///////////////////////////////////////////////////////////////////////////
 ///// NMaterialStateDynamicPropertiesInsp implementation
 
-FastNameMap<NMaterialStateDynamicPropertiesInsp::PropData>* NMaterialStateDynamicPropertiesInsp::FindMaterialProperties(NMaterial *material) const
+void NMaterialStateDynamicPropertiesInsp::FindMaterialPropertiesRecursive(NMaterial* material, FastNameMap<PropData>& propsMap) const
 {
-    FastNameMap<PropData>* ret = new FastNameMap<PropData>();
-
     HashMap<FastName, int32> flags;
     material->CollectMaterialFlags(flags);
 
@@ -56,13 +54,13 @@ FastNameMap<NMaterialStateDynamicPropertiesInsp::PropData>* NMaterialStateDynami
                 {
                     if (prop.storage != rhi::ShaderProp::STORAGE_DYNAMIC)
                     {
-                        if (0 == ret->count(prop.uid))
+                        if (0 == propsMap.count(prop.uid))
                         {
                             PropData data;
                             data.size = prop.arraySize;
                             data.type = prop.type;
                             data.defaultValue = prop.defaultValue;
-                            ret->insert(prop.uid, data);
+                            propsMap.insert(prop.uid, data);
                         }
                     }
                 }
@@ -77,17 +75,20 @@ FastNameMap<NMaterialStateDynamicPropertiesInsp::PropData>* NMaterialStateDynami
     for (; it != end; ++it)
     {
         FastName propName = it->first;
-        if (0 == ret->count(propName))
+        if (0 == propsMap.count(propName))
         {
             PropData data;
             data.size = it->second->arraySize;
             data.type = it->second->type;
             data.defaultValue = nullptr;
-            ret->insert(propName, data);
+            propsMap.insert(propName, data);
         }
     }
 
-    return ret;
+    if (material->GetParent())
+    {
+        FindMaterialPropertiesRecursive(material->GetParent(), propsMap);
+    }
 }
 
 InspInfoDynamic::DynamicData NMaterialStateDynamicPropertiesInsp::Prepare(void *object, int filter) const
@@ -95,7 +96,8 @@ InspInfoDynamic::DynamicData NMaterialStateDynamicPropertiesInsp::Prepare(void *
     NMaterial *material = (NMaterial*) object;
     DVASSERT(material);
 
-    FastNameMap<NMaterialStateDynamicPropertiesInsp::PropData>* data = FindMaterialProperties(material);
+    auto data = new FastNameMap<NMaterialStateDynamicPropertiesInsp::PropData>();
+    FindMaterialPropertiesRecursive(material, *data);
 
     // user require predefined global properties
     if (filter > 0)
@@ -288,7 +290,7 @@ VariantType NMaterialStateDynamicPropertiesInsp::MemberValueGet(const DynamicDat
 
 bool NMaterialStateDynamicPropertiesInsp::IsColor(const FastName &propName) const
 {
-    return (NULL != strstr(propName.c_str(), "Color"));
+    return (nullptr != strstr(propName.c_str(), "Color"));
 }
 
 void NMaterialStateDynamicPropertiesInsp::MemberValueSet(const DynamicData& ddata, const FastName &key, const VariantType &value)

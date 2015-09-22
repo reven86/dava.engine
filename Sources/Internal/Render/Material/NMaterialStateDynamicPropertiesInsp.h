@@ -57,7 +57,7 @@ protected:
     };
     
     bool IsColor(const FastName &key) const;
-    FastNameMap<PropData>* FindMaterialProperties(NMaterial *state) const;
+    void FindMaterialPropertiesRecursive(NMaterial* state, FastNameMap<PropData>& props) const;
 };
 
 };
