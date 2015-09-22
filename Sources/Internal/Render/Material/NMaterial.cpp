@@ -145,7 +145,9 @@ void NMaterial::BindParams(rhi::Packet& target)
                 }
                 materialBinding.updateSemantic = materialBinding.source->updateSemantic;
 
+#if defined(__DAVAENGINE_RENDERSTATS__)
                 ++Renderer::GetRenderStats().materialParamBindCount;
+#endif
             }
         }
         materialBufferBinding->lastValidPropertySemantic = NMaterialProperty::GetCurrentUpdateSemantic();
