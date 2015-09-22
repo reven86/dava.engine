@@ -106,7 +106,7 @@ RenderDataObject::~RenderDataObject()
     //streamArray.clear();
     //streamMap.clear();
     
-	Function<void()> fn = Bind(MakeFunction(this, &RenderDataObject::DeleteBuffersInternal), vboBuffer, indexBuffer);
+    Function<void()> fn = Bind(&RenderDataObject::DeleteBuffersInternal, this, vboBuffer, indexBuffer);
 	JobManager::Instance()->CreateMainJob(fn);
 }
 
@@ -190,7 +190,7 @@ void RenderDataObject::BuildVertexBuffer(int32 vertexCount, eBufferDrawType type
 
 	DVASSERT(!vertexAttachmentActive);
 
-	Function<void()> fn = Bind(MakeFunction(PointerWrapper<RenderDataObject>::WrapRetainRelease(this), &RenderDataObject::BuildVertexBufferInternal), vertexCount, type);
+    Function<void()> fn = Bind(MakeFunction(MakeSharedObject(this), &RenderDataObject::BuildVertexBufferInternal), vertexCount, type);
 	if(synchronously)
     {
         uint32 jobId = JobManager::Instance()->CreateMainJob(fn);
@@ -265,7 +265,7 @@ void RenderDataObject::SetIndices(eIndexFormat _format, uint8 * _indices, int32 
 
 void RenderDataObject::BuildIndexBuffer(eBufferDrawType type, bool synchronously)
 {
-	Function<void ()> fn = Bind(MakeFunction(PointerWrapper<RenderDataObject>::WrapRetainRelease(this), &RenderDataObject::BuildIndexBufferInternal), type);
+	Function<void ()> fn = Bind(MakeFunction(MakeSharedObject(this), &RenderDataObject::BuildIndexBufferInternal), type);
     uint32 jobId = JobManager::Instance()->CreateMainJob(fn);
 
     if(synchronously)
@@ -365,7 +365,7 @@ void RenderDataObject::DetachVertices()
 
 void RenderDataObject::UpdateVertexBuffer(int32 offset, int32 vertexCount, bool synchronously)
 {
-    uint32 jobId = JobManager::Instance()->CreateMainJob(Bind(MakeFunction(this, &RenderDataObject::UpdateVertexBufferInternal), offset, vertexCount));
+    uint32 jobId = JobManager::Instance()->CreateMainJob(Bind(&RenderDataObject::UpdateVertexBufferInternal, this, offset, vertexCount));
 
     if (synchronously)
     {
@@ -411,7 +411,7 @@ void RenderDataObject::UpdateVertexBufferInternal(int32 offset, int32 vertexCoun
 
 void RenderDataObject::UpdateIndexBuffer(int32 offset, bool synchronously)
 {
-    uint32 jobId = JobManager::Instance()->CreateMainJob(Bind(MakeFunction(this, &RenderDataObject::UpdateIndexBufferInternal), offset));
+    uint32 jobId = JobManager::Instance()->CreateMainJob(Bind(&RenderDataObject::UpdateIndexBufferInternal, this, offset));
 
     if (synchronously)
     {

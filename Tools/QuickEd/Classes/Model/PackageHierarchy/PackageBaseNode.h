@@ -38,6 +38,7 @@ namespace DAVA
 }
 
 class ControlNode;
+class StyleSheetNode;
 class PackageNode;
 class PackageVisitor;
 
@@ -69,7 +70,9 @@ public:
     virtual bool IsEditingSupported() const;
     virtual bool IsInsertingControlsSupported() const;
     virtual bool IsInsertingPackagesSupported() const;
+    virtual bool IsInsertingStylesSupported() const;
     virtual bool CanInsertControl(ControlNode *node, DAVA::int32 pos) const;
+    virtual bool CanInsertStyle(StyleSheetNode *node, DAVA::int32 pos) const;
     virtual bool CanInsertImportedPackage(PackageNode *package) const;
     virtual bool CanRemove() const;
     virtual bool CanCopy() const;

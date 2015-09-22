@@ -31,6 +31,7 @@
 #define __UI_EDITOR_STYLE_SHEET_NODE_H__
 
 #include "PackageBaseNode.h"
+#include "UI/Styles/UIStyleSheetSelectorChain.h"
 
 namespace DAVA
 {
@@ -42,22 +43,29 @@ class StyleSheetRootProperty;
 class StyleSheetNode : public PackageBaseNode
 {
 public:
-    StyleSheetNode(DAVA::UIStyleSheet *styleSheet);
+    StyleSheetNode(const DAVA::Vector<DAVA::UIStyleSheetSelectorChain> &selectorChains, const DAVA::Vector<DAVA::UIStyleSheetProperty> &properties);
+
+protected:
     virtual ~StyleSheetNode();
-    
+
+public:
+    StyleSheetNode *Clone() const;
+
     int GetCount() const override;
     PackageBaseNode *Get(DAVA::int32 index) const override;
     void Accept(PackageVisitor *visitor) override;
     
-    virtual DAVA::String GetName() const override;
-    
+    DAVA::String GetName() const override;
+    void UpdateName();
+
+    bool CanRemove() const override;
+    bool CanCopy() const override;
+
     StyleSheetRootProperty *GetRootProperty() const;
     
-    DAVA::UIStyleSheet *GetStyleSheet() const;
 private:
-    DAVA::Vector<PackageNode*> packages;
-    DAVA::UIStyleSheet *styleSheet;
     StyleSheetRootProperty *rootProperty;
+    DAVA::String name;
 };
 
 #endif //__UI_EDITOR_STYLE_SHEET_NODE_H__

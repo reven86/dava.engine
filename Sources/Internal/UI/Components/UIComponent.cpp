@@ -31,6 +31,7 @@
 #include "UI/UIControl.h"
 
 #include "UI/Layouts/UILinearLayoutComponent.h"
+#include "UI/Layouts/UIIgnoreLayoutComponent.h"
 #include "UI/Layouts/UISizePolicyComponent.h"
 #include "UI/Layouts/UIAnchorComponent.h"
 
@@ -38,12 +39,23 @@ namespace DAVA
 {
 
 UIComponent::UIComponent()
-    : control(NULL)
+    : control(nullptr)
 {
+}
+
+UIComponent::UIComponent(const UIComponent &src)
+    : control(nullptr)
+{
+    
 }
 
 UIComponent::~UIComponent()
 {
+}
+
+UIComponent &UIComponent::operator=(const UIComponent &src)
+{
+    return *this;
 }
 
 UIComponent * UIComponent::CreateByType(uint32 componentType)
@@ -52,6 +64,9 @@ UIComponent * UIComponent::CreateByType(uint32 componentType)
     {
         case LINEAR_LAYOUT_COMPONENT:
             return new UILinearLayoutComponent();
+            
+        case IGNORE_LAYOUT_COMPONENT:
+            return new UIIgnoreLayoutComponent();
             
         case SIZE_POLICY_COMPONENT:
             return new UISizePolicyComponent();
@@ -71,6 +86,9 @@ bool UIComponent::IsMultiple(uint32 componentType)
     switch (componentType)
     {
         case LINEAR_LAYOUT_COMPONENT:
+            return false;
+            
+        case IGNORE_LAYOUT_COMPONENT:
             return false;
             
         case SIZE_POLICY_COMPONENT:

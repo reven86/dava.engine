@@ -33,6 +33,7 @@
 #include "Base/BaseObject.h"
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
+#include "UI/Styles/UIStyleSheetSelectorChain.h"
 
 namespace DAVA
 {
@@ -63,7 +64,7 @@ public:
     virtual void EndPackage() = 0;
     
     virtual bool ProcessImportedPackage(const String &packagePath, AbstractUIPackageLoader *loader) = 0;
-    virtual void ProcessStyleSheets(const YamlNode *styleSheetsNode) = 0;
+    virtual void ProcessStyleSheet(const Vector<UIStyleSheetSelectorChain> &selectorChains, const Vector<UIStyleSheetProperty> &properties) = 0;
 
     virtual UIControl *BeginControlWithClass(const String &className) = 0;
     virtual UIControl *BeginControlWithCustomClass(const String &customClassName, const String &className) = 0;

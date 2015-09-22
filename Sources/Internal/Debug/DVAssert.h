@@ -27,8 +27,8 @@
 =====================================================================================*/
 
 
-#ifndef __LOGENGINE_ASSERT_H__
-#define __LOGENGINE_ASSERT_H__
+#ifndef __DAVAENGINE_ASSERT_H__
+#define __DAVAENGINE_ASSERT_H__
 
 #include "Base/BaseTypes.h"
 #include "FileSystem/Logger.h"
@@ -104,7 +104,8 @@ inline void DavaDebugBreak()
 
 
 #if defined(ENABLE_ASSERT_LOGGING)
-    #define LogErrorFunction(assertType, expr, msg, file, line) { DAVA::Logger::Error("========================================\n%s\n%s\n%s\nFile: %s\nLine: %d\n========================================", assertType, expr, msg, file, line); }
+	// end=assert=msg - used as marker on teamcity to fail build
+    #define LogErrorFunction(assertType, expr, msg, file, line) { DAVA::Logger::Error    ("========================================\n%s\n%s\n%s\nFile: %s\nLine: %d\n======================end=assert=msg====", assertType, expr, msg, file, line); }
     #define LogWarningFunction(assertType, expr, msg, file, line) { DAVA::Logger::Warning("========================================\n%s\n%s\n%s\nFile: %s\nLine: %d\n========================================", assertType, expr, msg, file, line); }
 #else //ENABLE_ASSERT_LOGGING
     #define LogErrorFunction(assertType, expr, msg, file, line)

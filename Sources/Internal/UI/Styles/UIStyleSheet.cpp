@@ -75,7 +75,7 @@ void UIStyleSheet::RecalculateScore()
     score = 0;
     for (const UIStyleSheetSelector& selector : selectorChain)
     {
-        score += 100000 + selector.classes.size();
+        score += static_cast<uint32>(100000 + selector.classes.size());
         if (selector.name.IsValid())
             score += 100;
         if (!selector.className.empty())

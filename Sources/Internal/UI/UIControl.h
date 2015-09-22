@@ -530,7 +530,8 @@ public:
 
     void SetAngleInDegrees(float32 angle);
     
-    virtual Vector2 GetContentPreferredSize() const;
+    virtual Vector2 GetContentPreferredSize(const Vector2 &constraints) const; // -1.0f means no constraint for axis
+    virtual bool IsHeightDependsOnWidth() const;
 
     /**
      \brief Returns control visibility.
@@ -1234,10 +1235,6 @@ public:
     // Find the control by name and add it to the list, if found.
     bool AddControlToList(List<UIControl*>& controlsList, const String& controlName, bool isRecursive = false);
 
-    // Get/set the Initial State.
-    int32 GetInitialState() const;
-    void SetInitialState(int32 newState);
-
     // Get/set visible flag for UI editor. Should not be serialized.
     bool GetVisibleForUIEditor() const { return visibleForUIEditor; };
     virtual void SetVisibleForUIEditor(bool value);
@@ -1297,9 +1294,6 @@ protected:
     Color debugDrawColor;
 
     eDebugDrawPivotMode drawPivotPointMode;
-
-    // Initial control's state which is stored on Yaml.
-    int32 initialState;
 
     void SetParent(UIControl *newParent);
 
@@ -1369,6 +1363,7 @@ public:
     void SetClassesFromString(const String &classes);
     
     const UIStyleSheetPropertySet& GetLocalPropertySet() const;
+    void SetLocalPropertySet(const UIStyleSheetPropertySet &set);
     void SetPropertyLocalFlag(uint32 propertyIndex, bool value);
     
     const UIStyleSheetPropertySet& GetStyledPropertySet() const;
@@ -1411,6 +1406,7 @@ public:
     // for introspection
     inline bool GetEnabled() const;
     inline void SetEnabledNotHierarchic(bool enabled);
+    inline void SetSelectedNotHierarchic(bool enabled);
     inline bool GetNoInput() const;
     inline void SetNoInput(bool noInput);
     inline bool GetDebugDraw() const;
@@ -1425,11 +1421,11 @@ public:
                          PROPERTY("angle", "Angle", GetAngleInDegrees, SetAngleInDegrees, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("visible", "Visible", GetVisible, SetVisible, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("enabled", "Enabled", GetEnabled, SetEnabledNotHierarchic, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("selected", "Selected", GetSelected, SetSelectedNotHierarchic, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("clip", "Clip", GetClipContents, SetClipContents, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("noInput", "No Input", GetNoInput, SetNoInput, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("tag", "Tag", GetTag, SetTag, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("classes", "Classes", GetClassesAsString, SetClassesFromString, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("initialState", "Initial State", GetInitialState, SetInitialState, I_SAVE | I_VIEW | I_EDIT)
                          
                          PROPERTY("debugDraw", "Debug Draw", GetDebugDraw, SetDebugDrawNotHierarchic, I_VIEW | I_EDIT)
                          PROPERTY("debugDrawColor", "Debug draw color", GetDebugDrawColor, SetDebugDrawColor, I_VIEW | I_EDIT)
@@ -1558,6 +1554,11 @@ bool UIControl::GetEnabled() const
 void UIControl::SetEnabledNotHierarchic(bool enabled)
 {
     SetDisabled(!enabled, false);
+}
+
+void UIControl::SetSelectedNotHierarchic(bool selected)
+{
+    SetSelected(selected, false);
 }
 
 bool UIControl::GetNoInput() const

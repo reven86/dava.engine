@@ -49,7 +49,7 @@ public:
     virtual ~PackageSerializer();
     
     void SerializePackage(PackageNode *package);
-    void SerializePackageNodes(PackageNode *package, const DAVA::Vector<ControlNode*> &controls);
+    void SerializePackageNodes(PackageNode *package, const DAVA::Vector<ControlNode*> &controls, const DAVA::Vector<StyleSheetNode*> &styles);
     
     virtual void PutValue(const DAVA::String &name, const DAVA::VariantType &value) = 0;
     virtual void PutValue(const DAVA::String &name, const DAVA::String &value) = 0;
@@ -96,11 +96,8 @@ private: // PropertyVisitor
     void VisitIntrospectionProperty(IntrospectionProperty *property) override;
 
     void VisitStyleSheetRoot(StyleSheetRootProperty *property) override;
-    void VisitStyleSheetSelectorsProperty(StyleSheetSelectorsProperty *property) override;
-    void VisitStyleSheetPropertiesSection(StyleSheetPropertiesSection *property) override;
+    void VisitStyleSheetSelectorProperty(StyleSheetSelectorProperty *property) override;
     void VisitStyleSheetProperty(StyleSheetProperty *property) override;
-    void VisitStyleSheetTransitionsSection(StyleSheetTransitionsSection *property) override;
-    void VisitStyleSheetTransition(StyleSheetTransition *property) override;
 private:
     void AcceptChildren(AbstractProperty *property);
     void PutValueProperty(const DAVA::String &name, ValueProperty *property);
@@ -108,6 +105,7 @@ private:
 private:
     DAVA::Vector<PackageNode*> importedPackages;
     DAVA::Vector<ControlNode*> controls;
+    DAVA::Vector<StyleSheetNode*> styles;
 };
 
 #endif // __QUICKED_PACKAGE_SERIALIZER_H__

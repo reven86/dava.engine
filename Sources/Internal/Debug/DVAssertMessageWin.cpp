@@ -63,7 +63,13 @@ bool DVAssertMessage::InnerShow(eModalType modalType, const char* content)
 #include "Debug/DVAssertMessage.h"
 #include "Utils/Utils.h"
 
+#include "Concurrency/Mutex.h"
+#include "Concurrency/ConditionVariable.h"
+#include "Concurrency/LockGuard.h"
+
 #include "Platform/TemplateWin32/CorePlatformWinUAP.h"
+#include "Platform/TemplateWin32/WinUAPXamlApp.h"
+#include "Platform/TemplateWin32/DispatcherWinUAP.h"
 
 namespace DAVA
 {
@@ -90,6 +96,15 @@ bool DVAssertMessage::InnerShow(eModalType /*modalType*/, const char* content)
     Platform::String^ text = ref new Platform::String(StringToWString(content).c_str());
     if (!core->IsUIThread())
     {
+        // If MainThreadDispatcher is in blocking call to UI thread we cannot show dialog box
+        // performing this action can lead to deadlock or system simply discards dialog box without showing it
+        // 
+        // So we simply tell caller to always debug break on DVASSERT to notify programmer about problems
+        if (core->XamlApplication()->MainThreadDispatcher()->InBlockingCall())
+        {
+            return true;
+        }
+
         Mutex mutex;
         ConditionVariable cv;
 

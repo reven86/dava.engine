@@ -43,7 +43,7 @@ MovieViewControl::MovieViewControl()
 MovieViewControl::~MovieViewControl()
 {
     // Tell private implementation that owner is sentenced to death
-    privateImpl->FlyToSunIcarus();
+    privateImpl->OwnerAtPremortem();
 }
 
 void MovieViewControl::Initialize(const Rect& rect)

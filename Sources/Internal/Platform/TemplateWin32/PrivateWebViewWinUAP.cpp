@@ -240,7 +240,7 @@ PrivateWebViewWinUAP::~PrivateWebViewWinUAP()
     }
 }
 
-void PrivateWebViewWinUAP::DetachDelegateAndView()
+void PrivateWebViewWinUAP::OwnerAtPremortem()
 {
     uiWebView = nullptr;
     webViewDelegate = nullptr;
@@ -299,12 +299,10 @@ void PrivateWebViewWinUAP::ExecuteJScript(const String& scriptString)
         auto js = nativeWebView->InvokeScriptAsync("eval", args);
         create_task(js).then([this, self](Platform::String^ result) {
             core->RunOnMainThread([this, result]() {
-                IUIWebViewDelegate* legate = webViewDelegate.Get();
-                UIWebView* view = uiWebView.Get();
-                if (legate != nullptr && view != nullptr)
+                if (webViewDelegate != nullptr && uiWebView != nullptr)
                 {
                     String jsResult = WStringToString(result->Data());
-                    legate->OnExecuteJScript(view, jsResult);
+                    webViewDelegate->OnExecuteJScript(uiWebView, jsResult);
                 }
             });
         }).then([self](task<void> t) {
@@ -362,12 +360,11 @@ void PrivateWebViewWinUAP::SetRenderToTexture(bool value)
     {
         renderToTexture = value;
 
-        UIWebView* view = uiWebView.Get();
-        if (view != nullptr)
+        if (uiWebView != nullptr)
         {
             if (!renderToTexture)
             {
-                view->SetSprite(nullptr, 0);
+                uiWebView->SetSprite(nullptr, 0);
             }
 
             bool offScreen = renderToTexture || !visible;
@@ -390,35 +387,53 @@ bool PrivateWebViewWinUAP::IsRenderToTexture() const
 
 void PrivateWebViewWinUAP::InstallEventHandlers()
 {
+    std::weak_ptr<PrivateWebViewWinUAP> self_weak(shared_from_this());
     // Install event handlers through lambdas as it seems only ref class's member functions can be event handlers directly
-    auto navigationStarting = ref new TypedEventHandler<WebView^, WebViewNavigationStartingEventArgs^>([this](WebView^ sender, WebViewNavigationStartingEventArgs^ args) {
-        OnNavigationStarting(sender, args);
+    auto navigationStarting = ref new TypedEventHandler<WebView^, WebViewNavigationStartingEventArgs^>([this, self_weak](WebView^ sender, WebViewNavigationStartingEventArgs^ args) {
+        auto self = self_weak.lock();
+        if (self != nullptr)
+        {
+            OnNavigationStarting(sender, args);
+        }
     });
-    auto navigationCompleted = ref new TypedEventHandler<WebView^, WebViewNavigationCompletedEventArgs^>([this](WebView^ sender, WebViewNavigationCompletedEventArgs^ args) {
-        OnNavigationCompleted(sender, args);
+    auto navigationCompleted = ref new TypedEventHandler<WebView^, WebViewNavigationCompletedEventArgs^>([this, self_weak](WebView^ sender, WebViewNavigationCompletedEventArgs^ args) {
+        auto self = self_weak.lock();
+        if (self != nullptr)
+        {
+            OnNavigationCompleted(sender, args);
+        }
     });
     nativeWebView->NavigationStarting += navigationStarting;
     nativeWebView->NavigationCompleted += navigationCompleted;
 }
 
-void PrivateWebViewWinUAP::PositionWebView(const Rect& rect, bool offScreen)
+void PrivateWebViewWinUAP::PositionWebView(const Rect& rectInVirtualCoordinates, bool offScreen)
 {
-    VirtualCoordinatesSystem* coordSys = VirtualCoordinatesSystem::Instance();
+    VirtualCoordinatesSystem* coordSystem = VirtualCoordinatesSystem::Instance();
 
-    Rect physRect = coordSys->ConvertVirtualToPhysical(rect);
-    const Vector2 physOffset = coordSys->GetPhysicalDrawOffset();
+    // 1. map virtual to physical
+    Rect controlRect = coordSystem->ConvertVirtualToPhysical(rectInVirtualCoordinates);
+    controlRect += coordSystem->GetPhysicalDrawOffset();
 
-    float32 width = physRect.dx + physOffset.x;
-    float32 height = physRect.dy + physOffset.y;
+    // 2. map physical to window
+    const float32 scaleFactor = core->GetScreenScaleFactor();
+    controlRect.x /= scaleFactor;
+    controlRect.y /= scaleFactor;
+    controlRect.dx /= scaleFactor;
+    controlRect.dy /= scaleFactor;
 
     if (offScreen)
     {
-        physRect.x = -width;
-        physRect.y = -height;
+        controlRect.x = -controlRect.dx;
+        controlRect.y = -controlRect.dy;
     }
-    nativeWebView->Width = width;
-    nativeWebView->Height = height;
-    core->XamlApplication()->PositionUIElement(nativeWebView, physRect.x, physRect.y);
+
+    // 3. set control's position and size
+    nativeWebView->MinHeight = 0.0;     // Force minimum control sizes to zero to
+    nativeWebView->MinWidth = 0.0;      // allow setting any control sizes
+    nativeWebView->Width = controlRect.dx;
+    nativeWebView->Height = controlRect.dy;
+    core->XamlApplication()->PositionUIElement(nativeWebView, controlRect.x, controlRect.y);
 }
 
 void PrivateWebViewWinUAP::OnNavigationStarting(WebView^ sender, WebViewNavigationStartingEventArgs^ args)
@@ -430,21 +445,21 @@ void PrivateWebViewWinUAP::OnNavigationStarting(WebView^ sender, WebViewNavigati
     }
     Logger::FrameworkDebug("[WebView] OnNavigationStarting: url=%s", url.c_str());
 
-    IUIWebViewDelegate* legate = webViewDelegate.Get();
-    UIWebView* view = uiWebView.Get();
-    if (legate != nullptr && view != nullptr)
+    bool redirectedByMouse = false; // For now I don't know how to get redirection method
+    IUIWebViewDelegate::eAction whatToDo = IUIWebViewDelegate::PROCESS_IN_WEBVIEW;
+    core->RunOnMainThreadBlocked([this, &whatToDo, &url, redirectedByMouse]()
     {
-        // For now delegate is running on UI thread not main, as RunOnMainThreadBlocked leads to deadlocks in some case
-        // Problem needs further investigation
-
-        bool redirectedByMouse = false; // For now I don't know how to get redirection method
-        IUIWebViewDelegate::eAction whatToDo = legate->URLChanged(view, url, redirectedByMouse);
-        if (IUIWebViewDelegate::PROCESS_IN_SYSTEM_BROWSER == whatToDo && args->Uri != nullptr)
+        if (uiWebView != nullptr && webViewDelegate != nullptr)
         {
-            Launcher::LaunchUriAsync(args->Uri);
+            whatToDo = webViewDelegate->URLChanged(uiWebView, url, redirectedByMouse);
         }
-        args->Cancel = whatToDo != IUIWebViewDelegate::PROCESS_IN_WEBVIEW;
+    });
+
+    if (IUIWebViewDelegate::PROCESS_IN_SYSTEM_BROWSER == whatToDo && args->Uri != nullptr)
+    {
+        Launcher::LaunchUriAsync(args->Uri);
     }
+    args->Cancel = whatToDo != IUIWebViewDelegate::PROCESS_IN_WEBVIEW;
 }
 
 void PrivateWebViewWinUAP::OnNavigationCompleted(WebView^ sender, WebViewNavigationCompletedEventArgs^ args)
@@ -471,11 +486,9 @@ void PrivateWebViewWinUAP::OnNavigationCompleted(WebView^ sender, WebViewNavigat
 
     auto self{shared_from_this()};
     core->RunOnMainThread([this, self]() {
-        IUIWebViewDelegate* legate = webViewDelegate.Get();
-        UIWebView* view = uiWebView.Get();
-        if (legate != nullptr && view != nullptr)
+        if (uiWebView != nullptr && webViewDelegate != nullptr)
         {
-            legate->PageLoaded(view);
+            webViewDelegate->PageLoaded(uiWebView);
         }
     });
 }
@@ -507,10 +520,9 @@ void PrivateWebViewWinUAP::RenderToTexture()
             if (sprite.Valid())
             {
                 core->RunOnMainThread([this, self, sprite]() {
-                    UIWebView* view = uiWebView.Get();
-                    if (view != nullptr)
+                    if (uiWebView != nullptr)
                     {
-                        view->SetSprite(sprite.Get(), 0);
+                        uiWebView->SetSprite(sprite.Get(), 0);
                     }
                 });
             }
@@ -542,13 +554,7 @@ Sprite* PrivateWebViewWinUAP::CreateSpriteFromPreviewData(const uint8* imageData
     DWORD bitsOffset = *OffsetPointer<DWORD>(imageData, 10);
 
     RefPtr<Image> imgSrc(Image::CreateFromData(width, height, FORMAT_RGBA8888, imageData + bitsOffset));
-    RefPtr<Image> imgDst(Image::Create(width, height, FORMAT_RGB888));
-    if (imgSrc.Valid() && imgDst.Valid())
-    {
-        ImageConvert::ConvertImageDirect(imgSrc.Get(), imgDst.Get());
-        return Sprite::CreateFromImage(imgDst.Get());
-    }
-    return nullptr;
+    return Sprite::CreateFromImage(imgSrc.Get(), true, false);
 }
 
 }   // namespace DAVA

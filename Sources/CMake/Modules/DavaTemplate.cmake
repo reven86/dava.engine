@@ -128,7 +128,6 @@ elseif ( WINDOWS_UAP )
 	
 	set(SHORT_NAME ${PROJECT_NAME})
 	set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-	set(PACKAGE_GUID "${WINDOWS_UAP_APPLICATION_GUID}")
 	
 	set ( WIN_UAP_CONF_DIR      "${DAVA_ROOT_DIR}/Sources/CMake/Resources/WindowsStore" )
 	set ( WIN_UAP_MANIFESTS_DIR "${WIN_UAP_CONF_DIR}/Manifests" )
@@ -136,15 +135,19 @@ elseif ( WINDOWS_UAP )
 	file( GLOB ASSET_FILES      "${WIN_UAP_ASSETS_DIR}/*.png" )
 	source_group ("Content\\Assets" FILES ${ASSET_FILES})
 	
-	if (NOT "${PLATFORM}" STREQUAL "DESKTOP")
-		configure_file(
-			${WIN_UAP_MANIFESTS_DIR}/Package_vc${COMPILER_VERSION}.${PLATFORM}.appxmanifest.in
-			${CMAKE_CURRENT_BINARY_DIR}/${APP_MANIFEST_NAME}
-			@ONLY)
+    if (NOT "${PLATFORM}" STREQUAL "DESKTOP")
+        if ( NOT WIN_STORE_MANIFEST_PACKAGE_GUID )
+            message( FATAL_ERROR "Windows Store package GUID is not set" )
+        endif ()
+        
+        configure_file(
+            ${WIN_UAP_MANIFESTS_DIR}/Package_vc${COMPILER_VERSION}.${PLATFORM}.appxmanifest.in
+            ${CMAKE_CURRENT_BINARY_DIR}/${APP_MANIFEST_NAME}
+            @ONLY)
 
         file ( COPY ${WIN_UAP_CONF_DIR}/TemporaryKey.pfx DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
         file ( RENAME ${CMAKE_CURRENT_BINARY_DIR}/TemporaryKey.pfx ${CMAKE_CURRENT_BINARY_DIR}/${APP_TEMPKEY_NAME} )
-	endif()
+    endif()
 	
 	if (WINDOWS_PHONE8)
 	    file( GLOB PHONE_RESOURCES "${WIN_UAP_ASSETS_DIR}/Tiles/*.png" )
@@ -314,7 +317,7 @@ else()
 endif()
 
 if( TARGET_FILE_TREE_FOUND )
-    add_dependencies(  ${PROJECT_NAME} FILE_TREE )
+    add_dependencies(  ${PROJECT_NAME} FILE_TREE_${PROJECT_NAME} )
     
 endif()
 
@@ -568,8 +571,24 @@ if( DEPLOY )
             set_target_properties ( ${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${OUTPUT_DIR} )
         endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
 
-    elseif( MACOS )
+    elseif( APPLE )
         set_target_properties( ${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_CONFIGURATION_BUILD_DIR  ${DEPLOY_DIR} )
+
+        if( IOS )
+            set( XCODERUN_PARAM -sdk iphoneos PackageApplication -v ${DEPLOY_DIR}/${PROJECT_NAME}.app -o ${DEPLOY_DIR}/${PROJECT_NAME}.ipa )
+
+            if( DEVELOPER_NAME )
+                list( APPEND XCODERUN_PARAM  --sign ${DEVELOPER_NAME} )
+            endif()
+
+            if( PROVISONING_PROFILE )
+                list( APPEND XCODERUN_PARAM  --embed ${PROVISONING_PROFILE} )
+            endif()
+
+            add_custom_target ( IOS_DEPLOY_${PROJECT_NAME} ALL COMMAND /usr/bin/xcrun ${XCODERUN_PARAM} )
+            add_dependencies(  IOS_DEPLOY_${PROJECT_NAME} ${PROJECT_NAME} )
+
+        endif()
 
     endif() 
 

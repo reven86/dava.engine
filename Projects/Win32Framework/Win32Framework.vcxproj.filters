@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="External">
@@ -204,6 +204,9 @@
     </Filter>
     <Filter Include="Internal\UI\Layouts">
       <UniqueIdentifier>{35e9d1cc-cb7d-4460-b271-1e7012178889}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internal\Functional">
+      <UniqueIdentifier>{1ed60acd-379f-473d-95ba-060107948670}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -725,9 +728,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\UIYamlLoader.h">
       <Filter>Internal\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Utils\HTTPDownloader.h">
-      <Filter>Internal\Utils</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Utils\MD5.h">
       <Filter>Internal\Utils</Filter>
@@ -1368,9 +1368,6 @@
     <ClInclude Include="..\..\Sources\Internal\UI\UIParticles.h">
       <Filter>Internal\UI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Base\Atomic.h">
-      <Filter>Internal\Base\Radix</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\FoliageSystem.h">
       <Filter>Internal\Scene3D\Systems</Filter>
     </ClInclude>
@@ -1508,9 +1505,6 @@
       <Filter>Internal\DLC\Patcher</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Base\Bind.h">
-      <Filter>Internal\Base</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Base\Function.h">
       <Filter>Internal\Base</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\DLC\DLC.h">
@@ -1923,6 +1917,27 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UISizePolicyComponent.h">
       <Filter>Internal\UI\Layouts</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Functional\Function.h">
+      <Filter>Internal\Functional</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Functional\Functional.h">
+      <Filter>Internal\Functional</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Functional\Signal.h">
+      <Filter>Internal\Functional</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Functional\SignalBase.h">
+      <Filter>Internal\Functional</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIPriorityStyleSheet.h">
+      <Filter>Internal\UI\Styles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UIIgnoreLayoutComponent.h">
+      <Filter>Internal\UI\Layouts</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNet\MMBigDataTransferService.h">
+      <Filter>Internal\Network\Services\MMNet</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2718,9 +2733,6 @@
     <ClCompile Include="..\..\Sources\Internal\UI\UISpinner.cpp">
       <Filter>Internal\UI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Utils\UTF8UtilsWin32.cpp">
-      <Filter>Internal\Utils</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\UISwitch.cpp">
       <Filter>Internal\UI</Filter>
     </ClCompile>
@@ -3004,7 +3016,7 @@
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibPngHelper.cpp">
       <Filter>Internal\Render\Image</Filter>
     </ClCompile>
-	<ClCompile Include="..\..\Sources\Internal\Render\Image\LibWebPHelper.cpp">
+    <ClCompile Include="..\..\Sources\Internal\Render\Image\LibWebPHelper.cpp">
       <Filter>Internal\Render\Image</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibJpegHelper.cpp">
@@ -3405,6 +3417,18 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UISizePolicyComponent.cpp">
       <Filter>Internal\UI\Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIPriorityStyleSheet.cpp">
+      <Filter>Internal\UI\Styles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UIIgnoreLayoutComponent.cpp">
+      <Filter>Internal\UI\Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Utils\UTF8Utils.cpp">
+      <Filter>Internal\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\Services\MMNet\MMBigDataTransferService.cpp">
+      <Filter>Internal\Network\Services\MMNet</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
