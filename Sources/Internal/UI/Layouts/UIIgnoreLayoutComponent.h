@@ -33,31 +33,31 @@
 
 namespace DAVA
 {
-    class UIControl;
+class UIControl;
+
+class UIIgnoreLayoutComponent : public UIComponent
+{
+public:
+    IMPLEMENT_COMPONENT_TYPE(IGNORE_LAYOUT_COMPONENT);
     
-    class UIIgnoreLayoutComponent : public UIComponent
-    {
-    public:
-        IMPLEMENT_COMPONENT_TYPE(IGNORE_LAYOUT_COMPONENT);
-        
-        UIIgnoreLayoutComponent() = default;
-        UIIgnoreLayoutComponent(const UIIgnoreLayoutComponent &src) = default;
-        
-    protected:
-        virtual ~UIIgnoreLayoutComponent() = default;
-        
-    private:
-        UIIgnoreLayoutComponent &operator=(const UIIgnoreLayoutComponent &) = delete;
-        
-    public:
-        UIIgnoreLayoutComponent* Clone() const override;
-        
-    public:
-        INTROSPECTION_EXTEND(UIIgnoreLayoutComponent, UIComponent,
-                             nullptr
-                             );
-        
-    };
+    UIIgnoreLayoutComponent() = default;
+    UIIgnoreLayoutComponent(const UIIgnoreLayoutComponent &src) = default;
+    
+protected:
+    virtual ~UIIgnoreLayoutComponent() = default;
+    
+private:
+    UIIgnoreLayoutComponent &operator=(const UIIgnoreLayoutComponent &) = delete;
+    
+public:
+    UIIgnoreLayoutComponent* Clone() const override;
+    
+public:
+    INTROSPECTION_EXTEND(UIIgnoreLayoutComponent, UIComponent,
+                         nullptr
+                         );
+    
+};
     
 }
 

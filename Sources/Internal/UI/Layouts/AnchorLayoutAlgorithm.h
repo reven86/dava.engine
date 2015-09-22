@@ -37,20 +37,20 @@
 namespace DAVA
 {
     
-    class AnchorLayoutAlgorithm
-    {
-    public:
-        AnchorLayoutAlgorithm(Vector<ControlLayoutData> &layoutData_, bool isRtl_);
-        ~AnchorLayoutAlgorithm();
-        
-        void Apply(ControlLayoutData &data, Vector2::eAxis axis, bool onlyForIgnoredControls);
-        
-    private:
-        Vector<ControlLayoutData> &layoutData;
-        
-        bool isRtl;
-    };
+class AnchorLayoutAlgorithm
+{
+public:
+    AnchorLayoutAlgorithm(Vector<ControlLayoutData> &layoutData_, bool isRtl_);
+    ~AnchorLayoutAlgorithm();
     
+    void Apply(ControlLayoutData &data, Vector2::eAxis axis, bool onlyForIgnoredControls);
+    
+private:
+    Vector<ControlLayoutData> &layoutData;
+    
+    bool isRtl;
+};
+
 }
 
 
