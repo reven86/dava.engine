@@ -86,8 +86,6 @@ public:
             MEMBER(magFilter, InspDesc("magFilter", GlobalEnumMap<rhi::TextureFilter>::Instance()), I_VIEW | I_EDIT | I_SAVE)
             MEMBER(mipFilter, InspDesc("mipFilter", GlobalEnumMap<rhi::TextureMipFilter>::Instance()), I_VIEW | I_EDIT | I_SAVE)
         )
-		
-
 	};
     
 	struct TextureDataSettings: public InspBase
@@ -220,15 +218,13 @@ protected:
 	void WriteCompression(File *file, const Compression *compression) const;
     
     //loading
-    void LoadVersion6(File *file);
-    void LoadVersion7(File *file);
-    void LoadVersion8(File *file);
-    void LoadVersion9(File *file);
-    void LoadVersion10(File* file);
-    DAVA_DEPRECATED(void FixCompressionFormat());
+    DAVA_DEPRECATED(void LoadVersion6(File* file));
+    DAVA_DEPRECATED(void LoadVersion7(File* file));
+    DAVA_DEPRECATED(void LoadVersion8(File* file));
+    DAVA_DEPRECATED(void LoadVersion9(File* file));
 
+    void LoadVersion10(File* file);
     void LoadVersion11(File *file);
-    DAVA_DEPRECATED(void ConvertV10orLessToV11());
     //end of loading
 
     void RecalculateCompressionSourceCRC();
