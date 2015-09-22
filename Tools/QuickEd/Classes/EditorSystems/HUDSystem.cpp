@@ -355,10 +355,17 @@ void HUDSystem::OnSelectionChanged(const SelectedNodes& selected, const Selected
         ControlNode* controlNode = dynamic_cast<ControlNode*>(node);
         if (nullptr != controlNode && nullptr != controlNode->GetControl())
         {
-            hudMap.emplace(std::piecewise_construct,
-                           std::forward_as_tuple(controlNode),
-                           std::forward_as_tuple(controlNode, hudControl));
-            sortedControlList.insert(controlNode);
+            const PackageNode* package = systemManager->GetPackage();
+            const PackageControlsNode* packageControlsNode = package->GetPackageControlsNode();
+            const ImportedPackagesNode* importedPackagesNode = package->GetImportedPackagesNode();
+            PackageBaseNode* parent = controlNode->GetParent();
+            if (packageControlsNode != parent && importedPackagesNode != parent)
+            {
+                hudMap.emplace(std::piecewise_construct,
+                               std::forward_as_tuple(controlNode),
+                               std::forward_as_tuple(controlNode, hudControl));
+                sortedControlList.insert(controlNode);
+            }
         }
     }
 
