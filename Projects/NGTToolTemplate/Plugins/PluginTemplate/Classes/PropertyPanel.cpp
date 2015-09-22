@@ -26,9 +26,44 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef DAVAPLUGIN_DAVAREFLECTIONBRIDGE_H
-#define DAVAPLUGIN_DAVAREFLECTIONBRIDGE_H
+#include "core_reflection/i_definition_manager.hpp"
+#include "core_reflection/interfaces/i_reflection_controller.hpp"
+#include "core_data_model/reflection/reflected_tree_model.hpp"
 
+#include "core_data_model/i_tree_model.hpp"
 
+#include "PropertyPanel.h"
+#include "ReflectionBridge.h"
 
-#endif // DAVAPLUGIN_DAVAREFLECTIONBRIDGE_H
+#include "Render/TextureDescriptor.h"
+
+#include "Debug/DVAssert.h"
+
+PropertyPanel::PropertyPanel()
+{
+}
+
+PropertyPanel::~PropertyPanel()
+{
+}
+
+void PropertyPanel::Initialize(IUIFramework& uiFramework, IUIApplication& uiApplication)
+{
+    using TRef = DAVA::TextureDescriptor::TextureDrawSettings;
+
+    IDefinitionManager* defMng = Context::queryInterface<IDefinitionManager>();
+    IReflectionController* controller = Context::queryInterface<IReflectionController>();
+    defMng->registerDefinition(CreateDavaClassDefinition<TRef>());
+
+    ObjectHandle obj = defMng->create<TRef>();
+
+    std::unique_ptr<ITreeModel> model(new ReflectedTreeModel(obj, *defMng, controller));
+
+    view = uiFramework.createView("qrc:/default/PropertyPanel.qml", IUIFramework::ResourceType::Url, std::move(model));
+    uiApplication.addView(*view);
+}
+
+void PropertyPanel::Finalize()
+{
+    view.reset();
+}

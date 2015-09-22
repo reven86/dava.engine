@@ -2,6 +2,9 @@
 <ui version="4.0">
  <class>MainWindow</class>
  <widget class="QMainWindow" name="MainWindow">
+   <property name="contextMenuPolicy">
+     <enum>Qt::PreventContextMenu</enum>
+   </property>
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -64,40 +67,20 @@
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QDockWidget" name="dockWidget">
    <property name="layoutTags" stdset="0">
-    <string>Library</string>
+    <string notr="true">Library</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>1</number>
    </attribute>
-   <widget class="QWidget" name="dockWidgetContents">
-    <layout class="QVBoxLayout" name="verticalLayout_2">
-     <property name="leftMargin">
-      <number>2</number>
-     </property>
-     <property name="topMargin">
-      <number>0</number>
-     </property>
-     <property name="rightMargin">
-      <number>2</number>
-     </property>
-    </layout>
-   </widget>
   </widget>
-  <action name="action1">
-   <property name="text">
-    <string>1</string>
+  <widget class="QDockWidget" name="dockWidget_2">
+   <property name="layoutTags" stdset="0">
+    <string notr="true">PropertyPanel</string>
    </property>
-  </action>
-  <action name="action2">
-   <property name="text">
-    <string>2</string>
-   </property>
-  </action>
-  <action name="actionOpen_Scene">
-   <property name="text">
-    <string>Open Scene</string>
-   </property>
-  </action>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+  </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources>

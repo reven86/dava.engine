@@ -26,4 +26,26 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "DAVAReflectionBridge.h"
+#ifndef DAVAPLUGINTEMPLATE_PROPERTYPANEL_H
+#define DAVAPLUGINTEMPLATE_PROPERTYPANEL_H
+
+#include "core_ui_framework/i_view.hpp"
+#include "core_ui_framework/i_ui_framework.hpp"
+#include "core_ui_framework/i_ui_application.hpp"
+
+#include <memory>
+
+class PropertyPanel
+{
+public:
+    PropertyPanel();
+    ~PropertyPanel();
+
+    void Initialize(IUIFramework& uiFramework, IUIApplication& uiApplication);
+    void Finalize();
+
+private:
+    std::unique_ptr<IView> view;
+};
+
+#endif // DAVAPLUGINTEMPLATE_PROPERTYPANEL_H
