@@ -68,7 +68,9 @@ static Handle
 metal_IndexBuffer_Create( const IndexBuffer::Descriptor& desc )
 {
     Handle          handle  = InvalidHandle;
-    id<MTLBuffer>   uid     = [_Metal_Device newBufferWithLength:desc.size options:MTLResourceOptionCPUCacheModeDefault];
+    id<MTLBuffer>   uid     = (desc.initialData)
+                              ? [_Metal_Device newBufferWithBytes:desc.initialData length:desc.size options:MTLResourceOptionCPUCacheModeDefault]
+                              : [_Metal_Device newBufferWithLength:desc.size options:MTLResourceOptionCPUCacheModeDefault];
 
     if( uid )
     {
