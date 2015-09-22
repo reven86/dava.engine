@@ -33,7 +33,6 @@ using namespace DAVA;
 
 PackageBaseNode::PackageBaseNode(PackageBaseNode* parent)
     : parent(parent)
-    , depth(nullptr != parent ? parent->depth + 1 : 0)
 {
 }
 
