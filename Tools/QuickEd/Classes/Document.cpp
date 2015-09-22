@@ -51,7 +51,6 @@ Document::Document(PackageNode* _package, QObject* parent)
     , systemManager(_package)
 {
     systemManager.SelectionChanged.Connect(this, &Document::SelectedNodesChanged);
-    systemManager.EmulationModeChangedSignal.Connect(this, &Document::EmulationModeChanged);
     systemManager.CanvasSizeChanged.Connect(this, &Document::CanvasSizeChanged);
 
     systemManager.PropertiesChanged.Connect([this](ControlNode* node, const Vector<std::pair<AbstractProperty*, VariantType>> properties, size_t hash)
@@ -73,16 +72,6 @@ Document::~Document()
     {
         delete context.second;
     }
-}
-
-int Document::GetScale() const
-{
-    return scale;
-}
-
-bool Document::IsInEmulationMode() const
-{
-    return systemManager.IsInEmulationMode();
 }
 
 EditorSystemsManager* Document::GetSystemManager()
@@ -123,8 +112,6 @@ WidgetContext* Document::GetContext(QObject* requester) const
 void Document::Activate()
 {
     systemManager.Activate();
-    emit ScaleChanged(scale);
-    emit EmulationModeChanged(IsInEmulationMode());
 }
 
 void Document::Deactivate()
@@ -149,30 +136,16 @@ void Document::RefreshLayout()
     package->RefreshPackageStylesAndLayout(true);
 }
 
-void Document::SetScale(int arg)
+void Document::SetScale(float scale)
 {
-    if (scale != arg)
-    {
-        scale = arg;
-        DAVA::float32 realScale = scale / 100.0f;
-        systemManager.GetScalableControl()->SetScale(Vector2(realScale, realScale));
-        emit ScaleChanged(scale);
-        emit CanvasSizeChanged();
-    }
-}
-
-void Document::ResetScale()
-{
-    SetScale(defaultScale);
+    DAVA::float32 realScale = scale / 100.0f;
+    systemManager.GetScalableControl()->SetScale(Vector2(realScale, realScale));
+    emit CanvasSizeChanged();
 }
 
 void Document::SetEmulationMode(bool arg)
 {
-    if (IsInEmulationMode() != arg)
-    {
-        systemManager.SetEmulationMode(arg);
-        emit EmulationModeChanged(IsInEmulationMode());
-    }
+    systemManager.SetEmulationMode(arg);
 }
 
 void Document::RefreshAllControlProperties()

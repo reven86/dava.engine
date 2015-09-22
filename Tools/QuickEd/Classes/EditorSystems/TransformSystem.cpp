@@ -62,11 +62,10 @@ TransformSystem::TransformSystem(EditorSystemsManager* parent)
     : BaseEditorSystem(parent)
     , steps({{15, 10, 10}}) //10 grad for rotate and 20 pix for move/resize
 {
-    accumulates.fill({{0, 0}});
     systemManager->ActiveAreaChanged.Connect(this, &TransformSystem::OnActiveAreaChanged);
     systemManager->SelectionChanged.Connect([this](const SelectedNodes& selected, const SelectedNodes& deselected)
                                             {
-                                           SelectionContainer::MergeSelectionAndContainer(selected, deselected, selectedControlNodes);
+                                                SelectionContainer::MergeSelectionAndContainer(selected, deselected, selectedControlNodes);
                                             });
 }
 
@@ -86,8 +85,8 @@ bool TransformSystem::OnInput(UIEvent* currentInput)
     case UIEvent::PHASE_BEGAN:
     {
         prevPos = currentInput->point;
-        milliseconds ms = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
-        currentHash = static_cast<size_t>(ms.count());
+        microseconds us = duration_cast<microseconds>(system_clock::now().time_since_epoch());
+        currentHash = static_cast<size_t>(us.count());
         return activeArea != HUDAreaInfo::NO_AREA;
     }
     case UIEvent::PHASE_DRAG:
@@ -98,6 +97,7 @@ bool TransformSystem::OnInput(UIEvent* currentInput)
     }
     case UIEvent::PHASE_ENDED:
         accumulates.fill({{0, 0}});
+        extraDelta.SetZero();
         return false;
     default:
         return false;
@@ -136,10 +136,6 @@ bool TransformSystem::ProcessDrag(const Vector2& pos)
         return false;
     }
 
-    const auto& keyBoard = InputSystem::Instance()->GetKeyboard();
-    auto gd = activeControlNode->GetControl()->GetGeometricData();
-    auto control = activeControlNode->GetControl();
-
     switch (activeArea)
     {
     case HUDAreaInfo::FRAME_AREA:
@@ -154,6 +150,7 @@ bool TransformSystem::ProcessDrag(const Vector2& pos)
     case HUDAreaInfo::BOTTOM_CENTER_AREA:
     case HUDAreaInfo::BOTTOM_RIGHT_AREA:
     {
+        const auto& keyBoard = InputSystem::Instance()->GetKeyboard();
         bool withPivot = keyBoard.IsKeyPressed(DVKEY_ALT);
         bool rateably = keyBoard.IsKeyPressed(DVKEY_SHIFT);
         ResizeControl(pos, withPivot, rateably);
@@ -161,47 +158,12 @@ bool TransformSystem::ProcessDrag(const Vector2& pos)
     }
     case HUDAreaInfo::PIVOT_POINT_AREA:
     {
-        const Vector2& size = control->GetSize();
-        if (size.x != 0.0f && size.y != 0.0f && gd.scale.x != 0.0f && gd.scale.y != 0.0f)
-        {
-            Vector<PropertyDelta> propertiesDelta;
-
-            const Vector2 delta = pos - prevPos;
-            const Vector2 scaledDelta = delta / gd.scale;
-            //position calculates in absolute
-            propertiesDelta.emplace_back("Position", VariantType(scaledDelta));
-            //pivot point calculate in rotate coordinates
-            const Vector2 angeledDelta(scaledDelta.x * gd.cosA + scaledDelta.y * gd.sinA,
-                                       scaledDelta.x * -gd.sinA + scaledDelta.y * gd.cosA);
-            const Vector2 pivot(angeledDelta / size);
-            propertiesDelta.emplace_back("Pivot", VariantType(pivot));
-
-            AdjustProperty(activeControlNode, propertiesDelta);
-        }
+        MovePivot(pos);
         return true;
     }
     case HUDAreaInfo::ROTATE_AREA:
     {
-        const Rect& ur = gd.GetUnrotatedRect();
-        Vector2 pivotPoint = ur.GetPosition() + ur.GetSize() * control->GetPivot();
-        Vector2 rotatePoint = pivotPoint;
-        Vector2 l1(prevPos - rotatePoint);
-        Vector2 l2(pos - rotatePoint);
-        float32 angleRad = atan2(l2.y, l2.x) - atan2(l1.y, l1.x);
-        float32 angle = RadToDeg(angleRad);
-        if (InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_SHIFT))
-        {
-            AbstractProperty* property = activeControlNode->GetRootProperty()->FindPropertyByName("Angle");
-            float32 currentAngle = property->GetValue().AsFloat();
-            Vector2 newAngle(currentAngle + angle, 0.0f);
-            AccumulateOperation(ROTATE_OPERATION, newAngle);
-            angle = newAngle.dx - currentAngle;
-        }
-        else
-        {
-            angle = round(angle);
-        }
-        AdjustProperty(activeControlNode, "Angle", VariantType(angle));
+        Rotate(pos);
         return true;
     }
     default:
@@ -357,21 +319,7 @@ void TransformSystem::ResizeControl(const Vector2& pos, bool withPivot, bool rat
         }
     }
 
-    AbstractProperty* sizeProperty = activeControlNode->GetRootProperty()->FindPropertyByName("Size");
-    Vector2 origSize = sizeProperty->GetValue().AsVector2();
-    Vector2 finalSize(origSize + deltaSize);
-    if (finalSize.dx < minimumSize.dx)
-    {
-        float32 availableDelta = minimumSize.dx - origSize.dx;
-        deltaPosition.dx *= availableDelta / deltaSize.dx;
-        deltaSize.dx = availableDelta;
-    }
-    if (finalSize.dy < minimumSize.dy)
-    {
-        float32 availableDelta = minimumSize.dy - origSize.dy;
-        deltaPosition.dy *= availableDelta / deltaSize.dy;
-        deltaSize.dy = availableDelta;
-    }
+    AdjustResize(deltaSize, deltaPosition);
 
     //rotate delta position backwards, because SetPosition require absolute coordinates
     Vector2 rotatedPosition;
@@ -382,6 +330,111 @@ void TransformSystem::ResizeControl(const Vector2& pos, bool withPivot, bool rat
     propertiesDelta.emplace_back("Position", VariantType(rotatedPosition));
     propertiesDelta.emplace_back("Size", VariantType(deltaSize));
     AdjustProperty(activeControlNode, propertiesDelta);
+}
+
+void TransformSystem::AdjustResize(DAVA::Vector2& deltaSize, DAVA::Vector2& deltaPosition)
+{
+    if (extraDelta.dx != 0.0f)
+    {
+        float overload = extraDelta.dx + deltaSize.dx;
+        if ((overload > 0.0f) ^ (extraDelta.dx > 0.0f)) //overload more than extraDelta
+        {
+            extraDelta.dx = 0.0f;
+            deltaPosition.dx *= overload / deltaSize.dx;
+            deltaSize.dx = overload;
+        }
+        else //delta less than we need to resize
+        {
+            extraDelta.x += deltaSize.dx;
+            deltaSize.dx = 0.0f;
+            deltaPosition.dx = 0.0f;
+        }
+    }
+    if (extraDelta.dy != 0.0f)
+    {
+        float overload = extraDelta.dy + deltaSize.dy;
+        if ((overload > 0.0f) ^ (extraDelta.dy > 0.0f)) //overload more than extraDelta
+        {
+            extraDelta.dy = 0.0f;
+            deltaPosition.dy *= overload / deltaSize.dy;
+            deltaSize.dy = overload;
+        }
+        else
+        {
+            extraDelta.y += deltaSize.dy;
+            deltaSize.dy = 0;
+            deltaPosition.dy = 0;
+        }
+    }
+
+    AbstractProperty* sizeProperty = activeControlNode->GetRootProperty()->FindPropertyByName("Size");
+    Vector2 origSize = sizeProperty->GetValue().AsVector2();
+    Vector2 finalSize(origSize + deltaSize);
+
+    if (finalSize.dx < minimumSize.dx)
+    {
+        float32 availableDelta = minimumSize.dx - origSize.dx;
+        extraDelta.dx += deltaSize.dx - availableDelta;
+        deltaPosition.dx *= availableDelta / deltaSize.dx;
+        deltaSize.dx = availableDelta;
+    }
+    if (finalSize.dy < minimumSize.dy)
+    {
+        float32 availableDelta = minimumSize.dy - origSize.dy;
+        extraDelta.dy += deltaSize.dy - availableDelta;
+        deltaPosition.dy *= availableDelta / deltaSize.dy;
+        deltaSize.dy = availableDelta;
+    }
+
+}
+
+void TransformSystem::MovePivot(const Vector2& pos)
+{
+    const UIControl* control = activeControlNode->GetControl();
+    const UIGeometricData& gd = control->GetGeometricData();
+    const Vector2& size = control->GetSize();
+    if (size.x != 0.0f && size.y != 0.0f && gd.scale.x != 0.0f && gd.scale.y != 0.0f)
+    {
+        Vector<PropertyDelta> propertiesDelta;
+
+        const Vector2 delta = pos - prevPos;
+        const Vector2 scaledDelta = delta / gd.scale;
+        //position calculates in absolute
+        propertiesDelta.emplace_back("Position", VariantType(scaledDelta));
+        //pivot point calculate in rotate coordinates
+        const Vector2 angeledDelta(scaledDelta.x * gd.cosA + scaledDelta.y * gd.sinA,
+                                   scaledDelta.x * -gd.sinA + scaledDelta.y * gd.cosA);
+        const Vector2 pivot(angeledDelta / size);
+        propertiesDelta.emplace_back("Pivot", VariantType(pivot));
+
+        AdjustProperty(activeControlNode, propertiesDelta);
+    }
+}
+
+void TransformSystem::Rotate(const Vector2& pos)
+{
+    const UIControl* control = activeControlNode->GetControl();
+    const UIGeometricData& gd = control->GetGeometricData();
+    const Rect& ur = gd.GetUnrotatedRect();
+    Vector2 pivotPoint = ur.GetPosition() + ur.GetSize() * control->GetPivot();
+    Vector2 rotatePoint = pivotPoint;
+    Vector2 l1(prevPos - rotatePoint);
+    Vector2 l2(pos - rotatePoint);
+    float32 angleRad = atan2(l2.y, l2.x) - atan2(l1.y, l1.x);
+    float32 angle = RadToDeg(angleRad);
+    if (InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_SHIFT))
+    {
+        AbstractProperty* property = activeControlNode->GetRootProperty()->FindPropertyByName("Angle");
+        float32 currentAngle = property->GetValue().AsFloat();
+        Vector2 newAngle(currentAngle + angle, 0.0f);
+        AccumulateOperation(ROTATE_OPERATION, newAngle);
+        angle = newAngle.dx - currentAngle;
+    }
+    else
+    {
+        angle = round(angle);
+    }
+    AdjustProperty(activeControlNode, "Angle", VariantType(angle));
 }
 
 void TransformSystem::AdjustProperty(ControlNode* node, const String& propertyName, const VariantType& delta)

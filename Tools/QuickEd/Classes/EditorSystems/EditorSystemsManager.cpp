@@ -100,11 +100,6 @@ PackageNode* EditorSystemsManager::GetPackage()
     return package;
 }
 
-bool EditorSystemsManager::IsInEmulationMode() const
-{
-    return emulationMode;
-}
-
 UIControl* EditorSystemsManager::GetRootControl()
 {
     return rootControl;
@@ -193,14 +188,9 @@ void EditorSystemsManager::CollectControlNodesByRectImpl(SelectedControls& contr
     }
 }
 
-void EditorSystemsManager::SetEmulationMode(bool arg)
+void EditorSystemsManager::SetEmulationMode(bool emulationMode)
 {
-    if (emulationMode != arg)
-    {
-        emulationMode = arg;
-
-        auto root = static_cast<RootControl*>(rootControl);
-        root->SetEmulationMode(emulationMode);
-        EmulationModeChangedSignal.Emit(std::move(emulationMode));
-    }
+    auto root = static_cast<RootControl*>(rootControl);
+    root->SetEmulationMode(emulationMode);
+    EmulationModeChangedSignal.Emit(std::move(emulationMode));
 }

@@ -127,18 +127,19 @@ void PreviewWidget::OnDocumentChanged(Document *arg)
     document = arg;
     if (nullptr != document)
     {
-        auto root = document->GetSystemManager()->GetRootControl();
+        EditorSystemsManager* systemManager = document->GetSystemManager();
+        UIControl* root = systemManager->GetRootControl();
+        UIControl* scalableControl = systemManager->GetScalableControl();
         DVASSERT(nullptr != root);
         scrollAreaController->GetBackgroundControl()->AddControl(root);
-        scrollAreaController->SetNestedControl(root);
-        
-        scaleCombo->lineEdit()->setText(ScaleFromInt(document->GetScale()));
+        scrollAreaController->SetNestedControl(scalableControl);
+        OnScaleByComboText();
     }
 }
 
 void PreviewWidget::OnMonitorChanged()
 {
-    OnScaleByComboIndex(scaleCombo->currentIndex());
+    OnScaleByComboText();
 }
 
 void PreviewWidget::UpdateScrollArea()
@@ -162,8 +163,9 @@ void PreviewWidget::OnScaleByZoom(int scaleDelta)
 void PreviewWidget::OnScaleByComboIndex(int index)
 {   
     DVASSERT(index >= 0);
-    int scale = percentages.at(index);
-    scrollAreaController->SetScale(scale);
+    float scale = static_cast<float>(percentages.at(index));
+    scale *= davaGLWidget->devicePixelRatio();
+    emit ScaleChanged(scale);
 }
 
 void PreviewWidget::OnScaleByComboText()
@@ -182,7 +184,8 @@ void PreviewWidget::OnScaleByComboText()
 		// Try to parse the value.
 		scaleValue = curTextValue.toFloat();
 	}
-    scrollAreaController->SetScale(scaleValue);
+    scaleValue *= davaGLWidget->devicePixelRatio();
+    emit ScaleChanged(scaleValue);
 }
 
 void PreviewWidget::OnZoomInRequested()

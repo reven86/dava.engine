@@ -65,8 +65,6 @@ class AbstractProperty;
 class Document final : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(int scale READ GetScale WRITE SetScale NOTIFY ScaleChanged RESET ResetScale);
-    Q_PROPERTY(bool emulationMode READ IsInEmulationMode WRITE SetEmulationMode NOTIFY EmulationModeChanged)
 
 public:
     explicit Document(PackageNode *package, QObject *parent = nullptr);
@@ -75,8 +73,6 @@ public:
     void Activate();
     void Deactivate();
 
-    int GetScale() const;
-    bool IsInEmulationMode() const;
     EditorSystemsManager* GetSystemManager();
     const DAVA::FilePath &GetPackageFilePath() const;
     QUndoStack *GetUndoStack();
@@ -89,20 +85,15 @@ public:
     void RefreshLayout();
 
 signals:
-    void ScaleChanged(int scale);
-    void EmulationModeChanged(bool emulationMode);
     void SelectedNodesChanged(const SelectedNodes &selected, const SelectedNodes &deselected);
     void CanvasSizeChanged();
 public slots:
-    void SetScale(int scale);
-    void ResetScale();
+    void SetScale(float scale);
     void SetEmulationMode(bool emulationMode);
     void RefreshAllControlProperties();
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
 
 private:
-    static const int defaultScale = 100;
-    int scale = defaultScale;
 
     DAVA::UnorderedMap < QObject*, WidgetContext* > contexts;
 

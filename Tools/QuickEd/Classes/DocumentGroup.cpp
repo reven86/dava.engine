@@ -84,8 +84,6 @@ void DocumentGroup::SetActiveDocument(Document* document)
     {
         active->Deactivate();
         disconnect(active, &Document::SelectedNodesChanged, this, &DocumentGroup::SelectedNodesChanged);
-        disconnect(active, &Document::EmulationModeChanged, this, &DocumentGroup::EmulationModeChanged);
-        disconnect(active, &Document::ScaleChanged, this, &DocumentGroup::ScaleChanged);
         disconnect(active, &Document::CanvasSizeChanged, this, &DocumentGroup::CanvasSizeChanged);
     }
     
@@ -98,8 +96,6 @@ void DocumentGroup::SetActiveDocument(Document* document)
     else
     {
         connect(active, &Document::SelectedNodesChanged, this, &DocumentGroup::SelectedNodesChanged);
-        connect(active, &Document::EmulationModeChanged, this, &DocumentGroup::EmulationModeChanged);
-        connect(active, &Document::ScaleChanged, this, &DocumentGroup::ScaleChanged);
         connect(active, &Document::CanvasSizeChanged, this, &DocumentGroup::CanvasSizeChanged);
 
         undoGroup->setActiveStack(active->GetUndoStack());
@@ -127,7 +123,7 @@ void DocumentGroup::SetEmulationMode(bool emulationMode)
     }
 }
 
-void DocumentGroup::SetScale(int scale)
+void DocumentGroup::SetScale(float scale)
 {
     if(nullptr != active)
     {

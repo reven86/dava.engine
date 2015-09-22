@@ -55,7 +55,8 @@ public:
     ScrollAreaController *GetScrollAreaController();
 
     void OnSelectControlByMenu(const DAVA::Vector<ControlNode*>& nodes, const DAVA::Vector2& pos, ControlNode*& selectedNode);
-
+signals:
+    void ScaleChanged(float scale);
 public slots:
     void OnDocumentChanged(Document *document);
     

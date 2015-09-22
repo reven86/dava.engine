@@ -53,6 +53,7 @@ public:
     void AdjustToNestedControl();
 
 private:
+    void CalculateTotalRect(UIControl* control, Rect& totalRect, Vector2& rootControlPosition);
     void UpdateSprite();
     void Draw(const UIGeometricData& geometricData) override;
     ScopedPtr<UIControl> counterPoiseControl;
@@ -175,16 +176,23 @@ void CalculateTotalRectImpl(UIControl* control, Rect& totalRect, Vector2& rootCo
     }
 }
 
-void CalculateTotalRect(UIControl* control, Rect& totalRect, Vector2& rootControlPosition)
+void GridControl::CalculateTotalRect(UIControl* control, Rect& totalRect, Vector2& rootControlPosition)
 {
     rootControlPosition.SetZero();
     UIGeometricData gd = control->GetGeometricData();
     gd.position.SetZero();
-    totalRect = gd.GetAABBox();
 
-    for (const auto& child : control->GetChildren())
+    Vector2 scale = canvasSystem->systemManager->GetScalableControl()->GetScale();
+    if (scale.x != 0.0f || scale.y != 0.0f)
     {
-        CalculateTotalRectImpl(child, totalRect, rootControlPosition, gd);
+        gd.scale /= scale;
+
+        totalRect = gd.GetAABBox();
+
+        for (const auto& child : control->GetChildren())
+        {
+            CalculateTotalRectImpl(child, totalRect, rootControlPosition, gd);
+        }
     }
 }
 
@@ -377,6 +385,6 @@ void CanvasSystem::LayoutCanvas()
         curY += rect.dy + spacing;
     }
     Vector2 size(maxWidth, totalHeight);
-    systemManager->GetRootControl()->SetSize(size);
+    systemManager->GetScalableControl()->SetSize(size);
     systemManager->CanvasSizeChanged.Emit();
 }

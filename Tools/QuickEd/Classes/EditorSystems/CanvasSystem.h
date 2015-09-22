@@ -41,6 +41,7 @@ class GridControl;
 class CanvasSystem final : public BaseEditorSystem, private PackageListener
 {
 public:
+    friend class GridControl;
     CanvasSystem(EditorSystemsManager* parent);
     ~CanvasSystem() override;
 
