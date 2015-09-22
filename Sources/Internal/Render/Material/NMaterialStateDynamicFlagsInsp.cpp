@@ -115,7 +115,9 @@ void NMaterialStateDynamicFlagsInsp::MemberValueSet(const DynamicData& ddata, co
     {
         int32 newValue = 0;
         if ((value.GetType() == VariantType::TYPE_BOOLEAN) && value.AsBool())
+        {
             newValue = 1;
+        }
 
         if (material->HasLocalFlag(member))
         {
