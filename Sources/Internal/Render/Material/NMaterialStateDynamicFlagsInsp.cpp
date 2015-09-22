@@ -49,7 +49,7 @@ Vector<FastName> NMaterialStateDynamicFlagsInsp::MembersList(const DynamicData& 
 {
     static Vector<FastName> ret;
 
-    if(0 == ret.size())
+    if (ret.empty())
     {
         ret.reserve(22);
         
@@ -90,11 +90,10 @@ InspDesc NMaterialStateDynamicFlagsInsp::MemberDesc(const DynamicData& ddata, co
 
 VariantType NMaterialStateDynamicFlagsInsp::MemberValueGet(const DynamicData& ddata, const FastName &member) const
 {
-    VariantType ret;
-
     NMaterial *material = static_cast<NMaterial*>(ddata.object);
     DVASSERT(material);
-    
+
+    VariantType ret;
     ret.SetBool(0 != material->GetEffectiveFlagValue(member));
     return ret;
 }
@@ -104,14 +103,8 @@ void NMaterialStateDynamicFlagsInsp::MemberValueSet(const DynamicData& ddata, co
     NMaterial *material = static_cast<NMaterial*>(ddata.object);
     DVASSERT(material);
 
-    int newValue = 0;
-    if(value.GetType() == VariantType::TYPE_BOOLEAN && value.AsBool())
-    {
-        newValue = true;
-    }
-    
     // empty value is thread as flag remove
-    if(value.GetType() == VariantType::TYPE_NONE)
+    if (value.GetType() == VariantType::TYPE_NONE)
     {
         if (material->HasLocalFlag(member))
         {
@@ -120,30 +113,27 @@ void NMaterialStateDynamicFlagsInsp::MemberValueSet(const DynamicData& ddata, co
     }
     else
     {
-        if (!material->HasLocalFlag(member))
+        int32 newValue = 0;
+        if ((value.GetType() == VariantType::TYPE_BOOLEAN) && value.AsBool())
+            newValue = 1;
+
+        if (material->HasLocalFlag(member))
         {
-            material->AddFlag(member, newValue);
+            material->SetFlag(member, newValue);
         }
         else
         {
-            material->SetFlag(member, newValue);
+            material->AddFlag(member, newValue);
         }
     }
 }
 
 int NMaterialStateDynamicFlagsInsp::MemberFlags(const DynamicData& ddata, const FastName &member) const
 {
-    int ret = I_VIEW;
-    
     NMaterial *material = static_cast<NMaterial*>(ddata.object);
     DVASSERT(material);
 
-    if (material->HasLocalFlag(member))
-    {
-        ret |= I_EDIT;
-    }
-
-    return ret;
+    return I_VIEW | (material->HasLocalFlag(member) ? I_EDIT : 0);
 }
 
 };
