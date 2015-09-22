@@ -688,7 +688,6 @@ bool ResourcePacker2D::AddFilesToCache(const AssetCache::CacheItemKey &key, cons
     
     
     String fileListString;
-    fileListString.append("\"");
     ScopedPtr<FileList> outFilesList(new FileList(outputPath));
     for (int fi = 0; fi < outFilesList->GetCount(); ++fi)
     {
@@ -702,7 +701,6 @@ bool ResourcePacker2D::AddFilesToCache(const AssetCache::CacheItemKey &key, cons
             fileListString += outFilesList->GetPathname(fi).GetAbsolutePathname();
         }
     }
-    fileListString.append("\"");
 
     if(fileListString.empty() == false)
     {
@@ -713,7 +711,7 @@ bool ResourcePacker2D::AddFilesToCache(const AssetCache::CacheItemKey &key, cons
         arguments.push_back(AssetCache::KeyToString(key));
 
         arguments.push_back("-f");
-        arguments.push_back(fileListString);
+        arguments.push_back('\"' + fileListString + '\"');
 
         if (!cacheClientIp.empty())
         {
