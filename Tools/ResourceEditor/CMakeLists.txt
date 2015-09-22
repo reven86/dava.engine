@@ -36,7 +36,8 @@ include_directories   ( "Classes/Collada" )
 
 
 add_definitions       ( 
--D__DAVAENGINE_SPEEDTREE__ 
+-D__DAVAENGINE_SPEEDTREE__
+-D__DAVAENGINE_RENDERSTATS__
 -DQT_OPENGL_LIB
 -DQT_GUI_LIB
 -DQT_NETWORK_LIB

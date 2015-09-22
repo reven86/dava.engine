@@ -447,12 +447,20 @@
     <property name="title">
      <string>Debug Functions</string>
     </property>
+    <widget class="QMenu" name="menuDump">
+     <property name="title">
+      <string>Dump</string>
+     </property>
+     <addaction name="actionDumpTextures"/>
+     <addaction name="actionDumpSprites"/>
+    </widget>
     <addaction name="actionGridCopy"/>
     <addaction name="actionBatchProcess"/>
     <addaction name="actionCreateTestSkinnedObject"/>
     <addaction name="actionDeviceList"/>
     <addaction name="actionImageSplitterForNormals"/>
     <addaction name="actionReplaceTextureMipmap"/>
+    <addaction name="menuDump"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -2160,6 +2168,16 @@
   <action name="actionWithCompressedTextures">
    <property name="text">
     <string>With Compressed Textures</string>
+   </property>
+  </action>
+  <action name="actionDumpTextures">
+   <property name="text">
+    <string>Textures</string>
+   </property>
+  </action>
+  <action name="actionDumpSprites">
+   <property name="text">
+    <string>Sprites</string>
    </property>
   </action>
  </widget>
