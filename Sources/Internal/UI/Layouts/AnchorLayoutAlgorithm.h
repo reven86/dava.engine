@@ -26,8 +26,8 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
-#ifndef __DAVAENGINE_UI_LAYOUT_SYSTEM_H__
-#define __DAVAENGINE_UI_LAYOUT_SYSTEM_H__
+#ifndef __DAVAENGINE_ANCHOR_LAYOUT_ALGORITHM_H__
+#define __DAVAENGINE_ANCHOR_LAYOUT_ALGORITHM_H__
 
 #include "Base/BaseTypes.h"
 #include "Math/Vector.h"
@@ -36,42 +36,22 @@
 
 namespace DAVA
 {
-class UIControl;
-
-class UILayoutSystem
-{
-public:
-    UILayoutSystem();
-    virtual ~UILayoutSystem();
     
-public:
-    bool IsRtl() const;
-    void SetRtl(bool rtl);
-
-    bool IsAutoupdatesEnabled() const;
-    void SetAutoupdatesEnabled(bool enabled);
+    class AnchorLayoutAlgorithm
+    {
+    public:
+        AnchorLayoutAlgorithm(Vector<ControlLayoutData> &layoutData_, bool isRtl_);
+        ~AnchorLayoutAlgorithm();
+        
+        void Apply(ControlLayoutData &data, Vector2::eAxis axis, bool onlyForIgnoredControls);
+        
+    private:
+        Vector<ControlLayoutData> &layoutData;
+        
+        bool isRtl;
+    };
     
-    void ApplyLayout(UIControl *control, bool considerDenendenceOnChildren = false);
-    
-private:
-    UIControl *FindNotDependentOnChildrenControl(UIControl *control) const;
-    
-    void CollectControls(UIControl *control);
-    void CollectControlChildren(UIControl *control, int32 parentIndex);
-    
-    void ProcessAxis(Vector2::eAxis axis);
-    void DoMeasurePhase(Vector2::eAxis axis);
-    void DoLayoutPhase(Vector2::eAxis axis);
-
-    void ApplySizesAndPositions();
-
-private:
-    bool isRtl = false;
-    bool autoupdatesEnabled = true;
-    Vector<ControlLayoutData> layoutData;
-};
-
 }
 
 
-#endif //__DAVAENGINE_UI_LAYOUT_SYSTEM_H__
+#endif //__DAVAENGINE_ANCHOR_LAYOUT_ALGORITHM_H__

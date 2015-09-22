@@ -51,8 +51,8 @@ public:
     
 private:
     void InitializeParams(ControlLayoutData &data, const UILinearLayoutComponent *layout, Vector2::eAxis axis);
-    void CalculateDependendOnParentSizes(ControlLayoutData &data, Vector2::eAxis axis);
-    bool CalculateChildDependendOnParentSize(ControlLayoutData &data, Vector2::eAxis axis);
+    void CalculateDependentOnParentSizes(ControlLayoutData &data, Vector2::eAxis axis);
+    bool CalculateChildDependentOnParentSize(ControlLayoutData &data, Vector2::eAxis axis);
     void CalculateDynamicPaddingAndSpaces(ControlLayoutData &data, const UILinearLayoutComponent *layout, Vector2::eAxis axis);
     void PlaceChildren(ControlLayoutData &data, Vector2::eAxis axis);
 

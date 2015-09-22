@@ -31,6 +31,8 @@
 #include "UILinearLayoutComponent.h"
 #include "UISizePolicyComponent.h"
 
+#include "AnchorLayoutAlgorithm.h"
+
 #include "UI/UIControl.h"
 
 namespace DAVA
@@ -61,10 +63,13 @@ void LinearLayoutAlgorithm::Apply(ControlLayoutData &data, Vector2::eAxis axis)
     
     if (childrenCount > 0)
     {
-        CalculateDependendOnParentSizes(data, axis);
+        CalculateDependentOnParentSizes(data, axis);
         CalculateDynamicPaddingAndSpaces(data, layout, axis);
         PlaceChildren(data, axis);
     }
+    
+    AnchorLayoutAlgorithm anchorAlg(layoutData, axis);
+    anchorAlg.Apply(data, axis, true);
 }
 
 void LinearLayoutAlgorithm::InitializeParams(ControlLayoutData &data, const UILinearLayoutComponent *layout, Vector2::eAxis axis)
@@ -105,7 +110,7 @@ void LinearLayoutAlgorithm::InitializeParams(ControlLayoutData &data, const UILi
     restSize = contentSize - fixedSize - spacesCount * spacing;
 }
 
-void LinearLayoutAlgorithm::CalculateDependendOnParentSizes(ControlLayoutData &data, Vector2::eAxis axis)
+void LinearLayoutAlgorithm::CalculateDependentOnParentSizes(ControlLayoutData &data, Vector2::eAxis axis)
 {
     int32 index = data.GetFirstChildIndex();
     while (index <= data.GetLastChildIndex())
@@ -117,7 +122,7 @@ void LinearLayoutAlgorithm::CalculateDependendOnParentSizes(ControlLayoutData &d
         bool needRestart = false;
         if (!haveToSkip)
         {
-            bool sizeWasLimited = CalculateChildDependendOnParentSize(childData, axis);
+            bool sizeWasLimited = CalculateChildDependentOnParentSize(childData, axis);
             if (sizeWasLimited)
             {
                 needRestart = true;
@@ -136,7 +141,7 @@ void LinearLayoutAlgorithm::CalculateDependendOnParentSizes(ControlLayoutData &d
     }
 }
 
-bool LinearLayoutAlgorithm::CalculateChildDependendOnParentSize(ControlLayoutData &childData, Vector2::eAxis axis)
+bool LinearLayoutAlgorithm::CalculateChildDependentOnParentSize(ControlLayoutData &childData, Vector2::eAxis axis)
 {
     const UISizePolicyComponent *sizeHint = childData.GetControl()->GetComponent<UISizePolicyComponent>();
     if (sizeHint != nullptr && sizeHint->GetPolicyByAxis(axis) == UISizePolicyComponent::PERCENT_OF_PARENT)
