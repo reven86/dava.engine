@@ -379,6 +379,9 @@ void SceneEditor2::SetChanged(bool changed)
 
 void SceneEditor2::Update(float timeElapsed)
 {
+    renderStats = Renderer::GetRenderStats();
+    Renderer::GetRenderStats().Reset();
+
     Scene::Update(timeElapsed);
 }
 
@@ -388,19 +391,8 @@ void SceneEditor2::SetViewportRect(const DAVA::Rect &newViewportRect)
 }
 
 void SceneEditor2::Draw()
-{    
-	
-//	NMaterial* global = renderSystem->GetMaterialSystem()->GetMaterial(MATERIAL_FOR_REBIND);
-//	DVASSERT(global);
-//	
-//	if(global)
-//	{
-//		global->Rebind();
-//	}
-	
-	Scene::Draw();
-    
-    renderStats = Renderer::GetRenderStats();
+{
+    Scene::Draw();
 
 	if(isHUDVisible)
 	{

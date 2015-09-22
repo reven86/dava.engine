@@ -145,7 +145,6 @@ void SceneInfo::Initialize3DDrawSection()
     QtPropertyData* header = CreateInfoHeader("DrawInfo");
 
     AddChild("Visible Render Object Count", header);
-    AddChild("Occluded Object Count",  header);
     AddChild("DrawPrimitiveCalls", header);
     AddChild("DrawIndexedPrimitiveCalls", header);
     AddChild("LineList", header);
@@ -165,24 +164,17 @@ void SceneInfo::Refresh3DDrawInfo()
 
     const RenderStats& renderStats = activeScene->GetRenderStats();
 
-#if RHI_COMPLETE_EDITOR
-    SetChild("Visible Render Object Count", renderStats.visibleRenderObjectCount, header);
-    SetChild("Occluded Object Count", renderStats.occludedRenderObjectCount, header);
-#endif // RHI_COMPLETE_EDITOR
-    
+    SetChild("Visible Render Object Count", renderStats.visibleRenderObjects, header);
     SetChild("DrawPrimitiveCalls", renderStats.drawPrimitive, header);
     SetChild("DrawIndexedPrimitiveCalls", renderStats.drawIndexedPrimitive, header);
     SetChild("LineList", renderStats.primitiveLineListCount, header);
     SetChild("TriangleList", renderStats.primitiveTriangleListCount, header);
     SetChild("TriangleStrip", renderStats.primitiveTriangleStripCount, header);
 
-#if RHI_COMPLETE_EDITOR
     QtPropertyData* header2 = GetInfoHeader("Bind Info");
 
-    SetChild("Dynamic Param Bind Count", renderStats.dynamicParamUniformBindCount, header2);
-    SetChild("Material Param Bind Count", renderStats.materialParamUniformBindCount, header2);
-#endif // RHI_COMPLETE_EDITOR
-
+    SetChild("Dynamic Param Bind Count", renderStats.dynamicParamBindCount, header2);
+    SetChild("Material Param Bind Count", renderStats.materialParamBindCount, header2);
 }
 
 

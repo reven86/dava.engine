@@ -51,13 +51,12 @@ namespace //for private variables
     RenderOptions renderOptions;
     DynamicBindings dynamicBindings;
     RuntimeTextures runtimeTextures;
+    RenderStats stats;
 
     int32 framebufferWidth;
     int32 framebufferHeight;
 
     ScreenShotCallbackDelegate * screenshotCallback = nullptr;
-
-    RenderStats stats;
 }
 
 void Initialize(rhi::Api _api, const rhi::InitParam & params)
@@ -158,7 +157,9 @@ void RequestGLScreenShot(ScreenShotCallbackDelegate *_screenShotCallback)
 }
 
 void BeginFrame()
-{    
+{
+    StatSet::ResetAll();
+
     RenderCallbacks::ProcessFrame();
     DynamicBufferAllocator::BeginFrame();        
 }
@@ -183,13 +184,11 @@ void EndFrame()
     stats.primitiveTriangleListCount = StatSet::StatValue(rhi::stat_DTL);
     stats.primitiveTriangleStripCount = StatSet::StatValue(rhi::stat_DTS);
     stats.primitiveLineListCount = StatSet::StatValue(rhi::stat_DLL);
-
-    StatSet::ResetAll();
 }
 
 }
 
-void RenderStats::Clear()
+void RenderStats::Reset()
 {
     drawIndexedPrimitive = 0U;
     drawPrimitive = 0U;
@@ -211,11 +210,10 @@ void RenderStats::Clear()
     dynamicParamBindCount = 0U;
     materialParamBindCount = 0U;
 
-    drawSprite = 0U;
+    batches2d = 0U;
+    packets2d = 0U;
 
     visibleRenderObjects = 0U;
-    occludedRenderBatches = 0U;
-    occludedRenderObjects = 0U;
 }
 
 }

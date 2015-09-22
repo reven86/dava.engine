@@ -94,7 +94,7 @@ protected:
 
 struct RenderStats
 {
-    void Clear();
+    void Reset();
 
     uint32 drawPrimitive = 0U;
     uint32 drawIndexedPrimitive = 0U;
@@ -115,11 +115,10 @@ struct RenderStats
     uint32 dynamicParamBindCount = 0U;
     uint32 materialParamBindCount = 0U;
 
-    uint32 drawSprite = 0U;
+    uint32 batches2d = 0U;
+    uint32 packets2d = 0U;
 
     uint32 visibleRenderObjects = 0U;
-    uint32 occludedRenderBatches = 0U;
-    uint32 occludedRenderObjects = 0U;
 };
 
 }
