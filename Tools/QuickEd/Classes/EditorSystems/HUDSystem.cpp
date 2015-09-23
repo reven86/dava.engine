@@ -351,21 +351,27 @@ void HUDSystem::OnSelectionChanged(const SelectedNodes& selected, const Selected
     for (auto node : deselected)
     {
         ControlNode* controlNode = dynamic_cast<ControlNode*>(node);
-        hudMap.erase(controlNode);
-        sortedControlList.erase(controlNode);
+        if (nullptr != controlNode)
+        {
+            hudMap.erase(controlNode);
+            sortedControlList.erase(controlNode);
+        }
     }
 
     for (auto node : selected)
     {
         ControlNode* controlNode = dynamic_cast<ControlNode*>(node);
-        PackageBaseNode* parent = controlNode->GetParent();
-
-        if (nullptr != controlNode && nullptr != controlNode->GetControl() && nullptr != parent && nullptr != parent->GetControl())
+        if (controlNode != nullptr)
         {
-            hudMap.emplace(std::piecewise_construct,
-                           std::forward_as_tuple(controlNode),
-                           std::forward_as_tuple(controlNode, hudControl));
-            sortedControlList.insert(controlNode);
+            PackageBaseNode* parent = controlNode->GetParent();
+
+            if (nullptr != controlNode && nullptr != controlNode->GetControl() && nullptr != parent && nullptr != parent->GetControl())
+            {
+                hudMap.emplace(std::piecewise_construct,
+                               std::forward_as_tuple(controlNode),
+                               std::forward_as_tuple(controlNode, hudControl));
+                sortedControlList.insert(controlNode);
+            }
         }
     }
 

@@ -33,6 +33,7 @@
 #include "EditorSystems/EditorSystemsManager.h"
 #include "Base/BaseTypes.h"
 #include "Math/Vector.h"
+#include "UI/UIControl.h"
 
 class TransformSystem final : public BaseEditorSystem
 {
@@ -80,6 +81,8 @@ private:
     DAVA::List<ControlNode*> nodesToMove;
     const DAVA::Vector2 minimumSize = DAVA::Vector2(16.0f, 16.0f);
     size_t currentHash = 0;
+    DAVA::UIGeometricData parentGeometricData;
+    DAVA::UIGeometricData controlGeometricData;
 };
 
 #endif // __QUICKED_TRANSFORM_SYSTEM_H__
