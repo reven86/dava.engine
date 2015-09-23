@@ -145,7 +145,9 @@ void NMaterial::BindParams(rhi::Packet& target)
                 }
                 materialBinding.updateSemantic = materialBinding.source->updateSemantic;
 
+#if defined(__DAVAENGINE_RENDERSTATS__)
                 ++Renderer::GetRenderStats().materialParamBindCount;
+#endif
             }
         }
         materialBufferBinding->lastValidPropertySemantic = NMaterialProperty::GetCurrentUpdateSemantic();
@@ -276,7 +278,7 @@ void NMaterial::AddProperty(const FastName& propName, const float32 *propData, r
     prop->data.reset(new float[ShaderDescriptor::CalculateDataSize(type, arraySize)]);
     prop->SetPropertyValue(propData);
     localProperties[propName] = prop;
-    
+    ClearLocalBuffers(); //RHI_COMPLETE - as local buffers can have binding for this property set as default
     InvalidateBufferBindings();
 }
 
@@ -560,6 +562,7 @@ void NMaterial::RebuildRenderVariants()
         renderVariants[variantDescr.passName] = variant;
     }
 
+    ClearLocalBuffers();
     activeVariantName = FastName();    
     activeVariantInstance = nullptr;
     needRebuildVariants = false;
