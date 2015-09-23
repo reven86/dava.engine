@@ -71,7 +71,7 @@ public:
         {
             UIControl* control = new UIControl();
             UIControlBackground* background = control->GetBackground();
-            background->SetSprite("~res:/Gfx/CheckeredBg2", 0);
+            background->SetSprite("~res:/Gfx/BlackGrid", 0);
             background->SetDrawType(UIControlBackground::DRAW_TILED);
 
             borders.emplace_back(control);
@@ -188,7 +188,7 @@ public:
         {
             UIControl* control = new UIControl();
             UIControlBackground* background = control->GetBackground();
-            background->SetSprite("~res:/Gfx/CheckeredBg2", 0);
+            background->SetSprite("~res:/Gfx/BlackGrid", 0);
             background->SetDrawType(UIControlBackground::DRAW_TILED);
             borders.emplace_back(control);
         }
@@ -238,7 +238,7 @@ public:
         : ControlContainer(area_)
     {
         SetName("Frame Rect Control");
-        background->SetSprite("~res:/Gfx/HUDControls/HUDControls2", 0);
+        background->SetSprite("~res:/Gfx/HUDControls/Rect", 0);
         background->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
     }
 
@@ -286,7 +286,7 @@ public:
         : ControlContainer(HUDAreaInfo::PIVOT_POINT_AREA)
     {
         SetName("pivot point control");
-        background->SetSprite("~res:/Gfx/HUDControls/HUDControls2", 1);
+        background->SetSprite("~res:/Gfx/HUDControls/Pivot", 0);
         background->SetDrawType(UIControlBackground::DRAW_ALIGNED);
     }
 
@@ -307,7 +307,7 @@ public:
         : ControlContainer(HUDAreaInfo::ROTATE_AREA)
     {
         SetName("rotate control");
-        background->SetSprite("~res:/Gfx/HUDControls/HUDControls2", 2);
+        background->SetSprite("~res:/Gfx/HUDControls/Rotate", 2);
         background->SetDrawType(UIControlBackground::DRAW_ALIGNED);
     }
 

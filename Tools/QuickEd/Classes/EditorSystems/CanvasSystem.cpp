@@ -227,11 +227,11 @@ void GridControl::UpdateSprite()
     /*bool transformed = !counterpoiseControl->GetPosition().IsZero() || !counterpoiseControl->GetPivot().IsZero() || counterpoiseControl->GetAngle() != 0;
     if (transformed)
     {
-        background->SetSprite("~res:/Gfx/CheckeredBg2", 0);
+        background->SetSprite("~res:/Gfx/BlackGrid", 0);
     }
     else*/ //use it to indicate that root control is in invalid state
     {
-        background->SetSprite("~res:/Gfx/CheckeredBg", 0);
+        background->SetSprite("~res:/Gfx/GreyGrid", 0);
     }
 }
 
