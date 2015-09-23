@@ -882,7 +882,14 @@ void QtMainWindow::SetupActions()
     
     connect(ui->actionImageSplitterForNormals, &QAction::triggered, developerTools, &DeveloperTools::OnImageSplitterNormals);
     connect(ui->actionReplaceTextureMipmap, &QAction::triggered, developerTools, &DeveloperTools::OnReplaceTextureMipmap);
-    
+
+    connect(ui->actionDumpTextures, &QAction::triggered, []
+            { Texture::DumpTextures();
+            });
+    connect(ui->actionDumpSprites, &QAction::triggered, []
+            { Sprite::DumpSprites();
+            });
+
     connect( ui->actionDeviceList, &QAction::triggered, this, &QtMainWindow::DebugDeviceList );
 
     auto actSpy = ui->menuDebug_Functions->addAction( "Spy Qt Widgets" );

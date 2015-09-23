@@ -90,6 +90,10 @@ const FXDescriptor& GetFXDescriptor(const FastName &fxName, HashMap<FastName, in
     DVASSERT(initialized);
     Vector<int32> key;
     ShaderDescriptorCache::BuildFlagsKey(fxName, defines, key);
+
+    if (quality.IsValid()) //quality made as part of fx key
+        key.push_back(quality.Index());
+
     Map<Vector<int32>, FXDescriptor>& localFx = fxDescriptors;
     auto it = fxDescriptors.find(key);
     if (it != fxDescriptors.end())

@@ -253,6 +253,7 @@ bool CubemapEditorDialog::IsFormatValid(const DAVA::ImageInfo &info)
         case FORMAT_RGBA4444:
         case FORMAT_RGBA5551:
         case FORMAT_RGBA8888:
+        case FORMAT_RGB888:
         case FORMAT_RGB565:
         case FORMAT_A8:
         case FORMAT_A16:
