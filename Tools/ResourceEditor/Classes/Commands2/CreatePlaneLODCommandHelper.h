@@ -57,8 +57,8 @@ namespace CreatePlaneLODCommandHelper
     };
     using RequestPointer = DAVA::RefPtr<Request>;
 
-    RequestPointer RequestRenderToTexture(DAVA::LodComponent* lodComponent, DAVA::int32 fromLodLayer, 
-		DAVA::uint32 textureSize, const DAVA::FilePath& texturePath);
+    RequestPointer RequestRenderToTexture(DAVA::LodComponent* lodComponent, DAVA::int32 fromLodLayer,
+                                          DAVA::uint32 textureSize, const DAVA::FilePath& texturePath);
 };
 
 #endif // #ifndef __CREATE_PLANE_LOD_COOMAND_H__

@@ -120,8 +120,8 @@ void LandscapeThumbnails::Create(DAVA::Landscape* landscape, LandscapeThumbnails
     }
     RenderCallbacks::RegisterSyncCallback(syncObject, MakeFunction(&OnCreateLandscapeTextureCompleted));
 
-	const auto identityMatrix = &Matrix4::IDENTITY;
-	DAVA::ShaderDescriptorCache::ClearDynamicBindigs();
+    const auto identityMatrix = &Matrix4::IDENTITY;
+    DAVA::ShaderDescriptorCache::ClearDynamicBindigs();
 	Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, identityMatrix, (pointer_size)(identityMatrix));
 	Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_VIEW, identityMatrix, (pointer_size)(identityMatrix));
 	Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_PROJ, identityMatrix, (pointer_size)(identityMatrix));

@@ -251,8 +251,8 @@ void VisibilityToolSystem::SetState(eVisibilityToolState newState)
             break;
 
         case VT_STATE_SET_AREA:
-			drawSystem->SetCursorTexture(cursorTexture);
-			drawSystem->SetCursorSize(cursorSize);
+            drawSystem->SetCursorTexture(cursorTexture);
+            drawSystem->SetCursorSize(cursorSize);
 			break;
 
 		default:

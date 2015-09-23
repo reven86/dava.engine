@@ -144,10 +144,16 @@ public:
 
     static void DumpTextures();
 
-    inline int32 GetWidth() const { return width; }
-	inline int32 GetHeight() const { return height; }
-	
-	void GenerateMipmaps();	
+    inline int32 GetWidth() const
+    {
+        return width;
+    }
+    inline int32 GetHeight() const
+    {
+        return height;
+    }
+
+    void GenerateMipmaps();	
 	
 	void TexImage(int32 level, uint32 width, uint32 height, const void * _data, uint32 dataSize, uint32 cubeFaceId);
     

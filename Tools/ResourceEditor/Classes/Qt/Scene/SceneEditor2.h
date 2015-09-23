@@ -172,9 +172,9 @@ public:
 
     void DisableTools(int32 toolFlags, bool saveChanges = true);
     bool IsToolsEnabled(int32 toolFlags);
-	int32 GetEnabledTools();
+    int32 GetEnabledTools();
 
-	SceneEditor2 *CreateCopyForExport();	//Need to prevent changes of original scene
+    SceneEditor2 *CreateCopyForExport();	//Need to prevent changes of original scene
     Entity * Clone(Entity *dstNode /* = NULL */) override;
 
     void Activate() override;
@@ -201,8 +201,8 @@ protected:
 
     DAVA::Vector<DAVA::Entity*> editorEntities;
 
-    virtual void EditorCommandProcess(const Command2 *command, bool redo);
-	virtual void Draw();
+    virtual void EditorCommandProcess(const Command2* command, bool redo);
+    virtual void Draw();
 
     void ExtractEditorEntities();
 	void InjectEditorEntities();

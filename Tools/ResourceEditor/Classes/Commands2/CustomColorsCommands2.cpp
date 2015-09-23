@@ -45,8 +45,8 @@ void ActionEnableCustomColors::Redo()
 {
     if (sceneEditor == nullptr)
     {
-		return;
-	}
+        return;
+    }
 	
 	bool enabled = sceneEditor->customColorsSystem->IsLandscapeEditingEnabled();
 	if (enabled)
@@ -96,8 +96,8 @@ void ActionDisableCustomColors::Redo()
 {
     if (sceneEditor == nullptr)
     {
-		return;
-	}
+        return;
+    }
 	
 	bool disabled = !sceneEditor->customColorsSystem->IsLandscapeEditingEnabled();
 	if (disabled)
@@ -133,7 +133,7 @@ ModifyCustomColorsCommand::ModifyCustomColorsCommand(Image* originalImage, Image
     customColorsProxy = SafeRetain(_customColorsProxy);
 
     undoImage = Image::CopyImageRegion(originalImage, updatedRect);
-	redoImage = Image::CopyImageRegion(currentImage, updatedRect);
+    redoImage = Image::CopyImageRegion(currentImage, updatedRect);
 }
 
 ModifyCustomColorsCommand::~ModifyCustomColorsCommand()

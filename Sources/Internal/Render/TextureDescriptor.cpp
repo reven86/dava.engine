@@ -95,7 +95,6 @@ DAVA_DEPRECATED(void ConvertV10orLessToV11(TextureDescriptor& descriptor))
         break;
     }
 }
-
 }
 
 //================   TextureDrawSettings  ===================
