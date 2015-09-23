@@ -186,7 +186,6 @@ void TextBlock::SetFontInternal(Font* _font)
 
 void TextBlock::SetFont(Font* _font)
 {
-    LockGuard<Mutex> guard(mutex);
     if (_font && _font != font)
     {
         SetFontInternal(_font);
@@ -196,7 +195,6 @@ void TextBlock::SetFont(Font* _font)
 
 void TextBlock::SetRectSize(const Vector2& size)
 {
-    LockGuard<Mutex> guard(mutex);
     if (rectSize != size)
 	{
 		rectSize = size;
@@ -206,7 +204,6 @@ void TextBlock::SetRectSize(const Vector2& size)
 
 void TextBlock::SetScale(const Vector2 & _scale)
 {
-    LockGuard<Mutex> guard(mutex);
     if (scale != _scale)
     {
         scale = _scale;
@@ -216,7 +213,6 @@ void TextBlock::SetScale(const Vector2 & _scale)
 
 void TextBlock::SetText(const WideString & _string, const Vector2 &requestedTextRectSize)
 {
-    LockGuard<Mutex> guard(mutex);
     if (logicalText != _string || requestedSize != requestedTextRectSize)
     {
         requestedSize = requestedTextRectSize;
@@ -227,7 +223,6 @@ void TextBlock::SetText(const WideString & _string, const Vector2 &requestedText
 
 void TextBlock::SetMultiline(bool _isMultilineEnabled, bool bySymbol)
 {
-    LockGuard<Mutex> guard(mutex);
     if (isMultilineEnabled != _isMultilineEnabled || isMultilineBySymbolEnabled != bySymbol)
     {
         isMultilineBySymbolEnabled = bySymbol;
@@ -238,7 +233,6 @@ void TextBlock::SetMultiline(bool _isMultilineEnabled, bool bySymbol)
 
 void TextBlock::SetFittingOption(int32 _fittingType)
 {
-    LockGuard<Mutex> guard(mutex);
     if (fittingType != _fittingType)
 	{
 		fittingType = _fittingType;
@@ -248,7 +242,6 @@ void TextBlock::SetFittingOption(int32 _fittingType)
 
 void TextBlock::SetRenderSize(float32 _renderSize)
 {
-    LockGuard<Mutex> guard(mutex);
     if (renderSize != _renderSize)
     {
         renderSize = Max(_renderSize, 0.1f);
@@ -258,7 +251,6 @@ void TextBlock::SetRenderSize(float32 _renderSize)
 
 void TextBlock::SetAlign(int32 _align)
 {
-    LockGuard<Mutex> guard(mutex);
     if (align != _align)
     {
         align = _align;
@@ -268,7 +260,6 @@ void TextBlock::SetAlign(int32 _align)
 
 void TextBlock::SetUseRtlAlign(eUseRtlAlign _useRtlAlign)
 {
-    LockGuard<Mutex> guard(mutex);
     if (useRtlAlign != _useRtlAlign)
     {
         useRtlAlign = _useRtlAlign;
@@ -278,165 +269,118 @@ void TextBlock::SetUseRtlAlign(eUseRtlAlign _useRtlAlign)
 
 Font* TextBlock::GetFont()
 {
-    LockGuard<Mutex> guard(mutex);
     return font;
 }
 
 const WideString& TextBlock::GetText()
 {
-    LockGuard<Mutex> guard(mutex);
     return logicalText;
 }
 
 bool TextBlock::GetMultiline()
 {
-    LockGuard<Mutex> guard(mutex);
     return isMultilineEnabled;
 }
 
 bool TextBlock::GetMultilineBySymbol()
 {
-    LockGuard<Mutex> guard(mutex);
     return isMultilineBySymbolEnabled;
 }
 
 int32 TextBlock::GetFittingOption()
 {
-    LockGuard<Mutex> guard(mutex);
     return fittingType;
 }
 
 TextBlock::eUseRtlAlign TextBlock::GetUseRtlAlign()
 {
-    LockGuard<Mutex> guard(mutex);
     return useRtlAlign;
 }
 
 int32 TextBlock::GetAlign()
 {
-    LockGuard<Mutex> guard(mutex);
     return align;
 }
 
 const Vector<WideString>& TextBlock::GetMultilineStrings()
 {
-    LockGuard<Mutex> guard(mutex);
-    if (needCalculateCacheParams)
-    {
-        CalculateCacheParams();
-    }
+    CalculateCacheParamsIfNeed();
     return multilineStrings;
 }
 
 const WideString& TextBlock::GetVisualText()
 {
-    LockGuard<Mutex> guard(mutex);
-    if (needCalculateCacheParams)
-    {
-        CalculateCacheParams();
-    }
+    CalculateCacheParamsIfNeed();
     return visualText;
 }
 
 float32 TextBlock::GetRenderSize()
 {
-    LockGuard<Mutex> guard(mutex);
-    if (needCalculateCacheParams)
-    {
-        CalculateCacheParams();
-    }
+    CalculateCacheParamsIfNeed();
     return renderSize;
 }
 
 const Vector2& TextBlock::GetTextSize()
 {
-    LockGuard<Mutex> guard(mutex);
-    if (needCalculateCacheParams)
-    {
-        CalculateCacheParams();
-    }
+    CalculateCacheParamsIfNeed();
     return cacheTextSize;
 }
 
 const Vector<int32>& TextBlock::GetStringSizes()
 {
-    LockGuard<Mutex> guard(mutex);
-    if (needCalculateCacheParams)
-    {
-        CalculateCacheParams();
-    }
+    CalculateCacheParamsIfNeed();
     return stringSizes;
 }
 
 const Vector2& TextBlock::GetSpriteOffset()
 {
-    LockGuard<Mutex> guard(mutex);
-    if (needCalculateCacheParams)
-    {
-        CalculateCacheParams();
-    }
+    CalculateCacheParamsIfNeed();
     return cacheSpriteOffset;
 }
 
 bool TextBlock::IsRtl()
 {
-    LockGuard<Mutex> guard(mutex);
-    if (needCalculateCacheParams)
-    {
-        CalculateCacheParams();
-    }
+    CalculateCacheParamsIfNeed();
     return isRtl;
 }
 
 int32 TextBlock::GetVisualAlign()
 {
-    LockGuard<Mutex> guard(mutex);
-    if (needCalculateCacheParams)
-    {
-        CalculateCacheParams();
-    }
-    return GetVisualAlignNoMutexLock();
-}
+    CalculateCacheParamsIfNeed();
 
-int32 TextBlock::GetVisualAlignNoMutexLock() const
-{
-	if (((align & (ALIGN_LEFT | ALIGN_RIGHT)) != 0) &&
+    if (((align & (ALIGN_LEFT | ALIGN_RIGHT)) != 0) &&
         ((useRtlAlign == RTL_USE_BY_CONTENT && isRtl) ||
          (useRtlAlign == RTL_USE_BY_SYSTEM && UIControlSystem::Instance()->IsRtl())))
     {
         // Mirror left/right align
         return align ^ (ALIGN_LEFT | ALIGN_RIGHT);
     }
-	return align;
+    return align;
 }
 
 #if defined(LOCALIZATION_DEBUG)
 int32 TextBlock::GetFittingOptionUsed()
 {
-    LockGuard<Mutex> guard(mutex);
+    CalculateCacheParamsIfNeed();
     return fittingTypeUsed;
 }
 
 bool TextBlock::IsVisualTextCroped()
 {
-    LockGuard<Mutex> guard(mutex);
+    CalculateCacheParamsIfNeed();
     return visualTextCroped;
 }
 #endif
 
 Vector2 TextBlock::GetPreferredSizeForWidth(float32 width)
 {
-    LockGuard<Mutex> guard(mutex);
     if (!font)
         return Vector2();
 
     Vector2 result;
     if (requestedSize.dx < 0.0f && requestedSize.dy < 0.0f && fittingType == FITTING_DISABLED)
     {
-        if (needCalculateCacheParams)
-        {
-            CalculateCacheParams();
-        }
+        CalculateCacheParamsIfNeed();
         result = cacheTextSize;
     }
     else
@@ -460,7 +404,6 @@ Vector2 TextBlock::GetPreferredSizeForWidth(float32 width)
 
 Sprite * TextBlock::GetSprite()
 {
-    LockGuard<Mutex> guard(mutex);
     if (textBlockRender)
     {
         return textBlockRender->GetSprite();
@@ -475,7 +418,6 @@ bool TextBlock::IsSpriteReady()
 
 void TextBlock::ForcePrepare(Texture* texture)
 {
-    LockGuard<Mutex> guard(mutex);
     NeedPrepare(texture);
 }
 
@@ -508,6 +450,8 @@ void TextBlock::PrepareInternal()
 void TextBlock::CalculateCacheParams()
 {
     needCalculateCacheParams = false;
+    stringSizes.clear();
+    multilineStrings.clear();
 
 #if defined(LOCALIZATION_DEBUG)
     fittingTypeUsed = FITTING_DISABLED;
@@ -526,34 +470,39 @@ void TextBlock::CalculateCacheParams()
         cacheOy = 0;
         cacheSpriteOffset = Vector2(0.f,0.f);
         cacheTextSize = Vector2(0.f,0.f);
-		
         return;
     }
 
-    TextLayout textLayout(isBiDiSupportEnabled);
-    Vector<float32> charSizes;
-    
-    textLayout.Reset(logicalText, *font);
-    isRtl = textLayout.IsRtlText();
-    
-    visualText = textLayout.GetVisualText(false);
-
-    bool useJustify = ((align & ALIGN_HJUSTIFY) != 0);
-    renderSize = originalFontSize * scale.y;
-    font->SetSize(renderSize);
     Vector2 drawSize = rectSize;
-
-    if(requestedSize.dx > 0)
+    if (requestedSize.dx > 0)
     {
         drawSize.x = requestedSize.dx;
     }
-    if(requestedSize.dy > 0)
+    if (requestedSize.dy > 0)
     {
         drawSize.y = requestedSize.dy;
     }
+    bool useJustify = ((align & ALIGN_HJUSTIFY) != 0);
 
-    Font::StringMetrics textMetrics;
-    stringSizes.clear();
+    renderSize = originalFontSize * scale.y;
+    font->SetSize(renderSize);
+
+    TextLayout textLayout(isBiDiSupportEnabled);
+    textLayout.Reset(logicalText);
+    isRtl = textLayout.IsRtlText();
+    visualText = textLayout.GetVisualText(false);
+
+    Vector<float32> charSizes;
+    Font::StringMetrics textMetrics = font->GetStringMetrics(visualText, &charSizes);
+
+    if (visualText != textLayout.GetPreparedText())
+    {
+        textLayout.CalculateCharSizes(*font);
+    }
+    else
+    {
+        textLayout.SetCharSizes(charSizes);
+    }
 
     // This is a temporary fix to correctly handle long multiline texts
     // which can't be broken to the separate lines.
@@ -566,10 +515,6 @@ void TextBlock::CalculateCacheParams()
 
     if(!isMultilineEnabled || treatMultilineAsSingleLine)
     {
-        Vector<float32> charSizes;
-        textMetrics = font->GetStringMetrics(visualText, &charSizes);
-        DVASSERT(charSizes.size() == visualText.length());
-        
         for (float32& val : charSizes)
         {
             val = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(val);
@@ -769,26 +714,19 @@ void TextBlock::CalculateCacheParams()
     }
     else //if(!isMultilineEnabled)
     {
+        int32 yOffset = font->GetVerticalSpacing();
+        int32 fontHeight = 0;
+        textMetrics.width = textMetrics.drawRect.dx = 0;
+
+        multilineStrings.clear();
+        textLayout.Seek(0);
+        textLayout.FillList(multilineStrings, drawSize.dx, isMultilineBySymbolEnabled, true);
+        fontHeight = font->GetFontHeight() + yOffset;
+        textMetrics.height = textMetrics.drawRect.dy = fontHeight * (int32)multilineStrings.size() - yOffset;
+
         if (fittingType && (requestedSize.dy >= 0/* || requestedSize.dx >= 0*/) && visualText.size() > 3)
         {
-            multilineStrings.clear();
-            textLayout.Seek(0);
-            while (!textLayout.IsEndOfText())
-            {
-                if(isMultilineBySymbolEnabled || !textLayout.NextByWords(drawSize.dx))
-                {
-                    textLayout.NextBySymbols(drawSize.dx);
-                }
-                multilineStrings.push_back(textLayout.GetVisualLine(true));
-            }
-        
-            int32 yOffset = font->GetVerticalSpacing();
-            int32 fontHeight = font->GetFontHeight() + yOffset;
             float32 lastSize = renderSize;
-
-            textMetrics.width = 0;
-            textMetrics.height = fontHeight * (int32)multilineStrings.size() - yOffset;
-
             bool isChanged = false;
             while (true)
             {
@@ -796,7 +734,7 @@ void TextBlock::CalculateCacheParams()
 
                 bool yBigger = false;
                 bool yLower = false;
-                if(requestedSize.dy >= 0)
+                if (requestedSize.dy >= 0)
                 {
                     if ((isChanged || fittingType & FITTING_REDUCE) && textMetrics.height > drawSize.y)
                     {
@@ -806,6 +744,13 @@ void TextBlock::CalculateCacheParams()
                         {
                             renderSize = lastSize;
                             font->SetSize(renderSize);
+
+                            multilineStrings.clear();
+                            textLayout.CalculateCharSizes(*font);
+                            textLayout.Seek(0);
+                            textLayout.FillList(multilineStrings, drawSize.dx, isMultilineBySymbolEnabled, true);
+                            fontHeight = font->GetFontHeight() + yOffset;
+                            textMetrics.height = textMetrics.drawRect.dy = fontHeight * (int32)multilineStrings.size() - yOffset;
                             break;
                         }
                     }
@@ -832,14 +777,14 @@ void TextBlock::CalculateCacheParams()
                         {
                             yMul = (drawSize.y * 0.95f) / textMetrics.height;
                         }
-                        if (yMul == 1.0f)
+                        if (FLOAT_EQUAL(yMul, 1.0f))
                         {
                             yMul = 1.05f;
                         }
                     }
                 }
 
-                if((!yBigger && !yLower) || FLOAT_EQUAL(renderSize,0.f))
+                if ((!yBigger && !yLower) || FLOAT_EQUAL(renderSize, 0.f))
                 {
                     break;
                 }
@@ -858,43 +803,18 @@ void TextBlock::CalculateCacheParams()
                     fittingTypeUsed |= FITTING_REDUCE;
                 }
 #endif
+
                 renderSize = finalSize;
                 font->SetSize(renderSize);
 
-
                 multilineStrings.clear();
-                textLayout.Reset(logicalText, *font);
-                while (!textLayout.IsEndOfText())
-                {
-                    if(isMultilineBySymbolEnabled || !textLayout.NextByWords(drawSize.dx))
-                    {
-                        textLayout.NextBySymbols(drawSize.dx);
-                    }
-                    multilineStrings.push_back(textLayout.GetVisualLine(true));
-                }
-
-                yOffset = font->GetVerticalSpacing();
+                textLayout.CalculateCharSizes(*font);
+                textLayout.Seek(0);
+                textLayout.FillList(multilineStrings, drawSize.dx, isMultilineBySymbolEnabled, true);
                 fontHeight = font->GetFontHeight() + yOffset;
-                textMetrics.height = fontHeight * (int32)multilineStrings.size() - yOffset;
+                textMetrics.height = textMetrics.drawRect.dy = fontHeight * (int32)multilineStrings.size() - yOffset;
             };
         }
-
-        multilineStrings.clear();
-        textLayout.Reset(logicalText, *font);
-        while (!textLayout.IsEndOfText())
-        {
-            if(isMultilineBySymbolEnabled || !textLayout.NextByWords(drawSize.dx))
-            {
-                textLayout.NextBySymbols(drawSize.dx);
-            }
-            multilineStrings.push_back(textLayout.GetVisualLine(true));
-        }
-
-        int32 yOffset = font->GetVerticalSpacing();
-        int32 fontHeight = font->GetFontHeight() + yOffset;
-
-        textMetrics.width = textMetrics.drawRect.dx = 0;
-        textMetrics.height = textMetrics.drawRect.dy = fontHeight * (int32)multilineStrings.size() - yOffset;
 
         if (textMetrics.height > drawSize.y && requestedSize.y >= 0.f)
         {
@@ -1011,10 +931,7 @@ void TextBlock::CalculateCacheParams()
 
 void TextBlock::PreDraw()
 {
-    if (needCalculateCacheParams)
-    {
-        CalculateCacheParams();
-    }
+    CalculateCacheParamsIfNeed();
 
     if(needPrepareInternal)
 	{

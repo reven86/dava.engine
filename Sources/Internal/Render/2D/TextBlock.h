@@ -157,8 +157,8 @@ protected:
     void NeedPrepare(Texture* texture = NULL);
     void PrepareInternal();
 	void CalculateCacheParams();
+    void CalculateCacheParamsIfNeed();
 
-	int32 GetVisualAlignNoMutexLock() const; // Return align for displaying BiDi-text (w/o mutex lock)
     void SetFontInternal(Font* _font);
 
     Vector2 scale;
@@ -193,8 +193,6 @@ protected:
     Vector<WideString> multilineStrings;
     Vector<int32> stringSizes;
     
-    Mutex mutex;
-
     bool isMultilineEnabled:1;
     bool isMultilineBySymbolEnabled:1;
     bool isPredrawed:1;
@@ -218,6 +216,14 @@ protected:
 	float angle;
 	Vector2 pivot;
 };
+
+inline void TextBlock::CalculateCacheParamsIfNeed()
+{
+    if (needCalculateCacheParams)
+    {
+        CalculateCacheParams();
+    }
+}
 
 }; //end of namespace
 

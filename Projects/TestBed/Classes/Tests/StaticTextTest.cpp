@@ -191,9 +191,10 @@ void StaticTextTest::LoadResources()
 
 void StaticTextTest::UnloadResources()
 {
+    inputText->SetDelegate(nullptr);
+    SafeDelete(inputDelegate);
     SafeRelease(previewText);
     SafeRelease(inputText);
-    SafeDelete(inputDelegate);
     SafeRelease(requireTextSizeButton);
     for (auto btn : alignButtons)
     {
@@ -210,6 +211,8 @@ void StaticTextTest::UnloadResources()
         SafeRelease(btn);
     }
     multilineButtons.clear();
+
+    BaseScreen::UnloadResources();
 }
 
 void StaticTextTest::SetPreviewText(const DAVA::WideString& text)
