@@ -227,7 +227,7 @@ public:							// properties for fast access
 
 
     rhi::HTexture handle;
-    rhi::HSamplerState sampleStateHandle;
+    rhi::HSamplerState samplerStateHandle;
     rhi::SamplerState::Descriptor::Sampler samplerState;
 
 	

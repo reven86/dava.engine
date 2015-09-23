@@ -237,8 +237,8 @@ void Texture::ReleaseTextureData()
         rhi::DeleteTexture(handle);
     handle = rhi::HTexture(rhi::InvalidHandle);
 
-    rhi::ReleaseSamplerState(sampleStateHandle);
-    sampleStateHandle = rhi::HSamplerState(rhi::InvalidHandle);
+    rhi::ReleaseSamplerState(samplerStateHandle);
+    samplerStateHandle = rhi::HSamplerState(rhi::InvalidHandle);
 
 	state = STATE_INVALID;
     isRenderTarget = false;
@@ -316,8 +316,8 @@ void Texture::SetWrapMode(rhi::TextureAddrMode wrapU, rhi::TextureAddrMode wrapV
     samplerState.addrV = wrapV;
     samplerState.addrW = wrapW;
 
-    rhi::ReleaseSamplerState(sampleStateHandle);
-    sampleStateHandle = CreateSamplerStateHandle(samplerState);
+    rhi::ReleaseSamplerState(samplerStateHandle);
+    samplerStateHandle = CreateSamplerStateHandle(samplerState);
 }
 
 void Texture::SetMinMagFilter(rhi::TextureFilter minFilter, rhi::TextureFilter magFilter, rhi::TextureMipFilter mipFilter)
@@ -326,8 +326,8 @@ void Texture::SetMinMagFilter(rhi::TextureFilter minFilter, rhi::TextureFilter m
     samplerState.magFilter = magFilter;
     samplerState.mipFilter = mipFilter;
 
-    rhi::ReleaseSamplerState(sampleStateHandle);
-    sampleStateHandle = CreateSamplerStateHandle(samplerState);
+    rhi::ReleaseSamplerState(samplerStateHandle);
+    samplerStateHandle = CreateSamplerStateHandle(samplerState);
 }
 	
 void Texture::GenerateMipmaps()
@@ -516,8 +516,8 @@ void Texture::FlushDataToRenderer(Vector<Image *> * images)
     samplerState.magFilter = texDescriptor->drawSettings.magFilter;
     samplerState.mipFilter = texDescriptor->drawSettings.mipFilter;
 
-    rhi::ReleaseSamplerState(sampleStateHandle);
-    sampleStateHandle = CreateSamplerStateHandle(samplerState);
+    rhi::ReleaseSamplerState(samplerStateHandle);
+    samplerStateHandle = CreateSamplerStateHandle(samplerState);
 
     state = STATE_VALID;
 
@@ -704,7 +704,7 @@ Texture * Texture::CreateFBO(uint32 w, uint32 h, PixelFormat format, rhi::Textur
     descriptor.format = formatDescriptor.format;
     DVASSERT(descriptor.format != ((rhi::TextureFormat)-1));//unsupported format
     tx->handle = rhi::CreateTexture(descriptor);
-    tx->sampleStateHandle = CreateSamplerStateHandle(tx->samplerState);
+    tx->samplerStateHandle = CreateSamplerStateHandle(tx->samplerState);
 
     tx->isRenderTarget = true;
     tx->texDescriptor->pathname = Format("FBO texture %d", textureFboCounter);
@@ -976,13 +976,8 @@ int32 Texture::GetBaseMipMap() const
 rhi::HSamplerState Texture::CreateSamplerStateHandle(const rhi::SamplerState::Descriptor::Sampler& samplerState)
 {
     rhi::SamplerState::Descriptor samplerDesc;
-    samplerDesc.fragmentSampler[0].magFilter = samplerState.magFilter;
-    samplerDesc.fragmentSampler[0].minFilter = samplerState.minFilter;
-    samplerDesc.fragmentSampler[0].mipFilter = samplerState.mipFilter;
-    samplerDesc.fragmentSampler[0].addrU = samplerState.addrU;
-    samplerDesc.fragmentSampler[0].addrV = samplerState.addrV;
-    samplerDesc.fragmentSampler[0].addrW = samplerState.addrW;
 
+    samplerDesc.fragmentSampler[0] = samplerState;
     samplerDesc.fragmentSamplerCount = 1;
 
     return rhi::AcquireSamplerState(samplerDesc);

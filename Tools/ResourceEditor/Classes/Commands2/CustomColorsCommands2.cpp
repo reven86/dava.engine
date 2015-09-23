@@ -179,7 +179,7 @@ void ModifyCustomColorsCommand::ApplyImage(DAVA::Image *image)
     textureSetHandle = rhi::AcquireTextureSet(desc);
     
     RenderSystem2D::Instance()->BeginRenderTargetPass(customColorsTarget, false);
-    RenderSystem2D::Instance()->DrawTexture(textureSetHandle, texture->sampleStateHandle, customColorsProxy->GetBrushMaterial(), Color::White, updatedRect);
+    RenderSystem2D::Instance()->DrawTexture(textureSetHandle, texture->samplerStateHandle, customColorsProxy->GetBrushMaterial(), Color::White, updatedRect);
     RenderSystem2D::Instance()->EndRenderTargetPass();
 	
 	customColorsProxy->UpdateRect(updatedRect);

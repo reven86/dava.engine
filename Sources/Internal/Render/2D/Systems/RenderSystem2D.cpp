@@ -992,7 +992,7 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * drawState, const 
     BatchDescriptor batch;
     batch.material = state->GetMaterial();
     batch.textureSetHandle = sprite->GetTextureHandle(frame);
-    batch.samplerStateHandle = sprite->GetTexture(frame)->sampleStateHandle;
+    batch.samplerStateHandle = sprite->GetTexture(frame)->samplerStateHandle;
     batch.singleColor = color;
     batch.vertexCount = spriteVertexCount;
     batch.indexCount = spriteIndexCount;
@@ -1093,7 +1093,7 @@ void RenderSystem2D::DrawStretched(Sprite * sprite, Sprite::DrawState * state, V
     BatchDescriptor batch;
     batch.singleColor = color;
     batch.textureSetHandle = sprite->GetTextureHandle(frame);
-    batch.samplerStateHandle = sprite->GetTexture(frame)->sampleStateHandle;
+    batch.samplerStateHandle = sprite->GetTexture(frame)->samplerStateHandle;
     batch.material = state->GetMaterial();
     batch.vertexCount = spriteVertexCount;
     batch.indexCount = spriteIndexCount;
@@ -1188,7 +1188,7 @@ void RenderSystem2D::DrawTiled(Sprite * sprite, Sprite::DrawState * state, const
     batch.singleColor = color;
     batch.material = state->GetMaterial();
     batch.textureSetHandle = sprite->GetTextureHandle(frame);
-    batch.samplerStateHandle = sprite->GetTexture(frame)->sampleStateHandle;
+    batch.samplerStateHandle = sprite->GetTexture(frame)->samplerStateHandle;
     batch.vertexCount = spriteVertexCount;
     batch.indexCount = spriteIndexCount;
     batch.vertexStride = 2;

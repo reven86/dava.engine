@@ -509,7 +509,7 @@ void VisibilityToolSystem::DrawVisibilityPoint()
     const Vector2 curSize(CROSS_TEXTURE_SIZE, CROSS_TEXTURE_SIZE);
 
     RenderSystem2D::Instance()->BeginRenderTargetPass(visibilityToolTexture);
-    RenderSystem2D::Instance()->DrawTexture(crossTextureSet, crossTexture->sampleStateHandle, RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL, Color::White, Rect(cursorPosition * landscapeSize - curSize / 2.f, curSize));
+    RenderSystem2D::Instance()->DrawTexture(crossTextureSet, crossTexture->samplerStateHandle, RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL, Color::White, Rect(cursorPosition * landscapeSize - curSize / 2.f, curSize));
     RenderSystem2D::Instance()->EndRenderTargetPass();
     
     visibilityToolProxy->UpdateVisibilityPointSet(true);

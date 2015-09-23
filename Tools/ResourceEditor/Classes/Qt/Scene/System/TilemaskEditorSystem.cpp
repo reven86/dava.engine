@@ -213,7 +213,7 @@ void TilemaskEditorSystem::Process(float32 timeElapsed)
             Rect toolRect(toolPos, toolSize);
 
             RenderSystem2D::Instance()->BeginRenderTargetPass(toolTexture);
-            RenderSystem2D::Instance()->DrawTexture(toolImageTextureSet, toolImageTexture->sampleStateHandle, RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL, Color::White, toolRect);
+            RenderSystem2D::Instance()->DrawTexture(toolImageTextureSet, toolImageTexture->samplerStateHandle, RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL, Color::White, toolRect);
             RenderSystem2D::Instance()->EndRenderTargetPass();
 
             toolSpriteUpdated = true;
@@ -468,7 +468,7 @@ void TilemaskEditorSystem::CreateMaskTexture()
         landscapeTilemaskTexture = SafeRetain(tilemask);
         
         RenderSystem2D::Instance()->BeginRenderTargetPass(srcTexture);
-        RenderSystem2D::Instance()->DrawTexture(landscapeTilemaskTextureSet, landscapeTilemaskTexture->sampleStateHandle, RenderSystem2D::DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL, Color::White);
+        RenderSystem2D::Instance()->DrawTexture(landscapeTilemaskTextureSet, landscapeTilemaskTexture->samplerStateHandle, RenderSystem2D::DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL, Color::White);
         RenderSystem2D::Instance()->EndRenderTargetPass();
         
         drawSystem->GetLandscapeProxy()->SetTilemaskTexture(srcTexture);
