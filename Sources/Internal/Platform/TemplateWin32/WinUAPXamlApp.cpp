@@ -67,7 +67,6 @@ using namespace ::Windows::ApplicationModel::Core;
 using namespace ::Windows::UI::Xaml::Media;
 using namespace ::Windows::System::Threading;
 using namespace ::Windows::Phone::UI::Input;
-using namespace ::Platform;
 
 namespace DAVA
 {
