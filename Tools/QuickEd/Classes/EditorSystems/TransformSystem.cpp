@@ -109,26 +109,34 @@ void TransformSystem::OnSelectionChanged(const SelectedNodes& selected, const Se
     auto iter = nodesToMove.begin();
     while (iter != nodesToMove.end())
     {
-        bool isChild = false;
-        auto iter2 = nodesToMove.begin();
-        while (iter2 != nodesToMove.end() && !isChild)
+        bool toRemove = false;
+        PackageBaseNode* parent = (*iter)->GetParent();
+        if (nullptr == parent || nullptr == parent->GetControl())
         {
-            PackageBaseNode* node1 = *iter;
-            PackageBaseNode* node2 = *iter2;
-            if (iter != iter2)
-            {
-                while (nullptr != node1->GetParent() && nullptr != node1->GetControl() && !isChild)
-                {
-                    if (node1 == node2)
-                    {
-                        isChild = true;
-                    }
-                    node1 = node1->GetParent();
-                }
-            }
-            ++iter2;
+            toRemove = true;
         }
-        if (isChild)
+        else
+        {
+            auto iter2 = nodesToMove.begin();
+            while (iter2 != nodesToMove.end() && !toRemove)
+            {
+                PackageBaseNode* node1 = *iter;
+                PackageBaseNode* node2 = *iter2;
+                if (iter != iter2)
+                {
+                    while (nullptr != node1->GetParent() && nullptr != node1->GetControl() && !toRemove)
+                    {
+                        if (node1 == node2)
+                        {
+                            toRemove = true;
+                        }
+                        node1 = node1->GetParent();
+                    }
+                }
+                ++iter2;
+            }
+        }
+        if (toRemove)
         {
             nodesToMove.erase(iter++);
         }
