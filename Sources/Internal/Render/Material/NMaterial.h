@@ -41,35 +41,23 @@
 
 namespace DAVA
 {
+struct MaterialBufferBinding;
 
 struct NMaterialProperty
 {
     FastName name;
     rhi::ShaderProp::Type type;
     uint32 arraySize;
-    std::unique_ptr<float32[]> data;
     uint32 updateSemantic;
+    std::unique_ptr<float32[]> data;
 
-    inline void SetPropertyValue(const float32 *newValue);    
-    inline static uint32 GetCurrentUpdateSemantic(){ return globalPropertyUpdateSemanticCounter; }
+    inline void SetPropertyValue(const float32 *newValue);
+
+    inline static uint32 GetCurrentUpdateSemantic()
+		{ return globalPropertyUpdateSemanticCounter; }
+
 private:
     static uint32 globalPropertyUpdateSemanticCounter;
-};
-
-struct MaterialPropertyBinding
-{
-    rhi::ShaderProp::Type type;
-    uint32 reg;
-    uint32 regCount; //offset for props less than 1 reg size
-    uint32 updateSemantic;
-    NMaterialProperty *source;
-};
-
-struct MaterialBufferBinding
-{
-    rhi::HConstBuffer constBuffer;
-    Vector<MaterialPropertyBinding> propBindings;
-    uint32 lastValidPropertySemantic;
 };
 
 struct MaterialTextureInfo
@@ -81,7 +69,7 @@ struct MaterialTextureInfo
 class RenderVariantInstance
 {
     friend class NMaterial;
-    ShaderDescriptor *shader;
+    ShaderDescriptor *shader = nullptr;
 
     rhi::HDepthStencilState depthState;
     rhi::HSamplerState samplerState;
@@ -93,7 +81,7 @@ class RenderVariantInstance
 
     Vector<MaterialBufferBinding *> materialBufferBindings;
     
-    uint32 renderLayer;
+    uint32 renderLayer = 0;
 
     RenderVariantInstance();
     RenderVariantInstance(const RenderVariantInstance&) = delete;
@@ -107,12 +95,14 @@ class NMaterial : public DataNode
     friend class NMaterialStateDynamicFlagsInsp;
     friend class NMaterialStateDynamicPropertiesInsp;
     friend class NMaterialStateDynamicTexturesInsp;
+
 public:
     NMaterial();    
     ~NMaterial();
 
     void Load(KeyedArchive * archive, SerializationContext * serializationContext) override;
     void Save(KeyedArchive * archive, SerializationContext * serializationContext) override;
+
     NMaterial* Clone();
 
     void SetFXName(const FastName & fxName);
@@ -128,23 +118,21 @@ public:
 
     uint32 GetRequiredVertexFormat();
 
-
     void InvalidateBufferBindings();
     void InvalidateTextureBindings();
     void InvalidateRenderVariants();
 
-    /*properties*/
+    // properties
     void AddProperty(const FastName& propName, const float32 *propData, rhi::ShaderProp::Type type, uint32 arraySize = 1);
     void RemoveProperty(const FastName& propName);
     void SetPropertyValue(const FastName& propName, const float32 *propData);    
     bool HasLocalProperty(const FastName& propName);   
     rhi::ShaderProp::Type GetLocalPropType(const FastName& propName);
+    uint32 GetLocalPropArraySize(const FastName& propName);
     const float32* GetLocalPropValue(const FastName& propName);
     const float32* GetEffectivePropValue(const FastName& propName);
 
-
-
-    /*textures*/
+    // textures
     void AddTexture(const FastName& slotName, Texture *texture);
     void RemoveTexture(const FastName& slotName);
     void SetTexture(const FastName& slotName, Texture *texture);
@@ -153,7 +141,7 @@ public:
     Texture* GetEffectiveTexture(const FastName& slotName);
     void CollectLocalTextures(Set<MaterialTextureInfo *> &collection) const;
 
-    /*flags*/
+    // flags
     void AddFlag(const FastName& flagName, int32 value);
     void RemoveFlag(const FastName& flagName);
     void SetFlag(const FastName& flagName, int32 value);
@@ -170,8 +158,10 @@ public:
 
     void BindParams(rhi::Packet& target);
 
-    //returns true if has variant for this pass, false otherwise - if material doesn't support pass active variant will be not changed
-    bool PreBuildMaterial(const FastName& passName); //later add engine flags here
+    // returns true if has variant for this pass, false otherwise
+	// if material doesn't support pass active variant will be not changed
+	// later add engine flags here
+    bool PreBuildMaterial(const FastName& passName); 
 
 private:
     void LoadOldNMaterial(KeyedArchive * archive, SerializationContext * serializationContext);    
@@ -184,7 +174,7 @@ private:
     void ClearLocalBuffers();
     void InjectChildBuffer(UniquePropertyLayout propLayoutId, MaterialBufferBinding* buffer);
 
-    /*the following functions will collect data recursively*/
+    // the following functions will collect data recursively
     MaterialBufferBinding* GetConstBufferBinding(UniquePropertyLayout propertyLayout);
     NMaterialProperty* GetMaterialProperty(const FastName& propName);    
     void CollectMaterialFlags(HashMap<FastName, int32>& target);        
@@ -193,31 +183,34 @@ private:
     void RemoveChildMaterial(NMaterial *material);    
 
 private:
-    //config time
+    // config time
     FastName materialName;
     FastName fxName;
     FastName qualityGroup;
+    FastName activeVariantName;
 
     HashMap<FastName, NMaterialProperty *> localProperties;
     HashMap<FastName, MaterialTextureInfo*> localTextures;
-    HashMap<FastName, int32> localFlags; //integer flags are just more generic then boolean (eg. #if SHADING == HIGH), it has nothing in common with eFlagValue bullshit from old NMaterial    
 
-    //runtime
-    NMaterial *parent;
+	// integer flags are just more generic than boolean (eg. #if SHADING == HIGH),
+	// it has nothing in common with eFlagValue bullshit from old NMaterial    
+    HashMap<FastName, int32> localFlags; 
+
+    // runtime
+    NMaterial *parent = nullptr;
     Vector<NMaterial *> children;
+
+    RenderVariantInstance *activeVariantInstance = nullptr;
+
     HashMap<UniquePropertyLayout, MaterialBufferBinding*> localConstBuffers;
 
-    /*this is for render passes - not used right now - only active variant instance*/
+    // this is for render passes - not used right now - only active variant instance
     HashMap<FastName, RenderVariantInstance *> renderVariants;
 
-    FastName activeVariantName;
-    RenderVariantInstance *activeVariantInstance;
-
-    bool needRebuildBindings;
-    bool needRebuildTextures;
-    bool needRebuildVariants;    
-
-    uint32 sortingKey;
+    uint32 sortingKey = 0;
+    bool needRebuildBindings = true;
+    bool needRebuildTextures = true;
+    bool needRebuildVariants = true;
 
 public:
     INTROSPECTION_EXTEND(NMaterial, DataNode,

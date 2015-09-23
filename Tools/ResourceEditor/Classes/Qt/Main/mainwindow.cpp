@@ -43,6 +43,7 @@
 #include "QtUtils.h"
 #include "Project/ProjectManager.h"
 #include "Scene/SceneHelper.h"
+#include "Scene/LandscapeThumbnails.h"
 #include "SpritesPacker/SpritePackerHelper.h"
 
 #include "TextureBrowser/TextureBrowser.h"
@@ -408,25 +409,27 @@ bool QtMainWindow::SaveAllSceneEmitters(SceneEditor2 *scene) const
 
 DAVA::eGPUFamily QtMainWindow::GetGPUFormat()
 {
-    return GPUFamilyDescriptor::ConvertValueToGPU(SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsInt32());
+    return static_cast<DAVA::eGPUFamily>(GPUFamilyDescriptor::ConvertValueToGPU(SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsUInt32()));
 }
 
 void QtMainWindow::SetGPUFormat(DAVA::eGPUFamily gpu)
 {
 	// before reloading textures we should save tile-mask texture for all opened scenes
-    if (SaveTilemask())
-    {
-        SettingsManager::SetValue(Settings::Internal_TextureViewGPU, VariantType(gpu));
+	if(SaveTilemask())
+	{
+        SettingsManager::SetValue(Settings::Internal_TextureViewGPU, VariantType(static_cast<uint32>(gpu)));
         DAVA::Texture::SetDefaultGPU(gpu);
 
         DAVA::TexturesMap allScenesTextures;
+        DAVA::Vector<DAVA::NMaterial*> allSceneMaterials;
         for (int tab = 0; tab < GetSceneWidget()->GetTabCount(); ++tab)
         {
             SceneEditor2 *scene = GetSceneWidget()->GetTabScene(tab);
             SceneHelper::EnumerateSceneTextures(scene, allScenesTextures, SceneHelper::TexturesEnumerateMode::EXCLUDE_NULL);
+            SceneHelper::EnumerateMaterialInstances(scene, allSceneMaterials);
         }
 
-        if (allScenesTextures.size() > 0)
+        if (!allScenesTextures.empty())
         {
             int progress = 0;
             WaitStart("Reloading textures...", "", 0, allScenesTextures.size());
@@ -449,6 +452,14 @@ void QtMainWindow::SetGPUFormat(DAVA::eGPUFamily gpu)
             emit TexturesReloaded();
 
             WaitStop();
+        }
+
+        if (!allSceneMaterials.empty())
+        {
+            for (auto m : allSceneMaterials)
+            {
+                m->InvalidateTextureBindings();
+            }
         }
     }
     LoadGPUFormat();
@@ -732,7 +743,8 @@ void QtMainWindow::SetupActions()
 	ui->actionExportTegra->setData(GPU_TEGRA);
 	ui->actionExportMali->setData(GPU_MALI);
 	ui->actionExportAdreno->setData(GPU_ADRENO);
-	ui->actionExportPNG->setData(GPU_ORIGIN);
+    ui->actionExportDX11->setData(GPU_DX11);
+    ui->actionExportPNG->setData(GPU_ORIGIN);
 	
 	// import
 #ifdef __DAVAENGINE_SPEEDTREE__
@@ -745,7 +757,8 @@ void QtMainWindow::SetupActions()
 	ui->actionReloadTegra->setData(GPU_TEGRA);
 	ui->actionReloadMali->setData(GPU_MALI);
 	ui->actionReloadAdreno->setData(GPU_ADRENO);
-	ui->actionReloadPNG->setData(GPU_ORIGIN);
+    ui->actionReloadDX11->setData(GPU_DX11);
+    ui->actionReloadPNG->setData(GPU_ORIGIN);
 
     QActionGroup *reloadGroup = new QActionGroup(this);
     QList<QAction *> reloadActions = ui->menuTexturesForGPU->actions();
@@ -2053,7 +2066,7 @@ void QtMainWindow::OnSaveTiledTexture()
     Landscape* landscape = FindLandscape(scene);
     if (nullptr != landscape)
 	{
-		landscape->CreateLandscapeTexture(MakeFunction(this, &QtMainWindow::OnTiledTextureRetreived));
+		LandscapeThumbnails::Create(landscape, MakeFunction(this, &QtMainWindow::OnTiledTextureRetreived));
 	}
 }
 

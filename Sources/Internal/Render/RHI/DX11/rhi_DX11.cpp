@@ -205,7 +205,7 @@ _InitDX11()
     swapchain_desc.BufferCount                          = 2;
 
     swapchain_desc.OutputWindow                         = (HWND)_DX11_InitParam.window;
-    swapchain_desc.Windowed                             = (_DX11_InitParam.fullScreen)  ? TRUE  : FALSE;
+    swapchain_desc.Windowed                             = (_DX11_InitParam.fullScreen)  ? FALSE  : TRUE;
 
     swapchain_desc.SwapEffect                           = DXGI_SWAP_EFFECT_DISCARD;
     swapchain_desc.Flags                                = 0;
@@ -284,11 +284,17 @@ dx11_Initialize( const InitParam& param )
     ConstBufferDX11::InitializeRingBuffer( 4*1024*1024 ); // CRAP: hardcoded const ring-buf size
 
 
-    stat_DIP        = StatSet::AddStat( "rhi'dip", "dip" );
-    stat_DP         = StatSet::AddStat( "rhi'dp", "dp" );
-    stat_SET_PS     = StatSet::AddStat( "rhi'set-ps", "set-ps" );
-    stat_SET_TEX    = StatSet::AddStat( "rhi'set-tex", "set-tex" );
-    stat_SET_CB     = StatSet::AddStat( "rhi'set-cb", "set-cb" );
+    stat_DIP = StatSet::AddStat("rhi'dip", "dip");
+    stat_DP = StatSet::AddStat("rhi'dp", "dp");
+    stat_DTL = StatSet::AddStat("rhi'dtl", "dtl");
+    stat_DTS = StatSet::AddStat("rhi'dts", "dts");
+    stat_DLL = StatSet::AddStat("rhi'dll", "dll");
+    stat_SET_PS = StatSet::AddStat("rhi'set-ps", "set-ps");
+    stat_SET_SS = StatSet::AddStat("rhi'set-ss", "set-ss");
+    stat_SET_TEX = StatSet::AddStat("rhi'set-tex", "set-tex");
+    stat_SET_CB = StatSet::AddStat("rhi'set-cb", "set-cb");
+    stat_SET_VB = StatSet::AddStat("rhi'set-vb", "set-vb");
+    stat_SET_IB = StatSet::AddStat("rhi'set-ib", "set-ib");
 
 	_DeviceCaps.is32BitIndicesSupported = true;
 	_DeviceCaps.isFramebufferFetchSupported = true;

@@ -36,6 +36,9 @@
 #include "TextureCompression/TextureConverter.h"
 #include <atomic>
 
+#include "AssetCache/CacheItemKey.h"
+
+
 namespace DAVA
 {
 
@@ -44,25 +47,43 @@ class YamlNode;
 
 class ResourcePacker2D
 {
+    static const String VERSION;
+    
 public:
     using FILESMAP = std::map<String, String>;
     ResourcePacker2D();
-    // Packing of resources section
+
     void InitFolders(const FilePath & inputPath,const FilePath & outputPath);
     void PackResources(eGPUFamily forGPU);
     void RecalculateMD5ForOutputDir();
-    bool IsMD5ChangedDir(const FilePath & processDirectoryPath, const FilePath & pathname, const String & psdName, bool isRecursive) const;
-    bool IsMD5ChangedFile(const FilePath & processDirectoryPath, const FilePath & pathname, const String & psdName) const;
+    bool RecalculateDirMD5(const FilePath & pathname, const FilePath& md5file, bool isRecursive) const;
+    bool RecalculateFileMD5(const FilePath & pathname, const FilePath& md5file) const;
     
     DefinitionFile * ProcessPSD(const FilePath & processDirectoryPath, const FilePath & psdPathname, const String & psdName, bool twoSideMargin, uint32 texturesMargin);
     Vector<String> FetchFlags(const FilePath & flagsPathname);
 
-    static String GetProcessFolderName();
+	static String GetProcessFolderName();
+
     void SetConvertQuality(const TextureConverter::eConvertQuality quality);
     void SetRunning(bool arg);
     bool IsRunning() const;
-public:
     
+    void SetCacheClientTool(const FilePath & path, const String& ip, const String& port, const String& timeout);
+    void ClearCacheClientTool();
+    bool IsUsingCache() const;
+
+    const Set<String>& GetErrors() const;
+
+protected:
+    void AddError(const String& errorMsg);
+
+    void RecursiveTreeWalk(const FilePath & inputPath, const FilePath & outputPath, const Vector<String> & flags = Vector<String>());
+    bool isRecursiveFlagSet(const Vector<String> & flags);
+    
+    bool GetFilesFromCache(const AssetCache::CacheItemKey &key, const FilePath & inputPath, const FilePath & outputPath);
+    bool AddFilesToCache(const AssetCache::CacheItemKey &key, const FilePath & inputPath, const FilePath & outputPath);
+    
+public:
     FilePath inputGfxDirectory;
     FilePath outputGfxDirectory;
     FilePath excludeDirectory;
@@ -71,21 +92,33 @@ public:
     bool isGfxModified;
     
     bool isLightmapsPacking;
-    bool clearProcessDirectory;
+    bool forceRepack;
     bool clearOutputDirectory;
     eGPUFamily requestedGPUFamily;
     TextureConverter::eConvertQuality quality;
     FILESMAP spriteFiles;
 
-    const Set<String>& GetErrors() const;
 protected:
-    Set<String> errors;
+    FilePath cacheClientTool;
+    String cacheClientIp;
+    String cacheClientPort;
+    String cacheClientTimeout;
+    
+	Set<String> errors;
 
-    void AddError(const String& errorMsg);
-    void RecursiveTreeWalk(const FilePath & inputPath, const FilePath & outputPath, const Vector<String> & flags = Vector<String>());
 private:
     std::atomic<bool> running;
 };
+
+inline bool ResourcePacker2D::IsUsingCache() const
+{
+#ifdef __DAVAENGINE_WIN_UAP__
+    //no cache in win uap
+    return false;
+#else
+    return (!cacheClientTool.IsEmpty());
+#endif
+}
 
 inline bool ResourcePacker2D::IsRunning() const
 {
@@ -93,6 +126,7 @@ inline bool ResourcePacker2D::IsRunning() const
 }
 
 };
+
 
 
 #endif // __DAVAENGINE_RESOURCEPACKER2D_H__

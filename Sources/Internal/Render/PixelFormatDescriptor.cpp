@@ -37,24 +37,22 @@ namespace DAVA
 PixelFormatDescriptor PixelFormatDescriptor::pixelDescriptors[FORMAT_COUNT];
 
 PixelFormatDescriptor::PixelFormatDescriptor()
-    : format(rhi::TextureFormat(-1))
-	,   formatID(FORMAT_INVALID)
-	,   pixelSize(0)
-	,   isHardwareSupported(false)
+    : format(rhi::TEXTURE_UNSUPPORTED_FORMAT)
+    , formatID(FORMAT_INVALID)
+    , pixelSize(0)
+    , isHardwareSupported(false)
 {
 }
 
 void PixelFormatDescriptor::InitializePixelFormatDescriptors()
 {
-    const rhi::TextureFormat UNSUPPORTED_FORMAT = (rhi::TextureFormat) -1;
-
     DVASSERT(FORMAT_COUNT == 33); // add new format below
 
 	//SetPixelDescription(FORMAT_INVALID, FastName("WRONG FORMAT"), 0);
 	SetPixelDescription(FORMAT_RGBA8888, FastName("RGBA8888"), 32, rhi::TEXTURE_FORMAT_R8G8B8A8);
 	SetPixelDescription(FORMAT_RGBA5551, FastName("RGBA5551"), 16, rhi::TEXTURE_FORMAT_R5G5B5A1);
 	SetPixelDescription(FORMAT_RGBA4444, FastName("RGBA4444"), 16, rhi::TEXTURE_FORMAT_R4G4B4A4);
-    SetPixelDescription(FORMAT_RGB888, FastName("RGB888"), 24, rhi::TEXTURE_FORMAT_R8G8B8);
+    SetPixelDescription(FORMAT_RGB888, FastName("RGB888"), 24, rhi::TEXTURE_UNSUPPORTED_FORMAT);
     SetPixelDescription(FORMAT_RGB565, FastName("RGB565"), 16, rhi::TEXTURE_FORMAT_R5G6B5);
 
     SetPixelDescription(FORMAT_A8, FastName("A8"), 8, rhi::TEXTURE_FORMAT_R8);
@@ -67,10 +65,10 @@ void PixelFormatDescriptor::InitializePixelFormatDescriptors()
     SetPixelDescription(FORMAT_PVR2, FastName("PVR2"), 2, rhi::TEXTURE_FORMAT_PVRTC_2BPP_RGBA);
 
     SetPixelDescription(FORMAT_DXT1, FastName("DXT1"), 4, rhi::TEXTURE_FORMAT_DXT1);
-    SetPixelDescription(FORMAT_DXT1A, FastName("DXT1a"), 4, UNSUPPORTED_FORMAT);
+    SetPixelDescription(FORMAT_DXT1A, FastName("DXT1a"), 4, rhi::TEXTURE_UNSUPPORTED_FORMAT);
     SetPixelDescription(FORMAT_DXT3, FastName("DXT3"), 8, rhi::TEXTURE_FORMAT_DXT3);
     SetPixelDescription(FORMAT_DXT5, FastName("DXT5"), 8, rhi::TEXTURE_FORMAT_DXT5);
-    SetPixelDescription(FORMAT_DXT5NM, FastName("DXT5nm"), 8, UNSUPPORTED_FORMAT);
+    SetPixelDescription(FORMAT_DXT5NM, FastName("DXT5nm"), 8, rhi::TEXTURE_UNSUPPORTED_FORMAT);
 
     SetPixelDescription(FORMAT_ETC1, FastName("ETC1"), 8, rhi::TEXTURE_FORMAT_ETC1);
 
@@ -91,7 +89,7 @@ void PixelFormatDescriptor::InitializePixelFormatDescriptors()
     SetPixelDescription(FORMAT_ETC2_RGB_A1, FastName("ETC2_RGB_A1"), 4, rhi::TEXTURE_FORMAT_ETC2_R8G8B8A1);
 
 #if defined (__DAVAENGINE_WIN32__)
-    SetPixelDescription(FORMAT_BGR888, FastName("BGR888"), 24, UNSUPPORTED_FORMAT);
+    SetPixelDescription(FORMAT_BGR888, FastName("BGR888"), 24, rhi::TEXTURE_UNSUPPORTED_FORMAT);
 #endif
 }
 

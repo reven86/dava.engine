@@ -132,6 +132,16 @@ metal_NeedRestoreResources()
     return false;
 }
     
+static void
+metal_Suspend()
+{
+}
+    
+static void
+metal_Resume()
+{
+}
+    
 //------------------------------------------------------------------------------
     
 void
@@ -191,11 +201,17 @@ metal_Initialize( const InitParam& param )
 
     ConstBufferMetal::InitializeRingBuffer( 8*1024*1024 );
 
-    stat_DIP        = StatSet::AddStat( "rhi'dip", "dip" );
-    stat_DP         = StatSet::AddStat( "rhi'dp", "dp" );
-    stat_SET_PS     = StatSet::AddStat( "rhi'set-ps", "set-ps" );
-    stat_SET_TEX    = StatSet::AddStat( "rhi'set-tex", "set-tex" );
-    stat_SET_CB     = StatSet::AddStat( "rhi'set-cb", "set-cb" );
+    stat_DIP = StatSet::AddStat("rhi'dip", "dip");
+    stat_DP = StatSet::AddStat("rhi'dp", "dp");
+    stat_DTL = StatSet::AddStat("rhi'dtl", "dtl");
+    stat_DTS = StatSet::AddStat("rhi'dts", "dts");
+    stat_DLL = StatSet::AddStat("rhi'dll", "dll");
+    stat_SET_PS = StatSet::AddStat("rhi'set-ps", "set-ps");
+    stat_SET_SS = StatSet::AddStat("rhi'set-ss", "set-ss");
+    stat_SET_TEX = StatSet::AddStat("rhi'set-tex", "set-tex");
+    stat_SET_CB = StatSet::AddStat("rhi'set-cb", "set-cb");
+    stat_SET_VB = StatSet::AddStat("rhi'set-vb", "set-vb");
+    stat_SET_IB = StatSet::AddStat("rhi'set-ib", "set-ib");
 
 
     VertexBufferMetal::SetupDispatch( &DispatchMetal );
@@ -215,6 +231,8 @@ metal_Initialize( const InitParam& param )
     DispatchMetal.impl_TextureFormatSupported   = &metal_TextureFormatSupported;
     DispatchMetal.impl_DeviceCaps               = &metal_DeviceCaps;
     DispatchMetal.impl_NeedRestoreResources     = &metal_NeedRestoreResources;
+    DispatchMetal.impl_ResumeRendering          = &metal_Resume;
+    DispatchMetal.impl_SuspendRendering         = &metal_Suspend;
     
     SetDispatchTable( DispatchMetal );
     

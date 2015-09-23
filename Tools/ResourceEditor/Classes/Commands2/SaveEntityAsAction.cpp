@@ -110,21 +110,16 @@ void SaveEntityAsAction::Redo()
 
 void SaveEntityAsAction::RemoveLightmapsRecursive(Entity *entity) const
 {
-#if RHI_COMPLETE_EDITOR
 	RenderObject * renderObject = GetRenderObject(entity);
 	if (nullptr != renderObject)
 	{
 		const uint32 batchCount = renderObject->GetRenderBatchCount();
 		for (uint32 b = 0; b < batchCount; ++b)
 		{
-			NMaterial *material = renderObject->GetRenderBatch(b)->GetMaterial();
-			if (nullptr != material)
+			NMaterial* material = renderObject->GetRenderBatch(b)->GetMaterial();
+			if ((nullptr != material) && material->HasLocalTexture(NMaterialTextureName::TEXTURE_LIGHTMAP))
 			{
-				auto lightmapPath = material->GetTexturePath(NMaterial::TEXTURE_LIGHTMAP);
-				if (!lightmapPath.IsEmpty())
-				{
-					material->SetTexturePath(NMaterial::TEXTURE_LIGHTMAP, FilePath());
-				}
+				material->RemoveTexture(NMaterialTextureName::TEXTURE_LIGHTMAP);
 			}
 		}
 	}
@@ -134,6 +129,5 @@ void SaveEntityAsAction::RemoveLightmapsRecursive(Entity *entity) const
 	{
 		RemoveLightmapsRecursive(entity->GetChild(ch));
 	}
-#endif //RHI_COMPLETE_EDITOR
 }
 

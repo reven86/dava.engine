@@ -79,6 +79,7 @@ DAVA::Entity* CreatePlaneLODCommand::GetEntity() const
     return request->lodComponent->GetEntity();
 }
 
+
 void CreatePlaneLODCommand::CreateTextureFiles()
 {
     DVASSERT(request->planeImage);

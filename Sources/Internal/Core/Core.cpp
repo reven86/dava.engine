@@ -525,10 +525,6 @@ void Core::SystemProcessFrame()
         core->BeginFrame();
 //#endif
 
-#if !defined(__DAVAENGINE_ANDROID__)
-        RenderResource::SaveAllResourcesToSystemMem();
-#endif //#if !defined(__DAVAENGINE_ANDROID__)
-
         // recalc frame inside begin / end frame
         if (VirtualCoordinatesSystem::Instance()->WasScreenSizeChanged())
         {

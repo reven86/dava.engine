@@ -33,6 +33,7 @@
 #include "Base/BaseTypes.h"
 #include "Base/FastName.h"    
 
+namespace DAVA { class File; }
 
 
 namespace rhi
@@ -44,7 +45,6 @@ using DAVA::uint64;
 using DAVA::int32;
 using DAVA::float32;
 using DAVA::Size2i;
-
 
 typedef uint32 Handle;
 static const uint32 InvalidHandle       = 0;
@@ -215,6 +215,9 @@ public:
     static bool     MakeCompatible( const VertexLayout& vbLayout, const VertexLayout& shaderLayout, VertexLayout* compatibleLayout );
 
 
+    void            Save( DAVA::File* out ) const;
+    void            Load( DAVA::File* in );
+
     void            Dump() const;
 
 
@@ -300,12 +303,12 @@ TextureType
     TEXTURE_TYPE_CUBE
 };
 
-enum
-TextureFormat
+enum TextureFormat
 {
-    TEXTURE_FORMAT_R8G8B8A8,
+    TEXTURE_UNSUPPORTED_FORMAT = -1,
+
+    TEXTURE_FORMAT_R8G8B8A8 = 0,
     TEXTURE_FORMAT_R8G8B8X8,
-    TEXTURE_FORMAT_R8G8B8,
 
     TEXTURE_FORMAT_R5G5B5A1,
     TEXTURE_FORMAT_R5G6B5,
@@ -324,7 +327,7 @@ TextureFormat
 
     TEXTURE_FORMAT_PVRTC_4BPP_RGBA,
     TEXTURE_FORMAT_PVRTC_2BPP_RGBA,
-    
+
     TEXTURE_FORMAT_PVRTC2_4BPP_RGB,
     TEXTURE_FORMAT_PVRTC2_4BPP_RGBA,
     TEXTURE_FORMAT_PVRTC2_2BPP_RGB,

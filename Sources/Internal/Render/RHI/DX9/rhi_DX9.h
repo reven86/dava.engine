@@ -48,7 +48,6 @@ void        SetToRHI( Handle vb, unsigned stream_i, unsigned offset, unsigned st
 void        ReleaseAll();
 void        ReCreateAll();
 unsigned    NeedRestoreCount();
-void        PatchCommands( DX9Command* command, uint32 cmdCount );
 }
 
 namespace IndexBufferDX9
@@ -58,7 +57,6 @@ void        SetToRHI( Handle vb );
 void        ReleaseAll();
 void        ReCreateAll();
 unsigned    NeedRestoreCount();
-void        PatchCommands( DX9Command* command, uint32 cmdCount );
 }
 
 namespace QueryBufferDX9

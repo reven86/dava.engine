@@ -192,19 +192,13 @@ namespace DAVA
 
 		if(wasCreated)
 		{
-			RenderResource::SaveAllResourcesToSystemMem();
-			RenderResource::LostAllResources();
-
 			ResizeView(w, h);
 
 			rhi::ResetParam params;
 			params.width = (uint32)width;
 			params.height = (uint32)height;
+			params.window = rendererParams.window;
 			Renderer::Reset(params);
-
-//			RenderManager::Instance()->Invalidate();   RHI_COMPLETE
-			RenderResource::InvalidateAllResources();
-//			SceneCache::Instance()->InvalidateSceneMaterials();   RHI_COMPLETE
         }
 		else
 		{
@@ -230,6 +224,7 @@ namespace DAVA
 
 	void CorePlatformAndroid::OnCreateActivity()
 	{
+		DAVA::Thread::InitMainThread();
 //		Logger::Debug("[CorePlatformAndroid::OnCreateActivity]");
 	}
 
@@ -267,6 +262,9 @@ namespace DAVA
 			}
 			DAVA::Core::Instance()->GoForeground();
 
+			if(!foreground)
+				rhi::ResumeRendering();
+
 			foreground = true;
 		}
 		Logger::Debug("[CorePlatformAndroid::StartForeground] end");
@@ -286,6 +284,9 @@ namespace DAVA
 			DAVA::Core::Instance()->SetIsActive(false);
 		}
 		DAVA::Core::Instance()->GoBackground(isLock);
+
+		if(foreground)
+			rhi::SuspendRendering();
 
 		foreground = false;
 	}

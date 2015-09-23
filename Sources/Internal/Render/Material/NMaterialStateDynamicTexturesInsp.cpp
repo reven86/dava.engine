@@ -44,38 +44,34 @@ NMaterialStateDynamicTexturesInsp::~NMaterialStateDynamicTexturesInsp()
     SafeRelease(defaultTexture);
 }
 
-Set<FastName>* NMaterialStateDynamicTexturesInsp::FindMaterialTextures(NMaterial *material) const
+void NMaterialStateDynamicTexturesInsp::FindMaterialTexturesRecursive(NMaterial *material, Set<FastName>& ret) const
 {
-    Set<FastName>* ret = new Set<FastName>();
-
-    if (material->fxName.IsValid())
+	auto fxName = material->GetEffectiveFXName();
+    if (fxName.IsValid())
     {
         HashMap<FastName, int32> flags;
         material->CollectMaterialFlags(flags);
 
         // shader data
-        FXDescriptor fxDescriptor = FXCache::GetFXDescriptor(material->fxName, flags, material->qualityGroup);        
+        FXDescriptor fxDescriptor = FXCache::GetFXDescriptor(fxName, flags, material->qualityGroup);        
         for (auto& descriptor : fxDescriptor.renderPassDescriptors)
         {
             if (descriptor.shader == nullptr)
                 continue;
+
             const rhi::ShaderSamplerList& samplers = descriptor.shader->GetFragmentSamplerList();
-            for (auto &samp : samplers)
+            for (const auto& samp : samplers)
             {
-                ret->insert(samp.uid);
+                ret.insert(samp.uid);
             }
         }
 
-        // local properties
-        auto it = material->localTextures.begin();
-        auto end = material->localTextures.end();
-        for (; it != end; ++it)
-        {
-            ret->insert(it->first);
-        }
+		for (const auto& t : material->localTextures)
+			ret.insert(t.first);
     }
 
-    return ret;
+	if (nullptr != material->GetParent())
+		FindMaterialTexturesRecursive(material->GetParent(), ret);
 }
 
 InspInfoDynamic::DynamicData NMaterialStateDynamicTexturesInsp::Prepare(void *object, int filter) const
@@ -83,11 +79,13 @@ InspInfoDynamic::DynamicData NMaterialStateDynamicTexturesInsp::Prepare(void *ob
     NMaterial *material = (NMaterial*)object;
     DVASSERT(material);
 
-    auto data = FindMaterialTextures(material);
+	Set<FastName>* data = new Set<FastName>();
+    FindMaterialTexturesRecursive(material, *data);
 
     if (filter > 0)
     {
-        auto checkAndAdd = [&data](const FastName &name) {
+        auto checkAndAdd = [&data](const FastName &name) 
+		{
             if (0 == data->count(name))
             {
                 data->insert(name);
@@ -108,7 +106,6 @@ InspInfoDynamic::DynamicData NMaterialStateDynamicTexturesInsp::Prepare(void *ob
     DynamicData ddata;
     ddata.object = object;
     ddata.data = std::shared_ptr<void>(data);
-
     return ddata;
 }
 

@@ -268,7 +268,12 @@ void VegetationGeometry::OnVegetationPropertiesChanged(NMaterial * mat, KeyedArc
         if(props->IsKeyExists(lightmapKeyName))
         {
             FilePath lightmapPath = props->GetString(lightmapKeyName);
-            mat->SetTexture(VegetationPropertyNames::UNIFORM_SAMPLER_VEGETATIONMAP, ScopedPtr<Texture>(Texture::CreateFromFile(lightmapPath)));
+            
+            ScopedPtr<Texture> lightmapTexture(Texture::CreateFromFile(lightmapPath));
+            if(mat->HasLocalTexture(VegetationPropertyNames::UNIFORM_SAMPLER_VEGETATIONMAP))
+                mat->SetTexture(VegetationPropertyNames::UNIFORM_SAMPLER_VEGETATIONMAP, lightmapTexture);
+            else
+                mat->AddTexture(VegetationPropertyNames::UNIFORM_SAMPLER_VEGETATIONMAP, lightmapTexture);
         }
         
         String heightmapKeyName = NMaterialTextureName::TEXTURE_HEIGHTMAP.c_str();

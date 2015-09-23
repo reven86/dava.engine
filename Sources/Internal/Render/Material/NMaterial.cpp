@@ -30,23 +30,40 @@
 #include "Render/Material/NMaterial.h"
 
 #include "Scene3D/Systems/QualitySettingsSystem.h"
+#include "Scene3D/SceneFile/SerializationContext.h"
+
 #include "Render/Material/NMaterialNames.h"
-
 #include "Render/Highlevel/Landscape.h"
-
 #include "Render/Material/FXCache.h"
 #include "Render/Shader.h"
 #include "Render/Texture.h"
-#include "Scene3D/SceneFile/SerializationContext.h"
 
 #include "Utils/Utils.h"
 #include "Utils/StringFormat.h"
 #include "FileSystem/YamlParser.h"
 
-
-
 namespace DAVA
 {
+
+struct MaterialPropertyBinding
+{
+	rhi::ShaderProp::Type type;
+	uint32 reg;
+	uint32 regCount;
+	uint32 updateSemantic;
+	NMaterialProperty* source;
+	MaterialPropertyBinding(rhi::ShaderProp::Type type_, uint32 reg_, uint32 regCount_, uint32 updateSemantic_, NMaterialProperty* source_) : 
+			type(type_), reg(reg_), regCount(regCount_), updateSemantic(updateSemantic_), source(source_) 
+	{
+	}
+};
+
+struct MaterialBufferBinding
+{
+	rhi::HConstBuffer constBuffer;
+	Vector<MaterialPropertyBinding> propBindings;
+	uint32 lastValidPropertySemantic = 0;
+};
 
 uint32 NMaterialProperty::globalPropertyUpdateSemanticCounter = 0;
 
@@ -62,16 +79,11 @@ RenderVariantInstance::~RenderVariantInstance()
 }
 
 NMaterial::NMaterial()
-    : parent(nullptr)
-    , localProperties(16, nullptr)
+    : localProperties(16, nullptr)
     , localConstBuffers(16, nullptr)
     , localTextures(8, nullptr)
     , localFlags(16, 0)
     , renderVariants(4, nullptr)
-    , needRebuildBindings(true)
-    , needRebuildTextures(true)
-    , needRebuildVariants(true)
-    , activeVariantInstance(nullptr)
 {
 }
 
@@ -118,21 +130,25 @@ void NMaterial::BindParams(rhi::Packet& target)
         for (auto& materialBinding : materialBufferBinding->propBindings)
         {
             DVASSERT(materialBinding.source)
-                if (materialBinding.updateSemantic != materialBinding.source->updateSemantic)
+            if (materialBinding.updateSemantic != materialBinding.source->updateSemantic)
+            {
+                //Logger::Info( " upd-prop " );
+                if (materialBinding.type < rhi::ShaderProp::TYPE_FLOAT4)
                 {
-                    //Logger::Info( " upd-prop " );                    
-                    if (materialBinding.type < rhi::ShaderProp::TYPE_FLOAT4)
-                    {
-                        DVASSERT(materialBinding.source->arraySize == 1);
-                        rhi::UpdateConstBuffer1fv(materialBufferBinding->constBuffer, materialBinding.reg, materialBinding.regCount, materialBinding.source->data.get(), ShaderDescriptor::CalculateDataSize(materialBinding.type, materialBinding.source->arraySize));
-                    }
-                    else
-                    {
-                        DVASSERT(materialBinding.source->arraySize <= materialBinding.regCount);
-                        rhi::UpdateConstBuffer4fv(materialBufferBinding->constBuffer, materialBinding.reg, materialBinding.source->data.get(), ShaderDescriptor::CalculateRegsCount(materialBinding.type, materialBinding.source->arraySize));
-                    }                                        
-                    materialBinding.updateSemantic = materialBinding.source->updateSemantic;
+                    DVASSERT(materialBinding.source->arraySize == 1);
+                    rhi::UpdateConstBuffer1fv(materialBufferBinding->constBuffer, materialBinding.reg, materialBinding.regCount, materialBinding.source->data.get(), ShaderDescriptor::CalculateDataSize(materialBinding.type, materialBinding.source->arraySize));
                 }
+                else
+                {
+                    DVASSERT(materialBinding.source->arraySize <= materialBinding.regCount);
+                    rhi::UpdateConstBuffer4fv(materialBufferBinding->constBuffer, materialBinding.reg, materialBinding.source->data.get(), ShaderDescriptor::CalculateRegsCount(materialBinding.type, materialBinding.source->arraySize));
+                }
+                materialBinding.updateSemantic = materialBinding.source->updateSemantic;
+
+#if defined(__DAVAENGINE_RENDERSTATS__)
+                ++Renderer::GetRenderStats().materialParamBindCount;
+#endif
+            }
         }
         materialBufferBinding->lastValidPropertySemantic = NMaterialProperty::GetCurrentUpdateSemantic();
     }
@@ -152,7 +168,7 @@ uint32 NMaterial::GetRequiredVertexFormat()
     uint32 res = 0;
     for (auto& variant : renderVariants)
     {
-		bool shaderValid = nullptr != variant.second->shader;
+		bool shaderValid = (nullptr != variant.second) && (nullptr != variant.second->shader);
 		DVASSERT_MSG(shaderValid, "Shader is invalid. Check log for details.");
 
 		if (shaderValid)
@@ -262,7 +278,7 @@ void NMaterial::AddProperty(const FastName& propName, const float32 *propData, r
     prop->data.reset(new float[ShaderDescriptor::CalculateDataSize(type, arraySize)]);
     prop->SetPropertyValue(propData);
     localProperties[propName] = prop;
-    
+    ClearLocalBuffers(); //RHI_COMPLETE - as local buffers can have binding for this property set as default
     InvalidateBufferBindings();
 }
 
@@ -273,6 +289,7 @@ void NMaterial::RemoveProperty(const FastName& propName)
     DVASSERT(prop != nullptr);
     localProperties.erase(propName);
     SafeDelete(prop);
+    ClearLocalBuffers(); //RHI_COMPLETE - as local buffers can have binding for this property now just clear them all, later rethink to erease just buffers containing this propertyg
 
     InvalidateBufferBindings();
 }
@@ -295,11 +312,19 @@ rhi::ShaderProp::Type NMaterial::GetLocalPropType(const FastName& propName)
     DVASSERT(prop != nullptr);
     return prop->type;
 }
+
 const float32* NMaterial::GetLocalPropValue(const FastName& propName)
 {
     NMaterialProperty *prop = localProperties.at(propName);
     DVASSERT(prop != nullptr);
     return prop->data.get();
+}
+
+uint32 NMaterial::GetLocalPropArraySize(const FastName& propName)
+{
+    NMaterialProperty *prop = localProperties.at(propName);
+    DVASSERT(prop != nullptr);
+    return prop->arraySize;
 }
 
 const float32* NMaterial::GetEffectivePropValue(const FastName& propName)
@@ -537,6 +562,7 @@ void NMaterial::RebuildRenderVariants()
         renderVariants[variantDescr.passName] = variant;
     }
 
+    ClearLocalBuffers();
     activeVariantName = FastName();    
     activeVariantInstance = nullptr;
     needRebuildVariants = false;
@@ -594,14 +620,10 @@ void NMaterial::RebuildBindings()
                         {
                             DVASSERT(prop->type == propDescr.type);
 
-                            //create property binding
-                            MaterialPropertyBinding binding;
-                            binding.type = propDescr.type;
-                            binding.reg = propDescr.bufferReg;
-                            binding.regCount = propDescr.bufferRegCount;
-                            binding.updateSemantic = 0; //mark as dirty - set it on next draw request
-                            binding.source = prop;
-                            bufferBinding->propBindings.push_back(binding);
+                            // create property binding
+
+                            bufferBinding->propBindings.emplace_back(propDescr.type, 
+								propDescr.bufferReg, propDescr.bufferRegCount, 0, prop);
                         }
                         else
                         {
@@ -761,6 +783,7 @@ NMaterial* NMaterial::Clone()
 
     for (auto prop : localProperties)
         clonedMaterial->AddProperty(prop.first, prop.second->data.get(), prop.second->type, prop.second->arraySize);
+
     for (auto tex : localTextures)
     {
         MaterialTextureInfo *res = new MaterialTextureInfo();
@@ -774,7 +797,7 @@ NMaterial* NMaterial::Clone()
 
     clonedMaterial->SetParent(parent);
 
-    //DataNode properties
+    // DataNode properties
     clonedMaterial->id = 0;
     clonedMaterial->scene = scene;
     clonedMaterial->isRuntime = isRuntime;
@@ -849,7 +872,6 @@ void NMaterial::Load(KeyedArchive * archive, SerializationContext * serializatio
         return;
     }
 
-
     if (archive->IsKeyExists("materialName"))
     {
         materialName = FastName(archive->GetString("materialName"));
@@ -890,10 +912,14 @@ void NMaterial::Load(KeyedArchive * archive, SerializationContext * serializatio
             const uint8* ptr = propVariant->AsByteArray();
 
             FastName propName = FastName(it->first);
-            uint8 propType = *ptr; ptr += sizeof(uint8);
-            uint32 propSize = *(uint32*)ptr; ptr += sizeof(uint32);
-            float32 *data = (float32*)ptr;
 
+            uint8 propType = *ptr; 
+			ptr += sizeof(uint8);
+
+            uint32 propSize = *(uint32*)ptr;
+			ptr += sizeof(uint32);
+
+            float32 *data = (float32*)ptr;
             AddProperty(propName, data, (rhi::ShaderProp::Type)propType, propSize);
         }
     }
@@ -915,7 +941,7 @@ void NMaterial::Load(KeyedArchive * archive, SerializationContext * serializatio
         const Map<String, VariantType*>& flagsMap = archive->GetArchive("flags")->GetArchieveData();
         for (Map<String, VariantType*>::const_iterator it = flagsMap.begin(); it != flagsMap.end(); ++it)
         {
-            AddFlag(FastName(it->first), it->second->AsInt32());
+			AddFlag(FastName(it->first), it->second->AsInt32());
         }
     }
 }

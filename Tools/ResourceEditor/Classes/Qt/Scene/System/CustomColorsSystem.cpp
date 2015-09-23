@@ -43,8 +43,8 @@
 #include "Project/ProjectManager.h"
 
 CustomColorsSystem::CustomColorsSystem(Scene* scene)
-:	LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.tex")
-,	drawColor(Color(0.f, 0.f, 0.f, 0.f))
+    : LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.tex")
+    , drawColor(Color(0.f, 0.f, 0.f, 0.f))
 {
     curToolSize = 120;
     SetColor(colorIndex);
@@ -260,9 +260,12 @@ void CustomColorsSystem::UpdateBrushTool()
     updatedRect.SetPosition(spritePos);
     updatedRect.SetSize(spriteSize);
     AddRectToAccumulator(updatedRect);
-    
+
+    glLoadIdentity();
+
+    auto brushMaterial = drawSystem->GetCustomColorsProxy()->GetBrushMaterial();
     RenderSystem2D::Instance()->BeginRenderTargetPass(colorTexture, false);
-    RenderSystem2D::Instance()->DrawTexture(toolTextureSet, RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL, drawColor, updatedRect);
+    RenderSystem2D::Instance()->DrawTexture(toolTextureSet, brushMaterial, drawColor, updatedRect);
     RenderSystem2D::Instance()->EndRenderTargetPass();
 }
 
@@ -356,7 +359,7 @@ bool CustomColorsSystem::LoadTexture( const DAVA::FilePath &filePath, bool creat
 		return false;
 
 	Image* image = images.front();
-	if(image)
+	if(CouldApplyImage(image, filePath.GetFilename()))
 	{
         AddRectToAccumulator(Rect(Vector2(0.f, 0.f), Vector2(image->GetWidth(), image->GetHeight())));
         
@@ -391,16 +394,46 @@ bool CustomColorsSystem::LoadTexture( const DAVA::FilePath &filePath, bool creat
             
             Texture * target = drawSystem->GetCustomColorsProxy()->GetTexture();
             
+            auto brushMaterial = drawSystem->GetCustomColorsProxy()->GetBrushMaterial();
             RenderSystem2D::Instance()->BeginRenderTargetPass(target, false);
-            RenderSystem2D::Instance()->DrawTexture(loadedTextureSet, RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL, Color::White);
+            RenderSystem2D::Instance()->DrawTexture(loadedTextureSet, brushMaterial, Color::White);
             RenderSystem2D::Instance()->EndRenderTargetPass();
         }
-
-		for_each(images.begin(), images.end(), SafeRelease<Image>);
 	}
+    
+    for_each(images.begin(), images.end(), SafeRelease<Image>);
+    return true;
+}
+
+bool CustomColorsSystem::CouldApplyImage(Image *image, const String &imageName) const
+{
+    if (image == nullptr)
+    {
+        return false;
+    }
+
+    if (image->GetPixelFormat() != FORMAT_RGBA8888)
+    {
+        Logger::Error("[CustomColorsSystem] %s has wrong format (%s). We need RGBA888", imageName.c_str(), GlobalEnumMap<PixelFormat>::Instance()->ToString(image->GetPixelFormat()));
+        return false;
+    }
+
+    const Texture *oldTexture = drawSystem->GetCustomColorsProxy()->GetTexture();
+    if (oldTexture != nullptr)
+    {
+        const Size2i imageSize(image->GetWidth(), image->GetHeight());
+        const Size2i textureSize(oldTexture->GetWidth(), oldTexture->GetHeight());
+
+        if (imageSize != textureSize)
+        {
+            Logger::Error("[CustomColorsSystem] %s has wrong size (%d x %d). We need (%d x %d)", imageName.c_str(), imageSize.dx, imageSize.dy, textureSize.dx, textureSize.dy);
+            return false;
+        }
+    }
 
     return true;
 }
+
 
 void CustomColorsSystem::StoreSaveFileName(const FilePath& filePath)
 {

@@ -1082,6 +1082,8 @@ bool SceneFileV2::ReplaceNodeAfterLoad(Entity * node)
             {
                 NMaterial * batchMaterial = new NMaterial();
                 batchMaterial->SetParent(material);
+                batchMaterial->SetMaterialName(FastName(Format("Instance-%u",
+                                                               static_cast<uint32>(material->GetChildren().size()))));
                 mesh->AddPolygonGroup(group->GetPolygonGroup(), batchMaterial);
             }
         }
@@ -1431,6 +1433,11 @@ void SceneFileV2::ConvertShadowVolumes(Entity * entity, NMaterial * shadowMateri
 
                 NMaterial* shadowMaterial = new NMaterial();
                 shadowMaterial->SetParent(shadowMaterialParent);
+
+                shadowMaterial->SetMaterialName(FastName(Format("%s-%u",
+                                                                shadowMaterialParent->GetMaterialName().c_str(),
+                                                                static_cast<DAVA::uint32>(shadowMaterialParent->GetChildren().size()))));
+
                 shadowBatch->SetMaterial(shadowMaterial);
                 shadowMaterial->Release();
 

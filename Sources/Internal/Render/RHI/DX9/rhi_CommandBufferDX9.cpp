@@ -797,12 +797,18 @@ SCOPED_FUNCTION_TIMING();
                                      : PipelineStateDX9::VertexLayoutStride( cur_pipelinestate );
 
                 VertexBufferDX9::SetToRHI( (Handle)(arg[0]), 0, 0, stride );
+
+                StatSet::IncStat(stat_SET_VB, 1);
+
                 c += 2;
             }   break;
             
             case DX9__SET_INDICES :
             {
                 IndexBufferDX9::SetToRHI( (Handle)(arg[0]) );
+
+                StatSet::IncStat(stat_SET_IB, 1);
+
                 c += 1;
             }   break;
 
@@ -907,7 +913,8 @@ SCOPED_FUNCTION_TIMING();
 
             case DX9__SET_SAMPLER_STATE :
             {
-                SamplerStateDX9::SetToRHI( (Handle)(arg[0]) );
+                SamplerStateDX9::SetToRHI((Handle)(arg[0]));
+                StatSet::IncStat(stat_SET_SS, 1);
                 c += 1;
             }   break;
             
@@ -938,7 +945,23 @@ SCOPED_FUNCTION_TIMING();
                     QueryBufferDX9::BeginQuery( cur_query_buf, cur_query_i );
 
                 DX9_CALL(_D3D9_Device->DrawPrimitive( (D3DPRIMITIVETYPE)(arg[0]), /*base_vertex*/0, UINT(arg[1]) ),"DrawPrimitive");
-                StatSet::IncStat( stat_DP, 1 );
+                StatSet::IncStat(stat_DP, 1);
+                switch (arg[0])
+                {
+                case D3DPT_TRIANGLELIST:
+                    StatSet::IncStat(stat_DTL, 1);
+                    break;
+
+                case D3DPT_TRIANGLESTRIP:
+                    StatSet::IncStat(stat_DTS, 1);
+                    break;
+
+                case D3DPT_LINELIST:
+                    StatSet::IncStat(stat_DLL, 1);
+                    break;
+
+                default: break;
+                }
                 
                 if( cur_query_i != InvalidIndex )
                     QueryBufferDX9::EndQuery( cur_query_buf, cur_query_i );
@@ -963,6 +986,23 @@ SCOPED_FUNCTION_TIMING();
                     QueryBufferDX9::EndQuery( cur_query_buf, cur_query_i );
                 
                 StatSet::IncStat( stat_DIP, 1 );
+                switch (type)
+                {
+                case D3DPT_TRIANGLELIST:
+                    StatSet::IncStat(stat_DTL, 1);
+                    break;
+
+                case D3DPT_TRIANGLESTRIP:
+                    StatSet::IncStat(stat_DTS, 1);
+                    break;
+
+                case D3DPT_LINELIST:
+                    StatSet::IncStat(stat_DLL, 1);
+                    break;
+
+                default: break;
+                }
+
                 c += 5;
             }   break;
 
@@ -1038,37 +1078,43 @@ static void
 _RejectAllFrames()
 {
     _FrameSync.Lock();
-    for( std::vector<FrameDX9>::iterator f=_Frame.begin(),f_end=_Frame.end(); f!=f_end; ++f )
+    for (std::vector<FrameDX9>::iterator f = _Frame.begin(); f != _Frame.end(); )
     {
-        if (f->sync != InvalidHandle)
+        if (f->readyToExecute)
         {
-            SyncObjectDX9_t*    s = SyncObjectPool::Get(f->sync);
-            s->is_signaled = true;
-            s->is_used = true;
-        }
-        for( std::vector<Handle>::iterator p=f->pass.begin(),p_end=f->pass.end(); p!=p_end; ++p )
-        {
-            RenderPassDX9_t*    pp = RenderPassPool::Get( *p );
-            
-            for( std::vector<Handle>::iterator c=pp->cmdBuf.begin(),c_end=pp->cmdBuf.end(); c!=c_end; ++c )
+            if (f->sync != InvalidHandle)
             {
-                CommandBufferDX9_t* cc = CommandBufferPool::Get( *c );
-                if (cc->sync != InvalidHandle)
-                {
-                    SyncObjectDX9_t*    s = SyncObjectPool::Get(cc->sync);
-                    s->is_signaled = true;
-                    s->is_used = true;
-                }                
-                cc->_cmd.clear();
-                CommandBufferPool::Free( *c ); 
+                SyncObjectDX9_t*    s = SyncObjectPool::Get(f->sync);
+                s->is_signaled = true;
+                s->is_used = true;
             }
+            for (std::vector<Handle>::iterator p = f->pass.begin(), p_end = f->pass.end(); p != p_end; ++p)
+            {
+                RenderPassDX9_t*    pp = RenderPassPool::Get(*p);
 
-            RenderPassPool::Free( *p );
+                for (std::vector<Handle>::iterator c = pp->cmdBuf.begin(), c_end = pp->cmdBuf.end(); c != c_end; ++c)
+                {
+                    CommandBufferDX9_t* cc = CommandBufferPool::Get(*c);
+                    if (cc->sync != InvalidHandle)
+                    {
+                        SyncObjectDX9_t*    s = SyncObjectPool::Get(cc->sync);
+                        s->is_signaled = true;
+                        s->is_used = true;
+                    }
+                    cc->_cmd.clear();
+                    CommandBufferPool::Free(*c);
+                }
+
+                RenderPassPool::Free(*p);
+            }
+            f = _Frame.erase(f);
+        }
+        else
+        {
+            ++f;
         }
     }
-
-    _Frame.clear();
-    _FrameStarted = false;
+    
     _FrameSync.Unlock();
 }
 
@@ -1193,13 +1239,10 @@ Trace("\n\n-------------------------------\nframe %u executed(submitted to GPU)\
             if( SUCCEEDED(hr) )
             {                
                 Logger::Info( "device reset\n");
-
+                
                 TextureDX9::ReCreateAll();
                 VertexBufferDX9::ReCreateAll();
                 IndexBufferDX9::ReCreateAll();
-
-                VertexBufferDX9::PatchCommands( _DX9_PendingImmediateCmd, _DX9_PendingImmediateCmdCount );
-                IndexBufferDX9::PatchCommands( _DX9_PendingImmediateCmd, _DX9_PendingImmediateCmdCount );
 
                 _ResetPending = false;
             }
@@ -1269,13 +1312,13 @@ Trace("exec %i\n",int(cmd->func));
             
             case DX9Command::LOCK_VERTEX_BUFFER :
             {
-                cmd->retval = ((IDirect3DVertexBuffer9*)(arg[0]))->Lock( UINT(arg[1]), UINT(arg[2]), (VOID**)(arg[3]), DWORD(arg[4]) );
+                cmd->retval = (*((IDirect3DVertexBuffer9**)arg[0]))->Lock( UINT(arg[1]), UINT(arg[2]), (VOID**)(arg[3]), DWORD(arg[4]) );
                 CHECK_HR(cmd->retval);
             }   break;
             
             case DX9Command::UNLOCK_VERTEX_BUFFER :
             {
-                cmd->retval = ((IDirect3DVertexBuffer9*)(arg[0]))->Unlock();
+                cmd->retval = (*((IDirect3DVertexBuffer9**)arg[0]))->Unlock();
                 CHECK_HR(cmd->retval);
             }   break;
             
@@ -1287,13 +1330,13 @@ Trace("exec %i\n",int(cmd->func));
             
             case DX9Command::LOCK_INDEX_BUFFER :
             {
-                cmd->retval = ((IDirect3DIndexBuffer9*)(arg[0]))->Lock( UINT(arg[1]), UINT(arg[2]), (VOID**)(arg[3]), DWORD(arg[4]) );
+                cmd->retval = (*((IDirect3DIndexBuffer9**)arg[0]))->Lock( UINT(arg[1]), UINT(arg[2]), (VOID**)(arg[3]), DWORD(arg[4]) );
                 CHECK_HR(cmd->retval);
             }   break;
             
             case DX9Command::UNLOCK_INDEX_BUFFER :
             {
-                cmd->retval = ((IDirect3DIndexBuffer9*)(arg[0]))->Unlock();
+                cmd->retval = (*((IDirect3DIndexBuffer9**)arg[0]))->Unlock();
                 CHECK_HR(cmd->retval);
             }   break;
 

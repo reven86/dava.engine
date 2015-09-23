@@ -1,30 +1,30 @@
 ﻿/*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
+ Copyright (c) 2008, binaryzebra
+ All rights reserved.
+ 
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions are met:
+ 
+ * Redistributions of source code must retain the above copyright
+ notice, this list of conditions and the following disclaimer.
+ * Redistributions in binary form must reproduce the above copyright
+ notice, this list of conditions and the following disclaimer in the
+ documentation and/or other materials provided with the distribution.
+ * Neither the name of the binaryzebra nor the
+ names of its contributors may be used to endorse or promote products
+ derived from this software without specific prior written permission.
+ 
+ THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+ ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+ DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ =====================================================================================*/
 
     #include "../Common/rhi_Pool.h"
     #include "rhi_GLES2.h"
@@ -36,6 +36,7 @@
 
     #include "Debug/DVAssert.h"
     #include "FileSystem/Logger.h"
+
     using DAVA::Logger;
     #include "Concurrency/Thread.h"
     #include "Concurrency/Semaphore.h"
@@ -153,6 +154,9 @@ static bool                 _GLES2_RenderThreadExitPending  = false;
 static DAVA::Spinlock       _GLES2_RenderThreadExitSync;
 static DAVA::Semaphore      _GLES2_RenderThredStartedSync   (1);
 
+static DAVA::Mutex          _GLES2_RenderThreadSuspendSync;
+static DAVA::Atomic<bool>   _GLES2_RenderThreadSuspended    (false);
+    
 static DAVA::Thread*        _GLES2_RenderThread             = nullptr;
 static unsigned             _GLES2_RenderThreadFrameCount   = 0;
 
@@ -864,6 +868,9 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
                 {
                     VertexBufferGLES2::SetToRHI( vb );
                     PipelineStateGLES2::SetVertexDeclToRHI( cur_ps, cur_vdecl );
+
+                    StatSet::IncStat(stat_SET_VB, 1);
+
                     cur_vb = vb;
                 }
                 
@@ -872,7 +879,9 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
             
             case GLES2__SET_INDICES :
             {
-                idx_size = IndexBufferGLES2::SetToRHI( (Handle)(arg[0]) );
+                idx_size = IndexBufferGLES2::SetToRHI((Handle)(arg[0]));
+                StatSet::IncStat(stat_SET_IB, 1);
+
                 c += 1;
             }   break;
 
@@ -993,7 +1002,8 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
             
             case GLES2__SET_SAMPLER_STATE :
             {
-                SamplerStateGLES2::SetToRHI( (Handle)(arg[0]) );
+                SamplerStateGLES2::SetToRHI((Handle)(arg[0]));
+                StatSet::IncStat(stat_SET_SS, 1);
                 c += 1;
             }   break;
 
@@ -1074,7 +1084,22 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
                     QueryBufferGLES2::BeginQuery( cur_query_buf, cur_query_i );
                 
                 GL_CALL(glDrawArrays( mode, 0, v_cnt ));
-                StatSet::IncStat( stat_DP, 1 );
+                StatSet::IncStat(stat_DP, 1);
+                switch (mode)
+                {
+                case GL_TRIANGLES:
+                    StatSet::IncStat(stat_DTL, 1);
+                    break;
+
+                case GL_TRIANGLE_STRIP:
+                    StatSet::IncStat(stat_DTS, 1);
+                    break;
+
+                case GL_LINES:
+                    StatSet::IncStat(stat_DLL, 1);
+                    break;
+                }
+
 //Logger::Info( "  dp" );
                 
                 if( cur_query_i != InvalidIndex )
@@ -1134,6 +1159,20 @@ Trace("DIP  mode= %i  v_cnt= %i  start_i= %i\n",int(mode),int(v_cnt),int(startIn
                 GL_CALL(glDrawElements( mode, v_cnt, i_sz, (void*)(i_off) ));
 //LCP;
                 StatSet::IncStat( stat_DIP, 1 );
+                switch (mode)
+                {
+                case GL_TRIANGLES:
+                    StatSet::IncStat(stat_DTL, 1);
+                    break;
+
+                case GL_TRIANGLE_STRIP:
+                    StatSet::IncStat(stat_DTS, 1);
+                    break;
+
+                case GL_LINES:
+                    StatSet::IncStat(stat_DLL, 1);
+                    break;
+                }
 //LCP;
 
                 if( cur_query_i != InvalidIndex )
@@ -1168,6 +1207,53 @@ Trace("DIP  mode= %i  v_cnt= %i  start_i= %i\n",int(mode),int(v_cnt),int(startIn
     }
 
     _cmd.clear();
+}
+
+
+//------------------------------------------------------------------------------
+
+static void
+_RejectAllFrames()
+{
+    _FrameSync.Lock();
+    for (std::vector<FrameGLES2>::iterator f = _Frame.begin(); f != _Frame.end(); )
+    {
+        if (f->readyToExecute)
+        {
+            if (f->sync != InvalidHandle)
+            {
+                SyncObjectGLES2_t*    s = SyncObjectPool::Get(f->sync);
+                s->is_signaled = true;
+                s->is_used = true;
+            }
+            for (std::vector<Handle>::iterator p = f->pass.begin(), p_end = f->pass.end(); p != p_end; ++p)
+            {
+                RenderPassGLES2_t*    pp = RenderPassPool::Get(*p);
+
+                for (std::vector<Handle>::iterator c = pp->cmdBuf.begin(), c_end = pp->cmdBuf.end(); c != c_end; ++c)
+                {
+                    CommandBufferGLES2_t* cc = CommandBufferPool::Get(*c);
+                    if (cc->sync != InvalidHandle)
+                    {
+                        SyncObjectGLES2_t* s = SyncObjectPool::Get(cc->sync);
+                        s->is_signaled = true;
+                        s->is_used = true;
+                    }
+                    cc->_cmd.clear();
+                    CommandBufferPool::Free(*c);
+                }
+
+                RenderPassPool::Free(*p);
+            }
+            f = _Frame.erase(f);
+        }
+        else
+        {
+            ++f;
+        }
+    }
+
+    _FrameSync.Unlock();
 }
 
 
@@ -1274,7 +1360,17 @@ Trace("rhi-gl.swap-buffers done\n");
 #elif defined(__DAVAENGINE_IPHONE__)
         ios_gl_end_frame();
 #elif defined(__DAVAENGINE_ANDROID__)
-        android_gl_end_frame();
+
+        bool success = android_gl_end_frame();
+        if(!success) //'false' mean lost context, need restore resources
+        {
+        	_RejectAllFrames();
+
+        	TextureGLES2::ReCreateAll();
+        	VertexBufferGLES2::ReCreateAll();
+        	IndexBufferGLES2::ReCreateAll();
+        }
+
 #endif
     }
 
@@ -1353,8 +1449,11 @@ _RenderFunc( DAVA::BaseObject* obj, void*, void* )
 
     while( true )
     {
+        _GLES2_RenderThreadSuspendSync.Lock();
+        
         bool    do_wait = true;
         bool    do_exit = false;
+     
         
         // CRAP: busy-wait
         do
@@ -1383,7 +1482,7 @@ _RenderFunc( DAVA::BaseObject* obj, void*, void* )
 //            cnt = _RenderQueue.size();
 //            _CmdQueueSync.Unlock();
             _FrameSync.Lock();
-            do_wait = !( _Frame.size()  &&  _Frame.begin()->readyToExecute );
+            do_wait = !(_Frame.size() && _Frame.begin()->readyToExecute ) && !_GLES2_RenderThreadSuspended.Get();
             _FrameSync.Unlock();
         } while( do_wait );
 
@@ -1391,6 +1490,8 @@ _RenderFunc( DAVA::BaseObject* obj, void*, void* )
             break;
 
         _ExecuteQueuedCommands();
+        
+        _GLES2_RenderThreadSuspendSync.Unlock();
     }
 
     Trace( "RHI render-thread stopped\n" );
@@ -1428,7 +1529,26 @@ UninitializeRenderThreadGLES2()
         _GLES2_RenderThread->Join();
     }
 }
+    
+//------------------------------------------------------------------------------
+    
+void
+SuspendGLES2()
+{
+    _GLES2_RenderThreadSuspended.Set(true);
+    _GLES2_RenderThreadSuspendSync.Lock();
+    glFinish();
+}
+    
+//------------------------------------------------------------------------------
 
+void
+ResumeGLES2()
+{
+    _GLES2_RenderThreadSuspendSync.Unlock();
+    _GLES2_RenderThreadSuspended.Set(false);
+}
+    
 //------------------------------------------------------------------------------
 
 static void
@@ -1493,7 +1613,7 @@ _ExecGL( GLCommand* command, uint32 cmdCount )
 
             case GLCommand::BIND_BUFFER :
             {
-                EXEC_GL(glBindBuffer( (GLenum)(arg[0]), (GLuint)(arg[1]) ));
+                EXEC_GL(glBindBuffer( (GLenum)(arg[0]), *(GLuint*)(arg[1]) ));
                 cmd->status = err;
             }   break;
 
@@ -1547,7 +1667,7 @@ _ExecGL( GLCommand* command, uint32 cmdCount )
 
             case GLCommand::BIND_TEXTURE :
             {
-                EXEC_GL(glBindTexture( (GLenum)(cmd->arg[0]), (GLuint)(cmd->arg[1]) ));
+                EXEC_GL(glBindTexture( (GLenum)(cmd->arg[0]), *(GLuint*)(cmd->arg[1]) ));
                 cmd->status = err;
             }   break;
 

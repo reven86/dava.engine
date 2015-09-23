@@ -49,6 +49,7 @@ VertexBufferGLES2_t
                   : size(0),
                     data(nullptr),
                     uid(0),
+					usage(USAGE_DEFAULT),
                     mapped(false)
                 {}
                 ~VertexBufferGLES2_t()
@@ -88,7 +89,7 @@ VertexBufferGLES2_t::Create( const VertexBuffer::Descriptor& desc, bool force_im
         {
             GLCommand   cmd2[] =
             {
-                { GLCommand::BIND_BUFFER, { GL_ARRAY_BUFFER, b } },
+                { GLCommand::BIND_BUFFER, { GL_ARRAY_BUFFER, uint64_t(&b) } },
                 { GLCommand::RESTORE_VERTEX_BUFFER, {} }
             };
 
@@ -195,7 +196,7 @@ gles2_VertexBuffer_Update( Handle vb, const void* data, uint32 offset, uint32 si
     {
         GLCommand   cmd[] = 
         {
-            { GLCommand::BIND_BUFFER, { GL_ARRAY_BUFFER, self->uid } },
+            { GLCommand::BIND_BUFFER, { GL_ARRAY_BUFFER, uint64_t(&self->uid) } },
             { GLCommand::BUFFER_DATA, { GL_ARRAY_BUFFER, self->size, (uint64)(self->data), self->usage } },
             { GLCommand::RESTORE_VERTEX_BUFFER, {} }
         };
@@ -237,7 +238,7 @@ gles2_VertexBuffer_Unmap( Handle vb )
 
     GLCommand   cmd[] = 
     {
-        { GLCommand::BIND_BUFFER, { GL_ARRAY_BUFFER, self->uid } },
+        { GLCommand::BIND_BUFFER, { GL_ARRAY_BUFFER, uint64_t(&self->uid) } },
         { GLCommand::BUFFER_DATA, { GL_ARRAY_BUFFER, self->size, (uint64)(self->data), self->usage } },
         { GLCommand::RESTORE_VERTEX_BUFFER, {} }
     };

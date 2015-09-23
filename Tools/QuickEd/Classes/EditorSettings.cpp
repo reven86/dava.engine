@@ -28,6 +28,7 @@
 
 
 #include "EditorSettings.h"
+#include "AssetCache/AssetCacheConstants.h"
 #include <QString>
 #include <QDir>
 
@@ -39,7 +40,7 @@ static const String EDITOR_SETTINGS_FILE("~doc:/QuickEdSettings.archive");
 
 EditorSettings::EditorSettings()
 {
-    settings = new KeyedArchive();    
+    settings = new KeyedArchive();
     settings->Load(EDITOR_SETTINGS_FILE);
 }
 
@@ -184,5 +185,26 @@ void EditorSettings::SetColor(const String& colorName, const Color& color)
     Vector4 colorValues(color.r, color.g, color.b, color.a);
     settings->SetVector4(colorName, colorValues);
     Save();
+}
+
+bool EditorSettings::IsUsingAssetCache() const
+{
+    return settings->GetBool("editor.usingAssetCache", false);
+}
+
+String EditorSettings::GetAssetCacheIp() const
+{
+    return settings->GetString("editor.assetCacheIp", "localhost");
+}
+
+String EditorSettings::GetAssetCachePort() const
+{
+    static String port = std::to_string(DAVA::AssetCache::ASSET_SERVER_PORT);
+    return settings->GetString("editor.assetCachePort", port);
+}
+
+String EditorSettings::GetAssetCacheTimeoutSec() const
+{
+    return settings->GetString("editor.assetCacheTimeoutSec", "5");
 }
 
