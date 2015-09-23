@@ -1216,19 +1216,19 @@ static void
 _RejectAllFrames()
 {
     _FrameSync.Lock();
-    for (std::vector<FrameGLES2>::iterator f = _Frame.begin(); f != _Frame.end(); )
+    for (std::vector<FrameGLES2>::iterator f = _Frame.begin(); f != _Frame.end();)
     {
         if (f->readyToExecute)
         {
             if (f->sync != InvalidHandle)
             {
-                SyncObjectGLES2_t*    s = SyncObjectPool::Get(f->sync);
+                SyncObjectGLES2_t* s = SyncObjectPool::Get(f->sync);
                 s->is_signaled = true;
                 s->is_used = true;
             }
             for (std::vector<Handle>::iterator p = f->pass.begin(), p_end = f->pass.end(); p != p_end; ++p)
             {
-                RenderPassGLES2_t*    pp = RenderPassPool::Get(*p);
+                RenderPassGLES2_t* pp = RenderPassPool::Get(*p);
 
                 for (std::vector<Handle>::iterator c = pp->cmdBuf.begin(), c_end = pp->cmdBuf.end(); c != c_end; ++c)
                 {
@@ -1613,7 +1613,7 @@ _ExecGL( GLCommand* command, uint32 cmdCount )
 
             case GLCommand::BIND_BUFFER :
             {
-                EXEC_GL(glBindBuffer( (GLenum)(arg[0]), *(GLuint*)(arg[1]) ));
+                EXEC_GL(glBindBuffer((GLenum)(arg[0]), *(GLuint*)(arg[1])));
                 cmd->status = err;
             }   break;
 
@@ -1667,7 +1667,7 @@ _ExecGL( GLCommand* command, uint32 cmdCount )
 
             case GLCommand::BIND_TEXTURE :
             {
-                EXEC_GL(glBindTexture( (GLenum)(cmd->arg[0]), *(GLuint*)(cmd->arg[1]) ));
+                EXEC_GL(glBindTexture((GLenum)(cmd->arg[0]), *(GLuint*)(cmd->arg[1])));
                 cmd->status = err;
             }   break;
 

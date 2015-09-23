@@ -61,8 +61,7 @@ class Texture;
     using TexturesMap = Map<String, Texture *>;
 #endif //#ifdef USE_FILEPATH_IN_MAP
 
-
-class Texture : public BaseObject
+    class Texture : public BaseObject
 {
     DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_TEXTURE)
 public:       
@@ -141,12 +140,11 @@ public:
      */
     static Texture * Get(const FilePath & name);
 
+    int32 Release() override;
 
-	virtual int32 Release();
+    static void DumpTextures();
 
-	static void	DumpTextures();
-
-	inline int32 GetWidth() const { return width; }
+    inline int32 GetWidth() const { return width; }
 	inline int32 GetHeight() const { return height; }
 	
 	void GenerateMipmaps();	

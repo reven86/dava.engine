@@ -665,7 +665,7 @@ int32 Texture::Release()
 	}
 	return BaseObject::Release();
 }
-	
+
 Texture * Texture::CreateFBO(uint32 w, uint32 h, PixelFormat format, rhi::TextureType requestedType)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
@@ -961,5 +961,4 @@ int32 Texture::GetBaseMipMap() const
 
     return 0;
 }
-
 };

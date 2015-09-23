@@ -960,9 +960,10 @@ SCOPED_FUNCTION_TIMING();
                     StatSet::IncStat(stat_DLL, 1);
                     break;
 
-                default: break;
+                default:
+                    break;
                 }
-                
+
                 if( cur_query_i != InvalidIndex )
                     QueryBufferDX9::EndQuery( cur_query_buf, cur_query_i );
 
@@ -1000,7 +1001,8 @@ SCOPED_FUNCTION_TIMING();
                     StatSet::IncStat(stat_DLL, 1);
                     break;
 
-                default: break;
+                default:
+                    break;
                 }
 
                 c += 5;

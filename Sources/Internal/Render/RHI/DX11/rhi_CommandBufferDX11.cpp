@@ -683,7 +683,7 @@ dx11_CommandBuffer_DrawPrimitive( Handle cmdBuf, PrimitiveType type, uint32 coun
     ctx->Draw( vertexCount, baseVertex );
                 
     if( cb->cur_query_i != InvalidIndex )
-        QueryBufferDX11::EndQuery( cb->cur_query_buf, cb->cur_query_i, ctx );
+        QueryBufferDX11::EndQuery(cb->cur_query_buf, cb->cur_query_i, ctx);
 
     StatSet::IncStat(stat_DIP, 1);
     switch (topo)

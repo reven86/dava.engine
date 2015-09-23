@@ -120,7 +120,6 @@ struct RenderStats
 
     uint32 visibleRenderObjects = 0U;
 };
-
 }
 
 #endif

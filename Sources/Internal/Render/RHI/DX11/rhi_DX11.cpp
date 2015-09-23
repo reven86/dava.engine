@@ -283,7 +283,6 @@ dx11_Initialize( const InitParam& param )
 
     ConstBufferDX11::InitializeRingBuffer( 4*1024*1024 ); // CRAP: hardcoded const ring-buf size
 
-
     stat_DIP = StatSet::AddStat("rhi'dip", "dip");
     stat_DP = StatSet::AddStat("rhi'dp", "dp");
     stat_DTL = StatSet::AddStat("rhi'dtl", "dtl");
@@ -296,8 +295,8 @@ dx11_Initialize( const InitParam& param )
     stat_SET_VB = StatSet::AddStat("rhi'set-vb", "set-vb");
     stat_SET_IB = StatSet::AddStat("rhi'set-ib", "set-ib");
 
-	_DeviceCaps.is32BitIndicesSupported = true;
-	_DeviceCaps.isFramebufferFetchSupported = true;
+    _DeviceCaps.is32BitIndicesSupported = true;
+    _DeviceCaps.isFramebufferFetchSupported = true;
 	_DeviceCaps.isVertexTextureUnitsSupported = true;
 	_DeviceCaps.isUpperLeftRTOrigin = true;
 	_DeviceCaps.isZeroBaseClipRange = true;
