@@ -237,7 +237,10 @@ void Texture::ReleaseTextureData()
         rhi::DeleteTexture(handle);
     handle = rhi::HTexture(rhi::InvalidHandle);
 
-	state = STATE_INVALID;
+    rhi::ReleaseSamplerState(samplerStateHandle);
+    samplerStateHandle = rhi::HSamplerState(rhi::InvalidHandle);
+
+    state = STATE_INVALID;
     isRenderTarget = false;
 }
 
@@ -306,13 +309,15 @@ Texture * Texture::CreateFromData(Image *image, bool generateMipMaps)
     
 	return texture;
 }
-
 	
 void Texture::SetWrapMode(rhi::TextureAddrMode wrapU, rhi::TextureAddrMode wrapV, rhi::TextureAddrMode wrapW)
 {
     samplerState.addrU = wrapU;
     samplerState.addrV = wrapV;
     samplerState.addrW = wrapW;
+
+    rhi::ReleaseSamplerState(samplerStateHandle);
+    samplerStateHandle = CreateSamplerStateHandle(samplerState);
 }
 
 void Texture::SetMinMagFilter(rhi::TextureFilter minFilter, rhi::TextureFilter magFilter, rhi::TextureMipFilter mipFilter)
@@ -320,14 +325,15 @@ void Texture::SetMinMagFilter(rhi::TextureFilter minFilter, rhi::TextureFilter m
     samplerState.minFilter = minFilter;
     samplerState.magFilter = magFilter;
     samplerState.mipFilter = mipFilter;
+
+    rhi::ReleaseSamplerState(samplerStateHandle);
+    samplerStateHandle = CreateSamplerStateHandle(samplerState);
 }
 	
 void Texture::GenerateMipmaps()
 {
     DVASSERT("Mipmap generation on fly is not supported anymore!")	
 }
-
-
 
 Texture * Texture::CreateFromImage(TextureDescriptor *descriptor, eGPUFamily gpu)
 {
@@ -509,6 +515,9 @@ void Texture::FlushDataToRenderer(Vector<Image *> * images)
     samplerState.minFilter = texDescriptor->drawSettings.minFilter;
     samplerState.magFilter = texDescriptor->drawSettings.magFilter;
     samplerState.mipFilter = texDescriptor->drawSettings.mipFilter;
+
+    rhi::ReleaseSamplerState(samplerStateHandle);
+    samplerStateHandle = CreateSamplerStateHandle(samplerState);
 
     state = STATE_VALID;
 
@@ -695,6 +704,7 @@ Texture * Texture::CreateFBO(uint32 w, uint32 h, PixelFormat format, rhi::Textur
     descriptor.format = formatDescriptor.format;
     DVASSERT(descriptor.format != ((rhi::TextureFormat)-1));//unsupported format
     tx->handle = rhi::CreateTexture(descriptor);
+    tx->samplerStateHandle = CreateSamplerStateHandle(tx->samplerState);
 
     tx->isRenderTarget = true;
     tx->texDescriptor->pathname = Format("FBO texture %d", textureFboCounter);
@@ -924,7 +934,6 @@ void Texture::SetPixelization(bool value)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-#if RHI_COMPLETE
     if (value == pixelizationFlag)
     {
         return;
@@ -937,12 +946,14 @@ void Texture::SetPixelization(bool value)
     for (Map<FilePath, Texture *>::const_iterator iter = texturesMap.begin(); iter != texturesMap.end(); iter ++)
     {
         Texture* texture = iter->second;
-        TextureFilter minFilter = pixelizationFlag ? FILTER_NEAREST : (TextureFilter)texture->GetDescriptor()->drawSettings.minFilter;
-        TextureFilter magFilter = pixelizationFlag ? FILTER_NEAREST : (TextureFilter)texture->GetDescriptor()->drawSettings.magFilter;
-        texture->SetMinMagFilter(minFilter, magFilter);
+        rhi::TextureFilter minFilter = pixelizationFlag ? rhi::TextureFilter::TEXFILTER_NEAREST : (rhi::TextureFilter)texture->GetDescriptor()->drawSettings.minFilter;
+        rhi::TextureFilter magFilter = pixelizationFlag ? rhi::TextureFilter::TEXFILTER_NEAREST : (rhi::TextureFilter)texture->GetDescriptor()->drawSettings.magFilter;
+        rhi::TextureMipFilter mipFilter = pixelizationFlag ? rhi::TextureMipFilter::TEXMIPFILTER_NONE : (rhi::TextureMipFilter)texture->GetDescriptor()->drawSettings.mipFilter;
+
+        texture->SetMinMagFilter(minFilter, magFilter, mipFilter);
     }
     textureMapMutex.Unlock();
-#endif //RHI_COMPLETE
+    //RHI_COMPLETE
 }
 
 
@@ -960,5 +971,14 @@ int32 Texture::GetBaseMipMap() const
     }
 
     return 0;
+}
+rhi::HSamplerState Texture::CreateSamplerStateHandle(const rhi::SamplerState::Descriptor::Sampler& samplerState)
+{
+    rhi::SamplerState::Descriptor samplerDesc;
+
+    samplerDesc.fragmentSampler[0] = samplerState;
+    samplerDesc.fragmentSamplerCount = 1;
+
+    return rhi::AcquireSamplerState(samplerDesc);
 }
 };

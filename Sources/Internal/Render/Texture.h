@@ -190,6 +190,8 @@ public:
     
     int32 GetBaseMipMap() const;
 
+    static rhi::HSamplerState CreateSamplerStateHandle(const rhi::SamplerState::Descriptor::Sampler& samplerState);
+
 protected:
 
     void RestoreRenderResource();
@@ -223,6 +225,7 @@ public:							// properties for fast access
 
 
     rhi::HTexture handle;
+    rhi::HSamplerState samplerStateHandle;
     rhi::SamplerState::Descriptor::Sampler samplerState;
 
 	
