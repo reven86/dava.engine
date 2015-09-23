@@ -393,7 +393,9 @@ void RenderSystem2D::Flush()
     {
         rhi::AddPacket(currentPacketListHandle, currentPacket);
 
+#if defined(__DAVAENGINE_RENDERSTATS__)
         ++Renderer::GetRenderStats().packets2d;
+#endif
     }
 
     currentVertexBuffer = nullptr;
@@ -430,7 +432,9 @@ void RenderSystem2D::DrawPacket(rhi::Packet& packet)
     }
     rhi::AddPacket(currentPacketListHandle, packet);
 
+#if defined(__DAVAENGINE_RENDERSTATS__)
     ++Renderer::GetRenderStats().packets2d;
+#endif
 }
 
 void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
@@ -452,7 +456,9 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
         return;
     }
 
+#if defined(__DAVAENGINE_RENDERSTATS__)
     ++Renderer::GetRenderStats().batches2d;
+#endif
 
     if ((vertexIndex + batchDesc.vertexCount > MAX_VERTICES) || (indexIndex + batchDesc.indexCount > MAX_INDECES))
     {
@@ -590,7 +596,9 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
             rhi::AddPacket(currentPacketListHandle, currentPacket);
             currentPacket.primitiveCount = 0;
 
+#if defined(__DAVAENGINE_RENDERSTATS__)
             ++Renderer::GetRenderStats().packets2d;
+#endif
         }
 
         if (useCustomWorldMatrix)

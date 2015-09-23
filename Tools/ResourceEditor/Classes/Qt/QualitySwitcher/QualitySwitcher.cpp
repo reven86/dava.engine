@@ -164,30 +164,22 @@ void QualitySwitcher::ApplyTx()
 
 void QualitySwitcher::ApplyMa()
 {
-#if RHI_COMPLETE_EDITOR
+
     SceneTabWidget *tabWidget = QtMainWindow::Instance()->GetSceneWidget();
     for(int tab = 0; tab < tabWidget->GetTabCount(); ++tab)
     {
         SceneEditor2 *sceneEditor = tabWidget->GetTabScene(tab);
 
-        DAVA::Map<DAVA::NMaterial*, DAVA::Set<DAVA::NMaterial *> > materialsTree;
-        sceneEditor->materialSystem->BuildMaterialsTree(materialsTree);
+        const DAVA::Set<DAVA::NMaterial *>& topParents = sceneEditor->materialSystem->GetTopParents();        
 
-        DAVA::Map<DAVA::NMaterial*, DAVA::Set<DAVA::NMaterial *> >::iterator begin = materialsTree.begin();
-        DAVA::Map<DAVA::NMaterial*, DAVA::Set<DAVA::NMaterial *> >::iterator end = materialsTree.end();
-
-        for(; begin != end; begin++)
-        {
-            DAVA::NMaterial *material = begin->first;
-            if(material->GetMaterialType() == DAVA::NMaterial::MATERIALTYPE_MATERIAL)
-            {
-                material->ReloadQuality();
-            }
+        for(auto material : topParents)
+        {            
+            material->InvalidateRenderVariants();            
         }
 
         sceneEditor->renderSystem->SetForceUpdateLights();
     }
-#endif // RHI_COMPLETE_EDITOR
+
 }
 
 void QualitySwitcher::UpdateEntitiesToQuality(DAVA::Entity *e)
