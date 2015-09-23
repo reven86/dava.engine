@@ -69,7 +69,52 @@
 
 namespace DAVA 
 {
-    
+namespace Validator
+{
+bool IsFormatSupported(PixelFormat format)
+{
+    const auto& formatDescriptor = PixelFormatDescriptor::GetPixelFormatDescriptor(format);
+    return formatDescriptor.isHardwareSupported;
+}
+
+bool AreImagesSquare(const Vector<DAVA::Image*>& imageSet)
+{
+    for (int32 i = 0; i < (int32)imageSet.size(); ++i)
+    {
+        if (!IsPowerOf2(imageSet[i]->GetWidth()) || !IsPowerOf2(imageSet[i]->GetHeight()))
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool AreImagesCorrectForTexture(const Vector<DAVA::Image*>& imageSet)
+{
+    if (0 == imageSet.size())
+    {
+        Logger::Error("[TextureValidator] Loaded images count is zero");
+        return false;
+    }
+
+    auto format = imageSet[0]->format;
+    if (!IsFormatSupported(format))
+    {
+        Logger::Error("[TextureValidator] Format %d is unsupported", format);
+        return false;
+    }
+
+    bool isSizeCorrect = Validator::AreImagesSquare(imageSet);
+    if (!isSizeCorrect)
+    {
+        Logger::Error("[TextureValidator] Size if loaded images is invalid (not power of 2)");
+        return false;
+    }
+
+    return true;
+}
+}
 
 Array<String, Texture::CUBE_FACE_COUNT> Texture::FACE_NAME_SUFFIX =
 {{
@@ -192,7 +237,10 @@ void Texture::ReleaseTextureData()
         rhi::DeleteTexture(handle);
     handle = rhi::HTexture(rhi::InvalidHandle);
 
-	state = STATE_INVALID;
+    rhi::ReleaseSamplerState(samplerStateHandle);
+    samplerStateHandle = rhi::HSamplerState(rhi::InvalidHandle);
+
+    state = STATE_INVALID;
     isRenderTarget = false;
 }
 
@@ -261,13 +309,15 @@ Texture * Texture::CreateFromData(Image *image, bool generateMipMaps)
     
 	return texture;
 }
-
 	
 void Texture::SetWrapMode(rhi::TextureAddrMode wrapU, rhi::TextureAddrMode wrapV, rhi::TextureAddrMode wrapW)
 {
     samplerState.addrU = wrapU;
     samplerState.addrV = wrapV;
     samplerState.addrW = wrapW;
+
+    rhi::ReleaseSamplerState(samplerStateHandle);
+    samplerStateHandle = CreateSamplerStateHandle(samplerState);
 }
 
 void Texture::SetMinMagFilter(rhi::TextureFilter minFilter, rhi::TextureFilter magFilter, rhi::TextureMipFilter mipFilter)
@@ -275,14 +325,15 @@ void Texture::SetMinMagFilter(rhi::TextureFilter minFilter, rhi::TextureFilter m
     samplerState.minFilter = minFilter;
     samplerState.magFilter = magFilter;
     samplerState.mipFilter = mipFilter;
+
+    rhi::ReleaseSamplerState(samplerStateHandle);
+    samplerStateHandle = CreateSamplerStateHandle(samplerState);
 }
 	
 void Texture::GenerateMipmaps()
 {
     DVASSERT("Mipmap generation on fly is not supported anymore!")	
 }
-
-
 
 Texture * Texture::CreateFromImage(TextureDescriptor *descriptor, eGPUFamily gpu)
 {
@@ -390,20 +441,13 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image *> * images)
         }
     }
 
-    if (0 == images->size())
+    if (!Validator::AreImagesCorrectForTexture(*images))
     {
-        Logger::Error("[Texture::LoadImages] Loaded images count is zero");
+        Logger::Error("[Texture::LoadImages] cannot create texture from images");
+
+        ReleaseImages(images);
         return false;
     }
-
-	bool isSizeCorrect = CheckImageSize(*images);
-	if (!isSizeCorrect)
-	{
-        Logger::Error("[Texture::LoadImages] Size if loaded images is invalid (not power of 2)");
-
-		ReleaseImages(images);
-		return false;
-	}
 
 	isPink = false;
 	state = STATE_DATA_LOADED;
@@ -472,24 +516,15 @@ void Texture::FlushDataToRenderer(Vector<Image *> * images)
     samplerState.magFilter = texDescriptor->drawSettings.magFilter;
     samplerState.mipFilter = texDescriptor->drawSettings.mipFilter;
 
+    rhi::ReleaseSamplerState(samplerStateHandle);
+    samplerStateHandle = CreateSamplerStateHandle(samplerState);
+
     state = STATE_VALID;
 
     ReleaseImages(images);
     SafeDelete(images);
 }
 
-bool Texture::CheckImageSize(const Vector<DAVA::Image *> &imageSet)
-{
-    for (int32 i = 0; i < (int32)imageSet.size(); ++i)
-    {
-        if (!IsPowerOf2(imageSet[i]->GetWidth()) || !IsPowerOf2(imageSet[i]->GetHeight()))
-        {
-            return false;
-        }
-    }
-    
-    return true;
-}
 
 Texture * Texture::CreateFromFile(const FilePath & pathName, const FastName &group, rhi::TextureType typeHint)
 {
@@ -639,7 +674,7 @@ int32 Texture::Release()
 	}
 	return BaseObject::Release();
 }
-	
+
 Texture * Texture::CreateFBO(uint32 w, uint32 h, PixelFormat format, rhi::TextureType requestedType)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
@@ -669,6 +704,7 @@ Texture * Texture::CreateFBO(uint32 w, uint32 h, PixelFormat format, rhi::Textur
     descriptor.format = formatDescriptor.format;
     DVASSERT(descriptor.format != ((rhi::TextureFormat)-1));//unsupported format
     tx->handle = rhi::CreateTexture(descriptor);
+    tx->samplerStateHandle = CreateSamplerStateHandle(tx->samplerState);
 
     tx->isRenderTarget = true;
     tx->texDescriptor->pathname = Format("FBO texture %d", textureFboCounter);
@@ -898,7 +934,6 @@ void Texture::SetPixelization(bool value)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-#if RHI_COMPLETE
     if (value == pixelizationFlag)
     {
         return;
@@ -911,12 +946,14 @@ void Texture::SetPixelization(bool value)
     for (Map<FilePath, Texture *>::const_iterator iter = texturesMap.begin(); iter != texturesMap.end(); iter ++)
     {
         Texture* texture = iter->second;
-        TextureFilter minFilter = pixelizationFlag ? FILTER_NEAREST : (TextureFilter)texture->GetDescriptor()->drawSettings.minFilter;
-        TextureFilter magFilter = pixelizationFlag ? FILTER_NEAREST : (TextureFilter)texture->GetDescriptor()->drawSettings.magFilter;
-        texture->SetMinMagFilter(minFilter, magFilter);
+        rhi::TextureFilter minFilter = pixelizationFlag ? rhi::TextureFilter::TEXFILTER_NEAREST : (rhi::TextureFilter)texture->GetDescriptor()->drawSettings.minFilter;
+        rhi::TextureFilter magFilter = pixelizationFlag ? rhi::TextureFilter::TEXFILTER_NEAREST : (rhi::TextureFilter)texture->GetDescriptor()->drawSettings.magFilter;
+        rhi::TextureMipFilter mipFilter = pixelizationFlag ? rhi::TextureMipFilter::TEXMIPFILTER_NONE : (rhi::TextureMipFilter)texture->GetDescriptor()->drawSettings.mipFilter;
+
+        texture->SetMinMagFilter(minFilter, magFilter, mipFilter);
     }
     textureMapMutex.Unlock();
-#endif //RHI_COMPLETE
+    //RHI_COMPLETE
 }
 
 
@@ -935,5 +972,13 @@ int32 Texture::GetBaseMipMap() const
 
     return 0;
 }
+rhi::HSamplerState Texture::CreateSamplerStateHandle(const rhi::SamplerState::Descriptor::Sampler& samplerState)
+{
+    rhi::SamplerState::Descriptor samplerDesc;
 
+    samplerDesc.fragmentSampler[0] = samplerState;
+    samplerDesc.fragmentSamplerCount = 1;
+
+    return rhi::AcquireSamplerState(samplerDesc);
+}
 };

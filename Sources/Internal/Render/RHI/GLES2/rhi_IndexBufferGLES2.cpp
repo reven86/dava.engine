@@ -86,11 +86,10 @@ IndexBufferGLES2_t::Create( const IndexBuffer::Descriptor& desc, bool force_imme
         
         if( cmd1.status == GL_NO_ERROR )
         {
-            GLCommand   cmd2[] =
+            GLCommand cmd2[] =
             {
-                { GLCommand::BIND_BUFFER, { GL_ELEMENT_ARRAY_BUFFER, uint64_t(&b) } },
-                { GLCommand::RESTORE_INDEX_BUFFER, {} }
-            };
+            {GLCommand::BIND_BUFFER, {GL_ELEMENT_ARRAY_BUFFER, uint64_t(&b)}},
+            {GLCommand::RESTORE_INDEX_BUFFER, {}}};
 
             ExecGL( cmd2, countof(cmd2), force_immediate );
 
@@ -185,12 +184,11 @@ gles2_IndexBuffer_Update( Handle ib, const void* data, unsigned offset, unsigned
 
     if( offset+size <= self->size )
     {
-        GLCommand   cmd[] = 
+        GLCommand cmd[] =
         {
-            { GLCommand::BIND_BUFFER, { GL_ELEMENT_ARRAY_BUFFER, uint64_t(&self->uid) } },
-            { GLCommand::BUFFER_DATA, { GL_ELEMENT_ARRAY_BUFFER, self->size, (uint64)(self->data), GL_STATIC_DRAW } },
-            { GLCommand::RESTORE_INDEX_BUFFER, {} }
-        };
+        {GLCommand::BIND_BUFFER, {GL_ELEMENT_ARRAY_BUFFER, uint64_t(&self->uid)}},
+        {GLCommand::BUFFER_DATA, {GL_ELEMENT_ARRAY_BUFFER, self->size, (uint64)(self->data), GL_STATIC_DRAW}},
+        {GLCommand::RESTORE_INDEX_BUFFER, {}}};
 
         memcpy( ((uint8*)self->data)+offset, data, size );
         ExecGL( cmd, countof(cmd) );
@@ -227,12 +225,11 @@ gles2_IndexBuffer_Unmap( Handle ib )
 
     DVASSERT(self->isMapped);
 
-    GLCommand   cmd[] = 
+    GLCommand cmd[] =
     {
-        { GLCommand::BIND_BUFFER, { GL_ELEMENT_ARRAY_BUFFER, uint64_t(&self->uid) } },
-        { GLCommand::BUFFER_DATA, { GL_ELEMENT_ARRAY_BUFFER, self->size, (uint64)(self->data), GL_STATIC_DRAW } },
-        { GLCommand::RESTORE_INDEX_BUFFER, {} }
-    };
+    {GLCommand::BIND_BUFFER, {GL_ELEMENT_ARRAY_BUFFER, uint64_t(&self->uid)}},
+    {GLCommand::BUFFER_DATA, {GL_ELEMENT_ARRAY_BUFFER, self->size, (uint64)(self->data), GL_STATIC_DRAW}},
+    {GLCommand::RESTORE_INDEX_BUFFER, {}}};
 
     ExecGL( cmd, countof(cmd) );
     

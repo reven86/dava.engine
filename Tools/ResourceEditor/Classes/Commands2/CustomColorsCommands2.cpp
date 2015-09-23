@@ -43,9 +43,9 @@ ActionEnableCustomColors::ActionEnableCustomColors(SceneEditor2* forSceneEditor)
 
 void ActionEnableCustomColors::Redo()
 {
-	if (sceneEditor == NULL)
-	{
-		return;
+    if (sceneEditor == nullptr)
+    {
+        return;
 	}
 	
 	bool enabled = sceneEditor->customColorsSystem->IsLandscapeEditingEnabled();
@@ -94,9 +94,9 @@ ActionDisableCustomColors::ActionDisableCustomColors(SceneEditor2* forSceneEdito
 
 void ActionDisableCustomColors::Redo()
 {
-	if (sceneEditor == NULL)
-	{
-		return;
+    if (sceneEditor == nullptr)
+    {
+        return;
 	}
 	
 	bool disabled = !sceneEditor->customColorsSystem->IsLandscapeEditingEnabled();
@@ -125,11 +125,15 @@ ModifyCustomColorsCommand::ModifyCustomColorsCommand(Image* originalImage, Image
 :	Command2(CMDID_CUSTOM_COLORS_MODIFY, "Custom Colors Modification")
 ,   texture(nullptr)
 {
-	updatedRect = Rect(floorf(_updatedRect.x), floorf(_updatedRect.y), ceilf(_updatedRect.dx), ceilf(_updatedRect.dy));
-	customColorsProxy = SafeRetain(_customColorsProxy);
-	
-	undoImage = Image::CopyImageRegion(originalImage, updatedRect);
-	redoImage = Image::CopyImageRegion(currentImage, updatedRect);
+    const Vector2 topLeft(floorf(_updatedRect.x), floorf(_updatedRect.y));
+    const Vector2 bottomRight(ceilf(_updatedRect.x + _updatedRect.dx), ceilf(_updatedRect.y + _updatedRect.dy));
+
+    updatedRect = Rect(topLeft, bottomRight - topLeft);
+
+    customColorsProxy = SafeRetain(_customColorsProxy);
+
+    undoImage = Image::CopyImageRegion(originalImage, updatedRect);
+    redoImage = Image::CopyImageRegion(currentImage, updatedRect);
 }
 
 ModifyCustomColorsCommand::~ModifyCustomColorsCommand()
@@ -175,7 +179,7 @@ void ModifyCustomColorsCommand::ApplyImage(DAVA::Image *image)
     textureSetHandle = rhi::AcquireTextureSet(desc);
     
     RenderSystem2D::Instance()->BeginRenderTargetPass(customColorsTarget, false);
-    RenderSystem2D::Instance()->DrawTexture(textureSetHandle, RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL, Color::White, updatedRect);
+    RenderSystem2D::Instance()->DrawTexture(textureSetHandle, texture->samplerStateHandle, customColorsProxy->GetBrushMaterial(), Color::White, updatedRect);
     RenderSystem2D::Instance()->EndRenderTargetPass();
 	
 	customColorsProxy->UpdateRect(updatedRect);
@@ -183,5 +187,5 @@ void ModifyCustomColorsCommand::ApplyImage(DAVA::Image *image)
 
 Entity* ModifyCustomColorsCommand::GetEntity() const
 {
-	return NULL;
+    return nullptr;
 }

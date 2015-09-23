@@ -136,7 +136,7 @@ FPROG_OUT_END
 #if TILED_DECAL_MASK
     DECL_FP_SAMPLER2D(decalmask)
     DECL_FP_SAMPLER2D(decaltexture)
-    property /*lowp*/ float4 decalTileColor : dynamic,a : ;
+    property float4 decalTileColor : static,a : ;
 #endif
 
 

@@ -87,11 +87,10 @@ VertexBufferGLES2_t::Create( const VertexBuffer::Descriptor& desc, bool force_im
         ExecGL( &cmd1, 1, force_immediate );
         if( cmd1.status == GL_NO_ERROR )
         {
-            GLCommand   cmd2[] =
+            GLCommand cmd2[] =
             {
-                { GLCommand::BIND_BUFFER, { GL_ARRAY_BUFFER, uint64_t(&b) } },
-                { GLCommand::RESTORE_VERTEX_BUFFER, {} }
-            };
+            {GLCommand::BIND_BUFFER, {GL_ARRAY_BUFFER, uint64_t(&b)}},
+            {GLCommand::RESTORE_VERTEX_BUFFER, {}}};
 
             ExecGL( cmd2, countof(cmd2), force_immediate );
             
@@ -194,12 +193,11 @@ gles2_VertexBuffer_Update( Handle vb, const void* data, uint32 offset, uint32 si
 
     if( offset+size <= self->size )
     {
-        GLCommand   cmd[] = 
+        GLCommand cmd[] =
         {
-            { GLCommand::BIND_BUFFER, { GL_ARRAY_BUFFER, uint64_t(&self->uid) } },
-            { GLCommand::BUFFER_DATA, { GL_ARRAY_BUFFER, self->size, (uint64)(self->data), self->usage } },
-            { GLCommand::RESTORE_VERTEX_BUFFER, {} }
-        };
+        {GLCommand::BIND_BUFFER, {GL_ARRAY_BUFFER, uint64_t(&self->uid)}},
+        {GLCommand::BUFFER_DATA, {GL_ARRAY_BUFFER, self->size, (uint64)(self->data), self->usage}},
+        {GLCommand::RESTORE_VERTEX_BUFFER, {}}};
 
         memcpy( ((uint8*)self->data)+offset, data, size );
         ExecGL( cmd, countof(cmd) );
@@ -236,12 +234,11 @@ gles2_VertexBuffer_Unmap( Handle vb )
 
     DVASSERT(self->mapped);
 
-    GLCommand   cmd[] = 
+    GLCommand cmd[] =
     {
-        { GLCommand::BIND_BUFFER, { GL_ARRAY_BUFFER, uint64_t(&self->uid) } },
-        { GLCommand::BUFFER_DATA, { GL_ARRAY_BUFFER, self->size, (uint64)(self->data), self->usage } },
-        { GLCommand::RESTORE_VERTEX_BUFFER, {} }
-    };
+    {GLCommand::BIND_BUFFER, {GL_ARRAY_BUFFER, uint64_t(&self->uid)}},
+    {GLCommand::BUFFER_DATA, {GL_ARRAY_BUFFER, self->size, (uint64)(self->data), self->usage}},
+    {GLCommand::RESTORE_VERTEX_BUFFER, {}}};
 
     ExecGL( cmd, countof(cmd) );
     self->mapped = false;

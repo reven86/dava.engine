@@ -477,7 +477,9 @@ void QuadTree::ProcessNodeClipping(uint16 nodeId, uint8 clippingFlags, Vector<Re
 			if ((flags & currVisibilityCriteria) == currVisibilityCriteria)
             {
                 visibilityArray.push_back(obj);
+#if defined(__DAVAENGINE_RENDERSTATS__)
                 ++Renderer::GetRenderStats().visibleRenderObjects;
+#endif
             }
 		}
 	}
@@ -493,7 +495,9 @@ void QuadTree::ProcessNodeClipping(uint16 nodeId, uint8 clippingFlags, Vector<Re
                     ||   currFrustum->IsInside(obj->GetWorldBoundingBox(), clippingFlags, obj->startClippingPlane))
                 {
                     visibilityArray.push_back(obj);
+#if defined(__DAVAENGINE_RENDERSTATS__)
                     ++Renderer::GetRenderStats().visibleRenderObjects;
+#endif
                 }
 			}
 		}

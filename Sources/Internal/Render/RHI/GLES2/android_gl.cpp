@@ -84,10 +84,10 @@ bool android_gl_end_frame()
 
 		eglMakeCurrent(_display, _surface, _surface, _context);
 
-		return false;  //if context was lost, return 'false' (need recreate all resources)
-	}
+        return false; //if context was lost, return 'false' (need recreate all resources)
+    }
 
-	return true;
+    return true;
 }
 
 void android_gl_acquire_context()

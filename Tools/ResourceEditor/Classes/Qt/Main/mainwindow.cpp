@@ -421,13 +421,15 @@ void QtMainWindow::SetGPUFormat(DAVA::eGPUFamily gpu)
         DAVA::Texture::SetDefaultGPU(gpu);
 
         DAVA::TexturesMap allScenesTextures;
+        DAVA::Vector<DAVA::NMaterial*> allSceneMaterials;
         for (int tab = 0; tab < GetSceneWidget()->GetTabCount(); ++tab)
         {
             SceneEditor2 *scene = GetSceneWidget()->GetTabScene(tab);
             SceneHelper::EnumerateSceneTextures(scene, allScenesTextures, SceneHelper::TexturesEnumerateMode::EXCLUDE_NULL);
+            SceneHelper::EnumerateMaterialInstances(scene, allSceneMaterials);
         }
 
-        if (allScenesTextures.size() > 0)
+        if (!allScenesTextures.empty())
         {
             int progress = 0;
             WaitStart("Reloading textures...", "", 0, allScenesTextures.size());
@@ -450,6 +452,14 @@ void QtMainWindow::SetGPUFormat(DAVA::eGPUFamily gpu)
             emit TexturesReloaded();
 
             WaitStop();
+        }
+
+        if (!allSceneMaterials.empty())
+        {
+            for (auto m : allSceneMaterials)
+            {
+                m->InvalidateTextureBindings();
+            }
         }
     }
     LoadGPUFormat();
@@ -872,7 +882,14 @@ void QtMainWindow::SetupActions()
     
     connect(ui->actionImageSplitterForNormals, &QAction::triggered, developerTools, &DeveloperTools::OnImageSplitterNormals);
     connect(ui->actionReplaceTextureMipmap, &QAction::triggered, developerTools, &DeveloperTools::OnReplaceTextureMipmap);
-    
+
+    connect(ui->actionDumpTextures, &QAction::triggered, []
+            { Texture::DumpTextures();
+            });
+    connect(ui->actionDumpSprites, &QAction::triggered, []
+            { Sprite::DumpSprites();
+            });
+
     connect( ui->actionDeviceList, &QAction::triggered, this, &QtMainWindow::DebugDeviceList );
 
     auto actSpy = ui->menuDebug_Functions->addAction( "Spy Qt Widgets" );

@@ -185,7 +185,6 @@ void EndFrame()
     stats.primitiveTriangleStripCount = StatSet::StatValue(rhi::stat_DTS);
     stats.primitiveLineListCount = StatSet::StatValue(rhi::stat_DLL);
 }
-
 }
 
 void RenderStats::Reset()
@@ -206,7 +205,6 @@ void RenderStats::Reset()
     primitiveTriangleStripCount = 0U;
     primitiveLineListCount = 0U;
 
-
     dynamicParamBindCount = 0U;
     materialParamBindCount = 0U;
 
@@ -215,5 +213,4 @@ void RenderStats::Reset()
 
     visibleRenderObjects = 0U;
 }
-
 }
