@@ -180,6 +180,19 @@ void WinUAPXamlApp::UnfocusUIElement()
     controlThatTakesFocus->Focus(FocusState::Pointer);
 }
 
+void WinUAPXamlApp::NativeControlGotFocus(Control^ control)
+{
+    currentFocusedControl = control;
+}
+
+void WinUAPXamlApp::NativeControlLostFocus(Control^ control)
+{
+    if (currentFocusedControl == control)
+    {
+        currentFocusedControl = nullptr;
+    }
+}
+
 void WinUAPXamlApp::Run()
 {
     dispatcher = std::make_unique<DispatcherWinUAP>();
@@ -452,6 +465,14 @@ void WinUAPXamlApp::OnHardwareBackButtonPressed(Platform::Object^ /*sender*/, Ba
 
 void WinUAPXamlApp::OnKeyDown(CoreWindow^ /*sender*/, KeyEventArgs^ args)
 {
+    // Check whether native control has focus, if so ignore key events
+    // Explanation:
+    //   For now key event handlers are invoked both for focused native control (e.g. TextBox) and for WinUAPXamlApp
+    //   This check prevents handling key events considered for native control but native control must call 
+    //   NativeControlGotFocus() and NativeControlLostFocus() methods on getting and losing its focus respectively
+    if (currentFocusedControl != nullptr && currentFocusedControl->FocusState != FocusState::Unfocused)
+        return;
+
     CoreWindow^ window = CoreWindow::GetForCurrentThread();
     CoreVirtualKeyStates menuStatus = window->GetKeyState(VirtualKey::Menu);
     CoreVirtualKeyStates tabStatus = window->GetKeyState(VirtualKey::Tab);
@@ -461,26 +482,29 @@ void WinUAPXamlApp::OnKeyDown(CoreWindow^ /*sender*/, KeyEventArgs^ args)
         __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
     }
 
-    VirtualKey key = args->VirtualKey;
+    int32 key = static_cast<int32>(args->VirtualKey);
     core->RunOnMainThread([this, key]()
     {
         UIEvent ev;
         ev.keyChar = 0;
         ev.tapCount = 1;
         ev.phase = UIEvent::PHASE_KEYCHAR;
-        ev.tid = InputSystem::Instance()->GetKeyboard().GetDavaKeyForSystemKey(static_cast<int32>(key));
+        ev.tid = InputSystem::Instance()->GetKeyboard().GetDavaKeyForSystemKey(key);
 
         Vector<UIEvent> touches = { ev };
         UIControlSystem::Instance()->OnInput(0, touches, allTouches);
         touches.pop_back();
         UIControlSystem::Instance()->OnInput(0, touches, allTouches);
-        InputSystem::Instance()->GetKeyboard().OnSystemKeyPressed(static_cast<int32>(key));
+        InputSystem::Instance()->GetKeyboard().OnSystemKeyPressed(key);
     });
-
 }
 
 void WinUAPXamlApp::OnKeyUp(CoreWindow^ /*sender*/, KeyEventArgs^ args)
 {
+    // See comment for OnKeyDown
+    if (currentFocusedControl != nullptr && currentFocusedControl->FocusState != FocusState::Unfocused)
+        return;
+
     int32 key = static_cast<int32>(args->VirtualKey);
     core->RunOnMainThread([this, key]()
     {
