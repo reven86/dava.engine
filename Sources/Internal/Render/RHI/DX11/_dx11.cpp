@@ -134,8 +134,10 @@ DX11_TextureFormat( TextureFormat format )
         case TEXTURE_FORMAT_R16             : return DXGI_FORMAT_R16_FLOAT;
 
         case TEXTURE_FORMAT_DXT1            : return DXGI_FORMAT_BC1_UNORM;
-        case TEXTURE_FORMAT_DXT3            : return DXGI_FORMAT_BC4_UNORM;
-        case TEXTURE_FORMAT_DXT5            : return DXGI_FORMAT_BC2_UNORM;
+        case TEXTURE_FORMAT_DXT3:
+            return DXGI_FORMAT_BC2_UNORM;
+        case TEXTURE_FORMAT_DXT5:
+            return DXGI_FORMAT_BC3_UNORM;
 
         case TEXTURE_FORMAT_PVRTC2_4BPP_RGB :
         case TEXTURE_FORMAT_PVRTC2_4BPP_RGBA :
