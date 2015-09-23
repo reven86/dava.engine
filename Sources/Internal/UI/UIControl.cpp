@@ -104,7 +104,7 @@ namespace DAVA
 
         drawPivotPointMode = DRAW_NEVER;
 
-        pivotPoint = Vector2(0, 0);
+        pivot = Vector2(0.0f, 0.0f);
         scale = Vector2(1.0f, 1.0f);
         angle = 0;
 
@@ -509,11 +509,11 @@ namespace DAVA
     {
         tempGeometricData.position = relativePosition;
         tempGeometricData.size = size;
-        tempGeometricData.pivotPoint = pivotPoint;
+        tempGeometricData.pivotPoint = GetPivotPoint();
         tempGeometricData.scale = scale;
         tempGeometricData.angle = angle;
         tempGeometricData.unrotatedRect.x = relativePosition.x - relativePosition.x * scale.x;
-        tempGeometricData.unrotatedRect.y = relativePosition.y - pivotPoint.y * scale.y;
+        tempGeometricData.unrotatedRect.y = relativePosition.y - GetPivotPoint().y * scale.y;
         tempGeometricData.unrotatedRect.dx = size.x * scale.x;
         tempGeometricData.unrotatedRect.dy = size.y * scale.y;
 
@@ -531,7 +531,7 @@ namespace DAVA
         UIGeometricData drawData;
         drawData.position = relativePosition;
         drawData.size = size;
-        drawData.pivotPoint = pivotPoint;
+        drawData.pivotPoint = GetPivotPoint();
         drawData.scale = scale;
         drawData.angle = angle;
 
@@ -654,14 +654,14 @@ namespace DAVA
         {
             scale.x = rect.dx / size.x;
             scale.y = rect.dy / size.y;
-            SetPosition(Vector2(rect.x + pivotPoint.x * scale.x, rect.y + pivotPoint.y * scale.y), rectInAbsoluteCoordinates);
+            SetPosition(Vector2(rect.x + GetPivotPoint().x * scale.x, rect.y + GetPivotPoint().y * scale.y), rectInAbsoluteCoordinates);
         }
         else
         {
             const UIGeometricData &gd = parent->GetGeometricData();
             scale.x = rect.dx / (size.x * gd.scale.x);
             scale.y = rect.dy / (size.y * gd.scale.y);
-            SetPosition(Vector2(rect.x + pivotPoint.x * scale.x, rect.y + pivotPoint.y * scale.y), rectInAbsoluteCoordinates);
+            SetPosition(Vector2(rect.x + GetPivotPoint().x * scale.x, rect.y + GetPivotPoint().y * scale.y), rectInAbsoluteCoordinates);
         }
     }
 
@@ -1059,7 +1059,7 @@ namespace DAVA
     {
         relativePosition = srcControl->relativePosition;
         size = srcControl->size;
-        pivotPoint = srcControl->pivotPoint;
+        pivot = srcControl->pivot;
         scale = srcControl->scale;
         angle = srcControl->angle;
         SafeRelease(background);
@@ -2243,9 +2243,7 @@ namespace DAVA
 
     Animation * UIControl::MoveAnimation(const Rect & rect, float time, Interpolation::FuncType interpolationFunc, int32 track)
     {
-        TwoVector2LinearAnimation *animation = new TwoVector2LinearAnimation(this
-                , &relativePosition, Vector2(rect.x + pivotPoint.x, rect.y + pivotPoint.y)
-                , &size, Vector2(rect.dx, rect.dy), time, interpolationFunc);
+        TwoVector2LinearAnimation* animation = new TwoVector2LinearAnimation(this, &relativePosition, Vector2(rect.x + GetPivotPoint().x, rect.y + GetPivotPoint().y), &size, Vector2(rect.dx, rect.dy), time, interpolationFunc);
         animation->Start(track);
         return animation;
     }
@@ -2254,9 +2252,7 @@ namespace DAVA
     {
         Vector2 finalScale(rect.dx / size.x, rect.dy / size.y);
 
-        TwoVector2LinearAnimation *animation = new TwoVector2LinearAnimation(this
-                , &relativePosition, Vector2(rect.x + pivotPoint.x * finalScale.x, rect.y + pivotPoint.y * finalScale.y)
-                , &scale, finalScale, time, interpolationFunc);
+        TwoVector2LinearAnimation* animation = new TwoVector2LinearAnimation(this, &relativePosition, Vector2(rect.x + GetPivotPoint().x * finalScale.x, rect.y + GetPivotPoint().y * finalScale.y), &scale, finalScale, time, interpolationFunc);
         animation->Start(track);
         return animation;
     }
