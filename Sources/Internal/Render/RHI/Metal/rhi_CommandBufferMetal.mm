@@ -367,6 +367,8 @@ metal_CommandBuffer_SetVertexData( Handle cmdBuf, Handle vb, uint32 streamIndex 
     CommandBufferMetal_t*   cb = CommandBufferPool::Get( cmdBuf );
 
     cb->cur_vb = vb;
+
+    StatSet::IncStat(stat_SET_VB, 1);
 }
 
 
@@ -404,6 +406,8 @@ metal_CommandBuffer_SetIndices( Handle cmdBuf, Handle ib )
     CommandBufferMetal_t*   cb = CommandBufferPool::Get( cmdBuf );
 
     cb->cur_ib = ib;
+
+    StatSet::IncStat(stat_SET_IB, 1);
 }
 
 
@@ -479,6 +483,7 @@ metal_CommandBuffer_SetSamplerState( Handle cmdBuf, const Handle samplerState )
     CommandBufferMetal_t*   cb = CommandBufferPool::Get( cmdBuf );
     
     SamplerStateMetal::SetToRHI( samplerState, cb->encoder );
+    StatSet::IncStat(stat_SET_SS, 1);
 }
 
 
@@ -512,7 +517,22 @@ metal_CommandBuffer_DrawPrimitive( Handle cmdBuf, PrimitiveType type, uint32 cou
 
     [cb->encoder setVertexBuffer:vb offset:0 atIndex:0 ]; // CRAP: assuming vdata is buffer#0
     [cb->encoder drawPrimitives:ptype vertexStart:0 vertexCount:v_cnt];
+
     StatSet::IncStat( stat_DP, 1 );
+    switch (ptype)
+    {
+    case MTLPrimitiveTypeTriangle:
+        StatSet::IncStat(stat_DTL, 1);
+        break;
+    case MTLPrimitiveTypeTriangleStrip:
+        StatSet::IncStat(stat_DTS, 1);
+        break;
+    case MTLPrimitiveTypeLine:
+        StatSet::IncStat(stat_DLL, 1);
+        break;
+    default:
+        break;
+    }
 }
 
 
@@ -549,7 +569,21 @@ metal_CommandBuffer_DrawIndexedPrimitive( Handle cmdBuf, PrimitiveType type, uin
 
     [cb->encoder setVertexBuffer:vb offset:firstVertex*cb->cur_stride atIndex:0 ]; // CRAP: assuming vdata is buffer#0
     [cb->encoder drawIndexedPrimitives:ptype indexCount:i_cnt indexType:i_type indexBuffer:ib indexBufferOffset:i_off ];
+
     StatSet::IncStat( stat_DIP, 1 );
+    switch (ptype)
+    {
+    case MTLPrimitiveTypeTriangle:
+        StatSet::IncStat(stat_DTL, 1);
+        break;
+    case MTLPrimitiveTypeTriangleStrip:
+        StatSet::IncStat(stat_DTS, 1);
+        break;
+    case MTLPrimitiveTypeLine:
+        StatSet::IncStat(stat_DLL, 1);
+        break;
+    default:
+        break;
 }
 
 

@@ -30,6 +30,7 @@
     #include "dbg_StatSet.h"
     
     #include "Concurrency/Spinlock.h"
+#include "Concurrency/LockGuard.h"
 
     #include <vector>
 
@@ -67,14 +68,20 @@ void
 StatSet::ResetAll()
 {
     using namespace statset;
-    
-    _StatSync.Lock();    
+
+#if defined(__DAVAENGINE_RENDERSTATS__)
+
+#if defined(RHI_THREADSAFE_STATS)
+    DAVA::LockGuard<DAVA::Spinlock> guard(_StatSync);
+#endif
+
     for( StatArray::iterator s=_Stat.begin(),s_end=_Stat.end(); s!=s_end; ++s )
     {
         if( !s->is_permanent )
             s->value = 0;
     }
-    _StatSync.Unlock();    
+
+#endif
 }
 
 
@@ -84,11 +91,15 @@ unsigned
 StatSet::AddStat( const char* full_name, const char* short_name, unsigned parent_id )
 {
     using namespace statset;
-    
+
     unsigned    id = InvalidIndex;
 
-    _StatSync.Lock();    
-    {
+#if defined(__DAVAENGINE_RENDERSTATS__)
+
+#if defined(RHI_THREADSAFE_STATS)
+    DAVA::LockGuard<DAVA::Spinlock> guard(_StatSync);
+#endif
+
     _Stat.resize( _Stat.size()+1 );
 
     Stat&   stat = _Stat.back();
@@ -99,10 +110,9 @@ StatSet::AddStat( const char* full_name, const char* short_name, unsigned parent
     stat.value         = 0;
     stat.is_permanent  = false;
 
-    id = _Stat.size()-1;
-    }
-    _StatSync.Unlock();    
+    id = _Stat.size() - 1;
 
+#endif
 
     return id;
 }
@@ -117,8 +127,12 @@ StatSet::AddPermanentStat( const char* full_name, const char* short_name, unsign
 
     unsigned    id = InvalidIndex;
 
-    _StatSync.Lock();    
-    {
+#if defined(__DAVAENGINE_RENDERSTATS__)
+
+#if defined(RHI_THREADSAFE_STATS)
+    DAVA::LockGuard<DAVA::Spinlock> guard(_StatSync);
+#endif
+
     _Stat.resize( _Stat.size()+1 );
 
     Stat&   stat = _Stat.back();
@@ -130,9 +144,8 @@ StatSet::AddPermanentStat( const char* full_name, const char* short_name, unsign
     stat.is_permanent  = true;
 
     id = _Stat.size()-1;
-    }
-    _StatSync.Unlock();
 
+#endif
 
     return id;
 }
@@ -144,13 +157,17 @@ void
 StatSet::SetStat( unsigned id, unsigned value )
 {
     using namespace statset;
-    
-    _StatSync.Lock();    
+
+#if defined(__DAVAENGINE_RENDERSTATS__)
+
+#if defined(RHI_THREADSAFE_STATS)
+    DAVA::LockGuard<DAVA::Spinlock> guard(_StatSync);
+#endif
 
     if( id < _Stat.size() )
         _Stat[id].value = value;
-    
-    _StatSync.Unlock();    
+
+#endif
 }
 
 
@@ -160,13 +177,16 @@ void
 StatSet::IncStat( unsigned id, unsigned delta )
 {
     using namespace statset;
-    
-    _StatSync.Lock();    
-    
+
+#if defined(__DAVAENGINE_RENDERSTATS__)
+
+#if defined(RHI_THREADSAFE_STATS)
+    DAVA::LockGuard<DAVA::Spinlock> guard(_StatSync);
+#endif
+
     if( id < _Stat.size() )
         _Stat[id].value += delta;
-    
-    _StatSync.Unlock();    
+#endif
 }
 
 
@@ -176,16 +196,19 @@ void
 StatSet::DecStat( unsigned id, unsigned delta )
 {
     using namespace statset;
-    
-    _StatSync.Lock();
-        
+
+#if defined(__DAVAENGINE_RENDERSTATS__)
+
+#if defined(RHI_THREADSAFE_STATS)
+    DAVA::LockGuard<DAVA::Spinlock> guard(_StatSync);
+#endif
+
     if( id < _Stat.size() )
     {
         unsigned    val = _Stat[id].value;
         _Stat[id].value = (delta >= val)  ? val-delta  : 0;
     }
-
-    _StatSync.Unlock();
+#endif
 }
 
 
@@ -195,10 +218,17 @@ unsigned
 StatSet::StatValue( unsigned id )
 {
     using namespace statset;
-    
-    _StatSync.Lock();
-    unsigned    val = (id < _Stat.size())  ? _Stat[id].value  : 0;
-    _StatSync.Unlock();
+
+    unsigned val = 0;
+
+#if defined(__DAVAENGINE_RENDERSTATS__)
+
+#if defined(RHI_THREADSAFE_STATS)
+    DAVA::LockGuard<DAVA::Spinlock> guard(_StatSync);
+#endif
+
+    val = (id < _Stat.size()) ? _Stat[id].value : 0;
+#endif
 
     return val;
 }
@@ -213,7 +243,12 @@ StatSet::StatID( const char* name )
 
     unsigned id = InvalidIndex;
 
-    _StatSync.Lock();
+#if defined(__DAVAENGINE_RENDERSTATS__)
+
+#if defined(RHI_THREADSAFE_STATS)
+    DAVA::LockGuard<DAVA::Spinlock> guard(_StatSync);
+#endif
+
     for( StatArray::const_iterator s=_Stat.begin(),s_end=_Stat.end(); s!=s_end; ++s )
     {
         if( strcmp( name, s->full_name ) == 0 )
@@ -222,7 +257,7 @@ StatSet::StatID( const char* name )
             break;
         }
     }
-    _StatSync.Unlock();
+#endif
 
     return id;
 }
@@ -235,10 +270,16 @@ StatSet::StatFullName( unsigned id )
 {
     using namespace statset;
 
-    _StatSync.Lock();
-    const char* name = (id < _Stat.size())  ? _Stat[id].full_name  : "<invalid id>";
-    _StatSync.Unlock();
+    const char* name = "<invalid id>";
 
+#if defined(__DAVAENGINE_RENDERSTATS__)
+
+#if defined(RHI_THREADSAFE_STATS)
+    DAVA::LockGuard<DAVA::Spinlock> guard(_StatSync);
+#endif
+
+    name = (id < _Stat.size()) ? _Stat[id].full_name : "<invalid id>";
+#endif
     return name;
 }
 

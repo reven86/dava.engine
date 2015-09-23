@@ -40,9 +40,9 @@ void NMaterialStateDynamicPropertiesInsp::FindMaterialPropertiesRecursive(NMater
     material->CollectMaterialFlags(flags);
 
     // shader data
-    if (material->fxName.IsValid())
+    if (material->GetEffectiveFXName().IsValid())
     {
-        FXDescriptor fxDescriptor = FXCache::GetFXDescriptor(material->fxName, flags, material->qualityGroup);
+        FXDescriptor fxDescriptor = FXCache::GetFXDescriptor(material->GetEffectiveFXName(), flags, material->qualityGroup);
         for (auto& descriptor : fxDescriptor.renderPassDescriptors)
         {
             if (descriptor.shader == nullptr)
