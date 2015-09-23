@@ -99,6 +99,7 @@ public:
         const uint16* indexPointer = nullptr;
         NMaterial * material = nullptr;
         rhi::HTextureSet textureSetHandle;
+        rhi::HSamplerState samplerStateHandle;
         rhi::PrimitiveType primitiveType = rhi::PRIMITIVE_TRIANGLELIST;
         Matrix4* worldMatrix = nullptr;
     };
@@ -250,7 +251,7 @@ public:
     */
     void DrawPolygonTransformed(const Polygon2 & polygon, bool closed, const Matrix3 & transform, const Color& color);
 
-    void DrawTexture(rhi::HTextureSet htextureSet, NMaterial* material, const Color & color, const Rect & dstRect = Rect(0.f, 0.f, -1.f, -1.f), const Rect & srcRect = Rect(0.f, 0.f, -1.f, -1.f));
+    void DrawTexture(rhi::HTextureSet htextureSet, rhi::HSamplerState hSamplerState, NMaterial* material, const Color & color, const Rect & dstRect = Rect(0.f, 0.f, -1.f, -1.f), const Rect & srcRect = Rect(0.f, 0.f, -1.f, -1.f));
 
 private:
     bool IsPreparedSpriteOnScreen(Sprite::DrawState * drawState);
@@ -305,7 +306,6 @@ private:
     };
     uint32 highlightControlsVerticesLimit;
 
-    rhi::HSamplerState samplerStateHandle;
     rhi::HRenderPass pass2DHandle;
     rhi::HPacketList packetList2DHandle;
     rhi::HRenderPass passTargetHandle;

@@ -95,13 +95,6 @@ void RenderSystem2D::Init()
     DEFAULT_2D_TEXTURE_GRAYSCALE_MATERIAL->SetFXName(FastName("~res:/Materials/2d.Textured.Grayscale.material"));
     DEFAULT_2D_TEXTURE_GRAYSCALE_MATERIAL->PreBuildMaterial(RENDER_PASS_NAME);
 
-    rhi::SamplerState::Descriptor samplerDesc;
-    samplerDesc.fragmentSampler[0].magFilter = rhi::TEXFILTER_LINEAR;
-    samplerDesc.fragmentSampler[0].minFilter = rhi::TEXFILTER_LINEAR;
-    samplerDesc.fragmentSampler[0].mipFilter = rhi::TEXMIPFILTER_NONE;
-    samplerDesc.fragmentSamplerCount = 1;
-    samplerStateHandle = rhi::AcquireSamplerState(samplerDesc);
-
     rhi::VertexLayout layout;
     layout.AddElement(rhi::VS_POSITION, 0, rhi::VDT_FLOAT, 3);
     layout.AddElement(rhi::VS_TEXCOORD, 0, rhi::VDT_FLOAT, 2);
@@ -133,8 +126,6 @@ RenderSystem2D::~RenderSystem2D()
     SafeRelease(DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL);
     SafeRelease(DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL);
     SafeRelease(DEFAULT_2D_TEXTURE_GRAYSCALE_MATERIAL);
-
-    rhi::ReleaseSamplerState(samplerStateHandle);
 }
 
 void RenderSystem2D::BeginFrame()
@@ -451,6 +442,9 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
     DVASSERT_MSG(batchDesc.vertexCount > 0 && batchDesc.vertexStride > 0 && batchDesc.vertexPointer != nullptr, "Incorrect vertex position data");
     DVASSERT_MSG(batchDesc.indexCount > 0 && batchDesc.indexPointer != nullptr, "Incorrect index data");
     DVASSERT_MSG(batchDesc.material != nullptr, "Incorrect material");
+    DVASSERT_MSG((batchDesc.samplerStateHandle != rhi::InvalidHandle && batchDesc.textureSetHandle != rhi::InvalidHandle) ||
+                (batchDesc.samplerStateHandle == rhi::InvalidHandle && batchDesc.textureSetHandle == rhi::InvalidHandle), 
+                "Incorrect textureSet or samplerState handle");
 
     DVASSERT_MSG(batchDesc.texCoordPointer == nullptr || batchDesc.texCoordStride > 0, "Incorrect vertex texture coordinates data");
     DVASSERT_MSG(batchDesc.colorPointer == nullptr || batchDesc.colorStride > 0, "Incorrect vertex color data");
@@ -640,7 +634,7 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
         lastMaterial = batchDesc.material;
         lastMaterial->BindParams(currentPacket);
         currentPacket.textureSet = batchDesc.textureSetHandle;
-        currentPacket.samplerState = samplerStateHandle;
+        currentPacket.samplerState = batchDesc.samplerStateHandle;
     }
     // End new packet
 
@@ -998,6 +992,7 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * drawState, const 
     BatchDescriptor batch;
     batch.material = state->GetMaterial();
     batch.textureSetHandle = sprite->GetTextureHandle(frame);
+    batch.samplerStateHandle = sprite->GetTexture(frame)->samplerStateHandle;
     batch.singleColor = color;
     batch.vertexCount = spriteVertexCount;
     batch.indexCount = spriteIndexCount;
@@ -1098,6 +1093,7 @@ void RenderSystem2D::DrawStretched(Sprite * sprite, Sprite::DrawState * state, V
     BatchDescriptor batch;
     batch.singleColor = color;
     batch.textureSetHandle = sprite->GetTextureHandle(frame);
+    batch.samplerStateHandle = sprite->GetTexture(frame)->samplerStateHandle;
     batch.material = state->GetMaterial();
     batch.vertexCount = spriteVertexCount;
     batch.indexCount = spriteIndexCount;
@@ -1106,6 +1102,7 @@ void RenderSystem2D::DrawStretched(Sprite * sprite, Sprite::DrawState * state, V
     batch.vertexPointer = (float32*)sd.transformedVertices.data();
     batch.texCoordPointer = (float32*)sd.texCoords.data();
     batch.indexPointer = sd.indeces;
+
     PushBatch(batch);
 	
     if (!pStreachData)
@@ -1191,6 +1188,7 @@ void RenderSystem2D::DrawTiled(Sprite * sprite, Sprite::DrawState * state, const
     batch.singleColor = color;
     batch.material = state->GetMaterial();
     batch.textureSetHandle = sprite->GetTextureHandle(frame);
+    batch.samplerStateHandle = sprite->GetTexture(frame)->samplerStateHandle;
     batch.vertexCount = spriteVertexCount;
     batch.indexCount = spriteIndexCount;
     batch.vertexStride = 2;
@@ -1198,6 +1196,7 @@ void RenderSystem2D::DrawTiled(Sprite * sprite, Sprite::DrawState * state, const
     batch.vertexPointer = (float32*)td.transformedVertices.data();
     batch.texCoordPointer = (float32*)td.texCoords.data();
     batch.indexPointer = td.indeces.data();
+
     PushBatch(batch);
 
     if (!pTiledData)
@@ -1462,7 +1461,7 @@ void RenderSystem2D::DrawPolygonTransformed(const Polygon2 & polygon, bool close
     DrawPolygon(copyPoly, closed, color);
 }
 
-void RenderSystem2D::DrawTexture(rhi::HTextureSet htextureSet, NMaterial *material, const Color & color, const Rect & _dstRect /* = Rect(0.f, 0.f, -1.f, -1.f) */, const Rect & _srcRect /* = Rect(0.f, 0.f, -1.f, -1.f) */)
+void RenderSystem2D::DrawTexture(rhi::HTextureSet htextureSet, rhi::HSamplerState hSamplerState, NMaterial *material, const Color & color, const Rect & _dstRect /* = Rect(0.f, 0.f, -1.f, -1.f) */, const Rect & _srcRect /* = Rect(0.f, 0.f, -1.f, -1.f) */)
 {
     Rect destRect(_dstRect);
     if (destRect.dx < 0.f || destRect.dy < 0.f)
@@ -1503,6 +1502,7 @@ void RenderSystem2D::DrawTexture(rhi::HTextureSet htextureSet, NMaterial *materi
     BatchDescriptor batch;
     batch.singleColor = color;
     batch.textureSetHandle = htextureSet;
+    batch.samplerStateHandle = hSamplerState;
     batch.material = material;
     batch.vertexCount = 4;
     batch.indexCount = 6;
