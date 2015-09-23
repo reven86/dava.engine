@@ -117,48 +117,28 @@ void ShowErrorDialog(const DAVA::Set<DAVA::String> &errors)
 
 	const uint32 maxErrorsPerDialog = 6;
 	uint32 totalErrors = errors.size();
-	uint32 processedDialogs = 0;
-	uint32 firstError = 1;
-	uint32 errorCounter = 0;
 
-	auto cleanUpEntityInfo = [](const DAVA::String& input) 
-	{
-		QRegularExpression re(PointerSerializer::GetRegex());
-		QString qText = QString::fromStdString(input);
-		qText.replace(re, QString());
-		return qText.toStdString();
-	};
-    
-	auto getDialogTitle = [&firstError, &errorCounter, &totalErrors]() -> DAVA::String
-	{
-		if (totalErrors < 2) 
-			return "Error";
-
-		if (errorCounter < 2)
-			return Format("Error %u from %u\n\n", firstError, totalErrors);
-
-		return Format("Errors %u-%u from %u\n\n", firstError, firstError + errorCounter - 1, totalErrors);
-	};
-
+	const String dialogTitle = Format("%u error(s)", totalErrors);
 	const String errorDivideLine("\n--------------------\n");
 
 	String errorMessage;
+	uint32 errorCounter = 0;
 	for (const auto& message : errors)
 	{
-		errorMessage += cleanUpEntityInfo(message) + errorDivideLine;
+		errorMessage += PointerSerializer::CleanUpString(message) + errorDivideLine;
 		errorCounter++;
 
 		if (errorCounter == maxErrorsPerDialog)
 		{
-		    ShowErrorDialog(errorMessage, getDialogTitle());
-			firstError += errorCounter;
+			errorMessage += "\n\nSee console log for details.";
+		    ShowErrorDialog(errorMessage, dialogTitle);
 			errorMessage.clear();
-			errorCounter = 0;
+			break;
 		}
 	}
 
 	if (!errorMessage.empty())
-	    ShowErrorDialog(errorMessage, getDialogTitle());
+	    ShowErrorDialog(errorMessage, dialogTitle);
 }
 
 void ShowErrorDialog(const DAVA::String &errorMessage, const DAVA::String &title)
