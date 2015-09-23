@@ -394,9 +394,9 @@ void SceneEditor2::Draw()
 {
     Scene::Draw();
 
-	if(isHUDVisible)
-	{
-		gridSystem->Draw();
+    if (isHUDVisible)
+    {
+        gridSystem->Draw();
 		cameraSystem->Draw();
 
 		if(collisionSystem)
@@ -493,7 +493,7 @@ void SceneEditor2::EditorCommandNotify::CleanChanged(bool clean)
 	}
 }
 
-const RenderStats & SceneEditor2::GetRenderStats() const
+const RenderStats& SceneEditor2::GetRenderStats() const
 {
     return renderStats;
 }

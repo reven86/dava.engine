@@ -194,8 +194,8 @@ namespace DAVA
 		{
 			ResizeView(w, h);
 
-			rhi::ResetParam params;
-			params.width = (uint32)width;
+            rhi::ResetParam params;
+            params.width = (uint32)width;
 			params.height = (uint32)height;
 			params.window = rendererParams.window;
 			Renderer::Reset(params);
@@ -224,7 +224,7 @@ namespace DAVA
 
 	void CorePlatformAndroid::OnCreateActivity()
 	{
-		DAVA::Thread::InitMainThread();
+        DAVA::Thread::InitMainThread();
 //		Logger::Debug("[CorePlatformAndroid::OnCreateActivity]");
 	}
 
@@ -262,12 +262,12 @@ namespace DAVA
 			}
 			DAVA::Core::Instance()->GoForeground();
 
-			if(!foreground)
-				rhi::ResumeRendering();
+            if (!foreground)
+                rhi::ResumeRendering();
 
-			foreground = true;
-		}
-		Logger::Debug("[CorePlatformAndroid::StartForeground] end");
+            foreground = true;
+        }
+        Logger::Debug("[CorePlatformAndroid::StartForeground] end");
 	}
 
 	void CorePlatformAndroid::StopForeground(bool isLock)
@@ -285,13 +285,13 @@ namespace DAVA
 		}
 		DAVA::Core::Instance()->GoBackground(isLock);
 
-		if(foreground)
-			rhi::SuspendRendering();
+        if (foreground)
+            rhi::SuspendRendering();
 
-		foreground = false;
-	}
+        foreground = false;
+    }
 
-	void CorePlatformAndroid::KeyUp(int32 keyCode)
+    void CorePlatformAndroid::KeyUp(int32 keyCode)
 	{
 		InputSystem::Instance()->GetKeyboard().OnSystemKeyUnpressed(keyCode);
 	}

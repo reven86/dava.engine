@@ -43,8 +43,8 @@ ActionEnableCustomColors::ActionEnableCustomColors(SceneEditor2* forSceneEditor)
 
 void ActionEnableCustomColors::Redo()
 {
-	if (sceneEditor == nullptr)
-	{
+    if (sceneEditor == nullptr)
+    {
 		return;
 	}
 	
@@ -94,8 +94,8 @@ ActionDisableCustomColors::ActionDisableCustomColors(SceneEditor2* forSceneEdito
 
 void ActionDisableCustomColors::Redo()
 {
-	if (sceneEditor == nullptr)
-	{
+    if (sceneEditor == nullptr)
+    {
 		return;
 	}
 	
@@ -131,8 +131,8 @@ ModifyCustomColorsCommand::ModifyCustomColorsCommand(Image* originalImage, Image
     updatedRect = Rect(topLeft, bottomRight - topLeft);
 
     customColorsProxy = SafeRetain(_customColorsProxy);
-	
-	undoImage = Image::CopyImageRegion(originalImage, updatedRect);
+
+    undoImage = Image::CopyImageRegion(originalImage, updatedRect);
 	redoImage = Image::CopyImageRegion(currentImage, updatedRect);
 }
 
@@ -179,7 +179,7 @@ void ModifyCustomColorsCommand::ApplyImage(DAVA::Image *image)
     textureSetHandle = rhi::AcquireTextureSet(desc);
     
     RenderSystem2D::Instance()->BeginRenderTargetPass(customColorsTarget, false);
-    RenderSystem2D::Instance()->DrawTexture(textureSetHandle, customColorsProxy->GetBrushMaterial(), Color::White, updatedRect);
+    RenderSystem2D::Instance()->DrawTexture(textureSetHandle, texture->samplerStateHandle, customColorsProxy->GetBrushMaterial(), Color::White, updatedRect);
     RenderSystem2D::Instance()->EndRenderTargetPass();
 	
 	customColorsProxy->UpdateRect(updatedRect);
@@ -187,5 +187,5 @@ void ModifyCustomColorsCommand::ApplyImage(DAVA::Image *image)
 
 Entity* ModifyCustomColorsCommand::GetEntity() const
 {
-	return nullptr;
+    return nullptr;
 }

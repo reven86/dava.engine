@@ -33,25 +33,24 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace DAVA
 {
-namespace 
+namespace
 {
-    Mutex callbackListMutex;
-    Vector<Function<void()>> resourceRestoreCallbacks;
-    Vector<Function<void()>> postRestoreCallbacks;
+Mutex callbackListMutex;
+Vector<Function<void()>> resourceRestoreCallbacks;
+Vector<Function<void()>> postRestoreCallbacks;
 
-    struct SyncCallback
-    {
-        rhi::HSyncObject syncObject;
-        Function < void(rhi::HSyncObject) > callback;
-    };
-    Vector<SyncCallback> syncCallbacks;
+struct SyncCallback
+{
+    rhi::HSyncObject syncObject;
+    Function<void(rhi::HSyncObject)> callback;
+};
+Vector<SyncCallback> syncCallbacks;
 
-    bool isInRestore = false;
+bool isInRestore = false;
 }
 
 namespace RenderCallbacks
 {
-
 void RegisterResourceRestoreCallback(Function<void()> callback)
 {
     DVASSERT(callback.IsTrivialTarget());
@@ -95,7 +94,7 @@ void UnRegisterPostRestoreCallback(Function<void()> callback)
 }
 
 void ProcessFrame()
-{    
+{
     if (rhi::NeedRestoreResources())
     {
         isInRestore = true;
@@ -137,7 +136,7 @@ void ProcessFrame()
 
 void RegisterSyncCallback(rhi::HSyncObject syncObject, Function<void(rhi::HSyncObject)> callback)
 {
-    syncCallbacks.push_back({ syncObject, callback });
+    syncCallbacks.push_back({syncObject, callback});
 }
 
 void UnRegisterSyncCallback(Function<void(rhi::HSyncObject)> callback)
@@ -145,7 +144,7 @@ void UnRegisterSyncCallback(Function<void(rhi::HSyncObject)> callback)
     for (size_t i = 0, sz = syncCallbacks.size(); i < sz;)
     {
         if (syncCallbacks[i].callback.Target() == callback.Target())
-        {            
+        {
             RemoveExchangingWithLast(syncCallbacks, i);
             --sz;
         }
@@ -155,6 +154,5 @@ void UnRegisterSyncCallback(Function<void(rhi::HSyncObject)> callback)
         }
     }
 }
-
 }
 }

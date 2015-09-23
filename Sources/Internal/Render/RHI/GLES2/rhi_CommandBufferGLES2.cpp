@@ -40,6 +40,7 @@
     using DAVA::Logger;
     #include "Concurrency/Thread.h"
     #include "Concurrency/Semaphore.h"
+    #include "Concurrency/ConditionVariable.h"
     #include "Debug/Profiler.h"
 
     #include "_gl.h"
@@ -149,6 +150,7 @@ static DAVA::Spinlock       _GLES2_CmdBufIsBeingExecutedSync;
 static GLCommand*           _GLES2_PendingImmediateCmd      = nullptr;
 static uint32               _GLES2_PendingImmediateCmdCount = 0;
 static DAVA::Mutex          _GLES2_PendingImmediateCmdSync;
+static DAVA::ConditionVariable _GLES2_PendingImmediateCmdCV;
 
 static bool                 _GLES2_RenderThreadExitPending  = false;
 static DAVA::Spinlock       _GLES2_RenderThreadExitSync;
@@ -172,13 +174,10 @@ FrameGLES2
 static std::vector<FrameGLES2>  _Frame;
 static bool                     _FrameStarted   = false;
 static unsigned                 _FrameNumber    = 1;
-//static DAVA::Spinlock       _FrameSync;
-static DAVA::Mutex              _FrameSync;
-
+static DAVA::Spinlock           _FrameSync;
+//static DAVA::Mutex              _FrameSync;
 
 static void _ExecGL( GLCommand* command, uint32 cmdCount );
-
-
 
 static Handle
 gles2_RenderPass_Allocate( const RenderPassConfig& passConf, uint32 cmdBufCount, Handle* cmdBuf )
@@ -1200,6 +1199,7 @@ Trace("DIP  mode= %i  v_cnt= %i  start_i= %i\n",int(mode),int(v_cnt),int(startIn
                 _GLES2_PendingImmediateCmdCount = 0;
             }
             _GLES2_PendingImmediateCmdSync.Unlock();
+            _GLES2_PendingImmediateCmdCV.NotifyOne();
 
             immediate_cmd_ttw = 10;
         }
@@ -1216,19 +1216,19 @@ static void
 _RejectAllFrames()
 {
     _FrameSync.Lock();
-    for (std::vector<FrameGLES2>::iterator f = _Frame.begin(); f != _Frame.end(); )
+    for (std::vector<FrameGLES2>::iterator f = _Frame.begin(); f != _Frame.end();)
     {
         if (f->readyToExecute)
         {
             if (f->sync != InvalidHandle)
             {
-                SyncObjectGLES2_t*    s = SyncObjectPool::Get(f->sync);
+                SyncObjectGLES2_t* s = SyncObjectPool::Get(f->sync);
                 s->is_signaled = true;
                 s->is_used = true;
             }
             for (std::vector<Handle>::iterator p = f->pass.begin(), p_end = f->pass.end(); p != p_end; ++p)
             {
-                RenderPassGLES2_t*    pp = RenderPassPool::Get(*p);
+                RenderPassGLES2_t* pp = RenderPassPool::Get(*p);
 
                 for (std::vector<Handle>::iterator c = pp->cmdBuf.begin(), c_end = pp->cmdBuf.end(); c != c_end; ++c)
                 {
@@ -1476,7 +1476,7 @@ _RenderFunc( DAVA::BaseObject* obj, void*, void* )
 //Trace("exec-imm-cmd done\n");
             }
             _GLES2_PendingImmediateCmdSync.Unlock();
-
+            _GLES2_PendingImmediateCmdCV.NotifyOne();
 
 //            _CmdQueueSync.Lock();
 //            cnt = _RenderQueue.size();
@@ -1507,8 +1507,8 @@ InitializeRenderThreadGLES2( uint32 frameCount )
         DVASSERT(_GLES2_ReleaseContext);
         _GLES2_ReleaseContext();
 
-        _GLES2_RenderThread = DAVA::Thread::Create( DAVA::Message(&_RenderFunc) );
-        _GLES2_RenderThread->SetName( "RHI.gl-render" );
+        _GLES2_RenderThread = DAVA::Thread::Create(DAVA::Message(&_RenderFunc));
+        _GLES2_RenderThread->SetName("RHI.gl-render");
         _GLES2_RenderThread->Start();    
         _GLES2_RenderThredStartedSync.Wait();
     }
@@ -1613,7 +1613,7 @@ _ExecGL( GLCommand* command, uint32 cmdCount )
 
             case GLCommand::BIND_BUFFER :
             {
-                EXEC_GL(glBindBuffer( (GLenum)(arg[0]), *(GLuint*)(arg[1]) ));
+                EXEC_GL(glBindBuffer((GLenum)(arg[0]), *(GLuint*)(arg[1])));
                 cmd->status = err;
             }   break;
 
@@ -1667,7 +1667,7 @@ _ExecGL( GLCommand* command, uint32 cmdCount )
 
             case GLCommand::BIND_TEXTURE :
             {
-                EXEC_GL(glBindTexture( (GLenum)(cmd->arg[0]), *(GLuint*)(cmd->arg[1]) ));
+                EXEC_GL(glBindTexture((GLenum)(cmd->arg[0]), *(GLuint*)(cmd->arg[1])));
                 cmd->status = err;
             }   break;
 
@@ -1872,32 +1872,22 @@ ExecGL( GLCommand* command, uint32 cmdCount, bool force_immediate )
     }
     else
     {
-        bool    scheduled = false;
-        bool    executed  = false;
-    
-        // CRAP: busy-wait
-        do
-        {
-            _GLES2_PendingImmediateCmdSync.Lock();
-            if( !_GLES2_PendingImmediateCmd )
-            {
-                _GLES2_PendingImmediateCmd      = command;
-                _GLES2_PendingImmediateCmdCount = cmdCount;
-                scheduled                 = true;
-            }
-            _GLES2_PendingImmediateCmdSync.Unlock();
-        } while( !scheduled );
+        _GLES2_PendingImmediateCmdSync.Lock();
 
-        // CRAP: busy-wait
-        do
+        while (nullptr != _GLES2_PendingImmediateCmd)
         {
-            _GLES2_PendingImmediateCmdSync.Lock();
-            if( !_GLES2_PendingImmediateCmd )
-            {
-                executed = true;
-            }
-            _GLES2_PendingImmediateCmdSync.Unlock();
-        } while( !executed );
+            _GLES2_PendingImmediateCmdCV.Wait(_GLES2_PendingImmediateCmdSync);
+        }
+
+        _GLES2_PendingImmediateCmd = command;
+        _GLES2_PendingImmediateCmdCount = cmdCount;
+
+        while (nullptr != _GLES2_PendingImmediateCmd)
+        {
+            _GLES2_PendingImmediateCmdCV.Wait(_GLES2_PendingImmediateCmdSync);
+        }
+
+        _GLES2_PendingImmediateCmdSync.Unlock();
     }
 }
 

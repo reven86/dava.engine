@@ -68,8 +68,14 @@
 #define MATERIAL_FLAGS_LABEL "Flags"
 #define MATERIAL_PROPERTIES_LABEL "Properties"
 #define MATERIAL_TEXTURES_LABEL "Textures"
-#define MATERIAL_ILLUMINATION_LABEL "Illumination"
 #define MATERIAL_TEMPLATE_LABEL "Template"
+
+namespace SectionName
+{
+const DAVA::FastName LocalFlags("localFlags");
+const DAVA::FastName LocalProperties("localProperties");
+const DAVA::FastName LocalTextures("localTextures");
+}
 
 MaterialEditor::MaterialEditor(QWidget *parent /* = 0 */)
     : QDialog(parent)
@@ -92,19 +98,16 @@ MaterialEditor::MaterialEditor(QWidget *parent /* = 0 */)
     baseRoot = new QtPropertyData();
     flagsRoot = new QtPropertyData();
     propertiesRoot = new QtPropertyData();
-    illuminationRoot = new QtPropertyData();
     texturesRoot = new QtPropertyData();
 
     ui->materialProperty->AppendProperty(MATERIAL_BASE_LABEL, baseRoot);
     ui->materialProperty->AppendProperty(MATERIAL_FLAGS_LABEL, flagsRoot);
     ui->materialProperty->AppendProperty(MATERIAL_PROPERTIES_LABEL, propertiesRoot);
-    ui->materialProperty->AppendProperty(MATERIAL_ILLUMINATION_LABEL, illuminationRoot);
     ui->materialProperty->AppendProperty(MATERIAL_TEXTURES_LABEL, texturesRoot);
 
     ui->materialProperty->ApplyStyle(baseRoot, QtPropertyEditor::HEADER_STYLE);
     ui->materialProperty->ApplyStyle(flagsRoot, QtPropertyEditor::HEADER_STYLE);
     ui->materialProperty->ApplyStyle(propertiesRoot, QtPropertyEditor::HEADER_STYLE);
-    ui->materialProperty->ApplyStyle(illuminationRoot, QtPropertyEditor::HEADER_STYLE);
     ui->materialProperty->ApplyStyle(texturesRoot, QtPropertyEditor::HEADER_STYLE);
 
     // global scene manager signals
@@ -258,9 +261,9 @@ void MaterialEditor::SetCurMaterial(const QList< DAVA::NMaterial *>& materials)
     treeStateHelper->SaveTreeViewState(false);
     
     FillBase();
-    FillDynamic(flagsRoot, DAVA::FastName("localFlags"));
-    FillDynamic(propertiesRoot, DAVA::FastName("localProperties"));
-    FillDynamic(texturesRoot, DAVA::FastName("localTextures"));
+    FillDynamic(flagsRoot, SectionName::LocalFlags);
+    FillDynamic(propertiesRoot, SectionName::LocalProperties);
+    FillDynamic(texturesRoot, SectionName::LocalTextures);
     FillTemplates(materials);
 
     // Restore back the tree view state from the shared storage.
@@ -352,10 +355,10 @@ void MaterialEditor::commandExecuted(SceneEditor2 *scene, const Command2 *comman
 
                 // if material flag was changed we should rebuild list of all properties
                 // because their set can be changed
-                if (inspCommand->dynamicInfo->GetMember()->Name() == DAVA::FastName("localFlags"))
+                if (inspCommand->dynamicInfo->GetMember()->Name() == SectionName::LocalFlags)
                 {
-                    FillDynamic(propertiesRoot, DAVA::FastName("localProperties"));
-                    FillDynamic(texturesRoot, DAVA::FastName("localTextures"));
+                    FillDynamic(propertiesRoot, SectionName::LocalProperties);
+                    FillDynamic(texturesRoot, SectionName::LocalTextures);
                 }
 
                 UpdateAllAddRemoveButtons(ui->materialProperty->GetRootProperty());
@@ -408,7 +411,6 @@ void MaterialEditor::showEvent(QShowEvent * event)
 void MaterialEditor::FillBase()
 {
     baseRoot->ChildRemoveAll();
-    illuminationRoot->ChildRemoveAll();
 
     foreach(DAVA::NMaterial *material, curMaterials)
     {
@@ -455,6 +457,11 @@ void MaterialEditor::FillDynamic(QtPropertyData *root, const FastName& dynamicNa
 
     foreach(DAVA::NMaterial *material, curMaterials)
     {
+        if (material == globalMaterial && dynamicName == SectionName::LocalTextures)
+        {
+            continue;
+        }
+
         const DAVA::InspInfo *info = material->GetTypeInfo();
         const DAVA::InspMember *materialMember = info->Member(dynamicName);
 
@@ -1147,7 +1154,7 @@ void MaterialEditor::UpdateMaterialPropertiesFromPreset(DAVA::NMaterial* materia
                 material->AddProperty(propName, propData, propType, propSize);
             }
         }
-	}
+    }
 }
 
 void MaterialEditor::UpdateMaterialFlagsFromPreset(DAVA::NMaterial* material, DAVA::KeyedArchive* flagsArchive)

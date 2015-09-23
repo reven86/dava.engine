@@ -265,7 +265,7 @@ void CustomColorsSystem::UpdateBrushTool()
 
     auto brushMaterial = drawSystem->GetCustomColorsProxy()->GetBrushMaterial();
     RenderSystem2D::Instance()->BeginRenderTargetPass(colorTexture, false);
-    RenderSystem2D::Instance()->DrawTexture(toolTextureSet, brushMaterial, drawColor, updatedRect);
+    RenderSystem2D::Instance()->DrawTexture(toolTextureSet, toolImageTexture->samplerStateHandle, brushMaterial, drawColor, updatedRect);
     RenderSystem2D::Instance()->EndRenderTargetPass();
 }
 
@@ -359,8 +359,8 @@ bool CustomColorsSystem::LoadTexture( const DAVA::FilePath &filePath, bool creat
 		return false;
 
 	Image* image = images.front();
-	if(CouldApplyImage(image, filePath.GetFilename()))
-	{
+    if (CouldApplyImage(image, filePath.GetFilename()))
+    {
         AddRectToAccumulator(Rect(Vector2(0.f, 0.f), Vector2(image->GetWidth(), image->GetHeight())));
         
 		if (createUndo)
@@ -393,19 +393,19 @@ bool CustomColorsSystem::LoadTexture( const DAVA::FilePath &filePath, bool creat
             loadedTextureSet = rhi::AcquireTextureSet(desc);
             
             Texture * target = drawSystem->GetCustomColorsProxy()->GetTexture();
-            
+
             auto brushMaterial = drawSystem->GetCustomColorsProxy()->GetBrushMaterial();
             RenderSystem2D::Instance()->BeginRenderTargetPass(target, false);
-            RenderSystem2D::Instance()->DrawTexture(loadedTextureSet, brushMaterial, Color::White);
+            RenderSystem2D::Instance()->DrawTexture(loadedTextureSet, loadedTexture->samplerStateHandle, brushMaterial, Color::White);
             RenderSystem2D::Instance()->EndRenderTargetPass();
         }
 	}
-    
+
     for_each(images.begin(), images.end(), SafeRelease<Image>);
     return true;
 }
 
-bool CustomColorsSystem::CouldApplyImage(Image *image, const String &imageName) const
+bool CustomColorsSystem::CouldApplyImage(Image* image, const String& imageName) const
 {
     if (image == nullptr)
     {
@@ -418,7 +418,7 @@ bool CustomColorsSystem::CouldApplyImage(Image *image, const String &imageName) 
         return false;
     }
 
-    const Texture *oldTexture = drawSystem->GetCustomColorsProxy()->GetTexture();
+    const Texture* oldTexture = drawSystem->GetCustomColorsProxy()->GetTexture();
     if (oldTexture != nullptr)
     {
         const Size2i imageSize(image->GetWidth(), image->GetHeight());
@@ -433,7 +433,6 @@ bool CustomColorsSystem::CouldApplyImage(Image *image, const String &imageName) 
 
     return true;
 }
-
 
 void CustomColorsSystem::StoreSaveFileName(const FilePath& filePath)
 {

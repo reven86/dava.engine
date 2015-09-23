@@ -47,12 +47,12 @@ void FrameworkDidLaunched()
     
     appOptions->SetInt32("renderer", rhi::RHI_GLES2);
 //    appOptions->SetInt32("renderer", rhi::RHI_METAL);
-	
+
     appOptions->SetInt32("rhi_threaded_frame_count", 2);
-    
-	appOptions->SetBool("iPhone_autodetectScreenScaleFactor", true);
-	appOptions->SetInt32("width", WIDTH);
-	appOptions->SetInt32("height", HEIGHT);
+
+    appOptions->SetBool("iPhone_autodetectScreenScaleFactor", true);
+    appOptions->SetInt32("width", WIDTH);
+    appOptions->SetInt32("height", HEIGHT);
 
 	DAVA::VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(WIDTH, HEIGHT);
 	DAVA::VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(WIDTH, HEIGHT, "Gfx");

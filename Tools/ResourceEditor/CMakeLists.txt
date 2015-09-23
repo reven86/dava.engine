@@ -5,6 +5,7 @@ set                   ( CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebinfo"
 project               ( ResourceEditor )
 
 set                   ( DAVA_USE_QT_WIDGETS true )
+set                   ( DAVA_USE_RENDERSTATS true )
 set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
 include               ( CMake-common )
 
@@ -36,7 +37,7 @@ include_directories   ( "Classes/Collada" )
 
 
 add_definitions       ( 
--D__DAVAENGINE_SPEEDTREE__ 
+-D__DAVAENGINE_SPEEDTREE__
 -DQT_OPENGL_LIB
 -DQT_GUI_LIB
 -DQT_NETWORK_LIB

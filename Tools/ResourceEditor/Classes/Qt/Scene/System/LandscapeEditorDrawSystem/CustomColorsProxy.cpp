@@ -142,8 +142,7 @@ void CustomColorsProxy::UpdateSpriteFromConfig()
     }
 }
 
-
-NMaterial * CustomColorsProxy::GetBrushMaterial() const
+NMaterial* CustomColorsProxy::GetBrushMaterial() const
 {
     return brushMaterial.get();
 }

@@ -164,22 +164,20 @@ void QualitySwitcher::ApplyTx()
 
 void QualitySwitcher::ApplyMa()
 {
-
     SceneTabWidget *tabWidget = QtMainWindow::Instance()->GetSceneWidget();
     for(int tab = 0; tab < tabWidget->GetTabCount(); ++tab)
     {
         SceneEditor2 *sceneEditor = tabWidget->GetTabScene(tab);
 
-        const DAVA::Set<DAVA::NMaterial *>& topParents = sceneEditor->materialSystem->GetTopParents();        
+        const DAVA::Set<DAVA::NMaterial*>& topParents = sceneEditor->materialSystem->GetTopParents();
 
-        for(auto material : topParents)
-        {            
-            material->InvalidateRenderVariants();            
+        for (auto material : topParents)
+        {
+            material->InvalidateRenderVariants();
         }
 
         sceneEditor->renderSystem->SetForceUpdateLights();
     }
-
 }
 
 void QualitySwitcher::UpdateEntitiesToQuality(DAVA::Entity *e)

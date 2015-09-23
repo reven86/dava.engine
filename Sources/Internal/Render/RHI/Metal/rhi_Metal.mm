@@ -213,7 +213,6 @@ metal_Initialize( const InitParam& param )
     stat_SET_VB = StatSet::AddStat("rhi'set-vb", "set-vb");
     stat_SET_IB = StatSet::AddStat("rhi'set-ib", "set-ib");
 
-
     VertexBufferMetal::SetupDispatch( &DispatchMetal );
     IndexBufferMetal::SetupDispatch( &DispatchMetal );
     QueryBufferMetal::SetupDispatch( &DispatchMetal );

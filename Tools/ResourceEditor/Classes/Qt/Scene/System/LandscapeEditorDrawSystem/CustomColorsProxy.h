@@ -36,42 +36,41 @@
 
 namespace DAVA
 {
-    class Texture;
-    class NMaterial;
+class Texture;
+class NMaterial;
 }
 
-
-class CustomColorsProxy: public DAVA::BaseObject
+class CustomColorsProxy : public DAVA::BaseObject
 {
 protected:
 	~CustomColorsProxy();
 public:
     CustomColorsProxy(DAVA::int32 size);
-	
-	DAVA::Texture * GetTexture();
+
+    DAVA::Texture* GetTexture();
     void UpdateRect(const DAVA::Rect& rect);
-	
-	void ResetTargetChanged();
+
+    void ResetTargetChanged();
 	bool IsTargetChanged();
     
     void ResetLoadedState(bool isLoaded = true);
     bool IsTextureLoaded() const;
-	
+
     DAVA::Rect GetChangedRect();
 
     DAVA::int32 GetChangesCount() const;
-	void ResetChanges();
+    void ResetChanges();
 	void IncrementChanges();
 	void DecrementChanges();
 	
 	void UpdateSpriteFromConfig();
 
-    DAVA::NMaterial * GetBrushMaterial() const;
-	
+    DAVA::NMaterial* GetBrushMaterial() const;
+
 protected:
     DAVA::Texture* customColorsRenderTarget;
     DAVA::Rect changedRect;
-	bool spriteChanged;
+    bool spriteChanged;
     bool textureLoaded;
     DAVA::int32 size;
 

@@ -77,7 +77,7 @@ void OnCreateLandscapeTextureCompleted(rhi::HSyncObject syncObject)
                 ++i;
             }
         }
-	}
+    }
 
     for (const auto& req : completedRequests)
     {
@@ -118,7 +118,7 @@ void LandscapeThumbnails::Create(DAVA::Landscape* landscape, LandscapeThumbnails
         DAVA::LockGuard<DAVA::Mutex> lock(requests.mutex);
         requests.list.emplace_back(syncObject, landscape, texture, handler);
     }
-	RenderCallbacks::RegisterSyncCallback(syncObject, MakeFunction(&OnCreateLandscapeTextureCompleted));
+    RenderCallbacks::RegisterSyncCallback(syncObject, MakeFunction(&OnCreateLandscapeTextureCompleted));
 
 	const auto identityMatrix = &Matrix4::IDENTITY;
 	DAVA::ShaderDescriptorCache::ClearDynamicBindigs();
