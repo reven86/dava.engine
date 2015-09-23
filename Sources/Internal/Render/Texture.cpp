@@ -666,10 +666,6 @@ int32 Texture::Release()
 	return BaseObject::Release();
 }
 
-void Texture::Retain()
-{
-    BaseObject::Retain();
-}
 
 Texture * Texture::CreateFBO(uint32 w, uint32 h, PixelFormat format, rhi::TextureType requestedType)
 {

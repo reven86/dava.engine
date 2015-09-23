@@ -142,10 +142,6 @@ public:
 
     int32 Release() override;
 
-    //DEBUG
-    void Retain() override;
-    //DEBUG
-
     static void	DumpTextures();
 
 	inline int32 GetWidth() const { return width; }
