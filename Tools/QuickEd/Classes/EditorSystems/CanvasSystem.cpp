@@ -263,7 +263,7 @@ void GridControl::UpdateCounterpoise()
     Vector2 angeledPosition(gd.position.x * gd.cosA + gd.position.y * gd.sinA,
                             gd.position.x * -gd.sinA + gd.position.y * gd.cosA);
 
-    counterpoiseControl->SetPosition(-angeledPosition + gd.pivotPoint);
+    counterpoiseControl->SetPosition(-angeledPosition + gd.pivotPoint * gd.scale);
 }
 
 CanvasSystem::CanvasSystem(EditorSystemsManager* parent)
