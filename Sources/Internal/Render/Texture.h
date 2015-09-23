@@ -214,8 +214,6 @@ protected:
     	
 	void GenerateMipmapsInternal();
 
-    static bool CheckImageSize(const Vector<Image *> &imageSet);
-    
 	Texture();
 	virtual ~Texture();
     
