@@ -140,10 +140,13 @@ public:
      */
     static Texture * Get(const FilePath & name);
 
+    int32 Release() override;
 
-	virtual int32 Release();
+    //DEBUG
+    void Retain() override;
+    //DEBUG
 
-	static void	DumpTextures();
+    static void	DumpTextures();
 
 	inline int32 GetWidth() const { return width; }
 	inline int32 GetHeight() const { return height; }

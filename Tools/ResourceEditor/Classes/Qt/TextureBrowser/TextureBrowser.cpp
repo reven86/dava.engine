@@ -133,9 +133,9 @@ void TextureBrowser::Close()
     TextureConvertor::Instance()->CancelConvert();
 	TextureConvertor::Instance()->WaitConvertedAll();
 
-	DAVA::SafeRelease(curScene);
+    setScene(nullptr);
 
-	// clear cache
+    // clear cache
 	TextureCache::Instance()->clearInsteadThumbnails();
 
     ui->textureAreaConverted->warningShow(false);
@@ -968,13 +968,16 @@ void TextureBrowser::convertStatusQueue(int curJob, int jobCount)
 
 void TextureBrowser::setScene(DAVA::Scene *scene)
 {
-	DAVA::SafeRelease(curScene);
-	curScene = DAVA::SafeRetain(scene);
+    if (scene != curScene)
+    {
+        DAVA::SafeRelease(curScene);
+        curScene = DAVA::SafeRetain(scene);
+    }
 
-	// reset current texture
-	setTexture(NULL, NULL);
+    // reset current texture
+    setTexture(nullptr, nullptr);
 
-	// set new scene
+    // set new scene
 	textureListModel->setScene(curScene);
 }
 
@@ -998,8 +1001,8 @@ void TextureBrowser::sceneDeactivated(SceneEditor2 *scene)
 {
 	if(curScene == scene)
 	{
-		setScene(NULL);
-	}
+        setScene(nullptr);
+    }
 }
 
 void TextureBrowser::sceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected)
