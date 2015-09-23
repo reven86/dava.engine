@@ -52,7 +52,7 @@ void FrameworkDidLaunched()
 
     appOptions->SetBool("iPhone_autodetectScreenScaleFactor", true);
     appOptions->SetInt32("width", WIDTH);
-	appOptions->SetInt32("height", HEIGHT);
+    appOptions->SetInt32("height", HEIGHT);
 
 	DAVA::VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(WIDTH, HEIGHT);
 	DAVA::VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(WIDTH, HEIGHT, "Gfx");

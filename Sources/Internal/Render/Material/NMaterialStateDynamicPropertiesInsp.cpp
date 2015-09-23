@@ -50,7 +50,7 @@ void NMaterialStateDynamicPropertiesInsp::FindMaterialPropertiesRecursive(NMater
             for (auto& buff : descriptor.shader->GetConstBufferDescriptors())
             {
                 const rhi::ShaderPropList& props = ShaderDescriptor::GetProps(buff.propertyLayoutId);
-                for (auto &prop : props)
+                for (auto& prop : props)
                 {
                     if (prop.storage != rhi::ShaderProp::STORAGE_DYNAMIC)
                     {
@@ -91,9 +91,9 @@ void NMaterialStateDynamicPropertiesInsp::FindMaterialPropertiesRecursive(NMater
     }
 }
 
-InspInfoDynamic::DynamicData NMaterialStateDynamicPropertiesInsp::Prepare(void *object, int filter) const
+InspInfoDynamic::DynamicData NMaterialStateDynamicPropertiesInsp::Prepare(void* object, int filter) const
 {
-    NMaterial *material = (NMaterial*) object;
+    NMaterial* material = (NMaterial*)object;
     DVASSERT(material);
 
     auto data = new FastNameMap<NMaterialStateDynamicPropertiesInsp::PropData>();
@@ -114,7 +114,8 @@ InspInfoDynamic::DynamicData NMaterialStateDynamicPropertiesInsp::Prepare(void *
         static float32 defaultFogHeight = 50.0f;
         static float32 defaultFogDensity = 0.005f;
 
-        auto checkAndAdd = [&data](const FastName &name, rhi::ShaderProp::Type type, uint32 size, const float32* defaultValue) {
+        auto checkAndAdd = [&data](const FastName& name, rhi::ShaderProp::Type type, uint32 size, const float32* defaultValue)
+        {
             if (0 == data->count(name))
             {
                 PropData prop;
@@ -181,33 +182,33 @@ InspInfoDynamic::DynamicData NMaterialStateDynamicPropertiesInsp::Prepare(void *
 Vector<FastName> NMaterialStateDynamicPropertiesInsp::MembersList(const DynamicData& ddata) const
 {
     Vector<FastName> ret;
-    
-    FastNameMap<PropData>* members = (FastNameMap<PropData>*) ddata.data.get();
+
+    FastNameMap<PropData>* members = (FastNameMap<PropData>*)ddata.data.get();
     DVASSERT(members);
 
     auto it = members->begin();
     auto end = members->end();
-    
+
     ret.reserve(members->size());
-    while(it != end)
+    while (it != end)
     {
         ret.push_back(it->first);
         ++it;
     }
-    
+
     return ret;
 }
 
-InspDesc NMaterialStateDynamicPropertiesInsp::MemberDesc(const DynamicData& ddata, const FastName &member) const
+InspDesc NMaterialStateDynamicPropertiesInsp::MemberDesc(const DynamicData& ddata, const FastName& member) const
 {
     return InspDesc(member.c_str());
 }
 
-int NMaterialStateDynamicPropertiesInsp::MemberFlags(const DynamicData& ddata, const FastName &member) const
+int NMaterialStateDynamicPropertiesInsp::MemberFlags(const DynamicData& ddata, const FastName& member) const
 {
     int flags = 0;
-    
-    NMaterial *material = (NMaterial*) ddata.object;
+
+    NMaterial* material = (NMaterial*)ddata.object;
     DVASSERT(material);
 
     flags |= I_VIEW;
@@ -216,31 +217,31 @@ int NMaterialStateDynamicPropertiesInsp::MemberFlags(const DynamicData& ddata, c
     {
         flags |= I_EDIT;
     }
-    
+
     return flags;
 }
 
-VariantType NMaterialStateDynamicPropertiesInsp::MemberValueGet(const DynamicData& ddata, const FastName &key) const
+VariantType NMaterialStateDynamicPropertiesInsp::MemberValueGet(const DynamicData& ddata, const FastName& key) const
 {
     VariantType ret;
-    
-    NMaterial *material = (NMaterial*)ddata.object;
+
+    NMaterial* material = (NMaterial*)ddata.object;
     DVASSERT(material);
 
-    FastNameMap<PropData>* members = (FastNameMap<PropData>*) ddata.data.get();
+    FastNameMap<PropData>* members = (FastNameMap<PropData>*)ddata.data.get();
     DVASSERT(members);
 
     if (members->count(key))
     {
-        const PropData &prop = members->at(key);
+        const PropData& prop = members->at(key);
         const float32* value = material->GetEffectivePropValue(key);
 
         if (nullptr == value)
         {
             value = prop.defaultValue;
 
-			if (nullptr == value)
-				return ret;
+            if (nullptr == value)
+                return ret;
         }
 
         switch (prop.type)
@@ -250,7 +251,7 @@ VariantType NMaterialStateDynamicPropertiesInsp::MemberValueGet(const DynamicDat
             break;
 
         case rhi::ShaderProp::TYPE_FLOAT2:
-            ret.SetVector2(*(Vector2*) value);
+            ret.SetVector2(*(Vector2*)value);
             break;
 
         case rhi::ShaderProp::TYPE_FLOAT3:
@@ -284,28 +285,28 @@ VariantType NMaterialStateDynamicPropertiesInsp::MemberValueGet(const DynamicDat
             break;
         }
     }
-    
+
     return ret;
 }
 
-bool NMaterialStateDynamicPropertiesInsp::IsColor(const FastName &propName) const
+bool NMaterialStateDynamicPropertiesInsp::IsColor(const FastName& propName) const
 {
     return (nullptr != strstr(propName.c_str(), "Color"));
 }
 
-void NMaterialStateDynamicPropertiesInsp::MemberValueSet(const DynamicData& ddata, const FastName &key, const VariantType &value)
+void NMaterialStateDynamicPropertiesInsp::MemberValueSet(const DynamicData& ddata, const FastName& key, const VariantType& value)
 {
-    NMaterial *material = (NMaterial*)ddata.object;
+    NMaterial* material = (NMaterial*)ddata.object;
     DVASSERT(material);
 
-    FastNameMap<PropData>* members = (FastNameMap<PropData>*) ddata.data.get();
+    FastNameMap<PropData>* members = (FastNameMap<PropData>*)ddata.data.get();
     DVASSERT(members);
 
-    if(members->count(key))
+    if (members->count(key))
     {
         PropData prop = members->at(key);
 
-        if(value.GetType() == VariantType::TYPE_NONE /* && state->GetMaterialType() != NMaterial::MATERIALTYPE_GLOBAL */)
+        if (value.GetType() == VariantType::TYPE_NONE /* && state->GetMaterialType() != NMaterial::MATERIALTYPE_GLOBAL */)
         {
             // empty variant value should remove this property
             if (material->HasLocalProperty(key))
@@ -315,7 +316,8 @@ void NMaterialStateDynamicPropertiesInsp::MemberValueSet(const DynamicData& ddat
         }
         else
         {
-            auto setValue = [&material, &key, &prop](const float32* value) {
+            auto setValue = [&material, &key, &prop](const float32* value)
+            {
                 if (material->HasLocalProperty(key))
                 {
                     material->SetPropertyValue(key, value);
@@ -326,61 +328,61 @@ void NMaterialStateDynamicPropertiesInsp::MemberValueSet(const DynamicData& ddat
                 }
             };
 
-            switch(prop.type)
+            switch (prop.type)
             {
             case rhi::ShaderProp::TYPE_FLOAT1:
-                {
-                    float32 val = value.AsFloat();
-                    setValue(&val);
-                }
-                break;
+            {
+                float32 val = value.AsFloat();
+                setValue(&val);
+            }
+            break;
 
             case rhi::ShaderProp::TYPE_FLOAT2:
-                {
-                    const Vector2& val = value.AsVector2();
-                    setValue(val.data);
-                }
-                break;
+            {
+                const Vector2& val = value.AsVector2();
+                setValue(val.data);
+            }
+            break;
 
             case rhi::ShaderProp::TYPE_FLOAT3:
+            {
+                if (IsColor(key))
                 {
-                    if(IsColor(key))
-                    {
-                        const Color &c = value.AsColor();
-                        setValue(c.color);
-                    }
-                    else
-                    {
-                        const Vector3 &val = value.AsVector3();
-                        setValue(val.data);
-                    }
+                    const Color& c = value.AsColor();
+                    setValue(c.color);
                 }
-                break;
-
-            case rhi::ShaderProp::TYPE_FLOAT4:
+                else
                 {
-                    Vector4 val;
-                    
-                    if(IsColor(key))
-                    {
-                        const Color &c = value.AsColor();
-                        setValue(c.color);
-                    }
-                    else
-                    {
-                        const Vector4 &val = value.AsVector4();
-                        setValue(val.data);
-                    }
-                }
-                break;
-                    
-            case rhi::ShaderProp::TYPE_FLOAT4X4:
-                {
-                    const Matrix4& val = value.AsMatrix4();
+                    const Vector3& val = value.AsVector3();
                     setValue(val.data);
                 }
-                break;
-                    
+            }
+            break;
+
+            case rhi::ShaderProp::TYPE_FLOAT4:
+            {
+                Vector4 val;
+
+                if (IsColor(key))
+                {
+                    const Color& c = value.AsColor();
+                    setValue(c.color);
+                }
+                else
+                {
+                    const Vector4& val = value.AsVector4();
+                    setValue(val.data);
+                }
+            }
+            break;
+
+            case rhi::ShaderProp::TYPE_FLOAT4X4:
+            {
+                const Matrix4& val = value.AsMatrix4();
+                setValue(val.data);
+            }
+            break;
+
             default:
                 DVASSERT(false);
                 break;
@@ -388,5 +390,4 @@ void NMaterialStateDynamicPropertiesInsp::MemberValueSet(const DynamicData& ddat
         }
     }
 }
-
 };
