@@ -394,9 +394,9 @@ void SceneEditor2::Draw()
 {
     Scene::Draw();
 
-    if(isHUDVisible)
-	{
-		gridSystem->Draw();
+    if (isHUDVisible)
+    {
+        gridSystem->Draw();
 		cameraSystem->Draw();
 
 		if(collisionSystem)

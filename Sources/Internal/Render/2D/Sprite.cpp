@@ -61,20 +61,6 @@ static int32 fboCounter = 0;
 
 Mutex Sprite::spriteMapMutex;
 
-namespace SpriteUtils
-{
-ScopedPtr<Image> PrepareImageToCreateSprite(Image* srcImage)
-{
-    if (srcImage->GetPixelFormat() == PixelFormat::FORMAT_RGB888)
-    {
-        ScopedPtr<Image> image8888(Image::Create(srcImage->GetWidth(), srcImage->GetHeight(), FORMAT_RGBA8888));
-        ImageConvert::ConvertImageDirect(srcImage, image8888.get());
-        return image8888;
-    }
-    return ScopedPtr<Image>(SafeRetain(srcImage));
-}
-}
-
 Sprite::DrawState::DrawState()
 {
     Reset();
@@ -349,9 +335,6 @@ Sprite * Sprite::CreateFromTexture(Texture *fromTexture, int32 textureRegionOffs
 
 Sprite* Sprite::CreateFromImage(Image* image, bool contentScaleIncluded /* = false*/, bool inVirtualSpace /* = false */)
 {
-    ScopedPtr<Image> srcImage = SpriteUtils::PrepareImageToCreateSprite(image);
-    image = srcImage.get();
-
     uint32 width = image->GetWidth();
     uint32 height = image->GetHeight();
 

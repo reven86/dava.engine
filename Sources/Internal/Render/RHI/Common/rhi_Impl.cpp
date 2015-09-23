@@ -672,7 +672,13 @@ TextureStride( TextureFormat format, Size2i size, uint32 level )
         {
             stride = width * sizeof(uint32);
         }   break;
-        
+
+        case TEXTURE_FORMAT_R8G8B8:
+        {
+            stride = width * 3 * sizeof(uint8);
+        }
+        break;
+
         case TEXTURE_FORMAT_R4G4B4A4 :
         case TEXTURE_FORMAT_R5G5B5A1 :
         case TEXTURE_FORMAT_R5G6B5 :
@@ -739,6 +745,10 @@ TextureSize( TextureFormat format, uint32 width, uint32 height, uint32 level )
         case TEXTURE_FORMAT_R8G8B8A8 :
         case TEXTURE_FORMAT_R8G8B8X8 :
             sz = ext.dx * ext.dy * sizeof(uint32);
+            break;
+
+        case TEXTURE_FORMAT_R8G8B8:
+            sz = ext.dx * ext.dy * 3 * sizeof(uint8);
             break;
 
         case TEXTURE_FORMAT_R5G5B5A1 :

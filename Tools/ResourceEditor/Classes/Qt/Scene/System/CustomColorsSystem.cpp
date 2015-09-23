@@ -265,7 +265,7 @@ void CustomColorsSystem::UpdateBrushTool()
 
     auto brushMaterial = drawSystem->GetCustomColorsProxy()->GetBrushMaterial();
     RenderSystem2D::Instance()->BeginRenderTargetPass(colorTexture, false);
-    RenderSystem2D::Instance()->DrawTexture(toolTextureSet, brushMaterial, drawColor, updatedRect);
+    RenderSystem2D::Instance()->DrawTexture(toolTextureSet, toolImageTexture->samplerStateHandle, brushMaterial, drawColor, updatedRect);
     RenderSystem2D::Instance()->EndRenderTargetPass();
 }
 
@@ -396,7 +396,7 @@ bool CustomColorsSystem::LoadTexture( const DAVA::FilePath &filePath, bool creat
 
             auto brushMaterial = drawSystem->GetCustomColorsProxy()->GetBrushMaterial();
             RenderSystem2D::Instance()->BeginRenderTargetPass(target, false);
-            RenderSystem2D::Instance()->DrawTexture(loadedTextureSet, brushMaterial, Color::White);
+            RenderSystem2D::Instance()->DrawTexture(loadedTextureSet, loadedTexture->samplerStateHandle, brushMaterial, Color::White);
             RenderSystem2D::Instance()->EndRenderTargetPass();
         }
 	}

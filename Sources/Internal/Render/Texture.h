@@ -140,13 +140,15 @@ public:
      */
     static Texture * Get(const FilePath & name);
 
+    int32 Release() override;
 
-	virtual int32 Release();
+    static void DumpTextures();
 
-	static void	DumpTextures();
-
-	inline int32 GetWidth() const { return width; }
-	inline int32 GetHeight() const { return height; }
+    inline int32 GetWidth() const
+    {
+        return width;
+    }
+    inline int32 GetHeight() const { return height; }
 	
 	void GenerateMipmaps();	
 	
@@ -191,6 +193,8 @@ public:
     
     int32 GetBaseMipMap() const;
 
+    static rhi::HSamplerState CreateSamplerStateHandle(const rhi::SamplerState::Descriptor::Sampler& samplerState);
+
 protected:
 
     void RestoreRenderResource();
@@ -224,6 +228,7 @@ public:							// properties for fast access
 
 
     rhi::HTexture handle;
+    rhi::HSamplerState samplerStateHandle;
     rhi::SamplerState::Descriptor::Sampler samplerState;
 
 	
