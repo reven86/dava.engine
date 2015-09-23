@@ -250,18 +250,15 @@ bool QtMainWindow::SaveScene( SceneEditor2 *scene )
 		// 
 		//if(scene->IsChanged())
 		{
-            bool saved = SaveAllSceneEmitters(scene);
-            if (saved)
+            SaveAllSceneEmitters(scene);
+            SceneFileV2::eError ret = scene->Save(scenePath);
+            if (DAVA::SceneFileV2::ERROR_NO_ERROR != ret)
             {
-                SceneFileV2::eError ret = scene->Save(scenePath);
-                if (DAVA::SceneFileV2::ERROR_NO_ERROR != ret)
-                {
-                    QMessageBox::warning(this, "Save error", "An error occurred while saving the scene. See log for more info.", QMessageBox::Ok);
-                }
-                else
-                {
-                    return true;
-                }
+                QMessageBox::warning(this, "Save error", "An error occurred while saving the scene. See log for more info.", QMessageBox::Ok);
+            }
+            else
+            {
+                return true;
             }
 		}
 	}
@@ -298,19 +295,16 @@ bool QtMainWindow::SaveSceneAs(SceneEditor2 *scene)
 
     scene->SetScenePath(scenePath);
 
-    bool saved = SaveAllSceneEmitters(scene);
-    if (saved)
+    SaveAllSceneEmitters(scene);
+    SceneFileV2::eError ret = scene->Save(scenePath);
+    if (DAVA::SceneFileV2::ERROR_NO_ERROR != ret)
     {
-        SceneFileV2::eError ret = scene->Save(scenePath);
-        if (DAVA::SceneFileV2::ERROR_NO_ERROR != ret)
-        {
-            QMessageBox::warning(this, "Save error", "An error occurred while saving the scene. Please, see logs for more info.", QMessageBox::Ok);
-        }
-        else
-        {
-            recentFiles.Add(scenePath.GetAbsolutePathname());
-            return true;
-        }
+        QMessageBox::warning(this, "Save error", "An error occurred while saving the scene. Please, see logs for more info.", QMessageBox::Ok);
+    }
+    else
+    {
+        recentFiles.Add(scenePath.GetAbsolutePathname());
+        return true;
     }
 
     return false;
@@ -353,14 +347,22 @@ void QtMainWindow::CollectEmittersForSave(ParticleEmitter *topLevelEmitter, DAVA
 
 
 
-bool QtMainWindow::SaveAllSceneEmitters(SceneEditor2 *scene) const
+void QtMainWindow::SaveAllSceneEmitters(SceneEditor2 *scene) const
 {
     DVASSERT(nullptr != scene);
 
+    if (!SettingsManager::GetValue(Settings::Scene_SaveEmitters).AsBool())
+    {
+        return;
+    }
+    
+    
     List<Entity *> effectEntities;
     scene->GetChildEntitiesWithComponent(effectEntities, Component::PARTICLE_EFFECT_COMPONENT);
     if (effectEntities.empty())
-        return true;
+    {
+        return;
+    }
 
     DAVA::List<EmitterDescriptor> emittersForSave;
     for (auto & entityWithEffect : effectEntities)
@@ -403,8 +405,6 @@ bool QtMainWindow::SaveAllSceneEmitters(SceneEditor2 *scene) const
         }
         emitter->SaveToYaml(yamlPathForSaving);
     }
-
-    return true;
 }
 
 DAVA::eGPUFamily QtMainWindow::GetGPUFormat()
@@ -700,13 +700,7 @@ void QtMainWindow::SetupDocks()
     // Console dock
 	{
         LogWidget *logWidget = new LogWidget();
-        logWidget->SetConvertFunction([](const DAVA::String & text)
-        {
-            QRegularExpression re(PointerSerializer::GetRegex());
-            QString qText = QString::fromStdString(text);
-            qText.replace(re, "");
-            return qText.toStdString();
-        });
+        logWidget->SetConvertFunction(&PointerSerializer::CleanUpString);
         connect(logWidget, &LogWidget::ItemClicked, this, &QtMainWindow::OnConsoleItemClicked);
         const auto var = SettingsManager::Instance()->GetValue(Settings::Internal_LogWidget);
 
