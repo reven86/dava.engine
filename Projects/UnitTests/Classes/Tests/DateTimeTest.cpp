@@ -70,15 +70,34 @@ DAVA_TESTCLASS(DateTimeTest)
             TEST_VERIFY(FormatDateTime(DateTime::LocalTime(dt.GetTimestamp())) == "2015-10-15 16:00:00+10800");
         }
         {
-            DAVA::String country_code = LocalizationSystem::Instance()->GetCountryCode();
-            DateTime date = DateTime::Now();
-            WideString ru_string = date.AsWString(L"%d.%m.%Y"); // ru format
-            WideString en_string = date.AsWString(L"%m/%d/%Y"); // en format
-            TEST_VERIFY(ru_string != en_string);
+            LocalizationSystem* ls = LocalizationSystem::Instance();
+            String previousLocale = ls->GetCurrentLocale();
 
-            WideString x_date = date.AsWString(L"%x"); // date representation
-            WideString x_time = date.AsWString(L"%X"); // time representation
-            TEST_VERIFY(x_date != x_time);
+            ls->SetDirectory("~res:/Strings/");
+            ls->Init();
+            ls->SetCurrentLocale("ru");
+
+            DAVA::String country_code = ls->GetCountryCode();
+
+            TEST_VERIFY(country_code == "ru_RU");
+
+            DateTime date = DateTime(1984, 8, 8, 16, 30, 22, 3); // 08.09.1984
+            WideString x_date_ru = date.AsWString(L"%x"); // date representation
+            WideString x_time_ru = date.AsWString(L"%X"); // time representation
+
+            ls->SetCurrentLocale("en");
+            ls->Init();
+            country_code = ls->GetCountryCode();
+
+            TEST_VERIFY(country_code == "en_US");
+
+            WideString x_date_en = date.AsWString(L"%x"); // date representation
+            WideString x_time_en = date.AsWString(L"%X"); // time representation
+
+            TEST_VERIFY(x_date_en != x_date_ru);
+            TEST_VERIFY(x_time_en != x_time_ru);
+
+            ls->SetCurrentLocale(previousLocale);
         }
     }
 

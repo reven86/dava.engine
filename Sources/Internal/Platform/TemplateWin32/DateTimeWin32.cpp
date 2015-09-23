@@ -37,25 +37,20 @@ namespace DAVA
 	DAVA::WideString DateTime::AsWString(const wchar_t* format) const
 	{
         String configLocale = LocalizationSystem::Instance()->GetCountryCode();
-        WideString configLocaleWide = StringToWString(configLocale);
-
 		configLocale.replace(configLocale.find("_"), 1, "-");
-        int nchars = GetLocaleInfoEx(configLocaleWide.c_str(), LOCALE_SENGLANGUAGE, nullptr, 0);
-        wchar_t languageCode[8] {};
-		GetLocaleInfoEx(configLocaleWide.c_str(), LOCALE_SENGLANGUAGE, languageCode, nchars);
-
-		struct tm timeinfo {};
-        wchar_t buffer [256] {};
 		
         Timestamp timeWithTZ = innerTime + timeZoneOffset;
 
-		GmTimeThreadSafe(&timeinfo, &timeWithTZ);
+        tm timeinfo;
+        GmTimeThreadSafe(&timeinfo, &timeWithTZ);
 
-        _locale_t loc = _create_locale(LC_ALL, UTF8Utils::EncodeToUTF8(languageCode).c_str());
-		DVASSERT(loc);
-        _wcsftime_l(buffer, 256, format, &timeinfo, loc);
+        _locale_t loc = _create_locale(LC_ALL, configLocale.c_str());
+        DVASSERT(loc);
 
-        DAVA::WideString str(buffer);
+        std::array<wchar_t, 256> buffer;
+        _wcsftime_l(&buffer[0], buffer.size(), format, &timeinfo, loc);
+
+        DAVA::WideString str(buffer.data());
         _free_locale(loc);
         return str;
     }
