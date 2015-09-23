@@ -248,3 +248,6 @@ ServerData ApplicationSettings::GetCurrentServer() const
 
     return ServerData();
 }
+
+
+

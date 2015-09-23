@@ -137,3 +137,4 @@ inline const uint64 CacheDB::GetUsedSize() const
 }; // end of namespace DAVA
 
 #endif // __DAVAENGINE_ASSET_CACHE_DATA_BASE_H__
+

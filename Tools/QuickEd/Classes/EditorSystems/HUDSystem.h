@@ -61,16 +61,22 @@ public:
     bool OnInput(DAVA::UIEvent* currentInput) override;
 
 private:
+    enum eSearchOrder
+    {
+        SEARCH_FORWARD,
+        SEARCH_BACKWARD
+    };
     void OnRootContolsChanged(const EditorSystemsManager::SortedPackageBaseNodeSet& rootControls);
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void OnEmulationModeChanged(bool emulationMode);
 
-    void ProcessCursor(const DAVA::Vector2& pos);
-    HUDAreaInfo GetControlArea(const DAVA::Vector2& pos) const;
+    void ProcessCursor(const DAVA::Vector2& pos, eSearchOrder searchOrder = SEARCH_FORWARD);
+    HUDAreaInfo GetControlArea(const DAVA::Vector2& pos, eSearchOrder searchOrder) const;
     void SetNewArea(const HUDAreaInfo& HUDAreaInfo);
 
     void SetCanDrawRect(bool canDrawRect_);
     void SetEditingEnabled(bool arg);
+    void UpdateAreasVisibility();
     HUDAreaInfo activeAreaInfo;
 
     DAVA::ScopedPtr<DAVA::UIControl> hudControl;

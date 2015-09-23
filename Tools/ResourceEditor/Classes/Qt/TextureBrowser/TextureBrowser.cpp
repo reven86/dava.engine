@@ -708,7 +708,7 @@ void TextureBrowser::texturePropertyChanged(int type)
     }
 
     // update warning message
-	updatePropertiesWarning();
+    updatePropertiesWarning();
 }
 
 void TextureBrowser::textureReadyOriginal(const DAVA::TextureDescriptor *descriptor, const TextureInfo & images)
@@ -748,7 +748,7 @@ void TextureBrowser::textureReadyConverted(const DAVA::TextureDescriptor *descri
 
         if (curDescriptor == descriptor && curTextureView == gpu)
         {
-			updateConvertedImageAndInfo(images.images, *curDescriptor);
+            updateConvertedImageAndInfo(images.images, *curDescriptor);
 		}
 
 		DAVA::Texture *texture = textureListModel->getTexture(descriptor);
@@ -756,7 +756,7 @@ void TextureBrowser::textureReadyConverted(const DAVA::TextureDescriptor *descri
 		{
             // reload this texture into scene
             reloadTextureToScene(texture, descriptor, gpu);
-		}
+        }
 	}
 }
 

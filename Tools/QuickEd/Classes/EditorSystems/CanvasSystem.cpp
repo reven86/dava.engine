@@ -58,6 +58,7 @@ private:
     void UpdateSprite();
     void Draw(const UIGeometricData& geometricData) override;
     void UpdateCounterpoise();
+    void FitGridToNestedControl();
     ScopedPtr<UIControl> counterpoiseControl;
     ScopedPtr<UIControl> positionHolderControl;
     CanvasSystem* canvasSystem = nullptr;
@@ -74,6 +75,7 @@ GridControl::GridControl(CanvasSystem* canvasSystem_)
 
 void GridControl::Init(UIControl* control)
 {
+    DVASSERT(nullptr != control);
     nestedControl = control;
     String name = control->GetName();
     name = name.empty() ? "unnamed" : name;
@@ -104,17 +106,15 @@ void GridControl::ControlPropertyWasChanged(ControlNode* node, AbstractProperty*
     }
     if (name == "Angle" || name == "Size" || name == "Scale" || name == "Position" || name == "Pivot")
     {
-        UIControl* control = node->GetControl();
         PackageBaseNode* parent = node;
-        while (nullptr != control && control != nestedControl)
+        while (nullptr != parent)
         {
+            if (parent->GetControl() == nestedControl) //we change child in the nested control
+            {
+                FitGridToNestedControl();
+                break;
+            }
             parent = parent->GetParent();
-            control = nullptr != parent ? parent->GetControl() : nullptr;
-        }
-        if (control == nestedControl)
-        {
-            AdjustToNestedControl();
-            canvasSystem->LayoutCanvas();
         }
     }
 }
@@ -196,33 +196,29 @@ void GridControl::ControlWasRemoved(ControlNode* node, ControlsContainerNode* fr
     {
         return;
     }
-    UIControl* control = from->GetControl();
     PackageBaseNode* parent = from;
-    while (nullptr != control && control != nestedControl)
+    while (nullptr != parent)
     {
+        if (parent->GetControl() == nestedControl) //we change child in the nested control
+        {
+            FitGridToNestedControl();
+            break;
+        }
         parent = parent->GetParent();
-        control = nullptr != parent ? parent->GetControl() : nullptr;
-    }
-    if (control == nestedControl)
-    {
-        AdjustToNestedControl();
-        canvasSystem->LayoutCanvas();
     }
 }
 
 void GridControl::ControlWasAdded(ControlNode* /*node*/, ControlsContainerNode* destination, int /*index*/)
 {
-    UIControl* control = destination->GetControl();
     PackageBaseNode* parent = destination;
-    while (nullptr != control && control != nestedControl)
+    while (nullptr != parent)
     {
+        if (parent->GetControl() == nestedControl) //we change child in the nested control
+        {
+            FitGridToNestedControl();
+            break;
+        }
         parent = parent->GetParent();
-        control = nullptr != parent ? parent->GetControl() : nullptr;
-    }
-    if (control == nestedControl)
-    {
-        AdjustToNestedControl();
-        canvasSystem->LayoutCanvas();
     }
 }
 
@@ -264,6 +260,12 @@ void GridControl::UpdateCounterpoise()
                             gd.position.x * -gd.sinA + gd.position.y * gd.cosA);
 
     counterpoiseControl->SetPosition(-angeledPosition + gd.pivotPoint * gd.scale);
+}
+
+void GridControl::FitGridToNestedControl()
+{
+    AdjustToNestedControl();
+    canvasSystem->LayoutCanvas();
 }
 
 CanvasSystem::CanvasSystem(EditorSystemsManager* parent)

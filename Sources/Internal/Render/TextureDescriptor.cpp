@@ -398,7 +398,7 @@ void TextureDescriptor::LoadVersion6(DAVA::File *file)
 
             file->Read(&compression[i].compressToWidth);
             file->Read(&compression[i].compressToHeight);
-			file->Read(&compression[i].sourceFileCrc);
+            file->Read(&compression[i].sourceFileCrc);
         }
 
         RecalculateCompressionSourceCRC();

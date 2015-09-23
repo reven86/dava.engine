@@ -49,6 +49,7 @@ namespace
 const Vector2 PIVOT_CONTROL_SIZE(20.0f, 20.0f);
 const Vector2 FRAME_RECT_SIZE(15.0f, 15.0f);
 const Vector2 ROTATE_CONTROL_SIZE(20.0f, 20.0f);
+const Array<HUDAreaInfo::eArea, 2> AreasToHide = {{HUDAreaInfo::PIVOT_POINT_AREA, HUDAreaInfo::ROTATE_AREA}};
 }
 
 class SelectionRect : public UIControl
@@ -96,6 +97,10 @@ private:
     }
     Rect CreateFrameBorderRect(int border, const Rect& frameRect) const
     {
+        if (frameRect.GetSize().IsZero())
+        {
+            return Rect();
+        }
         switch (border)
         {
         case BORDER_TOP:
@@ -353,35 +358,20 @@ void HUDSystem::OnSelectionChanged(const SelectedNodes& selected, const Selected
     for (auto node : selected)
     {
         ControlNode* controlNode = dynamic_cast<ControlNode*>(node);
-        if (nullptr != controlNode && nullptr != controlNode->GetControl())
+        PackageBaseNode* parent = controlNode->GetParent();
+
+        if (nullptr != controlNode && nullptr != controlNode->GetControl() && nullptr != parent && nullptr != parent->GetControl())
         {
-            const PackageNode* package = systemManager->GetPackage();
-            const PackageControlsNode* packageControlsNode = package->GetPackageControlsNode();
-            const ImportedPackagesNode* importedPackagesNode = package->GetImportedPackagesNode();
-            PackageBaseNode* parent = controlNode->GetParent();
-            if (packageControlsNode != parent && importedPackagesNode != parent)
-            {
-                hudMap.emplace(std::piecewise_construct,
-                               std::forward_as_tuple(controlNode),
-                               std::forward_as_tuple(controlNode, hudControl));
-                sortedControlList.insert(controlNode);
-            }
+            hudMap.emplace(std::piecewise_construct,
+                           std::forward_as_tuple(controlNode),
+                           std::forward_as_tuple(controlNode, hudControl));
+            sortedControlList.insert(controlNode);
         }
     }
 
-    ProcessCursor(pressedPoint);
-    bool showRotate = sortedControlList.size() == 1;
-    for (const auto& iter : sortedControlList)
-    {
-        ControlNode* node = dynamic_cast<ControlNode*>(iter);
-        DVASSERT(nullptr != node);
-        auto findIter = hudMap.find(node);
-        DVASSERT_MSG(findIter != hudMap.end(), "hud map corrupted");
-        const HUD& hud = findIter->second;
-        HUDAreaInfo::eArea area = HUDAreaInfo::ROTATE_AREA;
-        ControlContainer* controlContainer = hud.hudControls.find(area)->second.get();
-        controlContainer->SetVisible(showRotate);
-    }
+    UpdateAreasVisibility();
+
+    ProcessCursor(pressedPoint, SEARCH_BACKWARD);
 }
 
 bool HUDSystem::OnInput(UIEvent* currentInput)
@@ -412,9 +402,19 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
 
         if (canDrawRect)
         {
-            Vector2 point(currentInput->point);
-            Vector2 size(point - pressedPoint);
-            selectionRectControl->SetAbsoluteRect(Rect(pressedPoint, size));
+            Vector2 point(pressedPoint);
+            Vector2 size(currentInput->point - pressedPoint);
+            if (size.x < 0.0f)
+            {
+                point.x += size.x;
+                size.x *= -1;
+            }
+            if (size.y <= 0.0f)
+            {
+                point.y += size.y;
+                size.y *= -1;
+            }
+            selectionRectControl->SetAbsoluteRect(Rect(point, size));
             systemManager->SelectionRectChanged.Emit(selectionRectControl->GetAbsoluteRect());
         }
         return true;
@@ -449,13 +449,23 @@ void HUDSystem::OnEmulationModeChanged(bool emulationMode)
     }
 }
 
-void HUDSystem::ProcessCursor(const Vector2& pos)
+void HUDSystem::ProcessCursor(const Vector2& pos, eSearchOrder searchOrder)
 {
-    SetNewArea(GetControlArea(pos));
+    SetNewArea(GetControlArea(pos, searchOrder));
 }
 
-HUDAreaInfo HUDSystem::GetControlArea(const Vector2& pos) const
+HUDAreaInfo HUDSystem::GetControlArea(const Vector2& pos, eSearchOrder searchOrder) const
 {
+    int end = HUDAreaInfo::AREAS_BEGIN;
+    int sign = 1;
+    if (searchOrder == SEARCH_BACKWARD)
+    {
+        if (HUDAreaInfo::AREAS_BEGIN != HUDAreaInfo::AREAS_COUNT)
+        {
+            end = HUDAreaInfo::AREAS_COUNT - 1;
+        }
+        sign = -1;
+    }
     for (int i = HUDAreaInfo::AREAS_BEGIN; i < HUDAreaInfo::AREAS_COUNT; ++i)
     {
         for (const auto& iter : sortedControlList)
@@ -465,9 +475,9 @@ HUDAreaInfo HUDSystem::GetControlArea(const Vector2& pos) const
             auto findIter = hudMap.find(node);
             DVASSERT_MSG(findIter != hudMap.end(), "hud map corrupted");
             const HUD& hud = findIter->second;
-            HUDAreaInfo::eArea area = static_cast<HUDAreaInfo::eArea>(i);
+            HUDAreaInfo::eArea area = static_cast<HUDAreaInfo::eArea>(end + sign * i);
             ControlContainer* controlContainer = hud.hudControls.find(area)->second.get();
-            if (controlContainer->IsPointInside(pos))
+            if (controlContainer->GetVisible() && controlContainer->IsPointInside(pos))
             {
                 return HUDAreaInfo(hud.node, area);
             }
@@ -511,6 +521,24 @@ void HUDSystem::SetEditingEnabled(bool arg)
         else
         {
             OnSelectionChanged(selectionContainer.selectedNodes, SelectedNodes());
+        }
+    }
+}
+
+void HUDSystem::UpdateAreasVisibility()
+{
+    bool showAreas = sortedControlList.size() == 1;
+    for (const auto& iter : sortedControlList)
+    {
+        ControlNode* node = dynamic_cast<ControlNode*>(iter);
+        DVASSERT(nullptr != node);
+        auto findIter = hudMap.find(node);
+        DVASSERT_MSG(findIter != hudMap.end(), "hud map corrupted");
+        const HUD& hud = findIter->second;
+        for (HUDAreaInfo::eArea area : AreasToHide)
+        {
+            ControlContainer* controlContainer = hud.hudControls.find(area)->second.get();
+            controlContainer->SetVisible(showAreas);
         }
     }
 }

@@ -343,8 +343,8 @@ int TextureListDelegate::drawFormatInfo(QPainter *painter, QRect rect, const DAV
         gpuInfoColors[DAVA::GPU_DX11] = TextureBrowser::gpuColor_DX11;
 
         // format lines
-        for(int i = (DAVA::GPU_DEVICE_COUNT - 1); i >= 0; --i)
-		{
+        for (int i = (DAVA::GPU_DEVICE_COUNT - 1); i >= 0; --i)
+        {
 			r.moveLeft(r.x() - FORMAT_INFO_WIDTH);
 
 			if(descriptor->compression[i].format != DAVA::FORMAT_INVALID)

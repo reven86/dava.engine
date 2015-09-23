@@ -61,3 +61,4 @@ struct hash<DAVA::AssetCache::CacheItemKey>
 } // end of namespace std
 
 #endif // __DAVAENGINE_ASSET_CACHE_ITEM_KEY_H__
+

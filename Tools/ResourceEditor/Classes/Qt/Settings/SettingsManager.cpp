@@ -82,7 +82,7 @@ void SettingsManager::Init()
     CreateValue(Settings::General_AssetCache_Timeout, DAVA::VariantType(DAVA::String("")));
 
     CreateValue(Settings::Scene_GridStep, DAVA::VariantType(10.0f));
-	CreateValue(Settings::Scene_GridSize, DAVA::VariantType(600.0f));
+    CreateValue(Settings::Scene_GridSize, DAVA::VariantType(600.0f));
 	CreateValue(Settings::Scene_CameraSpeed0, DAVA::VariantType(35.0f));
 	CreateValue(Settings::Scene_CameraSpeed1, DAVA::VariantType(100.0f));
 	CreateValue(Settings::Scene_CameraSpeed2, DAVA::VariantType(250.0f));
@@ -116,7 +116,7 @@ void SettingsManager::Init()
     CreateValue(Settings::Internal_TextureViewGPU, DAVA::VariantType(static_cast<DAVA::uint32>(DAVA::GPU_ORIGIN)));
     CreateValue(Settings::Internal_LastProjectPath, DAVA::VariantType(DAVA::FilePath()));
     CreateValue(Settings::Internal_EditorVersion, DAVA::VariantType(DAVA::String("local build")));
-	CreateValue(Settings::Internal_CubemapLastFaceDir, DAVA::VariantType(DAVA::FilePath()));
+    CreateValue(Settings::Internal_CubemapLastFaceDir, DAVA::VariantType(DAVA::FilePath()));
 	CreateValue(Settings::Internal_CubemapLastProjDir, DAVA::VariantType(DAVA::FilePath()));
     CreateValue(Settings::Internal_ParticleLastEmitterDir, DAVA::VariantType(DAVA::FilePath()));
 

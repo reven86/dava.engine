@@ -424,7 +424,7 @@ void QtMainWindow::SetGPUFormat(DAVA::eGPUFamily gpu)
         DAVA::Texture::SetDefaultGPU(gpu);
 
         DAVA::TexturesMap allScenesTextures;
-		for(int tab = 0; tab < GetSceneWidget()->GetTabCount(); ++tab)
+        for(int tab = 0; tab < GetSceneWidget()->GetTabCount(); ++tab)
 		{
 			SceneEditor2 *scene = GetSceneWidget()->GetTabScene(tab);
 			SceneHelper::EnumerateSceneTextures(scene, allScenesTextures, SceneHelper::EXCLUDE_NULL);
@@ -739,7 +739,7 @@ void QtMainWindow::SetupActions()
     ui->actionExportDX11->setData(GPU_DX11);
     ui->actionExportPNG->setData(GPU_ORIGIN);
 
-    // import
+// import
 #ifdef __DAVAENGINE_SPEEDTREE__
     QObject::connect(ui->actionImportSpeedTreeXML, &QAction::triggered, this, &QtMainWindow::OnImportSpeedTreeXML);
 #endif //__DAVAENGINE_SPEEDTREE__

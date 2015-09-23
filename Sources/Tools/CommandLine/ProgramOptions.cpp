@@ -275,67 +275,67 @@ bool ProgramOptions::ParseOption()
                         {
                         case DAVA::VariantType::TYPE_STRING:
                         case DAVA::VariantType::TYPE_NONE:
-                        {
-                            for (auto& t : tokens)
                             {
-                                options[i].SetValue(DAVA::VariantType(t));
-                            }
-                            break;
-                        }
-                        case DAVA::VariantType::TYPE_INT32:
-                        {
-                            for (auto& t : tokens)
-                            {
-                                DAVA::int32 value = 0;
-                                if (1 == sscanf(t.c_str(), "%d", &value))
+                                for (auto& t : tokens)
                                 {
-                                    options[i].SetValue(DAVA::VariantType(value));
+                                    options[i].SetValue(DAVA::VariantType(t));
                                 }
+                                break;
                             }
-                        }
-                        break;
-                        case DAVA::VariantType::TYPE_UINT32:
-                        {
-                            for (auto& t : tokens)
-                            {
-                                DAVA::uint32 value = 0;
-                                if (1 == sscanf(t.c_str(), "%u", &value))
+                            case DAVA::VariantType::TYPE_INT32:
                                 {
-                                    options[i].SetValue(DAVA::VariantType(value));
+                                    for (auto& t : tokens)
+                                    {
+                                        DAVA::int32 value = 0;
+                                        if (1 == sscanf(t.c_str(), "%d", &value))
+                                        {
+                                            options[i].SetValue(DAVA::VariantType(value));
+                                        }
+                                    }
                                 }
-                            }
-                        }
-                        break;
-                        case DAVA::VariantType::TYPE_UINT64:
-                        {
-                            for (auto& t : tokens)
-                            {
-                                DAVA::uint64 value = 0;
-                                if (1 == sscanf(t.c_str(), "%llu", &value))
+                                break;
+                                case DAVA::VariantType::TYPE_UINT32:
                                 {
-                                    options[i].SetValue(DAVA::VariantType(value));
+                                    for (auto& t : tokens)
+                                    {
+                                        DAVA::uint32 value = 0;
+                                        if (1 == sscanf(t.c_str(), "%u", &value))
+                                        {
+                                            options[i].SetValue(DAVA::VariantType(value));
+                                        }
+                                    }
                                 }
-                            }
-                        }
-                        break;
-                        case DAVA::VariantType::TYPE_BOOLEAN:
-                        {
-                            for (auto& t : tokens)
+                                break;
+                                case DAVA::VariantType::TYPE_UINT64:
                             {
-                                if (strcmp(t.c_str(), "true"))
+                                for (auto& t : tokens)
                                 {
-                                    options[i].SetValue(DAVA::VariantType(true));
-                                }
-                                else if (strcmp(t.c_str(), "false"))
-                                {
-                                    options[i].SetValue(DAVA::VariantType(false));
+                                    DAVA::uint64 value = 0;
+                                    if (1 == sscanf(t.c_str(), "%llu", &value))
+                                    {
+                                        options[i].SetValue(DAVA::VariantType(value));
+                                    }
                                 }
                             }
                             break;
-                        }
-                        default:
-                            DVASSERT(0 && "Not implemented")
-                            break;
+                            case DAVA::VariantType::TYPE_BOOLEAN:
+                            {
+                                for (auto& t : tokens)
+                                {
+                                    if (strcmp(t.c_str(), "true"))
+                                    {
+                                        options[i].SetValue(DAVA::VariantType(true));
+                                    }
+                                    else if (strcmp(t.c_str(), "false"))
+                                    {
+                                        options[i].SetValue(DAVA::VariantType(false));
+                                    }
+                                }
+                                break;
+                            }
+                            default:
+                                DVASSERT(0 && "Not implemented")
+                                break;
                         }
 
                         ret = true;
@@ -348,3 +348,5 @@ bool ProgramOptions::ParseOption()
 
     return ret;
 }
+
+

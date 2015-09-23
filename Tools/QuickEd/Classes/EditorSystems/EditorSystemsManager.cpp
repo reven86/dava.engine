@@ -222,6 +222,10 @@ void EditorSystemsManager::CollectControlNodesByRect(SelectedControls& controlNo
     {
         ControlNode* controlNode = dynamic_cast<ControlNode*>(rootControl);
         DVASSERT(nullptr != controlNode);
+        if (rect.GetSize().x > 500)
+        {
+            int dummy = 0;
+        }
         CollectControlNodesByRectImpl(controlNodes, rect, controlNode);
     }
 }

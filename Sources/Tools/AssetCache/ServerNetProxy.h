@@ -103,3 +103,4 @@ inline void ServerNetProxy::SetDelegate(ServerNetProxyListener* _delegate)
 }; // end of namespace DAVA
 
 #endif // __DAVAENGINE_ASSET_CACHE_SERVER_H__
+

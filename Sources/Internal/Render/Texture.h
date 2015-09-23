@@ -327,8 +327,8 @@ public:							// properties for fast access
     eGPUFamily loadedAsFile;
     TextureState state : 2;
     uint32 textureType : 2;
-    DepthFormat depthFormat:2;
-	bool		isRenderTarget:1;
+    DepthFormat depthFormat : 2;
+    bool		isRenderTarget:1;
 	bool		isPink:1;
 
 #if defined(__DAVAENGINE_DIRECTX9__)

@@ -113,3 +113,4 @@ inline uint64 CachedItemValue::GetSize() const
 } // end of namespace DAVA
 
 #endif // __DAVAENGINE_ASSET_CACHE_CACHED_ITEM_VALUE_H__
+
