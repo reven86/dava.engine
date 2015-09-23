@@ -1461,7 +1461,7 @@ void RenderSystem2D::DrawPolygonTransformed(const Polygon2 & polygon, bool close
     DrawPolygon(copyPoly, closed, color);
 }
 
-void RenderSystem2D::DrawTexture(rhi::HTextureSet htextureSet, rhi::HSamplerState hSamplerState, NMaterial* material, const Color& color, const Rect& _dstRect /* = Rect(0.f, 0.f, -1.f, -1.f) */, const Rect& _srcRect /* = Rect(0.f, 0.f, -1.f, -1.f) */)
+void RenderSystem2D::DrawTexture(Texture* texture, NMaterial* material, const Color& color, const Rect& _dstRect /* = Rect(0.f, 0.f, -1.f, -1.f) */, const Rect& _srcRect /* = Rect(0.f, 0.f, -1.f, -1.f) */)
 {
     Rect destRect(_dstRect);
     if (destRect.dx < 0.f || destRect.dy < 0.f)
@@ -1501,8 +1501,8 @@ void RenderSystem2D::DrawTexture(rhi::HTextureSet htextureSet, rhi::HSamplerStat
 
     BatchDescriptor batch;
     batch.singleColor = color;
-    batch.textureSetHandle = htextureSet;
-    batch.samplerStateHandle = hSamplerState;
+    batch.textureSetHandle = texture->singleTextureSet;
+    batch.samplerStateHandle = texture->samplerStateHandle;
     batch.material = material;
     batch.vertexCount = 4;
     batch.indexCount = 6;

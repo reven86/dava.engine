@@ -251,7 +251,7 @@ public:
     */
     void DrawPolygonTransformed(const Polygon2 & polygon, bool closed, const Matrix3 & transform, const Color& color);
 
-    void DrawTexture(rhi::HTextureSet htextureSet, rhi::HSamplerState hSamplerState, NMaterial* material, const Color& color, const Rect& dstRect = Rect(0.f, 0.f, -1.f, -1.f), const Rect& srcRect = Rect(0.f, 0.f, -1.f, -1.f));
+    void DrawTexture(Texture* texture, NMaterial* material, const Color& color, const Rect& dstRect = Rect(0.f, 0.f, -1.f, -1.f), const Rect& srcRect = Rect(0.f, 0.f, -1.f, -1.f));
 
 private:
     bool IsPreparedSpriteOnScreen(Sprite::DrawState * drawState);

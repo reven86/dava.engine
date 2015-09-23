@@ -210,15 +210,17 @@ void Texture::AddToMap(Texture *tex)
     }
 }
 
-    
 Texture::Texture()
-:	width(0)
-,	height(0)
-,	loadedAsFile(GPU_ORIGIN)
-,	state(STATE_INVALID)
-,	textureType(rhi::TEXTURE_TYPE_2D)
-,	isRenderTarget(false)
-,	isPink(false)
+    : width(0)
+    , height(0)
+    , loadedAsFile(GPU_ORIGIN)
+    , state(STATE_INVALID)
+    , textureType(rhi::TEXTURE_TYPE_2D)
+    , isRenderTarget(false)
+    , isPink(false)
+    , handle(rhi::InvalidHandle)
+    , samplerStateHandle(rhi::InvalidHandle)
+    , singleTextureSet(rhi::InvalidHandle)
 {
     texDescriptor = new TextureDescriptor;
     RenderCallbacks::RegisterResourceRestoreCallback(MakeFunction(this, &Texture::RestoreRenderResource));
@@ -234,11 +236,22 @@ Texture::~Texture()
 void Texture::ReleaseTextureData()
 {
     if (handle.IsValid())
+    {
         rhi::DeleteTexture(handle);
-    handle = rhi::HTexture(rhi::InvalidHandle);
+        handle = rhi::HTexture(rhi::InvalidHandle);
+    }
 
-    rhi::ReleaseSamplerState(samplerStateHandle);
-    samplerStateHandle = rhi::HSamplerState(rhi::InvalidHandle);
+    if (samplerStateHandle.IsValid())
+    {
+        rhi::ReleaseSamplerState(samplerStateHandle);
+        samplerStateHandle = rhi::HSamplerState(rhi::InvalidHandle);
+    }
+
+    if (singleTextureSet.IsValid())
+    {
+        rhi::ReleaseTextureSet(singleTextureSet);
+        singleTextureSet = rhi::HTextureSet(rhi::InvalidHandle);
+    }
 
     state = STATE_INVALID;
     isRenderTarget = false;
@@ -504,6 +517,11 @@ void Texture::FlushDataToRenderer(Vector<Image *> * images)
     handle = rhi::CreateTexture(descriptor);
     DVASSERT(handle != rhi::InvalidHandle);
 
+    rhi::TextureSetDescriptor textureSetDesc;
+    textureSetDesc.fragmentTexture[0] = handle;
+    textureSetDesc.fragmentTextureCount = 1;
+    singleTextureSet = rhi::AcquireTextureSet(textureSetDesc);
+
     for (uint32 i = 0; i < (uint32)images->size(); ++i)
     {
         Image *img = (*images)[i];
@@ -706,6 +724,11 @@ Texture * Texture::CreateFBO(uint32 w, uint32 h, PixelFormat format, rhi::Textur
     tx->handle = rhi::CreateTexture(descriptor);
     tx->samplerStateHandle = CreateSamplerStateHandle(tx->samplerState);
 
+    rhi::TextureSetDescriptor textureSetDesc;
+    textureSetDesc.fragmentTexture[0] = tx->handle;
+    textureSetDesc.fragmentTextureCount = 1;
+    tx->singleTextureSet = rhi::AcquireTextureSet(textureSetDesc);
+
     tx->isRenderTarget = true;
     tx->texDescriptor->pathname = Format("FBO texture %d", textureFboCounter);
     AddToMap(tx);
@@ -715,7 +738,6 @@ Texture * Texture::CreateFBO(uint32 w, uint32 h, PixelFormat format, rhi::Textur
     return tx;
     
 }
-
 	
 void Texture::DumpTextures()
 {

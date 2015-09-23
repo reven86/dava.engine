@@ -226,8 +226,8 @@ public:							// properties for fast access
 
     rhi::HTexture handle;
     rhi::HSamplerState samplerStateHandle;
+    rhi::HTextureSet singleTextureSet;
     rhi::SamplerState::Descriptor::Sampler samplerState;
-
 	
     uint32		width:16;			// texture width
 	uint32		height:16;			// texture height
