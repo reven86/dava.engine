@@ -137,8 +137,8 @@ EditorSystemsManager::EditorSystemsManager(PackageNode* _package)
     rootControl->AddControl(scalableControl);
     scalableControl->SetName("scalableContent");
 
-    systems.push_back(new SelectionSystem(this));
     systems.push_back(new CanvasSystem(this));
+    systems.push_back(new SelectionSystem(this));
     systems.push_back(new HUDSystem(this));
     systems.push_back(new CursorSystem(this));
     systems.push_back(new ::TransformSystem(this));

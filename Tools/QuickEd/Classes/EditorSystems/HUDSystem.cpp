@@ -240,7 +240,7 @@ public:
 private:
     void InitFromGD(const UIGeometricData& geometricData) override
     {
-        Rect rect(Vector2(0.0f, 0.0f), FRAME_RECT_SIZE);
+        Rect rect(Vector2(), FRAME_RECT_SIZE);
         rect.SetCenter(GetPos(geometricData));
         SetAbsoluteRect(rect);
     }
@@ -288,9 +288,9 @@ public:
 private:
     void InitFromGD(const UIGeometricData& geometricData) override
     {
-        Rect rect(Vector2(0.0f, 0.0f), PIVOT_CONTROL_SIZE);
+        Rect rect(Vector2(), PIVOT_CONTROL_SIZE);
         const Rect& controlRect = geometricData.GetUnrotatedRect();
-        rect.SetCenter(controlRect.GetPosition() + geometricData.pivotPoint);
+        rect.SetCenter(controlRect.GetPosition() + geometricData.pivotPoint * geometricData.scale);
         SetAbsoluteRect(rect);
     }
 };
@@ -309,7 +309,7 @@ public:
 private:
     void InitFromGD(const UIGeometricData& geometricData) override
     {
-        Rect rect(Vector2(0.0f, 0.0f), ROTATE_CONTROL_SIZE);
+        Rect rect(Vector2(), ROTATE_CONTROL_SIZE);
         Rect controlRect = geometricData.GetUnrotatedRect();
         rect.SetCenter(Vector2(controlRect.GetPosition().x + controlRect.dx / 2.0f, controlRect.GetPosition().y - 20));
         SetAbsoluteRect(rect);
@@ -333,7 +333,7 @@ void HUDSystem::OnDeactivated()
 {
     hudControl->RemoveFromParent();
     canDrawRect = false;
-    selectionRectControl->SetSize(Vector2(0.0f, 0.0f));
+    selectionRectControl->SetSize(Vector2());
 }
 
 void HUDSystem::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
@@ -422,7 +422,7 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
         ProcessCursor(currentInput->point);
         if (canDrawRect)
         {
-            selectionRectControl->SetSize(Vector2(0, 0));
+            selectionRectControl->SetSize(Vector2());
         }
         bool retVal = dragRequested;
         SetCanDrawRect(false);
@@ -492,7 +492,7 @@ void HUDSystem::SetCanDrawRect(bool canDrawRect_)
         canDrawRect = canDrawRect_;
         if (!canDrawRect)
         {
-            selectionRectControl->SetSize(Vector2(0.0f, 0.0f));
+            selectionRectControl->SetSize(Vector2());
         }
     }
 }

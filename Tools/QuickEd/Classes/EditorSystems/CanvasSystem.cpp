@@ -54,10 +54,11 @@ public:
     void AdjustToNestedControl();
 
 private:
-    void CalculateTotalRect(UIControl* control, Rect& totalRect, Vector2& rootControlPosition);
+    void CalculateTotalRect(Rect& totalRect, Vector2& rootControlPosition);
     void UpdateSprite();
     void Draw(const UIGeometricData& geometricData) override;
-    ScopedPtr<UIControl> counterPoiseControl;
+    void UpdateCounterpoise();
+    ScopedPtr<UIControl> counterpoiseControl;
     ScopedPtr<UIControl> positionHolderControl;
     CanvasSystem* canvasSystem = nullptr;
     UIControl* nestedControl = nullptr;
@@ -65,7 +66,7 @@ private:
 
 GridControl::GridControl(CanvasSystem* canvasSystem_)
     : UIControl()
-    , counterPoiseControl(new UIControl())
+    , counterpoiseControl(new UIControl())
     , positionHolderControl(new UIControl())
     , canvasSystem(canvasSystem_)
 {
@@ -77,19 +78,16 @@ void GridControl::Init(UIControl* control)
     String name = control->GetName();
     name = name.empty() ? "unnamed" : name;
     SetName("Grid control of " + name);
-    counterPoiseControl->SetName("counterPoise of " + name);
+    counterpoiseControl->SetName("counterpoise of " + name);
     positionHolderControl->SetName("Position holder of " + name);
     AddControl(positionHolderControl);
-    positionHolderControl->AddControl(counterPoiseControl);
-    counterPoiseControl->AddControl(control);
+    positionHolderControl->AddControl(counterpoiseControl);
+    counterpoiseControl->AddControl(control);
 
     background->SetDrawType(UIControlBackground::DRAW_TILED);
     background->SetShader(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR);
 
-    counterPoiseControl->SetSize(control->GetSize() * control->GetScale());
-    counterPoiseControl->SetPosition(-control->GetPosition());
-    counterPoiseControl->SetPivot(-control->GetPivot());
-    counterPoiseControl->SetAngle(-control->GetAngle());
+    UpdateCounterpoise();
     UpdateSprite();
     AdjustToNestedControl();
 }
@@ -99,23 +97,9 @@ void GridControl::ControlPropertyWasChanged(ControlNode* node, AbstractProperty*
     const String& name = property->GetName();
     if (node->GetControl() == nestedControl)
     {
-        if (name == "Position")
+        if (name == "Angle" || name == "Size" || name == "Scale" || name == "Position" || name == "Pivot")
         {
-            Vector2 position = property->GetValue().AsVector2();
-            counterPoiseControl->SetPosition(-position);
-            UpdateSprite();
-        }
-        else if (name == "Pivot")
-        {
-            Vector2 pivot = property->GetValue().AsVector2();
-            counterPoiseControl->SetPivot(-pivot);
-            UpdateSprite();
-        }
-        else if (name == "Angle")
-        {
-            float32 angle = property->GetValue().AsFloat();
-            counterPoiseControl->SetAngle(-DegToRad(angle));
-            UpdateSprite();
+            UpdateCounterpoise();
         }
     }
     if (name == "Angle" || name == "Size" || name == "Scale" || name == "Position" || name == "Pivot")
@@ -177,17 +161,17 @@ void CalculateTotalRectImpl(UIControl* control, Rect& totalRect, Vector2& rootCo
     }
 }
 
-void GridControl::CalculateTotalRect(UIControl* control, Rect& totalRect, Vector2& rootControlPosition)
+void GridControl::CalculateTotalRect(Rect& totalRect, Vector2& rootControlPosition)
 {
     rootControlPosition.SetZero();
-    UIGeometricData gd = control->GetGeometricData();
+    UIGeometricData gd = nestedControl->GetGeometricData();
     gd.position.SetZero();
-    gd.scale /= GetParent()->GetParent()->GetScale(); //grid->canvasControl->scalableControl
+    gd.scale /= this->GetParent()->GetParent()->GetScale(); //grid->controlCanvas->scalableControl
     if (scale.x != 0.0f || scale.y != 0.0f)
     {
         totalRect = gd.GetAABBox();
 
-        for (const auto& child : control->GetChildren())
+        for (const auto& child : nestedControl->GetChildren())
         {
             CalculateTotalRectImpl(child, totalRect, rootControlPosition, gd);
         }
@@ -198,7 +182,7 @@ void GridControl::AdjustToNestedControl()
 {
     Rect rect;
     Vector2 pos;
-    CalculateTotalRect(nestedControl, rect, pos);
+    CalculateTotalRect(rect, pos);
     Vector2 size = rect.GetSize();
     positionHolderControl->SetPosition(pos);
     SetSize(size);
@@ -244,7 +228,7 @@ void GridControl::ControlWasAdded(ControlNode* /*node*/, ControlsContainerNode* 
 
 void GridControl::UpdateSprite()
 {
-    /*bool transformed = !counterPoiseControl->GetPosition().IsZero() || !counterPoiseControl->GetPivot().IsZero() || counterPoiseControl->GetAngle() != 0;
+    /*bool transformed = !counterpoiseControl->GetPosition().IsZero() || !counterpoiseControl->GetPivot().IsZero() || counterpoiseControl->GetAngle() != 0;
     if (transformed)
     {
         background->SetSprite("~res:/Gfx/CheckeredBg2", 0);
@@ -266,6 +250,20 @@ void GridControl::Draw(const UIGeometricData& geometricData)
         unscaledGd.AddGeometricData(geometricData);
         GetBackground()->Draw(unscaledGd);
     }
+}
+
+void GridControl::UpdateCounterpoise()
+{
+    UIGeometricData gd = nestedControl->GetLocalGeometricData();
+    counterpoiseControl->SetSize(gd.size);
+    gd.cosA = cosf(gd.angle);
+    gd.sinA = sinf(gd.angle);
+    counterpoiseControl->SetAngle(-gd.angle);
+
+    Vector2 angeledPosition(gd.position.x * gd.cosA + gd.position.y * gd.sinA,
+                            gd.position.x * -gd.sinA + gd.position.y * gd.cosA);
+
+    counterpoiseControl->SetPosition(-angeledPosition + gd.pivotPoint);
 }
 
 CanvasSystem::CanvasSystem(EditorSystemsManager* parent)

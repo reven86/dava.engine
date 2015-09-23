@@ -230,10 +230,12 @@ void TransformSystem::MoveAllSelectedControls(const Vector2& delta)
 void TransformSystem::MoveControl(const Vector2& pos)
 {
     Vector2 delta = pos - prevPos;
-    auto gd = activeControlNode->GetControl()->GetGeometricData();
+    UIControl* control = activeControlNode->GetControl();
+    auto gd = control->GetGeometricData();
     if (gd.scale.x != 0.0f && gd.scale.y != 0.0f)
     {
         Vector2 realDelta = delta / gd.scale;
+        realDelta *= control->GetScale();
         if (InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_SHIFT))
         {
             AbstractProperty* property = activeControlNode->GetRootProperty()->FindPropertyByName("Position");
@@ -257,13 +259,14 @@ void TransformSystem::ResizeControl(const Vector2& pos, bool withPivot, bool rat
     const auto invertX = cornersDirection.at(activeArea - HUDAreaInfo::TOP_LEFT_AREA)[Vector2::AXIS_X];
     const auto invertY = cornersDirection.at(activeArea - HUDAreaInfo::TOP_LEFT_AREA)[Vector2::AXIS_Y];
 
-    auto gd = activeControlNode->GetControl()->GetGeometricData();
+    UIControl* control = activeControlNode->GetControl();
+    auto gd = control->GetGeometricData();
     if (gd.scale.x == 0.0f || gd.scale.y == 0.0f)
     {
         return;
     }
-    Vector2 angeledDelta(delta.x * cosf(gd.angle) + delta.y * sinf(gd.angle),
-                         delta.x * -sinf(gd.angle) + delta.y * cosf(gd.angle)); //rotate delta
+    Vector2 angeledDelta(delta.x * gd.cosA + delta.y * gd.sinA,
+                         delta.x * -gd.sinA + delta.y * gd.cosA); //rotate delta
     //scale rotated delta
     Vector2 realDelta(angeledDelta / gd.scale);
     Vector2 deltaPosition(realDelta);
@@ -364,12 +367,14 @@ void TransformSystem::ResizeControl(const Vector2& pos, bool withPivot, bool rat
         }
     }
 
+    deltaPosition *= control->GetScale();
+
     AdjustResize(deltaSize, deltaPosition);
 
     //rotate delta position backwards, because SetPosition require absolute coordinates
     Vector2 rotatedPosition;
-    rotatedPosition.x = deltaPosition.x * cosf(-gd.angle) + deltaPosition.y * sinf(-gd.angle);
-    rotatedPosition.y = deltaPosition.x * -sinf(-gd.angle) + deltaPosition.y * cosf(-gd.angle);
+    rotatedPosition.x = deltaPosition.x * gd.cosA + deltaPosition.y * -gd.sinA;
+    rotatedPosition.y = deltaPosition.x * gd.sinA + deltaPosition.y * gd.cosA;
 
     Vector<PropertyDelta> propertiesDelta;
     propertiesDelta.emplace_back("Position", VariantType(rotatedPosition));
@@ -444,8 +449,10 @@ void TransformSystem::MovePivot(const Vector2& pos)
 
         const Vector2 delta = pos - prevPos;
         const Vector2 scaledDelta = delta / gd.scale;
+
+        const Vector2 deltaPosition = scaledDelta * control->GetScale();
         //position calculates in absolute
-        propertiesDelta.emplace_back("Position", VariantType(scaledDelta));
+        propertiesDelta.emplace_back("Position", VariantType(deltaPosition));
         //pivot point calculate in rotate coordinates
         const Vector2 angeledDelta(scaledDelta.x * gd.cosA + scaledDelta.y * gd.sinA,
                                    scaledDelta.x * -gd.sinA + scaledDelta.y * gd.cosA);
