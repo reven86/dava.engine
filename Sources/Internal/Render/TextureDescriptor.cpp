@@ -96,19 +96,6 @@ DAVA_DEPRECATED(void ConvertV10orLessToV11(TextureDescriptor& descriptor))
     }
 }
 
-DAVA_DEPRECATED(void RemoveRGB888Format(TextureDescriptor& descriptor))
-{
-    if (!descriptor.isCompressedFile)
-    {
-        for (uint32 c = 0; c < GPU_FAMILY_COUNT; ++c)
-        {
-            if (descriptor.compression[c].format == FORMAT_RGB888)
-            {
-                descriptor.compression->Clear();
-            }
-        }
-    }
-}
 }
 
 //================   TextureDrawSettings  ===================
@@ -342,7 +329,6 @@ bool TextureDescriptor::Load(const FilePath &filePathname)
     }
 
     Validator::FixCompressionFormat(*this);
-    Validator::RemoveRGB888Format(*this);
 
     return true;
 }
