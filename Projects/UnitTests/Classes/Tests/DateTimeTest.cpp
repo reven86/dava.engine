@@ -74,6 +74,10 @@ DAVA_TESTCLASS(DateTimeTest)
             WideString ru_string = date.AsWString(L"%d.%m.%Y"); // ru format
             WideString en_string = date.AsWString(L"%m/%d/%Y"); // en format
             TEST_VERIFY(ru_string != en_string);
+
+            WideString x_date = date.AsWString(L"%x"); // date representation
+            WideString x_time = date.AsWString(L"%X"); // time representation
+            TEST_VERIFY(x_date != x_time);
         }
     }
 
