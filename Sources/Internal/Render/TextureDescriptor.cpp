@@ -410,7 +410,7 @@ void TextureDescriptor::SaveInternal(File *file, const int32 signature, const ui
     
     //export data
     file->Write(&exportedAsGpuFamily);
-    int8 exportedAsPixelFormat = format;
+    int8 exportedAsPixelFormat = (COMPRESSED_FILE == signature) ? format : FORMAT_INVALID;
     file->Write(&exportedAsPixelFormat);
 }
 
