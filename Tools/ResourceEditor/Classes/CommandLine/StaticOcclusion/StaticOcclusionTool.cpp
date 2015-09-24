@@ -29,7 +29,7 @@
 
 #include "StaticOcclusionTool.h"
 
-#include "TexturePacker/CommandLineParser.h"
+#include "CommandLine/CommandLineParser.h"
 #include "Scene/SceneEditor2.h"
 
 using namespace DAVA;
