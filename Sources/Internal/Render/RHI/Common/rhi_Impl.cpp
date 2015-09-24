@@ -899,6 +899,7 @@ TextureSize( TextureFormat format, uint32 width, uint32 height, uint32 level )
             sz = ext.dx * ext.dy * sizeof(uint32);
             break;
 
+        default: break;
     }
 
     return sz;

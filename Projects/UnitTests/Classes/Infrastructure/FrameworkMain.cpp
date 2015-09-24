@@ -60,6 +60,8 @@ void FrameworkDidLaunched()
     appOptions->SetInt32("width",    1024);
     appOptions->SetInt32("height", 768);
 
+    appOptions->SetInt32("renderer", rhi::RHI_GLES2);
+
     appOptions->SetInt32("fullscreen", 0);
     appOptions->SetInt32("bpp", 32);
     appOptions->SetString(String("title"), String("Unit Tests"));

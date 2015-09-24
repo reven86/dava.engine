@@ -46,34 +46,6 @@ Sprite * TextureUtils::CreateSpriteFromTexture(const String &texturePathname)
     return createdSprite;
 }
 
-TextureUtils::CompareResult TextureUtils::CompareSprites(Sprite *first, Sprite *second, PixelFormat format)
-{
-    /*
-    DVASSERT(false);
-    DebugBreak();
-    __debugbreak();
-    */
-    DVASSERT(first->GetHeight() == second->GetHeight());
-    DVASSERT(first->GetWidth() == second->GetWidth());
-    
-    Image *firstComparer = CreateImageAsRGBA8888(first);
-    Image *secondComparer = CreateImageAsRGBA8888(second);
-
-    CompareResult compareResult = {0};
-
-    
-    compareResult = CompareImages(firstComparer, secondComparer, format);
- 
-//    String documentsPath = FileSystem::Instance()->GetCurrentDocumentsDirectory();
-//    firstComparer->Save(documentsPath + Format("PVRTest/src_number_%d.png", currentTest));
-//    secondComparer->Save(documentsPath + Format("PVRTest/dst_number_%d.png", currentTest));
-    
-    
-    SafeRelease(firstComparer);
-    SafeRelease(secondComparer);
-    return compareResult;
-}
-
 TextureUtils::CompareResult TextureUtils::CompareImages(const Image *first, const Image *second, PixelFormat format)
 {
     CompareResult compareResult = {0};
@@ -113,18 +85,14 @@ TextureUtils::CompareResult TextureUtils::CompareImages(const Image *first, cons
 
 Image * TextureUtils::CreateImageAsRGBA8888(Sprite *sprite)
 {
-    Rect oldViewport = RenderManager::Instance()->GetViewport();
     Vector2 targetSize = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(sprite->GetSize());
-    Texture * fbo = Texture::CreateFBO((uint32)targetSize.dx, (uint32)targetSize.dy, FORMAT_RGBA8888, Texture::DEPTH_NONE);
+    Texture * fbo = Texture::CreateFBO((uint32)targetSize.dx, (uint32)targetSize.dy, FORMAT_RGBA8888, rhi::TextureType::TEXTURE_TYPE_2D);
     
-    RenderManager::Instance()->SetRenderTarget(fbo);
-    RenderManager::Instance()->SetViewport(Rect(Vector2(), targetSize));
-    RenderSystem2D::Instance()->Draw(sprite);
+    RenderSystem2D::Instance()->BeginRenderTargetPass(fbo);
+    RenderSystem2D::Instance()->Draw(sprite, 0, Color::White);
+    RenderSystem2D::Instance()->EndRenderTargetPass();
     
-    RenderManager::Instance()->SetRenderTarget(0);
-    RenderManager::Instance()->SetViewport(oldViewport);
-    
-    Image *resultImage = fbo->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND);
+    Image *resultImage = fbo->CreateImageFromMemory();
     
     SafeRelease(fbo);
     return resultImage;
