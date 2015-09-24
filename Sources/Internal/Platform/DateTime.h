@@ -163,14 +163,31 @@ public:
      \returns bool value of success.
 	 */
     bool ParseRFC822Date(const DAVA::String&);
-    
+
     /**
-	 \brief Present DateTime according to pattern.
+	 \brief Present DateTime according to pattern. (deprecated use GetLocalizedDate
+     or GetLocalizedTime)
 	 \param[in] string pattern in strftime format.
      \returns localized string representation.
 	 */
-    DAVA::WideString AsWString(const wchar_t* format) const;
-   
+    DAVA_DEPRECATED(WideString AsWString(const wchar_t* format) const);
+
+    /**
+    \brief for current locale print date, platform dependent
+    example:
+    locale "ru_RU" -> "08.09.1984"
+    locale "en_US" -> "09/08/1984
+    */
+    WideString GetLocalizedDate() const;
+
+    /**
+    \brief for current locale print time, platform dependent
+    example:
+    locale ru_RU -> "15:20:35"
+    locale en_US -> "10:15:15 PM"
+    */
+    WideString GetLocalizedTime() const;
+
 private:
     
     DateTime(Timestamp timeStamp, int32 timeZone);

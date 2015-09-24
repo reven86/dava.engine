@@ -82,8 +82,8 @@ DAVA_TESTCLASS(DateTimeTest)
             TEST_VERIFY(country_code == "ru_RU");
 
             DateTime date = DateTime(1984, 8, 8, 16, 30, 22, 3); // 08.09.1984
-            WideString x_date_ru = date.AsWString(L"%x"); // date representation
-            WideString x_time_ru = date.AsWString(L"%X"); // time representation
+            WideString x_date_ru = date.GetLocalizedDate(); // date representation
+            WideString x_time_ru = date.GetLocalizedTime(); // time representation
 
             ls->SetCurrentLocale("en");
             ls->Init();
@@ -91,8 +91,8 @@ DAVA_TESTCLASS(DateTimeTest)
 
             TEST_VERIFY(country_code == "en_US");
 
-            WideString x_date_en = date.AsWString(L"%x"); // date representation
-            WideString x_time_en = date.AsWString(L"%X"); // time representation
+            WideString x_date_en = date.GetLocalizedDate(); // date representation
+            WideString x_time_en = date.GetLocalizedTime(); // time representation
 
             TEST_VERIFY(x_date_en != x_date_ru);
             TEST_VERIFY(x_time_en != x_time_ru);

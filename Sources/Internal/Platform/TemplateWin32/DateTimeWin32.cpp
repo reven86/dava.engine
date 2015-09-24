@@ -64,4 +64,14 @@ namespace DAVA
 		// and GMT in minutes.
         return TimeZoneInfo.Bias*(-60);
     }
+
+    WideString DateTime::GetLocalizedDate() const
+    {
+        return AsWString(L"%x");
+    }
+
+    WideString DateTime::GetLocalizedTime() const
+    {
+        return AsWString(L"%X");
+    }
 }
