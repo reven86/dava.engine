@@ -42,6 +42,7 @@ public:
     enum eType
     {
         LINEAR_LAYOUT_COMPONENT,
+        IGNORE_LAYOUT_COMPONENT,
         SIZE_POLICY_COMPONENT,
         ANCHOR_COMPONENT,
         
@@ -50,7 +51,10 @@ public:
     
 public:
     UIComponent();
+    UIComponent(const UIComponent &src);
     virtual ~UIComponent();
+    
+    UIComponent &operator=(const UIComponent &src);
 
     static UIComponent * CreateByType(uint32 componentType);
     static bool IsMultiple(uint32 componentType);

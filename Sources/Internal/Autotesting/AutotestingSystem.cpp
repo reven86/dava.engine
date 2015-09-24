@@ -102,6 +102,25 @@ namespace DAVA
 		luaSystem->SetDelegate(_delegate);
 	}
 
+    String AutotestingSystem::ResolvePathToAutomation(const String &automationPath)
+    {
+        String automationResolvedStrPath = "~res:" + automationPath;
+        if (FilePath(automationResolvedStrPath).Exists())
+        {
+            return automationResolvedStrPath;
+        }
+#if defined(__DAVAENGINE_ANDROID__)
+        FilePath automationResolvedPath = FileSystem::Instance()->GetPublicDocumentsPath() + automationPath;
+#else
+        FilePath automationResolvedPath = "~doc:" + automationPath;
+#endif //#if defined(__DAVAENGINE_ANDROID__)
+        if (automationResolvedPath.Exists())
+        {
+            return automationResolvedPath.GetStringValue();
+        }
+        return "";
+    }
+    
 	// This method is called on application started and it handle autotest initialisation
 	void AutotestingSystem::OnAppStarted()
 	{
@@ -121,16 +140,17 @@ namespace DAVA
 			FetchParametersFromDB();
 		}
 
-		String testFilePath = Format("~res:/Autotesting/Tests/%s/%s.lua", groupName.c_str(), testFileName.c_str());
-		if (!FileSystem::Instance()->IsFile(FilePath(testFilePath)))
+		const String testFileLocation = Format("/Autotesting/Tests/%s/%s.lua", groupName.c_str(), testFileName.c_str());
+        String testFileStrPath = ResolvePathToAutomation(testFileLocation);
+		if (testFileStrPath.empty())
 		{
-			Logger::Error("AutotestingSystemLua::OnAppStarted: couldn't open %s", testFilePath.c_str());
+			Logger::Error("AutotestingSystemLua::OnAppStarted: couldn't open %s", testFileLocation.c_str());
 			return;
 		}
 
 		AutotestingDB::Instance()->WriteLogHeader();
 
-		AutotestingSystemLua::Instance()->InitFromFile(testFilePath);
+		AutotestingSystemLua::Instance()->InitFromFile(testFileStrPath);
 	}
 
 	void AutotestingSystem::OnAppFinished()
@@ -180,12 +200,12 @@ namespace DAVA
 
 	RefPtr<KeyedArchive> AutotestingSystem::GetIdYamlOptions()
 	{
-		static const FilePath file = "~res:/Autotesting/id.yaml";
+		const String idYamlStrLocation = "/Autotesting/id.yaml";
+        String idYamlStrPath = ResolvePathToAutomation(idYamlStrLocation);
 		RefPtr<KeyedArchive> option(new KeyedArchive());
-		bool res = option->LoadFromYamlFile(file);
-		if (!res)
+        if (idYamlStrPath.empty() || !option->LoadFromYamlFile(idYamlStrPath))
 		{
-			ForceQuit("Couldn't open file " + file.GetAbsolutePathname());
+			ForceQuit("Couldn't open file " + idYamlStrLocation);
 		}
 
 		return option;
@@ -221,11 +241,12 @@ namespace DAVA
 	// Read DB parameters from config file and set connection to it
 	void AutotestingSystem::SetUpConnectionToDB()
 	{
+        const String dbConfigLocation = "/Autotesting/dbConfig.yaml";
+        String dbConfigStrPath = ResolvePathToAutomation(dbConfigLocation);
 		KeyedArchive *option = new KeyedArchive();
-		bool res = option->LoadFromYamlFile("~res:/Autotesting/dbConfig.yaml");
-		if (!res)
+		if (dbConfigStrPath.empty() || !option->LoadFromYamlFile(dbConfigStrPath))
 		{
-			ForceQuit("Couldn't open file ~res:/Autotesting/dbConfig.yaml");
+			ForceQuit("Couldn't open file " + dbConfigLocation);
 		}
 
 		String dbName = option->GetString("name");
@@ -373,7 +394,7 @@ namespace DAVA
 
 	void AutotestingSystem::OnScreenShot(Image *image)
 	{
-		Function<void()> fn = Bind(MakeFunction(this, &AutotestingSystem::OnScreenShotInternal), SafeRetain(image));
+        Function<void()> fn = Bind(&AutotestingSystem::OnScreenShotInternal, this, SafeRetain(image));
 		JobManager::Instance()->CreateWorkerJob(fn);
 	}
 

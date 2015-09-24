@@ -56,8 +56,13 @@ namespace Settings
     static const DAVA::FastName General_HeighMaskTool_Color1("General/HeighMaskTool/Color1");
 
     static const DAVA::FastName General_ColorMultiplyMax("General/ColorPicker/Maximum multiplier");
-    
-	static const DAVA::FastName Scene_GridStep("Scene/GridStep");
+
+    static const DAVA::FastName General_AssetCache_UseCache("General/AssetCache/UseCache");
+    static const DAVA::FastName General_AssetCache_Ip("General/AssetCache/IP");
+    static const DAVA::FastName General_AssetCache_Port("General/AssetCache/Port");
+    static const DAVA::FastName General_AssetCache_Timeout("General/AssetCache/Timeout");
+
+    static const DAVA::FastName Scene_GridStep("Scene/GridStep");
 	static const DAVA::FastName Scene_GridSize("Scene/GridSize");
 	static const DAVA::FastName Scene_CameraSpeed0("Scene/CameraSpeed0");
 	static const DAVA::FastName Scene_CameraSpeed1("Scene/CameraSpeed1");
@@ -81,6 +86,7 @@ namespace Settings
     static const DAVA::FastName Scene_AutoselectNewEntities("Scene/AutoselectNewEnities");
     static const DAVA::FastName Scene_RefreshLodForNonSolid("Scene/RefreshLodForNonSolid");
     static const DAVA::FastName Scene_RememberForceParameters("Scene/RememberForceParameters");
+    static const DAVA::FastName Scene_SaveEmitters("Scene/SaveEmittersWithScene");
 
     static const DAVA::FastName Scene_Sound_SoundObjectDraw("Scene/Sound/SoundObjectDraw");
     static const DAVA::FastName Scene_Sound_SoundObjectBoxColor("Scene/Sound/SoundObjectBoxColor");
@@ -147,6 +153,7 @@ protected:
     void Save();
 	void Load();
     void CreateValue(const DAVA::FastName& path, const DAVA::VariantType &defaultValue, const DAVA::InspDesc &description = DAVA::InspDesc(""));
+    DAVA_DEPRECATED(bool CustomTextureViewGPULoad(const DAVA::String & paramName, const DAVA::VariantType & src_value, DAVA::VariantType & dstValue));
 };
 
 #endif /* defined(__RESOURCEEDITORQT__SETTINGS_MANAGER__) */

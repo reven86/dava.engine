@@ -116,44 +116,39 @@ bool EditorUIPackageBuilder::ProcessImportedPackage(const String &packagePathStr
     return false;
 }
 
-void EditorUIPackageBuilder::ProcessStyleSheets(const YamlNode* styleSheetsNode)
+void EditorUIPackageBuilder::ProcessStyleSheet(const DAVA::Vector<DAVA::UIStyleSheetSelectorChain> &selectorChains, const DAVA::Vector<DAVA::UIStyleSheetProperty> &properties)
 {
-    UIStyleSheetYamlLoader styleSheetLoader;
-
-    Vector< UIStyleSheet* > styleSheets;
-    styleSheetLoader.LoadFromYaml(styleSheetsNode, &styleSheets);
-
-    AddStyleSheets(styleSheets);
-
-    for (UIStyleSheet* styleSheet : styleSheets)
-        SafeRelease(styleSheet);
+    StyleSheetNode *node = new StyleSheetNode(selectorChains, properties);
+    styleSheets.push_back(node);
 }
 
 UIControl *EditorUIPackageBuilder::BeginControlWithClass(const String &className)
 {
-    UIControl *control = ObjectFactory::Instance()->New<UIControl>(className);
+    RefPtr<UIControl> control(ObjectFactory::Instance()->New<UIControl>(className));
     if (control && className != EXCEPTION_CLASS_UI_TEXT_FIELD && className != EXCEPTION_CLASS_UI_LIST)//TODO: fix internal staticText for Win\Mac
     {
         control->RemoveAllControls();
     }
 
-    controlsStack.push_back(ControlDescr(ControlNode::CreateFromControl(control), true));
-    return control;
+    controlsStack.push_back(ControlDescr(ControlNode::CreateFromControl(control.Get()), true));
+
+    return control.Get();
 }
 
 UIControl *EditorUIPackageBuilder::BeginControlWithCustomClass(const String &customClassName, const String &className)
 {
-    UIControl *control = ObjectFactory::Instance()->New<UIControl>(className);
+    RefPtr<UIControl> control(ObjectFactory::Instance()->New<UIControl>(className));
 
     if (control && className != EXCEPTION_CLASS_UI_TEXT_FIELD && className != EXCEPTION_CLASS_UI_LIST)//TODO: fix internal staticText for Win\Mac
     {
         control->RemoveAllControls();
     }
 
-    ControlNode *node = ControlNode::CreateFromControl(control);
+    ControlNode *node = ControlNode::CreateFromControl(control.Get());
     node->GetRootProperty()->GetCustomClassProperty()->SetValue(VariantType(customClassName));
     controlsStack.push_back(ControlDescr(node, true));
-    return control;
+
+    return control.Get();
 }
 
 UIControl *EditorUIPackageBuilder::BeginControlWithPrototype(const String &packageName, const String &prototypeName, const String *customClassName, AbstractUIPackageLoader *loader)
@@ -323,7 +318,12 @@ void EditorUIPackageBuilder::ProcessProperty(const InspMember *member, const Var
     {
         ValueProperty *property = currentSection->FindProperty(member);
         if (property && value.GetType() != VariantType::TYPE_NONE)
+        {
+            if (property->GetStylePropertyIndex() != -1)
+                controlsStack.back().node->GetControl()->SetPropertyLocalFlag(property->GetStylePropertyIndex(), true);
+
             property->SetValue(value);
+        }
     }
 }
 
@@ -332,18 +332,12 @@ RefPtr<PackageNode> EditorUIPackageBuilder::BuildPackage() const
     DVASSERT(!packagePath.IsEmpty());
     RefPtr<PackageNode> package(new PackageNode(packagePath));
     
-    ScopedPtr<UIControlPackageContext> packageContext(new UIControlPackageContext());
     Vector<PackageNode*> declinedPackages;
     for (PackageNode *importedPackage : importedPackages)
     {
         if (package->GetImportedPackagesNode()->CanInsertImportedPackage(importedPackage))
         {
             package->GetImportedPackagesNode()->Add(importedPackage);
-
-            for (int32 styleSheetIndex = 0; styleSheetIndex < importedPackage->GetStyleSheets()->GetCount(); ++styleSheetIndex)
-            {
-                packageContext->AddStyleSheet(importedPackage->GetStyleSheets()->Get(styleSheetIndex)->GetStyleSheet());
-            }
         }
         else
         {
@@ -354,7 +348,6 @@ RefPtr<PackageNode> EditorUIPackageBuilder::BuildPackage() const
     for (StyleSheetNode *styleSheet : styleSheets)
     {
         package->GetStyleSheets()->Add(styleSheet);
-        packageContext->AddStyleSheet(styleSheet->GetStyleSheet());
     }
     
     for (ControlNode *control : rootControls)
@@ -368,12 +361,11 @@ RefPtr<PackageNode> EditorUIPackageBuilder::BuildPackage() const
         
         if (canInsert)
         {
-            control->GetControl()->SetPackageContext(packageContext);
             package->GetPackageControlsNode()->Add(control);
         }
     }
     
-    package->RefreshLayout();
+    package->RefreshPackageStylesAndLayout();
     
     DVASSERT(declinedPackages.empty());
     
@@ -390,6 +382,11 @@ const Vector<PackageNode*> &EditorUIPackageBuilder::GetImportedPackages() const
     return importedPackages;
 }
 
+const Vector<StyleSheetNode*> &EditorUIPackageBuilder::GetStyles() const
+{
+    return styleSheets;
+}
+
 void EditorUIPackageBuilder::AddImportedPackage(PackageNode *node)
 {
     importedPackages.push_back(SafeRetain(node));
@@ -403,15 +400,6 @@ ControlNode *EditorUIPackageBuilder::FindRootControl(const DAVA::String &name) c
             return control;
     }
     return nullptr;
-}
-
-void EditorUIPackageBuilder::AddStyleSheets(const DAVA::Vector<UIStyleSheet*>& newStyleSheets)
-{
-    for (UIStyleSheet *styleSheet : newStyleSheets)
-    {
-        StyleSheetNode *node = new StyleSheetNode(styleSheet);
-        styleSheets.push_back(node);
-    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

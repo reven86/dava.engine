@@ -124,12 +124,16 @@ public:
     DAVA_DEPRECATED(static bool IsEntityHasDifferentLODsCount(DAVA::Entity *entity));
     DAVA_DEPRECATED(static bool IsObjectHasDifferentLODsCount(DAVA::RenderObject *renderObject));
 
+	static void ExtractEmptyRenderObjectsAndShowErrors(DAVA::Entity *entity);
+	static void ExtractEmptyRenderObjects(DAVA::Entity *entity, Set<String> &errorsLog);
+
+
 protected:
     void ValidateRenderComponent(Entity *ownerNode, Set<String> &errorsLog);
     void ValidateRenderBatch(Entity *ownerNode, RenderBatch *renderBatch, Set<String> &errorsLog);
 
     void ValidateParticleEffectComponent(Entity *ownerNode, Set<String> &errorsLog) const;
-    void ValidateParticleEmitter(ParticleEmitter *emitter, Set<String> &errorsLog) const;
+    void ValidateParticleEmitter(ParticleEmitter *emitter, Set<String> &errorsLog, DAVA::Entity* owner) const;
 
 	void ValidateLandscapeTexture(Landscape *landscape, Landscape::eTextureLevel texLevel, Set<String> &errorsLog);
 	void ValidateCustomColorsTexture(Entity *landscapeEntity, Set<String> &errorsLog);

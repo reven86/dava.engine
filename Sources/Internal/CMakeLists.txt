@@ -42,7 +42,6 @@ if( ANDROID )
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libfmodevent.so"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libfmodex.so"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libTextureConverter_android.a"
-         "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libbox2d.a"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libuv_android.a"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libiconv_android.so"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/liblua_android.a"
@@ -127,10 +126,7 @@ elseif ( WINDOWS_UAP )
 
     file ( GLOB RELEASE_LIB_LIST "${DAVA_WIN_UAP_LIBRARIES_PATH_RELEASE}/*.lib" )
     list ( APPEND LIST_SHARED_LIBRARIES_RELEASE ${RELEASE_LIB_LIST}  )
-
 elseif( WIN32 ) 
-
-
     file ( GLOB LIB_LIST "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/D/*" )
     list ( APPEND LIST_SHARED_LIBRARIES_DEBUG ${LIB_LIST}  )
 
@@ -181,7 +177,6 @@ endforeach ()
 install_libraries( ${PROJECT_NAME} )
 
 if ( WINDOWS_UAP )
-    set_property(TARGET ${PROJECT_NAME} PROPERTY VS_MOBILE_EXTENSIONS_VERSION "10.0.0.1")
+    set_property(TARGET ${PROJECT_NAME} PROPERTY VS_MOBILE_EXTENSIONS_VERSION ${WINDOWS_UAP_MOBILE_EXT_SDK_VERSION} )
+    set_property(TARGET ${PROJECT_NAME} PROPERTY VS_IOT_EXTENSIONS_VERSION ${WINDOWS_UAP_IOT_EXT_SDK_VERSION} )
 endif()
-
-

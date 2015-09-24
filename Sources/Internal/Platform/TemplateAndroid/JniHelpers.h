@@ -35,8 +35,7 @@
 #include <jni.h>
 #include "Platform/TemplateAndroid/ExternC/AndroidLayer.h"
 #include "Debug/DVAssert.h"
-#include "Base/Function.h"
-#include "Base/Bind.h"
+#include "Functional/Function.h"
 #include "Math/Rect.h"
 
 #define DAVA_JNI_EXCEPTION_CHECK \
@@ -58,6 +57,9 @@
         DVASSERT_MSG(false, error.c_str());\
     }\
 }
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wclass-varargs"
 
 // placed into the Global namespace and not in JNI to use it like a jstring
 class jstringArray
@@ -825,6 +827,8 @@ Function<Ret(P1, P2, P3, P4, P5, P6)> JavaClass::GetStaticMethod(String name) co
 
 } // end namespace JNI
 } // end namespace DAVA
+
+#pragma clang diagnostic pop
 
 #endif
 

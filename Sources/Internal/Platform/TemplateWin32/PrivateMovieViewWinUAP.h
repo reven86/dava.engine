@@ -43,11 +43,11 @@ class PrivateMovieViewWinUAP : public std::enable_shared_from_this<PrivateMovieV
 {
 public:
     PrivateMovieViewWinUAP();
-    virtual ~PrivateMovieViewWinUAP();
+    ~PrivateMovieViewWinUAP();
 
     // MovieViewControl should invoke it in its destructor to tell this class instance
     // to fly away on its own (finish pending jobs if any, and delete when all references are lost)
-    void FlyToSunIcarus();
+    void OwnerAtPremortem();
 
     void Initialize(const Rect& rect);
 
@@ -66,7 +66,7 @@ public:
 
 private:
     void InstallEventHandlers();
-    void PositionMovieView(const Rect& rect);
+    void PositionMovieView(const Rect& rectInVirtualCoordinates);
 
     Windows::Storage::Streams::IRandomAccessStream^ CreateStreamFromUri(Windows::Foundation::Uri^ uri) const;
     Windows::Foundation::Uri^ UriFromPath(const FilePath& path) const;
@@ -89,7 +89,12 @@ private:
 //////////////////////////////////////////////////////////////////////////
 inline bool PrivateMovieViewWinUAP::IsPlaying()
 {
-    return moviePlaying;
+    // It seems that framework is client of game but not vice versa
+    // Game does not take into account that video playback can take some time after Play() has been called
+    // So assume movie is playing under following conditions:
+    //  - movie is really playing
+    //  - game has called Play() method
+    return moviePlaying || playRequest;
 }
 
 }   // namespace DAVA

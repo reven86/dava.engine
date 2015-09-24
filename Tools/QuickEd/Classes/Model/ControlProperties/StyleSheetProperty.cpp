@@ -29,33 +29,54 @@
 #include "StyleSheetProperty.h"
 
 #include "PropertyVisitor.h"
-#include "../PackageHierarchy/StyleSheetNode.h"
+#include "IntrospectionProperty.h"
+#include "VariantTypeProperty.h"
+
+#include "Model/PackageHierarchy/StyleSheetNode.h"
 #include "UI/Styles/UIStyleSheet.h"
 
 using namespace DAVA;
 
-StyleSheetProperty::StyleSheetProperty(StyleSheetNode *aStyleSheet, DAVA::uint32 aPropertyIndex)
+StyleSheetProperty::StyleSheetProperty(const DAVA::UIStyleSheetProperty &aProperty)
     : ValueProperty("prop")
-    , styleSheet(aStyleSheet) // weak
-    , propertyIndex(aPropertyIndex)
+    , property(aProperty)
 {
-    const UIStyleSheetPropertyDescriptor& descr = UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyByIndex(propertyIndex);
-    name = String(descr.name.c_str());
+    const UIStyleSheetPropertyDescriptor& descr = UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyByIndex(property.propertyIndex);
+    SetName(String(descr.name.c_str()));
+    SetOverridden(true);
+
+
+    VariantTypeProperty *prop = new VariantTypeProperty("Value", property.value);
+    prop->SetValue(property.value);
+    prop->SetParent(this);
+    properties.push_back(prop);
+    
+    for (int32 i = 0; i < TypeInfo()->MembersCount(); i++)
+    {
+        const InspMember *member = TypeInfo()->Member(i);
+        IntrospectionProperty *prop = new IntrospectionProperty(this, member, nullptr, CT_COPY);
+        prop->SetValue(member->Value(this));
+        prop->SetParent(this);
+        prop->DisableResetFeature();
+        properties.push_back(prop);
+    }
 }
 
 StyleSheetProperty::~StyleSheetProperty()
 {
-    styleSheet = nullptr; // weak
+    for (AbstractProperty *property : properties)
+        property->Release();
+    properties.clear();
 }
 
 int StyleSheetProperty::GetCount() const
 {
-    return 0;
+    return static_cast<int>(properties.size());
 }
 
 AbstractProperty *StyleSheetProperty::GetProperty(int index) const
 {
-    return nullptr;
+    return properties[index];
 }
 
 void StyleSheetProperty::Accept(PropertyVisitor *visitor)
@@ -63,15 +84,10 @@ void StyleSheetProperty::Accept(PropertyVisitor *visitor)
     visitor->VisitStyleSheetProperty(this);
 }
 
-bool StyleSheetProperty::IsReadOnly() const
-{
-    return styleSheet->IsReadOnly();
-}
-
 AbstractProperty::ePropertyType StyleSheetProperty::GetType() const
 {
-    const UIStyleSheetPropertyDescriptor& propertyDescr = UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyByIndex(propertyIndex);
-    const InspMember* member = propertyDescr.targetMembers[0].memberInfo; // we assert all members to have the same type
+    const UIStyleSheetPropertyDescriptor& descr = UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyByIndex(property.propertyIndex);
+    const InspMember* member = descr.targetMembers[0].memberInfo; // we assert all members to have the same type
 
     auto type = member->Desc().type;
     if (type == InspDesc::T_ENUM)
@@ -82,26 +98,20 @@ AbstractProperty::ePropertyType StyleSheetProperty::GetType() const
     return TYPE_VARIANT;
 }
 
+DAVA::uint32 StyleSheetProperty::GetFlags() const 
+{
+    return EF_CAN_REMOVE;
+}
+
 VariantType StyleSheetProperty::GetValue() const
 {
-    const UIStyleSheet *ss = styleSheet->GetStyleSheet();
-    const auto &pairs = ss->GetPropertyTable()->GetProperties();
-    for (const auto &pair : pairs)
-    {
-        if (pair.propertyIndex == propertyIndex)
-        {
-            return pair.value;
-        }
-    }
-
-    DVASSERT(false);
-    return VariantType();
+    return property.value;
 }
 
 const EnumMap *StyleSheetProperty::GetEnumMap() const
 {
-   const UIStyleSheetPropertyDescriptor& propertyDescr = UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyByIndex(propertyIndex);
-   const InspMember* member = propertyDescr.targetMembers[0].memberInfo; // we assert all members to have the same type
+   const UIStyleSheetPropertyDescriptor& descr = UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyByIndex(property.propertyIndex);
+   const InspMember* member = descr.targetMembers[0].memberInfo; // we assert all members to have the same type
    auto type = member->Desc().type;
    
    if (type == InspDesc::T_ENUM ||
@@ -113,4 +123,56 @@ const EnumMap *StyleSheetProperty::GetEnumMap() const
 
 void StyleSheetProperty::ApplyValue(const DAVA::VariantType &value)
 {
+    property.value = value;
 }
+
+Interpolation::FuncType StyleSheetProperty::GetTransitionFunction() const
+{
+    return property.transitionFunction;
+}
+
+void StyleSheetProperty::SetTransitionFunction(Interpolation::FuncType type)
+{
+    property.transitionFunction = type;
+}
+
+DAVA::int32 StyleSheetProperty::GetTransitionFunctionAsInt() const
+{
+    return GetTransitionFunction();
+}
+
+void StyleSheetProperty::SetTransitionFunctionFromInt(DAVA::int32 type)
+{
+    SetTransitionFunction(static_cast<Interpolation::FuncType>(type));
+}
+
+float32 StyleSheetProperty::GetTransitionTime() const
+{
+    return property.transitionTime;
+}
+
+void StyleSheetProperty::SetTransitionTime(DAVA::float32 transitionTime)
+{
+    property.transitionTime = transitionTime;
+}
+
+bool StyleSheetProperty::HasTransition() const
+{
+    return property.transition;
+}
+
+void StyleSheetProperty::SetTransition(bool transition)
+{
+    property.transition = transition;
+}
+
+uint32 StyleSheetProperty::GetPropertyIndex() const
+{
+    return property.propertyIndex;
+}
+
+const UIStyleSheetProperty &StyleSheetProperty::GetProperty() const
+{
+    return property;
+}
+

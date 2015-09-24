@@ -33,7 +33,7 @@
 
 using namespace DAVA;
 
-LocalizedTextValueProperty::LocalizedTextValueProperty(DAVA::BaseObject *anObject, const DAVA::InspMember *aMmember, const LocalizedTextValueProperty *sourceProperty, eCloneType cloneType)
+LocalizedTextValueProperty::LocalizedTextValueProperty(DAVA::BaseObject *anObject, const DAVA::InspMember *aMmember, const IntrospectionProperty *sourceProperty, eCloneType cloneType)
     : IntrospectionProperty(anObject, aMmember, sourceProperty, cloneType)
 {
     ApplyValue(member->Value(object));
@@ -41,24 +41,14 @@ LocalizedTextValueProperty::LocalizedTextValueProperty(DAVA::BaseObject *anObjec
 
 LocalizedTextValueProperty::~LocalizedTextValueProperty()
 {
+}
+
+void LocalizedTextValueProperty::Refresh(DAVA::int32 refreshFlags)
+{
+    IntrospectionProperty::Refresh(refreshFlags);
     
-}
-
-int LocalizedTextValueProperty::GetCount() const
-{
-    return 0;
-}
-
-AbstractProperty *LocalizedTextValueProperty::GetProperty(int index) const
-{
-    return NULL;
-}
-
-void LocalizedTextValueProperty::Refresh()
-{
-    IntrospectionProperty::Refresh();
-
-    member->SetValue(GetBaseObject(), VariantType(LocalizedString(text)));
+    if (refreshFlags & REFRESH_LOCALIZATION)
+        member->SetValue(GetBaseObject(), VariantType(LocalizedString(text)));
 }
 
 VariantType LocalizedTextValueProperty::GetValue() const

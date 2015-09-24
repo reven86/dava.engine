@@ -44,6 +44,7 @@ namespace DAVA
 {
 
 class CorePlatformWinUAP;
+class DispatcherWinUAP;
 
 /************************************************************************
  Class WinUAPXamlApp represents WinRT XAML application with embedded framework's render loop
@@ -60,6 +61,7 @@ ref class WinUAPXamlApp sealed : public ::Windows::UI::Xaml::Application
 public:
     // Deleted and defaulted functions are not supported in WinRT classes
     WinUAPXamlApp();
+    virtual ~WinUAPXamlApp();
 
     Windows::Graphics::Display::DisplayOrientations GetDisplayOrientation();
     Windows::UI::ViewManagement::ApplicationViewWindowingMode GetScreenMode();
@@ -69,13 +71,19 @@ public:
     void SetCursorVisible(bool isVisible);
 
     Windows::UI::Core::CoreDispatcher^ UIThreadDispatcher();
-    Windows::UI::Core::CoreDispatcher^ MainThreadDispatcher();
 
+internal:   // Only internal methods of ref class can return pointers to non-ref objects
+    DispatcherWinUAP* MainThreadDispatcher();
+
+public:
     void SetQuitFlag();
 
     void AddUIElement(Windows::UI::Xaml::UIElement^ uiElement);
     void RemoveUIElement(Windows::UI::Xaml::UIElement^ uiElement);
     void PositionUIElement(Windows::UI::Xaml::UIElement^ uiElement, float32 x, float32 y);
+    void SetTextBoxCustomStyle(Windows::UI::Xaml::Controls::TextBox^ textBox);
+    void SetPasswordBoxCustomStyle(Windows::UI::Xaml::Controls::PasswordBox^ passwordBox);
+    void UnfocusUIElement();
 
 protected:
     void OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^ args) override;
@@ -94,12 +102,12 @@ private:    // Event handlers
     void OnWindowSizeChanged(::Windows::UI::Core::CoreWindow^ sender, ::Windows::UI::Core::WindowSizeChangedEventArgs^ args);
 
     // Mouse and touch handlers
-    void OnPointerPressed(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ args);
-    void OnPointerReleased(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ args);
-    void OnPointerMoved(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ args);
-    void OnPointerEntered(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ args);
-    void OnPointerExited(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ args);
-    void OnPointerWheel(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ args);
+    void OnPointerPressed(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args);
+    void OnPointerReleased(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args);
+    void OnPointerMoved(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args);
+    void OnPointerEntered(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args);
+    void OnPointerExited(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args);
+    void OnPointerWheel(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args);
     void OnHardwareBackButtonPressed(Platform::Object^ sender, Windows::Phone::UI::Input::BackPressedEventArgs ^args);
 
     // Keyboard handlers
@@ -107,17 +115,14 @@ private:    // Event handlers
     void OnKeyUp(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ args);
     void OnMouseMoved(Windows::Devices::Input::MouseDevice^ mouseDevice, Windows::Devices::Input::MouseEventArgs^ args);
 
-    void DAVATouchEvent(UIEvent::eInputPhase phase, Windows::Foundation::Point position, int32 id);
+    void DAVATouchEvent(UIEvent::eInputPhase phase, float32 x, float32 y, int32 id, UIEvent::PointerDeviceID deviceIndex);
 
 private:
     void SetupEventHandlers();
-    void SetupRenderLoopEventHandlers();
     void CreateBaseXamlUI();
 
     void SetTitleName();
     void SetDisplayOrientations();
-
-    void InitInput();
 
     void InitRender();
     void ReInitRender();
@@ -128,21 +133,26 @@ private:
     void PrepareScreenSize();
     void UpdateScreenSize(float32 width, float32 height);
     void SetFullScreen(bool isFullScreenFlag);
-    void SetPreferredSize(int32 width, int32 height);
+    // in units of effective (view) pixels
+    void SetPreferredSize(float32 width, float32 height);
+    void HideAsyncTaskBar();
 
 private:
     CorePlatformWinUAP* core;
     Windows::UI::Core::CoreDispatcher^ uiThreadDispatcher = nullptr;
-    Windows::UI::Core::CoreIndependentInputSource^ mainThreadInputSource = nullptr;
+    std::unique_ptr<DispatcherWinUAP> dispatcher = nullptr;
 
     Windows::UI::Xaml::Controls::SwapChainPanel^ swapChainPanel = nullptr;
     Windows::UI::Xaml::Controls::Canvas^ canvas = nullptr;
+    Windows::UI::Xaml::Controls::Button^ controlThatTakesFocus = nullptr;
+    Windows::UI::Xaml::Style^ customTextBoxStyle = nullptr;
+    Windows::UI::Xaml::Style^ customPasswordBoxStyle = nullptr;
 
     Windows::Foundation::IAsyncAction^ renderLoopWorker = nullptr;
 
     volatile bool quitFlag = false;
 
-    Vector<UIEvent> allTouches;
+    Vector<UIEvent> events;
 
     bool isMouseDetected = false;
     bool isTouchDetected = false;
@@ -151,6 +161,7 @@ private:
     bool isWindowVisible = true;
     bool isWindowClosed = false;
     bool isFullscreen = false;
+    bool isRenderCreated = false;
     DisplayMode windowedMode = DisplayMode(DisplayMode::DEFAULT_WIDTH,
                                            DisplayMode::DEFAULT_HEIGHT,
                                            DisplayMode::DEFAULT_BITS_PER_PIXEL,
@@ -164,10 +175,19 @@ private:
     bool isLeftButtonPressed = false;
     bool isMiddleButtonPressed = false;
 
-    float32 windowWidth = static_cast<float32>(DisplayMode::DEFAULT_WIDTH);
-    float32 windowHeight = static_cast<float32>(DisplayMode::DEFAULT_HEIGHT);
+    float64 rawPixelsPerViewPixel = 1.0;
+    int32 viewWidth = DisplayMode::DEFAULT_WIDTH;
+    int32 viewHeight = DisplayMode::DEFAULT_HEIGHT;
+    int32 physicalWidth = static_cast<int32>(viewWidth * rawPixelsPerViewPixel);
+    int32 physicalHeight = static_cast<int32>(viewHeight * rawPixelsPerViewPixel);
 
     Windows::Graphics::Display::DisplayOrientations displayOrientation = ::Windows::Graphics::Display::DisplayOrientations::None;
+
+private:
+    // Hardcoded styles for TextBox and PasswordBox to apply features:
+    //  - transparent background in focus state
+    //  - removed 'X' button
+    static const wchar_t xamlTextBoxStyles[];
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -176,9 +196,9 @@ inline Windows::UI::Core::CoreDispatcher^ WinUAPXamlApp::UIThreadDispatcher()
     return uiThreadDispatcher;
 }
 
-inline Windows::UI::Core::CoreDispatcher^ WinUAPXamlApp::MainThreadDispatcher()
+inline DispatcherWinUAP* WinUAPXamlApp::MainThreadDispatcher()
 {
-    return mainThreadInputSource->Dispatcher;
+    return dispatcher.get();
 }
 
 inline void WinUAPXamlApp::SetQuitFlag()

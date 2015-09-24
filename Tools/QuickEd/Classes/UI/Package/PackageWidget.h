@@ -43,34 +43,39 @@ namespace Ui {
     class PackageWidget;
 }
 
-class ControlNode;
 class SharedData;
+class ControlNode;
+class StyleSheetNode;
 
 class PackageWidget : public QDockWidget, public Ui::PackageWidget
 {
     Q_OBJECT
 public:
     explicit PackageWidget(QWidget *parent = 0);
-    ~PackageWidget() = default;
-
+    ~PackageWidget() = default; 
+    using ExpandedIndexes = QModelIndexList ;
 public slots:
     void OnDocumentChanged(SharedData *context);
     void OnDataChanged(const QByteArray &role);
 private:
     void LoadContext();
     void SaveContext();
-private:
     
     void OnControlSelectedInEditor(const QList<ControlNode *> &node);
 
     void RefreshActions(const QList<PackageBaseNode*> &indexList);
     void RefreshAction(QAction *action, bool enabled, bool visible);
     void CollectSelectedControls(DAVA::Vector<ControlNode*> &nodes, bool forCopy, bool forRemove);
+    void CollectSelectedStyles(DAVA::Vector<StyleSheetNode*> &nodes, bool forCopy, bool forRemove);
     void CollectSelectedImportedPackages(DAVA::Vector<PackageNode*> &nodes, bool forCopy, bool forRemove);
-    void CopyNodesToClipboard(const DAVA::Vector<ControlNode*> &nodes);
-    void RemoveNodes(const DAVA::Vector<ControlNode*> &nodes);
-    QList<QPersistentModelIndex> GetExpandedIndexes() const;
-    
+    void CopyNodesToClipboard(const DAVA::Vector<ControlNode*> &controls, const DAVA::Vector<StyleSheetNode*> &styles);
+
+    template <typename NodeType>
+    void CollectSelectedNodes(const QItemSelection &selected, DAVA::Vector<NodeType*> &nodes, bool forCopy, bool forRemove);
+
+    ExpandedIndexes GetExpandedIndexes() const;
+    void RestoreExpandedIndexes(const ExpandedIndexes &indexes);
+
 private slots:
     void OnSelectionChanged(const QItemSelection &proxySelected, const QItemSelection &proxyDeselected);
     void filterTextChanged(const QString &);
@@ -80,7 +85,11 @@ private slots:
     void OnCut();
     void OnDelete();
     void OnRename();
+    void OnAddStyle();
 
+private:
+    QAction *CreateSeparator();
+    
 private:
     SharedData *sharedData;
     QAction *importPackageAction;
@@ -89,9 +98,12 @@ private:
     QAction *cutAction;
     QAction *delAction;
     QAction *renameAction;
+    QAction *addStyleAction;
     
     QPointer<FilteredPackageModel> filteredPackageModel;
     QPointer<PackageModel> packageModel;
+    QString lastFilterText;
+    ExpandedIndexes expandedIndexes;
 };
 
 #endif // __UI_EDITOR_UI_PACKAGE_WIDGET__

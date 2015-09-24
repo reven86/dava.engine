@@ -33,8 +33,6 @@
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 
-#include "Concurrency/Atomic.h"
-
 namespace DAVA
 {
 
@@ -47,7 +45,9 @@ public:
     PrivateWebViewWinUAP(UIWebView* UIWebView);
     ~PrivateWebViewWinUAP();
 
-    void DetachDelegateAndView();
+    // WebViewControl should invoke it in its destructor to tell this class instance
+    // to fly away on its own (finish pending jobs if any, and delete when all references are lost)
+    void OwnerAtPremortem();
 
     void Initialize(const Rect& rect);
 
@@ -67,7 +67,7 @@ public:
 
 private:
     void InstallEventHandlers();
-    void PositionWebView(const Rect& rect, bool offScreen);
+    void PositionWebView(const Rect& rectInVirtualCoordinates, bool offScreen);
 
     void RenderToTexture();
     Sprite* CreateSpriteFromPreviewData(const uint8* imageData, int32 width, int32 height) const;
@@ -78,8 +78,8 @@ private:    // WebView event handlers
 
 private:
     CorePlatformWinUAP* core;
-    Atomic<UIWebView*> uiWebView = nullptr;
-    Atomic<IUIWebViewDelegate*> webViewDelegate = nullptr;
+    UIWebView* uiWebView = nullptr;
+    IUIWebViewDelegate* webViewDelegate = nullptr;
     Windows::UI::Xaml::Controls::WebView^ nativeWebView = nullptr;
     Windows::UI::Color defaultBkgndColor;
     bool visible = true;

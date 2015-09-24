@@ -49,7 +49,7 @@
 namespace DAVA 
 {
 //TODO: move it to DateTimeWin32 or remove
-const LocalizationSystem::LanguageLocalePair LocalizationSystem::languageLocaleMap[] =
+const Vector<LocalizationSystem::LanguageLocalePair> LocalizationSystem::languageLocaleMap =
 {
     { "en", "en_US" },
     { "ru", "ru_RU" },
@@ -251,13 +251,14 @@ LocalizationSystem::StringFile * LocalizationSystem::LoadFromYamlFile(const Stri
 				
 			case YAML_SCALAR_EVENT:
 			{
-				
+				const uint8* str = reinterpret_cast<uint8*>(event.data.scalar.value);
+				size_t size = static_cast<size_t>(event.data.scalar.length);
 				if (isKey)
 				{
-					UTF8Utils::EncodeToWideString((uint8*)event.data.scalar.value, (int32)event.data.scalar.length, key);
+					UTF8Utils::EncodeToWideString(str, size, key);
 				}else 
 				{
-					UTF8Utils::EncodeToWideString((uint8*)event.data.scalar.value, (int32)event.data.scalar.length, value);
+					UTF8Utils::EncodeToWideString(str, size, value);
 					strFile->strings[key] = value;
 				}
 				
@@ -446,14 +447,16 @@ bool LocalizationSystem::GetStringsForCurrentLocale(Map<WideString, WideString>&
     
 String LocalizationSystem::GetCountryCode() const
 {
-    int32 knownLocalesNumber = COUNT_OF(languageLocaleMap);
-	for (int32 i = 0; i < knownLocalesNumber; i ++)
-	{
-		if (languageLocaleMap[i].languageCode == langId)
-		{
-			return languageLocaleMap[i].localeCode;
-		}
-	}
+    auto iter = std::find_if(languageLocaleMap.begin(), languageLocaleMap.end(), [&](const LocalizationSystem::LanguageLocalePair & langPair)
+    {
+        return langPair.languageCode == langId;
+    });
+
+    if (iter != languageLocaleMap.end())
+    {
+        return (*iter).localeCode;
+    }
+
     return "en_US";
 }
 	

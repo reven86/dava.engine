@@ -32,9 +32,11 @@
 #include "Utils/BiDiHelper.h"
 #include "Render/2D/TextLayout.h"
 
+#include <float.h>
+
 using namespace DAVA;
 
-static const String files[] = {
+static const Vector<String> files = {
     "weird_characters",
     "de",
     "en",
@@ -64,7 +66,7 @@ DAVA_TESTCLASS(LocalizationTest)
 
     DAVA_TEST(LocaleTest)
     {
-        for (size_t i = 0;i < COUNT_OF(files);++i)
+        for (size_t i = 0;i < files.size();++i)
         {
             FilePath srcFile = srcDir + (files[i] + ".yaml");
             FilePath cpyFile = cpyDir + (files[i] + ".yaml");

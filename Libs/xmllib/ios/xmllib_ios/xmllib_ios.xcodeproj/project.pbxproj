@@ -345,6 +345,8 @@
 /* Begin PBXProject section */
 		5C42C99014E3C22A00EB3F53 /* Project object */ = {
 			isa = PBXProject;
+			attributes = {
+			};
 			buildConfigurationList = 5C42C99314E3C22A00EB3F53 /* Build configuration list for PBXProject "xmllib_ios" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
@@ -498,7 +500,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				COPY_PHASE_STRIP = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -508,12 +509,12 @@
 					"$(inherited)",
 				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-				GCC_VERSION = com.apple.compilers.llvmgcc42;
+				GCC_VERSION = "";
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = ./../../include;
-				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				OTHER_CFLAGS = "-DHAVE_CONFIG_H";
 				PRECOMPS_INCLUDE_HEADERS_FROM_BUILT_PRODUCTS_DIR = NO;
 				SDKROOT = iphoneos;
@@ -524,15 +525,14 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				COPY_PHASE_STRIP = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
-				GCC_VERSION = com.apple.compilers.llvmgcc42;
+				GCC_VERSION = "";
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = ./../../include;
-				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				OTHER_CFLAGS = "-DHAVE_CONFIG_H";
 				PRECOMPS_INCLUDE_HEADERS_FROM_BUILT_PRODUCTS_DIR = NO;
 				SDKROOT = iphoneos;
@@ -543,8 +543,16 @@
 		5C42C9A714E3C22B00EB3F53 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = (
+					"$(ARCHS_STANDARD)",
+					armv7s,
+				);
 				DSTROOT = /tmp/xmllib_ios.dst;
 				GCC_PREFIX_HEADER = "";
+				OTHER_CFLAGS = (
+					"-DHAVE_CONFIG_H",
+					"-Wno-implicit-function-declaration",
+				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -554,8 +562,16 @@
 		5C42C9A814E3C22B00EB3F53 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = (
+					"$(ARCHS_STANDARD)",
+					armv7s,
+				);
 				DSTROOT = /tmp/xmllib_ios.dst;
 				GCC_PREFIX_HEADER = "";
+				OTHER_CFLAGS = (
+					"-DHAVE_CONFIG_H",
+					"-Wno-implicit-function-declaration",
+				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -565,6 +581,7 @@
 		5C42CA1C14E3C36300EB3F53 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = i386;
 				DSTROOT = /tmp/xmllib_ios_sim.dst;
 				GCC_PREFIX_HEADER = "";
 				OTHER_LDFLAGS = "-ObjC";
@@ -577,6 +594,7 @@
 		5C42CA1D14E3C36300EB3F53 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = i386;
 				DSTROOT = /tmp/xmllib_ios_sim.dst;
 				GCC_PREFIX_HEADER = "";
 				OTHER_LDFLAGS = "-ObjC";
@@ -619,6 +637,7 @@
 				5C42C9A814E3C22B00EB3F53 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		5C42CA1B14E3C36300EB3F53 /* Build configuration list for PBXNativeTarget "xmllib_ios_sim" */ = {
 			isa = XCConfigurationList;
@@ -627,6 +646,7 @@
 				5C42CA1D14E3C36300EB3F53 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		5C42CA1F14E3C39F00EB3F53 /* Build configuration list for PBXAggregateTarget "xmllib_ios_combined" */ = {
 			isa = XCConfigurationList;
@@ -635,6 +655,7 @@
 				5C42CA2114E3C39F00EB3F53 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

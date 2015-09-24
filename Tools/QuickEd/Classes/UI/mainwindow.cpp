@@ -41,6 +41,8 @@
 #include "QtTools/FileDialog/FileDialog.h"
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"
 
+#include "DebugTools/DebugTools.h"
+
 namespace
 {
     const QString APP_GEOMETRY = "geometry";
@@ -60,14 +62,23 @@ MainWindow::MainWindow(QWidget *parent)
 {
     setupUi(this);
 
-    // Relod Sprites
+    DebugTools::ConnectToUI(this);
+
+    // Reload Sprites
     QAction* actionReloadSprites = dialogReloadSprites->GetActionReloadSprites();
+    connect(actionReloadSprites, &QAction::triggered, this, &MainWindow::OnSetupCacheSettingsForPacker);
     menuTools->addAction(actionReloadSprites);
     toolBarPlugins->addAction(actionReloadSprites);
 
     actionLocalizationManager->setEnabled(false);
+    toolBarPlugins->addSeparator();
     InitLanguageBox();
+    toolBarPlugins->addSeparator();
     InitRtlBox();
+    toolBarPlugins->addSeparator();
+    InitGlobalClasses();
+    toolBarPlugins->addSeparator();
+    InitEmulationMode();
 
     tabBar->setElideMode(Qt::ElideNone);
     setWindowTitle(ResourcesManageHelper::GetProjectTitle());
@@ -252,6 +263,38 @@ void MainWindow::InitRtlBox()
     wrapper->setLayout(layout);
     toolBarPlugins->addWidget(wrapper);
     connect(rtlBox, &QCheckBox::stateChanged, this, &MainWindow::OnRtlChanged);
+}
+
+void MainWindow::InitGlobalClasses()
+{
+    QLineEdit *classesEdit = new QLineEdit();
+    classesEdit->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
+    QLabel *label = new QLabel(tr("global classes"));
+    label->setBuddy(classesEdit);
+    QHBoxLayout *layout = new QHBoxLayout;
+    layout->setMargin(0);
+    layout->addWidget(label);
+    layout->addWidget(classesEdit);
+    QWidget *wrapper = new QWidget();
+    wrapper->setLayout(layout);
+    toolBarPlugins->addWidget(wrapper);
+    connect(classesEdit, &QLineEdit::textChanged, this, &MainWindow::OnGlobalClassesChanged);
+}
+
+void MainWindow::InitEmulationMode()
+{
+    QCheckBox *emulationBox = new QCheckBox();
+    emulationBox->setCheckState(Qt::Unchecked);
+    QLabel *label = new QLabel(tr("Emulation"));
+    label->setBuddy(emulationBox);
+    QHBoxLayout *layout = new QHBoxLayout;
+    layout->setMargin(0);
+    layout->addWidget(label);
+    layout->addWidget(emulationBox);
+    QWidget *wrapper = new QWidget();
+    wrapper->setLayout(layout);
+    toolBarPlugins->addWidget(wrapper);
+    connect(emulationBox, &QCheckBox::stateChanged, this, &MainWindow::OnEmulationModeChanged);
 }
 
 void MainWindow::InitMenu()
@@ -477,6 +520,16 @@ void MainWindow::OnRtlChanged(int arg)
     emit RtlChanged(arg == Qt::Checked);
 }
 
+void MainWindow::OnEmulationModeChanged(int arg)
+{
+    previewWidget->SetEmulationMode(arg == Qt::Checked);
+}
+
+void MainWindow::OnGlobalClassesChanged(const QString &str)
+{
+    emit GlobalStyleClassesChanged(str);
+}
+
 void MainWindow::SetBackgroundColorMenuTriggered(QAction* action)
 {
     Color newColor;
@@ -525,4 +578,22 @@ void MainWindow::SetBackgroundColorMenuTriggered(QAction* action)
 
     // In case we don't found current color in predefined ones - select "Custom" menu item.
     backgroundFrameUseCustomColorAction->setChecked(!colorFound);
+}
+
+void MainWindow::OnSetupCacheSettingsForPacker()
+{
+    auto spritesPacker = dialogReloadSprites->GetSpritesPacker();
+    DVASSERT(nullptr != spritesPacker);
+
+    if (EditorSettings::Instance()->IsUsingAssetCache())
+    {
+        spritesPacker->SetCacheTool(
+        EditorSettings::Instance()->GetAssetCacheIp(),
+        EditorSettings::Instance()->GetAssetCachePort(),
+        EditorSettings::Instance()->GetAssetCacheTimeoutSec());
+    }
+    else
+    {
+        spritesPacker->ClearCacheTool();
+    }
 }

@@ -234,6 +234,7 @@
      <addaction name="actionExportTegra"/>
      <addaction name="actionExportMali"/>
      <addaction name="actionExportAdreno"/>
+     <addaction name="actionExportDX11"/>
      <addaction name="separator"/>
      <addaction name="actionExportPNG"/>
     </widget>
@@ -319,6 +320,7 @@
      <addaction name="actionReloadTegra"/>
      <addaction name="actionReloadMali"/>
      <addaction name="actionReloadAdreno"/>
+     <addaction name="actionReloadDX11"/>
      <addaction name="separator"/>
      <addaction name="actionReloadPNG"/>
     </widget>
@@ -1370,6 +1372,11 @@
     <string>Adreno</string>
    </property>
   </action>
+  <action name="actionExportDX11">
+   <property name="text">
+    <string>DX11</string>
+   </property>
+  </action>
   <action name="actionReloadMali">
    <property name="checkable">
     <bool>true</bool>
@@ -1384,6 +1391,14 @@
    </property>
    <property name="text">
     <string>Adreno</string>
+   </property>
+  </action>
+  <action name="actionReloadDX11">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>DX11</string>
    </property>
   </action>
   <action name="actionExportPNG">

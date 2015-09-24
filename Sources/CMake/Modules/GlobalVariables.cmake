@@ -1,4 +1,20 @@
 #
+function ( load_config CONFIG_FILE )
+
+    file( STRINGS ${CONFIG_FILE} ConfigContents )
+    foreach( NameAndValue ${ConfigContents} )
+        string( REGEX REPLACE "^[ ]+" "" NameAndValue ${NameAndValue} )
+        string( REGEX MATCH "^[^=]+" Name ${NameAndValue} ) 
+        string( REPLACE "${Name}=" "" Value ${NameAndValue} )
+        string( REGEX REPLACE " " "" Name   "${Name}" )
+        string( REGEX REPLACE " " "" Value  "${Value}" )
+        if( NOT ${Name} )
+            set( ${Name} "${Value}" PARENT_SCOPE )
+        endif()
+        #  message("---" [${Name}] "  " [${Value}] )
+    endforeach()
+
+endfunction ()
 
 # Only interpret ``if()`` arguments as variables or keywords when unquoted.
 if(NOT (CMAKE_VERSION VERSION_LESS 3.1))
@@ -46,23 +62,29 @@ set( DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR "${DAVA_ROOT_DIR}/../dava.resourceeditor
 
 #additional variables for Windows UAP
 if ( WINDOWS_UAP )
-    #turning on ANGLE lib on Windows Store
+    #turning on ANGLE and openssl_WinRT lib on Windows Store
     set( DAVA_THIRD_PARTY_INCLUDES_PATH "${DAVA_THIRD_PARTY_INCLUDES_PATH}" 
-	                                    "${DAVA_THIRD_PARTY_ROOT_PATH}/angle-ms-master/include" )
-	
+                                        "${DAVA_THIRD_PARTY_ROOT_PATH}/angle-ms-master/include"
+                                        "${DAVA_THIRD_PARTY_ROOT_PATH}/openssl_win10/include"
+                                        "${DAVA_THIRD_PARTY_ROOT_PATH}/fmod_uap/include" )
+
     #libs paths	
-	set ( DAVA_WIN_UAP_LIBRARIES_PATH_COMMON "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win10" ) 
-	if( "${CMAKE_GENERATOR_PLATFORM}" STREQUAL "ARM" )
+    set ( DAVA_WIN_UAP_LIBRARIES_PATH_COMMON "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win10" ) 
+    if( "${CMAKE_GENERATOR_PLATFORM}" STREQUAL "ARM" )
         set ( LIBS_ARCH_SELECTOR "arm" )
     elseif ( "${CMAKE_GENERATOR_PLATFORM}" STREQUAL "x64" )
         set ( LIBS_ARCH_SELECTOR "x64" )
     else ()
         set ( LIBS_ARCH_SELECTOR "x86" )
     endif ()
-	
-	set ( DAVA_WIN_UAP_LIBRARIES_PATH_DEBUG   "${DAVA_WIN_UAP_LIBRARIES_PATH_COMMON}/${LIBS_ARCH_SELECTOR}/Debug" )
-	set ( DAVA_WIN_UAP_LIBRARIES_PATH_RELEASE "${DAVA_WIN_UAP_LIBRARIES_PATH_COMMON}/${LIBS_ARCH_SELECTOR}/Release" )
-	
+
+    set ( DAVA_WIN_UAP_LIBRARIES_PATH_DEBUG   "${DAVA_WIN_UAP_LIBRARIES_PATH_COMMON}/${LIBS_ARCH_SELECTOR}/Debug" )
+    set ( DAVA_WIN_UAP_LIBRARIES_PATH_RELEASE "${DAVA_WIN_UAP_LIBRARIES_PATH_COMMON}/${LIBS_ARCH_SELECTOR}/Release" )
+    
+else ()
+    set( DAVA_THIRD_PARTY_INCLUDES_PATH "${DAVA_THIRD_PARTY_INCLUDES_PATH}"
+                                        "${DAVA_THIRD_PARTY_ROOT_PATH}/openssl/includes" )
+
 endif()
                                    
 get_filename_component( DAVA_SPEEDTREE_ROOT_DIR ${DAVA_SPEEDTREE_ROOT_DIR} ABSOLUTE )
@@ -94,16 +116,4 @@ else()
 
 endif()
 
-file( STRINGS ${DAVA_CONFIG_PATH} ConfigContents )
-foreach( NameAndValue ${ConfigContents} )
-  string( REGEX REPLACE "^[ ]+" "" NameAndValue ${NameAndValue} )
-  string( REGEX MATCH "^[^=]+" Name ${NameAndValue} ) 
-  string( REPLACE "${Name}=" "" Value ${NameAndValue} )
-  string( REGEX REPLACE " " "" Name   "${Name}" )
-  string( REGEX REPLACE " " "" Value  "${Value}" )
-  if( NOT ${Name} )
-      set( ${Name} "${Value}" )
-  endif()
-#  message("---" [${Name}] "  " [${Value}] )
-endforeach()   
-
+load_config ( ${DAVA_CONFIG_PATH} )

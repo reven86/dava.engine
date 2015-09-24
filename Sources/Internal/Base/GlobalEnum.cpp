@@ -52,7 +52,8 @@ ENUM_DECLARE(eGPUFamily)
 	ENUM_ADD_DESCR(GPU_TEGRA, "tegra");
 	ENUM_ADD_DESCR(GPU_MALI, "mali");
 	ENUM_ADD_DESCR(GPU_ADRENO, "adreno");
-	ENUM_ADD_DESCR(GPU_ORIGIN, "origin");
+    ENUM_ADD_DESCR(GPU_DX11, "dx11");
+    ENUM_ADD_DESCR(GPU_ORIGIN, "origin");
 }
 
 ENUM_DECLARE(Logger::eLogLevel)
@@ -149,7 +150,8 @@ ENUM_DECLARE(DeviceInfo::ePlatform)
     ENUM_ADD_DESCR(DeviceInfo::PLATFORM_MACOS, "MacOS");
     ENUM_ADD_DESCR(DeviceInfo::PLATFORM_ANDROID, "Android");
     ENUM_ADD_DESCR(DeviceInfo::PLATFORM_WIN32, "Win32");
-    ENUM_ADD_DESCR(DeviceInfo::PLATFORM_WIN_UAP, "Windows UAP");
+    ENUM_ADD_DESCR(DeviceInfo::PLATFORM_DESKTOP_WIN_UAP, "Windows Desktop UAP");
+    ENUM_ADD_DESCR(DeviceInfo::PLATFORM_PHONE_WIN_UAP, "Windows Phone UAP");
     ENUM_ADD_DESCR(DeviceInfo::PLATFORM_UNKNOWN, "Unknown");
 }
 
@@ -183,9 +185,6 @@ ENUM_DECLARE(Interpolation::FuncType)
     ENUM_ADD_DESCR(Interpolation::BOUNCE_IN, "BOUNCE_IN");
     ENUM_ADD_DESCR(Interpolation::BOUNCE_OUT, "BOUNCE_OUT");
     ENUM_ADD_DESCR(Interpolation::BOUNCE_IN_BOUNCE_OUT, "BOUNCE_IN_BOUNCE_OUT");
-    ENUM_ADD_DESCR(Interpolation::EASY_IN, "EASY_IN");
-    ENUM_ADD_DESCR(Interpolation::EASY_OUT, "EASY_OUT");
-    ENUM_ADD_DESCR(Interpolation::EASY_IN_EASY_OUT, "EASY_IN_EASY_OUT");
 }
 
 ENUM_DECLARE(UIControlBackground::eDrawType)
@@ -323,6 +322,7 @@ ENUM_DECLARE(UITextField::eReturnKeyType)
 ENUM_DECLARE(UIComponent::eType)
 {
     ENUM_ADD_DESCR(UIComponent::LINEAR_LAYOUT_COMPONENT, "LinearLayout");
+    ENUM_ADD_DESCR(UIComponent::IGNORE_LAYOUT_COMPONENT, "IgnoreLayout");
     ENUM_ADD_DESCR(UIComponent::SIZE_POLICY_COMPONENT, "SizePolicy");
     ENUM_ADD_DESCR(UIComponent::ANCHOR_COMPONENT, "Anchor");
 };

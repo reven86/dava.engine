@@ -1,4 +1,4 @@
-/*==================================================================================
+﻿/*==================================================================================
     Copyright (c) 2008, binaryzebra
     All rights reserved.
 
@@ -39,6 +39,7 @@
 #include "Platform/SystemTimer.h"
 #include "Platform/TemplateWin32/CorePlatformWinUAP.h"
 #include "Platform/TemplateWin32/WinUAPXamlApp.h"
+#include "Platform/TemplateWin32/DispatcherWinUAP.h"
 #include "Platform/DeviceInfo.h"
 
 #include "FileSystem/Logger.h"
@@ -67,10 +68,31 @@ using namespace ::Windows::Phone::UI::Input;
 
 namespace DAVA
 {
+namespace
+{
+UIEvent::PointerDeviceID ToDavaDeviceId(PointerDeviceType type)
+{
+    switch (type)
+    {
+    case PointerDeviceType::Mouse:
+        return UIEvent::PointerDeviceID::MOUSE;
+    case PointerDeviceType::Pen:
+        return UIEvent::PointerDeviceID::PEN;
+    case PointerDeviceType::Touch:
+        return UIEvent::PointerDeviceID::TOUCH;
+    default:
+        DVASSERT(false && "can't be!");
+        return UIEvent::PointerDeviceID::NOT_SUPPORTED;
+    }
+}
+} // end anonim namespace
 
 WinUAPXamlApp::WinUAPXamlApp()
     : core(static_cast<CorePlatformWinUAP*>(Core::Instance()))
+    , isPhoneApiDetected(DeviceInfo::ePlatform::PLATFORM_PHONE_WIN_UAP == DeviceInfo::GetPlatform())
 {}
+
+WinUAPXamlApp::~WinUAPXamlApp() {}
 
 DisplayOrientations WinUAPXamlApp::GetDisplayOrientation()
 {
@@ -92,13 +114,12 @@ void WinUAPXamlApp::SetScreenMode(ApplicationViewWindowingMode screenMode)
 
 Windows::Foundation::Size WinUAPXamlApp::GetCurrentScreenSize()
 {
-    return Windows::Foundation::Size(windowWidth, windowHeight);
+    return Windows::Foundation::Size(static_cast<float32>(physicalWidth), static_cast<float32>(physicalHeight));
 }
 
 void WinUAPXamlApp::SetCursorPinning(bool isPinning)
 {
     // should be started on UI thread
-    Logger::FrameworkDebug("[CorePlatformWinUAP] CursorPinning %d", static_cast<int32>(isPinning));
     if (isPhoneApiDetected)
     {
         return;
@@ -113,7 +134,6 @@ void WinUAPXamlApp::SetCursorVisible(bool isVisible)
     {
         return;
     }
-    Logger::FrameworkDebug("[CorePlatformWinUAP] CursorState %d", static_cast<int32>(isVisible));
     if (isVisible != isMouseCursorShown)
     {
         Window::Current->CoreWindow->PointerCursor = (isVisible ? ref new CoreCursor(CoreCursorType::Arrow, 0) : nullptr);
@@ -123,18 +143,9 @@ void WinUAPXamlApp::SetCursorVisible(bool isVisible)
 
 void WinUAPXamlApp::OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^ args)
 {
-    CoreWindow^ coreWindow = Window::Current->CoreWindow;
-    // need initialize device info on UI thread
-    // // it's a temporary decision
-    float32 landscapeWidth = Max(coreWindow->Bounds.Width, coreWindow->Bounds.Height);
-    float32 landscapeHeight = Min(coreWindow->Bounds.Width, coreWindow->Bounds.Height);
-    DeviceInfo::InitializeScreenInfo(static_cast<int32>(landscapeWidth), static_cast<int32>(landscapeHeight));
-    uiThreadDispatcher = coreWindow->Dispatcher;
+    uiThreadDispatcher = Window::Current->CoreWindow->Dispatcher;
 
     CreateBaseXamlUI();
-
-    UpdateScreenSize(coreWindow->Bounds.Width, coreWindow->Bounds.Height);
-    InitRender();
 
     WorkItemHandler^ workItemHandler = ref new WorkItemHandler([this](Windows::Foundation::IAsyncAction^ action) { Run(); });
     renderLoopWorker = ThreadPool::RunAsync(workItemHandler, WorkItemPriority::High, WorkItemOptions::TimeSliced);
@@ -169,32 +180,51 @@ void WinUAPXamlApp::PositionUIElement(Windows::UI::Xaml::UIElement^ uiElement, f
     canvas->SetTop(uiElement, y);
 }
 
+void WinUAPXamlApp::SetTextBoxCustomStyle(Windows::UI::Xaml::Controls::TextBox^ textBox)
+{
+    textBox->Style = customTextBoxStyle;
+}
+
+void WinUAPXamlApp::SetPasswordBoxCustomStyle(Windows::UI::Xaml::Controls::PasswordBox^ passwordBox)
+{
+    passwordBox->Style = customPasswordBoxStyle;
+}
+
+void WinUAPXamlApp::UnfocusUIElement()
+{
+    // XAML controls cannot be unfocused programmatically, this is especially useful for text fields
+    // So use dummy offscreen control that steals focus
+    controlThatTakesFocus->Focus(FocusState::Pointer);
+}
+
 void WinUAPXamlApp::Run()
 {
+    dispatcher = std::make_unique<DispatcherWinUAP>();
     Core::Instance()->CreateSingletons();
+    // View size and orientation option should be configured in FrameowrkDidLaunched
+    FrameworkDidLaunched();
 
-    SetupRenderLoopEventHandlers();
-    
+    core->RunOnUIThreadBlocked([this]() {
+        SetupEventHandlers();
+        PrepareScreenSize();
+        SetTitleName();
+        SetDisplayOrientations();
+        CoreWindow^ coreWindow = Window::Current->CoreWindow;
+        UpdateScreenSize(coreWindow->Bounds.Width, coreWindow->Bounds.Height);
+        InitRender();
+        HideAsyncTaskBar();
+    });
+
     RenderManager::Instance()->BindToCurrentThread();
     ReInitRender();
     InitCoordinatesSystem();
 
-
-    // View size and orientation option should be configured in FrameowrkDidLaunched
-    FrameworkDidLaunched();
-    core->RunOnUIThreadBlocked([this]() {
-        SetupEventHandlers();
-        SetTitleName();
-        InitInput();
-        PrepareScreenSize();
-        SetDisplayOrientations();
-    });
     Core::Instance()->SetIsActive(true);
 
     Core::Instance()->SystemAppStarted();
     while (!quitFlag)
     {
-        mainThreadInputSource->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
+        dispatcher->ProcessTasks();
 
         DAVA::uint64 startTime = DAVA::SystemTimer::Instance()->AbsoluteMS();
         RenderManager::Instance()->Lock();
@@ -264,18 +294,20 @@ void WinUAPXamlApp::OnWindowVisibilityChanged(::Windows::UI::Core::CoreWindow^ s
 
 void WinUAPXamlApp::OnWindowSizeChanged(::Windows::UI::Core::CoreWindow^ sender, ::Windows::UI::Core::WindowSizeChangedEventArgs^ args)
 {
-    // Propagate to main thread
-    float32 w = args->Size.Width;
-    float32 h = args->Size.Height;
-    core->RunOnMainThread([this, w, h]() {
-        UpdateScreenSize(w, h);
-        ReInitRender();
-        ReInitCoordinatesSystem();
-        UIScreenManager::Instance()->ScreenSizeChanged();
-    });
+    UpdateScreenSize(args->Size.Width, args->Size.Height);
+    // render will be created on UI thread
+    if (isRenderCreated)
+    {
+        // Propagate to main thread
+        core->RunOnMainThread([this]() {
+            ReInitRender();
+            ReInitCoordinatesSystem();
+            UIScreenManager::Instance()->ScreenSizeChanged();
+        });
+    }
 }
 
-void WinUAPXamlApp::OnPointerPressed(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ args)
+void WinUAPXamlApp::OnPointerPressed(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args)
 {
     PointerPoint^ pointPtr = args->CurrentPoint;
     PointerPointProperties^ pointProperties = pointPtr->Properties;
@@ -288,18 +320,34 @@ void WinUAPXamlApp::OnPointerPressed(Platform::Object^ sender, Windows::UI::Core
         isRightButtonPressed = pointProperties->IsRightButtonPressed;;
         isMiddleButtonPressed = pointProperties->IsMiddleButtonPressed;
     }
-    DAVATouchEvent(UIEvent::PHASE_BEGAN, args->CurrentPoint->Position, args->CurrentPoint->PointerId);
+
+    float32 x = pointPtr->Position.X;
+    float32 y = pointPtr->Position.Y;
+    int32 id = pointPtr->PointerId;
+    core->RunOnMainThread([this, x, y, id, type]()
+                          {
+        DAVATouchEvent(UIEvent::PHASE_BEGAN, x, y, id, ToDavaDeviceId(type));
+                          });
 }
 
-void WinUAPXamlApp::OnPointerReleased(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ args)
+void WinUAPXamlApp::OnPointerReleased(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args)
 {
     // will be started on main thread
+    float32 x = args->CurrentPoint->Position.X;
+    float32 y = args->CurrentPoint->Position.Y;
+    int32 id = args->CurrentPoint->PointerId;
     PointerDeviceType type = args->CurrentPoint->PointerDevice->PointerDeviceType;
+
+    auto fn = [this, x, y, id, type]()
+    { DAVATouchEvent(UIEvent::PHASE_ENDED, x, y, id, ToDavaDeviceId(type));
+    };
+
     if ((PointerDeviceType::Mouse == type) || (PointerDeviceType::Pen == type))
     {
         if (isLeftButtonPressed || isMiddleButtonPressed || isRightButtonPressed)
         {
-            DAVATouchEvent(UIEvent::PHASE_ENDED, args->CurrentPoint->Position, args->CurrentPoint->PointerId);
+            core->RunOnMainThread(fn);
+
             PointerPointProperties^ pointProperties = args->CurrentPoint->Properties;
             // update state after create davaEvent
             isLeftButtonPressed = pointProperties->IsLeftButtonPressed;
@@ -313,105 +361,127 @@ void WinUAPXamlApp::OnPointerReleased(Platform::Object^ sender, Windows::UI::Cor
     }
     else //  PointerDeviceType::Touch == args->CurrentPoint->PointerDevice->PointerDeviceType
     {
-        DAVATouchEvent(UIEvent::PHASE_ENDED, args->CurrentPoint->Position, args->CurrentPoint->PointerId);
+        core->RunOnMainThread(fn);
     }
 }
 
-void WinUAPXamlApp::OnPointerMoved(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ args)
+void WinUAPXamlApp::OnPointerMoved(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args)
 {
     // will be started on main thread
+    float32 x = args->CurrentPoint->Position.X;
+    float32 y = args->CurrentPoint->Position.Y;
+    int32 id = args->CurrentPoint->PointerId;
+    UIEvent::eInputPhase phase = UIEvent::PHASE_DRAG;
+
     PointerDeviceType type = args->CurrentPoint->PointerDevice->PointerDeviceType;
     if ((PointerDeviceType::Mouse == type) || (PointerDeviceType::Pen == type))
     {
-        if (isLeftButtonPressed || isMiddleButtonPressed || isRightButtonPressed)
+        if (!(isLeftButtonPressed || isMiddleButtonPressed || isRightButtonPressed))
         {
-            DAVATouchEvent(UIEvent::PHASE_DRAG, args->CurrentPoint->Position, args->CurrentPoint->PointerId);
-        }
-        else
-        {
-            DAVATouchEvent(UIEvent::PHASE_MOVE, args->CurrentPoint->Position, args->CurrentPoint->PointerId);
+            phase = UIEvent::PHASE_MOVE;
         }
     }
-    else //  PointerDeviceType::Touch == type
-    {
-        DAVATouchEvent(UIEvent::PHASE_DRAG, args->CurrentPoint->Position, args->CurrentPoint->PointerId);
-    }
+
+    core->RunOnMainThread([this, phase, x, y, id, type]()
+                          {
+        DAVATouchEvent(phase, x, y, id, ToDavaDeviceId(type));
+                          });
 }
 
-void WinUAPXamlApp::OnPointerEntered(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ args)
+void WinUAPXamlApp::OnPointerEntered(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args)
 {
     // will be started on main thread
-    Logger::FrameworkDebug("[CorePlatformWinUAP] OnPointerEntered");
     PointerDeviceType type = args->CurrentPoint->PointerDevice->PointerDeviceType;
     if (PointerDeviceType::Mouse == type && isCursorPinning)
     {
-        core->RunOnUIThread([this]() { SetCursorVisible(false); });
+        SetCursorVisible(false);
     }
 }
 
-void WinUAPXamlApp::OnPointerExited(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ args)
+void WinUAPXamlApp::OnPointerExited(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args)
 {
     // will be started on main thread
-    Logger::FrameworkDebug("[CorePlatformWinUAP] OnPointerExited");
+    float32 x = args->CurrentPoint->Position.X;
+    float32 y = args->CurrentPoint->Position.Y;
+    int32 id = args->CurrentPoint->PointerId;
+
     PointerDeviceType type = args->CurrentPoint->PointerDevice->PointerDeviceType;
     if ((PointerDeviceType::Mouse == type) || PointerDeviceType::Pen == type)
     {
         if (isLeftButtonPressed || isMiddleButtonPressed || isRightButtonPressed)
         {
-            DAVATouchEvent(UIEvent::PHASE_ENDED, args->CurrentPoint->Position, args->CurrentPoint->PointerId);
+            core->RunOnMainThread([this, x, y, id, type]()
+                                  {
+                DAVATouchEvent(UIEvent::PHASE_ENDED, x, y, id, ToDavaDeviceId(type));
+                                  });
             PointerPointProperties^ pointProperties = args->CurrentPoint->Properties;
             // update state after create davaEvent
             isLeftButtonPressed = pointProperties->IsLeftButtonPressed;
             isRightButtonPressed = pointProperties->IsRightButtonPressed;
             isMiddleButtonPressed = pointProperties->IsMiddleButtonPressed;
         }
-        core->RunOnUIThread([this]() { SetCursorVisible(true); });
+        SetCursorVisible(true);
     }
     else //  PointerDeviceType::Touch == type
     {
-        DAVATouchEvent(UIEvent::PHASE_DRAG, args->CurrentPoint->Position, args->CurrentPoint->PointerId);
+        core->RunOnMainThread([this, x, y, id, type]()
+                              {
+                                  DAVATouchEvent(UIEvent::PHASE_ENDED, x, y, id, ToDavaDeviceId(type));
+                              });
     }
 }
 
-void WinUAPXamlApp::OnPointerWheel(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ args)
+void WinUAPXamlApp::OnPointerWheel(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args)
 {
     // will be started on main thread
-    Logger::FrameworkDebug("[CorePlatformWinUAP] OnPointerWheel");
-    Vector<DAVA::UIEvent> touches;
     PointerPoint^ point = args->CurrentPoint;
     PointerPointProperties^ pointProperties = point->Properties;
     int32 wheelDelta = pointProperties->MouseWheelDelta;
-    UIEvent newTouch;
-    newTouch.tid = 0;
-    newTouch.physPoint.x = 0;
-    newTouch.physPoint.y = static_cast<float32>(wheelDelta / WHEEL_DELTA);
-    newTouch.phase = UIEvent::PHASE_WHEEL;
-    touches.push_back(newTouch);
-    UIControlSystem::Instance()->OnInput(UIEvent::PHASE_WHEEL, touches, allTouches);
+    PointerDeviceType type = args->CurrentPoint->PointerDevice->PointerDeviceType;
+
+    core->RunOnMainThread([this, wheelDelta, type]()
+                          {
+                              Vector<DAVA::UIEvent> newEvent;
+                              UIEvent newTouch;
+                              newTouch.tid = 0;
+                              newTouch.physPoint.x = 0;
+                              newTouch.physPoint.y = static_cast<float32>(wheelDelta / WHEEL_DELTA);
+                              newTouch.phase = UIEvent::PHASE_WHEEL;
+                              newTouch.deviceId = ToDavaDeviceId(type);
+                              newEvent.push_back(newTouch);
+                              UIControlSystem::Instance()->OnInput(newEvent, events);
+                          });
 }
 
-void WinUAPXamlApp::OnHardwareBackButtonPressed(_In_ Platform::Object^ sender, Windows::Phone::UI::Input::BackPressedEventArgs ^args)
+void WinUAPXamlApp::OnHardwareBackButtonPressed(Platform::Object^ sender, Windows::Phone::UI::Input::BackPressedEventArgs ^args)
 {
-    // Note: must run on main thread
-    args->Handled = true;
     core->RunOnMainThread([this]() {
-        Logger::FrameworkDebug("[CorePlatformWinUAP] OnHardwareBackButtonPressed");
+        InputSystem::Instance()->GetKeyboard().OnKeyPressed(static_cast<int32>(DVKEY_BACK));
+        UIEvent ev;
+        ev.keyChar = 0;
+        ev.tapCount = 1;
+        ev.phase = UIEvent::PHASE_KEYCHAR;
+        ev.tid = DVKEY_BACK;
+        Vector<UIEvent> newEvent = {ev};
+        UIControlSystem::Instance()->OnInput(newEvent, events);
+        newEvent.pop_back();
+        UIControlSystem::Instance()->OnInput(newEvent, events);
+        InputSystem::Instance()->GetKeyboard().OnKeyUnpressed(static_cast<int32>(DVKEY_BACK));
     });
+    args->Handled = true;
 }
 
 void WinUAPXamlApp::OnKeyDown(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ args)
 {
-    auto window = CoreWindow::GetForCurrentThread();
-    if (window)
+    CoreWindow^ window = CoreWindow::GetForCurrentThread();
+    CoreVirtualKeyStates menuStatus = window->GetKeyState(VirtualKey::Menu);
+    CoreVirtualKeyStates tabStatus = window->GetKeyState(VirtualKey::Tab);
+    bool isPressOrLock = static_cast<bool>((menuStatus & CoreVirtualKeyStates::Down) & (tabStatus & CoreVirtualKeyStates::Down));
+    if (isPressOrLock)
     {
-        CoreVirtualKeyStates menuStatus = window->GetKeyState(VirtualKey::Menu);
-        CoreVirtualKeyStates tabStatus = window->GetKeyState(VirtualKey::Tab);
-        bool isPressOrLock = static_cast<bool>((menuStatus & CoreVirtualKeyStates::Down) & (tabStatus & CoreVirtualKeyStates::Down));
-        if (isPressOrLock)
-        {
-            __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-        }
+        __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
     }
+
     VirtualKey key = args->VirtualKey;
     // Note: should be propagated to main thread
     core->RunOnMainThread([this, key]() {
@@ -421,10 +491,8 @@ void WinUAPXamlApp::OnKeyDown(Windows::UI::Core::CoreWindow^ sender, Windows::UI
         ev.phase = UIEvent::PHASE_KEYCHAR;
         ev.tid = InputSystem::Instance()->GetKeyboard().GetDavaKeyForSystemKey(static_cast<int32>(key));
 
-        Vector<UIEvent> touches = { ev };
-        UIControlSystem::Instance()->OnInput(0, touches, allTouches);
-        touches.pop_back();
-        UIControlSystem::Instance()->OnInput(0, touches, allTouches);
+        Vector<UIEvent> newEvent = {ev};
+        UIControlSystem::Instance()->OnInput(newEvent, events);
         InputSystem::Instance()->GetKeyboard().OnSystemKeyPressed(static_cast<int32>(key));
     });
 
@@ -434,12 +502,21 @@ void WinUAPXamlApp::OnKeyUp(Windows::UI::Core::CoreWindow^ sender, Windows::UI::
 {
     // Note: should be propagated to main thread
     VirtualKey key = args->VirtualKey;
-    core->RunOnMainThread([this, key]() {
+    core->RunOnMainThread([this, key]()
+                          {
+        UIEvent ev;
+        ev.keyChar = 0;
+        ev.tapCount = 1;
+        ev.phase = UIEvent::PHASE_KEYCHAR_RELEASE;
+        ev.tid = InputSystem::Instance()->GetKeyboard().GetDavaKeyForSystemKey(static_cast<int32>(key));
+
+        Vector<UIEvent> newEvent = { ev };
+        UIControlSystem::Instance()->OnInput(newEvent, events);
         InputSystem::Instance()->GetKeyboard().OnSystemKeyUnpressed(static_cast<int32>(key));
-    });
+                          });
 }
 
-void WinUAPXamlApp::OnMouseMoved(_In_ MouseDevice^ mouseDevice, _In_ MouseEventArgs^ args)
+void WinUAPXamlApp::OnMouseMoved(MouseDevice^ mouseDevice, MouseEventArgs^ args)
 {
     // Note: must run on main thread
     if (!isCursorPinning || isMouseCursorShown)
@@ -460,30 +537,33 @@ void WinUAPXamlApp::OnMouseMoved(_In_ MouseDevice^ mouseDevice, _In_ MouseEventA
     {
         button = 3;
     }
-    core->RunOnMainThread([this, position, button]() {
+
+    float32 x = position.X;
+    float32 y = position.Y;
+
+    core->RunOnMainThread([this, x, y, button]() {
         if (isLeftButtonPressed || isMiddleButtonPressed || isRightButtonPressed)
         {
-            DAVATouchEvent(UIEvent::PHASE_DRAG, position, button);
+            DAVATouchEvent(UIEvent::PHASE_DRAG, x, y, button, UIEvent::PointerDeviceID::MOUSE);
         }
         else
         {
-            DAVATouchEvent(UIEvent::PHASE_MOVE, position, button);
+            DAVATouchEvent(UIEvent::PHASE_MOVE, x, y, button, UIEvent::PointerDeviceID::MOUSE);
         }
     });
 }
 
-void WinUAPXamlApp::DAVATouchEvent(UIEvent::eInputPhase phase, Windows::Foundation::Point position, int32 id)
+void WinUAPXamlApp::DAVATouchEvent(UIEvent::eInputPhase phase, float32 x, float32 y, int32 id, UIEvent::PointerDeviceID deviceId)
 {
-    Logger::FrameworkDebug("[CorePlatformWinUAP] DAVATouchEvent phase = %d, ID = %d, position.X = %f, position.Y = %f", phase, id, position.X, position.Y);
-    Vector<DAVA::UIEvent> touches;
+    Vector<DAVA::UIEvent> newEvent;
     bool isFind = false;
-    for (auto it = allTouches.begin(), end = allTouches.end(); it != end; ++it)
+    for (auto it = events.begin(), end = events.end(); it != end; ++it)
     {
         if (it->tid == id)
         {
             isFind = true;
-            it->physPoint.x = position.X;
-            it->physPoint.y = position.Y;
+            it->physPoint.x = x;
+            it->physPoint.y = y;
             it->phase = phase;
             break;
         }
@@ -492,27 +572,28 @@ void WinUAPXamlApp::DAVATouchEvent(UIEvent::eInputPhase phase, Windows::Foundati
     {
         UIEvent newTouch;
         newTouch.tid = id;
-        newTouch.physPoint.x = position.X;
-        newTouch.physPoint.y = position.Y;
+        newTouch.physPoint.x = x;
+        newTouch.physPoint.y = y;
         newTouch.phase = phase;
-        allTouches.push_back(newTouch);
+        newTouch.deviceId = deviceId;
+        events.push_back(newTouch);
     }
-    for (auto it = allTouches.begin(), end = allTouches.end(); it != end; ++it)
+    for (auto it = events.begin(), end = events.end(); it != end; ++it)
     {
-        touches.push_back(*it);
+        newEvent.push_back(*it);
     }
     if (phase == UIEvent::PHASE_ENDED)
     {
-        for (Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); ++it)
+        for (Vector<DAVA::UIEvent>::iterator it = events.begin(); it != events.end(); ++it)
         {
             if (it->tid == id)
             {
-                allTouches.erase(it);
+                events.erase(it);
                 break;
             }
         }
     }
-    UIControlSystem::Instance()->OnInput(phase, touches, allTouches);
+    UIControlSystem::Instance()->OnInput(newEvent, events);
 }
 
 void WinUAPXamlApp::SetupEventHandlers()
@@ -525,26 +606,20 @@ void WinUAPXamlApp::SetupEventHandlers()
     coreWindow->SizeChanged += ref new TypedEventHandler<CoreWindow^, WindowSizeChangedEventArgs^>(this, &WinUAPXamlApp::OnWindowSizeChanged);
     coreWindow->VisibilityChanged += ref new TypedEventHandler<CoreWindow^, VisibilityChangedEventArgs^>(this, &WinUAPXamlApp::OnWindowVisibilityChanged);
 
+    coreWindow->PointerPressed += ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>(this, &WinUAPXamlApp::OnPointerPressed);
+    coreWindow->PointerMoved += ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>(this, &WinUAPXamlApp::OnPointerMoved);
+    coreWindow->PointerReleased += ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>(this, &WinUAPXamlApp::OnPointerReleased);
+    coreWindow->PointerEntered += ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>(this, &WinUAPXamlApp::OnPointerEntered);
+    coreWindow->PointerExited += ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>(this, &WinUAPXamlApp::OnPointerExited);
+    coreWindow->PointerWheelChanged += ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>(this, &WinUAPXamlApp::OnPointerWheel);
+
     coreWindow->KeyDown += ref new TypedEventHandler<CoreWindow^, KeyEventArgs^>(this, &WinUAPXamlApp::OnKeyDown);
     coreWindow->KeyUp += ref new TypedEventHandler<CoreWindow^, KeyEventArgs^>(this, &WinUAPXamlApp::OnKeyUp);
     MouseDevice::GetForCurrentView()->MouseMoved += ref new TypedEventHandler<MouseDevice^, MouseEventArgs^>(this, &WinUAPXamlApp::OnMouseMoved);
-    if (Windows::Foundation::Metadata::ApiInformation::IsTypePresent("Windows.Phone.UI.Input.HardwareButtons"))
+    if (isPhoneApiDetected)
     {
         HardwareButtons::BackPressed += ref new EventHandler<BackPressedEventArgs^>(this, &WinUAPXamlApp::OnHardwareBackButtonPressed);
-        isPhoneApiDetected = true;
-        Logger::FrameworkDebug("[CorePlatformWinUAP] Detected Phone Mode!");
     }
-}
-
-void WinUAPXamlApp::SetupRenderLoopEventHandlers()
-{
-    mainThreadInputSource = swapChainPanel->CreateCoreIndependentInputSource(CoreInputDeviceTypes::Mouse | CoreInputDeviceTypes::Touch | CoreInputDeviceTypes::Pen);
-    mainThreadInputSource->PointerPressed += ref new TypedEventHandler<Platform::Object^, PointerEventArgs^>(this, &WinUAPXamlApp::OnPointerPressed);
-    mainThreadInputSource->PointerMoved += ref new TypedEventHandler<Platform::Object^, PointerEventArgs^>(this, &WinUAPXamlApp::OnPointerMoved);
-    mainThreadInputSource->PointerReleased += ref new TypedEventHandler<Platform::Object^, PointerEventArgs^>(this, &WinUAPXamlApp::OnPointerReleased);
-    mainThreadInputSource->PointerEntered += ref new TypedEventHandler<Platform::Object^, PointerEventArgs^>(this, &WinUAPXamlApp::OnPointerEntered);
-    mainThreadInputSource->PointerExited += ref new TypedEventHandler<Platform::Object^, PointerEventArgs^>(this, &WinUAPXamlApp::OnPointerExited);
-    mainThreadInputSource->PointerWheelChanged += ref new TypedEventHandler<Platform::Object^, PointerEventArgs^>(this, &WinUAPXamlApp::OnPointerWheel);
 }
 
 void WinUAPXamlApp::CreateBaseXamlUI()
@@ -553,12 +628,36 @@ void WinUAPXamlApp::CreateBaseXamlUI()
     canvas = ref new Controls::Canvas();
     swapChainPanel->Children->Append(canvas);
     Window::Current->Content = swapChainPanel;
+
+    // Windows UAP doesn't allow to unfocus UI control programmatically
+    // It only permits to set focus at another control
+    // So create dummy offscreen button that steals focus when there is
+    // a need to unfocus native control, especially useful for text fields
+    controlThatTakesFocus = ref new Button();
+    controlThatTakesFocus->Content = L"I steal your focus";
+    controlThatTakesFocus->Width = 30;
+    controlThatTakesFocus->Height = 20;
+    AddUIElement(controlThatTakesFocus);
+    PositionUIElement(controlThatTakesFocus, -100, -100);
+
+    {   // Load custom textbox and password styles that allow transparent background when control has focus
+        using Windows::UI::Xaml::Markup::XamlReader;
+
+        Platform::Object^ obj = XamlReader::Load(ref new Platform::String(xamlTextBoxStyles));
+        ResourceDictionary^ dict = (ResourceDictionary^)obj;
+
+        Resources->MergedDictionaries->Append(dict);
+        Object^ texboxStyleObj = Resources->Lookup(ref new Platform::String(L"dava_custom_textbox"));
+        Object^ passwordStyleObj = Resources->Lookup(ref new Platform::String(L"dava_custom_passwordbox"));
+
+        customTextBoxStyle = (Windows::UI::Xaml::Style^)texboxStyleObj;
+        customPasswordBoxStyle = (Windows::UI::Xaml::Style^)passwordStyleObj;
+    }
 }
 
 void WinUAPXamlApp::SetTitleName()
 {
     // Note: must run on UI thread
-    Logger::FrameworkDebug("[CorePlatformWinUAP] SetTitleName");
     KeyedArchive* options = Core::Instance()->GetOptions();
     if (nullptr != options)
     {
@@ -570,7 +669,6 @@ void WinUAPXamlApp::SetTitleName()
 void WinUAPXamlApp::SetDisplayOrientations()
 {
     // Note: must run on UI thread
-    Logger::FrameworkDebug("[CorePlatformWinUAP] SetDisplayOrientations");
     Core::eScreenOrientation orientMode = Core::Instance()->GetScreenOrientation();
     switch (orientMode)
     {
@@ -598,56 +696,46 @@ void WinUAPXamlApp::SetDisplayOrientations()
     DisplayInformation::GetForCurrentView()->AutoRotationPreferences = displayOrientation;
 }
 
-void WinUAPXamlApp::InitInput()
-{
-    // Detect touch
-    Logger::FrameworkDebug("[CorePlatformWinUAP] InitInput");
-    TouchCapabilities^ touchCapabilities = ref new TouchCapabilities();
-    isTouchDetected = (1 == touchCapabilities->TouchPresent);   // Touch is always present in MSVS simulator
-
-    // Detect mouse
-    MouseCapabilities^ mouseCapabilities = ref new MouseCapabilities();
-    isMouseDetected = (1 == mouseCapabilities->MousePresent);
-}
-
 void WinUAPXamlApp::InitRender()
 {
-    Logger::FrameworkDebug("[CorePlatformWinUAP] InitRender");
     RenderManager::Create(Core::RENDERER_OPENGL_ES_2_0);
     RenderManager::Instance()->Create(swapChainPanel);
+    isRenderCreated = true;
 }
 
 void WinUAPXamlApp::ReInitRender()
 {
-    Logger::FrameworkDebug("[CorePlatformWinUAP] ReInitRender");
-    RenderManager::Instance()->Init(static_cast<int32>(windowWidth), static_cast<int32>(windowHeight));
+    RenderManager::Instance()->Init(physicalWidth, physicalHeight);
     RenderSystem2D::Instance()->Init();
 }
 
 void WinUAPXamlApp::InitCoordinatesSystem()
 {
-    Logger::FrameworkDebug("[CorePlatformWinUAP] InitCoordinatesSystem");
-    VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(static_cast<int32>(windowWidth), static_cast<int32>(windowHeight));
-    VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(static_cast<int32>(windowWidth), static_cast<int32>(windowHeight));
-    VirtualCoordinatesSystem::Instance()->EnableReloadResourceOnResize(true);
+    VirtualCoordinatesSystem* virtSystem = VirtualCoordinatesSystem::Instance();
+    virtSystem->SetInputScreenAreaSize(viewWidth, viewHeight);
+    virtSystem->SetPhysicalScreenSize(physicalWidth, physicalHeight);
+
+    virtSystem->EnableReloadResourceOnResize(true);
+    virtSystem->SetVirtualScreenSize(currentMode.width, currentMode.height);
 }
 
 void WinUAPXamlApp::ReInitCoordinatesSystem()
 {
-    Logger::FrameworkDebug("[CorePlatformWinUAP] ReInitCoordinatesSystem");
-    int32 intWidth = static_cast<int32>(windowWidth);
-    int32 intHeight = static_cast<int32>(windowHeight);
-    VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(intWidth, intHeight);
-    VirtualCoordinatesSystem::Instance()->UnregisterAllAvailableResourceSizes();
-    VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(static_cast<int32>(windowWidth), static_cast<int32>(windowHeight), "Gfx");
-    VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(intWidth, intHeight);
-    VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(intWidth, intHeight);
-    VirtualCoordinatesSystem::Instance()->ScreenSizeChanged();
+    VirtualCoordinatesSystem* virtSystem = VirtualCoordinatesSystem::Instance();
+    virtSystem->SetInputScreenAreaSize(viewWidth, viewHeight);
+    virtSystem->SetPhysicalScreenSize(physicalWidth, physicalHeight);
+
+    virtSystem->UnregisterAllAvailableResourceSizes();
+    virtSystem->RegisterAvailableResourceSize(currentMode.width, currentMode.height, "Gfx");
+    virtSystem->RegisterAvailableResourceSize(currentMode.width * 2, currentMode.height * 2, "Gfx2");
+    virtSystem->SetVirtualScreenSize(currentMode.width, currentMode.height);
+    virtSystem->ScreenSizeChanged();
 }
 
 void WinUAPXamlApp::PrepareScreenSize()
 {
     // Note: must run on UI thread
+    bool isFull(false);
     KeyedArchive* options = Core::Instance()->GetOptions();
     if (nullptr != options)
     {
@@ -658,40 +746,52 @@ void WinUAPXamlApp::PrepareScreenSize()
         fullscreenMode.width = options->GetInt32("fullscreen.width", fullscreenMode.width);
         fullscreenMode.height = options->GetInt32("fullscreen.height", fullscreenMode.height);
         fullscreenMode.bpp = windowedMode.bpp;
-        isFullscreen = (0 != options->GetInt32("fullscreen", 0));
+        isFull = (0 != options->GetInt32("fullscreen", 0));
     }
-    Logger::FrameworkDebug("[PlatformWin32] best display fullscreen mode matched: %d x %d x %d refreshRate: %d",
-                           fullscreenMode.width, fullscreenMode.height, fullscreenMode.bpp, fullscreenMode.refreshRate);
-    SetFullScreen(isFullscreen);
+    SetFullScreen(isFull);
     if (isFullscreen)
     {
+        fullscreenMode.width = viewWidth;
+        fullscreenMode.height = viewHeight;
         currentMode = fullscreenMode;
     }
     else
     {
+        // in units of effective (view) pixels
+        SetPreferredSize(static_cast<float32>(windowedMode.width), static_cast<float32>(windowedMode.height));
         currentMode = windowedMode;
-        SetPreferredSize(windowedMode.width, windowedMode.height);
     }
 }
 
 void WinUAPXamlApp::UpdateScreenSize(float32 width, float32 height)
 {
-    windowWidth = width;
-    windowHeight = height;
-    Logger::FrameworkDebug("[CorePlatformWinUAP] UpdateScreenSize windowWidth = %f, windowHeight = %f.", windowWidth, windowHeight);
+    // Note: must run on UI thread
+    Windows::Graphics::Display::DisplayInformation^ currentDisplayInformation = Windows::Graphics::Display::DisplayInformation::GetForCurrentView();
+    if (nullptr != currentDisplayInformation)
+    {
+        rawPixelsPerViewPixel = currentDisplayInformation->RawPixelsPerViewPixel;
+    }
+    viewWidth = static_cast<int32>(width);
+    viewHeight = static_cast<int32>(height);
+    physicalWidth = static_cast<int32>(viewWidth * rawPixelsPerViewPixel);
+    physicalHeight = static_cast<int32>(viewHeight * rawPixelsPerViewPixel);
+    if (isFullscreen)
+    {
+        currentMode.width = viewWidth;
+        currentMode.height = viewHeight;
+    }
 }
 
 void WinUAPXamlApp::SetFullScreen(bool isFullscreen_)
 {
     // Note: must run on UI thread
-    Logger::FrameworkDebug("[CorePlatformWinUAP] SetFullScreen %d", (int32)isFullscreen_);
-    if (isPhoneApiDetected)
+    ApplicationView^ view = ApplicationView::GetForCurrentView();
+    if (view->IsFullScreenMode == isFullscreen_)
     {
+        isFullscreen = isFullscreen_;
         return;
     }
-    ApplicationView^ view = ApplicationView::GetForCurrentView();
-    bool isFull = view->IsFullScreenMode;
-    if (isFull == isFullscreen_)
+    if (isPhoneApiDetected)
     {
         return;
     }
@@ -706,17 +806,119 @@ void WinUAPXamlApp::SetFullScreen(bool isFullscreen_)
     }
 }
 
-void WinUAPXamlApp::SetPreferredSize(int32 width, int32 height)
+void WinUAPXamlApp::SetPreferredSize(float32 width, float32 height)
 {
     // Note: must run on UI thread
-    Logger::FrameworkDebug("[CorePlatformWinUAP] SetPreferredSize width = %d, height = %d", width, height);
     if (isPhoneApiDetected)
     {
         return;
     }
     // MSDN::This property only has an effect when the app is launched on a desktop device that is not in tablet mode.
-    ApplicationView::GetForCurrentView()->PreferredLaunchViewSize = Windows::Foundation::Size(static_cast<float32>(width), static_cast<float32>(height));
+    ApplicationView::GetForCurrentView()->PreferredLaunchViewSize = Windows::Foundation::Size(width, height);
+    ApplicationView::PreferredLaunchWindowingMode = ApplicationViewWindowingMode::PreferredLaunchViewSize;
 }
+
+void WinUAPXamlApp::HideAsyncTaskBar()
+{
+    if (isPhoneApiDetected)
+    {
+        StatusBar::GetForCurrentView()->HideAsync();
+    }
+}
+
+const wchar_t WinUAPXamlApp::xamlTextBoxStyles[] = LR"(
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:App2">
+    <Style x:Key="dava_custom_textbox" TargetType="TextBox">
+        <Setter Property="MinWidth" Value="0" />
+        <Setter Property="MinHeight" Value="0" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="SelectionHighlightColor" Value="{ThemeResource TextSelectionHighlightColorThemeBrush}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
+        <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Hidden" />
+        <Setter Property="ScrollViewer.IsDeferredScrollingEnabled" Value="False" />
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TextBox">
+                    <Grid>
+                        <ContentPresenter x:Name="HeaderContentPresenter"
+                                      Grid.Row="0"
+                                      Margin="0,4,0,4"
+                                      Grid.ColumnSpan="2"
+                                      Content="{TemplateBinding Header}"
+                                      ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                      FontWeight="Semilight" />
+                        <ScrollViewer x:Name="ContentElement"
+                                    Grid.Row="1"
+                                    HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}"
+                                    HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                                    VerticalScrollMode="{TemplateBinding ScrollViewer.VerticalScrollMode}"
+                                    VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
+                                    IsHorizontalRailEnabled="{TemplateBinding ScrollViewer.IsHorizontalRailEnabled}"
+                                    IsVerticalRailEnabled="{TemplateBinding ScrollViewer.IsVerticalRailEnabled}"
+                                    IsDeferredScrollingEnabled="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}"
+                                    Margin="{TemplateBinding BorderThickness}"
+                                    Padding="{TemplateBinding Padding}"
+                                    IsTabStop="False"
+                                    AutomationProperties.AccessibilityView="Raw"
+                                    ZoomMode="Disabled" />
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style x:Key="dava_custom_passwordbox" TargetType="PasswordBox">
+        <Setter Property="MinWidth" Value="0" />
+        <Setter Property="MinHeight" Value="0" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="SelectionHighlightColor" Value="{ThemeResource TextSelectionHighlightColorThemeBrush}" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
+        <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Hidden" />
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="PasswordBox">
+                    <Grid>
+                        <ContentPresenter x:Name="HeaderContentPresenter"
+                                      Grid.Row="0"
+                                      Margin="0,4,0,4"
+                                      Grid.ColumnSpan="2"
+                                      Content="{TemplateBinding Header}"
+                                      ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                      FontWeight="Semilight" />
+                        <ScrollViewer x:Name="ContentElement"
+                            Grid.Row="1"
+                                  HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}"
+                                  HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                                  VerticalScrollMode="{TemplateBinding ScrollViewer.VerticalScrollMode}"
+                                  VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
+                                  IsHorizontalRailEnabled="{TemplateBinding ScrollViewer.IsHorizontalRailEnabled}"
+                                  IsVerticalRailEnabled="{TemplateBinding ScrollViewer.IsVerticalRailEnabled}"
+                                  Margin="{TemplateBinding BorderThickness}"
+                                  Padding="{TemplateBinding Padding}"
+                                  IsTabStop="False"
+                                  ZoomMode="Disabled"
+                                  AutomationProperties.AccessibilityView="Raw"/>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>
+)";
 
 }   // namespace DAVA
 
