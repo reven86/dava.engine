@@ -105,7 +105,6 @@ void *PthreadMain(void *param)
     JNI::AttachCurrentThreadToJVM();
 #endif
 
-#if defined(__DAVAENGINE_DEBUG__) 
     Thread *t = static_cast<Thread *>(param);    
 #   if defined (__DAVAENGINE_ANDROID__)
     pthread_setname_np(t->handle, t->name.c_str());
@@ -113,7 +112,6 @@ void *PthreadMain(void *param)
 #   elif defined(__DAVAENGINE_APPLE__)
     pthread_setname_np(t->name.c_str());
 #   endif
-#endif
 
     Thread::ThreadFunction(param);
 

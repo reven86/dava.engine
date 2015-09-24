@@ -584,7 +584,7 @@ metal_CommandBuffer_DrawIndexedPrimitive( Handle cmdBuf, PrimitiveType type, uin
         break;
     default:
         break;
-    }    
+    }
 }
 
 
