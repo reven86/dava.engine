@@ -195,4 +195,3 @@ void ClientNetProxy::RemoveListener(ClientNetProxyListener* listener)
 
 } // end of namespace AssetCache
 } // end of namespace DAVA
-

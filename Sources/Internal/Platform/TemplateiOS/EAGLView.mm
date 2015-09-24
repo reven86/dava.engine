@@ -365,11 +365,11 @@ void MoveTouchsToVector(void *inTouches, DAVA::Vector<DAVA::UIEvent> *outTouches
     if(DAVA::InputSystem::Instance()->GetMultitouchEnabled())
     {
         MoveTouchsToVector(total, &totalTouches);
-        DAVA::UIControlSystem::Instance()->OnInput(touchType, activeTouches, totalTouches);
+        DAVA::UIControlSystem::Instance()->OnInput(activeTouches, totalTouches);
     }
     else
     {
-        DAVA::UIControlSystem::Instance()->OnInput(touchType, activeTouches, activeTouches);
+        DAVA::UIControlSystem::Instance()->OnInput(activeTouches, activeTouches);
     }
 	activeTouches.clear();
 	totalTouches.clear();

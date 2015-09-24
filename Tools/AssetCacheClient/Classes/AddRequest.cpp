@@ -98,4 +98,3 @@ void AddRequest::OnAddedToCache(const AssetCache::CacheItemKey& key, bool added)
     requestResult.recieved = true;
     requestResult.succeed = added;
 }
-

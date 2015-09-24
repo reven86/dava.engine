@@ -233,4 +233,3 @@ void ServerCore::OnSettingsUpdated(const ApplicationSettings* _settings)
         return;
     }
 }
-

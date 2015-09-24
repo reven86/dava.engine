@@ -65,4 +65,3 @@ private:
 }
 
 #endif //__DAVAENGINE_ADDRESS_RESOLVER_H__
-

@@ -76,4 +76,3 @@ inline const Net::Endpoint& Connection::GetEndpoint() const
 } // end of namespace DAVA
 
 #endif // __DAVAENGINE_ASSETCACHE_CONNECTION_H__
-

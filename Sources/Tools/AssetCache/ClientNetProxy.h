@@ -108,4 +108,3 @@ inline Connection* ClientNetProxy::GetConnection() const
 }; // end of namespace DAVA
 
 #endif // __DAVAENGINE_ASSET_CACHE_CLIENT_H__
-

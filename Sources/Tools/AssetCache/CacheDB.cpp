@@ -432,4 +432,3 @@ const uint64 CacheDB::GetAvailableSize() const
 
 }; // end of namespace AssetCache
 }; // end of namespace DAVA
-

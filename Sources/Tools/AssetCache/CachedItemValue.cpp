@@ -334,4 +334,3 @@ CachedItemValue::ValueData CachedItemValue::LoadFile(const FilePath& pathname)
 
 } // end of namespace AssetCache
 } // end of namespace DAVA
-
