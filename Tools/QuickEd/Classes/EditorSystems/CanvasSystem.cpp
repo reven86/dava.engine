@@ -55,7 +55,6 @@ public:
 
 private:
     void CalculateTotalRect(Rect& totalRect, Vector2& rootControlPosition);
-    void UpdateSprite();
     void Draw(const UIGeometricData& geometricData) override;
     void UpdateCounterpoise();
     void FitGridToNestedControl();
@@ -87,10 +86,9 @@ void GridControl::Init(UIControl* control)
     counterpoiseControl->AddControl(control);
 
     background->SetDrawType(UIControlBackground::DRAW_TILED);
-    background->SetShader(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR);
+    background->SetSprite("~res:/Gfx/GreyGrid", 0);
 
     UpdateCounterpoise();
-    UpdateSprite();
     AdjustToNestedControl();
 }
 
@@ -186,7 +184,6 @@ void GridControl::AdjustToNestedControl()
     Vector2 size = rect.GetSize();
     positionHolderControl->SetPosition(pos);
     SetSize(size);
-    UpdateSprite();
 }
 
 void GridControl::ControlWasRemoved(ControlNode* node, ControlsContainerNode* from)
@@ -219,19 +216,6 @@ void GridControl::ControlWasAdded(ControlNode* /*node*/, ControlsContainerNode* 
             break;
         }
         parent = parent->GetParent();
-    }
-}
-
-void GridControl::UpdateSprite()
-{
-    /*bool transformed = !counterpoiseControl->GetPosition().IsZero() || !counterpoiseControl->GetPivot().IsZero() || counterpoiseControl->GetAngle() != 0;
-    if (transformed)
-    {
-        background->SetSprite("~res:/Gfx/BlackGrid", 0);
-    }
-    else*/ //use it to indicate that root control is in invalid state
-    {
-        background->SetSprite("~res:/Gfx/GreyGrid", 0);
     }
 }
 

@@ -41,9 +41,7 @@ struct HUDAreaInfo
     enum eArea
     {
         AREAS_BEGIN,
-        PIVOT_POINT_AREA = AREAS_BEGIN,
-        ROTATE_AREA,
-
+        ROTATE_AREA = AREAS_BEGIN,
         TOP_LEFT_AREA,
         TOP_CENTER_AREA,
         TOP_RIGHT_AREA,
@@ -52,7 +50,7 @@ struct HUDAreaInfo
         BOTTOM_LEFT_AREA,
         BOTTOM_CENTER_AREA,
         BOTTOM_RIGHT_AREA,
-
+        PIVOT_POINT_AREA,
         FRAME_AREA,
         NO_AREA,
         CORNERS_COUNT = FRAME_AREA - TOP_LEFT_AREA,

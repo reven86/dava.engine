@@ -56,6 +56,18 @@ const Array<Array<int, Vector2::AXIS_COUNT>, HUDAreaInfo::CORNERS_COUNT> corners
 {{0, 1}}, //BOTTOM_CENTER_AREA
 {{1, 1}} //BOTTOM_RIGHT_AREA
 }};
+
+Vector2 RotateVector(Vector2 in, const UIGeometricData& gd)
+{
+    return Vector2(in.x * gd.cosA + in.y * gd.sinA,
+                   in.x * -gd.sinA + in.y * gd.cosA);
+}
+
+Vector2 RotateVectorInv(Vector2 in, const float32& angle)
+{
+    return Vector2(in.x * cosf(angle) + in.y * -sinf(angle),
+                   in.x * sinf(angle) + in.y * cosf(angle));
+}
 }
 
 TransformSystem::TransformSystem(EditorSystemsManager* parent)
@@ -196,11 +208,11 @@ bool TransformSystem::ProcessDrag(const Vector2& pos)
     {
         return false;
     }
-
+    Vector2 delta(pos - prevPos);
     switch (activeArea)
     {
     case HUDAreaInfo::FRAME_AREA:
-        MoveControl(pos);
+        MoveControl(delta);
         return true;
     case HUDAreaInfo::TOP_LEFT_AREA:
     case HUDAreaInfo::TOP_CENTER_AREA:
@@ -214,12 +226,12 @@ bool TransformSystem::ProcessDrag(const Vector2& pos)
         const auto& keyBoard = InputSystem::Instance()->GetKeyboard();
         bool withPivot = keyBoard.IsKeyPressed(DVKEY_ALT);
         bool rateably = keyBoard.IsKeyPressed(DVKEY_SHIFT);
-        ResizeControl(pos, withPivot, rateably);
+        ResizeControl(delta, withPivot, rateably);
         return true;
     }
     case HUDAreaInfo::PIVOT_POINT_AREA:
     {
-        MovePivot(pos);
+        MovePivot(delta);
         return true;
     }
     case HUDAreaInfo::ROTATE_AREA:
@@ -243,63 +255,64 @@ void TransformSystem::MoveAllSelectedControls(const Vector2& delta)
     }
 }
 
-void TransformSystem::MoveControl(const Vector2& pos)
+void TransformSystem::MoveControl(const Vector2& delta)
 {
-    Vector2 delta = pos - prevPos;
     if (parentGeometricData.scale.x != 0.0f && parentGeometricData.scale.y != 0.0f)
     {
         Vector2 scaledDelta = delta / parentGeometricData.scale;
-        Vector2 angeledDelta(scaledDelta.x * parentGeometricData.cosA + scaledDelta.y * parentGeometricData.sinA,
-                             scaledDelta.x * -parentGeometricData.sinA + scaledDelta.y * parentGeometricData.cosA);
+        Vector2 angeledDelta(RotateVector(scaledDelta, parentGeometricData));
         MoveAllSelectedControls(angeledDelta);
     }
 }
 
-void TransformSystem::ResizeControl(const Vector2& pos, bool withPivot, bool rateably)
+bool TransformSystem::CheckIncorrectResize(const int invertX, const int invertY, Vector2 deltaSize)
+{
+    if (invertX != 0 && invertY != 0) //actual only for corners
+    {
+        if (fabs(deltaSize.x) > 0.0f && fabs(deltaSize.y) > 0.0f) //only if up and down requested
+        {
+            bool canNotResize = ((deltaSize.x * invertX) > 0.0f) ^ ((deltaSize.y * invertY) > 0.0f);
+            if (canNotResize) // and they have different sign for corner
+            {
+                float prop = fabs(deltaSize.x) / fabs(deltaSize.y);
+                if (prop > 0.48f && prop < 0.52f) // like "resize 10 to up and 10 to down rateably"
+                {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+void TransformSystem::ResizeControl(const Vector2& delta, bool withPivot, bool rateably)
 {
     DVASSERT(activeArea != HUDAreaInfo::NO_AREA);
-    Vector2 delta(pos - prevPos);
-    const Rect ur(controlGeometricData.GetUnrotatedRect());
-    const Vector2 controlSize(ur.GetSize());
-    if (parentGeometricData.scale.x == 0.0f || parentGeometricData.scale.y == 0.0f || controlSize.dx == 0.0f || controlSize.dy == 0.0f)
+    if (parentGeometricData.scale.x == 0.0f || parentGeometricData.scale.y == 0.0f)
     {
         return;
     }
 
     const auto invertX = cornersDirection.at(activeArea - HUDAreaInfo::TOP_LEFT_AREA)[Vector2::AXIS_X];
     const auto invertY = cornersDirection.at(activeArea - HUDAreaInfo::TOP_LEFT_AREA)[Vector2::AXIS_Y];
+    Vector2 pivot(controlGeometricData.size.x != 0.0f ? controlGeometricData.pivotPoint.x / controlGeometricData.size.x : 0.0f,
+                  controlGeometricData.size.y != 0.0f ? controlGeometricData.pivotPoint.y / controlGeometricData.size.y : 0.0f);
 
-    Vector2 scaledDelta = delta / parentGeometricData.scale;
-    Vector2 angeledDelta(scaledDelta.x * parentGeometricData.cosA + scaledDelta.y * parentGeometricData.sinA,
-                         scaledDelta.x * -parentGeometricData.sinA + scaledDelta.y * parentGeometricData.cosA);
+    Vector2 deltaSize(delta / controlGeometricData.scale);
+    deltaSize = RotateVector(deltaSize, controlGeometricData);
 
-    Vector2 deltaPosition(angeledDelta);
-    Vector2 deltaSize(angeledDelta);
-    //make resize absolutely
-    deltaSize.x *= invertX;
-    deltaSize.y *= invertY;
-    //disable move if not accepted
-    if (invertX == 0)
-    {
-        deltaPosition.x = 0.0f;
-    }
-    if (invertY == 0)
-    {
-        deltaPosition.y = 0.0f;
-    }
+    Vector2 deltaPosition = deltaSize;
+    deltaPosition.x *= invertX == -1 ? 1.0f - pivot.x : pivot.x;
+    deltaPosition.y *= invertY == -1 ? 1.0f - pivot.y : pivot.y;
 
-    auto pivotProp = activeControlNode->GetRootProperty()->FindPropertyByName("Pivot");
-    DVASSERT(nullptr != pivotProp);
-    Vector2 pivot = pivotProp->GetValue().AsVector2();
-
-    //calculate new positionp
-    deltaPosition.x *= invertX == -1 ? 1 - pivot.x : pivot.x;
-    deltaPosition.y *= invertY == -1 ? 1 - pivot.y : pivot.y;
+    deltaSize.x *= invertX == -1 ? -1 : 1;
+    deltaSize.y *= invertY == -1 ? -1 : 1;
 
     //modify if pivot modificator selected
     if (withPivot)
     {
         deltaPosition.SetZero();
+
         auto pivotDeltaX = invertX == -1 ? pivot.x : 1.0f - pivot.x;
         if (pivotDeltaX != 0.0f)
         {
@@ -315,20 +328,9 @@ void TransformSystem::ResizeControl(const Vector2& pos, bool withPivot, bool rat
     if (rateably)
     {
         //check situation when we try to resize up and down simultaneously
-        if (invertX != 0 && invertY != 0) //actual only for corners
+        if (CheckIncorrectResize(invertX, invertY, deltaSize))
         {
-            if (fabs(angeledDelta.x) > 0.0f && fabs(angeledDelta.y) > 0.0f) //only if up and down requested
-            {
-                bool canNotResize = ((angeledDelta.x * invertX) > 0.0f) ^ ((angeledDelta.y * invertY) > 0.0f);
-                if (canNotResize) // and they have different sign for corner
-                {
-                    float prop = fabs(angeledDelta.x) / fabs(angeledDelta.y);
-                    if (prop > 0.48f && prop < 0.52f) // like "resize 10 to up and 10 to down rateably"
-                    {
-                        return;
-                    }
-                }
-            }
+            return;
         }
         //calculate proportion of control
         const Vector2& size = activeControlNode->GetControl()->GetSize();
@@ -336,7 +338,7 @@ void TransformSystem::ResizeControl(const Vector2& pos, bool withPivot, bool rat
         if (proportion != 0.0f)
         {
             //get current drag direction
-            if (fabs(angeledDelta.y) > fabs(angeledDelta.x))
+            if (fabs(deltaSize.y) > fabs(deltaSize.x))
             {
                 deltaSize.x = deltaSize.y * proportion;
                 if (!withPivot)
@@ -372,14 +374,12 @@ void TransformSystem::ResizeControl(const Vector2& pos, bool withPivot, bool rat
     }
 
     AdjustResize(deltaSize, deltaPosition);
+    UIControl* control = activeControlNode->GetControl();
 
-    //rotate delta position backwards, because SetPosition require absolute coordinates
-    Vector2 rotatedPosition;
-    rotatedPosition.x = deltaPosition.x * parentGeometricData.cosA + deltaPosition.y * -parentGeometricData.sinA;
-    rotatedPosition.y = deltaPosition.x * parentGeometricData.sinA + deltaPosition.y * parentGeometricData.cosA;
-
+    deltaPosition *= control->GetScale();
+    deltaPosition = RotateVectorInv(deltaPosition, control->GetAngle());
     Vector<PropertyDelta> propertiesDelta;
-    propertiesDelta.emplace_back("Position", VariantType(rotatedPosition));
+    propertiesDelta.emplace_back("Position", VariantType(deltaPosition));
     propertiesDelta.emplace_back("Size", VariantType(deltaSize));
     AdjustProperty(activeControlNode, propertiesDelta);
 }
@@ -440,7 +440,7 @@ void TransformSystem::AdjustResize(DAVA::Vector2& deltaSize, DAVA::Vector2& delt
 
 }
 
-void TransformSystem::MovePivot(const Vector2& pos)
+void TransformSystem::MovePivot(const Vector2& delta)
 {
     const Rect ur(controlGeometricData.GetUnrotatedRect());
     const Vector2 controlSize(ur.GetSize());
@@ -450,17 +450,12 @@ void TransformSystem::MovePivot(const Vector2& pos)
     }
     Vector<PropertyDelta> propertiesDelta;
 
-    const Vector2 delta(pos - prevPos);
     Vector2 scaledDelta(delta / parentGeometricData.scale);
-    Vector2 angeledDeltaPosition(scaledDelta.x * parentGeometricData.cosA + scaledDelta.y * parentGeometricData.sinA,
-                                 scaledDelta.x * -parentGeometricData.sinA + scaledDelta.y * parentGeometricData.cosA);
-
-    const Vector2 angeledDeltaPivot(scaledDelta.x * controlGeometricData.cosA + scaledDelta.y * controlGeometricData.sinA,
-                                    scaledDelta.x * -controlGeometricData.sinA + scaledDelta.y * controlGeometricData.cosA);
-    Vector2 scaledSize(controlSize / parentGeometricData.scale);
-    const Vector2 pivot(angeledDeltaPivot / scaledSize);
-
+    Vector2 angeledDeltaPosition(RotateVector(scaledDelta, parentGeometricData));
     propertiesDelta.emplace_back("Position", VariantType(angeledDeltaPosition));
+
+    const Vector2 angeledDeltaPivot(RotateVector(delta, controlGeometricData));
+    const Vector2 pivot(angeledDeltaPivot / controlSize);
     propertiesDelta.emplace_back("Pivot", VariantType(pivot));
     AdjustProperty(activeControlNode, propertiesDelta);
 }
