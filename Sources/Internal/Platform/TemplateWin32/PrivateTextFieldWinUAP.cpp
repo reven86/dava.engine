@@ -312,9 +312,10 @@ void PrivateTextFieldWinUAP::UpdateRect(const Rect& rect)
     {
         auto self{shared_from_this()};
         TextFieldProperties props(properties);
-        core->RunOnUIThread([this, self, props] {
+        core->RunOnUIThread([this, self, props]
+                            {
             ProcessProperties(props);
-        });
+                            });
 
         properties.createNew = false;
         properties.focusChanged = false;
@@ -331,7 +332,7 @@ void PrivateTextFieldWinUAP::SetText(const WideString& text)
 
     curText = text;
     if (text.empty())
-    {   // Immediatly remove sprite image if new text is empty to get rid of flickering
+    { // Immediatly remove sprite image if new text is empty to get rid of flickering
         uiTextField->SetSprite(nullptr, 0);
     }
     programmaticTextChange = true;
@@ -497,18 +498,22 @@ void PrivateTextFieldWinUAP::InstallCommonEventHandlers()
     using Platform::Object;
 
     std::weak_ptr<PrivateTextFieldWinUAP> self_weak(shared_from_this());
-    auto keyDown = ref new KeyEventHandler([this, self_weak](Object^, KeyRoutedEventArgs^ args) {
+    auto keyDown = ref new KeyEventHandler([this, self_weak](Object ^, KeyRoutedEventArgs ^ args)
+                                           {
         if (auto self = self_weak.lock()) OnKeyDown(args);
-    });
-    auto keyUp = ref new KeyEventHandler([this, self_weak](Object^, KeyRoutedEventArgs^ args) {
+                                           });
+    auto keyUp = ref new KeyEventHandler([this, self_weak](Object ^, KeyRoutedEventArgs ^ args)
+                                         {
         if (auto self = self_weak.lock()) OnKeyUp(args);
-    });
-    auto gotFocus = ref new RoutedEventHandler([this, self_weak](Object^, RoutedEventArgs^) {
+                                         });
+    auto gotFocus = ref new RoutedEventHandler([this, self_weak](Object ^, RoutedEventArgs ^ )
+                                               {
         if (auto self = self_weak.lock()) OnGotFocus();
-    });
-    auto lostFocus = ref new RoutedEventHandler([this, self_weak](Object^, RoutedEventArgs^) {
+                                               });
+    auto lostFocus = ref new RoutedEventHandler([this, self_weak](Object ^, RoutedEventArgs ^ )
+                                                {
         if (auto self = self_weak.lock()) OnLostFocus();
-    });
+                                                });
     nativeControl->KeyDown += keyDown;
     nativeControl->KeyUp += keyUp;
     nativeControl->GotFocus += gotFocus;
@@ -520,12 +525,14 @@ void PrivateTextFieldWinUAP::InstallTextEventHandlers()
     using Platform::Object;
 
     std::weak_ptr<PrivateTextFieldWinUAP> self_weak(shared_from_this());
-    auto selectionChanged = ref new RoutedEventHandler([this, self_weak](Object^, RoutedEventArgs^) {
+    auto selectionChanged = ref new RoutedEventHandler([this, self_weak](Object ^, RoutedEventArgs ^ )
+                                                       {
         if (auto self = self_weak.lock()) OnSelectionChanged();
-    });
-    auto textChanged = ref new TextChangedEventHandler([this, self_weak](Object^, TextChangedEventArgs^) {
+                                                       });
+    auto textChanged = ref new TextChangedEventHandler([this, self_weak](Object ^, TextChangedEventArgs ^ )
+                                                       {
         if (auto self = self_weak.lock()) OnTextChanged();
-    });
+                                                       });
     nativeText->SelectionChanged += selectionChanged;
     nativeText->TextChanged += textChanged;
 }
@@ -535,26 +542,29 @@ void PrivateTextFieldWinUAP::InstallPasswordEventHandlers()
     using namespace Platform;
 
     std::weak_ptr<PrivateTextFieldWinUAP> self_weak(shared_from_this());
-    auto passwordChanged = ref new RoutedEventHandler([this, self_weak](Object^, RoutedEventArgs^) {
+    auto passwordChanged = ref new RoutedEventHandler([this, self_weak](Object ^, RoutedEventArgs ^ )
+                                                      {
         if (auto self = self_weak.lock()) OnTextChanged();
-    });
+                                                      });
     nativePassword->PasswordChanged += passwordChanged;
 }
 
 void PrivateTextFieldWinUAP::InstallKeyboardEventHandlers()
 {
     std::weak_ptr<PrivateTextFieldWinUAP> self_weak(shared_from_this());
-    auto keyboardHiding = ref new TypedEventHandler<InputPane^, InputPaneVisibilityEventArgs^>([this, self_weak](InputPane^, InputPaneVisibilityEventArgs^ args) {
+    auto keyboardHiding = ref new TypedEventHandler<InputPane ^, InputPaneVisibilityEventArgs ^>([this, self_weak](InputPane ^, InputPaneVisibilityEventArgs ^ args)
+                                                                                                 {
         if (auto self = self_weak.lock()) OnKeyboardHiding(args);
-    });
-    auto keyboardShowing = ref new TypedEventHandler<InputPane^, InputPaneVisibilityEventArgs^>([this, self_weak](InputPane^, InputPaneVisibilityEventArgs^ args) {
+                                                                                                 });
+    auto keyboardShowing = ref new TypedEventHandler<InputPane ^, InputPaneVisibilityEventArgs ^>([this, self_weak](InputPane ^, InputPaneVisibilityEventArgs ^ args)
+                                                                                                  {
         if (auto self = self_weak.lock()) OnKeyboardShowing(args);
-    });
+                                                                                                  });
     InputPane::GetForCurrentView()->Showing += keyboardShowing;
     InputPane::GetForCurrentView()->Hiding += keyboardHiding;
 }
 
-void PrivateTextFieldWinUAP::OnKeyDown(KeyRoutedEventArgs^ args)
+void PrivateTextFieldWinUAP::OnKeyDown(KeyRoutedEventArgs ^ args)
 {
     savedCaretPosition = GetNativeCaretPosition();
 
@@ -573,16 +583,16 @@ void PrivateTextFieldWinUAP::OnKeyDown(KeyRoutedEventArgs^ args)
             });
         }
         break;
-    case VirtualKey::Tab:
-        // Disable focus lost on tab using such an elegant decision
-        args->Handled = true;
-        break;
+        case VirtualKey::Tab:
+            // Disable focus lost on tab using such an elegant decision
+            args->Handled = true;
+            break;
     default:
         break;
     }
 }
 
-void PrivateTextFieldWinUAP::OnKeyUp(KeyRoutedEventArgs^ args)
+void PrivateTextFieldWinUAP::OnKeyUp(KeyRoutedEventArgs ^ args)
 {
     savedCaretPosition = GetNativeCaretPosition();
 
@@ -590,11 +600,12 @@ void PrivateTextFieldWinUAP::OnKeyUp(KeyRoutedEventArgs^ args)
     // So use KeyUp event for ENTER key
     if (VirtualKey::Enter == args->Key && !IsMultiline())
     {
-        auto self{ shared_from_this() };
-        core->RunOnMainThread([this, self]() {
+        auto self{shared_from_this()};
+        core->RunOnMainThread([this, self]()
+                              {
             if (textFieldDelegate != nullptr)
                 textFieldDelegate->TextFieldShouldReturn(uiTextField);
-        });
+                              });
     }
 }
 
@@ -612,7 +623,8 @@ void PrivateTextFieldWinUAP::OnGotFocus()
         SetNativePositionAndSize(rectInWindowSpace, false);
     }
     auto self{shared_from_this()};
-    core->RunOnMainThread([this, self, multiline, notifyControlSystemOnFocusChange]() {
+    core->RunOnMainThread([this, self, multiline, notifyControlSystemOnFocusChange]()
+                          {
         if (uiTextField != nullptr)
         {
             if (!multiline)
@@ -626,7 +638,7 @@ void PrivateTextFieldWinUAP::OnGotFocus()
             if (notifyControlSystemOnFocusChange)
                 UIControlSystem::Instance()->SetFocusedControl(uiTextField, false);
         }
-    });
+                          });
 }
 
 void PrivateTextFieldWinUAP::OnLostFocus()
@@ -655,14 +667,17 @@ void PrivateTextFieldWinUAP::OnTextChanged()
     WideString textToRestore;
     WideString newText(GetNativeText()->Data());
     if (IsMultiline())
-    {   // Remove '\r' characters
-        auto i = std::remove_if(newText.begin(), newText.end(), [](wchar_t c) -> bool { return c == L'\r'; });
+    { // Remove '\r' characters
+        auto i = std::remove_if(newText.begin(), newText.end(), [](wchar_t c) -> bool
+                                                                { return c == L'\r';
+                                                                });
         newText.erase(i, newText.end());
     }
 
     bool textAccepted = true;
     auto self{shared_from_this()};
-    core->RunOnMainThreadBlocked([this, self, &newText, &textAccepted, &textToRestore]() {
+    core->RunOnMainThreadBlocked([this, self, &newText, &textAccepted, &textToRestore]()
+                                 {
         bool targetAlive = uiTextField != nullptr && textFieldDelegate != nullptr;
         if (programmaticTextChange && targetAlive)
         {
@@ -687,32 +702,33 @@ void PrivateTextFieldWinUAP::OnTextChanged()
         programmaticTextChange = false;
         textAccepted ? curText = newText
                      : textToRestore = curText;
-    });
+                                 });
 
     if (!textAccepted)
     {
-        // Restore control's text and caret position as before text change 
+        // Restore control's text and caret position as before text change
         SetNativeText(textToRestore);
         SetNativeCaretPosition(savedCaretPosition);
         ignoreTextChange = true;
     }
 }
 
-void PrivateTextFieldWinUAP::OnKeyboardHiding(InputPaneVisibilityEventArgs^ args)
+void PrivateTextFieldWinUAP::OnKeyboardHiding(InputPaneVisibilityEventArgs ^ args)
 {
     if (recentlyLostFocus)
     {
         recentlyLostFocus = false;
 
         auto self{shared_from_this()};
-        core->RunOnMainThread([this, self]() {
+        core->RunOnMainThread([this, self]()
+                              {
             if (textFieldDelegate != nullptr)
                 textFieldDelegate->OnKeyboardHidden();
-        });
+                              });
     }
 }
 
-void PrivateTextFieldWinUAP::OnKeyboardShowing(InputPaneVisibilityEventArgs^ args)
+void PrivateTextFieldWinUAP::OnKeyboardShowing(InputPaneVisibilityEventArgs ^ args)
 {
     if (HasFocus())
     {
@@ -725,13 +741,13 @@ void PrivateTextFieldWinUAP::OnKeyboardShowing(InputPaneVisibilityEventArgs^ arg
 
         auto self{shared_from_this()};
         core->RunOnMainThread([this, self, keyboardRect]()
-        {
+                              {
             if (textFieldDelegate != nullptr)
             {
                 Rect rect = WindowToVirtual(keyboardRect);
                 textFieldDelegate->OnKeyboardShown(rect);
             }
-        });
+                              });
     }
 }
 
@@ -869,7 +885,7 @@ void PrivateTextFieldWinUAP::SetNativeInputEnabled(bool enabled)
 
 void PrivateTextFieldWinUAP::SetNativeText(const WideString& text)
 {
-    Platform::String^ platformText = ref new Platform::String(text.c_str());
+    Platform::String ^ platformText = ref new Platform::String(text.c_str());
     IsPassword() ? nativePassword->Password = platformText : nativeText->Text = platformText;
 }
 
@@ -877,7 +893,7 @@ void PrivateTextFieldWinUAP::SetNativeMaxTextLength(int32 maxLength)
 {
     // Native controls expect zero for unlimited input length
     int length = std::max(0, maxLength);
-    IsPassword() ?  nativePassword->MaxLength = length : nativeText->MaxLength = length;
+    IsPassword() ? nativePassword->MaxLength = length : nativeText->MaxLength = length;
 }
 
 void PrivateTextFieldWinUAP::SetNativeCaretPosition(int32 caretPosition)
@@ -971,7 +987,7 @@ void PrivateTextFieldWinUAP::SetNativeKeyboardType(int32 type)
         nativeValue = InputScopeNameValue::Password;
     }
 
-    InputScope^ inputScope = ref new InputScope();
+    InputScope ^ inputScope = ref new InputScope();
     inputScope->Names->Append(ref new InputScopeName(nativeValue));
     IsPassword() ? nativePassword->InputScope = inputScope : nativeText->InputScope = inputScope;
 }
@@ -990,7 +1006,7 @@ bool PrivateTextFieldWinUAP::HasFocus() const
     return FocusState::Unfocused != nativeControl->FocusState;
 }
 
-Platform::String^ PrivateTextFieldWinUAP::GetNativeText() const
+Platform::String ^ PrivateTextFieldWinUAP::GetNativeText() const
 {
     return !IsPassword() ? nativeText->Text : nativePassword->Password;
 }
@@ -1051,10 +1067,11 @@ void PrivateTextFieldWinUAP::RenderToTexture(bool moveOffScreenOnCompletion)
     RenderTargetBitmap^ renderTarget = ref new RenderTargetBitmap;
 
     auto renderTask = create_task(renderTarget->RenderAsync(nativeControl)).then([this, self, renderTarget]()
-    {
+                                                                                 {
         return renderTarget->GetPixelsAsync();
-    }).then([this, self, renderTarget, moveOffScreenOnCompletion](IBuffer^ renderBuffer)
-    {
+                                                                                 })
+                      .then([this, self, renderTarget, moveOffScreenOnCompletion](IBuffer ^ renderBuffer)
+                            {
         int32 imageWidth = renderTarget->PixelWidth;
         int32 imageHeight = renderTarget->PixelHeight;
         size_t streamSize = static_cast<size_t>(renderBuffer->Length);
@@ -1081,8 +1098,9 @@ void PrivateTextFieldWinUAP::RenderToTexture(bool moveOffScreenOnCompletion)
                 });
             }
         });
-    }).then([this, self](task<void> t)
-    {
+                            })
+                      .then([this, self](task<void> t)
+                            {
         try {
             t.get();
         }
@@ -1090,7 +1108,7 @@ void PrivateTextFieldWinUAP::RenderToTexture(bool moveOffScreenOnCompletion)
             HRESULT hr = e->HResult;
             Logger::Error("[TextField] RenderToTexture failed: 0x%08X", hr);
         }
-    });
+                            });
 }
 
 Sprite* PrivateTextFieldWinUAP::CreateSpriteFromPreviewData(uint8* imageData, int32 width, int32 height) const

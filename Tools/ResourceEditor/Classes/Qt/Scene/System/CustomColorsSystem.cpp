@@ -52,17 +52,8 @@ CustomColorsSystem::CustomColorsSystem(Scene* scene)
 
 CustomColorsSystem::~CustomColorsSystem()
 {
-    if(toolImageTexture)
-    {
-        SafeRelease(toolImageTexture);
-        rhi::ReleaseTextureSet(toolTextureSet);
-    }
-    
-    if(loadedTexture)
-    {
-        SafeRelease(loadedTexture);
-        rhi::ReleaseTextureSet(loadedTextureSet);
-    }
+    SafeRelease(toolImageTexture);
+    SafeRelease(loadedTexture);
 }
 
 LandscapeEditorDrawSystem::eErrorType CustomColorsSystem::EnableLandscapeEditing()
@@ -145,20 +136,11 @@ bool CustomColorsSystem::DisableLandscapeEdititing( bool saveNeeded)
     
 	drawSystem->GetLandscapeProxy()->SetToolTexture(nullptr, true);
 	enabled = false;
-	
-    if(toolImageTexture)
-    {
-        SafeRelease(toolImageTexture);
-        rhi::ReleaseTextureSet(toolTextureSet);
-    }
-    
-    if(loadedTexture)
-    {
-        SafeRelease(loadedTexture);
-        rhi::ReleaseTextureSet(loadedTextureSet);
-    }
-    
-	return !enabled;
+
+    SafeRelease(toolImageTexture);
+    SafeRelease(loadedTexture);
+
+    return !enabled;
 }
 
 void CustomColorsSystem::Process(DAVA::float32 timeElapsed)
@@ -233,20 +215,11 @@ void CustomColorsSystem::CreateToolImage(const FilePath& filePath)
 	{
 		return;
 	}
-	
-    if(toolImageTexture)
-    {
-        SafeRelease(toolImageTexture);
-        rhi::ReleaseTextureSet(toolTextureSet);
-    }
-    
+
+    SafeRelease(toolImageTexture);
+
     toolImageTexture = toolTexture;
     toolImageTexture->SetMinMagFilter(rhi::TEXFILTER_NEAREST, rhi::TEXFILTER_NEAREST, rhi::TEXMIPFILTER_NONE);
-    
-    rhi::TextureSetDescriptor desc;
-    desc.fragmentTextureCount = 1;
-    desc.fragmentTexture[0] = toolImageTexture->handle;
-    toolTextureSet = rhi::AcquireTextureSet(desc);
 }
 
 void CustomColorsSystem::UpdateBrushTool()
@@ -265,7 +238,7 @@ void CustomColorsSystem::UpdateBrushTool()
 
     auto brushMaterial = drawSystem->GetCustomColorsProxy()->GetBrushMaterial();
     RenderSystem2D::Instance()->BeginRenderTargetPass(colorTexture, false);
-    RenderSystem2D::Instance()->DrawTexture(toolTextureSet, toolImageTexture->samplerStateHandle, brushMaterial, drawColor, updatedRect);
+    RenderSystem2D::Instance()->DrawTexture(toolImageTexture, brushMaterial, drawColor, updatedRect);
     RenderSystem2D::Instance()->EndRenderTargetPass();
 }
 
@@ -379,24 +352,15 @@ bool CustomColorsSystem::LoadTexture( const DAVA::FilePath &filePath, bool creat
 		}
         else
         {
-            if(loadedTexture)
-            {
-                SafeRelease(loadedTexture);
-                rhi::ReleaseTextureSet(loadedTextureSet);
-            }
-            
+            SafeRelease(loadedTexture);
+
             loadedTexture = Texture::CreateFromData(image->GetPixelFormat(), image->GetData(),  image->GetWidth(), image->GetHeight(), false);
-            
-            rhi::TextureSetDescriptor desc;
-            desc.fragmentTextureCount = 1;
-            desc.fragmentTexture[0] = loadedTexture->handle;
-            loadedTextureSet = rhi::AcquireTextureSet(desc);
             
             Texture * target = drawSystem->GetCustomColorsProxy()->GetTexture();
 
             auto brushMaterial = drawSystem->GetCustomColorsProxy()->GetBrushMaterial();
             RenderSystem2D::Instance()->BeginRenderTargetPass(target, false);
-            RenderSystem2D::Instance()->DrawTexture(loadedTextureSet, loadedTexture->samplerStateHandle, brushMaterial, Color::White);
+            RenderSystem2D::Instance()->DrawTexture(loadedTexture, brushMaterial, Color::White);
             RenderSystem2D::Instance()->EndRenderTargetPass();
         }
 	}

@@ -72,7 +72,7 @@ void TextureProperties::setTextureDescriptor(DAVA::TextureDescriptor *descriptor
 
     if (nullptr != curTextureDescriptor)
     {
-		// enable this widget
+        // enable this widget
 		setEnabled(true);
 
 		// reset mipmap sizes
@@ -116,7 +116,7 @@ void TextureProperties::Save()
 {
     if (nullptr != curTextureDescriptor)
     {
-		curTextureDescriptor->Save();
+        curTextureDescriptor->Save();
 	}
 }
 
@@ -179,7 +179,7 @@ void TextureProperties::ReloadProperties()
 		headerIndex = AppendHeader("Texture drawSettings");
         propMipMap = AddPropertyItem(PropertyItemName::GenerateMipMaps, textureDataSettings, headerIndex);
         propMipMap->SetCheckable(true);
-		propMipMap->SetEditable(false);
+        propMipMap->SetEditable(false);
 
         propNormalMap = AddPropertyItem(PropertyItemName::IsNormalMap, textureDataSettings, headerIndex);
         propNormalMap->SetCheckable(true);
@@ -201,14 +201,14 @@ void TextureProperties::ReloadProperties()
         propMagFilter = AddPropertyItem(PropertyItemName::MagFilter, textureDrawSettings, headerIndex);
         propMipFilter = AddPropertyItem(PropertyItemName::MipFilter, textureDrawSettings, headerIndex);
 
-        DAVA::InspBase *compressionSettings = &curTextureDescriptor->compression[curGPU];
+        DAVA::InspBase* compressionSettings = &curTextureDescriptor->compression[curGPU];
 
-		// add per-gpu drawSettings
+        // add per-gpu drawSettings
 		headerIndex = AppendHeader(GlobalEnumMap<DAVA::eGPUFamily>::Instance()->ToString(curGPU));
         propFormat = AddPropertyItem(PropertyItemName::Format, compressionSettings, headerIndex);
 
         propSizes = new QtPropertyDataMetaObject(&curSizeLevelObject, DAVA::MetaInfo::Instance<int>());
-		AppendProperty("Size", propSizes, headerIndex);
+        AppendProperty("Size", propSizes, headerIndex);
 		LoadCurSizeToProp();
 
 		ReloadEnumFormats();
@@ -297,10 +297,10 @@ QtPropertyDataInspMember* TextureProperties::AddPropertyItem(const DAVA::FastNam
 
     if (nullptr != info)
     {
-		const DAVA::InspMember *member = info->Member(name);
+        const DAVA::InspMember *member = info->Member(name);
         if (nullptr != member)
         {
-			ret = new QtPropertyDataInspMember(object, member);
+            ret = new QtPropertyDataInspMember(object, member);
 			AppendProperty(member->Name().c_str(), ret, parent);
 		}
 	}
@@ -362,7 +362,7 @@ void TextureProperties::OnItemEdited(const QModelIndex &index)
 	}
     else if (data == propMinFilter || data == propMagFilter || data == propMipFilter)
     {
-		emit PropertyChanged(PROP_FILTER);
+        emit PropertyChanged(PROP_FILTER);
 	}
 	else if(data == propWrapModeS || data == propWrapModeT)
 	{
@@ -394,7 +394,7 @@ void TextureProperties::LoadCurSizeToProp()
     if (nullptr != curTextureDescriptor && nullptr != propSizes &&
         curGPU >= 0 && curGPU < DAVA::GPU_DEVICE_COUNT)
     {
-		QSize curSize(curTextureDescriptor->compression[curGPU].compressToWidth, curTextureDescriptor->compression[curGPU].compressToHeight);
+        QSize curSize(curTextureDescriptor->compression[curGPU].compressToWidth, curTextureDescriptor->compression[curGPU].compressToHeight);
 		int level = availableSizes.key(curSize, -1); 
 
 		if(-1 != level)
@@ -412,7 +412,7 @@ void TextureProperties::SaveCurSizeFromProp()
     if (nullptr != curTextureDescriptor && nullptr != propSizes &&
         curGPU >= 0 && curGPU < DAVA::GPU_DEVICE_COUNT)
     {
-		int level = propSizes->GetValue().toInt();
+        int level = propSizes->GetValue().toInt();
 
 		if(availableSizes.contains(level))
 		{

@@ -40,7 +40,7 @@
     using DAVA::Logger;
     #include "Concurrency/Thread.h"
     #include "Concurrency/Semaphore.h"
-    #include "Concurrency/ConditionVariable.h"
+#include "Concurrency/ConditionVariable.h"
     #include "Debug/Profiler.h"
 
     #include "_gl.h"
@@ -174,7 +174,7 @@ FrameGLES2
 static std::vector<FrameGLES2>  _Frame;
 static bool                     _FrameStarted   = false;
 static unsigned                 _FrameNumber    = 1;
-static DAVA::Spinlock           _FrameSync;
+static DAVA::Spinlock _FrameSync;
 //static DAVA::Mutex              _FrameSync;
 
 static void _ExecGL( GLCommand* command, uint32 cmdCount );

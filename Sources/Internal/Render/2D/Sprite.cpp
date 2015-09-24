@@ -220,8 +220,6 @@ void Sprite::InitFromFile(File *file)
 		textureNames[k] = tp;
 		DVASSERT_MSG(textures[k], "ERROR: Texture loading failed"/* + pathName*/);
 	}
-	
-	RegisterTextureStates();
 
 	int32 width, height;
 	file->ReadLine(tempBuf, 1024);
@@ -529,8 +527,6 @@ void Sprite::InitFromTexture(Texture *fromTexture, int32 xOffset, int32 yOffset,
 
     fboCounter++;
     Reset();
-
-    RegisterTextureStates();
 }
 
 void Sprite::SetOffsetsForFrame(int frame, float32 xOff, float32 yOff)
@@ -552,7 +548,6 @@ void Sprite::SetOffsetsForFrame(int frame, float32 xOff, float32 yOff)
 
 void Sprite::Clear()
 {
-	UnregisterTextureStates();
 	for (int32 k = 0; k < textureCount; ++k)
 	{
 		SafeRelease(textures[k]);
@@ -594,12 +589,6 @@ Texture* Sprite::GetTexture(int32 frameNumber) const
 {
 	frameNumber = Clamp(frameNumber, 0, frameCount - 1);
 	return textures[frameTextureIndex[frameNumber]];
-}
-	
-rhi::HTextureSet Sprite::GetTextureHandle(int32 frameNumber) const
-{
-	frameNumber = Clamp(frameNumber, 0, frameCount - 1);
-	return textureHandles[frameTextureIndex[frameNumber]];
 }
 
 float32 *Sprite::GetTextureVerts(int32 frameNumber)
@@ -933,34 +922,6 @@ File* Sprite::GetSpriteFile(const FilePath & spriteName, int32& resourceSizeInde
     }
 
     return fp;
-}
-
-void Sprite::RegisterTextureStates()
-{
-	textureHandles.resize(textureCount);
-	for(int32 i = 0; i < textureCount; ++i)
-    {
-        if(textures[i])
-        {
-            rhi::TextureSetDescriptor descriptor;
-            descriptor.fragmentTextureCount = 1;
-            descriptor.fragmentTexture[0] = textures[i]->handle;            			
-            textureHandles[i] = rhi::AcquireTextureSet(descriptor);
-		}
-	}
-}
-
-void Sprite::UnregisterTextureStates()
-{
-
-	for(int32 i = 0; i < textureCount; ++i)
-    {
-		if(textureHandles[i] != rhi::InvalidHandle)
-		{
-            rhi::ReleaseTextureSet(textureHandles[i]);			
-		}
-	}
-
 }
 
 void Sprite::ReloadExistingTextures()

@@ -3013,48 +3013,35 @@ bool QtMainWindow::SaveTilemask(bool forAllTabs /* = true */)
 
 void QtMainWindow::OnReloadShaders()
 {
-#if RHI_COMPLETE_EDITOR
-    ShaderCache::Instance()->Reload();
-    
-    DAVA::uint32 count = ui->sceneTabWidget->GetTabCount();
-    for(DAVA::uint32 i = 0; i < count; ++i)
+    ShaderDescriptorCache::RelaoadShaders();
+
+    SceneTabWidget* tabWidget = QtMainWindow::Instance()->GetSceneWidget();
+    for (int tab = 0, sz = tabWidget->GetTabCount(); tab < sz; ++tab)
     {
-        SceneEditor2 * scene = ui->sceneTabWidget->GetTabScene(i);
-        if(!scene) continue;
-        
-        DAVA::Set<DAVA::NMaterial *> materialList;
-        DAVA::MaterialSystem *matSystem = scene->GetMaterialSystem();
-        matSystem->BuildMaterialList(scene, materialList, NMaterial::MATERIALTYPE_NONE, true);
-        
-        const Map<uint32, NMaterial *> & particleInstances = scene->particleEffectSystem->GetMaterialInstances();
-        Map<uint32, NMaterial *>::const_iterator endParticleIt = particleInstances.end();
-        Map<uint32, NMaterial *>::const_iterator particleIt = particleInstances.begin();
-        for( ; particleIt != endParticleIt; ++particleIt)
+        SceneEditor2* sceneEditor = tabWidget->GetTabScene(tab);
+
+        const DAVA::Set<DAVA::NMaterial*>& topParents = sceneEditor->materialSystem->GetTopParents();
+
+        for (auto material : topParents)
         {
-            materialList.insert(particleIt->second);
-            if(particleIt->second->GetParent())
-                materialList.insert(particleIt->second->GetParent());
+            material->InvalidateRenderVariants();
+        }
+        const Map<uint64, NMaterial*>& particleInstances = sceneEditor->particleEffectSystem->GetMaterialInstances();
+        for (auto material : particleInstances)
+        {
+            material.second->InvalidateRenderVariants();
         }
 
-        scene->foliageSystem->CollectFoliageMaterials(materialList);
-
-        DAVA::Set<DAVA::NMaterial *>::iterator it = materialList.begin();
-        DAVA::Set<DAVA::NMaterial *>::iterator endIt = materialList.end();
-        while (it != endIt)
+        DAVA::Set<DAVA::NMaterial*> materialList;
+        sceneEditor->foliageSystem->CollectFoliageMaterials(materialList);
+        for (auto material : materialList)
         {
-            DAVA::NMaterial * material = *it;
-            DVASSERT(material);
-            
-            if(material)
-                material->BuildActiveUniformsCacheParamsCache();
-            
-            ++it;
+            if (material)
+                material->InvalidateRenderVariants();
         }
-        
-        if(scene->GetGlobalMaterial())
-            scene->GetGlobalMaterial()->BuildActiveUniformsCacheParamsCache();
+
+        sceneEditor->renderSystem->SetForceUpdateLights();
     }
-#endif // RHI_COMPLETE_EDITOR
 }
 
 void QtMainWindow::OnSwitchWithDifferentLODs(bool checked)

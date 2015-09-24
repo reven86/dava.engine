@@ -73,7 +73,7 @@ extern ID3DUserDefinedAnnotation*   _D3D11_UserAnnotation;
 // this hack need removed, when rhi_dx thread will synchronized with rander::reset
 #ifdef __DAVAENGINE_WIN_UAP__
 __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
-extern DAVA::Mutex  need_synchronized;
+extern DAVA::Mutex need_synchronized;
 #endif
 
 extern InitParam                    _DX11_InitParam;
