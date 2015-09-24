@@ -144,6 +144,8 @@ EditorSystemsManager::EditorSystemsManager(PackageNode* _package)
     systems.push_back(new ::TransformSystem(this));
 
     SelectionChanged.Connect(this, &EditorSystemsManager::OnSelectionChanged);
+
+    package->AddListener(this);
 }
 
 EditorSystemsManager::~EditorSystemsManager()
@@ -152,6 +154,7 @@ EditorSystemsManager::~EditorSystemsManager()
     {
         delete system;
     }
+    package->RemoveListener(this);
 }
 
 PackageNode* EditorSystemsManager::GetPackage()

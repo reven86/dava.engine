@@ -57,14 +57,13 @@ private:
 
     bool ProcessKey(const DAVA::int32 key);
 
-    bool ProcessDrag(const DAVA::Vector2& delta);
-    void ResizeControl(const DAVA::Vector2& delta, bool withPivot, bool rateably);
-    void AdjustResize(DAVA::Vector2& deltaSize, DAVA::Vector2& deltaPos);
-    void MovePivot(const DAVA::Vector2& delta);
-    void Rotate(const DAVA::Vector2& pos);
-    void MoveControl(const DAVA::Vector2& delta);
-    bool CheckIncorrectResize(const int invertX, const int invertY, DAVA::Vector2 deltaSize);
-    void MoveAllSelectedControls(const DAVA::Vector2& delta);
+    bool ProcessDrag(DAVA::Vector2 point);
+    void ResizeControl(DAVA::Vector2 delta, bool withPivot, bool rateably);
+    void AdjustResize(int directionX, int directionY, DAVA::Vector2& delta);
+    void MovePivot(DAVA::Vector2 delta);
+    void Rotate(DAVA::Vector2 pos);
+    void MoveControl(DAVA::Vector2 delta);
+    void MoveAllSelectedControls(DAVA::Vector2 delta);
 
     void AdjustProperty(ControlNode* node, const DAVA::String& propertyName, const DAVA::VariantType& delta);
 
@@ -84,6 +83,7 @@ private:
     size_t currentHash = 0;
     DAVA::UIGeometricData parentGeometricData;
     DAVA::UIGeometricData controlGeometricData;
+    AbstractProperty* sizeProperty = nullptr;
 };
 
 #endif // __QUICKED_TRANSFORM_SYSTEM_H__

@@ -88,6 +88,11 @@ void TransformSystem::OnActiveAreaChanged(const HUDAreaInfo& areaInfo)
         UIControl* parent = control->GetParent();
         parentGeometricData = parent->GetGeometricData();
         controlGeometricData = control->GetGeometricData();
+        sizeProperty = activeControlNode->GetRootProperty()->FindPropertyByName("Size");
+    }
+    else
+    {
+        sizeProperty = nullptr;
     }
 }
 
@@ -202,7 +207,7 @@ bool TransformSystem::ProcessKey(const int32 key)
     return false;
 }
 
-bool TransformSystem::ProcessDrag(const Vector2& pos)
+bool TransformSystem::ProcessDrag(Vector2 pos)
 {
     if (activeArea == HUDAreaInfo::NO_AREA)
     {
@@ -244,7 +249,7 @@ bool TransformSystem::ProcessDrag(const Vector2& pos)
     }
 }
 
-void TransformSystem::MoveAllSelectedControls(const Vector2& delta)
+void TransformSystem::MoveAllSelectedControls(Vector2 delta)
 {
     for (auto& controlNode : nodesToMove)
     {
@@ -255,7 +260,7 @@ void TransformSystem::MoveAllSelectedControls(const Vector2& delta)
     }
 }
 
-void TransformSystem::MoveControl(const Vector2& delta)
+void TransformSystem::MoveControl(Vector2 delta)
 {
     if (parentGeometricData.scale.x != 0.0f && parentGeometricData.scale.y != 0.0f)
     {
@@ -265,27 +270,7 @@ void TransformSystem::MoveControl(const Vector2& delta)
     }
 }
 
-bool TransformSystem::CheckIncorrectResize(const int invertX, const int invertY, Vector2 deltaSize)
-{
-    if (invertX != 0 && invertY != 0) //actual only for corners
-    {
-        if (fabs(deltaSize.x) > 0.0f && fabs(deltaSize.y) > 0.0f) //only if up and down requested
-        {
-            bool canNotResize = ((deltaSize.x * invertX) > 0.0f) ^ ((deltaSize.y * invertY) > 0.0f);
-            if (canNotResize) // and they have different sign for corner
-            {
-                float prop = fabs(deltaSize.x) / fabs(deltaSize.y);
-                if (prop > 0.48f && prop < 0.52f) // like "resize 10 to up and 10 to down rateably"
-                {
-                    return true;
-                }
-            }
-        }
-    }
-    return false;
-}
-
-void TransformSystem::ResizeControl(const Vector2& delta, bool withPivot, bool rateably)
+void TransformSystem::ResizeControl(Vector2 delta, bool withPivot, bool rateably)
 {
     DVASSERT(activeArea != HUDAreaInfo::NO_AREA);
     if (parentGeometricData.scale.x == 0.0f || parentGeometricData.scale.y == 0.0f)
@@ -293,32 +278,46 @@ void TransformSystem::ResizeControl(const Vector2& delta, bool withPivot, bool r
         return;
     }
 
-    const auto invertX = cornersDirection.at(activeArea - HUDAreaInfo::TOP_LEFT_AREA)[Vector2::AXIS_X];
-    const auto invertY = cornersDirection.at(activeArea - HUDAreaInfo::TOP_LEFT_AREA)[Vector2::AXIS_Y];
+    const auto directionX = cornersDirection.at(activeArea - HUDAreaInfo::TOP_LEFT_AREA)[Vector2::AXIS_X];
+    const auto directionY = cornersDirection.at(activeArea - HUDAreaInfo::TOP_LEFT_AREA)[Vector2::AXIS_Y];
+
     Vector2 pivot(controlGeometricData.size.x != 0.0f ? controlGeometricData.pivotPoint.x / controlGeometricData.size.x : 0.0f,
                   controlGeometricData.size.y != 0.0f ? controlGeometricData.pivotPoint.y / controlGeometricData.size.y : 0.0f);
 
-    Vector2 deltaSize(delta / controlGeometricData.scale);
-    deltaSize = RotateVector(deltaSize, controlGeometricData);
+    Vector2 deltaMappedToControl(delta / controlGeometricData.scale);
+    deltaMappedToControl = RotateVector(deltaMappedToControl, controlGeometricData);
 
-    Vector2 deltaPosition = deltaSize;
-    deltaPosition.x *= invertX == -1 ? 1.0f - pivot.x : pivot.x;
-    deltaPosition.y *= invertY == -1 ? 1.0f - pivot.y : pivot.y;
+    AdjustResize(directionX, directionY, deltaMappedToControl);
 
-    deltaSize.x *= invertX == -1 ? -1 : 1;
-    deltaSize.y *= invertY == -1 ? -1 : 1;
+    Vector2 deltaSize(deltaMappedToControl);
+    Vector2 deltaPosition(deltaMappedToControl);
+
+    deltaSize.x *= directionX;
+    deltaSize.y *= directionY;
+
+    deltaPosition.x *= directionX == -1 ? 1.0f - pivot.x : pivot.x;
+    deltaPosition.y *= directionY == -1 ? 1.0f - pivot.y : pivot.y;
+
+    if (directionX == 0)
+    {
+        deltaPosition.x = 0.0f;
+    }
+    if (directionY == 0)
+    {
+        deltaPosition.y = 0.0f;
+    }
 
     //modify if pivot modificator selected
     if (withPivot)
     {
         deltaPosition.SetZero();
 
-        auto pivotDeltaX = invertX == -1 ? pivot.x : 1.0f - pivot.x;
+        auto pivotDeltaX = directionX == -1 ? pivot.x : 1.0f - pivot.x;
         if (pivotDeltaX != 0.0f)
         {
             deltaSize.x /= pivotDeltaX;
         }
-        auto pivotDeltaY = invertY == -1 ? pivot.y : 1.0f - pivot.y;
+        auto pivotDeltaY = directionY == -1 ? pivot.y : 1.0f - pivot.y;
         if (pivotDeltaY != 0.0f)
         {
             deltaSize.y /= pivotDeltaY;
@@ -327,11 +326,6 @@ void TransformSystem::ResizeControl(const Vector2& delta, bool withPivot, bool r
     //modify rateably
     if (rateably)
     {
-        //check situation when we try to resize up and down simultaneously
-        if (CheckIncorrectResize(invertX, invertY, deltaSize))
-        {
-            return;
-        }
         //calculate proportion of control
         const Vector2& size = activeControlNode->GetControl()->GetSize();
         float proportion = size.y != 0.0f ? size.x / size.y : 0.0f;
@@ -344,13 +338,13 @@ void TransformSystem::ResizeControl(const Vector2& delta, bool withPivot, bool r
                 if (!withPivot)
                 {
                     deltaPosition.x = deltaSize.y * proportion;
-                    if (invertX == 0)
+                    if (directionX == 0)
                     {
                         deltaPosition.x *= (0.5f - pivot.x) * -1.0f; //rainbow unicorn was here and add -1 to the right.
                     }
                     else
                     {
-                        deltaPosition.x *= (invertX == -1 ? 1.0f - pivot.x : pivot.x) * invertX;
+                        deltaPosition.x *= (directionX == -1 ? 1.0f - pivot.x : pivot.x) * directionX;
                     }
                 }
             }
@@ -360,22 +354,20 @@ void TransformSystem::ResizeControl(const Vector2& delta, bool withPivot, bool r
                 if (!withPivot)
                 {
                     deltaPosition.y = deltaSize.x / proportion;
-                    if (invertY == 0)
+                    if (directionY == 0)
                     {
                         deltaPosition.y *= (0.5f - pivot.y) * -1.0f; // another rainbow unicorn adds -1 here.
                     }
                     else
                     {
-                        deltaPosition.y *= (invertY == -1 ? 1.0f - pivot.y : pivot.y) * invertY;
+                        deltaPosition.y *= (directionY == -1 ? 1.0f - pivot.y : pivot.y) * directionY;
                     }
                 }
             }
         }
     }
 
-    AdjustResize(deltaSize, deltaPosition);
     UIControl* control = activeControlNode->GetControl();
-
     deltaPosition *= control->GetScale();
     deltaPosition = RotateVectorInv(deltaPosition, control->GetAngle());
     Vector<PropertyDelta> propertiesDelta;
@@ -384,63 +376,69 @@ void TransformSystem::ResizeControl(const Vector2& delta, bool withPivot, bool r
     AdjustProperty(activeControlNode, propertiesDelta);
 }
 
-void TransformSystem::AdjustResize(DAVA::Vector2& deltaSize, DAVA::Vector2& deltaPosition)
+void TransformSystem::AdjustResize(int directionX, int directionY, Vector2& delta)
 {
     if (extraDelta.dx != 0.0f)
     {
-        float overload = extraDelta.dx + deltaSize.dx;
+        float overload = extraDelta.dx + delta.dx;
         if ((overload > 0.0f) ^ (extraDelta.dx > 0.0f)) //overload more than extraDelta
         {
             extraDelta.dx = 0.0f;
-            deltaPosition.dx *= overload / deltaSize.dx;
-            deltaSize.dx = overload;
+            delta.dx = overload;
         }
         else //delta less than we need to resize
         {
-            extraDelta.x += deltaSize.dx;
-            deltaSize.dx = 0.0f;
-            deltaPosition.dx = 0.0f;
+            extraDelta.dx += delta.dx;
+            delta.dx = 0.0f;
         }
     }
     if (extraDelta.dy != 0.0f)
     {
-        float overload = extraDelta.dy + deltaSize.dy;
+        float overload = extraDelta.dy + delta.dy;
         if ((overload > 0.0f) ^ (extraDelta.dy > 0.0f)) //overload more than extraDelta
         {
             extraDelta.dy = 0.0f;
-            deltaPosition.dy *= overload / deltaSize.dy;
-            deltaSize.dy = overload;
+            delta.dy = overload;
         }
         else
         {
-            extraDelta.y += deltaSize.dy;
-            deltaSize.dy = 0;
-            deltaPosition.dy = 0;
+            extraDelta.dy += delta.dy;
+            delta.dy = 0;
         }
     }
 
-    AbstractProperty* sizeProperty = activeControlNode->GetRootProperty()->FindPropertyByName("Size");
+    const Vector2 scaledMinimum(minimumSize / controlGeometricData.scale);
     Vector2 origSize = sizeProperty->GetValue().AsVector2();
+
+    Vector2 deltaSize(delta.x * directionX, delta.y * directionY);
     Vector2 finalSize(origSize + deltaSize);
 
-    if (finalSize.dx < minimumSize.dx)
+    if (finalSize.dx < scaledMinimum.dx)
     {
-        float32 availableDelta = minimumSize.dx - origSize.dx;
-        extraDelta.dx += deltaSize.dx - availableDelta;
-        deltaPosition.dx *= availableDelta / deltaSize.dx;
-        deltaSize.dx = availableDelta;
+        if (deltaSize.dx >= 0.0f)
+        {
+            return;
+        }
+        float32 availableDelta = origSize.dx - scaledMinimum.dx;
+        availableDelta *= directionX * -1;
+        extraDelta.dx += delta.dx - availableDelta;
+        delta.dx = availableDelta;
     }
-    if (finalSize.dy < minimumSize.dy)
+    if (finalSize.dy < scaledMinimum.dy)
     {
-        float32 availableDelta = minimumSize.dy - origSize.dy;
-        extraDelta.dy += deltaSize.dy - availableDelta;
-        deltaPosition.dy *= availableDelta / deltaSize.dy;
-        deltaSize.dy = availableDelta;
+        if (deltaSize.dy >= 0.0f)
+        {
+            return;
+        }
+        float32 availableDelta = origSize.dy - scaledMinimum.dy;
+        availableDelta *= directionY * -1;
+        extraDelta.dy += delta.dy - availableDelta;
+        delta.dy = availableDelta;
     }
 
 }
 
-void TransformSystem::MovePivot(const Vector2& delta)
+void TransformSystem::MovePivot(Vector2 delta)
 {
     const Rect ur(controlGeometricData.GetUnrotatedRect());
     const Vector2 controlSize(ur.GetSize());
@@ -460,7 +458,7 @@ void TransformSystem::MovePivot(const Vector2& delta)
     AdjustProperty(activeControlNode, propertiesDelta);
 }
 
-void TransformSystem::Rotate(const Vector2& pos)
+void TransformSystem::Rotate(Vector2 pos)
 {
     Vector2 rotatePoint(controlGeometricData.GetUnrotatedRect().GetPosition());
     rotatePoint += controlGeometricData.pivotPoint * controlGeometricData.scale;
