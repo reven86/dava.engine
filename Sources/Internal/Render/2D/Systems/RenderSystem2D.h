@@ -130,6 +130,8 @@ public:
     void DrawStretched(Sprite * sprite, Sprite::DrawState * drawState, Vector2 streatchCap, UIControlBackground::eDrawType type, const UIGeometricData &gd, StretchDrawData ** pStreachData, const Color& color);
     void DrawTiled(Sprite * sprite, Sprite::DrawState * drawState, const Vector2& streatchCap, const UIGeometricData &gd, TiledDrawData ** pTiledData, const Color& color);
 
+    void SetViewMatrix(const Matrix4& viewMatrix);
+
     /**
      * Destroy current buffers and create new.
      * @param verticesCount vertices count per buffer (size of buffer equals verticesCount*GetVertexSize(vertexFormat))
@@ -263,7 +265,9 @@ private:
 
     Matrix4 virtualToPhysicalMatrix;
     Matrix4 projMatrix;
+    Matrix4 viewMatrix;
     uint32 projMatrixSemantic;
+    uint32 viewMatrixSemantic;
     std::stack<Rect> clipStack;
 	Rect currentClip;
 
