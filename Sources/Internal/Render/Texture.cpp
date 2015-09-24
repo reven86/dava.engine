@@ -98,13 +98,6 @@ bool AreImagesCorrectForTexture(const Vector<DAVA::Image*>& imageSet)
         return false;
     }
 
-    auto format = imageSet[0]->format;
-    if (!IsFormatSupported(format))
-    {
-        Logger::Error("[TextureValidator] Format %d is unsupported", format);
-        return false;
-    }
-
     bool isSizeCorrect = Validator::AreImagesSquare(imageSet);
     if (!isSizeCorrect)
     {
@@ -113,6 +106,38 @@ bool AreImagesCorrectForTexture(const Vector<DAVA::Image*>& imageSet)
     }
 
     return true;
+}
+
+bool CheckAndFixImageFormat(Vector<Image*>* images)
+{
+    Vector<Image*>& imageSet = *images;
+
+    PixelFormat format = imageSet[0]->format;
+    if (IsFormatSupported(format))
+    {
+        return true;
+    }
+
+    if (format == FORMAT_RGB888)
+    {
+        const uint32 count = static_cast<uint32>(imageSet.size());
+        for (uint32 i = 0; i < count; ++i)
+        {
+            Image* image = imageSet[i];
+            Image* newImage = Image::Create(image->width, image->height, FORMAT_RGBA8888);
+            ImageConvert::ConvertImageDirect(image, newImage);
+
+            newImage->mipmapLevel = image->mipmapLevel;
+            newImage->cubeFaceID = image->cubeFaceID;
+
+            imageSet[i] = newImage;
+            image->Release();
+        }
+
+        return true;
+    }
+
+    return false;
 }
 }
 
@@ -462,8 +487,16 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image *> * images)
         return false;
     }
 
-	isPink = false;
-	state = STATE_DATA_LOADED;
+    if (!Validator::CheckAndFixImageFormat(images))
+    {
+        Logger::Error("[Texture::LoadImages] cannot create texture from images because of wrong image format");
+
+        ReleaseImages(images);
+        return false;
+    }
+
+    isPink = false;
+    state = STATE_DATA_LOADED;
 
 	return true;
 }
