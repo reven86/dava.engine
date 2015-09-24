@@ -107,7 +107,7 @@ private:
 
     Set<String> errors;
 
-    std::atomic<bool> running = false;
+    std::atomic<bool> running;
 };
 
 inline bool ResourcePacker2D::IsUsingCache() const
