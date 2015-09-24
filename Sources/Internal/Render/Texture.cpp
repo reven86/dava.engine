@@ -341,7 +341,9 @@ Texture * Texture::CreateFromData(Image *image, bool generateMipMaps)
     Vector<Image *> *images = new Vector<Image *>();
     image->Retain();
     images->push_back(image);
-	
+
+    Validator::CheckAndFixImageFormat(images);
+
     texture->SetParamsFromImages(images);
 	texture->FlushDataToRenderer(images);
     
