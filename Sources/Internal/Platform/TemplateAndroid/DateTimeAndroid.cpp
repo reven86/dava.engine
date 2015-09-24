@@ -79,6 +79,16 @@ WideString DateTime::AsWString(const wchar_t* format) const
 	return retString;
 }
 
+WideString DateTime::GetLocalizedDate() const
+{
+    return AsWString(L"%x");
+}
+
+WideString DateTime::GetLocalizedTime() const
+{
+    return AsWString(L"%X");
+}
+
 int32 DateTime::GetLocalTimeZoneOffset()
 {
 	JniDateTime jniDateTime;

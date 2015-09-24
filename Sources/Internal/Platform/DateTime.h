@@ -176,7 +176,7 @@ public:
     \brief for current locale print date, platform dependent
     example:
     locale "ru_RU" -> "08.09.1984"
-    locale "en_US" -> "09/08/1984
+    locale "en_US" -> "9/8/1984
     */
     WideString GetLocalizedDate() const;
 
