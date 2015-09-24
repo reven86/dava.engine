@@ -573,10 +573,6 @@ void PrivateTextFieldWinUAP::OnKeyDown(KeyRoutedEventArgs^ args)
             });
         }
         break;
-    case VirtualKey::Tab:
-        // Disable focus lost on tab using such an elegant decision
-        args->Handled = true;
-        break;
     default:
         break;
     }
@@ -850,6 +846,13 @@ void PrivateTextFieldWinUAP::SetNativeVisible(bool visible)
     if (IsMultiline())
     {
         nativeControl->Visibility = visible ? Visibility::Visible : Visibility::Collapsed;
+    }
+    else
+    {
+        // Single line TextBox is always visible to allow proper rendering into texture
+        // When such a control should not be visible it is moved off screen
+        // Disable TextBox in 'invisible' state to prevent tab navigation
+        SetNativeInputEnabled(visible);
     }
 }
 
