@@ -96,6 +96,8 @@ public:
     const rhi::ShaderSamplerList& GetFragmentSamplerList() const { return fragmentSamplerList; }
     const rhi::ShaderSamplerList& GetVertexSamplerList() const { return vertexSamplerList; }
 
+    bool IsValid();
+
 private:
     Vector<ConstBufferDescriptor> constBuffers;
 
@@ -113,12 +115,20 @@ private:
     rhi::ShaderSamplerList fragmentSamplerList;
     rhi::ShaderSamplerList vertexSamplerList;    
 
+    bool valid;
+
 //for storing and further debug simplification    
     FastName sourceName;
     HashMap<FastName, int32> defines;
 
     friend ShaderDescriptor* ShaderDescriptorCache::GetShaderDescriptor(const FastName& name, const HashMap<FastName, int32>& defines);
 };
+
+
+inline bool ShaderDescriptor::IsValid()
+{
+    return valid;
+}
 
 };
 

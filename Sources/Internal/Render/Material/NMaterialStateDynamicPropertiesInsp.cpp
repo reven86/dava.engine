@@ -45,7 +45,7 @@ void NMaterialStateDynamicPropertiesInsp::FindMaterialPropertiesRecursive(NMater
         FXDescriptor fxDescriptor = FXCache::GetFXDescriptor(material->GetEffectiveFXName(), flags, material->qualityGroup);
         for (auto& descriptor : fxDescriptor.renderPassDescriptors)
         {
-            if (descriptor.shader == nullptr)
+            if (!descriptor.shader->IsValid())
                 continue;
             for (auto& buff : descriptor.shader->GetConstBufferDescriptors())
             {
