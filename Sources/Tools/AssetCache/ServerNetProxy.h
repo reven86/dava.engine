@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 #ifndef __DAVAENGINE_ASSET_CACHE_SERVER_H__
 #define __DAVAENGINE_ASSET_CACHE_SERVER_H__
 
@@ -39,62 +38,55 @@
 
 namespace DAVA
 {
-
 namespace AssetCache
 {
- 
 class CachedItemValue;
 
-    
 class ServerNetProxyListener
 {
 public:
-    
     virtual ~ServerNetProxyListener() = default;
-    
-    virtual void OnAddToCache(Net::IChannel * channel, const CacheItemKey &key, CachedItemValue &&value) = 0;
-    virtual void OnRequestedFromCache(Net::IChannel * channel, const CacheItemKey &key) = 0;
-    virtual void OnWarmingUp(Net::IChannel * channel, const CacheItemKey &key) = 0;
 
-    virtual void OnChannelClosed(Net::IChannel * channel, const char8* message) { };
+    virtual void OnAddToCache(Net::IChannel* channel, const CacheItemKey& key, CachedItemValue&& value) = 0;
+    virtual void OnRequestedFromCache(Net::IChannel* channel, const CacheItemKey& key) = 0;
+    virtual void OnWarmingUp(Net::IChannel* channel, const CacheItemKey& key) = 0;
+
+    virtual void OnChannelClosed(Net::IChannel* channel, const char8* message){};
 };
-    
-    
-class ServerNetProxy final: public Net::IChannelListener
+
+class ServerNetProxy final : public Net::IChannelListener
 {
 public:
-    
     ServerNetProxy() = default;
     ~ServerNetProxy();
-    
-    void SetDelegate(ServerNetProxyListener * delegate);
+
+    void SetDelegate(ServerNetProxyListener* delegate);
 
     void Listen(uint16 port);
-    
+
     void Disconnect();
-    
+
     uint16 GetListenPort() const;
-    
-    bool AddedToCache(Net::IChannel * channel, const CacheItemKey &key, bool added);
-    bool Send(Net::IChannel * channel, const CacheItemKey &key, const CachedItemValue &value);
+
+    bool AddedToCache(Net::IChannel* channel, const CacheItemKey& key, bool added);
+    bool Send(Net::IChannel* channel, const CacheItemKey& key, const CachedItemValue& value);
 
     //Net::IChannelListener
     // Channel is open (underlying transport has connection) and can receive and send data through IChannel interface
-    void OnChannelOpen(Net::IChannel* channel) override {};
+    void OnChannelOpen(Net::IChannel* channel) override{};
     // Channel is closed (underlying transport has disconnected) with reason
-    void OnChannelClosed(Net::IChannel * channel, const char8* message) override;
+    void OnChannelClosed(Net::IChannel* channel, const char8* message) override;
     // Some data arrived into channel
-    void OnPacketReceived(Net::IChannel * channel, const void* buffer, size_t length) override;
+    void OnPacketReceived(Net::IChannel* channel, const void* buffer, size_t length) override;
     // Buffer has been sent and can be reused or freed
     void OnPacketSent(Net::IChannel* channel, const void* buffer, size_t length) override;
     // Data packet with given ID has been delivered to other side
-    void OnPacketDelivered(Net::IChannel* channel, uint32 packetId) override {};
+    void OnPacketDelivered(Net::IChannel* channel, uint32 packetId) override{};
 
 private:
-
     uint16 listenPort = 0;
     std::unique_ptr<Connection> netServer;
-    ServerNetProxyListener *delegate = nullptr;
+    ServerNetProxyListener* delegate = nullptr;
 };
 
 inline uint16 ServerNetProxy::GetListenPort() const
@@ -102,15 +94,12 @@ inline uint16 ServerNetProxy::GetListenPort() const
     return listenPort;
 }
 
-inline void ServerNetProxy::SetDelegate(ServerNetProxyListener * _delegate)
+inline void ServerNetProxy::SetDelegate(ServerNetProxyListener* _delegate)
 {
     delegate = _delegate;
 }
-    
-    
-    
+
 }; // end of namespace AssetCache
 }; // end of namespace DAVA
 
 #endif // __DAVAENGINE_ASSET_CACHE_SERVER_H__
-

@@ -94,8 +94,8 @@ void ProcessRecourcePacker()
     }
 
     ResourcePacker2D * resourcePacker = new ResourcePacker2D();
-    
-    auto & commandLine = Core::Instance()->GetCommandLine();
+
+    auto& commandLine = Core::Instance()->GetCommandLine();
     FilePath commandLinePath(commandLine[1]);
     commandLinePath.MakeDirectoryPathname();
     
@@ -121,14 +121,13 @@ void ProcessRecourcePacker()
         Logger::Error("[FATAL ERROR: PVRTexTool path need to be second parameter]");
         return;
     }
-    
-    
+
     auto toolFolderPath = resourcePacker->excludeDirectory + (commandLine[2] + "/");
     String pvrTexToolName = "PVRTexToolCLI";
     String cacheToolName = "AssetCacheClient";
-    
+
     PVRConverter::Instance()->SetPVRTexTool(toolFolderPath + pvrTexToolName);
-    
+
     uint64 elapsedTime = SystemTimer::Instance()->AbsoluteMS();
     Logger::FrameworkDebug("[Resource Packer Started]");
     Logger::FrameworkDebug("[INPUT DIR] - [%s]", resourcePacker->inputGfxDirectory.GetAbsolutePathname().c_str());
@@ -163,7 +162,7 @@ void ProcessRecourcePacker()
         Logger::FrameworkDebug("Asset cache will not be used");
         resourcePacker->ClearCacheClientTool();
     }
-    
+
     if (CommandLineParser::CommandIsFound(String("-md5mode")))
     {
         resourcePacker->RecalculateMD5ForOutputDir();

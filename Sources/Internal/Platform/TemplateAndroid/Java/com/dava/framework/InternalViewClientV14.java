@@ -27,7 +27,6 @@ public class InternalViewClientV14 extends WebViewClient {
         int id;
 
         volatile boolean isRenderToTexture = false;
-        volatile boolean isVisible = true;
         volatile boolean pendingVisible = true;
 
         // precache as much as possible
@@ -53,9 +52,9 @@ public class InternalViewClientV14 extends WebViewClient {
         }
         
         public void updateVisible(WebViewWrapper view) {
-            if(isVisible != pendingVisible) {
-                isVisible = pendingVisible;
-                if (isVisible)
+        	boolean visible = view.getVisibility() == View.VISIBLE;
+            if(visible != pendingVisible) {
+                if (pendingVisible)
                 {
                     view.setVisibility(View.VISIBLE);
                 }
