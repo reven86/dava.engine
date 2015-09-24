@@ -324,7 +324,9 @@ Texture * Texture::CreateFromData(PixelFormat _format, const uint8 *_data, uint3
     
     Vector<Image *> *images = new Vector<Image *>();
     images->push_back(image);
-	
+
+    Validator::CheckAndFixImageFormat(images);
+
     texture->SetParamsFromImages(images);
 	texture->FlushDataToRenderer(images);
 
