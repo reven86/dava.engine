@@ -33,6 +33,10 @@
 #include <time.h>
 #include <xlocale.h>
 
+#import <Foundation/Foundation.h>
+
+#include "Utils/UTF8Utils.h"
+
 namespace DAVA
 {
     DAVA::WideString DateTime::AsWString(const wchar_t* format) const
@@ -52,6 +56,64 @@ namespace DAVA
         DAVA::WideString str(buffer);
         
         return str;
+    }
+
+    WideString DateTime::GetLocalizedDate() const
+    {
+        time_t timeWithTZ = innerTime + timeZoneOffset;
+
+        tm timeinfo;
+        GmTimeThreadSafe(&timeinfo, &timeWithTZ);
+
+        DAVA::String locID = LocalizationSystem::Instance()->GetCountryCode();
+
+        NSString* locale_name = [NSString stringWithCString:locID.c_str()
+                                                   encoding:[NSString defaultCStringEncoding]];
+
+        NSLocale* locale = [[NSLocale alloc] initWithLocaleIdentifier:locale_name];
+
+        NSDate* date = [NSDate dateWithTimeIntervalSince1970:timeWithTZ];
+
+        NSDateFormatter* dateFormatter = [[NSDateFormatter alloc] init];
+        dateFormatter.timeStyle = NSDateFormatterNoStyle;
+        dateFormatter.dateStyle = NSDateFormatterShortStyle;
+
+        [dateFormatter setLocale:locale];
+
+        NSString* date_str = [dateFormatter stringFromDate:date];
+
+        std::string result = [date_str cStringUsingEncoding:[NSString defaultCStringEncoding]];
+
+        return UTF8Utils::EncodeToWideString(result);
+    }
+
+    WideString DateTime::GetLocalizedTime() const
+    {
+        time_t timeWithTZ = innerTime + timeZoneOffset;
+
+        tm timeinfo;
+        GmTimeThreadSafe(&timeinfo, &timeWithTZ);
+
+        DAVA::String locID = LocalizationSystem::Instance()->GetCountryCode();
+
+        NSString* locale_name = [NSString stringWithCString:locID.c_str()
+                                                   encoding:[NSString defaultCStringEncoding]];
+
+        NSLocale* locale = [[NSLocale alloc] initWithLocaleIdentifier:locale_name];
+
+        NSDate* date = [NSDate dateWithTimeIntervalSince1970:timeWithTZ];
+
+        NSDateFormatter* dateFormatter = [[NSDateFormatter alloc] init];
+        dateFormatter.timeStyle = NSDateFormatterMediumStyle;
+        dateFormatter.dateStyle = NSDateFormatterNoStyle;
+
+        [dateFormatter setLocale:locale];
+
+        NSString* date_str = [dateFormatter stringFromDate:date];
+
+        std::string result = [date_str cStringUsingEncoding:[NSString defaultCStringEncoding]];
+
+        return UTF8Utils::EncodeToWideString(result);
     }
 
     int32 DateTime::GetLocalTimeZoneOffset()
