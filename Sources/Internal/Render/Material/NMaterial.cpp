@@ -44,6 +44,14 @@
 
 namespace DAVA
 {
+namespace
+{
+const DAVA::String kMaterialKey = "materialKey";
+const DAVA::String kParentMaterialKey = "parentMaterialKey";
+const DAVA::String kFXName = "fxName";
+const DAVA::String kQualityGroup = "qualityGroup";
+const DAVA::String kMaterialName = "materialName";
+}
 
 struct MaterialPropertyBinding
 {
@@ -810,16 +818,16 @@ void NMaterial::Save(KeyedArchive * archive, SerializationContext * serializatio
     DataNode::Save(archive, serializationContext);
 
     if (parent)
-        archive->SetUInt64("parentMaterialKey", parent->GetNodeID());
+        archive->SetUInt64(kParentMaterialKey, parent->GetNodeID());
 
     if (materialName.IsValid())
-        archive->SetString("materialName", materialName.c_str());
+        archive->SetString(kMaterialName, materialName.c_str());
 
     if (fxName.IsValid())
-        archive->SetString("fxName", fxName.c_str());
+        archive->SetString(kFXName, fxName.c_str());
 
     if (qualityGroup.IsValid())
-        archive->SetString("qualityGroup", qualityGroup.c_str());
+        archive->SetString(kQualityGroup, qualityGroup.c_str());
 
     ScopedPtr<KeyedArchive> propertiesArchive(new KeyedArchive());
     for (HashMap<FastName, NMaterialProperty*>::iterator it = localProperties.begin(), itEnd = localProperties.end(); it != itEnd; ++it)
@@ -872,32 +880,32 @@ void NMaterial::Load(KeyedArchive * archive, SerializationContext * serializatio
         return;
     }
 
-    if (archive->IsKeyExists("materialName"))
+    if (archive->IsKeyExists(kMaterialName))
     {
-        materialName = FastName(archive->GetString("materialName"));
+        materialName = FastName(archive->GetString(kMaterialName));
     }
 
-    if (archive->IsKeyExists("materialKey"))
+    if (archive->IsKeyExists(kMaterialKey))
     {
-        uint64 materialKey = archive->GetUInt64("materialKey");
+        uint64 materialKey = archive->GetUInt64(kMaterialKey);
         id = materialKey;
     }
 
     uint64 parentKey(0);
-    if (archive->IsKeyExists("parentMaterialKey"))
+    if (archive->IsKeyExists(kParentMaterialKey))
     {
-        parentKey = archive->GetUInt64("parentMaterialKey");
+        parentKey = archive->GetUInt64(kParentMaterialKey);
     }
     serializationContext->AddBinding(parentKey, this); //parentKey == 0 is global material if it exists, or no-parent otherwise
 
-    if (archive->IsKeyExists("materialGroup"))
+    if (archive->IsKeyExists(kQualityGroup))
     {
-        qualityGroup = FastName(archive->GetString("materialGroup").c_str());
+        qualityGroup = FastName(archive->GetString(kQualityGroup).c_str());
     }
 
-    if (archive->IsKeyExists("fxName"))
+    if (archive->IsKeyExists(kFXName))
     {
-        fxName = FastName(archive->GetString("fxName").c_str());
+        fxName = FastName(archive->GetString(kFXName).c_str());
     }
 
     if (archive->IsKeyExists("properties"))
@@ -949,15 +957,15 @@ void NMaterial::Load(KeyedArchive * archive, SerializationContext * serializatio
 void NMaterial::LoadOldNMaterial(KeyedArchive * archive, SerializationContext * serializationContext)
 {    
     /*the following stuff is for importing old NMaterial stuff*/
-    
-    if (archive->IsKeyExists("materialName"))
+
+    if (archive->IsKeyExists(kMaterialName))
     {
-        materialName = FastName(archive->GetString("materialName"));
+        materialName = FastName(archive->GetString(kMaterialName));
     }
 
-    if (archive->IsKeyExists("materialKey"))
+    if (archive->IsKeyExists(kMaterialKey))
     {
-        uint64 materialKey = archive->GetUInt64("materialKey");
+        uint64 materialKey = archive->GetUInt64(kMaterialKey);
         id = materialKey;
     }
 
@@ -968,9 +976,9 @@ void NMaterial::LoadOldNMaterial(KeyedArchive * archive, SerializationContext * 
     }
 
     uint64 parentKey(0);
-    if (archive->IsKeyExists("parentMaterialKey"))
+    if (archive->IsKeyExists(kParentMaterialKey))
     {
-        parentKey = archive->GetUInt64("parentMaterialKey");
+        parentKey = archive->GetUInt64(kParentMaterialKey);
     }
     serializationContext->AddBinding(parentKey, this); //parentKey == 0 is global material if it exists, or no-parent otherwise
 
