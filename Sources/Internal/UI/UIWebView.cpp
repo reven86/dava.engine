@@ -74,7 +74,11 @@ void UIWebView::SetDelegate(IUIWebViewDelegate* delegate)
 
 void UIWebView::OpenFile(const FilePath &path)
 {
-    webViewControl->OpenURL(path.AsURL());
+    ScopedPtr<File> file(File::Create(path, File::OPEN | File::READ));
+    DVASSERT_MSG(file, "Failed to open file");
+    String data;
+    file->ReadString(data);
+    webViewControl->OpenFromBuffer(data, path.GetDirectory());
 }
 
 void UIWebView::OpenURL(const String& urlToOpen)
