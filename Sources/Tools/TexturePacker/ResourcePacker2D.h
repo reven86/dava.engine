@@ -38,7 +38,6 @@
 
 #include "AssetCache/CacheItemKey.h"
 
-
 namespace DAVA
 {
 
@@ -48,23 +47,23 @@ class YamlNode;
 class ResourcePacker2D
 {
     static const String VERSION;
-    
+
 public:
     ResourcePacker2D();
 
     void InitFolders(const FilePath & inputPath,const FilePath & outputPath);
+    bool RecalculateDirMD5(const FilePath& pathname, const FilePath& md5file, bool isRecursive) const;
+    void RecalculateMD5ForOutputDir();
+
     void SetConvertQuality(const TextureConverter::eConvertQuality quality);
 
     void SetRunning(bool arg);
     bool IsRunning() const;
 
-    void SetCacheClientTool(const FilePath & path, const String& ip, const String& port, const String& timeout);
+    void SetCacheClientTool(const FilePath& path, const String& ip, const String& port, const String& timeout);
     void ClearCacheClientTool();
 
     void PackResources(eGPUFamily forGPU);
-
-    void RecalculateMD5ForOutputDir();
-    bool RecalculateDirMD5(const FilePath& pathname, const FilePath& md5file, bool isRecursive) const;
 
     const Set<String>& GetErrors() const;
 
@@ -126,7 +125,5 @@ inline bool ResourcePacker2D::IsRunning() const
 }
 
 };
-
-
 
 #endif // __DAVAENGINE_RESOURCEPACKER2D_H__

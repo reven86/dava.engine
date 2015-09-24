@@ -38,19 +38,16 @@ struct RequestResult
     bool recieved = false;
 };
 
-
 class CacheRequest : public DAVA::AssetCache::ClientNetProxyListener
 {
 public:
-
-    CacheRequest(const DAVA::String & commandLineOptionName);
+    CacheRequest(const DAVA::String& commandLineOptionName);
     virtual ~CacheRequest() = default;
-    
+
     int Process();
     int CheckOptions() const;
 
 protected:
-    
     int Connect();
     int Disconnect();
 
@@ -60,12 +57,10 @@ protected:
     virtual int CheckOptionsInternal() const = 0;
 
 public:
-    
     ProgramOptions options;
-    
+
     DAVA::AssetCache::ClientNetProxy client;
     RequestResult requestResult;
 };
-
 
 #endif //__CACHE_REQUEST_H__

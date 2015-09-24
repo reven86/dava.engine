@@ -35,7 +35,7 @@
 using namespace DAVA;
 
 GetRequest::GetRequest()
-:   CacheRequest("get")
+    : CacheRequest("get")
 {
     options.AddOption("-f", VariantType(String("")), "Folder to save files from server");
 }
@@ -44,40 +44,39 @@ int GetRequest::SendRequest()
 {
     AssetCache::CacheItemKey key;
     AssetCache::StringToKey(options.GetOption("-h").AsString(), key);
-    
+
     auto requestSent = client.RequestFromCache(key);
     if (!requestSent)
     {
         Logger::Error("[GetRequest::%s] Cannot request files from server", __FUNCTION__);
         return AssetCacheClientConstants::EXIT_CANNOT_CONNECT;
     }
-    
+
     return AssetCacheClientConstants::EXIT_OK;
 }
 
 int GetRequest::CheckOptionsInternal() const
 {
     const String folderpath = options.GetOption("-f").AsString();
-    if(folderpath.empty())
+    if (folderpath.empty())
     {
         Logger::Error("[GetRequest::%s] Empty folderpath", __FUNCTION__);
         return AssetCacheClientConstants::EXIT_WRONG_COMMAND_LINE;
     }
-    
+
     return AssetCacheClientConstants::EXIT_OK;
 }
 
-
-void GetRequest::OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey &key, DAVA::AssetCache::CachedItemValue &&value)
+void GetRequest::OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey& key, DAVA::AssetCache::CachedItemValue&& value)
 {
     requestResult.recieved = true;
     requestResult.succeed = (value.IsEmpty() == false);
-    
-    if(requestResult.succeed)
+
+    if (requestResult.succeed)
     {
         FilePath folder = options.GetOption("-f").AsString();
         folder.MakeDirectoryPathname();
-        
+
         FileSystem::Instance()->CreateDirectory(folder, true);
         value.Export(folder);
     }

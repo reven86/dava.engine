@@ -45,13 +45,10 @@
 #include "AssetCache/AssetCache.h"
 #include "Platform/Process.h"
 
-
 namespace DAVA
 {
-
 const String ResourcePacker2D::VERSION = "0.0.1";
-    
-    
+
 static const String FLAG_RECURSIVE = "--recursive";
 
 ResourcePacker2D::ResourcePacker2D()
@@ -113,7 +110,6 @@ void ResourcePacker2D::PackResources(eGPUFamily forGPU)
     {
     	//Logger::Error("Can't create directory: %s", processDirectoryPath.c_str());
     }
-
 
     if (RecalculateDirMD5(outputGfxDirectory, processDirectoryPath + gfxDirName + ".md5", true))
     {
@@ -187,7 +183,6 @@ bool ResourcePacker2D::RecalculateParamsMD5(const String& params, const FilePath
     bool digestEqual = (oldMD5Digest == newMD5Digest);
     return isChanged ? true : !digestEqual;
 }
-
 bool ResourcePacker2D::RecalculateDirMD5(const FilePath& pathname, const FilePath& md5file, bool isRecursive) const
 {
     MD5::MD5Digest oldMD5Digest;
@@ -210,14 +205,13 @@ bool ResourcePacker2D::RecalculateDirMD5(const FilePath& pathname, const FilePat
 
     file = File::Create(md5file, File::CREATE | File::WRITE);
     DVASSERT(file && "Can't create md5 file");
-    
+
     auto bytesWritten = file->Write(newMD5Digest.digest.data(), newMD5Digest.digest.size());
     DVASSERT(bytesWritten == MD5::MD5Digest::DIGEST_SIZE && "16 bytes should be always written for md5 file");
 
     bool digestEqual = (oldMD5Digest == newMD5Digest);
     return isChanged ? true : !digestEqual;
 }
-
 
 bool ResourcePacker2D::RecalculateFileMD5(const FilePath& pathname, const FilePath& md5file) const
 {
@@ -230,16 +224,16 @@ bool ResourcePacker2D::RecalculateFileMD5(const FilePath& pathname, const FilePa
 
     ScopedPtr<File> file(File::Create(md5FileName, File::OPEN | File::READ));
 
-	if (!file)
-    	isChanged = true;
-	else
+    if (!file)
+        isChanged = true;
+    else
     {
         auto bytesRead = file->Read(oldMD5Digest.digest.data(), oldMD5Digest.digest.size());
         DVASSERT(bytesRead == MD5::MD5Digest::DIGEST_SIZE && "We should always read 16 bytes from md5 file");
-	}
-		
-	MD5::ForFile(pathname, newMD5Digest);
-    
+    }
+
+    MD5::ForFile(pathname, newMD5Digest);
+
     file = File::Create(md5FileName, File::CREATE | File::WRITE);
     DVASSERT(file && "Can't create md5 file");
 
@@ -391,7 +385,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
     FilePath processDir = rootDirectory + GetProcessFolderName() + inputRelativePath;
     FileSystem::Instance()->CreateDirectory(processDir, true);
 
-    if(forceRepack)
+    if (forceRepack)
     {
         FileSystem::Instance()->DeleteDirectoryFiles(processDir, false);
     }
@@ -401,7 +395,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
     Vector<String> currentFlags;
 
     const auto flagsPathname = inputPath + "flags.txt";
-    if(flagsPathname.Exists())
+    if (flagsPathname.Exists())
     {
         currentFlags = FetchFlags(flagsPathname);
     }
@@ -499,13 +493,13 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
                         }
                         else if (isLightmapsPacking && fullname.IsEqualToExtension(".png"))
                         {
-                            DefinitionFile * defFile = new DefinitionFile();
+                            DefinitionFile* defFile = new DefinitionFile();
                             defFile->LoadPNG(fullname, processDir);
                             definitionFileList.push_back(defFile);
                         }
                         else if (fullname.IsEqualToExtension(".pngdef"))
                         {
-                            DefinitionFile * defFile = new DefinitionFile();
+                            DefinitionFile* defFile = new DefinitionFile();
                             if (defFile->LoadPNGDef(fullname, processDir, useTwoSideMargin, marginInPixels))
                             {
                                 definitionFileList.push_back(defFile);
@@ -576,9 +570,6 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
     {
         Logger::Info("[%s] - unchanged", inputPath.GetAbsolutePathname().c_str());
     }
-    
-    
-	// process subfolders recursively
 
     if (false == CommandLineParser::Instance()->IsFlagSet("--recursive"))
     {
@@ -607,7 +598,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
     }
 }
 
-bool ResourcePacker2D::GetFilesFromCache(const AssetCache::CacheItemKey &key, const FilePath & inputPath, const FilePath & outputPath)
+bool ResourcePacker2D::GetFilesFromCache(const AssetCache::CacheItemKey& key, const FilePath& inputPath, const FilePath& outputPath)
 {
 #ifdef __DAVAENGINE_WIN_UAP__
     //no cache client in win uap
@@ -639,8 +630,8 @@ bool ResourcePacker2D::GetFilesFromCache(const AssetCache::CacheItemKey &key, co
         arguments.push_back("-ip");
         arguments.push_back(cacheClientIp);
     }
-    
-    if(!cacheClientPort.empty())
+
+    if (!cacheClientPort.empty())
     {
         arguments.push_back("-p");
         arguments.push_back(cacheClientPort);
@@ -651,13 +642,13 @@ bool ResourcePacker2D::GetFilesFromCache(const AssetCache::CacheItemKey &key, co
         arguments.push_back("-t");
         arguments.push_back(cacheClientTimeout);
     }
-    
+
     uint64 getTime = SystemTimer::Instance()->AbsoluteMS();
     Process cacheClient(cacheClientTool, arguments);
-    if(cacheClient.Run(false))
+    if (cacheClient.Run(false))
     {
         cacheClient.Wait();
-        
+
         auto exitCode = cacheClient.GetExitCode();
         getTime = SystemTimer::Instance()->AbsoluteMS() - getTime;
 
@@ -670,7 +661,7 @@ bool ResourcePacker2D::GetFilesFromCache(const AssetCache::CacheItemKey &key, co
         {
             Logger::Info("[%s - %.2lf secs] - attempted to retrieve from cache, result code %d", inputPath.GetAbsolutePathname().c_str(), (float64)(getTime) / 1000.0f, exitCode);
             const String& procOutput = cacheClient.GetOutput();
-            if(!procOutput.empty())
+            if (!procOutput.empty())
             {
                 Logger::FrameworkDebug("\nCacheClientLog: %s", procOutput.c_str());
             }
@@ -685,7 +676,7 @@ bool ResourcePacker2D::GetFilesFromCache(const AssetCache::CacheItemKey &key, co
 #endif
 }
 
-bool ResourcePacker2D::AddFilesToCache(const AssetCache::CacheItemKey &key, const FilePath & inputPath, const FilePath & outputPath)
+bool ResourcePacker2D::AddFilesToCache(const AssetCache::CacheItemKey& key, const FilePath& inputPath, const FilePath& outputPath)
 {
 #ifdef __DAVAENGINE_WIN_UAP__
     //no cache client in win uap
@@ -702,24 +693,23 @@ bool ResourcePacker2D::AddFilesToCache(const AssetCache::CacheItemKey &key, cons
     {
         FileSystem::Instance()->SetCurrentWorkingDirectory(oldDir);
     };
-    
-    
+
     String fileListString;
     ScopedPtr<FileList> outFilesList(new FileList(outputPath));
     for (int fi = 0; fi < outFilesList->GetCount(); ++fi)
     {
         if (!outFilesList->IsDirectory(fi))
         {
-            if(fileListString.empty() == false)
+            if (fileListString.empty() == false)
             {
                 fileListString += String(",");
             }
-            
+
             fileListString += outFilesList->GetPathname(fi).GetAbsolutePathname();
         }
     }
-    
-    if(fileListString.empty() == false)
+
+    if (fileListString.empty() == false)
     {
         Vector<String> arguments;
         arguments.push_back("add");
@@ -736,7 +726,7 @@ bool ResourcePacker2D::AddFilesToCache(const AssetCache::CacheItemKey &key, cons
             arguments.push_back(cacheClientIp);
         }
 
-        if(!cacheClientPort.empty())
+        if (!cacheClientPort.empty())
         {
             arguments.push_back("-p");
             arguments.push_back(cacheClientPort);
@@ -747,12 +737,12 @@ bool ResourcePacker2D::AddFilesToCache(const AssetCache::CacheItemKey &key, cons
             arguments.push_back("-t");
             arguments.push_back(cacheClientTimeout);
         }
-        else if(outFilesList->GetFileCount() > 20)
+        else if (outFilesList->GetFileCount() > 20)
         {
             arguments.push_back("-t");
-            arguments.push_back("5");   //enlarge default timeout
+            arguments.push_back("5"); //enlarge default timeout
         }
-        
+
         uint64 getTime = SystemTimer::Instance()->AbsoluteMS();
         Process cacheClient(cacheClientTool, arguments);
         if (cacheClient.Run(false))
@@ -791,7 +781,7 @@ bool ResourcePacker2D::AddFilesToCache(const AssetCache::CacheItemKey &key, cons
     }
 #endif
 }
-    
+
 const Set<String>& ResourcePacker2D::GetErrors() const
 {
     return errors;
@@ -802,8 +792,8 @@ void ResourcePacker2D::AddError(const String& errorMsg)
     Logger::Error(errorMsg.c_str());
     errors.insert(errorMsg);
 }
-    
-void ResourcePacker2D::SetCacheClientTool(const DAVA::FilePath &path, const String& ip, const String& port, const String& timeout)
+
+void ResourcePacker2D::SetCacheClientTool(const DAVA::FilePath& path, const String& ip, const String& port, const String& timeout)
 {
     cacheClientTool = path;
     cacheClientIp = ip;
@@ -818,5 +808,4 @@ void ResourcePacker2D::ClearCacheClientTool()
     cacheClientPort.clear();
     cacheClientTimeout.clear();
 }
-
 };

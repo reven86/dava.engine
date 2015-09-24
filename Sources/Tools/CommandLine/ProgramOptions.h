@@ -32,36 +32,32 @@
 #include "Base/BaseTypes.h"
 #include "FileSystem/VariantType.h"
 
-
 class ProgramOptions
 {
 public:
-    
-    ProgramOptions(const DAVA::String &_commandName);
+    ProgramOptions(const DAVA::String& _commandName);
 
-	void AddOption(const char *optionName, const DAVA::VariantType &defaultValue, const char *description = nullptr, bool canBeMultiple = false);
-    void AddArgument(const char *argumentName, bool required = true);
+    void AddOption(const char* optionName, const DAVA::VariantType& defaultValue, const char* description = nullptr, bool canBeMultiple = false);
+    void AddArgument(const char* argumentName, bool required = true);
 
-	DAVA::uint32 GetOptionsCount(const char *optionName) const;
-    DAVA::VariantType GetOption(const char *optionName, size_t pos = 0) const;
+    DAVA::uint32 GetOptionsCount(const char* optionName) const;
+    DAVA::VariantType GetOption(const char* optionName, size_t pos = 0) const;
 
-    DAVA::String GetArgument(const char *argumentName) const;
-    const DAVA::String & GetCommand() const;
+    DAVA::String GetArgument(const char* argumentName) const;
+    const DAVA::String& GetCommand() const;
 
-	bool Parse(int argc, char *argv[], size_t start = 1);
-	void PrintUsage() const;
+    bool Parse(int argc, char* argv[], size_t start = 1);
+    void PrintUsage() const;
 
 private:
-
-	bool ParseOption();
-
+    bool ParseOption();
 
 private:
     struct Option
     {
-		void SetValue(const DAVA::VariantType & value);
-        
-		DAVA::String name;
+        void SetValue(const DAVA::VariantType& value);
+
+        DAVA::String name;
         DAVA::String alias;
         DAVA::String descr;
         bool multipleValuesSuported = false;
@@ -77,15 +73,14 @@ private:
         DAVA::String value;
     };
 
-    char **argValues = nullptr;
+    char** argValues = nullptr;
     size_t argCount = 0;
     size_t argIndex = 0;
 
-	DAVA::Vector<Argument> arguments;
+    DAVA::Vector<Argument> arguments;
     DAVA::Vector<Option> options;
-    
+
     DAVA::String commandName;
 };
-
 
 #endif //__PROGRAM_OPTIONS_H__
