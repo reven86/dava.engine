@@ -222,7 +222,6 @@ bool GraphicInternalFont::InitFromConfig(const DAVA::FilePath &path)
 GraphicFont::GraphicFont()
     : fontInternal(nullptr)
     , texture(nullptr)
-    , textureSet()
 {
     fontType = Font::TYPE_GRAPHIC;
 }
@@ -231,10 +230,6 @@ GraphicFont::~GraphicFont()
 {
     SafeRelease(fontInternal);
     SafeRelease(texture);
-    if (textureSet.IsValid())
-    {
-        rhi::ReleaseTextureSet(textureSet);
-    }
 }
 
 GraphicFont* GraphicFont::Create(const FilePath & descriptorPath, const FilePath& texturePath)
@@ -279,7 +274,6 @@ Font * GraphicFont::Clone() const
     graphicFont->fontInternal = SafeRetain(fontInternal);
     graphicFont->size = size;
     graphicFont->texture = SafeRetain(texture);
-    graphicFont->textureSet = rhi::CopyTextureSet(textureSet);
     return graphicFont;
 }
 
@@ -465,11 +459,6 @@ bool GraphicFont::LoadTexture(const FilePath & path)
     {
         return false;
     }
-
-    rhi::TextureSetDescriptor descriptor;
-    descriptor.fragmentTextureCount = 1;
-    descriptor.fragmentTexture[0] = texture->handle;
-    textureSet = rhi::AcquireTextureSet(descriptor);
 
     return true;
 }

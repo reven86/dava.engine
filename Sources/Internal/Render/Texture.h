@@ -148,9 +148,12 @@ public:
     {
         return width;
     }
-    inline int32 GetHeight() const { return height; }
-	
-	void GenerateMipmaps();	
+    inline int32 GetHeight() const
+    {
+        return height;
+    }
+
+    void GenerateMipmaps();	
 	
 	void TexImage(int32 level, uint32 width, uint32 height, const void * _data, uint32 dataSize, uint32 cubeFaceId);
     
@@ -229,8 +232,8 @@ public:							// properties for fast access
 
     rhi::HTexture handle;
     rhi::HSamplerState samplerStateHandle;
+    rhi::HTextureSet singleTextureSet;
     rhi::SamplerState::Descriptor::Sampler samplerState;
-
 	
     uint32		width:16;			// texture width
 	uint32		height:16;			// texture height

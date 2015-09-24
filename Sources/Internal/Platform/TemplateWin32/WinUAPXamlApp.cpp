@@ -75,10 +75,12 @@ WinUAPXamlApp::WinUAPXamlApp()
     : core(static_cast<CorePlatformWinUAP*>(Core::Instance()))
     , isPhoneApiDetected(DeviceInfo::ePlatform::PLATFORM_PHONE_WIN_UAP == DeviceInfo::GetPlatform())
 {
-    deferredSizeScaleEvents = new DeferredScreenMetricEvents(DEFERRED_INTERVAL_MSEC, [this](bool isSizeUpdate, float32 widht, float32 height, bool isScaleUpdate, float32 scaleX, float32 scaleY) { MetricsScreenUpdated(isSizeUpdate, widht, height, isScaleUpdate, scaleX, scaleY); });
+    deferredSizeScaleEvents = new DeferredScreenMetricEvents(DEFERRED_INTERVAL_MSEC, [this](bool isSizeUpdate, float32 widht, float32 height, bool isScaleUpdate, float32 scaleX, float32 scaleY)
+                                                             { MetricsScreenUpdated(isSizeUpdate, widht, height, isScaleUpdate, scaleX, scaleY);
+                                                             });
 }
 
-WinUAPXamlApp::~WinUAPXamlApp() 
+WinUAPXamlApp::~WinUAPXamlApp()
 {
     delete deferredSizeScaleEvents;
 }
@@ -204,12 +206,12 @@ void WinUAPXamlApp::UnfocusUIElement()
     controlThatTakesFocus->Focus(FocusState::Pointer);
 }
 
-void WinUAPXamlApp::NativeControlGotFocus(Control^ control)
+void WinUAPXamlApp::NativeControlGotFocus(Control ^ control)
 {
     currentFocusedControl = control;
 }
 
-void WinUAPXamlApp::NativeControlLostFocus(Control^ control)
+void WinUAPXamlApp::NativeControlLostFocus(Control ^ control)
 {
     if (currentFocusedControl == control)
     {
@@ -229,7 +231,7 @@ void WinUAPXamlApp::Run()
         PrepareScreenSize();
         SetTitleName();
         SetDisplayOrientations();
-        
+
         UpdateScreenSize(static_cast<float32>(swapChainPanel->ActualWidth), static_cast<float32>(swapChainPanel->ActualHeight));
         UpdateScreenScale(swapChainPanel->CompositionScaleX, swapChainPanel->CompositionScaleY);
     });
@@ -250,7 +252,7 @@ void WinUAPXamlApp::Run()
         dispatcher->ProcessTasks();
 
         uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
-        
+
         Core::Instance()->SystemProcessFrame();
         
         uint32 elapsedTime = (uint32)(SystemTimer::Instance()->AbsoluteMS() - startTime);
@@ -326,22 +328,23 @@ void WinUAPXamlApp::MetricsScreenUpdated(bool isSizeUpdate, float32 widht, float
         scaleX = swapChainPanel->CompositionScaleX;
         scaleY = swapChainPanel->CompositionScaleY;
     }
-    core->RunOnMainThread([this, widht, height, scaleX, scaleY]() {
+    core->RunOnMainThread([this, widht, height, scaleX, scaleY]()
+                          {
         UpdateScreenSize(widht, height);
         UpdateScreenScale(scaleX, scaleY);
         ResetRender();
         ReInitCoordinatesSystem();
         UIScreenManager::Instance()->ScreenSizeChanged();
-    });
+                          });
 }
 
-void WinUAPXamlApp::OnSwapChainPanelPointerPressed(Platform::Object^ /*sender*/, PointerRoutedEventArgs^ args)
+void WinUAPXamlApp::OnSwapChainPanelPointerPressed(Platform::Object ^ /*sender*/, PointerRoutedEventArgs ^ args)
 {
-    PointerPoint^ pointerPoint = args->GetCurrentPoint(nullptr);
+    PointerPoint ^ pointerPoint = args->GetCurrentPoint(nullptr);
     PointerDeviceType type = pointerPoint->PointerDevice->PointerDeviceType;
     if ((PointerDeviceType::Mouse == type) || (PointerDeviceType::Pen == type))
     {
-        PointerPointProperties^ pointerProperties = pointerPoint->Properties;
+        PointerPointProperties ^ pointerProperties = pointerPoint->Properties;
         isLeftButtonPressed = pointerProperties->IsLeftButtonPressed;
         isRightButtonPressed = pointerProperties->IsRightButtonPressed;
         isMiddleButtonPressed = pointerProperties->IsMiddleButtonPressed;
@@ -351,21 +354,21 @@ void WinUAPXamlApp::OnSwapChainPanelPointerPressed(Platform::Object^ /*sender*/,
     float32 y = pointerPoint->Position.Y;
     int32 id = pointerPoint->PointerId;
     core->RunOnMainThread([this, x, y, id]()
-    {
+                          {
         DAVATouchEvent(UIEvent::PHASE_BEGAN, x, y, id);
-    });
+                          });
 }
 
-void WinUAPXamlApp::OnSwapChainPanelPointerReleased(Platform::Object^ /*sender*/, PointerRoutedEventArgs^ args)
+void WinUAPXamlApp::OnSwapChainPanelPointerReleased(Platform::Object ^ /*sender*/, PointerRoutedEventArgs ^ args)
 {
     bool passEventForProcession = true;
-    PointerPoint^ pointerPoint = args->GetCurrentPoint(nullptr);
+    PointerPoint ^ pointerPoint = args->GetCurrentPoint(nullptr);
     PointerDeviceType type = pointerPoint->PointerDevice->PointerDeviceType;
     if ((PointerDeviceType::Mouse == type) || (PointerDeviceType::Pen == type))
     {
         passEventForProcession = isLeftButtonPressed || isMiddleButtonPressed || isRightButtonPressed;
 
-        PointerPointProperties^ pointerProperties = pointerPoint->Properties;
+        PointerPointProperties ^ pointerProperties = pointerPoint->Properties;
         isLeftButtonPressed = pointerProperties->IsLeftButtonPressed;
         isRightButtonPressed = pointerProperties->IsRightButtonPressed;
         isMiddleButtonPressed = pointerProperties->IsMiddleButtonPressed;
@@ -376,16 +379,17 @@ void WinUAPXamlApp::OnSwapChainPanelPointerReleased(Platform::Object^ /*sender*/
         float32 x = pointerPoint->Position.X;
         float32 y = pointerPoint->Position.Y;
         int32 id = pointerPoint->PointerId;
-        core->RunOnMainThread([this, x, y, id]() {
+        core->RunOnMainThread([this, x, y, id]()
+                              {
             DAVATouchEvent(UIEvent::PHASE_ENDED, x, y, id);
-        });
+                              });
     }
 }
 
-void WinUAPXamlApp::OnSwapChainPanelPointerMoved(Platform::Object^ /*sender*/, PointerRoutedEventArgs^ args)
+void WinUAPXamlApp::OnSwapChainPanelPointerMoved(Platform::Object ^ /*sender*/, PointerRoutedEventArgs ^ args)
 {
     UIEvent::eInputPhase phase = UIEvent::PHASE_DRAG;
-    PointerPoint^ pointerPoint = args->GetCurrentPoint(nullptr);
+    PointerPoint ^ pointerPoint = args->GetCurrentPoint(nullptr);
     PointerDeviceType type = pointerPoint->PointerDevice->PointerDeviceType;
     if ((PointerDeviceType::Mouse == type) || (PointerDeviceType::Pen == type))
     {
@@ -403,9 +407,9 @@ void WinUAPXamlApp::OnSwapChainPanelPointerMoved(Platform::Object^ /*sender*/, P
     });
 }
 
-void WinUAPXamlApp::OnSwapChainPanelPointerEntered(Platform::Object^ /*sender*/, PointerRoutedEventArgs^ args)
+void WinUAPXamlApp::OnSwapChainPanelPointerEntered(Platform::Object ^ /*sender*/, PointerRoutedEventArgs ^ args)
 {
-    PointerPoint^ pointerPoint = args->GetCurrentPoint(nullptr);
+    PointerPoint ^ pointerPoint = args->GetCurrentPoint(nullptr);
     PointerDeviceType type = pointerPoint->PointerDevice->PointerDeviceType;
     if (PointerDeviceType::Mouse == type && isCursorPinning)
     {
@@ -413,16 +417,16 @@ void WinUAPXamlApp::OnSwapChainPanelPointerEntered(Platform::Object^ /*sender*/,
     }
 }
 
-void WinUAPXamlApp::OnSwapChainPanelPointerExited(Platform::Object^ /*sender*/, PointerRoutedEventArgs^ args)
+void WinUAPXamlApp::OnSwapChainPanelPointerExited(Platform::Object ^ /*sender*/, PointerRoutedEventArgs ^ args)
 {
     bool passEventForProcession = true;
-    PointerPoint^ pointerPoint = args->GetCurrentPoint(nullptr);
+    PointerPoint ^ pointerPoint = args->GetCurrentPoint(nullptr);
     PointerDeviceType type = pointerPoint->PointerDevice->PointerDeviceType;
     if (PointerDeviceType::Mouse == type || PointerDeviceType::Pen == type)
     {
         passEventForProcession = isLeftButtonPressed || isMiddleButtonPressed || isRightButtonPressed;
 
-        PointerPointProperties^ pointerProperties = pointerPoint->Properties;
+        PointerPointProperties ^ pointerProperties = pointerPoint->Properties;
         isLeftButtonPressed = pointerProperties->IsLeftButtonPressed;
         isRightButtonPressed = pointerProperties->IsRightButtonPressed;
         isMiddleButtonPressed = pointerProperties->IsMiddleButtonPressed;
@@ -435,18 +439,19 @@ void WinUAPXamlApp::OnSwapChainPanelPointerExited(Platform::Object^ /*sender*/, 
         float32 x = pointerPoint->Position.X;
         float32 y = pointerPoint->Position.Y;
         int32 id = pointerPoint->PointerId;
-        core->RunOnMainThread([this, x, y, id]() {
+        core->RunOnMainThread([this, x, y, id]()
+                              {
             DAVATouchEvent(UIEvent::PHASE_ENDED, x, y, id);
-        });
+                              });
     }
 }
 
-void WinUAPXamlApp::OnSwapChainPanelPointerWheel(Platform::Object^ /*sender*/, PointerRoutedEventArgs^ args)
+void WinUAPXamlApp::OnSwapChainPanelPointerWheel(Platform::Object ^ /*sender*/, PointerRoutedEventArgs ^ args)
 {
-    PointerPoint^ pointerPoint = args->GetCurrentPoint(nullptr);
+    PointerPoint ^ pointerPoint = args->GetCurrentPoint(nullptr);
     int32 wheelDelta = pointerPoint->Properties->MouseWheelDelta;
     core->RunOnMainThread([this, wheelDelta]()
-    {
+                          {
         UIEvent newTouch;
         newTouch.tid = 0;
         newTouch.physPoint.x = 0;
@@ -454,13 +459,13 @@ void WinUAPXamlApp::OnSwapChainPanelPointerWheel(Platform::Object^ /*sender*/, P
         newTouch.phase = UIEvent::PHASE_WHEEL;
 
         UIControlSystem::Instance()->OnInput(UIEvent::PHASE_WHEEL, { newTouch }, allTouches);
-    });
+                          });
 }
 
-void WinUAPXamlApp::OnHardwareBackButtonPressed(Platform::Object^ /*sender*/, BackPressedEventArgs ^args)
+void WinUAPXamlApp::OnHardwareBackButtonPressed(Platform::Object ^ /*sender*/, BackPressedEventArgs ^ args)
 {
     core->RunOnMainThread([this]()
-    {
+                          {
         UIEvent ev;
         ev.keyChar = 0;
         ev.tapCount = 1;
@@ -473,16 +478,16 @@ void WinUAPXamlApp::OnHardwareBackButtonPressed(Platform::Object^ /*sender*/, Ba
         touches.pop_back();
         UIControlSystem::Instance()->OnInput(0, touches, allTouches);
         InputSystem::Instance()->GetKeyboard().OnKeyUnpressed(static_cast<int32>(DVKEY_BACK));
-    });
+                          });
     args->Handled = true;
 }
 
-void WinUAPXamlApp::OnKeyDown(CoreWindow^ /*sender*/, KeyEventArgs^ args)
+void WinUAPXamlApp::OnKeyDown(CoreWindow ^ /*sender*/, KeyEventArgs ^ args)
 {
     // Check whether native control has focus, if so ignore key events
     // Explanation:
     //   For now key event handlers are invoked both for focused native control (e.g. TextBox) and for WinUAPXamlApp
-    //   This check prevents handling key events considered for native control but native control must call 
+    //   This check prevents handling key events considered for native control but native control must call
     //   NativeControlGotFocus() and NativeControlLostFocus() methods on getting and losing its focus respectively
     if (currentFocusedControl != nullptr && currentFocusedControl->FocusState != FocusState::Unfocused)
         return;
@@ -498,7 +503,7 @@ void WinUAPXamlApp::OnKeyDown(CoreWindow^ /*sender*/, KeyEventArgs^ args)
 
     int32 key = static_cast<int32>(args->VirtualKey);
     core->RunOnMainThread([this, key]()
-    {
+                          {
         UIEvent ev;
         ev.keyChar = 0;
         ev.tapCount = 1;
@@ -510,10 +515,10 @@ void WinUAPXamlApp::OnKeyDown(CoreWindow^ /*sender*/, KeyEventArgs^ args)
         touches.pop_back();
         UIControlSystem::Instance()->OnInput(0, touches, allTouches);
         InputSystem::Instance()->GetKeyboard().OnSystemKeyPressed(key);
-    });
+                          });
 }
 
-void WinUAPXamlApp::OnKeyUp(CoreWindow^ /*sender*/, KeyEventArgs^ args)
+void WinUAPXamlApp::OnKeyUp(CoreWindow ^ /*sender*/, KeyEventArgs ^ args)
 {
     // See comment for OnKeyDown
     if (currentFocusedControl != nullptr && currentFocusedControl->FocusState != FocusState::Unfocused)
@@ -521,9 +526,9 @@ void WinUAPXamlApp::OnKeyUp(CoreWindow^ /*sender*/, KeyEventArgs^ args)
 
     int32 key = static_cast<int32>(args->VirtualKey);
     core->RunOnMainThread([this, key]()
-    {
+                          {
         InputSystem::Instance()->GetKeyboard().OnSystemKeyUnpressed(key);
-    });
+                          });
 }
 
 void WinUAPXamlApp::OnMouseMoved(MouseDevice^ mouseDevice, MouseEventArgs^ args)
@@ -540,9 +545,9 @@ void WinUAPXamlApp::OnMouseMoved(MouseDevice^ mouseDevice, MouseEventArgs^ args)
     bool mouseButtonPressed = isLeftButtonPressed || isMiddleButtonPressed || isRightButtonPressed;
     UIEvent::eInputPhase phase = mouseButtonPressed ? UIEvent::PHASE_DRAG : UIEvent::PHASE_MOVE;
     core->RunOnMainThread([this, phase, x, y, id]()
-    {
+                          {
         DAVATouchEvent(phase, x, y, id);
-    });
+                          });
 }
 
 void WinUAPXamlApp::DAVATouchEvent(UIEvent::eInputPhase phase, float32 x, float32 y, int32 id)
@@ -596,8 +601,12 @@ void WinUAPXamlApp::SetupEventHandlers()
     coreWindow->Activated += ref new TypedEventHandler<CoreWindow^, WindowActivatedEventArgs^>(this, &WinUAPXamlApp::OnWindowActivationChanged);
     coreWindow->VisibilityChanged += ref new TypedEventHandler<CoreWindow^, VisibilityChangedEventArgs^>(this, &WinUAPXamlApp::OnWindowVisibilityChanged);
 
-    auto slowSize = ref new SizeChangedEventHandler([this](Object^ sender, SizeChangedEventArgs^ e) { deferredSizeScaleEvents->UpdateSize(sender, e); });
-    auto slowScale = ref new TypedEventHandler<SwapChainPanel^, Object^>([this](SwapChainPanel^ panel, Object^ args) { deferredSizeScaleEvents->UpdateScale(panel, args); });
+    auto slowSize = ref new SizeChangedEventHandler([this](Object ^ sender, SizeChangedEventArgs ^ e)
+                                                    { deferredSizeScaleEvents->UpdateSize(sender, e);
+                                                    });
+    auto slowScale = ref new TypedEventHandler<SwapChainPanel ^, Object ^>([this](SwapChainPanel ^ panel, Object ^ args)
+                                                                           { deferredSizeScaleEvents->UpdateScale(panel, args);
+                                                                           });
     swapChainPanel->SizeChanged += slowSize;
     swapChainPanel->CompositionScaleChanged += slowScale;
 
@@ -609,7 +618,7 @@ void WinUAPXamlApp::SetupEventHandlers()
     swapChainPanel->PointerExited += ref new PointerEventHandler(this, &WinUAPXamlApp::OnSwapChainPanelPointerExited);
     swapChainPanel->PointerWheelChanged += ref new PointerEventHandler(this, &WinUAPXamlApp::OnSwapChainPanelPointerWheel);
 
-    MouseDevice::GetForCurrentView()->MouseMoved += ref new TypedEventHandler<MouseDevice^, MouseEventArgs^>(this, &WinUAPXamlApp::OnMouseMoved);
+    MouseDevice::GetForCurrentView()->MouseMoved += ref new TypedEventHandler<MouseDevice ^, MouseEventArgs ^>(this, &WinUAPXamlApp::OnMouseMoved);
 
     coreWindow->KeyDown += ref new TypedEventHandler<CoreWindow^, KeyEventArgs^>(this, &WinUAPXamlApp::OnKeyDown);
     coreWindow->KeyUp += ref new TypedEventHandler<CoreWindow^, KeyEventArgs^>(this, &WinUAPXamlApp::OnKeyUp);

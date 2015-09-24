@@ -56,19 +56,21 @@ NMaterial* RenderSystem2D::DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL = nullptr;
 NMaterial* RenderSystem2D::DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL = nullptr;
 NMaterial* RenderSystem2D::DEFAULT_2D_TEXTURE_GRAYSCALE_MATERIAL = nullptr;
 
-RenderSystem2D::RenderSystem2D() 
+RenderSystem2D::RenderSystem2D()
     : currentVertexBuffer(nullptr)
     , currentIndexBuffer(nullptr)
     , indexIndex(0)
     , vertexIndex(0)
     , spriteClipping(false)
     , spriteIndexCount(0)
-    , spriteVertexCount(0)    
+    , spriteVertexCount(0)
     , prevFrameErrorsFlags(NO_ERRORS)
     , currFrameErrorsFlags(NO_ERRORS)
     , highlightControlsVerticesLimit(0)
     , renderTargetWidth(0)
     , renderTargetHeight(0)
+    , viewMatrixSemantic(0)
+    , projMatrixSemantic(0)
 {
 }
 
@@ -220,6 +222,14 @@ void RenderSystem2D::EndRenderTargetPass()
 
     ShaderDescriptorCache::ClearDynamicBindigs();
     Setup2DMatrices();
+}
+
+void RenderSystem2D::SetViewMatrix(const Matrix4& _viewMatrix)
+{
+    Flush();
+
+    viewMatrix = _viewMatrix;
+    viewMatrixSemantic += 8; //cause the same as at Setup2DMatrices()
 }
 
 void RenderSystem2D::Setup2DMatrices()
@@ -610,7 +620,7 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
             Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, &Matrix4::IDENTITY, reinterpret_cast<pointer_size>(&Matrix4::IDENTITY));
         }
         Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_PROJ, &projMatrix, static_cast<pointer_size>(projMatrixSemantic));
-        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_VIEW, &Matrix4::IDENTITY, reinterpret_cast<pointer_size>(&Matrix4::IDENTITY));
+        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_VIEW, &viewMatrix, static_cast<pointer_size>(viewMatrixSemantic));
 
         if (currentClip.dx > 0.f && currentClip.dy > 0.f)
         {
@@ -991,7 +1001,7 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * drawState, const 
 
     BatchDescriptor batch;
     batch.material = state->GetMaterial();
-    batch.textureSetHandle = sprite->GetTextureHandle(frame);
+    batch.textureSetHandle = sprite->GetTexture(frame)->singleTextureSet;
     batch.samplerStateHandle = sprite->GetTexture(frame)->samplerStateHandle;
     batch.singleColor = color;
     batch.vertexCount = spriteVertexCount;
@@ -1038,7 +1048,7 @@ void RenderSystem2D::DrawStretched(Sprite * sprite, Sprite::DrawState * state, V
     Vector2 stretchCap(Min(size.x * 0.5f, stretchCapVector.x),
         Min(size.y * 0.5f, stretchCapVector.y));
 
-    rhi::HTextureSet textureHandle = sprite->GetTextureHandle(frame);
+    rhi::HTextureSet textureHandle = sprite->GetTexture(frame)->singleTextureSet;
 
     bool needGenerateData = false;
     StretchDrawData * stretchData = 0;
@@ -1092,7 +1102,7 @@ void RenderSystem2D::DrawStretched(Sprite * sprite, Sprite::DrawState * state, V
 
     BatchDescriptor batch;
     batch.singleColor = color;
-    batch.textureSetHandle = sprite->GetTextureHandle(frame);
+    batch.textureSetHandle = sprite->GetTexture(frame)->singleTextureSet;
     batch.samplerStateHandle = sprite->GetTexture(frame)->samplerStateHandle;
     batch.material = state->GetMaterial();
     batch.vertexCount = spriteVertexCount;
@@ -1130,7 +1140,7 @@ void RenderSystem2D::DrawTiled(Sprite * sprite, Sprite::DrawState * state, const
     Vector2 stretchCap( Min( size.x, sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_WIDTH) ),
                         Min( size.y, sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT) ) );
 
-    rhi::HTextureSet textureHandle = sprite->GetTextureHandle(frame);
+    rhi::HTextureSet textureHandle = sprite->GetTexture(frame)->singleTextureSet;
 
     stretchCap.x = Min( stretchCap.x * 0.5f, stretchCapVector.x );
     stretchCap.y = Min( stretchCap.y * 0.5f, stretchCapVector.y );
@@ -1187,7 +1197,7 @@ void RenderSystem2D::DrawTiled(Sprite * sprite, Sprite::DrawState * state, const
     BatchDescriptor batch;
     batch.singleColor = color;
     batch.material = state->GetMaterial();
-    batch.textureSetHandle = sprite->GetTextureHandle(frame);
+    batch.textureSetHandle = sprite->GetTexture(frame)->singleTextureSet;
     batch.samplerStateHandle = sprite->GetTexture(frame)->samplerStateHandle;
     batch.vertexCount = spriteVertexCount;
     batch.indexCount = spriteIndexCount;
@@ -1461,7 +1471,7 @@ void RenderSystem2D::DrawPolygonTransformed(const Polygon2 & polygon, bool close
     DrawPolygon(copyPoly, closed, color);
 }
 
-void RenderSystem2D::DrawTexture(rhi::HTextureSet htextureSet, rhi::HSamplerState hSamplerState, NMaterial* material, const Color& color, const Rect& _dstRect /* = Rect(0.f, 0.f, -1.f, -1.f) */, const Rect& _srcRect /* = Rect(0.f, 0.f, -1.f, -1.f) */)
+void RenderSystem2D::DrawTexture(Texture* texture, NMaterial* material, const Color& color, const Rect& _dstRect /* = Rect(0.f, 0.f, -1.f, -1.f) */, const Rect& _srcRect /* = Rect(0.f, 0.f, -1.f, -1.f) */)
 {
     Rect destRect(_dstRect);
     if (destRect.dx < 0.f || destRect.dy < 0.f)
@@ -1501,8 +1511,8 @@ void RenderSystem2D::DrawTexture(rhi::HTextureSet htextureSet, rhi::HSamplerStat
 
     BatchDescriptor batch;
     batch.singleColor = color;
-    batch.textureSetHandle = htextureSet;
-    batch.samplerStateHandle = hSamplerState;
+    batch.textureSetHandle = texture->singleTextureSet;
+    batch.samplerStateHandle = texture->samplerStateHandle;
     batch.material = material;
     batch.vertexCount = 4;
     batch.indexCount = 6;

@@ -39,7 +39,6 @@
 
 namespace DAVA
 {
-
 using namespace ::Platform;
 using namespace ::Windows::UI::Xaml;
 using namespace ::Windows::UI::Xaml::Controls;
@@ -48,21 +47,21 @@ using namespace ::Windows::Foundation;
 const int32 DEFERRED_INTERVAL_MSEC = 100;
 
 // when app going in fullscreen or back
-// we receive events with intermediate sizes 
+// we receive events with intermediate sizes
 class DeferredScreenMetricEvents
 {
 public:
     using UpdateMetricCallback = std::function<void(bool isSizeUpdate, float32 widht, float32 height, bool isScaleUpdate, float32 scaleX, float32 scaleY)>;
     DeferredScreenMetricEvents(int32 interval, UpdateMetricCallback update);
     ~DeferredScreenMetricEvents();
-    void UpdateSize(Object^ sizeSender, SizeChangedEventArgs^ sizeArgs);
-    void UpdateScale(SwapChainPanel^ scalePanel, Object^ scaleArgs);
+    void UpdateSize(Object ^ sizeSender, SizeChangedEventArgs ^ sizeArgs);
+    void UpdateScale(SwapChainPanel ^ scalePanel, Object ^ scaleArgs);
 
 private:
     void DeferredTick();
     DispatcherTimer ^ timer;
     int32 interval = 0;
-    
+
     bool isSizeUpdate = false;
     bool isScaleUpdate = false;
     float32 widht = 0.0f;
@@ -73,7 +72,9 @@ private:
     UpdateMetricCallback updateCallback;
 };
 
-DeferredScreenMetricEvents::DeferredScreenMetricEvents(int32 interval, UpdateMetricCallback update) : interval(interval), updateCallback(update)
+DeferredScreenMetricEvents::DeferredScreenMetricEvents(int32 interval, UpdateMetricCallback update)
+    : interval(interval)
+    , updateCallback(update)
 {
     timer = ref new DispatcherTimer();
     TimeSpan span;
@@ -89,7 +90,7 @@ DeferredScreenMetricEvents::~DeferredScreenMetricEvents()
 {
 }
 
-void DeferredScreenMetricEvents::UpdateSize(Object^ sizeSender, SizeChangedEventArgs^ sizeArgs)
+void DeferredScreenMetricEvents::UpdateSize(Object ^ sizeSender, SizeChangedEventArgs ^ sizeArgs)
 {
     isSizeUpdate = true;
     if (timer->IsEnabled)
@@ -105,7 +106,7 @@ void DeferredScreenMetricEvents::UpdateSize(Object^ sizeSender, SizeChangedEvent
     height = sizeArgs->NewSize.Height;
 }
 
-void DeferredScreenMetricEvents::UpdateScale(SwapChainPanel^ scalePanel, Object^ scaleArgs)
+void DeferredScreenMetricEvents::UpdateScale(SwapChainPanel ^ scalePanel, Object ^ scaleArgs)
 {
     isScaleUpdate = true;
     if (timer->IsEnabled)
@@ -130,8 +131,7 @@ void DeferredScreenMetricEvents::DeferredTick()
     widht = height = scaleX = scaleY = 0.0f;
 }
 
-}   // namespace DAVA
+} // namespace DAVA
 
-
-#endif  // __DAVAENGINE_WIN_UAP__
-#endif  // __DAVAENGINE_DEFERREDEVENTS_H__
+#endif // __DAVAENGINE_WIN_UAP__
+#endif // __DAVAENGINE_DEFERREDEVENTS_H__

@@ -89,11 +89,6 @@ public:
     Texture* GetTexture() const;
 
     /**
-     \brief Get font texture handler
-     */
-    rhi::HTextureSet GetTextureHandler() const;
-
-    /**
      \brief Tests if two fonts are the same.
      */
     virtual bool IsEqual(const Font *font) const;
@@ -125,18 +120,12 @@ private:
 
     GraphicInternalFont * fontInternal;
     Texture * texture;
-    rhi::HTextureSet textureSet;
 };
 
 
 inline Texture* GraphicFont::GetTexture() const
 {
     return texture;
-}
-
-inline rhi::HTextureSet GraphicFont::GetTextureHandler() const
-{
-    return textureSet;
 }
 
 }

@@ -183,7 +183,7 @@ void EditorMaterialSystem::RemoveEntity(DAVA::Entity * entity)
     {
         for (DAVA::uint32 i = 0; i < ro->GetRenderBatchCount(); ++i)
         {
-			DAVA::RenderBatch *rb = ro->GetRenderBatch(i);
+            DAVA::RenderBatch *rb = ro->GetRenderBatch(i);
 			DAVA::NMaterial *material = rb->GetMaterial();
             RemoveMaterial(material);
 		}
@@ -242,7 +242,7 @@ void EditorMaterialSystem::ApplyViewMode(DAVA::NMaterial *material)
     {
         SetMaterialFlag(material, DAVA::NMaterialFlagName::FLAG_SETUPLIGHTMAP, 0);
     }
-    
+
     //materials
     auto UpdateFlags = [this, SetMaterialFlag](DAVA::NMaterial *material, DAVA::int32 mode, const DAVA::FastName &flagName)
     {

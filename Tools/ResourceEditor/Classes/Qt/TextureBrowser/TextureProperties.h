@@ -58,8 +58,8 @@ public:
     TextureProperties(QWidget* parent = nullptr);
     ~TextureProperties() override;
 
-    void setTextureDescriptor(DAVA::TextureDescriptor *descriptor);
-	void setTextureGPU(DAVA::eGPUFamily gpu);
+    void setTextureDescriptor(DAVA::TextureDescriptor* descriptor);
+    void setTextureGPU(DAVA::eGPUFamily gpu);
 
 	const DAVA::TextureDescriptor* getTextureDescriptor();
 	void setOriginalImageSize(const QSize &size);
@@ -107,7 +107,7 @@ protected:
 
     bool skipPropSizeChanged;
 
-	QSize origImageSize;
+    QSize origImageSize;
 	int curSizeLevelObject;
 
 	EnumMap enumFormats;

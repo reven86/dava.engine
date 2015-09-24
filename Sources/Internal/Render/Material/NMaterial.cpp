@@ -168,8 +168,8 @@ uint32 NMaterial::GetRequiredVertexFormat()
     uint32 res = 0;
     for (auto& variant : renderVariants)
     {
-		bool shaderValid = (nullptr != variant.second) && (nullptr != variant.second->shader);
-		DVASSERT_MSG(shaderValid, "Shader is invalid. Check log for details.");
+        bool shaderValid = (nullptr != variant.second) && (variant.second->shader->IsValid());
+        DVASSERT_MSG(shaderValid, "Shader is invalid. Check log for details.");
 
 		if (shaderValid)
 		{
@@ -753,8 +753,8 @@ bool NMaterial::PreBuildMaterial(const FastName& passName)
         RebuildBindings();
     if (needRebuildTextures)
         RebuildTextureBindings();
-    
-    bool res = (activeVariantInstance != nullptr) && (activeVariantInstance->shader != nullptr);
+
+    bool res = (activeVariantInstance != nullptr) && (activeVariantInstance->shader->IsValid());
     if (activeVariantName != passName)
     {
         RenderVariantInstance *targetVariant = renderVariants[passName];
@@ -763,8 +763,8 @@ bool NMaterial::PreBuildMaterial(const FastName& passName)
         {
             activeVariantName = passName;
             activeVariantInstance = targetVariant;
-            
-            res = (activeVariantInstance->shader != nullptr);
+
+            res = (activeVariantInstance->shader->IsValid());
         }
         else
         {

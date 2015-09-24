@@ -64,10 +64,8 @@ protected:
 
     int32 curToolSize;
 	Texture* toolImageTexture = nullptr;
-    rhi::HTextureSet toolTextureSet;
 
     Texture * loadedTexture = nullptr;
-    rhi::HTextureSet loadedTextureSet;
     
 	Color drawColor;
 	int32 colorIndex = 0;

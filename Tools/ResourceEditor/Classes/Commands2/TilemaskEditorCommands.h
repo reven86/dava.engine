@@ -83,7 +83,6 @@ protected:
 
 	void ApplyImageToTexture(Image* image, Texture * dstTex, int32 internalHandle);
     
-    rhi::HTextureSet textureSetHandle[2];
     Texture * texture[2];
 };
 
