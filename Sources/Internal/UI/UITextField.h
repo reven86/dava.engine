@@ -345,12 +345,10 @@ public:
 
 protected:
     ~UITextField() override;
-
-private:
     void WillBecomeVisible() override;
     void WillBecomeInvisible() override;
 
-    void RenderText();
+private:
     WideString GetVisibleText() const;
 
     void SetRenderToTexture(bool value);
