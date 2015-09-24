@@ -1194,8 +1194,8 @@ void MaterialEditor::UpdateMaterialFromPresetWithOptions(DAVA::NMaterial* materi
 {
 	if ((options & CHECKED_GROUP) && preset->IsKeyExists("group"))
 	{
-		material->SetQualityGroup(preset->GetFastName("materialGroup"));
-	}
+        material->SetQualityGroup(preset->GetFastName("group"));
+    }
 
 	if ((options & CHECKED_TEMPLATE) && preset->IsKeyExists("fxname"))
 	{
