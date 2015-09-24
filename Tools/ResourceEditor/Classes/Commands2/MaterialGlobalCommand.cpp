@@ -33,7 +33,7 @@ MaterialGlobalSetCommand::MaterialGlobalSetCommand(DAVA::Scene *_scene, DAVA::NM
 	: Command2(CMDID_MATERIAL_GLOBAL_SET, "Set global material")
     , scene(_scene)
 {
-    DVASSERT(NULL != scene);
+    DVASSERT(nullptr != scene);
 
     newGlobal = SafeRetain(global);
     oldGlobal = SafeRetain(scene->GetGlobalMaterial());
