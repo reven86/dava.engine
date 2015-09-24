@@ -457,7 +457,8 @@ void NMaterial::SetParent(NMaterial *_parent)
         SafeRetain(parent);
         parent->AddChildMaterial(this);
     }
-        
+
+    InvalidateRenderVariants();
 }
 
 NMaterial* NMaterial::GetParent()
@@ -474,7 +475,6 @@ void NMaterial::AddChildMaterial(NMaterial *material)
 {    
     DVASSERT(material);
     children.push_back(material);
-    material->InvalidateRenderVariants();    
 }
 
 void NMaterial::RemoveChildMaterial(NMaterial *material)
