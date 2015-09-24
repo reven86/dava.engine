@@ -98,13 +98,8 @@ void FoliageSystem::Process(float32 timeElapsed)
     VegetationRenderObject* vegetationRO = GetVegetation(foliageEntity);
     if(vegetationRO && vegetationRO->ReadyToRender())
     {
-        Camera * camera = GetScene()->GetRenderSystem()->GetMainCamera();
-        if (nullptr == camera)
-        {
-            return;
-        }
-
         WindSystem* windSystem = GetScene()->windSystem;
+        Camera* camera = GetScene()->GetRenderSystem()->GetMainCamera();
         Vector<AbstractQuadTreeNode<VegetationSpatialData>*> & visibleCells = vegetationRO->BuildVisibleCellList(camera);
         uint32 cellsCount = static_cast<uint32>(visibleCells.size());
         
