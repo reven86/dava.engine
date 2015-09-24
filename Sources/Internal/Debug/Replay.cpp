@@ -114,6 +114,7 @@ void Replay::RecordEvent(const UIEvent * ev)
 	Write(ev->controlState);
 	Write(ev->tapCount);
 	Write<uint16>(ev->keyChar);
+    Write(static_cast<uint32>(ev->deviceId));
 }
 
 void Replay::RecordSeed(const uint32 seed)
@@ -207,8 +208,11 @@ UIEvent	Replay::PlayEvent()
 	ev.controlState = Read<int32>(); if(!isPlayback) return ev;
 	ev.tapCount = Read<int32>(); if(!isPlayback) return ev;
 	ev.keyChar = (char16)Read<uint16>(); if(!isPlayback) return ev;
+    ev.deviceId = static_cast<UIEvent::PointerDeviceID>(Read<uint32>());
+    if (!isPlayback)
+        return ev;
 
-	return ev;
+    return ev;
 }
 
 void Replay::PlaySeed()

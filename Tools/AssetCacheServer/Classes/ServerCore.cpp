@@ -26,18 +26,17 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 #include "ServerCore.h"
 #include <QTimer>
 
 ServerCore::ServerCore()
-	: state(State::STOPPED)
+    : state(State::STOPPED)
     , remoteState(RemoteState::STOPPED)
 {
     QObject::connect(&settings, &ApplicationSettings::SettingsUpdated, this, &ServerCore::OnSettingsUpdated);
-    
+
     server.SetDelegate(&serverLogics);
-	client.AddListener(&serverLogics);
+    client.AddListener(&serverLogics);
     client.AddListener(this);
     serverLogics.Init(&server, &client, &dataBase);
 
@@ -134,12 +133,12 @@ void ServerCore::DisconnectRemote()
 void ServerCore::OnTimerUpdate()
 {
     serverLogics.Update();
-    
+
     auto netSystem = DAVA::Net::NetCore::Instance();
     if (netSystem)
-	{
-    	netSystem->Poll();
-	}
+    {
+        netSystem->Poll();
+    }
 }
 
 void ServerCore::OnConnectTimeout()
@@ -177,11 +176,11 @@ void ServerCore::OnAssetClientStateChanged()
     emit ServerStateChanged(this);
 }
 
-void ServerCore::OnSettingsUpdated(const ApplicationSettings *_settings)
+void ServerCore::OnSettingsUpdated(const ApplicationSettings* _settings)
 {
     DVASSERT(&settings == _settings);
 
-    auto & folder = settings.GetFolder();
+    auto& folder = settings.GetFolder();
     auto sizeGb = settings.GetCacheSizeGb();
     auto count = settings.GetFilesCount();
     auto autoSaveTimeoutMin = settings.GetAutoSaveTimeoutMin();
@@ -190,24 +189,24 @@ void ServerCore::OnSettingsUpdated(const ApplicationSettings *_settings)
     bool needServerRestart = false;
     bool needClientRestart = false;
 
-    if(state == State::STARTED)
-    {   // disconnect network if settings changed
+    if (state == State::STARTED)
+    { // disconnect network if settings changed
         if (server.GetListenPort() != settings.GetPort())
         {
             needServerRestart = true;
             StopListening();
         }
-            
-        if ((remoteState != RemoteState::STOPPED && !(remoteServerData == remoteServer)) || 
+
+        if ((remoteState != RemoteState::STOPPED && !(remoteServerData == remoteServer)) ||
             (remoteState == RemoteState::STOPPED && !remoteServer.ip.empty()))
         {
             needClientRestart = true;
             DisconnectRemote();
         }
     }
-        
+
     //updated DB settings
-    if(sizeGb && !folder.IsEmpty())
+    if (sizeGb && !folder.IsEmpty())
     {
         dataBase.UpdateSettings(folder, sizeGb * 1024 * 1024 * 1024, count, autoSaveTimeoutMin * 60 * 1000);
     }
@@ -222,7 +221,7 @@ void ServerCore::OnSettingsUpdated(const ApplicationSettings *_settings)
         StartListening();
     }
 
-    if(state == State::STARTED && needClientRestart)
+    if (state == State::STARTED && needClientRestart)
     {
         remoteServerData = remoteServer;
         ConnectRemote();
@@ -234,4 +233,3 @@ void ServerCore::OnSettingsUpdated(const ApplicationSettings *_settings)
         return;
     }
 }
-

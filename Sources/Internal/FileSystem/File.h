@@ -196,15 +196,15 @@ public:
 	/** 
 		\brief Get current file position
 	*/
-	virtual uint32 GetPos() const;
-	
-	/** 
+    virtual uint32 GetPos() const;
+
+    /** 
 		\brief Get current file size if writing
 		\brief and get real file size if file for reading
 	*/
-	virtual	uint32 GetSize() const;
-	
-	/** 
+    virtual uint32 GetSize() const;
+
+    /** 
 		\brief Set current file position
 		\param position position to set
 		\param seekType \ref IO::eFileSeek flag to set type of positioning
@@ -213,7 +213,7 @@ public:
 	virtual bool Seek(int32 position, uint32 seekType);
 	
 	//! return true if end of file reached and false in another case
-	virtual bool IsEof() const;
+    virtual bool IsEof() const;
 
     /**
         \brief Truncate a file to a specified length

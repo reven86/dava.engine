@@ -399,28 +399,36 @@ void UIControlSystem::SwitchInputToControl(int32 eventID, UIControl *targetContr
 	}
 }
 
-	
-void UIControlSystem::OnInput(int32 touchType, const Vector<UIEvent> &activeInputs, const Vector<UIEvent> &allInputs, bool fromReplay/* = false*/)
+void UIControlSystem::OnInput(const Vector<UIEvent>& activeInputs, const Vector<UIEvent>& allInputs)
 {
     inputCounter = 0;
-	if(Replay::IsPlayback() && !fromReplay) return;
-	if (lockInputCounter > 0)return;
 
-	if(frameSkip <= 0)
+    if (Replay::IsPlayback())
+    {
+        return;
+    }
+
+    if (lockInputCounter > 0)
+    {
+        return;
+    }
+
+    if(frameSkip <= 0)
 	{
 		if(Replay::IsRecord())
 		{
-			int32 count = (int32)activeInputs.size();
-			Replay::Instance()->RecordEventsCount(count);
-			for(Vector<UIEvent>::const_iterator it = activeInputs.begin(); it != activeInputs.end(); ++it) 
-			{
-				UIEvent ev = *it;
-                ev.point = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(ev.physPoint);
-				Replay::Instance()->RecordEvent(&ev);
-			}
+            int32 count = static_cast<int32>(activeInputs.size());
+            Replay::Instance()->RecordEventsCount(count);
 
-			count = (int32)allInputs.size();
-			Replay::Instance()->RecordEventsCount(count);
+            std::for_each(begin(activeInputs), end(activeInputs), [](const UIEvent& e)
+                          {
+                              UIEvent ev = e;
+                              ev.point = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(ev.physPoint);
+                              Replay::Instance()->RecordEvent(&ev);
+                          });
+
+            count = static_cast<int32>(allInputs.size());
+            Replay::Instance()->RecordEventsCount(count);
 			for(Vector<UIEvent>::const_iterator it = allInputs.begin(); it != allInputs.end(); ++it) 
 			{
 				UIEvent ev = *it;
@@ -430,10 +438,8 @@ void UIControlSystem::OnInput(int32 touchType, const Vector<UIEvent> &activeInpu
 		}
 
 		//check all touches for active state
-//		Logger::FrameworkDebug("IN   Active touches %d", activeInputs.size());
-//		Logger::FrameworkDebug("IN   Total touches %d", allInputs.size());
-		for (Vector<UIEvent>::iterator it = totalInputs.begin(); it != totalInputs.end(); it++) 
-		{
+        for (Vector<UIEvent>::iterator it = totalInputs.begin(); it != totalInputs.end(); ++it)
+        {
 			(*it).activeState = UIEvent::ACTIVITY_STATE_INACTIVE;
 			
 			for (Vector<UIEvent>::const_iterator wit = activeInputs.begin(); wit != activeInputs.end(); wit++) 
@@ -456,8 +462,8 @@ void UIControlSystem::OnInput(int32 touchType, const Vector<UIEvent> &activeInpu
 			}
 			if((*it).activeState == UIEvent::ACTIVITY_STATE_INACTIVE)
 			{
-				for (Vector<UIEvent>::const_iterator wit = allInputs.begin(); wit != allInputs.end(); wit++) 
-				{
+                for (Vector<UIEvent>::const_iterator wit = allInputs.begin(); wit != allInputs.end(); ++wit)
+                {
 					if((*it).tid == (*wit).tid)
 					{
 						if((*it).phase == (*wit).phase && (*it).physPoint == (*wit).physPoint)
@@ -537,15 +543,8 @@ void UIControlSystem::OnInput(int32 touchType, const Vector<UIEvent> &activeInpu
 				}
                 continue;
 			}
-            it++;
-		}
-		
-//		Logger::FrameworkDebug("Total touches %d", totalInputs.size());
-//		for (Vector<UIEvent>::iterator it = totalInputs.begin(); it != totalInputs.end(); it++)
-//		{
-//			Logger::FrameworkDebug("		ID %d", (*it).tid);
-//			Logger::FrameworkDebug("		phase %d", (*it).phase);
-//		}
+            ++it;
+        }
 
 
 		if(currentScreen)
@@ -569,7 +568,6 @@ void UIControlSystem::OnInput(int32 touchType, const Vector<UIEvent> &activeInpu
             }
 		}
 	}
-    //Logger::Info("UIControlSystem::inputs: %d", inputCounter);
 }
 
 void UIControlSystem::OnInput(UIEvent * event)
@@ -774,8 +772,8 @@ void UIControlSystem::ReplayEvents()
 
 		if(activeCount || allCount)
 		{
-			OnInput(0, activeInputs, allInputs, true);
-		}
+            OnInput(activeInputs, allInputs);
+        }
 	}
 }
 
