@@ -361,13 +361,15 @@ void NMaterial::SetTexture(const FastName& slotName, Texture* texture)
     MaterialTextureInfo * texInfo = localTextures.at(slotName);
     DVASSERT(texture != nullptr);    //use RemoveTexture to remove texture!
     DVASSERT(texInfo != nullptr);   //use AddTexture to add texture!
+
     if (texInfo->texture != texture)
     {
         SafeRelease(texInfo->texture);
         texInfo->texture = SafeRetain(texture);
         texInfo->path = texture->GetPathname();
-        InvalidateTextureBindings();
-    }        
+    }
+
+    InvalidateTextureBindings();
 }
 
 bool NMaterial::HasLocalTexture(const FastName& slotName)
