@@ -47,17 +47,18 @@ public:
     int MemberFlags(const DynamicData& ddata, const FastName &key) const override;
     VariantType MemberValueGet(const DynamicData& ddata, const FastName &key) const override;
     void MemberValueSet(const DynamicData& ddata, const FastName &key, const VariantType &value) override;
-    
-protected:
+
+private:
     struct PropData
     {
         uint32 size;
         rhi::ShaderProp::Type type;
         const float32* defaultValue;
     };
-    
+    using PropDataMap = FastNameMap<PropData>;
     bool IsColor(const FastName &key) const;
-    void FindMaterialPropertiesRecursive(NMaterial* state, FastNameMap<PropData>& props) const;
+    void FindMaterialPropertiesRecursive(NMaterial* state, PropDataMap& props) const;
+    void FillGlobalMaterialMemebers(NMaterial* state, PropDataMap& props) const;
 };
 
 };
