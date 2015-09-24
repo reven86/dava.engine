@@ -646,7 +646,12 @@ TextFieldPlatformImpl::TextFieldPlatformImpl(DAVA::UITextField* tf)
 
             // replace textField with new textView and apply current properties
             ::UITextView* textView = [[UITextView alloc] initWithFrame:rect textContainer:nil];
-            
+
+            //Workaround: fix OS built-in padding on UITextView
+            //See http://foobarpig.com/iphone/get-rid-of-uitextview-padding.html
+            //See http://stackoverflow.com/questions/746670/how-to-lose-margin-padding-in-uitextview
+            textView.contentInset = UIEdgeInsetsMake(-10, -5, 0, 0);
+
             HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
             BackgroundView* backgroundView = [appDelegate glController].backgroundView;
             [backgroundView PrepareView: textFieldHolder->textCtrl];
