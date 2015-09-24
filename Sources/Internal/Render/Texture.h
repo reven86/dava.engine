@@ -35,7 +35,6 @@
 #include "Base/BaseMath.h"
 #include "Base/BaseObject.h"
 #include "Base/FastName.h"
-#include "Render/RenderResource.h"
 #include "FileSystem/FilePath.h"
 #include "Render/RHI/rhi_Public.h"
 
@@ -62,8 +61,7 @@ class Texture;
     using TexturesMap = Map<String, Texture *>;
 #endif //#ifdef USE_FILEPATH_IN_MAP
 
-
-class Texture : public RenderResource
+    class Texture : public BaseObject
 {
     DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_TEXTURE)
 public:       
@@ -142,15 +140,20 @@ public:
      */
     static Texture * Get(const FilePath & name);
 
+    int32 Release() override;
 
-	virtual int32 Release();
+    static void DumpTextures();
 
-	static void	DumpTextures();
+    inline int32 GetWidth() const
+    {
+        return width;
+    }
+    inline int32 GetHeight() const
+    {
+        return height;
+    }
 
-	inline int32 GetWidth() const { return width; }
-	inline int32 GetHeight() const { return height; }
-	
-	void GenerateMipmaps();	
+    void GenerateMipmaps();	
 	
 	void TexImage(int32 level, uint32 width, uint32 height, const void * _data, uint32 dataSize, uint32 cubeFaceId);
     
@@ -193,6 +196,8 @@ public:
     
     int32 GetBaseMipMap() const;
 
+    static rhi::HSamplerState CreateSamplerStateHandle(const rhi::SamplerState::Descriptor::Sampler& samplerState);
+
 protected:
 
     void RestoreRenderResource();
@@ -215,8 +220,6 @@ protected:
     	
 	void GenerateMipmapsInternal();
 
-    static bool CheckImageSize(const Vector<Image *> &imageSet);
-    
 	Texture();
 	virtual ~Texture();
     
@@ -228,8 +231,9 @@ public:							// properties for fast access
 
 
     rhi::HTexture handle;
+    rhi::HSamplerState samplerStateHandle;
+    rhi::HTextureSet singleTextureSet;
     rhi::SamplerState::Descriptor::Sampler samplerState;
-
 	
     uint32		width:16;			// texture width
 	uint32		height:16;			// texture height

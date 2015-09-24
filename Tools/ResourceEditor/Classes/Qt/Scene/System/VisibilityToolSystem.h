@@ -68,10 +68,9 @@ public:
 	void SaveTexture(const FilePath& filePath);
 
 protected:
-	static const uint32 CROSS_TEXTURE_SIZE = 64;
+    static const float32 CROSS_TEXTURE_SIZE;
 
-	Texture* crossTexture;
-    rhi::HTextureSet crossTextureSet;
+    Texture* crossTexture;
 	uint32 curToolSize;
 
 	bool editingIsEnabled;

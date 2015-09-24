@@ -95,7 +95,7 @@ template <class HBuffer> struct BufferAllocator
         uint8 *data;
         uint32 base;
         uint32 count;
-    };    
+    };
 
     BufferAllocateResult AllocateData(uint32 size, uint32 count)
     {
@@ -111,7 +111,7 @@ template <class HBuffer> struct BufferAllocator
         {
             if (currentlyMappedBuffer) //unmap it
             {
-                BufferProxy<HBuffer>::UnmapBuffer(currentlyMappedBuffer->buffer);                
+                buffersToUnmap.push_back(currentlyMappedBuffer);
                 usedBuffers.push_back(currentlyMappedBuffer);
             }
             if (freeBuffers.size())
@@ -123,7 +123,7 @@ template <class HBuffer> struct BufferAllocator
             {
                 currentlyMappedBuffer = new BufferInfo();
                 currentlyMappedBuffer->allocatedSize = pageSize;
-                currentlyMappedBuffer->buffer = BufferProxy<HBuffer>::CreateBuffer(pageSize);                 
+                currentlyMappedBuffer->buffer = BufferProxy<HBuffer>::CreateBuffer(pageSize);
             }
             currentlyMappedData = BufferProxy<HBuffer>::MapBuffer(currentlyMappedBuffer->buffer, 0, currentlyMappedBuffer->allocatedSize); 
             currentlyMappedBuffer->readySync = rhi::GetCurrentFrameSyncObject();
@@ -145,6 +145,10 @@ template <class HBuffer> struct BufferAllocator
 
     void Clear()
     {
+        for (auto b : buffersToUnmap)
+        {
+            BufferProxy<HBuffer>::UnmapBuffer(b->buffer);
+        }
         for (auto b : freeBuffers)
         {
             BufferProxy<HBuffer>::DeleteBuffer(b->buffer);
@@ -158,6 +162,7 @@ template <class HBuffer> struct BufferAllocator
 
         freeBuffers.clear();
         usedBuffers.clear();
+        buffersToUnmap.clear();
     }
 
     void BeginFrame()
@@ -180,6 +185,12 @@ template <class HBuffer> struct BufferAllocator
 
     void EndFrame()
     {
+        for (auto b : buffersToUnmap)
+        {
+            BufferProxy<HBuffer>::UnmapBuffer(b->buffer);
+        }
+        buffersToUnmap.clear();
+
         if (currentlyMappedBuffer)
         {
             BufferProxy<HBuffer>::UnmapBuffer(currentlyMappedBuffer->buffer);
@@ -196,7 +207,7 @@ private:
     uint32 currentlyUsedSize = 0;
     List<BufferInfo*> freeBuffers;
     List<BufferInfo*> usedBuffers;
-
+    List<BufferInfo*> buffersToUnmap;
 };
 
 BufferAllocator<rhi::HVertexBuffer> vertexBufferAllocator;

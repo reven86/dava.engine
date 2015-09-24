@@ -80,7 +80,6 @@ protected:
 	Image* redoImage;
 	Rect updatedRect;
 
-    rhi::HTextureSet textureSetHandle;
     Texture * texture;
     
 	void ApplyImage(Image* image);

@@ -42,28 +42,16 @@
 namespace DAVA 
 {
     
-    
-    
-    
-    
-PolygonGroupWithMaterial::PolygonGroupWithMaterial()
-{
-    mesh = 0;
-    polygroupIndex = 0;
-    material = 0;
-}
-    
 PolygonGroupWithMaterial::~PolygonGroupWithMaterial()
 {
     SafeRelease(mesh);
-    SafeRelease(material);
 }
 
 void PolygonGroupWithMaterial::Setup(StaticMesh * _mesh, int32 _polygroupIndex, NMaterial * _material, TransformComponent * _transform)
 {
+    SetMaterial(_material);
     mesh = SafeRetain(_mesh);
     polygroupIndex = _polygroupIndex;
-    material = SafeRetain(_material);
     transform = _transform;
 }
 
@@ -82,16 +70,10 @@ PolygonGroup * PolygonGroupWithMaterial::GetPolygonGroup()
     return mesh->GetPolygonGroup(polygroupIndex);
 }
 
-NMaterial * PolygonGroupWithMaterial::GetMaterial()
-{
-    return material;
-}
-
 uint64 PolygonGroupWithMaterial::GetSortID()
 {
     return 0;
 }
-    
 
 MeshInstanceNode::MeshInstanceNode()
 :	Entity()

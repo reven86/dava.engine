@@ -379,6 +379,9 @@ void SceneEditor2::SetChanged(bool changed)
 
 void SceneEditor2::Update(float timeElapsed)
 {
+    renderStats = Renderer::GetRenderStats();
+    Renderer::GetRenderStats().Reset();
+
     Scene::Update(timeElapsed);
 }
 
@@ -388,26 +391,13 @@ void SceneEditor2::SetViewportRect(const DAVA::Rect &newViewportRect)
 }
 
 void SceneEditor2::Draw()
-{    
-	
-//	NMaterial* global = renderSystem->GetMaterialSystem()->GetMaterial(MATERIAL_FOR_REBIND);
-//	DVASSERT(global);
-//	
-//	if(global)
-//	{
-//		global->Rebind();
-//	}
-	
-	Scene::Draw();
-    
-#if RHI_COMPLETE_EDITOR
-    renderStats = RenderManager::Instance()->GetStats();
-#endif // RHI_COMPLETE_EDITOR
+{
+    Scene::Draw();
 
-	if(isHUDVisible)
-	{
-		gridSystem->Draw();
-		cameraSystem->Draw();
+    if (isHUDVisible)
+    {
+        gridSystem->Draw();
+        cameraSystem->Draw();
 
 		if(collisionSystem)
 			collisionSystem->Draw();
@@ -416,8 +406,6 @@ void SceneEditor2::Draw()
 
 		if(structureSystem)
 			structureSystem->Draw();
-
-		materialSystem->Draw();
 	}
  
 	tilemaskEditorSystem->Draw();
@@ -503,12 +491,10 @@ void SceneEditor2::EditorCommandNotify::CleanChanged(bool clean)
 	}
 }
 
-#if RHI_COMPLETE_EDITOR
-const RenderManager::Stats & SceneEditor2::GetRenderStats() const
+const RenderStats& SceneEditor2::GetRenderStats() const
 {
     return renderStats;
 }
-#endif // RHI_COMPLETE_EDITOR
 
 void SceneEditor2::DisableTools(int32 toolFlags, bool saveChanges /*= true*/)
 {

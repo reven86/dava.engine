@@ -135,6 +135,10 @@ void ShaderDescriptor::UpdateDynamicParams()
             }
             
             dynamicBinding.updateSemantic = updateSemantic;
+
+#if defined(__DAVAENGINE_RENDERSTATS__)
+            ++Renderer::GetRenderStats().dynamicParamBindCount;
+#endif
         }
     }
 }

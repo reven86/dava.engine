@@ -52,10 +52,7 @@ public:
     };
 
 	EditorMaterialSystem(DAVA::Scene * scene);
-	virtual ~EditorMaterialSystem();
-
-	//void BuildInstancesList(DAVA::NMaterial* parentMaterial, DAVA::Set<DAVA::NMaterial *> &in) const;
-    //void BuildMaterialsList(DAVA::Set<DAVA::NMaterial *> &in) const;
+    ~EditorMaterialSystem();
 
     const DAVA::Set<DAVA::NMaterial *>& GetTopParents() const;
 
@@ -71,36 +68,43 @@ public:
     void SetLightmapCanvasVisible(bool enable);
     bool IsLightmapCanvasVisible() const;
 
-protected:
-	virtual void AddEntity(DAVA::Entity * entity);
-	virtual void RemoveEntity(DAVA::Entity * entity);
+private:
+    struct MaterialMapping
+    {
+        enum class Mode : DAVA::uint32
+        {
+            RetainedRenderBatch,
+            RenderBatchIndexInRenderObject
+        };
 
-	void Draw();
+        DAVA::Entity* entity = nullptr;
+        DAVA::RenderBatch* renderBatch = nullptr;
+        DAVA::uint32 renderBatchIndexInRenderObject = static_cast<DAVA::uint32>(-1);
+        Mode mode = Mode::RenderBatchIndexInRenderObject;
+    };
+    using MaterialToObjectsMap = DAVA::Map<DAVA::NMaterial*, MaterialMapping>;
 
-	void ProcessCommand(const Command2 *command, bool redo);
+    void AddEntity(DAVA::Entity* entity) override;
+    void RemoveEntity(DAVA::Entity* entity) override;
 
-	void AddMaterial(DAVA::NMaterial *material, DAVA::Entity *entity, const DAVA::RenderBatch *rb);
-	void RemoveMaterial(DAVA::NMaterial *material);
+    void ProcessCommand(const Command2* command, bool redo);
+
+    void AddMaterialsFromEntity(DAVA::Entity* entity);
+    void AddMaterialFromRenderBatchWithEntity(DAVA::RenderBatch* renderBatch, DAVA::Entity* entity);
+    void AddMaterial(DAVA::NMaterial*, const MaterialMapping& mapping);
+
+    void RemoveMaterial(DAVA::NMaterial* material);
 
     void ApplyViewMode();
     void ApplyViewMode(DAVA::NMaterial *material);
 
-private:
-    int curViewMode;
-    bool showLightmapCanvas;
-
-    struct MaterialFB
-	{
-		MaterialFB() : entity(NULL), batch(NULL) {}
-
-		DAVA::Entity *entity;
-		const DAVA::RenderBatch *batch;
-	};
-
-	DAVA::Map<DAVA::NMaterial *, MaterialFB> materialFeedback;
-	DAVA::Set<DAVA::NMaterial *> ownedParents;
-
     bool IsEditable(DAVA::NMaterial *material) const;
+
+private:
+    MaterialToObjectsMap materialToObjectsMap;
+    DAVA::Set<DAVA::NMaterial*> ownedParents;
+    DAVA::uint32 curViewMode = LIGHTVIEW_ALL;
+    bool showLightmapCanvas = false;
 };
 
 #endif // __EDITOR_MATERIAL_SYSTEM_H__

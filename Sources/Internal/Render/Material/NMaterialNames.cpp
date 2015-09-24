@@ -153,6 +153,7 @@ namespace DAVA
     const FastName NMaterialFlagName::FLAG_SPECULAR = FastName("SPECULAR");
     const FastName NMaterialFlagName::FLAG_SEPARATE_NORMALMAPS = FastName("SEPARATE_NORMALMAPS");
 
+    const FastName NMaterialFlagName::FLAG_SPEED_TREE_LEAF = FastName("SPEED_TREE_LEAF");
     const FastName NMaterialFlagName::FLAG_SPHERICAL_LIT = FastName("SPHERICAL_LIT");
 
     const FastName NMaterialFlagName::FLAG_TANGENT_SPACE_WATER_REFLECTIONS = FastName("TANGENT_SPACE_WATER_REFLECTIONS");

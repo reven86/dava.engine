@@ -130,21 +130,25 @@ void NMaterial::BindParams(rhi::Packet& target)
         for (auto& materialBinding : materialBufferBinding->propBindings)
         {
             DVASSERT(materialBinding.source)
-                if (materialBinding.updateSemantic != materialBinding.source->updateSemantic)
+            if (materialBinding.updateSemantic != materialBinding.source->updateSemantic)
+            {
+                //Logger::Info( " upd-prop " );
+                if (materialBinding.type < rhi::ShaderProp::TYPE_FLOAT4)
                 {
-                    //Logger::Info( " upd-prop " );                    
-                    if (materialBinding.type < rhi::ShaderProp::TYPE_FLOAT4)
-                    {
-                        DVASSERT(materialBinding.source->arraySize == 1);
-                        rhi::UpdateConstBuffer1fv(materialBufferBinding->constBuffer, materialBinding.reg, materialBinding.regCount, materialBinding.source->data.get(), ShaderDescriptor::CalculateDataSize(materialBinding.type, materialBinding.source->arraySize));
-                    }
-                    else
-                    {
-                        DVASSERT(materialBinding.source->arraySize <= materialBinding.regCount);
-                        rhi::UpdateConstBuffer4fv(materialBufferBinding->constBuffer, materialBinding.reg, materialBinding.source->data.get(), ShaderDescriptor::CalculateRegsCount(materialBinding.type, materialBinding.source->arraySize));
-                    }                                        
-                    materialBinding.updateSemantic = materialBinding.source->updateSemantic;
+                    DVASSERT(materialBinding.source->arraySize == 1);
+                    rhi::UpdateConstBuffer1fv(materialBufferBinding->constBuffer, materialBinding.reg, materialBinding.regCount, materialBinding.source->data.get(), ShaderDescriptor::CalculateDataSize(materialBinding.type, materialBinding.source->arraySize));
                 }
+                else
+                {
+                    DVASSERT(materialBinding.source->arraySize <= materialBinding.regCount);
+                    rhi::UpdateConstBuffer4fv(materialBufferBinding->constBuffer, materialBinding.reg, materialBinding.source->data.get(), ShaderDescriptor::CalculateRegsCount(materialBinding.type, materialBinding.source->arraySize));
+                }
+                materialBinding.updateSemantic = materialBinding.source->updateSemantic;
+
+#if defined(__DAVAENGINE_RENDERSTATS__)
+                ++Renderer::GetRenderStats().materialParamBindCount;
+#endif
+            }
         }
         materialBufferBinding->lastValidPropertySemantic = NMaterialProperty::GetCurrentUpdateSemantic();
     }
@@ -164,8 +168,8 @@ uint32 NMaterial::GetRequiredVertexFormat()
     uint32 res = 0;
     for (auto& variant : renderVariants)
     {
-		bool shaderValid = (nullptr != variant.second) && (nullptr != variant.second->shader);
-		DVASSERT_MSG(shaderValid, "Shader is invalid. Check log for details.");
+        bool shaderValid = (nullptr != variant.second) && (variant.second->shader->IsValid());
+        DVASSERT_MSG(shaderValid, "Shader is invalid. Check log for details.");
 
 		if (shaderValid)
 		{
@@ -274,7 +278,7 @@ void NMaterial::AddProperty(const FastName& propName, const float32 *propData, r
     prop->data.reset(new float[ShaderDescriptor::CalculateDataSize(type, arraySize)]);
     prop->SetPropertyValue(propData);
     localProperties[propName] = prop;
-    
+    ClearLocalBuffers(); //RHI_COMPLETE - as local buffers can have binding for this property set as default
     InvalidateBufferBindings();
 }
 
@@ -453,7 +457,8 @@ void NMaterial::SetParent(NMaterial *_parent)
         SafeRetain(parent);
         parent->AddChildMaterial(this);
     }
-        
+
+    InvalidateRenderVariants();
 }
 
 NMaterial* NMaterial::GetParent()
@@ -470,7 +475,6 @@ void NMaterial::AddChildMaterial(NMaterial *material)
 {    
     DVASSERT(material);
     children.push_back(material);
-    material->InvalidateRenderVariants();    
 }
 
 void NMaterial::RemoveChildMaterial(NMaterial *material)
@@ -558,6 +562,7 @@ void NMaterial::RebuildRenderVariants()
         renderVariants[variantDescr.passName] = variant;
     }
 
+    ClearLocalBuffers();
     activeVariantName = FastName();    
     activeVariantInstance = nullptr;
     needRebuildVariants = false;
@@ -748,8 +753,8 @@ bool NMaterial::PreBuildMaterial(const FastName& passName)
         RebuildBindings();
     if (needRebuildTextures)
         RebuildTextureBindings();
-    
-    bool res = (activeVariantInstance != nullptr) && (activeVariantInstance->shader != nullptr);
+
+    bool res = (activeVariantInstance != nullptr) && (activeVariantInstance->shader->IsValid());
     if (activeVariantName != passName)
     {
         RenderVariantInstance *targetVariant = renderVariants[passName];
@@ -758,8 +763,8 @@ bool NMaterial::PreBuildMaterial(const FastName& passName)
         {
             activeVariantName = passName;
             activeVariantInstance = targetVariant;
-            
-            res = (activeVariantInstance->shader != nullptr);
+
+            res = (activeVariantInstance->shader->IsValid());
         }
         else
         {

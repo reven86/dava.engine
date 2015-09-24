@@ -145,7 +145,6 @@ private:
     QtPropertyData *baseRoot = nullptr;
     QtPropertyData *flagsRoot = nullptr;
     QtPropertyData *propertiesRoot = nullptr;
-    QtPropertyData *illuminationRoot = nullptr;
     QtPropertyData *texturesRoot = nullptr;
     QPointer<MaterialTemplateModel> templatesFilterModel;
 

@@ -145,15 +145,11 @@ void SceneInfo::Initialize3DDrawSection()
     QtPropertyData* header = CreateInfoHeader("DrawInfo");
 
     AddChild("Visible Render Object Count", header);
-    AddChild("Occluded Object Count",  header);
-    AddChild("ArraysCalls", header);
-    AddChild("ElementsCalls",  header);
-    AddChild("PointsList", header);
+    AddChild("DrawPrimitiveCalls", header);
+    AddChild("DrawIndexedPrimitiveCalls", header);
     AddChild("LineList", header);
-    AddChild("LineStrip", header);
     AddChild("TriangleList", header);
     AddChild("TriangleStrip", header);
-    AddChild("TriangleFan", header);
 
     QtPropertyData* header2 = CreateInfoHeader("Bind Info");
     AddChild("Dynamic Param Bind Count", header2);
@@ -164,31 +160,21 @@ void SceneInfo::Initialize3DDrawSection()
 void SceneInfo::Refresh3DDrawInfo()
 {
     if(!activeScene) return;
-#if RHI_COMPLETE_EDITOR
     QtPropertyData* header = GetInfoHeader("DrawInfo");
-    
-    const RenderManager::Stats & renderStats = activeScene->GetRenderStats();
 
-    
-    SetChild("Visible Render Object Count", renderStats.visibleRenderObjectCount, header);
-    SetChild("Occluded Object Count", renderStats.occludedRenderObjectCount, header);
+    const RenderStats& renderStats = activeScene->GetRenderStats();
 
-    
-    SetChild("ArraysCalls", renderStats.drawArraysCalls, header);
-    SetChild("ElementsCalls", renderStats.drawElementsCalls, header);
-    SetChild("PointsList", renderStats.primitiveCount[PRIMITIVETYPE_POINTLIST], header);
-    SetChild("LineList", renderStats.primitiveCount[PRIMITIVETYPE_LINELIST], header);
-    SetChild("LineStrip", renderStats.primitiveCount[PRIMITIVETYPE_LINESTRIP], header);
-    SetChild("TriangleList", renderStats.primitiveCount[PRIMITIVETYPE_TRIANGLELIST], header);
-    SetChild("TriangleStrip", renderStats.primitiveCount[PRIMITIVETYPE_TRIANGLESTRIP], header);
-    SetChild("TriangleFan", renderStats.primitiveCount[PRIMITIVETYPE_TRIANGLEFAN], header);
-    
+    SetChild("Visible Render Object Count", renderStats.visibleRenderObjects, header);
+    SetChild("DrawPrimitiveCalls", renderStats.drawPrimitive, header);
+    SetChild("DrawIndexedPrimitiveCalls", renderStats.drawIndexedPrimitive, header);
+    SetChild("LineList", renderStats.primitiveLineListCount, header);
+    SetChild("TriangleList", renderStats.primitiveTriangleListCount, header);
+    SetChild("TriangleStrip", renderStats.primitiveTriangleStripCount, header);
+
     QtPropertyData* header2 = GetInfoHeader("Bind Info");
 
-    SetChild("Dynamic Param Bind Count", renderStats.dynamicParamUniformBindCount, header2);
-    SetChild("Material Param Bind Count", renderStats.materialParamUniformBindCount, header2);
-#endif // RHI_COMPLETE_EDITOR
-
+    SetChild("Dynamic Param Bind Count", renderStats.dynamicParamBindCount, header2);
+    SetChild("Material Param Bind Count", renderStats.materialParamBindCount, header2);
 }
 
 
@@ -728,7 +714,6 @@ void SceneInfo::CollectSpeedTreeLeafsSquare(const EntityGroup * forGroup)
 SceneInfo::SpeedTreeInfo SceneInfo::GetSpeedTreeLeafsSquare(DAVA::RenderObject *renderObject)
 {
     SpeedTreeInfo info;
-#if RHI_COMPLETE_EDITOR
     if(renderObject)
     {
         bool hasLeafsGeometry = false;
@@ -738,7 +723,7 @@ SceneInfo::SpeedTreeInfo SceneInfo::GetSpeedTreeLeafsSquare(DAVA::RenderObject *
         for(int32 i = 0; i < rbCount; ++i)
         {
             RenderBatch * rb = renderObject->GetRenderBatch(i);
-            if(rb->GetMaterial() && rb->GetMaterial()->GetMaterialTemplate()->name == NMaterialName::SPEEDTREE_LEAF)
+            if (rb->GetMaterial() && rb->GetMaterial()->GetEffectiveFlagValue(NMaterialFlagName::FLAG_SPEED_TREE_LEAF))
             {
                 PolygonGroup * pg = rb->GetPolygonGroup();
                 int32 triangleCount = pg->GetIndexCount() / 3;
@@ -774,7 +759,6 @@ SceneInfo::SpeedTreeInfo SceneInfo::GetSpeedTreeLeafsSquare(DAVA::RenderObject *
             info.leafsSquareDivY = info.leafsSquare / (bboxSize.y * bboxSize.z);
         }
     }
-#endif // RHI_COMPLETE_EDITOR
     return info;
 }
 
@@ -976,11 +960,10 @@ void SceneInfo::InitializeLayersSection()
 
 void SceneInfo::RefreshLayersSection()
 {
-#if RHI_COMPLETE_EDITOR
     if(activeScene)
     {
-        float32 viewportSize = RenderManager::Instance()->frameBufferWidth * RenderManager::Instance()->frameBufferHeight;
-        
+        float32 viewportSize = (float32)Renderer::GetFramebufferWidth() * Renderer::GetFramebufferHeight();
+
         QtPropertyData* header = GetInfoHeader("Fragments Info");
     
         Vector<FastName> queriesNames;
@@ -1000,5 +983,4 @@ void SceneInfo::RefreshLayersSection()
             SetChild(queriesNames[i].c_str(), str.c_str(), header);
         }
     }
-#endif RHI_COMPLETE_EDITOR
 }
