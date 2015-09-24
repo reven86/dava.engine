@@ -397,7 +397,7 @@ void SceneEditor2::Draw()
     if (isHUDVisible)
     {
         gridSystem->Draw();
-		cameraSystem->Draw();
+        cameraSystem->Draw();
 
 		if(collisionSystem)
 			collisionSystem->Draw();
@@ -406,8 +406,6 @@ void SceneEditor2::Draw()
 
 		if(structureSystem)
 			structureSystem->Draw();
-
-		materialSystem->Draw();
 	}
  
 	tilemaskEditorSystem->Draw();

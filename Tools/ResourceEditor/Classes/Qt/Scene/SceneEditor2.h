@@ -174,7 +174,7 @@ public:
     bool IsToolsEnabled(int32 toolFlags);
     int32 GetEnabledTools();
 
-	SceneEditor2 *CreateCopyForExport();	//Need to prevent changes of original scene
+    SceneEditor2 *CreateCopyForExport();	//Need to prevent changes of original scene
     Entity * Clone(Entity *dstNode /* = NULL */) override;
 
     void Activate() override;

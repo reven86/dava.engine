@@ -133,17 +133,9 @@ ModifyTilemaskCommand::~ModifyTilemaskCommand()
 	SafeRelease(undoImageMask);
 	SafeRelease(redoImageMask);
 	SafeRelease(landscapeProxy);
-    
-    if(texture[0])
-    {
-        SafeRelease(texture[0]);
-        rhi::ReleaseTextureSet(textureSetHandle[0]);
-    }
-    if(texture[1])
-    {
-        SafeRelease(texture[1]);
-        rhi::ReleaseTextureSet(textureSetHandle[1]);
-    }
+
+    SafeRelease(texture[0]);
+    SafeRelease(texture[1]);
 }
 
 void ModifyTilemaskCommand::Undo()
@@ -178,22 +170,13 @@ Entity* ModifyTilemaskCommand::GetEntity() const
 
 void ModifyTilemaskCommand::ApplyImageToTexture(Image* image, Texture * dstTex, int32 internalHandleIndex)
 {
-    if(texture[internalHandleIndex])
-    {
-        SafeRelease(texture[internalHandleIndex]);
-        rhi::ReleaseTextureSet(textureSetHandle[internalHandleIndex]);
-    }
-    
+    SafeRelease(texture[internalHandleIndex]);
+
     texture[internalHandleIndex] = Texture::CreateFromData(image->GetPixelFormat(), image->GetData(),
                                                            image->GetWidth(), image->GetHeight(), false);
     
-    rhi::TextureSetDescriptor desc;
-    desc.fragmentTextureCount = 1;
-    desc.fragmentTexture[0] = texture[internalHandleIndex]->handle;
-    textureSetHandle[internalHandleIndex] = rhi::AcquireTextureSet(desc);
-    
     RenderSystem2D::Instance()->BeginRenderTargetPass(dstTex, false);
-    RenderSystem2D::Instance()->DrawTexture(textureSetHandle[internalHandleIndex], texture[internalHandleIndex]->samplerStateHandle, RenderSystem2D::DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL, Color::White, updatedRect);
+    RenderSystem2D::Instance()->DrawTexture(texture[internalHandleIndex], RenderSystem2D::DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL, Color::White, updatedRect);
     RenderSystem2D::Instance()->EndRenderTargetPass();
 }
 

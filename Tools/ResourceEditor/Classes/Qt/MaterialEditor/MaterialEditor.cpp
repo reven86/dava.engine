@@ -806,12 +806,10 @@ void MaterialEditor::OnMaterialAddGlobal(bool checked)
     SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
     if (nullptr != curScene)
     {
-        DAVA::NMaterial *global = new DAVA::NMaterial();
-        SCOPE_EXIT{ SafeRelease(global); };
+        ScopedPtr<DAVA::NMaterial> global(new DAVA::NMaterial());
 
         global->SetMaterialName(FastName("Scene_Global_Material"));
         curScene->Exec(new MaterialGlobalSetCommand(curScene, global));
-        SafeRelease(global);
 
         sceneActivated(curScene);
         SelectMaterial(curScene->GetGlobalMaterial());
@@ -1194,10 +1192,10 @@ void MaterialEditor::UpdateMaterialFromPresetWithOptions(DAVA::NMaterial* materi
 {
 	if ((options & CHECKED_GROUP) && preset->IsKeyExists("group"))
 	{
-		material->SetQualityGroup(preset->GetFastName("materialGroup"));
-	}
+        material->SetQualityGroup(preset->GetFastName("group"));
+    }
 
-	if ((options & CHECKED_TEMPLATE) && preset->IsKeyExists("fxname"))
+    if ((options & CHECKED_TEMPLATE) && preset->IsKeyExists("fxname"))
 	{
 		material->SetFXName(preset->GetFastName("fxname"));
 	}

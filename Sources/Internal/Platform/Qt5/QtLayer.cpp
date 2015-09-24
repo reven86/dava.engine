@@ -101,15 +101,7 @@ void QtLayer::OnResume()
     
 void QtLayer::ProcessFrame()
 {
-#if RHI_COMPLETE_EDITOR
-    RenderManager::Instance()->Lock();
-#endif // RHI_COMPLETE_EDITOR
-        
     Core::Instance()->SystemProcessFrame();
-
-#if RHI_COMPLETE_EDITOR
-    RenderManager::Instance()->Unlock();
-#endif // RHI_COMPLETE_EDITOR
 }
     
 

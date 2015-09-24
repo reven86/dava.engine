@@ -56,6 +56,8 @@ void FrameworkDidLaunched()
 
     GameCore * core = new GameCore();
     Core::SetApplicationCore(core);
+
+    DynamicBufferAllocator::SetPageSize(1024 * 512);
 }
 
 void FrameworkWillTerminate()

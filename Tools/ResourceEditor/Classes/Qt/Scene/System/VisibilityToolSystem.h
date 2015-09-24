@@ -71,7 +71,6 @@ protected:
     static const float32 CROSS_TEXTURE_SIZE;
 
     Texture* crossTexture;
-    rhi::HTextureSet crossTextureSet;
 	uint32 curToolSize;
 
 	bool editingIsEnabled;
