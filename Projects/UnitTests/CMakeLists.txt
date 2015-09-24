@@ -55,6 +55,8 @@ set( ANDROID_ICO                ${CMAKE_CURRENT_LIST_DIR}/android/ic_launcher-we
 
 set( ADDED_SRC                  ${IOS_ADD_SRC} )
 
+#set( IOS_DEPLOY_CUSTOM_COMAND  python ${CMAKE_CURRENT_LIST_DIR}/DataSource/convert_graphics.py )
+
 #uncomment this 2 strings to link libjpeg as additional project.
 #set( LIBRARIES jpeg )
 #add_subdirectory ( "${CMAKE_CURRENT_LIST_DIR}/../../Libs/libjpeg" ${CMAKE_CURRENT_BINARY_DIR}/libjpeg )
