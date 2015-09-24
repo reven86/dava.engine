@@ -324,6 +324,10 @@ void PrivateTextFieldWinUAP::UpdateRect(const Rect& rect)
 
 void PrivateTextFieldWinUAP::SetText(const WideString& text)
 {
+    // Do not set same text again as TextChanged event not fired after setting equal text
+    if (text.length() == curText.length() && text == curText)
+        return;
+
     properties.text = text;
     properties.textChanged = true;
     properties.textAssigned = true;
