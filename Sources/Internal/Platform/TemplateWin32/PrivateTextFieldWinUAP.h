@@ -214,6 +214,7 @@ private:
     Windows::UI::Xaml::Controls::TextBox^ nativeText = nullptr;
     Windows::UI::Xaml::Controls::PasswordBox^ nativePassword = nullptr;
     Windows::UI::Xaml::Controls::Control^ nativeControl = nullptr;      // Points either to nativeText or nativePassword
+    Windows::UI::Xaml::Controls::Border^ nativeControlHolder = nullptr;
 
     bool recentlyLostFocus = false;
     bool ignoreTextChange = false;

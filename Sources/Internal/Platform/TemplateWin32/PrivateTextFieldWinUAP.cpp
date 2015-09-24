@@ -485,15 +485,26 @@ void PrivateTextFieldWinUAP::CreateNativeControl(bool textControl)
     nativeControl->Padding = Thickness(0.0);
     nativeControl->Visibility = Visibility::Visible;
 
-    core->XamlApplication()->AddUIElement(nativeControl);
+    // Native control holder is used to keep text control inside itself to
+    // emulate vertical text alignment
+    nativeControlHolder = ref new Border();
+    nativeControlHolder->Background = ref new SolidColorBrush(Colors::Transparent);
+    nativeControlHolder->BorderBrush = ref new SolidColorBrush(Colors::Transparent);
+    nativeControlHolder->BorderThickness = Thickness(0.0);
+    nativeControlHolder->Padding = Thickness(0.0);
+    nativeControlHolder->MinWidth = 0.0;
+    nativeControlHolder->MinHeight = 0.0;
+    nativeControlHolder->Child = nativeControl;
+    core->XamlApplication()->AddUIElement(nativeControlHolder);
 }
 
 void PrivateTextFieldWinUAP::DeleteNativeControl()
 {
-    core->XamlApplication()->RemoveUIElement(nativeControl);
+    core->XamlApplication()->RemoveUIElement(nativeControlHolder);
     nativeControl = nullptr;
     nativeText = nullptr;
     nativePassword = nullptr;
+    nativeControlHolder = nullptr;
 }
 
 void PrivateTextFieldWinUAP::InstallCommonEventHandlers()
@@ -838,9 +849,9 @@ void PrivateTextFieldWinUAP::SetNativePositionAndSize(const Rect& rect, bool off
         xOffset = rect.x + rect.dx;
         yOffset = rect.y + rect.dy;
     }
-    nativeControl->Width = rect.dx;
-    nativeControl->Height = rect.dy;
-    core->XamlApplication()->PositionUIElement(nativeControl, rect.x - xOffset, rect.y - yOffset);
+    nativeControlHolder->Width = rect.dx;
+    nativeControlHolder->Height = rect.dy;
+    core->XamlApplication()->PositionUIElement(nativeControlHolder, rect.x - xOffset, rect.y - yOffset);
 }
 
 void PrivateTextFieldWinUAP::SetNativeVisible(bool visible)
@@ -850,6 +861,7 @@ void PrivateTextFieldWinUAP::SetNativeVisible(bool visible)
     if (IsMultiline())
     {
         nativeControl->Visibility = visible ? Visibility::Visible : Visibility::Collapsed;
+        nativeControlHolder->Visibility = visible ? Visibility::Visible : Visibility::Collapsed;
     }
     else
     {
@@ -929,7 +941,6 @@ void PrivateTextFieldWinUAP::SetNativeTextAlignment(int32 textAlignment, bool te
         }
     }
 
-    // NOTE: native TextBox doesn't support vertical text alignment
     TextAlignment nativeAlignment = TextAlignment::Left;
     if (textAlignment & ALIGN_LEFT)
         nativeAlignment = TextAlignment::Left;
@@ -938,6 +949,15 @@ void PrivateTextFieldWinUAP::SetNativeTextAlignment(int32 textAlignment, bool te
     else if (textAlignment & ALIGN_RIGHT)
         nativeAlignment = TextAlignment::Right;
 
+    VerticalAlignment nativeVAlignment = VerticalAlignment::Top;
+    if (textAlignment & ALIGN_TOP)
+        nativeVAlignment = VerticalAlignment::Top;
+    else if (textAlignment & ALIGN_VCENTER)
+        nativeVAlignment = VerticalAlignment::Center;
+    else if (textAlignment & ALIGN_BOTTOM)
+        nativeVAlignment = VerticalAlignment::Bottom;
+
+    nativeControl->VerticalAlignment = nativeVAlignment;
     // NOTE: only TextBox has TextAlignment property, not PasswordBox
     if (nativeText != nullptr)
         nativeText->TextAlignment = nativeAlignment;
@@ -1057,7 +1077,7 @@ void PrivateTextFieldWinUAP::RenderToTexture(bool moveOffScreenOnCompletion)
     auto self{shared_from_this()};
     RenderTargetBitmap^ renderTarget = ref new RenderTargetBitmap;
 
-    auto renderTask = create_task(renderTarget->RenderAsync(nativeControl)).then([this, self, renderTarget]()
+    auto renderTask = create_task(renderTarget->RenderAsync(nativeControlHolder)).then([this, self, renderTarget]()
     {
         return renderTarget->GetPixelsAsync();
     }).then([this, self, renderTarget, moveOffScreenOnCompletion](IBuffer^ renderBuffer)
