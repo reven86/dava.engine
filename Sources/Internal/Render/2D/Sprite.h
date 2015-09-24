@@ -174,8 +174,6 @@ public:
 	Texture* GetTexture() const;
 	Texture* GetTexture(int32 frameNumber) const;
 
-	rhi::HTextureSet GetTextureHandle(int32 frameNumber) const;
-
 	int32 GetFrameCount() const;
 
 	float32 GetWidth() const;
@@ -270,9 +268,6 @@ protected:
     static FilePath GetScaledName(const FilePath & spriteName);
     static File* LoadLocalizedFile(const FilePath & spritePathname, FilePath & texturePath);
 
-	void RegisterTextureStates();
-	void UnregisterTextureStates();
-
     static File* GetSpriteFile(const FilePath & spriteName, int32& resourceSizeIndex);
 
     void ReloadExistingTextures();
@@ -292,8 +287,6 @@ protected:
 	FilePath *textureNames;
 	int32 *frameTextureIndex;
 	int32 textureCount;
-
-	Vector<rhi::HTextureSet> textureHandles;
 	
 	float32 **frameVertices;
 	float32 **texCoords;

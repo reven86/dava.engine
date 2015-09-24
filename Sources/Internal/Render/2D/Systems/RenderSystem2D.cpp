@@ -991,7 +991,7 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * drawState, const 
 
     BatchDescriptor batch;
     batch.material = state->GetMaterial();
-    batch.textureSetHandle = sprite->GetTextureHandle(frame);
+    batch.textureSetHandle = sprite->GetTexture(frame)->singleTextureSet;
     batch.samplerStateHandle = sprite->GetTexture(frame)->samplerStateHandle;
     batch.singleColor = color;
     batch.vertexCount = spriteVertexCount;
@@ -1038,7 +1038,7 @@ void RenderSystem2D::DrawStretched(Sprite * sprite, Sprite::DrawState * state, V
     Vector2 stretchCap(Min(size.x * 0.5f, stretchCapVector.x),
         Min(size.y * 0.5f, stretchCapVector.y));
 
-    rhi::HTextureSet textureHandle = sprite->GetTextureHandle(frame);
+    rhi::HTextureSet textureHandle = sprite->GetTexture(frame)->singleTextureSet;
 
     bool needGenerateData = false;
     StretchDrawData * stretchData = 0;
@@ -1092,7 +1092,7 @@ void RenderSystem2D::DrawStretched(Sprite * sprite, Sprite::DrawState * state, V
 
     BatchDescriptor batch;
     batch.singleColor = color;
-    batch.textureSetHandle = sprite->GetTextureHandle(frame);
+    batch.textureSetHandle = sprite->GetTexture(frame)->singleTextureSet;
     batch.samplerStateHandle = sprite->GetTexture(frame)->samplerStateHandle;
     batch.material = state->GetMaterial();
     batch.vertexCount = spriteVertexCount;
@@ -1130,7 +1130,7 @@ void RenderSystem2D::DrawTiled(Sprite * sprite, Sprite::DrawState * state, const
     Vector2 stretchCap( Min( size.x, sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_WIDTH) ),
                         Min( size.y, sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT) ) );
 
-    rhi::HTextureSet textureHandle = sprite->GetTextureHandle(frame);
+    rhi::HTextureSet textureHandle = sprite->GetTexture(frame)->singleTextureSet;
 
     stretchCap.x = Min( stretchCap.x * 0.5f, stretchCapVector.x );
     stretchCap.y = Min( stretchCap.y * 0.5f, stretchCapVector.y );
@@ -1187,7 +1187,7 @@ void RenderSystem2D::DrawTiled(Sprite * sprite, Sprite::DrawState * state, const
     BatchDescriptor batch;
     batch.singleColor = color;
     batch.material = state->GetMaterial();
-    batch.textureSetHandle = sprite->GetTextureHandle(frame);
+    batch.textureSetHandle = sprite->GetTexture(frame)->singleTextureSet;
     batch.samplerStateHandle = sprite->GetTexture(frame)->samplerStateHandle;
     batch.vertexCount = spriteVertexCount;
     batch.indexCount = spriteIndexCount;
