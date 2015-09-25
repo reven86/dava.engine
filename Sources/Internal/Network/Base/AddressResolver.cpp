@@ -33,10 +33,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "FileSystem/Logger.h"
 #include "Debug/DVAssert.h"
 
-
-namespace DAVA {
-namespace Net {
-
+namespace DAVA
+{
+namespace Net
+{
 AddressResolver::AddressResolver(IOLoop* _loop)
     : loop(_loop)
 {
@@ -47,8 +47,6 @@ AddressResolver::~AddressResolver()
 {
     Cancel();
 }
-    
-
 
 bool AddressResolver::AsyncResolve(const char8* address, uint16 port, ResolverCallbackFn cbk)
 {
@@ -86,7 +84,7 @@ void AddressResolver::Cancel()
 {
     if (nullptr != handle)
     {
-        uv_cancel(reinterpret_cast<uv_req_t *>(handle));
+        uv_cancel(reinterpret_cast<uv_req_t*>(handle));
         handle = nullptr;
     }
 }
@@ -109,7 +107,7 @@ void AddressResolver::GotAddrInfo(int status, struct addrinfo* response)
     Endpoint endpoint;
     if (0 == status)
     {
-         endpoint = Endpoint(response->ai_addr);
+        endpoint = Endpoint(response->ai_addr);
     }
 
     resolverCallbackFn(endpoint, status);

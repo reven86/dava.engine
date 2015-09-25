@@ -34,29 +34,28 @@ namespace DAVA
 {
 namespace AssetCache
 {
-        
-String KeyToString(const DoubleMD5Key &key)
+String KeyToString(const DoubleMD5Key& key)
 {
     static const DAVA::uint32 bufferSize = HASH_SIZE * 2;
     Array<DAVA::char8, bufferSize + 1> buffer; // +1 is for MD5::HashToChar for \0
-    
+
     MD5::HashToChar(key.data(), key.size(), buffer.data(), buffer.size());
     return String(buffer.data(), bufferSize);
 }
-  
-void StringToKey(const String & string, DoubleMD5Key &key)
+
+void StringToKey(const String& string, DoubleMD5Key& key)
 {
     DVASSERT(string.length() == HASH_SIZE * 2);
-    
+
     MD5::CharToHash(string.data(), string.size(), key.data(), key.size());
 }
 
-void SerializeKey(const DoubleMD5Key & key, KeyedArchive *archieve)
+void SerializeKey(const DoubleMD5Key& key, KeyedArchive* archieve)
 {
     archieve->SetByteArray("keyData", key.data(), key.size());
 }
 
-void DeserializeKey(DoubleMD5Key & key, const KeyedArchive *archieve)
+void DeserializeKey(DoubleMD5Key& key, const KeyedArchive* archieve)
 {
     auto size = archieve->GetByteArraySize("keyData");
     DVASSERT(size == HASH_SIZE);
@@ -64,10 +63,5 @@ void DeserializeKey(DoubleMD5Key & key, const KeyedArchive *archieve)
     Memcpy(key.data(), archieve->GetByteArray("keyData"), size);
 }
 
-    
-    
 } // end of namespace AssetCache
 } // end of namespace DAVA
-
-
-
