@@ -51,8 +51,8 @@ DialogReloadSprites::DialogReloadSprites(QWidget* parent)
     qRegisterMetaType<DAVA::TextureConverter::eConvertQuality>("DAVA::TextureConverter::eConvertQuality");
     
     connect(actionReloadSprites, &QAction::triggered, this, &DialogReloadSprites::exec);
-    
-    spritesPacker = new SpritesPacker(this);
+
+    spritesPacker = new SpritesPacker();
     workerThread.setStackSize(16 * 1024 * 1024);
     spritesPacker->moveToThread(&workerThread);
     ui->setupUi(this);
@@ -103,6 +103,7 @@ DialogReloadSprites::~DialogReloadSprites()
     {
         OnStopClicked();
     }
+    delete spritesPacker;
     delete ui;
 }
 
@@ -184,12 +185,10 @@ void DialogReloadSprites::BlockingStop()
     QEventLoop loop;
     connect(spritesPacker, &SpritesPacker::Finished, &loop, &QEventLoop::quit);
     spritesPacker->Cancel();
-    workerThread.quit();
     if (spritesPacker->IsRunning())
     {
         loop.exec();
     }
-    workerThread.wait();
     QApplication::restoreOverrideCursor();
     workerThread.quit();
     this->setEnabled(true);
