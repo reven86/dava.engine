@@ -92,8 +92,8 @@ PreviewWidget::PreviewWidget(QWidget *parent)
     scaleCombo->setCurrentIndex(DEFAULT_SCALE_PERCENTAGE_INDEX);
     scaleCombo->lineEdit()->setMaxLength(6);
     scaleCombo->setInsertPolicy(QComboBox::NoInsert);
-      
-    connect(davaGLWidget->GetGLWindow(), &QWindow::screenChanged, this, &PreviewWidget::OnMonitorChanged);
+
+    connect(davaGLWidget, &DavaGLWidget::ScreenChanged, this, &PreviewWidget::OnMonitorChanged);
 
     connect(model, &PreviewModel::CanvasOrViewChanged, this, &PreviewWidget::OnScrollAreaChanged);
     connect(model, &PreviewModel::CanvasPositionChanged, this, &PreviewWidget::OnScrollPositionChanged);
@@ -101,11 +101,6 @@ PreviewWidget::PreviewWidget(QWidget *parent)
 
     connect(model, &PreviewModel::ControlNodeSelected, this, &PreviewWidget::OnControlNodeSelected);
     connect(model, &PreviewModel::ErrorOccurred, this, &PreviewWidget::OnError);
-}
-
-DavaGLWidget *PreviewWidget::GetDavaGLWidget()
-{
-    return davaGLWidget;
 }
 
 void PreviewWidget::SetEmulationMode(bool emulationMode)
@@ -209,7 +204,7 @@ void PreviewWidget::OnScaleByComboIndex(int index)
         return;
     }
 
-    auto dpr = static_cast<int>( davaGLWidget->GetGLWindow()->devicePixelRatio() );
+    auto dpr = static_cast<int>(davaGLWidget->GetDevicePixelRatio());
     auto scaleValue = SCALE_PERCENTAGES[index] * dpr;
     model->SetCanvasControlScale(scaleValue);
 }
@@ -244,7 +239,7 @@ void PreviewWidget::OnZoomOutRequested()
 
 void PreviewWidget::OnCanvasScaleChanged(int newScale)
 {
-    auto dpr = static_cast<int>( davaGLWidget->GetGLWindow()->devicePixelRatio() );
+    auto dpr = static_cast<int>(davaGLWidget->GetDevicePixelRatio());
     newScale /= dpr;
 
     QString newScaleText = QString(PERCENTAGE_FORMAT).arg(newScale);
