@@ -201,7 +201,7 @@ public:
         return ret;
     }
 
-    virtual void Emit(Args&&...) = 0;
+    virtual void Emit(Args&&...) const = 0;
 
 protected:
     struct ConnData
@@ -247,7 +247,7 @@ public:
     Signal(const Signal &) = delete;
     Signal& operator=(const Signal &) = delete;
 
-    void Emit(Args&&... args) override
+    void Emit(Args&&... args) const override
     {
         for (auto&& con : Base::connections)
         {
@@ -258,6 +258,56 @@ public:
         }
     }
 };
+
+class SignalConnection
+{
+public:
+    SignalConnection(SigConnectionID connId,
+                     const Function<void(SigConnectionID)>& unsubscriber)
+        : connectionId(connId)
+        , unsubscriberFunc(unsubscriber) {}
+
+    ~SignalConnection() 
+    {
+        Reset();
+    }
+
+    void Reset()
+    {
+        if (unsubscriberFunc)
+        {
+            unsubscriberFunc(connectionId);
+            unsubscriberFunc = nullptr;
+        }
+    }
+
+    SigConnectionID* Release()
+    {
+        if (unsubscriberFunc)
+        {
+            unsubscriberFunc = nullptr;
+            return &connectionId;
+        }
+        return nullptr;
+    }
+
+    const SigConnectionID* GetSigConnectionID() const
+    {
+        return unsubscriberFunc ? &connectionId : nullptr;
+    }
+
+private:
+    SigConnectionID connectionId;
+    Function<void(SigConnectionID)> unsubscriberFunc;
+};
+
+template<typename... Args>
+SignalConnection MakeSignalConnection(SigConnectionID connId, Signal<Args...>& signal)
+{
+    using SignalType = Signal<Args...>;
+    auto disconnector = [&](SigConnectionID connectionId) { signal.Disconnect(connectionId); };
+    return SignalConnection(connId, disconnector);
+}
 
 #ifdef ENABLE_MULTITHREADED_SIGNALS
 
@@ -270,7 +320,7 @@ class SignalMt final : public Sig11::SignalImpl<Mutex, Thread::Id, Args...>
     SignalMt(const SignalMt&) = delete;
     SignalMt& operator=(const SignalMt&) = delete;
 
-    void Emit(Args&&... args) override
+    void Emit(Args&&... args) const override
     {
         Thread::Id thisTid = Thread::GetCurrentId();
 
