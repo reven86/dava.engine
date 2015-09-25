@@ -501,7 +501,14 @@ void UITextField::Input(UIEvent *currentInput)
 
     if (currentInput->phase == UIEvent::PHASE_KEYCHAR)
     {
-        if (currentInput->tid == 0 && currentInput->keyChar == '\b')
+// on win32 we have split WM_CHAR and WM_KEYDOWN
+// on macos we have OnKeyUp and OnKeyDown
+#ifdef __DAVAENGINE_WINDOWS__
+        bool user_push_backspace = (currentInput->tid == 0 && currentInput->keyChar == '\b');
+#else
+        bool user_push_backspace = (currentInput->tid == DVKEY_BACKSPACE);
+#endif
+        if (user_push_backspace)
         {
             WideString str = L"";
             if(delegate->TextFieldKeyPressed(this, (int32)GetText().length() - 1, 1, str))

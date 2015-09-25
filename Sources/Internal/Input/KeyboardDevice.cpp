@@ -181,6 +181,19 @@ void KeyboardDevice::PrepareKeyTranslator()
     keyTranslator[DVMACOS_CAPS_LOCK] = DVKEY_CAPSLOCK;
     keyTranslator[0x31] = DVKEY_SPACE;
 
+    // from SDL2 scancodes_darwin.h
+    keyTranslator[24] = DVKEY_EQUALS;
+    keyTranslator[27] = DVKEY_MINUS;
+    keyTranslator[47] = DVKEY_PERIOD;
+    keyTranslator[43] = DVKEY_COMMA;
+    keyTranslator[41] = DVKEY_SEMICOLON;
+    keyTranslator[44] = DVKEY_SLASH;
+    keyTranslator[50] = DVKEY_GRAVE;
+    keyTranslator[33] = DVKEY_LBRACKET;
+    keyTranslator[42] = DVKEY_BACKSLASH;
+    keyTranslator[30] = DVKEY_RBRACKET;
+    keyTranslator[39] = DVKEY_APOSTROPHE;
+
     keyTranslator[0x00] = DVKEY_A;
     keyTranslator[0x0B] = DVKEY_B;
     keyTranslator[0x08] = DVKEY_C;
