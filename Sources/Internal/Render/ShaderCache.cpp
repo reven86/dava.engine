@@ -211,13 +211,13 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
     psDesc.vertexLayout = vSource.ShaderVertexLayout();
     psDesc.blending = fSource.Blending();
     rhi::HPipelineState piplineState = rhi::AcquireRenderPipelineState(psDesc);
-    ShaderDescriptor* res = new ShaderDescriptor(piplineState, vProgUid, fProgUid);
-    res->UpdateConfigFromSource(&vSource, &fSource);
+    ShaderDescriptor* res = new ShaderDescriptor(piplineState, vProgUid, fProgUid);    
     res->sourceName = name;
     res->defines = defines;
     res->valid = piplineState.IsValid(); //later add another conditions
     if (res->valid)
     {
+        res->UpdateConfigFromSource(&vSource, &fSource);
         res->requiredVertexFormat = GetVertexLayoutRequiredFormat(psDesc.vertexLayout);
     }        
     shaderDescriptors[key] = res;
@@ -268,11 +268,11 @@ void RelaoadShaders()
         psDesc.vertexLayout = vSource.ShaderVertexLayout();
         psDesc.blending = fSource.Blending();
         rhi::ReleaseRenderPipelineState(shader->piplineState);
-        shader->piplineState = rhi::AcquireRenderPipelineState(psDesc);        
-        shader->UpdateConfigFromSource(&vSource, &fSource);        
+        shader->piplineState = rhi::AcquireRenderPipelineState(psDesc);                
         shader->valid = shader->piplineState.IsValid(); //later add another conditions
         if (shader->valid)
         {
+            shader->UpdateConfigFromSource(&vSource, &fSource);
             shader->requiredVertexFormat = GetVertexLayoutRequiredFormat(psDesc.vertexLayout);
         }
         else
