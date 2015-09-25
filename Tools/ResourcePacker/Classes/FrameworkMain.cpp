@@ -95,7 +95,7 @@ void ProcessRecourcePacker()
 
     ResourcePacker2D resourcePacker;
 
-    auto & commandLine = Core::Instance()->GetCommandLine();
+    auto& commandLine = Core::Instance()->GetCommandLine();
     FilePath commandLinePath(commandLine[1]);
     commandLinePath.MakeDirectoryPathname();
     
@@ -125,9 +125,9 @@ void ProcessRecourcePacker()
     auto toolFolderPath = resourcePacker.excludeDirectory + (commandLine[2] + "/");
     String pvrTexToolName = "PVRTexToolCLI";
     String cacheToolName = "AssetCacheClient";
-    
+
     PVRConverter::Instance()->SetPVRTexTool(toolFolderPath + pvrTexToolName);
-    
+
     uint64 elapsedTime = SystemTimer::Instance()->AbsoluteMS();
     Logger::FrameworkDebug("[Resource Packer Started]");
     Logger::FrameworkDebug("[INPUT DIR] - [%s]", resourcePacker.inputGfxDirectory.GetAbsolutePathname().c_str());
@@ -161,7 +161,7 @@ void ProcessRecourcePacker()
     {
         Logger::FrameworkDebug("Asset cache will not be used");
     }
-    
+
     if (CommandLineParser::CommandIsFound(String("-md5mode")))
     {
         resourcePacker.RecalculateMD5ForOutputDir();

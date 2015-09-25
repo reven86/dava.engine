@@ -76,13 +76,13 @@ void SettingsManager::Init()
     CreateValue(Settings::General_HeighMaskTool_Color0, DAVA::VariantType(DAVA::Color(0.5f, 0.5f, 0.5f, 1.0f)));
     CreateValue(Settings::General_HeighMaskTool_Color1, DAVA::VariantType(DAVA::Color(0.0f, 0.0f, 0.0f, 1.0f)));
 
-    CreateValue(Settings::General_AssetCache_UseCache, DAVA::VariantType(true));
+    CreateValue(Settings::General_AssetCache_UseCache, DAVA::VariantType(false));
     CreateValue(Settings::General_AssetCache_Ip, DAVA::VariantType(DAVA::String("")));
     CreateValue(Settings::General_AssetCache_Port, DAVA::VariantType(DAVA::Format("%d", DAVA::AssetCache::ASSET_SERVER_PORT)));
     CreateValue(Settings::General_AssetCache_Timeout, DAVA::VariantType(DAVA::String("")));
 
-	CreateValue(Settings::Scene_GridStep, DAVA::VariantType(10.0f));
-	CreateValue(Settings::Scene_GridSize, DAVA::VariantType(600.0f));
+    CreateValue(Settings::Scene_GridStep, DAVA::VariantType(10.0f));
+    CreateValue(Settings::Scene_GridSize, DAVA::VariantType(600.0f));
 	CreateValue(Settings::Scene_CameraSpeed0, DAVA::VariantType(35.0f));
 	CreateValue(Settings::Scene_CameraSpeed1, DAVA::VariantType(100.0f));
 	CreateValue(Settings::Scene_CameraSpeed2, DAVA::VariantType(250.0f));
@@ -105,6 +105,7 @@ void SettingsManager::Init()
     CreateValue(Settings::Scene_AutoselectNewEntities, DAVA::VariantType(true));
     CreateValue(Settings::Scene_RefreshLodForNonSolid, DAVA::VariantType(true));
     CreateValue(Settings::Scene_RememberForceParameters, DAVA::VariantType(false));
+    CreateValue(Settings::Scene_SaveEmitters, DAVA::VariantType(false));
 
     CreateValue(Settings::Scene_Sound_SoundObjectDraw, DAVA::VariantType(false));
     CreateValue(Settings::Scene_Sound_SoundObjectBoxColor, DAVA::VariantType(DAVA::Color(0.0f, 0.8f, 0.4f, 0.2f)));
