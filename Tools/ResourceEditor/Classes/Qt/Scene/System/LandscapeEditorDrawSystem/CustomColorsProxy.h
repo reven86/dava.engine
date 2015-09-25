@@ -51,8 +51,8 @@ public:
     void UpdateRect(const DAVA::Rect& rect);
 
     void ResetTargetChanged();
-	bool IsTargetChanged();
-    
+    bool IsTargetChanged();
+
     void ResetLoadedState(bool isLoaded = true);
     bool IsTextureLoaded() const;
 
@@ -60,8 +60,8 @@ public:
 
     DAVA::int32 GetChangesCount() const;
     void ResetChanges();
-	void IncrementChanges();
-	void DecrementChanges();
+    void IncrementChanges();
+    void DecrementChanges();
 	
 	void UpdateSpriteFromConfig();
 

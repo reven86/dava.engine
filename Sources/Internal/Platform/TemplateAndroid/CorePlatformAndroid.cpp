@@ -196,7 +196,7 @@ namespace DAVA
 
             rhi::ResetParam params;
             params.width = (uint32)width;
-			params.height = (uint32)height;
+            params.height = (uint32)height;
 			params.window = rendererParams.window;
 			Renderer::Reset(params);
         }
@@ -268,7 +268,7 @@ namespace DAVA
             foreground = true;
         }
         Logger::Debug("[CorePlatformAndroid::StartForeground] end");
-	}
+    }
 
 	void CorePlatformAndroid::StopForeground(bool isLock)
 	{
@@ -292,7 +292,7 @@ namespace DAVA
     }
 
     void CorePlatformAndroid::KeyUp(int32 keyCode)
-	{
+    {
 		InputSystem::Instance()->GetKeyboard().OnSystemKeyUnpressed(keyCode);
 	}
 

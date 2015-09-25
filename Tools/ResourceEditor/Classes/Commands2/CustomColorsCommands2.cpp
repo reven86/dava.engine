@@ -45,8 +45,8 @@ void ActionEnableCustomColors::Redo()
 {
     if (sceneEditor == nullptr)
     {
-		return;
-	}
+        return;
+    }
 	
 	bool enabled = sceneEditor->customColorsSystem->IsLandscapeEditingEnabled();
 	if (enabled)
@@ -96,8 +96,8 @@ void ActionDisableCustomColors::Redo()
 {
     if (sceneEditor == nullptr)
     {
-		return;
-	}
+        return;
+    }
 	
 	bool disabled = !sceneEditor->customColorsSystem->IsLandscapeEditingEnabled();
 	if (disabled)
@@ -133,7 +133,7 @@ ModifyCustomColorsCommand::ModifyCustomColorsCommand(Image* originalImage, Image
     customColorsProxy = SafeRetain(_customColorsProxy);
 
     undoImage = Image::CopyImageRegion(originalImage, updatedRect);
-	redoImage = Image::CopyImageRegion(currentImage, updatedRect);
+    redoImage = Image::CopyImageRegion(currentImage, updatedRect);
 }
 
 ModifyCustomColorsCommand::~ModifyCustomColorsCommand()
@@ -141,12 +141,7 @@ ModifyCustomColorsCommand::~ModifyCustomColorsCommand()
 	SafeRelease(undoImage);
 	SafeRelease(redoImage);
 	SafeRelease(customColorsProxy);
-    
-    if(texture)
-    {
-        SafeRelease(texture);
-        rhi::ReleaseTextureSet(textureSetHandle);
-    }
+    SafeRelease(texture);
 }
 
 void ModifyCustomColorsCommand::Undo()
@@ -163,23 +158,14 @@ void ModifyCustomColorsCommand::Redo()
 
 void ModifyCustomColorsCommand::ApplyImage(DAVA::Image *image)
 {
-    if(texture)
-    {
-        SafeRelease(texture);
-        rhi::ReleaseTextureSet(textureSetHandle);
-    }
-    
-	Texture* customColorsTarget = customColorsProxy->GetTexture();
+    SafeRelease(texture);
+
+    Texture* customColorsTarget = customColorsProxy->GetTexture();
 	texture = Texture::CreateFromData(image->GetPixelFormat(), image->GetData(),
 											   image->GetWidth(), image->GetHeight(), false);
-	
-    rhi::TextureSetDescriptor desc;
-    desc.fragmentTextureCount = 1;
-    desc.fragmentTexture[0] = texture->handle;
-    textureSetHandle = rhi::AcquireTextureSet(desc);
     
     RenderSystem2D::Instance()->BeginRenderTargetPass(customColorsTarget, false);
-    RenderSystem2D::Instance()->DrawTexture(textureSetHandle, texture->samplerStateHandle, customColorsProxy->GetBrushMaterial(), Color::White, updatedRect);
+    RenderSystem2D::Instance()->DrawTexture(texture, customColorsProxy->GetBrushMaterial(), Color::White, updatedRect);
     RenderSystem2D::Instance()->EndRenderTargetPass();
 	
 	customColorsProxy->UpdateRect(updatedRect);

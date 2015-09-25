@@ -113,7 +113,7 @@ void TextDrawSystem::PushNextBatch(const Color& color)
     batchDescriptor.texCoordStride = TextBlockGraphicRender::TextVerticesDefaultStride;
     batchDescriptor.indexPointer = TextBlockGraphicRender::GetSharedIndexBuffer();
     batchDescriptor.material = fontMaterial;
-    batchDescriptor.textureSetHandle = font->GetTextureHandler();
+    batchDescriptor.textureSetHandle = font->GetTexture()->singleTextureSet;
     batchDescriptor.samplerStateHandle = font->GetTexture()->samplerStateHandle;
     batchDescriptor.worldMatrix = &Matrix4::IDENTITY;
     RenderSystem2D::Instance()->PushBatch(batchDescriptor);

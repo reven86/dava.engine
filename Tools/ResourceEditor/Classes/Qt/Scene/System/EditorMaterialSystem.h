@@ -87,13 +87,13 @@ private:
     void AddEntity(DAVA::Entity* entity) override;
     void RemoveEntity(DAVA::Entity* entity) override;
 
-    void ProcessCommand(const Command2 *command, bool redo);
+    void ProcessCommand(const Command2* command, bool redo);
 
     void AddMaterialsFromEntity(DAVA::Entity* entity);
     void AddMaterialFromRenderBatchWithEntity(DAVA::RenderBatch* renderBatch, DAVA::Entity* entity);
     void AddMaterial(DAVA::NMaterial*, const MaterialMapping& mapping);
 
-    void RemoveMaterial(DAVA::NMaterial *material);
+    void RemoveMaterial(DAVA::NMaterial* material);
 
     void ApplyViewMode();
     void ApplyViewMode(DAVA::NMaterial *material);

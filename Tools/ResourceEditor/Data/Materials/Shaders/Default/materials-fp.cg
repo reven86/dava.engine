@@ -118,7 +118,7 @@ FPROG_OUT_END
     DECL_FP_SAMPLER2D(lightmap)
 #endif
 
-#if ALPHATESTVALUE
+#if MATERIAL_TEXTURE && ALPHATEST && ALPHATESTVALUE
     property float alphatestThreshold           : static,a : ;
 #endif
 
@@ -474,34 +474,43 @@ FPROG_BEGIN
             #endif
         #endif
 
-    #elif MATERIAL_DECAL || MATERIAL_LIGHTMAP
-        
-        float3 color = float3(0.0,0.0,0.0);
+	#else
+		
+		#if MATERIAL_DECAL || MATERIAL_LIGHTMAP
+			
+			float3 color = float3(0.0,0.0,0.0);
 
-        #if VIEW_ALBEDO
-            color = textureColor0.rgb;
-        #else
-            color = float3(1.0,1.0,1.0);
+			#if VIEW_ALBEDO
+				color = textureColor0.rgb;
+			#else
+				color = float3(1.0,1.0,1.0);
+			#endif
+
+			#if VIEW_DIFFUSE
+				color *= textureColor1.rgb * 2.0;
+			#endif
+
+		#elif MATERIAL_TEXTURE
+
+			float3 color = textureColor0.rgb;
+		
+		#elif MATERIAL_SKYBOX
+			
+			float4 color = textureColor0;
+		
+		#else
+			
+			float3 color = float3(1.0,1.0,1.0);
+		
+		#endif
+		
+        #if TILED_DECAL_MASK
+            float maskSample = FP_TEXTURE2D( decalmask, FP_IN(varTexCoord0) ).a;
+            float4 tileColor = FP_TEXTURE2D( decaltexture, FP_IN(varDecalTileTexCoord) ).rgba * decalTileColor;
+            color.rgb += (tileColor.rgb - color.rgb) * tileColor.a * maskSample;
         #endif
-
-        #if VIEW_DIFFUSE
-            color *= textureColor1.rgb * 2.0;
-        #endif
-
-    #elif MATERIAL_TEXTURE
-
-        float3 color = textureColor0.rgb;
-    
-    #elif MATERIAL_SKYBOX
-        
-        float4 color = textureColor0;
-    
-    #else
-        
-        float3 color = float3(1.0,1.0,1.0);
-    
-    #endif
-
+		
+	#endif
 
 
     #if MATERIAL_DETAIL
