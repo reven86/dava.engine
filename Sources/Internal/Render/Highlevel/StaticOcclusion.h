@@ -105,7 +105,7 @@ private:
     uint32 xBlockCount;
     uint32 yBlockCount;
     uint32 zBlockCount;
-    uint32 objectCount;
+    //uint32 objectCount;
     uint32 currentFrameX;
     uint32 currentFrameY;
     uint32 currentFrameZ;

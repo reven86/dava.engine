@@ -132,7 +132,7 @@ private:
 
     NMaterial* material; // Should be replaced to NMaterial
     RenderObject* renderObject;
-    Matrix4* sortingTransformPtr;
+    //Matrix4* sortingTransformPtr;
 
     uint32 sortingKey; //oooookkkk -where o is offset, k is key
 

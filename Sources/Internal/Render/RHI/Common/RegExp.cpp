@@ -212,7 +212,9 @@ RegExp::compile( const char *pattern, const char* attributes )
     if (!this->_is_ref)
     free(this->_pattern);
     this->_pattern = _tcsdup(pattern);
-    this->_is_ref = _is_ref;
+    
+    // warning : assigning field to itself
+    // this->_is_ref = _is_ref;
     _tcscpy(flags, attributes);
 
     unsigned oldre_nsub = re_nsub;

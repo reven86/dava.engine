@@ -3449,7 +3449,7 @@ static int  open_file(
     } else {
         fname = filename;
     }
-search:
+//search:
     fullname = norm_path( *dirp, fname, TRUE, FALSE);
                                     /* Convert to absolute path     */
     if (! fullname)                 /* Non-existent or directory    */
