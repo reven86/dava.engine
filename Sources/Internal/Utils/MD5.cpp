@@ -96,7 +96,7 @@ void MD5::ForFile(const FilePath& pathName, MD5Digest& digest)
         }
     }
 
-	md5.Final();
+    md5.Final();
     digest = md5.GetDigest();
 }
 
@@ -133,8 +133,8 @@ void MD5::RecursiveDirectoryMD5(const FilePath & pathName, MD5 & md5, bool isRec
                     RecursiveDirectoryMD5(fileList->GetPathname(i), md5, isRecursive, includeHidden);
                 }
             }
-		}
-		else 
+        }
+        else 
 		{
 			// update MD5 according to the file
             String name = fileList->GetPathname(i).GetFilename();
@@ -144,7 +144,7 @@ void MD5::RecursiveDirectoryMD5(const FilePath & pathName, MD5 & md5, bool isRec
             MD5::ForFile(fileList->GetPathname(i), fileDigest);
             md5.Update(fileDigest.digest.data(), fileDigest.digest.size());
         }
-	}
+    }
 }
 
 void MD5::HashToChar(const MD5Digest& digest, char8* buffer, uint32 bufferSize)

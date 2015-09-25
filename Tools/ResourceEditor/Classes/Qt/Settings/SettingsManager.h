@@ -63,8 +63,8 @@ namespace Settings
     static const DAVA::FastName General_AssetCache_Timeout("General/AssetCache/Timeout");
 
     static const DAVA::FastName Scene_GridStep("Scene/GridStep");
-	static const DAVA::FastName Scene_GridSize("Scene/GridSize");
-	static const DAVA::FastName Scene_CameraSpeed0("Scene/CameraSpeed0");
+    static const DAVA::FastName Scene_GridSize("Scene/GridSize");
+    static const DAVA::FastName Scene_CameraSpeed0("Scene/CameraSpeed0");
 	static const DAVA::FastName Scene_CameraSpeed1("Scene/CameraSpeed1");
 	static const DAVA::FastName Scene_CameraSpeed2("Scene/CameraSpeed2");
 	static const DAVA::FastName Scene_CameraSpeed3("Scene/CameraSpeed3");

@@ -407,15 +407,15 @@ void VariantType::SetVariant(const VariantType& var)
 		{
 			SetFloat(var.floatValue);
 		}
-		break;
+        break;
         case TYPE_FLOAT64:
         {
             SetFloat64(var.float64Value);
         }
         break;
-    case TYPE_STRING:
-		{
-			SetString(var.AsString());
+        case TYPE_STRING:
+        {
+            SetString(var.AsString());
 		}
 		break;	
 	case TYPE_WIDE_STRING:
@@ -689,7 +689,7 @@ bool VariantType::Write(File * fp) const
                 return false;
             }
 		}
-		break;
+        break;
         case TYPE_FLOAT64:
         {
             written = fp->Write(&float64Value, sizeof(float64));
@@ -699,9 +699,9 @@ bool VariantType::Write(File * fp) const
             }
         }
         break;
-    case TYPE_STRING:
-		{
-			int32 len = (int32)stringValue->length();
+        case TYPE_STRING:
+        {
+            int32 len = (int32)stringValue->length();
 			written = fp->Write(&len, 4);
             if (written != 4)
             {
@@ -954,8 +954,8 @@ bool VariantType::Read(File * fp)
         }
         break;
         case TYPE_STRING:
-		{
-			int32 len;
+        {
+            int32 len;
 			read = fp->Read(&len, 4);
             if (read != 4)
             {
@@ -1456,7 +1456,7 @@ void* VariantType::MetaObject()
 		break;	
 	case TYPE_UINT32:
 		ret = &uint32Value;
-		break;
+        break;
     case TYPE_INT64:
         ret = &int64Value;
         break;
@@ -1464,14 +1464,14 @@ void* VariantType::MetaObject()
         ret = &uint64Value;
         break;
     case TYPE_FLOAT:
-		ret = &floatValue;
-		break;
+        ret = &floatValue;
+        break;
     case TYPE_FLOAT64:
         ret = &float64Value;
         break;
     case TYPE_STRING:
-		ret = stringValue;
-		break;	
+        ret = stringValue;
+        break;	
 	case TYPE_WIDE_STRING:
 		ret = wideStringValue;
 		break;
@@ -1533,8 +1533,8 @@ VariantType VariantType::LoadData(const void *src, const MetaInfo *meta)
         v.SetFloat64(*((float64*)src));
         break;
     case TYPE_STRING:
-		v.SetString(*((DAVA::String *) src));
-		break;
+        v.SetString(*((DAVA::String*)src));
+        break;
 	case TYPE_WIDE_STRING:
 		v.SetWideString(*((DAVA::WideString *) src));
 		break;
@@ -1656,8 +1656,8 @@ void VariantType::SaveData(void *dst, const MetaInfo *meta, const VariantType &v
             *((float64*)dst) = val.AsFloat64();
             break;
         case TYPE_STRING:
-			*((DAVA::String *) dst) = val.AsString();
-			break;
+            *((DAVA::String*)dst) = val.AsString();
+            break;
 		case TYPE_WIDE_STRING:
 			*((DAVA::WideString *) dst) = val.AsWideString();
 			break;
@@ -1753,8 +1753,8 @@ VariantType VariantType::FromType(int type)
         v.SetFloat64(0.0);
         break;
     case TYPE_STRING:
-		v.SetString("");
-		break;
+        v.SetString("");
+        break;
 	case TYPE_WIDE_STRING:
 		v.SetWideString(WideString());
 		break;

@@ -247,7 +247,7 @@ namespace DAVA
         }
 
         RenderManager::Instance()->ChangeDisplayMode(currentMode, isFullscreen);
-		RenderManager::Instance()->Init(currentMode.width, currentMode.height);
+        RenderManager::Instance()->Init(currentMode.width, currentMode.height);
         VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(currentMode.width, currentMode.height);
         VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(currentMode.width, currentMode.height);
 
@@ -440,7 +440,7 @@ namespace DAVA
 
     int32 CoreWin32Platform::MoveTouchsToVector(UIEvent::PointerDeviceID deviceId, USHORT buttsFlags, WPARAM wParam, LPARAM lParam, Vector<UIEvent>* outTouches)
     {
-		int button = 0;
+        int button = 0;
         int phase = -1;
 
         if(LOWORD(wParam))
@@ -502,16 +502,16 @@ namespace DAVA
 		bool isFind = false;
         for (Vector<DAVA::UIEvent>::iterator it = events.begin(); it != events.end(); it++)
         {
-			if(it->tid == button)
-			{
+            if (it->tid == button)
+            {
 				isFind = true;
 
                 it->physPoint.x = static_cast<float32>(GET_X_LPARAM(lParam));
                 it->physPoint.y = static_cast<float32>(GET_Y_LPARAM(lParam));
                 it->phase = phase;
 
-				break;
-			}
+                break;
+            }
 		}
 
 		if(!isFind)
@@ -527,19 +527,19 @@ namespace DAVA
 
         for (Vector<DAVA::UIEvent>::iterator it = events.begin(); it != events.end(); it++)
         {
-			outTouches->push_back(*it);
-		}
+            outTouches->push_back(*it);
+        }
 
 		if(phase == UIEvent::PHASE_ENDED || phase == UIEvent::PHASE_MOVE)
 		{
             for (Vector<DAVA::UIEvent>::iterator it = events.begin(); it != events.end(); it++)
             {
-				if(it->tid == button)
-				{
+                if (it->tid == button)
+                {
                     events.erase(it);
                     break;
-				}
-			}
+                }
+            }
 		}
 
 		return phase;
@@ -631,7 +631,7 @@ namespace DAVA
 			{
                 touchPhase = MoveTouchsToVector(deviceId, buttsFlags, wParam, lParam, &touches);
             }
-		}
+        }
 
         if (touchPhase != -1)
         {
@@ -640,13 +640,13 @@ namespace DAVA
 
         if (RenderManager::Instance()->GetCursor() != nullptr && mouseCursorShown)
         {
-			ShowCursor(false);
-			mouseCursorShown = false;
+            ShowCursor(false);
+            mouseCursorShown = false;
 		}
         if (RenderManager::Instance()->GetCursor() == nullptr && !mouseCursorShown)
         {
-			ShowCursor(false);
-			mouseCursorShown = false;
+            ShowCursor(false);
+            mouseCursorShown = false;
 		}
 
 		HandleMouseButtonsReleased(buttsFlags);
@@ -695,7 +695,7 @@ namespace DAVA
 
     LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     {
-		CoreWin32Platform* core = static_cast< CoreWin32Platform* >(Core::Instance());
+        CoreWin32Platform* core = static_cast<CoreWin32Platform*>(Core::Instance());
 #ifndef WM_MOUSEWHEEL
 #define WM_MOUSEWHEEL 0x020A
 #endif
@@ -843,8 +843,8 @@ namespace DAVA
         }
         case WM_NCMOUSEMOVE:
             if (!mouseCursorShown)
-			{	
-				ShowCursor(true);
+            {
+                ShowCursor(true);
 				mouseCursorShown = true;
 			}
 			break;

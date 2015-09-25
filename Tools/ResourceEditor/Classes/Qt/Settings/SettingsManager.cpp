@@ -82,8 +82,8 @@ void SettingsManager::Init()
     CreateValue(Settings::General_AssetCache_Timeout, DAVA::VariantType(DAVA::String("")));
 
     CreateValue(Settings::Scene_GridStep, DAVA::VariantType(10.0f));
-	CreateValue(Settings::Scene_GridSize, DAVA::VariantType(600.0f));
-	CreateValue(Settings::Scene_CameraSpeed0, DAVA::VariantType(35.0f));
+    CreateValue(Settings::Scene_GridSize, DAVA::VariantType(600.0f));
+    CreateValue(Settings::Scene_CameraSpeed0, DAVA::VariantType(35.0f));
 	CreateValue(Settings::Scene_CameraSpeed1, DAVA::VariantType(100.0f));
 	CreateValue(Settings::Scene_CameraSpeed2, DAVA::VariantType(250.0f));
 	CreateValue(Settings::Scene_CameraSpeed3, DAVA::VariantType(400.0f));

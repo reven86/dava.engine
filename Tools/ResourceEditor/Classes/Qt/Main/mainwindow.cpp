@@ -348,9 +348,7 @@ void QtMainWindow::CollectEmittersForSave(ParticleEmitter *topLevelEmitter, DAVA
     emitters.emplace_back(EmitterDescriptor(topLevelEmitter, nullptr, topLevelEmitter->configPath, entityName));
 }
 
-
-
-void QtMainWindow::SaveAllSceneEmitters(SceneEditor2 *scene) const
+void QtMainWindow::SaveAllSceneEmitters(SceneEditor2* scene) const
 {
     DVASSERT(nullptr != scene);
 
@@ -358,8 +356,7 @@ void QtMainWindow::SaveAllSceneEmitters(SceneEditor2 *scene) const
     {
         return;
     }
-    
-    
+
     List<Entity *> effectEntities;
     scene->GetChildEntitiesWithComponent(effectEntities, Component::PARTICLE_EFFECT_COMPONENT);
     if (effectEntities.empty())

@@ -287,8 +287,8 @@ public:
 		\param[in] key string key
 		\param[in] value we want to set for this key
 	 */
-	void SetString(const String & key, const String & value);
-	/**
+    void SetString(const String& key, const String& value);
+    /**
 		\brief Function to set variable in archive.
 		\param[in] key string key
 		\param[in] value we want to set for this key
@@ -445,7 +445,7 @@ public:
      \brief Function loads data from given yaml file.
      \param[in] pathName relative pathname in application documents folder
 	 */
-    bool LoadFromYamlFile(const FilePath & pathName);
+    bool LoadFromYamlFile(const FilePath& pathName);
 
     /**
      \brief Function saves data to given yaml file.

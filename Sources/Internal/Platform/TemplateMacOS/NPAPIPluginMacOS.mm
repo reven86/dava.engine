@@ -337,8 +337,8 @@ extern void FrameworkWillTerminate();
 
     time_t timestamp = time(NULL);
 
-	DAVA::UIEvent ev;
-	ev.keyChar = c;
+    DAVA::UIEvent ev;
+    ev.keyChar = c;
 	ev.phase = DAVA::UIEvent::PHASE_KEYCHAR;
 	ev.timestamp = timestamp;
 	ev.tapCount = 1;
