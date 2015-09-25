@@ -650,7 +650,7 @@ void Core::InitializeNetwork()
     }
     Net::Endpoint endPoint("127.0.0.1", port);
 
-    auto netLoggerService = std::make_unique<Net::NetLogger>(true, 100, false);
+    auto netLoggerService = std::make_unique<Net::NetLogger>();
 
     Net::SimpleNetCore* simpleNetCore = new Net::SimpleNetCore();
     const Net::SimpleNetService* service = simpleNetCore->RegisterService(

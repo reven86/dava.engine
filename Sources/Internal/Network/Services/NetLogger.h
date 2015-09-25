@@ -65,7 +65,7 @@ private:
     };
 
 public:
-    NetLogger(bool selfInstallFlag = true, size_t queueSize = 100, bool writeTimestampFlag = true);
+    NetLogger(bool selfInstallFlag = true, size_t queueSize = 100);
     virtual ~NetLogger();
 
     void Install();
@@ -92,7 +92,6 @@ private:
 
 private:
     bool selfInstall;
-    bool writeTimestamp;
     bool isInstalled;
     size_t maxQueueSize;
     Mutex mutex;
