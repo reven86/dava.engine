@@ -57,6 +57,7 @@ private:
     void CalculateTotalRect(Rect& totalRect, Vector2& rootControlPosition);
     void Draw(const UIGeometricData& geometricData) override;
     void UpdateCounterpoise();
+    void FitGridIfParentIsNested(PackageBaseNode* node);
     void FitGridToNestedControl();
     ScopedPtr<UIControl> counterpoiseControl;
     ScopedPtr<UIControl> positionHolderControl;
@@ -104,16 +105,7 @@ void GridControl::ControlPropertyWasChanged(ControlNode* node, AbstractProperty*
     }
     if (name == "Angle" || name == "Size" || name == "Scale" || name == "Position" || name == "Pivot")
     {
-        PackageBaseNode* parent = node;
-        while (nullptr != parent)
-        {
-            if (parent->GetControl() == nestedControl) //we change child in the nested control
-            {
-                FitGridToNestedControl();
-                break;
-            }
-            parent = parent->GetParent();
-        }
+        FitGridIfParentIsNested(node);
     }
 }
 
@@ -193,30 +185,12 @@ void GridControl::ControlWasRemoved(ControlNode* node, ControlsContainerNode* fr
     {
         return;
     }
-    PackageBaseNode* parent = from;
-    while (nullptr != parent)
-    {
-        if (parent->GetControl() == nestedControl) //we change child in the nested control
-        {
-            FitGridToNestedControl();
-            break;
-        }
-        parent = parent->GetParent();
-    }
+    FitGridIfParentIsNested(from);
 }
 
 void GridControl::ControlWasAdded(ControlNode* /*node*/, ControlsContainerNode* destination, int /*index*/)
 {
-    PackageBaseNode* parent = destination;
-    while (nullptr != parent)
-    {
-        if (parent->GetControl() == nestedControl) //we change child in the nested control
-        {
-            FitGridToNestedControl();
-            break;
-        }
-        parent = parent->GetParent();
-    }
+    FitGridIfParentIsNested(destination);
 }
 
 void GridControl::Draw(const UIGeometricData& geometricData)
@@ -244,6 +218,20 @@ void GridControl::UpdateCounterpoise()
                             gd.position.x * -gd.sinA + gd.position.y * gd.cosA);
 
     counterpoiseControl->SetPosition(-angeledPosition + gd.pivotPoint * gd.scale);
+}
+
+void GridControl::FitGridIfParentIsNested(PackageBaseNode* node)
+{
+    PackageBaseNode* parent = node;
+    while (nullptr != parent)
+    {
+        if (parent->GetControl() == nestedControl) //we change child in the nested control
+        {
+            FitGridToNestedControl();
+            return;
+        }
+        parent = parent->GetParent();
+    }
 }
 
 void GridControl::FitGridToNestedControl()

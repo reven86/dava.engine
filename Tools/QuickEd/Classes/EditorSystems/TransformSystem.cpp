@@ -72,7 +72,6 @@ Vector2 RotateVectorInv(Vector2 in, const float32& angle)
 
 TransformSystem::TransformSystem(EditorSystemsManager* parent)
     : BaseEditorSystem(parent)
-    , steps({{15, 10, 10}}) //10 grad for rotate and 20 pix for move/resize
 {
     systemManager->ActiveAreaChanged.Connect(this, &TransformSystem::OnActiveAreaChanged);
     systemManager->SelectionChanged.Connect(this, &TransformSystem::OnSelectionChanged);
@@ -88,11 +87,18 @@ void TransformSystem::OnActiveAreaChanged(const HUDAreaInfo& areaInfo)
         UIControl* parent = control->GetParent();
         parentGeometricData = parent->GetGeometricData();
         controlGeometricData = control->GetGeometricData();
-        sizeProperty = activeControlNode->GetRootProperty()->FindPropertyByName("Size");
+        RootProperty* rootProperty = activeControlNode->GetRootProperty();
+        sizeProperty = rootProperty->FindPropertyByName("Size");
+        positionProperty = rootProperty->FindPropertyByName("Position");
+        angleProperty = rootProperty->FindPropertyByName("Angle");
+        pivotProperty = rootProperty->FindPropertyByName("Pivot");
     }
     else
     {
         sizeProperty = nullptr;
+        positionProperty = nullptr;
+        angleProperty = nullptr;
+        pivotProperty = nullptr;
     }
 }
 
@@ -105,6 +111,8 @@ bool TransformSystem::OnInput(UIEvent* currentInput)
 
     case UIEvent::PHASE_BEGAN:
     {
+        accumulatedAngle = 0.0f;
+        extraDelta.SetZero();
         prevPos = currentInput->point;
         microseconds us = duration_cast<microseconds>(system_clock::now().time_since_epoch());
         currentHash = static_cast<size_t>(us.count());
@@ -112,13 +120,14 @@ bool TransformSystem::OnInput(UIEvent* currentInput)
     }
     case UIEvent::PHASE_DRAG:
     {
-        ProcessDrag(currentInput->point);
-        prevPos = currentInput->point;
+        if (currentInput->point != prevPos)
+        {
+            ProcessDrag(currentInput->point);
+            prevPos = currentInput->point;
+        }
         return false;
     }
     case UIEvent::PHASE_ENDED:
-        accumulates.fill({{0, 0}});
-        extraDelta.SetZero();
         return false;
     default:
         return false;
@@ -128,48 +137,12 @@ bool TransformSystem::OnInput(UIEvent* currentInput)
 void TransformSystem::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
     SelectionContainer::MergeSelectionAndContainer(selected, deselected, selectedControlNodes);
-
-    nodesToMove.resize(selectedControlNodes.size());
-    std::copy(selectedControlNodes.begin(), selectedControlNodes.end(), nodesToMove.begin());
-    auto iter = nodesToMove.begin();
-    while (iter != nodesToMove.end())
+    nodesToMove.clear();
+    for (ControlNode* selectedControl : selectedControlNodes)
     {
-        bool toRemove = false;
-        PackageBaseNode* parent = (*iter)->GetParent();
-        if (nullptr == parent || nullptr == parent->GetControl())
-        {
-            toRemove = true;
-        }
-        else
-        {
-            auto iter2 = nodesToMove.begin();
-            while (iter2 != nodesToMove.end() && !toRemove)
-            {
-                PackageBaseNode* node1 = *iter;
-                PackageBaseNode* node2 = *iter2;
-                if (iter != iter2)
-                {
-                    while (nullptr != node1->GetParent() && nullptr != node1->GetControl() && !toRemove)
-                    {
-                        if (node1 == node2)
-                        {
-                            toRemove = true;
-                        }
-                        node1 = node1->GetParent();
-                    }
-                }
-                ++iter2;
-            }
-        }
-        if (toRemove)
-        {
-            nodesToMove.erase(iter++);
-        }
-        else
-        {
-            ++iter;
-        }
+        nodesToMove.emplace_back(selectedControl, nullptr);
     }
+    CorrectNodesToMove();
 }
 
 bool TransformSystem::ProcessKey(const int32 key)
@@ -179,7 +152,9 @@ bool TransformSystem::ProcessKey(const int32 key)
         float step = 1.0f;
         const KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
         if (keyboard.IsKeyPressed(DVKEY_SHIFT))
+        {
             step = 10.0f;
+        }
         Vector2 deltaPos;
         switch (key)
         {
@@ -249,17 +224,6 @@ bool TransformSystem::ProcessDrag(Vector2 pos)
     }
 }
 
-void TransformSystem::MoveAllSelectedControls(Vector2 delta)
-{
-    for (auto& controlNode : nodesToMove)
-    {
-        if (controlNode->IsEditingSupported())
-        {
-            AdjustProperty(controlNode, "Position", VariantType(delta));
-        }
-    }
-}
-
 void TransformSystem::MoveControl(Vector2 delta)
 {
     if (parentGeometricData.scale.x != 0.0f && parentGeometricData.scale.y != 0.0f)
@@ -267,6 +231,26 @@ void TransformSystem::MoveControl(Vector2 delta)
         Vector2 scaledDelta = delta / parentGeometricData.scale;
         Vector2 angeledDelta(RotateVector(scaledDelta, parentGeometricData));
         MoveAllSelectedControls(angeledDelta);
+    }
+}
+
+void TransformSystem::MoveAllSelectedControls(Vector2 delta)
+{
+    DAVA::Vector<std::tuple<ControlNode*, AbstractProperty*, VariantType>> propertiesToChange;
+    for (auto& pair : nodesToMove)
+    {
+        ControlNode* node = pair.first;
+        if (node->IsEditingSupported())
+        {
+            AbstractProperty* property = pair.second;
+            Vector2 originalPosition = property->GetValue().AsVector2();
+            Vector2 finalPosition(originalPosition + delta);
+            propertiesToChange.emplace_back(node, property, VariantType(finalPosition));
+        }
+    }
+    if (!propertiesToChange.empty())
+    {
+        systemManager->PropertiesChanged.Emit(std::move(propertiesToChange), std::move(currentHash));
     }
 }
 
@@ -370,9 +354,10 @@ void TransformSystem::ResizeControl(Vector2 delta, bool withPivot, bool rateably
     UIControl* control = activeControlNode->GetControl();
     deltaPosition *= control->GetScale();
     deltaPosition = RotateVectorInv(deltaPosition, control->GetAngle());
+
     Vector<PropertyDelta> propertiesDelta;
-    propertiesDelta.emplace_back("Position", VariantType(deltaPosition));
-    propertiesDelta.emplace_back("Size", VariantType(deltaSize));
+    propertiesDelta.emplace_back(positionProperty, VariantType(deltaPosition));
+    propertiesDelta.emplace_back(sizeProperty, VariantType(deltaSize));
     AdjustProperty(activeControlNode, propertiesDelta);
 }
 
@@ -450,11 +435,11 @@ void TransformSystem::MovePivot(Vector2 delta)
 
     Vector2 scaledDelta(delta / parentGeometricData.scale);
     Vector2 angeledDeltaPosition(RotateVector(scaledDelta, parentGeometricData));
-    propertiesDelta.emplace_back("Position", VariantType(angeledDeltaPosition));
+    propertiesDelta.emplace_back(positionProperty, VariantType(angeledDeltaPosition));
 
     const Vector2 angeledDeltaPivot(RotateVector(delta, controlGeometricData));
     const Vector2 pivot(angeledDeltaPivot / controlSize);
-    propertiesDelta.emplace_back("Pivot", VariantType(pivot));
+    propertiesDelta.emplace_back(pivotProperty, VariantType(pivot));
     AdjustProperty(activeControlNode, propertiesDelta);
 }
 
@@ -465,25 +450,34 @@ void TransformSystem::Rotate(Vector2 pos)
     Vector2 l1(prevPos - rotatePoint);
     Vector2 l2(pos - rotatePoint);
     float32 angleRad = atan2(l2.y, l2.x) - atan2(l1.y, l1.x);
-    float32 angle = RadToDeg(angleRad);
+    float32 deltaAngle = RadToDeg(angleRad);
 
-    angle = round(angle);
-    AdjustProperty(activeControlNode, "Angle", VariantType(angle));
-}
+    deltaAngle = round(deltaAngle);
 
-void TransformSystem::AdjustProperty(ControlNode* node, const String& propertyName, const VariantType& delta)
-{
-    Vector<PropertyDelta> propertiesDelta;
-    propertiesDelta.emplace_back(propertyName, delta);
-    AdjustProperty(node, propertiesDelta);
+    float32 originalAngle = angleProperty->GetValue().AsFloat();
+
+    const KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
+    if (keyboard.IsKeyPressed(DVKEY_SHIFT))
+    {
+        static int step = 15.0f; //fixed angle step
+        float32 finalAngle = originalAngle + deltaAngle + accumulatedAngle;
+        int32 nearestTargetAngle = finalAngle - static_cast<int>(finalAngle) % step;
+
+        accumulatedAngle = finalAngle - nearestTargetAngle;
+        deltaAngle = nearestTargetAngle - originalAngle;
+    }
+    float32 finalAngle = static_cast<int32>(originalAngle + deltaAngle);
+    DAVA::Vector<std::tuple<ControlNode*, AbstractProperty*, VariantType>> propertiesToChange;
+    propertiesToChange.emplace_back(activeControlNode, angleProperty, VariantType(finalAngle));
+    systemManager->PropertiesChanged.Emit(std::move(propertiesToChange), std::move(currentHash));
 }
 
 void TransformSystem::AdjustProperty(ControlNode* node, const Vector<PropertyDelta>& propertiesDelta)
 {
-    Vector<std::pair<AbstractProperty*, VariantType>> propertiesToChange;
-    for (const auto& pair : propertiesDelta)
+    DAVA::Vector<std::tuple<ControlNode*, AbstractProperty*, VariantType>> propertiesToChange;
+    for (const PropertyDelta& pair : propertiesDelta)
     {
-        AbstractProperty* property = node->GetRootProperty()->FindPropertyByName(pair.first);
+        AbstractProperty* property = pair.first;
         DVASSERT(nullptr != property);
         const VariantType& delta = pair.second;
         VariantType var(delta);
@@ -500,30 +494,57 @@ void TransformSystem::AdjustProperty(ControlNode* node, const Vector<PropertyDel
             DVASSERT_MSG(false, "unexpected type");
             break;
         }
-        propertiesToChange.emplace_back(property, var);
+        propertiesToChange.emplace_back(node, property, var);
     }
-    systemManager->PropertiesChanged.Emit(std::move(node), std::move(propertiesToChange), std::move(currentHash));
+    if (!propertiesToChange.empty())
+    {
+        systemManager->PropertiesChanged.Emit(std::move(propertiesToChange), std::move(currentHash));
+    }
 }
 
-void TransformSystem::AccumulateOperation(ACCUMULATE_OPERATIONS operation, DAVA::Vector2& delta)
+void TransformSystem::CorrectNodesToMove()
 {
-    const int step = steps[operation];
-    int x = accumulates[operation][Vector2::AXIS_X];
-    int y = accumulates[operation][Vector2::AXIS_Y];
-
-    if (abs(x) < step)
+    auto iter = nodesToMove.begin();
+    while (iter != nodesToMove.end())
     {
-        x += delta.x;
+        bool toRemove = false;
+        PackageBaseNode* parent = iter->first->GetParent();
+        if (nullptr == parent || nullptr == parent->GetControl())
+        {
+            toRemove = true;
+        }
+        else
+        {
+            auto iter2 = nodesToMove.begin();
+            while (iter2 != nodesToMove.end() && !toRemove)
+            {
+                PackageBaseNode* node1 = iter->first;
+                PackageBaseNode* node2 = iter2->first;
+                if (iter != iter2)
+                {
+                    while (nullptr != node1->GetParent() && nullptr != node1->GetControl() && !toRemove)
+                    {
+                        if (node1 == node2)
+                        {
+                            toRemove = true;
+                        }
+                        node1 = node1->GetParent();
+                    }
+                }
+                ++iter2;
+            }
+        }
+        if (toRemove)
+        {
+            nodesToMove.erase(iter++);
+        }
+        else
+        {
+            ++iter;
+        }
     }
-
-    if (abs(y) < step)
+    for (auto& pair : nodesToMove)
     {
-        y += delta.y;
+        pair.second = pair.first->GetRootProperty()->FindPropertyByName("Position");
     }
-
-    delta = Vector2(x - x % step, y - y % step);
-    x -= delta.x;
-    y -= delta.y;
-    accumulates[operation][Vector2::AXIS_X] = x;
-    accumulates[operation][Vector2::AXIS_Y] = y;
 }

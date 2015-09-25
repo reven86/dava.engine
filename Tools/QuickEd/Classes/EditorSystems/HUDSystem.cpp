@@ -67,7 +67,7 @@ public:
         : UIControl()
     {
         SetName("Selection Rect");
-        for (int i = 0; i < BORDERS_COUNT; ++i)
+        for (uint32 i = 0; i < BORDERS_COUNT; ++i)
         {
             UIControl* control = new UIControl();
             UIControlBackground* background = control->GetBackground();

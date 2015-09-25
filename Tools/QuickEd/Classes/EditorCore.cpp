@@ -98,11 +98,6 @@ EditorCore::EditorCore(QObject *parent)
     qApp->installEventFilter(this);
 }
 
-EditorCore::~EditorCore()
-{
-    delete mainWindow;
-}
-
 void EditorCore::Start()
 {
     int32 projectCount = EditorSettings::Instance()->GetLastOpenedCount();

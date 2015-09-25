@@ -44,14 +44,8 @@ public:
     bool OnInput(DAVA::UIEvent* currentInput) override;
 
 private:
-    using PropertyDelta = std::pair<DAVA::String /*propertyName*/, DAVA::VariantType /*delta*/>;
-    enum ACCUMULATE_OPERATIONS
-    {
-        ROTATE_OPERATION,
-        MOVE_OPERATION,
-        RESIZE_OPERATION,
-        OPERATIONS_COUNT
-    };
+    using PropertyDelta = std::pair<AbstractProperty* /*property*/, DAVA::VariantType /*delta*/>;
+
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void OnActiveAreaChanged(const HUDAreaInfo& areaInfo);
 
@@ -65,25 +59,27 @@ private:
     void MoveControl(DAVA::Vector2 delta);
     void MoveAllSelectedControls(DAVA::Vector2 delta);
 
-    void AdjustProperty(ControlNode* node, const DAVA::String& propertyName, const DAVA::VariantType& delta);
-
+    void AdjustProperty(ControlNode* node, AbstractProperty* property, const DAVA::VariantType& value);
     void AdjustProperty(ControlNode* node, const DAVA::Vector<PropertyDelta>& propertiesDelta);
 
-    void AccumulateOperation(ACCUMULATE_OPERATIONS operation, DAVA::Vector2& delta);
+    void CorrectNodesToMove();
 
     HUDAreaInfo::eArea activeArea = HUDAreaInfo::NO_AREA;
     ControlNode* activeControlNode = nullptr;
     DAVA::Vector2 prevPos;
-    const DAVA::Array<int, OPERATIONS_COUNT> steps; //to transform with fixed step
-    DAVA::Array<DAVA::Array<int, DAVA::Vector2::AXIS_COUNT>, OPERATIONS_COUNT> accumulates;
     DAVA::Vector2 extraDelta;
     SelectedControls selectedControlNodes;
-    DAVA::List<ControlNode*> nodesToMove;
+    DAVA::List<std::pair<ControlNode* /*node*/, AbstractProperty* /*positionProperty*/>> nodesToMove;
     const DAVA::Vector2 minimumSize = DAVA::Vector2(16.0f, 16.0f);
     size_t currentHash = 0;
+    DAVA::float32 accumulatedAngle = 0.0f;
+
     DAVA::UIGeometricData parentGeometricData;
     DAVA::UIGeometricData controlGeometricData;
     AbstractProperty* sizeProperty = nullptr;
+    AbstractProperty* positionProperty = nullptr;
+    AbstractProperty* angleProperty = nullptr;
+    AbstractProperty* pivotProperty = nullptr;
 };
 
 #endif // __QUICKED_TRANSFORM_SYSTEM_H__
