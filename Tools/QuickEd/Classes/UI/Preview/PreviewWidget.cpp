@@ -135,6 +135,10 @@ void PreviewWidget::OnDocumentChanged(Document *arg)
         scrollAreaController->SetNestedControl(scalableControl);
         OnScaleByComboText();
     }
+    else
+    {
+        scrollAreaController->SetNestedControl(nullptr);
+    }
 }
 
 void PreviewWidget::OnMonitorChanged()

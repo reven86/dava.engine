@@ -49,6 +49,7 @@ ScrollAreaController::ScrollAreaController(QObject *parent)
 void ScrollAreaController::SetNestedControl(DAVA::UIControl *arg)
 {
     nestedControl = arg;
+    UpdateCanvasContentSize();
 }
 
 UIControl* ScrollAreaController::GetBackgroundControl()
