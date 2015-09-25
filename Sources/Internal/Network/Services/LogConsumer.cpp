@@ -40,15 +40,8 @@ namespace DAVA
 namespace Net
 {
 
-LogConsumer::LogConsumer(const Options& options) 
-    : writeToConsole(options.writeToConsole)
-    , rawOutput(options.rawOutput)
+LogConsumer::LogConsumer()
 {
-    if (options.filename.IsSet())
-    {
-        FilePath path = options.filename.Get();
-        file = RefPtr<File>(File::Create(path, File::WRITE | File::APPEND));
-    }
 }
 
 LogConsumer::~LogConsumer()
@@ -57,23 +50,17 @@ LogConsumer::~LogConsumer()
 
 void LogConsumer::OnPacketReceived(IChannel* channel, const void* buffer, size_t length)
 {
-    String output(static_cast<const char8*>(buffer), length);
+    String data(static_cast<const char8*>(buffer), length);
+    String endp(channel->RemoteEndpoint().ToString());
 
-    if (!rawOutput)
-    {
-        String endp(channel->RemoteEndpoint().ToString());
-        output = Format("[%s] %s", endp.c_str(), output.c_str());
-    }
+    String output = Format("[%s] %s", endp.c_str(), data.c_str());
+    newDataNotifier.Emit(output);
+}
 
-    if (file)
-    {
-        file->WriteLine(output);
-    }
-
-    if (writeToConsole)
-    {
-        printf("%s\n", output.c_str());
-    }
+SignalConnection LogConsumer::SubscribeOnReceivedData(const Function<void(const String&)>& func)
+{
+    SigConnectionID connectionId = newDataNotifier.Connect(func);
+    return MakeSignalConnection(connectionId, newDataNotifier);
 }
 
 }   // namespace Net

@@ -32,6 +32,7 @@
 
 #include "Base/Noncopyable.h"
 #include "Base/Optional.h"
+#include "Functional/Signal.h"
 
 #include "Network/NetService.h"
 
@@ -49,15 +50,7 @@ namespace Net
 class LogConsumer : public NetService
 {
 public:
-    //Options for LogConsumer
-    struct Options
-    {
-        Optional<String> filename;   //name of output file for logging
-        bool writeToConsole = false; //print log in standard out
-        bool rawOutput = false;      //write log without formatting
-    };
-
-    LogConsumer(const Options& options = Options());
+    LogConsumer();
     ~LogConsumer() override;
 
     LogConsumer(const LogConsumer&) = delete;
@@ -65,10 +58,10 @@ public:
 
     void OnPacketReceived(IChannel* channel, const void* buffer, size_t length) override;
 
+    SignalConnection SubscribeOnReceivedData(const Function<void(const String&)>& func);
+
 private:
-    bool writeToConsole;
-    bool rawOutput;
-    RefPtr<File> file;
+    Signal<const String&> newDataNotifier;
 };
 
 }   // namespace Net
