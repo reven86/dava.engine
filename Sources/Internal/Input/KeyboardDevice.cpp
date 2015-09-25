@@ -130,10 +130,20 @@ void KeyboardDevice::PrepareKeyTranslator()
 	keyTranslator[VK_CAPITAL] = DVKEY_CAPSLOCK;
     keyTranslator[VK_SPACE] = DVKEY_SPACE;
     keyTranslator[VK_TAB] = DVKEY_TAB;
-    keyTranslator[VK_OEM_PLUS] = DVKEY_EQUALS;
-    keyTranslator[VK_OEM_MINUS] = DVKEY_MINUS;
     keyTranslator[VK_ADD] = DVKEY_ADD;
     keyTranslator[VK_SUBTRACT] = DVKEY_SUBTRACT;
+
+    keyTranslator[VK_OEM_PLUS] = DVKEY_EQUALS;
+    keyTranslator[VK_OEM_MINUS] = DVKEY_MINUS;
+    keyTranslator[VK_OEM_PERIOD] = DVKEY_PERIOD;
+    keyTranslator[VK_OEM_COMMA] = DVKEY_COMMA;
+    keyTranslator[VK_OEM_1] = DVKEY_SEMICOLON;
+    keyTranslator[VK_OEM_2] = DVKEY_SLASH;
+    keyTranslator[VK_OEM_3] = DVKEY_GRAVE;
+    keyTranslator[VK_OEM_4] = DVKEY_LBRACKET;
+    keyTranslator[VK_OEM_5] = DVKEY_BACKSLASH;
+    keyTranslator[VK_OEM_6] = DVKEY_RBRACKET;
+    keyTranslator[VK_OEM_7] = DVKEY_APOSTROPHE;
 
     for (auto i = 0; i <= DVKEY_F12 - DVKEY_F1; i++)
     {

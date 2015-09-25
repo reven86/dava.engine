@@ -500,12 +500,9 @@ void UITextField::Input(UIEvent *currentInput)
 
 
     if (currentInput->phase == UIEvent::PHASE_KEYCHAR)
-    {    
-        /// macos
-        
-        if (currentInput->tid == DVKEY_BACKSPACE)
+    {
+        if (currentInput->tid == 0 && currentInput->keyChar == '\b')
         {
-            //TODO: act the same way on iPhone
             WideString str = L"";
             if(delegate->TextFieldKeyPressed(this, (int32)GetText().length() - 1, 1, str))
             {
