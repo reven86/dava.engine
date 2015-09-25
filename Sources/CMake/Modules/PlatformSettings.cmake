@@ -143,8 +143,8 @@ if( WARNINGS_AS_ERRORS )
         set( LOCAL_DISABLED_WARNINGS "${LOCAL_DISABLED_WARNINGS} \
 -Wno-reserved-id-macro \
 -Wno-unused-local-typedef \
--Wno-inconsistent-missing-override") \
--Wno-unknown-pragmas") \
+-Wno-inconsistent-missing-override \
+-Wno-unknown-pragmas")
         set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${LOCAL_DISABLED_WARNINGS}" ) # warnings as errors
     elseif( APPLE )
         set( LOCAL_DISABLED_WARNINGS "${LOCAL_DISABLED_WARNINGS} \
