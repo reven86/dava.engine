@@ -79,9 +79,10 @@ public:
 	
 	void	GetAnimationTimeInfo(FCDocument * document, float32 & timeStart, float32 & timeEnd);
     
-public:
+
 	FILE	* sceneFP;
 	ColladaScene *				colladaScene;
+
 private:
 	FCDocument *				document; 
     SceneFile::Header           header;

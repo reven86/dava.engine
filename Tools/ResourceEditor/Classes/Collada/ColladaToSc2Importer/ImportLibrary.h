@@ -56,7 +56,8 @@ private:
     bool GetTextureTypeAndPathFromCollada(ColladaMaterial * material, FastName & type, FilePath & path);
     FilePath GetNormalMapTexturePath(const FilePath & originalTexturePath);
     inline void FlipTexCoords(Vector2 & v);
-private:
+
+
     Map<ColladaPolygonGroupInstance *, PolygonGroup *> polygons;
     Map<FastName, NMaterial *> materialParents;
     Map<FastName, NMaterial *> materials;

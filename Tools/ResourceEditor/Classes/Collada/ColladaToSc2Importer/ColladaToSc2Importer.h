@@ -30,6 +30,8 @@
 #ifndef __COLLADA_TO_SC2_IMPORTER_H__
 #define __COLLADA_TO_SC2_IMPORTER_H__
 
+#include "Collada/ColladaToSc2Importer/ImportLibrary.h"
+
 namespace DAVA
 {
 
@@ -40,8 +42,6 @@ class ImportLibrary;
 class ColladaToSc2Importer
 {
 public:
-    ColladaToSc2Importer();
-    ~ColladaToSc2Importer();
     SceneFileV2::eError SaveSC2(ColladaScene * colladaScene, const FilePath & scenePath, const String & sceneName);
 
 private:
@@ -52,8 +52,8 @@ private:
     void BuildSceneAsCollada(Entity * root, ColladaSceneNode * colladaNode);
     Mesh * GetMeshFromCollada(ColladaMeshInstance * mesh, const bool isShadow);
 
-private:
-    ImportLibrary * library;
+
+    ImportLibrary library;
 };
 
 };

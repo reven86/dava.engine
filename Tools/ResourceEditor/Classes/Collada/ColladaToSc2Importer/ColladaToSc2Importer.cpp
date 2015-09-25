@@ -44,7 +44,6 @@
 #include "Collada/ColladaToSc2Importer/ColladaToSc2Importer.h"
 
 #include "Collada/ColladaToSc2Importer/ImportSettings.h"
-#include "Collada/ColladaToSc2Importer/ImportLibrary.h"
 
 namespace DAVA
 {
@@ -55,14 +54,14 @@ Mesh * ColladaToSc2Importer::GetMeshFromCollada(ColladaMeshInstance * mesh, cons
     Mesh * davaMesh = new Mesh();
     for (auto polygonGroupInstance : mesh->polyGroupInstances)
     {
-        PolygonGroup * davaPolygon = library->GetOrCreatePolygon(polygonGroupInstance);
+        PolygonGroup * davaPolygon = library.GetOrCreatePolygon(polygonGroupInstance);
 
         if (isShadow)
         {
             davaPolygon = DAVA::MeshUtils::CreateShadowPolygonGroup(davaPolygon);
         }
 
-        NMaterial * davaMaterial = library->GetOrCreateMaterial(polygonGroupInstance, isShadow);
+        NMaterial * davaMaterial = library.GetOrCreateMaterial(polygonGroupInstance, isShadow);
         davaMesh->AddPolygonGroup(davaPolygon, davaMaterial);
     }
     // TO VERIFY?
@@ -98,7 +97,7 @@ void ColladaToSc2Importer::ImportAnimation(ColladaSceneNode * colladaNode, Entit
         
         // Calculate actual transform and bake it into animation keys.
         // NOTE: for now usage of the same animation more than once is bad idea
-        AnimationData * animation = library->GetOrCreateAnimation(colladaNode->animation);
+        AnimationData * animation = library.GetOrCreateAnimation(colladaNode->animation);
         Matrix4 totalTransform = colladaNode->AccumulateTransformUptoFarParent(colladaNode->scene->rootNode);
         animation->BakeTransform(totalTransform);
         animationComponent->SetAnimation(animation);
@@ -138,7 +137,7 @@ void ColladaToSc2Importer::LoadMaterialParents(ColladaScene * colladaScene)
 {
     for (auto cmaterial : colladaScene->colladaMaterials)
     {
-        NMaterial * globalMaterial = library->GetOrCreateMaterialParent(cmaterial, false);
+        NMaterial * globalMaterial = library.GetOrCreateMaterialParent(cmaterial, false);
         DVASSERT(nullptr != globalMaterial);
     }
 }
@@ -150,20 +149,10 @@ void ColladaToSc2Importer::LoadAnimations(ColladaScene * colladaScene)
         for (auto & pair : canimation->animations)
         {
             SceneNodeAnimation * colladaAnimation = pair.second;
-            AnimationData * animation = library->GetOrCreateAnimation(colladaAnimation);
+            AnimationData * animation = library.GetOrCreateAnimation(colladaAnimation);
             DVASSERT(nullptr != animation);
         }
     }
-}
-
-ColladaToSc2Importer::ColladaToSc2Importer()
-{
-    library = new ImportLibrary();
-}
-
-ColladaToSc2Importer::~ColladaToSc2Importer()
-{
-    SafeDelete(library);
 }
     
     

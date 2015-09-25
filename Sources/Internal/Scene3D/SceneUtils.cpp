@@ -90,7 +90,6 @@ void CombineEntityLods(Entity * forRootNode)
         uint32 lodCount = 0;
         for (int lodNo = 0; lodNo < LodComponent::MAX_LOD_LAYERS; ++lodNo)
         {
-            
             // Remove dummy nodes
             // Try to find node with same name but with other lod
             const FastName lodIName(nodeWithLodsName + LodNameForIndex(lodNamePattern, lodNo));
