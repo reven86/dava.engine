@@ -63,7 +63,7 @@ struct TextBlockData
     Font *font;
 };
 
-static Set<TextBlock *> registredBlocks;
+static Set<TextBlock*> registredBlocks;
 
 #define NEW_RENDER 1
 
@@ -80,9 +80,9 @@ void UnregisterTextBlock(TextBlock *tbl)
 void TextBlock::ScreenResolutionChanged()
 {
 	Logger::FrameworkDebug("Regenerate text blocks");
-    for (auto it = registredBlocks.begin(), endIt = registredBlocks.end(); it != endIt; ++it)
+    for (auto textBlock : registredBlocks)
     {
-        (*it)->NeedPrepare();
+        textBlock->NeedPrepare();
     }
 }
 
@@ -139,21 +139,6 @@ TextBlock::~TextBlock()
 }
 
 // Setters // Getters
-
-void TextBlock::SetPosition(const Vector2& _position)
-{
-    position = _position;
-}
-
-void TextBlock::SetAngle(const float32 _angle)
-{
-    angle = _angle;
-}
-
-void TextBlock::SetPivot(const Vector2& _pivot)
-{
-    pivot = _pivot;
-}
 
 void TextBlock::SetFontInternal(Font* _font)
 {
@@ -267,41 +252,6 @@ void TextBlock::SetUseRtlAlign(eUseRtlAlign _useRtlAlign)
     }
 }
 
-Font* TextBlock::GetFont()
-{
-    return font;
-}
-
-const WideString& TextBlock::GetText()
-{
-    return logicalText;
-}
-
-bool TextBlock::GetMultiline()
-{
-    return isMultilineEnabled;
-}
-
-bool TextBlock::GetMultilineBySymbol()
-{
-    return isMultilineBySymbolEnabled;
-}
-
-int32 TextBlock::GetFittingOption()
-{
-    return fittingType;
-}
-
-TextBlock::eUseRtlAlign TextBlock::GetUseRtlAlign()
-{
-    return useRtlAlign;
-}
-
-int32 TextBlock::GetAlign()
-{
-    return align;
-}
-
 const Vector<WideString>& TextBlock::GetMultilineStrings()
 {
     CalculateCacheParamsIfNeed();
@@ -409,11 +359,6 @@ Sprite * TextBlock::GetSprite()
         return textBlockRender->GetSprite();
     }
     return nullptr;
-}
-
-bool TextBlock::IsSpriteReady()
-{
-    return (GetSprite() != nullptr);
 }
 
 void TextBlock::ForcePrepare(Texture* texture)
@@ -1006,16 +951,6 @@ TextBlock * TextBlock::Clone()
 #endif //LOCALIZATION_DEBUG
 
     return block;
-}
-
-void TextBlock::SetBiDiSupportEnabled(bool value)
-{
-    isBiDiSupportEnabled = value;
-}
-
-bool TextBlock::IsBiDiSupportEnabled()
-{
-    return isBiDiSupportEnabled;
 }
 
 };

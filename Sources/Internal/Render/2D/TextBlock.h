@@ -225,6 +225,71 @@ inline void TextBlock::CalculateCacheParamsIfNeed()
     }
 }
 
+inline void TextBlock::SetPosition(const Vector2& _position)
+{
+    position = _position;
+}
+
+inline void TextBlock::SetAngle(const float32 _angle)
+{
+    angle = _angle;
+}
+
+inline void TextBlock::SetPivot(const Vector2& _pivot)
+{
+    pivot = _pivot;
+}
+
+inline Font* TextBlock::GetFont()
+{
+    return font;
+}
+
+inline const WideString& TextBlock::GetText()
+{
+    return logicalText;
+}
+
+inline bool TextBlock::GetMultiline()
+{
+    return isMultilineEnabled;
+}
+
+inline bool TextBlock::GetMultilineBySymbol()
+{
+    return isMultilineBySymbolEnabled;
+}
+
+inline int32 TextBlock::GetFittingOption()
+{
+    return fittingType;
+}
+
+inline TextBlock::eUseRtlAlign TextBlock::GetUseRtlAlign()
+{
+    return useRtlAlign;
+}
+
+inline int32 TextBlock::GetAlign()
+{
+    return align;
+}
+
+inline bool TextBlock::IsSpriteReady()
+{
+    return (GetSprite() != nullptr);
+}
+
+inline void TextBlock::SetBiDiSupportEnabled(bool value)
+{
+    isBiDiSupportEnabled = value;
+}
+
+inline bool TextBlock::IsBiDiSupportEnabled()
+{
+    return isBiDiSupportEnabled;
+}
+
 }; //end of namespace
 
 #endif // __DAVAENGINE_TEXTBLOCK_H__
