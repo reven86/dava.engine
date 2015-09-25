@@ -67,9 +67,11 @@ inline char         _tcsnextc( const char* str )                    { return *st
 //
 //  publics:
 
+#if defined(__DAVAENGINE_WIN32__)
 #pragma warning( push, 3 )
 #pragma warning( disable: 174 )
 #pragma warning( disable: 193 )
+#endif
 
 
 // Disable debugging printf's
