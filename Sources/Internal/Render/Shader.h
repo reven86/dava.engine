@@ -69,6 +69,7 @@ struct DynamicPropertyBinding
 class ShaderDescriptor;
 namespace ShaderDescriptorCache {
 ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastName, int32>& defines);
+void RelaoadShaders();
 }
 
 class ShaderDescriptor
@@ -78,8 +79,7 @@ public://utility
     static uint32 CalculateRegsCount(rhi::ShaderProp::Type type, uint32 arraySize);  //return in registers  
     static uint32 CalculateDataSize(rhi::ShaderProp::Type type, uint32 arraySize); //return in float  
     
-public:
-    ShaderDescriptor(rhi::ShaderSource *vSource, rhi::ShaderSource *fSource, rhi::HPipelineState pipelineState);
+public:    
 
     void UpdateDynamicParams();
     void ClearDynamicBindings();
@@ -99,6 +99,10 @@ public:
     bool IsValid();
 
 private:
+    ShaderDescriptor(rhi::HPipelineState pipelineState, FastName vProgUid, FastName fProgUid);
+    ~ShaderDescriptor();
+    void UpdateConfigFromSource(rhi::ShaderSource *vSource, rhi::ShaderSource *fSource);
+
     Vector<ConstBufferDescriptor> constBuffers;
 
 
@@ -108,6 +112,7 @@ private:
 
     Map<std::pair<ConstBufferDescriptor::Type, uint32>, rhi::HConstBuffer> dynamicBuffers;
 
+    FastName vProgUid, fProgUid;
     rhi::HPipelineState piplineState;
 
     uint32 requiredVertexFormat;
@@ -122,6 +127,7 @@ private:
     HashMap<FastName, int32> defines;
 
     friend ShaderDescriptor* ShaderDescriptorCache::GetShaderDescriptor(const FastName& name, const HashMap<FastName, int32>& defines);
+    friend void ShaderDescriptorCache::RelaoadShaders();
 };
 
 inline bool ShaderDescriptor::IsValid()
