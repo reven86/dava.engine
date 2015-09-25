@@ -82,20 +82,3 @@ TextureUtils::CompareResult TextureUtils::CompareImages(const Image *first, cons
 
     return compareResult;
 }
-
-Image * TextureUtils::CreateImageAsRGBA8888(Sprite *sprite)
-{
-    Vector2 targetSize = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(sprite->GetSize());
-    Texture * fbo = Texture::CreateFBO((uint32)targetSize.dx, (uint32)targetSize.dy, FORMAT_RGBA8888, rhi::TextureType::TEXTURE_TYPE_2D);
-    
-    RenderSystem2D::Instance()->BeginRenderTargetPass(fbo);
-    RenderSystem2D::Instance()->Draw(sprite, 0, Color::White);
-    RenderSystem2D::Instance()->EndRenderTargetPass();
-    
-    Image *resultImage = fbo->CreateImageFromMemory();
-    
-    SafeRelease(fbo);
-    return resultImage;
-}
-
-
