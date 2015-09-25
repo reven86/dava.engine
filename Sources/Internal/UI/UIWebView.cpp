@@ -74,11 +74,20 @@ void UIWebView::SetDelegate(IUIWebViewDelegate* delegate)
 
 void UIWebView::OpenFile(const FilePath &path)
 {
+    // Open files in a browser via a buffer necessary because
+    // the reference type file:// is not supported in Windows 10
+    // for security reasons
     ScopedPtr<File> file(File::Create(path, File::OPEN | File::READ));
     DVASSERT_MSG(file, "Failed to open file");
     String data;
-    file->ReadString(data);
-    webViewControl->OpenFromBuffer(data, path.GetDirectory());
+    if (file && file->ReadString(data) > 0)
+    {
+        webViewControl->OpenFromBuffer(data, path.GetDirectory());
+    }
+    else
+    {
+        Logger::Error("Failed to read content from %s", path.GetStringValue());
+    }
 }
 
 void UIWebView::OpenURL(const String& urlToOpen)
