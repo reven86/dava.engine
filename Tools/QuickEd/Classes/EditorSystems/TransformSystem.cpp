@@ -452,8 +452,6 @@ void TransformSystem::Rotate(Vector2 pos)
     float32 angleRad = atan2(l2.y, l2.x) - atan2(l1.y, l1.x);
     float32 deltaAngle = RadToDeg(angleRad);
 
-    deltaAngle = round(deltaAngle);
-
     float32 originalAngle = angleProperty->GetValue().AsFloat();
 
     const KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
@@ -466,7 +464,7 @@ void TransformSystem::Rotate(Vector2 pos)
         accumulatedAngle = finalAngle - nearestTargetAngle;
         deltaAngle = nearestTargetAngle - originalAngle;
     }
-    float32 finalAngle = static_cast<int32>(originalAngle + deltaAngle);
+    float32 finalAngle = originalAngle + deltaAngle;
     DAVA::Vector<std::tuple<ControlNode*, AbstractProperty*, VariantType>> propertiesToChange;
     propertiesToChange.emplace_back(activeControlNode, angleProperty, VariantType(finalAngle));
     systemManager->PropertiesChanged.Emit(std::move(propertiesToChange), std::move(currentHash));
