@@ -1415,6 +1415,36 @@ Trace("exec %i\n",int(cmd->func));
                 CHECK_HR(cmd->retval);
             }   break;
 
+            case DX9Command::UPDATE_CUBETEXTURE_LEVEL :
+            {
+                IDirect3DCubeTexture9*  tex = *((IDirect3DCubeTexture9**)(arg[0]));
+
+                if( tex )
+                {
+                    UINT                lev = UINT(arg[1]);
+                    D3DCUBEMAP_FACES    face = (D3DCUBEMAP_FACES)(arg[2]);
+                    void*               src = (void*)(arg[3]);
+                    unsigned            sz  = unsigned(arg[4]);
+                    D3DLOCKED_RECT      rc  = {0};
+                    HRESULT             hr  = tex->LockRect( face, lev, &rc, NULL, 0 );
+
+                    if( SUCCEEDED(hr) )
+                    {
+                        memcpy( rc.pBits, src, sz );
+                        cmd->retval = tex->UnlockRect( face, lev );
+                    }
+                    else
+                    {
+                        CHECK_HR(hr);
+                        cmd->retval = hr;
+                    }
+                }
+                else
+                {
+                    cmd->retval = E_FAIL;
+                }
+            }   break;
+
             case DX9Command::GET_RENDERTARGET_DATA :
             {
                 cmd->retval = _D3D9_Device->GetRenderTargetData( (IDirect3DSurface9*)arg[0], (IDirect3DSurface9*)arg[1] );

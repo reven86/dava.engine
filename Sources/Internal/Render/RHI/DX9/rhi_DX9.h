@@ -158,6 +158,7 @@ DX9Command
         UNLOCK_CUBETEXTURE_RECT         = 48,
         GET_RENDERTARGET_DATA           = 49,
         UPDATE_TEXTURE_LEVEL            = 50,
+        UPDATE_CUBETEXTURE_LEVEL        = 40,
 
         CREATE_VERTEX_SHADER            = 51,
         CREATE_PIXEL_SHADER             = 52,
