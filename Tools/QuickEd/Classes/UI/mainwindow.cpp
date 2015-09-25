@@ -177,11 +177,6 @@ void MainWindow::RestoreMainWindowState()
     }
 }
 
-DavaGLWidget* MainWindow::GetGLWidget() const
-{
-    return previewWidget->GetDavaGLWidget();
-}
-
 DialogReloadSprites* MainWindow::GetDialogReloadSprites() const
 {
     return dialogReloadSprites;
