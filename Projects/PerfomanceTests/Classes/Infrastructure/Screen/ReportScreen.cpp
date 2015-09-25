@@ -56,8 +56,8 @@ void ReportScreen::CreateReportScreen()
         {
             const auto& framesInfo = test->GetFramesInfo();
             
-            float32 minDelta = FLT_MAX;
-            float32 maxDelta = FLT_MIN;
+            float32 minDelta = std::numeric_limits<float>::max();
+            float32 maxDelta = std::numeric_limits<float>::min();
             float32 averageDelta = 0.0f;
             
             float32 testTime = 0.0f;

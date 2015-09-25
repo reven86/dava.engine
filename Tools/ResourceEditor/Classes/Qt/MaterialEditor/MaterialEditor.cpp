@@ -412,6 +412,9 @@ void MaterialEditor::FillBase()
 {
     baseRoot->ChildRemoveAll();
 
+    auto scene = QtMainWindow::Instance()->GetCurrentScene();
+    auto globalMaterial = (nullptr == scene) ? nullptr : scene->GetGlobalMaterial();
+
     foreach(DAVA::NMaterial *material, curMaterials)
     {
         const DAVA::InspInfo *info = material->GetTypeInfo();
@@ -426,7 +429,7 @@ void MaterialEditor::FillBase()
 
         // fill material group, only for material type
         const DAVA::InspMember *groupMember = info->Member(DAVA::FastName("qualityGroup"));
-        if (nullptr != groupMember)
+        if ((nullptr != groupMember) && (globalMaterial != material))
         {
             QtPropertyDataInspMember *group = new QtPropertyDataInspMember(material, groupMember);
             baseRoot->MergeChild(group, MATERIAL_GROUP_LABEL);
@@ -617,6 +620,9 @@ void MaterialEditor::FillTemplates(const QList<DAVA::NMaterial *>& materials)
     {
         DAVA::NMaterial* material = materials[0];
         DAVA::FastName fxName = material->GetEffectiveFXName();
+        auto scene = QtMainWindow::Instance()->GetCurrentScene();
+        auto globalMaterial = (nullptr == scene) ? nullptr : scene->GetGlobalMaterial();
+        bool isGlobalMaterial = (material == globalMaterial);
         bool isLocalFxName = material->HasLocalFXName();
         bool hasParentFx = false;
 
@@ -647,15 +653,22 @@ void MaterialEditor::FillTemplates(const QList<DAVA::NMaterial *>& materials)
 
             ui->templateBox->setCurrentIndex(rowToSelect);
             ui->templateBox->setEnabled(true);
-
             ui->templateButton->setIcon(QIcon(":/QtIcons/cminus.png"));
-            ui->templateButton->setEnabled(hasParentFx);
+            ui->templateButton->setEnabled(!isGlobalMaterial && hasParentFx);
         }
         else
         {
+            if (isGlobalMaterial)
+            {
+                ui->templateBox->setCurrentIndex(-1);
+                ui->templateButton->setEnabled(false);
+            }
+            else
+            {
+                ui->templateButton->setEnabled(true);
+            }
             ui->templateBox->setEnabled(false);
             ui->templateButton->setIcon(QIcon(":/QtIcons/cplus.png"));
-            ui->templateButton->setEnabled(true);
         }
     }
     else
@@ -806,12 +819,10 @@ void MaterialEditor::OnMaterialAddGlobal(bool checked)
     SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
     if (nullptr != curScene)
     {
-        DAVA::NMaterial *global = new DAVA::NMaterial();
-        SCOPE_EXIT{ SafeRelease(global); };
+        ScopedPtr<DAVA::NMaterial> global(new DAVA::NMaterial());
 
         global->SetMaterialName(FastName("Scene_Global_Material"));
         curScene->Exec(new MaterialGlobalSetCommand(curScene, global));
-        SafeRelease(global);
 
         sceneActivated(curScene);
         SelectMaterial(curScene->GetGlobalMaterial());
@@ -1194,10 +1205,10 @@ void MaterialEditor::UpdateMaterialFromPresetWithOptions(DAVA::NMaterial* materi
 {
 	if ((options & CHECKED_GROUP) && preset->IsKeyExists("group"))
 	{
-		material->SetQualityGroup(preset->GetFastName("materialGroup"));
-	}
+        material->SetQualityGroup(preset->GetFastName("group"));
+    }
 
-	if ((options & CHECKED_TEMPLATE) && preset->IsKeyExists("fxname"))
+    if ((options & CHECKED_TEMPLATE) && preset->IsKeyExists("fxname"))
 	{
 		material->SetFXName(preset->GetFastName("fxname"));
 	}

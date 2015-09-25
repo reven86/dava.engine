@@ -335,7 +335,7 @@ void PrivateTextFieldWinUAP::SetText(const WideString& text)
 
     curText = text;
     if (text.empty())
-    {   // Immediatly remove sprite image if new text is empty to get rid of flickering
+    { // Immediatly remove sprite image if new text is empty to get rid of flickering
         uiTextField->SetSprite(nullptr, 0);
     }
     programmaticTextChange = true;
@@ -702,7 +702,7 @@ void PrivateTextFieldWinUAP::OnTextChanged()
 
     if (!textAccepted)
     {
-        // Restore control's text and caret position as before text change 
+        // Restore control's text and caret position as before text change
         SetNativeText(textToRestore);
         SetNativeCaretPosition(savedCaretPosition);
         ignoreTextChange = true;
@@ -896,7 +896,7 @@ void PrivateTextFieldWinUAP::SetNativeMaxTextLength(int32 maxLength)
 {
     // Native controls expect zero for unlimited input length
     int length = std::max(0, maxLength);
-    IsPassword() ?  nativePassword->MaxLength = length : nativeText->MaxLength = length;
+    IsPassword() ? nativePassword->MaxLength = length : nativeText->MaxLength = length;
 }
 
 void PrivateTextFieldWinUAP::SetNativeCaretPosition(int32 caretPosition)

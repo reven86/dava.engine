@@ -34,7 +34,6 @@
 
 namespace DAVA
 {
-
 UITextFieldWinUAP::UITextFieldWinUAP(UITextField* uiTextField)
     : privateImpl(std::make_shared<PrivateTextFieldWinUAP>(uiTextField))
 {}

@@ -54,9 +54,9 @@ class PrivateTextFieldWinUAP : public std::enable_shared_from_this<PrivateTextFi
         TextFieldProperties();
         void ClearChangedFlags();
 
-        bool createNew:1;
-        bool focus:1;
-        bool focusChanged:1;
+        bool createNew : 1;
+        bool focus : 1;
+        bool focusChanged : 1;
 
         Rect rect;
         Rect rectInWindowSpace;
@@ -74,36 +74,36 @@ class PrivateTextFieldWinUAP : public std::enable_shared_from_this<PrivateTextFi
         int32 caretPosition = 0;
         float32 fontSize = 0.0f;
 
-        bool anyPropertyChanged:1;
-        bool rectChanged:1;
-        bool textChanged:1;
-        bool textColorChanged:1;
-        bool visibleChanged:1;
-        bool passwordChanged:1;
-        bool multilineChanged:1;
-        bool inputEnabledChanged:1;
-        bool spellCheckingEnabledChanged:1;
-        bool textRtlAlignmentChanged:1;
-        bool textAlignmentChanged:1;
-        bool maxTextLengthChanged:1;
-        bool keyboardTypeChanged:1;
-        bool caretPositionChanged:1;
-        bool fontSizeChanged:1;
+        bool anyPropertyChanged : 1;
+        bool rectChanged : 1;
+        bool textChanged : 1;
+        bool textColorChanged : 1;
+        bool visibleChanged : 1;
+        bool passwordChanged : 1;
+        bool multilineChanged : 1;
+        bool inputEnabledChanged : 1;
+        bool spellCheckingEnabledChanged : 1;
+        bool textRtlAlignmentChanged : 1;
+        bool textAlignmentChanged : 1;
+        bool maxTextLengthChanged : 1;
+        bool keyboardTypeChanged : 1;
+        bool caretPositionChanged : 1;
+        bool fontSizeChanged : 1;
 
-        bool rectAssigned:1;
-        bool textAssigned:1;
-        bool textColorAssigned:1;
-        bool visibleAssigned:1;
-        bool passwordAssigned:1;
-        bool multilineAssigned:1;
-        bool inputEnabledAssigned:1;
-        bool spellCheckingEnabledAssigned:1;
-        bool textRtlAlignmentAssigned:1;
-        bool textAlignmentAssigned:1;
-        bool maxTextLengthAssigned:1;
-        bool keyboardTypeAssigned:1;
-        bool caretPositionAssigned:1;
-        bool fontSizeAssigned:1;
+        bool rectAssigned : 1;
+        bool textAssigned : 1;
+        bool textColorAssigned : 1;
+        bool visibleAssigned : 1;
+        bool passwordAssigned : 1;
+        bool multilineAssigned : 1;
+        bool inputEnabledAssigned : 1;
+        bool spellCheckingEnabledAssigned : 1;
+        bool textRtlAlignmentAssigned : 1;
+        bool textAlignmentAssigned : 1;
+        bool maxTextLengthAssigned : 1;
+        bool keyboardTypeAssigned : 1;
+        bool caretPositionAssigned : 1;
+        bool fontSizeAssigned : 1;
     };
 
 public:
@@ -180,7 +180,7 @@ private:
     void SetNativeSpellChecking(bool enabled);
 
     bool HasFocus() const;
-    Platform::String^ GetNativeText() const;
+    Platform::String ^ GetNativeText() const;
     int32 GetNativeCaretPosition() const;
 
     bool IsPassword() const;
@@ -192,8 +192,8 @@ private:
     Sprite* CreateSpriteFromPreviewData(uint8* imageData, int32 width, int32 height) const;
 
 private:    // Event handlers
-    void OnKeyDown(Windows::UI::Xaml::Input::KeyRoutedEventArgs^ args);
-    void OnKeyUp(Windows::UI::Xaml::Input::KeyRoutedEventArgs^ args);
+    void OnKeyDown(Windows::UI::Xaml::Input::KeyRoutedEventArgs ^ args);
+    void OnKeyUp(Windows::UI::Xaml::Input::KeyRoutedEventArgs ^ args);
     void OnGotFocus();
     void OnLostFocus();
     void OnTextChanged();
@@ -202,8 +202,8 @@ private:    // Event handlers
     void OnSelectionChanged();
 
     // Onscreen keyboard events
-    void OnKeyboardHiding(Windows::UI::ViewManagement::InputPaneVisibilityEventArgs^ args);
-    void OnKeyboardShowing(Windows::UI::ViewManagement::InputPaneVisibilityEventArgs^ args);
+    void OnKeyboardHiding(Windows::UI::ViewManagement::InputPaneVisibilityEventArgs ^ args);
+    void OnKeyboardShowing(Windows::UI::ViewManagement::InputPaneVisibilityEventArgs ^ args);
 
 private:
     CorePlatformWinUAP* core;
