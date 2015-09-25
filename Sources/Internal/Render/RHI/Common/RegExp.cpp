@@ -2290,11 +2290,12 @@ RegExp::get_pattern( unsigned n, std::string* str ) const
     return success;
 }
 
-
+#if defined(__DAVAENGINE_WIN32__)
 #pragma warning( default: 174 )
 #pragma warning( default: 193 )
 #pragma warning( default: 810 ) // conversion from "unsigned int" to "char={char}" may lose significant bits
 
 #pragma warning( pop )
+#endif
 
 
