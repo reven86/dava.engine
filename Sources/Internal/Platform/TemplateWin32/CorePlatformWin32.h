@@ -73,12 +73,12 @@ private:
     static String GetDeviceName(HANDLE hDevice);
     static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
-    RECT GetWindowedRectForDisplayMode(DisplayMode & dm);
+    RECT GetWindowedRectForDisplayMode(DisplayMode& dm);
     int32 MoveTouchsToVector(UIEvent::PointerDeviceID deviceId, USHORT buttsFlags, WPARAM wParam, LPARAM lParam, Vector<UIEvent>* outTouches);
 
     bool willQuit;
 
-	bool isRightButtonPressed;
+    bool isRightButtonPressed;
 	bool isLeftButtonPressed;
 	bool isMiddleButtonPressed;
     Vector<DAVA::UIEvent> events;

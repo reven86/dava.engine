@@ -95,13 +95,13 @@ public:
 	 \ Input can be handled in the different ways.
 	 */
     enum eInputHandledType
-	{
-		INPUT_NOT_HANDLED		= 0,//!<Input is not handled at all.
-		INPUT_HANDLED_SOFT		= 1,//!<Input is handled, but input control can be changed by UIControlSystem::Instance()->SwitchInputToControl() method.
-		INPUT_HANDLED_HARD		= 2,//!<Input is handled completely, input control can't be changed.
-	};
+    {
+        INPUT_NOT_HANDLED = 0, //!<Input is not handled at all.
+        INPUT_HANDLED_SOFT = 1, //!<Input is handled, but input control can be changed by UIControlSystem::Instance()->SwitchInputToControl() method.
+        INPUT_HANDLED_HARD = 2, //!<Input is handled completely, input control can't be changed.
+    };
 
-	friend class UIControlSystem;
+    friend class UIControlSystem;
 
     enum eButtonID
     {
