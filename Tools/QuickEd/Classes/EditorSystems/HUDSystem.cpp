@@ -83,7 +83,7 @@ private:
     {
         const Rect& rect = geometricData.GetUnrotatedRect();
         SetAbsoluteRect(rect);
-        for (int i = 0; i < BORDERS_COUNT; ++i)
+        for (uint32 i = 0; i < BORDERS_COUNT; ++i)
         {
             if (firstInit)
             {
@@ -95,7 +95,8 @@ private:
         firstInit = false;
         UIControl::Draw(geometricData);
     }
-    Rect CreateFrameBorderRect(int border, const Rect& frameRect) const
+
+    Rect CreateFrameBorderRect(uint32 border, const Rect& frameRect) const
     {
         if (frameRect.GetSize().IsZero())
         {
@@ -184,7 +185,7 @@ public:
         : ControlContainer(HUDAreaInfo::FRAME_AREA)
     {
         SetName("Frame Control");
-        for (int i = 0; i < BORDERS_COUNT; ++i)
+        for (uint32 i = 0; i < BORDERS_COUNT; ++i)
         {
             UIControl* control = new UIControl();
             UIControlBackground* background = control->GetBackground();
@@ -199,7 +200,7 @@ private:
     {
         const Rect& rect = geometricData.GetUnrotatedRect();
         SetAbsoluteRect(rect);
-        for (int i = 0; i < BORDERS_COUNT; ++i)
+        for (uint32 i = 0; i < BORDERS_COUNT; ++i)
         {
             if (firstInit)
             {
@@ -210,7 +211,7 @@ private:
         }
         firstInit = false;
     }
-    Rect CreateFrameBorderRect(int border, const Rect& frameRect) const
+    Rect CreateFrameBorderRect(uint32 border, const Rect& frameRect) const
     {
         switch (border)
         {
@@ -462,7 +463,7 @@ void HUDSystem::ProcessCursor(const Vector2& pos, eSearchOrder searchOrder)
 
 HUDAreaInfo HUDSystem::GetControlArea(const Vector2& pos, eSearchOrder searchOrder) const
 {
-    int end = HUDAreaInfo::AREAS_BEGIN;
+    uint32 end = HUDAreaInfo::AREAS_BEGIN;
     int sign = 1;
     if (searchOrder == SEARCH_BACKWARD)
     {
@@ -472,7 +473,7 @@ HUDAreaInfo HUDSystem::GetControlArea(const Vector2& pos, eSearchOrder searchOrd
         }
         sign = -1;
     }
-    for (int i = HUDAreaInfo::AREAS_BEGIN; i < HUDAreaInfo::AREAS_COUNT; ++i)
+    for (uint32 i = HUDAreaInfo::AREAS_BEGIN; i < HUDAreaInfo::AREAS_COUNT; ++i)
     {
         for (const auto& iter : sortedControlList)
         {
@@ -581,7 +582,7 @@ HUDSystem::HUD::HUD(ControlNode* node_, UIControl* hudControl)
 {
     node->GetRootProperty()->AddListener(this);
     HUDContainer* hudContainer = static_cast<HUDContainer*>(container.get());
-    for (int i = HUDAreaInfo::AREAS_BEGIN; i < HUDAreaInfo::AREAS_COUNT; ++i)
+    for (uint32 i = HUDAreaInfo::AREAS_BEGIN; i < HUDAreaInfo::AREAS_COUNT; ++i)
     {
         HUDAreaInfo::eArea area = static_cast<HUDAreaInfo::eArea>(i);
         ControlContainer* controlContainer = CreateControlContainer(area);
