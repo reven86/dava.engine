@@ -1100,4 +1100,8 @@ void NMaterial::LoadOldNMaterial(KeyedArchive * archive, SerializationContext * 
     }
 }
 
+const HashMap<FastName, int32>& NMaterial::GetLocalFlags() const
+{
+    return localFlags;
+}
 };
