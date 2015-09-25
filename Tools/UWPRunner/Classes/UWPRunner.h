@@ -44,6 +44,7 @@ struct PackageOptions
     Optional<String> architecture;
     Optional<String> profile;
     Optional<String> dependencies;
+    bool useTeamCityTestOutput = false;
 };
 
 PackageOptions ParseCommandLine();

@@ -38,6 +38,7 @@
 #include "Network/Services/LogConsumer.h"
 #include "Network/SimpleNetworking/SimpleNetCore.h"
 #include "Network/SimpleNetworking/SimpleNetService.h"
+#include "TeamcityOutput/TeamCityTestsOutput.h"
 
 #include <Objbase.h>
 
@@ -51,11 +52,13 @@
 using namespace DAVA;
 
 const Net::SimpleNetService* gNetLogger = nullptr;
+using StringRecv = Function<void(const String&)>;
 
 void Run(Runner& runner);
 void Start(Runner& runner);
 
-bool InitializeNetwork(bool isMobileDevice);
+bool InitializeNetwork(bool isMobileDevice, const StringRecv& logReceiver);
+void LogConsumingFunction(bool useTeamCityTestOutput, const String& logString);
 bool ConfigureIpOverUsb();
 void WaitApp();
 
@@ -143,7 +146,13 @@ void LaunchPackage(const FilePath& package, const PackageOptions& opt)
 
     //Init network
     Logger::Instance()->Info("Initializing network...");
-    if (!InitializeNetwork(isMobileDevice))
+
+    auto logConsumer = [=](const String& logString) 
+    { 
+        LogConsumingFunction(opt.useTeamCityTestOutput, logString); 
+    };
+
+    if (!InitializeNetwork(isMobileDevice, logConsumer))
     {
         DVASSERT_MSG(false, "Unable to initialize network");
         return;
@@ -187,7 +196,7 @@ void Start(Runner& runner)
     DVASSERT_MSG_RET(runner.start(), "Can't install application package");
 }
 
-bool InitializeNetwork(bool isMobileDevice)
+bool InitializeNetwork(bool isMobileDevice, const StringRecv& logReceiver)
 {
     if (isMobileDevice)
     {
@@ -209,10 +218,8 @@ bool InitializeNetwork(bool isMobileDevice)
     }
     Net::Endpoint endPoint("127.0.0.1", port);
 
-    Net::LogConsumer::Options options;
-    options.rawOutput = true;
-    options.writeToConsole = true;
-    auto logConsumer = std::make_unique<Net::LogConsumer>(std::cref(options));
+    auto logConsumer = std::make_unique<Net::LogConsumer>();
+    logConsumer->SubscribeOnReceivedData(logReceiver).Release();
 
     Net::SimpleNetCore* netcore = new Net::SimpleNetCore;
     gNetLogger = netcore->RegisterService(
@@ -307,7 +314,7 @@ bool ConfigureIpOverUsb()
     bool needRestart = false;
 
     //open or create key
-    RegKey key(HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\IpOverUsb\\DavaDebugging", true);
+    RegKey key(HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\IpOverUsbSdk\\DavaDebugging", true);
     DVASSERT_MSG_RET(key.IsExist(), "Can't open or create key", false);
     needRestart |= key.IsCreated();
 
@@ -382,4 +389,52 @@ FilePath ExtractManifest(const FilePath& package)
         return manifestFilePath;
     }
     return FilePath();
+}
+
+void LogConsumingFunction(bool useTeamCityTestOutput, const String& logString)
+{
+    //incoming string is formatted in style "[ip:port] date time message"
+    //extract only message text
+    String logLevel;
+    String message;
+
+    size_t spaces = 0;
+    for (auto i : logString)
+    {
+        if (::isspace(i))
+        {
+            spaces++;
+        }
+
+        if (spaces == 3)
+        {
+            logLevel += i;
+        }
+        else if (spaces >= 4)
+        {
+            message += i;
+        }
+    }
+
+    //remove first space
+    logLevel = logLevel.substr(1);
+    message = message.substr(1);
+
+    useTeamCityTestOutput = true;
+    if (useTeamCityTestOutput)
+    {
+        Logger* logger = Logger::Instance();
+        Optional<Logger::eLogLevel> ll = logger->GetLogLevelFromString(logLevel.c_str());
+
+        if (ll.IsSet())
+        {
+            TeamcityTestsOutput testOutput;
+            testOutput.Output(ll.Get(), message.c_str());
+        }
+
+    }
+    else
+    {
+        printf("[%s] %s", logLevel.c_str(), message.c_str());
+    }
 }

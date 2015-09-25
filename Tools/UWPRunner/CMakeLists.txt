@@ -50,3 +50,6 @@ set( LIBRARIES            ${QT_LIBRARIES} runtimeobject.lib XmlLite.lib wsclient
 set( ADDED_BINARY_DIR     ${QT5_PATH_WIN}/bin )
 
 setup_main_executable()
+
+set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_DEBUG   "/SUBSYSTEM:CONSOLE" )
+set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:CONSOLE" )

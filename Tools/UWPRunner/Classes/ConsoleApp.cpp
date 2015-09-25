@@ -49,7 +49,6 @@ PackageOptions ParseCommandLine()
     //no args
     if (arguments.size() == 1)
     {
-        ShowUsage();
         return PackageOptions();
     }
     //short form (only file)
@@ -110,6 +109,11 @@ PackageOptions ParseLongFormArgs(const Vector<String>& arguments)
         out.dependencies = FilePath(out.package.Get()).GetDirectory().GetAbsolutePathname();
     }
 
+    if (parser.IsFlagSet("--tc_test"))
+    {
+        out.useTeamCityTestOutput = true;
+    }
+
     return out;
 }
 
@@ -122,7 +126,9 @@ void ShowUsage()
         "Usage: \n"
         "    --package [path to appx package]\n"
         "    --dependencies [path to package dependencies dir]\n"
-        "    --profile (local/phone) [target device for package]";
+        "    --profile (local/phone) [target device for package]\n"
+        "    --arch [architecture of launching package, only for bundle]\n"
+        "    --tc_test [use teamcity test output]\n";
 
     std::cout << message;
 }
