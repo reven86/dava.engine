@@ -117,7 +117,7 @@ void ConnectionListenerPrivate::Start(const ConnectionWaitFunction& connectionWa
 
 void ConnectionListenerPrivate::Start(IConnectionPtr& conn) 
 {
-    Array<char, 1024> buffer;
+    Array<char, 4096> buffer;
 
     while (conn && 
            conn->GetChannelState() == IReadOnlyConnection::ChannelState::Connected &&
