@@ -348,11 +348,6 @@ void WinUAPXamlApp::OnSwapChainPanelPointerPressed(Platform::Object ^ /*sender*/
         isLeftButtonPressed = pointerProperties->IsLeftButtonPressed;
         isRightButtonPressed = pointerProperties->IsRightButtonPressed;
         isMiddleButtonPressed = pointerProperties->IsMiddleButtonPressed;
-        if (isRightButtonPressed)
-        {
-            SetCursorPinning(!isCursorPinning);
-            SetCursorVisible(!isCursorPinning);
-        }
     }
 
     float32 x = pointerPoint->Position.X;
@@ -361,7 +356,6 @@ void WinUAPXamlApp::OnSwapChainPanelPointerPressed(Platform::Object ^ /*sender*/
     core->RunOnMainThread([this, x, y, id]()
                           {
         DAVATouchEvent(UIEvent::PHASE_BEGAN, x, y, id);
-        Logger::Debug("+++ OnSwapChainPanelPointerPressed phase=%d, x=%f, y=%f, id=%d", int32(UIEvent::PHASE_BEGAN), x, y, id);
                           });
 }
 
@@ -388,7 +382,6 @@ void WinUAPXamlApp::OnSwapChainPanelPointerReleased(Platform::Object ^ /*sender*
         core->RunOnMainThread([this, x, y, id]()
                               {
             DAVATouchEvent(UIEvent::PHASE_ENDED, x, y, id);
-            Logger::Debug("+++ OnSwapChainPanelPointerReleased phase=%d, x=%f, y=%f, id=%d", int32(UIEvent::PHASE_ENDED), x, y, id);
                               });
     }
 }
@@ -411,7 +404,6 @@ void WinUAPXamlApp::OnSwapChainPanelPointerMoved(Platform::Object ^ /*sender*/, 
     int32 id = pointerPoint->PointerId;
     core->RunOnMainThread([this, phase, x, y, id]() {
         DAVATouchEvent(phase, x, y, id);
-        Logger::Debug("+++ OnSwapChainPanelPointerMoved phase=%d, x=%f, y=%f, id=%d", int32(phase), x, y, id);
     });
 }
 
@@ -450,7 +442,6 @@ void WinUAPXamlApp::OnSwapChainPanelPointerExited(Platform::Object ^ /*sender*/,
         core->RunOnMainThread([this, x, y, id]()
                               {
             DAVATouchEvent(UIEvent::PHASE_ENDED, x, y, id);
-            Logger::Debug("+++ OnSwapChainPanelPointerExited phase=%d, x=%f, y=%f, id=%d", int32(UIEvent::PHASE_ENDED), x, y, id);
                               });
     }
 }
@@ -556,7 +547,6 @@ void WinUAPXamlApp::OnMouseMoved(MouseDevice^ mouseDevice, MouseEventArgs^ args)
     core->RunOnMainThread([this, phase, x, y, id]()
                           {
         DAVATouchEvent(phase, x, y, id);
-        Logger::Debug("+++ OnMouseMoved phase=%d, x=%f, y=%f, id=%d", int32(phase), x, y, id);
                           });
 }
 

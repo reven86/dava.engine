@@ -90,7 +90,6 @@ Mutex SoundSystem::soundGroupsMutex;
 SoundSystem::SoundSystem()
 {
     DVASSERT(sizeof(FMOD_VECTOR) == sizeof(Vector3));
-    FMOD::Debug_SetLevel(0);
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
     FMOD::Memory_Initialize(nullptr, 0, &fmod_tracking_alloc, &fmod_tracking_realloc, &fmod_tracking_free);

@@ -101,7 +101,7 @@ void InputSystem::SetCursorPining(bool isPin)
 {
     pinCursor = isPin;
 
-#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN_UAP__)
+#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
     Cursor::SetCursorPinning(isPin);
 #endif
 }
