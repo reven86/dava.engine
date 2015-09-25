@@ -125,7 +125,7 @@ int main(int argc, char *argv[])
         //DAVA::String command = DAVA::CommandLineParser::Instance()->GetCommand(0);
 
         const char *command = argv[1];
-        if(command == writeOptions.GetCommand())
+        if (command == writeOptions.GetCommand())
         {
             paramsOk = writeOptions.Parse(argc, argv, 2);
             if(paramsOk)
@@ -369,10 +369,14 @@ int main(int argc, char *argv[])
     {
         printf("Usage: ResourcePatcher <command>\n");
         printf("\n Commands: write, list, apply, apply-all\n\n");
-        writeOptions.PrintUsage(); printf("\n");
-        listOptions.PrintUsage(); printf("\n");
-        applyOptions.PrintUsage(); printf("\n");
-        applyAllOptions.PrintUsage(); printf("\n");
+        writeOptions.PrintUsage();
+        printf("\n");
+        listOptions.PrintUsage();
+        printf("\n");
+        applyOptions.PrintUsage();
+        printf("\n");
+        applyAllOptions.PrintUsage();
+        printf("\n");
     }
 
     DAVA::FileSystem::Instance()->Release();

@@ -27,7 +27,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 #ifndef __APPLICATION_SETTINGS_H__
 #define __APPLICATION_SETTINGS_H__
 
@@ -36,9 +35,9 @@
 #include "Network/Base/Endpoint.h"
 #include <QObject>
 
-namespace DAVA 
+namespace DAVA
 {
-    class KeyedArchive;
+class KeyedArchive;
 };
 
 using namespace DAVA;
@@ -48,44 +47,40 @@ struct ServerData
     ServerData() = default;
     ServerData(String _ip, uint16 _port, bool _enabled);
 
-	bool IsEmpty() const;
-	bool EquivalentTo(const DAVA::Net::Endpoint & right) const;
+    bool IsEmpty() const;
+    bool EquivalentTo(const DAVA::Net::Endpoint& right) const;
 
-	bool operator == (const ServerData & right) const;
-	bool operator < (const ServerData & right) const;
-    
+    bool operator==(const ServerData& right) const;
+    bool operator<(const ServerData& right) const;
+
     String ip = "";
     uint16 port = AssetCache::ASSET_SERVER_PORT;
     bool enabled = false;
 };
 
-
 //TODO: we need one code for settings in different projects
 //need to use introspection instead of hardcoding of values
 
-class ApplicationSettings: public QObject
+class ApplicationSettings : public QObject
 {
     Q_OBJECT
-    
-private:
 
+private:
     static const String DEFAULT_FOLDER;
-    static const float64 DEFAULT_CACHE_SIZE_GB; 
+    static const float64 DEFAULT_CACHE_SIZE_GB;
     static const uint32 DEFAULT_FILES_COUNT = 5;
     static const uint32 DEFAULT_AUTO_SAVE_TIMEOUT_MIN = 1;
     static const uint16 DEFAULT_PORT = DAVA::AssetCache::ASSET_SERVER_PORT;
     static const bool DEFAULT_AUTO_START = true;
-    
-    
+
 public:
-    
     void Save() const;
     void Load();
 
     bool IsFirstLaunch() const;
 
-    const FilePath & GetFolder() const;
-    void SetFolder(const FilePath & folder);
+    const FilePath& GetFolder() const;
+    void SetFolder(const FilePath& folder);
 
     const float64 GetCacheSizeGb() const;
     void SetCacheSizeGb(const float64 size);
@@ -102,24 +97,21 @@ public:
     const bool IsAutoStart() const;
     void SetAutoStart(bool);
 
-    const List<ServerData> & GetServers() const;
+    const List<ServerData>& GetServers() const;
     void ResetServers();
-    void AddServer(const ServerData & server);
-    void RemoveServer(const ServerData & server);
-    
+    void AddServer(const ServerData& server);
+    void RemoveServer(const ServerData& server);
+
     ServerData GetCurrentServer() const;
-    
+
 signals:
-    void SettingsUpdated(const ApplicationSettings * settings) const;
-    
+    void SettingsUpdated(const ApplicationSettings* settings) const;
+
 private:
+    void Serialize(DAVA::KeyedArchive* archieve) const;
+    void Deserialize(DAVA::KeyedArchive* archieve);
 
-    void Serialize(DAVA::KeyedArchive * archieve) const;
-    void Deserialize(DAVA::KeyedArchive * archieve);
-    
-    
 public:
-
     FilePath folder;
     float64 cacheSizeGb = DEFAULT_CACHE_SIZE_GB;
     uint32 filesCount = DEFAULT_FILES_COUNT;

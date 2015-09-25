@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 #ifndef __DAVAENGINE_STATIC_MEMORY_FILE_H__
 #define __DAVAENGINE_STATIC_MEMORY_FILE_H__
 
@@ -34,10 +33,8 @@
 #include "Base/BaseObject.h"
 #include "FileSystem/File.h"
 
-
-namespace DAVA 
+namespace DAVA
 {
-
 /**
 	\ingroup filesystem
 	\brief class to work with file read-write interface on memory buffer
@@ -46,12 +43,10 @@ namespace DAVA
 class StaticMemoryFile : public File
 {
 protected:
-
-    StaticMemoryFile(uint8 *data, uint32 dataSize, uint32 attributes);
+    StaticMemoryFile(uint8* data, uint32 dataSize, uint32 attributes);
     ~StaticMemoryFile() override;
 
 public:
-
     /**
      \brief function to create a file instance with give attributes
      \param[in] data pointer to data to create file from
@@ -59,8 +54,7 @@ public:
      \param[in] attributes combinations of eFileAttributes
      \returns file instance
      */
-    static StaticMemoryFile * Create(uint8 *data, uint32 dataSize, uint32 attributes);
-
+    static StaticMemoryFile* Create(uint8* data, uint32 dataSize, uint32 attributes);
 
     /**
      \brief returns pointer to the data contained in the memory file
@@ -68,15 +62,13 @@ public:
      */
     const uint8* GetData() const;
 
-
     /**
      \brief Write [dataSize] bytes to this file from [pointerToData]
      \param[in] pointerToData function get data from this pointer
      \param[in] dataSize size of data we want to write
      \returns number of bytes actually written
      */
-    uint32 Write(const void * pointerToData, uint32 dataSize) override;
-
+    uint32 Write(const void* pointerToData, uint32 dataSize) override;
 
     /**
      \brief Read [dataSize] bytes from this file to [pointerToData]
@@ -84,21 +76,18 @@ public:
      \param[in] dataSize size of data we want to read
      \return number of bytes actually read
      */
-    uint32 Read(void * pointerToData, uint32 dataSize) override;
+    uint32 Read(void* pointerToData, uint32 dataSize) override;
 
-   
     /**
      \brief Get current file position
      */
     uint32 GetPos() const override;
-
 
     /**
      \brief Get current file size if writing
      \brief and get real file size if file for reading
      */
     uint32 GetSize() const override;
-
 
     /**
      \brief Set current file position
@@ -108,17 +97,14 @@ public:
      */
     bool Seek(int32 position, uint32 seekType) override;
 
-
     //! return true if end of file reached and false in another case
     bool IsEof() const override;
 
 private:
-
     uint32 GetRWOperationSize(uint32 dataSize) const;
 
 protected:
-
-    uint8 *memoryBuffer = nullptr;
+    uint8* memoryBuffer = nullptr;
     uint32 memoryBufferSize = 0;
     uint32 currentPos = 0;
 
@@ -145,9 +131,6 @@ inline bool StaticMemoryFile::IsEof() const
 {
     return isEof;
 }
-
-
 };
-
 
 #endif //__DAVAENGINE_STATIC_MEMORY_FILE_H__

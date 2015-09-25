@@ -26,8 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-
 #include "AssetCache/CachedItemValue.h"
 #include "Base/Data.h"
 #include "FileSystem/KeyedArchive.h"
@@ -38,18 +36,16 @@
 
 namespace DAVA
 {
-    
 namespace AssetCache
 {
-    
-CachedItemValue::CachedItemValue(const CachedItemValue & right)
+CachedItemValue::CachedItemValue(const CachedItemValue& right)
     : dataContainer(right.dataContainer)
     , size(right.size)
     , isFetched(right.isFetched)
 {
 }
-    
-CachedItemValue::CachedItemValue(CachedItemValue &&right)
+
+CachedItemValue::CachedItemValue(CachedItemValue&& right)
     : dataContainer(std::move(right.dataContainer))
     , size(right.size)
     , isFetched(right.isFetched)
@@ -57,25 +53,26 @@ CachedItemValue::CachedItemValue(CachedItemValue &&right)
     right.size = 0;
     right.isFetched = false;
 }
-    
-    
+
 CachedItemValue::~CachedItemValue()
 {
-    if(isFetched)
+    if (isFetched)
     {
         Free();
     }
     else
     {
-        DVASSERT(std::all_of(dataContainer.cbegin(), dataContainer.cend(), [this](const ValueDataContainer::value_type &data) { return IsDataLoaded(data.second) == false; }));
+        DVASSERT(std::all_of(dataContainer.cbegin(), dataContainer.cend(), [this](const ValueDataContainer::value_type& data)
+                             { return IsDataLoaded(data.second) == false;
+                             }));
     }
-    
+
     dataContainer.clear();
     size = 0;
     isFetched = false;
 }
-    
-void CachedItemValue::Add(const String &name, ValueData data)
+
+void CachedItemValue::Add(const String& name, ValueData data)
 {
     DVASSERT(dataContainer.count(name) == 0);
     DVASSERT(IsDataLoaded(data));
@@ -86,8 +83,7 @@ void CachedItemValue::Add(const String &name, ValueData data)
     isFetched = true;
 }
 
-    
-void CachedItemValue::Serialize(KeyedArchive * archieve, bool serializeData) const
+void CachedItemValue::Serialize(KeyedArchive* archieve, bool serializeData) const
 {
     DVASSERT(nullptr != archieve);
 
@@ -95,47 +91,46 @@ void CachedItemValue::Serialize(KeyedArchive * archieve, bool serializeData) con
 
     auto count = dataContainer.size();
     archieve->SetUInt32("data_count", count);
-    
+
     int32 index = 0;
-    for(const auto & dc : dataContainer)
+    for (const auto& dc : dataContainer)
     {
         archieve->SetString(Format("name_%d", index), dc.first);
 
         if (IsDataLoaded(dc.second) && serializeData)
         {
-            auto & data = dc.second;
+            auto& data = dc.second;
             archieve->SetByteArray(Format("data_%d", index), data.get()->data(), data.get()->size());
         }
-        
+
         ++index;
     }
 }
-    
 
-void CachedItemValue::Deserialize(KeyedArchive * archieve)
+void CachedItemValue::Deserialize(KeyedArchive* archieve)
 {
     DVASSERT(nullptr != archieve);
     DVASSERT(dataContainer.empty());
     DVASSERT(isFetched == false);
-    
+
     size = archieve->GetUInt64("size");
-    
+
     auto count = archieve->GetUInt32("data_count");
-    for(uint32 i = 0; i < count; ++i)
+    for (uint32 i = 0; i < count; ++i)
     {
         String name = archieve->GetString(Format("name_%d", i));
-        ValueData data = std::make_shared<Vector<uint8> >();
+        ValueData data = std::make_shared<Vector<uint8>>();
 
         auto key = Format("data_%d", i);
         auto size = archieve->GetByteArraySize(key);
-        if(size > 0)
+        if (size > 0)
         {
             isFetched = true;
 
             data.get()->resize(size);
             Memcpy(data.get()->data(), archieve->GetByteArray(key), size);
         }
-        
+
         dataContainer[name] = data;
     }
 }
@@ -151,7 +146,7 @@ bool CachedItemValue::Serialize(File* buffer) const
     if (buffer->Write(&count) != sizeof(count))
         return false;
 
-    for (const auto &entry : dataContainer)
+    for (const auto& entry : dataContainer)
     {
         if (buffer->WriteString(entry.first) == false)
             return false;
@@ -195,7 +190,7 @@ bool CachedItemValue::Deserialize(File* file)
             return false;
 
         uint32 datasize = 0;
-        ValueData data = std::make_shared<Vector<uint8> >();
+        ValueData data = std::make_shared<Vector<uint8>>();
 
         if (file->Read(&datasize) != sizeof(datasize))
             return false;
@@ -214,22 +209,21 @@ bool CachedItemValue::Deserialize(File* file)
     return true;
 }
 
-bool CachedItemValue::operator == (const CachedItemValue &right) const
+bool CachedItemValue::operator==(const CachedItemValue& right) const
 {
     if ((isFetched == right.isFetched) && (size == right.size) && (dataContainer.size() == right.dataContainer.size()))
     {
         return std::equal(dataContainer.cbegin(), dataContainer.cend(), right.dataContainer.cbegin(),
-            [](const ValueDataContainer::value_type &left, const ValueDataContainer::value_type &right) -> bool
-        {
+                          [](const ValueDataContainer::value_type& left, const ValueDataContainer::value_type& right) -> bool
+                          {
             return left.first == right.first;
-        }
-        );
+                          });
     }
 
     return false;
 }
 
-CachedItemValue & CachedItemValue::operator=(const CachedItemValue &right)
+CachedItemValue& CachedItemValue::operator=(const CachedItemValue& right)
 {
     if (this != &right)
     {
@@ -245,7 +239,7 @@ CachedItemValue & CachedItemValue::operator=(const CachedItemValue &right)
     return (*this);
 }
 
-CachedItemValue & CachedItemValue::operator=(CachedItemValue &&right)
+CachedItemValue& CachedItemValue::operator=(CachedItemValue&& right)
 {
     if (this != &right)
     {
@@ -253,7 +247,7 @@ CachedItemValue & CachedItemValue::operator=(CachedItemValue &&right)
 
         isFetched = right.isFetched;
         size = right.size;
-        
+
         right.size = 0;
         right.isFetched = false;
     }
@@ -265,9 +259,9 @@ bool CachedItemValue::Fetch(const FilePath& folder)
 {
     DVASSERT(folder.IsDirectoryPathname());
     DVASSERT(isFetched == false);
-    
+
     isFetched = true;
-    for (auto & dc : dataContainer)
+    for (auto& dc : dataContainer)
     {
         DVASSERT(IsDataLoaded(dc.second) == false);
         dc.second = LoadFile(folder + dc.first);
@@ -285,32 +279,32 @@ void CachedItemValue::Free()
     DVASSERT(isFetched == true);
 
     isFetched = false;
-    for (auto & dc : dataContainer)
+    for (auto& dc : dataContainer)
     {
         dc.second.reset();
     }
 }
-    
-void CachedItemValue::Export(const FilePath & folder) const
+
+void CachedItemValue::Export(const FilePath& folder) const
 {
     DVASSERT(folder.IsDirectoryPathname());
-    
+
     FileSystem::Instance()->CreateDirectory(folder, true);
-    
-    for (const auto & dc : dataContainer)
+
+    for (const auto& dc : dataContainer)
     {
-        if(IsDataLoaded(dc.second) == false)
+        if (IsDataLoaded(dc.second) == false)
         {
             Logger::Warning("[CachedItemValue::%s] File(%s) not loaded", __FUNCTION__, dc.first.c_str());
             continue;
         }
-        
+
         auto savedPath = folder + dc.first;
-        
+
         ScopedPtr<File> file(File::Create(savedPath, File::CREATE | File::WRITE));
-        if(file)
+        if (file)
         {
-            const ValueData &data = dc.second;
+            const ValueData& data = dc.second;
 
             auto written = file->Write(data.get()->data(), data.get()->size());
             DVVERIFY(written == data.get()->size());
@@ -321,17 +315,17 @@ void CachedItemValue::Export(const FilePath & folder) const
         }
     }
 }
-    
-CachedItemValue::ValueData CachedItemValue::LoadFile(const FilePath & pathname)
+
+CachedItemValue::ValueData CachedItemValue::LoadFile(const FilePath& pathname)
 {
     ValueData data = std::make_shared<Vector<uint8>>();
 
     ScopedPtr<File> file(File::Create(pathname, File::OPEN | File::READ));
-    if(file)
+    if (file)
     {
         auto dataSize = file->GetSize();
         data.get()->resize(dataSize);
-        
+
         auto read = file->Read(data.get()->data(), dataSize);
         DVVERIFY(read == dataSize);
     }
@@ -339,10 +333,9 @@ CachedItemValue::ValueData CachedItemValue::LoadFile(const FilePath & pathname)
     {
         Logger::Error("[CachedItemValue::%s] Cannot read file %s", __FUNCTION__, pathname.GetStringValue().c_str());
     }
-    
+
     return data;
 }
 
 } // end of namespace AssetCache
 } // end of namespace DAVA
-

@@ -31,16 +31,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 const uint32 BaseTest::FRAME_OFFSET = 5;
 
 BaseTest::BaseTest(const String& _testName, const TestParams& _testParams)
-    :   testName(_testName)
-    ,   testParams(_testParams)
-    ,   frameNumber(1)
-    ,   startTime(0)
-    ,   overallTestTime(0.0f)
-    ,   minDelta(FLT_MAX)
-    ,   maxDelta(FLT_MIN)
-    ,   currentFrameDelta(0.0f)
-    ,   uiRoot(new DAVA::UIControl())
-    ,   maxAllocatedMemory(0)
+    : testName(_testName)
+    , testParams(_testParams)
+    , frameNumber(1)
+    , startTime(0)
+    , overallTestTime(0.0f)
+    , minDelta(std::numeric_limits<float>::max())
+    , maxDelta(std::numeric_limits<float>::min())
+    , currentFrameDelta(0.0f)
+    , uiRoot(new DAVA::UIControl())
+    , maxAllocatedMemory(0)
 {
     sceneName = testName + ": " + GetParams().sceneName;
 }
