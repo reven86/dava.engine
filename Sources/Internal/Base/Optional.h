@@ -78,6 +78,12 @@ private:
     bool isSet = false;
 };
 
+template <typename T, typename ... Args>
+Optional<T> MakeOptional(Args&&... args)
+{
+    return T(std::forward<Args>(args)...);
+}
+
 //-------------------------------------------------------------------------------------------------
 //Implementation
 //-------------------------------------------------------------------------------------------------
@@ -258,6 +264,30 @@ template <typename T, typename U>
 bool operator!=(const T& rhs, const Optional<U>& lhs)
 {
     return !(rhs == lhs);
+}
+
+template <typename T>
+bool operator==(const Optional<T>& rhs, EmptyOptional)
+{
+    return !rhs.IsSet();
+}
+
+template <typename T>
+bool operator==(EmptyOptional, const Optional<T>& lhs)
+{
+    return !lhs.IsSet();
+}
+
+template <typename T>
+bool operator!=(const Optional<T>& rhs, EmptyOptional)
+{
+    return rhs.IsSet();
+}
+
+template <typename T>
+bool operator!=(EmptyOptional, const Optional<T>& lhs)
+{
+    return lhs.IsSet();
 }
 
 }
