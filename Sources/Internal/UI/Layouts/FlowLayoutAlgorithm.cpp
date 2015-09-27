@@ -83,6 +83,9 @@ void FlowLayoutAlgorithm::ProcessXAxis(const ControlLayoutData &data, UIFlowLayo
     const float32 spacing = component->GetHorizontalSpacing();
     const float32 controlSize = data.GetWidth();
     float32 x = padding;
+    const float32 rowSize = controlSize - padding * 2;
+    float32 restSize = rowSize;
+    bool first = true;
     for (int32 index = data.GetFirstChildIndex(); index <= data.GetLastChildIndex(); index++)
     {
         ControlLayoutData &childData = layoutData[index];
@@ -91,31 +94,22 @@ void FlowLayoutAlgorithm::ProcessXAxis(const ControlLayoutData &data, UIFlowLayo
         
         float32 childSize = childData.GetWidth();
         UISizePolicyComponent *sizePolicy = childData.GetControl()->GetComponent<UISizePolicyComponent>();
-        if (sizePolicy)
+        if (sizePolicy != nullptr && sizePolicy->GetHorizontalPolicy() == UISizePolicyComponent::PERCENT_OF_PARENT)
         {
-            if (sizePolicy->GetHorizontalPolicy() == UISizePolicyComponent::PERCENT_OF_PARENT)
-            {
-                float32 restSize = data.GetWidth() - padding * 2;
-                float32 value = sizePolicy->GetHorizontalValue();
-                if (value < 100.0f && value > EPSILON)
-                {
-                    int32 potentialSpacesCount = static_cast<int32>(100.0f / value) - 1;
-                    restSize -= potentialSpacesCount * spacing;
-                }
-                
-                childSize = restSize * value / 100.0f;
-                childSize = Clamp(childSize, sizePolicy->GetHorizontalMinValue(), sizePolicy->GetHorizontalMaxValue());
-                childData.SetSize(Vector2::AXIS_X, childSize);
-            }
+            childSize = sizePolicy->GetHorizontalMinValue();
+            childData.SetSize(Vector2::AXIS_X, childSize);
         }
         
-        if (x > padding + EPSILON && x + childSize > controlSize - padding + EPSILON)
+        if (restSize < childSize && !first)
         {
             x = padding;
-            childData.SetFlag(ControlLayoutData::FLAG_FLOW_LAYOUT_NEW_LINE);
+            restSize = rowSize;
+            childData.SetFlag(ControlLayoutData::FLAG_NEW_LINE);
         }
+        restSize -= childSize;
         childData.SetPosition(Vector2::AXIS_X, x);
         x += childData.GetWidth() + spacing;
+        first = false;
     }
 }
 
@@ -145,7 +139,7 @@ void FlowLayoutAlgorithm::ProcessYAxis(const ControlLayoutData &data, UIFlowLayo
             }
         }
         
-        if (childData.HasFlag(ControlLayoutData::FLAG_FLOW_LAYOUT_NEW_LINE))
+        if (childData.HasFlag(ControlLayoutData::FLAG_NEW_LINE))
         {
             y += lineHeight + spacing;
             lineHeight = 0;

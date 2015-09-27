@@ -162,7 +162,20 @@ void UILayoutSystem::DoLayoutPhase(Vector2::eAxis axis)
             UILinearLayoutComponent *linearLayoutComponent = it->GetControl()->GetComponent<UILinearLayoutComponent>();
             if (linearLayoutComponent != nullptr && linearLayoutComponent->IsEnabled() && linearLayoutComponent->GetAxis() == axis)
             {
-                LinearLayoutAlgorithm(layoutData, isRtl).Apply(*it, axis);
+                
+                LinearLayoutAlgorithm alg(layoutData, isRtl);
+                
+                alg.SetInverse(isRtl && linearLayoutComponent->IsUseRtl() && linearLayoutComponent->GetOrientation() == UILinearLayoutComponent::HORIZONTAL);
+                alg.SetSkipInvisible(linearLayoutComponent->IsSkipInvisibleControls());
+                
+                alg.SetPadding(linearLayoutComponent->GetPadding());
+                alg.SetSpacing(linearLayoutComponent->GetSpacing());
+                
+                alg.SetDynamicPadding(linearLayoutComponent->IsDynamicPadding());
+                alg.SetDynamicSpacing(linearLayoutComponent->IsDynamicSpacing());
+                
+
+                alg.Apply(*it, axis);
             }
             else
             {

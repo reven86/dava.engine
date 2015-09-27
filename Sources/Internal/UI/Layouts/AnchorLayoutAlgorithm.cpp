@@ -50,7 +50,12 @@ AnchorLayoutAlgorithm::~AnchorLayoutAlgorithm()
 
 void AnchorLayoutAlgorithm::Apply(ControlLayoutData &data, Vector2::eAxis axis, bool onlyForIgnoredControls)
 {
-    for (int32 i = data.GetFirstChildIndex(); i <= data.GetLastChildIndex(); i++)
+    Apply(data, axis, onlyForIgnoredControls, data.GetFirstChildIndex(), data.GetLastChildIndex());
+}
+    
+void AnchorLayoutAlgorithm::Apply(ControlLayoutData &data, Vector2::eAxis axis, bool onlyForIgnoredControls, int32 firstIndex, int32 lastIndex)
+{
+    for (int32 i = firstIndex; i <= lastIndex; i++)
     {
         ControlLayoutData &childData = layoutData[i];
         if (onlyForIgnoredControls && childData.GetControl()->GetComponentCount(UIComponent::IGNORE_LAYOUT_COMPONENT) == 0)

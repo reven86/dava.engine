@@ -44,6 +44,7 @@ public:
     ~AnchorLayoutAlgorithm();
     
     void Apply(ControlLayoutData &data, Vector2::eAxis axis, bool onlyForIgnoredControls);
+    void Apply(ControlLayoutData &data, Vector2::eAxis axis, bool onlyForIgnoredControls, int32 firstIndex, int32 lastIndex);
     
 private:
     Vector<ControlLayoutData> &layoutData;
