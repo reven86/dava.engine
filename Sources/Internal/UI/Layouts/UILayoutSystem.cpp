@@ -162,8 +162,7 @@ void UILayoutSystem::DoLayoutPhase(Vector2::eAxis axis)
             UILinearLayoutComponent *linearLayoutComponent = it->GetControl()->GetComponent<UILinearLayoutComponent>();
             if (linearLayoutComponent != nullptr && linearLayoutComponent->IsEnabled() && linearLayoutComponent->GetAxis() == axis)
             {
-                
-                LinearLayoutAlgorithm alg(layoutData, isRtl);
+                LinearLayoutAlgorithm alg(layoutData);
                 
                 alg.SetInverse(isRtl && linearLayoutComponent->IsUseRtl() && linearLayoutComponent->GetOrientation() == UILinearLayoutComponent::HORIZONTAL);
                 alg.SetSkipInvisible(linearLayoutComponent->IsSkipInvisibleControls());

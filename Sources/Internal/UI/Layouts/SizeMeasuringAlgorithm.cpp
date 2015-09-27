@@ -141,7 +141,7 @@ void SizeMeasuringAlgorithm::ProcessPercentOfChildrenSumPolicy(ControlLayoutData
             if (childData.HaveToSkipControl(skipInvisible))
                 continue;
             
-            if (childData.HasFlag(ControlLayoutData::FLAG_FLOW_LAYOUT_NEW_LINE))
+            if (childData.HasFlag(ControlLayoutData::FLAG_NEW_LINE))
             {
                 value += lineHeight + spacing;
                 lineHeight = 0;
