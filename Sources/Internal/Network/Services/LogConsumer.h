@@ -53,7 +53,7 @@ public:
     ~LogConsumer() override;
 
     LogConsumer(const LogConsumer&) = delete;
-    Noncopyable& operator = (const Noncopyable&) = delete;
+    LogConsumer& operator=(const LogConsumer&) = delete;
 
     void OnPacketReceived(IChannel* channel, const void* buffer, size_t length) override;
 
