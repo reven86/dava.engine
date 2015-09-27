@@ -28,7 +28,6 @@
 
 #include "LinearLayoutAlgorithm.h"
 
-#include "UILinearLayoutComponent.h"
 #include "UISizePolicyComponent.h"
 
 #include "AnchorLayoutAlgorithm.h"
@@ -89,9 +88,6 @@ void LinearLayoutAlgorithm::Apply(ControlLayoutData &data, Vector2::eAxis axis)
 void LinearLayoutAlgorithm::Apply(ControlLayoutData &data, Vector2::eAxis axis, int32 firstIndex, int32 lastIndex)
 {
     DVASSERT(firstIndex <= lastIndex);
-    
-    const UILinearLayoutComponent *layout = data.GetControl()->GetComponent<UILinearLayoutComponent>();
-    DVASSERT(layout != nullptr);
     
     InitializeParams(data, axis, firstIndex, lastIndex);
     
