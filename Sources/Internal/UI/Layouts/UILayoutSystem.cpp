@@ -173,7 +173,6 @@ void UILayoutSystem::DoLayoutPhase(Vector2::eAxis axis)
                 alg.SetDynamicPadding(linearLayoutComponent->IsDynamicPadding());
                 alg.SetDynamicSpacing(linearLayoutComponent->IsDynamicSpacing());
                 
-
                 alg.Apply(*it, axis);
             }
             else

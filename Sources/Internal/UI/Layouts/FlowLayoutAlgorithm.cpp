@@ -30,6 +30,10 @@
 
 #include "UIFlowLayoutComponent.h"
 #include "UISizePolicyComponent.h"
+#include "UIFlowLayoutHintComponent.h"
+
+#include "LinearLayoutAlgorithm.h"
+#include "AnchorLayoutAlgorithm.h"
 
 #include "UI/UIControl.h"
 
@@ -58,6 +62,16 @@ void FlowLayoutAlgorithm::Apply(ControlLayoutData &data, Vector2::eAxis axis)
     
     skipInvisible = layout->IsSkipInvisibleControls();
 
+    horizontalPadding = layout->GetHorizontalPadding();
+    horizontalSpacing = layout->GetHorizontalSpacing();
+    dynamicHorizontalPadding = layout->IsDynamicHorizontalPadding();
+    dynamicHorizontalSpacing = layout->IsDynamicHorizontalSpacing();
+    
+    verticalPadding = layout->GetVerticalPadding();
+    verticalSpacing = layout->GetVerticalSpacing();
+    dynamicVerticalPadding = layout->IsDynamicVerticalPadding();
+    dynamicVerticalSpacing = layout->IsDynamicVerticalSpacing();
+
     if (data.HasChildren())
     {
         switch (axis)
@@ -75,80 +89,208 @@ void FlowLayoutAlgorithm::Apply(ControlLayoutData &data, Vector2::eAxis axis)
                 break;
         }
     }
+    
+    AnchorLayoutAlgorithm anchorAlg(layoutData, axis);
+    anchorAlg.Apply(data, axis, true, data.GetFirstChildIndex(), data.GetLastChildIndex());
 }
     
-void FlowLayoutAlgorithm::ProcessXAxis(const ControlLayoutData &data, UIFlowLayoutComponent *component)
+void FlowLayoutAlgorithm::ProcessXAxis(ControlLayoutData &data, UIFlowLayoutComponent *component)
 {
-    const float32 padding = component->GetHorizontalPadding();
-    const float32 spacing = component->GetHorizontalSpacing();
-    const float32 controlSize = data.GetWidth();
-    float32 x = padding;
-    const float32 rowSize = controlSize - padding * 2;
+    float32 rowSize = data.GetWidth() - horizontalPadding * 2;
     float32 restSize = rowSize;
-    bool first = true;
+    
+    int32 firstIndex = data.GetFirstChildIndex();
+
+    bool newLineBeforeNext = false;
     for (int32 index = data.GetFirstChildIndex(); index <= data.GetLastChildIndex(); index++)
     {
         ControlLayoutData &childData = layoutData[index];
         if (childData.HaveToSkipControl(skipInvisible))
+        {
             continue;
+        }
         
         float32 childSize = childData.GetWidth();
         UISizePolicyComponent *sizePolicy = childData.GetControl()->GetComponent<UISizePolicyComponent>();
         if (sizePolicy != nullptr && sizePolicy->GetHorizontalPolicy() == UISizePolicyComponent::PERCENT_OF_PARENT)
         {
             childSize = sizePolicy->GetHorizontalMinValue();
-            childData.SetSize(Vector2::AXIS_X, childSize);
         }
         
-        if (restSize < childSize && !first)
+        bool newLineBeforeThis = newLineBeforeNext;
+        newLineBeforeNext = false;
+        UIFlowLayoutHintComponent *hint = childData.GetControl()->GetComponent<UIFlowLayoutHintComponent>();
+        if (hint != nullptr)
         {
-            x = padding;
-            restSize = rowSize;
-            childData.SetFlag(ControlLayoutData::FLAG_NEW_LINE);
+            newLineBeforeThis |= hint->IsNewLineBeforeThis();
+            newLineBeforeNext = hint->IsNewLineAfterThis();
         }
-        restSize -= childSize;
-        childData.SetPosition(Vector2::AXIS_X, x);
-        x += childData.GetWidth() + spacing;
-        first = false;
+        
+        if (newLineBeforeThis && index > firstIndex)
+        {
+            LayoutLine(data, firstIndex, index - 1);
+            firstIndex = index;
+            restSize = rowSize;
+        }
+        
+        if (restSize < childSize - EPSILON)
+        {
+            if (index > firstIndex)
+            {
+                LayoutLine(data, firstIndex, index - 1);
+                firstIndex = index;
+                restSize = rowSize - childSize - horizontalSpacing;
+            }
+            else
+            {
+                LayoutLine(data, firstIndex, index);
+                firstIndex = index + 1;
+                restSize = rowSize;
+            }
+        }
+        else
+        {
+            restSize = restSize - childSize - horizontalSpacing;
+        }
+    }
+    
+    if (firstIndex <= data.GetLastChildIndex())
+    {
+        LayoutLine(data, firstIndex, data.GetLastChildIndex());
     }
 }
 
-void FlowLayoutAlgorithm::ProcessYAxis(const ControlLayoutData &data, UIFlowLayoutComponent *component)
+void FlowLayoutAlgorithm::LayoutLine(ControlLayoutData &data, int32 firstIndex, int32 lastIndex)
 {
-    const float32 padding = component->GetVerticalPadding();
-    const float32 spacing = component->GetVerticalSpacing();
+    LinearLayoutAlgorithm alg(layoutData);
 
-    float32 y = padding;
+    alg.SetInverse(inverse);
+    alg.SetSkipInvisible(skipInvisible);
+    
+    alg.SetPadding(horizontalPadding);
+    alg.SetSpacing(horizontalSpacing);
+    
+    alg.SetDynamicPadding(dynamicHorizontalPadding);
+    alg.SetDynamicSpacing(dynamicHorizontalSpacing);
+    
+    alg.Apply(data, Vector2::AXIS_X, firstIndex, lastIndex);
+    
+    layoutData[lastIndex].SetFlag(ControlLayoutData::FLAG_LAST_IN_LINE);
+}
+
+void FlowLayoutAlgorithm::ProcessYAxis(ControlLayoutData &data, UIFlowLayoutComponent *component)
+{
+    CalculateDynamicPaddingAndSpaces(data);
+
     float32 lineHeight = 0;
+    float32 y = verticalPadding;
+    float32 firstIndex = data.GetFirstChildIndex();
     for (int32 index = data.GetFirstChildIndex(); index <= data.GetLastChildIndex(); index++)
     {
         ControlLayoutData &childData = layoutData[index];
         if (childData.HaveToSkipControl(skipInvisible))
+        {
             continue;
+        }
 
-        float32 childSize = childData.GetHeight();
+        lineHeight = Max(lineHeight, childData.GetHeight());
+
+        if (childData.HasFlag(ControlLayoutData::FLAG_LAST_IN_LINE))
+        {
+            LayoutLineVertically(data, firstIndex, index, y, y + lineHeight);
+            y += lineHeight + verticalSpacing;
+            lineHeight = 0;
+            firstIndex = index + 1;
+        }
+    }
+
+}
+ 
+void FlowLayoutAlgorithm::CalculateDynamicPaddingAndSpaces(ControlLayoutData &data)
+{
+    int32 linesCount = 0;
+    float32 contentSize = 0.0f;
+    float32 lineHeight = 0.0f;
+    if (dynamicVerticalPadding || dynamicVerticalSpacing)
+    {
+        for (int32 index = data.GetFirstChildIndex(); index <= data.GetLastChildIndex(); index++)
+        {
+            ControlLayoutData &childData = layoutData[index];
+            if (childData.HaveToSkipControl(skipInvisible))
+            {
+                continue;
+            }
+            
+            lineHeight = Max(lineHeight, childData.GetHeight());
+
+            if (childData.HasFlag(ControlLayoutData::FLAG_LAST_IN_LINE))
+            {
+                linesCount++;
+                contentSize += lineHeight;
+                lineHeight = 0.0f;
+            }
+        }
+    }
+    
+    float32 restSize = data.GetHeight() - contentSize;
+    if (linesCount > 0)
+    {
+        int32 spacesCount = linesCount - 1;
+        restSize -= verticalPadding * 2.0f;
+        restSize -= verticalSpacing * spacesCount;
+        if (restSize > EPSILON)
+        {
+            if (dynamicVerticalPadding || (dynamicVerticalSpacing && spacesCount > 0))
+            {
+                int32 cnt = 0;
+                if (dynamicVerticalPadding)
+                {
+                    cnt = 2;
+                }
+                
+                if (dynamicVerticalSpacing)
+                {
+                    cnt += spacesCount;
+                }
+                
+                float32 delta = restSize / cnt;
+                if (dynamicVerticalPadding)
+                {
+                    verticalPadding += delta;
+                }
+                
+                if (dynamicVerticalSpacing)
+                {
+                    verticalSpacing += delta;
+                }
+            }
+        }
+    }
+}
+
+void FlowLayoutAlgorithm::LayoutLineVertically(ControlLayoutData &data, int32 firstIndex, int32 lastIndex, float32 top, float32 bottom)
+{
+    for (int32 index = firstIndex; index <= lastIndex; index++)
+    {
+        ControlLayoutData &childData = layoutData[index];
+        if (childData.HaveToSkipControl(skipInvisible))
+        {
+            continue;
+        }
         UISizePolicyComponent *sizePolicy = childData.GetControl()->GetComponent<UISizePolicyComponent>();
+        float32 childSize = childData.GetHeight();
         if (sizePolicy)
         {
             if (sizePolicy->GetVerticalPolicy() == UISizePolicyComponent::PERCENT_OF_PARENT)
             {
-                float32 restSize = data.GetHeight() - padding * 2.0f;
-                childSize = restSize * sizePolicy->GetVerticalValue() / 100.0f;
+                childSize = (bottom - top) * sizePolicy->GetVerticalValue() / 100.0f;
                 childSize = Clamp(childSize, sizePolicy->GetVerticalMinValue(), sizePolicy->GetVerticalMaxValue());
                 childData.SetSize(Vector2::AXIS_Y, childSize);
             }
         }
         
-        if (childData.HasFlag(ControlLayoutData::FLAG_NEW_LINE))
-        {
-            y += lineHeight + spacing;
-            lineHeight = 0;
-        }
-        childData.SetPosition(Vector2::AXIS_Y, y);
-        
-        lineHeight = Max(lineHeight, childData.GetHeight());
+        childData.SetPosition(Vector2::AXIS_Y, top);
     }
-
 }
     
 }

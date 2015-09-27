@@ -45,7 +45,7 @@ public:
         FLAG_SIZE_CHANGED = 1 << 0,
         FLAG_POSITION_CHANGED = 1 << 1,
         FLAG_SIZE_CALCULATED = 1 << 2,
-        FLAG_NEW_LINE = 1 << 3,
+        FLAG_LAST_IN_LINE = 1 << 3,
     };
     
 public:

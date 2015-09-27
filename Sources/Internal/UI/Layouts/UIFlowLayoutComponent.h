@@ -42,7 +42,7 @@ public:
         ORIENTATION_RIGHT_TO_LEFT
     };
 public:
-    IMPLEMENT_COMPONENT_TYPE(FLOW_LAYOUT_COMPONENT);
+    IMPLEMENT_UI_COMPONENT_TYPE(FLOW_LAYOUT_COMPONENT);
     
     UIFlowLayoutComponent();
     UIFlowLayoutComponent(const UIFlowLayoutComponent &src);
@@ -129,7 +129,7 @@ public:
                          PROPERTY("hPadding", "Horizontal Padding", GetHorizontalPadding, SetHorizontalPadding, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("hDynamicPadding", "Dynamic Horizontal Padding", IsDynamicHorizontalPadding, SetDynamicHorizontalPadding, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("hSpacing", "Horizontal Spacing", GetHorizontalSpacing, SetHorizontalSpacing, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("dynamicSpacing", "Dynamic Horizontal Spacing", IsDynamicHorizontalSpacing, SetDynamicHorizontalSpacing, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("hDynamicSpacing", "Dynamic Horizontal Spacing", IsDynamicHorizontalSpacing, SetDynamicHorizontalSpacing, I_SAVE | I_VIEW | I_EDIT)
                          
                          PROPERTY("vPadding", "Vertical Padding", GetVerticalPadding, SetVerticalPadding, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("vDynamicPadding", "Dynamic Vertical Padding", IsDynamicVerticalPadding, SetDynamicVerticalPadding, I_SAVE | I_VIEW | I_EDIT)

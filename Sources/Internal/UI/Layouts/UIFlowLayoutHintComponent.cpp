@@ -26,40 +26,62 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
-#ifndef __DAVAENGINE_UI_IGNORE_LAYOUT_COMPONENT_H__
-#define __DAVAENGINE_UI_IGNORE_LAYOUT_COMPONENT_H__
 
-#include "UI/Components/UIComponent.h"
+#include "UIFlowLayoutHintComponent.h"
+
+#include "UI/UIControl.h"
+#include "Math/Vector.h"
 
 namespace DAVA
 {
-class UIControl;
-
-class UIIgnoreLayoutComponent : public UIComponent
+    
+UIFlowLayoutHintComponent::UIFlowLayoutHintComponent()
 {
-public:
-    IMPLEMENT_UI_COMPONENT_TYPE(IGNORE_LAYOUT_COMPONENT);
-    
-    UIIgnoreLayoutComponent() = default;
-    UIIgnoreLayoutComponent(const UIIgnoreLayoutComponent &src) = default;
-    
-protected:
-    virtual ~UIIgnoreLayoutComponent() = default;
-    
-private:
-    UIIgnoreLayoutComponent &operator=(const UIIgnoreLayoutComponent &) = delete;
-    
-public:
-    UIIgnoreLayoutComponent* Clone() const override;
-    
-public:
-    INTROSPECTION_EXTEND(UIIgnoreLayoutComponent, UIComponent,
-                         nullptr
-                         );
-    
-};
+}
+
+UIFlowLayoutHintComponent::UIFlowLayoutHintComponent(const UIFlowLayoutHintComponent &src)
+    : flags(src.flags)
+{
+}
+
+UIFlowLayoutHintComponent::~UIFlowLayoutHintComponent()
+{
     
 }
 
+UIFlowLayoutHintComponent* UIFlowLayoutHintComponent::Clone() const
+{
+    return new UIFlowLayoutHintComponent(*this);
+}
 
-#endif //__DAVAENGINE_UI_IGNORE_LAYOUT_COMPONENT_H__
+bool UIFlowLayoutHintComponent::IsNewLineBeforeThis() const
+{
+    return flags.test(FLAG_NEW_LINE_BEFORE_THIS);
+}
+
+void UIFlowLayoutHintComponent::SetNewLineBeforeThis(bool flag)
+{
+    flags.set(FLAG_NEW_LINE_BEFORE_THIS, flag);
+    SetLayoutDirty();
+}
+
+bool UIFlowLayoutHintComponent::IsNewLineAfterThis() const
+{
+    return flags.test(FLAG_NEW_LINE_AFTER_THIS);
+}
+
+void UIFlowLayoutHintComponent::SetNewLineAfterThis(bool flag)
+{
+    flags.set(FLAG_NEW_LINE_AFTER_THIS, flag);
+    SetLayoutDirty();
+}
+
+void UIFlowLayoutHintComponent::SetLayoutDirty()
+{
+    if (GetControl() != nullptr)
+    {
+        GetControl()->SetLayoutDirty();
+    }
+}
+    
+}

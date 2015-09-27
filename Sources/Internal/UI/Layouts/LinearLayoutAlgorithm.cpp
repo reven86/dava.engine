@@ -59,12 +59,12 @@ void LinearLayoutAlgorithm::SetSkipInvisible(bool skipInvisible_)
 
 void LinearLayoutAlgorithm::SetPadding(float32 padding_)
 {
-    padding = padding_;
+    initialPadding = padding_;
 }
 
 void LinearLayoutAlgorithm::SetSpacing(float32 spacing_)
 {
-    spacing = spacing_;
+    initialSpacing = spacing_;
 }
 
 void LinearLayoutAlgorithm::SetDynamicPadding(bool dynamicPadding_)
@@ -104,6 +104,9 @@ void LinearLayoutAlgorithm::Apply(ControlLayoutData &data, Vector2::eAxis axis, 
 
 void LinearLayoutAlgorithm::InitializeParams(ControlLayoutData &data, Vector2::eAxis axis, int32 firstIndex, int32 lastIndex)
 {
+    padding = initialPadding;
+    spacing = initialSpacing;
+    
     fixedSize = 0.0f;
     totalPercent = 0.0f;
 

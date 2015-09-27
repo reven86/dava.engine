@@ -26,8 +26,8 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
-#ifndef __DAVAENGINE_UI_IGNORE_LAYOUT_COMPONENT_H__
-#define __DAVAENGINE_UI_IGNORE_LAYOUT_COMPONENT_H__
+#ifndef __DAVAENGINE_UI_FLOW_LAYOUT_HINT_COMPONENT_H__
+#define __DAVAENGINE_UI_FLOW_LAYOUT_HINT_COMPONENT_H__
 
 #include "UI/Components/UIComponent.h"
 
@@ -35,26 +35,48 @@ namespace DAVA
 {
 class UIControl;
 
-class UIIgnoreLayoutComponent : public UIComponent
+class UIFlowLayoutHintComponent : public UIComponent
 {
 public:
-    IMPLEMENT_UI_COMPONENT_TYPE(IGNORE_LAYOUT_COMPONENT);
+    IMPLEMENT_UI_COMPONENT_TYPE(FLOW_LAYOUT_HINT_COMPONENT);
     
-    UIIgnoreLayoutComponent() = default;
-    UIIgnoreLayoutComponent(const UIIgnoreLayoutComponent &src) = default;
+    UIFlowLayoutHintComponent();
+    UIFlowLayoutHintComponent(const UIFlowLayoutHintComponent &src);
     
 protected:
-    virtual ~UIIgnoreLayoutComponent() = default;
+    virtual ~UIFlowLayoutHintComponent();
     
 private:
-    UIIgnoreLayoutComponent &operator=(const UIIgnoreLayoutComponent &) = delete;
+    UIFlowLayoutHintComponent &operator=(const UIFlowLayoutHintComponent &) = delete;
     
 public:
-    UIIgnoreLayoutComponent* Clone() const override;
+    UIFlowLayoutHintComponent* Clone() const override;
+    
+    bool IsNewLineBeforeThis() const;
+    void SetNewLineBeforeThis(bool flag);
+    
+    bool IsNewLineAfterThis() const;
+    void SetNewLineAfterThis(bool flag);
+    
+private:
+    
+    void SetLayoutDirty();
+    
+private:
+    enum eFlags
+    {
+        FLAG_NEW_LINE_BEFORE_THIS,
+        FLAG_NEW_LINE_AFTER_THIS,
+        FLAG_COUNT
+    };
+    
+    Bitset<eFlags::FLAG_COUNT> flags;
+
     
 public:
-    INTROSPECTION_EXTEND(UIIgnoreLayoutComponent, UIComponent,
-                         nullptr
+    INTROSPECTION_EXTEND(UIFlowLayoutHintComponent, UIComponent,
+                         PROPERTY("newLineBeforeThis", "New Line Before This", IsNewLineBeforeThis, SetNewLineBeforeThis, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("newLineAfterThis", "New Line After This", IsNewLineAfterThis, SetNewLineAfterThis, I_SAVE | I_VIEW | I_EDIT)
                          );
     
 };
@@ -62,4 +84,4 @@ public:
 }
 
 
-#endif //__DAVAENGINE_UI_IGNORE_LAYOUT_COMPONENT_H__
+#endif //__DAVAENGINE_UI_FLOW_LAYOUT_HINT_COMPONENT_H__

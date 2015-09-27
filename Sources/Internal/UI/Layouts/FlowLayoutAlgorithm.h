@@ -50,8 +50,12 @@ public:
     void Apply(ControlLayoutData &data, Vector2::eAxis axis);
     
 private:
-    void ProcessXAxis(const ControlLayoutData &data, UIFlowLayoutComponent *component);
-    void ProcessYAxis(const ControlLayoutData &data, UIFlowLayoutComponent *component);
+    void ProcessXAxis(ControlLayoutData &data, UIFlowLayoutComponent *component);
+    void LayoutLine(ControlLayoutData &data, int32 firstIndex, int32 lastIndex);
+    
+    void ProcessYAxis(ControlLayoutData &data, UIFlowLayoutComponent *component);
+    void CalculateDynamicPaddingAndSpaces(ControlLayoutData &data);
+    void LayoutLineVertically(ControlLayoutData &data, int32 firstIndex, int32 lastIndex, float32 top, float32 bottom);
 
 private:
     Vector<ControlLayoutData> &layoutData;
@@ -60,6 +64,16 @@ private:
     bool inverse = false;
     bool skipInvisible = true;
 
+    float32 horizontalPadding = 0.0f;
+    float32 horizontalSpacing = 0.0f;
+    bool dynamicHorizontalPadding = false;
+    bool dynamicHorizontalSpacing = false;
+    
+    float32 verticalPadding = 0.0f;
+    float32 verticalSpacing = 0.0f;
+    bool dynamicVerticalPadding = false;
+    bool dynamicVerticalSpacing = false;
+    
 };
 
 }

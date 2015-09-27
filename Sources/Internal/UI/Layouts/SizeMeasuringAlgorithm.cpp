@@ -128,48 +128,67 @@ void SizeMeasuringAlgorithm::ProcessFixedSizePolicy(ControlLayoutData &data, Vec
 
 void SizeMeasuringAlgorithm::ProcessPercentOfChildrenSumPolicy(ControlLayoutData &data, Vector2::eAxis axis)
 {
-    float32 value = 0;
-
     if (flowLayout && flowLayout->IsEnabled() && axis == Vector2::AXIS_Y)
     {
-        float32 spacing = flowLayout->GetVerticalSpacing();
-        
-        float32 lineHeight = 0;
-        for (int32 index = data.GetFirstChildIndex(); index <= data.GetLastChildIndex(); index++)
-        {
-            ControlLayoutData &childData = layoutData[index];
-            if (childData.HaveToSkipControl(skipInvisible))
-                continue;
-            
-            if (childData.HasFlag(ControlLayoutData::FLAG_NEW_LINE))
-            {
-                value += lineHeight + spacing;
-                lineHeight = 0;
-            }
-            
-            lineHeight = Max(lineHeight, childData.GetHeight());
-        }
-        value += lineHeight;
+        ProcessVerticalFlowLayoutPercentOfChildrenSumPolicy(data, axis);
     }
     else
     {
-        int32 processedChildrenCount = 0;
-        for (int32 i = data.GetFirstChildIndex(); i <= data.GetLastChildIndex(); i++)
+        ProcessDefaultPercentOfChildrenSumPolicy(data, axis);
+    }
+}
+    
+void SizeMeasuringAlgorithm::ProcessDefaultPercentOfChildrenSumPolicy(ControlLayoutData &data, Vector2::eAxis axis)
+{
+    float32 value = 0;
+    int32 processedChildrenCount = 0;
+    
+    for (int32 i = data.GetFirstChildIndex(); i <= data.GetLastChildIndex(); i++)
+    {
+        const ControlLayoutData &childData = layoutData[i];
+        if (!childData.HaveToSkipControl(skipInvisible))
         {
-            const ControlLayoutData &childData = layoutData[i];
-            if (!childData.HaveToSkipControl(skipInvisible))
-            {
-                processedChildrenCount++;
-                value += childData.GetSize(axis);
-            }
-        }
-        
-        if (linearLayout && linearLayout->IsEnabled() && axis == linearLayout->GetAxis() && processedChildrenCount > 0)
-        {
-            value += linearLayout->GetSpacing() * processedChildrenCount - 1;
+            processedChildrenCount++;
+            value += childData.GetSize(axis);
         }
     }
     
+    if (linearLayout && linearLayout->IsEnabled() && axis == linearLayout->GetAxis() && processedChildrenCount > 0)
+    {
+        value += linearLayout->GetSpacing() * processedChildrenCount - 1;
+    }
+    
+    ApplySize(data, value, axis);
+}
+
+void SizeMeasuringAlgorithm::ProcessVerticalFlowLayoutPercentOfChildrenSumPolicy(ControlLayoutData &data, Vector2::eAxis axis)
+{
+    DVASSERT(flowLayout && flowLayout->IsEnabled() && axis == Vector2::AXIS_Y);
+    
+    float32 value = 0;
+    int32 linesCount = 0;
+    float32 lineHeight = 0;
+    
+    for (int32 index = data.GetFirstChildIndex(); index <= data.GetLastChildIndex(); index++)
+    {
+        ControlLayoutData &childData = layoutData[index];
+        if (childData.HaveToSkipControl(skipInvisible))
+            continue;
+        
+        lineHeight = Max(lineHeight, childData.GetHeight());
+        
+        if (childData.HasFlag(ControlLayoutData::FLAG_LAST_IN_LINE))
+        {
+            value += lineHeight;
+            linesCount++;
+            lineHeight = 0;
+        }
+    }
+    if (linesCount > 0)
+    {
+        value += flowLayout->GetVerticalSpacing() * (linesCount - 1);
+    }
+
     ApplySize(data, value, axis);
 }
 

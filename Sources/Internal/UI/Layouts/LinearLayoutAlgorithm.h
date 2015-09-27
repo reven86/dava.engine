@@ -78,6 +78,9 @@ private:
     int32 childrenCount = 0;
     int32 spacesCount = 0;
 
+    float32 initialPadding = 0.0f;
+    float32 initialSpacing = 0.0f;
+
     float32 padding = 0.0f;
     float32 spacing = 0.0f;
     
