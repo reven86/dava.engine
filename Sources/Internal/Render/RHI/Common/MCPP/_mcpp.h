@@ -6,9 +6,9 @@
 #define MCPP_LIB        1
 #define DLL_EXPORT      0
 
-//#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WIN32__)
     #pragma warning( disable: 4018 4068 4101 4102 4146 )
-//#endif
+#endif
 
 
     #include <sys/types.h>

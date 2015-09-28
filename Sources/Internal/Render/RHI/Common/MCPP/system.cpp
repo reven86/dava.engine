@@ -2077,7 +2077,6 @@ void    at_start( void)
  * Do the commands prior to processing main source file after do_options().
  */
 {
-    char *  env;
     FILEINFO *      file_saved = infile;
 
     /*
@@ -2086,6 +2085,7 @@ void    at_start( void)
      */
     if (! mb_changed) {                     /* -m option precedes   */
 #if !defined(__DAVAENGINE_WIN_UAP__)
+        char *  env;
 		if ((env = getenv( "LC_ALL")) != NULL)
             set_encoding( env, (char*)"LC_ALL", 0);
         else if ((env = getenv( (char*)"LC_CTYPE")) != NULL)
@@ -2190,8 +2190,8 @@ static void set_env_dirs( void)
  * Add to include path those specified by environment variables.
  */
 {
-    const char *    env;
 #if !defined(__DAVAENGINE_WIN_UAP__)
+    const char *    env;
     if (cplus_val) {
         if ((env = getenv( ENV_CPLUS_INCLUDE_DIR)) != NULL)
             parse_env( env);
@@ -2887,6 +2887,8 @@ static void     undef_macros( void)
     }
 }
 
+#pragma warning( push )
+#pragma warning( disable : 4018 )
 void    put_depend(
     const char *    filename
 )
@@ -3002,6 +3004,8 @@ void    put_depend(
             /* Don't use pointer, since 'output' may be reallocated later.  */
     out_p = stpcpy( out_p, filename);
 }
+
+#pragma warning( pop )
 
 static char *   md_init(
     const char *    filename,   /* The source file name             */ 
@@ -3449,7 +3453,7 @@ static int  open_file(
     } else {
         fname = filename;
     }
-search:
+//search:
     fullname = norm_path( *dirp, fname, TRUE, FALSE);
                                     /* Convert to absolute path     */
     if (! fullname)                 /* Non-existent or directory    */

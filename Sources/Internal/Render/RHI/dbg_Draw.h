@@ -189,7 +189,9 @@ private:
     uint32          _inited:1;
     uint32          _no_depth_test:1;
     uint32          _small_text:1;
-    uint32          _draw_immediately:1;
+    
+    // wargning : is not used
+    // uint32          _draw_immediately:1;
     uint32          _wnd_w;
     uint32          _wnd_h;
 

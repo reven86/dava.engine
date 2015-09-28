@@ -249,19 +249,6 @@ SetupDispatch( Dispatch* dispatch )
 
 }
 
-
-
-//------------------------------------------------------------------------------
-
-static Handle
-gles2_CommandBuffer_Allocate()
-{
-    Handle cb = CommandBufferPool::Alloc();
-
-    return cb;
-}
-
-
 //------------------------------------------------------------------------------
 
 static void
@@ -1155,7 +1142,7 @@ Trace("DIP  mode= %i  v_cnt= %i  start_i= %i\n",int(mode),int(v_cnt),int(startIn
                     i_off = startIndex*sizeof(uint32);
                 }
 
-                GL_CALL(glDrawElements( mode, v_cnt, i_sz, (void*)(i_off) ));
+                GL_CALL(glDrawElements( mode, v_cnt, i_sz, (void*)((uint64)i_off) ));
 //LCP;
                 StatSet::IncStat( stat_DIP, 1 );
                 switch (mode)
@@ -1212,6 +1199,7 @@ Trace("DIP  mode= %i  v_cnt= %i  start_i= %i\n",int(mode),int(v_cnt),int(startIn
 
 //------------------------------------------------------------------------------
 
+#ifdef __DAVAENGINE_ANDROID__
 static void
 _RejectAllFrames()
 {
@@ -1255,6 +1243,7 @@ _RejectAllFrames()
 
     _FrameSync.Unlock();
 }
+#endif
 
 
 //------------------------------------------------------------------------------
@@ -1551,13 +1540,15 @@ ResumeGLES2()
     
 //------------------------------------------------------------------------------
 
+#if 0
+    
 static void
 _LogGLError( const char* expr, int err )
 {
     Trace( "FAILED  %s (err= 0x%X) : %s\n", expr, err, GetGLErrorString(err) );
     DVASSERT(!"KABOOM!!!");
 }
-
+#endif
 
 //------------------------------------------------------------------------------
 
