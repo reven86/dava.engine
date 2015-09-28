@@ -873,6 +873,8 @@ void PrivateTextFieldWinUAP::SetNativeVisible(bool visible)
         // When such a control should not be visible it is moved off screen
         // Disable TextBox in 'invisible' state to prevent tab navigation
         SetNativeInputEnabled(visible);
+        if (!visible)
+            SetNativePositionAndSize(rectInWindowSpace, true);
     }
 }
 
@@ -1101,7 +1103,7 @@ void PrivateTextFieldWinUAP::RenderToTexture(bool moveOffScreenOnCompletion)
 
         RefPtr<Sprite> sprite(CreateSpriteFromPreviewData(&buf[0], imageWidth, imageHeight));
         core->RunOnMainThread([this, self, sprite, moveOffScreenOnCompletion]() {
-            if (uiTextField != nullptr && sprite.Valid())
+            if (uiTextField != nullptr && sprite.Valid() && !curText.empty())
             {
                 uiTextField->SetSprite(sprite.Get(), 0);
             }
