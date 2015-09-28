@@ -129,6 +129,57 @@ TextBlock::TextBlock()
 #endif //LOCALIZATION_DEBUG
 }
 
+TextBlock::TextBlock(const TextBlock& src)
+    : font(nullptr)
+    , textureForInvalidation(nullptr)
+    , textBlockRender(nullptr)
+    , textureInvalidater(nullptr)
+    //Basic params
+    , scale(src.scale)
+    , rectSize(src.rectSize)
+    , isMultilineEnabled(src.isMultilineEnabled)
+    , isMultilineBySymbolEnabled(src.isMultilineBySymbolEnabled)
+    , align(src.align)
+    , fittingType(src.fittingType)
+    , useRtlAlign(src.useRtlAlign)
+    , angle(src.angle)
+    , pivot(src.pivot)
+    //SetText(...) equivalent
+    , logicalText(src.logicalText)
+    , requestedSize(src.requestedSize)
+    //Cache params
+    , visualText(src.visualText)
+    , isRtl(src.isRtl)
+    , cacheFinalSize(src.cacheFinalSize)
+    , cacheW(src.cacheW)
+    , cacheDx(src.cacheDx)
+    , cacheDy(src.cacheDy)
+    , cacheOx(src.cacheOx)
+    , cacheOy(src.cacheOy)
+    , cacheSpriteOffset(src.cacheSpriteOffset)
+    , cacheTextSize(src.cacheTextSize)
+    , renderSize(src.renderSize)
+    , multilineStrings(src.multilineStrings)
+    , stringSizes(src.stringSizes)
+    , isPredrawed(src.isPredrawed)
+    , cacheUseJustify(src.cacheUseJustify)
+    , treatMultilineAsSingleLine(src.treatMultilineAsSingleLine)
+    , needCalculateCacheParams(src.needCalculateCacheParams)
+    , needPrepareInternal(src.needPrepareInternal)
+#if defined(LOCALIZATION_DEBUG)
+    , fittingTypeUsed(src.fittingTypeUsed)
+    , visualTextCroped(src.visualTextCroped)
+#endif //LOCALIZATION_DEBUG
+{
+    //SetFont without Prepare
+    if (nullptr != src.font)
+    {
+        SetFontInternal(src.font);
+    }
+
+    RegisterTextBlock(this);
+}
+
 TextBlock::~TextBlock()
 {
 	SafeRelease(textureForInvalidation);
@@ -903,54 +954,7 @@ void TextBlock::Draw(const Color& textColor, const Vector2* offset/* = NULL*/)
 
 TextBlock * TextBlock::Clone()
 {
-    TextBlock *block = new TextBlock();
-
-    //Basic params
-    block->scale = scale;
-    block->rectSize = rectSize;
-    block->isMultilineEnabled = isMultilineEnabled;
-    block->isMultilineBySymbolEnabled = isMultilineBySymbolEnabled;
-    block->align = align;
-    block->fittingType = fittingType;
-    block->useRtlAlign = useRtlAlign;
-    block->angle = angle;
-    block->pivot = pivot;
-
-    //SetText(...) equivalent
-    block->logicalText = logicalText;
-    block->requestedSize = requestedSize;
-
-    //SetFont without Prepare
-    if (nullptr != font)
-    {
-        block->SetFontInternal(font);
-    }
-
-    //Cache params
-    block->visualText = visualText;
-    block->isRtl = isRtl;
-    block->cacheFinalSize = cacheFinalSize;
-    block->cacheW = cacheW;
-    block->cacheDx = cacheDx;
-    block->cacheDy = cacheDy;
-    block->cacheOx = cacheOx;
-    block->cacheOy = cacheOy;
-    block->cacheSpriteOffset = cacheSpriteOffset;
-    block->cacheTextSize = cacheTextSize;
-    block->renderSize = renderSize;
-    block->multilineStrings = multilineStrings;
-    block->stringSizes = stringSizes;
-    block->isPredrawed = isPredrawed;
-    block->cacheUseJustify = cacheUseJustify;
-    block->treatMultilineAsSingleLine = treatMultilineAsSingleLine;
-    block->needCalculateCacheParams = needCalculateCacheParams;
-
-#if defined(LOCALIZATION_DEBUG)
-    block->fittingTypeUsed = fittingTypeUsed;
-    block->visualTextCroped = visualTextCroped;
-#endif //LOCALIZATION_DEBUG
-
-    return block;
+    return new TextBlock(*this);
 }
 
 };

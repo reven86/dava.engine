@@ -152,7 +152,8 @@ public:
 protected:
 
 	TextBlock();
-	virtual ~TextBlock();
+    TextBlock(const TextBlock& src);
+    virtual ~TextBlock();
 
     void NeedPrepare(Texture* texture = NULL);
     void PrepareInternal();
