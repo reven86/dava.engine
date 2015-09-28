@@ -2887,6 +2887,8 @@ static void     undef_macros( void)
     }
 }
 
+#pragma warning( push )
+#pragma warning( disable : 4018 )
 void    put_depend(
     const char *    filename
 )
@@ -3002,6 +3004,8 @@ void    put_depend(
             /* Don't use pointer, since 'output' may be reallocated later.  */
     out_p = stpcpy( out_p, filename);
 }
+
+#pragma warning( pop )
 
 static char *   md_init(
     const char *    filename,   /* The source file name             */ 
