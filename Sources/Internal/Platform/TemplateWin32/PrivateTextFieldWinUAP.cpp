@@ -335,7 +335,7 @@ void PrivateTextFieldWinUAP::SetText(const WideString& text)
 
     curText = text;
     if (text.empty())
-    { // Immediatly remove sprite image if new text is empty to get rid of flickering
+    { // Immediatly remove sprite image if new text is empty to get rid of some flickering
         uiTextField->SetSprite(nullptr, 0);
     }
     programmaticTextChange = true;
@@ -616,26 +616,25 @@ void PrivateTextFieldWinUAP::OnGotFocus()
     SetNativeCaretPosition(GetNativeText()->Length());
 
     bool multiline = IsMultiline();
-    // If control's focus state is FocusState::Keyboard so assume it has got focus through tab navigation
-    bool notifyControlSystemOnFocusChange = multiline || FocusState::Keyboard == nativeControl->FocusState;
     if (!multiline)
     {
         SetNativePositionAndSize(rectInWindowSpace, false);
     }
     auto self{shared_from_this()};
-    core->RunOnMainThread([this, self, multiline, notifyControlSystemOnFocusChange]() {
+    core->RunOnMainThread([this, self, multiline]() {
         if (uiTextField != nullptr)
         {
             if (!multiline)
                 uiTextField->SetSprite(nullptr, 0);
 
-            // Manually set focus through direct call to UIControlSystem
+            // Manually set focus through direct call to UITextField::SetFocused()
             // Reason: UIControlSystem has no chance to know whether control has got focus when
             // one of the following occurs:
             // 1. click on text field in multiline mode as it is always shown on screen
             // 2. tab navigation
-            if (notifyControlSystemOnFocusChange)
-                UIControlSystem::Instance()->SetFocusedControl(uiTextField, false);
+            UIControl* curFocused = UIControlSystem::Instance()->GetFocusedControl();
+            if (curFocused != uiTextField)
+                uiTextField->SetFocused();
         }
     });
 }
@@ -647,6 +646,16 @@ void PrivateTextFieldWinUAP::OnLostFocus()
     {
         RenderToTexture(true);
     }
+
+    auto self{shared_from_this()};
+    core->RunOnMainThread([this, self]() {
+        if (uiTextField != nullptr)
+        {
+            uiTextField->ReleaseFocus();
+            if (textFieldDelegate)
+                textFieldDelegate->OnKeyboardHidden();
+        }
+    });
     recentlyLostFocus = true;
 }
 
@@ -715,11 +724,6 @@ void PrivateTextFieldWinUAP::OnKeyboardHiding(InputPaneVisibilityEventArgs^ args
     {
         recentlyLostFocus = false;
 
-        auto self{shared_from_this()};
-        core->RunOnMainThread([this, self]() {
-            if (textFieldDelegate != nullptr)
-                textFieldDelegate->OnKeyboardHidden();
-        });
     }
 }
 
