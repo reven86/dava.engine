@@ -218,6 +218,7 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
         res->UpdateConfigFromSource(&vSource, &fSource);
         res->requiredVertexFormat = GetVertexLayoutRequiredFormat(psDesc.vertexLayout);
     }
+
     shaderDescriptors[key] = res;
     return res;
 }

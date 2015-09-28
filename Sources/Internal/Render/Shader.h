@@ -100,6 +100,7 @@ public:
 private:
     ShaderDescriptor(rhi::HPipelineState pipelineState, FastName vProgUid, FastName fProgUid);
     ~ShaderDescriptor();
+
     void UpdateConfigFromSource(rhi::ShaderSource* vSource, rhi::ShaderSource* fSource);
 
     Vector<ConstBufferDescriptor> constBuffers;
