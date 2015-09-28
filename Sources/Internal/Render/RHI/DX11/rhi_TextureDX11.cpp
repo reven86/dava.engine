@@ -96,7 +96,7 @@ dx11_Texture_Create( const Texture::Descriptor& desc )
     Handle                  handle = InvalidHandle;
     D3D11_TEXTURE2D_DESC    desc2d = {0};
     ID3D11Texture2D*        tex2d  = nullptr;
-    D3D11_SUBRESOURCE_DATA  data[16];
+    D3D11_SUBRESOURCE_DATA  data[128];
     HRESULT                 hr;
     bool                    need_srv = true;
     bool                    need_rtv = false;
@@ -149,37 +149,41 @@ dx11_Texture_Create( const Texture::Descriptor& desc )
 
     DVASSERT(countof(data) <= countof(desc.initialData));
     memset( data, 0, sizeof(data) );
-    for( unsigned m=0; m!=desc.levelCount; ++m )
+
+    for( unsigned s=0; s!=desc2d.ArraySize; ++s )
     {
-        if( desc.initialData[m] )
+        for( unsigned m=0; m!=desc.levelCount; ++m )
         {
-            data[m].pSysMem     = desc.initialData[m];
-            data[m].SysMemPitch = TextureStride( desc.format, Size2i(desc.width,desc.height), m );
+            uint32  di = s*desc.levelCount + m;
+            void*   d  = desc.initialData[di];
 
-            if( desc.format == TEXTURE_FORMAT_R8G8B8A8 )
+            if( d )
             {
-                _SwapRB8( desc.initialData[m], TextureSize( desc.format, desc.width, desc.height, m ) );
-            }
-            else if( desc.format == TEXTURE_FORMAT_R4G4B4A4 )
-            {
-                _SwapRB4( desc.initialData[m], TextureSize( desc.format, desc.width, desc.height, m ) );
-            }
-            else if ( desc.format == TEXTURE_FORMAT_R5G5B5A1)
-            {
-                _SwapRB5551( desc.initialData[m], TextureSize( desc.format, desc.width, desc.height, m ) );
-            }
+                data[di].pSysMem     = d;
+                data[di].SysMemPitch = TextureStride( desc.format, Size2i(desc.width,desc.height), m );
 
-            useInitialData      = true;
-        }
-        else
-        {
-            break;
+                if( desc.format == TEXTURE_FORMAT_R8G8B8A8 )
+                {
+                    _SwapRB8( desc.initialData[m], TextureSize( desc.format, desc.width, desc.height, m ) );
+                }
+                else if( desc.format == TEXTURE_FORMAT_R4G4B4A4 )
+                {
+                    _SwapRB4( desc.initialData[m], TextureSize( desc.format, desc.width, desc.height, m ) );
+                }
+                else if ( desc.format == TEXTURE_FORMAT_R5G5B5A1)
+                {
+                    _SwapRB5551( desc.initialData[m], TextureSize( desc.format, desc.width, desc.height, m ) );
+                }
+
+                useInitialData      = true;
+            }
+            else
+            {
+                break;
+            }
         }
     }
-if( useInitialData )
-{
-DVASSERT(desc.type == TEXTURE_TYPE_2D);
-}
+
 
     hr = _D3D11_Device->CreateTexture2D( &desc2d, (useInitialData) ? data : NULL, &tex2d );
 

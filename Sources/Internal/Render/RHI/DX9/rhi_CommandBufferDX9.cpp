@@ -1274,18 +1274,26 @@ Trace("exec %i\n",int(cmd->func));
             
             case DX9Command::UPDATE_VERTEX_BUFFER :
             {
-                IDirect3DVertexBuffer9* vb  = *((IDirect3DVertexBuffer9**)arg[0]);
-                unsigned                sz  = unsigned(arg[2]);
-                void*                   dst = nullptr;
-                void*                   src = (void*)(arg[1]);
+                IDirect3DVertexBuffer9* vb = *((IDirect3DVertexBuffer9**)arg[0]);
 
-                if( SUCCEEDED(vb->Lock( 0, sz, &dst, 0 )) )
+                if( vb )
                 {
-                    memcpy( dst, src, sz );
-                    cmd->retval = vb->Unlock();
-                }
+                    unsigned    sz  = unsigned(arg[2]);
+                    void*       dst = nullptr;
+                    void*       src = (void*)(arg[1]);
+
+                    if( SUCCEEDED(vb->Lock( 0, sz, &dst, 0 )) )
+                    {
+                        memcpy( dst, src, sz );
+                        cmd->retval = vb->Unlock();
+                    }
                 
-                CHECK_HR(cmd->retval);
+                    CHECK_HR(cmd->retval);
+                }
+                else
+                {
+                    cmd->retval = E_FAIL;
+                }
             }   break;
             
             case DX9Command::CREATE_INDEX_BUFFER :
@@ -1308,18 +1316,26 @@ Trace("exec %i\n",int(cmd->func));
             
             case DX9Command::UPDATE_INDEX_BUFFER :
             {
-                IDirect3DIndexBuffer9*  ib  = *((IDirect3DIndexBuffer9**)arg[0]);
-                unsigned                sz  = unsigned(arg[2]);
-                void*                   dst = nullptr;
-                void*                   src = (void*)(arg[1]);
+                IDirect3DIndexBuffer9*  ib = *((IDirect3DIndexBuffer9**)arg[0]);
 
-                if( SUCCEEDED(ib->Lock( 0, sz, &dst, 0 )) )
+                if( ib )
                 {
-                    memcpy( dst, src, sz );
-                    cmd->retval = ib->Unlock();
-                }
+                    unsigned    sz  = unsigned(arg[2]);
+                    void*       dst = nullptr;
+                    void*       src = (void*)(arg[1]);
+
+                    if( SUCCEEDED(ib->Lock( 0, sz, &dst, 0 )) )
+                    {
+                        memcpy( dst, src, sz );
+                        cmd->retval = ib->Unlock();
+                    }
                 
-                CHECK_HR(cmd->retval);
+                    CHECK_HR(cmd->retval);
+                }
+                else
+                {
+                    cmd->retval = E_FAIL;
+                }
             }   break;
 
             case DX9Command::CREATE_TEXTURE :
@@ -1361,21 +1377,29 @@ Trace("exec %i\n",int(cmd->func));
             case DX9Command::UPDATE_TEXTURE_LEVEL :
             {
                 IDirect3DTexture9*  tex = *((IDirect3DTexture9**)(arg[0]));
-                UINT                lev = UINT(arg[1]);
-                void*               src = (void*)(arg[2]);
-                unsigned            sz  = unsigned(arg[3]);
-                D3DLOCKED_RECT      rc  = {0};
-                HRESULT             hr  = tex->LockRect( lev, &rc, NULL, 0 );
 
-                if( SUCCEEDED(hr) )
+                if( tex )
                 {
-                    memcpy( rc.pBits, src, sz );
-                    cmd->retval = tex->UnlockRect( lev );
+                    UINT            lev = UINT(arg[1]);
+                    void*           src = (void*)(arg[2]);
+                    unsigned        sz  = unsigned(arg[3]);
+                    D3DLOCKED_RECT  rc  = {0};
+                    HRESULT         hr  = tex->LockRect( lev, &rc, NULL, 0 );
+
+                    if( SUCCEEDED(hr) )
+                    {
+                        memcpy( rc.pBits, src, sz );
+                        cmd->retval = tex->UnlockRect( lev );
+                    }
+                    else
+                    {
+                        CHECK_HR(hr);
+                        cmd->retval = hr;
+                    }
                 }
                 else
                 {
-                    CHECK_HR(hr);
-                    cmd->retval = hr;
+                    cmd->retval = E_FAIL;
                 }
             }   break;
 
@@ -1389,6 +1413,36 @@ Trace("exec %i\n",int(cmd->func));
             {
                 cmd->retval = ((IDirect3DCubeTexture9*)(arg[0]))->UnlockRect( D3DCUBEMAP_FACES(arg[1]), UINT(arg[2]) );
                 CHECK_HR(cmd->retval);
+            }   break;
+
+            case DX9Command::UPDATE_CUBETEXTURE_LEVEL :
+            {
+                IDirect3DCubeTexture9*  tex = *((IDirect3DCubeTexture9**)(arg[0]));
+
+                if( tex )
+                {
+                    UINT                lev = UINT(arg[1]);
+                    D3DCUBEMAP_FACES    face = (D3DCUBEMAP_FACES)(arg[2]);
+                    void*               src = (void*)(arg[3]);
+                    unsigned            sz  = unsigned(arg[4]);
+                    D3DLOCKED_RECT      rc  = {0};
+                    HRESULT             hr  = tex->LockRect( face, lev, &rc, NULL, 0 );
+
+                    if( SUCCEEDED(hr) )
+                    {
+                        memcpy( rc.pBits, src, sz );
+                        cmd->retval = tex->UnlockRect( face, lev );
+                    }
+                    else
+                    {
+                        CHECK_HR(hr);
+                        cmd->retval = hr;
+                    }
+                }
+                else
+                {
+                    cmd->retval = E_FAIL;
+                }
             }   break;
 
             case DX9Command::GET_RENDERTARGET_DATA :

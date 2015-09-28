@@ -479,7 +479,7 @@ Descriptor
     uint32          height;
     TextureFormat   format;
     uint32          levelCount;
-    void*           initialData[16];    // it must be writable!
+    void*           initialData[128];   // it must be writable!
     uint32          isRenderTarget:1;
     uint32          autoGenMipmaps:1;
     uint32          needRestore:1;

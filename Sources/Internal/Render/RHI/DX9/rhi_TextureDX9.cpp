@@ -101,7 +101,7 @@ TextureDX9_t::Create( const Texture::Descriptor& desc, bool force_immediate )
     DVASSERT(desc.levelCount);
     bool                success     = false;
     D3DFORMAT           fmt         = DX9_TextureFormat( desc.format );
-    DWORD               usage       =(desc.isRenderTarget)  ? D3DUSAGE_RENDERTARGET  : 0;
+    DWORD               usage       = (desc.isRenderTarget)  ? D3DUSAGE_RENDERTARGET  : 0;
     D3DPOOL             pool        = (desc.isRenderTarget)  ? D3DPOOL_DEFAULT  : D3DPOOL_MANAGED;
     HRESULT             hr          = E_FAIL;
     bool                auto_mip    = (desc.autoGenMipmaps)  ? true  : false;
@@ -199,12 +199,53 @@ TextureDX9_t::Create( const Texture::Descriptor& desc, bool force_immediate )
         
         case TEXTURE_TYPE_CUBE :
         {
-DVASSERT(desc.initialData[0]==nullptr);
-            IDirect3DCubeTexture9*  cubetex9 = nullptr;
-            DX9Command              cmd1     = { DX9Command::CREATE_CUBE_TEXTURE, { desc.width, mip_count, usage, DX9_TextureFormat(desc.format), pool, uint64_t(&cubetex9), NULL } };
+            uint32      cmd1_cnt  = 1;
+            DX9Command  cmd1[128] = 
+            { 
+                { DX9Command::CREATE_CUBE_TEXTURE, { desc.width, mip_count, usage, DX9_TextureFormat(desc.format), pool, uint64_t(&cubetex9), NULL } }
+            };
             
-            ExecDX9( &cmd1, 1 );
-            hr = cmd1.retval;
+            DVASSERT(desc.levelCount*6 <= countof(desc.initialData));
+            TextureFace         face[]     = { TEXTURE_FACE_POSITIVE_X, TEXTURE_FACE_NEGATIVE_X, TEXTURE_FACE_POSITIVE_Y, TEXTURE_FACE_NEGATIVE_Y, TEXTURE_FACE_POSITIVE_Z, TEXTURE_FACE_NEGATIVE_Z };
+            D3DCUBEMAP_FACES    d3d_face[] = { D3DCUBEMAP_FACE_POSITIVE_X, D3DCUBEMAP_FACE_NEGATIVE_X, D3DCUBEMAP_FACE_POSITIVE_Y, D3DCUBEMAP_FACE_NEGATIVE_Y, D3DCUBEMAP_FACE_POSITIVE_Z, D3DCUBEMAP_FACE_NEGATIVE_Z };
+            
+            for( unsigned f=0; f!=countof(face); ++f )
+            {
+                for( unsigned m=0; m!=desc.levelCount; ++m )
+                {
+                    DX9Command* cmd  = cmd1 + cmd1_cnt;
+                    void*       data = desc.initialData[f*desc.levelCount+m];
+
+                    if( data )
+                    {
+                        Size2i  sz      = TextureExtents( Size2i(desc.width,desc.height), m );
+                        uint32  data_sz = TextureSize( desc.format, sz.dx, sz.dy);
+
+                        cmd->func   = DX9Command::UPDATE_CUBETEXTURE_LEVEL;
+                        cmd->arg[0] = uint64_t(&cubetex9);
+                        cmd->arg[1] = m;
+                        cmd->arg[2] = d3d_face[f];
+                        cmd->arg[3] = (uint64)(data);
+                        cmd->arg[4] = data_sz;
+                    
+                        if( desc.format == TEXTURE_FORMAT_R8G8B8A8 )
+                            _SwapRB8( data, data_sz );
+                        else if( desc.format == TEXTURE_FORMAT_R4G4B4A4 )
+                            _SwapRB4( data, data_sz );
+                        else if (desc.format == TEXTURE_FORMAT_R5G5B5A1)
+                            _SwapRB5551( data, data_sz );
+
+                        ++cmd1_cnt;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+            }
+            
+            ExecDX9( cmd1, cmd1_cnt, force_immediate );
+            hr = cmd1[0].retval;
         
             if( SUCCEEDED(hr) )
             {
