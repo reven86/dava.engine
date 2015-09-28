@@ -400,27 +400,34 @@ void TransformSystem::AdjustResize(int directionX, int directionY, Vector2& delt
 
     if (finalSize.dx < scaledMinimum.dx)
     {
-        if (deltaSize.dx >= 0.0f)
-        {
-            return;
-        }
         float32 availableDelta = origSize.dx - scaledMinimum.dx;
-        availableDelta *= directionX * -1;
-        extraDelta.dx += delta.dx - availableDelta;
-        delta.dx = availableDelta;
+        if (availableDelta <= 0.0f && deltaSize.dx <= 0.0f)
+        {
+            extraDelta.dx += delta.dx;
+            delta.dx = 0.0f;
+        }
+        else if (origSize.dx > scaledMinimum.dx)
+        {
+            availableDelta *= directionX * -1;
+            extraDelta.dx += delta.dx - availableDelta;
+            delta.dx = availableDelta;
+        }
     }
     if (finalSize.dy < scaledMinimum.dy)
     {
-        if (deltaSize.dy >= 0.0f)
-        {
-            return;
-        }
         float32 availableDelta = origSize.dy - scaledMinimum.dy;
-        availableDelta *= directionY * -1;
-        extraDelta.dy += delta.dy - availableDelta;
-        delta.dy = availableDelta;
+        if (availableDelta <= 0.0f && deltaSize.dy <= 0.0f)
+        {
+            extraDelta.dy += delta.dy;
+            delta.dy = 0.0f;
+        }
+        else if (origSize.dy > scaledMinimum.dy)
+        {
+            availableDelta *= directionY * -1;
+            extraDelta.dy += delta.dy - availableDelta;
+            delta.dy = availableDelta;
+        }
     }
-
 }
 
 void TransformSystem::MovePivot(Vector2 delta)
@@ -460,8 +467,23 @@ void TransformSystem::Rotate(Vector2 pos)
         static int step = 15.0f; //fixed angle step
         float32 finalAngle = originalAngle + deltaAngle + accumulatedAngle;
         int32 nearestTargetAngle = finalAngle - static_cast<int>(finalAngle) % step;
-
-        accumulatedAngle = finalAngle - nearestTargetAngle;
+        if (finalAngle >= 0.0f && deltaAngle < 0.0f)
+        {
+            nearestTargetAngle += step;
+        }
+        else if (finalAngle < 0.0f && deltaAngle >= 0.0f)
+        {
+            nearestTargetAngle -= step;
+        }
+        if ((deltaAngle >= 0.0f && nearestTargetAngle <= originalAngle + 0.005f) || (deltaAngle < 0.0f && nearestTargetAngle >= originalAngle - 0.005))
+        {
+            accumulatedAngle += deltaAngle;
+            return;
+        }
+        if ((deltaAngle != 0))
+        {
+            accumulatedAngle = finalAngle - nearestTargetAngle;
+        }
         deltaAngle = nearestTargetAngle - originalAngle;
     }
     float32 finalAngle = originalAngle + deltaAngle;

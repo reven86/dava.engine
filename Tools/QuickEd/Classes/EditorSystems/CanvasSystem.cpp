@@ -61,7 +61,8 @@ void GridControl::Draw(const UIGeometricData& geometricData)
         GetBackground()->Draw(unscaledGd);
     }
 }
-}
+
+} //unnamed namespe
 
 class BackgroundController
 {

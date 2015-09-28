@@ -71,7 +71,7 @@ public:
         {
             UIControl* control = new UIControl();
             UIControlBackground* background = control->GetBackground();
-            background->SetSprite("~res:/Gfx/BlackGrid", 0);
+            background->SetSprite("~res:/Gfx/HUDControls/BlackGrid", 0);
             background->SetDrawType(UIControlBackground::DRAW_TILED);
 
             borders.emplace_back(control);
@@ -189,7 +189,7 @@ public:
         {
             UIControl* control = new UIControl();
             UIControlBackground* background = control->GetBackground();
-            background->SetSprite("~res:/Gfx/BlackGrid", 0);
+            background->SetSprite("~res:/Gfx/HUDControls/BlackGrid", 0);
             background->SetDrawType(UIControlBackground::DRAW_TILED);
             borders.emplace_back(control);
         }

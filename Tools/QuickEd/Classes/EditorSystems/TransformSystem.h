@@ -59,7 +59,6 @@ private:
     void MoveControl(DAVA::Vector2 delta);
     void MoveAllSelectedControls(DAVA::Vector2 delta);
 
-    void AdjustProperty(ControlNode* node, AbstractProperty* property, const DAVA::VariantType& value);
     void AdjustProperty(ControlNode* node, const DAVA::Vector<PropertyDelta>& propertiesDelta);
 
     void CorrectNodesToMove();
