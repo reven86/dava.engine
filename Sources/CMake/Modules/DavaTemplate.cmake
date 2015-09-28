@@ -778,17 +778,22 @@ if ( QT_LIBRARIES )
 endif()
 
 foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
+    set(DST_DIR ${DEPLOY_DIR}/${OUTPUTCONFIG})
     if( APP_DATA )
         get_filename_component( DIR_NAME ${APP_DATA} NAME )
         ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD
-           COMMAND ${CMAKE_COMMAND} -E copy_directory ${APP_DATA}  ${DEPLOY_DIR}/${OUTPUTCONFIG}/${DIR_NAME}/
+           COMMAND ${CMAKE_COMMAND} -E copy_directory ${APP_DATA}  ${DST_DIR}/${DIR_NAME}/
             COMMAND ${CMAKE_COMMAND} -E remove  ${DEPLOY_DIR}/${OUTPUTCONFIG}/${PROJECT_NAME}.ilk
         )
 
     endif()
 
+    if (NOT EXISTS ${DST_DIR})
+        file(MAKE_DIRECTORY ${DST_DIR})
+    endif()
+
     foreach ( ITEM fmodex.dll fmod_event.dll IMagickHelper.dll glew32.dll TextureConverter.dll )
-        execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${DAVA_TOOLS_BIN_DIR}/${ITEM}  ${DEPLOY_DIR}/${OUTPUTCONFIG} )
+        execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${DAVA_TOOLS_BIN_DIR}/${ITEM}  ${DST_DIR} )
     endforeach ()
 endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
 

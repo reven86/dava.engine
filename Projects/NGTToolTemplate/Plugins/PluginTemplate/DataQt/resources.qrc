@@ -4,5 +4,6 @@
     <file>actions.xml</file>
     <file alias="Library.qml">Library.qml</file>
     <file>SceneTree.qml</file>
+    <file>PropertyPanel.qml</file>
   </qresource>
 </RCC>

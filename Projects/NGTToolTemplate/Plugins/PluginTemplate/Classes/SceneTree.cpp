@@ -154,7 +154,7 @@ void SceneTree::OnSelectionChanged(QList<QVariant> const & selection)
         DAVA::Entity * entity = item->GetEntity();
         DVASSERT(entity != nullptr);
 
-        findSystem<SceneSelectionSystem>(scene)->SetSelection(entity);
+        SelectedEntityChanged.Emit(std::move(entity));
         break;
     }
 }
@@ -185,7 +185,7 @@ void SceneTree::OnSceneSelectionChanged(DAVA::Scene * scene_, const EntityGroup 
     }
 
     DAVA::Entity * entity = selected->GetEntity(0);
-    
+    SelectedEntityChanged.Emit(std::move(entity));
 }
 
 ITreeModel * SceneTree::CreateSceneModel()

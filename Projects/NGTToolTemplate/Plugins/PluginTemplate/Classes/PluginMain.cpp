@@ -31,13 +31,19 @@
 #include "SceneViewer.h"
 #include "Library.h"
 #include "SceneTree.h"
+#include "PropertyPanel.h"
+#include "SceneSignals.h"
 
 #include "core_generic_plugin/generic_plugin.hpp"
+#include "core_reflection/i_definition_manager.hpp"
+#include "core_qt_common/shared_controls.hpp"
 
 #include "core_ui_framework/i_window.hpp"
 #include "core_ui_framework/i_view.hpp"
 #include "core_ui_framework/i_ui_framework.hpp"
 #include "core_ui_framework/i_ui_application.hpp"
+
+#include "ReflectionBridge.h"
 
 #include "FileSystem/Logger.h"
 
@@ -78,6 +84,13 @@ public:
         }
         Variant::setMetaTypeManager(metaTypeMng);
 
+        IDefinitionManager* definitionMng = context.queryInterface<IDefinitionManager>();
+        if (definitionMng == nullptr)
+        {
+            DAVA::Logger::Error("Can't query IDefinitionManager interface");
+            return;
+        }
+
         uiFramework->loadActionData(":/default/actions.xml", IUIFramework::ResourceType::File);
         mainWindow = uiFramework->createWindow(":/default/MainWindow.ui", IUIFramework::ResourceType::File);
 
@@ -86,6 +99,9 @@ public:
         new DAVA::QtLayer();
         new DavaLoop();
         new FrameworkLoop();
+
+        propertyPanel.reset(new PropertyPanel());
+        propertyPanel->Initialize(*uiFramework, *uiApplication);
 
         sceneTree.reset(new SceneTree());
         sceneTree->Initialize(*uiFramework, *uiApplication);
@@ -97,6 +113,11 @@ public:
 
         DVVERIFY(QObject::connect(library.get(), &Library::OpenScene, sceneWidget.get(), &SceneViewer::OnOpenScene));
         DVVERIFY(QObject::connect(sceneWidget.get(), &SceneViewer::SceneLoaded, sceneTree.get(), &SceneTree::SetScene));
+        DVVERIFY(QObject::connect(SceneSignals::Instance(), &SceneSignals::SelectionChanged,
+                                  sceneTree.get(), &SceneTree::OnSceneSelectionChanged));
+
+        sceneTree->SelectedEntityChanged.Connect(sceneWidget.get(), &SceneViewer::SetSelection);
+        sceneTree->SelectedEntityChanged.Connect(propertyPanel.get(), &PropertyPanel::SetEntity);
 
         uiApplication->addWindow(*mainWindow);
         uiApplication->addView(library->GetView());
@@ -109,6 +130,7 @@ public:
 
     bool Finalise(IComponentContext & context) override
     {
+        propertyPanel->Finalize();
         sceneTree->Finilize();
         sceneWidget->Finalise();
         library->Finilize();
@@ -117,6 +139,7 @@ public:
         DAVA::QtLayer::Instance()->Release();
         DavaLoop::Instance()->Release();
 
+        propertyPanel.reset();
         sceneTree.reset();
         sceneWidget.reset();
         library.reset();
@@ -132,6 +155,7 @@ public:
 private:
     std::unique_ptr<IWindow> mainWindow;
     std::unique_ptr<Library> library;
+    std::unique_ptr<PropertyPanel> propertyPanel;
     std::unique_ptr<SceneViewer> sceneWidget;
     std::unique_ptr<SceneTree> sceneTree;
 };

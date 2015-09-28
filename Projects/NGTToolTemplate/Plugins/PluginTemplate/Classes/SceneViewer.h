@@ -41,6 +41,7 @@ namespace DAVA
 {
     class UI3DView;
     class Scene;
+    class Entity;
 }
 
 class SceneViewer : public QObject
@@ -56,6 +57,8 @@ public:
     Q_SLOT void OnOpenScene(std::string const & scenePath);
 
     Q_SIGNAL void SceneLoaded(DAVA::Scene * scene);
+
+    void SetSelection(DAVA::Entity* entity);
 
 private:
     Q_SLOT void OnGlInitialized();
