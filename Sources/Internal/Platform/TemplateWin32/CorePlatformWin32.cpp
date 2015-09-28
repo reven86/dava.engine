@@ -235,19 +235,6 @@ namespace DAVA
             Logger::Info("system not supported touch input");
         }
 
-        //    todo: fix it
-        //		rhi::Reset(currentMode.width, currentMode.height);
-        //        RenderManager::Instance()->ChangeDisplayMode(currentMode, isFullscreen);
-        //        RenderManager::Instance()->Init(currentMode.width, currentMode.height);
-
-        rhi::ResetParam resetParams;
-        resetParams.width = currentMode.width;
-        resetParams.height = currentMode.height;
-        resetParams.scaleX = 1;
-        resetParams.scaleY = 1;
-        resetParams.fullScreen = 0;
-
-        rhi::Reset(resetParams);
         VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(currentMode.width, currentMode.height);
         VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(currentMode.width, currentMode.height);
 
