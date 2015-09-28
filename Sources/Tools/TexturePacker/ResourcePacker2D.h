@@ -49,7 +49,6 @@ class ResourcePacker2D
     static const String VERSION;
 
 public:
-    ResourcePacker2D();
 
     void InitFolders(const FilePath & inputPath,const FilePath & outputPath);
     bool RecalculateDirMD5(const FilePath& pathname, const FilePath& md5file, bool isRecursive) const;
@@ -103,6 +102,7 @@ private:
     String cacheClientIp;
     String cacheClientPort;
     String cacheClientTimeout;
+    bool isUsingCache = false;
 
     Set<String> errors;
 
@@ -115,7 +115,7 @@ inline bool ResourcePacker2D::IsUsingCache() const
     //no cache in win uap
     return false;
 #else
-    return (!cacheClientTool.IsEmpty());
+    return isUsingCache;
 #endif
 }
 
