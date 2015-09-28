@@ -923,11 +923,9 @@ NativeColorRGBA( float red, float green, float blue, float alpha )
             break;
 
         case RHI_DX11:
-#if defined(__DAVAENGINE_WIN_UAP__)
             color = ((uint32)((((a)& 0xFF) << 24) | (((b)& 0xFF) << 16) | (((g)& 0xFF) << 8) | ((r)& 0xFF)));
-#else
-            color = ((uint32)((((a)& 0xFF) << 24) | (((r)& 0xFF) << 16) | (((g)& 0xFF) << 8) | ((b)& 0xFF)));
-#endif
+            //color = ((uint32)((((a)& 0xFF) << 24) | (((r)& 0xFF) << 16) | (((g)& 0xFF) << 8) | ((b)& 0xFF))); for some reason it was here in case of non-uap. seems work ok without it. wait here for someone with "strange" videocard to complain
+
             break;
 
         case RHI_GLES2 :
