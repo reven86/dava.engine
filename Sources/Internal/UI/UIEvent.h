@@ -46,7 +46,6 @@ class UIControl;
 class UIEvent
 {
 public:
-
     enum eInputSource
     {
         INPUT_UNDEFINED,
@@ -56,87 +55,95 @@ public:
         INPUT_SOURCE_GAMEPAD
     };
 
-	/**
+    /**
 	 \enum Control state bits.
 	 */
-	enum eInputPhase
-	{
-			PHASE_BEGAN = 0	//!<Screen touch or mouse button press is began.
-		,	PHASE_DRAG		//!<User moves mouse with presset button or finger over the screen.
-		,	PHASE_ENDED		//!<Screen touch or mouse button press is ended.
-		,	PHASE_MOVE		//!<Mouse move event. Mouse moves without pressing any buttons. Works only with mouse controller.
-        ,   PHASE_WHEEL     //!<Mouse wheel event. MacOS & Win32 only
-		,	PHASE_CANCELLED	//!<Event was cancelled by the platform or by the control system for the some reason.  
+    enum eInputPhase
+    {
+        PHASE_BEGAN = 0, //!<Screen touch or mouse button press is began.
+        PHASE_DRAG, //!<User moves mouse with presset button or finger over the screen.
+        PHASE_ENDED, //!<Screen touch or mouse button press is ended.
+        PHASE_MOVE, //!<Mouse move event. Mouse moves without pressing any buttons. Works only with mouse controller.
+        PHASE_WHEEL, //!<Mouse wheel event. MacOS & Win32 only
+        PHASE_CANCELLED, //!<Event was cancelled by the platform or by the control system for the some reason.
+        PHASE_KEYCHAR, //!<Event is a keyboard key pressing event.
+        PHASE_KEYCHAR_RELEASE,
+        PHASE_JOYSTICK
+    };
 
-		,	PHASE_KEYCHAR	//!<Event is a keyboard key pressing event.
-		,	PHASE_JOYSTICK
-	};
-	
-	/**
+    /**
 	 \enum Internal Control Sytem event activity state.
 	 */
-	enum eInputActivityState
-	{
-			ACTIVITY_STATE_INACTIVE	=	0	
-		,	ACTIVITY_STATE_ACTIVE
-		,	ACTIVITY_STATE_CHANGED
-	};
-	
-	/**
+    enum eInputActivityState
+    {
+        ACTIVITY_STATE_INACTIVE = 0,
+        ACTIVITY_STATE_ACTIVE,
+        ACTIVITY_STATE_CHANGED
+    };
+
+    /**
 	 \enum Input state accordingly to control.
 	 */
-	enum eControlInputState
-	{
-			CONTROL_STATE_RELEASED	=	0	//!<Input is released
-		,	CONTROL_STATE_INSIDE			//!<Input processed inside control rerct for now
-		,	CONTROL_STATE_OUTSIDE			//!<Input processed outside of the control rerct for now
-	};
-	
-	/**
+    enum eControlInputState
+    {
+        CONTROL_STATE_RELEASED = 0, //!<Input is released
+        CONTROL_STATE_INSIDE, //!<Input processed inside control rerct for now
+        CONTROL_STATE_OUTSIDE //!<Input processed outside of the control rerct for now
+    };
+
+    /**
 	 \ Input can be handled in the different ways.
 	 */
-	enum eInputHandledType
-	{
-		INPUT_NOT_HANDLED		= 0,//!<Input is not handled at all.
-		INPUT_HANDLED_SOFT		= 1,//!<Input is handled, but input control can be changed by UIControlSystem::Instance()->SwitchInputToControl() method.
-		INPUT_HANDLED_HARD		= 2,//!<Input is handled completely, input control can't be changed.
-	};
+    enum eInputHandledType
+    {
+        INPUT_NOT_HANDLED = 0, //!<Input is not handled at all.
+        INPUT_HANDLED_SOFT = 1, //!<Input is handled, but input control can be changed by UIControlSystem::Instance()->SwitchInputToControl() method.
+        INPUT_HANDLED_HARD = 2, //!<Input is handled completely, input control can't be changed.
+    };
 
-	friend class UIControlSystem;
+    friend class UIControlSystem;
 
-	enum eButtonID 
-	{
-			BUTTON_NONE	= 0
-		,	BUTTON_1
-		,	BUTTON_2
-		,	BUTTON_3
-	};
-	
-	enum eJoystickAxisID
-	{
-			JOYSTICK_AXIS_X = 0
-		,	JOYSTICK_AXIS_Y
-		,	JOYSTICK_AXIS_Z
-		,	JOYSTICK_AXIS_RX
-		,	JOYSTICK_AXIS_RY
-		,	JOYSTICK_AXIS_RZ
-		,	JOYSTICK_AXIS_LTRIGGER
-		,	JOYSTICK_AXIS_RTRIGGER
-		,	JOYSTICK_AXIS_HAT_X
-		,	JOYSTICK_AXIS_HAT_Y
-	};
+    enum eButtonID
+    {
+        BUTTON_NONE = 0,
+        BUTTON_1,
+        BUTTON_2,
+        BUTTON_3
+    };
 
+    enum eJoystickAxisID
+    {
+        JOYSTICK_AXIS_X = 0,
+        JOYSTICK_AXIS_Y,
+        JOYSTICK_AXIS_Z,
+        JOYSTICK_AXIS_RX,
+        JOYSTICK_AXIS_RY,
+        JOYSTICK_AXIS_RZ,
+        JOYSTICK_AXIS_LTRIGGER,
+        JOYSTICK_AXIS_RTRIGGER,
+        JOYSTICK_AXIS_HAT_X,
+        JOYSTICK_AXIS_HAT_Y
+    };
 
-	int32 tid;//!< event id, for the platforms with mouse this id means mouse button id, key codes for keys, axis id for joystick
-	Vector2 point;//!< point of pressure in virtual coordinates
-	Vector2 physPoint;//!< point of pressure in physical coordinates
-	float64 timestamp;//!< time stemp of the event occurrence
-	int32 phase;//!< began, ended, moved. See eInputPhase
-	UIControl *touchLocker;//!< control that handles this input
-	int32 activeState;//!< state of input in control system (active, inactive, changed)
-	int32 controlState;//!< input state relative to control (outside, inside). Used for point inputs only(mouse, touch)
-	int32 tapCount;//!< count of the continuous inputs (clicks for mouse)
-	char16 keyChar;//!< unicode/translated character produced by key using current language, caps etc. Used only with PHASE_KEYCHAR.
+    enum class PointerDeviceID : uint32
+    {
+        NOT_SUPPORTED = 0,
+        MOUSE = 1,
+        TOUCH = 2,
+        PEN = 3
+    };
+
+    int32 tid = 0; // event id, for the platforms with mouse this id means mouse button id, key codes for keys, axis id for joystick
+    Vector2 point; // point of pressure in virtual coordinates
+    Vector2 physPoint; // point of pressure in physical coordinates
+    float64 timestamp = 0.0; // time stemp of the event occurrence
+    int32 phase = 0; // began, ended, moved. See eInputPhase
+    UIControl* touchLocker = nullptr; // control that handles this input
+    int32 activeState = ACTIVITY_STATE_INACTIVE; // state of input in control system (active, inactive, changed)
+    int32 controlState = CONTROL_STATE_RELEASED; // input state relative to control (outside, inside). Used for point inputs only(mouse, touch)
+    int32 tapCount = 0; // count of the continuous inputs (clicks for mouse)
+    char16 keyChar = 0; // unicode/translated character produced by key using current language, caps etc. Used only with PHASE_KEYCHAR.
+    PointerDeviceID deviceId = PointerDeviceID::NOT_SUPPORTED;
 
     inline void SetInputHandledType(eInputHandledType value)
     {
@@ -150,17 +157,7 @@ public:
     eInputHandledType GetInputHandledType() { return inputHandledType; };
     void ResetInputHandledType() { inputHandledType = INPUT_NOT_HANDLED; };
 
-	UIEvent() :
-        tid(0),
-        timestamp(0.f),
-        phase(0),
-        touchLocker(NULL),
-        activeState(ACTIVITY_STATE_INACTIVE),
-        controlState(CONTROL_STATE_RELEASED),
-        tapCount(0),
-        keyChar(0),
-        inputHandledType(INPUT_NOT_HANDLED)
-	{ }
+    UIEvent() = default;
 
     eInputSource GetInputSource()
     {
@@ -172,6 +169,7 @@ public:
             case PHASE_CANCELLED:
                 return INPUT_SOURCE_TOUCHSCREEN;
             case PHASE_KEYCHAR:
+            case PHASE_KEYCHAR_RELEASE:
                 return INPUT_SOURCE_KEYBOARD;
 #if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
 			case PHASE_MOVE:

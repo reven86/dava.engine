@@ -26,7 +26,6 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 #ifndef __DAVAENGINE_ADDRESS_RESOLVER_H__
 #define __DAVAENGINE_ADDRESS_RESOLVER_H__
 
@@ -35,17 +34,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Network/Base/Endpoint.h"
 #include <libuv/uv.h>
 
-
-namespace DAVA {
-namespace Net {
-
+namespace DAVA
+{
+namespace Net
+{
 class IOLoop;
-
 
 class AddressResolver
 {
 public:
-    using ResolverCallbackFn = Function < void(const Endpoint&, int32) >;
+    using ResolverCallbackFn = Function<void(const Endpoint&, int32)>;
 
 public:
     explicit AddressResolver(IOLoop* loop);
@@ -63,10 +61,7 @@ private:
     uv_getaddrinfo_t* handle = nullptr;
     ResolverCallbackFn resolverCallbackFn;
 };
-
-
 }
 }
 
 #endif //__DAVAENGINE_ADDRESS_RESOLVER_H__
-
