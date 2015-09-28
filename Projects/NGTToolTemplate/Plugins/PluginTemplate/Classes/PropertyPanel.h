@@ -38,7 +38,8 @@
 
 namespace DAVA
 {
-class Entity;
+class InspBase;
+class InspInfo;
 }
 
 class PropertyPanel : public QObject
@@ -57,7 +58,7 @@ public:
     Q_INVOKABLE QVariant GetPropertyTree();
     Q_SIGNAL void EntityChanged();
 
-    void SetEntity(DAVA::Entity* entity);
+    void SetObject(const DAVA::InspBase* object);
 
 private:
     std::unique_ptr<IView> view;

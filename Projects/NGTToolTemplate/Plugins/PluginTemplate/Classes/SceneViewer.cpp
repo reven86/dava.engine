@@ -97,6 +97,8 @@ void SceneViewer::OnOpenScene(std::string const & scenePath)
     DVASSERT(!scenePath.empty());
     DVASSERT(nullptr != uiView);
 
+    SetSelection(nullptr);
+
     ScopedPtr<PluginScene> scene(new PluginScene());
     SceneFileV2::eError result = scene->LoadScene(FilePath(scenePath));
     if (result == DAVA::SceneFileV2::ERROR_NO_ERROR)
@@ -133,9 +135,15 @@ void SceneViewer::OnOpenScene(std::string const & scenePath)
 void SceneViewer::SetSelection(DAVA::Entity* entity)
 {
     DVASSERT(uiView != nullptr);
-    DVASSERT(uiView->GetScene() != nullptr);
-
-    findSystem<SceneSelectionSystem>(uiView->GetScene())->SetSelection(entity);
+    DAVA::Scene* scene = uiView->GetScene();
+    if (scene)
+    {
+        SceneSelectionSystem* selectionSystem = findSystem<SceneSelectionSystem>(scene);
+        if (entity)
+            selectionSystem->SetSelection(entity);
+        else
+            selectionSystem->Clear();
+    }
 }
 
 void SceneViewer::OnGlInitialized()
