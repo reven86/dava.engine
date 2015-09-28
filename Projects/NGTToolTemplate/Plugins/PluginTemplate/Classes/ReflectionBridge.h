@@ -41,301 +41,94 @@
 #include "Base/Introspection.h"
 #include "Base/IntrospectionBase.h"
 
+#include <functional>
+
+namespace DAVA
+{
 class VariantConverter
 {
 public:
-    VariantConverter()
-    {
-        typeMapping.fill(nullptr);
-        IMetaTypeManager* metaTypeMng = Variant::getMetaTypeManager();
-        typeMapping[DAVA::VariantType::TYPE_NONE] = metaTypeMng->findType<void>();
-        typeMapping[DAVA::VariantType::TYPE_INT32] = metaTypeMng->findType<DAVA::int64>();
-        typeMapping[DAVA::VariantType::TYPE_FLOAT] = metaTypeMng->findType<DAVA::float32>();
-        typeMapping[DAVA::VariantType::TYPE_STRING] = metaTypeMng->findType<DAVA::String>();
-        typeMapping[DAVA::VariantType::TYPE_WIDE_STRING] = metaTypeMng->findType<DAVA::WideString>();
-        typeMapping[DAVA::VariantType::TYPE_UINT32] = metaTypeMng->findType<DAVA::uint64>();
-        typeMapping[DAVA::VariantType::TYPE_INT64] = metaTypeMng->findType<DAVA::int64>();
-        typeMapping[DAVA::VariantType::TYPE_UINT64] = metaTypeMng->findType<DAVA::uint64>();
-        typeMapping[DAVA::VariantType::TYPE_VECTOR2] = metaTypeMng->findType<DAVA::Vector2>();
-        typeMapping[DAVA::VariantType::TYPE_VECTOR3] = metaTypeMng->findType<DAVA::Vector3>();
-        typeMapping[DAVA::VariantType::TYPE_VECTOR4] = metaTypeMng->findType<DAVA::Vector4>();
-        typeMapping[DAVA::VariantType::TYPE_MATRIX2] = metaTypeMng->findType<DAVA::Matrix2>();
-        typeMapping[DAVA::VariantType::TYPE_MATRIX3] = metaTypeMng->findType<DAVA::Matrix3>();
-        typeMapping[DAVA::VariantType::TYPE_MATRIX4] = metaTypeMng->findType<DAVA::Matrix4>();
-        typeMapping[DAVA::VariantType::TYPE_COLOR] = metaTypeMng->findType<DAVA::Color>();
-        typeMapping[DAVA::VariantType::TYPE_FASTNAME] = metaTypeMng->findType<DAVA::FastName>();
-        typeMapping[DAVA::VariantType::TYPE_AABBOX3] = metaTypeMng->findType<DAVA::AABBox3>();
-        typeMapping[DAVA::VariantType::TYPE_FILEPATH] = metaTypeMng->findType<DAVA::FilePath>();
+    VariantType Convert(Variant const& v, MetaInfo const* info) const;
+    Variant Convert(VariantType const& value) const;
 
-#ifdef __DAVAENGINE_DEBUG__
-/*for (size_t i = 0; i < typeMapping.size(); ++i)
-        {
-            DAVA::VariantType::eVariantType t = static_cast<DAVA::VariantType::eVariantType>(i);
-            if (t != DAVA::VariantType::TYPE_KEYED_ARCHIVE && t != DAVA::VariantType::TYPE_BYTE_ARRAY)
-                assert(typeMapping[i] != nullptr);
-        }*/
-#endif
-    }
-
-    DAVA::VariantType Convert(Variant const& v)
-    {
-        DAVA::VariantType::eVariantType davaType = DAVA::VariantType::TYPE_NONE;
-        const MetaType* valueType = v.type();
-        for (size_t i = 0; i < typeMapping.size(); ++i)
-        {
-            if (typeMapping[i] == valueType)
-            {
-                davaType = static_cast<DAVA::VariantType::eVariantType>(i);
-                break;
-            }
-        }
-
-        switch (davaType)
-        {
-        case DAVA::VariantType::TYPE_BOOLEAN:
-            return DAVA::VariantType(v.value<bool>());
-        case DAVA::VariantType::TYPE_INT32:
-            return DAVA::VariantType(v.value<DAVA::int32>());
-        case DAVA::VariantType::TYPE_FLOAT:
-            return DAVA::VariantType(v.value<DAVA::float32>());
-        case DAVA::VariantType::TYPE_STRING:
-            return DAVA::VariantType(v.value<DAVA::String>());
-        case DAVA::VariantType::TYPE_WIDE_STRING:
-            return DAVA::VariantType(v.value<DAVA::WideString>());
-        case DAVA::VariantType::TYPE_UINT32:
-            return DAVA::VariantType(v.value<DAVA::uint32>());
-        case DAVA::VariantType::TYPE_INT64:
-            return DAVA::VariantType(v.value<DAVA::int64>());
-        case DAVA::VariantType::TYPE_UINT64:
-            return DAVA::VariantType(v.value<DAVA::uint64>());
-        case DAVA::VariantType::TYPE_VECTOR2:
-            return DAVA::VariantType(v.value<DAVA::Vector2>());
-        case DAVA::VariantType::TYPE_VECTOR3:
-            return DAVA::VariantType(v.value<DAVA::Vector3>());
-        case DAVA::VariantType::TYPE_VECTOR4:
-            return DAVA::VariantType(v.value<DAVA::Vector4>());
-        case DAVA::VariantType::TYPE_MATRIX2:
-            return DAVA::VariantType(v.value<DAVA::Matrix2>());
-        case DAVA::VariantType::TYPE_MATRIX3:
-            return DAVA::VariantType(v.value<DAVA::Matrix3>());
-        case DAVA::VariantType::TYPE_MATRIX4:
-            return DAVA::VariantType(v.value<DAVA::Matrix4>());
-        /*case DAVA::VariantType::TYPE_COLOR:         return DAVA::VariantType(v.value<DAVA::Color>());
-            case DAVA::VariantType::TYPE_FASTNAME:      return DAVA::VariantType(v.value<DAVA::FastName>());
-            case DAVA::VariantType::TYPE_AABBOX3:       return DAVA::VariantType(v.value<DAVA::AABBox3>());
-            case DAVA::VariantType::TYPE_FILEPATH:      return DAVA::VariantType(v.value<DAVA::FilePath>());*/
-        case DAVA::VariantType::TYPE_NONE:
-            break;
-        default:
-            DVASSERT(false);
-        }
-
-        return DAVA::VariantType();
-    }
-
-    Variant Convert(DAVA::VariantType const& value)
-    {
-        switch (value.GetType())
-        {
-        case DAVA::VariantType::TYPE_BOOLEAN:
-            return Variant(value.AsBool());
-        case DAVA::VariantType::TYPE_INT32:
-            return Variant(value.AsInt32());
-        case DAVA::VariantType::TYPE_FLOAT:
-            return Variant(value.AsFloat());
-        case DAVA::VariantType::TYPE_STRING:
-            return Variant(value.AsString());
-        case DAVA::VariantType::TYPE_WIDE_STRING:
-            return Variant(value.AsWideString());
-        case DAVA::VariantType::TYPE_UINT32:
-            return Variant(value.AsUInt32());
-        case DAVA::VariantType::TYPE_INT64:
-            return Variant(value.AsInt64());
-        case DAVA::VariantType::TYPE_UINT64:
-            return Variant(value.AsUInt64());
-        case DAVA::VariantType::TYPE_VECTOR2:
-            return Variant(value.AsVector2());
-        case DAVA::VariantType::TYPE_VECTOR3:
-            return Variant(value.AsVector3());
-        case DAVA::VariantType::TYPE_VECTOR4:
-            return Variant(value.AsVector4());
-        case DAVA::VariantType::TYPE_MATRIX2:
-            return Variant(value.AsMatrix2());
-        case DAVA::VariantType::TYPE_MATRIX3:
-            return Variant(value.AsMatrix3());
-        case DAVA::VariantType::TYPE_MATRIX4:
-            return Variant(value.AsMatrix4());
-        /*case DAVA::VariantType::TYPE_COLOR:           return Variant(value.AsColor());
-        case DAVA::VariantType::TYPE_FASTNAME:        return Variant(value.AsFastName());
-        case DAVA::VariantType::TYPE_AABBOX3:         return Variant(value.AsAABBox3());
-        case DAVA::VariantType::TYPE_FILEPATH:        return Variant(value.AsFilePath());*/
-        default:
-            DVASSERT(false);
-            break;
-        }
-
-        return Variant();
-    }
-
-    static VariantConverter& Instance()
-    {
-        static VariantConverter c;
-        return c;
-    }
+    static VariantConverter const& Instance();
 
 private:
-    DAVA::Array<const MetaType*, DAVA::VariantType::TYPES_COUNT> typeMapping;
+    VariantConverter();
+
+    using TVtoDV = std::function<VariantType(Variant const& v)>;
+    using TDVtoV = std::function<Variant(VariantType const& v)>;
+    struct ConvertNode
+    {
+        TVtoDV vToDvFn;
+        TDVtoV dvToVFn;
+    };
+
+    Array<ConvertNode, VariantType::TYPES_COUNT> convertFunctions;
 };
 
-template <typename TObject>
 class DavaMemberProperty : public BaseProperty
 {
 public:
     // здесь надо сихронизироватся в NGT. Для них TypeId == typeid( T ).name() и для правильного выборе компонента
     // в PropertyTree полагаю нам надо возвращать тоже самое. пока, что я беру Type()->GetTypeName(), а дальше посмотрим
-    DavaMemberProperty(const DAVA::InspMember* member)
-        : BaseProperty(member->Name().c_str(), member->Type()->GetTypeName())
-        , memberInsp(member)
-    {
-    }
+    DavaMemberProperty(const InspMember* member, const MetaInfo* objectType_);
 
-    Variant get(const ObjectHandle& pBase, const IDefinitionManager& definitionManager) const override
-    {
-        TObject* object = reflectedCast<TObject>(pBase, definitionManager).get();
-        if (object)
-            return VariantConverter::Instance().Convert(memberInsp->Value(object));
-
-        return Variant();
-    }
-
-    //==========================================================================
-    bool set(const ObjectHandle& pBase, const Variant& v, const IDefinitionManager& definitionManager) const override
-    {
-        TObject* object = reflectedCast<TObject>(pBase, definitionManager).get();
-        if (object == nullptr)
-            return false;
-
-        DAVA::VariantType value = VariantConverter::Instance().Convert(v);
-        memberInsp->SetValue(object, value);
-        return true;
-    }
+    Variant get(const ObjectHandle& pBase, const IDefinitionManager& definitionManager) const override;
+    bool set(const ObjectHandle& pBase, const Variant& v, const IDefinitionManager& definitionManager) const override;
+    const MetaBase* getMetaData() const override;
 
 private:
-    const DAVA::InspMember* memberInsp;
+    void* UpCast(ObjectHandle const& pBase, const IDefinitionManager& definitionManager) const;
+
+private:
+    const MetaInfo* objectType;
+    const InspMember* memberInsp;
+    MetaBase& metaBase;
+    WideString dysplayName;
 };
 
-#include "Base/IntrospectionBase.h"
-
-template <typename T>
-class DavaTypeClassDefinition : public IClassDefinitionDetails
+class DavaTypeDefinition : public IClassDefinitionDetails
 {
 public:
-    DavaTypeClassDefinition()
-        : metaData(&(MetaNone()))
-    {
-    }
+    DavaTypeDefinition();
 
-    void init(IClassDefinitionModifier& collection) override
-    {
-        initModifiers(collection, DAVA::GetIntrospection<T>());
-    }
+    bool isGeneric() const override;
+    const MetaBase* getMetaData() const override;
+    ObjectHandle createBaseProvider(const ReflectedPolyStruct& polyStruct) const override;
+    CastHelperCache* getCastHelperCache() const override;
 
-    bool isAbstract() const override
-    {
-        return std::is_abstract<T>();
-    }
+protected:
+    void SetDisplayName(const char* name);
 
-    virtual bool isGeneric() const override
-    {
-        return false;
-    }
-
-    const char* getName() const override
-    {
-        return getClassIdentifier<T>();
-    }
-
-    const char* getParentName() const override
-    {
-        return nullptr;
-    }
-
-    const MetaBase* getMetaData() const override
-    {
-        return metaData.get();
-    }
-
-    ObjectHandle createBaseProvider(const ReflectedPolyStruct&) const override
-    {
-        DVASSERT_MSG(false, ("Dava objects don't derived from ReflectedPolyStruct"));
-        return ObjectHandle();
-    }
-
-    ObjectHandle createBaseProvider(const IClassDefinition& definition, const void* pThis) const
-    {
-        return ObjectHandle(static_cast<const T*>(pThis), &definition);
-    }
-
-    ObjectHandle create(const IClassDefinition& definition) const override
-    {
-        auto pInst = std::unique_ptr<T>(CreateHelper<T>::create());
-        return ObjectHandle(std::move(pInst), &definition);
-    }
-
-    CastHelperCache* getCastHelperCache() const override
-    {
-        return nullptr;
-    }
-
-    void* upCast(void* object) const override
-    {
-        return nullptr;
-    }
-
-private:
-    void initModifiers(IClassDefinitionModifier& collection, const DAVA::InspInfo* info)
-    {
-        if (info == nullptr)
-            return;
-
-        for (int i = 0; i < info->MembersCount(); ++i)
-        {
-            const DAVA::InspMember* member = info->Member(i);
-
-            //void * memberObject = member->Data();
-            //InspInfo const * memberInsp = metaInfo->GetIntrospection()
-
-            DAVA::MetaInfo const* metaInfo = member->Type();
-            int memberFlags = member->Flags();
-
-            //if (есть интроспекция у поля и это интроспекция KeyedArchive)
-            //else if (есть указатель на memberObject и есть инстроспекция)
-            //else
-            //{
-            //if (metaInfo->IsPointer())
-            //  create read-only property
-            //else if (member->Collection() != nullptr)
-            // create collection property
-            //else if (member->Dynamic() != nullptr)
-            // create dynamic member property
-            //else
-            collection.addProperty(new DavaMemberProperty<T>(member), &(MetaNone()));
-            //}
-
-            //collection.addProperty(FunctionPropertyHelper<T>::getBaseProperty(member->Name().c_str(), ))
-        }
-
-        initModifiers(collection, info->BaseInfo());
-    }
+    void initModifiers(IClassDefinitionModifier& collection, const InspInfo* info);
 
 private:
     std::unique_ptr<const MetaBase> metaData;
+    mutable CastHelperCache castHelper;
+    WideString displayName;
 };
 
-template <typename T>
-typename std::enable_if<DAVA::HasInsp<T>::result, DavaTypeClassDefinition<T>*>::type CreateDavaClassDefinition()
+class DavaTypeObjectDefinition : public DavaTypeDefinition
 {
-    return new DavaTypeClassDefinition<T>();
+public:
+    DavaTypeObjectDefinition(const InspInfo* objectInsp_);
+
+    void init(IClassDefinitionModifier& collection) override;
+    bool isAbstract() const override;
+    const char* getName() const override;
+    const char* getParentName() const override;
+
+    ObjectHandle createBaseProvider(const IClassDefinition& definition, const void* pThis) const;
+    ObjectHandle create(const IClassDefinition& definition) const override;
+    void* upCast(void* object) const override;
+
+private:
+    InspInfo const* objectInsp;
+};
+
+/// Use it only for registration in IDefinitionManager
+void RegisterDavaType(IDefinitionManager& mng, const InspInfo* inspInfo);
 }
 
 #endif // DAVAPLUGINTEMPLATE_REFLECTIONBRIDGE_H

@@ -32,6 +32,7 @@
 #include "SelectionSystem.h"
 
 #include "Debug/DVAssert.h"
+#include "Scene3D/Entity.h"
 #include "Scene3D/Systems/Controller/WASDControllerSystem.h"
 #include "Scene3D/Systems/Controller/RotationControllerSystem.h"
 #include "Scene3D/Systems/RenderUpdateSystem.h"
@@ -42,7 +43,6 @@
 
 #include "QtTools/FrameworkBinding/FrameworkLoop.h"
 #include "GLWidget.h"
-
 
 namespace
 {
@@ -128,6 +128,14 @@ void SceneViewer::OnOpenScene(std::string const & scenePath)
         emit SceneLoaded(scene);
         //statusBar()->showMessage(scenePath);
     }
+}
+
+void SceneViewer::SetSelection(DAVA::Entity* entity)
+{
+    DVASSERT(uiView != nullptr);
+    DVASSERT(uiView->GetScene() != nullptr);
+
+    findSystem<SceneSelectionSystem>(uiView->GetScene())->SetSelection(entity);
 }
 
 void SceneViewer::OnGlInitialized()

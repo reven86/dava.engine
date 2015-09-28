@@ -34,9 +34,17 @@
 #include "core_ui_framework/i_ui_application.hpp"
 
 #include <memory>
+#include <QObject>
 
-class PropertyPanel
+namespace DAVA
 {
+class Entity;
+}
+
+class PropertyPanel : public QObject
+{
+    Q_OBJECT
+
 public:
     PropertyPanel();
     ~PropertyPanel();
@@ -44,8 +52,16 @@ public:
     void Initialize(IUIFramework& uiFramework, IUIApplication& uiApplication);
     void Finalize();
 
+    Q_PROPERTY(QVariant PropertyTree READ GetPropertyTree NOTIFY EntityChanged)
+
+    Q_INVOKABLE QVariant GetPropertyTree();
+    Q_SIGNAL void EntityChanged();
+
+    void SetEntity(DAVA::Entity* entity);
+
 private:
     std::unique_ptr<IView> view;
+    std::shared_ptr<IObjectHandleStorage> objectHandleStorage;
 };
 
 #endif // DAVAPLUGINTEMPLATE_PROPERTYPANEL_H

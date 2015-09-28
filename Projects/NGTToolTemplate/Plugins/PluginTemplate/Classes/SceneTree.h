@@ -37,6 +37,7 @@
 #include "core_ui_framework/i_ui_application.hpp"
 #include "core_ui_framework/i_ui_framework.hpp"
 
+#include "Functional/Signal.h"
 #include "Scene3D/Scene.h"
 #include "EntityGroup.h"
 
@@ -57,6 +58,7 @@ public:
     Q_INVOKABLE QVariant GetSceneTree();
     Q_INVOKABLE void OnSelectionChanged(QList<QVariant> const & selection);
 
+    DAVA::Signal<DAVA::Entity*> SelectedEntityChanged;
     Q_SIGNAL void SceneChanged();
 
     Q_SLOT void SetScene(DAVA::Scene * scene);

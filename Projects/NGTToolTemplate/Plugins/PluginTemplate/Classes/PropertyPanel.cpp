@@ -32,10 +32,12 @@
 
 #include "core_data_model/i_tree_model.hpp"
 
+#include "core_qt_common/helpers/qt_helpers.hpp"
+
 #include "PropertyPanel.h"
 #include "ReflectionBridge.h"
 
-#include "Render/TextureDescriptor.h"
+#include "Scene3D/Entity.h"
 
 #include "Debug/DVAssert.h"
 
@@ -49,21 +51,40 @@ PropertyPanel::~PropertyPanel()
 
 void PropertyPanel::Initialize(IUIFramework& uiFramework, IUIApplication& uiApplication)
 {
-    using TRef = DAVA::TextureDescriptor::TextureDrawSettings;
-
-    IDefinitionManager* defMng = Context::queryInterface<IDefinitionManager>();
-    IReflectionController* controller = Context::queryInterface<IReflectionController>();
-    defMng->registerDefinition(CreateDavaClassDefinition<TRef>());
-
-    ObjectHandle obj = defMng->create<TRef>();
-
-    std::unique_ptr<ITreeModel> model(new ReflectedTreeModel(obj, *defMng, controller));
-
-    view = uiFramework.createView("qrc:/default/PropertyPanel.qml", IUIFramework::ResourceType::Url, std::move(model));
+    view = uiFramework.createView("qrc:/default/PropertyPanel.qml", IUIFramework::ResourceType::Url, this);
     uiApplication.addView(*view);
 }
 
 void PropertyPanel::Finalize()
 {
+    objectHandleStorage.reset();
     view.reset();
+}
+
+Q_INVOKABLE QVariant PropertyPanel::GetPropertyTree()
+{
+    return QtHelpers::toQVariant(ObjectHandle(objectHandleStorage));
+}
+
+void PropertyPanel::SetEntity(DAVA::Entity* entity)
+{
+    using TModelPTr = std::unique_ptr<ITreeModel>;
+
+    std::shared_ptr<IObjectHandleStorage> temporaryHandle(objectHandleStorage);
+
+    if (entity != nullptr)
+    {
+        IDefinitionManager* defMng = Context::queryInterface<IDefinitionManager>();
+        IReflectionController* controller = Context::queryInterface<IReflectionController>();
+        RegisterDavaType(*defMng, entity->GetTypeInfo());
+
+        IClassDefinition* definition = defMng->getDefinition(entity->GetTypeInfo()->Type()->GetTypeName());
+
+        TModelPTr model(new ReflectedTreeModel(ObjectHandle(entity, definition), *defMng, controller));
+        objectHandleStorage.reset(new ObjectHandleStorage<TModelPTr>(std::move(model), nullptr));
+    }
+    else
+        objectHandleStorage.reset();
+
+    emit EntityChanged();
 }

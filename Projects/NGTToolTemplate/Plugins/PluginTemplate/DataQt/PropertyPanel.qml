@@ -1,7 +1,6 @@
 import QtQuick 2.1
 import QtQuick.Controls 1.0
 import QtQuick.Layouts 1.0
-import BWControls 1.0
 import WGControls 1.0
 
 Rectangle {
@@ -10,9 +9,29 @@ Rectangle {
   property var layoutHints: { 'PropertyPanel': 1.0 }
   property var sourceModel: source
 
- WGTreeModel {
+  Label {
+    id: searchBoxLabel
+    x: reflectedTreeView.leftMargin
+    y: 4
+    text: "Search:"
+  }
+
+  WGTextBox {
+    id: searchBox
+    y: 2
+    anchors.left: searchBoxLabel.right
+    anchors.right: parent.right
+  }
+
+ WGFilteredTreeModel {
     id: reflectedModel
-    source: sourceModel
+    source: sourceModel.PropertyTree
+
+    filter: WGTokenizedStringFilter {
+      id: stringFilter
+      filterText: searchBox.text
+      splitterChar: " "
+    }
 
     ValueExtension {}
     ColumnExtension {}
@@ -21,13 +40,13 @@ Rectangle {
     ThumbnailExtension {}
     SelectionExtension {
       id: treeModelSelection
-      multiSelect: true
+      multiSelect: false
     }
   }
 
   WGTreeView {
     id: reflectedTreeView
-    anchors.top: parent.bottom
+    anchors.top: searchBox.bottom
     anchors.left: parent.left
     anchors.right: parent.right
     anchors.bottom: parent.bottom
@@ -39,10 +58,7 @@ Rectangle {
 
     property Component propertyDelegate: Loader {
       clip: true
-      sourceComponent: {
-        console.log("Log in qml : ", itemData.Component)
-        itemData != null ? itemData.Component : null
-      }
+      sourceComponent: itemData != null ? itemData.Component : null
     }
   }
 }

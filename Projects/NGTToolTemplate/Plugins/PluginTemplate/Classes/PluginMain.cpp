@@ -32,6 +32,7 @@
 #include "Library.h"
 #include "SceneTree.h"
 #include "PropertyPanel.h"
+#include "SceneSignals.h"
 
 #include "core_generic_plugin/generic_plugin.hpp"
 #include "core_reflection/i_definition_manager.hpp"
@@ -83,6 +84,13 @@ public:
         }
         Variant::setMetaTypeManager(metaTypeMng);
 
+        IDefinitionManager* definitionMng = context.queryInterface<IDefinitionManager>();
+        if (definitionMng == nullptr)
+        {
+            DAVA::Logger::Error("Can't query IDefinitionManager interface");
+            return;
+        }
+
         uiFramework->loadActionData(":/default/actions.xml", IUIFramework::ResourceType::File);
         mainWindow = uiFramework->createWindow(":/default/MainWindow.ui", IUIFramework::ResourceType::File);
 
@@ -105,6 +113,11 @@ public:
 
         DVVERIFY(QObject::connect(library.get(), &Library::OpenScene, sceneWidget.get(), &SceneViewer::OnOpenScene));
         DVVERIFY(QObject::connect(sceneWidget.get(), &SceneViewer::SceneLoaded, sceneTree.get(), &SceneTree::SetScene));
+        DVVERIFY(QObject::connect(SceneSignals::Instance(), &SceneSignals::SelectionChanged,
+                                  sceneTree.get(), &SceneTree::OnSceneSelectionChanged));
+
+        sceneTree->SelectedEntityChanged.Connect(sceneWidget.get(), &SceneViewer::SetSelection);
+        sceneTree->SelectedEntityChanged.Connect(propertyPanel.get(), &PropertyPanel::SetEntity);
 
         uiApplication->addWindow(*mainWindow);
         uiApplication->addView(library->GetView());
