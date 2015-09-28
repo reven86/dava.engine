@@ -64,6 +64,10 @@ public:
 
     T& Get();
     const T& Get() const;
+    
+    explicit operator bool() const;
+    const T* operator->() const;
+    T* operator->();
 
     Optional& operator=(const Optional& other);
     Optional& operator=(Optional&& other);
@@ -71,10 +75,10 @@ public:
     Optional& operator=(T&& value);
 
 private:
-    using aligned_storage = 
+    using AlignedStorage = 
         typename std::aligned_storage<sizeof(T), std::alignment_of<T>::value>::type;
 
-    aligned_storage storage;
+    AlignedStorage storage;
     bool isSet = false;
 };
 
@@ -194,6 +198,24 @@ const T& Optional<T>::Get() const
 {
     assert(isSet);
     return *reinterpret_cast<const T*>(&storage);
+}
+
+template <typename T>
+Optional<T>::operator bool() const
+{
+    return IsSet();
+}
+
+template <typename T>
+const T* Optional<T>::operator->() const
+{
+    return &Get();
+}
+
+template <typename T>
+T* Optional<T>::operator->()
+{
+    return &Get();
 }
 
 template <typename T>
