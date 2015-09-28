@@ -378,7 +378,7 @@ private:
     bool showCursor = true;
     bool isMultiline_ = false;
 
-    TextFieldPlatformImpl* edit = nullptr;
+    TextFieldPlatformImpl* textFieldImpl = nullptr;
     Font* textFont = nullptr;
     float32 cursorTime = 0.0f;
     int32 maxLength = -1;

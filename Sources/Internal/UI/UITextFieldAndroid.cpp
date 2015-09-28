@@ -206,7 +206,7 @@ void JniTextField::SetMultiline(bool value)
 }
 
 uint32_t TextFieldPlatformImpl::sId = 0;
-DAVA::Map<uint32_t, TextFieldPlatformImpl*> TextFieldPlatformImpl::controls;
+DAVA::UnorderedMap<uint32_t, TextFieldPlatformImpl*> TextFieldPlatformImpl::controls;
 
 TextFieldPlatformImpl::TextFieldPlatformImpl(UITextField* textField)
 {
@@ -456,11 +456,11 @@ void TextFieldPlatformImpl::TextFieldShouldReturn(uint32_t id)
 
 TextFieldPlatformImpl* TextFieldPlatformImpl::GetUITextFieldAndroid(uint32_t id)
 {
-    DAVA::Map<uint32_t, TextFieldPlatformImpl*>::iterator iter = controls.find(id);
+    auto iter = controls.find(id);
     if (iter != controls.end())
         return iter->second;
 
-    return NULL;
+    return nullptr;
 }
 
 void TextFieldPlatformImpl::TextFieldKeyboardShown(const Rect& rect)

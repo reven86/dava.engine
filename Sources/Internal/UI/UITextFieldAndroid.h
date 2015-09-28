@@ -172,8 +172,8 @@ private:
     std::shared_ptr<JniTextField> jniTextField;
 	UITextField* textField = nullptr;
 	static uint32_t sId;
-	static Map<uint32_t, TextFieldPlatformImpl*> controls;
-	uint32_t id;
+    static UnorderedMap<uint32_t, TextFieldPlatformImpl*> controls;
+    uint32_t id;
 	Rect rect;
 	WideString text;
 	int32_t align;
