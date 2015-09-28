@@ -122,6 +122,7 @@ SyncObjectDX11_t
 {
     uint32  frame;
     uint32  is_signaled:1;
+    uint32  is_used : 1;
 };
 
 typedef ResourcePool<CommandBufferDX11_t,RESOURCE_COMMAND_BUFFER,CommandBuffer::Descriptor,false>   CommandBufferPool;
@@ -805,6 +806,7 @@ dx11_SyncObject_Create()
     SyncObjectDX11_t*   sync   = SyncObjectPool::Get( handle );
 
     sync->is_signaled = false;
+    sync->is_used = false;
 
     return handle;
 }
@@ -881,6 +883,16 @@ Trace("rhi-dx11.exec-queued-cmd\n");
     {
         do_exit = true;
     }
+
+    if (_Frame.size() && _Frame.begin()->sync != InvalidHandle)
+    {
+        SyncObjectDX11_t*  sync = SyncObjectPool::Get(_Frame.begin()->sync);
+
+        sync->frame = frame_n;
+        sync->is_signaled = false;
+        sync->is_used = true;
+    }
+
     _FrameSync.Unlock();
 
     if( do_exit )
@@ -953,7 +965,7 @@ Trace("\n\n-------------------------------\nframe %u executed(submitted to GPU)\
 
     for( SyncObjectPool::Iterator s=SyncObjectPool::Begin(),s_end=SyncObjectPool::End(); s!=s_end; ++s )
     {
-        if( frame_n - s->frame > 3 )
+        if (s->is_used && (frame_n - s->frame >= 2))
             s->is_signaled = true;
     }
 }
@@ -1142,6 +1154,7 @@ Trace("rhi-dx11.present\n");
             if( _Frame.size() )
             {
                 _Frame.back().readyToExecute = true;
+                _Frame.back().sync = sync;
                 _FrameStarted = false;
 Trace("\n\n-------------------------------\nframe %u generated\n",_Frame.back().number);
             }
@@ -1164,6 +1177,7 @@ Trace("\n\n-------------------------------\nframe %u generated\n",_Frame.back().
         if( _Frame.size() )
         {
             _Frame.back().readyToExecute = true;
+            _Frame.back().sync = sync;
             _FrameStarted = false;
         }
 
