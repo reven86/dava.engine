@@ -238,7 +238,11 @@ PrivateTextFieldWinUAP::~PrivateTextFieldWinUAP()
     if (nativeControl != nullptr)
     {
         Control^ p = nativeControl;
-        core->RunOnUIThread([p]() { // We don't need blocking call here
+        EventRegistrationToken tokenHiding = tokenKeyboardHiding;
+        EventRegistrationToken tokenShowing = tokenKeyboardShowing;
+        core->RunOnUIThread([p, tokenHiding, tokenShowing]() { // We don't need blocking call here
+            InputPane::GetForCurrentView()->Showing -= tokenHiding;
+            InputPane::GetForCurrentView()->Hiding -= tokenShowing;
             static_cast<CorePlatformWinUAP*>(Core::Instance())->XamlApplication()->RemoveUIElement(p);
         });
         nativeControl = nullptr;
@@ -565,8 +569,8 @@ void PrivateTextFieldWinUAP::InstallKeyboardEventHandlers()
     auto keyboardShowing = ref new TypedEventHandler<InputPane^, InputPaneVisibilityEventArgs^>([this, self_weak](InputPane^, InputPaneVisibilityEventArgs^ args) {
         if (auto self = self_weak.lock()) OnKeyboardShowing(args);
     });
-    InputPane::GetForCurrentView()->Showing += keyboardShowing;
-    InputPane::GetForCurrentView()->Hiding += keyboardHiding;
+    tokenKeyboardShowing = InputPane::GetForCurrentView()->Showing += keyboardShowing;
+    tokenKeyboardHiding = InputPane::GetForCurrentView()->Hiding += keyboardHiding;
 }
 
 void PrivateTextFieldWinUAP::OnKeyDown(KeyRoutedEventArgs^ args)
@@ -656,7 +660,6 @@ void PrivateTextFieldWinUAP::OnLostFocus()
                 textFieldDelegate->OnKeyboardHidden();
         }
     });
-    recentlyLostFocus = true;
 }
 
 void PrivateTextFieldWinUAP::OnSelectionChanged()
@@ -720,21 +723,17 @@ void PrivateTextFieldWinUAP::OnTextChanged()
 
 void PrivateTextFieldWinUAP::OnKeyboardHiding(InputPaneVisibilityEventArgs^ args)
 {
-    if (recentlyLostFocus)
-    {
-        recentlyLostFocus = false;
-
-    }
+    args->EnsuredFocusedElementInView = true;
 }
 
 void PrivateTextFieldWinUAP::OnKeyboardShowing(InputPaneVisibilityEventArgs^ args)
 {
+    // Tell keyboard that application will position native controls by itself
+    args->EnsuredFocusedElementInView = true;
+
     if (HasFocus())
     {
-        // Tell keyboard that application will position native controls by itself
-        args->EnsuredFocusedElementInView = true;
-
-        // Use qualified Rect type to excude name clash
+        // Use qualified Rect type to exclude name clash
         Windows::Foundation::Rect srcRect = InputPane::GetForCurrentView()->OccludedRect;
         DAVA::Rect keyboardRect(srcRect.X, srcRect.Y, srcRect.Width, srcRect.Height);
 
@@ -757,6 +756,7 @@ void PrivateTextFieldWinUAP::ProcessProperties(const TextFieldProperties& props)
     {
         CreateNativeControl(!props.password);
         ApplyAssignedProperties(props);
+        InstallKeyboardEventHandlers();
     }
     else if (props.passwordChanged)
     {

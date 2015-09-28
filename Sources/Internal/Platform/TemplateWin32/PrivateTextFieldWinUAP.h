@@ -216,7 +216,10 @@ private:
     Windows::UI::Xaml::Controls::Control^ nativeControl = nullptr;      // Points either to nativeText or nativePassword
     Windows::UI::Xaml::Controls::Border^ nativeControlHolder = nullptr;
 
-    bool recentlyLostFocus = false;
+    // Tokens to unsubscribe from touch keyboard event handlers
+    Windows::Foundation::EventRegistrationToken tokenKeyboardShowing;
+    Windows::Foundation::EventRegistrationToken tokenKeyboardHiding;
+
     bool ignoreTextChange = false;
 
     int32 caretPosition = 0;                // Current caret position
