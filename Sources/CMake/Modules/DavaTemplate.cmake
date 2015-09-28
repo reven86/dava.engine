@@ -564,7 +564,7 @@ if( DEPLOY )
 
     endif() 
 
-    if( QT_PREFIX )
+    if( QT5_FOUND )
         qt_deploy( )
 
     endif()
