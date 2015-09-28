@@ -2190,8 +2190,8 @@ static void set_env_dirs( void)
  * Add to include path those specified by environment variables.
  */
 {
-    const char *    env;
 #if !defined(__DAVAENGINE_WIN_UAP__)
+    const char *    env;
     if (cplus_val) {
         if ((env = getenv( ENV_CPLUS_INCLUDE_DIR)) != NULL)
             parse_env( env);
