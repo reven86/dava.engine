@@ -51,14 +51,16 @@ const String ResourcePacker2D::VERSION = "0.0.1";
 
 static const String FLAG_RECURSIVE = "--recursive";
 
-ResourcePacker2D::ResourcePacker2D()
-    : isGfxModified(true)
-    , isLightmapsPacking(false)
-    , forceRepack(false)
-    , clearOutputDirectory(true)
-    , quality(TextureConverter::ECQ_VERY_HIGH)
+enum AssetClientCode : int
 {
-}
+    OK = 0,
+    WRONG_COMMAND_LINE = 1,
+    WRONG_IP = 2,
+    TIMEOUT = 3,
+    CANNOT_CONNECT = 4,
+    SERVER_ERROR = 5,
+    CANNOT_READ_FILES = 6
+};
 
 String ResourcePacker2D::GetProcessFolderName()
 {
@@ -636,7 +638,7 @@ bool ResourcePacker2D::GetFilesFromCache(const AssetCache::CacheItemKey& key, co
         auto exitCode = cacheClient.GetExitCode();
         getTime = SystemTimer::Instance()->AbsoluteMS() - getTime;
 
-        if (exitCode == 0)
+        if (exitCode == AssetClientCode::OK)
         {
             Logger::Info("[%s - %.2lf secs] - GOT FROM CACHE", inputPath.GetAbsolutePathname().c_str(), (float64)(getTime) / 1000.0f);
             return true;
@@ -649,6 +651,12 @@ bool ResourcePacker2D::GetFilesFromCache(const AssetCache::CacheItemKey& key, co
             {
                 Logger::FrameworkDebug("\nCacheClientLog: %s", procOutput.c_str());
             }
+
+            if (exitCode == AssetClientCode::TIMEOUT)
+            {
+                isUsingCache = false;
+            }
+
             return false;
         }
     }
@@ -736,7 +744,7 @@ bool ResourcePacker2D::AddFilesToCache(const AssetCache::CacheItemKey& key, cons
             auto exitCode = cacheClient.GetExitCode();
             getTime = SystemTimer::Instance()->AbsoluteMS() - getTime;
 
-            if (exitCode == 0)
+            if (exitCode == AssetClientCode::OK)
             {
                 Logger::Info("[%s - %.2lf secs] - ADDED TO CACHE", inputPath.GetAbsolutePathname().c_str(), (float64)(getTime) / 1000.0f);
                 return true;
@@ -749,6 +757,12 @@ bool ResourcePacker2D::AddFilesToCache(const AssetCache::CacheItemKey& key, cons
                 {
                     Logger::FrameworkDebug("\nCacheClientLog: %s", procOutput.c_str());
                 }
+
+                if (exitCode == AssetClientCode::TIMEOUT)
+                {
+                    isUsingCache = false;
+                }
+
                 return false;
             }
         }
@@ -783,6 +797,7 @@ void ResourcePacker2D::SetCacheClientTool(const DAVA::FilePath& path, const Stri
     cacheClientIp = ip;
     cacheClientPort = port;
     cacheClientTimeout = timeout;
+    isUsingCache = !cacheClientTool.IsEmpty();
 }
 
 void ResourcePacker2D::ClearCacheClientTool()
@@ -791,5 +806,6 @@ void ResourcePacker2D::ClearCacheClientTool()
     cacheClientIp.clear();
     cacheClientPort.clear();
     cacheClientTimeout.clear();
+    isUsingCache = false;
 }
 };
