@@ -221,7 +221,7 @@ public class JNIWebView {
     }
 
     public static void OpenURL(final int id, final String url) {
-        final JNIActivity activity = JNIActivity.GetActivity();
+    	final JNIActivity activity = JNIActivity.GetActivity();
         if (null == activity || activity.GetIsPausing())
             return;
 

@@ -36,28 +36,26 @@ class CacheRequest;
 class AssetCacheClient
 {
 public:
-    
     AssetCacheClient();
     ~AssetCacheClient();
-    
-    bool ParseCommandLine(int argc, char * argv[]);
-    
-    int GetExitCode() const {return exitCode; };
-    
+
+    bool ParseCommandLine(int argc, char* argv[]);
+
+    int GetExitCode() const
+    {
+        return exitCode;
+    };
+
     void Process();
-    
+
 private:
-    
     void PrintUsage() const;
 
-    
 private:
-    
     int exitCode = AssetCacheClientConstants::EXIT_OK;
-    
-    DAVA::List<std::unique_ptr<CacheRequest>> requests;
-    CacheRequest *activeRequest = nullptr;
-};
 
+    DAVA::List<std::unique_ptr<CacheRequest>> requests;
+    CacheRequest* activeRequest = nullptr;
+};
 
 #endif //__ASSET_CACHE_CLIENT_H__

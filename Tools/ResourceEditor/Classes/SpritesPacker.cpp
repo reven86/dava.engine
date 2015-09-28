@@ -63,11 +63,11 @@ void SpritesPacker::PerformPack(bool isLightmapPacking, DAVA::eGPUFamily gpu)
 {
 	FileSystem::Instance()->CreateDirectory(outputDir, true);
 
-	ResourcePacker2D resourcePacker;
+    ResourcePacker2D resourcePacker;
 
-	resourcePacker.forceRepack = true;
+    resourcePacker.forceRepack = true;
     resourcePacker.InitFolders(inputDir, outputDir);
-	resourcePacker.isLightmapsPacking = isLightmapPacking;
+    resourcePacker.isLightmapsPacking = isLightmapPacking;
 
     if (SettingsManager::GetValue(Settings::General_AssetCache_UseCache).AsBool())
     {
