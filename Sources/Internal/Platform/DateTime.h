@@ -41,7 +41,7 @@ using Timestamp = time_t;
 class DateTime
 {
 public:
-    DateTime();
+    DateTime() = default;
     /**
 	 \brief Creates DateTime with specified params. Hours, seconds, minuntes will be setted to 0.
 	 \param[in] year: 1969 and lower is not allowed.
@@ -214,9 +214,9 @@ private:
     
     bool IsNumber(const String & s) const;
 
+    tm localTime = {0};
     Timestamp innerTime = 0;
     int32 timeZoneOffset = 0; // offset in seconds
-    tm localTime;
 };
     
 int32 DateTime::GetTimeZoneOffset() const

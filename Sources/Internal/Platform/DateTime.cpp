@@ -49,11 +49,6 @@ static const char *months[] = { "jan","feb","mar","apr","may","jun","jul","aug",
 
 namespace DAVA
 {
-DateTime::DateTime()
-{
-    std::uninitialized_fill_n(&localTime.tm_sec, sizeof(tm) / sizeof(localTime.tm_sec), 0);
-}
-
 DateTime::DateTime(Timestamp timeStamp, int32 _timeZoneOffset):
 innerTime(timeStamp),
 timeZoneOffset(_timeZoneOffset)
