@@ -278,6 +278,10 @@ void EditorSystemsManager::ControlWillBeRemoved(ControlNode* node, ControlsConta
         if (!previewMode)
         {
             recentlyRemovedControls.push_back(node);
+            if (editingRootControls.size() == 1)
+            {
+                SetPreviewMode(true);
+            }
         }
         editingRootControls.erase(node);
         EditingRootControlsChanged.Emit(std::move(editingRootControls));
