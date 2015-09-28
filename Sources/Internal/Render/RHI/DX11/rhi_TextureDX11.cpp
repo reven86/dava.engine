@@ -323,8 +323,8 @@ dx11_Texture_Unmap( Handle tex )
         _SwapRB5551(self->mappedData, TextureSize(self->format, self->width, self->height, self->mappedLevel));
     }
 
-    int rc_i = 0;
-    int face = 0;
+    uint32 rc_i = 0;
+    uint32 face = 0;
     
     if( self->arraySize == 6 )
     {

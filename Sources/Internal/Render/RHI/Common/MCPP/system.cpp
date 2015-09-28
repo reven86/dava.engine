@@ -2077,7 +2077,6 @@ void    at_start( void)
  * Do the commands prior to processing main source file after do_options().
  */
 {
-    char *  env;
     FILEINFO *      file_saved = infile;
 
     /*
@@ -2086,6 +2085,7 @@ void    at_start( void)
      */
     if (! mb_changed) {                     /* -m option precedes   */
 #if !defined(__DAVAENGINE_WIN_UAP__)
+        char *  env;
 		if ((env = getenv( "LC_ALL")) != NULL)
             set_encoding( env, (char*)"LC_ALL", 0);
         else if ((env = getenv( (char*)"LC_CTYPE")) != NULL)

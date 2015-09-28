@@ -67,7 +67,7 @@ inline char         _tcsnextc( const char* str )                    { return *st
 //
 //  publics:
 
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WIN32__)  || defined(__DAVAENGINE_WIN_UAP__)
 #pragma warning( push, 3 )
 #pragma warning( disable: 174 )
 #pragma warning( disable: 193 )
@@ -2290,7 +2290,7 @@ RegExp::get_pattern( unsigned n, std::string* str ) const
     return success;
 }
 
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WIN32__)  || defined(__DAVAENGINE_WIN_UAP__)
 #pragma warning( default: 174 )
 #pragma warning( default: 193 )
 #pragma warning( default: 810 ) // conversion from "unsigned int" to "char={char}" may lose significant bits
