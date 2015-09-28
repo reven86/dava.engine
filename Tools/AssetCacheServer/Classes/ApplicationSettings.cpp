@@ -1,4 +1,4 @@
-    /*==================================================================================
+/*==================================================================================
     Copyright (c) 2008, binaryzebra
     All rights reserved.
 
@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 #include "ApplicationSettings.h"
 
 #include "FileSystem/FileSystem.h"
@@ -34,42 +33,39 @@
 
 using namespace DAVA;
 
-
 ServerData::ServerData(String _ip, uint16 _port, bool _enabled)
-	: ip(_ip)
-	, port(_port)
-	, enabled(_enabled) 
+    : ip(_ip)
+    , port(_port)
+    , enabled(_enabled)
 {
 }
 
-bool ServerData::IsEmpty() const 
+bool ServerData::IsEmpty() const
 {
-	return ip.empty(); 
+    return ip.empty();
 }
 
-bool ServerData::operator == (const ServerData & right) const
+bool ServerData::operator==(const ServerData& right) const
 {
-	return (ip == right.ip) && (port == right.port);
+    return (ip == right.ip) && (port == right.port);
 }
 
-bool ServerData::EquivalentTo(const DAVA::Net::Endpoint & right) const
+bool ServerData::EquivalentTo(const DAVA::Net::Endpoint& right) const
 {
-	return (ip == right.Address().ToString()) && (port == right.Port());
+    return (ip == right.Address().ToString()) && (port == right.Port());
 }
 
-bool ServerData::operator < (const ServerData & right) const
+bool ServerData::operator<(const ServerData& right) const
 {
-	if (ip == right.ip)
-	{
-		return port < right.port;
-	}
-	return ip < right.ip;
+    if (ip == right.ip)
+    {
+        return port < right.port;
+    }
+    return ip < right.ip;
 }
-
 
 const String ApplicationSettings::DEFAULT_FOLDER = "";
 const float64 ApplicationSettings::DEFAULT_CACHE_SIZE_GB = 5.0;
-
 
 void ApplicationSettings::Save() const
 {
@@ -78,25 +74,25 @@ void ApplicationSettings::Save() const
     FileSystem::Instance()->CreateDirectory(path.GetDirectory(), true);
 
     ScopedPtr<File> file(File::Create(path, File::CREATE | File::WRITE));
-    if(!file)
+    if (!file)
     {
         Logger::Error("[ApplicationSettings::%s] Cannot create file %s", __FUNCTION__, path.GetStringValue().c_str());
         return;
     }
-    
+
     DAVA::ScopedPtr<DAVA::KeyedArchive> archive(new DAVA::KeyedArchive());
     Serialize(archive);
     archive->Save(file);
-    
+
     emit SettingsUpdated(this);
 }
 
 void ApplicationSettings::Load()
 {
     static FilePath path("~doc:/AssetServer/ACS_settings.dat");
-    
+
     ScopedPtr<File> file(File::Create(path, File::OPEN | File::READ));
-    if(file)
+    if (file)
     {
         isFirstLaunch = false;
         ScopedPtr<DAVA::KeyedArchive> archive(new DAVA::KeyedArchive());
@@ -111,22 +107,22 @@ void ApplicationSettings::Load()
     emit SettingsUpdated(this);
 }
 
-void ApplicationSettings::Serialize(DAVA::KeyedArchive * archive) const
+void ApplicationSettings::Serialize(DAVA::KeyedArchive* archive) const
 {
     DVASSERT(nullptr != archive);
-    
+
     archive->SetString("FolderPath", folder.GetStringValue());
     archive->SetFloat64("FolderSize", cacheSizeGb);
     archive->SetUInt32("NumberOfFiles", filesCount);
     archive->SetUInt32("AutoSaveTimeout", autoSaveTimeoutMin);
     archive->SetUInt32("Port", listenPort);
     archive->SetBool("AutoStart", autoStart);
-    
+
     auto size = remoteServers.size();
     archive->SetUInt32("ServersSize", size);
 
     uint32 index = 0;
-    for(auto & sd: remoteServers)
+    for (auto& sd : remoteServers)
     {
         archive->SetString(Format("Server_%d_ip", index), sd.ip);
         archive->SetUInt32(Format("Server_%d_port", index), sd.port);
@@ -135,12 +131,12 @@ void ApplicationSettings::Serialize(DAVA::KeyedArchive * archive) const
     }
 }
 
-void ApplicationSettings::Deserialize(DAVA::KeyedArchive * archive)
+void ApplicationSettings::Deserialize(DAVA::KeyedArchive* archive)
 {
     DVASSERT(nullptr != archive);
-    
+
     DVASSERT(remoteServers.size() == 0);
-    
+
     folder = archive->GetString("FolderPath", DEFAULT_FOLDER);
     cacheSizeGb = archive->GetFloat64("FolderSize", DEFAULT_CACHE_SIZE_GB);
     filesCount = archive->GetUInt32("NumberOfFiles", DEFAULT_FILES_COUNT);
@@ -149,7 +145,7 @@ void ApplicationSettings::Deserialize(DAVA::KeyedArchive * archive)
     autoStart = archive->GetBool("AutoStart", DEFAULT_AUTO_START);
 
     auto count = archive->GetUInt32("ServersSize");
-    for(uint32 i = 0; i < count; ++i)
+    for (uint32 i = 0; i < count; ++i)
     {
         ServerData sd;
         sd.ip = archive->GetString(Format("Server_%d_ip", i));
@@ -160,13 +156,12 @@ void ApplicationSettings::Deserialize(DAVA::KeyedArchive * archive)
     }
 }
 
-
-const FilePath & ApplicationSettings::GetFolder() const
+const FilePath& ApplicationSettings::GetFolder() const
 {
     return folder;
 }
 
-void ApplicationSettings::SetFolder(const FilePath & _folder)
+void ApplicationSettings::SetFolder(const FilePath& _folder)
 {
     folder = _folder;
 }
@@ -221,7 +216,7 @@ void ApplicationSettings::SetAutoStart(bool val)
     autoStart = val;
 }
 
-const List<ServerData> & ApplicationSettings::GetServers() const
+const List<ServerData>& ApplicationSettings::GetServers() const
 {
     return remoteServers;
 }
@@ -231,12 +226,12 @@ void ApplicationSettings::ResetServers()
     remoteServers.clear();
 }
 
-void ApplicationSettings::AddServer(const ServerData & server)
+void ApplicationSettings::AddServer(const ServerData& server)
 {
     remoteServers.push_back(server);
 }
 
-void ApplicationSettings::RemoveServer(const ServerData & server)
+void ApplicationSettings::RemoveServer(const ServerData& server)
 {
     remoteServers.remove(server);
 }
@@ -253,6 +248,3 @@ ServerData ApplicationSettings::GetCurrentServer() const
 
     return ServerData();
 }
-
-
-

@@ -110,5 +110,5 @@ PointerSerializer& PointerSerializer::operator = (PointerSerializer&& converter)
 
 DAVA::String PointerSerializer::CleanUpString(const DAVA::String& input)
 {
-	return std::regex_replace(input, std::regex(GetRegex()), std::string());
+    return std::regex_replace(input, std::regex(GetRegex()), std::string());
 }

@@ -345,9 +345,7 @@ void QtMainWindow::CollectEmittersForSave(ParticleEmitter *topLevelEmitter, DAVA
     emitters.emplace_back(EmitterDescriptor(topLevelEmitter, nullptr, topLevelEmitter->configPath, entityName));
 }
 
-
-
-void QtMainWindow::SaveAllSceneEmitters(SceneEditor2 *scene) const
+void QtMainWindow::SaveAllSceneEmitters(SceneEditor2* scene) const
 {
     DVASSERT(nullptr != scene);
 
@@ -355,8 +353,7 @@ void QtMainWindow::SaveAllSceneEmitters(SceneEditor2 *scene) const
     {
         return;
     }
-    
-    
+
     List<Entity *> effectEntities;
     scene->GetChildEntitiesWithComponent(effectEntities, Component::PARTICLE_EFFECT_COMPONENT);
     if (effectEntities.empty())
@@ -3039,11 +3036,9 @@ void QtMainWindow::OnReloadShaders()
         sceneEditor->renderSystem->SetForceUpdateLights();
     }
 
-#define INVALIDATE_2D_MATERIAL(material)                                            \
-    if (RenderSystem2D::material)                                                   \
-        RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL->InvalidateRenderVariants();      
-
-
+#define INVALIDATE_2D_MATERIAL(material) \
+    if (RenderSystem2D::material)        \
+        RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL->InvalidateRenderVariants();
 
     INVALIDATE_2D_MATERIAL(DEFAULT_2D_COLOR_MATERIAL)
     INVALIDATE_2D_MATERIAL(DEFAULT_2D_TEXTURE_MATERIAL)

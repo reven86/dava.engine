@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 #ifndef RUNGUARD_H
 #define RUNGUARD_H
 
@@ -34,16 +33,14 @@
 #include <QSharedMemory>
 #include <QSystemSemaphore>
 
-
 class RunGuard
 {
-
 public:
-    RunGuard( const QString& key );
+    RunGuard(const QString& key);
     ~RunGuard();
 
     bool isAnotherRunning();
-	bool tryToRun();
+    bool tryToRun();
     void release();
 
 private:
@@ -54,8 +51,7 @@ private:
     QSharedMemory sharedMem;
     QSystemSemaphore memLock;
 
-	Q_DISABLE_COPY( RunGuard )
+    Q_DISABLE_COPY(RunGuard)
 };
-
 
 #endif // RUNGUARD_H
