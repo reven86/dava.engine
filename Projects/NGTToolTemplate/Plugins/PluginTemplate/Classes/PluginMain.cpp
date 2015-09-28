@@ -117,7 +117,10 @@ public:
                                   sceneTree.get(), &SceneTree::OnSceneSelectionChanged));
 
         sceneTree->SelectedEntityChanged.Connect(sceneWidget.get(), &SceneViewer::SetSelection);
-        sceneTree->SelectedEntityChanged.Connect(propertyPanel.get(), &PropertyPanel::SetEntity);
+        sceneTree->SelectedEntityChanged.Connect([this](DAVA::Entity* entity)
+                                                 {
+            propertyPanel->SetObject(entity);
+                                                 });
 
         uiApplication->addWindow(*mainWindow);
         uiApplication->addView(library->GetView());

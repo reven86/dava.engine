@@ -66,21 +66,22 @@ Q_INVOKABLE QVariant PropertyPanel::GetPropertyTree()
     return QtHelpers::toQVariant(ObjectHandle(objectHandleStorage));
 }
 
-void PropertyPanel::SetEntity(DAVA::Entity* entity)
+void PropertyPanel::SetObject(const DAVA::InspBase* object)
 {
     using TModelPTr = std::unique_ptr<ITreeModel>;
 
     std::shared_ptr<IObjectHandleStorage> temporaryHandle(objectHandleStorage);
 
-    if (entity != nullptr)
+    if (object != nullptr)
     {
         IDefinitionManager* defMng = Context::queryInterface<IDefinitionManager>();
         IReflectionController* controller = Context::queryInterface<IReflectionController>();
-        RegisterDavaType(*defMng, entity->GetTypeInfo());
+        const DAVA::InspInfo* info = object->GetTypeInfo();
+        RegisterDavaType(*defMng, info);
 
-        IClassDefinition* definition = defMng->getDefinition(entity->GetTypeInfo()->Type()->GetTypeName());
+        IClassDefinition* definition = defMng->getDefinition(info->Type()->GetTypeName());
 
-        TModelPTr model(new ReflectedTreeModel(ObjectHandle(entity, definition), *defMng, controller));
+        TModelPTr model(new ReflectedTreeModel(definition->getBaseProvider(object), *defMng, controller));
         objectHandleStorage.reset(new ObjectHandleStorage<TModelPTr>(std::move(model), nullptr));
     }
     else
