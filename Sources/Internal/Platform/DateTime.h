@@ -41,7 +41,7 @@ using Timestamp = time_t;
 class DateTime
 {
 public:
-    
+    DateTime();
     /**
 	 \brief Creates DateTime with specified params. Hours, seconds, minuntes will be setted to 0.
 	 \param[in] year: 1969 and lower is not allowed.
@@ -213,10 +213,10 @@ private:
     Timestamp InternalTimeGm(tm *t) const;
     
     bool IsNumber(const String & s) const;
-    
-    Timestamp   innerTime;
-    int32       timeZoneOffset;// offset in seconds
-    tm          localTime;
+
+    Timestamp innerTime = 0;
+    int32 timeZoneOffset = 0; // offset in seconds
+    tm localTime;
 };
     
 int32 DateTime::GetTimeZoneOffset() const
