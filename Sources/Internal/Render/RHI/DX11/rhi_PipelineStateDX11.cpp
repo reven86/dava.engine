@@ -962,6 +962,12 @@ namespace ConstBufferDX11
 {
 
 void
+Init( uint32 maxCount )
+{
+    ConstBufDX11Pool::Reserve( maxCount );
+}
+
+void
 SetupDispatch( Dispatch* dispatch )
 {
     dispatch->impl_ConstBuffer_SetConst     = &dx11_ConstBuffer_SetConst;

@@ -262,6 +262,12 @@ namespace IndexBufferGLES2
 {
 
 void
+Init( uint32 maxCount )
+{
+    IndexBufferGLES2Pool::Reserve( maxCount );
+}
+
+void
 SetupDispatch( Dispatch* dispatch )
 {
     dispatch->impl_IndexBuffer_Create       = &gles2_IndexBuffer_Create;

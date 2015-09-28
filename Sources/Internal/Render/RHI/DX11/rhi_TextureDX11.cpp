@@ -412,6 +412,12 @@ namespace TextureDX11
 {
 
 void
+Init( uint32 maxCount )
+{
+    TextureDX11Pool::Reserve( maxCount );
+}
+
+void
 SetupDispatch( Dispatch* dispatch )
 {
     dispatch->impl_Texture_Create = &dx11_Texture_Create;

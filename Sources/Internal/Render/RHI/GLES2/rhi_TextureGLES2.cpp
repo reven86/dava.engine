@@ -721,6 +721,12 @@ namespace TextureGLES2
 { 
 
 void
+Init( uint32 maxCount )
+{
+    TextureGLES2Pool::Reserve( maxCount );
+}
+
+void
 SetupDispatch( Dispatch* dispatch )
 {
     dispatch->impl_Texture_Create       = &gles2_Texture_Create;

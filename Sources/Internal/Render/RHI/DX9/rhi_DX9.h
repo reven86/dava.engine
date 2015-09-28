@@ -44,6 +44,7 @@ struct DX9Command;
 namespace VertexBufferDX9
 {
 void        SetupDispatch( Dispatch* dispatch );
+void        Init( uint32 maxCount );
 void        SetToRHI( Handle vb, unsigned stream_i, unsigned offset, unsigned stride );
 void        ReleaseAll();
 void        ReCreateAll();
@@ -52,6 +53,7 @@ unsigned    NeedRestoreCount();
 
 namespace IndexBufferDX9
 {
+void        Init( uint32 maxCount );
 void        SetupDispatch( Dispatch* dispatch );
 void        SetToRHI( Handle vb );
 void        ReleaseAll();
@@ -77,6 +79,7 @@ void        SetToRHI( Handle ps, uint32 layoutUID );
 
 namespace ConstBufferDX9
 {
+void        Init( uint32 maxCount );
 void        SetupDispatch( Dispatch* dispatch );
 void        InitializeRingBuffer( uint32 size );
 const void* InstData( Handle cb );
@@ -86,6 +89,7 @@ void        InvalidateAllConstBufferInstances();
 
 namespace TextureDX9
 {
+void        Init( uint32 maxCount );
 void        SetupDispatch( Dispatch* dispatch );
 void        SetToRHI( Handle tex, unsigned unitIndex );
 void        SetAsRenderTarget( Handle tex );

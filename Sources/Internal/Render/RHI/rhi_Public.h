@@ -52,19 +52,28 @@ InitParam
     uint32          threadedRenderFrameCount;
     DAVA::Mutex*    FrameCommandExecutionSync;
 
+    uint32          maxIndexBufferCount;
+    uint32          maxVertexBufferCount;
+    uint32          maxConstBufferCount;
+    uint32          maxTextureCount;
+
     void            (*acquireContextFunc)();
     void            (*releaseContextFunc)();
             
                     InitParam()
                       : width(0),
                         height(0),
-                        scaleX(1.f),
-                        scaleY(1.f),
+                        scaleX(1.0f),
+                        scaleY(1.0f),
                         window(nullptr),
                         fullScreen(false),
                         threadedRenderEnabled(false),
                         threadedRenderFrameCount(2),
                         FrameCommandExecutionSync(nullptr),
+                        maxIndexBufferCount(0),
+                        maxVertexBufferCount(0),
+                        maxConstBufferCount(0),
+                        maxTextureCount(0),
                         acquireContextFunc(nullptr),
                         releaseContextFunc(nullptr)
                     {}

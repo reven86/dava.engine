@@ -285,6 +285,12 @@ namespace VertexBufferDX9
 {
 
 void
+Init( uint32 maxCount )
+{
+    VertexBufferDX9Pool::Reserve( maxCount );
+}
+
+void
 SetupDispatch( Dispatch* dispatch )
 {
     dispatch->impl_VertexBuffer_Create      = &dx9_VertexBuffer_Create;

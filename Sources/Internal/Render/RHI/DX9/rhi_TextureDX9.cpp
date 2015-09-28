@@ -592,6 +592,12 @@ namespace TextureDX9
 {
 
 void
+Init( uint32 maxCount )
+{
+    TextureDX9Pool::Reserve( maxCount );
+}
+
+void
 SetupDispatch( Dispatch* dispatch )
 {
     dispatch->impl_Texture_Create       = &dx9_Texture_Create;

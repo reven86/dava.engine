@@ -225,6 +225,12 @@ namespace IndexBufferDX11
 {
 
 void
+Init( uint32 maxCount )
+{
+    IndexBufferDX11Pool::Reserve( maxCount );
+}
+
+void
 SetupDispatch( Dispatch* dispatch )
 {
     dispatch->impl_IndexBuffer_Create   = &dx11_IndexBuffer_Create;

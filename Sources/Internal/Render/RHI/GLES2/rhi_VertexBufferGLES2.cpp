@@ -268,6 +268,12 @@ namespace VertexBufferGLES2
 {
 
 void
+Init( uint32 maxCount )
+{
+    VertexBufferGLES2Pool::Reserve( maxCount );
+}
+
+void
 SetupDispatch( Dispatch* dispatch )
 {
     dispatch->impl_VertexBuffer_Create      = &gles2_VertexBuffer_Create;

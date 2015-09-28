@@ -549,6 +549,12 @@ namespace ConstBufferGLES2
 {
 
 void
+Init( uint32 maxCount )
+{
+    ConstBufGLES2Pool::Reserve( maxCount );
+}
+
+void
 SetupDispatch( Dispatch* dispatch )
 {
     dispatch->impl_ConstBuffer_SetConst     = &gles2_ConstBuffer_SetConst;

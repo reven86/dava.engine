@@ -430,6 +430,10 @@ gles2_Initialize( const InitParam& param )
 
         gles_check_GL_extensions();
 
+        VertexBufferGLES2::Init( param.maxVertexBufferCount );
+        IndexBufferGLES2::Init( param.maxIndexBufferCount );
+        ConstBufferGLES2::Init( param.maxConstBufferCount );
+        TextureGLES2::Init( param.maxTextureCount );
         ConstBufferGLES2::InitializeRingBuffer(4 * 1024 * 1024); // CRAP: hardcoded default const ring-buf size
 
         Logger::Info("GL inited\n");
@@ -472,6 +476,10 @@ gles2_Initialize( const InitParam& param )
     _GLES2_AcquireContext = (param.acquireContextFunc)  ? param.acquireContextFunc  : &macos_gl_acquire_context;
     _GLES2_ReleaseContext = (param.releaseContextFunc)  ? param.releaseContextFunc  : &macos_gl_release_context;
    
+    VertexBufferGLES2::Init( param.maxVertexBufferCount );
+    IndexBufferGLES2::Init( param.maxIndexBufferCount );
+    ConstBufferGLES2::Init( param.maxConstBufferCount );
+    TextureGLES2::Init( param.maxTextureCount );
     ConstBufferGLES2::InitializeRingBuffer(4 * 1024 * 1024); // CRAP: hardcoded default const ring-buf size
 
     _Inited = true;
@@ -529,6 +537,10 @@ gles2_Initialize(const InitParam& param)
     _GLES2_AcquireContext = (param.acquireContextFunc)  ? param.acquireContextFunc  : &ios_gl_acquire_context;
     _GLES2_ReleaseContext = (param.releaseContextFunc)  ? param.releaseContextFunc  : &ios_gl_release_context;
 
+    VertexBufferGLES2::Init( param.maxVertexBufferCount );
+    IndexBufferGLES2::Init( param.maxIndexBufferCount );
+    ConstBufferGLES2::Init( param.maxConstBufferCount );
+    TextureGLES2::Init( param.maxTextureCount );
     ConstBufferGLES2::InitializeRingBuffer(4 * 1024 * 1024); // CRAP: hardcoded default const ring-buf size
 
     _Inited = true;
@@ -589,6 +601,10 @@ gles2_Initialize( const InitParam& param )
 
 	android_gl_init(param.window);
 
+    VertexBufferGLES2::Init( param.maxVertexBufferCount );
+    IndexBufferGLES2::Init( param.maxIndexBufferCount );
+    ConstBufferGLES2::Init( param.maxConstBufferCount );
+    TextureGLES2::Init( param.maxTextureCount );
     ConstBufferGLES2::InitializeRingBuffer(4 * 1024 * 1024); // CRAP: hardcoded default const ring-buf size
 
     _Inited = true;

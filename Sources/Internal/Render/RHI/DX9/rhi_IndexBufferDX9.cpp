@@ -282,6 +282,12 @@ namespace IndexBufferDX9
 {
 
 void
+Init( uint32 maxCount )
+{
+    IndexBufferDX9Pool::Reserve( maxCount );
+}
+
+void
 SetupDispatch( Dispatch* dispatch )
 {
     dispatch->impl_IndexBuffer_Create       = &dx9_IndexBuffer_Create;

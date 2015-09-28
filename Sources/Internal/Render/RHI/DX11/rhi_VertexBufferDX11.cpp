@@ -222,6 +222,12 @@ namespace VertexBufferDX11
 {
 
 void
+Init( uint32 maxCount )
+{
+    VertexBufferDX11Pool::Reserve( maxCount );
+}
+
+void
 SetupDispatch( Dispatch* dispatch )
 {
     dispatch->impl_VertexBuffer_Create  = &dx11_VertexBuffer_Create;

@@ -281,6 +281,10 @@ dx11_Initialize( const InitParam& param )
     SetDispatchTable( DispatchDX11 );
 
 
+    VertexBufferDX11::Init( param.maxVertexBufferCount );
+    IndexBufferDX11::Init( param.maxIndexBufferCount );
+    ConstBufferDX11::Init( param.maxConstBufferCount );
+    TextureDX11::Init( param.maxTextureCount );
     ConstBufferDX11::InitializeRingBuffer( 4*1024*1024 ); // CRAP: hardcoded const ring-buf size
 
 
