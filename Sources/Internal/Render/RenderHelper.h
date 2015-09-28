@@ -119,7 +119,7 @@ namespace DAVA
 
         void QueueCommand(const DrawCommand && command);
         void GetRequestedVertexCount(const DrawCommand & command, uint32 & vertexCount, uint32 & indexCount);
-        bool PreparePacket(rhi::Packet & packet, NMaterial * material, const std::pair<uint32, uint32> & buffersCount, ColoredVertex ** vBufferDataPtr, uint16 ** iBufferDataPtr);
+        bool PreparePacket(rhi::Packet& packet, NMaterial* material, const std::pair<uint32, uint32>& buffersCount, ColoredVertex** vBufferDataPtr, uint16** iBufferDataPtr);
 
         void QueueDrawBoxCommand(eDrawCommandID commandID, const AABBox3 & box, const Matrix4 * matrix, const Color & color, eDrawType drawType);
 

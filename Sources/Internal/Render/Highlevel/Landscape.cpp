@@ -614,6 +614,7 @@ void Landscape::FlushQueue()
     DVASSERT(queueRdoQuad != -1);
 
     DynamicBufferAllocator::AllocResultIB indexBuffer = DynamicBufferAllocator::AllocateIndexBuffer(queueIndexCount);
+    DVASSERT(indexBuffer.allocatedindices == queueIndexCount);
 
     Memcpy(indexBuffer.data, indices.data(), queueIndexCount * sizeof(uint16));
     RenderBatch* batch = renderBatchArray[flushQueueCounter].renderBatch;

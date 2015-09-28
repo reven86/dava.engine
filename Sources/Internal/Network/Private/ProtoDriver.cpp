@@ -253,7 +253,7 @@ bool ProtoDriver::ProcessDataPacket(ProtoDecoder::DecodeResult* result)
         // Send back delivery confirmation
         SendControl(TYPE_DELIVERY_ACK, result->channelId, result->packetId);
         ch->service->OnPacketReceived(ch, result->data, result->dataSize);
-        
+
         return true;
     }
     DVASSERT(0);

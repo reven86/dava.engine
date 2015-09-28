@@ -118,27 +118,27 @@ void ShowErrorDialog(const DAVA::Set<DAVA::String> &errors)
 	const uint32 maxErrorsPerDialog = 6;
 	uint32 totalErrors = errors.size();
 
-	const String dialogTitle = Format("%u error(s)", totalErrors);
-	const String errorDivideLine("\n--------------------\n");
+    const String dialogTitle = Format("%u error(s)", totalErrors);
+    const String errorDivideLine("\n--------------------\n");
 
-	String errorMessage;
-	uint32 errorCounter = 0;
-	for (const auto& message : errors)
-	{
-		errorMessage += PointerSerializer::CleanUpString(message) + errorDivideLine;
-		errorCounter++;
+    String errorMessage;
+    uint32 errorCounter = 0;
+    for (const auto& message : errors)
+    {
+        errorMessage += PointerSerializer::CleanUpString(message) + errorDivideLine;
+        errorCounter++;
 
-		if (errorCounter == maxErrorsPerDialog)
-		{
-			errorMessage += "\n\nSee console log for details.";
-		    ShowErrorDialog(errorMessage, dialogTitle);
-			errorMessage.clear();
-			break;
-		}
-	}
+        if (errorCounter == maxErrorsPerDialog)
+        {
+            errorMessage += "\n\nSee console log for details.";
+            ShowErrorDialog(errorMessage, dialogTitle);
+            errorMessage.clear();
+            break;
+        }
+    }
 
-	if (!errorMessage.empty())
-	    ShowErrorDialog(errorMessage, dialogTitle);
+    if (!errorMessage.empty())
+        ShowErrorDialog(errorMessage, dialogTitle);
 }
 
 void ShowErrorDialog(const DAVA::String &errorMessage, const DAVA::String &title)

@@ -62,7 +62,7 @@ public:
     template <typename Container>
     static DAVA::String FromPointerList(Container &&cont);
 
-	static DAVA::String CleanUpString(const DAVA::String& input);
+    static DAVA::String CleanUpString(const DAVA::String& input);
 
 private:
     DAVA::Vector<void*> pointers;

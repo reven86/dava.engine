@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 #ifndef __ASSETCACHESERVER_WINDOW_H__
 #define __ASSETCACHESERVER_WINDOW_H__
 
@@ -45,20 +44,19 @@ struct ServerData;
 
 namespace Ui
 {
-    class AssetCacheServerWidget;
+class AssetCacheServerWidget;
 }
-
 
 class AssetCacheServerWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    explicit AssetCacheServerWindow(ServerCore& core, QWidget *parent = nullptr);
+    explicit AssetCacheServerWindow(ServerCore& core, QWidget* parent = nullptr);
     ~AssetCacheServerWindow() override;
 
 protected:
-    void closeEvent(QCloseEvent *e) override;
+    void closeEvent(QCloseEvent* e) override;
 
     void LoadSettings();
     void SaveSettings();
@@ -69,7 +67,7 @@ private slots:
     void OnEditAction();
     void OnStartAction();
     void OnStopAction();
-    
+
     void OnFolderSelected();
     void OnFolderTextChanged();
     void OnCacheSizeChanged(double);
@@ -91,32 +89,33 @@ private slots:
 private:
     void CreateTrayIcon();
 
-    void AddRemoteServer(const ServerData & newServer);
+    void AddRemoteServer(const ServerData& newServer);
     void RemoveServers();
 
     void VerifyData();
 
     enum SettingsState
     {
-        NOT_EDITED, EDITED
+        NOT_EDITED,
+        EDITED
     };
 
     void ChangeSettingsState(SettingsState newState);
 
 private:
-    Ui::AssetCacheServerWidget *ui = nullptr;
-    QAction *startAction = nullptr;
-    QAction *stopAction = nullptr;
+    Ui::AssetCacheServerWidget* ui = nullptr;
+    QAction* startAction = nullptr;
+    QAction* stopAction = nullptr;
     QSystemTrayIcon* trayIcon = nullptr;
     std::unique_ptr<QIcon> greenGreenTrayIcon;
     std::unique_ptr<QIcon> greenGrayTrayIcon;
     std::unique_ptr<QIcon> greenRedTrayIcon;
     std::unique_ptr<QIcon> redGrayTrayIcon;
 
-    QVBoxLayout *serversBoxLayout = nullptr;
+    QVBoxLayout* serversBoxLayout = nullptr;
     List<RemoteServerWidget*> remoteServers;
 
-    ServerCore &serverCore;
+    ServerCore& serverCore;
 
     SettingsState settingsState = NOT_EDITED;
 };

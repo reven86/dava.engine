@@ -26,13 +26,12 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 #include <DAVAEngine.h>
 #include <Network/NetCore.h>
 
 #include "AssetCacheClient.h"
 
-void FrameworkDidLaunched() 
+void FrameworkDidLaunched()
 {
 }
 
@@ -45,14 +44,14 @@ void CreateDAVA()
     new DAVA::Logger();
     new DAVA::FileSystem();
     DAVA::FilePath::InitializeBundleName();
-    
+
     DAVA::FileSystem::Instance()->SetDefaultDocumentsDirectory();
     DAVA::FileSystem::Instance()->CreateDirectory(DAVA::FileSystem::Instance()->GetCurrentDocumentsDirectory(), true);
-    
+
     new DAVA::SystemTimer();
-    
+
     DAVA::Thread::InitMainThread();
-    
+
     new DAVA::Net::NetCore();
 }
 
@@ -60,27 +59,25 @@ void ReleaseDAVA()
 {
     DAVA::Net::NetCore::Instance()->Finish(true);
     DAVA::Net::NetCore::Instance()->Release();
-    
+
     DAVA::SystemTimer::Instance()->Release();
 
     DAVA::FileSystem::Instance()->Release();
     DAVA::Logger::Instance()->Release();
 }
 
-
-int main (int argc, char * argv[]) 
+int main(int argc, char* argv[])
 {
     CreateDAVA();
 
     AssetCacheClient cacheClient;
     bool parsed = cacheClient.ParseCommandLine(argc, argv);
-    if(parsed)
+    if (parsed)
     {
         DAVA::Logger::Instance()->SetLogLevel(DAVA::Logger::LEVEL_FRAMEWORK);
         cacheClient.Process();
-        
     }
-    
+
     int exitCode = cacheClient.GetExitCode();
 
     ReleaseDAVA();
