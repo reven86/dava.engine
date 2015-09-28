@@ -93,7 +93,7 @@ void ProcessRecourcePacker()
         DumpCommandLine();
     }
 
-    ResourcePacker2D * resourcePacker = new ResourcePacker2D();
+    ResourcePacker2D resourcePacker;
 
     auto& commandLine = Core::Instance()->GetCommandLine();
     FilePath commandLinePath(commandLine[1]);
@@ -101,16 +101,16 @@ void ProcessRecourcePacker()
     
     String lastDir = commandLinePath.GetDirectory().GetLastDirectoryName();
     FilePath outputh = commandLinePath + ("../../Data/" + lastDir + "/");
-    
-    resourcePacker->InitFolders(commandLinePath, outputh);
-    
-    if(resourcePacker->excludeDirectory.IsEmpty())
+
+    resourcePacker.InitFolders(commandLinePath, outputh);
+
+    if (resourcePacker.excludeDirectory.IsEmpty())
     {
         Logger::Error("[FATAL ERROR: Packer has wrong input pathname]");
         return;
     }
-    
-    if (resourcePacker->excludeDirectory.GetLastDirectoryName() != "DataSource")
+
+    if (resourcePacker.excludeDirectory.GetLastDirectoryName() != "DataSource")
     {
         Logger::Error("[FATAL ERROR: Packer working only inside DataSource directory]");
         return;
@@ -122,7 +122,7 @@ void ProcessRecourcePacker()
         return;
     }
 
-    auto toolFolderPath = resourcePacker->excludeDirectory + (commandLine[2] + "/");
+    auto toolFolderPath = resourcePacker.excludeDirectory + (commandLine[2] + "/");
     String pvrTexToolName = "PVRTexToolCLI";
     String cacheToolName = "AssetCacheClient";
 
@@ -130,10 +130,10 @@ void ProcessRecourcePacker()
 
     uint64 elapsedTime = SystemTimer::Instance()->AbsoluteMS();
     Logger::FrameworkDebug("[Resource Packer Started]");
-    Logger::FrameworkDebug("[INPUT DIR] - [%s]", resourcePacker->inputGfxDirectory.GetAbsolutePathname().c_str());
-    Logger::FrameworkDebug("[OUTPUT DIR] - [%s]", resourcePacker->outputGfxDirectory.GetAbsolutePathname().c_str());
-    Logger::FrameworkDebug("[EXCLUDE DIR] - [%s]", resourcePacker->excludeDirectory.GetAbsolutePathname().c_str());
-    
+    Logger::FrameworkDebug("[INPUT DIR] - [%s]", resourcePacker.inputGfxDirectory.GetAbsolutePathname().c_str());
+    Logger::FrameworkDebug("[OUTPUT DIR] - [%s]", resourcePacker.outputGfxDirectory.GetAbsolutePathname().c_str());
+    Logger::FrameworkDebug("[EXCLUDE DIR] - [%s]", resourcePacker.excludeDirectory.GetAbsolutePathname().c_str());
+
     PixelFormatDescriptor::InitializePixelFormatDescriptors();
     GPUFamilyDescriptor::SetupGPUParameters();
     
@@ -155,26 +155,23 @@ void ProcessRecourcePacker()
         String ip = CommandLineParser::GetCommandParam("-ip");
         String port = CommandLineParser::GetCommandParam("-p");
         String timeout = CommandLineParser::GetCommandParam("-t");
-        resourcePacker->SetCacheClientTool(toolFolderPath + cacheToolName, ip, port, timeout);
+        resourcePacker.SetCacheClientTool(toolFolderPath + cacheToolName, ip, port, timeout);
     }
     else
     {
         Logger::FrameworkDebug("Asset cache will not be used");
-        resourcePacker->ClearCacheClientTool();
     }
 
     if (CommandLineParser::CommandIsFound(String("-md5mode")))
     {
-        resourcePacker->RecalculateMD5ForOutputDir();
+        resourcePacker.RecalculateMD5ForOutputDir();
     }
     else
     {
-        resourcePacker->PackResources(exportForGPU);
+        resourcePacker.PackResources(exportForGPU);
     }
     elapsedTime = SystemTimer::Instance()->AbsoluteMS() - elapsedTime;
     Logger::FrameworkDebug("[Resource Packer Compile Time: %0.3lf seconds]", (float64)elapsedTime / 1000.0);
-    
-    SafeDelete(resourcePacker);
 }
 
 void FrameworkDidLaunched()
