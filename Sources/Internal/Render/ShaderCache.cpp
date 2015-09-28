@@ -30,6 +30,7 @@
 #include "Render/ShaderCache.h"
 #include "Render/RHI/rhi_ShaderCache.h"
 #include "FileSystem/FileSystem.h"
+#include "Concurrency/LockGuard.h"
 
 namespace DAVA
 {
@@ -48,6 +49,7 @@ namespace
 {
     Map<Vector<int32>, ShaderDescriptor *> shaderDescriptors;
     Map<FastName, ShaderSourceCode> shaderSourceCodes;
+    Mutex shaderCacheMutex;
     bool initialized = false;
 }
 
@@ -69,6 +71,9 @@ void Clear()
 {
     //RHI_COMPLETE - clear shader descriptors here too?
     DVASSERT(initialized);
+
+    LockGuard<Mutex> guard(shaderCacheMutex);
+
     for (auto &it : shaderSourceCodes)
     {        
         SafeDelete(it.second.vertexProgText);
@@ -81,6 +86,9 @@ void Clear()
 void ClearDynamicBindigs()
 {
     DVASSERT(initialized);
+
+    LockGuard<Mutex> guard(shaderCacheMutex);
+
     for (auto &it : shaderDescriptors)
     {        
         it.second->ClearDynamicBindings();
@@ -166,7 +174,9 @@ ShaderSourceCode GetSourceCode(const FastName& name)
 ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastName, int32>& defines)
 {    
     DVASSERT(initialized);
- 
+
+    LockGuard<Mutex> guard(shaderCacheMutex);
+
     /*key*/
     Vector<int32> key;
     BuildFlagsKey(name, defines, key);    
@@ -227,7 +237,9 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
 void RelaoadShaders()
 {
     DVASSERT(initialized);
-    
+
+    LockGuard<Mutex> guard(shaderCacheMutex);
+
     //clear cached source files
     for (auto &it : shaderSourceCodes)
     {
