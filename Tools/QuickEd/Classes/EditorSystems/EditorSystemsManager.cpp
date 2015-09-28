@@ -286,7 +286,7 @@ void EditorSystemsManager::CollectControlNodesByRectImpl(SelectedControls& contr
     }
 }
 
-void EditorSystemsManager::ControlWasRemoved(ControlNode* node, ControlsContainerNode* from)
+void EditorSystemsManager::ControlWillBeRemoved(ControlNode* node, ControlsContainerNode* from)
 {
     if (std::find(editingRootControls.begin(), editingRootControls.end(), node) != editingRootControls.end())
     {

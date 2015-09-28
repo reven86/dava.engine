@@ -115,7 +115,7 @@ private:
     void CollectControlNodesByPosImpl(DAVA::Vector<ControlNode*>& controlNodes, const DAVA::Vector2& pos, ControlNode* node) const;
     void CollectControlNodesByRectImpl(SelectedControls& controlNodes, const DAVA::Rect& rect, ControlNode* node) const;
 
-    void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from) override;
+    void ControlWillBeRemoved(ControlNode* node, ControlsContainerNode* from) override;
     void ControlWasAdded(ControlNode* node, ControlsContainerNode* /*destination*/, int /*index*/) override;
 
     DAVA::UIControl* rootControl = nullptr;

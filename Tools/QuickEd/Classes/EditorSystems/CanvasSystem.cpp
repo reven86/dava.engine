@@ -33,67 +33,84 @@
 #include "Model/PackageHierarchy/PackageBaseNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/PackageNode.h"
-#include "Model/PackageHierarchy/PackageControlsNode.h"
-#include "Model/PackageHierarchy/ImportedPackagesNode.h"
-#include "Render/2D/Systems/RenderSystem2D.h"
-#include "Render/Shader.h"
-#include "Model/ControlProperties/PropertyListener.h"
 #include "Model/ControlProperties/RootProperty.h"
 
 using namespace DAVA;
 
+namespace
+{
 class GridControl : public UIControl
 {
 public:
-    GridControl(CanvasSystem* canvasSystem);
+    GridControl() = default;
     ~GridControl() override = default;
-    void Init(UIControl* control);
+
+private:
+    void Draw(const UIGeometricData& geometricData) override;
+};
+
+void GridControl::Draw(const UIGeometricData& geometricData)
+{
+    if (0.0f != geometricData.scale.x)
+    {
+        float32 invScale = 1.0f / geometricData.scale.x;
+        UIGeometricData unscaledGd;
+        unscaledGd.scale = Vector2(invScale, invScale);
+        unscaledGd.size = geometricData.size * geometricData.scale.x;
+        unscaledGd.AddGeometricData(geometricData);
+        GetBackground()->Draw(unscaledGd);
+    }
+}
+}
+
+class BackgroundController
+{
+public:
+    BackgroundController(UIControl* nestedControl);
+    UIControl* GetGridControl();
     void ControlPropertyWasChanged(ControlNode* node, AbstractProperty* propert);
     void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from);
     void ControlWasAdded(ControlNode* node, ControlsContainerNode* /*destination*/, int /*index*/);
+    void UpdateCounterpoise();
     void AdjustToNestedControl();
+    DAVA::Signal<> ContentSizeChanged;
 
 private:
     void CalculateTotalRect(Rect& totalRect, Vector2& rootControlPosition);
-    void Draw(const UIGeometricData& geometricData) override;
-    void UpdateCounterpoise();
     void FitGridIfParentIsNested(PackageBaseNode* node);
     void FitGridToNestedControl();
+    ScopedPtr<UIControl> gridControl;
     ScopedPtr<UIControl> counterpoiseControl;
     ScopedPtr<UIControl> positionHolderControl;
-    CanvasSystem* canvasSystem = nullptr;
     UIControl* nestedControl = nullptr;
 };
 
-GridControl::GridControl(CanvasSystem* canvasSystem_)
-    : UIControl()
+BackgroundController::BackgroundController(UIControl* nestedControl_)
+    : gridControl(new GridControl())
     , counterpoiseControl(new UIControl())
     , positionHolderControl(new UIControl())
-    , canvasSystem(canvasSystem_)
+    , nestedControl(nestedControl_)
 {
-}
-
-void GridControl::Init(UIControl* control)
-{
-    DVASSERT(nullptr != control);
-    nestedControl = control;
-    String name = control->GetName();
+    DVASSERT(nullptr != nestedControl);
+    String name = nestedControl->GetName();
     name = name.empty() ? "unnamed" : name;
-    SetName("Grid control of " + name);
+    gridControl->SetName("Grid control of " + name);
     counterpoiseControl->SetName("counterpoise of " + name);
     positionHolderControl->SetName("Position holder of " + name);
-    AddControl(positionHolderControl);
+    gridControl->AddControl(positionHolderControl);
     positionHolderControl->AddControl(counterpoiseControl);
-    counterpoiseControl->AddControl(control);
+    counterpoiseControl->AddControl(nestedControl);
 
-    background->SetDrawType(UIControlBackground::DRAW_TILED);
-    background->SetSprite("~res:/Gfx/GreyGrid", 0);
-
-    UpdateCounterpoise();
-    AdjustToNestedControl();
+    gridControl->GetBackground()->SetDrawType(UIControlBackground::DRAW_TILED);
+    gridControl->GetBackground()->SetSprite("~res:/Gfx/GreyGrid", 0);
 }
 
-void GridControl::ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property)
+UIControl* BackgroundController::GetGridControl()
+{
+    return gridControl.get();
+}
+
+void BackgroundController::ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property)
 {
     const String& name = property->GetName();
     if (node->GetControl() == nestedControl)
@@ -151,13 +168,13 @@ void CalculateTotalRectImpl(UIControl* control, Rect& totalRect, Vector2& rootCo
     }
 }
 
-void GridControl::CalculateTotalRect(Rect& totalRect, Vector2& rootControlPosition)
+void BackgroundController::CalculateTotalRect(Rect& totalRect, Vector2& rootControlPosition)
 {
     rootControlPosition.SetZero();
     UIGeometricData gd = nestedControl->GetGeometricData();
     gd.position.SetZero();
-    gd.scale /= this->GetParent()->GetParent()->GetScale(); //grid->controlCanvas->scalableControl
-    if (scale.x != 0.0f || scale.y != 0.0f)
+    gd.scale /= gridControl->GetParent()->GetParent()->GetScale(); //grid->controlCanvas->scalableControl
+    if (gd.scale.x != 0.0f || gd.scale.y != 0.0f)
     {
         totalRect = gd.GetAABBox();
 
@@ -168,17 +185,17 @@ void GridControl::CalculateTotalRect(Rect& totalRect, Vector2& rootControlPositi
     }
 }
 
-void GridControl::AdjustToNestedControl()
+void BackgroundController::AdjustToNestedControl()
 {
     Rect rect;
     Vector2 pos;
     CalculateTotalRect(rect, pos);
     Vector2 size = rect.GetSize();
     positionHolderControl->SetPosition(pos);
-    SetSize(size);
+    gridControl->SetSize(size);
 }
 
-void GridControl::ControlWasRemoved(ControlNode* node, ControlsContainerNode* from)
+void BackgroundController::ControlWasRemoved(ControlNode* node, ControlsContainerNode* from)
 {
     //check that we adjust removed node
     if (node->GetControl() == nestedControl)
@@ -188,25 +205,12 @@ void GridControl::ControlWasRemoved(ControlNode* node, ControlsContainerNode* fr
     FitGridIfParentIsNested(from);
 }
 
-void GridControl::ControlWasAdded(ControlNode* /*node*/, ControlsContainerNode* destination, int /*index*/)
+void BackgroundController::ControlWasAdded(ControlNode* /*node*/, ControlsContainerNode* destination, int /*index*/)
 {
     FitGridIfParentIsNested(destination);
 }
 
-void GridControl::Draw(const UIGeometricData& geometricData)
-{
-    if (0.0f != geometricData.scale.x)
-    {
-        float32 invScale = 1.0f / geometricData.scale.x;
-        UIGeometricData unscaledGd;
-        unscaledGd.scale = Vector2(invScale, invScale);
-        unscaledGd.size = geometricData.size * geometricData.scale.x;
-        unscaledGd.AddGeometricData(geometricData);
-        GetBackground()->Draw(unscaledGd);
-    }
-}
-
-void GridControl::UpdateCounterpoise()
+void BackgroundController::UpdateCounterpoise()
 {
     UIGeometricData gd = nestedControl->GetLocalGeometricData();
     counterpoiseControl->SetSize(gd.size);
@@ -220,7 +224,7 @@ void GridControl::UpdateCounterpoise()
     counterpoiseControl->SetPosition(-angeledPosition + gd.pivotPoint * gd.scale);
 }
 
-void GridControl::FitGridIfParentIsNested(PackageBaseNode* node)
+void BackgroundController::FitGridIfParentIsNested(PackageBaseNode* node)
 {
     PackageBaseNode* parent = node;
     while (nullptr != parent)
@@ -234,10 +238,10 @@ void GridControl::FitGridIfParentIsNested(PackageBaseNode* node)
     }
 }
 
-void GridControl::FitGridToNestedControl()
+void BackgroundController::FitGridToNestedControl()
 {
     AdjustToNestedControl();
-    canvasSystem->LayoutCanvas();
+    ContentSizeChanged.Emit();
 }
 
 CanvasSystem::CanvasSystem(EditorSystemsManager* parent)
@@ -254,6 +258,10 @@ CanvasSystem::CanvasSystem(EditorSystemsManager* parent)
 CanvasSystem::~CanvasSystem()
 {
     systemManager->GetPackage()->RemoveListener(this);
+    for (BackgroundController* controller : gridControls)
+    {
+        delete controller;
+    }
 }
 
 void CanvasSystem::OnActivated()
@@ -271,46 +279,50 @@ void CanvasSystem::OnDeactivated()
 
 void CanvasSystem::ControlWasRemoved(ControlNode* node, ControlsContainerNode* from)
 {
-    for (GridControl* grid : gridControls)
+    for (BackgroundController* iter : gridControls)
     {
-        grid->ControlWasRemoved(node, from);
+        iter->ControlWasRemoved(node, from);
     }
 }
 
 void CanvasSystem::ControlWasAdded(ControlNode* node, ControlsContainerNode* destination, int index)
 {
-    for (GridControl* grid : gridControls)
+    for (BackgroundController* iter : gridControls)
     {
-        grid->ControlWasAdded(node, destination, index);
+        iter->ControlWasAdded(node, destination, index);
     }
 }
 
 void CanvasSystem::ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property)
 {
-    for (GridControl* grid : gridControls)
+    for (BackgroundController* iter : gridControls)
     {
-        grid->ControlPropertyWasChanged(node, property);
+        iter->ControlPropertyWasChanged(node, property);
     }
 }
 
 void CanvasSystem::CreateAndInsertGrid(PackageBaseNode* node, size_t pos)
 {
-    ScopedPtr<GridControl> gridControl(new GridControl(this));
+    BackgroundController* backgroundControoller(new BackgroundController(node->GetControl()));
+    backgroundControoller->ContentSizeChanged.Connect(this, &CanvasSystem::LayoutCanvas);
+
     auto iter = gridControls.begin();
     std::advance(iter, pos);
-    gridControls.insert(iter, gridControl.get());
-    UIControl* control = node->GetControl();
+    gridControls.insert(iter, backgroundControoller);
+
+    UIControl* grid = backgroundControoller->GetGridControl();
     if (pos >= controlsCanvas->GetChildren().size())
     {
-        controlsCanvas->AddControl(gridControl);
+        controlsCanvas->AddControl(grid);
     }
     else
     {
         auto iterToInsert = controlsCanvas->GetChildren().begin();
         std::advance(iterToInsert, pos);
-        controlsCanvas->InsertChildBelow(gridControl, *iterToInsert);
+        controlsCanvas->InsertChildBelow(grid, *iterToInsert);
     }
-    gridControl->Init(control);
+    backgroundControoller->UpdateCounterpoise();
+    backgroundControoller->AdjustToNestedControl();
 }
 
 void CanvasSystem::LayoutCanvas()
@@ -318,24 +330,25 @@ void CanvasSystem::LayoutCanvas()
     float32 maxWidth = 0.0f;
     float32 totalHeight = 0.0f;
     const int spacing = 5;
-    int childrenCount = gridControls.size();
+    const List<UIControl*>& children = controlsCanvas->GetChildren();
+    int childrenCount = children.size();
     if (childrenCount > 1)
     {
         totalHeight += spacing * (childrenCount - 1);
     }
-    for (const GridControl* grid : gridControls)
+    for (const UIControl* control : children)
     {
-        maxWidth = Max(maxWidth, grid->GetSize().dx);
-        totalHeight += grid->GetSize().dy;
+        maxWidth = Max(maxWidth, control->GetSize().dx);
+        totalHeight += control->GetSize().dy;
     }
 
     float32 curY = 0.0f;
-    for (GridControl* grid : gridControls)
+    for (UIControl* child : children)
     {
-        Rect rect = grid->GetRect();
+        Rect rect = child->GetRect();
         rect.y = curY;
         rect.x = (maxWidth - rect.dx) / 2.0f;
-        grid->SetRect(rect);
+        child->SetRect(rect);
         curY += rect.dy + spacing;
     }
     Vector2 size(maxWidth, totalHeight);
@@ -349,7 +362,7 @@ void CanvasSystem::OnRootContolsChanged(const EditorSystemsManager::SortedPackag
     controlsCanvas->RemoveAllControls();
     for (PackageBaseNode* rootControl : rootControls)
     {
-        CreateAndInsertGrid(rootControl, gridControls.size());
+        CreateAndInsertGrid(rootControl, controlsCanvas->GetChildren().size());
     }
     LayoutCanvas();
 }

@@ -38,7 +38,7 @@
 
 class EditorSystemsManager;
 class PackageBaseNode;
-class GridControl;
+class BackgroundController;
 
 class CanvasSystem final : public BaseEditorSystem, private PackageListener
 {
@@ -59,7 +59,7 @@ private:
     void CreateAndInsertGrid(PackageBaseNode* node, size_t pos);
 
     DAVA::ScopedPtr<DAVA::UIControl> controlsCanvas; //to attach or detach from document
-    DAVA::List<GridControl*> gridControls;
+    DAVA::List<BackgroundController*> gridControls;
 };
 
 #endif // __QUICKED_CANVAS_SYSTEM_H__
