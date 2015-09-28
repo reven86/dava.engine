@@ -130,7 +130,7 @@ void SizeMeasuringAlgorithm::ProcessPercentOfChildrenSumPolicy(ControlLayoutData
 {
     if (flowLayout && flowLayout->IsEnabled() && axis == Vector2::AXIS_Y)
     {
-        ProcessVerticalFlowLayoutPercentOfChildrenSumPolicy(data, axis);
+        ProcessVerticalFlowLayoutPercentOfChildrenSumPolicy(data, axis); // TODO: axis x
     }
     else
     {
