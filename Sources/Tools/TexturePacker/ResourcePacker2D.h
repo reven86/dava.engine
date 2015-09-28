@@ -70,6 +70,9 @@ private:
     bool RecalculateParamsMD5(const String& params, const FilePath& md5file) const;
     bool RecalculateFileMD5(const FilePath& pathname, const FilePath& md5file) const;
 
+    bool ReadMD5FromFile(const FilePath& md5file, MD5::MD5Digest& digest) const;
+    bool WriteMD5ToFile(const FilePath& md5file, const MD5::MD5Digest& digest) const;
+
     bool IsUsingCache() const;
 
     Vector<String> FetchFlags(const FilePath& flagsPathname);
