@@ -126,7 +126,7 @@ private:
     PackageNode* package = nullptr;
     SelectedControls selectedControlNodes;
     SortedPackageBaseNodeSet editingRootControls;
-    DAVA::Vector<ControlNode*> recentlyRemovedControls;
+    DAVA::Set<ControlNode*> recentlyRemovedControls;
     bool previewMode = true;
 };
 

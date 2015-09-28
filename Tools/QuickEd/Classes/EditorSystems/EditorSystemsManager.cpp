@@ -277,7 +277,7 @@ void EditorSystemsManager::ControlWillBeRemoved(ControlNode* node, ControlsConta
     {
         if (!previewMode)
         {
-            recentlyRemovedControls.push_back(node);
+            recentlyRemovedControls.insert(node);
             if (editingRootControls.size() == 1)
             {
                 SetPreviewMode(true);
@@ -301,9 +301,8 @@ void EditorSystemsManager::ControlWasAdded(ControlNode* node, ControlsContainerN
     }
     else
     {
-        if (std::find(recentlyRemovedControls.begin(), recentlyRemovedControls.end(), node) != recentlyRemovedControls.end())
+        if (recentlyRemovedControls.find(node) != recentlyRemovedControls.end())
         {
-            recentlyRemovedControls.erase(std::remove(recentlyRemovedControls.begin(), recentlyRemovedControls.end(), node));
             PackageBaseNode* parent = destination;
             while (parent->GetParent() != nullptr && parent->GetParent()->GetControl() != nullptr)
             {
@@ -314,6 +313,7 @@ void EditorSystemsManager::ControlWasAdded(ControlNode* node, ControlsContainerN
             EditingRootControlsChanged.Emit(std::move(editingRootControls));
         }
     }
+    recentlyRemovedControls.erase(node);
 }
 
 void EditorSystemsManager::SetPreviewMode(bool mode)
@@ -328,7 +328,6 @@ void EditorSystemsManager::SetPreviewMode(bool mode)
             editingRootControls.insert(controlsNode->Get(index));
         }
     }
-
     else
     {
         for (ControlNode* selectedControlNode : selectedControlNodes)

@@ -79,7 +79,6 @@ public:
 private:
     void CalculateTotalRect(Rect& totalRect, Vector2& rootControlPosition);
     void FitGridIfParentIsNested(PackageBaseNode* node);
-    void FitGridToNestedControl();
     ScopedPtr<UIControl> gridControl;
     ScopedPtr<UIControl> counterpoiseControl;
     ScopedPtr<UIControl> positionHolderControl;
@@ -189,6 +188,7 @@ void BackgroundController::AdjustToNestedControl()
     Vector2 size = rect.GetSize();
     positionHolderControl->SetPosition(pos);
     gridControl->SetSize(size);
+    ContentSizeChanged.Emit();
 }
 
 void BackgroundController::ControlWasRemoved(ControlNode* node, ControlsContainerNode* from)
@@ -209,15 +209,19 @@ void BackgroundController::ControlWasAdded(ControlNode* /*node*/, ControlsContai
 void BackgroundController::UpdateCounterpoise()
 {
     UIGeometricData gd = nestedControl->GetLocalGeometricData();
+    Vector2 invScale;
+    invScale.x = gd.scale.x != 0.0f ? 1.0f / gd.scale.x : 0.0f;
+    invScale.y = gd.scale.y != 0.0f ? 1.0f / gd.scale.y : 0.0f;
+    counterpoiseControl->SetScale(invScale);
     counterpoiseControl->SetSize(gd.size);
     gd.cosA = cosf(gd.angle);
     gd.sinA = sinf(gd.angle);
     counterpoiseControl->SetAngle(-gd.angle);
+    Vector2 pos(gd.position * invScale);
+    Vector2 angeledPosition(pos.x * gd.cosA + pos.y * gd.sinA,
+                            pos.x * -gd.sinA + pos.y * gd.cosA);
 
-    Vector2 angeledPosition(gd.position.x * gd.cosA + gd.position.y * gd.sinA,
-                            gd.position.x * -gd.sinA + gd.position.y * gd.cosA);
-
-    counterpoiseControl->SetPosition(-angeledPosition + gd.pivotPoint * gd.scale);
+    counterpoiseControl->SetPosition(-angeledPosition + gd.pivotPoint);
 }
 
 void BackgroundController::FitGridIfParentIsNested(PackageBaseNode* node)
@@ -227,17 +231,11 @@ void BackgroundController::FitGridIfParentIsNested(PackageBaseNode* node)
     {
         if (parent->GetControl() == nestedControl) //we change child in the nested control
         {
-            FitGridToNestedControl();
+            AdjustToNestedControl();
             return;
         }
         parent = parent->GetParent();
     }
-}
-
-void BackgroundController::FitGridToNestedControl()
-{
-    AdjustToNestedControl();
-    ContentSizeChanged.Emit();
 }
 
 CanvasSystem::CanvasSystem(EditorSystemsManager* parent)
