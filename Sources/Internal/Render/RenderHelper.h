@@ -72,6 +72,8 @@ namespace DAVA
         void Clear();
         bool IsEmpty();
 
+        void InvalidateMaterials();
+
         void DrawLine(const Vector3 & pt1, const Vector3 & pt2, const Color & color, eDrawType drawType = DRAW_WIRE_DEPTH);
         void DrawPolygon(const Polygon3 & polygon, const Color & color, eDrawType drawType);
         void DrawAABox(const AABBox3 & box, const Color & color, eDrawType drawType);
@@ -117,7 +119,7 @@ namespace DAVA
 
         void QueueCommand(const DrawCommand && command);
         void GetRequestedVertexCount(const DrawCommand & command, uint32 & vertexCount, uint32 & indexCount);
-        void PreparePacket(rhi::Packet & packet, NMaterial * material, const std::pair<uint32, uint32> & buffersCount, ColoredVertex ** vBufferDataPtr, uint16 ** iBufferDataPtr);
+        bool PreparePacket(rhi::Packet & packet, NMaterial * material, const std::pair<uint32, uint32> & buffersCount, ColoredVertex ** vBufferDataPtr, uint16 ** iBufferDataPtr);
 
         void QueueDrawBoxCommand(eDrawCommandID commandID, const AABBox3 & box, const Matrix4 * matrix, const Color & color, eDrawType drawType);
 
