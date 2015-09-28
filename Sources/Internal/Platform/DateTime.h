@@ -214,7 +214,7 @@ private:
     
     bool IsNumber(const String & s) const;
 
-    tm localTime = {0};
+    tm localTime = tm();
     Timestamp innerTime = 0;
     int32 timeZoneOffset = 0; // offset in seconds
 };
