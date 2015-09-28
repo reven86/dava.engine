@@ -539,17 +539,25 @@ if( DEPLOY )
         set_target_properties( ${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_CONFIGURATION_BUILD_DIR  ${DEPLOY_DIR} )
 
         if( IOS )
-            set( XCODERUN_PARAM -sdk iphoneos PackageApplication -v ${DEPLOY_DIR}/${PROJECT_NAME}.app -o ${DEPLOY_DIR}/${PROJECT_NAME}.ipa )
+
+            if( NOT IOS_SDK )
+                set( IOS_SDK -sdk iphoneos  )
+            endif()
+
+            set( XCODERUN_PARAM ${IOS_SDK} PackageApplication -v ${DEPLOY_DIR}/${PROJECT_NAME}.app -o ${DEPLOY_DIR}/${PROJECT_NAME}.ipa )
 
             if( DEVELOPER_NAME )
-                list( APPEND XCODERUN_PARAM  --sign ${DEVELOPER_NAME} )
+                list( APPEND XCODERUN_PARAM  "--sign" "${DEVELOPER_NAME}" )
             endif()
 
             if( PROVISONING_PROFILE )
-                list( APPEND XCODERUN_PARAM  --embed ${PROVISONING_PROFILE} )
+                list( APPEND XCODERUN_PARAM  "--embed" "${PROVISONING_PROFILE}" )
             endif()
 
-            add_custom_target ( IOS_DEPLOY_${PROJECT_NAME} ALL COMMAND /usr/bin/xcrun ${XCODERUN_PARAM} )
+            add_custom_target ( IOS_DEPLOY_${PROJECT_NAME} ALL COMMAND ${IOS_DEPLOY_CUSTOM_COMAND}
+                                                               COMMAND /usr/bin/xcrun ${XCODERUN_PARAM} VERBATIM )
+
+
             add_dependencies(  IOS_DEPLOY_${PROJECT_NAME} ${PROJECT_NAME} )
 
         endif()

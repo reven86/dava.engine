@@ -50,7 +50,6 @@ class ResourcePacker2D
 
 public:
     using FILESMAP = std::map<String, String>;
-    ResourcePacker2D();
 
     void InitFolders(const FilePath & inputPath,const FilePath & outputPath);
     void PackResources(eGPUFamily forGPU);
@@ -87,14 +86,14 @@ public:
     FilePath outputGfxDirectory;
     FilePath excludeDirectory;
     String gfxDirName;
-    
-    bool isGfxModified;
-    
-    bool isLightmapsPacking;
-    bool forceRepack;
-    bool clearOutputDirectory;
+
+    bool isGfxModified = true;
+
+    bool isLightmapsPacking = false;
+    bool forceRepack = false;
+    bool clearOutputDirectory = true;
     eGPUFamily requestedGPUFamily;
-    TextureConverter::eConvertQuality quality;
+    TextureConverter::eConvertQuality quality = TextureConverter::ECQ_VERY_HIGH;
     FILESMAP spriteFiles;
 
 protected:
@@ -102,6 +101,7 @@ protected:
     String cacheClientIp;
     String cacheClientPort;
     String cacheClientTimeout;
+    bool isUsingCache = false;
 
     Set<String> errors;
 
@@ -115,7 +115,7 @@ inline bool ResourcePacker2D::IsUsingCache() const
     //no cache in win uap
     return false;
 #else
-    return (!cacheClientTool.IsEmpty());
+    return isUsingCache;
 #endif
 }
 

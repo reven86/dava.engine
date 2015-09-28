@@ -416,7 +416,7 @@ void VariantType::SetVariant(const VariantType& var)
         case TYPE_STRING:
         {
             SetString(var.AsString());
-		}
+        }
 		break;	
 	case TYPE_WIDE_STRING:
 		{ 
@@ -702,7 +702,7 @@ bool VariantType::Write(File * fp) const
         case TYPE_STRING:
         {
             int32 len = (int32)stringValue->length();
-			written = fp->Write(&len, 4);
+            written = fp->Write(&len, 4);
             if (written != 4)
             {
                 return false;
@@ -956,7 +956,7 @@ bool VariantType::Read(File * fp)
         case TYPE_STRING:
         {
             int32 len;
-			read = fp->Read(&len, 4);
+            read = fp->Read(&len, 4);
             if (read != 4)
             {
                 return false;
@@ -1471,8 +1471,8 @@ void* VariantType::MetaObject()
         break;
     case TYPE_STRING:
         ret = stringValue;
-        break;	
-	case TYPE_WIDE_STRING:
+        break;
+    case TYPE_WIDE_STRING:
 		ret = wideStringValue;
 		break;
 	case TYPE_VECTOR2:
@@ -1535,7 +1535,7 @@ VariantType VariantType::LoadData(const void *src, const MetaInfo *meta)
     case TYPE_STRING:
         v.SetString(*((DAVA::String*)src));
         break;
-	case TYPE_WIDE_STRING:
+    case TYPE_WIDE_STRING:
 		v.SetWideString(*((DAVA::WideString *) src));
 		break;
 	case TYPE_UINT32:
@@ -1658,7 +1658,7 @@ void VariantType::SaveData(void *dst, const MetaInfo *meta, const VariantType &v
         case TYPE_STRING:
             *((DAVA::String*)dst) = val.AsString();
             break;
-		case TYPE_WIDE_STRING:
+        case TYPE_WIDE_STRING:
 			*((DAVA::WideString *) dst) = val.AsWideString();
 			break;
 		case TYPE_UINT32:
@@ -1755,7 +1755,7 @@ VariantType VariantType::FromType(int type)
     case TYPE_STRING:
         v.SetString("");
         break;
-	case TYPE_WIDE_STRING:
+    case TYPE_WIDE_STRING:
 		v.SetWideString(WideString());
 		break;
 	case TYPE_UINT32:
