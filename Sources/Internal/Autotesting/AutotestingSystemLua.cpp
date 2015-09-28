@@ -758,12 +758,12 @@ namespace DAVA
 	{
 		Vector<UIEvent> touches;
 		touches.push_back(input);
-		UIControlSystem::Instance()->OnInput(0, touches, touches);
+        UIControlSystem::Instance()->OnInput(touches, touches);
 
-		AutotestingSystem::Instance()->OnInput(input);
-	}
+        AutotestingSystem::Instance()->OnInput(input);
+    }
 
-	inline void AutotestingSystemLua::ParsePath(const String &path, Vector<String> &parsedPath)
+    inline void AutotestingSystemLua::ParsePath(const String &path, Vector<String> &parsedPath)
 	{
 		Split(path, "/", parsedPath);
 	}

@@ -44,6 +44,14 @@
 
 namespace DAVA
 {
+namespace MaterialSerializationKey
+{
+const DAVA::String MaterialKey = "materialKey";
+const DAVA::String ParentMaterialKey = "parentMaterialKey";
+const DAVA::String FXName = "fxName";
+const DAVA::String QualityGroup = "qualityGroup";
+const DAVA::String MaterialName = "materialName";
+}
 
 struct MaterialPropertyBinding
 {
@@ -80,9 +88,9 @@ RenderVariantInstance::~RenderVariantInstance()
 
 NMaterial::NMaterial()
     : localProperties(16, nullptr)
-    , localConstBuffers(16, nullptr)
     , localTextures(8, nullptr)
     , localFlags(16, 0)
+    , localConstBuffers(16, nullptr)
     , renderVariants(4, nullptr)
 {
 }
@@ -113,6 +121,7 @@ void NMaterial::BindParams(rhi::Packet& target)
     //Logger::Info( "bind-params" );
     DVASSERT(activeVariantInstance);       //trying to bind material that was not staged to render
     DVASSERT(activeVariantInstance->shader); //should have returned false on PreBuild!
+    DVASSERT(activeVariantInstance->shader->IsValid()); //should have returned false on PreBuild!
     /*set pipeline state*/
     target.renderPipelineState = activeVariantInstance->shader->GetPiplineState();
     target.depthStencilState = activeVariantInstance->depthState;
@@ -361,13 +370,15 @@ void NMaterial::SetTexture(const FastName& slotName, Texture* texture)
     MaterialTextureInfo * texInfo = localTextures.at(slotName);
     DVASSERT(texture != nullptr);    //use RemoveTexture to remove texture!
     DVASSERT(texInfo != nullptr);   //use AddTexture to add texture!
+
     if (texInfo->texture != texture)
     {
         SafeRelease(texInfo->texture);
         texInfo->texture = SafeRetain(texture);
         texInfo->path = texture->GetPathname();
-        InvalidateTextureBindings();
-    }        
+    }
+
+    InvalidateTextureBindings();
 }
 
 bool NMaterial::HasLocalTexture(const FastName& slotName)
@@ -585,7 +596,7 @@ void NMaterial::RebuildBindings()
     {
         RenderVariantInstance* currRenderVariant = variant.second;
         ShaderDescriptor *currShader = currRenderVariant->shader;
-        if (!currShader) //cant build for empty shader
+        if (!currShader->IsValid()) //cant build for empty shader
             continue;
         currRenderVariant->vertexConstBuffers.resize(currShader->GetVertexConstBuffersCount());
         currRenderVariant->fragmentConstBuffers.resize(currShader->GetFragmentConstBuffersCount());
@@ -687,7 +698,7 @@ void NMaterial::RebuildTextureBindings()
         
 
         ShaderDescriptor *currShader = currRenderVariant->shader;
-        if (!currShader) //cant build for empty shader
+        if (!currShader->IsValid()) //cant build for empty shader
             continue;
         rhi::TextureSetDescriptor textureDescr;        
         rhi::SamplerState::Descriptor samplerDescr;
@@ -810,16 +821,16 @@ void NMaterial::Save(KeyedArchive * archive, SerializationContext * serializatio
     DataNode::Save(archive, serializationContext);
 
     if (parent)
-        archive->SetUInt64("parentMaterialKey", parent->GetNodeID());
+        archive->SetUInt64(MaterialSerializationKey::ParentMaterialKey, parent->GetNodeID());
 
     if (materialName.IsValid())
-        archive->SetString("materialName", materialName.c_str());
+        archive->SetString(MaterialSerializationKey::MaterialName, materialName.c_str());
 
     if (fxName.IsValid())
-        archive->SetString("fxName", fxName.c_str());
+        archive->SetString(MaterialSerializationKey::FXName, fxName.c_str());
 
     if (qualityGroup.IsValid())
-        archive->SetString("qualityGroup", qualityGroup.c_str());
+        archive->SetString(MaterialSerializationKey::QualityGroup, qualityGroup.c_str());
 
     ScopedPtr<KeyedArchive> propertiesArchive(new KeyedArchive());
     for (HashMap<FastName, NMaterialProperty*>::iterator it = localProperties.begin(), itEnd = localProperties.end(); it != itEnd; ++it)
@@ -872,32 +883,32 @@ void NMaterial::Load(KeyedArchive * archive, SerializationContext * serializatio
         return;
     }
 
-    if (archive->IsKeyExists("materialName"))
+    if (archive->IsKeyExists(MaterialSerializationKey::MaterialName))
     {
-        materialName = FastName(archive->GetString("materialName"));
+        materialName = FastName(archive->GetString(MaterialSerializationKey::MaterialName));
     }
 
-    if (archive->IsKeyExists("materialKey"))
+    if (archive->IsKeyExists(MaterialSerializationKey::MaterialKey))
     {
-        uint64 materialKey = archive->GetUInt64("materialKey");
+        uint64 materialKey = archive->GetUInt64(MaterialSerializationKey::MaterialKey);
         id = materialKey;
     }
 
     uint64 parentKey(0);
-    if (archive->IsKeyExists("parentMaterialKey"))
+    if (archive->IsKeyExists(MaterialSerializationKey::ParentMaterialKey))
     {
-        parentKey = archive->GetUInt64("parentMaterialKey");
+        parentKey = archive->GetUInt64(MaterialSerializationKey::ParentMaterialKey);
     }
     serializationContext->AddBinding(parentKey, this); //parentKey == 0 is global material if it exists, or no-parent otherwise
 
-    if (archive->IsKeyExists("materialGroup"))
+    if (archive->IsKeyExists(MaterialSerializationKey::QualityGroup))
     {
-        qualityGroup = FastName(archive->GetString("materialGroup").c_str());
+        qualityGroup = FastName(archive->GetString(MaterialSerializationKey::QualityGroup).c_str());
     }
 
-    if (archive->IsKeyExists("fxName"))
+    if (archive->IsKeyExists(MaterialSerializationKey::FXName))
     {
-        fxName = FastName(archive->GetString("fxName").c_str());
+        fxName = FastName(archive->GetString(MaterialSerializationKey::FXName).c_str());
     }
 
     if (archive->IsKeyExists("properties"))
@@ -949,15 +960,15 @@ void NMaterial::Load(KeyedArchive * archive, SerializationContext * serializatio
 void NMaterial::LoadOldNMaterial(KeyedArchive * archive, SerializationContext * serializationContext)
 {    
     /*the following stuff is for importing old NMaterial stuff*/
-    
-    if (archive->IsKeyExists("materialName"))
+
+    if (archive->IsKeyExists(MaterialSerializationKey::MaterialName))
     {
-        materialName = FastName(archive->GetString("materialName"));
+        materialName = FastName(archive->GetString(MaterialSerializationKey::MaterialName));
     }
 
-    if (archive->IsKeyExists("materialKey"))
+    if (archive->IsKeyExists(MaterialSerializationKey::MaterialKey))
     {
-        uint64 materialKey = archive->GetUInt64("materialKey");
+        uint64 materialKey = archive->GetUInt64(MaterialSerializationKey::MaterialKey);
         id = materialKey;
     }
 
@@ -968,9 +979,9 @@ void NMaterial::LoadOldNMaterial(KeyedArchive * archive, SerializationContext * 
     }
 
     uint64 parentKey(0);
-    if (archive->IsKeyExists("parentMaterialKey"))
+    if (archive->IsKeyExists(MaterialSerializationKey::ParentMaterialKey))
     {
-        parentKey = archive->GetUInt64("parentMaterialKey");
+        parentKey = archive->GetUInt64(MaterialSerializationKey::ParentMaterialKey);
     }
     serializationContext->AddBinding(parentKey, this); //parentKey == 0 is global material if it exists, or no-parent otherwise
 
