@@ -143,6 +143,7 @@ namespace DAVA
         if (buffersCount.first)
         {
             DynamicBufferAllocator::AllocResultVB vb = DynamicBufferAllocator::AllocateVertexBuffer(sizeof(ColoredVertex), buffersCount.first);
+            DVASSERT(vb.allocatedVertices == buffersCount.first);
             *vBufferDataPtr = reinterpret_cast<ColoredVertex *>(vb.data);
             packet.vertexStream[0] = vb.buffer;
             packet.vertexCount = vb.allocatedVertices;
@@ -151,6 +152,7 @@ namespace DAVA
         if (buffersCount.second)
         {
             DynamicBufferAllocator::AllocResultIB ib = DynamicBufferAllocator::AllocateIndexBuffer(buffersCount.second);
+            DVASSERT(ib.allocatedindices == buffersCount.second);
             *iBufferDataPtr = ib.data;
             packet.indexBuffer = ib.buffer;
             packet.startIndex = ib.baseIndex;
