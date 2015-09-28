@@ -471,16 +471,15 @@ void WinUAPXamlApp::OnSwapChainPanelPointerWheel(Platform::Object ^ /*sender*/, 
     PointerDeviceType type = pointerPoint->PointerDevice->PointerDeviceType;
 
     core->RunOnMainThread([this, wheelDelta, type]()
-                          {
+    {
         UIEvent newTouch;
         newTouch.tid = 0;
         newTouch.physPoint.x = 0;
         newTouch.physPoint.y = static_cast<float32>(wheelDelta / WHEEL_DELTA);
         newTouch.phase = UIEvent::PHASE_WHEEL;
         newTouch.deviceId = ToDavaDeviceId(type);
-        newEvent.push_back(newTouch);
-        UIControlSystem::Instance()->OnInput(newEvent, events);
-                          });
+        UIControlSystem::Instance()->OnInput({newTouch}, events);
+    });
 }
 
 void WinUAPXamlApp::OnHardwareBackButtonPressed(Platform::Object ^ /*sender*/, BackPressedEventArgs ^ args)
@@ -570,17 +569,17 @@ void WinUAPXamlApp::OnMouseMoved(MouseDevice^ mouseDevice, MouseEventArgs^ args)
     float32 y = static_cast<float32>(args->MouseDelta.Y);
     int32 id = isLeftButtonPressed + isRightButtonPressed + isMiddleButtonPressed;
 
-    core->RunOnMainThread([this, x, y, button]()
-                          {
+    core->RunOnMainThread([this, x, y, id]()
+    {
         if (isLeftButtonPressed || isMiddleButtonPressed || isRightButtonPressed)
         {
-            DAVATouchEvent(UIEvent::PHASE_DRAG, x, y, button, UIEvent::PointerDeviceID::MOUSE);
+            DAVATouchEvent(UIEvent::PHASE_DRAG, x, y, id, UIEvent::PointerDeviceID::MOUSE);
         }
         else
         {
-            DAVATouchEvent(UIEvent::PHASE_MOVE, x, y, button, UIEvent::PointerDeviceID::MOUSE);
+            DAVATouchEvent(UIEvent::PHASE_MOVE, x, y, id, UIEvent::PointerDeviceID::MOUSE);
         }
-                          });
+    });
 }
 
 void WinUAPXamlApp::DAVATouchEvent(UIEvent::eInputPhase phase, float32 x, float32 y, int32 id, UIEvent::PointerDeviceID deviceId)
