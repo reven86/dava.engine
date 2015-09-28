@@ -129,12 +129,7 @@ void BackgroundController::ControlPropertyWasChanged(ControlNode* node, Abstract
 
 void CalculateTotalRectImpl(UIControl* control, Rect& totalRect, Vector2& rootControlPosition, const UIGeometricData& gd)
 {
-    UIGeometricData tempGeometricData;
-    tempGeometricData.position = control->GetPosition();
-    tempGeometricData.size = control->GetSize();
-    tempGeometricData.pivotPoint = control->GetPivotPoint();
-    tempGeometricData.scale = control->GetScale();
-    tempGeometricData.angle = control->GetAngle();
+    UIGeometricData tempGeometricData = control->GetLocalGeometricData();
     tempGeometricData.AddGeometricData(gd);
     Rect box = tempGeometricData.GetAABBox();
 

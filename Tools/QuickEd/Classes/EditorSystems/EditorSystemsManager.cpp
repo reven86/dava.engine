@@ -191,12 +191,7 @@ void EditorSystemsManager::Activate()
     }
     if (editingRootControls.empty())
     {
-        PackageControlsNode* controlsNode = package->GetPackageControlsNode();
-        for (int index = 0; index < controlsNode->GetCount(); ++index)
-        {
-            editingRootControls.insert(controlsNode->Get(index));
-        }
-        EditingRootControlsChanged.Emit(editingRootControls);
+        SetPreviewMode(true);
     }
 }
 
@@ -210,6 +205,13 @@ bool EditorSystemsManager::OnInput(UIEvent* currentInput)
         }
     }
     return false;
+}
+
+void EditorSystemsManager::SetEmulationMode(bool emulationMode)
+{
+    auto root = static_cast<RootControl*>(rootControl);
+    root->SetEmulationMode(emulationMode);
+    EmulationModeChangedSignal.Emit(std::move(emulationMode));
 }
 
 void EditorSystemsManager::CollectControlNodesByPos(DAVA::Vector<ControlNode*>& controlNodes, const DAVA::Vector2& pos) const
@@ -235,27 +237,10 @@ void EditorSystemsManager::CollectControlNodesByRect(SelectedControls& controlNo
 void EditorSystemsManager::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
     SelectionContainer::MergeSelectionAndContainer(selected, deselected, selectedControlNodes);
-    if (selectedControlNodes.empty())
+    if (!selectedControlNodes.empty())
     {
-        return;
+        SetPreviewMode(false);
     }
-    else
-    {
-        editingRootControls.clear();
-        for (ControlNode* selectedControlNode : selectedControlNodes)
-        {
-            PackageBaseNode* root = static_cast<PackageBaseNode*>(selectedControlNode);
-            while (nullptr != root->GetParent() && nullptr != root->GetParent()->GetControl())
-            {
-                root = root->GetParent();
-            }
-            if (nullptr != root)
-            {
-                editingRootControls.insert(root);
-            }
-        }
-    }
-    EditingRootControlsChanged.Emit(std::move(editingRootControls));
 }
 
 void EditorSystemsManager::CollectControlNodesByPosImpl(DAVA::Vector<ControlNode*>& controlNodes, const DAVA::Vector2& pos, ControlNode* node) const
@@ -290,6 +275,10 @@ void EditorSystemsManager::ControlWillBeRemoved(ControlNode* node, ControlsConta
 {
     if (std::find(editingRootControls.begin(), editingRootControls.end(), node) != editingRootControls.end())
     {
+        if (!previewMode)
+        {
+            recentlyRemovedControls.push_back(node);
+        }
         editingRootControls.erase(node);
         EditingRootControlsChanged.Emit(std::move(editingRootControls));
     }
@@ -297,7 +286,7 @@ void EditorSystemsManager::ControlWillBeRemoved(ControlNode* node, ControlsConta
 
 void EditorSystemsManager::ControlWasAdded(ControlNode* node, ControlsContainerNode* destination, int)
 {
-    if (selectedControlNodes.empty())
+    if (previewMode)
     {
         PackageControlsNode* packageControlsNode = package->GetPackageControlsNode();
         if (destination == packageControlsNode)
@@ -306,11 +295,50 @@ void EditorSystemsManager::ControlWasAdded(ControlNode* node, ControlsContainerN
             EditingRootControlsChanged.Emit(std::move(editingRootControls));
         }
     }
+    else
+    {
+        if (std::find(recentlyRemovedControls.begin(), recentlyRemovedControls.end(), node) != recentlyRemovedControls.end())
+        {
+            recentlyRemovedControls.erase(std::remove(recentlyRemovedControls.begin(), recentlyRemovedControls.end(), node));
+            PackageBaseNode* parent = destination;
+            while (parent->GetParent() != nullptr && parent->GetParent()->GetControl() != nullptr)
+            {
+                parent = parent->GetParent();
+            }
+            DVASSERT(nullptr != parent);
+            editingRootControls.insert(parent);
+            EditingRootControlsChanged.Emit(std::move(editingRootControls));
+        }
+    }
 }
 
-void EditorSystemsManager::SetEmulationMode(bool emulationMode)
+void EditorSystemsManager::SetPreviewMode(bool mode)
 {
-    auto root = static_cast<RootControl*>(rootControl);
-    root->SetEmulationMode(emulationMode);
-    EmulationModeChangedSignal.Emit(std::move(emulationMode));
+    previewMode = mode;
+    editingRootControls.clear();
+    if (previewMode)
+    {
+        PackageControlsNode* controlsNode = package->GetPackageControlsNode();
+        for (int index = 0; index < controlsNode->GetCount(); ++index)
+        {
+            editingRootControls.insert(controlsNode->Get(index));
+        }
+    }
+
+    else
+    {
+        for (ControlNode* selectedControlNode : selectedControlNodes)
+        {
+            PackageBaseNode* root = static_cast<PackageBaseNode*>(selectedControlNode);
+            while (nullptr != root->GetParent() && nullptr != root->GetParent()->GetControl())
+            {
+                root = root->GetParent();
+            }
+            if (nullptr != root)
+            {
+                editingRootControls.insert(root);
+            }
+        }
+    }
+    EditingRootControlsChanged.Emit(editingRootControls);
 }

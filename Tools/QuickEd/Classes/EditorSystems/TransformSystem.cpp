@@ -33,11 +33,8 @@
 #include "EditorSystems/EditorSystemsManager.h"
 #include "UI/UIEvent.h"
 #include "UI/UIControl.h"
-#include "Input/KeyboardDevice.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/ControlProperties/RootProperty.h"
-#include "Model/ControlProperties/ValueProperty.h"
-#include "UI/QtModelPackageCommandExecutor.h"
 #include <chrono>
 
 using namespace DAVA;
@@ -464,9 +461,9 @@ void TransformSystem::Rotate(Vector2 pos)
     const KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
     if (keyboard.IsKeyPressed(DVKEY_SHIFT))
     {
-        static int step = 15.0f; //fixed angle step
+        static const int step = 15; //fixed angle step
         float32 finalAngle = originalAngle + deltaAngle + accumulatedAngle;
-        int32 nearestTargetAngle = finalAngle - static_cast<int>(finalAngle) % step;
+        int32 nearestTargetAngle = static_cast<int32>(finalAngle - static_cast<int32>(finalAngle) % step);
         if (finalAngle >= 0.0f && deltaAngle < 0.0f)
         {
             nearestTargetAngle += step;

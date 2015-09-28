@@ -117,7 +117,7 @@ private:
 
     void ControlWillBeRemoved(ControlNode* node, ControlsContainerNode* from) override;
     void ControlWasAdded(ControlNode* node, ControlsContainerNode* /*destination*/, int /*index*/) override;
-
+    void SetPreviewMode(bool mode);
     DAVA::UIControl* rootControl = nullptr;
     DAVA::UIControl* scalableControl = nullptr;
 
@@ -126,6 +126,8 @@ private:
     PackageNode* package = nullptr;
     SelectedControls selectedControlNodes;
     SortedPackageBaseNodeSet editingRootControls;
+    DAVA::Vector<ControlNode*> recentlyRemovedControls;
+    bool previewMode = true;
 };
 
 #endif // __QUICKED_SYSTEMS_MANAGER_H__
