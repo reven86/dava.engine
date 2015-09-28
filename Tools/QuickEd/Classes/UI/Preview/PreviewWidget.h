@@ -56,7 +56,6 @@ class PreviewWidget : public QWidget, public Ui::PreviewWidget
 public:
     explicit PreviewWidget(QWidget *parent = nullptr);
     ~PreviewWidget() = default;
-    DavaGLWidget *GetDavaGLWidget();
     void SetEmulationMode(bool emulationMode);
     
 public slots:

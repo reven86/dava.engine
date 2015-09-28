@@ -33,9 +33,6 @@
 #include "EditorCore.h"
 
 #include "Platform/Qt5/QtLayer.h"
-#include "QtTools/DavaGLWidget/davaglwidget.h"
-#include "QtTools/FrameworkBinding/DavaLoop.h"
-#include "QtTools/FrameworkBinding/FrameworkLoop.h"
 #include "TextureCompression/PVRConverter.h"
 
 void InitPVRTexTool()
@@ -65,32 +62,12 @@ int main(int argc, char *argv[])
     // Editor Settings might be used by any singleton below during initialization, so
     // initialize it before any other one.
     new EditorSettings();
-    
+
     DAVA::ParticleEmitter::FORCE_DEEP_CLONE = true;
 
-    auto loopManager = new DavaLoop();
-    auto loop = new FrameworkLoop();
-
     auto *editorCore = new EditorCore();
-    auto mainWindow = editorCore->GetMainWindow();
-    auto glWidget = mainWindow->GetGLWidget();
 
-    loop->SetOpenGLWindow(glWidget);
     editorCore->Start();
-    loopManager->StartLoop( loop );
 
-    QApplication::exec();
-
-    glWidget->setParent(nullptr);
-
-    delete editorCore;
-    delete loop;
-    delete loopManager;
-    DAVA::QtLayer::Instance()->Release();
-    // TODO: fix crash on release
-    // DAVA::Core::Instance()->Release();    
-
-    delete glWidget;
-
-    return 0;
+    return QApplication::exec();
 }

@@ -43,7 +43,6 @@ class PropertiesWidget;
 class LibraryWidget;
 class PreviewWidget;
 
-class DavaGLWidget;
 class LocalizationEditorDialog;
 class DialogReloadSprites;
 
@@ -70,7 +69,6 @@ public:
     void OnProjectOpened(const DAVA::ResultList &resultList, QString projectPath);
     int AddTab(const DAVA::FilePath &scenePath);
     void OnCleanChanged(int index, bool val);
-    DavaGLWidget *GetGLWidget() const;
     DialogReloadSprites *GetDialogReloadSprites() const;
 protected:
     void closeEvent(QCloseEvent *event) override;
