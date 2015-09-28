@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 #ifndef __DAVAENGINE_ASSET_CACHE_SKOPPED_INCLUDE_H__
 #define __DAVAENGINE_ASSET_CACHE_SKOPPED_INCLUDE_H__
 
@@ -42,6 +41,4 @@
 
 #include "AssetCache/CacheDB.h"
 
-
 #endif // __DAVAENGINE_ASSET_CACHE_SKOPPED_INCLUDE_H__
-

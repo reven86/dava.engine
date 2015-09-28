@@ -70,55 +70,49 @@
 
 namespace DAVA
 {
-
-void MD5::ForData(const uint8 *data, uint32 dataSize, MD5Digest &digest)
+void MD5::ForData(const uint8* data, uint32 dataSize, MD5Digest& digest)
 {
 	MD5 md5;
 	md5.Init();
-	md5.Update(data, dataSize);
-	md5.Final();
+    md5.Update(data, dataSize);
+    md5.Final();
 
-	digest = md5.GetDigest();
+    digest = md5.GetDigest();
 }
 
-
-
-void MD5::ForFile(const FilePath & pathName, MD5Digest &digest)
+void MD5::ForFile(const FilePath& pathName, MD5Digest& digest)
 {
-	MD5 md5;
-	md5.Init();
+    MD5 md5;
+    md5.Init();
 
-	ScopedPtr<File> file(File::Create(pathName, File::OPEN | File::READ));
-	if (file)
-	{
-		Array<uint8, 1024> readBuffer;
-		uint32 readBytes = 0;
-		while ((readBytes = file->Read(readBuffer.data(), readBuffer.size())) != 0)
-		{
-			md5.Update(readBuffer.data(), readBytes);
-		}
-	}
+    ScopedPtr<File> file(File::Create(pathName, File::OPEN | File::READ));
+    if (file)
+    {
+        Array<uint8, 1024> readBuffer;
+        uint32 readBytes = 0;
+        while ((readBytes = file->Read(readBuffer.data(), readBuffer.size())) != 0)
+        {
+            md5.Update(readBuffer.data(), readBytes);
+        }
+    }
 
-	md5.Final();
-	digest = md5.GetDigest();
+    md5.Final();
+    digest = md5.GetDigest();
 }
 
-
-void MD5::ForDirectory(const FilePath & pathName, MD5Digest &digest, bool isRecursive, bool includeHidden)
+void MD5::ForDirectory(const FilePath& pathName, MD5Digest& digest, bool isRecursive, bool includeHidden)
 {
 	MD5 md5;
 	md5.Init();
 	MD5::RecursiveDirectoryMD5(pathName, md5, isRecursive, includeHidden);
 	md5.Final();
 
-	digest = md5.GetDigest();
+    digest = md5.GetDigest();
 }
-
-
 
 void MD5::RecursiveDirectoryMD5(const FilePath & pathName, MD5 & md5, bool isRecursive, bool includeHidden)
 {
-	ScopedPtr<FileList> fileList(new FileList(pathName, includeHidden));
+    ScopedPtr<FileList> fileList(new FileList(pathName, includeHidden));
     fileList->Sort();
 	for(int i = 0; i < fileList->GetCount(); ++i)
 	{
@@ -134,32 +128,31 @@ void MD5::RecursiveDirectoryMD5(const FilePath & pathName, MD5 & md5, bool isRec
 				if (isRecursive)
                 {
                     String name = fileList->GetPathname(i).GetLastDirectoryName();
-					md5.Update(reinterpret_cast<const uint8 *>(name.c_str()), static_cast<uint32>(name.size()));
-                    
+                    md5.Update(reinterpret_cast<const uint8*>(name.c_str()), static_cast<uint32>(name.size()));
+
                     RecursiveDirectoryMD5(fileList->GetPathname(i), md5, isRecursive, includeHidden);
                 }
-			}
-		}
-		else 
+            }
+        }
+        else 
 		{
 			// update MD5 according to the file
             String name = fileList->GetPathname(i).GetFilename();
-			md5.Update(reinterpret_cast<const uint8 *>(name.c_str()), static_cast<uint32>(name.size()));
-			
-			MD5Digest fileDigest;
-			MD5::ForFile(fileList->GetPathname(i), fileDigest);
-			md5.Update(fileDigest.digest.data(), fileDigest.digest.size());
-		}
-	}
+            md5.Update(reinterpret_cast<const uint8*>(name.c_str()), static_cast<uint32>(name.size()));
+
+            MD5Digest fileDigest;
+            MD5::ForFile(fileList->GetPathname(i), fileDigest);
+            md5.Update(fileDigest.digest.data(), fileDigest.digest.size());
+        }
+    }
 }
 
-void MD5::HashToChar(const MD5Digest &digest, char8 *buffer, uint32 bufferSize)
+void MD5::HashToChar(const MD5Digest& digest, char8* buffer, uint32 bufferSize)
 {
     HashToChar(digest.digest.data(), digest.digest.size(), buffer, bufferSize);
 }
 
-    
-void MD5::HashToChar(const uint8 * hash, uint32 hashSize, char8 *buffer, uint32 bufferSize)
+void MD5::HashToChar(const uint8* hash, uint32 hashSize, char8* buffer, uint32 bufferSize)
 {
     DVASSERT((hashSize * 2 + 1) == bufferSize && "To small buffer. Must be enought to put all characters of hash and \0");
 
@@ -172,14 +165,13 @@ void MD5::HashToChar(const uint8 * hash, uint32 hashSize, char8 *buffer, uint32 
     buffer[bufferSize - 1] = 0;
 }
 
-
-void MD5::CharToHash(const char8 *buffer, MD5Digest &digest)
+void MD5::CharToHash(const char8* buffer, MD5Digest& digest)
 {
     const int32 bufferSize = Min(static_cast<int32>(strlen(buffer)), MD5Digest::DIGEST_SIZE * 2);
     CharToHash(buffer, bufferSize, digest.digest.data(), digest.digest.size());
 }
 
-void MD5::CharToHash(const char8 *buffer, uint32 bufferSize, uint8 * hash, uint32 hashSize)
+void MD5::CharToHash(const char8* buffer, uint32 bufferSize, uint8* hash, uint32 hashSize)
 {
     if (bufferSize != hashSize * 2)
     {
@@ -224,8 +216,6 @@ char8 MD5::GetCharacterFromNumber(uint8 number)
     
     return (number + 'A' - 10);
 }
-
-
 
 static void Transform(uint32 *buf, uint32 *in);
 
@@ -344,12 +334,12 @@ void MD5::Final ()
 
   /* store buffer in digest */
   for (i = 0, ii = 0; i < 4; i++, ii += 4) {
-    this->digest.digest[ii] = (unsigned char)(this->buf[i] & 0xFF);
-    this->digest.digest[ii + 1] =
+      this->digest.digest[ii] = (unsigned char)(this->buf[i] & 0xFF);
+      this->digest.digest[ii + 1] =
       (unsigned char)((this->buf[i] >> 8) & 0xFF);
-    this->digest.digest[ii + 2] =
+      this->digest.digest[ii + 2] =
       (unsigned char)((this->buf[i] >> 16) & 0xFF);
-    this->digest.digest[ii + 3] =
+      this->digest.digest[ii + 3] =
       (unsigned char)((this->buf[i] >> 24) & 0xFF);
   }
 }

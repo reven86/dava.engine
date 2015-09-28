@@ -207,4 +207,3 @@ String EditorSettings::GetAssetCacheTimeoutSec() const
 {
     return settings->GetString("editor.assetCacheTimeoutSec", "5");
 }
-

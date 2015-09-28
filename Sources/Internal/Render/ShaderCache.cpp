@@ -51,7 +51,6 @@ namespace
     bool initialized = false;
 }
 
-
 void Initialize()
 {
     DVASSERT(!initialized);
@@ -166,7 +165,7 @@ ShaderSourceCode GetSourceCode(const FastName& name)
 ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastName, int32>& defines)
 {    
     DVASSERT(initialized);
- 
+
     /*key*/
     Vector<int32> key;
     BuildFlagsKey(name, defines, key);    
@@ -188,7 +187,7 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
     }
 
     /*Sources*/
-    ShaderSourceCode sourceCode = GetSourceCode(name);    
+    ShaderSourceCode sourceCode = GetSourceCode(name);
     rhi::ShaderSource vSource(sourceCode.vertexProgSourcePath.GetFrameworkPath().c_str());
     rhi::ShaderSource fSource(sourceCode.fragmentProgSourcePath.GetFrameworkPath().c_str());
     vSource.Construct(rhi::PROG_VERTEX, sourceCode.vertexProgText, progDefines);
@@ -203,7 +202,6 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
     rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_VERTEX, vProgUid, vSource.SourceCode());
     rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_FRAGMENT, fProgUid, fSource.SourceCode());
 
-
     //ShaderDescr
     rhi::PipelineState::Descriptor  psDesc;
     psDesc.vprogUid = vProgUid;
@@ -211,7 +209,7 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
     psDesc.vertexLayout = vSource.ShaderVertexLayout();
     psDesc.blending = fSource.Blending();
     rhi::HPipelineState piplineState = rhi::AcquireRenderPipelineState(psDesc);
-    ShaderDescriptor* res = new ShaderDescriptor(piplineState, vProgUid, fProgUid);    
+    ShaderDescriptor* res = new ShaderDescriptor(piplineState, vProgUid, fProgUid);
     res->sourceName = name;
     res->defines = defines;
     res->valid = piplineState.IsValid(); //later add another conditions
@@ -219,7 +217,8 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
     {
         res->UpdateConfigFromSource(&vSource, &fSource);
         res->requiredVertexFormat = GetVertexLayoutRequiredFormat(psDesc.vertexLayout);
-    }        
+    }
+
     shaderDescriptors[key] = res;
     return res;
 }
@@ -227,9 +226,9 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
 void RelaoadShaders()
 {
     DVASSERT(initialized);
-    
+
     //clear cached source files
-    for (auto &it : shaderSourceCodes)
+    for (auto& it : shaderSourceCodes)
     {
         SafeDelete(it.second.vertexProgText);
         SafeDelete(it.second.fragmentProgText);
@@ -239,36 +238,33 @@ void RelaoadShaders()
     //reload shaders
     for (auto& shaderDescr : shaderDescriptors)
     {
-        ShaderDescriptor * shader = shaderDescr.second;
+        ShaderDescriptor* shader = shaderDescr.second;
 
         /*Sources*/
         ShaderSourceCode sourceCode = GetSourceCode(shader->sourceName);
         rhi::ShaderSource vSource(sourceCode.vertexProgSourcePath.GetFrameworkPath().c_str());
         rhi::ShaderSource fSource(sourceCode.fragmentProgSourcePath.GetFrameworkPath().c_str());
         Vector<String> progDefines;
-        progDefines.reserve(shader->defines.size() * 2);        
+        progDefines.reserve(shader->defines.size() * 2);
         for (auto& it : shader->defines)
         {
             progDefines.push_back(String(it.first.c_str()));
-            progDefines.push_back(DAVA::Format("%d", it.second));            
+            progDefines.push_back(DAVA::Format("%d", it.second));
         }
         vSource.Construct(rhi::PROG_VERTEX, sourceCode.vertexProgText, progDefines);
         fSource.Construct(rhi::PROG_FRAGMENT, sourceCode.fragmentProgText, progDefines);
-        
-        
 
         rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_VERTEX, shader->vProgUid, vSource.SourceCode());
         rhi::ShaderCache::UpdateProg(rhi::HostApi(), rhi::PROG_FRAGMENT, shader->fProgUid, fSource.SourceCode());
 
-
         //ShaderDescr
-        rhi::PipelineState::Descriptor  psDesc;
+        rhi::PipelineState::Descriptor psDesc;
         psDesc.vprogUid = shader->vProgUid;
         psDesc.fprogUid = shader->fProgUid;
         psDesc.vertexLayout = vSource.ShaderVertexLayout();
         psDesc.blending = fSource.Blending();
         rhi::ReleaseRenderPipelineState(shader->piplineState);
-        shader->piplineState = rhi::AcquireRenderPipelineState(psDesc);                
+        shader->piplineState = rhi::AcquireRenderPipelineState(psDesc);
         shader->valid = shader->piplineState.IsValid(); //later add another conditions
         if (shader->valid)
         {
@@ -278,7 +274,7 @@ void RelaoadShaders()
         else
         {
             shader->requiredVertexFormat = 0;
-        }        
+        }
     }
 }
 

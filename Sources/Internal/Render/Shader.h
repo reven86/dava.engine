@@ -77,10 +77,9 @@ class ShaderDescriptor
 public://utility    
     static const rhi::ShaderPropList& GetProps(UniquePropertyLayout layout);
     static uint32 CalculateRegsCount(rhi::ShaderProp::Type type, uint32 arraySize);  //return in registers  
-    static uint32 CalculateDataSize(rhi::ShaderProp::Type type, uint32 arraySize); //return in float  
-    
-public:    
+    static uint32 CalculateDataSize(rhi::ShaderProp::Type type, uint32 arraySize); //return in float
 
+public:
     void UpdateDynamicParams();
     void ClearDynamicBindings();
 
@@ -101,7 +100,8 @@ public:
 private:
     ShaderDescriptor(rhi::HPipelineState pipelineState, FastName vProgUid, FastName fProgUid);
     ~ShaderDescriptor();
-    void UpdateConfigFromSource(rhi::ShaderSource *vSource, rhi::ShaderSource *fSource);
+
+    void UpdateConfigFromSource(rhi::ShaderSource* vSource, rhi::ShaderSource* fSource);
 
     Vector<ConstBufferDescriptor> constBuffers;
 

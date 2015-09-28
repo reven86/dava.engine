@@ -429,9 +429,6 @@
     <ClInclude Include="..\..\Sources\Internal\Platform\DPIHelper.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\MovieViewControlStub.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\Process.h" />
-    <ClInclude Include="..\..\Sources\Internal\Platform\Qt4\QtLayer.h" />
-    <ClInclude Include="..\..\Sources\Internal\Platform\Qt4\Win32\CorePlatformWin32Qt.h" />
-    <ClInclude Include="..\..\Sources\Internal\Platform\Qt4\Win32\QtLayerWin32.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\SystemTimer.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\TemplateWin32\CorePlatformWin32.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugQt|Win32'">true</ExcludedFromBuild>
@@ -899,9 +896,6 @@
     <ClCompile Include="..\..\Sources\Internal\Platform\DateTime.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\DeviceInfo.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\Process.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Platform\Qt4\QtLayer.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Platform\Qt4\Win32\CorePlatformWin32Qt.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Platform\Qt4\Win32\QtLayerWin32.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\SystemTimer.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\TemplateWin32\CorePlatformWin32.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugQt|Win32'">true</ExcludedFromBuild>

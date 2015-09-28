@@ -71,7 +71,6 @@ public:
 
     const Vector<uint8>& GetDataVector() const;
 
-
     /**
      \brief Write [dataSize] bytes to this file from [pointerToData]
      \param[in] pointerToData function get data from this pointer
@@ -121,7 +120,6 @@ inline const Vector<uint8>& DynamicMemoryFile::GetDataVector() const
 {
     return data;
 }
-
 };
 
 

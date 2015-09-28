@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 #ifndef __DAVAENGINE_ASSETCACHE_CONNECTION_H__
 #define __DAVAENGINE_ASSETCACHE_CONNECTION_H__
 
@@ -38,40 +37,37 @@ namespace DAVA
 {
 namespace Net
 {
-    struct IChannel;
+struct IChannel;
 }
 
 class KeyedArchive;
 namespace AssetCache
 {
+bool SendArchieve(Net::IChannel* channel, KeyedArchive* archieve);
 
-bool SendArchieve(Net::IChannel* channel, KeyedArchive *archieve);
-    
 class Connection final
 {
 public:
-    Connection(Net::eNetworkRole role, const Net::Endpoint & endpoint, Net::IChannelListener * listener, Net::eTransportType transport = Net::TRANSPORT_TCP);
+    Connection(Net::eNetworkRole role, const Net::Endpoint& endpoint, Net::IChannelListener* listener, Net::eTransportType transport = Net::TRANSPORT_TCP);
     ~Connection();
 
-    const Net::Endpoint & GetEndpoint() const;
+    const Net::Endpoint& GetEndpoint() const;
 
 private:
-
     bool Connect(Net::eNetworkRole _role, Net::eTransportType transport);
     void DisconnectBlocked();
 
-    static Net::IChannelListener * Create(uint32 serviceId, void* context);
+    static Net::IChannelListener* Create(uint32 serviceId, void* context);
     static void Delete(Net::IChannelListener* obj, void* context);
 
 private:
-    
     Net::Endpoint endpoint;
     Net::NetCore::TrackId controllerId = Net::NetCore::INVALID_TRACK_ID;
 
-    Net::IChannelListener *listener = nullptr;
+    Net::IChannelListener* listener = nullptr;
 };
 
-inline const Net::Endpoint & Connection::GetEndpoint() const
+inline const Net::Endpoint& Connection::GetEndpoint() const
 {
     return endpoint;
 }
@@ -80,4 +76,3 @@ inline const Net::Endpoint & Connection::GetEndpoint() const
 } // end of namespace DAVA
 
 #endif // __DAVAENGINE_ASSETCACHE_CONNECTION_H__
-

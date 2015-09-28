@@ -164,29 +164,29 @@ rhi::HConstBuffer ShaderDescriptor::GetDynamicBuffer(ConstBufferDescriptor::Type
     return dynamicBuffers[std::make_pair(type, index)];
 }
 
-
 ShaderDescriptor::ShaderDescriptor(rhi::HPipelineState _pipelineState, FastName _vProgUid, FastName _fProgUid)
-    :piplineState(_pipelineState), vProgUid(_vProgUid), fProgUid(_fProgUid)
-{    
-    
+    : piplineState(_pipelineState)
+    , vProgUid(_vProgUid)
+    , fProgUid(_fProgUid)
+{
 }
 ShaderDescriptor::~ShaderDescriptor()
 {
     rhi::ReleaseRenderPipelineState(piplineState);
 }
 
-void ShaderDescriptor::UpdateConfigFromSource(rhi::ShaderSource *vSource, rhi::ShaderSource *fSource)
+void ShaderDescriptor::UpdateConfigFromSource(rhi::ShaderSource* vSource, rhi::ShaderSource* fSource)
 {
     vertexConstBuffersCount = vSource->ConstBufferCount();
     fragmentConstBuffersCount = fSource->ConstBufferCount();
-    
+
     constBuffers.clear();
     dynamicBuffers.clear();
-    dynamicPropertyBindings.clear();    
+    dynamicPropertyBindings.clear();
 
     Vector<BufferPropertyLayout> bufferPropertyLayouts;
     bufferPropertyLayouts.resize(vertexConstBuffersCount + fragmentConstBuffersCount);
-    
+
     constBuffers.resize(vertexConstBuffersCount + fragmentConstBuffersCount);
 
     for (auto &prop : vSource->Properties())
@@ -213,7 +213,6 @@ void ShaderDescriptor::UpdateConfigFromSource(rhi::ShaderSource *vSource, rhi::S
         }
 
         constBuffers[i].propertyLayoutId = propertyLayoutSet.MakeUnique(bufferPropertyLayouts[i]);
-
     }
 
 

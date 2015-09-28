@@ -86,7 +86,7 @@ protected:
     void MoveTouchsToVector(const UIEvent &event, Vector<UIEvent> &outTouches);
     
     QtLayerDelegate *delegate;
-    Vector<UIEvent> allTouches;
+    Vector<UIEvent> allEvents;
     bool isDAVAEngineEnabled;
 };
 

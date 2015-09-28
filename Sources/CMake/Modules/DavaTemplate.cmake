@@ -175,14 +175,6 @@ endif()
 
 ###
 
-if( QT4_FOUND )
-    set( QT_PREFIX "Qt4")	
-
-elseif( QT5_FOUND )
-    set( QT_PREFIX "Qt5")	
-
-endif()
-
 if( DAVA_FOUND )
     if( ANDROID )
         include_directories   ( ${DAVA_ENGINE_DIR}/Platform/TemplateAndroid )
@@ -194,16 +186,16 @@ if( DAVA_FOUND )
 
     endif()
 
-    if( QT_PREFIX )
+    if( QT5_FOUND )
         if( WIN32 )
-            set ( PLATFORM_INCLUDES_DIR ${DAVA_PLATFORM_SRC}/${QT_PREFIX} ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/Win32 )
-            list( APPEND PATTERNS_CPP   ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/*.cpp ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/Win32/*.cpp )
-            list( APPEND PATTERNS_H     ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/*.h   ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/Win32/*.h   )        
+            set ( PLATFORM_INCLUDES_DIR ${DAVA_PLATFORM_SRC}/Qt5 ${DAVA_PLATFORM_SRC}/Qt5/Win32 )
+            list( APPEND PATTERNS_CPP   ${DAVA_PLATFORM_SRC}/Qt5/*.cpp ${DAVA_PLATFORM_SRC}/Qt5/Win32/*.cpp )
+            list( APPEND PATTERNS_H     ${DAVA_PLATFORM_SRC}/Qt5/*.h   ${DAVA_PLATFORM_SRC}/Qt5/Win32/*.h   )        
 
         elseif( MACOS )
-            set ( PLATFORM_INCLUDES_DIR  ${DAVA_PLATFORM_SRC}/${QT_PREFIX}  ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/MacOS )
-            list( APPEND PATTERNS_CPP    ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/*.cpp ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/MacOS/*.cpp ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/MacOS/*.mm )
-            list( APPEND PATTERNS_H      ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/*.h   ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/MacOS/*.h   )        
+            set ( PLATFORM_INCLUDES_DIR  ${DAVA_PLATFORM_SRC}/Qt5  ${DAVA_PLATFORM_SRC}/Qt5/MacOS )
+            list( APPEND PATTERNS_CPP    ${DAVA_PLATFORM_SRC}/Qt5/*.cpp ${DAVA_PLATFORM_SRC}/Qt5/MacOS/*.cpp ${DAVA_PLATFORM_SRC}/Qt5/MacOS/*.mm )
+            list( APPEND PATTERNS_H      ${DAVA_PLATFORM_SRC}/Qt5/*.h   ${DAVA_PLATFORM_SRC}/Qt5/MacOS/*.h   )        
 
         endif()
      
@@ -547,7 +539,12 @@ if( DEPLOY )
         set_target_properties( ${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_CONFIGURATION_BUILD_DIR  ${DEPLOY_DIR} )
 
         if( IOS )
-            set( XCODERUN_PARAM -sdk iphoneos PackageApplication -v ${DEPLOY_DIR}/${PROJECT_NAME}.app -o ${DEPLOY_DIR}/${PROJECT_NAME}.ipa )
+
+            if( NOT IOS_SDK )
+                set( IOS_SDK -sdk iphoneos  )
+            endif()
+
+            set( XCODERUN_PARAM ${IOS_SDK} PackageApplication -v ${DEPLOY_DIR}/${PROJECT_NAME}.app -o ${DEPLOY_DIR}/${PROJECT_NAME}.ipa )
 
             if( DEVELOPER_NAME )
                 list( APPEND XCODERUN_PARAM  --sign ${DEVELOPER_NAME} )
@@ -557,7 +554,10 @@ if( DEPLOY )
                 list( APPEND XCODERUN_PARAM  --embed ${PROVISONING_PROFILE} )
             endif()
 
-            add_custom_target ( IOS_DEPLOY_${PROJECT_NAME} ALL COMMAND /usr/bin/xcrun ${XCODERUN_PARAM} )
+            add_custom_target ( IOS_DEPLOY_${PROJECT_NAME} ALL COMMAND ${IOS_DEPLOY_CUSTOM_COMAND}
+                                                               COMMAND /usr/bin/xcrun ${XCODERUN_PARAM} )
+
+
             add_dependencies(  IOS_DEPLOY_${PROJECT_NAME} ${PROJECT_NAME} )
 
         endif()
