@@ -280,7 +280,14 @@ dx11_Initialize( const InitParam& param )
 
     SetDispatchTable( DispatchDX11 );
 
-
+    if( param.maxVertexBufferCount )
+        VertexBufferDX11::Init( param.maxVertexBufferCount );
+    if( param.maxIndexBufferCount )
+        IndexBufferDX11::Init( param.maxIndexBufferCount );
+    if( param.maxConstBufferCount )
+        ConstBufferDX11::Init( param.maxConstBufferCount );
+    if( param.maxTextureCount )
+        TextureDX11::Init( param.maxTextureCount );
     ConstBufferDX11::InitializeRingBuffer( 4*1024*1024 ); // CRAP: hardcoded const ring-buf size
 
     stat_DIP = StatSet::AddStat("rhi'dip", "dip");

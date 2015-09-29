@@ -156,6 +156,43 @@ metal_Texture_Create( const Texture::Descriptor& texDesc )
         tex->is_renderable  = texDesc.isRenderTarget;
         tex->is_cubemap     = texDesc.type == TEXTURE_TYPE_CUBE;
         
+        
+        uint32  sliceCount = (texDesc.type == TEXTURE_TYPE_CUBE)  ? 6  : 1;
+        
+        for( unsigned s=0; s!=sliceCount; ++s )
+        {
+            for( unsigned m=0; m!=texDesc.levelCount; ++m )
+            {
+                void*   data = texDesc.initialData[s*texDesc.levelCount+m];
+                
+                if( data )
+                {
+                    MTLRegion       rgn;
+                    uint32          stride  = TextureStride( texDesc.format, Size2i(texDesc.width,texDesc.height), m );
+                    Size2i          ext     = TextureExtents( Size2i(texDesc.width,texDesc.height), m );
+                    unsigned        sz      = TextureSize( texDesc.format, texDesc.width, texDesc.height, m );
+
+                    rgn.origin.x    = 0;
+                    rgn.origin.y    = 0;
+                    rgn.origin.z    = 0;
+                    rgn.size.width  = ext.dx;
+                    rgn.size.height = ext.dy;
+                    rgn.size.depth  = 1;
+
+                    if( texDesc.format == TEXTURE_FORMAT_R4G4B4A4 )
+                        _FlipRGBA4_ABGR4( texDesc.initialData[m], sz );
+                    else if( texDesc.format == TEXTURE_FORMAT_R5G5B5A1)
+                        _ABGR1555toRGBA5551( texDesc.initialData[m], sz );
+
+                    [uid replaceRegion:rgn mipmapLevel:m slice:0 withBytes:data bytesPerRow:stride bytesPerImage:sz];
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+        
         if( !tex->is_renderable )
             tex->mappedData = ::malloc( TextureSize( texDesc.format, texDesc.width, texDesc.height, 0 ) );
     
@@ -354,6 +391,12 @@ metal_Texture_Update( Handle tex, const void* data, uint32 level, TextureFace fa
 
 namespace TextureMetal
 {
+
+void
+Init( uint32 maxCount )
+{
+    TextureMetalPool::Reserve( maxCount );
+}
 
 void
 SetupDispatch( Dispatch* dispatch )
