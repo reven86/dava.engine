@@ -247,25 +247,31 @@ void WinUAPXamlApp::Run()
     Core::Instance()->SetIsActive(true);
 
     Core::Instance()->SystemAppStarted();
+
+    SystemTimer* sysTimer = SystemTimer::Instance();
     while (!quitFlag)
     {
         dispatcher->ProcessTasks();
 
-        uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
+        //  Control FPS
+        {
+            static uint64 startTime = sysTimer->AbsoluteMS();
+
+            uint64 elapsedTime = sysTimer->AbsoluteMS() - startTime;
+            int32 fpsLimit = Renderer::GetDesiredFPS();
+            if (fpsLimit > 0)
+            {
+                uint64 averageFrameTime = 1000UL / static_cast<uint64>(fpsLimit);
+                if (averageFrameTime > elapsedTime)
+                {
+                    uint64 sleepMs = averageFrameTime - elapsedTime;
+                    Thread::Sleep(static_cast<uint32>(sleepMs));
+                }
+            }
+            startTime = sysTimer->AbsoluteMS();
+        }
 
         Core::Instance()->SystemProcessFrame();
-        
-        uint32 elapsedTime = (uint32)(SystemTimer::Instance()->AbsoluteMS() - startTime);
-        int32 sleepMs = 1;
-        int32 fps = Renderer::GetDesiredFPS();
-        if (fps > 0)
-        {
-            sleepMs = (1000 / fps) - elapsedTime;
-            if (sleepMs > 0)
-            {
-                Thread::Sleep(sleepMs);
-            }
-        }
     }
 
     ApplicationCore* appCore = Core::Instance()->GetApplicationCore();
