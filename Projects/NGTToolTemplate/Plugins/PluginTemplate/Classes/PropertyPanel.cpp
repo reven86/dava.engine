@@ -57,7 +57,7 @@ void PropertyPanel::Initialize(IUIFramework& uiFramework, IUIApplication& uiAppl
 
 void PropertyPanel::Finalize()
 {
-    objectHandleStorage.reset();
+    SetObject(nullptr);
     view.reset();
 }
 
@@ -85,7 +85,13 @@ void PropertyPanel::SetObject(const DAVA::InspBase* object)
         objectHandleStorage.reset(new ObjectHandleStorage<TModelPTr>(std::move(model), nullptr));
     }
     else
-        objectHandleStorage.reset();
+    {
+        IDefinitionManager* defMng = Context::queryInterface<IDefinitionManager>();
+        IReflectionController* controller = Context::queryInterface<IReflectionController>();
+        TModelPTr model(new ReflectedTreeModel(ObjectHandle(), *defMng, controller));
+
+        objectHandleStorage.reset(new ObjectHandleStorage<TModelPTr>(std::move(model), nullptr));
+    }
 
     emit EntityChanged();
 }

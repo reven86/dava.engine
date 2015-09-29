@@ -7,4 +7,5 @@ plugins/plg_command_system
 plugins/plg_copy_paste
 plugins/plg_serialization
 plugins/plg_file_system
+plugins/plg_editor_interaction
 plugins/DavaPluginTemplate

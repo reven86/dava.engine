@@ -47,15 +47,17 @@ int main(int argc, char ** argv)
         return result;
     }
 
-    GenericPluginManager pluginManager;
-
-    pluginManager.loadPlugins(plugins);
-
-    IApplication* application = pluginManager.getContextManager().getGlobalContext()->queryInterface<IApplication>();
-    if (application != NULL)
     {
-        result = application->startApplication();
+        GenericPluginManager pluginManager;
+
+        pluginManager.loadPlugins(plugins);
+
+        IApplication* application = pluginManager.getContextManager().getGlobalContext()->queryInterface<IApplication>();
+        if (application != NULL)
+        {
+            result = application->startApplication();
+        }
     }
 
-    return result;;
+    return result;
 }
