@@ -27,6 +27,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
 #include "DynamicBufferAllocator.h"
+#include "Render/RenderCallbacks.h"
+#include "Functional/Function.h"
 
 namespace DAVA
 {
@@ -34,8 +36,7 @@ namespace DynamicBufferAllocator
 {
 namespace //for private members
 {
-uint32 defaultPageSize = 131072; //128kb
-
+uint32 pageSize = DEFAULT_PAGE_SIZE;
 
 template <class HBuffer> class BufferProxy
 {
@@ -94,13 +95,19 @@ template <class HBuffer> struct BufferAllocator
         uint8 *data;
         uint32 base;
         uint32 count;
-    };    
+    };
 
     BufferAllocateResult AllocateData(uint32 size, uint32 count)
     {
         DVASSERT(size);
+
         uint32 requiredSize = (size * count);
-        DVASSERT(requiredSize <= defaultPageSize); //assert for now - later allocate as much as possible and return incomplete buffer
+        if (requiredSize > pageSize)
+        {
+            count = pageSize / size;
+            requiredSize = size * count;
+        }
+
         uint32 base = ((currentlyUsedSize + size - 1) / size);
         uint32 offset = base * size;
         //cant fit - start new
@@ -108,7 +115,7 @@ template <class HBuffer> struct BufferAllocator
         {
             if (currentlyMappedBuffer) //unmap it
             {
-                BufferProxy<HBuffer>::UnmapBuffer(currentlyMappedBuffer->buffer);                
+                buffersToUnmap.push_back(currentlyMappedBuffer);
                 usedBuffers.push_back(currentlyMappedBuffer);
             }
             if (freeBuffers.size())
@@ -119,8 +126,8 @@ template <class HBuffer> struct BufferAllocator
             else
             {
                 currentlyMappedBuffer = new BufferInfo();
-                currentlyMappedBuffer->allocatedSize = defaultPageSize;
-                currentlyMappedBuffer->buffer = BufferProxy<HBuffer>::CreateBuffer(defaultPageSize);                 
+                currentlyMappedBuffer->allocatedSize = pageSize;
+                currentlyMappedBuffer->buffer = BufferProxy<HBuffer>::CreateBuffer(pageSize);
             }
             currentlyMappedData = BufferProxy<HBuffer>::MapBuffer(currentlyMappedBuffer->buffer, 0, currentlyMappedBuffer->allocatedSize); 
             currentlyMappedBuffer->readySync = rhi::GetCurrentFrameSyncObject();
@@ -142,6 +149,10 @@ template <class HBuffer> struct BufferAllocator
 
     void Clear()
     {
+        for (auto b : buffersToUnmap)
+        {
+            BufferProxy<HBuffer>::UnmapBuffer(b->buffer);
+        }
         for (auto b : freeBuffers)
         {
             BufferProxy<HBuffer>::DeleteBuffer(b->buffer);
@@ -151,7 +162,11 @@ template <class HBuffer> struct BufferAllocator
         {
             BufferProxy<HBuffer>::DeleteBuffer(b->buffer);
             SafeDelete(b);
-        }            
+        }
+
+        freeBuffers.clear();
+        usedBuffers.clear();
+        buffersToUnmap.clear();
     }
 
     void BeginFrame()
@@ -174,6 +189,12 @@ template <class HBuffer> struct BufferAllocator
 
     void EndFrame()
     {
+        for (auto b : buffersToUnmap)
+        {
+            BufferProxy<HBuffer>::UnmapBuffer(b->buffer);
+        }
+        buffersToUnmap.clear();
+
         if (currentlyMappedBuffer)
         {
             BufferProxy<HBuffer>::UnmapBuffer(currentlyMappedBuffer->buffer);
@@ -190,16 +211,18 @@ private:
     uint32 currentlyUsedSize = 0;
     List<BufferInfo*> freeBuffers;
     List<BufferInfo*> usedBuffers;
-
+    List<BufferInfo*> buffersToUnmap;
 };
 
 BufferAllocator<rhi::HVertexBuffer> vertexBufferAllocator;
 BufferAllocator<rhi::HIndexBuffer>  indexBufferAllocator;
 
+
 rhi::HIndexBuffer currQuadList;
 uint32 currMaxQuadCount = 0;
-}
+bool quadListRestoreRegistered = false;
 
+}
 
 AllocResultVB AllocateVertexBuffer(uint32 vertexSize, uint32 vertexCount)
 {
@@ -213,33 +236,47 @@ AllocResultIB AllocateIndexBuffer(uint32 indexCount)
     return AllocResultIB{ result.buffer, (uint16 *) result.data, result.base, result.count };
 }
 
+const uint32 VERTICES_PER_QUAD = 4;
+const uint32 INDICES_PER_QUAD = 6;
+
+void FillQuadListData()
+{
+    uint32 bufferSize = currMaxQuadCount * INDICES_PER_QUAD * 2; //uint16 = 2 bytes per index
+    uint16 * indices = (uint16*)rhi::MapIndexBuffer(currQuadList, 0, bufferSize);
+    for (uint32 i = 0; i < currMaxQuadCount; ++i)
+    {
+        indices[i*INDICES_PER_QUAD + 0] = i*VERTICES_PER_QUAD + 0;
+        indices[i*INDICES_PER_QUAD + 1] = i*VERTICES_PER_QUAD + 1;
+        indices[i*INDICES_PER_QUAD + 2] = i*VERTICES_PER_QUAD + 2;
+        indices[i*INDICES_PER_QUAD + 3] = i*VERTICES_PER_QUAD + 2;
+        indices[i*INDICES_PER_QUAD + 4] = i*VERTICES_PER_QUAD + 1;
+        indices[i*INDICES_PER_QUAD + 5] = i*VERTICES_PER_QUAD + 3; //preserve order
+    }
+    rhi::UnmapIndexBuffer(currQuadList);
+}
+
+void RestoreQuadList()
+{
+    if (currQuadList.IsValid() && rhi::NeedRestoreIndexBuffer(currQuadList))
+        FillQuadListData();
+}
 
 rhi::HIndexBuffer AllocateQuadListIndexBuffer(uint32 quadCount)
 {
-
+    if (!quadListRestoreRegistered)
+    {
+        RenderCallbacks::RegisterResourceRestoreCallback(MakeFunction(&RestoreQuadList));
+        quadListRestoreRegistered = true;
+    }
     if (quadCount > currMaxQuadCount)
     {        
         if (currQuadList.IsValid())
-            rhi::DeleteIndexBuffer(currQuadList);            
-
-        const uint32 VERTICES_PER_QUAD = 4;
-        const uint32 INDICES_PER_QUAD = 6;
+            rhi::DeleteIndexBuffer(currQuadList);                    
 
         currMaxQuadCount = Max(currMaxQuadCount * 2, quadCount);
         uint32 bufferSize = currMaxQuadCount * INDICES_PER_QUAD * 2; //uint16 = 2 bytes per index
         currQuadList = rhi::CreateIndexBuffer(bufferSize);
-        uint16 * indices = (uint16*)rhi::MapIndexBuffer(currQuadList, 0, bufferSize);        
-        for (uint32 i = 0; i < currMaxQuadCount; ++i)
-        {
-            indices[i*INDICES_PER_QUAD + 0] = i*VERTICES_PER_QUAD + 0;
-            indices[i*INDICES_PER_QUAD + 1] = i*VERTICES_PER_QUAD + 1;
-            indices[i*INDICES_PER_QUAD + 2] = i*VERTICES_PER_QUAD + 2;
-            indices[i*INDICES_PER_QUAD + 3] = i*VERTICES_PER_QUAD + 2;
-            indices[i*INDICES_PER_QUAD + 4] = i*VERTICES_PER_QUAD + 1;
-            indices[i*INDICES_PER_QUAD + 5] = i*VERTICES_PER_QUAD + 3; //preserve order
-        }
-
-        rhi::UnmapIndexBuffer(currQuadList);
+        FillQuadListData();
     }    
     return currQuadList;
 }
@@ -267,9 +304,10 @@ void Clear()
     vertexBufferAllocator.Clear();
     indexBufferAllocator.Clear();
 }
-void SetDefaultPageSize(uint32 size)
+void SetPageSize(uint32 size)
 {
-    defaultPageSize = size;
+    pageSize = size;
+
     vertexBufferAllocator.Clear();
     indexBufferAllocator.Clear();
 }
@@ -277,3 +315,4 @@ void SetDefaultPageSize(uint32 size)
 
 }
 }
+

@@ -19,6 +19,10 @@ if( NOT DISABLE_SOUNDS )
 
 endif()
 
+if( DAVA_USE_RENDERSTATS )
+    list( APPEND FRAMEWORK_DEFINITIONS -D__DAVAENGINE_RENDERSTATS__ )
+endif()
+
 set_property( GLOBAL PROPERTY USE_FOLDERS ON )
 set_property( GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER ${DAVA_PREDEFINED_TARGETS_FOLDER} )
 
@@ -45,7 +49,6 @@ if( ANDROID )
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libfmodevent.so"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libfmodex.so"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libTextureConverter_android.a"
-         "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libbox2d.a"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libuv_android.a"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libiconv_android.so"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/liblua_android.a"

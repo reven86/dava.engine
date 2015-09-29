@@ -47,6 +47,7 @@ ShadowVolumeRenderLayer::~ShadowVolumeRenderLayer()
 {
     rhi::DeleteVertexBuffer(quadBuffer);
     SafeRelease(shadowRectMaterial);
+    RenderCallbacks::UnRegisterResourceRestoreCallback(MakeFunction(this, &ShadowVolumeRenderLayer::Restore));
 }
 
 const static uint32 VERTEX_COUNT = 6;

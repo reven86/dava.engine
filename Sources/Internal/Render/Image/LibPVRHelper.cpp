@@ -65,6 +65,35 @@
 
 namespace DAVA
 {
+namespace PVRHelper
+{
+bool IsCompressedFormat(PixelFormat format)
+{
+    switch (format)
+    {
+    case FORMAT_PVR4:
+    case FORMAT_PVR2:
+    case FORMAT_ETC1:
+        return true;
+
+    case FORMAT_PVR2_2:
+    case FORMAT_PVR4_2:
+    case FORMAT_EAC_R11_UNSIGNED:
+    case FORMAT_EAC_R11_SIGNED:
+    case FORMAT_EAC_RG11_UNSIGNED:
+    case FORMAT_EAC_RG11_SIGNED:
+    case FORMAT_ETC2_RGB:
+    case FORMAT_ETC2_RGBA:
+    case FORMAT_ETC2_RGB_A1:
+        return true;
+
+    default:
+        return false;
+    }
+
+    return false;
+}
+}
 
 PVRFile::PVRFile()
     : metaData(nullptr)
@@ -568,6 +597,8 @@ bool LibPVRHelper::LoadMipMapLevel(const PVRFile *pvrFile, const uint32 fileMipM
         return false;
     }
 
+    const bool imageIsCompressed = PVRHelper::IsCompressedFormat(formatDescriptor.formatID);
+
     uint32 cubemapLayout = GetCubemapLayout(pvrFile);
     for (uint32 faceIndex = 0; faceIndex < compressedHeader.u32NumFaces; ++faceIndex)
     {
@@ -583,7 +614,7 @@ bool LibPVRHelper::LoadMipMapLevel(const PVRFile *pvrFile, const uint32 fileMipM
             image->cubeFaceID = (cubemapLayout & (0x0000000F << (faceIndex * 4))) >> (faceIndex * 4);
         }
 
-        if (formatDescriptor.isHardwareSupported)
+        if (formatDescriptor.isHardwareSupported || !imageIsCompressed)
         {
             bool imageLoaded = CopyToImage(image, fileMipMapLevel, faceIndex, compressedHeader, pTextureData);
             if (!imageLoaded)

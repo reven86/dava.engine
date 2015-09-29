@@ -54,10 +54,15 @@ namespace rhi
 
 uint32   stat_DIP       = InvalidIndex;
 uint32   stat_DP        = InvalidIndex;
+uint32 stat_DTL = InvalidIndex;
+uint32 stat_DTS = InvalidIndex;
+uint32 stat_DLL = InvalidIndex;
 uint32   stat_SET_PS    = InvalidIndex;
+uint32 stat_SET_SS = InvalidIndex;
 uint32   stat_SET_TEX   = InvalidIndex;
 uint32   stat_SET_CB    = InvalidIndex;
-
+uint32 stat_SET_VB = InvalidIndex;
+uint32 stat_SET_IB = InvalidIndex;
 
 static Dispatch _Impl = {0};
 
@@ -144,6 +149,18 @@ const RenderDeviceCaps & DeviceCaps()
     return (*_Impl.impl_DeviceCaps)();
 }
 
+void
+SuspendRendering()
+{
+    (*_Impl.impl_SuspendRendering)();
+}
+
+void
+ResumeRendering()
+{
+    (*_Impl.impl_ResumeRendering)();
+}
+    
 //////////////////////////////////////////////////////////////////////////
 
 namespace VertexBuffer
@@ -655,7 +672,13 @@ TextureStride( TextureFormat format, Size2i size, uint32 level )
         {
             stride = width * sizeof(uint32);
         }   break;
-        
+
+        case TEXTURE_FORMAT_R8G8B8:
+        {
+            stride = width * 3 * sizeof(uint8);
+        }
+        break;
+
         case TEXTURE_FORMAT_R4G4B4A4 :
         case TEXTURE_FORMAT_R5G5B5A1 :
         case TEXTURE_FORMAT_R5G6B5 :
@@ -723,9 +746,9 @@ TextureSize( TextureFormat format, uint32 width, uint32 height, uint32 level )
         case TEXTURE_FORMAT_R8G8B8X8 :
             sz = ext.dx * ext.dy * sizeof(uint32);
             break;
-        
-        case TEXTURE_FORMAT_R8G8B8 :
-            sz = ext.dx * ext.dy * 3*sizeof(uint8);
+
+        case TEXTURE_FORMAT_R8G8B8:
+            sz = ext.dx * ext.dy * 3 * sizeof(uint8);
             break;
 
         case TEXTURE_FORMAT_R5G5B5A1 :
@@ -900,11 +923,9 @@ NativeColorRGBA( float red, float green, float blue, float alpha )
             break;
 
         case RHI_DX11:
-#if defined(__DAVAENGINE_WIN_UAP__)
             color = ((uint32)((((a)& 0xFF) << 24) | (((b)& 0xFF) << 16) | (((g)& 0xFF) << 8) | ((r)& 0xFF)));
-#else
-            color = ((uint32)((((a)& 0xFF) << 24) | (((r)& 0xFF) << 16) | (((g)& 0xFF) << 8) | ((b)& 0xFF)));
-#endif
+            //color = ((uint32)((((a)& 0xFF) << 24) | (((r)& 0xFF) << 16) | (((g)& 0xFF) << 8) | ((b)& 0xFF))); for some reason it was here in case of non-uap. seems work ok without it. wait here for someone with "strange" videocard to complain
+
             break;
 
         case RHI_GLES2 :

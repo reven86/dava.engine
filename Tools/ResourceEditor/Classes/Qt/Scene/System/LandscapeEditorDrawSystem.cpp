@@ -561,6 +561,7 @@ void LandscapeEditorDrawSystem::ResetTileMaskTexture()
         Texture * texture = Texture::CreateFromFile(sourceTilemaskPath);
         texture->Reload();
         landscapeMaterial->SetTexture(Landscape::TEXTURE_TILEMASK, texture);
+        landscapeMaterial->InvalidateTextureBindings();
         texture->Release();
     }
 }

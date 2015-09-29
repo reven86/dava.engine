@@ -101,6 +101,7 @@ gles2_TextureFormatSupported( TextureFormat format )
     switch( format )
     {
         case TEXTURE_FORMAT_R8G8B8A8 :
+        case TEXTURE_FORMAT_R8G8B8:
         case TEXTURE_FORMAT_R5G5B5A1 :
         case TEXTURE_FORMAT_R5G6B5 :
         case TEXTURE_FORMAT_R4G4B4A4 :
@@ -186,11 +187,20 @@ gles_check_GL_extensions()
     const char* version = (const char*)glGetString(GL_VERSION);
     if(!IsEmptyString(version))
     {
-        if( strstr(version, "OpenGL ES 3.0") )
-        {
-            _GLES2_DeviceCaps.is32BitIndicesSupported = true;
-        }
-        else if (!strstr(version, "OpenGL ES"))
+    	if(strstr(version, "OpenGL ES"))
+    	{
+			const char * dotChar = strchr(version, '.');
+			if(dotChar && dotChar != version)
+			{
+				int majorVersion = atoi(dotChar-1);
+				if(majorVersion >= 3)
+				{
+					_GLES2_DeviceCaps.is32BitIndicesSupported = true;
+		            _GLES2_DeviceCaps.isVertexTextureUnitsSupported = true;
+				}
+			}
+    	}
+    	else
         {
             _GLES2_DeviceCaps.is32BitIndicesSupported = true;
             _GLES2_DeviceCaps.isVertexTextureUnitsSupported = true;
@@ -270,7 +280,7 @@ gles2_Reset( const ResetParam& param )
     _GLES2_DefaultFrameBuffer_Width  = param.width;
     _GLES2_DefaultFrameBuffer_Height = param.height;
 #if defined(__DAVAENGINE_ANDROID__)
-    android_gl_reset();
+    android_gl_reset(param.window);
 #endif
 }
 
@@ -425,15 +435,21 @@ gles2_Initialize( const InitParam& param )
         DispatchGLES2.impl_TextureFormatSupported   = &gles2_TextureFormatSupported;
         DispatchGLES2.impl_DeviceCaps               = &gles2_DeviceCaps;
         DispatchGLES2.impl_NeedRestoreResources     = &gles2_NeedRestoreResources;
+        DispatchGLES2.impl_ResumeRendering          = &ResumeGLES2;
+        DispatchGLES2.impl_SuspendRendering         = &SuspendGLES2;
 
         SetDispatchTable(DispatchGLES2);
 
         gles_check_GL_extensions();
 
-        VertexBufferGLES2::Init( param.maxVertexBufferCount );
-        IndexBufferGLES2::Init( param.maxIndexBufferCount );
-        ConstBufferGLES2::Init( param.maxConstBufferCount );
-        TextureGLES2::Init( param.maxTextureCount );
+        if( param.maxVertexBufferCount )
+            VertexBufferGLES2::Init( param.maxVertexBufferCount );
+        if( param.maxIndexBufferCount )
+            IndexBufferGLES2::Init( param.maxIndexBufferCount );
+        if( param.maxConstBufferCount )
+            ConstBufferGLES2::Init( param.maxConstBufferCount );
+        if( param.maxTextureCount )
+            TextureGLES2::Init( param.maxTextureCount );
         ConstBufferGLES2::InitializeRingBuffer(4 * 1024 * 1024); // CRAP: hardcoded default const ring-buf size
 
         Logger::Info("GL inited\n");
@@ -450,9 +466,15 @@ gles2_Initialize( const InitParam& param )
 
         stat_DIP = StatSet::AddStat("rhi'dip", "dip");
         stat_DP = StatSet::AddStat("rhi'dp", "dp");
+        stat_DTL = StatSet::AddStat("rhi'dtl", "dtl");
+        stat_DTS = StatSet::AddStat("rhi'dts", "dts");
+        stat_DLL = StatSet::AddStat("rhi'dll", "dll");
         stat_SET_PS = StatSet::AddStat("rhi'set-ps", "set-ps");
+        stat_SET_SS = StatSet::AddStat("rhi'set-ss", "set-ss");
         stat_SET_TEX = StatSet::AddStat("rhi'set-tex", "set-tex");
         stat_SET_CB = StatSet::AddStat("rhi'set-cb", "set-cb");
+        stat_SET_VB = StatSet::AddStat("rhi'set-vb", "set-vb");
+        stat_SET_IB = StatSet::AddStat("rhi'set-ib", "set-ib");
 
         RECT    rc;
         
@@ -476,10 +498,14 @@ gles2_Initialize( const InitParam& param )
     _GLES2_AcquireContext = (param.acquireContextFunc)  ? param.acquireContextFunc  : &macos_gl_acquire_context;
     _GLES2_ReleaseContext = (param.releaseContextFunc)  ? param.releaseContextFunc  : &macos_gl_release_context;
    
-    VertexBufferGLES2::Init( param.maxVertexBufferCount );
-    IndexBufferGLES2::Init( param.maxIndexBufferCount );
-    ConstBufferGLES2::Init( param.maxConstBufferCount );
-    TextureGLES2::Init( param.maxTextureCount );
+    if( param.maxVertexBufferCount )
+        VertexBufferGLES2::Init( param.maxVertexBufferCount );
+    if( param.maxIndexBufferCount )
+        IndexBufferGLES2::Init( param.maxIndexBufferCount );
+    if( param.maxConstBufferCount )
+        ConstBufferGLES2::Init( param.maxConstBufferCount );
+    if( param.maxTextureCount )
+        TextureGLES2::Init( param.maxTextureCount );
     ConstBufferGLES2::InitializeRingBuffer(4 * 1024 * 1024); // CRAP: hardcoded default const ring-buf size
 
     _Inited = true;
@@ -507,6 +533,8 @@ gles2_Initialize( const InitParam& param )
     DispatchGLES2.impl_TextureFormatSupported   = &gles2_TextureFormatSupported;
     DispatchGLES2.impl_DeviceCaps               = &gles2_DeviceCaps;
     DispatchGLES2.impl_NeedRestoreResources     = &gles2_NeedRestoreResources;
+    DispatchGLES2.impl_ResumeRendering          = &ResumeGLES2;
+    DispatchGLES2.impl_SuspendRendering         = &SuspendGLES2;
 
     SetDispatchTable(DispatchGLES2);
 
@@ -522,9 +550,15 @@ gles2_Initialize( const InitParam& param )
 
     stat_DIP = StatSet::AddStat("rhi'dip", "dip");
     stat_DP = StatSet::AddStat("rhi'dp", "dp");
+    stat_DTL = StatSet::AddStat("rhi'dtl", "dtl");
+    stat_DTS = StatSet::AddStat("rhi'dts", "dts");
+    stat_DLL = StatSet::AddStat("rhi'dll", "dll");
     stat_SET_PS = StatSet::AddStat("rhi'set-ps", "set-ps");
+    stat_SET_SS = StatSet::AddStat("rhi'set-ss", "set-ss");
     stat_SET_TEX = StatSet::AddStat("rhi'set-tex", "set-tex");
     stat_SET_CB = StatSet::AddStat("rhi'set-cb", "set-cb");
+    stat_SET_VB = StatSet::AddStat("rhi'set-vb", "set-vb");
+    stat_SET_IB = StatSet::AddStat("rhi'set-ib", "set-ib");
 }
 
 #elif defined(__DAVAENGINE_IPHONE__)
@@ -568,6 +602,8 @@ gles2_Initialize(const InitParam& param)
     DispatchGLES2.impl_TextureFormatSupported   = &gles2_TextureFormatSupported;
     DispatchGLES2.impl_DeviceCaps               = &gles2_DeviceCaps;
     DispatchGLES2.impl_NeedRestoreResources     = &gles2_NeedRestoreResources;
+    DispatchGLES2.impl_ResumeRendering          = &ResumeGLES2;
+    DispatchGLES2.impl_SuspendRendering         = &SuspendGLES2;
 
     SetDispatchTable(DispatchGLES2);
 
@@ -583,9 +619,15 @@ gles2_Initialize(const InitParam& param)
 
     stat_DIP = StatSet::AddStat("rhi'dip", "dip");
     stat_DP = StatSet::AddStat("rhi'dp", "dp");
+    stat_DTL = StatSet::AddStat("rhi'dtl", "dtl");
+    stat_DTS = StatSet::AddStat("rhi'dts", "dts");
+    stat_DLL = StatSet::AddStat("rhi'dll", "dll");
     stat_SET_PS = StatSet::AddStat("rhi'set-ps", "set-ps");
+    stat_SET_SS = StatSet::AddStat("rhi'set-ss", "set-ss");
     stat_SET_TEX = StatSet::AddStat("rhi'set-tex", "set-tex");
     stat_SET_CB = StatSet::AddStat("rhi'set-cb", "set-cb");
+    stat_SET_VB = StatSet::AddStat("rhi'set-vb", "set-vb");
+    stat_SET_IB = StatSet::AddStat("rhi'set-ib", "set-ib");
 }
 
 #elif defined(__DAVAENGINE_ANDROID__)
@@ -601,10 +643,14 @@ gles2_Initialize( const InitParam& param )
 
 	android_gl_init(param.window);
 
-    VertexBufferGLES2::Init( param.maxVertexBufferCount );
-    IndexBufferGLES2::Init( param.maxIndexBufferCount );
-    ConstBufferGLES2::Init( param.maxConstBufferCount );
-    TextureGLES2::Init( param.maxTextureCount );
+    if( param.maxVertexBufferCount )
+        VertexBufferGLES2::Init( param.maxVertexBufferCount );
+    if( param.maxIndexBufferCount )
+        IndexBufferGLES2::Init( param.maxIndexBufferCount );
+    if( param.maxConstBufferCount )
+        ConstBufferGLES2::Init( param.maxConstBufferCount );
+    if( param.maxTextureCount )
+        TextureGLES2::Init( param.maxTextureCount );
     ConstBufferGLES2::InitializeRingBuffer(4 * 1024 * 1024); // CRAP: hardcoded default const ring-buf size
 
     _Inited = true;
@@ -632,6 +678,8 @@ gles2_Initialize( const InitParam& param )
     DispatchGLES2.impl_TextureFormatSupported   = &gles2_TextureFormatSupported;
     DispatchGLES2.impl_DeviceCaps               = &gles2_DeviceCaps;
     DispatchGLES2.impl_NeedRestoreResources     = &gles2_NeedRestoreResources;
+    DispatchGLES2.impl_ResumeRendering          = &ResumeGLES2;
+    DispatchGLES2.impl_SuspendRendering         = &SuspendGLES2;
 
     SetDispatchTable(DispatchGLES2);
 
@@ -645,11 +693,17 @@ gles2_Initialize( const InitParam& param )
     glDebugMessageCallback(&_OGLErrorCallback, 0);
     #endif
 
-    stat_DIP     = StatSet::AddStat("rhi'dip", "dip");
-    stat_DP      = StatSet::AddStat("rhi'dp", "dp");
-    stat_SET_PS  = StatSet::AddStat("rhi'set-ps", "set-ps");
+    stat_DIP = StatSet::AddStat("rhi'dip", "dip");
+    stat_DP = StatSet::AddStat("rhi'dp", "dp");
+    stat_DTL = StatSet::AddStat("rhi'dtl", "dtl");
+    stat_DTS = StatSet::AddStat("rhi'dts", "dts");
+    stat_DLL = StatSet::AddStat("rhi'dll", "dll");
+    stat_SET_PS = StatSet::AddStat("rhi'set-ps", "set-ps");
+    stat_SET_SS = StatSet::AddStat("rhi'set-ss", "set-ss");
     stat_SET_TEX = StatSet::AddStat("rhi'set-tex", "set-tex");
-    stat_SET_CB  = StatSet::AddStat("rhi'set-cb", "set-cb");
+    stat_SET_CB = StatSet::AddStat("rhi'set-cb", "set-cb");
+    stat_SET_VB = StatSet::AddStat("rhi'set-vb", "set-vb");
+    stat_SET_IB = StatSet::AddStat("rhi'set-ib", "set-ib");
 }
 
 #endif
@@ -674,14 +728,14 @@ GetGLTextureFormat( rhi::TextureFormat rhiFormat, GLint* internalFormat, GLint* 
             success         = true;
             break;
 
-        case TEXTURE_FORMAT_R8G8B8 :
-            *internalFormat = GL_RGB; 
-            *format         = GL_RGB;
-            *type           = GL_UNSIGNED_BYTE;
-            *compressed     = false;
-            success         = true;
+        case TEXTURE_FORMAT_R8G8B8:
+            *internalFormat = GL_RGB;
+            *format = GL_RGB;
+            *type = GL_UNSIGNED_BYTE;
+            *compressed = false;
+            success = true;
             break;
-        
+
         case TEXTURE_FORMAT_R4G4B4A4 :
             *internalFormat = GL_RGBA;
             *format         = GL_RGBA;

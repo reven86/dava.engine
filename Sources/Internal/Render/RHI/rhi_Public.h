@@ -86,6 +86,7 @@ ResetParam
     uint32  height;
     float32 scaleX;
     float32 scaleY;
+    void*   window;
     uint32  fullScreen:1;
 
     ResetParam()
@@ -94,6 +95,7 @@ ResetParam
         scaleX(1.0f), 
         scaleY(1.0f),
         fullScreen(false)
+    	, window(nullptr)
     {}
 };
 
@@ -120,6 +122,9 @@ Api     HostApi();
 bool    TextureFormatSupported( TextureFormat format );
 const RenderDeviceCaps & DeviceCaps();
 
+void    SuspendRendering();
+void    ResumeRendering();
+    
 ////////////////////////////////////////////////////////////////////////////////
 // resource-handle
 

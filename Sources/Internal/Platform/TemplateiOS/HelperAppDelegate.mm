@@ -152,13 +152,6 @@ DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()
     {
         DAVA::Core::Instance()->SetIsActive(false);
     }
-    
-#if defined(__DAVAENGINE_OPENGL__)
-    //    https://developer.apple.com/library/ios/documentation/3ddrawing/conceptual/opengles_programmingguide/ImplementingaMultitasking-awareOpenGLESApplication/ImplementingaMultitasking-awareOpenGLESApplication.html#//apple_ref/doc/uid/TP40008793-CH5-SW5
-    //  see Background Apps May Not Execute Commands on the Graphics Hardware
-    
-    // glFinish();
-#endif
 }
 
 - (void)applicationDidEnterBackground:(UIApplication *)application
@@ -175,13 +168,8 @@ DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()
 //        NSLog(@"Sent to background by home button/switching to other app");
 //    }
 	DAVA::Core::Instance()->GoBackground(isLock);
-    
-#if defined(__DAVAENGINE_OPENGL__)
-    //    https://developer.apple.com/library/ios/documentation/3ddrawing/conceptual/opengles_programmingguide/ImplementingaMultitasking-awareOpenGLESApplication/ImplementingaMultitasking-awareOpenGLESApplication.html#//apple_ref/doc/uid/TP40008793-CH5-SW5
-    //  see Background Apps May Not Execute Commands on the Graphics Hardware
-    
-    // glFinish();
-#endif
+
+    rhi::SuspendRendering();
 }
 
 - (void)applicationWillEnterForeground:(UIApplication *)application
@@ -195,6 +183,8 @@ DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()
     {
         DAVA::Core::Instance()->SetIsActive(true);
     }
+    
+    rhi::ResumeRendering();
 }
 
 - (void)applicationWillTerminate:(UIApplication *)application

@@ -188,7 +188,7 @@ TextureGLES2_t::Create( const Texture::Descriptor& desc, bool force_immediate )
                 {
                     cmd2[cmd2_cnt].func   = GLCommand::BIND_TEXTURE;
                     cmd2[cmd2_cnt].arg[0] = (desc.type == TEXTURE_TYPE_CUBE)  ? GL_TEXTURE_CUBE_MAP  : GL_TEXTURE_2D;
-                    cmd2[cmd2_cnt].arg[1] = uid[0];
+                    cmd2[cmd2_cnt].arg[1] = uint64(&(uid[0]));
                     ++cmd2_cnt;
 
                     target  = (desc.type == TEXTURE_TYPE_CUBE)  ? face[s]  : GL_TEXTURE_2D;
@@ -264,7 +264,7 @@ TextureGLES2_t::Create( const Texture::Descriptor& desc, bool force_immediate )
 
             GLCommand   cmd3[] =
             {
-                { GLCommand::BIND_TEXTURE, { GL_TEXTURE_2D, uid[0] } },
+                { GLCommand::BIND_TEXTURE, { GL_TEXTURE_2D, uint64(&uid) } },
                 { GLCommand::TEX_IMAGE2D, { GL_TEXTURE_2D, 0, GL_RGBA, desc.width, desc.height, 0, GL_BGRA, GL_UNSIGNED_BYTE, 0 } },
                 { GLCommand::TEX_PARAMETER_I, { GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST } },
                 { GLCommand::TEX_PARAMETER_I, { GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST } },
@@ -498,7 +498,7 @@ gles2_Texture_Unmap( Handle tex )
     GLCommand   cmd[]  =
     {
         { GLCommand::SET_ACTIVE_TEXTURE, { GL_TEXTURE0+0 } },
-        { GLCommand::BIND_TEXTURE, { ttarget, self->uid } },
+        { GLCommand::BIND_TEXTURE, { ttarget, uint64(&(self->uid)) } },
         { GLCommand::TEX_IMAGE2D, { target, self->mappedLevel, uint64(int_fmt), uint64(sz.dx), uint64(sz.dy), 0, uint64(fmt), type, uint64(textureDataSize), (uint64)(self->mappedData), compressed } },
         { GLCommand::RESTORE_TEXTURE0, {} }
     };
@@ -554,7 +554,7 @@ gles2_Texture_Update( Handle tex, const void* data, uint32 level, TextureFace fa
         GLCommand   cmd[]  =
         {        
             { GLCommand::SET_ACTIVE_TEXTURE, { GL_TEXTURE0+0 } },
-            { GLCommand::BIND_TEXTURE, { ttarget, self->uid } },
+            { GLCommand::BIND_TEXTURE, { ttarget, uint64(&(self->uid)) } },
             { GLCommand::TEX_IMAGE2D, { target, uint64(level), uint64(int_fmt), uint64(sz.dx), uint64(sz.dy), 0, uint64(fmt), type, uint64(textureDataSize), (uint64)(data), compressed } },
             { GLCommand::RESTORE_TEXTURE0, {} }
         };

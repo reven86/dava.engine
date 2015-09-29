@@ -41,6 +41,7 @@ namespace DAVA
 {
 
 struct ScreenShotCallbackDelegate;
+struct RenderStats;
 
 namespace Renderer
 {
@@ -74,6 +75,9 @@ namespace Renderer
 
     //runtime textures
     RuntimeTextures& GetRuntimeTextures();
+
+    //render stats
+    RenderStats& GetRenderStats();
 }
 
 
@@ -88,6 +92,34 @@ protected:
     virtual void OnScreenShot(Image *image) = 0;
 };
 
+struct RenderStats
+{
+    void Reset();
+
+    uint32 drawPrimitive = 0U;
+    uint32 drawIndexedPrimitive = 0U;
+
+    uint32 pipelineStateSet = 0U;
+    uint32 samplerStateSet = 0U;
+
+    uint32 constBufferSet = 0U;
+    uint32 textureSet = 0U;
+
+    uint32 vertexBufferSet = 0U;
+    uint32 indexBufferSet = 0U;
+
+    uint32 primitiveTriangleListCount = 0U;
+    uint32 primitiveTriangleStripCount = 0U;
+    uint32 primitiveLineListCount = 0U;
+
+    uint32 dynamicParamBindCount = 0U;
+    uint32 materialParamBindCount = 0U;
+
+    uint32 batches2d = 0U;
+    uint32 packets2d = 0U;
+
+    uint32 visibleRenderObjects = 0U;
+};
 }
 
 #endif

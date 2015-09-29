@@ -88,7 +88,7 @@ IndexBufferGLES2_t::Create( const IndexBuffer::Descriptor& desc, bool force_imme
         {
             GLCommand   cmd2[] =
             {
-                { GLCommand::BIND_BUFFER, { GL_ELEMENT_ARRAY_BUFFER, b } },
+                { GLCommand::BIND_BUFFER, { GL_ELEMENT_ARRAY_BUFFER, uint64(&b) } },
                 { GLCommand::BUFFER_DATA, { GL_ELEMENT_ARRAY_BUFFER, desc.size, (uint64)(desc.initialData), GL_STATIC_DRAW } },
                 { GLCommand::RESTORE_INDEX_BUFFER, {} }
             };
@@ -191,7 +191,7 @@ gles2_IndexBuffer_Update( Handle ib, const void* data, unsigned offset, unsigned
     {
         GLCommand   cmd[] = 
         {
-            { GLCommand::BIND_BUFFER, { GL_ELEMENT_ARRAY_BUFFER, self->uid } },
+            { GLCommand::BIND_BUFFER, { GL_ELEMENT_ARRAY_BUFFER, uint64(&(self->uid)) } },
             { GLCommand::BUFFER_DATA, { GL_ELEMENT_ARRAY_BUFFER, self->size, (uint64)(self->data), GL_STATIC_DRAW } },
             { GLCommand::RESTORE_INDEX_BUFFER, {} }
         };
@@ -233,7 +233,7 @@ gles2_IndexBuffer_Unmap( Handle ib )
 
     GLCommand   cmd[] = 
     {
-        { GLCommand::BIND_BUFFER, { GL_ELEMENT_ARRAY_BUFFER, self->uid } },
+        { GLCommand::BIND_BUFFER, { GL_ELEMENT_ARRAY_BUFFER, uint64(&(self->uid)) } },
         { GLCommand::BUFFER_DATA, { GL_ELEMENT_ARRAY_BUFFER, self->size, (uint64)(self->data), GL_STATIC_DRAW } },
         { GLCommand::RESTORE_INDEX_BUFFER, {} }
     };

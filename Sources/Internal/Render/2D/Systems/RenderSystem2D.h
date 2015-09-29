@@ -99,6 +99,7 @@ public:
         const uint16* indexPointer = nullptr;
         NMaterial * material = nullptr;
         rhi::HTextureSet textureSetHandle;
+        rhi::HSamplerState samplerStateHandle;
         rhi::PrimitiveType primitiveType = rhi::PRIMITIVE_TRIANGLELIST;
         Matrix4* worldMatrix = nullptr;
     };
@@ -128,6 +129,8 @@ public:
     void Draw(Sprite * sprite, Sprite::DrawState * drawState, const Color& color);
     void DrawStretched(Sprite * sprite, Sprite::DrawState * drawState, Vector2 streatchCap, UIControlBackground::eDrawType type, const UIGeometricData &gd, StretchDrawData ** pStreachData, const Color& color);
     void DrawTiled(Sprite * sprite, Sprite::DrawState * drawState, const Vector2& streatchCap, const UIGeometricData &gd, TiledDrawData ** pTiledData, const Color& color);
+
+    void SetViewMatrix(const Matrix4& viewMatrix);
 
     /**
      * Destroy current buffers and create new.
@@ -250,7 +253,7 @@ public:
     */
     void DrawPolygonTransformed(const Polygon2 & polygon, bool closed, const Matrix3 & transform, const Color& color);
 
-    void DrawTexture(rhi::HTextureSet htextureSet, NMaterial* material, const Color & color, const Rect & dstRect = Rect(0.f, 0.f, -1.f, -1.f), const Rect & srcRect = Rect(0.f, 0.f, -1.f, -1.f));
+    void DrawTexture(Texture* texture, NMaterial* material, const Color& color, const Rect& dstRect = Rect(0.f, 0.f, -1.f, -1.f), const Rect& srcRect = Rect(0.f, 0.f, -1.f, -1.f));
 
 private:
     bool IsPreparedSpriteOnScreen(Sprite::DrawState * drawState);
@@ -262,7 +265,9 @@ private:
 
     Matrix4 virtualToPhysicalMatrix;
     Matrix4 projMatrix;
+    Matrix4 viewMatrix;
     uint32 projMatrixSemantic;
+    uint32 viewMatrixSemantic;
     std::stack<Rect> clipStack;
 	Rect currentClip;
 
@@ -305,7 +310,6 @@ private:
     };
     uint32 highlightControlsVerticesLimit;
 
-    rhi::HSamplerState samplerStateHandle;
     rhi::HRenderPass pass2DHandle;
     rhi::HPacketList packetList2DHandle;
     rhi::HRenderPass passTargetHandle;

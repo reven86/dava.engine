@@ -43,9 +43,60 @@
 
 namespace DAVA
 {
+namespace Validator
+{
+DAVA_DEPRECATED(void FixCompressionFormat(TextureDescriptor& descriptor))
+{
+    if (!descriptor.isCompressedFile)
+    {
+        if (descriptor.compression[GPU_DX11].format == FORMAT_INVALID && descriptor.compression[GPU_TEGRA].format != FORMAT_INVALID)
+        {
+            descriptor.compression[GPU_DX11] = descriptor.compression[GPU_TEGRA];
+            if (descriptor.compression[GPU_DX11].format == FORMAT_ETC1)
+            {
+                descriptor.compression[GPU_DX11].format = FORMAT_DXT1;
+            }
+        }
+    }
+}
 
+DAVA_DEPRECATED(void ConvertV10orLessToV11(TextureDescriptor& descriptor))
+{
+    descriptor.drawSettings.wrapModeS = (descriptor.drawSettings.wrapModeS == 0) ? rhi::TEXADDR_CLAMP : rhi::TEXADDR_WRAP;
+    descriptor.drawSettings.wrapModeT = (descriptor.drawSettings.wrapModeT == 0) ? rhi::TEXADDR_CLAMP : rhi::TEXADDR_WRAP;
 
-    
+    switch (descriptor.drawSettings.minFilter)
+    {
+    case 0:
+        descriptor.drawSettings.minFilter = rhi::TEXFILTER_NEAREST;
+        descriptor.drawSettings.mipFilter = rhi::TEXMIPFILTER_NONE;
+        break; //FILTER_NEAREST
+    case 1:
+        descriptor.drawSettings.minFilter = rhi::TEXFILTER_LINEAR;
+        descriptor.drawSettings.mipFilter = rhi::TEXMIPFILTER_NONE;
+        break; //FILTER_LINEAR
+    case 2:
+        descriptor.drawSettings.minFilter = rhi::TEXFILTER_NEAREST;
+        descriptor.drawSettings.mipFilter = rhi::TEXMIPFILTER_NEAREST;
+        break; //FILTER_NEAREST_MIPMAP_NEAREST
+    case 3:
+        descriptor.drawSettings.minFilter = rhi::TEXFILTER_LINEAR;
+        descriptor.drawSettings.mipFilter = rhi::TEXMIPFILTER_NEAREST;
+        break; //FILTER_LINEAR_MIPMAP_NEAREST
+    case 4:
+        descriptor.drawSettings.minFilter = rhi::TEXFILTER_NEAREST;
+        descriptor.drawSettings.mipFilter = rhi::TEXMIPFILTER_LINEAR;
+        break; //FILTER_NEAREST_MIPMAP_LINEAR
+    case 5:
+        descriptor.drawSettings.minFilter = rhi::TEXFILTER_LINEAR;
+        descriptor.drawSettings.mipFilter = rhi::TEXMIPFILTER_LINEAR;
+        break; //FILTER_LINEAR_MIPMAP_LINEAR
+    default:
+        break;
+    }
+}
+}
+
 //================   TextureDrawSettings  ===================
 void TextureDescriptor::TextureDrawSettings::SetDefaultValues()
 {
@@ -266,12 +317,17 @@ bool TextureDescriptor::Load(const FilePath &filePathname)
     case 10:
         LoadVersion10(file);
         break;
+    case 11:
+        LoadVersion11(file);
+        break;
     default:
     {
         Logger::Error("[TextureDescriptor::Load] Version %d is not supported", version);
         return false;
     }
     }
+
+    Validator::FixCompressionFormat(*this);
 
     return true;
 }
@@ -353,7 +409,7 @@ void TextureDescriptor::SaveInternal(File *file, const int32 signature, const ui
     
     //export data
     file->Write(&exportedAsGpuFamily);
-    int8 exportedAsPixelFormat = format;
+    int8 exportedAsPixelFormat = (COMPRESSED_FILE == signature) ? format : FORMAT_INVALID;
     file->Write(&exportedAsPixelFormat);
 }
 
@@ -377,7 +433,7 @@ void TextureDescriptor::LoadVersion6(DAVA::File *file)
 	file->Read(&drawSettings.minFilter);
 	file->Read(&drawSettings.magFilter);
 
-    ConvertV9orLessToV10();
+    Validator::ConvertV10orLessToV11(*this);
 
     if (isCompressedFile)
     {
@@ -390,14 +446,13 @@ void TextureDescriptor::LoadVersion6(DAVA::File *file)
     }
     else
     {
-        static_assert(GPU_DEVICE_COUNT == 5, "GPU_DEVICE_COUNT is changed, texture descriptor load routine should be altered");
-        for(auto i = 0; i < GPU_DEVICE_COUNT; ++i)
+        for (auto i = 0; i < 5; ++i)
         {
             int8 format;
 			file->Read(&format);
             compression[i].format = static_cast<PixelFormat>(format);
-            
-			file->Read(&compression[i].compressToWidth);
+
+            file->Read(&compression[i].compressToWidth);
 			file->Read(&compression[i].compressToHeight);
 			file->Read(&compression[i].sourceFileCrc);
         }
@@ -413,8 +468,8 @@ void TextureDescriptor::LoadVersion7(DAVA::File *file)
     file->Read(&dataSettings.textureFlags);
     file->Read(&drawSettings.minFilter);
     file->Read(&drawSettings.magFilter);
-    
-    ConvertV9orLessToV10();
+
+    Validator::ConvertV10orLessToV11(*this);
 
     if (isCompressedFile)
     {
@@ -427,13 +482,12 @@ void TextureDescriptor::LoadVersion7(DAVA::File *file)
     }
     else
     {
-        static_assert(GPU_DEVICE_COUNT == 5, "GPU_DEVICE_COUNT is changed, texture descriptor load routine should be altered");
-        for(int32 i = 0; i < GPU_DEVICE_COUNT; ++i)
+        for (int32 i = 0; i < 5; ++i)
         {
             int8 format;
             file->Read(&format);
             compression[i].format = static_cast<PixelFormat>(format);
-            
+
             file->Read(&compression[i].compressToWidth);
             file->Read(&compression[i].compressToHeight);
             file->Read(&compression[i].sourceFileCrc);
@@ -454,14 +508,14 @@ void TextureDescriptor::LoadVersion8(File *file)
     file->Read(&drawSettings.minFilter);
     file->Read(&drawSettings.magFilter);
 
-    ConvertV9orLessToV10();
+    Validator::ConvertV10orLessToV11(*this);
 
     if (isCompressedFile)
     {
         file->Read(&exportedAsGpuFamily);
         exportedAsGpuFamily = GPUFamilyDescriptor::ConvertValueToGPU(exportedAsGpuFamily);
 
-        int8 exportedAsPixelFormat = FORMAT_INVALID;
+        uint8 exportedAsPixelFormat = FORMAT_INVALID;
         file->Read(&exportedAsPixelFormat);
         format = static_cast<PixelFormat>(exportedAsPixelFormat);
     }
@@ -469,10 +523,9 @@ void TextureDescriptor::LoadVersion8(File *file)
     {
         uint8 compressionsCount = 0;
         file->Read(&compressionsCount);
-        static_assert(GPU_FAMILY_COUNT == 6, "GPU_FAMILY_COUNT is changed, texture descriptor load routine should be altered");
-        for (auto i = 0; i < GPU_FAMILY_COUNT; ++i)
+        for (auto i = 0; i < 6; ++i)
         {
-            int8 format;
+            uint8 format;
             file->Read(&format);
             compression[i].format = (PixelFormat)format;
 
@@ -496,7 +549,7 @@ void TextureDescriptor::LoadVersion9(File *file)
     file->Read(&drawSettings.minFilter);
     file->Read(&drawSettings.magFilter);
 
-    ConvertV9orLessToV10();
+    Validator::ConvertV10orLessToV11(*this);
 
     //data settings
     file->Read(&dataSettings.textureFlags);
@@ -527,12 +580,11 @@ void TextureDescriptor::LoadVersion9(File *file)
     //compression
     uint8 compressionsCount = 0;
     file->Read(&compressionsCount);
-    static_assert(GPU_FAMILY_COUNT == 6, "GPU_FAMILY_COUNT is changed, texture descriptor load routine should be altered");
     for (auto i = 0; i < compressionsCount; ++i)
     {
         auto &nextCompression = compression[i];
-        
-        int8 format;
+
+        uint8 format;
         file->Read(&format);
         nextCompression.format = static_cast<PixelFormat>(format);
         
@@ -545,13 +597,20 @@ void TextureDescriptor::LoadVersion9(File *file)
     //export data
     file->Read(&exportedAsGpuFamily);
     exportedAsGpuFamily = GPUFamilyDescriptor::ConvertValueToGPU(exportedAsGpuFamily);
-    
-    int8 exportedAsPixelFormat = FORMAT_INVALID;
+
+    uint8 exportedAsPixelFormat = FORMAT_INVALID;
     file->Read(&exportedAsPixelFormat);
     format = static_cast<PixelFormat>(exportedAsPixelFormat);
 }
 
-void TextureDescriptor::LoadVersion10(File *file)
+
+void TextureDescriptor::LoadVersion10(File* file)
+{
+    // has no changes in format
+    LoadVersion9(file);
+}
+
+void TextureDescriptor::LoadVersion11(File *file)
 {
     //draw settings
     file->Read(&drawSettings.wrapModeS);
@@ -589,7 +648,6 @@ void TextureDescriptor::LoadVersion10(File *file)
     //compression
     uint8 compressionsCount = 0;
     file->Read(&compressionsCount);
-    static_assert(GPU_FAMILY_COUNT == 6, "GPU_FAMILY_COUNT is changed, texture descriptor load routine should be altered");
     for (auto i = 0; i < compressionsCount; ++i)
     {
         auto &nextCompression = compression[i];
@@ -613,22 +671,6 @@ void TextureDescriptor::LoadVersion10(File *file)
     format = static_cast<PixelFormat>(exportedAsPixelFormat);
 }
 
-void TextureDescriptor::ConvertV9orLessToV10()
-{
-    drawSettings.wrapModeS = (drawSettings.wrapModeS == 0) ? rhi::TEXADDR_CLAMP : rhi::TEXADDR_WRAP;
-    drawSettings.wrapModeT = (drawSettings.wrapModeT == 0) ? rhi::TEXADDR_CLAMP : rhi::TEXADDR_WRAP;
-
-    switch (drawSettings.minFilter)
-    {
-    case 0: drawSettings.minFilter = rhi::TEXFILTER_NEAREST; drawSettings.mipFilter = rhi::TEXMIPFILTER_NONE;    break; //FILTER_NEAREST
-    case 1: drawSettings.minFilter = rhi::TEXFILTER_LINEAR;  drawSettings.mipFilter = rhi::TEXMIPFILTER_NONE;    break; //FILTER_LINEAR
-    case 2: drawSettings.minFilter = rhi::TEXFILTER_NEAREST; drawSettings.mipFilter = rhi::TEXMIPFILTER_NEAREST; break; //FILTER_NEAREST_MIPMAP_NEAREST
-    case 3: drawSettings.minFilter = rhi::TEXFILTER_LINEAR;  drawSettings.mipFilter = rhi::TEXMIPFILTER_NEAREST; break; //FILTER_LINEAR_MIPMAP_NEAREST
-    case 4: drawSettings.minFilter = rhi::TEXFILTER_NEAREST; drawSettings.mipFilter = rhi::TEXMIPFILTER_LINEAR;  break; //FILTER_NEAREST_MIPMAP_LINEAR
-    case 5: drawSettings.minFilter = rhi::TEXFILTER_LINEAR;  drawSettings.mipFilter = rhi::TEXMIPFILTER_LINEAR;  break; //FILTER_LINEAR_MIPMAP_LINEAR
-    default: break;
-    }
-}
 
 void TextureDescriptor::WriteCompression(File *file, const Compression *compression) const
 {

@@ -35,7 +35,6 @@
 #include "Base/BaseMath.h"
 #include "Base/BaseObject.h"
 #include "Base/FastName.h"
-#include "Render/RenderResource.h"
 #include "FileSystem/FilePath.h"
 #include "Render/RHI/rhi_Public.h"
 
@@ -56,23 +55,13 @@ class TextureDescriptor;
 class File;
 class Texture;
 	
-class TextureInvalidater
-{
-public:
-    virtual ~TextureInvalidater() {};
-	virtual void InvalidateTexture(Texture * texture) = 0;
-    virtual void AddTexture(Texture * texture) = 0;
-    virtual void RemoveTexture(Texture * texture) = 0;
-};
-	
 #ifdef USE_FILEPATH_IN_MAP
     using TexturesMap = Map<FilePath, Texture *>;
 #else //#ifdef USE_FILEPATH_IN_MAP
     using TexturesMap = Map<String, Texture *>;
 #endif //#ifdef USE_FILEPATH_IN_MAP
 
-
-class Texture : public RenderResource
+    class Texture : public BaseObject
 {
     DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_TEXTURE)
 public:       
@@ -151,15 +140,20 @@ public:
      */
     static Texture * Get(const FilePath & name);
 
+    int32 Release() override;
 
-	virtual int32 Release();
+    static void DumpTextures();
 
-	static void	DumpTextures();
+    inline int32 GetWidth() const
+    {
+        return width;
+    }
+    inline int32 GetHeight() const
+    {
+        return height;
+    }
 
-	inline int32 GetWidth() const { return width; }
-	inline int32 GetHeight() const { return height; }
-	
-	void GenerateMipmaps();	
+    void GenerateMipmaps();	
 	
 	void TexImage(int32 level, uint32 width, uint32 height, const void * _data, uint32 dataSize, uint32 cubeFaceId);
     
@@ -178,15 +172,10 @@ public:
 	bool IsPinkPlaceholder();
 
     void Reload();
-    void ReloadAs(eGPUFamily gpuFamily);
-	void SetInvalidater(TextureInvalidater* invalidater);
+    void ReloadAs(eGPUFamily gpuFamily);	
     void ReloadFromData(PixelFormat format, uint8 * data, uint32 width, uint32 height);
 
-	inline TextureState GetState() const;
-
-
-	void RestoreRenderResource();
-
+	inline TextureState GetState() const;	    
     
     void SetDebugInfo(const String & _debugInfo);
     
@@ -207,7 +196,11 @@ public:
     
     int32 GetBaseMipMap() const;
 
+    static rhi::HSamplerState CreateSamplerStateHandle(const rhi::SamplerState::Descriptor::Sampler& samplerState);
+
 protected:
+
+    void RestoreRenderResource();
     
     void ReleaseTextureData();
 
@@ -227,8 +220,6 @@ protected:
     	
 	void GenerateMipmapsInternal();
 
-    static bool CheckImageSize(const Vector<Image *> &imageSet);
-    
 	Texture();
 	virtual ~Texture();
     
@@ -240,20 +231,23 @@ public:							// properties for fast access
 
 
     rhi::HTexture handle;
+    rhi::HSamplerState samplerStateHandle;
+    rhi::HTextureSet singleTextureSet;
     rhi::SamplerState::Descriptor::Sampler samplerState;
-
 	
     uint32		width:16;			// texture width
 	uint32		height:16;			// texture height
 
-    eGPUFamily loadedAsFile:4;
-	TextureState state:2;
-	uint32		textureType:2;	
-	bool		isRenderTarget:1;
-	bool		isPink:1;
 
-    FastName		debugInfo;
-	TextureInvalidater* invalidater;
+    eGPUFamily loadedAsFile;
+    TextureState state:2;
+    uint32      textureType:2;
+
+    bool        isRenderTarget:1;
+    bool        isPink:1;
+
+
+    FastName		debugInfo;	
     TextureDescriptor *texDescriptor;
 
     static Mutex textureMapMutex;

@@ -44,7 +44,6 @@
 using namespace DAVA;
 
 SceneSaver::SceneSaver()
-    : copyConverted(false)
 {
 }
 
@@ -87,6 +86,7 @@ void SceneSaver::SaveFile(const String &fileName, Set<String> &errorLog)
 	}
 
     SafeRelease(scene);
+	RenderObjectsFlusher::Flush();
 }
 
 void SceneSaver::ResaveFile(const String &fileName, Set<String> &errorLog)
@@ -99,7 +99,7 @@ void SceneSaver::ResaveFile(const String &fileName, Set<String> &errorLog)
     Scene *scene = new Scene();
     if(SceneFileV2::ERROR_NO_ERROR == scene->LoadScene(sc2Filename))
     {
-        scene->SaveScene(sc2Filename, false);
+		scene->SaveScene(sc2Filename, false);
 	}
 	else
 	{
@@ -107,6 +107,7 @@ void SceneSaver::ResaveFile(const String &fileName, Set<String> &errorLog)
 	}
 
 	SafeRelease(scene);
+	RenderObjectsFlusher::Flush();
 }
 
 void SceneSaver::SaveScene(Scene *scene, const FilePath &fileName, Set<String> &errorLog)

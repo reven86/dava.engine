@@ -122,6 +122,7 @@ SyncObjectDX11_t
 {
     uint32  frame;
     uint32  is_signaled:1;
+    uint32  is_used : 1;
 };
 
 typedef ResourcePool<CommandBufferDX11_t,RESOURCE_COMMAND_BUFFER,CommandBuffer::Descriptor,false>   CommandBufferPool;
@@ -276,6 +277,7 @@ dx11_RenderPass_Begin( Handle pass )
     {
         _Frame.push_back( FrameDX11() );
         _Frame.back().number         = _FrameNumber;
+        _Frame.back().sync           = rhi::InvalidHandle;
         _Frame.back().readyToExecute = false;
 
 Trace("\n\n-------------------------------\nframe %u started\n",_FrameNumber);
@@ -529,6 +531,8 @@ dx11_CommandBuffer_SetVertexConstBuffer( Handle cmdBuf, uint32 bufIndex, Handle 
     CommandBufferDX11_t*    cb = CommandBufferPool::Get( cmdBuf );
 
     ConstBufferDX11::SetToRHI( buffer, cb->context );
+
+    StatSet::IncStat(stat_SET_CB, 1);
 }
 
 
@@ -540,6 +544,8 @@ dx11_CommandBuffer_SetVertexTexture( Handle cmdBuf, uint32 unitIndex, Handle tex
     CommandBufferDX11_t*    cb = CommandBufferPool::Get( cmdBuf );
 
     TextureDX11::SetToRHIVertex( tex, unitIndex, cb->context );
+
+    StatSet::IncStat(stat_SET_TEX, 1);
 }
 
 
@@ -585,6 +591,8 @@ dx11_CommandBuffer_SetFragmentConstBuffer( Handle cmdBuf, uint32 bufIndex, Handl
     CommandBufferDX11_t*    cb = CommandBufferPool::Get( cmdBuf );
 
     ConstBufferDX11::SetToRHI( buffer, cb->context );
+
+    StatSet::IncStat(stat_SET_CB, 1);
 }
 
 
@@ -596,6 +604,8 @@ dx11_CommandBuffer_SetFragmentTexture( Handle cmdBuf, uint32 unitIndex, Handle t
     CommandBufferDX11_t*    cb = CommandBufferPool::Get( cmdBuf );
 
     TextureDX11::SetToRHIFragment( tex, unitIndex, cb->context );
+
+    StatSet::IncStat(stat_SET_TEX, 1);
 }
 
 
@@ -618,6 +628,8 @@ dx11_CommandBuffer_SetSamplerState( Handle cmdBuf, const Handle samplerState )
     CommandBufferDX11_t*    cb = CommandBufferPool::Get( cmdBuf );
 
     SamplerStateDX11::SetToRHI( samplerState, cb->context );
+
+    StatSet::IncStat(stat_SET_SS, 1);
 }
 
 
@@ -664,13 +676,31 @@ dx11_CommandBuffer_DrawPrimitive( Handle cmdBuf, PrimitiveType type, uint32 coun
 
     VertexBufferDX11::SetToRHI( cb->cur_vb, 0, 0, cb->cur_vb_stride, ctx );
 
+    StatSet::IncStat(stat_SET_VB, 1);
+
     if( cb->cur_query_i != InvalidIndex )
         QueryBufferDX11::BeginQuery( cb->cur_query_buf, cb->cur_query_i, ctx );
                 
     ctx->Draw( vertexCount, baseVertex );
                 
     if( cb->cur_query_i != InvalidIndex )
-        QueryBufferDX11::EndQuery( cb->cur_query_buf, cb->cur_query_i, ctx );    
+        QueryBufferDX11::EndQuery(cb->cur_query_buf, cb->cur_query_i, ctx);
+
+    StatSet::IncStat(stat_DIP, 1);
+    switch (topo)
+    {
+    case D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST:
+        StatSet::IncStat(stat_DTL, 1);
+        break;
+    case D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP:
+        StatSet::IncStat(stat_DTS, 1);
+        break;
+    case D3D11_PRIMITIVE_TOPOLOGY_LINELIST:
+        StatSet::IncStat(stat_DLL, 1);
+        break;
+    default:
+        break;
+    }
 }
 
 
@@ -716,7 +746,10 @@ dx11_CommandBuffer_DrawIndexedPrimitive( Handle cmdBuf, PrimitiveType type, uint
 
     IndexBufferDX11::SetToRHI( cb->cur_ib, 0, ctx );
     VertexBufferDX11::SetToRHI( cb->cur_vb, 0, 0, cb->cur_vb_stride, ctx );
-                
+
+    StatSet::IncStat(stat_SET_VB, 1);
+    StatSet::IncStat(stat_SET_IB, 1);
+
     if( cb->cur_query_i != InvalidIndex )
         QueryBufferDX11::BeginQuery( cb->cur_query_buf, cb->cur_query_i, ctx );
                 
@@ -724,6 +757,22 @@ dx11_CommandBuffer_DrawIndexedPrimitive( Handle cmdBuf, PrimitiveType type, uint
 
     if( cb->cur_query_i != InvalidIndex )
         QueryBufferDX11::BeginQuery( cb->cur_query_buf, cb->cur_query_i, ctx );
+
+    StatSet::IncStat(stat_DIP, 1);
+    switch (topo)
+    {
+    case D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST:
+        StatSet::IncStat(stat_DTL, 1);
+        break;
+    case D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP:
+        StatSet::IncStat(stat_DTS, 1);
+        break;
+    case D3D11_PRIMITIVE_TOPOLOGY_LINELIST:
+        StatSet::IncStat(stat_DLL, 1);
+        break;
+    default:
+        break;
+    }
 }
 
 
@@ -757,6 +806,7 @@ dx11_SyncObject_Create()
     SyncObjectDX11_t*   sync   = SyncObjectPool::Get( handle );
 
     sync->is_signaled = false;
+    sync->is_used = false;
 
     return handle;
 }
@@ -830,6 +880,16 @@ Trace("rhi-dx11.exec-queued-cmd\n");
     {
         do_exec = false;
     }
+
+    if (_Frame.size() && _Frame.begin()->sync != InvalidHandle)
+    {
+        SyncObjectDX11_t*  sync = SyncObjectPool::Get(_Frame.begin()->sync);
+
+        sync->frame = frame_n;
+        sync->is_signaled = false;
+        sync->is_used = true;
+    }
+
     _FrameSync.Unlock();
 
     if( do_exec )
@@ -878,7 +938,7 @@ Trace("\n\n-------------------------------\nframe %u executed(submitted to GPU)\
 
         for( SyncObjectPool::Iterator s=SyncObjectPool::Begin(),s_end=SyncObjectPool::End(); s!=s_end; ++s )
         {
-            if( frame_n - s->frame > 3 )
+            if (s->is_used && (frame_n - s->frame >= 2))
                 s->is_signaled = true;
         }
     }
@@ -1071,7 +1131,8 @@ Trace("rhi-dx11.present\n");
             if( _Frame.size() )
             {
                 _Frame.back().readyToExecute = true;
-                _FrameStarted = false;
+                _Frame.back().sync           = sync;
+                _FrameStarted                = false;
 Trace("\n\n-------------------------------\nframe %u generated\n",_Frame.back().number);
             }
         }
@@ -1093,6 +1154,7 @@ Trace("\n\n-------------------------------\nframe %u generated\n",_Frame.back().
         if( _Frame.size() )
         {
             _Frame.back().readyToExecute = true;
+            _Frame.back().sync = sync;
             _FrameStarted = false;
         }
 

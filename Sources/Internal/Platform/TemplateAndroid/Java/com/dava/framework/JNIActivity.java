@@ -43,7 +43,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 	
 	private long mainLoopThreadID = 0;
 	
-	private native void nativeOnCreate(boolean isFirstRun);
+	private native void nativeOnCreate();
 	private native void nativeOnStart();
 	private native void nativeOnStop();
 	private native void nativeOnDestroy();
@@ -53,10 +53,11 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 	private native void nativeOnGamepadTriggersAvailable(boolean isAvailable);
 	private native boolean nativeIsMultitouchEnabled();
 	
-    private boolean isFirstRun = true;
     private static String commandLineParams = null;
+	
+    private boolean mainThreadExit = false;
     
-	public abstract JNISurfaceView FindSurfaceView();
+    public abstract JNISurfaceView FindSurfaceView();
 	
     private static JNIActivity activity = null;
     protected static SingalStrengthListner singalStrengthListner = null;
@@ -99,11 +100,6 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         commandLineParams = initCommandLineParams();
         
         //JNINotificationProvider.AttachToActivity();
-        
-        if(null != savedInstanceState)
-        {
-        	isFirstRun = savedInstanceState.getBoolean("isFirstRun");
-        }
         
         // initialize accelerometer
         SensorManager sensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
@@ -176,30 +172,41 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 		    splashView.setVisibility(View.GONE);
 		}
 
-		if(isFirstRun)
+		Thread mainThread = new Thread(new Runnable() 
 		{
-			Thread mainThread = new Thread(new Runnable() 
+			@Override
+			public void run() 
 			{
-				@Override
-				public void run() 
+	        	Log.e(JNIConst.LOG_TAG, "main thread stopped!");
+	        	
+		        // Initialize native framework core         
+		        JNIApplication.GetApplication().InitFramework(commandLineParams);
+
+		        nativeOnCreate();
+		        
+		        UpdateGamepadAxises();
+		        
+				while(true)
 				{
-			        // Initialize native framework core         
-			        JNIApplication.GetApplication().InitFramework(commandLineParams);
-			        
-			        UpdateGamepadAxises();
-			        
-			        nativeOnCreate(isFirstRun);
-			        
-					while(true)
-					{
-						surfaceView.ProcessQueueEvents();
-						surfaceView.ProcessFrame();
+					surfaceView.ProcessQueueEvents();
+					surfaceView.ProcessFrame();
+					
+					boolean needExit = false;
+			        synchronized (JNIActivity.this) 
+			        {
+			        	needExit = mainThreadExit;
 					}
+			        
+			        if(needExit) 
+			        {
+			        	Log.e(JNIConst.LOG_TAG, "main thread stopped!");
+			        	break;
+			        }
 				}
-			});
-			mainLoopThreadID = mainThread.getId();
-			mainThread.start();
-		}
+			}
+		});
+		mainLoopThreadID = mainThread.getId();
+		mainThread.start();
 		
         // The activity is being created.
         Log.i(JNIConst.LOG_TAG, "[Activity::onCreate] finish");
@@ -241,17 +248,6 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         Log.i(JNIConst.LOG_TAG, "[Activity::onRestart] start");
         super.onRestart();
         Log.i(JNIConst.LOG_TAG, "[Activity::onRestart] start");
-    }
-
-    @Override
-    protected void onSaveInstanceState(Bundle outState) 
-    {
-        Log.i(JNIConst.LOG_TAG, "[Activity::onSaveInstanceState] start");
-
-        outState.putBoolean("isFirstRun", isFirstRun);
-    	
-    	super.onSaveInstanceState(outState);
-    	Log.i(JNIConst.LOG_TAG, "[Activity::onSaveInstanceState] finish");
     }
     
     @Override
@@ -374,6 +370,11 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     {
         Log.i(JNIConst.LOG_TAG, "[Activity::onDestroy] start");
 
+        synchronized (this) 
+        {
+        	mainThreadExit = true;
+		}
+        
         if(mController != null)
         {
             mController.exit();

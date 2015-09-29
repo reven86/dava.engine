@@ -34,9 +34,8 @@
 
 namespace DAVA
 {
-
 UITextFieldWinUAP::UITextFieldWinUAP(UITextField* uiTextField)
-    : privateImpl(PrivateTextFieldWinUAP::Create(uiTextField))
+    : privateImpl(std::make_shared<PrivateTextFieldWinUAP>(uiTextField))
 {}
 
 UITextFieldWinUAP::~UITextFieldWinUAP()
@@ -127,7 +126,7 @@ void UITextFieldWinUAP::SetMultiline(bool value)
 
 void UITextFieldWinUAP::SetInputEnabled(bool value)
 {
-    privateImpl->SetInputEnabled(!value);
+    privateImpl->SetInputEnabled(value);
 }
 
 void UITextFieldWinUAP::SetRenderToTexture(bool value)

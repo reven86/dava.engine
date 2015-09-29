@@ -63,11 +63,15 @@ public:
 	static const FastName VERTEXCOLOR_FRAMEBLEND_OPAQUE;
 	static const FastName PIXELLIT_ALPHATEST;
 	static const FastName SPEEDTREE_LEAF;
+    static const FastName SPEEDTREE_LEAF_ALPHABLEND;
     static const FastName SPHERICLIT_SPEEDTREE_LEAF;
+    static const FastName SPHERICLIT_SPEEDTREE_LEAF_ALPHABLEND;
     static const FastName SPHERICLIT_TEXTURED_OPAQUE;
     static const FastName SPHERICLIT_TEXTURED_ALPHATEST;
+    static const FastName SPHERICLIT_TEXTURED_ALPHABLEND;
     static const FastName SPHERICLIT_TEXTURED_VERTEXCOLOR_OPAQUE;
     static const FastName SPHERICLIT_TEXTURED_VERTEXCOLOR_ALPHATEST;
+    static const FastName SPHERICLIT_TEXTURED_VERTEXCOLOR_ALPHABLEND;
     static const FastName VERTEXCOLOR_OPAQUE;
     static const FastName VERTEXCOLOR_OPAQUE_NODEPTHTEST;
 	static const FastName PIXELLIT_OPAQUE;
@@ -163,6 +167,7 @@ public:
     static const FastName FLAG_SPECULAR;
     static const FastName FLAG_SEPARATE_NORMALMAPS;
 
+    static const FastName FLAG_SPEED_TREE_LEAF;
     static const FastName FLAG_SPHERICAL_LIT;
 
     static const FastName FLAG_TANGENT_SPACE_WATER_REFLECTIONS;

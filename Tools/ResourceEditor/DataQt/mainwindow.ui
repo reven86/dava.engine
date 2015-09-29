@@ -234,6 +234,7 @@
      <addaction name="actionExportTegra"/>
      <addaction name="actionExportMali"/>
      <addaction name="actionExportAdreno"/>
+     <addaction name="actionExportDX11"/>
      <addaction name="separator"/>
      <addaction name="actionExportPNG"/>
     </widget>
@@ -318,6 +319,7 @@
      <addaction name="actionReloadTegra"/>
      <addaction name="actionReloadMali"/>
      <addaction name="actionReloadAdreno"/>
+     <addaction name="actionReloadDX11"/>
      <addaction name="separator"/>
      <addaction name="actionReloadPNG"/>
     </widget>
@@ -445,12 +447,20 @@
     <property name="title">
      <string>Debug Functions</string>
     </property>
+    <widget class="QMenu" name="menuDump">
+     <property name="title">
+      <string>Dump</string>
+     </property>
+     <addaction name="actionDumpTextures"/>
+     <addaction name="actionDumpSprites"/>
+    </widget>
     <addaction name="actionGridCopy"/>
     <addaction name="actionBatchProcess"/>
     <addaction name="actionCreateTestSkinnedObject"/>
     <addaction name="actionDeviceList"/>
     <addaction name="actionImageSplitterForNormals"/>
     <addaction name="actionReplaceTextureMipmap"/>
+    <addaction name="menuDump"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -1360,6 +1370,11 @@
     <string>Adreno</string>
    </property>
   </action>
+  <action name="actionExportDX11">
+   <property name="text">
+    <string>DX11</string>
+   </property>
+  </action>
   <action name="actionReloadMali">
    <property name="checkable">
     <bool>true</bool>
@@ -1374,6 +1389,14 @@
    </property>
    <property name="text">
     <string>Adreno</string>
+   </property>
+  </action>
+  <action name="actionReloadDX11">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>DX11</string>
    </property>
   </action>
   <action name="actionExportPNG">
@@ -2145,6 +2168,16 @@
   <action name="actionWithCompressedTextures">
    <property name="text">
     <string>With Compressed Textures</string>
+   </property>
+  </action>
+  <action name="actionDumpTextures">
+   <property name="text">
+    <string>Textures</string>
+   </property>
+  </action>
+  <action name="actionDumpSprites">
+   <property name="text">
+    <string>Sprites</string>
    </property>
   </action>
  </widget>

@@ -182,9 +182,37 @@ struct ParticleVertex
 };
 
 //void ParticleRenderObject::AppendParticleGroup(const ParticleGroup &group, ParticleRenderGroup *renderGroup, const Vector3& cameraDirection)
+void ParticleRenderObject::AppendRenderBatch(NMaterial* material, uint32 particlesCount, uint32 vertexLayout, const DynamicBufferAllocator::AllocResultVB& vBuffer)
+{
+    DVASSERT(particlesCount);
+
+    //now we need to create batch
+    if (currRenderBatchId >= renderBatchCache.size())
+    {
+        RenderBatch* newBatch = new RenderBatch();
+        newBatch->primitiveType = rhi::PRIMITIVE_TRIANGLELIST;
+        newBatch->SetRenderObject(this);
+        renderBatchCache.push_back(newBatch);
+        DVASSERT(renderBatchCache.size() > currRenderBatchId); //O_o
+    }
+
+    RenderBatch* targetBatch = renderBatchCache[currRenderBatchId];
+    targetBatch->SetMaterial(material);
+
+    targetBatch->vertexBuffer = vBuffer.buffer;
+    targetBatch->vertexCount = vBuffer.allocatedVertices;
+    targetBatch->vertexBase = vBuffer.baseVertex;
+
+    targetBatch->indexCount = particlesCount * 6;
+    targetBatch->indexBuffer = DynamicBufferAllocator::AllocateQuadListIndexBuffer(particlesCount);
+    targetBatch->startIndex = 0;
+    targetBatch->vertexLayoutId = vertexLayout;
+    activeRenderBatchArray.push_back(targetBatch);
+    currRenderBatchId++;
+}
+
 void ParticleRenderObject::AppendParticleGroup(List<ParticleGroup>::iterator begin, List<ParticleGroup>::iterator end, uint32 particlesCount, const Vector3& cameraDirection)
 {
-    
     if (!particlesCount)
         return; //hmmm?
 
@@ -192,13 +220,12 @@ void ParticleRenderObject::AppendParticleGroup(List<ParticleGroup>::iterator beg
     if (begin->layer->enableFrameBlend)
         vertexStride += (2 + 1) * sizeof(float); //texcoord2 * 2 + time * 1;
 
-    
-    
-    DynamicBufferAllocator::AllocResultVB target = DynamicBufferAllocator::AllocateVertexBuffer(vertexStride, particlesCount * 4);    
-    
-    uint32 particleStride = vertexStride * 4;
-    uint8* currpos = target.data;    
+    uint32 verteciesToAllocate = particlesCount * 4;
+    DynamicBufferAllocator::AllocResultVB target = DynamicBufferAllocator::AllocateVertexBuffer(vertexStride, verteciesToAllocate);
+    uint8* currpos = target.data;
 
+    uint32 verteciesAppended = 0;
+    uint32 particleStride = vertexStride * 4;
     for (auto it = begin; it != end; ++it)
     {
         const ParticleGroup& group = *it;
@@ -235,6 +262,17 @@ void ParticleRenderObject::AppendParticleGroup(List<ParticleGroup>::iterator beg
 
             for (int32 i = 0; i < basisCount; i++)
             {
+                if (verteciesAppended + 4 > target.allocatedVertices)
+                {
+                    uint32 vLayout = group.layer->enableFrameBlend ? frameBlendVertexLayoutId : regularVertexLayoutId;
+                    AppendRenderBatch(group.material, verteciesAppended / 4, vLayout, target);
+                    verteciesToAllocate -= verteciesAppended;
+                    verteciesAppended = 0;
+
+                    target = DynamicBufferAllocator::AllocateVertexBuffer(vertexStride, verteciesToAllocate);
+                    currpos = target.data;
+                }
+
                 ParticleVertex* verts[4];
                 verts[0] = (ParticleVertex*)currpos;
                 verts[1] = (ParticleVertex*)(currpos + vertexStride);
@@ -298,49 +336,21 @@ void ParticleRenderObject::AppendParticleGroup(List<ParticleGroup>::iterator beg
                     }                    
                 }
                 currpos += particleStride;
+                verteciesAppended += 4;
             }
             current = current->next;
         }
     }
 
-    //now we need to create batch
-    if (currRenderBatchId >= renderBatchCache.size())
+    if (verteciesAppended)
     {
-        RenderBatch *newBatch = new RenderBatch();
-        newBatch->primitiveType = rhi::PRIMITIVE_TRIANGLELIST;
-        newBatch->SetRenderObject(this);
-        renderBatchCache.push_back(newBatch);
-        DVASSERT(renderBatchCache.size()>currRenderBatchId); //O_o        
-    }    
-
-    RenderBatch *targetBatch = renderBatchCache[currRenderBatchId];
-    targetBatch->SetMaterial(begin->material);
-
-    targetBatch->vertexBuffer = target.buffer;
-    targetBatch->vertexCount = target.allocatedVertices;
-    targetBatch->vertexBase = target.baseVertex;
-    
-    targetBatch->indexCount = particlesCount * 6;
-    targetBatch->indexBuffer = DynamicBufferAllocator::AllocateQuadListIndexBuffer(particlesCount);
-    targetBatch->startIndex = 0;
-    targetBatch->vertexLayoutId = begin->layer->enableFrameBlend ? frameBlendVertexLayoutId : regularVertexLayoutId;
-    activeRenderBatchArray.push_back(targetBatch);
-    currRenderBatchId++;
+        AppendRenderBatch(begin->material, verteciesAppended / 4, begin->layer->enableFrameBlend ? frameBlendVertexLayoutId : regularVertexLayoutId, target);
+    }
 }
 
 void ParticleRenderObject::BindDynamicParameters(Camera * camera)
 {        
-    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
-    if(camera)
-    {
-        if(lights[0])
-        {
-            const Vector4 & lightPositionDirection0InCameraSpace = lights[0]->CalculatePositionDirectionBindVector(camera);
-            Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_LIGHT0_POSITION, &lightPositionDirection0InCameraSpace, (pointer_size)&lightPositionDirection0InCameraSpace);
-            Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_LIGHT0_COLOR, &lights[0]->GetDiffuseColor(), (pointer_size)lights[0]);
-            Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_LIGHT0_AMBIENT_COLOR, &lights[0]->GetAmbientColor(), (pointer_size)lights[0]);
-        }                
-    }    
+    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);    
 }
 
 

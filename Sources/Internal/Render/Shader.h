@@ -69,18 +69,17 @@ struct DynamicPropertyBinding
 class ShaderDescriptor;
 namespace ShaderDescriptorCache {
 ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastName, int32>& defines);
+void RelaoadShaders();
 }
 
 class ShaderDescriptor
 {    
 public://utility    
     static const rhi::ShaderPropList& GetProps(UniquePropertyLayout layout);
-    static uint32 CalculateRegsCount(rhi::ShaderProp::Type type, uint32 arraySize);  //return in registers  
-    static uint32 CalculateDataSize(rhi::ShaderProp::Type type, uint32 arraySize); //return in float  
-    
-public:
-    ShaderDescriptor(const rhi::ShaderSource *vSource, const rhi::ShaderSource *fSource, rhi::HPipelineState pipelineState);
+    static uint32 CalculateRegsCount(rhi::ShaderProp::Type type, uint32 arraySize);  //return in registers
+    static uint32 CalculateDataSize(rhi::ShaderProp::Type type, uint32 arraySize); //return in float
 
+public:
     void UpdateDynamicParams();
     void ClearDynamicBindings();
 
@@ -96,7 +95,14 @@ public:
     const rhi::ShaderSamplerList& GetFragmentSamplerList() const { return fragmentSamplerList; }
     const rhi::ShaderSamplerList& GetVertexSamplerList() const { return vertexSamplerList; }
 
+    bool IsValid();
+
 private:
+    ShaderDescriptor(rhi::HPipelineState pipelineState, FastName vProgUid, FastName fProgUid);
+    ~ShaderDescriptor();
+
+    void UpdateConfigFromSource(rhi::ShaderSource* vSource, rhi::ShaderSource* fSource);
+
     Vector<ConstBufferDescriptor> constBuffers;
 
 
@@ -106,20 +112,28 @@ private:
 
     Map<std::pair<ConstBufferDescriptor::Type, uint32>, rhi::HConstBuffer> dynamicBuffers;
 
+    FastName vProgUid, fProgUid;
     rhi::HPipelineState piplineState;
 
     uint32 requiredVertexFormat;
 
     rhi::ShaderSamplerList fragmentSamplerList;
-    rhi::ShaderSamplerList vertexSamplerList;    
+    rhi::ShaderSamplerList vertexSamplerList;
+
+    bool valid;
 
 //for storing and further debug simplification    
     FastName sourceName;
     HashMap<FastName, int32> defines;
 
     friend ShaderDescriptor* ShaderDescriptorCache::GetShaderDescriptor(const FastName& name, const HashMap<FastName, int32>& defines);
+    friend void ShaderDescriptorCache::RelaoadShaders();
 };
 
+inline bool ShaderDescriptor::IsValid()
+{
+    return valid;
+}
 };
 
 #endif // __DAVAENGINE_SHADER_H__

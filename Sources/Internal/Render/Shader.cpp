@@ -135,6 +135,10 @@ void ShaderDescriptor::UpdateDynamicParams()
             }
             
             dynamicBinding.updateSemantic = updateSemantic;
+
+#if defined(__DAVAENGINE_RENDERSTATS__)
+            ++Renderer::GetRenderStats().dynamicParamBindCount;
+#endif
         }
     }
 }
@@ -160,17 +164,31 @@ rhi::HConstBuffer ShaderDescriptor::GetDynamicBuffer(ConstBufferDescriptor::Type
     return dynamicBuffers[std::make_pair(type, index)];
 }
 
+ShaderDescriptor::ShaderDescriptor(rhi::HPipelineState _pipelineState, FastName _vProgUid, FastName _fProgUid)
+    : piplineState(_pipelineState)
+    , vProgUid(_vProgUid)
+    , fProgUid(_fProgUid)
+{
+}
+ShaderDescriptor::~ShaderDescriptor()
+{
+    rhi::ReleaseRenderPipelineState(piplineState);
+}
 
-ShaderDescriptor::ShaderDescriptor(const rhi::ShaderSource *vSource, const rhi::ShaderSource *fSource, rhi::HPipelineState _pipelineState)
-    :piplineState(_pipelineState)
-{    
+void ShaderDescriptor::UpdateConfigFromSource(rhi::ShaderSource* vSource, rhi::ShaderSource* fSource)
+{
     vertexConstBuffersCount = vSource->ConstBufferCount();
-    fragmentConstBuffersCount = fSource->ConstBufferCount();        
+    fragmentConstBuffersCount = fSource->ConstBufferCount();
+
+    constBuffers.clear();
+    dynamicBuffers.clear();
+    dynamicPropertyBindings.clear();
 
     Vector<BufferPropertyLayout> bufferPropertyLayouts;
     bufferPropertyLayouts.resize(vertexConstBuffersCount + fragmentConstBuffersCount);
+
     constBuffers.resize(vertexConstBuffersCount + fragmentConstBuffersCount);
-    
+
     for (auto &prop : vSource->Properties())
     {
         bufferPropertyLayouts[prop.bufferindex].props.push_back(prop);
@@ -183,7 +201,7 @@ ShaderDescriptor::ShaderDescriptor(const rhi::ShaderSource *vSource, const rhi::
     {
         if (i < vertexConstBuffersCount)
         {
-            constBuffers[i].type = ConstBufferDescriptor::Type::Vertex;            
+            constBuffers[i].type = ConstBufferDescriptor::Type::Vertex;
             constBuffers[i].targetSlot = i;
             constBuffers[i].updateType = vSource->ConstBufferStorage(constBuffers[i].targetSlot);
         }
@@ -193,9 +211,8 @@ ShaderDescriptor::ShaderDescriptor(const rhi::ShaderSource *vSource, const rhi::
             constBuffers[i].targetSlot = i - vertexConstBuffersCount;
             constBuffers[i].updateType = fSource->ConstBufferStorage(constBuffers[i].targetSlot);
         }
-        
-        constBuffers[i].propertyLayoutId = propertyLayoutSet.MakeUnique(bufferPropertyLayouts[i]);        
 
+        constBuffers[i].propertyLayoutId = propertyLayoutSet.MakeUnique(bufferPropertyLayouts[i]);
     }
 
 
@@ -221,8 +238,8 @@ ShaderDescriptor::ShaderDescriptor(const rhi::ShaderSource *vSource, const rhi::
                 binding.arraySize = prop.arraySize;
                 binding.updateSemantic = 0;
                 binding.dynamicPropertySemantic = DynamicBindings::GetUniformSemanticByName(prop.uid);
-                if( binding.dynamicPropertySemantic == DynamicBindings::UNKNOWN_SEMANTIC )
-                    Logger::Error( "wrong semantics in prop \"%s\"", prop.uid.c_str() );
+                if (binding.dynamicPropertySemantic == DynamicBindings::UNKNOWN_SEMANTIC)
+                    Logger::Error("wrong semantics in prop \"%s\"", prop.uid.c_str());
                 DVASSERT(binding.dynamicPropertySemantic != DynamicBindings::UNKNOWN_SEMANTIC); //unknown dynamic property
                 dynamicPropertyBindings.push_back(binding);
             }

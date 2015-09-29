@@ -41,6 +41,8 @@
 #include "QtTools/FileDialog/FileDialog.h"
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"
 
+#include "DebugTools/DebugTools.h"
+
 namespace
 {
     const QString APP_GEOMETRY = "geometry";
@@ -60,8 +62,11 @@ MainWindow::MainWindow(QWidget *parent)
 {
     setupUi(this);
 
-    // Relod Sprites
+    DebugTools::ConnectToUI(this);
+
+    // Reload Sprites
     QAction* actionReloadSprites = dialogReloadSprites->GetActionReloadSprites();
+    connect(actionReloadSprites, &QAction::triggered, this, &MainWindow::OnSetupCacheSettingsForPacker);
     menuTools->addAction(actionReloadSprites);
     toolBarPlugins->addAction(actionReloadSprites);
 
@@ -170,11 +175,6 @@ void MainWindow::RestoreMainWindowState()
     {
         logWidget->Deserialize(val.toByteArray());
     }
-}
-
-DavaGLWidget* MainWindow::GetGLWidget() const
-{
-    return previewWidget->GetDavaGLWidget();
 }
 
 DialogReloadSprites* MainWindow::GetDialogReloadSprites() const
@@ -573,4 +573,22 @@ void MainWindow::SetBackgroundColorMenuTriggered(QAction* action)
 
     // In case we don't found current color in predefined ones - select "Custom" menu item.
     backgroundFrameUseCustomColorAction->setChecked(!colorFound);
+}
+
+void MainWindow::OnSetupCacheSettingsForPacker()
+{
+    auto spritesPacker = dialogReloadSprites->GetSpritesPacker();
+    DVASSERT(nullptr != spritesPacker);
+
+    if (EditorSettings::Instance()->IsUsingAssetCache())
+    {
+        spritesPacker->SetCacheTool(
+        EditorSettings::Instance()->GetAssetCacheIp(),
+        EditorSettings::Instance()->GetAssetCachePort(),
+        EditorSettings::Instance()->GetAssetCacheTimeoutSec());
+    }
+    else
+    {
+        spritesPacker->ClearCacheTool();
+    }
 }

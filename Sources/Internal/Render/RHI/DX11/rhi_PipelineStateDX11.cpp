@@ -575,8 +575,7 @@ typedef ResourcePool<PipelineStateDX11_t,RESOURCE_PIPELINE_STATE,PipelineState::
 typedef ResourcePool<ConstBufDX11,RESOURCE_CONST_BUFFER,ConstBufDX11::Desc,false>                   ConstBufDX11Pool;
 
 RHI_IMPL_POOL(PipelineStateDX11_t,RESOURCE_PIPELINE_STATE,PipelineState::Descriptor,false);
-RHI_IMPL_POOL_SIZE(ConstBufDX11,RESOURCE_CONST_BUFFER,ConstBufDX11::Desc,false,8*1024);
-
+RHI_IMPL_POOL_SIZE(ConstBufDX11, RESOURCE_CONST_BUFFER, ConstBufDX11::Desc, false, 12 * 1024);
 
 //------------------------------------------------------------------------------
 

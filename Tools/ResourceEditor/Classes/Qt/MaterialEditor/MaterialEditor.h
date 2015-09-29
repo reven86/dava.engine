@@ -116,29 +116,44 @@ private:
         CHECKED_ALL = 0xff
     };
 
+    QString GetTemplatePath(DAVA::int32 index) const;
+    DAVA::uint32 ExecMaterialLoadingDialog(DAVA::uint32 initialState, const QString &inputFile);
+
     void initActions();
     void initTemplates();
     void setTemplatePlaceholder( const QString& text );
-    QString GetTemplatePath(int index) const;
-    DAVA::uint32 ExecMaterialLoadingDialog(DAVA::uint32 initialState, const QString &inputFile);
 
-	Ui::MaterialEditor *ui;
+	void StoreMaterialToPreset(DAVA::NMaterial* material, DAVA::KeyedArchive* preset, 
+		DAVA::SerializationContext* context) const;
+	void StoreMaterialTextures(DAVA::NMaterial* material, const DAVA::InspMember* materialMember,
+		DAVA::KeyedArchive* texturesArchive, DAVA::SerializationContext* context) const;
+	void StoreMaterialFlags(DAVA::NMaterial* material, const DAVA::InspMember* materialMember, 
+		DAVA::KeyedArchive* flagsArchive) const;
+	void StoreMaterialProperties(DAVA::NMaterial* material, const DAVA::InspMember* materialMember, 
+		DAVA::KeyedArchive* propertiesArchive) const;
+
+	void UpdateMaterialFromPresetWithOptions(DAVA::NMaterial* material, DAVA::KeyedArchive* preset,
+		DAVA::SerializationContext* context, uint32 options);
+	void UpdateMaterialPropertiesFromPreset(DAVA::NMaterial* material, DAVA::KeyedArchive* properitesArchive);
+	void UpdateMaterialFlagsFromPreset(DAVA::NMaterial* material, DAVA::KeyedArchive* flagsArchive);
+	void UpdateMaterialTexturesFromPreset(DAVA::NMaterial* material, DAVA::KeyedArchive* texturesArchive, 
+		const DAVA::FilePath& scenePath);
+
+private:
 	QtPosSaver posSaver;
+	QList<DAVA::NMaterial*> curMaterials;
+    QtPropertyData *baseRoot = nullptr;
+    QtPropertyData *flagsRoot = nullptr;
+    QtPropertyData *propertiesRoot = nullptr;
+    QtPropertyData *texturesRoot = nullptr;
+    QPointer<MaterialTemplateModel> templatesFilterModel;
 
-	QList< DAVA::NMaterial *> curMaterials;
-
-    QtPropertyData *baseRoot;
-    QtPropertyData *flagsRoot;
-    QtPropertyData *propertiesRoot;
-    QtPropertyData *illuminationRoot;
-    QtPropertyData *texturesRoot;
-
-	PropertyEditorStateHelper *treeStateHelper;
     ExpandMap expandMap;
-    QPointer< MaterialTemplateModel > templatesFilterModel;
+	PropertyEditorStateHelper *treeStateHelper = nullptr;
+	Ui::MaterialEditor *ui = nullptr;
 
     DAVA::FilePath lastSavePath;
-    DAVA::uint32 lastCheckState;
+    DAVA::uint32 lastCheckState = 0;
 };
 
 #endif

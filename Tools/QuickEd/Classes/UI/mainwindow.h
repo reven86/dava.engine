@@ -43,7 +43,6 @@ class PropertiesWidget;
 class LibraryWidget;
 class PreviewWidget;
 
-class DavaGLWidget;
 class LocalizationEditorDialog;
 class DialogReloadSprites;
 
@@ -70,7 +69,6 @@ public:
     void OnProjectOpened(const DAVA::ResultList &resultList, QString projectPath);
     int AddTab(const DAVA::FilePath &scenePath);
     void OnCleanChanged(int index, bool val);
-    DavaGLWidget *GetGLWidget() const;
     DialogReloadSprites *GetDialogReloadSprites() const;
 protected:
     void closeEvent(QCloseEvent *event) override;
@@ -88,9 +86,12 @@ signals:
     void RtlChanged(bool isRtl);
     void GlobalStyleClassesChanged(const QString &classesStr);
     void ReloadSprites(DAVA::eGPUFamily gpu);
+
 public slots:
     void OnProjectIsOpenChanged(bool arg);
     void OnCountChanged(int count);
+    void OnSetupCacheSettingsForPacker();
+
 private slots:
     void OnCurrentIndexChanged(int arg);
     void OnSaveDocument();
@@ -109,6 +110,7 @@ private slots:
     void OnRtlChanged(int arg);
     void OnEmulationModeChanged(int arg);
     void OnGlobalClassesChanged(const QString &str);
+
 private:
     void InitLanguageBox();
     void InitRtlBox();

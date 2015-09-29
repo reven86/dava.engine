@@ -30,14 +30,24 @@
 #include "CustomColorsProxy.h"
 #include "Deprecated/EditorConfig.h"
 
+#include "Render/Texture.h"
+#include "Render/Material/NMaterial.h"
+
+using namespace DAVA;
+
 CustomColorsProxy::CustomColorsProxy(int32 _size)
     : changedRect(Rect())
     , spriteChanged(false)
     , textureLoaded(false)
     , size(_size)
     , changes(0)
+    , brushMaterial(new NMaterial())
 {
 	customColorsRenderTarget = Texture::CreateFBO(size, size, FORMAT_RGBA8888/*, Texture::DEPTH_NONE*/);
+
+    brushMaterial->SetMaterialName(FastName("CustomColorsMaterial"));
+    brushMaterial->SetFXName(FastName("~res:/LandscapeEditor/Materials/CustomColors.material"));
+    brushMaterial->PreBuildMaterial(RenderSystem2D::RENDER_PASS_NAME);
 }
 
 void CustomColorsProxy::ResetLoadedState( bool isLoaded )
@@ -121,7 +131,7 @@ void CustomColorsProxy::UpdateSpriteFromConfig()
     viewport.width = viewport.height = size;
     
     Vector<Color> customColors = EditorConfig::Instance()->GetColorPropertyValues("LandscapeCustomColors");
-    if (customColors.size())
+    if (!customColors.empty())
     {
         Color color = customColors.front();
         RenderHelper::CreateClearPass(customColorsRenderTarget->handle, PRIORITY_CLEAR, color, viewport);
@@ -130,4 +140,9 @@ void CustomColorsProxy::UpdateSpriteFromConfig()
     {
         RenderHelper::CreateClearPass(customColorsRenderTarget->handle, PRIORITY_CLEAR, Color::Clear, viewport);
     }
+}
+
+NMaterial* CustomColorsProxy::GetBrushMaterial() const
+{
+    return brushMaterial.get();
 }

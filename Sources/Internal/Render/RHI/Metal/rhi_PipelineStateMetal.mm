@@ -194,8 +194,7 @@ typedef ResourcePool<PipelineStateMetal_t,RESOURCE_PIPELINE_STATE,PipelineState:
 typedef ResourcePool<PipelineStateMetal_t::ConstBuf,RESOURCE_CONST_BUFFER,PipelineStateMetal_t::ConstBuf::Desc,false>   ConstBufMetalPool;
 
 RHI_IMPL_POOL(PipelineStateMetal_t,RESOURCE_PIPELINE_STATE,PipelineState::Descriptor,false);
-RHI_IMPL_POOL_SIZE(PipelineStateMetal_t::ConstBuf,RESOURCE_CONST_BUFFER,PipelineStateMetal_t::ConstBuf::Desc,false,8*1024);
-
+RHI_IMPL_POOL_SIZE(PipelineStateMetal_t::ConstBuf, RESOURCE_CONST_BUFFER, PipelineStateMetal_t::ConstBuf::Desc, false, 12 * 1024);
 
 static RingBufferMetal  DefaultConstRingBuffer;
 static RingBufferMetal  VertexConstRingBuffer;

@@ -94,7 +94,11 @@ PreviewModel::PreviewModel(QObject *parent)
     , emulationMode(false)
 {
     view = new DAVA::UIControl();
+    view->SetName("PreviewModel_View");
+
     canvas = new PackageCanvas();
+    canvas->SetName("PreviewModel_PackageCanvas");
+
     view->AddControl(canvas);
 }
 

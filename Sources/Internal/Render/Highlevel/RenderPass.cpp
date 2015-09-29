@@ -129,9 +129,9 @@ void RenderPass::Draw(RenderSystem * renderSystem)
     
     PrepareVisibilityArrays(mainCamera, renderSystem);        
 
-    BeginRender();
+    BeginRenderPass();
     DrawLayers(mainCamera);
-    EndRender();
+    EndRenderPass();
 }
 
 void RenderPass::PrepareVisibilityArrays(Camera *camera, RenderSystem * renderSystem)
@@ -204,14 +204,14 @@ void RenderPass::DrawDebug(Camera *camera, RenderSystem * renderSystem)
     }
 }
 
-void RenderPass::BeginRender()
+void RenderPass::BeginRenderPass()
 {
     renderPass = rhi::AllocateRenderPass(passConfig, 1, &packetList);
     rhi::BeginRenderPass(renderPass);
     rhi::BeginPacketList(packetList);
 }
 
-void RenderPass::EndRender()
+void RenderPass::EndRenderPass()
 {
     rhi::EndPacketList(packetList);
     rhi::EndRenderPass(renderPass);
@@ -311,16 +311,16 @@ void MainForwardRenderPass::Draw(RenderSystem * renderSystem)
 	
     PrepareVisibilityArrays(mainCamera, renderSystem);        
 
-    BeginRender();
+    BeginRenderPass();
 
     DrawLayers(mainCamera);
 
     if (layersBatchArrays[RenderLayer::RENDER_LAYER_WATER_ID].GetRenderBatchCount() != 0)
         PrepareReflectionRefractionTextures(renderSystem);
     
-    DrawDebug(mainCamera, renderSystem);
+    DrawDebug(drawCamera, renderSystem);
 
-    EndRender();
+    EndRenderPass();
 }
 
 MainForwardRenderPass::~MainForwardRenderPass()
@@ -399,9 +399,9 @@ void WaterReflectionRenderPass::Draw(RenderSystem * renderSystem)
     ClearLayersArrays();
     PrepareLayersArrays(visibilityArray, currMainCamera);
     
-    BeginRender();
+    BeginRenderPass();
     DrawLayers(currMainCamera);
-    EndRender();
+    EndRenderPass();
 }
 
 
@@ -451,9 +451,9 @@ void WaterRefractionRenderPass::Draw(RenderSystem * renderSystem)
     ClearLayersArrays();
     PrepareLayersArrays(visibilityArray, currMainCamera);    
 
-    BeginRender();
+    BeginRenderPass();
     DrawLayers(currMainCamera);       
-    EndRender();
+    EndRenderPass();
 }
 
 

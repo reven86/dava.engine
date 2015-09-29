@@ -188,8 +188,6 @@ bool TilemaskEditorSystem::DisableLandscapeEdititing()
     editorMaterial->RemoveTexture(TILEMASK_EDTIOR_TEXTURE_SOURCE);
     
     SafeRelease(landscapeTilemaskTexture);
-    rhi::ReleaseTextureSet(landscapeTilemaskTextureSet);
-    landscapeTilemaskTextureSet = rhi::HTextureSet();
     
 	enabled = false;
 	return !enabled;
@@ -213,7 +211,7 @@ void TilemaskEditorSystem::Process(float32 timeElapsed)
             Rect toolRect(toolPos, toolSize);
 
             RenderSystem2D::Instance()->BeginRenderTargetPass(toolTexture);
-            RenderSystem2D::Instance()->DrawTexture(toolImageTextureSet, RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL, Color::White, toolRect);
+            RenderSystem2D::Instance()->DrawTexture(toolImageTexture, RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL, Color::White, toolRect);
             RenderSystem2D::Instance()->EndRenderTargetPass();
 
             toolSpriteUpdated = true;
@@ -371,12 +369,8 @@ void TilemaskEditorSystem::UpdateBrushTool()
 
 void TilemaskEditorSystem::UpdateToolImage()
 {
-    if(toolImageTexture)
-    {
-        SafeRelease(toolImageTexture);
-        rhi::ReleaseTextureSet(toolImageTextureSet);
-    }
-    
+    SafeRelease(toolImageTexture);
+
     Vector<Image *> images;
     ImageSystem::Instance()->Load(toolImagePath, images);
     if(images.size())
@@ -391,11 +385,6 @@ void TilemaskEditorSystem::UpdateToolImage()
         SafeRelease(images[0]);
         
         toolImageTexture = Texture::CreateFromData(toolImage, false);
-        
-        rhi::TextureSetDescriptor desc;
-        desc.fragmentTextureCount = 1;
-        desc.fragmentTexture[0] = toolImageTexture->handle;
-        toolImageTextureSet = rhi::AcquireTextureSet(desc);
     }
 }
 
@@ -461,14 +450,10 @@ void TilemaskEditorSystem::CreateMaskTexture()
     
     if(tilemask != srcTexture)
     {
-        rhi::TextureSetDescriptor desc;
-        desc.fragmentTextureCount = 1;
-        desc.fragmentTexture[0] = tilemask->handle;
-        landscapeTilemaskTextureSet = rhi::AcquireTextureSet(desc);
         landscapeTilemaskTexture = SafeRetain(tilemask);
         
         RenderSystem2D::Instance()->BeginRenderTargetPass(srcTexture);
-        RenderSystem2D::Instance()->DrawTexture(landscapeTilemaskTextureSet, RenderSystem2D::DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL, Color::White);
+        RenderSystem2D::Instance()->DrawTexture(landscapeTilemaskTexture, RenderSystem2D::DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL, Color::White);
         RenderSystem2D::Instance()->EndRenderTargetPass();
         
         drawSystem->GetLandscapeProxy()->SetTilemaskTexture(srcTexture);

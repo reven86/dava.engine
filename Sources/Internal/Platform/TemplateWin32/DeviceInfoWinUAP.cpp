@@ -59,6 +59,7 @@ using namespace ::Windows::Devices::HumanInterfaceDevice;
 using namespace ::Windows::Security::ExchangeActiveSyncProvisioning;
 using namespace ::Windows::Networking::Connectivity;
 using namespace ::Windows::System::UserProfile;
+using namespace ::Windows::UI::Xaml;
 
 namespace DAVA
 {
@@ -131,7 +132,11 @@ String DeviceInfoPrivate::GetRegion()
 
 String DeviceInfoPrivate::GetTimeZone()
 {
+// https://msdn.microsoft.com/en-us/library/dy1c794f.aspx?f=255&MSPPError=-2147217396
+#pragma warning(push)
+#pragma warning(disable : 4691) // some assembly reference warning
     return RTStringToString(Windows::System::TimeZoneSettings::CurrentTimeZoneDisplayName);
+#pragma warning(pop)
 }
 
 String DeviceInfoPrivate::GetHTTPProxyHost()
@@ -207,15 +212,16 @@ void DeviceInfoPrivate::InitializeScreenInfo()
 
     auto func = [this]()
     {
-        CoreWindow^ window = CoreWindow::GetForCurrentThread();
-        DVASSERT(window != nullptr);
+        // should be started on UI thread
+        CoreWindow^ coreWindow = Window::Current->CoreWindow;
+        DVASSERT(coreWindow != nullptr);
+        
+        screenInfo.width = static_cast<int32>(coreWindow->Bounds.Width);
+        screenInfo.height = static_cast<int32>(coreWindow->Bounds.Height);
 
-        using Windows::Graphics::Display::DisplayInformation;
         DisplayInformation^ displayInfo = DisplayInformation::GetForCurrentView();
+        DVASSERT(displayInfo != nullptr);
         screenInfo.scale = static_cast<float32>(displayInfo->RawPixelsPerViewPixel);
-
-        screenInfo.width = static_cast<int32>(window->Bounds.Width);
-        screenInfo.height = static_cast<int32>(window->Bounds.Height);
         DisplayOrientations curOrientation = DisplayInformation::GetForCurrentView()->CurrentOrientation;
         if (DisplayOrientations::Portrait == curOrientation || DisplayOrientations::PortraitFlipped == curOrientation)
         {

@@ -115,7 +115,7 @@ SceneTabWidget::SceneTabWidget(QWidget *parent)
 
         curScene->cameraSystem->MoveToStep( ofs );
     };
-    connect( davaWidget->GetGLWindow(), &OpenGLWindow::mouseScrolled, mouseWheelHandler );
+    connect(davaWidget, &DavaGLWidget::mouseScrolled, mouseWheelHandler);
 
     auto moveToSelectionHandler = [&]
     {
@@ -418,31 +418,31 @@ void SceneTabWidget::MouseOverSelectedEntities(SceneEditor2* scene, const Entity
 	static QCursor cursorRotate(QPixmap(":/QtIcons/curcor_rotate.png"));
 	static QCursor cursorScale(QPixmap(":/QtIcons/curcor_scale.png"));
 
-    auto w = davaWidget->GetGLWindow();
+    auto view = davaWidget->GetGLView();
 
-	if(GetCurrentScene() == scene && nullptr != entities)
+    if(GetCurrentScene() == scene && nullptr != entities)
 	{
 		switch(scene->modifSystem->GetModifMode())
 		{
 		case ST_MODIF_MOVE:
-			w->setCursor(cursorMove);
-			break;
+            view->setCursor(cursorMove);
+            break;
 		case ST_MODIF_ROTATE:
-            w->setCursor(cursorRotate);
-			break;
+            view->setCursor(cursorRotate);
+            break;
 		case ST_MODIF_SCALE:
-            w->setCursor(cursorScale);
-			break;
+            view->setCursor(cursorScale);
+            break;
 		case ST_MODIF_OFF:
 		default:
-            w->setCursor(Qt::ArrowCursor);
-			break;
+            view->unsetCursor();
+            break;
 		}
 	}
 	else
 	{
-		w->setCursor(Qt::ArrowCursor);
-	}
+        view->unsetCursor();
+    }
 }
 
 void SceneTabWidget::SceneSaved(SceneEditor2 *scene)

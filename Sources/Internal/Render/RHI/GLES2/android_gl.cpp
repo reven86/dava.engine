@@ -16,6 +16,13 @@ static EGLint _format = 0;
 static EGLConfig _config = 0;
 static ANativeWindow * _nativeWindow = nullptr;
 
+static bool needRecreateSurface = false;
+
+static const EGLint contextAttribs[] = {
+	EGL_CONTEXT_CLIENT_VERSION, 2,
+	EGL_NONE
+};
+
 void android_gl_init(void * _window)
 {
 	_nativeWindow = static_cast<ANativeWindow *>(_window);
@@ -28,11 +35,6 @@ void android_gl_init(void * _window)
 		EGL_RED_SIZE, 8,
 	    EGL_DEPTH_SIZE, 24,
 	    EGL_STENCIL_SIZE, 8,
-		EGL_NONE
-	};
-
-	const EGLint contextAttribs[] = {
-		EGL_CONTEXT_CLIENT_VERSION, 2,
 		EGL_NONE
 	};
 
@@ -53,20 +55,39 @@ void android_gl_init(void * _window)
 	eglMakeCurrent(_display, _surface, _surface, _context);
 }
 
-void android_gl_reset()
+void android_gl_reset(void * _window)
 {
-	if(_surface != EGL_NO_SURFACE)
-		eglDestroySurface(_display, _surface);
-
+	_nativeWindow = static_cast<ANativeWindow *>(_window);
 	ANativeWindow_setBuffersGeometry(_nativeWindow, _GLES2_DefaultFrameBuffer_Width, _GLES2_DefaultFrameBuffer_Height, _format);
-	_surface = eglCreateWindowSurface(_display, _config, _nativeWindow, nullptr);
 
-	eglMakeCurrent(_display, _surface, _surface, _context);
+	needRecreateSurface = true;
 }
 
-void android_gl_end_frame()
+bool android_gl_end_frame()
 {
-	eglSwapBuffers(_display, _surface);
+	if(needRecreateSurface)
+	{
+		eglDestroySurface(_display, _surface);
+		_surface = eglCreateWindowSurface(_display, _config, _nativeWindow, nullptr);
+
+		eglMakeCurrent(_display, _surface, _surface, _context);
+
+		needRecreateSurface = false;
+	}
+
+	EGLBoolean ret = eglSwapBuffers(_display, _surface);
+
+	if(!ret && eglGetError() == EGL_CONTEXT_LOST)
+	{
+		eglDestroyContext(_display, _context);
+		_GLES2_Context = _context = eglCreateContext(_display, _config, EGL_NO_CONTEXT, contextAttribs);
+
+		eglMakeCurrent(_display, _surface, _surface, _context);
+
+        return false; //if context was lost, return 'false' (need recreate all resources)
+    }
+
+    return true;
 }
 
 void android_gl_acquire_context()

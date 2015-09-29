@@ -130,7 +130,7 @@ void SpriteObject::UpdateBufferData(rhi::HVertexBuffer vBuffer, rhi::HIndexBuffe
     uint16 * indices = new uint16[indCount];
     float32 * verticesPtr = verticies;
     uint16 * indicesPtr = indices;
-    for (int32 i = 0; i < framesCount; ++i)
+    for (uint32 i = 0; i < framesCount; ++i)
     {
         float32 x0 = sprite->GetRectOffsetValueForFrame(i, Sprite::X_OFFSET_TO_ACTIVE) - sprPivot.x;
         float32 y0 = sprite->GetRectOffsetValueForFrame(i, Sprite::Y_OFFSET_TO_ACTIVE) - sprPivot.y;

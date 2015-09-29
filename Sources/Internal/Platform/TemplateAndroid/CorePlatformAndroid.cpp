@@ -39,7 +39,6 @@ extern void FrameworkWillTerminate();
 #include "Input/InputSystem.h"
 #include "UI/UIEvent.h"
 #include "FileSystem/FileSystem.h"
-#include "Scene3D/SceneCache.h"
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Platform/TemplateAndroid/JniHelpers.h"
@@ -193,17 +192,13 @@ namespace DAVA
 
 		if(wasCreated)
 		{
-			RenderResource::SaveAllResourcesToSystemMem();
-			RenderResource::LostAllResources();
-
 			ResizeView(w, h);
 
-			rhi::ResetParam params = {(uint32)width, (uint32)height};
+            rhi::ResetParam params;
+            params.width = (uint32)width;
+            params.height = (uint32)height;
+			params.window = rendererParams.window;
 			Renderer::Reset(params);
-
-//			RenderManager::Instance()->Invalidate();   RHI_COMPLETE
-			RenderResource::InvalidateAllResources();
-//			SceneCache::Instance()->InvalidateSceneMaterials();   RHI_COMPLETE
         }
 		else
 		{
@@ -229,6 +224,7 @@ namespace DAVA
 
 	void CorePlatformAndroid::OnCreateActivity()
 	{
+        DAVA::Thread::InitMainThread();
 //		Logger::Debug("[CorePlatformAndroid::OnCreateActivity]");
 	}
 
@@ -266,10 +262,13 @@ namespace DAVA
 			}
 			DAVA::Core::Instance()->GoForeground();
 
-			foreground = true;
-		}
-		Logger::Debug("[CorePlatformAndroid::StartForeground] end");
-	}
+            if (!foreground)
+                rhi::ResumeRendering();
+
+            foreground = true;
+        }
+        Logger::Debug("[CorePlatformAndroid::StartForeground] end");
+    }
 
 	void CorePlatformAndroid::StopForeground(bool isLock)
 	{
@@ -286,11 +285,14 @@ namespace DAVA
 		}
 		DAVA::Core::Instance()->GoBackground(isLock);
 
-		foreground = false;
-	}
+        if (foreground)
+            rhi::SuspendRendering();
 
-	void CorePlatformAndroid::KeyUp(int32 keyCode)
-	{
+        foreground = false;
+    }
+
+    void CorePlatformAndroid::KeyUp(int32 keyCode)
+    {
 		InputSystem::Instance()->GetKeyboard().OnSystemKeyUnpressed(keyCode);
 	}
 
@@ -342,14 +344,14 @@ namespace DAVA
 		InputSystem::Instance()->GetGamepadDevice().OnTriggersAvailable(isAvailable);
 	}
 
-	void CorePlatformAndroid::OnInput(int32 action, int32 source, Vector<UIEvent>& activeInputs, Vector<UIEvent>& allInputs)
-	{
-		DVASSERT(!allInputs.empty());
-		if (!allInputs.empty())
-		{
-			UIControlSystem::Instance()->OnInput(action, activeInputs, allInputs, allInputs[0].timestamp);
-		}
-	}
+    void CorePlatformAndroid::OnInput(int32, int32, Vector<UIEvent>& activeInputs, Vector<UIEvent>& allInputs)
+    {
+        DVASSERT(!allInputs.empty());
+        if (!allInputs.empty())
+        {
+            UIControlSystem::Instance()->OnInput(activeInputs, allInputs);
+        }
+    }
 
     bool CorePlatformAndroid::IsMultitouchEnabled()
     {

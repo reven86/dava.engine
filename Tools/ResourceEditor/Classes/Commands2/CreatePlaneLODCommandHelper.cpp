@@ -282,11 +282,7 @@ void CreatePlaneLODCommandHelper::CreatePlaneBatchForRequest(RequestPointer& req
 void CreatePlaneLODCommandHelper::DrawToTextureForRequest(RequestPointer& request, DAVA::Entity* fromEntity, DAVA::Camera* camera,
 	DAVA::int32 fromLodLayer, const rhi::Viewport& viewport, bool clearTarget)
 {
-    DAVA::TexturesMap textures;
-    SceneHelper::EnumerateEntityTextures(fromEntity->GetScene(), fromEntity, textures, 
-		SceneHelper::TexturesEnumerateMode::EXCLUDE_NULL);
-	for (auto& tex : textures)
-        tex.second->ReloadAs(GPU_ORIGIN);
+    request->ReloadTexturesToGPU(GPU_ORIGIN);
 
     ScopedPtr<Scene> tempScene(new Scene());
 
@@ -357,6 +353,26 @@ void CreatePlaneLODCommandHelper::Request::RegisterRenderCallback()
 		MakeFunction(this, &CreatePlaneLODCommandHelper::Request::OnRenderCallback));
 }
 
+void CreatePlaneLODCommandHelper::Request::ReloadTexturesToGPU(DAVA::eGPUFamily targetGPU)
+{
+    auto entity = lodComponent->GetEntity();
+
+    DAVA::TexturesMap textures;
+    SceneHelper::EnumerateEntityTextures(entity->GetScene(), entity, textures,
+                                         SceneHelper::TexturesEnumerateMode::EXCLUDE_NULL);
+    for (auto& tex : textures)
+    {
+        tex.second->ReloadAs(targetGPU);
+    }
+
+    DAVA::Vector<DAVA::NMaterial*> materials;
+    SceneHelper::EnumerateMaterialInstances(entity, materials);
+    for (auto& mat : materials)
+    {
+        mat->InvalidateTextureBindings();
+    }
+}
+
 void CreatePlaneLODCommandHelper::Request::OnRenderCallback(rhi::HSyncObject object)
 {
 	completed = true;
@@ -366,14 +382,7 @@ void CreatePlaneLODCommandHelper::Request::OnRenderCallback(rhi::HSyncObject obj
 
 	auto sourceEntity = lodComponent->GetEntity();
 
-    DAVA::TexturesMap textures;
-
-    SceneHelper::EnumerateEntityTextures(sourceEntity->GetScene(), sourceEntity, textures,  
-		SceneHelper::TexturesEnumerateMode::EXCLUDE_NULL);
-
     DAVA::eGPUFamily currentGPU = static_cast<DAVA::eGPUFamily>(
-		SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsInt32());
-
-	for (auto& tex : textures)
-        tex.second->ReloadAs(currentGPU);
+        SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsUInt32());
+    ReloadTexturesToGPU(currentGPU);
 }
