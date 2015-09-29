@@ -11,9 +11,11 @@ set (NGT_FOUND 1)
 include (NGTMacro)
 
 get_filename_component(NGT_ABS_CORE_PATH ${NGT_CORE_PATH} ABSOLUTE)
+get_filename_component(NGT_ABS_SRC_ROOT ${NGT_SRC_ROOT} ABSOLUTE)
 
 include_directories(${NGT_ABS_CORE_PATH})
 include_directories(${NGT_ABS_CORE_PATH}/interfaces)
+include_directories(${NGT_ABS_SRC_ROOT})
 get_subdirs_list(SUBDIRS ${NGT_ABS_CORE_PATH})
 
 foreach(SUBDIR ${SUBDIRS})
