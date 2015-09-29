@@ -70,6 +70,7 @@ public:
         for (uint32 i = 0; i < BORDERS_COUNT; ++i)
         {
             UIControl* control = new UIControl();
+            control->SetName("border of selection rect");
             UIControlBackground* background = control->GetBackground();
             background->SetSprite("~res:/Gfx/HUDControls/BlackGrid", 0);
             background->SetDrawType(UIControlBackground::DRAW_TILED);
@@ -188,6 +189,7 @@ public:
         for (uint32 i = 0; i < BORDERS_COUNT; ++i)
         {
             UIControl* control = new UIControl();
+            control->SetName("border of frame");
             UIControlBackground* background = control->GetBackground();
             background->SetSprite("~res:/Gfx/HUDControls/BlackGrid", 0);
             background->SetDrawType(UIControlBackground::DRAW_TILED);

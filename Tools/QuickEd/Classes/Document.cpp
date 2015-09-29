@@ -72,6 +72,7 @@ Document::~Document()
     {
         delete context.second;
     }
+    SafeRelease(package);
 }
 
 EditorSystemsManager* Document::GetSystemManager()

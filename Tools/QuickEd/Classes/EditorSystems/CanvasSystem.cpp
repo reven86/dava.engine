@@ -68,6 +68,7 @@ class BackgroundController
 {
 public:
     BackgroundController(UIControl* nestedControl);
+    ~BackgroundController();
     UIControl* GetGridControl();
     void ControlPropertyWasChanged(ControlNode* node, AbstractProperty* propert);
     void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from);
@@ -103,6 +104,11 @@ BackgroundController::BackgroundController(UIControl* nestedControl_)
 
     gridControl->GetBackground()->SetDrawType(UIControlBackground::DRAW_TILED);
     gridControl->GetBackground()->SetSprite("~res:/Gfx/GreyGrid", 0);
+}
+
+BackgroundController::~BackgroundController()
+{
+    gridControl->RemoveFromParent();
 }
 
 UIControl* BackgroundController::GetGridControl()
