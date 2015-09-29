@@ -1237,6 +1237,8 @@ static char *   catenate(
     return  out;
 }
 
+#pragma warning( push ) 
+#pragma warning( disable : 4018 )
 static const char *     remove_magics(
     const char *    argp,       /* The argument list    */
     int     from_last           /* token is the last or first?  */
