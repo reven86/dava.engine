@@ -194,11 +194,11 @@ void UILayoutSystem::ApplyLayout(UIControl *inputContainer, bool considerDenende
         }
     }
     
-    for (auto it = layoutData.rbegin(); it != layoutData.rend(); ++it)
+    for (ControlLayoutData &data : layoutData)
     {
-        it->ApplyLayoutToControl(indexOfSizeProperty);
+        data.ApplyLayoutToControl(indexOfSizeProperty);
     }
-    
+
     layoutData.clear();
 }
 
