@@ -81,6 +81,11 @@ public:
     friend bool operator==(const RefPtr& lhs, std::nullptr_t) { return lhs.pointer == nullptr; }
     friend bool operator!=(std::nullptr_t, const RefPtr& rhs) { return rhs.pointer != nullptr; }
     friend bool operator!=(const RefPtr& lhs, std::nullptr_t) { return lhs.pointer != nullptr; }
+    
+    friend bool operator==(const T* lhs, const RefPtr& rhs) { return lhs == rhs.pointer; }
+    friend bool operator==(const RefPtr& lhs, const T* rhs) { return lhs.pointer == rhs; }
+    friend bool operator!=(const T* lhs, const RefPtr& rhs) { return !(lhs == rhs); }
+    friend bool operator!=(const RefPtr& lhs, const T* rhs) { return !(lhs == rhs); }
 
     friend bool operator==(const RefPtr& lhs, const RefPtr& rhs) 
     { 
