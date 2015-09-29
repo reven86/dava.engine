@@ -211,8 +211,8 @@ public:
 		\return true if successful otherwise false.
 	*/
     virtual bool Seek(int32 position, uint32 seekType);
-	
-	//! return true if end of file reached and false in another case
+
+    //! return true if end of file reached and false in another case
     virtual bool IsEof() const;
 
     /**

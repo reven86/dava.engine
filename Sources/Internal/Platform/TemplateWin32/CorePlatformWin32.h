@@ -79,7 +79,7 @@ private:
     bool willQuit;
 
     bool isRightButtonPressed;
-	bool isLeftButtonPressed;
+    bool isLeftButtonPressed;
 	bool isMiddleButtonPressed;
     Vector<DAVA::UIEvent> events;
     Vector<TOUCHINPUT> inputTouchBuffer;
