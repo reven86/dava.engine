@@ -303,7 +303,7 @@ void EditorSystemsManager::ControlWasAdded(ControlNode* node, ControlsContainerN
     {
         if (recentlyRemovedControls.find(node) != recentlyRemovedControls.end())
         {
-            PackageBaseNode* parent = destination;
+            PackageBaseNode* parent = node;
             while (parent->GetParent() != nullptr && parent->GetParent()->GetControl() != nullptr)
             {
                 parent = parent->GetParent();
