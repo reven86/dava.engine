@@ -26,6 +26,8 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "Version.h"
+
 #include "AssetCacheServerWindow.h"
 #include "ui_AssetCacheServerWidget.h"
 
@@ -60,6 +62,8 @@ AssetCacheServerWindow::AssetCacheServerWindow(ServerCore& core, QWidget* parent
     , serverCore(core)
 {
     ui->setupUi(this);
+
+    setWindowTitle(QString("Asset Cache Server | %1").arg(TOOL_BUILD_VERSION));
 
     connect(ui->cacheFolderLineEdit, &QLineEdit::textChanged, this, &AssetCacheServerWindow::OnFolderTextChanged);
     connect(ui->selectFolderButton, &QPushButton::clicked, this, &AssetCacheServerWindow::OnFolderSelected);

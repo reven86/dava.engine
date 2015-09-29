@@ -37,7 +37,7 @@
 #include "Helpers/ResourcesManageHelper.h"
 #include "FileSystem/ResourceArchive.h"
 #include "Autotesting/AutotestingSystem.h"
-#include "version.h"
+#include "Version.h"
 
 using namespace DAVA;
 
@@ -121,8 +121,8 @@ void GameCore::UnpackHelp()
 	//Unpack Help to Documents.
     String editorVer = EditorSettings::Instance()->GetUIEditorVersion();
 	FilePath docsPath = FilePath(ResourcesManageHelper::GetDocumentationPath().toStdString());
-	if(editorVer != APPLICATION_VERSION  || !docsPath.Exists())
-	{
+    if (editorVer != TOOL_BUILD_VERSION || !docsPath.Exists())
+    {
 		ResourceArchive * helpRA = new ResourceArchive();
 		if(helpRA->Open("~res:/Help.docs"))
 		{
@@ -130,8 +130,8 @@ void GameCore::UnpackHelp()
 			FileSystem::Instance()->CreateDirectory(docsPath, true);
 		
 			helpRA->UnpackToFolder(docsPath);
-			EditorSettings::Instance()->SetUIEditorVersion(APPLICATION_VERSION);
-		}
+            EditorSettings::Instance()->SetUIEditorVersion(TOOL_BUILD_VERSION);
+        }
 
 		SafeRelease(helpRA);
 	}
