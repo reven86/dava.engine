@@ -120,14 +120,22 @@ namespace DAVA
             material->PreBuildMaterial(PASS_FORWARD);
     }
 
+    void RenderHelper::InvalidateMaterials()
+    {
+        for (NMaterial * & material : materials)
+            material->InvalidateRenderVariants();
+    }
+
     RenderHelper::~RenderHelper()
     {
         for (int32 i = 0; i < DRAW_TYPE_COUNT; ++i)
             SafeRelease(materials[i]);
     }
 
-    void RenderHelper::PreparePacket(rhi::Packet & packet, NMaterial * material, const std::pair<uint32, uint32> & buffersCount, ColoredVertex ** vBufferDataPtr, uint16 ** iBufferDataPtr)
+    bool RenderHelper::PreparePacket(rhi::Packet & packet, NMaterial * material, const std::pair<uint32, uint32> & buffersCount, ColoredVertex ** vBufferDataPtr, uint16 ** iBufferDataPtr)
     {
+        if (!material->PreBuildMaterial(PASS_FORWARD))
+            return false;
         material->BindParams(packet);
         packet.vertexStreamCount = 1;
         packet.vertexLayoutUID = coloredVertexLayoutUID;
@@ -147,6 +155,8 @@ namespace DAVA
             packet.indexBuffer = ib.buffer;
             packet.startIndex = ib.baseIndex;
         }
+
+        return true;
     }
 
     void RenderHelper::Present(rhi::HPacketList packetList, const Matrix4 * viewMatrix, const Matrix4 * projectionMatrix)
@@ -163,8 +173,12 @@ namespace DAVA
         Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_VIEW, viewMatrix, (pointer_size)viewMatrix);
         Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_PROJ, projectionMatrix, (pointer_size)projectionMatrix);
 
+        bool valid = true;
         for (int32 i = 0; i < DRAW_TYPE_COUNT; ++i)
-            PreparePacket(packet[i], materials[i], buffersElemCount[i], &vBufferPtr[i], &iBufferPtr[i]);
+            valid&= PreparePacket(packet[i], materials[i], buffersElemCount[i], &vBufferPtr[i], &iBufferPtr[i]);
+
+        if (!valid)
+            return;
 
         packet[DRAW_WIRE_DEPTH].primitiveType = packet[DRAW_WIRE_NO_DEPTH].primitiveType = rhi::PRIMITIVE_LINELIST;
         packet[DRAW_SOLID_DEPTH].primitiveType = packet[DRAW_SOLID_NO_DEPTH].primitiveType = rhi::PRIMITIVE_TRIANGLELIST;

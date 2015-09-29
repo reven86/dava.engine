@@ -146,6 +146,8 @@ public:
     void RemoveFlag(const FastName& flagName);
     void SetFlag(const FastName& flagName, int32 value);
     bool HasLocalFlag(const FastName& flagName);
+    const HashMap<FastName, int32>& GetLocalFlags() const;
+
     int32 GetLocalFlagValue(const FastName& flagName);
     int32 GetEffectiveFlagValue(const FastName& flagName);
 

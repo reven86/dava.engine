@@ -113,6 +113,7 @@ void NMaterial::BindParams(rhi::Packet& target)
     //Logger::Info( "bind-params" );
     DVASSERT(activeVariantInstance);       //trying to bind material that was not staged to render
     DVASSERT(activeVariantInstance->shader); //should have returned false on PreBuild!
+    DVASSERT(activeVariantInstance->shader->IsValid()); //should have returned false on PreBuild!
     /*set pipeline state*/
     target.renderPipelineState = activeVariantInstance->shader->GetPiplineState();
     target.depthStencilState = activeVariantInstance->depthState;
@@ -585,7 +586,7 @@ void NMaterial::RebuildBindings()
     {
         RenderVariantInstance* currRenderVariant = variant.second;
         ShaderDescriptor *currShader = currRenderVariant->shader;
-        if (!currShader) //cant build for empty shader
+        if (!currShader->IsValid()) //cant build for empty shader
             continue;
         currRenderVariant->vertexConstBuffers.resize(currShader->GetVertexConstBuffersCount());
         currRenderVariant->fragmentConstBuffers.resize(currShader->GetFragmentConstBuffersCount());
@@ -687,7 +688,7 @@ void NMaterial::RebuildTextureBindings()
         
 
         ShaderDescriptor *currShader = currRenderVariant->shader;
-        if (!currShader) //cant build for empty shader
+        if (!currShader->IsValid()) //cant build for empty shader
             continue;
         rhi::TextureSetDescriptor textureDescr;        
         rhi::SamplerState::Descriptor samplerDescr;
@@ -1100,4 +1101,8 @@ void NMaterial::LoadOldNMaterial(KeyedArchive * archive, SerializationContext * 
     }
 }
 
+const HashMap<FastName, int32>& NMaterial::GetLocalFlags() const
+{
+    return localFlags;
+}
 };
