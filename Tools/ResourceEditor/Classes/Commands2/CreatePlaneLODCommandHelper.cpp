@@ -389,3 +389,4 @@ void CreatePlaneLODCommandHelper::Request::OnRenderCallback(rhi::HSyncObject obj
         SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsUInt32());
     ReloadTexturesToGPU(currentGPU);
 }
+
