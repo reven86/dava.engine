@@ -39,6 +39,12 @@
 #include "core_command_system/i_command_manager.hpp"
 #include "core_reflection/i_definition_manager.hpp"
 #include "core_qt_common/shared_controls.hpp"
+#include "core_data_model/asset_browser/file_system_asset_browser_model.hpp"
+#include "core_data_model/asset_browser/asset_browser_event_model.hpp"
+#include "core_data_model/asset_browser/i_asset_browser_event_model.hpp"
+#include "core_data_model/asset_browser/i_asset_browser_event_model.hpp"
+#include "core_data_model/asset_browser/i_asset_object_model.hpp"
+#include "interfaces/panel_manager/i_panel_manager.hpp"
 
 #include "core_ui_framework/i_window.hpp"
 #include "core_ui_framework/i_view.hpp"
@@ -95,8 +101,13 @@ public:
             return;
         }
 
+        IFileSystem* fileSystem = context.queryInterface<IFileSystem>();
+        DVASSERT(fileSystem != nullptr);
+
         uiFramework->loadActionData(":/default/actions.xml", IUIFramework::ResourceType::File);
         mainWindow = uiFramework->createWindow(":/default/MainWindow.ui", IUIFramework::ResourceType::File);
+
+        SharedControls::initDefs(*definitionMng);
 
         DAVA::Core::Run(0, nullptr);
 
@@ -126,9 +137,21 @@ public:
             propertyPanel->SetObject(entity);
                                                  });
 
+        AssetPaths paths;
+        paths.emplace_back("D:/");
+        CustomContentFilters filter;
+
+        std::unique_ptr<IAssetBrowserModel> model(new FileSystemAssetBrowserModel(paths, filter, *fileSystem, *definitionMng));
+        std::unique_ptr<IAssetBrowserEventModel> events(new AssetBrowserEventModel());
+        events->connectUseSelectedAsset(std::bind(&DAVAPlugin::AssetSelected, this, std::placeholders::_1));
+
+        IPanelManager* panelMng = context.queryInterface<IPanelManager>();
+        assetBrowser = panelMng->createAssetBrowser(std::move(model), nullptr, std::move(events));
+
         uiApplication->addWindow(*mainWindow);
         uiApplication->addView(library->GetView());
         uiApplication->addView(sceneWidget->GetView());
+        uiApplication->addView(*assetBrowser);
 
         ICommandManager* commandMng = context.queryInterface<ICommandManager>();
         if (commandMng == nullptr)
@@ -160,6 +183,7 @@ public:
         sceneTree->Finilize();
         sceneWidget->Finalise();
         library->Finilize();
+        assetBrowser.reset();
 
         FrameworkLoop::Instance()->Release();
         DAVA::QtLayer::Instance()->Release();
@@ -179,11 +203,18 @@ public:
     }
 
 private:
+    void AssetSelected(const IAssetObjectModel& object)
+    {
+        sceneWidget->OnOpenScene(object.getFullPath());
+    }
+
+private:
     std::unique_ptr<IWindow> mainWindow;
     std::unique_ptr<Library> library;
     std::unique_ptr<PropertyPanel> propertyPanel;
     std::unique_ptr<SceneViewer> sceneWidget;
     std::unique_ptr<SceneTree> sceneTree;
+    std::unique_ptr<IView> assetBrowser;
 
     std::unique_ptr<IAction> undoAction;
     std::unique_ptr<IAction> redoAction;
