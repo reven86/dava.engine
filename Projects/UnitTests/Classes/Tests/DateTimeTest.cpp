@@ -93,8 +93,8 @@ DAVA_TESTCLASS(DateTimeTest)
             			Logger::Info("i == %d, l == %d, r == %d", i, static_cast<int>(l), static_cast<int>(r));
             			return false;
             		}
-            		return true;
             	}
+                return true;
             };
 
             DateTime date;
