@@ -389,7 +389,15 @@ dx9_Initialize( const InitParam& param )
 	DispatchDX9.impl_DeviceCaps             = &dx9_DeviceCaps;
 
     SetDispatchTable( DispatchDX9 );
-
+    
+    if( param.maxVertexBufferCount )
+        VertexBufferDX9::Init( param.maxVertexBufferCount );
+    if( param.maxIndexBufferCount )
+        IndexBufferDX9::Init( param.maxIndexBufferCount );
+    if( param.maxConstBufferCount )
+        ConstBufferDX9::Init( param.maxConstBufferCount );
+    if( param.maxTextureCount )
+        TextureDX9::Init( param.maxTextureCount );
 
     ConstBufferDX9::InitializeRingBuffer( 4*1024*1024 ); // CRAP: hardcoded const ring-buf size
 

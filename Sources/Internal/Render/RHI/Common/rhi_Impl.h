@@ -118,6 +118,7 @@ Dispatch
     void    (*impl_CommandBuffer_SetCullMode)( Handle, CullMode );
     void    (*impl_CommandBuffer_SetScissorRect)( Handle, ScissorRect );
     void    (*impl_CommandBuffer_SetViewport)( Handle, Viewport );
+    void    (*impl_CommandBuffer_SetFillMode)( Handle, FillMode );
     void    (*impl_CommandBuffer_SetVertexData)( Handle, Handle, uint32 );
     void    (*impl_CommandBuffer_SetVertexConstBuffer)( Handle, uint32, Handle );
     void    (*impl_CommandBuffer_SetVertexTexture)( Handle, uint32, Handle );

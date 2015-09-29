@@ -538,7 +538,7 @@ DbgDraw::DbgDraw()
     _inited(false),
     _no_depth_test(false),
     _small_text(false),
-    _draw_immediately(false),
+  //  _draw_immediately(false),
     _wnd_w(0),
     _wnd_h(0)
 {

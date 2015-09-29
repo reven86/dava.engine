@@ -98,6 +98,7 @@ CommandDX9
     DX9__SET_CULL_MODE,
     DX9__SET_SCISSOR_RECT,
     DX9__SET_VIEWPORT,
+    DX9__SET_FILLMODE,
     DX9__SET_VERTEX_PROG_CONST_BUFFER,
     DX9__SET_FRAGMENT_PROG_CONST_BUFFER,
     DX9__SET_TEXTURE,
@@ -297,7 +298,7 @@ dx9_CommandBuffer_SetCullMode( Handle cmdBuf, CullMode mode )
 
 //------------------------------------------------------------------------------
 
-void
+static void
 dx9_CommandBuffer_SetScissorRect( Handle cmdBuf, ScissorRect rect )
 {
     CommandBufferPool::Get(cmdBuf)->Command( DX9__SET_SCISSOR_RECT, rect.x, rect.y, rect.width, rect.height );
@@ -306,10 +307,19 @@ dx9_CommandBuffer_SetScissorRect( Handle cmdBuf, ScissorRect rect )
 
 //------------------------------------------------------------------------------
 
-void
+static void
 dx9_CommandBuffer_SetViewport( Handle cmdBuf, Viewport vp )
 {
     CommandBufferPool::Get(cmdBuf)->Command( DX9__SET_VIEWPORT, vp.x, vp.y, vp.width, vp.height );
+}
+
+
+//------------------------------------------------------------------------------
+
+static void
+dx9_CommandBuffer_SetFillMode( Handle cmdBuf, FillMode mode )
+{
+    CommandBufferPool::Get(cmdBuf)->Command( DX9__SET_FILLMODE, mode );
 }
 
 
@@ -905,6 +915,20 @@ SCOPED_FUNCTION_TIMING();
                 c += 4;
             }   break;
 
+            case DX9__SET_FILLMODE :
+            {
+                DWORD   mode = D3DFILL_SOLID;
+
+                switch( FillMode(arg[0]) )
+                {
+                    case FILLMODE_SOLID     : mode = D3DFILL_SOLID; break;
+                    case FILLMODE_WIREFRAME : mode = D3DFILL_WIREFRAME; break;
+                }
+                
+                _D3D9_Device->SetRenderState( D3DRS_FILLMODE, mode );
+                c += 1;
+            }   break;
+
             case DX9__SET_DEPTHSTENCIL_STATE :
             {
                 DepthStencilStateDX9::SetToRHI( (Handle)(arg[0]) );
@@ -1324,6 +1348,30 @@ Trace("exec %i\n",int(cmd->func));
                 CHECK_HR(cmd->retval);
             }   break;
             
+            case DX9Command::UPDATE_VERTEX_BUFFER :
+            {
+                IDirect3DVertexBuffer9* vb = *((IDirect3DVertexBuffer9**)arg[0]);
+
+                if( vb )
+                {
+                    unsigned    sz  = unsigned(arg[2]);
+                    void*       dst = nullptr;
+                    void*       src = (void*)(arg[1]);
+
+                    if( SUCCEEDED(vb->Lock( 0, sz, &dst, 0 )) )
+                    {
+                        memcpy( dst, src, sz );
+                        cmd->retval = vb->Unlock();
+                    }
+                
+                    CHECK_HR(cmd->retval);
+                }
+                else
+                {
+                    cmd->retval = E_FAIL;
+                }
+            }   break;
+            
             case DX9Command::CREATE_INDEX_BUFFER :
             {
                 cmd->retval = _D3D9_Device->CreateIndexBuffer( UINT(arg[0]), DWORD(arg[1]), D3DFORMAT(arg[2]), D3DPOOL(arg[3]), (IDirect3DIndexBuffer9**)(arg[4]), (HANDLE*)(arg[5]) );
@@ -1340,6 +1388,30 @@ Trace("exec %i\n",int(cmd->func));
             {
                 cmd->retval = (*((IDirect3DIndexBuffer9**)arg[0]))->Unlock();
                 CHECK_HR(cmd->retval);
+            }   break;
+            
+            case DX9Command::UPDATE_INDEX_BUFFER :
+            {
+                IDirect3DIndexBuffer9*  ib = *((IDirect3DIndexBuffer9**)arg[0]);
+
+                if( ib )
+                {
+                    unsigned    sz  = unsigned(arg[2]);
+                    void*       dst = nullptr;
+                    void*       src = (void*)(arg[1]);
+
+                    if( SUCCEEDED(ib->Lock( 0, sz, &dst, 0 )) )
+                    {
+                        memcpy( dst, src, sz );
+                        cmd->retval = ib->Unlock();
+                    }
+                
+                    CHECK_HR(cmd->retval);
+                }
+                else
+                {
+                    cmd->retval = E_FAIL;
+                }
             }   break;
 
             case DX9Command::CREATE_TEXTURE :
@@ -1378,6 +1450,35 @@ Trace("exec %i\n",int(cmd->func));
                 CHECK_HR(cmd->retval);
             }   break;
 
+            case DX9Command::UPDATE_TEXTURE_LEVEL :
+            {
+                IDirect3DTexture9*  tex = *((IDirect3DTexture9**)(arg[0]));
+
+                if( tex )
+                {
+                    UINT            lev = UINT(arg[1]);
+                    void*           src = (void*)(arg[2]);
+                    unsigned        sz  = unsigned(arg[3]);
+                    D3DLOCKED_RECT  rc  = {0};
+                    HRESULT         hr  = tex->LockRect( lev, &rc, NULL, 0 );
+
+                    if( SUCCEEDED(hr) )
+                    {
+                        memcpy( rc.pBits, src, sz );
+                        cmd->retval = tex->UnlockRect( lev );
+                    }
+                    else
+                    {
+                        CHECK_HR(hr);
+                        cmd->retval = hr;
+                    }
+                }
+                else
+                {
+                    cmd->retval = E_FAIL;
+                }
+            }   break;
+
             case DX9Command::LOCK_CUBETEXTURE_RECT :
             {
                 cmd->retval = ((IDirect3DCubeTexture9*)(arg[0]))->LockRect( D3DCUBEMAP_FACES(arg[1]), UINT(arg[2]), (D3DLOCKED_RECT*)(arg[3]), (const RECT*)(arg[4]), DWORD(arg[5]) );
@@ -1388,6 +1489,36 @@ Trace("exec %i\n",int(cmd->func));
             {
                 cmd->retval = ((IDirect3DCubeTexture9*)(arg[0]))->UnlockRect( D3DCUBEMAP_FACES(arg[1]), UINT(arg[2]) );
                 CHECK_HR(cmd->retval);
+            }   break;
+
+            case DX9Command::UPDATE_CUBETEXTURE_LEVEL :
+            {
+                IDirect3DCubeTexture9*  tex = *((IDirect3DCubeTexture9**)(arg[0]));
+
+                if( tex )
+                {
+                    UINT                lev = UINT(arg[1]);
+                    D3DCUBEMAP_FACES    face = (D3DCUBEMAP_FACES)(arg[2]);
+                    void*               src = (void*)(arg[3]);
+                    unsigned            sz  = unsigned(arg[4]);
+                    D3DLOCKED_RECT      rc  = {0};
+                    HRESULT             hr  = tex->LockRect( face, lev, &rc, NULL, 0 );
+
+                    if( SUCCEEDED(hr) )
+                    {
+                        memcpy( rc.pBits, src, sz );
+                        cmd->retval = tex->UnlockRect( face, lev );
+                    }
+                    else
+                    {
+                        CHECK_HR(hr);
+                        cmd->retval = hr;
+                    }
+                }
+                else
+                {
+                    cmd->retval = E_FAIL;
+                }
             }   break;
 
             case DX9Command::GET_RENDERTARGET_DATA :
@@ -1581,6 +1712,7 @@ SetupDispatch( Dispatch* dispatch )
     dispatch->impl_CommandBuffer_SetCullMode            = &dx9_CommandBuffer_SetCullMode;
     dispatch->impl_CommandBuffer_SetScissorRect         = &dx9_CommandBuffer_SetScissorRect;
     dispatch->impl_CommandBuffer_SetViewport            = &dx9_CommandBuffer_SetViewport;
+    dispatch->impl_CommandBuffer_SetFillMode            = &dx9_CommandBuffer_SetFillMode;
     dispatch->impl_CommandBuffer_SetVertexData          = &dx9_CommandBuffer_SetVertexData;
     dispatch->impl_CommandBuffer_SetVertexConstBuffer   = &dx9_CommandBuffer_SetVertexConstBuffer;
     dispatch->impl_CommandBuffer_SetVertexTexture       = &dx9_CommandBuffer_SetVertexTexture;

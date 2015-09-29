@@ -44,12 +44,14 @@ void        dx11_Initialize( const InitParam& param );
 
 namespace VertexBufferDX11
 {
+void        Init( uint32 maxCount );
 void        SetupDispatch( Dispatch* dispatch );
 void        SetToRHI( Handle vb, unsigned stream_i, unsigned offset, unsigned stride, ID3D11DeviceContext* context );
 }
 
 namespace IndexBufferDX11
 {
+void        Init( uint32 maxCount );
 void        SetupDispatch( Dispatch* dispatch );
 void        SetToRHI( Handle vb, unsigned offset, ID3D11DeviceContext* context );
 }
@@ -72,6 +74,7 @@ void        SetToRHI( Handle ps, uint32 layoutUID, ID3D11DeviceContext* context 
 
 namespace ConstBufferDX11
 {
+void        Init( uint32 maxCount );
 void        SetupDispatch( Dispatch* dispatch );
 void        InitializeRingBuffer( uint32 size );
 void        SetToRHI( Handle cb, ID3D11DeviceContext* context );
@@ -79,6 +82,7 @@ void        SetToRHI( Handle cb, ID3D11DeviceContext* context );
 
 namespace TextureDX11
 {
+void        Init( uint32 maxCount );
 void        SetupDispatch( Dispatch* dispatch );
 void        SetToRHIFragment( Handle tex, unsigned unitIndex, ID3D11DeviceContext* context );
 void        SetToRHIVertex( Handle tex, unsigned unitIndex, ID3D11DeviceContext* context );
