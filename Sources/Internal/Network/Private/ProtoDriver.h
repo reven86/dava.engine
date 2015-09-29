@@ -57,7 +57,7 @@ private:
     {
         uint32 channelId;
         uint32 packetId;
-        uint8* data = nullptr;  // Data
+        uint8* data = nullptr; // Data
         size_t dataLength;      //  and its length
         size_t sentLength;      // Number of bytes that have been already transfered
         size_t chunkLength;     // Number of bytes transfered during last operation

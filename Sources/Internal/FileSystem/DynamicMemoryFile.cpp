@@ -65,7 +65,7 @@ DynamicMemoryFile::~DynamicMemoryFile()
 {
 	
 }
-	
+
 const uint8* DynamicMemoryFile::GetData() const
 {
     if (!data.empty())
@@ -75,7 +75,7 @@ const uint8* DynamicMemoryFile::GetData() const
     else
     {
         return nullptr;
-	}
+    }
 }
 
 

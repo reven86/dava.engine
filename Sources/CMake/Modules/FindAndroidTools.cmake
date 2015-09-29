@@ -1,6 +1,6 @@
 include ( GlobalVariables )
 
-find_program( ANT_COMMAND NAMES ant /opt/local/bin/ant ${ANDROID_ANT}/ant ${ANDROID_ANT}/bin/ant
+find_program( ANT_COMMAND NAMES ant /opt/local/bin/ant ${ANDROID_ANT}/ant ${ANDROID_ANT}/bin/ant /usr/local/bin/ant
                                 ant.bat ${ANDROID_ANT}/ant.bat ${ANDROID_ANT}/bin/ant.bat )
 
 if( NOT ANT_COMMAND)
