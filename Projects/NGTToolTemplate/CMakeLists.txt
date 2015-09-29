@@ -46,6 +46,7 @@ list(APPEND NGT_PLUGINS
       plg_file_system
       plg_qt_common
       plg_editor_interaction
+      plg_history_ui
       plg_qt_app)
 
 list( APPEND QT_COMPONENTS
