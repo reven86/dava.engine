@@ -750,6 +750,7 @@ void NMaterial::RebuildTextureBindings()
                 textureDescr.vertexTexture[i] = Renderer::GetRuntimeTextures().GetPinkTexture(vertexSamplerList[i].type);
                 samplerDescr.vertexSampler[i] = Renderer::GetRuntimeTextures().GetPinkTextureSamplerState(vertexSamplerList[i].type);
             }
+            samplerDescr.vertexSampler[i].mipFilter = rhi::TEXMIPFILTER_NONE;
         }                            
 
 
