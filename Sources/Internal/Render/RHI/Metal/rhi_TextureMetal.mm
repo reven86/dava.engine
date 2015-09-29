@@ -394,6 +394,12 @@ namespace TextureMetal
 {
 
 void
+Init( uint32 maxCount )
+{
+    TextureMetalPool::Reserve( maxCount );
+}
+
+void
 SetupDispatch( Dispatch* dispatch )
 {
     dispatch->impl_Texture_Create = &metal_Texture_Create;

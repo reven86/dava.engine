@@ -147,6 +147,12 @@ namespace IndexBufferMetal
 {
 
 void
+Init( uint32 maxCount )
+{
+    IndexBufferMetalPool::Reserve( maxCount );
+}
+
+void
 SetupDispatch( Dispatch* dispatch )
 {
     dispatch->impl_IndexBuffer_Create  = &metal_IndexBuffer_Create;

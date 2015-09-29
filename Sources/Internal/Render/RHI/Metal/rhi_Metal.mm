@@ -222,6 +222,11 @@ metal_Initialize( const InitParam& param )
     
     SetDispatchTable( DispatchMetal );
     
+    VertexBufferMetal::Init( param.maxVertexBufferCount );
+    IndexBufferMetal::Init( param.maxIndexBufferCount );
+    ConstBufferMetal::Init( param.maxConstBufferCount );
+    TextureMetal::Init( param.maxTextureCount );
+
     _metal_DeviceCaps.is32BitIndicesSupported = true;
     _metal_DeviceCaps.isFramebufferFetchSupported = true;
     _metal_DeviceCaps.isVertexTextureUnitsSupported = true;

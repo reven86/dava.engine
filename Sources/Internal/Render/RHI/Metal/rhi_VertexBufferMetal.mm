@@ -148,6 +148,12 @@ namespace VertexBufferMetal
 {
 
 void
+Init( uint32 maxCount )
+{
+    VertexBufferMetalPool::Reserve( maxCount );
+}
+
+void
 SetupDispatch( Dispatch* dispatch )
 {
     dispatch->impl_VertexBuffer_Create  = &metal_VertexBuffer_Create;
