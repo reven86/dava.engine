@@ -98,6 +98,7 @@ CommandDX9
     DX9__SET_CULL_MODE,
     DX9__SET_SCISSOR_RECT,
     DX9__SET_VIEWPORT,
+    DX9__SET_FILLMODE,
     DX9__SET_VERTEX_PROG_CONST_BUFFER,
     DX9__SET_FRAGMENT_PROG_CONST_BUFFER,
     DX9__SET_TEXTURE,
@@ -297,7 +298,7 @@ dx9_CommandBuffer_SetCullMode( Handle cmdBuf, CullMode mode )
 
 //------------------------------------------------------------------------------
 
-void
+static void
 dx9_CommandBuffer_SetScissorRect( Handle cmdBuf, ScissorRect rect )
 {
     CommandBufferPool::Get(cmdBuf)->Command( DX9__SET_SCISSOR_RECT, rect.x, rect.y, rect.width, rect.height );
@@ -306,10 +307,19 @@ dx9_CommandBuffer_SetScissorRect( Handle cmdBuf, ScissorRect rect )
 
 //------------------------------------------------------------------------------
 
-void
+static void
 dx9_CommandBuffer_SetViewport( Handle cmdBuf, Viewport vp )
 {
     CommandBufferPool::Get(cmdBuf)->Command( DX9__SET_VIEWPORT, vp.x, vp.y, vp.width, vp.height );
+}
+
+
+//------------------------------------------------------------------------------
+
+static void
+dx9_CommandBuffer_SetFillMode( Handle cmdBuf, FillMode mode )
+{
+    CommandBufferPool::Get(cmdBuf)->Command( DX9__SET_FILLMODE, mode );
 }
 
 
@@ -903,6 +913,20 @@ SCOPED_FUNCTION_TIMING();
                 }
 
                 c += 4;
+            }   break;
+
+            case DX9__SET_FILLMODE :
+            {
+                DWORD   mode = D3DFILL_SOLID;
+
+                switch( FillMode(arg[0]) )
+                {
+                    case FILLMODE_SOLID     : mode = D3DFILL_SOLID; break;
+                    case FILLMODE_WIREFRAME : mode = D3DFILL_WIREFRAME; break;
+                }
+                
+                _D3D9_Device->SetRenderState( D3DRS_FILLMODE, mode );
+                c += 1;
             }   break;
 
             case DX9__SET_DEPTHSTENCIL_STATE :
@@ -1688,6 +1712,7 @@ SetupDispatch( Dispatch* dispatch )
     dispatch->impl_CommandBuffer_SetCullMode            = &dx9_CommandBuffer_SetCullMode;
     dispatch->impl_CommandBuffer_SetScissorRect         = &dx9_CommandBuffer_SetScissorRect;
     dispatch->impl_CommandBuffer_SetViewport            = &dx9_CommandBuffer_SetViewport;
+    dispatch->impl_CommandBuffer_SetFillMode            = &dx9_CommandBuffer_SetFillMode;
     dispatch->impl_CommandBuffer_SetVertexData          = &dx9_CommandBuffer_SetVertexData;
     dispatch->impl_CommandBuffer_SetVertexConstBuffer   = &dx9_CommandBuffer_SetVertexConstBuffer;
     dispatch->impl_CommandBuffer_SetVertexTexture       = &dx9_CommandBuffer_SetVertexTexture;
