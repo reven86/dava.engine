@@ -37,7 +37,6 @@
 namespace DAVA
 {
 
-static const int32 PRIORITY_SCREENSHOT_CLEAR_PASS = eDefaultPassPriority::PRIORITY_SERVICE_2D + 12;
 static const int32 PRIORITY_SCREENSHOT_3D_PASS = eDefaultPassPriority::PRIORITY_SERVICE_2D + 11;
 static const int32 PRIORITY_SCREENSHOT_2D_PASS = eDefaultPassPriority::PRIORITY_SERVICE_2D + 10;
 
@@ -64,7 +63,10 @@ void UIScreenshoter::OnFrame()
             {
                 it->callback(it->texture);
             }
+
             SafeRelease(it->texture);
+            rhi::DeleteTexture(it->depthTexture);
+
             it = waiters.erase(it);
             itEnd = waiters.end();
         }
@@ -126,15 +128,11 @@ void UIScreenshoter::MakeScreenshotInternal(UIControl* control, Texture* screens
     waiter.texture = SafeRetain(screenshot);
     waiter.callback = callback;
     waiter.syncObj = rhi::GetCurrentFrameSyncObject();
+    waiter.depthTexture = dephtTexture;
     waiters.push_back(waiter);
     // End preparing
 
     // Render to texture
-    rhi::Viewport viewport;
-    viewport.height = waiter.texture->GetHeight();
-    viewport.width = waiter.texture->GetWidth();
-    RenderHelper::CreateClearPass(waiter.texture->handle, PRIORITY_SCREENSHOT_CLEAR_PASS, Color::Clear, viewport);
-
     List<Control3dInfo> controls3d;
     FindAll3dViews(control, controls3d);
     for (auto& info : controls3d)
@@ -143,11 +141,12 @@ void UIScreenshoter::MakeScreenshotInternal(UIControl* control, Texture* screens
         if (nullptr != info.control->GetScene())
         {
             rhi::RenderPassConfig& config = info.control->GetScene()->GetMainPassConfig();
-            info.priority = config.priority;
-            info.texture = config.colorBuffer[0].texture;
-            info.depht = config.depthStencilBuffer.texture;
+            info.scenePassConfig = config;
+
             config.priority = PRIORITY_SCREENSHOT_3D_PASS;
             config.colorBuffer[0].texture = waiter.texture->handle;
+            config.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
+            Memcpy(config.colorBuffer[0].clearColor, Color::Clear.color, sizeof(Color));
             config.depthStencilBuffer.texture = dephtTexture;
         }
     }
@@ -160,15 +159,11 @@ void UIScreenshoter::MakeScreenshotInternal(UIControl* control, Texture* screens
         if (nullptr != info.control->GetScene())
         {
             rhi::RenderPassConfig& config = info.control->GetScene()->GetMainPassConfig();
-            config.priority = info.priority;
-            config.colorBuffer[0].texture = info.texture;
-            config.depthStencilBuffer.texture = info.depht;
+            config = info.scenePassConfig;
         }
         SafeRelease(info.control);
     }
     // End render
-
-    rhi::DeleteTexture(dephtTexture);
 }
 
 void UIScreenshoter::FindAll3dViews(UIControl * control, List<UIScreenshoter::Control3dInfo> & foundViews)
@@ -191,8 +186,6 @@ void UIScreenshoter::FindAll3dViews(UIControl * control, List<UIScreenshoter::Co
         {
             Control3dInfo info;
             info.control = current3dView;
-            info.priority = 0;
-            info.texture = rhi::InvalidHandle;
             foundViews.push_back(info);
         }
     }

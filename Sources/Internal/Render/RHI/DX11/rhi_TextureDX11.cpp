@@ -403,8 +403,8 @@ void
 SetRenderTarget( Handle color, Handle depthstencil, ID3D11DeviceContext* context )
 {
     TextureDX11_t*  rt = TextureDX11Pool::Get( color );
-    TextureDX11_t*  ds = (depthstencil!=InvalidHandle) ? TextureDX11Pool::Get( depthstencil ) : nullptr;
-    
+    TextureDX11_t* ds = (depthstencil != InvalidHandle && depthstencil != DefaultDepthBuffer) ? TextureDX11Pool::Get(depthstencil) : nullptr;
+
     if( rt->lastUnit != InvalidIndex )
     {
         ID3D11ShaderResourceView*   srv[1] = { NULL };
@@ -413,7 +413,7 @@ SetRenderTarget( Handle color, Handle depthstencil, ID3D11DeviceContext* context
         rt->lastUnit = InvalidIndex;
     }
 
-    context->OMSetRenderTargets( 1, &(rt->tex2d_rtv), (ds)?ds->tex2d_dsv:_D3D11_DepthStencilView );
+    context->OMSetRenderTargets(1, &(rt->tex2d_rtv), (ds) ? ds->tex2d_dsv : ((depthstencil == DefaultDepthBuffer) ? _D3D11_DepthStencilView : nullptr));
 }
 
 void
