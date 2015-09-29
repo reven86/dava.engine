@@ -168,7 +168,9 @@ void BackgroundController::CalculateTotalRect(Rect& totalRect, Vector2& rootCont
     rootControlPosition.SetZero();
     UIGeometricData gd = nestedControl->GetGeometricData();
     gd.position.SetZero();
-    gd.scale /= gridControl->GetParent()->GetParent()->GetScale(); //grid->controlCanvas->scalableControl
+    UIControl* scalableControl = gridControl->GetParent()->GetParent();
+    DVASSERT_MSG(nullptr != scalableControl, "grid update without being attached to screen");
+    gd.scale /= scalableControl->GetScale(); //grid->controlCanvas->scalableControl
     if (gd.scale.x != 0.0f || gd.scale.y != 0.0f)
     {
         totalRect = gd.GetAABBox();
@@ -261,7 +263,10 @@ CanvasSystem::~CanvasSystem()
 void CanvasSystem::OnActivated()
 {
     systemManager->GetScalableControl()->AddControl(controlsCanvas);
-    LayoutCanvas();
+    for (BackgroundController* iter : gridControls)
+    {
+        iter->AdjustToNestedControl();
+    }
 }
 
 void CanvasSystem::OnDeactivated()
@@ -273,6 +278,10 @@ void CanvasSystem::OnDeactivated()
 
 void CanvasSystem::ControlWasRemoved(ControlNode* node, ControlsContainerNode* from)
 {
+    if (nullptr == controlsCanvas->GetParent())
+    {
+        return;
+    }
     for (BackgroundController* iter : gridControls)
     {
         iter->ControlWasRemoved(node, from);
@@ -281,6 +290,10 @@ void CanvasSystem::ControlWasRemoved(ControlNode* node, ControlsContainerNode* f
 
 void CanvasSystem::ControlWasAdded(ControlNode* node, ControlsContainerNode* destination, int index)
 {
+    if (nullptr == controlsCanvas->GetParent())
+    {
+        return;
+    }
     for (BackgroundController* iter : gridControls)
     {
         iter->ControlWasAdded(node, destination, index);
@@ -289,6 +302,10 @@ void CanvasSystem::ControlWasAdded(ControlNode* node, ControlsContainerNode* des
 
 void CanvasSystem::ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property)
 {
+    if (nullptr == controlsCanvas->GetParent())
+    {
+        return;
+    }
     for (BackgroundController* iter : gridControls)
     {
         iter->ControlPropertyWasChanged(node, property);
