@@ -736,14 +736,20 @@ void NMaterial::RebuildTextureBindings()
 
 
         textureDescr.vertexTextureCount = vertexSamplerList.size();
+        samplerDescr.vertexSamplerCount = vertexSamplerList.size();
         for (size_t i = 0, sz = textureDescr.vertexTextureCount; i < sz; ++i)
         {
             Texture *tex = GetEffectiveTexture(vertexSamplerList[i].uid);
             if (tex)
+            {
                 textureDescr.vertexTexture[i] = tex->handle;
+                samplerDescr.vertexSampler[i] = tex->samplerState;
+            }
             else
+            {
                 textureDescr.vertexTexture[i] = Renderer::GetRuntimeTextures().GetPinkTexture(vertexSamplerList[i].type);
-
+                samplerDescr.vertexSampler[i] = Renderer::GetRuntimeTextures().GetPinkTextureSamplerState(vertexSamplerList[i].type);
+            }
         }                            
 
 
