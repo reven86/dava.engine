@@ -297,7 +297,7 @@ void                EndRenderPass( HRenderPass pass ); // no explicit render-pas
 struct
 Packet
 {
-    enum { OPT_OVERRIDE_SCISSOR=1 };
+    enum { OPT_OVERRIDE_SCISSOR=1, OPT_WIREFRAME=2 };
 
     uint32              vertexStreamCount;
     HVertexBuffer       vertexStream[MAX_VERTEX_STREAM_COUNT];

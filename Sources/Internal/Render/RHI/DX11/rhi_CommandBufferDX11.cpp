@@ -57,10 +57,11 @@ RasterizerParamDX11
 {
     uint32  cullMode:3;
     uint32  scissorEnabled:1;
+    uint32  wireframe:1;
 
     bool    operator==( const RasterizerParamDX11& b ) const
             {
-                return this->cullMode == b.cullMode  &&  this->scissorEnabled == b.scissorEnabled;
+                return this->cullMode == b.cullMode  &&  this->scissorEnabled == b.scissorEnabled  &&  this->wireframe == b.wireframe;
             }
 };
 
@@ -188,7 +189,7 @@ _GetRasterizerState( RasterizerParamDX11 param )
         D3D11_RASTERIZER_DESC   desc;
         HRESULT                 hr;
 
-        desc.FillMode               = D3D11_FILL_SOLID;
+        desc.FillMode               = (param.wireframe) ? D3D11_FILL_WIREFRAME : D3D11_FILL_SOLID;
         desc.FrontCounterClockwise  = FALSE;
 
         switch( CullMode(param.cullMode) )
@@ -339,6 +340,7 @@ dx11_CommandBuffer_Begin( Handle cmdBuf )
 
     cb->rs_param.cullMode       = CULL_NONE;
     cb->rs_param.scissorEnabled = false;
+    cb->rs_param.wireframe      = false;
 
     cb->sync                    = InvalidHandle;
 
@@ -480,7 +482,7 @@ dx11_CommandBuffer_SetScissorRect( Handle cmdBuf, ScissorRect rect )
 
 //------------------------------------------------------------------------------
 
-void
+static void
 dx11_CommandBuffer_SetViewport( Handle cmdBuf, Viewport vp )
 {
     CommandBufferDX11_t*    cb = CommandBufferPool::Get( cmdBuf );
@@ -506,6 +508,17 @@ dx11_CommandBuffer_SetViewport( Handle cmdBuf, Viewport vp )
     {
         cb->context->RSSetViewports( 1, &(cb->def_viewport) );
     }
+}
+
+
+//------------------------------------------------------------------------------
+
+static void
+dx11_CommandBuffer_SetFillMode( Handle cmdBuf, FillMode mode )
+{
+    CommandBufferDX11_t*    cb = CommandBufferPool::Get( cmdBuf );
+    
+    cb->rs_param.wireframe = (mode == FILLMODE_WIREFRAME);
 }
 
 
@@ -1217,6 +1230,7 @@ SetupDispatch( Dispatch* dispatch )
     dispatch->impl_CommandBuffer_SetCullMode            = &dx11_CommandBuffer_SetCullMode;
     dispatch->impl_CommandBuffer_SetScissorRect         = &dx11_CommandBuffer_SetScissorRect;
     dispatch->impl_CommandBuffer_SetViewport            = &dx11_CommandBuffer_SetViewport;
+    dispatch->impl_CommandBuffer_SetFillMode            = &dx11_CommandBuffer_SetFillMode;
     dispatch->impl_CommandBuffer_SetVertexData          = &dx11_CommandBuffer_SetVertexData;
     dispatch->impl_CommandBuffer_SetVertexConstBuffer   = &dx11_CommandBuffer_SetVertexConstBuffer;
     dispatch->impl_CommandBuffer_SetVertexTexture       = &dx11_CommandBuffer_SetVertexTexture;

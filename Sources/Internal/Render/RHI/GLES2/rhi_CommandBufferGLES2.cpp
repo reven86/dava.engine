@@ -66,6 +66,7 @@ CommandGLES2
     GLES2__SET_CULL_MODE                    = 24,
     GLES2__SET_SCISSOR_RECT                 = 25,
     GLES2__SET_VIEWPORT                     = 26,
+    GLES2__SET_FILLMODE                     = 27,
 
     GLES2__SET_VERTEX_PROG_CONST_BUFFER     = 31,
     GLES2__SET_FRAGMENT_PROG_CONST_BUFFER   = 32,
@@ -310,10 +311,19 @@ gles2_CommandBuffer_SetScissorRect( Handle cmdBuf, ScissorRect rect )
 
 //------------------------------------------------------------------------------
 
-void
+static void
 gles2_CommandBuffer_SetViewport( Handle cmdBuf, Viewport vp )
 {
     CommandBufferPool::Get(cmdBuf)->Command( GLES2__SET_VIEWPORT, vp.x, vp.y, vp.width, vp.height );
+}
+
+
+//------------------------------------------------------------------------------
+
+static void
+gles2_CommandBuffer_SetFillMode( Handle cmdBuf, FillMode mode )
+{
+    CommandBufferPool::Get(cmdBuf)->Command( GLES2__SET_FILLMODE, mode );
 }
 
 
@@ -992,6 +1002,15 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
 
                 c += 4;
             }    break;
+
+            case GLES2__SET_FILLMODE :
+            {
+                #if defined(__DAVAENGINE_WIN32__)
+                glPolygonMode( GL_FRONT_AND_BACK, (FillMode(arg[0])==FILLMODE_WIREFRAME) ? GL_LINE : GL_FILL );
+                #endif
+
+                c += 1;
+            }   break;
 
             case GLES2__SET_DEPTHSTENCIL_STATE :
             {
@@ -1904,6 +1923,7 @@ SetupDispatch( Dispatch* dispatch )
     dispatch->impl_CommandBuffer_SetCullMode            = &gles2_CommandBuffer_SetCullMode;
     dispatch->impl_CommandBuffer_SetScissorRect         = &gles2_CommandBuffer_SetScissorRect;
     dispatch->impl_CommandBuffer_SetViewport            = &gles2_CommandBuffer_SetViewport;
+    dispatch->impl_CommandBuffer_SetFillMode            = &gles2_CommandBuffer_SetFillMode;
     dispatch->impl_CommandBuffer_SetVertexData          = &gles2_CommandBuffer_SetVertexData;
     dispatch->impl_CommandBuffer_SetVertexConstBuffer   = &gles2_CommandBuffer_SetVertexConstBuffer;
     dispatch->impl_CommandBuffer_SetVertexTexture       = &gles2_CommandBuffer_SetVertexTexture;
