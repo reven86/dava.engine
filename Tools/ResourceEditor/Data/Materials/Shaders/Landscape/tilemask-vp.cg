@@ -11,7 +11,9 @@ VPROG_OUT_BEGIN
     
     VPROG_OUT_POSITION
     VPROG_OUT_TEXCOORD0(texCoord,2)
-    VPROG_OUT_TEXCOORD1(texCoordTiled,2)
+    #if TILEMASK
+        VPROG_OUT_TEXCOORD1(texCoordTiled,2)
+    #endif
 
     #if VERTEX_FOG
         VPROG_OUT_TEXCOORD5(varFog,4)
@@ -23,7 +25,9 @@ VPROG_OUT_END
 
 property float4x4 worldViewProjMatrix          : dynamic,a : ;
 
-property float2   textureTiling : static,instance : def_value=50,50;
+#if TILEMASK
+    property float2   textureTiling : static,instance : def_value=50,50;
+#endif
 
 #if VERTEX_FOG
 property float4x4 worldMatrix                  : dynamic,a : ;
@@ -47,7 +51,10 @@ VPROG_BEGIN
     VP_OUT_POSITION = mul( float4(in_pos.x,in_pos.y,in_pos.z,1.0), worldViewProjMatrix );
     
     VP_OUT(texCoord) = in_texcoord;
-    VP_OUT(texCoordTiled) = in_texcoord * float2(textureTiling.x, textureTiling.y);
+    
+    #if TILEMASK
+        VP_OUT(texCoordTiled) = in_texcoord * float2(textureTiling.x, textureTiling.y);
+    #endif
 
 
 #if VERTEX_FOG

@@ -96,6 +96,7 @@ dx11_Texture_Create( const Texture::Descriptor& desc )
     Handle                  handle = InvalidHandle;
     D3D11_TEXTURE2D_DESC    desc2d = {0};
     ID3D11Texture2D*        tex2d  = nullptr;
+    D3D11_SUBRESOURCE_DATA  data[128];
     HRESULT                 hr;
     bool                    need_srv = true;
     bool                    need_rtv = false;
@@ -144,7 +145,47 @@ dx11_Texture_Create( const Texture::Descriptor& desc )
         need_dsv = true;
     }
 
-    hr = _D3D11_Device->CreateTexture2D( &desc2d, NULL, &tex2d );
+    bool    useInitialData = false;
+
+    DVASSERT(countof(data) <= countof(desc.initialData));
+    memset( data, 0, sizeof(data) );
+
+    for( unsigned s=0; s!=desc2d.ArraySize; ++s )
+    {
+        for( unsigned m=0; m!=desc.levelCount; ++m )
+        {
+            uint32  di = s*desc.levelCount + m;
+            void*   d  = desc.initialData[di];
+
+            if( d )
+            {
+                data[di].pSysMem     = d;
+                data[di].SysMemPitch = TextureStride( desc.format, Size2i(desc.width,desc.height), m );
+
+                if( desc.format == TEXTURE_FORMAT_R8G8B8A8 )
+                {
+                    _SwapRB8( desc.initialData[m], TextureSize( desc.format, desc.width, desc.height, m ) );
+                }
+                else if( desc.format == TEXTURE_FORMAT_R4G4B4A4 )
+                {
+                    _SwapRB4( desc.initialData[m], TextureSize( desc.format, desc.width, desc.height, m ) );
+                }
+                else if ( desc.format == TEXTURE_FORMAT_R5G5B5A1)
+                {
+                    _SwapRB5551( desc.initialData[m], TextureSize( desc.format, desc.width, desc.height, m ) );
+                }
+
+                useInitialData      = true;
+            }
+            else
+            {
+                break;
+            }
+        }
+    }
+
+
+    hr = _D3D11_Device->CreateTexture2D( &desc2d, (useInitialData) ? data : NULL, &tex2d );
 
     if( SUCCEEDED(hr) )
     {
@@ -323,8 +364,8 @@ dx11_Texture_Unmap( Handle tex )
         _SwapRB5551(self->mappedData, TextureSize(self->format, self->width, self->height, self->mappedLevel));
     }
 
-    int rc_i = 0;
-    int face = 0;
+    uint32 rc_i = 0;
+    uint32 face = 0;
     
     if( self->arraySize == 6 )
     {
@@ -369,6 +410,12 @@ dx11_Texture_Update( Handle tex, const void* data, uint32 level, TextureFace fac
 
 namespace TextureDX11
 {
+
+void
+Init( uint32 maxCount )
+{
+    TextureDX11Pool::Reserve( maxCount );
+}
 
 void
 SetupDispatch( Dispatch* dispatch )

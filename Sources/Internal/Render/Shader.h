@@ -76,7 +76,7 @@ class ShaderDescriptor
 {    
 public://utility    
     static const rhi::ShaderPropList& GetProps(UniquePropertyLayout layout);
-    static uint32 CalculateRegsCount(rhi::ShaderProp::Type type, uint32 arraySize);  //return in registers  
+    static uint32 CalculateRegsCount(rhi::ShaderProp::Type type, uint32 arraySize);  //return in registers
     static uint32 CalculateDataSize(rhi::ShaderProp::Type type, uint32 arraySize); //return in float
 
 public:

@@ -419,8 +419,8 @@ void UIControlSystem::OnInput(const Vector<UIEvent>& activeInputs, const Vector<
 
     if (frameSkip <= 0)
     {
-        if(Replay::IsRecord())
-		{
+        if (Replay::IsRecord())
+        {
             int32 count = static_cast<int32>(activeInputs.size());
             Replay::Instance()->RecordEventsCount(count);
 
@@ -435,7 +435,7 @@ void UIControlSystem::OnInput(const Vector<UIEvent>& activeInputs, const Vector<
             Replay::Instance()->RecordEventsCount(count);
             for (Vector<UIEvent>::const_iterator it = allInputs.begin(); it != allInputs.end(); ++it)
             {
-				UIEvent ev = *it;
+                UIEvent ev = *it;
                 ev.point = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(ev.physPoint);
 				Replay::Instance()->RecordEvent(&ev);
 			}
@@ -446,8 +446,8 @@ void UIControlSystem::OnInput(const Vector<UIEvent>& activeInputs, const Vector<
         {
             (*it).activeState = UIEvent::ACTIVITY_STATE_INACTIVE;
 
-            for (Vector<UIEvent>::const_iterator wit = activeInputs.begin(); wit != activeInputs.end(); wit++) 
-			{
+            for (Vector<UIEvent>::const_iterator wit = activeInputs.begin(); wit != activeInputs.end(); wit++)
+            {
 				if((*it).tid == (*wit).tid)
 				{
 					if((*it).phase == (*wit).phase && (*it).physPoint == (*wit).physPoint)
@@ -470,7 +470,7 @@ void UIControlSystem::OnInput(const Vector<UIEvent>& activeInputs, const Vector<
                 {
                     if ((*it).tid == (*wit).tid)
                     {
-						if((*it).phase == (*wit).phase && (*it).physPoint == (*wit).physPoint)
+                        if((*it).phase == (*wit).phase && (*it).physPoint == (*wit).physPoint)
 						{
 							(*it).activeState = UIEvent::ACTIVITY_STATE_ACTIVE;
 						}

@@ -64,6 +64,7 @@ public:
 
     static T*       Get( Handle h );
 
+    static void     Reserve( unsigned maxCount );
     static unsigned ReCreateAll();
 
     class
@@ -114,6 +115,23 @@ template<> DAVA::Spinlock                           rhi::ResourcePool<T,RT,DT,nr
 template<> rhi::ResourcePool<T,RT,DT,nr>::Entry*    rhi::ResourcePool<T,RT,DT,nr>::Object      = 0;    \
 template<> unsigned                                 rhi::ResourcePool<T,RT,DT,nr>::ObjectCount = sz;   \
 template<> DAVA::Spinlock                           rhi::ResourcePool<T,RT,DT,nr>::ObjectSync  = {};   \
+
+
+
+//------------------------------------------------------------------------------
+
+template <class T, ResourceType RT, class DT, bool nr>
+inline void
+ResourcePool<T,RT,DT,nr>::Reserve( unsigned maxCount )
+{
+    ObjectSync.Lock();
+
+    DVASSERT(Object == nullptr);
+    DVASSERT(maxCount < HANDLE_INDEX_MASK);
+    ObjectCount = maxCount;
+
+    ObjectSync.Unlock();
+}
 
 
 //------------------------------------------------------------------------------

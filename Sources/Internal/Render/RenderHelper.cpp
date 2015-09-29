@@ -143,6 +143,7 @@ namespace DAVA
         if (buffersCount.first)
         {
             DynamicBufferAllocator::AllocResultVB vb = DynamicBufferAllocator::AllocateVertexBuffer(sizeof(ColoredVertex), buffersCount.first);
+            DVASSERT(vb.allocatedVertices == buffersCount.first);
             *vBufferDataPtr = reinterpret_cast<ColoredVertex *>(vb.data);
             packet.vertexStream[0] = vb.buffer;
             packet.vertexCount = vb.allocatedVertices;
@@ -151,6 +152,7 @@ namespace DAVA
         if (buffersCount.second)
         {
             DynamicBufferAllocator::AllocResultIB ib = DynamicBufferAllocator::AllocateIndexBuffer(buffersCount.second);
+            DVASSERT(ib.allocatedindices == buffersCount.second);
             *iBufferDataPtr = ib.data;
             packet.indexBuffer = ib.buffer;
             packet.startIndex = ib.baseIndex;
@@ -243,7 +245,7 @@ namespace DAVA
 
                 case COMMAND_DRAW_CIRCLE:
                 { 
-                    const uint32 pointCount = *reinterpret_cast<const uint32 *>(command.params.data() + 11);
+                    const uint32 pointCount = (uint32)(command.params[11]);
                     const Vector3 center(command.params.data() + 4), direction(command.params.data() + 7);
                     const float32 radius = command.params[10];
                     FillCircleVBuffer(commandVBufferPtr, center, direction, radius, pointCount, nativePrimitiveColor);
@@ -351,7 +353,7 @@ namespace DAVA
 
             case COMMAND_DRAW_CIRCLE:
             {
-                vertexCount = *(reinterpret_cast<const uint32*>(&command.params[11]));
+                vertexCount = (uint32)(command.params[11]);
                 indexCount = isSolidDraw ? (vertexCount - 2) * 3 : vertexCount * 2;
             } break;
 
@@ -419,7 +421,7 @@ namespace DAVA
         QueueCommand(DrawCommand{ COMMAND_DRAW_CIRCLE, drawType, { color.r, color.g, color.b, color.a,
                                                                    center.x, center.y, center.z,
                                                                    direction.x, direction.y, direction.z,
-                                                                   radius, *(reinterpret_cast<float32*>(&segmentCount)) } });
+                                                                   radius, (float32)(segmentCount) } });
     }
     void RenderHelper::DrawBSpline(BezierSpline3 * bSpline, int segments, float ts, float te, const Color & color, eDrawType drawType)
     {

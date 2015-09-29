@@ -348,7 +348,7 @@ namespace DAVA
     {
         DVASSERT(!allInputs.empty());
         if (!allInputs.empty())
-		{
+        {
             UIControlSystem::Instance()->OnInput(activeInputs, allInputs);
         }
     }

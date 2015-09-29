@@ -67,9 +67,11 @@ inline char         _tcsnextc( const char* str )                    { return *st
 //
 //  publics:
 
+#if defined(__DAVAENGINE_WIN32__)  || defined(__DAVAENGINE_WIN_UAP__)
 #pragma warning( push, 3 )
 #pragma warning( disable: 174 )
 #pragma warning( disable: 193 )
+#endif
 
 
 // Disable debugging printf's
@@ -212,7 +214,9 @@ RegExp::compile( const char *pattern, const char* attributes )
     if (!this->_is_ref)
     free(this->_pattern);
     this->_pattern = _tcsdup(pattern);
-    this->_is_ref = _is_ref;
+    
+    // warning : assigning field to itself
+    // this->_is_ref = _is_ref;
     _tcscpy(flags, attributes);
 
     unsigned oldre_nsub = re_nsub;
@@ -2286,11 +2290,12 @@ RegExp::get_pattern( unsigned n, std::string* str ) const
     return success;
 }
 
-
+#if defined(__DAVAENGINE_WIN32__)  || defined(__DAVAENGINE_WIN_UAP__)
 #pragma warning( default: 174 )
 #pragma warning( default: 193 )
-#pragma warning( default: 810 2259 ) // conversion from "unsigned int" to "char={char}" may lose significant bits
+#pragma warning( default: 810 ) // conversion from "unsigned int" to "char={char}" may lose significant bits
 
 #pragma warning( pop )
+#endif
 
 

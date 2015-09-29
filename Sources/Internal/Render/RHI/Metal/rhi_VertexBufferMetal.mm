@@ -69,7 +69,9 @@ static Handle
 metal_VertexBuffer_Create( const VertexBuffer::Descriptor& desc )
 {
     Handle          handle  = InvalidHandle;
-    id<MTLBuffer>   uid     = [_Metal_Device newBufferWithLength:desc.size options:MTLResourceOptionCPUCacheModeDefault];
+    id<MTLBuffer>   uid     = (desc.initialData)
+                              ? [_Metal_Device newBufferWithBytes:desc.initialData length:desc.size options:MTLResourceOptionCPUCacheModeDefault]
+                              : [_Metal_Device newBufferWithLength:desc.size options:MTLResourceOptionCPUCacheModeDefault];
 
     if( uid )
     {
@@ -79,7 +81,6 @@ metal_VertexBuffer_Create( const VertexBuffer::Descriptor& desc )
         vb->data   = [uid contents];
         vb->size   = desc.size;
         vb->uid    = uid;
-
     }
 
     return handle;
@@ -145,6 +146,12 @@ metal_VertexBuffer_Unmap( Handle vb )
 
 namespace VertexBufferMetal
 {
+
+void
+Init( uint32 maxCount )
+{
+    VertexBufferMetalPool::Reserve( maxCount );
+}
 
 void
 SetupDispatch( Dispatch* dispatch )
