@@ -32,7 +32,7 @@
 namespace rhi
 {
 
-static void
+inline void
 _FlipRGBA4_ABGR4( void* data, uint32 size )
 {
     // flip RGBA-ABGR order
@@ -51,7 +51,7 @@ _FlipRGBA4_ABGR4( void* data, uint32 size )
 
 //------------------------------------------------------------------------------
 
-static void
+inline void
 _ABGR1555toRGBA5551(void* data, uint32 size)
 {
     for (uint16* d = (uint16*)data, *d_end = (uint16*)data + size / sizeof(uint16); d != d_end; ++d)
@@ -68,7 +68,7 @@ _ABGR1555toRGBA5551(void* data, uint32 size)
 
 //------------------------------------------------------------------------------
 
-static void
+inline void
 _RGBA5551toABGR1555(void* data, uint32 size)
 {
     for (uint16* d = (uint16*)data, *d_end = (uint16*)data + size / sizeof(uint16); d != d_end; ++d)
@@ -85,7 +85,7 @@ _RGBA5551toABGR1555(void* data, uint32 size)
 
 //------------------------------------------------------------------------------
 
-static void
+inline void
 _SwapRB8( void* data, uint32 size )
 {
     for( uint8* d=(uint8*)data,*d_end=(uint8*)data+size; d!=d_end; d+=4 )
@@ -100,7 +100,7 @@ _SwapRB8( void* data, uint32 size )
 
 //------------------------------------------------------------------------------
 
-static void
+inline void
 _SwapRB4( void* data, uint32 size )
 {
     for( uint8* d=(uint8*)data,*d_end=(uint8*)data+size; d!=d_end; d+=2 )
@@ -115,7 +115,7 @@ _SwapRB4( void* data, uint32 size )
 
 //------------------------------------------------------------------------------
 
-static void
+inline void
 _SwapRB5551( void* data, uint32 size )
 {
     for (uint8* d = (uint8*)data, *d_end = (uint8*)data + size; d != d_end; d += 2)

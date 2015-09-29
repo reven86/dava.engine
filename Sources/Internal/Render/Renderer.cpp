@@ -46,7 +46,7 @@ namespace //for private variables
 {
     bool ininialized = false;
     rhi::Api api;
-    int32 desiredFPS = 0;
+    int32 desiredFPS = 60;
     
     RenderOptions renderOptions;
     DynamicBindings dynamicBindings;
