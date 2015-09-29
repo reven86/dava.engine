@@ -307,7 +307,7 @@ dx11_Initialize( const InitParam& param )
     _DeviceCaps.isVertexTextureUnitsSupported = true;
     _DeviceCaps.isUpperLeftRTOrigin = true;
 	_DeviceCaps.isZeroBaseClipRange = true;
-	_DeviceCaps.isCenterPixelMapping = true;
+    _DeviceCaps.isCenterPixelMapping = false;
 }
 
 

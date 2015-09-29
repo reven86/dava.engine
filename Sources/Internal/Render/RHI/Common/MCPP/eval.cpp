@@ -1503,6 +1503,8 @@ static expr_t   eval_signed(
     return  v1;
 }
 
+#pragma warning( push )
+#pragma warning( disable : 4146 )
 static expr_t   eval_unsigned(
     VAL_SIGN ** valpp,
     uexpr_t     v1u,
@@ -1597,6 +1599,7 @@ static expr_t   eval_unsigned(
     *valpp = valp;
     return  v1;
 }
+#pragma warning( pop )
 
 static void overflow(
     const char *    op_name,
