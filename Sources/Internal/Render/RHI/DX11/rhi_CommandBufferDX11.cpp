@@ -122,6 +122,7 @@ SyncObjectDX11_t
 {
     uint32  frame;
     uint32  is_signaled:1;
+    uint32  is_used : 1;
 };
 
 typedef ResourcePool<CommandBufferDX11_t,RESOURCE_COMMAND_BUFFER,CommandBuffer::Descriptor,false>   CommandBufferPool;
@@ -276,7 +277,7 @@ dx11_RenderPass_Begin( Handle pass )
     {
         _Frame.push_back( FrameDX11() );
         _Frame.back().number         = _FrameNumber;
-        _Frame.back().sync = rhi::InvalidHandle;
+        _Frame.back().sync           = rhi::InvalidHandle;
         _Frame.back().readyToExecute = false;
 
 Trace("\n\n-------------------------------\nframe %u started\n",_FrameNumber);
@@ -805,6 +806,7 @@ dx11_SyncObject_Create()
     SyncObjectDX11_t*   sync   = SyncObjectPool::Get( handle );
 
     sync->is_signaled = false;
+    sync->is_used = false;
 
     return handle;
 }
@@ -839,18 +841,15 @@ dx11_SyncObject_IsSignaled( Handle obj )
 static void
 _ExecuteQueuedCommandsDX11()
 {
-#ifdef __DAVAENGINE_WIN_UAP__
-    // this hack need removed, when rhi_dx thread will synchronized with rander::reset
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
-    DAVA::UniqueLock<DAVA::Mutex> lock(need_synchronized);
-#endif
-
 Trace("rhi-dx11.exec-queued-cmd\n");
+
+    if( _DX11_InitParam.FrameCommandExecutionSync )
+        _DX11_InitParam.FrameCommandExecutionSync->Lock();
 
     std::vector<RenderPassDX11_t*>  pass;
     std::vector<Handle>             pass_h;
     unsigned                        frame_n = 0;
-    bool                            do_exit = false;
+    bool                            do_exec = true;
 
     _FrameSync.Lock();
     if( _Frame.size() )
@@ -879,83 +878,73 @@ Trace("rhi-dx11.exec-queued-cmd\n");
     }
     else
     {
-        do_exit = true;
+        do_exec = false;
     }
+
+    if (_Frame.size() && _Frame.begin()->sync != InvalidHandle)
+    {
+        SyncObjectDX11_t*  sync = SyncObjectPool::Get(_Frame.begin()->sync);
+
+        sync->frame = frame_n;
+        sync->is_signaled = false;
+        sync->is_used = true;
+    }
+
     _FrameSync.Unlock();
 
-    if( do_exit )
-        return;
-
+    if( do_exec )
+    {
 Trace("\n\n-------------------------------\nexecuting frame %u\n",frame_n);
-    for( std::vector<RenderPassDX11_t*>::iterator p=pass.begin(),p_end=pass.end(); p!=p_end; ++p )
-    {
-        RenderPassDX11_t*   pp = *p;
-
-        for( unsigned b=0; b!=pp->cmdBuf.size(); ++b )
+        for( std::vector<RenderPassDX11_t*>::iterator p=pass.begin(),p_end=pass.end(); p!=p_end; ++p )
         {
-            Handle               cb_h = pp->cmdBuf[b];
-            CommandBufferDX11_t* cb   = CommandBufferPool::Get( cb_h );
-            
-            cb->Execute();
+            RenderPassDX11_t*   pp = *p;
 
-            if( cb->sync != InvalidHandle )
+            for( unsigned b=0; b!=pp->cmdBuf.size(); ++b )
             {
-                SyncObjectDX11_t*   sync = SyncObjectPool::Get( cb->sync );
+                Handle               cb_h = pp->cmdBuf[b];
+                CommandBufferDX11_t* cb   = CommandBufferPool::Get( cb_h );
+            
+                cb->Execute();
 
-                sync->frame       = frame_n;
-                sync->is_signaled = false;
+                if( cb->sync != InvalidHandle )
+                {
+                    SyncObjectDX11_t*   sync = SyncObjectPool::Get( cb->sync );
+
+                    sync->frame       = frame_n;
+                    sync->is_signaled = false;
+                }
+
+                CommandBufferPool::Free( cb_h );
             }
-
-            CommandBufferPool::Free( cb_h );
         }
-        
-//        RenderPassPool::Free( *p );
-    }
 
-    _FrameSync.Lock();
-    {
+        _FrameSync.Lock();
+        {
 Trace("\n\n-------------------------------\nframe %u executed(submitted to GPU)\n",frame_n);
-        _Frame.erase( _Frame.begin() );
+            _Frame.erase( _Frame.begin() );
         
-        for( std::vector<Handle>::iterator p=pass_h.begin(),p_end=pass_h.end(); p!=p_end; ++p )
-            RenderPassPool::Free( *p );
-    }    
-    _FrameSync.Unlock();
+            for( std::vector<Handle>::iterator p=pass_h.begin(),p_end=pass_h.end(); p!=p_end; ++p )
+                RenderPassPool::Free( *p );
+        }    
+        _FrameSync.Unlock();
 
+
+        // do present
     
-    // do flip, reset/restore device if necessary
-
-//    HRESULT hr;
-/*
-    if( _ResetPending )
-    {
-        hr = _D3D9_Device->TestCooperativeLevel();
-
-        if( hr == D3DERR_DEVICENOTRESET )
-        {
-///            reset( Size2i(_present_param->BackBufferWidth,_present_param->BackBufferHeight) );
-
-            _ResetPending = false;
-        }
-        else
-        {
-            ::Sleep( 100 );
-        }
-    }
-    else
-*/    
-    {
         _D3D11_SwapChain->Present( 0, 0 );
-    }    
 
 
-    // update sync-objects
+        // update sync-objects
 
-    for( SyncObjectPool::Iterator s=SyncObjectPool::Begin(),s_end=SyncObjectPool::End(); s!=s_end; ++s )
-    {
-        if( frame_n - s->frame > 3 )
-            s->is_signaled = true;
+        for( SyncObjectPool::Iterator s=SyncObjectPool::Begin(),s_end=SyncObjectPool::End(); s!=s_end; ++s )
+        {
+            if (s->is_used && (frame_n - s->frame >= 2))
+                s->is_signaled = true;
+        }
     }
+
+    if( _DX11_InitParam.FrameCommandExecutionSync )
+        _DX11_InitParam.FrameCommandExecutionSync->Unlock();
 }
 
 
@@ -1142,7 +1131,8 @@ Trace("rhi-dx11.present\n");
             if( _Frame.size() )
             {
                 _Frame.back().readyToExecute = true;
-                _FrameStarted = false;
+                _Frame.back().sync           = sync;
+                _FrameStarted                = false;
 Trace("\n\n-------------------------------\nframe %u generated\n",_Frame.back().number);
             }
         }
@@ -1164,6 +1154,7 @@ Trace("\n\n-------------------------------\nframe %u generated\n",_Frame.back().
         if( _Frame.size() )
         {
             _Frame.back().readyToExecute = true;
+            _Frame.back().sync = sync;
             _FrameStarted = false;
         }
 

@@ -962,6 +962,12 @@ namespace ConstBufferMetal
 {
 
 void
+Init( uint32 maxCount )
+{
+    ConstBufMetalPool::Reserve( maxCount );
+}
+
+void
 InitializeRingBuffer( uint32 size )
 {
     DefaultConstRingBuffer.Initialize( size );

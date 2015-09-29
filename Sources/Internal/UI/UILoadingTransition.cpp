@@ -37,8 +37,8 @@
 
 namespace DAVA 
 {
+static const uint32 LOADING_THREAD_STACK_SIZE = 1024 * 1024; // 1 mb
 
-	
 UILoadingTransition::UILoadingTransition()
 {
 	thread = 0;
@@ -121,7 +121,8 @@ void UILoadingTransition::DidAppear()
     if (!thread)
 	{
 		thread = Thread::Create(Message(this, &UILoadingTransition::ThreadMessage));
-		thread->Start();
+        thread->SetStackSize(LOADING_THREAD_STACK_SIZE);
+        thread->Start();
 	}
 }
 

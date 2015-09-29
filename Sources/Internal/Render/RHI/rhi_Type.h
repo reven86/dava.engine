@@ -420,17 +420,19 @@ namespace VertexBuffer
 struct
 Descriptor
 {
-    uint32  size;
-    Pool    pool;
-    Usage   usage;
-    uint32  needRestore:1;
+    uint32      size;
+    Pool        pool;
+    Usage       usage;
+    const void* initialData;
+    uint32      needRestore:1;
             
-            Descriptor( uint32 sz=0 ) 
-              : size(sz),
-                pool(POOL_DEFAULT),
-                usage(USAGE_DEFAULT),
-                needRestore(true)
-            {}
+                Descriptor( uint32 sz=0 ) 
+                  : size(sz),
+                    pool(POOL_DEFAULT),
+                    usage(USAGE_DEFAULT),
+                    initialData(nullptr),
+                    needRestore(true)
+                {}
 };
 }
 
@@ -451,6 +453,7 @@ Descriptor
     IndexSize   indexSize;
     Pool        pool;
     Usage       usage;
+    const void* initialData;
     uint32      needRestore:1;
             
                 Descriptor( uint32 sz=0 ) 
@@ -458,6 +461,7 @@ Descriptor
                     indexSize(INDEX_SIZE_16BIT),
                     pool(POOL_DEFAULT),
                     usage(USAGE_DEFAULT),
+                    initialData(nullptr),
                     needRestore(true)
                 {}
 };
@@ -475,6 +479,7 @@ Descriptor
     uint32          height;
     TextureFormat   format;
     uint32          levelCount;
+    void*           initialData[128];   // it must be writable!
     uint32          isRenderTarget:1;
     uint32          autoGenMipmaps:1;
     uint32          needRestore:1;
@@ -488,7 +493,9 @@ Descriptor
                         isRenderTarget(false),
                         autoGenMipmaps(false),
                         needRestore(true)
-                    {}
+                    {
+                        memset( initialData, 0, sizeof(initialData) );
+                    }
                     Descriptor()
                       : type(TEXTURE_TYPE_2D),
                         width(0),
@@ -498,7 +505,9 @@ Descriptor
                         isRenderTarget(false),
                         autoGenMipmaps(false),
                         needRestore(true)
-                    {}
+                    {
+                        memset( initialData, 0, sizeof(initialData) );
+                    }
 
 };
 

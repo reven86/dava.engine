@@ -1007,6 +1007,12 @@ namespace ConstBufferDX9
 {
 
 void
+Init( uint32 maxCount )
+{
+    ConstBufDX9Pool::Reserve( maxCount );
+}
+
+void
 SetupDispatch( Dispatch* dispatch )
 {
     dispatch->impl_ConstBuffer_SetConst     = &dx9_ConstBuffer_SetConst;

@@ -122,7 +122,7 @@ namespace DAVA
 
     void RenderHelper::InvalidateMaterials()
     {
-        for (NMaterial * & material : materials)
+        for (NMaterial*& material : materials)
             material->InvalidateRenderVariants();
     }
 
@@ -132,7 +132,7 @@ namespace DAVA
             SafeRelease(materials[i]);
     }
 
-    bool RenderHelper::PreparePacket(rhi::Packet & packet, NMaterial * material, const std::pair<uint32, uint32> & buffersCount, ColoredVertex ** vBufferDataPtr, uint16 ** iBufferDataPtr)
+    bool RenderHelper::PreparePacket(rhi::Packet& packet, NMaterial* material, const std::pair<uint32, uint32>& buffersCount, ColoredVertex** vBufferDataPtr, uint16** iBufferDataPtr)
     {
         if (!material->PreBuildMaterial(PASS_FORWARD))
             return false;
@@ -143,6 +143,7 @@ namespace DAVA
         if (buffersCount.first)
         {
             DynamicBufferAllocator::AllocResultVB vb = DynamicBufferAllocator::AllocateVertexBuffer(sizeof(ColoredVertex), buffersCount.first);
+            DVASSERT(vb.allocatedVertices == buffersCount.first);
             *vBufferDataPtr = reinterpret_cast<ColoredVertex *>(vb.data);
             packet.vertexStream[0] = vb.buffer;
             packet.vertexCount = vb.allocatedVertices;
@@ -151,6 +152,7 @@ namespace DAVA
         if (buffersCount.second)
         {
             DynamicBufferAllocator::AllocResultIB ib = DynamicBufferAllocator::AllocateIndexBuffer(buffersCount.second);
+            DVASSERT(ib.allocatedindices == buffersCount.second);
             *iBufferDataPtr = ib.data;
             packet.indexBuffer = ib.buffer;
             packet.startIndex = ib.baseIndex;
@@ -175,7 +177,7 @@ namespace DAVA
 
         bool valid = true;
         for (int32 i = 0; i < DRAW_TYPE_COUNT; ++i)
-            valid&= PreparePacket(packet[i], materials[i], buffersElemCount[i], &vBufferPtr[i], &iBufferPtr[i]);
+            valid &= PreparePacket(packet[i], materials[i], buffersElemCount[i], &vBufferPtr[i], &iBufferPtr[i]);
 
         if (!valid)
             return;

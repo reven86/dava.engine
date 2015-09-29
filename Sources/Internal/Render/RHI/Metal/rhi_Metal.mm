@@ -125,6 +125,16 @@ metal_DeviceCaps()
 {
     return _metal_DeviceCaps;
 }
+
+
+//------------------------------------------------------------------------------
+
+static bool
+metal_NeedRestoreResources()
+{
+    return false;
+}
+ 
     
 static bool
 metal_NeedRestoreResources()
@@ -228,13 +238,23 @@ metal_Initialize( const InitParam& param )
     DispatchMetal.impl_Uninitialize             = &metal_Uninitialize;
     DispatchMetal.impl_HostApi                  = &metal_HostApi;
     DispatchMetal.impl_TextureFormatSupported   = &metal_TextureFormatSupported;
+    DispatchMetal.impl_NeedRestoreResources     = &metal_NeedRestoreResources;
     DispatchMetal.impl_DeviceCaps               = &metal_DeviceCaps;
     DispatchMetal.impl_NeedRestoreResources     = &metal_NeedRestoreResources;
     DispatchMetal.impl_ResumeRendering          = &metal_Resume;
     DispatchMetal.impl_SuspendRendering         = &metal_Suspend;
     
     SetDispatchTable( DispatchMetal );
-    
+
+    if( param.maxVertexBufferCount ) 
+        VertexBufferMetal::Init( param.maxVertexBufferCount );
+    if( param.maxIndexBufferCount )
+        IndexBufferMetal::Init( param.maxIndexBufferCount );
+    if( param.maxConstBufferCount )
+        ConstBufferMetal::Init( param.maxConstBufferCount );
+    if( param.maxTextureCount )
+        TextureMetal::Init( param.maxTextureCount );
+
     _metal_DeviceCaps.is32BitIndicesSupported = true;
     _metal_DeviceCaps.isFramebufferFetchSupported = true;
     _metal_DeviceCaps.isVertexTextureUnitsSupported = true;

@@ -374,11 +374,10 @@ void MoveTouchsToVector(NSEvent *curEvent, int touchPhase, Vector<UIEvent> *outT
 -(void)process:(int)touchPhase touch:(NSEvent*)touch
 {
 	Vector<DAVA::UIEvent> touches;
-    Vector<DAVA::UIEvent> emptyTouches;
 
-    MoveTouchsToVector(touch, touchPhase, &touches);
-    UIControlSystem::Instance()->OnInput(touchPhase, emptyTouches, touches);
-	touches.clear();
+    [self moveTouchsToVector:touchPhase curEvent:touch outTouches:&touches];
+    UIControlSystem::Instance()->OnInput(touches, allTouches);
+    touches.clear();
 }
 
 - (void)mouseDown:(NSEvent *)theEvent
@@ -451,63 +450,46 @@ void MoveTouchsToVector(NSEvent *curEvent, int touchPhase, Vector<UIEvent> *outT
 }
 
 static int32 oldModifersFlags = 0;
-- (void) keyDown:(NSEvent *)event
+- (void)keyDown:(NSEvent*)event
 {
-	{
-			//		Logger::FrameworkDebug("glview keypress!");
-		unichar c = [[event characters] characterAtIndex:0];
-		
-		Vector<DAVA::UIEvent> touches;
-        Vector<DAVA::UIEvent> emptyTouches;
+    int32 keyCode = [event keyCode];
+    InputSystem* input = InputSystem::Instance();
+    KeyboardDevice& keyboard = input->GetKeyboard();
 
-        for(Vector<DAVA::UIEvent>::iterator it = activeTouches.begin(); it != activeTouches.end(); it++)
-        {
-            touches.push_back(*it);
-        }
+    DAVA::UIEvent ev;
+    ev.keyChar = [[event characters] characterAtIndex:0];
+    ev.phase = DAVA::UIEvent::PHASE_KEYCHAR;
+    ev.timestamp = event.timestamp;
+    ev.tapCount = 1;
+    ev.tid = keyboard.GetDavaKeyForSystemKey(keyCode);
 
-		DAVA::UIEvent ev;
-		ev.keyChar = c;
-		ev.phase = DAVA::UIEvent::PHASE_KEYCHAR;
-		ev.timestamp = event.timestamp;
-		ev.tapCount = 1;
-		ev.tid = InputSystem::Instance()->GetKeyboard().GetDavaKeyForSystemKey([event keyCode]);
-        
-        touches.push_back(ev);
-		
-        UIControlSystem::Instance()->OnInput(0, emptyTouches, touches);
-        touches.pop_back();
-        UIControlSystem::Instance()->OnInput(0, emptyTouches, touches);
-	}
-	
-    InputSystem::Instance()->GetKeyboard().OnSystemKeyPressed([event keyCode]);
-    if ([event modifierFlags]&NSCommandKeyMask)
-    {
-        InputSystem::Instance()->GetKeyboard().OnSystemKeyUnpressed([event keyCode]);
-    }
+    Vector<DAVA::UIEvent> touches;
+    touches.push_back(ev);
 
-//NSLog(@"key Down View");
-//	unichar c = [[event charactersIgnoringModifiers] characterAtIndex:0];
-//	
-//	if ([event modifierFlags] & NSCommandKeyMask)
-//	{
-//		if (c == 'f')
-//		{
-//			NSLog(@"[CoreMacOSPlatform] Switch screen mode");
-//			if (Core::Instance()->GetScreenMode() == Core::MODE_WINDOWED)
-//			{
-//				Core::Instance()->SwitchScreenToMode(Core::MODE_FULLSCREEN);
-//			}else 
-//			{	
-//				Core::Instance()->SwitchScreenToMode(Core::MODE_WINDOWED);
-//			}
-//		}
-//	}
+    UIControlSystem::Instance()->OnInput(touches, allTouches);
 
-}	
+    keyboard.OnSystemKeyPressed(keyCode);
+}
 
 - (void) keyUp:(NSEvent *)event
 {
-    InputSystem::Instance()->GetKeyboard().OnSystemKeyUnpressed([event keyCode]);
+    int32 keyCode = [event keyCode];
+    InputSystem* input = InputSystem::Instance();
+    KeyboardDevice& keyboard = input->GetKeyboard();
+
+    DAVA::UIEvent ev;
+    ev.keyChar = [[event characters] characterAtIndex:0];
+    ev.phase = DAVA::UIEvent::PHASE_KEYCHAR_RELEASE;
+    ev.timestamp = event.timestamp;
+    ev.tapCount = 1;
+    ev.tid = keyboard.GetDavaKeyForSystemKey(keyCode);
+
+    Vector<DAVA::UIEvent> touches;
+    touches.push_back(ev);
+
+    UIControlSystem::Instance()->OnInput(touches, allTouches);
+
+    keyboard.OnSystemKeyUnpressed(keyCode);
 }
 
 - (void) flagsChanged :(NSEvent *)event

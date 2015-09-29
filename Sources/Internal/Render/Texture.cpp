@@ -551,6 +551,51 @@ void Texture::FlushDataToRenderer(Vector<Image *> * images)
         descriptor.levelCount = Max(descriptor.levelCount, img->mipmapLevel + 1);
 
     DVASSERT(descriptor.format != ((rhi::TextureFormat) - 1));//unsupported format
+
+#if 1
+
+    if( descriptor.type == rhi::TEXTURE_TYPE_2D )
+    {
+        for (uint32 i = 0; i < (uint32)images->size(); ++i)
+            descriptor.initialData[i] = (*images)[i]->data;
+    }
+    else if( descriptor.type == rhi::TEXTURE_TYPE_CUBE )
+    {
+        rhi::TextureFace face[] = { rhi::TEXTURE_FACE_POSITIVE_X, rhi::TEXTURE_FACE_NEGATIVE_X, rhi::TEXTURE_FACE_POSITIVE_Y, rhi::TEXTURE_FACE_NEGATIVE_Y, rhi::TEXTURE_FACE_POSITIVE_Z, rhi::TEXTURE_FACE_NEGATIVE_Z };
+        void**           data   = descriptor.initialData;
+
+        for( unsigned f=0; f!=countof(face); ++f )
+        {
+            for( unsigned m=0; m!=descriptor.levelCount; ++m )
+            {
+                *data = nullptr;
+
+                for( uint32 i=0; i!=(uint32)images->size(); ++i )
+                {
+                    Image*  img = (*images)[i];
+                    
+                    if( img->cubeFaceID == face[f]  &&  img->mipmapLevel == m )
+                    {
+                        *data = img->data;
+                        break;
+                    }
+                }
+
+                ++data;
+            }
+        }
+    }
+
+    handle = rhi::CreateTexture( descriptor );
+    DVASSERT(handle != rhi::InvalidHandle);
+
+    rhi::TextureSetDescriptor textureSetDesc;
+    textureSetDesc.fragmentTexture[0] = handle;
+    textureSetDesc.fragmentTextureCount = 1;
+    singleTextureSet = rhi::AcquireTextureSet(textureSetDesc);
+
+#else
+
     handle = rhi::CreateTexture(descriptor);
     DVASSERT(handle != rhi::InvalidHandle);
 
@@ -564,6 +609,8 @@ void Texture::FlushDataToRenderer(Vector<Image *> * images)
         Image *img = (*images)[i];
         TexImage((img->mipmapLevel != (uint32)-1) ? img->mipmapLevel : i, img->width, img->height, img->data, img->dataSize, img->cubeFaceID);
     }
+
+#endif
 
     samplerState.addrU = texDescriptor->drawSettings.wrapModeS;
     samplerState.addrV = texDescriptor->drawSettings.wrapModeT;

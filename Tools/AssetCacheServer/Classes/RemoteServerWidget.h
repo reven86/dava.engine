@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 #ifndef __REMOTE_ASSET_CACHE_SERVER_H__
 #define __REMOTE_ASSET_CACHE_SERVER_H__
 
@@ -35,7 +34,7 @@
 
 namespace Ui
 {
-    class RemoteServerWidget;
+class RemoteServerWidget;
 }
 
 class RemoteServerWidget : public QWidget
@@ -43,8 +42,8 @@ class RemoteServerWidget : public QWidget
     Q_OBJECT
 
 public:
-    explicit RemoteServerWidget(QWidget *parent = nullptr);
-    explicit RemoteServerWidget(const ServerData &newServer, QWidget *parent = nullptr);
+    explicit RemoteServerWidget(QWidget* parent = nullptr);
+    explicit RemoteServerWidget(const ServerData& newServer, QWidget* parent = nullptr);
     ~RemoteServerWidget() override;
 
     ServerData GetServerData() const;
@@ -64,7 +63,7 @@ private slots:
     void OnChecked(int val);
 
 private:
-    Ui::RemoteServerWidget *ui;
+    Ui::RemoteServerWidget* ui;
 };
 
 #endif // __REMOTE_ASSET_CACHE_SERVER_H__
