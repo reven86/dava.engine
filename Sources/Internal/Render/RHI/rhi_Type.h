@@ -98,6 +98,12 @@ PrimitiveType
     PRIMITIVE_LINELIST      = 10
 };
 
+enum
+FillMode
+{
+    FILLMODE_SOLID      = 1,
+    FILLMODE_WIREFRAME  = 2
+};
 
 enum
 {
