@@ -20,10 +20,12 @@ public class JNIDateTime {
         if (format.equals("%x"))
         {
         	DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.SHORT, loc);
+        	dateFormat.setTimeZone(tz);
         	result = dateFormat.format(dt);
         } else if (format.equals("%X"))
         {
         	DateFormat dateFormat = DateFormat.getTimeInstance(DateFormat.MEDIUM, loc);
+        	dateFormat.setTimeZone(tz);
         	result = dateFormat.format(dt);
         } else
         {
