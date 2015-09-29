@@ -82,7 +82,7 @@ DAVA_TESTCLASS(DateTimeTest)
             TEST_VERIFY(country_code == "ru_RU");
 
             DateTime date;
-            date = DateTime(1984, 8, 8, 16, 30, 22, 3); // 08.09.1984
+            date = DateTime(1984, 8, 8, 16, 30, 22, 0); // 08.09.1984
             WideString x_date_ru = date.GetLocalizedDate(); // date representation
             TEST_VERIFY(x_date_ru == L"08.09.1984");
             WideString x_time_ru = date.GetLocalizedTime(); // time representation
