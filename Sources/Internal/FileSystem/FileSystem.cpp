@@ -965,5 +965,4 @@ bool FileSystem::GetFileSize(const FilePath& path, uint32& size)
 
     return false;
 }
-
 }

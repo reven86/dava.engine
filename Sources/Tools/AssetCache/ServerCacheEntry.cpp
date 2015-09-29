@@ -26,89 +26,79 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-
 #include "AssetCache/ServerCacheEntry.h"
-
 
 #include "FileSystem/KeyedArchive.h"
 
-#include "Platform/SystemTimer.H"
+#include "Platform/SystemTimer.h"
 #include "Debug/DVAssert.h"
 
 namespace DAVA
 {
-    
 namespace AssetCache
 {
-    
 ServerCacheEntry::ServerCacheEntry()
 {
 }
 
-ServerCacheEntry::ServerCacheEntry(const CachedItemValue &_value)
+ServerCacheEntry::ServerCacheEntry(const CachedItemValue& _value)
     : value(_value)
 {
 }
 
-ServerCacheEntry::ServerCacheEntry(ServerCacheEntry &&right)
+ServerCacheEntry::ServerCacheEntry(ServerCacheEntry&& right)
     : value(std::move(right.value))
     , accessID(right.accessID)
 {
 }
 
-ServerCacheEntry & ServerCacheEntry::operator=(ServerCacheEntry &&right)
+ServerCacheEntry& ServerCacheEntry::operator=(ServerCacheEntry&& right)
 {
-    if(this != &right)
+    if (this != &right)
     {
         value = std::move(right.value);
         accessID = right.accessID;
     }
-    
+
     return (*this);
 }
 
-    
-
-bool ServerCacheEntry::operator == (const ServerCacheEntry &right) const
+bool ServerCacheEntry::operator==(const ServerCacheEntry& right) const
 {
     return (accessID == right.accessID) && (value == right.value);
 }
 
-void ServerCacheEntry::Serialize(KeyedArchive * archieve) const
+void ServerCacheEntry::Serialize(KeyedArchive* archieve) const
 {
     DVASSERT(nullptr != archieve);
-    
+
     archieve->SetUInt64("accessID", accessID);
-    
+
     ScopedPtr<KeyedArchive> valueArchieve(new KeyedArchive());
     value.Serialize(valueArchieve, false);
     archieve->SetArchive("value", valueArchieve);
 }
 
-void ServerCacheEntry::Deserialize(KeyedArchive * archieve)
+void ServerCacheEntry::Deserialize(KeyedArchive* archieve)
 {
     DVASSERT(nullptr != archieve);
-    
+
     accessID = archieve->GetUInt64("accessID");
-    
-    KeyedArchive *valueArchieve = archieve->GetArchive("value");
+
+    KeyedArchive* valueArchieve = archieve->GetArchive("value");
     DVASSERT(valueArchieve);
     value.Deserialize(valueArchieve);
 }
-    
-void ServerCacheEntry::Fetch(const FilePath & folder)
+
+void ServerCacheEntry::Fetch(const FilePath& folder)
 {
     value.Fetch(folder);
 }
-    
+
 void ServerCacheEntry::Free()
 {
     value.Free();
 }
-    
-    
-    
+
 }; // end of namespace AssetCache
 }; // end of namespace DAVA
-

@@ -322,8 +322,8 @@ extern void FrameworkWillTerminate();
 	DAVA::Vector<DAVA::UIEvent> touches;
 	[self moveTouchesToVector:touch touchPhase:touchPhase outTouches:&touches];
 
-	DAVA::UIControlSystem::Instance()->OnInput(touchPhase, touches, allTouches);
-	touches.clear();
+    DAVA::UIControlSystem::Instance()->OnInput(touches, allTouches);
+    touches.clear();
 }
 
 -(void) keyDown:(NPCocoaEvent*)event
@@ -331,33 +331,51 @@ extern void FrameworkWillTerminate();
 	NSString* s = (NSString*)event->data.key.characters;
 	unichar c = [s characterAtIndex:0];
 
-	DAVA::Vector<DAVA::UIEvent> touches;
+    DAVA::InputSystem* input = DAVA::InputSystem::Instance();
+    DAVA::KeyboardDevice& keyboard = input->GetKeyboard();
+    DAVA::int32 keyCode = event->data.key.keyCode;
 
-	time_t timestamp = time(NULL);
+    time_t timestamp = time(NULL);
 
-	DAVA::UIEvent ev;
+    DAVA::UIEvent ev;
 	ev.keyChar = c;
 	ev.phase = DAVA::UIEvent::PHASE_KEYCHAR;
 	ev.timestamp = timestamp;
 	ev.tapCount = 1;
-	ev.tid = DAVA::InputSystem::Instance()->GetKeyboard().GetDavaKeyForSystemKey(event->data.key.keyCode);
+    ev.tid = keyboard.GetDavaKeyForSystemKey(keyCode);
 
-	touches.push_back(ev);
+    DAVA::Vector<DAVA::UIEvent> touches;
+    touches.push_back(ev);
 
-	DAVA::UIControlSystem::Instance()->OnInput(0, touches, allTouches);
-	touches.pop_back();
-	DAVA::UIControlSystem::Instance()->OnInput(0, touches, allTouches);
+    DAVA::UIControlSystem::Instance()->OnInput(touches, allTouches);
 
-	DAVA::InputSystem::Instance()->GetKeyboard().OnSystemKeyPressed(event->data.key.keyCode);
-	if (event->data.key.modifierFlags & NSCommandKeyMask)
-	{
-		DAVA::InputSystem::Instance()->GetKeyboard().OnSystemKeyUnpressed(event->data.key.keyCode);
-	}
+    keyboard.OnSystemKeyPressed(keyCode);
 }
 
 -(void) keyUp:(NPCocoaEvent*) event
 {
-	DAVA::InputSystem::Instance()->GetKeyboard().OnSystemKeyUnpressed(event->data.key.keyCode);
+    NSString* s = (NSString*)event->data.key.characters;
+    unichar c = [s characterAtIndex:0];
+
+    DAVA::InputSystem* input = DAVA::InputSystem::Instance();
+    DAVA::KeyboardDevice& keyboard = input->GetKeyboard();
+    DAVA::int32 keyCode = event->data.key.keyCode;
+
+    time_t timestamp = time(NULL);
+
+    DAVA::UIEvent ev;
+    ev.keyChar = c;
+    ev.phase = DAVA::UIEvent::PHASE_KEYCHAR_RELEASE;
+    ev.timestamp = timestamp;
+    ev.tapCount = 1;
+    ev.tid = keyboard.GetDavaKeyForSystemKey(keyCode);
+
+    DAVA::Vector<DAVA::UIEvent> touches;
+    touches.push_back(ev);
+
+    DAVA::UIControlSystem::Instance()->OnInput(touches, allTouches);
+
+    keyboard.OnSystemKeyUnpressed(keyCode);
 }
 
 -(void) flagsChanged:(NPCocoaEvent*) event
