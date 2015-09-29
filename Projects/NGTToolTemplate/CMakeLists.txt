@@ -52,6 +52,8 @@ list(APPEND NGT_PLUGINS
       plg_qt_common
       plg_editor_interaction
       plg_history_ui
+      plg_macros_ui
+      plg_panel_manager
       plg_qt_app)
 
 list( APPEND QT_COMPONENTS

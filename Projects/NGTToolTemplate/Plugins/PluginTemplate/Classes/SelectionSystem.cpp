@@ -198,7 +198,7 @@ void SceneSelectionSystem::Draw()
 
 	if(curSelections.Size() > 0)
 	{
-        DAVA::int32 drawMode = SS_DRAW_SHAPE | SS_DRAW_NO_DEEP_TEST;
+        DAVA::int32 drawMode = SS_DRAW_SHAPE;
         DAVA::RenderManager::SetDynamicParam(DAVA::PARAM_WORLD, &DAVA::Matrix4::IDENTITY, (DAVA::pointer_size) &DAVA::Matrix4::IDENTITY);
         DAVA::UniqueHandle renderState = (!(drawMode & SS_DRAW_NO_DEEP_TEST)) ? selectionDepthDrawState : selectionNormalDrawState;
 
