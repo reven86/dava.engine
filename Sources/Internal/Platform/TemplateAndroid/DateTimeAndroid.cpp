@@ -61,7 +61,7 @@ WideString JniDateTime::AsWString(const WideString& format, const String& countr
     char str[256] = {0};
     JNI::CreateStringFromJni(obj, str);
     WideString retWString;
-    UTF8Utils::EncodeToWideString((uint8*)str, 256, retWString);
+    UTF8Utils::EncodeToWideString((uint8*)str, strlen(str), retWString);
     return retWString;
 }
 
