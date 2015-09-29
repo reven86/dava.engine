@@ -1,3 +1,7 @@
 <Actions>
   <OpenScene text="Open Scene" path="menu.File"/>
+  <Undo shortcut="Ctrl+Z" path="menu.Edit"/>
+  <Redo shortcut="Ctrl+Y" path="menu.Edit"/>
+  <BeginBatch text="Batch" path="menu.Edit"/>
+  <EndBatch text="Unbatch" path="menu.Edit"/>
 </Actions>

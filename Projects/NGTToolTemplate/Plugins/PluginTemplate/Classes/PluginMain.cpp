@@ -34,7 +34,9 @@
 #include "PropertyPanel.h"
 #include "SceneSignals.h"
 
+#include "core_dependency_system/di_ref.hpp"
 #include "core_generic_plugin/generic_plugin.hpp"
+#include "core_command_system/i_command_manager.hpp"
 #include "core_reflection/i_definition_manager.hpp"
 #include "core_qt_common/shared_controls.hpp"
 
@@ -52,7 +54,9 @@
 class DAVAPlugin : public PluginMain
 {
 public:
-    explicit DAVAPlugin(IComponentContext & context) {}
+    explicit DAVAPlugin(IComponentContext& context)
+    {
+    }
 
     bool PostLoad(IComponentContext & context) override
     {
@@ -126,6 +130,25 @@ public:
         uiApplication->addView(library->GetView());
         uiApplication->addView(sceneWidget->GetView());
 
+        ICommandManager* commandMng = context.queryInterface<ICommandManager>();
+        if (commandMng == nullptr)
+        {
+            DAVA::Logger::Error("Can't query ICommandManager interface");
+            return;
+        }
+
+        undoAction = uiFramework->createAction("Undo", std::bind(&ICommandManager::undo, commandMng),
+                                               std::bind(&ICommandManager::canUndo, commandMng));
+        redoAction = uiFramework->createAction("Redo", std::bind(&ICommandManager::redo, commandMng),
+                                               std::bind(&ICommandManager::canRedo, commandMng));
+        beginBatch = uiFramework->createAction("BeginBatch", std::bind(&ICommandManager::beginBatchCommand, commandMng));
+        endBatch = uiFramework->createAction("EndBatch", std::bind(&ICommandManager::endBatchCommand, commandMng));
+
+        uiApplication->addAction(*undoAction);
+        uiApplication->addAction(*redoAction);
+        uiApplication->addAction(*beginBatch);
+        uiApplication->addAction(*endBatch);
+
         mainWindow->show();
 
         DavaLoop::Instance()->StartLoop(FrameworkLoop::Instance());
@@ -161,6 +184,11 @@ private:
     std::unique_ptr<PropertyPanel> propertyPanel;
     std::unique_ptr<SceneViewer> sceneWidget;
     std::unique_ptr<SceneTree> sceneTree;
+
+    std::unique_ptr<IAction> undoAction;
+    std::unique_ptr<IAction> redoAction;
+    std::unique_ptr<IAction> beginBatch;
+    std::unique_ptr<IAction> endBatch;
 };
 
 PLG_CALLBACK_FUNC(DAVAPlugin)

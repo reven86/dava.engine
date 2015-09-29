@@ -2,9 +2,6 @@
 <ui version="4.0">
  <class>MainWindow</class>
  <widget class="QMainWindow" name="MainWindow">
-   <property name="contextMenuPolicy">
-     <enum>Qt::PreventContextMenu</enum>
-   </property>
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -24,6 +21,9 @@
     <width>300</width>
     <height>200</height>
    </size>
+  </property>
+  <property name="contextMenuPolicy">
+   <enum>Qt::PreventContextMenu</enum>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
@@ -67,7 +67,7 @@
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QDockWidget" name="dockWidget">
    <property name="layoutTags" stdset="0">
-    <string notr="true">Library</string>
+    <string notr="true">default</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>1</number>
