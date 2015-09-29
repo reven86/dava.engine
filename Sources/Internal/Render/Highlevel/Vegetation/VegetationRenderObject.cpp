@@ -437,6 +437,7 @@ bool VegetationRenderObject::IsDataLoadNeeded()
     
 void VegetationRenderObject::PrepareToRender(Camera * camera)
 {
+    activeRenderBatchArray.clear();
     if(!ReadyToRender())
     {
         return;
@@ -449,8 +450,7 @@ void VegetationRenderObject::PrepareToRender(Camera * camera)
         AddRenderBatch(ScopedPtr<RenderBatch>(CreateRenderBatch()));
         ++renderBatchCount;
     }
-
-    activeRenderBatchArray.clear();
+    
 
     Vector<Vector<Vector<VegetationSortedBufferItem> > >& indexRenderDataObject = renderData->GetIndexBuffers();
     
