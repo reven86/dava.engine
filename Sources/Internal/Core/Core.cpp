@@ -436,6 +436,7 @@ Logger::Info("Core::SystemAppStarted");
 
     if (core != nullptr)
     {
+//rhi::ShaderSourceCache::Load( "~doc:/ShaderSource.bin" );
         Core::Instance()->CreateRenderer();
         RenderSystem2D::Instance()->Init();
         core->OnAppStarted();
@@ -446,6 +447,7 @@ void Core::SystemAppFinished()
 {
     if (core != nullptr)
     {
+//rhi::ShaderSourceCache::Save( "~doc:/ShaderSource.bin" );
         core->OnAppFinished();
     }
 }
@@ -635,16 +637,30 @@ void Core::SetCommandLine(Vector<String>&& args)
 void Core::SetCommandLine(const DAVA::String& cmdLine)
 {
     commandLine.clear();
-    Split(cmdLine, " ", commandLine);
-
-    //remove "quotes"
-    for (auto& arg : commandLine)
+    bool inQuote = false;
+    String currentParam;
+    for (auto ch : cmdLine)
     {
-        const char quote = '\"';
-        if (arg.front() == quote && arg.back() == quote)
+        if (ch == '"')
         {
-            arg = arg.substr(1, arg.size() - 2);
+            inQuote = !inQuote;
         }
+        else if (!inQuote && ch == ' ')
+        {
+            if (!currentParam.empty())
+            {
+                commandLine.push_back(currentParam);
+            }
+            currentParam.clear();
+        }
+        else
+        {
+            currentParam += ch;
+        }
+    }
+    if (!currentParam.empty())
+    {
+        commandLine.push_back(currentParam);
     }
 }
 

@@ -994,7 +994,7 @@ static inline void
 WriteS0( DAVA::File* f, const char* str )  
 { 
     char    s0[128*1024];
-    uint32  sz = L_ALIGNED_SIZE( strlen( str)+1, sizeof(uint32) );
+    uint32  sz = L_ALIGNED_SIZE( strlen(str)+1, sizeof(uint32) );
     
     memset( s0, 0x00, sz );
     strcpy( s0, str );
@@ -1135,7 +1135,7 @@ ShaderSource::ConstBufferStorage( uint32 bufIndex ) const
 //------------------------------------------------------------------------------
 
 BlendState
-ShaderSource::Blending()
+ShaderSource::Blending() const
 {
     return blending;
 }
@@ -1291,10 +1291,25 @@ ShaderSource::Dump() const
 
 //==============================================================================
 
+std::vector<ShaderSourceCache::entry_t> ShaderSourceCache::Entry;
+const uint32                            ShaderSourceCache::FormatVersion = 2;
+
 const ShaderSource*
-ShaderSourceCache::Get( FastName uid )
+ShaderSourceCache::Get( FastName uid, uint32 srcHash )
 {
+//Logger::Info("get-shader-src");
+//Logger::Info("  uid= \"%s\"",uid.c_str());
     const ShaderSource* src = nullptr;
+
+    for( std::vector<entry_t>::const_iterator e=Entry.begin(),e_end=Entry.end(); e!=e_end; ++e )
+    {
+        if( e->uid == uid  &&  e->srcHash == srcHash )
+        {
+            src = e->src;
+            break;
+        }
+    }
+//Logger::Info("  %s",(src)?"found":"not found");
 
     return src;
 }
@@ -1303,8 +1318,44 @@ ShaderSourceCache::Get( FastName uid )
 //------------------------------------------------------------------------------
 
 void
-ShaderSourceCache::Update( FastName uid, const ShaderSource& source )
+ShaderSourceCache::Update( FastName uid, uint32 srcHash, const ShaderSource& source )
 {
+    bool    doAdd = true;
+
+    for( std::vector<entry_t>::iterator e=Entry.begin(),e_end=Entry.end(); e!=e_end; ++e )
+    {
+        if( e->uid == uid )
+        {
+            *(e->src)   = source;
+            e->srcHash  = srcHash;
+            doAdd       = false;
+            break;
+        }
+    }
+    
+    if( doAdd )    
+    {
+        entry_t e;
+        
+        e.uid     = uid;
+        e.srcHash = srcHash;
+        e.src     = new ShaderSource();
+        *(e.src)  = source;
+        
+        Entry.push_back( e );
+//Logger::Info("cache-updated  uid= \"%s\"",e.uid.c_str());
+    }
+}
+
+
+//------------------------------------------------------------------------------
+
+void
+ShaderSourceCache::Clear()
+{
+    for( std::vector<entry_t>::const_iterator e=Entry.begin(),e_end=Entry.end(); e!=e_end; ++e )
+        delete e->src;
+    Entry.clear();
 }
 
 
@@ -1313,6 +1364,24 @@ ShaderSourceCache::Update( FastName uid, const ShaderSource& source )
 void
 ShaderSourceCache::Save( const char* fileName )
 {
+    using namespace DAVA;
+
+    File*   file = File::Create( fileName, File::WRITE|File::CREATE );
+    
+    if( file )
+    {
+        WriteUI4( file, FormatVersion );
+        
+        WriteUI4( file, Entry.size() );
+Logger::Info( "saving cached-shaders (%u) :", Entry.size() );
+        for( std::vector<entry_t>::const_iterator e=Entry.begin(),e_end=Entry.end(); e!=e_end; ++e )
+        {
+Logger::Info("  uid= \"%s\"",e->uid.c_str());
+            WriteS0( file, e->uid.c_str() );
+            WriteUI4( file, e->srcHash );
+            e->src->Save( file );
+        }
+    }
 }
 
 
@@ -1321,6 +1390,40 @@ ShaderSourceCache::Save( const char* fileName )
 void
 ShaderSourceCache::Load( const char* fileName )
 {
+    using namespace DAVA;
+
+    File*   file = File::Create( fileName, File::READ|File::OPEN );
+
+    if( file )
+    {
+        Clear();
+        uint32  version = ReadUI4( file );
+        
+        if( version == FormatVersion )
+        {
+            Entry.resize( ReadUI4( file ) );
+Logger::Info( "loading cached-shaders (%u) :", Entry.size() );
+            for( std::vector<entry_t>::iterator e=Entry.begin(),e_end=Entry.end(); e!=e_end; ++e )
+            {
+                std::string str;
+                ReadS0( file, &str );
+
+                e->uid      = FastName(str.c_str());
+                e->srcHash  = ReadUI4( file );
+Logger::Info( "  uid= \"%s\"", e->uid.c_str() );
+                e->src      = new ShaderSource();
+
+                e->src->Load( file );
+            }
+            Logger::Info( "loaded ShaderSource cache (%u shaders)", Entry.size() );
+        }
+        else
+        {
+            Logger::Warning( "ShaderSource-Cache version mismatch, ignoring cached shaders\n" );
+        }
+
+        file->Release();
+    }
 }
 
 

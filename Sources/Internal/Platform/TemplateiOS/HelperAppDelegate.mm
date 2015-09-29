@@ -152,8 +152,6 @@ DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()
     {
         DAVA::Core::Instance()->SetIsActive(false);
     }
-    
-    rhi::SuspendRendering();
 }
 
 - (void)applicationDidEnterBackground:(UIApplication *)application
@@ -170,6 +168,8 @@ DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()
 //        NSLog(@"Sent to background by home button/switching to other app");
 //    }
 	DAVA::Core::Instance()->GoBackground(isLock);
+
+    rhi::SuspendRendering();
 }
 
 - (void)applicationWillEnterForeground:(UIApplication *)application

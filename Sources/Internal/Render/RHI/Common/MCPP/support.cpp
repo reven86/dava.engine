@@ -827,7 +827,7 @@ escape:
             "Illegal control character %.0s0lx%02x in quotation"    /* _W1_ */
                     , NULL, (long) c, NULL);
         *out_p++ = c;
-chk_limit:
+//chk_limit:
         if (out_end < out_p) {
             *out_end = EOS;
             cfatal( "Too long quotation", NULL, 0L, NULL);  /* _F_  */
@@ -1683,7 +1683,7 @@ static char *   parse_line( void)
         case '/':
             switch (*sp++) {
             case '*':                       /* Start of a comment   */
-com_start:
+//com_start:
                 if ((sp = read_a_comment( sp, &com_size)) == NULL) {
                     xfree( temp);            /* End of file with un- */
                     return  NULL;           /*   terminated comment */

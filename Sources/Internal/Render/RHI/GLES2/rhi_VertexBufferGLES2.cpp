@@ -87,10 +87,22 @@ VertexBufferGLES2_t::Create( const VertexBuffer::Descriptor& desc, bool force_im
         ExecGL( &cmd1, 1, force_immediate );
         if( cmd1.status == GL_NO_ERROR )
         {
-            GLCommand cmd2[] =
+            switch( desc.usage )
             {
-            {GLCommand::BIND_BUFFER, {GL_ARRAY_BUFFER, uint64_t(&b)}},
-            {GLCommand::RESTORE_VERTEX_BUFFER, {}}};
+                case USAGE_DEFAULT      : usage = GL_STATIC_DRAW; break;
+                case USAGE_STATICDRAW   : usage = GL_STATIC_DRAW; break;
+                case USAGE_DYNAMICDRAW  : usage = GL_DYNAMIC_DRAW; break;
+            }
+
+            GLCommand   cmd2[] =
+            {
+                { GLCommand::BIND_BUFFER, { GL_ARRAY_BUFFER, uint64(&b) } },
+                { GLCommand::BUFFER_DATA, { GL_ARRAY_BUFFER, desc.size, (uint64)(desc.initialData), usage } },
+                { GLCommand::RESTORE_VERTEX_BUFFER, {} }
+            };
+
+            if( !desc.initialData )
+                cmd2[1].func = GLCommand::NOP;
 
             ExecGL( cmd2, countof(cmd2), force_immediate );
             
@@ -104,13 +116,6 @@ VertexBufferGLES2_t::Create( const VertexBuffer::Descriptor& desc, bool force_im
                     size   = desc.size;
                     uid    = b;
                     mapped = false;
-
-                    switch( desc.usage )
-                    {
-                        case USAGE_DEFAULT      : usage = GL_STATIC_DRAW; break;
-                        case USAGE_STATICDRAW   : usage = GL_STATIC_DRAW; break;
-                        case USAGE_DYNAMICDRAW  : usage = GL_DYNAMIC_DRAW; break;
-                    }
                     
                     success = true;
                 }
@@ -193,11 +198,12 @@ gles2_VertexBuffer_Update( Handle vb, const void* data, uint32 offset, uint32 si
 
     if( offset+size <= self->size )
     {
-        GLCommand cmd[] =
+        GLCommand   cmd[] = 
         {
-        {GLCommand::BIND_BUFFER, {GL_ARRAY_BUFFER, uint64_t(&self->uid)}},
-        {GLCommand::BUFFER_DATA, {GL_ARRAY_BUFFER, self->size, (uint64)(self->data), self->usage}},
-        {GLCommand::RESTORE_VERTEX_BUFFER, {}}};
+            { GLCommand::BIND_BUFFER, { GL_ARRAY_BUFFER, uint64(&(self->uid)) } },
+            { GLCommand::BUFFER_DATA, { GL_ARRAY_BUFFER, self->size, (uint64)(self->data), self->usage } },
+            { GLCommand::RESTORE_VERTEX_BUFFER, {} }
+        };
 
         memcpy( ((uint8*)self->data)+offset, data, size );
         ExecGL( cmd, countof(cmd) );
@@ -234,11 +240,12 @@ gles2_VertexBuffer_Unmap( Handle vb )
 
     DVASSERT(self->mapped);
 
-    GLCommand cmd[] =
+    GLCommand   cmd[] = 
     {
-    {GLCommand::BIND_BUFFER, {GL_ARRAY_BUFFER, uint64_t(&self->uid)}},
-    {GLCommand::BUFFER_DATA, {GL_ARRAY_BUFFER, self->size, (uint64)(self->data), self->usage}},
-    {GLCommand::RESTORE_VERTEX_BUFFER, {}}};
+        { GLCommand::BIND_BUFFER, { GL_ARRAY_BUFFER, uint64(&(self->uid)) } },
+        { GLCommand::BUFFER_DATA, { GL_ARRAY_BUFFER, self->size, (uint64)(self->data), self->usage } },
+        { GLCommand::RESTORE_VERTEX_BUFFER, {} }
+    };
 
     ExecGL( cmd, countof(cmd) );
     self->mapped = false;
@@ -260,6 +267,12 @@ gles2_VertexBuffer_NeedRestore( Handle vb )
 
 namespace VertexBufferGLES2
 {
+
+void
+Init( uint32 maxCount )
+{
+    VertexBufferGLES2Pool::Reserve( maxCount );
+}
 
 void
 SetupDispatch( Dispatch* dispatch )

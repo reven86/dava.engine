@@ -44,26 +44,26 @@ AssetCacheClient::~AssetCacheClient()
     activeRequest = nullptr;
 }
 
-bool AssetCacheClient::ParseCommandLine(int argc, char * argv[])
+bool AssetCacheClient::ParseCommandLine(int argc, char* argv[])
 {
-    if(argc > 1)
+    if (argc > 1)
     {
-        const char *command = argv[1];
-        for(auto & r : requests)
+        const char* command = argv[1];
+        for (auto& r : requests)
         {
             if (r->options.GetCommand() == command)
             {
                 activeRequest = r.get();
                 auto commandLineIsOk = r->options.Parse(argc, argv, 2);
-                if(commandLineIsOk)
+                if (commandLineIsOk)
                 {
                     exitCode = activeRequest->CheckOptions();
                     break;
                 }
             }
         }
-        
-        if(exitCode != AssetCacheClientConstants::EXIT_OK)
+
+        if (exitCode != AssetCacheClientConstants::EXIT_OK)
         {
             PrintUsage();
             return false;
@@ -78,17 +78,16 @@ bool AssetCacheClient::ParseCommandLine(int argc, char * argv[])
     return false;
 }
 
-
 void AssetCacheClient::PrintUsage() const
 {
     printf("Usage: AssetCacheClient <command>\n");
     printf("\n Commands: ");
 
     auto count = requests.size();
-    for(auto & r : requests)
+    for (auto& r : requests)
     {
         printf("%s", r->options.GetCommand().c_str());
-        if(count != 1)
+        if (count != 1)
         {
             printf(", ");
         }
@@ -96,7 +95,7 @@ void AssetCacheClient::PrintUsage() const
     }
 
     printf("\n\n");
-    for(auto & r : requests)
+    for (auto& r : requests)
     {
         r->options.PrintUsage();
         printf("\n");
@@ -105,7 +104,7 @@ void AssetCacheClient::PrintUsage() const
 
 void AssetCacheClient::Process()
 {
-    if(nullptr != activeRequest)
+    if (nullptr != activeRequest)
     {
         exitCode = activeRequest->Process();
     }

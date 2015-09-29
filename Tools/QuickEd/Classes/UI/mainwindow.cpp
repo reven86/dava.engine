@@ -583,9 +583,9 @@ void MainWindow::OnSetupCacheSettingsForPacker()
     if (EditorSettings::Instance()->IsUsingAssetCache())
     {
         spritesPacker->SetCacheTool(
-            EditorSettings::Instance()->GetAssetCacheIp(),
-            EditorSettings::Instance()->GetAssetCachePort(),
-            EditorSettings::Instance()->GetAssetCacheTimeoutSec());
+        EditorSettings::Instance()->GetAssetCacheIp(),
+        EditorSettings::Instance()->GetAssetCachePort(),
+        EditorSettings::Instance()->GetAssetCacheTimeoutSec());
     }
     else
     {

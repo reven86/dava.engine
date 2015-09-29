@@ -72,8 +72,8 @@ void UIScreenTransition::CreateRenderTargets()
     uint32 width = (uint32)VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dx;
     uint32 height = (uint32)VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy;
 
-    Texture * tex1 = Texture::CreateFBO(width, height, FORMAT_RGBA8888);
-    Texture * tex2 = Texture::CreateFBO(width, height, FORMAT_RGBA8888);
+    Texture * tex1 = Texture::CreateFBO(width, height, FORMAT_RGB565);
+    Texture * tex2 = Texture::CreateFBO(width, height, FORMAT_RGB565);
 
     renderTargetPrevScreen = Sprite::CreateFromTexture(tex1, 0, 0, (float32)width, (float32)height, true);
     renderTargetNextScreen = Sprite::CreateFromTexture(tex2, 0, 0, (float32)width, (float32)height, true);

@@ -33,7 +33,6 @@
 #include "ServerCore.h"
 #include "AssetCacheServerWindow.h"
 
-
 #include <QApplication>
 #include <QCryptographicHash>
 
@@ -48,31 +47,31 @@ void FrameworkDidLaunched()
 int main(int argc, char *argv[])
 {
     DAVA::Core::Run(argc, argv);
-	QApplication a(argc, argv);
+    QApplication a(argc, argv);
 
-	const QString appUid = "{AACCAACC-6CE2-459A-B26F-79AAF05E0C6B}";
-	const QString appUidPath = QCryptographicHash::hash((appUid + QApplication::applicationDirPath()).toUtf8(), QCryptographicHash::Sha1).toHex();
-	RunGuard runGuard(appUidPath);
-	if (runGuard.tryToRun())
-	{
-		DAVA::Logger::Instance()->SetLogFilename("AssetCacheServer.txt");
-		DAVA::Logger::Instance()->SetLogLevel(DAVA::Logger::LEVEL_FRAMEWORK);
+    const QString appUid = "{AACCAACC-6CE2-459A-B26F-79AAF05E0C6B}";
+    const QString appUidPath = QCryptographicHash::hash((appUid + QApplication::applicationDirPath()).toUtf8(), QCryptographicHash::Sha1).toHex();
+    RunGuard runGuard(appUidPath);
+    if (runGuard.tryToRun())
+    {
+        DAVA::Logger::Instance()->SetLogFilename("AssetCacheServer.txt");
+        DAVA::Logger::Instance()->SetLogLevel(DAVA::Logger::LEVEL_FRAMEWORK);
 
-		ServerCore server;
-		AssetCacheServerWindow mainWindow(server);
+        ServerCore server;
+        AssetCacheServerWindow mainWindow(server);
 
-		if (server.Settings().IsFirstLaunch())
-		{
-			mainWindow.show();
-		}
+        if (server.Settings().IsFirstLaunch())
+        {
+            mainWindow.show();
+        }
 
-		if (server.Settings().IsAutoStart())
-		{
-			server.Start();
-		}
+        if (server.Settings().IsAutoStart())
+        {
+            server.Start();
+        }
 
-		return a.exec();
-	}
+        return a.exec();
+    }
 
-	return -1;
+    return -1;
 }

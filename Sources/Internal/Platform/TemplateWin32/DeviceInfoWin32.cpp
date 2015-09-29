@@ -206,12 +206,11 @@ String DeviceInfoPrivate::GetUDID()
         SafeDeleteArray(buf);
     }
 
-
     MD5::MD5Digest md5Digest;
-	MD5::ForData(reinterpret_cast<const uint8 *>(res.c_str()), static_cast<uint32>(res.size()), md5Digest);
+    MD5::ForData(reinterpret_cast<const uint8*>(res.c_str()), static_cast<uint32>(res.size()), md5Digest);
 
     String digest(MD5::MD5Digest::DIGEST_SIZE * 2 + 1, '\0');
-	MD5::HashToChar(md5Digest, const_cast<char8 *>(digest.data()), digest.size());
+    MD5::HashToChar(md5Digest, const_cast<char8*>(digest.data()), digest.size());
     return digest;
 }
 

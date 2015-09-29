@@ -43,7 +43,7 @@ IOLoop::IOLoop(bool useDefaultIOLoop) : uvloop()
                                       , uvasync()
 {
 #ifdef __DAVAENGINE_WIN_UAP__
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
+    //__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
 #else
     if (useDefaultIOLoop)
     {

@@ -48,7 +48,7 @@ namespace rhi
 //==============================================================================
 
 typedef ResourcePool<ProgGLES2::ConstBuf,RESOURCE_CONST_BUFFER,ProgGLES2::ConstBuf::Desc,false>   ConstBufGLES2Pool;
-RHI_IMPL_POOL_SIZE(ProgGLES2::ConstBuf,RESOURCE_CONST_BUFFER,ProgGLES2::ConstBuf::Desc,false,8*1024);
+RHI_IMPL_POOL_SIZE(ProgGLES2::ConstBuf, RESOURCE_CONST_BUFFER, ProgGLES2::ConstBuf::Desc, false, 12 * 1024);
 
 static RingBuffer   DefaultConstRingBuffer;
 
@@ -547,6 +547,12 @@ gles2_ConstBuffer_Delete( Handle cb )
 
 namespace ConstBufferGLES2
 {
+
+void
+Init( uint32 maxCount )
+{
+    ConstBufGLES2Pool::Reserve( maxCount );
+}
 
 void
 SetupDispatch( Dispatch* dispatch )
