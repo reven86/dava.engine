@@ -63,7 +63,7 @@ AssetCacheServerWindow::AssetCacheServerWindow(ServerCore& core, QWidget* parent
 {
     ui->setupUi(this);
 
-    setWindowTitle(QString("Asset Cache Server | %1").arg(TOOL_BUILD_VERSION));
+    setWindowTitle(QString("Asset Cache Server | %1").arg(APPLICATION_BUILD_VERSION));
 
     connect(ui->cacheFolderLineEdit, &QLineEdit::textChanged, this, &AssetCacheServerWindow::OnFolderTextChanged);
     connect(ui->selectFolderButton, &QPushButton::clicked, this, &AssetCacheServerWindow::OnFolderSelected);

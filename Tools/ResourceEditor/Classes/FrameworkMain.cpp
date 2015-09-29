@@ -35,7 +35,7 @@ void FrameworkDidLaunched()
 {
 	DAVA::KeyedArchive * appOptions = new DAVA::KeyedArchive();
 
-    appOptions->SetString("title", DAVA::Format("DAVA Framework - ResourceEditor | %s.%s", DAVAENGINE_VERSION, TOOL_BUILD_VERSION));
+    appOptions->SetString("title", DAVA::Format("DAVA Framework - ResourceEditor | %s.%s", DAVAENGINE_VERSION, APPLICATION_BUILD_VERSION));
 
     appOptions->SetInt32("fullscreen", 0);
 	appOptions->SetInt32("bpp", 32);

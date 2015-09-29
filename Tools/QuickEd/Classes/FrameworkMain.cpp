@@ -42,7 +42,7 @@ void FrameworkDidLaunched()
     appOptions->SetInt32("bpp", 32);
     appOptions->SetBool("trackFont", true);
 
-    appOptions->SetString("title", DAVA::Format("DAVA Framework - QuickEd | %s-%s", DAVAENGINE_VERSION, TOOL_BUILD_VERSION));
+    appOptions->SetString("title", DAVA::Format("DAVA Framework - QuickEd | %s-%s", DAVAENGINE_VERSION, APPLICATION_BUILD_VERSION));
 
     Size2i screenSize = DPIHelper::GetScreenSize();
     appOptions->SetInt32("width",  screenSize.dx);
