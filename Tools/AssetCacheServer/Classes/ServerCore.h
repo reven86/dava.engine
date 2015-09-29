@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 #ifndef __SERVER_CORE_H__
 #define __SERVER_CORE_H__
 
@@ -41,25 +40,34 @@
 
 class QTimer;
 
-class ServerCore : public QObject, 
+class ServerCore : public QObject,
                    public DAVA::AssetCache::ClientNetProxyListener
 {
     Q_OBJECT
-    
+
     static const uint32 UPDATE_INTERVAL_MS = 1;
     static const uint32 CONNECT_TIMEOUT_SEC = 1;
     static const uint32 CONNECT_REATTEMPT_WAIT_SEC = 5;
-    
-    
+
 public:
-    enum class State {STARTED, STOPPED};
-    enum class RemoteState { STARTED, STOPPED, CONNECTING, WAITING_REATTEMPT};
+    enum class State
+    {
+        STARTED,
+        STOPPED
+    };
+    enum class RemoteState
+    {
+        STARTED,
+        STOPPED,
+        CONNECTING,
+        WAITING_REATTEMPT
+    };
 
     ServerCore();
     ~ServerCore() override;
-    
+
     ApplicationSettings& Settings();
-    
+
     void Start();
     void Stop();
 
@@ -73,27 +81,26 @@ signals:
     void ServerStateChanged(const ServerCore* serverCore) const;
 
 public slots:
-    void OnSettingsUpdated(const ApplicationSettings * settings);
+    void OnSettingsUpdated(const ApplicationSettings* settings);
 
 private slots:
     void OnTimerUpdate();
     void OnConnectTimeout();
     void OnReattemptTimer();
-            
+
 private:
     void StartListening();
     void StopListening();
 
     bool ConnectRemote();
     void DisconnectRemote();
-    
+
 private:
-    
     DAVA::AssetCache::ServerNetProxy server;
     DAVA::AssetCache::ClientNetProxy client;
     DAVA::AssetCache::CacheDB dataBase;
 
-	ServerLogics serverLogics;
+    ServerLogics serverLogics;
     ApplicationSettings settings;
 
     std::atomic<State> state;
@@ -120,6 +127,5 @@ inline ApplicationSettings& ServerCore::Settings()
 {
     return settings;
 }
-
 
 #endif // __SERVER_CORE_H__

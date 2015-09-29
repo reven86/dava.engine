@@ -32,6 +32,7 @@
 
 #include "ParticleGroup.h"
 #include "Render/Highlevel/RenderObject.h"
+#include "Render/DynamicBufferAllocator.h"
 
 namespace DAVA
 {
@@ -46,7 +47,8 @@ class ParticleRenderObject : public RenderObject
 
 	//void AppendParticleGroup(const ParticleGroup &group, ParticleRenderGroup *renderGroup, const Vector3& cameraDirection);	
     void AppendParticleGroup(List<ParticleGroup>::iterator begin, List<ParticleGroup>::iterator end, uint32 particlesCount, const Vector3& cameraDirection);
-	void PrepareRenderData(Camera * camera);    
+    void AppendRenderBatch(NMaterial* material, uint32 particlesCount, uint32 vertexLayout, const DynamicBufferAllocator::AllocResultVB& vBuffer);
+    void PrepareRenderData(Camera * camera);    
 	Vector<uint16> indices;
     uint32 sortingOffset;
     

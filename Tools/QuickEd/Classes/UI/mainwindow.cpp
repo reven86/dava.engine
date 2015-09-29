@@ -177,11 +177,6 @@ void MainWindow::RestoreMainWindowState()
     }
 }
 
-DavaGLWidget* MainWindow::GetGLWidget() const
-{
-    return previewWidget->GetDavaGLWidget();
-}
-
 DialogReloadSprites* MainWindow::GetDialogReloadSprites() const
 {
     return dialogReloadSprites;
@@ -588,9 +583,9 @@ void MainWindow::OnSetupCacheSettingsForPacker()
     if (EditorSettings::Instance()->IsUsingAssetCache())
     {
         spritesPacker->SetCacheTool(
-            EditorSettings::Instance()->GetAssetCacheIp(),
-            EditorSettings::Instance()->GetAssetCachePort(),
-            EditorSettings::Instance()->GetAssetCacheTimeoutSec());
+        EditorSettings::Instance()->GetAssetCacheIp(),
+        EditorSettings::Instance()->GetAssetCachePort(),
+        EditorSettings::Instance()->GetAssetCacheTimeoutSec());
     }
     else
     {

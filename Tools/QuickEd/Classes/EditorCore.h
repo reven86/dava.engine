@@ -40,7 +40,6 @@ class QAction;
 class Document;
 class DocumentGroup;
 class Project;
-class MainWindow;
 class PackageNode;
 
 class EditorCore : public QObject, public DAVA::Singleton<EditorCore>
@@ -51,7 +50,6 @@ public:
     ~EditorCore();
     void Start();
 
-    MainWindow *GetMainWindow() const;
     Project *GetProject() const;
 
 protected slots:
@@ -89,11 +87,6 @@ private:
     DocumentGroup *documentGroup;
     MainWindow *mainWindow;
 };
-
-inline MainWindow* EditorCore::GetMainWindow() const
-{
-    return const_cast<MainWindow*>(mainWindow);
-}
 
 inline Project* EditorCore::GetProject() const
 {

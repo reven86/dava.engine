@@ -26,44 +26,33 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "DAVAEngine.h"
 
-#ifndef QTTOOLS_FOCUSTRACKER_H
-#define QTTOOLS_FOCUSTRACKER_H
+#include "Platform/Qt5/QtLayer.h"
+#include "DavaRenderer.h"
 
-#include <QWidget>
-#include <QWindow>
-#include <QPointer>
-
-
-
-class DavaGLWidget;
-
-
-class FocusTracker
-    : public QObject
+DavaRenderer::DavaRenderer()
 {
-    Q_OBJECT
-    
-signals:
-    void focusIn();
-    void focusOut();
+#ifdef Q_OS_WIN
+    glewInit();
+#endif
+    DAVA::Core::Instance()->rendererParams.acquireContextFunc = []()
+    {
+    };
+    DAVA::Core::Instance()->rendererParams.releaseContextFunc = []()
+    {
+    };
+    DAVA::QtLayer::Instance()->AppStarted();
+    DAVA::QtLayer::Instance()->OnResume();
+}
 
-public:
-    explicit FocusTracker( DavaGLWidget *glWidget );
-    ~FocusTracker();
+DavaRenderer::~DavaRenderer()
+{
+    DAVA::QtLayer::Instance()->Release();
+}
 
-    bool eventFilter( QObject* watched, QEvent* event ) override;
-    
-    void OnClick();
-    void OnFocusIn();
-    void OnFocusOut();
-    
-private:
-    QPointer< DavaGLWidget > glWidget;
-    QPointer< QWindow > glWindow;
-    
-    bool isFocused;
-};
-
-
-#endif // QTTOOLS_FOCUSTRACKER_H
+void DavaRenderer::paint()
+{
+    glGetError(); //clear GL errors, produced by Qt
+    DAVA::QtLayer::Instance()->ProcessFrame();
+}

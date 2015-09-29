@@ -26,21 +26,19 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 #include "RemoteServerWidget.h"
 #include "ui_RemoteServerWidget.h"
 
 #include <QValidator>
 
-
-RemoteServerWidget::RemoteServerWidget(QWidget *parent)
+RemoteServerWidget::RemoteServerWidget(QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::RemoteServerWidget)
 {
     ui->setupUi(this);
 
     ui->ipLineEdit->setText("127.0.0.1");
-    
+
     connect(ui->removeServerButton, &QPushButton::clicked,
             this, &RemoteServerWidget::RemoveLater);
     connect(ui->ipLineEdit, &QLineEdit::textChanged,
@@ -49,7 +47,7 @@ RemoteServerWidget::RemoteServerWidget(QWidget *parent)
     connect(ui->enabledCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnChecked(int)));
 }
 
-RemoteServerWidget::RemoteServerWidget(const ServerData &newServer, QWidget *parent)
+RemoteServerWidget::RemoteServerWidget(const ServerData& newServer, QWidget* parent)
     : RemoteServerWidget(parent)
 {
     ui->enabledCheckBox->setChecked(newServer.enabled);

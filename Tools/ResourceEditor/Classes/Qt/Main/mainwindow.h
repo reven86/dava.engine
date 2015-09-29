@@ -235,10 +235,9 @@ protected:
     void OpenProject(const DAVA::FilePath & projectPath);
     
     void OnSceneSaveAsInternal(bool saveWithCompressed);
-    
-    void SaveAllSceneEmitters(SceneEditor2 *scene) const;
 
-    
+    void SaveAllSceneEmitters(SceneEditor2* scene) const;
+
 private slots:
 	void ProjectOpened(const QString &path);
 	void ProjectClosed();

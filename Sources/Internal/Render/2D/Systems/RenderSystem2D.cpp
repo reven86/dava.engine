@@ -491,6 +491,9 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
             {
                 DynamicBufferAllocator::AllocResultVB vertexBuffer = DynamicBufferAllocator::AllocateVertexBuffer(VBO_STRIDE, batchDesc.vertexCount);
                 DynamicBufferAllocator::AllocResultIB indexBuffer = DynamicBufferAllocator::AllocateIndexBuffer(batchDesc.indexCount);
+                DVASSERT(vertexBuffer.allocatedVertices == batchDesc.vertexCount);
+                DVASSERT(indexBuffer.allocatedindices == batchDesc.indexCount);
+
                 currentVertexBuffer = reinterpret_cast<BatchVertex*>(vertexBuffer.data);
                 currentIndexBuffer = indexBuffer.data;
 
@@ -509,6 +512,9 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
     {
         DynamicBufferAllocator::AllocResultVB vertexBuffer = DynamicBufferAllocator::AllocateVertexBuffer(VBO_STRIDE, MAX_VERTICES);
         DynamicBufferAllocator::AllocResultIB indexBuffer = DynamicBufferAllocator::AllocateIndexBuffer(MAX_INDECES);
+        DVASSERT(vertexBuffer.allocatedVertices == MAX_VERTICES);
+        DVASSERT(indexBuffer.allocatedindices == MAX_INDECES);
+
         currentVertexBuffer = reinterpret_cast<BatchVertex*>(vertexBuffer.data);
         currentIndexBuffer = indexBuffer.data;
 

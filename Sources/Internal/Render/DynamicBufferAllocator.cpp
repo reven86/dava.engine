@@ -102,7 +102,11 @@ template <class HBuffer> struct BufferAllocator
         DVASSERT(size);
 
         uint32 requiredSize = (size * count);
-        DVASSERT(requiredSize <= pageSize); //assert for now - later allocate as much as possible and return incomplete buffer
+        if (requiredSize > pageSize)
+        {
+            count = pageSize / size;
+            requiredSize = size * count;
+        }
 
         uint32 base = ((currentlyUsedSize + size - 1) / size);
         uint32 offset = base * size;
