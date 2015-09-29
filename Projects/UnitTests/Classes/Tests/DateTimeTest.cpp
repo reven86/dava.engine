@@ -84,7 +84,9 @@ DAVA_TESTCLASS(DateTimeTest)
             DateTime date;
             date = DateTime(1984, 8, 8, 16, 30, 22, 3); // 08.09.1984
             WideString x_date_ru = date.GetLocalizedDate(); // date representation
+            TEST_VERIFY(x_date_ru == L"08.09.1984");
             WideString x_time_ru = date.GetLocalizedTime(); // time representation
+            TEST_VERIFY(x_time_ru == L"16:30:22");
 
             ls->SetCurrentLocale("en");
             ls->Init();
@@ -93,7 +95,9 @@ DAVA_TESTCLASS(DateTimeTest)
             TEST_VERIFY(country_code == "en_US");
 
             WideString x_date_en = date.GetLocalizedDate(); // date representation
+            TEST_VERIFY(x_date_en == L"9/8/1984");
             WideString x_time_en = date.GetLocalizedTime(); // time representation
+            TEST_VERIFY(x_time_en == L"4:30:22 PM");
 
             TEST_VERIFY(x_date_en != x_date_ru);
             TEST_VERIFY(x_time_en != x_time_ru);
