@@ -3,7 +3,9 @@
 FPROG_IN_BEGIN
     
     FPROG_IN_TEXCOORD0(texCoord,2)
-    FPROG_IN_TEXCOORD1(texCoordTiled,2)
+    #if TILEMASK
+        FPROG_IN_TEXCOORD1(texCoordTiled,2)
+    #endif
     #if VERTEX_FOG
         FPROG_IN_TEXCOORD5(varFog,4)
     #endif
@@ -15,14 +17,18 @@ FPROG_OUT_BEGIN
     FPROG_OUT_COLOR
 FPROG_OUT_END
 
-DECL_FP_SAMPLER2D(tileTexture0)
-DECL_FP_SAMPLER2D(tileMask)
-DECL_FP_SAMPLER2D(colorTexture)
+#if TILEMASK
+    DECL_FP_SAMPLER2D(tileTexture0)
+    DECL_FP_SAMPLER2D(tileMask)
+    DECL_FP_SAMPLER2D(colorTexture)
 
-property float3 tileColor0 : static,instance : def_value=1,1,1;
-property float3 tileColor1 : static,instance : def_value=1,1,1;
-property float3 tileColor2 : static,instance : def_value=1,1,1;
-property float3 tileColor3 : static,instance : def_value=1,1,1;
+    property float3 tileColor0 : static,instance : def_value=1,1,1;
+    property float3 tileColor1 : static,instance : def_value=1,1,1;
+    property float3 tileColor2 : static,instance : def_value=1,1,1;
+    property float3 tileColor3 : static,instance : def_value=1,1,1;
+#else
+    DECL_FP_SAMPLER2D(fullTiledTexture);
+#endif
 
 #if CURSOR
 DECL_FP_SAMPLER2D(cursorTexture)
@@ -31,6 +37,7 @@ property float4 cursorCoordSize : static,instance : def_value=0,0,1,1;
 
 FPROG_BEGIN
 
+#ifdef TILEMASK
     float4 tileColor = FP_TEXTURE2D( tileTexture0, FP_IN(texCoordTiled) );
     float4 mask = FP_TEXTURE2D( tileMask, FP_IN(texCoord) );
     float4 color = FP_TEXTURE2D( colorTexture, FP_IN(texCoord) );
@@ -39,6 +46,10 @@ FPROG_BEGIN
                      tileColor.g * mask.g * tileColor1.rgb + 
                      tileColor.b * mask.b * tileColor2.rgb + 
                      tileColor.a * mask.a * tileColor3.rgb ) * color.rgb * 2.0;
+#else
+    float3 color3 = FP_TEXTURE2D(fullTiledTexture, FP_IN(texCoord)).rgb;
+#endif                     
+         
     float4 outColor = float4(color3, 1.0);
     
 #if CURSOR
