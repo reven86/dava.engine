@@ -108,9 +108,9 @@ RefPtr<T>::RefPtr(const RefPtr& ptr) : pointer(ptr.pointer)
 }
 
 template <class T>
-RefPtr<T>::RefPtr(RefPtr&& ptr) : RefPtr()
+RefPtr<T>::RefPtr(RefPtr&& ptr) : RefPtr(ptr.pointer)
 {
-    std::swap(pointer, ptr.pointer);
+    ptr.pointer = nullptr;
 }
 
 template <class T>
@@ -122,9 +122,8 @@ RefPtr<T>::RefPtr(const RefPtr<Other>& ptr) : RefPtr(ptr.pointer)
 
 template <class T>
 template <class Other>
-RefPtr<T>::RefPtr(RefPtr<Other>&& ptr) : RefPtr()
+RefPtr<T>::RefPtr(RefPtr<Other>&& ptr) : RefPtr(ptr.pointer)
 {
-    pointer = ptr.pointer;
     ptr.pointer = nullptr;
 }
 
