@@ -137,11 +137,11 @@ EditorSystemsManager::EditorSystemsManager(PackageNode* _package)
     rootControl->AddControl(scalableControl);
     scalableControl->SetName("scalableContent");
 
-    systems.push_back(new CanvasSystem(this));
-    systems.push_back(new SelectionSystem(this));
-    systems.push_back(new HUDSystem(this));
-    systems.push_back(new CursorSystem(this));
-    systems.push_back(new ::TransformSystem(this));
+    systems.emplace_back(new CanvasSystem(this));
+    systems.emplace_back(new SelectionSystem(this));
+    systems.emplace_back(new HUDSystem(this));
+    systems.emplace_back(new CursorSystem(this));
+    systems.emplace_back(new ::TransformSystem(this));
 
     SelectionChanged.Connect(this, &EditorSystemsManager::OnSelectionChanged);
 
@@ -150,10 +150,6 @@ EditorSystemsManager::EditorSystemsManager(PackageNode* _package)
 
 EditorSystemsManager::~EditorSystemsManager()
 {
-    for (auto& system : systems)
-    {
-        delete system;
-    }
     package->RemoveListener(this);
     SafeRelease(scalableControl);
     SafeRelease(rootControl);
@@ -185,7 +181,7 @@ void EditorSystemsManager::Deactivate()
 
 void EditorSystemsManager::Activate()
 {
-    for (auto system : systems)
+    for (auto& system : systems)
     {
         system->OnActivated();
     }

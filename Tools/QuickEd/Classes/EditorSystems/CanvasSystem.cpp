@@ -259,17 +259,17 @@ CanvasSystem::CanvasSystem(EditorSystemsManager* parent)
 
 CanvasSystem::~CanvasSystem()
 {
-    systemManager->GetPackage()->RemoveListener(this);
-    for (BackgroundController* controller : gridControls)
+    PackageNode* package = systemManager->GetPackage();
+    if (nullptr != package)
     {
-        delete controller;
+        systemManager->GetPackage()->RemoveListener(this);
     }
 }
 
 void CanvasSystem::OnActivated()
 {
     systemManager->GetScalableControl()->AddControl(controlsCanvas);
-    for (BackgroundController* iter : gridControls)
+    for (auto& iter : gridControls)
     {
         iter->AdjustToNestedControl();
     }
@@ -288,7 +288,7 @@ void CanvasSystem::ControlWasRemoved(ControlNode* node, ControlsContainerNode* f
     {
         return;
     }
-    for (BackgroundController* iter : gridControls)
+    for (auto& iter : gridControls)
     {
         iter->ControlWasRemoved(node, from);
     }
@@ -300,7 +300,7 @@ void CanvasSystem::ControlWasAdded(ControlNode* node, ControlsContainerNode* des
     {
         return;
     }
-    for (BackgroundController* iter : gridControls)
+    for (auto& iter : gridControls)
     {
         iter->ControlWasAdded(node, destination, index);
     }
@@ -312,7 +312,7 @@ void CanvasSystem::ControlPropertyWasChanged(ControlNode* node, AbstractProperty
     {
         return;
     }
-    for (BackgroundController* iter : gridControls)
+    for (auto& iter : gridControls)
     {
         iter->ControlPropertyWasChanged(node, property);
     }
@@ -325,7 +325,7 @@ void CanvasSystem::CreateAndInsertGrid(PackageBaseNode* node, size_t pos)
 
     auto iter = gridControls.begin();
     std::advance(iter, pos);
-    gridControls.insert(iter, backgroundControoller);
+    gridControls.emplace(iter, backgroundControoller);
 
     UIControl* grid = backgroundControoller->GetGridControl();
     if (pos >= controlsCanvas->GetChildren().size())
