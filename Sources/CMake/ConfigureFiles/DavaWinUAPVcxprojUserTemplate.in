@@ -3,5 +3,7 @@
   <PropertyGroup>
     <LocalDebuggerWorkingDirectory>@CMAKE_CURRENT_LIST_DIR@</LocalDebuggerWorkingDirectory>
     <LocalDebuggerEnvironment>PATH=@DAVA_BINARY_WIN32_DIR@</LocalDebuggerEnvironment>
+    <AppxPriConfigXmlDefaultSnippetPath>UWPPriConfigDefault.xml</AppxPriConfigXmlDefaultSnippetPath>
+    <AppxPriConfigXmlPackagingSnippetPath>UWPPriConfigPackaging.xml</AppxPriConfigXmlPackagingSnippetPath>
   </PropertyGroup>
 </Project>
