@@ -57,11 +57,5 @@ void LogConsumer::OnPacketReceived(IChannel* channel, const void* buffer, size_t
     newDataNotifier.Emit(output);
 }
 
-SignalConnection LogConsumer::SubscribeOnReceivedData(const Function<void(const String&)>& func)
-{
-    SigConnectionID connectionId = newDataNotifier.Connect(func);
-    return MakeSignalConnection(connectionId, newDataNotifier);
-}
-
 }   // namespace Net
 }   // namespace DAVA

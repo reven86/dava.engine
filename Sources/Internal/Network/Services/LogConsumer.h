@@ -55,11 +55,9 @@ public:
     LogConsumer(const LogConsumer&) = delete;
     LogConsumer& operator=(const LogConsumer&) = delete;
 
+    //NetService method implementation
     void OnPacketReceived(IChannel* channel, const void* buffer, size_t length) override;
 
-    SignalConnection SubscribeOnReceivedData(const Function<void(const String&)>& func);
-
-private:
     Signal<const String&> newDataNotifier;
 };
 
