@@ -35,7 +35,7 @@
 #include "UI/UIControl.h"
 #include "EditorSystems/BaseEditorSystem.h"
 #include "EditorSystems/EditorSystemsManager.h"
-#include "Model/ControlProperties/PropertyListener.h"
+#include "Model/PackageHierarchy/PackageListener.h"
 #include "Model/ControlProperties/RootProperty.h"
 
 class ControlContainer : public DAVA::UIControl
@@ -50,7 +50,7 @@ protected:
     const HUDAreaInfo::eArea area = HUDAreaInfo::NO_AREA;
 };
 
-class HUDSystem final : public BaseEditorSystem
+class HUDSystem final : public BaseEditorSystem, private PackageListener
 {
 public:
     HUDSystem(EditorSystemsManager* parent);
@@ -66,6 +66,9 @@ private:
         SEARCH_FORWARD,
         SEARCH_BACKWARD
     };
+
+    void ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property) override;
+
     void OnRootContolsChanged(const EditorSystemsManager::SortedPackageBaseNodeSet& rootControls);
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void OnEmulationModeChanged(bool emulationMode);
@@ -83,11 +86,11 @@ private:
 
     DAVA::Vector2 pressedPoint; //corner of selection rect
     bool canDrawRect = false; //selection rect state
-    struct HUD : private PropertyListener
+    struct HUD
     {
         HUD(ControlNode* node, DAVA::UIControl* hudControl);
         ~HUD();
-        void PropertyChanged(AbstractProperty* property) override;
+        void UpdateHUDVisibility();
         ControlNode* node = nullptr;
         DAVA::UIControl* control = nullptr;
         DAVA::ScopedPtr<ControlContainer> container;

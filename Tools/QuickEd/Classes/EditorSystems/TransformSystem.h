@@ -55,6 +55,7 @@ private:
     void ResizeControl(DAVA::Vector2 delta, bool withPivot, bool rateably);
     void AdjustResize(int directionX, int directionY, DAVA::Vector2& delta);
     void MovePivot(DAVA::Vector2 delta);
+    DAVA::Vector2 AdjustPivot(DAVA::Vector2& delta);
     void Rotate(DAVA::Vector2 pos);
     void MoveControl(DAVA::Vector2 delta);
     void MoveAllSelectedControls(DAVA::Vector2 delta);
@@ -71,7 +72,6 @@ private:
     DAVA::List<std::pair<ControlNode* /*node*/, AbstractProperty* /*positionProperty*/>> nodesToMove;
     const DAVA::Vector2 minimumSize = DAVA::Vector2(16.0f, 16.0f);
     size_t currentHash = 0;
-    DAVA::float32 accumulatedAngle = 0.0f;
 
     DAVA::UIGeometricData parentGeometricData;
     DAVA::UIGeometricData controlGeometricData;

@@ -108,7 +108,6 @@ bool TransformSystem::OnInput(UIEvent* currentInput)
 
     case UIEvent::PHASE_BEGAN:
     {
-        accumulatedAngle = 0.0f;
         extraDelta.SetZero();
         prevPos = currentInput->point;
         microseconds us = duration_cast<microseconds>(system_clock::now().time_since_epoch());
@@ -429,22 +428,89 @@ void TransformSystem::AdjustResize(int directionX, int directionY, Vector2& delt
 
 void TransformSystem::MovePivot(Vector2 delta)
 {
-    const Rect ur(controlGeometricData.GetUnrotatedRect());
-    const Vector2 controlSize(ur.GetSize());
-    if (parentGeometricData.scale.x == 0.0f || parentGeometricData.scale.y == 0.0f || controlSize.dx == 0.0f || controlSize.dy == 0.0f)
+    if (parentGeometricData.scale.x == 0.0f || parentGeometricData.scale.y == 0.0f)
     {
         return;
     }
+
     Vector<PropertyDelta> propertiesDelta;
+
+    Vector2 deltaPivot = AdjustPivot(delta);
+    propertiesDelta.emplace_back(pivotProperty, VariantType(deltaPivot));
 
     Vector2 scaledDelta(delta / parentGeometricData.scale);
     Vector2 angeledDeltaPosition(RotateVector(scaledDelta, parentGeometricData));
     propertiesDelta.emplace_back(positionProperty, VariantType(angeledDeltaPosition));
 
-    const Vector2 angeledDeltaPivot(RotateVector(delta, controlGeometricData));
-    const Vector2 pivot(angeledDeltaPivot / controlSize);
-    propertiesDelta.emplace_back(pivotProperty, VariantType(pivot));
     AdjustProperty(activeControlNode, propertiesDelta);
+}
+
+Vector2 TransformSystem::AdjustPivot(Vector2& delta)
+{
+    if (extraDelta.dx != 0.0f)
+    {
+        float overload = extraDelta.dx + delta.dx;
+        if ((overload > 0.0f) ^ (extraDelta.dx > 0.0f)) //overload more than extraDelta
+        {
+            extraDelta.dx = 0.0f;
+            delta.dx = overload;
+        }
+        else //delta less than we need to resize
+        {
+            extraDelta.dx += delta.dx;
+            delta.dx = 0.0f;
+        }
+    }
+    if (extraDelta.dy != 0.0f)
+    {
+        float overload = extraDelta.dy + delta.dy;
+        if ((overload > 0.0f) ^ (extraDelta.dy > 0.0f)) //overload more than extraDelta
+        {
+            extraDelta.dy = 0.0f;
+            delta.dy = overload;
+        }
+        else
+        {
+            extraDelta.dy += delta.dy;
+            delta.dy = 0;
+        }
+    }
+    const Rect ur(controlGeometricData.GetUnrotatedRect());
+    const Vector2 controlSize(ur.GetSize());
+
+    const Vector2 angeledDeltaPivot(RotateVector(delta, controlGeometricData));
+    Vector2 deltaPivot(angeledDeltaPivot / controlSize);
+
+    const Vector2 scaledRange(Vector2(2.0f, 2.0f) / controlGeometricData.scale);
+    const Vector2 range(scaledRange / controlSize);
+    Vector2 origPivot = pivotProperty->GetValue().AsVector2();
+
+    Vector2 finalPivot(origPivot + deltaPivot);
+    const float32 targetPosition = 0.25f;
+    const float32 maxPivot = 1.0f;
+    for (float32 target = 0.0f; target <= maxPivot; target += targetPosition)
+    {
+        float32 left = target - range.dx;
+        float32 right = target + range.dx;
+        if (finalPivot.dx >= right && finalPivot.dx <= left)
+        {
+            float availableDelta = 0.0f;
+            if (deltaPivot.dx >= 0.0f && origPivot.dx < left)
+            {
+                availableDelta = left - origPivot.dx;
+            }
+            else if (deltaPivot.dx <= 0.0f && origPivot.dx > right)
+            {
+                availableDelta = right - origPivot.dx;
+            }
+
+            DVASSERT(fabs(availableDelta) <= fabs(deltaPivot.dx));
+            extraDelta.dx += deltaPivot.dx - availableDelta;
+            delta.dx *= availableDelta / deltaPivot.dx;
+            finalPivot.dx = target;
+        }
+    }
+    return finalPivot;
 }
 
 void TransformSystem::Rotate(Vector2 pos)
@@ -462,7 +528,7 @@ void TransformSystem::Rotate(Vector2 pos)
     if (keyboard.IsKeyPressed(DVKEY_SHIFT))
     {
         static const int step = 15; //fixed angle step
-        float32 finalAngle = originalAngle + deltaAngle + accumulatedAngle;
+        float32 finalAngle = originalAngle + deltaAngle + extraDelta.dx;
         int32 nearestTargetAngle = static_cast<int32>(finalAngle - static_cast<int32>(finalAngle) % step);
         if (finalAngle >= 0.0f && deltaAngle < 0.0f)
         {
@@ -474,12 +540,12 @@ void TransformSystem::Rotate(Vector2 pos)
         }
         if ((deltaAngle >= 0.0f && nearestTargetAngle <= originalAngle + 0.005f) || (deltaAngle < 0.0f && nearestTargetAngle >= originalAngle - 0.005))
         {
-            accumulatedAngle += deltaAngle;
+            extraDelta.dx += deltaAngle;
             return;
         }
         if ((deltaAngle != 0))
         {
-            accumulatedAngle = finalAngle - nearestTargetAngle;
+            extraDelta.dx = finalAngle - nearestTargetAngle;
         }
         deltaAngle = nearestTargetAngle - originalAngle;
     }

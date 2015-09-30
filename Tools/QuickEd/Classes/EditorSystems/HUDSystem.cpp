@@ -582,7 +582,6 @@ HUDSystem::HUD::HUD(ControlNode* node_, UIControl* hudControl)
     , control(node_->GetControl())
     , container(new HUDContainer(control))
 {
-    node->GetRootProperty()->AddListener(this);
     HUDContainer* hudContainer = static_cast<HUDContainer*>(container.get());
     for (uint32 i = HUDAreaInfo::AREAS_BEGIN; i < HUDAreaInfo::AREAS_COUNT; ++i)
     {
@@ -597,12 +596,14 @@ HUDSystem::HUD::HUD(ControlNode* node_, UIControl* hudControl)
     hudControl->AddControl(container);
 
     container->InitFromGD(control->GetGeometricData());
-    container->SetVisible(control->GetVisible() && control->GetVisibleForUIEditor());
+    Vector2 size = control->GetSize();
+    Vector2 scale = control->GetScale();
+    bool visible = control->GetVisible() && control->GetVisibleForUIEditor() && size.dx > 0.0f && size.dy > 0.0f && ;
+    container->SetVisible(visible);
 }
 
 HUDSystem::HUD::~HUD()
 {
-    node->GetRootProperty()->RemoveListener(this);
     for (auto control : hudControls)
     {
         container->RemoveControl(control.second);
@@ -610,10 +611,3 @@ HUDSystem::HUD::~HUD()
     container->RemoveFromParent();
 }
 
-void HUDSystem::HUD::PropertyChanged(AbstractProperty* property)
-{
-    if (property->GetName() == "Visible")
-    {
-        container->SetVisible(property->GetValue().AsBool());
-    }
-}
