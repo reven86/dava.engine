@@ -1445,20 +1445,9 @@ Vector2 UIControl::GetPivotPoint() const
     return pivot * size;
 }
 
-void UIControl::SetPivotPoint(const Vector2& newPivotPoint)
-{
-    pivot.x = (size.x == 0.0f) ? 0.0f : (newPivotPoint.x / size.x);
-    pivot.y = (size.y == 0.0f) ? 0.0f : (newPivotPoint.y / size.y);
-}
-
 const Vector2& UIControl::GetPivot() const
 {
     return pivot;
-}
-
-void UIControl::SetPivot(const Vector2 &newPivot)
-{
-    pivot = newPivot;
 }
 
 const Vector2 & UIControl::GetScale() const

@@ -602,16 +602,19 @@ namespace DAVA
         SetLayoutDirty();
     }
 
-    void UIControl::SetPivotPoint(const Vector2& newPivot)
+    void UIControl::SetPivotPoint(const Vector2& newPivotPoint)
     {
-        pivotPoint = newPivot;
+        pivot.x = (size.x == 0.0f) ? 0.0f : (newPivotPoint.x / size.x);
+        pivot.y = (size.y == 0.0f) ? 0.0f : (newPivotPoint.y / size.y);
 
         SetLayoutDirty();
     }
 
     void UIControl::SetPivot(const Vector2& newPivot)
     {
-        SetPivotPoint(size * newPivot);
+        pivot = newPivot;
+
+        SetLayoutDirty();
     }
 
     void UIControl::SetAngle(float32 angleInRad)
