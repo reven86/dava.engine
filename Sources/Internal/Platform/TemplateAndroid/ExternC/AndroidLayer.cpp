@@ -53,9 +53,6 @@
 #include "Utils/UTF8Utils.h"
 #include "Platform/TemplateAndroid/JniHelpers.h"
 #include <dirent.h>
-//#if defined(__DAVAENGINE_PROFILE__)
-//#include "prof.h"
-//#endif //#if defined(__DAVAENGINE_PROFILE__)
 
 extern "C"
 {
@@ -93,11 +90,9 @@ extern "C"
 	JNIEXPORT void JNICALL Java_com_dava_framework_JNIRenderer_nativeOnPauseView(JNIEnv * env, jobject classthis, jboolean isLock);
 };
 
-#define MAX_PATH_SZ 260
-
 namespace 
 {
-	DAVA::CorePlatformAndroid *core = NULL;
+DAVA::CorePlatformAndroid* core = nullptr;
 
     DAVA::String documentsFolderPathEx;
     DAVA::String documentsFolderPathIn;
@@ -118,8 +113,29 @@ namespace
 	jfieldID gInputEventTimeField;
 	jfieldID gInputEventTapCountField;
 
-	AndroidDelegate *androidDelegate;
+    AndroidDelegate* androidDelegate = nullptr;
 }
+namespace DAVA
+{
+namespace JNI
+{
+JavaVM* GetJVM()
+{
+    if (androidDelegate == nullptr)
+    {
+        LOGE("androidDelegate == nullptr file %s(%d)", __FILE__, __LINE__);
+        return nullptr;
+    }
+    JavaVM* jvm = androidDelegate->GetVM();
+    if (jvm == nullptr)
+    {
+        LOGE("jvm == nullptr file %s(%d)", __FILE__, __LINE__);
+        return nullptr;
+    }
+    return jvm;
+}
+} // end namespace JNI
+} // end namespace DAVA
 
 jint JNI_OnLoad(JavaVM *vm, void *reserved)
 {
@@ -134,9 +150,11 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved)
 
 	androidDelegate = new AndroidDelegate(vm);
 
-	 DAVA::AndroidCrashReport::Init(env);
+    DAVA::AndroidCrashReport::Init(env);
 
-	return JNI_VERSION_1_6;
+    LOGI("finished JNI_OnLoad");
+
+    return JNI_VERSION_1_6;
 }
 
 void InitApplication(JNIEnv * env, const DAVA::String& commandLineParams)
@@ -183,7 +201,10 @@ void DeinitApplication()
 
 void Java_com_dava_framework_JNIApplication_OnCreateApplication(JNIEnv* env, jobject classthis, jstring externalPath, jstring internalPath, jstring apppath, jstring logTag, jstring packageName, jstring commandLineParams)
 {
+    LOGE("start OnCreateApplication");
     androidLogTag = DAVA::JNI::ToString(logTag);
+
+    LOGE("next logTag OnCreateApplication");
 
     documentsFolderPathEx = DAVA::JNI::ToString(externalPath);
     documentsFolderPathIn = DAVA::JNI::ToString(internalPath);
@@ -205,7 +226,7 @@ void Java_com_dava_framework_JNIApplication_OnCreateApplication(JNIEnv* env, job
 	gInputEventTimeField = env->GetFieldID(*gInputEventClass, "time", DAVA::JNI::TypeMetrics<jdouble>());
 	gInputEventTapCountField = env->GetFieldID(*gInputEventClass, "tapCount", DAVA::JNI::TypeMetrics<jint>());
 
-
+    DAVA::Logger::Info("finish OnCreateApplication");
 }
 
 void Java_com_dava_framework_JNIApplication_OnConfigurationChanged(JNIEnv * env, jobject classthis)

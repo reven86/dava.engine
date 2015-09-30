@@ -45,12 +45,6 @@ namespace DAVA
 namespace JNI
 {
 
-JavaVM *GetJVM()
-{
-    JavaVM* jvm = static_cast<DAVA::CorePlatformAndroid*>(Core::Instance())->GetAndroidSystemDelegate()->GetVM();
-    return jvm;
-}
-
 JNIEnv *GetEnv()
 {
     JNIEnv *env;
@@ -105,11 +99,22 @@ Rect V2P(const Rect& srcRect)
 DAVA::String ToString(const jstring jniString)
 {
     DAVA::String result;
+
+    if (jniString == nullptr)
+    {
+        LOGE("nullptr in jniString file %s(%d)", __FILE__, __LINE__);
+        return result;
+    }
+
     JNIEnv* env = GetEnv();
-    DVASSERT(env);
+    if (env == nullptr)
+    {
+        LOGE("nullptr in jniString file %s(%d)", __FILE__, __LINE__);
+        return result;
+    }
+
     // http://docs.oracle.com/javase/7/docs/technotes/guides/jni/spec/functions.html
     const char* utf8CString = env->GetStringUTFChars(jniString, nullptr);
-    DVASSERT(utf8CString != nullptr);
 
     if (utf8CString != nullptr)
     {
@@ -118,8 +123,8 @@ DAVA::String ToString(const jstring jniString)
     }
     else
     {
-		LOGE("[CreateStringFromJni] Can't create utf-string from jniString");
-	}
+        LOGE("Can't create utf-string from jniString file %s(%d)", __FILE__, __LINE__);
+    }
 
     return result;
 }
