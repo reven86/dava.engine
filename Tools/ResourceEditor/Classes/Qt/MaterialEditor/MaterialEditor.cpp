@@ -619,62 +619,70 @@ void MaterialEditor::FillTemplates(const QList<DAVA::NMaterial *>& materials)
     if (1 == materials.size() && materials[0])
     {
         DAVA::NMaterial* material = materials[0];
-        DAVA::FastName fxName = material->GetEffectiveFXName();
+
+        //Read material params
         auto scene = QtMainWindow::Instance()->GetCurrentScene();
-        auto globalMaterial = (nullptr == scene) ? nullptr : scene->GetGlobalMaterial();
-        bool isGlobalMaterial = (material == globalMaterial);
-        bool isLocalFxName = material->HasLocalFXName();
-        bool hasParentFx = false;
+        DAVA::NMaterial* globalMaterial = (nullptr == scene) ? nullptr : scene->GetGlobalMaterial();
 
-        if (nullptr != material->GetParent())
-        {
-            hasParentFx = material->GetParent()->GetEffectiveFXName().IsValid();
-        }
-
-        if (isLocalFxName)
-        {
-            int rowToSelect = -1;
-            QAbstractItemModel *model = ui->templateBox->model();
-            const int n = model->rowCount();
-            for (int i = 0; i < n; i++)
-            {
-                const QModelIndex index = model->index(i, 0);
-                if (index.data(Qt::UserRole).toString() == fxName.c_str())
-                {
-                    rowToSelect = i;
-                    break;
-                }
-            }
-
-            if (-1 == rowToSelect)
-            {
-                setTemplatePlaceholder(QString("NON-ASSIGNABLE: %1").arg(fxName.c_str()));
-            }
-
-            ui->templateBox->setCurrentIndex(rowToSelect);
-            ui->templateButton->setIcon(QIcon(":/QtIcons/cminus.png"));
-
-            bool templateEnabled = !isGlobalMaterial && hasParentFx;
-            ui->templateBox->setEnabled(templateEnabled);
-            ui->templateButton->setEnabled(templateEnabled);
+        const bool isGlobalMaterial = (material == globalMaterial);
+        if (isGlobalMaterial)
+        { // reset state
+            ui->templateBox->setCurrentIndex(-1);
+            ui->templateBox->setEnabled(false);
+            ui->templateButton->setEnabled(false);
+            ui->templateButton->setIcon(QIcon(":/QtIcons/cplus.png"));
         }
         else
         {
-            if (isGlobalMaterial)
-            {
-                ui->templateBox->setCurrentIndex(-1);
-                ui->templateButton->setEnabled(false);
+            { //set fx name to fx template box
+                const DAVA::FastName fxName = material->GetEffectiveFXName();
+
+                int rowToSelect = -1;
+                QAbstractItemModel* model = ui->templateBox->model();
+                const int n = model->rowCount();
+                for (int i = 0; i < n; i++)
+                {
+                    const QModelIndex index = model->index(i, 0);
+                    if (index.data(Qt::UserRole).toString() == fxName.c_str())
+                    {
+                        rowToSelect = i;
+                        break;
+                    }
+                }
+
+                if (-1 == rowToSelect)
+                {
+                    setTemplatePlaceholder(QString("NON-ASSIGNABLE: %1").arg(fxName.c_str()));
+                }
+
+                ui->templateBox->setCurrentIndex(rowToSelect);
             }
-            else
-            {
+
+            { //update button state
+
+                const bool hasLocalFxName = material->HasLocalFXName();
+
+                bool hasParentFx = false;
+                if (nullptr != material->GetParent())
+                {
+                    hasParentFx = material->GetParent()->HasLocalFXName();
+                }
+
+                if (hasLocalFxName)
+                {
+                    ui->templateButton->setIcon(QIcon(":/QtIcons/cminus.png"));
+                }
+                else
+                {
+                    ui->templateButton->setIcon(QIcon(":/QtIcons/cplus.png"));
+                }
                 ui->templateButton->setEnabled(true);
+                ui->templateBox->setEnabled(hasLocalFxName);
             }
-            ui->templateBox->setEnabled(false);
-            ui->templateButton->setIcon(QIcon(":/QtIcons/cplus.png"));
         }
     }
     else
-    {
+    { // reset state
         ui->templateBox->setCurrentIndex(-1);
         ui->templateBox->setEnabled(false);
         ui->templateButton->setEnabled(false);
