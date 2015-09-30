@@ -45,13 +45,7 @@ FXDescriptor defaultFX;
 bool initialized = false;
 }
 
-RenderPassDescriptor::RenderPassDescriptor()
-    :cullMode(rhi::CULL_NONE)
-    , renderLayer(RenderLayer::RENDER_LAYER_INVALID_ID)
-    , shader(nullptr)
-{
 
-}
 
 namespace FXCache
 {
@@ -231,6 +225,12 @@ const FXDescriptor& LoadFXFromOldTemplate(const FastName &fxName, HashMap<FastNa
                     passDescriptor.depthStateDescriptor.depthWriteEnabled = false;
                     passDescriptor.cullMode = rhi::CULL_NONE;
                     bool hasBlend = false;
+                    const YamlNode* fillMode = renderStateNode->Get("fillMode");
+                    if (fillMode)
+                    {
+                        if (fillMode->AsString() == "FILLMODE_WIREFRAME")
+                            passDescriptor.wireframe = true;
+                    }
                     for (auto& state : states)
                     {
                         if (state == "STATE_BLEND")

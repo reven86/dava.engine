@@ -102,6 +102,11 @@ public:
 	Texture * GetTilemaskDrawTexture(int32 number);
 	void SwapTilemaskDrawTextures();
 
+    void UpdateTileMaskPathname();
+
+protected:
+    FilePath GetPathForSourceTexture() const;
+
 protected:
 	enum eToolTextureType
 	{

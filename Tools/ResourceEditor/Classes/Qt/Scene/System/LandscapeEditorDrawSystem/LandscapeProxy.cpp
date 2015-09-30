@@ -49,19 +49,9 @@ LandscapeProxy::LandscapeProxy(Landscape* landscape, Entity* node)
 	tilemaskDrawTextures[TILEMASK_TEXTURE_DESTINATION] = NULL;
     
 	baseLandscape = SafeRetain(landscape);
-    
-    Texture * tiletexture = nullptr;
-    NMaterial * material = baseLandscape->GetMaterial();
-    if(nullptr != material)
-    {
-        tiletexture = material->GetEffectiveTexture(Landscape::TEXTURE_TILEMASK);
-    }
 
-    if(nullptr != tiletexture)
-    {
-        sourceTilemaskPath = tiletexture->GetDescriptor()->GetSourceTexturePathname();
-    }
-    
+    sourceTilemaskPath = GetPathForSourceTexture();
+
     landscapeEditorMaterial = new NMaterial();
     landscapeEditorMaterial->SetMaterialName(FastName("Landscape.Tool.Material"));
     landscapeEditorMaterial->SetFXName(FastName("~res:/Materials/Landscape.Tool.material"));
@@ -263,6 +253,21 @@ void LandscapeProxy::InitTilemaskImageCopy()
     tilemaskImageCopy = imgs[0];
 }
 
+DAVA::FilePath LandscapeProxy::GetPathForSourceTexture() const
+{
+    NMaterial* material = baseLandscape->GetMaterial();
+    if (nullptr != material)
+    {
+        Texture* tiletexture = material->GetEffectiveTexture(Landscape::TEXTURE_TILEMASK);
+        if (nullptr != tiletexture)
+        {
+            return tiletexture->GetDescriptor()->GetSourceTexturePathname();
+        }
+    }
+
+    return FilePath();
+}
+
 Image* LandscapeProxy::GetTilemaskImageCopy()
 {
 	return tilemaskImageCopy;
@@ -296,4 +301,13 @@ void LandscapeProxy::SwapTilemaskDrawTextures()
 	Texture* temp = tilemaskDrawTextures[TILEMASK_TEXTURE_SOURCE];
 	tilemaskDrawTextures[TILEMASK_TEXTURE_SOURCE] = tilemaskDrawTextures[TILEMASK_TEXTURE_DESTINATION];
 	tilemaskDrawTextures[TILEMASK_TEXTURE_DESTINATION] = temp;
+}
+
+void LandscapeProxy::UpdateTileMaskPathname()
+{
+    if (sourceTilemaskPath.IsEmpty())
+    {
+        sourceTilemaskPath = GetPathForSourceTexture();
+        DVASSERT(sourceTilemaskPath.IsEmpty() == false);
+    }
 }

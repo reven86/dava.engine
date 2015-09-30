@@ -1,0 +1,10 @@
+RenderTechnique:
+    Layers: ["OpaqueRenderLayer"]
+    RenderPass:
+        Name: "ForwardPass"
+        Shader: "~res:/Materials/Shaders/DebugDraw/debugdraw"
+        UniqueDefines: []
+        RenderState:                        
+            cullMode: "FACE_BACK"            
+            fillMode: "FILLMODE_WIREFRAME"
+            state: "STATE_COLORMASK_RED | STATE_COLORMASK_GREEN | STATE_COLORMASK_BLUE | STATE_COLORMASK_ALPHA"            
