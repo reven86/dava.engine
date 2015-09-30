@@ -32,7 +32,6 @@
 #include "UISizePolicyComponent.h"
 #include "UIFlowLayoutHintComponent.h"
 
-#include "LinearLayoutAlgorithm.h"
 #include "AnchorLayoutAlgorithm.h"
 
 #include "UI/UIControl.h"
@@ -96,12 +95,12 @@ void FlowLayoutAlgorithm::Apply(ControlLayoutData &data, Vector2::eAxis axis)
     
 void FlowLayoutAlgorithm::ProcessXAxis(ControlLayoutData &data, UIFlowLayoutComponent *component)
 {
-    float32 rowSize = data.GetWidth() - horizontalPadding * 2;
-    float32 restSize = rowSize;
-    
     int32 firstIndex = data.GetFirstChildIndex();
 
     bool newLineBeforeNext = false;
+    int32 childrenInLine = 0;
+    float32 usedSize = 0.0f;
+
     for (int32 index = data.GetFirstChildIndex(); index <= data.GetLastChildIndex(); index++)
     {
         ControlLayoutData &childData = layoutData[index];
@@ -114,7 +113,8 @@ void FlowLayoutAlgorithm::ProcessXAxis(ControlLayoutData &data, UIFlowLayoutComp
         UISizePolicyComponent *sizePolicy = childData.GetControl()->GetComponent<UISizePolicyComponent>();
         if (sizePolicy != nullptr && sizePolicy->GetHorizontalPolicy() == UISizePolicyComponent::PERCENT_OF_PARENT)
         {
-            childSize = sizePolicy->GetHorizontalMinValue();
+            childSize = sizePolicy->GetHorizontalValue() * (data.GetWidth() - horizontalPadding * 2.0f) / 100.0f;
+            childSize = Clamp(childSize, sizePolicy->GetHorizontalMinValue(), sizePolicy->GetHorizontalMaxValue());
         }
         
         bool newLineBeforeThis = newLineBeforeNext;
@@ -128,52 +128,79 @@ void FlowLayoutAlgorithm::ProcessXAxis(ControlLayoutData &data, UIFlowLayoutComp
         
         if (newLineBeforeThis && index > firstIndex)
         {
-            LayoutLine(data, firstIndex, index - 1);
+            LayoutLine(data, firstIndex, index - 1, childrenInLine, usedSize);
             firstIndex = index;
-            restSize = rowSize;
+            childrenInLine = 1;
+            usedSize = 0.0f;
         }
         
-        if (restSize < childSize - EPSILON)
+        float32 restSize = data.GetWidth() - usedSize;
+        restSize -= horizontalPadding * 2.0f;
+        if (childrenInLine > 0)
+            restSize -= horizontalSpacing * (childrenInLine - 1);
+        restSize -= childSize;
+        if (restSize < -EPSILON)
         {
             if (index > firstIndex)
             {
-                LayoutLine(data, firstIndex, index - 1);
+                LayoutLine(data, firstIndex, index - 1, childrenInLine, restSize);
                 firstIndex = index;
-                restSize = rowSize - childSize - horizontalSpacing;
+                childrenInLine = 1;
+                restSize = childSize;
             }
             else
             {
-                LayoutLine(data, firstIndex, index);
+                LayoutLine(data, firstIndex, index, 1, 0.0f);
+                childrenInLine = 0;
                 firstIndex = index + 1;
-                restSize = rowSize;
+                childSize = 0.0f;
             }
         }
         else
         {
-            restSize = restSize - childSize - horizontalSpacing;
+            childrenInLine++;
+            usedSize += childSize;
         }
     }
     
     if (firstIndex <= data.GetLastChildIndex())
     {
-        LayoutLine(data, firstIndex, data.GetLastChildIndex());
+        LayoutLine(data, firstIndex, data.GetLastChildIndex(), childrenInLine, usedSize);
     }
 }
 
-void FlowLayoutAlgorithm::LayoutLine(ControlLayoutData &data, int32 firstIndex, int32 lastIndex)
+void FlowLayoutAlgorithm::LayoutLine(ControlLayoutData &data, int32 firstIndex, int32 lastIndex, int32 childrenCount, float32 childrenSize)
 {
-    LinearLayoutAlgorithm alg(layoutData);
-
-    alg.SetInverse(inverse);
-    alg.SetSkipInvisible(skipInvisible);
+    float32 padding = horizontalPadding;
+    float32 spacing = horizontalSpacing;
+    CorrectPaddingAndSpacing(padding, spacing, dynamicHorizontalPadding, dynamicHorizontalSpacing, data.GetWidth() - childrenSize, childrenCount);
     
-    alg.SetPadding(horizontalPadding);
-    alg.SetSpacing(horizontalSpacing);
+    float32 position = padding;
+    if (inverse)
+    {
+        position = data.GetWidth() - padding;
+    }
     
-    alg.SetDynamicPadding(dynamicHorizontalPadding);
-    alg.SetDynamicSpacing(dynamicHorizontalSpacing);
-    
-    alg.Apply(data, Vector2::AXIS_X, firstIndex, lastIndex);
+    for (int32 i = firstIndex; i <= lastIndex; i++)
+    {
+        ControlLayoutData &childData = layoutData[i];
+        if (childData.HaveToSkipControl(skipInvisible))
+        {
+            continue;
+        }
+        
+        float32 size = childData.GetWidth();
+        childData.SetPosition(Vector2::AXIS_X, inverse ? position - size : position);
+        
+        if (inverse)
+        {
+            position -= size + spacing;
+        }
+        else
+        {
+            position += size + spacing;
+        }
+    }
     
     layoutData[lastIndex].SetFlag(ControlLayoutData::FLAG_LAST_IN_LINE);
 }
@@ -233,39 +260,7 @@ void FlowLayoutAlgorithm::CalculateDynamicPaddingAndSpaces(ControlLayoutData &da
     }
     
     float32 restSize = data.GetHeight() - contentSize;
-    if (linesCount > 0)
-    {
-        int32 spacesCount = linesCount - 1;
-        restSize -= verticalPadding * 2.0f;
-        restSize -= verticalSpacing * spacesCount;
-        if (restSize > EPSILON)
-        {
-            if (dynamicVerticalPadding || (dynamicVerticalSpacing && spacesCount > 0))
-            {
-                int32 cnt = 0;
-                if (dynamicVerticalPadding)
-                {
-                    cnt = 2;
-                }
-                
-                if (dynamicVerticalSpacing)
-                {
-                    cnt += spacesCount;
-                }
-                
-                float32 delta = restSize / cnt;
-                if (dynamicVerticalPadding)
-                {
-                    verticalPadding += delta;
-                }
-                
-                if (dynamicVerticalSpacing)
-                {
-                    verticalSpacing += delta;
-                }
-            }
-        }
-    }
+    CorrectPaddingAndSpacing(verticalPadding, verticalSpacing, dynamicVerticalPadding, dynamicVerticalSpacing, restSize, linesCount);
 }
 
 void FlowLayoutAlgorithm::LayoutLineVertically(ControlLayoutData &data, int32 firstIndex, int32 lastIndex, float32 top, float32 bottom)
@@ -292,5 +287,42 @@ void FlowLayoutAlgorithm::LayoutLineVertically(ControlLayoutData &data, int32 fi
         childData.SetPosition(Vector2::AXIS_Y, top); // TODO: Anchors
     }
 }
-    
+
+void FlowLayoutAlgorithm::CorrectPaddingAndSpacing(float32 &padding, float32 &spacing, bool dynamicPadding, bool dynamicSpacing, float32 restSize, int32 childrenCount)
+{
+    if (childrenCount > 0)
+    {
+        int32 spacesCount = childrenCount - 1;
+        restSize -= padding * 2.0f;
+        restSize -= spacing * spacesCount;
+        if (restSize > EPSILON)
+        {
+            if (dynamicPadding || (dynamicSpacing && spacesCount > 0))
+            {
+                int32 cnt = 0;
+                if (dynamicPadding)
+                {
+                    cnt = 2;
+                }
+                
+                if (dynamicSpacing)
+                {
+                    cnt += spacesCount;
+                }
+                
+                float32 delta = restSize / cnt;
+                if (dynamicPadding)
+                {
+                    padding += delta;
+                }
+                
+                if (dynamicSpacing)
+                {
+                    spacing += delta;
+                }
+            }
+        }
+    }
+}
+
 }

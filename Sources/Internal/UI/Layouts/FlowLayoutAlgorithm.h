@@ -51,11 +51,14 @@ public:
     
 private:
     void ProcessXAxis(ControlLayoutData &data, UIFlowLayoutComponent *component);
-    void LayoutLine(ControlLayoutData &data, int32 firstIndex, int32 lastIndex);
+    void LayoutLine(ControlLayoutData &data, int32 firstIndex, int32 lastIndex, int32 childrenCount, float32 childrenSize);
+    void CalculateHorizontalDynamicPaddingAndSpaces(ControlLayoutData &data, int32 firstIndex, int32 lastIndex);
     
     void ProcessYAxis(ControlLayoutData &data, UIFlowLayoutComponent *component);
     void CalculateDynamicPaddingAndSpaces(ControlLayoutData &data);
     void LayoutLineVertically(ControlLayoutData &data, int32 firstIndex, int32 lastIndex, float32 top, float32 bottom);
+
+    void CorrectPaddingAndSpacing(float32 &padding, float32 &spacing, bool dynamicPadding, bool dynamicSpacing, float32 restSize, int32 childrenCount);
 
 private:
     Vector<ControlLayoutData> &layoutData;
