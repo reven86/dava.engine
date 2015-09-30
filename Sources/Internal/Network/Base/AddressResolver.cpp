@@ -104,13 +104,16 @@ void AddressResolver::GetAddrInfoCallback(uv_getaddrinfo_t* handle, int status, 
 
 void AddressResolver::GotAddrInfo(int status, struct addrinfo* response)
 {
-    Endpoint endpoint;
-    if (0 == status)
+    if (handle)
     {
-        endpoint = Endpoint(response->ai_addr);
-    }
+        Endpoint endpoint;
+        if (0 == status)
+        {
+            endpoint = Endpoint(response->ai_addr);
+        }
 
-    resolverCallbackFn(endpoint, status);
+        resolverCallbackFn(endpoint, status);
+    }
 }
 
 } // end of namespace Net
