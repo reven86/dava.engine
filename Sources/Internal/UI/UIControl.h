@@ -468,7 +468,7 @@ public:
      \brief Sets the control pivot point.
      \param[in] newPivot new control pivot point.
      */
-    inline void SetPivotPoint(const Vector2 &newPivot);
+    void SetPivotPoint(const Vector2& newPivot);
 
     /**
      \brief Returns control pivot.
@@ -480,7 +480,7 @@ public:
      \brief Sets the control pivot.
      \param[in] newPivot new control pivot.
      */
-    inline void SetPivot(const Vector2 &newPivot);
+    void SetPivot(const Vector2& newPivot);
 
     /**
      \brief Returns control scale.
@@ -1279,8 +1279,9 @@ protected:
     bool isUpdated : 1;
     bool isIteratorCorrupted : 1;
 
-    bool styleSheetRebuildNeeded : 1;
+    bool styleSheetDirty : 1;
     bool styleSheetInitialized : 1;
+    bool layoutDirty : 1;
 
     int32 inputProcessorsCount;
 
@@ -1369,10 +1370,15 @@ public:
     
     const UIStyleSheetPropertySet& GetStyledPropertySet() const;
     void SetStyledPropertySet(const UIStyleSheetPropertySet &set);
-    
-    bool GetStyleSheetInitialized() const;
 
-    void MarkStyleSheetAsUpdated();
+    bool IsStyleSheetInitialized() const;
+    void SetStyleSheetInitialized();
+
+    void SetStyleSheetDirty();
+    void ResetStyleSheetDirty();
+
+    void SetLayoutDirty();
+    void ResetLayoutDirty();
 
     UIControlPackageContext* GetPackageContext() const;
     UIControlPackageContext* GetLocalPackageContext() const;
