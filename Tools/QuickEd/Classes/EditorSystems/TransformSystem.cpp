@@ -424,88 +424,80 @@ void TransformSystem::AdjustResize(int directionX, int directionY, Vector2& delt
 
 void TransformSystem::MovePivot(Vector2 delta)
 {
-    Vector<PropertyDelta> propertiesDelta;
-
-    Vector2 deltaPivot = AdjustPivot(delta);
-    propertiesDelta.emplace_back(pivotProperty, VariantType(deltaPivot));
+    DAVA::Vector<std::tuple<ControlNode*, AbstractProperty*, VariantType>> propertiesToChange;
+    Vector2 pivot = AdjustPivot(delta);
+    propertiesToChange.emplace_back(activeControlNode, pivotProperty, VariantType(pivot));
 
     Vector2 scaledDelta(delta / parentGeometricData.scale);
     Vector2 angeledDeltaPosition(RotateVector(scaledDelta, parentGeometricData));
-    propertiesDelta.emplace_back(positionProperty, VariantType(angeledDeltaPosition));
+    Vector2 originalPos(positionProperty->GetValue().AsVector2());
+    Vector2 finalPos(originalPos + angeledDeltaPosition);
+    propertiesToChange.emplace_back(activeControlNode, positionProperty, VariantType(finalPos));
 
-    AdjustProperty(activeControlNode, propertiesDelta);
+    systemManager->PropertiesChanged.Emit(std::move(propertiesToChange), std::move(currentHash));
 }
 
 Vector2 TransformSystem::AdjustPivot(Vector2& delta)
 {
-    if (extraDelta.dx != 0.0f)
-    {
-        float overload = extraDelta.dx + delta.dx;
-        if ((overload > 0.0f) ^ (extraDelta.dx > 0.0f)) //overload more than extraDelta
-        {
-            extraDelta.dx = 0.0f;
-            delta.dx = overload;
-        }
-        else //delta less than we need to resize
-        {
-            extraDelta.dx += delta.dx;
-            delta.dx = 0.0f;
-        }
-    }
-    if (extraDelta.dy != 0.0f)
-    {
-        float overload = extraDelta.dy + delta.dy;
-        if ((overload > 0.0f) ^ (extraDelta.dy > 0.0f)) //overload more than extraDelta
-        {
-            extraDelta.dy = 0.0f;
-            delta.dy = overload;
-        }
-        else
-        {
-            extraDelta.dy += delta.dy;
-            delta.dy = 0;
-        }
-    }
     const Rect ur(controlGeometricData.GetUnrotatedRect());
     const Vector2 controlSize(ur.GetSize());
 
     const Vector2 angeledDeltaPivot(RotateVector(delta, controlGeometricData));
     Vector2 deltaPivot(angeledDeltaPivot / controlSize);
 
-    const Vector2 scaledRange(Vector2(3.0f, 3.0f) / controlGeometricData.scale);
-    const Vector2 range(scaledRange / controlSize);
+    const Vector2 scaledRange(Vector2(10.0f, 10.0f) / controlGeometricData.scale);
+    const Vector2 range(scaledRange / controlSize); //range in pivot coordinates
+
     Vector2 origPivot = pivotProperty->GetValue().AsVector2();
+    Vector2 finalPivot(origPivot + deltaPivot + extraDelta.dx);
 
-    Vector2 finalPivot(origPivot + deltaPivot);
-    const float32 targetPosition = 0.25f;
+    const float32 targetPosition = 1.0f;
     const float32 maxPivot = 1.0f;
-    for (float32 target = 0.0f; target <= maxPivot; target += targetPosition)
+    bool found = false;
+    if (deltaPivot.dx != 0.0f)
     {
-        float32 left = target - range.dx;
-        float32 right = target + range.dx;
-        if (finalPivot.dx >= left && finalPivot.dx <= right)
+        for (float32 target = 0.0f; target <= maxPivot && !found; target += targetPosition)
         {
-            float availableDelta = 0.0f;
-            if (deltaPivot.dx >= 0.0f && origPivot.dx < left)
+            float32 left = target - range.dx;
+            float32 right = target + range.dx;
+            if (finalPivot.dx >= left && finalPivot.dx <= right)
             {
-                availableDelta = left - origPivot.dx;
-            }
-            else if (deltaPivot.dx <= 0.0f && origPivot.dx > right)
-            {
-                availableDelta = right - origPivot.dx;
-            }
+                float availableDelta = 0.0f;
+                if (deltaPivot.dx >= 0.0f && origPivot.dx < left)
+                {
+                    availableDelta = left - origPivot.dx;
+                }
+                else if (deltaPivot.dx <= 0.0f && origPivot.dx > right)
+                {
+                    availableDelta = right - origPivot.dx;
+                }
 
-            DVASSERT(fabs(availableDelta) <= fabs(deltaPivot.dx));
-            extraDelta.dx += deltaPivot.dx - availableDelta;
-            if (deltaPivot.dx != 0.0f)
-            {
+                if (extraDelta.dx == 0.0f)
+                {
+                    extraDelta.dx = finalPivot.dx - target;
+                }
+                else
+                {
+                    extraDelta.dx += deltaPivot.dx;
+                }
+                float32 was = delta.dx;
                 delta.dx *= availableDelta / deltaPivot.dx;
+                finalPivot.dx = target;
+                static int counter;
+                Logger::Info("%d av: %f, ex: %f, targ: %f, fin: %f, was: %f. del: %f", ++counter, availableDelta, extraDelta.dx, target, finalPivot.dx, was, delta.dx);
+                found = true;
             }
-            deltaPivot.dx = target - origPivot.dx;
-            break;
+        }
+        if (!found)
+        {
+            if (extraDelta.dx != 0.0f)
+            {
+                deltaPivot.dx += extraDelta.dx;
+                extraDelta.dx = 0.0f;
+            }
         }
     }
-    return deltaPivot;
+    return finalPivot;
 }
 
 void TransformSystem::Rotate(Vector2 pos)
