@@ -127,7 +127,9 @@ void NMaterial::BindParams(rhi::Packet& target)
     target.depthStencilState = activeVariantInstance->depthState;
     target.samplerState = activeVariantInstance->samplerState;
     target.textureSet = activeVariantInstance->textureSet;
-    target.cullMode = activeVariantInstance->cullMode; //rhi::CULL_NONE;// 
+    target.cullMode = activeVariantInstance->cullMode;
+    if (activeVariantInstance->wireFrame)
+        target.options |= rhi::Packet::OPT_WIREFRAME;
 
     activeVariantInstance->shader->UpdateDynamicParams();
     /*update values in material const buffers*/
@@ -543,7 +545,7 @@ void NMaterial::InvalidateRenderVariants()
 
 void NMaterial::RebuildRenderVariants()
 {
-    HashMap<FastName, int32> flags;
+    HashMap<FastName, int32> flags(16, 0);
     CollectMaterialFlags(flags);
 
     const FXDescriptor& fxDescr = FXCache::GetFXDescriptor(GetEffectiveFXName(), flags, QualitySettingsSystem::Instance()->GetCurMaterialQuality(GetQualityGroup()));
@@ -570,6 +572,7 @@ void NMaterial::RebuildRenderVariants()
         variant->depthState = rhi::AcquireDepthStencilState(variantDescr.depthStateDescriptor);
         variant->shader = variantDescr.shader;
         variant->cullMode = variantDescr.cullMode;
+        variant->wireFrame = variantDescr.wireframe;
         renderVariants[variantDescr.passName] = variant;
     }
 
@@ -868,7 +871,8 @@ void NMaterial::Save(KeyedArchive * archive, SerializationContext * serializatio
     ScopedPtr<KeyedArchive> flagsArchive(new KeyedArchive());
     for (HashMap<FastName, int32>::iterator it = localFlags.begin(), itEnd = localFlags.end(); it != itEnd; ++it)
     {
-        flagsArchive->SetInt32(it->first.c_str(), it->second);
+        if (!NMaterialFlagName::IsRuntimeFlag(it->first))
+            flagsArchive->SetInt32(it->first.c_str(), it->second);
     }
     archive->SetArchive("flags", flagsArchive);
 }
