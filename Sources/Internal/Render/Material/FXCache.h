@@ -36,13 +36,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace DAVA
 {
 struct RenderPassDescriptor
-{  
+{
     FastName passName;
-    ShaderDescriptor *shader;
-    rhi::DepthStencilState::Descriptor depthStateDescriptor;    
-    RenderLayer::eRenderLayerID renderLayer;
-    rhi::CullMode cullMode;
-    RenderPassDescriptor();
+    ShaderDescriptor* shader = nullptr;
+    rhi::DepthStencilState::Descriptor depthStateDescriptor;
+    RenderLayer::eRenderLayerID renderLayer = RenderLayer::RENDER_LAYER_INVALID_ID;
+    rhi::CullMode cullMode = rhi::CULL_NONE;
+    bool wireframe = false;
 };
 
 struct FXDescriptor

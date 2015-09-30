@@ -652,9 +652,11 @@ void MaterialEditor::FillTemplates(const QList<DAVA::NMaterial *>& materials)
             }
 
             ui->templateBox->setCurrentIndex(rowToSelect);
-            ui->templateBox->setEnabled(true);
             ui->templateButton->setIcon(QIcon(":/QtIcons/cminus.png"));
-            ui->templateButton->setEnabled(!isGlobalMaterial && hasParentFx);
+
+            bool templateEnabled = !isGlobalMaterial && hasParentFx;
+            ui->templateBox->setEnabled(templateEnabled);
+            ui->templateButton->setEnabled(templateEnabled);
         }
         else
         {

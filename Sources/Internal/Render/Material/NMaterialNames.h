@@ -89,6 +89,7 @@ public:
 
     static const FastName DEBUG_DRAW_OPAQUE;
     static const FastName DEBUG_DRAW_ALPHABLEND;
+    static const FastName DEBUG_DRAW_WIREFRAME;
 };
 
 class NMaterialTextureName
@@ -195,6 +196,8 @@ public:
     static const FastName FLAG_ILLUMINATION_USED;
     static const FastName FLAG_ILLUMINATION_SHADOW_CASTER;
     static const FastName FLAG_ILLUMINATION_SHADOW_RECEIVER;
+
+    static bool IsRuntimeFlag(const FastName& flag);
 };
 
 class NMaterialQualityName

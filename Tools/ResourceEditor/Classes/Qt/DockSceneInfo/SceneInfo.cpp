@@ -409,11 +409,10 @@ void SceneInfo::CollectLODDataInFrame()
         for(uint32 i = 0; i < batchCount; ++i)
         {            
             RenderBatch *rb = renderObject->GetActiveRenderBatch(i);
-            if(IsPointerToExactClass<RenderBatch>(rb))
-            {                
-                PolygonGroup *pg = rb->GetPolygonGroup();
-                if(pg)                
-                    indexCount += pg->GetIndexCount();                
+            PolygonGroup* pg = rb->GetPolygonGroup();
+            if (pg != nullptr)
+            {
+                indexCount += pg->GetIndexCount();
             }
         }
         int32 currLodIndex = renderObject->GetLodIndex();
