@@ -64,7 +64,7 @@ IOLoop::IOLoop(bool useDefaultIOLoop) : uvloop()
 IOLoop::~IOLoop()
 {
 #ifdef __DAVAENGINE_WIN_UAP__
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
+//__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
 #else
     // We can close default loop too
     DVVERIFY(0 == uv_loop_close(actualLoop));

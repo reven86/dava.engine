@@ -296,7 +296,10 @@ void CreatePlaneLODCommandHelper::DrawToTextureForRequest(RequestPointer& reques
 
     NMaterial* globalMaterial = fromEntity->GetScene()->GetGlobalMaterial();
     if (globalMaterial)
-        tempScene->SetGlobalMaterial(globalMaterial->Clone());
+    {
+        ScopedPtr<NMaterial> global(globalMaterial->Clone());
+        tempScene->SetGlobalMaterial(global);
+    }
 
     ScopedPtr<Entity> clonedEnity(SceneHelper::CloneEntityWithMaterials(fromEntity));
 	clonedEnity->SetLocalTransform(DAVA::Matrix4::IDENTITY);
@@ -386,3 +389,4 @@ void CreatePlaneLODCommandHelper::Request::OnRenderCallback(rhi::HSyncObject obj
         SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsUInt32());
     ReloadTexturesToGPU(currentGPU);
 }
+
