@@ -28,6 +28,7 @@
 #include "Render/Material/NMaterial.h"
 #include "Render/Material/FXCache.h"
 #include "Render/Material/NMaterialStateDynamicPropertiesInsp.h"
+#include "Scene3D/Systems/QualitySettingsSystem.h"
 
 namespace DAVA
 {
@@ -42,7 +43,7 @@ void NMaterialStateDynamicPropertiesInsp::FindMaterialPropertiesRecursive(NMater
     // shader data
     if (material->GetEffectiveFXName().IsValid())
     {
-        FXDescriptor fxDescriptor = FXCache::GetFXDescriptor(material->GetEffectiveFXName(), flags, material->qualityGroup);
+        FXDescriptor fxDescriptor = FXCache::GetFXDescriptor(material->GetEffectiveFXName(), flags, QualitySettingsSystem::Instance()->GetCurMaterialQuality(material->qualityGroup));
         for (auto& descriptor : fxDescriptor.renderPassDescriptors)
         {
             if (!descriptor.shader->IsValid())
