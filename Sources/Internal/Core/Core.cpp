@@ -194,7 +194,12 @@ void Core::CreateRenderer()
         rendererParams.threadedRenderEnabled    = true;
         rendererParams.threadedRenderFrameCount = options->GetInt32("rhi_threaded_frame_count");
     }
-    
+
+    rendererParams.maxIndexBufferCount = options->GetInt32("max_index_buffer_count");
+    rendererParams.maxVertexBufferCount = options->GetInt32("max_vertex_buffer_count");
+    rendererParams.maxConstBufferCount = options->GetInt32("max_const_buffer_count");
+    rendererParams.maxTextureCount = options->GetInt32("max_texture_count");
+
     Renderer::Initialize(renderer, rendererParams);
 }
         
@@ -436,6 +441,7 @@ Logger::Info("Core::SystemAppStarted");
 
     if (core != nullptr)
     {
+//rhi::ShaderSourceCache::Load( "~doc:/ShaderSource.bin" );
         Core::Instance()->CreateRenderer();
         RenderSystem2D::Instance()->Init();
         core->OnAppStarted();
@@ -446,6 +452,7 @@ void Core::SystemAppFinished()
 {
     if (core != nullptr)
     {
+//rhi::ShaderSourceCache::Save( "~doc:/ShaderSource.bin" );
         core->OnAppFinished();
     }
 }

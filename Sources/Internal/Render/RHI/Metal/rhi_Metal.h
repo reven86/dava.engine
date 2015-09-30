@@ -48,7 +48,7 @@ void        metal_Initialize( const InitParam& param );
 
 namespace VertexBufferMetal
 {
-id<MTLBuffer> GetBuffer( Handle ib );
+id<MTLBuffer>   GetBuffer( Handle ib );
 }
 
 namespace IndexBufferMetal
@@ -101,10 +101,12 @@ void    SetToRHI( Handle buf, unsigned bufIndex, id<MTLRenderCommandEncoder> ce 
     
 namespace VertexBufferMetal
 {
+    void        Init( uint32 maxCount );
     void        SetupDispatch( Dispatch* dispatch );
 }
 namespace IndexBufferMetal
 {
+    void        Init( uint32 maxCount );
     void        SetupDispatch( Dispatch* dispatch );
 }
 namespace QueryBufferMetal
@@ -113,6 +115,7 @@ namespace QueryBufferMetal
 }
 namespace TextureMetal
 {
+    void        Init( uint32 maxCount );
     void        SetupDispatch( Dispatch* dispatch );
 }
 namespace SamplerStateMetal
@@ -129,6 +132,7 @@ namespace DepthStencilStateMetal
 }
 namespace ConstBufferMetal
 {
+    void        Init( uint32 maxCount );
     void        SetupDispatch( Dispatch* dispatch );
 }
 namespace RenderPassMetal

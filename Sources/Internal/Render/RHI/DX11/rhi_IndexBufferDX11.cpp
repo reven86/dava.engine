@@ -90,16 +90,23 @@ dx11_IndexBuffer_Create( const IndexBuffer::Descriptor& desc )
     DVASSERT(desc.size);
     if( desc.size )
     {
-        D3D11_BUFFER_DESC   desc11 = {0};
-        ID3D11Buffer*       buf    = nullptr;
+        D3D11_BUFFER_DESC       desc11 = {0};
+        ID3D11Buffer*           buf    = nullptr;
+        D3D11_SUBRESOURCE_DATA  data;
         
         desc11.ByteWidth        = desc.size;        
         desc11.Usage            = D3D11_USAGE_DYNAMIC;
         desc11.CPUAccessFlags   = D3D11_CPU_ACCESS_WRITE;
         desc11.BindFlags        = D3D11_BIND_INDEX_BUFFER;                
         desc11.MiscFlags        = 0;
+
+        if( desc.initialData )
+        {
+            data.pSysMem     = desc.initialData;
+            data.SysMemPitch = desc.size;
+        }
         
-        HRESULT hr = _D3D11_Device->CreateBuffer( &desc11, NULL, &buf );
+        HRESULT hr = _D3D11_Device->CreateBuffer( &desc11, (desc.initialData) ? &data : NULL, &buf );
 
         if( SUCCEEDED(hr) )
         {
@@ -216,6 +223,12 @@ dx11_IndexBuffer_Unmap( Handle ib )
 
 namespace IndexBufferDX11
 {
+
+void
+Init( uint32 maxCount )
+{
+    IndexBufferDX11Pool::Reserve( maxCount );
+}
 
 void
 SetupDispatch( Dispatch* dispatch )

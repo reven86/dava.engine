@@ -78,6 +78,8 @@ _VertexAttribIndex( VertexSemantics s, uint32 i )
         case VS_BINORMAL    : attr_i = VATTR_BINORMAL; break;
         case VS_BLENDWEIGHT : attr_i = VATTR_BLENDWEIGHT; break;
         case VS_BLENDINDEX  : attr_i = VATTR_BLENDINDEX; break;
+            
+        default: break;
     }
     
     DVASSERT(attr_i != InvalidIndex);
@@ -668,6 +670,8 @@ Logger::Info("  fprogUid= %s",desc.fprogUid.c_str());
                         case 4 : fmt = MTLVertexFormatUChar4Normalized; break;
                     }
                 }   break;
+                    
+                default: break;
             }
             DVASSERT(fmt != MTLVertexFormatInvalid);
             
@@ -906,6 +910,8 @@ SetToRHI( Handle ps, uint32 layoutUID, bool ds_used, id<MTLRenderCommandEncoder>
                                     case 4 : fmt = MTLVertexFormatUChar4Normalized; break;
                                 }
                             }   break;
+                                
+                            default: break;
                         }
 
 
@@ -954,6 +960,12 @@ SetToRHI( Handle ps, uint32 layoutUID, bool ds_used, id<MTLRenderCommandEncoder>
 
 namespace ConstBufferMetal
 {
+
+void
+Init( uint32 maxCount )
+{
+    ConstBufMetalPool::Reserve( maxCount );
+}
 
 void
 InitializeRingBuffer( uint32 size )

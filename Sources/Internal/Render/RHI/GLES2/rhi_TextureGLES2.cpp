@@ -155,19 +155,90 @@ TextureGLES2_t::Create( const Texture::Descriptor& desc, bool force_immediate )
 
         ExecGL( &cmd1, 1, force_immediate );
 
-        if(     cmd1.status == GL_NO_ERROR 
-            &&  (desc.autoGenMipmaps  &&  !desc.isRenderTarget)
-          )
+        if( cmd1.status == GL_NO_ERROR )
         {
-            GLenum      target = (desc.type == TEXTURE_TYPE_CUBE)  ? GL_TEXTURE_CUBE_MAP  : GL_TEXTURE_2D;
-            GLCommand cmd2[] =
+            GLenum      target   = (desc.type == TEXTURE_TYPE_CUBE)  ? GL_TEXTURE_CUBE_MAP  : GL_TEXTURE_2D;
+            uint32      cmd2_cnt = 2;
+            GLCommand   cmd2[4+countof(desc.initialData)] =
             {
-            {GLCommand::SET_ACTIVE_TEXTURE, {GL_TEXTURE0 + 0}},
-            {GLCommand::BIND_TEXTURE, {target, uint64_t(uid)}},
-            {GLCommand::GENERATE_MIPMAP, {}},
-            {GLCommand::RESTORE_TEXTURE0, {}}};
+                { GLCommand::SET_ACTIVE_TEXTURE, { GL_TEXTURE0+0 } }//,
+//                { GLCommand::BIND_TEXTURE, { target, uid[0] } }
+            };
 
-            ExecGL( cmd2, countof(cmd2), force_immediate );
+            if( desc.autoGenMipmaps  &&  !desc.isRenderTarget )
+            {
+                cmd2[3].func = GLCommand::GENERATE_MIPMAP;
+                ++cmd2_cnt;
+            }
+
+            // process initial-data, if any
+//            if( desc.type == TEXTURE_TYPE_CUBE )
+            {
+                uint32  array_sz = (desc.type == TEXTURE_TYPE_CUBE)  ? 6  : 1;
+                GLenum  face[]   = { GL_TEXTURE_CUBE_MAP_POSITIVE_X, GL_TEXTURE_CUBE_MAP_NEGATIVE_X, GL_TEXTURE_CUBE_MAP_POSITIVE_Y, GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, GL_TEXTURE_CUBE_MAP_POSITIVE_Z, GL_TEXTURE_CUBE_MAP_NEGATIVE_Z };
+                GLint   int_fmt;
+                GLint   fmt;
+                GLenum  type;
+                bool    compressed;
+    
+                GetGLTextureFormat( desc.format, &int_fmt, &fmt, &type, &compressed );
+    
+                DVASSERT(desc.levelCount <= countof(desc.initialData));
+                for( unsigned s=0; s!=array_sz; ++s )
+                {
+                    cmd2[cmd2_cnt].func   = GLCommand::BIND_TEXTURE;
+                    cmd2[cmd2_cnt].arg[0] = (desc.type == TEXTURE_TYPE_CUBE)  ? GL_TEXTURE_CUBE_MAP  : GL_TEXTURE_2D;
+                    cmd2[cmd2_cnt].arg[1] = uint64(&(uid[0]));
+                    ++cmd2_cnt;
+
+                    target  = (desc.type == TEXTURE_TYPE_CUBE)  ? face[s]  : GL_TEXTURE_2D;
+                    
+                    for( unsigned m=0; m!=desc.levelCount; ++m )
+                    {
+                        GLCommand*  cmd  = cmd2 + cmd2_cnt;
+                        void*       data =  desc.initialData[s*desc.levelCount+m];
+
+                        if( data )
+                        {
+                            Size2i  sz      = TextureExtents( Size2i(desc.width,desc.height), m );
+                            uint32  data_sz = TextureSize( desc.format, sz.dx, sz.dy);
+            
+                            cmd->func    = GLCommand::TEX_IMAGE2D;
+                            cmd->arg[0]  = target;
+                            cmd->arg[1]  = m;
+                            cmd->arg[2]  = uint64(int_fmt);
+                            cmd->arg[3]  = uint64(sz.dx);
+                            cmd->arg[4]  = uint64(sz.dy);
+                            cmd->arg[5]  = 0;
+                            cmd->arg[6]  = uint64(fmt);
+                            cmd->arg[7]  = type;
+                            cmd->arg[8]  = uint64(data_sz);
+                            cmd->arg[9]  = (uint64)(data);
+                            cmd->arg[10] = compressed;
+
+                            if( desc.format == TEXTURE_FORMAT_R4G4B4A4 )
+                                _FlipRGBA4_ABGR4( desc.initialData[m], data_sz );
+                            else if( desc.format == TEXTURE_FORMAT_R5G5B5A1 )
+                                _ABGR1555toRGBA5551( desc.initialData[m], data_sz );
+
+                            ++cmd2_cnt;
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                }
+
+                cmd2[cmd2_cnt].func = GLCommand::RESTORE_TEXTURE0;
+                ++cmd2_cnt;
+            }
+//            else
+//            {
+//                DVASSERT(desc.initialData[0]==nullptr);
+//            }
+            
+            ExecGL( cmd2, cmd2_cnt, force_immediate );
         }
     }
 
@@ -191,20 +262,14 @@ TextureGLES2_t::Create( const Texture::Descriptor& desc, bool force_immediate )
             isRenderTarget        = true;
             forceSetSamplerState  = false;
 
-            GLint int_fmt, fmt;
-            GLenum type;
-            bool compressed;
-            GetGLTextureFormat( format, &int_fmt, &fmt, &type, &compressed );
-
-            DVASSERT(!compressed);
-
-            GLCommand cmd3[] =
+            GLCommand   cmd3[] =
             {
-            {GLCommand::BIND_TEXTURE, {GL_TEXTURE_2D, uint64_t(uid)}},
-            {GLCommand::TEX_IMAGE2D, {GL_TEXTURE_2D, 0, uint64(int_fmt), uint64(desc.width), uint64(desc.height), 0, uint64(fmt), type, 0, 0, 0}},
-            {GLCommand::TEX_PARAMETER_I, {GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST}},
-            {GLCommand::TEX_PARAMETER_I, {GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST}},
-            {GLCommand::RESTORE_TEXTURE0, {}}};
+                { GLCommand::BIND_TEXTURE, { GL_TEXTURE_2D, uint64(&(this->uid)) } },
+                { GLCommand::TEX_IMAGE2D, { GL_TEXTURE_2D, 0, GL_RGBA, desc.width, desc.height, 0, GL_BGRA, GL_UNSIGNED_BYTE, 0 } },
+                { GLCommand::TEX_PARAMETER_I, { GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST } },
+                { GLCommand::TEX_PARAMETER_I, { GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST } },
+                { GLCommand::RESTORE_TEXTURE0, {} }
+            };
 
             ExecGL( cmd3, countof(cmd3), force_immediate );
         }
@@ -267,8 +332,7 @@ TextureGLES2_t::Destroy( bool force_immediate )
 
     ExecGL( cmd, cmd_cnt );
 
-    uid = 0;
-    uid2 = 0;
+
 
     DVASSERT(!isMapped);
         
@@ -329,14 +393,14 @@ gles2_Texture_Create( const Texture::Descriptor& desc )
 static void*
 gles2_Texture_Map( Handle tex, unsigned level, TextureFace face )
 {
-    TextureGLES2_t* self = TextureGLES2Pool::Get( tex );
-    void*              mem = nullptr;
-    uint32 textureDataSize = TextureSize(self->format, self->width, self->height, level);
+    TextureGLES2_t* self    = TextureGLES2Pool::Get( tex );
+    void*           data    = nullptr;
+    uint32          data_sz = TextureSize( self->format, self->width, self->height, level );
     
     DVASSERT(!self->isRenderBuffer);
     DVASSERT(!self->isMapped);
 
-    self->mappedData = ::realloc( self->mappedData, textureDataSize );
+    self->mappedData = ::realloc( self->mappedData, data_sz );
     
     if( self->mappedData )
     {
@@ -354,13 +418,13 @@ gles2_Texture_Map( Handle tex, unsigned level, TextureFace face )
 
             ExecGL( cmd, countof(cmd) );            
             
-            mem               = self->mappedData;
+            data              = self->mappedData;
             self->mappedLevel = 0;
             self->isMapped    = true;
         }
         else
         {
-            mem               = self->mappedData;
+            data              = self->mappedData;
             self->mappedLevel = level;
             self->isMapped    = true;
 
@@ -378,14 +442,14 @@ gles2_Texture_Map( Handle tex, unsigned level, TextureFace face )
     
     if( self->format == TEXTURE_FORMAT_R4G4B4A4 )
     {
-        _FlipRGBA4_ABGR4( self->mappedData, textureDataSize );
+        _FlipRGBA4_ABGR4( self->mappedData, data_sz );
     }
     else if (self->format == TEXTURE_FORMAT_R5G5B5A1)
     {
-        _ABGR1555toRGBA5551(self->mappedData, textureDataSize);
+        _ABGR1555toRGBA5551( self->mappedData, data_sz );
     }
 
-    return mem;
+    return data;
 }
 
 
@@ -414,13 +478,29 @@ gles2_Texture_Unmap( Handle tex )
         _RGBA5551toABGR1555(self->mappedData, textureDataSize);
     }
 
-    GLenum      target = (self->isCubeMap)  ? GL_TEXTURE_CUBE_MAP  : GL_TEXTURE_2D;
-    GLCommand cmd[] =
+    GLenum      ttarget = (self->isCubeMap)  ? GL_TEXTURE_CUBE_MAP  : GL_TEXTURE_2D;
+    GLenum      target  = GL_TEXTURE_2D;
+        
+    if( self->isCubeMap )
     {
-    {GLCommand::SET_ACTIVE_TEXTURE, {GL_TEXTURE0 + 0}},
-    {GLCommand::BIND_TEXTURE, {target, uint64_t(&self->uid)}},
-    {GLCommand::TEX_IMAGE2D, {target, self->mappedLevel, uint64(int_fmt), uint64(sz.dx), uint64(sz.dy), 0, uint64(fmt), type, uint64(textureDataSize), (uint64)(self->mappedData), compressed}},
-    {GLCommand::RESTORE_TEXTURE0, {}}};
+        switch( self->mappedFace )
+        {
+            case TEXTURE_FACE_POSITIVE_X : target = GL_TEXTURE_CUBE_MAP_POSITIVE_X; break;
+            case TEXTURE_FACE_NEGATIVE_X : target = GL_TEXTURE_CUBE_MAP_NEGATIVE_X; break;
+            case TEXTURE_FACE_POSITIVE_Y : target = GL_TEXTURE_CUBE_MAP_POSITIVE_Y; break;
+            case TEXTURE_FACE_NEGATIVE_Y : target = GL_TEXTURE_CUBE_MAP_NEGATIVE_Y; break;
+            case TEXTURE_FACE_POSITIVE_Z : target = GL_TEXTURE_CUBE_MAP_POSITIVE_Z; break;
+            case TEXTURE_FACE_NEGATIVE_Z : target = GL_TEXTURE_CUBE_MAP_NEGATIVE_Z; break;
+        }
+    }
+
+    GLCommand   cmd[]  =
+    {
+        { GLCommand::SET_ACTIVE_TEXTURE, { GL_TEXTURE0+0 } },
+        { GLCommand::BIND_TEXTURE, { ttarget, uint64(&(self->uid)) } },
+        { GLCommand::TEX_IMAGE2D, { target, self->mappedLevel, uint64(int_fmt), uint64(sz.dx), uint64(sz.dy), 0, uint64(fmt), type, uint64(textureDataSize), (uint64)(self->mappedData), compressed } },
+        { GLCommand::RESTORE_TEXTURE0, {} }
+    };
 
     ExecGL( cmd, countof(cmd) );
 
@@ -470,12 +550,13 @@ gles2_Texture_Update( Handle tex, const void* data, uint32 level, TextureFace fa
             }
         }
 
-        GLCommand cmd[] =
-        {
-        {GLCommand::SET_ACTIVE_TEXTURE, {GL_TEXTURE0 + 0}},
-        {GLCommand::BIND_TEXTURE, {ttarget, uint64_t(&self->uid)}},
-        {GLCommand::TEX_IMAGE2D, {target, uint64(level), uint64(int_fmt), uint64(sz.dx), uint64(sz.dy), 0, uint64(fmt), type, uint64(textureDataSize), (uint64)(data), compressed}},
-        {GLCommand::RESTORE_TEXTURE0, {}}};
+        GLCommand   cmd[]  =
+        {        
+            { GLCommand::SET_ACTIVE_TEXTURE, { GL_TEXTURE0+0 } },
+            { GLCommand::BIND_TEXTURE, { ttarget, uint64(&(self->uid)) } },
+            { GLCommand::TEX_IMAGE2D, { target, uint64(level), uint64(int_fmt), uint64(sz.dx), uint64(sz.dy), 0, uint64(fmt), type, uint64(textureDataSize), (uint64)(data), compressed } },
+            { GLCommand::RESTORE_TEXTURE0, {} }
+        };
 
         ExecGL( cmd, countof(cmd) );
     }
@@ -639,6 +720,12 @@ namespace TextureGLES2
 { 
 
 void
+Init( uint32 maxCount )
+{
+    TextureGLES2Pool::Reserve( maxCount );
+}
+
+void
 SetupDispatch( Dispatch* dispatch )
 {
     dispatch->impl_Texture_Create       = &gles2_Texture_Create;
@@ -729,7 +816,7 @@ SetAsRenderTarget( Handle tex, Handle depth )
                 glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, ds->uid );
 #endif
             }
-            #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+            #if defined __DAVAENGINE_IPHONE__
             #else
             GLenum          b[1] = { GL_COLOR_ATTACHMENT0 };
             
@@ -776,6 +863,7 @@ NeedRestoreCount()
 {
     return TextureGLES2_t::NeedRestoreCount();
 }
+
 
 } // namespace TextureGLES2
 

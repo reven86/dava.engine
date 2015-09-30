@@ -57,10 +57,11 @@ RasterizerParamDX11
 {
     uint32  cullMode:3;
     uint32  scissorEnabled:1;
+    uint32  wireframe:1;
 
     bool    operator==( const RasterizerParamDX11& b ) const
             {
-                return this->cullMode == b.cullMode  &&  this->scissorEnabled == b.scissorEnabled;
+                return this->cullMode == b.cullMode  &&  this->scissorEnabled == b.scissorEnabled  &&  this->wireframe == b.wireframe;
             }
 };
 
@@ -188,7 +189,7 @@ _GetRasterizerState( RasterizerParamDX11 param )
         D3D11_RASTERIZER_DESC   desc;
         HRESULT                 hr;
 
-        desc.FillMode               = D3D11_FILL_SOLID;
+        desc.FillMode               = (param.wireframe) ? D3D11_FILL_WIREFRAME : D3D11_FILL_SOLID;
         desc.FrontCounterClockwise  = FALSE;
 
         switch( CullMode(param.cullMode) )
@@ -277,7 +278,7 @@ dx11_RenderPass_Begin( Handle pass )
     {
         _Frame.push_back( FrameDX11() );
         _Frame.back().number         = _FrameNumber;
-        _Frame.back().sync = rhi::InvalidHandle;
+        _Frame.back().sync           = rhi::InvalidHandle;
         _Frame.back().readyToExecute = false;
 
 Trace("\n\n-------------------------------\nframe %u started\n",_FrameNumber);
@@ -339,6 +340,7 @@ dx11_CommandBuffer_Begin( Handle cmdBuf )
 
     cb->rs_param.cullMode       = CULL_NONE;
     cb->rs_param.scissorEnabled = false;
+    cb->rs_param.wireframe      = false;
 
     cb->sync                    = InvalidHandle;
 
@@ -480,7 +482,7 @@ dx11_CommandBuffer_SetScissorRect( Handle cmdBuf, ScissorRect rect )
 
 //------------------------------------------------------------------------------
 
-void
+static void
 dx11_CommandBuffer_SetViewport( Handle cmdBuf, Viewport vp )
 {
     CommandBufferDX11_t*    cb = CommandBufferPool::Get( cmdBuf );
@@ -506,6 +508,17 @@ dx11_CommandBuffer_SetViewport( Handle cmdBuf, Viewport vp )
     {
         cb->context->RSSetViewports( 1, &(cb->def_viewport) );
     }
+}
+
+
+//------------------------------------------------------------------------------
+
+static void
+dx11_CommandBuffer_SetFillMode( Handle cmdBuf, FillMode mode )
+{
+    CommandBufferDX11_t*    cb = CommandBufferPool::Get( cmdBuf );
+    
+    cb->rs_param.wireframe = (mode == FILLMODE_WIREFRAME);
 }
 
 
@@ -841,18 +854,15 @@ dx11_SyncObject_IsSignaled( Handle obj )
 static void
 _ExecuteQueuedCommandsDX11()
 {
-#ifdef __DAVAENGINE_WIN_UAP__
-    // this hack need removed, when rhi_dx thread will synchronized with rander::reset
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
-    DAVA::UniqueLock<DAVA::Mutex> lock(need_synchronized);
-#endif
-
 Trace("rhi-dx11.exec-queued-cmd\n");
+
+    if( _DX11_InitParam.FrameCommandExecutionSync )
+        _DX11_InitParam.FrameCommandExecutionSync->Lock();
 
     std::vector<RenderPassDX11_t*>  pass;
     std::vector<Handle>             pass_h;
     unsigned                        frame_n = 0;
-    bool                            do_exit = false;
+    bool                            do_exec = true;
 
     _FrameSync.Lock();
     if( _Frame.size() )
@@ -881,7 +891,7 @@ Trace("rhi-dx11.exec-queued-cmd\n");
     }
     else
     {
-        do_exit = true;
+        do_exec = false;
     }
 
     if (_Frame.size() && _Frame.begin()->sync != InvalidHandle)
@@ -895,79 +905,59 @@ Trace("rhi-dx11.exec-queued-cmd\n");
 
     _FrameSync.Unlock();
 
-    if( do_exit )
-        return;
-
+    if( do_exec )
+    {
 Trace("\n\n-------------------------------\nexecuting frame %u\n",frame_n);
-    for( std::vector<RenderPassDX11_t*>::iterator p=pass.begin(),p_end=pass.end(); p!=p_end; ++p )
-    {
-        RenderPassDX11_t*   pp = *p;
-
-        for( unsigned b=0; b!=pp->cmdBuf.size(); ++b )
+        for( std::vector<RenderPassDX11_t*>::iterator p=pass.begin(),p_end=pass.end(); p!=p_end; ++p )
         {
-            Handle               cb_h = pp->cmdBuf[b];
-            CommandBufferDX11_t* cb   = CommandBufferPool::Get( cb_h );
-            
-            cb->Execute();
+            RenderPassDX11_t*   pp = *p;
 
-            if( cb->sync != InvalidHandle )
+            for( unsigned b=0; b!=pp->cmdBuf.size(); ++b )
             {
-                SyncObjectDX11_t*   sync = SyncObjectPool::Get( cb->sync );
+                Handle               cb_h = pp->cmdBuf[b];
+                CommandBufferDX11_t* cb   = CommandBufferPool::Get( cb_h );
+            
+                cb->Execute();
 
-                sync->frame       = frame_n;
-                sync->is_signaled = false;
+                if( cb->sync != InvalidHandle )
+                {
+                    SyncObjectDX11_t*   sync = SyncObjectPool::Get( cb->sync );
+
+                    sync->frame       = frame_n;
+                    sync->is_signaled = false;
+                }
+
+                CommandBufferPool::Free( cb_h );
             }
-
-            CommandBufferPool::Free( cb_h );
         }
-        
-//        RenderPassPool::Free( *p );
-    }
 
-    _FrameSync.Lock();
-    {
+        _FrameSync.Lock();
+        {
 Trace("\n\n-------------------------------\nframe %u executed(submitted to GPU)\n",frame_n);
-        _Frame.erase( _Frame.begin() );
+            _Frame.erase( _Frame.begin() );
         
-        for( std::vector<Handle>::iterator p=pass_h.begin(),p_end=pass_h.end(); p!=p_end; ++p )
-            RenderPassPool::Free( *p );
-    }    
-    _FrameSync.Unlock();
+            for( std::vector<Handle>::iterator p=pass_h.begin(),p_end=pass_h.end(); p!=p_end; ++p )
+                RenderPassPool::Free( *p );
+        }    
+        _FrameSync.Unlock();
 
+
+        // do present
     
-    // do flip, reset/restore device if necessary
-
-//    HRESULT hr;
-/*
-    if( _ResetPending )
-    {
-        hr = _D3D9_Device->TestCooperativeLevel();
-
-        if( hr == D3DERR_DEVICENOTRESET )
-        {
-///            reset( Size2i(_present_param->BackBufferWidth,_present_param->BackBufferHeight) );
-
-            _ResetPending = false;
-        }
-        else
-        {
-            ::Sleep( 100 );
-        }
-    }
-    else
-*/    
-    {
         _D3D11_SwapChain->Present( 0, 0 );
-    }    
 
 
-    // update sync-objects
+        // update sync-objects
 
-    for( SyncObjectPool::Iterator s=SyncObjectPool::Begin(),s_end=SyncObjectPool::End(); s!=s_end; ++s )
-    {
-        if (s->is_used && (frame_n - s->frame >= 2))
-            s->is_signaled = true;
+        for( SyncObjectPool::Iterator s=SyncObjectPool::Begin(),s_end=SyncObjectPool::End(); s!=s_end; ++s )
+        {
+            if (s->is_used && (frame_n - s->frame >= 2))
+                s->is_signaled = true;
+        }
     }
+
+    if( _DX11_InitParam.FrameCommandExecutionSync )
+        _DX11_InitParam.FrameCommandExecutionSync->Unlock();
 }
 
 
@@ -1154,8 +1144,8 @@ Trace("rhi-dx11.present\n");
             if( _Frame.size() )
             {
                 _Frame.back().readyToExecute = true;
-                _Frame.back().sync = sync;
-                _FrameStarted = false;
+                _Frame.back().sync           = sync;
+                _FrameStarted                = false;
 Trace("\n\n-------------------------------\nframe %u generated\n",_Frame.back().number);
             }
         }
@@ -1240,6 +1230,7 @@ SetupDispatch( Dispatch* dispatch )
     dispatch->impl_CommandBuffer_SetCullMode            = &dx11_CommandBuffer_SetCullMode;
     dispatch->impl_CommandBuffer_SetScissorRect         = &dx11_CommandBuffer_SetScissorRect;
     dispatch->impl_CommandBuffer_SetViewport            = &dx11_CommandBuffer_SetViewport;
+    dispatch->impl_CommandBuffer_SetFillMode            = &dx11_CommandBuffer_SetFillMode;
     dispatch->impl_CommandBuffer_SetVertexData          = &dx11_CommandBuffer_SetVertexData;
     dispatch->impl_CommandBuffer_SetVertexConstBuffer   = &dx11_CommandBuffer_SetVertexConstBuffer;
     dispatch->impl_CommandBuffer_SetVertexTexture       = &dx11_CommandBuffer_SetVertexTexture;
