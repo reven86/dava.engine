@@ -162,6 +162,29 @@ dx11_IndexBuffer_Update( Handle vb, const void* data, unsigned offset, unsigned 
 
     if( offset+size <= self->size )
     {
+        HRESULT                     hr;
+        D3D11_MAPPED_SUBRESOURCE    rc  = {0};
+
+        _D3D11_SecondaryContextSync.Lock();
+        hr = _D3D11_SecondaryContext->Map( self->buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &rc );
+        if( SUCCEEDED(hr)  &&  rc.pData )
+        {
+            memcpy( ((uint8*)(rc.pData))+offset, data, size );            
+            _D3D11_SecondaryContext->Unmap( self->buffer, 0 );
+            success = true;
+        }
+        _D3D11_SecondaryContextSync.Unlock();
+    }
+    
+    return success;
+/*
+    bool                success = false;
+    IndexBufferDX11_t*  self    = IndexBufferDX11Pool::Get( vb );
+
+    DVASSERT(!self->isMapped);
+
+    if( offset+size <= self->size )
+    {
         D3D11_MAPPED_SUBRESOURCE    rc   = {0};
         DX11Command                 cmd1 = { DX11Command::MAP, { uint64(self->buffer), 0, D3D11_MAP_WRITE_DISCARD, 0, uint64(&rc) } };
         
@@ -178,6 +201,7 @@ dx11_IndexBuffer_Update( Handle vb, const void* data, unsigned offset, unsigned 
     }
     
     return success;
+*/
 }
 
 
@@ -186,6 +210,22 @@ dx11_IndexBuffer_Update( Handle vb, const void* data, unsigned offset, unsigned 
 static void*
 dx11_IndexBuffer_Map( Handle ib, unsigned offset, unsigned size )
 {
+    void*                       ptr  = nullptr;
+    IndexBufferDX11_t*          self = IndexBufferDX11Pool::Get( ib );
+    D3D11_MAPPED_SUBRESOURCE    rc   = {0};
+
+    _D3D11_SecondaryContextSync.Lock();
+    _D3D11_SecondaryContext->Map( self->buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &rc );
+    _D3D11_SecondaryContextSync.Unlock();
+
+    if( rc.pData )
+    {
+        ptr            = rc.pData;
+        self->isMapped = true;
+    }
+
+    return ((uint8*)ptr)+offset;
+/*
     void*                       ptr  = nullptr;
     IndexBufferDX11_t*          self = IndexBufferDX11Pool::Get( ib );
     D3D11_MAPPED_SUBRESOURCE    rc   = {0};
@@ -201,6 +241,7 @@ dx11_IndexBuffer_Map( Handle ib, unsigned offset, unsigned size )
     }
 
     return ((uint8*)ptr)+offset;
+*/
 }
 
 
@@ -210,11 +251,20 @@ static void
 dx11_IndexBuffer_Unmap( Handle ib )
 {
     IndexBufferDX11_t*  self = IndexBufferDX11Pool::Get( ib );
+
+    DVASSERT(self->isMapped);
+    _D3D11_SecondaryContextSync.Lock();
+    _D3D11_SecondaryContext->Unmap( self->buffer, 0 );
+    _D3D11_SecondaryContextSync.Unlock();
+    self->isMapped = false;
+/*
+    IndexBufferDX11_t*  self = IndexBufferDX11Pool::Get( ib );
     DX11Command         cmd  = { DX11Command::UNMAP, { uint64(self->buffer), 0 } };
     
     DVASSERT(self->isMapped);
     ExecDX11( &cmd, 1 );
     self->isMapped = false;
+*/
 }
 
 
