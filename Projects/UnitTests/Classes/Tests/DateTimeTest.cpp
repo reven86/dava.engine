@@ -119,8 +119,8 @@ DAVA_TESTCLASS(DateTimeTest)
             Logger::Info("x_time_en == \"%s\"", UTF8Utils::EncodeToUTF8(x_time_en).c_str());
             TEST_VERIFY(wideCompare(x_time_en, L"4:30:22 PM"));
 
-            //TEST_VERIFY(x_date_en != x_date_ru);
-            //TEST_VERIFY(x_time_en != x_time_ru);
+            TEST_VERIFY(x_date_en != x_date_ru);
+            TEST_VERIFY(x_time_en != x_time_ru);
 
             ls->SetCurrentLocale(previousLocale);
         }

@@ -58,12 +58,15 @@ namespace DAVA
         return str;
     }
 
-    WideString DateTime::GetLocalizedDate() const
+    static WideString GetLocalizedDateOrTime(NSDateFormatterStyle timeStyle,
+                                             NSDateFormatterStyle dateStyle,
+                                             int32 timeZoneOffset,
+                                             time_t innerTime)
     {
-        time_t timeWithTZ = innerTime + timeZoneOffset;
+        NSTimeZone* timeZone = [NSTimeZone timeZoneForSecondsFromGMT:timeZoneOffset];
 
         tm timeinfo;
-        GmTimeThreadSafe(&timeinfo, &timeWithTZ);
+        gmtime_r(&innerTime, &timeinfo);
 
         DAVA::String locID = LocalizationSystem::Instance()->GetCountryCode();
 
@@ -72,13 +75,15 @@ namespace DAVA
 
         NSLocale* locale = [[NSLocale alloc] initWithLocaleIdentifier:locale_name];
 
-        NSDate* date = [NSDate dateWithTimeIntervalSince1970:timeWithTZ];
+        NSDate* date = [NSDate dateWithTimeIntervalSince1970:innerTime];
 
         NSDateFormatter* dateFormatter = [[NSDateFormatter alloc] init];
-        dateFormatter.timeStyle = NSDateFormatterNoStyle;
-        dateFormatter.dateStyle = NSDateFormatterShortStyle;
 
         [dateFormatter setLocale:locale];
+        [dateFormatter setTimeZone:timeZone];
+
+        dateFormatter.timeStyle = timeStyle;
+        dateFormatter.dateStyle = dateStyle;
 
         NSString* date_str = [dateFormatter stringFromDate:date];
 
@@ -87,33 +92,20 @@ namespace DAVA
         return UTF8Utils::EncodeToWideString(result);
     }
 
+    WideString DateTime::GetLocalizedDate() const
+    {
+        return GetLocalizedDateOrTime(NSDateFormatterNoStyle,
+                                      NSDateFormatterShortStyle,
+                                      timeZoneOffset,
+                                      innerTime);
+    }
+
     WideString DateTime::GetLocalizedTime() const
     {
-        time_t timeWithTZ = innerTime + timeZoneOffset;
-
-        tm timeinfo;
-        GmTimeThreadSafe(&timeinfo, &timeWithTZ);
-
-        DAVA::String locID = LocalizationSystem::Instance()->GetCountryCode();
-
-        NSString* locale_name = [NSString stringWithCString:locID.c_str()
-                                                   encoding:[NSString defaultCStringEncoding]];
-
-        NSLocale* locale = [[NSLocale alloc] initWithLocaleIdentifier:locale_name];
-
-        NSDate* date = [NSDate dateWithTimeIntervalSince1970:timeWithTZ];
-
-        NSDateFormatter* dateFormatter = [[NSDateFormatter alloc] init];
-        dateFormatter.timeStyle = NSDateFormatterMediumStyle;
-        dateFormatter.dateStyle = NSDateFormatterNoStyle;
-
-        [dateFormatter setLocale:locale];
-
-        NSString* date_str = [dateFormatter stringFromDate:date];
-
-        std::string result = [date_str cStringUsingEncoding:[NSString defaultCStringEncoding]];
-
-        return UTF8Utils::EncodeToWideString(result);
+        return GetLocalizedDateOrTime(NSDateFormatterMediumStyle,
+                                      NSDateFormatterNoStyle,
+                                      timeZoneOffset,
+                                      innerTime);
     }
 
     int32 DateTime::GetLocalTimeZoneOffset()
