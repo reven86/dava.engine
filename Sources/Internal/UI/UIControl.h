@@ -462,25 +462,25 @@ public:
      \brief Returns control pivot point.
      \returns control pivot point.
      */
-    inline const Vector2 &GetPivotPoint() const;
+    inline Vector2 GetPivotPoint() const;
 
     /**
      \brief Sets the control pivot point.
      \param[in] newPivot new control pivot point.
      */
-    void SetPivotPoint(const Vector2 &newPivot);
+    void SetPivotPoint(const Vector2& newPivot);
 
     /**
      \brief Returns control pivot.
      \returns control pivot.
      */
-    inline Vector2 GetPivot() const;
+    inline const Vector2& GetPivot() const;
 
     /**
      \brief Sets the control pivot.
      \param[in] newPivot new control pivot.
      */
-    void SetPivot(const Vector2 &newPivot);
+    void SetPivot(const Vector2& newPivot);
 
     /**
      \brief Returns control scale.
@@ -1246,6 +1246,7 @@ public:
 private:
     String name;
     FastName fastName;
+    Vector2 pivot; //!<control pivot. Top left control corner by default.
 protected:
     UIControl *parent;
     List<UIControl*> childs;
@@ -1255,7 +1256,6 @@ public:
     Vector2 relativePosition;//!<position in the parent control.
     Vector2 size;//!<control size.
 
-    Vector2 pivotPoint;//!<control pivot point. Top left control corner by default.
     Vector2 scale;//!<control scale. Scale relative to pivot point.
     float32 angle;//!<control rotation angle. Rotation around pivot point.
 
@@ -1370,7 +1370,7 @@ public:
     
     const UIStyleSheetPropertySet& GetStyledPropertySet() const;
     void SetStyledPropertySet(const UIStyleSheetPropertySet &set);
-    
+
     bool IsStyleSheetInitialized() const;
     void SetStyleSheetInitialized();
 
@@ -1421,7 +1421,7 @@ public:
     
 
     INTROSPECTION_EXTEND(UIControl, AnimatedObject,
-                         PROPERTY("position", "Position", GetPosition, SetPosition, I_SAVE | I_VIEW | I_EDIT )
+                         PROPERTY("position", "Position", GetPosition, SetPosition, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("size", "Size", GetSize, SetSize, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("scale", "Scale", GetScale, SetScale, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("pivot", "Pivot", GetPivot, SetPivot, I_SAVE | I_VIEW | I_EDIT)
@@ -1440,16 +1440,13 @@ public:
 
 };
 
-const Vector2 & UIControl::GetPivotPoint() const
+Vector2 UIControl::GetPivotPoint() const
 {
-    return pivotPoint;
+    return pivot * size;
 }
 
-Vector2 UIControl::GetPivot() const
+const Vector2& UIControl::GetPivot() const
 {
-    Vector2 pivot;
-    pivot.x = (size.x == 0.0f) ? 0.0f : (pivotPoint.x/size.x);
-    pivot.y = (size.y == 0.0f) ? 0.0f : (pivotPoint.y/size.y);
     return pivot;
 }
 
