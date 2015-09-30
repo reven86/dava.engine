@@ -502,8 +502,8 @@ namespace DAVA
 		bool isFind = false;
         for (Vector<DAVA::UIEvent>::iterator it = events.begin(); it != events.end(); it++)
         {
-            if(it->tid == button)
-			{
+            if (it->tid == button)
+            {
 				isFind = true;
 
                 it->physPoint.x = static_cast<float32>(GET_X_LPARAM(lParam));
@@ -511,7 +511,7 @@ namespace DAVA
                 it->phase = phase;
 
                 break;
-			}
+            }
 		}
 
 		if(!isFind)
@@ -528,18 +528,18 @@ namespace DAVA
         for (Vector<DAVA::UIEvent>::iterator it = events.begin(); it != events.end(); it++)
         {
             outTouches->push_back(*it);
-		}
+        }
 
 		if(phase == UIEvent::PHASE_ENDED || phase == UIEvent::PHASE_MOVE)
 		{
             for (Vector<DAVA::UIEvent>::iterator it = events.begin(); it != events.end(); it++)
             {
-                if(it->tid == button)
-				{
+                if (it->tid == button)
+                {
                     events.erase(it);
                     break;
                 }
-			}
+            }
 		}
 
 		return phase;
@@ -641,12 +641,12 @@ namespace DAVA
         if (RenderManager::Instance()->GetCursor() != nullptr && mouseCursorShown)
         {
             ShowCursor(false);
-			mouseCursorShown = false;
+            mouseCursorShown = false;
 		}
         if (RenderManager::Instance()->GetCursor() == nullptr && !mouseCursorShown)
         {
             ShowCursor(false);
-			mouseCursorShown = false;
+            mouseCursorShown = false;
 		}
 
 		HandleMouseButtonsReleased(buttsFlags);
@@ -695,7 +695,7 @@ namespace DAVA
 
     LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     {
-        CoreWin32Platform* core = static_cast< CoreWin32Platform* >(Core::Instance());
+        CoreWin32Platform* core = static_cast<CoreWin32Platform*>(Core::Instance());
 #ifndef WM_MOUSEWHEEL
 #define WM_MOUSEWHEEL 0x020A
 #endif
@@ -843,8 +843,8 @@ namespace DAVA
         }
         case WM_NCMOUSEMOVE:
             if (!mouseCursorShown)
-            {	
-				ShowCursor(true);
+            {
+                ShowCursor(true);
 				mouseCursorShown = true;
 			}
 			break;

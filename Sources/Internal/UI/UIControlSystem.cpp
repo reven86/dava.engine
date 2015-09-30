@@ -413,7 +413,7 @@ void UIControlSystem::OnInput(const Vector<UIEvent>& activeInputs, const Vector<
 
     if (frameSkip <= 0)
     {
-		if(Replay::IsRecord())
+        if(Replay::IsRecord())
 		{
             int32 count = static_cast<int32>(activeInputs.size());
             Replay::Instance()->RecordEventsCount(count);
@@ -427,8 +427,8 @@ void UIControlSystem::OnInput(const Vector<UIEvent>& activeInputs, const Vector<
 
             count = static_cast<int32>(allInputs.size());
             Replay::Instance()->RecordEventsCount(count);
-            for(Vector<UIEvent>::const_iterator it = allInputs.begin(); it != allInputs.end(); ++it) 
-			{
+            for (Vector<UIEvent>::const_iterator it = allInputs.begin(); it != allInputs.end(); ++it)
+            {
 				UIEvent ev = *it;
                 ev.point = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(ev.physPoint);
 				Replay::Instance()->RecordEvent(&ev);
@@ -439,8 +439,8 @@ void UIControlSystem::OnInput(const Vector<UIEvent>& activeInputs, const Vector<
         for (Vector<UIEvent>::iterator it = totalInputs.begin(); it != totalInputs.end(); ++it)
         {
             (*it).activeState = UIEvent::ACTIVITY_STATE_INACTIVE;
-			
-			for (Vector<UIEvent>::const_iterator wit = activeInputs.begin(); wit != activeInputs.end(); wit++) 
+
+            for (Vector<UIEvent>::const_iterator wit = activeInputs.begin(); wit != activeInputs.end(); wit++) 
 			{
 				if((*it).tid == (*wit).tid)
 				{
@@ -462,8 +462,8 @@ void UIControlSystem::OnInput(const Vector<UIEvent>& activeInputs, const Vector<
 			{
                 for (Vector<UIEvent>::const_iterator wit = allInputs.begin(); wit != allInputs.end(); ++wit)
                 {
-                    if((*it).tid == (*wit).tid)
-					{
+                    if ((*it).tid == (*wit).tid)
+                    {
 						if((*it).phase == (*wit).phase && (*it).physPoint == (*wit).physPoint)
 						{
 							(*it).activeState = UIEvent::ACTIVITY_STATE_ACTIVE;
@@ -544,8 +544,8 @@ void UIControlSystem::OnInput(const Vector<UIEvent>& activeInputs, const Vector<
             ++it;
         }
 
-        if(currentScreen)
-		{
+        if (currentScreen)
+        {
             // use index "i" because inside loop "totalInputs" can be changed
             // during DVASSERT_MSG
             for(size_t i = 0; i < totalInputs.size(); ++i)
