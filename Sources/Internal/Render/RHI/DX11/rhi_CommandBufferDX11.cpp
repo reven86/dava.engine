@@ -859,6 +859,16 @@ Trace("rhi-dx11.exec-queued-cmd\n");
     if( _DX11_InitParam.FrameCommandExecutionSync )
         _DX11_InitParam.FrameCommandExecutionSync->Lock();
 
+    _D3D11_SecondaryContextSync.Lock();
+    {
+        ID3D11CommandList*  cl = nullptr;
+            
+        _D3D11_SecondaryContext->FinishCommandList( TRUE, &cl );
+        _D3D11_ImmediateContext->ExecuteCommandList( cl, FALSE );
+        cl->Release();
+    }
+    _D3D11_SecondaryContextSync.Unlock();
+
     std::vector<RenderPassDX11_t*>  pass;
     std::vector<Handle>             pass_h;
     unsigned                        frame_n = 0;
@@ -907,17 +917,7 @@ Trace("rhi-dx11.exec-queued-cmd\n");
 
     if( do_exec )
     {
-Trace("\n\n-------------------------------\nexecuting frame %u\n",frame_n);
-        _D3D11_SecondaryContextSync.Lock();
-        {
-            ID3D11CommandList*  cl = nullptr;
-            
-            _D3D11_SecondaryContext->FinishCommandList( TRUE, &cl );
-            _D3D11_ImmediateContext->ExecuteCommandList( cl, FALSE );
-            cl->Release();
-        }
-        _D3D11_SecondaryContextSync.Unlock();
-        
+Trace("\n\n-------------------------------\nexecuting frame %u\n",frame_n);        
         for( std::vector<RenderPassDX11_t*>::iterator p=pass.begin(),p_end=pass.end(); p!=p_end; ++p )
         {
             RenderPassDX11_t*   pp = *p;
