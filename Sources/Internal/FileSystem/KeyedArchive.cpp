@@ -183,38 +183,37 @@ bool KeyedArchive::Save(File *archive) const
 	}
 	return true;
 }
-    
-uint32 KeyedArchive::Save(uint8 *data, uint32 size) const
+
+uint32 KeyedArchive::Save(uint8* data, uint32 size) const
 {
     ScopedPtr<DynamicMemoryFile> buffer(DynamicMemoryFile::Create(File::CREATE | File::WRITE));
-    
+
     Save(buffer);
-    
+
     auto archieveSize = buffer->GetSize();
-    if((nullptr != data) && (size >= archieveSize))
-    {   // if data is null, we just return requested size for data
+    if ((nullptr != data) && (size >= archieveSize))
+    { // if data is null, we just return requested size for data
         Memcpy(data, buffer->GetData(), archieveSize);
     }
     return archieveSize;
 }
 
-bool KeyedArchive::Load(const uint8 *data, uint32 size)
+bool KeyedArchive::Load(const uint8* data, uint32 size)
 {
-    if(nullptr == data || 0 == size)
+    if (nullptr == data || 0 == size)
     {
         return false;
     }
-    
+
     ScopedPtr<DynamicMemoryFile> buffer(DynamicMemoryFile::Create(File::CREATE | File::WRITE | File::READ));
     auto written = buffer->Write(data, size);
     DVASSERT(written == size);
-    
+
     buffer->Seek(0, File::SEEK_FROM_START);
-    
+
     return Load(buffer);
 }
 
-    
 bool KeyedArchive::LoadFromYamlFile(const FilePath & pathName)
 {
 	YamlParser	*parser	= YamlParser::Create(pathName);
@@ -304,10 +303,10 @@ void KeyedArchive::SetFloat(const String & key, float32 value)
 	objectMap[key] = variantValue;
 }
 
-void KeyedArchive::SetFloat64(const String & key, float64 value)
+void KeyedArchive::SetFloat64(const String& key, float64 value)
 {
     DeleteKey(key);
-    VariantType *variantValue = new VariantType();
+    VariantType* variantValue = new VariantType();
     variantValue->SetFloat64(value);
     objectMap[key] = variantValue;
 }
@@ -477,7 +476,7 @@ float32 KeyedArchive::GetFloat(const String & key, float32 defaultValue) const
     return it != objectMap.end() ? it->second->AsFloat() : defaultValue;
 }
 
-float64 KeyedArchive::GetFloat64(const String & key, float64 defaultValue) const
+float64 KeyedArchive::GetFloat64(const String& key, float64 defaultValue) const
 {
     auto it = objectMap.find(key);
     return it != objectMap.end() ? it->second->AsFloat64() : defaultValue;
@@ -698,6 +697,4 @@ const char* KeyedArchive::GenKeyFromIndex(uint32 index)
 	sprintf(tmpKey, "%04u", index);
 	return tmpKey;
 }
-
-	
 };
