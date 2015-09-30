@@ -59,7 +59,7 @@ private:
     void CreateAndInsertGrid(PackageBaseNode* node, size_t pos);
 
     DAVA::ScopedPtr<DAVA::UIControl> controlsCanvas; //to attach or detach from document
-    DAVA::List<BackgroundController*> gridControls;
+    DAVA::List<std::unique_ptr<BackgroundController>> gridControls;
 };
 
 #endif // __QUICKED_CANVAS_SYSTEM_H__

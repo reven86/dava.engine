@@ -45,7 +45,11 @@ SelectionSystem::SelectionSystem(EditorSystemsManager* parent)
 
 SelectionSystem::~SelectionSystem()
 {
-    systemManager->GetPackage()->RemoveListener(this);
+    PackageNode* package = systemManager->GetPackage();
+    if (nullptr != package)
+    {
+        systemManager->GetPackage()->RemoveListener(this);
+    }
 }
 
 void SelectionSystem::OnActivated()

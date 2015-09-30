@@ -121,7 +121,7 @@ private:
     DAVA::UIControl* rootControl = nullptr;
     DAVA::UIControl* scalableControl = nullptr;
 
-    DAVA::List<BaseEditorSystem*> systems;
+    DAVA::List<std::unique_ptr<BaseEditorSystem>> systems;
 
     PackageNode* package = nullptr;
     SelectedControls selectedControlNodes;
