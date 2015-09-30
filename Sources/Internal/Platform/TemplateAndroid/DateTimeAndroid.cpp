@@ -58,11 +58,9 @@ WideString JniDateTime::AsWString(const WideString& format, const String& countr
 
     env->DeleteLocalRef(jFormat);
     env->DeleteLocalRef(jCountryCode);
-    char str[256] = {0};
-    JNI::CreateStringFromJni(obj, str);
-    WideString retWString;
-    UTF8Utils::EncodeToWideString((uint8*)str, strlen(str), retWString);
-    return retWString;
+
+    WideString result = JNI::ToWideString(obj);
+    return result;
 }
 
 int JniDateTime::GetLocalTimeZoneOffset()
