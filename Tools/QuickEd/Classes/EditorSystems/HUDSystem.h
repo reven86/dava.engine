@@ -54,7 +54,7 @@ class HUDSystem final : public BaseEditorSystem, private PackageListener
 {
 public:
     HUDSystem(EditorSystemsManager* parent);
-    ~HUDSystem() = default;
+    ~HUDSystem() override;
 
     void OnDeactivated() override;
 

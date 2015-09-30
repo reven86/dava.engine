@@ -121,12 +121,12 @@ void BackgroundController::ControlPropertyWasChanged(ControlNode* node, Abstract
     const String& name = property->GetName();
     if (node->GetControl() == nestedControl)
     {
-        if (name == "Angle" || name == "Size" || name == "Scale" || name == "Position" || name == "Pivot")
+        if (name == "Angle" || name == "Size" || name == "Scale" || name == "Position" || name == "Pivot" || name == "Visible")
         {
             UpdateCounterpoise();
         }
     }
-    if (name == "Angle" || name == "Size" || name == "Scale" || name == "Position" || name == "Pivot")
+    if (name == "Angle" || name == "Size" || name == "Scale" || name == "Position" || name == "Pivot" || name == "Visible")
     {
         FitGridIfParentIsNested(node);
     }
@@ -134,6 +134,10 @@ void BackgroundController::ControlPropertyWasChanged(ControlNode* node, Abstract
 
 void CalculateTotalRectImpl(UIControl* control, Rect& totalRect, Vector2& rootControlPosition, const UIGeometricData& gd)
 {
+    if (!control->GetVisible())
+    {
+        return;
+    }
     UIGeometricData tempGeometricData = control->GetLocalGeometricData();
     tempGeometricData.AddGeometricData(gd);
     Rect box = tempGeometricData.GetAABBox();

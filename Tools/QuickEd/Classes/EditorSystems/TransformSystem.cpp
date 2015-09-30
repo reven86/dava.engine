@@ -253,10 +253,6 @@ void TransformSystem::MoveAllSelectedControls(Vector2 delta)
 void TransformSystem::ResizeControl(Vector2 delta, bool withPivot, bool rateably)
 {
     DVASSERT(activeArea != HUDAreaInfo::NO_AREA);
-    if (parentGeometricData.scale.x == 0.0f || parentGeometricData.scale.y == 0.0f)
-    {
-        return;
-    }
 
     const auto directionX = cornersDirection.at(activeArea - HUDAreaInfo::TOP_LEFT_AREA)[Vector2::AXIS_X];
     const auto directionY = cornersDirection.at(activeArea - HUDAreaInfo::TOP_LEFT_AREA)[Vector2::AXIS_Y];
@@ -428,11 +424,6 @@ void TransformSystem::AdjustResize(int directionX, int directionY, Vector2& delt
 
 void TransformSystem::MovePivot(Vector2 delta)
 {
-    if (parentGeometricData.scale.x == 0.0f || parentGeometricData.scale.y == 0.0f)
-    {
-        return;
-    }
-
     Vector<PropertyDelta> propertiesDelta;
 
     Vector2 deltaPivot = AdjustPivot(delta);
@@ -481,7 +472,7 @@ Vector2 TransformSystem::AdjustPivot(Vector2& delta)
     const Vector2 angeledDeltaPivot(RotateVector(delta, controlGeometricData));
     Vector2 deltaPivot(angeledDeltaPivot / controlSize);
 
-    const Vector2 scaledRange(Vector2(2.0f, 2.0f) / controlGeometricData.scale);
+    const Vector2 scaledRange(Vector2(3.0f, 3.0f) / controlGeometricData.scale);
     const Vector2 range(scaledRange / controlSize);
     Vector2 origPivot = pivotProperty->GetValue().AsVector2();
 
@@ -492,7 +483,7 @@ Vector2 TransformSystem::AdjustPivot(Vector2& delta)
     {
         float32 left = target - range.dx;
         float32 right = target + range.dx;
-        if (finalPivot.dx >= right && finalPivot.dx <= left)
+        if (finalPivot.dx >= left && finalPivot.dx <= right)
         {
             float availableDelta = 0.0f;
             if (deltaPivot.dx >= 0.0f && origPivot.dx < left)
@@ -506,11 +497,15 @@ Vector2 TransformSystem::AdjustPivot(Vector2& delta)
 
             DVASSERT(fabs(availableDelta) <= fabs(deltaPivot.dx));
             extraDelta.dx += deltaPivot.dx - availableDelta;
-            delta.dx *= availableDelta / deltaPivot.dx;
-            finalPivot.dx = target;
+            if (deltaPivot.dx != 0.0f)
+            {
+                delta.dx *= availableDelta / deltaPivot.dx;
+            }
+            deltaPivot.dx = target - origPivot.dx;
+            break;
         }
     }
-    return finalPivot;
+    return deltaPivot;
 }
 
 void TransformSystem::Rotate(Vector2 pos)
