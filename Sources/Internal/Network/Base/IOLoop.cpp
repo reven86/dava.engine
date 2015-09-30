@@ -90,7 +90,7 @@ int32 IOLoop::Run(eRunMode runMode)
 void IOLoop::Post(UserHandlerType handler)
 {
 #ifdef __DAVAENGINE_WIN_UAP__
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
+//__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
 #else
     {
         LockGuard<Mutex> lock(mutex);
