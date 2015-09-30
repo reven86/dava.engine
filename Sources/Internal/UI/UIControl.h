@@ -468,7 +468,7 @@ public:
      \brief Sets the control pivot point.
      \param[in] newPivot new control pivot point.
      */
-    inline void SetPivotPoint(const Vector2 &newPivot);
+    void SetPivotPoint(const Vector2 &newPivot);
 
     /**
      \brief Returns control pivot.
@@ -480,7 +480,7 @@ public:
      \brief Sets the control pivot.
      \param[in] newPivot new control pivot.
      */
-    inline void SetPivot(const Vector2 &newPivot);
+    void SetPivot(const Vector2 &newPivot);
 
     /**
      \brief Returns control scale.
@@ -1279,8 +1279,9 @@ protected:
     bool isUpdated : 1;
     bool isIteratorCorrupted : 1;
 
-    bool styleSheetRebuildNeeded : 1;
+    bool styleSheetDirty : 1;
     bool styleSheetInitialized : 1;
+    bool layoutDirty : 1;
 
     int32 inputProcessorsCount;
 
@@ -1370,9 +1371,14 @@ public:
     const UIStyleSheetPropertySet& GetStyledPropertySet() const;
     void SetStyledPropertySet(const UIStyleSheetPropertySet &set);
     
-    bool GetStyleSheetInitialized() const;
+    bool IsStyleSheetInitialized() const;
+    void SetStyleSheetInitialized();
 
-    void MarkStyleSheetAsUpdated();
+    void SetStyleSheetDirty();
+    void ResetStyleSheetDirty();
+
+    void SetLayoutDirty();
+    void ResetLayoutDirty();
 
     UIControlPackageContext* GetPackageContext() const;
     UIControlPackageContext* GetLocalPackageContext() const;
@@ -1415,7 +1421,7 @@ public:
     
 
     INTROSPECTION_EXTEND(UIControl, AnimatedObject,
-                         PROPERTY("position", "Position", GetPosition, SetPosition, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("position", "Position", GetPosition, SetPosition, I_SAVE | I_VIEW | I_EDIT )
                          PROPERTY("size", "Size", GetSize, SetSize, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("scale", "Scale", GetScale, SetScale, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("pivot", "Pivot", GetPivot, SetPivot, I_SAVE | I_VIEW | I_EDIT)
@@ -1439,22 +1445,12 @@ const Vector2 & UIControl::GetPivotPoint() const
     return pivotPoint;
 }
 
-void UIControl::SetPivotPoint(const Vector2 &newPivot)
-{
-    pivotPoint = newPivot;
-}
-
 Vector2 UIControl::GetPivot() const
 {
     Vector2 pivot;
     pivot.x = (size.x == 0.0f) ? 0.0f : (pivotPoint.x/size.x);
     pivot.y = (size.y == 0.0f) ? 0.0f : (pivotPoint.y/size.y);
     return pivot;
-}
-
-void UIControl::SetPivot(const Vector2 &newPivot)
-{
-    SetPivotPoint(size*newPivot);
 }
 
 const Vector2 & UIControl::GetScale() const

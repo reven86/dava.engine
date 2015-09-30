@@ -116,6 +116,7 @@ void UIStaticText::SetText(const WideString& _string, const Vector2 &requestedTe
     textBlock->SetText(_string, requestedTextRectSize);
     textBg->SetAlign(textBlock->GetVisualAlign());
     PrepareSprite();
+    SetLayoutDirty();
 }
 
 void UIStaticText::SetTextWithoutRect(const WideString &text)
@@ -128,6 +129,7 @@ void UIStaticText::SetFittingOption(int32 fittingType)
     textBlock->SetRectSize(size);
     textBlock->SetFittingOption(fittingType);
     PrepareSprite();
+    SetLayoutDirty();
 }
 
 int32 UIStaticText::GetFittingOption() const
@@ -142,6 +144,7 @@ void UIStaticText::SetFont(Font * _font)
         textBlock->SetRectSize(size);
         textBlock->SetFont(_font);
         PrepareSprite();
+        SetLayoutDirty();
     }
 }
 
@@ -165,6 +168,7 @@ void UIStaticText::SetMultiline(bool _isMultilineEnabled, bool bySymbol)
     textBlock->SetRectSize(size);
     textBlock->SetMultiline(_isMultilineEnabled, bySymbol);
     PrepareSprite();
+    SetLayoutDirty();
 }
 
 bool UIStaticText::GetMultiline() const
