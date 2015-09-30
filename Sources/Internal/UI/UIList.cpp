@@ -320,7 +320,7 @@ void UIList::Update(float32 timeElapsed)
     {
         r.y = scroll->GetPosition(d, SystemTimer::FrameDelta(), lockTouch);
     }
-    
+
     if (r != scrollContainer->GetRect())
     {
         scrollContainer->SetRect(r);

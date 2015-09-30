@@ -216,5 +216,4 @@ void UISizePolicyComponent::SetLayoutDirty()
         GetControl()->SetLayoutDirty();
     }
 }
-
 }
