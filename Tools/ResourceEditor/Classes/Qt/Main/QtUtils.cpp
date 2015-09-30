@@ -40,6 +40,7 @@
 #include "Classes/CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
 
 #include "QtTools/FileDialog/FileDialog.h"
+#include "QtTools/ConsoleWidget/PointerSerializer.h"
 
 #include "DAVAEngine.h"
 #include <QProcess>
@@ -112,28 +113,41 @@ DAVA::Image * CreateTopLevelImage(const DAVA::FilePath &imagePathname)
 
 void ShowErrorDialog(const DAVA::Set<DAVA::String> &errors)
 {
-    if(errors.empty())
-        return;
-    
-    String errorMessage = String("");
-    Set<String>::const_iterator endIt = errors.end();
-    for(Set<String>::const_iterator it = errors.begin(); it != endIt; ++it)
-    {
-		Logger::Error((*it).c_str());
+    if (errors.empty()) return;
 
-        errorMessage += *it + String("\n");
+	const uint32 maxErrorsPerDialog = 6;
+	uint32 totalErrors = errors.size();
+
+    const String dialogTitle = Format("%u error(s)", totalErrors);
+    const String errorDivideLine("\n--------------------\n");
+
+    String errorMessage;
+    uint32 errorCounter = 0;
+    for (const auto& message : errors)
+    {
+        errorMessage += PointerSerializer::CleanUpString(message) + errorDivideLine;
+        errorCounter++;
+
+        if (errorCounter == maxErrorsPerDialog)
+		{
+            errorMessage += "\n\nSee console log for details.";
+            ShowErrorDialog(errorMessage, dialogTitle);
+            errorMessage.clear();
+            break;
+        }
     }
-    
-    ShowErrorDialog(errorMessage);
+
+	if (!errorMessage.empty())
+        ShowErrorDialog(errorMessage, dialogTitle);
 }
 
-void ShowErrorDialog(const DAVA::String &errorMessage)
+void ShowErrorDialog(const DAVA::String &errorMessage, const DAVA::String &title)
 {
     bool forceClose = CommandLineParser::CommandIsFound(String("-force"))
                       || CommandLineParser::CommandIsFound(String("-forceclose"));
     if (!forceClose && !Core::Instance()->IsConsoleMode())
     {
-        QMessageBox::critical(QApplication::activeWindow(), "Error", errorMessage.c_str());
+        QMessageBox::critical(QApplication::activeWindow(), title.c_str(), errorMessage.c_str());
     }
 }
 

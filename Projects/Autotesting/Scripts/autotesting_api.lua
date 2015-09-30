@@ -13,7 +13,7 @@ lPrint = print
 
 -- API setup
 function SetPackagePath(path)
-    package.path = package.path .. ";" .. path .. "Actions/?.lua;" .. path .. "Scripts/?.lua;"
+    package.path = package.path .. ";" .. path .. "Actions/?.lua;" .. path .. "Scripts/?.lua;" .. ";" .. path .. "Tests/?.lua;"
     require "coxpcall"
 end
 

@@ -179,6 +179,9 @@
     <None Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Sources\Tools\AssetCache\CacheItemKey.h" />
+    <ClInclude Include="..\..\Sources\Tools\AssetCache\DoubleMD5Key.h" />
+    <ClInclude Include="..\..\Sources\Tools\CommandLine\ProgramOptions.h" />
     <ClInclude Include="..\..\Sources\Tools\TeamcityOutput\TeamcityOutput.h" />
     <ClInclude Include="..\..\Sources\Tools\TeamcityOutput\TeamCityTestsOutput.h" />
     <ClInclude Include="..\..\Sources\Tools\TextureCompression\DXTConverter.h" />
@@ -193,6 +196,7 @@
     <ClInclude Include="..\..\Sources\Tools\TexturePacker\TexturePacker.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Sources\Tools\AssetCache\DoubleMD5Key.cpp" />
     <ClCompile Include="..\..\Sources\Tools\TeamcityOutput\TeamcityOutput.cpp" />
     <ClCompile Include="..\..\Sources\Tools\TeamcityOutput\TeamCityTestsOutput.cpp" />
     <ClCompile Include="..\..\Sources\Tools\TextureCompression\DXTConverter.cpp" />

@@ -84,6 +84,8 @@ public:
 private:
     int32 GetOrientationAsInt() const;
     void SetOrientationFromInt(int32 type);
+
+    void SetLayoutDirty();
     
 private:
     enum eFlags

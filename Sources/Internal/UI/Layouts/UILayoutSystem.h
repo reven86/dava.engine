@@ -49,36 +49,30 @@ public:
     bool IsRtl() const;
     void SetRtl(bool rtl);
 
-    bool IsDirty() const;
-    void SetDirty();
-    void ResetDirty();
+    void ApplyLayout(UIControl *control, bool considerDenendenceOnChildren = false);
     
-    void ApplyLayout(UIControl *control);
+    bool IsAutoupdatesEnabled() const;
+    void SetAutoupdatesEnabled(bool enabled);
     
 private:
-    void DoMeasurePhase(UIControl *control, Vector2::eAxis axis);
-    void DoLayoutPhase(UIControl *control, Vector2::eAxis axis);
+    class ControlLayoutData;
     
-    void MeasureControl(UIControl *control, UISizePolicyComponent *sizeHint, Vector2::eAxis axis);
-    void ApplyLinearLayout(UIControl *control, UILinearLayoutComponent *linearLayoutComponent, Vector2::eAxis axis);
-    void ApplyAnchorLayout(UIControl *control, Vector2::eAxis axis, bool onlyForIgnoredControls);
-    void GetAxisDataByAnchorData(float32 size, float32 parentSize,
-                                 bool firstSideAnchorEnabled, float32 firstSideAnchor,
-                                 bool centerAnchorEnabled, float32 centerAnchor,
-                                 bool secondSideAnchorEnabled, float32 secondSideAnchor,
-                                 float32 &newPos, float32 &newSize);
-    void GetAnchorDataByAxisData(float32 size, float32 pos, float32 parentSize, bool firstSideAnchorEnabled, bool centerAnchorEnabled, bool secondSideAnchorEnabled, float32 &firstSideAnchor, float32 &centerAnchor, float32 &secondSideAnchor);
+private:
+    void CollectControls(UIControl *control);
+    void CollectControlChildren(UIControl *control, int32 parentIndex);
+    
+    void MeasureControl(ControlLayoutData &data, Vector2::eAxis axis);
+    void ApplyLinearLayout(ControlLayoutData &data, UILinearLayoutComponent *linearLayoutComponent, Vector2::eAxis axis);
+    void ApplyAnchorLayout(ControlLayoutData &data, Vector2::eAxis axis, bool onlyForIgnoredControls);
 
     bool HaveToSkipControl(UIControl *control, bool skipInvisible) const;
     
 private:
     bool isRtl = false;
-    bool dirty = true;
-
-    DAVA::Set<UIControl*> changedControls;
-    DAVA::int32 indexOfSizeProperty;
+    bool autoupdatesEnabled = true;
+    Vector<ControlLayoutData> layoutData;
+    int32 indexOfSizeProperty = -1;
 };
-
 
 }
 

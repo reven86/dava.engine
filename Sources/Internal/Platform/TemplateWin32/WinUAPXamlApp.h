@@ -115,7 +115,7 @@ private:    // Event handlers
     void OnKeyUp(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ args);
     void OnMouseMoved(Windows::Devices::Input::MouseDevice^ mouseDevice, Windows::Devices::Input::MouseEventArgs^ args);
 
-    void DAVATouchEvent(UIEvent::eInputPhase phase, float32 x, float32 y, int32 id);
+    void DAVATouchEvent(UIEvent::eInputPhase phase, float32 x, float32 y, int32 id, UIEvent::PointerDeviceID deviceIndex);
 
 private:
     void SetupEventHandlers();
@@ -152,7 +152,7 @@ private:
 
     volatile bool quitFlag = false;
 
-    Vector<UIEvent> allTouches;
+    Vector<UIEvent> events;
 
     bool isMouseDetected = false;
     bool isTouchDetected = false;

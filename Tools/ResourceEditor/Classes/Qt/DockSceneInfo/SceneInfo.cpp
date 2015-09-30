@@ -292,8 +292,8 @@ uint32 SceneInfo::CalculateTextureSize(const TexturesMap &textures)
 {
 	String projectPath = ProjectManager::Instance()->CurProjectPath().GetAbsolutePathname();
     uint32 textureSize = 0;
-    
-	eGPUFamily requestedGPU = static_cast<eGPUFamily>(SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsInt32());
+
+    eGPUFamily requestedGPU = static_cast<eGPUFamily>(SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsUInt32());
 
     TexturesMap::const_iterator endIt = textures.end();
     for(TexturesMap::const_iterator it = textures.begin(); it != endIt; ++it)

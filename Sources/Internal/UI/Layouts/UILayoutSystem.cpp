@@ -7,10 +7,129 @@
 #include "UI/UIControl.h"
 #include "UI/Styles/UIStyleSheetPropertyDataBase.h"
 
+#include "Platform/SystemTimer.h"
+
 namespace DAVA
 {
+    
+class UILayoutSystem::ControlLayoutData
+{
+public:
+    enum eFlag
+    {
+        FLAG_NONE = 0,
+        FLAG_SIZE_CHANGED = 1 << 0,
+        FLAG_POSITION_CHANGED = 1 << 1,
+        FLAG_X_SIZE_CALCULATED = 1 << 2,
+        FLAG_Y_SIZE_CALCULATED = 1 << 3
+    };
+    
+public:
+    ControlLayoutData(UIControl *control_) : control(control_)
+    {
+        position = control->GetPosition() - control->GetPivotPoint();
+        size = control->GetSize();
+    }
+    
+    void ApplyLayoutToControl(int32 indexOfSizeProperty)
+    {
+        if (HasFlag(FLAG_POSITION_CHANGED))
+        {
+            control->SetPosition(position + control->GetPivotPoint());
+        }
+        
+        if (HasFlag(FLAG_SIZE_CHANGED))
+        {
+            control->SetSize(size);
+            control->SetPropertyLocalFlag(indexOfSizeProperty, true);
+            control->OnSizeChanged();
+        }
+        
+        control->ResetLayoutDirty();
+    }
+
+    UIControl *GetControl() const
+    {
+        return control;
+    }
+    
+    template<class T> T* GetComponent() const
+    {
+        return control->GetComponent<T>(0);
+    }
+    
+    bool HasComponent(UIComponent::eType type) const
+    {
+        return control->GetComponentCount(type) > 0;
+    }
+    
+    bool HasFlag(eFlag flag) const
+    {
+        return (flags & flag) == flag;
+    }
+    
+    void SetFlag(eFlag flag)
+    {
+        flags |= flag;
+    }
+    
+    int32 GetFirstChildIndex() const
+    {
+        return firstChild;
+    }
+    
+    void SetFirstChildIndex(int32 index)
+    {
+        firstChild = index;
+    }
+    
+    int32 GetLastChildIndex() const
+    {
+        return lastChild;
+    }
+    
+    void SetLastChildIndex(int32 index)
+    {
+        lastChild = index;
+    }
+    
+    bool HasChildren() const
+    {
+        return lastChild >= firstChild;
+    }
+    
+    float32 GetSize(Vector2::eAxis axis) const
+    {
+        return size.data[axis];
+    }
+    
+    void SetSize(Vector2::eAxis axis, float32 value)
+    {
+        size.data[axis] = value;
+        flags |= FLAG_SIZE_CHANGED;
+    }
+    
+    float32 GetPosition(Vector2::eAxis axis) const
+    {
+        return position.data[axis];
+    }
+    
+    void SetPosition(Vector2::eAxis axis, float32 value)
+    {
+        position.data[axis] = value;
+        flags |= FLAG_POSITION_CHANGED;
+    }
+    
+private:
+    UIControl *control;
+    int32 flags = FLAG_NONE;
+    int32 firstChild = 0;
+    int32 lastChild = -1;
+    Vector2 size;
+    Vector2 position;
+};
+
 UILayoutSystem::UILayoutSystem()
-    : indexOfSizeProperty(-1)
 {
     indexOfSizeProperty = UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyIndex(FastName("size"));
 }
@@ -29,95 +148,128 @@ void UILayoutSystem::SetRtl(bool rtl)
     isRtl = rtl;
 }
 
-bool UILayoutSystem::IsDirty() const
+void UILayoutSystem::ApplyLayout(UIControl *inputContainer, bool considerDenendenceOnChildren)
 {
-    return dirty;
-}
-
-void UILayoutSystem::SetDirty()
-{
-    dirty = true;
-}
-
-void UILayoutSystem::ResetDirty()
-{
-    dirty = false;
-}
-
-void UILayoutSystem::ApplyLayout(UIControl *control)
-{
-    for (int32 axis = 0; axis < Vector2::AXIS_COUNT; axis++)
+    UIControl *container = inputContainer;
+    if (considerDenendenceOnChildren)
     {
-        DoMeasurePhase(control, static_cast<Vector2::eAxis>(axis));
-        DoLayoutPhase(control, static_cast<Vector2::eAxis>(axis));
+        while (container->GetParent() != nullptr)
+        {
+            UISizePolicyComponent *sizePolicy = container->GetParent()->GetComponent<UISizePolicyComponent>();
+            if (sizePolicy != nullptr && (sizePolicy->IsDependsOnChildren(Vector2::AXIS_X) || sizePolicy->IsDependsOnChildren(Vector2::AXIS_Y)))
+            {
+                container = container->GetParent();
+            }
+            else
+            {
+                break;
+            }
+        }
+    }
+
+    CollectControls(container);
+    
+    for (int32 axisIndex = 0; axisIndex < Vector2::AXIS_COUNT; axisIndex++)
+    {
+        Vector2::eAxis axis = static_cast<Vector2::eAxis>(axisIndex);
+        
+        // measure phase
+        for (auto it = layoutData.rbegin(); it != layoutData.rend(); ++it)
+        {
+            MeasureControl(*it, axis);
+        }
+
+        // layout phase
+        for (auto it = layoutData.begin(); it != layoutData.end(); ++it)
+        {
+            UILinearLayoutComponent *linearLayoutComponent = it->GetComponent<UILinearLayoutComponent>();
+            bool anchorOnlyIgnoredControls = false;
+            if (linearLayoutComponent != nullptr && linearLayoutComponent->IsEnabled() && linearLayoutComponent->GetAxis() == axis)
+            {
+                ApplyLinearLayout(*it, linearLayoutComponent, axis);
+                anchorOnlyIgnoredControls = true;
+            }
+            
+            ApplyAnchorLayout(*it, axis, anchorOnlyIgnoredControls);
+        }
     }
     
-    for (UIControl *control : changedControls)
+    for (ControlLayoutData &data : layoutData)
     {
-        control->SetPropertyLocalFlag(indexOfSizeProperty, true);
-        control->OnSizeChanged();
+        data.ApplyLayoutToControl(indexOfSizeProperty);
     }
-    changedControls.clear();
+
+    layoutData.clear();
 }
 
-void UILayoutSystem::DoMeasurePhase(UIControl *control, Vector2::eAxis axis)
+void UILayoutSystem::CollectControls(UIControl *control)
 {
-    const List<UIControl*> &children = control->GetChildren();
-    for (UIControl *child : children)
-        DoMeasurePhase(child, axis);
+    layoutData.clear();
+    layoutData.emplace_back(ControlLayoutData(control));
+    CollectControlChildren(control, 0);
+}
     
-    UISizePolicyComponent *sizeHint = control->GetComponent<UISizePolicyComponent>();
-    if (sizeHint)
+void UILayoutSystem::CollectControlChildren(UIControl *control, int32 parentIndex)
+{
+    int32 index = static_cast<int32>(layoutData.size());
+    const List<UIControl*> &children = control->GetChildren();
+    
+    layoutData[parentIndex].SetFirstChildIndex(index);
+    layoutData[parentIndex].SetLastChildIndex(index + static_cast<int32>(children.size() - 1));
+
+    for (UIControl *child : children)
     {
-        MeasureControl(control, sizeHint, axis);
+        layoutData.emplace_back(ControlLayoutData(child));
+    }
+
+    for (UIControl *child : children)
+    {
+        CollectControlChildren(child, index);
+        index++;
     }
 }
 
-void UILayoutSystem::DoLayoutPhase(UIControl *control, Vector2::eAxis axis)
+bool UILayoutSystem::IsAutoupdatesEnabled() const
 {
-    UILinearLayoutComponent *linearLayoutComponent = control->GetComponent<UILinearLayoutComponent>();
-    bool anchorOnlyIgnoredControls = false;
-    if (linearLayoutComponent && linearLayoutComponent->IsEnabled() && linearLayoutComponent->GetAxis() == axis)
-    {
-        ApplyLinearLayout(control, linearLayoutComponent, axis);
-        anchorOnlyIgnoredControls = true;
-    }
+    return autoupdatesEnabled;
+}
 
-    ApplyAnchorLayout(control, axis, anchorOnlyIgnoredControls);
-
-    const List<UIControl*> &children = control->GetChildren();
-    for (UIControl *child : children)
-        DoLayoutPhase(child, axis);
+void UILayoutSystem::SetAutoupdatesEnabled(bool enabled)
+{
+    autoupdatesEnabled = enabled;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Measuring
 ////////////////////////////////////////////////////////////////////////////////
 
-void UILayoutSystem::MeasureControl(UIControl *control, UISizePolicyComponent *sizeHint, Vector2::eAxis axis)
+void UILayoutSystem::MeasureControl(ControlLayoutData &data, Vector2::eAxis axis)
 {
-    DVASSERT(sizeHint);
-    
-    Vector2 newSize = control->GetSize();
+    UISizePolicyComponent *sizeHint = data.GetComponent<UISizePolicyComponent>();
+    if (sizeHint == nullptr)
+    {
+        return;
+    }
     
     bool skipInvisible = false;
     
-    
-    const DAVA::List<UIControl*> &children = control->GetChildren();
     UILinearLayoutComponent *linearLayout = nullptr;
     
-    linearLayout = control->GetComponent<UILinearLayoutComponent>();
-    if (linearLayout)
+    linearLayout = data.GetComponent<UILinearLayoutComponent>();
+    if (linearLayout != nullptr)
+    {
         skipInvisible = linearLayout->IsSkipInvisibleControls();
+    }
     
     UISizePolicyComponent::eSizePolicy policy = sizeHint->GetPolicyByAxis(axis);
     float32 hintValue = sizeHint->GetValueByAxis(axis);
     float32 value = 0;
+    int32 processedChildrenCount = 0;
     
     switch (policy)
     {
         case UISizePolicyComponent::IGNORE_SIZE:
-            value = newSize.data[axis]; // ignore
+            value = data.GetSize(axis); // ignore
             break;
             
         case UISizePolicyComponent::FIXED_SIZE:
@@ -125,114 +277,132 @@ void UILayoutSystem::MeasureControl(UIControl *control, UISizePolicyComponent *s
             break;
             
         case UISizePolicyComponent::PERCENT_OF_CHILDREN_SUM:
-            for (UIControl *child : children)
+            for (int32 i = data.GetFirstChildIndex(); i <= data.GetLastChildIndex(); i++)
             {
-                if (!HaveToSkipControl(child, skipInvisible))
-                    value += child->GetSize().data[axis];
+                const ControlLayoutData &childData = layoutData[i];
+                if (!HaveToSkipControl(childData.GetControl(), skipInvisible))
+                {
+                    processedChildrenCount++;
+                    value += childData.GetSize(axis);
+                }
+                
             }
             value = value * hintValue / 100.0f;
             break;
             
         case UISizePolicyComponent::PERCENT_OF_MAX_CHILD:
-            for (UIControl *child : children)
+            for (int32 i = data.GetFirstChildIndex(); i <= data.GetLastChildIndex(); i++)
             {
-                if (!HaveToSkipControl(child, skipInvisible))
-                    value = Max(value, child->GetSize().data[axis]);
+                const ControlLayoutData &childData = layoutData[i];
+                if (!HaveToSkipControl(childData.GetControl(), skipInvisible))
+                {
+                    processedChildrenCount = 1;
+                    value = Max(value, childData.GetSize(axis));
+                }
             }
             value = value * hintValue / 100.0f;
             break;
 
         case UISizePolicyComponent::PERCENT_OF_FIRST_CHILD:
-            if (!children.empty())
-                value = children.front()->GetSize().data[axis];
+            if (data.HasChildren())
+            {
+                value = layoutData[data.GetFirstChildIndex()].GetSize(axis);
+                processedChildrenCount = 1;
+            }
             value = value * hintValue / 100.0f;
             break;
             
         case UISizePolicyComponent::PERCENT_OF_LAST_CHILD:
-            if (!children.empty())
-                value = children.back()->GetSize().data[axis];
+            if (data.HasChildren())
+            {
+                value = layoutData[data.GetLastChildIndex()].GetSize(axis);
+                processedChildrenCount = 1;
+            }
             value = value * hintValue / 100.0f;
             break;
             
         case UISizePolicyComponent::PERCENT_OF_CONTENT:
         {
             Vector2 constraints(-1.0f, -1.0f);
-            if (control->IsHeightDependsOnWidth() && axis == Vector2::AXIS_Y)
+            if (data.GetControl()->IsHeightDependsOnWidth() && axis == Vector2::AXIS_Y)
             {
-                constraints.x = newSize.x;
+                constraints.x = data.GetSize(Vector2::AXIS_X);
             }
-            value = control->GetContentPreferredSize(constraints).data[axis] * hintValue / 100.0f;
+            value = data.GetControl()->GetContentPreferredSize(constraints).data[axis] * hintValue / 100.0f;
             break;
         }
             
         case UISizePolicyComponent::PERCENT_OF_PARENT:
-            value = newSize.data[axis]; // ignore
+            value = data.GetSize(axis); // ignore
+            break;
+            
+        default:
+            DVASSERT(false);
             break;
             
     }
     
-    if (policy == UISizePolicyComponent::PERCENT_OF_CHILDREN_SUM ||
-        policy == UISizePolicyComponent::PERCENT_OF_MAX_CHILD ||
-        policy == UISizePolicyComponent::PERCENT_OF_FIRST_CHILD ||
-        policy == UISizePolicyComponent::PERCENT_OF_LAST_CHILD)
+    if (sizeHint->IsDependsOnChildren(axis) && linearLayout != nullptr && linearLayout->GetAxis() == axis)
     {
-        if (linearLayout && linearLayout->GetAxis() == axis)
+        if (policy == UISizePolicyComponent::PERCENT_OF_CHILDREN_SUM && processedChildrenCount > 0)
         {
-            if (policy == UISizePolicyComponent::PERCENT_OF_CHILDREN_SUM && !children.empty())
-                value += linearLayout->GetSpacing() * (children.size() - 1);
-            
-            value += linearLayout->GetPadding() * 2.0f;
+            value += linearLayout->GetSpacing() * (processedChildrenCount - 1);
         }
+        
+        value += linearLayout->GetPadding() * 2.0f;
     }
     
     if (policy != UISizePolicyComponent::PERCENT_OF_PARENT && policy != UISizePolicyComponent::IGNORE_SIZE)
     {
         value = Clamp(value, sizeHint->GetMinValueByAxis(axis), sizeHint->GetMaxValueByAxis(axis));
     }
-    newSize.data[axis] = value;
     
-    if (control->GetSize() != newSize)
-    {
-        control->SetSize(newSize);
-        changedControls.insert(control);
-    }
+    data.SetSize(axis, value);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Linear Layout
 ////////////////////////////////////////////////////////////////////////////////
 
-void UILayoutSystem::ApplyLinearLayout(UIControl *control, UILinearLayoutComponent *layout, Vector2::eAxis axis)
+void UILayoutSystem::ApplyLinearLayout(ControlLayoutData &data, UILinearLayoutComponent *layout, Vector2::eAxis axis)
 {
     float32 fixedSize = 0.0f;
     float32 totalPercent = 0.0f;
     
-    const DAVA::List<UIControl*> &children = control->GetChildren();
-    if (children.empty())
+    if (!data.HasChildren())
+    {
         return;
+    }
     
     bool inverse = isRtl && layout->IsUseRtl() && layout->GetOrientation() == UILinearLayoutComponent::HORIZONTAL;
     const bool skipInvisible = layout->IsSkipInvisibleControls();
 
     int32 childrenCount = 0;
-    for (UIControl *child : children)
+    for (int32 i = data.GetFirstChildIndex(); i <= data.GetLastChildIndex(); i++)
     {
-        if (HaveToSkipControl(child, skipInvisible))
+        ControlLayoutData &childData = layoutData[i];
+        if (HaveToSkipControl(childData.GetControl(), skipInvisible))
+        {
             continue;
+        }
         
         childrenCount++;
         
-        const UISizePolicyComponent *sizeHint = child->GetComponent<UISizePolicyComponent>();
-        if (sizeHint)
+        const UISizePolicyComponent *sizeHint = childData.GetComponent<UISizePolicyComponent>();
+        if (sizeHint != nullptr)
         {
             if (sizeHint->GetPolicyByAxis(axis) == UISizePolicyComponent::PERCENT_OF_PARENT)
+            {
                 totalPercent += sizeHint->GetValueByAxis(axis);
+            }
             else
-                fixedSize += child->GetSize().data[axis];
+            {
+                fixedSize += childData.GetSize(axis);
+            }
         }
         else
         {
-            fixedSize += child->GetSize().data[axis];
+            fixedSize += childData.GetSize(axis);
         }
     }
     
@@ -242,8 +412,59 @@ void UILayoutSystem::ApplyLinearLayout(UIControl *control, UILinearLayoutCompone
         float32 spacing = layout->GetSpacing();
         
         int32 spacesCount = childrenCount - 1;
-        float32 contentSize = control->GetSize().data[axis] - padding * 2.0f;
+        float32 contentSize = data.GetSize(axis) - padding * 2.0f;
         float32 restSize = contentSize - fixedSize - spacesCount * spacing;
+        
+        bool haveToCalculateSizes = true;
+        
+        ControlLayoutData::eFlag flagSizeCalculated = axis == Vector2::AXIS_X ? ControlLayoutData::FLAG_X_SIZE_CALCULATED : ControlLayoutData::FLAG_Y_SIZE_CALCULATED;
+        while (haveToCalculateSizes)
+        {
+            haveToCalculateSizes = false;
+            for (int32 i = data.GetFirstChildIndex(); i <= data.GetLastChildIndex(); i++)
+            {
+                ControlLayoutData &childData = layoutData[i];
+                
+                if (childData.HasFlag(flagSizeCalculated))
+                {
+                    continue;
+                }
+                
+                if (HaveToSkipControl(childData.GetControl(), skipInvisible))
+                {
+                    childData.SetFlag(flagSizeCalculated);
+                    continue;
+                }
+                
+                const UISizePolicyComponent *sizeHint = childData.GetComponent<UISizePolicyComponent>();
+                if (sizeHint != nullptr && sizeHint->GetPolicyByAxis(axis) == UISizePolicyComponent::PERCENT_OF_PARENT)
+                {
+                    float32 percents = sizeHint->GetValueByAxis(axis);
+                    float32 size = 0.0f;
+                    if (totalPercent > EPSILON)
+                    {
+                        size = restSize * percents / Max(totalPercent, 100.0f);
+                    }
+                    
+                    float32 minSize = sizeHint->GetMinValueByAxis(axis);
+                    float32 maxSize = sizeHint->GetMaxValueByAxis(axis);
+                    if (size < minSize || maxSize < size)
+                    {
+                        size = Clamp(size, minSize, maxSize);
+                        childData.SetSize(axis, size);
+                        childData.SetFlag(flagSizeCalculated);
+                        
+                        restSize -= size;
+                        totalPercent -= percents;
+                        
+                        haveToCalculateSizes = true;
+                        break;
+                    }
+                    
+                    childData.SetSize(axis, size);
+                }
+            }
+        }
         
         if (totalPercent < 100.0f - EPSILON && restSize > EPSILON)
         {
@@ -253,69 +474,53 @@ void UILayoutSystem::ApplyLinearLayout(UIControl *control, UILinearLayoutCompone
             {
                 int32 cnt = 0;
                 if (dynamicPadding)
+                {
                     cnt = 2;
+                }
+
                 if (dynamicSpacing)
+                {
                     cnt += spacesCount;
+                }
                 
                 float32 delta = restSize * (1.0f - totalPercent / 100.0f) / cnt;
                 if (dynamicPadding)
+                {
                     padding += delta;
+                }
                 
                 if (dynamicSpacing)
+                {
                     spacing += delta;
+                }
             }
         }
         
         float32 position = padding;
         if (inverse)
-            position = control->GetSize().data[axis] - padding;
-
-        for (UIControl *child : children)
         {
-            if (HaveToSkipControl(child, skipInvisible))
-                continue;
+            position = data.GetSize(axis) - padding;
+        }
 
-            float32 size = 0.0f;
-            const UISizePolicyComponent *sizeHint = child->GetComponent<UISizePolicyComponent>();
-            if (sizeHint)
+        for (int32 i = data.GetFirstChildIndex(); i <= data.GetLastChildIndex(); i++)
+        {
+            ControlLayoutData &childData = layoutData[i];
+            if (HaveToSkipControl(childData.GetControl(), skipInvisible))
             {
-                if (sizeHint->GetPolicyByAxis(axis) == UISizePolicyComponent::PERCENT_OF_PARENT)
-                {
-                    if (totalPercent < EPSILON)
-                        size = 0.0f;
-                    else
-                        size = restSize * sizeHint->GetValueByAxis(axis) / Max(totalPercent, 100.0f);
-                    size = Clamp(size, sizeHint->GetMinValueByAxis(axis), sizeHint->GetMaxValueByAxis(axis));
-                }
-                else
-                    size = child->GetSize().data[axis];
+                continue;
             }
-            else
-            {
-                size = child->GetSize().data[axis];
-            }
-            
-            size = Max(size, 0.0f);
-            if (axis == Vector2::AXIS_X)
-            {
-                if (inverse)
-                    child->SetPosition(Vector2(position - size, child->GetPosition().y));
-                else
-                    child->SetPosition(Vector2(position, child->GetPosition().y));
-                child->SetSize(Vector2(size, child->GetSize().dy));
-            }
-            else
-            {
-                child->SetPosition(Vector2(child->GetPosition().x, position));
-                child->SetSize(Vector2(child->GetSize().dx, size));
-            }
+
+            float32 size = childData.GetSize(axis);
+            childData.SetPosition(axis, inverse ? position - size : position);
             
             if (inverse)
+            {
                 position -= size + spacing;
+            }
             else
+            {
                 position += size + spacing;
-            
-            changedControls.insert(child);
+            }
         }
     }
 }
@@ -324,155 +529,116 @@ void UILayoutSystem::ApplyLinearLayout(UIControl *control, UILinearLayoutCompone
 // Anchor Layout
 ////////////////////////////////////////////////////////////////////////////////
 
-void UILayoutSystem::ApplyAnchorLayout(UIControl *control, Vector2::eAxis axis, bool onlyForIgnoredControls)
+void UILayoutSystem::ApplyAnchorLayout(ControlLayoutData &data, Vector2::eAxis axis, bool onlyForIgnoredControls)
 {
-    const Vector2 &parentSize = control->GetSize();
-    const List<UIControl*> &children = control->GetChildren();
-    for (UIControl *child : children)
+    
+    for (int32 i = data.GetFirstChildIndex(); i <= data.GetLastChildIndex(); i++)
     {
-        if (onlyForIgnoredControls && child->GetComponentCount(UIComponent::IGNORE_LAYOUT_COMPONENT) == 0)
-            continue;
-        
-        const UISizePolicyComponent *sizeHint = child->GetComponent<UISizePolicyComponent>();
-        if (sizeHint)
+        ControlLayoutData &childData = layoutData[i];
+        if (onlyForIgnoredControls && childData.HasComponent(UIComponent::IGNORE_LAYOUT_COMPONENT) == 0)
         {
-            Vector2 newSize = child->GetSize();
-            
-            float32 s = newSize.data[axis];
+            continue;
+        }
+        
+        const UISizePolicyComponent *sizeHint = childData.GetComponent<UISizePolicyComponent>();
+        if (sizeHint != nullptr)
+        {
             if (sizeHint->GetPolicyByAxis(axis) == UISizePolicyComponent::PERCENT_OF_PARENT)
             {
-                s = control->GetSize().data[axis] * sizeHint->GetValueByAxis(axis) / 100.0f;
-                s = Clamp(s, sizeHint->GetMinValueByAxis(axis), sizeHint->GetMaxValueByAxis(axis));
-            }
-            newSize.data[axis] = s;
-            
-            if (newSize != child->GetSize())
-            {
-                child->SetSize(newSize);
-                changedControls.insert(child);
+                float32 size = data.GetSize(axis) * sizeHint->GetValueByAxis(axis) / 100.0f;
+                size = Clamp(size, sizeHint->GetMinValueByAxis(axis), sizeHint->GetMaxValueByAxis(axis));
+
+                childData.SetSize(axis, size);
             }
         }
         
-        UIAnchorComponent *hint = child->GetComponent<UIAnchorComponent>();
-        if (hint)
+        UIAnchorComponent *hint = childData.GetComponent<UIAnchorComponent>();
+        if (hint != nullptr)
         {
-            const Rect &rect = child->GetRect();
-            Rect newRect = rect;
+            float v1 = 0.0f;
+            bool v1Enabled = false;
+
+            float v2 = 0.0f;
+            bool v2Enabled = false;
+
+            float v3 = 0.0f;
+            bool v3Enabled = false;
             
-            if (axis == Vector2::AXIS_X && (hint->IsLeftAnchorEnabled() || hint->IsHCenterAnchorEnabled() || hint->IsRightAnchorEnabled()))
+            switch (axis)
             {
-                bool leftEnabled = hint->IsLeftAnchorEnabled();
-                float32 left = hint->GetLeftAnchor();
+                case Vector2::AXIS_X:
+                    v1Enabled = hint->IsLeftAnchorEnabled();
+                    v1 = hint->GetLeftAnchor();
+                    
+                    v2Enabled = hint->IsHCenterAnchorEnabled();
+                    v2 = hint->GetHCenterAnchor();
+                    
+                    v3Enabled = hint->IsRightAnchorEnabled();
+                    v3 = hint->GetRightAnchor();
 
-                bool rightEnabled = hint->IsRightAnchorEnabled();
-                float32 right = hint->GetRightAnchor();
+                    if (isRtl && hint->IsUseRtl())
+                    {
+                        v1Enabled = hint->IsRightAnchorEnabled();
+                        v1 = hint->GetRightAnchor();
+                        
+                        v3Enabled = hint->IsLeftAnchorEnabled();
+                        v3 = hint->GetLeftAnchor();
+                        
+                        v2 = -v2;
+                    }
+                    break;
+                    
+                case Vector2::AXIS_Y:
+                    v1Enabled = hint->IsTopAnchorEnabled();
+                    v1 = hint->GetTopAnchor();
+                    
+                    v2Enabled = hint->IsVCenterAnchorEnabled();
+                    v2 = hint->GetVCenterAnchor();
+                    
+                    v3Enabled = hint->IsBottomAnchorEnabled();
+                    v3 = hint->GetBottomAnchor();
 
-                bool hCenterEnabled = hint->IsHCenterAnchorEnabled();
-                float32 hCenter = hint->GetHCenterAnchor();
+                    break;
+                    
+                default:
+                    DVASSERT(false);
+                    break;
+            }
+            
+            if (v1Enabled || v2Enabled || v3Enabled)
+            {
+                float32 parentSize = data.GetSize(axis);
                 
-                if (isRtl && hint->IsUseRtl())
+                if (v1Enabled && v3Enabled) // left and right
                 {
-                    leftEnabled = hint->IsRightAnchorEnabled();
-                    left = hint->GetRightAnchor();
-                    
-                    rightEnabled = hint->IsLeftAnchorEnabled();
-                    right = hint->GetLeftAnchor();
-                    
-                    hCenter = -hCenter;
+                    childData.SetPosition(axis, v1);
+                    childData.SetSize(axis, parentSize - (v1 + v3));
                 }
-                
-                GetAxisDataByAnchorData(rect.dx, parentSize.x,
-                                        leftEnabled, left,
-                                        hCenterEnabled, hCenter,
-                                        rightEnabled, right,
-                                        newRect.x, newRect.dx);
-                
-            }
-            if (axis == Vector2::AXIS_Y && (hint->IsTopAnchorEnabled() || hint->IsVCenterAnchorEnabled() || hint->IsBottomAnchorEnabled()))
-            {
-                GetAxisDataByAnchorData(rect.dy, parentSize.y,
-                                        hint->IsTopAnchorEnabled(), hint->GetTopAnchor(),
-                                        hint->IsVCenterAnchorEnabled(), hint->GetVCenterAnchor(),
-                                        hint->IsBottomAnchorEnabled(), hint->GetBottomAnchor(),
-                                        newRect.y, newRect.dy);
-            }
-            
-            if (rect != newRect)
-            {
-                child->SetSize(newRect.GetSize());
-                child->SetPosition(newRect.GetPosition() + child->GetPivotPoint());
-                changedControls.insert(child);
+                else if (v1Enabled && v2Enabled) // left and center
+                {
+                    childData.SetPosition(axis, v1);
+                    childData.SetSize(axis, parentSize / 2.0f - (v1 - v2));
+                }
+                else if (v2Enabled && v3Enabled) // center and right
+                {
+                    childData.SetPosition(axis, parentSize / 2.0f + v2);
+                    childData.SetSize(axis, parentSize / 2.0f - (v2 + v3));
+                }
+                else if (v1Enabled) // left
+                {
+                    childData.SetPosition(axis, v1);
+                }
+                else if (v2Enabled) // center
+                {
+                    childData.SetPosition(axis, (parentSize - childData.GetSize(axis)) / 2.0f + v2);
+                }
+                else if (v3Enabled) // right
+                {
+                    childData.SetPosition(axis, parentSize - (childData.GetSize(axis) + v3));
+                }
+
             }
         }
-    }
-}
-
-void UILayoutSystem::GetAxisDataByAnchorData(float32 size, float32 parentSize,
-                                             bool firstSideAnchorEnabled, float32 firstSideAnchor,
-                                             bool centerAnchorEnabled, float32 centerAnchor,
-                                             bool secondSideAnchorEnabled, float32 secondSideAnchor,
-                                             float32 &newPos, float32 &newSize)
-{
-    if (firstSideAnchorEnabled && secondSideAnchorEnabled)
-    {
-        newPos = firstSideAnchor;
-        newSize = parentSize - (firstSideAnchor + secondSideAnchor);
-    }
-    else if (firstSideAnchorEnabled && centerAnchorEnabled)
-    {
-        newPos = firstSideAnchor;
-        newSize = parentSize / 2.0f - (firstSideAnchor - centerAnchor);
-    }
-    else if (centerAnchorEnabled && secondSideAnchorEnabled)
-    {
-        newPos = parentSize / 2.0f + centerAnchor;
-        newSize = parentSize / 2.0f - (centerAnchor + secondSideAnchor);
-    }
-    else if (firstSideAnchorEnabled)
-    {
-        newPos = firstSideAnchor;
-        newSize = size;
-    }
-    else if (secondSideAnchorEnabled)
-    {
-        newPos = parentSize - (size + secondSideAnchor);
-        newSize = size;
-    }
-    else if (centerAnchorEnabled)
-    {
-        newPos = (parentSize - size) / 2.0f + centerAnchor;
-        newSize = size;
-    }
-}
-
-void UILayoutSystem::GetAnchorDataByAxisData(float32 size, float32 pos, float32 parentSize, bool firstSideAnchorEnabled, bool centerAnchorEnabled, bool secondSideAnchorEnabled, float32 &firstSideAnchor, float32 &centerAnchor, float32 &secondSideAnchor)
-{
-    if (firstSideAnchorEnabled && secondSideAnchorEnabled)
-    {
-        firstSideAnchor = pos;
-        secondSideAnchor = parentSize - (pos + size);
-    }
-    else if (firstSideAnchorEnabled && centerAnchorEnabled)
-    {
-        firstSideAnchor = pos;
-        centerAnchor = pos + size - parentSize / 2.0f;
-    }
-    else if (centerAnchorEnabled && secondSideAnchorEnabled)
-    {
-        centerAnchor = pos - parentSize / 2.0f;
-        secondSideAnchor = parentSize - (pos + size);
-    }
-    else if (firstSideAnchorEnabled)
-    {
-        firstSideAnchor = pos;
-    }
-    else if (secondSideAnchorEnabled)
-    {
-        secondSideAnchor = parentSize - (pos + size);
-    }
-    else if (centerAnchorEnabled)
-    {
-        centerAnchor = pos - parentSize / 2.0f + size / 2.0f;
     }
 }
 

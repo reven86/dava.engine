@@ -90,6 +90,9 @@ public:
     void SetUseRtl(bool use);
 
 private:
+    void SetLayoutDirty();
+
+private:
     enum eFlags
     {
         FLAG_LEFT_ENABLED,
