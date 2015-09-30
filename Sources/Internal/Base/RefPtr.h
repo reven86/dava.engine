@@ -41,7 +41,9 @@ namespace DAVA
 template <class T>
 class RefPtr
 {
+    template <class Other>
     friend class RefPtr;
+
 public:
     RefPtr(T* ptr = nullptr);
     RefPtr(const RefPtr& ptr);
