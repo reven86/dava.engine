@@ -206,6 +206,7 @@ void Landscape::ReleaseGeometryData()
     for (IndexedRenderBatch & batch : renderBatchArray)
         batch.renderBatch->Release();
     renderBatchArray.clear();
+    activeRenderBatchArray.clear();
 
     for (rhi::HVertexBuffer handle : vertexBuffers)
         rhi::DeleteVertexBuffer(handle);
