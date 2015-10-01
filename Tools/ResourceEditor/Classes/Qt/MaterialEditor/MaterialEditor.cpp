@@ -643,24 +643,26 @@ void MaterialEditor::FillTemplates(const QList<DAVA::NMaterial *>& materials)
         else
         {
             { //set fx name to fx template box
-                const DAVA::FastName fxName = material->GetEffectiveFXName();
-
                 int rowToSelect = -1;
-                QAbstractItemModel* model = ui->templateBox->model();
-                const int n = model->rowCount();
-                for (int i = 0; i < n; i++)
+                const DAVA::FastName fxName = material->GetEffectiveFXName();
+                if (fxName.IsValid())
                 {
-                    const QModelIndex index = model->index(i, 0);
-                    if (index.data(Qt::UserRole).toString() == fxName.c_str())
+                    QAbstractItemModel* model = ui->templateBox->model();
+                    const int n = model->rowCount();
+                    for (int i = 0; i < n; i++)
                     {
-                        rowToSelect = i;
-                        break;
+                        const QModelIndex index = model->index(i, 0);
+                        if (index.data(Qt::UserRole).toString() == fxName.c_str())
+                        {
+                            rowToSelect = i;
+                            break;
+                        }
                     }
-                }
 
-                if (-1 == rowToSelect)
-                {
-                    setTemplatePlaceholder(QString("NON-ASSIGNABLE: %1").arg(fxName.c_str()));
+                    if (-1 == rowToSelect)
+                    {
+                        setTemplatePlaceholder(QString("NON-ASSIGNABLE: %1").arg(fxName.c_str()));
+                    }
                 }
 
                 ui->templateBox->setCurrentIndex(rowToSelect);

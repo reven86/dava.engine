@@ -97,7 +97,24 @@ void SaveEntityAsAction::Redo()
 		}
 		DVASSERT(nullptr != container);
 
-		scene->AddNode(container);								//1. Added new items in zero position with identity matrix
+        //Remove global material from cloned object
+        Scene* sourceScene = entities->GetEntity(0)->GetScene();
+        NMaterial* sourceGlobalMaterial = (sourceScene != nullptr) ? sourceScene->GetGlobalMaterial() : nullptr;
+        if (sourceGlobalMaterial)
+        {
+            List<NMaterial*> newMaterials;
+            container->GetDataNodes(newMaterials);
+
+            for (auto& mat : newMaterials)
+            {
+                if (mat->GetParent() == sourceGlobalMaterial)
+                {
+                    mat->SetParent(nullptr);
+                }
+            }
+        }
+
+        scene->AddNode(container);								//1. Added new items in zero position with identity matrix
 		scene->staticOcclusionSystem->InvalidateOcclusion();	//2. invalidate static occlusion indeces
 		RemoveLightmapsRecursive(container);					//3. Reset lightmaps
 				
