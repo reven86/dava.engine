@@ -65,16 +65,16 @@ VPROG_BEGIN
     float3 lightVecView = posView.xyz * lightPosition0.w - lightPosition0.xyz;
     
     if(dot(normal, -lightVecView) < 0.0)
-    {
-        if(posView.z * lightPosition0.w < lightPosition0.z)
-        {
-            posView.xyz -= lightVecView * (1000.0 - 10.0 + posView.z) / lightVecView.z;
-        }
-        else
-        {
-            posView = float4(lightVecView, 0.0);
-        }
-    }
+	{
+		if(posView.z * lightPosition0.w < lightPosition0.z)
+		{
+			posView.xyz -= lightVecView * (1000.0 - 10.0 + posView.z) / lightVecView.z;
+		}
+		else
+		{
+			posView = float4(lightVecView, 0.0);
+		}
+	}
     VP_OUT_POSITION = mul( posView, projMatrix );
     
 VPROG_END
