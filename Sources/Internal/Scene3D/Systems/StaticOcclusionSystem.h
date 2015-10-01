@@ -77,8 +77,8 @@ private:
     Camera * camera;
     StaticOcclusionData * activePVSSet;
     uint32 activeBlockIndex;
-    
-    
+    bool isInPvs = false;
+
     // Final system part
     void ProcessStaticOcclusion(Camera * camera);
     void ProcessStaticOcclusionForOneDataSet(uint32 blockIndex, StaticOcclusionData * data);
