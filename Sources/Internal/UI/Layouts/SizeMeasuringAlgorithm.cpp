@@ -30,6 +30,7 @@
 
 #include "UILinearLayoutComponent.h"
 #include "UIFlowLayoutComponent.h"
+#include "UIFlowLayoutHintComponent.h"
 #include "UISizePolicyComponent.h"
 
 #include "UI/UIControl.h"
@@ -128,9 +129,21 @@ void SizeMeasuringAlgorithm::ProcessFixedSizePolicy(ControlLayoutData &data, Vec
 
 void SizeMeasuringAlgorithm::ProcessPercentOfChildrenSumPolicy(ControlLayoutData &data, Vector2::eAxis axis)
 {
-    if (flowLayout && flowLayout->IsEnabled() && axis == Vector2::AXIS_Y)
+    if (flowLayout && flowLayout->IsEnabled())
     {
-        ProcessVerticalFlowLayoutPercentOfChildrenSumPolicy(data, axis); // TODO: axis x
+        switch (axis)
+        {
+        case Vector2::AXIS_X:
+            ProcessHorizontalFlowLayoutPercentOfChildrenSumPolicy(data);
+            break;
+        case Vector2::AXIS_Y:
+            ProcessVerticalFlowLayoutPercentOfChildrenSumPolicy(data);
+            break;
+
+        default:
+            DVASSERT(false);
+            break;
+        }
     }
     else
     {
@@ -142,12 +155,22 @@ void SizeMeasuringAlgorithm::ProcessDefaultPercentOfChildrenSumPolicy(ControlLay
 {
     float32 value = 0;
     int32 processedChildrenCount = 0;
-    
+
+    bool newLineBeforeNext = false;
     for (int32 i = data.GetFirstChildIndex(); i <= data.GetLastChildIndex(); i++)
     {
         const ControlLayoutData &childData = layoutData[i];
         if (!childData.HaveToSkipControl(skipInvisible))
         {
+            bool newLineBeforeThis = newLineBeforeNext;
+            newLineBeforeNext = false;
+            UIFlowLayoutHintComponent* hint = childData.GetControl()->GetComponent<UIFlowLayoutHintComponent>();
+            if (hint != nullptr)
+            {
+                newLineBeforeThis |= hint->IsNewLineBeforeThis();
+                newLineBeforeNext = hint->IsNewLineAfterThis();
+            }
+
             processedChildrenCount++;
             value += childData.GetSize(axis);
         }
@@ -161,11 +184,62 @@ void SizeMeasuringAlgorithm::ProcessDefaultPercentOfChildrenSumPolicy(ControlLay
     ApplySize(data, value, axis);
 }
 
-void SizeMeasuringAlgorithm::ProcessVerticalFlowLayoutPercentOfChildrenSumPolicy(ControlLayoutData &data, Vector2::eAxis axis)
+void SizeMeasuringAlgorithm::ProcessHorizontalFlowLayoutPercentOfChildrenSumPolicy(ControlLayoutData& data)
 {
-    DVASSERT(flowLayout && flowLayout->IsEnabled() && axis == Vector2::AXIS_Y);
-    
+    DVASSERT(flowLayout && flowLayout->IsEnabled());
+
+    float32 lineWidth = 0.0f;
+    float32 maxWidth = 0.0f;
+    bool newLineBeforeNext = false;
+    bool firstInLine = true;
+
+    for (int32 i = data.GetFirstChildIndex(); i <= data.GetLastChildIndex(); i++)
+    {
+        const ControlLayoutData& childData = layoutData[i];
+        if (!childData.HaveToSkipControl(skipInvisible))
+        {
+            float32 childSize = childData.GetWidth();
+            UISizePolicyComponent* sizePolicy = childData.GetControl()->GetComponent<UISizePolicyComponent>();
+            if (sizePolicy != nullptr && sizePolicy->GetHorizontalPolicy() == UISizePolicyComponent::PERCENT_OF_PARENT)
+            {
+                childSize = sizePolicy->GetHorizontalMinValue();
+            }
+
+            bool newLineBeforeThis = newLineBeforeNext;
+            newLineBeforeNext = false;
+            UIFlowLayoutHintComponent* hint = childData.GetControl()->GetComponent<UIFlowLayoutHintComponent>();
+            if (hint != nullptr)
+            {
+                newLineBeforeThis |= hint->IsNewLineBeforeThis();
+                newLineBeforeNext = hint->IsNewLineAfterThis();
+            }
+
+            if (newLineBeforeThis)
+            {
+                maxWidth = Max(maxWidth, lineWidth);
+                lineWidth = 0.0f;
+                firstInLine = true;
+            }
+
+            lineWidth += childSize;
+            if (!firstInLine)
+            {
+                lineWidth += flowLayout->GetHorizontalSpacing();
+            }
+            firstInLine = false;
+        }
+    }
+
+    maxWidth = Max(maxWidth, lineWidth);
+    ApplySize(data, maxWidth, Vector2::AXIS_X);
+}
+
+void SizeMeasuringAlgorithm::ProcessVerticalFlowLayoutPercentOfChildrenSumPolicy(ControlLayoutData& data)
+{
+    DVASSERT(flowLayout && flowLayout->IsEnabled());
+
     float32 value = 0;
+
     int32 linesCount = 0;
     float32 lineHeight = 0;
     
@@ -189,7 +263,7 @@ void SizeMeasuringAlgorithm::ProcessVerticalFlowLayoutPercentOfChildrenSumPolicy
         value += flowLayout->GetVerticalSpacing() * (linesCount - 1);
     }
 
-    ApplySize(data, value, axis);
+    ApplySize(data, value, Vector2::AXIS_Y);
 }
 
 void SizeMeasuringAlgorithm::ProcessPercentOfMaxChildPolicy(ControlLayoutData &data, Vector2::eAxis axis)

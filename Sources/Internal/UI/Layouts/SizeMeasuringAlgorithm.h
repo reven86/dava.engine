@@ -53,7 +53,8 @@ private:
     void ProcessFixedSizePolicy(ControlLayoutData &data, Vector2::eAxis axis);
     void ProcessPercentOfChildrenSumPolicy(ControlLayoutData &data, Vector2::eAxis axis);
     void ProcessDefaultPercentOfChildrenSumPolicy(ControlLayoutData &data, Vector2::eAxis axis);
-    void ProcessVerticalFlowLayoutPercentOfChildrenSumPolicy(ControlLayoutData &data, Vector2::eAxis axis);
+    void ProcessHorizontalFlowLayoutPercentOfChildrenSumPolicy(ControlLayoutData& data);
+    void ProcessVerticalFlowLayoutPercentOfChildrenSumPolicy(ControlLayoutData& data);
     void ProcessPercentOfMaxChildPolicy(ControlLayoutData &data, Vector2::eAxis axis);
     void ProcessPercentOfFirstChildPolicy(ControlLayoutData &data, Vector2::eAxis axis);
     void ProcessPercentOfLastChildPolicy(ControlLayoutData &data, Vector2::eAxis axis);

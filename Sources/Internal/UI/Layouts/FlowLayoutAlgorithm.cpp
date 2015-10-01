@@ -33,6 +33,7 @@
 #include "UIFlowLayoutHintComponent.h"
 
 #include "AnchorLayoutAlgorithm.h"
+#include "LayoutHelpers.h"
 
 #include "UI/UIControl.h"
 
@@ -131,14 +132,13 @@ void FlowLayoutAlgorithm::ProcessXAxis(ControlLayoutData &data, UIFlowLayoutComp
         {
             LayoutLine(data, firstIndex, index - 1, childrenInLine, usedSize);
             firstIndex = index;
-            childrenInLine = 1;
+            childrenInLine = 0;
             usedSize = 0.0f;
         }
         
         float32 restSize = data.GetWidth() - usedSize;
         restSize -= horizontalPadding * 2.0f + horizontalSpacing * childrenInLine + childSize;
-        LAYOUT_EPSILON = 0.01f;
-        if (restSize < -LAYOUT_EPSILON)
+        if (restSize < -LayoutHelpers::EPSILON)
         {
             if (index > firstIndex)
             {
@@ -294,7 +294,7 @@ void FlowLayoutAlgorithm::CorrectPaddingAndSpacing(float32 &padding, float32 &sp
         int32 spacesCount = childrenCount - 1;
         restSize -= padding * 2.0f;
         restSize -= spacing * spacesCount;
-        if (restSize > EPSILON)
+        if (restSize > LayoutHelpers::EPSILON)
         {
             if (dynamicPadding || (dynamicSpacing && spacesCount > 0))
             {

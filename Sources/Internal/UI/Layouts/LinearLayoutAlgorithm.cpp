@@ -31,6 +31,7 @@
 #include "UISizePolicyComponent.h"
 
 #include "AnchorLayoutAlgorithm.h"
+#include "LayoutHelpers.h"
 
 #include "UI/UIControl.h"
 
@@ -175,7 +176,7 @@ bool LinearLayoutAlgorithm::CalculateChildDependentOnParentSize(ControlLayoutDat
     {
         float32 percents = sizeHint->GetValueByAxis(axis);
         float32 size = 0.0f;
-        if (totalPercent > EPSILON)
+        if (totalPercent > LayoutHelpers::EPSILON)
         {
             size = restSize * percents / Max(totalPercent, 100.0f);
         }
@@ -202,7 +203,7 @@ bool LinearLayoutAlgorithm::CalculateChildDependentOnParentSize(ControlLayoutDat
 
 void LinearLayoutAlgorithm::CalculateDynamicPaddingAndSpaces(ControlLayoutData &data, Vector2::eAxis axis)
 {
-    if (totalPercent < 100.0f - EPSILON && restSize > EPSILON)
+    if (totalPercent < 100.0f - LayoutHelpers::EPSILON && restSize > LayoutHelpers::EPSILON)
     {
         if (dynamicPadding || (dynamicSpacing && spacesCount > 0))
         {
