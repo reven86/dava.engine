@@ -26,61 +26,40 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __QUICKED_CANVAS_SYSTEM_H__
+#define __QUICKED_CANVAS_SYSTEM_H__
 
-#ifndef __QUICKED_SHARED_DATA_H__
-#define __QUICKED_SHARED_DATA_H__
+#include "EditorSystems/BaseEditorSystem.h"
+#include "EditorSystems/EditorSystemsManager.h"
+#include "Model/PackageHierarchy/PackageListener.h"
+#include "Base/ScopedPtr.h"
+#include "UI/UIControl.h"
+#include "SelectionContainer.h"
 
-#include <QtCore>
-#include <QWidget>
-#include <QSharedPointer>
-#include "Base/BaseTypes.h"
-#include "Model/PackageHierarchy/ControlNode.h"
-#include "Model/PackageHierarchy/StyleSheetNode.h"
-#include "Document.h"
-
+class EditorSystemsManager;
 class PackageBaseNode;
+class BackgroundController;
 
-struct WidgetContext
+class CanvasSystem final : public BaseEditorSystem, private PackageListener
 {
-};
-
-class SharedData : public QObject
-{
-    Q_OBJECT
 public:
-    SharedData(QObject *parent = nullptr);
-    QVariant& GetData(const QByteArray &role);
-    Document *GetDocument() const; //TODO - this is deprecated
-    void SetData(const QByteArray &role, const QVariant &value);
-    WidgetContext* GetContext(QWidget* requester) const;
-    void SetContext(QWidget* requester, WidgetContext* widgetContext);
-    
-    const QList<PackageBaseNode*> &GetSelection() const;
-    void SetSelection(const QList<PackageBaseNode*> &aSelection);
-    
-signals:
-    void DataChanged(const QByteArray &role);
+    CanvasSystem(EditorSystemsManager* parent);
+    ~CanvasSystem() override;
+
+    void OnActivated() override;
+    void OnDeactivated() override;
+
+    void LayoutCanvas();
+
 private:
-    QMap < QByteArray, QVariant > values;
-    std::map < QWidget*, std::unique_ptr<WidgetContext> > contexts;
-    
-    QList<PackageBaseNode*> selection;
+    void OnRootContolsChanged(const EditorSystemsManager::SortedPackageBaseNodeSet& rootControls);
+    void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from) override;
+    void ControlWasAdded(ControlNode* node, ControlsContainerNode* /*destination*/, int /*index*/) override;
+    void ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property) override;
+    void CreateAndInsertGrid(PackageBaseNode* node, size_t pos);
+
+    DAVA::ScopedPtr<DAVA::UIControl> controlsCanvas; //to attach or detach from document
+    DAVA::List<std::unique_ptr<BackgroundController>> gridControls;
 };
 
-inline Document* SharedData::GetDocument() const
-{
-    return qobject_cast<Document*>(parent());
-}
-
-
-Q_DECLARE_METATYPE(SharedData*);
-Q_DECLARE_METATYPE(QAbstractItemModel*)
-Q_DECLARE_METATYPE(QPointer<QAbstractItemModel>)
-Q_DECLARE_METATYPE(ControlNode*);
-Q_DECLARE_METATYPE(StyleSheetNode*);
-Q_DECLARE_METATYPE(QList<ControlNode*>);
-Q_DECLARE_METATYPE(QList<StyleSheetNode*>);
-Q_DECLARE_METATYPE(QPersistentModelIndex);
-Q_DECLARE_METATYPE(QList<QPersistentModelIndex>);
-
-#endif // __QUICKED_SHARED_DATA_H__
+#endif // __QUICKED_CANVAS_SYSTEM_H__
