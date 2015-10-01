@@ -142,7 +142,7 @@ void TransformSystem::OnSelectionChanged(const SelectedNodes& selected, const Se
     nodesToMove.clear();
     for (ControlNode* selectedControl : selectedControlNodes)
     {
-        nodesToMove.emplace_back(selectedControl, nullptr);
+        nodesToMove.emplace_back(selectedControl, nullptr, nullptr);
     }
     CorrectNodesToMove();
 }
@@ -194,7 +194,7 @@ bool TransformSystem::ProcessDrag(Vector2 pos)
     switch (activeArea)
     {
     case HUDAreaInfo::FRAME_AREA:
-        MoveControl(delta);
+        MoveAllSelectedControls(delta);
         return true;
     case HUDAreaInfo::TOP_LEFT_AREA:
     case HUDAreaInfo::TOP_CENTER_AREA:
@@ -226,27 +226,29 @@ bool TransformSystem::ProcessDrag(Vector2 pos)
     }
 }
 
-void TransformSystem::MoveControl(Vector2 delta)
-{
-    if (parentGeometricData.scale.x != 0.0f && parentGeometricData.scale.y != 0.0f)
-    {
-        Vector2 scaledDelta = delta / parentGeometricData.scale;
-        Vector2 angeledDelta(RotateVector(scaledDelta, parentGeometricData));
-        MoveAllSelectedControls(angeledDelta);
-    }
-}
-
 void TransformSystem::MoveAllSelectedControls(Vector2 delta)
 {
-    DAVA::Vector<std::tuple<ControlNode*, AbstractProperty*, VariantType>> propertiesToChange;
-    for (auto& pair : nodesToMove)
+    Vector<std::tuple<ControlNode*, AbstractProperty*, VariantType>> propertiesToChange;
+    if (nodesToMove.size() == 1)
     {
-        ControlNode* node = pair.first;
-        if (node->IsEditingSupported())
+        const auto& tuple = nodesToMove.front();
+        Vector2 finalPos = AdjustMove(delta);
+        propertiesToChange.emplace_back(std::get<0>(tuple), std::get<1>(tuple), VariantType(finalPos));
+        systemManager->PropertiesChanged.Emit(std::move(propertiesToChange), std::move(currentHash));
+    }
+    return;
+    for (auto& tuple : nodesToMove)
+    {
+        ControlNode* node = std::get<0>(tuple);
+        Vector2 scale = std::get<2>(tuple)->scale;
+        if (node->IsEditingSupported() && scale.x != 0.0f && scale.y != 0.0f)
         {
-            AbstractProperty* property = pair.second;
+            Vector2 scaledDelta = delta / scale;
+            Vector2 rotatedDelta(RotateVector(scaledDelta, *std::get<2>(tuple)));
+
+            AbstractProperty* property = std::get<1>(tuple);
             Vector2 originalPosition = property->GetValue().AsVector2();
-            Vector2 finalPosition(originalPosition + delta);
+            Vector2 finalPosition(originalPosition + rotatedDelta);
             propertiesToChange.emplace_back(node, property, VariantType(finalPosition));
         }
     }
@@ -256,6 +258,99 @@ void TransformSystem::MoveAllSelectedControls(Vector2 delta)
     }
 }
 
+DAVA::Vector2 TransformSystem::AdjustMove(DAVA::Vector2& delta)
+{
+    const auto& tuple = nodesToMove.front();
+    const UIGeometricData* gd = std::get<2>(tuple);
+    const UIControl* control = std::get<0>(tuple)->GetControl();
+    Rect box = control->GetLocalGeometricData().GetAABBox();
+    Vector2 scaledDelta = delta / gd->scale;
+    Vector2 deltaPosition(RotateVector(scaledDelta, *gd));
+
+    const Vector2 scaledRange(Vector2(20.0f, 20.0f) / gd->scale);
+    const Vector2 range(RotateVector(scaledRange, *gd));
+
+    AbstractProperty* property = std::get<1>(tuple);
+    Vector2 originalPosition = property->GetValue().AsVector2();
+    Vector2 finalPosition(originalPosition + deltaPosition + extraDelta);
+    const float32 delimiter = 0.5f;
+    const float32 maxProp = 1.0f;
+
+    Vector2 target;
+    Vector2 distanceToTarget;
+    bool magnetX = false;
+    bool magnetY = false;
+
+    const KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
+    if (keyboard.IsKeyPressed(DVKEY_SHIFT))
+    {
+        for (float32 part = 0.0f; part <= maxProp; part += delimiter)
+        {
+            float32 controlLeft = box.x;
+            float32 controlRight = box.x + box.GetSize().dx;
+
+            float32 targetPos = part * gd->size.dx;
+            float32 left = targetPos - range.dx;
+            float32 right = targetPos + range.dx;
+            if (finalPosition.dx >= left && finalPosition.dx <= right)
+            {
+                float32 distance = fabs(finalPosition.dx - targetPos);
+                if (distance == 0.0f || !magnetX || distance < distanceToTarget.dx)
+                {
+                    distanceToTarget.dx = distance;
+                    target.dx = targetPos;
+                }
+                magnetX = true;
+            }
+        }
+
+        for (float32 part = 0.0f; part <= maxProp; part += delimiter)
+        {
+            float32 targetPos = part * gd->size.dy;
+            float32 top = targetPos - range.dy;
+            float32 bottom = targetPos + range.dy;
+
+            if (finalPosition.dy >= top && finalPosition.dy <= bottom)
+            {
+                float32 distance = fabs(finalPosition.dy - targetPos);
+                if (distance == 0.0f || !magnetY || distance < distanceToTarget.dy)
+                {
+                    distanceToTarget.dy = distance;
+                    target.dy = targetPos;
+                }
+                magnetY = true;
+            }
+        }
+    }
+    if (magnetX)
+    {
+        extraDelta.dx = finalPosition.dx - target.dx;
+        finalPosition.dx = target.dx;
+        delta.dx = target.dx - originalPosition.dx;
+    }
+    else if (extraDelta.dx != 0.0f)
+    {
+        deltaPosition.dx += extraDelta.dx;
+        extraDelta.dx = 0.0f;
+        delta.dx = deltaPosition.dx;
+    }
+    if (magnetY)
+    {
+        extraDelta.dy = finalPosition.dy - target.dy;
+        finalPosition.dy = target.dy;
+        delta.dy = target.dy - originalPosition.dy;
+    }
+    else if (extraDelta.dy != 0.0f)
+    {
+        deltaPosition.dy += extraDelta.dy;
+        extraDelta.dy = 0.0f;
+        delta.dy = deltaPosition.dy;
+    }
+    delta = RotateVectorInv(delta, *gd);
+    delta *= gd->scale;
+    return finalPosition;
+}
+
 void TransformSystem::ResizeControl(Vector2 delta, bool withPivot, bool rateably)
 {
     DVASSERT(activeArea != HUDAreaInfo::NO_AREA);
@@ -263,8 +358,8 @@ void TransformSystem::ResizeControl(Vector2 delta, bool withPivot, bool rateably
     const auto directionX = cornersDirection.at(activeArea - HUDAreaInfo::TOP_LEFT_AREA)[Vector2::AXIS_X];
     const auto directionY = cornersDirection.at(activeArea - HUDAreaInfo::TOP_LEFT_AREA)[Vector2::AXIS_Y];
 
-    Vector2 pivot(controlGeometricData.size.x != 0.0f ? controlGeometricData.pivotPoint.x / controlGeometricData.size.x : 0.0f,
-                  controlGeometricData.size.y != 0.0f ? controlGeometricData.pivotPoint.y / controlGeometricData.size.y : 0.0f);
+    Vector2 pivot(controlGeometricData.size.dx != 0.0f ? controlGeometricData.pivotPoint.dx / controlGeometricData.size.dx : 0.0f,
+                  controlGeometricData.size.dy != 0.0f ? controlGeometricData.pivotPoint.dy / controlGeometricData.size.dy : 0.0f);
 
     Vector2 deltaMappedToControl(delta / controlGeometricData.scale);
     deltaMappedToControl = RotateVector(deltaMappedToControl, controlGeometricData);
@@ -435,9 +530,9 @@ void TransformSystem::MovePivot(Vector2 delta)
     propertiesToChange.emplace_back(activeControlNode, pivotProperty, VariantType(pivot));
 
     Vector2 scaledDelta(delta / parentGeometricData.scale);
-    Vector2 angeledDeltaPosition(RotateVector(scaledDelta, parentGeometricData));
+    Vector2 rotatedDeltaPosition(RotateVector(scaledDelta, parentGeometricData));
     Vector2 originalPos(positionProperty->GetValue().AsVector2());
-    Vector2 finalPos(originalPos + angeledDeltaPosition);
+    Vector2 finalPos(originalPos + rotatedDeltaPosition);
     propertiesToChange.emplace_back(activeControlNode, positionProperty, VariantType(finalPos));
 
     systemManager->PropertiesChanged.Emit(std::move(propertiesToChange), std::move(currentHash));
@@ -448,8 +543,8 @@ Vector2 TransformSystem::AdjustPivot(Vector2& delta)
     const Rect ur(controlGeometricData.GetUnrotatedRect());
     const Vector2 controlSize(ur.GetSize());
 
-    const Vector2 angeledDeltaPivot(RotateVector(delta, controlGeometricData));
-    Vector2 deltaPivot(angeledDeltaPivot / controlSize);
+    const Vector2 rotatedDeltaPivot(RotateVector(delta, controlGeometricData));
+    Vector2 deltaPivot(rotatedDeltaPivot / controlSize);
 
     const Vector2 scaledRange(Vector2(10.0f, 10.0f));
     const Vector2 range(scaledRange / controlSize); //range in pivot coordinates
@@ -461,14 +556,14 @@ Vector2 TransformSystem::AdjustPivot(Vector2& delta)
     const KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
     if (keyboard.IsKeyPressed(DVKEY_SHIFT))
     {
-        const float32 targetPosition = 0.25f;
+        const float32 delimiter = 0.25f;
         const float32 maxPivot = 1.0f;
 
-        Vector2 target(maxPivot, maxPivot);
-        Vector2 distanceToTarget(maxPivot, maxPivot);
-        for (float32 targetX = 0.0f; targetX <= maxPivot; targetX += targetPosition)
+        Vector2 target;
+        Vector2 distanceToTarget;
+        for (float32 targetX = 0.0f; targetX <= maxPivot; targetX += delimiter)
         {
-            for (float32 targetY = 0.0f; targetY <= maxPivot; targetY += targetPosition)
+            for (float32 targetY = 0.0f; targetY <= maxPivot; targetY += delimiter)
             {
                 float32 left = targetX - range.dx;
                 float32 right = targetX + range.dx;
@@ -477,7 +572,7 @@ Vector2 TransformSystem::AdjustPivot(Vector2& delta)
                 if (finalPivot.dx >= left && finalPivot.dx <= right && finalPivot.dy >= top && finalPivot.dy <= bottom)
                 {
                     Vector2 currentDistance(fabs(finalPivot.dx - targetX), fabs(finalPivot.dy - targetY));
-                    if (currentDistance.IsZero() || currentDistance.x < distanceToTarget.x || currentDistance.y < distanceToTarget.y)
+                    if (currentDistance.IsZero() || !found || currentDistance.x < distanceToTarget.x || currentDistance.y < distanceToTarget.y)
                     {
                         distanceToTarget = currentDistance;
                         target = Vector2(targetX, targetY);
@@ -490,8 +585,8 @@ Vector2 TransformSystem::AdjustPivot(Vector2& delta)
         {
             extraDelta.dx = finalPivot.dx - target.x;
             extraDelta.dy = finalPivot.dy - target.y;
-
             delta = RotateVectorInv((target - origPivot) * controlSize, controlGeometricData);
+
             finalPivot = target;
         }
     }
@@ -585,7 +680,7 @@ void TransformSystem::CorrectNodesToMove()
     while (iter != nodesToMove.end())
     {
         bool toRemove = false;
-        PackageBaseNode* parent = iter->first->GetParent();
+        PackageBaseNode* parent = std::get<0>(*iter)->GetParent();
         if (nullptr == parent || nullptr == parent->GetControl())
         {
             toRemove = true;
@@ -595,8 +690,8 @@ void TransformSystem::CorrectNodesToMove()
             auto iter2 = nodesToMove.begin();
             while (iter2 != nodesToMove.end() && !toRemove)
             {
-                PackageBaseNode* node1 = iter->first;
-                PackageBaseNode* node2 = iter2->first;
+                PackageBaseNode* node1 = std::get<0>(*iter);
+                PackageBaseNode* node2 = std::get<0>(*iter2);
                 if (iter != iter2)
                 {
                     while (nullptr != node1->GetParent() && nullptr != node1->GetControl() && !toRemove)
@@ -620,8 +715,11 @@ void TransformSystem::CorrectNodesToMove()
             ++iter;
         }
     }
-    for (auto& pair : nodesToMove)
+    for (auto& tuple : nodesToMove)
     {
-        pair.second = pair.first->GetRootProperty()->FindPropertyByName("Position");
+        ControlNode* node = std::get<0>(tuple);
+        UIControl* control = node->GetControl();
+        std::get<1>(tuple) = node->GetRootProperty()->FindPropertyByName("Position");
+        std::get<2>(tuple) = &control->GetParent()->GetGeometricData();
     }
 }
