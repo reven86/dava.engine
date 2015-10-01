@@ -672,10 +672,11 @@ void MaterialEditor::FillTemplates(const QList<DAVA::NMaterial *>& materials)
 
                 const bool hasLocalFxName = material->HasLocalFXName();
 
+                NMaterial* parentMaterial = material->GetParent();
                 bool hasParentFx = false;
-                if (nullptr != material->GetParent())
+                if (parentMaterial != nullptr)
                 {
-                    hasParentFx = material->GetParent()->HasLocalFXName();
+                    hasParentFx = parentMaterial->HasLocalFXName();
                 }
 
                 if (hasLocalFxName)
@@ -686,7 +687,16 @@ void MaterialEditor::FillTemplates(const QList<DAVA::NMaterial *>& materials)
                 {
                     ui->templateButton->setIcon(QIcon(":/QtIcons/cplus.png"));
                 }
-                ui->templateButton->setEnabled(true);
+
+                if (parentMaterial == nullptr || parentMaterial == globalMaterial)
+                {
+                    ui->templateButton->setEnabled(false);
+                }
+                else
+                {
+                    ui->templateButton->setEnabled(true);
+                }
+
                 ui->templateBox->setEnabled(hasLocalFxName);
             }
         }
