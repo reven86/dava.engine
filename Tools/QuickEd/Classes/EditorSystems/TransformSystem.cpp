@@ -451,7 +451,7 @@ Vector2 TransformSystem::AdjustPivot(Vector2& delta)
     const Vector2 angeledDeltaPivot(RotateVector(delta, controlGeometricData));
     Vector2 deltaPivot(angeledDeltaPivot / controlSize);
 
-    const Vector2 scaledRange(Vector2(30.0f, 30.0f));
+    const Vector2 scaledRange(Vector2(10.0f, 10.0f));
     const Vector2 range(scaledRange / controlSize); //range in pivot coordinates
 
     Vector2 origPivot = pivotProperty->GetValue().AsVector2();
