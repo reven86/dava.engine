@@ -349,6 +349,10 @@ void MaterialEditor::commandExecuted(SceneEditor2 *scene, const Command2 *comman
                 const String memberName(inspCommand->member->Name().c_str());
                 if (memberName == NMaterialSerializationKey::QualityGroup || memberName == NMaterialSerializationKey::FXName)
                 {
+                    for (auto& m : curMaterials)
+                    {
+                        m->InvalidateRenderVariants();
+                    }
                     materialPropertiesUpdater->Update();
                 }
             }
