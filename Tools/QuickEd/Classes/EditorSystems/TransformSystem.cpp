@@ -60,6 +60,12 @@ Vector2 RotateVector(Vector2 in, const UIGeometricData& gd)
                    in.x * -gd.sinA + in.y * gd.cosA);
 }
 
+Vector2 RotateVectorInv(Vector2 in, const UIGeometricData& gd)
+{
+    return Vector2(in.x * gd.cosA + in.y * -gd.sinA,
+                   in.x * gd.sinA + in.y * gd.cosA);
+}
+
 Vector2 RotateVectorInv(Vector2 in, const float32& angle)
 {
     return Vector2(in.x * cosf(angle) + in.y * -sinf(angle),
@@ -445,56 +451,55 @@ Vector2 TransformSystem::AdjustPivot(Vector2& delta)
     const Vector2 angeledDeltaPivot(RotateVector(delta, controlGeometricData));
     Vector2 deltaPivot(angeledDeltaPivot / controlSize);
 
-    const Vector2 scaledRange(Vector2(10.0f, 10.0f) / controlGeometricData.scale);
+    const Vector2 scaledRange(Vector2(30.0f, 30.0f));
     const Vector2 range(scaledRange / controlSize); //range in pivot coordinates
 
     Vector2 origPivot = pivotProperty->GetValue().AsVector2();
-    Vector2 finalPivot(origPivot + deltaPivot + extraDelta.dx);
+    Vector2 finalPivot(origPivot + deltaPivot + extraDelta);
 
-    const float32 targetPosition = 1.0f;
+    const float32 targetPosition = 0.25f;
     const float32 maxPivot = 1.0f;
     bool found = false;
-    if (deltaPivot.dx != 0.0f)
-    {
-        for (float32 target = 0.0f; target <= maxPivot && !found; target += targetPosition)
-        {
-            float32 left = target - range.dx;
-            float32 right = target + range.dx;
-            if (finalPivot.dx >= left && finalPivot.dx <= right)
-            {
-                float availableDelta = 0.0f;
-                if (deltaPivot.dx >= 0.0f && origPivot.dx < left)
-                {
-                    availableDelta = left - origPivot.dx;
-                }
-                else if (deltaPivot.dx <= 0.0f && origPivot.dx > right)
-                {
-                    availableDelta = right - origPivot.dx;
-                }
 
-                if (extraDelta.dx == 0.0f)
+    Vector2 target(maxPivot, maxPivot);
+    Vector2 distanceToTarget(maxPivot, maxPivot);
+    for (float32 targetX = 0.0f; targetX <= maxPivot; targetX += targetPosition)
+    {
+        for (float32 targetY = 0.0f; targetY <= maxPivot; targetY += targetPosition)
+        {
+            float32 left = targetX - range.dx;
+            float32 right = targetX + range.dx;
+            float32 top = targetY - range.dy;
+            float32 bottom = targetY + range.dy;
+            if (finalPivot.dx >= left && finalPivot.dx <= right && finalPivot.dy >= top && finalPivot.dy <= bottom)
+            {
+                Vector2 currentDistance(fabs(finalPivot.dx - targetX), fabs(finalPivot.dy - targetY));
+                if (currentDistance.IsZero() || currentDistance.x < distanceToTarget.x || currentDistance.y < distanceToTarget.y)
                 {
-                    extraDelta.dx = finalPivot.dx - target;
+                    distanceToTarget = currentDistance;
+                    target = Vector2(targetX, targetY);
                 }
-                else
-                {
-                    extraDelta.dx += deltaPivot.dx;
-                }
-                float32 was = delta.dx;
-                delta.dx *= availableDelta / deltaPivot.dx;
-                finalPivot.dx = target;
-                static int counter;
-                Logger::Info("%d av: %f, ex: %f, targ: %f, fin: %f, was: %f. del: %f", ++counter, availableDelta, extraDelta.dx, target, finalPivot.dx, was, delta.dx);
                 found = true;
             }
         }
-        if (!found)
+    }
+    if (found)
+    {
+        extraDelta.dx = finalPivot.dx - target.x;
+        extraDelta.dy = finalPivot.dy - target.y;
+
+        delta = RotateVectorInv((target - origPivot) * controlSize, controlGeometricData);
+        finalPivot = target;
+    }
+    else
+    {
+        if (!extraDelta.IsZero())
         {
-            if (extraDelta.dx != 0.0f)
-            {
-                deltaPivot.dx += extraDelta.dx;
-                extraDelta.dx = 0.0f;
-            }
+            deltaPivot.dx += extraDelta.dx;
+            extraDelta.dx = 0.0f;
+            deltaPivot.dy += extraDelta.dy;
+            extraDelta.dy = 0.0f;
+            delta = RotateVectorInv(deltaPivot * controlSize, controlGeometricData);
         }
     }
     return finalPivot;
