@@ -227,9 +227,9 @@ protected:
 		Our recommendation to perform in-game progress saves during the game immediately after changes that are important. 
 	 */
 	virtual void OnAppFinished() = 0;
-    
-#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__) 
-	/**
+
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_WIN_UAP__)
+    /**
 		\brief Called when application goes to background on mobile platforms
 	 */
 	virtual void OnBackground() = 0;
@@ -243,9 +243,9 @@ protected:
      \brief Called when application goes to background due to device lock on iOS platforms
 	 */
 	virtual void OnDeviceLocked() = 0;
-#endif //#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
-	
-	/**	
+#endif //#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_WIN_UAP__)
+
+    /**	
 		\brief this function is called every frame to let you update your application. 
 		Normally this function can handle high-level tasks that is common between all application screens. 
 		Logic of the particular game screen should be inside that screen and it's Update function. 

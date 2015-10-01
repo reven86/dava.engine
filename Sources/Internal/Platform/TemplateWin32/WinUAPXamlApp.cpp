@@ -306,27 +306,33 @@ void WinUAPXamlApp::Run()
 
 void WinUAPXamlApp::OnSuspending(::Platform::Object^ sender, Windows::ApplicationModel::SuspendingEventArgs^ args)
 {
-    isWindowVisible = false;
-    Core::Instance()->SetIsActive(isWindowVisible);
+    Core::Instance()->GetApplicationCore()->OnSuspend();
 }
 
 void WinUAPXamlApp::OnResuming(::Platform::Object^ sender, ::Platform::Object^ args)
 {
-    isWindowVisible = true;
-    Core::Instance()->SetIsActive(isWindowVisible);
+    Core::Instance()->GetApplicationCore()->OnResume();
 }
 
 void WinUAPXamlApp::OnWindowActivationChanged(::Windows::UI::Core::CoreWindow^ sender, ::Windows::UI::Core::WindowActivatedEventArgs^ args)
 {
     CoreWindowActivationState state = args->WindowActivationState;
+
     switch (state)
     {
     case CoreWindowActivationState::CodeActivated:
     case CoreWindowActivationState::PointerActivated:
-        Core::Instance()->SetIsActive(true);
+        if (isPhoneApiDetected)
+        {
+            Core::Instance()->SetIsActive(true);
+        }
         break;
     case CoreWindowActivationState::Deactivated:
-        Core::Instance()->SetIsActive(false);
+        InputSystem::Instance()->GetKeyboard().ClearAllKeys();
+        if (isPhoneApiDetected)
+        {
+            Core::Instance()->SetIsActive(false);
+        }
         break;
     default:
         break;
@@ -335,8 +341,16 @@ void WinUAPXamlApp::OnWindowActivationChanged(::Windows::UI::Core::CoreWindow^ s
 
 void WinUAPXamlApp::OnWindowVisibilityChanged(::Windows::UI::Core::CoreWindow^ sender, ::Windows::UI::Core::VisibilityChangedEventArgs^ args)
 {
-    isWindowVisible = args->Visible;
-    Core::Instance()->SetIsActive(isWindowVisible);
+    if (args->Visible)
+    {
+        isPhoneApiDetected ? Core::Instance()->SetIsActive(true) : Core::Instance()->GoForeground();
+        Core::Instance()->SetIsActive(true);
+    }
+    else
+    {
+        isPhoneApiDetected ? Core::Instance()->SetIsActive(false) : Core::Instance()->GoBackground(false);
+        InputSystem::Instance()->GetKeyboard().ClearAllKeys();
+    }
 }
 
 void WinUAPXamlApp::MetricsScreenUpdated(bool isSizeUpdate, float32 widht, float32 height, bool isScaleUpdate, float32 scaleX, float32 scaleY)
