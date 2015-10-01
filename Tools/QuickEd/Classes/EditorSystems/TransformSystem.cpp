@@ -263,7 +263,8 @@ DAVA::Vector2 TransformSystem::AdjustMove(DAVA::Vector2& delta)
     const auto& tuple = nodesToMove.front();
     const UIGeometricData* gd = std::get<2>(tuple);
     const UIControl* control = std::get<0>(tuple)->GetControl();
-    Rect box = control->GetLocalGeometricData().GetAABBox();
+    UIGeometricData controlGD = control->GetLocalGeometricData();
+
     Vector2 scaledDelta = delta / gd->scale;
     Vector2 deltaPosition(RotateVector(scaledDelta, *gd));
 
@@ -273,6 +274,10 @@ DAVA::Vector2 TransformSystem::AdjustMove(DAVA::Vector2& delta)
     AbstractProperty* property = std::get<1>(tuple);
     Vector2 originalPosition = property->GetValue().AsVector2();
     Vector2 finalPosition(originalPosition + deltaPosition + extraDelta);
+
+    controlGD.position += deltaPosition + extraDelta;
+    Rect box = controlGD.GetAABBox();
+
     const float32 delimiter = 0.5f;
     const float32 maxProp = 1.0f;
 
@@ -284,70 +289,111 @@ DAVA::Vector2 TransformSystem::AdjustMove(DAVA::Vector2& delta)
     const KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
     if (keyboard.IsKeyPressed(DVKEY_SHIFT))
     {
+        float32 usedBorder;
+
         for (float32 part = 0.0f; part <= maxProp; part += delimiter)
         {
             float32 controlLeft = box.x;
             float32 controlRight = box.x + box.GetSize().dx;
-
+            if (keyboard.IsKeyPressed(DVKEY_ALT))
+            {
+                controlLeft = finalPosition.dx;
+                controlRight = finalPosition.dx;
+            }
             float32 targetPos = part * gd->size.dx;
             float32 left = targetPos - range.dx;
             float32 right = targetPos + range.dx;
-            if (finalPosition.dx >= left && finalPosition.dx <= right)
+            if (controlLeft >= left && controlLeft <= right)
+            {
+                float32 distance = fabs(controlLeft - targetPos);
+                if (distance == 0.0f || !magnetX || distance < distanceToTarget.dx)
+                {
+                    distanceToTarget.dx = distance;
+                    target.dx = targetPos;
+                    usedBorder = controlLeft;
+                }
+                magnetX = true;
+            }
+
+            if (controlRight >= left && controlRight <= right)
             {
                 float32 distance = fabs(finalPosition.dx - targetPos);
                 if (distance == 0.0f || !magnetX || distance < distanceToTarget.dx)
                 {
                     distanceToTarget.dx = distance;
                     target.dx = targetPos;
+                    usedBorder = controlRight;
                 }
                 magnetX = true;
             }
         }
+        if (magnetX)
+        {
+            extraDelta.dx = usedBorder - target.dx;
+            delta.dx = target.dx - usedBorder;
+        }
 
         for (float32 part = 0.0f; part <= maxProp; part += delimiter)
         {
-            float32 targetPos = part * gd->size.dy;
+            float32 controlTop = box.y;
+            float32 controlBottom = box.y + box.GetSize().dy;
+            if (keyboard.IsKeyPressed(DVKEY_ALT))
+            {
+                controlTop = finalPosition.dy;
+                controlBottom = finalPosition.dy;
+            }
+            float32 targetPos = part * gd->size.dx;
             float32 top = targetPos - range.dy;
             float32 bottom = targetPos + range.dy;
-
-            if (finalPosition.dy >= top && finalPosition.dy <= bottom)
+            if (controlTop >= top && controlTop <= bottom)
             {
-                float32 distance = fabs(finalPosition.dy - targetPos);
+                float32 distance = fabs(controlTop - targetPos);
                 if (distance == 0.0f || !magnetY || distance < distanceToTarget.dy)
                 {
                     distanceToTarget.dy = distance;
                     target.dy = targetPos;
+                    usedBorder = controlTop;
+                }
+                magnetY = true;
+            }
+
+            if (controlBottom >= top && controlBottom <= bottom)
+            {
+                float32 distance = fabs(controlBottom - targetPos);
+                if (distance == 0.0f || !magnetY || distance < distanceToTarget.dy)
+                {
+                    distanceToTarget.dy = distance;
+                    target.dy = targetPos;
+                    usedBorder = controlBottom;
                 }
                 magnetY = true;
             }
         }
+        if (magnetY)
+        {
+            extraDelta.dy = usedBorder - target.dy;
+            delta.dy = target.dy - usedBorder;
+        }
     }
-    if (magnetX)
-    {
-        extraDelta.dx = finalPosition.dx - target.dx;
-        finalPosition.dx = target.dx;
-        delta.dx = target.dx - originalPosition.dx;
-    }
-    else if (extraDelta.dx != 0.0f)
+
+    if (!magnetX && extraDelta.dx != 0.0f)
     {
         deltaPosition.dx += extraDelta.dx;
         extraDelta.dx = 0.0f;
         delta.dx = deltaPosition.dx;
     }
-    if (magnetY)
-    {
-        extraDelta.dy = finalPosition.dy - target.dy;
-        finalPosition.dy = target.dy;
-        delta.dy = target.dy - originalPosition.dy;
-    }
-    else if (extraDelta.dy != 0.0f)
+
+    if (!magnetY && extraDelta.dy != 0.0f)
     {
         deltaPosition.dy += extraDelta.dy;
         extraDelta.dy = 0.0f;
         delta.dy = deltaPosition.dy;
     }
+    finalPosition = originalPosition + delta;
+
     delta = RotateVectorInv(delta, *gd);
     delta *= gd->scale;
+
     return finalPosition;
 }
 
