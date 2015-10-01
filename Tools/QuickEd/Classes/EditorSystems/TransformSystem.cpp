@@ -457,50 +457,52 @@ Vector2 TransformSystem::AdjustPivot(Vector2& delta)
     Vector2 origPivot = pivotProperty->GetValue().AsVector2();
     Vector2 finalPivot(origPivot + deltaPivot + extraDelta);
 
-    const float32 targetPosition = 0.25f;
-    const float32 maxPivot = 1.0f;
     bool found = false;
-
-    Vector2 target(maxPivot, maxPivot);
-    Vector2 distanceToTarget(maxPivot, maxPivot);
-    for (float32 targetX = 0.0f; targetX <= maxPivot; targetX += targetPosition)
+    const KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
+    if (keyboard.IsKeyPressed(DVKEY_SHIFT))
     {
-        for (float32 targetY = 0.0f; targetY <= maxPivot; targetY += targetPosition)
+        const float32 targetPosition = 0.25f;
+        const float32 maxPivot = 1.0f;
+
+        Vector2 target(maxPivot, maxPivot);
+        Vector2 distanceToTarget(maxPivot, maxPivot);
+        for (float32 targetX = 0.0f; targetX <= maxPivot; targetX += targetPosition)
         {
-            float32 left = targetX - range.dx;
-            float32 right = targetX + range.dx;
-            float32 top = targetY - range.dy;
-            float32 bottom = targetY + range.dy;
-            if (finalPivot.dx >= left && finalPivot.dx <= right && finalPivot.dy >= top && finalPivot.dy <= bottom)
+            for (float32 targetY = 0.0f; targetY <= maxPivot; targetY += targetPosition)
             {
-                Vector2 currentDistance(fabs(finalPivot.dx - targetX), fabs(finalPivot.dy - targetY));
-                if (currentDistance.IsZero() || currentDistance.x < distanceToTarget.x || currentDistance.y < distanceToTarget.y)
+                float32 left = targetX - range.dx;
+                float32 right = targetX + range.dx;
+                float32 top = targetY - range.dy;
+                float32 bottom = targetY + range.dy;
+                if (finalPivot.dx >= left && finalPivot.dx <= right && finalPivot.dy >= top && finalPivot.dy <= bottom)
                 {
-                    distanceToTarget = currentDistance;
-                    target = Vector2(targetX, targetY);
+                    Vector2 currentDistance(fabs(finalPivot.dx - targetX), fabs(finalPivot.dy - targetY));
+                    if (currentDistance.IsZero() || currentDistance.x < distanceToTarget.x || currentDistance.y < distanceToTarget.y)
+                    {
+                        distanceToTarget = currentDistance;
+                        target = Vector2(targetX, targetY);
+                    }
+                    found = true;
                 }
-                found = true;
             }
         }
-    }
-    if (found)
-    {
-        extraDelta.dx = finalPivot.dx - target.x;
-        extraDelta.dy = finalPivot.dy - target.y;
-
-        delta = RotateVectorInv((target - origPivot) * controlSize, controlGeometricData);
-        finalPivot = target;
-    }
-    else
-    {
-        if (!extraDelta.IsZero())
+        if (found)
         {
-            deltaPivot.dx += extraDelta.dx;
-            extraDelta.dx = 0.0f;
-            deltaPivot.dy += extraDelta.dy;
-            extraDelta.dy = 0.0f;
-            delta = RotateVectorInv(deltaPivot * controlSize, controlGeometricData);
+            extraDelta.dx = finalPivot.dx - target.x;
+            extraDelta.dy = finalPivot.dy - target.y;
+
+            delta = RotateVectorInv((target - origPivot) * controlSize, controlGeometricData);
+            finalPivot = target;
         }
+    }
+
+    if (!found && !extraDelta.IsZero())
+    {
+        deltaPivot.dx += extraDelta.dx;
+        extraDelta.dx = 0.0f;
+        deltaPivot.dy += extraDelta.dy;
+        extraDelta.dy = 0.0f;
+        delta = RotateVectorInv(deltaPivot * controlSize, controlGeometricData);
     }
     return finalPivot;
 }
