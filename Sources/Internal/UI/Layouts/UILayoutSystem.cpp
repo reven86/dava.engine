@@ -43,7 +43,6 @@
 
 namespace DAVA
 {
-    
 UILayoutSystem::UILayoutSystem()
 {
 }
@@ -107,27 +106,27 @@ UIControl *UILayoutSystem::FindNotDependentOnChildrenControl(UIControl *control)
     return result;
 }
 
-void UILayoutSystem::CollectControls(UIControl *control)
+void UILayoutSystem::CollectControls(UIControl* control)
 {
     layoutData.clear();
     layoutData.emplace_back(ControlLayoutData(control));
     CollectControlChildren(control, 0);
 }
-    
-void UILayoutSystem::CollectControlChildren(UIControl *control, int32 parentIndex)
+
+void UILayoutSystem::CollectControlChildren(UIControl* control, int32 parentIndex)
 {
     int32 index = static_cast<int32>(layoutData.size());
     const List<UIControl*> &children = control->GetChildren();
-    
+
     layoutData[parentIndex].SetFirstChildIndex(index);
     layoutData[parentIndex].SetLastChildIndex(index + static_cast<int32>(children.size() - 1));
 
-    for (UIControl *child : children)
+    for (UIControl* child : children)
     {
         layoutData.emplace_back(ControlLayoutData(child));
     }
 
-    for (UIControl *child : children)
+    for (UIControl* child : children)
     {
         CollectControlChildren(child, index);
         index++;
