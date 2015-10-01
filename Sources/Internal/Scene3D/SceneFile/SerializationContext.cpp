@@ -88,23 +88,6 @@ namespace DAVA
 		materialBindings.clear();
 	}
 			
-Texture* SerializationContext::PrepareTexture(rhi::TextureType textureTypeHint, Texture* tx)
-{
-
-	if(tx)
-	{
-		if(tx->isPink)
-		{
-			tx->Retain();
-		}
-
-		return tx;
-	}
-
-	return Texture::CreatePink(textureTypeHint);
-
-}
-
 
 void SerializationContext::AddLoadedPolygonGroup(PolygonGroup *group, uint32 dataFilePos)
 {
