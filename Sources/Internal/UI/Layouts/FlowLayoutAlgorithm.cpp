@@ -115,6 +115,7 @@ void FlowLayoutAlgorithm::ProcessXAxis(ControlLayoutData &data, UIFlowLayoutComp
         {
             childSize = sizePolicy->GetHorizontalValue() * (data.GetWidth() - horizontalPadding * 2.0f) / 100.0f;
             childSize = Clamp(childSize, sizePolicy->GetHorizontalMinValue(), sizePolicy->GetHorizontalMaxValue());
+            childData.SetSize(Vector2::AXIS_X, childSize);
         }
         
         bool newLineBeforeThis = newLineBeforeNext;
@@ -135,25 +136,23 @@ void FlowLayoutAlgorithm::ProcessXAxis(ControlLayoutData &data, UIFlowLayoutComp
         }
         
         float32 restSize = data.GetWidth() - usedSize;
-        restSize -= horizontalPadding * 2.0f;
-        if (childrenInLine > 0)
-            restSize -= horizontalSpacing * (childrenInLine - 1);
-        restSize -= childSize;
-        if (restSize < -EPSILON)
+        restSize -= horizontalPadding * 2.0f + horizontalSpacing * childrenInLine + childSize;
+        LAYOUT_EPSILON = 0.01f;
+        if (restSize < -LAYOUT_EPSILON)
         {
             if (index > firstIndex)
             {
                 LayoutLine(data, firstIndex, index - 1, childrenInLine, restSize);
                 firstIndex = index;
                 childrenInLine = 1;
-                restSize = childSize;
+                usedSize = childSize;
             }
             else
             {
                 LayoutLine(data, firstIndex, index, 1, 0.0f);
-                childrenInLine = 0;
                 firstIndex = index + 1;
-                childSize = 0.0f;
+                childrenInLine = 0;
+                usedSize = 0.0f;
             }
         }
         else
