@@ -21,7 +21,7 @@ FPROG_IN_BEGIN
 
     #endif
 
-    #if MATERIAL_DECAL || MATERIAL_LIGHTMAP || FRAME_BLEND || ALPHA_MASK
+    #if MATERIAL_DECAL || ( MATERIAL_LIGHTMAP  && VIEW_DIFFUSE ) || FRAME_BLEND || ALPHA_MASK
         FPROG_IN_TEXCOORD1(varTexCoord1,2)
     #endif
 
@@ -114,7 +114,7 @@ FPROG_OUT_END
     DECL_FP_SAMPLER2D(detail)
 #endif
 
-#if MATERIAL_LIGHTMAP
+#if MATERIAL_LIGHTMAP  && VIEW_DIFFUSE
     DECL_FP_SAMPLER2D(lightmap)
 #endif
 
@@ -229,7 +229,7 @@ FPROG_BEGIN
     #endif
     
     
-    #if MATERIAL_LIGHTMAP
+    #if MATERIAL_LIGHTMAP  && VIEW_DIFFUSE
         float3 textureColor1 = FP_TEXTURE2D( lightmap, FP_IN(varTexCoord1) ).rgb;
     #endif
     
