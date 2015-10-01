@@ -61,6 +61,7 @@
 
 #include "QtTools/FileDialog/FileDialog.h"
 
+#include "Tools/LazyUpdater/LazyUpdater.h"
 
 #define MATERIAL_NAME_LABEL "Name"
 #define MATERIAL_GROUP_LABEL "Group"
@@ -83,6 +84,9 @@ MaterialEditor::MaterialEditor(QWidget *parent /* = 0 */)
     , templatesFilterModel(nullptr)
     , lastCheckState(CHECKED_ALL)
 {
+    Function<void()> fn(this, &MaterialEditor::RefreshMaterialProperties);
+    materialPropertiesUpdater = new LazyUpdater(fn, this);
+
     ui->setupUi(this);
     setWindowFlags(WINDOWFLAG_ON_TOP_OF_APPLICATION);
 
@@ -342,10 +346,10 @@ void MaterialEditor::commandExecuted(SceneEditor2 *scene, const Command2 *comman
             {
                 InspMemberModifyCommand *inspCommand = (InspMemberModifyCommand *)command;
 
-                const QString memberName = inspCommand->member->Name().c_str();
-                if (memberName == "materialGroup" || memberName == "fxName")
+                const String memberName(inspCommand->member->Name().c_str());
+                if (memberName == NMaterialSerializationKey::QualityGroup || memberName == NMaterialSerializationKey::FXName)
                 {
-                    SetCurMaterial(curMaterials);
+                    materialPropertiesUpdater->Update();
                 }
             }
             break;
@@ -367,7 +371,7 @@ void MaterialEditor::commandExecuted(SceneEditor2 *scene, const Command2 *comman
         case CMDID_MATERIAL_GLOBAL_SET:
             {
                 sceneActivated(scene);
-                SetCurMaterial(curMaterials);
+                materialPropertiesUpdater->Update();
             }
             break;
         default:
@@ -380,7 +384,7 @@ void MaterialEditor::commandExecuted(SceneEditor2 *scene, const Command2 *comman
 
 void MaterialEditor::OnQualityChanged()
 {
-    SetCurMaterial(curMaterials);
+    RefreshMaterialProperties();
 }
 
 void MaterialEditor::onCurrentExpandModeChange(bool mode)
@@ -708,7 +712,7 @@ void MaterialEditor::OnTemplateChanged(int index)
         }
     }
 
-    SetCurMaterial(curMaterials);
+    RefreshMaterialProperties();
 }
 
 void MaterialEditor::OnTemplateButton()
@@ -733,7 +737,7 @@ void MaterialEditor::OnTemplateButton()
             }
 
             QtMainWindow::Instance()->GetCurrentScene()->Exec(cmd);
-            SetCurMaterial(curMaterials);
+            RefreshMaterialProperties();
         }
     }
 }
@@ -969,7 +973,7 @@ void MaterialEditor::OnMaterialLoad(bool checked)
         }
     }
 
-    SetCurMaterial(curMaterials);
+    RefreshMaterialProperties();
 }
 
 void MaterialEditor::ClearDynamicMembers(DAVA::NMaterial *material, const DAVA::InspMemberDynamic *dynamicMember)
@@ -1237,4 +1241,9 @@ void MaterialEditor::UpdateMaterialFromPresetWithOptions(DAVA::NMaterial* materi
 	{
 		UpdateMaterialTexturesFromPreset(material,  preset->GetArchive("textures"), context->GetScenePath());
 	}
+}
+
+void MaterialEditor::RefreshMaterialProperties()
+{
+    SetCurMaterial(curMaterials);
 }

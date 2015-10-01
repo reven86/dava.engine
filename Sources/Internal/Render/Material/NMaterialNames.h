@@ -200,6 +200,16 @@ public:
     static bool IsRuntimeFlag(const FastName& flag);
 };
 
+class NMaterialSerializationKey
+{
+public:
+    static const DAVA::String MaterialKey;
+    static const DAVA::String ParentMaterialKey;
+    static const DAVA::String FXName;
+    static const DAVA::String QualityGroup;
+    static const DAVA::String MaterialName;
+};
+
 class NMaterialQualityName
 {
 public:
