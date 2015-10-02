@@ -219,7 +219,7 @@ bool InitializeNetwork(bool isMobileDevice, const StringRecv& logReceiver)
     Net::Endpoint endPoint("127.0.0.1", port);
 
     auto logConsumer = std::make_unique<Net::LogConsumer>();
-    logConsumer->SubscribeOnReceivedData(logReceiver).Release();
+    logConsumer->newDataNotifier.Connect(logReceiver);
 
     Net::SimpleNetCore* netcore = new Net::SimpleNetCore;
     gNetLogger = netcore->RegisterService(
