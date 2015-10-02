@@ -41,9 +41,6 @@ namespace DAVA
 template <class T>
 class RefPtr
 {
-    template <class Other>
-    friend class RefPtr;
-
 public:
     RefPtr(T* ptr = nullptr);
     RefPtr(const RefPtr& ptr);
@@ -96,6 +93,9 @@ public:
     friend bool operator!=(const RefPtr& lhs, const RefPtr& rhs) { return !(lhs == rhs); }
 
 private:
+    template <class Other>
+    friend class RefPtr;
+
     template <class U>
     RefPtr& Assign(U ptr);
 

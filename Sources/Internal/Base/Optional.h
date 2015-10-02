@@ -42,7 +42,6 @@ struct EmptyOptional {};
 template <typename T>
 class Optional
 {
-    friend Optional;
 public:
     Optional() = default;
     Optional(EmptyOptional);
@@ -75,7 +74,10 @@ public:
     Optional& operator=(T&& value);
 
 private:
-    using AlignedStorage = 
+    template <typename Other>
+    friend class Optional;
+
+    using AlignedStorage =
         typename std::aligned_storage<sizeof(T), std::alignment_of<T>::value>::type;
 
     AlignedStorage storage;
