@@ -53,12 +53,12 @@ private:
 
     bool ProcessDrag(DAVA::Vector2 point);
     void ResizeControl(DAVA::Vector2 delta, bool withPivot, bool rateably);
-    void AdjustResize(int directionX, int directionY, DAVA::Vector2& delta);
+    DAVA::Vector2 AdjustResize(DAVA::Array<int, DAVA::Vector2::AXIS_COUNT> directions, DAVA::Vector2 delta);
     void MovePivot(DAVA::Vector2 delta);
     DAVA::Vector2 AdjustPivot(DAVA::Vector2& delta);
     void Rotate(DAVA::Vector2 pos);
     void MoveAllSelectedControls(DAVA::Vector2 delta);
-    DAVA::Vector2 AdjustMove(DAVA::Vector2& delta);
+    DAVA::Vector2 AdjustMove(DAVA::Vector2 delta);
     void AdjustProperty(ControlNode* node, const DAVA::Vector<PropertyDelta>& propertiesDelta);
 
     void CorrectNodesToMove();

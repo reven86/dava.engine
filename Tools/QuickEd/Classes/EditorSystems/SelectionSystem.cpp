@@ -26,7 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include <QApplication> //sorry for it
+#include <QApplication>
 
 #include "Input/InputSystem.h"
 #include "Input/KeyboardDevice.h"
