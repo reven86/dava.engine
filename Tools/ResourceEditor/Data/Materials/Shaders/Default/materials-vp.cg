@@ -176,7 +176,7 @@ property float4 jointQuaternions[MAX_JOINTS] : dynamic,skin2 : bigarray ;
 
 #include "vp-fog-props.cgh"
 
-#if MATERIAL_LIGHTMAP
+#if MATERIAL_LIGHTMAP && VIEW_DIFFUSE
 property float2 uvOffset : static,a : ;
 property float2 uvScale : static,a : ;
 #endif
@@ -710,7 +710,7 @@ VPROG_BEGIN
     #if SETUP_LIGHTMAP
         varLightmapSize      = lightmapSize;
         VP_OUT(varTexCoord1) = VP_IN_TEXCOORD1;
-    #elif MATERIAL_LIGHTMAP
+    #elif MATERIAL_LIGHTMAP && VIEW_DIFFUSE
         VP_OUT(varTexCoord1) = uvScale*VP_IN_TEXCOORD1 + uvOffset;
     #else
         VP_OUT(varTexCoord1) = VP_IN_TEXCOORD1;

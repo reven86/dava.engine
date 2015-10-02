@@ -27,7 +27,7 @@ FPROG_OUT_END
     property float3 tileColor2 : static,instance : def_value=1,1,1;
     property float3 tileColor3 : static,instance : def_value=1,1,1;
 #else
-    DECL_FP_SAMPLER2D(fullTiledTexture);
+    DECL_FP_SAMPLER2D(fullTiledTexture)
 #endif
 
 #if CURSOR

@@ -132,9 +132,8 @@ void StaticOcclusionSystem::Process(float32 timeElapsed)
 
     uint32 size = (uint32)staticOcclusionComponents.size();
     if (size == 0)return;
-    
-    
-    bool notInPVS = true;
+
+    bool updateNotInPVS = true;
     bool needUpdatePVS = false;
     
     const Vector3 & position = camera->GetPosition();
@@ -166,18 +165,23 @@ void StaticOcclusionSystem::Process(float32 timeElapsed)
                             activeBlockIndex = blockIndex;
                             needUpdatePVS = true;
                         }
-                        notInPVS = false;
+                        updateNotInPVS = false;
                     }
                 }
             }
         }
     }
-    
-    if (notInPVS)
+
+    if (updateNotInPVS && isInPvs)
     {
         UndoOcclusionVisibility();
+        isInPvs = false;
     }
-    
+    else
+    {
+        isInPvs = true;
+    }
+
     if (needUpdatePVS)
     {
         ProcessStaticOcclusionForOneDataSet(activeBlockIndex, activePVSSet);
