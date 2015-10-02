@@ -32,10 +32,12 @@
 #include "UI/UIStaticText.h"
 #include "UI/UITextField.h"
 #include "UI/UIControlBackground.h"
-#include "UI/Layouts/UIAnchorComponent.h"
 #include "UI/Layouts/UILinearLayoutComponent.h"
 #include "UI/Layouts/UIFlowLayoutComponent.h"
+#include "UI/Layouts/UIFlowLayoutHintComponent.h"
+#include "UI/Layouts/UIIgnoreLayoutComponent.h"
 #include "UI/Layouts/UISizePolicyComponent.h"
+#include "UI/Layouts/UIAnchorComponent.h"
 
 namespace DAVA
 {
@@ -44,10 +46,80 @@ UIStyleSheetPropertyDataBase::UIStyleSheetPropertyDataBase()
     , bgGroup("bg", ePropertyOwner::BACKGROUND, 0, UIControlBackground::TypeInfo())
     , staticTextGroup("text", ePropertyOwner::CONTROL, 0, UIStaticText::TypeInfo())
     , textFieldGroup("textField", ePropertyOwner::CONTROL, 0, UITextField::TypeInfo())
-    , anchorGroup("anchor", ePropertyOwner::COMPONENT, UIComponent::ANCHOR_COMPONENT, UIAnchorComponent::TypeInfo())
     , linearLayoutGroup("linearLayout", ePropertyOwner::COMPONENT, UIComponent::LINEAR_LAYOUT_COMPONENT, UILinearLayoutComponent::TypeInfo())
     , flowLayoutGroup("flowLayout", ePropertyOwner::COMPONENT, UIComponent::FLOW_LAYOUT_COMPONENT, UIFlowLayoutComponent::TypeInfo())
+    , flowLayoutHintGroup("flowLayoutHint", ePropertyOwner::COMPONENT, UIComponent::FLOW_LAYOUT_HINT_COMPONENT, UIFlowLayoutHintComponent::TypeInfo())
+    , ignoreLayoutGroup("ignoreLayout", ePropertyOwner::COMPONENT, UIComponent::IGNORE_LAYOUT_COMPONENT, UIIgnoreLayoutComponent::TypeInfo())
+    , sizePolicyGroup("sizePolicy", ePropertyOwner::COMPONENT, UIComponent::SIZE_POLICY_COMPONENT, UISizePolicyComponent::TypeInfo())
+    , anchorGroup("anchor", ePropertyOwner::COMPONENT, UIComponent::ANCHOR_COMPONENT, UIAnchorComponent::TypeInfo())
 
+    , properties({ { UIStyleSheetPropertyDescriptor(&controlGroup, FastName("angle"), VariantType(0.0f)),
+                     UIStyleSheetPropertyDescriptor(&controlGroup, FastName("size"), VariantType(Vector2(0.0f, 0.0f))),
+                     UIStyleSheetPropertyDescriptor(&controlGroup, FastName("scale"), VariantType(Vector2(1.0f, 1.0f))),
+                     UIStyleSheetPropertyDescriptor(&controlGroup, FastName("visible"), VariantType(true)),
+
+                     UIStyleSheetPropertyDescriptor(&bgGroup, FastName("drawType"), VariantType(UIControlBackground::DRAW_ALIGNED)),
+                     UIStyleSheetPropertyDescriptor(&bgGroup, FastName("sprite"), VariantType(FilePath())),
+                     UIStyleSheetPropertyDescriptor(&bgGroup, FastName("frame"), VariantType(0)),
+                     UIStyleSheetPropertyDescriptor(&bgGroup, FastName("color"), VariantType(Color::White)),
+                     UIStyleSheetPropertyDescriptor(&bgGroup, FastName("colorInherit"), VariantType(UIControlBackground::COLOR_IGNORE_PARENT)),
+                     UIStyleSheetPropertyDescriptor(&bgGroup, FastName("align"), VariantType(ALIGN_HCENTER | ALIGN_VCENTER)),
+                     UIStyleSheetPropertyDescriptor(&bgGroup, FastName("leftRightStretchCap"), VariantType(0.0f)),
+                     UIStyleSheetPropertyDescriptor(&bgGroup, FastName("topBottomStretchCap"), VariantType(0.0f)),
+
+                     UIStyleSheetPropertyDescriptor(&staticTextGroup, FastName("font"), VariantType(String(""))),
+                     UIStyleSheetPropertyDescriptor(&staticTextGroup, FastName("textColor"), VariantType(Color::White)),
+                     UIStyleSheetPropertyDescriptor(&staticTextGroup, FastName("textcolorInheritType"), VariantType(UIControlBackground::COLOR_MULTIPLY_ON_PARENT)),
+                     UIStyleSheetPropertyDescriptor(&staticTextGroup, FastName("shadowoffset"), VariantType(Vector2(0.0f, 0.0f))),
+                     UIStyleSheetPropertyDescriptor(&staticTextGroup, FastName("shadowcolor"), VariantType(Color::White)),
+                     UIStyleSheetPropertyDescriptor(&staticTextGroup, FastName("textalign"), VariantType(ALIGN_HCENTER | ALIGN_VCENTER)),
+
+                     UIStyleSheetPropertyDescriptor(&linearLayoutGroup, FastName("enabled"), VariantType(true)),
+                     UIStyleSheetPropertyDescriptor(&linearLayoutGroup, FastName("orientation"), VariantType(UILinearLayoutComponent::HORIZONTAL)),
+                     UIStyleSheetPropertyDescriptor(&linearLayoutGroup, FastName("padding"), VariantType(0.0f)),
+                     UIStyleSheetPropertyDescriptor(&linearLayoutGroup, FastName("dynamicPadding"), VariantType(false)),
+                     UIStyleSheetPropertyDescriptor(&linearLayoutGroup, FastName("spacing"), VariantType(0.0f)),
+                     UIStyleSheetPropertyDescriptor(&linearLayoutGroup, FastName("dynamicSpacing"), VariantType(false)),
+
+                     UIStyleSheetPropertyDescriptor(&flowLayoutGroup, FastName("enabled"), VariantType(true)),
+                     UIStyleSheetPropertyDescriptor(&flowLayoutGroup, FastName("orientation"), VariantType(UIFlowLayoutComponent::ORIENTATION_LEFT_TO_RIGHT)),
+                     UIStyleSheetPropertyDescriptor(&flowLayoutGroup, FastName("hPadding"), VariantType(0.0f)),
+                     UIStyleSheetPropertyDescriptor(&flowLayoutGroup, FastName("hDynamicPadding"), VariantType(false)),
+                     UIStyleSheetPropertyDescriptor(&flowLayoutGroup, FastName("hSpacing"), VariantType(0.0f)),
+                     UIStyleSheetPropertyDescriptor(&flowLayoutGroup, FastName("hDynamicSpacing"), VariantType(false)),
+                     UIStyleSheetPropertyDescriptor(&flowLayoutGroup, FastName("vPadding"), VariantType(0.0f)),
+                     UIStyleSheetPropertyDescriptor(&flowLayoutGroup, FastName("vDynamicPadding"), VariantType(false)),
+                     UIStyleSheetPropertyDescriptor(&flowLayoutGroup, FastName("vSpacing"), VariantType(0.0f)),
+                     UIStyleSheetPropertyDescriptor(&flowLayoutGroup, FastName("vDynamicSpacing"), VariantType(false)),
+
+                     UIStyleSheetPropertyDescriptor(&flowLayoutHintGroup, FastName("newLineBeforeThis"), VariantType(false)),
+                     UIStyleSheetPropertyDescriptor(&flowLayoutHintGroup, FastName("newLineAfterThis"), VariantType(false)),
+
+                     UIStyleSheetPropertyDescriptor(&ignoreLayoutGroup, FastName("enabled"), VariantType(true)),
+
+                     UIStyleSheetPropertyDescriptor(&sizePolicyGroup, FastName("horizontalPolicy"), VariantType(UISizePolicyComponent::IGNORE_SIZE)),
+                     UIStyleSheetPropertyDescriptor(&sizePolicyGroup, FastName("horizontalValue"), VariantType(0.0f)),
+                     UIStyleSheetPropertyDescriptor(&sizePolicyGroup, FastName("horizontalMin"), VariantType(0.0f)),
+                     UIStyleSheetPropertyDescriptor(&sizePolicyGroup, FastName("horizontalMax"), VariantType(99999.0f)),
+                     UIStyleSheetPropertyDescriptor(&sizePolicyGroup, FastName("verticalPolicy"), VariantType(UISizePolicyComponent::IGNORE_SIZE)),
+                     UIStyleSheetPropertyDescriptor(&sizePolicyGroup, FastName("verticalValue"), VariantType(0.0f)),
+                     UIStyleSheetPropertyDescriptor(&sizePolicyGroup, FastName("verticalMin"), VariantType(0.0f)),
+                     UIStyleSheetPropertyDescriptor(&sizePolicyGroup, FastName("verticalMax"), VariantType(99999.0f)),
+
+                     UIStyleSheetPropertyDescriptor(&anchorGroup, FastName("enabled"), VariantType(true)),
+                     UIStyleSheetPropertyDescriptor(&anchorGroup, FastName("leftAnchorEnabled"), VariantType(false)),
+                     UIStyleSheetPropertyDescriptor(&anchorGroup, FastName("leftAnchor"), VariantType(0.0f)),
+                     UIStyleSheetPropertyDescriptor(&anchorGroup, FastName("rightAnchorEnabled"), VariantType(false)),
+                     UIStyleSheetPropertyDescriptor(&anchorGroup, FastName("rightAnchor"), VariantType(0.0f)),
+                     UIStyleSheetPropertyDescriptor(&anchorGroup, FastName("bottomAnchorEnabled"), VariantType(false)),
+                     UIStyleSheetPropertyDescriptor(&anchorGroup, FastName("bottomAnchor"), VariantType(0.0f)),
+                     UIStyleSheetPropertyDescriptor(&anchorGroup, FastName("topAnchorEnabled"), VariantType(false)),
+                     UIStyleSheetPropertyDescriptor(&anchorGroup, FastName("topAnchor"), VariantType(0.0f)),
+                     UIStyleSheetPropertyDescriptor(&anchorGroup, FastName("hCenterAnchorEnabled"), VariantType(false)),
+                     UIStyleSheetPropertyDescriptor(&anchorGroup, FastName("hCenterAnchor"), VariantType(0.0f)),
+                     UIStyleSheetPropertyDescriptor(&anchorGroup, FastName("vCenterAnchorEnabled"), VariantType(false)),
+                     UIStyleSheetPropertyDescriptor(&anchorGroup, FastName("vCenterAnchor"), VariantType(0.0f)) } })
+{
     , properties({ { UIStyleSheetPropertyDescriptor(&controlGroup, FastName("angle"), VariantType(0.0f)),
                      UIStyleSheetPropertyDescriptor(&controlGroup, FastName("size"), VariantType(Vector2(0.0f, 0.0f))),
                      UIStyleSheetPropertyDescriptor(&controlGroup, FastName("scale"), VariantType(Vector2(1.0f, 1.0f))),

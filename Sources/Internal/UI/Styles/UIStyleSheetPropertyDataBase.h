@@ -46,7 +46,7 @@ class UIStyleSheetPropertyDataBase :
 public:
     enum
     {
-        STYLE_SHEET_PROPERTY_COUNT = 29
+        STYLE_SHEET_PROPERTY_COUNT = 58
     };
 
     UIStyleSheetPropertyDataBase();
@@ -60,9 +60,13 @@ private:
     UIStyleSheetPropertyGroup bgGroup;
     UIStyleSheetPropertyGroup staticTextGroup;
     UIStyleSheetPropertyGroup textFieldGroup;
-    UIStyleSheetPropertyGroup anchorGroup;
+
     UIStyleSheetPropertyGroup linearLayoutGroup;
     UIStyleSheetPropertyGroup flowLayoutGroup;
+    UIStyleSheetPropertyGroup flowLayoutHintGroup;
+    UIStyleSheetPropertyGroup ignoreLayoutGroup;
+    UIStyleSheetPropertyGroup sizePolicyGroup;
+    UIStyleSheetPropertyGroup anchorGroup;
 
     Array<UIStyleSheetPropertyDescriptor, STYLE_SHEET_PROPERTY_COUNT> properties; // have to be after groups declaration
 
