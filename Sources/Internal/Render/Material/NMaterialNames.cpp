@@ -81,9 +81,7 @@ namespace DAVA
 
     const FastName NMaterialName::DEBUG_DRAW_OPAQUE = FastName("~res:/Materials/DebugDraw/Debug.Opaque.material");
     const FastName NMaterialName::DEBUG_DRAW_ALPHABLEND = FastName("~res:/Materials/DebugDraw/Debug.Alphablend.material");
-
-
-
+    const FastName NMaterialName::DEBUG_DRAW_WIREFRAME = FastName("~res:/Materials/DebugDraw/Wireframe.material");
 
     const FastName NMaterialTextureName::TEXTURE_ALBEDO("albedo");
     const FastName NMaterialTextureName::TEXTURE_NORMAL("normalmap");
@@ -185,5 +183,36 @@ namespace DAVA
     //quality
     const FastName NMaterialQualityName::QUALITY_FLAG_NAME = FastName("Quality");
     const FastName NMaterialQualityName::QUALITY_GROUP_FLAG_NAME = FastName("QualityGroup");
-    const FastName NMaterialQualityName::DEFAULT_QUALITY_NAME = FastName("Normal");          
+    const FastName NMaterialQualityName::DEFAULT_QUALITY_NAME = FastName("Normal");
+
+    Vector<FastName> RUNTIME_ONLY_FLAGS =
+    {
+      NMaterialFlagName::FLAG_LIGHTMAPONLY,
+      NMaterialFlagName::FLAG_TEXTUREONLY,
+      NMaterialFlagName::FLAG_SETUPLIGHTMAP,
+
+      NMaterialFlagName::FLAG_DEBUG_UNITY_Z_NORMAL,
+      NMaterialFlagName::FLAG_DEBUG_Z_NORMAL_SCALE,
+      NMaterialFlagName::FLAG_DEBUG_NORMAL_ROTATION,
+
+      NMaterialFlagName::FLAG_VIEWALBEDO,
+      NMaterialFlagName::FLAG_VIEWAMBIENT,
+      NMaterialFlagName::FLAG_VIEWDIFFUSE,
+      NMaterialFlagName::FLAG_VIEWSPECULAR
+    };
+
+    bool NMaterialFlagName::IsRuntimeFlag(const FastName& flag)
+    {
+        auto it = std::find_if(RUNTIME_ONLY_FLAGS.begin(), RUNTIME_ONLY_FLAGS.end(), [&flag](const FastName& toFind)
+                               {
+            return flag == toFind;
+                               });
+        return it != RUNTIME_ONLY_FLAGS.end();
+    }
+
+    const DAVA::String NMaterialSerializationKey::MaterialKey = "materialKey";
+    const DAVA::String NMaterialSerializationKey::ParentMaterialKey = "parentMaterialKey";
+    const DAVA::String NMaterialSerializationKey::FXName = "fxName";
+    const DAVA::String NMaterialSerializationKey::QualityGroup = "qualityGroup";
+    const DAVA::String NMaterialSerializationKey::MaterialName = "materialName";
 };

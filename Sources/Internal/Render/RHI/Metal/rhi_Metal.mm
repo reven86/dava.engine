@@ -134,13 +134,6 @@ metal_NeedRestoreResources()
 {
     return false;
 }
- 
-    
-static bool
-metal_NeedRestoreResources()
-{
-    return false;
-}
     
 static void
 metal_Suspend()

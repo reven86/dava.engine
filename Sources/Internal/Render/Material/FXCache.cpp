@@ -45,13 +45,7 @@ FXDescriptor defaultFX;
 bool initialized = false;
 }
 
-RenderPassDescriptor::RenderPassDescriptor()
-    :cullMode(rhi::CULL_NONE)
-    , renderLayer(RenderLayer::RENDER_LAYER_INVALID_ID)
-    , shader(nullptr)
-{
 
-}
 
 namespace FXCache
 {
@@ -62,7 +56,7 @@ void Initialize()
 {
     DVASSERT(!initialized);
     initialized = true;
-return;
+
     RenderPassDescriptor defaultPass;
     defaultPass.passName = PASS_FORWARD;
     defaultPass.renderLayer = RenderLayer::RENDER_LAYER_OPAQUE_ID;
@@ -94,7 +88,6 @@ const FXDescriptor& GetFXDescriptor(const FastName &fxName, HashMap<FastName, in
     if (quality.IsValid()) //quality made as part of fx key
         key.push_back(quality.Index());
 
-    Map<Vector<int32>, FXDescriptor>& localFx = fxDescriptors;
     auto it = fxDescriptors.find(key);
     if (it != fxDescriptors.end())
         return it->second;
@@ -106,6 +99,10 @@ const FXDescriptor& GetFXDescriptor(const FastName &fxName, HashMap<FastName, in
 const FXDescriptor& LoadFXFromOldTemplate(const FastName &fxName, HashMap<FastName, int32>& defines, const Vector<int32>& key, const FastName& quality)
 {
     //the stuff below is old old legacy carried from RenderTechnique and NMaterialTemplate
+    if (!fxName.IsValid())
+    {
+        return defaultFX;
+    }
 
     FilePath fxPath(fxName.c_str());
     YamlParser* parser = YamlParser::Create(fxPath);
@@ -231,6 +228,12 @@ const FXDescriptor& LoadFXFromOldTemplate(const FastName &fxName, HashMap<FastNa
                     passDescriptor.depthStateDescriptor.depthWriteEnabled = false;
                     passDescriptor.cullMode = rhi::CULL_NONE;
                     bool hasBlend = false;
+                    const YamlNode* fillMode = renderStateNode->Get("fillMode");
+                    if (fillMode)
+                    {
+                        if (fillMode->AsString() == "FILLMODE_WIREFRAME")
+                            passDescriptor.wireframe = true;
+                    }
                     for (auto& state : states)
                     {
                         if (state == "STATE_BLEND")

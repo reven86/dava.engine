@@ -139,7 +139,9 @@ LandscapeEditorDrawSystem::eErrorType TilemaskEditorSystem::EnableLandscapeEditi
 		return enablingError;
 	}
 
-	selectionSystem->SetLocked(true);
+    drawSystem->GetLandscapeProxy()->UpdateTileMaskPathname();
+
+    selectionSystem->SetLocked(true);
 	modifSystem->SetLocked(true);
 
 	landscapeSize = drawSystem->GetTextureSize(textureLevel);

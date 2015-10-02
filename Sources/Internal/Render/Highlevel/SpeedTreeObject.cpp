@@ -110,7 +110,16 @@ void SpeedTreeObject::UpdateAnimationFlag(int32 maxAnimatedLod)
     for (uint32 k = 0; k < size; ++k)
     {
         int32 flagValue = (renderBatchArray[k].lodIndex > maxAnimatedLod) ? 0 : 1;
-        renderBatchArray[k].renderBatch->GetMaterial()->SetFlag(FLAG_WIND_ANIMATION, flagValue);
+
+        auto material = renderBatchArray[k].renderBatch->GetMaterial();
+        if (material->HasLocalFlag(FLAG_WIND_ANIMATION))
+        {
+            material->SetFlag(FLAG_WIND_ANIMATION, flagValue);
+        }
+        else
+        {
+            material->AddFlag(FLAG_WIND_ANIMATION, flagValue);
+        }
     }
 }
 

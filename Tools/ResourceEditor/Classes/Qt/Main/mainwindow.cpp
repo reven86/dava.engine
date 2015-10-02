@@ -736,8 +736,8 @@ void QtMainWindow::SetupActions()
 	ui->actionExportAdreno->setData(GPU_ADRENO);
     ui->actionExportDX11->setData(GPU_DX11);
     ui->actionExportPNG->setData(GPU_ORIGIN);
-	
-	// import
+
+// import
 #ifdef __DAVAENGINE_SPEEDTREE__
     QObject::connect(ui->actionImportSpeedTreeXML, &QAction::triggered, this, &QtMainWindow::OnImportSpeedTreeXML);
 #endif //__DAVAENGINE_SPEEDTREE__
@@ -3038,7 +3038,7 @@ void QtMainWindow::OnReloadShaders()
 
 #define INVALIDATE_2D_MATERIAL(material) \
     if (RenderSystem2D::material)        \
-        RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL->InvalidateRenderVariants();
+        RenderSystem2D::material->InvalidateRenderVariants();
 
     INVALIDATE_2D_MATERIAL(DEFAULT_2D_COLOR_MATERIAL)
     INVALIDATE_2D_MATERIAL(DEFAULT_2D_TEXTURE_MATERIAL)
