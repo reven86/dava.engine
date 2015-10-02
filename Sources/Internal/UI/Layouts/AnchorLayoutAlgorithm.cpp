@@ -58,31 +58,25 @@ void AnchorLayoutAlgorithm::Apply(ControlLayoutData &data, Vector2::eAxis axis, 
     for (int32 i = firstIndex; i <= lastIndex; i++)
     {
         ControlLayoutData &childData = layoutData[i];
-        if (onlyForIgnoredControls && childData.GetControl()->GetComponentCount(UIComponent::IGNORE_LAYOUT_COMPONENT) == 0)
+        if (!onlyForIgnoredControls || childData.HaveToSkipControl(false))
         {
-            continue;
-        }
-        
-        const UISizePolicyComponent *sizeHint = childData.GetControl()->GetComponent<UISizePolicyComponent>();
-        if (sizeHint != nullptr)
-        {
-            if (sizeHint->GetPolicyByAxis(axis) == UISizePolicyComponent::PERCENT_OF_PARENT)
+            const UISizePolicyComponent* sizeHint = childData.GetControl()->GetComponent<UISizePolicyComponent>();
+            if (sizeHint != nullptr && sizeHint->GetPolicyByAxis(axis) == UISizePolicyComponent::PERCENT_OF_PARENT)
             {
                 float32 size = data.GetSize(axis) * sizeHint->GetValueByAxis(axis) / 100.0f;
                 size = Clamp(size, sizeHint->GetMinValueByAxis(axis), sizeHint->GetMaxValueByAxis(axis));
-                
                 childData.SetSize(axis, size);
             }
-        }
 
-        ApplyAnchor(childData, axis, 0.0f, data.GetSize(axis), isRtl);
+            ApplyAnchor(childData, axis, 0.0f, data.GetSize(axis), isRtl);
+        }
     }
 }
 
 void AnchorLayoutAlgorithm::ApplyAnchor(ControlLayoutData& data, Vector2::eAxis axis, float32 min, float32 max, bool isRtl)
 {
     UIAnchorComponent* hint = data.GetControl()->GetComponent<UIAnchorComponent>();
-    if (hint != nullptr)
+    if (hint != nullptr && hint->IsEnabled())
     {
         float v1 = 0.0f;
         bool v1Enabled = false;

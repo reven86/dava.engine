@@ -34,7 +34,7 @@ namespace DAVA
 {
 UIAnchorComponent::UIAnchorComponent()
 {
-    
+    SetEnabled(true);
 }
 
 UIAnchorComponent::UIAnchorComponent(const UIAnchorComponent &src)
@@ -58,7 +58,17 @@ UIAnchorComponent* UIAnchorComponent::Clone() const
 {
     return new UIAnchorComponent(*this);
 }
-    
+
+bool UIAnchorComponent::IsEnabled() const
+{
+    return flags.test(FLAG_ENABLED);
+}
+
+void UIAnchorComponent::SetEnabled(bool enabled)
+{
+    flags.set(FLAG_ENABLED, enabled);
+}
+
 bool UIAnchorComponent::IsLeftAnchorEnabled() const
 {
     return flags.test(FLAG_LEFT_ENABLED);

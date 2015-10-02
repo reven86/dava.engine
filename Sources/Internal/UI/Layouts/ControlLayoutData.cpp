@@ -30,6 +30,7 @@
 
 #include "UI/UIControl.h"
 #include "UI/Components/UIComponent.h"
+#include "UI/Layouts/UIIgnoreLayoutComponent.h"
 
 namespace DAVA
 {
@@ -146,6 +147,10 @@ float32 ControlLayoutData::GetHeight() const
 
 bool ControlLayoutData::HaveToSkipControl(bool skipInvisible) const
 {
-    return (skipInvisible && !control->GetVisible()) || control->GetComponentCount(UIComponent::IGNORE_LAYOUT_COMPONENT) > 0;
+    if (skipInvisible && !control->GetVisible())
+        return true;
+
+    UIIgnoreLayoutComponent* ignoreComponent = control->GetComponent<UIIgnoreLayoutComponent>();
+    return ignoreComponent != nullptr && ignoreComponent->IsEnabled();
 }
 }
