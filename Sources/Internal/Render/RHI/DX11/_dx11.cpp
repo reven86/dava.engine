@@ -52,6 +52,8 @@ ID3D11Texture2D*            _D3D11_DepthStencilBuffer   = nullptr;
 ID3D11DepthStencilView*     _D3D11_DepthStencilView     = nullptr;
 D3D_FEATURE_LEVEL           _D3D11_FeatureLevel         = D3D_FEATURE_LEVEL_9_1;
 ID3D11DeviceContext*        _D3D11_ImmediateContext     = nullptr;
+ID3D11DeviceContext*        _D3D11_SecondaryContext     = nullptr;
+DAVA::Mutex                 _D3D11_SecondaryContextSync;
 ID3D11Debug*                _D3D11_Debug                = nullptr;
 ID3DUserDefinedAnnotation*  _D3D11_UserAnnotation       = nullptr;
 
