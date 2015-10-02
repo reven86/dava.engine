@@ -49,8 +49,8 @@ namespace Net
 class LogConsumer : public NetService
 {
 public:
-    LogConsumer();
-    ~LogConsumer() override;
+    LogConsumer() = default;
+    ~LogConsumer() override = default;
 
     LogConsumer(const LogConsumer&) = delete;
     LogConsumer& operator=(const LogConsumer&) = delete;

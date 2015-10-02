@@ -40,14 +40,6 @@ namespace DAVA
 namespace Net
 {
 
-LogConsumer::LogConsumer()
-{
-}
-
-LogConsumer::~LogConsumer()
-{
-}
-
 void LogConsumer::OnPacketReceived(IChannel* channel, const void* buffer, size_t length)
 {
     String data(static_cast<const char8*>(buffer), length);
