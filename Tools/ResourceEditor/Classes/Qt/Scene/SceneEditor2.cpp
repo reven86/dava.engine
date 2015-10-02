@@ -198,10 +198,14 @@ bool SceneEditor2::Load(const DAVA::FilePath &path)
 SceneFileV2::eError SceneEditor2::Save(const DAVA::FilePath & path, bool saveForGame /*= false*/)
 {
 	ExtractEditorEntities();
-    
+
+    ScopedPtr<Texture> tilemaskTexture(nullptr);
+    bool needToRestoreTilemask = false;
     if(landscapeEditorDrawSystem)
-    {
-        landscapeEditorDrawSystem->SaveTileMaskTexture();
+    { //dirty magic to work with new saving of materials and FBO landsacpe texture
+        tilemaskTexture = SafeRetain(landscapeEditorDrawSystem->GetTileMaskTexture());
+
+        needToRestoreTilemask = landscapeEditorDrawSystem->SaveTileMaskTexture();
         landscapeEditorDrawSystem->ResetTileMaskTexture();
     }
     
@@ -216,7 +220,12 @@ SceneFileV2::eError SceneEditor2::Save(const DAVA::FilePath & path, bool saveFor
 		commandStack.SetClean(true);
 	}
 
-	InjectEditorEntities();
+    if (needToRestoreTilemask)
+    {
+        landscapeEditorDrawSystem->SetTileMaskTexture(tilemaskTexture);
+    }
+
+    InjectEditorEntities();
 
 	SceneSignals::Instance()->EmitSaved(this);
 
