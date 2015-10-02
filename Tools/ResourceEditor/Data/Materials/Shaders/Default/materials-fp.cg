@@ -129,7 +129,7 @@ FPROG_OUT_END
 #if TILED_DECAL_MASK
     DECL_FP_SAMPLER2D(decalmask)
     DECL_FP_SAMPLER2D(decaltexture)
-    property float4 decalTileColor : static,a : ;
+    property float4 decalTileColor : static,a : def_value=1,1,1,1 ;
 #endif
 
 
@@ -456,7 +456,7 @@ FPROG_BEGIN
     
         #if VIEW_ALBEDO
             #if TILED_DECAL_MASK
-                float maskSample = FP_TEXTURE2D( decalmask, FP_IN(varTexCoord0) ).a;
+                float maskSample = FP_A8( FP_TEXTURE2D( decalmask, FP_IN(varTexCoord0) ));
                 float4 tileColor = FP_TEXTURE2D( decaltexture, FP_IN(varDecalTileTexCoord) ).rgba * decalTileColor;
                 color *= textureColor0.rgb + (tileColor.rgb - textureColor0.rgb) * tileColor.a * maskSample;
             #else
