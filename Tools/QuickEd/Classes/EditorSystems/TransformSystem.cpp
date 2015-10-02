@@ -340,10 +340,10 @@ void TransformSystem::ResizeControl(Vector2 delta, bool withPivot, bool rateably
     Vector2 deltaMappedToControl(delta / controlGeometricData.scale);
     deltaMappedToControl = RotateVector(deltaMappedToControl, controlGeometricData);
 
-    AdjustResize(directions, deltaMappedToControl);
+    Vector2 adjustedDelta = AdjustResize(directions, deltaMappedToControl);
 
-    Vector2 deltaSize(deltaMappedToControl);
-    Vector2 deltaPosition(deltaMappedToControl);
+    Vector2 deltaSize(adjustedDelta);
+    Vector2 deltaPosition(adjustedDelta);
     for (int32 axisInt = Vector2::AXIS_X; axisInt < Vector2::AXIS_COUNT; ++axisInt)
     {
         Vector2::eAxis axis = static_cast<Vector2::eAxis>(axisInt);
@@ -407,52 +407,33 @@ void TransformSystem::ResizeControl(Vector2 delta, bool withPivot, bool rateably
     AdjustProperty(activeControlNode, propertiesDelta);
 }
 
-void TransformSystem::AdjustResize(Array<int, Vector2::AXIS_COUNT> directions, Vector2& delta)
+Vector2 TransformSystem::AdjustResize(Array<int, Vector2::AXIS_COUNT> directions, Vector2 delta)
 {
-    for (int32 axisInt = Vector2::AXIS_X; axisInt < Vector2::AXIS_COUNT; ++axisInt)
-    {
-        Vector2::eAxis axis = static_cast<Vector2::eAxis>(axisInt);
-        if (extraDelta[axis] != 0.0f)
-        {
-            float overload = extraDelta[axis] + delta[axis];
-            if ((overload > 0.0f) ^ (extraDelta[axis] > 0.0f)) //overload more than extraDelta
-            {
-                extraDelta[axis] = 0.0f;
-                delta[axis] = overload;
-            }
-            else //delta less than we need to resize
-            {
-                extraDelta[axis] += delta[axis];
-                delta[axis] = 0.0f;
-            }
-        }
-    }
-
     const Vector2 scaledMinimum(minimumSize / controlGeometricData.scale);
     Vector2 origSize = sizeProperty->GetValue().AsVector2();
 
     Vector2 deltaSize(delta.x * directions[Vector2::AXIS_X], delta.y * directions[Vector2::AXIS_Y]);
-    Vector2 finalSize(origSize + deltaSize);
+    Vector2 finalSize(origSize + deltaSize - extraDelta);
 
-    for (int32 axisInt = Vector2::AXIS_X; axisInt < Vector2::AXIS_COUNT; ++axisInt)
+    static int counter;
+    counter++;
+    //for (int32 axisInt = Vector2::AXIS_X; axisInt < Vector2::AXIS_COUNT; ++axisInt)
     {
-        Vector2::eAxis axis = static_cast<Vector2::eAxis>(axisInt);
+        Vector2::eAxis axis = static_cast<Vector2::eAxis>(DAVA::Vector2::AXIS_X);
         if (finalSize[axis] < scaledMinimum[axis])
         {
-            float32 availableDelta = origSize[axis] - scaledMinimum[axis];
-            if (availableDelta <= 0.0f && deltaSize[axis] <= 0.0f)
-            {
-                extraDelta[axis] += delta[axis];
-                delta[axis] = 0.0f;
-            }
-            else if (origSize[axis] > scaledMinimum[axis])
-            {
-                availableDelta *= directions[axis] * -1;
-                extraDelta[axis] += delta[axis] - availableDelta;
-                delta[axis] = availableDelta;
-            }
+            extraDelta[axis] = scaledMinimum[axis] - finalSize[axis];
+            delta[axis] = Min(0.0f, origSize[axis] - scaledMinimum[axis]);
+            Logger::Info("%d  %f %f", counter, extraDelta.x, extraDelta.y);
+        }
+        else
+        {
+            delta[axis] -= extraDelta[axis];
+            extraDelta[axis] = 0.0f;
+            Logger::Debug("%d  %f %f", counter, extraDelta.x, extraDelta.y);
         }
     }
+    return delta;
 }
 
 void TransformSystem::MovePivot(Vector2 delta)
