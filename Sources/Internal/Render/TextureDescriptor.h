@@ -246,7 +246,7 @@ public:
 	TextureDataSettings dataSettings;
 	Compression compression[GPU_FAMILY_COUNT];
 
-    PixelFormat format:8; // texture format
+    PixelFormat format : 8; // texture format
     //Binary only
     int8 exportedAsGpuFamily;
 	

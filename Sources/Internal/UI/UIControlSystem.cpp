@@ -28,7 +28,6 @@
 
 #include "UI/UIControlSystem.h"
 #include "UI/UIScreen.h"
-#include "UI/Layouts/UILayoutSystem.h"
 #include "UI/Styles/UIStyleSheetSystem.h"
 #include "FileSystem/Logger.h"
 #include "Render/OcclusionQuery.h"
@@ -852,3 +851,4 @@ void UIControlSystem::SetClearColor(const DAVA::Color& _clearColor)
     clearColor = _clearColor;
 }
 };
+

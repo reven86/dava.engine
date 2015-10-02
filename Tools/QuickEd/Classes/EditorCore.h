@@ -42,12 +42,12 @@ class DocumentGroup;
 class Project;
 class PackageNode;
 
-class EditorCore : public QObject, public DAVA::Singleton<EditorCore>
+class EditorCore final : public QObject, public DAVA::Singleton<EditorCore>
 {
     Q_OBJECT
 public:
     explicit EditorCore(QObject *parent = nullptr);
-    ~EditorCore();
+    ~EditorCore() = default;
     void Start();
 
     Project *GetProject() const;
@@ -82,10 +82,11 @@ private:
     void CloseDocument(int index);
     int GetIndexByPackagePath(const QString &fileName) const;
     ///Return: pointer to currentDocument if exists, nullptr if not
-    Project *project;
+    Project* project = nullptr;
     QList<Document*> documents;
-    DocumentGroup *documentGroup;
-    MainWindow *mainWindow;
+    DocumentGroup* documentGroup = nullptr;
+    std::unique_ptr<MainWindow> mainWindow = nullptr;
+    DAVA::UIControl* rootControl = nullptr;
 };
 
 inline Project* EditorCore::GetProject() const
