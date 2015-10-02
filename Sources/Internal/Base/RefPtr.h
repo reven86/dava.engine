@@ -181,7 +181,7 @@ void RefPtr<T>::Set(T* ptr)
 template <class T>
 void RefPtr<T>::Reset()
 {
-    return Assign(RefPtr<T>());
+    Assign(RefPtr<T>());
 }
 
 template <class T>
