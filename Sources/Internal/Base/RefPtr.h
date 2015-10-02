@@ -68,10 +68,8 @@ public:
     bool Valid() const;
     void Swap(RefPtr& ptr);
     
-    T& operator*();
-    const T& operator*() const;
-    T* operator->();
-    const T* operator->() const;
+    T& operator*() const;
+    T* operator->() const;
     
     operator bool();
     friend bool operator<(const RefPtr& lhs, const RefPtr& rhs);
@@ -197,25 +195,13 @@ void RefPtr<T>::Swap(RefPtr& ptr)
 }
 
 template <class T>
-T& RefPtr<T>::operator*()
+T& RefPtr<T>::operator*() const
 {
     return *pointer;
 }
 
 template <class T>
-const T& RefPtr<T>::operator*() const
-{
-    return *pointer;
-}
-
-template <class T>
-T* RefPtr<T>::operator->()
-{
-    return pointer;
-}
-
-template <class T>
-const T* RefPtr<T>::operator->() const
+T* RefPtr<T>::operator->() const
 {
     return pointer;
 }
