@@ -142,14 +142,14 @@ void FlowLayoutAlgorithm::ProcessXAxis(ControlLayoutData &data, UIFlowLayoutComp
         {
             if (index > firstIndex)
             {
-                LayoutLine(data, firstIndex, index - 1, childrenInLine, restSize);
+                LayoutLine(data, firstIndex, index - 1, childrenInLine, usedSize);
                 firstIndex = index;
                 childrenInLine = 1;
                 usedSize = childSize;
             }
             else
             {
-                LayoutLine(data, firstIndex, index, 1, 0.0f);
+                LayoutLine(data, firstIndex, index, 1, childSize);
                 firstIndex = index + 1;
                 childrenInLine = 0;
                 usedSize = 0.0f;
