@@ -26,6 +26,8 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
+#include <QApplication>
+
 #include "Input/InputSystem.h"
 #include "Input/KeyboardDevice.h"
 
@@ -152,8 +154,7 @@ bool TransformSystem::ProcessKey(const int32 key)
     if (!selectedControlNodes.empty())
     {
         float step = 1.0f;
-        const KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
-        if (keyboard.IsKeyPressed(DVKEY_SHIFT))
+        if (QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier))
         {
             step = 10.0f;
         }
@@ -194,7 +195,7 @@ bool TransformSystem::ProcessDrag(Vector2 pos)
     switch (activeArea)
     {
     case HUDAreaInfo::FRAME_AREA:
-        MoveAllSelectedControls(delta);
+        MoveAllSelectedControls(AdjustMove(delta));
         return true;
     case HUDAreaInfo::TOP_LEFT_AREA:
     case HUDAreaInfo::TOP_CENTER_AREA:
@@ -205,9 +206,8 @@ bool TransformSystem::ProcessDrag(Vector2 pos)
     case HUDAreaInfo::BOTTOM_CENTER_AREA:
     case HUDAreaInfo::BOTTOM_RIGHT_AREA:
     {
-        const auto& keyBoard = InputSystem::Instance()->GetKeyboard();
-        bool withPivot = keyBoard.IsKeyPressed(DVKEY_ALT);
-        bool rateably = keyBoard.IsKeyPressed(DVKEY_SHIFT);
+        bool withPivot = QApplication::keyboardModifiers().testFlag(Qt::AltModifier);
+        bool rateably = QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier);
         ResizeControl(delta, withPivot, rateably);
         return true;
     }
@@ -229,28 +229,17 @@ bool TransformSystem::ProcessDrag(Vector2 pos)
 void TransformSystem::MoveAllSelectedControls(Vector2 delta)
 {
     Vector<std::tuple<ControlNode*, AbstractProperty*, VariantType>> propertiesToChange;
-    if (nodesToMove.size() == 1)
-    {
-        const auto& tuple = nodesToMove.front();
-        Vector2 finalPos = AdjustMove(delta);
-        propertiesToChange.emplace_back(std::get<0>(tuple), std::get<1>(tuple), VariantType(finalPos));
-        systemManager->PropertiesChanged.Emit(std::move(propertiesToChange), std::move(currentHash));
-    }
-    return;
+
     for (auto& tuple : nodesToMove)
     {
         ControlNode* node = std::get<0>(tuple);
-        Vector2 scale = std::get<2>(tuple)->scale;
-        if (node->IsEditingSupported() && scale.x != 0.0f && scale.y != 0.0f)
-        {
-            Vector2 scaledDelta = delta / scale;
-            Vector2 rotatedDelta(RotateVector(scaledDelta, *std::get<2>(tuple)));
-
-            AbstractProperty* property = std::get<1>(tuple);
-            Vector2 originalPosition = property->GetValue().AsVector2();
-            Vector2 finalPosition(originalPosition + rotatedDelta);
-            propertiesToChange.emplace_back(node, property, VariantType(finalPosition));
-        }
+        const UIGeometricData* gd = std::get<2>(tuple);
+        Vector2 scaledDelta = delta / gd->scale;
+        Vector2 deltaPosition(RotateVector(scaledDelta, *gd));
+        AbstractProperty* property = std::get<1>(tuple);
+        Vector2 originalPosition = property->GetValue().AsVector2();
+        Vector2 finalPosition(originalPosition + deltaPosition);
+        propertiesToChange.emplace_back(node, property, VariantType(finalPosition));
     }
     if (!propertiesToChange.empty())
     {
@@ -258,105 +247,92 @@ void TransformSystem::MoveAllSelectedControls(Vector2 delta)
     }
 }
 
-DAVA::Vector2 TransformSystem::AdjustMove(DAVA::Vector2& delta)
+DAVA::Vector2 TransformSystem::AdjustMove(DAVA::Vector2 delta)
 {
-    const auto& tuple = nodesToMove.front();
-    const UIGeometricData* gd = std::get<2>(tuple);
-    const UIControl* control = std::get<0>(tuple)->GetControl();
-    Rect box = control->GetLocalGeometricData().GetAABBox();
-    Vector2 scaledDelta = delta / gd->scale;
-    Vector2 deltaPosition(RotateVector(scaledDelta, *gd));
-
-    const Vector2 scaledRange(Vector2(20.0f, 20.0f) / gd->scale);
-    const Vector2 range(RotateVector(scaledRange, *gd));
-
-    AbstractProperty* property = std::get<1>(tuple);
-    Vector2 originalPosition = property->GetValue().AsVector2();
-    Vector2 finalPosition(originalPosition + deltaPosition + extraDelta);
-    const float32 delimiter = 0.5f;
-    const float32 maxProp = 1.0f;
-
-    Vector2 target;
-    Vector2 distanceToTarget;
-    bool magnetX = false;
-    bool magnetY = false;
-
-    const KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
-    if (keyboard.IsKeyPressed(DVKEY_SHIFT))
+    if (QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier))
     {
-        for (float32 part = 0.0f; part <= maxProp; part += delimiter)
+        for (auto& tuple : nodesToMove)
         {
-            float32 controlLeft = box.x;
-            float32 controlRight = box.x + box.GetSize().dx;
-
-            float32 targetPos = part * gd->size.dx;
-            float32 left = targetPos - range.dx;
-            float32 right = targetPos + range.dx;
-            if (finalPosition.dx >= left && finalPosition.dx <= right)
+            if (std::get<0>(tuple) != activeControlNode)
             {
-                float32 distance = fabs(finalPosition.dx - targetPos);
-                if (distance == 0.0f || !magnetX || distance < distanceToTarget.dx)
-                {
-                    distanceToTarget.dx = distance;
-                    target.dx = targetPos;
-                }
-                magnetX = true;
+                continue;
             }
-        }
+            const UIGeometricData* gd = std::get<2>(tuple);
+            const UIControl* control = std::get<0>(tuple)->GetControl();
 
-        for (float32 part = 0.0f; part <= maxProp; part += delimiter)
-        {
-            float32 targetPos = part * gd->size.dy;
-            float32 top = targetPos - range.dy;
-            float32 bottom = targetPos + range.dy;
+            Vector2 scaledDelta = delta / gd->scale;
+            Vector2 deltaPosition(RotateVector(scaledDelta, *gd));
 
-            if (finalPosition.dy >= top && finalPosition.dy <= bottom)
+            Array<bool, Vector2::AXIS_COUNT> magnet = {{false, false}};
+            Vector2 nextPosToNearest;
+            Vector2 deltaToNearest;
+
+            const Vector2 scaledRange(Vector2(20.0f, 20.0f) / gd->scale);
+            const Vector2 range(RotateVector(scaledRange, *gd));
+
+            Array<Array<float32, 3>, Vector2::AXIS_COUNT> searchingPath = {{{{0.0f, 0.5f, 1.0f}}, {{0.0f, 0.5f, 1.0f}}}};
+            Array<Array<float32, 3>, Vector2::AXIS_COUNT> controlRegions = {{{{0.0f, 0.5f, 1.0f}}, {{0.0f, 0.5f, 1.0f}}}};
+
+            UIGeometricData controlGD = control->GetLocalGeometricData();
+            Rect box = controlGD.GetAABBox();
+
+            Vector2 nearestDistance;
+            for (int32 axisInt = Vector2::AXIS_X; axisInt < Vector2::AXIS_COUNT; ++axisInt)
             {
-                float32 distance = fabs(finalPosition.dy - targetPos);
-                if (distance == 0.0f || !magnetY || distance < distanceToTarget.dy)
+                Vector2::eAxis axis = static_cast<Vector2::eAxis>(axisInt);
+                for (auto path : searchingPath[axis])
                 {
-                    distanceToTarget.dy = distance;
-                    target.dy = targetPos;
+                    float32 pathPos = path * gd->size[axis];
+                    float32 left = pathPos - range[axis];
+                    float32 right = pathPos + range[axis];
+
+                    for (auto region : controlRegions[axis])
+                    {
+                        float32 regionPos = box.GetPosition()[axis] + box.GetSize()[axis] * region;
+                        float32 nextRegionPos = regionPos + deltaPosition[axis] + extraDelta[axis];
+                        if (nextRegionPos >= left && nextRegionPos <= right)
+                        {
+                            float32 distanceToPath = fabs(nextRegionPos - pathPos);
+                            if (!magnet[axis] || nearestDistance[axis] > distanceToPath)
+                            {
+                                nearestDistance[axis] = distanceToPath;
+
+                                nextPosToNearest[axis] = nextRegionPos - pathPos;
+                                deltaToNearest[axis] = pathPos - regionPos;
+                            }
+                            magnet[axis] = true;
+                        }
+                    }
                 }
-                magnetY = true;
             }
+            for (int32 axisInt = Vector2::AXIS_X; axisInt < Vector2::AXIS_COUNT; ++axisInt)
+            {
+                Vector2::eAxis axis = static_cast<Vector2::eAxis>(axisInt);
+                if (magnet[axis])
+                {
+                    extraDelta[axis] = nextPosToNearest[axis];
+                    deltaPosition[axis] = deltaToNearest[axis];
+                }
+                if (!magnet[axis] && extraDelta[axis] != 0.0f)
+                {
+                    deltaPosition[axis] += extraDelta[axis];
+                    extraDelta[axis] = 0.0f;
+                    deltaPosition[axis] = deltaPosition[axis];
+                }
+            }
+            delta = RotateVectorInv(deltaPosition, *gd);
+            delta *= gd->scale;
+            break;
         }
     }
-    if (magnetX)
-    {
-        extraDelta.dx = finalPosition.dx - target.dx;
-        finalPosition.dx = target.dx;
-        delta.dx = target.dx - originalPosition.dx;
-    }
-    else if (extraDelta.dx != 0.0f)
-    {
-        deltaPosition.dx += extraDelta.dx;
-        extraDelta.dx = 0.0f;
-        delta.dx = deltaPosition.dx;
-    }
-    if (magnetY)
-    {
-        extraDelta.dy = finalPosition.dy - target.dy;
-        finalPosition.dy = target.dy;
-        delta.dy = target.dy - originalPosition.dy;
-    }
-    else if (extraDelta.dy != 0.0f)
-    {
-        deltaPosition.dy += extraDelta.dy;
-        extraDelta.dy = 0.0f;
-        delta.dy = deltaPosition.dy;
-    }
-    delta = RotateVectorInv(delta, *gd);
-    delta *= gd->scale;
-    return finalPosition;
+    return delta;
 }
 
 void TransformSystem::ResizeControl(Vector2 delta, bool withPivot, bool rateably)
 {
     DVASSERT(activeArea != HUDAreaInfo::NO_AREA);
 
-    const auto directionX = cornersDirection.at(activeArea - HUDAreaInfo::TOP_LEFT_AREA)[Vector2::AXIS_X];
-    const auto directionY = cornersDirection.at(activeArea - HUDAreaInfo::TOP_LEFT_AREA)[Vector2::AXIS_Y];
+    const auto directions = cornersDirection.at(activeArea - HUDAreaInfo::TOP_LEFT_AREA);
 
     Vector2 pivot(controlGeometricData.size.dx != 0.0f ? controlGeometricData.pivotPoint.dx / controlGeometricData.size.dx : 0.0f,
                   controlGeometricData.size.dy != 0.0f ? controlGeometricData.pivotPoint.dy / controlGeometricData.size.dy : 0.0f);
@@ -364,40 +340,33 @@ void TransformSystem::ResizeControl(Vector2 delta, bool withPivot, bool rateably
     Vector2 deltaMappedToControl(delta / controlGeometricData.scale);
     deltaMappedToControl = RotateVector(deltaMappedToControl, controlGeometricData);
 
-    AdjustResize(directionX, directionY, deltaMappedToControl);
+    AdjustResize(directions, deltaMappedToControl);
 
     Vector2 deltaSize(deltaMappedToControl);
     Vector2 deltaPosition(deltaMappedToControl);
-
-    deltaSize.x *= directionX;
-    deltaSize.y *= directionY;
-
-    deltaPosition.x *= directionX == -1 ? 1.0f - pivot.x : pivot.x;
-    deltaPosition.y *= directionY == -1 ? 1.0f - pivot.y : pivot.y;
-
-    if (directionX == 0)
+    for (int32 axisInt = Vector2::AXIS_X; axisInt < Vector2::AXIS_COUNT; ++axisInt)
     {
-        deltaPosition.x = 0.0f;
-    }
-    if (directionY == 0)
-    {
-        deltaPosition.y = 0.0f;
-    }
+        Vector2::eAxis axis = static_cast<Vector2::eAxis>(axisInt);
+        const int direction = directions[axis];
 
-    //modify if pivot modificator selected
-    if (withPivot)
-    {
-        deltaPosition.SetZero();
+        deltaSize[axis] *= direction;
+        deltaPosition[axis] *= direction == -1 ? 1.0f - pivot[axis] : pivot[axis];
 
-        auto pivotDeltaX = directionX == -1 ? pivot.x : 1.0f - pivot.x;
-        if (pivotDeltaX != 0.0f)
+        if (direction == 0)
         {
-            deltaSize.x /= pivotDeltaX;
+            deltaPosition[axis] = 0.0f;
         }
-        auto pivotDeltaY = directionY == -1 ? pivot.y : 1.0f - pivot.y;
-        if (pivotDeltaY != 0.0f)
+
+        //modify if pivot modificator selected
+        if (withPivot)
         {
-            deltaSize.y /= pivotDeltaY;
+            deltaPosition[axis] = 0.0f;
+
+            auto pivotDelta = direction == -1 ? pivot[axis] : 1.0f - pivot[axis];
+            if (pivotDelta != 0.0f)
+            {
+                deltaSize[axis] /= pivotDelta;
+            }
         }
     }
     //modify rateably
@@ -408,37 +377,21 @@ void TransformSystem::ResizeControl(Vector2 delta, bool withPivot, bool rateably
         float proportion = size.y != 0.0f ? size.x / size.y : 0.0f;
         if (proportion != 0.0f)
         {
+            Vector2 propDeltaSize(deltaSize.y * proportion, deltaSize.x / proportion);
             //get current drag direction
-            if (fabs(deltaSize.y) > fabs(deltaSize.x))
+            Vector2::eAxis axis = fabs(deltaSize.y) > fabs(deltaSize.x) ? Vector2::AXIS_X : Vector2::AXIS_Y;
+
+            deltaSize[axis] = propDeltaSize[axis];
+            if (!withPivot)
             {
-                deltaSize.x = deltaSize.y * proportion;
-                if (!withPivot)
+                deltaPosition[axis] = propDeltaSize[axis];
+                if (directions[axis] == 0)
                 {
-                    deltaPosition.x = deltaSize.y * proportion;
-                    if (directionX == 0)
-                    {
-                        deltaPosition.x *= (0.5f - pivot.x) * -1.0f; //rainbow unicorn was here and add -1 to the right.
-                    }
-                    else
-                    {
-                        deltaPosition.x *= (directionX == -1 ? 1.0f - pivot.x : pivot.x) * directionX;
-                    }
+                    deltaPosition[axis] *= (0.5f - pivot[axis]) * -1.0f; //rainbow unicorn was here and add -1 to the right.
                 }
-            }
-            else
-            {
-                deltaSize.y = deltaSize.x / proportion;
-                if (!withPivot)
+                else
                 {
-                    deltaPosition.y = deltaSize.x / proportion;
-                    if (directionY == 0)
-                    {
-                        deltaPosition.y *= (0.5f - pivot.y) * -1.0f; // another rainbow unicorn adds -1 here.
-                    }
-                    else
-                    {
-                        deltaPosition.y *= (directionY == -1 ? 1.0f - pivot.y : pivot.y) * directionY;
-                    }
+                    deltaPosition[axis] *= (directions[axis] == -1 ? 1.0f - pivot[axis] : pivot[axis]) * directions[axis];
                 }
             }
         }
@@ -454,71 +407,50 @@ void TransformSystem::ResizeControl(Vector2 delta, bool withPivot, bool rateably
     AdjustProperty(activeControlNode, propertiesDelta);
 }
 
-void TransformSystem::AdjustResize(int directionX, int directionY, Vector2& delta)
+void TransformSystem::AdjustResize(Array<int, Vector2::AXIS_COUNT> directions, Vector2& delta)
 {
-    if (extraDelta.dx != 0.0f)
+    for (int32 axisInt = Vector2::AXIS_X; axisInt < Vector2::AXIS_COUNT; ++axisInt)
     {
-        float overload = extraDelta.dx + delta.dx;
-        if ((overload > 0.0f) ^ (extraDelta.dx > 0.0f)) //overload more than extraDelta
+        Vector2::eAxis axis = static_cast<Vector2::eAxis>(axisInt);
+        if (extraDelta[axis] != 0.0f)
         {
-            extraDelta.dx = 0.0f;
-            delta.dx = overload;
-        }
-        else //delta less than we need to resize
-        {
-            extraDelta.dx += delta.dx;
-            delta.dx = 0.0f;
-        }
-    }
-    if (extraDelta.dy != 0.0f)
-    {
-        float overload = extraDelta.dy + delta.dy;
-        if ((overload > 0.0f) ^ (extraDelta.dy > 0.0f)) //overload more than extraDelta
-        {
-            extraDelta.dy = 0.0f;
-            delta.dy = overload;
-        }
-        else
-        {
-            extraDelta.dy += delta.dy;
-            delta.dy = 0;
+            float overload = extraDelta[axis] + delta[axis];
+            if ((overload > 0.0f) ^ (extraDelta[axis] > 0.0f)) //overload more than extraDelta
+            {
+                extraDelta[axis] = 0.0f;
+                delta[axis] = overload;
+            }
+            else //delta less than we need to resize
+            {
+                extraDelta[axis] += delta[axis];
+                delta[axis] = 0.0f;
+            }
         }
     }
 
     const Vector2 scaledMinimum(minimumSize / controlGeometricData.scale);
     Vector2 origSize = sizeProperty->GetValue().AsVector2();
 
-    Vector2 deltaSize(delta.x * directionX, delta.y * directionY);
+    Vector2 deltaSize(delta.x * directions[Vector2::AXIS_X], delta.y * directions[Vector2::AXIS_Y]);
     Vector2 finalSize(origSize + deltaSize);
 
-    if (finalSize.dx < scaledMinimum.dx)
+    for (int32 axisInt = Vector2::AXIS_X; axisInt < Vector2::AXIS_COUNT; ++axisInt)
     {
-        float32 availableDelta = origSize.dx - scaledMinimum.dx;
-        if (availableDelta <= 0.0f && deltaSize.dx <= 0.0f)
+        Vector2::eAxis axis = static_cast<Vector2::eAxis>(axisInt);
+        if (finalSize[axis] < scaledMinimum[axis])
         {
-            extraDelta.dx += delta.dx;
-            delta.dx = 0.0f;
-        }
-        else if (origSize.dx > scaledMinimum.dx)
-        {
-            availableDelta *= directionX * -1;
-            extraDelta.dx += delta.dx - availableDelta;
-            delta.dx = availableDelta;
-        }
-    }
-    if (finalSize.dy < scaledMinimum.dy)
-    {
-        float32 availableDelta = origSize.dy - scaledMinimum.dy;
-        if (availableDelta <= 0.0f && deltaSize.dy <= 0.0f)
-        {
-            extraDelta.dy += delta.dy;
-            delta.dy = 0.0f;
-        }
-        else if (origSize.dy > scaledMinimum.dy)
-        {
-            availableDelta *= directionY * -1;
-            extraDelta.dy += delta.dy - availableDelta;
-            delta.dy = availableDelta;
+            float32 availableDelta = origSize[axis] - scaledMinimum[axis];
+            if (availableDelta <= 0.0f && deltaSize[axis] <= 0.0f)
+            {
+                extraDelta[axis] += delta[axis];
+                delta[axis] = 0.0f;
+            }
+            else if (origSize[axis] > scaledMinimum[axis])
+            {
+                availableDelta *= directions[axis] * -1;
+                extraDelta[axis] += delta[axis] - availableDelta;
+                delta[axis] = availableDelta;
+            }
         }
     }
 }
@@ -553,8 +485,7 @@ Vector2 TransformSystem::AdjustPivot(Vector2& delta)
     Vector2 finalPivot(origPivot + deltaPivot + extraDelta);
 
     bool found = false;
-    const KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
-    if (keyboard.IsKeyPressed(DVKEY_SHIFT))
+    if (!QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier))
     {
         const float32 delimiter = 0.25f;
         const float32 maxPivot = 1.0f;
@@ -613,8 +544,7 @@ void TransformSystem::Rotate(Vector2 pos)
 
     float32 originalAngle = angleProperty->GetValue().AsFloat();
 
-    const KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
-    if (keyboard.IsKeyPressed(DVKEY_SHIFT))
+    if (QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier))
     {
         static const int step = 15; //fixed angle step
         float32 finalAngle = originalAngle + deltaAngle + extraDelta.dx;

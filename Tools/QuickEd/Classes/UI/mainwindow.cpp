@@ -43,6 +43,7 @@
 
 #include "DebugTools/DebugTools.h"
 
+QDataStream str;
 namespace
 {
     const QString APP_GEOMETRY = "geometry";
