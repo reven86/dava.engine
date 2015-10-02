@@ -40,14 +40,6 @@ namespace DAVA
 namespace Net
 {
 
-LogConsumer::LogConsumer()
-{
-}
-
-LogConsumer::~LogConsumer()
-{
-}
-
 void LogConsumer::OnPacketReceived(IChannel* channel, const void* buffer, size_t length)
 {
     String data(static_cast<const char8*>(buffer), length);
@@ -55,12 +47,6 @@ void LogConsumer::OnPacketReceived(IChannel* channel, const void* buffer, size_t
 
     String output = Format("[%s] %s", endp.c_str(), data.c_str());
     newDataNotifier.Emit(output);
-}
-
-SignalConnection LogConsumer::SubscribeOnReceivedData(const Function<void(const String&)>& func)
-{
-    SigConnectionID connectionId = newDataNotifier.Connect(func);
-    return MakeSignalConnection(connectionId, newDataNotifier);
 }
 
 }   // namespace Net

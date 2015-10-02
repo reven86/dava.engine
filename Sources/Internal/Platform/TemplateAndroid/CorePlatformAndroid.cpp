@@ -385,7 +385,7 @@ namespace DAVA
     void CorePlatformAndroid::OnInput(int32, int32, Vector<UIEvent>& activeInputs, Vector<UIEvent>& allInputs)
     {
         DVASSERT(!allInputs.empty());
-		if (!allInputs.empty())
+        if (!allInputs.empty())
 		{
             UIControlSystem::Instance()->OnInput(activeInputs, allInputs);
         }

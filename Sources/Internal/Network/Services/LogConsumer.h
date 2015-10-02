@@ -30,7 +30,6 @@
 #ifndef __DAVAENGINE_LOGCONSUMER_H__
 #define __DAVAENGINE_LOGCONSUMER_H__
 
-#include "Base/Noncopyable.h"
 #include "Base/Optional.h"
 #include "Functional/Signal.h"
 
@@ -50,17 +49,15 @@ namespace Net
 class LogConsumer : public NetService
 {
 public:
-    LogConsumer();
-    ~LogConsumer() override;
+    LogConsumer() = default;
+    ~LogConsumer() override = default;
 
     LogConsumer(const LogConsumer&) = delete;
-    Noncopyable& operator = (const Noncopyable&) = delete;
+    LogConsumer& operator=(const LogConsumer&) = delete;
 
+    //NetService method implementation
     void OnPacketReceived(IChannel* channel, const void* buffer, size_t length) override;
 
-    SignalConnection SubscribeOnReceivedData(const Function<void(const String&)>& func);
-
-private:
     Signal<const String&> newDataNotifier;
 };
 

@@ -375,7 +375,7 @@ void ParticleEmitter::LoadFromYaml(const FilePath & filename, bool preserveInher
 		
         size = PropertyLineYamlReader::CreatePropertyLine<Vector3>(emitterNode->Get("size"));
         
-        if(size == 0)
+        if(size == nullptr)
         {
             Vector3 _size(0, 0, 0);
             const YamlNode * widthNode = emitterNode->Get("width");
