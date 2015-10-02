@@ -54,35 +54,19 @@ public:
     uint32 GetStyleSheetPropertyIndex(const FastName& name) const;
     bool IsValidStyleSheetProperty(const FastName& name) const;
     const UIStyleSheetPropertyDescriptor& GetStyleSheetPropertyByIndex(uint32 index) const;
+
 private:
+    UIStyleSheetPropertyGroup controlGroup;
+    UIStyleSheetPropertyGroup bgGroup;
+    UIStyleSheetPropertyGroup staticTextGroup;
+    UIStyleSheetPropertyGroup textFieldGroup;
+    UIStyleSheetPropertyGroup anchorGroup;
+    UIStyleSheetPropertyGroup linearLayoutGroup;
+    UIStyleSheetPropertyGroup flowLayoutGroup;
+
+    Array<UIStyleSheetPropertyDescriptor, STYLE_SHEET_PROPERTY_COUNT> properties; // have to be after groups declaration
+
     UnorderedMap<FastName, uint32> propertyNameToIndexMap;
-    Array<UIStyleSheetPropertyDescriptor, STYLE_SHEET_PROPERTY_COUNT> properties;
-    
-    struct ComponentPropertyRegistrator
-    {
-        UIStyleSheetPropertyTargetMember operator () (uint32 index, const InspInfo* typeInfo, const InspMember* member) const;
-
-        uint32 componentType;
-    };
-
-    struct BackgroundPropertyRegistrator
-    {
-        UIStyleSheetPropertyTargetMember operator () (uint32 index, const InspInfo* typeInfo, const InspMember* member) const;
-    };
-
-    struct ControlPropertyRegistrator
-    {
-        UIStyleSheetPropertyTargetMember operator () (uint32 index, const InspInfo* typeInfo, const InspMember* member) const;
-    };
-
-    template < typename CallbackType >
-    void ProcessObjectIntrospection(const InspInfo* typeInfo, const CallbackType& callback);
-        
-    template < typename ComponentType >
-    void ProcessComponentIntrospection();
-
-    template < typename ControlType >
-    void ProcessControlIntrospection();
 };
 
 typedef Bitset<UIStyleSheetPropertyDataBase::STYLE_SHEET_PROPERTY_COUNT> UIStyleSheetPropertySet;

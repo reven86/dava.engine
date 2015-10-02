@@ -239,37 +239,34 @@ void UIStyleSheetSystem::DoForAllPropertyInstances(UIControl* control, uint32 pr
 
     const UIStyleSheetPropertyDescriptor& descr = propertyDB->GetStyleSheetPropertyByIndex(propertyIndex);
 
-    for (const UIStyleSheetPropertyTargetMember& targetMember : descr.targetMembers)
+    switch (descr.group->propertyOwner)
     {
-        switch (targetMember.propertyOwner)
+    case ePropertyOwner::CONTROL:
+    {
+        const InspInfo* typeInfo = control->GetTypeInfo();
+        do
         {
-        case ePropertyOwner::CONTROL:
-        {
-            const InspInfo* typeInfo = control->GetTypeInfo();
-            do
+            if (typeInfo == descr.group->typeInfo)
             {
-                if (typeInfo == targetMember.typeInfo)
-                {
-                    action(control, control, targetMember.memberInfo);
-                    break;
-                }
-                typeInfo = typeInfo->BaseInfo();
-            } while (typeInfo);
+                action(control, control, descr.memberInfo);
+                break;
+            }
+            typeInfo = typeInfo->BaseInfo();
+        } while (typeInfo);
 
-            break;
-        }
-        case ePropertyOwner::BACKGROUND:
-            if (control->GetBackgroundComponentsCount() > 0)
-                action(control, control->GetBackgroundComponent(0), targetMember.memberInfo);
-            break;
-        case ePropertyOwner::COMPONENT:
-            if (UIComponent* component = control->GetComponent(targetMember.componentType))
-                action(control, component, targetMember.memberInfo);
-            break;
-        default:
-            DVASSERT(false);
-            break;
-        }
+        break;
+    }
+    case ePropertyOwner::BACKGROUND:
+        if (control->GetBackgroundComponentsCount() > 0)
+            action(control, control->GetBackgroundComponent(0), descr.memberInfo);
+        break;
+    case ePropertyOwner::COMPONENT:
+        if (UIComponent* component = control->GetComponent(descr.group->componentType))
+            action(control, component, descr.memberInfo);
+        break;
+    default:
+        DVASSERT(false);
+        break;
     }
 }
 

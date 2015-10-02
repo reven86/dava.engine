@@ -46,27 +46,45 @@ enum class ePropertyOwner
     COMPONENT,
 };
 
-struct UIStyleSheetPropertyTargetMember
+struct UIStyleSheetPropertyGroup
 {
+    String prefix;
     ePropertyOwner propertyOwner;
     uint32 componentType;
     const InspInfo* typeInfo;
-    const InspMember* memberInfo;
 
-    bool operator == (const UIStyleSheetPropertyTargetMember& other) const
+    UIStyleSheetPropertyGroup(const String& prefix_, ePropertyOwner owner_, uint32 componentType_, const InspInfo* typeInfo_)
+        : prefix(prefix_)
+        , propertyOwner(owner_)
+        , componentType(componentType_)
+        , typeInfo(typeInfo_)
     {
-        return  propertyOwner == other.propertyOwner &&
-            componentType == other.componentType &&
-            typeInfo == other.typeInfo &&
-            memberInfo == other.memberInfo;
     }
 };
 
 struct UIStyleSheetPropertyDescriptor
 {
+    UIStyleSheetPropertyGroup* group;
+
     FastName name;
     VariantType defaultValue;
-    Vector<UIStyleSheetPropertyTargetMember> targetMembers;
+    const InspMember* memberInfo;
+
+    UIStyleSheetPropertyDescriptor(UIStyleSheetPropertyGroup* group_, const FastName& name_, const VariantType& defaultValue_)
+        : group(group_)
+        , name(name_)
+        , defaultValue(defaultValue_)
+        , memberInfo(nullptr)
+    {
+    }
+
+    String GetFullName() const
+    {
+        if (group->prefix.empty())
+            return String(name.c_str());
+
+        return group->prefix + String("-") + String(name.c_str());
+    }
 };
 
 struct UIStyleSheetSelector

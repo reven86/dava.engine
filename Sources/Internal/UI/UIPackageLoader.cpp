@@ -218,7 +218,7 @@ void UIPackageLoader::LoadStyleSheets(const YamlNode *styleSheetsNode, AbstractU
             {
                 uint32 index = propertyDB->GetStyleSheetPropertyIndex(FastName(propertyIter.first));
                 const UIStyleSheetPropertyDescriptor& propertyDescr = propertyDB->GetStyleSheetPropertyByIndex(index);
-                if (!propertyDescr.targetMembers.empty())
+                if (propertyDescr.memberInfo != nullptr)
                 {
                     const YamlNode *propertyNode = propertyIter.second;
                     const YamlNode *valueNode = propertyNode;
@@ -227,8 +227,8 @@ void UIPackageLoader::LoadStyleSheets(const YamlNode *styleSheetsNode, AbstractU
                     
                     if (valueNode)
                     {
-                        VariantType value(valueNode->AsVariantType(propertyDescr.targetMembers[0].memberInfo));
-                        
+                        VariantType value(valueNode->AsVariantType(propertyDescr.memberInfo));
+
                         UIStyleSheetProperty property{ index, value };
                         
                         if (propertyNode->GetType() == YamlNode::TYPE_MAP)
