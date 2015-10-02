@@ -85,9 +85,9 @@ void SettingsManager::Init()
     CreateValue(Settings::Scene_GridSize, DAVA::VariantType(600.0f));
     CreateValue(Settings::Scene_CameraSpeed0, DAVA::VariantType(35.0f));
     CreateValue(Settings::Scene_CameraSpeed1, DAVA::VariantType(100.0f));
-	CreateValue(Settings::Scene_CameraSpeed2, DAVA::VariantType(250.0f));
-	CreateValue(Settings::Scene_CameraSpeed3, DAVA::VariantType(400.0f));
-	CreateValue(Settings::Scene_CameraFOV, DAVA::VariantType(70.0f));
+    CreateValue(Settings::Scene_CameraSpeed2, DAVA::VariantType(250.0f));
+    CreateValue(Settings::Scene_CameraSpeed3, DAVA::VariantType(400.0f));
+    CreateValue(Settings::Scene_CameraFOV, DAVA::VariantType(70.0f));
 	CreateValue(Settings::Scene_CameraNear, DAVA::VariantType(1.0f));
 	CreateValue(Settings::Scene_CameraFar, DAVA::VariantType(5000.0f));
     CreateValue(Settings::Scene_CameraHeightOnLandscape, DAVA::VariantType(2.0f));
@@ -116,9 +116,9 @@ void SettingsManager::Init()
 
     CreateValue(Settings::Internal_TextureViewGPU, DAVA::VariantType(static_cast<DAVA::uint32>(DAVA::GPU_ORIGIN)));
     CreateValue(Settings::Internal_LastProjectPath, DAVA::VariantType(DAVA::FilePath()));
-	CreateValue(Settings::Internal_EditorVersion, DAVA::VariantType(DAVA::String("local build")));
-	CreateValue(Settings::Internal_CubemapLastFaceDir, DAVA::VariantType(DAVA::FilePath()));
-	CreateValue(Settings::Internal_CubemapLastProjDir, DAVA::VariantType(DAVA::FilePath()));
+    CreateValue(Settings::Internal_EditorVersion, DAVA::VariantType(DAVA::String("local build")));
+    CreateValue(Settings::Internal_CubemapLastFaceDir, DAVA::VariantType(DAVA::FilePath()));
+    CreateValue(Settings::Internal_CubemapLastProjDir, DAVA::VariantType(DAVA::FilePath()));
     CreateValue(Settings::Internal_ParticleLastEmitterDir, DAVA::VariantType(DAVA::FilePath()));
 
 	CreateValue(Settings::Internal_RecentFiles, DAVA::VariantType(static_cast<DAVA::KeyedArchive *>(nullptr)));
@@ -180,7 +180,7 @@ DAVA::FastName SettingsManager::GetSettingsName(size_t index)
     return SettingsManager::Instance()->settingsOrder[index];
 }
 
-bool SettingsManager::CustomTextureViewGPULoad(const DAVA::String & paramName, const DAVA::VariantType & src_value, DAVA::VariantType & dstValue)
+bool SettingsManager::CustomTextureViewGPULoad(const DAVA::String& paramName, const DAVA::VariantType& src_value, DAVA::VariantType& dstValue)
 {
     if (DAVA::VariantType::TYPE_INT32 == src_value.GetType() && paramName == Settings::Internal_TextureViewGPU.c_str())
     {

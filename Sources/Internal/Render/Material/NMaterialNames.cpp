@@ -209,4 +209,10 @@ namespace DAVA
                                });
         return it != RUNTIME_ONLY_FLAGS.end();
     }
+
+    const DAVA::String NMaterialSerializationKey::MaterialKey = "materialKey";
+    const DAVA::String NMaterialSerializationKey::ParentMaterialKey = "parentMaterialKey";
+    const DAVA::String NMaterialSerializationKey::FXName = "fxName";
+    const DAVA::String NMaterialSerializationKey::QualityGroup = "qualityGroup";
+    const DAVA::String NMaterialSerializationKey::MaterialName = "materialName";
 };

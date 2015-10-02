@@ -525,7 +525,7 @@ void LandscapeEditorDrawSystem::SaveTileMaskTexture()
  	}
 
     Texture* texture = GetLandscapeProxy()->GetTilemaskTexture();// baseLandscape->GetMaterial()->GetEffectiveTexture(Landscape::TEXTURE_TILEMASK);
-
+//    Texture* texture = baseLandscape->GetMaterial()->GetEffectiveTexture(Landscape::TEXTURE_TILEMASK);
 	if (texture)
 	{
 		Image *image = texture->CreateImageFromMemory();

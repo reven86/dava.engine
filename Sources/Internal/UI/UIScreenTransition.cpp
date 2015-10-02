@@ -42,11 +42,6 @@
 namespace DAVA
 {
 
-static const int32 PRIORITY_SCREENSHOT_CLEAR_PASS = eDefaultPassPriority::PRIORITY_SERVICE_2D + 3;
-static const int32 PRIORITY_SCREENSHOT_3D_PASS = eDefaultPassPriority::PRIORITY_SERVICE_2D + 2;
-static const int32 PRIORITY_SCREENSHOT_2D_PASS = eDefaultPassPriority::PRIORITY_SERVICE_2D + 1;
-
-
 Sprite * UIScreenTransition::renderTargetPrevScreen = 0;
 Sprite * UIScreenTransition::renderTargetNextScreen = 0;
 

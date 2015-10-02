@@ -47,6 +47,7 @@ namespace Ui {
 
 class QtPropertyDataInspDynamic;
 
+class LazyUpdater;
 class MaterialEditor : public QDialog, public DAVA::Singleton<MaterialEditor>
 {
 	Q_OBJECT
@@ -96,6 +97,8 @@ protected:
     void UpdateAddRemoveButtonState(QtPropertyDataInspDynamic *data);
 
     void ClearDynamicMembers(DAVA::NMaterial *material, const DAVA::InspMemberDynamic *dynamicInsp);
+
+    void RefreshMaterialProperties();
 
 private slots:
     void onFilterChanged();
@@ -154,6 +157,8 @@ private:
 
     DAVA::FilePath lastSavePath;
     DAVA::uint32 lastCheckState = 0;
+
+    LazyUpdater* materialPropertiesUpdater;
 };
 
 #endif

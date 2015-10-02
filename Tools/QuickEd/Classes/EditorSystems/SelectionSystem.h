@@ -26,5 +26,44 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __QUICKED_SELECTION_SYSTEM_H__
+#define __QUICKED_SELECTION_SYSTEM_H__
 
-#include "ControlSelectionListener.h"
+#include "EditorSystems/SelectionContainer.h"
+#include "EditorSystems/BaseEditorSystem.h"
+#include "Model/PackageHierarchy/PackageListener.h"
+#include "Math/Rect.h"
+#include <Functional/SignalBase.h>
+
+class EditorSystemsManager;
+namespace DAVA
+{
+class Vector2;
+}
+
+class SelectionSystem final : public BaseEditorSystem, private PackageListener
+{
+public:
+    SelectionSystem(EditorSystemsManager* doc);
+    ~SelectionSystem() override;
+
+    void OnActivated() override;
+    void OnDeactivated() override;
+
+    bool OnInput(DAVA::UIEvent* currentInput) override;
+
+private:
+    void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from) override;
+
+    void OnSelectByRect(const DAVA::Rect& rect);
+
+    void SetSelection(const SelectedNodes& selected, const SelectedNodes& SelectedNodes);
+
+    bool ProcessMousePress(const DAVA::Vector2& point);
+
+    bool mousePressed = false;
+    SelectionContainer selectionContainer;
+    DAVA::SigConnectionID connectionID;
+};
+
+#endif // __QUICKED_SELECTION_SYSTEM_H__

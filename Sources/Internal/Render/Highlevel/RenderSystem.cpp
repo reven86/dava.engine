@@ -193,22 +193,21 @@ void RenderSystem::UnregisterMaterial(NMaterial * material)
     
 void RenderSystem::SetGlobalMaterial(NMaterial * newGlobalMaterial)
 {
-    uint32 count = static_cast<uint32>(renderObjectArray.size());
-    for (uint32 i = 0; i < count; ++i)
+    Set<DataNode*> dataNodes;
+    for (RenderObject* obj : renderObjectArray)
     {
-        RenderObject *obj = renderObjectArray[i];
-        uint32 countBatch = obj->GetRenderBatchCount();
-        for (uint32 j = 0; j < countBatch; ++j)
+        obj->GetDataNodes(dataNodes);
+    }
+    for (DataNode* dataNode : dataNodes)
+    {
+        NMaterial* batchMaterial = dynamic_cast<NMaterial*>(dataNode);
+        if (batchMaterial)
         {
-            NMaterial * batchMaterial = obj->GetRenderBatch(j)->GetMaterial();
-            if (batchMaterial)
+            while (batchMaterial->GetParent() && batchMaterial->GetParent() != globalMaterial && batchMaterial->GetParent() != newGlobalMaterial)
             {
-                while (batchMaterial->GetParent() && batchMaterial->GetParent() != globalMaterial && batchMaterial->GetParent() != newGlobalMaterial)
-                {
-                    batchMaterial = batchMaterial->GetParent();
-                }
-                batchMaterial->SetParent(newGlobalMaterial);
+                batchMaterial = batchMaterial->GetParent();
             }
+            batchMaterial->SetParent(newGlobalMaterial);
         }
     }
 

@@ -375,7 +375,8 @@ void MoveTouchsToVector(NSEvent *curEvent, int touchPhase, Vector<UIEvent> *outT
 {
 	Vector<DAVA::UIEvent> touches;
 
-    [self moveTouchsToVector:touchPhase curEvent:touch outTouches:&touches];
+    MoveTouchsToVector(touch, touchPhase, &touches);
+
     UIControlSystem::Instance()->OnInput(touches, allTouches);
     touches.clear();
 }

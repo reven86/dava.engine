@@ -28,7 +28,7 @@
 
 
 #include "mainwindow.h"
-
+#include "Document.h"
 //////////////////////////////////////////////////////////////////////////
 #include "fontmanagerdialog.h"
 #include "Helpers/ResourcesManageHelper.h"
@@ -182,6 +182,11 @@ DialogReloadSprites* MainWindow::GetDialogReloadSprites() const
     return dialogReloadSprites;
 }
 
+QCheckBox* MainWindow::GetCheckboxEmulation()
+{
+    return emulationBox;
+}
+
 void MainWindow::OnCurrentIndexChanged(int arg)
 {
     bool enabled = arg >= 0;
@@ -278,7 +283,7 @@ void MainWindow::InitGlobalClasses()
 
 void MainWindow::InitEmulationMode()
 {
-    QCheckBox *emulationBox = new QCheckBox();
+    emulationBox = new QCheckBox();
     emulationBox->setCheckState(Qt::Unchecked);
     QLabel *label = new QLabel(tr("Emulation"));
     label->setBuddy(emulationBox);
@@ -289,7 +294,6 @@ void MainWindow::InitEmulationMode()
     QWidget *wrapper = new QWidget();
     wrapper->setLayout(layout);
     toolBarPlugins->addWidget(wrapper);
-    connect(emulationBox, &QCheckBox::stateChanged, this, &MainWindow::OnEmulationModeChanged);
 }
 
 void MainWindow::InitMenu()
@@ -515,11 +519,6 @@ void MainWindow::OnRtlChanged(int arg)
     emit RtlChanged(arg == Qt::Checked);
 }
 
-void MainWindow::OnEmulationModeChanged(int arg)
-{
-    previewWidget->SetEmulationMode(arg == Qt::Checked);
-}
-
 void MainWindow::OnGlobalClassesChanged(const QString &str)
 {
     emit GlobalStyleClassesChanged(str);
@@ -590,5 +589,13 @@ void MainWindow::OnSetupCacheSettingsForPacker()
     else
     {
         spritesPacker->ClearCacheTool();
+    }
+}
+
+void MainWindow::OnDocumentChanged(Document* doc)
+{
+    if (nullptr != doc)
+    {
+        doc->SetEmulationMode(emulationBox->isChecked());
     }
 }

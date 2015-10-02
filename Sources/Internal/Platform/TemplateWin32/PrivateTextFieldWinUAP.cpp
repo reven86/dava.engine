@@ -488,6 +488,7 @@ void PrivateTextFieldWinUAP::CreateNativeControl(bool textControl)
     nativeControl->BorderBrush = ref new SolidColorBrush(Colors::Transparent);
     nativeControl->Padding = Thickness(0.0);
     nativeControl->Visibility = Visibility::Visible;
+    nativeControl->TabNavigation = KeyboardNavigationMode::Cycle;
 
     // Native control holder is used to keep text control inside itself to
     // emulate vertical text alignment
