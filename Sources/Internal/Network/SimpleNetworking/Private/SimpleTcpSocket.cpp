@@ -40,11 +40,6 @@ SimpleTcpSocket::SimpleTcpSocket(const Endpoint& endPoint)
     : socketEndPoint(endPoint)
 {
     socketId = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    
-    if (socketId == DV_INVALID_SOCKET)
-    {
-        LogNetworkError("Failed to create socket");
-    }
 }
 
 SimpleTcpSocket::~SimpleTcpSocket()
@@ -67,16 +62,10 @@ bool SimpleTcpSocket::Shutdown()
 
     if (socketId == DV_INVALID_SOCKET)
     {
-        DVASSERT_MSG(false, "Unable to shutdown server - it is invalid");
         return false;
     }
     
-    int res = ::shutdown(socketId, DV_SD_BOTH);
-    if (!CheckSocketResult(res))
-    {
-        LogNetworkError("Failed to shutdown connection");
-    }
-
+    ::shutdown(socketId, DV_SD_BOTH);
     Close();
     return true;
 }
@@ -90,7 +79,6 @@ size_t SimpleTcpSocket::Send(const char* buf, size_t bufSize)
     
     if (!CheckSocketResult(size))
     {
-        LogNetworkError("Failed to send data");
         Close();
 
         return 0;
@@ -109,7 +97,6 @@ size_t SimpleTcpSocket::Recv(char* buf, size_t bufSize, bool recvAll)
     
     if (!CheckSocketResult(size))
     {
-        LogNetworkError("Failed to receive data");
         Close();
 
         return 0;

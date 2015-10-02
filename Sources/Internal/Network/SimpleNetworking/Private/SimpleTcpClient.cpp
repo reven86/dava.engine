@@ -44,7 +44,6 @@ bool SimpleTcpClient::Connect()
 {
     if (socketId == DV_INVALID_SOCKET)
     {
-        DVASSERT_MSG(false, "Unable to connect to server - socket is invalid");
         return false;
     }
 

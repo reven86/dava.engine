@@ -45,7 +45,6 @@ bool SimpleTcpServer::Listen()
 {
     if (socketId == DV_INVALID_SOCKET)
     {
-        DVASSERT_MSG(false, "Unable to listen server - it is invalid");
         return false;
     }
     
@@ -57,7 +56,6 @@ bool SimpleTcpServer::Listen()
     int listenRes = ::listen(socketId, 1);
     if (!CheckSocketResult(listenRes))
     {   
-        LogNetworkError("Failed to listen socket");
         Close();
     }
     
@@ -68,14 +66,12 @@ bool SimpleTcpServer::Accept()
 {
     if (socketId == DV_INVALID_SOCKET)
     {
-        DVASSERT_MSG(false, "Unable to accept server - it is invalid");
         return false;
     }
     
     socket_t acceptSocket = ::accept(socketId, nullptr, nullptr);
     if (acceptSocket == DV_INVALID_SOCKET)
     {
-        LogNetworkError("Failed to accept socket");
         return false;
     }
     
@@ -93,7 +89,6 @@ bool SimpleTcpServer::Bind()
     int bindRes = ::bind(socketId, addr, socketEndPoint.Size());
     if (!CheckSocketResult(bindRes))
     {
-        LogNetworkError("Failed to bind socket");
         Close();
     }
 
