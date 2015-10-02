@@ -247,7 +247,8 @@ public:							// properties for fast access
     bool        isPink:1;
 
 
-    FastName		debugInfo;	
+    FastName		debugInfo;
+
     TextureDescriptor *texDescriptor;
 
     static Mutex textureMapMutex;

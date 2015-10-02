@@ -68,14 +68,7 @@ FPROG_IN_BEGIN
 
     #if VERTEX_FOG
         FPROG_IN_TEXCOORD5(varFog,4)
-//        varying lowp float varFogAmoung;
-//        varying lowp float3 varFogColor;
-    #endif
-    
-    #if SETUP_LIGHTMAP
-        varying lowp float varLightmapSize;
-    #endif
-    
+    #endif           
 
     #if FRAME_BLEND
         FPROG_IN_TEXCOORD3(varTime, 1)
@@ -156,6 +149,10 @@ FPROG_OUT_END
 
 #if FLATCOLOR
     property float4 flatColor : static,a : ;
+#endif
+
+#if SETUP_LIGHTMAP && (MATERIAL_DECAL || MATERIAL_LIGHTMAP)
+    property float lightmapSize : static,a : ;    
 #endif
 
 float 
@@ -245,9 +242,9 @@ FPROG_BEGIN
             float3 darkGray = float3(0.25,0.25,0.25);
     
             bool isXodd;
-            bool isYodd;
+            bool isYodd;            
             
-            if(fract(floor(FP_IN(varTexCoord1).x*varLightmapSize)/2.0) == 0.0)
+            if(fract(floor(FP_IN(varTexCoord1).x*lightmapSize)/2.0) == 0.0)
             {
                 isXodd = true;
             }
@@ -256,7 +253,7 @@ FPROG_BEGIN
                 isXodd = false;
             }
             
-            if(fract(floor(FP_IN(varTexCoord1).y*varLightmapSize)/2.0) == 0.0)
+            if(fract(floor(FP_IN(varTexCoord1).y*lightmapSize)/2.0) == 0.0)
             {
                 isYodd = true;
             }

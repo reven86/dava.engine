@@ -29,16 +29,16 @@
 
 #include "DAVAEngine.h"
 #include "GameCore.h"
-#include "version.h"
+#include "Version.h"
 
 void FrameworkDidLaunched()
 {
 	DAVA::KeyedArchive * appOptions = new DAVA::KeyedArchive();
 
-	appOptions->SetString("title", DAVA::Format("DAVA Framework - ResourceEditor | %s.%s", DAVAENGINE_VERSION, APPLICATION_VERSION));
+    appOptions->SetString("title", DAVA::Format("DAVA Framework - ResourceEditor | %s.%s", DAVAENGINE_VERSION, APPLICATION_BUILD_VERSION));
 
-	appOptions->SetInt32("fullscreen", 0);
-	appOptions->SetInt32("bpp", 32);
+    appOptions->SetInt32("fullscreen", 0);
+    appOptions->SetInt32("bpp", 32);
     appOptions->SetInt32("renderer", rhi::RHI_GLES2);
     appOptions->SetInt32("width", 1024);
     appOptions->SetInt32("height", 768);

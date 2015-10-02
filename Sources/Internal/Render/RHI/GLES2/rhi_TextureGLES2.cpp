@@ -261,17 +261,22 @@ TextureGLES2_t::Create( const Texture::Descriptor& desc, bool force_immediate )
         {
             isRenderTarget        = true;
             forceSetSamplerState  = false;
+            
+            GLint   int_fmt, fmt;
+            GLenum  type;
+            bool    compressed;
 
-            GLCommand   cmd3[] =
+            GetGLTextureFormat( format, &int_fmt, &fmt, &type, &compressed );
+            DVASSERT(!compressed);
+
+            GLCommand cmd3[] =
             {
                 { GLCommand::BIND_TEXTURE, { GL_TEXTURE_2D, uint64(&(this->uid)) } },
-                { GLCommand::TEX_IMAGE2D, { GL_TEXTURE_2D, 0, GL_RGBA, desc.width, desc.height, 0, GL_BGRA, GL_UNSIGNED_BYTE, 0 } },
-                { GLCommand::TEX_PARAMETER_I, { GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST } },
-                { GLCommand::TEX_PARAMETER_I, { GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST } },
+                { GLCommand::TEX_IMAGE2D, {GL_TEXTURE_2D, 0, uint64(int_fmt), uint64(desc.width), uint64(desc.height), 0, uint64(fmt), type, 0, 0, 0} },
+                { GLCommand::TEX_PARAMETER_I, {GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST} },
+                { GLCommand::TEX_PARAMETER_I, {GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST} },
                 { GLCommand::RESTORE_TEXTURE0, {} }
             };
-
-            ExecGL( cmd3, countof(cmd3), force_immediate );
         }
         else
         {

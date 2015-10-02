@@ -736,8 +736,8 @@ void QtMainWindow::SetupActions()
 	ui->actionExportAdreno->setData(GPU_ADRENO);
     ui->actionExportDX11->setData(GPU_DX11);
     ui->actionExportPNG->setData(GPU_ORIGIN);
-	
-	// import
+
+// import
 #ifdef __DAVAENGINE_SPEEDTREE__
     QObject::connect(ui->actionImportSpeedTreeXML, &QAction::triggered, this, &QtMainWindow::OnImportSpeedTreeXML);
 #endif //__DAVAENGINE_SPEEDTREE__
