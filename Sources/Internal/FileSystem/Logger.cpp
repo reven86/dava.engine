@@ -159,7 +159,7 @@ Optional<Logger::eLogLevel> Logger::GetLogLevelFromString(const char8* ll) const
             return static_cast<eLogLevel>(i);
         }
     }
-    return EmptyOptional();
+    return EmptyOptional;
 }
 
 void Logger::SetLogLevel(eLogLevel ll)

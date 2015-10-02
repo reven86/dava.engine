@@ -37,14 +37,15 @@ namespace DAVA
 {
 
 //-------------------------------------------------------------------------------------------------
-struct EmptyOptional {};
+struct EmptyOptionalType {};
+static EmptyOptionalType EmptyOptional;
 
 template <typename T>
 class Optional
 {
 public:
     Optional() = default;
-    Optional(EmptyOptional);
+    Optional(EmptyOptionalType);
 
     Optional(const Optional& other);
     Optional(Optional&& other);
@@ -94,7 +95,7 @@ Optional<T> MakeOptional(Args&&... args)
 //Implementation
 //-------------------------------------------------------------------------------------------------
 template <typename T>
-Optional<T>::Optional(EmptyOptional) : Optional() {}
+Optional<T>::Optional(EmptyOptionalType) : Optional() {}
 
 template <typename T>
 Optional<T>::Optional(const Optional& other) : Optional()
@@ -291,25 +292,25 @@ bool operator!=(const T& rhs, const Optional<U>& lhs)
 }
 
 template <typename T>
-bool operator==(const Optional<T>& rhs, EmptyOptional)
+bool operator==(const Optional<T>& rhs, EmptyOptionalType)
 {
     return !rhs.IsSet();
 }
 
 template <typename T>
-bool operator==(EmptyOptional, const Optional<T>& lhs)
+bool operator==(EmptyOptionalType, const Optional<T>& lhs)
 {
     return !lhs.IsSet();
 }
 
 template <typename T>
-bool operator!=(const Optional<T>& rhs, EmptyOptional)
+bool operator!=(const Optional<T>& rhs, EmptyOptionalType)
 {
     return rhs.IsSet();
 }
 
 template <typename T>
-bool operator!=(EmptyOptional, const Optional<T>& lhs)
+bool operator!=(EmptyOptionalType, const Optional<T>& lhs)
 {
     return lhs.IsSet();
 }
