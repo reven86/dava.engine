@@ -46,7 +46,7 @@ struct RenderStats;
 namespace Renderer
 {
     //init
-    void Initialize(rhi::Api api, const rhi::InitParam & params);
+void Initialize(rhi::Api api, rhi::InitParam& params);
     void Uninitialize();
 
     void Reset(const rhi::ResetParam & params);

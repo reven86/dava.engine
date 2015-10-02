@@ -94,7 +94,8 @@ WinUAPXamlApp::WinUAPXamlApp()
     , isPhoneApiDetected(DeviceInfo::ePlatform::PLATFORM_PHONE_WIN_UAP == DeviceInfo::GetPlatform())
 {
     deferredSizeScaleEvents = new DeferredScreenMetricEvents(DEFERRED_INTERVAL_MSEC, [this](bool isSizeUpdate, float32 widht, float32 height, bool isScaleUpdate, float32 scaleX, float32 scaleY)
-                                                             { MetricsScreenUpdated(isSizeUpdate, widht, height, isScaleUpdate, scaleX, scaleY);
+                                                             {
+                                                                 MetricsScreenUpdated(isSizeUpdate, widht, height, isScaleUpdate, scaleX, scaleY);
                                                              });
 }
 
@@ -367,11 +368,11 @@ void WinUAPXamlApp::MetricsScreenUpdated(bool isSizeUpdate, float32 widht, float
     }
     core->RunOnMainThread([this, widht, height, scaleX, scaleY]()
                           {
-        UpdateScreenSize(widht, height);
-        UpdateScreenScale(scaleX, scaleY);
-        ResetRender();
-        ReInitCoordinatesSystem();
-        UIScreenManager::Instance()->ScreenSizeChanged();
+                              UpdateScreenSize(widht, height);
+                              UpdateScreenScale(scaleX, scaleY);
+                              ResetRender();
+                              ReInitCoordinatesSystem();
+                              UIScreenManager::Instance()->ScreenSizeChanged();
                           });
 }
 
