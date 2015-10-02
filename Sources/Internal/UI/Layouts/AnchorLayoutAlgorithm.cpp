@@ -74,92 +74,96 @@ void AnchorLayoutAlgorithm::Apply(ControlLayoutData &data, Vector2::eAxis axis, 
                 childData.SetSize(axis, size);
             }
         }
-        
-        UIAnchorComponent *hint = childData.GetControl()->GetComponent<UIAnchorComponent>();
-        if (hint != nullptr)
+
+        ApplyAnchor(childData, axis, 0.0f, data.GetSize(axis), isRtl);
+    }
+}
+
+void AnchorLayoutAlgorithm::ApplyAnchor(ControlLayoutData& data, Vector2::eAxis axis, float32 min, float32 max, bool isRtl)
+{
+    UIAnchorComponent* hint = data.GetControl()->GetComponent<UIAnchorComponent>();
+    if (hint != nullptr)
+    {
+        float v1 = 0.0f;
+        bool v1Enabled = false;
+
+        float v2 = 0.0f;
+        bool v2Enabled = false;
+
+        float v3 = 0.0f;
+        bool v3Enabled = false;
+
+        switch (axis)
         {
-            float v1 = 0.0f;
-            bool v1Enabled = false;
-            
-            float v2 = 0.0f;
-            bool v2Enabled = false;
-            
-            float v3 = 0.0f;
-            bool v3Enabled = false;
-            
-            switch (axis)
+        case Vector2::AXIS_X:
+            v1Enabled = hint->IsLeftAnchorEnabled();
+            v1 = hint->GetLeftAnchor();
+
+            v2Enabled = hint->IsHCenterAnchorEnabled();
+            v2 = hint->GetHCenterAnchor();
+
+            v3Enabled = hint->IsRightAnchorEnabled();
+            v3 = hint->GetRightAnchor();
+
+            if (isRtl && hint->IsUseRtl())
+                {
+                    v1Enabled = hint->IsRightAnchorEnabled();
+                    v1 = hint->GetRightAnchor();
+
+                    v3Enabled = hint->IsLeftAnchorEnabled();
+                    v3 = hint->GetLeftAnchor();
+
+                    v2 = -v2;
+                }
+                break;
+
+        case Vector2::AXIS_Y:
+            v1Enabled = hint->IsTopAnchorEnabled();
+            v1 = hint->GetTopAnchor();
+
+            v2Enabled = hint->IsVCenterAnchorEnabled();
+            v2 = hint->GetVCenterAnchor();
+
+            v3Enabled = hint->IsBottomAnchorEnabled();
+            v3 = hint->GetBottomAnchor();
+
+            break;
+
+        default:
+            DVASSERT(false);
+            break;
+        }
+
+        if (v1Enabled || v2Enabled || v3Enabled)
+        {
+            float32 parentSize = max - min;
+
+            if (v1Enabled && v3Enabled) // left and right
             {
-                case Vector2::AXIS_X:
-                    v1Enabled = hint->IsLeftAnchorEnabled();
-                    v1 = hint->GetLeftAnchor();
-                    
-                    v2Enabled = hint->IsHCenterAnchorEnabled();
-                    v2 = hint->GetHCenterAnchor();
-                    
-                    v3Enabled = hint->IsRightAnchorEnabled();
-                    v3 = hint->GetRightAnchor();
-                    
-                    if (isRtl && hint->IsUseRtl())
-                    {
-                        v1Enabled = hint->IsRightAnchorEnabled();
-                        v1 = hint->GetRightAnchor();
-                        
-                        v3Enabled = hint->IsLeftAnchorEnabled();
-                        v3 = hint->GetLeftAnchor();
-                        
-                        v2 = -v2;
-                    }
-                    break;
-                    
-                case Vector2::AXIS_Y:
-                    v1Enabled = hint->IsTopAnchorEnabled();
-                    v1 = hint->GetTopAnchor();
-                    
-                    v2Enabled = hint->IsVCenterAnchorEnabled();
-                    v2 = hint->GetVCenterAnchor();
-                    
-                    v3Enabled = hint->IsBottomAnchorEnabled();
-                    v3 = hint->GetBottomAnchor();
-                    
-                    break;
-                    
-                default:
-                    DVASSERT(false);
-                    break;
+                data.SetPosition(axis, v1 + min);
+                data.SetSize(axis, parentSize - (v1 + v3));
             }
-            
-            if (v1Enabled || v2Enabled || v3Enabled)
+            else if (v1Enabled && v2Enabled) // left and center
             {
-                float32 parentSize = data.GetSize(axis);
-                
-                if (v1Enabled && v3Enabled) // left and right
-                {
-                    childData.SetPosition(axis, v1);
-                    childData.SetSize(axis, parentSize - (v1 + v3));
-                }
-                else if (v1Enabled && v2Enabled) // left and center
-                {
-                    childData.SetPosition(axis, v1);
-                    childData.SetSize(axis, parentSize / 2.0f - (v1 - v2));
-                }
-                else if (v2Enabled && v3Enabled) // center and right
-                {
-                    childData.SetPosition(axis, parentSize / 2.0f + v2);
-                    childData.SetSize(axis, parentSize / 2.0f - (v2 + v3));
-                }
-                else if (v1Enabled) // left
-                {
-                    childData.SetPosition(axis, v1);
-                }
-                else if (v2Enabled) // center
-                {
-                    childData.SetPosition(axis, (parentSize - childData.GetSize(axis)) / 2.0f + v2);
-                }
-                else if (v3Enabled) // right
-                {
-                    childData.SetPosition(axis, parentSize - (childData.GetSize(axis) + v3));
-                }
-                
+                data.SetPosition(axis, v1 + min);
+                data.SetSize(axis, parentSize / 2.0f - (v1 - v2));
+            }
+            else if (v2Enabled && v3Enabled) // center and right
+            {
+                data.SetPosition(axis, parentSize / 2.0f + v2 + min);
+                data.SetSize(axis, parentSize / 2.0f - (v2 + v3));
+            }
+            else if (v1Enabled) // left
+            {
+                data.SetPosition(axis, v1 + min);
+            }
+            else if (v2Enabled) // center
+            {
+                data.SetPosition(axis, (parentSize - data.GetSize(axis)) / 2.0f + v2 + min);
+            }
+            else if (v3Enabled) // right
+            {
+                data.SetPosition(axis, parentSize - (data.GetSize(axis) + v3) + min);
             }
         }
     }

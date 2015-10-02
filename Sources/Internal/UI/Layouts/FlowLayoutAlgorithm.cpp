@@ -282,8 +282,9 @@ void FlowLayoutAlgorithm::LayoutLineVertically(ControlLayoutData &data, int32 fi
                 childData.SetSize(Vector2::AXIS_Y, childSize);
             }
         }
-        
-        childData.SetPosition(Vector2::AXIS_Y, top); // TODO: Anchors
+
+        childData.SetPosition(Vector2::AXIS_Y, top);
+        AnchorLayoutAlgorithm::ApplyAnchor(childData, Vector2::AXIS_Y, top, bottom, false);
     }
 }
 
