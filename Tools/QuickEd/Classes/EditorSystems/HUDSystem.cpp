@@ -34,8 +34,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Input/InputSystem.h"
 #include "Input/KeyboardDevice.h"
 #include "UI/Layouts/UISizePolicyComponent.h"
-#include "Render/RenderState.h"
-#include "Render/RenderManager.h"
 
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/PackageNode.h"

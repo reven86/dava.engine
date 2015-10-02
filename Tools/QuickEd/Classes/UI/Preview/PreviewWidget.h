@@ -53,6 +53,7 @@ public:
     ~PreviewWidget() = default;
 
     ScrollAreaController* GetScrollAreaController();
+    DavaGLWidget* GetGLWidget();
 
     void OnSelectControlByMenu(const DAVA::Vector<ControlNode*>& nodes, const DAVA::Vector2& pos, ControlNode*& selectedNode);
 signals:
@@ -84,5 +85,10 @@ private:
     ScrollAreaController* scrollAreaController = nullptr;
     QList<int> percentages;
 };
+
+inline DavaGLWidget* PreviewWidget::GetGLWidget()
+{
+    return davaGLWidget;
+}
 
 #endif // __QUICKED_PREVIEW_WIDGET_H__

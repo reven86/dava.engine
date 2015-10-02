@@ -50,6 +50,7 @@ public:
     ~EditorCore() = default;
     void Start();
 
+    MainWindow* GetMainWindow();
     Project *GetProject() const;
 
 protected slots:
@@ -88,6 +89,11 @@ private:
     std::unique_ptr<MainWindow> mainWindow = nullptr;
     DAVA::UIControl* rootControl = nullptr;
 };
+
+inline MainWindow* EditorCore::GetMainWindow()
+{
+    return mainWindow.get();
+}
 
 inline Project* EditorCore::GetProject() const
 {
