@@ -49,21 +49,21 @@ public:
     bool IsRtl() const;
     void SetRtl(bool rtl);
 
-    void ApplyLayout(UIControl *control, bool considerDenendenceOnChildren = false);
-    
+    void ApplyLayout(UIControl* control, bool considerDenendenceOnChildren = false);
+
     bool IsAutoupdatesEnabled() const;
     void SetAutoupdatesEnabled(bool enabled);
-    
+
 private:
     class ControlLayoutData;
-    
+
 private:
-    void CollectControls(UIControl *control);
-    void CollectControlChildren(UIControl *control, int32 parentIndex);
-    
-    void MeasureControl(ControlLayoutData &data, Vector2::eAxis axis);
-    void ApplyLinearLayout(ControlLayoutData &data, UILinearLayoutComponent *linearLayoutComponent, Vector2::eAxis axis);
-    void ApplyAnchorLayout(ControlLayoutData &data, Vector2::eAxis axis, bool onlyForIgnoredControls);
+    void CollectControls(UIControl* control);
+    void CollectControlChildren(UIControl* control, int32 parentIndex);
+
+    void MeasureControl(ControlLayoutData& data, Vector2::eAxis axis);
+    void ApplyLinearLayout(ControlLayoutData& data, UILinearLayoutComponent* linearLayoutComponent, Vector2::eAxis axis);
+    void ApplyAnchorLayout(ControlLayoutData& data, Vector2::eAxis axis, bool onlyForIgnoredControls);
 
     bool HaveToSkipControl(UIControl *control, bool skipInvisible) const;
     

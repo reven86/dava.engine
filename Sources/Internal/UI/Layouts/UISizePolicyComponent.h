@@ -93,9 +93,9 @@ public:
     float32 GetValueByAxis(int32 axis) const;
     float32 GetMinValueByAxis(int32 axis) const;
     float32 GetMaxValueByAxis(int32 axis) const;
-    
+
     bool IsDependsOnChildren(int32 axis) const;
-    
+
 private:
     int32 GetHorizontalPolicyAsInt() const;
     void SetHorizontalPolicyFromInt(int32 policy);
@@ -126,9 +126,7 @@ public:
                          PROPERTY("verticalPolicy", InspDesc("Vertical Policy", GlobalEnumMap<eSizePolicy>::Instance()), GetVerticalPolicyAsInt, SetVerticalPolicyFromInt, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("verticalValue", "Vertical Value", GetVerticalValue, SetVerticalValue, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("verticalMin", "Vertical Min Size", GetVerticalMinValue, SetVerticalMinValue, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("verticalMax", "Vertical Max Size", GetVerticalMaxValue, SetVerticalMaxValue, I_SAVE | I_VIEW | I_EDIT)
-                         );
-    
+                         PROPERTY("verticalMax", "Vertical Max Size", GetVerticalMaxValue, SetVerticalMaxValue, I_SAVE | I_VIEW | I_EDIT));
 };
 
 }

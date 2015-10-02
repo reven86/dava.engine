@@ -283,7 +283,7 @@ void UIStaticText::Draw(const UIGeometricData &geometricData)
         textBlockRect.dy *= geometricData.scale.dy;
         textBlock->SetScale(geometricData.scale);
 		textBlock->SetAngle(geometricData.angle);
-		textBlock->SetPivot(pivotPoint*geometricData.scale);
+        textBlock->SetPivot(GetPivotPoint() * geometricData.scale);
     }
     textBlock->SetRectSize(textBlockRect.GetSize());
     textBlock->SetPosition(textBlockRect.GetPosition());

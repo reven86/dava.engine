@@ -86,7 +86,7 @@ private:
     void SetOrientationFromInt(int32 type);
 
     void SetLayoutDirty();
-    
+
 private:
     enum eFlags
     {
