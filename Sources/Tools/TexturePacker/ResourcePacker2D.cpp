@@ -49,7 +49,6 @@ namespace DAVA
 {
 const String ResourcePacker2D::VERSION = "0.0.1";
 
-static const String FLAG_RECURSIVE = "--recursive";
 
 enum AssetClientCode : int
 {
@@ -61,6 +60,27 @@ enum AssetClientCode : int
     SERVER_ERROR = 5,
     CANNOT_READ_FILES = 6
 };
+
+const String& GetCodeAsString(AssetClientCode code)
+{
+    static Array<String, 7> codeStrings = {{"OK",
+                                            "WRONG_COMMAND_LINE",
+                                            "WRONG_IP",
+                                            "TIMEOUT",
+                                            "CANNOT_CONNECT",
+                                            "SERVER_ERROR",
+                                            "CANNOT_READ_FILES"}};
+    static String codeUnknown("CODE_UNKNOWN");
+
+    if (code >= 0 && code < codeStrings.size())
+    {
+        return codeStrings[code];
+    }
+    else
+    {
+        return codeUnknown;
+    }
+}
 
 String ResourcePacker2D::GetProcessFolderName()
 {
@@ -569,9 +589,9 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
                     
                     FilePath output = outputPath + filename;
                     output.MakeDirectoryPathname();
-    				
-                    if (find(currentCommandFlags.begin(), currentCommandFlags.end(), FLAG_RECURSIVE) != currentCommandFlags.end())
-    				{
+
+                    if (find(currentCommandFlags.begin(), currentCommandFlags.end(), "--recursive") != currentCommandFlags.end())
+                    {
     					RecursiveTreeWalk(input, output, currentCommandFlags);
     				}
     				else
@@ -645,7 +665,11 @@ bool ResourcePacker2D::GetFilesFromCache(const AssetCache::CacheItemKey& key, co
         }
         else
         {
-            Logger::Info("[%s - %.2lf secs] - attempted to retrieve from cache, result code %d", inputPath.GetAbsolutePathname().c_str(), (float64)(getTime) / 1000.0f, exitCode);
+            Logger::Info("[%s - %.2lf secs] - attempted to retrieve from cache, result code %d (%s)",
+                         inputPath.GetAbsolutePathname().c_str(),
+                         (float64)(getTime) / 1000.0f,
+                         exitCode,
+                         GetCodeAsString(static_cast<AssetClientCode>(exitCode)).c_str());
             const String& procOutput = cacheClient.GetOutput();
             if (!procOutput.empty())
             {
@@ -710,7 +734,7 @@ bool ResourcePacker2D::AddFilesToCache(const AssetCache::CacheItemKey& key, cons
         arguments.push_back(AssetCache::KeyToString(key));
 
         arguments.push_back("-f");
-        arguments.push_back('\"' + fileListString + '\"');
+        arguments.push_back(fileListString);
 
         if (!cacheClientIp.empty())
         {
@@ -751,7 +775,10 @@ bool ResourcePacker2D::AddFilesToCache(const AssetCache::CacheItemKey& key, cons
             }
             else
             {
-                Logger::Info("[%s - %.2lf secs] - attempted to add to cache, result code %d", inputPath.GetAbsolutePathname().c_str(), (float64)(getTime) / 1000.0f, exitCode);
+                Logger::Info("[%s - %.2lf secs] - attempted to add to cache, result code %d (%s)", inputPath.GetAbsolutePathname().c_str(),
+                             (float64)(getTime) / 1000.0f,
+                             exitCode,
+                             GetCodeAsString(static_cast<AssetClientCode>(exitCode)).c_str());
                 const String& procOutput = cacheClient.GetOutput();
                 if (!procOutput.empty())
                 {
