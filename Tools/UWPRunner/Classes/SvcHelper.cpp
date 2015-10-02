@@ -38,10 +38,17 @@ SvcHelper::SvcHelper(const String &name)
     : serviceName(name)
 {
     serviceControlManager = ::OpenSCManager(0, 0, 0);
-    DVASSERT_MSG_RET(serviceControlManager, "Can't open Service Control Manager");
+    if (!serviceControlManager)
+    {
+        DVASSERT_MSG(false, "Can't open Service Control Manager");
+        return;
+    }
 
     service = ::OpenService(serviceControlManager, name.c_str(), SC_MANAGER_ALL_ACCESS);
-    DVASSERT_MSG_RET(service, "Can't open service " + name);
+    if (!service)
+    {
+        DVASSERT_MSG(false, "Can't open service " + name);
+    }
 }
 
 SvcHelper::~SvcHelper()
@@ -63,9 +70,14 @@ String SvcHelper::ServiceDescription() const
     Array<char, 8 * 1024> data;
     DWORD bytesNeeded;
 
-    DVASSERT_MSG_RET(::QueryServiceConfig2(service,
-        SERVICE_CONFIG_DESCRIPTION, (LPBYTE) data.data(), data.size(), &bytesNeeded),
-        "Can't query service description", "");
+    BOOL res = ::QueryServiceConfig2(service, 
+        SERVICE_CONFIG_DESCRIPTION, (LPBYTE)data.data(), data.size(), &bytesNeeded);
+
+    if (!res)
+    {
+        DVASSERT_MSG(false, "Can't query service description");
+        return "";
+    }
 
     return String(data.data());
 }
@@ -78,7 +90,11 @@ bool SvcHelper::IsInstalled() const
 bool SvcHelper::IsRunning() const
 {
     SERVICE_STATUS info;
-    DVASSERT_MSG_RET(::QueryServiceStatus(service, &info), "Can't query service status", false);
+    if (!::QueryServiceStatus(service, &info))
+    {
+        DVASSERT_MSG(false, "Can't query service status");
+        return false;
+    }
     
     return info.dwCurrentState != SERVICE_STOPPED;
 }

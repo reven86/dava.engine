@@ -130,45 +130,41 @@ inline void DavaDebugBreak()
 	// no assert functions in release builds
 	#define DVASSERT(expr) {}
 	#define DVASSERT_MSG(expr, msg) {}
-    #define DVASSERT_RET(expr, ...)          if(!(expr)) return __VA_ARGS__
-    #define DVASSERT_MSG_RET(expr, msg, ...) if(!(expr)) return __VA_ARGS__
+	#define DVWARNING(expr, msg) {}
 
-    #define DVWARNING(expr, msg) {}
 	#define DVVERIFY(expr) do {(void)(expr);} while(false);
 
 #else
 
-//Implementation of assertion macro
-// expr - expression
-// mode - message mode (modal/non-modal)
-// title - message title
-// msg - message
-// breakHandler - instructions for breaking choise
-// failHandler - instructions for case of assertion
-#define DVASSERT_IMPL(expr, mode, title, msg, breakHandler, failHandler)\
+#define DVASSERT(expr)\
     if (!(expr))\
     {\
-        LogErrorFunction(title, #expr, msg, __FILE__, __LINE__);\
-        if (MessageFunction(mode, title, #expr, msg, __FILE__, __LINE__))\
+        LogErrorFunction("DV_ASSERT", #expr, "", __FILE__, __LINE__);\
+        if (MessageFunction(DAVA::DVAssertMessage::ALWAYS_MODAL, "DV_ASSERT", \
+                #expr, "", __FILE__, __LINE__))\
         { \
-            breakHandler;\
+            DavaDebugBreak();\
         } \
-        failHandler;\
+	}\
+
+#define DVASSERT_MSG(expr, msg)\
+    if (!(expr))\
+    {\
+        LogErrorFunction("DV_ASSERT", #expr, msg, __FILE__, __LINE__);\
+        if (MessageFunction(DAVA::DVAssertMessage::ALWAYS_MODAL, "DV_ASSERT", \
+                #expr, msg, __FILE__, __LINE__))\
+        { \
+            DavaDebugBreak();\
+        } \
     }\
 
-//Assertation macro
-#define DVASSERT_TEMPLATE(expr, msg, ret)\
-    DVASSERT_IMPL(expr, DAVA::DVAssertMessage::ALWAYS_MODAL, \
-                  "DV_ASSERT", msg, DavaDebugBreak(), ret)
-
-#define DVASSERT(expr) DVASSERT_TEMPLATE(expr, "", {})
-#define DVASSERT_MSG(expr, msg) DVASSERT_TEMPLATE(expr, msg, {})
-#define DVASSERT_RET(expr, ...) DVASSERT_TEMPLATE(expr, "", return __VA_ARGS__)
-#define DVASSERT_MSG_RET(expr, msg, ...) DVASSERT_TEMPLATE(expr, msg, return __VA_ARGS__)
-
-//Warning macro
 #define DVWARNING(expr, msg)\
-    DVASSERT_IMPL(expr, DAVA::DVAssertMessage::TRY_NONMODAL, "DV_WARNING", msg, {}, {})
+    if (!(expr))\
+    {\
+        LogWarningFunction("DV_WARNING", #expr, msg, __FILE__, __LINE__);\
+		MessageFunction(DAVA::DVAssertMessage::TRY_NONMODAL, "DV_WARNING", \
+		        #expr, msg, __FILE__, __LINE__);\
+    }\
 
 #define DVVERIFY(expr) DVASSERT(expr)
 

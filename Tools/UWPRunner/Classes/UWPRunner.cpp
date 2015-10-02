@@ -184,23 +184,36 @@ void Run(Runner& runner)
     WaitApp();
 
     //remove app package after working
-    DVASSERT_MSG_RET(runner.remove(), "Unable to remove package");
+    if (!runner.remove())
+    {
+        DVASSERT_MSG(false, "Unable to remove package");
+    }
 }
 
 void Start(Runner& runner)
 {
     Logger::Instance()->Info("Installing package...");
-    DVASSERT_MSG_RET(runner.install(true), "Can't install application package");
+    if (!runner.install(true))
+    {
+        DVASSERT_MSG(false, "Can't install application package");
+    }
 
     Logger::Instance()->Info("Starting application...");
-    DVASSERT_MSG_RET(runner.start(), "Can't install application package");
+    if (!runner.start())
+    {
+        DVASSERT_MSG(false, "Can't install application package");
+    }
 }
 
 bool InitializeNetwork(bool isMobileDevice, const StringRecv& logReceiver)
 {
     if (isMobileDevice)
     {
-        DVASSERT_MSG_RET(ConfigureIpOverUsb(), "Can't configure IpOverUsb service", false);
+        if (!ConfigureIpOverUsb())
+        {
+            DVASSERT_MSG(false, "Can't configure IpOverUsb service");
+            return false;
+        }
     }
 
     uint16 port;
@@ -259,32 +272,44 @@ Optional<bool> UpdateIpOverUsbConfig(RegKey& key)
     Optional<String> address = key.QueryString("DestinationAddress");
     if (address != desiredDestAddr)
     {
-        DVASSERT_MSG_RET(key.SetValue("DestinationAddress", desiredDestAddr),
-                         "Unable to set DestinationAddress", EmptyOptional());
+        if (!key.SetValue("DestinationAddress", desiredDestAddr))
+        {
+            DVASSERT_MSG(false, "Unable to set DestinationAddress");
+            return EmptyOptional();
+        }
         changed |= true;
     }
 
     Optional<DWORD> port = key.QueryDWORD("DestinationPort");
     if (port != desiredDestPort)
     {
-        DVASSERT_MSG_RET(key.SetValue("DestinationPort", desiredDestPort),
-                         "Unable to set DestinationPort", EmptyOptional());
+        if (!key.SetValue("DestinationPort", desiredDestPort))
+        {
+            DVASSERT_MSG(false, "Unable to set DestinationPort");
+            return EmptyOptional();
+        }
         changed |= true;
     }
 
     address = key.QueryString("LocalAddress");
     if (address != desiredLocalAddr)
     {
-        DVASSERT_MSG_RET(key.SetValue("LocalAddress", desiredLocalAddr),
-                         "Unable to set LocalAddress", EmptyOptional());
+        if (!key.SetValue("LocalAddress", desiredLocalAddr))
+        {
+            DVASSERT_MSG(false, "Unable to set LocalAddress");
+            return EmptyOptional();
+        }
         changed |= true;
     }
 
     port = key.QueryDWORD("LocalPort");
     if (port != desiredLocalPort)
     {
-        DVASSERT_MSG_RET(key.SetValue("LocalPort", desiredLocalPort),
-                         "Unable to set LocalPort", EmptyOptional());
+        if (!key.SetValue("LocalPort", desiredLocalPort))
+        {
+            DVASSERT_MSG(false, "Unable to set LocalPort");
+            return EmptyOptional();
+        }
         changed |= true;
     }
 
@@ -295,13 +320,25 @@ bool RestartIpOverUsb()
 {
     //open service
     SvcHelper service("IpOverUsbSvc");
-    DVASSERT_MSG_RET(service.IsInstalled(), "Can't open IpOverUsb service", false);
+    if (!service.IsInstalled())
+    {
+        DVASSERT_MSG(false, "Can't open IpOverUsb service");
+        return false;
+    }
 
     //stop it
-    DVASSERT_MSG_RET(service.Stop(), "Can't stop IpOverUsb service", false);
+    if (!service.Stop())
+    {
+        DVASSERT_MSG(false, "Can't stop IpOverUsb service");
+        return false;
+    }
     
     //start it
-    DVASSERT_MSG_RET(service.Start(), "Can't start IpOverUsb service", false);
+    if (!service.Start())
+    {
+        DVASSERT_MSG(false, "Can't start IpOverUsb service");
+        return false;
+    }
 
     //waiting for service starting
     Thread::Sleep(1000);
@@ -315,12 +352,20 @@ bool ConfigureIpOverUsb()
 
     //open or create key
     RegKey key(HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\IpOverUsbSdk\\DavaDebugging", true);
-    DVASSERT_MSG_RET(key.IsExist(), "Can't open or create key", false);
+    if (!key.IsExist())
+    {
+        DVASSERT_MSG(false, "Can't open or create key");
+        return false;
+    }
     needRestart |= key.IsCreated();
 
     //update config values
     Optional<bool> result = UpdateIpOverUsbConfig(key);
-    DVASSERT_MSG_RET(result.IsSet(), "Unable to update IpOverUsb service config", false);
+    if (!result.IsSet())
+    {
+        DVASSERT_MSG(false, "Unable to update IpOverUsb service config");
+        return false;
+    }
     needRestart |= result.Get();
 
     //restart service to applying new config
