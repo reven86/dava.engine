@@ -144,7 +144,7 @@ eErrorCode LibWebPHelper::WriteFile(const FilePath & fileName, const Vector<Imag
     int stride = width * sizeof(*imageData) * PixelFormatDescriptor::GetPixelFormatSizeInBytes(format);
     if (FORMAT_RGB888 == format)
     {
-        if (quality == MAX_IMAGE_QUALITY)
+        if (quality == LOSSLESS_IMAGE_QUALITY)
         {
             outSize = static_cast<uint32>(WebPEncodeLosslessRGB(imageData, width, height, stride, &outData));
         }
@@ -155,7 +155,7 @@ eErrorCode LibWebPHelper::WriteFile(const FilePath & fileName, const Vector<Imag
     }
     else
     {
-        if (quality == MAX_IMAGE_QUALITY)
+        if (quality == LOSSLESS_IMAGE_QUALITY)
         {
             outSize = static_cast<uint32>(WebPEncodeLosslessRGBA(imageData, width, height, stride, &outData));
         }
