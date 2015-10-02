@@ -172,29 +172,73 @@ void UIStyleSheetSystem::ProcessControl(UIControl* control)
     
 void UIStyleSheetSystem::AddGlobalClass(const FastName &clazz)
 {
-    if (find(globalClasses.begin(), globalClasses.end(), clazz) == globalClasses.end())
+    auto it = std::find_if(globalClasses.begin(), globalClasses.end(), [&clazz](UIStyleSheetClass& cl)
+                           {
+        return cl.clazz == clazz && !cl.tag.IsValid();
+                           });
+
+    if (it == globalClasses.end())
     {
-        globalClasses.push_back(clazz);
+        globalClasses.push_back(UIStyleSheetClass(FastName(), clazz));
     }
 }
 
 void UIStyleSheetSystem::RemoveGlobalClass(const FastName &clazz)
 {
-    auto iter = find(globalClasses.begin(), globalClasses.end(), clazz);
-    
-    if (iter != globalClasses.end())
+    auto it = std::find_if(globalClasses.begin(), globalClasses.end(), [&clazz](UIStyleSheetClass& cl)
+                           {
+        return cl.clazz == clazz && !cl.tag.IsValid();
+                           });
+
+    if (it != globalClasses.end())
     {
-        *iter = globalClasses.back();
+        *it = globalClasses.back();
         globalClasses.pop_back();
     }
 }
     
 bool UIStyleSheetSystem::HasGlobalClass(const FastName &clazz) const
 {
-    return find(globalClasses.begin(), globalClasses.end(), clazz) != globalClasses.end();
+    auto it = std::find_if(globalClasses.begin(), globalClasses.end(), [&clazz](const UIStyleSheetClass& cl)
+                           {
+        return cl.clazz == clazz;
+                           });
+
+    return it != globalClasses.end();
 }
 
-void UIStyleSheetSystem::ClearGlobalFlags()
+void UIStyleSheetSystem::SetGlobalTaggedClass(const FastName& tag, const FastName& clazz)
+{
+    auto it = std::find_if(globalClasses.begin(), globalClasses.end(), [&tag](UIStyleSheetClass& cl)
+                           {
+        return cl.tag == tag;
+                           });
+
+    if (it != globalClasses.end())
+    {
+        it->clazz = clazz;
+    }
+    else
+    {
+        globalClasses.push_back(UIStyleSheetClass(tag, clazz));
+    }
+}
+
+void UIStyleSheetSystem::ResetGlobalTaggedClass(const FastName& tag)
+{
+    auto it = std::find_if(globalClasses.begin(), globalClasses.end(), [&tag](UIStyleSheetClass& cl)
+                           {
+        return cl.tag == tag;
+                           });
+
+    if (it != globalClasses.end())
+    {
+        *it = globalClasses.back();
+        globalClasses.pop_back();
+    }
+}
+
+void UIStyleSheetSystem::ClearGlobalClasses()
 {
     globalClasses.clear();
 }

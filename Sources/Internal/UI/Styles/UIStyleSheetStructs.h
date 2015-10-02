@@ -123,6 +123,17 @@ struct UIStyleSheetProperty
     bool transition;
 };
 
+struct UIStyleSheetClass
+{
+    UIStyleSheetClass(const FastName& tag_, const FastName& clazz_)
+        : tag(tag_)
+        , clazz(clazz_)
+    {
+    }
+
+    FastName tag;
+    FastName clazz;
+};
 };
 
 

@@ -1332,7 +1332,9 @@ public:
     void AddClass(const FastName& clazz);
     void RemoveClass(const FastName& clazz);
     bool HasClass(const FastName& clazz);
-    
+    void SetTaggedClass(const FastName& tag, const FastName& clazz);
+    void ResetTaggedClass(const FastName& tag);
+
     String GetClassesAsString();
     void SetClassesFromString(const String &classes);
     
@@ -1356,7 +1358,7 @@ public:
     UIControlPackageContext* GetLocalPackageContext() const;
     void SetPackageContext(UIControlPackageContext* packageContext);
 private:
-    Vector<FastName> classes;
+    Vector<UIStyleSheetClass> classes;
     UIStyleSheetPropertySet localProperties;
     UIStyleSheetPropertySet styledProperties;
     RefPtr< UIControlPackageContext > packageContext;

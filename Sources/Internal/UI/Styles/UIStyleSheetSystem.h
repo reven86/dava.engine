@@ -32,6 +32,7 @@
 
 #include "Base/BaseTypes.h"
 #include "Base/FastName.h"
+#include "UIStyleSheetStructs.h"
 
 namespace DAVA
 {
@@ -51,15 +52,18 @@ public:
     void AddGlobalClass(const FastName &clazz);
     void RemoveGlobalClass(const FastName &clazz);
     bool HasGlobalClass(const FastName &clazz) const;
-    void ClearGlobalFlags();
+    void SetGlobalTaggedClass(const FastName& tag, const FastName& clazz);
+    void ResetGlobalTaggedClass(const FastName& tag);
+    void ClearGlobalClasses();
+
 private:
     bool StyleSheetMatchesControl(const UIStyleSheet* styleSheet, UIControl* control);
     bool SelectorMatchesControl(const UIStyleSheetSelector& selector, UIControl* control);
 
     template <typename CallbackType>
     void DoForAllPropertyInstances(UIControl* control, uint32 propertyIndex, const CallbackType& action);
-    
-    Vector<FastName> globalClasses;
+
+    Vector<UIStyleSheetClass> globalClasses;
 };
 
 };
