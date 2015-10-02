@@ -110,13 +110,12 @@ void KeyboardDevice::OnSystemKeyUnpressed(int32 systemKeyCode)
     
 void KeyboardDevice::PrepareKeyTranslator()
 {
-    for (auto& key : keyTranslator)
-    {
-        key = DVKEY_UNKNOWN;
-    }
+    std::uninitialized_fill(begin(keyTranslator), end(keyTranslator), DVKEY_UNKNOWN);
 
 #if defined(__DAVAENGINE_WINDOWS__)
-	keyTranslator[VK_LEFT] = DVKEY_LEFT;
+    // see https://msdn.microsoft.com/en-us/library/windows/desktop/dd375731%28v=vs.85%29.aspx
+
+    keyTranslator[VK_LEFT] = DVKEY_LEFT;
 	keyTranslator[VK_RIGHT] = DVKEY_RIGHT;
 	keyTranslator[VK_UP] = DVKEY_UP;
 	keyTranslator[VK_DOWN] = DVKEY_DOWN;
@@ -132,6 +131,11 @@ void KeyboardDevice::PrepareKeyTranslator()
     keyTranslator[VK_TAB] = DVKEY_TAB;
     keyTranslator[VK_ADD] = DVKEY_ADD;
     keyTranslator[VK_SUBTRACT] = DVKEY_SUBTRACT;
+    keyTranslator[VK_HOME] = DVKEY_HOME;
+    keyTranslator[VK_END] = DVKEY_END;
+    keyTranslator[VK_PRIOR] = DVKEY_PGUP;
+    keyTranslator[VK_NEXT] = DVKEY_PGDN;
+    keyTranslator[VK_INSERT] = DVKEY_INSERT;
 
     keyTranslator[VK_OEM_PLUS] = DVKEY_EQUALS;
     keyTranslator[VK_OEM_MINUS] = DVKEY_MINUS;
@@ -162,7 +166,10 @@ void KeyboardDevice::PrepareKeyTranslator()
         keyTranslator[0x30 + i] = DVKEY_0 + i;
         keyTranslator[0x60 + i] = DVKEY_NUMPAD0 + i;
     }
-    
+    keyTranslator[VK_MULTIPLY] = DVKEY_MULTIPLY;
+    keyTranslator[VK_DIVIDE] = DVKEY_DIVIDE;
+    keyTranslator[VK_DECIMAL] = DVKEY_DECIMAL;
+
 #endif
 
 #if defined(__DAVAENGINE_MACOS__)

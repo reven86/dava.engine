@@ -31,145 +31,137 @@
 #define __DAVAENGINE_KEYBOARD_DEVICE_H__
 
 #include "Base/BaseTypes.h"
-#include "Base/BaseMath.h"
-#include "Base/Singleton.h"
 #include "Base/BaseObject.h"
-//#include "UI/UIControl.h"
-//#include "UI/UIEvent.h"
-//#include "UI/UIScreenTransition.h"
-//#include "UI/UILoadingTransition.h"
-//#include "UI/UIPopup.h"
 
 /**
 	\defgroup inputsystem	Input System
 */
 namespace DAVA
 {
-
 const static int MAX_KEYS = 256;
-    
-    enum eDavaKeys 
-    {
-        DVKEY_UNKNOWN   =   0,
-        DVKEY_ESCAPE		,
-        DVKEY_BACKSPACE		,
-        DVKEY_TAB			,
-        DVKEY_ENTER			,
-        DVKEY_SPACE			,
-        
-        DVKEY_SHIFT			,
-        DVKEY_CTRL			,
-        DVKEY_ALT			,
-        
-        DVKEY_LWIN			,
-        DVKEY_RWIN			,
-        DVKEY_APPS			,
-        
-        DVKEY_PAUSE			,
-        DVKEY_CAPSLOCK		,
-        DVKEY_NUMLOCK		,
-        DVKEY_SCROLLLOCK	,
-        
-        DVKEY_PGUP			,
-        DVKEY_PGDN			,
-        DVKEY_HOME			,
-        DVKEY_END			,
-        DVKEY_INSERT		,
-        DVKEY_DELETE		,
-        
-        DVKEY_LEFT			,
-        DVKEY_UP			,
-        DVKEY_RIGHT			,
-        DVKEY_DOWN			,
-        
-        DVKEY_0				,
-        DVKEY_1				,
-        DVKEY_2				,
-        DVKEY_3				,
-        DVKEY_4				,
-        DVKEY_5				,
-        DVKEY_6				,
-        DVKEY_7				,
-        DVKEY_8				,
-        DVKEY_9				,
-        
-        DVKEY_A				,
-        DVKEY_B				,
-        DVKEY_C				,
-        DVKEY_D				,
-        DVKEY_E				,
-        DVKEY_F				,
-        DVKEY_G				,
-        DVKEY_H				,
-        DVKEY_I				,
-        DVKEY_J				,
-        DVKEY_K				,
-        DVKEY_L				,
-        DVKEY_M				,
-        DVKEY_N				,
-        DVKEY_O				,
-        DVKEY_P				,
-        DVKEY_Q				,
-        DVKEY_R				,
-        DVKEY_S				,
-        DVKEY_T				,
-        DVKEY_U				,
-        DVKEY_V				,
-        DVKEY_W				,
-        DVKEY_X				,
-        DVKEY_Y				,
-        DVKEY_Z				,
-        
-        DVKEY_GRAVE			,
-        DVKEY_MINUS			,
-        DVKEY_EQUALS		,
-        DVKEY_BACKSLASH		,
-        DVKEY_LBRACKET		,
-        DVKEY_RBRACKET		,
-        DVKEY_SEMICOLON		,
-        DVKEY_APOSTROPHE	,
-        DVKEY_COMMA			,
-        DVKEY_PERIOD		,
-        DVKEY_SLASH			,
-        
-        DVKEY_NUMPAD0		,
-        DVKEY_NUMPAD1		,
-        DVKEY_NUMPAD2		,
-        DVKEY_NUMPAD3		,
-        DVKEY_NUMPAD4		,
-        DVKEY_NUMPAD5		,
-        DVKEY_NUMPAD6		,
-        DVKEY_NUMPAD7		,
-        DVKEY_NUMPAD8		,
-        DVKEY_NUMPAD9		,
-        
-        DVKEY_MULTIPLY		,
-        DVKEY_DIVIDE		,
-        DVKEY_ADD			,
-        DVKEY_SUBTRACT		,
-        DVKEY_DECIMAL		,
-        
-        DVKEY_F1			,
-        DVKEY_F2			,
-        DVKEY_F3			,
-        DVKEY_F4			,
-        DVKEY_F5			,
-        DVKEY_F6			,
-        DVKEY_F7			,
-        DVKEY_F8			,
-        DVKEY_F9			,
-        DVKEY_F10			,
-        DVKEY_F11			,
-        DVKEY_F12			,
-        
-        //Android keys
-        DVKEY_BACK          ,
-        DVKEY_MENU          ,
 
-        DVKEY_COUNT
-        
-    };
-    
+enum eDavaKeys : int32
+{
+    DVKEY_UNKNOWN = 0,
+    DVKEY_ESCAPE,
+    DVKEY_BACKSPACE,
+    DVKEY_TAB,
+    DVKEY_ENTER,
+    DVKEY_SPACE,
+
+    DVKEY_SHIFT,
+    DVKEY_CTRL,
+    DVKEY_ALT,
+
+    DVKEY_LWIN,
+    DVKEY_RWIN,
+    DVKEY_APPS,
+
+    DVKEY_PAUSE,
+    DVKEY_CAPSLOCK,
+    DVKEY_NUMLOCK,
+    DVKEY_SCROLLLOCK,
+
+    DVKEY_PGUP,
+    DVKEY_PGDN,
+    DVKEY_HOME,
+    DVKEY_END,
+    DVKEY_INSERT,
+    DVKEY_DELETE,
+
+    DVKEY_LEFT,
+    DVKEY_UP,
+    DVKEY_RIGHT,
+    DVKEY_DOWN,
+
+    DVKEY_0,
+    DVKEY_1,
+    DVKEY_2,
+    DVKEY_3,
+    DVKEY_4,
+    DVKEY_5,
+    DVKEY_6,
+    DVKEY_7,
+    DVKEY_8,
+    DVKEY_9,
+
+    DVKEY_A,
+    DVKEY_B,
+    DVKEY_C,
+    DVKEY_D,
+    DVKEY_E,
+    DVKEY_F,
+    DVKEY_G,
+    DVKEY_H,
+    DVKEY_I,
+    DVKEY_J,
+    DVKEY_K,
+    DVKEY_L,
+    DVKEY_M,
+    DVKEY_N,
+    DVKEY_O,
+    DVKEY_P,
+    DVKEY_Q,
+    DVKEY_R,
+    DVKEY_S,
+    DVKEY_T,
+    DVKEY_U,
+    DVKEY_V,
+    DVKEY_W,
+    DVKEY_X,
+    DVKEY_Y,
+    DVKEY_Z,
+
+    DVKEY_GRAVE,
+    DVKEY_MINUS,
+    DVKEY_EQUALS,
+    DVKEY_BACKSLASH,
+    DVKEY_LBRACKET,
+    DVKEY_RBRACKET,
+    DVKEY_SEMICOLON,
+    DVKEY_APOSTROPHE,
+    DVKEY_COMMA,
+    DVKEY_PERIOD,
+    DVKEY_SLASH,
+
+    DVKEY_NUMPAD0,
+    DVKEY_NUMPAD1,
+    DVKEY_NUMPAD2,
+    DVKEY_NUMPAD3,
+    DVKEY_NUMPAD4,
+    DVKEY_NUMPAD5,
+    DVKEY_NUMPAD6,
+    DVKEY_NUMPAD7,
+    DVKEY_NUMPAD8,
+    DVKEY_NUMPAD9,
+
+    DVKEY_MULTIPLY,
+    DVKEY_DIVIDE,
+    DVKEY_ADD,
+    DVKEY_SUBTRACT,
+    DVKEY_DECIMAL,
+
+    DVKEY_F1,
+    DVKEY_F2,
+    DVKEY_F3,
+    DVKEY_F4,
+    DVKEY_F5,
+    DVKEY_F6,
+    DVKEY_F7,
+    DVKEY_F8,
+    DVKEY_F9,
+    DVKEY_F10,
+    DVKEY_F11,
+    DVKEY_F12,
+
+    //Android keys
+    DVKEY_BACK,
+    DVKEY_MENU,
+
+    DVKEY_COUNT
+
+};
+
     enum eMacOsModiferKeys 
     {
         DVMACOS_COMMAND = 0xFF,
@@ -213,8 +205,8 @@ protected:
         
     bool keyStatus[DVKEY_COUNT];//keys pressed for the current frame
     bool realKeyStatus[DVKEY_COUNT];
-        
-    int32 keyTranslator[MAX_KEYS];
+
+    std::array<int32, MAX_KEYS> keyTranslator;
 };
 };
 
