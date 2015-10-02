@@ -275,7 +275,7 @@ Optional<bool> UpdateIpOverUsbConfig(RegKey& key)
         if (!key.SetValue("DestinationAddress", desiredDestAddr))
         {
             DVASSERT_MSG(false, "Unable to set DestinationAddress");
-            return EmptyOptional();
+            return EmptyOptional;
         }
         changed |= true;
     }
@@ -286,7 +286,7 @@ Optional<bool> UpdateIpOverUsbConfig(RegKey& key)
         if (!key.SetValue("DestinationPort", desiredDestPort))
         {
             DVASSERT_MSG(false, "Unable to set DestinationPort");
-            return EmptyOptional();
+            return EmptyOptional;
         }
         changed |= true;
     }
@@ -297,7 +297,7 @@ Optional<bool> UpdateIpOverUsbConfig(RegKey& key)
         if (!key.SetValue("LocalAddress", desiredLocalAddr))
         {
             DVASSERT_MSG(false, "Unable to set LocalAddress");
-            return EmptyOptional();
+            return EmptyOptional;
         }
         changed |= true;
     }
@@ -308,7 +308,7 @@ Optional<bool> UpdateIpOverUsbConfig(RegKey& key)
         if (!key.SetValue("LocalPort", desiredLocalPort))
         {
             DVASSERT_MSG(false, "Unable to set LocalPort");
-            return EmptyOptional();
+            return EmptyOptional;
         }
         changed |= true;
     }

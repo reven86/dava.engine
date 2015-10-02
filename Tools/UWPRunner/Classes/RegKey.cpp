@@ -59,7 +59,7 @@ Optional<String> RegKey::QueryString(const char* valueName) const
                       reinterpret_cast<LPBYTE>(arr.data()),
                       &size);
 
-    return type == REG_SZ ? MakeOptional<String>(arr.data()) : EmptyOptional();
+    return type == REG_SZ ? MakeOptional<String>(arr.data()) : EmptyOptional;
 }
 
 bool RegKey::SetValue(const String& valName, const String& val)
@@ -82,7 +82,7 @@ Optional<DWORD> RegKey::QueryDWORD(const char* valueName) const
                       reinterpret_cast<LPBYTE>(&result),
                       &size);
 
-    return type == REG_DWORD ? MakeOptional<DWORD>(result) : EmptyOptional();
+    return type == REG_DWORD ? MakeOptional<DWORD>(result) : EmptyOptional;
 }
 
 bool RegKey::SetValue(const String& valName, DWORD val)
