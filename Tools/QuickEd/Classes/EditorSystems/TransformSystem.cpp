@@ -411,26 +411,24 @@ Vector2 TransformSystem::AdjustResize(Array<int, Vector2::AXIS_COUNT> directions
 {
     const Vector2 scaledMinimum(minimumSize / controlGeometricData.scale);
     Vector2 origSize = sizeProperty->GetValue().AsVector2();
-
+    delta += extraDelta; //transform to virtual coordinates
     Vector2 deltaSize(delta.x * directions[Vector2::AXIS_X], delta.y * directions[Vector2::AXIS_Y]);
-    Vector2 finalSize(origSize + deltaSize - extraDelta);
+    Vector2 finalSize(origSize + deltaSize);
 
-    static int counter;
-    counter++;
-    //for (int32 axisInt = Vector2::AXIS_X; axisInt < Vector2::AXIS_COUNT; ++axisInt)
+    for (int32 axisInt = Vector2::AXIS_X; axisInt < Vector2::AXIS_COUNT; ++axisInt)
     {
         Vector2::eAxis axis = static_cast<Vector2::eAxis>(DAVA::Vector2::AXIS_X);
         if (finalSize[axis] < scaledMinimum[axis])
         {
-            extraDelta[axis] = scaledMinimum[axis] - finalSize[axis];
-            delta[axis] = Min(0.0f, origSize[axis] - scaledMinimum[axis]);
-            Logger::Info("%d  %f %f", counter, extraDelta.x, extraDelta.y);
+            extraDelta[axis] = finalSize[axis] - scaledMinimum[axis];
+            extraDelta[axis] /= directions[axis];
+            int sign = delta[axis] > 0 ? 1 : -1;
+            delta[axis] = Max(0.0f, origSize[axis] - scaledMinimum[axis]); //truncate delta
+            delta[axis] *= sign; // restore delta sign;
         }
         else
         {
-            delta[axis] -= extraDelta[axis];
             extraDelta[axis] = 0.0f;
-            Logger::Debug("%d  %f %f", counter, extraDelta.x, extraDelta.y);
         }
     }
     return delta;
@@ -495,8 +493,7 @@ Vector2 TransformSystem::AdjustPivot(Vector2& delta)
         }
         if (found)
         {
-            extraDelta.dx = finalPivot.dx - target.x;
-            extraDelta.dy = finalPivot.dy - target.y;
+            extraDelta = finalPivot - target;
             delta = RotateVectorInv((target - origPivot) * controlSize, controlGeometricData);
 
             finalPivot = target;
@@ -505,10 +502,8 @@ Vector2 TransformSystem::AdjustPivot(Vector2& delta)
 
     if (!found && !extraDelta.IsZero())
     {
-        deltaPivot.dx += extraDelta.dx;
-        extraDelta.dx = 0.0f;
-        deltaPivot.dy += extraDelta.dy;
-        extraDelta.dy = 0.0f;
+        deltaPivot += extraDelta;
+        extraDelta.SetZero();
         delta = RotateVectorInv(deltaPivot * controlSize, controlGeometricData);
     }
     return finalPivot;
