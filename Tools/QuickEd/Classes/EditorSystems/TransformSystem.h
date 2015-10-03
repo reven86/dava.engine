@@ -58,7 +58,8 @@ private:
     DAVA::Vector2 AdjustPivot(DAVA::Vector2& delta);
     void Rotate(DAVA::Vector2 pos);
     void MoveAllSelectedControls(DAVA::Vector2 delta);
-    DAVA::Vector2 AdjustMove(DAVA::Vector2 delta);
+    void MoveControls(DAVA::Vector2 delta);
+    DAVA::Vector2 AdjustMove(DAVA::Vector2 delta, const DAVA::UIGeometricData* gd, const DAVA::UIControl* control);
     void AdjustProperty(ControlNode* node, const DAVA::Vector<PropertyDelta>& propertiesDelta);
 
     void CorrectNodesToMove();

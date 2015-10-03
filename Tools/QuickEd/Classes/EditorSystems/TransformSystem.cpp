@@ -195,7 +195,7 @@ bool TransformSystem::ProcessDrag(Vector2 pos)
     switch (activeArea)
     {
     case HUDAreaInfo::FRAME_AREA:
-        MoveAllSelectedControls(AdjustMove(delta));
+        MoveControls(delta);
         return true;
     case HUDAreaInfo::TOP_LEFT_AREA:
     case HUDAreaInfo::TOP_CENTER_AREA:
@@ -247,82 +247,88 @@ void TransformSystem::MoveAllSelectedControls(Vector2 delta)
     }
 }
 
-DAVA::Vector2 TransformSystem::AdjustMove(DAVA::Vector2 delta)
+void TransformSystem::MoveControls(Vector2 delta)
 {
     if (QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier))
     {
         for (auto& tuple : nodesToMove)
         {
-            if (std::get<0>(tuple) != activeControlNode)
+            if (std::get<0>(tuple) == activeControlNode)
             {
-                continue;
+                const UIGeometricData* gd = std::get<2>(tuple);
+                const UIControl* control = std::get<0>(tuple)->GetControl();
+
+                Vector2 scaledDelta = delta / gd->scale;
+                Vector2 deltaPosition(RotateVector(scaledDelta, *gd));
+
+                deltaPosition = AdjustMove(deltaPosition, gd, control);
+
+                delta = RotateVectorInv(deltaPosition, *gd);
+                delta *= gd->scale;
+                break;
             }
-            const UIGeometricData* gd = std::get<2>(tuple);
-            const UIControl* control = std::get<0>(tuple)->GetControl();
+        }
+    }
+    MoveAllSelectedControls(delta);
+}
 
-            Vector2 scaledDelta = delta / gd->scale;
-            Vector2 deltaPosition(RotateVector(scaledDelta, *gd));
+DAVA::Vector2 TransformSystem::AdjustMove(DAVA::Vector2 delta, const UIGeometricData* gd, const UIControl* control)
+{
+    delta += extraDelta;
 
-            Array<bool, Vector2::AXIS_COUNT> magnet = {{false, false}};
-            Vector2 nextPosToNearest;
-            Vector2 deltaToNearest;
+    Array<bool, Vector2::AXIS_COUNT> magnet = {{false, false}};
+    Vector2 nextPosToNearest; //virtual delta to nearest magnet border. Will be zero if cursor under border
+    Vector2 deltaToNearest; //real delta to nearest magnet border. Will be zero if control already was magnet to this border
 
-            const Vector2 scaledRange(Vector2(20.0f, 20.0f) / gd->scale);
-            const Vector2 range(RotateVector(scaledRange, *gd));
+    const Vector2 scaledRange(Vector2(20.0f, 20.0f) / gd->scale);
+    const Vector2 range(RotateVector(scaledRange, *gd));
 
-            Array<Array<float32, 3>, Vector2::AXIS_COUNT> searchingPath = {{{{0.0f, 0.5f, 1.0f}}, {{0.0f, 0.5f, 1.0f}}}};
-            Array<Array<float32, 3>, Vector2::AXIS_COUNT> controlRegions = {{{{0.0f, 0.5f, 1.0f}}, {{0.0f, 0.5f, 1.0f}}}};
+    Array<Array<float32, 3>, Vector2::AXIS_COUNT> searchingPath = {{{{0.0f, 0.5f, 1.0f}}, {{0.0f, 0.5f, 1.0f}}}};
+    Array<Array<float32, 3>, Vector2::AXIS_COUNT> controlRegions = {{{{0.0f, 0.5f, 1.0f}}, {{0.0f, 0.5f, 1.0f}}}};
 
-            UIGeometricData controlGD = control->GetLocalGeometricData();
-            Rect box = controlGD.GetAABBox();
+    UIGeometricData controlGD = control->GetLocalGeometricData();
+    Rect box = controlGD.GetAABBox();
 
-            Vector2 nearestDistance;
-            for (int32 axisInt = Vector2::AXIS_X; axisInt < Vector2::AXIS_COUNT; ++axisInt)
+    Vector2 nearestDistance;
+    for (int32 axisInt = Vector2::AXIS_X; axisInt < Vector2::AXIS_COUNT; ++axisInt)
+    {
+        Vector2::eAxis axis = static_cast<Vector2::eAxis>(axisInt);
+        for (auto path : searchingPath[axis])
+        {
+            float32 pathPos = path * gd->size[axis];
+            float32 left = pathPos - range[axis];
+            float32 right = pathPos + range[axis];
+
+            for (auto region : controlRegions[axis])
             {
-                Vector2::eAxis axis = static_cast<Vector2::eAxis>(axisInt);
-                for (auto path : searchingPath[axis])
+                float32 regionPos = box.GetPosition()[axis] + box.GetSize()[axis] * region;
+                float32 nextRegionPos = regionPos + delta[axis];
+                if (nextRegionPos >= left && nextRegionPos <= right)
                 {
-                    float32 pathPos = path * gd->size[axis];
-                    float32 left = pathPos - range[axis];
-                    float32 right = pathPos + range[axis];
-
-                    for (auto region : controlRegions[axis])
+                    float32 distanceToPath = fabs(nextRegionPos - pathPos);
+                    if (!magnet[axis] || nearestDistance[axis] > distanceToPath)
                     {
-                        float32 regionPos = box.GetPosition()[axis] + box.GetSize()[axis] * region;
-                        float32 nextRegionPos = regionPos + deltaPosition[axis] + extraDelta[axis];
-                        if (nextRegionPos >= left && nextRegionPos <= right)
-                        {
-                            float32 distanceToPath = fabs(nextRegionPos - pathPos);
-                            if (!magnet[axis] || nearestDistance[axis] > distanceToPath)
-                            {
-                                nearestDistance[axis] = distanceToPath;
+                        nearestDistance[axis] = distanceToPath;
 
-                                nextPosToNearest[axis] = nextRegionPos - pathPos;
-                                deltaToNearest[axis] = pathPos - regionPos;
-                            }
-                            magnet[axis] = true;
-                        }
+                        nextPosToNearest[axis] = nextRegionPos - pathPos;
+                        deltaToNearest[axis] = pathPos - regionPos;
                     }
+                    magnet[axis] = true;
                 }
             }
-            for (int32 axisInt = Vector2::AXIS_X; axisInt < Vector2::AXIS_COUNT; ++axisInt)
-            {
-                Vector2::eAxis axis = static_cast<Vector2::eAxis>(axisInt);
-                if (magnet[axis])
-                {
-                    extraDelta[axis] = nextPosToNearest[axis];
-                    deltaPosition[axis] = deltaToNearest[axis];
-                }
-                if (!magnet[axis] && extraDelta[axis] != 0.0f)
-                {
-                    deltaPosition[axis] += extraDelta[axis];
-                    extraDelta[axis] = 0.0f;
-                    deltaPosition[axis] = deltaPosition[axis];
-                }
-            }
-            delta = RotateVectorInv(deltaPosition, *gd);
-            delta *= gd->scale;
-            break;
+        }
+    }
+    for (int32 axisInt = Vector2::AXIS_X; axisInt < Vector2::AXIS_COUNT; ++axisInt)
+    {
+        Vector2::eAxis axis = static_cast<Vector2::eAxis>(axisInt);
+        if (magnet[axis])
+        {
+            extraDelta[axis] = nextPosToNearest[axis];
+            delta[axis] = deltaToNearest[axis];
+        }
+        else
+        {
+            extraDelta[axis] = 0.0f;
         }
     }
     return delta;
