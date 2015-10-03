@@ -43,8 +43,8 @@ protected:
     virtual ~ValueProperty();
     
 public:
-    virtual int GetCount() const override;
-    virtual AbstractProperty *GetProperty(int index) const override;
+    virtual DAVA::int32 GetCount() const override;
+    virtual AbstractProperty *GetProperty(DAVA::int32 index) const override;
 
     virtual void Refresh(DAVA::int32 refreshFlags) override;
 

@@ -1480,7 +1480,7 @@ SWIGINTERN int SWIG_Lua_iterate_bases(lua_State *L, swig_type_info * SWIGUNUSED 
       for(i=0;i<bases_count;i++) {
         /* Iteration through class bases */
 #if (SWIG_LUA_TARGET == SWIG_LUA_FLAVOR_LUA)
-        lua_rawgeti(L,bases_table,static_cast<int>(i+1));
+        lua_rawgeti(L,bases_table,i+1);
         base_swig_type = 0;
         if(lua_isnil(L,-1)) {
           valid = 0;
@@ -3163,33 +3163,6 @@ static swig_lua_class _wrap_class_UIGeometricData = { "UIGeometricData", "UIGeom
 static int _wrap_new_UIControl__SWIG_0(lua_State* L) {
   int SWIG_arg = 0;
   DAVA::Rect *arg1 = 0 ;
-  bool arg2 ;
-  DAVA::UIControl *result = 0 ;
-  
-  SWIG_check_num_args("DAVA::UIControl::UIControl",2,2)
-  if(!lua_isuserdata(L,1)) SWIG_fail_arg("DAVA::UIControl::UIControl",1,"DAVA::Rect const &");
-  if(!lua_isboolean(L,2)) SWIG_fail_arg("DAVA::UIControl::UIControl",2,"bool");
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__Rect,0))){
-    SWIG_fail_ptr("new_UIControl",1,SWIGTYPE_p_DAVA__Rect);
-  }
-  
-  arg2 = (lua_toboolean(L, 2)!=0);
-  result = (DAVA::UIControl *)new DAVA::UIControl((DAVA::Rect const &)*arg1,arg2);
-  SWIG_NewPointerObj(L,result,SWIGTYPE_p_DAVA__UIControl,1); SWIG_arg++; 
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_new_UIControl__SWIG_1(lua_State* L) {
-  int SWIG_arg = 0;
-  DAVA::Rect *arg1 = 0 ;
   DAVA::UIControl *result = 0 ;
   
   SWIG_check_num_args("DAVA::UIControl::UIControl",1,1)
@@ -3211,7 +3184,7 @@ fail:
 }
 
 
-static int _wrap_new_UIControl__SWIG_2(lua_State* L) {
+static int _wrap_new_UIControl__SWIG_1(lua_State* L) {
   int SWIG_arg = 0;
   DAVA::UIControl *result = 0 ;
   
@@ -3230,13 +3203,13 @@ fail:
 
 static int _wrap_new_UIControl(lua_State* L) {
   int argc;
-  int argv[3]={
-    1,2,3
+  int argv[2]={
+    1,2
   };
   
   argc = lua_gettop(L);
   if (argc == 0) {
-    return _wrap_new_UIControl__SWIG_2(L);
+    return _wrap_new_UIControl__SWIG_1(L);
   }
   if (argc == 1) {
     int _v;
@@ -3249,32 +3222,12 @@ static int _wrap_new_UIControl(lua_State* L) {
       }
     }
     if (_v) {
-      return _wrap_new_UIControl__SWIG_1(L);
-    }
-  }
-  if (argc == 2) {
-    int _v;
-    {
-      void *ptr;
-      if (lua_isuserdata(L,argv[0])==0 || SWIG_ConvertPtr(L,argv[0], (void **) &ptr, SWIGTYPE_p_DAVA__Rect, 0)) {
-        _v = 0;
-      } else {
-        _v = 1;
-      }
-    }
-    if (_v) {
-      {
-        _v = lua_isboolean(L,argv[1]);
-      }
-      if (_v) {
         return _wrap_new_UIControl__SWIG_0(L);
-      }
     }
   }
   
   SWIG_Lua_pusherrstring(L,"Wrong arguments for overloaded function 'new_UIControl'\n"
     "  Possible C/C++ prototypes are:\n"
-    "    DAVA::UIControl::UIControl(DAVA::Rect const &,bool)\n"
     "    DAVA::UIControl::UIControl(DAVA::Rect const &)\n"
     "    DAVA::UIControl::UIControl()\n");
   lua_error(L);return 0;

@@ -49,9 +49,9 @@
 namespace DAVA
 {
 
-UIMovieView::UIMovieView(const Rect &rect, bool rectInAbsoluteCoordinates)
-    : UIControl(rect, rectInAbsoluteCoordinates)
-    , movieViewControl(new MovieViewControl)
+UIMovieView::UIMovieView(const Rect &rect)
+    : UIControl(rect)
+    , movieViewControl(new MovieViewControl())
 {
     movieViewControl->Initialize(rect);
 }
@@ -114,7 +114,7 @@ void UIMovieView::SystemDraw(const UIGeometricData &geometricData)
 #if defined(DRAW_PLACEHOLDER_FOR_STUB_UIMOVIEVIEW)
     Color curDebugDrawColor = GetDebugDrawColor();
 
-    Rect absRect = GetRect(true);
+    Rect absRect = GetAbsoluteRect();
     RenderManager::Instance()->SetColor(Color(1.0f, 0.4f, 0.8f, 1.0f));
     RenderHelper::Instance()->DrawRect(absRect, RenderState::RENDERSTATE_2D_BLEND);
 
@@ -139,7 +139,7 @@ void UIMovieView::WillBecomeInvisible()
     movieViewControl->SetVisible(false);
 }
 
-UIControl* UIMovieView::Clone()
+UIMovieView *UIMovieView::Clone()
 {
     UIMovieView* uiMoviewView = new UIMovieView(GetRect());
     uiMoviewView->CopyDataFrom(this);

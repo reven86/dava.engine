@@ -49,7 +49,7 @@ static const String UISLIDER_THUMB_SPRITE_CONTROL_NAME = "thumbSpriteControl";
 static const String UISLIDER_MIN_SPRITE_CONTROL_NAME = "minSpriteControl";
 static const String UISLIDER_MAX_SPRITE_CONTROL_NAME = "maxSpriteControl";
 
-UISlider::UISlider(const Rect & rect)
+UISlider::UISlider(const Rect &rect)
 :	UIControl(rect)
 ,	minBackground(NULL)
 ,	maxBackground(NULL)
@@ -379,7 +379,7 @@ YamlNode * UISlider::SaveToYamlNode(UIYamlLoader * loader)
     return node;
 }
 	
-UIControl* UISlider::Clone()
+UISlider *UISlider::Clone()
 {
 	UISlider *t = new UISlider(GetRect());
 	t->CopyDataFrom(this);
@@ -429,14 +429,6 @@ void UISlider::AttachToSubcontrols()
 	}
 
     InitInactiveParts(thumbButton->GetBackground()->GetSprite());
-}
-
-List<UIControl*> UISlider::GetSubcontrols()
-{
-	List<UIControl*> subControls;
-	AddControlToList(subControls, UISLIDER_THUMB_SPRITE_CONTROL_NAME);
-
-	return subControls;
 }
 
 void UISlider::LoadBackgound(const char* prefix, UIControlBackground* background, const YamlNode* rootNode, const UIYamlLoader* loader)

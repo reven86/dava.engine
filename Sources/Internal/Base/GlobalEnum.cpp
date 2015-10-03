@@ -42,6 +42,7 @@
 #include "UI/Layouts/UISizePolicyComponent.h"
 #include "UI/Layouts/UILinearLayoutComponent.h"
 #include "FileSystem/Logger.h"
+#include "UI/UIWebView.h"
 
 using namespace DAVA;
 
@@ -343,6 +344,14 @@ ENUM_DECLARE(UILinearLayoutComponent::eOrientation)
 {
     ENUM_ADD_DESCR(UILinearLayoutComponent::HORIZONTAL, "Horizontal");
     ENUM_ADD_DESCR(UILinearLayoutComponent::VERTICAL, "Vertical");
+};
+
+ENUM_DECLARE(UIWebView::eDataDetectorType)
+{
+    ENUM_ADD_DESCR(UIWebView::DATA_DETECTOR_PHONE_NUMBERS  , "PhoneNumbers");
+    ENUM_ADD_DESCR(UIWebView::DATA_DETECTOR_LINKS          , "Links");
+    ENUM_ADD_DESCR(UIWebView::DATA_DETECTOR_ADDRESSES      , "Adresses");
+    ENUM_ADD_DESCR(UIWebView::DATA_DETECTOR_CALENDAR_EVENTS, "CalendarEvents");
 };
 
 /*

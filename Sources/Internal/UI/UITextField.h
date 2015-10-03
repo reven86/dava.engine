@@ -168,8 +168,8 @@ protected:
     ~UITextField() override;
 
 public:
-    UITextField(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
-    
+    UITextField(const Rect &rect = Rect());
+
     void WillAppear() override;
     void DidAppear() override;
     void WillDisappear() override;
@@ -337,13 +337,7 @@ public:
      */
     bool IsEnableReturnKeyAutomatically() const;
     void SetEnableReturnKeyAutomatically(bool value);
-    
-    /**
-     \brief Returns list of control children without internal controls.
-     \returns list of control children without internal controls.
-     */
-    List<UIControl* >& GetRealChildren() override;
-    
+
     UITextField *Clone() override;
     void CopyDataFrom(UIControl *srcControl) override;
 

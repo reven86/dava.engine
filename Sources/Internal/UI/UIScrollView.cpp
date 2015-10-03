@@ -40,11 +40,11 @@ namespace DAVA
 
 static const String UISCROLL_VIEW_CONTAINER_NAME = "scrollContainerControl";
 
-UIScrollView::UIScrollView(const Rect &rect, bool rectInAbsoluteCoordinates/* = false*/)
-:	UIControl(rect, rectInAbsoluteCoordinates),
-	scrollContainer(new UIScrollViewContainer()),
-	scrollHorizontal(new ScrollHelper()),
-	scrollVertical(new ScrollHelper())
+UIScrollView::UIScrollView(const Rect &rect)
+    : UIControl(rect)
+    , scrollContainer(new UIScrollViewContainer())
+    , scrollHorizontal(new ScrollHelper())
+    , scrollVertical(new ScrollHelper())
 {
     SetInputEnabled(false, false);
     SetFocusEnabled(false);
@@ -103,8 +103,8 @@ void UIScrollView::RemoveControl( UIControl *control )
 void UIScrollView::PushContentToBounds(UIControl *parentControl)
 {
 	// We have to shift each child of ScrollContent to fit its bounds
-	const List<UIControl*> &childslist = parentControl->GetRealChildren();
-	for(List<UIControl*>::const_iterator it = childslist.begin(); it != childslist.end(); ++it)
+    const List<UIControl*> &childslist = parentControl->GetChildren();
+    for(List<UIControl*>::const_iterator it = childslist.begin(); it != childslist.end(); ++it)
 	{
         UIControl *childControl = (*it);
         if (!(childControl && childControl->GetVisible()))
@@ -132,8 +132,8 @@ Vector2 UIScrollView::GetControlOffset(UIControl *parentControl, Vector2 current
 {
 	Vector2 currentOffset = currentContentOffset;
 	// Get control's farest position inside scrollContainer
-	const List<UIControl*> &childslist = parentControl->GetRealChildren();
-	for(List<UIControl*>::const_iterator it = childslist.begin(); it != childslist.end(); ++it)
+    const List<UIControl*> &childslist = parentControl->GetChildren();
+    for(List<UIControl*>::const_iterator it = childslist.begin(); it != childslist.end(); ++it)
 	{	
         UIControl *childControl = (*it);
         if (!(childControl && childControl->GetVisible()))
@@ -155,9 +155,9 @@ Vector2 UIScrollView::GetMaxSize(UIControl * parentControl, Vector2 currentMaxSi
 {
 	// Initial content max size is actual control sizes
 	Vector2 maxSize = currentMaxSize;
-	
-	const List<UIControl*> &childslist = parentControl->GetRealChildren();
-	for(List<UIControl*>::const_iterator it = childslist.begin(); it != childslist.end(); ++it)
+
+    const List<UIControl*> &childslist = parentControl->GetChildren();
+    for(List<UIControl*>::const_iterator it = childslist.begin(); it != childslist.end(); ++it)
 	{
         UIControl *childControl = (*it);
         if ( !(childControl && childControl->GetVisible()) )
@@ -189,16 +189,7 @@ Vector2 UIScrollView::GetMaxSize(UIControl * parentControl, Vector2 currentMaxSi
 	return maxSize;
 }
 
-List<UIControl* > UIScrollView::GetSubcontrols()
-{
-	List<UIControl* > subControls;
-	
-	AddControlToList(subControls, UISCROLL_VIEW_CONTAINER_NAME);
-	
-	return subControls;
-}
-
-UIControl* UIScrollView::Clone()
+UIScrollView *UIScrollView::Clone()
 {
 	UIScrollView *t = new UIScrollView(GetRect());
 	t->CopyDataFrom(this);

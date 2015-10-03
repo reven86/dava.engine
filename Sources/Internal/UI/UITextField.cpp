@@ -55,9 +55,8 @@ extern void CloseKeyboard();
 
 namespace DAVA
 {
-
-UITextField::UITextField(const Rect &rect, bool rectInAbsoluteCoordinates/*= false*/)
-    : UIControl(rect, rectInAbsoluteCoordinates)
+UITextField::UITextField(const Rect &rect)
+    : UIControl(rect)
 {
 #if defined(__DAVAENGINE_ANDROID__)
     textFieldAndroid = new UITextFieldAndroid(this);
@@ -824,15 +823,6 @@ YamlNode * UITextField::SaveToYamlNode(UIYamlLoader * loader)
     }
 
     return node;
-}
-
-List<UIControl*>& UITextField::GetRealChildren()
-{
-    List<UIControl*>& realChildren = UIControl::GetRealChildren();
-#if !defined(DAVA_TEXTFIELD_USE_NATIVE)
-    realChildren.remove(staticText);
-#endif
-    return realChildren;
 }
 
 UITextField* UITextField::Clone()

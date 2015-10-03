@@ -700,7 +700,7 @@ void UIList::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
     InitAfterYaml();
 }
 
-UIControl *UIList::Clone()
+UIList *UIList::Clone()
 {
     UIList *c = new UIList(GetRect(), this->orientation);
     c->CopyDataFrom(this);
@@ -781,13 +781,6 @@ float32 UIList::ViewPosition(UIScrollBar *forScrollBar)
 void UIList::OnViewPositionChanged(UIScrollBar *byScrollBar, float32 newPosition)
 {
     scroll->SetPosition(-newPosition);
-}
-
-List<UIControl* >& UIList::GetRealChildren()
-{
-    List<UIControl* >& realChildren = UIControl::GetRealChildren();
-    realChildren.remove(scrollContainer);
-    return realChildren;
 }
 
 void UIList::ScrollToPosition( float32 position, float32 timeSec /*= 0.3f*/ )

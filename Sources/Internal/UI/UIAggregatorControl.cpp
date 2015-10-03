@@ -36,14 +36,13 @@ using namespace DAVA;
 
 #define AGGREGATOR_PATH "aggregatorPath"
 
-UIAggregatorControl::UIAggregatorControl(const Rect &rect, bool rectInAbsoluteCoordinates) :
-	UIControl(rect, rectInAbsoluteCoordinates)
+UIAggregatorControl::UIAggregatorControl(const Rect &rect)
+    : UIControl(rect)
 {
-	
 }
 
 
-UIControl* UIAggregatorControl::Clone()
+UIAggregatorControl *UIAggregatorControl::Clone()
 {
 	UIAggregatorControl* c = new UIAggregatorControl(Rect(relativePosition.x, relativePosition.y, size.x, size.y));
 	c->CopyDataFrom(this);
@@ -68,18 +67,6 @@ void UIAggregatorControl::LoadFromYamlNode(const YamlNode * node, UIYamlLoader *
 		// DF-2230 - Pass relative path to loader
 		UIYamlLoader::Load(this, aggregatorPath, loader->GetAssertIfCustomControlNotFound());
 	}
-}
-
-List<UIControl* >& UIAggregatorControl::GetRealChildren()
-{
-	realChilds = UIControl::GetRealChildren();
-	
-	for (List<UIControl*>::iterator iter = aggregatorControls.begin(); iter != aggregatorControls.end(); ++iter)
-	{
-		UIControl* control = (*iter);
-		realChilds.remove(control);
-	}
-	return realChilds;
 }
 
 void UIAggregatorControl::AddAggregatorChild(UIControl* uiControl)

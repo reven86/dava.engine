@@ -42,9 +42,9 @@ class UIScrollViewContainer : public UIControl
 protected:
 	virtual ~UIScrollViewContainer();
 public:
-	UIScrollViewContainer(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
-	
-	virtual UIControl *Clone();
+    UIScrollViewContainer(const Rect &rect = Rect());
+
+    virtual UIScrollViewContainer *Clone();
 	virtual void CopyDataFrom(UIControl *srcControl);
 	
 public:

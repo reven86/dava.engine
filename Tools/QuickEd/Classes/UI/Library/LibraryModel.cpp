@@ -71,7 +71,11 @@ LibraryModel::LibraryModel(PackageNode *_root, QObject *parent)
         {"UIScrollView", true},
         {"UISpinner", true},
         {"UISwitch", true},
-        {"UIParticles", false}
+        {"UIParticles", false},
+        {"UIWebView", false},
+        {"UIMovieView", false},
+        {"UI3DView", false},
+        {"UIJoypad", true}
     };
     
     for (std::pair<String, bool> &descr : controlDescrs)

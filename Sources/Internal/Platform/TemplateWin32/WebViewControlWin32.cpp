@@ -1051,7 +1051,7 @@ void WebViewControl::LoadHtmlString(const WideString& htmlString)
     // document content with custom html from memory
     // http://msdn.microsoft.com/en-us/library/ie/aa752047%28v=vs.85%29.aspx
 
-    Rect r = uiWebView.GetRect(true);
+    Rect r = uiWebView.GetAbsoluteRect();
 
     // destroy browser window
     CleanData();
