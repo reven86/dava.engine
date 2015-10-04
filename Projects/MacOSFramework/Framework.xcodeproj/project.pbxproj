@@ -427,9 +427,6 @@
 		176DE9F5174B5561007A983B /* UIEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989D5A16BD24E500732C04 /* UIEvent.h */; };
 		176DE9F6174B5561007A983B /* UIFadeTransition.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989D5C16BD24E500732C04 /* UIFadeTransition.h */; };
 		176DE9F7174B5561007A983B /* UIFileSystemDialog.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989D5E16BD24E500732C04 /* UIFileSystemDialog.h */; };
-		176DE9F8174B5561007A983B /* UIHierarchy.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989D6016BD24E500732C04 /* UIHierarchy.h */; };
-		176DE9F9174B5561007A983B /* UIHierarchyCell.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989D6216BD24E500732C04 /* UIHierarchyCell.h */; };
-		176DE9FA174B5561007A983B /* UIHierarchyNode.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989D6416BD24E500732C04 /* UIHierarchyNode.h */; };
 		176DE9FB174B5561007A983B /* UIHoleTransition.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989D6616BD24E500732C04 /* UIHoleTransition.h */; };
 		176DE9FC174B5561007A983B /* UIJoypad.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989D6816BD24E500732C04 /* UIJoypad.h */; };
 		176DE9FD174B5561007A983B /* UIList.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989D6A16BD24E500732C04 /* UIList.h */; };
@@ -663,9 +660,6 @@
 		176DEB12174B5561007A983B /* UIEvent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989D5916BD24E500732C04 /* UIEvent.cpp */; };
 		176DEB13174B5561007A983B /* UIFadeTransition.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989D5B16BD24E500732C04 /* UIFadeTransition.cpp */; };
 		176DEB14174B5561007A983B /* UIFileSystemDialog.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989D5D16BD24E500732C04 /* UIFileSystemDialog.cpp */; };
-		176DEB15174B5561007A983B /* UIHierarchy.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989D5F16BD24E500732C04 /* UIHierarchy.cpp */; };
-		176DEB16174B5561007A983B /* UIHierarchyCell.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989D6116BD24E500732C04 /* UIHierarchyCell.cpp */; };
-		176DEB17174B5561007A983B /* UIHierarchyNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989D6316BD24E500732C04 /* UIHierarchyNode.cpp */; };
 		176DEB18174B5561007A983B /* UIHoleTransition.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989D6516BD24E500732C04 /* UIHoleTransition.cpp */; };
 		176DEB19174B5561007A983B /* UIJoypad.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989D6716BD24E500732C04 /* UIJoypad.cpp */; };
 		176DEB1A174B5561007A983B /* UIList.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989D6916BD24E500732C04 /* UIList.cpp */; };
@@ -2055,12 +2049,6 @@
 		E898A01416BD24E500732C04 /* UIFadeTransition.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989D5C16BD24E500732C04 /* UIFadeTransition.h */; };
 		E898A01516BD24E500732C04 /* UIFileSystemDialog.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989D5D16BD24E500732C04 /* UIFileSystemDialog.cpp */; };
 		E898A01616BD24E500732C04 /* UIFileSystemDialog.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989D5E16BD24E500732C04 /* UIFileSystemDialog.h */; };
-		E898A01716BD24E500732C04 /* UIHierarchy.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989D5F16BD24E500732C04 /* UIHierarchy.cpp */; };
-		E898A01816BD24E500732C04 /* UIHierarchy.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989D6016BD24E500732C04 /* UIHierarchy.h */; };
-		E898A01916BD24E500732C04 /* UIHierarchyCell.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989D6116BD24E500732C04 /* UIHierarchyCell.cpp */; };
-		E898A01A16BD24E500732C04 /* UIHierarchyCell.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989D6216BD24E500732C04 /* UIHierarchyCell.h */; };
-		E898A01B16BD24E500732C04 /* UIHierarchyNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989D6316BD24E500732C04 /* UIHierarchyNode.cpp */; };
-		E898A01C16BD24E500732C04 /* UIHierarchyNode.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989D6416BD24E500732C04 /* UIHierarchyNode.h */; };
 		E898A01D16BD24E500732C04 /* UIHoleTransition.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989D6516BD24E500732C04 /* UIHoleTransition.cpp */; };
 		E898A01E16BD24E500732C04 /* UIHoleTransition.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989D6616BD24E500732C04 /* UIHoleTransition.h */; };
 		E898A01F16BD24E500732C04 /* UIJoypad.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989D6716BD24E500732C04 /* UIJoypad.cpp */; };
@@ -2308,9 +2296,6 @@
 		E898A17E16BD265400732C04 /* UIEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989D5A16BD24E500732C04 /* UIEvent.h */; };
 		E898A17F16BD265400732C04 /* UIFadeTransition.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989D5C16BD24E500732C04 /* UIFadeTransition.h */; };
 		E898A18016BD265400732C04 /* UIFileSystemDialog.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989D5E16BD24E500732C04 /* UIFileSystemDialog.h */; };
-		E898A18116BD265400732C04 /* UIHierarchy.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989D6016BD24E500732C04 /* UIHierarchy.h */; };
-		E898A18216BD265400732C04 /* UIHierarchyCell.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989D6216BD24E500732C04 /* UIHierarchyCell.h */; };
-		E898A18316BD265400732C04 /* UIHierarchyNode.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989D6416BD24E500732C04 /* UIHierarchyNode.h */; };
 		E898A18416BD265400732C04 /* UIHoleTransition.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989D6616BD24E500732C04 /* UIHoleTransition.h */; };
 		E898A18516BD265400732C04 /* UIJoypad.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989D6816BD24E500732C04 /* UIJoypad.h */; };
 		E898A18616BD265400732C04 /* UIList.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989D6A16BD24E500732C04 /* UIList.h */; };
@@ -2497,9 +2482,6 @@
 		E898A29516BD265400732C04 /* UIEvent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989D5916BD24E500732C04 /* UIEvent.cpp */; };
 		E898A29616BD265400732C04 /* UIFadeTransition.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989D5B16BD24E500732C04 /* UIFadeTransition.cpp */; };
 		E898A29716BD265400732C04 /* UIFileSystemDialog.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989D5D16BD24E500732C04 /* UIFileSystemDialog.cpp */; };
-		E898A29816BD265400732C04 /* UIHierarchy.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989D5F16BD24E500732C04 /* UIHierarchy.cpp */; };
-		E898A29916BD265400732C04 /* UIHierarchyCell.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989D6116BD24E500732C04 /* UIHierarchyCell.cpp */; };
-		E898A29A16BD265400732C04 /* UIHierarchyNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989D6316BD24E500732C04 /* UIHierarchyNode.cpp */; };
 		E898A29B16BD265400732C04 /* UIHoleTransition.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989D6516BD24E500732C04 /* UIHoleTransition.cpp */; };
 		E898A29C16BD265400732C04 /* UIJoypad.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989D6716BD24E500732C04 /* UIJoypad.cpp */; };
 		E898A29D16BD265400732C04 /* UIList.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989D6916BD24E500732C04 /* UIList.cpp */; };
@@ -3669,12 +3651,6 @@
 		E8989D5C16BD24E500732C04 /* UIFadeTransition.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIFadeTransition.h; sourceTree = "<group>"; };
 		E8989D5D16BD24E500732C04 /* UIFileSystemDialog.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIFileSystemDialog.cpp; sourceTree = "<group>"; };
 		E8989D5E16BD24E500732C04 /* UIFileSystemDialog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIFileSystemDialog.h; sourceTree = "<group>"; };
-		E8989D5F16BD24E500732C04 /* UIHierarchy.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIHierarchy.cpp; sourceTree = "<group>"; };
-		E8989D6016BD24E500732C04 /* UIHierarchy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIHierarchy.h; sourceTree = "<group>"; };
-		E8989D6116BD24E500732C04 /* UIHierarchyCell.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIHierarchyCell.cpp; sourceTree = "<group>"; };
-		E8989D6216BD24E500732C04 /* UIHierarchyCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIHierarchyCell.h; sourceTree = "<group>"; };
-		E8989D6316BD24E500732C04 /* UIHierarchyNode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIHierarchyNode.cpp; sourceTree = "<group>"; };
-		E8989D6416BD24E500732C04 /* UIHierarchyNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIHierarchyNode.h; sourceTree = "<group>"; };
 		E8989D6516BD24E500732C04 /* UIHoleTransition.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIHoleTransition.cpp; sourceTree = "<group>"; };
 		E8989D6616BD24E500732C04 /* UIHoleTransition.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIHoleTransition.h; sourceTree = "<group>"; };
 		E8989D6716BD24E500732C04 /* UIJoypad.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIJoypad.cpp; sourceTree = "<group>"; };
@@ -5256,12 +5232,6 @@
 				E8989D5C16BD24E500732C04 /* UIFadeTransition.h */,
 				E8989D5D16BD24E500732C04 /* UIFileSystemDialog.cpp */,
 				E8989D5E16BD24E500732C04 /* UIFileSystemDialog.h */,
-				E8989D5F16BD24E500732C04 /* UIHierarchy.cpp */,
-				E8989D6016BD24E500732C04 /* UIHierarchy.h */,
-				E8989D6116BD24E500732C04 /* UIHierarchyCell.cpp */,
-				E8989D6216BD24E500732C04 /* UIHierarchyCell.h */,
-				E8989D6316BD24E500732C04 /* UIHierarchyNode.cpp */,
-				E8989D6416BD24E500732C04 /* UIHierarchyNode.h */,
 				E8989D6516BD24E500732C04 /* UIHoleTransition.cpp */,
 				E8989D6616BD24E500732C04 /* UIHoleTransition.h */,
 				E8989D6716BD24E500732C04 /* UIJoypad.cpp */,
@@ -5738,9 +5708,6 @@
 				176DE9F7174B5561007A983B /* UIFileSystemDialog.h in Headers */,
 				7C007E021B384DAC000003DB /* Mutex.h in Headers */,
 				4F53ED4119A23BEE00D3869D /* PatchFile.h in Headers */,
-				176DE9F8174B5561007A983B /* UIHierarchy.h in Headers */,
-				176DE9F9174B5561007A983B /* UIHierarchyCell.h in Headers */,
-				176DE9FA174B5561007A983B /* UIHierarchyNode.h in Headers */,
 				647EFC56195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.h in Headers */,
 				176DE9FB174B5561007A983B /* UIHoleTransition.h in Headers */,
 				0282B87918BC72BE006F1EE4 /* FMODFileSoundEvent.h in Headers */,
@@ -6241,9 +6208,6 @@
 				E898A01216BD24E500732C04 /* UIEvent.h in Headers */,
 				E898A01416BD24E500732C04 /* UIFadeTransition.h in Headers */,
 				E898A01616BD24E500732C04 /* UIFileSystemDialog.h in Headers */,
-				E898A01816BD24E500732C04 /* UIHierarchy.h in Headers */,
-				E898A01A16BD24E500732C04 /* UIHierarchyCell.h in Headers */,
-				E898A01C16BD24E500732C04 /* UIHierarchyNode.h in Headers */,
 				E898A01E16BD24E500732C04 /* UIHoleTransition.h in Headers */,
 				E898A02016BD24E500732C04 /* UIJoypad.h in Headers */,
 				E898A02216BD24E500732C04 /* UIList.h in Headers */,
@@ -6722,9 +6686,6 @@
 				E898A17F16BD265400732C04 /* UIFadeTransition.h in Headers */,
 				E898A18016BD265400732C04 /* UIFileSystemDialog.h in Headers */,
 				026A1DD419DAF1B700813AEF /* SkinnedMesh.h in Headers */,
-				E898A18116BD265400732C04 /* UIHierarchy.h in Headers */,
-				E898A18216BD265400732C04 /* UIHierarchyCell.h in Headers */,
-				E898A18316BD265400732C04 /* UIHierarchyNode.h in Headers */,
 				E898A18416BD265400732C04 /* UIHoleTransition.h in Headers */,
 				7C007DE61B384DAC000003DB /* Atomic.h in Headers */,
 				11B346921B42CDD6007DD207 /* UIStyleSheetPropertyDataBase.h in Headers */,
@@ -7223,9 +7184,6 @@
 				E89EDE7D1A2E16FA0036E993 /* UIControl_wrap.cxx in Sources */,
 				176DEB13174B5561007A983B /* UIFadeTransition.cpp in Sources */,
 				176DEB14174B5561007A983B /* UIFileSystemDialog.cpp in Sources */,
-				176DEB15174B5561007A983B /* UIHierarchy.cpp in Sources */,
-				176DEB16174B5561007A983B /* UIHierarchyCell.cpp in Sources */,
-				176DEB17174B5561007A983B /* UIHierarchyNode.cpp in Sources */,
 				176DEB18174B5561007A983B /* UIHoleTransition.cpp in Sources */,
 				4F503B9E1AEA702C005C3F89 /* MemoryManager.cpp in Sources */,
 				176DEB19174B5561007A983B /* UIJoypad.cpp in Sources */,
@@ -7663,13 +7621,10 @@
 				50B429D31A5A704400CEB3D3 /* Discoverer.cpp in Sources */,
 				50B06920186D4C4C00B44A39 /* RenderLayerManager.cpp in Sources */,
 				B7464C871AEA7BEE00D3AB13 /* TextLayout.cpp in Sources */,
-				E898A01716BD24E500732C04 /* UIHierarchy.cpp in Sources */,
 				641A61DA18CDC2F4003359E7 /* FoliageSystem.cpp in Sources */,
 				D7E6C5A8198255BF00B96D1A /* CurlDownloader.cpp in Sources */,
 				E8FC12F2186972560095D8FE /* QualitySettingsComponent.cpp in Sources */,
 				644C86BE19476A7100964F91 /* RenderBatchPool.cpp in Sources */,
-				E898A01916BD24E500732C04 /* UIHierarchyCell.cpp in Sources */,
-				E898A01B16BD24E500732C04 /* UIHierarchyNode.cpp in Sources */,
 				026A1DC819DAF0A300813AEF /* SkeletonSystem.cpp in Sources */,
 				E898A01D16BD24E500732C04 /* UIHoleTransition.cpp in Sources */,
 				A6DBFA6F1887D804006BE11C /* NMaterialNames.cpp in Sources */,
@@ -8103,9 +8058,6 @@
 				E898A29716BD265400732C04 /* UIFileSystemDialog.cpp in Sources */,
 				644C86E319476A7100964F91 /* VegetationGeometry.cpp in Sources */,
 				02FD8265192A3859007762C0 /* WaveSystem.cpp in Sources */,
-				E898A29816BD265400732C04 /* UIHierarchy.cpp in Sources */,
-				E898A29916BD265400732C04 /* UIHierarchyCell.cpp in Sources */,
-				E898A29A16BD265400732C04 /* UIHierarchyNode.cpp in Sources */,
 				7C007E1C1B384DAC000003DB /* ThreadWin32.cpp in Sources */,
 				E8ACC88118A29FBA00F26ABC /* ParticleRenderObject.cpp in Sources */,
 				026A1DC119DAF09700813AEF /* SkeletonComponent.cpp in Sources */,
