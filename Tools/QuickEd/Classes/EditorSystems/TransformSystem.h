@@ -33,6 +33,7 @@
 #include "EditorSystems/EditorSystemsManager.h"
 #include "Base/BaseTypes.h"
 #include "Math/Vector.h"
+#include "UI/UIControl.h"
 
 namespace DAVA
 {
@@ -77,8 +78,8 @@ private:
     const DAVA::Vector2 minimumSize = DAVA::Vector2(16.0f, 16.0f);
     size_t currentHash = 0;
 
-    DAVA::UIGeometricData& parentGeometricData;
-    DAVA::UIGeometricData& controlGeometricData;
+    DAVA::UIGeometricData parentGeometricData;
+    DAVA::UIGeometricData controlGeometricData;
     AbstractProperty* sizeProperty = nullptr;
     AbstractProperty* positionProperty = nullptr;
     AbstractProperty* angleProperty = nullptr;

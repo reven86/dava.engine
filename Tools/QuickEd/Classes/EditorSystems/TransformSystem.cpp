@@ -447,15 +447,15 @@ Vector2 TransformSystem::AdjustResize(Array<int, Vector2::AXIS_COUNT> directions
 
 void TransformSystem::MovePivot(Vector2 delta)
 {
-    DAVA::Vector<std::tuple<ControlNode*, AbstractProperty*, VariantType>> propertiesToChange;
+    Vector<std::tuple<ControlNode*, AbstractProperty*, VariantType>> propertiesToChange;
     Vector2 pivot = AdjustPivot(delta);
     propertiesToChange.emplace_back(activeControlNode, pivotProperty, VariantType(pivot));
 
     Vector2 scaledDelta(delta / parentGeometricData.scale);
     Vector2 rotatedDeltaPosition(RotateVector(scaledDelta, parentGeometricData));
     Vector2 originalPos(positionProperty->GetValue().AsVector2());
-    Vector2 finalPos(originalPos + rotatedDeltaPosition);
-    propertiesToChange.emplace_back(activeControlNode, positionProperty, VariantType(finalPos));
+    Vector2 finalPosition(originalPos + rotatedDeltaPosition);
+    propertiesToChange.emplace_back(activeControlNode, positionProperty, VariantType(finalPosition));
 
     systemManager->PropertiesChanged.Emit(std::move(propertiesToChange), std::move(currentHash));
 }
@@ -504,6 +504,14 @@ Vector2 TransformSystem::AdjustPivot(Vector2& delta)
         }
         if (found)
         {
+            Vector2 offset = controlGeometricData.GetUnrotatedRect().GetSize() * target;
+            Vector2 position = controlGeometricData.position - RotateVectorInv(controlGeometricData.pivotPoint * controlGeometricData.scale, controlGeometricData);
+            Vector2 absPos = position + RotateVectorInv(offset, controlGeometricData);
+
+            Vector<MagnetLine> magnets;
+            magnets.emplace_back(Rect(absPos.x, absPos.y, 0, 0), controlGeometricData, Vector2::AXIS_X);
+            magnets.emplace_back(Rect(absPos.x, absPos.y, 0, 0), controlGeometricData, Vector2::AXIS_Y);
+            systemManager->MagnetLinesChanged.Emit(magnets);
             extraDelta = finalPivot - target;
             delta = RotateVectorInv((target - origPivot) * controlSize, controlGeometricData);
 
@@ -511,11 +519,15 @@ Vector2 TransformSystem::AdjustPivot(Vector2& delta)
         }
     }
 
-    if (!found && !extraDelta.IsZero())
+    if (!found)
     {
-        deltaPivot += extraDelta;
-        extraDelta.SetZero();
-        delta = RotateVectorInv(deltaPivot * controlSize, controlGeometricData);
+        systemManager->MagnetLinesChanged.Emit(Vector<MagnetLine>());
+        if (!extraDelta.IsZero())
+        {
+            deltaPivot += extraDelta;
+            extraDelta.SetZero();
+            delta = RotateVectorInv(deltaPivot * controlSize, controlGeometricData);
+        }
     }
     return finalPivot;
 }

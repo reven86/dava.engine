@@ -33,13 +33,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Base/BaseTypes.h"
 #include "Input/InputSystem.h"
 #include "Input/KeyboardDevice.h"
-#include "UI/Layouts/UISizePolicyComponent.h"
-#include "Render/RenderState.h"
-#include "Render/RenderManager.h"
 
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/PackageNode.h"
-#include "Model/PackageHierarchy/ImportedPackagesNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
 
 using namespace DAVA;
@@ -399,6 +395,7 @@ HUDSystem::HUDSystem(EditorSystemsManager* parent)
     systemManager->SelectionChanged.Connect(this, &HUDSystem::OnSelectionChanged);
     systemManager->EmulationModeChangedSignal.Connect(this, &HUDSystem::OnEmulationModeChanged);
     systemManager->EditingRootControlsChanged.Connect(this, &HUDSystem::OnRootContolsChanged);
+    systemManager->MagnetLinesChanged.Connect(this, &HUDSystem::OnMagnetLinesChanged);
 }
 
 HUDSystem::~HUDSystem()
@@ -410,9 +407,14 @@ HUDSystem::~HUDSystem()
     }
 }
 
+void HUDSystem::OnActivated()
+{
+    systemManager->GetRootControl()->AddControl(hudControl.get());
+}
+
 void HUDSystem::OnDeactivated()
 {
-    hudControl->RemoveFromParent();
+    systemManager->GetRootControl()->RemoveControl(hudControl.get());
     canDrawRect = false;
     selectionRectControl->SetSize(Vector2());
 }
@@ -545,18 +547,20 @@ void HUDSystem::OnEmulationModeChanged(bool emulationMode)
 
 void HUDSystem::OnMagnetLinesChanged(const DAVA::Vector<MagnetLine>& magnetLines)
 {
+    static const float32 axtraSizeValue = 50.0f;
     magnetControls.clear();
 
     for (const MagnetLine& line : magnetLines)
     {
         UIControl* control = new UIControl();
+        control->SetDebugDraw(true);
         control->SetAbsoluteRect(line.absoluteRect);
-        const float32 extraWidth = 100;
-
-        control->SetAngle(line.gd->angle);
-        control->SetScale(line.gd->scale);
+        Vector2 extraSize(line.axis == Vector2::AXIS_X ? axtraSizeValue : 0.0f, line.axis == Vector2::AXIS_Y ? axtraSizeValue : 0.0f);
+        control->SetSize(control->GetSize() + extraSize);
+        control->SetAngle(line.gd.angle);
+        control->SetPivotPoint(extraSize / 2.0f);
         hudControl->AddControl(control);
-        magnetControls.emplace_back(control);
+        magnetControls.emplace_back(control, DestroyControl);
     }
 }
 

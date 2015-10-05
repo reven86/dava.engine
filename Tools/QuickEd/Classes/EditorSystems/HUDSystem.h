@@ -35,14 +35,13 @@
 #include "Model/PackageHierarchy/PackageListener.h"
 #include "Model/ControlProperties/RootProperty.h"
 
-class ControlContainer;
-
 class HUDSystem final : public BaseEditorSystem, private PackageListener
 {
 public:
     HUDSystem(EditorSystemsManager* parent);
     ~HUDSystem() override;
 
+    void OnActivated() override;
     void OnDeactivated() override;
 
     bool OnInput(DAVA::UIEvent* currentInput) override;
