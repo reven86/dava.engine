@@ -31,7 +31,6 @@
 #define __DAVAENGINE_REGKEY_H__
 
 #include "Base/BaseTypes.h"
-#include "Base/Optional.h"
 
 namespace DAVA
 {
@@ -44,14 +43,17 @@ public:
     bool IsExist() const { return isExist; }
     bool IsCreated() const { return isCreated; }
 
-    Optional<String> QueryString(const char* valueName) const;
+    //TODO: replace on Optional<String>
+    String QueryString(const char* valueName) const;
     bool SetValue(const String& valName, const String& val);
 
-    Optional<DWORD> QueryDWORD(const char* valueName) const;
+    //TODO: replace on Optional<DWORD>
+    DWORD QueryDWORD(const char* valueName) const;
     bool SetValue(const String& valName, DWORD val);
 
     template <typename T>
-    Optional<T> QueryValue(const char* valueName);
+    //TODO: replace on Optional<T>
+    T QueryValue(const char* valueName);
 
 private:
     bool isExist = false;
@@ -60,13 +62,13 @@ private:
 };
 
 template <>
-inline Optional<String> RegKey::QueryValue<String>(const char* valueName)
+inline String RegKey::QueryValue<String>(const char* valueName)
 {
     return QueryString(valueName);
 }
 
 template <>
-inline Optional<DWORD> RegKey::QueryValue<DWORD>(const char* valueName)
+inline DWORD RegKey::QueryValue<DWORD>(const char* valueName)
 {
     return QueryDWORD(valueName);
 }

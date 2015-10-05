@@ -31,19 +31,18 @@
 #define UWP_RUNNER_H
 
 #include "Base/BaseTypes.h"
-#include "Base/Optional.h"
 #include "FileSystem/FilePath.h"
 
-using DAVA::Optional;
 using DAVA::String;
 using DAVA::FilePath;
 
 struct PackageOptions
 {
-    Optional<String> package;
-    Optional<String> architecture;
-    Optional<String> profile;
-    Optional<String> dependencies;
+    //TODO: replace on Optional
+    String package;
+    String architecture;
+    String profile;
+    String dependencies;
     bool useTeamCityTestOutput = false;
 };
 

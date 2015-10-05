@@ -64,7 +64,8 @@ IConnectionPtr ConnectionManager::CreateServerConnection(const Endpoint& endPoin
     if (!socket->Listen() || !socket->Accept())
         return IConnectionPtr();
 
-    return MakeRefPtr<Connection>(socket);
+    //TODO: use MakeRefPtr
+    return IConnectionPtr(new Connection(socket));
 }
 
 IConnectionPtr ConnectionManager::CreateClientConnection(const Endpoint& endPoint)
@@ -74,7 +75,8 @@ IConnectionPtr ConnectionManager::CreateClientConnection(const Endpoint& endPoin
     if (!socket->Connect())
         return IConnectionPtr();
 
-    return MakeRefPtr<Connection>(socket);
+    //TODO: use MakeRefPtr
+    return IConnectionPtr(new Connection(socket));
 }
 
 template <typename T>

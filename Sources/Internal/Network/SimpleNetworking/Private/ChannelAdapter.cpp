@@ -56,7 +56,8 @@ void ChannelAdapter::RemoveConnection()
     if (!connection)
         return;
     
-    connection.Reset();
+    //TODO: replace on reset
+    connection = IConnectionPtr();
     channelListener->OnChannelClosed(this, "");
 }
 

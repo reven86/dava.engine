@@ -39,7 +39,6 @@
                                 Logger::Debug("%s_2 = %f, %f, %f, %f", #param, param._30, param._31, param._32, param._33);
 
 #include "Base/BaseTypes.h"
-#include "Base/Optional.h"
 #include "Base/Singleton.h"
 
 #include "FileSystem/FilePath.h"
@@ -126,7 +125,8 @@ public:
     void EnableConsoleMode();
 
     const char8 * GetLogLevelString(eLogLevel ll) const;
-    Optional<eLogLevel> GetLogLevelFromString(const char8* ll) const;
+    //TODO: insert Optional
+    eLogLevel GetLogLevelFromString(const char8* ll) const;
 
 private:
     void PlatformLog(eLogLevel ll, const char8* text) const;

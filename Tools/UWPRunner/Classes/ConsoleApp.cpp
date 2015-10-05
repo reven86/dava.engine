@@ -104,9 +104,9 @@ PackageOptions ParseLongFormArgs(const Vector<String>& arguments)
     {
         out.dependencies = parser.GetParamForFlag("--dependencies");
     }
-    else if (out.package.IsSet())
+    else if (!out.package.empty())
     {
-        out.dependencies = FilePath(out.package.Get()).GetDirectory().GetAbsolutePathname();
+        out.dependencies = FilePath(out.package).GetDirectory().GetAbsolutePathname();
     }
 
     if (parser.IsFlagSet("--tc_test"))
@@ -133,36 +133,36 @@ void ShowUsage()
     std::cout << message;
 }
 
-bool CheckPackageOption(const Optional<String>& package)
+bool CheckPackageOption(const String& package)
 {
     FileSystem* fs = FileSystem::Instance();
 
-    if (!package.IsSet())
+    if (package.empty())
     {
         std::cout << "Package file is not set";
         return false;
     }
-    else if (!fs->IsFile(package.Get()))
+    else if (!fs->IsFile(package))
     {
-        std::cout << "Cannot find the specified file: " << package.Get();
+        std::cout << "Cannot find the specified file: " << package;
         return false;
     }
 
     return true;
 }
 
-bool CheckDependenciesOption(const Optional<String>& dependencies)
+bool CheckDependenciesOption(const String& dependencies)
 {
     FileSystem* fs = FileSystem::Instance();
 
-    if (!dependencies.IsSet())
+    if (dependencies.empty())
     {
         std::cout << "Package dependencies path is not set";
         return false;
     }
-    else if (!fs->IsDirectory(dependencies.Get()))
+    else if (!fs->IsDirectory(dependencies))
     {
-        std::cout << "Cannot find the specified path: " << dependencies.Get();
+        std::cout << "Cannot find the specified path: " << dependencies;
         return false;
     }
 

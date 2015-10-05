@@ -150,7 +150,7 @@ const char8 * Logger::GetLogLevelString(eLogLevel ll) const
     return logLevelString[ll];
 }
 
-Optional<Logger::eLogLevel> Logger::GetLogLevelFromString(const char8* ll) const
+Logger::eLogLevel Logger::GetLogLevelFromString(const char8* ll) const
 {
     for (size_t i = 0; i < logLevelString.size(); ++i)
     {
@@ -159,7 +159,7 @@ Optional<Logger::eLogLevel> Logger::GetLogLevelFromString(const char8* ll) const
             return static_cast<eLogLevel>(i);
         }
     }
-    return EmptyOptional;
+    return LEVEL__DISABLE;
 }
 
 void Logger::SetLogLevel(eLogLevel ll)

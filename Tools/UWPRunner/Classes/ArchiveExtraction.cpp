@@ -67,7 +67,8 @@ bool ExtractFileFromArchive(const String& zipFile, const String& file, const Str
         return false;
 
     scriptFile->WriteString(script);
-    scriptFile.Reset();
+    //TODO: repcale on Reset
+    scriptFile = RefPtr<File>();
 
     int res = ::system(("python.exe " + scriptFilePath.GetAbsolutePathname()).c_str());
     fs->DeleteFile(scriptFilePath);

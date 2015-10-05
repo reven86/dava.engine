@@ -30,7 +30,6 @@
 #ifndef __DAVAENGINE_LOGCONSUMER_H__
 #define __DAVAENGINE_LOGCONSUMER_H__
 
-#include "Base/Optional.h"
 #include "Functional/Signal.h"
 
 #include "Network/NetService.h"

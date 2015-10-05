@@ -66,7 +66,7 @@ void LaunchPackage(const PackageOptions& opt);
 void LaunchPackage(const FilePath& package, const PackageOptions& opt);
 
 String GetCurrentArchitecture();
-QString GetQtWinRTRunnerProfile(const Optional<String>& profile, const FilePath& manifest);
+QString GetQtWinRTRunnerProfile(const String& profile, const FilePath& manifest);
 FilePath ExtractManifest(const FilePath& package);
 
 void FrameworkDidLaunched()
@@ -83,7 +83,7 @@ void FrameworkDidLaunched()
 
 void LaunchPackage(const PackageOptions& opt)
 {
-    FilePath package = opt.package.Get();
+    FilePath package = opt.package;
 
     //if package is bundle, extract concrete package from it
     if (AppxBundleHelper::IsBundle(package))
@@ -92,9 +92,9 @@ void LaunchPackage(const PackageOptions& opt)
         AppxBundleHelper bundle(package);
 
         //try to extract package for specified architecture
-        if (opt.architecture.IsSet())
+        if (!opt.architecture.empty())
         {
-            package = bundle.ExtractApplicationForArchitecture(opt.architecture.Get());
+            package = bundle.ExtractApplicationForArchitecture(opt.architecture);
             if (package.IsEmpty())
             {
                 DVASSERT_MSG(false, "Can't extract package for specified architecture from bundle");
@@ -162,7 +162,7 @@ void LaunchPackage(const FilePath& package, const PackageOptions& opt)
     Logger::Instance()->Info("Preparing to launch...");
     Runner runner(QString::fromStdString(package.GetAbsolutePathname()),
                   QString::fromStdString(manifest.GetAbsolutePathname()),
-                  QString::fromStdString(opt.dependencies.Get()),
+                  QString::fromStdString(opt.dependencies),
                   QStringList(),
                   profile);
 
@@ -261,7 +261,7 @@ void FrameworkWillTerminate()
     Net::SimpleNetCore::Instance()->Release();
 }
 
-Optional<bool> UpdateIpOverUsbConfig(RegKey& key)
+bool UpdateIpOverUsbConfig(RegKey& key)
 {
     const String desiredDestAddr = "127.0.0.1";
     const DWORD  desiredDestPort = Net::SimpleNetCore::UWPRemotePort;
@@ -269,24 +269,24 @@ Optional<bool> UpdateIpOverUsbConfig(RegKey& key)
     const DWORD  desiredLocalPort = desiredDestPort;
     bool changed = false;
 
-    Optional<String> address = key.QueryString("DestinationAddress");
+    String address = key.QueryString("DestinationAddress");
     if (address != desiredDestAddr)
     {
         if (!key.SetValue("DestinationAddress", desiredDestAddr))
         {
             DVASSERT_MSG(false, "Unable to set DestinationAddress");
-            return EmptyOptional;
+            return false;
         }
         changed |= true;
     }
 
-    Optional<DWORD> port = key.QueryDWORD("DestinationPort");
+    DWORD port = key.QueryDWORD("DestinationPort");
     if (port != desiredDestPort)
     {
         if (!key.SetValue("DestinationPort", desiredDestPort))
         {
             DVASSERT_MSG(false, "Unable to set DestinationPort");
-            return EmptyOptional;
+            return false;
         }
         changed |= true;
     }
@@ -297,7 +297,7 @@ Optional<bool> UpdateIpOverUsbConfig(RegKey& key)
         if (!key.SetValue("LocalAddress", desiredLocalAddr))
         {
             DVASSERT_MSG(false, "Unable to set LocalAddress");
-            return EmptyOptional;
+            return false;
         }
         changed |= true;
     }
@@ -308,7 +308,7 @@ Optional<bool> UpdateIpOverUsbConfig(RegKey& key)
         if (!key.SetValue("LocalPort", desiredLocalPort))
         {
             DVASSERT_MSG(false, "Unable to set LocalPort");
-            return EmptyOptional;
+            return false;
         }
         changed |= true;
     }
@@ -360,13 +360,13 @@ bool ConfigureIpOverUsb()
     needRestart |= key.IsCreated();
 
     //update config values
-    Optional<bool> result = UpdateIpOverUsbConfig(key);
-    if (!result.IsSet())
+    bool result = UpdateIpOverUsbConfig(key);
+    /*if (!result.IsSet())
     {
         DVASSERT_MSG(false, "Unable to update IpOverUsb service config");
         return false;
-    }
-    needRestart |= result.Get();
+    }*/
+    needRestart |= result;
 
     //restart service to applying new config
     if (needRestart)
@@ -379,10 +379,10 @@ String GetCurrentArchitecture()
     return sizeof(void*) == 4 ? "x86" : "x64";
 }
 
-QString GetQtWinRTRunnerProfile(const Optional<String>& profile, const FilePath& manifest)
+QString GetQtWinRTRunnerProfile(const String& profile, const FilePath& manifest)
 {
     //if profile is set, just convert it
-    if (profile.IsSet())
+    if (!profile.empty())
     {
         return profile == "local" ? QStringLiteral("appx") : QStringLiteral("appxphone");
     }
@@ -469,12 +469,12 @@ void LogConsumingFunction(bool useTeamCityTestOutput, const String& logString)
     if (useTeamCityTestOutput)
     {
         Logger* logger = Logger::Instance();
-        Optional<Logger::eLogLevel> ll = logger->GetLogLevelFromString(logLevel.c_str());
+        Logger::eLogLevel ll = logger->GetLogLevelFromString(logLevel.c_str());
 
-        if (ll.IsSet())
+        if (ll != Logger::LEVEL__DISABLE)
         {
             TeamcityTestsOutput testOutput;
-            testOutput.Output(ll.Get(), message.c_str());
+            testOutput.Output(ll, message.c_str());
         }
 
     }

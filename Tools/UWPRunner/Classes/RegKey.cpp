@@ -46,7 +46,7 @@ RegKey::RegKey(HKEY scope, const char* keyName, bool createIfNotExist)
     isExist = res == ERROR_SUCCESS;
 }
 
-Optional<String> RegKey::QueryString(const char* valueName) const
+String RegKey::QueryString(const char* valueName) const
 {
     Array<char, 1024> arr{};
     DWORD size = arr.size();
@@ -59,7 +59,7 @@ Optional<String> RegKey::QueryString(const char* valueName) const
                       reinterpret_cast<LPBYTE>(arr.data()),
                       &size);
 
-    return type == REG_SZ ? MakeOptional<String>(arr.data()) : EmptyOptional;
+    return type == REG_SZ ? arr.data() : "";
 }
 
 bool RegKey::SetValue(const String& valName, const String& val)
@@ -69,7 +69,7 @@ bool RegKey::SetValue(const String& valName, const String& val)
     return res == ERROR_SUCCESS;
 }
 
-Optional<DWORD> RegKey::QueryDWORD(const char* valueName) const
+DWORD RegKey::QueryDWORD(const char* valueName) const
 {
     DWORD result;
     DWORD size = sizeof(result);
@@ -82,7 +82,7 @@ Optional<DWORD> RegKey::QueryDWORD(const char* valueName) const
                       reinterpret_cast<LPBYTE>(&result),
                       &size);
 
-    return type == REG_DWORD ? MakeOptional<DWORD>(result) : EmptyOptional;
+    return type == REG_DWORD ? result : -1;
 }
 
 bool RegKey::SetValue(const String& valName, DWORD val)
