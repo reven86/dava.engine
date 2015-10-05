@@ -31,6 +31,7 @@
 #define __QUICKED_PROPERTIES_MODEL_H__
 
 #include <QAbstractItemModel>
+#include <QSet>
 
 #include "FileSystem/VariantType.h"
 #include "Model/ControlProperties/PropertyListener.h"
@@ -42,6 +43,8 @@ namespace DAVA {
         ResetRole = Qt::UserRole +1,
     };
 }
+
+class QTimer;
 
 class AbstractProperty;
 class ControlNode;
@@ -57,19 +60,21 @@ public:
     PropertiesModel(ControlNode *controlNode, QtModelPackageCommandExecutor *_commandExecutor, QObject *parent = nullptr);
     PropertiesModel(StyleSheetNode *styleSheet, QtModelPackageCommandExecutor *_commandExecutor, QObject *parent = nullptr);
     virtual ~PropertiesModel();
-    
+    void Init();
     ControlNode *GetControlNode() const {return controlNode; }
-    
-    virtual QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
-    virtual QModelIndex parent(const QModelIndex &child) const override;
-    virtual int rowCount(const QModelIndex &parent = QModelIndex()) const  override;
-    virtual int columnCount(const QModelIndex &parent = QModelIndex()) const  override;
-    virtual QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
-    virtual bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
 
-    virtual Qt::ItemFlags flags(const QModelIndex &index) const override;
-    virtual QVariant headerData(int section, Qt::Orientation orientation,
-                                int role = Qt::DisplayRole) const override;
+    QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
+    QModelIndex parent(const QModelIndex& child) const override;
+    int rowCount(const QModelIndex& parent = QModelIndex()) const override;
+    int columnCount(const QModelIndex& parent = QModelIndex()) const override;
+    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+    bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole) override;
+
+    Qt::ItemFlags flags(const QModelIndex& index) const override;
+    QVariant headerData(int section, Qt::Orientation orientation,
+                        int role = Qt::DisplayRole) const override;
+private slots:
+    void UpdateAllChangedProperties();
 
 private: // PropertyListener
     void PropertyChanged(AbstractProperty *property) override;
@@ -106,6 +111,8 @@ private:
     StyleSheetNode *styleSheet = nullptr;
     AbstractProperty *rootProperty = nullptr;
     QtModelPackageCommandExecutor *commandExecutor = nullptr;
+    QSet<QPair<QModelIndex, QModelIndex>> changedIndexes;
+    QTimer* updatePropertyTimer = nullptr;
 };
 
 #endif // __QUICKED_PROPERTIES_MODEL_H__

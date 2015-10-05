@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#if !defined(APPLICATION_VERSION)
-#define APPLICATION_VERSION "local build"
+#if !defined(APPLICATION_BUILD_VERSION)
+#define APPLICATION_BUILD_VERSION "local build"
 #endif
