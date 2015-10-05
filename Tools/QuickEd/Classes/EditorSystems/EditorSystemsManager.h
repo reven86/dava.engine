@@ -36,6 +36,14 @@
 #include "Math/Vector.h"
 #include "Model/PackageHierarchy/PackageListener.h"
 
+namespace DAVA
+{
+class UIControl;
+class UIEvent;
+class VariantType;
+class UIGeometricData;
+}
+
 struct HUDAreaInfo
 {
     enum eArea
@@ -66,12 +74,15 @@ struct HUDAreaInfo
     eArea area = NO_AREA;
 };
 
-namespace DAVA
+struct MagnetLine
 {
-class UIControl;
-class UIEvent;
-class VariantType;
-}
+    DAVA::Rect absoluteRect;
+    const DAVA::UIGeometricData* gd = nullptr;
+};
+
+extern void DestroyControl(DAVA::UIControl* c);
+template <typename T>
+using ControlPtr = std::unique_ptr<T, std::function<void(T*)>>;
 
 class BaseEditorSystem;
 class AbstractProperty;
@@ -109,6 +120,7 @@ public:
     DAVA::Signal<const DAVA::Vector<std::tuple<ControlNode*, AbstractProperty*, DAVA::VariantType>>& /*properties*/, size_t /*hash*/> PropertiesChanged;
     DAVA::Signal<const DAVA::Vector<ControlNode*>& /*nodes*/, const DAVA::Vector2& /*pos*/, ControlNode*& /*selectedNode*/> SelectionByMenuRequested;
     DAVA::Signal<const SortedPackageBaseNodeSet&> EditingRootControlsChanged;
+    DAVA::Signal<const DAVA::Vector<MagnetLine>& /*magnetLines*/> MagnetLinesChanged;
 
 private:
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
@@ -118,8 +130,8 @@ private:
     void ControlWillBeRemoved(ControlNode* node, ControlsContainerNode* from) override;
     void ControlWasAdded(ControlNode* node, ControlsContainerNode* /*destination*/, int /*index*/) override;
     void SetPreviewMode(bool mode);
-    DAVA::UIControl* rootControl = nullptr;
-    DAVA::UIControl* scalableControl = nullptr;
+    ControlPtr<DAVA::UIControl> rootControl;
+    ControlPtr<DAVA::UIControl> scalableControl;
 
     DAVA::List<std::unique_ptr<BaseEditorSystem>> systems;
 

@@ -29,26 +29,13 @@
 #ifndef __QUICKED_HUD_SYSTEM_H__
 #define __QUICKED_HUD_SYSTEM_H__
 
-#include "Base/ScopedPtr.h"
 #include "Math/Vector.h"
-#include "Math/Rect.h"
-#include "UI/UIControl.h"
 #include "EditorSystems/BaseEditorSystem.h"
 #include "EditorSystems/EditorSystemsManager.h"
 #include "Model/PackageHierarchy/PackageListener.h"
 #include "Model/ControlProperties/RootProperty.h"
 
-class ControlContainer : public DAVA::UIControl
-{
-public:
-    explicit ControlContainer(const HUDAreaInfo::eArea area);
-
-    HUDAreaInfo::eArea GetArea() const;
-    virtual void InitFromGD(const DAVA::UIGeometricData& gd_) = 0;
-
-protected:
-    const HUDAreaInfo::eArea area = HUDAreaInfo::NO_AREA;
-};
+class ControlContainer;
 
 class HUDSystem final : public BaseEditorSystem, private PackageListener
 {
@@ -73,6 +60,8 @@ private:
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void OnEmulationModeChanged(bool emulationMode);
 
+    void OnMagnetLinesChanged(const DAVA::Vector<MagnetLine>& magnetLines);
+
     void ProcessCursor(const DAVA::Vector2& pos, eSearchOrder searchOrder = SEARCH_FORWARD);
     HUDAreaInfo GetControlArea(const DAVA::Vector2& pos, eSearchOrder searchOrder) const;
     void SetNewArea(const HUDAreaInfo& HUDAreaInfo);
@@ -82,22 +71,23 @@ private:
     void UpdateAreasVisibility();
     HUDAreaInfo activeAreaInfo;
 
-    DAVA::ScopedPtr<DAVA::UIControl> hudControl;
+    ControlPtr<DAVA::UIControl> hudControl;
 
     DAVA::Vector2 pressedPoint; //corner of selection rect
     bool canDrawRect = false; //selection rect state
     struct HUD
     {
         HUD(ControlNode* node, DAVA::UIControl* hudControl);
-        ~HUD();
+        ~HUD() = default;
         void UpdateHUDVisibility();
         ControlNode* node = nullptr;
         DAVA::UIControl* control = nullptr;
-        DAVA::ScopedPtr<ControlContainer> container;
-        DAVA::Map<HUDAreaInfo::eArea, DAVA::ScopedPtr<ControlContainer>> hudControls;
+        ControlPtr<DAVA::UIControl> container;
+        DAVA::Map<HUDAreaInfo::eArea, ControlPtr<DAVA::UIControl>> hudControls;
     };
     DAVA::Map<ControlNode*, HUD> hudMap;
-    DAVA::ScopedPtr<DAVA::UIControl> selectionRectControl;
+    ControlPtr<DAVA::UIControl> selectionRectControl;
+    DAVA::Vector<ControlPtr<DAVA::UIControl>> magnetControls;
     EditorSystemsManager::SortedPackageBaseNodeSet sortedControlList;
     bool dragRequested = false;
     bool editingEnabled = false;

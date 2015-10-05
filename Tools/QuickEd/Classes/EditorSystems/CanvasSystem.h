@@ -32,8 +32,6 @@
 #include "EditorSystems/BaseEditorSystem.h"
 #include "EditorSystems/EditorSystemsManager.h"
 #include "Model/PackageHierarchy/PackageListener.h"
-#include "Base/ScopedPtr.h"
-#include "UI/UIControl.h"
 #include "SelectionContainer.h"
 
 class EditorSystemsManager;
@@ -58,7 +56,7 @@ private:
     void ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property) override;
     void CreateAndInsertGrid(PackageBaseNode* node, size_t pos);
 
-    DAVA::ScopedPtr<DAVA::UIControl> controlsCanvas; //to attach or detach from document
+    ControlPtr<DAVA::UIControl> controlsCanvas; //to attach or detach from document
     DAVA::List<std::unique_ptr<BackgroundController>> gridControls;
 };
 

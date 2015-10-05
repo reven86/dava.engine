@@ -75,8 +75,12 @@ Vector2 RotateVectorInv(Vector2 in, const float32& angle)
 }
 }
 
+static UIGeometricData dummy;
+
 TransformSystem::TransformSystem(EditorSystemsManager* parent)
     : BaseEditorSystem(parent)
+    , parentGeometricData(dummy)
+    , controlGeometricData(dummy)
 {
     systemManager->ActiveAreaChanged.Connect(this, &TransformSystem::OnActiveAreaChanged);
     systemManager->SelectionChanged.Connect(this, &TransformSystem::OnSelectionChanged);
@@ -132,6 +136,7 @@ bool TransformSystem::OnInput(UIEvent* currentInput)
         return false;
     }
     case UIEvent::PHASE_ENDED:
+        systemManager->MagnetLinesChanged.Emit(Vector<MagnetLine>());
         return false;
     default:
         return false;
