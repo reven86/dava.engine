@@ -16,7 +16,7 @@ root = tree.getroot()
 
 ns = '{http://schemas.microsoft.com/developer/msbuild/2003}' 
 
-modified_project = 'false'
+modified_project = False
 
 for neighbor in root.iter( ns+'ItemGroup' ):
     for child in neighbor:
@@ -26,21 +26,21 @@ for neighbor in root.iter( ns+'ItemGroup' ):
             find_val = child.findall( ns+'LinkLibraryDependencies' ) 
             if( find_val ) :
                 if( find_val[0].text == 'false' ) :
-                    modified_project = 'true'
+                    modified_project = True
                 find_val[0].text = 'true'
             else :
                 node = Element( 'LinkLibraryDependencies' )  
                 node.text = 'true'
                 child.append( node  )
-                modified_project = 'true'
+                modified_project = True
                   
             find_val = child.findall( ns+'UseLibraryDependencyInputs' ) 
             if( find_val  ) :
                 if( find_val[0].text == 'false' ) :
-                    modified_project = 'true'
+                    modified_project = True
                 find_val[0].text = 'true'
             else :
-                modified_project = 'true'
+                modified_project = True
                 node = Element( 'UseLibraryDependencyInputs' )  
                 node.text = 'true'
                 child.append( node  )
