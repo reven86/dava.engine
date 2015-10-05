@@ -137,7 +137,7 @@ void KeyboardDevice::PrepareKeyTranslator()
     keyTranslator[VK_NEXT] = DVKEY_PGDN;
     keyTranslator[VK_INSERT] = DVKEY_INSERT;
 
-    keyTranslator[VK_OEM_PLUS] = DVKEY_EQUALS;
+    keyTranslator[VK_OEM_PLUS] = DVKEY_ADD;
     keyTranslator[VK_OEM_MINUS] = DVKEY_MINUS;
     keyTranslator[VK_OEM_PERIOD] = DVKEY_PERIOD;
     keyTranslator[VK_OEM_COMMA] = DVKEY_COMMA;
@@ -189,6 +189,7 @@ void KeyboardDevice::PrepareKeyTranslator()
     keyTranslator[0x31] = DVKEY_SPACE;
 
     // from SDL2 scancodes_darwin.h
+    //keyTranslator[10] = DVKEY_NON_US_BACKSLASH;
     keyTranslator[24] = DVKEY_EQUALS;
     keyTranslator[27] = DVKEY_MINUS;
     keyTranslator[47] = DVKEY_PERIOD;
@@ -200,6 +201,17 @@ void KeyboardDevice::PrepareKeyTranslator()
     keyTranslator[42] = DVKEY_BACKSLASH;
     keyTranslator[30] = DVKEY_RBRACKET;
     keyTranslator[39] = DVKEY_APOSTROPHE;
+    keyTranslator[114] = DVKEY_INSERT;
+    keyTranslator[115] = DVKEY_HOME;
+    keyTranslator[116] = DVKEY_PGUP;
+    keyTranslator[119] = DVKEY_END;
+    keyTranslator[121] = DVKEY_PGDN;
+    keyTranslator[69] = DVKEY_ADD;
+    keyTranslator[78] = DVKEY_MINUS;
+    keyTranslator[67] = DVKEY_MULTIPLY;
+    keyTranslator[75] = DVKEY_DIVIDE;
+    keyTranslator[81] = DVKEY_EQUALS;
+    keyTranslator[65] = DVKEY_PERIOD;
 
     keyTranslator[0x00] = DVKEY_A;
     keyTranslator[0x0B] = DVKEY_B;
@@ -243,11 +255,11 @@ void KeyboardDevice::PrepareKeyTranslator()
     
     keyTranslator[0x7A] = DVKEY_F1;
     keyTranslator[0x78] = DVKEY_F2;
-    keyTranslator[0x73] = DVKEY_F3;
     keyTranslator[0x76] = DVKEY_F4;
     keyTranslator[0x60] = DVKEY_F5;
     keyTranslator[0x61] = DVKEY_F6;
     keyTranslator[0x62] = DVKEY_F7;
+    keyTranslator[0x63] = DVKEY_F3;
     keyTranslator[0x64] = DVKEY_F8;
     keyTranslator[0x65] = DVKEY_F9;
     keyTranslator[0x6D] = DVKEY_F10;

@@ -158,6 +158,9 @@ enum eDavaKeys : int32
     DVKEY_BACK,
     DVKEY_MENU,
 
+    // exist on some keyboards
+    // TODO DVKEY_NON_US_BACKSLASH,
+
     DVKEY_COUNT
 
 };
