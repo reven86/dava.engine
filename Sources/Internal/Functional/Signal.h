@@ -201,7 +201,7 @@ public:
         return ret;
     }
 
-    virtual void Emit(Args&&...) = 0;
+    virtual void Emit(Args...) = 0;
 
 protected:
     struct ConnData
@@ -247,7 +247,7 @@ public:
     Signal(const Signal &) = delete;
     Signal& operator=(const Signal &) = delete;
 
-    void Emit(Args&&... args) override
+    void Emit(Args... args) override
     {
         for (auto&& con : Base::connections)
         {

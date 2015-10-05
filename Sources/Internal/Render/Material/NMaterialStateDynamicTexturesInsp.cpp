@@ -28,6 +28,7 @@
 #include "Render/Material/NMaterial.h"
 #include "Render/Material/NMaterialStateDynamicTexturesInsp.h"
 #include "Render/Material/FXCache.h"
+#include "Scene3D/Systems/QualitySettingsSystem.h"
 
 namespace DAVA
 {
@@ -53,7 +54,7 @@ void NMaterialStateDynamicTexturesInsp::FindMaterialTexturesRecursive(NMaterial 
         material->CollectMaterialFlags(flags);
 
         // shader data
-        FXDescriptor fxDescriptor = FXCache::GetFXDescriptor(fxName, flags, material->qualityGroup);        
+        FXDescriptor fxDescriptor = FXCache::GetFXDescriptor(fxName, flags, QualitySettingsSystem::Instance()->GetCurMaterialQuality(material->qualityGroup));
         for (auto& descriptor : fxDescriptor.renderPassDescriptors)
         {
             if (!descriptor.shader->IsValid())

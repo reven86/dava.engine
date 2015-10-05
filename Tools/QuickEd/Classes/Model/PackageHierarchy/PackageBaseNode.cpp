@@ -31,7 +31,8 @@
 
 using namespace DAVA;
 
-PackageBaseNode::PackageBaseNode(PackageBaseNode *parent) : parent(parent)
+PackageBaseNode::PackageBaseNode(PackageBaseNode* parent)
+    : parent(parent)
 {
 }
 

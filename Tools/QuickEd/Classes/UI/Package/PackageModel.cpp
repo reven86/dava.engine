@@ -440,14 +440,23 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
 
 void PackageModel::ControlPropertyWasChanged(ControlNode *node, AbstractProperty *property)
 {
-    QModelIndex index = indexByNode(node);
-    emit dataChanged(index, index);
+    if (property->GetName() == "Name")
+    {
+        QModelIndex index = indexByNode(node);
+        emit dataChanged(index, index, QVector<int>() << Qt::DisplayRole);
+    }
+
+    else if (property->GetName() == "Custom Class")
+    {
+        QModelIndex index = indexByNode(node);
+        emit dataChanged(index, index, QVector<int>() << Qt::DecorationRole);
+    }
 }
 
 void PackageModel::StylePropertyWasChanged(StyleSheetNode *node, AbstractProperty *property)
 {
     QModelIndex index = indexByNode(node);
-    emit dataChanged(index, index);
+    emit dataChanged(index, index, QVector<int>() << Qt::DisplayRole);
 }
 
 void PackageModel::ControlWillBeAdded(ControlNode *node, ControlsContainerNode *destination, int row)

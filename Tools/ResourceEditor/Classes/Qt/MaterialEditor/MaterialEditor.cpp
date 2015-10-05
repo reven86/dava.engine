@@ -61,6 +61,7 @@
 
 #include "QtTools/FileDialog/FileDialog.h"
 
+#include "Tools/LazyUpdater/LazyUpdater.h"
 
 #define MATERIAL_NAME_LABEL "Name"
 #define MATERIAL_GROUP_LABEL "Group"
@@ -83,6 +84,9 @@ MaterialEditor::MaterialEditor(QWidget *parent /* = 0 */)
     , templatesFilterModel(nullptr)
     , lastCheckState(CHECKED_ALL)
 {
+    Function<void()> fn(this, &MaterialEditor::RefreshMaterialProperties);
+    materialPropertiesUpdater = new LazyUpdater(fn, this);
+
     ui->setupUi(this);
     setWindowFlags(WINDOWFLAG_ON_TOP_OF_APPLICATION);
 
@@ -342,10 +346,14 @@ void MaterialEditor::commandExecuted(SceneEditor2 *scene, const Command2 *comman
             {
                 InspMemberModifyCommand *inspCommand = (InspMemberModifyCommand *)command;
 
-                const QString memberName = inspCommand->member->Name().c_str();
-                if (memberName == "materialGroup" || memberName == "fxName")
+                const String memberName(inspCommand->member->Name().c_str());
+                if (memberName == NMaterialSerializationKey::QualityGroup || memberName == NMaterialSerializationKey::FXName)
                 {
-                    SetCurMaterial(curMaterials);
+                    for (auto& m : curMaterials)
+                    {
+                        m->InvalidateRenderVariants();
+                    }
+                    materialPropertiesUpdater->Update();
                 }
             }
             break;
@@ -367,7 +375,7 @@ void MaterialEditor::commandExecuted(SceneEditor2 *scene, const Command2 *comman
         case CMDID_MATERIAL_GLOBAL_SET:
             {
                 sceneActivated(scene);
-                SetCurMaterial(curMaterials);
+                materialPropertiesUpdater->Update();
             }
             break;
         default:
@@ -380,7 +388,7 @@ void MaterialEditor::commandExecuted(SceneEditor2 *scene, const Command2 *comman
 
 void MaterialEditor::OnQualityChanged()
 {
-    SetCurMaterial(curMaterials);
+    RefreshMaterialProperties();
 }
 
 void MaterialEditor::onCurrentExpandModeChange(bool mode)
@@ -619,62 +627,82 @@ void MaterialEditor::FillTemplates(const QList<DAVA::NMaterial *>& materials)
     if (1 == materials.size() && materials[0])
     {
         DAVA::NMaterial* material = materials[0];
-        DAVA::FastName fxName = material->GetEffectiveFXName();
+
+        //Read material params
         auto scene = QtMainWindow::Instance()->GetCurrentScene();
-        auto globalMaterial = (nullptr == scene) ? nullptr : scene->GetGlobalMaterial();
-        bool isGlobalMaterial = (material == globalMaterial);
-        bool isLocalFxName = material->HasLocalFXName();
-        bool hasParentFx = false;
+        DAVA::NMaterial* globalMaterial = (nullptr == scene) ? nullptr : scene->GetGlobalMaterial();
 
-        if (nullptr != material->GetParent())
-        {
-            hasParentFx = material->GetParent()->GetEffectiveFXName().IsValid();
-        }
-
-        if (isLocalFxName)
-        {
-            int rowToSelect = -1;
-            QAbstractItemModel *model = ui->templateBox->model();
-            const int n = model->rowCount();
-            for (int i = 0; i < n; i++)
-            {
-                const QModelIndex index = model->index(i, 0);
-                if (index.data(Qt::UserRole).toString() == fxName.c_str())
-                {
-                    rowToSelect = i;
-                    break;
-                }
-            }
-
-            if (-1 == rowToSelect)
-            {
-                setTemplatePlaceholder(QString("NON-ASSIGNABLE: %1").arg(fxName.c_str()));
-            }
-
-            ui->templateBox->setCurrentIndex(rowToSelect);
-            ui->templateButton->setIcon(QIcon(":/QtIcons/cminus.png"));
-
-            bool templateEnabled = !isGlobalMaterial && hasParentFx;
-            ui->templateBox->setEnabled(templateEnabled);
-            ui->templateButton->setEnabled(templateEnabled);
+        const bool isGlobalMaterial = (material == globalMaterial);
+        if (isGlobalMaterial)
+        { // reset state
+            ui->templateBox->setCurrentIndex(-1);
+            ui->templateBox->setEnabled(false);
+            ui->templateButton->setEnabled(false);
+            ui->templateButton->setIcon(QIcon(":/QtIcons/cplus.png"));
         }
         else
         {
-            if (isGlobalMaterial)
-            {
-                ui->templateBox->setCurrentIndex(-1);
-                ui->templateButton->setEnabled(false);
+            { //set fx name to fx template box
+                int rowToSelect = -1;
+                const DAVA::FastName fxName = material->GetEffectiveFXName();
+                if (fxName.IsValid())
+                {
+                    QAbstractItemModel* model = ui->templateBox->model();
+                    const int n = model->rowCount();
+                    for (int i = 0; i < n; i++)
+                    {
+                        const QModelIndex index = model->index(i, 0);
+                        if (index.data(Qt::UserRole).toString() == fxName.c_str())
+                        {
+                            rowToSelect = i;
+                            break;
+                        }
+                    }
+
+                    if (-1 == rowToSelect)
+                    {
+                        setTemplatePlaceholder(QString("NON-ASSIGNABLE: %1").arg(fxName.c_str()));
+                    }
+                }
+
+                ui->templateBox->setCurrentIndex(rowToSelect);
             }
-            else
-            {
-                ui->templateButton->setEnabled(true);
+
+            { //update button state
+
+                const bool hasLocalFxName = material->HasLocalFXName();
+
+                NMaterial* parentMaterial = material->GetParent();
+                bool hasParentFx = false;
+                if (parentMaterial != nullptr)
+                {
+                    hasParentFx = parentMaterial->HasLocalFXName();
+                }
+
+                if (hasLocalFxName)
+                {
+                    ui->templateButton->setIcon(QIcon(":/QtIcons/cminus.png"));
+                }
+                else
+                {
+                    ui->templateButton->setIcon(QIcon(":/QtIcons/cplus.png"));
+                }
+
+                if (parentMaterial == nullptr || parentMaterial == globalMaterial)
+                {
+                    ui->templateButton->setEnabled(false);
+                }
+                else
+                {
+                    ui->templateButton->setEnabled(true);
+                }
+
+                ui->templateBox->setEnabled(hasLocalFxName);
             }
-            ui->templateBox->setEnabled(false);
-            ui->templateButton->setIcon(QIcon(":/QtIcons/cplus.png"));
         }
     }
     else
-    {
+    { // reset state
         ui->templateBox->setCurrentIndex(-1);
         ui->templateBox->setEnabled(false);
         ui->templateButton->setEnabled(false);
@@ -700,7 +728,7 @@ void MaterialEditor::OnTemplateChanged(int index)
         }
     }
 
-    SetCurMaterial(curMaterials);
+    RefreshMaterialProperties();
 }
 
 void MaterialEditor::OnTemplateButton()
@@ -725,7 +753,7 @@ void MaterialEditor::OnTemplateButton()
             }
 
             QtMainWindow::Instance()->GetCurrentScene()->Exec(cmd);
-            SetCurMaterial(curMaterials);
+            RefreshMaterialProperties();
         }
     }
 }
@@ -961,7 +989,7 @@ void MaterialEditor::OnMaterialLoad(bool checked)
         }
     }
 
-    SetCurMaterial(curMaterials);
+    RefreshMaterialProperties();
 }
 
 void MaterialEditor::ClearDynamicMembers(DAVA::NMaterial *material, const DAVA::InspMemberDynamic *dynamicMember)
@@ -1229,4 +1257,9 @@ void MaterialEditor::UpdateMaterialFromPresetWithOptions(DAVA::NMaterial* materi
 	{
 		UpdateMaterialTexturesFromPreset(material,  preset->GetArchive("textures"), context->GetScenePath());
 	}
+}
+
+void MaterialEditor::RefreshMaterialProperties()
+{
+    SetCurMaterial(curMaterials);
 }

@@ -145,9 +145,9 @@ public:
     union
     {
         bool boolValue;
-        int32   int32Value;
-        uint32  uint32Value;
-		float32 floatValue;
+        int32 int32Value;
+        uint32 uint32Value;
+        float32 floatValue;
         float64 float64Value;
 
         int64 int64Value;
@@ -235,14 +235,14 @@ public:
 		\brief Function to set wide string value to variant type variable
 		\param[in] value	value to set
 	 */
-    void SetWideString(const WideString & value);
+    void SetWideString(const WideString& value);
 
-	/**
+    /**
 	 \brief Function to set byte array value to variant type variable
 	 \param[in] value	value to set
 	 \param[in] arraySizeInBytes	size of the array in bytes
 	 */
-	void SetByteArray(const uint8 *array, int32 arraySizeInBytes);
+    void SetByteArray(const uint8 *array, int32 arraySizeInBytes);
 
 	/**
 	 \brief Function to set KeyedArchive to variation type variable.
@@ -365,13 +365,13 @@ public:
 		\brief Function to return wide string value from variable
 		\returns value of variable, or generate assert if variable type is different
 	 */
-    const WideString & AsWideString() const;
+    const WideString& AsWideString() const;
 
-	/**
+    /**
 	 \brief Function to return array from variable
 	 \returns value of variable, or generate assert if variable type is different
 	 */
-	const uint8 *AsByteArray() const;
+    const uint8 *AsByteArray() const;
 	/**
 	 \brief Function to return array size from variable
 	 \returns array size in bytes variable, or generate assert if variable type is different

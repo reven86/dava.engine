@@ -21,7 +21,7 @@ FPROG_IN_BEGIN
 
     #endif
 
-    #if MATERIAL_DECAL || MATERIAL_LIGHTMAP || FRAME_BLEND || ALPHA_MASK
+    #if MATERIAL_DECAL || ( MATERIAL_LIGHTMAP  && VIEW_DIFFUSE ) || FRAME_BLEND || ALPHA_MASK
         FPROG_IN_TEXCOORD1(varTexCoord1,2)
     #endif
 
@@ -68,14 +68,7 @@ FPROG_IN_BEGIN
 
     #if VERTEX_FOG
         FPROG_IN_TEXCOORD5(varFog,4)
-//        varying lowp float varFogAmoung;
-//        varying lowp float3 varFogColor;
-    #endif
-    
-    #if SETUP_LIGHTMAP
-        varying lowp float varLightmapSize;
-    #endif
-    
+    #endif           
 
     #if FRAME_BLEND
         FPROG_IN_TEXCOORD3(varTime, 1)
@@ -114,7 +107,7 @@ FPROG_OUT_END
     DECL_FP_SAMPLER2D(detail)
 #endif
 
-#if MATERIAL_LIGHTMAP
+#if MATERIAL_LIGHTMAP  && VIEW_DIFFUSE
     DECL_FP_SAMPLER2D(lightmap)
 #endif
 
@@ -136,7 +129,7 @@ FPROG_OUT_END
 #if TILED_DECAL_MASK
     DECL_FP_SAMPLER2D(decalmask)
     DECL_FP_SAMPLER2D(decaltexture)
-    property float4 decalTileColor : static,a : ;
+    property float4 decalTileColor : static,a : def_value=1,1,1,1 ;
 #endif
 
 
@@ -156,6 +149,10 @@ FPROG_OUT_END
 
 #if FLATCOLOR
     property float4 flatColor : static,a : ;
+#endif
+
+#if SETUP_LIGHTMAP && (MATERIAL_DECAL || MATERIAL_LIGHTMAP)
+    property float lightmapSize : static,a : ;    
 #endif
 
 float 
@@ -229,7 +226,7 @@ FPROG_BEGIN
     #endif
     
     
-    #if MATERIAL_LIGHTMAP
+    #if MATERIAL_LIGHTMAP  && VIEW_DIFFUSE
         float3 textureColor1 = FP_TEXTURE2D( lightmap, FP_IN(varTexCoord1) ).rgb;
     #endif
     
@@ -245,9 +242,9 @@ FPROG_BEGIN
             float3 darkGray = float3(0.25,0.25,0.25);
     
             bool isXodd;
-            bool isYodd;
+            bool isYodd;            
             
-            if(fract(floor(FP_IN(varTexCoord1).x*varLightmapSize)/2.0) == 0.0)
+            if(fract(floor(FP_IN(varTexCoord1).x*lightmapSize)/2.0) == 0.0)
             {
                 isXodd = true;
             }
@@ -256,7 +253,7 @@ FPROG_BEGIN
                 isXodd = false;
             }
             
-            if(fract(floor(FP_IN(varTexCoord1).y*varLightmapSize)/2.0) == 0.0)
+            if(fract(floor(FP_IN(varTexCoord1).y*lightmapSize)/2.0) == 0.0)
             {
                 isYodd = true;
             }
@@ -398,47 +395,48 @@ FPROG_BEGIN
                     float3 fresnelOut = FresnelShlickVec3( NdotV, metalFresnelReflectance );
                 #endif
             #endif
-    
-            float specularity = inSpecularity;
-            float glossiness = inGlossiness * textureColor0.a;
-            float glossPower = pow(5000.0, glossiness); //textureColor0.a;
-    
-            //float glossiness = inGlossiness * 0.999;
-            //glossiness = 200.0 * glossiness / (1.0 - glossiness);
-            //#define GOTANDA
             
+            
+            //#define GOTANDA                        
             #if GOTANDA
                 float3 fresnelIn = FresnelShlickVec3(NdotL, metalFresnelReflectance);
-                float3 diffuse = NdotL / _PI * (1.0 - fresnelIn * specularity);
+                float3 diffuse = NdotL / _PI * (1.0 - fresnelIn * inSpecularity);
             #else
-                float diffuse = NdotL / _PI;// * (1.0 - fresnelIn * specularity);
+                float diffuse = NdotL / _PI;// * (1.0 - fresnelIn * inSpecularity);
             #endif
-    
-            #if GOTANDA
-                float specCutoff = 1.0 - NdotL;
-                specCutoff *= specCutoff;
-                specCutoff *= specCutoff;
-                specCutoff *= specCutoff;
-                specCutoff = 1.0 - specCutoff;
-            #else
-                float specCutoff = NdotL;
-            #endif
-    
-            #if GOTANDA
-                float specularNorm = (glossPower + 2.0) * (glossPower + 4.0) / (8.0 * _PI * (pow(2.0, -glossPower / 2.0) + glossPower));
-            #else
-                float specularNorm = (glossPower + 2.0) / 8.0;
-            #endif
+        
+            #if VIEW_SPECULAR
+                //float glossiness = inGlossiness * 0.999;
+                //glossiness = 200.0 * glossiness / (1.0 - glossiness);                
+                float glossiness = inGlossiness * textureColor0.a;
+                float glossPower = pow(5000.0, glossiness); //textureColor0.a;
+                       
+                #if GOTANDA
+                    float specCutoff = 1.0 - NdotL;
+                    specCutoff *= specCutoff;
+                    specCutoff *= specCutoff;
+                    specCutoff *= specCutoff;
+                    specCutoff = 1.0 - specCutoff;
+                #else
+                    float specCutoff = NdotL;
+                #endif
+        
+                #if GOTANDA
+                    float specularNorm = (glossPower + 2.0) * (glossPower + 4.0) / (8.0 * _PI * (pow(2.0, -glossPower / 2.0) + glossPower));
+                #else
+                    float specularNorm = (glossPower + 2.0) / 8.0;
+                #endif
 
-            float specularNormalized = specularNorm * pow(NdotH, glossPower) * specCutoff * specularity;
+                float specularNormalized = specularNorm * pow(NdotH, glossPower) * specCutoff * inSpecularity;
 
-            #if FAST_METAL
-                float geometricFactor = 1.0;
-            #else
-                float geometricFactor = 1.0 / LdotH * LdotH;
+                #if FAST_METAL
+                    float geometricFactor = 1.0;
+                #else
+                    float geometricFactor = 1.0 / LdotH * LdotH;
+                #endif
+
+                ColorType specular = specularNormalized * geometricFactor * fresnelOut;
             #endif
-
-            ColorType specular = specularNormalized * geometricFactor * fresnelOut;
         
         #endif
     
@@ -458,7 +456,7 @@ FPROG_BEGIN
     
         #if VIEW_ALBEDO
             #if TILED_DECAL_MASK
-                float maskSample = FP_TEXTURE2D( decalmask, FP_IN(varTexCoord0) ).a;
+                float maskSample = FP_A8( FP_TEXTURE2D( decalmask, FP_IN(varTexCoord0) ));
                 float4 tileColor = FP_TEXTURE2D( decaltexture, FP_IN(varDecalTileTexCoord) ).rgba * decalTileColor;
                 color *= textureColor0.rgb + (tileColor.rgb - textureColor0.rgb) * tileColor.a * maskSample;
             #else

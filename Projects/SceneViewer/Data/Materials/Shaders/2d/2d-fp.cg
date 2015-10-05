@@ -59,6 +59,11 @@ FPROG_BEGIN
     resColor.rgb = float3(gray , gray, gray);
 #endif
 
+#if ALPHATEST
+float alpha = resColor.a;
+if( alpha < 0.5 ) FP_DISCARD_FRAGMENT;
+#endif
+
     FP_OUT_COLOR = resColor;
 
 FPROG_END

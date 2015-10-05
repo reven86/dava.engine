@@ -607,7 +607,7 @@ void Core::SystemProcessFrame()
     
 void Core::GoBackground(bool isLock)
 {
-#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__) 
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_WIN_UAP__)
     if (core)
     {
         if(isLock)
@@ -624,7 +624,7 @@ void Core::GoBackground(bool isLock)
 
 void Core::GoForeground()
 {
-#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_WIN_UAP__)
     if (core)
     {
         core->OnForeground();

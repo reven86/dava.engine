@@ -70,7 +70,7 @@ VPROG_OUT_BEGIN
 
     #if MATERIAL_SKYBOX
     VPROG_OUT_TEXCOORD0(varTexCoord0,3)
-    #elif MATERIAL_TEXTURE
+    #elif MATERIAL_TEXTURE || TILED_DECAL_MASK
     VPROG_OUT_TEXCOORD0(varTexCoord0,2)
     #endif
 
@@ -120,14 +120,14 @@ kkk
     #if VERTEX_COLOR || SPHERICAL_LIT
         VPROG_OUT_COLOR1(varVertexColor,4)
     #endif
-
+    
     #if VERTEX_FOG
         VPROG_OUT_TEXCOORD5(varFog,4)
 //        varying lowp float varFogAmoung;
 //        varying lowp vec3 varFogColor;
     #endif
 
-    
+
     #if FRAME_BLEND
         VPROG_OUT_TEXCOORD3(varTime,1)        
     #endif
@@ -408,7 +408,8 @@ VPROG_BEGIN
     #else // WIND_ANIMATION
 
         #if WAVE_ANIMATION
-            VP_OUT_POSITION = mul( Wave(globalTime, VP_IN_POSITION, inTexCoord0), worldViewProjMatrix );
+			float4 waveValue = Wave(globalTime, float4(VP_IN_POSITION.xyz, 1.0), VP_IN_TEXCOORD0);
+            VP_OUT_POSITION = mul( waveValue, worldViewProjMatrix );
         #else
             #if SKINNING
 //weightedVertexPosition.w=3.0;
@@ -679,7 +680,7 @@ VPROG_BEGIN
 
 #endif
 
-#if MATERIAL_SKYBOX || MATERIAL_TEXTURE
+#if MATERIAL_SKYBOX || MATERIAL_TEXTURE || TILED_DECAL_MASK
     VP_OUT(varTexCoord0) = VP_IN_TEXCOORD0;
 #endif    
 
@@ -693,14 +694,14 @@ VPROG_BEGIN
         VP_OUT(varTexCoord0) += tex0ShiftPerSecond * globalTime;
     #endif
 
-        
-    #if TILED_DECAL_MASK
-        varDecalTileTexCoord = VP_OUT(varTexCoord0) * decalTileCoordScale;
-    #endif
+#endif
+
+#if TILED_DECAL_MASK
+    VP_OUT(varDecalTileTexCoord) = VP_OUT(varTexCoord0) * decalTileCoordScale;
 #endif
     
 #if MATERIAL_DETAIL
-    varDetailTexCoord = VP_OUT(varTexCoord0) * detailTileCoordScale;
+    VP_OUT(varDetailTexCoord) = VP_OUT(varTexCoord0) * detailTileCoordScale;
 #endif
 
 
