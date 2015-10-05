@@ -59,6 +59,8 @@ AssetCacheServerWindow::AssetCacheServerWindow(ServerCore& core, QWidget* parent
     , ui(new Ui::AssetCacheServerWidget)
     , serverCore(core)
 {
+    setWindowFlags((windowFlags() | Qt::CustomizeWindowHint) & ~Qt::WindowFullscreenButtonHint);
+
     ui->setupUi(this);
 
     connect(ui->cacheFolderLineEdit, &QLineEdit::textChanged, this, &AssetCacheServerWindow::OnFolderTextChanged);
