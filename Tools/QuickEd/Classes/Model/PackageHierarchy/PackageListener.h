@@ -42,27 +42,31 @@ class ImportedPackagesNode;
 class PackageListener
 {
 public:
-    virtual void ControlPropertyWasChanged(ControlNode *node, AbstractProperty *property) = 0;
-    virtual void StylePropertyWasChanged(StyleSheetNode *node, AbstractProperty *property) = 0;
-    
-    virtual void ControlWillBeAdded(ControlNode *node, ControlsContainerNode *destination, int index) = 0;
-    virtual void ControlWasAdded(ControlNode *node, ControlsContainerNode *destination, int index) = 0;
-    
-    virtual void ControlWillBeRemoved(ControlNode *node, ControlsContainerNode *from) = 0;
-    virtual void ControlWasRemoved(ControlNode *node, ControlsContainerNode *from) = 0;
-    
-    virtual void StyleWillBeAdded(StyleSheetNode *node, StyleSheetsNode *destination, int index) = 0;
-    virtual void StyleWasAdded(StyleSheetNode *node, StyleSheetsNode *destination, int index) = 0;
-    
-    virtual void StyleWillBeRemoved(StyleSheetNode *node, StyleSheetsNode *from) = 0;
-    virtual void StyleWasRemoved(StyleSheetNode *node, StyleSheetsNode *from) = 0;
-    
-    virtual void ImportedPackageWillBeAdded(PackageNode *node, ImportedPackagesNode *to, int index) = 0;
-    virtual void ImportedPackageWasAdded(PackageNode *node, ImportedPackagesNode *to, int index) = 0;
+    virtual ~PackageListener() = 0;
+    virtual void ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property){};
+    virtual void StylePropertyWasChanged(StyleSheetNode* node, AbstractProperty* property){};
 
-    virtual void ImportedPackageWillBeRemoved(PackageNode *node, ImportedPackagesNode *from) = 0;
-    virtual void ImportedPackageWasRemoved(PackageNode *node, ImportedPackagesNode *from) = 0;
-    
+    virtual void ControlWillBeAdded(ControlNode* node, ControlsContainerNode* destination, int index){};
+    virtual void ControlWasAdded(ControlNode* node, ControlsContainerNode* destination, int index){};
+
+    virtual void ControlWillBeRemoved(ControlNode* node, ControlsContainerNode* from){};
+    virtual void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from){};
+
+    virtual void StyleWillBeAdded(StyleSheetNode* node, StyleSheetsNode* destination, int index){};
+    virtual void StyleWasAdded(StyleSheetNode* node, StyleSheetsNode* destination, int index){};
+
+    virtual void StyleWillBeRemoved(StyleSheetNode* node, StyleSheetsNode* from){};
+    virtual void StyleWasRemoved(StyleSheetNode* node, StyleSheetsNode* from){};
+
+    virtual void ImportedPackageWillBeAdded(PackageNode* node, ImportedPackagesNode* to, int index){};
+    virtual void ImportedPackageWasAdded(PackageNode* node, ImportedPackagesNode* to, int index){};
+
+    virtual void ImportedPackageWillBeRemoved(PackageNode* node, ImportedPackagesNode* from){};
+    virtual void ImportedPackageWasRemoved(PackageNode* node, ImportedPackagesNode* from){};
 };
+
+inline PackageListener::~PackageListener()
+{
+}
 
 #endif // __QUICKED_PACKAGE_LISTENER_H__

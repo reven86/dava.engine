@@ -394,6 +394,28 @@ void RootProperty::RefreshProperty(AbstractProperty *property, DAVA::int32 refre
         listener->PropertyChanged(property);
 }
 
+AbstractProperty* RootProperty::FindPropertyByName(const String& name) const
+{
+    int propertiesCount = GetCount();
+    for (int index = 0; index < propertiesCount; ++index)
+    {
+        AbstractProperty* rootProperty = GetProperty(index);
+        if (nullptr != rootProperty)
+        {
+            int sectionCount = rootProperty->GetCount();
+            for (int prop = 0; prop < sectionCount; ++prop)
+            {
+                AbstractProperty* valueProperty = rootProperty->GetProperty(prop);
+                if (nullptr != valueProperty && valueProperty->GetName() == name)
+                {
+                    return valueProperty;
+                }
+            }
+        }
+    }
+    return nullptr;
+}
+
 void RootProperty::Refresh(DAVA::int32 refreshFlags)
 {
     for (int32 i = 0; i < GetCount(); i++)

@@ -193,11 +193,11 @@ public:
 	 */
     void Update();
 
-	/**
+    /**
 	 \brief Calls every frame by the system for draw.
 		Draws all controls hierarchy to the screen.
 	 */
-	void Draw();
+    void Draw();
 	
 //	void SetTransitionType(int newTransitionType);
 	
