@@ -44,7 +44,7 @@ protected:
 public:
     UIScrollViewContainer(const Rect &rect = Rect());
 
-    virtual UIScrollViewContainer *Clone();
+    UIScrollViewContainer *Clone() override;
 	virtual void CopyDataFrom(UIControl *srcControl);
 	
 public:

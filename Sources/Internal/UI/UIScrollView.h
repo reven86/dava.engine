@@ -73,7 +73,7 @@ public:
     void ScrollToVerticalPosition(float32 vertPos, float32 timeSec = 0.3f);
     void ScrollToPosition(const Vector2& pos, float32 timeSec = 0.3f);
 
-    virtual UIScrollView *Clone();
+    UIScrollView *Clone() override;
 	virtual void CopyDataFrom(UIControl *srcControl);
 	
 	virtual void SetRect(const Rect &rect);

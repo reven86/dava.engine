@@ -118,9 +118,9 @@ RootProperty::~RootProperty()
     listeners.clear();
 }
 
-int RootProperty::GetCount() const
+uint32 RootProperty::GetCount() const
 {
-    return (int)(baseProperties.size() + controlProperties.size() + componentProperties.size() + backgroundProperties.size() + internalControlProperties.size());
+    return (baseProperties.size() + controlProperties.size() + componentProperties.size() + backgroundProperties.size() + internalControlProperties.size());
 }
 
 AbstractProperty *RootProperty::GetProperty(int index) const

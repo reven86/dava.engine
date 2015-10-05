@@ -79,7 +79,7 @@ public:
     AbstractProperty *GetParent() const;
     void SetParent(AbstractProperty *parent);
     
-    virtual DAVA::int32 GetCount() const = 0;
+    virtual DAVA::uint32 GetCount() const = 0;
     virtual AbstractProperty *GetProperty(DAVA::int32 index) const = 0;
     virtual DAVA::int32 GetIndex(AbstractProperty *property) const;
 

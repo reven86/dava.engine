@@ -225,7 +225,7 @@ public:
     virtual float32 ViewPosition(UIScrollBar *forScrollBar);
     virtual void OnViewPositionChanged(UIScrollBar *byScrollBar, float32 newPosition);
 
-    virtual UIList *Clone();
+    UIList *Clone() override;
     virtual void CopyDataFrom(UIControl *srcControl);
 
     virtual const String GetDelegateControlPath(const UIControl *rootControl) const;

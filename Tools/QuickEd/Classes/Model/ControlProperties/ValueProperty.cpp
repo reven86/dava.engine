@@ -53,7 +53,7 @@ ValueProperty::~ValueProperty()
 
 }
 
-int32 ValueProperty::GetCount() const
+uint32 ValueProperty::GetCount() const
 {
     return static_cast<int32>(children.size());
 }

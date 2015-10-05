@@ -266,7 +266,7 @@ bool ControlNode::IsInsertingControlsSupported() const
 
 bool ControlNode::CanInsertControl(ControlNode *node, DAVA::int32 pos) const
 {
-    if (IsReadOnly() || ControlClassesWithoutChildren.count(control->GetClassName()))
+    if (!IsInsertingControlsSupported())
         return false;
     
     if (pos < static_cast<int32>(nodes.size()) && nodes[pos]->GetCreationType() == CREATED_FROM_PROTOTYPE_CHILD)

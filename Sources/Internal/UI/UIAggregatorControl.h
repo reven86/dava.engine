@@ -40,7 +40,7 @@ namespace DAVA
 		~UIAggregatorControl(){}
 	public:
         UIAggregatorControl(const Rect &rect = Rect());
-        virtual UIAggregatorControl *Clone();
+        UIAggregatorControl *Clone() override;
 
 		virtual YamlNode* SaveToYamlNode(UIYamlLoader * loader);
 		virtual void LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader);
