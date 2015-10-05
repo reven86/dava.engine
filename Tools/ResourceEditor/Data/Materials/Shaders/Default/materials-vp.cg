@@ -109,13 +109,7 @@ VPROG_OUT_BEGIN
         VPROG_OUT_TEXCOORD6(varPerPixelAttenuation,1)
         #endif
         VPROG_OUT_TEXCOORD7(varToCameraVec,3) 
-    #endif
-
-    #if SETUP_LIGHTMAP
-kkk        
-        uniform float lightmapSize;
-        varying lowp float varLightmapSize;
-    #endif
+    #endif    
     
     #if VERTEX_COLOR || SPHERICAL_LIT
         VPROG_OUT_COLOR1(varVertexColor,4)
@@ -176,7 +170,7 @@ property float4 jointQuaternions[MAX_JOINTS] : dynamic,skin2 : bigarray ;
 
 #include "vp-fog-props.cgh"
 
-#if MATERIAL_LIGHTMAP && VIEW_DIFFUSE
+#if MATERIAL_LIGHTMAP && !SETUP_LIGHTMAP
 property float2 uvOffset : static,a : ;
 property float2 uvScale : static,a : ;
 #endif
@@ -707,10 +701,9 @@ VPROG_BEGIN
 
 #if MATERIAL_DECAL || MATERIAL_LIGHTMAP || FRAME_BLEND || ALPHA_MASK
     
-    #if SETUP_LIGHTMAP
-        varLightmapSize      = lightmapSize;
+    #if SETUP_LIGHTMAP        
         VP_OUT(varTexCoord1) = VP_IN_TEXCOORD1;
-    #elif MATERIAL_LIGHTMAP && VIEW_DIFFUSE
+    #elif MATERIAL_LIGHTMAP
         VP_OUT(varTexCoord1) = uvScale*VP_IN_TEXCOORD1 + uvOffset;
     #else
         VP_OUT(varTexCoord1) = VP_IN_TEXCOORD1;

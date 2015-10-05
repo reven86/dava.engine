@@ -76,7 +76,8 @@ void ApplicationCore::OnEnterFullscreen()
 { }
 
 void ApplicationCore::OnExitFullscreen()
-{ }
+{
+}
 
 void ApplicationCore::Draw()
 {

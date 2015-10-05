@@ -227,6 +227,9 @@ _InitDX11()
 
             hr = _D3D11_ImmediateContext->QueryInterface( __uuidof(ID3DUserDefinedAnnotation), (void**)(&_D3D11_UserAnnotation) );
         }
+        
+        hr = _D3D11_Device->CreateDeferredContext( 0, &_D3D11_SecondaryContext );
+        DVASSERT(_D3D11_SecondaryContext);
 
         hr = _D3D11_Device->CreateRenderTargetView( _D3D11_SwapChainBuffer, 0, &_D3D11_RenderTargetView );
 
