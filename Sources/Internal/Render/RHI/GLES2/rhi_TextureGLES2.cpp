@@ -277,6 +277,8 @@ TextureGLES2_t::Create( const Texture::Descriptor& desc, bool force_immediate )
                 { GLCommand::TEX_PARAMETER_I, {GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST} },
                 { GLCommand::RESTORE_TEXTURE0, {} }
             };
+
+            ExecGL(cmd3, countof(cmd3), force_immediate);
         }
         else
         {
@@ -821,7 +823,7 @@ SetAsRenderTarget( Handle tex, Handle depth )
                 glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, ds->uid );
 #endif
             }
-            #if defined __DAVAENGINE_IPHONE__
+#if defined __DAVAENGINE_IPHONE__ || defined __DAVAENGINE_ANDROID__
             #else
             GLenum          b[1] = { GL_COLOR_ATTACHMENT0 };
             
