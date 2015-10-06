@@ -711,12 +711,10 @@ namespace DAVA
             return 1; // https://msdn.microsoft.com/en-us/library/windows/desktop/ms648055%28v=vs.85%29.aspx
         case WM_KEYUP:
         {
-            DAVA::UIEvent ev;
-            ev.keyChar = 0;
-            ev.phase = DAVA::UIEvent::PHASE_KEYCHAR_RELEASE;
-            ev.tapCount = 1;
-
             int32 system_key_code = static_cast<int32>(wParam);
+
+            DAVA::UIEvent ev;
+            ev.phase = DAVA::UIEvent::PHASE_KEY_UP;
             ev.tid = keyboard.GetDavaKeyForSystemKey(system_key_code);
 
             Vector<DAVA::UIEvent> touches;
@@ -730,12 +728,17 @@ namespace DAVA
 
         case WM_KEYDOWN:
         {
-            DAVA::UIEvent ev;
-            ev.keyChar = 0;
-            ev.phase = DAVA::UIEvent::PHASE_KEYCHAR;
-            ev.tapCount = 1;
-
             int32 system_key_code = static_cast<int32>(wParam);
+
+            DAVA::UIEvent ev;
+            if ((HIWORD(lParam) & KF_REPEAT) == 0)
+            {
+                ev.phase = DAVA::UIEvent::PHASE_KEY_DOWN;
+            }
+            else
+            {
+                ev.phase = DAVA::UIEvent::PHASE_KEY_DOWN_REPEAT;
+            }
             ev.tid = keyboard.GetDavaKeyForSystemKey(system_key_code);
 
             Vector<DAVA::UIEvent> touches;
@@ -751,9 +754,16 @@ namespace DAVA
         {
             DAVA::UIEvent ev;
             ev.keyChar = static_cast<char16>(wParam);
-            ev.phase = DAVA::UIEvent::PHASE_KEYCHAR;
-            ev.tapCount = 1;
-            ev.tid = 0;
+            if ((HIWORD(lParam) & KF_REPEAT) == 0)
+            {
+                ev.phase = DAVA::UIEvent::PHASE_KEYCHAR;
+                OutputDebugStringA("wm_char\n");
+            }
+            else
+            {
+                ev.phase = DAVA::UIEvent::PHASE_KEYCHAR_REPEAT;
+                OutputDebugStringA("wm_char_repeat\n");
+            }
 
             Vector<DAVA::UIEvent> touches;
             touches.push_back(ev);

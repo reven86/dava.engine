@@ -113,6 +113,8 @@ private:    // Event handlers
     // Keyboard handlers
     void OnKeyDown(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ args);
     void OnKeyUp(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ args);
+    void OnChar(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Core::CharacterReceivedEventArgs ^ args);
+
     void OnMouseMoved(Windows::Devices::Input::MouseDevice^ mouseDevice, Windows::Devices::Input::MouseEventArgs^ args);
 
     void DAVATouchEvent(UIEvent::eInputPhase phase, float32 x, float32 y, int32 id, UIEvent::PointerDeviceID deviceIndex);

@@ -482,37 +482,64 @@ void WinUAPXamlApp::OnKeyDown(Windows::UI::Core::CoreWindow^ sender, Windows::UI
         __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
     }
 
-    VirtualKey key = args->VirtualKey;
+    int32 key = static_cast<int32>(args->VirtualKey);
+    bool isKeyReleased = args->KeyStatus.IsKeyReleased;
     // Note: should be propagated to main thread
-    core->RunOnMainThread([this, key]() {
+    core->RunOnMainThread([this, key, isKeyReleased]()
+                          {
+        auto& keyboard = InputSystem::Instance()->GetKeyboard();
+
         UIEvent ev;
-        ev.keyChar = 0;
-        ev.tapCount = 1;
-        ev.phase = UIEvent::PHASE_KEYCHAR;
-        ev.tid = InputSystem::Instance()->GetKeyboard().GetDavaKeyForSystemKey(static_cast<int32>(key));
+        if (isKeyReleased)
+        {
+            ev.phase = UIEvent::PHASE_KEY_DOWN;
+        }
+        else
+        {
+            ev.phase = UIEvent::PHASE_KEY_DOWN_REPEAT;
+        }
+        ev.tid = keyboard.GetDavaKeyForSystemKey(static_cast<int32>(key));
 
         Vector<UIEvent> newEvent = {ev};
         UIControlSystem::Instance()->OnInput(newEvent, events);
-        InputSystem::Instance()->GetKeyboard().OnSystemKeyPressed(static_cast<int32>(key));
-    });
-
+        keyboard.OnSystemKeyPressed(static_cast<int32>(key));
+                          });
 }
 
 void WinUAPXamlApp::OnKeyUp(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ args)
 {
-    // Note: should be propagated to main thread
-    VirtualKey key = args->VirtualKey;
+    int32 key = static_cast<int32>(args->VirtualKey);
     core->RunOnMainThread([this, key]()
                           {
-        UIEvent ev;
-        ev.keyChar = 0;
-        ev.tapCount = 1;
-        ev.phase = UIEvent::PHASE_KEYCHAR_RELEASE;
-        ev.tid = InputSystem::Instance()->GetKeyboard().GetDavaKeyForSystemKey(static_cast<int32>(key));
+                              auto& keyboard = InputSystem::Instance()->GetKeyboard();
 
-        Vector<UIEvent> newEvent = { ev };
-        UIControlSystem::Instance()->OnInput(newEvent, events);
-        InputSystem::Instance()->GetKeyboard().OnSystemKeyUnpressed(static_cast<int32>(key));
+                              UIEvent ev;
+                              ev.phase = UIEvent::PHASE_KEY_UP;
+                              ev.tid = keyboard.GetDavaKeyForSystemKey((key));
+
+                              UIControlSystem::Instance()->OnInput({ ev }, events);
+                              keyboard.OnSystemKeyUnpressed(static_cast<int32>(key));
+                          });
+}
+
+void WinUAPXamlApp::OnChar(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Core::CharacterReceivedEventArgs ^ args)
+{
+    uint32 unicodeChar = args->KeyCode;
+    bool isKeyReleased = args->KeyStatus.IsKeyReleased;
+    core->RunOnMainThread([this, unicodeChar, isKeyReleased]()
+                          {
+                              UIEvent ev;
+                              DVASSERT(unicodeChar < 0xFFFF); // whar_t is 16 bit, so keyChar dosnt fit
+                              ev.keyChar = unicodeChar;
+                              if (isKeyReleased)
+                              {
+                                  ev.phase = UIEvent::PHASE_KEYCHAR;
+                              }
+                              else
+                              {
+                                  ev.phase = UIEvent::PHASE_KEYCHAR_REPEAT;
+                              }
+                              UIControlSystem::Instance()->OnInput({ ev }, events);
                           });
 }
 
@@ -615,6 +642,7 @@ void WinUAPXamlApp::SetupEventHandlers()
 
     coreWindow->KeyDown += ref new TypedEventHandler<CoreWindow^, KeyEventArgs^>(this, &WinUAPXamlApp::OnKeyDown);
     coreWindow->KeyUp += ref new TypedEventHandler<CoreWindow^, KeyEventArgs^>(this, &WinUAPXamlApp::OnKeyUp);
+    coreWindow->CharacterReceived += ref new TypedEventHandler<CoreWindow ^, CharacterReceivedEventArgs ^>(this, &WinUAPXamlApp::OnChar);
     MouseDevice::GetForCurrentView()->MouseMoved += ref new TypedEventHandler<MouseDevice^, MouseEventArgs^>(this, &WinUAPXamlApp::OnMouseMoved);
     if (isPhoneApiDetected)
     {
