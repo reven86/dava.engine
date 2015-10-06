@@ -63,15 +63,21 @@
 
 #include "Tools/LazyUpdater/LazyUpdater.h"
 
-#define MATERIAL_NAME_LABEL "Name"
-#define MATERIAL_GROUP_LABEL "Group"
-#define MATERIAL_BASE_LABEL "Base"
-#define MATERIAL_FLAGS_LABEL "Flags"
-#define MATERIAL_PROPERTIES_LABEL "Properties"
-#define MATERIAL_TEXTURES_LABEL "Textures"
-#define MATERIAL_TEMPLATE_LABEL "Template"
+namespace UIName
+{
+static const QString Template = "Template";
 
-namespace SectionName
+static const QString Name = "Name";
+static const QString Group = "Group";
+
+static const QString Base = "Base";
+static const QString Flags = "Flags";
+static const QString Illumination = "Illumination";
+static const QString Properties = "Properties";
+static const QString Textures = "Textures";
+}
+
+namespace NMaterialSectionName
 {
 const DAVA::FastName LocalFlags("localFlags");
 const DAVA::FastName LocalProperties("localProperties");
@@ -96,23 +102,12 @@ MaterialEditor::MaterialEditor(QWidget *parent /* = 0 */)
 
     ui->materialProperty->SetEditTracking(true);
     ui->materialProperty->setContextMenuPolicy(Qt::CustomContextMenu);
-    //ui->materialProperty->setSortingEnabled(true);
-    //ui->materialProperty->header()->setSortIndicator(0, Qt::AscendingOrder);
 
-    baseRoot = new QtPropertyData();
-    flagsRoot = new QtPropertyData();
-    propertiesRoot = new QtPropertyData();
-    texturesRoot = new QtPropertyData();
-
-    ui->materialProperty->AppendProperty(MATERIAL_BASE_LABEL, baseRoot);
-    ui->materialProperty->AppendProperty(MATERIAL_FLAGS_LABEL, flagsRoot);
-    ui->materialProperty->AppendProperty(MATERIAL_PROPERTIES_LABEL, propertiesRoot);
-    ui->materialProperty->AppendProperty(MATERIAL_TEXTURES_LABEL, texturesRoot);
-
-    ui->materialProperty->ApplyStyle(baseRoot, QtPropertyEditor::HEADER_STYLE);
-    ui->materialProperty->ApplyStyle(flagsRoot, QtPropertyEditor::HEADER_STYLE);
-    ui->materialProperty->ApplyStyle(propertiesRoot, QtPropertyEditor::HEADER_STYLE);
-    ui->materialProperty->ApplyStyle(texturesRoot, QtPropertyEditor::HEADER_STYLE);
+    baseRoot = AddSection(UIName::Base);
+    flagsRoot = AddSection(UIName::Flags);
+    illuminationRoot = AddSection(UIName::Illumination);
+    propertiesRoot = AddSection(UIName::Properties);
+    texturesRoot = AddSection(UIName::Textures);
 
     // global scene manager signals
     QObject::connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2 *)), this, SLOT(sceneActivated(SceneEditor2 *)));
@@ -166,6 +161,14 @@ MaterialEditor::~MaterialEditor()
     posSaver.SaveValue("splitPosPreview", v2);
     posSaver.SaveValue("lastSavePath", DAVA::VariantType(lastSavePath));
     posSaver.SaveValue("lastLoadState", DAVA::VariantType(lastCheckState));
+}
+
+QtPropertyData* MaterialEditor::AddSection(const QString& sectionName)
+{
+    QtPropertyData* section = new QtPropertyData();
+    ui->materialProperty->AppendProperty(sectionName, section);
+    ui->materialProperty->ApplyStyle(section, QtPropertyEditor::HEADER_STYLE);
+    return section;
 }
 
 void MaterialEditor::initActions()
@@ -265,9 +268,10 @@ void MaterialEditor::SetCurMaterial(const QList< DAVA::NMaterial *>& materials)
     treeStateHelper->SaveTreeViewState(false);
     
     FillBase();
-    FillDynamic(flagsRoot, SectionName::LocalFlags);
-    FillDynamic(propertiesRoot, SectionName::LocalProperties);
-    FillDynamic(texturesRoot, SectionName::LocalTextures);
+    FillDynamic(flagsRoot, NMaterialSectionName::LocalFlags);
+    FillIllumination();
+    FillDynamic(propertiesRoot, NMaterialSectionName::LocalProperties);
+    FillDynamic(texturesRoot, NMaterialSectionName::LocalTextures);
     FillTemplates(materials);
 
     // Restore back the tree view state from the shared storage.
@@ -363,10 +367,56 @@ void MaterialEditor::commandExecuted(SceneEditor2 *scene, const Command2 *comman
 
                 // if material flag was changed we should rebuild list of all properties
                 // because their set can be changed
-                if (inspCommand->dynamicInfo->GetMember()->Name() == SectionName::LocalFlags)
+                if (inspCommand->dynamicInfo->GetMember()->Name() == NMaterialSectionName::LocalFlags)
                 {
-                    FillDynamic(propertiesRoot, SectionName::LocalProperties);
-                    FillDynamic(texturesRoot, SectionName::LocalTextures);
+                    if (inspCommand->key == NMaterialFlagName::FLAG_ILLUMINATION_USED && inspCommand->newValue.AsBool())
+                    {
+                        auto AddFlagIfNeeded = [](NMaterial* mat, const FastName& flagName)
+                        {
+                            bool hasFlag = false;
+                            NMaterial *parent = 
+                            while (mat)
+                            {
+                                if (mat->HasLocalFlag(flagName))
+                                {
+                                    hasFlag = true;
+                                    break;
+                                }
+
+                                mat = mat->GetParent();
+                            }
+
+                            if (!hasFlag && mat)
+                            {
+                                mat->AddFlag(flagName, 0);
+                            }
+                        };
+
+                        NMaterial* material = static_cast<NMaterial*>(inspCommand->ddata.object);
+                        AddFlagIfNeeded(material, NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_CASTER);
+                        AddFlagIfNeeded(material, NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_RECEIVER);
+
+                        bool hasProperty = false;
+                        while (material)
+                        {
+                            if (material->HasLocalFlag(flagName))
+                            {
+                                hasProperty = true;
+                                break;
+                            }
+
+                            mat = mat->GetParent();
+                        }
+
+                        if (!hasFlag)
+                        {
+                            mat->AddFlag(flagName, 0);
+                        }
+                    }
+
+                    FillIllumination();
+                    FillDynamic(propertiesRoot, NMaterialSectionName::LocalProperties);
+                    FillDynamic(texturesRoot, NMaterialSectionName::LocalTextures);
                 }
 
                 UpdateAllAddRemoveButtons(ui->materialProperty->GetRootProperty());
@@ -432,7 +482,7 @@ void MaterialEditor::FillBase()
         if (nullptr != nameMember)
         {
             QtPropertyDataInspMember *name = new QtPropertyDataInspMember(material, nameMember);
-            baseRoot->MergeChild(name, MATERIAL_NAME_LABEL);
+            baseRoot->MergeChild(name, UIName::Name);
         }
 
         // fill material group, only for material type
@@ -440,7 +490,7 @@ void MaterialEditor::FillBase()
         if ((nullptr != groupMember) && (globalMaterial != material))
         {
             QtPropertyDataInspMember *group = new QtPropertyDataInspMember(material, groupMember);
-            baseRoot->MergeChild(group, MATERIAL_GROUP_LABEL);
+            baseRoot->MergeChild(group, UIName::Group);
 
             // Add unknown value:
             group->AddAllowedValue(VariantType(String()), "Unknown");
@@ -468,7 +518,7 @@ void MaterialEditor::FillDynamic(QtPropertyData *root, const FastName& dynamicNa
 
     foreach(DAVA::NMaterial *material, curMaterials)
     {
-        if (material == globalMaterial && dynamicName == SectionName::LocalTextures)
+        if (material == globalMaterial && dynamicName == NMaterialSectionName::LocalTextures)
         {
             continue;
         }
@@ -485,6 +535,46 @@ void MaterialEditor::FillDynamic(QtPropertyData *root, const FastName& dynamicNa
     }
 }
 
+void MaterialEditor::FillIllumination()
+{
+    DAVA::NMaterial* globalMaterial = nullptr;
+    illuminationRoot->ChildRemoveAll();
+
+    for (auto& material : curMaterials)
+    {
+        if (material->GetEffectiveFlagValue(NMaterialFlagName::FLAG_ILLUMINATION_USED) != 1)
+        {
+            continue;
+        }
+
+        const DAVA::InspInfo* info = material->GetTypeInfo();
+        { // Add flags
+            const DAVA::InspMember* flagsMember = info->Member(NMaterialSectionName::LocalFlags);
+            if (flagsMember != nullptr && (nullptr != flagsMember->Dynamic()))
+            {
+                DAVA::InspInfoDynamic* dynamicInfo = flagsMember->Dynamic()->GetDynamicInfo();
+                FillDynamicMember(illuminationRoot, dynamicInfo, material, NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_CASTER);
+                FillDynamicMember(illuminationRoot, dynamicInfo, material, NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_RECEIVER);
+            }
+        }
+
+        { // add properties
+            const DAVA::InspMember* propertiesMember = info->Member(NMaterialSectionName::LocalProperties);
+            if (propertiesMember != nullptr && (nullptr != propertiesMember->Dynamic()))
+            {
+                DAVA::InspInfoDynamic* dynamicInfo = propertiesMember->Dynamic()->GetDynamicInfo();
+                FillDynamicMember(illuminationRoot, dynamicInfo, material, NMaterialParamName::PARAM_LIGHTMAP_SIZE);
+            }
+        }
+    }
+}
+
+void MaterialEditor::FillDynamicMember(QtPropertyData* root, DAVA::InspInfoDynamic* dynamic, DAVA::NMaterial* material, const FastName& memberName)
+{
+    DAVA::InspInfoDynamic::DynamicData ddata = dynamic->Prepare(material, false);
+    FillDynamicMemberInternal(root, dynamic, ddata, memberName);
+}
+
 void MaterialEditor::FillDynamicMembers(QtPropertyData *root, DAVA::InspInfoDynamic *dynamic, DAVA::NMaterial *material, bool isGlobal)
 {
     DAVA::InspInfoDynamic::DynamicData ddata = dynamic->Prepare(material, isGlobal);
@@ -493,20 +583,32 @@ void MaterialEditor::FillDynamicMembers(QtPropertyData *root, DAVA::InspInfoDyna
     // enumerate dynamic members and add them
     for(size_t i = 0; i < membersList.size(); ++i)
     {
-        QtPropertyDataInspDynamic *dynamicData = new QtPropertyDataInspDynamic(dynamic, ddata, membersList[i]);
+        const FastName& name = membersList[i];
 
-        // for all textures we should add texture path validator
-        if (root == texturesRoot)
-        {
-            ApplyTextureValidator(dynamicData);
+        if (root == flagsRoot && (name == NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_CASTER || name == NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_RECEIVER))
+        { // it will be shown in section illumination
+            continue;
         }
 
-        // update buttons state and enabled/disable state of this data
-        UpdateAddRemoveButtonState(dynamicData);
-
-        // merge created dynamic data into specified root
-        root->MergeChild(dynamicData, membersList[i].c_str());
+        FillDynamicMemberInternal(root, dynamic, ddata, name);
     }
+}
+
+void MaterialEditor::FillDynamicMemberInternal(QtPropertyData* root, DAVA::InspInfoDynamic* dynamic, DAVA::InspInfoDynamic::DynamicData& ddata, const FastName& memberName)
+{
+    QtPropertyDataInspDynamic* dynamicData = new QtPropertyDataInspDynamic(dynamic, ddata, memberName);
+
+    // for all textures we should add texture path validator
+    if (root == texturesRoot)
+    {
+        ApplyTextureValidator(dynamicData);
+    }
+
+    // update buttons state and enabled/disable state of this data
+    UpdateAddRemoveButtonState(dynamicData);
+
+    // merge created dynamic data into specified root
+    root->MergeChild(dynamicData, memberName.c_str());
 }
 
 void MaterialEditor::ApplyTextureValidator(QtPropertyDataInspDynamic *data)
@@ -1028,10 +1130,10 @@ DAVA::uint32 MaterialEditor::ExecMaterialLoadingDialog(DAVA::uint32 initialState
     QGroupBox *groupbox = new QGroupBox("Load parameters", dlg);
     dlgLayout->addWidget(groupbox);
 
-    QCheckBox *templateChBox = new QCheckBox(MATERIAL_TEMPLATE_LABEL, groupbox);
-    QCheckBox *groupChBox = new QCheckBox(MATERIAL_GROUP_LABEL, groupbox);
-    QCheckBox *propertiesChBox = new QCheckBox(MATERIAL_PROPERTIES_LABEL, groupbox);
-    QCheckBox *texturesChBox = new QCheckBox(MATERIAL_TEXTURES_LABEL, groupbox);
+    QCheckBox* templateChBox = new QCheckBox(UIName::Template, groupbox);
+    QCheckBox* groupChBox = new QCheckBox(UIName::Group, groupbox);
+    QCheckBox* propertiesChBox = new QCheckBox(UIName::Properties, groupbox);
+    QCheckBox* texturesChBox = new QCheckBox(UIName::Textures, groupbox);
 
     templateChBox->setChecked((bool) (initialState & CHECKED_TEMPLATE));
     groupChBox->setChecked((bool) (initialState & CHECKED_GROUP));

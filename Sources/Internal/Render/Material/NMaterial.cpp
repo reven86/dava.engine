@@ -1095,22 +1095,43 @@ void NMaterial::LoadOldNMaterial(KeyedArchive * archive, SerializationContext * 
         }
     }
 
+    bool illuminationUsed = false;
     if (archive->IsKeyExists("illumination.isUsed"))
-        AddFlag(NMaterialFlagName::FLAG_ILLUMINATION_USED, archive->GetBool("illumination.isUsed"));
+    {
+        illuminationUsed = archive->GetBool("illumination.isUsed");
+        AddFlag(NMaterialFlagName::FLAG_ILLUMINATION_USED, illuminationUsed);
+    }
 
     if (archive->IsKeyExists("illumination.castShadow"))
+    {
         AddFlag(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_CASTER, archive->GetBool("illumination.castShadow"));
+    }
+    else if (illuminationUsed)
+    {
+        AddFlag(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_CASTER, false); // need for material editor
+    }
 
     if (archive->IsKeyExists("illumination.receiveShadow"))
+    {
         AddFlag(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_RECEIVER, archive->GetBool("illumination.receiveShadow"));
+    }
+    else if (illuminationUsed)
+    {
+        AddFlag(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_RECEIVER, false); // need for material editor
+    }
 
+    static const float32 DEFAULT_LIGHTMAP_SIZE = 128.f;
     if (archive->IsKeyExists("illumination.lightmapSize"))
     {
-        float32 lighmapSize = (float32)archive->GetInt32("illumination.lightmapSize");
+        float32 lighmapSize = (float32)archive->GetInt32("illumination.lightmapSize", DEFAULT_LIGHTMAP_SIZE);
         if (HasLocalProperty(NMaterialParamName::PARAM_LIGHTMAP_SIZE))
             SetPropertyValue(NMaterialParamName::PARAM_LIGHTMAP_SIZE, &lighmapSize);
         else
             AddProperty(NMaterialParamName::PARAM_LIGHTMAP_SIZE, &lighmapSize, rhi::ShaderProp::TYPE_FLOAT1, 1);
+    }
+    else if (illuminationUsed)
+    {
+        AddProperty(NMaterialParamName::PARAM_LIGHTMAP_SIZE, &DEFAULT_LIGHTMAP_SIZE, rhi::ShaderProp::TYPE_FLOAT1, 1);
     }
 }
 

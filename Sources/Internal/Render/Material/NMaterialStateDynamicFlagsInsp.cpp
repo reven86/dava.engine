@@ -52,32 +52,32 @@ Vector<FastName> NMaterialStateDynamicFlagsInsp::MembersList(const DynamicData& 
     if (ret.empty())
     {
         ret.reserve(22);
-        
-        ret.push_back(NMaterialFlagName::FLAG_VERTEXFOG);
-        ret.push_back(NMaterialFlagName::FLAG_FOG_LINEAR);
-        ret.push_back(NMaterialFlagName::FLAG_FOG_HALFSPACE);
-        ret.push_back(NMaterialFlagName::FLAG_FOG_HALFSPACE_LINEAR);
-        ret.push_back(NMaterialFlagName::FLAG_FOG_ATMOSPHERE);
 
-        ret.push_back(NMaterialFlagName::FLAG_FLATCOLOR);
-        ret.push_back(NMaterialFlagName::FLAG_TEXTURESHIFT);
-        ret.push_back(NMaterialFlagName::FLAG_TEXTURE0_ANIMATION_SHIFT);
-        
-        ret.push_back(NMaterialFlagName::FLAG_WAVE_ANIMATION);
-        ret.push_back(NMaterialFlagName::FLAG_FAST_NORMALIZATION);
-        
-        ret.push_back(NMaterialFlagName::FLAG_SPECULAR);
-        ret.push_back(NMaterialFlagName::FLAG_SEPARATE_NORMALMAPS);
-        ret.push_back(NMaterialFlagName::FLAG_TANGENT_SPACE_WATER_REFLECTIONS);
-        ret.push_back(NMaterialFlagName::FLAG_DEBUG_UNITY_Z_NORMAL);
-        ret.push_back(NMaterialFlagName::FLAG_DEBUG_Z_NORMAL_SCALE);
-        ret.push_back(NMaterialFlagName::FLAG_DEBUG_NORMAL_ROTATION);        
-        ret.push_back(NMaterialFlagName::FLAG_SKINNING);
-        ret.push_back(NMaterialFlagName::FLAG_TILED_DECAL_MASK);
-		ret.push_back(NMaterialFlagName::FLAG_ALPHATESTVALUE);
-        ret.push_back(NMaterialFlagName::FLAG_ILLUMINATION_USED);
-        //        ret.push_back(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_CASTER);
-        //        ret.push_back(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_RECEIVER);
+        ret.emplace_back(NMaterialFlagName::FLAG_VERTEXFOG);
+        ret.emplace_back(NMaterialFlagName::FLAG_FOG_LINEAR);
+        ret.emplace_back(NMaterialFlagName::FLAG_FOG_HALFSPACE);
+        ret.emplace_back(NMaterialFlagName::FLAG_FOG_HALFSPACE_LINEAR);
+        ret.emplace_back(NMaterialFlagName::FLAG_FOG_ATMOSPHERE);
+
+        ret.emplace_back(NMaterialFlagName::FLAG_FLATCOLOR);
+        ret.emplace_back(NMaterialFlagName::FLAG_TEXTURESHIFT);
+        ret.emplace_back(NMaterialFlagName::FLAG_TEXTURE0_ANIMATION_SHIFT);
+
+        ret.emplace_back(NMaterialFlagName::FLAG_WAVE_ANIMATION);
+        ret.emplace_back(NMaterialFlagName::FLAG_FAST_NORMALIZATION);
+
+        ret.emplace_back(NMaterialFlagName::FLAG_SPECULAR);
+        ret.emplace_back(NMaterialFlagName::FLAG_SEPARATE_NORMALMAPS);
+        ret.emplace_back(NMaterialFlagName::FLAG_TANGENT_SPACE_WATER_REFLECTIONS);
+        ret.emplace_back(NMaterialFlagName::FLAG_DEBUG_UNITY_Z_NORMAL);
+        ret.emplace_back(NMaterialFlagName::FLAG_DEBUG_Z_NORMAL_SCALE);
+        ret.emplace_back(NMaterialFlagName::FLAG_DEBUG_NORMAL_ROTATION);
+        ret.emplace_back(NMaterialFlagName::FLAG_SKINNING);
+        ret.emplace_back(NMaterialFlagName::FLAG_TILED_DECAL_MASK);
+        ret.emplace_back(NMaterialFlagName::FLAG_ALPHATESTVALUE);
+        ret.emplace_back(NMaterialFlagName::FLAG_ILLUMINATION_USED);
+        ret.emplace_back(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_CASTER);
+        ret.emplace_back(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_RECEIVER);
     }
 
     return ret;

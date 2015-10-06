@@ -89,8 +89,13 @@ protected:
 
     void FillBase();
     void FillDynamic(QtPropertyData *root, const FastName& dynamicName);
-    void FillDynamicMembers(QtPropertyData *root, DAVA::InspInfoDynamic *dynamic, DAVA::NMaterial *material, bool isGlobal);
+    void FillIllumination();
     void FillTemplates(const QList<DAVA::NMaterial *>& materials);
+
+    void FillDynamicMember(QtPropertyData* root, DAVA::InspInfoDynamic* dynamic, DAVA::NMaterial* material, const FastName& memberName);
+    void FillDynamicMemberInternal(QtPropertyData* root, DAVA::InspInfoDynamic* dynamic, DAVA::InspInfoDynamic::DynamicData& ddata, const FastName& memberName);
+    void FillDynamicMembers(QtPropertyData* root, DAVA::InspInfoDynamic* dynamic, DAVA::NMaterial* material, bool isGlobal);
+
     void ApplyTextureValidator(QtPropertyDataInspDynamic *data);
 
     void UpdateAllAddRemoveButtons(QtPropertyData *root);
@@ -142,11 +147,14 @@ private:
 	void UpdateMaterialTexturesFromPreset(DAVA::NMaterial* material, DAVA::KeyedArchive* texturesArchive, 
 		const DAVA::FilePath& scenePath);
 
+    QtPropertyData* AddSection(const QString& sectionName);
+
 private:
 	QtPosSaver posSaver;
 	QList<DAVA::NMaterial*> curMaterials;
     QtPropertyData *baseRoot = nullptr;
     QtPropertyData *flagsRoot = nullptr;
+    QtPropertyData* illuminationRoot = nullptr;
     QtPropertyData *propertiesRoot = nullptr;
     QtPropertyData *texturesRoot = nullptr;
     QPointer<MaterialTemplateModel> templatesFilterModel;
