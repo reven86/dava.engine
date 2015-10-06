@@ -293,8 +293,6 @@ ParticleEmitter *ParticleEmitter::LoadEmitter(const FilePath & filename)
 bool ParticleEmitter::LoadFromYaml(const FilePath & filename, bool preserveInheritPosition)
 {
     Cleanup(true);
-    
-    configPath = filename;
 
 	YamlParser * parser = YamlParser::Create(filename);
 	if(!parser)
@@ -303,6 +301,8 @@ bool ParticleEmitter::LoadFromYaml(const FilePath & filename, bool preserveInher
 		return false;
 	}
 
+    configPath = filename;
+    
 	YamlNode * rootNode = parser->GetRootNode();
 
 	const YamlNode * emitterNode = rootNode->Get("emitter");
