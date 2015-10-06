@@ -32,9 +32,11 @@
 
 #include <QObject>
 #include <QUndoGroup>
+#include "Base/BaseTypes.h"
+#include "EditorSystems/SelectionContainer.h"
 
 class Document;
-class SharedData;
+class PackageBaseNode;
 
 class DocumentGroup : public QObject
 {
@@ -48,14 +50,18 @@ public:
     QList<Document*> GetDocuments() const;
     Document* GetActiveDocument() const;
     const QUndoGroup* GetUndoGroup() const;
-public slots:
-    void SetActiveDocument(Document* document);
 
 signals:
     void ActiveDocumentChanged(Document*);
+    void SelectedNodesChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
+    void CanvasSizeChanged();
 
-    void SharedDataChanged(const QByteArray &role);
-    void DocumentChanged(SharedData *data);
+public slots:
+    void SetActiveDocument(Document* document);
+    void SetSelectedNodes(const SelectedNodes& selected, const SelectedNodes& deselected);
+    void SetEmulationMode(bool emulationMode);
+    void SetScale(float scale);
+
 protected:
     Document *active;
     QList<Document*> documentList;

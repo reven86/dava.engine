@@ -121,23 +121,23 @@ void ShowErrorDialog(const DAVA::Set<DAVA::String> &errors)
     const String dialogTitle = Format("%u error(s)", totalErrors);
     const String errorDivideLine("\n--------------------\n");
 
-	String errorMessage;
+    String errorMessage;
     uint32 errorCounter = 0;
     for (const auto& message : errors)
-	{
+    {
         errorMessage += PointerSerializer::CleanUpString(message) + errorDivideLine;
         errorCounter++;
 
-		if (errorCounter == maxErrorsPerDialog)
-		{
+        if (errorCounter == maxErrorsPerDialog)
+        {
             errorMessage += "\n\nSee console log for details.";
             ShowErrorDialog(errorMessage, dialogTitle);
             errorMessage.clear();
             break;
         }
-	}
+    }
 
-	if (!errorMessage.empty())
+    if (!errorMessage.empty())
         ShowErrorDialog(errorMessage, dialogTitle);
 }
 

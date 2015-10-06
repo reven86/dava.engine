@@ -502,19 +502,19 @@ namespace DAVA
 		bool isFind = false;
         for (Vector<DAVA::UIEvent>::iterator it = events.begin(); it != events.end(); it++)
         {
-            if(it->tid == button)
-			{
-				isFind = true;
+            if (it->tid == button)
+            {
+                isFind = true;
 
                 it->physPoint.x = static_cast<float32>(GET_X_LPARAM(lParam));
                 it->physPoint.y = static_cast<float32>(GET_Y_LPARAM(lParam));
                 it->phase = phase;
 
                 break;
-			}
-		}
+            }
+        }
 
-		if(!isFind)
+        if(!isFind)
 		{
 			UIEvent newTouch;
 			newTouch.tid = button;
@@ -528,21 +528,21 @@ namespace DAVA
         for (Vector<DAVA::UIEvent>::iterator it = events.begin(); it != events.end(); it++)
         {
             outTouches->push_back(*it);
-		}
+        }
 
-		if(phase == UIEvent::PHASE_ENDED || phase == UIEvent::PHASE_MOVE)
-		{
+        if (phase == UIEvent::PHASE_ENDED || phase == UIEvent::PHASE_MOVE)
+        {
             for (Vector<DAVA::UIEvent>::iterator it = events.begin(); it != events.end(); it++)
             {
-                if(it->tid == button)
-				{
+                if (it->tid == button)
+                {
                     events.erase(it);
                     break;
                 }
-			}
-		}
+            }
+        }
 
-		return phase;
+        return phase;
 	}
 
 	static bool mouseCursorShown = true;
@@ -641,15 +641,15 @@ namespace DAVA
         if (RenderManager::Instance()->GetCursor() != nullptr && mouseCursorShown)
         {
             ShowCursor(false);
-			mouseCursorShown = false;
-		}
+            mouseCursorShown = false;
+        }
         if (RenderManager::Instance()->GetCursor() == nullptr && !mouseCursorShown)
         {
             ShowCursor(false);
-			mouseCursorShown = false;
-		}
+            mouseCursorShown = false;
+        }
 
-		HandleMouseButtonsReleased(buttsFlags);
+        HandleMouseButtonsReleased(buttsFlags);
 	}
 
     void CoreWin32Platform::OnTouchEvent(UIEvent::eInputPhase phase, UIEvent::PointerDeviceID deviceId, uint32 fingerId, float32 x, float32 y, float presure)
@@ -695,7 +695,7 @@ namespace DAVA
 
     LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     {
-        CoreWin32Platform* core = static_cast< CoreWin32Platform* >(Core::Instance());
+        CoreWin32Platform* core = static_cast<CoreWin32Platform*>(Core::Instance());
 #ifndef WM_MOUSEWHEEL
 #define WM_MOUSEWHEEL 0x020A
 #endif
@@ -843,10 +843,10 @@ namespace DAVA
         }
         case WM_NCMOUSEMOVE:
             if (!mouseCursorShown)
-            {	
-				ShowCursor(true);
-				mouseCursorShown = true;
-			}
+            {
+                ShowCursor(true);
+                mouseCursorShown = true;
+            }
 			break;
 		case WM_DESTROY:
 			PostQuitMessage(0);

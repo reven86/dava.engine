@@ -662,13 +662,21 @@ uint8 GetImageParametersAt(const Vector<String>& gpuParams, uint8 gpuParamPositi
 
             if (gpuParamPosition < gpuParams.size())
             {
-                int res = -1;
-                bool parseOk = ParseFromString(gpuParams[gpuParamPosition], res);
-
-                if (parseOk && res >= 0 && res <= 100)
+                if (CompareCaseInsensitive(gpuParams[gpuParamPosition], "lossless") == 0)
                 {
-                    imageQuality = static_cast<ImageQuality>(res);
+                    imageQuality = ImageQuality::LOSSLESS_IMAGE_QUALITY;
                     ++paramsRead;
+                }
+                else
+                {
+                    int res = -1;
+                    bool parseOk = ParseFromString(gpuParams[gpuParamPosition], res);
+
+                    if (parseOk && res >= 0 && res <= 100)
+                    {
+                        imageQuality = static_cast<ImageQuality>(res);
+                        ++paramsRead;
+                    }
                 }
             }
         }

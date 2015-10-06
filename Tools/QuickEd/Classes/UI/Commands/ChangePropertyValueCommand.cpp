@@ -33,52 +33,118 @@
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/ControlProperties/AbstractProperty.h"
 
-ChangePropertyValueCommand::ChangePropertyValueCommand(PackageNode *_root, ControlNode *_node, AbstractProperty *prop, const DAVA::VariantType &newVal, QUndoCommand *parent /*= 0*/ )
+using namespace DAVA;
+
+ChangePropertyValueCommand::ChangePropertyValueCommand(PackageNode* root_, const Vector<std::tuple<ControlNode*, AbstractProperty*, VariantType>>& properties_, size_t hash_, QUndoCommand* parent /*= nullptr*/)
     : QUndoCommand(parent)
-    , root(SafeRetain(_root))
-    , node(SafeRetain(_node))
-    , property(SafeRetain(prop))
-    , newValue(newVal)
+    , root(SafeRetain(root_))
+    , hash(hash_)
 {
-    if (property->IsOverriddenLocally())
+    for (auto property : properties_)
     {
-        oldValue = property->GetValue();
+        AbstractProperty* prop = std::get<PROPERTY>(property);
+        changedProperties.emplace_back(
+        std::get<NODE>(property),
+        prop,
+        std::get<NEW_VALUE>(property),
+        GetValueFromProperty(prop));
     }
-    setText( QString("change %1").arg(QString(property->GetName().c_str())));
+    Init();
 }
 
-ChangePropertyValueCommand::ChangePropertyValueCommand(PackageNode *_root, ControlNode *_node, AbstractProperty *prop, QUndoCommand *parent /*= 0*/ )
+ChangePropertyValueCommand::ChangePropertyValueCommand(PackageNode* root_, ControlNode* node, AbstractProperty* prop, const VariantType& newVal, size_t hash_, QUndoCommand* parent /*= nullptr*/)
     : QUndoCommand(parent)
-    , root(SafeRetain(_root))
-    , node(SafeRetain(_node))
-    , property(SafeRetain(prop))
+    , root(SafeRetain(root_))
+    , hash(hash_)
 {
-    if (property->IsOverriddenLocally())
+    changedProperties.emplace_back(
+    node, prop, newVal, GetValueFromProperty(prop));
+    Init();
+}
+
+ChangePropertyValueCommand::ChangePropertyValueCommand(PackageNode* root_, ControlNode* node, AbstractProperty* prop, QUndoCommand* parent /*= nullptr*/)
+    : QUndoCommand(parent)
+    , root(SafeRetain(root_))
+{
+    changedProperties.emplace_back(
+    node, prop, VariantType(), GetValueFromProperty(prop));
+    Init();
+}
+
+void ChangePropertyValueCommand::Init()
+{
+    QString text = "changed:";
+    std::hash<void*> ptrHash;
+    for (const auto& propertyValue : changedProperties)
     {
-        oldValue = property->GetValue();
+        AbstractProperty* prop = std::get<PROPERTY>(propertyValue);
+        hash = ptrHash(prop) ^ (hash << 1);
+        text += QString(" %1").arg(prop->GetName().c_str());
     }
-    setText( QString("reset %1").arg(QString(property->GetName().c_str())));
+    setText(text);
 }
 
 ChangePropertyValueCommand::~ChangePropertyValueCommand()
 {
     SafeRelease(root);
-    SafeRelease(node);
-    SafeRelease(property);
 }
 
 void ChangePropertyValueCommand::redo()
 {
-    if (newValue.GetType() == DAVA::VariantType::TYPE_NONE)
-        root->ResetControlProperty(node, property);
-    else
-        root->SetControlProperty(node, property, newValue);
+    for (const auto& propertyValue : changedProperties)
+    {
+        ControlNode* node = std::get<NODE>(propertyValue);
+        const VariantType& newValue = std::get<NEW_VALUE>(propertyValue);
+        AbstractProperty* property = std::get<PROPERTY>(propertyValue);
+
+        if (newValue.GetType() == VariantType::TYPE_NONE)
+        {
+            root->ResetControlProperty(node, property);
+        }
+        else
+        {
+            root->SetControlProperty(node, property, newValue);
+        }
+    }
 }
 
 void ChangePropertyValueCommand::undo()
 {
-    if (oldValue.GetType() == DAVA::VariantType::TYPE_NONE)
-        root->ResetControlProperty(node, property);
-    else
-        root->SetControlProperty(node, property, oldValue);
+    for (const auto& propertyValue : changedProperties)
+    {
+        ControlNode* node = std::get<NODE>(propertyValue);
+        const VariantType& oldValue = std::get<OLD_VALUE>(propertyValue);
+        AbstractProperty* property = std::get<PROPERTY>(propertyValue);
+
+        if (oldValue.GetType() == VariantType::TYPE_NONE)
+        {
+            root->ResetControlProperty(node, property);
+        }
+        else
+        {
+            root->SetControlProperty(node, property, oldValue);
+        }
+    }
+}
+
+int ChangePropertyValueCommand::id() const
+{
+    return static_cast<int>(hash);
+}
+
+bool ChangePropertyValueCommand::mergeWith(const QUndoCommand* other)
+{
+    if (other->id() != id())
+        return false;
+    const ChangePropertyValueCommand* otherCommand = static_cast<const ChangePropertyValueCommand*>(other);
+    for (int i = 0, k = changedProperties.size(); i < k; ++i)
+    {
+        std::get<NEW_VALUE>(changedProperties.at(i)) = std::get<NEW_VALUE>(otherCommand->changedProperties.at(i));
+    }
+    return true;
+}
+
+VariantType ChangePropertyValueCommand::GetValueFromProperty(AbstractProperty* property)
+{
+    return property->IsOverriddenLocally() ? property->GetValue() : VariantType();
 }

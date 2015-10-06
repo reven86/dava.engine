@@ -481,6 +481,18 @@ void SoundSystem::SetCurrentLocale(const String & langID)
     }
 }
 
+String SoundSystem::GetCurrentLocale() const
+{
+    if (fmodEventSystem)
+    {
+        char lang[256] = {};
+        FMOD_VERIFY(fmodEventSystem->getLanguage(lang));
+        return String(lang);
+    }
+
+    return String();
+}
+
 void SoundSystem::SetListenerPosition(const Vector3 & position)
 {
     if (fmodEventSystem)
