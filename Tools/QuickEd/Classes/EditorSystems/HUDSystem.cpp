@@ -545,7 +545,7 @@ void HUDSystem::OnEmulationModeChanged(bool emulationMode)
     }
 }
 
-void HUDSystem::OnMagnetLinesChanged(const DAVA::Vector<MagnetLine>& magnetLines)
+void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLine>& magnetLines)
 {
     static const float32 axtraSizeValue = 50.0f;
     magnetControls.clear();

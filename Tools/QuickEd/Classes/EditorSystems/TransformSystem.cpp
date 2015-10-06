@@ -460,6 +460,28 @@ void TransformSystem::MovePivot(Vector2 delta)
     systemManager->PropertiesChanged.Emit(std::move(propertiesToChange), std::move(currentHash));
 }
 
+void TransformSystem::EmitMagnetLinesForPivot(Vector2& target)
+{
+    const Rect ur(controlGeometricData.GetUnrotatedRect());
+    Vector2 offset = ur.GetSize() * target;
+    Vector2 position = controlGeometricData.position - RotateVectorInv(controlGeometricData.pivotPoint * controlGeometricData.scale, controlGeometricData);
+
+    Vector2 horizontalLinePos(0.0f, offset.y);
+    horizontalLinePos = RotateVectorInv(horizontalLinePos, controlGeometricData);
+    horizontalLinePos += position;
+
+    Vector2 verticalLinePos(offset.x, 0.0f);
+    verticalLinePos = RotateVectorInv(verticalLinePos, controlGeometricData);
+    verticalLinePos += position;
+
+    Rect horizontalRect(horizontalLinePos, Vector2(ur.GetSize().x, 0.0f));
+    Rect verticalRect(verticalLinePos, Vector2(0.0f, ur.GetSize().y));
+    Vector<MagnetLine> magnets;
+    magnets.emplace_back(horizontalRect, controlGeometricData, Vector2::AXIS_X);
+    magnets.emplace_back(verticalRect, controlGeometricData, Vector2::AXIS_Y);
+    systemManager->MagnetLinesChanged.Emit(magnets);
+}
+
 Vector2 TransformSystem::AdjustPivot(Vector2& delta)
 {
     const Rect ur(controlGeometricData.GetUnrotatedRect());
@@ -504,14 +526,7 @@ Vector2 TransformSystem::AdjustPivot(Vector2& delta)
         }
         if (found)
         {
-            Vector2 offset = controlGeometricData.GetUnrotatedRect().GetSize() * target;
-            Vector2 position = controlGeometricData.position - RotateVectorInv(controlGeometricData.pivotPoint * controlGeometricData.scale, controlGeometricData);
-            Vector2 absPos = position + RotateVectorInv(offset, controlGeometricData);
-
-            Vector<MagnetLine> magnets;
-            magnets.emplace_back(Rect(absPos.x, absPos.y, 0, 0), controlGeometricData, Vector2::AXIS_X);
-            magnets.emplace_back(Rect(absPos.x, absPos.y, 0, 0), controlGeometricData, Vector2::AXIS_Y);
-            systemManager->MagnetLinesChanged.Emit(magnets);
+            EmitMagnetLinesForPivot(target);
             extraDelta = finalPivot - target;
             delta = RotateVectorInv((target - origPivot) * controlSize, controlGeometricData);
 

@@ -60,6 +60,7 @@ private:
     void ResizeControl(DAVA::Vector2 delta, bool withPivot, bool rateably);
     DAVA::Vector2 AdjustResize(DAVA::Array<int, DAVA::Vector2::AXIS_COUNT> directions, DAVA::Vector2 delta);
     void MovePivot(DAVA::Vector2 delta);
+    void EmitMagnetLinesForPivot(DAVA::Vector2& target);
     DAVA::Vector2 AdjustPivot(DAVA::Vector2& delta);
     void Rotate(DAVA::Vector2 pos);
     void MoveAllSelectedControls(DAVA::Vector2 delta);
