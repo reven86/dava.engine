@@ -69,6 +69,12 @@ if( ANDROID )
 
 endif()
 
+if( DAVA_TOOLS_FOUND )
+    include_directories( ${DAVA_TOOLS_DIR} )
+    list ( APPEND LIBRARIES ${DAVA_TOOLS_LIBRARY} )
+
+endif()
+
 if( DAVA_FOUND )
     include_directories   ( ${DAVA_INCLUDE_DIR} ) 
     include_directories   ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} )
@@ -480,11 +486,6 @@ endif()
 
 if( DAVA_FOUND )
     list ( APPEND LIBRARIES ${DAVA_LIBRARY} )
-
-endif()
-
-if( DAVA_TOOLS_FOUND )
-    list ( APPEND LIBRARIES ${DAVA_TOOLS_LIBRARY} )
 
 endif()
 
