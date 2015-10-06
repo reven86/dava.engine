@@ -1040,10 +1040,10 @@ void Texture::SetPixelization(bool value)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-    if (value == pixelizationFlag)
-    {
-        return;
-    }
+    //     if (value == pixelizationFlag)
+    //     {
+    //         return;
+    //     }
 
     pixelizationFlag = value;
     const TexturesMap& texturesMap = GetTextureMap();

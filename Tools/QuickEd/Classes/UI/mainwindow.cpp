@@ -597,5 +597,8 @@ void MainWindow::OnDocumentChanged(Document* doc)
     if (nullptr != doc)
     {
         doc->SetEmulationMode(emulationBox->isChecked());
+
+        const bool isPixelized = EditorSettings::Instance()->IsPixelized();
+        Texture::SetPixelization(isPixelized);
     }
 }
