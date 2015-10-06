@@ -51,7 +51,7 @@ public:
     void Unlock() DAVA_NOEXCEPT;
 
 private:
-    Atomic<int32> flag;
+    Atomic<size_t> flag;
 };
 
 //-----------------------------------------------------------------------------
