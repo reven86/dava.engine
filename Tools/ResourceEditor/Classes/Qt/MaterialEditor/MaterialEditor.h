@@ -149,6 +149,9 @@ private:
 
     QtPropertyData* AddSection(const QString& sectionName);
 
+    void AddMaterialFlagIfNeed(NMaterial* material, const FastName& flagName);
+    bool HasMaterialProperty(NMaterial* material, const FastName& paramName);
+
 private:
 	QtPosSaver posSaver;
 	QList<DAVA::NMaterial*> curMaterials;

@@ -369,57 +369,33 @@ void MaterialEditor::commandExecuted(SceneEditor2 *scene, const Command2 *comman
                 // because their set can be changed
                 if (inspCommand->dynamicInfo->GetMember()->Name() == NMaterialSectionName::LocalFlags)
                 {
-                    if (inspCommand->key == NMaterialFlagName::FLAG_ILLUMINATION_USED && inspCommand->newValue.AsBool())
+                    if (inspCommand->key == NMaterialFlagName::FLAG_ILLUMINATION_USED)
                     {
-                        auto AddFlagIfNeeded = [](NMaterial* mat, const FastName& flagName)
-                        {
-                            bool hasFlag = false;
-                            NMaterial *parent = 
-                            while (mat)
-                            {
-                                if (mat->HasLocalFlag(flagName))
-                                {
-                                    hasFlag = true;
-                                    break;
-                                }
-
-                                mat = mat->GetParent();
-                            }
-
-                            if (!hasFlag && mat)
-                            {
-                                mat->AddFlag(flagName, 0);
-                            }
-                        };
-
                         NMaterial* material = static_cast<NMaterial*>(inspCommand->ddata.object);
-                        AddFlagIfNeeded(material, NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_CASTER);
-                        AddFlagIfNeeded(material, NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_RECEIVER);
-
-                        bool hasProperty = false;
-                        while (material)
+                        if (material->HasLocalFlag(NMaterialFlagName::FLAG_ILLUMINATION_USED) && material->GetLocalFlagValue(NMaterialFlagName::FLAG_ILLUMINATION_USED) == 1)
                         {
-                            if (material->HasLocalFlag(flagName))
+                            AddMaterialFlagIfNeed(material, NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_CASTER);
+                            AddMaterialFlagIfNeed(material, NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_RECEIVER);
+
+                            bool hasProperty = HasMaterialProperty(material, NMaterialParamName::PARAM_LIGHTMAP_SIZE);
+                            if (!hasProperty)
                             {
-                                hasProperty = true;
-                                break;
+                                static const float32 DEFAULT_LIGHTMAP_SIZE = 128.f;
+                                material->AddProperty(NMaterialParamName::PARAM_LIGHTMAP_SIZE, &DEFAULT_LIGHTMAP_SIZE, rhi::ShaderProp::TYPE_FLOAT1, 1);
+
+                                material->AddProperty(NMaterialParamName::PARAM_FOG_START, &DEFAULT_LIGHTMAP_SIZE, rhi::ShaderProp::TYPE_FLOAT1, 1);
                             }
 
-                            mat = mat->GetParent();
-                        }
-
-                        if (!hasFlag)
-                        {
-                            mat->AddFlag(flagName, 0);
+                            material->InvalidateRenderVariants();
                         }
                     }
 
-                    FillIllumination();
-                    FillDynamic(propertiesRoot, NMaterialSectionName::LocalProperties);
-                    FillDynamic(texturesRoot, NMaterialSectionName::LocalTextures);
+                    materialPropertiesUpdater->Update();
                 }
-
-                UpdateAllAddRemoveButtons(ui->materialProperty->GetRootProperty());
+                else
+                {
+                    UpdateAllAddRemoveButtons(ui->materialProperty->GetRootProperty());
+                }
             }
             break;
         case CMDID_MATERIAL_GLOBAL_SET:
@@ -434,6 +410,42 @@ void MaterialEditor::commandExecuted(SceneEditor2 *scene, const Command2 *comman
 
         ui->materialProperty->verticalScrollBar()->setValue(curScrollPos);
     }
+}
+
+void MaterialEditor::AddMaterialFlagIfNeed(NMaterial* material, const FastName& flagName)
+{
+    bool hasFlag = false;
+    NMaterial* parent = material;
+    while (parent)
+    {
+        if (parent->HasLocalFlag(flagName))
+        {
+            hasFlag = true;
+            break;
+        }
+
+        parent = parent->GetParent();
+    }
+
+    if (!hasFlag)
+    {
+        material->AddFlag(flagName, 0);
+    }
+}
+
+bool MaterialEditor::HasMaterialProperty(NMaterial* material, const FastName& paramName)
+{
+    while (material != nullptr)
+    {
+        if (material->HasLocalProperty(paramName))
+        {
+            return true;
+        }
+
+        material = material->GetParent();
+    }
+
+    return false;
 }
 
 void MaterialEditor::OnQualityChanged()
@@ -537,7 +549,6 @@ void MaterialEditor::FillDynamic(QtPropertyData *root, const FastName& dynamicNa
 
 void MaterialEditor::FillIllumination()
 {
-    DAVA::NMaterial* globalMaterial = nullptr;
     illuminationRoot->ChildRemoveAll();
 
     for (auto& material : curMaterials)
@@ -585,10 +596,15 @@ void MaterialEditor::FillDynamicMembers(QtPropertyData *root, DAVA::InspInfoDyna
     {
         const FastName& name = membersList[i];
 
-        if (root == flagsRoot && (name == NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_CASTER || name == NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_RECEIVER))
+        if ((root == flagsRoot) && (name == NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_CASTER || name == NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_RECEIVER))
         { // it will be shown in section illumination
             continue;
         }
+
+        //        if ((root == propertiesRoot) && (name == NMaterialParamName::PARAM_LIGHTMAP_SIZE))
+        //        { // it will be shown in section illumination
+        //            continue;
+        //        }
 
         FillDynamicMemberInternal(root, dynamic, ddata, name);
     }
@@ -1364,4 +1380,5 @@ void MaterialEditor::UpdateMaterialFromPresetWithOptions(DAVA::NMaterial* materi
 void MaterialEditor::RefreshMaterialProperties()
 {
     SetCurMaterial(curMaterials);
+    UpdateAllAddRemoveButtons(ui->materialProperty->GetRootProperty());
 }
