@@ -69,6 +69,12 @@ if( ANDROID )
 
 endif()
 
+if( DAVA_TOOLS_FOUND )
+    include_directories( ${DAVA_TOOLS_DIR} )
+    list ( APPEND LIBRARIES ${DAVA_TOOLS_LIBRARY} )
+
+endif()
+
 if( DAVA_FOUND )
     include_directories   ( ${DAVA_INCLUDE_DIR} ) 
     include_directories   ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} )
@@ -107,9 +113,11 @@ elseif ( WINDOWS_UAP )
         message(FATAL_ERROR "This app supports Store / Phone only. Please check the target platform.")
     endif ()
 
+    set ( WINDOWS_UAP_CONFIG_DIR "${DAVA_ROOT_DIR}/Sources/CMake/ConfigureFiles" )
+
     #loading config file
     if ( NOT WINDOWS_UAP_CONFIG_FILE )
-        set ( WINDOWS_UAP_CONFIG_FILE "${DAVA_ROOT_DIR}/Sources/CMake/ConfigureFiles/UWPConfigTemplate.in" )
+        set ( WINDOWS_UAP_CONFIG_FILE "${WINDOWS_UAP_CONFIG_DIR}/UWPConfigTemplate.in" )
     endif ()
     configure_file( ${WINDOWS_UAP_CONFIG_FILE} ${CMAKE_CURRENT_BINARY_DIR}/UWPConfig.in )
     load_config ( ${CMAKE_CURRENT_BINARY_DIR}/UWPConfig.in )
@@ -130,6 +138,10 @@ elseif ( WINDOWS_UAP )
     get_filename_component ( CERT_NAME ${WINDOWS_UAP_CERTIFICATE_FILE} NAME )
     file ( COPY ${WINDOWS_UAP_CERTIFICATE_FILE} DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
     file ( RENAME ${CMAKE_CURRENT_BINARY_DIR}/${CERT_NAME} ${CMAKE_CURRENT_BINARY_DIR}/${APP_CERT_NAME} )
+    
+    #copy priconfig files
+    file ( COPY "${WINDOWS_UAP_CONFIG_DIR}/UWPPriConfigDefault.xml" DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+    file ( COPY "${WINDOWS_UAP_CONFIG_DIR}/UWPPriConfigPackaging.xml" DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
     
     set(CONTENT_FILES ${CONTENT_FILES}
         ${CMAKE_CURRENT_BINARY_DIR}/${APP_MANIFEST_NAME} )
@@ -477,11 +489,6 @@ if( DAVA_FOUND )
 
 endif()
 
-if( DAVA_TOOLS_FOUND )
-    list ( APPEND LIBRARIES ${DAVA_TOOLS_LIBRARY} )
-
-endif()
-
 if( ANDROID )
     set( LINK_WHOLE_ARCHIVE_FLAG -Wl,--whole-archive -Wl,--allow-multiple-definition )
     set( NO_LINK_WHOLE_ARCHIVE_FLAG -Wl,--no-whole-archive )
@@ -564,7 +571,7 @@ if( DEPLOY )
 
     endif() 
 
-    if( QT_PREFIX )
+    if( QT5_FOUND )
         qt_deploy( )
 
     endif()
