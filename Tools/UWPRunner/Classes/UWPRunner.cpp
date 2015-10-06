@@ -30,6 +30,7 @@
 #include <QFile>
 #include <QXmlStreamReader>
 
+#include "Concurrency/Atomic.h"
 #include "Concurrency/LockGuard.h"
 #include "Concurrency/Mutex.h"
 #include "Concurrency/Thread.h"
@@ -52,6 +53,7 @@
 using namespace DAVA;
 
 const Net::SimpleNetService* gNetLogger = nullptr;
+Atomic<bool> interrupt = false;
 using StringRecv = Function<void(const String&)>;
 
 void Run(Runner& runner);
@@ -245,14 +247,17 @@ void WaitApp()
 {
     Logger::Instance()->Info("Waiting app exit...");
 
-    while (true)
+    /*while (true)
     {
+        
         Thread::Sleep(1000);
         if (!gNetLogger->IsActive())
         {
             break;
         }
-    }
+    }*/
+
+    while (!interrupt) { Thread::Sleep(1000); }
 }
 
 void FrameworkWillTerminate()
@@ -465,7 +470,6 @@ void LogConsumingFunction(bool useTeamCityTestOutput, const String& logString)
     logLevel = logLevel.substr(1);
     message = message.substr(1);
 
-    useTeamCityTestOutput = true;
     if (useTeamCityTestOutput)
     {
         Logger* logger = Logger::Instance();
@@ -475,6 +479,11 @@ void LogConsumingFunction(bool useTeamCityTestOutput, const String& logString)
         {
             TeamcityTestsOutput testOutput;
             testOutput.Output(ll, message.c_str());
+
+            if (message.find("Finish all tests") != String::npos)
+            {
+                interrupt = true;
+            }
         }
 
     }
