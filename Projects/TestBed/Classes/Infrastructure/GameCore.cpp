@@ -42,6 +42,7 @@
 #include "Tests/UIMovieTest.h"
 #include "Tests/WebViewTest.h"
 #include "Tests/FunctionSignalTest.h"
+#include "Tests/KeyboardTest.h"
 //$UNITTEST_INCLUDE
 
 void GameCore::RunOnlyThisTest()
@@ -65,6 +66,7 @@ void GameCore::RegisterTests()
     new UIMovieTest();
     new WebViewTest();
 	new FunctionSignalTest();
+    new KeyboardTest();
 //$UNITTEST_CTOR
 }
 

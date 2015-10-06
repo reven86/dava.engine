@@ -483,20 +483,20 @@ void WinUAPXamlApp::OnKeyDown(Windows::UI::Core::CoreWindow^ sender, Windows::UI
     }
 
     int32 key = static_cast<int32>(args->VirtualKey);
-    bool isKeyReleased = args->KeyStatus.IsKeyReleased;
-    // Note: should be propagated to main thread
-    core->RunOnMainThread([this, key, isKeyReleased]()
+    bool isRepeat = args->KeyStatus.WasKeyDown;
+
+    core->RunOnMainThread([this, key, isRepeat]()
                           {
         auto& keyboard = InputSystem::Instance()->GetKeyboard();
 
         UIEvent ev;
-        if (isKeyReleased)
+        if (isRepeat)
         {
-            ev.phase = UIEvent::PHASE_KEY_DOWN;
+            ev.phase = UIEvent::PHASE_KEY_DOWN_REPEAT;
         }
         else
         {
-            ev.phase = UIEvent::PHASE_KEY_DOWN_REPEAT;
+            ev.phase = UIEvent::PHASE_KEY_DOWN;
         }
         ev.tid = keyboard.GetDavaKeyForSystemKey(static_cast<int32>(key));
 
@@ -525,19 +525,19 @@ void WinUAPXamlApp::OnKeyUp(Windows::UI::Core::CoreWindow^ sender, Windows::UI::
 void WinUAPXamlApp::OnChar(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Core::CharacterReceivedEventArgs ^ args)
 {
     uint32 unicodeChar = args->KeyCode;
-    bool isKeyReleased = args->KeyStatus.IsKeyReleased;
-    core->RunOnMainThread([this, unicodeChar, isKeyReleased]()
+    bool isRepeat = args->KeyStatus.WasKeyDown;
+    core->RunOnMainThread([this, unicodeChar, isRepeat]()
                           {
                               UIEvent ev;
-                              DVASSERT(unicodeChar < 0xFFFF); // whar_t is 16 bit, so keyChar dosnt fit
+                              DVASSERT(unicodeChar < 0xFFFF); // wchar_t is 16 bit, so keyChar dosnt fit
                               ev.keyChar = unicodeChar;
-                              if (isKeyReleased)
+                              if (isRepeat)
                               {
-                                  ev.phase = UIEvent::PHASE_KEYCHAR;
+                                  ev.phase = UIEvent::PHASE_KEYCHAR_REPEAT;
                               }
                               else
                               {
-                                  ev.phase = UIEvent::PHASE_KEYCHAR_REPEAT;
+                                  ev.phase = UIEvent::PHASE_KEYCHAR;
                               }
                               UIControlSystem::Instance()->OnInput({ ev }, events);
                           });
