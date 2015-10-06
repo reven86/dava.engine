@@ -157,7 +157,6 @@ property float4 lightPosition0 : dynamic,a : ;
 property float materialSpecularShininess : static,a : ;
 property float inSpecularity : static,a : ;
 property float inGlossiness : static,a : ;
-property float physicalFresnelReflectance : static,a : ;
 property float3 metalFresnelReflectance : static,a : ;
 #endif
 
