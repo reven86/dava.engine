@@ -341,6 +341,11 @@ void EditorMaterialSystem::ProcessCommand(const Command2 *command, bool redo)
     }
 }
 
+bool EditorMaterialSystem::HasMaterial(DAVA::NMaterial* material) const
+{
+    return (materialToObjectsMap.count(material) > 0) || (ownedParents.count(material) > 0);
+}
+
 void EditorMaterialSystem::AddMaterial(DAVA::NMaterial* material, const MaterialMapping& mapping)
 {
     if (nullptr != material)
