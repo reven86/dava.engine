@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "Version.h"
 
 #include "AssetCacheServerWindow.h"
 #include "ui_AssetCacheServerWidget.h"
@@ -49,17 +50,20 @@
 #include <QDoubleSpinBox>
 #include <QSpinBox>
 
-namespace {
-    String DEFAULT_REMOTE_IP = "127.0.0.1";
-    uint16 DEFAULT_REMOTE_PORT = DAVA::AssetCache::ASSET_SERVER_PORT;
+namespace
+{
+String DEFAULT_REMOTE_IP = "127.0.0.1";
+uint16 DEFAULT_REMOTE_PORT = DAVA::AssetCache::ASSET_SERVER_PORT;
 }
 
-AssetCacheServerWindow::AssetCacheServerWindow(ServerCore& core, QWidget *parent)
+AssetCacheServerWindow::AssetCacheServerWindow(ServerCore& core, QWidget* parent)
     : QMainWindow(parent)
     , ui(new Ui::AssetCacheServerWidget)
     , serverCore(core)
 {
     ui->setupUi(this);
+
+    setWindowTitle(QString("Asset Cache Server | %1").arg(APPLICATION_BUILD_VERSION));
 
     connect(ui->cacheFolderLineEdit, &QLineEdit::textChanged, this, &AssetCacheServerWindow::OnFolderTextChanged);
     connect(ui->selectFolderButton, &QPushButton::clicked, this, &AssetCacheServerWindow::OnFolderSelected);
@@ -105,13 +109,13 @@ void AssetCacheServerWindow::CreateTrayIcon()
     stopAction = new QAction("Stop server", this);
     connect(stopAction, &QAction::triggered, this, &AssetCacheServerWindow::OnStopAction);
 
-    QAction *editAction = new QAction("Edit settings", this);
+    QAction* editAction = new QAction("Edit settings", this);
     connect(editAction, &QAction::triggered, this, &AssetCacheServerWindow::OnEditAction);
 
-    QAction *quitAction = new QAction("Quit", this);
+    QAction* quitAction = new QAction("Quit", this);
     connect(quitAction, &QAction::triggered, qApp, QApplication::quit);
 
-    QMenu *trayActionsMenu = new QMenu(this);
+    QMenu* trayActionsMenu = new QMenu(this);
     trayActionsMenu->addAction(startAction);
     trayActionsMenu->addAction(stopAction);
     trayActionsMenu->addSeparator();
@@ -136,7 +140,7 @@ void AssetCacheServerWindow::CreateTrayIcon()
     connect(trayIcon, &QSystemTrayIcon::activated, this, &AssetCacheServerWindow::OnTrayIconActivated);
 }
 
-void AssetCacheServerWindow::closeEvent(QCloseEvent *e)
+void AssetCacheServerWindow::closeEvent(QCloseEvent* e)
 {
     hide();
     e->ignore();
@@ -174,7 +178,7 @@ void AssetCacheServerWindow::OnFolderSelected()
     QString directory = FileDialog::getExistingDirectory(this, "Choose directory", QDir::currentPath(),
                                                          QFileDialog::ShowDirsOnly);
     ui->cacheFolderLineEdit->setText(directory);
-    
+
     VerifyData();
 }
 
@@ -218,7 +222,7 @@ void AssetCacheServerWindow::OnRemoteServerAdded()
 
 void AssetCacheServerWindow::OnRemoteServerRemoved()
 {
-    RemoteServerWidget *remoteServer = qobject_cast<RemoteServerWidget *>(sender());
+    RemoteServerWidget* remoteServer = qobject_cast<RemoteServerWidget*>(sender());
     remoteServers.remove(remoteServer);
 
     remoteServer->deleteLater();
@@ -234,7 +238,7 @@ void AssetCacheServerWindow::OnRemoteServerChecked(bool checked)
 {
     if (checked)
     {
-        RemoteServerWidget *checkedServer = qobject_cast<RemoteServerWidget *>(sender());
+        RemoteServerWidget* checkedServer = qobject_cast<RemoteServerWidget*>(sender());
         for (auto& nextServer : remoteServers)
         {
             if (nextServer->IsChecked() && nextServer != checkedServer)
@@ -264,9 +268,9 @@ void AssetCacheServerWindow::OnStopAction()
     serverCore.Stop();
 }
 
-void AssetCacheServerWindow::AddRemoteServer(const ServerData & newServer)
+void AssetCacheServerWindow::AddRemoteServer(const ServerData& newServer)
 {
-    RemoteServerWidget *server = new RemoteServerWidget(newServer, this);
+    RemoteServerWidget* server = new RemoteServerWidget(newServer, this);
     remoteServers.push_back(server);
 
     connect(server, &RemoteServerWidget::RemoveLater, this, &AssetCacheServerWindow::OnRemoteServerRemoved);
@@ -317,7 +321,7 @@ void AssetCacheServerWindow::SaveSettings()
     serverCore.Settings().SetAutoStart(ui->autoStartCheckBox->isChecked());
 
     serverCore.Settings().ResetServers();
-    for (auto &server : remoteServers)
+    for (auto& server : remoteServers)
     {
         serverCore.Settings().AddServer(server->GetServerData());
     }
@@ -336,14 +340,14 @@ void AssetCacheServerWindow::LoadSettings()
     ui->autoSaveTimeoutSpinBox->setValue(serverCore.Settings().GetAutoSaveTimeoutMin());
     ui->portSpinBox->setValue(serverCore.Settings().GetPort());
     ui->autoStartCheckBox->setChecked(serverCore.Settings().IsAutoStart());
-    
+
     RemoveServers();
     auto& servers = serverCore.Settings().GetServers();
-    for (auto& sd: servers)
+    for (auto& sd : servers)
     {
         AddRemoteServer(sd);
     }
-    
+
     blockSignals(blocked);
 
     ChangeSettingsState(NOT_EDITED);
@@ -356,7 +360,7 @@ void AssetCacheServerWindow::OnServerStateChanged(const ServerCore* server)
     auto serverState = serverCore.GetState();
     auto remoteState = serverCore.GetRemoteState();
 
-    switch(serverState)
+    switch (serverState)
     {
     case ServerCore::State::STARTED:
     {

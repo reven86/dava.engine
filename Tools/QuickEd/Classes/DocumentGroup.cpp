@@ -26,13 +26,10 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
+#include "Document.h"
 #include "DocumentGroup.h"
 #include <QObject>
-#include "Document.h"
 #include <QUndoGroup>
-#include <QDebug>
-
 #include "Debug/DVAssert.h"
 
 DocumentGroup::DocumentGroup(QObject *parent) 
@@ -85,25 +82,53 @@ void DocumentGroup::SetActiveDocument(Document* document)
     }
     if (nullptr != active) 
     {
-        disconnect(active, &Document::SharedDataChanged, this, &DocumentGroup::SharedDataChanged);
+        active->Deactivate();
+        disconnect(active, &Document::SelectedNodesChanged, this, &DocumentGroup::SelectedNodesChanged);
+        disconnect(active, &Document::CanvasSizeChanged, this, &DocumentGroup::CanvasSizeChanged);
     }
     
     active = document;
-
+    
     if (nullptr == active)
     {
-        emit DocumentChanged(nullptr);
         undoGroup->setActiveStack(nullptr);
     }
     else
     {
-        emit DocumentChanged(active->GetContext());
-        
-        connect(active, &Document::SharedDataChanged, this, &DocumentGroup::SharedDataChanged);
+        connect(active, &Document::SelectedNodesChanged, this, &DocumentGroup::SelectedNodesChanged);
+        connect(active, &Document::CanvasSizeChanged, this, &DocumentGroup::CanvasSizeChanged);
 
         undoGroup->setActiveStack(active->GetUndoStack());
     }
     emit ActiveDocumentChanged(document);
+    if (nullptr != active)
+    {
+        active->Activate();
+    }
+}
+
+void DocumentGroup::SetSelectedNodes(const SelectedNodes &selected, const SelectedNodes &deselected)
+{
+    if(nullptr != active)
+    {
+        active->OnSelectionChanged(selected, deselected);
+    }
+}
+
+void DocumentGroup::SetEmulationMode(bool emulationMode)
+{
+    if(nullptr != active)
+    {
+        active->SetEmulationMode(emulationMode);
+    }
+}
+
+void DocumentGroup::SetScale(float scale)
+{
+    if(nullptr != active)
+    {
+        active->SetScale(scale);
+    }
 }
 
 Document *DocumentGroup::GetActiveDocument() const

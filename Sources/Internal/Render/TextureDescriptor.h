@@ -59,10 +59,10 @@ class TextureDescriptor
     static const int8 CURRENT_VERSION = 10;
 
     enum eSignatures
-	{
-		COMPRESSED_FILE = 0x00EEEE00,
-		NOTCOMPRESSED_FILE = 0x00EE00EE
-	};
+    {
+        COMPRESSED_FILE = 0x00EEEE00,
+        NOTCOMPRESSED_FILE = 0x00EE00EE
+    };
 
 public:
 
@@ -241,7 +241,7 @@ public:
 	TextureDataSettings dataSettings;
 	Compression compression[GPU_FAMILY_COUNT];
 
-    PixelFormat format:8; // texture format
+    PixelFormat format : 8; // texture format
     //Binary only
     int8 exportedAsGpuFamily;
 	

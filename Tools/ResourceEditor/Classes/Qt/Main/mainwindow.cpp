@@ -348,9 +348,7 @@ void QtMainWindow::CollectEmittersForSave(ParticleEmitter *topLevelEmitter, DAVA
     emitters.emplace_back(EmitterDescriptor(topLevelEmitter, nullptr, topLevelEmitter->configPath, entityName));
 }
 
-
-
-void QtMainWindow::SaveAllSceneEmitters(SceneEditor2 *scene) const
+void QtMainWindow::SaveAllSceneEmitters(SceneEditor2* scene) const
 {
     DVASSERT(nullptr != scene);
 
@@ -358,8 +356,7 @@ void QtMainWindow::SaveAllSceneEmitters(SceneEditor2 *scene) const
     {
         return;
     }
-    
-    
+
     List<Entity *> effectEntities;
     scene->GetChildEntitiesWithComponent(effectEntities, Component::PARTICLE_EFFECT_COMPONENT);
     if (effectEntities.empty())
@@ -423,8 +420,8 @@ void QtMainWindow::SetGPUFormat(DAVA::eGPUFamily gpu)
         SettingsManager::SetValue(Settings::Internal_TextureViewGPU, VariantType(static_cast<uint32>(gpu)));
         DAVA::Texture::SetDefaultGPU(gpu);
 
-		DAVA::TexturesMap allScenesTextures;
-		for(int tab = 0; tab < GetSceneWidget()->GetTabCount(); ++tab)
+        DAVA::TexturesMap allScenesTextures;
+        for(int tab = 0; tab < GetSceneWidget()->GetTabCount(); ++tab)
 		{
 			SceneEditor2 *scene = GetSceneWidget()->GetTabScene(tab);
 			SceneHelper::EnumerateSceneTextures(scene, allScenesTextures, SceneHelper::EXCLUDE_NULL);
@@ -732,8 +729,8 @@ void QtMainWindow::SetupActions()
 	ui->actionExportAdreno->setData(GPU_ADRENO);
     ui->actionExportDX11->setData(GPU_DX11);
     ui->actionExportPNG->setData(GPU_ORIGIN);
-	
-	// import
+
+// import
 #ifdef __DAVAENGINE_SPEEDTREE__
     QObject::connect(ui->actionImportSpeedTreeXML, &QAction::triggered, this, &QtMainWindow::OnImportSpeedTreeXML);
 #endif //__DAVAENGINE_SPEEDTREE__

@@ -31,19 +31,16 @@
 
 #include "CacheRequest.h"
 
-class GetRequest: public CacheRequest
+class GetRequest : public CacheRequest
 {
 public:
-    
     GetRequest();
-    
-    void OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey &key, DAVA::AssetCache::CachedItemValue &&value) override;
+
+    void OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey& key, DAVA::AssetCache::CachedItemValue&& value) override;
 
 protected:
     int SendRequest() override;
     int CheckOptionsInternal() const override;
 };
-
-
 
 #endif //__GET_REQUEST_H__

@@ -70,7 +70,7 @@ public:
     static const String TYPENAME_UINT64;    // "uint64"
 
     static const String TYPENAME_FLOAT;     // "float"
-    static const String TYPENAME_FLOAT64;   // "float64"
+    static const String TYPENAME_FLOAT64; // "float64"
     static const String TYPENAME_STRING;    // "string"
     static const String TYPENAME_WIDESTRING;// "wideString"
     static const String TYPENAME_BYTE_ARRAY;// "byteArray"
@@ -87,19 +87,18 @@ public:
 	static const String TYPENAME_AABBOX3;     // "AABBox3"
 	static const String TYPENAME_FILEPATH;  // "FilePath"
 
-
-	VariantType();
-	VariantType(const VariantType &value);
-	explicit VariantType(bool value);
-	explicit VariantType(int32 value);
+    VariantType();
+    VariantType(const VariantType& value);
+    explicit VariantType(bool value);
+    explicit VariantType(int32 value);
     explicit VariantType(uint32 value);
     explicit VariantType(float32 value);
-	explicit VariantType(float64 value);
-	explicit VariantType(const String & value);
-	explicit VariantType(const WideString & value);
-	explicit VariantType(const uint8 *array, int32 arraySizeInBytes);
-	explicit VariantType(KeyedArchive *archive);
-	explicit VariantType(const int64 & value);
+    explicit VariantType(float64 value);
+    explicit VariantType(const String& value);
+    explicit VariantType(const WideString& value);
+    explicit VariantType(const uint8* array, int32 arraySizeInBytes);
+    explicit VariantType(KeyedArchive* archive);
+    explicit VariantType(const int64 & value);
 	explicit VariantType(const uint64 & value);
 	explicit VariantType(const Vector2 & value);
 	explicit VariantType(const Vector3 & value);
@@ -113,17 +112,17 @@ public:
 	explicit VariantType(const FilePath & value);
 
 	~VariantType();
-	
+
     enum eVariantType
-	{
-		TYPE_NONE = 0,
-		TYPE_BOOLEAN,
-		TYPE_INT32,
-		TYPE_FLOAT,
-		TYPE_STRING,
-		TYPE_WIDE_STRING,
-		TYPE_BYTE_ARRAY,
-		TYPE_UINT32,    
+    {
+        TYPE_NONE = 0,
+        TYPE_BOOLEAN,
+        TYPE_INT32,
+        TYPE_FLOAT,
+        TYPE_STRING,
+        TYPE_WIDE_STRING,
+        TYPE_BYTE_ARRAY,
+        TYPE_UINT32,
         TYPE_KEYED_ARCHIVE,
         TYPE_INT64,
         TYPE_UINT64,
@@ -135,24 +134,24 @@ public:
         TYPE_MATRIX4,
         TYPE_COLOR,
         TYPE_FASTNAME,
-		TYPE_AABBOX3,
-		TYPE_FILEPATH,
+        TYPE_AABBOX3,
+        TYPE_FILEPATH,
         TYPE_FLOAT64,
-        
-        TYPES_COUNT // every new type should be always added to the end for compatibility with old archives
-	};
-	uint8 type;
 
-	union  
-	{
-		bool    boolValue;
-		int32   int32Value;
+        TYPES_COUNT // every new type should be always added to the end for compatibility with old archives
+    };
+    uint8 type;
+
+    union
+    {
+        bool boolValue;
+        int32 int32Value;
         uint32  uint32Value;
 		float32 floatValue;
         float64 float64Value;
-        
-        int64    int64Value;
-        uint64   uint64Value;
+
+        int64 int64Value;
+        uint64 uint64Value;
 
         Vector2* vector2Value;
         Vector3* vector3Value;
@@ -226,19 +225,19 @@ public:
      */
     void SetFloat64(float64 value);
 
-	/**
+    /**
 		\brief Function to set string value to variant type variable
 		\param[in] value	value to set
 	 */
-	void SetString(const String & value);
+    void SetString(const String& value);
 
-	/**
+    /**
 		\brief Function to set wide string value to variant type variable
 		\param[in] value	value to set
 	 */
-	void SetWideString(const WideString & value);
+    void SetWideString(const WideString& value);
 
-	/**
+    /**
 	 \brief Function to set byte array value to variant type variable
 	 \param[in] value	value to set
 	 \param[in] arraySizeInBytes	size of the array in bytes
@@ -356,19 +355,19 @@ public:
      */
     float64 AsFloat64() const;
 
-	/**
+    /**
 		\brief Function to return string value from variable
 		\returns value of variable, or generate assert if variable type is different
 	 */
-	const String & AsString() const;
+    const String& AsString() const;
 
-	/**
+    /**
 		\brief Function to return wide string value from variable
 		\returns value of variable, or generate assert if variable type is different
 	 */
-	const WideString & AsWideString() const;
+    const WideString& AsWideString() const;
 
-	/**
+    /**
 	 \brief Function to return array from variable
 	 \returns value of variable, or generate assert if variable type is different
 	 */
