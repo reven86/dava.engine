@@ -68,6 +68,8 @@ public:
     void SetLightmapCanvasVisible(bool enable);
     bool IsLightmapCanvasVisible() const;
 
+    bool HasMaterial(DAVA::NMaterial*);
+
 private:
     struct MaterialMapping
     {
