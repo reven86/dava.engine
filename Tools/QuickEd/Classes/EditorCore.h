@@ -43,15 +43,15 @@ class Project;
 class MainWindow;
 class PackageNode;
 
-class EditorCore : public QObject, public DAVA::Singleton<EditorCore>
+class EditorCore final : public QObject, public DAVA::Singleton<EditorCore>
 {
     Q_OBJECT
 public:
     explicit EditorCore(QObject *parent = nullptr);
-    ~EditorCore();
+    ~EditorCore() = default;
     void Start();
 
-    MainWindow *GetMainWindow() const;
+    MainWindow* GetMainWindow();
     Project *GetProject() const;
 
 protected slots:
@@ -84,15 +84,16 @@ private:
     void CloseDocument(int index);
     int GetIndexByPackagePath(const QString &fileName) const;
     ///Return: pointer to currentDocument if exists, nullptr if not
-    Project *project;
+    Project *project = nullptr;
     QList<Document*> documents;
-    DocumentGroup *documentGroup;
-    MainWindow *mainWindow;
+    DocumentGroup *documentGroup = nullptr;
+    std::unique_ptr<MainWindow> mainWindow = nullptr;
+    DAVA::UIControl *rootControl = nullptr;
 };
 
-inline MainWindow* EditorCore::GetMainWindow() const
+inline MainWindow* EditorCore::GetMainWindow()
 {
-    return const_cast<MainWindow*>(mainWindow);
+    return mainWindow.get();
 }
 
 inline Project* EditorCore::GetProject() const

@@ -26,5 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#include "ControlSelectionListener.h"
+#if !defined(APPLICATION_BUILD_VERSION)
+#define APPLICATION_BUILD_VERSION "local build"
+#endif

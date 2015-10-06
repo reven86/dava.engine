@@ -106,16 +106,6 @@ PropertiesTreeItemDelegate::~PropertiesTreeItemDelegate()
     }
 }
 
-void PropertiesTreeItemDelegate::paint( QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index ) const
-{
-    QStyledItemDelegate::paint(painter, option, index);
-}
-
-QSize PropertiesTreeItemDelegate::sizeHint( const QStyleOptionViewItem &option, const QModelIndex &index ) const
-{
-    return QStyledItemDelegate::sizeHint(option, index);
-}
-
 QWidget *PropertiesTreeItemDelegate::createEditor( QWidget * parent, const QStyleOptionViewItem & option, const QModelIndex & index ) const
 {
     AbstractPropertyDelegate *currentDelegate = GetCustomItemDelegateForIndex(index);
@@ -192,11 +182,6 @@ void PropertiesTreeItemDelegate::setModelData(QWidget * editor, QAbstractItemMod
         return;
 
     QStyledItemDelegate::setModelData(editor, model, index);
-}
-
-void PropertiesTreeItemDelegate::updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &index) const
-{
-    QStyledItemDelegate::updateEditorGeometry(editor, option, index);
 }
 
 bool PropertiesTreeItemDelegate::editorEvent(QEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option, const QModelIndex &index)

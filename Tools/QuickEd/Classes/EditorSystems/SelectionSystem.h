@@ -26,24 +26,44 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __QUICKED_SELECTION_SYSTEM_H__
+#define __QUICKED_SELECTION_SYSTEM_H__
 
-#ifndef __QUICKED_CONTROL_SELECTION_LISTENER_H__
-#define __QUICKED_CONTROL_SELECTION_LISTENER_H__
+#include "EditorSystems/SelectionContainer.h"
+#include "EditorSystems/BaseEditorSystem.h"
+#include "Model/PackageHierarchy/PackageListener.h"
+#include "Math/Rect.h"
+#include <Functional/SignalBase.h>
 
-#include "Base/BaseTypes.h"
-
+class EditorSystemsManager;
 namespace DAVA
 {
-    class UIControl;
+class Vector2;
 }
 
-class ControlSelectionListener
+class SelectionSystem final : public BaseEditorSystem, private PackageListener
 {
 public:
-    ControlSelectionListener() {}
-    virtual ~ControlSelectionListener() {}
-    
-    virtual void OnControlSelected(const DAVA::List<std::pair<DAVA::UIControl *, DAVA::UIControl*> > &selectedPairs) = 0;
+    SelectionSystem(EditorSystemsManager* doc);
+    ~SelectionSystem() override;
+
+    void OnActivated() override;
+    void OnDeactivated() override;
+
+    bool OnInput(DAVA::UIEvent* currentInput) override;
+
+private:
+    void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from) override;
+
+    void OnSelectByRect(const DAVA::Rect& rect);
+
+    void SetSelection(const SelectedNodes& selected, const SelectedNodes& SelectedNodes);
+
+    bool ProcessMousePress(const DAVA::Vector2& point);
+
+    bool mousePressed = false;
+    SelectionContainer selectionContainer;
+    DAVA::SigConnectionID connectionID;
 };
 
-#endif // __QUICKED_CONTROL_SELECTION_LISTENER_H__
+#endif // __QUICKED_SELECTION_SYSTEM_H__
