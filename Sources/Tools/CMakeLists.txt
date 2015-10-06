@@ -16,6 +16,7 @@ add_definitions       (
 
 include ( PlatformSettings )
 
+include_directories   ( . )
 include_directories   ( ${DAVA_INCLUDE_DIR} ) 
 include_directories   ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} )  
 include_directories   ( ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib ) 

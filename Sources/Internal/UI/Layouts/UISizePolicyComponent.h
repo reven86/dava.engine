@@ -93,14 +93,18 @@ public:
     float32 GetValueByAxis(int32 axis) const;
     float32 GetMinValueByAxis(int32 axis) const;
     float32 GetMaxValueByAxis(int32 axis) const;
-    
+
+    bool IsDependsOnChildren(int32 axis) const;
+
 private:
     int32 GetHorizontalPolicyAsInt() const;
     void SetHorizontalPolicyFromInt(int32 policy);
     
     int32 GetVerticalPolicyAsInt() const;
     void SetVerticalPolicyFromInt(int32 policy);
-    
+
+    void SetLayoutDirty();
+
 private:
     struct AxisPolicy
     {
@@ -117,14 +121,12 @@ public:
     INTROSPECTION_EXTEND(UISizePolicyComponent, UIComponent,
                          PROPERTY("horizontalPolicy", InspDesc("Horizontal Policy", GlobalEnumMap<eSizePolicy>::Instance()), GetHorizontalPolicyAsInt, SetHorizontalPolicyFromInt, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("horizontalValue", "Horizontal Value", GetHorizontalValue, SetHorizontalValue, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("horizontalMin", "Horizontal Min Value", GetHorizontalMinValue, SetHorizontalMinValue, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("horizontalMax", "Horizontal Max Value", GetHorizontalMaxValue, SetHorizontalMaxValue, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("horizontalMin", "Horizontal Min Size", GetHorizontalMinValue, SetHorizontalMinValue, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("horizontalMax", "Horizontal Max Size", GetHorizontalMaxValue, SetHorizontalMaxValue, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("verticalPolicy", InspDesc("Vertical Policy", GlobalEnumMap<eSizePolicy>::Instance()), GetVerticalPolicyAsInt, SetVerticalPolicyFromInt, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("verticalValue", "Vertical Value", GetVerticalValue, SetVerticalValue, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("verticalMin", "Vertical Min Value", GetVerticalMinValue, SetVerticalMinValue, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("verticalMax", "Vertical Max Value", GetVerticalMaxValue, SetVerticalMaxValue, I_SAVE | I_VIEW | I_EDIT)
-                         );
-    
+                         PROPERTY("verticalMin", "Vertical Min Size", GetVerticalMinValue, SetVerticalMinValue, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("verticalMax", "Vertical Max Size", GetVerticalMaxValue, SetVerticalMaxValue, I_SAVE | I_VIEW | I_EDIT));
 };
 
 }

@@ -388,7 +388,7 @@ void Entity::BakeTransforms()
 	uint32 size = (uint32)children.size();
     if (size == 1 && (0 == GetComponent(Component::RENDER_COMPONENT) && 0 == GetComponent(Component::PARTICLE_EFFECT_COMPONENT) && 0 == GetComponent(Component::ANIMATION_COMPONENT))) // propagate matrices
     {
-		children[0]->SetLocalTransform(children[0]->GetLocalTransform() * GetLocalTransform());
+        children[0]->SetLocalTransform(children[0]->GetLocalTransform() * GetLocalTransform());
 		SetLocalTransform(Matrix4::IDENTITY);
 		AddFlag(NODE_LOCAL_MATRIX_IDENTITY);
 	}

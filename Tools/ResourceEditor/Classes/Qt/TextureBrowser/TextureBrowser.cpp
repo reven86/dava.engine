@@ -590,7 +590,7 @@ void TextureBrowser::setupTextureViewTabBar()
     ui->viewTabBar->setTabData(tabIndex, GPU_DX11);
     ui->viewTabBar->setTabIcon(tabIndex, QIcon(pix));
 
-    QObject::connect(ui->viewTabBar,  SIGNAL(currentChanged(int)), this, SLOT(textureViewChanged(int)));
+    QObject::connect(ui->viewTabBar, SIGNAL(currentChanged(int)), this, SLOT(textureViewChanged(int)));
 }
 
 void TextureBrowser::resetTextureInfo()
@@ -707,8 +707,8 @@ void TextureBrowser::texturePropertyChanged(int type)
         reloadTextureToScene(curTexture, descriptor, DAVA::GPU_ORIGIN);
     }
 
-	// update warning message
-	updatePropertiesWarning();
+    // update warning message
+    updatePropertiesWarning();
 }
 
 void TextureBrowser::textureReadyOriginal(const DAVA::TextureDescriptor *descriptor, const TextureInfo & images)
@@ -746,17 +746,17 @@ void TextureBrowser::textureReadyConverted(const DAVA::TextureDescriptor *descri
 	{
         descriptor->Save();
 
-        if(curDescriptor == descriptor && curTextureView == gpu)
-		{
-			updateConvertedImageAndInfo(images.images, *curDescriptor);
+        if (curDescriptor == descriptor && curTextureView == gpu)
+        {
+            updateConvertedImageAndInfo(images.images, *curDescriptor);
 		}
 
 		DAVA::Texture *texture = textureListModel->getTexture(descriptor);
 		if(NULL != texture)
 		{
             // reload this texture into scene
-			reloadTextureToScene(texture, descriptor, gpu);
-		}
+            reloadTextureToScene(texture, descriptor, gpu);
+        }
 	}
 }
 

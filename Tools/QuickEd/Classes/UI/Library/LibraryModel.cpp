@@ -274,9 +274,7 @@ void LibraryModel::CreateImportPackagesRootItem()
 
 void LibraryModel::ControlPropertyWasChanged(ControlNode *node, AbstractProperty *property)
 {
-    String name = property->GetName();
-    std::transform(name.begin(), name.end(), name.begin(), ::tolower);
-    if (name == "name")
+    if (property->GetName() == "Name")
     {
         QModelIndex index = indexByNode(node, invisibleRootItem());
         if (index.isValid())
@@ -298,18 +296,6 @@ void LibraryModel::ControlPropertyWasChanged(ControlNode *node, AbstractProperty
             }
         }
     }
-}
-
-void LibraryModel::StylePropertyWasChanged(StyleSheetNode *node, AbstractProperty *property)
-{
-    // do nothing
-}
-
-void LibraryModel::ControlWillBeAdded(ControlNode *node, ControlsContainerNode *destination, int row)
-{
-    Q_UNUSED(node);
-    Q_UNUSED(destination);
-    Q_UNUSED(row);
 }
 
 void LibraryModel::ControlWasAdded(ControlNode *node, ControlsContainerNode *destination, int row)
@@ -348,19 +334,6 @@ void LibraryModel::ControlWillBeRemoved(ControlNode *node, ControlsContainerNode
     }
 }
 
-void LibraryModel::ControlWasRemoved(ControlNode *node, ControlsContainerNode *from)
-{
-    Q_UNUSED(node);
-    Q_UNUSED(from);
-}
-
-void LibraryModel::ImportedPackageWillBeAdded(PackageNode *node, ImportedPackagesNode *to, int index)
-{
-    Q_UNUSED(node);
-    Q_UNUSED(to);
-    Q_UNUSED(index);
-}
-
 void LibraryModel::ImportedPackageWasAdded(PackageNode *node, ImportedPackagesNode *to, int index)
 {
     Q_UNUSED(to);
@@ -380,26 +353,6 @@ void LibraryModel::ImportedPackageWasAdded(PackageNode *node, ImportedPackagesNo
     }
 }
 
-void LibraryModel::StyleWillBeAdded(StyleSheetNode *node, StyleSheetsNode *destination, int index)
-{
-    // do nothing
-}
-
-void LibraryModel::StyleWasAdded(StyleSheetNode *node, StyleSheetsNode *destination, int index)
-{
-    // do nothing
-}
-
-void LibraryModel::StyleWillBeRemoved(StyleSheetNode *node, StyleSheetsNode *from)
-{
-    // do nothing
-}
-
-void LibraryModel::StyleWasRemoved(StyleSheetNode *node, StyleSheetsNode *from)
-{
-    // do nothing
-}
-
 void LibraryModel::ImportedPackageWillBeRemoved(PackageNode *node, ImportedPackagesNode *from)
 {
     Q_UNUSED(from);
@@ -415,10 +368,4 @@ void LibraryModel::ImportedPackageWillBeRemoved(PackageNode *node, ImportedPacka
         removeRow(importedPackageRootItem->row());
         importedPackageRootItem = nullptr;
     }
-}
-
-void LibraryModel::ImportedPackageWasRemoved(PackageNode *node, ImportedPackagesNode *from)
-{
-    Q_UNUSED(node);
-    Q_UNUSED(from);
 }
