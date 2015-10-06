@@ -911,7 +911,7 @@ void NMaterial::Load(KeyedArchive * archive, SerializationContext * serializatio
 
     if (archive->IsKeyExists(NMaterialSerializationKey::FXName))
     {
-        fxName = FastName(archive->GetString(NMaterialSerializationKey::FXName).c_str());
+        fxName = FastName(archive->GetString(NMaterialSerializationKey::FXName));
     }
 
     if (archive->IsKeyExists("properties"))
@@ -996,7 +996,8 @@ void NMaterial::LoadOldNMaterial(KeyedArchive * archive, SerializationContext * 
     // don't load fxName from material instance (type = 2)
     if (archive->IsKeyExists("materialTemplate") && oldType != 2)
     {
-        fxName = FastName(archive->GetString("materialTemplate").c_str());        
+        auto materialTemplate = archive->GetString("materialTemplate");
+        fxName = materialTemplate.empty() ? FastName() : FastName(materialTemplate);
     }    
 
     if (archive->IsKeyExists("textures"))

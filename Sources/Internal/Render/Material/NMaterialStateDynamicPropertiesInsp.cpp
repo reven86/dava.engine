@@ -42,7 +42,7 @@ void NMaterialStateDynamicPropertiesInsp::FindMaterialPropertiesRecursive(NMater
 
     // shader data
     auto fxName = material->GetEffectiveFXName();
-    if (fxName.IsValid() && (strlen(fxName.c_str()) > 0))
+    if (fxName.IsValid())
     {
         auto qualityGroup = QualitySettingsSystem::Instance()->GetCurMaterialQuality(material->qualityGroup);
         FXDescriptor fxDescriptor = FXCache::GetFXDescriptor(fxName, flags, qualityGroup);
@@ -70,7 +70,7 @@ void NMaterialStateDynamicPropertiesInsp::FindMaterialPropertiesRecursive(NMater
     }
     else
     {
-        // is fxName is not valid (e.g global material)
+        // if fxName is not valid (e.g global material)
         // we just add all local properties
         for (const auto& lp : material->localProperties)
         {

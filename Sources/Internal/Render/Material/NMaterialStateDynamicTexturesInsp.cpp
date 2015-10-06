@@ -48,7 +48,7 @@ NMaterialStateDynamicTexturesInsp::~NMaterialStateDynamicTexturesInsp()
 void NMaterialStateDynamicTexturesInsp::FindMaterialTexturesRecursive(NMaterial *material, Set<FastName>& ret) const
 {
 	auto fxName = material->GetEffectiveFXName();
-    if (fxName.IsValid() && (strlen(fxName.c_str()) > 0))
+    if (fxName.IsValid())
     {
         HashMap<FastName, int32> flags;
         material->CollectMaterialFlags(flags);
@@ -69,7 +69,7 @@ void NMaterialStateDynamicTexturesInsp::FindMaterialTexturesRecursive(NMaterial 
     }
     else
     {
-        // is fxName is not valid (e.g global material)
+        // if fxName is not valid (e.g global material)
         // we just add all local textures
         for (const auto& t : material->localTextures)
             ret.insert(t.first);
