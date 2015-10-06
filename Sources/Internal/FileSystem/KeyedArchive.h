@@ -287,14 +287,14 @@ public:
 		\param[in] key string key
 		\param[in] value we want to set for this key
 	 */
-    void SetString(const String & key, const String & value);
-	/**
+    void SetString(const String& key, const String& value);
+    /**
 		\brief Function to set variable in archive.
 		\param[in] key string key
 		\param[in] value we want to set for this key
 	 */
 
-	void SetWideString(const String & key, const WideString & value);
+    void SetWideString(const String & key, const WideString & value);
 	/**
         \brief Function to set variable in archive.
         \param[in] key string key

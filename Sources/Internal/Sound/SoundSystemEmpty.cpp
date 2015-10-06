@@ -82,7 +82,12 @@ namespace DAVA
     void SoundSystem::SetCurrentLocale(const String &langID)
     {
     }
-    
+
+    String SoundSystem::GetCurrentLocale() const
+    {
+        return String();
+    }
+
     void SoundSystem::SetListenerPosition(const Vector3 &position)
     {
     }

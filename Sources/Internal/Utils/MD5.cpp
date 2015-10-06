@@ -134,9 +134,9 @@ void MD5::RecursiveDirectoryMD5(const FilePath & pathName, MD5 & md5, bool isRec
                 }
             }
         }
-		else 
-		{
-			// update MD5 according to the file
+        else
+        {
+            // update MD5 according to the file
             String name = fileList->GetPathname(i).GetFilename();
             md5.Update(reinterpret_cast<const uint8*>(name.c_str()), static_cast<uint32>(name.size()));
 
