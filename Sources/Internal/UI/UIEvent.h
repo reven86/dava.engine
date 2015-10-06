@@ -66,11 +66,11 @@ public:
         PHASE_MOVE, //!<Mouse move event. Mouse moves without pressing any buttons. Works only with mouse controller.
         PHASE_WHEEL, //!<Mouse wheel event. MacOS & Win32 only
         PHASE_CANCELLED, //!<Event was cancelled by the platform or by the control system for the some reason.
-        PHASE_KEYCHAR, //!<Event some symbol was intered. or repeat symbol if pressed and hold
+        PHASE_KEYCHAR, //!<Event some symbol was intered.
         PHASE_KEY_DOWN,
         PHASE_KEY_UP,
-        PHASE_KEYCHAR_REPEAT, //!< Usefull if User hold SPACE key in text editor and wait
-        PHASE_KEY_DOWN_REPEAT, //!< Usefull if user hold LEFT key in text editor and wait cursor to move
+        PHASE_KEYCHAR_REPEAT, //!< Usefull if User hold key in text editor and wait
+        PHASE_KEY_DOWN_REPEAT, //!< Usefull if user hold key in text editor and wait cursor to move
         PHASE_JOYSTICK
     };
 

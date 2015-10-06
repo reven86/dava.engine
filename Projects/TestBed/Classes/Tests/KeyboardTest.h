@@ -42,7 +42,10 @@ protected:
     void UnloadResources() override;
 
 private:
+    void OnResetClick(DAVA::BaseObject* sender, void* data, void* callerData);
+
     DAVA::UIStaticText* previewText = nullptr;
+    DAVA::UIButton* resetButton = nullptr;
 };
 
 #endif //__KEYBOARDTEST_TEST_H__

@@ -582,45 +582,15 @@ void WinUAPXamlApp::OnMouseMoved(MouseDevice^ mouseDevice, MouseEventArgs^ args)
 
 void WinUAPXamlApp::DAVATouchEvent(UIEvent::eInputPhase phase, float32 x, float32 y, int32 id, UIEvent::PointerDeviceID deviceId)
 {
-    Vector<DAVA::UIEvent> newEvent;
-    bool isFind = false;
-    for (auto it = events.begin(), end = events.end(); it != end; ++it)
-    {
-        if (it->tid == id)
-        {
-            isFind = true;
-            it->physPoint.x = x;
-            it->physPoint.y = y;
-            it->phase = phase;
-            break;
-        }
-    }
-    if (!isFind)
-    {
-        UIEvent newTouch;
-        newTouch.tid = id;
-        newTouch.physPoint.x = x;
-        newTouch.physPoint.y = y;
-        newTouch.phase = phase;
-        newTouch.deviceId = deviceId;
-        events.push_back(newTouch);
-    }
-    for (auto it = events.begin(), end = events.end(); it != end; ++it)
-    {
-        newEvent.push_back(*it);
-    }
-    if (phase == UIEvent::PHASE_ENDED)
-    {
-        for (Vector<DAVA::UIEvent>::iterator it = events.begin(); it != events.end(); ++it)
-        {
-            if (it->tid == id)
-            {
-                events.erase(it);
-                break;
-            }
-        }
-    }
-    UIControlSystem::Instance()->OnInput(newEvent, events);
+    UIEvent newTouch;
+
+    newTouch.tid = id;
+    newTouch.physPoint.x = x;
+    newTouch.physPoint.y = y;
+    newTouch.phase = phase;
+    newTouch.deviceId = deviceId;
+
+    UIControlSystem::Instance()->OnInput({newTouch}, events);
 }
 
 void WinUAPXamlApp::SetupEventHandlers()

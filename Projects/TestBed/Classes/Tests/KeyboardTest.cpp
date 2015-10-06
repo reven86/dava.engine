@@ -44,14 +44,38 @@ public:
         if (currentInput->phase >= UIEvent::PHASE_KEYCHAR &&
             currentInput->phase <= UIEvent::PHASE_KEY_DOWN_REPEAT)
         {
-            numEvents++;
+            ++numKeyboardEvents;
         }
-        else
+        else if (currentInput->phase >= UIEvent::PHASE_BEGAN ||
+                 currentInput->phase <= UIEvent::PHASE_CANCELLED)
         {
-            return false;
+            ++numMouseEvents;
         }
         switch (currentInput->phase)
         {
+        case UIEvent::PHASE_BEGAN: //!<Screen touch or mouse button press is began.
+            ++numMouseDown;
+            lastMouseX = currentInput->point.x;
+            lastMouseY = currentInput->point.y;
+            break;
+        case UIEvent::PHASE_DRAG: //!<User moves mouse with presset button or finger over the screen.
+            ++numDrag;
+            lastMouseX = currentInput->point.x;
+            lastMouseY = currentInput->point.y;
+            break;
+        case UIEvent::PHASE_ENDED: //!<Screen touch or mouse button press is ended.
+            ++numMouseUp;
+            break;
+        case UIEvent::PHASE_MOVE: //!<Mouse move event. Mouse moves without pressing any buttons. Works only with mouse controller.
+            ++numMouseMove;
+            lastMouseX = currentInput->point.x;
+            lastMouseY = currentInput->point.y;
+            break;
+        case UIEvent::PHASE_WHEEL: //!<Mouse wheel event. MacOS & Win32 only
+            ++numMouseWheel;
+            break;
+        case UIEvent::PHASE_CANCELLED: //!<Event was cancelled by the platform or by the control system for the some reason.
+            break;
         case UIEvent::PHASE_KEYCHAR:
             ++numChar;
             lastChar = currentInput->keyChar;
@@ -68,32 +92,60 @@ public:
         case UIEvent::PHASE_KEY_UP:
             ++numKeyUp;
             break;
-        case UIEvent::PHASE_WHEEL:
-            //currentText += L"wheel ";
-            break;
         };
 
         std::wstringstream currentText;
-        currentText << L"events: " << numEvents << L"\n"
-                    << L"numKeyDown: " << numKeyDown << L"\n"
-                    << L"numKeyUp: " << numKeyUp << L"\n"
-                    << L"numKeyDownRepeat: " << numKeyDownRepeat << L"\n"
-                    << L"numChar: " << numChar << L"\n"
-                    << L"numCharRepeat: " << numCharRepeat << L"\n"
+        currentText << L"KeyboardEvents: " << numKeyboardEvents << L"\n"
+                    << L"KeyDown: " << numKeyDown << L"\n"
+                    << L"KeyUp: " << numKeyUp << L"\n"
+                    << L"KeyDownRepeat: " << numKeyDownRepeat << L"\n"
+                    << L"Char: " << numChar << L"\n"
+                    << L"CharRepeat: " << numCharRepeat << L"\n"
                     << L"lastChar: \'" << lastChar << L"\'";
 
         SetText(currentText.str());
         return true;
     }
 
+    void ResetCounters()
+    {
+        numKeyboardEvents = 0;
+        numKeyDown = 0;
+        numKeyUp = 0;
+        numKeyDownRepeat = 0;
+        numChar = 0;
+        numCharRepeat = 0;
+        lastChar = L'\0';
+
+        numMouseEvents = 0;
+        numDrag = 0;
+        numMouseMove = 0;
+        numMouseDown = 0;
+        numMouseUp = 0;
+        numMouseWheel = 0;
+        lastMouseKey = L'\0';
+        lastMouseX = 0;
+        lastMouseY = 0;
+    }
+
 private:
-    uint32 numEvents = 0;
+    uint32 numKeyboardEvents = 0;
     uint32 numKeyDown = 0;
     uint32 numKeyUp = 0;
     uint32 numKeyDownRepeat = 0;
     uint32 numChar = 0;
     uint32 numCharRepeat = 0;
     wchar_t lastChar = L'\0';
+
+    uint32 numMouseEvents = 0;
+    uint32 numDrag = 0;
+    uint32 numMouseMove = 0;
+    uint32 numMouseDown = 0;
+    uint32 numMouseUp = 0;
+    uint32 numMouseWheel = 0;
+    wchar_t lastMouseKey = L'\0';
+    int32 lastMouseX = 0;
+    int32 lastMouseY = 0;
 };
 
 CustomText* customText = nullptr;
@@ -124,10 +176,17 @@ void KeyboardTest::LoadResources()
     customText->SetFocusEnabled(true);
     customText->SetAlign(ALIGN_LEFT | ALIGN_TOP);
     customText->SetTextAlign(ALIGN_LEFT | ALIGN_TOP);
-    //customText->SetHCenterAlign(ALIGN_LEFT);
     customText->SetMultiline(true);
     customText->SetMultilineType(UIStaticText::MULTILINE_ENABLED_BY_SYMBOL);
     AddControl(customText);
+
+    resetButton = new UIButton(Rect(220, 30, 50, 30));
+    resetButton->SetDebugDraw(true);
+    resetButton->SetStateFont(0xFF, font);
+    resetButton->SetStateFontColor(0xFF, Color::White);
+    resetButton->SetStateText(0xFF, L"Reset");
+    resetButton->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &KeyboardTest::OnResetClick));
+    AddControl(resetButton);
 
     UIControlSystem::Instance()->SetFocusedControl(customText, true);
 }
@@ -138,4 +197,12 @@ void KeyboardTest::UnloadResources()
     SafeRelease(previewText);
 
     BaseScreen::UnloadResources();
+}
+
+void KeyboardTest::OnResetClick(DAVA::BaseObject* sender, void* data, void* callerData)
+{
+    if (customText)
+    {
+        customText->ResetCounters();
+    }
 }
