@@ -134,28 +134,6 @@ void LandscapeProxy::SetLandscapeTileColor(const FastName& level, const Color& c
     }
 }
 
-void LandscapeProxy::SetTilemaskTexture(Texture* texture)
-{
-    NMaterial * landscapeMaterial = baseLandscape->GetMaterial();
-    while (landscapeMaterial)
-    {
-        if(landscapeMaterial->HasLocalTexture(Landscape::TEXTURE_TILEMASK))
-            break;
-        
-        landscapeMaterial = landscapeMaterial->GetParent();
-    }
-    
-    if(landscapeMaterial)
-    {
-        landscapeMaterial->SetTexture(Landscape::TEXTURE_TILEMASK, texture);
-    }
-}
-
-Texture * LandscapeProxy::GetTilemaskTexture()
-{
-    return baseLandscape->GetMaterial()->GetEffectiveTexture(Landscape::TEXTURE_TILEMASK);
-}
-
 void LandscapeProxy::SetToolTexture(Texture * texture, bool mixColors)
 {
     if (texture)

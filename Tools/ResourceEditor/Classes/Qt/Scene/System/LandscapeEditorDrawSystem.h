@@ -116,10 +116,12 @@ public:
 	Rect GetHeightmapRect();
 	Rect GetLandscapeRect();
 
-	void SaveTileMaskTexture();
-	void ResetTileMaskTexture();
+    bool SaveTileMaskTexture();
+    void ResetTileMaskTexture();
+    Texture* GetTileMaskTexture();
+    void SetTileMaskTexture(Texture* texture);
 
-	eErrorType VerifyLandscape() const;
+    eErrorType VerifyLandscape() const;
 
 	Landscape * GetBaseLandscape() const;
 	

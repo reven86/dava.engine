@@ -121,12 +121,14 @@ void LandscapeThumbnails::Create(DAVA::Landscape* landscape, LandscapeThumbnails
     RenderCallbacks::RegisterSyncCallback(syncObject, MakeFunction(&OnCreateLandscapeTextureCompleted));
 
     const auto identityMatrix = &Matrix4::IDENTITY;
+    Vector3 nullVector(0.0f, 0.0f, 0.0f);
     DAVA::ShaderDescriptorCache::ClearDynamicBindigs();
 	Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, identityMatrix, (pointer_size)(identityMatrix));
 	Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_VIEW, identityMatrix, (pointer_size)(identityMatrix));
 	Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_PROJ, identityMatrix, (pointer_size)(identityMatrix));
+    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_CAMERA_POS, &nullVector, (pointer_size)(&nullVector));
 
-	rhi::Packet packet = { };
+    rhi::Packet packet = { };
     packet.vertexStreamCount = 1;
     packet.vertexStream[0] = renderData->vertexBuffer;
     packet.vertexCount = renderData->vertexCount;

@@ -33,6 +33,7 @@
 #include "Beast/BeastProxy.h"
 #include "Beast/LightmapsPacker.h"
 #include "Qt/Settings/SettingsManager.h"
+#include "CommandLine/SceneUtils/SceneUtils.h"
 
 #include "DAVAEngine.h"
 
@@ -90,7 +91,11 @@ void BeastAction::Redo()
 			}
 		}
 
-		Sleep(15);
+        if (Core::Instance()->IsConsoleMode())
+        {
+            RenderObjectsFlusher::Flush();
+        }
+        Sleep(15);
 	}
 
 	if(NULL != waitDialog)

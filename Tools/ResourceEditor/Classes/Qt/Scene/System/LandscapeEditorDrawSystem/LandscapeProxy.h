@@ -76,8 +76,6 @@ public:
 	void SetLandscapeTileColor(const FastName& level, const Color& color);
 
     void SetToolTexture(Texture * texture, bool mixColors);
-	void SetTilemaskTexture(Texture* texture);
-    Texture * GetTilemaskTexture();
 
 	RenderObject* GetRenderObject();
 	void SetHeightmap(Heightmap* heightmap);
