@@ -34,15 +34,15 @@
 
 class SceneSaverTool: public CommandLineTool
 {
-    enum class eAction : DAVA::uint8
+    enum class eAction: DAVA::uint8
     {
         ACTION_NONE = 0,
-
+        
         ACTION_SAVE,
         ACTION_RESAVE_SCENE,
         ACTION_RESAVE_YAML,
     };
-
+    
 public:
 
 	DAVA::String GetCommandLineKey() const override;
@@ -53,6 +53,7 @@ public:
 	DAVA::FilePath GetQualityConfigPath() const override;
 
 private:
+
     eAction commandAction;
     DAVA::String filename;
     

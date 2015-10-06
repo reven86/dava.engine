@@ -259,56 +259,6 @@ public:
     }
 };
 
-class SignalConnection
-{
-public:
-    SignalConnection(SigConnectionID connId,
-                     const Function<void(SigConnectionID)>& unsubscriber)
-        : connectionId(connId)
-        , unsubscriberFunc(unsubscriber) {}
-
-    ~SignalConnection() 
-    {
-        Reset();
-    }
-
-    void Reset()
-    {
-        if (unsubscriberFunc)
-        {
-            unsubscriberFunc(connectionId);
-            unsubscriberFunc = nullptr;
-        }
-    }
-
-    SigConnectionID* Release()
-    {
-        if (unsubscriberFunc)
-        {
-            unsubscriberFunc = nullptr;
-            return &connectionId;
-        }
-        return nullptr;
-    }
-
-    const SigConnectionID* GetSigConnectionID() const
-    {
-        return unsubscriberFunc ? &connectionId : nullptr;
-    }
-
-private:
-    SigConnectionID connectionId;
-    Function<void(SigConnectionID)> unsubscriberFunc;
-};
-
-template<typename... Args>
-SignalConnection MakeSignalConnection(SigConnectionID connId, Signal<Args...>& signal)
-{
-    using SignalType = Signal<Args...>;
-    auto disconnector = [&](SigConnectionID connectionId) { signal.Disconnect(connectionId); };
-    return SignalConnection(connId, disconnector);
-}
-
 #ifdef ENABLE_MULTITHREADED_SIGNALS
 
 template<typename... Args>

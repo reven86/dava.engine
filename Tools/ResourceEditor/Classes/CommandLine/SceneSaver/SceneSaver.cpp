@@ -40,6 +40,7 @@
 
 #include "CommandLine/CommandLineTool.h"
 
+
 using namespace DAVA;
 
 SceneSaver::SceneSaver()
@@ -353,12 +354,12 @@ void SceneSaver::CopyCustomColorTexture(Scene *scene, const FilePath & sceneFold
     customProps->SetString(ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP, newTexPathname.GetRelativePathname(newProjectPathname));
 }
 
-void SceneSaver::ResaveYamlFilesRecursive(const FilePath& folder, Set<String>& errorLog) const
+void SceneSaver::ResaveYamlFilesRecursive(const FilePath & folder, Set<String> &errorLog) const
 {
     ScopedPtr<FileList> fileList(new FileList(folder));
     for (int32 i = 0; i < fileList->GetCount(); ++i)
     {
-        const FilePath& pathname = fileList->GetPathname(i);
+        const FilePath & pathname = fileList->GetPathname(i);
         if (fileList->IsDirectory(i))
         {
             if (!fileList->IsNavigationDirectory(i))
@@ -370,7 +371,7 @@ void SceneSaver::ResaveYamlFilesRecursive(const FilePath& folder, Set<String>& e
         {
             if (pathname.IsEqualToExtension(".yaml"))
             {
-                ParticleEmitter* emitter = new ParticleEmitter();
+                ParticleEmitter *emitter = new ParticleEmitter();
                 emitter->LoadFromYaml(pathname);
                 emitter->SaveToYaml(pathname);
                 SafeRelease(emitter);

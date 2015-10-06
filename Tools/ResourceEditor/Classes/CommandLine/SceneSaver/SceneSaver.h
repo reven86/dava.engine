@@ -50,8 +50,9 @@ public:
     
     void EnableCopyConverted(bool enabled);
 
-    void ResaveYamlFilesRecursive(const DAVA::FilePath& folder, DAVA::Set<DAVA::String>& errorLog) const;
+    void ResaveYamlFilesRecursive(const DAVA::FilePath & folder, DAVA::Set<DAVA::String> &errorLog) const;
 
+    
 protected:
     
     void ReleaseTextures();

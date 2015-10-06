@@ -64,7 +64,7 @@ DAVA::String SceneSaverTool::GetCommandLineKey() const
 bool SceneSaverTool::InitializeFromCommandLine()
 {
     commandAction = eAction::ACTION_NONE;
-
+    
     inFolder = CommandLineParser::GetCommandParam(String("-indir"));
     if (inFolder.IsEmpty())
     {
@@ -103,6 +103,7 @@ bool SceneSaverTool::InitializeFromCommandLine()
         return false;
     }
 
+    
     filename = CommandLineParser::GetCommandParam(String("-processfile"));
     if (filename.empty() && (commandAction != eAction::ACTION_RESAVE_YAML))
     {

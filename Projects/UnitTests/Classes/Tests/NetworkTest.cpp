@@ -36,10 +36,10 @@
 #include "Network/NetService.h"
 #include "Network/NetCore.h"
 
+#ifndef __DAVAENGINE_WIN_UAP__
+
 using namespace DAVA;
 using namespace DAVA::Net;
-
-#ifndef __DAVAENGINE_WIN_UAP__
 
 struct Parcel
 {

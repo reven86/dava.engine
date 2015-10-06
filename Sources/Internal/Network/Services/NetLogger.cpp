@@ -106,18 +106,16 @@ void NetLogger::DoOutput(Logger::eLogLevel ll, const char8* text)
 void NetLogger::SendNextRecord()
 {
     LogRecord record;
-    if (!IsChannelOpen() || !GetFirstMessage(record))
+    if (IsChannelOpen() && true == GetFirstMessage(record))
     {
-        return;
+        String timeStr = TimestampToString(record.timestamp);
+        const char* levelStr = Logger::Instance()->GetLogLevelString(record.level);
+
+        size_t n = timeStr.size() + 1 + strlen(levelStr) + 1 + record.message.size();
+        char8* buf = new char8[n + 1];  // this will be deleted in OnChannelSendComplete callback
+        Snprintf(buf, n + 1, "%s %s %s", timeStr.c_str(), levelStr, record.message.c_str());
+        Send(buf, n - 1);   // remove trailing '\n'
     }
-
-    String timeStr = TimestampToString(record.timestamp);
-    const char* levelStr = Logger::Instance()->GetLogLevelString(record.level);
-
-    size_t n = timeStr.size() + 1 + strlen(levelStr) + 1 + record.message.size();
-    char8* buf = new char8[n + 1];  // this will be deleted in OnChannelSendComplete callback
-    Snprintf(buf, n + 1, "%s %s %s", timeStr.c_str(), levelStr, record.message.c_str());
-    Send(buf, n - 1);   // remove trailing '\n'
 }
 
 bool NetLogger::EnqueueMessage(Logger::eLogLevel ll, const char8* message)

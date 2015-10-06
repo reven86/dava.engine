@@ -37,21 +37,23 @@
 
 namespace DAVA
 {
+
 UIComponent::UIComponent()
     : control(nullptr)
 {
 }
 
-UIComponent::UIComponent(const UIComponent& src)
+UIComponent::UIComponent(const UIComponent &src)
     : control(nullptr)
 {
+    
 }
 
 UIComponent::~UIComponent()
 {
 }
 
-UIComponent& UIComponent::operator=(const UIComponent& src)
+UIComponent &UIComponent::operator=(const UIComponent &src)
 {
     return *this;
 }
