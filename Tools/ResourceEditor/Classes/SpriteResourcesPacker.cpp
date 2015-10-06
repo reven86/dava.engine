@@ -26,44 +26,42 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#include "SpritesPacker.h"
+#include "SpriteResourcesPacker.h"
 #include "TexturePacker/ResourcePacker2D.h"
 #include "TexturePacker/CommandLineParser.h"
 #include "Qt/Settings/SettingsManager.h"
 
-SpritesPacker::~SpritesPacker()
+SpriteResourcesPacker::~SpriteResourcesPacker()
 {
-
 }
 
-void SpritesPacker::SetInputDir(const FilePath & _inputDir)
+void SpriteResourcesPacker::SetInputDir(const DAVA::FilePath& _inputDir)
 {
     DVASSERT(_inputDir.IsDirectoryPathname());
-	inputDir = _inputDir;
+    inputDir = _inputDir;
 }
 
-void SpritesPacker::SetOutputDir(const FilePath & _outputDir)
+void SpriteResourcesPacker::SetOutputDir(const DAVA::FilePath& _outputDir)
 {
     DVASSERT(_outputDir.IsDirectoryPathname());
-	outputDir = _outputDir;
+    outputDir = _outputDir;
 }
 
-void SpritesPacker::PackLightmaps(DAVA::eGPUFamily gpu)
+void SpriteResourcesPacker::PackLightmaps(DAVA::eGPUFamily gpu)
 {
-	return PerformPack(true, gpu);
+    return PerformPack(true, gpu);
 }
 
-void SpritesPacker::PackTextures(DAVA::eGPUFamily gpu)
+void SpriteResourcesPacker::PackTextures(DAVA::eGPUFamily gpu)
 {
-	return PerformPack(false, gpu);
+    return PerformPack(false, gpu);
 }
 
-void SpritesPacker::PerformPack(bool isLightmapPacking, DAVA::eGPUFamily gpu)
+void SpriteResourcesPacker::PerformPack(bool isLightmapPacking, DAVA::eGPUFamily gpu)
 {
-	FileSystem::Instance()->CreateDirectory(outputDir, true);
+    DAVA::FileSystem::Instance()->CreateDirectory(outputDir, true);
 
-    ResourcePacker2D resourcePacker;
+    DAVA::ResourcePacker2D resourcePacker;
 
     resourcePacker.forceRepack = true;
     resourcePacker.InitFolders(inputDir, outputDir);
