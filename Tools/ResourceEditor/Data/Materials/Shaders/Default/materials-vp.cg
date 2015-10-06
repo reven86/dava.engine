@@ -117,8 +117,6 @@ VPROG_OUT_BEGIN
     
     #if VERTEX_FOG
         VPROG_OUT_TEXCOORD5(varFog,4)
-//        varying lowp float varFogAmoung;
-//        varying lowp vec3 varFogColor;
     #endif
 
 
