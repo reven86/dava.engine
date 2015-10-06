@@ -60,8 +60,14 @@ void NMaterialStateDynamicTexturesInsp::FindMaterialTexturesRecursive(NMaterial 
             if (!descriptor.shader->IsValid())
                 continue;
 
-            const rhi::ShaderSamplerList& samplers = descriptor.shader->GetFragmentSamplerList();
-            for (const auto& samp : samplers)
+            const rhi::ShaderSamplerList& fragmentSamplers = descriptor.shader->GetFragmentSamplerList();
+            for (const auto& samp : fragmentSamplers)
+            {
+                ret.insert(samp.uid);
+            }
+
+            const rhi::ShaderSamplerList& vertexSamplers = descriptor.shader->GetVertexSamplerList();
+            for (const auto& samp : vertexSamplers)
             {
                 ret.insert(samp.uid);
             }
