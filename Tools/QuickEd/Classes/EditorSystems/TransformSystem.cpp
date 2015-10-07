@@ -277,15 +277,17 @@ namespace
 {
 struct MagnetLine
 {
-    MagnetLine(float32 linePos_, float32 controlPos_, const Rect& targetBox_)
+    MagnetLine(float32 linePos_, float32 controlPos_, const Rect& targetBox_, float32 multiplyer_ = 1.0f)
         : linePos(linePos_)
         , controlPos(controlPos_)
-        , difference(fabs(controlPos - linePos))
+        , multiplyer(multiplyer_)
+        , difference(multiplyer == 0.0f ? std::numeric_limits<float32>::max() : fabs(controlPos - linePos) / multiplyer)
         , targetBox(targetBox_)
     {
     }
     float32 linePos = 0.0f;
     float32 controlPos = 0.0f;
+    float32 multiplyer = 1.0f;
     float32 difference = 0.0f;
     Rect targetBox;
 };
@@ -311,13 +313,14 @@ Vector2 TransformSystem::AdjustMove(Vector2 delta, const UIGeometricData* parent
         for (int32 axisInt = Vector2::AXIS_X; axisInt < Vector2::AXIS_COUNT; ++axisInt)
         {
             Vector2::eAxis axis = static_cast<Vector2::eAxis>(axisInt);
-            List<MagnetLine> magnetPairs;
             float32 controlLeft = box.GetPosition()[axis];
             float32 controlRight = controlLeft + box.GetSize()[axis];
 
             float32 parentLeft = 0.0f;
             float32 parentRight = parentLeft + parentBox.GetSize()[axis];
             DVASSERT(controlLeft < controlRight);
+
+            List<MagnetLine> magnetPairs;
 
             magnetPairs.emplace_back(parentLeft, controlLeft, parentBox);
             magnetPairs.emplace_back(parentLeft + (parentRight - parentLeft) / 2.0f, controlLeft + (controlRight - controlLeft) / 2.0f, parentBox);
@@ -360,29 +363,35 @@ Vector2 TransformSystem::AdjustMove(Vector2 delta, const UIGeometricData* parent
             {
                 extraDelta[axis] = cursorPos - nearestLine.linePos;
                 delta[axis] = nearestLine.linePos - nearestLine.controlPos;
+            }
+            for (const MagnetLine& line : magnetPairs)
+            {
+                if (line.linePos == line.controlPos)
+                {
+                    Vector2 position = parentGD->position - RotateVectorInv(parentGD->pivotPoint * parentGD->scale, *parentGD);
 
-                Vector2 position = parentGD->position - RotateVectorInv(parentGD->pivotPoint * parentGD->scale, *parentGD);
+                    const Vector2::eAxis axis2 = axis == Vector2::AXIS_X ? Vector2::AXIS_Y : Vector2::AXIS_X;
 
-                const Vector2::eAxis axis2 = axis == Vector2::AXIS_X ? Vector2::AXIS_Y : Vector2::AXIS_X;
+                    float32 controlTop = box.GetPosition()[axis2];
+                    float32 controlBottom = controlTop + box.GetSize()[axis2];
 
-                float32 controlTop = box.GetPosition()[axis2];
-                float32 controlBottom = controlTop + box.GetSize()[axis2];
+                    float32 targetTop = line.targetBox.GetPosition()[axis2];
+                    float32 targetBottom = targetTop + line.targetBox.GetSize()[axis2];
 
-                float32 targetTop = nearestLine.targetBox.GetPosition()[axis2];
-                float32 targetBottom = targetTop + nearestLine.targetBox.GetSize()[axis2];
-
-                Vector2 linePos;
-                linePos[axis] = nearestLine.linePos;
-                linePos[axis2] = Min(controlTop, targetTop);
-                Vector2 lineSize;
-                lineSize[axis] = 0.0f;
-                lineSize[axis2] = Max(controlBottom, targetBottom) - linePos[axis2];
-                linePos = RotateVectorInv(linePos, parentGeometricData);
-                Rect lineRect(linePos + position, lineSize);
-                magnets.emplace_back(lineRect, parentGeometricData, axis2);
+                    Vector2 linePos;
+                    linePos[axis] = line.linePos;
+                    linePos[axis2] = Min(controlTop, targetTop);
+                    Vector2 lineSize;
+                    lineSize[axis] = 0.0f;
+                    lineSize[axis2] = Max(controlBottom, targetBottom) - linePos[axis2];
+                    linePos = RotateVectorInv(linePos, parentGeometricData);
+                    Rect lineRect(linePos + position, lineSize);
+                    magnets.emplace_back(lineRect, parentGeometricData, axis2);
+                }
             }
         }
     }
+
     systemManager->MagnetLinesChanged.Emit(magnets);
     return delta;
 }
@@ -478,9 +487,15 @@ Vector2 TransformSystem::AdjustResize(Array<int, Vector2::AXIS_COUNT> directions
     Vector2 deltaSize(delta.x * directions[Vector2::AXIS_X], delta.y * directions[Vector2::AXIS_Y]);
     Vector2 finalSize(origSize + deltaSize);
 
+    Vector<MagnetLineInfo> magnets;
+
     for (int32 axisInt = Vector2::AXIS_X; axisInt < Vector2::AXIS_COUNT; ++axisInt)
     {
         Vector2::eAxis axis = static_cast<Vector2::eAxis>(axisInt);
+        if (directions[axis] == 0)
+        {
+            continue;
+        }
         if (finalSize[axis] < scaledMinimum[axis])
         {
             extraDelta[axis] = finalSize[axis] - scaledMinimum[axis];
@@ -489,7 +504,98 @@ Vector2 TransformSystem::AdjustResize(Array<int, Vector2::AXIS_COUNT> directions
             delta[axis] = Max(0.0f, origSize[axis] - scaledMinimum[axis]); //truncate delta
             delta[axis] *= sign; // restore delta sign;
         }
+        else
+        {
+            if (!QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier))
+            {
+                UIGeometricData* parentGD = &parentGeometricData;
+                UIControl* control = activeControlNode->GetControl();
+                const Vector2 scaledRange(Vector2(20.0f, 20.0f) / parentGD->scale);
+                const Vector2 range(RotateVector(scaledRange, *parentGD));
+
+                UIGeometricData controlGD = control->GetLocalGeometricData();
+                Rect parentBox = parentGD->GetUnrotatedRect();
+                parentBox.SetPosition(Vector2(0.0f, 0.0f));
+                Rect box = controlGD.GetAABBox();
+
+                List<MagnetLine> magnetPairs;
+                float32 controlLeft = box.GetPosition()[axis];
+                float32 controlRight = controlLeft + box.GetSize()[axis];
+
+                float32 parentLeft = 0.0f;
+                float32 parentRight = parentLeft + parentBox.GetSize()[axis];
+                DVASSERT(controlLeft < controlRight);
+                magnetPairs.emplace_back(parentLeft, controlLeft, parentBox, directions[axis] != 1);
+                magnetPairs.emplace_back(parentLeft + (parentRight - parentLeft) / 2.0f, controlLeft + (controlRight - controlLeft) / 2.0f, parentBox, 0.5f);
+                magnetPairs.emplace_back(parentLeft + parentRight, controlRight, parentBox, directions[axis] != -1);
+                const float32 border = 20.0f;
+                if (parentGD->GetUnrotatedRect().GetSize()[axis] > 100)
+                {
+                    magnetPairs.emplace_back(parentLeft + border, controlLeft, parentBox, directions[axis] != 1);
+                    magnetPairs.emplace_back(parentRight - border, controlRight, parentBox, directions[axis] != -1);
+                }
+
+                for (UIControl* neighbour : control->GetParent()->GetChildren())
+                {
+                    if (std::find_if(selectedControlNodes.begin(), selectedControlNodes.end(), [neighbour](ControlNode* node)
+                                     {
+                        return neighbour == node->GetControl();
+                                     }) == selectedControlNodes.end())
+                    {
+                        Rect neighbourBox = neighbour->GetLocalGeometricData().GetAABBox();
+
+                        float32 neighbourLeft = neighbourBox.GetPosition()[axis];
+                        float32 neighbourRight = neighbourLeft + neighbourBox.GetSize()[axis];
+                        DVASSERT(neighbourLeft < neighbourRight);
+
+                        magnetPairs.emplace_back(neighbourLeft, controlLeft, neighbourBox);
+                        magnetPairs.emplace_back(neighbourLeft + (neighbourRight - neighbourLeft) / 2.0f, controlLeft + (controlRight - controlLeft) / 2.0f, neighbourBox);
+                        magnetPairs.emplace_back(neighbourRight, controlRight, neighbourBox);
+                    }
+                }
+                DVASSERT(!magnetPairs.empty());
+                magnetPairs.sort([](const MagnetLine& left, const MagnetLine& right)
+                                 {return left.difference < right.difference;
+                                 });
+                MagnetLine nearestLine = magnetPairs.front();
+                float32 areaNearLineLeft = nearestLine.linePos - range[axis];
+                float32 areaNearLineRight = nearestLine.linePos + range[axis];
+                float32 cursorPos = nearestLine.controlPos + delta[axis] * nearestLine.multiplyer;
+                if (cursorPos >= areaNearLineLeft && cursorPos <= areaNearLineRight)
+                {
+                    extraDelta[axis] = cursorPos - nearestLine.linePos;
+                    delta[axis] = nearestLine.linePos - nearestLine.controlPos;
+                }
+                for (const MagnetLine& line : magnetPairs)
+                {
+                    if (line.linePos == line.controlPos)
+                    {
+                        Vector2 position = parentGD->position - RotateVectorInv(parentGD->pivotPoint * parentGD->scale, *parentGD);
+
+                        const Vector2::eAxis axis2 = axis == Vector2::AXIS_X ? Vector2::AXIS_Y : Vector2::AXIS_X;
+
+                        float32 controlTop = box.GetPosition()[axis2];
+                        float32 controlBottom = controlTop + box.GetSize()[axis2];
+
+                        float32 targetTop = line.targetBox.GetPosition()[axis2];
+                        float32 targetBottom = targetTop + line.targetBox.GetSize()[axis2];
+
+                        Vector2 linePos;
+                        linePos[axis] = line.linePos;
+                        linePos[axis2] = Min(controlTop, targetTop);
+                        Vector2 lineSize;
+                        lineSize[axis] = 0.0f;
+                        lineSize[axis2] = Max(controlBottom, targetBottom) - linePos[axis2];
+                        linePos = RotateVectorInv(linePos, parentGeometricData);
+                        Rect lineRect(linePos + position, lineSize);
+                        magnets.emplace_back(lineRect, parentGeometricData, axis2);
+                    }
+                }
+            }
+        }
     }
+    systemManager->MagnetLinesChanged.Emit(magnets);
+
     return delta;
 }
 
