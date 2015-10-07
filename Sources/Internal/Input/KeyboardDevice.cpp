@@ -41,7 +41,7 @@ KeyboardDevice::KeyboardDevice()
 KeyboardDevice::~KeyboardDevice()
 {
 }
-    
+
 bool KeyboardDevice::IsKeyPressed(int32 keyCode) const
 {
     DVASSERT( keyCode < DVKEY_COUNT );
@@ -87,7 +87,7 @@ void KeyboardDevice::OnAfterUpdate()
         keyStatus[i] = realKeyStatus[i];
     }
 }
-    
+
 int32 KeyboardDevice::GetDavaKeyForSystemKey(int32 systemKeyCode) const
 {
     DVASSERT(systemKeyCode < MAX_KEYS);

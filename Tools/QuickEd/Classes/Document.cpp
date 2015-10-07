@@ -80,22 +80,22 @@ EditorSystemsManager* Document::GetSystemManager()
     return &systemManager;
 }
 
-const FilePath &Document::GetPackageFilePath() const
+const FilePath& Document::GetPackageFilePath() const
 {
     return package->GetPath();
 }
 
-QUndoStack *Document::GetUndoStack()
+QUndoStack* Document::GetUndoStack()
 {
     return undoStack;
 }
 
-PackageNode *Document::GetPackage()
+PackageNode* Document::GetPackage()
 {
     return package;
 }
 
-QtModelPackageCommandExecutor *Document::GetCommandExecutor()
+QtModelPackageCommandExecutor* Document::GetCommandExecutor()
 {
     return commandExecutor;
 }

@@ -53,12 +53,12 @@ public:
 
 signals:
     void ActiveDocumentChanged(Document*);
-    void SelectedNodesChanged(const SelectedNodes &selected, const SelectedNodes &deselected);
+    void SelectedNodesChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void CanvasSizeChanged();
-    
+
 public slots:
     void SetActiveDocument(Document* document);
-    void SetSelectedNodes(const SelectedNodes &selected, const SelectedNodes &deselected);
+    void SetSelectedNodes(const SelectedNodes& selected, const SelectedNodes& deselected);
     void SetEmulationMode(bool emulationMode);
     void SetScale(float scale);
 
