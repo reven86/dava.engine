@@ -292,6 +292,10 @@ else()
 
 endif()
 
+if (QT5_FOUND)
+    link_with_qt5(${PROJECT_NAME})
+endif()
+
 if ( QT5_FOUND )
     if ( WIN32 )
         set ( QTCONF_DEPLOY_PATH "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/qt.conf" )
@@ -412,26 +416,9 @@ elseif( MACOS )
 
     set( BINARY_DIR ${OUTPUT_DIR}/MacOS/${PROJECT_NAME} )
 
-    if( DAVA_FOUND AND NOT MAC_DISABLE_BUNDLE )
-        ADD_CUSTOM_COMMAND(
-        TARGET ${PROJECT_NAME}
-        POST_BUILD
-            COMMAND
-            install_name_tool -change @executable_path/../Frameworks/libfmodex.dylib  @executable_path/../Resources/libfmodex.dylib ${OUTPUT_DIR}/Resources/libfmodevent.dylib
-
-            COMMAND
-            install_name_tool -change ./libfmodevent.dylib @executable_path/../Resources/libfmodevent.dylib ${BINARY_DIR}
-
-            COMMAND
-            install_name_tool -change ./libfmodex.dylib @executable_path/../Resources/libfmodex.dylib ${BINARY_DIR}
-
-            COMMAND
-            install_name_tool -change ./libIMagickHelper.dylib @executable_path/../Resources/libIMagickHelper.dylib ${BINARY_DIR}
-
-            COMMAND
-            install_name_tool -change ./libTextureConverter.dylib @executable_path/../Resources/libTextureConverter.dylib ${BINARY_DIR}
-        )
-
+    if( DAVA_FOUND )
+        set(LD_RUNPATHES "@executable_path @executable_path/../Resources @executable_path/../Frameworks")
+        set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_LD_RUNPATH_SEARCH_PATHS "${LD_RUNPATHES}")
     endif()
 
 elseif ( WIN32 )
