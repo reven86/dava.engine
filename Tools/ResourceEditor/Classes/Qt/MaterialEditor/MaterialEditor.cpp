@@ -1153,12 +1153,12 @@ void MaterialEditor::StoreMaterialToPreset(DAVA::NMaterial* material, DAVA::Keye
 	archive->SetArchive("properties", propertiesArchive);
 
 	auto fxName = material->GetLocalFXName();
-	if (fxName.IsValid())
-		archive->SetFastName("fxname", fxName);
+    if (fxName.IsValid())
+        archive->SetFastName("fxname", fxName);
 	
 	auto qualityGroup = material->GetQualityGroup();
-	if (qualityGroup.IsValid())
-		archive->SetFastName("group", qualityGroup);
+    if (qualityGroup.IsValid())
+        archive->SetFastName("group", qualityGroup);
 }
 
 void MaterialEditor::UpdateMaterialPropertiesFromPreset(DAVA::NMaterial* material, DAVA::KeyedArchive* properitesArchive)

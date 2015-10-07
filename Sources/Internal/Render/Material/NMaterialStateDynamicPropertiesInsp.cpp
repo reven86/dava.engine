@@ -41,9 +41,11 @@ void NMaterialStateDynamicPropertiesInsp::FindMaterialPropertiesRecursive(NMater
     material->CollectMaterialFlags(flags);
 
     // shader data
-    if (material->GetEffectiveFXName().IsValid())
+    auto fxName = material->GetEffectiveFXName();
+    if (fxName.IsValid())
     {
-        FXDescriptor fxDescriptor = FXCache::GetFXDescriptor(material->GetEffectiveFXName(), flags, QualitySettingsSystem::Instance()->GetCurMaterialQuality(material->qualityGroup));
+        auto qualityGroup = QualitySettingsSystem::Instance()->GetCurMaterialQuality(material->qualityGroup);
+        FXDescriptor fxDescriptor = FXCache::GetFXDescriptor(fxName, flags, qualityGroup);
         for (auto& descriptor : fxDescriptor.renderPassDescriptors)
         {
             if (!descriptor.shader->IsValid())
@@ -64,6 +66,19 @@ void NMaterialStateDynamicPropertiesInsp::FindMaterialPropertiesRecursive(NMater
                     }
                 }
             }
+        }
+    }
+    else
+    {
+        // if fxName is not valid (e.g global material)
+        // we just add all local properties
+        for (const auto& lp : material->localProperties)
+        {
+            PropData data;
+            data.size = lp.second->arraySize;
+            data.type = lp.second->type;
+            data.defaultValue = nullptr;
+            propsMap.insert(lp.first, data);
         }
     }
 
