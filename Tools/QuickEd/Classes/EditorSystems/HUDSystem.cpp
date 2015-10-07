@@ -363,7 +363,14 @@ HUDSystem::HUD::HUD(ControlNode* node_, UIControl* hudControl)
     , container(new HUDContainer(control), DestroyControl)
 {
     HUDContainer* hudContainer = static_cast<HUDContainer*>(container.get());
-    for (uint32 i = HUDAreaInfo::AREAS_BEGIN; i < HUDAreaInfo::AREAS_COUNT; ++i)
+    uint32 begin = HUDAreaInfo::AREAS_BEGIN;
+    uint32 end = HUDAreaInfo::AREAS_COUNT;
+    if (node->GetParent() == nullptr || node->GetParent()->GetControl() == nullptr)
+    {
+        begin = HUDAreaInfo::CORNERS_BEGIN;
+        end = HUDAreaInfo::CORNERS_COUNT;
+    }
+    for (uint32 i = begin; i < end; ++i)
     {
         HUDAreaInfo::eArea area = static_cast<HUDAreaInfo::eArea>(i);
         ControlContainer* controlContainer = CreateControlContainer(area);
@@ -441,9 +448,7 @@ void HUDSystem::OnSelectionChanged(const SelectedNodes& selected, const Selected
         ControlNode* controlNode = dynamic_cast<ControlNode*>(node);
         if (controlNode != nullptr)
         {
-            PackageBaseNode* parent = controlNode->GetParent();
-
-            if (nullptr != controlNode && nullptr != controlNode->GetControl() && nullptr != parent && nullptr != parent->GetControl())
+            if (nullptr != controlNode && nullptr != controlNode->GetControl())
             {
                 hudMap.emplace(std::piecewise_construct,
                                std::forward_as_tuple(controlNode),
@@ -591,10 +596,14 @@ HUDAreaInfo HUDSystem::GetControlArea(const Vector2& pos, eSearchOrder searchOrd
             DVASSERT_MSG(findIter != hudMap.end(), "hud map corrupted");
             const auto& hud = findIter->second;
             HUDAreaInfo::eArea area = static_cast<HUDAreaInfo::eArea>(end + sign * i);
-            const auto& controlContainer = hud.hudControls.find(area)->second;
-            if (controlContainer->GetVisible() && controlContainer->IsPointInside(pos))
+            auto hudControlsIter = hud.hudControls.find(area);
+            if (hudControlsIter != hud.hudControls.end())
             {
-                return HUDAreaInfo(hud.node, area);
+                const auto& controlContainer = hudControlsIter->second;
+                if (controlContainer->GetVisible() && controlContainer->IsPointInside(pos))
+                {
+                    return HUDAreaInfo(hud.node, area);
+                }
             }
         }
     }
@@ -652,8 +661,12 @@ void HUDSystem::UpdateAreasVisibility()
         const auto& hud = findIter->second;
         for (HUDAreaInfo::eArea area : AreasToHide)
         {
-            const auto& controlContainer = hud.hudControls.find(area)->second;
-            controlContainer->SetVisible(showAreas);
+            auto hudControlsIter = hud.hudControls.find(area);
+            if (hudControlsIter != hud.hudControls.end())
+            {
+                const auto& controlContainer = hudControlsIter->second;
+                controlContainer->SetVisible(showAreas);
+            }
         }
     }
 }

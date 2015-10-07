@@ -61,7 +61,8 @@ struct HUDAreaInfo
         PIVOT_POINT_AREA,
         FRAME_AREA,
         NO_AREA,
-        CORNERS_COUNT = FRAME_AREA - TOP_LEFT_AREA,
+        CORNERS_BEGIN = TOP_LEFT_AREA,
+        CORNERS_COUNT = PIVOT_POINT_AREA - TOP_LEFT_AREA + CORNERS_BEGIN,
         AREAS_COUNT = NO_AREA - AREAS_BEGIN
     };
     HUDAreaInfo(ControlNode* owner_ = nullptr, eArea area_ = NO_AREA)
