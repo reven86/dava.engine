@@ -50,6 +50,15 @@ public:
     void Apply(ControlLayoutData &data, Vector2::eAxis axis);
     
 private:
+    
+    struct LineInfo
+    {
+        int32 firstIndex;
+        int32 lastIndex;
+        
+        float32 freeSpace;
+    };
+    
     void ProcessXAxis(ControlLayoutData &data, UIFlowLayoutComponent *component);
     void LayoutLine(ControlLayoutData &data, int32 firstIndex, int32 lastIndex, int32 childrenCount, float32 childrenSize);
     void CalculateHorizontalDynamicPaddingAndSpaces(ControlLayoutData &data, int32 firstIndex, int32 lastIndex);

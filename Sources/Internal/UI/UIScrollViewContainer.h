@@ -52,7 +52,7 @@ public:
 	virtual void Input(UIEvent *currentTouch);
     virtual void InputCancelled(UIEvent *currentInput);
 	virtual bool SystemInput(UIEvent *currentInput);
-	virtual void SetSize(const Vector2 &rect);
+    virtual void SetSize(const Vector2 &size);
     virtual void WillDisappear();
 
 

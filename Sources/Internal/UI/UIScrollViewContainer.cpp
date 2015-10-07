@@ -83,6 +83,39 @@ void UIScrollViewContainer::SetSize(const Vector2 &size)
 		// We should not allow scrolling when content rect is less than or is equal ScrollView "window"
 		enableHorizontalScroll = size.dx > parentSize.dx;
 		enableVerticalScroll = size.dy > parentSize.dy;
+        
+        UIScrollView *scrollView = cast_if_equal<UIScrollView*>(parent);
+        if (scrollView != nullptr)
+        {
+            scrollView->OnScrollViewContainerSizeChanged();
+            
+            if (scrollView->IsAutoUpdate())
+            {
+                if (!enableHorizontalScroll)
+                {
+                    if (scrollView->IsCenterContent())
+                    {
+                        relativePosition.x = (scrollView->GetSize().dx - GetSize().dx) / 2;
+                    }
+                    else
+                    {
+                        relativePosition.x = 0;
+                    }
+                }
+                
+                if (!enableVerticalScroll)
+                {
+                    if (scrollView->IsCenterContent())
+                    {
+                        relativePosition.y = (scrollView->GetSize().dy - GetSize().dy) / 2;
+                    }
+                    else
+                    {
+                        relativePosition.y = 0;
+                    }
+                }
+            }
+        }
 	}
 }
 
@@ -225,6 +258,18 @@ void UIScrollViewContainer::Update(float32 timeElapsed)
                 relativePosition.x = scrollView->GetHorizontalScroll()->GetPosition(0, timeElapsed, false);
             }
         }
+        else if (scrollView->IsAutoUpdate())
+        {
+            if (scrollView->IsCenterContent())
+            {
+                relativePosition.x = (scrollView->GetSize().dx - GetSize().dx) / 2;
+            }
+            else
+            {
+                relativePosition.x = 0;
+            }
+        }
+        
         if (enableVerticalScroll)
         {
             if (scrollView->GetVerticalScroll() == currentScroll)
@@ -234,6 +279,17 @@ void UIScrollViewContainer::Update(float32 timeElapsed)
             else
             {
                 relativePosition.y = scrollView->GetVerticalScroll()->GetPosition(0, timeElapsed, false);
+            }
+        }
+        else if (scrollView->IsAutoUpdate())
+        {
+            if (scrollView->IsCenterContent())
+            {
+                relativePosition.y = (scrollView->GetSize().dy - GetSize().dy) / 2;
+            }
+            else
+            {
+                relativePosition.y = 0;
             }
         }
 

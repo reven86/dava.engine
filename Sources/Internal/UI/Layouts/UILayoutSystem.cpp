@@ -85,6 +85,9 @@ void UILayoutSystem::ApplyLayout(UIControl *control, bool considerDenendenceOnCh
     ProcessAxis(Vector2::AXIS_Y);
     
     ApplySizesAndPositions();
+    
+    Logger::Debug("!!! layouts: %d", layoutData.size());
+    layoutData.clear();
 }
 
 UIControl *UILayoutSystem::FindNotDependentOnChildrenControl(UIControl *control) const
@@ -185,19 +188,9 @@ void UILayoutSystem::DoLayoutPhase(Vector2::eAxis axis)
 
 void UILayoutSystem::ApplySizesAndPositions()
 {
-    Vector<UIControl*> controls;
     for (ControlLayoutData &data : layoutData)
     {
         data.ApplyLayoutToControl();
-        if (data.HasFlag(ControlLayoutData::FLAG_SIZE_CHANGED))
-            controls.push_back(data.GetControl());
-    }
-    
-    layoutData.clear();
-    for (UIControl *control : controls)
-    {
-        control->OnSizeChanged();
-        control->PerformEvent(UIControl::EVENT_SIZE_CHANGED_BY_LAYOUT_SYSTEM);
     }
 }
 

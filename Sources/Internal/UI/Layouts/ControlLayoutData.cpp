@@ -51,6 +51,7 @@ void ControlLayoutData::ApplyLayoutToControl()
     if (HasFlag(FLAG_SIZE_CHANGED))
     {
         control->SetSize(size);
+        control->OnSizeChanged();
     }
     
     control->ResetLayoutDirty();
