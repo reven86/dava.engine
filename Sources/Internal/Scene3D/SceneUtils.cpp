@@ -90,30 +90,30 @@ void CombineEntityLods(Entity * forRootNode)
         uint32 lodCount = 0;
         for (int lodNo = 0; lodNo < LodComponent::MAX_LOD_LAYERS; ++lodNo)
         {
-            // Remove dummy nodes
             // Try to find node with same name but with other lod
             const FastName lodIName(nodeWithLodsName + LodNameForIndex(lodNamePattern, lodNo));
             Entity * ln = oldParent->FindByName(lodIName.c_str());
             
-            if (nullptr == ln)
-            {
-                const FastName dummyLodName(nodeWithLodsName + LodNameForIndex(dummyLodNamePattern, lodNo));
-                ln = oldParent->FindByName(dummyLodName.c_str());
-                
-                if (nullptr != ln)
-                {
-                    ln->SetVisible(false);
-                    ln->RemoveAllChildren();
-                }
-            }
-            
+            // Lod found. Move render batches from entity to NewMesh as lod.
             if (nullptr != ln)
             {
                 CollapseRenderBatchesRecursiveAsLod(ln, lodNo, newMesh);
                 CollapseAnimationsUpToFarParent(ln, newNodeWithLods);
                 
                 oldParent->RemoveNode(ln);
+                
                 ++lodCount;
+            }
+
+            // Try to find dummy lod node
+            const FastName dummyLodName(nodeWithLodsName + LodNameForIndex(dummyLodNamePattern, lodNo));
+            ln = oldParent->FindByName(dummyLodName.c_str());
+            
+            if (nullptr != ln)
+            {
+                // Remove dummy nodes
+                ln->RemoveAllChildren();
+                oldParent->RemoveNode(ln);
             }
             
         }
