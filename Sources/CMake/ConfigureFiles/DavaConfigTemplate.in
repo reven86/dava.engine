@@ -3,6 +3,8 @@ QT5_PATH_WIN             = $ENV{QT5_HOME}
 
 QT5_PATH_MAC             = $ENV{HOME}/Qt/5.4/clang_64
 
+NGT_PATH                       = $ENV{NGT_HOME}
+
 ANDROID_KEY_STORE        = ${DAVA_ROOT_DIR}/Sources/CMake/Resources/Android/DavaTest.keystore
 ANDROID_KEY_ALIAS        = test
 ANDROID_STORE_PASSWORD   = qazwsx
@@ -12,8 +14,8 @@ ANDROID_ANT              = $ENV{ANDROID_ANT_ROOT}
 ANDROID_NDK              = $ENV{ANDROID_NDK_ROOT}
 ANDROID_SDK              = $ENV{ANDROID_SDK_ROOT}
 ANDROID_ABI              = armeabi-v7a
-ANDROID_NATIVE_API_LEVEL = 17 
-ANDROID_TARGET_API_LEVEL = 21 
+ANDROID_NATIVE_API_LEVEL = 17
+ANDROID_TARGET_API_LEVEL = 21
 
 WINDOWS_UAP_PLATFORM_NAME = WindowsStore
 WINDOWS_UAP_PLATRORM_VERSION = 10.0

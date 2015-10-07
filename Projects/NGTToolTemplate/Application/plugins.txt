@@ -1,0 +1,12 @@
+plugins/plg_alert_ui
+plugins/plg_reflection
+plugins/plg_qt_app
+plugins/plg_qt_common
+plugins/plg_variant
+plugins/plg_command_system
+plugins/plg_copy_paste
+plugins/plg_serialization
+plugins/plg_file_system
+plugins/plg_history_ui
+plugins/plg_editor_interaction
+plugins/DavaPluginTemplate

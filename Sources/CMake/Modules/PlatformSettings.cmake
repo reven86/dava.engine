@@ -7,10 +7,10 @@ endif  ()
 
 if     ( ANDROID )
     set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y" )
-    set( CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -mfloat-abi=softfp -mfpu=neon -frtti" )    
+    set( CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -mfloat-abi=softfp -mfpu=neon -frtti" )
     set( CMAKE_ECLIPSE_MAKE_ARGUMENTS -j8 )
-    
-elseif ( IOS     ) 
+
+elseif ( IOS     )
     set( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -fvisibility=hidden" )
     set( CMAKE_CXX_FLAGS_DEBUG    "${CMAKE_CXX_FLAGS} -O0" )
     set( CMAKE_CXX_FLAGS_RELEASE  "${CMAKE_CXX_FLAGS} -O2" )
@@ -25,9 +25,9 @@ elseif ( IOS     )
 
     if( NOT IOS_BUNDLE_IDENTIFIER )
         set( IOS_BUNDLE_IDENTIFIER com.davaconsulting.${PROJECT_NAME} )
-        
+
     endif()
-    
+
     # Fix try_compile
     set( MACOSX_BUNDLE_GUI_IDENTIFIER  ${IOS_BUNDLE_IDENTIFIER} )
     set( CMAKE_MACOSX_BUNDLE YES )
@@ -46,23 +46,29 @@ elseif ( WIN32 )
         set ( CRT_TYPE_RELEASE "/MD" )
         #consume windows runtime extension (C++/CX)
         set ( ADDITIONAL_CXX_FLAGS "/ZW")
-        
+
         #turning on SAFESEH option on UAP x86
         if ( NOT CMAKE_GENERATOR_PLATFORM OR ${CMAKE_GENERATOR_PLATFORM} STREQUAL "Win32" )
             set ( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /SAFESEH" )
         endif ()
+
     else ()
-        set ( CRT_TYPE_DEBUG "/MTd" )
-        set ( CRT_TYPE_RELEASE "/MT" )
+        if (USE_DYNAMIC_CRT)
+            set ( CRT_TYPE_DEBUG "/MDd" )
+            set ( CRT_TYPE_RELEASE "/MD" )
+        else()
+            set ( CRT_TYPE_DEBUG "/MTd" )
+            set ( CRT_TYPE_RELEASE "/MT" )
+        endif()
     endif ()
-    
+
     # ignorance of linker warnings
     set ( CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /IGNORE:4099,4221,4264" )
     set ( CMAKE_STATIC_LINKER_FLAGS "${CMAKE_STATIC_LINKER_FLAGS} /IGNORE:4099,4221,4264" )
     set ( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /IGNORE:4099" )
 
-    set ( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${CRT_TYPE_DEBUG} ${ADDITIONAL_CXX_FLAGS} /MP /EHsc /Zi /Od" ) 
-    set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${CRT_TYPE_RELEASE} ${ADDITIONAL_CXX_FLAGS} /MP /EHsc" ) 
+    set ( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${CRT_TYPE_DEBUG} ${ADDITIONAL_CXX_FLAGS} /MP /EHsc /Zi /Od" )
+    set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${CRT_TYPE_RELEASE} ${ADDITIONAL_CXX_FLAGS} /MP /EHsc" )
     set ( CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /ENTRY:mainCRTStartup /INCREMENTAL:NO" )
 
     # undef macros min and max defined in windows.h
@@ -167,15 +173,15 @@ endif()
 
 ##
 if     ( ANDROID )
-    set ( DAVA_THIRD_PARTY_LIBRARIES_PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/android/${ANDROID_NDK_ABI_NAME}" ) 
-    
-elseif ( IOS     ) 
-    set ( DAVA_THIRD_PARTY_LIBRARIES_PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/ios" ) 
-  
+    set ( DAVA_THIRD_PARTY_LIBRARIES_PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/android/${ANDROID_NDK_ABI_NAME}" )
+
+elseif ( IOS     )
+    set ( DAVA_THIRD_PARTY_LIBRARIES_PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/ios" )
+
 elseif ( MACOS )
-    set ( DAVA_THIRD_PARTY_LIBRARIES_PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/mac" ) 
+    set ( DAVA_THIRD_PARTY_LIBRARIES_PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/mac" )
 
 elseif ( WIN32)
-    set ( DAVA_THIRD_PARTY_LIBRARIES_PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win" ) 
-    
+    set ( DAVA_THIRD_PARTY_LIBRARIES_PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win" )
+
 endif  ()

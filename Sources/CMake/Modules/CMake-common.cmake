@@ -11,9 +11,9 @@ if( ANDROID )
     find_package( AndroidTools REQUIRED )
 
     if( WIN32 )
-        set( MAKE_PROGRAM ${ANDROID_NDK}/prebuilt/windows-x86_64/bin/make.exe ) 
+        set( MAKE_PROGRAM ${ANDROID_NDK}/prebuilt/windows-x86_64/bin/make.exe )
     elseif( APPLE )
-       set( MAKE_PROGRAM ${ANDROID_NDK}/prebuilt/darwin-x86_64/bin/make ) 
+       set( MAKE_PROGRAM ${ANDROID_NDK}/prebuilt/darwin-x86_64/bin/make )
     endif()
 
     file( TO_CMAKE_PATH "${MAKE_PROGRAM}" MAKE_PROGRAM )
@@ -27,7 +27,7 @@ elseif ( WINDOWS_UAP )
         remove_definitions( -DDAVA_MEMORY_PROFILING_ENABLE )
         unset ( DAVA_MEMORY_PROFILER )
     endif ()
-    
+
 endif()
 
 include ( PlatformSettings     )
@@ -85,11 +85,11 @@ macro (define_source_files)
     # Source files are defined by globbing source files in current source directory and also by including the extra source files if provided
     if (NOT ARG_GLOB_CPP_PATTERNS)
         set (ARG_GLOB_CPP_PATTERNS *.c *.cpp )    # Default glob pattern
-        if( APPLE )  
+        if( APPLE )
             list ( APPEND ARG_GLOB_CPP_PATTERNS *.m *.mm )
         endif  ()
     endif ()
-    
+
     if (NOT ARG_GLOB_H_PATTERNS)
         set (ARG_GLOB_H_PATTERNS *.h *.hpp)
     endif ()
@@ -100,8 +100,8 @@ macro (define_source_files)
     list (APPEND CPP_FILES ${ARG_EXTRA_CPP_FILES})
     list (APPEND H_FILES ${ARG_EXTRA_H_FILES})
     set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
-    
-    # Optionally enable PCH                                                           	                                                                                   	
+
+    # Optionally enable PCH
     if (ARG_PCH)
         enable_pch ()
     endif ()
@@ -129,56 +129,56 @@ macro (define_source_files)
         endforeach ()
         endforeach ()
     endif ()
-   
+
     # Optionally accumulate source files at parent scope
     if (ARG_PARENT_SCOPE)
         set (${DIR_NAME}_CPP_FILES ${CPP_FILES} PARENT_SCOPE)
         set (${DIR_NAME}_H_FILES ${H_FILES} PARENT_SCOPE)
     # Optionally put source files into further sub-group (only works for current scope due to CMake limitation)
     endif ()
-        
+
 endmacro ()
 
 #
 macro (define_source_folders )
 
     cmake_parse_arguments (ARG "RECURSIVE_CALL" "" "SRC_ROOT;GLOB_ERASE_FOLDERS" ${ARGN})
-    
+
     IF( NOT ARG_RECURSIVE_CALL )
-        set( PROJECT_SOURCE_FILES  ) 
-        set( PROJECT_SOURCE_FILES_CPP  ) 
-        set( PROJECT_SOURCE_FILES_HPP  ) 
-         
+        set( PROJECT_SOURCE_FILES  )
+        set( PROJECT_SOURCE_FILES_CPP  )
+        set( PROJECT_SOURCE_FILES_HPP  )
+
         IF( ARG_SRC_ROOT )
             FOREACH( FOLDER_ITEM ${ARG_SRC_ROOT} )
-                get_filename_component ( PATH ${FOLDER_ITEM} REALPATH ) 
-                list ( APPEND  DAVA_FOLDERS ${PATH} ) 
+                get_filename_component ( PATH ${FOLDER_ITEM} REALPATH )
+                list ( APPEND  DAVA_FOLDERS ${PATH} )
             ENDFOREACH()
         ELSE()
-            list ( APPEND DAVA_FOLDERS ${CMAKE_CURRENT_SOURCE_DIR} ) 
+            list ( APPEND DAVA_FOLDERS ${CMAKE_CURRENT_SOURCE_DIR} )
         ENDIF()
 
     ENDIF()
-    
+
     set( SOURCE_FOLDERS  )
-    
+
     IF( ARG_SRC_ROOT )
-    
+
         FOREACH( FOLDER_ITEM ${ARG_SRC_ROOT} )
 
-            set ( CPP_PATTERNS ${FOLDER_ITEM}/*.c ${FOLDER_ITEM}/*.cpp )    
-            if( APPLE )  
+            set ( CPP_PATTERNS ${FOLDER_ITEM}/*.c ${FOLDER_ITEM}/*.cpp )
+            if( APPLE )
                 list ( APPEND CPP_PATTERNS ${FOLDER_ITEM}/*.m  ${FOLDER_ITEM}/*.mm )
             endif  ()
-        
+
             define_source_files ( GLOB_CPP_PATTERNS ${CPP_PATTERNS}
                                   GLOB_H_PATTERNS   ${FOLDER_ITEM}/*.h ${FOLDER_ITEM}/*.hpp )
-                                  
+
             FILE( GLOB LIST_SOURCE_FOLDERS "${FOLDER_ITEM}/*" )
 
-            list ( APPEND SOURCE_FOLDERS  ${LIST_SOURCE_FOLDERS} ) 
-            list ( APPEND PROJECT_SOURCE_FILES_CPP  ${CPP_FILES} ) 
-            list ( APPEND PROJECT_SOURCE_FILES_HPP  ${H_FILES}   ) 
+            list ( APPEND SOURCE_FOLDERS  ${LIST_SOURCE_FOLDERS} )
+            list ( APPEND PROJECT_SOURCE_FILES_CPP  ${CPP_FILES} )
+            list ( APPEND PROJECT_SOURCE_FILES_HPP  ${H_FILES}   )
             list ( APPEND PROJECT_SOURCE_FILES      ${CPP_FILES} ${H_FILES} )
 
         ENDFOREACH()
@@ -187,24 +187,24 @@ macro (define_source_folders )
         define_source_files ( )
         FILE( GLOB SOURCE_FOLDERS "*" )
 
-        list ( APPEND PROJECT_SOURCE_FILES_CPP  ${CPP_FILES} ) 
-        list ( APPEND PROJECT_SOURCE_FILES_HPP  ${H_FILES}   ) 
+        list ( APPEND PROJECT_SOURCE_FILES_CPP  ${CPP_FILES} )
+        list ( APPEND PROJECT_SOURCE_FILES_HPP  ${H_FILES}   )
         list ( APPEND PROJECT_SOURCE_FILES      ${CPP_FILES} ${H_FILES} )
 
     ENDIF()
-  
-             
+
+
     FOREACH(FOLDER_ITEM ${SOURCE_FOLDERS})
         IF( IS_DIRECTORY "${FOLDER_ITEM}" )
-            get_filename_component ( FOLDER_NAME ${FOLDER_ITEM} NAME ) 
+            get_filename_component ( FOLDER_NAME ${FOLDER_ITEM} NAME )
             set( NOT_FIND_ERASE_ITEM 1 )
             FOREACH( ERASE_ITEM ${ARG_GLOB_ERASE_FOLDERS} )
                 IF( ${FOLDER_NAME} STREQUAL ${ERASE_ITEM} )
                     set( NOT_FIND_ERASE_ITEM 0 )
-                    break()     
+                    break()
                 ENDIF()
             ENDFOREACH()
-        
+
             IF( ${NOT_FIND_ERASE_ITEM} )
                 FILE(GLOB FIND_CMAKELIST "${FOLDER_ITEM}/CMakeLists.txt")
                 IF( FIND_CMAKELIST )
@@ -217,9 +217,9 @@ macro (define_source_folders )
                     endif()
 
                     add_subdirectory ( ${FOLDER_ITEM} )
-                    list ( APPEND PROJECT_SOURCE_FILES ${${FOLDER_NAME}_CPP_FILES} ${${FOLDER_NAME}_H_FILES} )    
-                    list ( APPEND PROJECT_SOURCE_FILES_CPP  ${${FOLDER_NAME}_CPP_FILES} ) 
-                    list ( APPEND PROJECT_SOURCE_FILES_HPP  ${${FOLDER_NAME}_H_FILES}   ) 
+                    list ( APPEND PROJECT_SOURCE_FILES ${${FOLDER_NAME}_CPP_FILES} ${${FOLDER_NAME}_H_FILES} )
+                    list ( APPEND PROJECT_SOURCE_FILES_CPP  ${${FOLDER_NAME}_CPP_FILES} )
+                    list ( APPEND PROJECT_SOURCE_FILES_HPP  ${${FOLDER_NAME}_H_FILES}   )
                 ELSE()
                     list (APPEND PROJECT_SOURCE_FILES ${CPP_FILES} ${H_FILES})
                     define_source_folders( SRC_ROOT ${FOLDER_ITEM} GLOB_ERASE_FOLDERS ${ARG_GLOB_ERASE_FOLDERS} RECURSIVE_CALL )
@@ -227,7 +227,7 @@ macro (define_source_folders )
             ENDIF()
         ENDIF()
     ENDFOREACH()
-    
+
 endmacro ()
 
 #
@@ -236,7 +236,7 @@ macro ( generate_source_groups_project )
     cmake_parse_arguments ( ARG "RECURSIVE_CALL"  "ROOT_DIR;GROUP_PREFIX" "SRC_ROOT;GROUP_FOLDERS" ${ARGN} )
 
     IF( ARG_ROOT_DIR )
-        get_filename_component ( ROOT_DIR ${ARG_ROOT_DIR} REALPATH ) 
+        get_filename_component ( ROOT_DIR ${ARG_ROOT_DIR} REALPATH )
 
     else()
         set( ROOT_DIR ${CMAKE_CURRENT_LIST_DIR} )
@@ -250,7 +250,7 @@ macro ( generate_source_groups_project )
     ENDIF()
 
 
-    IF( ARG_SRC_ROOT ) 
+    IF( ARG_SRC_ROOT )
         set( SRC_ROOT_LIST  )
 
         FOREACH( SRC_ITEM ${ARG_SRC_ROOT} )
@@ -258,7 +258,7 @@ macro ( generate_source_groups_project )
             IF( "${SRC_ITEM}" STREQUAL "*" )
                 list ( APPEND SRC_ROOT_LIST "*" )
             ELSE()
-                get_filename_component ( SRC_ITEM ${SRC_ITEM} REALPATH ) 
+                get_filename_component ( SRC_ITEM ${SRC_ITEM} REALPATH )
                 list ( APPEND SRC_ROOT_LIST ${SRC_ITEM}/* )
             ENDIF()
         ENDFOREACH()
@@ -270,11 +270,11 @@ macro ( generate_source_groups_project )
 
 
     FOREACH( SRC_ROOT_ITEM ${SRC_ROOT_LIST} )
-      
-        file ( GLOB_RECURSE FILE_LIST ${SRC_ROOT_ITEM} )        
+
+        file ( GLOB_RECURSE FILE_LIST ${SRC_ROOT_ITEM} )
 
         FOREACH( ITEM ${FILE_LIST} )
-            get_filename_component ( FILE_PATH ${ITEM} PATH ) 
+            get_filename_component ( FILE_PATH ${ITEM} PATH )
 
             IF( "${FILE_PATH}" STREQUAL "${ROOT_DIR}" )
                 STRING(REGEX REPLACE "${ROOT_DIR}" "" FILE_GROUP ${FILE_PATH} )
@@ -343,42 +343,42 @@ macro ( add_content_win_uap_single CONTENT_DIR )
     set ( GROUP_PREFIX "Content\\" )
 	get_filename_component ( CONTENT_DIR_ABS ${CONTENT_DIR} ABSOLUTE )
 	get_filename_component ( CONTENT_DIR_PATH ${CONTENT_DIR_ABS} PATH )
-	
+
 	#process all content files
 	FOREACH( ITEM ${CONTENT_LIST} )
 		get_filename_component ( ITEM ${ITEM} ABSOLUTE )
 	    #message("Item: ${ITEM}")
-		
+
 		#add item to project source group "Content"
 		get_filename_component ( ITEM_PATH ${ITEM} PATH )
 		STRING( REGEX REPLACE "${CONTENT_DIR_PATH}" "" ITEM_GROUP ${ITEM_PATH} )
-		
+
 		#remove the first '/' symbol
 		STRING ( SUBSTRING ${ITEM_GROUP} 0 1 FIRST_SYMBOL )
 		if (FIRST_SYMBOL STREQUAL "/")
 		    STRING ( SUBSTRING ${ITEM_GROUP} 1 -1 ITEM_GROUP )
 		endif ()
-		
+
 		#reverse the slashes
 		STRING( REGEX REPLACE "/" "\\\\" ITEM_GROUP ${ITEM_GROUP} )
 		#message( "Item group: ${GROUP_PREFIX}${ITEM_GROUP}" )
 		source_group( ${GROUP_PREFIX}${ITEM_GROUP} FILES ${ITEM} )
-		
+
 		#set deployment properties to item
 		set_property( SOURCE ${ITEM} PROPERTY VS_DEPLOYMENT_CONTENT 1 )
 		set_property( SOURCE ${ITEM} PROPERTY VS_DEPLOYMENT_LOCATION ${ITEM_GROUP} )
-		
+
 	ENDFOREACH()
-	
+
 endmacro ()
 
 macro ( add_content_win_uap DEPLOYMENT_CONTENT_LIST )
-	
+
 	#process all content files
 	FOREACH( ITEM ${DEPLOYMENT_CONTENT_LIST} )
 		add_content_win_uap_single ( ${ITEM} )
 	ENDFOREACH()
-	
+
 endmacro ()
 
 
@@ -391,4 +391,4 @@ endmacro ()
 
 
 
-  
+
