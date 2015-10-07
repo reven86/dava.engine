@@ -1074,9 +1074,32 @@ void Landscape::Load(KeyedArchive * archive, SerializationContext * serializatio
     DVASSERT(matKey);
     landscapeMaterial = SafeRetain(static_cast<NMaterial*>(serializationContext->GetDataBlock(matKey)));
     if (landscapeMaterial)
+    {
+        //Import old params
+        if (!landscapeMaterial->HasLocalProperty(NMaterialParamName::PARAM_LANDSCAPE_TEXTURE_TILING))
+        {
+            if (archive->IsKeyExists("tiling_0"))
+            {
+                Vector2 tilingValue;
+                tilingValue = archive->GetByteArrayAsType("tiling_0", tilingValue);
+                landscapeMaterial->AddProperty(NMaterialParamName::PARAM_LANDSCAPE_TEXTURE_TILING, tilingValue.data, rhi::ShaderProp::TYPE_FLOAT2);
+            }
+            else if (landscapeMaterial->HasLocalProperty(NMaterialParamName::DEPRECATED_LANDSCAPE_TEXTURE_0_TILING))
+            {
+                landscapeMaterial->AddProperty(NMaterialParamName::PARAM_LANDSCAPE_TEXTURE_TILING, landscapeMaterial->GetLocalPropValue(NMaterialParamName::DEPRECATED_LANDSCAPE_TEXTURE_0_TILING), rhi::ShaderProp::TYPE_FLOAT2);
+                for (int32 i = 0; i < 4; i++)
+                {
+                    FastName propName(Format("texture%dTiling", i));
+                    if (landscapeMaterial->HasLocalProperty(propName))
+                        landscapeMaterial->RemoveProperty(propName);
+                }
+            }
+        }
+
         landscapeMaterial->PreBuildMaterial(PASS_FORWARD);
-	
-	FilePath heightmapPath = serializationContext->GetScenePath() + archive->GetString("hmap");
+    }
+
+    FilePath heightmapPath = serializationContext->GetScenePath() + archive->GetString("hmap");
     AABBox3 loadedBbox = archive->GetByteArrayAsType("bbox", AABBox3());
 
     BuildLandscapeFromHeightmapImage(heightmapPath, loadedBbox);

@@ -131,7 +131,9 @@ namespace DAVA
     const FastName NMaterialParamName::PARAM_RCP_SCREEN_SIZE("rcpScreenSize");
     const FastName NMaterialParamName::PARAM_SCREEN_OFFSET("screenOffset");
     const FastName NMaterialParamName::PARAM_ALPHATEST_THRESHOLD("alphatestThreshold");
+    const FastName NMaterialParamName::PARAM_LANDSCAPE_TEXTURE_TILING("textureTiling");
     const FastName NMaterialParamName::DEPRECATED_SHADOW_COLOR_PARAM("shadowColor");
+    const FastName NMaterialParamName::DEPRECATED_LANDSCAPE_TEXTURE_0_TILING("texture0Tiling");
 
     //flags    
     const FastName NMaterialFlagName::FLAG_BLENDING = FastName("BLENDING");
