@@ -376,16 +376,6 @@ void MaterialEditor::commandExecuted(SceneEditor2 *scene, const Command2 *comman
                         {
                             AddMaterialFlagIfNeed(material, NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_CASTER);
                             AddMaterialFlagIfNeed(material, NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_RECEIVER);
-
-                            bool hasProperty = HasMaterialProperty(material, NMaterialParamName::PARAM_LIGHTMAP_SIZE);
-                            if (!hasProperty)
-                            {
-                                static const float32 DEFAULT_LIGHTMAP_SIZE = 128.f;
-                                material->AddProperty(NMaterialParamName::PARAM_LIGHTMAP_SIZE, &DEFAULT_LIGHTMAP_SIZE, rhi::ShaderProp::TYPE_FLOAT1, 1);
-
-                                material->AddProperty(NMaterialParamName::PARAM_FOG_START, &DEFAULT_LIGHTMAP_SIZE, rhi::ShaderProp::TYPE_FLOAT1, 1);
-                            }
-
                             material->InvalidateRenderVariants();
                         }
                     }
@@ -601,10 +591,10 @@ void MaterialEditor::FillDynamicMembers(QtPropertyData *root, DAVA::InspInfoDyna
             continue;
         }
 
-        //        if ((root == propertiesRoot) && (name == NMaterialParamName::PARAM_LIGHTMAP_SIZE))
-        //        { // it will be shown in section illumination
-        //            continue;
-        //        }
+        if ((root == propertiesRoot) && (name == NMaterialParamName::PARAM_LIGHTMAP_SIZE))
+        { // it will be shown in section illumination
+            continue;
+        }
 
         FillDynamicMemberInternal(root, dynamic, ddata, name);
     }
