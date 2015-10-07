@@ -619,7 +619,7 @@ namespace DAVA
             UIEvent newTouch;
             newTouch.tid = 0;
             newTouch.physPoint.x = 0;
-            newTouch.physPoint.y = ((SHORT)buttonData) / (float32)(WHEEL_DELTA);
+            newTouch.physPoint.y = static_cast<SHORT>(buttonData) / static_cast<float32>(WHEEL_DELTA);
             newTouch.phase = UIEvent::PHASE_WHEEL;
             newTouch.deviceId = deviceId;
 
@@ -717,10 +717,7 @@ namespace DAVA
             ev.phase = DAVA::UIEvent::PHASE_KEY_UP;
             ev.tid = keyboard.GetDavaKeyForSystemKey(system_key_code);
 
-            Vector<DAVA::UIEvent> touches;
-            touches.push_back(ev);
-
-            UIControlSystem::Instance()->OnInput(touches, core->events);
+            UIControlSystem::Instance()->OnInput({ev}, core->events);
 
             keyboard.OnSystemKeyUnpressed(system_key_code);
         }
@@ -741,10 +738,7 @@ namespace DAVA
             }
             ev.tid = keyboard.GetDavaKeyForSystemKey(system_key_code);
 
-            Vector<DAVA::UIEvent> touches;
-            touches.push_back(ev);
-
-            UIControlSystem::Instance()->OnInput(touches, core->events);
+            UIControlSystem::Instance()->OnInput({ev}, core->events);
 
             keyboard.OnSystemKeyPressed(system_key_code);
         };
@@ -756,19 +750,14 @@ namespace DAVA
             ev.keyChar = static_cast<char16>(wParam);
             if ((HIWORD(lParam) & KF_REPEAT) == 0)
             {
-                ev.phase = DAVA::UIEvent::PHASE_KEYCHAR;
-                OutputDebugStringA("wm_char\n");
+                ev.phase = DAVA::UIEvent::PHASE_CHAR;
             }
             else
             {
-                ev.phase = DAVA::UIEvent::PHASE_KEYCHAR_REPEAT;
-                OutputDebugStringA("wm_char_repeat\n");
+                ev.phase = DAVA::UIEvent::PHASE_CHAR_REPEAT;
             }
 
-            Vector<DAVA::UIEvent> touches;
-            touches.push_back(ev);
-
-            UIControlSystem::Instance()->OnInput(touches, core->events);
+            UIControlSystem::Instance()->OnInput({ev}, core->events);
         }
         break;
 

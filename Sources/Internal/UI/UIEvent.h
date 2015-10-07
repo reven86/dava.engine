@@ -58,7 +58,7 @@ public:
     /**
 	 \enum Control state bits.
 	 */
-    enum eInputPhase
+    enum eInputPhase : int32
     {
         PHASE_BEGAN = 0, //!<Screen touch or mouse button press is began.
         PHASE_DRAG, //!<User moves mouse with presset button or finger over the screen.
@@ -66,10 +66,10 @@ public:
         PHASE_MOVE, //!<Mouse move event. Mouse moves without pressing any buttons. Works only with mouse controller.
         PHASE_WHEEL, //!<Mouse wheel event. MacOS & Win32 only
         PHASE_CANCELLED, //!<Event was cancelled by the platform or by the control system for the some reason.
-        PHASE_KEYCHAR, //!<Event some symbol was intered.
+        PHASE_CHAR, //!<Event some symbol was intered.
         PHASE_KEY_DOWN,
         PHASE_KEY_UP,
-        PHASE_KEYCHAR_REPEAT, //!< Usefull if User hold key in text editor and wait
+        PHASE_CHAR_REPEAT, //!< Usefull if User hold key in text editor and wait
         PHASE_KEY_DOWN_REPEAT, //!< Usefull if user hold key in text editor and wait cursor to move
         PHASE_JOYSTICK
     };
@@ -106,7 +106,7 @@ public:
 
     friend class UIControlSystem;
 
-    enum eButtonID
+    enum eButtonID : int32
     {
         BUTTON_NONE = 0,
         BUTTON_1,
@@ -114,7 +114,7 @@ public:
         BUTTON_3
     };
 
-    enum eJoystickAxisID
+    enum eJoystickAxisID : int32
     {
         JOYSTICK_AXIS_X = 0,
         JOYSTICK_AXIS_Y,
@@ -145,7 +145,7 @@ public:
     int32 activeState = ACTIVITY_STATE_INACTIVE; // state of input in control system (active, inactive, changed)
     int32 controlState = CONTROL_STATE_RELEASED; // input state relative to control (outside, inside). Used for point inputs only(mouse, touch)
     int32 tapCount = 0; // count of the continuous inputs (clicks for mouse)
-    char16 keyChar = 0; // unicode/translated character produced by key using current language, caps etc. Used only with PHASE_KEYCHAR.
+    char16 keyChar = 0; // unicode/translated character produced by key using current language, caps etc. Used only with PHASE_CHAR.
     PointerDeviceID deviceId = PointerDeviceID::NOT_SUPPORTED;
 
     inline void SetInputHandledType(eInputHandledType value)
@@ -171,7 +171,7 @@ public:
             case PHASE_ENDED:
             case PHASE_CANCELLED:
                 return INPUT_SOURCE_TOUCHSCREEN;
-            case PHASE_KEYCHAR:
+            case PHASE_CHAR:
             case PHASE_KEY_UP:
             case PHASE_KEY_DOWN:
                 return INPUT_SOURCE_KEYBOARD;

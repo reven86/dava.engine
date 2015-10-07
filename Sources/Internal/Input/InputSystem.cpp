@@ -57,8 +57,8 @@ void InputSystem::ProcessInputEvent(UIEvent * event)
 {
 	for(Vector<InputCallback>::iterator it = callbacks.begin(); it != callbacks.end(); it++)
 	{
-		if(event->phase == UIEvent::PHASE_KEYCHAR && ((*it).devices & INPUT_DEVICE_KEYBOARD))
-			(*it)(event);
+        if (event->phase == UIEvent::PHASE_CHAR && ((*it).devices & INPUT_DEVICE_KEYBOARD))
+            (*it)(event);
 		else if(event->phase == UIEvent::PHASE_JOYSTICK && ((*it).devices & INPUT_DEVICE_JOYSTICK))
 			(*it)(event);
 		else if(((*it).devices & INPUT_DEVICE_TOUCH))

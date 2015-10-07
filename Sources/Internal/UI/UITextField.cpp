@@ -498,8 +498,7 @@ void UITextField::Input(UIEvent *currentInput)
     if(this != UIControlSystem::Instance()->GetFocusedControl())
         return;
 
-
-    if (currentInput->phase == UIEvent::PHASE_KEYCHAR)
+    if (currentInput->phase == UIEvent::PHASE_CHAR)
     {
 // on win32 we have split WM_CHAR and WM_KEYDOWN
 // on macos we have OnKeyUp and OnKeyDown

@@ -317,7 +317,7 @@ private:
     void NotifyListenersWillSwitch( UIScreen* screen );
     void NotifyListenersDidSwitch( UIScreen* screen );
 
-    void CopyTouchData(UIEvent* dst, const UIEvent* src);
+    static void CopyTouchData(UIEvent* dst, const UIEvent* src);
 
     UILayoutSystem *layoutSystem;
     UIStyleSheetSystem* styleSheetSystem;

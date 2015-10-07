@@ -441,15 +441,13 @@ void WinUAPXamlApp::OnPointerWheel(Windows::UI::Core::CoreWindow^ sender, Window
 
     core->RunOnMainThread([this, wheelDelta, type]()
                           {
-                              Vector<DAVA::UIEvent> newEvent;
-                              UIEvent newTouch;
-                              newTouch.tid = 0;
-                              newTouch.physPoint.x = 0;
-                              newTouch.physPoint.y = static_cast<float32>(wheelDelta / WHEEL_DELTA);
-                              newTouch.phase = UIEvent::PHASE_WHEEL;
-                              newTouch.deviceId = ToDavaDeviceId(type);
-                              newEvent.push_back(newTouch);
-                              UIControlSystem::Instance()->OnInput(newEvent, events);
+                              UIEvent ev;
+
+                              ev.physPoint.y = static_cast<float32>(wheelDelta / WHEEL_DELTA);
+                              ev.phase = UIEvent::PHASE_WHEEL;
+                              ev.deviceId = ToDavaDeviceId(type);
+
+                              UIControlSystem::Instance()->OnInput({ ev }, events);
                           });
 }
 
@@ -460,7 +458,7 @@ void WinUAPXamlApp::OnHardwareBackButtonPressed(Platform::Object^ sender, Window
         UIEvent ev;
         ev.keyChar = 0;
         ev.tapCount = 1;
-        ev.phase = UIEvent::PHASE_KEYCHAR;
+        ev.phase = UIEvent::PHASE_CHAR;
         ev.tid = DVKEY_BACK;
         Vector<UIEvent> newEvent = {ev};
         UIControlSystem::Instance()->OnInput(newEvent, events);
@@ -533,11 +531,11 @@ void WinUAPXamlApp::OnChar(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::
                               ev.keyChar = unicodeChar;
                               if (isRepeat)
                               {
-                                  ev.phase = UIEvent::PHASE_KEYCHAR_REPEAT;
+                                  ev.phase = UIEvent::PHASE_CHAR_REPEAT;
                               }
                               else
                               {
-                                  ev.phase = UIEvent::PHASE_KEYCHAR;
+                                  ev.phase = UIEvent::PHASE_CHAR;
                               }
                               UIControlSystem::Instance()->OnInput({ ev }, events);
                           });

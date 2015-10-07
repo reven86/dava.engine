@@ -527,8 +527,8 @@ namespace DAVA
 
 		UIEvent keyPress;
 		keyPress.tid = keyChar;
-		keyPress.phase = UIEvent::PHASE_KEYCHAR;
-		keyPress.tapCount = 1;
+        keyPress.phase = UIEvent::PHASE_CHAR;
+        keyPress.tapCount = 1;
 		keyPress.keyChar = keyChar;
 
 		Logger::FrameworkDebug("AutotestingSystemLua::KeyPress %d phase=%d count=%d point=(%f, %f) physPoint=(%f,%f) key=%c", keyPress.tid, keyPress.phase,

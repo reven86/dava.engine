@@ -1563,7 +1563,7 @@ namespace DAVA
         switch (currentInput->phase)
         {
 #if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
-            case UIEvent::PHASE_KEYCHAR:
+        case UIEvent::PHASE_CHAR:
             {
                     Input(currentInput);
             }
@@ -1752,11 +1752,7 @@ namespace DAVA
 
         //if(currentInput->touchLocker != this)
         {
-            if(clipContents
-               && (currentInput->phase != UIEvent::PHASE_DRAG
-                   && currentInput->phase != UIEvent::PHASE_ENDED
-                   && currentInput->phase != UIEvent::PHASE_KEYCHAR
-                   && currentInput->phase != UIEvent::PHASE_JOYSTICK))
+            if (clipContents && (currentInput->phase != UIEvent::PHASE_DRAG && currentInput->phase != UIEvent::PHASE_ENDED && currentInput->phase != UIEvent::PHASE_CHAR && currentInput->phase != UIEvent::PHASE_JOYSTICK))
             {
                 if(!IsPointInside(currentInput->point))
                 {

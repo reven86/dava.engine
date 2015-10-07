@@ -62,7 +62,7 @@ void BaseScreen::SystemScreenSizeDidChanged(const Rect &newFullScreenSize)
 
 bool BaseScreen::SystemInput(UIEvent *currentInput)
 {
-    if ((currentInput->tid == DVKEY_BACK) && (currentInput->phase = UIEvent::PHASE_KEYCHAR))
+    if ((currentInput->tid == DVKEY_BACK) && (currentInput->phase == UIEvent::PHASE_KEY_DOWN))
     {
         OnExitButton(nullptr, nullptr, nullptr);
     }

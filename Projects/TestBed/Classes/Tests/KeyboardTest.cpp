@@ -36,12 +36,12 @@ public:
     CustomText(const Rect& rect)
         : UIStaticText(rect)
     {
-        SetInputEnabled(true);
+        UIStaticText::SetInputEnabled(true);
     }
 
     bool SystemInput(UIEvent* currentInput) override
     {
-        if (currentInput->phase >= UIEvent::PHASE_KEYCHAR &&
+        if (currentInput->phase >= UIEvent::PHASE_CHAR &&
             currentInput->phase <= UIEvent::PHASE_KEY_DOWN_REPEAT)
         {
             ++numKeyboardEvents;
@@ -57,6 +57,7 @@ public:
             ++numMouseDown;
             lastMouseX = currentInput->point.x;
             lastMouseY = currentInput->point.y;
+            lastMouseKey = currentInput->tid;
             break;
         case UIEvent::PHASE_DRAG: //!<User moves mouse with presset button or finger over the screen.
             ++numDrag;
@@ -65,45 +66,68 @@ public:
             break;
         case UIEvent::PHASE_ENDED: //!<Screen touch or mouse button press is ended.
             ++numMouseUp;
+            lastMouseX = currentInput->point.x;
+            lastMouseY = currentInput->point.y;
+            lastMouseKey = currentInput->tid;
             break;
         case UIEvent::PHASE_MOVE: //!<Mouse move event. Mouse moves without pressing any buttons. Works only with mouse controller.
             ++numMouseMove;
             lastMouseX = currentInput->point.x;
             lastMouseY = currentInput->point.y;
+            lastMouseKey = currentInput->tid;
             break;
         case UIEvent::PHASE_WHEEL: //!<Mouse wheel event. MacOS & Win32 only
             ++numMouseWheel;
+            lastWheel = currentInput->physPoint.y;
             break;
         case UIEvent::PHASE_CANCELLED: //!<Event was cancelled by the platform or by the control system for the some reason.
+            ++numMouseCancel;
             break;
-        case UIEvent::PHASE_KEYCHAR:
+        case UIEvent::PHASE_CHAR:
             ++numChar;
             lastChar = currentInput->keyChar;
             break;
-        case UIEvent::PHASE_KEYCHAR_REPEAT:
+        case UIEvent::PHASE_CHAR_REPEAT:
             ++numCharRepeat;
             break;
         case UIEvent::PHASE_KEY_DOWN:
             ++numKeyDown;
+            lastKey = currentInput->tid;
             break;
         case UIEvent::PHASE_KEY_DOWN_REPEAT:
             ++numKeyDownRepeat;
+            lastKey = currentInput->tid;
+            OutputDebugStringA("PHASE_KEY_DOWN_REPEAT\n");
             break;
         case UIEvent::PHASE_KEY_UP:
             ++numKeyUp;
+            lastKey = currentInput->tid;
             break;
         };
 
         std::wstringstream currentText;
-        currentText << L"KeyboardEvents: " << numKeyboardEvents << L"\n"
-                    << L"KeyDown: " << numKeyDown << L"\n"
-                    << L"KeyUp: " << numKeyUp << L"\n"
-                    << L"KeyDownRepeat: " << numKeyDownRepeat << L"\n"
-                    << L"Char: " << numChar << L"\n"
-                    << L"CharRepeat: " << numCharRepeat << L"\n"
-                    << L"lastChar: \'" << lastChar << L"\'";
+        currentText << L"Keyboards: " << numKeyboardEvents << L"\n"
+                    << L"KD: " << numKeyDown << L"\n"
+                    << L"KU: " << numKeyUp << L"\n"
+                    << L"KDR: " << numKeyDownRepeat << L"\n"
+                    << L"Ch: " << numChar << L"\n"
+                    << L"ChR: " << numCharRepeat << L"\n"
+                    << L"ch: \'" << lastChar << L"\'\n"
+                    << L"k: " << lastKey << L"\n"
+                    << L"Mouse: " << numMouseEvents << L"\n"
+                    << L"Drg: " << numDrag << L"\n"
+                    << L"Mv: " << numMouseMove << L"\n"
+                    << L"Dn: " << numMouseDown << L"\n"
+                    << L"Up: " << numMouseUp << L"\n"
+                    << L"Whl: " << numMouseWheel << L"\n"
+                    << L"Cncl: " << numMouseCancel << L"\n"
+                    << L"Key: " << lastMouseKey << L"\n"
+                    << L"X: " << lastMouseX << L"\n"
+                    << L"Y: " << lastMouseY << L"\n"
+                    << L"Whl: " << lastWheel;
 
         SetText(currentText.str());
+
         return true;
     }
 
@@ -116,6 +140,7 @@ public:
         numChar = 0;
         numCharRepeat = 0;
         lastChar = L'\0';
+        lastKey = 0;
 
         numMouseEvents = 0;
         numDrag = 0;
@@ -123,9 +148,11 @@ public:
         numMouseDown = 0;
         numMouseUp = 0;
         numMouseWheel = 0;
+        numMouseCancel = 0;
         lastMouseKey = L'\0';
         lastMouseX = 0;
         lastMouseY = 0;
+        lastWheel = 0.f;
     }
 
 private:
@@ -136,6 +163,7 @@ private:
     uint32 numChar = 0;
     uint32 numCharRepeat = 0;
     wchar_t lastChar = L'\0';
+    uint32 lastKey = 0;
 
     uint32 numMouseEvents = 0;
     uint32 numDrag = 0;
@@ -143,9 +171,11 @@ private:
     uint32 numMouseDown = 0;
     uint32 numMouseUp = 0;
     uint32 numMouseWheel = 0;
+    uint32 numMouseCancel = 0;
     wchar_t lastMouseKey = L'\0';
     int32 lastMouseX = 0;
     int32 lastMouseY = 0;
+    float32 lastWheel = 0.f;
 };
 
 CustomText* customText = nullptr;
@@ -180,7 +210,7 @@ void KeyboardTest::LoadResources()
     customText->SetMultilineType(UIStaticText::MULTILINE_ENABLED_BY_SYMBOL);
     AddControl(customText);
 
-    resetButton = new UIButton(Rect(220, 30, 50, 30));
+    resetButton = new UIButton(Rect(420, 30, 50, 30));
     resetButton->SetDebugDraw(true);
     resetButton->SetStateFont(0xFF, font);
     resetButton->SetStateFontColor(0xFF, Color::White);
@@ -195,6 +225,7 @@ void KeyboardTest::UnloadResources()
 {
     SafeRelease(customText);
     SafeRelease(previewText);
+    SafeRelease(resetButton);
 
     BaseScreen::UnloadResources();
 }
@@ -204,5 +235,6 @@ void KeyboardTest::OnResetClick(DAVA::BaseObject* sender, void* data, void* call
     if (customText)
     {
         customText->ResetCounters();
+        customText->SetText(L"");
     }
 }
