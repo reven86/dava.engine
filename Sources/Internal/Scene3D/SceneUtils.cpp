@@ -172,16 +172,14 @@ void CollapseRenderBatchesRecursiveAsLod(Entity * node, uint32 lod, RenderObject
     RenderObject * lodRenderObject = GetRenderObject(node);
     if (nullptr != lodRenderObject)
     {
-        uint32 batchNo = 0;
         while (lodRenderObject->GetRenderBatchCount() > 0)
         {
-            RenderBatch * batch = lodRenderObject->GetRenderBatch(batchNo);
+            RenderBatch * batch = lodRenderObject->GetRenderBatch(0);
             batch->Retain();
             lodRenderObject->RemoveRenderBatch(batch);
             ro->AddRenderBatch(batch, lod, -1);
             batch->Release();
-            ++batchNo;
-        }
+        };
     }
 }
 
