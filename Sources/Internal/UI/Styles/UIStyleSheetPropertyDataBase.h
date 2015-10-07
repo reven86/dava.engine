@@ -46,7 +46,7 @@ class UIStyleSheetPropertyDataBase :
 public:
     enum
     {
-        STYLE_SHEET_PROPERTY_COUNT = 58
+        STYLE_SHEET_PROPERTY_COUNT = 57
     };
 
     UIStyleSheetPropertyDataBase();
