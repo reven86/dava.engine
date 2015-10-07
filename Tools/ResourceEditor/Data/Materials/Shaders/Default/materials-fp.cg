@@ -116,11 +116,9 @@ FPROG_OUT_END
 #endif
 
 #if PIXEL_LIT
-    DECL_FP_SAMPLER2D(normalmap)
-    property float  materialSpecularShininess   : static,a : ;
+    DECL_FP_SAMPLER2D(normalmap)    
     property float  lightIntensity0             : static,a : ;
-    property float  inSpecularity               : static,a : ;
-    property float  physicalFresnelReflectance  : static,a : ;
+    property float  inSpecularity               : static,a : ;    
     property float3 metalFresnelReflectance     : static,a : ;
     property float  normalScale                 : static,a : ;
 #endif

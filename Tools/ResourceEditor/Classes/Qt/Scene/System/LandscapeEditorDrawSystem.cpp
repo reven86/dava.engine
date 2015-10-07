@@ -512,22 +512,16 @@ void LandscapeEditorDrawSystem::RemoveEntity(DAVA::Entity * entity)
 	}
 }
 
-void LandscapeEditorDrawSystem::SaveTileMaskTexture()
+bool LandscapeEditorDrawSystem::SaveTileMaskTexture()
 {
-	if (!baseLandscape)
-	{
-		return;
-	}
+    if (baseLandscape == nullptr || !GetLandscapeProxy()->IsTilemaskChanged())
+    {
+        return false;
+    }
 
- 	if (!GetLandscapeProxy()->IsTilemaskChanged())
- 	{
- 		return;
- 	}
-
-    Texture* texture = GetLandscapeProxy()->GetTilemaskTexture();// baseLandscape->GetMaterial()->GetEffectiveTexture(Landscape::TEXTURE_TILEMASK);
-//    Texture* texture = baseLandscape->GetMaterial()->GetEffectiveTexture(Landscape::TEXTURE_TILEMASK);
-	if (texture)
-	{
+    Texture* texture = GetTileMaskTexture();
+    if (texture != nullptr)
+    {
 		Image *image = texture->CreateImageFromMemory();
 
 		if(image)
@@ -537,33 +531,59 @@ void LandscapeEditorDrawSystem::SaveTileMaskTexture()
 		}
 
 		GetLandscapeProxy()->ResetTilemaskChanged();
-	}
+
+        return true;
+    }
+
+    return false;
 }
 
 void LandscapeEditorDrawSystem::ResetTileMaskTexture()
 {
-	if (!baseLandscape)
-	{
+    if (baseLandscape == nullptr)
+    {
 		return;
 	}
 
-    NMaterial * landscapeMaterial = baseLandscape->GetMaterial();
-    while (landscapeMaterial)
+    ScopedPtr<Texture> texture(Texture::CreateFromFile(sourceTilemaskPath));
+    texture->Reload();
+    SetTileMaskTexture(texture);
+}
+
+void LandscapeEditorDrawSystem::SetTileMaskTexture(Texture* texture)
+{
+    if (baseLandscape == nullptr)
     {
-        if(landscapeMaterial->HasLocalTexture(Landscape::TEXTURE_TILEMASK))
+        return;
+    }
+
+    NMaterial * landscapeMaterial = baseLandscape->GetMaterial();
+    while (landscapeMaterial != nullptr)
+    {
+        if (landscapeMaterial->HasLocalTexture(Landscape::TEXTURE_TILEMASK))
             break;
 
         landscapeMaterial = landscapeMaterial->GetParent();
     }
 
-    if(landscapeMaterial)
+    if (landscapeMaterial != nullptr)
     {
-        Texture * texture = Texture::CreateFromFile(sourceTilemaskPath);
-        texture->Reload();
         landscapeMaterial->SetTexture(Landscape::TEXTURE_TILEMASK, texture);
-        landscapeMaterial->InvalidateTextureBindings();
-        texture->Release();
     }
+}
+
+Texture* LandscapeEditorDrawSystem::GetTileMaskTexture()
+{
+    if (baseLandscape != nullptr)
+    {
+        NMaterial* landscapeMaterial = baseLandscape->GetMaterial();
+        if (landscapeMaterial != nullptr)
+        {
+            return landscapeMaterial->GetEffectiveTexture(Landscape::TEXTURE_TILEMASK);
+        }
+    }
+
+    return nullptr;
 }
 
 LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::VerifyLandscape() const

@@ -207,4 +207,8 @@ extern GLuint   _GLES2_LastSetVB;
 extern GLuint   _GLES2_LastSetTex0;
 extern GLenum   _GLES2_LastSetTex0Target;
 
+#if defined(__DAVAENGINE_WIN32__)
+extern HDC _GLES2_WindowDC;
+#endif
+
 bool            GetGLTextureFormat( rhi::TextureFormat rhiFormat, GLint* internalFormat, GLint* format, GLenum* type, bool* compressed );
