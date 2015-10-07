@@ -318,7 +318,7 @@ void SizeMeasuringAlgorithm::ProcessPercentOfContentPolicy(ControlLayoutData &da
     Vector2 constraints(-1.0f, -1.0f);
     if (data.GetControl()->IsHeightDependsOnWidth() && axis == Vector2::AXIS_Y)
     {
-        constraints.x = GetSize(data, Vector2::AXIS_X);
+        constraints.x = data.GetSize(Vector2::AXIS_X);
     }
     
     float32 value = data.GetControl()->GetContentPreferredSize(constraints).data[axis];
