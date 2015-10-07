@@ -504,7 +504,7 @@ namespace DAVA
         {
             if (it->tid == button)
             {
-				isFind = true;
+                isFind = true;
 
                 it->physPoint.x = static_cast<float32>(GET_X_LPARAM(lParam));
                 it->physPoint.y = static_cast<float32>(GET_Y_LPARAM(lParam));
@@ -512,7 +512,7 @@ namespace DAVA
 
                 break;
             }
-		}
+        }
 
 		if(!isFind)
 		{
@@ -530,7 +530,7 @@ namespace DAVA
             outTouches->push_back(*it);
         }
 
-		if(phase == UIEvent::PHASE_ENDED || phase == UIEvent::PHASE_MOVE)
+        if(phase == UIEvent::PHASE_ENDED || phase == UIEvent::PHASE_MOVE)
 		{
             for (Vector<DAVA::UIEvent>::iterator it = events.begin(); it != events.end(); it++)
             {
@@ -540,7 +540,7 @@ namespace DAVA
                     break;
                 }
             }
-		}
+        }
 
 		return phase;
 	}
@@ -642,12 +642,12 @@ namespace DAVA
         {
             ShowCursor(false);
             mouseCursorShown = false;
-		}
+        }
         if (RenderManager::Instance()->GetCursor() == nullptr && !mouseCursorShown)
         {
             ShowCursor(false);
             mouseCursorShown = false;
-		}
+        }
 
 		HandleMouseButtonsReleased(buttsFlags);
 	}
@@ -845,7 +845,7 @@ namespace DAVA
             if (!mouseCursorShown)
             {
                 ShowCursor(true);
-				mouseCursorShown = true;
+                mouseCursorShown = true;
 			}
 			break;
 		case WM_DESTROY:

@@ -40,19 +40,35 @@ class AbstractProperty;
 class ChangePropertyValueCommand: public QUndoCommand
 {
 public:
-    ChangePropertyValueCommand(PackageNode *_root, ControlNode *_node, AbstractProperty *_property, const DAVA::VariantType &newValue, QUndoCommand *parent = 0);
-    ChangePropertyValueCommand(PackageNode *_root, ControlNode *_node, AbstractProperty *_property, QUndoCommand *parent = 0);
+    ChangePropertyValueCommand(PackageNode* _root, const DAVA::Vector<std::tuple<ControlNode*, AbstractProperty*, DAVA::VariantType>>& properties, size_t hash = 0, QUndoCommand* parent = nullptr);
+
+    ChangePropertyValueCommand(PackageNode* _root, ControlNode* _node, AbstractProperty* _property, const DAVA::VariantType& newValue, size_t hash = 0, QUndoCommand* parent = nullptr);
+    ChangePropertyValueCommand(PackageNode* _root, ControlNode* _node, AbstractProperty* _property, QUndoCommand* parent = nullptr);
     virtual ~ChangePropertyValueCommand();
 
-    virtual void redo();
-    virtual void undo();
-    
+    void redo() override;
+    void undo() override;
+
+    int id() const override;
+
+    bool mergeWith(const QUndoCommand* other) override;
+
 private:
-    PackageNode *root;
-    ControlNode *node;
-    AbstractProperty *property;
-    DAVA::VariantType oldValue;
-    DAVA::VariantType newValue;
+    enum ePropertyComponent
+    {
+        NODE,
+        PROPERTY,
+        NEW_VALUE,
+        OLD_VALUE
+    };
+    using PropertyValue = std::tuple<ControlNode*, AbstractProperty*, DAVA::VariantType, DAVA::VariantType>;
+    void Init();
+    DAVA::VariantType GetValueFromProperty(AbstractProperty* property);
+    PackageNode* root = nullptr;
+
+    DAVA::Vector<PropertyValue> changedProperties;
+
+    size_t hash = 0;
 };
 
 #endif // __QUICKED_CHANGE_PROPERTY_VALUE_COMMAND_H__

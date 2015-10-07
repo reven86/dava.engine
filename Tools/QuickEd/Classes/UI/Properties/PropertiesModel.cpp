@@ -32,10 +32,9 @@
 #include <QPoint>
 #include <QColor>
 #include <QFont>
+#include <QTimer>
 #include <QVector2D>
 #include <QVector4D>
-#include <QUndoStack>
-
 #include "Document.h"
 #include "Ui/QtModelPackageCommandExecutor.h"
 
@@ -52,15 +51,19 @@
 
 #include "UI/UIControl.h"
 
+#include <chrono>
+
+using namespace std::chrono;
 using namespace DAVA;
 
-PropertiesModel::PropertiesModel(ControlNode *_controlNode, QtModelPackageCommandExecutor *_commandExecutor, QObject *parent)
-: QAbstractItemModel(parent)
-, commandExecutor(SafeRetain(_commandExecutor))
+PropertiesModel::PropertiesModel(ControlNode* _controlNode, QtModelPackageCommandExecutor* _commandExecutor, QObject* parent)
+    : QAbstractItemModel(parent)
+    , commandExecutor(SafeRetain(_commandExecutor))
 {
     controlNode = SafeRetain(_controlNode);
     controlNode->GetRootProperty()->AddListener(this);
     rootProperty = SafeRetain(controlNode->GetRootProperty());
+    Init();
 }
 
 PropertiesModel::PropertiesModel(StyleSheetNode *aStyleSheet, QtModelPackageCommandExecutor *_commandExecutor, QObject *parent)
@@ -70,6 +73,7 @@ PropertiesModel::PropertiesModel(StyleSheetNode *aStyleSheet, QtModelPackageComm
     styleSheet = SafeRetain(aStyleSheet);
     styleSheet->GetRootProperty()->AddListener(this);
     rootProperty = SafeRetain(styleSheet->GetRootProperty());
+    Init();
 }
 
 PropertiesModel::~PropertiesModel()
@@ -84,6 +88,14 @@ PropertiesModel::~PropertiesModel()
     SafeRelease(controlNode);
     SafeRelease(rootProperty);
     SafeRelease(styleSheet);
+}
+
+void PropertiesModel::Init()
+{
+    updatePropertyTimer = new QTimer(this);
+    updatePropertyTimer->setSingleShot(true);
+    updatePropertyTimer->setInterval(30);
+    connect(updatePropertyTimer, &QTimer::timeout, this, &PropertiesModel::UpdateAllChangedProperties, Qt::QueuedConnection);
 }
 
 QModelIndex PropertiesModel::index(int row, int column, const QModelIndex &parent) const
@@ -138,7 +150,6 @@ QVariant PropertiesModel::data(const QModelIndex &index, int role) const
     
     AbstractProperty *property = static_cast<AbstractProperty*>(index.internalPointer());
     uint32 flags = property->GetFlags();
-    
     switch (role)
     {
         case Qt::CheckStateRole:
@@ -296,11 +307,20 @@ QVariant PropertiesModel::headerData(int section, Qt::Orientation /*orientation*
     return QVariant();
 }
 
+void PropertiesModel::UpdateAllChangedProperties()
+{
+    for (auto pair : changedIndexes)
+    {
+        emit dataChanged(pair.first, pair.second, QVector<int>() << Qt::DisplayRole);
+    }
+}
+
 void PropertiesModel::PropertyChanged(AbstractProperty *property)
 {
     QModelIndex nameIndex = indexByProperty(property, 0);
     QModelIndex valueIndex = nameIndex.sibling(nameIndex.row(), 1);
-    emit dataChanged(nameIndex, valueIndex);
+    changedIndexes.insert(qMakePair(nameIndex, valueIndex));
+    updatePropertyTimer->start();
 }
 
 void PropertiesModel::ComponentPropertiesWillBeAdded(RootProperty *root, ComponentPropertiesSection *section, int index)
@@ -374,7 +394,9 @@ void PropertiesModel::ChangeProperty(AbstractProperty *property, const DAVA::Var
 {
     if (controlNode)
     {
-        commandExecutor->ChangeProperty(controlNode, property, value);
+        microseconds us = duration_cast<microseconds>(system_clock::now().time_since_epoch());
+        size_t usCount = static_cast<size_t>(us.count());
+        commandExecutor->ChangeProperty(controlNode, property, value, usCount);
     }
     else if (styleSheet)
     {
