@@ -36,7 +36,7 @@
 
 #include "mainwindow.h"
 
-#include "TexturePacker/CommandLineParser.h"
+#include "CommandLine/CommandLineParser.h"
 #include "Classes/CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
 
 #include "QtTools/FileDialog/FileDialog.h"
@@ -129,7 +129,7 @@ void ShowErrorDialog(const DAVA::Set<DAVA::String> &errors)
         errorCounter++;
 
         if (errorCounter == maxErrorsPerDialog)
-		{
+        {
             errorMessage += "\n\nSee console log for details.";
             ShowErrorDialog(errorMessage, dialogTitle);
             errorMessage.clear();
@@ -137,7 +137,7 @@ void ShowErrorDialog(const DAVA::Set<DAVA::String> &errors)
         }
     }
 
-	if (!errorMessage.empty())
+    if (!errorMessage.empty())
         ShowErrorDialog(errorMessage, dialogTitle);
 }
 

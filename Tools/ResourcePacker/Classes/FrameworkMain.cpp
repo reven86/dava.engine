@@ -30,7 +30,7 @@
 #include "DAVAEngine.h"
 #include "GameCore.h"
 #include "TexturePacker/ResourcePacker2D.h"
-#include "TexturePacker/CommandLineParser.h"
+#include "CommandLine/CommandLineParser.h"
 
 #include "TextureCompression/PVRConverter.h"
 
@@ -59,21 +59,6 @@ void PrintUsage()
     printf("resourcepacker [src_dir] - will pack resources from src_dir\n");
 }
 
-
-bool CheckPosition(int32 commandPosition)
-{
-    if(CommandLineParser::CheckPosition(commandPosition))
-    {
-        printf("Wrong arguments\n");
-        PrintUsage();
-
-        return false;
-    }
-    
-    return true;
-}
-
-
 void DumpCommandLine()
 {
     const Vector<String> & commandLine = Core::Instance()->GetCommandLine();
@@ -96,21 +81,21 @@ void ProcessRecourcePacker()
     ResourcePacker2D resourcePacker;
 
     auto& commandLine = Core::Instance()->GetCommandLine();
-    FilePath commandLinePath(commandLine[1]);
-    commandLinePath.MakeDirectoryPathname();
-    
-    String lastDir = commandLinePath.GetDirectory().GetLastDirectoryName();
-    FilePath outputh = commandLinePath + ("../../Data/" + lastDir + "/");
+    FilePath inputDir(commandLine[1]);
+    inputDir.MakeDirectoryPathname();
 
-    resourcePacker.InitFolders(commandLinePath, outputh);
+    String lastDir = inputDir.GetDirectory().GetLastDirectoryName();
+    FilePath outputDir = inputDir + ("../../Data/" + lastDir + "/");
 
-    if (resourcePacker.excludeDirectory.IsEmpty())
+    resourcePacker.InitFolders(inputDir, outputDir);
+
+    if (resourcePacker.rootDirectory.IsEmpty())
     {
         Logger::Error("[FATAL ERROR: Packer has wrong input pathname]");
         return;
     }
 
-    if (resourcePacker.excludeDirectory.GetLastDirectoryName() != "DataSource")
+    if (resourcePacker.rootDirectory.GetLastDirectoryName() != "DataSource")
     {
         Logger::Error("[FATAL ERROR: Packer working only inside DataSource directory]");
         return;
@@ -122,7 +107,7 @@ void ProcessRecourcePacker()
         return;
     }
 
-    auto toolFolderPath = resourcePacker.excludeDirectory + (commandLine[2] + "/");
+    auto toolFolderPath = resourcePacker.rootDirectory + (commandLine[2] + "/");
     String pvrTexToolName = "PVRTexToolCLI";
     String cacheToolName = "AssetCacheClient";
 
@@ -132,7 +117,7 @@ void ProcessRecourcePacker()
     Logger::FrameworkDebug("[Resource Packer Started]");
     Logger::FrameworkDebug("[INPUT DIR] - [%s]", resourcePacker.inputGfxDirectory.GetAbsolutePathname().c_str());
     Logger::FrameworkDebug("[OUTPUT DIR] - [%s]", resourcePacker.outputGfxDirectory.GetAbsolutePathname().c_str());
-    Logger::FrameworkDebug("[EXCLUDE DIR] - [%s]", resourcePacker.excludeDirectory.GetAbsolutePathname().c_str());
+    Logger::FrameworkDebug("[EXCLUDE DIR] - [%s]", resourcePacker.rootDirectory.GetAbsolutePathname().c_str());
 
     PixelFormatDescriptor::InitializePixelFormatDescriptors();
     GPUFamilyDescriptor::SetupGPUParameters();
@@ -160,6 +145,7 @@ void ProcessRecourcePacker()
     else
     {
         Logger::FrameworkDebug("Asset cache will not be used");
+        resourcePacker.ClearCacheClientTool();
     }
 
     if (CommandLineParser::CommandIsFound(String("-md5mode")))

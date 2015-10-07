@@ -30,7 +30,7 @@
 #include "TextureDescriptorTool.h"
 #include "TextureDescriptorUtils.h"
 
-#include "TexturePacker/CommandLineParser.h"
+#include "CommandLine/CommandLineParser.h"
 #include "Render/PixelFormatDescriptor.h"
 
 using namespace DAVA;
