@@ -54,6 +54,7 @@ const String VariantType::TYPENAME_INT64   = "int64";
 const String VariantType::TYPENAME_UINT64  = "uint64";
     
 const String VariantType::TYPENAME_FLOAT   = "float";
+const String VariantType::TYPENAME_FLOAT64 = "float64";
 const String VariantType::TYPENAME_STRING  = "string";
 const String VariantType::TYPENAME_WIDESTRING = "wideString";
 const String VariantType::TYPENAME_BYTE_ARRAY = "byteArray";
@@ -68,31 +69,30 @@ const String VariantType::TYPENAME_COLOR   = "Color";
 const String VariantType::TYPENAME_FASTNAME= "FastName";
 const String VariantType::TYPENAME_AABBOX3 = "AABBox3";
 const String VariantType::TYPENAME_FILEPATH = "FilePath";
-    
+
 const Array<VariantType::PairTypeName, VariantType::TYPES_COUNT> VariantType::variantNamesMap =
-{{
-    VariantType::PairTypeName(VariantType::TYPE_NONE,          TYPENAME_UNKNOWN,		nullptr),
-    VariantType::PairTypeName(VariantType::TYPE_BOOLEAN,       TYPENAME_BOOLEAN,		MetaInfo::Instance<bool>()),
-    VariantType::PairTypeName(VariantType::TYPE_INT32,         TYPENAME_INT32,			MetaInfo::Instance<int32>()),
-    VariantType::PairTypeName(VariantType::TYPE_FLOAT,         TYPENAME_FLOAT,			MetaInfo::Instance<float32>()),
-    VariantType::PairTypeName(VariantType::TYPE_STRING,        TYPENAME_STRING,			MetaInfo::Instance<String>()),
-    VariantType::PairTypeName(VariantType::TYPE_WIDE_STRING,   TYPENAME_WIDESTRING,		MetaInfo::Instance<WideString>()),
-    VariantType::PairTypeName(VariantType::TYPE_BYTE_ARRAY,    TYPENAME_BYTE_ARRAY,		MetaInfo::Instance<Vector<uint8> >()),
-    VariantType::PairTypeName(VariantType::TYPE_UINT32,        TYPENAME_UINT32,			MetaInfo::Instance<uint32>()),
-    VariantType::PairTypeName(VariantType::TYPE_KEYED_ARCHIVE, TYPENAME_KEYED_ARCHIVE,	MetaInfo::Instance<KeyedArchive *>()),
-    VariantType::PairTypeName(VariantType::TYPE_INT64,         TYPENAME_INT64,			MetaInfo::Instance<int64>()),
-    VariantType::PairTypeName(VariantType::TYPE_UINT64,        TYPENAME_UINT64,			MetaInfo::Instance<uint64>()),
-    VariantType::PairTypeName(VariantType::TYPE_VECTOR2,       TYPENAME_VECTOR2,		MetaInfo::Instance<Vector2>()),
-    VariantType::PairTypeName(VariantType::TYPE_VECTOR3,       TYPENAME_VECTOR3,		MetaInfo::Instance<Vector3>()),
-    VariantType::PairTypeName(VariantType::TYPE_VECTOR4,       TYPENAME_VECTOR4,		MetaInfo::Instance<Vector4>()),
-    VariantType::PairTypeName(VariantType::TYPE_MATRIX2,       TYPENAME_MATRIX2,		MetaInfo::Instance<Matrix2>()),
-    VariantType::PairTypeName(VariantType::TYPE_MATRIX3,       TYPENAME_MATRIX3,		MetaInfo::Instance<Matrix3>()),
-    VariantType::PairTypeName(VariantType::TYPE_MATRIX4,       TYPENAME_MATRIX4,		MetaInfo::Instance<Matrix4>()),
-	VariantType::PairTypeName(VariantType::TYPE_COLOR,         TYPENAME_COLOR,          MetaInfo::Instance<Color>()),
-	VariantType::PairTypeName(VariantType::TYPE_FASTNAME,      TYPENAME_FASTNAME,       MetaInfo::Instance<FastName>()),
-	VariantType::PairTypeName(VariantType::TYPE_AABBOX3,       TYPENAME_AABBOX3,        MetaInfo::Instance<AABBox3>()),
-	VariantType::PairTypeName(VariantType::TYPE_FILEPATH,      TYPENAME_FILEPATH,       MetaInfo::Instance<FilePath>())
-}};
+{{VariantType::PairTypeName(VariantType::TYPE_NONE, TYPENAME_UNKNOWN, nullptr),
+  VariantType::PairTypeName(VariantType::TYPE_BOOLEAN, TYPENAME_BOOLEAN, MetaInfo::Instance<bool>()),
+  VariantType::PairTypeName(VariantType::TYPE_INT32, TYPENAME_INT32, MetaInfo::Instance<int32>()),
+  VariantType::PairTypeName(VariantType::TYPE_FLOAT, TYPENAME_FLOAT, MetaInfo::Instance<float32>()),
+  VariantType::PairTypeName(VariantType::TYPE_STRING, TYPENAME_STRING, MetaInfo::Instance<String>()),
+  VariantType::PairTypeName(VariantType::TYPE_WIDE_STRING, TYPENAME_WIDESTRING, MetaInfo::Instance<WideString>()),
+  VariantType::PairTypeName(VariantType::TYPE_BYTE_ARRAY, TYPENAME_BYTE_ARRAY, MetaInfo::Instance<Vector<uint8>>()),
+  VariantType::PairTypeName(VariantType::TYPE_UINT32, TYPENAME_UINT32, MetaInfo::Instance<uint32>()),
+  VariantType::PairTypeName(VariantType::TYPE_KEYED_ARCHIVE, TYPENAME_KEYED_ARCHIVE, MetaInfo::Instance<KeyedArchive*>()),
+  VariantType::PairTypeName(VariantType::TYPE_INT64, TYPENAME_INT64, MetaInfo::Instance<int64>()),
+  VariantType::PairTypeName(VariantType::TYPE_UINT64, TYPENAME_UINT64, MetaInfo::Instance<uint64>()),
+  VariantType::PairTypeName(VariantType::TYPE_VECTOR2, TYPENAME_VECTOR2, MetaInfo::Instance<Vector2>()),
+  VariantType::PairTypeName(VariantType::TYPE_VECTOR3, TYPENAME_VECTOR3, MetaInfo::Instance<Vector3>()),
+  VariantType::PairTypeName(VariantType::TYPE_VECTOR4, TYPENAME_VECTOR4, MetaInfo::Instance<Vector4>()),
+  VariantType::PairTypeName(VariantType::TYPE_MATRIX2, TYPENAME_MATRIX2, MetaInfo::Instance<Matrix2>()),
+  VariantType::PairTypeName(VariantType::TYPE_MATRIX3, TYPENAME_MATRIX3, MetaInfo::Instance<Matrix3>()),
+  VariantType::PairTypeName(VariantType::TYPE_MATRIX4, TYPENAME_MATRIX4, MetaInfo::Instance<Matrix4>()),
+  VariantType::PairTypeName(VariantType::TYPE_COLOR, TYPENAME_COLOR, MetaInfo::Instance<Color>()),
+  VariantType::PairTypeName(VariantType::TYPE_FASTNAME, TYPENAME_FASTNAME, MetaInfo::Instance<FastName>()),
+  VariantType::PairTypeName(VariantType::TYPE_AABBOX3, TYPENAME_AABBOX3, MetaInfo::Instance<AABBox3>()),
+  VariantType::PairTypeName(VariantType::TYPE_FILEPATH, TYPENAME_FILEPATH, MetaInfo::Instance<FilePath>()),
+  VariantType::PairTypeName(VariantType::TYPE_FLOAT64, TYPENAME_FLOAT64, MetaInfo::Instance<float64>())}};
 
 VariantType::VariantType()
     : type(TYPE_NONE)
@@ -123,6 +123,12 @@ VariantType::VariantType(uint32 value) : pointerValue(nullptr)
 VariantType::VariantType(float32 value) : pointerValue(nullptr)
 {
 	SetFloat(value);
+}
+
+VariantType::VariantType(float64 value)
+    : pointerValue(nullptr)
+{
+    SetFloat64(value);
 }
 
 VariantType::VariantType(const String & value) : pointerValue(nullptr)
@@ -244,6 +250,13 @@ void VariantType::SetFloat(float32 value)
 	floatValue = value;
 }
 
+void VariantType::SetFloat64(float64 value)
+{
+    ReleasePointer();
+    type = TYPE_FLOAT64;
+    float64Value = value;
+}
+
 void VariantType::SetString(const String & value)
 {
     ReleasePointer();
@@ -283,14 +296,14 @@ void VariantType::SetInt64(const int64 & value)
 {
     ReleasePointer();
     type = TYPE_INT64;
-    int64Value = new int64(value);
+    int64Value = value;
 }
 
 void VariantType::SetUInt64(const uint64 & value)
 {
     ReleasePointer();
     type = TYPE_UINT64;
-    uint64Value = new uint64(value);
+    uint64Value = value;
 }
 
 void VariantType::SetVector2(const Vector2 & value)
@@ -394,12 +407,17 @@ void VariantType::SetVariant(const VariantType& var)
 		{
 			SetFloat(var.floatValue);
 		}
-		break;	
-	case TYPE_STRING:
-		{
-			SetString(var.AsString());
-		}
-		break;	
+        break;
+        case TYPE_FLOAT64:
+        {
+            SetFloat64(var.float64Value);
+        }
+        break;
+        case TYPE_STRING:
+        {
+            SetString(var.AsString());
+        }
+        break;	
 	case TYPE_WIDE_STRING:
 		{ 
 			SetWideString(var.AsWideString());
@@ -508,6 +526,12 @@ float32  VariantType::AsFloat() const
 	return floatValue;
 }
 
+float64 VariantType::AsFloat64() const
+{
+    DVASSERT(type == TYPE_FLOAT64);
+    return float64Value;
+}
+
 const String &  VariantType::AsString() const
 {
 	DVASSERT(type == TYPE_STRING);
@@ -543,13 +567,13 @@ KeyedArchive *VariantType::AsKeyedArchive() const
 int64 VariantType::AsInt64() const
 {
     DVASSERT(type == TYPE_INT64);
-    return *int64Value;
+    return int64Value;
 }
 
 uint64 VariantType::AsUInt64() const
 {
     DVASSERT(type == TYPE_UINT64);
-    return *uint64Value;
+    return uint64Value;
 }
     
 const Vector2 & VariantType::AsVector2() const
@@ -665,11 +689,20 @@ bool VariantType::Write(File * fp) const
                 return false;
             }
 		}
-		break;	
-	case TYPE_STRING:
-		{
-			int32 len = (int32)stringValue->length();
-			written = fp->Write(&len, 4);
+        break;
+        case TYPE_FLOAT64:
+        {
+            written = fp->Write(&float64Value, sizeof(float64));
+            if (written != sizeof(float64))
+            {
+                return false;
+            }
+        }
+        break;
+        case TYPE_STRING:
+        {
+            int32 len = (int32)stringValue->length();
+            written = fp->Write(&len, 4);
             if (written != 4)
             {
                 return false;
@@ -737,7 +770,7 @@ bool VariantType::Write(File * fp) const
         break;
     case TYPE_INT64:
 		{
-            written = fp->Write(int64Value, sizeof(int64));
+            written = fp->Write(&int64Value, sizeof(int64));
             if (written != sizeof(int64))
             {
                 return false;
@@ -746,7 +779,7 @@ bool VariantType::Write(File * fp) const
             break;
     case TYPE_UINT64:
 		{
-            written = fp->Write(uint64Value, sizeof(uint64));
+            written = fp->Write(&uint64Value, sizeof(uint64));
             if (written != sizeof(uint64))
             {
                 return false;
@@ -910,11 +943,20 @@ bool VariantType::Read(File * fp)
                 return false;
             }
 		}
-        break;	
-		case TYPE_STRING:
-		{
-			int32 len;
-			read = fp->Read(&len, 4);
+        break;
+        case TYPE_FLOAT64:
+        {
+            read = fp->Read(&float64Value, sizeof(float64));
+            if (read != sizeof(float64))
+            {
+                return false;
+            }
+        }
+        break;
+        case TYPE_STRING:
+        {
+            int32 len;
+            read = fp->Read(&len, 4);
             if (read != 4)
             {
                 return false;
@@ -999,8 +1041,7 @@ bool VariantType::Read(File * fp)
         break;
         case TYPE_INT64:
 		{
-            int64Value = new int64;
-            read = fp->Read(int64Value, sizeof(int64));
+            read = fp->Read(&int64Value, sizeof(int64));
             if (read != sizeof(int64))
             {
                 return false;
@@ -1009,8 +1050,7 @@ bool VariantType::Read(File * fp)
             break;
         case TYPE_UINT64:
 		{
-            uint64Value = new uint64;
-            read = fp->Read(uint64Value, sizeof(uint64));
+            read = fp->Read(&uint64Value, sizeof(uint64));
             if (read != sizeof(uint64))
             {
                 return false;
@@ -1164,16 +1204,6 @@ void VariantType::ReleasePointer()
                 ((KeyedArchive *)pointerValue)->Release();
             }
                 break;
-            case TYPE_INT64:
-            {
-                delete int64Value;
-            }
-                break;
-            case TYPE_UINT64:
-            {
-                delete uint64Value;
-            }
-                break;
             case TYPE_VECTOR2:
             {
                 delete vector2Value;
@@ -1225,17 +1255,17 @@ void VariantType::ReleasePointer()
             {
                 delete fastnameValue;
             }
-			break;
-			case TYPE_AABBOX3:
-				{
-					delete aabbox3;
-				}
-				break;
-			case TYPE_FILEPATH:
-				{
-					delete filepathValue;
-				}
-				break;
+            break;
+            case TYPE_AABBOX3:
+            {
+                delete aabbox3;
+            }
+            break;
+            case TYPE_FILEPATH:
+            {
+                delete filepathValue;
+            }
+            break;
         }
         
         // It is enough to set only pointerValue to nullptr - all other pointers are in union, so
@@ -1260,7 +1290,10 @@ bool VariantType::operator==(const VariantType& other) const
 		    case TYPE_FLOAT:
                 isEqual = (AsFloat() == other.AsFloat());
                 break;
-		    case TYPE_STRING:
+            case TYPE_FLOAT64:
+                isEqual = (AsFloat64() == other.AsFloat64());
+                break;
+            case TYPE_STRING:
                 isEqual = (AsString() == other.AsString());
                 break;
             case TYPE_WIDE_STRING:
@@ -1423,18 +1456,25 @@ void* VariantType::MetaObject()
 		break;	
 	case TYPE_UINT32:
 		ret = &uint32Value;
-		break;	
-	case TYPE_FLOAT:
-		ret = &floatValue;
-		break;	
-	case TYPE_STRING:
-		ret = stringValue;
-		break;	
-	case TYPE_WIDE_STRING:
-		ret = wideStringValue;
+        break;
+    case TYPE_INT64:
+        ret = &int64Value;
+        break;
+    case TYPE_UINT64:
+        ret = &uint64Value;
+        break;
+    case TYPE_FLOAT:
+        ret = &floatValue;
+        break;
+    case TYPE_FLOAT64:
+        ret = &float64Value;
+        break;
+    case TYPE_STRING:
+        ret = stringValue;
+        break;
+    case TYPE_WIDE_STRING:
+        ret = wideStringValue;
 		break;
-	case TYPE_INT64:
-	case TYPE_UINT64:
 	case TYPE_VECTOR2:
 	case TYPE_BYTE_ARRAY:
 	case TYPE_VECTOR3:
@@ -1489,11 +1529,14 @@ VariantType VariantType::LoadData(const void *src, const MetaInfo *meta)
 	case TYPE_FLOAT:
 		v.SetFloat(*((float *) src));
 		break;
-	case TYPE_STRING:
-		v.SetString(*((DAVA::String *) src));
-		break;
-	case TYPE_WIDE_STRING:
-		v.SetWideString(*((DAVA::WideString *) src));
+    case TYPE_FLOAT64:
+        v.SetFloat64(*((float64*)src));
+        break;
+    case TYPE_STRING:
+        v.SetString(*((DAVA::String*)src));
+        break;
+    case TYPE_WIDE_STRING:
+        v.SetWideString(*((DAVA::WideString *) src));
 		break;
 	case TYPE_UINT32:
 		v.SetUInt32(*((uint32 *) src));
@@ -1609,11 +1652,14 @@ void VariantType::SaveData(void *dst, const MetaInfo *meta, const VariantType &v
 		case TYPE_FLOAT:
 			*((float *) dst) = val.AsFloat();
 			break;
-		case TYPE_STRING:
-			*((DAVA::String *) dst) = val.AsString();
-			break;
-		case TYPE_WIDE_STRING:
-			*((DAVA::WideString *) dst) = val.AsWideString();
+        case TYPE_FLOAT64:
+            *((float64*)dst) = val.AsFloat64();
+            break;
+        case TYPE_STRING:
+            *((DAVA::String*)dst) = val.AsString();
+            break;
+        case TYPE_WIDE_STRING:
+            *((DAVA::WideString *) dst) = val.AsWideString();
 			break;
 		case TYPE_UINT32:
 			*((uint32 *) dst) = val.AsUInt32();
@@ -1703,11 +1749,14 @@ VariantType VariantType::FromType(int type)
 	case TYPE_FLOAT:
 		v.SetFloat(0.0);
 		break;
-	case TYPE_STRING:
-		v.SetString("");
-		break;
-	case TYPE_WIDE_STRING:
-		v.SetWideString(WideString());
+    case TYPE_FLOAT64:
+        v.SetFloat64(0.0);
+        break;
+    case TYPE_STRING:
+        v.SetString("");
+        break;
+    case TYPE_WIDE_STRING:
+        v.SetWideString(WideString());
 		break;
 	case TYPE_UINT32:
 		v.SetUInt32(0);

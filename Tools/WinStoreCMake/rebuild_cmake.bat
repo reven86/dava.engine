@@ -5,7 +5,7 @@ call update_cmake.bat
 
 ::check existence of repo directory 
 set WORK_DIR_REPO=cmake_repo
-if not exist %WORK_DIR_REPO% (echo "Can't find %WORK_DIR_REPO%.") & (exit)
+if not exist %WORK_DIR_REPO% (echo "Can't find %WORK_DIR_REPO%.") & (exit /B)
 
 ::build intermediate cmake
 set INTERMEDIATE_DIR_BUILD=cmake_intermediate_build
