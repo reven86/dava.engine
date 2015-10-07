@@ -1,4 +1,28 @@
 #!/bin/sh
 
-python codeformat/git-clang-format.py --binary codeformat/clang-format --style file
-git add -u
+exec_clang_format() 
+{
+	file="${1}"
+
+	case "$file" in
+		# apply clang-format only for specified by extension files
+		*.c | *.cc |*.cpp | *.h | *.hh |*.hpp | *.mm | *.cxx)
+			python codeformat/git-clang-format.py -q --binary codeformat/clang-format --style file ${file}
+			error_code=$?
+
+			if [ $error_code -ne 0 ]; then
+		        exit $error_code
+		    else
+				echo "[clan-format] ${file}"
+				git add ${file}
+		    fi  
+		;;
+		# do nothing for everything else
+		*)
+		;;
+	esac 
+}
+
+for file in `git diff-index --cached --name-only HEAD` ; do
+	exec_clang_format "${file}"
+done
