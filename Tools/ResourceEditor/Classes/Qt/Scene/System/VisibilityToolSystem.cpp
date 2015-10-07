@@ -306,8 +306,12 @@ void VisibilityToolSystem::SetVisibilityAreaInternal()
 	}
 }
 
-void VisibilityToolSystem::PerformHeightTest(const Vector3& spectatorCoords, const Vector2& circleCenter,
-                                             float32 circleRadius, float32 density, const Vector<float32>& heightValues, Vector<Vector3>& colorizedPoints)
+void VisibilityToolSystem::PerformHeightTest(const Vector3& spectatorCoords,
+                                             const Vector2& circleCenter,
+                                             float32 circleRadius,
+                                             float32 density,
+                                             const Vector<float32>& heightValues,
+                                             Vector<Vector3>& colorizedPoints)
 {
     if (heightValues.empty())
     {
