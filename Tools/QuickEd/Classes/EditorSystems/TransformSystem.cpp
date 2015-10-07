@@ -333,7 +333,10 @@ Vector2 TransformSystem::AdjustMove(Vector2 delta, const UIGeometricData* parent
 
         for (UIControl* neighbour : control->GetParent()->GetChildren())
         {
-            if (neighbour != control)
+            if (std::find_if(selectedControlNodes.begin(), selectedControlNodes.end(), [neighbour](ControlNode* node)
+                             {
+                return neighbour == node->GetControl();
+                             }) == selectedControlNodes.end())
             {
                 Rect neighbourBox = neighbour->GetLocalGeometricData().GetAABBox();
 
