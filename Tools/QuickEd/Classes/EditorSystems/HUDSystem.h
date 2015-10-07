@@ -59,7 +59,7 @@ private:
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void OnEmulationModeChanged(bool emulationMode);
 
-    void OnMagnetLinesChanged(const DAVA::Vector<MagnetLine>& magnetLines);
+    void OnMagnetLinesChanged(const DAVA::Vector<MagnetLineInfo>& magnetLines);
 
     void ProcessCursor(const DAVA::Vector2& pos, eSearchOrder searchOrder = SEARCH_FORWARD);
     HUDAreaInfo GetControlArea(const DAVA::Vector2& pos, eSearchOrder searchOrder) const;

@@ -74,9 +74,9 @@ struct HUDAreaInfo
     eArea area = NO_AREA;
 };
 
-struct MagnetLine
+struct MagnetLineInfo
 {
-    MagnetLine(const DAVA::Rect& rect_, const DAVA::UIGeometricData& gd_, DAVA::Vector2::eAxis axis_)
+    MagnetLineInfo(const DAVA::Rect& rect_, const DAVA::UIGeometricData& gd_, DAVA::Vector2::eAxis axis_)
         : absoluteRect(rect_)
         , gd(gd_)
         , axis(axis_)
@@ -127,7 +127,7 @@ public:
     DAVA::Signal<const DAVA::Vector<std::tuple<ControlNode*, AbstractProperty*, DAVA::VariantType>>& /*properties*/, size_t /*hash*/> PropertiesChanged;
     DAVA::Signal<const DAVA::Vector<ControlNode*>& /*nodes*/, const DAVA::Vector2& /*pos*/, ControlNode*& /*selectedNode*/> SelectionByMenuRequested;
     DAVA::Signal<const SortedPackageBaseNodeSet&> EditingRootControlsChanged;
-    DAVA::Signal<const DAVA::Vector<MagnetLine>& /*magnetLines*/> MagnetLinesChanged;
+    DAVA::Signal<const DAVA::Vector<MagnetLineInfo>& /*magnetLines*/> MagnetLinesChanged;
 
 private:
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);

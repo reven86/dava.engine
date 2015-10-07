@@ -136,7 +136,7 @@ bool TransformSystem::OnInput(UIEvent* currentInput)
         return false;
     }
     case UIEvent::PHASE_ENDED:
-        systemManager->MagnetLinesChanged.Emit(Vector<MagnetLine>());
+        systemManager->MagnetLinesChanged.Emit(Vector<MagnetLineInfo>());
         return false;
     default:
         return false;
@@ -254,7 +254,7 @@ void TransformSystem::MoveAllSelectedControls(Vector2 delta)
 
 void TransformSystem::MoveControls(Vector2 delta)
 {
-    if (QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier))
+    if (!QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier))
     {
         for (auto& tuple : nodesToMove)
         {
@@ -276,66 +276,111 @@ void TransformSystem::MoveControls(Vector2 delta)
     }
     MoveAllSelectedControls(delta);
 }
+namespace
+{
+struct MagnetLine
+{
+    MagnetLine(float32 linePos_, float32 controlPos_, const Rect& targetBox_)
+        : linePos(linePos_)
+        , controlPos(controlPos_)
+        , difference(fabs(controlPos - linePos))
+        , targetBox(targetBox_)
+    {
+    }
+    float32 linePos = 0.0f;
+    float32 controlPos = 0.0f;
+    float32 difference = 0.0f;
+    Rect targetBox;
+};
+}
 
-DAVA::Vector2 TransformSystem::AdjustMove(DAVA::Vector2 delta, const UIGeometricData* gd, const UIControl* control)
+Vector2 TransformSystem::AdjustMove(Vector2 delta, const UIGeometricData* parentGD, const UIControl* control)
 {
     delta += extraDelta;
+    extraDelta.SetZero();
 
-    Array<bool, Vector2::AXIS_COUNT> magnet = {{false, false}};
-    Vector2 nextPosToNearest; //virtual delta to nearest magnet border. Will be zero if cursor under border
-    Vector2 deltaToNearest; //real delta to nearest magnet border. Will be zero if control already was magnet to this border
+    Vector<MagnetLineInfo> magnets;
 
-    const Vector2 scaledRange(Vector2(20.0f, 20.0f) / gd->scale);
-    const Vector2 range(RotateVector(scaledRange, *gd));
-
-    Array<Array<float32, 3>, Vector2::AXIS_COUNT> searchingPath = {{{{0.0f, 0.5f, 1.0f}}, {{0.0f, 0.5f, 1.0f}}}};
-    Array<Array<float32, 3>, Vector2::AXIS_COUNT> controlRegions = {{{{0.0f, 0.5f, 1.0f}}, {{0.0f, 0.5f, 1.0f}}}};
+    const Vector2 scaledRange(Vector2(20.0f, 20.0f) / parentGD->scale);
+    const Vector2 range(RotateVector(scaledRange, *parentGD));
 
     UIGeometricData controlGD = control->GetLocalGeometricData();
+    Rect parentBox = parentGD->GetUnrotatedRect();
+    parentBox.SetPosition(Vector2(0.0f, 0.0f));
     Rect box = controlGD.GetAABBox();
 
-    Vector2 nearestDistance;
     for (int32 axisInt = Vector2::AXIS_X; axisInt < Vector2::AXIS_COUNT; ++axisInt)
     {
         Vector2::eAxis axis = static_cast<Vector2::eAxis>(axisInt);
-        for (auto path : searchingPath[axis])
+        List<MagnetLine> magnetPairs;
+        float32 controlLeft = box.GetPosition()[axis];
+        float32 controlRight = controlLeft + box.GetSize()[axis];
+
+        float32 parentLeft = 0.0f;
+        float32 parentRight = parentLeft + parentBox.GetSize()[axis];
+        DVASSERT(controlLeft < controlRight);
+
+        magnetPairs.emplace_back(parentLeft, controlLeft, parentBox);
+        magnetPairs.emplace_back(parentLeft + (parentRight - parentLeft) / 2.0f, controlLeft + (controlRight - controlLeft) / 2.0f, parentBox);
+        magnetPairs.emplace_back(parentLeft + parentRight, controlRight, parentBox);
+
+        const float32 border = 20.0f;
+        if (parentGD->GetUnrotatedRect().GetSize()[axis] > 100)
         {
-            float32 pathPos = path * gd->size[axis];
-            float32 left = pathPos - range[axis];
-            float32 right = pathPos + range[axis];
+            magnetPairs.emplace_back(parentLeft + border, controlLeft, parentBox);
+            magnetPairs.emplace_back(parentRight - border, controlRight, parentBox);
+        }
 
-            for (auto region : controlRegions[axis])
+        for (UIControl* neighbour : control->GetParent()->GetChildren())
+        {
+            if (neighbour != control)
             {
-                float32 regionPos = box.GetPosition()[axis] + box.GetSize()[axis] * region;
-                float32 nextRegionPos = regionPos + delta[axis];
-                if (nextRegionPos >= left && nextRegionPos <= right)
-                {
-                    float32 distanceToPath = fabs(nextRegionPos - pathPos);
-                    if (!magnet[axis] || nearestDistance[axis] > distanceToPath)
-                    {
-                        nearestDistance[axis] = distanceToPath;
+                Rect neighbourBox = neighbour->GetLocalGeometricData().GetAABBox();
 
-                        nextPosToNearest[axis] = nextRegionPos - pathPos;
-                        deltaToNearest[axis] = pathPos - regionPos;
-                    }
-                    magnet[axis] = true;
-                }
+                float32 neighbourLeft = neighbourBox.GetPosition()[axis];
+                float32 neighbourRight = neighbourLeft + neighbourBox.GetSize()[axis];
+                DVASSERT(neighbourLeft < neighbourRight);
+
+                magnetPairs.emplace_back(neighbourLeft, controlLeft, neighbourBox);
+                magnetPairs.emplace_back(neighbourLeft + (neighbourRight - neighbourLeft) / 2.0f, controlLeft + (controlRight - controlLeft) / 2.0f, neighbourBox);
+                magnetPairs.emplace_back(neighbourRight, controlRight, neighbourBox);
             }
         }
-    }
-    for (int32 axisInt = Vector2::AXIS_X; axisInt < Vector2::AXIS_COUNT; ++axisInt)
-    {
-        Vector2::eAxis axis = static_cast<Vector2::eAxis>(axisInt);
-        if (magnet[axis])
+        DVASSERT(!magnetPairs.empty());
+        magnetPairs.sort([](const MagnetLine& left, const MagnetLine& right)
+                         {return left.difference < right.difference;
+                         });
+        MagnetLine nearestLine = magnetPairs.front();
+        float32 areaNearLineLeft = nearestLine.linePos - range[axis];
+        float32 areaNearLineRight = nearestLine.linePos + range[axis];
+        float32 cursorPos = nearestLine.controlPos + delta[axis];
+        if (cursorPos >= areaNearLineLeft && cursorPos <= areaNearLineRight)
         {
-            extraDelta[axis] = nextPosToNearest[axis];
-            delta[axis] = deltaToNearest[axis];
-        }
-        else
-        {
-            extraDelta[axis] = 0.0f;
+            extraDelta[axis] = cursorPos - nearestLine.linePos;
+            delta[axis] = nearestLine.linePos - nearestLine.controlPos;
+
+            Vector2 position = parentGD->position - RotateVectorInv(parentGD->pivotPoint * parentGD->scale, *parentGD);
+
+            const Vector2::eAxis axis2 = axis == Vector2::AXIS_X ? Vector2::AXIS_Y : Vector2::AXIS_X;
+
+            float32 controlTop = box.GetPosition()[axis2];
+            float32 controlBottom = controlTop + box.GetSize()[axis2];
+
+            float32 targetTop = nearestLine.targetBox.GetPosition()[axis2];
+            float32 targetBottom = targetTop + nearestLine.targetBox.GetSize()[axis2];
+
+            Vector2 linePos;
+            linePos[axis] = nearestLine.linePos;
+            linePos[axis2] = Min(controlTop, targetTop);
+            Vector2 lineSize;
+            lineSize[axis] = 0.0f;
+            lineSize[axis2] = Max(controlBottom, targetBottom) - linePos[axis2];
+
+            Rect lineRect(linePos + position, lineSize);
+            magnets.emplace_back(lineRect, parentGeometricData, axis2);
         }
     }
+    systemManager->MagnetLinesChanged.Emit(magnets);
     return delta;
 }
 
@@ -476,7 +521,7 @@ void TransformSystem::EmitMagnetLinesForPivot(Vector2& target)
 
     Rect horizontalRect(horizontalLinePos, Vector2(ur.GetSize().x, 0.0f));
     Rect verticalRect(verticalLinePos, Vector2(0.0f, ur.GetSize().y));
-    Vector<MagnetLine> magnets;
+    Vector<MagnetLineInfo> magnets;
     magnets.emplace_back(horizontalRect, controlGeometricData, Vector2::AXIS_X);
     magnets.emplace_back(verticalRect, controlGeometricData, Vector2::AXIS_Y);
     systemManager->MagnetLinesChanged.Emit(magnets);
@@ -536,7 +581,7 @@ Vector2 TransformSystem::AdjustPivot(Vector2& delta)
 
     if (!found)
     {
-        systemManager->MagnetLinesChanged.Emit(Vector<MagnetLine>());
+        systemManager->MagnetLinesChanged.Emit(Vector<MagnetLineInfo>());
         if (!extraDelta.IsZero())
         {
             deltaPivot += extraDelta;

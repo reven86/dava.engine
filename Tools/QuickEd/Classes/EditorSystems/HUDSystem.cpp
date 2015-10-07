@@ -545,12 +545,12 @@ void HUDSystem::OnEmulationModeChanged(bool emulationMode)
     }
 }
 
-void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLine>& magnetLines)
+void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLineInfo>& magnetLines)
 {
     static const float32 axtraSizeValue = 50.0f;
     magnetControls.clear();
 
-    for (const MagnetLine& line : magnetLines)
+    for (const MagnetLineInfo& line : magnetLines)
     {
         UIControl* control = new UIControl();
         control->SetDebugDraw(true);
