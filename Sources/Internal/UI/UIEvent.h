@@ -187,8 +187,7 @@ public:
         }
     }
 
-protected:
-	eInputHandledType inputHandledType;//!< input handled type, INPUT_NOT_HANDLED by default. 
+    eInputHandledType inputHandledType = INPUT_NOT_HANDLED; //!< input handled type, INPUT_NOT_HANDLED by default.
 };
 };
 

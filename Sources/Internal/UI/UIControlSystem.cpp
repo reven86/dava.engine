@@ -405,6 +405,60 @@ static bool IsSameTouch(const UIEvent& l, const UIEvent& r)
     l.phase < UIEvent::PHASE_CHAR;
 };
 
+static void CopyTouchData(UIEvent* dst, const UIEvent* src)
+{
+    dst->timestamp = src->timestamp;
+    dst->physPoint = src->physPoint;
+    dst->point = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(src->physPoint);
+    dst->tapCount = src->tapCount;
+    dst->inputHandledType = src->inputHandledType;
+}
+
+static void UpdateOldEvent(const Vector<UIEvent>& newEvents, UIEvent& oldEvent)
+{
+    auto newEvIt = std::find_if(begin(newEvents), end(newEvents), [oldEvent](const UIEvent& newEv)
+                                {
+        return IsSameTouch(oldEvent, newEv);
+                                });
+
+    if (newEvIt != newEvents.end())
+    {
+        if (oldEvent.phase == newEvIt->phase && oldEvent.physPoint == newEvIt->physPoint)
+        {
+            oldEvent.activeState = UIEvent::ACTIVITY_STATE_ACTIVE;
+        }
+        else
+        {
+            oldEvent.activeState = UIEvent::ACTIVITY_STATE_CHANGED;
+        }
+
+        oldEvent.phase = newEvIt->phase;
+        CopyTouchData(&oldEvent, &*newEvIt);
+    }
+};
+
+static void AddNewEvents(const Vector<UIEvent>& newEvents, Vector<UIEvent>& totals)
+{
+    auto FindNewTouchAndAddToTotals = [&totals](const UIEvent& newEv)
+    {
+        auto it = std::find_if(begin(totals), end(totals), [newEv](const UIEvent& oldEv)
+        {
+            return IsSameTouch(newEv, oldEv);
+        });
+
+        if (it == totals.end())
+        {
+            totals.push_back(newEv);
+
+            auto& ev = totals.back();
+            ev.activeState = UIEvent::ACTIVITY_STATE_CHANGED;
+            ev.point = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(ev.physPoint);
+        }
+    };
+
+    std::for_each(begin(newEvents), end(newEvents), FindNewTouchAndAddToTotals);
+};
+
 void UIControlSystem::OnInput(const Vector<UIEvent>& activeInputs, const Vector<UIEvent>& allInputs)
 {
     inputCounter = 0;
@@ -440,30 +494,7 @@ void UIControlSystem::OnInput(const Vector<UIEvent>& activeInputs, const Vector<
             std::for_each(begin(allInputs), end(allInputs), ConvertToPointAndRecord);
         }
 
-        auto UpdateOldEvent = [](const Vector<UIEvent>& newEvents, UIEvent& oldEvent)
-        {
-            auto wit = std::find_if(begin(newEvents), end(newEvents), [oldEvent](const UIEvent& newEv)
-            {
-                return IsSameTouch(oldEvent, newEv);
-            });
-
-            if (wit != newEvents.end())
-            {
-                if (oldEvent.phase == wit->phase && oldEvent.physPoint == wit->physPoint)
-                {
-                    oldEvent.activeState = UIEvent::ACTIVITY_STATE_ACTIVE;
-                }
-                else
-                {
-                    oldEvent.activeState = UIEvent::ACTIVITY_STATE_CHANGED;
-                }
-
-                oldEvent.phase = wit->phase;
-                CopyTouchData(&oldEvent, &*wit);
-            }
-        };
-
-        auto UpdatePrevEvents = [UpdateOldEvent, &activeInputs, &allInputs](UIEvent& oldEvent)
+        auto UpdatePrevEvents = [&activeInputs, &allInputs](UIEvent& oldEvent)
         {
             oldEvent.activeState = UIEvent::ACTIVITY_STATE_INACTIVE;
 
@@ -477,33 +508,11 @@ void UIControlSystem::OnInput(const Vector<UIEvent>& activeInputs, const Vector<
 
         std::for_each(begin(totalInputs), end(totalInputs), UpdatePrevEvents);
 
-        auto AddNewTouches = [](const Vector<UIEvent>& newEvents, Vector<UIEvent>& totals)
+        AddNewEvents(activeInputs, totalInputs);
+        AddNewEvents(allInputs, totalInputs);
+
+        auto InactiveOrCanceled = [this](UIEvent& ev)
         {
-            auto FindNewTouchAndAddToTotals = [&totals](const UIEvent& wit)
-            {
-                auto it = std::find_if(begin(totals), end(totals), [wit](const UIEvent& newEv)
-                {
-                    return IsSameTouch(wit, newEv);
-                });
-
-                if (it == totals.end())
-                {
-                    totals.push_back(wit);
-
-                    auto& ev = totals.back();
-                    ev.activeState = UIEvent::ACTIVITY_STATE_CHANGED;
-                    ev.point = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(ev.physPoint);
-                }
-            };
-
-            std::for_each(begin(newEvents), end(newEvents), FindNewTouchAndAddToTotals);
-        };
-
-        AddNewTouches(activeInputs, totalInputs);
-        AddNewTouches(allInputs, totalInputs);
-
-        auto startRemoveIt = std::remove_if(begin(totalInputs), end(totalInputs), [this](UIEvent& ev)
-                                            {
             if (ev.activeState == UIEvent::ACTIVITY_STATE_INACTIVE || ev.phase == UIEvent::PHASE_CANCELLED)
             {
                 if (ev.phase != UIEvent::PHASE_ENDED)
@@ -513,7 +522,9 @@ void UIControlSystem::OnInput(const Vector<UIEvent>& activeInputs, const Vector<
                 return true;
             }
             return false;
-                                            });
+        };
+
+        auto startRemoveIt = std::remove_if(begin(totalInputs), end(totalInputs), InactiveOrCanceled);
 
         if (startRemoveIt != totalInputs.end())
         {
@@ -783,15 +794,6 @@ void UIControlSystem::NotifyListenersDidSwitch( UIScreen* screen )
     uint32 listenersCount = (uint32)screenSwitchListenersCopy.size();
     for(uint32 i = 0; i < listenersCount; ++i)
         screenSwitchListenersCopy[i]->OnScreenDidSwitch( screen );
-}
-
-void UIControlSystem::CopyTouchData(UIEvent* dst, const UIEvent* src)
-{
-    dst->timestamp = src->timestamp;
-    dst->physPoint = src->physPoint;
-    dst->point = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(src->physPoint);
-    dst->tapCount = src->tapCount;
-    dst->inputHandledType = src->inputHandledType;
 }
 
 void UIControlSystem::UI3DViewAdded()
