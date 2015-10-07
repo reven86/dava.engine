@@ -62,7 +62,7 @@ private:
     void ProcessPercentOfParentPolicy(ControlLayoutData &data, Vector2::eAxis axis);
 
     void ApplySize(ControlLayoutData &data, float32 value, Vector2::eAxis axis);
-    float32 GetSize(ControlLayoutData &data, Vector2::eAxis axis);
+    float32 GetSize(const ControlLayoutData &data, Vector2::eAxis axis);
     float32 GetLayoutPadding(Vector2::eAxis axis);
     float32 ClampValue(float32 value, Vector2::eAxis axis);
 

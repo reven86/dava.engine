@@ -51,7 +51,7 @@ public:
 public:
     ControlLayoutData(UIControl *control_);
     
-    void ApplyLayoutToControl(int32 indexOfSizeProperty);
+    void ApplyLayoutToControl();
     
     UIControl *GetControl() const;
     

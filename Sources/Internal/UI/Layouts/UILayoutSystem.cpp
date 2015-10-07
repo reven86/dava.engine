@@ -141,9 +141,10 @@ void UILayoutSystem::ProcessAxis(Vector2::eAxis axis)
 
 void UILayoutSystem::DoMeasurePhase(Vector2::eAxis axis)
 {
-    for (auto it = layoutData.rbegin(); it != layoutData.rend(); ++it)
+    int32 lastIndex = static_cast<int32>(layoutData.size() - 1);
+    for (int32 index = lastIndex; index >= 0; index--)
     {
-        SizeMeasuringAlgorithm(layoutData).Apply(*it, axis);
+        SizeMeasuringAlgorithm(layoutData).Apply(layoutData[index], axis);
     }
 }
 
@@ -184,14 +185,20 @@ void UILayoutSystem::DoLayoutPhase(Vector2::eAxis axis)
 
 void UILayoutSystem::ApplySizesAndPositions()
 {
-    int32 indexOfSizeProperty = UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyIndex(FastName("size"));
-    
+    Vector<UIControl*> controls;
     for (ControlLayoutData &data : layoutData)
     {
-        data.ApplyLayoutToControl(indexOfSizeProperty);
+        data.ApplyLayoutToControl();
+        if (data.HasFlag(ControlLayoutData::FLAG_SIZE_CHANGED))
+            controls.push_back(data.GetControl());
     }
     
     layoutData.clear();
+    for (UIControl *control : controls)
+    {
+        control->OnSizeChanged();
+        control->PerformEvent(UIControl::EVENT_SIZE_CHANGED_BY_LAYOUT_SYSTEM);
+    }
 }
 
 }

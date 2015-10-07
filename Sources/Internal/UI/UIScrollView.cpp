@@ -123,8 +123,12 @@ void UIScrollView::PushContentToBounds(UIControl *parentControl)
 		{
 			childRect.y += Abs(position.y);
 		}
-		// Move each first child
-		childControl->SetRect(childRect);
+		
+        // Move each first child
+        if (childRect != childControl->GetRect())
+        {
+            childControl->SetRect(childRect);
+        }
 	}
 }
 
@@ -292,7 +296,7 @@ void UIScrollView::RecalculateContentSize()
 									Vector2(0, 0));
 									
 	// Update scroll view content size
-	scrollContainer->SetRect(Rect(contentRect.x, contentRect.y, maxSize.x, maxSize.y));
+    scrollContainer->SetRect(Rect(contentRect.x, contentRect.y, maxSize.x, maxSize.y));
 	scrollHorizontal->SetElementSize(maxSize.x);
 	scrollVertical->SetElementSize(maxSize.y);
 }
@@ -449,7 +453,10 @@ void UIScrollView::SetHorizontalScrollPosition(float32 horzPos)
 
     Rect contentRect = scrollContainer->GetRect();
 	contentRect.x = horzPos;
-    scrollContainer->SetRect(contentRect);
+    if (scrollContainer->GetRect() != contentRect)
+    {
+        scrollContainer->SetRect(contentRect);
+    }
 
     scrollHorizontal->SetPosition(horzPos);
 }
@@ -463,7 +470,10 @@ void UIScrollView::SetVerticalScrollPosition(float32 vertPos)
     
     Rect contentRect = scrollContainer->GetRect();
 	contentRect.y = vertPos;
-    scrollContainer->SetRect(contentRect);
+    if (scrollContainer->GetRect() != contentRect)
+    {
+        scrollContainer->SetRect(contentRect);
+    }
     
     scrollVertical->SetPosition(vertPos);
 }

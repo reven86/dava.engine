@@ -172,7 +172,7 @@ void SizeMeasuringAlgorithm::ProcessDefaultPercentOfChildrenSumPolicy(ControlLay
             }
 
             processedChildrenCount++;
-            value += childData.GetSize(axis);
+            value += GetSize(childData, axis);
         }
     }
     
@@ -274,7 +274,7 @@ void SizeMeasuringAlgorithm::ProcessPercentOfMaxChildPolicy(ControlLayoutData &d
         const ControlLayoutData &childData = layoutData[i];
         if (!childData.HaveToSkipControl(skipInvisible))
         {
-            value = Max(value, childData.GetSize(axis));
+            value = Max(value, GetSize(childData, axis));
         }
     }
     
@@ -289,7 +289,7 @@ void SizeMeasuringAlgorithm::ProcessPercentOfFirstChildPolicy(ControlLayoutData 
         const ControlLayoutData &childData = layoutData[i];
         if (!childData.HaveToSkipControl(skipInvisible))
         {
-            value = childData.GetSize(axis);
+            value = GetSize(childData, axis);
             break;
         }
     }
@@ -305,7 +305,7 @@ void SizeMeasuringAlgorithm::ProcessPercentOfLastChildPolicy(ControlLayoutData &
         const ControlLayoutData &childData = layoutData[i];
         if (!childData.HaveToSkipControl(skipInvisible))
         {
-            value = childData.GetSize(axis);
+            value = GetSize(childData, axis);
             break;
         }
     }
@@ -318,7 +318,7 @@ void SizeMeasuringAlgorithm::ProcessPercentOfContentPolicy(ControlLayoutData &da
     Vector2 constraints(-1.0f, -1.0f);
     if (data.GetControl()->IsHeightDependsOnWidth() && axis == Vector2::AXIS_Y)
     {
-        constraints.x = data.GetSize(Vector2::AXIS_X);
+        constraints.x = GetSize(data, Vector2::AXIS_X);
     }
     
     float32 value = data.GetControl()->GetContentPreferredSize(constraints).data[axis];
@@ -327,7 +327,7 @@ void SizeMeasuringAlgorithm::ProcessPercentOfContentPolicy(ControlLayoutData &da
 
 void SizeMeasuringAlgorithm::ProcessPercentOfParentPolicy(ControlLayoutData &data, Vector2::eAxis axis)
 {
-    data.SetSizeWithoutChangeFlag(axis, sizePolicy->GetMinValueByAxis(axis));
+    // do nothing
 }
 
 void SizeMeasuringAlgorithm::ApplySize(ControlLayoutData &data, float32 value, Vector2::eAxis axis)
@@ -338,6 +338,16 @@ void SizeMeasuringAlgorithm::ApplySize(ControlLayoutData &data, float32 value, V
     data.SetSize(axis, clampedValue);
 }
     
+float32 SizeMeasuringAlgorithm::GetSize(const ControlLayoutData &data, Vector2::eAxis axis)
+{
+    UISizePolicyComponent *sizePolicy = data.GetControl()->GetComponent<UISizePolicyComponent>();
+    if (sizePolicy && sizePolicy->GetPolicyByAxis(axis) == UISizePolicyComponent::PERCENT_OF_PARENT)
+    {
+        return sizePolicy->GetMinValueByAxis(axis);
+    }
+    return data.GetSize(axis);
+}
+
 float32 SizeMeasuringAlgorithm::GetLayoutPadding(Vector2::eAxis axis)
 {
     if (flowLayout && flowLayout->IsEnabled())

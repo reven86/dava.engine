@@ -72,17 +72,17 @@ void UIScrollViewContainer::CopyDataFrom(UIControl *srcControl)
 	UIControl::CopyDataFrom(srcControl);
 }
 
-void UIScrollViewContainer::SetRect(const Rect &rect)
+void UIScrollViewContainer::SetSize(const Vector2 &size)
 {
-	UIControl::SetRect(rect);
+	UIControl::SetSize(size);
 	
 	UIControl *parent = GetParent();
 	if (parent)
 	{
-		Rect parentRect = parent->GetRect();
+		Vector2 parentSize = parent->GetSize();
 		// We should not allow scrolling when content rect is less than or is equal ScrollView "window"
-		enableHorizontalScroll = rect.dx > parentRect.dx;
-		enableVerticalScroll = rect.dy > parentRect.dy;
+		enableHorizontalScroll = size.dx > parentSize.dx;
+		enableVerticalScroll = size.dy > parentSize.dy;
 	}
 }
 

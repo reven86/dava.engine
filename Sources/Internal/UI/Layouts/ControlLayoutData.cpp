@@ -41,7 +41,7 @@ ControlLayoutData::ControlLayoutData(UIControl *control_) : control(control_)
     size = control->GetSize();
 }
 
-void ControlLayoutData::ApplyLayoutToControl(int32 indexOfSizeProperty)
+void ControlLayoutData::ApplyLayoutToControl()
 {
     if (HasFlag(FLAG_POSITION_CHANGED))
     {
@@ -51,8 +51,6 @@ void ControlLayoutData::ApplyLayoutToControl(int32 indexOfSizeProperty)
     if (HasFlag(FLAG_SIZE_CHANGED))
     {
         control->SetSize(size);
-        control->SetPropertyLocalFlag(indexOfSizeProperty, true);
-        control->OnSizeChanged();
     }
     
     control->ResetLayoutDirty();
