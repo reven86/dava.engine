@@ -1358,8 +1358,6 @@ Trace("\n\n-------------------------------\nframe %u executed(submitted to GPU)\
     if( _GLES2_Context )
     {
 #if defined(__DAVAENGINE_WIN32__)
-        /*HWND    wnd = (HWND)_GLES2_Native_Window;
-        HDC     dc = ::GetDC( wnd );*/
 Trace("rhi-gl.swap-buffers...\n");
         SwapBuffers(_GLES2_WindowDC);
 Trace("rhi-gl.swap-buffers done\n");
