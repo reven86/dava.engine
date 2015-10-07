@@ -250,7 +250,7 @@ void Core::ReleaseSingletons()
 
 void Core::SetOptions(KeyedArchive * archiveOfOptions)
 {
-SafeRelease(options);
+    SafeRelease(options);
 
     options = SafeRetain(archiveOfOptions);
     
