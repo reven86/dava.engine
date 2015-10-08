@@ -186,18 +186,18 @@ public:
 	 */
     void OnInput(const Vector<UIEvent>& activeInputs, const Vector<UIEvent>& allInputs);
 
-    void OnInput(UIEvent * event);
+    void OnInput(UIEvent* event);
 
-	/**
+    /**
 	 \brief Callse very frame by the system for update.
 	 */
-	void Update();
+    void Update();
 
-	/**
+    /**
 	 \brief Calls every frame by the system for draw.
 		Draws all controls hierarchy to the screen.
 	 */
-	void Draw();
+    void Draw();
 	
 //	void SetTransitionType(int newTransitionType);
 	

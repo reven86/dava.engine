@@ -761,11 +761,11 @@ namespace DAVA
         UIControlSystem::Instance()->OnInput(touches, touches);
 
         AutotestingSystem::Instance()->OnInput(input);
-	}
+    }
 
-	inline void AutotestingSystemLua::ParsePath(const String &path, Vector<String> &parsedPath)
-	{
-		Split(path, "/", parsedPath);
+    inline void AutotestingSystemLua::ParsePath(const String& path, Vector<String>& parsedPath)
+    {
+        Split(path, "/", parsedPath);
 	}
 
 	bool AutotestingSystemLua::LoadWrappedLuaObjects()

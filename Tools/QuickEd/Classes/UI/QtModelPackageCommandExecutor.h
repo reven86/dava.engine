@@ -62,7 +62,8 @@ public:
     void RemoveImportedPackagesFromPackage(const DAVA::Vector<PackageNode*> &importedPackage, PackageNode *package);
 
 public:
-    void ChangeProperty(ControlNode *node, AbstractProperty *property, const DAVA::VariantType &value);
+    void ChangeProperty(const DAVA::Vector<std::tuple<ControlNode*, AbstractProperty*, DAVA::VariantType>>& properties, size_t hash = 0);
+    void ChangeProperty(ControlNode* node, AbstractProperty* property, const DAVA::VariantType& value, size_t hash = 0);
     void ResetProperty(ControlNode *node, AbstractProperty *property);
 
     void AddComponent(ControlNode *node, DAVA::uint32 componentType);

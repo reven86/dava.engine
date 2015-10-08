@@ -28,7 +28,7 @@
 
 
 #include "TexturePacker/PngImage.h"
-#include "TexturePacker/CommandLineParser.h"
+#include "CommandLine/CommandLineParser.h"
 #include "Render/Image/LibPngHelper.h"
 #include "Render/Image/ImageSystem.h"
 #include "Render/Image/ImageConvert.h"

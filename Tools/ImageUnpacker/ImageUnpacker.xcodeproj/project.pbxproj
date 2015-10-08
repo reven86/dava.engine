@@ -406,10 +406,9 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)/../../Libs/fmod/lib/macos",
-					/Users/i_bratchik/Documents/work/dava.framework/Libs/IMagickHelpLib,
+                    "$(SRCROOT)/../../Libs/IMagickHelpLib",
 					"$(SRCROOT)/../../Libs/libs",
-					/Users/i_bratchik/Documents/work/dava.framework/Libs/libs,
-					/Users/victorkleschenko/Work/WoT/dava.framework/Tools/Bin,
+					"$(SRCROOT)/../../Tools/Bin"
 				);
 				PRODUCT_NAME = ImageUnpacker;
 			};
