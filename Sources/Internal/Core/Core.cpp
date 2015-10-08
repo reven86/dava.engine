@@ -221,7 +221,6 @@ void Core::ReleaseSingletons()
     UIControlSystem::Instance()->Release();
     FontManager::Instance()->Release();
     AnimationManager::Instance()->Release();
-    SystemTimer::Instance()->Release();
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
     Accelerometer::Instance()->Release();
     //SoundSystem::Instance()->Release();
@@ -246,6 +245,8 @@ void Core::ReleaseSingletons()
 #if defined(__DAVAENGINE_ANDROID__)
     AssetsManager::Instance()->Release();
 #endif
+
+    SystemTimer::Instance()->Release();
 }
 
 void Core::SetOptions(KeyedArchive * archiveOfOptions)
@@ -453,6 +454,10 @@ void Core::SystemAppFinished()
     if (core != nullptr)
     {
 //rhi::ShaderSourceCache::Save( "~doc:/ShaderSource.bin" );
+        #if TRACER_ENABLED
+//        profiler::DumpEvents();
+        profiler::SaveEvents("trace.json");
+        #endif
         core->OnAppFinished();
     }
 }
@@ -466,6 +471,7 @@ void Core::SystemProcessFrame()
     START_TIMING(PROF__FRAME);
     #endif
 
+    TRACE_BEGIN_EVENT(11,"core","SystemProcessFrame")
 
 #ifdef __DAVAENGINE_NVIDIA_TEGRA_PROFILE__
     static bool isInit = false;
@@ -569,15 +575,16 @@ void Core::SystemProcessFrame()
         STOP_TIMING(PROF__FRAME_UPDATE);
         
         START_TIMING(PROF__FRAME_DRAW);
+        TRACE_BEGIN_EVENT(11,"core","Draw")
         core->Draw();
+        TRACE_END_EVENT(11,"core","Draw")
         STOP_TIMING(PROF__FRAME_DRAW);
 
         START_TIMING(PROF__FRAME_ENDFRAME);
+        TRACE_BEGIN_EVENT(11,"core","EndFrame")
         core->EndFrame();
+        TRACE_END_EVENT(11,"core","EndFrame")
         STOP_TIMING(PROF__FRAME_ENDFRAME);
-// #ifdef __DAVAENGINE_DIRECTX9__
-//      core->BeginFrame();
-// #endif
     }
     Stats::Instance()->EndFrame();
     globalFrameIndex++;
@@ -586,6 +593,8 @@ void Core::SystemProcessFrame()
     EGLuint64NV end = eglGetSystemTimeNV() / frequency;
     EGLuint64NV interval = end - start;
 #endif //__DAVAENGINE_NVIDIA_TEGRA_PROFILE__
+
+    TRACE_END_EVENT(11,"core","SystemProcessFrame")
 
     #if PROFILER_ENABLED
         STOP_TIMING(PROF__FRAME);

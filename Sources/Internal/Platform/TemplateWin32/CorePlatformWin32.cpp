@@ -30,6 +30,7 @@
 #if defined(__DAVAENGINE_WIN32__)
 
 #include <shellapi.h>
+#include "Debug/Profiler.h"
 
 #include "Concurrency/Thread.h"
 #include "Input/KeyboardDevice.h"
@@ -290,7 +291,9 @@ namespace DAVA
                 }
             }
 
+            TRACE_BEGIN_EVENT(11,"core","Sleep");
             Sleep(sleepMs);
+            TRACE_END_EVENT(11,"core","Sleep");
 
 			if (willQuit)
 			{	
