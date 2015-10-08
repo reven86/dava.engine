@@ -339,7 +339,14 @@ extern void FrameworkWillTerminate();
 
     DAVA::UIEvent ev;
     ev.keyChar = c;
-    ev.phase = DAVA::UIEvent::PHASE_KEYCHAR;
+    if (c == 0)
+    {
+        ev.phase = DAVA::UIEvent::PHASE_KEY_DOWN;
+    }
+    else
+    {
+        ev.phase = DAVA::UIEvent::PHASE_CHAR;
+    }
     ev.timestamp = timestamp;
 	ev.tapCount = 1;
     ev.tid = keyboard.GetDavaKeyForSystemKey(keyCode);
@@ -365,7 +372,14 @@ extern void FrameworkWillTerminate();
 
     DAVA::UIEvent ev;
     ev.keyChar = c;
-    ev.phase = DAVA::UIEvent::PHASE_KEYCHAR_RELEASE;
+    if (c == 0)
+    {
+        ev.phase = DAVA::UIEvent::PHASE_KEY_UP;
+    }
+    else
+    {
+        ev.phase = DAVA::UIEvent::PHASE_CHAR;
+    }
     ev.timestamp = timestamp;
     ev.tapCount = 1;
     ev.tid = keyboard.GetDavaKeyForSystemKey(keyCode);

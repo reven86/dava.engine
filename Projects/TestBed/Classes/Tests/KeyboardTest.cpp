@@ -97,7 +97,6 @@ public:
         case UIEvent::PHASE_KEY_DOWN_REPEAT:
             ++numKeyDownRepeat;
             lastKey = currentInput->tid;
-            OutputDebugStringA("PHASE_KEY_DOWN_REPEAT\n");
             break;
         case UIEvent::PHASE_KEY_UP:
             ++numKeyUp;
