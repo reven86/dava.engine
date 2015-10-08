@@ -330,7 +330,7 @@ void VisibilityToolSystem::PerformHeightTest(const Vector3& spectatorCoords,
         {
             float32 px = circleCenter.x - circleRadius + density * x;
             float32 py = circleCenter.y - circleRadius + density * y;
-            if ((px < 0.0f) && (py < 0.0f) && (px >= landscapeSize) && (py >= landscapeSize))
+            if ((px < 0.0f) || (py < 0.0f) || (px >= landscapeSize) || (py >= landscapeSize))
             {
                 continue;
             }
