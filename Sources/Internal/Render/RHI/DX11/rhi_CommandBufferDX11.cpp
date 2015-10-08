@@ -143,6 +143,9 @@ FrameDX11
     Handle              sync;
     std::vector<Handle> pass;
     uint32              readyToExecute:1;
+    
+    ID3D11CommandList*  cmdList;
+
 };
 
 static std::vector<FrameDX11>   _Frame;
@@ -280,6 +283,7 @@ dx11_RenderPass_Begin( Handle pass )
         _Frame.back().number         = _FrameNumber;
         _Frame.back().sync           = rhi::InvalidHandle;
         _Frame.back().readyToExecute = false;
+        _Frame.back().cmdList        = nullptr;
 
 Trace("\n\n-------------------------------\nframe %u started\n",_FrameNumber);
         _FrameStarted = true;
@@ -758,10 +762,11 @@ dx11_CommandBuffer_DrawIndexedPrimitive( Handle cmdBuf, PrimitiveType type, uint
     }
 
     IndexBufferDX11::SetToRHI( cb->cur_ib, 0, ctx );
-    VertexBufferDX11::SetToRHI( cb->cur_vb, 0, 0, cb->cur_vb_stride, ctx );
-
-    StatSet::IncStat(stat_SET_VB, 1);
     StatSet::IncStat(stat_SET_IB, 1);
+
+    VertexBufferDX11::SetToRHI( cb->cur_vb, 0, 0, cb->cur_vb_stride, ctx );
+    StatSet::IncStat(stat_SET_VB, 1);
+
 
     if( cb->cur_query_i != InvalidIndex )
         QueryBufferDX11::BeginQuery( cb->cur_query_buf, cb->cur_query_i, ctx );
@@ -856,21 +861,14 @@ _ExecuteQueuedCommandsDX11()
 {
 Trace("rhi-dx11.exec-queued-cmd\n");
 
+    TRACE_BEGIN_EVENT(22,"rhi","_ExecuteQueuedCommandsDX11");
+
     if( _DX11_InitParam.FrameCommandExecutionSync )
         _DX11_InitParam.FrameCommandExecutionSync->Lock();
-
-    _D3D11_SecondaryContextSync.Lock();
-    {
-        ID3D11CommandList*  cl = nullptr;
-            
-        _D3D11_SecondaryContext->FinishCommandList( TRUE, &cl );
-        _D3D11_ImmediateContext->ExecuteCommandList( cl, FALSE );
-        cl->Release();
-    }
-    _D3D11_SecondaryContextSync.Unlock();
-
+    
     std::vector<RenderPassDX11_t*>  pass;
     std::vector<Handle>             pass_h;
+    ID3D11CommandList*              cmdList = nullptr;
     unsigned                        frame_n = 0;
     bool                            do_exec = true;
 
@@ -898,6 +896,7 @@ Trace("rhi-dx11.exec-queued-cmd\n");
 
         pass_h  = _Frame.begin()->pass;
         frame_n = _Frame.begin()->number;
+        cmdList = _Frame.begin()->cmdList;
     }
     else
     {
@@ -918,6 +917,11 @@ Trace("rhi-dx11.exec-queued-cmd\n");
     if( do_exec )
     {
 Trace("\n\n-------------------------------\nexecuting frame %u\n",frame_n);        
+        
+        _D3D11_ImmediateContext->ExecuteCommandList( cmdList, FALSE );
+        cmdList->Release();
+        cmdList = nullptr;
+        
         for( std::vector<RenderPassDX11_t*>::iterator p=pass.begin(),p_end=pass.end(); p!=p_end; ++p )
         {
             RenderPassDX11_t*   pp = *p;
@@ -969,6 +973,8 @@ Trace("\n\n-------------------------------\nframe %u executed(submitted to GPU)\
 
     if( _DX11_InitParam.FrameCommandExecutionSync )
         _DX11_InitParam.FrameCommandExecutionSync->Unlock();
+
+    TRACE_END_EVENT(22,"rhi","_ExecuteQueuedCommandsDX11");
 }
 
 
@@ -1021,6 +1027,7 @@ Trace("exec %i\n",int(cmd->func));
 void
 ExecDX11( DX11Command* command, uint32 cmdCount, bool force_immediate )
 {
+//TRACE_BEGIN_EVENT((force_immediate)?22:11,"rhi","ExecDX11");
     if( force_immediate  ||  !_DX11_RenderThreadFrameCount )
     {
         _ExecDX11( command, cmdCount );
@@ -1054,6 +1061,7 @@ ExecDX11( DX11Command* command, uint32 cmdCount, bool force_immediate )
             _DX11_PendingImmediateCmdSync.Unlock();
         } while( !executed );
     }
+//TRACE_END_EVENT((force_immediate)?22:11,"rhi","ExecDX11");
 }
 
 
@@ -1072,6 +1080,7 @@ _RenderFuncDX11( DAVA::BaseObject* obj, void*, void* )
         bool    do_wait = true;
         bool    do_exit = false;
         
+        TRACE_BEGIN_EVENT(22,"rhi","wait-to-exec");
         do
         {
             // CRAP: busy-wait
@@ -1082,6 +1091,7 @@ _RenderFuncDX11( DAVA::BaseObject* obj, void*, void* )
             if( do_exit )
                 break;
 
+//            TRACE_BEGIN_EVENT(22,"rhi","imm.cmd processing");
             _DX11_PendingImmediateCmdSync.Lock();
             if( _DX11_PendingImmediateCmd )
             {
@@ -1092,11 +1102,13 @@ Trace("exec imm cmd (%u)\n",_DX11_PendingImmediateCmdCount);
 Trace("exec-imm-cmd done\n");
             }
             _DX11_PendingImmediateCmdSync.Unlock();
+//            TRACE_END_EVENT(22,"rhi","imm.cmd processing");
             
             _FrameSync.Lock();
             do_wait = !( _Frame.size()  &&  _Frame.begin()->readyToExecute );
             _FrameSync.Unlock();
         } while( do_wait );
+        TRACE_END_EVENT(22,"rhi","wait-to-exec");
 
         if( do_exit )
             break;
@@ -1150,10 +1162,13 @@ dx11_Present(Handle sync)
     if( _DX11_RenderThreadFrameCount )
     {
 Trace("rhi-dx11.present\n");
+        TRACE_BEGIN_EVENT(11,"rhi","dx11_Present");
         _FrameSync.Lock(); 
         {   
             if( _Frame.size() )
             {
+                _D3D11_SecondaryContext->FinishCommandList( TRUE, &(_Frame.back().cmdList) );
+            
                 _Frame.back().readyToExecute = true;
                 _Frame.back().sync           = sync;
                 _FrameStarted                = false;
@@ -1172,17 +1187,29 @@ Trace("\n\n-------------------------------\nframe %u generated\n",_Frame.back().
         _FrameSync.Unlock();
         }
         while( frame_cnt >= _DX11_RenderThreadFrameCount );
+        TRACE_END_EVENT(11,"rhi","dx11_Present");
     }
     else
     {
+        TRACE_BEGIN_EVENT(22,"rhi","dx11_Present");
         if( _Frame.size() )
         {
+            _D3D11_SecondaryContext->FinishCommandList( TRUE, &(_Frame.back().cmdList) );
             _Frame.back().readyToExecute = true;
             _Frame.back().sync = sync;
             _FrameStarted = false;
         }
+        else
+        {
+            ID3D11CommandList*  cl = nullptr;
+            
+            _D3D11_SecondaryContext->FinishCommandList( TRUE, &cl );
+            _D3D11_ImmediateContext->ExecuteCommandList( cl, FALSE );
+            cl->Release();
+        }
 
         _ExecuteQueuedCommandsDX11(); 
+        TRACE_END_EVENT(22,"rhi","dx11_Present");
     }
 }
 
@@ -1211,6 +1238,7 @@ CommandBufferDX11_t::Execute()
 {
 SCOPED_FUNCTION_TIMING();
 
+    TRACE_BEGIN_EVENT(22,"rhi","CommandBufferDX11_t::Execute");
     context->Release();
     context = nullptr;
 
@@ -1223,6 +1251,7 @@ SCOPED_FUNCTION_TIMING();
     _D3D11_ImmediateContext->ExecuteCommandList( commandList, FALSE );
     commandList->Release();
     commandList = nullptr;
+    TRACE_END_EVENT(22,"rhi","CommandBufferDX11_t::Execute");
 }
 
 

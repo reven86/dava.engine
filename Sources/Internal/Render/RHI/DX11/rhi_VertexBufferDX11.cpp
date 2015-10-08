@@ -51,6 +51,8 @@ public:
                             ~VertexBufferDX11_t();
 
     unsigned        size;
+    Usage           usage;
+    void*           mappedData;
     ID3D11Buffer*   buffer;
     uint32          isMapped:1;
 };
@@ -98,6 +100,23 @@ dx11_VertexBuffer_Create( const VertexBuffer::Descriptor& desc )
         desc11.BindFlags        = D3D11_BIND_VERTEX_BUFFER;                
         desc11.MiscFlags        = 0;
 
+        switch( desc.usage )
+        {
+            case USAGE_DEFAULT : 
+                desc11.Usage = D3D11_USAGE_DYNAMIC; 
+                break;
+            
+            case USAGE_STATICDRAW : 
+                desc11.Usage = D3D11_USAGE_IMMUTABLE; 
+                DVASSERT(desc.initialData);
+                break;
+
+            case USAGE_DYNAMICDRAW : 
+                desc11.Usage = D3D11_USAGE_DYNAMIC;
+                desc11.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE; 
+                break;
+        }
+
         if( desc.initialData )
         {
             data.pSysMem     = desc.initialData;
@@ -111,9 +130,11 @@ dx11_VertexBuffer_Create( const VertexBuffer::Descriptor& desc )
             handle = VertexBufferDX11Pool::Alloc();
             VertexBufferDX11_t*    vb = VertexBufferDX11Pool::Get( handle );
 
-            vb->size     = desc.size;
-            vb->buffer   = buf;
-            vb->isMapped = false;
+            vb->size        = desc.size;
+            vb->usage       = desc.usage;
+            vb->buffer      = buf;
+            vb->mappedData  = nullptr;
+            vb->isMapped    = false;
         }
         else
         {
@@ -140,7 +161,8 @@ dx11_VertexBuffer_Delete( Handle vb )
             self->buffer = nullptr;
         }
 
-        self->size = 0;
+        self->size       = 0;
+        self->mappedData = nullptr;
 
         VertexBufferDX11Pool::Free( vb );
     }
@@ -155,25 +177,30 @@ dx11_VertexBuffer_Update( Handle vb, const void* data, unsigned offset, unsigned
     bool                success = false;
     VertexBufferDX11_t* self    = VertexBufferDX11Pool::Get( vb );
 
+    DVASSERT(self->usage != USAGE_DYNAMICDRAW);
+    DVASSERT(self->usage != USAGE_STATICDRAW);
     DVASSERT(!self->isMapped);
 
-    if( offset+size <= self->size )
+    if( self->usage == USAGE_DEFAULT )
     {
-        D3D11_MAPPED_SUBRESOURCE    rc   = {0};
-        DX11Command                 cmd1 = { DX11Command::MAP, { uint64(self->buffer), 0, D3D11_MAP_WRITE_DISCARD, 0, uint64(&rc) } };
+        if( offset+size <= self->size )
+        {
+            D3D11_MAPPED_SUBRESOURCE    rc   = {0};
+            DX11Command                 cmd1 = { DX11Command::MAP, { uint64(self->buffer), 0, D3D11_MAP_WRITE_DISCARD, 0, uint64(&rc) } };
         
-        ExecDX11( &cmd1, 1 );
+            ExecDX11( &cmd1, 1 );
         
-        if( rc.pData )
-        {            
-            DX11Command cmd2 = { DX11Command::UNMAP, { uint64(self->buffer), 0 } };
+            if( rc.pData )
+            {            
+                DX11Command cmd2 = { DX11Command::UNMAP, { uint64(self->buffer), 0 } };
             
-            memcpy( ((uint8*)(rc.pData))+offset, data, size );            
-            ExecDX11( &cmd2, 1 );
-            success = true;
+                memcpy( ((uint8*)(rc.pData))+offset, data, size );            
+                ExecDX11( &cmd2, 1 );
+                success = true;
+            }
         }
     }
-    
+        
     return success;
 }
 
@@ -183,18 +210,41 @@ dx11_VertexBuffer_Update( Handle vb, const void* data, unsigned offset, unsigned
 static void*
 dx11_VertexBuffer_Map( Handle vb, unsigned offset, unsigned size )
 {
-    void*                       ptr  = nullptr;
-    VertexBufferDX11_t*         self = VertexBufferDX11Pool::Get( vb );
-    D3D11_MAPPED_SUBRESOURCE    rc   = {0};
-    DX11Command                 cmd  = { DX11Command::MAP, { uint64(self->buffer), 0, D3D11_MAP_WRITE_DISCARD, 0, uint64(&rc) } };
-
+    void*               ptr  = nullptr;
+    VertexBufferDX11_t* self = VertexBufferDX11Pool::Get( vb );
+    
+    DVASSERT(self->usage != USAGE_STATICDRAW);
     DVASSERT(!self->isMapped);
-    ExecDX11( &cmd, 1 );
 
-    if( rc.pData )
+    if( self->usage == USAGE_DYNAMICDRAW )
     {
-        ptr            = rc.pData;
-        self->isMapped = true;
+        D3D11_MAPPED_SUBRESOURCE    rc   = {0};
+        HRESULT                     hr;
+
+        _D3D11_SecondaryContextSync.Lock();
+        hr = _D3D11_SecondaryContext->Map( self->buffer, NULL, D3D11_MAP_WRITE_DISCARD, 0, &rc );
+        _D3D11_SecondaryContextSync.Unlock();
+
+        if( SUCCEEDED(hr)  &&  rc.pData )
+        {
+            self->isMapped = true;
+            ptr = rc.pData;
+        }
+    }
+    else
+    {
+        D3D11_MAPPED_SUBRESOURCE    rc   = {0};
+        DX11Command                 cmd  = { DX11Command::MAP, { uint64(self->buffer), 0, D3D11_MAP_WRITE_DISCARD, 0, uint64(&rc) } };
+
+        DVASSERT(self->usage != USAGE_STATICDRAW);
+        DVASSERT(!self->isMapped);
+        ExecDX11( &cmd, 1 );
+
+        if( rc.pData )
+        {
+            ptr            = rc.pData;
+            self->isMapped = true;
+        }
     }
 
     return ((uint8*)ptr)+offset;
@@ -207,11 +257,24 @@ static void
 dx11_VertexBuffer_Unmap( Handle vb )
 {
     VertexBufferDX11_t* self = VertexBufferDX11Pool::Get( vb );
-    DX11Command         cmd  = { DX11Command::UNMAP, { uint64(self->buffer), 0 } };
     
+    DVASSERT(self->usage != USAGE_STATICDRAW);
     DVASSERT(self->isMapped);
-    ExecDX11( &cmd, 1 );
-    self->isMapped = false;
+
+    if( self->usage == USAGE_DYNAMICDRAW )
+    {
+        _D3D11_SecondaryContextSync.Lock();
+        _D3D11_SecondaryContext->Unmap( self->buffer, 0 );
+        _D3D11_SecondaryContextSync.Unlock();
+        self->isMapped = false;
+    }
+    else
+    {    
+        DX11Command cmd  = { DX11Command::UNMAP, { uint64(self->buffer), 0 } };
+    
+        ExecDX11( &cmd, 1 );
+        self->isMapped = false;
+    }
 }
 
 

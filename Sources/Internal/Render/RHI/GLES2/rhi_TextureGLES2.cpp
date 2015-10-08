@@ -793,7 +793,7 @@ SetAsRenderTarget( Handle tex, Handle depth )
 {
     TextureGLES2_t* self = TextureGLES2Pool::Get( tex );
     GLuint          fb   = 0;
-
+    DVASSERT(self->isRenderTarget || self->isRenderBuffer);
     for( unsigned i=0; i!=self->fbo.size(); ++i )
     {
         if( self->fbo[i].color == tex  &&  self->fbo[i].depthStencil == depth )

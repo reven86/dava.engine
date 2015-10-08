@@ -213,6 +213,7 @@ DbgDraw::Buffer<Vertex,Prim>::construct( unsigned max_vertex_count )
         {
             
             rhi::VertexBuffer::Descriptor descr = rhi::VertexBuffer::Descriptor(max_vertex_count*sizeof(Vertex));
+            descr.usage = rhi::USAGE_DYNAMICDRAW;
             descr.needRestore = false;
             _vb[i] = rhi::CreateVertexBuffer( descr );
 
@@ -275,6 +276,7 @@ DbgDraw::Buffer<Vertex,Prim>::_grow()
     for( unsigned i=0; i<countof(_vb); ++i )
     {
         rhi::VertexBuffer::Descriptor descr = rhi::VertexBuffer::Descriptor(vb_sz);
+        descr.usage = rhi::USAGE_DYNAMICDRAW;
         descr.needRestore = false;
         vb[i] = rhi::CreateVertexBuffer(descr);
 
