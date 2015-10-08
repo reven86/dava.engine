@@ -345,12 +345,10 @@ public:
 
 protected:
     ~UITextField() override;
-
-private:
     void WillBecomeVisible() override;
     void WillBecomeInvisible() override;
 
-    void RenderText();
+private:
     WideString GetVisibleText() const;
 
     void SetRenderToTexture(bool value);
@@ -380,7 +378,7 @@ private:
     bool showCursor = true;
     bool isMultiline_ = false;
 
-    TextFieldPlatformImpl* edit = nullptr;
+    TextFieldPlatformImpl* textFieldImpl = nullptr;
     Font* textFont = nullptr;
     float32 cursorTime = 0.0f;
     int32 maxLength = -1;
