@@ -7,4 +7,4 @@ RenderTechnique:
         RenderState:                        
             cullMode: "FACE_BACK"            
             fillMode: "FILLMODE_WIREFRAME"
-            state: "STATE_COLORMASK_RED | STATE_COLORMASK_GREEN | STATE_COLORMASK_BLUE | STATE_COLORMASK_ALPHA"            
+            state: "STATE_DEPTH_TEST | STATE_DEPTH_WRITE | STATE_COLORMASK_RED | STATE_COLORMASK_GREEN | STATE_COLORMASK_BLUE | STATE_COLORMASK_ALPHA"
