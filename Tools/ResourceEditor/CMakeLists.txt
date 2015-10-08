@@ -79,7 +79,7 @@ set( MACOS_PLIST          ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/Info.plist )
 set( MACOS_ICO            ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/icon.icns  )
 set( MACOS_DYLIB          ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib/libIMagickHelper.dylib )
 set( ADDED_SRC            ${UI_APP_HDRS} ${RCC_APP_SRCS}  )
-set( LIBRARIES            ${BEAST_LIB} ${QT_LIBRARIES}  )
+set( LIBRARIES            ${BEAST_LIB} )
 set( ADDED_BINARY_DIR     ${QT5_PATH_WIN}/bin )
 
 DEPLOY_SCRIPT            ( PYTHON      "${CMAKE_CURRENT_LIST_DIR}/DataSource/convert_graphics.py;${CMAKE_CURRENT_LIST_DIR}/DataSource"
