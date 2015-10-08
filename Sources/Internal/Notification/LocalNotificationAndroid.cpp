@@ -79,10 +79,10 @@ void LocalNotificationAndroid::ShowText(const WideString &title, const WideStrin
 
     jstring jstrNotificationUid = env->NewStringUTF(notificationId.c_str());
 
-	jstring jStrTitle = JNI::CreateJString(title);
-	jstring jStrText = JNI::CreateJString(text);
+    jstring jStrTitle = JNI::ToJNIString(title);
+    jstring jStrText = JNI::ToJNIString(text);
 
-	setText(jstrNotificationUid, jStrTitle, jStrText, useSound);
+    setText(jstrNotificationUid, jStrTitle, jStrText, useSound);
 
     env->DeleteLocalRef(jstrNotificationUid);
 	env->DeleteLocalRef(jStrTitle);
@@ -97,10 +97,10 @@ void LocalNotificationAndroid::ShowProgress(const WideString &title, const WideS
 
     jstring jstrNotificationUid = env->NewStringUTF(notificationId.c_str());
 
-	jstring jStrTitle = JNI::CreateJString(env, title);
-	jstring jStrText = JNI::CreateJString(env, text);
+    jstring jStrTitle = JNI::ToJNIString(title);
+    jstring jStrText = JNI::ToJNIString(text);
 
-	setProgress(jstrNotificationUid, jStrTitle, jStrText, total, progress, useSound);
+    setProgress(jstrNotificationUid, jStrTitle, jStrText, total, progress, useSound);
 
     env->DeleteLocalRef(jstrNotificationUid);
 	env->DeleteLocalRef(jStrTitle);
@@ -113,10 +113,10 @@ void LocalNotificationAndroid::PostDelayedNotification(const WideString &title, 
 	JNIEnv *env = JNI::GetEnv();
 
     jstring jstrNotificationUid = env->NewStringUTF(notificationId.c_str());
-	jstring jStrTitle = JNI::CreateJString(env, title);
-	jstring jStrText = JNI::CreateJString(env, text);
+    jstring jStrTitle = JNI::ToJNIString(title);
+    jstring jStrText = JNI::ToJNIString(text);
 
-	notifyDelayed(jstrNotificationUid, jStrTitle, jStrText, delaySeconds, useSound);
+    notifyDelayed(jstrNotificationUid, jStrTitle, jStrText, delaySeconds, useSound);
 
 	env->DeleteLocalRef(jstrNotificationUid);
 	env->DeleteLocalRef(jStrTitle);
@@ -125,7 +125,6 @@ void LocalNotificationAndroid::PostDelayedNotification(const WideString &title, 
 
 void LocalNotificationAndroid::RemoveAllDelayedNotifications()
 {
-	JNIEnv *env = JNI::GetEnv();
 	removeAllDelayedNotifications();
 }
 
