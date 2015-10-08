@@ -61,17 +61,6 @@ DeviceInfoPrivate::DeviceInfoPrivate() : jniDeviceInfo("com/dava/framework/JNIDe
 
 }
 
-namespace
-{
-    String jstringToString(jstring s)
-    {
-        DVASSERT(0 != s);
-        String result;
-        JNI::CreateStringFromJni(s, result);
-        return result;
-    }
-}
-
 DeviceInfo::ePlatform DeviceInfoPrivate::GetPlatform()
 {
     return 	DeviceInfo::PLATFORM_ANDROID;
@@ -84,42 +73,42 @@ String DeviceInfoPrivate::GetPlatformString()
 
 String DeviceInfoPrivate::GetVersion()
 {
-	return jstringToString(getVersion());
+    return JNI::ToString(getVersion());
 }
 
 String DeviceInfoPrivate::GetManufacturer()
 {
-	return jstringToString(getManufacturer());
+    return JNI::ToString(getManufacturer());
 }
 
 String DeviceInfoPrivate::GetModel()
 {
-	return jstringToString(getModel());
+    return JNI::ToString(getModel());
 }
 
 String DeviceInfoPrivate::GetLocale()
 {
-	return jstringToString(getLocale());
+    return JNI::ToString(getLocale());
 }
 
 String DeviceInfoPrivate::GetRegion()
 {
-	return jstringToString(getRegion());
+    return JNI::ToString(getRegion());
 }
 
 String DeviceInfoPrivate::GetTimeZone()
 {
-	return jstringToString(getTimeZone());
+    return JNI::ToString(getTimeZone());
 }
 
 String DeviceInfoPrivate::GetUDID()
 {
-	return jstringToString(getUDID());
+    return JNI::ToString(getUDID());
 }
 
 WideString DeviceInfoPrivate::GetName()
 {
-    return StringToWString(jstringToString(getName()));
+    return StringToWString(JNI::ToString(getName()));
 }
 
 int32 DeviceInfoPrivate::GetZBufferSize()
@@ -129,12 +118,12 @@ int32 DeviceInfoPrivate::GetZBufferSize()
 
 String DeviceInfoPrivate::GetHTTPProxyHost()
 {
-	return jstringToString(getHTTPProxyHost());
+    return JNI::ToString(getHTTPProxyHost());
 }
 
 String DeviceInfoPrivate::GetHTTPNonProxyHosts()
 {
-	return jstringToString(getHTTPNonProxyHosts());
+    return JNI::ToString(getHTTPNonProxyHosts());
 }
 
 int32 DeviceInfoPrivate::GetHTTPProxyPort()
@@ -234,10 +223,9 @@ DeviceInfo::StorageInfo DeviceInfoPrivate::StorageInfoFromJava(jobject object)
 
 		fieldID = env->GetFieldID(classInfo, "path", "Ljava/lang/String;");
 		jstring jStr = (jstring)env->GetObjectField(object, fieldID);
-		char str[512] = {0};
-		JNI::CreateStringFromJni(env, jStr, str);
-		info.path = String(str);
-	}
+
+        info.path = JNI::ToString(jStr);
+    }
 
 	return info;
 }
