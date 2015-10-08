@@ -88,7 +88,7 @@ void DocumentGroup::SetActiveDocument(Document* document)
     }
     
     active = document;
-    
+
     if (nullptr == active)
     {
         undoGroup->setActiveStack(nullptr);
@@ -107,9 +107,9 @@ void DocumentGroup::SetActiveDocument(Document* document)
     }
 }
 
-void DocumentGroup::SetSelectedNodes(const SelectedNodes &selected, const SelectedNodes &deselected)
+void DocumentGroup::SetSelectedNodes(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
-    if(nullptr != active)
+    if (nullptr != active)
     {
         active->OnSelectionChanged(selected, deselected);
     }
@@ -117,7 +117,7 @@ void DocumentGroup::SetSelectedNodes(const SelectedNodes &selected, const Select
 
 void DocumentGroup::SetEmulationMode(bool emulationMode)
 {
-    if(nullptr != active)
+    if (nullptr != active)
     {
         active->SetEmulationMode(emulationMode);
     }
@@ -125,7 +125,7 @@ void DocumentGroup::SetEmulationMode(bool emulationMode)
 
 void DocumentGroup::SetScale(float scale)
 {
-    if(nullptr != active)
+    if (nullptr != active)
     {
         active->SetScale(scale);
     }

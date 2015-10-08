@@ -29,7 +29,7 @@
 
 #include "CommandLine/Dump/DumpTool.h"
 #include "CommandLine/Dump/SceneDumper.h"
-#include "TexturePacker/CommandLineParser.h"
+#include "CommandLine/CommandLineParser.h"
 #include "FileSystem/FilePath.h"
 #include "FileSystem/FileSystem.h"
 
