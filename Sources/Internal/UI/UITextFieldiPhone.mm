@@ -731,7 +731,21 @@ TextFieldPlatformImpl::TextFieldPlatformImpl(DAVA::UITextField* tf)
 
     void TextFieldPlatformImpl::SetRenderToTexture(bool value)
     {
+        if(renderToTexture == value)
+            return;
+        
         renderToTexture = value;
+        
+        if(renderToTexture)
+        {
+            deltaMoveControl = MOVE_TO_OFFSCREEN_STEP;
+        }
+        else
+        {
+            deltaMoveControl = 0;
+        }
+        
+        isNeedToUpdateTexture = true;
     }
 
     bool TextFieldPlatformImpl::IsRenderToTexture() const
