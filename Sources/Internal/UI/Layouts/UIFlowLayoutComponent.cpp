@@ -89,6 +89,17 @@ void UIFlowLayoutComponent::SetDynamicHorizontalPadding(bool dynamic)
     SetLayoutDirty();
 }
 
+bool UIFlowLayoutComponent::IsDynamicHorizontalInLinePadding() const
+{
+    return flags.test(FLAG_DYNAMIC_HORIZONTAL_IN_LINE_PADDING);
+}
+    
+void UIFlowLayoutComponent::SetDynamicHorizontalInLinePadding(bool dynamic)
+{
+    flags.set(FLAG_DYNAMIC_HORIZONTAL_IN_LINE_PADDING, dynamic);
+    SetLayoutDirty();
+}
+
 bool UIFlowLayoutComponent::IsDynamicHorizontalSpacing() const
 {
     return flags.test(FLAG_DYNAMIC_HORIZONTAL_SPACING);

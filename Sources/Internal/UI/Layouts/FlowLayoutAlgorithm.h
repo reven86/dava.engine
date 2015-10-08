@@ -50,21 +50,16 @@ public:
     void Apply(ControlLayoutData &data, Vector2::eAxis axis);
     
 private:
-    
-    struct LineInfo
-    {
-        int32 firstIndex;
-        int32 lastIndex;
-        
-        float32 freeSpace;
-    };
+    struct LineInfo;
     
     void ProcessXAxis(ControlLayoutData &data, UIFlowLayoutComponent *component);
+    void CollectLinesInformation(ControlLayoutData &data, Vector<LineInfo> &lines);
+    void FixHorizontalPadding(ControlLayoutData &data, Vector<LineInfo> &lines);
     void LayoutLine(ControlLayoutData &data, int32 firstIndex, int32 lastIndex, int32 childrenCount, float32 childrenSize);
     void CalculateHorizontalDynamicPaddingAndSpaces(ControlLayoutData &data, int32 firstIndex, int32 lastIndex);
     
     void ProcessYAxis(ControlLayoutData &data, UIFlowLayoutComponent *component);
-    void CalculateDynamicPaddingAndSpaces(ControlLayoutData &data);
+    void CalculateVerticalDynamicPaddingAndSpaces(ControlLayoutData &data);
     void LayoutLineVertically(ControlLayoutData &data, int32 firstIndex, int32 lastIndex, float32 top, float32 bottom);
 
     void CorrectPaddingAndSpacing(float32 &padding, float32 &spacing, bool dynamicPadding, bool dynamicSpacing, float32 restSize, int32 childrenCount);
@@ -79,6 +74,7 @@ private:
     float32 horizontalPadding = 0.0f;
     float32 horizontalSpacing = 0.0f;
     bool dynamicHorizontalPadding = false;
+    bool dynamicHorizontalInLinePadding = false;
     bool dynamicHorizontalSpacing = false;
     
     float32 verticalPadding = 0.0f;

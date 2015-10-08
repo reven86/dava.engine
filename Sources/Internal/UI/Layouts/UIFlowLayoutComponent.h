@@ -41,6 +41,7 @@ public:
         ORIENTATION_LEFT_TO_RIGHT,
         ORIENTATION_RIGHT_TO_LEFT
     };
+    
 public:
     IMPLEMENT_UI_COMPONENT_TYPE(FLOW_LAYOUT_COMPONENT);
     
@@ -70,6 +71,9 @@ public:
     
     bool IsDynamicHorizontalPadding() const;
     void SetDynamicHorizontalPadding(bool dynamic);
+    
+    bool IsDynamicHorizontalInLinePadding() const;
+    void SetDynamicHorizontalInLinePadding(bool dynamic);
     
     bool IsDynamicHorizontalSpacing() const;
     void SetDynamicHorizontalSpacing(bool dynamic);
@@ -106,6 +110,7 @@ private:
     {
         FLAG_ENABLED,
         FLAG_DYNAMIC_HORIZONTAL_PADDING,
+        FLAG_DYNAMIC_HORIZONTAL_IN_LINE_PADDING,
         FLAG_DYNAMIC_HORIZONTAL_SPACING,
         FLAG_DYNAMIC_VERTICAL_PADDING,
         FLAG_DYNAMIC_VERTICAL_SPACING,
@@ -128,6 +133,7 @@ public:
                          
                          PROPERTY("hPadding", "Horizontal Padding", GetHorizontalPadding, SetHorizontalPadding, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("hDynamicPadding", "Dynamic Horizontal Padding", IsDynamicHorizontalPadding, SetDynamicHorizontalPadding, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("hDynamicInLinePadding", "Dynamic In Line Padding", IsDynamicHorizontalInLinePadding, SetDynamicHorizontalInLinePadding, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("hSpacing", "Horizontal Spacing", GetHorizontalSpacing, SetHorizontalSpacing, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("hDynamicSpacing", "Dynamic Horizontal Spacing", IsDynamicHorizontalSpacing, SetDynamicHorizontalSpacing, I_SAVE | I_VIEW | I_EDIT)
                          

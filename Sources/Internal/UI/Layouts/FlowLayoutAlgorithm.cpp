@@ -39,6 +39,16 @@
 
 namespace DAVA
 {
+    
+struct FlowLayoutAlgorithm::LineInfo
+{
+    int32 firstIndex;
+    int32 lastIndex;
+    int32 childrenCount;
+    float32 usedSize;
+};
+    
+
 FlowLayoutAlgorithm::FlowLayoutAlgorithm(Vector<ControlLayoutData> &layoutData_, bool isRtl_)
     : layoutData(layoutData_)
     , isRtl(isRtl_)
@@ -65,6 +75,7 @@ void FlowLayoutAlgorithm::Apply(ControlLayoutData &data, Vector2::eAxis axis)
     horizontalPadding = layout->GetHorizontalPadding();
     horizontalSpacing = layout->GetHorizontalSpacing();
     dynamicHorizontalPadding = layout->IsDynamicHorizontalPadding();
+    dynamicHorizontalInLinePadding = layout->IsDynamicHorizontalInLinePadding();
     dynamicHorizontalSpacing = layout->IsDynamicHorizontalSpacing();
     
     verticalPadding = layout->GetVerticalPadding();
@@ -96,12 +107,28 @@ void FlowLayoutAlgorithm::Apply(ControlLayoutData &data, Vector2::eAxis axis)
     
 void FlowLayoutAlgorithm::ProcessXAxis(ControlLayoutData &data, UIFlowLayoutComponent *component)
 {
-    int32 firstIndex = data.GetFirstChildIndex();
+    Vector<LineInfo> lines;
+    CollectLinesInformation(data, lines);
+    
+    if (component->IsDynamicHorizontalPadding())
+    {
+        FixHorizontalPadding(data, lines);
+    }
+    
+    for (LineInfo &line : lines)
+    {
+        LayoutLine(data, line.firstIndex, line.lastIndex, line.childrenCount, line.usedSize);
+    }
+}
 
+void FlowLayoutAlgorithm::CollectLinesInformation(ControlLayoutData &data, Vector<LineInfo> &lines)
+{
+    int32 firstIndex = data.GetFirstChildIndex();
+    
     bool newLineBeforeNext = false;
     int32 childrenInLine = 0;
     float32 usedSize = 0.0f;
-
+    
     for (int32 index = data.GetFirstChildIndex(); index <= data.GetLastChildIndex(); index++)
     {
         ControlLayoutData &childData = layoutData[index];
@@ -130,7 +157,7 @@ void FlowLayoutAlgorithm::ProcessXAxis(ControlLayoutData &data, UIFlowLayoutComp
         
         if (newLineBeforeThis && index > firstIndex)
         {
-            LayoutLine(data, firstIndex, index - 1, childrenInLine, usedSize);
+            lines.emplace_back(LineInfo{firstIndex, index - 1, childrenInLine, usedSize});
             firstIndex = index;
             childrenInLine = 0;
             usedSize = 0.0f;
@@ -142,14 +169,15 @@ void FlowLayoutAlgorithm::ProcessXAxis(ControlLayoutData &data, UIFlowLayoutComp
         {
             if (index > firstIndex)
             {
-                LayoutLine(data, firstIndex, index - 1, childrenInLine, usedSize);
+                lines.emplace_back(LineInfo{firstIndex, index - 1, childrenInLine, usedSize});
                 firstIndex = index;
                 childrenInLine = 1;
                 usedSize = childSize;
             }
             else
             {
-                LayoutLine(data, firstIndex, index, 1, childSize);
+                
+                lines.emplace_back(LineInfo{firstIndex, index, 1, childSize});
                 firstIndex = index + 1;
                 childrenInLine = 0;
                 usedSize = 0.0f;
@@ -164,7 +192,28 @@ void FlowLayoutAlgorithm::ProcessXAxis(ControlLayoutData &data, UIFlowLayoutComp
     
     if (firstIndex <= data.GetLastChildIndex())
     {
-        LayoutLine(data, firstIndex, data.GetLastChildIndex(), childrenInLine, usedSize);
+        lines.emplace_back(LineInfo{firstIndex, data.GetLastChildIndex(), childrenInLine, usedSize});
+    }
+}
+
+void FlowLayoutAlgorithm::FixHorizontalPadding(ControlLayoutData &data, Vector<LineInfo> &lines)
+{
+    float32 maxUsedSize = 0.0f;
+    for (const LineInfo &line : lines)
+    {
+        float32 usedLineLize = line.usedSize;
+        if (line.childrenCount > 1)
+        {
+            usedLineLize += (line.childrenCount - 1) * horizontalSpacing;
+        }
+        maxUsedSize = Max(usedLineLize, maxUsedSize);
+    }
+    
+    float32 restSize = data.GetWidth() - maxUsedSize;
+    restSize -= horizontalPadding * 2.0f;
+    if (restSize >= LayoutHelpers::EPSILON)
+    {
+        horizontalPadding += restSize / 2.0f;
     }
 }
 
@@ -172,7 +221,7 @@ void FlowLayoutAlgorithm::LayoutLine(ControlLayoutData &data, int32 firstIndex, 
 {
     float32 padding = horizontalPadding;
     float32 spacing = horizontalSpacing;
-    CorrectPaddingAndSpacing(padding, spacing, dynamicHorizontalPadding, dynamicHorizontalSpacing, data.GetWidth() - childrenSize, childrenCount);
+    CorrectPaddingAndSpacing(padding, spacing, dynamicHorizontalInLinePadding, dynamicHorizontalSpacing, data.GetWidth() - childrenSize, childrenCount);
     
     float32 position = padding;
     if (inverse)
@@ -206,7 +255,7 @@ void FlowLayoutAlgorithm::LayoutLine(ControlLayoutData &data, int32 firstIndex, 
 
 void FlowLayoutAlgorithm::ProcessYAxis(ControlLayoutData &data, UIFlowLayoutComponent *component)
 {
-    CalculateDynamicPaddingAndSpaces(data);
+    CalculateVerticalDynamicPaddingAndSpaces(data);
 
     float32 lineHeight = 0;
     float32 y = verticalPadding;
@@ -232,13 +281,14 @@ void FlowLayoutAlgorithm::ProcessYAxis(ControlLayoutData &data, UIFlowLayoutComp
 
 }
  
-void FlowLayoutAlgorithm::CalculateDynamicPaddingAndSpaces(ControlLayoutData &data)
+void FlowLayoutAlgorithm::CalculateVerticalDynamicPaddingAndSpaces(ControlLayoutData &data)
 {
-    int32 linesCount = 0;
-    float32 contentSize = 0.0f;
-    float32 lineHeight = 0.0f;
     if (dynamicVerticalPadding || dynamicVerticalSpacing)
     {
+        int32 linesCount = 0;
+        float32 contentSize = 0.0f;
+        float32 lineHeight = 0.0f;
+
         for (int32 index = data.GetFirstChildIndex(); index <= data.GetLastChildIndex(); index++)
         {
             ControlLayoutData &childData = layoutData[index];
@@ -256,10 +306,10 @@ void FlowLayoutAlgorithm::CalculateDynamicPaddingAndSpaces(ControlLayoutData &da
                 lineHeight = 0.0f;
             }
         }
+
+        float32 restSize = data.GetHeight() - contentSize;
+        CorrectPaddingAndSpacing(verticalPadding, verticalSpacing, dynamicVerticalPadding, dynamicVerticalSpacing, restSize, linesCount);
     }
-    
-    float32 restSize = data.GetHeight() - contentSize;
-    CorrectPaddingAndSpacing(verticalPadding, verticalSpacing, dynamicVerticalPadding, dynamicVerticalSpacing, restSize, linesCount);
 }
 
 void FlowLayoutAlgorithm::LayoutLineVertically(ControlLayoutData &data, int32 firstIndex, int32 lastIndex, float32 top, float32 bottom)
