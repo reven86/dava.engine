@@ -126,7 +126,7 @@ void GameCore::UnpackHelp()
 	FilePath docsPath = FilePath(ResourcesManageHelper::GetDocumentationPath().toStdString());
     if (editorVer != APPLICATION_BUILD_VERSION || !docsPath.Exists())
     {
-		ResourceArchive * helpRA = new ResourceArchive();
+        ResourceArchive * helpRA = new ResourceArchive();
 		if(helpRA->Open("~res:/Help.docs"))
 		{
 			FileSystem::Instance()->DeleteDirectory(docsPath);
@@ -136,6 +136,6 @@ void GameCore::UnpackHelp()
             EditorSettings::Instance()->SetUIEditorVersion(APPLICATION_BUILD_VERSION);
         }
 
-		SafeRelease(helpRA);
+        SafeRelease(helpRA);
 	}
 }

@@ -74,7 +74,7 @@ EditorCore::EditorCore(QObject *parent)
     connect(mainWindow.get(), &MainWindow::RtlChanged, this, &EditorCore::OnRtlChanged);
     connect(mainWindow.get(), &MainWindow::GlobalStyleClassesChanged, this, &EditorCore::OnGlobalStyleClassesChanged);
 
-    QCheckBox *emulationBox = mainWindow->GetCheckboxEmulation();
+    QCheckBox* emulationBox = mainWindow->GetCheckboxEmulation();
     connect(emulationBox, &QCheckBox::clicked, documentGroup, &DocumentGroup::SetEmulationMode);
 
     connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow.get(), &MainWindow::OnDocumentChanged);
@@ -177,7 +177,7 @@ bool EditorCore::CloseOneDocument(int index)
 {
     DVASSERT(index >= 0);
     DVASSERT(index < documents.size());
-    Document *document = documents.at(index);
+    Document* document = documents.at(index);
     QUndoStack *undoStack = document->GetUndoStack();
     if (!undoStack->isClean())
     {
@@ -398,7 +398,7 @@ bool EditorCore::eventFilter( QObject *obj, QEvent *event )
             {
             case Qt::ApplicationInactive:
             {
-                if ( QtLayer::Instance() )
+                if (QtLayer::Instance())
                 {
                     QtLayer::Instance()->OnSuspend();
                 }
@@ -406,7 +406,7 @@ bool EditorCore::eventFilter( QObject *obj, QEvent *event )
             }
             case Qt::ApplicationActive:
             {
-                if ( QtLayer::Instance() )
+                if (QtLayer::Instance())
                 {
                     QtLayer::Instance()->OnResume();
                 }

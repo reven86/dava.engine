@@ -32,7 +32,7 @@
 
 #include "Base/BaseTypes.h"
 #include "Render/Image/Image.h"
-#include "TexturePacker/ImagePacker.h"
+#include "TexturePacker/TextureAtlas.h"
 
 namespace DAVA
 {
