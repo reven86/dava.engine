@@ -357,6 +357,17 @@ ControlContainer* CreateControlContainer(HUDAreaInfo::eArea area)
     }
 }
 
+struct HUDSystem::HUD
+{
+    HUD(ControlNode* node, DAVA::UIControl* hudControl);
+    ~HUD() = default;
+    void UpdateHUDVisibility();
+    ControlNode* node = nullptr;
+    UIControl* control = nullptr;
+    ControlPtr<DAVA::UIControl> container;
+    Map<HUDAreaInfo::eArea, ControlPtr<DAVA::UIControl>> hudControls;
+};
+
 HUDSystem::HUD::HUD(ControlNode* node_, UIControl* hudControl)
     : node(node_)
     , control(node_->GetControl())
@@ -452,7 +463,7 @@ void HUDSystem::OnSelectionChanged(const SelectedNodes& selected, const Selected
             {
                 hudMap.emplace(std::piecewise_construct,
                                std::forward_as_tuple(controlNode),
-                               std::forward_as_tuple(controlNode, hudControl.get()));
+                               std::forward_as_tuple(new HUD(controlNode, hudControl.get())));
                 sortedControlList.insert(controlNode);
             }
         }
@@ -528,7 +539,7 @@ void HUDSystem::ControlPropertyWasChanged(ControlNode* node, AbstractProperty* p
     {
         for (auto& pair : hudMap)
         {
-            pair.second.UpdateHUDVisibility();
+            pair.second->UpdateHUDVisibility();
         }
     }
 }
@@ -562,7 +573,7 @@ void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLineInfo>& magnetLines)
         control->SetAbsoluteRect(line.absoluteRect);
         Vector2 extraSize(line.axis == Vector2::AXIS_X ? axtraSizeValue : 0.0f, line.axis == Vector2::AXIS_Y ? axtraSizeValue : 0.0f);
         control->SetSize(control->GetSize() + extraSize);
-        control->SetAngle(line.gd.angle);
+        control->SetAngle(line.gd->angle);
         control->SetPivotPoint(extraSize / 2.0f);
         hudControl->AddControl(control);
         magnetControls.emplace_back(control, DestroyControl);
@@ -596,13 +607,13 @@ HUDAreaInfo HUDSystem::GetControlArea(const Vector2& pos, eSearchOrder searchOrd
             DVASSERT_MSG(findIter != hudMap.end(), "hud map corrupted");
             const auto& hud = findIter->second;
             HUDAreaInfo::eArea area = static_cast<HUDAreaInfo::eArea>(end + sign * i);
-            auto hudControlsIter = hud.hudControls.find(area);
-            if (hudControlsIter != hud.hudControls.end())
+            auto hudControlsIter = hud->hudControls.find(area);
+            if (hudControlsIter != hud->hudControls.end())
             {
                 const auto& controlContainer = hudControlsIter->second;
                 if (controlContainer->GetVisible() && controlContainer->IsPointInside(pos))
                 {
-                    return HUDAreaInfo(hud.node, area);
+                    return HUDAreaInfo(hud->node, area);
                 }
             }
         }
@@ -661,8 +672,8 @@ void HUDSystem::UpdateAreasVisibility()
         const auto& hud = findIter->second;
         for (HUDAreaInfo::eArea area : AreasToHide)
         {
-            auto hudControlsIter = hud.hudControls.find(area);
-            if (hudControlsIter != hud.hudControls.end())
+            auto hudControlsIter = hud->hudControls.find(area);
+            if (hudControlsIter != hud->hudControls.end())
             {
                 const auto& controlContainer = hudControlsIter->second;
                 controlContainer->SetVisible(showAreas);

@@ -77,14 +77,14 @@ struct HUDAreaInfo
 
 struct MagnetLineInfo
 {
-    MagnetLineInfo(const DAVA::Rect& rect_, const DAVA::UIGeometricData& gd_, DAVA::Vector2::eAxis axis_)
+    MagnetLineInfo(const DAVA::Rect& rect_, const DAVA::UIGeometricData* gd_, DAVA::Vector2::eAxis axis_)
         : absoluteRect(rect_)
         , gd(gd_)
         , axis(axis_)
     {
     }
     DAVA::Rect absoluteRect;
-    const DAVA::UIGeometricData& gd;
+    const DAVA::UIGeometricData* gd;
     const DAVA::Vector2::eAxis axis;
 };
 

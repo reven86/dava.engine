@@ -52,6 +52,7 @@ private:
         SEARCH_FORWARD,
         SEARCH_BACKWARD
     };
+    struct HUD;
 
     void ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property) override;
 
@@ -74,17 +75,8 @@ private:
 
     DAVA::Vector2 pressedPoint; //corner of selection rect
     bool canDrawRect = false; //selection rect state
-    struct HUD
-    {
-        HUD(ControlNode* node, DAVA::UIControl* hudControl);
-        ~HUD() = default;
-        void UpdateHUDVisibility();
-        ControlNode* node = nullptr;
-        DAVA::UIControl* control = nullptr;
-        ControlPtr<DAVA::UIControl> container;
-        DAVA::Map<HUDAreaInfo::eArea, ControlPtr<DAVA::UIControl>> hudControls;
-    };
-    DAVA::Map<ControlNode*, HUD> hudMap;
+
+    DAVA::Map<ControlNode*, std::unique_ptr<HUD>> hudMap;
     ControlPtr<DAVA::UIControl> selectionRectControl;
     DAVA::Vector<ControlPtr<DAVA::UIControl>> magnetControls;
     EditorSystemsManager::SortedPackageBaseNodeSet sortedControlList;
