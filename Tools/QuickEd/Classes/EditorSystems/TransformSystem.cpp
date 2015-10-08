@@ -305,9 +305,10 @@ List<MagnetLine> CreateMagnetPairsForMove(const UIControl* control, const UIGeom
     List<MagnetLine> magnets;
 
     UIGeometricData controlGD = control->GetLocalGeometricData();
-    Rect parentBox = parentGD->GetUnrotatedRect();
+    Rect parentBox(Vector2(), parentGD->size);
     parentBox.SetPosition(Vector2(0.0f, 0.0f));
     Rect box = controlGD.GetAABBox();
+
     DVASSERT(box.dx > 0.0f && box.dy > 0.0f);
 
     magnets.emplace_back(0.0f, box, 0.0f, parentBox, axis);
@@ -379,7 +380,10 @@ void ExtractMatchedLines(Vector<MagnetLineInfo>& magnets, const List<MagnetLine>
             Vector2 lineSize;
             lineSize[axis] = 0.0f;
             lineSize[axis2] = Max(controlBottom, targetBottom) - linePos[axis2];
+
             linePos = RotateVectorInv(linePos, *parentGD);
+            linePos *= parentGD->scale;
+            lineSize *= parentGD->scale;
             Rect lineRect(linePos + position, lineSize);
             magnets.emplace_back(lineRect, parentGD, axis2);
         }
