@@ -69,14 +69,17 @@ void FrameworkDidLaunched()
 
     DAVA::VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(DeviceInfo::GetScreenInfo().width, DeviceInfo::GetScreenInfo().height);
     DAVA::VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(DeviceInfo::GetScreenInfo().width, DeviceInfo::GetScreenInfo().height, "Gfx");
+    ;
+    appOptions->SetInt32("renderer", rhi::RHI_DX11);
+    appOptions->SetInt32( "rhi_threaded_frame_count", 2 );
 
 #else
 	KeyedArchive * appOptions = new KeyedArchive();
 #if defined(__DAVAENGINE_WIN32__)
-//    appOptions->SetInt32("renderer", rhi::RHI_DX11);
+    appOptions->SetInt32("renderer", rhi::RHI_DX11);
 //    appOptions->SetInt32("renderer", rhi::RHI_DX9);
-    appOptions->SetInt32("renderer", rhi::RHI_GLES2);
-//appOptions->SetInt32( "rhi_threaded_frame_count", 2 );
+//    appOptions->SetInt32("renderer", rhi::RHI_GLES2);
+appOptions->SetInt32( "rhi_threaded_frame_count", 2 );
 #elif defined(__DAVAENGINE_MACOS__)
     appOptions->SetInt32("renderer", rhi::RHI_GLES2);
 #endif

@@ -60,18 +60,28 @@ void NMaterialStateDynamicTexturesInsp::FindMaterialTexturesRecursive(NMaterial 
             if (!descriptor.shader->IsValid())
                 continue;
 
-            const rhi::ShaderSamplerList& samplers = descriptor.shader->GetFragmentSamplerList();
-            for (const auto& samp : samplers)
+            const rhi::ShaderSamplerList& fragmentSamplers = descriptor.shader->GetFragmentSamplerList();
+            for (const auto& samp : fragmentSamplers)
+            {
+                ret.insert(samp.uid);
+            }
+
+            const rhi::ShaderSamplerList& vertexSamplers = descriptor.shader->GetVertexSamplerList();
+            for (const auto& samp : vertexSamplers)
             {
                 ret.insert(samp.uid);
             }
         }
-
-		for (const auto& t : material->localTextures)
-			ret.insert(t.first);
+    }
+    else
+    {
+        // if fxName is not valid (e.g global material)
+        // we just add all local textures
+        for (const auto& t : material->localTextures)
+            ret.insert(t.first);
     }
 
-	if (nullptr != material->GetParent())
+    if (nullptr != material->GetParent())
 		FindMaterialTexturesRecursive(material->GetParent(), ret);
 }
 

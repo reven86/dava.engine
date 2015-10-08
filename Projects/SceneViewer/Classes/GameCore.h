@@ -51,6 +51,9 @@ public:
 	
 	virtual void OnAppStarted();
 	virtual void OnAppFinished();
+
+	virtual void OnBackground()     {}
+	virtual void OnDeviceLocked()   {}
 	
 	virtual void OnSuspend();
 	virtual void OnResume();
