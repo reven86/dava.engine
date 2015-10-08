@@ -1099,11 +1099,11 @@ void RenderSystem2D::DrawStretched(Sprite* sprite, Sprite::DrawState* state, Vec
     }
     else if (state->flags & ESM_HFLIP)
     {
-        flipMatrix = Matrix3(1.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, sd.size.y, 1.0f);
+        flipMatrix = Matrix3(-1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, sd.size.x, 0.0f, 1.0f);
     }
     else if (state->flags & ESM_VFLIP)
     {
-        flipMatrix = Matrix3(-1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, sd.size.x, 0.0f, 1.0f);
+        flipMatrix = Matrix3(1.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, sd.size.y, 1.0f);
     }
 
     transformMatr = flipMatrix * transformMatr;
