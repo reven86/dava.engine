@@ -397,7 +397,6 @@ void UIScrollView::OnScrollViewContainerSizeChanged()
     {
         scrollHorizontal->SetElementSize(scrollContainer->GetSize().dx);
         scrollVertical->SetElementSize(scrollContainer->GetSize().dy);
-        SetScrollPosition(Vector2(0.0f, 0.0f));
     }
 }
 
