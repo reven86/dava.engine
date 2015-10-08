@@ -49,6 +49,13 @@ public:
     bool OnInput(DAVA::UIEvent* currentInput) override;
 
 private:
+    using MoveInfo = std::tuple < ControlNode* /*node*/, AbstractProperty* /*positionProperty*/, const DAVA::UIGeometricData* /*parent gd*/ > ;
+    enum
+    {
+        NODE_POS,
+        PROPERTY_POS,
+        GD_POS
+    };
     using PropertyDelta = std::pair<AbstractProperty* /*property*/, DAVA::VariantType /*delta*/>;
 
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
@@ -63,10 +70,10 @@ private:
     void EmitMagnetLinesForPivot(DAVA::Vector2& target);
     DAVA::Vector2 AdjustPivot(DAVA::Vector2& delta);
     void Rotate(DAVA::Vector2 pos);
+    bool AdjustRotate(DAVA::float32 deltaAngle, DAVA::float32 originalAngle, DAVA::float32& finalAngle);
     void MoveAllSelectedControls(DAVA::Vector2 delta);
     void MoveControls(DAVA::Vector2 delta);
     DAVA::Vector2 AdjustMove(DAVA::Vector2 delta, const DAVA::UIGeometricData* gd, const DAVA::UIControl* control);
-    void AdjustProperty(ControlNode* node, const DAVA::Vector<PropertyDelta>& propertiesDelta);
 
     void CorrectNodesToMove();
 
@@ -75,7 +82,7 @@ private:
     DAVA::Vector2 prevPos;
     DAVA::Vector2 extraDelta;
     SelectedControls selectedControlNodes;
-    DAVA::List<std::tuple<ControlNode* /*node*/, AbstractProperty* /*positionProperty*/, const DAVA::UIGeometricData* /*parent gd*/>> nodesToMove;
+    DAVA::List<MoveInfo> nodesToMove;
     const DAVA::Vector2 minimumSize = DAVA::Vector2(16.0f, 16.0f);
     size_t currentHash = 0;
 

@@ -320,7 +320,8 @@ void PropertiesModel::PropertyChanged(AbstractProperty *property)
     QModelIndex nameIndex = indexByProperty(property, 0);
     QModelIndex valueIndex = nameIndex.sibling(nameIndex.row(), 1);
     changedIndexes.insert(qMakePair(nameIndex, valueIndex));
-    updatePropertyTimer->start();
+    UpdateAllChangedProperties(); 
+    //updatePropertyTimer->start();
 }
 
 void PropertiesModel::ComponentPropertiesWillBeAdded(RootProperty *root, ComponentPropertiesSection *section, int index)

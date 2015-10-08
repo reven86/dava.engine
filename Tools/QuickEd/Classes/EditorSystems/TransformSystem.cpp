@@ -73,14 +73,28 @@ Vector2 RotateVectorInv(Vector2 in, const float32& angle)
     return Vector2(in.x * cosf(angle) + in.y * -sinf(angle),
                    in.x * sinf(angle) + in.y * cosf(angle));
 }
-}
 
-static UIGeometricData dummy;
+struct MagnetLine
+{
+    MagnetLine(float32 linePos_, float32 controlPos_, const Rect& targetBox_, float32 multiplyer_ = 1.0f)
+        : linePos(linePos_)
+        , controlPos(controlPos_)
+        , multiplyer(multiplyer_)
+        , difference(multiplyer == 0.0f ? std::numeric_limits<float32>::max() : fabs(controlPos - linePos) / multiplyer)
+        , targetBox(targetBox_)
+    {
+    }
+    float32 linePos = 0.0f;
+    float32 controlPos = 0.0f;
+    float32 multiplyer = 1.0f;
+    float32 difference = 0.0f;
+    Rect targetBox;
+};
+
+}
 
 TransformSystem::TransformSystem(EditorSystemsManager* parent)
     : BaseEditorSystem(parent)
-    , parentGeometricData(dummy)
-    , controlGeometricData(dummy)
 {
     systemManager->ActiveAreaChanged.Connect(this, &TransformSystem::OnActiveAreaChanged);
     systemManager->SelectionChanged.Connect(this, &TransformSystem::OnSelectionChanged);
@@ -159,7 +173,7 @@ bool TransformSystem::ProcessKey(const int32 key)
     if (!selectedControlNodes.empty())
     {
         float step = 1.0f;
-        if (QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier))
+        if (!QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier))
         {
             step = 10.0f;
         }
@@ -237,11 +251,11 @@ void TransformSystem::MoveAllSelectedControls(Vector2 delta)
 
     for (auto& tuple : nodesToMove)
     {
-        ControlNode* node = std::get<0>(tuple);
-        const UIGeometricData* gd = std::get<2>(tuple);
+        ControlNode* node = std::get<NODE_POS>(tuple);
+        const UIGeometricData* gd = std::get<GD_POS>(tuple);
         Vector2 scaledDelta = delta / gd->scale;
         Vector2 deltaPosition(RotateVector(scaledDelta, *gd));
-        AbstractProperty* property = std::get<1>(tuple);
+        AbstractProperty* property = std::get<PROPERTY_POS>(tuple);
         Vector2 originalPosition = property->GetValue().AsVector2();
         Vector2 finalPosition(originalPosition + deltaPosition);
         propertiesToChange.emplace_back(node, property, VariantType(finalPosition));
@@ -254,43 +268,23 @@ void TransformSystem::MoveAllSelectedControls(Vector2 delta)
 
 void TransformSystem::MoveControls(Vector2 delta)
 {
-    for (auto& tuple : nodesToMove)
+    auto iter = std::find_if(nodesToMove.begin(), nodesToMove.end(), [this](const MoveInfo &tuple)
     {
-        if (std::get<0>(tuple) == activeControlNode)
-        {
-            const UIGeometricData* gd = std::get<2>(tuple);
-            const UIControl* control = std::get<0>(tuple)->GetControl();
+        return std::get<NODE_POS>(tuple) == activeControlNode;
+    });
+    DVASSERT(iter != nodesToMove.end());
+    const MoveInfo &tuple = *iter;
+    const UIGeometricData* gd = std::get<GD_POS>(tuple);
+    const UIControl* control = std::get<NODE_POS>(tuple)->GetControl();
 
-            Vector2 scaledDelta = delta / gd->scale;
-            Vector2 deltaPosition(RotateVector(scaledDelta, *gd));
+    Vector2 scaledDelta = delta / gd->scale;
+    Vector2 deltaPosition(RotateVector(scaledDelta, *gd)); //transform delta to control coordinates
 
-            deltaPosition = AdjustMove(deltaPosition, gd, control);
+    deltaPosition = AdjustMove(deltaPosition, gd, control);
 
-            delta = RotateVectorInv(deltaPosition, *gd);
-            delta *= gd->scale;
-            break;
-        }
-    }
+    delta = RotateVectorInv(deltaPosition, *gd); //transform adjusted delta back to screen coordinates
+    delta *= gd->scale;
     MoveAllSelectedControls(delta);
-}
-namespace
-{
-struct MagnetLine
-{
-    MagnetLine(float32 linePos_, float32 controlPos_, const Rect& targetBox_, float32 multiplyer_ = 1.0f)
-        : linePos(linePos_)
-        , controlPos(controlPos_)
-        , multiplyer(multiplyer_)
-        , difference(multiplyer == 0.0f ? std::numeric_limits<float32>::max() : fabs(controlPos - linePos) / multiplyer)
-        , targetBox(targetBox_)
-    {
-    }
-    float32 linePos = 0.0f;
-    float32 controlPos = 0.0f;
-    float32 multiplyer = 1.0f;
-    float32 difference = 0.0f;
-    Rect targetBox;
-};
 }
 
 Vector2 TransformSystem::AdjustMove(Vector2 delta, const UIGeometricData* parentGD, const UIControl* control)
@@ -469,13 +463,17 @@ void TransformSystem::ResizeControl(Vector2 delta, bool withPivot, bool rateably
     deltaPosition *= control->GetScale();
     deltaPosition = RotateVectorInv(deltaPosition, control->GetAngle());
 
-    Vector<PropertyDelta> propertiesDelta;
+    Vector<std::tuple<ControlNode*, AbstractProperty*, VariantType>> propertiesToChange;
+
     if (activeControlNode->GetParent() != nullptr && activeControlNode->GetParent()->GetControl() != nullptr)
     {
-        propertiesDelta.emplace_back(positionProperty, VariantType(deltaPosition));
+        Vector2 originalPosition = positionProperty->GetValue().AsVector2();
+        propertiesToChange.emplace_back(activeControlNode, positionProperty, VariantType(originalPosition + deltaPosition));
     }
-    propertiesDelta.emplace_back(sizeProperty, VariantType(deltaSize));
-    AdjustProperty(activeControlNode, propertiesDelta);
+    Vector2 originalSize = sizeProperty->GetValue().AsVector2();
+    propertiesToChange.emplace_back(activeControlNode, sizeProperty, VariantType(originalSize + deltaSize));
+
+    systemManager->PropertiesChanged.Emit(std::move(propertiesToChange), std::move(currentHash));
 }
 
 Vector2 TransformSystem::AdjustResize(Array<int, Vector2::AXIS_COUNT> directions, Vector2 delta)
@@ -548,9 +546,9 @@ Vector2 TransformSystem::AdjustResize(Array<int, Vector2::AXIS_COUNT> directions
                         float32 neighbourRight = neighbourLeft + neighbourBox.GetSize()[axis];
                         DVASSERT(neighbourLeft < neighbourRight);
 
-                        magnetPairs.emplace_back(neighbourLeft, controlLeft, neighbourBox);
-                        magnetPairs.emplace_back(neighbourLeft + (neighbourRight - neighbourLeft) / 2.0f, controlLeft + (controlRight - controlLeft) / 2.0f, neighbourBox);
-                        magnetPairs.emplace_back(neighbourRight, controlRight, neighbourBox);
+                        magnetPairs.emplace_back(neighbourLeft, controlLeft, neighbourBox, directions[axis] != 1);
+                        magnetPairs.emplace_back(neighbourLeft + (neighbourRight - neighbourLeft) / 2.0f, controlLeft + (controlRight - controlLeft) / 2.0f, neighbourBox, 0.5f);
+                        magnetPairs.emplace_back(neighbourRight, controlRight, neighbourBox, directions[axis] != -1);
                     }
                 }
                 DVASSERT(!magnetPairs.empty());
@@ -558,13 +556,13 @@ Vector2 TransformSystem::AdjustResize(Array<int, Vector2::AXIS_COUNT> directions
                                  {return left.difference < right.difference;
                                  });
                 MagnetLine nearestLine = magnetPairs.front();
-                float32 areaNearLineLeft = nearestLine.linePos - range[axis];
-                float32 areaNearLineRight = nearestLine.linePos + range[axis];
+                float32 areaNearLineLeft = nearestLine.linePos - range[axis] * nearestLine.multiplyer;
+                float32 areaNearLineRight = nearestLine.linePos + range[axis] * nearestLine.multiplyer;
                 float32 cursorPos = nearestLine.controlPos + delta[axis] * nearestLine.multiplyer;
                 if (cursorPos >= areaNearLineLeft && cursorPos <= areaNearLineRight)
                 {
-                    extraDelta[axis] = cursorPos - nearestLine.linePos;
-                    delta[axis] = nearestLine.linePos - nearestLine.controlPos;
+                    extraDelta[axis] = (cursorPos - nearestLine.linePos) / nearestLine.multiplyer;
+                    delta[axis] = (nearestLine.linePos - nearestLine.controlPos) / nearestLine.multiplyer;
                 }
                 for (const MagnetLine& line : magnetPairs)
                 {
@@ -709,67 +707,40 @@ void TransformSystem::Rotate(Vector2 pos)
     Vector2 l2(pos - rotatePoint);
     float32 angleRad = atan2(l2.y, l2.x) - atan2(l1.y, l1.x);
     float32 deltaAngle = RadToDeg(angleRad);
-
+    deltaAngle += extraDelta.dx;
+    extraDelta.SetZero();    
     float32 originalAngle = angleProperty->GetValue().AsFloat();
-
-    if (QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier))
-    {
-        static const int step = 15; //fixed angle step
-        float32 finalAngle = originalAngle + deltaAngle + extraDelta.dx;
-        int32 nearestTargetAngle = static_cast<int32>(finalAngle - static_cast<int32>(finalAngle) % step);
-        if (finalAngle >= 0.0f && deltaAngle < 0.0f)
-        {
-            nearestTargetAngle += step;
-        }
-        else if (finalAngle < 0.0f && deltaAngle >= 0.0f)
-        {
-            nearestTargetAngle -= step;
-        }
-        if ((deltaAngle >= 0.0f && nearestTargetAngle <= originalAngle + 0.005f) || (deltaAngle < 0.0f && nearestTargetAngle >= originalAngle - 0.005))
-        {
-            extraDelta.dx += deltaAngle;
-            return;
-        }
-        if ((deltaAngle != 0))
-        {
-            extraDelta.dx = finalAngle - nearestTargetAngle;
-        }
-        deltaAngle = nearestTargetAngle - originalAngle;
-    }
     float32 finalAngle = originalAngle + deltaAngle;
-    DAVA::Vector<std::tuple<ControlNode*, AbstractProperty*, VariantType>> propertiesToChange;
+
+    if (!AdjustRotate(deltaAngle, originalAngle, finalAngle))
+    {
+        return;
+    }
+    Vector<std::tuple<ControlNode*, AbstractProperty*, VariantType>> propertiesToChange;
     propertiesToChange.emplace_back(activeControlNode, angleProperty, VariantType(finalAngle));
     systemManager->PropertiesChanged.Emit(std::move(propertiesToChange), std::move(currentHash));
 }
 
-void TransformSystem::AdjustProperty(ControlNode* node, const Vector<PropertyDelta>& propertiesDelta)
+bool TransformSystem::AdjustRotate(float32 deltaAngle, float32 originalAngle, float32& finalAngle)
 {
-    DAVA::Vector<std::tuple<ControlNode*, AbstractProperty*, VariantType>> propertiesToChange;
-    for (const PropertyDelta& pair : propertiesDelta)
+    if (QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier))
     {
-        AbstractProperty* property = pair.first;
-        DVASSERT(nullptr != property);
-        const VariantType& delta = pair.second;
-        VariantType var(delta);
-
-        switch (delta.GetType())
+        static const int step = 15; //fixed angle step
+        int32 nearestTargetAngle = static_cast<int32>(finalAngle - static_cast<int32>(finalAngle) % step);
+        if ((finalAngle >= 0) ^ (deltaAngle > 0))
         {
-        case VariantType::TYPE_VECTOR2:
-            var = VariantType(property->GetValue().AsVector2() + delta.AsVector2());
-            break;
-        case VariantType::TYPE_FLOAT:
-            var = VariantType(property->GetValue().AsFloat() + delta.AsFloat());
-            break;
-        default:
-            DVASSERT_MSG(false, "unexpected type");
-            break;
+            nearestTargetAngle += step * (finalAngle >= 0.0f ? 1 : -1);
         }
-        propertiesToChange.emplace_back(node, property, var);
+        if ((deltaAngle >= 0.0f && nearestTargetAngle <= originalAngle + 0.005f) || (deltaAngle < 0.0f && nearestTargetAngle >= originalAngle - 0.005f))
+        {
+            extraDelta.dx = deltaAngle;
+            return false;
+            //disable rotate backwards if we move cursor forward
+        }
+        extraDelta.dx = finalAngle - nearestTargetAngle;
+        finalAngle = nearestTargetAngle;
     }
-    if (!propertiesToChange.empty())
-    {
-        systemManager->PropertiesChanged.Emit(std::move(propertiesToChange), std::move(currentHash));
-    }
+    return true;
 }
 
 void TransformSystem::CorrectNodesToMove()
@@ -778,7 +749,7 @@ void TransformSystem::CorrectNodesToMove()
     while (iter != nodesToMove.end())
     {
         bool toRemove = false;
-        PackageBaseNode* parent = std::get<0>(*iter)->GetParent();
+        PackageBaseNode* parent = std::get<NODE_POS>(*iter)->GetParent();
         if (nullptr == parent || nullptr == parent->GetControl())
         {
             toRemove = true;
@@ -788,8 +759,8 @@ void TransformSystem::CorrectNodesToMove()
             auto iter2 = nodesToMove.begin();
             while (iter2 != nodesToMove.end() && !toRemove)
             {
-                PackageBaseNode* node1 = std::get<0>(*iter);
-                PackageBaseNode* node2 = std::get<0>(*iter2);
+                PackageBaseNode* node1 = std::get<NODE_POS>(*iter);
+                PackageBaseNode* node2 = std::get<NODE_POS>(*iter2);
                 if (iter != iter2)
                 {
                     while (nullptr != node1->GetParent() && nullptr != node1->GetControl() && !toRemove)
@@ -815,9 +786,9 @@ void TransformSystem::CorrectNodesToMove()
     }
     for (auto& tuple : nodesToMove)
     {
-        ControlNode* node = std::get<0>(tuple);
+        ControlNode* node = std::get<NODE_POS>(tuple);
         UIControl* control = node->GetControl();
-        std::get<1>(tuple) = node->GetRootProperty()->FindPropertyByName("Position");
-        std::get<2>(tuple) = &control->GetParent()->GetGeometricData();
+        std::get<PROPERTY_POS>(tuple) = node->GetRootProperty()->FindPropertyByName("Position");
+        std::get<GD_POS>(tuple) = &control->GetParent()->GetGeometricData();
     }
 }
