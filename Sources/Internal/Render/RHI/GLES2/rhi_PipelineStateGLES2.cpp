@@ -150,31 +150,92 @@ VertexDeclGLES2
                         DVASSERT(vattrInited);
 
                         uint32  base                    = firstVertex * stride;
-//                        int     attr_used[VATTR_COUNT];
+                        int     attr_used[VATTR_COUNT];
 
-//                        memset( attr_used, 0, sizeof(attr_used) );
+                        memset( attr_used, 0, sizeof(attr_used) );
+
+                        struct
+                        vattr_t
+                        {
+                            bool            enabled;
+                            GLint           size;
+                            GLenum          type;
+                            GLboolean       normalized;
+                            const GLvoid*   pointer;
+                        };
+
+                        static vattr_t  vattr[VATTR_COUNT];
+                        static unsigned cur_stride = 0;
+                        static bool     needInit   = true;
+
+                        if( needInit )
+                        {
+//                            for( vattr_t* a=vattr,*a_end=vattr+countof(vattr); a!=a_end; ++a )
+//                                a->enabled = false;
+                            memset( vattr, 0, sizeof(vattr) );
+                                                        
+                            for( unsigned i=0; i!=VATTR_COUNT; ++i )
+                                GL_CALL(glDisableVertexAttribArray( i ));
+                            
+                            needInit = false;
+                        }
                         
-Trace("gl.vattr-array\n");
-Trace("  base= %u  stride= %u  first_v= %u\n",base,stride,firstVertex);
-                        for( unsigned i=0; i!=VATTR_COUNT; ++i )
-                            GL_CALL(glDisableVertexAttribArray( i ));
+//Trace("gl.vattr-array\n");
+//Trace("  base= %u  stride= %u  first_v= %u\n",base,stride,firstVertex);
+
+                        for( unsigned i=0; i!=elemCount; ++i )
+                        {
+                            unsigned    idx = elem[i].index;
+
+                            if( idx != InvalidIndex )
+                                attr_used[idx] = 1;
+                        }
+                        
+                        for( unsigned i=0; i!=countof(attr_used); ++i )
+                        {
+                            if( !attr_used[i] )
+                            {
+                                if( vattr[i].enabled )
+                                {
+                                    GL_CALL(glDisableVertexAttribArray( i ));
+                                    vattr[i].enabled = false;
+                                }
+                            }
+                        }
+
                         for( unsigned i=0; i!=elemCount; ++i )
                         {
                             unsigned    idx = elem[i].index;
 
                             if( idx != InvalidIndex )
                             {
-Trace("[%u] count= %u  type= %u  norm= %i  stride= %u  offset= %u\n",idx,elem[i].count,elem[i].type,elem[i].normalized,stride,base+(uint8_t*)elem[i].offset);
-                                GL_CALL(glEnableVertexAttribArray( idx ));
-                                GL_CALL(glVertexAttribPointer( idx, elem[i].count, elem[i].type, (GLboolean)(elem[i].normalized), stride, base+(uint8_t*)elem[i].offset ));
-//                                attr_used[idx] = 1;
+//Trace("[%u] count= %u  type= %u  norm= %i  stride= %u  offset= %u\n",idx,elem[i].count,elem[i].type,elem[i].normalized,stride,base+(uint8_t*)elem[i].offset);
+                                if( !vattr[idx].enabled )
+                                {
+                                    GL_CALL(glEnableVertexAttribArray( idx ));
+                                    vattr[idx].enabled = true;
+                                }
+
+/*                                
+                                if(     vattr[idx].size != elem[i].count
+                                    ||  vattr[idx].type != elem[i].type
+                                    ||  vattr[idx].normalized != (GLboolean)(elem[i].normalized)
+                                    ||  cur_stride != stride
+                                    ||  vattr[idx].pointer != (const GLvoid*)(base + (uint8_t*)(elem[i].offset))
+                                  )
+*/                                
+                                {
+                                    GL_CALL(glVertexAttribPointer( idx, elem[i].count, elem[i].type, (GLboolean)(elem[i].normalized), stride, (const GLvoid*)(base + (uint8_t*)(elem[i].offset)) ));
+
+                                    vattr[idx].size         = elem[i].count;
+                                    vattr[idx].type         = elem[i].type;
+                                    vattr[idx].normalized   = (GLboolean)(elem[i].normalized);
+                                    vattr[idx].pointer      = (const GLvoid*)(base + (uint8_t*)(elem[i].offset));
+                                }                                
                             }
                         }
-//                        for( unsigned i=0; i!=countof(attr_used); ++i )
-//                        {
-//                            if( !attr_used[i] )
-//                                GL_CALL(glDisableVertexAttribArray( i ));
-//                        }
+
+                        cur_stride = stride;                    
                     }
 
     struct
@@ -189,7 +250,7 @@ Trace("[%u] count= %u  type= %u  norm= %i  stride= %u  offset= %u\n",idx,elem[i]
         void*       offset;
     };
 
-    Elem            elem[16];
+    Elem            elem[VATTR_COUNT];
     unsigned        elemCount;
     unsigned        stride;
     uint32          vattrInited:1;

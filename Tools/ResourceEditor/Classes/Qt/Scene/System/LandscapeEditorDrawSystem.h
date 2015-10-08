@@ -96,7 +96,6 @@ public:
 	Vector3 GetLandscapeSize();
 	float32 GetLandscapeMaxHeight();
 	float32 GetHeightAtHeightmapPoint(const Vector2& point);
-    float32 GetHeightAtNormalizedPoint(const Vector2& point);
     float32 GetHeightAtTexturePoint(const FastName& level, const Vector2& point);
 	KeyedArchive* GetLandscapeCustomProperties();
 
