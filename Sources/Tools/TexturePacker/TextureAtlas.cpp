@@ -26,30 +26,28 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#include "TexturePacker/ImagePacker.h"
+#include "TexturePacker/TextureAtlas.h"
 #include "TexturePacker/TexturePacker.h"
 #include "Base/BaseTypes.h"
 
 namespace DAVA
 {
-
-ImagePacker::PackNode * ImagePacker::PackNode::Insert(const Size2i& imageSize)
+TextureAtlas::PackNode* TextureAtlas::PackNode::Insert(const Size2i& imageSize)
 {
-	if (!isLeaf)
-	{
-		ImagePacker::PackNode *imageNode = child[0]->Insert(imageSize);
-		if (imageNode)
+    if (!isLeaf)
+    {
+        TextureAtlas::PackNode* imageNode = child[0]->Insert(imageSize);
+        if (imageNode)
             return imageNode;
         else
-		    return child[1]->Insert(imageSize);
-	}
+            return child[1]->Insert(imageSize);
+    }
     else
-	{
-		if (isImageSet)
+    {
+        if (isImageSet)
             return nullptr;
 
-        if (packer->useTwoSideMargin)
+        if (atlas.useTwoSideMargin)
         {
             int32 dw = packCell.rect.dx - packCell.leftMargin - packCell.rightMargin - imageSize.dx;
             int32 dh = packCell.rect.dy - packCell.topMargin - packCell.bottomMargin - imageSize.dy;
@@ -65,8 +63,8 @@ ImagePacker::PackNode * ImagePacker::PackNode::Insert(const Size2i& imageSize)
 
             isLeaf = false;
 
-            child[0] = new ImagePacker::PackNode(packer);
-            child[1] = new ImagePacker::PackNode(packer);
+            child[0] = new TextureAtlas::PackNode(atlas);
+            child[1] = new TextureAtlas::PackNode(atlas);
 
             child[0]->packCell = child[1]->packCell = packCell;
 
@@ -77,9 +75,8 @@ ImagePacker::PackNode * ImagePacker::PackNode::Insert(const Size2i& imageSize)
                 auto dxLeft = imageSize.dx + child[0]->packCell.rightMargin + child[0]->packCell.leftMargin;
                 child[0]->packCell.rect = Rect2i(packCell.rect.x, packCell.rect.y, dxLeft, packCell.rect.dy);
                 child[1]->packCell.rect = Rect2i(packCell.rect.x + dxLeft, packCell.rect.y, packCell.rect.dx - dxLeft, packCell.rect.dy);
-                
             }
-            else        // vertical split
+            else // vertical split
             {
                 child[0]->packCell.bottomMargin = 1;
                 child[1]->packCell.topMargin = 1;
@@ -93,8 +90,8 @@ ImagePacker::PackNode * ImagePacker::PackNode::Insert(const Size2i& imageSize)
             int32 dw = packCell.rect.dx - imageSize.dx;
             int32 dh = packCell.rect.dy - imageSize.dy;
 
-            int32 rightMargin = packer->texturesMargin;
-            int32 bottomMargin = packer->texturesMargin;
+            int32 rightMargin = atlas.texturesMargin;
+            int32 bottomMargin = atlas.texturesMargin;
 
             if (dw < 0)
             {
@@ -128,8 +125,8 @@ ImagePacker::PackNode * ImagePacker::PackNode::Insert(const Size2i& imageSize)
 
             isLeaf = false;
 
-            child[0] = new ImagePacker::PackNode(packer);
-            child[1] = new ImagePacker::PackNode(packer);
+            child[0] = new TextureAtlas::PackNode(atlas);
+            child[1] = new TextureAtlas::PackNode(atlas);
 
             child[0]->packCell.isTwoSideMargin = child[1]->packCell.isTwoSideMargin = false;
             child[0]->touchesBottomBorder = child[1]->touchesBottomBorder = this->touchesBottomBorder;
@@ -141,85 +138,85 @@ ImagePacker::PackNode * ImagePacker::PackNode::Insert(const Size2i& imageSize)
                 child[1]->packCell.rect = Rect2i(packCell.rect.x + imageSize.dx, packCell.rect.y, packCell.rect.dx - imageSize.dx, packCell.rect.dy);
                 child[0]->touchesRightBorder = false;
             }
-            else        // vertical split
+            else // vertical split
             {
                 child[0]->packCell.rect = Rect2i(packCell.rect.x, packCell.rect.y, packCell.rect.dx, imageSize.dy);
                 child[1]->packCell.rect = Rect2i(packCell.rect.x, packCell.rect.y + imageSize.dy, packCell.rect.dx, packCell.rect.dy - imageSize.dy);
                 child[0]->touchesBottomBorder = false;
             }
         }
-		
+
         return child[0]->Insert(imageSize);
-	}
+    }
 }
 
-void ImagePacker::PackNode::Release()
+void TextureAtlas::PackNode::Release()
 {
-	if (child[0])
-		child[0]->Release();
+    if (child[0])
+        child[0]->Release();
 
-	if (child[1])
-		child[1]->Release();
+    if (child[1])
+        child[1]->Release();
 
-	delete this;
+    delete this;
 }
 
-
-ImagePacker::ImagePacker(const Rect2i & _rect, bool _useTwoSideMargin, int32 _texturesMargin) :
-	useTwoSideMargin(_useTwoSideMargin),
-	texturesMargin(_texturesMargin)
+TextureAtlas::TextureAtlas(const Rect2i& _rect, bool _useTwoSideMargin, int32 _texturesMargin)
+    : useTwoSideMargin(_useTwoSideMargin)
+    , texturesMargin(_texturesMargin)
 {
-	root = new PackNode(this);
+    root = new PackNode(*this);
     root->touchesRightBorder = true;
     root->touchesBottomBorder = true;
     root->packCell.rect = rect = _rect;
     root->packCell.isTwoSideMargin = useTwoSideMargin;
 }
 
-ImagePacker::~ImagePacker()
+TextureAtlas::~TextureAtlas()
 {
-	Release();
+    Release();
 }
 
-void ImagePacker::Release()
+void TextureAtlas::Release()
 {
-	if (root)
-	{
-		root->Release();
-		root = 0;
-	}
+    if (root)
+    {
+        root->Release();
+        root = 0;
+    }
 }
 
-bool ImagePacker::AddImage(const Size2i & imageSize, void * searchPtr)
+bool TextureAtlas::AddImage(const Size2i& imageSize, void* searchPtr)
 {
-	PackNode * node = root->Insert(imageSize);
-	if (node)
-	{
-		node->searchPtr = searchPtr;
+    PackNode* node = root->Insert(imageSize);
+    if (node)
+    {
+        node->searchPtr = searchPtr;
         Logger::FrameworkDebug("set search ptr to rect:(%d, %d) ims: (%d, %d)", node->packCell.rect.dx, node->packCell.rect.dy, imageSize.dx, imageSize.dy);
-	}
-	return (node != 0);
-}
-	
-PackedInfo* ImagePacker::SearchRectForPtr(void * searchPtr)
-{
-	ImagePacker::PackNode * res = root->SearchRectForPtr(searchPtr);
-	return (res ? &res->packCell : 0);
+    }
+    return (node != 0);
 }
 
-ImagePacker::PackNode * ImagePacker::PackNode::SearchRectForPtr(void * searchPtr)
+PackedInfo* TextureAtlas::SearchRectForPtr(void* searchPtr)
 {
-	if (searchPtr == this->searchPtr)
-	{
-		return this;
-	}
-	else
-	{
-		ImagePacker::PackNode * res = 0;
-		if (child[0]) res = child[0]->SearchRectForPtr(searchPtr);
-		if (!res && child[1]) res = child[1]->SearchRectForPtr(searchPtr);
-		return res;
-	}
+    TextureAtlas::PackNode* res = root->SearchRectForPtr(searchPtr);
+    return (res ? &res->packCell : 0);
 }
-	
+
+TextureAtlas::PackNode* TextureAtlas::PackNode::SearchRectForPtr(void* searchPtr)
+{
+    if (searchPtr == this->searchPtr)
+    {
+        return this;
+    }
+    else
+    {
+        TextureAtlas::PackNode* res = 0;
+        if (child[0])
+            res = child[0]->SearchRectForPtr(searchPtr);
+        if (!res && child[1])
+            res = child[1]->SearchRectForPtr(searchPtr);
+        return res;
+    }
+}
 };

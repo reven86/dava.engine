@@ -39,7 +39,7 @@
 #include "QtTools/DavaGLWidget/davaglwidget.h"
 #include "Project/ProjectManager.h"
 #include "TeamcityOutput/TeamcityOutput.h"
-#include "TexturePacker/CommandLineParser.h"
+#include "CommandLine/CommandLineParser.h"
 #include "TexturePacker/ResourcePacker2D.h"
 #include "TextureCompression/PVRConverter.h"
 #include "CommandLine/CommandLineManager.h"

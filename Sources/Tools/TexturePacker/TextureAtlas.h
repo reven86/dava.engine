@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 #ifndef __DAVAENGINE_IMAGEPACKER_H__
 #define __DAVAENGINE_IMAGEPACKER_H__
 
@@ -35,60 +34,66 @@
 
 namespace DAVA
 {
-    
-
-    struct PackedInfo
-    {
-        Rect2i rect;
-        bool isTwoSideMargin = false;
-        uint32 topMargin = 0;
-        uint32 leftMargin = 0;
-        uint32 rightMargin = 0;
-        uint32 bottomMargin = 0;
-    };
+struct PackedInfo
+{
+    Rect2i rect;
+    bool isTwoSideMargin = false;
+    uint32 topMargin = 0;
+    uint32 leftMargin = 0;
+    uint32 rightMargin = 0;
+    uint32 bottomMargin = 0;
+};
 
 //! helper class to simplify packing of many small 2D images to one big 2D image
-class ImagePacker
+class TextureAtlas
 {
 public:
-	ImagePacker(const Rect2i & _rect, bool _useTwoSideMargin, int32 _texturesMargin);
-	virtual ~ImagePacker();
+    TextureAtlas(const Rect2i& _rect, bool _useTwoSideMargin, int32 _texturesMargin);
+    ~TextureAtlas();
 
-	void Release(); 
-	
-	bool AddImage(const Size2i & imageSize, void * searchPtr);
-	PackedInfo * SearchRectForPtr(void * searchPtr);
-	
-	Rect2i & GetRect() { return rect; };
+    void Release();
+
+    bool AddImage(const Size2i& imageSize, void* searchPtr);
+    PackedInfo* SearchRectForPtr(void* searchPtr);
+
+    Rect2i& GetRect()
+    {
+        return rect;
+    };
 
 public:
-	bool useTwoSideMargin;
-	int32 texturesMargin;
+    bool useTwoSideMargin;
+    int32 texturesMargin;
 
 private:
-	Rect2i rect;
-	
-	struct PackNode
-	{
-        PackNode(const ImagePacker* _packer) : packer(_packer) { child[0] = nullptr; child[1] = nullptr; }
-        const ImagePacker*  packer;
-        bool            isImageSet = false;
-        bool            isLeaf = true;
-        PackNode*       child[2];
-        void*           searchPtr = nullptr;
-        bool            touchesRightBorder = false;
-        bool            touchesBottomBorder = false;
-        PackedInfo      packCell;
+    Rect2i rect;
 
-		PackNode *	Insert(const Size2i& frameSize);
-		PackNode *	SearchRectForPtr(void * searchPtr);
-		void		Release();
-	};
-	
-	
-	PackNode * root;
+    struct PackNode
+    {
+        PackNode(const TextureAtlas& _packer)
+            : atlas(_packer)
+        {
+            child[0] = nullptr;
+            child[1] = nullptr;
+        }
+        const TextureAtlas& atlas;
+        bool isImageSet = false;
+        bool isLeaf = true;
+        PackNode* child[2];
+        void* searchPtr = nullptr;
+        bool touchesRightBorder = false;
+        bool touchesBottomBorder = false;
+        PackedInfo packCell;
+
+        PackNode* Insert(const Size2i& frameSize);
+        PackNode* SearchRectForPtr(void* searchPtr);
+        void Release();
+    };
+
+    PackNode* root;
 };
 
-};
+using TextureAtlasPtr = std::unique_ptr<TextureAtlas>;
+}
 
 #endif // __DAVAENGINE_IMAGEPACKER_H__
