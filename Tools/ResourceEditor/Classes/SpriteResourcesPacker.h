@@ -26,29 +26,27 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 #ifndef __SPRITES_PACKER_H__
 #define __SPRITES_PACKER_H__
 
 #include "DAVAEngine.h"
-using namespace DAVA;
 
-class SpritesPacker
+class SpriteResourcesPacker
 {
 public:
-	virtual ~SpritesPacker();
+    virtual ~SpriteResourcesPacker();
 
-	void SetInputDir(const FilePath & inputDir);
-	void SetOutputDir(const FilePath & outputDir);
+    void SetInputDir(const DAVA::FilePath& inputDir);
+    void SetOutputDir(const DAVA::FilePath& outputDir);
 
-	void PackLightmaps(DAVA::eGPUFamily gpu);
-	void PackTextures(DAVA::eGPUFamily gpu);
+    void PackLightmaps(DAVA::eGPUFamily gpu);
+    void PackTextures(DAVA::eGPUFamily gpu);
 
 protected:
-	void PerformPack(bool isLightmapPacking, DAVA::eGPUFamily gpu);
+    void PerformPack(bool isLightmapPacking, DAVA::eGPUFamily gpu);
 
-	FilePath inputDir;
-	FilePath outputDir;
+    DAVA::FilePath inputDir;
+    DAVA::FilePath outputDir;
 };
 
 #endif //__SPRITES_PACKER_H__

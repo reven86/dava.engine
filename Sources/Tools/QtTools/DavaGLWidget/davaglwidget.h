@@ -30,21 +30,20 @@
 #ifndef DAVAGLWIDGET_H
 #define DAVAGLWIDGET_H
 
-#include <QOpenGLWidget>
 #include <QTimer>
 #include <QMimeData>
 #include <QWindow>
+#include <QWidget>
 #include <QPointer>
 #include <QScopedPointer>
 
-
+class QDragMoveEvent;
 class QOpenGLContext;
 class QOpenGLPaintDevice;
 class QExposeEvent;
 class DavaGLWidget;
 class FocusTracker;
 class ControlMapper;
-
 
 class OpenGLWindow
     : public QWindow
