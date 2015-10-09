@@ -29,7 +29,7 @@
 
 #include "DAVAEngine.h"
 #include "GameCore.h"
-#include "TexturePacker/CommandLineParser.h"
+#include "CommandLine/CommandLineParser.h"
 
 #include "Render/Image/ImageConvert.h"
 
@@ -47,20 +47,6 @@ void PrintUsage()
     printf("Example:\n");
     printf("\t-saveas -ext .tga -folder /Users/nickname/test/");
 
-}
-
-
-bool CheckPosition(int32 commandPosition)
-{
-    if(CommandLineParser::CheckPosition(commandPosition))
-    {
-        printf("Wrong arguments\n");
-        PrintUsage();
-
-        return false;
-    }
-    
-    return true;
 }
 
 

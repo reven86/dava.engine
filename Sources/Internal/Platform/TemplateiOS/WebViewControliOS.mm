@@ -276,7 +276,8 @@ void DAVA::WebViewControl::SetImageAsSpriteToControl(void* imagePtr, UIControl& 
         NSUInteger bitsPerComponent = 8;
         
         // this way we can copy image from system memory into our buffer
-        
+        Memset(rawData, 0, width * height * bytesPerPixel);
+
         CGContextRef context = CGBitmapContextCreate(rawData, width, height,
                                                      bitsPerComponent, bytesPerRow, colorSpace,
                                                      kCGImageAlphaPremultipliedLast
