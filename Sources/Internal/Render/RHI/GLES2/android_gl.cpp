@@ -1,7 +1,5 @@
 #include "Base/Platform.h"
 
-#include "FileSystem/Logger.h"
-
 #ifdef __DAVAENGINE_ANDROID__
 
 #include "android_gl.h"
