@@ -201,7 +201,7 @@ void ApplicationCore::OnFocusLost()
     // Default implementation is empty.
 }
 
-void ApplicationCore::OnFocusRecieve()
+void ApplicationCore::OnFocusReceived()
 {
     // Default implementation is empty.
 }

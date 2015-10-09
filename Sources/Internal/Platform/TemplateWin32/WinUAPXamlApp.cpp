@@ -167,8 +167,6 @@ void WinUAPXamlApp::SetCursorVisible(bool isVisible)
     }
     if (isVisible != isMouseCursorShown)
     {
-        //Window::Current->CoreWindow->SetPointerCapture();
-        //swapChainPanel->CapturePointer()
         Window::Current->CoreWindow->PointerCursor = (isVisible ? ref new CoreCursor(CoreCursorType::Arrow, 0) : nullptr);
         isMouseCursorShown = isVisible;
     }
@@ -347,7 +345,7 @@ void WinUAPXamlApp::OnWindowActivationChanged(::Windows::UI::Core::CoreWindow^ s
         }
         else
         {
-            Core::Instance()->FocusRecieve();
+            Core::Instance()->FocusReceived();
         }
         break;
     case CoreWindowActivationState::Deactivated:

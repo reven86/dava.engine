@@ -637,11 +637,11 @@ void Core::FocusLost()
     }
 }
 
-void Core::FocusRecieve()
+void Core::FocusReceived()
 {
     if (core)
     {
-        core->OnFocusRecieve();
+        core->OnFocusReceived();
     }
 }
 

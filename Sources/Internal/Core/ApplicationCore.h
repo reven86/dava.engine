@@ -251,7 +251,7 @@ protected:
     /**
      \brief Called when application has received focus (desktop platforms)
      */
-    virtual void OnFocusRecieve();
+    virtual void OnFocusReceived();
 
     /**	
 		\brief this function is called every frame to let you update your application. 
