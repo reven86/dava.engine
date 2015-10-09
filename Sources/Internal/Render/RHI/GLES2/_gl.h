@@ -190,6 +190,13 @@
 }
 #else
 #define GL_CALL(expr) expr
+/*
+#define GL_CALL(expr) \
+{ \
+profiler::ScopedTiming( PROF_STRING_ID("gl-call"), "gl-call" ); \
+    expr ; \
+}
+*/
 #endif
 
 extern GLuint   _GLES2_Binded_FrameBuffer;
