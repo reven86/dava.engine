@@ -107,7 +107,6 @@ private:
     {
         Texture * texture = nullptr;
         rhi::HSyncObject syncObj;
-        rhi::HTexture depthTexture;
         Function<void(Texture*)> callback;
     };
 

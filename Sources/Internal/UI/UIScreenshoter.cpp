@@ -65,7 +65,6 @@ void UIScreenshoter::OnFrame()
             }
 
             SafeRelease(it->texture);
-            rhi::DeleteTexture(it->depthTexture);
 
             it = waiters.erase(it);
             itEnd = waiters.end();
@@ -80,8 +79,8 @@ void UIScreenshoter::OnFrame()
 Texture* UIScreenshoter::MakeScreenshot(UIControl* control, const PixelFormat format)
 {
     const Vector2 size(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(control->GetSize()));
-    Texture * screenshot(Texture::CreateFBO((int32)size.dx, (int32)size.dy, format));
-    
+    Texture* screenshot(Texture::CreateFBO((int32)size.dx, (int32)size.dy, format, true));
+
     MakeScreenshotInternal(control, screenshot, nullptr);
     
     return screenshot;
@@ -90,7 +89,7 @@ Texture* UIScreenshoter::MakeScreenshot(UIControl* control, const PixelFormat fo
 void UIScreenshoter::MakeScreenshot(UIControl* control, const PixelFormat format, Function<void(Texture*)> callback)
 {
     const Vector2 size(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(control->GetSize()));
-    Texture * screenshot(Texture::CreateFBO((int32)size.dx, (int32)size.dy, format));
+    Texture* screenshot(Texture::CreateFBO((int32)size.dx, (int32)size.dy, format, true));
 
     MakeScreenshotInternal(control, screenshot, callback);
 
@@ -112,23 +111,11 @@ void UIScreenshoter::MakeScreenshotInternal(UIControl* control, Texture* screens
     if (control == nullptr)
         return;
 
-    // Create depth and stencil buffer
-    rhi::Texture::Descriptor descriptor;
-    descriptor.width = screenshot->GetWidth();
-    descriptor.height = screenshot->GetHeight();
-    descriptor.autoGenMipmaps = false;
-    descriptor.needRestore = false;
-    descriptor.type = rhi::TEXTURE_TYPE_2D;
-    descriptor.format = rhi::TEXTURE_FORMAT_D24S8;
-    rhi::HTexture dephtTexture = rhi::CreateTexture(descriptor);
-    // End creating
-
     // Prepare waiter
     ScreenshotWaiter waiter;
     waiter.texture = SafeRetain(screenshot);
     waiter.callback = callback;
     waiter.syncObj = rhi::GetCurrentFrameSyncObject();
-    waiter.depthTexture = dephtTexture;
     waiters.push_back(waiter);
     // End preparing
 
@@ -147,7 +134,8 @@ void UIScreenshoter::MakeScreenshotInternal(UIControl* control, Texture* screens
             config.colorBuffer[0].texture = waiter.texture->handle;
             config.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
             Memcpy(config.colorBuffer[0].clearColor, Color::Clear.color, sizeof(Color));
-            config.depthStencilBuffer.texture = dephtTexture;
+            if (waiter.texture->handleDepthStencil != rhi::InvalidHandle)
+                config.depthStencilBuffer.texture = waiter.texture->handleDepthStencil;
         }
     }
     RenderSystem2D::Instance()->BeginRenderTargetPass(waiter.texture, false, Color::Clear, PRIORITY_SCREENSHOT_2D_PASS);
