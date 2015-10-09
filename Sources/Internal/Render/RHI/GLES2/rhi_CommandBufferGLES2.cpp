@@ -40,7 +40,7 @@
     using DAVA::Logger;
     #include "Concurrency/Thread.h"
     #include "Concurrency/Semaphore.h"
-#include "Concurrency/ConditionVariable.h"
+    #include "Concurrency/ConditionVariable.h"
     #include "Debug/Profiler.h"
 
     #include "_gl.h"
@@ -48,7 +48,6 @@
 
 namespace rhi
 {
-
 enum
 CommandGLES2
 {
@@ -151,7 +150,6 @@ static DAVA::Spinlock       _GLES2_CmdBufIsBeingExecutedSync;
 static GLCommand*           _GLES2_PendingImmediateCmd      = nullptr;
 static uint32               _GLES2_PendingImmediateCmdCount = 0;
 static DAVA::Mutex          _GLES2_PendingImmediateCmdSync;
-static DAVA::ConditionVariable _GLES2_PendingImmediateCmdCV;
 
 static bool                 _GLES2_RenderThreadExitPending  = false;
 static DAVA::Spinlock       _GLES2_RenderThreadExitSync;
@@ -1205,7 +1203,6 @@ Trace("DIP  mode= %i  v_cnt= %i  start_i= %i\n",int(mode),int(v_cnt),int(startIn
                 _GLES2_PendingImmediateCmdCount = 0;
             }
             _GLES2_PendingImmediateCmdSync.Unlock();
-            _GLES2_PendingImmediateCmdCV.NotifyOne();
 
             immediate_cmd_ttw = 10;
         }
@@ -1395,7 +1392,7 @@ Trace("rhi-gl.swap-buffers done\n");
 
 static void
 gles2_Present(Handle sync)
-{    
+{
     if( _GLES2_RenderThreadFrameCount )
     {
 Trace("rhi-gl.present\n");
@@ -1482,7 +1479,6 @@ _RenderFunc( DAVA::BaseObject* obj, void*, void* )
 //Trace("exec-imm-cmd done\n");
             }
             _GLES2_PendingImmediateCmdSync.Unlock();
-            _GLES2_PendingImmediateCmdCV.NotifyOne();
 
 //            _CmdQueueSync.Lock();
 //            cnt = _RenderQueue.size();
@@ -1880,22 +1876,32 @@ ExecGL( GLCommand* command, uint32 cmdCount, bool force_immediate )
     }
     else
     {
-        _GLES2_PendingImmediateCmdSync.Lock();
+        bool scheduled = false;
+        bool executed = false;
 
-        while (nullptr != _GLES2_PendingImmediateCmd)
+        // CRAP: busy-wait
+        do
         {
-            _GLES2_PendingImmediateCmdCV.Wait(_GLES2_PendingImmediateCmdSync);
-        }
+            _GLES2_PendingImmediateCmdSync.Lock();
+            if (!_GLES2_PendingImmediateCmd)
+            {
+                _GLES2_PendingImmediateCmd = command;
+                _GLES2_PendingImmediateCmdCount = cmdCount;
+                scheduled = true;
+            }
+            _GLES2_PendingImmediateCmdSync.Unlock();
+        } while (!scheduled);
 
-        _GLES2_PendingImmediateCmd = command;
-        _GLES2_PendingImmediateCmdCount = cmdCount;
-
-        while (nullptr != _GLES2_PendingImmediateCmd)
+        // CRAP: busy-wait
+        do
         {
-            _GLES2_PendingImmediateCmdCV.Wait(_GLES2_PendingImmediateCmdSync);
-        }
-
-        _GLES2_PendingImmediateCmdSync.Unlock();
+            _GLES2_PendingImmediateCmdSync.Lock();
+            if (!_GLES2_PendingImmediateCmd)
+            {
+                executed = true;
+            }
+            _GLES2_PendingImmediateCmdSync.Unlock();
+        } while (!executed);
     }
 }
 

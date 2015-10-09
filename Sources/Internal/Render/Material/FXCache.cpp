@@ -134,7 +134,16 @@ const FXDescriptor& LoadFXFromOldTemplate(const FastName &fxName, HashMap<FastNa
         }
         if (qualityNode == nullptr)
         {
-            Logger::Error("Template: %s do not support quality %s - loading first", fxPath.GetAbsolutePathname().c_str(), quality.c_str());
+            if ((quality.c_str() == nullptr) || (strlen(quality.c_str()) == 0))
+            {
+                Logger::Warning("Quality not defined for template: %s, loading default one.",
+                                fxPath.GetAbsolutePathname().c_str(), quality.c_str());
+            }
+            else
+            {
+                Logger::Error("Template: %s do not support quality %s - loading first one.",
+                              fxPath.GetAbsolutePathname().c_str(), quality.c_str());
+            }
             qualityNode = materialTemplateNode->Get(materialTemplateNode->GetCount()-1);
         }
         YamlParser* parserTechnique = YamlParser::Create(qualityNode->AsString());
