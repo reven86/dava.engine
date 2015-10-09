@@ -97,10 +97,10 @@ public:
     explicit VariantType(const String& value);
     explicit VariantType(const WideString& value);
     explicit VariantType(const uint8* array, int32 arraySizeInBytes);
-    explicit VariantType(KeyedArchive *archive);
-	explicit VariantType(const int64 & value);
-	explicit VariantType(const uint64 & value);
-	explicit VariantType(const Vector2 & value);
+    explicit VariantType(KeyedArchive* archive);
+    explicit VariantType(const int64& value);
+    explicit VariantType(const uint64& value);
+    explicit VariantType(const Vector2 & value);
 	explicit VariantType(const Vector3 & value);
 	explicit VariantType(const Vector4 & value);
 	explicit VariantType(const Matrix2 & value);

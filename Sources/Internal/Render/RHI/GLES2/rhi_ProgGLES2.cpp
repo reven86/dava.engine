@@ -459,7 +459,7 @@ ProgGLES2::ConstBuf::Instance() const
 void
 ProgGLES2::ConstBuf::SetToRHI( const void* instData ) const
 {
-//SCOPED_NAMED_TIMING("gl.cb-set");
+//SCOPED_NAMED_TIMING("gl-Uniform4fv");
     GL_CALL(glUniform4fv( location, count, (GLfloat*)instData ));
     StatSet::IncStat( stat_SET_CB, 1 );
 }
