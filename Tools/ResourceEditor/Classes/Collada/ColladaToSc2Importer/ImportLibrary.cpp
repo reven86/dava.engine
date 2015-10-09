@@ -239,7 +239,7 @@ NMaterial * ImportLibrary::GetOrCreateMaterialParent(ColladaMaterial * colladaMa
     FastName textureType;
     FilePath texturePath;
     bool hasTexture = GetTextureTypeAndPathFromCollada(colladaMaterial, textureType, texturePath);
-    if (hasTexture)
+    if (!isShadow && hasTexture)
     {
         FilePath descriptorPathname = TextureDescriptor::GetDescriptorPathname(texturePath);
         
