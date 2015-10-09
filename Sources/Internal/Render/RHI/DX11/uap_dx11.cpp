@@ -9,10 +9,6 @@
 #include <DirectXMath.h>
 #include <dxgi1_3.h>
 #include <D3D11SDKLayers.h>
-//this hack need removed, when rhi_dx thread will synchronized with rander::reset
-__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
-#include "Concurrency/Mutex.h"
-#include "Concurrency/UniqueLock.h"
 
 using namespace rhi;
 using namespace Microsoft::WRL;
@@ -678,12 +674,6 @@ void init_device_and_swapchain_uap( void* panel )
 
 void resize_swapchain(int width, int height, float32 sx, float32 sy)
 {
-#ifdef __DAVAENGINE_WIN_UAP__
-    // this hack need removed, when rhi_dx thread will synchronized with rander::reset
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
-    DAVA::UniqueLock<DAVA::Mutex> lock(need_synchronized);
-#endif
-
     SetCompositionScale(sx, sy);
     SetLogicalSize(Windows::Foundation::Size(static_cast<float>(width), static_cast<float>(height)));
     CreateWindowSizeDependentResources();

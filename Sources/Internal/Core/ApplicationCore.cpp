@@ -176,13 +176,33 @@ bool ApplicationCore::OnQuit()
 	return false;
 }
 
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_WIN_UAP__)
+void ApplicationCore::OnAppFinished()
+{
+    // Default implementation is empty.
+}
+
+void ApplicationCore::OnBackground()
+{
+    // Default implementation is empty.
+}
 
 void ApplicationCore::OnForeground()
 {
 	// Default implementation is empty.
 }
 
-#endif
+void ApplicationCore::OnDeviceLocked()
+{
+    // Default implementation is empty.
+}
 
+void ApplicationCore::OnFocusLost()
+{
+    // Default implementation is empty.
+}
+
+void ApplicationCore::OnFocusRecieve()
+{
+    // Default implementation is empty.
+}
 };
