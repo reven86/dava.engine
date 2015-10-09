@@ -9,19 +9,21 @@ macro ( qt_deploy )
     if( WIN32 )
         get_qt5_deploy_list(BINARY_ITEMS)
 
-        execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${DEPLOY_DIR} )
-        foreach ( ITEM  ${BINARY_ITEMS} )
-            execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${QT5_PATH_WIN}/bin/${ITEM}.dll  ${DEPLOY_DIR} )
-        endforeach ()
+        foreach(ITEM ${BINARY_ITEMS})
+            string(TOLOWER ${ITEM} ITEM)
+            if (EXISTS ${QT5_PATH_WIN}/bin/Qt5${ITEM}.dll)
+                LIST(APPEND QT_ITEMS_LIST --${ITEM})
+            endif()
+        endforeach()
 
-        file ( GLOB FILE_LIST ${QT5_PATH_WIN}/bin/icu*.dll )
-        foreach ( ITEM  ${FILE_LIST} )
-            execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${ITEM}  ${DEPLOY_DIR} )
-        endforeach ()
-
-        execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${DEPLOY_DIR}/platforms )
-        execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${QT5_PATH_WIN}/plugins/platforms/qwindows.dll
-                                                         ${DEPLOY_DIR}/platforms )
+        ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME} POST_BUILD
+            COMMAND "${DAVA_SCRIPTS_FILES_PATH}/deployqt.bat"
+            "${QT5_PATH_WIN}/bin/"
+            $<$<CONFIG:Debug>:--debug> $<$<NOT:$<CONFIG:Debug>>:--release>
+            --dir  "${DEPLOY_DIR}/$<CONFIG>"
+            --qmldir "${QML_SCAN_DIR}" "$<TARGET_FILE:${PROJECT_NAME}>"
+            ${QT_ITEMS_LIST}
+        )
 
     elseif( MACOS )
 
@@ -74,11 +76,10 @@ foreach(COMPONENT ${QT5_FIND_COMPONENTS})
     endif()
 
     ASSERT(Qt5${COMPONENT}_FOUND "Can't find Qt5 component : ${COMPONENT}")
-    LIST(APPEND DEPLOY_LIST "Qt5${COMPONENT}")
     LIST(APPEND LINKAGE_LIST "Qt5::${COMPONENT}")
 endforeach()
 
-append_qt5_deploy(DEPLOY_LIST)
+append_qt5_deploy(QT5_FIND_COMPONENTS)
 set_linkage_qt5_modules(LINKAGE_LIST)
 set ( DAVA_EXTRA_ENVIRONMENT QT_QPA_PLATFORM_PLUGIN_PATH=$ENV{QT_QPA_PLATFORM_PLUGIN_PATH} )
 
