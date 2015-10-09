@@ -36,10 +36,23 @@ namespace DAVA
 namespace Net
 {
 
+SimpleNetCorePrivate::SimpleNetCorePrivate() 
+    : connectionManager(&ioPool)
+{
+}
+
 SimpleNetCorePrivate::~SimpleNetCorePrivate()
 {
+    ioPool.Execute(IOPool::SendOperation, true);
+    ioPool.CancelAll();
+
     connectionManager.Shutdown();
     UnregisterAllServices();
+}
+
+void SimpleNetCorePrivate::Run()
+{
+    ioPool.Execute();
 }
 
 const SimpleNetService* SimpleNetCorePrivate::RegisterService(

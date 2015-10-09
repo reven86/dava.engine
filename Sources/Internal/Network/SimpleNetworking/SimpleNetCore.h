@@ -34,6 +34,7 @@
 
 #include "Base/BaseTypes.h"
 #include "Base/Singleton.h"
+#include "Functional/Function.h"
 #include "Network/NetService.h"
 #include "Network/Base/Endpoint.h"
 #include "Network/SimpleNetworking/IConnection.h"
@@ -45,15 +46,18 @@ namespace Net
 
 struct IConnectionManager
 {
+    using ConnectionCallback = Function<void(IConnectionPtr)>;
     enum ConnectionRole
     {
         ServerRole = 0x1,
         ClientRole = 0x2
     };
-    virtual IConnectionPtr CreateConnection(ConnectionRole role,
-                                            const Endpoint& endPoint) = 0;
 
-    virtual ~IConnectionManager() {}
+    virtual void CreateConnection(ConnectionRole role, 
+                                  const Endpoint& endPoint,
+                                  const ConnectionCallback& cb) = 0;
+
+    virtual ~IConnectionManager() = default;
 };
 
 class SimpleNetService;

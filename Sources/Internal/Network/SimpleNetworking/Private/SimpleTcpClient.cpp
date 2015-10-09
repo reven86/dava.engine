@@ -35,29 +35,25 @@ namespace DAVA
 namespace Net
 {
 
-SimpleTcpClient::SimpleTcpClient(const Endpoint& endPoint)
-    : SimpleTcpSocket(endPoint)
+SimpleTcpClient::SimpleTcpClient(IOPool* ioPoolPtr, const Endpoint& endPoint)
+    : SimpleTcpSocket(ioPoolPtr, endPoint)
 {
 }
 
-bool SimpleTcpClient::Connect()
+bool SimpleTcpClient::Connect(const Function<void(bool)>& cb)
 {
     if (socketId == DV_INVALID_SOCKET)
     {
         return false;
     }
 
-    const sockaddr* addr = reinterpret_cast<const sockaddr*>(socketEndPoint.CastToSockaddrIn());
-
-    int connectRes = ::connect(socketId, addr, socketEndPoint.Size());
-    if (!CheckSocketResult(connectRes))
+    Function<void(bool)> listenCallback(cb);
+    ioPool->AddConnectOperation(socketId, socketEndPoint, [this, listenCallback]
     {
-        LogNetworkError("Failed to connect socket");
-        Close();
-    }
-
-    connectionEstablished = CheckSocketResult(connectRes);
-    return connectionEstablished;
+        connectionEstablished = true;
+        listenCallback(true);
+    });
+    return true;
 }
     
 }  // namespace Net

@@ -40,8 +40,8 @@ namespace Net
 class SimpleTcpClient : public SimpleTcpSocket
 {
 public:
-    SimpleTcpClient(const Endpoint& endPoint);
-    bool Connect();
+    SimpleTcpClient(IOPool* ioPoolPtr, const Endpoint& endPoint);
+    bool Connect(const Function<void(bool)>& cb);
 };
 
 }  // namespace Net

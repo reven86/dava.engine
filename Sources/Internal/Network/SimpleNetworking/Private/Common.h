@@ -31,6 +31,7 @@
 #define __DAVAENGINE_SIMPLE_NETWORKING_COMMON_H__
 
 #include "Base/Platform.h"
+#include <libuv/uv.h>
 
 namespace DAVA
 {

@@ -36,8 +36,9 @@ namespace DAVA
 namespace Net
 {
 
-SimpleTcpSocket::SimpleTcpSocket(const Endpoint& endPoint)
-    : socketEndPoint(endPoint)
+SimpleTcpSocket::SimpleTcpSocket(IOPool* ioPoolPtr, const Endpoint& endPoint)
+    : ioPool(ioPoolPtr)
+    , socketEndPoint(endPoint)
 {
     socketId = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 }
@@ -70,39 +71,48 @@ bool SimpleTcpSocket::Shutdown()
     return true;
 }
 
-size_t SimpleTcpSocket::Send(const char* buf, size_t bufSize)
+bool SimpleTcpSocket::Send(IOPool::BufferPtr&& buf, size_t bufSize, const IOPool::SendCallback& cb)
 {
     if (!IsConnectionEstablished())
-        return 0;
+        return false;
 
-    int size = ::send(socketId, buf, bufSize, 0);
-    
-    if (!CheckSocketResult(size))
+    IOPool::SendCallback callback(cb);
+    auto sendCallback = [this, callback] (size_t size)
     {
-        Close();
+        if (!CheckSocketResult(static_cast<int>(size)))
+        {
+            Close();
+            callback(0);
+            return;
+        }
 
-        return 0;
-    }
-    
-    return static_cast<size_t>(size);
+        callback(size);
+    };
+
+    ioPool->AddSendOperation(socketId, std::move(buf), bufSize, sendCallback);
+    return true;
 }
 
-size_t SimpleTcpSocket::Recv(char* buf, size_t bufSize, bool recvAll)
+bool SimpleTcpSocket::Recv(const IOPool::RecvCallback& cb, size_t* recvBytesCount)
 {
     if (!IsConnectionEstablished())
-        return 0;
+        return false;
 
-    int flags = recvAll ? MSG_WAITALL : 0;
-    int size = ::recv(socketId, buf, bufSize, flags);
-    
-    if (!CheckSocketResult(size))
+    IOPool::RecvCallback callback(cb);
+    auto sendCallback = [this, callback](const char* buf, size_t size)
     {
-        Close();
+        if (!CheckSocketResult(static_cast<int>(size)))
+        {
+            Close();
+            callback(nullptr, 0);
+            return;
+        }
 
-        return 0;
-    }
-    
-    return static_cast<size_t>(size);
+        callback(buf, size);
+    };
+
+    ioPool->AddReceiveOperation(socketId, cb, recvBytesCount);
+    return true;
 }
 
 void SimpleTcpSocket::Close()

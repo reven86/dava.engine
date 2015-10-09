@@ -27,48 +27,54 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_ICONNECTION_H__
-#define __DAVAENGINE_ICONNECTION_H__
+#ifndef __DAVAENGINE_IO_POOL_H__
+#define __DAVAENGINE_IO_POOL_H__
 
-#include <memory>
-#include <type_traits>
-
-#include "Base/BaseTypes.h"
-#include "Base/RefPtr.h"
-#include "Base/TypeHolders.h"
 #include "Functional/Function.h"
 #include "Network/Base/Endpoint.h"
+#include "Network/SimpleNetworking/IConnection.h"
+#include "Network/SimpleNetworking/Private/Common.h"
 
 namespace DAVA
 {
 namespace Net
 {
 
-//--------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------
-struct IConnection : public RefCounter
+class IOPool
 {
-    virtual ~IConnection() = default;
+public:
+    using Procedure = Function<void()>;
+    using ListenCallback = Function<void(socket_t)>;
+    using SendCallback = IConnection::WriteCallback;
+    using RecvCallback = IConnection::ReadCallback;
+    using BufferPtr = std::unique_ptr<const char[]>;
 
-    using WriteCallback = Function<void(size_t)>;
-    using ReadCallback = Function<void(const char*, size_t)>;
+    void AddConnectOperation(socket_t sock, const Endpoint& endPoint, const Procedure& cb) {}
+    void AddListenOperation(socket_t sock, const ListenCallback& cb) {}
+    void AddSendOperation(socket_t sock,
+                          BufferPtr&& data,
+                          size_t size, 
+                          const SendCallback& cb = nullptr) {}
+    void AddReceiveOperation(socket_t sock, 
+                             const RecvCallback& cb,
+                             size_t* recvBytesCount = nullptr) {}
 
-    enum class ChannelState
+    enum OperationType
     {
-        Disconnected,
-        Connected
+        ConnectOperation = 0x1,
+        ListenOperation = 0x2,
+        SendOperation = 0x4,
+        ReceiveOperation = 0x8,
+        AllOperations = ConnectOperation | ListenOperation | SendOperation | ReceiveOperation
     };
-    virtual ChannelState GetChannelState() = 0;
-    virtual const Endpoint& GetEndpoint() = 0;
 
-    virtual bool Write(const char* buffer, size_t bufSize, const WriteCallback& cb = nullptr) = 0;
-    virtual bool ReadSome(const ReadCallback& cb) = 0;
-    virtual bool ReadAll(size_t bytesCount, const ReadCallback& cb) = 0;
+    void Execute(OperationType opType = AllOperations, bool force = false) {}
+    void CancelAll() {}
+
+private:
 };
-using IConnectionPtr = RefPtr<IConnection>;
 
 }  // namespace Net
 }  // namespace DAVA
 
-#endif  // __DAVAENGINE_ICONNECTION_H__
+#endif  // __DAVAENGINE_IO_POOL_H__

@@ -37,7 +37,24 @@ namespace DAVA
 {
 namespace Net
 {
-    
+
+ConnectionManager::ConnectionManager(IOPool * ioPoolPtr) : ioPool(ioPoolPtr)
+{
+}
+
+void ConnectionManager::CreateConnection(ConnectionRole role,
+                                         const Endpoint& endPoint,
+                                         const ConnectionCallback& cb)
+{
+    ConnectionCallback connectionCallback(cb);
+
+    if (role == ClientRole)
+    {
+        //auto clientAcceptor;
+        ioPool;
+    }
+}
+
 IConnectionPtr ConnectionManager::CreateConnection(ConnectionRole role, const Endpoint& endPoint)
 {
     if (role == ClientRole)
@@ -83,7 +100,7 @@ template <typename T>
 std::shared_ptr<T> ConnectionManager::CreateSocket(const Endpoint& endPoint)
 {
     static_assert(std::is_base_of<ISimpleAbstractSocket, T>::value, "Not a ISimpleAbstractSocket");
-    auto socket = std::make_shared<T>(endPoint);
+    auto socket = std::make_shared<T>(ioPool, endPoint);
 
     sockets.push_back(socket);
     return socket;

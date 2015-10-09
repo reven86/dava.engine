@@ -41,10 +41,9 @@ namespace Net
 class SimpleTcpServer : public SimpleTcpSocket
 {
 public:
-    SimpleTcpServer(const Endpoint& endPoint);
+    SimpleTcpServer(IOPool* ioPoolPtr, const Endpoint& endPoint);
     
-    bool Listen();
-    bool Accept();
+    bool Listen(const Function<void(bool)>& cb);
 
 private:
     bool Bind();

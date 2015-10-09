@@ -28,6 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Network/SimpleNetworking/SimpleNetCore.h"
 #include "Network/SimpleNetworking/Private/SimpleAbstractSocket.h"
+#include "Network/SimpleNetworking/Private/IOPool.h"
 
 namespace DAVA
 {
@@ -37,7 +38,11 @@ namespace Net
 class ConnectionManager : public IConnectionManager
 {
 public:
-    IConnectionPtr CreateConnection(ConnectionRole role, const Endpoint& endPoint) override;
+    ConnectionManager(IOPool* ioPoolPtr);
+
+    virtual void CreateConnection(ConnectionRole role,
+                                  const Endpoint& endPoint,
+                                  const ConnectionCallback& cb) override;
 
     void Shutdown();
 
@@ -49,6 +54,7 @@ private:
     std::shared_ptr<T> CreateSocket(const Endpoint& endPoint);
 
     std::vector<std::weak_ptr<ISimpleAbstractSocket>> sockets;
+    IOPool* ioPool;
 };
     
 }  // namespace Net

@@ -30,7 +30,6 @@
 #ifndef __DAVAENGINE_CONNECTION_H__
 #define __DAVAENGINE_CONNECTION_H__
 
-#include "Concurrency/Mutex.h"
 #include "Network/SimpleNetworking/IConnection.h"
 #include "Network/SimpleNetworking/Private/SimpleAbstractSocket.h"
 
@@ -47,19 +46,12 @@ public:
     ChannelState GetChannelState() override;
     const Endpoint& GetEndpoint() override;
 
-    size_t ReadSome(char* buffer, size_t bufSize) override;
-    bool ReadAll(char* buffer, size_t bufSize) override;
-    size_t Write(const char* buffer, size_t bufSize) override;
-
-    size_t ReadBytesCount() override;
-    size_t WrittenBytesCount() override;
+    virtual bool Write(const char* buffer, size_t bufSize, const WriteCallback& cb) override;
+    virtual bool ReadSome(const ReadCallback& cb) override;
+    virtual bool ReadAll(size_t bytesCount, const ReadCallback& cb) override;
 
 private:
     ISimpleAbstractSocketPtr socket;
-    Mutex recvMutex;
-    Mutex sendMutex;
-    size_t readBytesCount = 0;
-    size_t writtenBytesCount = 0;
 };
 
 }  // namespace Net

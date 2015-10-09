@@ -120,7 +120,7 @@ void ConnectionListenerPrivate::Start(IConnectionPtr& conn)
     Array<char, 4096> buffer;
 
     while (conn && 
-           conn->GetChannelState() == IReadOnlyConnection::ChannelState::Connected &&
+           conn->GetChannelState() == IConnection::ChannelState::Connected &&
            !thread->IsCancelling())
     {
         size_t read = conn->ReadSome(buffer.data(), buffer.size());

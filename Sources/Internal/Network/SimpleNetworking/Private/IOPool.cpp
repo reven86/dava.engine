@@ -27,48 +27,4 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_ICONNECTION_H__
-#define __DAVAENGINE_ICONNECTION_H__
-
-#include <memory>
-#include <type_traits>
-
-#include "Base/BaseTypes.h"
-#include "Base/RefPtr.h"
-#include "Base/TypeHolders.h"
-#include "Functional/Function.h"
-#include "Network/Base/Endpoint.h"
-
-namespace DAVA
-{
-namespace Net
-{
-
-//--------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------
-struct IConnection : public RefCounter
-{
-    virtual ~IConnection() = default;
-
-    using WriteCallback = Function<void(size_t)>;
-    using ReadCallback = Function<void(const char*, size_t)>;
-
-    enum class ChannelState
-    {
-        Disconnected,
-        Connected
-    };
-    virtual ChannelState GetChannelState() = 0;
-    virtual const Endpoint& GetEndpoint() = 0;
-
-    virtual bool Write(const char* buffer, size_t bufSize, const WriteCallback& cb = nullptr) = 0;
-    virtual bool ReadSome(const ReadCallback& cb) = 0;
-    virtual bool ReadAll(size_t bytesCount, const ReadCallback& cb) = 0;
-};
-using IConnectionPtr = RefPtr<IConnection>;
-
-}  // namespace Net
-}  // namespace DAVA
-
-#endif  // __DAVAENGINE_ICONNECTION_H__
+#include "Network/SimpleNetworking/Private/IOPool.h"

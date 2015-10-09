@@ -32,6 +32,7 @@
 
 #include <memory>
 #include "Network/Base/Endpoint.h"
+#include "Network/SimpleNetworking/Private/IOPool.h"
 
 namespace DAVA
 {
@@ -45,10 +46,11 @@ struct ISimpleAbstractSocket
     virtual const Endpoint& GetEndpoint() = 0;
     virtual bool Shutdown() = 0;
     
-    virtual size_t Send(const char* buf, size_t bufSize) = 0;
-    virtual size_t Recv(char* buf, size_t bufSize, bool recvAll = false) = 0;
-    virtual bool IsConnectionEstablished() = 0;
+    virtual bool Send(IOPool::BufferPtr&& buf, size_t bufSize,
+                      const IOPool::SendCallback& cb = nullptr) = 0;
+    virtual bool Recv(const IOPool::RecvCallback& cb, size_t* recvBytesCount = nullptr) = 0;
 
+    virtual bool IsConnectionEstablished() = 0;
     virtual bool IsValid() = 0;
 };
 using ISimpleAbstractSocketPtr = std::shared_ptr<ISimpleAbstractSocket>;
