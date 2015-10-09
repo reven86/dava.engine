@@ -49,13 +49,12 @@ public:
     bool OnInput(DAVA::UIEvent* currentInput) override;
 
 private:
-    using MoveInfo = std::tuple<ControlNode* /*node*/, AbstractProperty* /*positionProperty*/, const DAVA::UIGeometricData* /*parent gd*/, DAVA::Vector2 /*extraDelta*/>;
+    using MoveInfo = std::tuple<ControlNode* /*node*/, AbstractProperty* /*positionProperty*/, const DAVA::UIGeometricData* /*parent gd*/>;
     enum
     {
-        NODE_POS,
-        PROPERTY_POS,
-        GD_POS,
-        EXTRA_DELTA_POS
+        NODE_INDEX,
+        PROPERTY_INDEX,
+        GD_INDEX
     };
     using PropertyDelta = std::pair<AbstractProperty* /*property*/, DAVA::VariantType /*delta*/>;
 
@@ -73,9 +72,10 @@ private:
     void Rotate(DAVA::Vector2 pos);
     bool AdjustRotate(DAVA::float32 deltaAngle, DAVA::float32 originalAngle, DAVA::float32& finalAngle);
     void MoveAllSelectedControls(DAVA::Vector2 delta, bool canAdjust);
-    void AdjustMove(DAVA::Vector2& delta, DAVA::Vector<MagnetLineInfo>& magnetLines, MoveInfo& info);
+    DAVA::Vector2 AdjustMove(DAVA::Vector2 delta, DAVA::Vector<MagnetLineInfo>& magnetLines, const DAVA::UIGeometricData* parentGD, const DAVA::UIControl* control);
 
     void CorrectNodesToMove();
+    void UpdateNeighboursToMove();
 
     HUDAreaInfo::eArea activeArea = HUDAreaInfo::NO_AREA;
     ControlNode* activeControlNode = nullptr;
@@ -83,6 +83,7 @@ private:
     DAVA::Vector2 extraDelta;
     SelectedControls selectedControlNodes;
     DAVA::List<MoveInfo> nodesToMove;
+    DAVA::Vector<DAVA::UIControl*> neighbours;
     const DAVA::Vector2 minimumSize = DAVA::Vector2(16.0f, 16.0f);
     size_t currentHash = 0;
 

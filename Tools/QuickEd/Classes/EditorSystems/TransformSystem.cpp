@@ -137,6 +137,7 @@ void TransformSystem::OnActiveAreaChanged(const HUDAreaInfo& areaInfo)
         angleProperty = nullptr;
         pivotProperty = nullptr;
     }
+    UpdateNeighboursToMove();
 }
 
 bool TransformSystem::OnInput(UIEvent* currentInput)
@@ -149,10 +150,6 @@ bool TransformSystem::OnInput(UIEvent* currentInput)
     case UIEvent::PHASE_BEGAN:
     {
         extraDelta.SetZero();
-        for (auto& tuple : nodesToMove)
-        {
-            std::get<EXTRA_DELTA_POS>(tuple).SetZero();
-        }
         prevPos = currentInput->point;
         microseconds us = duration_cast<microseconds>(system_clock::now().time_since_epoch());
         currentHash = static_cast<size_t>(us.count());
@@ -181,9 +178,10 @@ void TransformSystem::OnSelectionChanged(const SelectedNodes& selected, const Se
     nodesToMove.clear();
     for (ControlNode* selectedControl : selectedControlNodes)
     {
-        nodesToMove.emplace_back(selectedControl, nullptr, nullptr, Vector2(0.0f, 0.0f));
+        nodesToMove.emplace_back(selectedControl, nullptr, nullptr);
     }
     CorrectNodesToMove();
+    UpdateNeighboursToMove();
 }
 
 bool TransformSystem::ProcessKey(const int32 key)
@@ -268,22 +266,42 @@ void TransformSystem::MoveAllSelectedControls(Vector2 delta, bool canAdjust)
     Vector<std::tuple<ControlNode*, AbstractProperty*, VariantType>> propertiesToChange;
     Vector<MagnetLineInfo> magnets;
 
+    if (canAdjust)
+    {
+        Vector2 scaledDelta = delta / parentGeometricData.scale;
+        Vector2 deltaPosition(RotateVector(scaledDelta, parentGeometricData));
+        Vector2 movedDeltaPosition = deltaPosition + extraDelta;
+        extraDelta.SetZero();
+        Vector2 adjustedPositon = AdjustMove(movedDeltaPosition, magnets, &parentGeometricData, activeControlNode->GetControl());
+        AbstractProperty* property = positionProperty;
+        Vector2 originalPosition = property->GetValue().AsVector2();
+        Vector2 finalPosition(originalPosition + adjustedPositon);
+        propertiesToChange.emplace_back(activeControlNode, property, VariantType(finalPosition));
+        for (int32 axisInt = Vector2::AXIS_X; axisInt < Vector2::AXIS_COUNT; ++axisInt)
+        {
+            Vector2::eAxis axis = static_cast<Vector2::eAxis>(axisInt);
+            if (fabs(deltaPosition[axis]) > TRANSFORM_EPSILON)
+            {
+                delta[axis] *= adjustedPositon[axis] / deltaPosition[axis];
+            }
+            else
+            {
+                delta[axis] = 0.0f;
+            }
+        }
+    }
+
     for (auto& tuple : nodesToMove)
     {
-        ControlNode* node = std::get<NODE_POS>(tuple);
-        const UIGeometricData* gd = std::get<GD_POS>(tuple);
+        ControlNode* node = std::get<NODE_INDEX>(tuple);
+        if (node == activeControlNode)
+        {
+            continue;
+        }
+        const UIGeometricData* gd = std::get<GD_INDEX>(tuple);
         Vector2 scaledDelta = delta / gd->scale;
         Vector2 deltaPosition(RotateVector(scaledDelta, *gd));
-        Vector2& extraDelta_ = std::get<EXTRA_DELTA_POS>(tuple);
-        deltaPosition += extraDelta_;
-        extraDelta_.SetZero();
-        if (canAdjust)
-        {
-            AdjustMove(deltaPosition, magnets, tuple);
-        }
-
-        AbstractProperty* property = std::get<PROPERTY_POS>(tuple);
-
+        AbstractProperty* property = std::get<PROPERTY_INDEX>(tuple);
         Vector2 originalPosition = property->GetValue().AsVector2();
         Vector2 finalPosition(originalPosition + deltaPosition);
         propertiesToChange.emplace_back(node, property, VariantType(finalPosition));
@@ -335,8 +353,10 @@ List<MagnetLine> CreateMagnetPairsForMove(const Rect& box, const UIGeometricData
     return magnets;
 }
 
-void ExtractMatchedLines(Vector<MagnetLineInfo>& magnets, const List<MagnetLine>& magnetLines, const UIGeometricData* parentGD, Vector2::eAxis axis, float32 extraDelta)
+void ExtractMatchedLines(Vector<MagnetLineInfo>& magnets, const List<MagnetLine>& magnetLines, const UIControl* control, Vector2::eAxis axis, float32 extraDelta)
 {
+    UIControl* parent = control->GetParent();
+    const UIGeometricData* parentGD = &parent->GetGeometricData();
     for (const MagnetLine& line : magnetLines)
     {
         if (fabs(line.distance - extraDelta) < TRANSFORM_EPSILON)
@@ -367,28 +387,8 @@ void ExtractMatchedLines(Vector<MagnetLineInfo>& magnets, const List<MagnetLine>
     }
 }
 
-void CollectNeighbours(Vector<UIControl*>& neighbours, const SelectedControls& selectedControlNodes, UIControl* controlParent)
+Vector2 TransformSystem::AdjustMove(Vector2 delta, Vector<MagnetLineInfo>& magnets, const UIGeometricData* parentGD, const UIControl* control)
 {
-    DVASSERT(nullptr != controlParent);
-    Vector<UIControl*> ignoredNeighbours;
-    for (ControlNode* node : selectedControlNodes)
-    {
-        if (node->GetControl()->GetParent() == controlParent)
-        {
-            ignoredNeighbours.push_back(node->GetControl());
-        }
-    }
-
-    const auto& children = controlParent->GetChildren();
-    std::set_difference(children.begin(), children.end(), ignoredNeighbours.begin(), ignoredNeighbours.end(), std::back_inserter(neighbours));
-}
-// const UIGeometricData* parentGD, const UIControl* control
-void TransformSystem::AdjustMove(Vector2& delta, Vector<MagnetLineInfo>& magnets, MoveInfo& moveInfo)
-{
-    const UIGeometricData* parentGD = std::get<GD_POS>(moveInfo);
-    const UIControl* control = std::get<NODE_POS>(moveInfo)->GetControl();
-    Vector2& extraDelta = std::get<EXTRA_DELTA_POS>(moveInfo);
-
     const Vector2 scaledRange(Vector2(20.0f, 20.0f) / parentGD->scale);
     const Vector2 range(RotateVector(scaledRange, *parentGD));
 
@@ -399,9 +399,6 @@ void TransformSystem::AdjustMove(Vector2& delta, Vector<MagnetLineInfo>& magnets
     for (int32 axisInt = Vector2::AXIS_X; axisInt < Vector2::AXIS_COUNT; ++axisInt)
     {
         Vector2::eAxis axis = static_cast<Vector2::eAxis>(axisInt);
-
-        Vector<UIControl*> neighbours;
-        CollectNeighbours(neighbours, selectedControlNodes, control->GetParent());
 
         List<MagnetLine> magnetLines = CreateMagnetPairsForMove(box, parentGD, neighbours, axis);
         std::function<bool(const MagnetLine&, const MagnetLine&)> predicate = [](const MagnetLine& left, const MagnetLine& right) -> bool
@@ -417,8 +414,10 @@ void TransformSystem::AdjustMove(Vector2& delta, Vector<MagnetLineInfo>& magnets
             extraDelta[axis] = nearestLine.distance;
             delta[axis] -= nearestLine.distance;
         }
-        ExtractMatchedLines(magnets, magnetLines, parentGD, axis, extraDelta[axis]);
+
+        ExtractMatchedLines(magnets, magnetLines, control, axis, extraDelta[axis]);
     }
+    return delta;
 }
 
 void TransformSystem::ResizeControl(Vector2 delta, bool withPivot, bool rateably)
@@ -780,7 +779,7 @@ void TransformSystem::CorrectNodesToMove()
     while (iter != nodesToMove.end())
     {
         bool toRemove = false;
-        PackageBaseNode* parent = std::get<NODE_POS>(*iter)->GetParent();
+        PackageBaseNode* parent = std::get<NODE_INDEX>(*iter)->GetParent();
         if (nullptr == parent || nullptr == parent->GetControl())
         {
             toRemove = true;
@@ -790,8 +789,8 @@ void TransformSystem::CorrectNodesToMove()
             auto iter2 = nodesToMove.begin();
             while (iter2 != nodesToMove.end() && !toRemove)
             {
-                PackageBaseNode* node1 = std::get<NODE_POS>(*iter);
-                PackageBaseNode* node2 = std::get<NODE_POS>(*iter2);
+                PackageBaseNode* node1 = std::get<NODE_INDEX>(*iter);
+                PackageBaseNode* node2 = std::get<NODE_INDEX>(*iter2);
                 if (iter != iter2)
                 {
                     while (nullptr != node1->GetParent() && nullptr != node1->GetControl() && !toRemove)
@@ -817,9 +816,43 @@ void TransformSystem::CorrectNodesToMove()
     }
     for (auto& tuple : nodesToMove)
     {
-        ControlNode* node = std::get<NODE_POS>(tuple);
+        ControlNode* node = std::get<NODE_INDEX>(tuple);
         UIControl* control = node->GetControl();
-        std::get<PROPERTY_POS>(tuple) = node->GetRootProperty()->FindPropertyByName("Position");
-        std::get<GD_POS>(tuple) = &control->GetParent()->GetGeometricData();
+        std::get<PROPERTY_INDEX>(tuple) = node->GetRootProperty()->FindPropertyByName("Position");
+        UIControl* parent = control->GetParent();
+        DVASSERT(nullptr != parent);
+        std::get<GD_INDEX>(tuple) = &parent->GetGeometricData();
+    }
+}
+
+void CollectNeighbours(Vector<UIControl*>& neighbours, const SelectedControls& selectedControlNodes, UIControl* controlParent)
+{
+    DVASSERT(nullptr != controlParent);
+    Vector<UIControl*> ignoredNeighbours;
+    for (ControlNode* node : selectedControlNodes)
+    {
+        if (node->GetControl()->GetParent() == controlParent)
+        {
+            ignoredNeighbours.push_back(node->GetControl());
+        }
+    }
+
+    const List<UIControl*>& children = controlParent->GetChildren();
+    std::copy_if(children.begin(), children.end(), std::back_inserter(neighbours), [&ignoredNeighbours](UIControl* left) -> bool
+                                                                                   {
+                     return std::find(ignoredNeighbours.begin(), ignoredNeighbours.end(), left) == ignoredNeighbours.end();
+                                                                                   });
+}
+
+void TransformSystem::UpdateNeighboursToMove()
+{
+    neighbours.clear();
+    if (nullptr != activeControlNode)
+    {
+        UIControl* parent = activeControlNode->GetControl()->GetParent();
+        if (nullptr != parent)
+        {
+            CollectNeighbours(neighbours, selectedControlNodes, parent);
+        }
     }
 }
