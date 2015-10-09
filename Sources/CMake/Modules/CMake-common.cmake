@@ -477,3 +477,30 @@ macro ( add_dynamic_libs_win_uap LIBS_LOCATION OUTPUT_LIB_LIST )
     add_dynamic_config_lib_win_uap ( "RELEASE" ${LIBS_LOCATION} ${OUTPUT_LIB_LIST} )
 
 endmacro ()
+
+function (ASSERT VAR_NAME MESSAGE)
+    if (NOT ${VAR_NAME})
+         message( FATAL_ERROR ${MESSAGE} )
+    endif()
+endfunction()
+
+function (append_qt5_deploy LIBRARIES)
+    GET_PROPERTY(QT_DEPLOY_LIST_VALUE GLOBAL PROPERTY QT_DEPLOY_LIST)
+    LIST(APPEND QT_DEPLOY_LIST_VALUE ${${LIBRARIES}})
+    SET_PROPERTY(GLOBAL PROPERTY QT_DEPLOY_LIST "${QT_DEPLOY_LIST_VALUE}")
+endfunction()
+
+function (set_linkage_qt5_modules LIBRARIES)
+    SET_PROPERTY(GLOBAL PROPERTY QT_LINKAGE_LIST ${${LIBRARIES}})
+endfunction()
+
+function (get_qt5_deploy_list OUTPUT_VAR_NAME)
+    GET_PROPERTY(QT_DEPLOY_LIST_VALUE GLOBAL PROPERTY QT_DEPLOY_LIST)
+    LIST(REMOVE_DUPLICATES QT_DEPLOY_LIST_VALUE)
+    set(${OUTPUT_VAR_NAME} ${QT_DEPLOY_LIST_VALUE} PARENT_SCOPE)
+endfunction()
+
+function (link_with_qt5 TARGET)
+    GET_PROPERTY(QT_LINKAGE_LIST_VALUE GLOBAL PROPERTY QT_LINKAGE_LIST)
+    target_link_libraries( ${TARGET} ${NO_LINK_WHOLE_ARCHIVE_FLAG} ${QT_LINKAGE_LIST_VALUE} )
+endfunction()
