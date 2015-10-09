@@ -166,7 +166,8 @@ public:
 	inline Vector3();
 	inline Vector3(float32 _x, float32 _y, float32 _z);
 	inline Vector3(const float32 *_data);
-	explicit inline Vector3(const Vector2 & v);
+    inline Vector3(const Vector2& v, float _z);
+    explicit inline Vector3(const Vector2 & v);
     explicit inline Vector3(const Vector4 & v);
 	inline Vector3 & operator =(const Vector3 & _v);
 	inline Vector3 & operator =(const Vector2 & _v);
@@ -186,7 +187,12 @@ public:
     inline bool IsZero() const { return x == 0.f && y == 0.f && z == 0.f; }
     inline void Zerofy() { x = y = z = 0.f; } // = 0
 
-	//! On functions
+    const Vector2& xy() const
+    {
+        return *(reinterpret_cast<const Vector2*>(data));
+    }
+
+    //! On functions
 	inline float32 SquareLength()  const;
 	inline float32 Length() const;
     inline float32 Normalize();
@@ -569,7 +575,14 @@ inline Vector3::Vector3(const Vector2 & v)
 	y = v.y;
 	z = 0.0f;
 }
-	
+
+inline Vector3::Vector3(const Vector2& v, float _z)
+{
+    x = v.x;
+    y = v.y;
+    z = _z;
+}
+
 inline Vector3::Vector3(const Vector4 & v)
 {
     x = v.x;

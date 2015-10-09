@@ -315,7 +315,6 @@ TextureGLES2_t::Destroy( bool force_immediate )
         }
 
         cmd_cnt += fbo.size();
-        fbo.clear();
     }
     else if( isRenderBuffer )
     {
@@ -337,16 +336,16 @@ TextureGLES2_t::Destroy( bool force_immediate )
         cmd[0].arg[1] = uint64(&(uid));
     }
 
-    ExecGL( cmd, cmd_cnt );
+    ExecGL(cmd, cmd_cnt, force_immediate);
 
-
+    fbo.clear();
 
     DVASSERT(!isMapped);
         
     if( mappedData )
     {
         ::free( mappedData );
-            
+
         mappedData = nullptr;
         width      = 0;
         height     = 0;

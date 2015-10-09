@@ -47,33 +47,22 @@ public:
     bool IsLandscapeEditingEnabled() const;
 
 protected:
-    
     LandscapeEditorDrawSystem::eErrorType IsCanBeEnabled() const;
 
     void UpdateCursorPosition();
 
-    
-    
 protected:
-
-	bool enabled;
-
-    
 	SceneCollisionSystem *collisionSystem;
 	SceneSelectionSystem *selectionSystem;
 	EntityModificationSystem *modifSystem;
     LandscapeEditorDrawSystem *drawSystem;
-    
-    
-    DAVA::Texture* cursorTexture;
-    DAVA::float32 cursorSize;
 	Vector2 cursorPosition;
     Vector2 prevCursorPos;
-
-
-    bool isIntersectsLandscape;
-    
-    int32 landscapeSize;
+    Texture* cursorTexture = nullptr;
+    float32 cursorSize = 0.0f;
+    float32 landscapeSize = 0.0f;
+    bool isIntersectsLandscape = false;
+    bool enabled = false;
 };
 
 #endif //__LANDSCAPE_EDITOR_SYSTEM__

@@ -266,6 +266,12 @@ void Texture::ReleaseTextureData()
         handle = rhi::HTexture(rhi::InvalidHandle);
     }
 
+    if (handleDepthStencil.IsValid())
+    {
+        rhi::DeleteTexture(handleDepthStencil);
+        handleDepthStencil = rhi::HTexture();
+    }
+
     if (samplerStateHandle.IsValid())
     {
         rhi::ReleaseSamplerState(samplerStateHandle);
@@ -777,7 +783,7 @@ int32 Texture::Release()
 	return BaseObject::Release();
 }
 
-Texture * Texture::CreateFBO(uint32 w, uint32 h, PixelFormat format, rhi::TextureType requestedType)
+Texture* Texture::CreateFBO(uint32 w, uint32 h, PixelFormat format, bool needDepth, rhi::TextureType requestedType)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
@@ -794,7 +800,8 @@ Texture * Texture::CreateFBO(uint32 w, uint32 h, PixelFormat format, rhi::Textur
     tx->textureType = requestedType;
     tx->texDescriptor->format = format;
     tx->samplerState.mipFilter = tx->texDescriptor->drawSettings.mipFilter = rhi::TEXMIPFILTER_NONE;
-    
+    tx->samplerStateHandle = CreateSamplerStateHandle(tx->samplerState);
+
     const PixelFormatDescriptor & formatDescriptor = PixelFormatDescriptor::GetPixelFormatDescriptor(format);
     rhi::Texture::Descriptor descriptor;
     descriptor.width = tx->width;
@@ -804,9 +811,16 @@ Texture * Texture::CreateFBO(uint32 w, uint32 h, PixelFormat format, rhi::Textur
     descriptor.needRestore = false;
     descriptor.type = requestedType;
     descriptor.format = formatDescriptor.format;
+
     DVASSERT(descriptor.format != ((rhi::TextureFormat)-1));//unsupported format
     tx->handle = rhi::CreateTexture(descriptor);
-    tx->samplerStateHandle = CreateSamplerStateHandle(tx->samplerState);
+
+    if (needDepth)
+    {
+        descriptor.isRenderTarget = false;
+        descriptor.format = rhi::TEXTURE_FORMAT_D24S8;
+        tx->handleDepthStencil = rhi::CreateTexture(descriptor);
+    }
 
     rhi::TextureSetDescriptor textureSetDesc;
     textureSetDesc.fragmentTexture[0] = tx->handle;
