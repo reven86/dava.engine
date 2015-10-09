@@ -29,7 +29,7 @@
 
 #include "BeastCommandLineTool.h"
 #include "CommandLine/SceneUtils/SceneUtils.h"
-#include "TexturePacker/CommandLineParser.h"
+#include "CommandLine/CommandLineParser.h"
 #include "Scene/SceneEditor2.h"
 #include "Scene/SceneHelper.h"
 #include "Commands2/BeastAction.h"

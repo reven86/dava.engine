@@ -1,6 +1,7 @@
 package com.dava.framework;
 
 import java.util.TimeZone;
+import java.text.DateFormat;
 import java.util.Date;
 import java.util.Locale;
 
@@ -14,10 +15,26 @@ public class JNIDateTime {
         Locale loc = new Locale(countryCode);      
         Date dt = new Date();
         dt.setTime(timeStamp*1000);
-        Strftime formatter = new Strftime(format, loc);
-        formatter.setTimeZone(tz);
         
-        return formatter.format(dt);
+        String result;        
+        if (format.equals("%x"))
+        {
+        	DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.SHORT, loc);
+        	dateFormat.setTimeZone(tz);
+        	result = dateFormat.format(dt);
+        } else if (format.equals("%X"))
+        {
+        	DateFormat dateFormat = DateFormat.getTimeInstance(DateFormat.MEDIUM, loc);
+        	dateFormat.setTimeZone(tz);
+        	result = dateFormat.format(dt);
+        } else
+        {
+        	// this is old invalid implementation leave it only temporarily, see DAVA::DateTime.AsWString(String format)
+        	Strftime formatter = new Strftime(format, loc);
+            formatter.setTimeZone(tz);
+            result = formatter.format(dt);	
+        }
+        return result;
 	}
 	
 	public static int GetLocalTimeZoneOffset()

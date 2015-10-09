@@ -36,7 +36,7 @@
 
 #include "mainwindow.h"
 
-#include "TexturePacker/CommandLineParser.h"
+#include "CommandLine/CommandLineParser.h"
 #include "Classes/CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
 
 #include "QtTools/FileDialog/FileDialog.h"

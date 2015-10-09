@@ -44,12 +44,13 @@ class Color;
 class UITextField;
 class UITextFieldDelegate;
 class PrivateTextFieldWinUAP;
+class UIGeometricData;
 
-class UITextFieldWinUAP
+class TextFieldPlatformImpl
 {
 public:
-    UITextFieldWinUAP(UITextField* uiTextField);
-    ~UITextFieldWinUAP();
+    TextFieldPlatformImpl(UITextField* uiTextField);
+    ~TextFieldPlatformImpl();
 
     void SetVisible(bool isVisible);
     void SetIsPassword(bool isPassword);
@@ -90,6 +91,8 @@ public:
 
     uint32 GetCursorPos() const;
     void SetCursorPos(uint32 pos);
+
+    void SystemDraw(const UIGeometricData&);
 
 private:
     std::shared_ptr<PrivateTextFieldWinUAP> privateImpl;

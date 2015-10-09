@@ -85,16 +85,17 @@ void LocalizationSystem::InitWithDirectory(const FilePath &directoryPath)
     Init();
 }
 
-void LocalizationSystem::SetDirectory(const FilePath &directoryPath)
+void LocalizationSystem::SetDirectory(const FilePath& dirPath)
 {
-    DVASSERT(directoryPath.IsDirectoryPathname());
-    this->directoryPath = directoryPath;
+    DVASSERT(dirPath.IsDirectoryPathname());
+    directoryPath = dirPath;
 #if defined(__DAVAENGINE_IPHONE__)
 	LocalizationIPhone::SelectPreferedLocalizationForPath(directoryPath);
 #elif defined(__DAVAENGINE_ANDROID__)
     LocalizationAndroid::SelectPreferedLocalization();
 #else
-    SetCurrentLocale(Core::Instance()->GetOptions()->GetString("locale", DEFAULT_LOCALE));
+    String loc = Core::Instance()->GetOptions()->GetString("locale", DEFAULT_LOCALE);
+    SetCurrentLocale(loc);
 #endif
 }
 

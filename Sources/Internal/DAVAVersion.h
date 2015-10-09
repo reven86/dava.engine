@@ -32,5 +32,4 @@
 
 #define DAVAENGINE_VERSION "0.7"
 
-
 #endif //__DAVAENGINE_VERION_H__

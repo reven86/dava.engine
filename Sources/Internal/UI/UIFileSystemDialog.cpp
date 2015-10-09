@@ -30,6 +30,7 @@
 #include "UI/UIFileSystemDialog.h"
 #include "UI/UIList.h"
 #include "UI/UITextField.h"
+#include "UI/UIStaticText.h"
 #include "FileSystem/FileList.h"
 #include "Utils/Utils.h"
 #include "Core/Core.h"
@@ -249,6 +250,10 @@ void UIFileSystemDialog::Show(UIControl *parentControl)
     RefreshList();
 }
 
+void UIFileSystemDialog::SetTitle(const WideString& newTitle)
+{
+    title->SetText(newTitle);
+}
 
 void UIFileSystemDialog::SetCurrentDir(const FilePath &newDirPath, bool rebuildHistory /* = false*/)
 {

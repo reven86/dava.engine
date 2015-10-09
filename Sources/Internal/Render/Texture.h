@@ -240,6 +240,7 @@ public:							// properties for fast access
 
 
     eGPUFamily loadedAsFile;
+
     TextureState state:2;
     uint32      textureType:2;
 
