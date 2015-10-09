@@ -1302,16 +1302,37 @@ DiscardAll()
     _FrameSync.Lock();
     for( std::vector<FrameDX11>::iterator f=_Frame.begin(),f_end=_Frame.end(); f!=f_end; ++f )
     {
-        for( std::vector<Handle>::iterator p=f->pass.begin(),p_end=f->pass.end(); f!=f_end; ++f )
+        if (f->readyToExecute)
         {
-            RenderPassDX11_t*   pp = RenderPassPool::Get( *p );
-                                    
-            for( std::vector<Handle>::iterator b=pp->cmdBuf.begin(),b_end=pp->cmdBuf.end(); b!=b_end; ++b )
+            if (f->sync != InvalidHandle)
             {
-                CommandBufferDX11_t*  cb = CommandBufferPool::Get( *b );
+                SyncObjectDX11_t* s = SyncObjectPool::Get(f->sync);
+                s->is_signaled = true;
+                s->is_used = true;
+            }
 
-                if( cb->commandList )
-                    cb->commandList->Release();
+            for (std::vector<Handle>::iterator p = f->pass.begin(), p_end = f->pass.end(); p != p_end; ++p)
+            {
+                RenderPassDX11_t* pp = RenderPassPool::Get(*p);
+
+                for (std::vector<Handle>::iterator b = pp->cmdBuf.begin(), b_end = pp->cmdBuf.end(); b != b_end; ++b)
+                {
+                    CommandBufferDX11_t* cb = CommandBufferPool::Get(*b);
+
+                    if (cb->sync != InvalidHandle)
+                    {
+                        SyncObjectDX11_t* s = SyncObjectPool::Get(cb->sync);
+                        s->is_signaled = true;
+                        s->is_used = true;
+                    }
+
+                    if (cb->commandList)
+                        cb->commandList->Release();
+
+                    CommandBufferPool::Free(*b);
+                }
+
+                RenderPassPool::Free(*p);
             }
         }
     }
