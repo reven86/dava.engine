@@ -125,14 +125,9 @@ public:
 
     TextBlock * Clone();
 
-<<<<<<< HEAD
-    const Vector<int32> & GetStringSizes() const;
-        
-=======
     const Vector<int32>& GetStringSizes();
+        
 
-    void ForcePrepare(Texture* texture);
->>>>>>> development
 #if defined(LOCALIZATION_DEBUG)
     int32 GetFittingOptionUsed();
 	bool IsVisualTextCroped();

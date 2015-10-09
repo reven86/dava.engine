@@ -100,15 +100,9 @@ TextBlock::TextBlock()
     , cacheDy(0)
     , cacheW(0)
     , cacheOx(0)
-<<<<<<< HEAD
     , cacheOy(0)
-    , angle(0.f)
-=======
-    , cacheOy(0)
-    , textureForInvalidation(NULL)
     , angle(0.f)
     , needCalculateCacheParams(false)
->>>>>>> development
 {
     font = NULL;
     isMultilineEnabled = false;
@@ -133,9 +127,7 @@ TextBlock::TextBlock()
 
 TextBlock::TextBlock(const TextBlock& src)
     : font(nullptr)
-    , textureForInvalidation(nullptr)
     , textBlockRender(nullptr)
-    , textureInvalidater(nullptr)
     //Basic params
     , scale(src.scale)
     , rectSize(src.rectSize)
@@ -198,59 +190,21 @@ void TextBlock::SetFontInternal(Font* _font)
 
     originalFontSize = font->GetSize();
     renderSize = originalFontSize;
-<<<<<<< HEAD
 
     SafeRelease(textBlockRender);    
-    switch (font->GetFontType()) 
-	{
-        case Font::TYPE_FT:
-            textBlockRender = new TextBlockSoftwareRender(this);           
-			break;
-		case Font::TYPE_GRAPHIC:
-        case Font::TYPE_DISTANCE:
-			textBlockRender = new TextBlockGraphicRender(this);
-			break;
-		default:
-			DVASSERT(!"Unknown font type");
-			break;
-	}
-	
-    mutex.Unlock();
-    Prepare();
-}
-
-void TextBlock::SetRectSize(const Vector2 & size)
-{
-    mutex.Lock();
-
-	if (rectSize != size)
-	{
-		rectSize = size;
-
-		mutex.Unlock();
-		Prepare();
-        return;
-=======
-
-    SafeRelease(textBlockRender);
-    SafeDelete(textureInvalidater);
     switch (font->GetFontType())
     {
     case Font::TYPE_FT:
         textBlockRender = new TextBlockSoftwareRender(this);
-        textureInvalidater = new TextBlockSoftwareTexInvalidater(this);
         break;
-    case Font::TYPE_GRAPHICAL:
-        textBlockRender = new TextBlockGraphicsRender(this);
-        break;
+    case Font::TYPE_GRAPHIC:
     case Font::TYPE_DISTANCE:
-        textBlockRender = new TextBlockDistanceRender(this);
+        textBlockRender = new TextBlockGraphicRender(this);
         break;
 
     default:
         DVASSERT(!"Unknown font type");
         break;
->>>>>>> development
     }
 }
 
@@ -446,35 +400,11 @@ Sprite * TextBlock::GetSprite()
     return nullptr;
 }
 
-void TextBlock::ForcePrepare(Texture* texture)
-{
-    NeedPrepare(texture);
-}
 
-<<<<<<< HEAD
-void TextBlock::Prepare()
-{
-	if(!font)
-	{
-		return;
-	}
-	
-	CalculateCacheParams();
-
-	
-	needPrepareInternal = true;
-	
-=======
 void TextBlock::NeedPrepare(Texture* texture /*=NULL*/)
 {
-    if (texture != textureForInvalidation)
-    {
-        SafeRelease(textureForInvalidation);
-        textureForInvalidation = SafeRetain(texture);
-    }
     needCalculateCacheParams = true;
     needPrepareInternal = true;
->>>>>>> development
 }
 	
 void TextBlock::PrepareInternal()
@@ -1015,34 +945,6 @@ TextBlock * TextBlock::Clone()
     block->SetText(GetText(), requestedSize);
 
     return block;
-}
-
-
-void TextBlock::SetBiDiSupportEnabled(bool value)
-{
-    isBiDiSupportEnabled = value;
-}
-
-bool TextBlock::IsBiDiSupportEnabled()
-{
-    return isBiDiSupportEnabled;
-}
-
-const Vector2 & TextBlock::GetTextSize()
-{
-    LockGuard<Mutex> guard(mutex);
-    return cacheTextSize;
-}
-
-const Vector<int32> & TextBlock::GetStringSizes() const
-{
-    return stringSizes;
-}
-
-const Vector2& TextBlock::GetSpriteOffset()
-{
-    LockGuard<Mutex> guard(mutex);
-    return cacheSpriteOffset;
 }
 
 };
