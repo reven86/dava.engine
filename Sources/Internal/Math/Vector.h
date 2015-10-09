@@ -829,16 +829,16 @@ inline Vector3 PerpendicularVector(const Vector3& normal)
 
     if (componentsLength.x > 0.5f)
     {
-        float scaleFactor = std::sqrt(componentsLength.z + componentsLength.x);
+        float32 scaleFactor = std::sqrt(componentsLength.z + componentsLength.x);
         return Vector3(normal.z / scaleFactor, 0.0f, -normal.x / scaleFactor);
     }
     else if (componentsLength.y > 0.5f)
     {
-        float scaleFactor = std::sqrt(componentsLength.y + componentsLength.x);
+        float32 scaleFactor = std::sqrt(componentsLength.y + componentsLength.x);
         return Vector3(-normal.y / scaleFactor, normal.x / scaleFactor, 0.0f);
     }
 
-    float scaleFactor = std::sqrt(componentsLength.z + componentsLength.y);
+    float32 scaleFactor = std::sqrt(componentsLength.z + componentsLength.y);
     return Vector3(0.0f, -normal.z / scaleFactor, normal.y / scaleFactor);
 }
 
