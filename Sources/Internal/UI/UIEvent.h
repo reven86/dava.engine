@@ -46,14 +46,6 @@ class UIControl;
 class UIEvent
 {
 public:
-    enum eInputSource
-    {
-        INPUT_UNDEFINED,
-        INPUT_SOURCE_TOUCHSCREEN,
-        INPUT_SOURCE_MOUSE,
-        INPUT_SOURCE_KEYBOARD,
-        INPUT_SOURCE_GAMEPAD
-    };
 
     /**
 	 \enum Control state bits.
@@ -128,12 +120,23 @@ public:
         JOYSTICK_AXIS_HAT_Y
     };
 
-    enum class PointerDeviceID : uint32
+    //enum eInputSource
+    //{
+    //    INPUT_UNDEFINED,
+    //    INPUT_SOURCE_TOUCHSCREEN,
+    //    INPUT_SOURCE_MOUSE,
+    //    INPUT_SOURCE_KEYBOARD,
+    //    INPUT_SOURCE_GAMEPAD
+    //};
+
+    enum class Device : uint32
     {
-        NOT_SUPPORTED = 0,
-        MOUSE = 1,
-        TOUCH = 2,
-        PEN = 3
+        UNKNOWN = 0,
+        TOUCH_SURFACE,
+        MOUSE,
+        KEYBOARD,
+        GAMEPAD,
+        PEN
     };
 
     int32 tid = 0; // event id, for the platforms with mouse this id means mouse button id, key codes for keys, axis id for joystick
@@ -146,7 +149,7 @@ public:
     int32 controlState = CONTROL_STATE_RELEASED; // input state relative to control (outside, inside). Used for point inputs only(mouse, touch)
     int32 tapCount = 0; // count of the continuous inputs (clicks for mouse)
     char16 keyChar = 0; // unicode/translated character produced by key using current language, caps etc. Used only with PHASE_CHAR.
-    PointerDeviceID deviceId = PointerDeviceID::NOT_SUPPORTED;
+    Device device = Device::UNKNOWN;
 
     inline void SetInputHandledType(eInputHandledType value)
     {
@@ -162,30 +165,30 @@ public:
 
     UIEvent() = default;
 
-    eInputSource GetInputSource()
-    {
-        switch (phase)
-        {
-            case PHASE_BEGAN:
-            case PHASE_DRAG:
-            case PHASE_ENDED:
-            case PHASE_CANCELLED:
-                return INPUT_SOURCE_TOUCHSCREEN;
-            case PHASE_CHAR:
-            case PHASE_KEY_UP:
-            case PHASE_KEY_DOWN:
-                return INPUT_SOURCE_KEYBOARD;
-#if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
-			case PHASE_MOVE:
-            case PHASE_WHEEL:
-                return INPUT_SOURCE_MOUSE;
-#endif
-            case PHASE_JOYSTICK:
-                return INPUT_SOURCE_GAMEPAD;
-            default:
-                return INPUT_UNDEFINED;
-        }
-    }
+    //    eInputSource GetInputSource()
+    //    {
+    //        switch (phase)
+    //        {
+    //            case PHASE_BEGAN:
+    //            case PHASE_DRAG:
+    //            case PHASE_ENDED:
+    //            case PHASE_CANCELLED:
+    //                return INPUT_SOURCE_TOUCHSCREEN;
+    //            case PHASE_CHAR:
+    //            case PHASE_KEY_UP:
+    //            case PHASE_KEY_DOWN:
+    //                return INPUT_SOURCE_KEYBOARD;
+    //#if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
+    //			case PHASE_MOVE:
+    //            case PHASE_WHEEL:
+    //                return INPUT_SOURCE_MOUSE;
+    //#endif
+    //            case PHASE_JOYSTICK:
+    //                return INPUT_SOURCE_GAMEPAD;
+    //            default:
+    //                return INPUT_UNDEFINED;
+    //        }
+    //    }
 
     eInputHandledType inputHandledType = INPUT_NOT_HANDLED; //!< input handled type, INPUT_NOT_HANDLED by default.
 };

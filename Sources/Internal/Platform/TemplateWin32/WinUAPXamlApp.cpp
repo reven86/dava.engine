@@ -70,19 +70,19 @@ namespace DAVA
 {
 namespace
 {
-UIEvent::PointerDeviceID ToDavaDeviceId(PointerDeviceType type)
+UIEvent::Device ToDavaDeviceId(PointerDeviceType type)
 {
     switch (type)
     {
     case PointerDeviceType::Mouse:
-        return UIEvent::PointerDeviceID::MOUSE;
+        return UIEvent::Device::MOUSE;
     case PointerDeviceType::Pen:
-        return UIEvent::PointerDeviceID::PEN;
+        return UIEvent::Device::PEN;
     case PointerDeviceType::Touch:
-        return UIEvent::PointerDeviceID::TOUCH;
+        return UIEvent::Device::TOUCH_SURFACE;
     default:
         DVASSERT(false && "can't be!");
-        return UIEvent::PointerDeviceID::NOT_SUPPORTED;
+        return UIEvent::Device::NOT_SUPPORTED;
     }
 }
 } // end anonim namespace
@@ -445,7 +445,7 @@ void WinUAPXamlApp::OnPointerWheel(Windows::UI::Core::CoreWindow^ sender, Window
 
                               ev.physPoint.y = static_cast<float32>(wheelDelta / WHEEL_DELTA);
                               ev.phase = UIEvent::PHASE_WHEEL;
-                              ev.deviceId = ToDavaDeviceId(type);
+                              ev.device = ToDavaDeviceId(type);
 
                               UIControlSystem::Instance()->OnInput({ ev }, events);
                           });
@@ -569,16 +569,16 @@ void WinUAPXamlApp::OnMouseMoved(MouseDevice^ mouseDevice, MouseEventArgs^ args)
     core->RunOnMainThread([this, x, y, button]() {
         if (isLeftButtonPressed || isMiddleButtonPressed || isRightButtonPressed)
         {
-            DAVATouchEvent(UIEvent::PHASE_DRAG, x, y, button, UIEvent::PointerDeviceID::MOUSE);
+            DAVATouchEvent(UIEvent::PHASE_DRAG, x, y, button, UIEvent::Device::MOUSE);
         }
         else
         {
-            DAVATouchEvent(UIEvent::PHASE_MOVE, x, y, button, UIEvent::PointerDeviceID::MOUSE);
+            DAVATouchEvent(UIEvent::PHASE_MOVE, x, y, button, UIEvent::Device::MOUSE);
         }
     });
 }
 
-void WinUAPXamlApp::DAVATouchEvent(UIEvent::eInputPhase phase, float32 x, float32 y, int32 id, UIEvent::PointerDeviceID deviceId)
+void WinUAPXamlApp::DAVATouchEvent(UIEvent::eInputPhase phase, float32 x, float32 y, int32 id, UIEvent::Device device)
 {
     UIEvent newTouch;
 
@@ -586,7 +586,7 @@ void WinUAPXamlApp::DAVATouchEvent(UIEvent::eInputPhase phase, float32 x, float3
     newTouch.physPoint.x = x;
     newTouch.physPoint.y = y;
     newTouch.phase = phase;
-    newTouch.deviceId = deviceId;
+    newTouch.device = device;
 
     UIControlSystem::Instance()->OnInput({newTouch}, events);
 }

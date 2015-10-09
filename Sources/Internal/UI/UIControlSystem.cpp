@@ -400,7 +400,7 @@ void UIControlSystem::SwitchInputToControl(int32 eventID, UIControl *targetContr
 static bool IsSameTouch(const UIEvent& l, const UIEvent& r)
 {
     return l.tid == r.tid &&
-    l.deviceId == r.deviceId &&
+    l.device == r.device &&
     l.phase != UIEvent::PHASE_WHEEL &&
     l.phase < UIEvent::PHASE_CHAR;
 };
