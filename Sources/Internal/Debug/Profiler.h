@@ -36,7 +36,7 @@
     #include <Base/Hash.h>
 
     #define PROFILER_ENABLED        0
-    #define TRACER_ENABLED          1
+    #define TRACER_ENABLED          0
 
 
 namespace profiler

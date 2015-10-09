@@ -145,7 +145,6 @@ FrameDX11
     uint32              readyToExecute:1;
     
     ID3D11CommandList*  cmdList;
-
 };
 
 static std::vector<FrameDX11>   _Frame;
@@ -248,6 +247,7 @@ dx11_RenderPass_Allocate( const RenderPassConfig& passDesc, uint32 cmdBufCount, 
         Handle               h  = CommandBufferPool::Alloc();
         CommandBufferDX11_t* cb = CommandBufferPool::Get( h );
 
+        cb->commandList   = nullptr;
         cb->passCfg       = passDesc;
         cb->isFirstInPass = i == 0;
         cb->isLastInPass  = i == cmdBufCount-1;
@@ -421,6 +421,7 @@ dx11_CommandBuffer_End( Handle cmdBuf, Handle syncObject )
 {
     CommandBufferDX11_t*    cb = CommandBufferPool::Get( cmdBuf );
 
+    cb->context->OMSetRenderTargets( 0, NULL, NULL );
     cb->context->FinishCommandList( TRUE, &(cb->commandList) );
     cb->sync = syncObject;
 }
@@ -1291,6 +1292,38 @@ SetupDispatch( Dispatch* dispatch )
     
     dispatch->impl_Present                              = &dx11_Present;
 }
+
+void
+DiscardAll()
+{
+    if( _DX11_InitParam.FrameCommandExecutionSync )
+        _DX11_InitParam.FrameCommandExecutionSync->Lock();    
+
+    _FrameSync.Lock();
+    for( std::vector<FrameDX11>::iterator f=_Frame.begin(),f_end=_Frame.end(); f!=f_end; ++f )
+    {
+        for( std::vector<Handle>::iterator p=f->pass.begin(),p_end=f->pass.end(); f!=f_end; ++f )
+        {
+            RenderPassDX11_t*   pp = RenderPassPool::Get( *p );
+                                    
+            for( std::vector<Handle>::iterator b=pp->cmdBuf.begin(),b_end=pp->cmdBuf.end(); b!=b_end; ++b )
+            {
+                CommandBufferDX11_t*  cb = CommandBufferPool::Get( *b );
+
+                if( cb->commandList )
+                    cb->commandList->Release();
+            }
+        }
+    }
+    _Frame.clear();
+    _FrameSync.Unlock();
+
+    _D3D11_ImmediateContext->OMSetRenderTargets( 0, NULL, NULL );
+
+    if( _DX11_InitParam.FrameCommandExecutionSync )
+        _DX11_InitParam.FrameCommandExecutionSync->Unlock();
+}
+
 }
 
 
