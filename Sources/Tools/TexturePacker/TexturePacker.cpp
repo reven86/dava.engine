@@ -759,13 +759,20 @@ TexturePacker::ImageExportKeys TexturePacker::GetExportKeys(eGPUFamily forGPU)
                 {
                     if (wrapper->IsFormatSupported(keys.pixelFormat))
                     {
-                        if (ImageConvert::CanConvertFromTo(FORMAT_RGBA8888, keys.pixelFormat))
+                        // TO DO: link intermediate atlass pixelformat with code which genetates it.
+                        const PixelFormat intermediateAtlassFormat = FORMAT_RGBA8888;
+
+                        // Try to setup kays only if destination pixelformat is different
+                        if (intermediateAtlassFormat != keys.pixelFormat)
                         {
-                            keys.toConvertOrigin = true;
-                        }
-                        else
-                        {
-                            AddError(Format("Can't convert to '%s'", GlobalEnumMap<PixelFormat>::Instance()->ToString(keys.pixelFormat)));
+                            if (ImageConvert::CanConvertFromTo(intermediateAtlassFormat, keys.pixelFormat))
+                            {
+                                keys.toConvertOrigin = true;
+                            }
+                            else
+                            {
+                                AddError(Format("Can't convert to '%s'", GlobalEnumMap<PixelFormat>::Instance()->ToString(keys.pixelFormat)));
+                            }
                         }
                     }
                     else
