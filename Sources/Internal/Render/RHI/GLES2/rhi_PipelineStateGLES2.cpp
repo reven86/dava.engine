@@ -217,7 +217,8 @@ VertexDeclGLES2
                                 }
 
 /*                                
-                                if(     vattr[idx].size != elem[i].count
+                                if(     !VAttrCacheValid
+                                    ||  vattr[idx].size != elem[i].count
                                     ||  vattr[idx].type != elem[i].type
                                     ||  vattr[idx].normalized != (GLboolean)(elem[i].normalized)
                                     ||  cur_stride != stride
@@ -230,12 +231,17 @@ VertexDeclGLES2
                                     vattr[idx].size         = elem[i].count;
                                     vattr[idx].type         = elem[i].type;
                                     vattr[idx].normalized   = (GLboolean)(elem[i].normalized);
-                                    vattr[idx].pointer      = (const GLvoid*)(base + (uint8_t*)(elem[i].offset));
-                                }                                
+                                    vattr[idx].pointer      = (const GLvoid*)(base + (uint8_t*)(elem[i].offset));                                    
+                                }
                             }
                         }
+                        VAttrCacheValid = true;
 
                         cur_stride = stride;                    
+                    }
+    static void     InvalidateVAttrCache()
+                    {
+                        VAttrCacheValid = false;
                     }
 
     struct
@@ -254,7 +260,11 @@ VertexDeclGLES2
     unsigned        elemCount;
     unsigned        stride;
     uint32          vattrInited:1;
+
+    static bool     VAttrCacheValid;
 };
+
+bool    VertexDeclGLES2::VAttrCacheValid = false;
 
 
 class
@@ -506,19 +516,45 @@ SetToRHI( Handle ps, uint32 layoutUID )
     PipelineStateGLES2_t* ps2 = PipelineStateGLES2Pool::Get( ps );
 
     DVASSERT(ps2);
+
+    static uint32   prog = 0;
     
-    GL_CALL(glUseProgram( ps2->glProg ));
+    if( ps2->glProg != prog )
+    {
+        GL_CALL(glUseProgram( ps2->glProg ));
+        prog = ps2->glProg;
+    }
+
     ps2->vprog.ProgGLES2::SetupTextureUnits();
     ps2->fprog.ProgGLES2::SetupTextureUnits( ps2->vprog.SamplerCount() );
+    VertexDeclGLES2::InvalidateVAttrCache();
+
+    static bool     blendEnabled = false;
+    static GLenum   blendSrc     = (GLenum)0;
+    static GLenum   blendDst     = (GLenum)0;
     
     if( ps2->blendEnabled )
     {
-        GL_CALL(glEnable( GL_BLEND ));
-        GL_CALL(glBlendFunc( ps2->blendSrc, ps2->blendDst ));
+        if( !blendEnabled )
+        {
+            GL_CALL(glEnable( GL_BLEND ));
+            blendEnabled = true;
+        }
+
+        if( ps2->blendSrc != blendSrc  ||  ps2->blendDst != blendDst )
+        {
+            GL_CALL(glBlendFunc( ps2->blendSrc, ps2->blendDst ));
+            blendSrc = ps2->blendSrc;
+            blendDst = ps2->blendDst;
+        }
     }
     else
     {
-        GL_CALL(glDisable( GL_BLEND ));
+        if( blendEnabled )
+        {
+            GL_CALL(glDisable( GL_BLEND ));
+            blendEnabled = false;
+        }
     }
 
     glColorMask( ps2->maskR, ps2->maskG, ps2->maskB, ps2->maskA );

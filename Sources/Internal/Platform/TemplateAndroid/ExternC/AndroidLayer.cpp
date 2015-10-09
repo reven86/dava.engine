@@ -212,13 +212,9 @@ void Java_com_dava_framework_JNIApplication_OnCreateApplication(JNIEnv* env, job
     androidPackageName = DAVA::JNI::ToString(packageName);
     DAVA::String commandLine = DAVA::JNI::ToString(commandLineParams);
 
-<<<<<<< HEAD
     DAVA::Thread::InitMainThread();
 
-	InitApplication(env, commandLine);
-=======
     InitApplication(env, commandLine);
->>>>>>> development
 
     gArrayListClass = new DAVA::JNI::JavaClass("java/util/ArrayList");
 	gInputEventClass = new DAVA::JNI::JavaClass("com/dava/framework/JNISurfaceView$InputRunnable$InputEvent");
