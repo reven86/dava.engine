@@ -162,7 +162,9 @@ gles2_IndexBuffer_Create( const IndexBuffer::Descriptor& desc )
 
     if( ib->Create( desc ) )
     {
-        ib->UpdateCreationDesc( desc );
+        IndexBuffer::Descriptor creationDesc(desc);
+        creationDesc.initialData = nullptr;
+        ib->UpdateCreationDesc(creationDesc);
     }
     else
     {

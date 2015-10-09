@@ -382,7 +382,9 @@ gles2_Texture_Create( const Texture::Descriptor& desc )
 
     if( tex->Create( desc ) )
     {
-        tex->UpdateCreationDesc( desc );
+        Texture::Descriptor creationDesc(desc);
+        Memset(creationDesc.initialData, 0, sizeof(creationDesc.initialData));
+        tex->UpdateCreationDesc(creationDesc);
     }
     else
     {
