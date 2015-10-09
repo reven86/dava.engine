@@ -112,6 +112,7 @@ void        SetupDispatch( Dispatch* dispatch );
 namespace CommandBufferDX11
 {
 void        SetupDispatch( Dispatch* dispatch );
+void        DiscardAll();
 }
 
 struct
