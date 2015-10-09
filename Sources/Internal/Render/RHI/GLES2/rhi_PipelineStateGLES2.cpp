@@ -517,7 +517,14 @@ SetToRHI( Handle ps, uint32 layoutUID )
 
     DVASSERT(ps2);
 
-    GL_CALL(glUseProgram( ps2->glProg ));
+    static uint32   prog = 0;
+    
+    if( ps2->glProg != prog )
+    {
+        GL_CALL(glUseProgram( ps2->glProg ));
+        prog = ps2->glProg;
+    }
+
     ps2->vprog.ProgGLES2::SetupTextureUnits();
     ps2->fprog.ProgGLES2::SetupTextureUnits( ps2->vprog.SamplerCount() );
     VertexDeclGLES2::InvalidateVAttrCache();
@@ -537,8 +544,8 @@ SetToRHI( Handle ps, uint32 layoutUID )
         if( ps2->blendSrc != blendSrc  ||  ps2->blendDst != blendDst )
         {
             GL_CALL(glBlendFunc( ps2->blendSrc, ps2->blendDst ));
-            ps2->blendSrc = blendSrc;
-            ps2->blendDst = blendDst;
+            blendSrc = ps2->blendSrc;
+            blendDst = ps2->blendDst;
         }
     }
     else
