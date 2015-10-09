@@ -340,8 +340,8 @@ namespace DAVA
 
 		UIEvent * keyEvent = new UIEvent;
 		keyEvent->keyChar = 0;
-		keyEvent->phase = DAVA::UIEvent::PHASE_KEYCHAR;
-		keyEvent->tapCount = 1;
+        keyEvent->phase = DAVA::UIEvent::PHASE_KEY_DOWN;
+        keyEvent->tapCount = 1;
 		keyEvent->tid = InputSystem::Instance()->GetKeyboard().GetDavaKeyForSystemKey(keyCode);
 
 		InputSystem::Instance()->ProcessInputEvent(keyEvent);
