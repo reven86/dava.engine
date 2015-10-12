@@ -79,10 +79,13 @@ void UIScrollViewContainer::SetSize(const Vector2 &size)
 	UIControl *parent = GetParent();
 	if (parent)
 	{
-		Vector2 parentSize = parent->GetSize();
+		const Vector2 &parentSize = parent->GetSize();
 		// We should not allow scrolling when content rect is less than or is equal ScrollView "window"
 		enableHorizontalScroll = size.dx > parentSize.dx;
 		enableVerticalScroll = size.dy > parentSize.dy;
+        Array<bool, Vector2::AXIS_COUNT> enableScroll;
+        enableScroll[Vector2::AXIS_X]= enableHorizontalScroll;
+        enableScroll[Vector2::AXIS_Y]= enableVerticalScroll;
         
         UIScrollView *scrollView = cast_if_equal<UIScrollView*>(parent);
         if (scrollView != nullptr)
@@ -91,27 +94,18 @@ void UIScrollViewContainer::SetSize(const Vector2 &size)
             
             if (scrollView->IsAutoUpdate())
             {
-                if (!enableHorizontalScroll)
+                for (int32 axis = 0; axis < Vector2::AXIS_COUNT; axis++)
                 {
-                    if (scrollView->IsCenterContent())
+                    if (!enableScroll[axis])
                     {
-                        relativePosition.x = (scrollView->GetSize().dx - GetSize().dx) / 2;
-                    }
-                    else
-                    {
-                        relativePosition.x = 0;
-                    }
-                }
-                
-                if (!enableVerticalScroll)
-                {
-                    if (scrollView->IsCenterContent())
-                    {
-                        relativePosition.y = (scrollView->GetSize().dy - GetSize().dy) / 2;
-                    }
-                    else
-                    {
-                        relativePosition.y = 0;
+                        if (scrollView->IsCenterContent())
+                        {
+                            relativePosition.data[axis] = (scrollView->GetSize().data[axis] - GetSize().data[axis]) / 2;
+                        }
+                        else
+                        {
+                            relativePosition.data[axis] = 0;
+                        }
                     }
                 }
             }
