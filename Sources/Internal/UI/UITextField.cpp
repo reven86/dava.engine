@@ -63,7 +63,7 @@ public:
         : staticText_(new UIStaticText(Rect(0, 0, control->GetRect().dx, control->GetRect().dy)))
         , control_(control)
     {
-        control->AddControl(staticText_);
+        control_->AddControl(staticText_);
         staticText_->SetSpriteAlign(ALIGN_LEFT | ALIGN_BOTTOM);
     }
     ~TextFieldPlatformImpl()
@@ -72,12 +72,10 @@ public:
         SafeRelease(staticText_);
         control_ = nullptr;
     }
-
     void CopyDataFrom(TextFieldPlatformImpl* t)
     {
         staticText_->CopyDataFrom(t->staticText_);
     }
-
     void OpenKeyboard()
     {
     }
@@ -204,9 +202,8 @@ public:
     {
         staticText_->SetRect(rect);
     }
-    void SystemDraw(const UIGeometricData& geomData)
+    void SystemDraw(const UIGeometricData&)
     {
-        staticText_->SystemDraw(geomData);
     }
 
 private:
@@ -561,7 +558,7 @@ void UITextField::Input(UIEvent *currentInput)
     if(this != UIControlSystem::Instance()->GetFocusedControl())
         return;
 
-    if (currentInput->phase == UIEvent::PHASE_CHAR)
+    if (currentInput->phase == UIEvent::PHASE_KEYCHAR)
     {
 // on win32 we have split WM_CHAR and WM_KEYDOWN
 // on macos we have OnKeyUp and OnKeyDown
