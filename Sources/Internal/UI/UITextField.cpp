@@ -60,15 +60,13 @@ class TextFieldPlatformImpl
 public:
     friend class UITextField;
     TextFieldPlatformImpl(UITextField* control)
-        : staticText_(new UIStaticText(Rect(0, 0, control->GetRect().dx, control->GetRect().dy)))
+        : staticText_(new UIStaticText(control->GetRect()))
         , control_(control)
     {
-        control_->AddControl(staticText_);
         staticText_->SetSpriteAlign(ALIGN_LEFT | ALIGN_BOTTOM);
     }
     ~TextFieldPlatformImpl()
     {
-        control_->RemoveControl(staticText_);
         SafeRelease(staticText_);
         control_ = nullptr;
     }
@@ -169,7 +167,6 @@ public:
     {
         return staticText_->GetTextUseRtlAlign();
     }
-
     void SetTextUseRtlAlign(TextBlock::eUseRtlAlign align)
     {
         staticText_->SetTextUseRtlAlign(align);
@@ -288,6 +285,12 @@ void UITextField::Update(float32 timeElapsed)
             showCursor = !showCursor;
             needRedraw = true;
         }
+    }
+    else if (showCursor)
+    {
+        cursorTime = 0;
+        showCursor = false;
+        needRedraw = true;
     }
     
     if (!needRedraw)
@@ -551,7 +554,7 @@ int32 UITextField::GetTextAlign() const
 void UITextField::Input(UIEvent *currentInput)
 {
 #if !defined(DAVA_TEXTFIELD_USE_NATIVE)
-    if (NULL == delegate)
+    if (nullptr == delegate)
     {
         return;
     }
@@ -559,21 +562,16 @@ void UITextField::Input(UIEvent *currentInput)
     if(this != UIControlSystem::Instance()->GetFocusedControl())
         return;
 
-    if (currentInput->phase == UIEvent::PHASE_KEYCHAR)
+    if (currentInput->phase == UIEvent::PHASE_KEY_DOWN ||
+        currentInput->phase == UIEvent::PHASE_KEY_DOWN_REPEAT)
     {
-// on win32 we have split WM_CHAR and WM_KEYDOWN
-// on macos we have OnKeyUp and OnKeyDown
-#ifdef __DAVAENGINE_WINDOWS__
-        bool user_push_backspace = (currentInput->tid == 0 && currentInput->keyChar == '\b');
-#else
-        bool user_push_backspace = (currentInput->tid == DVKEY_BACKSPACE);
-#endif
-        if (user_push_backspace)
+        if (currentInput->tid == DVKEY_BACKSPACE)
         {
-            WideString str = L"";
-            if(delegate->TextFieldKeyPressed(this, (int32)GetText().length() - 1, 1, str))
+            WideString str;
+            int32 length = static_cast<int32>(GetText().length() - 1);
+            if (delegate->TextFieldKeyPressed(this, length, 1, str))
             {
-                SetText(GetAppliedChanges((int32)GetText().length() - 1,  1, str));
+                SetText(GetAppliedChanges(length, 1, str));
             }
         }
         else if (currentInput->tid == DVKEY_ENTER)
@@ -584,13 +582,18 @@ void UITextField::Input(UIEvent *currentInput)
         {
             delegate->TextFieldShouldCancel(this);
         }
-        else if(currentInput->keyChar != 0)
+    }
+    else if (currentInput->phase == UIEvent::PHASE_CHAR ||
+             currentInput->phase == UIEvent::PHASE_CHAR_REPEAT)
+    {
+        if (currentInput->keyChar != 0 && currentInput->keyChar != '\b')
         {
             WideString str;
             str += currentInput->keyChar;
-            if(delegate->TextFieldKeyPressed(this, (int32)GetText().length(), 0, str))
+            int32 length = static_cast<int32>(GetText().length());
+            if (delegate->TextFieldKeyPressed(this, length, 0, str))
             {
-                SetText(GetAppliedChanges((int32)GetText().length(),  0, str));
+                SetText(GetAppliedChanges(length, 0, str));
             }
         }
     }
