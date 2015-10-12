@@ -31,8 +31,7 @@
 #define __DAVAENGINE_UI_EVENT_H__
 
 #include "Base/BaseTypes.h"
-#include "Base/BaseMath.h"
-#include "Base/BaseObject.h"
+#include "Math/Vector.h"
 
 namespace DAVA
 {
@@ -120,15 +119,6 @@ public:
         JOYSTICK_AXIS_HAT_Y
     };
 
-    //enum eInputSource
-    //{
-    //    INPUT_UNDEFINED,
-    //    INPUT_SOURCE_TOUCHSCREEN,
-    //    INPUT_SOURCE_MOUSE,
-    //    INPUT_SOURCE_KEYBOARD,
-    //    INPUT_SOURCE_GAMEPAD
-    //};
-
     enum class Device : uint32
     {
         UNKNOWN = 0,
@@ -138,6 +128,20 @@ public:
         GAMEPAD,
         PEN
     };
+
+    UIEvent() = default;
+
+    void SetInputHandledType(eInputHandledType value)
+    {
+        // Input Handled Type can be only increased.
+        if (inputHandledType < value)
+        {
+            inputHandledType = value;
+        }
+    }
+
+    eInputHandledType GetInputHandledType() { return inputHandledType; };
+    void ResetInputHandledType() { inputHandledType = INPUT_NOT_HANDLED; };
 
     int32 tid = 0; // event id, for the platforms with mouse this id means mouse button id, key codes for keys, axis id for joystick
     Vector2 point; // point of pressure in virtual coordinates
@@ -150,46 +154,6 @@ public:
     int32 tapCount = 0; // count of the continuous inputs (clicks for mouse)
     char16 keyChar = 0; // unicode/translated character produced by key using current language, caps etc. Used only with PHASE_CHAR.
     Device device = Device::UNKNOWN;
-
-    inline void SetInputHandledType(eInputHandledType value)
-    {
-        // Input Handled Type can be only increased.
-        if (inputHandledType < value)
-        {
-            inputHandledType = value;
-        }
-    }
-
-    eInputHandledType GetInputHandledType() { return inputHandledType; };
-    void ResetInputHandledType() { inputHandledType = INPUT_NOT_HANDLED; };
-
-    UIEvent() = default;
-
-    //    eInputSource GetInputSource()
-    //    {
-    //        switch (phase)
-    //        {
-    //            case PHASE_BEGAN:
-    //            case PHASE_DRAG:
-    //            case PHASE_ENDED:
-    //            case PHASE_CANCELLED:
-    //                return INPUT_SOURCE_TOUCHSCREEN;
-    //            case PHASE_CHAR:
-    //            case PHASE_KEY_UP:
-    //            case PHASE_KEY_DOWN:
-    //                return INPUT_SOURCE_KEYBOARD;
-    //#if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
-    //			case PHASE_MOVE:
-    //            case PHASE_WHEEL:
-    //                return INPUT_SOURCE_MOUSE;
-    //#endif
-    //            case PHASE_JOYSTICK:
-    //                return INPUT_SOURCE_GAMEPAD;
-    //            default:
-    //                return INPUT_UNDEFINED;
-    //        }
-    //    }
-
     eInputHandledType inputHandledType = INPUT_NOT_HANDLED; //!< input handled type, INPUT_NOT_HANDLED by default.
 };
 };
