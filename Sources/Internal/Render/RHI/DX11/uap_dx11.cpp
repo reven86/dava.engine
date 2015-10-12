@@ -1,5 +1,6 @@
 #include "uap_dx11.h"
 #include "_dx11.h"
+#include "rhi_DX11.h"
 #include "../rhi_Public.h"
 
 #if defined(__DAVAENGINE_WIN_UAP__)
@@ -9,10 +10,6 @@
 #include <DirectXMath.h>
 #include <dxgi1_3.h>
 #include <D3D11SDKLayers.h>
-//this hack need removed, when rhi_dx thread will synchronized with rander::reset
-__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
-#include "Concurrency/Mutex.h"
-#include "Concurrency/UniqueLock.h"
 
 using namespace rhi;
 using namespace Microsoft::WRL;
@@ -274,11 +271,8 @@ void CreateDeviceResources()
 
 void CreateWindowSizeDependentResources()
 {
-    // Clear the previous window size specific context.
-#if 0
-    ID3D11RenderTargetView* nullViews[D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT] = { nullptr };
-    m_d3dContext->OMSetRenderTargets(D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT, nullViews, nullptr);
-#endif
+    if (_DX11_InitParam.FrameCommandExecutionSync)
+        _DX11_InitParam.FrameCommandExecutionSync->Lock();
 
     m_swapChainBuffer.Reset();
     m_d3dRenderTargetView.Reset();
@@ -492,6 +486,9 @@ void CreateWindowSizeDependentResources()
         );
 
     m_d3dContext->RSSetViewports(1, &m_screenViewport);
+
+    if (_DX11_InitParam.FrameCommandExecutionSync)
+        _DX11_InitParam.FrameCommandExecutionSync->Unlock();
 }
 
 // This method is called when the XAML control is created (or re-created).
@@ -678,14 +675,10 @@ void init_device_and_swapchain_uap( void* panel )
 
 void resize_swapchain(int width, int height, float32 sx, float32 sy)
 {
-#ifdef __DAVAENGINE_WIN_UAP__
-    // this hack need removed, when rhi_dx thread will synchronized with rander::reset
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
-    DAVA::UniqueLock<DAVA::Mutex> lock(need_synchronized);
-#endif
-
     SetCompositionScale(sx, sy);
     SetLogicalSize(Windows::Foundation::Size(static_cast<float>(width), static_cast<float>(height)));
+
+    rhi::CommandBufferDX11::DiscardAll();
     CreateWindowSizeDependentResources();
 
     _D3D11_SwapChain = m_swapChain.Get();

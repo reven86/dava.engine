@@ -607,7 +607,6 @@ void Core::SystemProcessFrame()
     
 void Core::GoBackground(bool isLock)
 {
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_WIN_UAP__)
     if (core)
     {
         if(isLock)
@@ -619,18 +618,31 @@ void Core::GoBackground(bool isLock)
             core->OnBackground();
         }
     }
-#endif //#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
 }
 
 void Core::GoForeground()
 {
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_WIN_UAP__)
     if (core)
     {
         core->OnForeground();
     }
     Net::NetCore::Instance()->RestartAllControllers();
-#endif //#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+}
+
+void Core::FocusLost()
+{
+    if (core)
+    {
+        core->OnFocusLost();
+    }
+}
+
+void Core::FocusReceived()
+{
+    if (core)
+    {
+        core->OnFocusReceived();
+    }
 }
 
 uint32 Core::GetGlobalFrameIndex()

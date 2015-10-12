@@ -966,14 +966,14 @@ Trace( const char* format, ... )
     va_list  arglist;
 
     va_start( arglist, format );
-    #if defined(__DAVAENGINE_WIN32__)
+    #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_WIN_UAP__)
     _vsnprintf( _TraceBuf, countof(_TraceBuf), format, arglist );
     #else
     vsnprintf( _TraceBuf, countof(_TraceBuf), format, arglist );
     #endif
     va_end( arglist );
     
-    #if defined(__DAVAENGINE_WIN32__)
+    #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_WIN_UAP__)
     ::OutputDebugStringA( _TraceBuf );
     #else
     puts( _TraceBuf );
