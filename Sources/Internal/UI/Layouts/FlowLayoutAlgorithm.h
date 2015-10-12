@@ -52,13 +52,13 @@ public:
 private:
     struct LineInfo;
     
-    void ProcessXAxis(ControlLayoutData &data, UIFlowLayoutComponent *component);
+    void ProcessXAxis(ControlLayoutData &data, const UIFlowLayoutComponent *component);
     void CollectLinesInformation(ControlLayoutData &data, Vector<LineInfo> &lines);
     void FixHorizontalPadding(ControlLayoutData &data, Vector<LineInfo> &lines);
     void LayoutLine(ControlLayoutData &data, int32 firstIndex, int32 lastIndex, int32 childrenCount, float32 childrenSize);
     void CalculateHorizontalDynamicPaddingAndSpaces(ControlLayoutData &data, int32 firstIndex, int32 lastIndex);
     
-    void ProcessYAxis(ControlLayoutData &data, UIFlowLayoutComponent *component);
+    void ProcessYAxis(ControlLayoutData &data);
     void CalculateVerticalDynamicPaddingAndSpaces(ControlLayoutData &data);
     void LayoutLineVertically(ControlLayoutData &data, int32 firstIndex, int32 lastIndex, float32 top, float32 bottom);
 

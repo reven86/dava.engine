@@ -92,7 +92,7 @@ void FlowLayoutAlgorithm::Apply(ControlLayoutData &data, Vector2::eAxis axis)
                 break;
                 
             case Vector2::AXIS_Y:
-                ProcessYAxis(data, layout);
+                ProcessYAxis(data);
                 break;
                 
             default:
@@ -105,7 +105,7 @@ void FlowLayoutAlgorithm::Apply(ControlLayoutData &data, Vector2::eAxis axis)
     anchorAlg.Apply(data, axis, true, data.GetFirstChildIndex(), data.GetLastChildIndex());
 }
     
-void FlowLayoutAlgorithm::ProcessXAxis(ControlLayoutData &data, UIFlowLayoutComponent *component)
+void FlowLayoutAlgorithm::ProcessXAxis(ControlLayoutData &data, const UIFlowLayoutComponent *component)
 {
     Vector<LineInfo> lines;
     CollectLinesInformation(data, lines);
@@ -255,7 +255,7 @@ void FlowLayoutAlgorithm::LayoutLine(ControlLayoutData &data, int32 firstIndex, 
     layoutData[realLastIndex].SetFlag(ControlLayoutData::FLAG_LAST_IN_LINE);
 }
 
-void FlowLayoutAlgorithm::ProcessYAxis(ControlLayoutData &data, UIFlowLayoutComponent *component)
+void FlowLayoutAlgorithm::ProcessYAxis(ControlLayoutData &data)
 {
     CalculateVerticalDynamicPaddingAndSpaces(data);
 
