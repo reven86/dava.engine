@@ -53,7 +53,6 @@ public:
     unsigned        size;
     Usage           usage;
     ID3D11Buffer*   buffer;
-    void*           mappedData;
     unsigned        isMapped:1;
     unsigned        is32bit:1;
 };
@@ -135,7 +134,6 @@ dx11_IndexBuffer_Create( const IndexBuffer::Descriptor& desc )
             ib->size        = desc.size;
             ib->usage       = desc.usage;
             ib->buffer      = buf;
-            ib->mappedData  = nullptr;
             ib->is32bit     = desc.indexSize == INDEX_SIZE_32BIT;
             ib->isMapped    = false;
         }
@@ -164,8 +162,7 @@ dx11_IndexBuffer_Delete( Handle ib )
             self->buffer = nullptr;
         }
 
-        self->size       = 0;
-        self->mappedData = nullptr;
+        self->size = 0;
 
         IndexBufferDX11Pool::Free( ib );
     }
