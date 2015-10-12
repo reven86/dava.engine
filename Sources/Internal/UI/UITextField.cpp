@@ -202,8 +202,9 @@ public:
     {
         staticText_->SetRect(rect);
     }
-    void SystemDraw(const UIGeometricData&)
+    void SystemDraw(const UIGeometricData& data)
     {
+        staticText_->SystemDraw(data);
     }
 
 private:
