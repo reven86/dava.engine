@@ -1462,6 +1462,9 @@ _RenderFunc( DAVA::BaseObject* obj, void*, void* )
         bool    do_wait = true;
         bool    do_exit = false;
      
+#if defined __DAVAENGINE_ANDROID__
+        android_gl_checkSurface();
+#endif
         
         // CRAP: busy-wait
         do

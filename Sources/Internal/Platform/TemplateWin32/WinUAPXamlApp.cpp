@@ -169,13 +169,18 @@ void WinUAPXamlApp::PreStartAppSettings()
 
 void WinUAPXamlApp::OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^ args)
 {
-    PreStartAppSettings();
-    uiThreadDispatcher = Window::Current->CoreWindow->Dispatcher;
+    // If renderLoopWorker is null then app performing cold start
+    // else app is restored from background or resumed from suspended state
+    if (nullptr == renderLoopWorker)
+    {
+        PreStartAppSettings();
+        uiThreadDispatcher = Window::Current->CoreWindow->Dispatcher;
 
-    CreateBaseXamlUI();
+        CreateBaseXamlUI();
 
-    WorkItemHandler^ workItemHandler = ref new WorkItemHandler([this](Windows::Foundation::IAsyncAction^ action) { Run(); });
-    renderLoopWorker = ThreadPool::RunAsync(workItemHandler, WorkItemPriority::High, WorkItemOptions::TimeSliced);
+        WorkItemHandler^ workItemHandler = ref new WorkItemHandler([this](Windows::Foundation::IAsyncAction^ action) { Run(); });
+        renderLoopWorker = ThreadPool::RunAsync(workItemHandler, WorkItemPriority::High, WorkItemOptions::TimeSliced);
+    }
 
     Window::Current->Activate();
 }
