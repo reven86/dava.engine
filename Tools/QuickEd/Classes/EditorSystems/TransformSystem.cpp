@@ -98,7 +98,6 @@ struct MagnetLine
     Rect targetBox;
 
     float32 distance = std::numeric_limits<float32>::max();
-    float32 relativeDistance = std::numeric_limits<float32>::max();
     Vector2::eAxis axis;
 };
 
@@ -501,18 +500,12 @@ void TransformSystem::ResizeControl(Vector2 delta, bool withPivot, bool rateably
     deltaSize += extraDelta; //transform to virtual coordinates
     extraDelta.SetZero();
 
-    for (int32 axisInt = Vector2::AXIS_X; axisInt < Vector2::AXIS_COUNT; ++axisInt)
-    {
-        Vector2::eAxis axis = static_cast<Vector2::eAxis>(axisInt);
-        deltaPosition[axis] *= deltaSize[axis] != 0.0f ? origDeltaSize[axis] / deltaSize[axis] : 0.0f;
-    }
-
     Vector2 adjustedSize = AdjustResize(deltaSize, transformPoint, directions);
     //deltaSize = AdjustToMinimumSize(deltaSize);
     for (int32 axisInt = Vector2::AXIS_X; axisInt < Vector2::AXIS_COUNT; ++axisInt)
     {
         Vector2::eAxis axis = static_cast<Vector2::eAxis>(axisInt);
-        deltaPosition[axis] *= deltaSize[axis] != 0.0f ? adjustedSize[axis] / deltaSize[axis] : 0.0f;
+        deltaPosition[axis] *= origDeltaSize[axis] != 0.0f ? adjustedSize[axis] / origDeltaSize[axis] : 0.0f;
     }
 
     deltaPosition *= control->GetScale();
@@ -580,62 +573,51 @@ Vector2 TransformSystem::AdjustResize(Vector2 deltaSize, Vector2 transformPoint,
     }
     Vector2 transformPosition = box.GetPosition() + box.GetSize() * transformPoint;
 
-    Vector2 originalPosition = positionProperty->GetValue().AsVector2();
-    Vector2 originalSize = sizeProperty->GetValue().AsVector2();
-
-    List<MagnetLine> totalMagnetLines; //collect all magnet lines
     for (int32 axisInt = Vector2::AXIS_X; axisInt < Vector2::AXIS_COUNT; ++axisInt)
     {
         Vector2::eAxis axis = static_cast<Vector2::eAxis>(axisInt);
         if (directions[axis] != 0)
         {
             List<MagnetLine> magnetLines = CreateMagnetPairsForMove(box, &parentGeometricData, neighbours, axis);
-            totalMagnetLines.splice(totalMagnetLines.begin(), magnetLines);
+
+            std::function<bool(const MagnetLine&)> removePredicate = [directions, transformPosition](const MagnetLine& line) -> bool
+            {
+                if (directions[line.axis] == 1)
+                {
+                    return transformPosition[line.axis] > line.targetPosition || transformPosition[line.axis] > line.controlPosition;
+                }
+                else
+                {
+                    return transformPosition[line.axis] < line.targetPosition || transformPosition[line.axis] < line.controlPosition;
+                }
+            };
+            magnetLines.remove_if(removePredicate);
+
+            std::function<bool(const MagnetLine&, const MagnetLine&)> predicate = [transformPoint, directions](const MagnetLine& left, const MagnetLine& right) -> bool
+            {
+                float32 shareLeft = left.controlSharePos - transformPoint[left.axis];
+                float32 shareRight = right.controlSharePos - transformPoint[right.axis];
+                return fabs(left.distance * shareLeft) < fabs(right.distance * shareRight);
+            };
+
+            MagnetLine nearestLine = *std::min_element(magnetLines.begin(), magnetLines.end(), predicate);
+            float32 share = fabs(nearestLine.controlSharePos - transformPoint[nearestLine.axis]);
+            float32 areaNearLineRight = nearestLine.targetPosition + range[nearestLine.axis] * share;
+            float32 areaNearLineLeft = nearestLine.targetPosition - range[nearestLine.axis] * share;
+
+            Vector2 oldDeltaSize(deltaSize);
+
+            if (nearestLine.controlPosition >= areaNearLineLeft && nearestLine.controlPosition <= areaNearLineRight)
+            {
+                const Vector2::eAxis axis = nearestLine.axis;
+                float32 distance = nearestLine.distance * directions[axis] * -1;
+                distance /= share;
+                deltaSize[axis] += distance;
+                extraDelta[axis] = oldDeltaSize[axis] - deltaSize[axis];
+                static int counter;
+                DAVA::Logger::Info("%d, target: %f, controlPos: %f, origDelta %f, distance: %f, delta: %f, extraDelta: %f", ++counter, nearestLine.targetPosition, nearestLine.controlPosition, oldDeltaSize.dx, nearestLine.distance, deltaSize.dx, extraDelta.dx);
+            }
         }
-    }
-
-    std::function<bool(const MagnetLine&)> removePredicate = [directions, transformPosition](const MagnetLine& line) -> bool
-    {
-        if (directions[line.axis] == 1)
-        {
-            return transformPosition[line.axis] > line.targetPosition || transformPosition[line.axis] > line.controlPosition;
-        }
-        else
-        {
-            return transformPosition[line.axis] < line.targetPosition || transformPosition[line.axis] < line.controlPosition;
-        }
-    };
-    totalMagnetLines.remove_if(removePredicate);
-
-    std::function<bool(const MagnetLine&, const MagnetLine&)> predicate = [transformPoint, directions](const MagnetLine& left, const MagnetLine& right) -> bool
-    {
-        float32 shareLeft = left.controlSharePos - transformPoint[left.axis];
-        float32 shareRight = right.controlSharePos - transformPoint[right.axis];
-        return fabs(left.distance * shareLeft) < fabs(right.distance * shareRight);
-    };
-
-    MagnetLine nearestLine = *std::min_element(totalMagnetLines.begin(), totalMagnetLines.end(), predicate);
-    float32 share = fabs(nearestLine.controlSharePos - transformPoint[nearestLine.axis]);
-    float32 areaNearLineRight = nearestLine.targetPosition + range[nearestLine.axis] * share;
-    float32 areaNearLineLeft = nearestLine.targetPosition - range[nearestLine.axis] * share;
-
-    Vector2 oldDeltaSize(deltaSize);
-
-    if (nearestLine.controlPosition >= areaNearLineLeft && nearestLine.controlPosition <= areaNearLineRight)
-    {
-        const Vector2::eAxis axis = nearestLine.axis;
-        float32 distance = nearestLine.distance * directions[axis] * -1;
-        deltaSize[axis] += distance;
-        const Vector2::eAxis axis2 = axis == Vector2::AXIS_X ? Vector2::AXIS_Y : Vector2::AXIS_X;
-
-        if (oldDeltaSize[axis] != 0.0f)
-        {
-            deltaSize[axis2] *= deltaSize[axis] / oldDeltaSize[axis];
-        }
-        extraDelta = oldDeltaSize - deltaSize;
-        extraDelta[Vector2::AXIS_X] *= directions[Vector2::AXIS_X];
-        static int counter;
-        DAVA::Logger::Info("%d, target: %f, controlPos: %f, origDelta %f, distance: %f, delta: %f, extraDelta: %f", ++counter, nearestLine.targetPosition, nearestLine.controlPosition, oldDeltaSize.dx, nearestLine.distance, deltaSize.dx, extraDelta.dx);
     }
 
     return deltaSize;
