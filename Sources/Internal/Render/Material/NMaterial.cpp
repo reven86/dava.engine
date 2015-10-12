@@ -185,7 +185,7 @@ uint32 NMaterial::GetRequiredVertexFormat()
 MaterialBufferBinding* NMaterial::GetConstBufferBinding(UniquePropertyLayout propertyLayout)
 {
     MaterialBufferBinding* res = localConstBuffers.at(propertyLayout);
-    if ((res == nullptr) && (parent != nullptr))
+    if ((res == nullptr) && (parent != nullptr) && (!NeedLocalOverride(propertyLayout)))
         res = parent->GetConstBufferBinding(propertyLayout);
 
     return res;
