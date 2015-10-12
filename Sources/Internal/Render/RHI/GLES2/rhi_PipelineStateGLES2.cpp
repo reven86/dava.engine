@@ -43,6 +43,15 @@
 namespace rhi
 {
 
+namespace PipelineStateGLES2
+{
+    static int      cachedBlendEnabled  = -1;
+    static GLenum   cachedBlendSrc      = (GLenum)0;
+    static GLenum   cachedBlendDst      = (GLenum)0;
+    static uint32   cachedProgram       = 0;
+}
+
+
 struct
 VertexDeclGLES2
 {
@@ -516,45 +525,38 @@ SetToRHI( Handle ps, uint32 layoutUID )
     PipelineStateGLES2_t* ps2 = PipelineStateGLES2Pool::Get( ps );
 
     DVASSERT(ps2);
-
-    static uint32   prog = 0;
     
-    if( ps2->glProg != prog )
+    if( ps2->glProg != cachedProgram )
     {
         GL_CALL(glUseProgram( ps2->glProg ));
-        prog = ps2->glProg;
+        cachedProgram = ps2->glProg;
     }
 
     ps2->vprog.ProgGLES2::SetupTextureUnits();
     ps2->fprog.ProgGLES2::SetupTextureUnits( ps2->vprog.SamplerCount() );
     VertexDeclGLES2::InvalidateVAttrCache();
 
-    static bool     blendEnabled = false;
-    static GLenum   blendSrc     = (GLenum)0;
-    static GLenum   blendDst     = (GLenum)0;
     
     if( ps2->blendEnabled )
     {
-        if( !blendEnabled )
+        if( cachedBlendEnabled != GL_TRUE )
         {
             GL_CALL(glEnable( GL_BLEND ));
-            blendEnabled = true;
+            cachedBlendEnabled = GL_TRUE;
         }
-#if 0
-        if( ps2->blendSrc != blendSrc  ||  ps2->blendDst != blendDst )
-#endif
+        if( ps2->blendSrc != cachedBlendSrc  ||  ps2->blendDst != cachedBlendDst )
         {
             GL_CALL(glBlendFunc( ps2->blendSrc, ps2->blendDst ));
-            blendSrc = ps2->blendSrc;
-            blendDst = ps2->blendDst;
+            cachedBlendSrc = ps2->blendSrc;
+            cachedBlendDst = ps2->blendDst;
         }
     }
     else
     {
-        if( blendEnabled )
+        if( cachedBlendEnabled != GL_FALSE )
         {
             GL_CALL(glDisable( GL_BLEND ));
-            blendEnabled = false;
+            cachedBlendEnabled = GL_FALSE;
         }
     }
 
@@ -612,6 +614,17 @@ VertexSamplerCount( Handle ps )
     PipelineStateGLES2_t* ps2 = PipelineStateGLES2Pool::Get( ps );
     
     return ps2->vprog.SamplerCount();
+}
+
+void
+InvalidateCache()
+{
+    cachedBlendEnabled  = -1;
+    cachedBlendSrc      = (GLenum)0;
+    cachedBlendDst      = (GLenum)0;
+    cachedProgram       = 0;
+
+    VertexDeclGLES2::InvalidateVAttrCache();
 }
 
 } // namespace PipelineStateGLES2
