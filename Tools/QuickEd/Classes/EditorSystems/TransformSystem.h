@@ -56,6 +56,9 @@ private:
         PROPERTY_INDEX,
         GD_INDEX
     };
+    using Directions = DAVA::Array<int, DAVA::Vector2::AXIS_COUNT>;
+    using CornersDirections = DAVA::Array<Directions, HUDAreaInfo::CORNERS_COUNT>;
+    static const CornersDirections cornersDirections;
     using PropertyDelta = std::pair<AbstractProperty* /*property*/, DAVA::VariantType /*delta*/>;
 
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
@@ -65,7 +68,8 @@ private:
 
     bool ProcessDrag(DAVA::Vector2 point);
     void ResizeControl(DAVA::Vector2 delta, bool withPivot, bool rateably);
-    DAVA::Vector2 AdjustResize(DAVA::Array<int, DAVA::Vector2::AXIS_COUNT> directions, DAVA::Vector2 delta);
+    DAVA::Vector2 AdjustToMinimumSize(DAVA::Vector2 delta);
+    DAVA::Vector2 AdjustResize(DAVA::Vector2 deltaSize, DAVA::Vector2 deltaPosition, DAVA::Vector2 transfromPoint, Directions directions);
     void MovePivot(DAVA::Vector2 delta);
     void EmitMagnetLinesForPivot(DAVA::Vector2& target);
     DAVA::Vector2 AdjustPivot(DAVA::Vector2& delta);
@@ -84,7 +88,6 @@ private:
     SelectedControls selectedControlNodes;
     DAVA::List<MoveInfo> nodesToMove;
     DAVA::Vector<DAVA::UIControl*> neighbours;
-    const DAVA::Vector2 minimumSize = DAVA::Vector2(16.0f, 16.0f);
     size_t currentHash = 0;
 
     DAVA::UIGeometricData parentGeometricData;
