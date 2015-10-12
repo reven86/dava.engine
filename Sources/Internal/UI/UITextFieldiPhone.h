@@ -35,14 +35,14 @@
 namespace DAVA 
 {
 class UITextField;
-    
-class UITextFieldiPhone
+
+class TextFieldPlatformImpl
 {
 public:
-    UITextFieldiPhone(UITextField& tf);
-	virtual ~UITextFieldiPhone();
-	
-	void OpenKeyboard();
+    TextFieldPlatformImpl(UITextField* tf);
+    virtual ~TextFieldPlatformImpl();
+
+    void OpenKeyboard();
 	void CloseKeyboard();
 	void GetText(WideString & string) const;
 	void SetText(const WideString & string);
@@ -84,12 +84,15 @@ public:
     
     void SetRenderToTexture(bool value);
     bool IsRenderToTexture() const;
+    void SystemDraw(const UIGeometricData& geometricData);
+
 private:
     // Truncate the text to maxLength characters.
     void* TruncateText(void* text, int maxLength);
     void UpdateStaticTexture();
     void UpdateNativeRect(const Rect & virtualRect, int xOffset);
-    
+
+    Rect nextRect;
     Rect prevRect;
     UITextField& davaTextField;
 	void * objcClassPtr;

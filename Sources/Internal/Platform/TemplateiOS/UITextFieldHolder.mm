@@ -266,16 +266,21 @@
             }
         }
         // End workaround
-        
+
         [cachedText release];
         cachedText = [[NSString alloc] initWithString:fieldText];
-        
+
         DAVA::WideString newString;
         cstr = [cachedText cStringUsingEncoding:NSUTF8StringEncoding];
         DAVA::UTF8Utils::EncodeToWideString((DAVA::uint8*)cstr, (DAVA::int32)strlen(cstr), newString);
         
         cppTextField->GetDelegate()->TextFieldOnTextChanged(cppTextField, newString, oldString);
     }
+}
+
+- (void)textViewDidChange:(UITextView*)textView
+{
+    [self eventEditingChanged:textView];
 }
 
 - (BOOL)textFieldShouldBeginEditing:(UITextField *)textField
