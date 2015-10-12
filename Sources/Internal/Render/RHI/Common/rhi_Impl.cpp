@@ -160,6 +160,13 @@ ResumeRendering()
 {
     (*_Impl.impl_ResumeRendering)();
 }
+
+void
+InvalidateCache()
+{
+    if( _Impl.impl_InvalidateCache )
+        (*_Impl.impl_InvalidateCache)();
+}
     
 //////////////////////////////////////////////////////////////////////////
 

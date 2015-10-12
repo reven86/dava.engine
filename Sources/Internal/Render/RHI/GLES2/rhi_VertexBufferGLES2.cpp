@@ -47,7 +47,7 @@ VertexBufferGLES2_t
 {
                 VertexBufferGLES2_t()
                   : size(0),
-                    data(nullptr),
+                    mappedData(nullptr),
                     uid(0),
 					usage(USAGE_DEFAULT),
                     isMapped(false)
@@ -60,7 +60,7 @@ VertexBufferGLES2_t
 
 
     uint32      size;
-    void*       data;
+    void*       mappedData;
     uint32      uid;
     GLenum      usage;
     uint32      isMapped:1;
@@ -112,18 +112,13 @@ VertexBufferGLES2_t::Create( const VertexBuffer::Descriptor& desc, bool force_im
             
             if( cmd2[0].status == GL_NO_ERROR )
             {
-                void*   d = malloc( desc.size );
-
-                if( d )
-                {
-                    data          = d;
-                    size          = desc.size;
-                    uid           = b;
-                    isMapped      = false;
-                    updatePending = false;
+                mappedData    = nullptr;
+                size          = desc.size;
+                uid           = b;
+                isMapped      = false;
+                updatePending = false;
                     
-                    success = true;
-                }
+                success = true;
             }
         }
     }
@@ -137,17 +132,17 @@ VertexBufferGLES2_t::Create( const VertexBuffer::Descriptor& desc, bool force_im
 void
 VertexBufferGLES2_t::Destroy( bool force_immediate )
 {
-    if( data )
+    GLCommand   cmd = { GLCommand::DELETE_BUFFERS, { 1, (uint64)(&uid) } };
+    ExecGL( &cmd, 1, force_immediate );
+
+    if( mappedData )
     {
-        GLCommand   cmd = { GLCommand::DELETE_BUFFERS, { 1, (uint64)(&uid) } };
-        ExecGL( &cmd, 1, force_immediate );
-
-        free( data );
-
-        data = nullptr;
-        size = 0;
-        uid  = 0;
+        ::free( mappedData );
+        mappedData = nullptr;
     }
+
+    size = 0;
+    uid  = 0;
 }
 
 
@@ -207,11 +202,10 @@ gles2_VertexBuffer_Update( Handle vb, const void* data, uint32 offset, uint32 si
         GLCommand   cmd[] = 
         {
             { GLCommand::BIND_BUFFER, { GL_ARRAY_BUFFER, uint64(&(self->uid)) } },
-            { GLCommand::BUFFER_DATA, { GL_ARRAY_BUFFER, self->size, (uint64)(self->data), self->usage } },
+            { GLCommand::BUFFER_DATA, { GL_ARRAY_BUFFER, self->size, (uint64)(data), self->usage } },
             { GLCommand::RESTORE_VERTEX_BUFFER, {} }
         };
 
-        memcpy( ((uint8*)self->data)+offset, data, size );
         ExecGL( cmd, countof(cmd) );
         success = cmd[1].status == GL_NO_ERROR;
         self->MarkRestored();
@@ -227,14 +221,21 @@ void*
 gles2_VertexBuffer_Map( Handle vb, uint32 offset, uint32 size )
 {
     VertexBufferGLES2_t*    self = VertexBufferGLES2Pool::Get( vb );
+    void*                   data = nullptr;
 
     DVASSERT(self->usage != GL_STATIC_DRAW);
     DVASSERT(!self->isMapped);
-    DVASSERT(self->data);
     
-    self->isMapped = true;
+    if( offset+size <= self->size )    
+    {
+        if( !self->mappedData )
+            self->mappedData = ::malloc( self->size );
 
-    return (offset+size <= self->size)  ? ((uint8*)self->data)+offset  : 0;
+        self->isMapped = true;
+        data = ((uint8*)self->mappedData) + offset;
+    }
+
+    return data;
 }
 
 
@@ -258,13 +259,16 @@ gles2_VertexBuffer_Unmap( Handle vb )
         GLCommand   cmd[] = 
         {
             { GLCommand::BIND_BUFFER, { GL_ARRAY_BUFFER, uint64(&(self->uid)) } },
-            { GLCommand::BUFFER_DATA, { GL_ARRAY_BUFFER, self->size, (uint64)(self->data), self->usage } },
+            { GLCommand::BUFFER_DATA, { GL_ARRAY_BUFFER, self->size, (uint64)(self->mappedData), self->usage } },
             { GLCommand::RESTORE_VERTEX_BUFFER, {} }
         };
 
         ExecGL( cmd, countof(cmd) );
         self->isMapped = false;
         self->MarkRestored();
+
+        ::free( self->mappedData );
+        self->mappedData = nullptr;
     }
 }
 
@@ -307,13 +311,13 @@ SetToRHI( Handle vb )
     VertexBufferGLES2_t*    self = VertexBufferGLES2Pool::Get( vb );
 
     DVASSERT(!self->isMapped);
-Trace("set-vb %p  sz= %u\n",self->data,self->size);
     GL_CALL(glBindBuffer( GL_ARRAY_BUFFER, self->uid ));
     _GLES2_LastSetVB = self->uid;
 
     if( self->updatePending )
     {
-        glBufferData( GL_ARRAY_BUFFER, self->size, self->data, self->usage );
+        DVASSERT(self->mappedData);
+        glBufferData( GL_ARRAY_BUFFER, self->size, self->mappedData, self->usage );
         self->updatePending = false;
     }
 }

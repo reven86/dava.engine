@@ -52,7 +52,6 @@ public:
 
     unsigned        size;
     Usage           usage;
-    void*           mappedData;
     ID3D11Buffer*   buffer;
     uint32          isMapped:1;
 };
@@ -133,7 +132,6 @@ dx11_VertexBuffer_Create( const VertexBuffer::Descriptor& desc )
             vb->size        = desc.size;
             vb->usage       = desc.usage;
             vb->buffer      = buf;
-            vb->mappedData  = nullptr;
             vb->isMapped    = false;
         }
         else
@@ -161,8 +159,7 @@ dx11_VertexBuffer_Delete( Handle vb )
             self->buffer = nullptr;
         }
 
-        self->size       = 0;
-        self->mappedData = nullptr;
+        self->size = 0;
 
         VertexBufferDX11Pool::Free( vb );
     }
