@@ -34,6 +34,7 @@
 #include "Base/BaseTypes.h"
 #include "Math/Vector.h"
 #include "UI/UIControl.h"
+#include <array>
 
 namespace DAVA
 {
@@ -43,6 +44,9 @@ class UIControl;
 class TransformSystem final : public BaseEditorSystem
 {
 public:
+    using Directions = DAVA::Array<int, DAVA::Vector2::AXIS_COUNT>;
+    using CornersDirections = DAVA::Array<Directions, HUDAreaInfo::CORNERS_COUNT>;
+
     explicit TransformSystem(EditorSystemsManager* parent);
     ~TransformSystem() = default;
 
@@ -56,8 +60,7 @@ private:
         PROPERTY_INDEX,
         GD_INDEX
     };
-    using Directions = DAVA::Array<int, DAVA::Vector2::AXIS_COUNT>;
-    using CornersDirections = DAVA::Array<Directions, HUDAreaInfo::CORNERS_COUNT>;
+
     static const CornersDirections cornersDirections;
     using PropertyDelta = std::pair<AbstractProperty* /*property*/, DAVA::VariantType /*delta*/>;
 
@@ -69,14 +72,14 @@ private:
     bool ProcessDrag(DAVA::Vector2 point);
     void ResizeControl(DAVA::Vector2 delta, bool withPivot, bool rateably);
     DAVA::Vector2 AdjustToMinimumSize(DAVA::Vector2 delta);
-    DAVA::Vector2 AdjustResize(DAVA::Vector2 deltaSize, DAVA::Vector2 deltaPosition, DAVA::Vector2 transfromPoint, Directions directions);
+    DAVA::Vector2 AdjustResize(DAVA::Vector2 deltaSize, DAVA::Vector2 transformPoint, Directions directions);
     void MovePivot(DAVA::Vector2 delta);
     void EmitMagnetLinesForPivot(DAVA::Vector2& target);
     DAVA::Vector2 AdjustPivot(DAVA::Vector2& delta);
     void Rotate(DAVA::Vector2 pos);
     bool AdjustRotate(DAVA::float32 deltaAngle, DAVA::float32 originalAngle, DAVA::float32& finalAngle);
     void MoveAllSelectedControls(DAVA::Vector2 delta, bool canAdjust);
-    DAVA::Vector2 AdjustMove(DAVA::Vector2 delta, DAVA::Vector<MagnetLineInfo>& magnetLines, const DAVA::UIGeometricData* parentGD, const DAVA::UIControl* control);
+    void AdjustMove(DAVA::Vector2& delta, DAVA::Vector<MagnetLineInfo>& magnetLines, const DAVA::UIGeometricData* parentGD, const DAVA::UIControl* control);
 
     void CorrectNodesToMove();
     void UpdateNeighboursToMove();
