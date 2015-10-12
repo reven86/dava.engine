@@ -259,9 +259,9 @@ void FlowLayoutAlgorithm::ProcessYAxis(ControlLayoutData &data, UIFlowLayoutComp
 {
     CalculateVerticalDynamicPaddingAndSpaces(data);
 
-    float32 lineHeight = 0;
+    float32 lineHeight = 0.0f;
     float32 y = verticalPadding;
-    float32 firstIndex = data.GetFirstChildIndex();
+    int32 firstIndex = data.GetFirstChildIndex();
     for (int32 index = data.GetFirstChildIndex(); index <= data.GetLastChildIndex(); index++)
     {
         ControlLayoutData &childData = layoutData[index];

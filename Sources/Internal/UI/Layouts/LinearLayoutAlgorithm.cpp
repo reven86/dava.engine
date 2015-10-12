@@ -37,8 +37,9 @@
 
 namespace DAVA
 {
-LinearLayoutAlgorithm::LinearLayoutAlgorithm(Vector<ControlLayoutData> &layoutData_)
+LinearLayoutAlgorithm::LinearLayoutAlgorithm(Vector<ControlLayoutData> &layoutData_, bool isRtl_)
     : layoutData(layoutData_)
+    , isRtl(isRtl_)
 {
     
 }
@@ -99,7 +100,7 @@ void LinearLayoutAlgorithm::Apply(ControlLayoutData &data, Vector2::eAxis axis, 
         PlaceChildren(data, axis, firstIndex, lastIndex);
     }
     
-    AnchorLayoutAlgorithm anchorAlg(layoutData, axis);
+    AnchorLayoutAlgorithm anchorAlg(layoutData, isRtl);
     anchorAlg.Apply(data, axis, true, firstIndex, lastIndex);
 }
 

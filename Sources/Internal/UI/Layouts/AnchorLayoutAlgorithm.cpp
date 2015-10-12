@@ -78,13 +78,13 @@ void AnchorLayoutAlgorithm::ApplyAnchor(ControlLayoutData& data, Vector2::eAxis 
     UIAnchorComponent* hint = data.GetControl()->GetComponent<UIAnchorComponent>();
     if (hint != nullptr && hint->IsEnabled())
     {
-        float v1 = 0.0f;
+        float32 v1 = 0.0f;
         bool v1Enabled = false;
 
-        float v2 = 0.0f;
+        float32 v2 = 0.0f;
         bool v2Enabled = false;
 
-        float v3 = 0.0f;
+        float32 v3 = 0.0f;
         bool v3Enabled = false;
 
         switch (axis)

@@ -43,7 +43,7 @@ class UISizePolicyComponent;
 class LinearLayoutAlgorithm
 {
 public:
-    LinearLayoutAlgorithm(Vector<ControlLayoutData> &layoutData_);
+    LinearLayoutAlgorithm(Vector<ControlLayoutData> &layoutData_, bool isRtl_);
     ~LinearLayoutAlgorithm();
     
     void SetInverse(bool inverse_);
@@ -65,6 +65,7 @@ private:
 
 private:
     Vector<ControlLayoutData> &layoutData;
+    const bool isRtl;
     
     bool inverse = false;
     bool skipInvisible = true;
