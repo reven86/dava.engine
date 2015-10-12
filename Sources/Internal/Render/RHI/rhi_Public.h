@@ -124,6 +124,9 @@ const RenderDeviceCaps & DeviceCaps();
 
 void    SuspendRendering();
 void    ResumeRendering();
+
+void    InvalidateCache();
+
     
 ////////////////////////////////////////////////////////////////////////////////
 // resource-handle
