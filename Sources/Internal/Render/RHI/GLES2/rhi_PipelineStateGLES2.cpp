@@ -540,8 +540,9 @@ SetToRHI( Handle ps, uint32 layoutUID )
             GL_CALL(glEnable( GL_BLEND ));
             blendEnabled = true;
         }
-
+#if 0
         if( ps2->blendSrc != blendSrc  ||  ps2->blendDst != blendDst )
+#endif
         {
             GL_CALL(glBlendFunc( ps2->blendSrc, ps2->blendDst ));
             blendSrc = ps2->blendSrc;
