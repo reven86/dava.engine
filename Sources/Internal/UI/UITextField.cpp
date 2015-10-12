@@ -63,19 +63,18 @@ public:
         : staticText_(new UIStaticText(Rect(0, 0, control->GetRect().dx, control->GetRect().dy)))
         , control_(control)
     {
-        control->AddControl(staticText_);
+        control_->AddControl(staticText_);
         staticText_->SetSpriteAlign(ALIGN_LEFT | ALIGN_BOTTOM);
     }
     ~TextFieldPlatformImpl()
     {
+        control_->RemoveControl(staticText_);
         SafeRelease(staticText_);
         control_ = nullptr;
     }
-    TextFieldPlatformImpl* Clone()
+    void CopyDataFrom(TextFieldPlatformImpl* t)
     {
-        TextFieldPlatformImpl* t = new TextFieldPlatformImpl(control_);
-        t->staticText_->CopyDataFrom(staticText_);
-        return t;
+        staticText_->CopyDataFrom(t->staticText_);
     }
     void OpenKeyboard()
     {
@@ -861,16 +860,11 @@ void UITextField::CopyDataFrom(UIControl *srcControl)
     
     cursorBlinkingTime = t->cursorBlinkingTime;
 #if !defined(DAVA_TEXTFIELD_USE_NATIVE)
-    SafeDelete(textFieldImpl);
-    if (t->textFieldImpl != nullptr)
-    {
-        textFieldImpl = t->textFieldImpl->Clone();
-        AddControl(textFieldImpl->staticText_);
-    }
     if (t->textFont != nullptr)
     {
         SetFont(t->textFont);
     }
+    textFieldImpl->CopyDataFrom(t->textFieldImpl);
 #endif
 
     SetAutoCapitalizationType(t->GetAutoCapitalizationType());
