@@ -42,7 +42,11 @@ namespace
 {
 std::string SCENE_EXTENSION = ".sc2";
 char const * SCENE_FILE_FILTER = "Scene (*.sc2)";
-char const * FILE_SYSTEM_ROOT = "d:\\dev\\dava.test\\SmokeTest";
+#ifdef _WIN32
+char const* FILE_SYSTEM_ROOT = "d:\\";
+#elif __APPLE__
+char const* FILE_SYSTEM_ROOT = "/";
+#endif
 
 bool IsSceneFile(std::string const & filePath)
 {

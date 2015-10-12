@@ -98,6 +98,9 @@ public:
         uiFramework->loadActionData(":/default/actions.xml", IUIFramework::ResourceType::File);
         mainWindow = uiFramework->createWindow(":/default/MainWindow.ui", IUIFramework::ResourceType::File);
 
+        uiApplication->addWindow(*mainWindow);
+        mainWindow->show();
+
         DAVA::Core::Run(0, nullptr);
 
         new DAVA::QtLayer();
@@ -126,7 +129,6 @@ public:
             propertyPanel->SetObject(entity);
                                                  });
 
-        uiApplication->addWindow(*mainWindow);
         uiApplication->addView(library->GetView());
         uiApplication->addView(sceneWidget->GetView());
 
@@ -148,8 +150,6 @@ public:
         uiApplication->addAction(*redoAction);
         uiApplication->addAction(*beginBatch);
         uiApplication->addAction(*endBatch);
-
-        mainWindow->show();
 
         DavaLoop::Instance()->StartLoop(FrameworkLoop::Instance());
     }

@@ -74,6 +74,11 @@ BW_SET_TEST_DST_DIR(${TOOL_OUTPUT_DIR})
 BW_SET_ASSET_PIPELINE_DST_DIR(${TOOL_OUTPUT_DIR})
 BW_SET_EXECUTABLE_DST_DIR(${TOOL_OUTPUT_DIR})
 
+cmake_policy(SET CMP0043 NEW)
+
+add_subdirectory ( Application )
+add_subdirectory ( Plugins/PluginTemplate )
+
 foreach(NGT_LIB ${NGT_LIBS})
     append_ngt_lib(${NGT_LIB})
 endforeach()
@@ -81,10 +86,3 @@ endforeach()
 foreach(NGT_PLUGIN ${NGT_PLUGINS})
     append_ngt_plugin(${NGT_PLUGIN})
 endforeach()
-
-cmake_policy(SET CMP0043 NEW)
-
-set(CMAKE_DEBUG_POSTFIX _d)
-
-add_subdirectory ( Application )
-add_subdirectory ( Plugins/PluginTemplate )

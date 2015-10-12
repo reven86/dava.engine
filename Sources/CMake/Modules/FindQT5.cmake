@@ -20,15 +20,22 @@ macro ( qt_deploy )
             COMMAND "${DAVA_SCRIPTS_FILES_PATH}/deployqt.bat"
             "${QT5_PATH_WIN}/bin/"
             $<$<CONFIG:Debug>:--debug> $<$<NOT:$<CONFIG:Debug>>:--release>
-            --dir  "${DEPLOY_DIR}/$<CONFIG>"
+            --dir  "${DEPLOY_DIR}/"
             --qmldir "${QML_SCAN_DIR}" "$<TARGET_FILE:${PROJECT_NAME}>"
             ${QT_ITEMS_LIST}
         )
 
     elseif( MACOS )
+        if (BW_BUNDLE_NAME)
+            set(BUNDLE_NAME ${BW_BUNDLE_NAME})
+        else()
+            set(BUNDLE_NAME ${PROJECT_NAME})
+        endif()
 
         ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD
-            COMMAND ${QT5_PATH_MAC}/bin/macdeployqt ${DEPLOY_DIR}/${PROJECT_NAME}.app
+            COMMAND ${QT5_PATH_MAC}/bin/macdeployqt
+                    ${DEPLOY_DIR}/${BUNDLE_NAME}.app
+                    -qmldir="${QML_SCAN_DIR}"
         )
 
     endif()

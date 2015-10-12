@@ -38,7 +38,11 @@
 int main(int argc, char ** argv)
 {
     QFileInfo appFileInfo(argv[0]);
+#ifdef _WIN32
     QString pluginsPathDesc = appFileInfo.absolutePath() + "/plugins/plugins.txt";
+#elif __APPLE__
+    QString pluginsPathDesc = appFileInfo.absolutePath() + "/../PlugIns/plugins/plugins.txt";
+#endif
 
     int result = 1;
     std::vector<std::wstring> plugins;

@@ -297,7 +297,7 @@ if (QT5_FOUND)
     link_with_qt5(${PROJECT_NAME})
 endif()
 
-if ( QT5_FOUND )
+if ( QT5_FOUND AND NOT NOT_DEPLOY_QT)
     if ( WIN32 )
         set ( QTCONF_DEPLOY_PATH "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/qt.conf" )
     elseif ( APPLE )
@@ -314,15 +314,11 @@ if ( QT5_FOUND )
     endif()
 
     configure_file( ${DAVA_CONFIGURE_FILES_PATH}/QtConfTemplate.in
-                    ${CMAKE_CURRENT_BINARY_DIR}/DavaConfigDebug.in  )
-    configure_file( ${DAVA_CONFIGURE_FILES_PATH}/QtConfTemplate.in
-                    ${CMAKE_CURRENT_BINARY_DIR}/DavaConfigRelWithDebinfo.in  )
-    configure_file( ${DAVA_CONFIGURE_FILES_PATH}/QtConfTemplate.in
-                    ${CMAKE_CURRENT_BINARY_DIR}/DavaConfigRelease.in  )
+                    ${CMAKE_CURRENT_BINARY_DIR}/DavaConfig.in  )
 
     ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD
        COMMAND ${CMAKE_COMMAND} -E copy
-       ${CMAKE_CURRENT_BINARY_DIR}/DavaConfig$(CONFIGURATION).in
+       ${CMAKE_CURRENT_BINARY_DIR}/DavaConfig.in
        ${QTCONF_DEPLOY_PATH}
     )
 
@@ -564,7 +560,7 @@ if( DEPLOY )
 
     endif()
 
-    if( QT5_FOUND )
+    if( QT5_FOUND AND NOT NOT_DEPLOY_QT)
         qt_deploy( )
 
     endif()
@@ -612,7 +608,9 @@ if( WIN32 )
     add_definitions ( -D_CRT_SECURE_NO_DEPRECATE )
 endif()
 
-if( WIN32_DATA )
+if( MACOS_DATA )
+    set( APP_DATA ${MACOS_DATA} )
+elseif( WIN32_DATA )
     set( APP_DATA ${WIN32_DATA} )
 endif()
 
@@ -621,6 +619,24 @@ if( WIN32 )
 endif()
 
 ###
+
+if (MACOS)
+    if ( DAVA_FOUND )
+        file (GLOB DYLIB_FILES ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/*.dylib)
+    endif()
+
+    set_source_files_properties(${DYLIB_FILES} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+    list(APPEND DYLIB_FILES "${DYLIB_FILES}" "${MACOS_DYLIB}")
+
+    list( APPEND RESOURCES_LIST  ${APP_DATA}  )
+    list( APPEND RESOURCES_LIST  ${DYLIB_FILES} )
+    list( APPEND RESOURCES_LIST  ${MACOS_XIB}   )
+
+    list( APPEND LIBRARIES      ${DYLIB_FILES} )
+
+elseif ( WIN32 )
+    list(APPEND RESOURCES_LIST ${WIN32_RESOURCES})
+endif()
 
 if( DAVA_FOUND )
     include_directories   ( ${DAVA_INCLUDE_DIR} )
@@ -660,9 +676,9 @@ endif()
 
 if ( QT5_FOUND )
     if ( WIN32 )
-        set ( QTCONF_DEPLOY_PATH "${DEPLOY_DIR}/${CMAKE_CFG_INTDIR}/qt.conf" )
+        set ( QTCONF_DEPLOY_PATH "${TOOL_OUTPUT_DIR}/${CMAKE_CFG_INTDIR}/qt.conf" )
     elseif ( APPLE )
-        set ( QTCONF_DEPLOY_PATH "${DEPLOY_DIR}/${CMAKE_CFG_INTDIR}/${PROJECT_NAME}.app/Contents/Resources/qt.conf" )
+        set ( QTCONF_DEPLOY_PATH "${TOOL_OUTPUT_DIR}/${CMAKE_CFG_INTDIR}/${BW_BUNDLE_NAME}.app/Contents/Resources/qt.conf" )
     endif()
 
     if     ( TEAMCITY_DEPLOY AND WIN32 )
@@ -745,17 +761,36 @@ if (QT5_FOUND)
     link_with_qt5(${PROJECT_NAME})
 endif()
 
+if ( WIN32 )
+        set(TARGET_RESOURCE_DIR ${TOOL_OUTPUT_DIR}/$<CONFIG>)
+    elseif( MACOS )
+        set(TARGET_RESOURCE_DIR ${TOOL_OUTPUT_DIR}/$<CONFIG>/${BW_BUNDLE_NAME}.app/Contents/Resources)
+    endif()
+
 if( APP_DATA )
     get_filename_component( DIR_NAME ${APP_DATA} NAME )
+
     ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD
-           COMMAND ${CMAKE_COMMAND} -E copy_directory ${APP_DATA}  ${DEPLOY_DIR}/$<CONFIG>/${DIR_NAME}/
+           COMMAND ${CMAKE_COMMAND} -E copy_directory ${APP_DATA}  ${TARGET_RESOURCE_DIR}/${DIR_NAME}/
     )
 endif()
 
-foreach ( ITEM fmodex.dll fmod_event.dll IMagickHelper.dll glew32.dll TextureConverter.dll )
-    ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD
-               COMMAND ${CMAKE_COMMAND} -E copy_if_different ${DAVA_TOOLS_BIN_DIR}/${ITEM}  ${DEPLOY_DIR}/$<CONFIG>/
-    )
+if (WIN32)
+    list(APPEND DYNAMIC_LIB_LIST fmodex.dll fmod_event.dll IMagickHelper.dll glew32.dll TextureConverter.dll )
+elseif (MACOS)
+    list(APPEND DYNAMIC_LIB_LIST libfmodex.dylib libfmodevent.dylib libTextureConverter.dylib ${MACOS_DYLIB} )
+endif()
+
+foreach ( ITEM ${DYNAMIC_LIB_LIST})
+    if (EXISTS ${ITEM})
+        ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD
+                   COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                   ${ITEM}  ${TARGET_RESOURCE_DIR}/ )
+    else()
+        ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD
+                   COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                   ${DAVA_TOOLS_BIN_DIR}/${ITEM}  ${TARGET_RESOURCE_DIR}/ )
+    endif()
 endforeach()
 
 if (DEPLOY AND DEPLOY_DIR)
