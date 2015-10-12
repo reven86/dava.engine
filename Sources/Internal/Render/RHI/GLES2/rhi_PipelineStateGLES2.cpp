@@ -557,7 +557,16 @@ SetToRHI( Handle ps, uint32 layoutUID )
         }
     }
 
-    glColorMask( ps2->maskR, ps2->maskG, ps2->maskB, ps2->maskA );
+    static GLboolean    mask[4] = { false, false, false, false };
+    
+    if( ps2->maskR != mask[0]  ||  ps2->maskG != mask[1]  ||  ps2->maskB != mask[2]  ||  ps2->maskA != mask[3] )
+    {
+        glColorMask( ps2->maskR, ps2->maskG, ps2->maskB, ps2->maskA );
+        mask[0] = ps2->maskR;
+        mask[1] = ps2->maskG;
+        mask[2] = ps2->maskB;
+        mask[3] = ps2->maskA;
+    }
 }
 
 void
