@@ -45,22 +45,16 @@ namespace DAVA
 namespace JNI
 {
 
-JavaVM *GetJVM()
-{
-    static JavaVM *jvm = static_cast<DAVA::CorePlatformAndroid *>(Core::Instance())->GetAndroidSystemDelegate()->GetVM();
-    return jvm;
-}
-
 JNIEnv *GetEnv()
 {
     JNIEnv *env;
     JavaVM *vm = GetJVM();
 
-    if (NULL == vm || JNI_EDETACHED == vm->GetEnv((void**)&env, JNI_VERSION_1_6))
+    if (nullptr == vm || JNI_EDETACHED == vm->GetEnv((void**)&env, JNI_VERSION_1_6))
     {
         Logger::Error("runtime_error(Thread is not attached to JNI)");
     }
-    DVASSERT(NULL != env);
+    DVASSERT(nullptr != env);
     return env;
 }
 
@@ -102,50 +96,53 @@ Rect V2P(const Rect& srcRect)
     return rect;
 }
 
-bool CreateStringFromJni(JNIEnv *env, jstring jniString, char *generalString)
+DAVA::String ToString(const jstring jniString)
 {
-	bool ret = false;
-	generalString[0] = 0;
+    DAVA::String result;
 
-	const char* utfString = env->GetStringUTFChars(jniString, NULL);
-	if (utfString)
-	{
-		strcpy(generalString, utfString);
-		env->ReleaseStringUTFChars(jniString, utfString);
-		ret = true;
-	}
-	else
-	{
-		LOGE("[CreateStringFromJni] Can't create utf-string from jniString");
-	}
+    if (jniString == nullptr)
+    {
+        LOGE("nullptr in jniString file %s(%d)", __FILE__, __LINE__);
+        return result;
+    }
 
-	return ret;
+    JNIEnv* env = GetEnv();
+    if (env == nullptr)
+    {
+        LOGE("nullptr in jniString file %s(%d)", __FILE__, __LINE__);
+        return result;
+    }
+
+    // http://docs.oracle.com/javase/7/docs/technotes/guides/jni/spec/functions.html
+    const char* utf8CString = env->GetStringUTFChars(jniString, nullptr);
+
+    if (utf8CString != nullptr)
+    {
+        result.assign(utf8CString);
+        env->ReleaseStringUTFChars(jniString, utf8CString);
+    }
+    else
+    {
+        LOGE("Can't create utf-string from jniString file %s(%d)", __FILE__, __LINE__);
+    }
+
+    return result;
 }
 
-void CreateStringFromJni(JNIEnv *env, jstring jniString, DAVA::String& string)
+DAVA::WideString ToWideString(const jstring jniString)
 {
-	const char* utfString = env->GetStringUTFChars(jniString, NULL);
-	if (utfString)
-	{
-		string.assign(utfString);
-		env->ReleaseStringUTFChars(jniString, utfString);
-	}
+    DAVA::String utf8 = ToString(jniString);
+    return DAVA::UTF8Utils::EncodeToWideString(utf8);
 }
 
-void CreateWStringFromJni(JNIEnv *env, jstring jniString, DAVA::WideString& string)
+jstring ToJNIString(const DAVA::WideString& string)
 {
-	const jchar *raw = env->GetStringChars(jniString, 0);
-	if (raw)
-	{
-		jsize len = env->GetStringLength(jniString);
-		string.assign(raw, raw + len);
-		env->ReleaseStringChars(jniString, raw);
-	}
-}
+    JNIEnv* env = GetEnv();
+    DVASSERT(env);
 
-jstring CreateJString(JNIEnv *env, const DAVA::WideString& string)
-{
-	return env->NewStringUTF(DAVA::UTF8Utils::EncodeToUTF8(string).c_str());
+    String utf8 = DAVA::UTF8Utils::EncodeToUTF8(string);
+
+    return env->NewStringUTF(utf8.c_str());
 }
 
 JavaClass::JavaClass(const String &className)

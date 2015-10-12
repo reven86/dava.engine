@@ -28,7 +28,7 @@
 
 #include "SpriteResourcesPacker.h"
 #include "TexturePacker/ResourcePacker2D.h"
-#include "TexturePacker/CommandLineParser.h"
+#include "CommandLine/CommandLineParser.h"
 #include "Qt/Settings/SettingsManager.h"
 
 SpriteResourcesPacker::~SpriteResourcesPacker()

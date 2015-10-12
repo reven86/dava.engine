@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 
-import android.app.Activity;
 import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.view.SurfaceHolder;

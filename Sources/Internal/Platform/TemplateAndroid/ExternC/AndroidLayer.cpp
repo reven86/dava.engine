@@ -53,9 +53,6 @@
 #include "Utils/UTF8Utils.h"
 #include "Platform/TemplateAndroid/JniHelpers.h"
 #include <dirent.h>
-//#if defined(__DAVAENGINE_PROFILE__)
-//#include "prof.h"
-//#endif //#if defined(__DAVAENGINE_PROFILE__)
 
 extern "C"
 {
@@ -93,20 +90,18 @@ extern "C"
 	JNIEXPORT void JNICALL Java_com_dava_framework_JNIRenderer_nativeOnPauseView(JNIEnv * env, jobject classthis, jboolean isLock);
 };
 
-#define MAX_PATH_SZ 260
-
 namespace 
 {
-	DAVA::CorePlatformAndroid *core = NULL;
+DAVA::CorePlatformAndroid* core = nullptr;
 
-	char documentsFolderPathEx[MAX_PATH_SZ];
-	char documentsFolderPathIn[MAX_PATH_SZ];
-	char folderDocuments[MAX_PATH_SZ];
-	char assetsFolderPath[MAX_PATH_SZ];
-	char androidLogTag[MAX_PATH_SZ];
-	char androidPackageName[MAX_PATH_SZ];
+    DAVA::String documentsFolderPathEx;
+    DAVA::String documentsFolderPathIn;
+    DAVA::String folderDocuments;
+    DAVA::String assetsFolderPath;
+    DAVA::String androidLogTag;
+    DAVA::String androidPackageName;
 
-	DAVA::JNI::JavaClass* gArrayListClass = nullptr;
+    DAVA::JNI::JavaClass* gArrayListClass = nullptr;
 	DAVA::JNI::JavaClass* gInputEventClass = nullptr;
 
 	DAVA::Function< jobject(jobject, jint) > gArrayListGetMethod;
@@ -118,8 +113,29 @@ namespace
 	jfieldID gInputEventTimeField;
 	jfieldID gInputEventTapCountField;
 
-	AndroidDelegate *androidDelegate;
+    AndroidDelegate* androidDelegate = nullptr;
 }
+namespace DAVA
+{
+namespace JNI
+{
+JavaVM* GetJVM()
+{
+    if (androidDelegate == nullptr)
+    {
+        LOGE("androidDelegate == nullptr file %s(%d)", __FILE__, __LINE__);
+        return nullptr;
+    }
+    JavaVM* jvm = androidDelegate->GetVM();
+    if (jvm == nullptr)
+    {
+        LOGE("jvm == nullptr file %s(%d)", __FILE__, __LINE__);
+        return nullptr;
+    }
+    return jvm;
+}
+} // end namespace JNI
+} // end namespace DAVA
 
 jint JNI_OnLoad(JavaVM *vm, void *reserved)
 {
@@ -134,9 +150,11 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved)
 
 	androidDelegate = new AndroidDelegate(vm);
 
-	 DAVA::AndroidCrashReport::Init(env);
+    DAVA::AndroidCrashReport::Init(env);
 
-	return JNI_VERSION_1_6;
+    LOGI("finished JNI_OnLoad");
+
+    return JNI_VERSION_1_6;
 }
 
 void InitApplication(JNIEnv * env, const DAVA::String& commandLineParams)
@@ -146,8 +164,11 @@ void InitApplication(JNIEnv * env, const DAVA::String& commandLineParams)
 		core = new DAVA::CorePlatformAndroid(commandLineParams);
 		if(core)
 		{
-			core->CreateAndroidWindow(documentsFolderPathEx, documentsFolderPathIn, assetsFolderPath, androidLogTag, androidDelegate);
-		}
+            core->CreateAndroidWindow(documentsFolderPathEx.c_str(),
+                                      documentsFolderPathIn.c_str(),
+                                      assetsFolderPath.c_str(),
+                                      androidLogTag.c_str(), androidDelegate);
+        }
 		else
 		{
 			LOGE("[InitApplication] Can't allocate space for CoreAndroidPlatform");
@@ -180,17 +201,18 @@ void DeinitApplication()
 
 void Java_com_dava_framework_JNIApplication_OnCreateApplication(JNIEnv* env, jobject classthis, jstring externalPath, jstring internalPath, jstring apppath, jstring logTag, jstring packageName, jstring commandLineParams)
 {
-	bool retCreateLogTag = DAVA::JNI::CreateStringFromJni(env, logTag, androidLogTag);
-//	LOGI("___ OnCreateApplication __ %d", classthis);
+    LOGE("start OnCreateApplication");
+    androidLogTag = DAVA::JNI::ToString(logTag);
 
-	bool retCreatedExDocuments = DAVA::JNI::CreateStringFromJni(env, externalPath, documentsFolderPathEx);
-	bool retCreatedInDocuments = DAVA::JNI::CreateStringFromJni(env, internalPath, documentsFolderPathIn);
-	bool retCreatedAssets = DAVA::JNI::CreateStringFromJni(env, apppath, assetsFolderPath);
-	bool retCreatePackageName = DAVA::JNI::CreateStringFromJni(env, packageName, androidPackageName);
-	DAVA::String commandLine;
-	DAVA::JNI::CreateStringFromJni(env, commandLineParams, commandLine);
+    LOGE("next logTag OnCreateApplication");
 
-	InitApplication(env, commandLine);
+    documentsFolderPathEx = DAVA::JNI::ToString(externalPath);
+    documentsFolderPathIn = DAVA::JNI::ToString(internalPath);
+    assetsFolderPath = DAVA::JNI::ToString(apppath);
+    androidPackageName = DAVA::JNI::ToString(packageName);
+    DAVA::String commandLine = DAVA::JNI::ToString(commandLineParams);
+
+    InitApplication(env, commandLine);
 
 	gArrayListClass = new DAVA::JNI::JavaClass("java/util/ArrayList");
 	gInputEventClass = new DAVA::JNI::JavaClass("com/dava/framework/JNIGLSurfaceView$InputRunnable$InputEvent");
@@ -204,7 +226,7 @@ void Java_com_dava_framework_JNIApplication_OnCreateApplication(JNIEnv* env, job
 	gInputEventTimeField = env->GetFieldID(*gInputEventClass, "time", DAVA::JNI::TypeMetrics<jdouble>());
 	gInputEventTapCountField = env->GetFieldID(*gInputEventClass, "tapCount", DAVA::JNI::TypeMetrics<jint>());
 
-
+    DAVA::Logger::Info("finish OnCreateApplication");
 }
 
 void Java_com_dava_framework_JNIApplication_OnConfigurationChanged(JNIEnv * env, jobject classthis)

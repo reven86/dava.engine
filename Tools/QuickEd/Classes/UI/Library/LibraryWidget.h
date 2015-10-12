@@ -42,10 +42,11 @@ public:
     LibraryWidget(QWidget *parent = nullptr);
     ~LibraryWidget() = default;
 public slots:
-    void OnDocumentChanged(Document *document);
+    void OnDocumentChanged(Document* document);
+
 private:
     void LoadContext();
-    Document *document = nullptr;
+    Document* document = nullptr;
 };
 
 #endif // __QUICKED_LIBRARY_WIDGET_H__

@@ -4,7 +4,7 @@ project ( TestBed )
 # Enable MemoryManagerTest in UnitTests
 # this variable should be defined in all dependant projects (dava framework, etc)
 if( NOT DAVA_MEGASOLUTION )
-    set ( DAVA_MEMORY_PROFILER 1 )
+    #set ( DAVA_MEMORY_PROFILER 1 )
 endif()
 
 set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" )

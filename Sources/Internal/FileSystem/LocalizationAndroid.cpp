@@ -45,10 +45,7 @@ String LocalizationAndroid::GetDeviceLang(void)
     JNI::JavaClass jniLocalisation("com/dava/framework/JNILocalization");
     Function<jstring ()> getLocale  = jniLocalisation.GetStaticMethod<jstring>("GetLocale");
 
-    char str[256] = {0};
-    JNI::CreateStringFromJni(getLocale(), str);
-    String locale = str;
-    return locale;
+    return JNI::ToString(getLocale());
 }
 
 };
