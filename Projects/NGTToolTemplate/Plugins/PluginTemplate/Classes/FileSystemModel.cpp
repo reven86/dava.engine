@@ -41,7 +41,7 @@ FileSystemModel::FileSystemModel(std::string const & rootPath, TCheckFile const 
         return;
     }
 
-    if (!fileSystem->exists(rootPath.c_str()))
+    if (rootPath.empty() || !fileSystem->exists(rootPath.c_str()))
         return;
 
     root.reset(new Item(fileSystem->getFileInfo(rootPath.c_str()), *fileSystem, checkFileFn));

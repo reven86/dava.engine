@@ -43,7 +43,9 @@ namespace
 std::string SCENE_EXTENSION = ".sc2";
 char const * SCENE_FILE_FILTER = "Scene (*.sc2)";
 #ifdef _WIN32
-char const* FILE_SYSTEM_ROOT = "d:\\";
+// if you set here some real folder path, application can starts very long
+// FileSystem model will accumulate all files recursively
+char const* FILE_SYSTEM_ROOT = "";
 #elif __APPLE__
 char const* FILE_SYSTEM_ROOT = "/";
 #endif
