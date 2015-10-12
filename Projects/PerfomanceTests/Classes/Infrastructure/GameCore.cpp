@@ -30,7 +30,7 @@
 #include "GameCore.h"
 
 #include "Platform/DateTime.h"
-#include "TexturePacker/CommandLineParser.h"
+#include "CommandLine/CommandLineParser.h"
 #include "Utils/Utils.h"
 
 #include <fstream>

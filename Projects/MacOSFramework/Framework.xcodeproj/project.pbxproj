@@ -76,7 +76,6 @@
 		02A2FC3518D2E7460039E66A /* TreeToAnimatedTreeConverter.h in Headers */ = {isa = PBXBuildFile; fileRef = 02A2FC3118D2E7460039E66A /* TreeToAnimatedTreeConverter.h */; };
 		02A2FC3618D2E7460039E66A /* TreeToAnimatedTreeConverter.h in Headers */ = {isa = PBXBuildFile; fileRef = 02A2FC3118D2E7460039E66A /* TreeToAnimatedTreeConverter.h */; };
 		02A2FC3718D2E7460039E66A /* TreeToAnimatedTreeConverter.h in Headers */ = {isa = PBXBuildFile; fileRef = 02A2FC3118D2E7460039E66A /* TreeToAnimatedTreeConverter.h */; };
-		02E9E3AB17296D4200C501BC /* FMODUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E9E3AA17296D4200C501BC /* FMODUtils.h */; };
 		02E9E4231739616800C501BC /* SoundComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E9E4211739616800C501BC /* SoundComponent.cpp */; };
 		02E9E4241739616800C501BC /* SoundComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E9E4221739616800C501BC /* SoundComponent.h */; };
 		02E9E4321739622E00C501BC /* FMODUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E9E3AA17296D4200C501BC /* FMODUtils.h */; };
@@ -1082,7 +1081,6 @@
 		641A61DD18CDC2F4003359E7 /* FoliageSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 641A61D918CDC2F4003359E7 /* FoliageSystem.h */; };
 		641A61DE18CDC2F4003359E7 /* FoliageSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 641A61D918CDC2F4003359E7 /* FoliageSystem.h */; };
 		641A61DF18CDC2F4003359E7 /* FoliageSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 641A61D918CDC2F4003359E7 /* FoliageSystem.h */; };
-		6435963B18C1FA3200862C31 /* AbstractQuadTree.h in Headers */ = {isa = PBXBuildFile; fileRef = 6435963718C1FA3200862C31 /* AbstractQuadTree.h */; };
 		6435963C18C1FA3200862C31 /* AbstractQuadTree.h in Headers */ = {isa = PBXBuildFile; fileRef = 6435963718C1FA3200862C31 /* AbstractQuadTree.h */; };
 		6435963D18C1FA3200862C31 /* AbstractQuadTree.h in Headers */ = {isa = PBXBuildFile; fileRef = 6435963718C1FA3200862C31 /* AbstractQuadTree.h */; };
 		644C86BE19476A7100964F91 /* RenderBatchPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 644C86A819476A7100964F91 /* RenderBatchPool.cpp */; };
@@ -1196,23 +1194,6 @@
 		76199F3D192DF73D008A47E2 /* VersionInfo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 76199F39192DF73D008A47E2 /* VersionInfo.cpp */; };
 		76199F3E192DF73D008A47E2 /* VersionInfo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 76199F39192DF73D008A47E2 /* VersionInfo.cpp */; };
 		76199F3F192DF73D008A47E2 /* VersionInfo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 76199F39192DF73D008A47E2 /* VersionInfo.cpp */; };
-		76C7419A1A48374B00184019 /* CoreMacOSPlatformQt.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 76C7418B1A48374B00184019 /* CoreMacOSPlatformQt.cpp */; };
-		76C7419C1A48374B00184019 /* CoreMacOSPlatformQt.h in Headers */ = {isa = PBXBuildFile; fileRef = 76C7418C1A48374B00184019 /* CoreMacOSPlatformQt.h */; };
-		76C7419E1A48374B00184019 /* OpenGLView.h in Headers */ = {isa = PBXBuildFile; fileRef = 76C7418D1A48374B00184019 /* OpenGLView.h */; };
-		76C741A01A48374B00184019 /* OpenGLView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 76C7418E1A48374B00184019 /* OpenGLView.mm */; };
-		76C741A21A48374B00184019 /* QtLayerMacOS.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 76C7418F1A48374B00184019 /* QtLayerMacOS.cpp */; };
-		76C741A41A48374B00184019 /* QtLayerMacOS.h in Headers */ = {isa = PBXBuildFile; fileRef = 76C741901A48374B00184019 /* QtLayerMacOS.h */; };
-		76C741A61A48374B00184019 /* QtLayerMacOSObjective.mm in Sources */ = {isa = PBXBuildFile; fileRef = 76C741911A48374B00184019 /* QtLayerMacOSObjective.mm */; };
-		76C741A81A48374B00184019 /* QtLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 76C741921A48374B00184019 /* QtLayer.cpp */; };
-		76C741AA1A48374B00184019 /* QtLayer.h in Headers */ = {isa = PBXBuildFile; fileRef = 76C741931A48374B00184019 /* QtLayer.h */; };
-		76C741AB1A48374B00184019 /* CorePlatformWin32Qt.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 76C741951A48374B00184019 /* CorePlatformWin32Qt.cpp */; };
-		76C741AC1A48374B00184019 /* CorePlatformWin32Qt.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 76C741951A48374B00184019 /* CorePlatformWin32Qt.cpp */; };
-		76C741AD1A48374B00184019 /* CorePlatformWin32Qt.h in Headers */ = {isa = PBXBuildFile; fileRef = 76C741961A48374B00184019 /* CorePlatformWin32Qt.h */; };
-		76C741AE1A48374B00184019 /* CorePlatformWin32Qt.h in Headers */ = {isa = PBXBuildFile; fileRef = 76C741961A48374B00184019 /* CorePlatformWin32Qt.h */; };
-		76C741AF1A48374B00184019 /* QtLayerWin32.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 76C741971A48374B00184019 /* QtLayerWin32.cpp */; };
-		76C741B01A48374B00184019 /* QtLayerWin32.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 76C741971A48374B00184019 /* QtLayerWin32.cpp */; };
-		76C741B11A48374B00184019 /* QtLayerWin32.h in Headers */ = {isa = PBXBuildFile; fileRef = 76C741981A48374B00184019 /* QtLayerWin32.h */; };
-		76C741B21A48374B00184019 /* QtLayerWin32.h in Headers */ = {isa = PBXBuildFile; fileRef = 76C741981A48374B00184019 /* QtLayerWin32.h */; };
 		7C007DE51B384DAC000003DB /* Atomic.h in Headers */ = {isa = PBXBuildFile; fileRef = 7C007DD11B384DAC000003DB /* Atomic.h */; };
 		7C007DE61B384DAC000003DB /* Atomic.h in Headers */ = {isa = PBXBuildFile; fileRef = 7C007DD11B384DAC000003DB /* Atomic.h */; };
 		7C007DE71B384DAC000003DB /* Atomic.h in Headers */ = {isa = PBXBuildFile; fileRef = 7C007DD11B384DAC000003DB /* Atomic.h */; };
@@ -1290,8 +1271,6 @@
 		84CB671F191FC8850086483D /* ImageSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 84CB6710191FC8850086483D /* ImageSystem.h */; };
 		84CB6720191FC8850086483D /* LibDdsHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84CB6711191FC8850086483D /* LibDdsHelper.cpp */; };
 		84CB6721191FC8850086483D /* LibDdsHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 84CB6712191FC8850086483D /* LibDdsHelper.h */; };
-		84CB6722191FC8850086483D /* LibWebPHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84CB6713191FC8850086483D /* LibWebPHelper.cpp */; };
-		84CB6723191FC8850086483D /* LibWebPHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 84CB6714191FC8850086483D /* LibWebPHelper.h */; };
 		84CB6724191FC8850086483D /* LibPngHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84CB6715191FC8850086483D /* LibPngHelper.cpp */; };
 		84CB6725191FC8850086483D /* LibPngHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 84CB6716191FC8850086483D /* LibPngHelper.h */; };
 		84CB6726191FC8850086483D /* LibPVRHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84CB6717191FC8850086483D /* LibPVRHelper.cpp */; };
@@ -1305,8 +1284,6 @@
 		84E975C6191FCE060054CCF9 /* ImageSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 84CB6710191FC8850086483D /* ImageSystem.h */; };
 		84E975C7191FCE0A0054CCF9 /* LibDdsHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84CB6711191FC8850086483D /* LibDdsHelper.cpp */; };
 		84E975C8191FCE0D0054CCF9 /* LibDdsHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 84CB6712191FC8850086483D /* LibDdsHelper.h */; };
-		84E975C9191FCE100054CCF9 /* LibWebPHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84CB6713191FC8850086483D /* LibWebPHelper.cpp */; };
-		84E975CA191FCE130054CCF9 /* LibWebPHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 84CB6714191FC8850086483D /* LibWebPHelper.h */; };
 		84E975CB191FCE160054CCF9 /* LibPngHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84CB6715191FC8850086483D /* LibPngHelper.cpp */; };
 		84E975CD191FCE1D0054CCF9 /* LibPVRHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84CB6717191FC8850086483D /* LibPVRHelper.cpp */; };
 		84E975CE191FCE200054CCF9 /* LibPVRHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 84CB6718191FC8850086483D /* LibPVRHelper.h */; };
@@ -1690,6 +1667,8 @@
 		E879E2461988EF8D0026191D /* OGLHelpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E879E2451988EF8D0026191D /* OGLHelpers.cpp */; };
 		E879E2471988EF8D0026191D /* OGLHelpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E879E2451988EF8D0026191D /* OGLHelpers.cpp */; };
 		E879E2481988EF8D0026191D /* OGLHelpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E879E2451988EF8D0026191D /* OGLHelpers.cpp */; };
+		E88E45871BA97346006BC67E /* LibWebPHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84CB6713191FC8850086483D /* LibWebPHelper.cpp */; };
+		E88E45881BA9734A006BC67E /* LibWebPHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84CB6713191FC8850086483D /* LibWebPHelper.cpp */; };
 		E8951B741738FEEC00755339 /* GPUFamilyDescriptor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8951B721738FEEC00755339 /* GPUFamilyDescriptor.cpp */; };
 		E8951B751738FEEC00755339 /* GPUFamilyDescriptor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8951B721738FEEC00755339 /* GPUFamilyDescriptor.cpp */; };
 		E8951B761738FEEC00755339 /* GPUFamilyDescriptor.h in Headers */ = {isa = PBXBuildFile; fileRef = E8951B731738FEEC00755339 /* GPUFamilyDescriptor.h */; };
@@ -2664,9 +2643,6 @@
 		E89EDE881A2E17170036E993 /* DateTime.h in Headers */ = {isa = PBXBuildFile; fileRef = 62BD24BF18C621EB00D2F0D3 /* DateTime.h */; };
 		E89EDE891A2E17170036E993 /* DateTime.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62BD24BE18C621EB00D2F0D3 /* DateTime.cpp */; };
 		E89EDE8A1A2E17170036E993 /* DateTime.h in Headers */ = {isa = PBXBuildFile; fileRef = 62BD24BF18C621EB00D2F0D3 /* DateTime.h */; };
-		E89EDE8C1A2E17750036E993 /* OpenUDIDMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 846CFE62174D1A75004ECE3C /* OpenUDIDMacOS.mm */; };
-		E89EDE8E1A2E177A0036E993 /* OpenUDIDMacOS.h in Headers */ = {isa = PBXBuildFile; fileRef = 846CFE61174D1A75004ECE3C /* OpenUDIDMacOS.h */; };
-		E89EDE8F1A2E177B0036E993 /* OpenUDIDMacOS.h in Headers */ = {isa = PBXBuildFile; fileRef = 846CFE61174D1A75004ECE3C /* OpenUDIDMacOS.h */; };
 		E89EDE901A2E17B80036E993 /* OpenUDIDApple.mm in Sources */ = {isa = PBXBuildFile; fileRef = 846CFE5E174D1A64004ECE3C /* OpenUDIDApple.mm */; };
 		E89EDE911A2E17D90036E993 /* DateTimeApple.mm in Sources */ = {isa = PBXBuildFile; fileRef = 6280BAA818D6F909007809B7 /* DateTimeApple.mm */; };
 		E89EDE921A2E17DA0036E993 /* DateTimeApple.mm in Sources */ = {isa = PBXBuildFile; fileRef = 6280BAA818D6F909007809B7 /* DateTimeApple.mm */; };
@@ -2692,8 +2668,13 @@
 		E8E081421A03956D009A3228 /* OpenUDIDMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 846CFE62174D1A75004ECE3C /* OpenUDIDMacOS.mm */; };
 		E8E081431A039573009A3228 /* OpenUDIDMacOS.h in Headers */ = {isa = PBXBuildFile; fileRef = 846CFE61174D1A75004ECE3C /* OpenUDIDMacOS.h */; };
 		E8E081441A03973A009A3228 /* OpenUDIDApple.h in Headers */ = {isa = PBXBuildFile; fileRef = 846CFE5D174D1A64004ECE3C /* OpenUDIDApple.h */; };
-		E8E081451A03973D009A3228 /* OpenUDIDApple.mm in Sources */ = {isa = PBXBuildFile; fileRef = 846CFE5E174D1A64004ECE3C /* OpenUDIDApple.mm */; };
 		E8E081461A039740009A3228 /* OpenUDIDApple.h in Headers */ = {isa = PBXBuildFile; fileRef = 846CFE5D174D1A64004ECE3C /* OpenUDIDApple.h */; };
+		E8E6ECC11B8B4C4F00FA81B9 /* StaticMemoryFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8E6ECBF1B8B4C4F00FA81B9 /* StaticMemoryFile.cpp */; };
+		E8E6ECC21B8B4C4F00FA81B9 /* StaticMemoryFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8E6ECBF1B8B4C4F00FA81B9 /* StaticMemoryFile.cpp */; };
+		E8E6ECC31B8B4C4F00FA81B9 /* StaticMemoryFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8E6ECBF1B8B4C4F00FA81B9 /* StaticMemoryFile.cpp */; };
+		E8E6ECC41B8B4C4F00FA81B9 /* StaticMemoryFile.h in Headers */ = {isa = PBXBuildFile; fileRef = E8E6ECC01B8B4C4F00FA81B9 /* StaticMemoryFile.h */; };
+		E8E6ECC51B8B4C4F00FA81B9 /* StaticMemoryFile.h in Headers */ = {isa = PBXBuildFile; fileRef = E8E6ECC01B8B4C4F00FA81B9 /* StaticMemoryFile.h */; };
+		E8E6ECC61B8B4C4F00FA81B9 /* StaticMemoryFile.h in Headers */ = {isa = PBXBuildFile; fileRef = E8E6ECC01B8B4C4F00FA81B9 /* StaticMemoryFile.h */; };
 		E8F21DCA16C196DC007F957A /* GlobalEventSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50D6C8E616C107D400BB3F78 /* GlobalEventSystem.cpp */; };
 		E8F21DCB16C196DD007F957A /* GlobalEventSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50D6C8E616C107D400BB3F78 /* GlobalEventSystem.cpp */; };
 		E8F43E24186C3D02006796CB /* MaterialSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8F43E22186C3D02006796CB /* MaterialSystem.cpp */; };
@@ -2761,6 +2742,10 @@
 		FE578C621327927C0081BDE9 /* libvorbisfile_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FE578C5F1327927C0081BDE9 /* libvorbisfile_macos.a */; };
 		FEA1D3CE1ADF9B88006B981A /* LibTgaHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FEA1D3CC1ADF9B88006B981A /* LibTgaHelper.cpp */; };
 		FEA1D3CF1ADF9B88006B981A /* LibTgaHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = FEA1D3CD1ADF9B88006B981A /* LibTgaHelper.h */; };
+		FECAA1CA1B7358B4008BC3FC /* AbstractQuadTree.h in Headers */ = {isa = PBXBuildFile; fileRef = 6435963718C1FA3200862C31 /* AbstractQuadTree.h */; };
+		FECAA1CC1B7358B4008BC3FC /* FMODUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E9E3AA17296D4200C501BC /* FMODUtils.h */; };
+		FECAA1CE1B7358B4008BC3FC /* LibWebPHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 84CB6714191FC8850086483D /* LibWebPHelper.h */; };
+		FECAA1CF1B7358B4008BC3FC /* LibWebPHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84CB6713191FC8850086483D /* LibWebPHelper.cpp */; };
 		FED4C0C91B3AA41F006D0379 /* LibJpegHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FED4C0C71B3AA41E006D0379 /* LibJpegHelper.cpp */; };
 		FED4C0CA1B3AA41F006D0379 /* LibJpegHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = FED4C0C81B3AA41E006D0379 /* LibJpegHelper.h */; };
 /* End PBXBuildFile section */
@@ -3082,19 +3067,6 @@
 		74D1EAB7172E950700EDE0B7 /* UIScrollViewContainer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIScrollViewContainer.h; sourceTree = "<group>"; };
 		76199F38192DF73D008A47E2 /* VersionInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VersionInfo.h; sourceTree = "<group>"; };
 		76199F39192DF73D008A47E2 /* VersionInfo.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VersionInfo.cpp; sourceTree = "<group>"; };
-		76C7418B1A48374B00184019 /* CoreMacOSPlatformQt.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CoreMacOSPlatformQt.cpp; sourceTree = "<group>"; };
-		76C7418C1A48374B00184019 /* CoreMacOSPlatformQt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CoreMacOSPlatformQt.h; sourceTree = "<group>"; };
-		76C7418D1A48374B00184019 /* OpenGLView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OpenGLView.h; sourceTree = "<group>"; };
-		76C7418E1A48374B00184019 /* OpenGLView.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = OpenGLView.mm; sourceTree = "<group>"; };
-		76C7418F1A48374B00184019 /* QtLayerMacOS.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = QtLayerMacOS.cpp; sourceTree = "<group>"; };
-		76C741901A48374B00184019 /* QtLayerMacOS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QtLayerMacOS.h; sourceTree = "<group>"; };
-		76C741911A48374B00184019 /* QtLayerMacOSObjective.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = QtLayerMacOSObjective.mm; sourceTree = "<group>"; };
-		76C741921A48374B00184019 /* QtLayer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = QtLayer.cpp; sourceTree = "<group>"; };
-		76C741931A48374B00184019 /* QtLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QtLayer.h; sourceTree = "<group>"; };
-		76C741951A48374B00184019 /* CorePlatformWin32Qt.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CorePlatformWin32Qt.cpp; sourceTree = "<group>"; };
-		76C741961A48374B00184019 /* CorePlatformWin32Qt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CorePlatformWin32Qt.h; sourceTree = "<group>"; };
-		76C741971A48374B00184019 /* QtLayerWin32.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = QtLayerWin32.cpp; sourceTree = "<group>"; };
-		76C741981A48374B00184019 /* QtLayerWin32.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QtLayerWin32.h; sourceTree = "<group>"; };
 		7C007DD11B384DAC000003DB /* Atomic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Atomic.h; sourceTree = "<group>"; };
 		7C007DD21B384DAC000003DB /* AtomicGNU.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AtomicGNU.h; sourceTree = "<group>"; };
 		7C007DD31B384DAC000003DB /* AtomicWindows.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AtomicWindows.h; sourceTree = "<group>"; };
@@ -3786,6 +3758,8 @@
 		E8BAD5AE185213F100C98C8D /* IntrospectionDynamic.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IntrospectionDynamic.cpp; sourceTree = "<group>"; };
 		E8BAD5AF185213F100C98C8D /* IntrospectionDynamic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IntrospectionDynamic.h; sourceTree = "<group>"; };
 		E8CC1BF616C109F1009B49BF /* IntrospectionBase.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IntrospectionBase.cpp; sourceTree = "<group>"; };
+		E8E6ECBF1B8B4C4F00FA81B9 /* StaticMemoryFile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StaticMemoryFile.cpp; sourceTree = "<group>"; };
+		E8E6ECC01B8B4C4F00FA81B9 /* StaticMemoryFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StaticMemoryFile.h; sourceTree = "<group>"; };
 		E8F43E22186C3D02006796CB /* MaterialSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MaterialSystem.cpp; sourceTree = "<group>"; };
 		E8F43E23186C3D02006796CB /* MaterialSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MaterialSystem.h; sourceTree = "<group>"; };
 		E8FC12F0186972560095D8FE /* QualitySettingsComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = QualitySettingsComponent.cpp; sourceTree = "<group>"; };
@@ -4199,42 +4173,6 @@
 				644C86BD19476A7100964F91 /* VegetationSpatialData.h */,
 			);
 			path = Vegetation;
-			sourceTree = "<group>";
-		};
-		76C741891A48374B00184019 /* Qt4 */ = {
-			isa = PBXGroup;
-			children = (
-				76C7418A1A48374B00184019 /* MacOS */,
-				76C741921A48374B00184019 /* QtLayer.cpp */,
-				76C741931A48374B00184019 /* QtLayer.h */,
-				76C741941A48374B00184019 /* Win32 */,
-			);
-			path = Qt4;
-			sourceTree = "<group>";
-		};
-		76C7418A1A48374B00184019 /* MacOS */ = {
-			isa = PBXGroup;
-			children = (
-				76C7418B1A48374B00184019 /* CoreMacOSPlatformQt.cpp */,
-				76C7418C1A48374B00184019 /* CoreMacOSPlatformQt.h */,
-				76C7418D1A48374B00184019 /* OpenGLView.h */,
-				76C7418E1A48374B00184019 /* OpenGLView.mm */,
-				76C7418F1A48374B00184019 /* QtLayerMacOS.cpp */,
-				76C741901A48374B00184019 /* QtLayerMacOS.h */,
-				76C741911A48374B00184019 /* QtLayerMacOSObjective.mm */,
-			);
-			path = MacOS;
-			sourceTree = "<group>";
-		};
-		76C741941A48374B00184019 /* Win32 */ = {
-			isa = PBXGroup;
-			children = (
-				76C741951A48374B00184019 /* CorePlatformWin32Qt.cpp */,
-				76C741961A48374B00184019 /* CorePlatformWin32Qt.h */,
-				76C741971A48374B00184019 /* QtLayerWin32.cpp */,
-				76C741981A48374B00184019 /* QtLayerWin32.h */,
-			);
-			path = Win32;
 			sourceTree = "<group>";
 		};
 		7C007DD01B384DAC000003DB /* Concurrency */ = {
@@ -4651,6 +4589,8 @@
 		E8989B5816BD24E400732C04 /* FileSystem */ = {
 			isa = PBXGroup;
 			children = (
+				E8E6ECBF1B8B4C4F00FA81B9 /* StaticMemoryFile.cpp */,
+				E8E6ECC01B8B4C4F00FA81B9 /* StaticMemoryFile.h */,
 				15D3117E198285C800919AAA /* YamlEmitter.cpp */,
 				15D3117F198285C800919AAA /* YamlEmitter.h */,
 				155D77D6197DD22E006AEBCD /* YamlNode.cpp */,
@@ -4785,7 +4725,6 @@
 		E8989BD716BD24E400732C04 /* Platform */ = {
 			isa = PBXGroup;
 			children = (
-				76C741891A48374B00184019 /* Qt4 */,
 				6280BAA818D6F909007809B7 /* DateTimeApple.mm */,
 				62BD24BE18C621EB00D2F0D3 /* DateTime.cpp */,
 				62BD24BF18C621EB00D2F0D3 /* DateTime.h */,
@@ -5559,6 +5498,7 @@
 				176DE92F174B5561007A983B /* MongodbObject.h in Headers */,
 				176DE930174B5561007A983B /* DAVAConfig.h in Headers */,
 				176DE931174B5561007A983B /* DAVAEngine.h in Headers */,
+				E8E6ECC61B8B4C4F00FA81B9 /* StaticMemoryFile.h in Headers */,
 				17B3EA9718E9A64C0069AE7A /* CorePlatformMacOS.h in Headers */,
 				176DE933174B5561007A983B /* DVAssert.h in Headers */,
 				176DE934174B5561007A983B /* List.h in Headers */,
@@ -5840,7 +5780,6 @@
 				026A1DC519DAF09700813AEF /* SkeletonComponent.h in Headers */,
 				176DEA14174B5561007A983B /* DPIHelper.h in Headers */,
 				176DEA15174B5561007A983B /* UIWebView.h in Headers */,
-				E89EDE8E1A2E177A0036E993 /* OpenUDIDMacOS.h in Headers */,
 				11B1551F1B2F26B200E0EECE /* UIControlPackageContext.h in Headers */,
 				176DEA16174B5561007A983B /* IWebViewControl.h in Headers */,
 				644C86E719476A7100964F91 /* VegetationGeometry.h in Headers */,
@@ -5977,6 +5916,7 @@
 				E8989DC816BD24E500732C04 /* HashMap.h in Headers */,
 				50C16DD21A52D7B9003C307A /* LogConsumer.h in Headers */,
 				E8989DC916BD24E500732C04 /* Introspection.h in Headers */,
+				E8E6ECC41B8B4C4F00FA81B9 /* StaticMemoryFile.h in Headers */,
 				E8989DCA16BD24E500732C04 /* IntrospectionBase.h in Headers */,
 				76199F3A192DF73D008A47E2 /* VersionInfo.h in Headers */,
 				50F3B8741B1EE39E00976CBC /* TestClass.h in Headers */,
@@ -6125,8 +6065,6 @@
 				1166AC161A8CDF2D00F1618D /* dlmalloc.h in Headers */,
 				50B429D41A5A704400CEB3D3 /* Discoverer.h in Headers */,
 				50F3B8751B1EE39E00976CBC /* TestClassFactory.h in Headers */,
-				84CB6723191FC8850086483D /* LibWebPHelper.h in Headers */,
-				84CB6723191FC8850086483D /* LibWebPHelper.h in Headers */,
 				F3E441D51B7A4DE9001FF7F1 /* SignalBase.h in Headers */,
 				E8989ECD16BD24E500732C04 /* NSFullScreenWindow.h in Headers */,
 				E8989ECF16BD24E500732C04 /* OpenGLView.h in Headers */,
@@ -6285,7 +6223,6 @@
 				50320B6E1B8DA55C00F7123B /* MMBigDataTransferService.h in Headers */,
 				E8989FE116BD24E500732C04 /* ParticleEffectSystem.h in Headers */,
 				50FB9DA91A92446700BDB8A2 /* MemoryManager.h in Headers */,
-				76C741AD1A48374B00184019 /* CorePlatformWin32Qt.h in Headers */,
 				E8989FE516BD24E500732C04 /* RenderUpdateSystem.h in Headers */,
 				E8989FE716BD24E500732C04 /* SwitchSystem.h in Headers */,
 				E8989FE916BD24E500732C04 /* TransformSystem.h in Headers */,
@@ -6337,7 +6274,6 @@
 				E898A04D16BD24E500732C04 /* UTF8Utils.h in Headers */,
 				50C16DBF1A52D7B9003C307A /* NetCore.h in Headers */,
 				E898A04F16BD24E500732C04 /* Utils.h in Headers */,
-				76C741B11A48374B00184019 /* QtLayerWin32.h in Headers */,
 				50D6C8EA16C107D500BB3F78 /* GlobalEventSystem.h in Headers */,
 				CCB4C41B16CBC5B200F2B085 /* ComponentHelpers.h in Headers */,
 				D7CC263719C43C7C00A3B754 /* LocalNotificationController.h in Headers */,
@@ -6419,10 +6355,8 @@
 				748A99751726C5EE00C6411B /* UIScrollView.h in Headers */,
 				74D1EABA172E950700EDE0B7 /* UIScrollViewContainer.h in Headers */,
 				E8990B3E1A288C2000FF71A1 /* WASDControllerComponent.h in Headers */,
-				6435963B18C1FA3200862C31 /* AbstractQuadTree.h in Headers */,
-				02E9E3AB17296D4200C501BC /* FMODUtils.h in Headers */,
-				6435963B18C1FA3200862C31 /* AbstractQuadTree.h in Headers */,
-				02E9E3AB17296D4200C501BC /* FMODUtils.h in Headers */,
+				FECAA1CA1B7358B4008BC3FC /* AbstractQuadTree.h in Headers */,
+				FECAA1CC1B7358B4008BC3FC /* FMODUtils.h in Headers */,
 				02A2FC3518D2E7460039E66A /* TreeToAnimatedTreeConverter.h in Headers */,
 				02E9E4241739616800C501BC /* SoundComponent.h in Headers */,
 				02E9E439173964DA00C501BC /* SoundUpdateSystem.h in Headers */,
@@ -6523,7 +6457,6 @@
 				E89EDE6D1A2E16FA0036E993 /* MongodbUpdateObject.h in Headers */,
 				E898A07C16BD265400732C04 /* Radix.h in Headers */,
 				E898A07D16BD265400732C04 /* RefPtr.h in Headers */,
-				76C7419C1A48374B00184019 /* CoreMacOSPlatformQt.h in Headers */,
 				E898A07E16BD265400732C04 /* ScopedPtr.h in Headers */,
 				322FFD4819C042880000ED71 /* UIControlHelpers.h in Headers */,
 				E898A07F16BD265400732C04 /* Singleton.h in Headers */,
@@ -6630,7 +6563,6 @@
 				11CB615419C3391B00B48A92 /* AnimationData.h in Headers */,
 				02FD7EDD19237D96007762C0 /* WindSystem.h in Headers */,
 				D7CC263E19C43C7C00A3B754 /* LocalNotificationNotImplemented.h in Headers */,
-				76C741A41A48374B00184019 /* QtLayerMacOS.h in Headers */,
 				E8ADAEBD18CA1226000B251C /* PixelFormatDescriptor.h in Headers */,
 				E898A0D016BD265400732C04 /* Particle.h in Headers */,
 				644C86E619476A7100964F91 /* VegetationGeometry.h in Headers */,
@@ -6647,11 +6579,9 @@
 				D7CC263819C43C7C00A3B754 /* LocalNotificationController.h in Headers */,
 				B7464C8B1AEA7BEE00D3AB13 /* TextLayout.h in Headers */,
 				02FD8270192A3861007762C0 /* WaveComponent.h in Headers */,
-				E89EDE8F1A2E177B0036E993 /* OpenUDIDMacOS.h in Headers */,
 				E89EDE521A2E16FA0036E993 /* AutotestingSystemConfig.h in Headers */,
 				CC931B29188EC95F000375F9 /* SwitchToRenerObjectConverter.h in Headers */,
 				E898A0E516BD265400732C04 /* Font.h in Headers */,
-				76C7419E1A48374B00184019 /* OpenGLView.h in Headers */,
 				E898A0E616BD265400732C04 /* FontManager.h in Headers */,
 				E898A0E716BD265400732C04 /* FTFont.h in Headers */,
 				E898A0E816BD265400732C04 /* GraphicsFont.h in Headers */,
@@ -6667,7 +6597,6 @@
 				E898A0EF16BD265400732C04 /* StaticMesh.h in Headers */,
 				647EFC55195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.h in Headers */,
 				E898A0F016BD265400732C04 /* Cursor.h in Headers */,
-				76C741AE1A48374B00184019 /* CorePlatformWin32Qt.h in Headers */,
 				E898A0F116BD265400732C04 /* ColorOnlyEffect.h in Headers */,
 				E898A0F216BD265400732C04 /* MultiTextureEffect.h in Headers */,
 				E898A0F316BD265400732C04 /* TextureMulColorAlphaTestEffect.h in Headers */,
@@ -6707,7 +6636,6 @@
 				644C86E919476A7100964F91 /* VegetationMaterialTransformer.h in Headers */,
 				3281F3101B2990A100D12AC5 /* UILayoutSystem.h in Headers */,
 				E8BAD5B4185213F100C98C8D /* IntrospectionDynamic.h in Headers */,
-				76C741AA1A48374B00184019 /* QtLayer.h in Headers */,
 				E898A12F16BD265400732C04 /* GameObject.h in Headers */,
 				7C007DFB1B384DAC000003DB /* LockGuard.h in Headers */,
 				E898A13016BD265400732C04 /* GameObjectAnimations.h in Headers */,
@@ -6740,7 +6668,6 @@
 				E898A14816BD265400732C04 /* MeshInstance.h in Headers */,
 				E898A14916BD265400732C04 /* MeshInstanceNode.h in Headers */,
 				E898A14A16BD265400732C04 /* ParticleEffectNode.h in Headers */,
-				76C741B21A48374B00184019 /* QtLayerWin32.h in Headers */,
 				E898A14B16BD265400732C04 /* ParticleEmitterNode.h in Headers */,
 				E898A14C16BD265400732C04 /* PathManip.h in Headers */,
 				E898A14D16BD265400732C04 /* PolygonGroupInstance.h in Headers */,
@@ -6773,6 +6700,7 @@
 				E898A16416BD265400732C04 /* LightUpdateSystem.h in Headers */,
 				E898A16516BD265400732C04 /* LodSystem.h in Headers */,
 				E898A16616BD265400732C04 /* ParticleEffectSystem.h in Headers */,
+				E8E6ECC51B8B4C4F00FA81B9 /* StaticMemoryFile.h in Headers */,
 				E898A16816BD265400732C04 /* RenderUpdateSystem.h in Headers */,
 				E898A16916BD265400732C04 /* SwitchSystem.h in Headers */,
 				644C86CE19476A7100964F91 /* VegetationCustomGeometry.h in Headers */,
@@ -6906,8 +6834,7 @@
 				A679102317B3C71B000AA2F2 /* SkyboxRenderObject.h in Headers */,
 				EA56554E17CDFF4B00426EB8 /* PerformanceSettings.h in Headers */,
 				E89EDE611A2E16FA0036E993 /* GameAPI.h in Headers */,
-				84E975CA191FCE130054CCF9 /* LibWebPHelper.h in Headers */,
-				84E975CA191FCE130054CCF9 /* LibWebPHelper.h in Headers */,
+				FECAA1CE1B7358B4008BC3FC /* LibWebPHelper.h in Headers */,
 				CC0D7B381A76055A00309408 /* EdgeComponent.h in Headers */,
 				50A5187417B256250022E8FA /* ShaderCache.h in Headers */,
 				A6B0518117E886D8000EED68 /* SerializationContext.h in Headers */,
@@ -6992,7 +6919,7 @@
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0510;
+				LastUpgradeCheck = 0640;
 			};
 			buildConfigurationList = 1DEB922208733DC00010E9CD /* Build configuration list for PBXProject "Framework" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -7277,6 +7204,7 @@
 				02141409181984D600925E51 /* DAVAClassRegistrator.cpp in Sources */,
 				176DEB0B174B5561007A983B /* ScrollHelper.cpp in Sources */,
 				4F53ED3019A23BE700D3869D /* CurlDownloader.cpp in Sources */,
+				E8E6ECC31B8B4C4F00FA81B9 /* StaticMemoryFile.cpp in Sources */,
 				E89EDE741A2E16FA0036E993 /* Polygon2Swig.cpp in Sources */,
 				A6DBFA711887D804006BE11C /* NMaterialNames.cpp in Sources */,
 				176DEB0C174B5561007A983B /* TheoraPlayer.cpp in Sources */,
@@ -7343,6 +7271,7 @@
 				11B1551C1B2F26B200E0EECE /* UIControlPackageContext.cpp in Sources */,
 				176DEB3A174B5561007A983B /* UISwitch.cpp in Sources */,
 				176DEB3B174B5561007A983B /* Camera.cpp in Sources */,
+				E88E45881BA9734A006BC67E /* LibWebPHelper.cpp in Sources */,
 				176DEB3C174B5561007A983B /* CullingSystem.cpp in Sources */,
 				C172EC5218CA0AEB004309CF /* DFFont.cpp in Sources */,
 				3281F30E1B2990A100D12AC5 /* UILayoutSystem.cpp in Sources */,
@@ -7455,9 +7384,6 @@
 				50C16DAF1A52D7B9003C307A /* NetworkUtils.cpp in Sources */,
 				7C007E1B1B384DAC000003DB /* ThreadWin32.cpp in Sources */,
 				E8989DB816BD24E500732C04 /* BaseObjectChecker.cpp in Sources */,
-				84CB6722191FC8850086483D /* LibWebPHelper.cpp in Sources */,
-				84CB6722191FC8850086483D /* LibWebPHelper.cpp in Sources */,
-				84CB6722191FC8850086483D /* LibWebPHelper.cpp in Sources */,
 				7C007E0F1B384DAC000003DB /* Thread.cpp in Sources */,
 				7C007DF41B384DAC000003DB /* ConditionVariable.cpp in Sources */,
 				E8989DBB16BD24E500732C04 /* Data.cpp in Sources */,
@@ -7578,7 +7504,6 @@
 				50320B6D1B8DA55C00F7123B /* MMBigDataTransferService.cpp in Sources */,
 				B4C29D3F199B592D001B83FE /* SceneCache.cpp in Sources */,
 				E8989EE416BD24E500732C04 /* TextBlock.cpp in Sources */,
-				76C741AF1A48374B00184019 /* QtLayerWin32.cpp in Sources */,
 				E8989EE616BD24E500732C04 /* AnimatedMesh.cpp in Sources */,
 				E8989EE816BD24E500732C04 /* EdgeAdjacency.cpp in Sources */,
 				11B346941B42CDD6007DD207 /* UIStyleSheetPropertyTable.cpp in Sources */,
@@ -7623,7 +7548,6 @@
 				C172EC0E18C9F1E9004309CF /* TextBlockGraphicsRender.cpp in Sources */,
 				76199F3D192DF73D008A47E2 /* VersionInfo.cpp in Sources */,
 				02FD7EE919237DA2007762C0 /* WindComponent.cpp in Sources */,
-				76C741AB1A48374B00184019 /* CorePlatformWin32Qt.cpp in Sources */,
 				E8989F5016BD24E500732C04 /* RenderOptions.cpp in Sources */,
 				E8989F5216BD24E500732C04 /* RenderResource.cpp in Sources */,
 				E8990B351A288C2000FF71A1 /* SnapToLandscapeControllerComponent.cpp in Sources */,
@@ -7750,6 +7674,7 @@
 				E898A01D16BD24E500732C04 /* UIHoleTransition.cpp in Sources */,
 				A6DBFA6F1887D804006BE11C /* NMaterialNames.cpp in Sources */,
 				11B155581B32D85400E0EECE /* UIStyleSheetSystem.cpp in Sources */,
+				E88E45871BA97346006BC67E /* LibWebPHelper.cpp in Sources */,
 				D7CC264019C43C7C00A3B754 /* LocalNotificationProgress.cpp in Sources */,
 				E898A01F16BD24E500732C04 /* UIJoypad.cpp in Sources */,
 				E898A02116BD24E500732C04 /* UIList.cpp in Sources */,
@@ -7826,6 +7751,7 @@
 				CCC7A46B16F1D6170061EA5D /* ShadowVolume.cpp in Sources */,
 				CCC7A46F16F1D6170061EA5D /* ShadowVolumeRenderPass.cpp in Sources */,
 				CCC7A47316F1D6170061EA5D /* SpriteObject.cpp in Sources */,
+				E8E6ECC11B8B4C4F00FA81B9 /* StaticMemoryFile.cpp in Sources */,
 				CCC7A47716F1D6170061EA5D /* SpriteRenderBatch.cpp in Sources */,
 				11B3468E1B42CDD6007DD207 /* UIStyleSheetPropertyDataBase.cpp in Sources */,
 				320A4B2D19E6B5B80049D713 /* AbstractUIPackageBuilder.cpp in Sources */,
@@ -7999,7 +7925,6 @@
 				E898A1E016BD265400732C04 /* BezierSpline.cpp in Sources */,
 				E898A1E116BD265400732C04 /* Math2D.cpp in Sources */,
 				E898A1E216BD265400732C04 /* Matrix4.cpp in Sources */,
-				76C741A01A48374B00184019 /* OpenGLView.mm in Sources */,
 				E898A1E316BD265400732C04 /* NeonMath.cpp in Sources */,
 				E898A1E416BD265400732C04 /* Polygon2.cpp in Sources */,
 				E898A1E516BD265400732C04 /* Polygon3.cpp in Sources */,
@@ -8016,7 +7941,6 @@
 				E898A1F016BD265400732C04 /* Particle.cpp in Sources */,
 				E898A1F116BD265400732C04 /* ParticleEmitter.cpp in Sources */,
 				E898A1F416BD265400732C04 /* ParticleLayer.cpp in Sources */,
-				76C741AC1A48374B00184019 /* CorePlatformWin32Qt.cpp in Sources */,
 				E898A1F716BD265400732C04 /* ParticlePropertyLine.cpp in Sources */,
 				E8990B3C1A288C2000FF71A1 /* WASDControllerComponent.cpp in Sources */,
 				E898A1FF16BD265400732C04 /* SystemTimer.cpp in Sources */,
@@ -8037,11 +7961,9 @@
 				E89EDE491A2E16FA0036E993 /* AutotestingSystem_wrap.cxx in Sources */,
 				E898A21016BD265400732C04 /* StaticMesh.cpp in Sources */,
 				E898A21116BD265400732C04 /* CursorMacOS.mm in Sources */,
-				E89EDE8C1A2E17750036E993 /* OpenUDIDMacOS.mm in Sources */,
 				CC84B01D18211A9000934482 /* JobManager.cpp in Sources */,
 				E898A21216BD265400732C04 /* ColorOnlyEffect.cpp in Sources */,
 				E898A21316BD265400732C04 /* MultiTextureEffect.cpp in Sources */,
-				76C741A81A48374B00184019 /* QtLayer.cpp in Sources */,
 				E898A21416BD265400732C04 /* TextureMulColorAlphaTestEffect.cpp in Sources */,
 				E898A21516BD265400732C04 /* TextureMulColorEffect.cpp in Sources */,
 				76199F3E192DF73D008A47E2 /* VersionInfo.cpp in Sources */,
@@ -8071,7 +7993,6 @@
 				E898A23916BD265400732C04 /* RenderManagerGL.cpp in Sources */,
 				4F53ED2419A23BE100D3869D /* DLC.cpp in Sources */,
 				E898A23B16BD265400732C04 /* RenderOptions.cpp in Sources */,
-				76C741A61A48374B00184019 /* QtLayerMacOSObjective.mm in Sources */,
 				4F53ED3A19A23BED00D3869D /* PatchFile.cpp in Sources */,
 				E89EDE791A2E16FA0036E993 /* RectSwig.cpp in Sources */,
 				5013F6921859EB0400FB3C51 /* StaticOcclusionSystem.cpp in Sources */,
@@ -8136,8 +8057,7 @@
 				E898A26516BD265400732C04 /* PathManip.cpp in Sources */,
 				E898A26616BD265400732C04 /* PolygonGroupInstance.cpp in Sources */,
 				B786013A1A08B6170041F817 /* StringUtils.cpp in Sources */,
-				84E975C9191FCE100054CCF9 /* LibWebPHelper.cpp in Sources */,
-				84E975C9191FCE100054CCF9 /* LibWebPHelper.cpp in Sources */,
+				FECAA1CF1B7358B4008BC3FC /* LibWebPHelper.cpp in Sources */,
 				E8990B551A288C8F00FF71A1 /* WASDControllerSystem.cpp in Sources */,
 				E898A26B16BD265400732C04 /* Scene.cpp in Sources */,
 				E898A26C16BD265400732C04 /* SceneAnimationMixer.cpp in Sources */,
@@ -8148,7 +8068,6 @@
 				644C86BF19476A7100964F91 /* RenderBatchPool.cpp in Sources */,
 				E898A27116BD265400732C04 /* SceneNodeAnimation.cpp in Sources */,
 				E898A27216BD265400732C04 /* SceneNodeAnimationKey.cpp in Sources */,
-				E8E081451A03973D009A3228 /* OpenUDIDApple.mm in Sources */,
 				E898A27316BD265400732C04 /* SceneNodeAnimationList.cpp in Sources */,
 				E898A27416BD265400732C04 /* ShadowVolumeNode.cpp in Sources */,
 				E898A27516BD265400732C04 /* SkeletonNode.cpp in Sources */,
@@ -8163,7 +8082,6 @@
 				E898A27D16BD265400732C04 /* LodSystem.cpp in Sources */,
 				E898A27E16BD265400732C04 /* ParticleEffectSystem.cpp in Sources */,
 				E898A28016BD265400732C04 /* RenderUpdateSystem.cpp in Sources */,
-				76C741B01A48374B00184019 /* QtLayerWin32.cpp in Sources */,
 				4F53ED4619A23BF200D3869D /* bs_patch.c in Sources */,
 				E898A28116BD265400732C04 /* SwitchSystem.cpp in Sources */,
 				505EB40F1824CEC5009BEA3C /* OcclusionQuery.cpp in Sources */,
@@ -8178,7 +8096,6 @@
 				E898A29016BD265400732C04 /* UI3DView.cpp in Sources */,
 				E898A29116BD265400732C04 /* UIButton.cpp in Sources */,
 				E898A29216BD265400732C04 /* UIControl.cpp in Sources */,
-				76C7419A1A48374B00184019 /* CoreMacOSPlatformQt.cpp in Sources */,
 				E898A29316BD265400732C04 /* UIControlBackground.cpp in Sources */,
 				E898A29416BD265400732C04 /* UIControlSystem.cpp in Sources */,
 				E898A29516BD265400732C04 /* UIEvent.cpp in Sources */,
@@ -8252,7 +8169,6 @@
 				CCC7A45016F1D6170061EA5D /* RenderBatch.cpp in Sources */,
 				CCC7A45816F1D6170061EA5D /* RenderLayer.cpp in Sources */,
 				02FD7EEA19237DA2007762C0 /* WindComponent.cpp in Sources */,
-				76C741A21A48374B00184019 /* QtLayerMacOS.cpp in Sources */,
 				CCC7A45C16F1D6170061EA5D /* RenderObject.cpp in Sources */,
 				7C007DF51B384DAC000003DB /* ConditionVariable.cpp in Sources */,
 				155D77D9197DD22E006AEBCD /* YamlNode.cpp in Sources */,
@@ -8268,6 +8184,7 @@
 				CCC7A47016F1D6170061EA5D /* ShadowVolumeRenderPass.cpp in Sources */,
 				CCC7A47416F1D6170061EA5D /* SpriteObject.cpp in Sources */,
 				647EFC42195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.cpp in Sources */,
+				E8E6ECC21B8B4C4F00FA81B9 /* StaticMemoryFile.cpp in Sources */,
 				CCC7A47816F1D6170061EA5D /* SpriteRenderBatch.cpp in Sources */,
 				CCC7A47E16F1D64D0061EA5D /* RenderState.cpp in Sources */,
 				CCC7A48416F1D6700061EA5D /* UpdateSystem.cpp in Sources */,

@@ -55,8 +55,9 @@ struct Rect
 	inline bool PointInside(const Vector2 & point) const; 
 	inline Rect Intersection(const Rect & rect) const;
 	inline bool RectIntersects(const Rect & rect) const;
-	inline void ClampToRect(Vector2 & point) const;
-	inline void ClampToRect(Rect& rect) const;
+    inline bool RectContains(const Rect& rect) const;
+    inline void ClampToRect(Vector2& point) const;
+    inline void ClampToRect(Rect& rect) const;
 	inline Rect Combine(const Rect& rect) const;
 
 	inline Vector2 GetCenter() const;
@@ -120,23 +121,46 @@ inline bool Rect::RectIntersects(const Rect & rect) const
 	float32 top2 = rect.y;
 	float32 bottom1 = y + dy;
 	float32 bottom2 = rect.y + rect.dy;
-
-	if (bottom1 < top2)
-        return(false);
-	if (top1 > bottom2)
-        return(false);
-
+    if (top1 > bottom1 || top2 > bottom2 || bottom1 < top2 || top1 > bottom2)
+    {
+        return false;
+    }
     float32 left1 = x;
     float32 left2 = rect.x;
     float32 right1 = x + dx;
     float32 right2 = rect.x + rect.dx;
+    if (left1 > right1 || left2 > right2 || right1 < left2 || left1 > right2)
+    {
+        return false;
+    }
 
-	if (right1 < left2)
-        return(false);
-	if (left1 > right2)
-        return(false);
+    return true;
+}
 
-	return(true);
+//realization from Qt QRect.cpp: bool QRectF::contains(const QRectF &r) const
+inline bool Rect::RectContains(const Rect& rect) const
+{
+    float32 top1 = y;
+    float32 bottom1 = y + dy;
+    float32 top2 = rect.y;
+    float32 bottom2 = rect.y + rect.dy;
+
+    if (top1 > bottom1 || top2 > bottom2 || top2 < top1 || bottom2 > bottom1)
+    {
+        return false;
+    }
+
+    float32 left1 = x;
+    float32 right1 = x + dx;
+    float32 left2 = rect.x;
+    float32 right2 = rect.x + rect.dx;
+
+    if (left1 > right1 || left2 > right2 || left2 < left1 || right2 > right1)
+    {
+        return false;
+    }
+
+    return true;
 }
 
 inline Rect Rect::Intersection(const Rect & rect) const

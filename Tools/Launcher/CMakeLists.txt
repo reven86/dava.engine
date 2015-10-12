@@ -38,7 +38,7 @@ qt5_wrap_ui           ( UI_APP_HDRS  ${UI_LIST} )
 file                  ( GLOB RCC_LIST "DataQt/*.qrc" )
 qt5_add_resources     ( RCC_APP_SRCS  ${RCC_LIST} )
 
-set                   ( Generated  ${MOC_APP_SRCS} ${UI_APP_HDRS} ${RCC_APP_SRCS} )
+set                   ( Generated  ${UI_APP_HDRS} ${RCC_APP_SRCS} )
 
 define_source_folders          ( SRC_ROOT "Classes"  )
 generate_source_groups_project ( SRC_ROOT "Classes" "DataQt"  )
@@ -48,7 +48,7 @@ list( APPEND QT_LIBRARIES  Qt5::Network )
 set( MACOS_PLIST          ${CMAKE_CURRENT_LIST_DIR}/Info.plist )
 set( MACOS_ICO            ${CMAKE_CURRENT_LIST_DIR}/icon.icns  )
 
-set( ADDED_SRC            ${MOC_APP_SRCS} ${UI_APP_HDRS} ${RCC_APP_SRCS}  Launcher.rc )
+set( ADDED_SRC            ${UI_APP_HDRS} ${RCC_APP_SRCS}  Launcher.rc )
 
 set( LIBRARIES            ${QT_LIBRARIES}  quazip yaml-cpp  )
 set( LIBRARIES_RELEASE    ${LIB_RELEASE} )

@@ -58,11 +58,9 @@ WideString JniDateTime::AsWString(const WideString& format, const String& countr
 
     env->DeleteLocalRef(jFormat);
     env->DeleteLocalRef(jCountryCode);
-    char str[256] = {0};
-    JNI::CreateStringFromJni(obj, str);
-    WideString retWString;
-    UTF8Utils::EncodeToWideString((uint8*)str, 256, retWString);
-    return retWString;
+
+    WideString result = JNI::ToWideString(obj);
+    return result;
 }
 
 int JniDateTime::GetLocalTimeZoneOffset()
@@ -77,6 +75,16 @@ WideString DateTime::AsWString(const wchar_t* format) const
 	WideString retString = jniDateTime.AsWString( WideString (format), countryCode, innerTime, timeZoneOffset);
 
 	return retString;
+}
+
+WideString DateTime::GetLocalizedDate() const
+{
+    return AsWString(L"%x");
+}
+
+WideString DateTime::GetLocalizedTime() const
+{
+    return AsWString(L"%X");
 }
 
 int32 DateTime::GetLocalTimeZoneOffset()

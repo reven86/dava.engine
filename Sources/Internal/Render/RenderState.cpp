@@ -992,16 +992,16 @@ void RenderState::InitDefaultStates()
 	defaultStateData.fillMode = FILLMODE_SOLID;
 	
 	RenderState::RENDERSTATE_2D_BLEND = RenderManager::Instance()->CreateRenderState(defaultStateData);
-	
-	defaultStateData.state = RenderState::DEFAULT_2D_STATE;
-	defaultStateData.cullMode = FACE_BACK;
-	defaultStateData.depthFunc = CMP_NEVER;
-	defaultStateData.sourceFactor = BLEND_SRC_ALPHA;
-	defaultStateData.destFactor = BLEND_ONE_MINUS_SRC_ALPHA;
+
+    defaultStateData.state = RenderState::DEFAULT_2D_STATE;
+    defaultStateData.cullMode = FACE_BACK;
+    defaultStateData.depthFunc = CMP_NEVER;
+    defaultStateData.sourceFactor = BLEND_SRC_ALPHA;
+    defaultStateData.destFactor = BLEND_ONE_MINUS_SRC_ALPHA;
 	defaultStateData.fillMode = FILLMODE_SOLID;
-	
-	RenderState::RENDERSTATE_2D_OPAQUE = RenderManager::Instance()->CreateRenderState(defaultStateData);
-	
+
+    RenderState::RENDERSTATE_2D_OPAQUE = RenderManager::Instance()->CreateRenderState(defaultStateData);
+
     defaultStateData.state = RenderState::DEFAULT_3D_STATE;
 	defaultStateData.cullMode = FACE_BACK;
 	defaultStateData.depthFunc = CMP_LESS;

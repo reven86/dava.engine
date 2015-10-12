@@ -131,12 +131,17 @@ String DeviceInfoPrivate::GetModel()
 			model = "iPhone 5S GSM+CDMA";
 
         if ([modelName hasPrefix:@"iPhone7,1"])
-			model = "iPhone 6 Plus";
-		if ([modelName hasPrefix:@"iPhone7,2"])
+            model = "iPhone 6 Plus";
+        if ([modelName hasPrefix:@"iPhone7,2"])
 			model = "iPhone 6";
-        
-		// iPad
-		if ([modelName hasPrefix:@"iPad1,1"])
+
+        if ([modelName hasPrefix:@"iPhone8,1"])
+            model = "iPhone 6s";
+        if ([modelName hasPrefix:@"iPhone8,2"])
+            model = "iPhone 6s Plus";
+
+        // iPad
+        if ([modelName hasPrefix:@"iPad1,1"])
 			model = "iPad 1";
 
 		if ([modelName hasPrefix:@"iPad2,1"])

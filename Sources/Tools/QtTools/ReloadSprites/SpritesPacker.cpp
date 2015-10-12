@@ -28,8 +28,6 @@
 
 
 #include "SpritesPacker.h"
-#include "TexturePacker/ResourcePacker2D.h"
-#include <TexturePacker/CommandLineParser.h>
 #include "Platform/Qt5/QtLayer.h"
 #include "Render/2D/Sprite.h"
 #include <QDirIterator>
@@ -39,15 +37,22 @@ using namespace DAVA;
 
 SpritesPacker::SpritesPacker(QObject* parent)
     : QObject(parent)
-    , resourcePacker2D(new ResourcePacker2D())
     , running(false)
 {
-    resourcePacker2D->isLightmapsPacking = true;
 }
 
 SpritesPacker::~SpritesPacker()
 {
-    delete resourcePacker2D;
+}
+
+void SpritesPacker::SetCacheTool(const String& ip, const String& port, const String& timeout)
+{
+    resourcePacker2D.SetCacheClientTool("~res:/AssetCacheClient", ip, port, timeout);
+}
+
+void SpritesPacker::ClearCacheTool()
+{
+    resourcePacker2D.ClearCacheClientTool();
 }
 
 void SpritesPacker::AddTask(const QDir &inputDir, const QDir &outputDir)
@@ -64,7 +69,7 @@ void SpritesPacker::ReloadSprites(bool clearDirs, const eGPUFamily gpu, const Te
 {
     SetRunning(true);
     void *pool = QtLayer::Instance()->CreateAutoreleasePool();
-    resourcePacker2D->SetRunning(true);
+    resourcePacker2D.SetRunning(true);
     for (const auto &task : tasks)
     {
         const auto &inputDir = task.first;
@@ -76,13 +81,13 @@ void SpritesPacker::ReloadSprites(bool clearDirs, const eGPUFamily gpu, const Te
 
         const FilePath inputFilePath = FilePath(inputDir.absolutePath().toStdString()).MakeDirectoryPathname();
         const FilePath outputFilePath = FilePath(outputDir.absolutePath().toStdString()).MakeDirectoryPathname();
-        CommandLineParser::Instance()->Clear(); //CommandLineParser is used in ResourcePackerScreen
-        resourcePacker2D->clearProcessDirectory = true;
-        resourcePacker2D->clearOutputDirectory = clearDirs;
-        resourcePacker2D->SetConvertQuality(quality);
-        resourcePacker2D->InitFolders(inputFilePath, outputFilePath);
-        resourcePacker2D->PackResources(gpu);
-        if (!resourcePacker2D->IsRunning())
+
+        resourcePacker2D.forceRepack = true;
+        resourcePacker2D.clearOutputDirectory = clearDirs;
+        resourcePacker2D.SetConvertQuality(quality);
+        resourcePacker2D.InitFolders(inputFilePath, outputFilePath);
+        resourcePacker2D.PackResources(gpu);
+        if (!resourcePacker2D.IsRunning())
         {
             break;
         }
@@ -95,7 +100,7 @@ void SpritesPacker::ReloadSprites(bool clearDirs, const eGPUFamily gpu, const Te
 
 void SpritesPacker::Cancel()
 {
-    resourcePacker2D->SetRunning(false);
+    resourcePacker2D.SetRunning(false);
 }
 
 bool SpritesPacker::IsRunning() const
@@ -112,7 +117,7 @@ void SpritesPacker::SetRunning(bool arg)
         {
             emit Finished();
         }
-        String message = String("Sprites packer ") + (arg ? "started" : (resourcePacker2D->IsRunning() ? "finished" : "cancelled"));
+        String message = String("Sprites packer ") + (arg ? "started" : (resourcePacker2D.IsRunning() ? "finished" : "canceled"));
         Logger::Debug(message.c_str());
         emit RunningStateChanged(arg);
     }

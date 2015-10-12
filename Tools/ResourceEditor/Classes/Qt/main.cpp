@@ -39,7 +39,7 @@
 #include "QtTools/DavaGLWidget/davaglwidget.h"
 #include "Project/ProjectManager.h"
 #include "TeamcityOutput/TeamcityOutput.h"
-#include "TexturePacker/CommandLineParser.h"
+#include "CommandLine/CommandLineParser.h"
 #include "TexturePacker/ResourcePacker2D.h"
 #include "TextureCompression/PVRConverter.h"
 #include "CommandLine/CommandLineManager.h"
@@ -49,7 +49,7 @@
 #include "LicenceDialog/LicenceDialog.h"
 
 #include "Qt/Settings/SettingsManager.h"
-#include "Qt/Tools/RunGuard/RunGuard.h"
+#include "QtTools/RunGuard/RunGuard.h"
 
 #include "Deprecated/EditorConfig.h"
 #include "Deprecated/SceneValidator.h"
@@ -207,7 +207,9 @@ void RunGui( int argc, char *argv[], CommandLineManager& cmdLine )
     LocalizationSystem::Instance()->InitWithDirectory( "~res:/Strings/" );
     LocalizationSystem::Instance()->SetCurrentLocale( "en" );
 
-    DAVA::Texture::SetDefaultGPU( static_cast<eGPUFamily>(SettingsManager::GetValue( Settings::Internal_TextureViewGPU ).AsInt32()) );
+    int32 val = SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsUInt32();
+    eGPUFamily family = static_cast<eGPUFamily>(val);
+    DAVA::Texture::SetDefaultGPU(family);
 
     // check and unpack help documents
     UnpackHelpDoc();
@@ -270,7 +272,7 @@ void UnpackHelpDoc()
 {
     DAVA::String editorVer = SettingsManager::GetValue( Settings::Internal_EditorVersion ).AsString();
     DAVA::FilePath docsPath = FilePath( ResourceEditor::DOCUMENTATION_PATH );
-    if ( editorVer != APPLICATION_VERSION || !docsPath.Exists() )
+    if (editorVer != APPLICATION_BUILD_VERSION || !docsPath.Exists())
     {
         DAVA::Logger::FrameworkDebug( "Unpacking Help..." );
         DAVA::ResourceArchive * helpRA = new DAVA::ResourceArchive();
@@ -282,7 +284,7 @@ void UnpackHelpDoc()
         }
         DAVA::SafeRelease( helpRA );
     }
-    SettingsManager::SetValue( Settings::Internal_EditorVersion, VariantType( String( APPLICATION_VERSION ) ) );
+    SettingsManager::SetValue(Settings::Internal_EditorVersion, VariantType(String(APPLICATION_BUILD_VERSION)));
 }
 
 void FixOSXFonts()

@@ -53,11 +53,16 @@ endif()
 
 if( WIN32 )
     set ( QT_CORE_LIB Qt5Core.lib )
-
 elseif( MACOS )
     set ( QT_CORE_LIB QtCore.la )
-
 endif()
+
+# Find includes in corresponding build directories
+set ( CMAKE_INCLUDE_CURRENT_DIR ON )
+
+# Instruct CMake to run moc automatically when needed.
+set ( CMAKE_AUTOMOC ON )
+set(AUTOMOC_MOC_OPTIONS PROPERTIES FOLDER CMakeAutomocTargets)
 
 set ( QT5_FOUND 0 )
 
@@ -77,15 +82,28 @@ if( QT5_LIB_PATH )
 
     message ( "QT5_LIB_PATH - " ${QT5_LIB_PATH} )
 
-    set ( QT5_FOUND    1 )
-    foreach(QT_MODULE ${QT5_FIND_COMPONENTS})
-        find_package("Qt5${QT_MODULE}" REQUIRED)
-        if (NOT "Qt5${QT_MODULE}_FOUND")
-            set(QT5_FOUND 0)
+    find_package ( Qt5Core )
+
+    if( Qt5Core_FOUND  )
+        find_package ( Qt5Concurrent )
+        find_package ( Qt5Gui )
+        find_package ( Qt5Widgets )
+
+        if( Qt5Concurrent_FOUND AND
+            Qt5Gui_FOUND        AND
+            Qt5Widgets_FOUND   )
+
+            set ( QT5_FOUND    1 )
+            set ( QT_LIBRARIES Qt5::Core
+                               Qt5::Gui
+                               Qt5::Widgets
+                               Qt5::Concurrent )
+
         endif()
     endforeach()
 
-    set ( QT_LIBRARIES ${QT5_FIND_COMPONENTS})
+    endif()
+
     set ( DAVA_EXTRA_ENVIRONMENT QT_QPA_PLATFORM_PLUGIN_PATH=$ENV{QT_QPA_PLATFORM_PLUGIN_PATH} )
 
 endif()

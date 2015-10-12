@@ -124,13 +124,13 @@ String JniWebView::GetCookie(const String& targetUrl, const String& cookieName)
 {
 	JNIEnv *env = JNI::GetEnv();
 
-	String returnStr = "";
+    String returnStr;
 
     jstring jTargetURL = env->NewStringUTF(targetUrl.c_str());
     jstring jName = env->NewStringUTF(cookieName.c_str());
     jobject item = getCookie(jTargetURL, jName);
 
-    JNI::CreateStringFromJni(jstring(item), returnStr);
+    returnStr = JNI::ToString(jstring(item));
 
     env->DeleteLocalRef(jTargetURL);
     env->DeleteLocalRef(jName);
@@ -153,8 +153,7 @@ Map<String, String> JniWebView::GetCookies(const String& targetUrl)
         for (jsize i = 0; i < size; ++i)
         {
             jobject item = env->GetObjectArrayElement(jArray, i);
-            String cookiesString = "";
-            JNI::CreateStringFromJni(jstring(item), cookiesString);
+            String cookiesString = JNI::ToString(jstring(item));
 
             Vector<String> cookieEntry;
             Split(cookiesString, "=", cookieEntry);

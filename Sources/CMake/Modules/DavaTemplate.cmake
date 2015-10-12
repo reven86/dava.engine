@@ -69,6 +69,12 @@ if( ANDROID )
 
 endif()
 
+if( DAVA_TOOLS_FOUND )
+    include_directories( ${DAVA_TOOLS_DIR} )
+    list ( APPEND LIBRARIES ${DAVA_TOOLS_LIBRARY} )
+
+endif()
+
 if( DAVA_FOUND )
     include_directories   ( ${DAVA_INCLUDE_DIR} )
     include_directories   ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} )
@@ -107,10 +113,12 @@ elseif ( WINDOWS_UAP )
         message(FATAL_ERROR "This app supports Store / Phone only. Please check the target platform.")
 	endif()
 
+    set ( WINDOWS_UAP_CONFIG_DIR "${DAVA_ROOT_DIR}/Sources/CMake/ConfigureFiles" )
+
     #loading config file
     if ( NOT WINDOWS_UAP_CONFIG_FILE )
-        set ( WINDOWS_UAP_CONFIG_FILE "${DAVA_ROOT_DIR}/Sources/CMake/ConfigureFiles/UWPConfigTemplate.in" )
-	endif()
+        set ( WINDOWS_UAP_CONFIG_FILE "${WINDOWS_UAP_CONFIG_DIR}/UWPConfigTemplate.in" )
+    endif ()
     configure_file( ${WINDOWS_UAP_CONFIG_FILE} ${CMAKE_CURRENT_BINARY_DIR}/UWPConfig.in )
     load_config ( ${CMAKE_CURRENT_BINARY_DIR}/UWPConfig.in )
 
@@ -131,7 +139,11 @@ elseif ( WINDOWS_UAP )
     file ( COPY ${WINDOWS_UAP_CERTIFICATE_FILE} DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
     file ( RENAME ${CMAKE_CURRENT_BINARY_DIR}/${CERT_NAME} ${CMAKE_CURRENT_BINARY_DIR}/${APP_CERT_NAME} )
 
-	    set(CONTENT_FILES ${CONTENT_FILES}
+    #copy priconfig files
+    file ( COPY "${WINDOWS_UAP_CONFIG_DIR}/UWPPriConfigDefault.xml" DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+    file ( COPY "${WINDOWS_UAP_CONFIG_DIR}/UWPPriConfigPackaging.xml" DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+
+    set(CONTENT_FILES ${CONTENT_FILES}
         ${CMAKE_CURRENT_BINARY_DIR}/${APP_MANIFEST_NAME} )
 
     set(RESOURCE_FILES ${CONTENT_FILES} ${DEBUG_CONTENT_FILES} ${RELEASE_CONTENT_FILES}
@@ -176,14 +188,6 @@ endif()
 
 ###
 
-if( QT4_FOUND )
-    set( QT_PREFIX "Qt4")
-
-elseif( QT5_FOUND )
-    set( QT_PREFIX "Qt5")
-
-endif()
-
 if( DAVA_FOUND )
     if( ANDROID )
         include_directories   ( ${DAVA_ENGINE_DIR}/Platform/TemplateAndroid )
@@ -195,16 +199,16 @@ if( DAVA_FOUND )
 
     endif()
 
-    if( QT_PREFIX )
+    if( QT5_FOUND )
         if( WIN32 )
-            set ( PLATFORM_INCLUDES_DIR ${DAVA_PLATFORM_SRC}/${QT_PREFIX} ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/Win32 )
-            list( APPEND PATTERNS_CPP   ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/*.cpp ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/Win32/*.cpp )
-            list( APPEND PATTERNS_H     ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/*.h   ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/Win32/*.h   )
+            set ( PLATFORM_INCLUDES_DIR ${DAVA_PLATFORM_SRC}/Qt5 ${DAVA_PLATFORM_SRC}/Qt5/Win32 )
+            list( APPEND PATTERNS_CPP   ${DAVA_PLATFORM_SRC}/Qt5/*.cpp ${DAVA_PLATFORM_SRC}/Qt5/Win32/*.cpp )
+            list( APPEND PATTERNS_H     ${DAVA_PLATFORM_SRC}/Qt5/*.h   ${DAVA_PLATFORM_SRC}/Qt5/Win32/*.h   )
 
         elseif( MACOS )
-            set ( PLATFORM_INCLUDES_DIR  ${DAVA_PLATFORM_SRC}/${QT_PREFIX}  ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/MacOS )
-            list( APPEND PATTERNS_CPP    ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/*.cpp ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/MacOS/*.cpp ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/MacOS/*.mm )
-            list( APPEND PATTERNS_H      ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/*.h   ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/MacOS/*.h   )
+            set ( PLATFORM_INCLUDES_DIR  ${DAVA_PLATFORM_SRC}/Qt5  ${DAVA_PLATFORM_SRC}/Qt5/MacOS )
+            list( APPEND PATTERNS_CPP    ${DAVA_PLATFORM_SRC}/Qt5/*.cpp ${DAVA_PLATFORM_SRC}/Qt5/MacOS/*.cpp ${DAVA_PLATFORM_SRC}/Qt5/MacOS/*.mm )
+            list( APPEND PATTERNS_H      ${DAVA_PLATFORM_SRC}/Qt5/*.h   ${DAVA_PLATFORM_SRC}/Qt5/MacOS/*.h   )
 
         endif()
 
@@ -276,17 +280,16 @@ if( ANDROID )
     add_library( ${PROJECT_NAME} SHARED ${PLATFORM_ADDED_SRC} ${ADDED_SRC} ${REMAINING_LIST} )
 
 else()
-    add_executable( ${PROJECT_NAME} MACOSX_BUNDLE ${EXECUTABLE_FLAG}
+    if( NOT MAC_DISABLE_BUNDLE )
+        set( BUNDLE_FLAG  MACOSX_BUNDLE )
+    endif()
+
+    add_executable( ${PROJECT_NAME} ${BUNDLE_FLAG} ${EXECUTABLE_FLAG}
         ${ADDED_SRC}
         ${PLATFORM_ADDED_SRC}
         ${PROJECT_SOURCE_FILES}
         ${RESOURCES_LIST}
     )
-
-endif()
-
-if( TARGET_FILE_TREE_FOUND )
-    add_dependencies(  ${PROJECT_NAME} FILE_TREE_${PROJECT_NAME} )
 
 endif()
 
@@ -399,6 +402,8 @@ elseif( MACOS )
                             RESOURCE "${RESOURCES_LIST}"
                           )
 
+    set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS " -Wl,-dead_strip")
+
     if( DEPLOY )
         set( OUTPUT_DIR ${DEPLOY_DIR}/${PROJECT_NAME}.app/Contents )
 
@@ -409,25 +414,8 @@ elseif( MACOS )
     set( BINARY_DIR ${OUTPUT_DIR}/MacOS/${PROJECT_NAME} )
 
     if( DAVA_FOUND )
-        ADD_CUSTOM_COMMAND(
-        TARGET ${PROJECT_NAME}
-        POST_BUILD
-            COMMAND
-            install_name_tool -change @executable_path/../Frameworks/libfmodex.dylib  @executable_path/../Resources/libfmodex.dylib ${OUTPUT_DIR}/Resources/libfmodevent.dylib
-
-            COMMAND
-            install_name_tool -change ./libfmodevent.dylib @executable_path/../Resources/libfmodevent.dylib ${BINARY_DIR}
-
-            COMMAND
-            install_name_tool -change ./libfmodex.dylib @executable_path/../Resources/libfmodex.dylib ${BINARY_DIR}
-
-            COMMAND
-            install_name_tool -change ./libIMagickHelper.dylib @executable_path/../Resources/libIMagickHelper.dylib ${BINARY_DIR}
-
-            COMMAND
-            install_name_tool -change ./libTextureConverter.dylib @executable_path/../Resources/libTextureConverter.dylib ${BINARY_DIR}
-        )
-
+        set(LD_RUNPATHES "@executable_path @executable_path/../Resources @executable_path/../Frameworks")
+        set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_LD_RUNPATH_SEARCH_PATHS "${LD_RUNPATHES}")
     endif()
 
 elseif ( WIN32 )
@@ -477,13 +465,13 @@ list ( APPEND DAVA_FOLDERS ${DAVA_THIRD_PARTY_LIBRARIES_PATH} )
 
 file_tree_check( "${DAVA_FOLDERS}" )
 
-if( DAVA_FOUND )
-    list ( APPEND LIBRARIES ${DAVA_LIBRARY} )
+if( TARGET_FILE_TREE_FOUND )
+    add_dependencies(  ${PROJECT_NAME} FILE_TREE_${PROJECT_NAME} )
 
 endif()
 
-if( DAVA_TOOLS_FOUND )
-    list ( APPEND LIBRARIES ${DAVA_TOOLS_LIBRARY} )
+if( DAVA_FOUND )
+    list ( APPEND LIBRARIES ${DAVA_LIBRARY} )
 
 endif()
 
@@ -547,24 +535,32 @@ if( DEPLOY )
         set_target_properties( ${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_CONFIGURATION_BUILD_DIR  ${DEPLOY_DIR} )
 
         if( IOS )
-            set( XCODERUN_PARAM -sdk iphoneos PackageApplication -v ${DEPLOY_DIR}/${PROJECT_NAME}.app -o ${DEPLOY_DIR}/${PROJECT_NAME}.ipa )
+
+            if( NOT IOS_SDK )
+                set( IOS_SDK -sdk iphoneos  )
+            endif()
+
+            set( XCODERUN_PARAM ${IOS_SDK} PackageApplication -v ${DEPLOY_DIR}/${PROJECT_NAME}.app -o ${DEPLOY_DIR}/${PROJECT_NAME}.ipa )
 
             if( DEVELOPER_NAME )
-                list( APPEND XCODERUN_PARAM  --sign ${DEVELOPER_NAME} )
+                list( APPEND XCODERUN_PARAM  "--sign" "${DEVELOPER_NAME}" )
             endif()
 
             if( PROVISONING_PROFILE )
-                list( APPEND XCODERUN_PARAM  --embed ${PROVISONING_PROFILE} )
+                list( APPEND XCODERUN_PARAM  "--embed" "${PROVISONING_PROFILE}" )
             endif()
 
-            add_custom_target ( IOS_DEPLOY_${PROJECT_NAME} ALL COMMAND /usr/bin/xcrun ${XCODERUN_PARAM} )
+            add_custom_target ( IOS_DEPLOY_${PROJECT_NAME} ALL COMMAND ${IOS_DEPLOY_CUSTOM_COMAND}
+                                                               COMMAND /usr/bin/xcrun ${XCODERUN_PARAM} VERBATIM )
+
+
             add_dependencies(  IOS_DEPLOY_${PROJECT_NAME} ${PROJECT_NAME} )
 
         endif()
 
     endif()
 
-    if( QT_PREFIX )
+    if( QT5_FOUND )
         qt_deploy( )
 
     endif()

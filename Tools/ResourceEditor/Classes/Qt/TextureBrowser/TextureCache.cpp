@@ -37,7 +37,7 @@
 
 TextureCache::TextureCache()
 {
-    qRegisterMetaType< QList<QImage> >();
+    qRegisterMetaType<QList<QImage>>();
 
     curThumbnailWeight = 0;
 	curOriginalWeight = 0;

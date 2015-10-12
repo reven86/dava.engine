@@ -46,6 +46,7 @@ class PreviewWidget;
 class DavaGLWidget;
 class LocalizationEditorDialog;
 class DialogReloadSprites;
+class Document;
 
 class MainWindow : public QMainWindow, public Ui::MainWindow
 {
@@ -70,8 +71,10 @@ public:
     void OnProjectOpened(const DAVA::ResultList &resultList, QString projectPath);
     int AddTab(const DAVA::FilePath &scenePath);
     void OnCleanChanged(int index, bool val);
-    DavaGLWidget *GetGLWidget() const;
-    DialogReloadSprites *GetDialogReloadSprites() const;
+    DavaGLWidget* GetGLWidget();
+    DialogReloadSprites* GetDialogReloadSprites();
+    QCheckBox* GetCheckboxEmulation();
+
 protected:
     void closeEvent(QCloseEvent *event) override;
 signals:
@@ -88,9 +91,13 @@ signals:
     void RtlChanged(bool isRtl);
     void GlobalStyleClassesChanged(const QString &classesStr);
     void ReloadSprites(DAVA::eGPUFamily gpu);
+
 public slots:
     void OnProjectIsOpenChanged(bool arg);
     void OnCountChanged(int count);
+    void OnSetupCacheSettingsForPacker();
+    void OnDocumentChanged(Document* doc);
+
 private slots:
     void OnCurrentIndexChanged(int arg);
     void OnSaveDocument();
@@ -107,8 +114,8 @@ private slots:
     void OnPixelizationStateChanged();
     
     void OnRtlChanged(int arg);
-    void OnEmulationModeChanged(int arg);
     void OnGlobalClassesChanged(const QString &str);
+
 private:
     void InitLanguageBox();
     void InitRtlBox();
@@ -125,10 +132,11 @@ private:
 private:
     // Background Frame Color menu actions.
     QList<QAction*> backgroundFramePredefinedColorActions;
-    QAction* backgroundFrameUseCustomColorAction;
-    QAction* backgroundFrameSelectCustomColorAction;
-    LocalizationEditorDialog *localizationEditorDialog;
-    DialogReloadSprites *dialogReloadSprites;
+    QAction* backgroundFrameUseCustomColorAction = nullptr;
+    QAction* backgroundFrameSelectCustomColorAction = nullptr;
+    LocalizationEditorDialog* localizationEditorDialog = nullptr;
+    DialogReloadSprites* dialogReloadSprites = nullptr;
+    QCheckBox* emulationBox = nullptr;
 };
 
 Q_DECLARE_METATYPE(MainWindow::TabState*);

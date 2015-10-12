@@ -253,18 +253,15 @@ bool QtMainWindow::SaveScene( SceneEditor2 *scene )
 		// 
 		//if(scene->IsChanged())
 		{
-            bool saved = SaveAllSceneEmitters(scene);
-            if (saved)
+            SaveAllSceneEmitters(scene);
+            SceneFileV2::eError ret = scene->Save(scenePath);
+            if (DAVA::SceneFileV2::ERROR_NO_ERROR != ret)
             {
-                SceneFileV2::eError ret = scene->Save(scenePath);
-                if (DAVA::SceneFileV2::ERROR_NO_ERROR != ret)
-                {
-                    QMessageBox::warning(this, "Save error", "An error occurred while saving the scene. See log for more info.", QMessageBox::Ok);
-                }
-                else
-                {
-                    return true;
-                }
+                QMessageBox::warning(this, "Save error", "An error occurred while saving the scene. See log for more info.", QMessageBox::Ok);
+            }
+            else
+            {
+                return true;
             }
 		}
 	}
@@ -301,19 +298,16 @@ bool QtMainWindow::SaveSceneAs(SceneEditor2 *scene)
 
     scene->SetScenePath(scenePath);
 
-    bool saved = SaveAllSceneEmitters(scene);
-    if (saved)
+    SaveAllSceneEmitters(scene);
+    SceneFileV2::eError ret = scene->Save(scenePath);
+    if (DAVA::SceneFileV2::ERROR_NO_ERROR != ret)
     {
-        SceneFileV2::eError ret = scene->Save(scenePath);
-        if (DAVA::SceneFileV2::ERROR_NO_ERROR != ret)
-        {
-            QMessageBox::warning(this, "Save error", "An error occurred while saving the scene. Please, see logs for more info.", QMessageBox::Ok);
-        }
-        else
-        {
-            recentFiles.Add(scenePath.GetAbsolutePathname());
-            return true;
-        }
+        QMessageBox::warning(this, "Save error", "An error occurred while saving the scene. Please, see logs for more info.", QMessageBox::Ok);
+    }
+    else
+    {
+        recentFiles.Add(scenePath.GetAbsolutePathname());
+        return true;
     }
 
     return false;
@@ -354,16 +348,21 @@ void QtMainWindow::CollectEmittersForSave(ParticleEmitter *topLevelEmitter, DAVA
     emitters.emplace_back(EmitterDescriptor(topLevelEmitter, nullptr, topLevelEmitter->configPath, entityName));
 }
 
-
-
-bool QtMainWindow::SaveAllSceneEmitters(SceneEditor2 *scene) const
+void QtMainWindow::SaveAllSceneEmitters(SceneEditor2* scene) const
 {
     DVASSERT(nullptr != scene);
+
+    if (!SettingsManager::GetValue(Settings::Scene_SaveEmitters).AsBool())
+    {
+        return;
+    }
 
     List<Entity *> effectEntities;
     scene->GetChildEntitiesWithComponent(effectEntities, Component::PARTICLE_EFFECT_COMPONENT);
     if (effectEntities.empty())
-        return true;
+    {
+        return;
+    }
 
     DAVA::List<EmitterDescriptor> emittersForSave;
     for (auto & entityWithEffect : effectEntities)
@@ -406,13 +405,11 @@ bool QtMainWindow::SaveAllSceneEmitters(SceneEditor2 *scene) const
         }
         emitter->SaveToYaml(yamlPathForSaving);
     }
-
-    return true;
 }
 
 DAVA::eGPUFamily QtMainWindow::GetGPUFormat()
 {
-    return GPUFamilyDescriptor::ConvertValueToGPU(SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsInt32());
+    return static_cast<DAVA::eGPUFamily>(GPUFamilyDescriptor::ConvertValueToGPU(SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsUInt32()));
 }
 
 void QtMainWindow::SetGPUFormat(DAVA::eGPUFamily gpu)
@@ -420,13 +417,13 @@ void QtMainWindow::SetGPUFormat(DAVA::eGPUFamily gpu)
 	// before reloading textures we should save tilemask texture for all opened scenes
 	if(SaveTilemask())
 	{
-		SettingsManager::SetValue(Settings::Internal_TextureViewGPU, VariantType(gpu));
-		DAVA::Texture::SetDefaultGPU(gpu);
+        SettingsManager::SetValue(Settings::Internal_TextureViewGPU, VariantType(static_cast<uint32>(gpu)));
+        DAVA::Texture::SetDefaultGPU(gpu);
 
-		DAVA::TexturesMap allScenesTextures;
-		for(int tab = 0; tab < GetSceneWidget()->GetTabCount(); ++tab)
-		{
-			SceneEditor2 *scene = GetSceneWidget()->GetTabScene(tab);
+        DAVA::TexturesMap allScenesTextures;
+        for (int tab = 0; tab < GetSceneWidget()->GetTabCount(); ++tab)
+        {
+            SceneEditor2 *scene = GetSceneWidget()->GetTabScene(tab);
 			SceneHelper::EnumerateSceneTextures(scene, allScenesTextures, SceneHelper::EXCLUDE_NULL);
 		}
 
@@ -693,13 +690,7 @@ void QtMainWindow::SetupDocks()
     // Console dock
 	{
         LogWidget *logWidget = new LogWidget();
-        logWidget->SetConvertFunction([](const DAVA::String & text)
-        {
-            QRegularExpression re(PointerSerializer::GetRegex());
-            QString qText = QString::fromStdString(text);
-            qText.replace(re, "");
-            return qText.toStdString();
-        });
+        logWidget->SetConvertFunction(&PointerSerializer::CleanUpString);
         connect(logWidget, &LogWidget::ItemClicked, this, &QtMainWindow::OnConsoleItemClicked);
         const auto var = SettingsManager::Instance()->GetValue(Settings::Internal_LogWidget);
 
@@ -736,9 +727,10 @@ void QtMainWindow::SetupActions()
 	ui->actionExportTegra->setData(GPU_TEGRA);
 	ui->actionExportMali->setData(GPU_MALI);
 	ui->actionExportAdreno->setData(GPU_ADRENO);
-	ui->actionExportPNG->setData(GPU_ORIGIN);
-	
-	// import
+    ui->actionExportDX11->setData(GPU_DX11);
+    ui->actionExportPNG->setData(GPU_ORIGIN);
+
+// import
 #ifdef __DAVAENGINE_SPEEDTREE__
     QObject::connect(ui->actionImportSpeedTreeXML, &QAction::triggered, this, &QtMainWindow::OnImportSpeedTreeXML);
 #endif //__DAVAENGINE_SPEEDTREE__
@@ -749,7 +741,8 @@ void QtMainWindow::SetupActions()
 	ui->actionReloadTegra->setData(GPU_TEGRA);
 	ui->actionReloadMali->setData(GPU_MALI);
 	ui->actionReloadAdreno->setData(GPU_ADRENO);
-	ui->actionReloadPNG->setData(GPU_ORIGIN);
+    ui->actionReloadDX11->setData(GPU_DX11);
+    ui->actionReloadPNG->setData(GPU_ORIGIN);
 
     QActionGroup *reloadGroup = new QActionGroup(this);
     QList<QAction *> reloadActions = ui->menuTexturesForGPU->actions();
