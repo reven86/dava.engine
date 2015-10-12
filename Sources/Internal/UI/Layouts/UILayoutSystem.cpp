@@ -86,7 +86,6 @@ void UILayoutSystem::ApplyLayout(UIControl *control, bool considerDenendenceOnCh
     
     ApplySizesAndPositions();
     
-    Logger::Debug("!!! layouts: %d", layoutData.size());
     layoutData.clear();
 }
 

@@ -100,16 +100,16 @@ void AnchorLayoutAlgorithm::ApplyAnchor(ControlLayoutData& data, Vector2::eAxis 
             v3 = hint->GetRightAnchor();
 
             if (isRtl && hint->IsUseRtl())
-                {
-                    v1Enabled = hint->IsRightAnchorEnabled();
-                    v1 = hint->GetRightAnchor();
+            {
+                v1Enabled = hint->IsRightAnchorEnabled();
+                v1 = hint->GetRightAnchor();
 
-                    v3Enabled = hint->IsLeftAnchorEnabled();
-                    v3 = hint->GetLeftAnchor();
+                v3Enabled = hint->IsLeftAnchorEnabled();
+                v3 = hint->GetLeftAnchor();
 
-                    v2 = -v2;
-                }
-                break;
+                v2 = -v2;
+            }
+            break;
 
         case Vector2::AXIS_Y:
             v1Enabled = hint->IsTopAnchorEnabled();

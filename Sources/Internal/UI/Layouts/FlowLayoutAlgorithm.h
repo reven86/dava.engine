@@ -66,7 +66,7 @@ private:
 
 private:
     Vector<ControlLayoutData> &layoutData;
-    bool isRtl;
+    const bool isRtl;
 
     bool inverse = false;
     bool skipInvisible = true;

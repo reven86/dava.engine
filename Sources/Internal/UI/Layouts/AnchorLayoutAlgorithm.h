@@ -51,7 +51,7 @@ public:
 private:
     Vector<ControlLayoutData> &layoutData;
     
-    bool isRtl;
+    const bool isRtl;
 };
 
 }

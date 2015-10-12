@@ -101,7 +101,7 @@ void FlowLayoutAlgorithm::Apply(ControlLayoutData &data, Vector2::eAxis axis)
         }
     }
     
-    AnchorLayoutAlgorithm anchorAlg(layoutData, axis);
+    AnchorLayoutAlgorithm anchorAlg(layoutData, isRtl);
     anchorAlg.Apply(data, axis, true, data.GetFirstChildIndex(), data.GetLastChildIndex());
 }
     
@@ -228,7 +228,7 @@ void FlowLayoutAlgorithm::LayoutLine(ControlLayoutData &data, int32 firstIndex, 
     {
         position = data.GetWidth() - padding;
     }
-    
+    int32 realLastIndex = -1;
     for (int32 i = firstIndex; i <= lastIndex; i++)
     {
         ControlLayoutData &childData = layoutData[i];
@@ -248,9 +248,11 @@ void FlowLayoutAlgorithm::LayoutLine(ControlLayoutData &data, int32 firstIndex, 
         {
             position += size + spacing;
         }
+        realLastIndex = i;
     }
     
-    layoutData[lastIndex].SetFlag(ControlLayoutData::FLAG_LAST_IN_LINE);
+    DVASSERT(realLastIndex != -1);
+    layoutData[realLastIndex].SetFlag(ControlLayoutData::FLAG_LAST_IN_LINE);
 }
 
 void FlowLayoutAlgorithm::ProcessYAxis(ControlLayoutData &data, UIFlowLayoutComponent *component)
