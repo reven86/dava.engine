@@ -28,7 +28,7 @@
 
 
 #include "SpritePackerHelper.h"
-#include "SpritesPacker.h"
+#include "SpriteResourcesPacker.h"
 #include "Qt/Settings/SettingsManager.h"
 #include "Project/ProjectManager.h"
 #include <QtConcurrentRun>
@@ -79,7 +79,7 @@ void SpritePackerHelper::Pack(DAVA::eGPUFamily gpu)
     bool isSrcChanged = resourcePacker.RecalculateDirMD5(inputDir, projectPath + "DataSource/Gfx/particles.md5", true);
     if (isSrcChanged)
     {
-        SpritesPacker packer;
+        SpriteResourcesPacker packer;
         packer.SetInputDir(inputDir);
         packer.SetOutputDir(outputDir);
         packer.PackTextures(gpu);

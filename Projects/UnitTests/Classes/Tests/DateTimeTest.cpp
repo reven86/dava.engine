@@ -69,6 +69,45 @@ DAVA_TESTCLASS(DateTimeTest)
             DateTime dt(2015, 10, 15, 13, 0, 0, 0);
             TEST_VERIFY(FormatDateTime(DateTime::LocalTime(dt.GetTimestamp())) == "2015-10-15 16:00:00+10800");
         }
+        {
+            LocalizationSystem* ls = LocalizationSystem::Instance();
+            String previousLocale = ls->GetCurrentLocale();
+
+            ls->SetDirectory("~res:/Strings/");
+            ls->Init();
+            ls->SetCurrentLocale("ru");
+
+            DAVA::String country_code = ls->GetCountryCode();
+
+            TEST_VERIFY(country_code == "ru_RU");
+
+            DateTime date;
+            date = DateTime(1984, 8, 8, 16, 30, 22, 0); // 08.09.1984
+            WideString x_date_ru = date.GetLocalizedDate(); // date representation
+            Logger::Info("x_date_ru == \"%s\"", UTF8Utils::EncodeToUTF8(x_date_ru).c_str());
+            TEST_VERIFY(x_date_ru == L"08.09.1984" || x_date_ru == L"08.09.84"); // may differ on win32/win10/android/ios
+            WideString x_time_ru = date.GetLocalizedTime(); // time representation
+            Logger::Info("x_time_ru == \"%s\"", UTF8Utils::EncodeToUTF8(x_time_ru).c_str());
+            TEST_VERIFY(x_time_ru == L"16:30:22");
+
+            ls->SetCurrentLocale("en");
+            ls->Init();
+            country_code = ls->GetCountryCode();
+
+            TEST_VERIFY(country_code == "en_US");
+
+            WideString x_date_en = date.GetLocalizedDate(); // date representation
+            Logger::Info("x_date_en == \"%s\"", UTF8Utils::EncodeToUTF8(x_date_en).c_str());
+            TEST_VERIFY(x_date_en == L"9/8/1984" || x_date_en == L"9/8/84");
+            WideString x_time_en = date.GetLocalizedTime(); // time representation
+            Logger::Info("x_time_en == \"%s\"", UTF8Utils::EncodeToUTF8(x_time_en).c_str());
+            TEST_VERIFY(x_time_en == L"4:30:22 PM");
+
+            TEST_VERIFY(x_date_en != x_date_ru);
+            TEST_VERIFY(x_time_en != x_time_ru);
+
+            ls->SetCurrentLocale(previousLocale);
+        }
     }
 
     void PrintDateTimeContent(const DateTime& inputTime)

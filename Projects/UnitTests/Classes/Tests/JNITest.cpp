@@ -73,7 +73,7 @@ DAVA_TESTCLASS(JNITest)
         auto passString = jtest.GetStaticMethod<jboolean, jstring>("PassString");
 
         // prepare data
-        jstring str = JNI::CreateJString(L"TestString");
+        jstring str = JNI::ToJNIString(L"TestString");
 
         // call Java Method
         jboolean isPassed = passString(str);
@@ -95,7 +95,7 @@ DAVA_TESTCLASS(JNITest)
         // fill array
         for (uint32 i = 0; i < stringsToPass; ++i)
         {
-            jstring str = JNI::CreateJString(L"TestString");
+            jstring str = JNI::ToJNIString(L"TestString");
             env->SetObjectArrayElement(stringArray, i, str);
             env->DeleteLocalRef(str);
         }
@@ -107,7 +107,7 @@ DAVA_TESTCLASS(JNITest)
         env->DeleteLocalRef(stringArray);
 
         // Try to call dinamic method for object
-        str = JNI::CreateJString(L"TestString");
+        str = JNI::ToJNIString(L"TestString");
         // Take method to retrive some jobject
         auto notGet = jtest.GetStaticMethod<jobject> ("GetN");
 
@@ -134,8 +134,8 @@ DAVA_TESTCLASS(JNITest)
         auto showNotificationProgress = javaNotificationProvider.GetStaticMethod<void, jstring, jstring, jstring, int, int, jboolean>("NotifyProgress");
         auto showNotificationProgressThread = inThreadInitedClass.GetStaticMethod<void, jstring, jstring, jstring, int, int, jboolean>("NotifyProgress");
 
-        jstring jStrTitle = JNI::CreateJString(L"test");
-        jstring jStrText = JNI::CreateJString(L"test2");
+        jstring jStrTitle = JNI::ToJNIString(L"test");
+        jstring jStrText = JNI::ToJNIString(L"test2");
 
         showNotificationText(jStrTitle, jStrTitle, jStrTitle, false);
         showNotificationProgressThread(jStrTitle, jStrTitle, jStrTitle, 100, 100, false);

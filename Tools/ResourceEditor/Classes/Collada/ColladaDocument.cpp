@@ -31,7 +31,7 @@
 #include "ColladaDocument.h"
 #include "ColladaPolygonGroup.h"
 #include "Scene3D/SceneFile.h"
-#include "TexturePacker/CommandLineParser.h"
+#include "CommandLine/CommandLineParser.h"
 #include "Collada/ColladaToSc2Importer/ColladaToSc2Importer.h"
 
 ///*

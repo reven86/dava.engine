@@ -55,8 +55,8 @@ struct Rect
 	inline bool PointInside(const Vector2 & point) const; 
 	inline Rect Intersection(const Rect & rect) const;
 	inline bool RectIntersects(const Rect & rect) const;
-    inline bool RectContains(const Rect &rect) const;
-	inline void ClampToRect(Vector2 & point) const;
+    inline bool RectContains(const Rect& rect) const;
+    inline void ClampToRect(Vector2 & point) const;
 	inline void ClampToRect(Rect& rect) const;
 	inline Rect Combine(const Rect& rect) const;
 

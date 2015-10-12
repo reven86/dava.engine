@@ -79,7 +79,7 @@ public:
 	ParticleEmitter();	
 	ParticleEmitter * Clone();
 	
-	void LoadFromYaml(const FilePath & pathName, bool preserveInheritPosition=false); 
+	bool LoadFromYaml(const FilePath & pathName, bool preserveInheritPosition=false);
     void SaveToYaml(const FilePath & pathName);    	
 	
 	void AddLayer(ParticleLayer * layer);

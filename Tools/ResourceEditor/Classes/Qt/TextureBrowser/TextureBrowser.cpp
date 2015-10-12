@@ -749,7 +749,7 @@ void TextureBrowser::textureReadyConverted(const DAVA::TextureDescriptor *descri
         if (curDescriptor == descriptor && curTextureView == gpu)
         {
             updateConvertedImageAndInfo(images.images, *curDescriptor);
-		}
+        }
 
 		DAVA::Texture *texture = textureListModel->getTexture(descriptor);
 		if(NULL != texture)
@@ -757,7 +757,7 @@ void TextureBrowser::textureReadyConverted(const DAVA::TextureDescriptor *descri
             // reload this texture into scene
             reloadTextureToScene(texture, descriptor, gpu);
         }
-	}
+    }
 }
 
 void TextureBrowser::texturePixelOver(const QPoint &pos)

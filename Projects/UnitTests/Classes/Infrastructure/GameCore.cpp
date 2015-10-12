@@ -28,7 +28,7 @@
 
 #include "Base/BaseTypes.h"
 #include "UI/UIScreenManager.h"
-#include "TexturePacker/CommandLineParser.h"
+#include "CommandLine/CommandLineParser.h"
 #include "Utils/Utils.h"
 #include "UnitTests/UnitTests.h"
 
