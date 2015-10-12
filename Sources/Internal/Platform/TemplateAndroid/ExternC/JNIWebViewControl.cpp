@@ -37,8 +37,7 @@ extern "C"
 int Java_com_dava_framework_JNIWebView_OnUrlChange(JNIEnv* env, jobject classthis, int id, jstring jUrl, jboolean hasGesture)
 {
     int res = 0;
-    char url[1024];
-    DAVA::JNI::CreateStringFromJni(env, jUrl, url);
+    DAVA::String url = DAVA::JNI::ToString(jUrl);
     bool isRedirectedByMouseClick = static_cast<bool>(hasGesture);
     res = DAVA::JniWebView::URLChanged(id, url, isRedirectedByMouseClick);
     return res;

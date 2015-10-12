@@ -41,7 +41,7 @@
 #include "Beast/BeastCommandLineTool.h"
 #include "TextureDescriptor/TextureDescriptorTool.h"
 
-#include "TexturePacker/CommandLineParser.h"
+#include "CommandLine/CommandLineParser.h"
 
 #include "Main/QtUtils.h"
 #include "TeamcityOutput/TeamcityOutput.h"

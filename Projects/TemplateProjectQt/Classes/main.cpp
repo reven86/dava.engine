@@ -61,7 +61,9 @@ void RunGui(int argc, char *argv[])
     // Must be called before creating QApplication instance
     DAVA::QtLayer::MakeAppForeground(false);
     QTimer::singleShot(0, []{DAVA::QtLayer::MakeAppForeground();});
-    QTimer::singleShot(0, []{DAVA::QtLayer::RestoreMenuBar(););
+    QTimer::singleShot(0, [] {
+        DAVA::QtLayer::RestoreMenuBar();
+    });
 #endif
 
     new DavaLoop();

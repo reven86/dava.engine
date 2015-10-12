@@ -47,8 +47,8 @@ public:
     PropertiesWidget(QWidget* parent = nullptr);
 
 public slots:
-    void OnDocumentChanged(Document *doc);
-    void SetSelectedNodes(const SelectedNodes &selected, const SelectedNodes &deselected);
+    void OnDocumentChanged(Document* doc);
+    void SetSelectedNodes(const SelectedNodes& selected, const SelectedNodes& deselected);
 
     void OnAddComponent(QAction *action);
     void OnAddStyleProperty(QAction *action);
@@ -58,6 +58,7 @@ public slots:
     void OnSelectionChanged(const QItemSelection &selected,
                             const QItemSelection &deselected);
     void OnModelChanged();
+
 private:
     QAction *CreateAddComponentAction();
     QAction *CreateAddStyleSelectorAction();
@@ -70,12 +71,12 @@ private:
     
     void UpdateSelection();
     void UpdateActions();
-    
-    Document *document = nullptr;
-    QAction *addComponentAction = nullptr;
-    QAction *addStylePropertyAction = nullptr;
-    QAction *addStyleSelectorAction = nullptr;
-    QAction *removeAction = nullptr;
+
+    Document* document = nullptr;
+    QAction* addComponentAction = nullptr;
+    QAction* addStylePropertyAction = nullptr;
+    QAction* addStyleSelectorAction = nullptr;
+    QAction* removeAction = nullptr;
 
     SelectionContainer selectionContainer;
 };

@@ -128,6 +128,4 @@ private:
 	CacheMap cacheConverted[DAVA::GPU_DEVICE_COUNT];
 };
 
-Q_DECLARE_METATYPE( QList<QImage> )
-
 #endif // __TEXTURE_CACHE_H__
