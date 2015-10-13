@@ -56,28 +56,21 @@ const TransformSystem::CornersDirections TransformSystem::cornersDirections =
 
 namespace
 {
+Vector2 operator*(TransformSystem::Directions directions, Vector2 delta)
+{
+    return Vector2(directions[Vector2::AXIS_X] * delta[Vector2::AXIS_X], directions[Vector2::AXIS_Y] * delta[Vector2::AXIS_Y]);
+}
+
 Vector2 RotateVector(Vector2 in, const UIGeometricData& gd)
 {
     return Vector2(in.x * gd.cosA + in.y * gd.sinA,
                    in.x * -gd.sinA + in.y * gd.cosA);
 }
 
-Vector2 RotateVector(Vector2 in, float32 angle)
-{
-    return Vector2(in.x * cosf(angle) + in.y * sinf(angle),
-                   in.x * -sinf(angle) + in.y * cosf(angle));
-}
-
 Vector2 RotateVectorInv(Vector2 in, const UIGeometricData& gd)
 {
     return Vector2(in.x * gd.cosA + in.y * -gd.sinA,
                    in.x * gd.sinA + in.y * gd.cosA);
-}
-
-Vector2 RotateVectorInv(Vector2 in, float32 angle)
-{
-    return Vector2(in.x * cosf(angle) + in.y * -sinf(angle),
-                   in.x * sinf(angle) + in.y * cosf(angle));
 }
 
 struct MagnetLine
@@ -441,14 +434,14 @@ void TransformSystem::ResizeControl(Vector2 delta, bool withPivot, bool rateably
     Vector2 deltaMappedToControl(delta / controlGeometricData.scale);
     deltaMappedToControl = RotateVector(deltaMappedToControl, controlGeometricData);
 
-    Vector2 deltaSize(deltaMappedToControl);
+    Vector2 deltaSize(directions * deltaMappedToControl);
     Vector2 deltaPosition(deltaMappedToControl);
+
     for (int32 axisInt = Vector2::AXIS_X; axisInt < Vector2::AXIS_COUNT; ++axisInt)
     {
         Vector2::eAxis axis = static_cast<Vector2::eAxis>(axisInt);
         const int direction = directions[axis];
 
-        deltaSize[axis] *= direction;
         deltaPosition[axis] *= direction == -1 ? 1.0f - pivot[axis] : pivot[axis];
 
         if (direction == 0)
@@ -496,29 +489,20 @@ void TransformSystem::ResizeControl(Vector2 delta, bool withPivot, bool rateably
         }
     }
 
-    Vector2 transformPoint = withPivot ? pivot : Vector2(0.0f, 0.0f);
-    for (int32 axisInt = Vector2::AXIS_X; axisInt < Vector2::AXIS_COUNT; ++axisInt)
-    {
-        Vector2::eAxis axis = static_cast<Vector2::eAxis>(axisInt);
-        if (directions[axis] == -1)
-        {
-            transformPoint[axis] = 1.0f - transformPoint[axis];
-        }
-    }
     Vector2 origDeltaSize(deltaSize);
-    deltaSize += extraDelta; //transform to virtual coordinates
-    extraDelta.SetZero();
 
-    Vector2 adjustedSize = AdjustResize(deltaSize, deltaPosition, transformPoint, directions);
+    Vector2 adjustedSize = AdjustResize(deltaSize, withPivot, directions);
     //deltaSize = AdjustToMinimumSize(deltaSize);
     for (int32 axisInt = Vector2::AXIS_X; axisInt < Vector2::AXIS_COUNT; ++axisInt)
     {
         Vector2::eAxis axis = static_cast<Vector2::eAxis>(axisInt);
         deltaPosition[axis] *= origDeltaSize[axis] != 0.0f ? adjustedSize[axis] / origDeltaSize[axis] : 0.0f;
     }
-
-    deltaPosition *= control->GetScale();
-    deltaPosition = RotateVectorInv(deltaPosition, control->GetAngle());
+    UIGeometricData controlGD = control->GetGeometricData();
+    controlGD.sinA = sinf(controlGD.angle);
+    controlGD.cosA = cosf(controlGD.angle);
+    deltaPosition *= controlGD.scale;
+    deltaPosition = RotateVectorInv(deltaPosition, controlGD);
 
     Vector<std::tuple<ControlNode*, AbstractProperty*, VariantType>> propertiesToChange;
 
@@ -563,8 +547,18 @@ Vector2 TransformSystem::AdjustToMinimumSize(Vector2 deltaSize)
     return deltaSize;
 }
 
-Vector2 TransformSystem::AdjustResize(Vector2 deltaSize, Vector2 deltaPosition, Vector2 transformPoint, Directions directions)
+Vector2 TransformSystem::AdjustResize(Vector2 deltaSize, bool withPivot, Directions directions)
 {
+    Vector2 transformPoint = withPivot ? pivotProperty->GetValue().AsVector2() : Vector2(0.0f, 0.0f);
+    for (int32 axisInt = Vector2::AXIS_X; axisInt < Vector2::AXIS_COUNT; ++axisInt)
+    {
+        Vector2::eAxis axis = static_cast<Vector2::eAxis>(axisInt);
+        if (directions[axis] == -1)
+        {
+            transformPoint[axis] = 1.0f - transformPoint[axis];
+        }
+    }
+
     Vector<MagnetLineInfo> magnets;
 
     UIGeometricData* parentGD = &parentGeometricData;
@@ -574,12 +568,42 @@ Vector2 TransformSystem::AdjustResize(Vector2 deltaSize, Vector2 deltaPosition, 
     const Vector2 range(RotateVector(scaledRange, parentGeometricData));
 
     UIGeometricData controlGD = control->GetLocalGeometricData();
-
+    controlGD.cosA = cosf(controlGD.angle);
+    controlGD.sinA = sinf(controlGD.angle);
     //calculate control box in parent
-    controlGD.size += deltaSize;
     Rect box = controlGD.GetAABBox();
-    Vector2 sizeAffect = RotateVectorInv(deltaSize * transformPoint * controlGD.scale, controlGD.angle);
-    box.SetPosition(box.GetPosition() - sizeAffect);
+
+    Rect nextBox = box;
+    Vector2 deltaSizeInParent(RotateVectorInv(deltaSize * controlGD.scale, controlGD));
+    Vector2 directedSize(directions * deltaSize);
+    Vector2 directedSizeInParent(RotateVectorInv(directedSize * controlGD.scale, controlGD));
+
+    Vector2 boxDeltaPosition;
+    Vector2 boxDeltaSize;
+    for (int32 axisInt = Vector2::AXIS_X; axisInt < Vector2::AXIS_COUNT; ++axisInt)
+    {
+        Vector2::eAxis axis = static_cast<Vector2::eAxis>(axisInt);
+        if (deltaSizeInParent[axis] > 0 ^ directedSizeInParent[axis] > 0 && directedSizeInParent[axis] < 0)
+        {
+            boxDeltaPosition[axis] = directedSizeInParent[axis];
+        }
+        else
+        {
+            boxDeltaSize[axis] = directedSizeInParent[axis];
+        }
+    }
+    nextBox.SetPosition(box.GetPosition() + boxDeltaPosition);
+    nextBox.SetSize(nextBox.GetSize() + deltaSizeInParent);
+
+    static int counter;
+    DAVA::Logger::Info("%d next - was %f %f %f %f", counter++, nextBox.x - box.x, nextBox.y - box.y, nextBox.x + nextBox.dx - box.x - box.dx, nextBox.y + nextBox.dy - box.y - box.dy);
+    return deltaSize;
+
+    //how delta size change box position
+    //ltaPosition = deltaSize * controlGD.scale;
+
+    //Vector2 sizeAffect = RotateVectorInv(deltaSize * transformPoint * controlGD.scale, controlGD.angle);
+    //box.SetPosition(box.GetPosition() - sizeAffect);
 
     Vector2 transformPosition = box.GetPosition() + box.GetSize() * transformPoint;
 
