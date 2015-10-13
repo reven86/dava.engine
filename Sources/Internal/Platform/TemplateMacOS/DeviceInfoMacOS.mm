@@ -177,7 +177,7 @@ int32 DeviceInfoPrivate::GetCpuCount()
 
 bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType type)
 {
-    if (type == DeviceInfo::HID_POINTER_TYPE || type == HID_KEYBOARD_TYPE)
+    if (type == DeviceInfo::HID_POINTER_TYPE || type == DeviceInfo::HID_KEYBOARD_TYPE)
     {
         return true;
     }
