@@ -405,7 +405,7 @@ AbstractProperty* RootProperty::FindPropertyByName(const String& name) const
             int sectionCount = rootProperty->GetCount();
             for (int prop = 0; prop < sectionCount; ++prop)
             {
-                AbstractProperty *valueProperty = rootProperty->GetProperty(prop);
+                AbstractProperty* valueProperty = rootProperty->GetProperty(prop);
                 if (nullptr != valueProperty && valueProperty->GetName() == name)
                 {
                     return valueProperty;

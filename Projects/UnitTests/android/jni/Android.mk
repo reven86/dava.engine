@@ -26,7 +26,7 @@ LOCAL_SRC_FILES := \
 	$(wildcard $(DV_PROJECT_ROOT)/Classes/Infrastructure/*.cpp) \
 	$(wildcard $(DV_PROJECT_ROOT)/Classes/Tests/*.cpp) \
 	$(wildcard $(DAVA_ROOT)/Sources/Tools/TeamcityOutput/*.cpp) \
-	$(wildcard $(DAVA_ROOT)/Sources/Tools/TexturePacker/CommandLineParser.cpp) )
+	$(wildcard $(DAVA_ROOT)/Sources/Tools/CommandLine/CommandLineParser.cpp) )
 
 LOCAL_LDLIBS := -lz -lOpenSLES -landroid -latomic
 

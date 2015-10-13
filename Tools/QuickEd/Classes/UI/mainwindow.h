@@ -74,6 +74,7 @@ public:
     DavaGLWidget* GetGLWidget();
     DialogReloadSprites* GetDialogReloadSprites();
     QCheckBox* GetCheckboxEmulation();
+
 protected:
     void closeEvent(QCloseEvent *event) override;
 signals:
@@ -133,9 +134,9 @@ private:
     QList<QAction*> backgroundFramePredefinedColorActions;
     QAction* backgroundFrameUseCustomColorAction = nullptr;
     QAction* backgroundFrameSelectCustomColorAction = nullptr;
-    LocalizationEditorDialog *localizationEditorDialog = nullptr;
-    DialogReloadSprites *dialogReloadSprites = nullptr;
-    QCheckBox *emulationBox = nullptr;
+    LocalizationEditorDialog* localizationEditorDialog = nullptr;
+    DialogReloadSprites* dialogReloadSprites = nullptr;
+    QCheckBox* emulationBox = nullptr;
 };
 
 Q_DECLARE_METATYPE(MainWindow::TabState*);

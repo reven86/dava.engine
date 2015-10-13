@@ -75,12 +75,12 @@ PropertiesWidget::PropertiesWidget(QWidget *parent)
     treeView->addAction(removeAction);
 }
 
-void PropertiesWidget::OnDocumentChanged(Document *arg)
+void PropertiesWidget::OnDocumentChanged(Document* arg)
 {
     document = arg;
 }
 
-void PropertiesWidget::SetSelectedNodes(const SelectedNodes &selected, const SelectedNodes &deselected)
+void PropertiesWidget::SetSelectedNodes(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
     selectionContainer.MergeSelection(selected, deselected);
     UpdateSelection();
