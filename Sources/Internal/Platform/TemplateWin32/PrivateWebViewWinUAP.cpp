@@ -503,13 +503,13 @@ void PrivateWebViewWinUAP::RenderToTexture()
     auto taskCapture = create_task(nativeWebView->CapturePreviewToStreamAsync(inMemoryStream));
     taskCapture.then([this, self, inMemoryStream, width, height]()
     {
-        size_t streamSize = static_cast<size_t>(inMemoryStream->Size);
+        unsigned long long streamSize = inMemoryStream->Size;
         DataReader^ reader = ref new DataReader(inMemoryStream->GetInputStreamAt(0));
-        auto taskLoad = create_task(reader->LoadAsync(streamSize));
+        auto taskLoad = create_task(reader->LoadAsync(static_cast<unsigned>(streamSize)));
         taskLoad.then([this, self, reader, width, height, streamSize](task<unsigned int>)
         {
             size_t index = 0;
-            std::vector<uint8> buf(streamSize, 0);
+            std::vector<uint8> buf(static_cast<size_t>(streamSize), 0);
             while (reader->UnconsumedBufferLength > 0)
             {
                 buf[index] = reader->ReadByte();

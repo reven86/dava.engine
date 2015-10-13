@@ -271,7 +271,7 @@ List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetStoragesList()
     size_t size = removableStorages->Size;
     for (size_t i = 0; i < size; ++i)
     {
-        Platform::String^ path = removableStorages->GetAt(i)->Path;
+        Platform::String^ path = removableStorages->GetAt(static_cast<unsigned>(i))->Path;
         storage.path = WStringToString(path->Data());
         if (FillStorageSpaceInfo(storage))
         {
