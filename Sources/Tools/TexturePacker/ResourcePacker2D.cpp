@@ -72,7 +72,7 @@ const String& GetCodeAsString(AssetClientCode code)
                                             "CANNOT_READ_FILES"}};
     static String codeUnknown("CODE_UNKNOWN");
 
-    if (code >= 0 && code < codeStrings.size())
+    if (code >= 0 && code < static_cast<int>(codeStrings.size()))
     {
         return codeStrings[code];
     }
