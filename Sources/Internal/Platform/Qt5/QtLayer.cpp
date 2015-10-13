@@ -101,6 +101,7 @@ void QtLayer::OnResume()
     
 void QtLayer::ProcessFrame()
 {
+    rhi::InvalidateCache(); //as QT itself can break gl states
     Core::Instance()->SystemProcessFrame();
 }
     

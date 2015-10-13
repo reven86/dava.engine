@@ -287,6 +287,15 @@ gles2_Reset( const ResetParam& param )
 
 //------------------------------------------------------------------------------
 
+static void
+gles2_InvalidateCache()
+{
+    PipelineStateGLES2::InvalidateCache();
+}
+
+
+//------------------------------------------------------------------------------
+
 static bool
 gles2_NeedRestoreResources()
 {
@@ -410,7 +419,8 @@ gles2_Initialize( const InitParam& param )
     {
         _GLES2_AcquireContext = param.acquireContextFunc;
         _GLES2_ReleaseContext = param.releaseContextFunc;
-        success = true; //context already created in external code
+        if (glewInit() == GLEW_OK)
+            success = true;
     }
 
     DVASSERT(_GLES2_AcquireContext);
@@ -437,6 +447,7 @@ gles2_Initialize( const InitParam& param )
         DispatchGLES2.impl_NeedRestoreResources     = &gles2_NeedRestoreResources;
         DispatchGLES2.impl_ResumeRendering          = &ResumeGLES2;
         DispatchGLES2.impl_SuspendRendering         = &SuspendGLES2;
+        DispatchGLES2.impl_InvalidateCache          = &gles2_InvalidateCache;
 
         SetDispatchTable(DispatchGLES2);
 
@@ -535,6 +546,7 @@ gles2_Initialize( const InitParam& param )
     DispatchGLES2.impl_NeedRestoreResources     = &gles2_NeedRestoreResources;
     DispatchGLES2.impl_ResumeRendering          = &ResumeGLES2;
     DispatchGLES2.impl_SuspendRendering         = &SuspendGLES2;
+    DispatchGLES2.impl_InvalidateCache          = &gles2_InvalidateCache;
 
     SetDispatchTable(DispatchGLES2);
 
@@ -608,6 +620,7 @@ gles2_Initialize(const InitParam& param)
     DispatchGLES2.impl_NeedRestoreResources     = &gles2_NeedRestoreResources;
     DispatchGLES2.impl_ResumeRendering          = &ResumeGLES2;
     DispatchGLES2.impl_SuspendRendering         = &SuspendGLES2;
+    DispatchGLES2.impl_InvalidateCache          = &gles2_InvalidateCache;
 
     SetDispatchTable(DispatchGLES2);
 
@@ -684,6 +697,7 @@ gles2_Initialize( const InitParam& param )
     DispatchGLES2.impl_NeedRestoreResources     = &gles2_NeedRestoreResources;
     DispatchGLES2.impl_ResumeRendering          = &ResumeGLES2;
     DispatchGLES2.impl_SuspendRendering         = &SuspendGLES2;
+    DispatchGLES2.impl_InvalidateCache          = &gles2_InvalidateCache;
 
     SetDispatchTable(DispatchGLES2);
 

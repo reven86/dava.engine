@@ -226,15 +226,14 @@ protected:
 		We do not recommend to save game progress in this function, because on some platforms it can create problems. 
 		Our recommendation to perform in-game progress saves during the game immediately after changes that are important. 
 	 */
-	virtual void OnAppFinished() = 0;
+    virtual void OnAppFinished();
 
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_WIN_UAP__)
     /**
 		\brief Called when application goes to background on mobile platforms
 	 */
-	virtual void OnBackground() = 0;
+    virtual void OnBackground();
 
-	/**
+    /**
 	 \brief Called when application returns to foreground on mobile platforms
 	 */
 	virtual void OnForeground();
@@ -242,8 +241,17 @@ protected:
     /**
      \brief Called when application goes to background due to device lock on iOS platforms
 	 */
-	virtual void OnDeviceLocked() = 0;
-#endif //#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_WIN_UAP__)
+    virtual void OnDeviceLocked();
+
+    /**
+     \brief Called when application lost focus (desktop platforms)
+     */
+    virtual void OnFocusLost();
+
+    /**
+     \brief Called when application has received focus (desktop platforms)
+     */
+    virtual void OnFocusReceived();
 
     /**	
 		\brief this function is called every frame to let you update your application. 

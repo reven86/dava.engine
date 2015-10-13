@@ -249,8 +249,10 @@ public:
 	
 	virtual void GoBackground(bool isLock);
 	virtual void GoForeground();
-    
-	/**
+    virtual void FocusLost();
+    virtual void FocusReceived();
+
+    /**
      \brief Get device familty
      */
     eDeviceFamily GetDeviceFamily();

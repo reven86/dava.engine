@@ -30,7 +30,7 @@
 #include "Infrastructure/GameCore.h"
 
 #include "Platform/DateTime.h"
-#include "TexturePacker/CommandLineParser.h"
+#include "CommandLine/CommandLineParser.h"
 #include "Utils/Utils.h"
 #include "Infrastructure/TestListScreen.h"
 #include "Tests/NotificationTest.h"

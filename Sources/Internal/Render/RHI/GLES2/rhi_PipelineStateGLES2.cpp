@@ -43,6 +43,15 @@
 namespace rhi
 {
 
+namespace PipelineStateGLES2
+{
+    static int      cachedBlendEnabled  = -1;
+    static GLenum   cachedBlendSrc      = (GLenum)0;
+    static GLenum   cachedBlendDst      = (GLenum)0;
+    static uint32   cachedProgram       = 0;
+}
+
+
 struct
 VertexDeclGLES2
 {
@@ -217,7 +226,8 @@ VertexDeclGLES2
                                 }
 
 /*                                
-                                if(     vattr[idx].size != elem[i].count
+                                if(     !VAttrCacheValid
+                                    ||  vattr[idx].size != elem[i].count
                                     ||  vattr[idx].type != elem[i].type
                                     ||  vattr[idx].normalized != (GLboolean)(elem[i].normalized)
                                     ||  cur_stride != stride
@@ -230,12 +240,17 @@ VertexDeclGLES2
                                     vattr[idx].size         = elem[i].count;
                                     vattr[idx].type         = elem[i].type;
                                     vattr[idx].normalized   = (GLboolean)(elem[i].normalized);
-                                    vattr[idx].pointer      = (const GLvoid*)(base + (uint8_t*)(elem[i].offset));
-                                }                                
+                                    vattr[idx].pointer      = (const GLvoid*)(base + (uint8_t*)(elem[i].offset));                                    
+                                }
                             }
                         }
+                        VAttrCacheValid = true;
 
                         cur_stride = stride;                    
+                    }
+    static void     InvalidateVAttrCache()
+                    {
+                        VAttrCacheValid = false;
                     }
 
     struct
@@ -254,7 +269,11 @@ VertexDeclGLES2
     unsigned        elemCount;
     unsigned        stride;
     uint32          vattrInited:1;
+
+    static bool     VAttrCacheValid;
 };
+
+bool    VertexDeclGLES2::VAttrCacheValid = false;
 
 
 class
@@ -507,21 +526,50 @@ SetToRHI( Handle ps, uint32 layoutUID )
 
     DVASSERT(ps2);
     
-    GL_CALL(glUseProgram( ps2->glProg ));
+    if( ps2->glProg != cachedProgram )
+    {
+        GL_CALL(glUseProgram( ps2->glProg ));
+        cachedProgram = ps2->glProg;
+    }
+
     ps2->vprog.ProgGLES2::SetupTextureUnits();
     ps2->fprog.ProgGLES2::SetupTextureUnits( ps2->vprog.SamplerCount() );
+    VertexDeclGLES2::InvalidateVAttrCache();
+
     
     if( ps2->blendEnabled )
     {
-        GL_CALL(glEnable( GL_BLEND ));
-        GL_CALL(glBlendFunc( ps2->blendSrc, ps2->blendDst ));
+        if( cachedBlendEnabled != GL_TRUE )
+        {
+            GL_CALL(glEnable( GL_BLEND ));
+            cachedBlendEnabled = GL_TRUE;
+        }
+        if( ps2->blendSrc != cachedBlendSrc  ||  ps2->blendDst != cachedBlendDst )
+        {
+            GL_CALL(glBlendFunc( ps2->blendSrc, ps2->blendDst ));
+            cachedBlendSrc = ps2->blendSrc;
+            cachedBlendDst = ps2->blendDst;
+        }
     }
     else
     {
-        GL_CALL(glDisable( GL_BLEND ));
+        if( cachedBlendEnabled != GL_FALSE )
+        {
+            GL_CALL(glDisable( GL_BLEND ));
+            cachedBlendEnabled = GL_FALSE;
+        }
     }
 
-    glColorMask( ps2->maskR, ps2->maskG, ps2->maskB, ps2->maskA );
+    static GLboolean    mask[4] = { false, false, false, false };
+    
+    if( ps2->maskR != mask[0]  ||  ps2->maskG != mask[1]  ||  ps2->maskB != mask[2]  ||  ps2->maskA != mask[3] )
+    {
+        glColorMask( ps2->maskR, ps2->maskG, ps2->maskB, ps2->maskA );
+        mask[0] = ps2->maskR;
+        mask[1] = ps2->maskG;
+        mask[2] = ps2->maskB;
+        mask[3] = ps2->maskA;
+    }
 }
 
 void
@@ -566,6 +614,17 @@ VertexSamplerCount( Handle ps )
     PipelineStateGLES2_t* ps2 = PipelineStateGLES2Pool::Get( ps );
     
     return ps2->vprog.SamplerCount();
+}
+
+void
+InvalidateCache()
+{
+    cachedBlendEnabled  = -1;
+    cachedBlendSrc      = (GLenum)0;
+    cachedBlendDst      = (GLenum)0;
+    cachedProgram       = 0;
+
+    VertexDeclGLES2::InvalidateVAttrCache();
 }
 
 } // namespace PipelineStateGLES2

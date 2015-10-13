@@ -139,7 +139,23 @@ void WinUAPXamlApp::SetCursorPinning(bool isPinning)
     {
         return;
     }
-    isCursorPinning = isPinning;
+
+    if (isCursorPinning != isPinning)
+    {
+        static Windows::Foundation::EventRegistrationToken token;
+
+        if (isCursorPinning && !isPinning)
+        {
+            MouseDevice::GetForCurrentView()->MouseMoved -= token;
+        }
+
+        isCursorPinning = isPinning;
+
+        if (isPinning)
+        {
+            token = MouseDevice::GetForCurrentView()->MouseMoved += ref new TypedEventHandler<MouseDevice ^, MouseEventArgs ^>(this, &WinUAPXamlApp::OnMouseMoved);
+        }
+    }
 }
 
 void WinUAPXamlApp::SetCursorVisible(bool isVisible)
@@ -169,13 +185,18 @@ void WinUAPXamlApp::PreStartAppSettings()
 
 void WinUAPXamlApp::OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^ args)
 {
-    PreStartAppSettings();
-    uiThreadDispatcher = Window::Current->CoreWindow->Dispatcher;
+    // If renderLoopWorker is null then app performing cold start
+    // else app is restored from background or resumed from suspended state
+    if (nullptr == renderLoopWorker)
+    {
+        PreStartAppSettings();
+        uiThreadDispatcher = Window::Current->CoreWindow->Dispatcher;
 
-    CreateBaseXamlUI();
+        CreateBaseXamlUI();
 
-    WorkItemHandler^ workItemHandler = ref new WorkItemHandler([this](Windows::Foundation::IAsyncAction^ action) { Run(); });
-    renderLoopWorker = ThreadPool::RunAsync(workItemHandler, WorkItemPriority::High, WorkItemOptions::TimeSliced);
+        WorkItemHandler^ workItemHandler = ref new WorkItemHandler([this](Windows::Foundation::IAsyncAction^ action) { Run(); });
+        renderLoopWorker = ThreadPool::RunAsync(workItemHandler, WorkItemPriority::High, WorkItemOptions::TimeSliced);
+    }
 
     Window::Current->Activate();
 }
@@ -327,13 +348,21 @@ void WinUAPXamlApp::OnWindowActivationChanged(::Windows::UI::Core::CoreWindow^ s
         {
             Core::Instance()->SetIsActive(true);
         }
+        else
+        {
+            Core::Instance()->FocusReceived();
+        }
         break;
     case CoreWindowActivationState::Deactivated:
-        InputSystem::Instance()->GetKeyboard().ClearAllKeys();
         if (isPhoneApiDetected)
         {
             Core::Instance()->SetIsActive(false);
         }
+        else
+        {
+            Core::Instance()->FocusLost();
+        }
+        InputSystem::Instance()->GetKeyboard().ClearAllKeys();
         break;
     default:
         break;
@@ -344,12 +373,24 @@ void WinUAPXamlApp::OnWindowVisibilityChanged(::Windows::UI::Core::CoreWindow^ s
 {
     if (args->Visible)
     {
-        isPhoneApiDetected ? Core::Instance()->SetIsActive(true) : Core::Instance()->GoForeground();
-        Core::Instance()->SetIsActive(true);
+        if (!isPhoneApiDetected)
+        {
+            Core::Instance()->GoForeground();
+            //Core::Instance()->FocusRecieve();
+        }
+        Core::Instance()->SetIsActive(true); //TODO: Maybe should move on client side
     }
     else
     {
-        isPhoneApiDetected ? Core::Instance()->SetIsActive(false) : Core::Instance()->GoBackground(false);
+        if (!isPhoneApiDetected)
+        {
+            //Core::Instance()->FocusLost();
+            Core::Instance()->GoBackground(false);
+        }
+        else
+        {
+            Core::Instance()->SetIsActive(false); //TODO: Maybe should move on client side
+        }
         InputSystem::Instance()->GetKeyboard().ClearAllKeys();
     }
 }
@@ -426,6 +467,11 @@ void WinUAPXamlApp::OnSwapChainPanelPointerReleased(Platform::Object ^ /*sender*
 
 void WinUAPXamlApp::OnSwapChainPanelPointerMoved(Platform::Object ^ /*sender*/, PointerRoutedEventArgs ^ args)
 {
+    if (isCursorPinning || !isMouseCursorShown)
+    {
+        return;
+    }
+
     UIEvent::eInputPhase phase = UIEvent::PHASE_DRAG;
     PointerPoint ^ pointerPoint = args->GetCurrentPoint(nullptr);
     PointerDeviceType type = pointerPoint->PointerDevice->PointerDeviceType;
@@ -667,12 +713,10 @@ void WinUAPXamlApp::SetupEventHandlers()
     // Receive mouse events from SwapChainPanel, not CoreWindow, to not handle native controls' events
     swapChainPanel->PointerPressed += ref new PointerEventHandler(this, &WinUAPXamlApp::OnSwapChainPanelPointerPressed);
     swapChainPanel->PointerReleased += ref new PointerEventHandler(this, &WinUAPXamlApp::OnSwapChainPanelPointerReleased);
-    swapChainPanel->PointerMoved += ref new PointerEventHandler(this, &WinUAPXamlApp::OnSwapChainPanelPointerMoved);
     swapChainPanel->PointerEntered += ref new PointerEventHandler(this, &WinUAPXamlApp::OnSwapChainPanelPointerEntered);
+    swapChainPanel->PointerMoved += ref new PointerEventHandler(this, &WinUAPXamlApp::OnSwapChainPanelPointerMoved);
     swapChainPanel->PointerExited += ref new PointerEventHandler(this, &WinUAPXamlApp::OnSwapChainPanelPointerExited);
     swapChainPanel->PointerWheelChanged += ref new PointerEventHandler(this, &WinUAPXamlApp::OnSwapChainPanelPointerWheel);
-
-    MouseDevice::GetForCurrentView()->MouseMoved += ref new TypedEventHandler<MouseDevice ^, MouseEventArgs ^>(this, &WinUAPXamlApp::OnMouseMoved);
 
     coreWindow->KeyDown += ref new TypedEventHandler<CoreWindow^, KeyEventArgs^>(this, &WinUAPXamlApp::OnKeyDown);
     coreWindow->KeyUp += ref new TypedEventHandler<CoreWindow^, KeyEventArgs^>(this, &WinUAPXamlApp::OnKeyUp);

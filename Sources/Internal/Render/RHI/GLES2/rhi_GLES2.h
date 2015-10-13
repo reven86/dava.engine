@@ -93,6 +93,7 @@ void        SetupDispatch( Dispatch* dispatch );
 void        SetToRHI( Handle ps, uint32 vdeclUID );
 void        SetVertexDeclToRHI( Handle ps, uint32 vdeclUID, uint32 firstVertex=0 );
 uint32      VertexSamplerCount( Handle ps );
+void        InvalidateCache();
 }
 
 namespace DepthStencilStateGLES2

@@ -181,7 +181,7 @@ private:
     DisplayMode currentMode = windowedMode;
     DisplayMode fullscreenMode = windowedMode;
 
-    bool isMouseCursorShown = false;
+    bool isMouseCursorShown = true;
     bool isCursorPinning = false;
     bool isRightButtonPressed = false;
     bool isLeftButtonPressed = false;

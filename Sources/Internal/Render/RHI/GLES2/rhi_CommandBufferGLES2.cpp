@@ -713,8 +713,9 @@ SCOPED_NAMED_TIMING("gl.exec");
     Handle      fp_const[MAX_CONST_BUFFER_COUNT];
     const void* fp_const_data[MAX_CONST_BUFFER_COUNT];
     Handle      cur_vb          = InvalidHandle;
+    bool        vdecl_pending   = true;
     IndexSize   idx_size        = INDEX_SIZE_16BIT;
-    unsigned    tex_unit_0      =0;
+    unsigned    tex_unit_0      = 0;
     Handle      cur_query_buf   = InvalidHandle;
     uint32      cur_query_i     = InvalidIndex;
     GLint       def_viewport[4] = {0,0,0,0};
@@ -861,7 +862,8 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
                 if( cur_vb != vb )
                 {
                     VertexBufferGLES2::SetToRHI( vb );
-                    PipelineStateGLES2::SetVertexDeclToRHI( cur_ps, cur_vdecl );
+                    vdecl_pending = true;
+                    cur_base_vert = 0;
 
                     StatSet::IncStat(stat_SET_VB, 1);
 
@@ -1086,6 +1088,12 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
                 if( cur_query_i != InvalidIndex )
                     QueryBufferGLES2::BeginQuery( cur_query_buf, cur_query_i );
                 
+                if( vdecl_pending )
+                {
+                    PipelineStateGLES2::SetVertexDeclToRHI( cur_ps, cur_vdecl );
+                    vdecl_pending = false;
+                }
+                
                 GL_CALL(glDrawArrays( mode, 0, v_cnt ));
                 StatSet::IncStat(stat_DP, 1);
                 switch (mode)
@@ -1113,7 +1121,6 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
             
             case GLES2__DRAW_INDEXED_PRIMITIVE :
             {
-//LCP;
                 unsigned    v_cnt       = unsigned(arg[1]);
                 int         mode        = int(arg[0]);
                 uint32      firstVertex = uint32(arg[2]);
@@ -1138,18 +1145,16 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
                         ConstBufferGLES2::SetToRHI( fp_const[i], fp_const_data[i] );
                 }
 
-                if( firstVertex != cur_base_vert )
+                if( vdecl_pending  ||  firstVertex != cur_base_vert )
                 {
                     PipelineStateGLES2::SetVertexDeclToRHI( cur_ps, cur_vdecl, firstVertex );
+                    vdecl_pending = false;
                     cur_base_vert = firstVertex;
                 }
 
                 if( cur_query_i != InvalidIndex )
                     QueryBufferGLES2::BeginQuery( cur_query_buf, cur_query_i );
 
-//LCP;
-Trace("DIP  mode= %i  v_cnt= %i  start_i= %i\n",int(mode),int(v_cnt),int(startIndex));
-//LCP;
                 int i_sz  = GL_UNSIGNED_SHORT;
                 int i_off = startIndex*sizeof(uint16);
 
@@ -1457,6 +1462,9 @@ _RenderFunc( DAVA::BaseObject* obj, void*, void* )
         bool    do_wait = true;
         bool    do_exit = false;
      
+#if defined __DAVAENGINE_ANDROID__
+        android_gl_checkSurface();
+#endif
         
         // CRAP: busy-wait
         do

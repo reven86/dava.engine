@@ -66,6 +66,7 @@
 - (void)setUseRtlAlign:(bool)value;
 
 - (void)eventEditingChanged:(UIView *)sender;
+- (void)textViewDidChange:(UITextView*)textView;
 
 - (void)setupTraits;
 

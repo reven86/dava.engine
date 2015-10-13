@@ -239,6 +239,7 @@ inline Vector3 CrossProduct(const Vector3 & v1, const Vector3 & v2);
 inline float32 DotProduct(const Vector3 & v1, const Vector3 & v2);
 inline Vector3 Lerp(const Vector3 & _v1, const Vector3 & _v2, float32 t);
 inline Vector3 Reflect(const Vector3 & v, const Vector3 & n);
+inline Vector3 PerpendicularVector(const Vector3& normal);
 
 /**	
 	\ingroup math
@@ -545,8 +546,8 @@ inline float32 CrossProduct(const Vector2 & a, const Vector2 & b)
 
 inline Vector2 Reflect(const Vector2 & v, const Vector2 & n)
 {
-	Vector2 r = v - (2 * DotProduct(v, n)) * n;
-	return r;
+    Vector2 r = v - (2.0f * DotProduct(v, n)) * n;
+    return r;
 }
 
 // Vector3 Implementation
@@ -822,6 +823,24 @@ inline Vector3 Reflect(const Vector3 & v, const Vector3 & n)
 	return r;
 }
 
+inline Vector3 PerpendicularVector(const Vector3& normal)
+{
+    Vector3 componentsLength(normal.x * normal.x, normal.y * normal.y, normal.z * normal.z);
+
+    if (componentsLength.x > 0.5f)
+    {
+        float32 scaleFactor = std::sqrt(componentsLength.z + componentsLength.x);
+        return Vector3(normal.z / scaleFactor, 0.0f, -normal.x / scaleFactor);
+    }
+    else if (componentsLength.y > 0.5f)
+    {
+        float32 scaleFactor = std::sqrt(componentsLength.y + componentsLength.x);
+        return Vector3(-normal.y / scaleFactor, normal.x / scaleFactor, 0.0f);
+    }
+
+    float32 scaleFactor = std::sqrt(componentsLength.z + componentsLength.y);
+    return Vector3(0.0f, -normal.z / scaleFactor, normal.y / scaleFactor);
+}
 
 // Vector4 implementation
 inline Vector4::Vector4()

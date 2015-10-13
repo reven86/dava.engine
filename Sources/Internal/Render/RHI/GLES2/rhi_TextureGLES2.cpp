@@ -513,6 +513,8 @@ gles2_Texture_Unmap( Handle tex )
     ExecGL( cmd, countof(cmd) );
 
     self->isMapped = false;
+    ::free( self->mappedData );
+    self->mappedData = nullptr;
 }
 
 

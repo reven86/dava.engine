@@ -101,9 +101,7 @@ void Reset(const rhi::ResetParam & params)
     framebufferWidth = static_cast<int32>(params.width * params.scaleX);
     framebufferHeight = static_cast<int32>(params.height * params.scaleY);
 
-    renderCmdExecSync.Lock();
     rhi::Reset(params);
-    renderCmdExecSync.Unlock();
 }
 
 bool IsDeviceLost()
