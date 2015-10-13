@@ -64,7 +64,9 @@ void ServerNetProxy::OnPacketReceived(Net::IChannel* channel, const void* packet
 
     if (length > 0)
     {
-        std::unique_ptr<CachePacket> packet = CachePacket::Create(static_cast<const uint8*>(packetData), length);
+        std::unique_ptr<CachePacket> packet = 
+            CachePacket::Create(static_cast<const uint8*>(packetData), static_cast<uint32>(length));
+
         if (packet)
         {
             switch (packet->type)

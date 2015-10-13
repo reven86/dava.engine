@@ -519,10 +519,10 @@ void TextBlock::CalculateCacheParams()
         WideString pointsStr;
         if ((fittingType & FITTING_POINTS) && (drawSize.x < textMetrics.width))
         {
-            uint32 length = charSizes.size();
+            size_t length = charSizes.size();
             Font::StringMetrics pointsMetric = font->GetStringMetrics(L"...");
             float32 fullWidth = static_cast<float32>(textMetrics.width + pointsMetric.width);
-            for (uint32 i = length - 1; i > 0U; --i)
+            for (size_t i = length - 1; i > 0U; --i)
             {
                 if(fullWidth <= drawSize.x)
                 {
@@ -539,7 +539,7 @@ void TextBlock::CalculateCacheParams()
         }
         else if (!((fittingType & FITTING_REDUCE) || (fittingType & FITTING_ENLARGE)) && (drawSize.x < textMetrics.width) && (requestedSize.x >= 0))
         {
-            uint32 length = charSizes.size();
+            uint32 length = static_cast<uint32>(charSizes.size());
             float32 fullWidth = static_cast<float32>(textMetrics.width);
             if(ALIGN_RIGHT & align)
             {
