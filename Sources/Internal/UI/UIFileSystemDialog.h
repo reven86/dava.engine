@@ -118,13 +118,9 @@ public:
     {
         delegate = newDelegate;
     }
-    
-    void SetTitle(const WideString &newTitle)
-    {
-        title->SetText(newTitle);
-    }
-    
-    
+
+    void SetTitle(const WideString& newTitle);
+
     void SetCurrentDir(const FilePath &newDirPath, bool rebuildHistory = false);
     
     /**

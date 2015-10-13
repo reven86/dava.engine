@@ -275,35 +275,34 @@ ParticleEmitter *ParticleEmitter::LoadEmitter(const FilePath & filename)
     else
     {
         res = new ParticleEmitter();
-        res->LoadFromYaml(filename);
-        List<ModifiablePropertyLineBase *> modifiables;
-        res->GetModifableLines(modifiables);
-        if (modifiables.empty()) //if emitter have no modifiable lines - cache it
-        {                    
-            res->requireDeepClone = false; //allow referencing instead of cloning
-            emitterCache[FILEPATH_MAP_KEY(filename)] = res;   
-        }        
+        if (res->LoadFromYaml(filename))
+        {
+            List<ModifiablePropertyLineBase *> modifiables;
+            res->GetModifableLines(modifiables);
+            if (modifiables.empty()) //if emitter have no modifiable lines - cache it
+            {                    
+                res->requireDeepClone = false; //allow referencing instead of cloning
+                emitterCache[FILEPATH_MAP_KEY(filename)] = res;   
+            }
+        }
     }
 
     return res;
 }
 
-
-
-
-void ParticleEmitter::LoadFromYaml(const FilePath & filename, bool preserveInheritPosition)
+bool ParticleEmitter::LoadFromYaml(const FilePath & filename, bool preserveInheritPosition)
 {
     Cleanup(true);
-    
+
 	YamlParser * parser = YamlParser::Create(filename);
 	if(!parser)
 	{
 		Logger::Error("ParticleEmitter::LoadFromYaml failed (%s)", filename.GetAbsolutePathname().c_str());
-		return;
+		return false;
 	}
 
-	configPath = filename;	
-
+    configPath = filename;
+    
 	YamlNode * rootNode = parser->GetRootNode();
 
 	const YamlNode * emitterNode = rootNode->Get("emitter");
@@ -411,6 +410,8 @@ void ParticleEmitter::LoadFromYaml(const FilePath & filename, bool preserveInher
 	// old yaml files. Generate the default name for nodes with empty names.
 	UpdateEmptyLayerNames();		
     SafeRelease(parser);
+    
+    return true;
 }
 
 void ParticleEmitter::SaveToYaml(const FilePath & filename)

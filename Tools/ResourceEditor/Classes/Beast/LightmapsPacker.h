@@ -34,9 +34,9 @@
 using namespace DAVA;
 
 #include "LightmapAtlasingData.h"
-#include "SpritesPacker.h"
+#include "SpriteResourcesPacker.h"
 
-class LightmapsPacker : public SpritesPacker
+class LightmapsPacker : public SpriteResourcesPacker
 {
 public:
 	LightmapsPacker();
