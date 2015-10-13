@@ -186,13 +186,15 @@ void DeviceInfoPrivate::InitializeScreenInfo()
 
 bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType type)
 {
-    DVASSERT(false && "Not Implement");
+    if (type == DeviceInfo::HID_POINTER_TYPE)
+    {
+        return true;
+    }
     return false;
 }
 
 void DeviceInfoPrivate::SetHIDConnectionCallback(DeviceInfo::eHIDType type, DeviceInfo::HIDCallBackFunc&& callback)
 {
-    DVASSERT(false && "Not Implement");
 }
 
 DeviceInfo::StorageInfo DeviceInfoPrivate::StorageInfoFromJava(jobject object)

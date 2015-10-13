@@ -177,13 +177,15 @@ int32 DeviceInfoPrivate::GetCpuCount()
 
 bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType type)
 {
-        DVASSERT(false && "Not Implement");
-        return false;
+    if (type == DeviceInfo::HID_POINTER_TYPE || type == HID_KEYBOARD_TYPE)
+    {
+        return true;
+    }
+    return false;
 }
 
 void DeviceInfoPrivate::SetHIDConnectionCallback(DeviceInfo::eHIDType type, DeviceInfo::HIDCallBackFunc&& callback)
 {
-        DVASSERT(false && "Not Implement");
 }
 
 }
