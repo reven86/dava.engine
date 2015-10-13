@@ -392,6 +392,24 @@ macro ( add_content_win_uap DEPLOYMENT_CONTENT_LIST )
 	
 endmacro ()
 
+macro ( add_static_libs_win_uap LIBS_LOCATION OUTPUT_LIB_LIST )
+
+    #find all libs in specified path
+    file ( GLOB LIB_LIST "${LIBS_LOCATION}/*.lib" )
+    
+    #append every lib to output lib list
+    FOREACH ( LIB ${LIB_LIST} )
+    
+        #replace platform specified part of path on VS Platform variable
+        FOREACH ( LIB_ARCH ${CMAKE_VS_EFFECTIVE_PLATFORMS} )
+            STRING( REGEX REPLACE "${LIB_ARCH}" "$(Platform)" LIB ${LIB} )
+        ENDFOREACH ()
+        
+        list ( APPEND ${OUTPUT_LIB_LIST} ${LIB} )
+        
+    ENDFOREACH ()
+
+endmacro ()
 
 
 

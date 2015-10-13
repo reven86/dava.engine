@@ -46,11 +46,6 @@ elseif ( WIN32 )
         set ( CRT_TYPE_RELEASE "/MD" )
         #consume windows runtime extension (C++/CX)
         set ( ADDITIONAL_CXX_FLAGS "/ZW")
-        
-        #turning on SAFESEH option on UAP x86
-        if ( NOT CMAKE_GENERATOR_PLATFORM OR ${CMAKE_GENERATOR_PLATFORM} STREQUAL "Win32" )
-            set ( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /SAFESEH" )
-        endif ()
     else ()
         set ( CRT_TYPE_DEBUG "/MTd" )
         set ( CRT_TYPE_RELEASE "/MT" )
