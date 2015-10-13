@@ -992,7 +992,7 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
 
             case GLES2__SET_FILLMODE :
             {
-                #if defined(__DAVAENGINE_WIN32__)
+                #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
                 glPolygonMode( GL_FRONT_AND_BACK, (FillMode(arg[0])==FILLMODE_WIREFRAME) ? GL_LINE : GL_FILL );
                 #endif
 
