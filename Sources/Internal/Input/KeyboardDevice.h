@@ -164,15 +164,6 @@ enum eDavaKeys : int32
     DVKEY_COUNT
 
 };
-
-    enum eMacOsModiferKeys 
-    {
-        DVMACOS_COMMAND = 0xFF,
-        DVMACOS_OPTION = 0xFE,
-        DVMACOS_CONTROL = 0xFD,
-        DVMACOS_SHIFT = 0xFC,
-        DVMACOS_CAPS_LOCK = 0xFB,
-    };
     
 class KeyboardDevice : public BaseObject
 {

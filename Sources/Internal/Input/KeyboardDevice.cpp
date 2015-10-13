@@ -181,10 +181,11 @@ void KeyboardDevice::PrepareKeyTranslator()
     keyTranslator[0x33] = DVKEY_BACKSPACE;
     keyTranslator[0x24] = DVKEY_ENTER;
     keyTranslator[0x30] = DVKEY_TAB;
-    keyTranslator[DVMACOS_COMMAND] = DVKEY_CTRL;
-    keyTranslator[DVMACOS_OPTION] = DVKEY_ALT;
-    keyTranslator[DVMACOS_SHIFT] = DVKEY_SHIFT;
-    keyTranslator[DVMACOS_CAPS_LOCK] = DVKEY_CAPSLOCK;
+    keyTranslator[59] = DVKEY_CTRL; // left ctrl
+    keyTranslator[58] = DVKEY_ALT; // left alt
+    keyTranslator[56] = DVKEY_SHIFT; // left shift
+    keyTranslator[57] = DVKEY_CAPSLOCK;
+    keyTranslator[55] = DVKEY_LWIN; // LGUI in SDL
     keyTranslator[0x31] = DVKEY_SPACE;
 
     // from SDL2 scancodes_darwin.h
