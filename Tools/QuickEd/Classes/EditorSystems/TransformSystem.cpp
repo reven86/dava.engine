@@ -500,7 +500,7 @@ void TransformSystem::ResizeControl(Vector2 delta, bool withPivot, bool rateably
     deltaSize += extraDelta; //transform to virtual coordinates
     extraDelta.SetZero();
 
-    Vector2 adjustedSize = AdjustResize(deltaSize, transformPoint, directions);
+    Vector2 adjustedSize = AdjustResize(deltaSize, deltaPosition, transformPoint, directions);
     //deltaSize = AdjustToMinimumSize(deltaSize);
     for (int32 axisInt = Vector2::AXIS_X; axisInt < Vector2::AXIS_COUNT; ++axisInt)
     {
@@ -519,7 +519,8 @@ void TransformSystem::ResizeControl(Vector2 delta, bool withPivot, bool rateably
         propertiesToChange.emplace_back(activeControlNode, positionProperty, VariantType(originalPosition + deltaPosition));
     }
     Vector2 originalSize = sizeProperty->GetValue().AsVector2();
-    propertiesToChange.emplace_back(activeControlNode, sizeProperty, VariantType(originalSize + adjustedSize));
+    Vector2 finalSize(originalSize + adjustedSize);
+    propertiesToChange.emplace_back(activeControlNode, sizeProperty, VariantType(finalSize));
 
     systemManager->PropertiesChanged.Emit(std::move(propertiesToChange), std::move(currentHash));
 }
@@ -552,7 +553,7 @@ Vector2 TransformSystem::AdjustToMinimumSize(Vector2 deltaSize)
     return deltaSize;
 }
 
-Vector2 TransformSystem::AdjustResize(Vector2 deltaSize, Vector2 transformPoint, Directions directions)
+Vector2 TransformSystem::AdjustResize(Vector2 deltaSize, Vector2 deltaPosition, Vector2 transformPoint, Directions directions)
 {
     UIGeometricData* parentGD = &parentGeometricData;
     UIControl* control = activeControlNode->GetControl();
@@ -565,12 +566,10 @@ Vector2 TransformSystem::AdjustResize(Vector2 deltaSize, Vector2 transformPoint,
     //calculate control box in parent
     Rect box = controlGD.GetAABBox();
     {
-        Vector2 deltaPosition = deltaSize * transformPoint;
-        deltaPosition.x *= directions[Vector2::AXIS_X];
-        deltaPosition.y *= directions[Vector2::AXIS_Y];
         box.SetSize(box.GetSize() + deltaSize);
         box.SetPosition(box.GetPosition() + deltaPosition);
     }
+
     Vector2 transformPosition = box.GetPosition() + box.GetSize() * transformPoint;
 
     for (int32 axisInt = Vector2::AXIS_X; axisInt < Vector2::AXIS_COUNT; ++axisInt)

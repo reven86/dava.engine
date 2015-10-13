@@ -72,7 +72,7 @@ private:
     bool ProcessDrag(DAVA::Vector2 point);
     void ResizeControl(DAVA::Vector2 delta, bool withPivot, bool rateably);
     DAVA::Vector2 AdjustToMinimumSize(DAVA::Vector2 delta);
-    DAVA::Vector2 AdjustResize(DAVA::Vector2 deltaSize, DAVA::Vector2 transformPoint, Directions directions);
+    DAVA::Vector2 AdjustResize(DAVA::Vector2 deltaSize, DAVA::Vector2 deltaPosition, DAVA::Vector2 transformPoint, Directions directions);
     void MovePivot(DAVA::Vector2 delta);
     void EmitMagnetLinesForPivot(DAVA::Vector2& target);
     DAVA::Vector2 AdjustPivot(DAVA::Vector2& delta);
