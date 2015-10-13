@@ -440,8 +440,8 @@ namespace DAVA
 		int32 id = input.tid;
 		switch (input.phase)
 		{
-		case UIEvent::PHASE_BEGAN:
-		{
+        case UIEvent::Phase::BEGAN:
+        {
 			mouseMove = input;
 			if (!IsTouchDown(id))
 			{
@@ -449,23 +449,23 @@ namespace DAVA
 			}
 			else
 			{
-				Logger::Error("AutotestingSystemYaml::OnInput PHASE_BEGAN duplicate touch id=%d", id);
-			}
+                Logger::Error("AutotestingSystemYaml::OnInput BEGAN duplicate touch id=%d", id);
+            }
 		}
 		break;
 #if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
-		case UIEvent::PHASE_MOVE:
-		{
+        case UIEvent::Phase::MOVE:
+        {
 			mouseMove = input;
 			if (IsTouchDown(id))
 			{
-				Logger::Error("AutotestingSystemYaml::OnInput PHASE_MOVE id=%d must be PHASE_DRAG", id);
-			}
+                Logger::Error("AutotestingSystemYaml::OnInput MOVE id=%d must be DRAG", id);
+            }
 		}
 		break;
 #endif
-		case UIEvent::PHASE_DRAG:
-		{
+        case UIEvent::Phase::DRAG:
+        {
 			mouseMove = input;
 			Map<int32, UIEvent>::iterator findIt = touches.find(id);
 			if (findIt != touches.end())
@@ -474,12 +474,12 @@ namespace DAVA
 			}
 			else
 			{
-				Logger::Error("AutotestingSystemYaml::OnInput PHASE_DRAG id=%d must be PHASE_MOVE", id);
-			}
+                Logger::Error("AutotestingSystemYaml::OnInput DRAG id=%d must be MOVE", id);
+            }
 		}
 		break;
-		case UIEvent::PHASE_ENDED:
-		{
+        case UIEvent::Phase::ENDED:
+        {
 			mouseMove = input;
 			Map<int32, UIEvent>::iterator findIt = touches.find(id);
 			if (findIt != touches.end())
@@ -488,8 +488,8 @@ namespace DAVA
 			}
 			else
 			{
-				Logger::Error("AutotestingSystemYaml::OnInput PHASE_ENDED id=%d not found", id);
-			}
+                Logger::Error("AutotestingSystemYaml::OnInput ENDED id=%d not found", id);
+            }
 		}
 		break;
 		default:

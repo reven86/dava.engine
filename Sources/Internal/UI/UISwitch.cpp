@@ -227,7 +227,7 @@ void UISwitch::Input(UIEvent *currentInput)
     }
 
     Vector2 touchPos = currentInput->point;
-    if (currentInput->phase == UIEvent::PHASE_BEGAN)
+    if (currentInput->phase == UIEvent::Phase::BEGAN)
     {
         if (toggle->IsPointInside(touchPos))
         {
@@ -239,7 +239,7 @@ void UISwitch::Input(UIEvent *currentInput)
             dragAnchorX = ANCHOR_UNDEFINED;
         }
     }
-    else if (currentInput->phase == UIEvent::PHASE_DRAG)
+    else if (currentInput->phase == UIEvent::Phase::DRAG)
     {
         if (dragAnchorX < ANCHOR_UNDEFINED)
         {
@@ -260,7 +260,7 @@ void UISwitch::Input(UIEvent *currentInput)
             }
         }
     }
-    else if (currentInput->phase == UIEvent::PHASE_ENDED || currentInput->phase == UIEvent::PHASE_CANCELLED)
+    else if (currentInput->phase == UIEvent::Phase::ENDED || currentInput->phase == UIEvent::Phase::CANCELLED)
     {
         if (dragAnchorX < ANCHOR_UNDEFINED)
         {

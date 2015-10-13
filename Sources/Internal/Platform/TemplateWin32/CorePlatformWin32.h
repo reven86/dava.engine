@@ -69,12 +69,12 @@ private:
 	static const uint32 FULLSCREEN_STYLE = WS_VISIBLE | WS_POPUP;
 
     void OnMouseEvent(UIEvent::Device deviceId, USHORT buttsFlags, WPARAM wParam, LPARAM lParam, USHORT buttonData);
-    void OnTouchEvent(UIEvent::eInputPhase phase, UIEvent::Device deviceId, uint32 fingerId, float32 x, float32 y, float presure);
+    void OnTouchEvent(UIEvent::Phase phase, UIEvent::Device deviceId, uint32 fingerId, float32 x, float32 y, float presure);
     static String GetDeviceName(HANDLE hDevice);
     static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
     RECT GetWindowedRectForDisplayMode(DisplayMode& dm);
-    int32 MoveTouchsToVector(UIEvent::Device deviceId, USHORT buttsFlags, WPARAM wParam, LPARAM lParam, Vector<UIEvent>* outTouches);
+    UIEvent::Phase MoveTouchsToVector(UIEvent::Device deviceId, USHORT buttsFlags, WPARAM wParam, LPARAM lParam, Vector<UIEvent>* outTouches);
 
     bool willQuit;
 

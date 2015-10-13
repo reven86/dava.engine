@@ -94,12 +94,12 @@ void RotationControllerSystem::Input(UIEvent *event)
 
     if(event->tid == UIEvent::BUTTON_2 || event->tid == UIEvent::BUTTON_3)
     {
-        if(UIEvent::PHASE_BEGAN == event->phase)
+        if (UIEvent::Phase::BEGAN == event->phase)
         {
             rotateStartPoint = event->point;
             rotateStopPoint = event->point;
         }
-        else if(UIEvent::PHASE_DRAG == event->phase || UIEvent::PHASE_ENDED == event->phase)
+        else if (UIEvent::Phase::DRAG == event->phase || UIEvent::Phase::ENDED == event->phase)
         {
             rotateStartPoint = rotateStopPoint;
             rotateStopPoint = event->point;

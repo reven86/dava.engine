@@ -45,23 +45,20 @@ class UIControl;
 class UIEvent
 {
 public:
-
-    /**
-	 \enum Control state bits.
-	 */
-    enum eInputPhase : int32
+    enum class Phase : int32
     {
-        PHASE_BEGAN = 0, //!<Screen touch or mouse button press is began.
-        PHASE_DRAG, //!<User moves mouse with presset button or finger over the screen.
-        PHASE_ENDED, //!<Screen touch or mouse button press is ended.
-        PHASE_MOVE, //!<Mouse move event. Mouse moves without pressing any buttons. Works only with mouse controller.
-        PHASE_WHEEL, //!<Mouse wheel event. MacOS & Win32 only
-        PHASE_CANCELLED, //!<Event was cancelled by the platform or by the control system for the some reason.
-        PHASE_CHAR, //!<Event some symbol was intered.
-        PHASE_KEY_DOWN,
-        PHASE_KEY_UP,
-        PHASE_CHAR_REPEAT, //!< Usefull if User hold key in text editor and wait
-        PHASE_KEY_DOWN_REPEAT, //!< Usefull if user hold key in text editor and wait cursor to move
+        ERROR = 0,
+        BEGAN, //!<Screen touch or mouse button press is began.
+        DRAG, //!<User moves mouse with presset button or finger over the screen.
+        ENDED, //!<Screen touch or mouse button press is ended.
+        MOVE, //!<Mouse move event. Mouse moves without pressing any buttons. Works only with mouse controller.
+        WHEEL, //!<Mouse wheel event. MacOS & Win32 only
+        CANCELLED, //!<(ios only)Event was cancelled by the platform or by the control system for the some reason.
+        CHAR, //!<Event some symbol was intered.
+        CHAR_REPEAT, //!< Usefull if User hold key in text editor and wait
+        KEY_DOWN,
+        KEY_DOWN_REPEAT, //!< Usefull if user hold key in text editor and wait cursor to move
+        KEY_UP,
         PHASE_JOYSTICK
     };
 
@@ -146,13 +143,13 @@ public:
     int32 tid = 0; // event id, for the platforms with mouse this id means mouse button id, key codes for keys, axis id for joystick
     Vector2 point; // point of pressure in virtual coordinates
     Vector2 physPoint; // point of pressure in physical coordinates
-    float64 timestamp = 0.0; // time stemp of the event occurrence
-    int32 phase = 0; // began, ended, moved. See eInputPhase
+    float64 timestamp = 0.0; //(TODO not all platforms) time stemp of the event occurrence
+    Phase phase = Phase::BEGAN; // began, ended, moved. See Phase
     UIControl* touchLocker = nullptr; // control that handles this input
     int32 activeState = ACTIVITY_STATE_INACTIVE; // state of input in control system (active, inactive, changed)
     int32 controlState = CONTROL_STATE_RELEASED; // input state relative to control (outside, inside). Used for point inputs only(mouse, touch)
-    int32 tapCount = 0; // count of the continuous inputs (clicks for mouse)
-    char16 keyChar = 0; // unicode/translated character produced by key using current language, caps etc. Used only with PHASE_CHAR.
+    int32 tapCount = 0; // (TODO not all platforms) count of the continuous inputs (clicks for mouse)
+    char16 keyChar = 0; // (TODO make char32_t) unicode/translated character produced by key using current language, caps etc. Used only with CHAR.
     Device device = Device::UNKNOWN;
     eInputHandledType inputHandledType = INPUT_NOT_HANDLED; //!< input handled type, INPUT_NOT_HANDLED by default.
 };

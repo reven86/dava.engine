@@ -401,8 +401,8 @@ static bool IsSameTouch(const UIEvent& l, const UIEvent& r)
 {
     return l.tid == r.tid &&
     l.device == r.device &&
-    l.phase != UIEvent::PHASE_WHEEL &&
-    l.phase < UIEvent::PHASE_CHAR;
+    l.phase != UIEvent::Phase::WHEEL &&
+    l.phase < UIEvent::Phase::CHAR;
 };
 
 static void CopyTouchData(UIEvent* dst, const UIEvent* src)
@@ -511,11 +511,10 @@ void UIControlSystem::OnInput(const Vector<UIEvent>& activeInputs, const Vector<
         AddNewEvents(activeInputs, totalInputs);
         AddNewEvents(allInputs, totalInputs);
 
-        auto InactiveOrCanceled = [this](UIEvent& ev)
-        {
-            if (ev.activeState == UIEvent::ACTIVITY_STATE_INACTIVE || ev.phase == UIEvent::PHASE_CANCELLED)
+        auto InactiveOrCanceled = [this](UIEvent& ev) {
+            if (ev.activeState == UIEvent::ACTIVITY_STATE_INACTIVE || ev.phase == UIEvent::Phase::CANCELLED)
             {
-                if (ev.phase != UIEvent::PHASE_ENDED)
+                if (ev.phase != UIEvent::Phase::ENDED)
                 {
                     CancelInput(&ev);
                 }

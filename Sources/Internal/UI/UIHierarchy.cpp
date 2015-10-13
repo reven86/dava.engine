@@ -398,7 +398,7 @@ void UIHierarchy::DragInput(UIEvent *input)
 {
     switch (input->phase) 
     {
-        case UIEvent::PHASE_BEGAN:
+    case UIEvent::Phase::BEGAN:
         {
             lockTouch = true;
             mainTouch = input->tid;
@@ -419,7 +419,7 @@ void UIHierarchy::DragInput(UIEvent *input)
             }
             break;
         }
-        case UIEvent::PHASE_DRAG:
+        case UIEvent::Phase::DRAG:
         {
             if(cellUnderDrag)
             {
@@ -460,7 +460,7 @@ void UIHierarchy::DragInput(UIEvent *input)
             }
             break;
         }
-        case UIEvent::PHASE_ENDED:
+        case UIEvent::Phase::ENDED:
         {
             if(draggedData)
             {
@@ -478,7 +478,7 @@ void UIHierarchy::DragInput(UIEvent *input)
             }
             //break; not needed!
         }
-        case UIEvent::PHASE_CANCELLED:
+        case UIEvent::Phase::CANCELLED:
         {
             lockTouch = false;
             mainTouch = 0;
@@ -516,18 +516,18 @@ void UIHierarchy::Input(UIEvent *currentInput)
         newPos = currentInput->point.y;
         switch (currentInput->phase) 
         {
-            case UIEvent::PHASE_BEGAN:
+        case UIEvent::Phase::BEGAN:
             {
                 lockTouch = true;
                 oldPos = newPos;
                 mainTouch = currentInput->tid;
             }
                 break;
-            case UIEvent::PHASE_DRAG:
+                case UIEvent::Phase::DRAG:
             {
             }
                 break;
-            case UIEvent::PHASE_ENDED:
+                case UIEvent::Phase::ENDED:
             {
                 lockTouch = false;
                 mainTouch = 0;
@@ -548,7 +548,7 @@ bool UIHierarchy::SystemInput(UIEvent *currentInput)
     
     if(currentInput->touchLocker != this)
     {
-        if(currentInput->phase == UIEvent::PHASE_BEGAN)
+        if (currentInput->phase == UIEvent::Phase::BEGAN)
         {
             if(IsPointInside(currentInput->point))
             {
@@ -556,7 +556,7 @@ bool UIHierarchy::SystemInput(UIEvent *currentInput)
                 Input(currentInput);
             }
         }
-        else if(currentInput->tid == mainTouch && currentInput->phase == UIEvent::PHASE_DRAG)
+        else if (currentInput->tid == mainTouch && currentInput->phase == UIEvent::Phase::DRAG)
         {
             bool isCommandPressed =     InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_CTRL) 
                                     ||  InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_SHIFT);
@@ -574,7 +574,7 @@ bool UIHierarchy::SystemInput(UIEvent *currentInput)
                 UIControlSystem::Instance()->SwitchInputToControl(mainTouch, this);
             }
         }
-        else if(currentInput->tid == mainTouch && currentInput->phase == UIEvent::PHASE_ENDED)
+        else if (currentInput->tid == mainTouch && currentInput->phase == UIEvent::Phase::ENDED)
         {
             mainTouch = 0;
             lockTouch = false;

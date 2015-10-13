@@ -203,8 +203,10 @@ UIEvent	Replay::PlayEvent()
 	ev.point.x = Read<float32>(); if(!isPlayback) return ev;
 	ev.point.y = Read<float32>(); if(!isPlayback) return ev;
 	ev.timestamp = Read<float64>(); if(!isPlayback) return ev;
-	ev.phase = Read<int32>(); if(!isPlayback) return ev;
-	ev.activeState = Read<int32>(); if(!isPlayback) return ev;
+    ev.phase = static_cast<UIEvent::Phase>(Read<int32>());
+    if (!isPlayback)
+        return ev;
+    ev.activeState = Read<int32>(); if(!isPlayback) return ev;
 	ev.controlState = Read<int32>(); if(!isPlayback) return ev;
 	ev.tapCount = Read<int32>(); if(!isPlayback) return ev;
 	ev.keyChar = (char16)Read<uint16>(); if(!isPlayback) return ev;

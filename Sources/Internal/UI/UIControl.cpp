@@ -1562,16 +1562,16 @@ namespace DAVA
 
         switch (currentInput->phase)
         {
-        case UIEvent::PHASE_CHAR:
-        case UIEvent::PHASE_CHAR_REPEAT:
-        case UIEvent::PHASE_KEY_DOWN:
-        case UIEvent::PHASE_KEY_DOWN_REPEAT:
+        case UIEvent::Phase::CHAR:
+        case UIEvent::Phase::CHAR_REPEAT:
+        case UIEvent::Phase::KEY_DOWN:
+        case UIEvent::Phase::KEY_DOWN_REPEAT:
             {
                     Input(currentInput);
             }
             break;
 
-            case UIEvent::PHASE_MOVE:
+            case UIEvent::Phase::MOVE:
             {
                 if (!currentInput->touchLocker && IsPointInside(currentInput->point))
                 {
@@ -1581,12 +1581,12 @@ namespace DAVA
                 }
             }
             break;
-            case UIEvent::PHASE_WHEEL:
+            case UIEvent::Phase::WHEEL:
             {
                  Input(currentInput);
             }
             break;
-            case UIEvent::PHASE_BEGAN:
+            case UIEvent::Phase::BEGAN:
             {
                 if (!currentInput->touchLocker && IsPointInside(currentInput->point))
                 {
@@ -1626,7 +1626,7 @@ namespace DAVA
                 }
             }
                 break;
-            case UIEvent::PHASE_DRAG:
+                case UIEvent::Phase::DRAG:
             {
                 if(currentInput->touchLocker == this)
                 {
@@ -1670,7 +1670,7 @@ namespace DAVA
                 }
             }
                 break;
-            case UIEvent::PHASE_ENDED:
+                case UIEvent::Phase::ENDED:
             {
                 if(currentInput->touchLocker == this)
                 {
@@ -1735,7 +1735,7 @@ namespace DAVA
                 }
             }
                 break;
-            case UIEvent::PHASE_JOYSTICK:
+                case UIEvent::Phase::PHASE_JOYSTICK:
             {
                 Input(currentInput);
             }
@@ -1754,7 +1754,7 @@ namespace DAVA
 
         //if(currentInput->touchLocker != this)
         {
-            if (clipContents && (currentInput->phase != UIEvent::PHASE_DRAG && currentInput->phase != UIEvent::PHASE_ENDED && currentInput->phase != UIEvent::PHASE_CHAR && currentInput->phase != UIEvent::PHASE_JOYSTICK))
+            if (clipContents && (currentInput->phase != UIEvent::Phase::DRAG && currentInput->phase != UIEvent::Phase::ENDED && currentInput->phase != UIEvent::Phase::CHAR && currentInput->phase != UIEvent::Phase::PHASE_JOYSTICK))
             {
                 if(!IsPointInside(currentInput->point))
                 {

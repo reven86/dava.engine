@@ -562,8 +562,8 @@ void UITextField::Input(UIEvent *currentInput)
     if(this != UIControlSystem::Instance()->GetFocusedControl())
         return;
 
-    if (currentInput->phase == UIEvent::PHASE_KEY_DOWN ||
-        currentInput->phase == UIEvent::PHASE_KEY_DOWN_REPEAT)
+    if (currentInput->phase == UIEvent::Phase::KEY_DOWN ||
+        currentInput->phase == UIEvent::Phase::KEY_DOWN_REPEAT)
     {
         if (currentInput->tid == DVKEY_BACKSPACE)
         {
@@ -583,8 +583,8 @@ void UITextField::Input(UIEvent *currentInput)
             delegate->TextFieldShouldCancel(this);
         }
     }
-    else if (currentInput->phase == UIEvent::PHASE_CHAR ||
-             currentInput->phase == UIEvent::PHASE_CHAR_REPEAT)
+    else if (currentInput->phase == UIEvent::Phase::CHAR ||
+             currentInput->phase == UIEvent::Phase::CHAR_REPEAT)
     {
         if (currentInput->keyChar != 0 && currentInput->keyChar != '\b')
         {

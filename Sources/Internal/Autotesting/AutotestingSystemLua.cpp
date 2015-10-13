@@ -527,7 +527,7 @@ namespace DAVA
 
 		UIEvent keyPress;
 		keyPress.tid = keyChar;
-        keyPress.phase = UIEvent::PHASE_CHAR;
+        keyPress.phase = UIEvent::Phase::CHAR;
         keyPress.tapCount = 1;
 		keyPress.keyChar = keyChar;
 
@@ -709,8 +709,8 @@ namespace DAVA
 	void AutotestingSystemLua::TouchDown(const Vector2 &point, int32 touchId, int32 tapCount)
 	{
 		UIEvent touchDown;
-		touchDown.phase = UIEvent::PHASE_BEGAN;
-		touchDown.tid = touchId;
+        touchDown.phase = UIEvent::Phase::BEGAN;
+        touchDown.tid = touchId;
 		touchDown.tapCount = tapCount;
 		touchDown.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
 		touchDown.point = point;
@@ -727,16 +727,16 @@ namespace DAVA
 
 		if (AutotestingSystem::Instance()->IsTouchDown(touchId))
 		{
-			touchMove.phase = UIEvent::PHASE_DRAG;
-			ProcessInput(touchMove);
+            touchMove.phase = UIEvent::Phase::DRAG;
+            ProcessInput(touchMove);
 		}
 		else
 		{
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
 			Logger::Warning("AutotestingSystemLua::TouchMove point=(%f, %f) ignored no touch down found", point.x, point.y);
 #else
-			touchMove.phase = UIEvent::PHASE_MOVE;
-			ProcessInput(touchMove);
+            touchMove.phase = UIEvent::Phase::MOVE;
+            ProcessInput(touchMove);
 #endif
 		}
 	}
@@ -748,8 +748,8 @@ namespace DAVA
 		{
 			AutotestingSystem::Instance()->OnError("TouchAction::TouchUp touch down not found");
 		}
-		touchUp.phase = UIEvent::PHASE_ENDED;
-		touchUp.tid = touchId;
+        touchUp.phase = UIEvent::Phase::ENDED;
+        touchUp.tid = touchId;
 
 		ProcessInput(touchUp);
 	}
