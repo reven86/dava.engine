@@ -1675,7 +1675,8 @@ InitializeRenderThreadDX9( uint32 frameCount )
     {
         _DX9_RenderThread = DAVA::Thread::Create( DAVA::Message(&_RenderFuncDX9) );
         _DX9_RenderThread->SetName( "RHI.dx9-render" );
-        _DX9_RenderThread->Start();    
+        _DX9_RenderThread->Start();
+        _DX9_RenderThread->SetPriority(DAVA::Thread::PRIORITY_HIGH);
         _DX9_RenderThreadStartedSync.Wait();
     }
     else

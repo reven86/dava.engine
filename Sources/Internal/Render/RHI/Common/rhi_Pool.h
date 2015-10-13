@@ -92,31 +92,32 @@ public:
 
 
 private:
-
-    struct
-    Entry
+    struct Entry
     {
-        T       object;
-        uint32  allocated:1;
-        uint32  generation:8;
+        T object;
+
+        uint32 allocated : 1;
+        uint32 generation : 8;
+        uint32 nextObjectIndex : 16;
     };
 
     static Entry*           Object;
-    static unsigned         ObjectCount;
+    static uint32 ObjectCount;
+    static uint32 HeadIndex;
     static DAVA::Spinlock   ObjectSync;
 };
 
-#define RHI_IMPL_POOL(T,RT,DT,nr) \
-template<> rhi::ResourcePool<T,RT,DT,nr>::Entry*    rhi::ResourcePool<T,RT,DT,nr>::Object      = 0;    \
-template<> unsigned                                 rhi::ResourcePool<T,RT,DT,nr>::ObjectCount = 2048; \
-template<> DAVA::Spinlock                           rhi::ResourcePool<T,RT,DT,nr>::ObjectSync  = {};   \
+#define RHI_IMPL_POOL(T, RT, DT, nr) \
+template<> rhi::ResourcePool<T, RT, DT, nr>::Entry* rhi::ResourcePool<T, RT, DT, nr>::Object = 0;    \
+template<> uint32 rhi::ResourcePool<T, RT, DT, nr>::ObjectCount = 2048; \
+template<> uint32 rhi::ResourcePool<T, RT, DT, nr>::HeadIndex = 0;    \
+template<> DAVA::Spinlock rhi::ResourcePool<T, RT, DT, nr>::ObjectSync = {};   \
 
-#define RHI_IMPL_POOL_SIZE(T,RT,DT,nr,sz) \
-template<> rhi::ResourcePool<T,RT,DT,nr>::Entry*    rhi::ResourcePool<T,RT,DT,nr>::Object      = 0;    \
-template<> unsigned                                 rhi::ResourcePool<T,RT,DT,nr>::ObjectCount = sz;   \
-template<> DAVA::Spinlock                           rhi::ResourcePool<T,RT,DT,nr>::ObjectSync  = {};   \
-
-
+#define RHI_IMPL_POOL_SIZE(T, RT, DT, nr, sz) \
+template<> rhi::ResourcePool<T, RT, DT, nr>::Entry* rhi::ResourcePool<T, RT, DT, nr>::Object = 0;    \
+template<> uint32 rhi::ResourcePool<T, RT, DT, nr>::ObjectCount = sz;   \
+template<> uint32 rhi::ResourcePool<T, RT, DT, nr>::HeadIndex = 0;    \
+template<> DAVA::Spinlock rhi::ResourcePool<T, RT, DT, nr>::ObjectSync = {};
 
 //------------------------------------------------------------------------------
 
@@ -147,29 +148,32 @@ ResourcePool<T,RT,DT,nr>::Alloc()
     if( !Object )
     {
         Object = new Entry[ObjectCount];
-        
+
+        uint32 nextObjectIndex = 0;
         for( Entry* e=Object,*e_end=Object+ObjectCount; e!=e_end; ++e )
         {
+            ++nextObjectIndex;
+
             e->allocated  = false;
             e->generation = 0;
+            e->nextObjectIndex = nextObjectIndex;
         }
+
+        (Object + ObjectCount - 1)->nextObjectIndex = 0;
     }
 
-    for( Entry* e=Object,*e_end=Object+ObjectCount; e!=e_end; ++e )
-    {
-        if( !e->allocated )
-        {
-            e->allocated = true;
-            ++e->generation;
-            
-            handle = 0;
-            handle = ((uint32(e-Object)<<HANDLE_INDEX_SHIFT) & HANDLE_INDEX_MASK) | 
-                     (((e->generation)<<HANDLE_GENERATION_SHIFT)&HANDLE_GENERATION_MASK) |
-                     ((RT<<HANDLE_TYPE_SHIFT)&HANDLE_TYPE_MASK);
-            break;
-        }
-    }
-    
+    Entry* e = Object + HeadIndex;
+    DVASSERT(!e->allocated);
+    HeadIndex = e->nextObjectIndex;
+
+    e->allocated = true;
+    ++e->generation;
+
+    handle = 0;
+    handle = ((uint32(e - Object) << HANDLE_INDEX_SHIFT) & HANDLE_INDEX_MASK) |
+    (((e->generation) << HANDLE_GENERATION_SHIFT) & HANDLE_GENERATION_MASK) |
+    ((RT << HANDLE_TYPE_SHIFT) & HANDLE_TYPE_MASK);
+
     ObjectSync.Unlock();
     
     DVASSERT(handle != InvalidHandle);
@@ -188,11 +192,16 @@ ResourcePool<T,RT,DT,nr>::Free( Handle h )
     uint32  type  = (h&HANDLE_TYPE_MASK) >> HANDLE_TYPE_SHIFT;    
     DVASSERT(type == RT);
     DVASSERT(index < ObjectCount);
-    Entry*  e     = Object + index;
 
+    Entry* e = Object + index;
     DVASSERT(e->allocated);
-    ObjectSync.Lock();    
+
+    ObjectSync.Lock();
+
+    e->nextObjectIndex = HeadIndex;
+    HeadIndex = index;
     e->allocated = false;
+
     ObjectSync.Unlock();
  }
 
