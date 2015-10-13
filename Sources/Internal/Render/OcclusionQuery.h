@@ -63,9 +63,13 @@ public:
 
     bool IsResultAvailable();
     void GetQuery(uint32 * resultValue);
-    GLuint GetId() const { return id; };
+    uint32 GetId() const
+    {
+        return id;
+    };
+
 private:
-    GLuint id;
+    uint32 id;
 };
 
 template<uint32 N, uint32 M>

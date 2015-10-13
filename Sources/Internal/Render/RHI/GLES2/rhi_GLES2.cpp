@@ -419,7 +419,8 @@ gles2_Initialize( const InitParam& param )
     {
         _GLES2_AcquireContext = param.acquireContextFunc;
         _GLES2_ReleaseContext = param.releaseContextFunc;
-        success = true; //context already created in external code
+        if (glewInit() == GLEW_OK)
+            success = true;
     }
 
     DVASSERT(_GLES2_AcquireContext);
