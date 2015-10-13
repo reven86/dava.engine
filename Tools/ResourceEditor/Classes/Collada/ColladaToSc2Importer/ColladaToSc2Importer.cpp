@@ -61,7 +61,7 @@ Mesh * ColladaToSc2Importer::GetMeshFromCollada(ColladaMeshInstance * mesh, cons
             davaPolygon = DAVA::MeshUtils::CreateShadowPolygonGroup(davaPolygon);
         }
 
-        NMaterial * davaMaterial = library.GetOrCreateMaterial(polygonGroupInstance, isShadow);
+        ScopedPtr<NMaterial> davaMaterial(library.CreateMaterialInstance(polygonGroupInstance, isShadow));
         davaMesh->AddPolygonGroup(davaPolygon, davaMaterial);
     }
     // TO VERIFY?

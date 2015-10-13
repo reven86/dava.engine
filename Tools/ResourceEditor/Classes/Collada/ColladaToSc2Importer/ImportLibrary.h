@@ -47,7 +47,7 @@ public:
     ~ImportLibrary();
     
     PolygonGroup * GetOrCreatePolygon(ColladaPolygonGroupInstance * colladaPGI);
-    NMaterial * GetOrCreateMaterial(ColladaPolygonGroupInstance * colladaPolyGroupInst, const bool isShadow);
+    NMaterial* CreateMaterialInstance(ColladaPolygonGroupInstance* colladaPolyGroupInst, const bool isShadow);
     NMaterial * GetOrCreateMaterialParent(ColladaMaterial * colladaMaterial, const bool isShadow);
     AnimationData * GetOrCreateAnimation(SceneNodeAnimation * colladaSceneNode);
     
@@ -60,7 +60,6 @@ private:
 
     Map<ColladaPolygonGroupInstance *, PolygonGroup *> polygons;
     Map<FastName, NMaterial *> materialParents;
-    Map<FastName, NMaterial *> materials;
     Map<SceneNodeAnimation *, AnimationData *> animations;
 };
     

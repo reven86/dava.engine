@@ -61,14 +61,7 @@ ImportLibrary::~ImportLibrary()
         DVASSERT(0 == refCount);
     }
     polygons.clear();
-    
-    for (auto & pair : materials)
-    {
-        uint32 refCount = pair.second->Release();
-        DVASSERT(0 == refCount);
-    }
-    materials.clear();
-    
+
     for (auto & pair : materialParents)
     {
         uint32 refCount = pair.second->Release();
@@ -260,32 +253,17 @@ NMaterial * ImportLibrary::GetOrCreateMaterialParent(ColladaMaterial * colladaMa
     }
     return davaMaterialParent;
 }
-    
-NMaterial * ImportLibrary::GetOrCreateMaterial(ColladaPolygonGroupInstance * colladaPolyGroupInst, const bool isShadow)
+
+NMaterial* ImportLibrary::CreateMaterialInstance(ColladaPolygonGroupInstance* colladaPolyGroupInst, const bool isShadow)
 {
     ColladaMaterial * colladaMaterial = colladaPolyGroupInst->material;
     DVASSERT(nullptr != colladaMaterial && "Empty material");
 
     NMaterial * davaMaterialParent = GetOrCreateMaterialParent(colladaMaterial, isShadow);
 
-    // Use daeId + parentMaterialName to make unique key for material in the library
-    String daeId = colladaMaterial->material->GetDaeId().c_str();
-    String parentMaterialName(davaMaterialParent->GetMaterialName().c_str());
-    FastName materialKey = FastName(daeId + parentMaterialName.c_str());
+    NMaterial* material = NMaterial::CreateMaterialInstance();
+    material->SetParent(davaMaterialParent);
 
-    // Try to get material from library
-    NMaterial * material = materials[materialKey];
-    
-    // There is no material in the library, so create new one
-    if (nullptr == material)
-    {
-        material = NMaterial::CreateMaterialInstance();
-        material->SetMaterialName(FastName(daeId));
-        material->SetParent(davaMaterialParent);
-
-        materials[materialKey] = material;
-    }
-    
     return material;
 }
     
