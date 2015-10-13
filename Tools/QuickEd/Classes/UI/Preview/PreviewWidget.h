@@ -51,7 +51,7 @@ class PreviewWidget : public QWidget, public Ui::PreviewWidget
 public:
     explicit PreviewWidget(QWidget *parent = nullptr);
     ~PreviewWidget() = default;
-    DavaGLWidget* GetDavaGLWidget();
+    DavaGLWidget* GetGLWidget();
     ScrollAreaController* GetScrollAreaController();
 
     void OnSelectControlByMenu(const DAVA::Vector<ControlNode*>& nodes, const DAVA::Vector2& pos, ControlNode*& selectedNode);
