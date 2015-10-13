@@ -84,11 +84,11 @@ private:
     void CloseDocument(int index);
     int GetIndexByPackagePath(const QString &fileName) const;
     ///Return: pointer to currentDocument if exists, nullptr if not
-    Project *project = nullptr;
+    Project* project = nullptr;
     QList<Document*> documents;
-    DocumentGroup *documentGroup = nullptr;
+    DocumentGroup* documentGroup = nullptr;
     std::unique_ptr<MainWindow> mainWindow = nullptr;
-    DAVA::UIControl *rootControl = nullptr;
+    DAVA::UIControl* rootControl = nullptr;
 };
 
 inline MainWindow* EditorCore::GetMainWindow()

@@ -123,7 +123,7 @@ PackageWidget::PackageWidget(QWidget *parent)
     treeView->addAction(delAction);
 }
 
-void PackageWidget::OnDocumentChanged(Document *arg)
+void PackageWidget::OnDocumentChanged(Document* arg)
 {
     treeView->setUpdatesEnabled(false);
 
@@ -148,7 +148,7 @@ void PackageWidget::LoadContext()
     else
     {
         //restore context
-        PackageContext *context = dynamic_cast<PackageContext*>(document->GetContext(this));
+        PackageContext* context = dynamic_cast<PackageContext*>(document->GetContext(this));
         if (nullptr == context)
         {
             context = new PackageContext(document);
@@ -175,7 +175,7 @@ void PackageWidget::SaveContext()
     {
         return;
     }
-    PackageContext *context = dynamic_cast<PackageContext*>(document->GetContext(this));
+    PackageContext* context = dynamic_cast<PackageContext*>(document->GetContext(this));
     context->expandedIndexes = GetExpandedIndexes();
     context->filterString = filterLine->text();
 }
@@ -308,17 +308,13 @@ void PackageWidget::OnImport()
         return;
     }
     QStringList fileNames = FileDialog::getOpenFileNames(
-        qApp->activeWindow()
-        , tr("Select one or move files to import")
-        , QString::fromStdString(document->GetPackageFilePath().GetDirectory().GetStringValue())
-        , "Packages (*.yaml)"
-        );
+    qApp->activeWindow(), tr("Select one or move files to import"), QString::fromStdString(document->GetPackageFilePath().GetDirectory().GetStringValue()), "Packages (*.yaml)");
     if (fileNames.isEmpty())
     {
         return;
     }
 
-    PackageNode *root = document->GetPackage();
+    PackageNode* root = document->GetPackage();
     Vector<FilePath> packages;
     for (const auto &fileName : fileNames)
     {
@@ -371,7 +367,7 @@ void PackageWidget::OnCut()
     CollectSelectedStyles(styles, true, true);
     
     CopyNodesToClipboard(controls, styles);
-    
+
     document->GetCommandExecutor()->Remove(controls, styles);
 }
 
@@ -408,9 +404,8 @@ void PackageWidget::OnAddStyle()
     const DAVA::Vector<DAVA::UIStyleSheetProperty> properties;
     
     ScopedPtr<StyleSheetNode> style(new StyleSheetNode(selectorChains, properties));
-    StyleSheetsNode *styleSheets = document->GetPackage()->GetStyleSheets();
+    StyleSheetsNode* styleSheets = document->GetPackage()->GetStyleSheets();
     document->GetCommandExecutor()->InsertStyle(style, styleSheets, styleSheets->GetCount());
-   
 }
 
 void PackageWidget::filterTextChanged(const QString &filterText)
@@ -499,13 +494,13 @@ void PackageWidget::SetSelectedNodes(const SelectedNodes& selected, const Select
 
         disconnect(treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &PackageWidget::OnSelectionChanged);
 
-        for (const auto &node : reallyDeselected)
+        for (const auto& node : reallyDeselected)
         {
             QModelIndex srcIndex = packageModel->indexByNode(node);
             QModelIndex dstIndex = filteredPackageModel->mapFromSource(srcIndex);
             treeView->selectionModel()->select(dstIndex, QItemSelectionModel::Deselect);
         }
-        for (const auto &node : reallySelected)
+        for (const auto& node : reallySelected)
         {
             QModelIndex srcIndex = packageModel->indexByNode(node);
             QModelIndex dstIndex = filteredPackageModel->mapFromSource(srcIndex);

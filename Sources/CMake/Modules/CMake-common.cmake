@@ -338,7 +338,18 @@ endmacro ()
 macro ( add_content_win_uap_single CONTENT_DIR )
 
 	#get all files from it and add to SRC
-	file ( GLOB_RECURSE CONTENT_LIST "${CONTENT_DIR}/*")
+	file ( GLOB_RECURSE CONTENT_LIST_TMP "${CONTENT_DIR}/*")
+    
+    #check svn dir (it happens)
+    FOREACH( ITEM ${CONTENT_LIST_TMP} )
+
+        STRING ( FIND ${ITEM} ".svn" SVN_DIR_POS )
+        if ( ${SVN_DIR_POS} STREQUAL "-1" )
+            list ( APPEND CONTENT_LIST ${ITEM} )
+        endif()
+
+    ENDFOREACH()
+    
 	list ( APPEND ADDED_CONTENT_SRC ${CONTENT_LIST} )
     set ( GROUP_PREFIX "Content\\" )
 	get_filename_component ( CONTENT_DIR_ABS ${CONTENT_DIR} ABSOLUTE )

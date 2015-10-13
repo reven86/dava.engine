@@ -26,14 +26,13 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 #include "ScrollAreaController.h"
 #include "UI/UIScreenManager.h"
 #include <QSizeF>
 
 using namespace DAVA;
 
-ScrollAreaController::ScrollAreaController(QObject *parent)
+ScrollAreaController::ScrollAreaController(QObject* parent)
     : QObject(parent)
     , backgroundControl(new UIControl)
 {
@@ -46,7 +45,7 @@ ScrollAreaController::ScrollAreaController(QObject *parent)
     UIScreenManager::Instance()->GetScreen()->AddControl(backgroundControl);
 }
 
-void ScrollAreaController::SetNestedControl(DAVA::UIControl *arg)
+void ScrollAreaController::SetNestedControl(DAVA::UIControl* arg)
 {
     nestedControl = arg;
     UpdateCanvasContentSize();
@@ -75,9 +74,9 @@ QPoint ScrollAreaController::GetPosition() const
 void ScrollAreaController::UpdateCanvasContentSize()
 {
     Vector2 contentSize;
-    if(nullptr != nestedControl)
+    if (nullptr != nestedControl)
     {
-        const auto &gd = nestedControl->GetGeometricData();
+        const auto& gd = nestedControl->GetGeometricData();
 
         contentSize = gd.GetAABBox().GetSize();
     }
@@ -101,7 +100,7 @@ void ScrollAreaController::SetViewSize(const QSize& viewSize_)
     }
 }
 
-void ScrollAreaController::SetPosition(const QPoint &position_)
+void ScrollAreaController::SetPosition(const QPoint& position_)
 {
     if (position_ != position)
     {
@@ -114,7 +113,7 @@ void ScrollAreaController::SetPosition(const QPoint &position_)
 
 void ScrollAreaController::UpdatePosition()
 {
-    if(nullptr != nestedControl)
+    if (nullptr != nestedControl)
     {
         Vector2 position(margin, margin);
         if (viewSize.width() > canvasSize.width())

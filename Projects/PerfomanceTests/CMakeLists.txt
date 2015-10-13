@@ -20,8 +20,8 @@ include_directories   ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} )
 include_directories   ( ${DAVA_ENGINE_DIR}/Platform/TemplateAndroid )
 
 set( PackerTools             ${DAVA_TOOLS_DIR}/TexturePacker )
-set( PackerToolsSCR          ${DAVA_TOOLS_DIR}/TexturePacker/CommandLineParser.h 
-                             ${DAVA_TOOLS_DIR}/TexturePacker/CommandLineParser.cpp )
+set( CommandLineTools        ${DAVA_TOOLS_DIR}/CommandLine/CommandLineParser.h 
+                             ${DAVA_TOOLS_DIR}/CommandLine/CommandLineParser.cpp )
 
 if( WIN32 )
     set( PLATFORM_SPECIFIC_FOLDER "Win32Specific" )

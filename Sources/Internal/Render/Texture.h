@@ -328,8 +328,8 @@ public:							// properties for fast access
     TextureState state : 2;
     uint32 textureType : 2;
     DepthFormat depthFormat : 2;
-    bool		isRenderTarget:1;
-	bool		isPink:1;
+    bool isRenderTarget : 1;
+    bool isPink : 1;
 
 #if defined(__DAVAENGINE_DIRECTX9__)
 	LPDIRECT3DTEXTURE9 id;
