@@ -27,8 +27,6 @@
 =====================================================================================*/
 
 
-#include "DAVAEngine.h"
-
 #include "Platform/Qt5/QtLayer.h"
 
 #include "Davaglwidget.h"
