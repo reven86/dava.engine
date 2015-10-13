@@ -62,13 +62,19 @@ Vector2 RotateVector(Vector2 in, const UIGeometricData& gd)
                    in.x * -gd.sinA + in.y * gd.cosA);
 }
 
+Vector2 RotateVector(Vector2 in, float32 angle)
+{
+    return Vector2(in.x * cosf(angle) + in.y * sinf(angle),
+                   in.x * -sinf(angle) + in.y * cosf(angle));
+}
+
 Vector2 RotateVectorInv(Vector2 in, const UIGeometricData& gd)
 {
     return Vector2(in.x * gd.cosA + in.y * -gd.sinA,
                    in.x * gd.sinA + in.y * gd.cosA);
 }
 
-Vector2 RotateVectorInv(Vector2 in, const float32& angle)
+Vector2 RotateVectorInv(Vector2 in, float32 angle)
 {
     return Vector2(in.x * cosf(angle) + in.y * -sinf(angle),
                    in.x * sinf(angle) + in.y * cosf(angle));
@@ -358,7 +364,7 @@ void ExtractMatchedLines(Vector<MagnetLineInfo>& magnets, const List<MagnetLine>
     const UIGeometricData* parentGD = &parent->GetGeometricData();
     for (const MagnetLine& line : magnetLines)
     {
-        if (fabs(line.distance - extraDelta) < TRANSFORM_EPSILON)
+        if (fabs(line.distance) < TRANSFORM_EPSILON)
         {
             Vector2 position = parentGD->position - RotateVectorInv(parentGD->pivotPoint * parentGD->scale, *parentGD);
 
@@ -414,7 +420,10 @@ void TransformSystem::AdjustMove(Vector2& delta, Vector<MagnetLineInfo>& magnets
             delta[axis] -= nearestLine.distance;
             extraDelta[axis] = oldDelta[axis] - delta[axis];
         }
-
+        for (MagnetLine& line : magnetLines)
+        {
+            line.distance -= extraDelta[line.axis];
+        }
         ExtractMatchedLines(magnets, magnetLines, control, axis, extraDelta[axis]);
     }
 }
@@ -550,11 +559,14 @@ Vector2 TransformSystem::AdjustToMinimumSize(Vector2 deltaSize)
             }
         }
     }
+
     return deltaSize;
 }
 
 Vector2 TransformSystem::AdjustResize(Vector2 deltaSize, Vector2 deltaPosition, Vector2 transformPoint, Directions directions)
 {
+    Vector<MagnetLineInfo> magnets;
+
     UIGeometricData* parentGD = &parentGeometricData;
     UIControl* control = activeControlNode->GetControl();
 
@@ -564,11 +576,10 @@ Vector2 TransformSystem::AdjustResize(Vector2 deltaSize, Vector2 deltaPosition, 
     UIGeometricData controlGD = control->GetLocalGeometricData();
 
     //calculate control box in parent
+    controlGD.size += deltaSize;
     Rect box = controlGD.GetAABBox();
-    {
-        box.SetSize(box.GetSize() + deltaSize);
-        box.SetPosition(box.GetPosition() + deltaPosition);
-    }
+    Vector2 sizeAffect = RotateVectorInv(deltaSize * transformPoint * controlGD.scale, controlGD.angle);
+    box.SetPosition(box.GetPosition() - sizeAffect);
 
     Vector2 transformPosition = box.GetPosition() + box.GetSize() * transformPoint;
 
@@ -608,16 +619,27 @@ Vector2 TransformSystem::AdjustResize(Vector2 deltaSize, Vector2 deltaPosition, 
 
             if (nearestLine.controlPosition >= areaNearLineLeft && nearestLine.controlPosition <= areaNearLineRight)
             {
-                const Vector2::eAxis axis = nearestLine.axis;
                 float32 distance = nearestLine.distance * directions[axis] * -1;
                 distance /= share;
-                deltaSize[axis] += distance;
+                float32 scaledDistance = distance / controlGD.scale[axis];
+                deltaSize[axis] += scaledDistance;
                 extraDelta[axis] = oldDeltaSize[axis] - deltaSize[axis];
-                static int counter;
-                DAVA::Logger::Info("%d, target: %f, controlPos: %f, origDelta %f, distance: %f, delta: %f, extraDelta: %f", ++counter, nearestLine.targetPosition, nearestLine.controlPosition, oldDeltaSize.dx, nearestLine.distance, deltaSize.dx, extraDelta.dx);
             }
+
+            for (MagnetLine& line : magnetLines)
+            {
+                if (line.distance == nearestLine.distance)
+                {
+                    auto was = line.distance;
+                    line.distance -= extraDelta[line.axis] * controlGD.scale[line.axis] * share / directions[line.axis];
+                    //static int counter;
+                    //DAVA::Logger::Info("%d, was %f, extraDelta: %f, now %f", ++counter, was, extraDelta[line.axis], line.distance);
+                }
+            }
+            ExtractMatchedLines(magnets, magnetLines, control, axis, extraDelta[axis]);
         }
     }
+    systemManager->MagnetLinesChanged.Emit(magnets);
 
     return deltaSize;
 }
