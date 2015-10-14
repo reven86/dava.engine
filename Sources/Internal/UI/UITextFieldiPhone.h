@@ -43,8 +43,8 @@ public:
     virtual ~TextFieldPlatformImpl();
 
     void OpenKeyboard();
-	void CloseKeyboard();
-	void GetText(WideString & string) const;
+    void CloseKeyboard();
+    void GetText(WideString & string) const;
 	void SetText(const WideString & string);
 	void UpdateRect(const Rect & rect);
 

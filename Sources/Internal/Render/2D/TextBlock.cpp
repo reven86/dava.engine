@@ -232,8 +232,8 @@ void TextBlock::SetFont(Font* _font)
 void TextBlock::SetRectSize(const Vector2& size)
 {
     if (rectSize != size)
-	{
-		rectSize = size;
+    {
+        rectSize = size;
         NeedPrepare();
     }
 }
@@ -270,8 +270,8 @@ void TextBlock::SetMultiline(bool _isMultilineEnabled, bool bySymbol)
 void TextBlock::SetFittingOption(int32 _fittingType)
 {
     if (fittingType != _fittingType)
-	{
-		fittingType = _fittingType;
+    {
+        fittingType = _fittingType;
         NeedPrepare();
     }
 }
@@ -929,9 +929,9 @@ void TextBlock::PreDraw()
 {
     CalculateCacheParamsIfNeed();
 
-    if(needPrepareInternal)
-	{
-		PrepareInternal();
+    if (needPrepareInternal)
+    {
+        PrepareInternal();
 	}
     
 	if (textBlockRender)

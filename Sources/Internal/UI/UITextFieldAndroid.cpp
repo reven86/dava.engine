@@ -235,12 +235,12 @@ void TextFieldPlatformImpl::CloseKeyboard()
     jniTextField->CloseKeyboard();
 }
 
-void TextFieldPlatformImpl::GetText(WideString & string) const
+void TextFieldPlatformImpl::GetText(WideString& string) const
 {
     string = text;
 }
 
-void TextFieldPlatformImpl::SetText(const WideString & string)
+void TextFieldPlatformImpl::SetText(const WideString& string)
 {
     if (text.compare(string) != 0)
     {
@@ -251,7 +251,7 @@ void TextFieldPlatformImpl::SetText(const WideString & string)
     }
 }
 
-void TextFieldPlatformImpl::UpdateRect(const Rect & rect)
+void TextFieldPlatformImpl::UpdateRect(const Rect& rect)
 {
     if (rect != this->rect)
     {
@@ -260,7 +260,7 @@ void TextFieldPlatformImpl::UpdateRect(const Rect & rect)
     }
 }
 
-void TextFieldPlatformImpl::SetTextColor(const DAVA::Color &color)
+void TextFieldPlatformImpl::SetTextColor(const DAVA::Color& color)
 {
     jniTextField->SetTextColor(color.r, color.g, color.b, color.a);
 }
@@ -391,7 +391,7 @@ WideString TextFieldPlatformImpl::TruncateText(const WideString& text, int32 max
     return str;
 }
 
-bool TextFieldPlatformImpl::TextFieldKeyPressed(int32 replacementLocation, int32 replacementLength, WideString &text)
+bool TextFieldPlatformImpl::TextFieldKeyPressed(int32 replacementLocation, int32 replacementLength, WideString& text)
 {
     bool res = true;
     UITextFieldDelegate* delegate = textField->GetDelegate();
@@ -410,7 +410,7 @@ bool TextFieldPlatformImpl::TextFieldKeyPressed(int32 replacementLocation, int32
     return res;
 }
 
-bool TextFieldPlatformImpl::TextFieldKeyPressed(uint32_t id, int32 replacementLocation, int32 replacementLength, WideString &text)
+bool TextFieldPlatformImpl::TextFieldKeyPressed(uint32_t id, int32 replacementLocation, int32 replacementLength, WideString& text)
 {
     TextFieldPlatformImpl* control = GetUITextFieldAndroid(id);
     if (!control)
@@ -524,7 +524,7 @@ void TextFieldPlatformImpl::TextFieldFocusChanged(uint32_t id, bool hasFocus)
 }
 
 void TextFieldPlatformImpl::TextFieldUpdateTexture(uint32_t id, int32* rawPixels,
-        int width, int height)
+                                                   int width, int height)
 {
     TextFieldPlatformImpl* control = GetUITextFieldAndroid(id);
     if (nullptr != control)
