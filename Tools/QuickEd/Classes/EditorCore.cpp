@@ -91,6 +91,9 @@ EditorCore::EditorCore(QObject *parent)
     auto previewWidget = mainWindow->previewWidget;
     auto scrollAreaController = previewWidget->GetScrollAreaController();
     connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, previewWidget, &PreviewWidget::OnDocumentChanged);
+    connect(documentGroup, &DocumentGroup::DocumentActivated, previewWidget, &PreviewWidget::OnDocumentActivated);
+    connect(documentGroup, &DocumentGroup::DocumentDeactivated, previewWidget, &PreviewWidget::OnDocumentDeactivated);
+
     connect(documentGroup, &DocumentGroup::CanvasSizeChanged, scrollAreaController, &ScrollAreaController::UpdateCanvasContentSize);
     connect(previewWidget, &PreviewWidget::ScaleChanged, documentGroup, &DocumentGroup::SetScale);
     connect(project->GetEditorLocalizationSystem(), &EditorLocalizationSystem::LocaleChanged, this, &EditorCore::UpdateLanguage);

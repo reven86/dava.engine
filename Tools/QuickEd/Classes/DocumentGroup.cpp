@@ -85,6 +85,7 @@ void DocumentGroup::SetActiveDocument(Document* document)
         active->Deactivate();
         disconnect(active, &Document::SelectedNodesChanged, this, &DocumentGroup::SelectedNodesChanged);
         disconnect(active, &Document::CanvasSizeChanged, this, &DocumentGroup::CanvasSizeChanged);
+        DocumentDeactivated(active);
     }
     
     active = document;
@@ -104,6 +105,7 @@ void DocumentGroup::SetActiveDocument(Document* document)
     if (nullptr != active)
     {
         active->Activate();
+        DocumentActivated(active);
     }
 }
 

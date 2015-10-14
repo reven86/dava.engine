@@ -59,7 +59,8 @@ signals:
     void ScaleChanged(float scale);
 public slots:
     void OnDocumentChanged(Document* document);
-
+    void OnDocumentActivated(Document* document);
+    void OnDocumentDeactivated(Document* document);
 private slots:
     // Zoom.
 	void OnScaleByComboIndex(int value);

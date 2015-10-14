@@ -104,7 +104,7 @@ void ScrollAreaController::SetPosition(const QPoint& position_)
     if (position_ != position)
     {
         position = position_;
-        auto newPos = Vector2(position.x(), position.y());
+        auto newPos = Vector2(-position.x(), -position.y());
         backgroundControl->SetPosition(newPos);
         emit PositionChanged(position);
     }

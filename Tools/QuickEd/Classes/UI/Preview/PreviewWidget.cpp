@@ -81,6 +81,8 @@ PreviewWidget::PreviewWidget(QWidget* parent)
     connect(scrollAreaController, &ScrollAreaController::ViewSizeChanged, this, &PreviewWidget::UpdateScrollArea);
     connect(scrollAreaController, &ScrollAreaController::CanvasSizeChanged, this, &PreviewWidget::UpdateScrollArea);
 
+    connect(scrollAreaController, &ScrollAreaController::PositionChanged, this, &PreviewWidget::OnPositionChanged);
+
     connect(scaleCombo, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &PreviewWidget::OnScaleByComboIndex);
     connect(scaleCombo->lineEdit(), &QLineEdit::editingFinished, this, &PreviewWidget::OnScaleByComboText);
 
@@ -129,11 +131,6 @@ void PreviewWidget::OnSelectControlByMenu(const Vector<ControlNode*>& nodesUnder
 
 void PreviewWidget::OnDocumentChanged(Document* arg)
 {
-    if (document != nullptr)
-    {
-        PreviewContext* context = static_cast<PreviewContext*>(document->GetContext(this));
-        context->canvasPosition = scrollAreaController->GetPosition();
-    }
     document = arg;
     if (nullptr != document)
     {
@@ -144,24 +141,33 @@ void PreviewWidget::OnDocumentChanged(Document* arg)
         scrollAreaController->GetBackgroundControl()->AddControl(root);
         scrollAreaController->SetNestedControl(scalableControl);
         OnScaleByComboText();
-
-        PreviewContext* context = static_cast<PreviewContext*>(document->GetContext(this));
-        if (nullptr == context)
-        {
-            context = new PreviewContext();
-            document->SetContext(this, context);
-            QPoint position(horizontalScrollBar->maximum() / 2.0f, verticalScrollBar->maximum() / 2.0f);
-            scrollAreaController->SetPosition(position);
-        }
-        else
-        {
-            scrollAreaController->SetPosition(context->canvasPosition);
-        }
     }
     else
     {
         scrollAreaController->SetNestedControl(nullptr);
     }
+}
+
+void PreviewWidget::OnDocumentActivated(Document* document)
+{
+    PreviewContext* context = static_cast<PreviewContext*>(document->GetContext(this));
+    if (nullptr == context)
+    {
+        context = new PreviewContext();
+        document->SetContext(this, context);
+        QPoint position(horizontalScrollBar->maximum() / 2.0f, verticalScrollBar->maximum() / 2.0f);
+        scrollAreaController->SetPosition(position);
+    }
+    else
+    {
+        scrollAreaController->SetPosition(context->canvasPosition);
+    }
+}
+
+void PreviewWidget::OnDocumentDeactivated(Document* document)
+{
+    PreviewContext* context = static_cast<PreviewContext*>(document->GetContext(this));
+    context->canvasPosition = scrollAreaController->GetPosition();
 }
 
 void PreviewWidget::OnMonitorChanged()
@@ -183,8 +189,8 @@ void PreviewWidget::UpdateScrollArea()
 
 void PreviewWidget::OnPositionChanged(const QPoint& position)
 {
-    verticalScrollBar->setSliderPosition(position.x());
-    horizontalScrollBar->setSliderPosition(position.y());
+    horizontalScrollBar->setSliderPosition(position.x());
+    verticalScrollBar->setSliderPosition(position.y());
 }
 
 void PreviewWidget::OnScaleByZoom(int scaleDelta)
@@ -239,13 +245,13 @@ void PreviewWidget::OnGLWidgetResized(int width, int height, int dpr)
 void PreviewWidget::OnVScrollbarMoved(int vPosition)
 {
     QPoint canvasPosition = scrollAreaController->GetPosition();
-    canvasPosition.setY(-vPosition);
+    canvasPosition.setY(vPosition);
     scrollAreaController->SetPosition(canvasPosition);
 }
 
 void PreviewWidget::OnHScrollbarMoved(int hPosition)
 {
     QPoint canvasPosition = scrollAreaController->GetPosition();
-    canvasPosition.setX(-hPosition);
+    canvasPosition.setX(hPosition);
     scrollAreaController->SetPosition(canvasPosition);
 }

@@ -53,6 +53,8 @@ public:
 
 signals:
     void ActiveDocumentChanged(Document*);
+    void DocumentActivated(Document*);
+    void DocumentDeactivated(Document*);
     void SelectedNodesChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void CanvasSizeChanged();
 
