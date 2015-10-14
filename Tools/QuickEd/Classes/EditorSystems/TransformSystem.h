@@ -72,7 +72,8 @@ private:
     bool ProcessDrag(DAVA::Vector2 point);
     void ResizeControl(DAVA::Vector2 delta, bool withPivot, bool rateably);
     DAVA::Vector2 AdjustToMinimumSize(DAVA::Vector2 delta);
-    DAVA::Vector2 AdjustResize(DAVA::Vector2 deltaSize, bool withPivot, Directions directions);
+    DAVA::Vector2 AdjustResize(DAVA::Vector2 deltaSize, DAVA::Vector2 transformPoint, Directions directions);
+    DAVA::Vector2 AdjustResize_(DAVA::Vector2 deltaSize, DAVA::Vector2 transformPoint, Directions directions, DAVA::Vector<MagnetLineInfo>& magnets);
     void MovePivot(DAVA::Vector2 delta);
     void EmitMagnetLinesForPivot(DAVA::Vector2& target);
     DAVA::Vector2 AdjustPivot(DAVA::Vector2& delta);
@@ -99,6 +100,9 @@ private:
     AbstractProperty* positionProperty = nullptr;
     AbstractProperty* angleProperty = nullptr;
     AbstractProperty* pivotProperty = nullptr;
+
+    const DAVA::Vector2 minimumSize = DAVA::Vector2(16.0f, 16.0f);
+    const DAVA::Vector2 magnetRange = DAVA::Vector2(10.0f, 10.0f);
 };
 
 #endif // __QUICKED_TRANSFORM_SYSTEM_H__
