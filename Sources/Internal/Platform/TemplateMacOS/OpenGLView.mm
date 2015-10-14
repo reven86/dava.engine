@@ -171,57 +171,8 @@ extern void FrameworkMain(int argc, char *argv[]);
         return;
     
 //	Logger::FrameworkDebug("drawRect started");
-	
-#if RHI_COMPLETE
-	if (activeCursor != RenderManager::Instance()->GetCursor())
-	{
-		activeCursor = RenderManager::Instance()->GetCursor();
-		[[self window] invalidateCursorRectsForView: self];
-	}
-#endif
-	
-	
-#if RHI_COMPLETE
-	DAVA::RenderManager::Instance()->Lock();
-#endif
-	
-	if (isFirstDraw)
-	{
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		isFirstDraw = false;
-	}	
-	
 
-	
-	DAVA::Core::Instance()->SystemProcessFrame();
-	
-/*	// This is an optimization.  If the view is being
-	// resized, don't do a buffer swap.  The GL content
-	// will be updated as part of the window flush anyway.
-	// This makes live resize look nicer as the GL view
-	// won't get flushed ahead of the window flush.  It also
-	// makes live resize faster since we're not flushing twice.
-	// Because I want the animtion to continue while resize
-	// is happening, I use my own flag rather than calling
-	// [self inLiveReize].  For most apps this wouldn't be
-	// necessary.
- 
-	if(!sizeChanged)
-	{
-		[[self openGLContext] flushBuffer];
-	}
-	else glFlush();
-	sizeChanged = NO; */
-    
-/*
-    if(DAVA::Core::Instance()->IsActive())
-    {
-        [[self openGLContext] flushBuffer];
-    }
-*/    
-//	DAVA::RenderManager::Instance()->Unlock();
-//  Logger::FrameworkDebug("drawRect ended");
-
+    DAVA::Core::Instance()->SystemProcessFrame();
 }
 
 - (void) resetCursorRects
