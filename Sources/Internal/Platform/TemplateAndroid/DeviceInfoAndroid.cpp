@@ -229,7 +229,7 @@ DeviceInfo::StorageInfo DeviceInfoPrivate::StorageInfoFromJava(jobject object)
         info.path = JNI::ToString(jStr);
     }
 
-	return info;
+    return info;
 }
 
 int32 DeviceInfoPrivate::GetNetworkType()

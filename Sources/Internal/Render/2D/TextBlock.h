@@ -148,7 +148,8 @@ public:
     TextBlockRender* GetRenderer(){ return textBlockRender; }
 
     void SetAngle(const float32 _angle);
-    void SetPivot(const Vector2 & _pivot);
+    void SetPivot(const Vector2& _pivot);
+
 protected:
 
 	TextBlock();
@@ -157,7 +158,7 @@ protected:
 
     void NeedPrepare(Texture* texture = NULL);
     void PrepareInternal();
-	void CalculateCacheParams();
+    void CalculateCacheParams();
     void CalculateCacheParamsIfNeed();
 
     void SetFontInternal(Font* _font);

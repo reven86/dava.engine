@@ -341,7 +341,7 @@ extern void FrameworkWillTerminate();
     ev.keyChar = c;
     ev.phase = DAVA::UIEvent::PHASE_KEYCHAR;
     ev.timestamp = timestamp;
-	ev.tapCount = 1;
+    ev.tapCount = 1;
     ev.tid = keyboard.GetDavaKeyForSystemKey(keyCode);
 
     DAVA::Vector<DAVA::UIEvent> touches;
