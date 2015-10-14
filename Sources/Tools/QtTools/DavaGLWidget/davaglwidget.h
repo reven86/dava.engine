@@ -32,10 +32,11 @@
 
 #include <QOpenGLWidget>
 #include <QMimeData>
-#include <QWindow>
+#include <QWidget>
 #include <QScopedPointer>
 #include <QQuickWindow>
 
+class QDragMoveEvent;
 class DavaGLWidget;
 class ControlMapper;
 class QResizeEvent;

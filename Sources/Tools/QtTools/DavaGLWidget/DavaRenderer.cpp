@@ -33,9 +33,6 @@
 
 DavaRenderer::DavaRenderer()
 {
-#ifdef Q_OS_WIN
-    glewInit();
-#endif
     DAVA::Core::Instance()->rendererParams.acquireContextFunc = []()
     {
     };
@@ -53,6 +50,5 @@ DavaRenderer::~DavaRenderer()
 
 void DavaRenderer::paint()
 {
-    glGetError(); //clear GL errors, produced by Qt
     DAVA::QtLayer::Instance()->ProcessFrame();
 }
