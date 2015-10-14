@@ -355,6 +355,8 @@ public:
     GLboolean           maskG;
     GLboolean           maskB;
     GLboolean           maskA;
+
+    bool needPrepareTextureLoc = true;
 };
 
 typedef ResourcePool<PipelineStateGLES2_t,RESOURCE_PIPELINE_STATE,PipelineState::Descriptor,false>  PipelineStateGLES2Pool;
@@ -530,10 +532,15 @@ SetToRHI( Handle ps, uint32 layoutUID )
     {
         GL_CALL(glUseProgram( ps2->glProg ));
         cachedProgram = ps2->glProg;
+
+        if (ps2->needPrepareTextureLoc)
+        {
+            ps2->needPrepareTextureLoc = false;
+            ps2->vprog.ProgGLES2::SetupTextureUnits();
+            ps2->fprog.ProgGLES2::SetupTextureUnits(ps2->vprog.SamplerCount());
+        }
     }
 
-    ps2->vprog.ProgGLES2::SetupTextureUnits();
-    ps2->fprog.ProgGLES2::SetupTextureUnits( ps2->vprog.SamplerCount() );
     VertexDeclGLES2::InvalidateVAttrCache();
 
     
