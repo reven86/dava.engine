@@ -486,22 +486,24 @@ void UIList::Input(UIEvent *currentInput)
     switch (currentInput->phase)
     {
     case UIEvent::Phase::BEGAN:
-        {
-            lockTouch = true;
-            oldPos = newPos;
-            mainTouch = currentInput->tid;
-        }
-            break;
-            case UIEvent::Phase::DRAG:
-        {
-        }
-            break;
-            case UIEvent::Phase::ENDED:
-        {
-            lockTouch = false;
-            mainTouch = -1;
-        }
-            break;
+    {
+        lockTouch = true;
+        oldPos = newPos;
+        mainTouch = currentInput->tid;
+    }
+    break;
+    case UIEvent::Phase::DRAG:
+    {
+    }
+    break;
+    case UIEvent::Phase::ENDED:
+    {
+        lockTouch = false;
+        mainTouch = -1;
+    }
+    break;
+    default:
+        break;
     }
 
     currentInput->SetInputHandledType(UIEvent::INPUT_HANDLED_HARD); // Drag is handled - see please DF-2508.

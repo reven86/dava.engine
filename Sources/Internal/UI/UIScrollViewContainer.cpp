@@ -97,37 +97,39 @@ int32 UIScrollViewContainer::GetTouchTreshold()
 
 void UIScrollViewContainer::Input(UIEvent *currentTouch)
 {
-	if(currentTouch->tid == mainTouch)
-	{
-		newPos = currentTouch->point;
-		
-		switch(currentTouch->phase)
-		{
+    if (currentTouch->tid == mainTouch)
+    {
+        newPos = currentTouch->point;
+
+        switch (currentTouch->phase)
+        {
         case UIEvent::Phase::BEGAN:
+        {
+            scrollStartInitialPosition = currentTouch->point;
+            scrollStartMovement = false;
+            state = STATE_SCROLL;
+            lockTouch = true;
+            oldPos = newPos;
+        }
+        break;
+        case UIEvent::Phase::DRAG:
+        {
+            if (state == STATE_SCROLL)
             {
-				scrollStartInitialPosition = currentTouch->point;
-				scrollStartMovement = false;
-				state = STATE_SCROLL;
-				lockTouch = true;
-				oldPos = newPos;
-			}
-			break;
-            case UIEvent::Phase::DRAG:
-            {
-				if(state == STATE_SCROLL)
-				{
-					scrollStartMovement = true;
-				}
-			}
-			break;
-            case UIEvent::Phase::ENDED:
-            {
-				lockTouch = false;
-				state = STATE_DECCELERATION;
-			}
-			break;
-		}
-	}
+                scrollStartMovement = true;
+            }
+        }
+        break;
+        case UIEvent::Phase::ENDED:
+        {
+            lockTouch = false;
+            state = STATE_DECCELERATION;
+        }
+        break;
+        default:
+            break;
+        }
+    }
 }
 
 bool UIScrollViewContainer::SystemInput(UIEvent *currentTouch)

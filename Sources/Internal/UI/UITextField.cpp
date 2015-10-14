@@ -88,6 +88,7 @@ public:
     }
     void SetFontSize(float32)
     {
+        // TODO: implement in staticText_->SetFontSize(float32);
     }
     void SetText(const WideString& text_, const Vector2& requestedTextRectSize = Vector2(0, 0))
     {
@@ -146,6 +147,10 @@ public:
     void SetFont(Font* f)
     {
         staticText_->SetFont(f);
+    }
+    Font* GetFont() const
+    {
+        return staticText_->GetFont();
     }
     void SetTextColor(Color c)
     {
@@ -254,7 +259,6 @@ void UITextField::SetupDefaults()
 
 UITextField::~UITextField()
 {
-    SafeRelease(textFont);
     SafeDelete(textFieldImpl);
     UIControl::RemoveAllControls();
 }
@@ -378,14 +382,7 @@ void UITextField::ReleaseFocus()
 void UITextField::SetFont(Font * font)
 {
 #if !defined(DAVA_TEXTFIELD_USE_NATIVE)
-    if (font == textFont)
-    {
-        return;
-    }
-
-    SafeRelease(textFont);
-    textFont = SafeRetain(font);
-    textFieldImpl->SetFont(textFont);
+    textFieldImpl->SetFont(font);
 #endif  // !defined(DAVA_TEXTFIELD_USE_NATIVE)
 }
 
@@ -444,11 +441,6 @@ int32 UITextField::GetTextUseRtlAlignAsInt() const
 void UITextField::SetFontSize(float32 size)
 {
     textFieldImpl->SetFontSize(size);
-
-    if (textFont)
-    {
-        textFont->SetSize(size);
-    }
 }
 
 void UITextField::SetDelegate(UITextFieldDelegate * _delegate)
@@ -515,7 +507,7 @@ Font* UITextField::GetFont() const
 #if defined(DAVA_TEXTFIELD_USE_NATIVE)
     return nullptr;
 #else
-    return textFont;
+    return textFieldImpl->GetFont();
 #endif
 }
 
@@ -863,10 +855,6 @@ void UITextField::CopyDataFrom(UIControl *srcControl)
     
     cursorBlinkingTime = t->cursorBlinkingTime;
 #if !defined(DAVA_TEXTFIELD_USE_NATIVE)
-    if (t->textFont != nullptr)
-    {
-        SetFont(t->textFont);
-    }
     textFieldImpl->CopyDataFrom(t->textFieldImpl);
 #endif
 

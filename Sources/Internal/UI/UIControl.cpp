@@ -1566,179 +1566,187 @@ namespace DAVA
         case UIEvent::Phase::CHAR_REPEAT:
         case UIEvent::Phase::KEY_DOWN:
         case UIEvent::Phase::KEY_DOWN_REPEAT:
-            {
-                    Input(currentInput);
-            }
-            break;
+        {
+            Input(currentInput);
+        }
+        break;
 
-            case UIEvent::Phase::MOVE:
+        case UIEvent::Phase::MOVE:
+        {
+            if (!currentInput->touchLocker && IsPointInside(currentInput->point))
             {
-                if (!currentInput->touchLocker && IsPointInside(currentInput->point))
+                UIControlSystem::Instance()->SetHoveredControl(this);
+                Input(currentInput);
+                return true;
+            }
+        }
+        break;
+        case UIEvent::Phase::WHEEL:
+        {
+            Input(currentInput);
+        }
+        break;
+        case UIEvent::Phase::BEGAN:
+        {
+            if (!currentInput->touchLocker && IsPointInside(currentInput->point))
+        {
+            if (multiInput || !currentInputID)
+            {
+                controlState |= STATE_PRESSED_INSIDE;
+                controlState &= ~STATE_NORMAL;
+                ++touchesInside;
+                ++totalTouches;
+                currentInput->controlState = UIEvent::CONTROL_STATE_INSIDE;
+
+                // Yuri Coder, 2013/12/18. Set the touch lockers before the EVENT_TOUCH_DOWN handler
+                // to have possibility disable control inside the EVENT_TOUCH_DOWN. See also DF-2943.
+                currentInput->touchLocker = this;
+                if (exclusiveInput)
                 {
-                    UIControlSystem::Instance()->SetHoveredControl(this);
-                    Input(currentInput);
-                    return true;
+                    UIControlSystem::Instance()->SetExclusiveInputLocker(this,
+                                                                         currentInput->tid);
                 }
-            }
-            break;
-            case UIEvent::Phase::WHEEL:
-            {
-                 Input(currentInput);
-            }
-            break;
-            case UIEvent::Phase::BEGAN:
-            {
-                if (!currentInput->touchLocker && IsPointInside(currentInput->point))
+
+                PerformEventWithData(EVENT_TOUCH_DOWN, currentInput);
+
+                if (!multiInput)
                 {
-                    if(multiInput || !currentInputID)
+                    currentInputID = currentInput->tid;
+                }
+
+                Input(currentInput);
+                return true;
+            }
+            else
+            {
+                currentInput->touchLocker = this;
+                return true;
+            }
+        }
+        }
+        break;
+        case UIEvent::Phase::DRAG:
+        {
+            if (currentInput->touchLocker == this)
+            {
+                if (multiInput || currentInputID == currentInput->tid)
+            {
+                if (controlState & STATE_PRESSED_INSIDE || controlState & STATE_PRESSED_OUTSIDE)
+                {
+                    if (IsPointInside(currentInput->point, true))
                     {
-
-                        controlState |= STATE_PRESSED_INSIDE;
-                        controlState &= ~STATE_NORMAL;
-                        ++touchesInside;
-                        ++totalTouches;
-                        currentInput->controlState = UIEvent::CONTROL_STATE_INSIDE;
-
-                        // Yuri Coder, 2013/12/18. Set the touch lockers before the EVENT_TOUCH_DOWN handler
-                        // to have possibility disable control inside the EVENT_TOUCH_DOWN. See also DF-2943.
-                        currentInput->touchLocker = this;
-                        if(exclusiveInput)
+                        if (currentInput->controlState == UIEvent::CONTROL_STATE_OUTSIDE)
                         {
-                            UIControlSystem::Instance()->SetExclusiveInputLocker(this, currentInput->tid);
+                            currentInput->controlState =
+                            UIEvent::CONTROL_STATE_INSIDE;
+                            ++touchesInside;
+                            if (touchesInside > 0)
+                            {
+                                controlState |= STATE_PRESSED_INSIDE;
+                                controlState &= ~STATE_PRESSED_OUTSIDE;
+#if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
+                                controlState |= STATE_HOVER;
+#endif
+                            }
                         }
-
-                        PerformEventWithData(EVENT_TOUCH_DOWN, currentInput);
-
-                        if(!multiInput)
-                        {
-                            currentInputID = currentInput->tid;
-                        }
-
-                        Input(currentInput);
-                        return true;
                     }
                     else
                     {
-                        currentInput->touchLocker = this;
-                        return true;
-                    }
-
-                }
-            }
-                break;
-                case UIEvent::Phase::DRAG:
-            {
-                if(currentInput->touchLocker == this)
-                {
-                    if(multiInput || currentInputID == currentInput->tid)
-                    {
-                        if(controlState & STATE_PRESSED_INSIDE || controlState & STATE_PRESSED_OUTSIDE)
+                        if (currentInput->controlState == UIEvent::CONTROL_STATE_INSIDE)
                         {
-                            if (IsPointInside(currentInput->point, true))
-                            {
-                                if(currentInput->controlState == UIEvent::CONTROL_STATE_OUTSIDE)
-                                {
-                                    currentInput->controlState = UIEvent::CONTROL_STATE_INSIDE;
-                                    ++touchesInside;
-                                    if(touchesInside > 0)
-                                    {
-                                        controlState |= STATE_PRESSED_INSIDE;
-                                        controlState &= ~STATE_PRESSED_OUTSIDE;
-#if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
-                                        controlState |= STATE_HOVER;
-#endif
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                if(currentInput->controlState == UIEvent::CONTROL_STATE_INSIDE)
-                                {
-                                    currentInput->controlState = UIEvent::CONTROL_STATE_OUTSIDE;
-                                    --touchesInside;
-                                    if(touchesInside == 0)
-                                    {
-                                        controlState |= STATE_PRESSED_OUTSIDE;
-                                        controlState &= ~STATE_PRESSED_INSIDE;
-                                    }
-                                }
-                            }
-                        }
-                        Input(currentInput);
-                    }
-                    return true;
-                }
-            }
-                break;
-                case UIEvent::Phase::ENDED:
-            {
-                if(currentInput->touchLocker == this)
-                {
-                    if(multiInput || currentInputID == currentInput->tid)
-                    {
-                        Input(currentInput);
-                        if(currentInput->tid == currentInputID)
-                        {
-                            currentInputID = 0;
-                        }
-                        if(totalTouches > 0)
-                        {
-                            --totalTouches;
-                            if(currentInput->controlState == UIEvent::CONTROL_STATE_INSIDE)
-                            {
-                                --touchesInside;
-#if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
-                                if(totalTouches == 0)
-                                {
-                                    controlState |= STATE_HOVER;
-                                }
-#endif
-                            }
-
-                            currentInput->controlState = UIEvent::CONTROL_STATE_RELEASED;
-
-                            if(totalTouches == 0)
-                            {
-                                if (IsPointInside(currentInput->point, true))
-                                {
-                                    if (UIControlSystem::Instance()->GetFocusedControl() != this && focusEnabled)
-                                    {
-                                        UIControlSystem::Instance()->SetFocusedControl(this, false);
-                                    }
-                                    PerformEventWithData(EVENT_TOUCH_UP_INSIDE, currentInput);
-                                }
-                                else
-                                {
-                                    PerformEventWithData(EVENT_TOUCH_UP_OUTSIDE, currentInput);
-                                }
-                                controlState &= ~STATE_PRESSED_INSIDE;
-                                controlState &= ~STATE_PRESSED_OUTSIDE;
-                                controlState |= STATE_NORMAL;
-                                if(UIControlSystem::Instance()->GetExclusiveInputLocker() == this)
-                                {
-                                    UIControlSystem::Instance()->SetExclusiveInputLocker(NULL, -1);
-                                }
-                            }
-                            else if(touchesInside <= 0)
+                            currentInput->controlState =
+                            UIEvent::CONTROL_STATE_OUTSIDE;
+                            --touchesInside;
+                            if (touchesInside == 0)
                             {
                                 controlState |= STATE_PRESSED_OUTSIDE;
                                 controlState &= ~STATE_PRESSED_INSIDE;
-#if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
-                                controlState &= ~STATE_HOVER;
-#endif
                             }
                         }
                     }
-
-                    currentInput->touchLocker = NULL;
-                    return true;
                 }
-            }
-                break;
-                case UIEvent::Phase::PHASE_JOYSTICK:
-            {
                 Input(currentInput);
             }
+            return true;
+            }
+        }
+        break;
+        case UIEvent::Phase::ENDED:
+        {
+            if (currentInput->touchLocker == this)
+            {
+                if (multiInput || currentInputID == currentInput->tid)
+            {
+                Input(currentInput);
+                if (currentInput->tid == currentInputID)
+                {
+                    currentInputID = 0;
+                }
+                if (totalTouches > 0)
+                {
+                    --totalTouches;
+                    if (currentInput->controlState == UIEvent::CONTROL_STATE_INSIDE)
+                    {
+                        --touchesInside;
+#if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
+                        if (totalTouches == 0)
+                        {
+                            controlState |= STATE_HOVER;
+                        }
+#endif
+                    }
+
+                    currentInput->controlState =
+                    UIEvent::CONTROL_STATE_RELEASED;
+
+                    if (totalTouches == 0)
+                    {
+                        if (IsPointInside(currentInput->point, true))
+                        {
+                            if (UIControlSystem::Instance()->GetFocusedControl() != this && focusEnabled)
+                            {
+                                UIControlSystem::Instance()->SetFocusedControl(
+                                this, false);
+                            }
+                            PerformEventWithData(EVENT_TOUCH_UP_INSIDE,
+                                                 currentInput);
+                        }
+                        else
+                        {
+                            PerformEventWithData(EVENT_TOUCH_UP_OUTSIDE,
+                                                 currentInput);
+                        }
+                        controlState &= ~STATE_PRESSED_INSIDE;
+                        controlState &= ~STATE_PRESSED_OUTSIDE;
+                        controlState |= STATE_NORMAL;
+                        if (UIControlSystem::Instance()->GetExclusiveInputLocker() == this)
+                        {
+                            UIControlSystem::Instance()->SetExclusiveInputLocker(
+                            NULL, -1);
+                        }
+                    }
+                    else if (touchesInside <= 0)
+                    {
+                        controlState |= STATE_PRESSED_OUTSIDE;
+                        controlState &= ~STATE_PRESSED_INSIDE;
+#if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
+                        controlState &= ~STATE_HOVER;
+#endif
+                    }
+                }
+            }
+
+            currentInput->touchLocker = NULL;
+            return true;
+        }
+        }
+        break;
+        case UIEvent::Phase::JOYSTICK:
+        {
+            Input(currentInput);
+        }
+        default:
+            break;
         }
 
         return false;
@@ -1754,7 +1762,7 @@ namespace DAVA
 
         //if(currentInput->touchLocker != this)
         {
-            if (clipContents && (currentInput->phase != UIEvent::Phase::DRAG && currentInput->phase != UIEvent::Phase::ENDED && currentInput->phase != UIEvent::Phase::CHAR && currentInput->phase != UIEvent::Phase::PHASE_JOYSTICK))
+            if (clipContents && (currentInput->phase != UIEvent::Phase::DRAG && currentInput->phase != UIEvent::Phase::ENDED && currentInput->phase != UIEvent::Phase::CHAR && currentInput->phase != UIEvent::Phase::JOYSTICK))
             {
                 if(!IsPointInside(currentInput->point))
                 {

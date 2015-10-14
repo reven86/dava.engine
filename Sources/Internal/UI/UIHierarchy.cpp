@@ -514,25 +514,27 @@ void UIHierarchy::Input(UIEvent *currentInput)
     else
     {
         newPos = currentInput->point.y;
-        switch (currentInput->phase) 
+        switch (currentInput->phase)
         {
         case UIEvent::Phase::BEGAN:
-            {
-                lockTouch = true;
-                oldPos = newPos;
-                mainTouch = currentInput->tid;
-            }
-                break;
-                case UIEvent::Phase::DRAG:
-            {
-            }
-                break;
-                case UIEvent::Phase::ENDED:
-            {
-                lockTouch = false;
-                mainTouch = 0;
-            }
-                break;
+        {
+            lockTouch = true;
+            oldPos = newPos;
+            mainTouch = currentInput->tid;
+        }
+        break;
+        case UIEvent::Phase::DRAG:
+        {
+        }
+        break;
+        case UIEvent::Phase::ENDED:
+        {
+            lockTouch = false;
+            mainTouch = 0;
+        }
+        break;
+        default:
+            break;
         }
     }
 
@@ -893,6 +895,4 @@ void UIHierarchy::ScrollToData(void *userData)
     float32 scrollPos = (float32)(count * GetCellHeight());
     scroll->SetPosition(-scrollPos);
 }
-  
-    
 };

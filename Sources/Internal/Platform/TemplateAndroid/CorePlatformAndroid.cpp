@@ -331,25 +331,35 @@ namespace DAVA
 
 	void CorePlatformAndroid::KeyUp(int32 keyCode)
 	{
-		InputSystem::Instance()->GetKeyboard().OnSystemKeyUnpressed(keyCode);
-	}
+        InputSystem* inputSystem = InputSystem::Instance();
+        KeyboardDevice& keyboard = inputSystem->GetKeyboard();
 
-	void CorePlatformAndroid::KeyDown(int32 keyCode)
-	{
-		InputSystem::Instance()->GetKeyboard().OnSystemKeyPressed(keyCode);
+        UIEvent keyEvent;
+        keyEvent.device = UIEvent::Device::KEYBOARD;
+        keyEvent.phase = DAVA::UIEvent::Phase::KEY_UP;
+        keyEvent.tid = keyboard.GetDavaKeyForSystemKey(keyCode);
 
-		UIEvent * keyEvent = new UIEvent;
-		keyEvent->keyChar = 0;
-        keyEvent->phase = DAVA::UIEvent::PHASE_KEY_DOWN;
-        keyEvent->tapCount = 1;
-		keyEvent->tid = InputSystem::Instance()->GetKeyboard().GetDavaKeyForSystemKey(keyCode);
+        inputSystem->ProcessInputEvent(&keyEvent);
 
-		InputSystem::Instance()->ProcessInputEvent(keyEvent);
+        keyboard.OnSystemKeyUnpressed(keyCode);
+    }
 
-		SafeDelete(keyEvent);
-	}
+    void CorePlatformAndroid::KeyDown(int32 keyCode)
+    {
+        InputSystem* inputSystem = InputSystem::Instance();
+        KeyboardDevice& keyboard = inputSystem->GetKeyboard();
 
-	void CorePlatformAndroid::OnGamepadElement(int32 elementKey, float32 value, bool isKeycode)
+        UIEvent keyEvent;
+        keyEvent.device = UIEvent::Device::KEYBOARD;
+        keyEvent.phase = DAVA::UIEvent::Phase::KEY_DOWN;
+        keyEvent.tid = keyboard.GetDavaKeyForSystemKey(keyCode);
+
+        inputSystem->ProcessInputEvent(&keyEvent);
+
+        keyboard.OnSystemKeyPressed(keyCode);
+    }
+
+    void CorePlatformAndroid::OnGamepadElement(int32 elementKey, float32 value, bool isKeycode)
 	{
 		GamepadDevice & gamepadDevice = InputSystem::Instance()->GetGamepadDevice();
 
@@ -366,9 +376,9 @@ namespace DAVA
 		newEvent.tid = davaKey;
 		newEvent.physPoint.x = value;
 		newEvent.point.x = value;
-		newEvent.phase = DAVA::UIEvent::PHASE_JOYSTICK;
+        newEvent.phase = DAVA::UIEvent::Phase::JOYSTICK;
 
-		gamepadDevice.SystemProcessElement(static_cast<GamepadDevice::eDavaGamepadElement>(davaKey), value);
+        gamepadDevice.SystemProcessElement(static_cast<GamepadDevice::eDavaGamepadElement>(davaKey), value);
 		InputSystem::Instance()->ProcessInputEvent(&newEvent);
 	}
 

@@ -59,7 +59,7 @@ public:
         KEY_DOWN,
         KEY_DOWN_REPEAT, //!< Usefull if user hold key in text editor and wait cursor to move
         KEY_UP,
-        PHASE_JOYSTICK
+        JOYSTICK
     };
 
     /**

@@ -59,7 +59,7 @@ void InputSystem::ProcessInputEvent(UIEvent * event)
 	{
         if (event->phase == UIEvent::Phase::CHAR && ((*it).devices & INPUT_DEVICE_KEYBOARD))
             (*it)(event);
-        else if (event->phase == UIEvent::Phase::PHASE_JOYSTICK && ((*it).devices & INPUT_DEVICE_JOYSTICK))
+        else if (event->phase == UIEvent::Phase::JOYSTICK && ((*it).devices & INPUT_DEVICE_JOYSTICK))
             (*it)(event);
 		else if(((*it).devices & INPUT_DEVICE_TOUCH))
 			(*it)(event);
