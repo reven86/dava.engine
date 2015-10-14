@@ -88,6 +88,10 @@ void LogModel::AddMessage(DAVA::Logger::eLogLevel ll, const QString& text)
 
 void LogModel::Clear()
 {
+    if (rowCount() <= 0)
+    {
+        return;
+    }
     beginRemoveRows(QModelIndex(), 0, rowCount() - 1);
     items.clear();
     endRemoveRows();
