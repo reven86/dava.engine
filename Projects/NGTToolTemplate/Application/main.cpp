@@ -39,9 +39,11 @@ int main(int argc, char ** argv)
 {
     QFileInfo appFileInfo(argv[0]);
 #ifdef _WIN32
-    QString pluginsPathDesc = appFileInfo.absolutePath() + "/plugins/plugins.txt";
+    QString pluginsBasePath = appFileInfo.absolutePath() + "/";
+    QString pluginsPathDesc = pluginsBasePath + "plugins/plugins.txt";
 #elif __APPLE__
-    QString pluginsPathDesc = appFileInfo.absolutePath() + "/../PlugIns/plugins/plugins.txt";
+    QString pluginsBasePath = appFileInfo.absolutePath() + "/../PlugIns/";
+    QString pluginsPathDesc = pluginsBasePath + "plugins/plugins.txt";
 #endif
 
     int result = 1;
@@ -52,6 +54,10 @@ int main(int argc, char ** argv)
     }
 
     {
+        std::wstring basePath = pluginsBasePath.toStdWString();
+        std::transform(plugins.begin(), plugins.end(), plugins.begin(), [&basePath](std::wstring const& pluginPath) {
+            return basePath + pluginPath;
+        });
         GenericPluginManager pluginManager(false);
 
         pluginManager.loadPlugins(plugins);
