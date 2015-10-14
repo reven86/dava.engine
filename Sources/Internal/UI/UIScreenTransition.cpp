@@ -91,6 +91,10 @@ void UIScreenTransition::StartTransition(UIScreen * _prevScreen, UIScreen * _nex
 
     UIControlSystem::Instance()->GetScreenshoter()->MakeScreenshot(prevScreen, renderTargetPrevScreen->GetTexture());
 
+    // If prevScreen is visible we should notify it that it will comes to invisible state
+    if (prevScreen->IsOnScreen())
+        prevScreen->SystemWillBecomeInvisible();
+
     nextScreen->LoadGroup();
     nextScreen->SystemWillAppear();
     nextScreen->SystemUpdate(SystemTimer::FrameDelta());
