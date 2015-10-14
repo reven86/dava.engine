@@ -32,6 +32,7 @@
     #include "rhi_GLES2.h"
 
     #include "Debug/DVAssert.h"
+    #include "Debug/Profiler.h"
     #include "FileSystem/Logger.h"
     using DAVA::Logger;
 
@@ -758,6 +759,7 @@ SetToRHI( Handle tex, unsigned unit_i, uint32 base_i )
 
     GL_CALL(glActiveTexture( GL_TEXTURE0+sampler_i ));
     GL_CALL(glBindTexture( target, self->uid ));
+//{SCOPED_NAMED_TIMING("gl-BindTexture");}
     
     if( sampler_i == 0 )
     {

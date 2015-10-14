@@ -703,7 +703,7 @@ CommandBufferGLES2_t::Command( uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3
 void        
 CommandBufferGLES2_t::Execute()
 {
-SCOPED_NAMED_TIMING("gl.exec");
+//SCOPED_NAMED_TIMING("gl.exec");
     Handle      cur_ps          = InvalidHandle;
     uint32      cur_vdecl       = VertexLayout::InvalidUID;
     uint32      cur_base_vert   = 0;
@@ -1064,6 +1064,7 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
 
             case GLES2__DRAW_PRIMITIVE :
             {
+//{SCOPED_NAMED_TIMING("gl.DP")}
                 unsigned    v_cnt   = unsigned(arg[1]);
                 int         mode    = int(arg[0]);
                 
@@ -1121,6 +1122,7 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
             
             case GLES2__DRAW_INDEXED_PRIMITIVE :
             {
+//{SCOPED_NAMED_TIMING("gl.DIP")}
                 unsigned    v_cnt       = unsigned(arg[1]);
                 int         mode        = int(arg[0]);
                 uint32      firstVertex = uint32(arg[2]);

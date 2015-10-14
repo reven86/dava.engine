@@ -185,7 +185,7 @@ VertexDeclGLES2
                                                         
                             for( unsigned i=0; i!=VATTR_COUNT; ++i )
                                 GL_CALL(glDisableVertexAttribArray( i ));
-                            
+
                             needInit = false;
                         }
                         
@@ -206,6 +206,7 @@ VertexDeclGLES2
                             {
                                 if( vattr[i].enabled )
                                 {
+//{SCOPED_NAMED_TIMING("gl-DisableVertexAttribArray")}
                                     GL_CALL(glDisableVertexAttribArray( i ));
                                     vattr[i].enabled = false;
                                 }
@@ -221,6 +222,7 @@ VertexDeclGLES2
 //Trace("[%u] count= %u  type= %u  norm= %i  stride= %u  offset= %u\n",idx,elem[i].count,elem[i].type,elem[i].normalized,stride,base+(uint8_t*)elem[i].offset);
                                 if( !vattr[idx].enabled )
                                 {
+//{SCOPED_NAMED_TIMING("gl-EnableVertexAttribArray")}
                                     GL_CALL(glEnableVertexAttribArray( idx ));
                                     vattr[idx].enabled = true;
                                 }
@@ -235,6 +237,7 @@ VertexDeclGLES2
                                   )
 */                                
                                 {
+//{SCOPED_NAMED_TIMING("gl-VertexAttribPointer")}
                                     GL_CALL(glVertexAttribPointer( idx, elem[i].count, elem[i].type, (GLboolean)(elem[i].normalized), stride, (const GLvoid*)(base + (uint8_t*)(elem[i].offset)) ));
 
                                     vattr[idx].size         = elem[i].count;
@@ -528,6 +531,7 @@ SetToRHI( Handle ps, uint32 layoutUID )
     
     if( ps2->glProg != cachedProgram )
     {
+//SCOPED_NAMED_TIMING("gl-UseProgram");
         GL_CALL(glUseProgram( ps2->glProg ));
         cachedProgram = ps2->glProg;
     }
