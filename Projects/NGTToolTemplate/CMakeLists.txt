@@ -7,7 +7,11 @@ set                   ( FRAMEWORK_PATH "${CMAKE_CURRENT_LIST_DIR}/../../" )
 set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${FRAMEWORK_PATH}/Sources/CMake/Modules/" )
 set                   ( USE_DYNAMIC_CRT 1)
 set                   ( TARGET_PLUGIN_APP_FOLDER_NAME ${PROJECT_NAME})
-set                   ( TOOL_OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR})
+set                   ( TOOL_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>")
+
+if (DEPLOY_DIR)
+      set (TOOL_OUTPUT_DIR ${DEPLOY_DIR})
+endif()
 
 # Solution folders: http://athile.net/library/blog/?p=288
 SET_PROPERTY( GLOBAL PROPERTY USE_FOLDERS ON )
@@ -69,7 +73,9 @@ add_definitions(
 find_package(QT5 REQUIRED COMPONENTS ${QT_COMPONENTS})
 find_package(NGT REQUIRED)
 
-BW_SET_USE_CONFIGURATION_NAME(1)
+if (NOT DEPLOY_DIR)
+      BW_SET_USE_CONFIGURATION_NAME(1)
+endif()
 BW_SET_TEST_DST_DIR(${TOOL_OUTPUT_DIR})
 BW_SET_ASSET_PIPELINE_DST_DIR(${TOOL_OUTPUT_DIR})
 BW_SET_EXECUTABLE_DST_DIR(${TOOL_OUTPUT_DIR})

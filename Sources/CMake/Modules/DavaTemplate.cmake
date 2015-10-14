@@ -676,9 +676,9 @@ endif()
 
 if ( QT5_FOUND )
     if ( WIN32 )
-        set ( QTCONF_DEPLOY_PATH "${TOOL_OUTPUT_DIR}/${CMAKE_CFG_INTDIR}/qt.conf" )
+        set ( QTCONF_DEPLOY_PATH "${TOOL_OUTPUT_DIR}/qt.conf" )
     elseif ( APPLE )
-        set ( QTCONF_DEPLOY_PATH "${TOOL_OUTPUT_DIR}/${CMAKE_CFG_INTDIR}/${BW_BUNDLE_NAME}.app/Contents/Resources/qt.conf" )
+        set ( QTCONF_DEPLOY_PATH "${TOOL_OUTPUT_DIR}/${BW_BUNDLE_NAME}.app/Contents/Resources/qt.conf" )
     endif()
 
     if     ( TEAMCITY_DEPLOY AND WIN32 )
@@ -762,9 +762,9 @@ if (QT5_FOUND)
 endif()
 
 if ( WIN32 )
-        set(TARGET_RESOURCE_DIR ${TOOL_OUTPUT_DIR}/$<CONFIG>)
+        set(TARGET_RESOURCE_DIR ${TOOL_OUTPUT_DIR})
     elseif( MACOS )
-        set(TARGET_RESOURCE_DIR ${TOOL_OUTPUT_DIR}/$<CONFIG>/${BW_BUNDLE_NAME}.app/Contents/Resources)
+        set(TARGET_RESOURCE_DIR ${TOOL_OUTPUT_DIR}/${BW_BUNDLE_NAME}.app/Contents/Resources)
     endif()
 
 if( APP_DATA )
