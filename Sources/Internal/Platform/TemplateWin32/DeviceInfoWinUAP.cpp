@@ -268,10 +268,9 @@ List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetStoragesList()
     storage.removable = true;
 
     auto removableStorages = WaitAsync(KnownFolders::RemovableDevices->GetFoldersAsync());
-    size_t size = removableStorages->Size;
-    for (size_t i = 0; i < size; ++i)
+    for (unsigned i = 0; i < removableStorages->Size; ++i)
     {
-        Platform::String^ path = removableStorages->GetAt(static_cast<unsigned>(i))->Path;
+        Platform::String^ path = removableStorages->GetAt(i)->Path;
         storage.path = WStringToString(path->Data());
         if (FillStorageSpaceInfo(storage))
         {
