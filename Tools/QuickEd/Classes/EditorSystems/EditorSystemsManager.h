@@ -36,6 +36,14 @@
 #include "Math/Vector.h"
 #include "Model/PackageHierarchy/PackageListener.h"
 
+namespace DAVA
+{
+class UIControl;
+class UIEvent;
+class VariantType;
+class UIGeometricData;
+}
+
 struct HUDAreaInfo
 {
     enum eArea
@@ -53,7 +61,8 @@ struct HUDAreaInfo
         PIVOT_POINT_AREA,
         FRAME_AREA,
         NO_AREA,
-        CORNERS_COUNT = FRAME_AREA - TOP_LEFT_AREA,
+        CORNERS_BEGIN = TOP_LEFT_AREA,
+        CORNERS_COUNT = PIVOT_POINT_AREA - TOP_LEFT_AREA + CORNERS_BEGIN,
         AREAS_COUNT = NO_AREA - AREAS_BEGIN
     };
     HUDAreaInfo(ControlNode* owner_ = nullptr, eArea area_ = NO_AREA)
@@ -66,12 +75,22 @@ struct HUDAreaInfo
     eArea area = NO_AREA;
 };
 
-namespace DAVA
+struct MagnetLineInfo
 {
-class UIControl;
-class UIEvent;
-class VariantType;
-}
+    MagnetLineInfo(const DAVA::Rect& rect_, const DAVA::UIGeometricData* gd_, DAVA::Vector2::eAxis axis_)
+        : absoluteRect(rect_)
+        , gd(gd_)
+        , axis(axis_)
+    {
+    }
+    DAVA::Rect absoluteRect;
+    const DAVA::UIGeometricData* gd;
+    const DAVA::Vector2::eAxis axis;
+};
+
+extern void DestroyControl(DAVA::UIControl* c);
+template <typename T>
+using ControlPtr = std::unique_ptr<T, std::function<void(T*)>>;
 
 class BaseEditorSystem;
 class AbstractProperty;
@@ -105,11 +124,13 @@ public:
     DAVA::Signal<const HUDAreaInfo& /*areaInfo*/> ActiveAreaChanged;
     DAVA::Signal<const DAVA::Rect& /*selectionRectControl*/> SelectionRectChanged;
     DAVA::Signal<bool> EmulationModeChangedSignal;
+    DAVA::Signal<double> DPRChanged;
+
     DAVA::Signal<> CanvasSizeChanged;
     DAVA::Signal<const DAVA::Vector<std::tuple<ControlNode*, AbstractProperty*, DAVA::VariantType>>& /*properties*/, size_t /*hash*/> PropertiesChanged;
     DAVA::Signal<const DAVA::Vector<ControlNode*>& /*nodes*/, const DAVA::Vector2& /*pos*/, ControlNode*& /*selectedNode*/> SelectionByMenuRequested;
     DAVA::Signal<const SortedPackageBaseNodeSet&> EditingRootControlsChanged;
-    DAVA::Signal<double> DPRChanged;
+    DAVA::Signal<const DAVA::Vector<MagnetLineInfo>& /*magnetLines*/> MagnetLinesChanged;
 
 private:
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
@@ -119,8 +140,8 @@ private:
     void ControlWillBeRemoved(ControlNode* node, ControlsContainerNode* from) override;
     void ControlWasAdded(ControlNode* node, ControlsContainerNode* /*destination*/, int /*index*/) override;
     void SetPreviewMode(bool mode);
-    DAVA::UIControl* rootControl = nullptr;
-    DAVA::UIControl* scalableControl = nullptr;
+    ControlPtr<DAVA::UIControl> rootControl;
+    ControlPtr<DAVA::UIControl> scalableControl;
 
     DAVA::List<std::unique_ptr<BaseEditorSystem>> systems;
 

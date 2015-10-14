@@ -39,7 +39,18 @@
 #include "EditorSystems/HUDSystem.h"
 #include "EditorSystems/TransformSystem.h"
 
+#include "UI/UIControl.h"
+
 using namespace DAVA;
+
+void DestroyControl(DAVA::UIControl* c)
+{
+    if (nullptr != c)
+    {
+        c->RemoveFromParent();
+        SafeRelease(c);
+    }
+}
 
 namespace
 {
@@ -128,13 +139,13 @@ bool CompareByLCA(PackageBaseNode* left, PackageBaseNode* right)
 }
 
 EditorSystemsManager::EditorSystemsManager(PackageNode* _package)
-    : rootControl(new RootControl(this))
-    , scalableControl(new UIControl())
+    : rootControl(new RootControl(this), DestroyControl)
+    , scalableControl(new UIControl(), DestroyControl)
     , package(SafeRetain(_package))
     , editingRootControls(CompareByLCA)
 {
     rootControl->SetName("rootControl");
-    rootControl->AddControl(scalableControl);
+    rootControl->AddControl(scalableControl.get());
     scalableControl->SetName("scalableContent");
 
     systems.emplace_back(new CanvasSystem(this));
@@ -151,8 +162,6 @@ EditorSystemsManager::EditorSystemsManager(PackageNode* _package)
 EditorSystemsManager::~EditorSystemsManager()
 {
     package->RemoveListener(this);
-    SafeRelease(scalableControl);
-    SafeRelease(rootControl);
     SafeRelease(package);
 }
 
@@ -163,12 +172,12 @@ PackageNode* EditorSystemsManager::GetPackage()
 
 UIControl* EditorSystemsManager::GetRootControl()
 {
-    return rootControl;
+    return rootControl.get();
 }
 
 UIControl* EditorSystemsManager::GetScalableControl()
 {
-    return scalableControl;
+    return scalableControl.get();
 }
 
 void EditorSystemsManager::Deactivate()
@@ -206,7 +215,7 @@ bool EditorSystemsManager::OnInput(UIEvent* currentInput)
 
 void EditorSystemsManager::SetEmulationMode(bool emulationMode)
 {
-    auto root = static_cast<RootControl*>(rootControl);
+    auto root = static_cast<RootControl*>(rootControl.get());
     root->SetEmulationMode(emulationMode);
     EmulationModeChangedSignal.Emit(std::move(emulationMode));
 }

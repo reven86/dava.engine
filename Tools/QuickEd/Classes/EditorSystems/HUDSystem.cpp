@@ -33,16 +33,24 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Base/BaseTypes.h"
 #include "Input/InputSystem.h"
 #include "Input/KeyboardDevice.h"
-#include "UI/Layouts/UISizePolicyComponent.h"
-#include "Render/RenderState.h"
-#include "Render/RenderManager.h"
 
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/PackageNode.h"
-#include "Model/PackageHierarchy/ImportedPackagesNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
 
 using namespace DAVA;
+
+class ControlContainer : public UIControl
+{
+public:
+    explicit ControlContainer(const HUDAreaInfo::eArea area);
+
+    HUDAreaInfo::eArea GetArea() const;
+    virtual void InitFromGD(const UIGeometricData& gd_) = 0;
+
+protected:
+    const HUDAreaInfo::eArea area = HUDAreaInfo::NO_AREA;
+};
 
 namespace
 {
@@ -75,7 +83,7 @@ public:
             background->SetSprite("~res:/Gfx/HUDControls/BlackGrid", 0);
             background->SetDrawType(UIControlBackground::DRAW_TILED);
 
-            borders.emplace_back(control);
+            borders.emplace_back(control, DestroyControl);
         }
     }
 
@@ -88,7 +96,7 @@ private:
         {
             if (firstInit)
             {
-                AddControl(borders[i]);
+                AddControl(borders[i].get());
             }
             Rect borderRect = CreateFrameBorderRect(i, rect);
             borders[i]->SetAbsoluteRect(borderRect);
@@ -119,7 +127,7 @@ private:
         }
     }
     bool firstInit = true;
-    Vector<ScopedPtr<UIControl>> borders;
+    Vector<ControlPtr<UIControl>> borders;
 };
 
 ControlContainer::ControlContainer(const HUDAreaInfo::eArea area_)
@@ -193,7 +201,7 @@ public:
             UIControlBackground* background = control->GetBackground();
             background->SetSprite("~res:/Gfx/HUDControls/BlackGrid", 0);
             background->SetDrawType(UIControlBackground::DRAW_TILED);
-            borders.emplace_back(control);
+            borders.emplace_back(control, DestroyControl);
         }
     }
 
@@ -206,7 +214,7 @@ private:
         {
             if (firstInit)
             {
-                GetParent()->AddControl(borders[i]);
+                GetParent()->AddControl(borders[i].get());
             }
             Rect borderRect = CreateFrameBorderRect(i, rect);
             borders[i]->SetAbsoluteRect(borderRect);
@@ -231,7 +239,7 @@ private:
         }
     }
     bool firstInit = true;
-    Vector<ScopedPtr<UIControl>> borders;
+    Vector<ControlPtr<UIControl>> borders;
 };
 
 class FrameRectControl : public ControlContainer
@@ -324,23 +332,108 @@ private:
     }
 };
 
+ControlContainer* CreateControlContainer(HUDAreaInfo::eArea area)
+{
+    switch (area)
+    {
+    case HUDAreaInfo::PIVOT_POINT_AREA:
+        return new PivotPointControl();
+    case HUDAreaInfo::ROTATE_AREA:
+        return new RotateControl();
+    case HUDAreaInfo::TOP_LEFT_AREA:
+    case HUDAreaInfo::TOP_CENTER_AREA:
+    case HUDAreaInfo::TOP_RIGHT_AREA:
+    case HUDAreaInfo::CENTER_LEFT_AREA:
+    case HUDAreaInfo::CENTER_RIGHT_AREA:
+    case HUDAreaInfo::BOTTOM_LEFT_AREA:
+    case HUDAreaInfo::BOTTOM_CENTER_AREA:
+    case HUDAreaInfo::BOTTOM_RIGHT_AREA:
+        return new FrameRectControl(area);
+    case HUDAreaInfo::FRAME_AREA:
+        return new FrameControl();
+    default:
+        DVASSERT("!unacceptable value of area");
+        return nullptr;
+    }
+}
+
+struct HUDSystem::HUD
+{
+    HUD(ControlNode* node, DAVA::UIControl* hudControl);
+    ~HUD() = default;
+    void UpdateHUDVisibility();
+    ControlNode* node = nullptr;
+    UIControl* control = nullptr;
+    ControlPtr<DAVA::UIControl> container;
+    Map<HUDAreaInfo::eArea, ControlPtr<DAVA::UIControl>> hudControls;
+};
+
+HUDSystem::HUD::HUD(ControlNode* node_, UIControl* hudControl)
+    : node(node_)
+    , control(node_->GetControl())
+    , container(new HUDContainer(control), DestroyControl)
+{
+    HUDContainer* hudContainer = static_cast<HUDContainer*>(container.get());
+    uint32 begin = HUDAreaInfo::AREAS_BEGIN;
+    uint32 end = HUDAreaInfo::AREAS_COUNT;
+    if (node->GetParent() == nullptr || node->GetParent()->GetControl() == nullptr)
+    {
+        begin = HUDAreaInfo::CORNERS_BEGIN;
+        end = HUDAreaInfo::CORNERS_COUNT;
+    }
+    for (uint32 i = begin; i < end; ++i)
+    {
+        HUDAreaInfo::eArea area = static_cast<HUDAreaInfo::eArea>(i);
+        ControlContainer* controlContainer = CreateControlContainer(area);
+        hudContainer->AddChild(controlContainer);
+        hudControls.emplace(std::piecewise_construct,
+                            std::forward_as_tuple(area),
+                            std::forward_as_tuple(controlContainer, DestroyControl));
+    }
+    hudControl->AddControl(hudContainer);
+    hudContainer->InitFromGD(control->GetGeometricData());
+}
+
+void HUDSystem::HUD::UpdateHUDVisibility()
+{
+    const UIGeometricData& gd = control->GetGeometricData();
+    bool visible = control->GetVisible() && control->GetVisibleForUIEditor() && gd.size.dx > 0.0f && gd.size.dy > 0.0f && gd.scale.dx > 0.0f && gd.scale.dy > 0.0f;
+    container->SetVisible(visible);
+}
+
 HUDSystem::HUDSystem(EditorSystemsManager* parent)
     : BaseEditorSystem(parent)
-    , hudControl(new UIControl())
-    , selectionRectControl(new SelectionRect())
+    , hudControl(new UIControl(), DestroyControl)
+    , selectionRectControl(new SelectionRect(), DestroyControl)
     , sortedControlList(CompareByLCA)
 {
-    hudControl->AddControl(selectionRectControl);
+    systemManager->GetPackage()->AddListener(this);
+    hudControl->AddControl(selectionRectControl.get());
     hudControl->SetName("hudControl");
     systemManager->SelectionChanged.Connect(this, &HUDSystem::OnSelectionChanged);
     systemManager->EmulationModeChangedSignal.Connect(this, &HUDSystem::OnEmulationModeChanged);
     systemManager->DPRChanged.Connect(this, &HUDSystem::OnDPRChanged);
     systemManager->EditingRootControlsChanged.Connect(this, &HUDSystem::OnRootContolsChanged);
+    systemManager->MagnetLinesChanged.Connect(this, &HUDSystem::OnMagnetLinesChanged);
+}
+
+HUDSystem::~HUDSystem()
+{
+    PackageNode* package = systemManager->GetPackage();
+    if (nullptr != package)
+    {
+        systemManager->GetPackage()->RemoveListener(this);
+    }
+}
+
+void HUDSystem::OnActivated()
+{
+    systemManager->GetRootControl()->AddControl(hudControl.get());
 }
 
 void HUDSystem::OnDeactivated()
 {
-    hudControl->RemoveFromParent();
+    systemManager->GetRootControl()->RemoveControl(hudControl.get());
     canDrawRect = false;
     selectionRectControl->SetSize(Vector2());
 }
@@ -367,13 +460,11 @@ void HUDSystem::OnSelectionChanged(const SelectedNodes& selected, const Selected
         ControlNode* controlNode = dynamic_cast<ControlNode*>(node);
         if (controlNode != nullptr)
         {
-            PackageBaseNode* parent = controlNode->GetParent();
-
-            if (nullptr != controlNode && nullptr != controlNode->GetControl() && nullptr != parent && nullptr != parent->GetControl())
+            if (nullptr != controlNode && nullptr != controlNode->GetControl())
             {
                 hudMap.emplace(std::piecewise_construct,
                                std::forward_as_tuple(controlNode),
-                               std::forward_as_tuple(controlNode, hudControl));
+                               std::forward_as_tuple(new HUD(controlNode, hudControl.get())));
                 sortedControlList.insert(controlNode);
             }
         }
@@ -442,6 +533,18 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
     return false;
 }
 
+void HUDSystem::ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property)
+{
+    const String& name = property->GetName();
+    if (name == "Scale" || name == "Size" || name == "Visible")
+    {
+        for (auto& pair : hudMap)
+        {
+            pair.second->UpdateHUDVisibility();
+        }
+    }
+}
+
 void HUDSystem::OnRootContolsChanged(const EditorSystemsManager::SortedPackageBaseNodeSet& rootControls)
 {
     SetEditingEnabled(rootControls.size() == 1);
@@ -451,11 +554,30 @@ void HUDSystem::OnEmulationModeChanged(bool emulationMode)
 {
     if (emulationMode)
     {
-        systemManager->GetRootControl()->RemoveControl(hudControl);
+        systemManager->GetRootControl()->RemoveControl(hudControl.get());
     }
     else
     {
-        systemManager->GetRootControl()->AddControl(hudControl);
+        systemManager->GetRootControl()->AddControl(hudControl.get());
+    }
+}
+
+void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLineInfo>& magnetLines)
+{
+    static const float32 axtraSizeValue = 50.0f;
+    magnetControls.clear();
+
+    for (const MagnetLineInfo& line : magnetLines)
+    {
+        UIControl* control = new UIControl();
+        control->SetDebugDraw(true);
+        control->SetAbsoluteRect(line.absoluteRect);
+        Vector2 extraSize(line.axis == Vector2::AXIS_X ? axtraSizeValue : 0.0f, line.axis == Vector2::AXIS_Y ? axtraSizeValue : 0.0f);
+        control->SetSize(control->GetSize() + extraSize);
+        control->SetAngle(line.gd->angle);
+        control->SetPivotPoint(extraSize / 2.0f);
+        hudControl->AddControl(control);
+        magnetControls.emplace_back(control, DestroyControl);
     }
 }
 
@@ -488,12 +610,16 @@ HUDAreaInfo HUDSystem::GetControlArea(const Vector2& pos, eSearchOrder searchOrd
             DVASSERT(nullptr != node);
             auto findIter = hudMap.find(node);
             DVASSERT_MSG(findIter != hudMap.end(), "hud map corrupted");
-            const HUD& hud = findIter->second;
+            const auto& hud = findIter->second;
             HUDAreaInfo::eArea area = static_cast<HUDAreaInfo::eArea>(end + sign * i);
-            ControlContainer* controlContainer = hud.hudControls.find(area)->second.get();
-            if (controlContainer->GetVisible() && controlContainer->IsPointInside(pos))
+            auto hudControlsIter = hud->hudControls.find(area);
+            if (hudControlsIter != hud->hudControls.end())
             {
-                return HUDAreaInfo(hud.node, area);
+                const auto& controlContainer = hudControlsIter->second;
+                if (controlContainer->GetVisible() && controlContainer->IsPointInside(pos))
+                {
+                    return HUDAreaInfo(hud->node, area);
+                }
             }
         }
     }
@@ -548,77 +674,16 @@ void HUDSystem::UpdateAreasVisibility()
         DVASSERT(nullptr != node);
         auto findIter = hudMap.find(node);
         DVASSERT_MSG(findIter != hudMap.end(), "hud map corrupted");
-        const HUD& hud = findIter->second;
+        const auto& hud = findIter->second;
         for (HUDAreaInfo::eArea area : AreasToHide)
         {
-            ControlContainer* controlContainer = hud.hudControls.find(area)->second.get();
-            controlContainer->SetVisible(showAreas);
+            auto hudControlsIter = hud->hudControls.find(area);
+            if (hudControlsIter != hud->hudControls.end())
+            {
+                const auto& controlContainer = hudControlsIter->second;
+                controlContainer->SetVisible(showAreas);
+            }
         }
     }
 }
 
-ControlContainer* CreateControlContainer(HUDAreaInfo::eArea area)
-{
-    switch (area)
-    {
-    case HUDAreaInfo::PIVOT_POINT_AREA:
-        return new PivotPointControl();
-    case HUDAreaInfo::ROTATE_AREA:
-        return new RotateControl();
-    case HUDAreaInfo::TOP_LEFT_AREA:
-    case HUDAreaInfo::TOP_CENTER_AREA:
-    case HUDAreaInfo::TOP_RIGHT_AREA:
-    case HUDAreaInfo::CENTER_LEFT_AREA:
-    case HUDAreaInfo::CENTER_RIGHT_AREA:
-    case HUDAreaInfo::BOTTOM_LEFT_AREA:
-    case HUDAreaInfo::BOTTOM_CENTER_AREA:
-    case HUDAreaInfo::BOTTOM_RIGHT_AREA:
-        return new FrameRectControl(area);
-    case HUDAreaInfo::FRAME_AREA:
-        return new FrameControl();
-    default:
-        DVASSERT("!unacceptable value of area");
-        return nullptr;
-    }
-}
-
-HUDSystem::HUD::HUD(ControlNode* node_, UIControl* hudControl)
-    : node(node_)
-    , control(node_->GetControl())
-    , container(new HUDContainer(control))
-{
-    node->GetRootProperty()->AddListener(this);
-    HUDContainer* hudContainer = static_cast<HUDContainer*>(container.get());
-    for (uint32 i = HUDAreaInfo::AREAS_BEGIN; i < HUDAreaInfo::AREAS_COUNT; ++i)
-    {
-        HUDAreaInfo::eArea area = static_cast<HUDAreaInfo::eArea>(i);
-        ControlContainer* controlContainer = CreateControlContainer(area);
-        hudContainer->AddChild(controlContainer);
-        hudControls.emplace(std::piecewise_construct,
-                            std::forward_as_tuple(area),
-                            std::forward_as_tuple(controlContainer));
-    }
-
-    hudControl->AddControl(container);
-
-    container->InitFromGD(control->GetGeometricData());
-    container->SetVisible(control->GetVisible() && control->GetVisibleForUIEditor());
-}
-
-HUDSystem::HUD::~HUD()
-{
-    node->GetRootProperty()->RemoveListener(this);
-    for (auto control : hudControls)
-    {
-        container->RemoveControl(control.second);
-    }
-    container->RemoveFromParent();
-}
-
-void HUDSystem::HUD::PropertyChanged(AbstractProperty* property)
-{
-    if (property->GetName() == "Visible")
-    {
-        container->SetVisible(property->GetValue().AsBool());
-    }
-}

@@ -26,6 +26,8 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include <QApplication>
+
 #include "Input/InputSystem.h"
 #include "Input/KeyboardDevice.h"
 #include "EditorSystems/SelectionSystem.h"
@@ -113,7 +115,7 @@ void SelectionSystem::OnSelectByRect(const Rect& rect)
             selected.insert(node);
         }
     }
-    if (!InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_SHIFT))
+    if (!QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier))
     {
         //deselect all not selected by rect
         std::set_difference(selectionContainer.selectedNodes.begin(), selectionContainer.selectedNodes.end(), areaNodes.begin(), areaNodes.end(), std::inserter(deselected, deselected.end()));
@@ -127,14 +129,14 @@ bool SelectionSystem::ProcessMousePress(const DAVA::Vector2& point)
     SelectedNodes deselected;
     DAVA::Vector<ControlNode*> nodesUnderPoint;
     systemManager->CollectControlNodesByPos(nodesUnderPoint, point);
-    if (!InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_SHIFT))
+    if (!QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier))
     {
         deselected = selectionContainer.selectedNodes;
     }
     if (!nodesUnderPoint.empty())
     {
         auto node = nodesUnderPoint.back();
-        if (InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_CTRL))
+        if (QApplication::keyboardModifiers().testFlag(Qt::ControlModifier))
         {
             if (selectionContainer.selectedNodes.find(node) != selectionContainer.selectedNodes.end())
             {
@@ -145,7 +147,7 @@ bool SelectionSystem::ProcessMousePress(const DAVA::Vector2& point)
                 selected.insert(node);
             }
         }
-        else if (InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_ALT))
+        else if (QApplication::keyboardModifiers().testFlag(Qt::AltModifier))
         {
             ControlNode* selectedNode = nullptr;
             systemManager->SelectionByMenuRequested.Emit(nodesUnderPoint, point, selectedNode);

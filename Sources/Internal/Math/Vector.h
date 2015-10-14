@@ -91,9 +91,12 @@ public:
     inline bool IsZero() const { return x == 0.f && y == 0.f; }
     inline void SetZero() { x = y = 0.f; } // = 0
 
-	//! On operations
-	inline const Vector2 & operator += (const Vector2 & _v);
-	inline const Vector2 & operator -= (const Vector2 & _v);
+    //! Get operators
+    float32& operator[](eAxis axis);
+    float32 operator[](eAxis axis) const;
+    //! On operations
+    inline const Vector2& operator+=(const Vector2& _v);
+    inline const Vector2 & operator -= (const Vector2 & _v);
 	inline const Vector2 & operator *= (const Vector2 & _v);
 	inline const Vector2 & operator /= (const Vector2 & _v);
 	inline const Vector2 & operator *= (float32 f);
@@ -354,7 +357,18 @@ inline void Vector2::Lerp(const Vector2 & _v1, const Vector2 & _v2, float32 t)
 	x = _v1.x * (1.0f - t) + _v2.x * t;
 	y = _v1.y * (1.0f - t) + _v2.y * t;
 }
-	
+
+// Get operators
+inline float32& Vector2::operator[](eAxis axis)
+{
+    return data[axis];
+}
+
+inline float32 Vector2::operator[](eAxis axis) const
+{
+    return data[axis];
+}
+
 // On operators
 
 inline const Vector2 & Vector2::operator +=(const Vector2 & _v)
