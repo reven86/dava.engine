@@ -37,6 +37,8 @@
 
 TextureCache::TextureCache()
 {
+    qRegisterMetaType<QList<QImage>>();
+
     curThumbnailWeight = 0;
 	curOriginalWeight = 0;
     for(int i = 0 ; i < DAVA::GPU_DEVICE_COUNT; ++i)

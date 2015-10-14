@@ -21,7 +21,7 @@
     0xaaaabbcc -> aaaa = major version number.  bb = minor version number.  cc = development version number.
 */
 
-#define FMOD_EVENT_VERSION 0x00044432
+#define FMOD_EVENT_VERSION 0x00044457
 
 /*
     FMOD event types
