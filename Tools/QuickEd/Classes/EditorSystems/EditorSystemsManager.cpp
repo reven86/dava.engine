@@ -177,6 +177,7 @@ void EditorSystemsManager::Deactivate()
     {
         system->OnDeactivated();
     }
+    rootControl->RemoveFromParent();
 }
 
 void EditorSystemsManager::Activate()

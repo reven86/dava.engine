@@ -75,6 +75,7 @@ private slots:
     void OnMonitorChanged();
 
     void UpdateScrollArea();
+    void OnPositionChanged(const QPoint& position);
 
 private:
     void OnScaleByZoom(int scaleDelta);

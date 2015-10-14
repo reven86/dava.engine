@@ -28,7 +28,6 @@
 
 #include "ScrollAreaController.h"
 #include "UI/UIScreenManager.h"
-#include <QSizeF>
 
 using namespace DAVA;
 

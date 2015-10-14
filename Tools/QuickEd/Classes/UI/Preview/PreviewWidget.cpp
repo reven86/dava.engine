@@ -51,6 +51,12 @@ QString ScaleFromInt(int scale)
 {
     return QString("%1 %").arg(scale);
 }
+
+struct PreviewContext : WidgetContext
+{
+    ~PreviewContext() override = default;
+    QPoint canvasPosition;
+};
 }
 
 PreviewWidget::PreviewWidget(QWidget* parent)
@@ -123,7 +129,11 @@ void PreviewWidget::OnSelectControlByMenu(const Vector<ControlNode*>& nodesUnder
 
 void PreviewWidget::OnDocumentChanged(Document* arg)
 {
-    scrollAreaController->GetBackgroundControl()->RemoveAllControls();
+    if (document != nullptr)
+    {
+        PreviewContext* context = static_cast<PreviewContext*>(document->GetContext(this));
+        context->canvasPosition = scrollAreaController->GetPosition();
+    }
     document = arg;
     if (nullptr != document)
     {
@@ -134,6 +144,19 @@ void PreviewWidget::OnDocumentChanged(Document* arg)
         scrollAreaController->GetBackgroundControl()->AddControl(root);
         scrollAreaController->SetNestedControl(scalableControl);
         OnScaleByComboText();
+
+        PreviewContext* context = static_cast<PreviewContext*>(document->GetContext(this));
+        if (nullptr == context)
+        {
+            context = new PreviewContext();
+            document->SetContext(this, context);
+            QPoint position(horizontalScrollBar->maximum() / 2.0f, verticalScrollBar->maximum() / 2.0f);
+            scrollAreaController->SetPosition(position);
+        }
+        else
+        {
+            scrollAreaController->SetPosition(context->canvasPosition);
+        }
     }
     else
     {
@@ -156,6 +179,12 @@ void PreviewWidget::UpdateScrollArea()
 
     verticalScrollBar->setRange(0, contentSize.height() - areaSize.height());
     horizontalScrollBar->setRange(0, contentSize.width() - areaSize.width());
+}
+
+void PreviewWidget::OnPositionChanged(const QPoint& position)
+{
+    verticalScrollBar->setSliderPosition(position.x());
+    horizontalScrollBar->setSliderPosition(position.y());
 }
 
 void PreviewWidget::OnScaleByZoom(int scaleDelta)
