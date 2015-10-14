@@ -51,26 +51,26 @@ ShadowVolumeRenderLayer::~ShadowVolumeRenderLayer()
 }
 
 const static uint32 VERTEX_COUNT = 6;
-void ShadowVolumeRenderLayer::UpdtateBufferData()
+std::array<Vector3, VERTEX_COUNT> quad =
 {
-    std::array<Vector3, 6> quad =
-    {
-        Vector3(-1.f, -1.f, 1.f), Vector3(-1.f, 1.f, 1.f), Vector3(1.f, -1.f, 1.f),
-        Vector3(-1.f, 1.f, 1.f), Vector3(1.f, 1.f, 1.f), Vector3(1.f, -1.f, 1.f),        
-    };
-    
-    rhi::UpdateVertexBuffer(quadBuffer, quad.data(), 0, sizeof(Vector3) * VERTEX_COUNT);
-}
+  Vector3(-1.f, -1.f, 1.f), Vector3(-1.f, 1.f, 1.f), Vector3(1.f, -1.f, 1.f),
+  Vector3(-1.f, 1.f, 1.f), Vector3(1.f, 1.f, 1.f), Vector3(1.f, -1.f, 1.f),
+};
+
 void ShadowVolumeRenderLayer::Restore()
 {
     if (rhi::NeedRestoreVertexBuffer(quadBuffer))
-        UpdtateBufferData();
+    {
+        rhi::UpdateVertexBuffer(quadBuffer, quad.data(), 0, sizeof(Vector3) * VERTEX_COUNT);
+    }
 }
 
 void ShadowVolumeRenderLayer::PrepareRenderData()
-{    
-    quadBuffer = rhi::CreateVertexBuffer(sizeof(Vector3) * VERTEX_COUNT);
-    UpdtateBufferData();
+{
+    rhi::VertexBuffer::Descriptor vDesc;
+    vDesc.size = sizeof(Vector3) * VERTEX_COUNT;
+    vDesc.initialData = quad.data();
+    quadBuffer = rhi::CreateVertexBuffer(vDesc);
 
     rhi::VertexLayout vxLayout;
     vxLayout.AddElement(rhi::VS_POSITION, 0, rhi::VDT_FLOAT, 3);

@@ -1519,7 +1519,8 @@ InitializeRenderThreadGLES2( uint32 frameCount )
 
         _GLES2_RenderThread = DAVA::Thread::Create(DAVA::Message(&_RenderFunc));
         _GLES2_RenderThread->SetName("RHI.gl-render");
-        _GLES2_RenderThread->Start();    
+        _GLES2_RenderThread->Start();
+        _GLES2_RenderThread->SetPriority(DAVA::Thread::PRIORITY_HIGH);
         _GLES2_RenderThredStartedSync.Wait();
     }
 }
