@@ -90,6 +90,9 @@ void DocumentGroup::SetActiveDocument(Document* document)
     
     active = document;
 
+    active->SetScale(scale);
+    active->SetEmulationMode(emulationMode);
+
     if (nullptr == active)
     {
         undoGroup->setActiveStack(nullptr);
@@ -117,19 +120,30 @@ void DocumentGroup::SetSelectedNodes(const SelectedNodes& selected, const Select
     }
 }
 
-void DocumentGroup::SetEmulationMode(bool emulationMode)
+void DocumentGroup::SetEmulationMode(bool arg)
 {
+    emulationMode = arg;
     if (nullptr != active)
     {
-        active->SetEmulationMode(emulationMode);
+        active->SetEmulationMode(arg);
     }
 }
 
-void DocumentGroup::SetScale(float scale)
+void DocumentGroup::SetScale(float arg)
 {
+    scale = arg;
     if (nullptr != active)
     {
-        active->SetScale(scale);
+        active->SetScale(arg);
+    }
+}
+
+void DocumentGroup::SetDPR(qreal arg)
+{
+    dpr = dpr;
+    if (nullptr != active)
+    {
+        active->SetDPR(static_cast<double>(dpr));
     }
 }
 

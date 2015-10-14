@@ -73,10 +73,10 @@ public:
     void OnCleanChanged(int index, bool val);
     DavaGLWidget* GetGLWidget();
     DialogReloadSprites* GetDialogReloadSprites();
-    QCheckBox* GetCheckboxEmulation();
 
 protected:
     void closeEvent(QCloseEvent *event) override;
+
 signals:
     void TabClosed(int tab);
     void CloseProject();
@@ -91,12 +91,12 @@ signals:
     void RtlChanged(bool isRtl);
     void GlobalStyleClassesChanged(const QString &classesStr);
     void ReloadSprites(DAVA::eGPUFamily gpu);
+    void EmulationModeChanbed(bool emulationMode);
 
 public slots:
     void OnProjectIsOpenChanged(bool arg);
     void OnCountChanged(int count);
     void OnSetupCacheSettingsForPacker();
-    void OnDocumentChanged(Document* doc);
 
 private slots:
     void OnCurrentIndexChanged(int arg);

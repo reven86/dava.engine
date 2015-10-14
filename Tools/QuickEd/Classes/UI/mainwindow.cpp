@@ -102,6 +102,9 @@ MainWindow::MainWindow(QWidget *parent)
     RebuildRecentMenu();
     menuTools->setEnabled(false);
     toolBarPlugins->setEnabled(false);
+
+    EmulationModeChanbed(emulationBox->isChecked());
+    connect(emulationBox, &QCheckBox::toggled, this, &MainWindow::EmulationModeChanbed);
 }
 
 MainWindow::~MainWindow()
@@ -185,11 +188,6 @@ DavaGLWidget* MainWindow::GetGLWidget()
 DialogReloadSprites* MainWindow::GetDialogReloadSprites()
 {
     return dialogReloadSprites;
-}
-
-QCheckBox* MainWindow::GetCheckboxEmulation()
-{
-    return emulationBox;
 }
 
 void MainWindow::OnCurrentIndexChanged(int arg)
@@ -594,13 +592,5 @@ void MainWindow::OnSetupCacheSettingsForPacker()
     else
     {
         spritesPacker->ClearCacheTool();
-    }
-}
-
-void MainWindow::OnDocumentChanged(Document* doc)
-{
-    if (nullptr != doc)
-    {
-        doc->SetEmulationMode(emulationBox->isChecked());
     }
 }

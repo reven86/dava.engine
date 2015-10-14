@@ -63,8 +63,13 @@ public slots:
     void SetSelectedNodes(const SelectedNodes& selected, const SelectedNodes& deselected);
     void SetEmulationMode(bool emulationMode);
     void SetScale(float scale);
+    void SetDPR(qreal dpr);
 
 protected:
+    bool emulationMode = false;
+    float scale = 100.0f;
+    qreal dpr = 1.0f;
+
     Document *active;
     QList<Document*> documentList;
     QUndoGroup *undoGroup;

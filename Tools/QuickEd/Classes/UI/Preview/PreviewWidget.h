@@ -57,6 +57,7 @@ public:
     void OnSelectControlByMenu(const DAVA::Vector<ControlNode*>& nodes, const DAVA::Vector2& pos, ControlNode*& selectedNode);
 signals:
     void ScaleChanged(float scale);
+    void DPRChanged(qreal dpr);
 public slots:
     void OnDocumentChanged(Document* document);
     void OnDocumentActivated(Document* document);
@@ -80,7 +81,9 @@ private slots:
 
 private:
     void OnScaleByZoom(int scaleDelta);
+    void SetDPR(qreal dpr);
 
+    qreal dpr = 1.0f;
     Document* document = nullptr;
     DavaGLWidget* davaGLWidget = nullptr;
     ScrollAreaController* scrollAreaController = nullptr;

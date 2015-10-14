@@ -46,9 +46,9 @@ using namespace DAVA;
 
 namespace
 {
-const Vector2 PIVOT_CONTROL_SIZE(20.0f, 20.0f);
-const Vector2 FRAME_RECT_SIZE(15.0f, 15.0f);
-const Vector2 ROTATE_CONTROL_SIZE(20.0f, 20.0f);
+const Vector2 PIVOT_CONTROL_SIZE(10.0f, 10.0f);
+const Vector2 FRAME_RECT_SIZE(7.5f, 7.5f);
+const Vector2 ROTATE_CONTROL_SIZE(10.0f, 10.0f);
 const Array<HUDAreaInfo::eArea, 2> AreasToHide = {{HUDAreaInfo::PIVOT_POINT_AREA, HUDAreaInfo::ROTATE_AREA}};
 }
 
@@ -334,6 +334,7 @@ HUDSystem::HUDSystem(EditorSystemsManager* parent)
     hudControl->SetName("hudControl");
     systemManager->SelectionChanged.Connect(this, &HUDSystem::OnSelectionChanged);
     systemManager->EmulationModeChangedSignal.Connect(this, &HUDSystem::OnEmulationModeChanged);
+    systemManager->DPRChanged.Connect(this, &HUDSystem::OnDPRChanged);
     systemManager->EditingRootControlsChanged.Connect(this, &HUDSystem::OnRootContolsChanged);
 }
 
@@ -456,6 +457,10 @@ void HUDSystem::OnEmulationModeChanged(bool emulationMode)
     {
         systemManager->GetRootControl()->AddControl(hudControl);
     }
+}
+
+void HUDSystem::OnDPRChanged(double dpr)
+{
 }
 
 void HUDSystem::ProcessCursor(const Vector2& pos, eSearchOrder searchOrder)

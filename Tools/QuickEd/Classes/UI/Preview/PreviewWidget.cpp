@@ -95,6 +95,8 @@ PreviewWidget::PreviewWidget(QWidget* parent)
     scaleCombo->lineEdit()->setMaxLength(6); //3 digits + whitespace + % ?
     scaleCombo->setInsertPolicy(QComboBox::NoInsert);
     UpdateScrollArea();
+    DPRChanged(davaGLWidget->GetGLWindow()->devicePixelRatio());
+    OnScaleByComboText();
 }
 
 DavaGLWidget *PreviewWidget::GetDavaGLWidget()
@@ -140,7 +142,6 @@ void PreviewWidget::OnDocumentChanged(Document* arg)
         DVASSERT(nullptr != root);
         scrollAreaController->GetBackgroundControl()->AddControl(root);
         scrollAreaController->SetNestedControl(scalableControl);
-        OnScaleByComboText();
     }
     else
     {
@@ -172,7 +173,7 @@ void PreviewWidget::OnDocumentDeactivated(Document* document)
 
 void PreviewWidget::OnMonitorChanged()
 {
-    OnScaleByComboText();
+    SetDPR(davaGLWidget->GetGLWindow()->devicePixelRatio());
 }
 
 void PreviewWidget::UpdateScrollArea()
@@ -191,11 +192,6 @@ void PreviewWidget::OnPositionChanged(const QPoint& position)
 {
     horizontalScrollBar->setSliderPosition(position.x());
     verticalScrollBar->setSliderPosition(position.y());
-}
-
-void PreviewWidget::OnScaleByZoom(int scaleDelta)
-{
-    //TODO: implement this method
 }
 
 void PreviewWidget::OnScaleByComboIndex(int index)
@@ -254,4 +250,18 @@ void PreviewWidget::OnHScrollbarMoved(int hPosition)
     QPoint canvasPosition = scrollAreaController->GetPosition();
     canvasPosition.setX(hPosition);
     scrollAreaController->SetPosition(canvasPosition);
+}
+
+void PreviewWidget::OnScaleByZoom(int scaleDelta)
+{
+    //TODO: implement this method
+}
+
+void PreviewWidget::SetDPR(qreal arg)
+{
+    if (dpr != arg)
+    {
+        dpr = arg;
+        DPRChanged(dpr);
+    }
 }

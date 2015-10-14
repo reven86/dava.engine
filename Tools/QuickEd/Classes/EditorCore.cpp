@@ -73,11 +73,7 @@ EditorCore::EditorCore(QObject *parent)
     connect(mainWindow.get(), &MainWindow::SaveDocument, this, static_cast<void (EditorCore::*)(int)>(&EditorCore::SaveDocument));
     connect(mainWindow.get(), &MainWindow::RtlChanged, this, &EditorCore::OnRtlChanged);
     connect(mainWindow.get(), &MainWindow::GlobalStyleClassesChanged, this, &EditorCore::OnGlobalStyleClassesChanged);
-
-    QCheckBox* emulationBox = mainWindow->GetCheckboxEmulation();
-    connect(emulationBox, &QCheckBox::clicked, documentGroup, &DocumentGroup::SetEmulationMode);
-
-    connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow.get(), &MainWindow::OnDocumentChanged);
+    connect(mainWindow.get(), &MainWindow::EmulationModeChanbed, documentGroup, &DocumentGroup::SetEmulationMode);
 
     connect(documentGroup, &DocumentGroup::ActiveDocumentChanged, mainWindow->libraryWidget, &LibraryWidget::OnDocumentChanged);
 
@@ -96,6 +92,7 @@ EditorCore::EditorCore(QObject *parent)
 
     connect(documentGroup, &DocumentGroup::CanvasSizeChanged, scrollAreaController, &ScrollAreaController::UpdateCanvasContentSize);
     connect(previewWidget, &PreviewWidget::ScaleChanged, documentGroup, &DocumentGroup::SetScale);
+    connect(previewWidget, &PreviewWidget::DPRChanged, documentGroup, &DocumentGroup::SetDPR);
     connect(project->GetEditorLocalizationSystem(), &EditorLocalizationSystem::LocaleChanged, this, &EditorCore::UpdateLanguage);
 
     qApp->installEventFilter(this);

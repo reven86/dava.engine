@@ -149,6 +149,11 @@ void Document::SetEmulationMode(bool arg)
     systemManager.SetEmulationMode(arg);
 }
 
+void Document::SetDPR(double arg)
+{
+    systemManager.DPRChanged.Emit(std::move(arg));
+}
+
 void Document::RefreshAllControlProperties()
 {
     package->GetPackageControlsNode()->RefreshControlProperties();

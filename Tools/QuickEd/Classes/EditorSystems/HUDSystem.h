@@ -69,6 +69,7 @@ private:
     void OnRootContolsChanged(const EditorSystemsManager::SortedPackageBaseNodeSet& rootControls);
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void OnEmulationModeChanged(bool emulationMode);
+    void OnDPRChanged(double dpr);
 
     void ProcessCursor(const DAVA::Vector2& pos, eSearchOrder searchOrder = SEARCH_FORWARD);
     HUDAreaInfo GetControlArea(const DAVA::Vector2& pos, eSearchOrder searchOrder) const;
