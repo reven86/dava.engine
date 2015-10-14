@@ -148,13 +148,13 @@ EditorSystemsManager::EditorSystemsManager(PackageNode* _package)
     rootControl->AddControl(scalableControl.get());
     scalableControl->SetName("scalableContent");
 
+    SelectionChanged.Connect(this, &EditorSystemsManager::OnSelectionChanged);
+
     systems.emplace_back(new CanvasSystem(this));
     systems.emplace_back(new SelectionSystem(this));
     systems.emplace_back(new HUDSystem(this));
     systems.emplace_back(new CursorSystem(this));
     systems.emplace_back(new ::TransformSystem(this));
-
-    SelectionChanged.Connect(this, &EditorSystemsManager::OnSelectionChanged);
 
     package->AddListener(this);
 }
