@@ -1,3 +1,5 @@
+include (CMake-common)
+
 macro(define_ngt_pathes ngt_root)
     get_filename_component( NGT_ROOT ${ngt_root} ABSOLUTE )
     set                   ( NGT_SRC_ROOT "${NGT_ROOT}/src/core/")
@@ -29,4 +31,5 @@ endmacro()
 macro (append_ngt_plugin LIB_NAME)
     add_subdirectory(${${LIB_NAME}_PATH} "ngt/${LIB_NAME}")
     SET_PROPERTY( TARGET ${LIB_NAME} PROPERTY FOLDER "NGT Plugins")
+    append_deploy_dependency(${LIB_NAME})
 endmacro()

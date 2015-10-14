@@ -19,6 +19,7 @@ set( MACOS_ICO            ${CMAKE_CURRENT_LIST_DIR}/MacOSSpecific/icon.icns )
 set( ADDED_BINARY_DIR     ${QT5_PATH_WIN}/bin )
 set( NOT_DEPLOY_QT 1)
 
+append_deploy_dependency(${PROJECT_NAME})
 setup_main_executable()
 
 BW_GET_EXECUTABLE_DST_DIR(EXE_DIR)

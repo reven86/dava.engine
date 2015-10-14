@@ -57,6 +57,8 @@ SET_PROPERTY( TARGET DavaFramework  PROPERTY FOLDER "DavaCore")
 SET_PROPERTY( TARGET DavaTools  PROPERTY FOLDER "DavaCore")
 SET_PROPERTY( TARGET QtTools  PROPERTY FOLDER "DavaCore")
 
+append_deploy_dependency(${PROJECT_NAME})
+
 setup_main_dynlib()
 
 SET_PROPERTY( TARGET ${PROJECT_NAME}  PROPERTY FOLDER "ToolsPlugin")

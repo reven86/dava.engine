@@ -683,7 +683,7 @@ if ( QT5_FOUND )
 
     if     ( TEAMCITY_DEPLOY AND WIN32 )
         set ( PLUGINS_PATH .)
-    elseif ( TEAMCITY_DEPLOY AND APPLE )
+    elseif ( TEAMCITY_DEPLOY AND MACOS )
         set ( PLUGINS_PATH PlugIns )
     else()
         set( PLUGINS_PATH  ${QT5_LIB_PATH}/../plugins )
@@ -741,6 +741,8 @@ file_tree_check( "${DAVA_FOLDERS}" )
 
 if( DAVA_FOUND )
     list ( APPEND LIBRARIES ${DAVA_LIBRARY} )
+    set(LD_RUNPATHES "@executable_path @executable_path/../Resources @executable_path/../Frameworks")
+    set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_LD_RUNPATH_SEARCH_PATHS "${LD_RUNPATHES}")
 endif()
 
 if( DAVA_TOOLS_FOUND )
@@ -777,8 +779,10 @@ endif()
 
 if (WIN32)
     list(APPEND DYNAMIC_LIB_LIST fmodex.dll fmod_event.dll IMagickHelper.dll glew32.dll TextureConverter.dll )
+    set( DYNAMIC_LIBS_PATH ${DAVA_TOOLS_BIN_DIR})
 elseif (MACOS)
     list(APPEND DYNAMIC_LIB_LIST libfmodex.dylib libfmodevent.dylib libTextureConverter.dylib ${MACOS_DYLIB} )
+    set( DYNAMIC_LIBS_PATH ${DAVA_THIRD_PARTY_LIBRARIES_PATH} )
 endif()
 
 foreach ( ITEM ${DYNAMIC_LIB_LIST})
@@ -789,12 +793,28 @@ foreach ( ITEM ${DYNAMIC_LIB_LIST})
     else()
         ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD
                    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                   ${DAVA_TOOLS_BIN_DIR}/${ITEM}  ${TARGET_RESOURCE_DIR}/ )
+                   ${DYNAMIC_LIBS_PATH}/${ITEM}  ${TARGET_RESOURCE_DIR}/ )
     endif()
 endforeach()
 
+
 if (DEPLOY AND DEPLOY_DIR)
+    if (WIN32)
         qt_deploy()
+    elseif(MACOS)
+        add_custom_target ( QT_DEPLOY_${PROJECT_NAME} ALL
+            COMMAND ${QT5_PATH_MAC}/bin/macdeployqt
+                    ${DEPLOY_DIR}/${BW_BUNDLE_NAME}.app
+                    -always-overwrite
+                    -qmldir="${QML_SCAN_DIR}"
+        )
+
+        get_deploy_dependencies(DEPENDENCIES_LIST)
+        foreach(DEPENDENCY ${DEPENDENCIES_LIST})
+            message("Add dependency : " ${DEPENDENCY})
+            add_dependencies( QT_DEPLOY_${PROJECT_NAME} ${DEPENDENCY} )
+        endforeach()
+    endif()
 endif()
 
 endmacro ()
