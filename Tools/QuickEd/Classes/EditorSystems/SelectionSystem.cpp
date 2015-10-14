@@ -35,8 +35,89 @@
 #include "UI/UIEvent.h"
 #include "EditorSystems/EditorSystemsManager.h"
 #include "Model/PackageHierarchy/PackageNode.h"
+#include "Model/PackageHierarchy/PackageControlsNode.h"
 
 using namespace DAVA;
+
+namespace
+{
+PackageBaseNode* FindFirstChildWithControl(PackageBaseNode* node)
+{
+    DVASSERT(node != nullptr);
+    if (node->GetControl() != nullptr)
+    {
+        return node;
+    }
+    int count = node->GetCount();
+    for (int i = 0; i < count; ++i)
+    {
+        PackageBaseNode* child = FindFirstChildWithControl(node->Get(i));
+        if (nullptr != child)
+        {
+            return child;
+        }
+    }
+    return nullptr;
+}
+
+PackageBaseNode* FindNeighbour(PackageBaseNode* node)
+{
+    PackageBaseNode* parent = node->GetParent();
+    if (parent != nullptr)
+    {
+        int count = parent->GetCount();
+        for (int i = 0; i < count; ++i)
+        {
+            if (node == parent->Get(i))
+            {
+                if (i != count - 1)
+                {
+                    return parent->Get(i + 1);
+                }
+            }
+        }
+        if (parent->GetControl() != nullptr)
+        {
+            return FindNeighbour(parent);
+        }
+    }
+    return nullptr;
+}
+
+PackageBaseNode* GetNextControl(PackageBaseNode* node)
+{
+    DVASSERT(node != nullptr);
+    if (node->GetCount() > 0)
+    {
+        PackageBaseNode* child = FindFirstChildWithControl(node->Get(0));
+        if (nullptr != child)
+        {
+            return child;
+        }
+    }
+
+    //no child with controls
+    PackageBaseNode* neighbour = FindNeighbour(node);
+    if (nullptr != neighbour)
+    {
+        if (neighbour->GetControl() != nullptr)
+        {
+            return neighbour;
+        }
+        PackageBaseNode* child = FindFirstChildWithControl(neighbour);
+        if (nullptr != child)
+        {
+            return child;
+        }
+    }
+    while (node->GetParent() != nullptr && node->GetParent()->GetControl())
+    {
+        node = node->GetParent();
+    }
+    DVASSERT(node->GetParent() != nullptr)
+    return node->GetParent()->Get(0);
+}
+} //unnamed namespace
 
 SelectionSystem::SelectionSystem(EditorSystemsManager* parent)
     : BaseEditorSystem(parent)
@@ -84,8 +165,19 @@ bool SelectionSystem::OnInput(UIEvent* currentInput)
     {
         if (currentInput->tid == DVKEY_TAB)
         {
-            SetSelection(SelectedNodes(), selectionContainer.selectedNodes);
-            //TODO: select next control
+            PackageBaseNode* nextNode;
+            if (selectionContainer.selectedNodes.empty())
+            {
+                PackageControlsNode* controlsNode = systemManager->GetPackage()->GetPackageControlsNode();
+                nextNode = GetNextControl(dynamic_cast<PackageBaseNode*>(controlsNode));
+            }
+            else
+            {
+                nextNode = GetNextControl(*selectionContainer.selectedNodes.rbegin());
+            }
+            SelectedNodes newSelectedNodes;
+            newSelectedNodes.insert(nextNode);
+            SetSelection(newSelectedNodes, selectionContainer.selectedNodes);
             return true;
         }
     }
