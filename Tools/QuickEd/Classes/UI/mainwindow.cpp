@@ -103,7 +103,6 @@ MainWindow::MainWindow(QWidget *parent)
     menuTools->setEnabled(false);
     toolBarPlugins->setEnabled(false);
 
-    EmulationModeChanbed(emulationBox->isChecked());
     connect(emulationBox, &QCheckBox::toggled, this, &MainWindow::EmulationModeChanbed);
 }
 
@@ -218,6 +217,11 @@ void MainWindow::OnCleanChanged(int index, bool val)
     {
         actionSaveDocument->setEnabled(tabState->isModified);
     }
+}
+
+bool MainWindow::IsInEmulationMode() const
+{
+    return emulationBox->isChecked();
 }
 
 void MainWindow::OnOpenFontManager()

@@ -95,8 +95,6 @@ PreviewWidget::PreviewWidget(QWidget* parent)
     scaleCombo->lineEdit()->setMaxLength(6); //3 digits + whitespace + % ?
     scaleCombo->setInsertPolicy(QComboBox::NoInsert);
     UpdateScrollArea();
-    DPRChanged(davaGLWidget->GetGLWindow()->devicePixelRatio());
-    OnScaleByComboText();
 }
 
 DavaGLWidget *PreviewWidget::GetDavaGLWidget()
@@ -107,6 +105,31 @@ DavaGLWidget *PreviewWidget::GetDavaGLWidget()
 ScrollAreaController* PreviewWidget::GetScrollAreaController()
 {
     return scrollAreaController;
+}
+
+float PreviewWidget::GetScale() const
+{
+    // Firstly verify whether the value is already set.
+    QString curTextValue = scaleCombo->currentText().trimmed();
+    int scaleValue = 0;
+    if (curTextValue.endsWith(" %"))
+    {
+        int endCharPos = curTextValue.lastIndexOf(" %");
+        QString remainderNumber = curTextValue.left(endCharPos);
+        scaleValue = remainderNumber.toInt();
+    }
+    else
+    {
+        // Try to parse the value.
+        scaleValue = curTextValue.toFloat();
+    }
+    scaleValue *= davaGLWidget->devicePixelRatio();
+    return scaleValue;
+}
+
+qreal PreviewWidget::GetDPR() const
+{
+    return davaGLWidget->GetGLWindow()->devicePixelRatio();
 }
 
 void PreviewWidget::OnSelectControlByMenu(const Vector<ControlNode*>& nodesUnderPoint, const Vector2& point, ControlNode*& selectedNode)
@@ -204,22 +227,8 @@ void PreviewWidget::OnScaleByComboIndex(int index)
 
 void PreviewWidget::OnScaleByComboText()
 {
-	// Firstly verify whether the value is already set.
-	QString curTextValue = scaleCombo->currentText().trimmed();
-	int scaleValue = 0;
-	if (curTextValue.endsWith(" %"))
-	{
-		int endCharPos = curTextValue.lastIndexOf(" %");
-		QString remainderNumber = curTextValue.left(endCharPos);
-		scaleValue = remainderNumber.toInt();
-	}
-	else
-	{
-		// Try to parse the value.
-		scaleValue = curTextValue.toFloat();
-	}
-    scaleValue *= davaGLWidget->devicePixelRatio();
-    emit ScaleChanged(scaleValue);
+    float scale = GetScale();
+    emit ScaleChanged(scale);
 }
 
 void PreviewWidget::OnZoomInRequested()

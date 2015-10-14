@@ -40,27 +40,46 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using namespace DAVA;
 
-class ControlContainer : public UIControl
+class HUDSystem::ControlContainer : public UIControl
 {
 public:
     explicit ControlContainer(const HUDAreaInfo::eArea area);
 
     HUDAreaInfo::eArea GetArea() const;
     virtual void InitFromGD(const UIGeometricData& gd_) = 0;
+    void SetDPR(double arg);
 
 protected:
     const HUDAreaInfo::eArea area = HUDAreaInfo::NO_AREA;
+    double dpr = 1.0f;
 };
+
+HUDSystem::ControlContainer::ControlContainer(const HUDAreaInfo::eArea area_)
+    : UIControl()
+    , area(area_)
+{
+}
+
+HUDAreaInfo::eArea HUDSystem::ControlContainer::GetArea() const
+{
+    return area;
+}
+
+void HUDSystem::ControlContainer::SetDPR(double arg)
+{
+    dpr = arg;
+}
 
 namespace
 {
 const Vector2 PIVOT_CONTROL_SIZE(10.0f, 10.0f);
 const Vector2 FRAME_RECT_SIZE(7.5f, 7.5f);
 const Vector2 ROTATE_CONTROL_SIZE(10.0f, 10.0f);
+const float32 LINE_WIDTH = 0.5f;
 const Array<HUDAreaInfo::eArea, 2> AreasToHide = {{HUDAreaInfo::PIVOT_POINT_AREA, HUDAreaInfo::ROTATE_AREA}};
 }
 
-class SelectionRect : public UIControl
+class SelectionRect : public HUDSystem::ControlContainer
 {
 public:
     enum
@@ -72,7 +91,7 @@ public:
         BORDERS_COUNT
     };
     explicit SelectionRect()
-        : UIControl()
+        : ControlContainer(HUDAreaInfo::NO_AREA)
     {
         SetName("Selection Rect");
         for (uint32 i = 0; i < BORDERS_COUNT; ++i)
@@ -86,22 +105,29 @@ public:
             borders.emplace_back(control, DestroyControl);
         }
     }
-
-private:
-    void Draw(const UIGeometricData& geometricData) override
+    void InitFromGD(const UIGeometricData& geometricData) override
     {
         const Rect& rect = geometricData.GetUnrotatedRect();
         SetAbsoluteRect(rect);
         for (uint32 i = 0; i < BORDERS_COUNT; ++i)
         {
-            if (firstInit)
-            {
-                AddControl(borders[i].get());
-            }
             Rect borderRect = CreateFrameBorderRect(i, rect);
             borders[i]->SetAbsoluteRect(borderRect);
         }
-        firstInit = false;
+    }
+
+private:
+    void Draw(const UIGeometricData& geometricData) override
+    {
+        if (firstInit)
+        {
+            for (uint32 i = 0; i < BORDERS_COUNT; ++i)
+            {
+                AddControl(borders[i].get());
+            }
+            firstInit = false;
+        }
+        InitFromGD(geometricData);
         UIControl::Draw(geometricData);
     }
 
@@ -114,13 +140,13 @@ private:
         switch (border)
         {
         case BORDER_TOP:
-            return Rect(frameRect.x, frameRect.y, frameRect.dx, 1.0f);
+            return Rect(frameRect.x, frameRect.y, frameRect.dx, LINE_WIDTH * dpr);
         case BORDER_BOTTOM:
-            return Rect(frameRect.x, frameRect.y + frameRect.dy, frameRect.dx, 1.0f);
+            return Rect(frameRect.x, frameRect.y + frameRect.dy, frameRect.dx, LINE_WIDTH * dpr);
         case BORDER_LEFT:
-            return Rect(frameRect.x, frameRect.y, 1.0f, frameRect.dy);
+            return Rect(frameRect.x, frameRect.y, LINE_WIDTH * dpr, frameRect.dy);
         case BORDER_RIGHT:
-            return Rect(frameRect.x + frameRect.dx, frameRect.y, 1.0f, frameRect.dy);
+            return Rect(frameRect.x + frameRect.dx, frameRect.y, LINE_WIDTH * dpr, frameRect.dy);
         default:
             DVASSERT("!impossible value for frame control position");
             return Rect();
@@ -130,18 +156,7 @@ private:
     Vector<ControlPtr<UIControl>> borders;
 };
 
-ControlContainer::ControlContainer(const HUDAreaInfo::eArea area_)
-    : UIControl()
-    , area(area_)
-{
-}
-
-HUDAreaInfo::eArea ControlContainer::GetArea() const
-{
-    return area;
-}
-
-class HUDContainer : public ControlContainer
+class HUDContainer : public HUDSystem::ControlContainer
 {
 public:
     explicit HUDContainer(UIControl* container)
@@ -179,7 +194,7 @@ private:
     Vector<ControlContainer*> childs;
 };
 
-class FrameControl : public ControlContainer
+class FrameControl : public HUDSystem::ControlContainer
 {
 public:
     enum
@@ -226,13 +241,13 @@ private:
         switch (border)
         {
         case BORDER_TOP:
-            return Rect(frameRect.x, frameRect.y, frameRect.dx, 1.0f);
+            return Rect(frameRect.x, frameRect.y, frameRect.dx, LINE_WIDTH * dpr);
         case BORDER_BOTTOM:
-            return Rect(frameRect.x, frameRect.y + frameRect.dy, frameRect.dx, 1.0f);
+            return Rect(frameRect.x, frameRect.y + frameRect.dy, frameRect.dx, LINE_WIDTH * dpr);
         case BORDER_LEFT:
-            return Rect(frameRect.x, frameRect.y, 1.0f, frameRect.dy);
+            return Rect(frameRect.x, frameRect.y, LINE_WIDTH * dpr, frameRect.dy);
         case BORDER_RIGHT:
-            return Rect(frameRect.x + frameRect.dx, frameRect.y, 1.0f, frameRect.dy);
+            return Rect(frameRect.x + frameRect.dx, frameRect.y, LINE_WIDTH * dpr, frameRect.dy);
         default:
             DVASSERT("!impossible value for frame control position");
             return Rect();
@@ -242,7 +257,7 @@ private:
     Vector<ControlPtr<UIControl>> borders;
 };
 
-class FrameRectControl : public ControlContainer
+class FrameRectControl : public HUDSystem::ControlContainer
 {
 public:
     explicit FrameRectControl(const HUDAreaInfo::eArea area_)
@@ -256,7 +271,7 @@ public:
 private:
     void InitFromGD(const UIGeometricData& geometricData) override
     {
-        Rect rect(Vector2(), FRAME_RECT_SIZE);
+        Rect rect(Vector2(), FRAME_RECT_SIZE * dpr);
         rect.SetCenter(GetPos(geometricData));
         SetAbsoluteRect(rect);
     }
@@ -290,7 +305,7 @@ private:
     }
 };
 
-class PivotPointControl : public ControlContainer
+class PivotPointControl : public HUDSystem::ControlContainer
 {
 public:
     explicit PivotPointControl()
@@ -304,14 +319,14 @@ public:
 private:
     void InitFromGD(const UIGeometricData& geometricData) override
     {
-        Rect rect(Vector2(), PIVOT_CONTROL_SIZE);
+        Rect rect(Vector2(), PIVOT_CONTROL_SIZE * dpr);
         const Rect& controlRect = geometricData.GetUnrotatedRect();
         rect.SetCenter(controlRect.GetPosition() + geometricData.pivotPoint * geometricData.scale);
         SetAbsoluteRect(rect);
     }
 };
 
-class RotateControl : public ControlContainer
+class RotateControl : public HUDSystem::ControlContainer
 {
 public:
     explicit RotateControl()
@@ -325,14 +340,14 @@ public:
 private:
     void InitFromGD(const UIGeometricData& geometricData) override
     {
-        Rect rect(Vector2(), ROTATE_CONTROL_SIZE);
+        Rect rect(Vector2(), ROTATE_CONTROL_SIZE * dpr);
         Rect controlRect = geometricData.GetUnrotatedRect();
         rect.SetCenter(Vector2(controlRect.GetPosition().x + controlRect.dx / 2.0f, controlRect.GetPosition().y - 20));
         SetAbsoluteRect(rect);
     }
 };
 
-ControlContainer* CreateControlContainer(HUDAreaInfo::eArea area)
+HUDSystem::ControlContainer* CreateControlContainer(HUDAreaInfo::eArea area)
 {
     switch (area)
     {
@@ -365,7 +380,7 @@ struct HUDSystem::HUD
     ControlNode* node = nullptr;
     UIControl* control = nullptr;
     ControlPtr<DAVA::UIControl> container;
-    Map<HUDAreaInfo::eArea, ControlPtr<DAVA::UIControl>> hudControls;
+    Map<HUDAreaInfo::eArea, ControlPtr<ControlContainer>> hudControls;
 };
 
 HUDSystem::HUD::HUD(ControlNode* node_, UIControl* hudControl)
@@ -465,6 +480,10 @@ void HUDSystem::OnSelectionChanged(const SelectedNodes& selected, const Selected
                 hudMap.emplace(std::piecewise_construct,
                                std::forward_as_tuple(controlNode),
                                std::forward_as_tuple(new HUD(controlNode, hudControl.get())));
+                for (auto& hudControlsIter : hudMap.at(controlNode)->hudControls)
+                {
+                    hudControlsIter.second->SetDPR(dpr);
+                }
                 sortedControlList.insert(controlNode);
             }
         }
@@ -508,12 +527,12 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
             if (size.x < 0.0f)
             {
                 point.x += size.x;
-                size.x *= -1;
+                size.x *= -1.0f;
             }
             if (size.y <= 0.0f)
             {
                 point.y += size.y;
-                size.y *= -1;
+                size.y *= -1.0f;
             }
             selectionRectControl->SetAbsoluteRect(Rect(point, size));
             systemManager->SelectionRectChanged.Emit(selectionRectControl->GetAbsoluteRect());
@@ -581,8 +600,17 @@ void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLineInfo>& magnetLines)
     }
 }
 
-void HUDSystem::OnDPRChanged(double dpr)
+void HUDSystem::OnDPRChanged(double arg)
 {
+    dpr = arg;
+    selectionRectControl->SetDPR(dpr);
+    for (auto& hudMapIter : hudMap)
+    {
+        for (auto& hudControlsIter : hudMapIter.second->hudControls)
+        {
+            hudControlsIter.second->SetDPR(dpr);
+        }
+    }
 }
 
 void HUDSystem::ProcessCursor(const Vector2& pos, eSearchOrder searchOrder)

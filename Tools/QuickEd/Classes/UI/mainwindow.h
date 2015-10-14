@@ -71,6 +71,7 @@ public:
     void OnProjectOpened(const DAVA::ResultList &resultList, QString projectPath);
     int AddTab(const DAVA::FilePath &scenePath);
     void OnCleanChanged(int index, bool val);
+    bool IsInEmulationMode() const;
     DavaGLWidget* GetGLWidget();
     DialogReloadSprites* GetDialogReloadSprites();
 

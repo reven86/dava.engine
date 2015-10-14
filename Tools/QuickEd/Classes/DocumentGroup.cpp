@@ -90,9 +90,6 @@ void DocumentGroup::SetActiveDocument(Document* document)
     
     active = document;
 
-    active->SetScale(scale);
-    active->SetEmulationMode(emulationMode);
-
     if (nullptr == active)
     {
         undoGroup->setActiveStack(nullptr);
@@ -103,6 +100,10 @@ void DocumentGroup::SetActiveDocument(Document* document)
         connect(active, &Document::CanvasSizeChanged, this, &DocumentGroup::CanvasSizeChanged);
 
         undoGroup->setActiveStack(active->GetUndoStack());
+
+        active->SetScale(scale);
+        active->SetEmulationMode(emulationMode);
+        active->SetDPR(dpr);
     }
     emit ActiveDocumentChanged(document);
     if (nullptr != active)
@@ -140,7 +141,7 @@ void DocumentGroup::SetScale(float arg)
 
 void DocumentGroup::SetDPR(qreal arg)
 {
-    dpr = dpr;
+    dpr = arg;
     if (nullptr != active)
     {
         active->SetDPR(static_cast<double>(dpr));

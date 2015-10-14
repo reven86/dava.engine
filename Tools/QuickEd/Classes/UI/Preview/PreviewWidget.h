@@ -53,7 +53,8 @@ public:
     ~PreviewWidget() = default;
     DavaGLWidget *GetDavaGLWidget();
     ScrollAreaController* GetScrollAreaController();
-
+    float GetScale() const;
+    qreal GetDPR() const;
     void OnSelectControlByMenu(const DAVA::Vector<ControlNode*>& nodes, const DAVA::Vector2& pos, ControlNode*& selectedNode);
 signals:
     void ScaleChanged(float scale);

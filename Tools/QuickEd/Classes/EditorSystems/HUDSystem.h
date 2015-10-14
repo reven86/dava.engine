@@ -41,6 +41,8 @@ public:
     HUDSystem(EditorSystemsManager* parent);
     ~HUDSystem() override;
 
+    class ControlContainer;
+
     void OnActivated() override;
     void OnDeactivated() override;
 
@@ -78,11 +80,12 @@ private:
     bool canDrawRect = false; //selection rect state
 
     DAVA::Map<ControlNode*, std::unique_ptr<HUD>> hudMap;
-    ControlPtr<DAVA::UIControl> selectionRectControl;
+    ControlPtr<ControlContainer> selectionRectControl;
     DAVA::Vector<ControlPtr<DAVA::UIControl>> magnetControls;
     EditorSystemsManager::SortedPackageBaseNodeSet sortedControlList;
     bool dragRequested = false;
     bool editingEnabled = false;
+    double dpr = 1.0f;
     SelectionContainer selectionContainer;
 };
 

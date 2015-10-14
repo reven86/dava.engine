@@ -95,6 +95,10 @@ EditorCore::EditorCore(QObject *parent)
     connect(previewWidget, &PreviewWidget::DPRChanged, documentGroup, &DocumentGroup::SetDPR);
     connect(project->GetEditorLocalizationSystem(), &EditorLocalizationSystem::LocaleChanged, this, &EditorCore::UpdateLanguage);
 
+    documentGroup->SetEmulationMode(mainWindow->IsInEmulationMode());
+    documentGroup->SetScale(previewWidget->GetScale());
+    documentGroup->SetDPR(previewWidget->GetDPR());
+
     qApp->installEventFilter(this);
 }
 
