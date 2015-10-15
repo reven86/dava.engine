@@ -26,7 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "DAVAEngine.h"
+#include "Base/BaseTypes.h"
 
 #ifndef __DAVAENGINE_APPLE__
 
