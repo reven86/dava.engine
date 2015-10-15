@@ -713,6 +713,7 @@ CommandBufferGLES2_t::Execute()
     Handle      fp_const[MAX_CONST_BUFFER_COUNT];
     const void* fp_const_data[MAX_CONST_BUFFER_COUNT];
     Handle      cur_vb          = InvalidHandle;
+    Handle      cur_ib          = InvalidHandle;
     bool        vdecl_pending   = true;
     IndexSize   idx_size        = INDEX_SIZE_16BIT;
     unsigned    tex_unit_0      = 0;
@@ -875,8 +876,14 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
             
             case GLES2__SET_INDICES :
             {
-                idx_size = IndexBufferGLES2::SetToRHI((Handle)(arg[0]));
-                StatSet::IncStat(stat_SET_IB, 1);
+                Handle  ib = (Handle)(arg[0]);
+                
+                if( ib != cur_ib )
+                {
+                    idx_size = IndexBufferGLES2::SetToRHI(ib);
+                    StatSet::IncStat(stat_SET_IB, 1);
+                    cur_ib = ib;
+                }
 
                 c += 1;
             }   break;
@@ -913,7 +920,7 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
                     cur_vdecl       = vdecl;
                     cur_base_vert   = 0;
                     last_ps         = InvalidHandle;
-                    cur_vb          = InvalidHandle;
+//                    cur_vb          = InvalidHandle;
                 }
 
                 tex_unit_0 = PipelineStateGLES2::VertexSamplerCount( ps );
