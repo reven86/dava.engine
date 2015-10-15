@@ -175,16 +175,16 @@ extern void FrameworkWillTerminate();
 			break;
 
 		case NPCocoaEventMouseDown:
-			[self processEvent:DAVA::UIEvent::PHASE_BEGAN touch:event];
-			break;
+            [self processEvent:DAVA::UIEvent::Phase::BEGAN touch:event];
+            break;
 
 		case NPCocoaEventMouseUp:
-			[self processEvent:DAVA::UIEvent::PHASE_ENDED touch:event];
-			break;
+            [self processEvent:DAVA::UIEvent::Phase::ENDED touch:event];
+            break;
 
 		case NPCocoaEventMouseMoved:
-			[self processEvent:DAVA::UIEvent::PHASE_MOVE touch:event];
-			break;
+            [self processEvent:DAVA::UIEvent::Phase::MOVE touch:event];
+            break;
 
 		case NPCocoaEventMouseEntered:
 			break;
@@ -193,8 +193,8 @@ extern void FrameworkWillTerminate();
 			break;
 
 		case NPCocoaEventMouseDragged:
-			[self processEvent:DAVA::UIEvent::PHASE_DRAG touch:event];
-			break;
+            [self processEvent:DAVA::UIEvent::Phase::DRAG touch:event];
+            break;
 
 		case NPCocoaEventKeyDown:
 			[self keyDown:event];
@@ -219,14 +219,14 @@ extern void FrameworkWillTerminate();
 	}
 }
 
--(void) moveTouchesToVector:(NPCocoaEvent*)curEvent touchPhase:(int)touchPhase outTouches:(DAVA::Vector<DAVA::UIEvent>*)outTouches
+- (void)moveTouchesToVector:(NPCocoaEvent*)curEvent touchPhase:(DAVA::UIEvent::Phase)touchPhase outTouches:(DAVA::Vector<DAVA::UIEvent>*)outTouches
 {
 	int button = 0;
 	button = curEvent->data.mouse.buttonNumber + 1;
 	time_t timestamp = time(NULL);
 
-	if (touchPhase == DAVA::UIEvent::PHASE_DRAG)
-	{
+    if (touchPhase == DAVA::UIEvent::Phase::DRAG)
+    {
 		for(DAVA::Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
 		{
 			NSPoint p;
@@ -304,8 +304,8 @@ extern void FrameworkWillTerminate();
 		outTouches->push_back(*it);
 	}
 
-	if(touchPhase == DAVA::UIEvent::PHASE_ENDED || touchPhase == DAVA::UIEvent::PHASE_MOVE)
-	{
+    if (touchPhase == DAVA::UIEvent::Phase::ENDED || touchPhase == DAVA::UIEvent::Phase::MOVE)
+    {
 		for(DAVA::Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
 		{
 			if(it->tid == button)
@@ -317,7 +317,7 @@ extern void FrameworkWillTerminate();
 	}
 }
 
--(void) processEvent:(int)touchPhase touch:(NPCocoaEvent*)touch
+- (void)processEvent:(DAVA::UIEvent::Phase)touchPhase touch:(NPCocoaEvent*)touch
 {
 	DAVA::Vector<DAVA::UIEvent> touches;
 	[self moveTouchesToVector:touch touchPhase:touchPhase outTouches:&touches];
@@ -341,11 +341,11 @@ extern void FrameworkWillTerminate();
     ev.keyChar = c;
     if (c == 0)
     {
-        ev.phase = DAVA::UIEvent::PHASE_KEY_DOWN;
+        ev.phase = DAVA::UIEvent::Phase::KEY_DOWN;
     }
     else
     {
-        ev.phase = DAVA::UIEvent::PHASE_CHAR;
+        ev.phase = DAVA::UIEvent::Phase::CHAR;
     }
     ev.timestamp = timestamp;
     ev.tapCount = 1;
@@ -374,11 +374,11 @@ extern void FrameworkWillTerminate();
     ev.keyChar = c;
     if (c == 0)
     {
-        ev.phase = DAVA::UIEvent::PHASE_KEY_UP;
+        ev.phase = DAVA::UIEvent::Phase::KEY_UP;
     }
     else
     {
-        ev.phase = DAVA::UIEvent::PHASE_CHAR;
+        ev.phase = DAVA::UIEvent::Phase::CHAR;
     }
     ev.timestamp = timestamp;
     ev.tapCount = 1;
@@ -403,14 +403,14 @@ extern void FrameworkWillTerminate();
 		NSAlternateKeyMask,
 		NSCommandKeyMask};
 
-	static DAVA::int32 keyCodes[] = {
-		DAVA::DVMACOS_CAPS_LOCK,
-		DAVA::DVMACOS_SHIFT,
-		DAVA::DVMACOS_CONTROL,
-		DAVA::DVMACOS_OPTION,
-		DAVA::DVMACOS_COMMAND};
+    static DAVA::int32 keyCodes[] = {
+    DAVA::DVKEY_CAPSLOCK,
+    DAVA::DVKEY_SHIFT,
+    DAVA::DVKEY_CTRL,
+    DAVA::DVKEY_ALT,
+    DAVA::DVKEY_LWIN};
 
-	for (int i = 0; i < 5; i++)
+    for (int i = 0; i < 5; i++)
 	{
 		if ((oldModifiersFlags & masks[i]) != (newModifiers & masks[i]))
 		{
