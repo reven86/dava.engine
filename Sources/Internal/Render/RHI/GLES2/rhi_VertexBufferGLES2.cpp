@@ -158,7 +158,9 @@ gles2_VertexBuffer_Create( const VertexBuffer::Descriptor& desc )
 
     if( vb->Create( desc ) )
     {
-        vb->UpdateCreationDesc( desc );
+        VertexBuffer::Descriptor creationDesc(desc);
+        creationDesc.initialData = nullptr;
+        vb->UpdateCreationDesc(creationDesc);
     }
     else
     {

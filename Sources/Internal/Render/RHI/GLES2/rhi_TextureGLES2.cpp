@@ -383,7 +383,9 @@ gles2_Texture_Create( const Texture::Descriptor& desc )
 
     if( tex->Create( desc ) )
     {
-        tex->UpdateCreationDesc( desc );
+        Texture::Descriptor creationDesc(desc);
+        Memset(creationDesc.initialData, 0, sizeof(creationDesc.initialData));
+        tex->UpdateCreationDesc(creationDesc);
     }
     else
     {
@@ -759,8 +761,8 @@ SetToRHI( Handle tex, unsigned unit_i, uint32 base_i )
 
     GL_CALL(glActiveTexture( GL_TEXTURE0+sampler_i ));
     GL_CALL(glBindTexture( target, self->uid ));
-//{SCOPED_NAMED_TIMING("gl-BindTexture");}
-    
+    //{SCOPED_NAMED_TIMING("gl-BindTexture");}
+
     if( sampler_i == 0 )
     {
         _GLES2_LastSetTex0       = self->uid;

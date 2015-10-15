@@ -703,7 +703,7 @@ CommandBufferGLES2_t::Command( uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3
 void        
 CommandBufferGLES2_t::Execute()
 {
-//SCOPED_NAMED_TIMING("gl.exec");
+    //SCOPED_NAMED_TIMING("gl.exec");
     Handle      cur_ps          = InvalidHandle;
     uint32      cur_vdecl       = VertexLayout::InvalidUID;
     uint32      cur_base_vert   = 0;
@@ -999,7 +999,7 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
 
             case GLES2__SET_FILLMODE :
             {
-                #if defined(__DAVAENGINE_WIN32__)
+                #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
                 glPolygonMode( GL_FRONT_AND_BACK, (FillMode(arg[0])==FILLMODE_WIREFRAME) ? GL_LINE : GL_FILL );
                 #endif
 
@@ -1071,7 +1071,7 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
 
             case GLES2__DRAW_PRIMITIVE :
             {
-//{SCOPED_NAMED_TIMING("gl.DP")}
+                //{SCOPED_NAMED_TIMING("gl.DP")}
                 unsigned    v_cnt   = unsigned(arg[1]);
                 int         mode    = int(arg[0]);
                 
@@ -1129,7 +1129,7 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
             
             case GLES2__DRAW_INDEXED_PRIMITIVE :
             {
-//{SCOPED_NAMED_TIMING("gl.DIP")}
+                //{SCOPED_NAMED_TIMING("gl.DIP")}
                 unsigned    v_cnt       = unsigned(arg[1]);
                 int         mode        = int(arg[0]);
                 uint32      firstVertex = uint32(arg[2]);
@@ -1528,7 +1528,8 @@ InitializeRenderThreadGLES2( uint32 frameCount )
 
         _GLES2_RenderThread = DAVA::Thread::Create(DAVA::Message(&_RenderFunc));
         _GLES2_RenderThread->SetName("RHI.gl-render");
-        _GLES2_RenderThread->Start();    
+        _GLES2_RenderThread->Start();
+        _GLES2_RenderThread->SetPriority(DAVA::Thread::PRIORITY_HIGH);
         _GLES2_RenderThredStartedSync.Wait();
     }
 }
