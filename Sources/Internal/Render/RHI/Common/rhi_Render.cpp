@@ -524,10 +524,9 @@ CopyTextureSet( HTextureSet tsh )
 void
 ReleaseTextureSet(HTextureSet tsh, bool forceImmediate)
 {
-    TextureSet_t*   ts  = TextureSetPool::Get( tsh );
-
-    if( ts )
+    if (tsh != InvalidHandle)
     {
+        TextureSet_t* ts = TextureSetPool::Get(tsh);
         if( --ts->refCount == 0 )
         {
             if (forceImmediate)
@@ -984,10 +983,9 @@ SCOPED_NAMED_TIMING("rhi.AddPackets");
 
         if( p->textureSet != pl->curTextureSet )
         {
-            TextureSet_t*   ts  = TextureSetPool::Get( p->textureSet );
-
-            if( ts )
+            if (p->textureSet != InvalidHandle)
             {
+                TextureSet_t* ts = TextureSetPool::Get(p->textureSet);
                 for( unsigned i=0; i!=ts->fragmentTextureCount; ++i )
                 {
                     rhi::CommandBuffer::SetFragmentTexture( cmdBuf, i, ts->fragmentTexture[i] );
