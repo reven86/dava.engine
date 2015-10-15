@@ -30,6 +30,8 @@
 
 #ifdef __DAVAENGINE_APPLE__
 
+#import <Foundation/NSProcessInfo.h>
+
 namespace DAVA
 {
 
