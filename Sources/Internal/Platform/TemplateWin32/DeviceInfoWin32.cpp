@@ -117,13 +117,6 @@ List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetStoragesList()
     return l;
 }
 
-int32 DeviceInfoPrivate::GetCpuCount()
-{
-    SYSTEM_INFO sysinfo;
-    GetSystemInfo(&sysinfo);
-    return sysinfo.dwNumberOfProcessors;
-}
-
 String DeviceInfoPrivate::GetUDID()
 {
     ULONG family = AF_INET;

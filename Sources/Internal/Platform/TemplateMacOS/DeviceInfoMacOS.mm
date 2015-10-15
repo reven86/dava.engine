@@ -170,11 +170,6 @@ void DeviceInfoPrivate::InitializeScreenInfo()
 	screenInfo.scale = 1;
 }
 
-int32 DeviceInfoPrivate::GetCpuCount()
-{
-    return (int32)[[NSProcessInfo processInfo] processorCount];
-}
-
 bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType type)
 {
     if (type == DeviceInfo::HID_POINTER_TYPE || type == DeviceInfo::HID_KEYBOARD_TYPE)

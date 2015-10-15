@@ -171,11 +171,6 @@ List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetStoragesList()
     return l;
 }
 
-int32 DeviceInfoPrivate::GetCpuCount()
-{
-    return sysconf(_SC_NPROCESSORS_CONF);
-}
-
 void DeviceInfoPrivate::InitializeScreenInfo()
 {
     CorePlatformAndroid *core = (CorePlatformAndroid *)Core::Instance();
