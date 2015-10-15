@@ -33,7 +33,7 @@
 namespace DAVA
 {
 
-int32 DeviceInfoPrivate::GetCpuCount()
+int32 GetCpuCount()
 {
     return (int32)[[NSProcessInfo processInfo] processorCount];
 }
