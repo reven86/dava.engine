@@ -117,10 +117,7 @@ public:
     inline void SetLightmap(const FilePath& filePath);
     inline void SetLightmapAndGenerateDensityMap(const FilePath& filePath);
     inline const FilePath& GetLightmapPath() const;
-    
-    inline void SetVegetationTexture(const FilePath& texture);
-    inline const FilePath& GetVegetationTexture() const;
-    
+
     inline void SetClusterLimit(const uint32& maxClusters);
     inline uint32 GetClusterLimit() const;
     
@@ -248,7 +245,6 @@ private:
     Vector<AbstractQuadTreeNode<VegetationSpatialData>*> visibleCells;
     
     FilePath heightmapPath;
-    FilePath albedoTexturePath;
     FilePath lightmapTexturePath;
     
     FilePath customGeometryPath;
@@ -296,7 +292,6 @@ public:
                          PROPERTY("scaleVariation", "Scale variation", GetScaleVariation, SetScaleVariation, I_SAVE | I_EDIT | I_VIEW)
                          PROPERTY("rotationVariation", "Rotation variation", GetRotationVariation, SetRotationVariation, I_SAVE | I_EDIT | I_VIEW)
                          PROPERTY("lightmap", "Lightmap", GetLightmapPath, SetLightmapAndGenerateDensityMap, I_SAVE | I_EDIT | I_VIEW)
-                         //PROPERTY("vegetationTexture", "Vegetation texture", GetVegetationTexture, SetVegetationTexture, I_SAVE | I_EDIT | I_VIEW)
                          PROPERTY("lodRanges", "Lod ranges", GetLodRange, SetLodRange, I_EDIT | I_VIEW)
                          PROPERTY("visibilityDistance", "Visibility distances", GetVisibilityDistance, SetVisibilityDistance, I_EDIT | I_VIEW)
                          PROPERTY("maxVisibleQuads", "Max visible quads", GetMaxVisibleQuads, SetMaxVisibleQuads, I_EDIT | I_VIEW)
@@ -424,26 +419,6 @@ inline void VegetationRenderObject::SetLightmapAndGenerateDensityMap(const FileP
     GenerateDensityMapFromTransparencyMask(filePath, densityMap);
     
     UpdateVegetationSetup();
-}
-
-inline void VegetationRenderObject::SetVegetationTexture(const FilePath& texturePath)
-{
-    albedoTexturePath = texturePath;
-    
-    if(vegetationGeometry != NULL)
-    {
-        KeyedArchive* props = new KeyedArchive();
-        props->SetString(NMaterialTextureName::TEXTURE_ALBEDO.c_str(), albedoTexturePath.GetStringValue());
-        
-        vegetationGeometry->OnVegetationPropertiesChanged(renderData->GetMaterial(), props);
-        
-        SafeRelease(props);
-    }
-}
-
-inline const FilePath& VegetationRenderObject::GetVegetationTexture() const
-{
-    return albedoTexturePath;
 }
 
 inline void VegetationRenderObject::SetClusterLimit(const uint32& maxClusters)
