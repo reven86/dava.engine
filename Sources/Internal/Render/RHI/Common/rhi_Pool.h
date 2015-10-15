@@ -208,28 +208,18 @@ ResourcePool<T,RT,DT,nr>::Free( Handle h )
 
 //------------------------------------------------------------------------------
 
-template <class T, ResourceType RT, typename DT, bool nr>
-inline T*
-ResourcePool<T,RT,DT,nr>::Get( Handle h )
-{
-    T*  object = 0;
+ template <class T, ResourceType RT, typename DT, bool nr>
+ inline T* ResourcePool<T, RT, DT, nr>::Get(Handle h)
+ {
+     DVASSERT(h != InvalidHandle);
+     DVASSERT(((h & HANDLE_TYPE_MASK) >> HANDLE_TYPE_SHIFT) == RT);
+     uint32 index = (h & HANDLE_INDEX_MASK) >> HANDLE_INDEX_SHIFT;
+     DVASSERT(index < ObjectCount);
+     Entry* e = Object + index;
+     DVASSERT(e->allocated);
+     DVASSERT(e->generation == ((h & HANDLE_GENERATION_MASK) >> HANDLE_GENERATION_SHIFT));
 
-    if( h != InvalidHandle )
-    {
-        uint32  type   = (h&HANDLE_TYPE_MASK) >> HANDLE_TYPE_SHIFT;
-        DVASSERT(type == RT);
-        uint32  index  = (h&HANDLE_INDEX_MASK)>>HANDLE_INDEX_SHIFT;
-        uint32  gen    = (h&HANDLE_GENERATION_MASK)>>HANDLE_GENERATION_SHIFT;
-        DVASSERT(index < ObjectCount);
-        Entry*  e     = Object + index;
-
-        DVASSERT(e->allocated);
-        DVASSERT(e->generation == gen);
-
-        object = &(e->object);
-    }
-
-    return object;
+     return &(e->object);
 }
 
 
