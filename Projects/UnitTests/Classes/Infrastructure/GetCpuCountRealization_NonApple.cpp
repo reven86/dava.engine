@@ -34,10 +34,10 @@ namespace DAVA
 {
 
 #ifdef __DAVAENGINE_ANDROID__
-    int32 GetCpuCount()
-    {
-        return sysconf(_SC_NPROCESSORS_CONF);
-    }
+int32 GetCpuCount()
+{
+    return sysconf(_SC_NPROCESSORS_CONF);
+}
 #endif
 
 #ifdef __DAVAENGINE_WINDOWS__
