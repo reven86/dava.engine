@@ -125,7 +125,7 @@ private:    // Event handlers
     void OnKeyDown(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ args);
     void OnKeyUp(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ args);
 
-    void DAVATouchEvent(UIEvent::eInputPhase phase, float32 x, float32 y, int32 id);
+    void DAVATouchEvent(UIEvent::eInputPhase phase, float32 x, float32 y, int32 id, UIEvent::PointerDeviceID deviceIndex);
     void PreStartAppSettings();
 
 private:
@@ -164,7 +164,7 @@ private:
 
     volatile bool quitFlag = false;
 
-    Vector<UIEvent> allTouches;
+    Vector<UIEvent> events;
 
     bool isMouseDetected = false;
     bool isTouchDetected = false;
@@ -181,7 +181,7 @@ private:
     DisplayMode currentMode = windowedMode;
     DisplayMode fullscreenMode = windowedMode;
 
-    bool isMouseCursorShown = false;
+    bool isMouseCursorShown = true;
     bool isCursorPinning = false;
     bool isRightButtonPressed = false;
     bool isLeftButtonPressed = false;

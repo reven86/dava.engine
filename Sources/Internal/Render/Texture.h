@@ -130,9 +130,8 @@ public:
 	
     static Texture * CreatePink(rhi::TextureType requestedType = rhi::TEXTURE_TYPE_2D, bool checkers = true);
 
-    static Texture * CreateFBO(uint32 width, uint32 height, PixelFormat format, rhi::TextureType requestedType = rhi::TEXTURE_TYPE_2D);
+    static Texture* CreateFBO(uint32 width, uint32 height, PixelFormat format, bool needDepth = false, rhi::TextureType requestedType = rhi::TEXTURE_TYPE_2D);
 
-    
     /**
         \brief Get texture from cache.
         If texture isn't in cache, returns 0
@@ -231,6 +230,7 @@ public:							// properties for fast access
 
 
     rhi::HTexture handle;
+    rhi::HTexture handleDepthStencil; //it's legacy and should be removed. (maybe together with CreateFBO method)
     rhi::HSamplerState samplerStateHandle;
     rhi::HTextureSet singleTextureSet;
     rhi::SamplerState::Descriptor::Sampler samplerState;
@@ -240,6 +240,7 @@ public:							// properties for fast access
 
 
     eGPUFamily loadedAsFile;
+
     TextureState state:2;
     uint32      textureType:2;
 
@@ -247,7 +248,8 @@ public:							// properties for fast access
     bool        isPink:1;
 
 
-    FastName		debugInfo;	
+    FastName		debugInfo;
+
     TextureDescriptor *texDescriptor;
 
     static Mutex textureMapMutex;

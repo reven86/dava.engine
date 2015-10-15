@@ -160,10 +160,11 @@ void PrivateMovieViewWinUAP::Play()
         if (!moviePlaying)
         {
             moviePlaying = true;
-            auto self{ shared_from_this() };
-            core->RunOnUIThread([this, self]() {
+            auto self{shared_from_this()};
+            core->RunOnUIThread([this, self]()
+                                {
                 nativeMovieView->Play();
-            });
+                                });
         }
     }
     else

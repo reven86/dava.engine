@@ -120,14 +120,22 @@ namespace DAVA
             material->PreBuildMaterial(PASS_FORWARD);
     }
 
+    void RenderHelper::InvalidateMaterials()
+    {
+        for (NMaterial*& material : materials)
+            material->InvalidateRenderVariants();
+    }
+
     RenderHelper::~RenderHelper()
     {
         for (int32 i = 0; i < DRAW_TYPE_COUNT; ++i)
             SafeRelease(materials[i]);
     }
 
-    void RenderHelper::PreparePacket(rhi::Packet & packet, NMaterial * material, const std::pair<uint32, uint32> & buffersCount, ColoredVertex ** vBufferDataPtr, uint16 ** iBufferDataPtr)
+    bool RenderHelper::PreparePacket(rhi::Packet& packet, NMaterial* material, const std::pair<uint32, uint32>& buffersCount, ColoredVertex** vBufferDataPtr, uint16** iBufferDataPtr)
     {
+        if (!material->PreBuildMaterial(PASS_FORWARD))
+            return false;
         material->BindParams(packet);
         packet.vertexStreamCount = 1;
         packet.vertexLayoutUID = coloredVertexLayoutUID;
@@ -135,6 +143,7 @@ namespace DAVA
         if (buffersCount.first)
         {
             DynamicBufferAllocator::AllocResultVB vb = DynamicBufferAllocator::AllocateVertexBuffer(sizeof(ColoredVertex), buffersCount.first);
+            DVASSERT(vb.allocatedVertices == buffersCount.first);
             *vBufferDataPtr = reinterpret_cast<ColoredVertex *>(vb.data);
             packet.vertexStream[0] = vb.buffer;
             packet.vertexCount = vb.allocatedVertices;
@@ -143,10 +152,13 @@ namespace DAVA
         if (buffersCount.second)
         {
             DynamicBufferAllocator::AllocResultIB ib = DynamicBufferAllocator::AllocateIndexBuffer(buffersCount.second);
+            DVASSERT(ib.allocatedindices == buffersCount.second);
             *iBufferDataPtr = ib.data;
             packet.indexBuffer = ib.buffer;
             packet.startIndex = ib.baseIndex;
         }
+
+        return true;
     }
 
     void RenderHelper::Present(rhi::HPacketList packetList, const Matrix4 * viewMatrix, const Matrix4 * projectionMatrix)
@@ -163,8 +175,12 @@ namespace DAVA
         Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_VIEW, viewMatrix, (pointer_size)viewMatrix);
         Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_PROJ, projectionMatrix, (pointer_size)projectionMatrix);
 
+        bool valid = true;
         for (int32 i = 0; i < DRAW_TYPE_COUNT; ++i)
-            PreparePacket(packet[i], materials[i], buffersElemCount[i], &vBufferPtr[i], &iBufferPtr[i]);
+            valid &= PreparePacket(packet[i], materials[i], buffersElemCount[i], &vBufferPtr[i], &iBufferPtr[i]);
+
+        if (!valid)
+            return;
 
         packet[DRAW_WIRE_DEPTH].primitiveType = packet[DRAW_WIRE_NO_DEPTH].primitiveType = rhi::PRIMITIVE_LINELIST;
         packet[DRAW_SOLID_DEPTH].primitiveType = packet[DRAW_SOLID_NO_DEPTH].primitiveType = rhi::PRIMITIVE_TRIANGLELIST;
@@ -229,7 +245,7 @@ namespace DAVA
 
                 case COMMAND_DRAW_CIRCLE:
                 { 
-                    const uint32 pointCount = *reinterpret_cast<const uint32 *>(command.params.data() + 11);
+                    const uint32 pointCount = (uint32)(command.params[11]);
                     const Vector3 center(command.params.data() + 4), direction(command.params.data() + 7);
                     const float32 radius = command.params[10];
                     FillCircleVBuffer(commandVBufferPtr, center, direction, radius, pointCount, nativePrimitiveColor);
@@ -337,7 +353,7 @@ namespace DAVA
 
             case COMMAND_DRAW_CIRCLE:
             {
-                vertexCount = *(reinterpret_cast<const uint32*>(&command.params[11]));
+                vertexCount = (uint32)(command.params[11]);
                 indexCount = isSolidDraw ? (vertexCount - 2) * 3 : vertexCount * 2;
             } break;
 
@@ -405,7 +421,7 @@ namespace DAVA
         QueueCommand(DrawCommand{ COMMAND_DRAW_CIRCLE, drawType, { color.r, color.g, color.b, color.a,
                                                                    center.x, center.y, center.z,
                                                                    direction.x, direction.y, direction.z,
-                                                                   radius, *(reinterpret_cast<float32*>(&segmentCount)) } });
+                                                                   radius, (float32)(segmentCount) } });
     }
     void RenderHelper::DrawBSpline(BezierSpline3 * bSpline, int segments, float ts, float te, const Color & color, eDrawType drawType)
     {

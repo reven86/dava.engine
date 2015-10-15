@@ -75,6 +75,7 @@ class RenderVariantInstance
     rhi::HSamplerState samplerState;
     rhi::HTextureSet textureSet;
     rhi::CullMode cullMode;
+    bool wireFrame = 0;
 
     Vector<rhi::HConstBuffer> vertexConstBuffers;
     Vector<rhi::HConstBuffer> fragmentConstBuffers;

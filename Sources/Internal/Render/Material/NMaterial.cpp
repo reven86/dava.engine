@@ -80,9 +80,9 @@ RenderVariantInstance::~RenderVariantInstance()
 
 NMaterial::NMaterial()
     : localProperties(16, nullptr)
-    , localConstBuffers(16, nullptr)
     , localTextures(8, nullptr)
     , localFlags(16, 0)
+    , localConstBuffers(16, nullptr)
     , renderVariants(4, nullptr)
 {
 }
@@ -113,12 +113,15 @@ void NMaterial::BindParams(rhi::Packet& target)
     //Logger::Info( "bind-params" );
     DVASSERT(activeVariantInstance);       //trying to bind material that was not staged to render
     DVASSERT(activeVariantInstance->shader); //should have returned false on PreBuild!
+    DVASSERT(activeVariantInstance->shader->IsValid()); //should have returned false on PreBuild!
     /*set pipeline state*/
     target.renderPipelineState = activeVariantInstance->shader->GetPiplineState();
     target.depthStencilState = activeVariantInstance->depthState;
     target.samplerState = activeVariantInstance->samplerState;
     target.textureSet = activeVariantInstance->textureSet;
-    target.cullMode = activeVariantInstance->cullMode; //rhi::CULL_NONE;// 
+    target.cullMode = activeVariantInstance->cullMode;
+    if (activeVariantInstance->wireFrame)
+        target.options |= rhi::Packet::OPT_WIREFRAME;
 
     activeVariantInstance->shader->UpdateDynamicParams();
     /*update values in material const buffers*/
@@ -182,7 +185,7 @@ uint32 NMaterial::GetRequiredVertexFormat()
 MaterialBufferBinding* NMaterial::GetConstBufferBinding(UniquePropertyLayout propertyLayout)
 {
     MaterialBufferBinding* res = localConstBuffers.at(propertyLayout);
-    if ((res == nullptr) && (parent != nullptr))
+    if ((res == nullptr) && (parent != nullptr) && (!NeedLocalOverride(propertyLayout)))
         res = parent->GetConstBufferBinding(propertyLayout);
 
     return res;
@@ -278,7 +281,7 @@ void NMaterial::AddProperty(const FastName& propName, const float32 *propData, r
     prop->data.reset(new float[ShaderDescriptor::CalculateDataSize(type, arraySize)]);
     prop->SetPropertyValue(propData);
     localProperties[propName] = prop;
-    ClearLocalBuffers(); //RHI_COMPLETE - as local buffers can have binding for this property set as default
+
     InvalidateBufferBindings();
 }
 
@@ -289,7 +292,6 @@ void NMaterial::RemoveProperty(const FastName& propName)
     DVASSERT(prop != nullptr);
     localProperties.erase(propName);
     SafeDelete(prop);
-    ClearLocalBuffers(); //RHI_COMPLETE - as local buffers can have binding for this property now just clear them all, later rethink to erease just buffers containing this propertyg
 
     InvalidateBufferBindings();
 }
@@ -361,13 +363,15 @@ void NMaterial::SetTexture(const FastName& slotName, Texture* texture)
     MaterialTextureInfo * texInfo = localTextures.at(slotName);
     DVASSERT(texture != nullptr);    //use RemoveTexture to remove texture!
     DVASSERT(texInfo != nullptr);   //use AddTexture to add texture!
+
     if (texInfo->texture != texture)
     {
         SafeRelease(texInfo->texture);
         texInfo->texture = SafeRetain(texture);
         texInfo->path = texture->GetPathname();
-        InvalidateTextureBindings();
-    }        
+    }
+
+    InvalidateTextureBindings();
 }
 
 bool NMaterial::HasLocalTexture(const FastName& slotName)
@@ -508,7 +512,8 @@ void NMaterial::ClearLocalBuffers()
 }
 
 void NMaterial::InvalidateBufferBindings()
-{    
+{
+    ClearLocalBuffers(); //RHI_COMPLETE - as local buffers can have binding for this property now just clear them all, later rethink to erease just buffers containing this propertyg
     needRebuildBindings = true;
     for (auto& child : children)
         child->InvalidateBufferBindings();
@@ -532,7 +537,7 @@ void NMaterial::InvalidateRenderVariants()
 
 void NMaterial::RebuildRenderVariants()
 {
-    HashMap<FastName, int32> flags;
+    HashMap<FastName, int32> flags(16, 0);
     CollectMaterialFlags(flags);
 
     const FXDescriptor& fxDescr = FXCache::GetFXDescriptor(GetEffectiveFXName(), flags, QualitySettingsSystem::Instance()->GetCurMaterialQuality(GetQualityGroup()));
@@ -559,6 +564,7 @@ void NMaterial::RebuildRenderVariants()
         variant->depthState = rhi::AcquireDepthStencilState(variantDescr.depthStateDescriptor);
         variant->shader = variantDescr.shader;
         variant->cullMode = variantDescr.cullMode;
+        variant->wireFrame = variantDescr.wireframe;
         renderVariants[variantDescr.passName] = variant;
     }
 
@@ -585,7 +591,7 @@ void NMaterial::RebuildBindings()
     {
         RenderVariantInstance* currRenderVariant = variant.second;
         ShaderDescriptor *currShader = currRenderVariant->shader;
-        if (!currShader) //cant build for empty shader
+        if (!currShader->IsValid()) //cant build for empty shader
             continue;
         currRenderVariant->vertexConstBuffers.resize(currShader->GetVertexConstBuffersCount());
         currRenderVariant->fragmentConstBuffers.resize(currShader->GetFragmentConstBuffersCount());
@@ -687,7 +693,7 @@ void NMaterial::RebuildTextureBindings()
         
 
         ShaderDescriptor *currShader = currRenderVariant->shader;
-        if (!currShader) //cant build for empty shader
+        if (!currShader->IsValid()) //cant build for empty shader
             continue;
         rhi::TextureSetDescriptor textureDescr;        
         rhi::SamplerState::Descriptor samplerDescr;
@@ -725,14 +731,21 @@ void NMaterial::RebuildTextureBindings()
 
 
         textureDescr.vertexTextureCount = vertexSamplerList.size();
+        samplerDescr.vertexSamplerCount = vertexSamplerList.size();
         for (size_t i = 0, sz = textureDescr.vertexTextureCount; i < sz; ++i)
         {
             Texture *tex = GetEffectiveTexture(vertexSamplerList[i].uid);
             if (tex)
+            {
                 textureDescr.vertexTexture[i] = tex->handle;
+                samplerDescr.vertexSampler[i] = tex->samplerState;
+            }
             else
+            {
                 textureDescr.vertexTexture[i] = Renderer::GetRuntimeTextures().GetPinkTexture(vertexSamplerList[i].type);
-
+                samplerDescr.vertexSampler[i] = Renderer::GetRuntimeTextures().GetPinkTextureSamplerState(vertexSamplerList[i].type);
+            }
+            samplerDescr.vertexSampler[i].mipFilter = rhi::TEXMIPFILTER_NONE;
         }                            
 
 
@@ -810,16 +823,16 @@ void NMaterial::Save(KeyedArchive * archive, SerializationContext * serializatio
     DataNode::Save(archive, serializationContext);
 
     if (parent)
-        archive->SetUInt64("parentMaterialKey", parent->GetNodeID());
+        archive->SetUInt64(NMaterialSerializationKey::ParentMaterialKey, parent->GetNodeID());
 
     if (materialName.IsValid())
-        archive->SetString("materialName", materialName.c_str());
+        archive->SetString(NMaterialSerializationKey::MaterialName, materialName.c_str());
 
     if (fxName.IsValid())
-        archive->SetString("fxName", fxName.c_str());
+        archive->SetString(NMaterialSerializationKey::FXName, fxName.c_str());
 
     if (qualityGroup.IsValid())
-        archive->SetString("qualityGroup", qualityGroup.c_str());
+        archive->SetString(NMaterialSerializationKey::QualityGroup, qualityGroup.c_str());
 
     ScopedPtr<KeyedArchive> propertiesArchive(new KeyedArchive());
     for (HashMap<FastName, NMaterialProperty*>::iterator it = localProperties.begin(), itEnd = localProperties.end(); it != itEnd; ++it)
@@ -857,7 +870,8 @@ void NMaterial::Save(KeyedArchive * archive, SerializationContext * serializatio
     ScopedPtr<KeyedArchive> flagsArchive(new KeyedArchive());
     for (HashMap<FastName, int32>::iterator it = localFlags.begin(), itEnd = localFlags.end(); it != itEnd; ++it)
     {
-        flagsArchive->SetInt32(it->first.c_str(), it->second);
+        if (!NMaterialFlagName::IsRuntimeFlag(it->first))
+            flagsArchive->SetInt32(it->first.c_str(), it->second);
     }
     archive->SetArchive("flags", flagsArchive);
 }
@@ -872,32 +886,32 @@ void NMaterial::Load(KeyedArchive * archive, SerializationContext * serializatio
         return;
     }
 
-    if (archive->IsKeyExists("materialName"))
+    if (archive->IsKeyExists(NMaterialSerializationKey::MaterialName))
     {
-        materialName = FastName(archive->GetString("materialName"));
+        materialName = FastName(archive->GetString(NMaterialSerializationKey::MaterialName));
     }
 
-    if (archive->IsKeyExists("materialKey"))
+    if (archive->IsKeyExists(NMaterialSerializationKey::MaterialKey))
     {
-        uint64 materialKey = archive->GetUInt64("materialKey");
+        uint64 materialKey = archive->GetUInt64(NMaterialSerializationKey::MaterialKey);
         id = materialKey;
     }
 
     uint64 parentKey(0);
-    if (archive->IsKeyExists("parentMaterialKey"))
+    if (archive->IsKeyExists(NMaterialSerializationKey::ParentMaterialKey))
     {
-        parentKey = archive->GetUInt64("parentMaterialKey");
+        parentKey = archive->GetUInt64(NMaterialSerializationKey::ParentMaterialKey);
     }
     serializationContext->AddBinding(parentKey, this); //parentKey == 0 is global material if it exists, or no-parent otherwise
 
-    if (archive->IsKeyExists("materialGroup"))
+    if (archive->IsKeyExists(NMaterialSerializationKey::QualityGroup))
     {
-        qualityGroup = FastName(archive->GetString("materialGroup").c_str());
+        qualityGroup = FastName(archive->GetString(NMaterialSerializationKey::QualityGroup).c_str());
     }
 
-    if (archive->IsKeyExists("fxName"))
+    if (archive->IsKeyExists(NMaterialSerializationKey::FXName))
     {
-        fxName = FastName(archive->GetString("fxName").c_str());
+        fxName = FastName(archive->GetString(NMaterialSerializationKey::FXName));
     }
 
     if (archive->IsKeyExists("properties"))
@@ -949,15 +963,15 @@ void NMaterial::Load(KeyedArchive * archive, SerializationContext * serializatio
 void NMaterial::LoadOldNMaterial(KeyedArchive * archive, SerializationContext * serializationContext)
 {    
     /*the following stuff is for importing old NMaterial stuff*/
-    
-    if (archive->IsKeyExists("materialName"))
+
+    if (archive->IsKeyExists(NMaterialSerializationKey::MaterialName))
     {
-        materialName = FastName(archive->GetString("materialName"));
+        materialName = FastName(archive->GetString(NMaterialSerializationKey::MaterialName));
     }
 
-    if (archive->IsKeyExists("materialKey"))
+    if (archive->IsKeyExists(NMaterialSerializationKey::MaterialKey))
     {
-        uint64 materialKey = archive->GetUInt64("materialKey");
+        uint64 materialKey = archive->GetUInt64(NMaterialSerializationKey::MaterialKey);
         id = materialKey;
     }
 
@@ -968,9 +982,9 @@ void NMaterial::LoadOldNMaterial(KeyedArchive * archive, SerializationContext * 
     }
 
     uint64 parentKey(0);
-    if (archive->IsKeyExists("parentMaterialKey"))
+    if (archive->IsKeyExists(NMaterialSerializationKey::ParentMaterialKey))
     {
-        parentKey = archive->GetUInt64("parentMaterialKey");
+        parentKey = archive->GetUInt64(NMaterialSerializationKey::ParentMaterialKey);
     }
     serializationContext->AddBinding(parentKey, this); //parentKey == 0 is global material if it exists, or no-parent otherwise
 
@@ -982,7 +996,8 @@ void NMaterial::LoadOldNMaterial(KeyedArchive * archive, SerializationContext * 
     // don't load fxName from material instance (type = 2)
     if (archive->IsKeyExists("materialTemplate") && oldType != 2)
     {
-        fxName = FastName(archive->GetString("materialTemplate").c_str());        
+        auto materialTemplate = archive->GetString("materialTemplate");
+        fxName = materialTemplate.empty() ? FastName() : FastName(materialTemplate);
     }    
 
     if (archive->IsKeyExists("textures"))
@@ -1081,22 +1096,43 @@ void NMaterial::LoadOldNMaterial(KeyedArchive * archive, SerializationContext * 
         }
     }
 
+    bool illuminationUsed = false;
     if (archive->IsKeyExists("illumination.isUsed"))
-        AddFlag(NMaterialFlagName::FLAG_ILLUMINATION_USED, archive->GetBool("illumination.isUsed"));
+    {
+        illuminationUsed = archive->GetBool("illumination.isUsed");
+        AddFlag(NMaterialFlagName::FLAG_ILLUMINATION_USED, illuminationUsed);
+    }
 
     if (archive->IsKeyExists("illumination.castShadow"))
+    {
         AddFlag(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_CASTER, archive->GetBool("illumination.castShadow"));
+    }
+    else if (illuminationUsed)
+    {
+        AddFlag(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_CASTER, false); // need for material editor
+    }
 
     if (archive->IsKeyExists("illumination.receiveShadow"))
+    {
         AddFlag(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_RECEIVER, archive->GetBool("illumination.receiveShadow"));
+    }
+    else if (illuminationUsed)
+    {
+        AddFlag(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_RECEIVER, false); // need for material editor
+    }
 
+    static const float32 DEFAULT_LIGHTMAP_SIZE = 128.f;
     if (archive->IsKeyExists("illumination.lightmapSize"))
     {
-        float32 lighmapSize = (float32)archive->GetInt32("illumination.lightmapSize");
+        float32 lighmapSize = (float32)archive->GetInt32("illumination.lightmapSize", DEFAULT_LIGHTMAP_SIZE);
         if (HasLocalProperty(NMaterialParamName::PARAM_LIGHTMAP_SIZE))
             SetPropertyValue(NMaterialParamName::PARAM_LIGHTMAP_SIZE, &lighmapSize);
         else
             AddProperty(NMaterialParamName::PARAM_LIGHTMAP_SIZE, &lighmapSize, rhi::ShaderProp::TYPE_FLOAT1, 1);
+    }
+    else if (illuminationUsed)
+    {
+        AddProperty(NMaterialParamName::PARAM_LIGHTMAP_SIZE, &DEFAULT_LIGHTMAP_SIZE, rhi::ShaderProp::TYPE_FLOAT1, 1);
     }
 }
 

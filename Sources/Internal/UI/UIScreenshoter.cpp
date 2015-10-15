@@ -37,7 +37,6 @@
 namespace DAVA
 {
 
-static const int32 PRIORITY_SCREENSHOT_CLEAR_PASS = eDefaultPassPriority::PRIORITY_SERVICE_2D + 12;
 static const int32 PRIORITY_SCREENSHOT_3D_PASS = eDefaultPassPriority::PRIORITY_SERVICE_2D + 11;
 static const int32 PRIORITY_SCREENSHOT_2D_PASS = eDefaultPassPriority::PRIORITY_SERVICE_2D + 10;
 
@@ -64,7 +63,9 @@ void UIScreenshoter::OnFrame()
             {
                 it->callback(it->texture);
             }
+
             SafeRelease(it->texture);
+
             it = waiters.erase(it);
             itEnd = waiters.end();
         }
@@ -78,8 +79,8 @@ void UIScreenshoter::OnFrame()
 Texture* UIScreenshoter::MakeScreenshot(UIControl* control, const PixelFormat format)
 {
     const Vector2 size(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(control->GetSize()));
-    Texture * screenshot(Texture::CreateFBO((int32)size.dx, (int32)size.dy, format));
-    
+    Texture* screenshot(Texture::CreateFBO((int32)size.dx, (int32)size.dy, format, true));
+
     MakeScreenshotInternal(control, screenshot, nullptr);
     
     return screenshot;
@@ -88,7 +89,7 @@ Texture* UIScreenshoter::MakeScreenshot(UIControl* control, const PixelFormat fo
 void UIScreenshoter::MakeScreenshot(UIControl* control, const PixelFormat format, Function<void(Texture*)> callback)
 {
     const Vector2 size(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(control->GetSize()));
-    Texture * screenshot(Texture::CreateFBO((int32)size.dx, (int32)size.dy, format));
+    Texture* screenshot(Texture::CreateFBO((int32)size.dx, (int32)size.dy, format, true));
 
     MakeScreenshotInternal(control, screenshot, callback);
 
@@ -110,17 +111,6 @@ void UIScreenshoter::MakeScreenshotInternal(UIControl* control, Texture* screens
     if (control == nullptr)
         return;
 
-    // Create depth and stencil buffer
-    rhi::Texture::Descriptor descriptor;
-    descriptor.width = screenshot->GetWidth();
-    descriptor.height = screenshot->GetHeight();
-    descriptor.autoGenMipmaps = false;
-    descriptor.needRestore = false;
-    descriptor.type = rhi::TEXTURE_TYPE_2D;
-    descriptor.format = rhi::TEXTURE_FORMAT_D24S8;
-    rhi::HTexture dephtTexture = rhi::CreateTexture(descriptor);
-    // End creating
-
     // Prepare waiter
     ScreenshotWaiter waiter;
     waiter.texture = SafeRetain(screenshot);
@@ -130,11 +120,6 @@ void UIScreenshoter::MakeScreenshotInternal(UIControl* control, Texture* screens
     // End preparing
 
     // Render to texture
-    rhi::Viewport viewport;
-    viewport.height = waiter.texture->GetHeight();
-    viewport.width = waiter.texture->GetWidth();
-    RenderHelper::CreateClearPass(waiter.texture->handle, PRIORITY_SCREENSHOT_CLEAR_PASS, Color::Clear, viewport);
-
     List<Control3dInfo> controls3d;
     FindAll3dViews(control, controls3d);
     for (auto& info : controls3d)
@@ -143,12 +128,14 @@ void UIScreenshoter::MakeScreenshotInternal(UIControl* control, Texture* screens
         if (nullptr != info.control->GetScene())
         {
             rhi::RenderPassConfig& config = info.control->GetScene()->GetMainPassConfig();
-            info.priority = config.priority;
-            info.texture = config.colorBuffer[0].texture;
-            info.depht = config.depthStencilBuffer.texture;
+            info.scenePassConfig = config;
+
             config.priority = PRIORITY_SCREENSHOT_3D_PASS;
             config.colorBuffer[0].texture = waiter.texture->handle;
-            config.depthStencilBuffer.texture = dephtTexture;
+            config.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
+            Memcpy(config.colorBuffer[0].clearColor, Color::Clear.color, sizeof(Color));
+            if (waiter.texture->handleDepthStencil != rhi::InvalidHandle)
+                config.depthStencilBuffer.texture = waiter.texture->handleDepthStencil;
         }
     }
     RenderSystem2D::Instance()->BeginRenderTargetPass(waiter.texture, false, Color::Clear, PRIORITY_SCREENSHOT_2D_PASS);
@@ -160,15 +147,11 @@ void UIScreenshoter::MakeScreenshotInternal(UIControl* control, Texture* screens
         if (nullptr != info.control->GetScene())
         {
             rhi::RenderPassConfig& config = info.control->GetScene()->GetMainPassConfig();
-            config.priority = info.priority;
-            config.colorBuffer[0].texture = info.texture;
-            config.depthStencilBuffer.texture = info.depht;
+            config = info.scenePassConfig;
         }
         SafeRelease(info.control);
     }
     // End render
-
-    rhi::DeleteTexture(dephtTexture);
 }
 
 void UIScreenshoter::FindAll3dViews(UIControl * control, List<UIScreenshoter::Control3dInfo> & foundViews)
@@ -191,8 +174,6 @@ void UIScreenshoter::FindAll3dViews(UIControl * control, List<UIScreenshoter::Co
         {
             Control3dInfo info;
             info.control = current3dView;
-            info.priority = 0;
-            info.texture = rhi::InvalidHandle;
             foundViews.push_back(info);
         }
     }

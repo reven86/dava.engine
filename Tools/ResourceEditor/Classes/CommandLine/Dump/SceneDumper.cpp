@@ -143,7 +143,6 @@ void SceneDumper::DumpRenderObject(DAVA::RenderObject *renderObject, SceneLinks 
             links.insert(vegetation->GetCustomGeometryPath());
 
             descriptorPathnames.insert(vegetation->GetLightmapPath());
-            descriptorPathnames.insert(vegetation->GetVegetationTexture());
 			break;
 		}
 

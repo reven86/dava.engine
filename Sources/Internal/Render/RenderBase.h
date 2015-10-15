@@ -35,88 +35,6 @@
 #include "Base/FastName.h"
 #include "Render/RHI/rhi_Type.h"
 
-/**
-	\defgroup render Rendering abstraction
-	\defgroup render_2d 2D Rendering
-	\defgroup render_3d 3D Rendering
-*/
-
-/*
- Boroda: Я не знаю почему но <glew/gl.h> при включение из .mm файлов выдает ошибку как будто кто-то уже подключил 
- стандартный GL хотя в проекте нигде нет на него упоминаний. Есть подозрение что какой-то конфликт с внутренностями ObjC
- Как обойти пока непонятно - я сделал этот хедер чтобы включать его только там где это реально надо. 
- 
- Раньше это лежало в BaseTypes.h
- */
-
-#ifdef __DAVAENGINE_IPHONE__
-	#define __DAVAENGINE_OPENGL__
-	#import <OpenGLES/ES1/gl.h>
-	#import <OpenGLES/ES1/glext.h>
-    #import <OpenGLES/ES2/gl.h>
-    #import <OpenGLES/ES2/glext.h>
-    #import <OpenGLES/ES3/gl.h>
-    #import <OpenGLES/ES3/glext.h>
-#elif defined(__DAVAENGINE_MACOS__)
-	#define __DAVAENGINE_OPENGL__
-	//	#include <GL/glew.h>
-    #ifdef __DAVAENGINE_MACOS_VERSION_10_6__
-        #include "OpenGL/gl.h"
-    #endif //#ifdef __DAVAENGINE_MACOS_VERSION_10_6__
-
-	#include <OpenGL/OpenGL.h>
-	//	#include <GLUT/glut.h>
-#elif defined(__DAVAENGINE_WIN32__)
- 	#if defined(__DAVAENGINE_RENDER_AUTOCONFIG__)
- 	#define __DAVAENGINE_DIRECTX9__
-//	#define __DAVAENGINE_OPENGL__
- 	#endif 
-
-	#if defined(__DAVAENGINE_OPENGL__)
-		#include <GL/glew.h>
-		#include <direct.h>
-	#elif defined(__DAVAENGINE_DIRECTX9__)
-		// TODO: right now Sprite code do not compiles without GL types. Fix that. 
-		#include <GL/gl.h>
-		// #include <direct.h>
-		
-		#define D3D_DEBUG_INFO
-		#include <d3d9.h>
-		#include <dxerr.h>
-    #endif
-
-
-#elif defined(__DAVAENGINE_WIN_UAP__)
-
-#define GL_GLEXT_PROTOTYPES
-#include <EGL/egl.h>
-#include <EGL/eglext.h>
-#include <EGL/eglplatform.h>
-#include <angle_gl.h>
-#include <angle_windowsstore.h>
-
-#define __DAVAENGINE_OPENGL_ES_ANGLE__
-#define __DAVAENGINE_OPENGL_ES__
-
-#elif defined(__DAVAENGINE_ANDROID__)
-	#define __DAVAENGINE_OPENGL__
-    #include <android/api-level.h>
-	#include <GLES/gl.h>
-	#include <GLES/glext.h>
-    #include <EGL/egl.h>
-#if (__ANDROID_API__ < 18)
-    #include <GLES2/gl2.h>
-    #include <GLES2/gl2ext.h>
-#else
-    #include <GLES3/gl3.h>
-    #include <GLES3/gl3ext.h>
-#endif
-
-#else //PLATFORMS
-	//other platforms
-#endif//PLATFORMS 
-
-
 namespace DAVA
 {
 
@@ -135,6 +53,7 @@ enum ImageQuality : uint8
 {
     MIN_IMAGE_QUALITY = 0,
     MAX_IMAGE_QUALITY = 100,
+    LOSSLESS_IMAGE_QUALITY = 255,
     DEFAULT_IMAGE_QUALITY = MAX_IMAGE_QUALITY
 };
 

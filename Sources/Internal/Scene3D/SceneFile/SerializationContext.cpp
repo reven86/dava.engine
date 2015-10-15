@@ -42,69 +42,52 @@
 
 namespace DAVA
 {
-    SerializationContext::SerializationContext() :
-        globalMaterialKey(0)
-	{ }
-
-	SerializationContext::~SerializationContext()
-	{
-		for(Map<uint64, DataNode*>::iterator it = dataBlocks.begin();
-			it != dataBlocks.end();
-			++it)
-		{
-			SafeRelease(it->second);
-		}
-		
-		for(Map<uint64, NMaterial*>::iterator it = importedMaterials.begin();
-			it != importedMaterials.end();
-			++it)
-		{
-			SafeRelease(it->second);
-		}
-
-		DVASSERT(materialBindings.size() == 0 && "Serialization context destroyed without resolving material bindings!");
-		materialBindings.clear();
-	}
-	
-	void SerializationContext::ResolveMaterialBindings()
-	{
-		size_t instanceCount = materialBindings.size();
-		for(size_t i = 0; i < instanceCount; ++i)
-		{
-			MaterialBinding& binding = materialBindings[i];
-            uint64 parentKey = (binding.parentKey) ? binding.parentKey : globalMaterialKey;
-            if (!parentKey)
-                continue;
-
-            NMaterial* parentMat = static_cast<NMaterial*>(GetDataBlock(parentKey));
-			
-			DVASSERT(parentMat);
-			if(parentMat != binding.childMaterial) //global material case
-			{
-				binding.childMaterial->SetParent(parentMat);
-			}
-		}
-		
-		materialBindings.clear();
-	}
-			
-Texture* SerializationContext::PrepareTexture(rhi::TextureType textureTypeHint, Texture* tx)
+SerializationContext::SerializationContext()
+    : globalMaterialKey(0)
 {
-
-	if(tx)
-	{
-		if(tx->isPink)
-		{
-			tx->Retain();
-		}
-
-		return tx;
-	}
-
-	return Texture::CreatePink(textureTypeHint);
-
 }
 
+SerializationContext::~SerializationContext()
+{
+    for (Map<uint64, DataNode*>::iterator it = dataBlocks.begin();
+         it != dataBlocks.end();
+         ++it)
+    {
+        SafeRelease(it->second);
+    }
+
+    for (Map<uint64, NMaterial*>::iterator it = importedMaterials.begin();
+         it != importedMaterials.end();
+         ++it)
+    {
+        SafeRelease(it->second);
+    }
+
+    DVASSERT(materialBindings.size() == 0 && "Serialization context destroyed without resolving material bindings!");
+    materialBindings.clear();
+}
+
+void SerializationContext::ResolveMaterialBindings()
+{
+    size_t instanceCount = materialBindings.size();
+    for (size_t i = 0; i < instanceCount; ++i)
+    {
+        MaterialBinding& binding = materialBindings[i];
+        uint64 parentKey = (binding.parentKey) ? binding.parentKey : globalMaterialKey;
+        if (!parentKey)
+            continue;
+
+        NMaterial* parentMat = static_cast<NMaterial*>(GetDataBlock(parentKey));
+
+        DVASSERT(parentMat);
+        if (parentMat != binding.childMaterial) //global material case
+        {
+            binding.childMaterial->SetParent(parentMat);
+        }
+    }
+
+    materialBindings.clear();
+}
 
 void SerializationContext::AddLoadedPolygonGroup(PolygonGroup *group, uint32 dataFilePos)
 {

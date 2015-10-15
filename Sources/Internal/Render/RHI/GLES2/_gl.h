@@ -190,6 +190,13 @@
 }
 #else
 #define GL_CALL(expr) expr
+/*
+#define GL_CALL(expr) \
+{ \
+profiler::ScopedTiming( PROF_STRING_ID("gl-call"), "gl-call" ); \
+    expr ; \
+}
+*/
 #endif
 
 extern GLuint   _GLES2_Binded_FrameBuffer;
@@ -206,5 +213,9 @@ extern GLuint   _GLES2_LastSetIB;
 extern GLuint   _GLES2_LastSetVB;
 extern GLuint   _GLES2_LastSetTex0;
 extern GLenum   _GLES2_LastSetTex0Target;
+
+#if defined(__DAVAENGINE_WIN32__)
+extern HDC _GLES2_WindowDC;
+#endif
 
 bool            GetGLTextureFormat( rhi::TextureFormat rhiFormat, GLint* internalFormat, GLint* format, GLenum* type, bool* compressed );

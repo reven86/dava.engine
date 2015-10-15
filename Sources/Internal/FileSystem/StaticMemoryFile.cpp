@@ -26,14 +26,12 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 #include "FileSystem/StaticMemoryFile.h"
 #include "Utils/StringFormat.h"
 
-namespace DAVA 
+namespace DAVA
 {
-
-StaticMemoryFile * StaticMemoryFile::Create(uint8 *data, uint32 dataSize, uint32 attributes)
+StaticMemoryFile* StaticMemoryFile::Create(uint8* data, uint32 dataSize, uint32 attributes)
 {
     if (attributes & File::APPEND)
     {
@@ -41,14 +39,13 @@ StaticMemoryFile * StaticMemoryFile::Create(uint8 *data, uint32 dataSize, uint32
         return nullptr;
     }
 
-    StaticMemoryFile *fl = new StaticMemoryFile(data, dataSize, attributes);
-	fl->filename = Format("memoryfile_%p", static_cast<void*>(fl));
-	
-	return fl;
+    StaticMemoryFile* fl = new StaticMemoryFile(data, dataSize, attributes);
+    fl->filename = Format("memoryfile_%p", static_cast<void*>(fl));
+
+    return fl;
 }
 
-
-StaticMemoryFile::StaticMemoryFile(uint8 *data, uint32 dataSize, uint32 attributes)
+StaticMemoryFile::StaticMemoryFile(uint8* data, uint32 dataSize, uint32 attributes)
     : File()
     , memoryBuffer(data)
     , memoryBufferSize(dataSize)
@@ -62,34 +59,34 @@ StaticMemoryFile::~StaticMemoryFile()
     memoryBufferSize = 0;
     currentPos = 0;
 }
-	
-uint32 StaticMemoryFile::Write(const void * pointerToData, uint32 dataSize)
+
+uint32 StaticMemoryFile::Write(const void* pointerToData, uint32 dataSize)
 {
     DVASSERT(nullptr != pointerToData);
-	if ((fileAttributes & File::WRITE) == 0)
-	{
-		return 0;
-	}
+    if ((fileAttributes & File::WRITE) == 0)
+    {
+        return 0;
+    }
 
     uint32 written = GetRWOperationSize(dataSize);
-	if(written > 0)
-	{
- 		Memcpy(memoryBuffer + currentPos, pointerToData, written);
+    if (written > 0)
+    {
+        Memcpy(memoryBuffer + currentPos, pointerToData, written);
         currentPos += written;
-	}
+    }
 
     isEof = (dataSize != written);
-	
+
     return written;
 }
 
-uint32 StaticMemoryFile::Read(void * pointerToData, uint32 dataSize)
+uint32 StaticMemoryFile::Read(void* pointerToData, uint32 dataSize)
 {
     DVASSERT(nullptr != pointerToData);
-	if ((fileAttributes & File::READ) == 0)
-	{
-		return 0;
-	}
+    if ((fileAttributes & File::READ) == 0)
+    {
+        return 0;
+    }
 
     uint32 read = GetRWOperationSize(dataSize);
     if (read > 0)
@@ -101,7 +98,6 @@ uint32 StaticMemoryFile::Read(void * pointerToData, uint32 dataSize)
 
     return read;
 }
-
 
 uint32 StaticMemoryFile::GetRWOperationSize(uint32 dataSize) const
 {
@@ -121,25 +117,25 @@ uint32 StaticMemoryFile::GetRWOperationSize(uint32 dataSize) const
 
 bool StaticMemoryFile::Seek(int32 position, uint32 seekType)
 {
-	int32 pos = 0;
-	switch(seekType)
-	{
-		case SEEK_FROM_START:
-			pos = position;
-			break;
-		case SEEK_FROM_CURRENT:
-			pos = GetPos() + position;
-			break;
-		case SEEK_FROM_END:
-			pos = GetSize() - 1 + position;
-			break;
-		default:
-			return false;
-	};
+    int32 pos = 0;
+    switch (seekType)
+    {
+    case SEEK_FROM_START:
+        pos = position;
+        break;
+    case SEEK_FROM_CURRENT:
+        pos = GetPos() + position;
+        break;
+    case SEEK_FROM_END:
+        pos = GetSize() - 1 + position;
+        break;
+    default:
+        return false;
+    };
 
     if (pos < 0)
     {
-	    return false;
+        return false;
     }
 
     // behavior taken from std::FILE - don't move pointer to less than 0 value
@@ -150,8 +146,6 @@ bool StaticMemoryFile::Seek(int32 position, uint32 seekType)
     isEof = false;
 
     return true;
-	
 }
-
 
 } // end of namespace DAVA

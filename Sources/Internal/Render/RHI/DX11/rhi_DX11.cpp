@@ -173,6 +173,7 @@ _InitDX11()
 #if defined(__DAVAENGINE_WIN_UAP__)
 
     init_device_and_swapchain_uap( _DX11_InitParam.window );
+    _D3D11_Device->CreateDeferredContext( 0, &_D3D11_SecondaryContext );
 
 #else
 
@@ -227,8 +228,10 @@ _InitDX11()
 
             hr = _D3D11_ImmediateContext->QueryInterface( __uuidof(ID3DUserDefinedAnnotation), (void**)(&_D3D11_UserAnnotation) );
         }
-
+        
         hr = _D3D11_Device->CreateRenderTargetView( _D3D11_SwapChainBuffer, 0, &_D3D11_RenderTargetView );
+
+        _D3D11_Device->CreateDeferredContext( 0, &_D3D11_SecondaryContext );
 
         D3D11_TEXTURE2D_DESC    ds_desc = {0};
         
@@ -280,7 +283,14 @@ dx11_Initialize( const InitParam& param )
 
     SetDispatchTable( DispatchDX11 );
 
-
+    if( param.maxVertexBufferCount )
+        VertexBufferDX11::Init( param.maxVertexBufferCount );
+    if( param.maxIndexBufferCount )
+        IndexBufferDX11::Init( param.maxIndexBufferCount );
+    if( param.maxConstBufferCount )
+        ConstBufferDX11::Init( param.maxConstBufferCount );
+    if( param.maxTextureCount )
+        TextureDX11::Init( param.maxTextureCount );
     ConstBufferDX11::InitializeRingBuffer( 4*1024*1024 ); // CRAP: hardcoded const ring-buf size
 
     stat_DIP = StatSet::AddStat("rhi'dip", "dip");
@@ -300,7 +310,7 @@ dx11_Initialize( const InitParam& param )
     _DeviceCaps.isVertexTextureUnitsSupported = true;
     _DeviceCaps.isUpperLeftRTOrigin = true;
 	_DeviceCaps.isZeroBaseClipRange = true;
-	_DeviceCaps.isCenterPixelMapping = true;
+    _DeviceCaps.isCenterPixelMapping = false;
 }
 
 

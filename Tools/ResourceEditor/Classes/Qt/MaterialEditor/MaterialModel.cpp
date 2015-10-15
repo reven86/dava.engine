@@ -341,21 +341,26 @@ void MaterialModel::Sync(MaterialItem *item)
     {
         MaterialItem *childItem = (MaterialItem *)item->child(i);
         DAVA::NMaterial* childMaterial = childItem->GetMaterial();
-        if (0 != processedList.count(childMaterial))
-        {
-            item->removeRow(i--);
-        }
-        else
+
+        bool shouldSyncMaterial = (processedList.count(childMaterial) > 0) &&
+        curScene->materialSystem->HasMaterial(childMaterial);
+
+        if (shouldSyncMaterial)
         {
             processedList[childMaterial] = true;
             Sync(childItem);
+        }
+        else
+        {
+            item->removeRow(i--);
         }
     }
 
     // add materials that are in hierarchy but not in model yet
     for (auto it : processedList)
     {
-        if (!it.second)
+        bool shouldAddMaterial = !it.second && curScene->materialSystem->HasMaterial(it.first);
+        if (shouldAddMaterial)
         {
             MaterialItem *newItem = new MaterialItem(it.first, true, true);
             item->appendRow(newItem);

@@ -320,7 +320,11 @@ void UIList::Update(float32 timeElapsed)
     {
         r.y = scroll->GetPosition(d, SystemTimer::FrameDelta(), lockTouch);
     }
-    scrollContainer->SetRect(r);
+
+    if (r != scrollContainer->GetRect())
+    {
+        scrollContainer->SetRect(r);
+    }
 
     List<UIControl*>::const_iterator it;
     Rect viewRect = GetGeometricData().GetUnrotatedRect();//GetRect(TRUE);

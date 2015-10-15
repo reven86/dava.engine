@@ -124,6 +124,7 @@ PacketList_t
 
     uint32      setDefaultViewport:1;
     uint32      restoreDefScissorRect:1;
+    uint32      restoreSolidFill:1;
     uint32      invertCulling:1;
 
     // debug
@@ -873,11 +874,13 @@ BeginPacketList( HPacketList packetList )
     
 
     CommandBuffer::SetCullMode( pl->cmdBuf, CULL_NONE );
+    rhi::CommandBuffer::SetFillMode( pl->cmdBuf, FILLMODE_SOLID );
     
     if( pl->queryBuffer != rhi::InvalidHandle )
         CommandBuffer::SetQueryBuffer( pl->cmdBuf, pl->queryBuffer );
 
-    pl->restoreDefScissorRect = false;
+    pl->restoreDefScissorRect   = false;
+    pl->restoreSolidFill        = false;
 
     pl->batchIndex = 0;
 }
@@ -1016,7 +1019,20 @@ SCOPED_NAMED_TIMING("rhi.AddPackets");
                 pl->restoreDefScissorRect = false;
             }
         }
-
+        
+        if( p->options & Packet::OPT_WIREFRAME )
+        {
+            rhi::CommandBuffer::SetFillMode( cmdBuf, FILLMODE_WIREFRAME );
+            pl->restoreSolidFill = true;
+        }
+        else
+        {
+            if( pl->restoreSolidFill )
+            {
+                rhi::CommandBuffer::SetFillMode( cmdBuf, FILLMODE_SOLID );
+                pl->restoreSolidFill = false;
+            }
+        }
         
 //        if( p->queryIndex != InvalidIndex )
         {

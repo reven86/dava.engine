@@ -42,11 +42,6 @@
 namespace DAVA
 {
 
-static const int32 PRIORITY_SCREENSHOT_CLEAR_PASS = eDefaultPassPriority::PRIORITY_SERVICE_2D + 3;
-static const int32 PRIORITY_SCREENSHOT_3D_PASS = eDefaultPassPriority::PRIORITY_SERVICE_2D + 2;
-static const int32 PRIORITY_SCREENSHOT_2D_PASS = eDefaultPassPriority::PRIORITY_SERVICE_2D + 1;
-
-
 Sprite * UIScreenTransition::renderTargetPrevScreen = 0;
 Sprite * UIScreenTransition::renderTargetNextScreen = 0;
 
@@ -72,8 +67,8 @@ void UIScreenTransition::CreateRenderTargets()
     uint32 width = (uint32)VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dx;
     uint32 height = (uint32)VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy;
 
-    Texture * tex1 = Texture::CreateFBO(width, height, FORMAT_RGBA8888);
-    Texture * tex2 = Texture::CreateFBO(width, height, FORMAT_RGBA8888);
+    Texture* tex1 = Texture::CreateFBO(width, height, FORMAT_RGB565, true);
+    Texture* tex2 = Texture::CreateFBO(width, height, FORMAT_RGB565, true);
 
     renderTargetPrevScreen = Sprite::CreateFromTexture(tex1, 0, 0, (float32)width, (float32)height, true);
     renderTargetNextScreen = Sprite::CreateFromTexture(tex2, 0, 0, (float32)width, (float32)height, true);

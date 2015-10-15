@@ -46,7 +46,7 @@ namespace //for private variables
 {
     bool ininialized = false;
     rhi::Api api;
-    int32 desiredFPS = 0;
+    int32 desiredFPS = 60;
     
     RenderOptions renderOptions;
     DynamicBindings dynamicBindings;
@@ -59,7 +59,9 @@ namespace //for private variables
     ScreenShotCallbackDelegate * screenshotCallback = nullptr;
 }
 
-void Initialize(rhi::Api _api, const rhi::InitParam & params)
+static Mutex renderCmdExecSync;
+
+void Initialize(rhi::Api _api, rhi::InitParam& params)
 {
     DVASSERT(!ininialized);
 
@@ -67,6 +69,11 @@ void Initialize(rhi::Api _api, const rhi::InitParam & params)
 
     framebufferWidth = static_cast<int32>(params.width * params.scaleX);
     framebufferHeight = static_cast<int32>(params.height * params.scaleY);
+
+    if (nullptr == params.FrameCommandExecutionSync)
+    {
+        params.FrameCommandExecutionSync = &renderCmdExecSync;
+    }
 
     rhi::Initialize(api, params);
     rhi::ShaderCache::Initialize();

@@ -52,17 +52,17 @@
 namespace rhi
 {
 
-uint32   stat_DIP       = InvalidIndex;
-uint32   stat_DP        = InvalidIndex;
-uint32 stat_DTL = InvalidIndex;
-uint32 stat_DTS = InvalidIndex;
-uint32 stat_DLL = InvalidIndex;
-uint32   stat_SET_PS    = InvalidIndex;
-uint32 stat_SET_SS = InvalidIndex;
-uint32   stat_SET_TEX   = InvalidIndex;
-uint32   stat_SET_CB    = InvalidIndex;
-uint32 stat_SET_VB = InvalidIndex;
-uint32 stat_SET_IB = InvalidIndex;
+uint32  stat_DIP        = InvalidIndex;
+uint32  stat_DP         = InvalidIndex;
+uint32  stat_DTL        = InvalidIndex;
+uint32  stat_DTS        = InvalidIndex;
+uint32  stat_DLL        = InvalidIndex;
+uint32  stat_SET_PS     = InvalidIndex;
+uint32  stat_SET_SS     = InvalidIndex;
+uint32  stat_SET_TEX    = InvalidIndex;
+uint32  stat_SET_CB     = InvalidIndex;
+uint32  stat_SET_VB     = InvalidIndex;
+uint32  stat_SET_IB     = InvalidIndex;
 
 static Dispatch _Impl = {0};
 
@@ -159,6 +159,13 @@ void
 ResumeRendering()
 {
     (*_Impl.impl_ResumeRendering)();
+}
+
+void
+InvalidateCache()
+{
+    if( _Impl.impl_InvalidateCache )
+        (*_Impl.impl_InvalidateCache)();
 }
     
 //////////////////////////////////////////////////////////////////////////
@@ -577,6 +584,12 @@ SetViewport( Handle cmdBuf, Viewport vp )
 }
 
 void
+SetFillMode( Handle cmdBuf, FillMode mode )
+{
+    (*_Impl.impl_CommandBuffer_SetFillMode)( cmdBuf, mode );
+}
+
+void
 SetVertexData( Handle cmdBuf, Handle vb, uint32 streamIndex )
 {
     (*_Impl.impl_CommandBuffer_SetVertexData)( cmdBuf, vb, streamIndex );
@@ -899,6 +912,7 @@ TextureSize( TextureFormat format, uint32 width, uint32 height, uint32 level )
             sz = ext.dx * ext.dy * sizeof(uint32);
             break;
 
+        default: break;
     }
 
     return sz;
@@ -923,11 +937,9 @@ NativeColorRGBA( float red, float green, float blue, float alpha )
             break;
 
         case RHI_DX11:
-#if defined(__DAVAENGINE_WIN_UAP__)
             color = ((uint32)((((a)& 0xFF) << 24) | (((b)& 0xFF) << 16) | (((g)& 0xFF) << 8) | ((r)& 0xFF)));
-#else
-            color = ((uint32)((((a)& 0xFF) << 24) | (((r)& 0xFF) << 16) | (((g)& 0xFF) << 8) | ((b)& 0xFF)));
-#endif
+            //color = ((uint32)((((a)& 0xFF) << 24) | (((r)& 0xFF) << 16) | (((g)& 0xFF) << 8) | ((b)& 0xFF))); for some reason it was here in case of non-uap. seems work ok without it. wait here for someone with "strange" videocard to complain
+
             break;
 
         case RHI_GLES2 :
@@ -961,14 +973,14 @@ Trace( const char* format, ... )
     va_list  arglist;
 
     va_start( arglist, format );
-    #if defined(__DAVAENGINE_WIN32__)
+    #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_WIN_UAP__)
     _vsnprintf( _TraceBuf, countof(_TraceBuf), format, arglist );
     #else
     vsnprintf( _TraceBuf, countof(_TraceBuf), format, arglist );
     #endif
     va_end( arglist );
     
-    #if defined(__DAVAENGINE_WIN32__)
+    #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_WIN_UAP__)
     ::OutputDebugStringA( _TraceBuf );
     #else
     puts( _TraceBuf );

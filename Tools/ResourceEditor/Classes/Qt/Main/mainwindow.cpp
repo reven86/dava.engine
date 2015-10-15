@@ -345,9 +345,7 @@ void QtMainWindow::CollectEmittersForSave(ParticleEmitter *topLevelEmitter, DAVA
     emitters.emplace_back(EmitterDescriptor(topLevelEmitter, nullptr, topLevelEmitter->configPath, entityName));
 }
 
-
-
-void QtMainWindow::SaveAllSceneEmitters(SceneEditor2 *scene) const
+void QtMainWindow::SaveAllSceneEmitters(SceneEditor2* scene) const
 {
     DVASSERT(nullptr != scene);
 
@@ -355,8 +353,7 @@ void QtMainWindow::SaveAllSceneEmitters(SceneEditor2 *scene) const
     {
         return;
     }
-    
-    
+
     List<Entity *> effectEntities;
     scene->GetChildEntitiesWithComponent(effectEntities, Component::PARTICLE_EFFECT_COMPONENT);
     if (effectEntities.empty())
@@ -739,8 +736,8 @@ void QtMainWindow::SetupActions()
 	ui->actionExportAdreno->setData(GPU_ADRENO);
     ui->actionExportDX11->setData(GPU_DX11);
     ui->actionExportPNG->setData(GPU_ORIGIN);
-	
-	// import
+
+// import
 #ifdef __DAVAENGINE_SPEEDTREE__
     QObject::connect(ui->actionImportSpeedTreeXML, &QAction::triggered, this, &QtMainWindow::OnImportSpeedTreeXML);
 #endif //__DAVAENGINE_SPEEDTREE__
@@ -3034,8 +3031,22 @@ void QtMainWindow::OnReloadShaders()
                 material->InvalidateRenderVariants();
         }
 
+        sceneEditor->renderSystem->GetDebugDrawer()->InvalidateMaterials();
+
         sceneEditor->renderSystem->SetForceUpdateLights();
     }
+
+#define INVALIDATE_2D_MATERIAL(material) \
+    if (RenderSystem2D::material)        \
+        RenderSystem2D::material->InvalidateRenderVariants();
+
+    INVALIDATE_2D_MATERIAL(DEFAULT_2D_COLOR_MATERIAL)
+    INVALIDATE_2D_MATERIAL(DEFAULT_2D_TEXTURE_MATERIAL)
+    INVALIDATE_2D_MATERIAL(DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL)
+    INVALIDATE_2D_MATERIAL(DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL)
+    INVALIDATE_2D_MATERIAL(DEFAULT_2D_TEXTURE_GRAYSCALE_MATERIAL)
+
+#undef INVALIDATE_2D_MATERIAL
 }
 
 void QtMainWindow::OnSwitchWithDifferentLODs(bool checked)

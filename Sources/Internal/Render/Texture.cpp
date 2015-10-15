@@ -266,6 +266,12 @@ void Texture::ReleaseTextureData()
         handle = rhi::HTexture(rhi::InvalidHandle);
     }
 
+    if (handleDepthStencil.IsValid())
+    {
+        rhi::DeleteTexture(handleDepthStencil);
+        handleDepthStencil = rhi::HTexture();
+    }
+
     if (samplerStateHandle.IsValid())
     {
         rhi::ReleaseSamplerState(samplerStateHandle);
@@ -551,6 +557,51 @@ void Texture::FlushDataToRenderer(Vector<Image *> * images)
         descriptor.levelCount = Max(descriptor.levelCount, img->mipmapLevel + 1);
 
     DVASSERT(descriptor.format != ((rhi::TextureFormat) - 1));//unsupported format
+
+#if 1
+
+    if( descriptor.type == rhi::TEXTURE_TYPE_2D )
+    {
+        for (uint32 i = 0; i < (uint32)images->size(); ++i)
+            descriptor.initialData[i] = (*images)[i]->data;
+    }
+    else if( descriptor.type == rhi::TEXTURE_TYPE_CUBE )
+    {
+        rhi::TextureFace face[] = { rhi::TEXTURE_FACE_POSITIVE_X, rhi::TEXTURE_FACE_NEGATIVE_X, rhi::TEXTURE_FACE_POSITIVE_Y, rhi::TEXTURE_FACE_NEGATIVE_Y, rhi::TEXTURE_FACE_POSITIVE_Z, rhi::TEXTURE_FACE_NEGATIVE_Z };
+        void**           data   = descriptor.initialData;
+
+        for( unsigned f=0; f!=countof(face); ++f )
+        {
+            for( unsigned m=0; m!=descriptor.levelCount; ++m )
+            {
+                *data = nullptr;
+
+                for( uint32 i=0; i!=(uint32)images->size(); ++i )
+                {
+                    Image*  img = (*images)[i];
+                    
+                    if( img->cubeFaceID == face[f]  &&  img->mipmapLevel == m )
+                    {
+                        *data = img->data;
+                        break;
+                    }
+                }
+
+                ++data;
+            }
+        }
+    }
+
+    handle = rhi::CreateTexture( descriptor );
+    DVASSERT(handle != rhi::InvalidHandle);
+
+    rhi::TextureSetDescriptor textureSetDesc;
+    textureSetDesc.fragmentTexture[0] = handle;
+    textureSetDesc.fragmentTextureCount = 1;
+    singleTextureSet = rhi::AcquireTextureSet(textureSetDesc);
+
+#else
+
     handle = rhi::CreateTexture(descriptor);
     DVASSERT(handle != rhi::InvalidHandle);
 
@@ -564,6 +615,8 @@ void Texture::FlushDataToRenderer(Vector<Image *> * images)
         Image *img = (*images)[i];
         TexImage((img->mipmapLevel != (uint32)-1) ? img->mipmapLevel : i, img->width, img->height, img->data, img->dataSize, img->cubeFaceID);
     }
+
+#endif
 
     samplerState.addrU = texDescriptor->drawSettings.wrapModeS;
     samplerState.addrV = texDescriptor->drawSettings.wrapModeT;
@@ -730,7 +783,7 @@ int32 Texture::Release()
 	return BaseObject::Release();
 }
 
-Texture * Texture::CreateFBO(uint32 w, uint32 h, PixelFormat format, rhi::TextureType requestedType)
+Texture* Texture::CreateFBO(uint32 w, uint32 h, PixelFormat format, bool needDepth, rhi::TextureType requestedType)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
@@ -747,7 +800,8 @@ Texture * Texture::CreateFBO(uint32 w, uint32 h, PixelFormat format, rhi::Textur
     tx->textureType = requestedType;
     tx->texDescriptor->format = format;
     tx->samplerState.mipFilter = tx->texDescriptor->drawSettings.mipFilter = rhi::TEXMIPFILTER_NONE;
-    
+    tx->samplerStateHandle = CreateSamplerStateHandle(tx->samplerState);
+
     const PixelFormatDescriptor & formatDescriptor = PixelFormatDescriptor::GetPixelFormatDescriptor(format);
     rhi::Texture::Descriptor descriptor;
     descriptor.width = tx->width;
@@ -757,9 +811,16 @@ Texture * Texture::CreateFBO(uint32 w, uint32 h, PixelFormat format, rhi::Textur
     descriptor.needRestore = false;
     descriptor.type = requestedType;
     descriptor.format = formatDescriptor.format;
+
     DVASSERT(descriptor.format != ((rhi::TextureFormat)-1));//unsupported format
     tx->handle = rhi::CreateTexture(descriptor);
-    tx->samplerStateHandle = CreateSamplerStateHandle(tx->samplerState);
+
+    if (needDepth)
+    {
+        descriptor.isRenderTarget = false;
+        descriptor.format = rhi::TEXTURE_FORMAT_D24S8;
+        tx->handleDepthStencil = rhi::CreateTexture(descriptor);
+    }
 
     rhi::TextureSetDescriptor textureSetDesc;
     textureSetDesc.fragmentTexture[0] = tx->handle;
@@ -993,10 +1054,10 @@ void Texture::SetPixelization(bool value)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-    if (value == pixelizationFlag)
-    {
-        return;
-    }
+    //     if (value == pixelizationFlag)
+    //     {
+    //         return;
+    //     }
 
     pixelizationFlag = value;
     const TexturesMap& texturesMap = GetTextureMap();

@@ -40,7 +40,7 @@
     using DAVA::Logger;
     #include "Concurrency/Thread.h"
     #include "Concurrency/Semaphore.h"
-#include "Concurrency/ConditionVariable.h"
+    #include "Concurrency/ConditionVariable.h"
     #include "Debug/Profiler.h"
 
     #include "_gl.h"
@@ -48,7 +48,6 @@
 
 namespace rhi
 {
-
 enum
 CommandGLES2
 {
@@ -66,6 +65,7 @@ CommandGLES2
     GLES2__SET_CULL_MODE                    = 24,
     GLES2__SET_SCISSOR_RECT                 = 25,
     GLES2__SET_VIEWPORT                     = 26,
+    GLES2__SET_FILLMODE                     = 27,
 
     GLES2__SET_VERTEX_PROG_CONST_BUFFER     = 31,
     GLES2__SET_FRAGMENT_PROG_CONST_BUFFER   = 32,
@@ -150,7 +150,6 @@ static DAVA::Spinlock       _GLES2_CmdBufIsBeingExecutedSync;
 static GLCommand*           _GLES2_PendingImmediateCmd      = nullptr;
 static uint32               _GLES2_PendingImmediateCmdCount = 0;
 static DAVA::Mutex          _GLES2_PendingImmediateCmdSync;
-static DAVA::ConditionVariable _GLES2_PendingImmediateCmdCV;
 
 static bool                 _GLES2_RenderThreadExitPending  = false;
 static DAVA::Spinlock       _GLES2_RenderThreadExitSync;
@@ -249,19 +248,6 @@ SetupDispatch( Dispatch* dispatch )
 
 }
 
-
-
-//------------------------------------------------------------------------------
-
-static Handle
-gles2_CommandBuffer_Allocate()
-{
-    Handle cb = CommandBufferPool::Alloc();
-
-    return cb;
-}
-
-
 //------------------------------------------------------------------------------
 
 static void
@@ -310,10 +296,19 @@ gles2_CommandBuffer_SetScissorRect( Handle cmdBuf, ScissorRect rect )
 
 //------------------------------------------------------------------------------
 
-void
+static void
 gles2_CommandBuffer_SetViewport( Handle cmdBuf, Viewport vp )
 {
     CommandBufferPool::Get(cmdBuf)->Command( GLES2__SET_VIEWPORT, vp.x, vp.y, vp.width, vp.height );
+}
+
+
+//------------------------------------------------------------------------------
+
+static void
+gles2_CommandBuffer_SetFillMode( Handle cmdBuf, FillMode mode )
+{
+    CommandBufferPool::Get(cmdBuf)->Command( GLES2__SET_FILLMODE, mode );
 }
 
 
@@ -718,8 +713,9 @@ SCOPED_NAMED_TIMING("gl.exec");
     Handle      fp_const[MAX_CONST_BUFFER_COUNT];
     const void* fp_const_data[MAX_CONST_BUFFER_COUNT];
     Handle      cur_vb          = InvalidHandle;
+    bool        vdecl_pending   = true;
     IndexSize   idx_size        = INDEX_SIZE_16BIT;
-    unsigned    tex_unit_0      =0;
+    unsigned    tex_unit_0      = 0;
     Handle      cur_query_buf   = InvalidHandle;
     uint32      cur_query_i     = InvalidIndex;
     GLint       def_viewport[4] = {0,0,0,0};
@@ -866,7 +862,8 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
                 if( cur_vb != vb )
                 {
                     VertexBufferGLES2::SetToRHI( vb );
-                    PipelineStateGLES2::SetVertexDeclToRHI( cur_ps, cur_vdecl );
+                    vdecl_pending = true;
+                    cur_base_vert = 0;
 
                     StatSet::IncStat(stat_SET_VB, 1);
 
@@ -993,6 +990,15 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
                 c += 4;
             }    break;
 
+            case GLES2__SET_FILLMODE :
+            {
+                #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
+                glPolygonMode( GL_FRONT_AND_BACK, (FillMode(arg[0])==FILLMODE_WIREFRAME) ? GL_LINE : GL_FILL );
+                #endif
+
+                c += 1;
+            }   break;
+
             case GLES2__SET_DEPTHSTENCIL_STATE :
             {
                 DepthStencilStateGLES2::SetToRHI( (Handle)(arg[0]) );
@@ -1082,6 +1088,12 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
                 if( cur_query_i != InvalidIndex )
                     QueryBufferGLES2::BeginQuery( cur_query_buf, cur_query_i );
                 
+                if( vdecl_pending )
+                {
+                    PipelineStateGLES2::SetVertexDeclToRHI( cur_ps, cur_vdecl );
+                    vdecl_pending = false;
+                }
+                
                 GL_CALL(glDrawArrays( mode, 0, v_cnt ));
                 StatSet::IncStat(stat_DP, 1);
                 switch (mode)
@@ -1109,7 +1121,6 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
             
             case GLES2__DRAW_INDEXED_PRIMITIVE :
             {
-//LCP;
                 unsigned    v_cnt       = unsigned(arg[1]);
                 int         mode        = int(arg[0]);
                 uint32      firstVertex = uint32(arg[2]);
@@ -1134,18 +1145,16 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
                         ConstBufferGLES2::SetToRHI( fp_const[i], fp_const_data[i] );
                 }
 
-                if( firstVertex != cur_base_vert )
+                if( vdecl_pending  ||  firstVertex != cur_base_vert )
                 {
                     PipelineStateGLES2::SetVertexDeclToRHI( cur_ps, cur_vdecl, firstVertex );
+                    vdecl_pending = false;
                     cur_base_vert = firstVertex;
                 }
 
                 if( cur_query_i != InvalidIndex )
                     QueryBufferGLES2::BeginQuery( cur_query_buf, cur_query_i );
 
-//LCP;
-Trace("DIP  mode= %i  v_cnt= %i  start_i= %i\n",int(mode),int(v_cnt),int(startIndex));
-//LCP;
                 int i_sz  = GL_UNSIGNED_SHORT;
                 int i_off = startIndex*sizeof(uint16);
 
@@ -1155,7 +1164,7 @@ Trace("DIP  mode= %i  v_cnt= %i  start_i= %i\n",int(mode),int(v_cnt),int(startIn
                     i_off = startIndex*sizeof(uint32);
                 }
 
-                GL_CALL(glDrawElements( mode, v_cnt, i_sz, (void*)(i_off) ));
+                GL_CALL(glDrawElements( mode, v_cnt, i_sz, (void*)((uint64)i_off) ));
 //LCP;
                 StatSet::IncStat( stat_DIP, 1 );
                 switch (mode)
@@ -1199,7 +1208,6 @@ Trace("DIP  mode= %i  v_cnt= %i  start_i= %i\n",int(mode),int(v_cnt),int(startIn
                 _GLES2_PendingImmediateCmdCount = 0;
             }
             _GLES2_PendingImmediateCmdSync.Unlock();
-            _GLES2_PendingImmediateCmdCV.NotifyOne();
 
             immediate_cmd_ttw = 10;
         }
@@ -1212,6 +1220,7 @@ Trace("DIP  mode= %i  v_cnt= %i  start_i= %i\n",int(mode),int(v_cnt),int(startIn
 
 //------------------------------------------------------------------------------
 
+#ifdef __DAVAENGINE_ANDROID__
 static void
 _RejectAllFrames()
 {
@@ -1255,6 +1264,7 @@ _RejectAllFrames()
 
     _FrameSync.Unlock();
 }
+#endif
 
 
 //------------------------------------------------------------------------------
@@ -1350,10 +1360,8 @@ Trace("\n\n-------------------------------\nframe %u executed(submitted to GPU)\
     if( _GLES2_Context )
     {
 #if defined(__DAVAENGINE_WIN32__)
-        HWND    wnd = (HWND)_GLES2_Native_Window;
-        HDC     dc = ::GetDC( wnd );
 Trace("rhi-gl.swap-buffers...\n");
-        SwapBuffers( dc );
+        SwapBuffers(_GLES2_WindowDC);
 Trace("rhi-gl.swap-buffers done\n");
 #elif defined(__DAVAENGINE_MACOS__)
         macos_gl_end_frame();
@@ -1389,7 +1397,7 @@ Trace("rhi-gl.swap-buffers done\n");
 
 static void
 gles2_Present(Handle sync)
-{    
+{
     if( _GLES2_RenderThreadFrameCount )
     {
 Trace("rhi-gl.present\n");
@@ -1454,6 +1462,9 @@ _RenderFunc( DAVA::BaseObject* obj, void*, void* )
         bool    do_wait = true;
         bool    do_exit = false;
      
+#if defined __DAVAENGINE_ANDROID__
+        android_gl_checkSurface();
+#endif
         
         // CRAP: busy-wait
         do
@@ -1476,7 +1487,6 @@ _RenderFunc( DAVA::BaseObject* obj, void*, void* )
 //Trace("exec-imm-cmd done\n");
             }
             _GLES2_PendingImmediateCmdSync.Unlock();
-            _GLES2_PendingImmediateCmdCV.NotifyOne();
 
 //            _CmdQueueSync.Lock();
 //            cnt = _RenderQueue.size();
@@ -1509,7 +1519,8 @@ InitializeRenderThreadGLES2( uint32 frameCount )
 
         _GLES2_RenderThread = DAVA::Thread::Create(DAVA::Message(&_RenderFunc));
         _GLES2_RenderThread->SetName("RHI.gl-render");
-        _GLES2_RenderThread->Start();    
+        _GLES2_RenderThread->Start();
+        _GLES2_RenderThread->SetPriority(DAVA::Thread::PRIORITY_HIGH);
         _GLES2_RenderThredStartedSync.Wait();
     }
 }
@@ -1551,13 +1562,15 @@ ResumeGLES2()
     
 //------------------------------------------------------------------------------
 
+#if 0
+    
 static void
 _LogGLError( const char* expr, int err )
 {
     Trace( "FAILED  %s (err= 0x%X) : %s\n", expr, err, GetGLErrorString(err) );
     DVASSERT(!"KABOOM!!!");
 }
-
+#endif
 
 //------------------------------------------------------------------------------
 
@@ -1872,22 +1885,32 @@ ExecGL( GLCommand* command, uint32 cmdCount, bool force_immediate )
     }
     else
     {
-        _GLES2_PendingImmediateCmdSync.Lock();
+        bool scheduled = false;
+        bool executed = false;
 
-        while (nullptr != _GLES2_PendingImmediateCmd)
+        // CRAP: busy-wait
+        do
         {
-            _GLES2_PendingImmediateCmdCV.Wait(_GLES2_PendingImmediateCmdSync);
-        }
+            _GLES2_PendingImmediateCmdSync.Lock();
+            if (!_GLES2_PendingImmediateCmd)
+            {
+                _GLES2_PendingImmediateCmd = command;
+                _GLES2_PendingImmediateCmdCount = cmdCount;
+                scheduled = true;
+            }
+            _GLES2_PendingImmediateCmdSync.Unlock();
+        } while (!scheduled);
 
-        _GLES2_PendingImmediateCmd = command;
-        _GLES2_PendingImmediateCmdCount = cmdCount;
-
-        while (nullptr != _GLES2_PendingImmediateCmd)
+        // CRAP: busy-wait
+        do
         {
-            _GLES2_PendingImmediateCmdCV.Wait(_GLES2_PendingImmediateCmdSync);
-        }
-
-        _GLES2_PendingImmediateCmdSync.Unlock();
+            _GLES2_PendingImmediateCmdSync.Lock();
+            if (!_GLES2_PendingImmediateCmd)
+            {
+                executed = true;
+            }
+            _GLES2_PendingImmediateCmdSync.Unlock();
+        } while (!executed);
     }
 }
 
@@ -1904,6 +1927,7 @@ SetupDispatch( Dispatch* dispatch )
     dispatch->impl_CommandBuffer_SetCullMode            = &gles2_CommandBuffer_SetCullMode;
     dispatch->impl_CommandBuffer_SetScissorRect         = &gles2_CommandBuffer_SetScissorRect;
     dispatch->impl_CommandBuffer_SetViewport            = &gles2_CommandBuffer_SetViewport;
+    dispatch->impl_CommandBuffer_SetFillMode            = &gles2_CommandBuffer_SetFillMode;
     dispatch->impl_CommandBuffer_SetVertexData          = &gles2_CommandBuffer_SetVertexData;
     dispatch->impl_CommandBuffer_SetVertexConstBuffer   = &gles2_CommandBuffer_SetVertexConstBuffer;
     dispatch->impl_CommandBuffer_SetVertexTexture       = &gles2_CommandBuffer_SetVertexTexture;

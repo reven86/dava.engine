@@ -100,9 +100,7 @@ private:
     struct Control3dInfo
     {
         UI3DView* control = nullptr;
-        int32 priority = 0;
-        rhi::Handle texture = rhi::InvalidHandle;
-        rhi::Handle depht = rhi::InvalidHandle;
+        rhi::RenderPassConfig scenePassConfig;
     };
 
     struct ScreenshotWaiter

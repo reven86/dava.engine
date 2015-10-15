@@ -89,6 +89,7 @@ public:
 
     static const FastName DEBUG_DRAW_OPAQUE;
     static const FastName DEBUG_DRAW_ALPHABLEND;
+    static const FastName DEBUG_DRAW_WIREFRAME;
 };
 
 class NMaterialTextureName
@@ -144,7 +145,9 @@ public:
     static const FastName PARAM_RCP_SCREEN_SIZE;
     static const FastName PARAM_SCREEN_OFFSET;
     static const FastName PARAM_ALPHATEST_THRESHOLD;
-	static const FastName DEPRECATED_SHADOW_COLOR_PARAM;
+    static const FastName PARAM_LANDSCAPE_TEXTURE_TILING;
+    static const FastName DEPRECATED_SHADOW_COLOR_PARAM;
+    static const FastName DEPRECATED_LANDSCAPE_TEXTURE_0_TILING;
 };
 
 class NMaterialFlagName
@@ -195,6 +198,18 @@ public:
     static const FastName FLAG_ILLUMINATION_USED;
     static const FastName FLAG_ILLUMINATION_SHADOW_CASTER;
     static const FastName FLAG_ILLUMINATION_SHADOW_RECEIVER;
+
+    static bool IsRuntimeFlag(const FastName& flag);
+};
+
+class NMaterialSerializationKey
+{
+public:
+    static const DAVA::String MaterialKey;
+    static const DAVA::String ParentMaterialKey;
+    static const DAVA::String FXName;
+    static const DAVA::String QualityGroup;
+    static const DAVA::String MaterialName;
 };
 
 class NMaterialQualityName

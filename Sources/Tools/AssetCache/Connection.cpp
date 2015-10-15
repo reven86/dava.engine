@@ -26,8 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-
 #include "AssetCache/Connection.h"
 #include "AssetCache/AssetCacheConstants.h"
 
@@ -43,29 +41,29 @@
 
 #include "Concurrency/LockGuard.h"
 
-namespace DAVA {
-namespace AssetCache{
-
-bool SendArchieve(Net::IChannel* channel, KeyedArchive *archieve)
+namespace DAVA
+{
+namespace AssetCache
+{
+bool SendArchieve(Net::IChannel* channel, KeyedArchive* archieve)
 {
     DVASSERT(archieve && channel);
 
     auto packedSize = archieve->Save(nullptr, 0);
-    uint8 *packedData = new uint8[packedSize];
+    uint8* packedData = new uint8[packedSize];
 
     DVVERIFY(packedSize == archieve->Save(packedData, packedSize));
 
     uint32 packedId = 0;
     return channel->Send(packedData, packedSize, 0, &packedId);
 }
-    
-Connection::Connection(Net::eNetworkRole _role, const Net::Endpoint & _endpoint, Net::IChannelListener * _listener, Net::eTransportType transport)
+
+Connection::Connection(Net::eNetworkRole _role, const Net::Endpoint& _endpoint, Net::IChannelListener* _listener, Net::eTransportType transport)
     : endpoint(_endpoint)
     , listener(_listener)
 {
     Connect(_role, transport);
 }
-
 
 Connection::~Connection()
 {
@@ -78,13 +76,13 @@ Connection::~Connection()
 bool Connection::Connect(Net::eNetworkRole role, Net::eTransportType transport)
 {
     const auto serviceID = NET_SERVICE_ID;
-    
+
     bool isRegistered = Net::NetCore::Instance()->IsServiceRegistered(serviceID);
     if (!isRegistered)
     {
         isRegistered = Net::NetCore::Instance()->RegisterService(serviceID,
-            MakeFunction(&Connection::Create),
-            MakeFunction(&Connection::Delete));
+                                                                 MakeFunction(&Connection::Create),
+                                                                 MakeFunction(&Connection::Delete));
     }
 
     if (isRegistered)
@@ -121,10 +119,9 @@ void Connection::DisconnectBlocked()
     controllerId = Net::NetCore::INVALID_TRACK_ID;
 }
 
-
-Net::IChannelListener * Connection::Create(uint32 serviceId, void* context)
+Net::IChannelListener* Connection::Create(uint32 serviceId, void* context)
 {
-    auto connection = static_cast<Connection *>(context);
+    auto connection = static_cast<Connection*>(context);
     return connection->listener;
 }
 
@@ -134,9 +131,5 @@ void Connection::Delete(Net::IChannelListener* obj, void* context)
     //listener has external creation and deletion
 }
 
-
-
-
 } // end of namespace AssetCache
 } // end of namespace DAVA
-

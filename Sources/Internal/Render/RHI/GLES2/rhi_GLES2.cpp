@@ -55,7 +55,7 @@ GLuint      _GLES2_LastSetTex0                  = 0;
 GLenum      _GLES2_LastSetTex0Target            = GL_TEXTURE_2D;
 
 #if defined(__DAVAENGINE_WIN32__)
-HDC deviceContext = 0;
+HDC         _GLES2_WindowDC                     = 0;
 #endif
 
 namespace rhi
@@ -287,6 +287,15 @@ gles2_Reset( const ResetParam& param )
 
 //------------------------------------------------------------------------------
 
+static void
+gles2_InvalidateCache()
+{
+    PipelineStateGLES2::InvalidateCache();
+}
+
+
+//------------------------------------------------------------------------------
+
 static bool
 gles2_NeedRestoreResources()
 {
@@ -303,7 +312,7 @@ gles2_NeedRestoreResources()
 void
 wgl_AcquireContext()
 {
-    wglMakeCurrent( deviceContext, (HGLRC)_GLES2_Context );
+    wglMakeCurrent( _GLES2_WindowDC, (HGLRC)_GLES2_Context );
 }
 
 void
@@ -322,7 +331,7 @@ gles2_Initialize( const InitParam& param )
 
     if (_GLES2_Native_Window)
     {
-        deviceContext = ::GetDC((HWND)_GLES2_Native_Window);
+        _GLES2_WindowDC = ::GetDC((HWND)_GLES2_Native_Window);
 
         DVASSERT(!_Inited);
 
@@ -349,22 +358,22 @@ gles2_Initialize( const InitParam& param )
             0,                                // reserved
             0, 0, 0                           // layer masks ignored
         };
-        int  pixel_format = ChoosePixelFormat(deviceContext, &pfd);
-        SetPixelFormat(deviceContext, pixel_format, &pfd);
-        SetMapMode(deviceContext, MM_TEXT);
+        int  pixel_format = ChoosePixelFormat( _GLES2_WindowDC, &pfd );
+        SetPixelFormat( _GLES2_WindowDC, pixel_format, &pfd);
+        SetMapMode( _GLES2_WindowDC, MM_TEXT);
 
 
-        HGLRC   ctx = wglCreateContext(deviceContext);
+        HGLRC   ctx = wglCreateContext( _GLES2_WindowDC );
 
-        if (ctx)
+        if( ctx )
         {
             Logger::Info("GL-context created\n");
-            /*
+            
             GLint attr[] =
             {
-            // here we ask for OpenGL 4.0
-            WGL_CONTEXT_MAJOR_VERSION_ARB, 4,
-            WGL_CONTEXT_MINOR_VERSION_ARB, 3,
+            // here we ask for OpenGL version
+            WGL_CONTEXT_MAJOR_VERSION_ARB, 3,
+            WGL_CONTEXT_MINOR_VERSION_ARB, 2,
             // forward compatibility mode
             WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
             // uncomment this for Compatibility profile
@@ -373,25 +382,23 @@ gles2_Initialize( const InitParam& param )
             WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
             0
             };
-            */
-            wglMakeCurrent(deviceContext, ctx);
+            
+            wglMakeCurrent( _GLES2_WindowDC, ctx );
             glewExperimental = false;
 
-            if (glewInit() == GLEW_OK)
-            {
-                /*
-                HGLRC ctx4 = wglCreateContextAttribsARB( dc, 0, attr );
-                if( ctx4  &&  wglMakeCurrent( dc, ctx4 ) )
+            if( glewInit() == GLEW_OK )
+            {                
+                HGLRC ctx4 = 0;//wglCreateContextAttribsARB( _GLES2_WindowDC, 0, attr );
+                if( ctx4  &&  wglMakeCurrent( _GLES2_WindowDC, ctx4 ) )
                 {
-                //            wglDeleteContext( ctx );
-                note( "using GL 4.0\n" );
-                _Context = (void*)ctx4;
+                    wglDeleteContext( ctx );
+                    Logger::Info( "using GL %i.%i", attr[1], attr[3] );
+                    _GLES2_Context = (void*)ctx4;
                 }
                 else
-                {
-                */
-                _GLES2_Context = (void*)ctx;
-                //            }
+                {                
+                    _GLES2_Context = (void*)ctx;
+                }
 
                 _GLES2_AcquireContext = &wgl_AcquireContext;
                 _GLES2_ReleaseContext = &wgl_ReleaseContext;
@@ -412,7 +419,8 @@ gles2_Initialize( const InitParam& param )
     {
         _GLES2_AcquireContext = param.acquireContextFunc;
         _GLES2_ReleaseContext = param.releaseContextFunc;
-        success = true; //context already created in external code
+        if (glewInit() == GLEW_OK)
+            success = true;
     }
 
     DVASSERT(_GLES2_AcquireContext);
@@ -439,11 +447,20 @@ gles2_Initialize( const InitParam& param )
         DispatchGLES2.impl_NeedRestoreResources     = &gles2_NeedRestoreResources;
         DispatchGLES2.impl_ResumeRendering          = &ResumeGLES2;
         DispatchGLES2.impl_SuspendRendering         = &SuspendGLES2;
+        DispatchGLES2.impl_InvalidateCache          = &gles2_InvalidateCache;
 
         SetDispatchTable(DispatchGLES2);
 
         gles_check_GL_extensions();
 
+        if( param.maxVertexBufferCount )
+            VertexBufferGLES2::Init( param.maxVertexBufferCount );
+        if( param.maxIndexBufferCount )
+            IndexBufferGLES2::Init( param.maxIndexBufferCount );
+        if( param.maxConstBufferCount )
+            ConstBufferGLES2::Init( param.maxConstBufferCount );
+        if( param.maxTextureCount )
+            TextureGLES2::Init( param.maxTextureCount );
         ConstBufferGLES2::InitializeRingBuffer(4 * 1024 * 1024); // CRAP: hardcoded default const ring-buf size
 
         Logger::Info("GL inited\n");
@@ -492,6 +509,14 @@ gles2_Initialize( const InitParam& param )
     _GLES2_AcquireContext = (param.acquireContextFunc)  ? param.acquireContextFunc  : &macos_gl_acquire_context;
     _GLES2_ReleaseContext = (param.releaseContextFunc)  ? param.releaseContextFunc  : &macos_gl_release_context;
    
+    if( param.maxVertexBufferCount )
+        VertexBufferGLES2::Init( param.maxVertexBufferCount );
+    if( param.maxIndexBufferCount )
+        IndexBufferGLES2::Init( param.maxIndexBufferCount );
+    if( param.maxConstBufferCount )
+        ConstBufferGLES2::Init( param.maxConstBufferCount );
+    if( param.maxTextureCount )
+        TextureGLES2::Init( param.maxTextureCount );
     ConstBufferGLES2::InitializeRingBuffer(4 * 1024 * 1024); // CRAP: hardcoded default const ring-buf size
 
     _Inited = true;
@@ -521,6 +546,7 @@ gles2_Initialize( const InitParam& param )
     DispatchGLES2.impl_NeedRestoreResources     = &gles2_NeedRestoreResources;
     DispatchGLES2.impl_ResumeRendering          = &ResumeGLES2;
     DispatchGLES2.impl_SuspendRendering         = &SuspendGLES2;
+    DispatchGLES2.impl_InvalidateCache          = &gles2_InvalidateCache;
 
     SetDispatchTable(DispatchGLES2);
 
@@ -557,6 +583,14 @@ gles2_Initialize(const InitParam& param)
     _GLES2_AcquireContext = (param.acquireContextFunc)  ? param.acquireContextFunc  : &ios_gl_acquire_context;
     _GLES2_ReleaseContext = (param.releaseContextFunc)  ? param.releaseContextFunc  : &ios_gl_release_context;
 
+    if (param.maxVertexBufferCount)
+        VertexBufferGLES2::Init(param.maxVertexBufferCount);
+    if (param.maxIndexBufferCount)
+        IndexBufferGLES2::Init(param.maxIndexBufferCount);
+    if (param.maxConstBufferCount)
+        ConstBufferGLES2::Init(param.maxConstBufferCount);
+    if (param.maxTextureCount)
+        TextureGLES2::Init(param.maxTextureCount);
     ConstBufferGLES2::InitializeRingBuffer(4 * 1024 * 1024); // CRAP: hardcoded default const ring-buf size
 
     _Inited = true;
@@ -586,6 +620,7 @@ gles2_Initialize(const InitParam& param)
     DispatchGLES2.impl_NeedRestoreResources     = &gles2_NeedRestoreResources;
     DispatchGLES2.impl_ResumeRendering          = &ResumeGLES2;
     DispatchGLES2.impl_SuspendRendering         = &SuspendGLES2;
+    DispatchGLES2.impl_InvalidateCache          = &gles2_InvalidateCache;
 
     SetDispatchTable(DispatchGLES2);
 
@@ -625,6 +660,14 @@ gles2_Initialize( const InitParam& param )
 
 	android_gl_init(param.window);
 
+    if( param.maxVertexBufferCount )
+        VertexBufferGLES2::Init( param.maxVertexBufferCount );
+    if( param.maxIndexBufferCount )
+        IndexBufferGLES2::Init( param.maxIndexBufferCount );
+    if( param.maxConstBufferCount )
+        ConstBufferGLES2::Init( param.maxConstBufferCount );
+    if( param.maxTextureCount )
+        TextureGLES2::Init( param.maxTextureCount );
     ConstBufferGLES2::InitializeRingBuffer(4 * 1024 * 1024); // CRAP: hardcoded default const ring-buf size
 
     _Inited = true;
@@ -654,6 +697,7 @@ gles2_Initialize( const InitParam& param )
     DispatchGLES2.impl_NeedRestoreResources     = &gles2_NeedRestoreResources;
     DispatchGLES2.impl_ResumeRendering          = &ResumeGLES2;
     DispatchGLES2.impl_SuspendRendering         = &SuspendGLES2;
+    DispatchGLES2.impl_InvalidateCache          = &gles2_InvalidateCache;
 
     SetDispatchTable(DispatchGLES2);
 

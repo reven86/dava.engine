@@ -48,7 +48,7 @@ namespace rhi
 //==============================================================================
 
 typedef ResourcePool<ProgGLES2::ConstBuf,RESOURCE_CONST_BUFFER,ProgGLES2::ConstBuf::Desc,false>   ConstBufGLES2Pool;
-RHI_IMPL_POOL_SIZE(ProgGLES2::ConstBuf,RESOURCE_CONST_BUFFER,ProgGLES2::ConstBuf::Desc,false,8*1024);
+RHI_IMPL_POOL_SIZE(ProgGLES2::ConstBuf, RESOURCE_CONST_BUFFER, ProgGLES2::ConstBuf::Desc, false, 12 * 1024);
 
 static RingBuffer   DefaultConstRingBuffer;
 
@@ -459,7 +459,7 @@ ProgGLES2::ConstBuf::Instance() const
 void
 ProgGLES2::ConstBuf::SetToRHI( const void* instData ) const
 {
-//SCOPED_NAMED_TIMING("gl.cb-set");
+//SCOPED_NAMED_TIMING("gl-Uniform4fv");
     GL_CALL(glUniform4fv( location, count, (GLfloat*)instData ));
     StatSet::IncStat( stat_SET_CB, 1 );
 }
@@ -547,6 +547,12 @@ gles2_ConstBuffer_Delete( Handle cb )
 
 namespace ConstBufferGLES2
 {
+
+void
+Init( uint32 maxCount )
+{
+    ConstBufGLES2Pool::Reserve( maxCount );
+}
 
 void
 SetupDispatch( Dispatch* dispatch )

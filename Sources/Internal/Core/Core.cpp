@@ -194,7 +194,12 @@ void Core::CreateRenderer()
         rendererParams.threadedRenderEnabled    = true;
         rendererParams.threadedRenderFrameCount = options->GetInt32("rhi_threaded_frame_count");
     }
-    
+
+    rendererParams.maxIndexBufferCount = options->GetInt32("max_index_buffer_count");
+    rendererParams.maxVertexBufferCount = options->GetInt32("max_vertex_buffer_count");
+    rendererParams.maxConstBufferCount = options->GetInt32("max_const_buffer_count");
+    rendererParams.maxTextureCount = options->GetInt32("max_texture_count");
+
     Renderer::Initialize(renderer, rendererParams);
 }
         
@@ -216,7 +221,6 @@ void Core::ReleaseSingletons()
     UIControlSystem::Instance()->Release();
     FontManager::Instance()->Release();
     AnimationManager::Instance()->Release();
-    SystemTimer::Instance()->Release();
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
     Accelerometer::Instance()->Release();
     //SoundSystem::Instance()->Release();
@@ -241,11 +245,13 @@ void Core::ReleaseSingletons()
 #if defined(__DAVAENGINE_ANDROID__)
     AssetsManager::Instance()->Release();
 #endif
+
+    SystemTimer::Instance()->Release();
 }
 
 void Core::SetOptions(KeyedArchive * archiveOfOptions)
 {
-SafeRelease(options);
+    SafeRelease(options);
 
     options = SafeRetain(archiveOfOptions);
     
@@ -436,6 +442,7 @@ Logger::Info("Core::SystemAppStarted");
 
     if (core != nullptr)
     {
+//rhi::ShaderSourceCache::Load( "~doc:/ShaderSource.bin" );
         Core::Instance()->CreateRenderer();
         RenderSystem2D::Instance()->Init();
         core->OnAppStarted();
@@ -446,6 +453,11 @@ void Core::SystemAppFinished()
 {
     if (core != nullptr)
     {
+//rhi::ShaderSourceCache::Save( "~doc:/ShaderSource.bin" );
+        #if TRACER_ENABLED
+//        profiler::DumpEvents();
+        profiler::SaveEvents("trace.json");
+        #endif
         core->OnAppFinished();
     }
 }
@@ -459,6 +471,7 @@ void Core::SystemProcessFrame()
     START_TIMING(PROF__FRAME);
     #endif
 
+    TRACE_BEGIN_EVENT(11,"core","SystemProcessFrame")
 
 #ifdef __DAVAENGINE_NVIDIA_TEGRA_PROFILE__
     static bool isInit = false;
@@ -562,15 +575,16 @@ void Core::SystemProcessFrame()
         STOP_TIMING(PROF__FRAME_UPDATE);
         
         START_TIMING(PROF__FRAME_DRAW);
+        TRACE_BEGIN_EVENT(11,"core","Draw")
         core->Draw();
+        TRACE_END_EVENT(11,"core","Draw")
         STOP_TIMING(PROF__FRAME_DRAW);
 
         START_TIMING(PROF__FRAME_ENDFRAME);
+        TRACE_BEGIN_EVENT(11,"core","EndFrame")
         core->EndFrame();
+        TRACE_END_EVENT(11,"core","EndFrame")
         STOP_TIMING(PROF__FRAME_ENDFRAME);
-// #ifdef __DAVAENGINE_DIRECTX9__
-//      core->BeginFrame();
-// #endif
     }
     Stats::Instance()->EndFrame();
     globalFrameIndex++;
@@ -579,6 +593,8 @@ void Core::SystemProcessFrame()
     EGLuint64NV end = eglGetSystemTimeNV() / frequency;
     EGLuint64NV interval = end - start;
 #endif //__DAVAENGINE_NVIDIA_TEGRA_PROFILE__
+
+    TRACE_END_EVENT(11,"core","SystemProcessFrame")
 
     #if PROFILER_ENABLED
         STOP_TIMING(PROF__FRAME);
@@ -591,7 +607,6 @@ void Core::SystemProcessFrame()
     
 void Core::GoBackground(bool isLock)
 {
-#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__) 
     if (core)
     {
         if(isLock)
@@ -603,18 +618,31 @@ void Core::GoBackground(bool isLock)
             core->OnBackground();
         }
     }
-#endif //#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
 }
 
 void Core::GoForeground()
 {
-#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
     if (core)
     {
         core->OnForeground();
     }
     Net::NetCore::Instance()->RestartAllControllers();
-#endif //#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+}
+
+void Core::FocusLost()
+{
+    if (core)
+    {
+        core->OnFocusLost();
+    }
+}
+
+void Core::FocusReceived()
+{
+    if (core)
+    {
+        core->OnFocusReceived();
+    }
 }
 
 uint32 Core::GetGlobalFrameIndex()
@@ -635,16 +663,30 @@ void Core::SetCommandLine(Vector<String>&& args)
 void Core::SetCommandLine(const DAVA::String& cmdLine)
 {
     commandLine.clear();
-    Split(cmdLine, " ", commandLine);
-
-    //remove "quotes"
-    for (auto& arg : commandLine)
+    bool inQuote = false;
+    String currentParam;
+    for (auto ch : cmdLine)
     {
-        const char quote = '\"';
-        if (arg.front() == quote && arg.back() == quote)
+        if (ch == '"')
         {
-            arg = arg.substr(1, arg.size() - 2);
+            inQuote = !inQuote;
         }
+        else if (!inQuote && ch == ' ')
+        {
+            if (!currentParam.empty())
+            {
+                commandLine.push_back(currentParam);
+            }
+            currentParam.clear();
+        }
+        else
+        {
+            currentParam += ch;
+        }
+    }
+    if (!currentParam.empty())
+    {
+        commandLine.push_back(currentParam);
     }
 }
 

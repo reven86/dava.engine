@@ -171,57 +171,8 @@ extern void FrameworkMain(int argc, char *argv[]);
         return;
     
 //	Logger::FrameworkDebug("drawRect started");
-	
-#if RHI_COMPLETE
-	if (activeCursor != RenderManager::Instance()->GetCursor())
-	{
-		activeCursor = RenderManager::Instance()->GetCursor();
-		[[self window] invalidateCursorRectsForView: self];
-	}
-#endif
-	
-	
-#if RHI_COMPLETE
-	DAVA::RenderManager::Instance()->Lock();
-#endif
-	
-	if (isFirstDraw)
-	{
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		isFirstDraw = false;
-	}	
-	
 
-	
-	DAVA::Core::Instance()->SystemProcessFrame();
-	
-/*	// This is an optimization.  If the view is being
-	// resized, don't do a buffer swap.  The GL content
-	// will be updated as part of the window flush anyway.
-	// This makes live resize look nicer as the GL view
-	// won't get flushed ahead of the window flush.  It also
-	// makes live resize faster since we're not flushing twice.
-	// Because I want the animtion to continue while resize
-	// is happening, I use my own flag rather than calling
-	// [self inLiveReize].  For most apps this wouldn't be
-	// necessary.
- 
-	if(!sizeChanged)
-	{
-		[[self openGLContext] flushBuffer];
-	}
-	else glFlush();
-	sizeChanged = NO; */
-    
-/*
-    if(DAVA::Core::Instance()->IsActive())
-    {
-        [[self openGLContext] flushBuffer];
-    }
-*/    
-//	DAVA::RenderManager::Instance()->Unlock();
-//  Logger::FrameworkDebug("drawRect ended");
-
+    DAVA::Core::Instance()->SystemProcessFrame();
 }
 
 - (void) resetCursorRects
@@ -374,11 +325,11 @@ void MoveTouchsToVector(NSEvent *curEvent, int touchPhase, Vector<UIEvent> *outT
 -(void)process:(int)touchPhase touch:(NSEvent*)touch
 {
 	Vector<DAVA::UIEvent> touches;
-    Vector<DAVA::UIEvent> emptyTouches;
 
     MoveTouchsToVector(touch, touchPhase, &touches);
-    UIControlSystem::Instance()->OnInput(touchPhase, emptyTouches, touches);
-	touches.clear();
+
+    UIControlSystem::Instance()->OnInput(touches, allTouches);
+    touches.clear();
 }
 
 - (void)mouseDown:(NSEvent *)theEvent
@@ -451,63 +402,46 @@ void MoveTouchsToVector(NSEvent *curEvent, int touchPhase, Vector<UIEvent> *outT
 }
 
 static int32 oldModifersFlags = 0;
-- (void) keyDown:(NSEvent *)event
+- (void)keyDown:(NSEvent*)event
 {
-	{
-			//		Logger::FrameworkDebug("glview keypress!");
-		unichar c = [[event characters] characterAtIndex:0];
-		
-		Vector<DAVA::UIEvent> touches;
-        Vector<DAVA::UIEvent> emptyTouches;
+    int32 keyCode = [event keyCode];
+    InputSystem* input = InputSystem::Instance();
+    KeyboardDevice& keyboard = input->GetKeyboard();
 
-        for(Vector<DAVA::UIEvent>::iterator it = activeTouches.begin(); it != activeTouches.end(); it++)
-        {
-            touches.push_back(*it);
-        }
+    DAVA::UIEvent ev;
+    ev.keyChar = [[event characters] characterAtIndex:0];
+    ev.phase = DAVA::UIEvent::PHASE_KEYCHAR;
+    ev.timestamp = event.timestamp;
+    ev.tapCount = 1;
+    ev.tid = keyboard.GetDavaKeyForSystemKey(keyCode);
 
-		DAVA::UIEvent ev;
-		ev.keyChar = c;
-		ev.phase = DAVA::UIEvent::PHASE_KEYCHAR;
-		ev.timestamp = event.timestamp;
-		ev.tapCount = 1;
-		ev.tid = InputSystem::Instance()->GetKeyboard().GetDavaKeyForSystemKey([event keyCode]);
-        
-        touches.push_back(ev);
-		
-        UIControlSystem::Instance()->OnInput(0, emptyTouches, touches);
-        touches.pop_back();
-        UIControlSystem::Instance()->OnInput(0, emptyTouches, touches);
-	}
-	
-    InputSystem::Instance()->GetKeyboard().OnSystemKeyPressed([event keyCode]);
-    if ([event modifierFlags]&NSCommandKeyMask)
-    {
-        InputSystem::Instance()->GetKeyboard().OnSystemKeyUnpressed([event keyCode]);
-    }
+    Vector<DAVA::UIEvent> touches;
+    touches.push_back(ev);
 
-//NSLog(@"key Down View");
-//	unichar c = [[event charactersIgnoringModifiers] characterAtIndex:0];
-//	
-//	if ([event modifierFlags] & NSCommandKeyMask)
-//	{
-//		if (c == 'f')
-//		{
-//			NSLog(@"[CoreMacOSPlatform] Switch screen mode");
-//			if (Core::Instance()->GetScreenMode() == Core::MODE_WINDOWED)
-//			{
-//				Core::Instance()->SwitchScreenToMode(Core::MODE_FULLSCREEN);
-//			}else 
-//			{	
-//				Core::Instance()->SwitchScreenToMode(Core::MODE_WINDOWED);
-//			}
-//		}
-//	}
+    UIControlSystem::Instance()->OnInput(touches, allTouches);
 
-}	
+    keyboard.OnSystemKeyPressed(keyCode);
+}
 
 - (void) keyUp:(NSEvent *)event
 {
-    InputSystem::Instance()->GetKeyboard().OnSystemKeyUnpressed([event keyCode]);
+    int32 keyCode = [event keyCode];
+    InputSystem* input = InputSystem::Instance();
+    KeyboardDevice& keyboard = input->GetKeyboard();
+
+    DAVA::UIEvent ev;
+    ev.keyChar = [[event characters] characterAtIndex:0];
+    ev.phase = DAVA::UIEvent::PHASE_KEYCHAR_RELEASE;
+    ev.timestamp = event.timestamp;
+    ev.tapCount = 1;
+    ev.tid = keyboard.GetDavaKeyForSystemKey(keyCode);
+
+    Vector<DAVA::UIEvent> touches;
+    touches.push_back(ev);
+
+    UIControlSystem::Instance()->OnInput(touches, allTouches);
+
+    keyboard.OnSystemKeyUnpressed(keyCode);
 }
 
 - (void) flagsChanged :(NSEvent *)event

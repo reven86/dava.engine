@@ -45,6 +45,7 @@ void        gles2_Initialize( const InitParam& param );
 
 namespace VertexBufferGLES2
 {
+void        Init( uint32 maxCount );
 void        SetupDispatch( Dispatch* dispatch );
 void        SetToRHI( Handle vb );
 void        ReCreateAll();
@@ -53,6 +54,7 @@ unsigned    NeedRestoreCount();
 
 namespace IndexBufferGLES2
 {
+void        Init( uint32 maxCount );
 void        SetupDispatch( Dispatch* dispatch );
 IndexSize   SetToRHI( Handle ib );
 void        ReCreateAll();
@@ -69,6 +71,7 @@ void        EndQuery( Handle buf, uint32 objectIndex );
 
 namespace TextureGLES2
 { 
+void        Init( uint32 maxCount );
 void        SetupDispatch( Dispatch* dispatch );
 void        SetToRHI( Handle tex, unsigned unit_i, uint32 base_i=InvalidIndex  );
 void        SetAsRenderTarget( Handle tex, Handle depth );
@@ -90,6 +93,7 @@ void        SetupDispatch( Dispatch* dispatch );
 void        SetToRHI( Handle ps, uint32 vdeclUID );
 void        SetVertexDeclToRHI( Handle ps, uint32 vdeclUID, uint32 firstVertex=0 );
 uint32      VertexSamplerCount( Handle ps );
+void        InvalidateCache();
 }
 
 namespace DepthStencilStateGLES2
@@ -99,6 +103,7 @@ void        SetToRHI( Handle hstate );
 }
 namespace ConstBufferGLES2
 {
+void        Init( uint32 maxCount );
 void        SetupDispatch( Dispatch* dispatch );
 void        InitializeRingBuffer( uint32 size );
 

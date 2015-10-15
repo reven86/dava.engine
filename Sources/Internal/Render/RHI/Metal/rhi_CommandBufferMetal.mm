@@ -346,10 +346,23 @@ metal_CommandBuffer_SetViewport(Handle cmdBuf, Viewport viewport)
     [encoder setViewport:vp];
 }
 
+
 //------------------------------------------------------------------------------
 
 static void
-metal_CommandBuffer_SetVertexData(Handle cmdBuf, Handle vb, uint32 streamIndex)
+metal_CommandBuffer_SetFillMode( Handle cmdBuf, FillMode mode )
+{
+    CommandBufferMetal_t* cb = CommandBufferPool::Get(cmdBuf);
+    id<MTLRenderCommandEncoder> encoder = cb->encoder;
+    
+    [encoder setTriangleFillMode:(mode==FILLMODE_WIREFRAME) ? MTLTriangleFillModeLines : MTLTriangleFillModeFill];
+}
+
+
+//------------------------------------------------------------------------------
+
+static void
+metal_CommandBuffer_SetVertexData( Handle cmdBuf, Handle vb, uint32 streamIndex)
 {
     CommandBufferMetal_t* cb = CommandBufferPool::Get(cmdBuf);
 
@@ -357,6 +370,7 @@ metal_CommandBuffer_SetVertexData(Handle cmdBuf, Handle vb, uint32 streamIndex)
 
     StatSet::IncStat(stat_SET_VB, 1);
 }
+
 
 //------------------------------------------------------------------------------
 
@@ -688,6 +702,7 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_CommandBuffer_SetCullMode = &metal_CommandBuffer_SetCullMode;
     dispatch->impl_CommandBuffer_SetScissorRect = &metal_CommandBuffer_SetScissorRect;
     dispatch->impl_CommandBuffer_SetViewport = &metal_CommandBuffer_SetViewport;
+    dispatch->impl_CommandBuffer_SetFillMode = &metal_CommandBuffer_SetFillMode;
     dispatch->impl_CommandBuffer_SetVertexData = &metal_CommandBuffer_SetVertexData;
     dispatch->impl_CommandBuffer_SetVertexConstBuffer = &metal_CommandBuffer_SetVertexConstBuffer;
     dispatch->impl_CommandBuffer_SetVertexTexture = &metal_CommandBuffer_SetVertexTexture;

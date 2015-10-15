@@ -1194,23 +1194,6 @@
 		76199F3D192DF73D008A47E2 /* VersionInfo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 76199F39192DF73D008A47E2 /* VersionInfo.cpp */; };
 		76199F3E192DF73D008A47E2 /* VersionInfo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 76199F39192DF73D008A47E2 /* VersionInfo.cpp */; };
 		76199F3F192DF73D008A47E2 /* VersionInfo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 76199F39192DF73D008A47E2 /* VersionInfo.cpp */; };
-		76C7419A1A48374B00184019 /* CoreMacOSPlatformQt.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 76C7418B1A48374B00184019 /* CoreMacOSPlatformQt.cpp */; };
-		76C7419C1A48374B00184019 /* CoreMacOSPlatformQt.h in Headers */ = {isa = PBXBuildFile; fileRef = 76C7418C1A48374B00184019 /* CoreMacOSPlatformQt.h */; };
-		76C7419E1A48374B00184019 /* OpenGLView.h in Headers */ = {isa = PBXBuildFile; fileRef = 76C7418D1A48374B00184019 /* OpenGLView.h */; };
-		76C741A01A48374B00184019 /* OpenGLView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 76C7418E1A48374B00184019 /* OpenGLView.mm */; };
-		76C741A21A48374B00184019 /* QtLayerMacOS.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 76C7418F1A48374B00184019 /* QtLayerMacOS.cpp */; };
-		76C741A41A48374B00184019 /* QtLayerMacOS.h in Headers */ = {isa = PBXBuildFile; fileRef = 76C741901A48374B00184019 /* QtLayerMacOS.h */; };
-		76C741A61A48374B00184019 /* QtLayerMacOSObjective.mm in Sources */ = {isa = PBXBuildFile; fileRef = 76C741911A48374B00184019 /* QtLayerMacOSObjective.mm */; };
-		76C741A81A48374B00184019 /* QtLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 76C741921A48374B00184019 /* QtLayer.cpp */; };
-		76C741AA1A48374B00184019 /* QtLayer.h in Headers */ = {isa = PBXBuildFile; fileRef = 76C741931A48374B00184019 /* QtLayer.h */; };
-		76C741AB1A48374B00184019 /* CorePlatformWin32Qt.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 76C741951A48374B00184019 /* CorePlatformWin32Qt.cpp */; };
-		76C741AC1A48374B00184019 /* CorePlatformWin32Qt.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 76C741951A48374B00184019 /* CorePlatformWin32Qt.cpp */; };
-		76C741AD1A48374B00184019 /* CorePlatformWin32Qt.h in Headers */ = {isa = PBXBuildFile; fileRef = 76C741961A48374B00184019 /* CorePlatformWin32Qt.h */; };
-		76C741AE1A48374B00184019 /* CorePlatformWin32Qt.h in Headers */ = {isa = PBXBuildFile; fileRef = 76C741961A48374B00184019 /* CorePlatformWin32Qt.h */; };
-		76C741AF1A48374B00184019 /* QtLayerWin32.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 76C741971A48374B00184019 /* QtLayerWin32.cpp */; };
-		76C741B01A48374B00184019 /* QtLayerWin32.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 76C741971A48374B00184019 /* QtLayerWin32.cpp */; };
-		76C741B11A48374B00184019 /* QtLayerWin32.h in Headers */ = {isa = PBXBuildFile; fileRef = 76C741981A48374B00184019 /* QtLayerWin32.h */; };
-		76C741B21A48374B00184019 /* QtLayerWin32.h in Headers */ = {isa = PBXBuildFile; fileRef = 76C741981A48374B00184019 /* QtLayerWin32.h */; };
 		7C007DE51B384DAC000003DB /* Atomic.h in Headers */ = {isa = PBXBuildFile; fileRef = 7C007DD11B384DAC000003DB /* Atomic.h */; };
 		7C007DE61B384DAC000003DB /* Atomic.h in Headers */ = {isa = PBXBuildFile; fileRef = 7C007DD11B384DAC000003DB /* Atomic.h */; };
 		7C007DE71B384DAC000003DB /* Atomic.h in Headers */ = {isa = PBXBuildFile; fileRef = 7C007DD11B384DAC000003DB /* Atomic.h */; };
@@ -3084,19 +3067,6 @@
 		74D1EAB7172E950700EDE0B7 /* UIScrollViewContainer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIScrollViewContainer.h; sourceTree = "<group>"; };
 		76199F38192DF73D008A47E2 /* VersionInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VersionInfo.h; sourceTree = "<group>"; };
 		76199F39192DF73D008A47E2 /* VersionInfo.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VersionInfo.cpp; sourceTree = "<group>"; };
-		76C7418B1A48374B00184019 /* CoreMacOSPlatformQt.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CoreMacOSPlatformQt.cpp; sourceTree = "<group>"; };
-		76C7418C1A48374B00184019 /* CoreMacOSPlatformQt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CoreMacOSPlatformQt.h; sourceTree = "<group>"; };
-		76C7418D1A48374B00184019 /* OpenGLView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OpenGLView.h; sourceTree = "<group>"; };
-		76C7418E1A48374B00184019 /* OpenGLView.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = OpenGLView.mm; sourceTree = "<group>"; };
-		76C7418F1A48374B00184019 /* QtLayerMacOS.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = QtLayerMacOS.cpp; sourceTree = "<group>"; };
-		76C741901A48374B00184019 /* QtLayerMacOS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QtLayerMacOS.h; sourceTree = "<group>"; };
-		76C741911A48374B00184019 /* QtLayerMacOSObjective.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = QtLayerMacOSObjective.mm; sourceTree = "<group>"; };
-		76C741921A48374B00184019 /* QtLayer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = QtLayer.cpp; sourceTree = "<group>"; };
-		76C741931A48374B00184019 /* QtLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QtLayer.h; sourceTree = "<group>"; };
-		76C741951A48374B00184019 /* CorePlatformWin32Qt.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CorePlatformWin32Qt.cpp; sourceTree = "<group>"; };
-		76C741961A48374B00184019 /* CorePlatformWin32Qt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CorePlatformWin32Qt.h; sourceTree = "<group>"; };
-		76C741971A48374B00184019 /* QtLayerWin32.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = QtLayerWin32.cpp; sourceTree = "<group>"; };
-		76C741981A48374B00184019 /* QtLayerWin32.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QtLayerWin32.h; sourceTree = "<group>"; };
 		7C007DD11B384DAC000003DB /* Atomic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Atomic.h; sourceTree = "<group>"; };
 		7C007DD21B384DAC000003DB /* AtomicGNU.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AtomicGNU.h; sourceTree = "<group>"; };
 		7C007DD31B384DAC000003DB /* AtomicWindows.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AtomicWindows.h; sourceTree = "<group>"; };
@@ -4205,42 +4175,6 @@
 			path = Vegetation;
 			sourceTree = "<group>";
 		};
-		76C741891A48374B00184019 /* Qt4 */ = {
-			isa = PBXGroup;
-			children = (
-				76C7418A1A48374B00184019 /* MacOS */,
-				76C741921A48374B00184019 /* QtLayer.cpp */,
-				76C741931A48374B00184019 /* QtLayer.h */,
-				76C741941A48374B00184019 /* Win32 */,
-			);
-			path = Qt4;
-			sourceTree = "<group>";
-		};
-		76C7418A1A48374B00184019 /* MacOS */ = {
-			isa = PBXGroup;
-			children = (
-				76C7418B1A48374B00184019 /* CoreMacOSPlatformQt.cpp */,
-				76C7418C1A48374B00184019 /* CoreMacOSPlatformQt.h */,
-				76C7418D1A48374B00184019 /* OpenGLView.h */,
-				76C7418E1A48374B00184019 /* OpenGLView.mm */,
-				76C7418F1A48374B00184019 /* QtLayerMacOS.cpp */,
-				76C741901A48374B00184019 /* QtLayerMacOS.h */,
-				76C741911A48374B00184019 /* QtLayerMacOSObjective.mm */,
-			);
-			path = MacOS;
-			sourceTree = "<group>";
-		};
-		76C741941A48374B00184019 /* Win32 */ = {
-			isa = PBXGroup;
-			children = (
-				76C741951A48374B00184019 /* CorePlatformWin32Qt.cpp */,
-				76C741961A48374B00184019 /* CorePlatformWin32Qt.h */,
-				76C741971A48374B00184019 /* QtLayerWin32.cpp */,
-				76C741981A48374B00184019 /* QtLayerWin32.h */,
-			);
-			path = Win32;
-			sourceTree = "<group>";
-		};
 		7C007DD01B384DAC000003DB /* Concurrency */ = {
 			isa = PBXGroup;
 			children = (
@@ -4791,7 +4725,6 @@
 		E8989BD716BD24E400732C04 /* Platform */ = {
 			isa = PBXGroup;
 			children = (
-				76C741891A48374B00184019 /* Qt4 */,
 				6280BAA818D6F909007809B7 /* DateTimeApple.mm */,
 				62BD24BE18C621EB00D2F0D3 /* DateTime.cpp */,
 				62BD24BF18C621EB00D2F0D3 /* DateTime.h */,
@@ -6290,7 +6223,6 @@
 				50320B6E1B8DA55C00F7123B /* MMBigDataTransferService.h in Headers */,
 				E8989FE116BD24E500732C04 /* ParticleEffectSystem.h in Headers */,
 				50FB9DA91A92446700BDB8A2 /* MemoryManager.h in Headers */,
-				76C741AD1A48374B00184019 /* CorePlatformWin32Qt.h in Headers */,
 				E8989FE516BD24E500732C04 /* RenderUpdateSystem.h in Headers */,
 				E8989FE716BD24E500732C04 /* SwitchSystem.h in Headers */,
 				E8989FE916BD24E500732C04 /* TransformSystem.h in Headers */,
@@ -6342,7 +6274,6 @@
 				E898A04D16BD24E500732C04 /* UTF8Utils.h in Headers */,
 				50C16DBF1A52D7B9003C307A /* NetCore.h in Headers */,
 				E898A04F16BD24E500732C04 /* Utils.h in Headers */,
-				76C741B11A48374B00184019 /* QtLayerWin32.h in Headers */,
 				50D6C8EA16C107D500BB3F78 /* GlobalEventSystem.h in Headers */,
 				CCB4C41B16CBC5B200F2B085 /* ComponentHelpers.h in Headers */,
 				D7CC263719C43C7C00A3B754 /* LocalNotificationController.h in Headers */,
@@ -6526,7 +6457,6 @@
 				E89EDE6D1A2E16FA0036E993 /* MongodbUpdateObject.h in Headers */,
 				E898A07C16BD265400732C04 /* Radix.h in Headers */,
 				E898A07D16BD265400732C04 /* RefPtr.h in Headers */,
-				76C7419C1A48374B00184019 /* CoreMacOSPlatformQt.h in Headers */,
 				E898A07E16BD265400732C04 /* ScopedPtr.h in Headers */,
 				322FFD4819C042880000ED71 /* UIControlHelpers.h in Headers */,
 				E898A07F16BD265400732C04 /* Singleton.h in Headers */,
@@ -6633,7 +6563,6 @@
 				11CB615419C3391B00B48A92 /* AnimationData.h in Headers */,
 				02FD7EDD19237D96007762C0 /* WindSystem.h in Headers */,
 				D7CC263E19C43C7C00A3B754 /* LocalNotificationNotImplemented.h in Headers */,
-				76C741A41A48374B00184019 /* QtLayerMacOS.h in Headers */,
 				E8ADAEBD18CA1226000B251C /* PixelFormatDescriptor.h in Headers */,
 				E898A0D016BD265400732C04 /* Particle.h in Headers */,
 				644C86E619476A7100964F91 /* VegetationGeometry.h in Headers */,
@@ -6653,7 +6582,6 @@
 				E89EDE521A2E16FA0036E993 /* AutotestingSystemConfig.h in Headers */,
 				CC931B29188EC95F000375F9 /* SwitchToRenerObjectConverter.h in Headers */,
 				E898A0E516BD265400732C04 /* Font.h in Headers */,
-				76C7419E1A48374B00184019 /* OpenGLView.h in Headers */,
 				E898A0E616BD265400732C04 /* FontManager.h in Headers */,
 				E898A0E716BD265400732C04 /* FTFont.h in Headers */,
 				E898A0E816BD265400732C04 /* GraphicsFont.h in Headers */,
@@ -6669,7 +6597,6 @@
 				E898A0EF16BD265400732C04 /* StaticMesh.h in Headers */,
 				647EFC55195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.h in Headers */,
 				E898A0F016BD265400732C04 /* Cursor.h in Headers */,
-				76C741AE1A48374B00184019 /* CorePlatformWin32Qt.h in Headers */,
 				E898A0F116BD265400732C04 /* ColorOnlyEffect.h in Headers */,
 				E898A0F216BD265400732C04 /* MultiTextureEffect.h in Headers */,
 				E898A0F316BD265400732C04 /* TextureMulColorAlphaTestEffect.h in Headers */,
@@ -6709,7 +6636,6 @@
 				644C86E919476A7100964F91 /* VegetationMaterialTransformer.h in Headers */,
 				3281F3101B2990A100D12AC5 /* UILayoutSystem.h in Headers */,
 				E8BAD5B4185213F100C98C8D /* IntrospectionDynamic.h in Headers */,
-				76C741AA1A48374B00184019 /* QtLayer.h in Headers */,
 				E898A12F16BD265400732C04 /* GameObject.h in Headers */,
 				7C007DFB1B384DAC000003DB /* LockGuard.h in Headers */,
 				E898A13016BD265400732C04 /* GameObjectAnimations.h in Headers */,
@@ -6742,7 +6668,6 @@
 				E898A14816BD265400732C04 /* MeshInstance.h in Headers */,
 				E898A14916BD265400732C04 /* MeshInstanceNode.h in Headers */,
 				E898A14A16BD265400732C04 /* ParticleEffectNode.h in Headers */,
-				76C741B21A48374B00184019 /* QtLayerWin32.h in Headers */,
 				E898A14B16BD265400732C04 /* ParticleEmitterNode.h in Headers */,
 				E898A14C16BD265400732C04 /* PathManip.h in Headers */,
 				E898A14D16BD265400732C04 /* PolygonGroupInstance.h in Headers */,
@@ -7579,7 +7504,6 @@
 				50320B6D1B8DA55C00F7123B /* MMBigDataTransferService.cpp in Sources */,
 				B4C29D3F199B592D001B83FE /* SceneCache.cpp in Sources */,
 				E8989EE416BD24E500732C04 /* TextBlock.cpp in Sources */,
-				76C741AF1A48374B00184019 /* QtLayerWin32.cpp in Sources */,
 				E8989EE616BD24E500732C04 /* AnimatedMesh.cpp in Sources */,
 				E8989EE816BD24E500732C04 /* EdgeAdjacency.cpp in Sources */,
 				11B346941B42CDD6007DD207 /* UIStyleSheetPropertyTable.cpp in Sources */,
@@ -7624,7 +7548,6 @@
 				C172EC0E18C9F1E9004309CF /* TextBlockGraphicsRender.cpp in Sources */,
 				76199F3D192DF73D008A47E2 /* VersionInfo.cpp in Sources */,
 				02FD7EE919237DA2007762C0 /* WindComponent.cpp in Sources */,
-				76C741AB1A48374B00184019 /* CorePlatformWin32Qt.cpp in Sources */,
 				E8989F5016BD24E500732C04 /* RenderOptions.cpp in Sources */,
 				E8989F5216BD24E500732C04 /* RenderResource.cpp in Sources */,
 				E8990B351A288C2000FF71A1 /* SnapToLandscapeControllerComponent.cpp in Sources */,
@@ -8002,7 +7925,6 @@
 				E898A1E016BD265400732C04 /* BezierSpline.cpp in Sources */,
 				E898A1E116BD265400732C04 /* Math2D.cpp in Sources */,
 				E898A1E216BD265400732C04 /* Matrix4.cpp in Sources */,
-				76C741A01A48374B00184019 /* OpenGLView.mm in Sources */,
 				E898A1E316BD265400732C04 /* NeonMath.cpp in Sources */,
 				E898A1E416BD265400732C04 /* Polygon2.cpp in Sources */,
 				E898A1E516BD265400732C04 /* Polygon3.cpp in Sources */,
@@ -8019,7 +7941,6 @@
 				E898A1F016BD265400732C04 /* Particle.cpp in Sources */,
 				E898A1F116BD265400732C04 /* ParticleEmitter.cpp in Sources */,
 				E898A1F416BD265400732C04 /* ParticleLayer.cpp in Sources */,
-				76C741AC1A48374B00184019 /* CorePlatformWin32Qt.cpp in Sources */,
 				E898A1F716BD265400732C04 /* ParticlePropertyLine.cpp in Sources */,
 				E8990B3C1A288C2000FF71A1 /* WASDControllerComponent.cpp in Sources */,
 				E898A1FF16BD265400732C04 /* SystemTimer.cpp in Sources */,
@@ -8043,7 +7964,6 @@
 				CC84B01D18211A9000934482 /* JobManager.cpp in Sources */,
 				E898A21216BD265400732C04 /* ColorOnlyEffect.cpp in Sources */,
 				E898A21316BD265400732C04 /* MultiTextureEffect.cpp in Sources */,
-				76C741A81A48374B00184019 /* QtLayer.cpp in Sources */,
 				E898A21416BD265400732C04 /* TextureMulColorAlphaTestEffect.cpp in Sources */,
 				E898A21516BD265400732C04 /* TextureMulColorEffect.cpp in Sources */,
 				76199F3E192DF73D008A47E2 /* VersionInfo.cpp in Sources */,
@@ -8073,7 +7993,6 @@
 				E898A23916BD265400732C04 /* RenderManagerGL.cpp in Sources */,
 				4F53ED2419A23BE100D3869D /* DLC.cpp in Sources */,
 				E898A23B16BD265400732C04 /* RenderOptions.cpp in Sources */,
-				76C741A61A48374B00184019 /* QtLayerMacOSObjective.mm in Sources */,
 				4F53ED3A19A23BED00D3869D /* PatchFile.cpp in Sources */,
 				E89EDE791A2E16FA0036E993 /* RectSwig.cpp in Sources */,
 				5013F6921859EB0400FB3C51 /* StaticOcclusionSystem.cpp in Sources */,
@@ -8163,7 +8082,6 @@
 				E898A27D16BD265400732C04 /* LodSystem.cpp in Sources */,
 				E898A27E16BD265400732C04 /* ParticleEffectSystem.cpp in Sources */,
 				E898A28016BD265400732C04 /* RenderUpdateSystem.cpp in Sources */,
-				76C741B01A48374B00184019 /* QtLayerWin32.cpp in Sources */,
 				4F53ED4619A23BF200D3869D /* bs_patch.c in Sources */,
 				E898A28116BD265400732C04 /* SwitchSystem.cpp in Sources */,
 				505EB40F1824CEC5009BEA3C /* OcclusionQuery.cpp in Sources */,
@@ -8178,7 +8096,6 @@
 				E898A29016BD265400732C04 /* UI3DView.cpp in Sources */,
 				E898A29116BD265400732C04 /* UIButton.cpp in Sources */,
 				E898A29216BD265400732C04 /* UIControl.cpp in Sources */,
-				76C7419A1A48374B00184019 /* CoreMacOSPlatformQt.cpp in Sources */,
 				E898A29316BD265400732C04 /* UIControlBackground.cpp in Sources */,
 				E898A29416BD265400732C04 /* UIControlSystem.cpp in Sources */,
 				E898A29516BD265400732C04 /* UIEvent.cpp in Sources */,
@@ -8252,7 +8169,6 @@
 				CCC7A45016F1D6170061EA5D /* RenderBatch.cpp in Sources */,
 				CCC7A45816F1D6170061EA5D /* RenderLayer.cpp in Sources */,
 				02FD7EEA19237DA2007762C0 /* WindComponent.cpp in Sources */,
-				76C741A21A48374B00184019 /* QtLayerMacOS.cpp in Sources */,
 				CCC7A45C16F1D6170061EA5D /* RenderObject.cpp in Sources */,
 				7C007DF51B384DAC000003DB /* ConditionVariable.cpp in Sources */,
 				155D77D9197DD22E006AEBCD /* YamlNode.cpp in Sources */,

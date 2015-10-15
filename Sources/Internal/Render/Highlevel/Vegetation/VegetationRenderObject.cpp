@@ -218,7 +218,6 @@ RenderObject* VegetationRenderObject::Clone(RenderObject *newObject)
     vegetationRenderObject->SetRotationVariation(GetRotationVariation());
     vegetationRenderObject->SetHeightmapPath(GetHeightmapPath());
     vegetationRenderObject->SetLightmap(GetLightmapPath());
-    vegetationRenderObject->SetVegetationTexture(GetVegetationTexture());
     vegetationRenderObject->SetWorldSize(GetWorldSize());
     vegetationRenderObject->SetCustomGeometryPathInternal(GetCustomGeometryPath());
     vegetationRenderObject->SetCameraBias(GetCameraBias());
@@ -245,13 +244,8 @@ void VegetationRenderObject::Save(KeyedArchive *archive, SerializationContext *s
     archive->SetVector4("vro.clusterLayerLimit", GetLayerClusterLimit());
     archive->SetVector4("vro.scaleVariation", GetScaleVariation());
     archive->SetVector4("vro.rotationVariation", GetRotationVariation());
-    
-	if(albedoTexturePath.IsEmpty() == false)
-	{
-		archive->SetString("vro.vegtexture", albedoTexturePath.GetRelativePathname(serializationContext->GetScenePath()));
-	}
 
-	if(lightmapTexturePath.IsEmpty() == false)
+    if(lightmapTexturePath.IsEmpty() == false)
 	{
 		archive->SetString("vro.lightmap", lightmapTexturePath.GetRelativePathname(serializationContext->GetScenePath()));
 	}
@@ -357,12 +351,6 @@ void VegetationRenderObject::Load(KeyedArchive *archive, SerializationContext *s
             SetRotationVariation(Vector4(180.0f, 180.0f, 180.0f, 180.0f));
         }
 
-		String vegtexture = archive->GetString("vro.vegtexture");
-		if(vegtexture.empty() == false)
-		{
-			SetVegetationTexture(serializationContext->GetScenePath() + vegtexture);
-		}
-
 		String lightmap = archive->GetString("vro.lightmap");
 		if(lightmap.empty() == false)
 		{
@@ -437,6 +425,7 @@ bool VegetationRenderObject::IsDataLoadNeeded()
     
 void VegetationRenderObject::PrepareToRender(Camera * camera)
 {
+    activeRenderBatchArray.clear();
     if(!ReadyToRender())
     {
         return;
@@ -449,8 +438,7 @@ void VegetationRenderObject::PrepareToRender(Camera * camera)
         AddRenderBatch(ScopedPtr<RenderBatch>(CreateRenderBatch()));
         ++renderBatchCount;
     }
-
-    activeRenderBatchArray.clear();
+    
 
     Vector<Vector<Vector<VegetationSortedBufferItem> > >& indexRenderDataObject = renderData->GetIndexBuffers();
     
@@ -935,7 +923,6 @@ void VegetationRenderObject::CreateRenderData()
     props->SetVector3(VegetationPropertyNames::UNIFORM_PERTURBATION_FORCE.c_str(), perturbationForce);
     props->SetFloat(VegetationPropertyNames::UNIFORM_PERTURBATION_FORCE_DISTANCE.c_str(), maxPerturbationDistance);
     props->SetVector3(VegetationPropertyNames::UNIFORM_PERTURBATION_POINT.c_str(), perturbationPoint);
-    props->SetString(NMaterialTextureName::TEXTURE_ALBEDO.c_str(), albedoTexturePath.GetStringValue());
     props->SetString(VegetationPropertyNames::UNIFORM_SAMPLER_VEGETATIONMAP.c_str(), lightmapTexturePath.GetStringValue());
     
     vegetationGeometry->OnVegetationPropertiesChanged(renderData->GetMaterial(), props);

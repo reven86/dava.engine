@@ -57,6 +57,12 @@ DAVA_DEPRECATED(void FixCompressionFormat(TextureDescriptor& descriptor))
                 descriptor.compression[GPU_DX11].format = FORMAT_DXT1;
             }
         }
+
+        if (descriptor.compression[GPU_DX11].format == FORMAT_RGB888)
+        {
+            descriptor.compression[GPU_DX11].Clear();
+            Logger::Error("[TextureDescriptor] Texture %s has unsupported RGB888 format for GPU_DX11", descriptor.pathname.GetStringValue().c_str());
+        }
     }
 }
 
@@ -453,8 +459,8 @@ void TextureDescriptor::LoadVersion6(DAVA::File *file)
             compression[i].format = static_cast<PixelFormat>(format);
 
             file->Read(&compression[i].compressToWidth);
-			file->Read(&compression[i].compressToHeight);
-			file->Read(&compression[i].sourceFileCrc);
+            file->Read(&compression[i].compressToHeight);
+            file->Read(&compression[i].sourceFileCrc);
         }
 
         RecalculateCompressionSourceCRC();

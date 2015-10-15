@@ -81,6 +81,7 @@
         source
         {
             uid             [S0],
+            srcHash         [UI4],
             source          [ShaderSource]
         } sourceCount
     }

@@ -997,17 +997,25 @@ void Scene::OptimizeBeforeExport()
 {
     List<NMaterial*> materials;
     GetDataNodes(materials);
-    
+
+    const auto RemoveMaterialFlag = [](NMaterial* material, const FastName& flagName)
+    {
+        if (material->HasLocalFlag(flagName))
+        {
+            material->RemoveFlag(flagName);
+        }
+    };
+
     for(auto & mat: materials)
     {
-        if (mat->HasLocalFlag(NMaterialFlagName::FLAG_ILLUMINATION_USED))
-            mat->RemoveFlag(NMaterialFlagName::FLAG_ILLUMINATION_USED);
-        
-        if (mat->HasLocalFlag(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_CASTER))
-            mat->RemoveFlag(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_CASTER);
-        
-        if (mat->HasLocalFlag(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_RECEIVER))
-            mat->RemoveFlag(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_RECEIVER);
+        RemoveMaterialFlag(mat, NMaterialFlagName::FLAG_ILLUMINATION_USED);
+        RemoveMaterialFlag(mat, NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_CASTER);
+        RemoveMaterialFlag(mat, NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_RECEIVER);
+
+        if (mat->HasLocalProperty(NMaterialParamName::PARAM_LIGHTMAP_SIZE))
+        {
+            mat->RemoveProperty(NMaterialParamName::PARAM_LIGHTMAP_SIZE);
+        }
     }
 
     ImportShadowColor(this);

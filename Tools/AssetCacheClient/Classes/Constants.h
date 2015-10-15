@@ -33,17 +33,16 @@
 
 namespace AssetCacheClientConstants
 {
-    enum ExitCodes: int
-    {
-        EXIT_OK = 0,
-        EXIT_WRONG_COMMAND_LINE,
-        EXIT_WRONG_IP,
-        EXIT_TIMEOUT,
-        EXIT_CANNOT_CONNECT,
-        EXIT_SERVER_ERROR,
-		EXIT_READ_FILES
-    };
+enum ExitCodes : int
+{
+    EXIT_OK = 0,
+    EXIT_WRONG_COMMAND_LINE,
+    EXIT_WRONG_IP,
+    EXIT_TIMEOUT,
+    EXIT_CANNOT_CONNECT,
+    EXIT_SERVER_ERROR,
+    EXIT_READ_FILES
 };
-
+};
 
 #endif //__ASSET_CACHE_CLIENT_CONSTANTS_H__

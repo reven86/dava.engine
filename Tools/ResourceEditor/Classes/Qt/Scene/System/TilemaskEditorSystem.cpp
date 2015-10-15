@@ -139,7 +139,9 @@ LandscapeEditorDrawSystem::eErrorType TilemaskEditorSystem::EnableLandscapeEditi
 		return enablingError;
 	}
 
-	selectionSystem->SetLocked(true);
+    drawSystem->GetLandscapeProxy()->UpdateTileMaskPathname();
+
+    selectionSystem->SetLocked(true);
 	modifSystem->SetLocked(true);
 
 	landscapeSize = drawSystem->GetTextureSize(textureLevel);
@@ -362,8 +364,8 @@ void TilemaskEditorSystem::UpdateBrushTool()
     
     rhi::EndPacketList(pList);
     rhi::EndRenderPass(pass);
-    
-    drawSystem->GetLandscapeProxy()->SetTilemaskTexture(dstTexture);
+
+    drawSystem->SetTileMaskTexture(dstTexture);
     drawSystem->GetLandscapeProxy()->SwapTilemaskDrawTextures();
 }
 
@@ -455,8 +457,8 @@ void TilemaskEditorSystem::CreateMaskTexture()
         RenderSystem2D::Instance()->BeginRenderTargetPass(srcTexture);
         RenderSystem2D::Instance()->DrawTexture(landscapeTilemaskTexture, RenderSystem2D::DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL, Color::White);
         RenderSystem2D::Instance()->EndRenderTargetPass();
-        
-        drawSystem->GetLandscapeProxy()->SetTilemaskTexture(srcTexture);
+
+        drawSystem->SetTileMaskTexture(srcTexture);
     }
 }
 

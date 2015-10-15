@@ -63,7 +63,7 @@ void android_gl_reset(void * _window)
 	needRecreateSurface = true;
 }
 
-bool android_gl_end_frame()
+void android_gl_checkSurface()
 {
 	if(needRecreateSurface)
 	{
@@ -74,7 +74,10 @@ bool android_gl_end_frame()
 
 		needRecreateSurface = false;
 	}
+}
 
+bool android_gl_end_frame()
+{
 	EGLBoolean ret = eglSwapBuffers(_display, _surface);
 
 	if(!ret && eglGetError() == EGL_CONTEXT_LOST)

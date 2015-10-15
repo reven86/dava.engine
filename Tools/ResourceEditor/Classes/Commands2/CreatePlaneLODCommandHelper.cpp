@@ -272,7 +272,6 @@ void CreatePlaneLODCommandHelper::CreatePlaneBatchForRequest(RequestPointer& req
 	ScopedPtr<NMaterial> material(new NMaterial());
 	material->SetMaterialName(FastName(DAVA::Format("plane_lod_%d_for_%s", request->newLodIndex, fromEntity->GetName().c_str())));
 	material->SetFXName(NMaterialName::TEXTURED_ALPHATEST);
-	material->SetQualityGroup(NMaterialQualityName::DEFAULT_QUALITY_NAME);
 	material->AddTexture(NMaterialTextureName::TEXTURE_ALBEDO, fileTexture);
 
     request->planeBatch->SetPolygonGroup(planePG);
@@ -296,7 +295,10 @@ void CreatePlaneLODCommandHelper::DrawToTextureForRequest(RequestPointer& reques
 
     NMaterial* globalMaterial = fromEntity->GetScene()->GetGlobalMaterial();
     if (globalMaterial)
-        tempScene->SetGlobalMaterial(globalMaterial->Clone());
+    {
+        ScopedPtr<NMaterial> global(globalMaterial->Clone());
+        tempScene->SetGlobalMaterial(global);
+    }
 
     ScopedPtr<Entity> clonedEnity(SceneHelper::CloneEntityWithMaterials(fromEntity));
 	clonedEnity->SetLocalTransform(DAVA::Matrix4::IDENTITY);
@@ -386,3 +388,4 @@ void CreatePlaneLODCommandHelper::Request::OnRenderCallback(rhi::HSyncObject obj
         SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsUInt32());
     ReloadTexturesToGPU(currentGPU);
 }
+

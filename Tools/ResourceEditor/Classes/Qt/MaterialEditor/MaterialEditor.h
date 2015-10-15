@@ -47,6 +47,7 @@ namespace Ui {
 
 class QtPropertyDataInspDynamic;
 
+class LazyUpdater;
 class MaterialEditor : public QDialog, public DAVA::Singleton<MaterialEditor>
 {
 	Q_OBJECT
@@ -88,14 +89,21 @@ protected:
 
     void FillBase();
     void FillDynamic(QtPropertyData *root, const FastName& dynamicName);
-    void FillDynamicMembers(QtPropertyData *root, DAVA::InspInfoDynamic *dynamic, DAVA::NMaterial *material, bool isGlobal);
+    void FillIllumination();
     void FillTemplates(const QList<DAVA::NMaterial *>& materials);
+
+    void FillDynamicMember(QtPropertyData* root, DAVA::InspInfoDynamic* dynamic, DAVA::NMaterial* material, const FastName& memberName);
+    void FillDynamicMemberInternal(QtPropertyData* root, DAVA::InspInfoDynamic* dynamic, DAVA::InspInfoDynamic::DynamicData& ddata, const FastName& memberName);
+    void FillDynamicMembers(QtPropertyData* root, DAVA::InspInfoDynamic* dynamic, DAVA::NMaterial* material, bool isGlobal);
+
     void ApplyTextureValidator(QtPropertyDataInspDynamic *data);
 
     void UpdateAllAddRemoveButtons(QtPropertyData *root);
     void UpdateAddRemoveButtonState(QtPropertyDataInspDynamic *data);
 
     void ClearDynamicMembers(DAVA::NMaterial *material, const DAVA::InspMemberDynamic *dynamicInsp);
+
+    void RefreshMaterialProperties();
 
 private slots:
     void onFilterChanged();
@@ -139,11 +147,17 @@ private:
 	void UpdateMaterialTexturesFromPreset(DAVA::NMaterial* material, DAVA::KeyedArchive* texturesArchive, 
 		const DAVA::FilePath& scenePath);
 
+    QtPropertyData* AddSection(const QString& sectionName);
+
+    void AddMaterialFlagIfNeed(NMaterial* material, const FastName& flagName);
+    bool HasMaterialProperty(NMaterial* material, const FastName& paramName);
+
 private:
 	QtPosSaver posSaver;
 	QList<DAVA::NMaterial*> curMaterials;
     QtPropertyData *baseRoot = nullptr;
     QtPropertyData *flagsRoot = nullptr;
+    QtPropertyData* illuminationRoot = nullptr;
     QtPropertyData *propertiesRoot = nullptr;
     QtPropertyData *texturesRoot = nullptr;
     QPointer<MaterialTemplateModel> templatesFilterModel;
@@ -154,6 +168,8 @@ private:
 
     DAVA::FilePath lastSavePath;
     DAVA::uint32 lastCheckState = 0;
+
+    LazyUpdater* materialPropertiesUpdater;
 };
 
 #endif

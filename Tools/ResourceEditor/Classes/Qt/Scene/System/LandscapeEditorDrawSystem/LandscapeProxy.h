@@ -76,8 +76,6 @@ public:
 	void SetLandscapeTileColor(const FastName& level, const Color& color);
 
     void SetToolTexture(Texture * texture, bool mixColors);
-	void SetTilemaskTexture(Texture* texture);
-    Texture * GetTilemaskTexture();
 
 	RenderObject* GetRenderObject();
 	void SetHeightmap(Heightmap* heightmap);
@@ -101,6 +99,11 @@ public:
 	void InitTilemaskDrawTextures();
 	Texture * GetTilemaskDrawTexture(int32 number);
 	void SwapTilemaskDrawTextures();
+
+    void UpdateTileMaskPathname();
+
+protected:
+    FilePath GetPathForSourceTexture() const;
 
 protected:
 	enum eToolTextureType

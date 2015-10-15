@@ -43,6 +43,15 @@
 namespace rhi
 {
 
+namespace PipelineStateGLES2
+{
+    static int      cachedBlendEnabled  = -1;
+    static GLenum   cachedBlendSrc      = (GLenum)0;
+    static GLenum   cachedBlendDst      = (GLenum)0;
+    static uint32   cachedProgram       = 0;
+}
+
+
 struct
 VertexDeclGLES2
 {
@@ -150,31 +159,98 @@ VertexDeclGLES2
                         DVASSERT(vattrInited);
 
                         uint32  base                    = firstVertex * stride;
-//                        int     attr_used[VATTR_COUNT];
+                        int     attr_used[VATTR_COUNT];
 
-//                        memset( attr_used, 0, sizeof(attr_used) );
+                        memset( attr_used, 0, sizeof(attr_used) );
+
+                        struct
+                        vattr_t
+                        {
+                            bool            enabled;
+                            GLint           size;
+                            GLenum          type;
+                            GLboolean       normalized;
+                            const GLvoid*   pointer;
+                        };
+
+                        static vattr_t  vattr[VATTR_COUNT];
+                        static unsigned cur_stride = 0;
+                        static bool     needInit   = true;
+
+                        if( needInit )
+                        {
+//                            for( vattr_t* a=vattr,*a_end=vattr+countof(vattr); a!=a_end; ++a )
+//                                a->enabled = false;
+                            memset( vattr, 0, sizeof(vattr) );
+                                                        
+                            for( unsigned i=0; i!=VATTR_COUNT; ++i )
+                                GL_CALL(glDisableVertexAttribArray( i ));
+                            
+                            needInit = false;
+                        }
                         
-Trace("gl.vattr-array\n");
-Trace("  base= %u  stride= %u  first_v= %u\n",base,stride,firstVertex);
-                        for( unsigned i=0; i!=VATTR_COUNT; ++i )
-                            GL_CALL(glDisableVertexAttribArray( i ));
+//Trace("gl.vattr-array\n");
+//Trace("  base= %u  stride= %u  first_v= %u\n",base,stride,firstVertex);
+
+                        for( unsigned i=0; i!=elemCount; ++i )
+                        {
+                            unsigned    idx = elem[i].index;
+
+                            if( idx != InvalidIndex )
+                                attr_used[idx] = 1;
+                        }
+                        
+                        for( unsigned i=0; i!=countof(attr_used); ++i )
+                        {
+                            if( !attr_used[i] )
+                            {
+                                if( vattr[i].enabled )
+                                {
+                                    GL_CALL(glDisableVertexAttribArray( i ));
+                                    vattr[i].enabled = false;
+                                }
+                            }
+                        }
+
                         for( unsigned i=0; i!=elemCount; ++i )
                         {
                             unsigned    idx = elem[i].index;
 
                             if( idx != InvalidIndex )
                             {
-Trace("[%u] count= %u  type= %u  norm= %i  stride= %u  offset= %u\n",idx,elem[i].count,elem[i].type,elem[i].normalized,stride,base+(uint8_t*)elem[i].offset);
-                                GL_CALL(glEnableVertexAttribArray( idx ));
-                                GL_CALL(glVertexAttribPointer( idx, elem[i].count, elem[i].type, (GLboolean)(elem[i].normalized), stride, base+(uint8_t*)elem[i].offset ));
-//                                attr_used[idx] = 1;
+//Trace("[%u] count= %u  type= %u  norm= %i  stride= %u  offset= %u\n",idx,elem[i].count,elem[i].type,elem[i].normalized,stride,base+(uint8_t*)elem[i].offset);
+                                if( !vattr[idx].enabled )
+                                {
+                                    GL_CALL(glEnableVertexAttribArray( idx ));
+                                    vattr[idx].enabled = true;
+                                }
+
+/*                                
+                                if(     !VAttrCacheValid
+                                    ||  vattr[idx].size != elem[i].count
+                                    ||  vattr[idx].type != elem[i].type
+                                    ||  vattr[idx].normalized != (GLboolean)(elem[i].normalized)
+                                    ||  cur_stride != stride
+                                    ||  vattr[idx].pointer != (const GLvoid*)(base + (uint8_t*)(elem[i].offset))
+                                  )
+*/                                
+                                {
+                                    GL_CALL(glVertexAttribPointer( idx, elem[i].count, elem[i].type, (GLboolean)(elem[i].normalized), stride, (const GLvoid*)(base + (uint8_t*)(elem[i].offset)) ));
+
+                                    vattr[idx].size         = elem[i].count;
+                                    vattr[idx].type         = elem[i].type;
+                                    vattr[idx].normalized   = (GLboolean)(elem[i].normalized);
+                                    vattr[idx].pointer      = (const GLvoid*)(base + (uint8_t*)(elem[i].offset));                                    
+                                }
                             }
                         }
-//                        for( unsigned i=0; i!=countof(attr_used); ++i )
-//                        {
-//                            if( !attr_used[i] )
-//                                GL_CALL(glDisableVertexAttribArray( i ));
-//                        }
+                        VAttrCacheValid = true;
+
+                        cur_stride = stride;                    
+                    }
+    static void     InvalidateVAttrCache()
+                    {
+                        VAttrCacheValid = false;
                     }
 
     struct
@@ -189,11 +265,15 @@ Trace("[%u] count= %u  type= %u  norm= %i  stride= %u  offset= %u\n",idx,elem[i]
         void*       offset;
     };
 
-    Elem            elem[16];
+    Elem            elem[VATTR_COUNT];
     unsigned        elemCount;
     unsigned        stride;
     uint32          vattrInited:1;
+
+    static bool     VAttrCacheValid;
 };
+
+bool    VertexDeclGLES2::VAttrCacheValid = false;
 
 
 class
@@ -275,6 +355,8 @@ public:
     GLboolean           maskG;
     GLboolean           maskB;
     GLboolean           maskA;
+
+    bool needPrepareTextureLoc = true;
 };
 
 typedef ResourcePool<PipelineStateGLES2_t,RESOURCE_PIPELINE_STATE,PipelineState::Descriptor,false>  PipelineStateGLES2Pool;
@@ -446,21 +528,55 @@ SetToRHI( Handle ps, uint32 layoutUID )
 
     DVASSERT(ps2);
     
-    GL_CALL(glUseProgram( ps2->glProg ));
-    ps2->vprog.ProgGLES2::SetupTextureUnits();
-    ps2->fprog.ProgGLES2::SetupTextureUnits( ps2->vprog.SamplerCount() );
+    if( ps2->glProg != cachedProgram )
+    {
+        GL_CALL(glUseProgram( ps2->glProg ));
+        cachedProgram = ps2->glProg;
+
+        if (ps2->needPrepareTextureLoc)
+        {
+            ps2->needPrepareTextureLoc = false;
+            ps2->vprog.ProgGLES2::SetupTextureUnits();
+            ps2->fprog.ProgGLES2::SetupTextureUnits(ps2->vprog.SamplerCount());
+        }
+    }
+
+    VertexDeclGLES2::InvalidateVAttrCache();
+
     
     if( ps2->blendEnabled )
     {
-        GL_CALL(glEnable( GL_BLEND ));
-        GL_CALL(glBlendFunc( ps2->blendSrc, ps2->blendDst ));
+        if( cachedBlendEnabled != GL_TRUE )
+        {
+            GL_CALL(glEnable( GL_BLEND ));
+            cachedBlendEnabled = GL_TRUE;
+        }
+        if( ps2->blendSrc != cachedBlendSrc  ||  ps2->blendDst != cachedBlendDst )
+        {
+            GL_CALL(glBlendFunc( ps2->blendSrc, ps2->blendDst ));
+            cachedBlendSrc = ps2->blendSrc;
+            cachedBlendDst = ps2->blendDst;
+        }
     }
     else
     {
-        GL_CALL(glDisable( GL_BLEND ));
+        if( cachedBlendEnabled != GL_FALSE )
+        {
+            GL_CALL(glDisable( GL_BLEND ));
+            cachedBlendEnabled = GL_FALSE;
+        }
     }
 
-    glColorMask( ps2->maskR, ps2->maskG, ps2->maskB, ps2->maskA );
+    static GLboolean    mask[4] = { false, false, false, false };
+    
+    if( ps2->maskR != mask[0]  ||  ps2->maskG != mask[1]  ||  ps2->maskB != mask[2]  ||  ps2->maskA != mask[3] )
+    {
+        glColorMask( ps2->maskR, ps2->maskG, ps2->maskB, ps2->maskA );
+        mask[0] = ps2->maskR;
+        mask[1] = ps2->maskG;
+        mask[2] = ps2->maskB;
+        mask[3] = ps2->maskA;
+    }
 }
 
 void
@@ -505,6 +621,17 @@ VertexSamplerCount( Handle ps )
     PipelineStateGLES2_t* ps2 = PipelineStateGLES2Pool::Get( ps );
     
     return ps2->vprog.SamplerCount();
+}
+
+void
+InvalidateCache()
+{
+    cachedBlendEnabled  = -1;
+    cachedBlendSrc      = (GLenum)0;
+    cachedBlendDst      = (GLenum)0;
+    cachedProgram       = 0;
+
+    VertexDeclGLES2::InvalidateVAttrCache();
 }
 
 } // namespace PipelineStateGLES2

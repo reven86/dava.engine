@@ -67,14 +67,10 @@ extern ID3D11Texture2D*             _D3D11_DepthStencilBuffer;
 extern ID3D11DepthStencilView*      _D3D11_DepthStencilView;
 extern D3D_FEATURE_LEVEL            _D3D11_FeatureLevel;
 extern ID3D11DeviceContext*         _D3D11_ImmediateContext;
+extern ID3D11DeviceContext*         _D3D11_SecondaryContext;
+extern DAVA::Mutex                  _D3D11_SecondaryContextSync;
 extern ID3D11Debug*                 _D3D11_Debug;
 extern ID3DUserDefinedAnnotation*   _D3D11_UserAnnotation;
-
-// this hack need removed, when rhi_dx thread will synchronized with rander::reset
-#ifdef __DAVAENGINE_WIN_UAP__
-__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
-extern DAVA::Mutex need_synchronized;
-#endif
 
 extern InitParam                    _DX11_InitParam;
 

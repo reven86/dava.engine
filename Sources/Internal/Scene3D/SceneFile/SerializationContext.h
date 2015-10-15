@@ -162,8 +162,6 @@ namespace DAVA
 			return defaultMaterialQuality;
 		}
 		
-        Texture* PrepareTexture(rhi::TextureType textureTypeHint, Texture* tx);
-		
 		void ResolveMaterialBindings();
 
         void AddLoadedPolygonGroup(PolygonGroup *group, uint32 dataFilePos);

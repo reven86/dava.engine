@@ -317,40 +317,45 @@ Rect LandscapeEditorDrawSystem::GetLandscapeRect()
 float32 LandscapeEditorDrawSystem::GetHeightAtHeightmapPoint(const Vector2& point)
 {
 	Heightmap *heightmap = GetHeightmapProxy();
-	int32 x = (int32)point.x;
+
+    int32 hmSize = heightmap->Size();
+    int32 x = (int32)point.x;
 	int32 y = (int32)point.y;
 
-	DVASSERT_MSG((x >= 0 && x < heightmap->Size()) && (y >= 0 && y < heightmap->Size()),
-				 "Point must be in heightmap coordinates");
+    DVASSERT_MSG((x >= 0) && (x < hmSize) && (y >= 0) && (y < hmSize),
+                 "Point must be in heightmap coordinates");
 
-	int32 index = x + y * heightmap->Size();
-	float32 height = heightmap->Data()[index];
-	float32 maxHeight = GetLandscapeMaxHeight();
+    int nextX = DAVA::Min(x + 1, hmSize - 1);
+    int nextY = DAVA::Min(y + 1, hmSize - 1);
+    int i00 = x + y * hmSize;
+    int i01 = nextX + y * hmSize;
+    int i10 = x + nextY * hmSize;
+    int i11 = nextX + nextY * hmSize;
 
-	height *= maxHeight;
-	height /= Heightmap::MAX_VALUE;
+    const auto hmData = heightmap->Data();
+    float h00 = static_cast<float>(hmData[i00]);
+    float h01 = static_cast<float>(hmData[i01]);
+    float h10 = static_cast<float>(hmData[i10]);
+    float h11 = static_cast<float>(hmData[i11]);
 
-	return height;
+    float dx = point.x - static_cast<float>(x);
+    float dy = point.y - static_cast<float>(y);
+    float h0 = h00 * (1.0f - dx) + h01 * dx;
+    float h1 = h10 * (1.0f - dx) + h11 * dx;
+    float h = h0 * (1.0f - dy) + h1 * dy;
+
+    return h * GetLandscapeMaxHeight() / static_cast<float>(Heightmap::MAX_VALUE);
 }
 
 float32 LandscapeEditorDrawSystem::GetHeightAtTexturePoint(const FastName& level, const Vector2& point)
 {
-    if (GetTextureRect(level).PointInside(point))
+    auto textureRect = GetTextureRect(level);
+    if (textureRect.PointInside(point))
     {
         return GetHeightAtHeightmapPoint(TexturePointToHeightmapPoint(level, point));
     }
-    
-    return 0.f;
-}
 
-float32 LandscapeEditorDrawSystem::GetHeightAtNormalizedPoint(const Vector2& point)
-{
-	if (point.x >= 0.f && point.x <= 1.f && point.y >= 0.f && point.y <= 1.f)
-	{
-		return GetHeightAtHeightmapPoint(point * GetHeightmapProxy()->Size());
-	}
-
-	return 0.f;
+    return 0.0f;
 }
 
 Vector2 LandscapeEditorDrawSystem::HeightmapPointToTexturePoint(const FastName& level, const Vector2& point)
@@ -512,22 +517,16 @@ void LandscapeEditorDrawSystem::RemoveEntity(DAVA::Entity * entity)
 	}
 }
 
-void LandscapeEditorDrawSystem::SaveTileMaskTexture()
+bool LandscapeEditorDrawSystem::SaveTileMaskTexture()
 {
-	if (!baseLandscape)
-	{
-		return;
-	}
+    if (baseLandscape == nullptr || !GetLandscapeProxy()->IsTilemaskChanged())
+    {
+        return false;
+    }
 
- 	if (!GetLandscapeProxy()->IsTilemaskChanged())
- 	{
- 		return;
- 	}
-
-    Texture* texture = GetLandscapeProxy()->GetTilemaskTexture();// baseLandscape->GetMaterial()->GetEffectiveTexture(Landscape::TEXTURE_TILEMASK);
-
-	if (texture)
-	{
+    Texture* texture = GetTileMaskTexture();
+    if (texture != nullptr)
+    {
 		Image *image = texture->CreateImageFromMemory();
 
 		if(image)
@@ -537,33 +536,59 @@ void LandscapeEditorDrawSystem::SaveTileMaskTexture()
 		}
 
 		GetLandscapeProxy()->ResetTilemaskChanged();
-	}
+
+        return true;
+    }
+
+    return false;
 }
 
 void LandscapeEditorDrawSystem::ResetTileMaskTexture()
 {
-	if (!baseLandscape)
-	{
+    if (baseLandscape == nullptr)
+    {
 		return;
 	}
 
-    NMaterial * landscapeMaterial = baseLandscape->GetMaterial();
-    while (landscapeMaterial)
+    ScopedPtr<Texture> texture(Texture::CreateFromFile(sourceTilemaskPath));
+    texture->Reload();
+    SetTileMaskTexture(texture);
+}
+
+void LandscapeEditorDrawSystem::SetTileMaskTexture(Texture* texture)
+{
+    if (baseLandscape == nullptr)
     {
-        if(landscapeMaterial->HasLocalTexture(Landscape::TEXTURE_TILEMASK))
+        return;
+    }
+
+    NMaterial * landscapeMaterial = baseLandscape->GetMaterial();
+    while (landscapeMaterial != nullptr)
+    {
+        if (landscapeMaterial->HasLocalTexture(Landscape::TEXTURE_TILEMASK))
             break;
 
         landscapeMaterial = landscapeMaterial->GetParent();
     }
 
-    if(landscapeMaterial)
+    if (landscapeMaterial != nullptr)
     {
-        Texture * texture = Texture::CreateFromFile(sourceTilemaskPath);
-        texture->Reload();
         landscapeMaterial->SetTexture(Landscape::TEXTURE_TILEMASK, texture);
-        landscapeMaterial->InvalidateTextureBindings();
-        texture->Release();
     }
+}
+
+Texture* LandscapeEditorDrawSystem::GetTileMaskTexture()
+{
+    if (baseLandscape != nullptr)
+    {
+        NMaterial* landscapeMaterial = baseLandscape->GetMaterial();
+        if (landscapeMaterial != nullptr)
+        {
+            return landscapeMaterial->GetEffectiveTexture(Landscape::TEXTURE_TILEMASK);
+        }
+    }
+
+    return nullptr;
 }
 
 LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::VerifyLandscape() const
