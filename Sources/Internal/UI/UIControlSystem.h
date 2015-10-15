@@ -198,7 +198,7 @@ public:
 		Draws all controls hierarchy to the screen.
 	 */
     void Draw();
-	
+
 //	void SetTransitionType(int newTransitionType);
 	
 			

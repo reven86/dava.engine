@@ -766,7 +766,7 @@ namespace DAVA
     inline void AutotestingSystemLua::ParsePath(const String& path, Vector<String>& parsedPath)
     {
         Split(path, "/", parsedPath);
-	}
+    }
 
 	bool AutotestingSystemLua::LoadWrappedLuaObjects()
 	{

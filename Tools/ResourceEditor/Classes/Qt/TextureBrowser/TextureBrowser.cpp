@@ -751,7 +751,7 @@ void TextureBrowser::textureReadyConverted(const DAVA::TextureDescriptor *descri
             updateConvertedImageAndInfo(images.images, *curDescriptor);
         }
 
-		DAVA::Texture *texture = textureListModel->getTexture(descriptor);
+        DAVA::Texture *texture = textureListModel->getTexture(descriptor);
 		if(NULL != texture)
 		{
             // reload this texture into scene

@@ -30,9 +30,8 @@
 #ifndef __FRAMEWORK__DEVICEINFO__
 #define __FRAMEWORK__DEVICEINFO__
 
-#include <functional>
-
 #include "Base/BaseTypes.h"
+#include "Functional/Signal.h"
 #include "Render/RenderBase.h"
 
 namespace DAVA
@@ -150,7 +149,6 @@ public:
         HID_SYSTEM_CONTROL_TYPE,
         HID_COUNT_TYPE,
     };
-    using HIDCallBackFunc = std::function<void(eHIDType, bool)>;
     using ListForStorageInfo = List<StorageInfo>;
 
     static ePlatform GetPlatform();
@@ -174,14 +172,14 @@ public:
     static int32 GetCpuCount();
     static void InitializeScreenInfo();
 
-    // true, if device connected
+    // true if device connected
     static bool IsHIDConnected(eHIDType type);
-    
 
-    // for notify, if you need know, when "human interface device" connection is changed
-    // int value - type "human interface device"
-    // bool value - device has been connected(true), or disconnected(false)
-    static void SetHIDConnectionCallback(DeviceInfo::eHIDType type, DeviceInfo::HIDCallBackFunc&& callback);
+    // Signal of changed HID connection
+    // DeviceInfo::eHIDType value - type of HID
+    // bool value - device's state: connected (true) or disconnected (false)
+    using HIDConnectionSignal = Signal<eHIDType, bool>;
+    static HIDConnectionSignal& GetHIDConnectionSignal(eHIDType type);
 
 private:
     static DeviceInfoPrivate* GetPrivateImpl();

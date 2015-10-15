@@ -301,7 +301,7 @@ public:
         \param[in] value we want to set for this key
         \param[in] arraySize size fo the array we want tot save
 	 */
-    	
+
     void SetFastName(const String & key, const FastName & value);
 	/**
         \brief Function to set variable in archive.

@@ -105,10 +105,10 @@ private:
 class TextFieldPlatformImpl
 {
 public:
-	TextFieldPlatformImpl(UITextField* textField);
-	virtual ~TextFieldPlatformImpl();
+    TextFieldPlatformImpl(UITextField* textField);
+    virtual ~TextFieldPlatformImpl();
 
-	void OpenKeyboard();
+    void OpenKeyboard();
 	void CloseKeyboard();
 	void GetText(WideString & string) const;
 	void SetText(const WideString & string);
@@ -162,7 +162,7 @@ public:
     void SystemDraw(const UIGeometricData& geometricData);
 
 private:
-	static TextFieldPlatformImpl* GetUITextFieldAndroid(uint32_t id);
+    static TextFieldPlatformImpl* GetUITextFieldAndroid(uint32_t id);
 
 protected:
     // Truncate the text to maxLength characters.
@@ -174,7 +174,7 @@ private:
 	static uint32_t sId;
     static UnorderedMap<uint32_t, TextFieldPlatformImpl*> controls;
     uint32_t id;
-	Rect rect;
+    Rect rect;
 	WideString text;
 	int32_t align;
 	bool useRtlAlign;
