@@ -135,9 +135,9 @@ DAVA::String PointerSerializer::FromPointerList(Container &&cont)
         << " : "
         << "[\n";
 
-    auto it = std::cbegin(cont);
-    auto begin_it = std::cbegin(cont);
-    auto end_it = std::cend(cont);
+    auto it = std::begin(cont);
+    auto begin_it = std::begin(cont);
+    auto end_it = std::end(cont);
     while (it != end_it)
     {
         if (it != begin_it)
