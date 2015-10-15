@@ -297,7 +297,6 @@ void DeviceInfoPrivate::NotifyAllClients(NativeHIDType type, bool isConnected)
 
     //pass notification in main thread
     CorePlatformWinUAP* core = static_cast<CorePlatformWinUAP*>(Core::Instance());
-    DVASSERT_MSG(nullptr != core, "DeviceInfo::InitializeScreenInfo(): Core::Instance() is null");
 
     DeviceInfo::HIDConnectionSignal* signal = &GetHIDConnectionSignal(hidType);
     core->RunOnMainThread([=] { signal->Emit(hidType, isConnected); });
