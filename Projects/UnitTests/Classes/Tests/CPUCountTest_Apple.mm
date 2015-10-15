@@ -26,23 +26,30 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "DAVAEngine.h"
 
-#include "Platform/DeviceInfoPrivateBase.h"
-#include <thread>
+#include "UnitTests/UnitTests.h"
 
-namespace DAVA
+using namespace DAVA;
+
+#ifdef __DAVAENGINE_APPLE__
+
+DAVA_TESTCLASS(CPUCountTest)
 {
 
-int32 DeviceInfoPrivateBase::GetCpuCount()
+int32 DeviceInfoPrivate::GetCpuCount()
 {
-    size_t processors = std::thread::hardware_concurrency();
-    return processors != 0 ? static_cast<int32>(processors) : 1;
+    return (int32)[[NSProcessInfo processInfo] processorCount];
 }
 
-DeviceInfo::HIDConnectionSignal& DeviceInfoPrivateBase::GetHIDConnectionSignal(
-    DeviceInfo::eHIDType type)
+DAVA_TEST(StandardVersusPlatformRealizationTest)
 {
-    return hidConnectionSignals[type];
+    int32 cpuCountFromStandardRealization = DeviceInfo::GetCpuCount();
+    int32 cpuCountFromPlatformRealization = GetCpuCount();
+    
+    TEST_VERIFY(cpuCountFromStandardRealization == cpuCountFromPlatformRealization);
 }
 
-}  // namespace DAVA
+};
+
+#endif // __DAVAENGINE_APPLE__
