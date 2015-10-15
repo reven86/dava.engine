@@ -391,15 +391,8 @@ void DeviceInfoPrivate::InitializeScreenInfo()
 
 bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType type)
 {
-    if (type == DeviceInfo::HID_POINTER_TYPE)
-    {
-        return true;
-    }
-    return false;
-}
-
-void DeviceInfoPrivate::SetHIDConnectionCallback(DeviceInfo::eHIDType type, DeviceInfo::HIDCallBackFunc&& callback)
-{
+    //TODO: Implement this method
+    return type == DeviceInfo::HID_POINTER_TYPE;
 }
 
 }

@@ -149,7 +149,6 @@ public:
         HID_SYSTEM_CONTROL_TYPE,
         HID_COUNT_TYPE,
     };
-    using HIDCallBackFunc = std::function<void(eHIDType, bool)>;
     using ListForStorageInfo = List<StorageInfo>;
 
     static ePlatform GetPlatform();
