@@ -237,14 +237,13 @@ PrivateTextFieldWinUAP::~PrivateTextFieldWinUAP()
 {
     if (nativeControl != nullptr)
     {
-        Border ^ p = nativeControlHolder;
+        UIElement^ p = nativeControlHolder;
         EventRegistrationToken tokenHiding = tokenKeyboardHiding;
         EventRegistrationToken tokenShowing = tokenKeyboardShowing;
         core->RunOnUIThread([p, tokenHiding, tokenShowing]() { // We don't need blocking call here
             InputPane::GetForCurrentView()->Showing -= tokenHiding;
             InputPane::GetForCurrentView()->Hiding -= tokenShowing;
             static_cast<CorePlatformWinUAP*>(Core::Instance())->XamlApplication()->RemoveUIElement(p);
-            p->Child = nullptr;
         });
         nativeControlHolder = nullptr;
         nativeControl = nullptr;
@@ -316,9 +315,12 @@ void PrivateTextFieldWinUAP::UpdateRect(const Rect& rect)
 
     if (properties.createNew || properties.anyPropertyChanged || properties.focusChanged)
     {
+        if (properties.textChanged && properties.focusChanged && properties.focus)
+            uiTextField->SetSprite(nullptr, 0);
+
         auto self{shared_from_this()};
         TextFieldProperties props(properties);
-        core->RunOnUIThread([this, self, props] {
+        core->RunOnUIThreadBlocked([this, self, props] {
             ProcessProperties(props);
         });
 
@@ -490,6 +492,8 @@ void PrivateTextFieldWinUAP::CreateNativeControl(bool textControl)
     nativeControl->BorderBrush = ref new SolidColorBrush(Colors::Transparent);
     nativeControl->Padding = Thickness(0.0);
     nativeControl->Visibility = Visibility::Visible;
+    nativeControl->MinWidth = 0.0;
+    nativeControl->MinHeight = 0.0;
     nativeControl->TabNavigation = KeyboardNavigationMode::Cycle;
 
     // Native control holder is used to keep text control inside itself to
@@ -499,6 +503,7 @@ void PrivateTextFieldWinUAP::CreateNativeControl(bool textControl)
     nativeControlHolder->BorderBrush = ref new SolidColorBrush(Colors::Transparent);
     nativeControlHolder->BorderThickness = Thickness(0.0);
     nativeControlHolder->Padding = Thickness(0.0);
+    nativeControlHolder->Margin = Thickness(0.0);
     nativeControlHolder->MinWidth = 0.0;
     nativeControlHolder->MinHeight = 0.0;
     nativeControlHolder->Child = nativeControl;
@@ -651,6 +656,7 @@ void PrivateTextFieldWinUAP::OnLostFocus()
     core->XamlApplication()->NativeControlLostFocus(nativeControl);
     if (!IsMultiline())
     {
+        waitRenderToTextureComplete = true;
         RenderToTexture(true);
     }
 
@@ -757,6 +763,7 @@ void PrivateTextFieldWinUAP::ProcessProperties(const TextFieldProperties& props)
     rectInWindowSpace = props.rectInWindowSpace;
     if (props.createNew)
     {
+        waitRenderToTextureComplete = !props.multiline;
         CreateNativeControl(!props.password);
         ApplyAssignedProperties(props);
         InstallKeyboardEventHandlers();
@@ -787,7 +794,7 @@ void PrivateTextFieldWinUAP::ProcessProperties(const TextFieldProperties& props)
 
     if (!IsMultiline() && !HasFocus())
     {
-        RenderToTexture(false);
+        RenderToTexture(waitRenderToTextureComplete);
     }
 }
 
@@ -798,7 +805,7 @@ void PrivateTextFieldWinUAP::ApplyChangedProperties(const TextFieldProperties& p
     if (props.visibleChanged || props.multilineChanged)
         SetNativeVisible(props.visible);
     if (props.rectChanged)
-        SetNativePositionAndSize(props.rectInWindowSpace, !(IsMultiline() || HasFocus()));
+        SetNativePositionAndSize(props.rectInWindowSpace, !(IsMultiline() || HasFocus() || waitRenderToTextureComplete));
     if (props.maxTextLengthChanged)
         SetNativeMaxTextLength(props.maxTextLength);
     if (props.textChanged)
@@ -826,7 +833,7 @@ void PrivateTextFieldWinUAP::ApplyAssignedProperties(const TextFieldProperties& 
     if (props.visibleAssigned || props.multilineAssigned)
         SetNativeVisible(props.visible);
     if (props.rectAssigned)
-        SetNativePositionAndSize(props.rectInWindowSpace, !(IsMultiline() || HasFocus()));
+        SetNativePositionAndSize(props.rectInWindowSpace, !(IsMultiline() || HasFocus() || waitRenderToTextureComplete));
     if (props.maxTextLengthAssigned)
         SetNativeMaxTextLength(props.maxTextLength);
     if (props.textAssigned)
@@ -1113,6 +1120,7 @@ void PrivateTextFieldWinUAP::RenderToTexture(bool moveOffScreenOnCompletion)
             if (moveOffScreenOnCompletion)
             {
                 core->RunOnUIThread([this, self]() {
+                    waitRenderToTextureComplete = false;
                     SetNativePositionAndSize(rectInWindowSpace, true);
                 });
             }

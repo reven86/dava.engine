@@ -221,6 +221,7 @@ private:
     Windows::Foundation::EventRegistrationToken tokenKeyboardHiding;
 
     bool ignoreTextChange = false;
+    bool waitRenderToTextureComplete = false;   // If flag is set do not move native control offscreen to get rid of some flickering
 
     int32 caretPosition = 0;                // Current caret position
     int32 savedCaretPosition = 0;           // Saved caret position to restore it when delegate declines text changing
