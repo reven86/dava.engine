@@ -5,6 +5,7 @@ TIMECLICK = 0.5 -- time for simple action
 DELAY = 0.5 -- time for simulation of human reaction
 
 MULTIPLAYER_TIMEOUT_COUNT = 300 -- Multiplayer timeout
+DEVICE = "not_initialized"
 
 EPSILON = 1
 
@@ -218,41 +219,49 @@ end
 ----------------------------------------------------------------------------------------------------
 -- Multiplayer API
 ----------------------------------------------------------------------------------------------------
+MP_STATE = {}
+MP_STATE['READY'] = "ready"
+MP_STATE['NO_DEVICE'] = "not_found"
+
 -- mark current device as ready to work in DB
 function ReadState(name)
-    return autotestingSystem:ReadState(name)
+    return autotestingSystem:ReadState(name, "State")
 end
 
 function ReadCommand(name)
-    return autotestingSystem:ReadCommand(name)
+    return autotestingSystem:ReadState(name, "Command")
 end
 
 function WriteState(name, state)
-    autotestingSystem:WriteState(name, state)
+    autotestingSystem:WriteState(name, "State", state)
     coroutine.yield()
 end
 
 function WriteCommand(name, command)
-    autotestingSystem:WriteCommand(name, command)
+    autotestingSystem:WriteState(name, "Command", command)
     coroutine.yield()
 end
 
-function InitializeDevice(name)
-    DEVICE = name
-    Log("Mark " .. name .. " device as Ready")
+function InitializeDevice()
+    DEVICE = GetDeviceName()
+    Log("Mark " .. DEVICE .. " device as Ready")
+    autotestingSystem:InitializeDevice()
+    WriteState(DEVICE, MP_STATE['READY'])
     Yield()
-    autotestingSystem:InitializeDevice(DEVICE)
-    Yield()
-    WriteState(DEVICE, "ready")
 end
 
 function WaitForDevice(name)
     Log("Wait while " .. name .. " device become Ready")
     Yield()
+	local currentStatus = ""
     for i = 1, MULTIPLAYER_TIMEOUT_COUNT do
-        if ReadState(name) == "ready" then
+		currentStatus = ReadState(name)
+        if currentStatus == MP_STATE['READY'] then
+			Log("Device " .. name .. " is ready")
             return
-        end
+        elseif currentStatus == MP_STATE['NO_DEVICE'] then
+			OnError("Could not find device " .. name)
+		end
         Wait(1)
     end
     OnError("Device " .. name .. " is not ready during timeout")

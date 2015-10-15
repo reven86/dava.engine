@@ -49,11 +49,15 @@ namespace DAVA
         : startTimeMS(0)
         , isInit(false)
         , isRunning(false)
+        , isDB(true)
+        , isMaster(true)
+        , isRegistered(false)
+        , isWaiting(false)
+        , isInitMultiplayer(false)
         , needExitApp(false)
         , timeBeforeExit(0.0f)
         , projectName("")
         , groupName("default")
-        , deviceId("not-initialized")
         , deviceName("not-initialized")
 		, testsDate("not_found")
 		, runId("not_found")
@@ -69,16 +73,11 @@ namespace DAVA
         , framework("framework")
         , branchRev("0")
         , frameworkRev("0")
-        , isDB(true)
         , needClearGroupInDB(false)
-        , isMaster(true)
         , requestedHelpers(0)
         , masterId("")
         , masterTask("")
         , masterRunId(0)
-        , isRegistered(false)
-        , isWaiting(false)
-        , isInitMultiplayer(false)
         , multiplayerName("")
         , waitTimeLeft(0.0f)
         , waitCheckTimeLeft(0.0f)
@@ -264,10 +263,14 @@ namespace DAVA
 	}
 
 	// Multiplayer API
-	void AutotestingSystem::InitializeDevice(const String &device)
+	void AutotestingSystem::InitializeDevice()
 	{
-		Logger::Info("AutotestingSystem::InitializeDevice device=%s", device.c_str());
-		deviceId = device;
+		Logger::Info("AutotestingSystem::InitializeDevice");
+		if (!isDB)
+		{
+			OnError("Couldn't use multiplayer test in local mode.");
+		}
+		isInitMultiplayer = true;
 	}
 
 	String AutotestingSystem::GetCurrentTimeString()
@@ -363,9 +366,9 @@ namespace DAVA
         
         AutotestingDB::Instance()->Log("ERROR", screenShotName);
 
-		if (isDB && deviceId != "not-initialized")
+		if (isDB && isInitMultiplayer)
 		{
-            AutotestingDB::Instance()->WriteState(deviceId, "error");
+            AutotestingDB::Instance()->WriteState(deviceName, "State", "error");
 		}
 
 		ExitApp();
@@ -418,9 +421,9 @@ namespace DAVA
 		// Mark last step as SUCCESS
 		OnStepFinished();
 
-		if (deviceId != "not-initialized")
+		if (isDB && isInitMultiplayer)
 		{
-			AutotestingDB::Instance()->WriteState(deviceId, "finished");
+			AutotestingDB::Instance()->WriteState(deviceName, "State", "finished");
 		}
 
 		// Mark test as SUCCESS

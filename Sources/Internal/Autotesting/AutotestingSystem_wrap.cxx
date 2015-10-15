@@ -1480,7 +1480,7 @@ SWIGINTERN int SWIG_Lua_iterate_bases(lua_State *L, swig_type_info * SWIGUNUSED 
       for(i=0;i<bases_count;i++) {
         /* Iteration through class bases */
 #if (SWIG_LUA_TARGET == SWIG_LUA_FLAVOR_LUA)
-        lua_rawgeti(L,bases_table, static_cast<int>(i+1));
+        lua_rawgeti(L,bases_table,i+1);
         base_swig_type = 0;
         if(lua_isnil(L,-1)) {
           valid = 0;
@@ -6005,68 +6005,6 @@ fail:
 }
 
 
-static int _wrap_AutotestingSystemLua_WriteState(lua_State* L) {
-  int SWIG_arg = 0;
-  DAVA::AutotestingSystemLua *arg1 = (DAVA::AutotestingSystemLua *) 0 ;
-  DAVA::String *arg2 = 0 ;
-  DAVA::String *arg3 = 0 ;
-  DAVA::String temp2 ;
-  DAVA::String temp3 ;
-  
-  SWIG_check_num_args("DAVA::AutotestingSystemLua::WriteState",3,3)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::AutotestingSystemLua::WriteState",1,"DAVA::AutotestingSystemLua *");
-  if(!lua_isstring(L,2)) SWIG_fail_arg("DAVA::AutotestingSystemLua::WriteState",2,"DAVA::String const &");
-  if(!lua_isstring(L,3)) SWIG_fail_arg("DAVA::AutotestingSystemLua::WriteState",3,"DAVA::String const &");
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__AutotestingSystemLua,0))){
-    SWIG_fail_ptr("AutotestingSystemLua_WriteState",1,SWIGTYPE_p_DAVA__AutotestingSystemLua);
-  }
-  
-  temp2.assign(lua_tostring(L,2),lua_rawlen(L,2)); arg2=&temp2;
-  temp3.assign(lua_tostring(L,3),lua_rawlen(L,3)); arg3=&temp3;
-  (arg1)->WriteState((DAVA::String const &)*arg2,(DAVA::String const &)*arg3);
-  
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_AutotestingSystemLua_WriteCommand(lua_State* L) {
-  int SWIG_arg = 0;
-  DAVA::AutotestingSystemLua *arg1 = (DAVA::AutotestingSystemLua *) 0 ;
-  DAVA::String *arg2 = 0 ;
-  DAVA::String *arg3 = 0 ;
-  DAVA::String temp2 ;
-  DAVA::String temp3 ;
-  
-  SWIG_check_num_args("DAVA::AutotestingSystemLua::WriteCommand",3,3)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::AutotestingSystemLua::WriteCommand",1,"DAVA::AutotestingSystemLua *");
-  if(!lua_isstring(L,2)) SWIG_fail_arg("DAVA::AutotestingSystemLua::WriteCommand",2,"DAVA::String const &");
-  if(!lua_isstring(L,3)) SWIG_fail_arg("DAVA::AutotestingSystemLua::WriteCommand",3,"DAVA::String const &");
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__AutotestingSystemLua,0))){
-    SWIG_fail_ptr("AutotestingSystemLua_WriteCommand",1,SWIGTYPE_p_DAVA__AutotestingSystemLua);
-  }
-  
-  temp2.assign(lua_tostring(L,2),lua_rawlen(L,2)); arg2=&temp2;
-  temp3.assign(lua_tostring(L,3),lua_rawlen(L,3)); arg3=&temp3;
-  (arg1)->WriteCommand((DAVA::String const &)*arg2,(DAVA::String const &)*arg3);
-  
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
 static int _wrap_AutotestingSystemLua_GetServerQueueState(lua_State* L) {
   int SWIG_arg = 0;
   DAVA::AutotestingSystemLua *arg1 = (DAVA::AutotestingSystemLua *) 0 ;
@@ -6130,19 +6068,23 @@ static int _wrap_AutotestingSystemLua_ReadState(lua_State* L) {
   int SWIG_arg = 0;
   DAVA::AutotestingSystemLua *arg1 = (DAVA::AutotestingSystemLua *) 0 ;
   DAVA::String *arg2 = 0 ;
+  DAVA::String *arg3 = 0 ;
   DAVA::String temp2 ;
+  DAVA::String temp3 ;
   DAVA::String result;
   
-  SWIG_check_num_args("DAVA::AutotestingSystemLua::ReadState",2,2)
+  SWIG_check_num_args("DAVA::AutotestingSystemLua::ReadState",3,3)
   if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::AutotestingSystemLua::ReadState",1,"DAVA::AutotestingSystemLua *");
   if(!lua_isstring(L,2)) SWIG_fail_arg("DAVA::AutotestingSystemLua::ReadState",2,"DAVA::String const &");
+  if(!lua_isstring(L,3)) SWIG_fail_arg("DAVA::AutotestingSystemLua::ReadState",3,"DAVA::String const &");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__AutotestingSystemLua,0))){
     SWIG_fail_ptr("AutotestingSystemLua_ReadState",1,SWIGTYPE_p_DAVA__AutotestingSystemLua);
   }
   
   temp2.assign(lua_tostring(L,2),lua_rawlen(L,2)); arg2=&temp2;
-  result = (arg1)->ReadState((DAVA::String const &)*arg2);
+  temp3.assign(lua_tostring(L,3),lua_rawlen(L,3)); arg3=&temp3;
+  result = (arg1)->ReadState((DAVA::String const &)*arg2,(DAVA::String const &)*arg3);
   lua_pushlstring(L,(&result)->data(),(&result)->size()); SWIG_arg++;
   return SWIG_arg;
   
@@ -6154,24 +6096,31 @@ fail:
 }
 
 
-static int _wrap_AutotestingSystemLua_ReadCommand(lua_State* L) {
+static int _wrap_AutotestingSystemLua_WriteState(lua_State* L) {
   int SWIG_arg = 0;
   DAVA::AutotestingSystemLua *arg1 = (DAVA::AutotestingSystemLua *) 0 ;
   DAVA::String *arg2 = 0 ;
+  DAVA::String *arg3 = 0 ;
+  DAVA::String *arg4 = 0 ;
   DAVA::String temp2 ;
-  DAVA::String result;
+  DAVA::String temp3 ;
+  DAVA::String temp4 ;
   
-  SWIG_check_num_args("DAVA::AutotestingSystemLua::ReadCommand",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::AutotestingSystemLua::ReadCommand",1,"DAVA::AutotestingSystemLua *");
-  if(!lua_isstring(L,2)) SWIG_fail_arg("DAVA::AutotestingSystemLua::ReadCommand",2,"DAVA::String const &");
+  SWIG_check_num_args("DAVA::AutotestingSystemLua::WriteState",4,4)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::AutotestingSystemLua::WriteState",1,"DAVA::AutotestingSystemLua *");
+  if(!lua_isstring(L,2)) SWIG_fail_arg("DAVA::AutotestingSystemLua::WriteState",2,"DAVA::String const &");
+  if(!lua_isstring(L,3)) SWIG_fail_arg("DAVA::AutotestingSystemLua::WriteState",3,"DAVA::String const &");
+  if(!lua_isstring(L,4)) SWIG_fail_arg("DAVA::AutotestingSystemLua::WriteState",4,"DAVA::String const &");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__AutotestingSystemLua,0))){
-    SWIG_fail_ptr("AutotestingSystemLua_ReadCommand",1,SWIGTYPE_p_DAVA__AutotestingSystemLua);
+    SWIG_fail_ptr("AutotestingSystemLua_WriteState",1,SWIGTYPE_p_DAVA__AutotestingSystemLua);
   }
   
   temp2.assign(lua_tostring(L,2),lua_rawlen(L,2)); arg2=&temp2;
-  result = (arg1)->ReadCommand((DAVA::String const &)*arg2);
-  lua_pushlstring(L,(&result)->data(),(&result)->size()); SWIG_arg++;
+  temp3.assign(lua_tostring(L,3),lua_rawlen(L,3)); arg3=&temp3;
+  temp4.assign(lua_tostring(L,4),lua_rawlen(L,4)); arg4=&temp4;
+  (arg1)->WriteState((DAVA::String const &)*arg2,(DAVA::String const &)*arg3,(DAVA::String const &)*arg4);
+  
   return SWIG_arg;
   
   if(0) SWIG_fail;
@@ -6185,19 +6134,15 @@ fail:
 static int _wrap_AutotestingSystemLua_InitializeDevice(lua_State* L) {
   int SWIG_arg = 0;
   DAVA::AutotestingSystemLua *arg1 = (DAVA::AutotestingSystemLua *) 0 ;
-  DAVA::String *arg2 = 0 ;
-  DAVA::String temp2 ;
   
-  SWIG_check_num_args("DAVA::AutotestingSystemLua::InitializeDevice",2,2)
+  SWIG_check_num_args("DAVA::AutotestingSystemLua::InitializeDevice",1,1)
   if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::AutotestingSystemLua::InitializeDevice",1,"DAVA::AutotestingSystemLua *");
-  if(!lua_isstring(L,2)) SWIG_fail_arg("DAVA::AutotestingSystemLua::InitializeDevice",2,"DAVA::String const &");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__AutotestingSystemLua,0))){
     SWIG_fail_ptr("AutotestingSystemLua_InitializeDevice",1,SWIGTYPE_p_DAVA__AutotestingSystemLua);
   }
   
-  temp2.assign(lua_tostring(L,2),lua_rawlen(L,2)); arg2=&temp2;
-  (arg1)->InitializeDevice((DAVA::String const &)*arg2);
+  (arg1)->InitializeDevice();
   
   return SWIG_arg;
   
@@ -6469,12 +6414,10 @@ static swig_lua_method swig_AutotestingSystemLua_methods[]= {
     { "CheckText", _wrap_AutotestingSystemLua_CheckText},
     { "CheckMsgText", _wrap_AutotestingSystemLua_CheckMsgText},
     { "GetText", _wrap_AutotestingSystemLua_GetText},
-    { "WriteState", _wrap_AutotestingSystemLua_WriteState},
-    { "WriteCommand", _wrap_AutotestingSystemLua_WriteCommand},
     { "GetServerQueueState", _wrap_AutotestingSystemLua_GetServerQueueState},
     { "SetServerQueueState", _wrap_AutotestingSystemLua_SetServerQueueState},
     { "ReadState", _wrap_AutotestingSystemLua_ReadState},
-    { "ReadCommand", _wrap_AutotestingSystemLua_ReadCommand},
+    { "WriteState", _wrap_AutotestingSystemLua_WriteState},
     { "InitializeDevice", _wrap_AutotestingSystemLua_InitializeDevice},
     { "GetDeviceName", _wrap_AutotestingSystemLua_GetDeviceName},
     { "GetPlatform", _wrap_AutotestingSystemLua_GetPlatform},
