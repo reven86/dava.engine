@@ -271,8 +271,11 @@ void WinUAPXamlApp::Run()
         SetTitleName();
         SetDisplayOrientations();
 
-        UpdateScreenSize(static_cast<float32>(swapChainPanel->ActualWidth), static_cast<float32>(swapChainPanel->ActualHeight));
-        UpdateScreenScale(swapChainPanel->CompositionScaleX, swapChainPanel->CompositionScaleY);
+        float32 width = static_cast<float32>(swapChainPanel->ActualWidth);
+        float32 height = static_cast<float32>(swapChainPanel->ActualHeight);
+        float32 scaleX = swapChainPanel->CompositionScaleX;
+        float32 scaleY = swapChainPanel->CompositionScaleY;
+        UpdateScreenSizeAndScale(width, height, scaleX, scaleY);
     });
 
     core->rendererParams.window = reinterpret_cast<void*>(swapChainPanel);
@@ -408,8 +411,7 @@ void WinUAPXamlApp::MetricsScreenUpdated(bool isSizeUpdate, float32 width, float
     }
     core->RunOnMainThread([this, width, height, scaleX, scaleY]()
                           {
-                              UpdateScreenSize(width, height);
-                              UpdateScreenScale(scaleX, scaleY);
+                              UpdateScreenSizeAndScale(width, height, scaleX, scaleY);
                               ResetRender();
                               ReInitCoordinatesSystem();
                               UIScreenManager::Instance()->ScreenSizeChanged();
@@ -847,22 +849,14 @@ void WinUAPXamlApp::PrepareScreenSize()
     }
 }
 
-void WinUAPXamlApp::UpdateScreenSize(float32 width, float32 height)
-{
-    preciseViewWidth = width;
-    preciseViewHeight = height;
-    viewWidth = static_cast<int32>(width);
-    viewHeight = static_cast<int32>(height);
-    physicalWidth = static_cast<int32>(preciseViewWidth * viewScaleX);
-    physicalHeight = static_cast<int32>(preciseViewHeight * viewScaleY);
-}
-
-void WinUAPXamlApp::UpdateScreenScale(float32 scaleX, float32 scaleY)
+void WinUAPXamlApp::UpdateScreenSizeAndScale(float32 width, float32 height, float32 scaleX, float32 scaleY)
 {
     viewScaleX = scaleX;
     viewScaleY = scaleY;
-    physicalWidth = static_cast<int32>(preciseViewWidth * viewScaleX);
-    physicalHeight = static_cast<int32>(preciseViewHeight * viewScaleY);
+    viewWidth = static_cast<int32>(width);
+    viewHeight = static_cast<int32>(height);
+    physicalWidth = static_cast<int32>(width * scaleX);
+    physicalHeight = static_cast<int32>(height * scaleY);
 }
 
 void WinUAPXamlApp::SetFullScreen(bool isFullscreen_)

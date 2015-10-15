@@ -141,8 +141,7 @@ private:
     void ReInitCoordinatesSystem();
 
     void PrepareScreenSize();
-    void UpdateScreenSize(float32 width, float32 height);
-    void UpdateScreenScale(float32 scaleX, float32 scaleY);
+    void UpdateScreenSizeAndScale(float32 width, float32 height, float32 scaleX, float32 scaleY);
     void SetFullScreen(bool isFullScreenFlag);
     // in units of effective (view) pixels
     void SetPreferredSize(float32 width, float32 height);
@@ -189,8 +188,6 @@ private:
 
     float32 viewScaleX = 1.f;
     float32 viewScaleY = 1.f;
-    float32 preciseViewWidth = static_cast<float32>(DisplayMode::DEFAULT_WIDTH);
-    float32 preciseViewHeight = static_cast<float32>(DisplayMode::DEFAULT_HEIGHT);
     int32 viewWidth = DisplayMode::DEFAULT_WIDTH;
     int32 viewHeight = DisplayMode::DEFAULT_HEIGHT;
     int32 physicalWidth = static_cast<int32>(viewWidth * viewScaleX);
