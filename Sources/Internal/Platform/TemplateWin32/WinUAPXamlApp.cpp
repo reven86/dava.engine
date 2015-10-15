@@ -87,7 +87,7 @@ UIEvent::PointerDeviceID ToDavaDeviceId(PointerDeviceType type)
         return UIEvent::PointerDeviceID::NOT_SUPPORTED;
     }
 }
-} // end anonim namespace
+} // anonimous namespace
 
 WinUAPXamlApp::WinUAPXamlApp()
     : core(static_cast<CorePlatformWinUAP*>(Core::Instance()))
@@ -328,71 +328,70 @@ void WinUAPXamlApp::Run()
 
 void WinUAPXamlApp::OnSuspending(::Platform::Object^ sender, Windows::ApplicationModel::SuspendingEventArgs^ args)
 {
-    Core::Instance()->GetApplicationCore()->OnSuspend();
+    core->RunOnMainThreadBlocked([]() {
+        Core::Instance()->GetApplicationCore()->OnSuspend();
+    });
 }
 
 void WinUAPXamlApp::OnResuming(::Platform::Object^ sender, ::Platform::Object^ args)
 {
-    Core::Instance()->GetApplicationCore()->OnResume();
+    core->RunOnMainThreadBlocked([]() {
+        Core::Instance()->GetApplicationCore()->OnResume();
+    });
 }
 
 void WinUAPXamlApp::OnWindowActivationChanged(::Windows::UI::Core::CoreWindow^ sender, ::Windows::UI::Core::WindowActivatedEventArgs^ args)
 {
     CoreWindowActivationState state = args->WindowActivationState;
 
-    switch (state)
+    core->RunOnMainThread([this, state]()
     {
-    case CoreWindowActivationState::CodeActivated:
-    case CoreWindowActivationState::PointerActivated:
-        if (isPhoneApiDetected)
+        switch (state)
         {
-            Core::Instance()->SetIsActive(true);
+        case CoreWindowActivationState::CodeActivated:
+        case CoreWindowActivationState::PointerActivated:
+            isPhoneApiDetected ? Core::Instance()->SetIsActive(true)
+                               : Core::Instance()->FocusReceived();
+            break;
+        case CoreWindowActivationState::Deactivated:
+            isPhoneApiDetected ? Core::Instance()->SetIsActive(false)
+                               : Core::Instance()->FocusLost();
+            InputSystem::Instance()->GetKeyboard().ClearAllKeys();
+            break;
+        default:
+            break;
         }
-        else
-        {
-            Core::Instance()->FocusReceived();
-        }
-        break;
-    case CoreWindowActivationState::Deactivated:
-        if (isPhoneApiDetected)
-        {
-            Core::Instance()->SetIsActive(false);
-        }
-        else
-        {
-            Core::Instance()->FocusLost();
-        }
-        InputSystem::Instance()->GetKeyboard().ClearAllKeys();
-        break;
-    default:
-        break;
-    }
+    });
 }
 
 void WinUAPXamlApp::OnWindowVisibilityChanged(::Windows::UI::Core::CoreWindow^ sender, ::Windows::UI::Core::VisibilityChangedEventArgs^ args)
 {
-    if (args->Visible)
+    bool visible = args->Visible;
+    core->RunOnMainThread([this, visible]()
     {
-        if (!isPhoneApiDetected)
+        if (visible)
         {
-            Core::Instance()->GoForeground();
-            //Core::Instance()->FocusRecieve();
-        }
-        Core::Instance()->SetIsActive(true); //TODO: Maybe should move on client side
-    }
-    else
-    {
-        if (!isPhoneApiDetected)
-        {
-            //Core::Instance()->FocusLost();
-            Core::Instance()->GoBackground(false);
+            if (!isPhoneApiDetected)
+            {
+                Core::Instance()->GoForeground();
+                //Core::Instance()->FocusRecieve();
+            }
+            Core::Instance()->SetIsActive(true); //TODO: Maybe should move to client side
         }
         else
         {
-            Core::Instance()->SetIsActive(false); //TODO: Maybe should move on client side
+            if (!isPhoneApiDetected)
+            {
+                //Core::Instance()->FocusLost();
+                Core::Instance()->GoBackground(false);
+            }
+            else
+            {
+                Core::Instance()->SetIsActive(false); //TODO: Maybe should move to client side
+            }
+            InputSystem::Instance()->GetKeyboard().ClearAllKeys();
         }
-        InputSystem::Instance()->GetKeyboard().ClearAllKeys();
-    }
+    });
 }
 
 void WinUAPXamlApp::MetricsScreenUpdated(bool isSizeUpdate, float32 widht, float32 height, bool isScaleUpdate, float32 scaleX, float32 scaleY)
@@ -433,9 +432,9 @@ void WinUAPXamlApp::OnSwapChainPanelPointerPressed(Platform::Object ^ /*sender*/
     float32 y = pointerPoint->Position.Y;
     int32 id = pointerPoint->PointerId;
     core->RunOnMainThread([this, x, y, id, type]()
-                          {
+    {
         DAVATouchEvent(UIEvent::PHASE_BEGAN, x, y, id, ToDavaDeviceId(type));
-                          });
+    });
 }
 
 void WinUAPXamlApp::OnSwapChainPanelPointerReleased(Platform::Object ^ /*sender*/, PointerRoutedEventArgs ^ args)
@@ -459,9 +458,9 @@ void WinUAPXamlApp::OnSwapChainPanelPointerReleased(Platform::Object ^ /*sender*
         float32 y = pointerPoint->Position.Y;
         int32 id = pointerPoint->PointerId;
         core->RunOnMainThread([this, x, y, id, type]()
-                              {
+        {
             DAVATouchEvent(UIEvent::PHASE_ENDED, x, y, id, ToDavaDeviceId(type));
-                              });
+        });
     }
 }
 
@@ -487,9 +486,9 @@ void WinUAPXamlApp::OnSwapChainPanelPointerMoved(Platform::Object ^ /*sender*/, 
     float32 y = pointerPoint->Position.Y;
     int32 id = pointerPoint->PointerId;
     core->RunOnMainThread([this, phase, x, y, id, type]()
-                          {
+    {
         DAVATouchEvent(phase, x, y, id, ToDavaDeviceId(type));
-                          });
+    });
 }
 
 void WinUAPXamlApp::OnSwapChainPanelPointerEntered(Platform::Object ^ /*sender*/, PointerRoutedEventArgs ^ args)
@@ -525,9 +524,9 @@ void WinUAPXamlApp::OnSwapChainPanelPointerExited(Platform::Object ^ /*sender*/,
         float32 y = pointerPoint->Position.Y;
         int32 id = pointerPoint->PointerId;
         core->RunOnMainThread([this, x, y, id, type]()
-                              {
+        {
             DAVATouchEvent(UIEvent::PHASE_ENDED, x, y, id, ToDavaDeviceId(type));
-                              });
+        });
     }
 }
 
@@ -552,7 +551,7 @@ void WinUAPXamlApp::OnSwapChainPanelPointerWheel(Platform::Object ^ /*sender*/, 
 void WinUAPXamlApp::OnHardwareBackButtonPressed(Platform::Object ^ /*sender*/, BackPressedEventArgs ^ args)
 {
     core->RunOnMainThread([this]()
-                          {
+    {
         UIEvent ev;
         ev.keyChar = 0;
         ev.tapCount = 1;
@@ -565,7 +564,7 @@ void WinUAPXamlApp::OnHardwareBackButtonPressed(Platform::Object ^ /*sender*/, B
         newEvent.pop_back();
         UIControlSystem::Instance()->OnInput(newEvent, events);
         InputSystem::Instance()->GetKeyboard().OnKeyUnpressed(static_cast<int32>(DVKEY_BACK));
-                          });
+    });
     args->Handled = true;
 }
 
@@ -590,7 +589,7 @@ void WinUAPXamlApp::OnKeyDown(CoreWindow ^ /*sender*/, KeyEventArgs ^ args)
 
     int32 key = static_cast<int32>(args->VirtualKey);
     core->RunOnMainThread([this, key]()
-                          {
+    {
         UIEvent ev;
         ev.keyChar = 0;
         ev.tapCount = 1;
@@ -600,7 +599,7 @@ void WinUAPXamlApp::OnKeyDown(CoreWindow ^ /*sender*/, KeyEventArgs ^ args)
         Vector<UIEvent> newEvent = {ev};
         UIControlSystem::Instance()->OnInput(newEvent, events);
         InputSystem::Instance()->GetKeyboard().OnSystemKeyPressed(static_cast<int32>(key));
-                          });
+    });
 }
 
 void WinUAPXamlApp::OnKeyUp(CoreWindow ^ /*sender*/, KeyEventArgs ^ args)
@@ -612,7 +611,7 @@ void WinUAPXamlApp::OnKeyUp(CoreWindow ^ /*sender*/, KeyEventArgs ^ args)
     // Note: should be propagated to main thread
     VirtualKey key = args->VirtualKey;
     core->RunOnMainThread([this, key]()
-                          {
+    {
         UIEvent ev;
         ev.keyChar = 0;
         ev.tapCount = 1;
@@ -622,7 +621,7 @@ void WinUAPXamlApp::OnKeyUp(CoreWindow ^ /*sender*/, KeyEventArgs ^ args)
         Vector<UIEvent> newEvent = { ev };
         UIControlSystem::Instance()->OnInput(newEvent, events);
         InputSystem::Instance()->GetKeyboard().OnSystemKeyUnpressed(static_cast<int32>(key));
-                          });
+    });
 }
 
 void WinUAPXamlApp::OnMouseMoved(MouseDevice^ mouseDevice, MouseEventArgs^ args)
