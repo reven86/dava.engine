@@ -189,6 +189,8 @@ private:
 
     float32 viewScaleX = 1.f;
     float32 viewScaleY = 1.f;
+    float32 preciseViewWidth = static_cast<float32>(DisplayMode::DEFAULT_WIDTH);
+    float32 preciseViewHeight = static_cast<float32>(DisplayMode::DEFAULT_HEIGHT);
     int32 viewWidth = DisplayMode::DEFAULT_WIDTH;
     int32 viewHeight = DisplayMode::DEFAULT_HEIGHT;
     int32 physicalWidth = static_cast<int32>(viewWidth * viewScaleX);
