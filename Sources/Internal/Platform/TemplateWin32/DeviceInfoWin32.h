@@ -34,7 +34,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #if defined(__DAVAENGINE_WIN32__)
 
-#include "Base/Platform.h"
 #include "Platform/DeviceInfoPrivateBase.h"
 
 namespace DAVA
