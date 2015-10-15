@@ -742,7 +742,6 @@ void WinUAPXamlApp::CreateBaseXamlUI()
     controlThatTakesFocus->Content = L"I steal your focus";
     controlThatTakesFocus->Width = 30;
     controlThatTakesFocus->Height = 20;
-    controlThatTakesFocus->IsTabStop = false;
     AddUIElement(controlThatTakesFocus);
     PositionUIElement(controlThatTakesFocus, -100, -100);
 
