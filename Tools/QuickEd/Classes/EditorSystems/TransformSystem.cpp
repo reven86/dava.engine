@@ -112,7 +112,7 @@ struct MagnetLine
     Vector2::eAxis axis;
 };
 
-const float32 TRANSFORM_EPSILON = static_cast<float32>(0.0005);
+const float32 TRANSFORM_EPSILON = 0.0005f;
 } //namespace
 
 TransformSystem::TransformSystem(EditorSystemsManager* parent)
