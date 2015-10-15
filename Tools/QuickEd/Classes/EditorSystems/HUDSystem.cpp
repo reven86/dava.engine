@@ -83,7 +83,7 @@ public:
             background->SetSprite("~res:/Gfx/HUDControls/BlackGrid", 0);
             background->SetDrawType(UIControlBackground::DRAW_TILED);
 
-            borders.emplace_back(control, DestroyControl);
+            borders.emplace_back(control);
         }
     }
 
@@ -96,7 +96,7 @@ private:
         {
             if (firstInit)
             {
-                AddControl(borders[i].get());
+                AddControl(borders[i].Get());
             }
             Rect borderRect = CreateFrameBorderRect(i, rect);
             borders[i]->SetAbsoluteRect(borderRect);
@@ -127,7 +127,7 @@ private:
         }
     }
     bool firstInit = true;
-    Vector<ControlPtr<UIControl>> borders;
+    Vector<RefPtr<UIControl>> borders;
 };
 
 ControlContainer::ControlContainer(const HUDAreaInfo::eArea area_)
@@ -144,40 +144,47 @@ HUDAreaInfo::eArea ControlContainer::GetArea() const
 class HUDContainer : public ControlContainer
 {
 public:
-    explicit HUDContainer(UIControl* container)
-        : ControlContainer(HUDAreaInfo::NO_AREA)
-        , control(container)
-    {
-        SetName("HudContainer of " + container->GetName());
-    }
-    void AddChild(ControlContainer* container)
-    {
-        AddControl(container);
-        childs.push_back(container);
-    }
-    void InitFromGD(const UIGeometricData& geometricData) override
-    {
-        const Rect& ur = geometricData.GetUnrotatedRect();
-        SetSize(ur.GetSize());
-        SetPivot(control->GetPivot());
-        SetAbsoluteRect(ur);
-        SetAngle(geometricData.angle);
-        for (auto child : childs)
-        {
-            child->InitFromGD(geometricData);
-        }
-    }
-
-    void SystemDraw(const UIGeometricData& geometricData) override
-    {
-        InitFromGD(control->GetGeometricData());
-        UIControl::SystemDraw(geometricData);
-    }
+    explicit HUDContainer(UIControl* container);
+    void AddChild(ControlContainer* container);
+    void InitFromGD(const UIGeometricData& geometricData) override;
+    void SystemDraw(const UIGeometricData& geometricData) override;
 
 private:
     UIControl* control = nullptr;
-    Vector<ControlContainer*> childs;
+    Vector<RefPtr<ControlContainer>> childs;
 };
+
+HUDContainer::HUDContainer(UIControl* container)
+    : ControlContainer(HUDAreaInfo::NO_AREA)
+    , control(container)
+{
+    SetName("HudContainer of " + container->GetName());
+}
+
+void HUDContainer::AddChild(ControlContainer* container)
+{
+    AddControl(container);
+    childs.emplace_back(container);
+}
+
+void HUDContainer::InitFromGD(const UIGeometricData& geometricData)
+{
+    const Rect& ur = geometricData.GetUnrotatedRect();
+    SetSize(ur.GetSize());
+    SetPivot(control->GetPivot());
+    SetAbsoluteRect(ur);
+    SetAngle(geometricData.angle);
+    for (auto child : childs)
+    {
+        child->InitFromGD(geometricData);
+    }
+}
+
+void HUDContainer::SystemDraw(const UIGeometricData& geometricData)
+{
+    InitFromGD(control->GetGeometricData());
+    UIControl::SystemDraw(geometricData);
+}
 
 class FrameControl : public ControlContainer
 {
@@ -201,7 +208,7 @@ public:
             UIControlBackground* background = control->GetBackground();
             background->SetSprite("~res:/Gfx/HUDControls/BlackGrid", 0);
             background->SetDrawType(UIControlBackground::DRAW_TILED);
-            borders.emplace_back(control, DestroyControl);
+            borders.emplace_back(control);
         }
     }
 
@@ -214,7 +221,7 @@ private:
         {
             if (firstInit)
             {
-                GetParent()->AddControl(borders[i].get());
+                GetParent()->AddControl(borders[i].Get());
             }
             Rect borderRect = CreateFrameBorderRect(i, rect);
             borders[i]->SetAbsoluteRect(borderRect);
@@ -239,7 +246,7 @@ private:
         }
     }
     bool firstInit = true;
-    Vector<ControlPtr<UIControl>> borders;
+    Vector<RefPtr<UIControl>> borders;
 };
 
 class FrameRectControl : public ControlContainer
@@ -359,21 +366,23 @@ ControlContainer* CreateControlContainer(HUDAreaInfo::eArea area)
 
 struct HUDSystem::HUD
 {
-    HUD(ControlNode* node, DAVA::UIControl* hudControl);
-    ~HUD() = default;
+    HUD(ControlNode* node, UIControl* hudControl);
+    ~HUD();
     void UpdateHUDVisibility();
     ControlNode* node = nullptr;
     UIControl* control = nullptr;
-    ControlPtr<DAVA::UIControl> container;
-    Map<HUDAreaInfo::eArea, ControlPtr<DAVA::UIControl>> hudControls;
+    UIControl* hudControl = nullptr;
+    RefPtr<HUDContainer> container;
+    Map<HUDAreaInfo::eArea, RefPtr<UIControl>> hudControls;
 };
 
-HUDSystem::HUD::HUD(ControlNode* node_, UIControl* hudControl)
+HUDSystem::HUD::HUD(ControlNode* node_, UIControl* hudControl_)
     : node(node_)
     , control(node_->GetControl())
-    , container(new HUDContainer(control), DestroyControl)
+    , hudControl(hudControl_)
+    , container(new HUDContainer(control))
 {
-    HUDContainer* hudContainer = static_cast<HUDContainer*>(container.get());
+    container->SetName("Container for HUD controls of node " + node_->GetName());
     uint32 begin = HUDAreaInfo::AREAS_BEGIN;
     uint32 end = HUDAreaInfo::AREAS_COUNT;
     if (node->GetParent() == nullptr || node->GetParent()->GetControl() == nullptr)
@@ -385,30 +394,33 @@ HUDSystem::HUD::HUD(ControlNode* node_, UIControl* hudControl)
     {
         HUDAreaInfo::eArea area = static_cast<HUDAreaInfo::eArea>(i);
         ControlContainer* controlContainer = CreateControlContainer(area);
-        hudContainer->AddChild(controlContainer);
-        hudControls.emplace(std::piecewise_construct,
-                            std::forward_as_tuple(area),
-                            std::forward_as_tuple(controlContainer, DestroyControl));
+        container->AddChild(controlContainer);
+        hudControls[area] = controlContainer;
     }
-    hudControl->AddControl(hudContainer);
-    hudContainer->InitFromGD(control->GetGeometricData());
+    hudControl->AddControl(container.Get());
+    container->InitFromGD(control->GetGeometricData());
+}
+
+HUDSystem::HUD::~HUD()
+{
+    hudControl->RemoveControl(container.Get());
 }
 
 void HUDSystem::HUD::UpdateHUDVisibility()
 {
     const UIGeometricData& gd = control->GetGeometricData();
-    bool visible = control->GetVisible() && control->GetVisibleForUIEditor() && gd.size.dx > 0.0f && gd.size.dy > 0.0f && gd.scale.dx > 0.0f && gd.scale.dy > 0.0f;
+    bool visible = control->GetSystemVisible() && gd.size.dx > 0.0f && gd.size.dy > 0.0f && gd.scale.dx > 0.0f && gd.scale.dy > 0.0f;
     container->SetVisible(visible);
 }
 
 HUDSystem::HUDSystem(EditorSystemsManager* parent)
     : BaseEditorSystem(parent)
-    , hudControl(new UIControl(), DestroyControl)
-    , selectionRectControl(new SelectionRect(), DestroyControl)
+    , hudControl(new UIControl())
+    , selectionRectControl(new SelectionRect())
     , sortedControlList(CompareByLCA)
 {
     systemManager->GetPackage()->AddListener(this);
-    hudControl->AddControl(selectionRectControl.get());
+    hudControl->AddControl(selectionRectControl.Get());
     hudControl->SetName("hudControl");
     systemManager->SelectionChanged.Connect(this, &HUDSystem::OnSelectionChanged);
     systemManager->EmulationModeChangedSignal.Connect(this, &HUDSystem::OnEmulationModeChanged);
@@ -421,18 +433,19 @@ HUDSystem::~HUDSystem()
     PackageNode* package = systemManager->GetPackage();
     if (nullptr != package)
     {
-        systemManager->GetPackage()->RemoveListener(this);
+        package->RemoveListener(this);
     }
+    systemManager->GetRootControl()->RemoveControl(hudControl.Get());
 }
 
 void HUDSystem::OnActivated()
 {
-    systemManager->GetRootControl()->AddControl(hudControl.get());
+    systemManager->GetRootControl()->AddControl(hudControl.Get());
 }
 
 void HUDSystem::OnDeactivated()
 {
-    systemManager->GetRootControl()->RemoveControl(hudControl.get());
+    systemManager->GetRootControl()->RemoveControl(hudControl.Get());
     canDrawRect = false;
     selectionRectControl->SetSize(Vector2());
 }
@@ -463,7 +476,7 @@ void HUDSystem::OnSelectionChanged(const SelectedNodes& selected, const Selected
             {
                 hudMap.emplace(std::piecewise_construct,
                                std::forward_as_tuple(controlNode),
-                               std::forward_as_tuple(new HUD(controlNode, hudControl.get())));
+                               std::forward_as_tuple(new HUD(controlNode, hudControl.Get())));
                 sortedControlList.insert(controlNode);
             }
         }
@@ -537,9 +550,9 @@ void HUDSystem::ControlPropertyWasChanged(ControlNode* node, AbstractProperty* p
     const String& name = property->GetName();
     if (name == "Scale" || name == "Size" || name == "Visible")
     {
-        for (auto& pair : hudMap)
+        for (auto& hudPair : hudMap)
         {
-            pair.second->UpdateHUDVisibility();
+            hudPair.second->UpdateHUDVisibility();
         }
     }
 }
@@ -553,17 +566,21 @@ void HUDSystem::OnEmulationModeChanged(bool emulationMode)
 {
     if (emulationMode)
     {
-        systemManager->GetRootControl()->RemoveControl(hudControl.get());
+        systemManager->GetRootControl()->RemoveControl(hudControl.Get());
     }
     else
     {
-        systemManager->GetRootControl()->AddControl(hudControl.get());
+        systemManager->GetRootControl()->AddControl(hudControl.Get());
     }
 }
 
 void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLineInfo>& magnetLines)
 {
     static const float32 axtraSizeValue = 50.0f;
+    for (auto& magnetControl : magnetControls)
+    {
+        hudControl->RemoveControl(magnetControl.Get());
+    }
     magnetControls.clear();
 
     for (const MagnetLineInfo& line : magnetLines)
@@ -576,7 +593,7 @@ void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLineInfo>& magnetLines)
         control->SetAngle(line.gd->angle);
         control->SetPivotPoint(extraSize / 2.0f);
         hudControl->AddControl(control);
-        magnetControls.emplace_back(control, DestroyControl);
+        magnetControls.emplace_back(control);
     }
 }
 
@@ -611,7 +628,7 @@ HUDAreaInfo HUDSystem::GetControlArea(const Vector2& pos, eSearchOrder searchOrd
             if (hudControlsIter != hud->hudControls.end())
             {
                 const auto& controlContainer = hudControlsIter->second;
-                if (controlContainer->GetVisible() && controlContainer->IsPointInside(pos))
+                if (controlContainer->GetSystemVisible() && controlContainer->IsPointInside(pos))
                 {
                     return HUDAreaInfo(hud->node, area);
                 }

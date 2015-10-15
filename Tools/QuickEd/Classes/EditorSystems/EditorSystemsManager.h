@@ -30,6 +30,7 @@
 #define __QUICKED_SYSTEMS_MANAGER_H__
 
 #include "Base/BaseTypes.h"
+#include "Base/RefPtr.h"
 #include "Functional/Signal.h"
 #include "EditorSystems/SelectionContainer.h"
 #include "Math/Rect.h"
@@ -88,17 +89,13 @@ struct MagnetLineInfo
     const DAVA::Vector2::eAxis axis;
 };
 
-extern void DestroyControl(DAVA::UIControl* c);
-template <typename T>
-using ControlPtr = std::unique_ptr<T, std::function<void(T*)>>;
-
 class BaseEditorSystem;
 class AbstractProperty;
 class PackageNode;
 
 bool CompareByLCA(PackageBaseNode* left, PackageBaseNode* right);
 
-class EditorSystemsManager : private PackageListener
+class EditorSystemsManager : PackageListener
 {
 public:
     explicit EditorSystemsManager(PackageNode* package);
@@ -131,6 +128,7 @@ public:
     DAVA::Signal<const DAVA::Vector<MagnetLineInfo>& /*magnetLines*/> MagnetLinesChanged;
 
 private:
+    class RootControl;
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void CollectControlNodesByPosImpl(DAVA::Vector<ControlNode*>& controlNodes, const DAVA::Vector2& pos, ControlNode* node) const;
     void CollectControlNodesByRectImpl(SelectedControls& controlNodes, const DAVA::Rect& rect, ControlNode* node) const;
@@ -138,8 +136,8 @@ private:
     void ControlWillBeRemoved(ControlNode* node, ControlsContainerNode* from) override;
     void ControlWasAdded(ControlNode* node, ControlsContainerNode* /*destination*/, int /*index*/) override;
     void SetPreviewMode(bool mode);
-    ControlPtr<DAVA::UIControl> rootControl;
-    ControlPtr<DAVA::UIControl> scalableControl;
+    DAVA::RefPtr<RootControl> rootControl;
+    DAVA::RefPtr<DAVA::UIControl> scalableControl;
 
     DAVA::List<std::unique_ptr<BaseEditorSystem>> systems;
 
