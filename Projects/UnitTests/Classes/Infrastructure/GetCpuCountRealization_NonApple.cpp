@@ -31,7 +31,7 @@
 #ifndef __DAVAENGINE_APPLE__
 
 #ifdef __DAVAENGINE_ANDROID__
-#   include <sys/sysinfo.h>
+#   include <unistd.h>
 #endif
 
 namespace DAVA
