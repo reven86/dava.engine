@@ -312,7 +312,7 @@ ProgGLES2::ConstBufferCount() const
 //------------------------------------------------------------------------------
 
 Handle
-ProgGLES2::InstanceConstBuffer( unsigned bufIndex )
+ProgGLES2::InstanceConstBuffer( unsigned bufIndex ) const
 {
     Handle  handle = InvalidHandle;
 

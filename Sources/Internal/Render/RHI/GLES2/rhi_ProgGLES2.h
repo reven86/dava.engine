@@ -53,7 +53,7 @@ public:
     unsigned        SamplerCount() const;
 
     unsigned        ConstBufferCount() const;
-    Handle          InstanceConstBuffer( unsigned bufIndex );
+    Handle          InstanceConstBuffer( unsigned bufIndex ) const;
     void            SetupTextureUnits( unsigned baseUnit=0 ) const;
 
 
