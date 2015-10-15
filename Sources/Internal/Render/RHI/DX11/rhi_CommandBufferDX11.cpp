@@ -1129,7 +1129,8 @@ InitializeRenderThreadDX11( uint32 frameCount )
     {
         _DX11_RenderThread = DAVA::Thread::Create( DAVA::Message(&_RenderFuncDX11) );
         _DX11_RenderThread->SetName( "RHI.dx11-render" );
-        _DX11_RenderThread->Start();    
+        _DX11_RenderThread->Start();
+        _DX11_RenderThread->SetPriority(DAVA::Thread::PRIORITY_HIGH);
         _DX11_RenderThreadStartedSync.Wait();
     }
     else
