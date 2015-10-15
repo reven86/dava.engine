@@ -107,10 +107,9 @@ void ServerLogics::OnChannelClosed(DAVA::Net::IChannel* channel, const DAVA::cha
 {
     if (waitedRequests.size())
     {
-        auto iter = std::find_if(waitedRequests.begin(), waitedRequests.end(), [&channel](const RequestDescription& description) -> bool
-                                                                               {
-                                     return (description.clientChannel == channel);
-                                                                               });
+        auto iter = std::find_if(waitedRequests.begin(), waitedRequests.end(), [&channel](const RequestDescription& description) -> bool {
+            return (description.clientChannel == channel);
+        });
 
         if (iter != waitedRequests.end())
         {
@@ -128,10 +127,9 @@ void ServerLogics::OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey& key
 
     if ((nullptr != server) && waitedRequests.size())
     {
-        auto iter = std::find_if(waitedRequests.begin(), waitedRequests.end(), [&key](const RequestDescription& description) -> bool
-                                                                               {
-                                     return (description.key == key) && (description.request == DAVA::AssetCache::PACKET_GET_REQUEST);
-                                                                               });
+        auto iter = std::find_if(waitedRequests.begin(), waitedRequests.end(), [&key](const RequestDescription& description) -> bool {
+            return (description.key == key) && (description.request == DAVA::AssetCache::PACKET_GET_REQUEST);
+        });
 
         if (iter != waitedRequests.end())
         {

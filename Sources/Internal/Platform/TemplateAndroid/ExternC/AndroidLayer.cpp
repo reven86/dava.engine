@@ -94,17 +94,17 @@ namespace
 {
 DAVA::CorePlatformAndroid* core = nullptr;
 
-    DAVA::String documentsFolderPathEx;
-    DAVA::String documentsFolderPathIn;
-    DAVA::String folderDocuments;
-    DAVA::String assetsFolderPath;
-    DAVA::String androidLogTag;
-    DAVA::String androidPackageName;
+DAVA::String documentsFolderPathEx;
+DAVA::String documentsFolderPathIn;
+DAVA::String folderDocuments;
+DAVA::String assetsFolderPath;
+DAVA::String androidLogTag;
+DAVA::String androidPackageName;
 
-    DAVA::JNI::JavaClass* gArrayListClass = nullptr;
-	DAVA::JNI::JavaClass* gInputEventClass = nullptr;
+DAVA::JNI::JavaClass* gArrayListClass = nullptr;
+DAVA::JNI::JavaClass* gInputEventClass = nullptr;
 
-	DAVA::Function< jobject(jobject, jint) > gArrayListGetMethod;
+    DAVA::Function< jobject(jobject, jint) > gArrayListGetMethod;
 	DAVA::Function< jint(jobject) > gArrayListSizeMethod;
 
 	jfieldID gInputEventTidField;
@@ -114,25 +114,25 @@ DAVA::CorePlatformAndroid* core = nullptr;
 	jfieldID gInputEventTapCountField;
 
     AndroidDelegate* androidDelegate = nullptr;
-}
-namespace DAVA
-{
-namespace JNI
-{
-JavaVM* GetJVM()
-{
-    if (androidDelegate == nullptr)
-    {
-        LOGE("androidDelegate == nullptr file %s(%d)", __FILE__, __LINE__);
-        return nullptr;
     }
-    JavaVM* jvm = androidDelegate->GetVM();
-    if (jvm == nullptr)
+    namespace DAVA
     {
-        LOGE("jvm == nullptr file %s(%d)", __FILE__, __LINE__);
-        return nullptr;
-    }
-    return jvm;
+    namespace JNI
+    {
+    JavaVM* GetJVM()
+    {
+        if (androidDelegate == nullptr)
+        {
+            LOGE("androidDelegate == nullptr file %s(%d)", __FILE__, __LINE__);
+            return nullptr;
+        }
+        JavaVM* jvm = androidDelegate->GetVM();
+        if (jvm == nullptr)
+        {
+            LOGE("jvm == nullptr file %s(%d)", __FILE__, __LINE__);
+            return nullptr;
+        }
+        return jvm;
 }
 } // end namespace JNI
 } // end namespace DAVA
@@ -169,8 +169,8 @@ void InitApplication(JNIEnv * env, const DAVA::String& commandLineParams)
                                       assetsFolderPath.c_str(),
                                       androidLogTag.c_str(), androidDelegate);
         }
-		else
-		{
+        else
+        {
 			LOGE("[InitApplication] Can't allocate space for CoreAndroidPlatform");
 		}
 	}
@@ -214,8 +214,8 @@ void Java_com_dava_framework_JNIApplication_OnCreateApplication(JNIEnv* env, job
 
     InitApplication(env, commandLine);
 
-	gArrayListClass = new DAVA::JNI::JavaClass("java/util/ArrayList");
-	gInputEventClass = new DAVA::JNI::JavaClass("com/dava/framework/JNIGLSurfaceView$InputRunnable$InputEvent");
+    gArrayListClass = new DAVA::JNI::JavaClass("java/util/ArrayList");
+    gInputEventClass = new DAVA::JNI::JavaClass("com/dava/framework/JNIGLSurfaceView$InputRunnable$InputEvent");
 
 	gArrayListGetMethod = gArrayListClass->GetMethod<jobject, jint>("get");
 	gArrayListSizeMethod = gArrayListClass->GetMethod<jint>("size");

@@ -49,7 +49,6 @@ class ResourcePacker2D
     static const String VERSION;
 
 public:
-
     void InitFolders(const FilePath & inputPath,const FilePath & outputPath);
     bool RecalculateDirMD5(const FilePath& pathname, const FilePath& md5file, bool isRecursive) const;
     void RecalculateMD5ForOutputDir();
@@ -81,11 +80,11 @@ private:
 
     void AddError(const String& errorMsg);
 
-    void RecursiveTreeWalk(const FilePath & inputPath, const FilePath & outputPath, const Vector<String> & flags = Vector<String>());
-    
-    bool GetFilesFromCache(const AssetCache::CacheItemKey &key, const FilePath & inputPath, const FilePath & outputPath);
-    bool AddFilesToCache(const AssetCache::CacheItemKey &key, const FilePath & inputPath, const FilePath & outputPath);
-    
+    void RecursiveTreeWalk(const FilePath& inputPath, const FilePath& outputPath, const Vector<String>& flags = Vector<String>());
+
+    bool GetFilesFromCache(const AssetCache::CacheItemKey& key, const FilePath& inputPath, const FilePath& outputPath);
+    bool AddFilesToCache(const AssetCache::CacheItemKey& key, const FilePath& inputPath, const FilePath& outputPath);
+
 public:
     FilePath inputGfxDirectory;
     FilePath outputGfxDirectory;

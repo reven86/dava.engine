@@ -120,17 +120,17 @@ private:
     void ExportImage(PngImageExt& image, const ImageExportKeys& exportKeys, FilePath exportedPathname);
 
     Texture::TextureWrap GetDescriptorWrapMode();
-	FilterItem GetDescriptorFilter(bool generateMipMaps = false);
-    
+    FilterItem GetDescriptorFilter(bool generateMipMaps = false);
+
     bool CheckFrameSize(const Size2i &spriteSize, const Size2i &frameSize);
     
 	void WriteDefinitionString(FILE *fp, const Rect2i & writeRect, const Rect2i &originRect, int textureIndex, const String& frameName);
     void DrawToFinalImage(PngImageExt& finalImage, PngImageExt& drawedImage, const PackedInfo& drawRect, const Rect2i& frameRect);
 
     Vector<SizeSortItem> sortVector;
-	uint32 maxTextureSize;
+    uint32 maxTextureSize;
 
-	bool onlySquareTextures;
+    bool onlySquareTextures;
     bool NeedSquareTextureForCompression(ImageExportKeys keys);
 	
     TextureConverter::eConvertQuality quality;
