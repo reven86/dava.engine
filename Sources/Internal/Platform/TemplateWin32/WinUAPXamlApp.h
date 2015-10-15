@@ -141,8 +141,7 @@ private:
     void ReInitCoordinatesSystem();
 
     void PrepareScreenSize();
-    void UpdateScreenSize(float32 width, float32 height);
-    void UpdateScreenScale(float32 scaleX, float32 scaleY);
+    void UpdateScreenSizeAndScale(float32 width, float32 height, float32 scaleX, float32 scaleY);
     void SetFullScreen(bool isFullScreenFlag);
     // in units of effective (view) pixels
     void SetPreferredSize(float32 width, float32 height);
