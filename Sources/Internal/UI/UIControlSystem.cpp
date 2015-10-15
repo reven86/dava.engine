@@ -402,6 +402,7 @@ static bool IsSameTouch(const UIEvent& l, const UIEvent& r)
     return l.tid == r.tid &&
     l.device == r.device &&
     l.phase != UIEvent::Phase::WHEEL &&
+    l.phase != UIEvent::Phase::MOVE &&
     l.phase < UIEvent::Phase::CHAR;
 };
 

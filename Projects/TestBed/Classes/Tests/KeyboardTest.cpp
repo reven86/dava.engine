@@ -41,64 +41,64 @@ public:
 
     bool SystemInput(UIEvent* currentInput) override
     {
-        if (currentInput->phase >= UIEvent::PHASE_CHAR &&
-            currentInput->phase <= UIEvent::PHASE_KEY_DOWN_REPEAT)
+        if (currentInput->phase >= UIEvent::Phase::CHAR &&
+            currentInput->phase <= UIEvent::Phase::KEY_UP)
         {
             ++numKeyboardEvents;
         }
-        else if (currentInput->phase >= UIEvent::PHASE_BEGAN ||
-                 currentInput->phase <= UIEvent::PHASE_CANCELLED)
+        else if (currentInput->phase >= UIEvent::Phase::BEGAN ||
+                 currentInput->phase <= UIEvent::Phase::CANCELLED)
         {
             ++numMouseEvents;
         }
         switch (currentInput->phase)
         {
-        case UIEvent::PHASE_BEGAN: //!<Screen touch or mouse button press is began.
+        case UIEvent::Phase::BEGAN: //!<Screen touch or mouse button press is began.
             ++numMouseDown;
-            lastMouseX = currentInput->point.x;
-            lastMouseY = currentInput->point.y;
+            lastMouseX = static_cast<int32>(currentInput->point.x);
+            lastMouseY = static_cast<int32>(currentInput->point.y);
             lastMouseKey = currentInput->tid;
             break;
-        case UIEvent::PHASE_DRAG: //!<User moves mouse with presset button or finger over the screen.
+        case UIEvent::Phase::DRAG: //!<User moves mouse with presset button or finger over the screen.
             ++numDrag;
-            lastMouseX = currentInput->point.x;
-            lastMouseY = currentInput->point.y;
+            lastMouseX = static_cast<int32>(currentInput->point.x);
+            lastMouseY = static_cast<int32>(currentInput->point.y);
             break;
-        case UIEvent::PHASE_ENDED: //!<Screen touch or mouse button press is ended.
+        case UIEvent::Phase::ENDED: //!<Screen touch or mouse button press is ended.
             ++numMouseUp;
-            lastMouseX = currentInput->point.x;
-            lastMouseY = currentInput->point.y;
+            lastMouseX = static_cast<int32>(currentInput->point.x);
+            lastMouseY = static_cast<int32>(currentInput->point.y);
             lastMouseKey = currentInput->tid;
             break;
-        case UIEvent::PHASE_MOVE: //!<Mouse move event. Mouse moves without pressing any buttons. Works only with mouse controller.
+        case UIEvent::Phase::MOVE: //!<Mouse move event. Mouse moves without pressing any buttons. Works only with mouse controller.
             ++numMouseMove;
-            lastMouseX = currentInput->point.x;
-            lastMouseY = currentInput->point.y;
+            lastMouseX = static_cast<int32>(currentInput->point.x);
+            lastMouseY = static_cast<int32>(currentInput->point.y);
             lastMouseKey = currentInput->tid;
             break;
-        case UIEvent::PHASE_WHEEL: //!<Mouse wheel event. MacOS & Win32 only
+        case UIEvent::Phase::WHEEL: //!<Mouse wheel event. MacOS & Win32 only
             ++numMouseWheel;
             lastWheel = currentInput->physPoint.y;
             break;
-        case UIEvent::PHASE_CANCELLED: //!<Event was cancelled by the platform or by the control system for the some reason.
+        case UIEvent::Phase::CANCELLED: //!<Event was cancelled by the platform or by the control system for the some reason.
             ++numMouseCancel;
             break;
-        case UIEvent::PHASE_CHAR:
+        case UIEvent::Phase::CHAR:
             ++numChar;
             lastChar = currentInput->keyChar;
             break;
-        case UIEvent::PHASE_CHAR_REPEAT:
+        case UIEvent::Phase::CHAR_REPEAT:
             ++numCharRepeat;
             break;
-        case UIEvent::PHASE_KEY_DOWN:
+        case UIEvent::Phase::KEY_DOWN:
             ++numKeyDown;
             lastKey = currentInput->tid;
             break;
-        case UIEvent::PHASE_KEY_DOWN_REPEAT:
+        case UIEvent::Phase::KEY_DOWN_REPEAT:
             ++numKeyDownRepeat;
             lastKey = currentInput->tid;
             break;
-        case UIEvent::PHASE_KEY_UP:
+        case UIEvent::Phase::KEY_UP:
             ++numKeyUp;
             lastKey = currentInput->tid;
             break;
