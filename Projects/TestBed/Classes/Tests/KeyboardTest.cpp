@@ -127,7 +127,7 @@ public:
 
         SetText(currentText.str());
 
-        return true;
+        return false; // let pass event to other controls
     }
 
     void ResetCounters()
