@@ -30,36 +30,20 @@
 
 #include "UnitTests/UnitTests.h"
 
-using namespace DAVA;
+namespace DAVA
+{
 
-#ifndef __DAVAENGINE_APPLE__
+extern int32 GetCpuCount();
 
 DAVA_TESTCLASS(CPUCountTest)
 {
-#ifdef __DAVAENGINE_ANDROID__
-    int32 GetCpuCount()
+    DAVA_TEST(StandardVersusPlatformRealizationTest)
     {
-        return sysconf(_SC_NPROCESSORS_CONF);
+        int32 cpuCountFromStandardRealization = DeviceInfo::GetCpuCount();
+        int32 cpuCountFromPlatformRealization = GetCpuCount();
+
+        TEST_VERIFY(cpuCountFromStandardRealization == cpuCountFromPlatformRealization);
     }
-#endif
-
-#ifdef __DAVAENGINE_WINDOWS__
-int32 GetCpuCount()
-{
-    SYSTEM_INFO sysinfo;
-    GetSystemInfo(&sysinfo);
-    return sysinfo.dwNumberOfProcessors;
-}
-#endif
-
-DAVA_TEST(StandardVersusPlatformRealizationTest)
-{
-    int32 cpuCountFromStandardRealization = DeviceInfo::GetCpuCount();
-    int32 cpuCountFromPlatformRealization = GetCpuCount();
-    
-    TEST_VERIFY(cpuCountFromStandardRealization == cpuCountFromPlatformRealization);
-}
-
 };
 
-#endif // !__DAVAENGINE_APPLE__
+} // namespace DAVA
