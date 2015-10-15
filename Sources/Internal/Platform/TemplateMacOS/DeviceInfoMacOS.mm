@@ -172,7 +172,7 @@ void DeviceInfoPrivate::InitializeScreenInfo()
 
 bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType type)
 {
-    //TODO: Implement this method
+    //TODO: remove this empty realization and implement detection of HID connection
     if (type == DeviceInfo::HID_POINTER_TYPE || type == DeviceInfo::HID_KEYBOARD_TYPE)
     {
         return true;
