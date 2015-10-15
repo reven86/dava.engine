@@ -148,10 +148,9 @@ void QtLayer::Resize(int32 width, int32 height)
 void QtLayer::KeyPressed(char16 key, int32 count, uint64 timestamp)
 {
     UIEvent ev;
-    ev.keyChar = 0;
-    ev.phase = UIEvent::PHASE_KEYCHAR;
+    ev.phase = UIEvent::Phase::KEY_DOWN;
     ev.timestamp = static_cast<float64>(timestamp);
-    ev.tapCount = 1;
+    ev.device = UIEvent::Device::KEYBOARD;
     ev.tid = key;
 
     UIControlSystem::Instance()->OnInput({ev}, allEvents);
@@ -163,9 +162,8 @@ void QtLayer::KeyPressed(char16 key, int32 count, uint64 timestamp)
 void QtLayer::KeyReleased(char16 key)
 {
     UIEvent ev;
-    ev.keyChar = 0;
-    ev.phase = UIEvent::PHASE_KEYCHAR_RELEASE;
-    ev.tapCount = 1;
+    ev.phase = UIEvent::Phase::KEY_UP;
+    ev.device = UIEvent::Device::KEYBOARD;
     ev.tid = key;
 
     UIControlSystem::Instance()->OnInput({ev}, allEvents);
@@ -181,11 +179,12 @@ void QtLayer::CopyEvents(DAVA::UIEvent &newEvent, const DAVA::UIEvent &sourceEve
     newEvent.physPoint = sourceEvent.physPoint;
     newEvent.timestamp = sourceEvent.timestamp;
     newEvent.phase = sourceEvent.phase;
+    newEvent.device = sourceEvent.device;
 }
     
 void QtLayer::MoveTouchsToVector(const UIEvent &event, Vector<UIEvent> &outTouches)
 {
-    if(event.phase == UIEvent::PHASE_DRAG)
+    if (event.phase == UIEvent::Phase::DRAG)
     {
         for (Vector<DAVA::UIEvent>::iterator it = allEvents.begin(); it != allEvents.end(); it++)
         {
@@ -214,8 +213,8 @@ void QtLayer::MoveTouchsToVector(const UIEvent &event, Vector<UIEvent> &outTouch
     {
         outTouches.push_back(*it);
     }
-    
-    if(event.phase == UIEvent::PHASE_ENDED || event.phase == UIEvent::PHASE_MOVE)
+
+    if (event.phase == UIEvent::Phase::ENDED || event.phase == UIEvent::Phase::MOVE)
     {
         for (Vector<DAVA::UIEvent>::iterator it = allEvents.begin(); it != allEvents.end(); it++)
         {

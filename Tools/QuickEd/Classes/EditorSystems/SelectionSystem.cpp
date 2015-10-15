@@ -68,17 +68,17 @@ bool SelectionSystem::OnInput(UIEvent* currentInput)
 {
     switch (currentInput->phase)
     {
-    case UIEvent::PHASE_BEGAN:
+    case UIEvent::Phase::BEGAN:
         mousePressed = true;
         return ProcessMousePress(currentInput->point);
-    case UIEvent::PHASE_ENDED:
+    case UIEvent::Phase::ENDED:
         if (!mousePressed)
         {
             return ProcessMousePress(currentInput->point);
         }
         mousePressed = false;
         return false;
-    case UIEvent::PHASE_KEYCHAR:
+    case UIEvent::Phase::KEY_DOWN:
     {
         if (currentInput->tid == DVKEY_TAB)
         {

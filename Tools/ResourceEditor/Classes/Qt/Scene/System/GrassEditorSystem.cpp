@@ -78,7 +78,7 @@ void GrassEditorSystem::Input(DAVA::UIEvent *event)
 
 		    switch(event->phase)
 		    {
-                case UIEvent::PHASE_BEGAN:
+            case UIEvent::Phase::BEGAN:
                     {
                         inDrawState = true;
                         affectedArea.Empty();
@@ -95,7 +95,7 @@ void GrassEditorSystem::Input(DAVA::UIEvent *event)
                     }
 				    break;
 
-			    case UIEvent::PHASE_DRAG:
+                    case UIEvent::Phase::DRAG:
                     if(inDrawState)
                     {
                         if(curCursorPos.x >= 0 && curCursorPos.y >= 0)
@@ -106,7 +106,7 @@ void GrassEditorSystem::Input(DAVA::UIEvent *event)
                     }
 				    break;
 
-			    case UIEvent::PHASE_ENDED:
+                    case UIEvent::Phase::ENDED:
                     if(inDrawState)
                     {
                         inDrawState = false;

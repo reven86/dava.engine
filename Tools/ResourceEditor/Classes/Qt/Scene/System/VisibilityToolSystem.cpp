@@ -151,8 +151,8 @@ void VisibilityToolSystem::Input(DAVA::UIEvent *event)
 		return;
 	}
 
-	if (UIEvent::PHASE_KEYCHAR == event->phase)
-	{
+    if (UIEvent::Phase::KEY_DOWN == event->phase)
+    {
 		if (event->tid == DVKEY_ESCAPE)
 		{
 			SetState(VT_STATE_NORMAL);
@@ -162,19 +162,19 @@ void VisibilityToolSystem::Input(DAVA::UIEvent *event)
 	{
 		switch(event->phase)
 		{
-			case UIEvent::PHASE_BEGAN:
-				if (isIntersectsLandscape)
+        case UIEvent::Phase::BEGAN:
+                if (isIntersectsLandscape)
 				{
 					StoreOriginalState();
 					editingIsEnabled = true;
 				}
 				break;
 
-			case UIEvent::PHASE_DRAG:
-				break;
+        case UIEvent::Phase::DRAG:
+                break;
 
-			case UIEvent::PHASE_ENDED:
-				if (editingIsEnabled)
+        case UIEvent::Phase::ENDED:
+                if (editingIsEnabled)
 				{
 					if (state == VT_STATE_SET_POINT)
 					{

@@ -391,10 +391,10 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
     }
     switch (currentInput->phase)
     {
-    case UIEvent::PHASE_MOVE:
+    case UIEvent::Phase::MOVE:
         ProcessCursor(currentInput->point);
         return false;
-    case UIEvent::PHASE_BEGAN:
+    case UIEvent::Phase::BEGAN:
     {
         //check that we can draw rect
         Vector<ControlNode*> nodes;
@@ -406,7 +406,7 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
         pressedPoint = currentInput->point;
         return canDrawRect;
     }
-    case UIEvent::PHASE_DRAG:
+    case UIEvent::Phase::DRAG:
         dragRequested = true;
 
         if (canDrawRect)
@@ -427,7 +427,7 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
             systemManager->SelectionRectChanged.Emit(selectionRectControl->GetAbsoluteRect());
         }
         return true;
-    case UIEvent::PHASE_ENDED:
+    case UIEvent::Phase::ENDED:
         ProcessCursor(currentInput->point);
         if (canDrawRect)
         {

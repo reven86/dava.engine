@@ -103,10 +103,10 @@ bool TransformSystem::OnInput(UIEvent* currentInput)
 {
     switch (currentInput->phase)
     {
-    case UIEvent::PHASE_KEYCHAR:
+    case UIEvent::Phase::KEY_DOWN:
         return ProcessKey(currentInput->tid);
 
-    case UIEvent::PHASE_BEGAN:
+    case UIEvent::Phase::BEGAN:
     {
         accumulatedAngle = 0.0f;
         extraDelta.SetZero();
@@ -115,7 +115,7 @@ bool TransformSystem::OnInput(UIEvent* currentInput)
         currentHash = static_cast<size_t>(us.count());
         return activeArea != HUDAreaInfo::NO_AREA;
     }
-    case UIEvent::PHASE_DRAG:
+    case UIEvent::Phase::DRAG:
     {
         if (currentInput->point != prevPos)
         {
@@ -124,7 +124,7 @@ bool TransformSystem::OnInput(UIEvent* currentInput)
         }
         return false;
     }
-    case UIEvent::PHASE_ENDED:
+    case UIEvent::Phase::ENDED:
         return false;
     default:
         return false;
