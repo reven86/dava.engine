@@ -4,7 +4,6 @@ project( DavaPluginTemplate) # to change the project name
 set                   ( DAVA_USE_QT_WIDGETS true )
 
 include               ( CMake-common )
-include               ( DavaDynamicLib )
 
 find_package          ( QT5           REQUIRED )
 find_package          ( DavaFramework REQUIRED )

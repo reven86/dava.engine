@@ -36,6 +36,7 @@ include ( FileTreeCheck        )
 include ( DavaTemplate         )
 include ( CMakeDependentOption )
 include ( CMakeParseArguments  )
+include ( DavaDynamicLib )
 
 
 set( CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebinfo" CACHE STRING "limited configs" FORCE )
