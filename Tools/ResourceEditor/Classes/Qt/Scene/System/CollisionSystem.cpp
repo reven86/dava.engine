@@ -27,6 +27,7 @@
 =====================================================================================*/
 
 
+#include "Base/AlignedAllocator.h"
 #include "Scene/System/CollisionSystem.h"
 #include "Scene/System/CollisionSystem/CollisionRenderObject.h"
 #include "Scene/System/CollisionSystem/CollisionLandscape.h"
@@ -69,16 +70,16 @@ SceneCollisionSystem::SceneCollisionSystem(DAVA::Scene * scene)
 	btVector3 worldMax(1000,1000,1000);
 
 	objectsCollConf = new btDefaultCollisionConfiguration();
-	objectsCollDisp = new btCollisionDispatcher(objectsCollConf);
-	objectsBroadphase = new btAxisSweep3(worldMin,worldMax);
+    objectsCollDisp = DAVA::CreateObjectAligned<btCollisionDispatcher, 16>(objectsCollConf);
+    objectsBroadphase = new btAxisSweep3(worldMin,worldMax);
     objectsDebugDrawer = new SceneCollisionDebugDrawer(scene->GetRenderSystem()->GetDebugDrawer());
 	objectsDebugDrawer->setDebugMode(btIDebugDraw::DBG_DrawWireframe);
 	objectsCollWorld = new btCollisionWorld(objectsCollDisp, objectsBroadphase, objectsCollConf);
 	objectsCollWorld->setDebugDrawer(objectsDebugDrawer);
 
 	landCollConf = new btDefaultCollisionConfiguration();
-	landCollDisp = new btCollisionDispatcher(landCollConf);
-	landBroadphase = new btAxisSweep3(worldMin,worldMax);
+    landCollDisp = DAVA::CreateObjectAligned<btCollisionDispatcher, 16>(landCollConf);
+    landBroadphase = new btAxisSweep3(worldMin,worldMax);
     landDebugDrawer = new SceneCollisionDebugDrawer(scene->GetRenderSystem()->GetDebugDrawer());
 	landDebugDrawer->setDebugMode(btIDebugDraw::DBG_DrawWireframe);
 	landCollWorld = new btCollisionWorld(landCollDisp, landBroadphase, landCollConf);
@@ -106,14 +107,15 @@ SceneCollisionSystem::~SceneCollisionSystem()
 	DAVA::SafeDelete(objectsCollWorld);
 	DAVA::SafeDelete(objectsBroadphase);
     DAVA::SafeDelete(objectsDebugDrawer);
-	DAVA::SafeDelete(objectsCollDisp);
 	DAVA::SafeDelete(objectsCollConf);
 
 	DAVA::SafeDelete(landCollWorld); 
 	DAVA::SafeDelete(landDebugDrawer);
 	DAVA::SafeDelete(landBroadphase);
-	DAVA::SafeDelete(landCollDisp);
 	DAVA::SafeDelete(landCollConf);
+
+    DAVA::DestroyObjectAligned(objectsCollDisp);
+    DAVA::DestroyObjectAligned(landCollDisp);
 }
 
 void SceneCollisionSystem::SetDrawMode(int mode)
@@ -212,29 +214,30 @@ bool SceneCollisionSystem::LandRayTest(const DAVA::Vector3 &from, const DAVA::Ve
 
 	DAVA::Vector3 rayDirection = to - from;
 	DAVA::float32 rayLength = rayDirection.Length();
-    DAVA::Vector3 rayStep = rayDirection;
-    rayStep.Normalize();
-    rayStep *= Min(5.0f, rayLength);
+    rayDirection.Normalize();
+    rayDirection *= Min(5.0f, rayLength);
+    float stepSize = rayDirection.Length();
 
-	btVector3 btFrom(from.x, from.y, from.z);
-	while ((rayLength - rayStep.Length()) >= EPSILON)
-	{
-		btVector3 btTo(btFrom.x() + rayStep.x, btFrom.y() + rayStep.y, btFrom.z() + rayStep.z);
+    btVector3 btStep(rayDirection.x, rayDirection.y, rayDirection.z);
+    btVector3 btFrom(from.x, from.y, from.z);
+    while ((rayLength - stepSize) >= std::numeric_limits<float>::epsilon())
+    {
+        btVector3 btTo = btFrom + btStep;
 
-		btCollisionWorld::ClosestRayResultCallback btCallback(btFrom, btTo);
+        btCollisionWorld::ClosestRayResultCallback btCallback(btFrom, btTo);
 		landCollWorld->rayTest(btFrom, btTo, btCallback);
-		if(btCallback.hasHit()) 
-		{
+
+        if (btCallback.hasHit())
+        {
 			btVector3 hitPoint = btCallback.m_hitPointWorld;
 			ret = DAVA::Vector3(hitPoint.x(), hitPoint.y(), hitPoint.z());
-
 			landIntersectCachedResult = true;
 			break;
 		}
 
 		btFrom = btTo;
-		rayLength -= rayStep.Length();
-	}
+        rayLength -= stepSize;
+    }
 
 	lastLandCollision = ret;
 	intersectionPoint = ret;

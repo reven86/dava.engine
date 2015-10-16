@@ -27,6 +27,7 @@
 =====================================================================================*/
 
 
+#include "Base/AlignedAllocator.h"
 #include "Qt/Scene/System/CollisionSystem/CollisionLandscape.h"
 #include "Render/Highlevel/Heightmap.h"
 
@@ -66,8 +67,10 @@ CollisionLandscape::CollisionLandscape(DAVA::Entity *entity, btCollisionWorld *w
 				}
 			}
 
-			btTerrain = new btHeightfieldTerrainShape(heightmap->Size(), heightmap->Size(),	&btHMap.front(), landScaleH, 0, landHeight, 2, PHY_FLOAT, true);
-			btTerrain->setLocalScaling(btVector3(landScaleW, landScaleW, 1.0f));
+            btTerrain = DAVA::CreateObjectAligned<btHeightfieldTerrainShape, 16>(heightmap->Size(),
+                                                                                 heightmap->Size(), btHMap.data(), landScaleH, 0.0f, landHeight, 2, PHY_FLOAT, true);
+
+            btTerrain->setLocalScaling(btVector3(landScaleW, landScaleW, 1.0f));
 			
 			btTransform landTransform;
 			landTransform.setIdentity();
@@ -89,6 +92,6 @@ CollisionLandscape::~CollisionLandscape()
 	{
 		btWord->removeCollisionObject(btObject);
 		DAVA::SafeDelete(btObject);
-		DAVA::SafeDelete(btTerrain);
-	}
+        DAVA::DestroyObjectAligned(btTerrain);
+    }
 }

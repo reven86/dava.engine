@@ -291,8 +291,10 @@ void VisibilityToolSystem::SetVisibilityAreaInternal()
         point.z = drawSystem->GetHeightAtTexturePoint(textureLevel, point.xy()) + visibilityPointHeight;
 
         Vector<Vector3> resP;
-        PerformHeightTest(point, cursorPosition * landscapeSize, cursorSize * landscapeSize / 2.f,
-                          pointsDensity, areaPointHeights, resP);
+
+        PerformHeightTest(point, Vector2(0.5f, 0.5f) * landscapeSize,
+                          0.5f * landscapeSize, pointsDensity, areaPointHeights, resP);
+
         DrawVisibilityAreaPoints(resP);
 
         // render view point one more time
@@ -318,7 +320,6 @@ void VisibilityToolSystem::PerformHeightTest(const Vector3& spectatorCoords,
 		return;
 	}
 
-    const float circleRadiusSquared = circleRadius * circleRadius;
     const uint32 sideLength = static_cast<uint32>((2.0f * circleRadius) / density + 0.5f);
     const Vector3 sourcePoint(drawSystem->TexturePointToLandscapePoint(textureLevel, spectatorCoords.xy()), spectatorCoords.z);
 
@@ -335,14 +336,9 @@ void VisibilityToolSystem::PerformHeightTest(const Vector3& spectatorCoords,
                 continue;
             }
 
-            Vector2 xy(px, py);
-            if ((circleCenter - xy).SquareLength() > circleRadiusSquared)
-            {
-                continue;
-            }
-
             bool occluded = true;
 
+            Vector2 xy(px, py);
             float32 baseZ = drawSystem->GetHeightAtTexturePoint(textureLevel, xy);
             Vector3 target(drawSystem->TexturePointToLandscapePoint(textureLevel, xy));
             for (uint32 layerIndex = 0; layerIndex < heightValues.size(); ++layerIndex)

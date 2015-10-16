@@ -77,11 +77,11 @@ public:
 	}
 public:
 #else //__CELLOS_LV2__ __SPU__
-#ifdef BT_USE_SSE // _WIN32
-	union {
+#ifdef BT_USE_SSE
+    union {
 		__m128 mVec128;
-		btScalar	m_floats[4];
-	};
+        btScalar m_floats[4];
+    };
 	SIMD_FORCE_INLINE	__m128	get128() const
 	{
 		return mVec128;
@@ -109,20 +109,45 @@ public:
    */
 	SIMD_FORCE_INLINE btVector3(const btScalar& x, const btScalar& y, const btScalar& z)
 	{
-		m_floats[0] = x;
+#ifdef BT_USE_SSE
+        mVec128 = _mm_set_ps(0.0f, z, y, x);
+#else
+        m_floats[0] = x;
 		m_floats[1] = y;
 		m_floats[2] = z;
 		m_floats[3] = btScalar(0.);
-	}
+#endif
+    }
 
-	
+    SIMD_FORCE_INLINE btVector3(const btScalar& x, const btScalar& y, const btScalar& z, const btScalar& w)
+    {
+#ifdef BT_USE_SSE
+        mVec128 = _mm_set_ps(w, z, y, x);
+#else
+        m_floats[0] = x;
+        m_floats[1] = y;
+        m_floats[2] = z;
+        m_floats[3] = w;
+#endif
+    }
+
+#ifdef BT_USE_SSE
+    SIMD_FORCE_INLINE btVector3(const __m128& v)
+        : mVec128(v)
+    {
+    }
+#endif
+
 /**@brief Add a vector to this one 
  * @param The vector to add to this one */
 	SIMD_FORCE_INLINE btVector3& operator+=(const btVector3& v)
 	{
-
-		m_floats[0] += v.m_floats[0]; m_floats[1] += v.m_floats[1];m_floats[2] += v.m_floats[2];
-		return *this;
+#ifdef BT_USE_SSE
+        mVec128 = _mm_add_ps(mVec128, v.mVec128);
+#else
+        m_floats[0] += v.m_floats[0]; m_floats[1] += v.m_floats[1];m_floats[2] += v.m_floats[2];
+#endif
+        return *this;
 	}
 
 
@@ -130,8 +155,12 @@ public:
    * @param The vector to subtract */
 	SIMD_FORCE_INLINE btVector3& operator-=(const btVector3& v) 
 	{
-		m_floats[0] -= v.m_floats[0]; m_floats[1] -= v.m_floats[1];m_floats[2] -= v.m_floats[2];
-		return *this;
+#ifdef BT_USE_SSE
+        mVec128 = _mm_sub_ps(mVec128, v.mVec128);
+#else
+        m_floats[0] -= v.m_floats[0]; m_floats[1] -= v.m_floats[1];m_floats[2] -= v.m_floats[2];
+#endif
+        return *this;
 	}
   /**@brief Scale the vector
    * @param s Scale factor */
@@ -153,8 +182,14 @@ public:
    * @param v The other vector in the dot product */
 	SIMD_FORCE_INLINE btScalar dot(const btVector3& v) const
 	{
-		return m_floats[0] * v.m_floats[0] + m_floats[1] * v.m_floats[1] +m_floats[2] * v.m_floats[2];
-		
+#ifdef BT_USE_SSE
+        auto m = _mm_mul_ps(mVec128, v.mVec128);
+        auto t = _mm_add_ps(m, _mm_shuffle_ps(m, m, _MM_SHUFFLE(0, 3, 2, 1)));
+        return _mm_cvtss_f32(_mm_add_ps(t, _mm_shuffle_ps(t, t, _MM_SHUFFLE(1, 0, 3, 2))));
+#else
+        return m_floats[0] * v.m_floats[0] + m_floats[1] * v.m_floats[1] +m_floats[2] * v.m_floats[2];
+#endif
+
 //			// Note that this inline assembly does NOT work correctly though it is *identical* to the dedicated assembly
 //			// version and has (in theory) properly assigned register constraints and clobbers. In fact, it produces a
 //			// correct numerical result, but gcc seems to not properly manage registers and this causes trouble downstream.
@@ -250,11 +285,17 @@ public:
    * @param v The other vector */
 	SIMD_FORCE_INLINE btVector3 cross(const btVector3& v) const
 	{
-		return btVector3(
-			m_floats[1] * v.m_floats[2] -m_floats[2] * v.m_floats[1],
-			m_floats[2] * v.m_floats[0] - m_floats[0] * v.m_floats[2],
-			m_floats[0] * v.m_floats[1] - m_floats[1] * v.m_floats[0]);
-
+#ifdef BT_USE_SSE
+        __m128 result = _mm_sub_ps(
+        _mm_mul_ps(mVec128, _mm_shuffle_ps(v.mVec128, v.mVec128, _MM_SHUFFLE(3, 0, 2, 1))),
+        _mm_mul_ps(v.mVec128, _mm_shuffle_ps(mVec128, mVec128, _MM_SHUFFLE(3, 0, 2, 1))));
+        return btVector3(_mm_shuffle_ps(result, result, _MM_SHUFFLE(3, 0, 2, 1)));
+#else
+        return btVector3(
+        m_floats[1] * v.m_floats[2] - m_floats[2] * v.m_floats[1],
+        m_floats[2] * v.m_floats[0] - m_floats[0] * v.m_floats[2],
+        m_floats[0] * v.m_floats[1] - m_floats[1] * v.m_floats[0]);
+#endif
 //			// Note that this inline assembly function does seem to work okay;
 //			// however, given trouble produced elsewhere (e.g., see Vector3
 //			// dot product in this file), it is probably best to call the pure
@@ -337,8 +378,12 @@ public:
    * @param v The other vector */
 	SIMD_FORCE_INLINE btVector3& operator*=(const btVector3& v)
 	{
-		m_floats[0] *= v.m_floats[0]; m_floats[1] *= v.m_floats[1];m_floats[2] *= v.m_floats[2];
-		return *this;
+#ifdef BT_USE_SSE
+        mVec128 = _mm_mul_ps(mVec128, v.mVec128);
+#else
+        m_floats[0] *= v.m_floats[0]; m_floats[1] *= v.m_floats[1];m_floats[2] *= v.m_floats[2];
+#endif
+        return *this;
 	}
 
 	 /**@brief Return the x value */
@@ -449,21 +494,33 @@ public:
 SIMD_FORCE_INLINE btVector3 
 operator+(const btVector3& v1, const btVector3& v2) 
 {
-	return btVector3(v1.m_floats[0] + v2.m_floats[0], v1.m_floats[1] + v2.m_floats[1], v1.m_floats[2] + v2.m_floats[2]);
+#ifdef BT_USE_SSE
+    return btVector3(_mm_add_ps(v1.mVec128, v2.mVec128));
+#else
+    return btVector3(v1.m_floats[0] + v2.m_floats[0], v1.m_floats[1] + v2.m_floats[1], v1.m_floats[2] + v2.m_floats[2]);
+#endif
 }
 
 /**@brief Return the elementwise product of two vectors */
 SIMD_FORCE_INLINE btVector3 
 operator*(const btVector3& v1, const btVector3& v2) 
 {
-	return btVector3(v1.m_floats[0] * v2.m_floats[0], v1.m_floats[1] * v2.m_floats[1], v1.m_floats[2] * v2.m_floats[2]);
+#ifdef BT_USE_SSE
+    return btVector3(_mm_mul_ps(v1.mVec128, v2.mVec128));
+#else
+    return btVector3(v1.m_floats[0] * v2.m_floats[0], v1.m_floats[1] * v2.m_floats[1], v1.m_floats[2] * v2.m_floats[2]);
+#endif
 }
 
 /**@brief Return the difference between two vectors */
 SIMD_FORCE_INLINE btVector3 
 operator-(const btVector3& v1, const btVector3& v2)
 {
-	return btVector3(v1.m_floats[0] - v2.m_floats[0], v1.m_floats[1] - v2.m_floats[1], v1.m_floats[2] - v2.m_floats[2]);
+#ifdef BT_USE_SSE
+    return btVector3(_mm_sub_ps(v1.mVec128, v2.mVec128));
+#else
+    return btVector3(v1.m_floats[0] - v2.m_floats[0], v1.m_floats[1] - v2.m_floats[1], v1.m_floats[2] - v2.m_floats[2]);
+#endif
 }
 /**@brief Return the negative of the vector */
 SIMD_FORCE_INLINE btVector3 
@@ -498,7 +555,11 @@ operator/(const btVector3& v, const btScalar& s)
 SIMD_FORCE_INLINE btVector3
 operator/(const btVector3& v1, const btVector3& v2)
 {
-	return btVector3(v1.m_floats[0] / v2.m_floats[0],v1.m_floats[1] / v2.m_floats[1],v1.m_floats[2] / v2.m_floats[2]);
+#ifdef BT_USE_SSE
+    return btVector3(_mm_div_ps(v1.mVec128, v2.mVec128));
+#else
+    return btVector3(v1.m_floats[0] / v2.m_floats[0],v1.m_floats[1] / v2.m_floats[1],v1.m_floats[2] / v2.m_floats[2]);
+#endif
 }
 
 /**@brief Return the dot product between two vectors */

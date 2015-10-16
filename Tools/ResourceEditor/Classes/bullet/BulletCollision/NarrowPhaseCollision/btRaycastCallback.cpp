@@ -71,12 +71,11 @@ void btTriangleRaycastCallback::processTriangle(btVector3* triangle,int partId, 
 	const btVector3 &vert1=triangle[1];
 	const btVector3 &vert2=triangle[2];
 
-	btVector3 v10; v10 = vert1 - vert0 ;
-	btVector3 v20; v20 = vert2 - vert0 ;
+    btVector3 v10 = vert1 - vert0;
+    btVector3 v20 = vert2 - vert0;
+    btVector3 triangleNormal = v10.cross(v20);
 
-	btVector3 triangleNormal; triangleNormal = v10.cross( v20 );
-	
-	const btScalar dist = vert0.dot(triangleNormal);
+    const btScalar dist = vert0.dot(triangleNormal);
 	btScalar dist_a = triangleNormal.dot(m_from) ;
 	dist_a-= dist;
 	btScalar dist_b = triangleNormal.dot(m_to);
@@ -108,16 +107,14 @@ void btTriangleRaycastCallback::processTriangle(btVector3* triangle,int partId, 
 		edge_tolerance *= btScalar(-0.0001);
 		btVector3 point; point.setInterpolate3( m_from, m_to, distance);
 		{
-			btVector3 v0p; v0p = vert0 - point;
-			btVector3 v1p; v1p = vert1 - point;
-			btVector3 cp0; cp0 = v0p.cross( v1p );
+            btVector3 v0p = vert0 - point;
+            btVector3 v1p = vert1 - point;
+            btVector3 cp0 = v0p.cross(v1p);
 
-			if ( (btScalar)(cp0.dot(triangleNormal)) >=edge_tolerance) 
+            if ( (btScalar)(cp0.dot(triangleNormal)) >=edge_tolerance) 
 			{
-						
-
-				btVector3 v2p; v2p = vert2 -  point;
-				btVector3 cp1;
+                btVector3 v2p = vert2 - point;
+                btVector3 cp1;
 				cp1 = v1p.cross( v2p);
 				if ( (btScalar)(cp1.dot(triangleNormal)) >=edge_tolerance) 
 				{

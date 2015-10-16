@@ -127,19 +127,14 @@ protected:
 
 	PHY_ScalarType	m_heightDataType;	
 	bool	m_flipQuadEdges;
-  bool  m_useDiamondSubdivision;
 
-	int	m_upAxis;
-	
 	btVector3	m_localScaling;
 
-	virtual btScalar	getRawHeightFieldValue(int x,int y) const;
-	void		quantizeWithClamp(int* out, const btVector3& point,int isMax) const;
-	void		getVertex(int x,int y,btVector3& vertex) const;
+    virtual btScalar getRawHeightFieldValue(int x, int y) const;
+    void quantizeWithClamp(int* out, const btVector3& point, int isMax) const;
+    btVector3 btHeightfieldTerrainShape::getVertex(int x, int y) const;
 
-
-
-	/// protected initialization
+    /// protected initialization
 	/**
 	  Handles the work of constructors so that public constructors can be
 	  backwards-compatible without a lot of copy/paste.
@@ -172,10 +167,6 @@ public:
 	btHeightfieldTerrainShape(int heightStickWidth,int heightStickLength,const void* heightfieldData, btScalar maxHeight,int upAxis,bool useFloatData,bool flipQuadEdges);
 
 	virtual ~btHeightfieldTerrainShape();
-
-
-	void setUseDiamondSubdivision(bool useDiamondSubdivision=true) { m_useDiamondSubdivision = useDiamondSubdivision;}
-
 
 	virtual void getAabb(const btTransform& t,btVector3& aabbMin,btVector3& aabbMax) const;
 

@@ -125,12 +125,19 @@ SIMD_FORCE_INLINE bool btRayAabb2(const btVector3& rayFrom,
 								  btScalar lambda_max)
 {
 	btScalar tmax, tymin, tymax, tzmin, tzmax;
-	tmin = (bounds[raySign[0]].getX() - rayFrom.getX()) * rayInvDirection.getX();
-	tmax = (bounds[1-raySign[0]].getX() - rayFrom.getX()) * rayInvDirection.getX();
-	tymin = (bounds[raySign[1]].getY() - rayFrom.getY()) * rayInvDirection.getY();
-	tymax = (bounds[1-raySign[1]].getY() - rayFrom.getY()) * rayInvDirection.getY();
+    btVector3 vmin(bounds[raySign[0]].getX(), bounds[raySign[1]].getX(), bounds[raySign[2]].getX());
+    btVector3 vmax(bounds[1 - raySign[0]].getX(), bounds[1 - raySign[1]].getX(), bounds[1 - raySign[2]].getX());
+    vmin -= rayFrom;
+    vmin *= rayInvDirection;
+    vmax -= rayFrom;
+    vmax *= rayInvDirection;
 
-	if ( (tmin > tymax) || (tymin > tmax) )
+    tmin = vmin.getX(); // (bounds[raySign[0]].getX() - rayFrom.getX()) * rayInvDirection.getX();
+    tmax = vmax.getX(); // (bounds[1-raySign[0]].getX() - rayFrom.getX()) * rayInvDirection.getX();
+    tymin = vmin.getY(); // (bounds[raySign[1]].getY() - rayFrom.getY()) * rayInvDirection.getY();
+    tymax = vmax.getY(); // (bounds[1-raySign[1]].getY() - rayFrom.getY()) * rayInvDirection.getY();
+
+    if ( (tmin > tymax) || (tymin > tmax) )
 		return false;
 
 	if (tymin > tmin)
@@ -139,10 +146,10 @@ SIMD_FORCE_INLINE bool btRayAabb2(const btVector3& rayFrom,
 	if (tymax < tmax)
 		tmax = tymax;
 
-	tzmin = (bounds[raySign[2]].getZ() - rayFrom.getZ()) * rayInvDirection.getZ();
-	tzmax = (bounds[1-raySign[2]].getZ() - rayFrom.getZ()) * rayInvDirection.getZ();
+    tzmin = vmin.getZ(); // (bounds[raySign[2]].getZ() - rayFrom.getZ()) * rayInvDirection.getZ();
+    tzmax = vmax.getZ(); // (bounds[1-raySign[2]].getZ() - rayFrom.getZ()) * rayInvDirection.getZ();
 
-	if ( (tmin > tzmax) || (tzmin > tmax) )
+    if ( (tmin > tzmax) || (tzmin > tmax) )
 		return false;
 	if (tzmin > tmin)
 		tmin = tzmin;
