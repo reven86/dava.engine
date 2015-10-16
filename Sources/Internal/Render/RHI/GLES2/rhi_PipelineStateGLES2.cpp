@@ -154,7 +154,7 @@ VertexDeclGLES2
 
                         vattrInited = true;
                     }
-    void            SetToRHI( uint32 firstVertex )
+                    void SetToRHI(uint32 firstVertex) const
                     {
                         DVASSERT(vattrInited);
 
@@ -185,7 +185,7 @@ VertexDeclGLES2
                                                         
                             for( unsigned i=0; i!=VATTR_COUNT; ++i )
                                 GL_CALL(glDisableVertexAttribArray( i ));
-                            
+
                             needInit = false;
                         }
                         
@@ -206,6 +206,7 @@ VertexDeclGLES2
                             {
                                 if( vattr[i].enabled )
                                 {
+                                    //{SCOPED_NAMED_TIMING("gl-DisableVertexAttribArray")}
                                     GL_CALL(glDisableVertexAttribArray( i ));
                                     vattr[i].enabled = false;
                                 }
@@ -221,6 +222,7 @@ VertexDeclGLES2
 //Trace("[%u] count= %u  type= %u  norm= %i  stride= %u  offset= %u\n",idx,elem[i].count,elem[i].type,elem[i].normalized,stride,base+(uint8_t*)elem[i].offset);
                                 if( !vattr[idx].enabled )
                                 {
+                                    //{SCOPED_NAMED_TIMING("gl-EnableVertexAttribArray")}
                                     GL_CALL(glEnableVertexAttribArray( idx ));
                                     vattr[idx].enabled = true;
                                 }
@@ -235,6 +237,7 @@ VertexDeclGLES2
                                   )
 */                                
                                 {
+                                    //{SCOPED_NAMED_TIMING("gl-VertexAttribPointer")}
                                     GL_CALL(glVertexAttribPointer( idx, elem[i].count, elem[i].type, (GLboolean)(elem[i].normalized), stride, (const GLvoid*)(base + (uint8_t*)(elem[i].offset)) ));
 
                                     vattr[idx].size         = elem[i].count;
@@ -281,7 +284,6 @@ PipelineStateGLES2_t
 {
 public:
                         PipelineStateGLES2_t()
-                          : glProg(0)
                         {}
 
     struct
@@ -294,7 +296,7 @@ public:
                                   : ProgGLES2(PROG_VERTEX)
                                 {}
 
-        void                    SetToRHI( uint32 layoutUID, uint32 firstVertex=0 )
+                                void SetToRHI(uint32 layoutUID, uint32 firstVertex = 0) const
                                 {
                                     if( layoutUID == VertexLayout::InvalidUID )
                                     {
@@ -322,8 +324,8 @@ public:
             VertexDeclGLES2 vdecl;
             uint32          layoutUID;
         };
-        
-        std::vector<vdecl_t>    altVdecl;
+
+        mutable std::vector<vdecl_t> altVdecl;
     };
 
     struct
@@ -342,10 +344,36 @@ public:
         DAVA::FastName  uid;
     };
 
+    struct
+    program_t
+    {
+        const VertexProgGLES2* vprog;
+        const FragmentProgGLES2* fprog;
+        unsigned glProg;
 
-    VertexProgGLES2     vprog;
-    FragmentProgGLES2   fprog;
-    unsigned            glProg;
+        program_t()
+            : vprog(nullptr)
+            , fprog(nullptr)
+            , glProg(0)
+        {
+        }
+    };
+
+    struct
+    ProgramEntry
+    {
+        uint32 vprogSrcHash;
+        VertexProgGLES2* vprog;
+        uint32 fprogSrcHash;
+        FragmentProgGLES2* fprog;
+        unsigned glProg;
+        int refCount;
+    };
+
+    static bool AcquireProgram(const PipelineState::Descriptor& desc, program_t* prog);
+    static void ReleaseProgram(const program_t& prog);
+
+    program_t prog;
 
     GLenum              blendSrc;
     GLenum              blendDst;
@@ -357,98 +385,156 @@ public:
     GLboolean           maskA;
 
     bool needPrepareTextureLoc = true;
+
+    static std::vector<ProgramEntry> _ProgramEntry;
 };
 
 typedef ResourcePool<PipelineStateGLES2_t,RESOURCE_PIPELINE_STATE,PipelineState::Descriptor,false>  PipelineStateGLES2Pool;
 RHI_IMPL_POOL(PipelineStateGLES2_t,RESOURCE_PIPELINE_STATE,PipelineState::Descriptor,false);
 
+std::vector<PipelineStateGLES2_t::ProgramEntry> PipelineStateGLES2_t::_ProgramEntry;
 
 //------------------------------------------------------------------------------
 
-static void
-gles2_PipelineState_Delete( Handle ps )
+bool PipelineStateGLES2_t::AcquireProgram(const PipelineState::Descriptor& desc, PipelineStateGLES2_t::program_t* prog)
 {
-    PipelineStateGLES2Pool::Free( ps );
-}
-
-
-//------------------------------------------------------------------------------
-
-static Handle
-gles2_PipelineState_Create( const PipelineState::Descriptor& desc )
-{
-    Handle                      handle      = PipelineStateGLES2Pool::Alloc();;
-    PipelineStateGLES2_t*       ps          = PipelineStateGLES2Pool::Get( handle );
-    bool                        vprog_valid = false;
-    bool                        fprog_valid = false;
+    bool success = false;
+    bool doAdd = true;
+    uint32 vprogSrcHash;
+    uint32 fprogSrcHash;
     static std::vector<uint8>   vprog_bin;
     static std::vector<uint8>   fprog_bin;
 
     rhi::ShaderCache::GetProg( desc.vprogUid, &vprog_bin );
     rhi::ShaderCache::GetProg( desc.fprogUid, &fprog_bin );
 
+    vprogSrcHash = DAVA::HashValue_N((const char*)(&vprog_bin[0]), strlen((const char*)(&vprog_bin[0])));
+    fprogSrcHash = DAVA::HashValue_N((const char*)(&fprog_bin[0]), strlen((const char*)(&fprog_bin[0])));
 
-    // construct vprog
-    
-    if( ps->vprog.Construct( (const char*)(&vprog_bin[0]) ) )
+    for (std::vector<PipelineStateGLES2_t::ProgramEntry>::iterator p = _ProgramEntry.begin(), p_end = _ProgramEntry.end(); p != p_end; ++p)
     {
-        ps->vprog.vdecl.Construct( desc.vertexLayout );        
-        vprog_valid = true;
-    }
-
-
-    // construct fprog
-
-    if( ps->fprog.Construct( (const char*)(&fprog_bin[0]) ) )
-    {
-        fprog_valid = true;
-    }
-
-
-    // construct pipeline-state
-
-    if( vprog_valid  &&  fprog_valid )
-    {
-        GLCommand   cmd1[]      =
+        if (p->vprogSrcHash == vprogSrcHash && p->fprogSrcHash == fprogSrcHash)
         {
-            { GLCommand::CREATE_PROGRAM, { 0 } },
-        };
-
-        ExecGL( cmd1, countof(cmd1) );
-
-
-
-        int         status  = 0;
-        unsigned    gl_prog = cmd1[0].retval;
-        GLCommand   cmd2[]      =
-        {
-            { GLCommand::ATTACH_SHADER, { gl_prog, ps->vprog.ShaderUid() } },
-            { GLCommand::ATTACH_SHADER, { gl_prog, ps->fprog.ShaderUid() } },
-            { GLCommand::LINK_PROGRAM, { gl_prog } },
-            { GLCommand::GET_PROGRAM_IV, { gl_prog, GL_LINK_STATUS, (uint64_t)(&status) } },
-        };
-
-        ExecGL( cmd2, countof(cmd2) );
-        
-        if( status )
-        {
-            ps->vprog.vdecl.InitVattr( gl_prog );
-            ps->vprog.GetProgParams( gl_prog );
-            ps->fprog.GetProgParams( gl_prog );
-            
-            ps->vprog.uid = desc.vprogUid;
-            ps->fprog.uid = desc.fprogUid;
-            ps->glProg    = gl_prog;
+            prog->vprog = p->vprog;
+            prog->fprog = p->fprog;
+            prog->glProg = p->glProg;
+            doAdd = false;
+            success = true;
+            break;
         }
-        else
-        {
-            char    info[1024];
+    }
 
-            glGetProgramInfoLog( gl_prog, countof(info), 0, info );
-            Trace( "prog-link failed:\n" );
-            Trace( info );
-        }                
-    
+    if (doAdd)
+    {
+        ProgramEntry entry;
+        bool vprog_valid = false;
+        bool fprog_valid = false;
+
+        // construct vprog
+
+        entry.vprog = new VertexProgGLES2();
+        if (entry.vprog->Construct((const char*)(&vprog_bin[0])))
+        {
+            entry.vprog->vdecl.Construct(desc.vertexLayout);
+            vprog_valid = true;
+        }
+
+        // construct fprog
+
+        entry.fprog = new FragmentProgGLES2();
+        if (entry.fprog->Construct((const char*)(&fprog_bin[0])))
+        {
+            fprog_valid = true;
+        }
+
+        // construct pipeline-state
+
+        if (vprog_valid && fprog_valid)
+        {
+            GLCommand cmd1[] =
+            {
+              { GLCommand::CREATE_PROGRAM, { 0 } },
+            };
+
+            ExecGL(cmd1, countof(cmd1));
+
+            int status = 0;
+            unsigned gl_prog = cmd1[0].retval;
+            GLCommand cmd2[] =
+            {
+              { GLCommand::ATTACH_SHADER, { gl_prog, entry.vprog->ShaderUid() } },
+              { GLCommand::ATTACH_SHADER, { gl_prog, entry.fprog->ShaderUid() } },
+              { GLCommand::LINK_PROGRAM, { gl_prog } },
+              { GLCommand::GET_PROGRAM_IV, { gl_prog, GL_LINK_STATUS, (uint64_t)(&status) } },
+            };
+
+            ExecGL(cmd2, countof(cmd2));
+
+            if (status)
+            {
+                entry.vprog->vdecl.InitVattr(gl_prog);
+                entry.vprog->GetProgParams(gl_prog);
+                entry.fprog->GetProgParams(gl_prog);
+
+                entry.vprog->uid = desc.vprogUid;
+                entry.vprogSrcHash = vprogSrcHash;
+                entry.fprog->uid = desc.fprogUid;
+                entry.fprogSrcHash = fprogSrcHash;
+                entry.glProg = gl_prog;
+
+                success = true;
+            }
+            else
+            {
+                char info[1024];
+
+                glGetProgramInfoLog(gl_prog, countof(info), 0, info);
+                Trace("prog-link failed:\n");
+                Trace(info);
+            }
+        }
+
+        _ProgramEntry.push_back(entry);
+        //Logger::Info("gl-prog cnt = %u",_ProgramEntry.size());
+        prog->vprog = entry.vprog;
+        prog->fprog = entry.fprog;
+        prog->glProg = entry.glProg;
+        ;
+    }
+
+    return success;
+}
+
+//------------------------------------------------------------------------------
+
+void PipelineStateGLES2_t::ReleaseProgram(const PipelineStateGLES2_t::program_t& prog)
+{
+}
+
+//------------------------------------------------------------------------------
+
+static void
+gles2_PipelineState_Delete(Handle ps)
+{
+    PipelineStateGLES2Pool::Free(ps);
+}
+
+//------------------------------------------------------------------------------
+
+static Handle
+gles2_PipelineState_Create(const PipelineState::Descriptor& desc)
+{
+    Handle handle = PipelineStateGLES2Pool::Alloc();
+    ;
+    PipelineStateGLES2_t* ps = PipelineStateGLES2Pool::Get(handle);
+    static std::vector<uint8> vprog_bin;
+    static std::vector<uint8> fprog_bin;
+
+    rhi::ShaderCache::GetProg(desc.vprogUid, &vprog_bin);
+    rhi::ShaderCache::GetProg(desc.fprogUid, &fprog_bin);
+
+    if (PipelineStateGLES2_t::AcquireProgram(desc, &(ps->prog)))
+    {
         ps->blendEnabled = desc.blending.rtBlend[0].blendEnabled;
 
         switch( desc.blending.rtBlend[0].colorSrc )
@@ -493,8 +579,8 @@ static Handle
 gles2_PipelineState_CreateVertexConstBuffer( Handle ps, unsigned bufIndex )
 {
     PipelineStateGLES2_t* ps2 = PipelineStateGLES2Pool::Get( ps );
-    
-    return ps2->vprog.InstanceConstBuffer( bufIndex );
+
+    return ps2->prog.vprog->InstanceConstBuffer(bufIndex);
 }
 
 
@@ -504,8 +590,8 @@ static Handle
 gles2_PipelineState_CreateFragmentConstBuffer( Handle ps, unsigned bufIndex )
 {
     PipelineStateGLES2_t* ps2 = PipelineStateGLES2Pool::Get( ps );
-    
-    return ps2->fprog.InstanceConstBuffer( bufIndex );
+
+    return ps2->prog.fprog->InstanceConstBuffer(bufIndex);
 }
 
 
@@ -527,20 +613,21 @@ SetToRHI( Handle ps, uint32 layoutUID )
     PipelineStateGLES2_t* ps2 = PipelineStateGLES2Pool::Get( ps );
 
     DVASSERT(ps2);
-    
-    if( ps2->glProg != cachedProgram )
+
+    if (ps2->prog.glProg != cachedProgram)
     {
-        GL_CALL(glUseProgram( ps2->glProg ));
-        cachedProgram = ps2->glProg;
+        SCOPED_NAMED_TIMING("gl-UseProgram");
+        //Trace("  SetProg \"%s\"\n",ps2->prog.vprog->uid.c_str());
+        GL_CALL(glUseProgram(ps2->prog.glProg));
+        cachedProgram = ps2->prog.glProg;
 
         if (ps2->needPrepareTextureLoc)
         {
             ps2->needPrepareTextureLoc = false;
-            ps2->vprog.ProgGLES2::SetupTextureUnits();
-            ps2->fprog.ProgGLES2::SetupTextureUnits(ps2->vprog.SamplerCount());
+            ps2->prog.vprog->ProgGLES2::SetupTextureUnits();
+            ps2->prog.fprog->ProgGLES2::SetupTextureUnits(ps2->prog.vprog->SamplerCount());
         }
     }
-
     VertexDeclGLES2::InvalidateVAttrCache();
 
     
@@ -582,14 +669,14 @@ SetToRHI( Handle ps, uint32 layoutUID )
 void
 SetVertexDeclToRHI( Handle ps, uint32 layoutUID, uint32 firstVertex )
 {
-Trace("SetVertexDeclToRHI  layoutUID= %u\n",layoutUID);
+    //Trace("SetVertexDeclToRHI  layoutUID= %u\n",layoutUID);
     PipelineStateGLES2_t* ps2 = PipelineStateGLES2Pool::Get( ps );
 
     if( layoutUID != VertexLayout::InvalidUID )
     {
         bool    do_add = true;
-        
-        for( std::vector<PipelineStateGLES2_t::VertexProgGLES2::vdecl_t>::iterator v=ps2->vprog.altVdecl.begin(),v_end=ps2->vprog.altVdecl.end(); v!=v_end; ++v )
+
+        for (std::vector<PipelineStateGLES2_t::VertexProgGLES2::vdecl_t>::iterator v = ps2->prog.vprog->altVdecl.begin(), v_end = ps2->prog.vprog->altVdecl.end(); v != v_end; ++v)
         {
             if( v->layoutUID == layoutUID )
             {
@@ -605,22 +692,22 @@ Trace("SetVertexDeclToRHI  layoutUID= %u\n",layoutUID);
             
             vdecl.layoutUID = layoutUID;
             vdecl.vdecl.Construct( *layout );
-            vdecl.vdecl.InitVattr( ps2->glProg, true );
-            ps2->vprog.altVdecl.push_back( vdecl );
+            vdecl.vdecl.InitVattr(ps2->prog.glProg, true);
+            ps2->prog.vprog->altVdecl.push_back(vdecl);
         }
     }    
 
 //if( layoutUID != VertexLayout::InvalidUID )
 //VertexLayout::Get( layoutUID )->Dump();
-    ps2->vprog.SetToRHI( layoutUID, firstVertex );
+    ps2->prog.vprog->SetToRHI(layoutUID, firstVertex);
 }
 
 uint32
 VertexSamplerCount( Handle ps )
 {
     PipelineStateGLES2_t* ps2 = PipelineStateGLES2Pool::Get( ps );
-    
-    return ps2->vprog.SamplerCount();
+
+    return ps2->prog.vprog->SamplerCount();
 }
 
 void

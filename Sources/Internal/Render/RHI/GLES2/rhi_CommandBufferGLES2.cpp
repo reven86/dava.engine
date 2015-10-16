@@ -703,7 +703,7 @@ CommandBufferGLES2_t::Command( uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3
 void        
 CommandBufferGLES2_t::Execute()
 {
-SCOPED_NAMED_TIMING("gl.exec");
+    //SCOPED_NAMED_TIMING("gl.exec");
     Handle      cur_ps          = InvalidHandle;
     uint32      cur_vdecl       = VertexLayout::InvalidUID;
     uint32      cur_base_vert   = 0;
@@ -713,6 +713,7 @@ SCOPED_NAMED_TIMING("gl.exec");
     Handle      fp_const[MAX_CONST_BUFFER_COUNT];
     const void* fp_const_data[MAX_CONST_BUFFER_COUNT];
     Handle      cur_vb          = InvalidHandle;
+    Handle      cur_ib          = InvalidHandle;
     bool        vdecl_pending   = true;
     IndexSize   idx_size        = INDEX_SIZE_16BIT;
     unsigned    tex_unit_0      = 0;
@@ -875,8 +876,14 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
             
             case GLES2__SET_INDICES :
             {
-                idx_size = IndexBufferGLES2::SetToRHI((Handle)(arg[0]));
-                StatSet::IncStat(stat_SET_IB, 1);
+                Handle  ib = (Handle)(arg[0]);
+                
+                if( ib != cur_ib )
+                {
+                    idx_size = IndexBufferGLES2::SetToRHI(ib);
+                    StatSet::IncStat(stat_SET_IB, 1);
+                    cur_ib = ib;
+                }
 
                 c += 1;
             }   break;
@@ -912,8 +919,8 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
                     cur_ps          = ps;
                     cur_vdecl       = vdecl;
                     cur_base_vert   = 0;
-                    last_ps         = InvalidHandle;
-                    cur_vb          = InvalidHandle;
+                    last_ps = InvalidHandle;
+                    vdecl_pending = true;
                 }
 
                 tex_unit_0 = PipelineStateGLES2::VertexSamplerCount( ps );
@@ -1064,6 +1071,7 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
 
             case GLES2__DRAW_PRIMITIVE :
             {
+                //{SCOPED_NAMED_TIMING("gl.DP")}
                 unsigned    v_cnt   = unsigned(arg[1]);
                 int         mode    = int(arg[0]);
                 
@@ -1121,6 +1129,7 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
             
             case GLES2__DRAW_INDEXED_PRIMITIVE :
             {
+                //{SCOPED_NAMED_TIMING("gl.DIP")}
                 unsigned    v_cnt       = unsigned(arg[1]);
                 int         mode        = int(arg[0]);
                 uint32      firstVertex = uint32(arg[2]);

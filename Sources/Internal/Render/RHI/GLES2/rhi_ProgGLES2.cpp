@@ -312,7 +312,7 @@ ProgGLES2::ConstBufferCount() const
 //------------------------------------------------------------------------------
 
 Handle
-ProgGLES2::InstanceConstBuffer( unsigned bufIndex )
+ProgGLES2::InstanceConstBuffer(unsigned bufIndex) const
 {
     Handle  handle = InvalidHandle;
 
@@ -348,6 +348,7 @@ ProgGLES2::SetupTextureUnits( unsigned baseUnit ) const
     {
         if( texunitLoc[i] != -1 )
         {
+            //{SCOPED_NAMED_TIMING("gl-Uniform1i")}
             glUniform1i( texunitLoc[i], baseUnit + i );
 //            cmd[cnt].func   = GLCommand::SET_UNIFORM_1I;
 //            cmd[cnt].arg[0] = texunitLoc[i];
