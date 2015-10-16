@@ -280,7 +280,6 @@ void DefaultUIPackageBuilder::EndControl(bool isRoot)
         {
             UIControl *control = controlsStack.back()->control.Get();
             control->AddControl(lastDescr->control.Get());
-            lastDescr->control->UpdateLayout();
         }
     }
     SafeDelete(lastDescr);

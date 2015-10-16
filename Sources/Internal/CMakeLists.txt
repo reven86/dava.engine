@@ -39,12 +39,9 @@ if( ANDROID )
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libzip_android.a"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libfribidi_android.a"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libunibreak_android.a"
-         "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libiconv_android.so"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libfmodevent.so"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libfmodex.so"
-         "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libTextureConverter_android.a"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libuv_android.a"
-         "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libiconv_android.so"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/liblua_android.a"
          "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libwebp_android.a"
          )
@@ -56,6 +53,7 @@ if( ANDROID )
          "-landroid"
          "-lGLESv2"
          "-lstdc++"
+         "-latomic"
          )
 
     list ( APPEND LIST_SHARED_LIBRARIES ${LIST_LIBRARIES} )

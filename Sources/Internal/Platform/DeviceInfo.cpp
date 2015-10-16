@@ -148,16 +148,14 @@ void DeviceInfo::InitializeScreenInfo()
     GetPrivateImpl()->InitializeScreenInfo();
 }
 
-
 bool DeviceInfo::IsHIDConnected(eHIDType type)
 {
     return GetPrivateImpl()->IsHIDConnected(type);
 }
 
-
-void DeviceInfo::SetHIDConnectionCallback(DeviceInfo::eHIDType type, DeviceInfo::HIDCallBackFunc&& callback)
+DeviceInfo::HIDConnectionSignal& DeviceInfo::GetHIDConnectionSignal(DeviceInfo::eHIDType type)
 {
-    GetPrivateImpl()->SetHIDConnectionCallback(type, std::forward<HIDCallBackFunc>(callback));
+    return GetPrivateImpl()->GetHIDConnectionSignal(type);
 }
 
-}
+} // namespace DAVA
