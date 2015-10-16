@@ -444,23 +444,26 @@ void WinUAPXamlApp::OnPointerWheel(Windows::UI::Core::CoreWindow^ sender, Window
                               ev.phase = UIEvent::Phase::WHEEL;
                               ev.device = ToDavaDeviceId(type);
 
-                              UIControlSystem::Instance()->OnInput({ ev }, events);
+                              UIControlSystem::Instance()->OnInput(&ev);
                           });
 }
 
 void WinUAPXamlApp::OnHardwareBackButtonPressed(Platform::Object^ sender, Windows::Phone::UI::Input::BackPressedEventArgs ^args)
 {
     core->RunOnMainThread([this]() {
-        InputSystem::Instance()->GetKeyboard().OnKeyPressed(static_cast<int32>(DVKEY_BACK));
         UIEvent ev;
         ev.keyChar = 0;
         ev.tapCount = 1;
-        ev.phase = UIEvent::Phase::CHAR;
+        ev.phase = UIEvent::Phase::KEY_DOWN;
         ev.tid = DVKEY_BACK;
-        Vector<UIEvent> newEvent = {ev};
-        UIControlSystem::Instance()->OnInput(newEvent, events);
-        newEvent.pop_back();
-        UIControlSystem::Instance()->OnInput(newEvent, events);
+        ev.device = UIEvent::Device::KEYBOARD;
+
+        UIControlSystem::Instance()->OnInput(&ev);
+        InputSystem::Instance()->GetKeyboard().OnKeyPressed(static_cast<int32>(DVKEY_BACK));
+
+        ev.phase = UIEvent::Phase::KEY_UP;
+
+        UIControlSystem::Instance()->OnInput(&ev);
         InputSystem::Instance()->GetKeyboard().OnKeyUnpressed(static_cast<int32>(DVKEY_BACK));
     });
     args->Handled = true;
@@ -496,8 +499,7 @@ void WinUAPXamlApp::OnKeyDown(Windows::UI::Core::CoreWindow^ sender, Windows::UI
         }
         ev.tid = keyboard.GetDavaKeyForSystemKey(static_cast<int32>(key));
 
-        Vector<UIEvent> newEvent = {ev};
-        UIControlSystem::Instance()->OnInput(newEvent, events);
+        UIControlSystem::Instance()->OnInput(&ev);
         keyboard.OnSystemKeyPressed(static_cast<int32>(key));
                           });
 }
@@ -514,7 +516,7 @@ void WinUAPXamlApp::OnKeyUp(Windows::UI::Core::CoreWindow^ sender, Windows::UI::
                               ev.phase = UIEvent::Phase::KEY_UP;
                               ev.tid = keyboard.GetDavaKeyForSystemKey((key));
 
-                              UIControlSystem::Instance()->OnInput({ ev }, events);
+                              UIControlSystem::Instance()->OnInput(&ev);
                               keyboard.OnSystemKeyUnpressed(static_cast<int32>(key));
                           });
 }
@@ -537,7 +539,7 @@ void WinUAPXamlApp::OnChar(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::
                               {
                                   ev.phase = UIEvent::Phase::CHAR;
                               }
-                              UIControlSystem::Instance()->OnInput({ ev }, events);
+                              UIControlSystem::Instance()->OnInput(&ev);
                           });
 }
 
@@ -588,7 +590,7 @@ void WinUAPXamlApp::DAVATouchEvent(UIEvent::Phase phase, float32 x, float32 y, i
     newTouch.phase = phase;
     newTouch.device = device;
 
-    UIControlSystem::Instance()->OnInput({newTouch}, events);
+    UIControlSystem::Instance()->OnInput(&newTouch);
 }
 
 void WinUAPXamlApp::SetupEventHandlers()

@@ -74,14 +74,14 @@ private:
     static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
     RECT GetWindowedRectForDisplayMode(DisplayMode& dm);
-    UIEvent::Phase MoveTouchsToVector(UIEvent::Device deviceId, USHORT buttsFlags, WPARAM wParam, LPARAM lParam, Vector<UIEvent>* outTouches);
+    UIEvent::Phase MoveTouchsToVector(UIEvent::Device deviceId, USHORT buttsFlags, WPARAM wParam, LPARAM lParam, UIEvent& outTouch);
 
     bool willQuit;
 
     bool isRightButtonPressed;
     bool isLeftButtonPressed;
     bool isMiddleButtonPressed;
-    Vector<DAVA::UIEvent> events;
+    //Vector<DAVA::UIEvent> events;
     Vector<TOUCHINPUT> inputTouchBuffer;
 };
 

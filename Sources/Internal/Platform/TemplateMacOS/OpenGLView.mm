@@ -451,9 +451,9 @@ static int32 oldModifersFlags = 0;
     NSString* chars = [event characters];
     bool isRepeat = [event isARepeat];
     int32 keyCode = [event keyCode];
-    uint32 chars_length = [chars length];
+    uint32 charsLength = [chars length];
 
-    for (uint32 i = 0; i < chars_length; ++i)
+    for (uint32 i = 0; i < charsLength; ++i)
     {
         uint32 ch = [chars characterAtIndex:i];
         DVASSERT(ch < 0xFFFF);

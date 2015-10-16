@@ -184,9 +184,9 @@ public:
 	/**
 	 \brief Calls by the system for input processing.
 	 */
-    void OnInput(const Vector<UIEvent>& activeInputs, const Vector<UIEvent>& allInputs);
+    void OnInput(UIEvent* newEvent);
 
-    void OnInput(UIEvent* event);
+    //void OnInput(UIEvent* event);
 
     /**
 	 \brief Callse very frame by the system for update.

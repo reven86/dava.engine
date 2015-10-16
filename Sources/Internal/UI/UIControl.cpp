@@ -1637,8 +1637,7 @@ namespace DAVA
                     {
                         if (currentInput->controlState == UIEvent::CONTROL_STATE_OUTSIDE)
                         {
-                            currentInput->controlState =
-                            UIEvent::CONTROL_STATE_INSIDE;
+                            currentInput->controlState = UIEvent::CONTROL_STATE_INSIDE;
                             ++touchesInside;
                             if (touchesInside > 0)
                             {

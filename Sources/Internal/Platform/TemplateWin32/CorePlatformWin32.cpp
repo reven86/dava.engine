@@ -438,7 +438,7 @@ namespace DAVA
 		SendMessage(hWindow, WM_SETICON, ICON_BIG, (LPARAM)smallIcon);
 	}
 
-    UIEvent::Phase CoreWin32Platform::MoveTouchsToVector(UIEvent::Device deviceId, USHORT buttsFlags, WPARAM wParam, LPARAM lParam, Vector<UIEvent>* outTouches)
+    UIEvent::Phase CoreWin32Platform::MoveTouchsToVector(UIEvent::Device deviceId, USHORT buttsFlags, WPARAM wParam, LPARAM lParam, UIEvent& outTouch)
     {
         int button = 0;
         UIEvent::Phase phase = UIEvent::Phase::ERROR;
@@ -503,48 +503,11 @@ namespace DAVA
             return phase;
         }
 
-        bool isFind = false;
-        for (Vector<DAVA::UIEvent>::iterator it = events.begin(); it != events.end(); it++)
-        {
-            if (it->tid == button)
-            {
-                isFind = true;
-
-                it->physPoint.x = static_cast<float32>(GET_X_LPARAM(lParam));
-                it->physPoint.y = static_cast<float32>(GET_Y_LPARAM(lParam));
-                it->phase = phase;
-
-                break;
-            }
-        }
-
-        if (!isFind)
-        {
-            UIEvent newTouch;
-			newTouch.tid = button;
-            newTouch.physPoint.x = static_cast<float32>(GET_X_LPARAM(lParam));
-            newTouch.physPoint.y = static_cast<float32>(GET_Y_LPARAM(lParam));
-            newTouch.phase = phase;
-            newTouch.device = deviceId;
-            events.push_back(newTouch);
-        }
-
-        for (Vector<DAVA::UIEvent>::iterator it = events.begin(); it != events.end(); it++)
-        {
-            outTouches->push_back(*it);
-        }
-
-        if (phase == UIEvent::Phase::ENDED || phase == UIEvent::Phase::MOVE)
-        {
-            for (Vector<DAVA::UIEvent>::iterator it = events.begin(); it != events.end(); it++)
-            {
-                if (it->tid == button)
-                {
-                    events.erase(it);
-                    break;
-                }
-            }
-        }
+        outTouch.tid = button;
+        outTouch.physPoint.x = static_cast<float32>(GET_X_LPARAM(lParam));
+        outTouch.physPoint.y = static_cast<float32>(GET_Y_LPARAM(lParam));
+        outTouch.phase = phase;
+        outTouch.device = deviceId;
 
         return phase;
     }
@@ -608,7 +571,7 @@ namespace DAVA
 
     void CoreWin32Platform::OnMouseEvent(UIEvent::Device deviceId, USHORT buttsFlags, WPARAM wParam, LPARAM lParam, USHORT buttonData)
     {
-        Vector<DAVA::UIEvent> touches;
+        UIEvent newTouch;
         UIEvent::Phase touchPhase = UIEvent::Phase::ERROR;
 
         if (HIWORD(wParam) || mouseButtonsDownMask > 0) // isPoint inside window or some clicks already captured
@@ -620,26 +583,23 @@ namespace DAVA
         {
             touchPhase = UIEvent::Phase::WHEEL;
 
-            UIEvent newTouch;
             newTouch.tid = 0;
             newTouch.physPoint.x = 0;
             newTouch.physPoint.y = static_cast<SHORT>(buttonData) / static_cast<float32>(WHEEL_DELTA);
             newTouch.phase = UIEvent::Phase::WHEEL;
             newTouch.device = deviceId;
-
-            touches.push_back(newTouch);
         }
         else
 		{
             if(HIWORD(wParam) || mouseButtonsDownMask > 0) // HIWORD(wParam) - isPoint inside window
 			{
-                touchPhase = MoveTouchsToVector(deviceId, buttsFlags, wParam, lParam, &touches);
+                touchPhase = MoveTouchsToVector(deviceId, buttsFlags, wParam, lParam, newTouch);
             }
         }
 
         if (touchPhase != UIEvent::Phase::ERROR)
         {
-            UIControlSystem::Instance()->OnInput(touches, events);
+            UIControlSystem::Instance()->OnInput(&newTouch);
         }
 
         if (RenderManager::Instance()->GetCursor() != nullptr && mouseCursorShown)
@@ -665,10 +625,7 @@ namespace DAVA
         newTouch.phase = phase;
         newTouch.device = deviceId;
 
-        Vector<UIEvent> touches;
-        touches.push_back(newTouch);
-
-        UIControlSystem::Instance()->OnInput(touches, events);
+        UIControlSystem::Instance()->OnInput(&newTouch);
     }
 
     struct MouseDevice
@@ -722,7 +679,7 @@ namespace DAVA
             ev.tid = keyboard.GetDavaKeyForSystemKey(system_key_code);
             ev.device = UIEvent::Device::KEYBOARD;
 
-            UIControlSystem::Instance()->OnInput({ev}, core->events);
+            UIControlSystem::Instance()->OnInput(&ev);
 
             keyboard.OnSystemKeyUnpressed(system_key_code);
         }
@@ -744,7 +701,7 @@ namespace DAVA
             ev.tid = keyboard.GetDavaKeyForSystemKey(system_key_code);
             ev.device = UIEvent::Device::KEYBOARD;
 
-            UIControlSystem::Instance()->OnInput({ev}, core->events);
+            UIControlSystem::Instance()->OnInput(&ev);
 
             keyboard.OnSystemKeyPressed(system_key_code);
         };
@@ -762,8 +719,7 @@ namespace DAVA
             {
                 ev.phase = UIEvent::Phase::CHAR_REPEAT;
             }
-
-            UIControlSystem::Instance()->OnInput({ev}, core->events);
+            UIControlSystem::Instance()->OnInput(&ev);
         }
         break;
 

@@ -198,7 +198,7 @@ protected:
 
     Bitset<DVKEY_COUNT> keyStatus; //keys pressed for the current frame
     Bitset<DVKEY_COUNT> realKeyStatus;
-    std::array<int32, MAX_KEYS> keyTranslator;
+    Array<int32, MAX_KEYS> keyTranslator;
 };
 };
 

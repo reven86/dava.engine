@@ -756,9 +756,8 @@ namespace DAVA
 
 	void AutotestingSystemLua::ProcessInput(const UIEvent &input)
 	{
-		Vector<UIEvent> touches;
-		touches.push_back(input);
-        UIControlSystem::Instance()->OnInput(touches, touches);
+        UIEvent ev = input;
+        UIControlSystem::Instance()->OnInput(&ev);
 
         AutotestingSystem::Instance()->OnInput(input);
     }
