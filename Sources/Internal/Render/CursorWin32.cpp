@@ -39,7 +39,7 @@ void DAVA::Cursor::SetCursorPinning(bool pin)
 {
     static DAVA::Point2i lastCursorPosition;
 
-    ShowSystemCursor(!pin);
+    SetSystemCursorVisibility(!pin);
 
     CoreWin32PlatformBase * winCore = static_cast<CoreWin32PlatformBase *>(Core::Instance());
     if (pin)
@@ -53,7 +53,7 @@ void DAVA::Cursor::SetCursorPinning(bool pin)
     }
 }
 
-void DAVA::Cursor::ShowSystemCursor( bool show )
+void DAVA::Cursor::SetSystemCursorVisibility()(bool show)
 {
     CURSORINFO ci = { sizeof( ci ), 0 };
     if ( GetCursorInfo( &ci ) != 0 )

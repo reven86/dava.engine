@@ -1495,7 +1495,7 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
     {
         Vector2 point = _point;
 
-        if (InputSystem::Instance()->IsCursorPining())
+        if (InputSystem::Instance()->GetCursorCaptureMode())
         {
             point.x = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx / 2.f;
             point.y = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx / 2.f;

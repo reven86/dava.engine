@@ -119,12 +119,26 @@ DisplayMode CorePlatformWinUAP::GetCurrentDisplayMode()
     return DisplayMode(static_cast<int32>(screenSize.Width), static_cast<int32>(screenSize.Height), DisplayMode::DEFAULT_BITS_PER_PIXEL, DisplayMode::DEFAULT_DISPLAYFREQUENCY);
 }
 
-void CorePlatformWinUAP::SetCursorPinning(bool isPinning)
+bool CorePlatformWinUAP::GetCursorVisibility()
 {
-    RunOnUIThread([this, isPinning]() {
-        xamlApp->SetCursorPinning(isPinning);
-        xamlApp->SetCursorVisible(!isPinning);
-    });
+    return xamlApp->GetCursorVisible();
+}
+
+InputSystem::eMouseCaptureMode CorePlatformWinUAP::GetCursorCaptureMode()
+{
+    return xamlApp->GetCursorCaptureMode();
+}
+
+bool CorePlatformWinUAP::SetCursorCaptureMode(InputSystem::eMouseCaptureMode mode)
+{
+    RunOnUIThread([this, mode]() {
+        if (xamlApp->SetCursorCaptureMode(mode))
+        {
+            xamlApp->SetCursorVisible(mode != InputSystem::MOUSE_CAPTURE_PINING);
+        }
+    },
+                  true);
+    return GetCursorCaptureMode() == mode;
 }
 
 bool CorePlatformWinUAP::IsUIThread() const

@@ -36,6 +36,7 @@
 #include "Base/BaseTypes.h"
 #include "Core/Core.h"
 #include "Platform/DeviceInfo.h"
+#include "Input/InputSystem.h"
 
 namespace DAVA
 {
@@ -59,7 +60,10 @@ public:
     void SwitchScreenToMode(eScreenMode screenMode) override;
     void ToggleFullscreen() override;
     DisplayMode GetCurrentDisplayMode() override;
-    void SetCursorPinning(bool isPinning);
+
+    bool GetCursorVisibility();
+    InputSystem::eMouseCaptureMode GetCursorCaptureMode();
+    bool SetCursorCaptureMode(InputSystem::eMouseCaptureMode mode);
 
     // Win10 specific member functions
 

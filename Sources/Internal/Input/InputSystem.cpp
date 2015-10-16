@@ -97,12 +97,21 @@ void InputSystem::OnAfterUpdate()
     keyboard->OnAfterUpdate();
 }
 
-void InputSystem::SetCursorPining(bool isPin)
+InputSystem::eMouseCaptureMode InputSystem::GetCursorCaptureMode()
 {
-    pinCursor = isPin;
-
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN_UAP__)
-    Cursor::SetCursorPinning(isPin);
+    return Cursor::GetCursorCaptureMode();
+#else
+    return MOUSE_CAPTURE_OFF;
+#endif
+}
+
+bool InputSystem::SetCursorCaptureMode(eMouseCaptureMode mode)
+{
+#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN_UAP__)
+    return Cursor::SetCursorCaptureMode(mode);
+#else
+    return mode == MOUSE_CAPTURE_OFF;
 #endif
 }
 

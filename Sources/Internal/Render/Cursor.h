@@ -34,6 +34,7 @@
 #include "Base/BaseMath.h"
 #include "Render/Texture.h"
 #include "Render/2D/Sprite.h"
+#include "Input/InputSystem.h"
 
 namespace DAVA
 {
@@ -81,11 +82,12 @@ public:
 #if defined(__DAVAENGINE_MACOS__)
 	void * GetMacOSXCursor();
 #endif 
-#if defined (__DAVAENGINE_WIN_UAP__)
-    static void SetCursorPinning(bool pin);
-#elif defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
-    static void ShowSystemCursor(bool show);
-    static void SetCursorPinning(bool pin);
+
+#if defined(__DAVAENGINE_WIN_UAP__) || defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
+    static InputSystem::eMouseCaptureMode GetCursorCaptureMode();
+    static bool SetCursorCaptureMode(InputSystem::eMouseCaptureMode mode);
+    static bool GetSystemCursorVisibility();
+    static bool SetSystemCursorVisibility(bool show);
 #endif
     
 private:

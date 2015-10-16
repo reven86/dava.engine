@@ -60,7 +60,14 @@ public:
 		INPUT_DEVICE_JOYSTICK	= 1 << 2
 	};
 
-	friend void Core::CreateSingletons();
+    enum eMouseCaptureMode
+    {
+        MOUSE_CAPTURE_OFF = 0, //!< Disable any capturing (send absolute xy)
+        MOUSE_CAPTURE_FRAME, //!< Capture system cursor into window rect (send absolute xy)
+        MOUSE_CAPTURE_PINING //!<< Capture system cursor on current position (send xy move delta)
+    };
+
+    friend void Core::CreateSingletons();
 	
 protected:
 	~InputSystem();
@@ -83,9 +90,9 @@ public:
     inline KeyboardDevice & GetKeyboard();
     inline GamepadDevice  & GetGamepadDevice();
 
-    inline bool IsCursorPining();
-    void SetCursorPining(bool isPin);
-    
+    eMouseCaptureMode GetCursorCaptureMode();
+    bool SetCursorCaptureMode(eMouseCaptureMode mode);
+
     inline void EnableMultitouch(bool enabled);
     inline bool GetMultitouchEnabled() const;
     
@@ -99,11 +106,6 @@ protected:
     
     bool isMultitouchEnabled;
 };
-
-inline bool InputSystem::IsCursorPining()
-{
-    return pinCursor;
-}
 
 inline KeyboardDevice & InputSystem::GetKeyboard()
 {
