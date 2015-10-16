@@ -47,7 +47,7 @@ public:
 
     HUDAreaInfo::eArea GetArea() const;
     virtual void InitFromGD(const UIGeometricData& gd_) = 0;
-    void SetDPR(double arg);
+    void SetDPR(float32 arg);
 
 protected:
     const HUDAreaInfo::eArea area = HUDAreaInfo::NO_AREA;
@@ -65,7 +65,7 @@ HUDAreaInfo::eArea HUDSystem::ControlContainer::GetArea() const
     return area;
 }
 
-void HUDSystem::ControlContainer::SetDPR(double arg)
+void HUDSystem::ControlContainer::SetDPR(float32 arg)
 {
     dpr = arg;
 }
@@ -522,7 +522,12 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
     {
         //check that we can draw rect
         Vector<ControlNode*> nodes;
-        systemManager->CollectControlNodesByPos(nodes, currentInput->point);
+        Vector<ControlNode*> nodesUnderPoint;
+        Vector2 point = currentInput->point;
+        auto predicate = [point](const UIControl* control) -> bool {
+            return control->GetSystemVisible() && control->IsPointInside(point);
+        };
+        systemManager->CollectControlNodes(std::back_inserter(nodesUnderPoint), predicate);
         const PackageControlsNode* packageNode = systemManager->GetPackage()->GetPackageControlsNode();
         bool noHudableControls = nodes.empty() || (nodes.size() == 1 && nodes.front()->GetParent() == packageNode);
         bool hotKeyDetected = InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_CTRL);
@@ -624,7 +629,7 @@ void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLineInfo>& magnetLines)
     }
 }
 
-void HUDSystem::OnDPRChanged(double arg)
+void HUDSystem::OnDPRChanged(float32 arg)
 {
     dpr = arg;
     selectionRectControl->SetDPR(dpr);

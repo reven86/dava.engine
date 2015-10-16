@@ -27,8 +27,8 @@
 =====================================================================================*/
 
 
-#ifndef QUICKED_BASECONTROLLER_H
-#define QUICKED_BASECONTROLLER_H
+#ifndef QUICKED_EDITOR_CORE_H
+#define QUICKED_EDITOR_CORE_H
 
 #include <QObject>
 #include "UI/mainwindow.h"
@@ -111,4 +111,4 @@ inline EditorFontSystem *GetEditorFontSystem()
     return EditorCore::Instance()->GetProject()->GetEditorFontSystem();
 }
 
-#endif // QUICKED_BASECONTROLLER_H
+#endif // QUICKED_EDITOR_CORE_H

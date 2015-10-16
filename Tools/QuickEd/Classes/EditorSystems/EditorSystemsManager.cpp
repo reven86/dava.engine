@@ -214,26 +214,6 @@ void EditorSystemsManager::SetEmulationMode(bool emulationMode)
     EmulationModeChangedSignal.Emit(std::move(emulationMode));
 }
 
-void EditorSystemsManager::CollectControlNodesByPos(DAVA::Vector<ControlNode*>& controlNodes, const DAVA::Vector2& pos) const
-{
-    for (PackageBaseNode* rootControl : editingRootControls)
-    {
-        ControlNode* controlNode = dynamic_cast<ControlNode*>(rootControl);
-        DVASSERT(nullptr != controlNode);
-        CollectControlNodesByPosImpl(controlNodes, pos, controlNode);
-    }
-}
-
-void EditorSystemsManager::CollectControlNodesByRect(SelectedControls& controlNodes, const Rect& rect) const
-{
-    for (PackageBaseNode* rootControl : editingRootControls)
-    {
-        ControlNode* controlNode = dynamic_cast<ControlNode*>(rootControl);
-        DVASSERT(nullptr != controlNode);
-        CollectControlNodesByRectImpl(controlNodes, rect, controlNode);
-    }
-}
-
 void EditorSystemsManager::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
     SelectionContainer::MergeSelectionAndContainer(selected, deselected, selectedControlNodes);
@@ -243,7 +223,8 @@ void EditorSystemsManager::OnSelectionChanged(const SelectedNodes& selected, con
     }
 }
 
-void EditorSystemsManager::CollectControlNodesByPosImpl(DAVA::Vector<ControlNode*>& controlNodes, const DAVA::Vector2& pos, ControlNode* node) const
+/*
+void EditorSystemsManager::CollectControlNodesByPosImpl(Vector<ControlNode*>& controlNodes, const Vector2& pos, ControlNode* node) const
 {
     int count = node->GetCount();
     auto control = node->GetControl();
@@ -269,7 +250,7 @@ void EditorSystemsManager::CollectControlNodesByRectImpl(SelectedControls& contr
     {
         CollectControlNodesByRectImpl(controlNodes, rect, node->Get(i));
     }
-}
+}*/
 
 void EditorSystemsManager::ControlWillBeRemoved(ControlNode* node, ControlsContainerNode* from)
 {

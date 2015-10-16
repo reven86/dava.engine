@@ -34,6 +34,7 @@
 #include <QLineEdit>
 #include <QScreen>
 #include <QMenu>
+#include <QShortCut>
 #include "UI/UIControl.h"
 #include "UI/UIScreenManager.h"
 
@@ -93,6 +94,16 @@ PreviewWidget::PreviewWidget(QWidget* parent)
     scaleCombo->lineEdit()->setMaxLength(6); //3 digits + whitespace + % ?
     scaleCombo->setInsertPolicy(QComboBox::NoInsert);
     UpdateScrollArea();
+
+    QAction* deleteAction = new QAction(tr("Delete"), davaGLWidget);
+    deleteAction->setShortcut(QKeySequence::Delete);
+    deleteAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    connect(deleteAction, &QAction::triggered, this, &PreviewWidget::DeleteRequested);
+
+    QAction* selectAll = new QAction(tr("Select all"), davaGLWidget);
+    selectAll->setShortcut(QKeySequence::SelectAll);
+    selectAll->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    connect(selectAll, &QAction::triggered, this, &PreviewWidget::SelectAllRequested);
 }
 
 DavaGLWidget *PreviewWidget::GetDavaGLWidget()
@@ -130,9 +141,8 @@ qreal PreviewWidget::GetDPR() const
     return davaGLWidget->GetGLWindow()->devicePixelRatio();
 }
 
-void PreviewWidget::OnSelectControlByMenu(const Vector<ControlNode*>& nodesUnderPoint, const Vector2& point, ControlNode*& selectedNode)
+ControlNode* PreviewWidget::OnSelectControlByMenu(const Vector<ControlNode*>& nodesUnderPoint, const Vector2& point)
 {
-    selectedNode = nullptr;
     QPoint globalPos = davaGLWidget->mapToGlobal(QPoint(point.x, point.y) / davaGLWidget->devicePixelRatio());
     QMenu menu;
     for (auto it = nodesUnderPoint.rbegin(); it != nodesUnderPoint.rend(); ++it)
@@ -148,8 +158,9 @@ void PreviewWidget::OnSelectControlByMenu(const Vector<ControlNode*>& nodesUnder
     if (nullptr != selectedAction)
     {
         void* ptr = selectedAction->data().value<void*>();
-        selectedNode = static_cast<ControlNode*>(ptr);
+        return static_cast<ControlNode*>(ptr);
     }
+    return nullptr;
 }
 
 void PreviewWidget::OnDocumentChanged(Document* arg)
@@ -179,6 +190,7 @@ void PreviewWidget::OnDocumentActivated(Document* document)
         document->SetContext(this, context);
         QPoint position(horizontalScrollBar->maximum() / 2.0f, verticalScrollBar->maximum() / 2.0f);
         scrollAreaController->SetPosition(position);
+        //!!!!document->GetSystemManager()->GetControlByMenu = std::bind(this, &PreviewWidget::OnSelectControlByMenu);
     }
     else
     {

@@ -117,26 +117,29 @@ public:
 
     void SetEmulationMode(bool emulationMode);
 
-    void CollectControlNodesByPos(DAVA::Vector<ControlNode*>& controlNodes, const DAVA::Vector2& pos) const;
-    void CollectControlNodesByRect(SelectedControls& controlNodes, const DAVA::Rect& rect) const;
+    template <class OutIt, class Predicate>
+    void CollectControlNodes(OutIt destination, Predicate predicate) const;
 
     DAVA::Signal<const SelectedNodes& /*selected*/, const SelectedNodes& /*deselected*/> SelectionChanged;
     DAVA::Signal<const HUDAreaInfo& /*areaInfo*/> ActiveAreaChanged;
     DAVA::Signal<const DAVA::Rect& /*selectionRectControl*/> SelectionRectChanged;
     DAVA::Signal<bool> EmulationModeChangedSignal;
-    DAVA::Signal<double> DPRChanged;
-
+    DAVA::Signal<DAVA::float32> DPRChanged;
     DAVA::Signal<> CanvasSizeChanged;
     DAVA::Signal<const DAVA::Vector<std::tuple<ControlNode*, AbstractProperty*, DAVA::VariantType>>& /*properties*/, size_t /*hash*/> PropertiesChanged;
-    DAVA::Signal<const DAVA::Vector<ControlNode*>& /*nodes*/, const DAVA::Vector2& /*pos*/, ControlNode*& /*selectedNode*/> SelectionByMenuRequested;
     DAVA::Signal<const SortedPackageBaseNodeSet&> EditingRootControlsChanged;
     DAVA::Signal<const DAVA::Vector<MagnetLineInfo>& /*magnetLines*/> MagnetLinesChanged;
+    DAVA::Signal<> DeleteControl;
+    DAVA::Signal<> SelectAllControls;
+
+    std::function<ControlNode*(const DAVA::Vector<ControlNode*>& /*nodes*/, const DAVA::Vector2& /*pos*/)> GetControlByMenu;
 
 private:
     class RootControl;
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
-    void CollectControlNodesByPosImpl(DAVA::Vector<ControlNode*>& controlNodes, const DAVA::Vector2& pos, ControlNode* node) const;
-    void CollectControlNodesByRectImpl(SelectedControls& controlNodes, const DAVA::Rect& rect, ControlNode* node) const;
+
+    template <class OutIt, class Predicate>
+    void CollectControlNodesImpl(OutIt destination, Predicate predicate, ControlNode* node) const;
 
     void ControlWillBeRemoved(ControlNode* node, ControlsContainerNode* from) override;
     void ControlWasAdded(ControlNode* node, ControlsContainerNode* /*destination*/, int /*index*/) override;
@@ -154,5 +157,32 @@ private:
     DAVA::Set<ControlNode*> recentlyRemovedControls;
     bool previewMode = true;
 };
+
+template <class OutIt, class Predicate>
+void EditorSystemsManager::CollectControlNodes(OutIt destination, Predicate predicate) const
+{
+    for (PackageBaseNode* rootControl : editingRootControls)
+    {
+        ControlNode* controlNode = dynamic_cast<ControlNode*>(rootControl);
+        DVASSERT(nullptr != controlNode);
+        CollectControlNodesImpl(destination, predicate, controlNode);
+    }
+}
+
+template <class OutIt, class Predicate>
+void EditorSystemsManager::CollectControlNodesImpl(OutIt destination, Predicate predicate, ControlNode* node) const
+{
+    auto control = node->GetControl();
+    if (predicate(control))
+    {
+        *destination++ = node;
+    }
+
+    int count = node->GetCount();
+    for (int i = 0; i < count; ++i)
+    {
+        CollectControlNodesImpl(destination, predicate, node->Get(i));
+    }
+}
 
 #endif // __QUICKED_SYSTEMS_MANAGER_H__

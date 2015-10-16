@@ -55,10 +55,12 @@ public:
     ScrollAreaController* GetScrollAreaController();
     float GetScale() const;
     qreal GetDPR() const;
-    void OnSelectControlByMenu(const DAVA::Vector<ControlNode*>& nodes, const DAVA::Vector2& pos, ControlNode*& selectedNode);
+    ControlNode* OnSelectControlByMenu(const DAVA::Vector<ControlNode*>& nodes, const DAVA::Vector2& pos);
 signals:
     void ScaleChanged(float scale);
     void DPRChanged(qreal dpr);
+    void DeleteRequested();
+    void SelectAllRequested();
 public slots:
     void OnDocumentChanged(Document* document);
     void OnDocumentActivated(Document* document);

@@ -61,7 +61,7 @@ private:
     void OnRootContolsChanged(const EditorSystemsManager::SortedPackageBaseNodeSet& rootControls);
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void OnEmulationModeChanged(bool emulationMode);
-    void OnDPRChanged(double dpr);
+    void OnDPRChanged(DAVA::float32 dpr);
 
     void OnMagnetLinesChanged(const DAVA::Vector<MagnetLineInfo>& magnetLines);
 
@@ -85,7 +85,7 @@ private:
     EditorSystemsManager::SortedPackageBaseNodeSet sortedControlList;
     bool dragRequested = false;
     bool editingEnabled = false;
-    double dpr = 1.0f;
+    DAVA::float32 dpr = 1.0f;
     SelectionContainer selectionContainer;
 };
 

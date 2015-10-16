@@ -36,10 +36,6 @@
 
 #include "Ui/QtModelPackageCommandExecutor.h"
 #include "EditorCore.h"
-#include "Ui/MainWindow.h"
-#include "Ui/Preview/PreviewWidget.h"
-
-#include <QObject>
 
 using namespace DAVA;
 
@@ -57,11 +53,6 @@ Document::Document(PackageNode* _package, QObject* parent)
                                             {
         commandExecutor->ChangeProperty(properties, hash);
                                             });
-
-    EditorCore* editorCore = qobject_cast<EditorCore*>(this->parent());
-    DVASSERT(nullptr != editorCore);
-    PreviewWidget* previewWidget = editorCore->GetMainWindow()->previewWidget;
-    systemManager.SelectionByMenuRequested.Connect(previewWidget, &PreviewWidget::OnSelectControlByMenu);
 
     connect(GetEditorFontSystem(), &EditorFontSystem::UpdateFontPreset, this, &Document::RefreshAllControlProperties);
 }

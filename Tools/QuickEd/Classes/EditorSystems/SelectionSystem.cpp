@@ -32,6 +32,7 @@
 #include "EditorSystems/SelectionSystem.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "UI/UIEvent.h"
+#include "UI/UIControl.h"
 #include "EditorSystems/EditorSystemsManager.h"
 #include "EditorSystems/KeyboardProxy.h"
 #include "Model/PackageHierarchy/PackageNode.h"
@@ -43,6 +44,7 @@ SelectionSystem::SelectionSystem(EditorSystemsManager* parent)
 {
     systemManager->GetPackage()->AddListener(this);
     systemManager->SelectionRectChanged.Connect(this, &SelectionSystem::OnSelectByRect);
+    systemManager->SelectAllControls.Connect(this, &SelectionSystem::SelectAllControls);
 }
 
 SelectionSystem::~SelectionSystem()
@@ -107,7 +109,10 @@ void SelectionSystem::OnSelectByRect(const Rect& rect)
     SelectedNodes deselected;
     SelectedNodes selected;
     Set<ControlNode*> areaNodes;
-    systemManager->CollectControlNodesByRect(areaNodes, rect);
+    auto predicate = [rect](const UIControl* control) -> bool {
+        return control->GetSystemVisible() && rect.RectContains(control->GetGeometricData().GetAABBox());
+    };
+    systemManager->CollectControlNodes(std::inserter(areaNodes, areaNodes.end()), predicate);
     if (!areaNodes.empty())
     {
         for (auto node : areaNodes)
@@ -124,12 +129,22 @@ void SelectionSystem::OnSelectByRect(const Rect& rect)
     SetSelection(selected, deselected);
 }
 
+void SelectionSystem::SelectAllControls()
+{
+    SelectedNodes selected;
+    systemManager->CollectControlNodes(std::inserter(selected, selected.end()), [](const UIControl*) { return true; });
+    SetSelection(selected, SelectedNodes());
+}
+
 bool SelectionSystem::ProcessMousePress(const DAVA::Vector2& point)
 {
     SelectedNodes selected;
     SelectedNodes deselected;
-    DAVA::Vector<ControlNode*> nodesUnderPoint;
-    systemManager->CollectControlNodesByPos(nodesUnderPoint, point);
+    Vector<ControlNode*> nodesUnderPoint;
+    auto predicate = [point](const UIControl* control) -> bool {
+        return control->GetSystemVisible() && control->IsPointInside(point);
+    };
+    systemManager->CollectControlNodes(std::back_inserter(nodesUnderPoint), predicate);
     const KeyboardProxy* keyBoardProxy = systemManager->GetKeyboardProxy();
     if (!keyBoardProxy->IsKeyPressed(KeyboardProxy::KEY_SHIFT))
     {
@@ -137,7 +152,7 @@ bool SelectionSystem::ProcessMousePress(const DAVA::Vector2& point)
     }
     if (!nodesUnderPoint.empty())
     {
-        auto node = nodesUnderPoint.back();
+        PackageBaseNode* node = *nodesUnderPoint.rbegin();
         if (keyBoardProxy->IsKeyPressed(KeyboardProxy::KEY_CTRL))
         {
             if (selectionContainer.selectedNodes.find(node) != selectionContainer.selectedNodes.end())
@@ -151,8 +166,8 @@ bool SelectionSystem::ProcessMousePress(const DAVA::Vector2& point)
         }
         else if (keyBoardProxy->IsKeyPressed(KeyboardProxy::KEY_ALT))
         {
-            ControlNode* selectedNode = nullptr;
-            systemManager->SelectionByMenuRequested.Emit(nodesUnderPoint, point, selectedNode);
+            ControlNode* selectedNode = systemManager->GetControlByMenu(nodesUnderPoint, point);
+            ;
             if (nullptr != selectedNode)
             {
                 selected.insert(selectedNode);
