@@ -281,22 +281,17 @@ Core::eScreenOrientation Core::GetScreenOrientation()
     
 Core::eScreenMode Core::GetScreenMode()
 {
-    Logger::FrameworkDebug("[Core::GetScreenMode] return screen mode MODE_UNSUPPORTED");
-    return MODE_UNSUPPORTED;
+    return eScreenMode::FULLSCREEN;
 }
 
-void Core::SwitchScreenToMode(eScreenMode screenMode)
+bool Core::SetScreenMode(eScreenMode screenMode)
 {
-    Logger::FrameworkDebug("[Core::SwitchScreenToMode] do not supported by platform implementation of core");
+    return screenMode == eScreenMode::FULLSCREEN;
 }
 
 void Core::GetAvailableDisplayModes(List<DisplayMode> & availableModes)
 {   
 
-}
-void Core::ToggleFullscreen()
-{
-    
 }
 
 DisplayMode Core::FindBestMode(const DisplayMode & requestedMode)

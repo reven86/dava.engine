@@ -35,14 +35,27 @@
 #include "Platform/TemplateWin32/CoreWin32PlatformBase.h"
 #include "FileSystem/FileSystem.h"
 
-void DAVA::Cursor::SetCursorPinning(bool pin)
+static DAVA::InputSystem::eMouseCaptureMode mouseMode = DAVA::InputSystem::eMouseCaptureMode::OFF;
+static bool lastSystemCursorShowState = true;
+
+DAVA::InputSystem::eMouseCaptureMode DAVA::Cursor::GetCursorCaptureMode()
 {
+    return mouseMode;
+}
+
+bool DAVA::Cursor::SetCursorCaptureMode(DAVA::InputSystem::eMouseCaptureMode mode)
+{
+    if (mode == InputSystem::eMouseCaptureMode::FRAME)
+    {
+        DVASSERT_MSG(false, "Unsupported mouse capture mode");
+        return false;
+    }
+
     static DAVA::Point2i lastCursorPosition;
 
-    SetSystemCursorVisibility(!pin);
-
+    SetSystemCursorVisibility(mode != DAVA::InputSystem::eMouseCaptureMode::PINING);
     CoreWin32PlatformBase * winCore = static_cast<CoreWin32PlatformBase *>(Core::Instance());
-    if (pin)
+    if (mode == DAVA::InputSystem::eMouseCaptureMode::PINING)
     {
         lastCursorPosition = winCore->GetCursorPosition();
         winCore->SetCursorPositionCenter();
@@ -51,23 +64,60 @@ void DAVA::Cursor::SetCursorPinning(bool pin)
     {
         winCore->SetCursorPosition(lastCursorPosition);
     }
+
+    mouseMode = mode;
+    return true;
 }
 
-void DAVA::Cursor::SetSystemCursorVisibility()(bool show)
+bool DAVA::Cursor::GetSystemCursorVisibility()
 {
+    CURSORINFO ci = { sizeof(ci), 0 };
+    if (GetCursorInfo(&ci) != 0)
+    {
+        return (ci.flags & CURSOR_SHOWING) == CURSOR_SHOWING; // In Windows 8 will be added other flags;
+    }
+    return lastSystemCursorShowState;
+}
+
+bool DAVA::Cursor::SetSystemCursorVisibility(bool show)
+{
+    int32 showCount = 0;
     CURSORINFO ci = { sizeof( ci ), 0 };
     if ( GetCursorInfo( &ci ) != 0 )
     {
         const auto isVisible = ( ci.flags & CURSOR_SHOWING ) == CURSOR_SHOWING; // In Windows 8 will be added other flags
         if ( show != isVisible )
         {
-            ShowCursor( show );
+            showCount = ShowCursor(show);
+        }
+        else
+        {
+            // Nothing to change -> accept
+            return true;
         }
     }
     else
     {
-        ShowCursor( show ); // No cursor info available, just call
+        showCount = ShowCursor(show); // No cursor info available, just call
     }
+
+    if (show && showCount >= 0)
+    {
+        // If system cursor is visible then showCount should be >= 0
+        lastSystemCursorShowState = true;
+    }
+    else if (!show && showCount < 0)
+    {
+        // If system cursor is not visible then showCount should be -1
+        lastSystemCursorShowState = false;
+    }
+    else
+    {
+        // Setup failure
+        return false;
+    }
+
+    return true;
 }
 
 #endif

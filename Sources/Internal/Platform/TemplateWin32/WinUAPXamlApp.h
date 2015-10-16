@@ -70,7 +70,6 @@ public:
     Windows::Graphics::Display::DisplayOrientations GetDisplayOrientation();
     Windows::UI::ViewManagement::ApplicationViewWindowingMode GetScreenMode();
     void SetScreenMode(Windows::UI::ViewManagement::ApplicationViewWindowingMode screenMode);
-    void ToggleFullscreen();
     Windows::Foundation::Size GetCurrentScreenSize();
 
     bool GetCursorVisible();
@@ -187,7 +186,7 @@ private:
     DisplayMode currentMode = windowedMode;
     DisplayMode fullscreenMode = windowedMode;
 
-    InputSystem::eMouseCaptureMode cursorCaptureMode = InputSystem::MOUSE_CAPTURE_OFF;
+    InputSystem::eMouseCaptureMode cursorCaptureMode = InputSystem::eMouseCaptureMode::OFF;
     bool isMouseCursorShown = true;
     bool isRightButtonPressed = false;
     bool isLeftButtonPressed = false;

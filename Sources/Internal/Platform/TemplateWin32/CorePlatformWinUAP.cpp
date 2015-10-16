@@ -76,39 +76,37 @@ Core::eScreenMode CorePlatformWinUAP::GetScreenMode()
     ApplicationViewWindowingMode viewMode;
     auto func = [this, &viewMode] { viewMode = xamlApp->GetScreenMode(); };
     RunOnUIThreadBlocked(func);
-
     switch (viewMode)
     {
     case ApplicationViewWindowingMode::FullScreen:
-        return eScreenMode::MODE_FULLSCREEN;
+        return eScreenMode::FULLSCREEN;
     case ApplicationViewWindowingMode::PreferredLaunchViewSize:
-        return eScreenMode::MODE_WINDOWED;
+        return eScreenMode::WINDOWED;
     case ApplicationViewWindowingMode::Auto:
-        return eScreenMode::MODE_UNSUPPORTED;
     default:
-        return eScreenMode::MODE_UNSUPPORTED;
+        DVASSERT_MSG(false, "Unknown screen mode");
+        // Unknown screen mode -> return default value
+        return eScreenMode::FULLSCREEN;
     }
 }
 
-void CorePlatformWinUAP::SwitchScreenToMode(eScreenMode screenMode)
+bool CorePlatformWinUAP::SetScreenMode(eScreenMode screenMode)
 {
-    ApplicationViewWindowingMode mode(ApplicationViewWindowingMode::PreferredLaunchViewSize);
-    if (screenMode == Core::MODE_FULLSCREEN)
+    switch (screenMode)
     {
-        mode = ApplicationViewWindowingMode::FullScreen;
+    case DAVA::Core::eScreenMode::FULLSCREEN:
+        RunOnUIThread([this]() { xamlApp->SetScreenMode(ApplicationViewWindowingMode::FullScreen); });
+        return true;
+    case DAVA::Core::eScreenMode::WINDOWED_FULLSCREEN:
+        DVASSERT_MSG(false, "Unimplemented screen mode");
+        return false;
+    case DAVA::Core::eScreenMode::WINDOWED:
+        RunOnUIThread([this]() { xamlApp->SetScreenMode(ApplicationViewWindowingMode::PreferredLaunchViewSize); });
+        return true;
+    default:
+        DVASSERT_MSG(false, "Unknown screen mode");
+        return false;
     }
-    else if (screenMode == Core::MODE_WINDOWED)
-    {
-        mode = ApplicationViewWindowingMode::PreferredLaunchViewSize;
-    }
-    RunOnUIThread([this, mode]() { xamlApp->SetScreenMode(mode); });
-}
-
-void CorePlatformWinUAP::ToggleFullscreen()
-{
-    RunOnUIThread([this]()
-                  { xamlApp->ToggleFullscreen();
-                  });
 }
 
 DisplayMode CorePlatformWinUAP::GetCurrentDisplayMode()
@@ -131,13 +129,12 @@ InputSystem::eMouseCaptureMode CorePlatformWinUAP::GetCursorCaptureMode()
 
 bool CorePlatformWinUAP::SetCursorCaptureMode(InputSystem::eMouseCaptureMode mode)
 {
-    RunOnUIThread([this, mode]() {
+    RunOnUIThreadBlocked([this, mode]() {
         if (xamlApp->SetCursorCaptureMode(mode))
         {
-            xamlApp->SetCursorVisible(mode != InputSystem::MOUSE_CAPTURE_PINING);
+            xamlApp->SetCursorVisible(mode != InputSystem::eMouseCaptureMode::PINING);
         }
-    },
-                  true);
+    });
     return GetCursorCaptureMode() == mode;
 }
 

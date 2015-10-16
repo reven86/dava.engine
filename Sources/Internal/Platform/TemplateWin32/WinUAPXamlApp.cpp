@@ -122,11 +122,6 @@ void WinUAPXamlApp::SetScreenMode(ApplicationViewWindowingMode screenMode)
     SetFullScreen(fullscreen);
 }
 
-void WinUAPXamlApp::ToggleFullscreen()
-{
-    SetFullScreen(!isFullscreen);
-}
-
 Windows::Foundation::Size WinUAPXamlApp::GetCurrentScreenSize()
 {
     return Windows::Foundation::Size(static_cast<float32>(viewWidth), static_cast<float32>(viewHeight));
@@ -147,7 +142,7 @@ bool WinUAPXamlApp::SetCursorCaptureMode(InputSystem::eMouseCaptureMode newMode)
         // Uninstall old capture mode
         switch (cursorCaptureMode)
         {
-        case DAVA::InputSystem::MOUSE_CAPTURE_PINING:
+        case DAVA::InputSystem::eMouseCaptureMode::PINING:
             MouseDevice::GetForCurrentView()->MouseMoved -= token;
             break;
         }
@@ -155,16 +150,16 @@ bool WinUAPXamlApp::SetCursorCaptureMode(InputSystem::eMouseCaptureMode newMode)
         // Setup new capture mode
         switch (newMode)
         {
-        case DAVA::InputSystem::MOUSE_CAPTURE_OFF:
+        case DAVA::InputSystem::eMouseCaptureMode::OFF:
             // Nothing to setup on platform
             cursorCaptureMode = newMode;
             break;
 
-        case DAVA::InputSystem::MOUSE_CAPTURE_FRAME:
+        case DAVA::InputSystem::eMouseCaptureMode::FRAME:
             // Mode unsupported yet
             break;
 
-        case DAVA::InputSystem::MOUSE_CAPTURE_PINING:
+        case DAVA::InputSystem::eMouseCaptureMode::PINING:
             token = MouseDevice::GetForCurrentView()->MouseMoved += ref new TypedEventHandler<MouseDevice ^, MouseEventArgs ^>(this, &WinUAPXamlApp::OnMouseMoved);
             cursorCaptureMode = newMode;
             break;
@@ -490,7 +485,7 @@ void WinUAPXamlApp::OnSwapChainPanelPointerReleased(Platform::Object ^ /*sender*
 
 void WinUAPXamlApp::OnSwapChainPanelPointerMoved(Platform::Object ^ /*sender*/, PointerRoutedEventArgs ^ args)
 {
-    if (cursorCaptureMode == InputSystem::MOUSE_CAPTURE_PINING || !isMouseCursorShown)
+    if (cursorCaptureMode == InputSystem::eMouseCaptureMode::PINING || !isMouseCursorShown)
     {
         return;
     }
@@ -519,7 +514,7 @@ void WinUAPXamlApp::OnSwapChainPanelPointerEntered(Platform::Object ^ /*sender*/
 {
     PointerPoint ^ pointerPoint = args->GetCurrentPoint(nullptr);
     PointerDeviceType type = pointerPoint->PointerDevice->PointerDeviceType;
-    if (PointerDeviceType::Mouse == type && cursorCaptureMode == InputSystem::MOUSE_CAPTURE_PINING)
+    if (PointerDeviceType::Mouse == type && cursorCaptureMode == InputSystem::eMouseCaptureMode::PINING)
     {
         SetCursorVisible(false);
     }
@@ -650,7 +645,7 @@ void WinUAPXamlApp::OnKeyUp(CoreWindow ^ /*sender*/, KeyEventArgs ^ args)
 
 void WinUAPXamlApp::OnMouseMoved(MouseDevice^ mouseDevice, MouseEventArgs^ args)
 {
-    if (cursorCaptureMode != InputSystem::MOUSE_CAPTURE_PINING || isMouseCursorShown)
+    if (cursorCaptureMode != InputSystem::eMouseCaptureMode::PINING || isMouseCursorShown)
     {
         return;
     }

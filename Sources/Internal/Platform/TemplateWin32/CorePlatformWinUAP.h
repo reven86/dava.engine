@@ -57,8 +57,7 @@ public:
     void Quit() override;
 
     eScreenMode GetScreenMode() override;
-    void SwitchScreenToMode(eScreenMode screenMode) override;
-    void ToggleFullscreen() override;
+    bool SetScreenMode(eScreenMode screenMode) override;
     DisplayMode GetCurrentDisplayMode() override;
 
     bool GetCursorVisibility();

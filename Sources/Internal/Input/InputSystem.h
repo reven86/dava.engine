@@ -60,11 +60,11 @@ public:
 		INPUT_DEVICE_JOYSTICK	= 1 << 2
 	};
 
-    enum eMouseCaptureMode
+    enum class eMouseCaptureMode
     {
-        MOUSE_CAPTURE_OFF = 0, //!< Disable any capturing (send absolute xy)
-        MOUSE_CAPTURE_FRAME, //!< Capture system cursor into window rect (send absolute xy)
-        MOUSE_CAPTURE_PINING //!<< Capture system cursor on current position (send xy move delta)
+        OFF = 0, //!< Disable any capturing (send absolute xy)
+        FRAME, //!< Capture system cursor into window rect (send absolute xy)
+        PINING //!<< Capture system cursor on current position (send xy move delta)
     };
 
     friend void Core::CreateSingletons();
