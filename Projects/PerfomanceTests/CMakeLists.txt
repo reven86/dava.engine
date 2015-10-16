@@ -8,7 +8,9 @@ endif()
 
 set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
 include      ( CMake-common )
-include      ( FindDavaFramework )
+
+find_package( DavaFramework REQUIRED )
+find_package( DavaTools     REQUIRED )
 
 include_directories   ( "iOSSpecific" )
 include_directories   ( "Classes" )
@@ -44,7 +46,6 @@ endif()
 
 define_source_folders( SRC_ROOT "Classes" "iOSSpecific" ${PLATFORM_SPECIFIC_FOLDER} ${TeamcityOutput} )
 generate_source_groups_project( )
-add_subdirectory( ${DAVA_TOOLS_DIR} ${CMAKE_CURRENT_BINARY_DIR}/TextureTools )
 
 set( APP_DATA             ${CMAKE_CURRENT_LIST_DIR}/Data )
 

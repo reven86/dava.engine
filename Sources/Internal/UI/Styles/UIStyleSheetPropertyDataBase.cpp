@@ -42,7 +42,6 @@ namespace DAVA
 UIStyleSheetPropertyDataBase::UIStyleSheetPropertyDataBase() :
     properties({ {
         { FastName("angle"), VariantType(0.0f) },
-        { FastName("size"), VariantType(Vector2(0.0f, 0.0f)) },
         { FastName("scale"), VariantType(Vector2(1.0f, 1.0f)) },
         { FastName("visible"), VariantType(true) },
 
