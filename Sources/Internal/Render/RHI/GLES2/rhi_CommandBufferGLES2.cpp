@@ -1684,8 +1684,14 @@ _ExecGL( GLCommand* command, uint32 cmdCount )
 
             case GLCommand::SET_ACTIVE_TEXTURE :
             {
-                EXEC_GL(glActiveTexture( GLenum(arg[0]) ));
-                cmd->status = err;
+                int t = int(arg[0]);
+
+                if( t != _GLES2_LastActiveTexture )
+                {
+                    EXEC_GL(glActiveTexture( GLenum(t) ));
+                    _GLES2_LastActiveTexture = t;
+                    cmd->status = err;
+                }
             }   break;
 
             case GLCommand::BIND_TEXTURE :

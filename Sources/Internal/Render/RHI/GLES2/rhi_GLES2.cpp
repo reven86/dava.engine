@@ -53,6 +53,7 @@ GLuint      _GLES2_LastSetIB                    = 0;
 GLuint      _GLES2_LastSetVB                    = 0;
 GLuint      _GLES2_LastSetTex0                  = 0;
 GLenum      _GLES2_LastSetTex0Target            = GL_TEXTURE_2D;
+int         _GLES2_LastActiveTexture            = -1;
 
 #if defined(__DAVAENGINE_WIN32__)
 HDC         _GLES2_WindowDC                     = 0;

@@ -29,6 +29,7 @@
 #pragma once
 
 #include "../rhi_Type.h"
+#include "Debug/Profiler.h"
 
 #if defined(__DAVAENGINE_WIN32__)
 
@@ -213,6 +214,7 @@ extern GLuint   _GLES2_LastSetIB;
 extern GLuint   _GLES2_LastSetVB;
 extern GLuint   _GLES2_LastSetTex0;
 extern GLenum   _GLES2_LastSetTex0Target;
+extern int      _GLES2_LastActiveTexture;
 
 #if defined(__DAVAENGINE_WIN32__)
 extern HDC _GLES2_WindowDC;
