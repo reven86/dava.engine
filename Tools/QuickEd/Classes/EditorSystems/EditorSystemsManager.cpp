@@ -27,6 +27,7 @@
 =====================================================================================*/
 
 #include "EditorSystems/EditorSystemsManager.h"
+#include "EditorSystems/KeyboardProxy.h"
 
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
@@ -43,18 +44,7 @@
 
 using namespace DAVA;
 
-void DestroyControl(DAVA::UIControl* c)
-{
-    if (nullptr != c)
-    {
-        c->RemoveFromParent();
-        SafeRelease(c);
-    }
-}
-
-namespace
-{
-class RootControl : public UIControl
+class EditorSystemsManager::RootControl : public UIControl
 {
 public:
     RootControl(EditorSystemsManager* arg)
@@ -79,7 +69,6 @@ public:
 private:
     EditorSystemsManager* systemManager = nullptr;
     bool emulationMode = false;
-};
 };
 
 bool CompareByLCA(PackageBaseNode* left, PackageBaseNode* right)
@@ -139,13 +128,14 @@ bool CompareByLCA(PackageBaseNode* left, PackageBaseNode* right)
 }
 
 EditorSystemsManager::EditorSystemsManager(PackageNode* _package)
-    : rootControl(new RootControl(this), DestroyControl)
-    , scalableControl(new UIControl(), DestroyControl)
+    : rootControl(new RootControl(this))
+    , scalableControl(new UIControl())
+    , keyboardProxy(new KeyboardProxy)
     , package(SafeRetain(_package))
     , editingRootControls(CompareByLCA)
 {
     rootControl->SetName("rootControl");
-    rootControl->AddControl(scalableControl.get());
+    rootControl->AddControl(scalableControl.Get());
     scalableControl->SetName("scalableContent");
 
     systems.emplace_back(new CanvasSystem(this));
@@ -165,6 +155,11 @@ EditorSystemsManager::~EditorSystemsManager()
     SafeRelease(package);
 }
 
+const KeyboardProxy* EditorSystemsManager::GetKeyboardProxy() const
+{
+    return keyboardProxy.get();
+}
+
 PackageNode* EditorSystemsManager::GetPackage()
 {
     return package;
@@ -172,12 +167,12 @@ PackageNode* EditorSystemsManager::GetPackage()
 
 UIControl* EditorSystemsManager::GetRootControl()
 {
-    return rootControl.get();
+    return rootControl.Get();
 }
 
 UIControl* EditorSystemsManager::GetScalableControl()
 {
-    return scalableControl.get();
+    return scalableControl.Get();
 }
 
 void EditorSystemsManager::Deactivate()
@@ -215,8 +210,7 @@ bool EditorSystemsManager::OnInput(UIEvent* currentInput)
 
 void EditorSystemsManager::SetEmulationMode(bool emulationMode)
 {
-    auto root = static_cast<RootControl*>(rootControl.get());
-    root->SetEmulationMode(emulationMode);
+    rootControl->SetEmulationMode(emulationMode);
     EmulationModeChangedSignal.Emit(std::move(emulationMode));
 }
 
@@ -253,7 +247,7 @@ void EditorSystemsManager::CollectControlNodesByPosImpl(DAVA::Vector<ControlNode
 {
     int count = node->GetCount();
     auto control = node->GetControl();
-    if (control->IsPointInside(pos) && control->GetVisible() && control->GetVisibleForUIEditor())
+    if (control->IsPointInside(pos) && control->GetSystemVisible())
     {
         controlNodes.push_back(node);
     }

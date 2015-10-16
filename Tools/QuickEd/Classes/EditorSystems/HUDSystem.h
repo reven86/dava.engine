@@ -74,14 +74,14 @@ private:
     void UpdateAreasVisibility();
     HUDAreaInfo activeAreaInfo;
 
-    ControlPtr<DAVA::UIControl> hudControl;
+    DAVA::RefPtr<DAVA::UIControl> hudControl;
 
     DAVA::Vector2 pressedPoint; //corner of selection rect
     bool canDrawRect = false; //selection rect state
 
     DAVA::Map<ControlNode*, std::unique_ptr<HUD>> hudMap;
-    ControlPtr<ControlContainer> selectionRectControl;
-    DAVA::Vector<ControlPtr<DAVA::UIControl>> magnetControls;
+    DAVA::RefPtr<DAVA::UIControl> selectionRectControl;
+    DAVA::Vector<DAVA::RefPtr<DAVA::UIControl>> magnetControls;
     EditorSystemsManager::SortedPackageBaseNodeSet sortedControlList;
     bool dragRequested = false;
     bool editingEnabled = false;

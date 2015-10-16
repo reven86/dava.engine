@@ -171,9 +171,13 @@ public:
     explicit inline Vector3(const Vector4 & v);
 	inline Vector3 & operator =(const Vector3 & _v);
 	inline Vector3 & operator =(const Vector2 & _v);
-	
-	//! Set functions
-	inline void	Set(float32 _x, float32 _y, float32 _z);
+
+    //! Get operators
+    float32& operator[](eAxis axis);
+    float32 operator[](eAxis axis) const;
+
+    //! Set functions
+    inline void	Set(float32 _x, float32 _y, float32 _z);
 	
 	//! Additional functions
 	inline Vector3	CrossProduct(const Vector3 & _v) const;
@@ -266,8 +270,12 @@ public:
 	inline Vector4 & operator =(const Vector4 & _v);
 	inline Vector4 & operator =(const Vector3 & _v);
 
-	//! Set functions
-	inline void	Set(float32 _x, float32 _y, float32 _z, float32 _w);
+    //! Get operators
+    float32& operator[](eAxis axis);
+    float32 operator[](eAxis axis) const;
+
+    //! Set functions
+    inline void	Set(float32 _x, float32 _y, float32 _z, float32 _w);
 	
 	//! Additional functions
 	inline Vector4	CrossProduct(const Vector4 & _v) const;
@@ -602,7 +610,18 @@ inline Vector3 & Vector3::operator =(const Vector2 & _v)
 	z = 0.0f;
 	return (*this);
 }
-	
+
+// Get operators
+inline float32& Vector3::operator[](eAxis axis)
+{
+    return data[axis];
+}
+
+inline float32 Vector3::operator[](eAxis axis) const
+{
+    return data[axis];
+}
+
 //! set functions	
 inline void	Vector3::Set(float32 _x, float32 _y, float32 _z)
 {
@@ -868,7 +887,18 @@ inline Vector4 & Vector4::operator=(const Vector3 & _v)
 	w = 1.0f;
 	return (*this);
 }
-	
+
+// Get operators
+inline float32& Vector4::operator[](eAxis axis)
+{
+    return data[axis];
+}
+
+inline float32 Vector4::operator[](eAxis axis) const
+{
+    return data[axis];
+}
+
 //! set functions	
 inline void	Vector4::Set(float32 _x, float32 _y, float32 _z, float32 _w)
 {

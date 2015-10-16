@@ -26,39 +26,12 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __QUICKED_CANVAS_SYSTEM_H__
-#define __QUICKED_CANVAS_SYSTEM_H__
+#include "KeyboardProxy.h"
 
-#include "EditorSystems/BaseEditorSystem.h"
-#include "EditorSystems/EditorSystemsManager.h"
-#include "Model/PackageHierarchy/PackageListener.h"
-#include "SelectionContainer.h"
+#include <QApplication>
 
-class EditorSystemsManager;
-class PackageBaseNode;
-class BackgroundController;
-
-class CanvasSystem final : public BaseEditorSystem, private PackageListener
+bool KeyboardProxy::IsKeyPressed(eKeys key) const
 {
-public:
-    CanvasSystem(EditorSystemsManager* parent);
-    ~CanvasSystem() override;
-
-    void OnActivated() override;
-    void OnDeactivated() override;
-
-    void LayoutCanvas();
-
-private:
-    void OnRootContolsChanged(const EditorSystemsManager::SortedPackageBaseNodeSet& rootControls);
-    void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from) override;
-    void ControlWasAdded(ControlNode* node, ControlsContainerNode* /*destination*/, int /*index*/) override;
-    void ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property) override;
-    BackgroundController* CreateControlBackground(PackageBaseNode* node);
-    void AddBackgroundControllerToCanvas(BackgroundController* backgroundController, size_t pos);
-
-    DAVA::RefPtr<DAVA::UIControl> controlsCanvas; //to attach or detach from document
-    DAVA::List<std::unique_ptr<BackgroundController>> gridControls;
-};
-
-#endif // __QUICKED_CANVAS_SYSTEM_H__
+    Qt::KeyboardModifier modifier = static_cast<Qt::KeyboardModifier>(key);
+    return QApplication::keyboardModifiers().testFlag(modifier);
+}
