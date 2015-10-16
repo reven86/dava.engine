@@ -26,8 +26,8 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
-#ifndef __DAVAENGINE_UI_LAYOUT_SYSTEM_H__
-#define __DAVAENGINE_UI_LAYOUT_SYSTEM_H__
+#ifndef __DAVAENGINE_LINEAR_LAYOUT_ALGORITHM_H__
+#define __DAVAENGINE_LINEAR_LAYOUT_ALGORITHM_H__
 
 #include "Base/BaseTypes.h"
 #include "Math/Vector.h"
@@ -36,42 +36,61 @@
 
 namespace DAVA
 {
+    
 class UIControl;
+class UISizePolicyComponent;
 
-class UILayoutSystem
+class LinearLayoutAlgorithm
 {
 public:
-    UILayoutSystem();
-    virtual ~UILayoutSystem();
+    LinearLayoutAlgorithm(Vector<ControlLayoutData> &layoutData_, bool isRtl_);
+    ~LinearLayoutAlgorithm();
     
-public:
-    bool IsRtl() const;
-    void SetRtl(bool rtl);
-
-    bool IsAutoupdatesEnabled() const;
-    void SetAutoupdatesEnabled(bool enabled);
+    void SetInverse(bool inverse_);
+    void SetSkipInvisible(bool skipInvisible_);
+    void SetPadding(float32 padding_);
+    void SetSpacing(float32 spacing_);
+    void SetDynamicPadding(bool dynamicPadding_);
+    void SetDynamicSpacing(bool dynamicSpacing_);
     
-    void ApplyLayout(UIControl *control, bool considerDenendenceOnChildren = false);
+    void Apply(ControlLayoutData &data, Vector2::eAxis axis);
+    void Apply(ControlLayoutData &data, Vector2::eAxis axis, int32 firstIndex, int32 lastIndex);
     
 private:
-    UIControl *FindNotDependentOnChildrenControl(UIControl *control) const;
-    
-    void CollectControls(UIControl *control);
-    void CollectControlChildren(UIControl *control, int32 parentIndex);
-    
-    void ProcessAxis(Vector2::eAxis axis);
-    void DoMeasurePhase(Vector2::eAxis axis);
-    void DoLayoutPhase(Vector2::eAxis axis);
-
-    void ApplySizesAndPositions();
+    void InitializeParams(ControlLayoutData &data, Vector2::eAxis axis, int32 firstIndex, int32 lastIndex);
+    void CalculateDependentOnParentSizes(ControlLayoutData &data, Vector2::eAxis axis, int32 firstIndex, int32 lastIndex);
+    bool CalculateChildDependentOnParentSize(ControlLayoutData &data, Vector2::eAxis axis);
+    void CalculateDynamicPaddingAndSpaces(ControlLayoutData &data, Vector2::eAxis axis);
+    void PlaceChildren(ControlLayoutData &data, Vector2::eAxis axis, int32 firstIndex, int32 lastIndex);
 
 private:
-    bool isRtl = false;
-    bool autoupdatesEnabled = true;
-    Vector<ControlLayoutData> layoutData;
+    Vector<ControlLayoutData> &layoutData;
+    const bool isRtl;
+    
+    bool inverse = false;
+    bool skipInvisible = true;
+    
+    float32 fixedSize = 0.0f;
+    float32 totalPercent = 0.0f;
+
+    float32 contentSize = 0.0f;
+    float32 restSize = 0.0f;
+
+    int32 childrenCount = 0;
+    int32 spacesCount = 0;
+
+    float32 initialPadding = 0.0f;
+    float32 initialSpacing = 0.0f;
+
+    float32 padding = 0.0f;
+    float32 spacing = 0.0f;
+    
+    bool dynamicPadding = false;
+    bool dynamicSpacing = false;
+
 };
 
 }
 
 
-#endif //__DAVAENGINE_UI_LAYOUT_SYSTEM_H__
+#endif //__DAVAENGINE_LINEAR_LAYOUT_ALGORITHM_H__

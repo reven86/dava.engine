@@ -26,8 +26,8 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
-#ifndef __DAVAENGINE_UI_LAYOUT_SYSTEM_H__
-#define __DAVAENGINE_UI_LAYOUT_SYSTEM_H__
+#ifndef __DAVAENGINE_FLOW_LAYOUT_ALGORITHM_H__
+#define __DAVAENGINE_FLOW_LAYOUT_ALGORITHM_H__
 
 #include "Base/BaseTypes.h"
 #include "Math/Vector.h"
@@ -36,42 +36,55 @@
 
 namespace DAVA
 {
+    
 class UIControl;
+class UIFlowLayoutComponent;
+class UISizePolicyComponent;
 
-class UILayoutSystem
+class FlowLayoutAlgorithm
 {
 public:
-    UILayoutSystem();
-    virtual ~UILayoutSystem();
+    FlowLayoutAlgorithm(Vector<ControlLayoutData> &layoutData_, bool isRtl_);
+    ~FlowLayoutAlgorithm();
     
-public:
-    bool IsRtl() const;
-    void SetRtl(bool rtl);
-
-    bool IsAutoupdatesEnabled() const;
-    void SetAutoupdatesEnabled(bool enabled);
-    
-    void ApplyLayout(UIControl *control, bool considerDenendenceOnChildren = false);
+    void Apply(ControlLayoutData &data, Vector2::eAxis axis);
     
 private:
-    UIControl *FindNotDependentOnChildrenControl(UIControl *control) const;
+    struct LineInfo;
     
-    void CollectControls(UIControl *control);
-    void CollectControlChildren(UIControl *control, int32 parentIndex);
+    void ProcessXAxis(ControlLayoutData &data, const UIFlowLayoutComponent *component);
+    void CollectLinesInformation(ControlLayoutData &data, Vector<LineInfo> &lines);
+    void FixHorizontalPadding(ControlLayoutData &data, Vector<LineInfo> &lines);
+    void LayoutLine(ControlLayoutData &data, int32 firstIndex, int32 lastIndex, int32 childrenCount, float32 childrenSize);
+    void CalculateHorizontalDynamicPaddingAndSpaces(ControlLayoutData &data, int32 firstIndex, int32 lastIndex);
     
-    void ProcessAxis(Vector2::eAxis axis);
-    void DoMeasurePhase(Vector2::eAxis axis);
-    void DoLayoutPhase(Vector2::eAxis axis);
+    void ProcessYAxis(ControlLayoutData &data);
+    void CalculateVerticalDynamicPaddingAndSpaces(ControlLayoutData &data);
+    void LayoutLineVertically(ControlLayoutData &data, int32 firstIndex, int32 lastIndex, float32 top, float32 bottom);
 
-    void ApplySizesAndPositions();
+    void CorrectPaddingAndSpacing(float32 &padding, float32 &spacing, bool dynamicPadding, bool dynamicSpacing, float32 restSize, int32 childrenCount);
 
 private:
-    bool isRtl = false;
-    bool autoupdatesEnabled = true;
-    Vector<ControlLayoutData> layoutData;
+    Vector<ControlLayoutData> &layoutData;
+    const bool isRtl;
+
+    bool inverse = false;
+    bool skipInvisible = true;
+
+    float32 horizontalPadding = 0.0f;
+    float32 horizontalSpacing = 0.0f;
+    bool dynamicHorizontalPadding = false;
+    bool dynamicHorizontalInLinePadding = false;
+    bool dynamicHorizontalSpacing = false;
+    
+    float32 verticalPadding = 0.0f;
+    float32 verticalSpacing = 0.0f;
+    bool dynamicVerticalPadding = false;
+    bool dynamicVerticalSpacing = false;
+    
 };
 
 }
 
 
-#endif //__DAVAENGINE_UI_LAYOUT_SYSTEM_H__
+#endif //__DAVAENGINE_FLOW_LAYOUT_ALGORITHM_H__

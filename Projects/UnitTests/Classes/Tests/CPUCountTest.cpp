@@ -30,8 +30,7 @@
 
 #include "UnitTests/UnitTests.h"
 
-namespace DAVA
-{
+using namespace DAVA;
 
 extern int32 GetCpuCount();
 
@@ -45,5 +44,3 @@ DAVA_TESTCLASS(CPUCountTest)
         TEST_VERIFY(cpuCountFromStandardRealization == cpuCountFromPlatformRealization);
     }
 };
-
-} // namespace DAVA

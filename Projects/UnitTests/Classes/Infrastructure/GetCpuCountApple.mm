@@ -32,14 +32,11 @@
 
 #import <Foundation/NSProcessInfo.h>
 
-namespace DAVA
-{
+using namespace DAVA;
 
 int32 GetCpuCount()
 {
     return (int32)[[NSProcessInfo processInfo] processorCount];
 }
-
-} // namespace DAVA
 
 #endif // __DAVAENGINE_APPLE__

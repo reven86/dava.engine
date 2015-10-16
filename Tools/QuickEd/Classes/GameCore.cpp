@@ -39,6 +39,8 @@
 #include "Autotesting/AutotestingSystem.h"
 #include "Version.h"
 
+#include "UI/Layouts/UILayoutSystem.h"
+
 using namespace DAVA;
 
 GameCore::GameCore()
@@ -57,6 +59,7 @@ GameCore::GameCore()
 
 	//Initialize internal resources of application
 	ResourcesManageHelper::InitInternalResources();
+    UIControlSystem::Instance()->GetLayoutSystem()->SetAutoupdatesEnabled(false);
 }
 
 GameCore::~GameCore()

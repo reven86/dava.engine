@@ -30,14 +30,11 @@
 
 #ifndef __DAVAENGINE_APPLE__
 
-#ifdef __DAVAENGINE_ANDROID__
-#   include <unistd.h>
-#endif
-
-namespace DAVA
-{
+using namespace DAVA;
 
 #ifdef __DAVAENGINE_ANDROID__
+#include <unistd.h>
+
 int32 GetCpuCount()
 {
     return sysconf(_SC_NPROCESSORS_CONF);
@@ -52,7 +49,5 @@ int32 GetCpuCount()
     return sysinfo.dwNumberOfProcessors;
 }
 #endif
-
-} // namespace DAVA
 
 #endif // !__DAVAENGINE_APPLE__

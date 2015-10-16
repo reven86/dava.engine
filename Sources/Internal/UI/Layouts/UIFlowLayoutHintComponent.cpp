@@ -26,52 +26,62 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
-#ifndef __DAVAENGINE_UI_LAYOUT_SYSTEM_H__
-#define __DAVAENGINE_UI_LAYOUT_SYSTEM_H__
 
-#include "Base/BaseTypes.h"
+#include "UIFlowLayoutHintComponent.h"
+
+#include "UI/UIControl.h"
 #include "Math/Vector.h"
-
-#include "ControlLayoutData.h"
 
 namespace DAVA
 {
-class UIControl;
-
-class UILayoutSystem
+    
+UIFlowLayoutHintComponent::UIFlowLayoutHintComponent()
 {
-public:
-    UILayoutSystem();
-    virtual ~UILayoutSystem();
-    
-public:
-    bool IsRtl() const;
-    void SetRtl(bool rtl);
-
-    bool IsAutoupdatesEnabled() const;
-    void SetAutoupdatesEnabled(bool enabled);
-    
-    void ApplyLayout(UIControl *control, bool considerDenendenceOnChildren = false);
-    
-private:
-    UIControl *FindNotDependentOnChildrenControl(UIControl *control) const;
-    
-    void CollectControls(UIControl *control);
-    void CollectControlChildren(UIControl *control, int32 parentIndex);
-    
-    void ProcessAxis(Vector2::eAxis axis);
-    void DoMeasurePhase(Vector2::eAxis axis);
-    void DoLayoutPhase(Vector2::eAxis axis);
-
-    void ApplySizesAndPositions();
-
-private:
-    bool isRtl = false;
-    bool autoupdatesEnabled = true;
-    Vector<ControlLayoutData> layoutData;
-};
-
 }
 
+UIFlowLayoutHintComponent::UIFlowLayoutHintComponent(const UIFlowLayoutHintComponent &src)
+    : flags(src.flags)
+{
+}
 
-#endif //__DAVAENGINE_UI_LAYOUT_SYSTEM_H__
+UIFlowLayoutHintComponent::~UIFlowLayoutHintComponent()
+{
+    
+}
+
+UIFlowLayoutHintComponent* UIFlowLayoutHintComponent::Clone() const
+{
+    return new UIFlowLayoutHintComponent(*this);
+}
+
+bool UIFlowLayoutHintComponent::IsNewLineBeforeThis() const
+{
+    return flags.test(FLAG_NEW_LINE_BEFORE_THIS);
+}
+
+void UIFlowLayoutHintComponent::SetNewLineBeforeThis(bool flag)
+{
+    flags.set(FLAG_NEW_LINE_BEFORE_THIS, flag);
+    SetLayoutDirty();
+}
+
+bool UIFlowLayoutHintComponent::IsNewLineAfterThis() const
+{
+    return flags.test(FLAG_NEW_LINE_AFTER_THIS);
+}
+
+void UIFlowLayoutHintComponent::SetNewLineAfterThis(bool flag)
+{
+    flags.set(FLAG_NEW_LINE_AFTER_THIS, flag);
+    SetLayoutDirty();
+}
+
+void UIFlowLayoutHintComponent::SetLayoutDirty()
+{
+    if (GetControl() != nullptr)
+    {
+        GetControl()->SetLayoutDirty();
+    }
+}
+    
+}
