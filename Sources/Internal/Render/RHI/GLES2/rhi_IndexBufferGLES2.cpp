@@ -176,10 +176,10 @@ gles2_IndexBuffer_Create( const IndexBuffer::Descriptor& desc )
 static void
 gles2_IndexBuffer_Delete( Handle ib )
 {
-    IndexBufferGLES2_t* self = IndexBufferGLES2Pool::Get( ib );
-
-    if( self )
+    if (ib != InvalidHandle)
     {
+        IndexBufferGLES2_t* self = IndexBufferGLES2Pool::Get(ib);
+
         self->MarkRestored();
         self->Destroy();
         IndexBufferGLES2Pool::Free( ib );

@@ -87,6 +87,8 @@ public:
 };
 RHI_IMPL_RESOURCE(TextureGLES2_t,Texture::Descriptor);
 
+static uint32 _CurrentActiveSlot = -1;
+
 TextureGLES2_t::TextureGLES2_t()
   : uid(0),
     uid2(0),
@@ -240,6 +242,8 @@ TextureGLES2_t::Create( const Texture::Descriptor& desc, bool force_immediate )
 //            }
             
             ExecGL( cmd2, cmd2_cnt, force_immediate );
+
+            _CurrentActiveSlot = 0;
         }
     }
 
@@ -513,6 +517,8 @@ gles2_Texture_Unmap( Handle tex )
 
     ExecGL( cmd, countof(cmd) );
 
+    _CurrentActiveSlot = 0;
+
     self->isMapped = false;
     ::free( self->mappedData );
     self->mappedData = nullptr;
@@ -570,6 +576,8 @@ gles2_Texture_Update( Handle tex, const void* data, uint32 level, TextureFace fa
         };
 
         ExecGL( cmd, countof(cmd) );
+
+        _CurrentActiveSlot = 0;
     }
 }
 
@@ -758,8 +766,12 @@ SetToRHI( Handle tex, unsigned unit_i, uint32 base_i )
     const SamplerState::Descriptor::Sampler* sampler = (fragment) 
                                                         ? _CurSamplerState->fragmentSampler + unit_i
                                                         : _CurSamplerState->vertexSampler + unit_i;
+    if (_CurrentActiveSlot != sampler_i)
+    {
+        GL_CALL(glActiveTexture(GL_TEXTURE0 + sampler_i));
+        _CurrentActiveSlot = sampler_i;
+    }
 
-    GL_CALL(glActiveTexture( GL_TEXTURE0+sampler_i ));
     GL_CALL(glBindTexture( target, self->uid ));
     //{SCOPED_NAMED_TIMING("gl-BindTexture");}
 

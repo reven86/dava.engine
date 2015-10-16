@@ -627,9 +627,8 @@ SetToRHI( Handle ps, uint32 layoutUID )
             ps2->prog.fprog->ProgGLES2::SetupTextureUnits(ps2->prog.vprog->SamplerCount());
         }
     }
-    VertexDeclGLES2::InvalidateVAttrCache();
+    //    VertexDeclGLES2::InvalidateVAttrCache();
 
-    
     if( ps2->blendEnabled )
     {
         if( cachedBlendEnabled != GL_TRUE )
