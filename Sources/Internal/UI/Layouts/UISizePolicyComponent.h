@@ -51,7 +51,7 @@ public:
     };
     
 public:
-    IMPLEMENT_COMPONENT_TYPE(SIZE_POLICY_COMPONENT);
+    IMPLEMENT_UI_COMPONENT_TYPE(SIZE_POLICY_COMPONENT);
     
     UISizePolicyComponent();
     UISizePolicyComponent(const UISizePolicyComponent &src);

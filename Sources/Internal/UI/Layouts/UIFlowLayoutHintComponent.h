@@ -26,52 +26,62 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
-#ifndef __DAVAENGINE_UI_LAYOUT_SYSTEM_H__
-#define __DAVAENGINE_UI_LAYOUT_SYSTEM_H__
+#ifndef __DAVAENGINE_UI_FLOW_LAYOUT_HINT_COMPONENT_H__
+#define __DAVAENGINE_UI_FLOW_LAYOUT_HINT_COMPONENT_H__
 
-#include "Base/BaseTypes.h"
-#include "Math/Vector.h"
-
-#include "ControlLayoutData.h"
+#include "UI/Components/UIComponent.h"
 
 namespace DAVA
 {
 class UIControl;
 
-class UILayoutSystem
+class UIFlowLayoutHintComponent : public UIComponent
 {
 public:
-    UILayoutSystem();
-    virtual ~UILayoutSystem();
+    IMPLEMENT_UI_COMPONENT_TYPE(FLOW_LAYOUT_HINT_COMPONENT);
+    
+    UIFlowLayoutHintComponent();
+    UIFlowLayoutHintComponent(const UIFlowLayoutHintComponent &src);
+    
+protected:
+    virtual ~UIFlowLayoutHintComponent();
+    
+private:
+    UIFlowLayoutHintComponent &operator=(const UIFlowLayoutHintComponent &) = delete;
     
 public:
-    bool IsRtl() const;
-    void SetRtl(bool rtl);
-
-    bool IsAutoupdatesEnabled() const;
-    void SetAutoupdatesEnabled(bool enabled);
+    UIFlowLayoutHintComponent* Clone() const override;
     
-    void ApplyLayout(UIControl *control, bool considerDenendenceOnChildren = false);
+    bool IsNewLineBeforeThis() const;
+    void SetNewLineBeforeThis(bool flag);
+    
+    bool IsNewLineAfterThis() const;
+    void SetNewLineAfterThis(bool flag);
     
 private:
-    UIControl *FindNotDependentOnChildrenControl(UIControl *control) const;
     
-    void CollectControls(UIControl *control);
-    void CollectControlChildren(UIControl *control, int32 parentIndex);
+    void SetLayoutDirty();
     
-    void ProcessAxis(Vector2::eAxis axis);
-    void DoMeasurePhase(Vector2::eAxis axis);
-    void DoLayoutPhase(Vector2::eAxis axis);
-
-    void ApplySizesAndPositions();
-
 private:
-    bool isRtl = false;
-    bool autoupdatesEnabled = true;
-    Vector<ControlLayoutData> layoutData;
+    enum eFlags
+    {
+        FLAG_NEW_LINE_BEFORE_THIS,
+        FLAG_NEW_LINE_AFTER_THIS,
+        FLAG_COUNT
+    };
+    
+    Bitset<eFlags::FLAG_COUNT> flags;
+
+    
+public:
+    INTROSPECTION_EXTEND(UIFlowLayoutHintComponent, UIComponent,
+                         PROPERTY("newLineBeforeThis", "New Line Before This", IsNewLineBeforeThis, SetNewLineBeforeThis, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("newLineAfterThis", "New Line After This", IsNewLineAfterThis, SetNewLineAfterThis, I_SAVE | I_VIEW | I_EDIT)
+                         );
+    
 };
-
+    
 }
 
 
-#endif //__DAVAENGINE_UI_LAYOUT_SYSTEM_H__
+#endif //__DAVAENGINE_UI_FLOW_LAYOUT_HINT_COMPONENT_H__

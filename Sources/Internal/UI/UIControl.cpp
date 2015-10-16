@@ -1135,6 +1135,7 @@ namespace DAVA
         styleSheetDirty = srcControl->styleSheetDirty;
         styleSheetInitialized = false;
         layoutDirty = srcControl->layoutDirty;
+        packageContext = srcControl->packageContext;
 
         SafeRelease(eventDispatcher);
         if (srcControl->eventDispatcher != nullptr && srcControl->eventDispatcher->GetEventsCount() != 0)
