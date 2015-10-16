@@ -96,7 +96,7 @@ struct MagnetLine
     {
         controlPosition = controlBox.GetPosition()[axis] + controlBox.GetSize()[axis] * controlSharePos;
         targetPosition = targetBox.GetPosition()[axis] + targetBox.GetSize()[axis] * targetSharePos;
-        distance = controlPosition - targetPosition;
+        interval = controlPosition - targetPosition;
     }
 
     float32 controlSharePos;
@@ -107,7 +107,7 @@ struct MagnetLine
     float32 targetPosition;
     Rect targetBox;
 
-    float32 distance = std::numeric_limits<float32>::max();
+    float32 interval = std::numeric_limits<float32>::max();
     Vector2::eAxis axis;
 };
 
@@ -373,7 +373,7 @@ void ExtractMatchedLines(Vector<MagnetLineInfo>& magnets, const List<MagnetLine>
     const UIGeometricData* parentGD = &parent->GetGeometricData();
     for (const MagnetLine& line : magnetLines)
     {
-        if (fabs(line.distance) < TRANSFORM_EPSILON)
+        if (fabs(line.interval) < TRANSFORM_EPSILON)
         {
             Vector2 position = parentGD->position - RotateVector(parentGD->pivotPoint * parentGD->scale, parentGD->angle);
 
@@ -416,7 +416,7 @@ Vector2 TransformSystem::AdjustMoveToNearestBorder(Vector2 delta, Vector<MagnetL
         //get nearest magnet line
         std::function<bool(const MagnetLine&, const MagnetLine&)> predicate = [](const MagnetLine& left, const MagnetLine& right) -> bool
         {
-            return fabs(left.distance) < fabs(right.distance);
+            return fabs(left.interval) < fabs(right.interval);
         };
         MagnetLine nearestLine = *std::min_element(magnetLines.begin(), magnetLines.end(), predicate);
 
@@ -425,13 +425,13 @@ Vector2 TransformSystem::AdjustMoveToNearestBorder(Vector2 delta, Vector<MagnetL
         if (nearestLine.controlPosition >= areaNearLineLeft && nearestLine.controlPosition <= areaNearLineRight)
         {
             Vector2 oldDelta(delta);
-            delta[axis] -= nearestLine.distance;
+            delta[axis] -= nearestLine.interval;
             extraDelta[axis] = oldDelta[axis] - delta[axis];
         }
         //adjust all lines to transformed state to get matched lines
         for (MagnetLine& line : magnetLines)
         {
-            line.distance -= extraDelta[line.axis];
+            line.interval -= extraDelta[line.axis];
         }
         ExtractMatchedLines(magnets, magnetLines, control, axis);
     }
@@ -632,8 +632,8 @@ DAVA::Vector2 TransformSystem::AdjustResizeToBorder(Vector2 deltaSize, Vector2 t
             {
                 float32 shareLeft = left.controlSharePos - transformPoint[left.axis];
                 float32 shareRight = right.controlSharePos - transformPoint[right.axis];
-                float32 distanceLeft = shareLeft == 0.0f ? std::numeric_limits<float32>::max() : left.distance / shareLeft;
-                float32 distanceRight = shareRight == 0.0f ? std::numeric_limits<float32>::max() : right.distance / shareRight;
+                float32 distanceLeft = shareLeft == 0.0f ? std::numeric_limits<float32>::max() : left.interval / shareLeft;
+                float32 distanceRight = shareRight == 0.0f ? std::numeric_limits<float32>::max() : right.interval / shareRight;
                 return fabs(distanceLeft) < fabs(distanceRight);
             };
 
@@ -647,10 +647,10 @@ DAVA::Vector2 TransformSystem::AdjustResizeToBorder(Vector2 deltaSize, Vector2 t
 
             if (nearestLine.controlPosition >= areaNearLineLeft && nearestLine.controlPosition <= areaNearLineRight)
             {
-                float32 distance = nearestLine.distance * directions[axis] * -1;
+                float32 interval = nearestLine.interval * directions[axis] * -1;
                 DVASSERT(share > 0.0f);
-                distance /= share;
-                float32 scaledDistance = distance / controlGD.scale[axis];
+                interval /= share;
+                float32 scaledDistance = interval / controlGD.scale[axis];
                 deltaSize[axis] += scaledDistance;
                 extraDelta[axis] += oldDeltaSize[axis] - deltaSize[axis];
             }
@@ -658,7 +658,7 @@ DAVA::Vector2 TransformSystem::AdjustResizeToBorder(Vector2 deltaSize, Vector2 t
             for (MagnetLine& line : magnetLines)
             {
                 float32 lineShare = fabs(line.controlSharePos - transformPoint[line.axis]);
-                line.distance -= extraDelta[line.axis] * controlGD.scale[line.axis] * lineShare / directions[line.axis];
+                line.interval -= extraDelta[line.axis] * controlGD.scale[line.axis] * lineShare / directions[line.axis];
             }
             ExtractMatchedLines(magnets, magnetLines, control, axis);
         }
