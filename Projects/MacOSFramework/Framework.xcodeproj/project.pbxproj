@@ -1302,6 +1302,12 @@
 		7C007E1E1B384DAC000003DB /* UniqueLock.h in Headers */ = {isa = PBXBuildFile; fileRef = 7C007DE41B384DAC000003DB /* UniqueLock.h */; };
 		7C007E1F1B384DAC000003DB /* UniqueLock.h in Headers */ = {isa = PBXBuildFile; fileRef = 7C007DE41B384DAC000003DB /* UniqueLock.h */; };
 		7C007E201B384DAC000003DB /* UniqueLock.h in Headers */ = {isa = PBXBuildFile; fileRef = 7C007DE41B384DAC000003DB /* UniqueLock.h */; };
+		7C593BEA1BD13E95008B31A4 /* DeviceInfoPrivateBase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7C593BE81BD13E95008B31A4 /* DeviceInfoPrivateBase.cpp */; settings = {ASSET_TAGS = (); }; };
+		7C593BEB1BD13E95008B31A4 /* DeviceInfoPrivateBase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7C593BE81BD13E95008B31A4 /* DeviceInfoPrivateBase.cpp */; settings = {ASSET_TAGS = (); }; };
+		7C593BEC1BD13E95008B31A4 /* DeviceInfoPrivateBase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7C593BE81BD13E95008B31A4 /* DeviceInfoPrivateBase.cpp */; settings = {ASSET_TAGS = (); }; };
+		7C593BED1BD13E95008B31A4 /* DeviceInfoPrivateBase.h in Headers */ = {isa = PBXBuildFile; fileRef = 7C593BE91BD13E95008B31A4 /* DeviceInfoPrivateBase.h */; settings = {ASSET_TAGS = (); }; };
+		7C593BEE1BD13E95008B31A4 /* DeviceInfoPrivateBase.h in Headers */ = {isa = PBXBuildFile; fileRef = 7C593BE91BD13E95008B31A4 /* DeviceInfoPrivateBase.h */; settings = {ASSET_TAGS = (); }; };
+		7C593BEF1BD13E95008B31A4 /* DeviceInfoPrivateBase.h in Headers */ = {isa = PBXBuildFile; fileRef = 7C593BE91BD13E95008B31A4 /* DeviceInfoPrivateBase.h */; settings = {ASSET_TAGS = (); }; };
 		840D24221703311400267C58 /* DeviceInfo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 840D24201703311400267C58 /* DeviceInfo.cpp */; };
 		840D24231703311400267C58 /* DeviceInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 840D24211703311400267C58 /* DeviceInfo.h */; };
 		840ED3E116D5089E00D2BA6C /* DPIHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 840ED3E016D5089E00D2BA6C /* DPIHelper.h */; };
@@ -3151,6 +3157,8 @@
 		7C007DE21B384DAC000003DB /* ThreadPosix.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; path = ThreadPosix.cpp; sourceTree = "<group>"; };
 		7C007DE31B384DAC000003DB /* ThreadWin32.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ThreadWin32.cpp; sourceTree = "<group>"; };
 		7C007DE41B384DAC000003DB /* UniqueLock.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UniqueLock.h; sourceTree = "<group>"; };
+		7C593BE81BD13E95008B31A4 /* DeviceInfoPrivateBase.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DeviceInfoPrivateBase.cpp; sourceTree = "<group>"; };
+		7C593BE91BD13E95008B31A4 /* DeviceInfoPrivateBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DeviceInfoPrivateBase.h; sourceTree = "<group>"; };
 		840D24201703311400267C58 /* DeviceInfo.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; path = DeviceInfo.cpp; sourceTree = "<group>"; };
 		840D24211703311400267C58 /* DeviceInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DeviceInfo.h; sourceTree = "<group>"; };
 		840ED3E016D5089E00D2BA6C /* DPIHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DPIHelper.h; sourceTree = "<group>"; };
@@ -4805,16 +4813,18 @@
 		E8989BD716BD24E400732C04 /* Platform */ = {
 			isa = PBXGroup;
 			children = (
-				6280BAA818D6F909007809B7 /* DateTimeApple.mm */,
 				62BD24BE18C621EB00D2F0D3 /* DateTime.cpp */,
 				62BD24BF18C621EB00D2F0D3 /* DateTime.h */,
-				A63BCD6817EB26E300EA4811 /* Process.cpp */,
-				A63BCD6917EB26E300EA4811 /* Process.h */,
-				846CFE5D174D1A64004ECE3C /* OpenUDIDApple.h */,
-				846CFE5E174D1A64004ECE3C /* OpenUDIDApple.mm */,
+				6280BAA818D6F909007809B7 /* DateTimeApple.mm */,
 				840D24201703311400267C58 /* DeviceInfo.cpp */,
 				840D24211703311400267C58 /* DeviceInfo.h */,
+				7C593BE81BD13E95008B31A4 /* DeviceInfoPrivateBase.cpp */,
+				7C593BE91BD13E95008B31A4 /* DeviceInfoPrivateBase.h */,
 				840ED3E016D5089E00D2BA6C /* DPIHelper.h */,
+				846CFE5D174D1A64004ECE3C /* OpenUDIDApple.h */,
+				846CFE5E174D1A64004ECE3C /* OpenUDIDApple.mm */,
+				A63BCD6817EB26E300EA4811 /* Process.cpp */,
+				A63BCD6917EB26E300EA4811 /* Process.h */,
 				E8989BF316BD24E400732C04 /* SystemTimer.cpp */,
 				E8989BF416BD24E400732C04 /* SystemTimer.h */,
 				E8989C0116BD24E400732C04 /* TemplateMacOS */,
@@ -5892,6 +5902,7 @@
 				32B14A5A1B837AFB00F8C026 /* UIIgnoreLayoutComponent.h in Headers */,
 				176DEA22174B5561007A983B /* IRenderUpdatable.h in Headers */,
 				176DEA23174B5561007A983B /* Landscape.h in Headers */,
+				7C593BEF1BD13E95008B31A4 /* DeviceInfoPrivateBase.h in Headers */,
 				176DEA24174B5561007A983B /* LandscapeChunk.h in Headers */,
 				176DEA25174B5561007A983B /* LandscapeCursor.h in Headers */,
 				176DEA26174B5561007A983B /* Light.h in Headers */,
@@ -6144,6 +6155,7 @@
 				647EFC44195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.h in Headers */,
 				84CB671A191FC8850086483D /* Image.h in Headers */,
 				E8989E9216BD24E500732C04 /* Particle.h in Headers */,
+				7C593BED1BD13E95008B31A4 /* DeviceInfoPrivateBase.h in Headers */,
 				E8989E9416BD24E500732C04 /* ParticleEmitter.h in Headers */,
 				E89EDE511A2E16FA0036E993 /* AutotestingSystemConfig.h in Headers */,
 				E8989E9A16BD24E500732C04 /* ParticleLayer.h in Headers */,
@@ -6606,6 +6618,7 @@
 				E898A0A116BD265400732C04 /* KeyedArchive.h in Headers */,
 				E8E081411A03956D009A3228 /* OpenUDIDMacOS.h in Headers */,
 				7C007DEF1B384DAC000003DB /* Concurrency.h in Headers */,
+				7C593BEE1BD13E95008B31A4 /* DeviceInfoPrivateBase.h in Headers */,
 				E898A0A216BD265400732C04 /* KeyedArchiver.h in Headers */,
 				E898A0A316BD265400732C04 /* KeyedUnarchiver.h in Headers */,
 				E898A0A416BD265400732C04 /* LocalizationSystem.h in Headers */,
@@ -7342,6 +7355,7 @@
 				176DEB1B174B5561007A983B /* UIListCell.cpp in Sources */,
 				176DEB1C174B5561007A983B /* UILoadingTransition.cpp in Sources */,
 				176DEB1D174B5561007A983B /* UIMoveInTransition.cpp in Sources */,
+				7C593BEC1BD13E95008B31A4 /* DeviceInfoPrivateBase.cpp in Sources */,
 				176DEB1E174B5561007A983B /* UIPopup.cpp in Sources */,
 				176DEB1F174B5561007A983B /* UIScreen.cpp in Sources */,
 				176DEB20174B5561007A983B /* UIScreenManagerMacOS.cpp in Sources */,
@@ -7644,6 +7658,7 @@
 				E8989F3816BD24E500732C04 /* NMaterial.cpp in Sources */,
 				A650F4B81864A10100D3278D /* NMaterialTemplate.cpp in Sources */,
 				E8989F3B16BD24E500732C04 /* Material.cpp in Sources */,
+				7C593BEA1BD13E95008B31A4 /* DeviceInfoPrivateBase.cpp in Sources */,
 				E8989F3F16BD24E500732C04 /* RenderBase.cpp in Sources */,
 				E8989F4116BD24E500732C04 /* RenderDataObject.cpp in Sources */,
 				E8989F4316BD24E500732C04 /* RenderEffect.cpp in Sources */,
@@ -8362,6 +8377,7 @@
 				9A01127AB20613B7AB6047C9 /* NSStringUtils.mm in Sources */,
 				E89EDE851A2E16FA0036E993 /* VectorSwig.cpp in Sources */,
 				9A011F52159862F0BF8B01DD /* LocalNotificationDelayed.cpp in Sources */,
+				7C593BEB1BD13E95008B31A4 /* DeviceInfoPrivateBase.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
