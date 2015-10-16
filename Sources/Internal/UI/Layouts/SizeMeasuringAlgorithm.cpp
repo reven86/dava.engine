@@ -178,7 +178,7 @@ void SizeMeasuringAlgorithm::ProcessDefaultPercentOfChildrenSumPolicy(ControlLay
     
     if (linearLayout && linearLayout->IsEnabled() && axis == linearLayout->GetAxis() && processedChildrenCount > 0)
     {
-        value += linearLayout->GetSpacing() * processedChildrenCount - 1;
+        value += linearLayout->GetSpacing() * (processedChildrenCount - 1);
     }
     
     ApplySize(data, value, axis);
