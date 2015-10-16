@@ -51,7 +51,7 @@ public:
 
 protected:
     const HUDAreaInfo::eArea area = HUDAreaInfo::NO_AREA;
-    double dpr = 1.0f;
+    float32 dpr = 1.0f;
 };
 
 HUDSystem::ControlContainer::ControlContainer(const HUDAreaInfo::eArea area_)
@@ -72,10 +72,10 @@ void HUDSystem::ControlContainer::SetDPR(double arg)
 
 namespace
 {
-const Vector2 PIVOT_CONTROL_SIZE(10.0f, 10.0f);
-const Vector2 FRAME_RECT_SIZE(7.5f, 7.5f);
-const Vector2 ROTATE_CONTROL_SIZE(10.0f, 10.0f);
-const float32 LINE_WIDTH = 0.5f;
+const Vector2 PIVOT_CONTROL_SIZE(15.0f, 15.0f);
+const Vector2 FRAME_RECT_SIZE(10.0f, 10.0f);
+const Vector2 ROTATE_CONTROL_SIZE(15.0f, 15.0f);
+const float32 LINE_WIDTH = 1.0f;
 const Array<HUDAreaInfo::eArea, 2> AreasToHide = {{HUDAreaInfo::PIVOT_POINT_AREA, HUDAreaInfo::ROTATE_AREA}};
 }
 
@@ -123,7 +123,7 @@ private:
         {
             for (uint32 i = 0; i < BORDERS_COUNT; ++i)
             {
-                AddControl(borders[i].get());
+                AddControl(borders[i].Get());
             }
             firstInit = false;
         }
@@ -140,13 +140,13 @@ private:
         switch (border)
         {
         case BORDER_TOP:
-            return Rect(frameRect.x, frameRect.y, frameRect.dx, LINE_WIDTH * dpr);
+            return Rect(frameRect.x, frameRect.y, frameRect.dx, LINE_WIDTH);
         case BORDER_BOTTOM:
-            return Rect(frameRect.x, frameRect.y + frameRect.dy, frameRect.dx, LINE_WIDTH * dpr);
+            return Rect(frameRect.x, frameRect.y + frameRect.dy, frameRect.dx, LINE_WIDTH);
         case BORDER_LEFT:
-            return Rect(frameRect.x, frameRect.y, LINE_WIDTH * dpr, frameRect.dy);
+            return Rect(frameRect.x, frameRect.y, LINE_WIDTH, frameRect.dy);
         case BORDER_RIGHT:
-            return Rect(frameRect.x + frameRect.dx, frameRect.y, LINE_WIDTH * dpr, frameRect.dy);
+            return Rect(frameRect.x + frameRect.dx, frameRect.y, LINE_WIDTH, frameRect.dy);
         default:
             DVASSERT("!impossible value for frame control position");
             return Rect();
@@ -248,13 +248,13 @@ private:
         switch (border)
         {
         case BORDER_TOP:
-            return Rect(frameRect.x, frameRect.y, frameRect.dx, LINE_WIDTH * dpr);
+            return Rect(frameRect.x, frameRect.y, frameRect.dx, LINE_WIDTH);
         case BORDER_BOTTOM:
-            return Rect(frameRect.x, frameRect.y + frameRect.dy, frameRect.dx, LINE_WIDTH * dpr);
+            return Rect(frameRect.x, frameRect.y + frameRect.dy, frameRect.dx, LINE_WIDTH);
         case BORDER_LEFT:
-            return Rect(frameRect.x, frameRect.y, LINE_WIDTH * dpr, frameRect.dy);
+            return Rect(frameRect.x, frameRect.y, LINE_WIDTH, frameRect.dy);
         case BORDER_RIGHT:
-            return Rect(frameRect.x + frameRect.dx, frameRect.y, LINE_WIDTH * dpr, frameRect.dy);
+            return Rect(frameRect.x + frameRect.dx, frameRect.y, LINE_WIDTH, frameRect.dy);
         default:
             DVASSERT("!impossible value for frame control position");
             return Rect();
@@ -320,7 +320,7 @@ public:
     {
         SetName("pivot point control");
         background->SetSprite("~res:/Gfx/HUDControls/Pivot", 0);
-        background->SetDrawType(UIControlBackground::DRAW_ALIGNED);
+        background->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
     }
 
 private:
@@ -341,7 +341,7 @@ public:
     {
         SetName("rotate control");
         background->SetSprite("~res:/Gfx/HUDControls/Rotate", 2);
-        background->SetDrawType(UIControlBackground::DRAW_ALIGNED);
+        background->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
     }
 
 private:
@@ -388,7 +388,7 @@ struct HUDSystem::HUD
     UIControl* control = nullptr;
     UIControl* hudControl = nullptr;
     RefPtr<HUDContainer> container;
-    Map<HUDAreaInfo::eArea, RefPtr<UIControl>> hudControls;
+    Map<HUDAreaInfo::eArea, RefPtr<ControlContainer>> hudControls;
 };
 
 HUDSystem::HUD::HUD(ControlNode* node_, UIControl* hudControl_)
