@@ -44,7 +44,7 @@ class UIStyleSheetPropertyDataBase :
     public StaticSingleton<UIStyleSheetPropertyDataBase >
 {
 public:
-    enum { STYLE_SHEET_PROPERTY_COUNT = 30 };
+    enum { STYLE_SHEET_PROPERTY_COUNT = 29 };
 
     UIStyleSheetPropertyDataBase();
 

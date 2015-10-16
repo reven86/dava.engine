@@ -26,52 +26,70 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
-#ifndef __DAVAENGINE_UI_LAYOUT_SYSTEM_H__
-#define __DAVAENGINE_UI_LAYOUT_SYSTEM_H__
+#ifndef __DAVAENGINE_CONTROL_LAYOUT_DATA_H__
+#define __DAVAENGINE_CONTROL_LAYOUT_DATA_H__
 
 #include "Base/BaseTypes.h"
 #include "Math/Vector.h"
-
-#include "ControlLayoutData.h"
 
 namespace DAVA
 {
 class UIControl;
 
-class UILayoutSystem
+class ControlLayoutData
 {
 public:
-    UILayoutSystem();
-    virtual ~UILayoutSystem();
+    enum eFlag
+    {
+        FLAG_NONE = 0,
+        FLAG_SIZE_CHANGED = 1 << 0,
+        FLAG_POSITION_CHANGED = 1 << 1,
+        FLAG_SIZE_CALCULATED = 1 << 2,
+        FLAG_LAST_IN_LINE = 1 << 3,
+    };
     
 public:
-    bool IsRtl() const;
-    void SetRtl(bool rtl);
+    ControlLayoutData(UIControl *control_);
+    
+    void ApplyLayoutToControl();
+    
+    UIControl *GetControl() const;
+    
+    bool HasFlag(eFlag flag) const;
+    void SetFlag(eFlag flag);
+    
+    int32 GetFirstChildIndex() const;
+    void SetFirstChildIndex(int32 index);
 
-    bool IsAutoupdatesEnabled() const;
-    void SetAutoupdatesEnabled(bool enabled);
+    int32 GetLastChildIndex() const;
+    void SetLastChildIndex(int32 index);
     
-    void ApplyLayout(UIControl *control, bool considerDenendenceOnChildren = false);
+    bool HasChildren() const;
     
+    float32 GetSize(Vector2::eAxis axis) const;
+    void SetSize(Vector2::eAxis axis, float32 value);
+    void SetSizeWithoutChangeFlag(Vector2::eAxis axis, float32 value);
+    
+    float32 GetPosition(Vector2::eAxis axis) const;
+    void SetPosition(Vector2::eAxis axis, float32 value);
+    
+    float32 GetX() const;
+    float32 GetY() const;
+    float32 GetWidth() const;
+    float32 GetHeight() const;
+    
+    bool HaveToSkipControl(bool skipInvisible) const;
+
 private:
-    UIControl *FindNotDependentOnChildrenControl(UIControl *control) const;
-    
-    void CollectControls(UIControl *control);
-    void CollectControlChildren(UIControl *control, int32 parentIndex);
-    
-    void ProcessAxis(Vector2::eAxis axis);
-    void DoMeasurePhase(Vector2::eAxis axis);
-    void DoLayoutPhase(Vector2::eAxis axis);
-
-    void ApplySizesAndPositions();
-
-private:
-    bool isRtl = false;
-    bool autoupdatesEnabled = true;
-    Vector<ControlLayoutData> layoutData;
+    UIControl *control;
+    int32 flags = FLAG_NONE;
+    int32 firstChild = 0;
+    int32 lastChild = -1;
+    Vector2 size;
+    Vector2 position;
 };
-
+    
 }
 
 
-#endif //__DAVAENGINE_UI_LAYOUT_SYSTEM_H__
+#endif //__DAVAENGINE_CONTROL_LAYOUT_DATA_H__

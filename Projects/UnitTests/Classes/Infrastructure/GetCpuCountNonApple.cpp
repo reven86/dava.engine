@@ -26,74 +26,28 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "Base/BaseTypes.h"
 
-#ifndef __DAVAENGINE_UI_COMPONENT_H__
-#define __DAVAENGINE_UI_COMPONENT_H__
+#ifndef __DAVAENGINE_APPLE__
 
-#include "Base/BaseObject.h"
+using namespace DAVA;
 
-namespace DAVA
+#ifdef __DAVAENGINE_ANDROID__
+#include <unistd.h>
+
+int32 GetCpuCount()
 {
-class UIControl;
-
-class UIComponent : public BaseObject
-{
-public:
-    enum eType
-    {
-        LINEAR_LAYOUT_COMPONENT,
-        FLOW_LAYOUT_COMPONENT,
-        FLOW_LAYOUT_HINT_COMPONENT,
-        IGNORE_LAYOUT_COMPONENT,
-        SIZE_POLICY_COMPONENT,
-        ANCHOR_COMPONENT,
-        
-        COMPONENT_COUNT
-    };
-    
-public:
-    UIComponent();
-    UIComponent(const UIComponent &src);
-    virtual ~UIComponent();
-    
-    UIComponent &operator=(const UIComponent &src);
-
-    static UIComponent * CreateByType(uint32 componentType);
-    static bool IsMultiple(uint32 componentType);
-
-    virtual uint32 GetType() const = 0;
-
-    void SetControl(UIControl* _control);
-    UIControl* GetControl() const;
-
-    virtual UIComponent* Clone() const = 0;
-
-private:
-    UIControl* control;
-
-public:
-    INTROSPECTION_EXTEND(UIComponent, BaseObject, 
-        nullptr
-    );
-
-};
-
-#define IMPLEMENT_UI_COMPONENT_TYPE(TYPE) \
-    virtual uint32 GetType() const override { return TYPE; }; \
-    static const uint32 C_TYPE = TYPE;
-
-inline void UIComponent::SetControl(UIControl* _control)
-{
-    control = _control;
+    return sysconf(_SC_NPROCESSORS_CONF);
 }
+#endif
 
-inline UIControl* UIComponent::GetControl() const
+#ifdef __DAVAENGINE_WINDOWS__
+int32 GetCpuCount()
 {
-    return control;
+    SYSTEM_INFO sysinfo;
+    GetSystemInfo(&sysinfo);
+    return sysinfo.dwNumberOfProcessors;
 }
-    
+#endif
 
-}
-
-
-#endif //__DAVAENGINE_UI_COMPONENT_H__
+#endif // !__DAVAENGINE_APPLE__
