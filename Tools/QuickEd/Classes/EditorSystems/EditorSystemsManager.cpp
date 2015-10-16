@@ -27,6 +27,7 @@
 =====================================================================================*/
 
 #include "EditorSystems/EditorSystemsManager.h"
+#include "EditorSystems/KeyboardProxy.h"
 
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
@@ -129,6 +130,7 @@ bool CompareByLCA(PackageBaseNode* left, PackageBaseNode* right)
 EditorSystemsManager::EditorSystemsManager(PackageNode* _package)
     : rootControl(new RootControl(this))
     , scalableControl(new UIControl())
+    , keyboardProxy(new KeyboardProxy)
     , package(SafeRetain(_package))
     , editingRootControls(CompareByLCA)
 {
@@ -151,6 +153,11 @@ EditorSystemsManager::~EditorSystemsManager()
 {
     package->RemoveListener(this);
     SafeRelease(package);
+}
+
+const KeyboardProxy* EditorSystemsManager::GetKeyboardProxy() const
+{
+    return keyboardProxy.get();
 }
 
 PackageNode* EditorSystemsManager::GetPackage()

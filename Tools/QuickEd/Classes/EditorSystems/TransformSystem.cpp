@@ -26,13 +26,12 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
-#include <QApplication>
-
 #include "Input/InputSystem.h"
 #include "Input/KeyboardDevice.h"
 
 #include "EditorSystems/TransformSystem.h"
 #include "EditorSystems/EditorSystemsManager.h"
+#include "EditorSystems/KeyboardProxy.h"
 #include "UI/UIEvent.h"
 #include "UI/UIControl.h"
 #include "Model/PackageHierarchy/ControlNode.h"
@@ -206,7 +205,8 @@ bool TransformSystem::ProcessKey(const int32 key)
     if (!selectedControlNodes.empty())
     {
         float step = moveStepByKeyboard;
-        if (!QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier))
+        const KeyboardProxy* keyBoardProxy = systemManager->GetKeyboardProxy();
+        if (!keyBoardProxy->IsKeyPressed(KeyboardProxy::KEY_SHIFT))
         {
             step = expandedMoveStepByKeyboard;
         }
@@ -244,10 +244,12 @@ bool TransformSystem::ProcessDrag(Vector2 pos)
         return false;
     }
     Vector2 delta(pos - prevPos);
+    const KeyboardProxy* keyBoardProxy = systemManager->GetKeyboardProxy();
+
     switch (activeArea)
     {
     case HUDAreaInfo::FRAME_AREA:
-        MoveAllSelectedControls(delta, !QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier));
+        MoveAllSelectedControls(delta, !keyBoardProxy->IsKeyPressed(KeyboardProxy::KEY_SHIFT));
         return true;
     case HUDAreaInfo::TOP_LEFT_AREA:
     case HUDAreaInfo::TOP_CENTER_AREA:
@@ -258,8 +260,8 @@ bool TransformSystem::ProcessDrag(Vector2 pos)
     case HUDAreaInfo::BOTTOM_CENTER_AREA:
     case HUDAreaInfo::BOTTOM_RIGHT_AREA:
     {
-        bool withPivot = QApplication::keyboardModifiers().testFlag(Qt::AltModifier);
-        bool rateably = QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier);
+        bool withPivot = keyBoardProxy->IsKeyPressed(KeyboardProxy::KEY_ALT);
+        bool rateably = keyBoardProxy->IsKeyPressed(KeyboardProxy::KEY_SHIFT);
         ResizeControl(delta, withPivot, rateably);
         return true;
     }
@@ -579,8 +581,8 @@ Vector2 TransformSystem::AdjustResizeToMinimumSize(Vector2 deltaSize)
 Vector2 TransformSystem::AdjustResizeToBorder(Vector2 deltaSize, Vector2 transformPoint, Directions directions)
 {
     Vector<MagnetLineInfo> magnets;
-
-    bool canAdjustResize = !QApplication::keyboardModifiers().testFlag(Qt::ControlModifier) && activeControlNode->GetControl()->GetAngle() == 0.0f && activeControlNode->GetParent()->GetControl() != nullptr;
+    const KeyboardProxy* keyBoardProxy = systemManager->GetKeyboardProxy();
+    bool canAdjustResize = !keyBoardProxy->IsKeyPressed(KeyboardProxy::KEY_CTRL) && activeControlNode->GetControl()->GetAngle() == 0.0f && activeControlNode->GetParent()->GetControl() != nullptr;
 
     if (canAdjustResize)
     {
@@ -719,7 +721,8 @@ DAVA::Vector2 TransformSystem::AdjustPivotToNearestArea(Vector2& delta)
     Vector2 finalPivot(origPivot + deltaPivot + extraDelta);
 
     bool found = false;
-    if (!QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier))
+    const KeyboardProxy* keyBoardProxy = systemManager->GetKeyboardProxy();
+    if (!keyBoardProxy->IsKeyPressed(KeyboardProxy::KEY_SHIFT))
     {
         const float32 maxPivot = 1.0f;
 
@@ -789,8 +792,8 @@ void TransformSystem::Rotate(Vector2 pos)
 float32 TransformSystem::AdjustRotateToFixedAngle(float32 deltaAngle, float32 originalAngle)
 {
     float32 finalAngle = originalAngle + deltaAngle;
-
-    if (QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier))
+    const KeyboardProxy* keyBoardProxy = systemManager->GetKeyboardProxy();
+    if (keyBoardProxy->IsKeyPressed(KeyboardProxy::KEY_SHIFT))
     {
         static const int step = angleSegment; //fixed angle step
         int32 nearestTargetAngle = static_cast<int32>(finalAngle - static_cast<int32>(finalAngle) % step);

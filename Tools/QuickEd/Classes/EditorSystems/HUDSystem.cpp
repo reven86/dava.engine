@@ -587,7 +587,14 @@ void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLineInfo>& magnetLines)
     {
         UIControl* control = new UIControl();
         control->SetDebugDraw(true);
-        control->SetAbsoluteRect(line.absoluteRect);
+        Rect lineRect = line.absoluteRect;
+        UIControl* topLevelControl = hudControl.Get();
+        while (topLevelControl->GetParent()->GetParent() != nullptr) //first control is screen
+        {
+            topLevelControl = topLevelControl->GetParent();
+        }
+        lineRect.SetPosition(line.absoluteRect.GetPosition() - topLevelControl->GetPosition());
+        control->SetAbsoluteRect(lineRect);
         Vector2 extraSize(line.axis == Vector2::AXIS_X ? axtraSizeValue : 0.0f, line.axis == Vector2::AXIS_Y ? axtraSizeValue : 0.0f);
         control->SetSize(control->GetSize() + extraSize);
         control->SetAngle(line.gd->angle);
