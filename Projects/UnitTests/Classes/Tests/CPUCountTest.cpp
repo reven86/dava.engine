@@ -43,5 +43,4 @@ DAVA_TESTCLASS(CPUCountTest)
 
         TEST_VERIFY(cpuCountFromStandardRealization == cpuCountFromPlatformRealization);
     }
-
-} // namespace DAVA
+};
