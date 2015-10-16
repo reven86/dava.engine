@@ -175,7 +175,7 @@ public:
     // true if device connected
     static bool IsHIDConnected(eHIDType type);
 
-    // Signal of changed HID connection
+    // Signal type telling HID connected/disconnected
     // DeviceInfo::eHIDType value - type of HID
     // bool value - device's state: connected (true) or disconnected (false)
     using HIDConnectionSignal = Signal<eHIDType, bool>;
