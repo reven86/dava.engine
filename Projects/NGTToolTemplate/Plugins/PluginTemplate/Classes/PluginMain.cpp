@@ -140,7 +140,11 @@ public:
                                                  });
 
         AssetPaths paths;
+#ifdef _WIN32
         paths.emplace_back("D:/");
+#else
+        paths.emplace_back("/Users/");
+#endif
         CustomContentFilters filter;
 
         std::unique_ptr<IAssetBrowserModel> model(new FileSystemAssetBrowserModel(paths, filter, *fileSystem, *definitionMng));

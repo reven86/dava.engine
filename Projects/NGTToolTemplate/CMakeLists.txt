@@ -7,7 +7,7 @@ set                   ( FRAMEWORK_PATH "${CMAKE_CURRENT_LIST_DIR}/../../" )
 set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${FRAMEWORK_PATH}/Sources/CMake/Modules/" )
 set                   ( USE_DYNAMIC_CRT 1)
 set                   ( TARGET_PLUGIN_APP_FOLDER_NAME ${PROJECT_NAME})
-set                   ( TOOL_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>")
+set                   ( TOOL_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
 
 if (DEPLOY_DIR)
       set (TOOL_OUTPUT_DIR ${DEPLOY_DIR})

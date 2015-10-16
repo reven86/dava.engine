@@ -47,7 +47,7 @@ char const * SCENE_FILE_FILTER = "Scene (*.sc2)";
 // FileSystem model will accumulate all files recursively
 char const* FILE_SYSTEM_ROOT = "";
 #elif __APPLE__
-char const* FILE_SYSTEM_ROOT = "/";
+char const* FILE_SYSTEM_ROOT = "";
 #endif
 
 bool IsSceneFile(std::string const & filePath)
