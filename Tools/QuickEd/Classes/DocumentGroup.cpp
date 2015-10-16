@@ -148,6 +148,14 @@ void DocumentGroup::SetDPR(qreal arg)
     }
 }
 
+void DocumentGroup::OnSelectAllRequested()
+{
+    if (active != nullptr)
+    {
+        active->GetSystemManager()->SelectAllControls.Emit();
+    }
+}
+
 Document *DocumentGroup::GetActiveDocument() const
 {
     return active;

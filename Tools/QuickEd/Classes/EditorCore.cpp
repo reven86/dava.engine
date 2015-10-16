@@ -93,6 +93,9 @@ EditorCore::EditorCore(QObject *parent)
     connect(documentGroup, &DocumentGroup::CanvasSizeChanged, scrollAreaController, &ScrollAreaController::UpdateCanvasContentSize);
     connect(previewWidget, &PreviewWidget::ScaleChanged, documentGroup, &DocumentGroup::SetScale);
     connect(previewWidget, &PreviewWidget::DPRChanged, documentGroup, &DocumentGroup::SetDPR);
+    connect(previewWidget, &PreviewWidget::SelectAllRequested, documentGroup, &DocumentGroup::OnSelectAllRequested);
+    connect(previewWidget, &PreviewWidget::DeleteRequested, mainWindow->packageWidget, &PackageWidget::OnDelete);
+
     connect(project->GetEditorLocalizationSystem(), &EditorLocalizationSystem::LocaleChanged, this, &EditorCore::UpdateLanguage);
 
     documentGroup->SetEmulationMode(mainWindow->IsInEmulationMode());

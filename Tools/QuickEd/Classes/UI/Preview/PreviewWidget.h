@@ -56,15 +56,18 @@ public:
     float GetScale() const;
     qreal GetDPR() const;
     ControlNode* OnSelectControlByMenu(const DAVA::Vector<ControlNode*>& nodes, const DAVA::Vector2& pos);
+
 signals:
     void ScaleChanged(float scale);
     void DPRChanged(qreal dpr);
     void DeleteRequested();
     void SelectAllRequested();
+
 public slots:
     void OnDocumentChanged(Document* document);
     void OnDocumentActivated(Document* document);
     void OnDocumentDeactivated(Document* document);
+
 private slots:
     // Zoom.
 	void OnScaleByComboIndex(int value);

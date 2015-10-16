@@ -49,10 +49,9 @@ Document::Document(PackageNode* _package, QObject* parent)
     systemManager.SelectionChanged.Connect(this, &Document::SelectedNodesChanged);
     systemManager.CanvasSizeChanged.Connect(this, &Document::CanvasSizeChanged);
 
-    systemManager.PropertiesChanged.Connect([this](const Vector<std::tuple<ControlNode*, AbstractProperty*, VariantType>>& properties, size_t hash)
-                                            {
+    systemManager.PropertiesChanged.Connect([this](const Vector<std::tuple<ControlNode*, AbstractProperty*, VariantType>>& properties, size_t hash) {
         commandExecutor->ChangeProperty(properties, hash);
-                                            });
+    });
 
     connect(GetEditorFontSystem(), &EditorFontSystem::UpdateFontPreset, this, &Document::RefreshAllControlProperties);
 }

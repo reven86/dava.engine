@@ -1,3 +1,4 @@
+
 /*==================================================================================
     Copyright (c) 2008, binaryzebra
     All rights reserved.
@@ -95,15 +96,17 @@ PreviewWidget::PreviewWidget(QWidget* parent)
     scaleCombo->setInsertPolicy(QComboBox::NoInsert);
     UpdateScrollArea();
 
-    QAction* deleteAction = new QAction(tr("Delete"), davaGLWidget);
+    QAction* deleteAction = new QAction(tr("Delete"), this);
     deleteAction->setShortcut(QKeySequence::Delete);
-    deleteAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    deleteAction->setShortcutContext(Qt::WindowShortcut); //widget shortcut is not working for davaGLWidget
     connect(deleteAction, &QAction::triggered, this, &PreviewWidget::DeleteRequested);
+    davaGLWidget->addAction(deleteAction);
 
-    QAction* selectAll = new QAction(tr("Select all"), davaGLWidget);
-    selectAll->setShortcut(QKeySequence::SelectAll);
-    selectAll->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    connect(selectAll, &QAction::triggered, this, &PreviewWidget::SelectAllRequested);
+    QAction* selectAllAction = new QAction(tr("Select all"), this);
+    selectAllAction->setShortcut(QKeySequence::SelectAll);
+    selectAllAction->setShortcutContext(Qt::WindowShortcut);
+    connect(selectAllAction, &QAction::triggered, this, &PreviewWidget::SelectAllRequested);
+    davaGLWidget->addAction(selectAllAction);
 }
 
 DavaGLWidget *PreviewWidget::GetDavaGLWidget()

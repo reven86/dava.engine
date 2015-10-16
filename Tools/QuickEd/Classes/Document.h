@@ -85,6 +85,7 @@ public:
 signals:
     void SelectedNodesChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void CanvasSizeChanged();
+
 public slots:
     void SetScale(float scale);
     void SetEmulationMode(bool emulationMode);

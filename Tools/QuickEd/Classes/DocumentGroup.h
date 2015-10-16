@@ -64,6 +64,7 @@ public slots:
     void SetEmulationMode(bool emulationMode);
     void SetScale(float scale);
     void SetDPR(qreal dpr);
+    void OnSelectAllRequested();
 
 protected:
     bool emulationMode = false;
