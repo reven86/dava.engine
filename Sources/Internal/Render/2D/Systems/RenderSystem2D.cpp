@@ -69,8 +69,8 @@ RenderSystem2D::RenderSystem2D()
     , highlightControlsVerticesLimit(0)
     , renderTargetWidth(0)
     , renderTargetHeight(0)
-    , viewMatrixSemantic(0)
-    , projMatrixSemantic(0)
+    , viewMatrixSemantic(8) //0 is bad idea as it is same as UPDATE_SEMANTIC_ALWAYS. why 8 - see comment in Setup2DMatrixes
+    , projMatrixSemantic(8)
 {
 }
 

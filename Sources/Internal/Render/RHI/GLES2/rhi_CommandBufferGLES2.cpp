@@ -919,8 +919,8 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
                     cur_ps          = ps;
                     cur_vdecl       = vdecl;
                     cur_base_vert   = 0;
-                    last_ps         = InvalidHandle;
-//                    cur_vb          = InvalidHandle;
+                    last_ps = InvalidHandle;
+                    vdecl_pending = true;
                 }
 
                 tex_unit_0 = PipelineStateGLES2::VertexSamplerCount( ps );
