@@ -253,7 +253,7 @@ public:
         {
             if (!con.second.blocked)
             {
-                con.second.fn(std::move(args)...);
+                con.second.fn(std::forward<Args>(args)...);
             }
         }
     }
@@ -285,7 +285,7 @@ class SignalMt final : public Sig11::SignalImpl<Mutex, Thread::Id, Args...>
                 }
                 else
                 {
-                    Function<void()> fn = Bind(con.second.fn, std::move(args)...);
+                    Function<void()> fn = Bind(con.second.fn, std::forward<Args>(args)...);
 
                     // TODO:
                     // add implementation
