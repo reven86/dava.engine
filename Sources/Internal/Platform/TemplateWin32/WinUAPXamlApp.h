@@ -91,7 +91,6 @@ protected:
 private:
     void Run();
 
-private:    // Event handlers
     // App state handlers
     void OnSuspending(::Platform::Object^ sender, Windows::ApplicationModel::SuspendingEventArgs^ args);
     void OnResuming(::Platform::Object^ sender, ::Platform::Object^ args);
@@ -118,8 +117,8 @@ private:    // Event handlers
     void OnMouseMoved(Windows::Devices::Input::MouseDevice^ mouseDevice, Windows::Devices::Input::MouseEventArgs^ args);
 
     void DAVATouchEvent(UIEvent::Phase phase, float32 x, float32 y, int32 id, UIEvent::Device deviceIndex);
+    UIEvent::eButtonID GetMouseButtonIndex(Windows::UI::Core::PointerEventArgs ^ args);
 
-private:
     void SetupEventHandlers();
     void CreateBaseXamlUI();
 
@@ -139,7 +138,6 @@ private:
     void SetPreferredSize(float32 width, float32 height);
     void HideAsyncTaskBar();
 
-private:
     CorePlatformWinUAP* core;
     Windows::UI::Core::CoreDispatcher^ uiThreadDispatcher = nullptr;
     std::unique_ptr<DispatcherWinUAP> dispatcher = nullptr;
@@ -184,8 +182,6 @@ private:
     int32 physicalHeight = static_cast<int32>(viewHeight * rawPixelsPerViewPixel);
 
     Windows::Graphics::Display::DisplayOrientations displayOrientation = ::Windows::Graphics::Display::DisplayOrientations::None;
-
-private:
     // Hardcoded styles for TextBox and PasswordBox to apply features:
     //  - transparent background in focus state
     //  - removed 'X' button

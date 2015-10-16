@@ -307,25 +307,47 @@ void WinUAPXamlApp::OnWindowSizeChanged(::Windows::UI::Core::CoreWindow^ sender,
     }
 }
 
+UIEvent::eButtonID WinUAPXamlApp::GetMouseButtonIndex(Windows::UI::Core::PointerEventArgs ^ args)
+{
+    UIEvent::eButtonID result = UIEvent::BUTTON_NONE;
+
+    PointerPointProperties ^ pointProperties = args->CurrentPoint->Properties;
+    if (isLeftButtonPressed != pointProperties->IsLeftButtonPressed)
+    {
+        result = UIEvent::BUTTON_1;
+    }
+    if (isRightButtonPressed != pointProperties->IsRightButtonPressed)
+    {
+        result = UIEvent::BUTTON_2;
+    }
+    if (isMiddleButtonPressed != pointProperties->IsMiddleButtonPressed)
+    {
+        result = UIEvent::BUTTON_3;
+    }
+    isLeftButtonPressed = pointProperties->IsLeftButtonPressed;
+    isRightButtonPressed = pointProperties->IsRightButtonPressed;
+    isMiddleButtonPressed = pointProperties->IsMiddleButtonPressed;
+    return result;
+}
+
 void WinUAPXamlApp::OnPointerPressed(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args)
 {
     PointerPoint^ pointPtr = args->CurrentPoint;
     PointerPointProperties^ pointProperties = pointPtr->Properties;
     PointerDeviceType type = pointPtr->PointerDevice->PointerDeviceType;
-    // will be started on main thread
-    if ((PointerDeviceType::Mouse == type) || (PointerDeviceType::Pen == type))
-    {
-        //update state before create dava event
-        isLeftButtonPressed = pointProperties->IsLeftButtonPressed;
-        isRightButtonPressed = pointProperties->IsRightButtonPressed;;
-        isMiddleButtonPressed = pointProperties->IsMiddleButtonPressed;
-    }
 
     float32 x = pointPtr->Position.X;
     float32 y = pointPtr->Position.Y;
-    int32 id = pointPtr->PointerId;
-    core->RunOnMainThread([this, x, y, id, type]() {
-        DAVATouchEvent(UIEvent::Phase::BEGAN, x, y, id, ToDavaDeviceId(type));
+    int32 pointerOrButtonIndex = pointPtr->PointerId;
+
+    // will be started on main thread
+    if ((PointerDeviceType::Mouse == type) || (PointerDeviceType::Pen == type))
+    {
+        pointerOrButtonIndex = GetMouseButtonIndex(args);
+    }
+
+    core->RunOnMainThread([this, x, y, pointerOrButtonIndex, type]() {
+        DAVATouchEvent(UIEvent::Phase::BEGAN, x, y, pointerOrButtonIndex, ToDavaDeviceId(type));
     });
 }
 
@@ -334,34 +356,19 @@ void WinUAPXamlApp::OnPointerReleased(Windows::UI::Core::CoreWindow^ sender, Win
     // will be started on main thread
     float32 x = args->CurrentPoint->Position.X;
     float32 y = args->CurrentPoint->Position.Y;
-    int32 id = args->CurrentPoint->PointerId;
+    int32 pointerOrButtonIndex = args->CurrentPoint->PointerId;
     PointerDeviceType type = args->CurrentPoint->PointerDevice->PointerDeviceType;
-
-    auto fn = [this, x, y, id, type]() {
-        DAVATouchEvent(UIEvent::Phase::ENDED, x, y, id, ToDavaDeviceId(type));
-    };
 
     if ((PointerDeviceType::Mouse == type) || (PointerDeviceType::Pen == type))
     {
-        if (isLeftButtonPressed || isMiddleButtonPressed || isRightButtonPressed)
-        {
-            core->RunOnMainThread(fn);
+        pointerOrButtonIndex = GetMouseButtonIndex(args);
+    }
 
-            PointerPointProperties^ pointProperties = args->CurrentPoint->Properties;
-            // update state after create davaEvent
-            isLeftButtonPressed = pointProperties->IsLeftButtonPressed;
-            isRightButtonPressed = pointProperties->IsRightButtonPressed;
-            isMiddleButtonPressed = pointProperties->IsMiddleButtonPressed;
-        }
-        else
-        {
-            DVASSERT(isLeftButtonPressed || isMiddleButtonPressed || isRightButtonPressed);
-        }
-    }
-    else //  PointerDeviceType::Touch == args->CurrentPoint->PointerDevice->PointerDeviceType
-    {
-        core->RunOnMainThread(fn);
-    }
+    auto fn = [this, x, y, pointerOrButtonIndex, type]() {
+        DAVATouchEvent(UIEvent::Phase::ENDED, x, y, pointerOrButtonIndex, ToDavaDeviceId(type));
+    };
+
+    core->RunOnMainThread(fn);
 }
 
 void WinUAPXamlApp::OnPointerMoved(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args)
@@ -369,22 +376,22 @@ void WinUAPXamlApp::OnPointerMoved(Windows::UI::Core::CoreWindow^ sender, Window
     // will be started on main thread
     float32 x = args->CurrentPoint->Position.X;
     float32 y = args->CurrentPoint->Position.Y;
-    int32 id = args->CurrentPoint->PointerId;
+    int32 pointerOrButtonIndex = args->CurrentPoint->PointerId;
     UIEvent::Phase phase = UIEvent::Phase::DRAG;
 
     PointerDeviceType type = args->CurrentPoint->PointerDevice->PointerDeviceType;
     if ((PointerDeviceType::Mouse == type) || (PointerDeviceType::Pen == type))
     {
+        pointerOrButtonIndex = GetMouseButtonIndex(args);
         if (!(isLeftButtonPressed || isMiddleButtonPressed || isRightButtonPressed))
         {
             phase = UIEvent::Phase::MOVE;
         }
     }
 
-    core->RunOnMainThread([this, phase, x, y, id, type]()
-                          {
-        DAVATouchEvent(phase, x, y, id, ToDavaDeviceId(type));
-                          });
+    core->RunOnMainThread([this, phase, x, y, pointerOrButtonIndex, type]() {
+        DAVATouchEvent(phase, x, y, pointerOrButtonIndex, ToDavaDeviceId(type));
+    });
 }
 
 void WinUAPXamlApp::OnPointerEntered(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args)
