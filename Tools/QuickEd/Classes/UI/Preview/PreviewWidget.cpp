@@ -40,8 +40,6 @@
 #include "QtTools/DavaGLWidget/davaglwidget.h"
 
 #include "Document.h"
-#include "EditorSystems/CanvasSystem.h"
-#include "EditorSystems/HUDSystem.h"
 
 using namespace DAVA;
 

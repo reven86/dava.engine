@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include <QApplication>
 
 #include "Input/InputSystem.h"
 #include "Input/KeyboardDevice.h"
@@ -34,6 +33,7 @@
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "UI/UIEvent.h"
 #include "EditorSystems/EditorSystemsManager.h"
+#include "EditorSystems/KeyboardProxy.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
 
@@ -207,7 +207,8 @@ void SelectionSystem::OnSelectByRect(const Rect& rect)
             selected.insert(node);
         }
     }
-    if (!QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier))
+    const KeyboardProxy* keyBoardProxy = systemManager->GetKeyboardProxy();
+    if (!keyBoardProxy->IsKeyPressed(KeyboardProxy::KEY_SHIFT))
     {
         //deselect all not selected by rect
         std::set_difference(selectionContainer.selectedNodes.begin(), selectionContainer.selectedNodes.end(), areaNodes.begin(), areaNodes.end(), std::inserter(deselected, deselected.end()));
@@ -221,14 +222,15 @@ bool SelectionSystem::ProcessMousePress(const DAVA::Vector2& point)
     SelectedNodes deselected;
     DAVA::Vector<ControlNode*> nodesUnderPoint;
     systemManager->CollectControlNodesByPos(nodesUnderPoint, point);
-    if (!QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier))
+    const KeyboardProxy* keyBoardProxy = systemManager->GetKeyboardProxy();
+    if (!keyBoardProxy->IsKeyPressed(KeyboardProxy::KEY_SHIFT))
     {
         deselected = selectionContainer.selectedNodes;
     }
     if (!nodesUnderPoint.empty())
     {
         auto node = nodesUnderPoint.back();
-        if (QApplication::keyboardModifiers().testFlag(Qt::ControlModifier))
+        if (keyBoardProxy->IsKeyPressed(KeyboardProxy::KEY_CTRL))
         {
             if (selectionContainer.selectedNodes.find(node) != selectionContainer.selectedNodes.end())
             {
@@ -239,7 +241,7 @@ bool SelectionSystem::ProcessMousePress(const DAVA::Vector2& point)
                 selected.insert(node);
             }
         }
-        else if (QApplication::keyboardModifiers().testFlag(Qt::AltModifier))
+        else if (keyBoardProxy->IsKeyPressed(KeyboardProxy::KEY_ALT))
         {
             ControlNode* selectedNode = nullptr;
             systemManager->SelectionByMenuRequested.Emit(nodesUnderPoint, point, selectedNode);
