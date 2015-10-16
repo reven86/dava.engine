@@ -863,6 +863,7 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
                 if( cur_vb != vb )
                 {
                     VertexBufferGLES2::SetToRHI( vb );
+                    PipelineStateGLES2::InvalidateVattrCache();
                     vdecl_pending = true;
                     cur_base_vert = 0;
 
