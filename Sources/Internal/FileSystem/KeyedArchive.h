@@ -470,7 +470,8 @@ public:
      \brief Function to get all data of archive.
      \returns map of VariantType class with names
 	 */
-    const Map<String, VariantType*> & GetArchieveData() const;
+    using ObjectMap = UnorderedMap<String, VariantType*>;
+    const ObjectMap& GetArchieveData() const;
 
     /**
      \brief Function loads data from given yaml Node.
@@ -494,7 +495,7 @@ public:
     static const char* GenKeyFromIndex(uint32 index);
 
 private:
-	Map<String, VariantType*> objectMap;
+    ObjectMap objectMap;
 
 public:
 	INTROSPECTION_EXTEND(KeyedArchive, BaseObject, NULL);

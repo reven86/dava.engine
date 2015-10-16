@@ -346,9 +346,8 @@ bool SceneFileV2::ReadVersionTags(VersionInfo::SceneVersion& _version, File * fi
 
         if (loaded)
         {
-            using KeyedTagsMap = Map<String, VariantType*>;
-            const KeyedTagsMap& keyedTags = tagsArchive->GetArchieveData();
-            for (KeyedTagsMap::const_iterator it = keyedTags.begin(); it != keyedTags.end(); it++)
+            const auto& keyedTags = tagsArchive->GetArchieveData();
+            for (auto it = keyedTags.begin(); it != keyedTags.end(); it++)
             {
                 const String& tag = it->first;
                 const uint32 ver = it->second->AsUInt32();
@@ -1035,9 +1034,9 @@ bool SceneFileV2::RemoveEmptyHierarchy(Entity * currentNode)
                 if(currentProperties)
                 {
                     KeyedArchive * newProperties = GetOrCreateCustomProperties(childNode)->GetArchive();
-                    const Map<String, VariantType*> & oldMap = currentProperties->GetArchieveData();
-                    Map<String, VariantType*>::const_iterator itEnd = oldMap.end();
-                    for(Map<String, VariantType*>::const_iterator it = oldMap.begin(); it != itEnd; ++it)
+                    const KeyedArchive::ObjectMap& oldMap = currentProperties->GetArchieveData();
+                    KeyedArchive::ObjectMap::const_iterator itEnd = oldMap.end();
+                    for (KeyedArchive::ObjectMap::const_iterator it = oldMap.begin(); it != itEnd; ++it)
                     {
                         newProperties->SetVariant(it->first, *it->second);
                     }

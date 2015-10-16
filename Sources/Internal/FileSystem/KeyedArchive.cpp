@@ -159,9 +159,13 @@ bool KeyedArchive::Save(const FilePath & pathName) const
 
 bool KeyedArchive::Save(File *archive) const
 {
+    // preserve backward compatibility, using ordered map
+    Map<String, VariantType*> orderedMap;
+    orderedMap.insert(objectMap.begin(), objectMap.end());
+
     Array<char, 2> header;
     uint16 version = 1;
-    uint32 size = static_cast<uint32>(objectMap.size());
+    uint32 size = static_cast<uint32>(orderedMap.size());
 
     header[0] = 'K'; header[1] = 'A';
     
@@ -171,9 +175,9 @@ bool KeyedArchive::Save(File *archive) const
     {
         return false;
     }
-	for (const auto &obj : objectMap)
-	{
-		VariantType key;
+    for (const auto& obj : orderedMap)
+    {
+        VariantType key;
 		key.SetString(obj.first);
         if (!key.Write(archive)
             || !obj.second->Write(archive))
@@ -685,7 +689,7 @@ void KeyedArchive::Dump() const
 	Logger::FrameworkDebug("============================================================");
 }
 
-const Map<String, VariantType*> & KeyedArchive::GetArchieveData() const
+const KeyedArchive::ObjectMap& KeyedArchive::GetArchieveData() const
 {
     return objectMap;
 }

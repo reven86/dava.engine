@@ -916,8 +916,8 @@ void NMaterial::Load(KeyedArchive * archive, SerializationContext * serializatio
 
     if (archive->IsKeyExists("properties"))
     {
-        const Map<String, VariantType*>& propsMap = archive->GetArchive("properties")->GetArchieveData();
-        for (Map<String, VariantType*>::const_iterator it = propsMap.begin(); it != propsMap.end(); ++it)
+        const auto& propsMap = archive->GetArchive("properties")->GetArchieveData();
+        for (auto it = propsMap.begin(); it != propsMap.end(); ++it)
         {
             const VariantType* propVariant = it->second;
             DVASSERT(VariantType::TYPE_BYTE_ARRAY == propVariant->type);
@@ -940,8 +940,8 @@ void NMaterial::Load(KeyedArchive * archive, SerializationContext * serializatio
 
     if (archive->IsKeyExists("textures"))
     {
-        const Map<String, VariantType*>& texturesMap = archive->GetArchive("textures")->GetArchieveData();
-        for (Map<String, VariantType*>::const_iterator it = texturesMap.begin(); it != texturesMap.end(); ++it)
+        const KeyedArchive::ObjectMap& texturesMap = archive->GetArchive("textures")->GetArchieveData();
+        for (KeyedArchive::ObjectMap::const_iterator it = texturesMap.begin(); it != texturesMap.end(); ++it)
         {
             String relativePathname = it->second->AsString();
             MaterialTextureInfo *texInfo = new MaterialTextureInfo();            
@@ -952,8 +952,8 @@ void NMaterial::Load(KeyedArchive * archive, SerializationContext * serializatio
 
     if (archive->IsKeyExists("flags"))
     {
-        const Map<String, VariantType*>& flagsMap = archive->GetArchive("flags")->GetArchieveData();
-        for (Map<String, VariantType*>::const_iterator it = flagsMap.begin(); it != flagsMap.end(); ++it)
+        const KeyedArchive::ObjectMap& flagsMap = archive->GetArchive("flags")->GetArchieveData();
+        for (KeyedArchive::ObjectMap::const_iterator it = flagsMap.begin(); it != flagsMap.end(); ++it)
         {
 			AddFlag(FastName(it->first), it->second->AsInt32());
         }
@@ -1002,10 +1002,10 @@ void NMaterial::LoadOldNMaterial(KeyedArchive * archive, SerializationContext * 
 
     if (archive->IsKeyExists("textures"))
     {
-        const Map<String, VariantType*>& texturesMap = archive->GetArchive("textures")->GetArchieveData();
-        for (Map<String, VariantType*>::const_iterator it = texturesMap.begin();
-            it != texturesMap.end();
-            ++it)
+        const KeyedArchive::ObjectMap& texturesMap = archive->GetArchive("textures")->GetArchieveData();
+        for (KeyedArchive::ObjectMap::const_iterator it = texturesMap.begin();
+             it != texturesMap.end();
+             ++it)
         {
             String relativePathname = it->second->AsString();
             MaterialTextureInfo *texInfo = new MaterialTextureInfo();
@@ -1016,8 +1016,8 @@ void NMaterial::LoadOldNMaterial(KeyedArchive * archive, SerializationContext * 
 
     if (archive->IsKeyExists("setFlags"))
     {
-        const Map<String, VariantType*>& flagsMap = archive->GetArchive("setFlags")->GetArchieveData();
-        for (Map<String, VariantType*>::const_iterator it = flagsMap.begin(); it != flagsMap.end(); ++it)
+        const KeyedArchive::ObjectMap& flagsMap = archive->GetArchive("setFlags")->GetArchieveData();
+        for (KeyedArchive::ObjectMap::const_iterator it = flagsMap.begin(); it != flagsMap.end(); ++it)
         {
             AddFlag(FastName(it->first), it->second->AsInt32());
         }
@@ -1051,8 +1051,8 @@ void NMaterial::LoadOldNMaterial(KeyedArchive * archive, SerializationContext * 
 
     if (archive->IsKeyExists("properties"))
     {
-        const Map<String, VariantType*>& propsMap = archive->GetArchive("properties")->GetArchieveData();
-        for (Map<String, VariantType*>::const_iterator it = propsMap.begin(); it != propsMap.end(); ++it)
+        const KeyedArchive::ObjectMap& propsMap = archive->GetArchive("properties")->GetArchieveData();
+        for (KeyedArchive::ObjectMap::const_iterator it = propsMap.begin(); it != propsMap.end(); ++it)
         {            
             const VariantType* propVariant = it->second;
             DVASSERT(VariantType::TYPE_BYTE_ARRAY == propVariant->type);

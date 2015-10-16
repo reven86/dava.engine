@@ -286,8 +286,8 @@ void SceneExporter::RemoveEditorCustomProperties(Entity *rootNode)
         KeyedArchive *props = GetCustomPropertiesArchieve(node);
         if(props)
         {
-            const Map<String, VariantType*> propsMap = props->GetArchieveData();
-            
+            const KeyedArchive::ObjectMap propsMap = props->GetArchieveData();
+
             auto endIt = propsMap.end();
             for(auto it = propsMap.begin(); it != endIt; ++it)
             {

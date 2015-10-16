@@ -1332,12 +1332,12 @@ bool VariantType::operator==(const VariantType& other) const
                     {
                         isEqual = true;
                         if(keyedArchive != otherKeyedArchive)
-                        {                                
-                            const Map<String, VariantType*> &data = keyedArchive->GetArchieveData();
-                            const Map<String, VariantType*> &otherData = otherKeyedArchive->GetArchieveData();
+                        {
+                            const KeyedArchive::ObjectMap& data = keyedArchive->GetArchieveData();
+                            const KeyedArchive::ObjectMap& otherData = otherKeyedArchive->GetArchieveData();
                             for(const auto &obj : data)
                             {
-                                Map<String, VariantType*>::const_iterator findIt = otherData.find(obj.first);
+                                KeyedArchive::ObjectMap::const_iterator findIt = otherData.find(obj.first);
                                 if(findIt != otherData.end())
                                 {
                                     if(obj.second != findIt->second)
