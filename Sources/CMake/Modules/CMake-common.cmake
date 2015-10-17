@@ -411,13 +411,19 @@ macro ( add_static_libs_win_uap LIBS_LOCATION OUTPUT_LIB_LIST )
 
 endmacro ()
 
+macro ( add_dynamic_config_lib_win_uap CONFIG_TYPE LIBS_LOCATION OUTPUT_LIB_LIST )
 
+    #search dll's 
+    FOREACH ( LIB_ARCH ${CMAKE_VS_EFFECTIVE_PLATFORMS} )
+        file ( GLOB LIB_LIST "${LIBS_LOCATION}/${LIB_ARCH}/${CONFIG_TYPE}/*.dll" )
+        list ( APPEND "${OUTPUT_LIB_LIST}_${CONFIG_TYPE}" ${LIB_LIST} )
+    ENDFOREACH ()
 
+endmacro ()
 
+macro ( add_dynamic_libs_win_uap LIBS_LOCATION OUTPUT_LIB_LIST )
 
+    add_dynamic_config_lib_win_uap ( "DEBUG"   ${LIBS_LOCATION} ${OUTPUT_LIB_LIST} )
+    add_dynamic_config_lib_win_uap ( "RELEASE" ${LIBS_LOCATION} ${OUTPUT_LIB_LIST} )
 
-
-
-
-
-  
+endmacro ()
