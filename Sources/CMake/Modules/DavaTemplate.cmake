@@ -460,10 +460,16 @@ elseif ( WIN32 )
         #add a build step for dll deploy fix. 
         if ( NEED_DLL_FIX )
             set ( DLL_FIX_TARGET_NAME "DLL_FIX_${PROJECT_NAME}" )
-                
+            
+            if ( "${PROJECT_NAME}" STREQUAL "${CMAKE_PROJECT_NAME}" )
+                set ( VS_PROJECT_PATH "${CMAKE_BINARY_DIR}" )
+            else ()
+                set ( VS_PROJECT_PATH "${CMAKE_BINARY_DIR}/${PROJECT_NAME}" )
+            endif ()
+            
             add_custom_target ( ${DLL_FIX_TARGET_NAME} ALL
                     COMMAND python.exe ${DAVA_SCRIPTS_FILES_PATH}/vs_uwp_dll_deploy_fix.py
-                                       ${CMAKE_BINARY_DIR}/${PROJECT_NAME}.vcxproj
+                                       ${VS_PROJECT_PATH}/${PROJECT_NAME}.vcxproj
             )
 
             add_dependencies( ${PROJECT_NAME} ${DLL_FIX_TARGET_NAME} )
