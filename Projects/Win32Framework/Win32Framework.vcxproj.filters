@@ -1786,6 +1786,9 @@
     <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UIFlowLayoutHintComponent.h">
       <Filter>Internal\UI\Layouts</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Platform\DeviceInfoPrivateBase.h">
+      <Filter>Internal\Platform</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\Internal\DAVAEngine.cpp">
@@ -3141,6 +3144,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UIFlowLayoutHintComponent.cpp">
       <Filter>Internal\UI\Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Platform\DeviceInfoPrivateBase.cpp">
+      <Filter>Internal\Platform</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
