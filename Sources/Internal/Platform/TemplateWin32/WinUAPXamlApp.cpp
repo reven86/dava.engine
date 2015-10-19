@@ -395,9 +395,13 @@ void WinUAPXamlApp::OnPointerMoved(Windows::UI::Core::CoreWindow^ sender, Window
         {
             phase = isButtonPressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
         }
-        else if (!(isLeftButtonPressed || isRightButtonPressed || isMiddleButtonPressed))
+        else if (!isLeftButtonPressed) // drag only with left mouse button(PC, Mac)
         {
             phase = UIEvent::Phase::MOVE;
+        }
+        else if (isLeftButtonPressed)
+        {
+            pointerOrButtonIndex = UIEvent::BUTTON_1;
         }
     }
 
