@@ -56,6 +56,10 @@ extern void CloseKeyboard();
 #include "Platform/SystemTimer.h"
 namespace DAVA
 {
+// This implementation simulate iOS/Android native contols,
+// so no ierarhy for internal UIStaticText, and call UpdateRect
+// every frame, and render directly in SyctemDraw. This helps
+// to find similar bugs in all implementations
 class TextFieldPlatformImpl
 {
 public:
@@ -102,6 +106,7 @@ public:
     }
     void UpdateRect(const Rect& rect)
     {
+        // see comment for TextFieldPlatformImpl class above
         staticText_->SetRect(rect);
 
         if (control_ == UIControlSystem::Instance()->GetFocusedControl())
@@ -247,7 +252,7 @@ public:
     }
     void SystemDraw(const UIGeometricData&)
     {
-        // we update rect on every frame, so no need to use ierarhy
+        // see comment for TextFieldPlatformImpl class above
         UIGeometricData d;
         staticText_->SystemDraw(d);
     }
