@@ -117,7 +117,7 @@ private:
     void OnMouseMoved(Windows::Devices::Input::MouseDevice^ mouseDevice, Windows::Devices::Input::MouseEventArgs^ args);
 
     void DAVATouchEvent(UIEvent::Phase phase, float32 x, float32 y, int32 id, UIEvent::Device deviceIndex);
-    UIEvent::eButtonID GetMouseButtonIndex(Windows::UI::Core::PointerEventArgs ^ args);
+    UIEvent::eButtonID GetMouseButtonIndex(Windows::UI::Core::PointerEventArgs ^ args, bool& isButtonPushed);
 
     void SetupEventHandlers();
     void CreateBaseXamlUI();

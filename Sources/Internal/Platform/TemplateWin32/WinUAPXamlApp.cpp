@@ -307,7 +307,7 @@ void WinUAPXamlApp::OnWindowSizeChanged(::Windows::UI::Core::CoreWindow^ sender,
     }
 }
 
-UIEvent::eButtonID WinUAPXamlApp::GetMouseButtonIndex(Windows::UI::Core::PointerEventArgs ^ args)
+UIEvent::eButtonID WinUAPXamlApp::GetMouseButtonIndex(Windows::UI::Core::PointerEventArgs ^ args, bool& isButtonPressed)
 {
     UIEvent::eButtonID result = UIEvent::BUTTON_NONE;
 
@@ -315,14 +315,19 @@ UIEvent::eButtonID WinUAPXamlApp::GetMouseButtonIndex(Windows::UI::Core::Pointer
     if (isLeftButtonPressed != pointProperties->IsLeftButtonPressed)
     {
         result = UIEvent::BUTTON_1;
+        isButtonPressed = pointProperties->IsLeftButtonPressed;
     }
+
     if (isRightButtonPressed != pointProperties->IsRightButtonPressed)
     {
         result = UIEvent::BUTTON_2;
+        isButtonPressed = pointProperties->IsRightButtonPressed;
     }
+
     if (isMiddleButtonPressed != pointProperties->IsMiddleButtonPressed)
     {
         result = UIEvent::BUTTON_3;
+        isButtonPressed = pointProperties->IsMiddleButtonPressed;
     }
     isLeftButtonPressed = pointProperties->IsLeftButtonPressed;
     isRightButtonPressed = pointProperties->IsRightButtonPressed;
@@ -340,10 +345,10 @@ void WinUAPXamlApp::OnPointerPressed(Windows::UI::Core::CoreWindow^ sender, Wind
     float32 y = pointPtr->Position.Y;
     int32 pointerOrButtonIndex = pointPtr->PointerId;
 
-    // will be started on main thread
     if ((PointerDeviceType::Mouse == type) || (PointerDeviceType::Pen == type))
     {
-        pointerOrButtonIndex = GetMouseButtonIndex(args);
+        bool isButtonPressed;
+        pointerOrButtonIndex = GetMouseButtonIndex(args, isButtonPressed);
     }
 
     core->RunOnMainThread([this, x, y, pointerOrButtonIndex, type]() {
@@ -353,7 +358,6 @@ void WinUAPXamlApp::OnPointerPressed(Windows::UI::Core::CoreWindow^ sender, Wind
 
 void WinUAPXamlApp::OnPointerReleased(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args)
 {
-    // will be started on main thread
     float32 x = args->CurrentPoint->Position.X;
     float32 y = args->CurrentPoint->Position.Y;
     int32 pointerOrButtonIndex = args->CurrentPoint->PointerId;
@@ -361,7 +365,8 @@ void WinUAPXamlApp::OnPointerReleased(Windows::UI::Core::CoreWindow^ sender, Win
 
     if ((PointerDeviceType::Mouse == type) || (PointerDeviceType::Pen == type))
     {
-        pointerOrButtonIndex = GetMouseButtonIndex(args);
+        bool isButtonPressed;
+        pointerOrButtonIndex = GetMouseButtonIndex(args, isButtonPressed);
     }
 
     auto fn = [this, x, y, pointerOrButtonIndex, type]() {
@@ -373,7 +378,9 @@ void WinUAPXamlApp::OnPointerReleased(Windows::UI::Core::CoreWindow^ sender, Win
 
 void WinUAPXamlApp::OnPointerMoved(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args)
 {
-    // will be started on main thread
+    // WORKAROUND! if you hold left mouse button(or any other)
+    // and then push right mouse button you will reseave OnPointerMoved!!!
+    // we have to store buttons state and every time check what happens
     float32 x = args->CurrentPoint->Position.X;
     float32 y = args->CurrentPoint->Position.Y;
     int32 pointerOrButtonIndex = args->CurrentPoint->PointerId;
@@ -382,8 +389,13 @@ void WinUAPXamlApp::OnPointerMoved(Windows::UI::Core::CoreWindow^ sender, Window
     PointerDeviceType type = args->CurrentPoint->PointerDevice->PointerDeviceType;
     if ((PointerDeviceType::Mouse == type) || (PointerDeviceType::Pen == type))
     {
-        pointerOrButtonIndex = GetMouseButtonIndex(args);
-        if (!(isLeftButtonPressed || isMiddleButtonPressed || isRightButtonPressed))
+        bool isButtonPressed;
+        pointerOrButtonIndex = GetMouseButtonIndex(args, isButtonPressed);
+        if (UIEvent::BUTTON_NONE != pointerOrButtonIndex)
+        {
+            phase = isButtonPressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
+        }
+        else if (!(isLeftButtonPressed || isRightButtonPressed || isMiddleButtonPressed))
         {
             phase = UIEvent::Phase::MOVE;
         }
