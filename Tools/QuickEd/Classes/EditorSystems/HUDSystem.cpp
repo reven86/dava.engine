@@ -474,9 +474,7 @@ void HUDSystem::OnSelectionChanged(const SelectedNodes& selected, const Selected
         {
             if (nullptr != controlNode && nullptr != controlNode->GetControl())
             {
-                hudMap.emplace(std::piecewise_construct,
-                               std::forward_as_tuple(controlNode),
-                               std::forward_as_tuple(new HUD(controlNode, hudControl.Get())));
+                hudMap[controlNode] = std::make_unique<HUD>(controlNode, hudControl.Get());
                 sortedControlList.insert(controlNode);
             }
         }
