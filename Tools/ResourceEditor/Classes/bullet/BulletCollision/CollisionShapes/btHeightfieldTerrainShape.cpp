@@ -261,30 +261,36 @@ void btHeightfieldTerrainShape::processAllTriangles(btTriangleCallback* callback
     auto hData = m_heightfieldDataFloat;
     if (m_flipQuadEdges)
     {
-        float fStartX = m_width2 + static_cast<float>(startX);
-        float fy = m_length2 + static_cast<float>(startY);
+        float sx = m_localScaling.getX();
+        float sy = m_localScaling.getY();
+        float sz = m_localScaling.getZ();
+
+        float fStartX = sx * (m_width2 + static_cast<float>(startX));
+        float fy = sy * (m_length2 + static_cast<float>(startY));
         float fz = m_localOrigin.m_floats[2];
-        btVector3 localScale = m_localScaling;
-        for (int y = startY; y < endY; ++y, fy += 1.0f)
+
+        for (int y = startY; y < endY; ++y, fy += sy)
         {
             int r0 = y * m_heightStickWidth;
             int r1 = (y + 1) * m_heightStickWidth;
-            float fx = fStartX;
-            float y0x0 = m_heightfieldDataFloat[startX + r0] - fz;
-            float y1x0 = m_heightfieldDataFloat[startX + r1] - fz;
-            for (int x = startX; x < endX; ++x, fx += 1.0f)
-            {
-                float y0x1 = m_heightfieldDataFloat[x + 1 + r0] - fz;
-                float y1x1 = m_heightfieldDataFloat[x + 1 + r1] - fz;
 
-                btVector3 vertices[3];
-                vertices[0] = localScale * btVector3(fx, fy, y0x0);
-                vertices[1] = localScale * btVector3(fx + 1.0f, fy, y0x1);
-                vertices[2] = localScale * btVector3(fx + 1.0f, fy + 1.0f, y1x1);
+            float fx = fStartX;
+            float y0x0 = sz * (m_heightfieldDataFloat[startX + r0] - fz);
+            float y1x0 = sz * (m_heightfieldDataFloat[startX + r1] - fz);
+            for (int x = startX; x < endX; ++x, fx += sx)
+            {
+                float y0x1 = sz * (m_heightfieldDataFloat[x + 1 + r0] - fz);
+                float y1x1 = sz * (m_heightfieldDataFloat[x + 1 + r1] - fz);
+
+                btVector3 vertices[4];
+                vertices[0] = btVector3(fx, fy, y0x0);
+                vertices[1] = btVector3(fx + sx, fy, y0x1);
+                vertices[2] = btVector3(fx + sx, fy + sy, y1x1);
+                vertices[3] = btVector3(fx, fy + sy, y1x0);
                 callback->processTriangle(vertices, x, y);
 
                 vertices[1] = vertices[2];
-                vertices[2] = localScale * btVector3(fx, fy + 1.0f, y1x0);
+                vertices[2] = vertices[3];
                 callback->processTriangle(vertices, x, y);
 
                 y0x0 = y0x1;

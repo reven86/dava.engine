@@ -41,9 +41,10 @@ public:
 	CollisionLandscape(DAVA::Entity *entity, btCollisionWorld *word, DAVA::Landscape *landscape);
 	virtual ~CollisionLandscape();
 
-protected:
-	btHeightfieldTerrainShape* btTerrain;
-	DAVA::Vector<DAVA::float32> btHMap;
+private:
+    class CollisionLandscapePrivate;
+    CollisionLandscapePrivate* impl = nullptr;
+    char implData[1024];
 };
 
 #endif // __SCENE_COLLISION_LANDSCAPE_H__

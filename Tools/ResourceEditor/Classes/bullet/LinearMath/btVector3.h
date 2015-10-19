@@ -58,8 +58,6 @@ subject to the following restrictions:
 #define btVector3DataName "btVector3FloatData"
 #endif //BT_USE_DOUBLE_PRECISION
 
-
-
 /**@brief btVector3 can be used to represent 3D points and vectors.
  * It has an un-used w component to suit 16-byte alignment when btVector3 is stored in containers. This extra component can be used by derived classes (Quaternion?) or by user
  * Ideally, this class should be replaced by a platform optimized SIMD version that keeps the data in registers
@@ -555,11 +553,7 @@ operator/(const btVector3& v, const btScalar& s)
 SIMD_FORCE_INLINE btVector3
 operator/(const btVector3& v1, const btVector3& v2)
 {
-#ifdef BT_USE_SSE
-    return btVector3(_mm_div_ps(v1.mVec128, v2.mVec128));
-#else
     return btVector3(v1.m_floats[0] / v2.m_floats[0],v1.m_floats[1] / v2.m_floats[1],v1.m_floats[2] / v2.m_floats[2]);
-#endif
 }
 
 /**@brief Return the dot product between two vectors */
@@ -615,7 +609,15 @@ lerp(const btVector3& v1, const btVector3& v2, const btScalar& t)
 	return v1.lerp(v2, t);
 }
 
-
+SIMD_FORCE_INLINE btVector3
+div(const btVector3& v1, const btVector3& v2)
+{
+#ifdef BT_USE_SSE
+    return btVector3(_mm_div_ps(v1.mVec128, v2.mVec128));
+#else
+    return operator/(v1, v2);
+#endif
+}
 
 SIMD_FORCE_INLINE btScalar btVector3::distance2(const btVector3& v) const
 {

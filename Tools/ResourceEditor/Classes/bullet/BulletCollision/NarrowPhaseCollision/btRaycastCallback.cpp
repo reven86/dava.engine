@@ -63,8 +63,6 @@ btTriangleRaycastCallback::btTriangleRaycastCallback(const btVector3& from,const
 
 }
 
-
-
 void btTriangleRaycastCallback::processTriangle(btVector3* triangle,int partId, int triangleIndex)
 {
 	const btVector3 &vert0=triangle[0];
@@ -81,8 +79,8 @@ void btTriangleRaycastCallback::processTriangle(btVector3* triangle,int partId, 
 	btScalar dist_b = triangleNormal.dot(m_to);
 	dist_b -= dist;
 
-	if ( dist_a * dist_b >= btScalar(0.0) )
-	{
+    if (dist_a * dist_b > 0.0f)
+    {
 		return ; // same sign
 	}
    //@BP Mod - Backface filtering

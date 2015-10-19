@@ -291,10 +291,7 @@ void VisibilityToolSystem::SetVisibilityAreaInternal()
         point.z = drawSystem->GetHeightAtTexturePoint(textureLevel, point.xy()) + visibilityPointHeight;
 
         Vector<Vector3> resP;
-
-        PerformHeightTest(point, Vector2(0.5f, 0.5f) * landscapeSize,
-                          0.5f * landscapeSize, pointsDensity, areaPointHeights, resP);
-
+        PerformHeightTest(point, Vector2(0.5f, 0.5f) * landscapeSize, 0.5f * landscapeSize, pointsDensity, areaPointHeights, resP);
         DrawVisibilityAreaPoints(resP);
 
         // render view point one more time

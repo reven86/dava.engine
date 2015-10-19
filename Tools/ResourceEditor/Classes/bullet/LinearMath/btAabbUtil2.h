@@ -125,8 +125,8 @@ SIMD_FORCE_INLINE bool btRayAabb2(const btVector3& rayFrom,
 								  btScalar lambda_max)
 {
 	btScalar tmax, tymin, tymax, tzmin, tzmax;
-    btVector3 vmin(bounds[raySign[0]].getX(), bounds[raySign[1]].getX(), bounds[raySign[2]].getX());
-    btVector3 vmax(bounds[1 - raySign[0]].getX(), bounds[1 - raySign[1]].getX(), bounds[1 - raySign[2]].getX());
+    btVector3 vmin(bounds[raySign[0]].getX(), bounds[raySign[1]].getY(), bounds[raySign[2]].getZ());
+    btVector3 vmax(bounds[1 - raySign[0]].getX(), bounds[1 - raySign[1]].getY(), bounds[1 - raySign[2]].getZ());
     vmin -= rayFrom;
     vmin *= rayInvDirection;
     vmax -= rayFrom;
