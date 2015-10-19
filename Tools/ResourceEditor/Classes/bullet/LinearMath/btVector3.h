@@ -58,6 +58,8 @@ subject to the following restrictions:
 #define btVector3DataName "btVector3FloatData"
 #endif //BT_USE_DOUBLE_PRECISION
 
+#undef BT_USE_SSE
+
 /**@brief btVector3 can be used to represent 3D points and vectors.
  * It has an un-used w component to suit 16-byte alignment when btVector3 is stored in containers. This extra component can be used by derived classes (Quaternion?) or by user
  * Ideally, this class should be replaced by a platform optimized SIMD version that keeps the data in registers
@@ -610,7 +612,7 @@ lerp(const btVector3& v1, const btVector3& v2, const btScalar& t)
 }
 
 SIMD_FORCE_INLINE btVector3
-div(const btVector3& v1, const btVector3& v2)
+btVector3Div(const btVector3& v1, const btVector3& v2)
 {
 #ifdef BT_USE_SSE
     return btVector3(_mm_div_ps(v1.mVec128, v2.mVec128));
