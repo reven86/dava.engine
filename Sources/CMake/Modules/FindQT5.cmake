@@ -16,12 +16,16 @@ macro ( qt_deploy )
             endif()
         endforeach()
 
+        if (QML_SCAN_DIR)
+            set(QML_SCAN_FLAG "--qmldir ${QML_SCAN_DIR}")
+        endif()
+
         ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME} POST_BUILD
             COMMAND "${DAVA_SCRIPTS_FILES_PATH}/deployqt.bat"
             "${QT5_PATH_WIN}/bin/"
             $<$<CONFIG:Debug>:--debug> $<$<NOT:$<CONFIG:Debug>>:--release>
             --dir  "${DEPLOY_DIR}/"
-            --qmldir "${QML_SCAN_DIR}" "$<TARGET_FILE:${PROJECT_NAME}>"
+            "${QML_SCAN_FLAG}" "$<TARGET_FILE:${PROJECT_NAME}>"
             ${QT_ITEMS_LIST}
         )
 
@@ -32,11 +36,15 @@ macro ( qt_deploy )
             set(BUNDLE_NAME ${PROJECT_NAME})
         endif()
 
+        if (QML_SCAN_DIR)
+            set(QML_SCAN_FLAG "-qmldir=${QML_SCAN_DIR}")
+        endif()
+
         ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD
             COMMAND ${QT5_PATH_MAC}/bin/macdeployqt
                     ${DEPLOY_DIR}/${BUNDLE_NAME}.app
                     -always-overwrite
-                    -qmldir="${QML_SCAN_DIR}"
+                    "${QML_SCAN_FLAG}"
         )
 
     endif()
