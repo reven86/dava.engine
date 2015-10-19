@@ -629,14 +629,17 @@ HUDAreaInfo HUDSystem::GetControlArea(const Vector2& pos, eSearchOrder searchOrd
             auto findIter = hudMap.find(node);
             DVASSERT_MSG(findIter != hudMap.end(), "hud map corrupted");
             const auto& hud = findIter->second;
-            HUDAreaInfo::eArea area = static_cast<HUDAreaInfo::eArea>(end + sign * i);
-            auto hudControlsIter = hud->hudControls.find(area);
-            if (hudControlsIter != hud->hudControls.end())
+            if (hud->container->GetSystemVisible())
             {
-                const auto& controlContainer = hudControlsIter->second;
-                if (controlContainer->GetSystemVisible() && controlContainer->IsPointInside(pos))
+                HUDAreaInfo::eArea area = static_cast<HUDAreaInfo::eArea>(end + sign * i);
+                auto hudControlsIter = hud->hudControls.find(area);
+                if (hudControlsIter != hud->hudControls.end())
                 {
-                    return HUDAreaInfo(hud->node, area);
+                    const auto& controlContainer = hudControlsIter->second;
+                    if (controlContainer->GetSystemVisible() && controlContainer->IsPointInside(pos))
+                    {
+                        return HUDAreaInfo(hud->node, area);
+                    }
                 }
             }
         }
