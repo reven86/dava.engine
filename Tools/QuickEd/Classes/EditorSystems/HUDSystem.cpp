@@ -399,6 +399,7 @@ HUDSystem::HUD::HUD(ControlNode* node_, UIControl* hudControl_)
     }
     hudControl->AddControl(container.Get());
     container->InitFromGD(control->GetGeometricData());
+    UpdateHUDVisibility();
 }
 
 HUDSystem::HUD::~HUD()

@@ -135,6 +135,7 @@ void TransformSystem::OnActiveAreaChanged(const HUDAreaInfo& areaInfo)
         UIControl* parent = control->GetParent();
         parentGeometricData = parent->GetGeometricData();
         controlGeometricData = control->GetGeometricData();
+
         DVASSERT(parentGeometricData.scale.x > 0.0f && parentGeometricData.scale.y > 0.0f);
         DVASSERT(parentGeometricData.size.x > 0.0f && parentGeometricData.size.y > 0.0f);
         DVASSERT(controlGeometricData.scale.x > 0.0f && controlGeometricData.scale.y > 0.0f);
@@ -285,16 +286,14 @@ void TransformSystem::MoveAllSelectedControls(Vector2 delta, bool canAdjust)
     Vector<std::tuple<ControlNode*, AbstractProperty*, VariantType>> propertiesToChange;
     Vector<MagnetLineInfo> magnets;
     //at furst we need to magnet control under cursor or unmagnet it
+    if (canAdjust)
     {
         Vector2 scaledDelta = delta / parentGeometricData.scale;
         Vector2 deltaPosition(RotateVector(scaledDelta, -parentGeometricData.angle));
         Vector2 adjustedPosition(deltaPosition);
         adjustedPosition += extraDelta;
         extraDelta.SetZero();
-        if (canAdjust)
-        {
-            adjustedPosition = AdjustMoveToNearestBorder(adjustedPosition, magnets, &parentGeometricData, activeControlNode->GetControl());
-        }
+        adjustedPosition = AdjustMoveToNearestBorder(adjustedPosition, magnets, &parentGeometricData, activeControlNode->GetControl());
         AbstractProperty* property = positionProperty;
         Vector2 originalPosition = property->GetValue().AsVector2();
         Vector2 finalPosition(originalPosition + adjustedPosition);
