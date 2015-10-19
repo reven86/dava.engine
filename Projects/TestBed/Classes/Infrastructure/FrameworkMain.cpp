@@ -56,12 +56,24 @@ void FrameworkDidLaunched()
     appOptions->SetBool("iPhone_autodetectScreenScaleFactor", true);
 
     DAVA::VirtualCoordinatesSystem::Instance()->SetProportionsIsFixed(false);
+    
+#elif defined (__DAVAENGINE_MACOS__)
+    screenWidth = WIDTH;
+    screenHeight = HEIGHT;
+
+    appOptions->SetInt32("renderer", rhi::RHI_GLES2);
+    appOptions->SetInt32("fullscreen", 1);
+    appOptions->SetInt32("bpp", 32);
+    
+    DAVA::VirtualCoordinatesSystem::Instance()->SetProportionsIsFixed(false);
+    
 #elif defined (__DAVAENGINE_WIN_UAP__)
     screenWidth = DeviceInfo::GetScreenInfo().width;
     screenHeight = DeviceInfo::GetScreenInfo().height;
 
     appOptions->SetInt32("fullscreen", 0);
     appOptions->SetInt32("bpp", 32);
+    
 #else
     screenWidth = WIDTH;
     screenHeight = HEIGHT;
@@ -69,6 +81,7 @@ void FrameworkDidLaunched()
     appOptions->SetInt32("renderer", rhi::RHI_DX9);
     appOptions->SetInt32("fullscreen", 0);
     appOptions->SetInt32("bpp", 32);
+    
 #endif 
     
     appOptions->SetInt32("width", screenWidth);
