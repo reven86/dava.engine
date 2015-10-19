@@ -84,8 +84,8 @@ public:
         WAYPOINT_COMPONENT,
         EDGE_COMPONENT,
 
-        COMPONENT_COUNT,
-        FIRST_USER_DEFINED_COMPONENT = 0xFFFF
+        FIRST_USER_DEFINED_COMPONENT = 48,
+        COMPONENT_COUNT = 64
     };
 
 public:
