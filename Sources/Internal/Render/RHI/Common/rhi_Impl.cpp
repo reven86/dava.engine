@@ -49,6 +49,8 @@
     using DAVA::Logger;
     #include "Concurrency/Spinlock.h"
 
+    #include "MemoryManager/MemoryProfiler.h"
+
 namespace rhi
 {
 
@@ -176,13 +178,29 @@ namespace VertexBuffer
 Handle  
 Create( const Descriptor& desc )
 {
+#if !defined(DAVA_MEMORY_PROFILING_ENABLE)
     return (*_Impl.impl_VertexBuffer_Create)( desc );
+#else
+    Handle handle = (*_Impl.impl_VertexBuffer_Create)(desc);
+    if (handle != rhi::InvalidHandle)
+    {
+        DAVA_MEMORY_PROFILER_GPU_ALLOC(handle, desc.size, DAVA::ALLOC_GPU_RDO_VERTEX);
+    }
+    return handle;
+#endif
 }
 
 void
 Delete( Handle vb )
 {
+#if !defined(DAVA_MEMORY_PROFILING_ENABLE)
     return (*_Impl.impl_VertexBuffer_Delete)( vb );
+#else
+    if (vb != rhi::InvalidHandle)
+    {
+        DAVA_MEMORY_PROFILER_GPU_DEALLOC(vb, DAVA::ALLOC_GPU_RDO_VERTEX);
+    }
+#endif
 }
 
 bool    
@@ -221,13 +239,29 @@ namespace IndexBuffer
 Handle  
 Create( const Descriptor& desc )
 {
+#if !defined(DAVA_MEMORY_PROFILING_ENABLE)
     return (*_Impl.impl_IndexBuffer_Create)( desc );
+#else
+    Handle handle = (*_Impl.impl_IndexBuffer_Create)(desc);
+    if (handle != rhi::InvalidHandle)
+    {
+        DAVA_MEMORY_PROFILER_GPU_ALLOC(handle, desc.size, DAVA::ALLOC_GPU_RDO_INDEX);
+    }
+    return handle;
+#endif
 }
 
 void
 Delete( Handle vb )
 {
+#if !defined(DAVA_MEMORY_PROFILING_ENABLE)
     return (*_Impl.impl_IndexBuffer_Delete)( vb );
+#else
+    if (vb != rhi::InvalidHandle)
+    {
+        DAVA_MEMORY_PROFILER_GPU_DEALLOC(vb, DAVA::ALLOC_GPU_RDO_INDEX);
+    }
+#endif
 }
 
 bool    
@@ -301,16 +335,54 @@ namespace
 Texture
 {
 
+#if defined(DAVA_MEMORY_PROFILING_ENABLE)
+uint32 TextureSizeForProfiling(Handle handle, const Texture::Descriptor& desc)
+{
+    uint32 size = 0;
+    uint32 nfaces = desc.type == TEXTURE_TYPE_CUBE ? 6 : 1;
+    for (uint32 curFace = 0; curFace < nfaces; ++curFace)
+    {
+        for (uint32 curLevel = 0; curLevel < desc.levelCount; ++curLevel)
+        {
+            if (desc.initialData[curFace * desc.levelCount + curLevel] != nullptr)
+            {
+                Size2i sz = TextureExtents(Size2i(desc.width, desc.height), curLevel);
+                uint32 n = TextureSize(desc.format, sz.dx, sz.dy);
+                size += n;
+            }
+        }
+    }
+    return size;
+}
+#endif
+
 Handle
 Create( const Texture::Descriptor& desc )
 {
+#if !defined(DAVA_MEMORY_PROFILING_ENABLE)
     return (*_Impl.impl_Texture_Create)( desc );
+#else
+    Handle handle = (*_Impl.impl_Texture_Create)(desc);
+    if (handle != rhi::InvalidHandle)
+    {
+        uint32 size = TextureSizeForProfiling(handle, desc);
+        DAVA_MEMORY_PROFILER_GPU_ALLOC(handle, size, DAVA::ALLOC_GPU_TEXTURE);
+    }
+    return handle;
+#endif
 }
 
 void
 Delete( Handle tex )
 {
+#if !defined(DAVA_MEMORY_PROFILING_ENABLE)
     return (*_Impl.impl_Texture_Delete)( tex );
+#else
+    if (tex != rhi::InvalidHandle)
+    {
+        DAVA_MEMORY_PROFILER_GPU_DEALLOC(tex, DAVA::ALLOC_GPU_TEXTURE);
+    }
+#endif
 }
 
 void*
