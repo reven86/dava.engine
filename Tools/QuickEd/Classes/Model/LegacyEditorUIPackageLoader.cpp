@@ -52,9 +52,6 @@ const FastName PROPERTY_NAME_TEXT_USE_RTL_ALIGN("textUseRtlAlign");
 
 LegacyEditorUIPackageLoader::LegacyEditorUIPackageLoader(LegacyControlData *data)
     : legacyData(SafeRetain(data))
-    , storeAggregatorName(false)
-    , aggregatorName("")
-
 {
     // for legacy loading
     
@@ -127,11 +124,6 @@ bool LegacyEditorUIPackageLoader::LoadPackage(const FilePath &packagePath, Abstr
     const LegacyControlData::Data *data = legacyData ? legacyData->Get(packagePath.GetFrameworkPath()) : NULL;
     if (data)
     {
-        if (storeAggregatorName)
-        {
-            aggregatorName = data->name;
-            storeAggregatorName = false;
-        }
         legacyControl->SetName(data->name);
         builder->ProcessProperty(legacyControl->TypeInfo()->Member(PROPERTY_NAME_SIZE), VariantType(data->size));
     }
@@ -178,15 +170,19 @@ void LegacyEditorUIPackageLoader::LoadControl(const DAVA::String &name, const Ya
     {
         loadChildren = false;
         const YamlNode *pathNode = node->Get("aggregatorPath");
-        storeAggregatorName = true;
-        aggregatorName = "";
-        bool result = builder->ProcessImportedPackage(pathNode->AsString(), this);
+        String aggregatorName = "";
+        String packagPath(pathNode->AsString());
+        bool result = builder->ProcessImportedPackage(packagPath, this);
+        
+        const LegacyControlData::Data *data = legacyData ? legacyData->Get(packagPath) : NULL;
+        if (nullptr != data)
+        {
+            aggregatorName = data->name;
+        }
+        
         DVASSERT(result);
-        DVASSERT(storeAggregatorName == false);
         DVASSERT(!aggregatorName.empty());
         control = builder->BeginControlWithPrototype(FilePath(pathNode->AsString()).GetBasename(), aggregatorName, nullptr, this);
-        storeAggregatorName = false;
-        aggregatorName = "";
     }
     else if (baseType)
         control = builder->BeginControlWithCustomClass(type->AsString(), baseType->AsString());

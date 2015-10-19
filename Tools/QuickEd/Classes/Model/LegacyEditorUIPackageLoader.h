@@ -95,8 +95,6 @@ private:
 
 private:
     LegacyControlData *legacyData;
-    bool storeAggregatorName;
-    DAVA::String aggregatorName;
 };
 
 
