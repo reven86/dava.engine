@@ -337,8 +337,8 @@ endmacro ()
 
 macro ( add_content_win_uap_single CONTENT_DIR )
 
-	#get all files from it and add to SRC
-	file ( GLOB_RECURSE CONTENT_LIST_TMP "${CONTENT_DIR}/*")
+    #get all files from it and add to SRC
+    file ( GLOB_RECURSE CONTENT_LIST_TMP "${CONTENT_DIR}/*")
     
     #check svn dir (it happens)
     FOREACH( ITEM ${CONTENT_LIST_TMP} )
@@ -350,46 +350,50 @@ macro ( add_content_win_uap_single CONTENT_DIR )
 
     ENDFOREACH()
     
-	list ( APPEND ADDED_CONTENT_SRC ${CONTENT_LIST} )
+    list ( APPEND ADDED_CONTENT_SRC ${CONTENT_LIST} )
     set ( GROUP_PREFIX "Content\\" )
-	get_filename_component ( CONTENT_DIR_ABS ${CONTENT_DIR} ABSOLUTE )
-	get_filename_component ( CONTENT_DIR_PATH ${CONTENT_DIR_ABS} PATH )
-	
-	#process all content files
-	FOREACH( ITEM ${CONTENT_LIST} )
-		get_filename_component ( ITEM ${ITEM} ABSOLUTE )
-	    #message("Item: ${ITEM}")
-		
-		#add item to project source group "Content"
-		get_filename_component ( ITEM_PATH ${ITEM} PATH )
-		STRING( REGEX REPLACE "${CONTENT_DIR_PATH}" "" ITEM_GROUP ${ITEM_PATH} )
-		
-		#remove the first '/' symbol
-		STRING ( SUBSTRING ${ITEM_GROUP} 0 1 FIRST_SYMBOL )
-		if (FIRST_SYMBOL STREQUAL "/")
-		    STRING ( SUBSTRING ${ITEM_GROUP} 1 -1 ITEM_GROUP )
-		endif ()
-		
-		#reverse the slashes
-		STRING( REGEX REPLACE "/" "\\\\" ITEM_GROUP ${ITEM_GROUP} )
-		#message( "Item group: ${GROUP_PREFIX}${ITEM_GROUP}" )
-		source_group( ${GROUP_PREFIX}${ITEM_GROUP} FILES ${ITEM} )
-		
-		#set deployment properties to item
-		set_property( SOURCE ${ITEM} PROPERTY VS_DEPLOYMENT_CONTENT 1 )
-		set_property( SOURCE ${ITEM} PROPERTY VS_DEPLOYMENT_LOCATION ${ITEM_GROUP} )
-		
-	ENDFOREACH()
-	
+    get_filename_component ( CONTENT_DIR_ABS ${CONTENT_DIR} ABSOLUTE )
+    get_filename_component ( CONTENT_DIR_PATH ${CONTENT_DIR_ABS} PATH )
+
+    #process all content files
+    FOREACH( ITEM ${CONTENT_LIST} )
+        get_filename_component ( ITEM ${ITEM} ABSOLUTE )
+        #message("Item: ${ITEM}")
+        
+        #add item to project source group "Content"
+        get_filename_component ( ITEM_PATH ${ITEM} PATH )
+        STRING( REGEX REPLACE "${CONTENT_DIR_PATH}" "" ITEM_GROUP ${ITEM_PATH} )
+        
+        #remove the first '/' symbol
+        STRING ( SUBSTRING ${ITEM_GROUP} 0 1 FIRST_SYMBOL )
+        if (FIRST_SYMBOL STREQUAL "/")
+            STRING ( SUBSTRING ${ITEM_GROUP} 1 -1 ITEM_GROUP )
+        endif ()
+        
+        #reverse the slashes
+        STRING( REGEX REPLACE "/" "\\\\" ITEM_GROUP ${ITEM_GROUP} )
+        #message( "Group prefix: ${GROUP_PREFIX}" )
+        #message( "Item group: ${ITEM_GROUP}" )
+        source_group( ${GROUP_PREFIX}${ITEM_GROUP} FILES ${ITEM} )
+        
+        #set deployment properties to item
+        set_property( SOURCE ${ITEM} PROPERTY VS_DEPLOYMENT_CONTENT 1 )
+        
+        #all resources deploys in specified location
+        set ( DEPLOYMENT_LOCATION "${DAVA_WIN_UAP_RESOURCES_DEPLOYMENT_LOCATION}\\${ITEM_GROUP}" )
+        set_property( SOURCE ${ITEM} PROPERTY VS_DEPLOYMENT_LOCATION ${DEPLOYMENT_LOCATION} )
+        
+    ENDFOREACH()
+
 endmacro ()
 
 macro ( add_content_win_uap DEPLOYMENT_CONTENT_LIST )
-	
-	#process all content files
-	FOREACH( ITEM ${DEPLOYMENT_CONTENT_LIST} )
-		add_content_win_uap_single ( ${ITEM} )
-	ENDFOREACH()
-	
+
+    #process all content files
+    FOREACH( ITEM ${DEPLOYMENT_CONTENT_LIST} )
+        add_content_win_uap_single ( ${ITEM} )
+    ENDFOREACH()
+
 endmacro ()
 
 macro ( add_static_libs_win_uap LIBS_LOCATION OUTPUT_LIB_LIST )
