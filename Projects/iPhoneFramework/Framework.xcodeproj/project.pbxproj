@@ -1119,6 +1119,10 @@
 		647EFC7D195F0AC40073B3CB /* NMaterialStateDynamicTexturesInsp.h in Headers */ = {isa = PBXBuildFile; fileRef = 647EFC6E195F0AC40073B3CB /* NMaterialStateDynamicTexturesInsp.h */; };
 		647EFC7E195F0AC40073B3CB /* NMaterialStateDynamicTexturesInsp.h in Headers */ = {isa = PBXBuildFile; fileRef = 647EFC6E195F0AC40073B3CB /* NMaterialStateDynamicTexturesInsp.h */; };
 		72C84EB61B29C98B003A52E0 /* libwebp_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 72C84EB51B29C98B003A52E0 /* libwebp_ios.a */; };
+		7CA955561BD13F4B00B5F7E2 /* DeviceInfoPrivateBase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7CA955541BD13F4B00B5F7E2 /* DeviceInfoPrivateBase.cpp */; settings = {ASSET_TAGS = (); }; };
+		7CA955571BD13F4B00B5F7E2 /* DeviceInfoPrivateBase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7CA955541BD13F4B00B5F7E2 /* DeviceInfoPrivateBase.cpp */; settings = {ASSET_TAGS = (); }; };
+		7CA955581BD13F4B00B5F7E2 /* DeviceInfoPrivateBase.h in Headers */ = {isa = PBXBuildFile; fileRef = 7CA955551BD13F4B00B5F7E2 /* DeviceInfoPrivateBase.h */; settings = {ASSET_TAGS = (); }; };
+		7CA955591BD13F4B00B5F7E2 /* DeviceInfoPrivateBase.h in Headers */ = {isa = PBXBuildFile; fileRef = 7CA955551BD13F4B00B5F7E2 /* DeviceInfoPrivateBase.h */; settings = {ASSET_TAGS = (); }; };
 		7CBAFE3A1B38458E00F9E9ED /* Atomic.h in Headers */ = {isa = PBXBuildFile; fileRef = 7CBAFE261B38458E00F9E9ED /* Atomic.h */; };
 		7CBAFE3B1B38458E00F9E9ED /* Atomic.h in Headers */ = {isa = PBXBuildFile; fileRef = 7CBAFE261B38458E00F9E9ED /* Atomic.h */; };
 		7CBAFE3C1B38458E00F9E9ED /* AtomicGNU.h in Headers */ = {isa = PBXBuildFile; fileRef = 7CBAFE271B38458E00F9E9ED /* AtomicGNU.h */; };
@@ -2269,6 +2273,8 @@
 		647EFC6D195F0AC40073B3CB /* NMaterialStateDynamicTexturesInsp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NMaterialStateDynamicTexturesInsp.cpp; sourceTree = "<group>"; };
 		647EFC6E195F0AC40073B3CB /* NMaterialStateDynamicTexturesInsp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NMaterialStateDynamicTexturesInsp.h; sourceTree = "<group>"; };
 		72C84EB51B29C98B003A52E0 /* libwebp_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libwebp_ios.a; path = ../../Libs/libs/libwebp_ios.a; sourceTree = "<group>"; };
+		7CA955541BD13F4B00B5F7E2 /* DeviceInfoPrivateBase.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DeviceInfoPrivateBase.cpp; sourceTree = "<group>"; };
+		7CA955551BD13F4B00B5F7E2 /* DeviceInfoPrivateBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DeviceInfoPrivateBase.h; sourceTree = "<group>"; };
 		7CBAFE261B38458E00F9E9ED /* Atomic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Atomic.h; sourceTree = "<group>"; };
 		7CBAFE271B38458E00F9E9ED /* AtomicGNU.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AtomicGNU.h; sourceTree = "<group>"; };
 		7CBAFE281B38458E00F9E9ED /* AtomicWindows.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AtomicWindows.h; sourceTree = "<group>"; };
@@ -3971,14 +3977,16 @@
 		E8B3C8BB16B9326D002BD35F /* Platform */ = {
 			isa = PBXGroup;
 			children = (
-				6280BAA418D6F7DC007809B7 /* DateTimeApple.mm */,
 				624C87F018C6160F00E1049D /* DateTime.cpp */,
 				624C87F118C6160F00E1049D /* DateTime.h */,
-				84E5E0FC174D02EA0001C74F /* OpenUDIDApple.h */,
-				84E5E0FD174D02EA0001C74F /* OpenUDIDApple.mm */,
+				6280BAA418D6F7DC007809B7 /* DateTimeApple.mm */,
 				E8B6B3C41705DEB4004F665E /* DeviceInfo.cpp */,
 				E8B6B3C51705DEB4004F665E /* DeviceInfo.h */,
+				7CA955541BD13F4B00B5F7E2 /* DeviceInfoPrivateBase.cpp */,
+				7CA955551BD13F4B00B5F7E2 /* DeviceInfoPrivateBase.h */,
 				840ED3CA16D5070400D2BA6C /* DPIHelper.h */,
+				84E5E0FC174D02EA0001C74F /* OpenUDIDApple.h */,
+				84E5E0FD174D02EA0001C74F /* OpenUDIDApple.mm */,
 				E8B3C8D716B9326D002BD35F /* SystemTimer.cpp */,
 				E8B3C8D816B9326D002BD35F /* SystemTimer.h */,
 				E8B3C8D916B9326D002BD35F /* TemplateiOS */,
@@ -4818,6 +4826,7 @@
 				02FD7F861924997C007762C0 /* Spline.h in Headers */,
 				02FD7F871924997C007762C0 /* Vector.h in Headers */,
 				15D311931982861500919AAA /* YamlEmitter.h in Headers */,
+				7CA955591BD13F4B00B5F7E2 /* DeviceInfoPrivateBase.h in Headers */,
 				B7464C821AEA705E00D3AB13 /* TextLayout.h in Headers */,
 				D7CC267419C517E500A3B754 /* LocalNotificationProgress.h in Headers */,
 				D7FEF15C19864E5C00B2C7AF /* PatchFile.h in Headers */,
@@ -5546,6 +5555,7 @@
 				E8B3CCE416B9326E002BD35F /* SoundSystem.h in Headers */,
 				E8B3CCE816B9326E002BD35F /* ScrollHelper.h in Headers */,
 				50194DCF1A52D92600557DAB /* NetLogger.h in Headers */,
+				7CA955581BD13F4B00B5F7E2 /* DeviceInfoPrivateBase.h in Headers */,
 				E8B3CCEA16B9326E002BD35F /* TheoraPlayer.h in Headers */,
 				64493E1619476F4700AB2715 /* VegetationRenderData.h in Headers */,
 				E8B3CCEC16B9326E002BD35F /* UI3DView.h in Headers */,
@@ -6104,6 +6114,7 @@
 				32B074C219E53C0C0069981A /* UIPackage.cpp in Sources */,
 				02FD81A11924997C007762C0 /* StringFormat.cpp in Sources */,
 				02FD81A21924997C007762C0 /* Utils.cpp in Sources */,
+				7CA955571BD13F4B00B5F7E2 /* DeviceInfoPrivateBase.cpp in Sources */,
 				02FD81A31924997C007762C0 /* UtilsMacOS.mm in Sources */,
 				02FD81A41924997C007762C0 /* IntrospectionBase.cpp in Sources */,
 				02FD81A51924997C007762C0 /* GlobalEventSystem.cpp in Sources */,
@@ -6231,6 +6242,7 @@
 				E8B3CA9F16B9326E002BD35F /* Data.cpp in Sources */,
 				50194DAA1A52D92600557DAB /* NetworkUtils.cpp in Sources */,
 				EAAC98BC1937354800549BAD /* MeshUtils.cpp in Sources */,
+				7CA955561BD13F4B00B5F7E2 /* DeviceInfoPrivateBase.cpp in Sources */,
 				E8B3CAA116B9326E002BD35F /* DynamicObjectCache.cpp in Sources */,
 				FEA1D3D41ADF9CB5006B981A /* LibTgaHelper.cpp in Sources */,
 				84D18C0819201BEF009E3E90 /* LibPVRHelper.cpp in Sources */,
