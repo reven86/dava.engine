@@ -156,15 +156,15 @@ bool WinUAPXamlApp::SetCursorCaptureMode(InputSystem::eMouseCaptureMode newMode)
             break;
         case DAVA::InputSystem::eMouseCaptureMode::FRAME:
             // Mode unsupported yet
-            Logger::Error("Unsupported mouse capture mode");
+            Logger::Error("Unsupported cursor capture mode");
             break;
         case DAVA::InputSystem::eMouseCaptureMode::PINING:
             token = MouseDevice::GetForCurrentView()->MouseMoved += ref new TypedEventHandler<MouseDevice ^, MouseEventArgs ^>(this, &WinUAPXamlApp::OnMouseMoved);
             cursorCaptureMode = newMode;
             break;
         default:
-            DVASSERT("[WinUAPXamlApp::SetCursorCaptureMode] Incorrect cursor capture mode");
-            Logger::Error("Incorrect mouse capture mode");
+            DVASSERT("Incorrect cursor capture mode");
+            Logger::Error("Incorrect cursor capture mode");
             break;
         }
     }

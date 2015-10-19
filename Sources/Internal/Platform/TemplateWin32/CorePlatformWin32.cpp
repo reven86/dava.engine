@@ -334,7 +334,9 @@ namespace DAVA
     {
 		if (GetScreenMode() != screenMode) // check if we try to switch mode
 		{
-            if (screenMode == Core::eScreenMode::FULLSCREEN)
+            switch (screenMode)
+            {
+            case DAVA::Core::eScreenMode::FULLSCREEN:
             {
                 isFullscreen = true;
                 currentMode = fullscreenMode;
@@ -342,19 +344,28 @@ namespace DAVA
                 SetMenu(hWindow, NULL);
                 SetWindowLong(hWindow, GWL_STYLE, FULLSCREEN_STYLE);
                 SetWindowPos(hWindow, NULL, 0, 0, currentMode.width, currentMode.height, SWP_NOZORDER);
+                break;
             }
-            else if (screenMode == Core::eScreenMode::WINDOWED)
+            case DAVA::Core::eScreenMode::WINDOWED_FULLSCREEN:
+            {
+                Logger::Error("Unsupported screen mode");
+                return false;
+            }
+            case DAVA::Core::eScreenMode::WINDOWED:
             {
                 isFullscreen = false;
                 SetWindowLong(hWindow, GWL_STYLE, WINDOWED_STYLE);
                 currentMode = windowedMode;
                 RECT windowedRect = GetWindowedRectForDisplayMode(currentMode);
                 SetWindowPos(hWindow, HWND_NOTOPMOST, windowPositionBeforeFullscreen.left, windowPositionBeforeFullscreen.top, windowedRect.right - windowedRect.left, windowedRect.bottom - windowedRect.top, SWP_NOACTIVATE | SWP_SHOWWINDOW);
+                break;
             }
-            else
+            default:
             {
-                DVASSERT_MSG(false, "Unsupported screen mode");
+                DVASSERT_MSG(false, "Incorrect screen mode");
+                Logger::Error("Incorrect screen mode");
                 return false;
+            }
             }
 
             Logger::FrameworkDebug("[RenderManagerDX9] toggle mode: %d x %d isFullscreen: %d", currentMode.width, currentMode.height, isFullscreen);

@@ -45,28 +45,36 @@ DAVA::InputSystem::eMouseCaptureMode DAVA::Cursor::GetCursorCaptureMode()
 
 bool DAVA::Cursor::SetCursorCaptureMode(DAVA::InputSystem::eMouseCaptureMode mode)
 {
-    if (mode == InputSystem::eMouseCaptureMode::FRAME)
-    {
-        DVASSERT_MSG(false, "Unsupported mouse capture mode");
-        return false;
-    }
-
     static DAVA::Point2i lastCursorPosition;
 
-    SetSystemCursorVisibility(mode != DAVA::InputSystem::eMouseCaptureMode::PINING);
-    CoreWin32PlatformBase * winCore = static_cast<CoreWin32PlatformBase *>(Core::Instance());
-    if (mode == DAVA::InputSystem::eMouseCaptureMode::PINING)
+    switch (mode)
     {
-        lastCursorPosition = winCore->GetCursorPosition();
-        winCore->SetCursorPositionCenter();
-    }
-    else
+    case DAVA::InputSystem::eMouseCaptureMode::OFF:
+    case DAVA::InputSystem::eMouseCaptureMode::PINING:
     {
-        winCore->SetCursorPosition(lastCursorPosition);
-    }
+        SetSystemCursorVisibility(mode != DAVA::InputSystem::eMouseCaptureMode::PINING);
+        CoreWin32PlatformBase* winCore = static_cast<CoreWin32PlatformBase*>(Core::Instance());
+        if (mode == DAVA::InputSystem::eMouseCaptureMode::PINING)
+        {
+            lastCursorPosition = winCore->GetCursorPosition();
+            winCore->SetCursorPositionCenter();
+        }
+        else
+        {
+            winCore->SetCursorPosition(lastCursorPosition);
+        }
 
-    mouseMode = mode;
-    return true;
+        mouseMode = mode;
+        return true;
+    }
+    case DAVA::InputSystem::eMouseCaptureMode::FRAME:
+        Logger::Error("Unsupported cursor capture mode");
+        return false;
+    default:
+        DVASSERT_MSG(false, "Incorrect cursor capture mode");
+        Logger::Error("Incorrect cursor capture mode");
+        return false;
+    }
 }
 
 bool DAVA::Cursor::GetSystemCursorVisibility()
