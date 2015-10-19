@@ -90,7 +90,6 @@ public:
 class UITextField : public UIControl 
 {
 public:
-    friend class TextFieldPlatformImpl;
     // Auto-capitalization type.
     enum eAutoCapitalizationType
     {
@@ -344,13 +343,14 @@ public:
 
     void SystemDraw(const UIGeometricData& geometricData) override;
 
+    WideString GetVisibleText() const;
+
 protected:
     ~UITextField() override;
     void WillBecomeVisible() override;
     void WillBecomeInvisible() override;
 
 private:
-    WideString GetVisibleText() const;
 
     void SetRenderToTexture(bool value);
     bool IsRenderToTexture() const;
@@ -373,14 +373,11 @@ private:
     eReturnKeyType returnKeyType;
 
     // All Boolean variables are grouped together because of DF-2149.
-    bool needRedraw;
     bool isPassword;
     bool enableReturnKeyAutomatically;
-    bool showCursor = true;
     bool isMultiline_ = false;
 
     TextFieldPlatformImpl* textFieldImpl = nullptr;
-    float32 cursorTime = 0.0f;
     int32 maxLength = -1;
 
 public:

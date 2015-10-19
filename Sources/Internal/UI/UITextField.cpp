@@ -78,6 +78,8 @@ public:
     void CopyDataFrom(TextFieldPlatformImpl* t)
     {
         staticText_->CopyDataFrom(t->staticText_);
+        cursorTime = t->cursorTime;
+        showCursor = t->showCursor;
     }
     void OpenKeyboard()
     {
@@ -90,6 +92,7 @@ public:
     }
     void SetIsPassword(bool)
     {
+        needRedraw = true;
     }
     void SetFontSize(float32)
     {
@@ -103,6 +106,7 @@ public:
         {
             control_->GetDelegate()->TextFieldOnTextChanged(control_, text_, prevText);
         }
+        needRedraw = true;
     }
     void UpdateRect(const Rect& rect)
     {
@@ -112,23 +116,23 @@ public:
         if (control_ == UIControlSystem::Instance()->GetFocusedControl())
         {
             float32 timeElapsed = SystemTimer::Instance()->FrameDelta();
-            control_->cursorTime += timeElapsed;
+            cursorTime += timeElapsed;
 
-            if (control_->cursorTime >= 0.5f)
+            if (cursorTime >= 0.5f)
             {
-                control_->cursorTime = 0;
-                control_->showCursor = !control_->showCursor;
-                control_->needRedraw = true;
+                cursorTime = 0;
+                showCursor = !showCursor;
+                needRedraw = true;
             }
         }
-        else if (control_->showCursor)
+        else if (showCursor)
         {
-            control_->cursorTime = 0;
-            control_->showCursor = false;
-            control_->needRedraw = true;
+            cursorTime = 0;
+            showCursor = false;
+            needRedraw = true;
         }
 
-        if (!control_->needRedraw)
+        if (!needRedraw)
         {
             return;
         }
@@ -136,14 +140,14 @@ public:
         const WideString& txt = control_->GetVisibleText();
         if (control_ == UIControlSystem::Instance()->GetFocusedControl())
         {
-            WideString txtWithCursor = txt + (control_->showCursor ? L"_" : L" ");
+            WideString txtWithCursor = txt + (showCursor ? L"_" : L" ");
             SetText(txtWithCursor, NO_REQUIRED_SIZE);
         }
         else
         {
             SetText(txt, NO_REQUIRED_SIZE);
         }
-        control_->needRedraw = false;
+        needRedraw = false;
     }
     void SetAutoCapitalizationType(int32)
     {
@@ -260,6 +264,9 @@ public:
 private:
     UIStaticText* staticText_ = nullptr;
     UITextField* control_ = nullptr;
+    float32 cursorTime = 0.0f;
+    bool needRedraw = true;
+    bool showCursor = true;
 };
 } // end namespace DAVA
 #endif
@@ -502,8 +509,6 @@ void UITextField::SetText(const WideString& text_)
 {
     textFieldImpl->SetText(text_);
     text = text_;
-
-    needRedraw = true;
 }
 
 const WideString & UITextField::GetText()
@@ -857,8 +862,6 @@ void UITextField::CopyDataFrom(UIControl *srcControl)
     UIControl::CopyDataFrom(srcControl);
     UITextField* t = static_cast<UITextField*>(srcControl);
 
-    cursorTime = t->cursorTime;
-    showCursor = t->showCursor;
     isPassword = t->isPassword;
     SetText(t->text);
     SetRect(t->GetRect());
@@ -882,8 +885,6 @@ void UITextField::CopyDataFrom(UIControl *srcControl)
 void UITextField::SetIsPassword(bool isPassword_)
 {
     isPassword = isPassword_;
-    needRedraw = true;
-
     textFieldImpl->SetIsPassword(isPassword_);
 }
     
