@@ -41,7 +41,7 @@ FileSystemModel::FileSystemModel(std::string const & rootPath, TCheckFile const 
         return;
     }
 
-    if (!fileSystem->exists(rootPath.c_str()))
+    if (rootPath.empty() || !fileSystem->exists(rootPath.c_str()))
         return;
 
     root.reset(new Item(fileSystem->getFileInfo(rootPath.c_str()), *fileSystem, checkFileFn));
@@ -116,9 +116,7 @@ const char * FileSystemModel::Item::getDisplayText(int column) const
 {
     if (fileInfo.isDirectory())
     {
-        size_t pos = fileInfo.fullPath.rfind(FileInfo::kDirectorySeparator, fileInfo.fullPath.size() - 2);
-        if (pos == std::string::npos)
-            pos = fileInfo.fullPath.rfind(FileInfo::kAltDirectorySeparator, fileInfo.fullPath.size() - 2);
+        size_t pos = fileInfo.fullPath.rfind(FilePath::kNativeDirectorySeparator, fileInfo.fullPath.size() - 2);
 
         if (pos != std::string::npos)
             return &fileInfo.fullPath.c_str()[pos + 1];

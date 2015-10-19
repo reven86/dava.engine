@@ -121,7 +121,7 @@ DAVA_TESTCLASS(FormatsTest)
         }
     }
     
-#if !defined (__DAVAENGINE_IPHONE__)
+#if !defined(__DAVAENGINE_IPHONE__) && !defined(NGT_INTEGRATION)
     DAVA_TEST(TestDds)
     {
         Vector<PixelFormat> suportedFormats;

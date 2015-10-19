@@ -36,6 +36,7 @@ include ( FileTreeCheck        )
 include ( DavaTemplate         )
 include ( CMakeDependentOption )
 include ( CMakeParseArguments  )
+include ( DavaDynamicLib )
 
 
 set( CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebinfo" CACHE STRING "limited configs" FORCE )
@@ -392,14 +393,40 @@ macro ( add_content_win_uap DEPLOYMENT_CONTENT_LIST )
 
 endmacro ()
 
+function (ASSERT VAR_NAME MESSAGE)
+    if (NOT ${VAR_NAME})
+         message( FATAL_ERROR ${MESSAGE} )
+    endif()
+endfunction()
 
+function (append_qt5_deploy LIBRARIES)
+    GET_PROPERTY(QT_DEPLOY_LIST_VALUE GLOBAL PROPERTY QT_DEPLOY_LIST)
+    LIST(APPEND QT_DEPLOY_LIST_VALUE ${${LIBRARIES}})
+    SET_PROPERTY(GLOBAL PROPERTY QT_DEPLOY_LIST "${QT_DEPLOY_LIST_VALUE}")
+endfunction()
 
+function (set_linkage_qt5_modules LIBRARIES)
+    SET_PROPERTY(GLOBAL PROPERTY QT_LINKAGE_LIST ${${LIBRARIES}})
+endfunction()
 
+function (get_qt5_deploy_list OUTPUT_VAR_NAME)
+    GET_PROPERTY(QT_DEPLOY_LIST_VALUE GLOBAL PROPERTY QT_DEPLOY_LIST)
+    LIST(REMOVE_DUPLICATES QT_DEPLOY_LIST_VALUE)
+    set(${OUTPUT_VAR_NAME} ${QT_DEPLOY_LIST_VALUE} PARENT_SCOPE)
+endfunction()
 
+function (link_with_qt5 TARGET)
+    GET_PROPERTY(QT_LINKAGE_LIST_VALUE GLOBAL PROPERTY QT_LINKAGE_LIST)
+    target_link_libraries( ${TARGET} ${NO_LINK_WHOLE_ARCHIVE_FLAG} ${QT_LINKAGE_LIST_VALUE} )
+endfunction()
 
+function (append_deploy_dependency _RPOJECT_NAME)
+    GET_PROPERTY(DEPENDENT_LIST GLOBAL PROPERTY DEPLOY_DEPENDENCIES)
+    LIST(APPEND DEPENDENT_LIST ${_RPOJECT_NAME})
+    SET_PROPERTY(GLOBAL PROPERTY DEPLOY_DEPENDENCIES ${DEPENDENT_LIST})
+endfunction()
 
-
-
-
-
-
+function (get_deploy_dependencies OUTPUT_VAR_NAME)
+    GET_PROPERTY(DEPENDENT_LIST GLOBAL PROPERTY DEPLOY_DEPENDENCIES)
+    SET(${OUTPUT_VAR_NAME} ${DEPENDENT_LIST} PARENT_SCOPE)
+endfunction()

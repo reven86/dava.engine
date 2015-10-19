@@ -1,4 +1,5 @@
 include ( GlobalVariables )
+include ( CMake-common )
 
 macro ( qt_deploy )
     if ( NOT QT5_FOUND )
@@ -6,108 +7,91 @@ macro ( qt_deploy )
     endif ()
 
     if( WIN32 )
-        set( BINARY_ITEMS Qt5Core.dll
-                          Qt5Gui.dll
-                          Qt5Widgets.dll
-                          )
+        get_qt5_deploy_list(BINARY_ITEMS)
 
-        foreach ( ITEM  ${BINARY_ITEMS} )
-            execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${QT5_PATH_WIN}/bin/${ITEM}  ${DEPLOY_DIR} )
+        foreach(ITEM ${BINARY_ITEMS})
+            string(TOLOWER ${ITEM} ITEM)
+            if (EXISTS ${QT5_PATH_WIN}/bin/Qt5${ITEM}.dll)
+                LIST(APPEND QT_ITEMS_LIST --${ITEM})
+            endif()
+        endforeach()
 
-        endforeach ()
-
-        execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${DEPLOY_DIR}/platforms )
-        execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${QT5_PATH_WIN}/plugins/platforms/qwindows.dll
-                                                          ${DEPLOY_DIR}/platforms )
-
-        file ( GLOB FILE_LIST ${QT5_PATH_WIN}/bin/icu*.dll )
-        foreach ( ITEM  ${FILE_LIST} )
-            execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${ITEM}  ${DEPLOY_DIR} )
-
-        endforeach ()
+        ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME} POST_BUILD
+            COMMAND "${DAVA_SCRIPTS_FILES_PATH}/deployqt.bat"
+            "${QT5_PATH_WIN}/bin/"
+            $<$<CONFIG:Debug>:--debug> $<$<NOT:$<CONFIG:Debug>>:--release>
+            --dir  "${DEPLOY_DIR}/"
+            --qmldir "${QML_SCAN_DIR}" "$<TARGET_FILE:${PROJECT_NAME}>"
+            ${QT_ITEMS_LIST}
+        )
 
     elseif( MACOS )
+        if (BW_BUNDLE_NAME)
+            set(BUNDLE_NAME ${BW_BUNDLE_NAME})
+        else()
+            set(BUNDLE_NAME ${PROJECT_NAME})
+        endif()
 
         ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD
-            COMMAND ${QT5_PATH_MAC}/bin/macdeployqt ${DEPLOY_DIR}/${PROJECT_NAME}.app
+            COMMAND ${QT5_PATH_MAC}/bin/macdeployqt
+                    ${DEPLOY_DIR}/${BUNDLE_NAME}.app
+                    -always-overwrite
+                    -qmldir="${QML_SCAN_DIR}"
         )
 
     endif()
 
 endmacro ()
 
-if ( QT5_FOUND )
-    return ()
-endif ()
+macro(resolve_qt_pathes)
+    if ( NOT QT5_LIB_PATH)
 
-# Find includes in corresponding build directories
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
+        if( WIN32 )
+            set ( QT_CORE_LIB Qt5Core.lib )
+        elseif( MACOS )
+            set ( QT_CORE_LIB QtCore.la )
+        endif()
 
-# Instruct CMake to run moc automatically when needed.
-set(CMAKE_AUTOMOC ON)
+        find_path( QT5_LIB_PATH NAMES ${QT_CORE_LIB}
+                          PATHS ${QT5_PATH_MAC} ${QT5_PATH_WIN}
+                          PATH_SUFFIXES lib)
 
-message("Components - " ${QT5_FIND_COMPONENTS})
-if (NOT QT5_FIND_COMPONENTS)
-    list( APPEND QT5_FIND_COMPONENTS Core Gui Widgets Concurrent)
-endif()
+        ASSERT(QT5_LIB_PATH "Please set the correct path to QT5 in file DavaConfig.in")
 
-if( WIN32 )
-    set ( QT_CORE_LIB Qt5Core.lib )
-elseif( MACOS )
-    set ( QT_CORE_LIB QtCore.la )
-endif()
+        set ( QT5_MODULE_PATH ${QT5_LIB_PATH}/cmake)
+        set ( CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${QT5_MODULE_PATH})
+
+        message ( "QT5_LIB_PATH - " ${QT5_LIB_PATH} )
+
+    endif()
+endmacro()
+
+#################################################################
 
 # Find includes in corresponding build directories
 set ( CMAKE_INCLUDE_CURRENT_DIR ON )
-
 # Instruct CMake to run moc automatically when needed.
 set ( CMAKE_AUTOMOC ON )
-set(AUTOMOC_MOC_OPTIONS PROPERTIES FOLDER CMakeAutomocTargets)
 
-set ( QT5_FOUND 0 )
+list( APPEND QT5_FIND_COMPONENTS ${QT5_FIND_COMPONENTS} Core Gui Widgets Concurrent)
+list( REMOVE_DUPLICATES QT5_FIND_COMPONENTS)
 
-find_path( QT5_LIB_PATH
-  NAMES
-    ${QT_CORE_LIB}
-  PATHS
-    ${QT5_PATH_MAC}
-    ${QT5_PATH_WIN}
-  PATH_SUFFIXES
-    lib
-)
+resolve_qt_pathes()
 
-if( QT5_LIB_PATH )
-    set ( QT5_MODULE_PATH ${QT5_LIB_PATH}/cmake)
-    set ( CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${QT5_MODULE_PATH})
-
-    message ( "QT5_LIB_PATH - " ${QT5_LIB_PATH} )
-
-    find_package ( Qt5Core )
-
-    if( Qt5Core_FOUND  )
-        find_package ( Qt5Concurrent )
-        find_package ( Qt5Gui )
-        find_package ( Qt5Widgets )
-
-        if( Qt5Concurrent_FOUND AND
-            Qt5Gui_FOUND        AND
-            Qt5Widgets_FOUND   )
-
-            set ( QT5_FOUND    1 )
-            set ( QT_LIBRARIES Qt5::Core
-                               Qt5::Gui
-                               Qt5::Widgets
-                               Qt5::Concurrent )
-
-        endif()
-    endforeach()
-
+foreach(COMPONENT ${QT5_FIND_COMPONENTS})
+    if (NOT Qt5${COMPONENT}_FOUND)
+        find_package("Qt5${COMPONENT}")
     endif()
 
-    set ( DAVA_EXTRA_ENVIRONMENT QT_QPA_PLATFORM_PLUGIN_PATH=$ENV{QT_QPA_PLATFORM_PLUGIN_PATH} )
+    ASSERT(Qt5${COMPONENT}_FOUND "Can't find Qt5 component : ${COMPONENT}")
+    LIST(APPEND LINKAGE_LIST "Qt5::${COMPONENT}")
+endforeach()
 
-endif()
+append_qt5_deploy(QT5_FIND_COMPONENTS)
+set_linkage_qt5_modules(LINKAGE_LIST)
+set ( DAVA_EXTRA_ENVIRONMENT QT_QPA_PLATFORM_PLUGIN_PATH=$ENV{QT_QPA_PLATFORM_PLUGIN_PATH} )
 
+set(QT5_FOUND 1)
 
 if( NOT QT5_FOUND )
     message( FATAL_ERROR "Please set the correct path to QT5 in file DavaConfig.in"  )

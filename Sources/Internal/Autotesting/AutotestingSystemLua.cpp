@@ -768,7 +768,7 @@ namespace DAVA
         Split(path, "/", parsedPath);
     }
 
-	bool AutotestingSystemLua::LoadWrappedLuaObjects()
+    bool AutotestingSystemLua::LoadWrappedLuaObjects()
 	{
 		if (!luaState)
 		{

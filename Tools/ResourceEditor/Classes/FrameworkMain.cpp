@@ -40,8 +40,8 @@ void FrameworkDidLaunched()
     appOptions->SetInt32("fullscreen", 0);
     appOptions->SetInt32("bpp", 32);
 
-    GameCore * core = new GameCore();
-	DAVA::Core::SetApplicationCore(core);
+    GameCore* core = new GameCore();
+    DAVA::Core::SetApplicationCore(core);
 	DAVA::Core::Instance()->SetOptions(appOptions);
     DAVA::VirtualCoordinatesSystem::Instance()->EnableReloadResourceOnResize(false);
 

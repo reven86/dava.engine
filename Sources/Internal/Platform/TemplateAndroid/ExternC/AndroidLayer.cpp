@@ -102,9 +102,9 @@ DAVA::String androidLogTag;
 DAVA::String androidPackageName;
 
 DAVA::JNI::JavaClass* gArrayListClass = nullptr;
-    DAVA::JNI::JavaClass* gInputEventClass = nullptr;
+DAVA::JNI::JavaClass* gInputEventClass = nullptr;
 
-	DAVA::Function< jobject(jobject, jint) > gArrayListGetMethod;
+    DAVA::Function< jobject(jobject, jint) > gArrayListGetMethod;
 	DAVA::Function< jint(jobject) > gArrayListSizeMethod;
 
 	jfieldID gInputEventTidField;
@@ -170,7 +170,7 @@ void InitApplication(JNIEnv * env, const DAVA::String& commandLineParams)
                                       androidLogTag.c_str(), androidDelegate);
         }
         else
-		{
+        {
 			LOGE("[InitApplication] Can't allocate space for CoreAndroidPlatform");
 		}
 	}
@@ -215,7 +215,7 @@ void Java_com_dava_framework_JNIApplication_OnCreateApplication(JNIEnv* env, job
     InitApplication(env, commandLine);
 
     gArrayListClass = new DAVA::JNI::JavaClass("java/util/ArrayList");
-	gInputEventClass = new DAVA::JNI::JavaClass("com/dava/framework/JNIGLSurfaceView$InputRunnable$InputEvent");
+    gInputEventClass = new DAVA::JNI::JavaClass("com/dava/framework/JNIGLSurfaceView$InputRunnable$InputEvent");
 
 	gArrayListGetMethod = gArrayListClass->GetMethod<jobject, jint>("get");
 	gArrayListSizeMethod = gArrayListClass->GetMethod<jint>("size");

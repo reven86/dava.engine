@@ -391,7 +391,7 @@ void Entity::BakeTransforms()
         children[0]->SetLocalTransform(children[0]->GetLocalTransform() * GetLocalTransform());
         SetLocalTransform(Matrix4::IDENTITY);
         AddFlag(NODE_LOCAL_MATRIX_IDENTITY);
-	}
+    }
 		
 	for(uint32 c = 0; c < size; ++c)
 	{

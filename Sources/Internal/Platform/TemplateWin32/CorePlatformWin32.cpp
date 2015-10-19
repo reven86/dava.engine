@@ -516,7 +516,7 @@ namespace DAVA
 
         if (!isFind)
         {
-			UIEvent newTouch;
+            UIEvent newTouch;
 			newTouch.tid = button;
             newTouch.physPoint.x = static_cast<float32>(GET_X_LPARAM(lParam));
             newTouch.physPoint.y = static_cast<float32>(GET_Y_LPARAM(lParam));
@@ -545,7 +545,7 @@ namespace DAVA
         return phase;
     }
 
-	static bool mouseCursorShown = true;
+    static bool mouseCursorShown = true;
 	static USHORT mouseButtonsDownMask = 0;
 
 	void HandleMouseButtonsPressed(USHORT buttsFlags)
