@@ -1,5 +1,4 @@
 #ifdef GL_ES
-// define default precision for float, vec, mat.
 precision highp float;
 #else
 #define lowp
@@ -7,62 +6,21 @@ precision highp float;
 #define mediump
 #endif
 
-
-
-// INPUT ATTRIBUTES
 attribute vec4 inPosition;
-attribute vec3 inNormal;
-
-
-#if defined(PIXEL_LIT)
-attribute vec3 inTangent;
-#endif
-
 attribute vec2 inTexCoord0;
 
-#if defined(MATERIAL_DECAL)
-attribute vec2 inTexCoord1;
-varying vec2 varTexCoordDecal;
-#endif
-
-// UNIFORMS
 uniform mat4 worldViewProjMatrix;
+uniform mediump vec2 texture0Tiling;
 
+varying mediump vec2 varTexCoordOrig;
+varying mediump vec2 varTexCoord0;
 
+#if defined(VERTEX_FOG) || defined(SPECULAR)
 uniform mat4 worldViewMatrix;
-
-
-#if defined(VERTEX_LIT) || defined(PIXEL_LIT) || (defined(VERTEX_FOG) && defined(FOG_GLOW))
-uniform vec4 lightPosition0;
 #endif
 
-#if defined(PIXEL_LIT)
-uniform mat3 worldViewInvTransposeMatrix;
-uniform float lightIntensity0; 
-uniform float materialSpecularShininess;
-#endif
-
-#if defined(DEBUG_NORMAL_ROTATION)
-uniform float normalRotation;
-#endif
-
-#if !defined (TANGENT_SPACE_WATER_REFLECTIONS)
-varying vec3 eyeDist;
-#endif
-
-#if defined(PIXEL_LIT)
-varying vec3 varLightVec;
-#endif
-
-#if defined(PIXEL_LIT)||defined(MATERIAL_DECAL)	
-varying highp vec2 varTexCoord0;
-varying highp vec2 varTexCoord1;
-uniform mediump vec2 normal0ShiftPerSecond;
-uniform mediump vec2 normal1ShiftPerSecond;
-uniform mediump float normal0Scale;
-uniform mediump float normal1Scale;
-uniform float globalTime;
-#endif
+uniform vec3 cameraPosition;
+uniform mat4 worldMatrix;
 
 #if defined(VERTEX_FOG)
     uniform lowp vec3 fogColor;
@@ -93,87 +51,83 @@ uniform float globalTime;
     varying lowp vec3 varFogColor;
 #endif
 
-uniform vec3 cameraPosition;
-uniform mat4 worldMatrix;
-uniform mat3 worldInvTransposeMatrix;
-
-
-
-
-
-#if defined(VERTEX_LIT)
-	varying mediump vec3 reflectionDirectionInWorldSpace;
-#elif defined(PIXEL_LIT)
-	varying mediump vec3 cameraToPointInTangentSpace;
-	varying mediump mat3 tbnToWorldMatrix;
+#ifdef EDITOR_CURSOR
+varying vec2 varTexCoordCursor;
 #endif
 
+#if defined(SPECULAR) || defined(VERTEX_FOG)
+uniform vec4 lightPosition0;
+#endif
+#ifdef SPECULAR
+uniform mat3 worldViewInvTransposeMatrix;
+attribute vec3 inNormal;
+attribute vec3 inTangent;
 
+uniform vec3 lightAmbientColor0;
+uniform vec3 lightColor0;
+uniform mat3 normalMatrix;
 
+uniform float inSpecularity;
+uniform float physicalFresnelReflectance;
+uniform vec3 metalFresnelReflectance;
 
+varying vec3 varSpecularColor;
+varying float varNdotH;
+
+const float _PI = 3.141592654;
+
+float FresnelShlick(float NdotL, float Cspec)
+{
+	float fresnel_exponent = 5.0;
+	return Cspec + (1.0 - Cspec) * pow(1.0 - NdotL, fresnel_exponent);
+}
+
+vec3 FresnelShlickVec3(float NdotL, vec3 Cspec)
+{
+	float fresnel_exponent = 5.0;
+	return Cspec + (1.0 - Cspec) * (pow(1.0 - NdotL, fresnel_exponent));
+}
+
+#endif
 
 void main()
 {
-    
-    gl_Position = worldViewProjMatrix * inPosition;	
+	gl_Position = worldViewProjMatrix * inPosition;
 
-#if defined(VERTEX_LIT)    
-    vec3 viewDirectionInWorldSpace = vec3(worldMatrix * inPosition) - cameraPosition;
-    vec3 normalDirectionInWorldSpace = normalize(vec3(worldInvTransposeMatrix * inNormal));
-    reflectionDirectionInWorldSpace = reflect(viewDirectionInWorldSpace, normalDirectionInWorldSpace);
-	#if defined(MATERIAL_DECAL)
-		varTexCoordDecal = inTexCoord1;		
-	#endif	
-#endif
+	varTexCoordOrig = inTexCoord0;
 
-#if defined(VERTEX_LIT) || defined(PIXEL_LIT) || (defined(VERTEX_FOG) && defined(FOG_GLOW))
-	vec3 eyeCoordsPosition = vec3(worldViewMatrix * inPosition);
+	varTexCoord0 = inTexCoord0 * texture0Tiling;
+	
+#if defined(SPECULAR) || defined(VERTEX_FOG)
+    vec3 eyeCoordsPosition = vec3(worldViewMatrix * inPosition);
     vec3 toLightDir = lightPosition0.xyz - eyeCoordsPosition * lightPosition0.w;
-#endif
-
-#if defined(PIXEL_LIT)
-	vec3 n = normalize (worldViewInvTransposeMatrix * inNormal);
-	vec3 t = normalize (worldViewInvTransposeMatrix * inTangent);
-	vec3 b = cross (n, t);
-
-	#if !defined (TANGENT_SPACE_WATER_REFLECTIONS)
-		eyeDist = eyeCoordsPosition;
-	#endif
-    
-	// transform light and half angle vectors by tangent basis
-	vec3 v;
-	v.x = dot (toLightDir, t);
-	v.y = dot (toLightDir, b);
-	v.z = dot (toLightDir, n);
-	varLightVec = v;       
-
-    v.x = dot (eyeCoordsPosition, t);
-	v.y = dot (eyeCoordsPosition, b);
-	v.z = dot (eyeCoordsPosition, n);
-	cameraToPointInTangentSpace = v;
-    
-    vec3 binormTS = cross(inNormal, inTangent);
-    tbnToWorldMatrix = mat3(inTangent, binormTS, inNormal);
+    toLightDir = normalize(toLightDir);
 #endif
 	
-#if defined(PIXEL_LIT)||defined(MATERIAL_DECAL)	
-	varTexCoord0 = inTexCoord0 * normal0Scale + normal0ShiftPerSecond * globalTime;
-    #if defined(SEPARATE_NORMALMAPS)
-        #if defined(DEBUG_NORMAL_ROTATION)
-            float rota = radians(normalRotation);        
-            float cr = cos(rota);
-            float sr = sin(rota);
-            vec2 rotatedTC = vec2(inTexCoord0.x * cr + inTexCoord0.y * sr, inTexCoord0.x * sr - inTexCoord0.y * cr);
-            varTexCoord1 = rotatedTC * normal1Scale + normal1ShiftPerSecond * globalTime;
-        #else            
-            varTexCoord1 = inTexCoord0 * normal1Scale + normal1ShiftPerSecond * globalTime;
-        #endif
-    #else
-        varTexCoord1 = vec2(inTexCoord0.x+inTexCoord0.y, inTexCoord0.x-inTexCoord0.y) * normal1Scale + normal1ShiftPerSecond * globalTime;
-    #endif
+#if defined(SPECULAR)
+    vec3 normal = normalize(worldViewInvTransposeMatrix * inNormal); // normal in eye coordinates
     
+    vec3 toCameraNormalized = normalize(-eyeCoordsPosition);
+    vec3 H = normalize(toLightDir + toCameraNormalized);
+    
+    float NdotL = max (dot (normal, toLightDir), 0.0);
+    float NdotH = max (dot (normal, H), 0.0);
+    float LdotH = max (dot (toLightDir, H), 0.0);
+    float NdotV = max (dot (normal, toCameraNormalized), 0.0);
+    
+    vec3 fresnelIn = FresnelShlickVec3(NdotL, metalFresnelReflectance);
+    vec3 fresnelOut = FresnelShlickVec3(NdotV, metalFresnelReflectance);
+    float specularity = inSpecularity;
+    
+	//varDiffuseColor = NdotL / _PI;
+    
+    float Dbp = NdotL;
+    float Geo = 1.0 / LdotH * LdotH;
+    
+    varSpecularColor = Dbp * Geo * fresnelOut * specularity * lightColor0;
+    varNdotH = NdotH;
 #endif
-
+    
 #if defined(VERTEX_FOG)
     float fogDistance = length(eyeCoordsPosition);
     
@@ -191,9 +145,7 @@ void main()
         #else
             vec3 viewPointInWorldSpace = vec3(worldMatrix * inPosition);
         #endif
-        #if !defined(VERTEX_LIT)
-            vec3 viewDirectionInWorldSpace = viewPointInWorldSpace - cameraPosition;
-        #endif
+        vec3 viewDirectionInWorldSpace = viewPointInWorldSpace - cameraPosition;
     #endif
     
     // calculating halfSpaceFog amoung
@@ -206,7 +158,7 @@ void main()
 
             float fogFdotP = viewPointInWorldSpace.z - fogHalfspaceHeight;
             float fogFdotC = cameraPosition.z - fogHalfspaceHeight;
-            
+
             float fogC1 = fogK * (fogFdotP + fogFdotC);
             float fogC2 = (1.0 - 2.0 * fogK) * fogFdotP;
             float fogG = min(fogC2, 0.0);
@@ -240,5 +192,8 @@ void main()
         varFogColor = fogColor;
     #endif
 #endif
-    
+
+#ifdef EDITOR_CURSOR
+	varTexCoordCursor = inTexCoord0;
+#endif
 }

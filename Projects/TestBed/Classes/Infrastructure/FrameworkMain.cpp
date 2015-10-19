@@ -71,9 +71,11 @@ void FrameworkDidLaunched()
     screenWidth = DeviceInfo::GetScreenInfo().width;
     screenHeight = DeviceInfo::GetScreenInfo().height;
 
+    appOptions->SetInt32("renderer", rhi::RHI_DX11);
     appOptions->SetInt32("fullscreen", 0);
     appOptions->SetInt32("bpp", 32);
     
+    DAVA::VirtualCoordinatesSystem::Instance()->SetProportionsIsFixed(false);
 #else
     screenWidth = WIDTH;
     screenHeight = HEIGHT;

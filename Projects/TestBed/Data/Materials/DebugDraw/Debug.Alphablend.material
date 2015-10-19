@@ -2,7 +2,7 @@ RenderTechnique:
     Layers: ["DebugRenderLayer"]
     RenderPass:
         Name: "ForwardPass"
-        Shader: "~res:/Shaders/renderer2dColor"
+        Shader: "~res:/Materials/Shaders/DebugDraw/debugdraw"
         UniqueDefines: []
         RenderState:
             alphaFunc: "CMP_ALWAYS"

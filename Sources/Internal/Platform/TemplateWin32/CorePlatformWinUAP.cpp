@@ -84,7 +84,6 @@ Core::eScreenMode CorePlatformWinUAP::GetScreenMode()
         return eScreenMode::WINDOWED;
     case ApplicationViewWindowingMode::Auto:
     default:
-        DVASSERT_MSG(false, "Unknown screen mode");
         // Unknown screen mode -> return default value
         return eScreenMode::FULLSCREEN;
     }
@@ -98,7 +97,7 @@ bool CorePlatformWinUAP::SetScreenMode(eScreenMode screenMode)
         RunOnUIThread([this]() { xamlApp->SetScreenMode(ApplicationViewWindowingMode::FullScreen); });
         return true;
     case DAVA::Core::eScreenMode::WINDOWED_FULLSCREEN:
-        DVASSERT_MSG(false, "Unimplemented screen mode");
+        Logger::Error("Unimplemented screen mode");
         return false;
     case DAVA::Core::eScreenMode::WINDOWED:
         RunOnUIThread([this]() { xamlApp->SetScreenMode(ApplicationViewWindowingMode::PreferredLaunchViewSize); });
