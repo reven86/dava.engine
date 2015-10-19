@@ -30,16 +30,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef __FRAMEWORK__DEVICEINFO_MACOS__
 #define __FRAMEWORK__DEVICEINFO_MACOS__
 
-#include "Base/BaseTypes.h"
+#include "Base/Platform.h"
 
 #if defined(__DAVAENGINE_MACOS__)
 
-#include "Platform/DeviceInfo.h"
+#include "Platform/DeviceInfoPrivateBase.h"
 
 namespace DAVA
 {
 
-class DeviceInfoPrivate
+class DeviceInfoPrivate : public DeviceInfoPrivateBase
 {
 public:
     DeviceInfoPrivate();
@@ -61,10 +61,8 @@ public:
     eGPUFamily GetGPUFamily();
     DeviceInfo::NetworkInfo GetNetworkInfo();
     List<DeviceInfo::StorageInfo> GetStoragesList();
-    int32 GetCpuCount();
     void InitializeScreenInfo();
     bool IsHIDConnected(DeviceInfo::eHIDType type);
-    void SetHIDConnectionCallback(DeviceInfo::eHIDType type, DeviceInfo::HIDCallBackFunc&& callback);
 
 private:
     DeviceInfo::ScreenInfo screenInfo;
