@@ -90,6 +90,7 @@ public:
 class UITextField : public UIControl 
 {
 public:
+    friend class TextFieldPlatformImpl;
     // Auto-capitalization type.
     enum eAutoCapitalizationType
     {

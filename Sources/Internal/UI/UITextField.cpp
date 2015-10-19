@@ -53,6 +53,7 @@ extern void CloseKeyboard();
 #   include "UI/UITextFieldWinUAP.h"
 #else
 #include "UI/UIStaticText.h"
+#include "Platform/SystemTimer.h"
 namespace DAVA
 {
 class TextFieldPlatformImpl
@@ -98,6 +99,46 @@ public:
         {
             control_->GetDelegate()->TextFieldOnTextChanged(control_, text_, prevText);
         }
+    }
+    void UpdateRect(const Rect& rect)
+    {
+        staticText_->SetRect(rect);
+
+        if (control_ == UIControlSystem::Instance()->GetFocusedControl())
+        {
+            float32 timeElapsed = SystemTimer::Instance()->FrameDelta();
+            control_->cursorTime += timeElapsed;
+
+            if (control_->cursorTime >= 0.5f)
+            {
+                control_->cursorTime = 0;
+                control_->showCursor = !control_->showCursor;
+                control_->needRedraw = true;
+            }
+        }
+        else if (control_->showCursor)
+        {
+            control_->cursorTime = 0;
+            control_->showCursor = false;
+            control_->needRedraw = true;
+        }
+
+        if (!control_->needRedraw)
+        {
+            return;
+        }
+
+        const WideString& txt = control_->GetVisibleText();
+        if (control_ == UIControlSystem::Instance()->GetFocusedControl())
+        {
+            WideString txtWithCursor = txt + (control_->showCursor ? L"_" : L" ");
+            SetText(txtWithCursor, NO_REQUIRED_SIZE);
+        }
+        else
+        {
+            SetText(txt, NO_REQUIRED_SIZE);
+        }
+        control_->needRedraw = false;
     }
     void SetAutoCapitalizationType(int32)
     {
@@ -204,9 +245,11 @@ public:
     {
         staticText_->SetRect(rect);
     }
-    void SystemDraw(const UIGeometricData& data)
+    void SystemDraw(const UIGeometricData&)
     {
-        staticText_->SystemDraw(data);
+        // we update rect on every frame, so no need to use ierarhy
+        UIGeometricData d;
+        staticText_->SystemDraw(d);
     }
 
 private:
@@ -275,45 +318,7 @@ void UITextField::CloseKeyboard()
 
 void UITextField::Update(float32 timeElapsed)
 {
-#ifdef DAVA_TEXTFIELD_USE_NATIVE
-    // Calling UpdateRect with allowNativeControlMove set to true
     textFieldImpl->UpdateRect(GetGeometricData().GetUnrotatedRect());
-#else
-    if(this == UIControlSystem::Instance()->GetFocusedControl())
-    {
-        cursorTime += timeElapsed;
-
-        if (cursorTime >= 0.5f)
-        {
-            cursorTime = 0;
-            showCursor = !showCursor;
-            needRedraw = true;
-        }
-    }
-    else if (showCursor)
-    {
-        cursorTime = 0;
-        showCursor = false;
-        needRedraw = true;
-    }
-
-    if (!needRedraw)
-    {
-        return;
-    }
-
-    if(this == UIControlSystem::Instance()->GetFocusedControl())
-    {
-        WideString txt = GetVisibleText();
-        txt += showCursor ? L"_" : L" ";
-        textFieldImpl->SetText(txt, NO_REQUIRED_SIZE);
-    }
-    else
-    {
-        textFieldImpl->SetText(GetVisibleText(), NO_REQUIRED_SIZE);
-    }
-    needRedraw = false;
-#endif
 }
 
 void UITextField::WillAppear()
