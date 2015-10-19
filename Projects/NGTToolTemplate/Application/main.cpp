@@ -28,31 +28,99 @@
 
 #include "core_generic_plugin_manager/config_plugin_loader.hpp"
 #include "core_generic_plugin_manager/generic_plugin_manager.hpp"
+#include "core_generic_plugin/interfaces/i_command_line_parser.hpp"
 #include "core_generic_plugin/interfaces/i_application.hpp"
 #include "core_generic_plugin/interfaces/i_plugin_context_manager.hpp"
+#include "core_dependency_system/i_interface.hpp"
 
 #include <QFileInfo>
 #include <QString>
 #include <QDir>
 
-int main(int argc, char ** argv)
+class CommandLineParser
+: public Implements<ICommandLineParser>
 {
-    QFileInfo appFileInfo(argv[0]);
-    QString pluginsPathDesc = appFileInfo.absolutePath() + "/plugins/plugins.txt";
+public:
+    CommandLineParser(int argc_, char** argv_)
+        : m_argc(argc_)
+        , m_argv(argv_)
+    {
+        ResolvePaths();
+    }
+
+    int argc() const override
+    {
+        return m_argc;
+    }
+
+    char** argv() const override
+    {
+        return m_argv;
+    }
+
+    const char* pluginConfigPath() const override
+    {
+        return configPath.c_str();
+    }
+
+    const wchar_t* pluginConfigPathW() const override
+    {
+        return configWPath.c_str();
+    }
+
+    std::wstring const& GetPluginsBasePath() const
+    {
+        return pluginsBasePath;
+    }
+
+private:
+    void ResolvePaths()
+    {
+        QFileInfo appFileInfo(m_argv[0]);
+
+#ifdef _WIN32
+        QString pluginsBasePath_ = appFileInfo.absolutePath() + "/";
+        QString pluginsPathDesc_ = pluginsBasePath_ + "plugins/plugins.txt";
+#elif __APPLE__
+        QString pluginsBasePath_ = appFileInfo.absolutePath() + "/../PlugIns/";
+        QString pluginsPathDesc_ = pluginsBasePath_ + "plugins/plugins.txt";
+#endif
+
+        pluginsBasePath = pluginsBasePath_.toStdWString();
+        configPath = pluginsPathDesc_.toStdString();
+        configWPath = pluginsPathDesc_.toStdWString();
+    }
+
+private:
+    int m_argc;
+    char** m_argv;
+    std::string configPath;
+    std::wstring configWPath;
+    std::wstring pluginsBasePath;
+};
+
+int main(int argc, char** argv)
+{
+    CommandLineParser cmdParser(argc, argv);
 
     int result = 1;
     std::vector<std::wstring> plugins;
-    if (!ConfigPluginLoader::getPlugins(plugins, pluginsPathDesc.toStdWString()))
+    if (!ConfigPluginLoader::getPlugins(plugins, cmdParser.pluginConfigPathW()))
     {
         return result;
     }
 
     {
-        GenericPluginManager pluginManager;
+        std::transform(plugins.begin(), plugins.end(), plugins.begin(), [&cmdParser](std::wstring const& pluginPath) {
+            return cmdParser.GetPluginsBasePath() + pluginPath;
+        });
+        GenericPluginManager pluginManager(false);
+        IComponentContext* globalContext = pluginManager.getContextManager().getGlobalContext();
+        globalContext->registerInterface<ICommandLineParser>(&cmdParser, false);
 
         pluginManager.loadPlugins(plugins);
 
-        IApplication* application = pluginManager.getContextManager().getGlobalContext()->queryInterface<IApplication>();
+        IApplication* application = globalContext->queryInterface<IApplication>();
         if (application != NULL)
         {
             result = application->startApplication();

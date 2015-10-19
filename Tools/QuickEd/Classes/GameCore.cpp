@@ -127,8 +127,8 @@ void GameCore::UnpackHelp()
     if (editorVer != APPLICATION_BUILD_VERSION || !docsPath.Exists())
     {
         ResourceArchive* helpRA = new ResourceArchive();
-        if(helpRA->Open("~res:/Help.docs"))
-		{
+        if (helpRA->Open("~res:/Help.docs"))
+        {
 			FileSystem::Instance()->DeleteDirectory(docsPath);
 			FileSystem::Instance()->CreateDirectory(docsPath, true);
 		

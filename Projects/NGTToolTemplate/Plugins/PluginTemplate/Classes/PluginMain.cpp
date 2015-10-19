@@ -107,7 +107,9 @@ public:
         uiFramework->loadActionData(":/default/actions.xml", IUIFramework::ResourceType::File);
         mainWindow = uiFramework->createWindow(":/default/MainWindow.ui", IUIFramework::ResourceType::File);
 
-        SharedControls::initDefs(*definitionMng);
+		SharedControls::initDefs(*definitionMng);
+        uiApplication->addWindow(*mainWindow);
+        mainWindow->show();
 
         DAVA::Core::Run(0, nullptr);
 
@@ -138,7 +140,7 @@ public:
                                                  });
 
         AssetPaths paths;
-        paths.emplace_back("D:/");
+        paths.emplace_back("/");
         CustomContentFilters filter;
 
         std::unique_ptr<IAssetBrowserModel> model(new FileSystemAssetBrowserModel(paths, filter, *fileSystem, *definitionMng));
@@ -148,7 +150,6 @@ public:
         IPanelManager* panelMng = context.queryInterface<IPanelManager>();
         assetBrowser = panelMng->createAssetBrowser(std::move(model), nullptr, std::move(events));
 
-        uiApplication->addWindow(*mainWindow);
         uiApplication->addView(library->GetView());
         uiApplication->addView(sceneWidget->GetView());
         uiApplication->addView(*assetBrowser);
@@ -171,8 +172,6 @@ public:
         uiApplication->addAction(*redoAction);
         uiApplication->addAction(*beginBatch);
         uiApplication->addAction(*endBatch);
-
-        mainWindow->show();
 
         DavaLoop::Instance()->StartLoop(FrameworkLoop::Instance());
     }

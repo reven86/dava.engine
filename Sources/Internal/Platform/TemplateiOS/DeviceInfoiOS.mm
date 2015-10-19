@@ -133,7 +133,7 @@ String DeviceInfoPrivate::GetModel()
         if ([modelName hasPrefix:@"iPhone7,1"])
             model = "iPhone 6 Plus";
         if ([modelName hasPrefix:@"iPhone7,2"])
-			model = "iPhone 6";
+            model = "iPhone 6";
 
         if ([modelName hasPrefix:@"iPhone8,1"])
             model = "iPhone 6s";
@@ -142,7 +142,7 @@ String DeviceInfoPrivate::GetModel()
 
         // iPad
         if ([modelName hasPrefix:@"iPad1,1"])
-			model = "iPad 1";
+            model = "iPad 1";
 
 		if ([modelName hasPrefix:@"iPad2,1"])
 			model = "iPad 2 WiFi";

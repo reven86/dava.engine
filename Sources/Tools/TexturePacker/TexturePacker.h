@@ -121,7 +121,7 @@ private:
 
     Texture::TextureWrap GetDescriptorWrapMode();
     FilterItem GetDescriptorFilter(bool generateMipMaps = false);
-    
+
     bool CheckFrameSize(const Size2i &spriteSize, const Size2i &frameSize);
     
 	void WriteDefinitionString(FILE *fp, const Rect2i & writeRect, const Rect2i &originRect, int textureIndex, const String& frameName);
@@ -130,7 +130,7 @@ private:
     Vector<SizeSortItem> sortVector;
     uint32 maxTextureSize;
 
-	bool onlySquareTextures;
+    bool onlySquareTextures;
     bool NeedSquareTextureForCompression(ImageExportKeys keys);
 	
     TextureConverter::eConvertQuality quality;

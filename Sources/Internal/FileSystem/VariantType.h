@@ -100,8 +100,8 @@ public:
     explicit VariantType(KeyedArchive* archive);
     explicit VariantType(const int64& value);
     explicit VariantType(const uint64& value);
-    explicit VariantType(const Vector2 & value);
-	explicit VariantType(const Vector3 & value);
+    explicit VariantType(const Vector2& value);
+    explicit VariantType(const Vector3 & value);
 	explicit VariantType(const Vector4 & value);
 	explicit VariantType(const Matrix2 & value);
 	explicit VariantType(const Matrix3 & value);
@@ -248,7 +248,7 @@ public:
      Archive is copying into the variable.
 	 \param[in] archive	archive to set (Archive is retains inside variable type)
 	 */
-	void SetKeyedArchive(KeyedArchive *archive);
+    void SetKeyedArchive(KeyedArchive *archive);
     
     /**
      \brief Function to set int64 value to variant type variable
@@ -375,7 +375,7 @@ public:
 	 \brief Function to return array size from variable
 	 \returns array size in bytes variable, or generate assert if variable type is different
 	 */
-	int32 AsByteArraySize() const;
+    int32 AsByteArraySize() const;
 
     /**
 	 \brief Function to return keyed archive from variable. Returns pointer to the KeyedArchive inside.

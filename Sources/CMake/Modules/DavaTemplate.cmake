@@ -111,7 +111,7 @@ elseif ( WINDOWS_UAP )
 
     if ( NOT "${CMAKE_SYSTEM_NAME}" STREQUAL "WindowsStore" )
         message(FATAL_ERROR "This app supports Store / Phone only. Please check the target platform.")
-	endif()
+    endif ()
 
     set ( WINDOWS_UAP_CONFIG_DIR "${DAVA_ROOT_DIR}/Sources/CMake/ConfigureFiles" )
 
@@ -124,12 +124,12 @@ elseif ( WINDOWS_UAP )
 
     set ( APP_MANIFEST_NAME "Package.appxmanifest" )
     set ( APP_CERT_NAME "${PROJECT_NAME}_Key.pfx" )
-	set(SHORT_NAME ${PROJECT_NAME})
-	set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+    set ( SHORT_NAME ${PROJECT_NAME} )
+    set_property ( GLOBAL PROPERTY USE_FOLDERS ON )
 
     #search assets
     file( GLOB ASSET_FILES "${WINDOWS_UAP_ASSETS_DIR}/*.png" )
-	source_group ("Content\\Assets" FILES ${ASSET_FILES})
+    source_group ( "Content\\Assets" FILES ${ASSET_FILES} )
 
     #copy manifest
     configure_file ( ${WINDOWS_UAP_MANIFEST_FILE} ${CMAKE_CURRENT_BINARY_DIR}/${APP_MANIFEST_NAME} @ONLY )
@@ -293,7 +293,11 @@ else()
 
 endif()
 
-if ( QT5_FOUND )
+if (QT5_FOUND)
+    link_with_qt5(${PROJECT_NAME})
+endif()
+
+if ( QT5_FOUND AND NOT NOT_DEPLOY_QT)
     if ( WIN32 )
         set ( QTCONF_DEPLOY_PATH "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/qt.conf" )
     elseif ( APPLE )
@@ -302,23 +306,25 @@ if ( QT5_FOUND )
 
     if     ( TEAMCITY_DEPLOY AND WIN32 )
         set ( PLUGINS_PATH .)
+        set ( QML_IMPORT_PATH .)
+        set ( QML2_IMPORT_PATH .)
     elseif ( TEAMCITY_DEPLOY AND APPLE )
         set ( PLUGINS_PATH PlugIns )
+        set ( QML_IMPORT_PATH Resources/qml)
+        set ( QML2_IMPORT_PATH Resources/qml)
     else()
-        set( PLUGINS_PATH  ${QT5_LIB_PATH}/../plugins )
-        get_filename_component( PLUGINS_PATH ${PLUGINS_PATH} ABSOLUTE )
+        get_filename_component (ABS_QT_PATH "${QT5_LIB_PATH}/../" ABSOLUTE)
+        set ( PLUGINS_PATH  ${ABS_QT_PATH}/plugins )
+        set ( QML_IMPORT_PATH ${ABS_QT_PATH}/qml)
+        set ( QML2_IMPORT_PATH ${ABS_QT_PATH}/qml)
     endif()
 
     configure_file( ${DAVA_CONFIGURE_FILES_PATH}/QtConfTemplate.in
-                    ${CMAKE_CURRENT_BINARY_DIR}/DavaConfigDebug.in  )
-    configure_file( ${DAVA_CONFIGURE_FILES_PATH}/QtConfTemplate.in
-                    ${CMAKE_CURRENT_BINARY_DIR}/DavaConfigRelWithDebinfo.in  )
-    configure_file( ${DAVA_CONFIGURE_FILES_PATH}/QtConfTemplate.in
-                    ${CMAKE_CURRENT_BINARY_DIR}/DavaConfigRelease.in  )
+                    ${CMAKE_CURRENT_BINARY_DIR}/DavaConfig.in  )
 
     ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD
        COMMAND ${CMAKE_COMMAND} -E copy
-       ${CMAKE_CURRENT_BINARY_DIR}/DavaConfig$(CONFIGURATION).in
+       ${CMAKE_CURRENT_BINARY_DIR}/DavaConfig.in
        ${QTCONF_DEPLOY_PATH}
     )
 
@@ -560,7 +566,7 @@ if( DEPLOY )
 
     endif()
 
-    if( QT5_FOUND )
+    if( QT5_FOUND AND NOT NOT_DEPLOY_QT)
         qt_deploy( )
 
     endif()
@@ -598,199 +604,4 @@ macro( DEPLOY_SCRIPT )
         endforeach ()
 
     endif()
-endmacro ()
-
-macro( setup_main_dynlib )
-
-include      ( PlatformSettings )
-
-if( WIN32 )
-    add_definitions ( -D_CRT_SECURE_NO_DEPRECATE )
-endif()
-
-if( WIN32_DATA )
-    set( APP_DATA ${WIN32_DATA} )
-endif()
-
-if( DAVA_FOUND )
-    include_directories   ( ${DAVA_INCLUDE_DIR} )
-    include_directories   ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} )
-
-    list( APPEND ANDROID_JAVA_LIBS  ${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/android/jar )
-    list( APPEND ANDROID_JAVA_SRC   ${DAVA_ENGINE_DIR}/Platform/TemplateAndroid/Java )
-
-endif()
-
-if( WIN32 )
-    list( APPEND RESOURCES_LIST  ${WIN32_RESOURCES} )
-endif()
-
-###
-
-if( QT4_FOUND )
-    set( QT_PREFIX "Qt4")
-
-elseif( QT5_FOUND )
-    set( QT_PREFIX "Qt5")
-
-endif()
-
-if( DAVA_FOUND )
-
-    if( QT_PREFIX )
-        if( WIN32 )
-            set ( PLATFORM_INCLUDES_DIR ${DAVA_PLATFORM_SRC}/${QT_PREFIX} ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/Win32 )
-            list( APPEND PATTERNS_CPP   ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/*.cpp ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/Win32/*.cpp )
-            list( APPEND PATTERNS_H     ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/*.h   ${DAVA_PLATFORM_SRC}/${QT_PREFIX}/Win32/*.h   )
-
-        endif()
-
-        include_directories( ${PLATFORM_INCLUDES_DIR} )
-
-    else()
-        if( WIN32 )
-            add_definitions  ( -D_UNICODE  -DUNICODE )
-            list( APPEND ADDED_SRC  ${DAVA_PLATFORM_SRC}/TemplateWin32/CorePlatformWin32.cpp
-                                    ${DAVA_PLATFORM_SRC}/TemplateWin32/CorePlatformWin32.h  )
-
-        endif()
-
-    endif()
-
-    file( GLOB_RECURSE CPP_FILES ${PATTERNS_CPP} )
-    file( GLOB_RECURSE H_FILES   ${PATTERNS_H} )
-    set ( PLATFORM_ADDED_SRC ${H_FILES} ${CPP_FILES} )
-
-endif()
-
-###
-
-add_library( ${PROJECT_NAME} SHARED
-        ${ADDED_SRC}
-        ${PLATFORM_ADDED_SRC}
-        ${PROJECT_SOURCE_FILES}
-        ${RESOURCES_LIST}
-)
-
-if( TARGET_FILE_TREE_FOUND )
-    add_dependencies(  ${PROJECT_NAME} FILE_TREE_${PROJECT_NAME} )
-
-endif()
-
-if ( QT5_FOUND )
-    if ( WIN32 )
-        set ( QTCONF_DEPLOY_PATH "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/qt.conf" )
-    elseif ( APPLE )
-        set ( QTCONF_DEPLOY_PATH "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${PROJECT_NAME}.app/Contents/Resources/qt.conf" )
-    endif()
-
-    if     ( TEAMCITY_DEPLOY AND WIN32 )
-        set ( PLUGINS_PATH .)
-    elseif ( TEAMCITY_DEPLOY AND APPLE )
-        set ( PLUGINS_PATH PlugIns )
-    else()
-        set( PLUGINS_PATH  ${QT5_LIB_PATH}/../plugins )
-        get_filename_component( PLUGINS_PATH ${PLUGINS_PATH} ABSOLUTE )
-    endif()
-
-    configure_file( ${DAVA_CONFIGURE_FILES_PATH}/QtConfTemplate.in
-                    ${CMAKE_CURRENT_BINARY_DIR}/DavaConfigDebug.in  )
-    configure_file( ${DAVA_CONFIGURE_FILES_PATH}/QtConfTemplate.in
-                    ${CMAKE_CURRENT_BINARY_DIR}/DavaConfigRelWithDebinfo.in  )
-    configure_file( ${DAVA_CONFIGURE_FILES_PATH}/QtConfTemplate.in
-                    ${CMAKE_CURRENT_BINARY_DIR}/DavaConfigRelease.in  )
-
-    ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD
-       COMMAND ${CMAKE_COMMAND} -E copy
-       ${CMAKE_CURRENT_BINARY_DIR}/DavaConfig$(CONFIGURATION).in
-       ${QTCONF_DEPLOY_PATH}
-    )
-
-endif()
-
-
-if ( WIN32 )
-    if( "${EXECUTABLE_FLAG}" STREQUAL "WIN32" )
-        set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "/ENTRY: /NODEFAULTLIB:libcmt.lib /NODEFAULTLIB:libcmtd.lib" )
-
-    else()
-        set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "/NODEFAULTLIB:libcmt.lib /NODEFAULTLIB:libcmtd.lib" )
-
-    endif()
-
-    list( APPEND DAVA_BINARY_WIN32_DIR "${ADDED_BINARY_DIR}" )
-
-    if ( WINDOWS_UAP )
-        set ( DAVA_VCPROJ_USER_TEMPLATE "DavaWinUAPVcxprojUserTemplate.in" )
-    else ()
-        set ( DAVA_VCPROJ_USER_TEMPLATE "DavaVcxprojUserTemplate.in" )
-    endif ()
-
-    configure_file( ${DAVA_CONFIGURE_FILES_PATH}/${DAVA_VCPROJ_USER_TEMPLATE}
-                    ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.vcxproj.user @ONLY )
-
-    if( OUTPUT_TO_BUILD_DIR )
-        set( OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR} )
-        foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
-            string( TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG )
-            set_target_properties ( ${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG}  ${OUTPUT_DIR} )
-        endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
-     endif()
-
-    if ( WINDOWS_UAP )
-        set_property(TARGET ${PROJECT_NAME} PROPERTY VS_WINRT_COMPONENT TRUE)
-    endif()
-
-endif()
-
-list ( APPEND DAVA_FOLDERS ${DAVA_ENGINE_DIR} )
-list ( APPEND DAVA_FOLDERS ${FILE_TREE_CHECK_FOLDERS} )
-list ( APPEND DAVA_FOLDERS ${DAVA_THIRD_PARTY_LIBRARIES_PATH} )
-
-file_tree_check( "${DAVA_FOLDERS}" )
-
-if( DAVA_FOUND )
-    list ( APPEND LIBRARIES ${DAVA_LIBRARY} )
-
-endif()
-
-if( DAVA_TOOLS_FOUND )
-    list ( APPEND LIBRARIES ${DAVA_TOOLS_LIBRARY} )
-
-endif()
-
-target_link_libraries( ${PROJECT_NAME} ${LINK_WHOLE_ARCHIVE_FLAG} ${TARGET_LIBRARIES} ${NO_LINK_WHOLE_ARCHIVE_FLAG} ${LIBRARIES} )
-
-foreach ( FILE ${LIBRARIES_DEBUG} )
-    target_link_libraries  ( ${PROJECT_NAME} debug ${FILE} )
-endforeach ()
-
-foreach ( FILE ${LIBRARIES_RELEASE} )
-    target_link_libraries  ( ${PROJECT_NAME} optimized ${FILE} )
-endforeach ()
-
-if ( QT_LIBRARIES )
-    qt5_use_modules(${PROJECT_NAME} ${QT_LIBRARIES})
-endif()
-
-foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
-    set(DST_DIR ${DEPLOY_DIR}/${OUTPUTCONFIG})
-    if( APP_DATA )
-        get_filename_component( DIR_NAME ${APP_DATA} NAME )
-        ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD
-           COMMAND ${CMAKE_COMMAND} -E copy_directory ${APP_DATA}  ${DST_DIR}/${DIR_NAME}/
-            COMMAND ${CMAKE_COMMAND} -E remove  ${DEPLOY_DIR}/${OUTPUTCONFIG}/${PROJECT_NAME}.ilk
-        )
-
-    endif()
-
-    if (NOT EXISTS ${DST_DIR})
-        file(MAKE_DIRECTORY ${DST_DIR})
-    endif()
-
-    foreach ( ITEM fmodex.dll fmod_event.dll IMagickHelper.dll glew32.dll TextureConverter.dll )
-        execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${DAVA_TOOLS_BIN_DIR}/${ITEM}  ${DST_DIR} )
-    endforeach ()
-endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
-
 endmacro ()
