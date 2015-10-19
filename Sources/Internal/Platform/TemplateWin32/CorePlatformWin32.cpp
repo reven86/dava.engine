@@ -514,8 +514,8 @@ namespace DAVA
             }
         }
 
-		if(!isFind)
-		{
+        if (!isFind)
+        {
 			UIEvent newTouch;
 			newTouch.tid = button;
             newTouch.physPoint.x = static_cast<float32>(GET_X_LPARAM(lParam));
@@ -530,8 +530,8 @@ namespace DAVA
             outTouches->push_back(*it);
         }
 
-        if(phase == UIEvent::PHASE_ENDED || phase == UIEvent::PHASE_MOVE)
-		{
+        if (phase == UIEvent::PHASE_ENDED || phase == UIEvent::PHASE_MOVE)
+        {
             for (Vector<DAVA::UIEvent>::iterator it = events.begin(); it != events.end(); it++)
             {
                 if (it->tid == button)
@@ -542,8 +542,8 @@ namespace DAVA
             }
         }
 
-		return phase;
-	}
+        return phase;
+    }
 
 	static bool mouseCursorShown = true;
 	static USHORT mouseButtonsDownMask = 0;
@@ -649,8 +649,8 @@ namespace DAVA
             mouseCursorShown = false;
         }
 
-		HandleMouseButtonsReleased(buttsFlags);
-	}
+        HandleMouseButtonsReleased(buttsFlags);
+    }
 
     void CoreWin32Platform::OnTouchEvent(UIEvent::eInputPhase phase, UIEvent::PointerDeviceID deviceId, uint32 fingerId, float32 x, float32 y, float presure)
     {
@@ -846,8 +846,8 @@ namespace DAVA
             {
                 ShowCursor(true);
                 mouseCursorShown = true;
-			}
-			break;
+            }
+            break;
 		case WM_DESTROY:
 			PostQuitMessage(0);
 			return 0;

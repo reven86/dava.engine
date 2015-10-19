@@ -41,10 +41,12 @@ namespace DAVA
 static const String UISCROLL_VIEW_CONTAINER_NAME = "scrollContainerControl";
 
 UIScrollView::UIScrollView(const Rect &rect, bool rectInAbsoluteCoordinates/* = false*/)
-:	UIControl(rect, rectInAbsoluteCoordinates),
-	scrollContainer(new UIScrollViewContainer()),
-	scrollHorizontal(new ScrollHelper()),
-	scrollVertical(new ScrollHelper())
+    : UIControl(rect, rectInAbsoluteCoordinates)
+	, scrollContainer(new UIScrollViewContainer())
+	, scrollHorizontal(new ScrollHelper())
+	, scrollVertical(new ScrollHelper())
+    , autoUpdate(false)
+    , centerContent(false)
 {
     SetInputEnabled(false, false);
     SetFocusEnabled(false);
@@ -123,8 +125,12 @@ void UIScrollView::PushContentToBounds(UIControl *parentControl)
 		{
 			childRect.y += Abs(position.y);
 		}
-		// Move each first child
-		childControl->SetRect(childRect);
+		
+        // Move each first child
+        if (childRect != childControl->GetRect())
+        {
+            childControl->SetRect(childRect);
+        }
 	}
 }
 
@@ -211,6 +217,8 @@ void UIScrollView::CopyDataFrom(UIControl *srcControl)
     UIScrollView *src = DynamicTypeCheck<UIScrollView*>(srcControl);
     scrollHorizontal->CopyDataFrom(src->scrollHorizontal);
     scrollVertical->CopyDataFrom(src->scrollVertical);
+    autoUpdate = src->autoUpdate;
+    centerContent = src->centerContent;
 }
 
 void UIScrollView::SetPadding(const Vector2 & padding)
@@ -280,6 +288,12 @@ void UIScrollView::RecalculateContentSize()
 	{
 		return;
 	}
+    
+    if (autoUpdate)
+    {
+        DVASSERT(!autoUpdate);
+        return;
+    }
 	
 	Rect contentRect = scrollContainer->GetRect();
 	Rect parentRect = GetRect();
@@ -292,7 +306,7 @@ void UIScrollView::RecalculateContentSize()
 									Vector2(0, 0));
 									
 	// Update scroll view content size
-	scrollContainer->SetRect(Rect(contentRect.x, contentRect.y, maxSize.x, maxSize.y));
+    scrollContainer->SetRect(Rect(contentRect.x, contentRect.y, maxSize.x, maxSize.y));
 	scrollHorizontal->SetElementSize(maxSize.x);
 	scrollVertical->SetElementSize(maxSize.y);
 }
@@ -377,6 +391,15 @@ void UIScrollView::OnViewPositionChanged(UIScrollBar *byScrollBar, float32 newPo
 	scrollContainer->SetRect(curContainerRect);
 }
 
+void UIScrollView::OnScrollViewContainerSizeChanged()
+{
+    if (autoUpdate && scrollContainer != nullptr)
+    {
+        scrollHorizontal->SetElementSize(scrollContainer->GetSize().dx);
+        scrollVertical->SetElementSize(scrollContainer->GetSize().dy);
+    }
+}
+
 float32 UIScrollView::GetParameterForScrollBar(UIScrollBar* forScrollBar, const Vector2& vectorParam)
 {
 	if (forScrollBar->GetOrientation() == UIScrollBar::ORIENTATION_HORIZONTAL)
@@ -447,9 +470,12 @@ void UIScrollView::SetHorizontalScrollPosition(float32 horzPos)
         return;
     }
 
-    Rect contentRect = scrollContainer->GetRect();
-	contentRect.x = horzPos;
-    scrollContainer->SetRect(contentRect);
+    Vector2 pos = scrollContainer->GetPosition();
+	pos.x = horzPos;
+    if (scrollContainer->GetPosition() != pos)
+    {
+        scrollContainer->SetPosition(pos);
+    }
 
     scrollHorizontal->SetPosition(horzPos);
 }
@@ -461,9 +487,12 @@ void UIScrollView::SetVerticalScrollPosition(float32 vertPos)
         return;
     }
     
-    Rect contentRect = scrollContainer->GetRect();
-	contentRect.y = vertPos;
-    scrollContainer->SetRect(contentRect);
+    Vector2 pos = scrollContainer->GetPosition();
+	pos.y = vertPos;
+    if (scrollContainer->GetPosition() != pos)
+    {
+        scrollContainer->SetPosition(pos);
+    }
     
     scrollVertical->SetPosition(vertPos);
 }
@@ -493,6 +522,26 @@ void UIScrollView::ScrollToPosition( const Vector2& pos, float32 timeSec )
 const String UIScrollView::GetDelegateControlPath(const UIControl *rootControl) const
 {
     return UIControlHelpers::GetControlPath(this, rootControl);
+}
+    
+bool UIScrollView::IsAutoUpdate() const
+{
+    return autoUpdate;
+}
+
+void UIScrollView::SetAutoUpdate(bool auto_)
+{
+    autoUpdate = auto_;
+}
+
+bool UIScrollView::IsCenterContent() const
+{
+    return centerContent;
+}
+
+void UIScrollView::SetCenterContent(bool center_)
+{
+    centerContent = center_;
 }
 
 };

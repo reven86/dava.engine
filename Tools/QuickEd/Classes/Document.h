@@ -37,7 +37,6 @@
 #include "EditorSystems/SelectionContainer.h"
 #include "Math/Rect.h"
 
-
 struct WidgetContext
 {
     virtual ~WidgetContext() = 0;
@@ -45,7 +44,6 @@ struct WidgetContext
 
 inline WidgetContext::~WidgetContext()
 {
-    
 }
 
 namespace DAVA {
@@ -67,7 +65,7 @@ class Document final : public QObject
     Q_OBJECT
 
 public:
-    explicit Document(PackageNode *package, QObject *parent = nullptr);
+    explicit Document(PackageNode* package, QObject* parent = nullptr);
     ~Document();
 
     void Activate();
@@ -75,9 +73,9 @@ public:
 
     EditorSystemsManager* GetSystemManager();
     const DAVA::FilePath &GetPackageFilePath() const;
-    QUndoStack *GetUndoStack();
-    PackageNode *GetPackage();
-    QtModelPackageCommandExecutor *GetCommandExecutor();
+    QUndoStack* GetUndoStack();
+    PackageNode* GetPackage();
+    QtModelPackageCommandExecutor* GetCommandExecutor();
     WidgetContext* GetContext(QObject* requester) const;
 
     void SetContext(QObject* requester, WidgetContext* widgetContext);
@@ -85,7 +83,7 @@ public:
     void RefreshLayout();
 
 signals:
-    void SelectedNodesChanged(const SelectedNodes &selected, const SelectedNodes &deselected);
+    void SelectedNodesChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void CanvasSizeChanged();
 public slots:
     void SetScale(float scale);
@@ -94,12 +92,11 @@ public slots:
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
 
 private:
+    DAVA::UnorderedMap<QObject*, WidgetContext*> contexts;
 
-    DAVA::UnorderedMap < QObject*, WidgetContext* > contexts;
-
-    PackageNode *package = nullptr;
-    QtModelPackageCommandExecutor *commandExecutor = nullptr;
-    QUndoStack *undoStack = nullptr;
+    PackageNode* package = nullptr;
+    QtModelPackageCommandExecutor* commandExecutor = nullptr;
+    QUndoStack* undoStack = nullptr;
 
     EditorSystemsManager systemManager;
 };

@@ -442,8 +442,8 @@ void UIControlSystem::OnInput(const Vector<UIEvent>& activeInputs, const Vector<
 
             for (Vector<UIEvent>::const_iterator wit = activeInputs.begin(); wit != activeInputs.end(); wit++)
             {
-				if((*it).tid == (*wit).tid)
-				{
+                if ((*it).tid == (*wit).tid)
+                {
 					if((*it).phase == (*wit).phase && (*it).physPoint == (*wit).physPoint)
 					{
 						(*it).activeState = UIEvent::ACTIVITY_STATE_ACTIVE;
@@ -464,9 +464,9 @@ void UIControlSystem::OnInput(const Vector<UIEvent>& activeInputs, const Vector<
                 {
                     if ((*it).tid == (*wit).tid)
                     {
-                        if((*it).phase == (*wit).phase && (*it).physPoint == (*wit).physPoint)
-						{
-							(*it).activeState = UIEvent::ACTIVITY_STATE_ACTIVE;
+                        if ((*it).phase == (*wit).phase && (*it).physPoint == (*wit).physPoint)
+                        {
+                            (*it).activeState = UIEvent::ACTIVITY_STATE_ACTIVE;
 						}
 						else 
 						{

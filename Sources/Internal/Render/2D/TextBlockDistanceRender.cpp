@@ -129,10 +129,10 @@ void TextBlockDistanceRender::Draw(const Color& textColor, const Vector2* offset
 		xOffset += (int32)offset->x;
 		yOffset += (int32)offset->y;
 	}
-	
-	int32 align = textBlock->GetVisualAlignNoMutexLock();
-	if (align & ALIGN_RIGHT)
-	{
+
+    int32 align = textBlock->GetVisualAlign();
+    if (align & ALIGN_RIGHT)
+    {
 		xOffset += (int32)(textBlock->rectSize.dx - renderRect.dx);
 	}
 	else if ((align & ALIGN_HCENTER) || (align & ALIGN_HJUSTIFY))

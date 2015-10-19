@@ -49,7 +49,7 @@ class PackageModel : public QAbstractItemModel, private PackageListener
 public:
     PackageModel(PackageNode *root, QtModelPackageCommandExecutor *commandExecutor, QObject *parent = 0);
     ~PackageModel() override;
-    
+
     QModelIndex indexByNode(PackageBaseNode *node) const;
     
     QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
