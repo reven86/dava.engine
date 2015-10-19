@@ -33,7 +33,7 @@
 
 #include <cassert>
 
-#if defined(__DAVAENGINE_WINDOWS__)
+#if defined(__DAVAENGINE_WIN32__)
 #include <dbghelp.h>
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
 #include <execinfo.h>
@@ -43,6 +43,8 @@
 #include <unwind.h>
 #include <dlfcn.h>
 #include <cxxabi.h>
+#else
+#error "Unknown platform"
 #endif
 
 #include "Base/Hash.h"
@@ -735,13 +737,15 @@ DAVA_NOINLINE void MemoryManager::CollectBacktrace(Backtrace* backtrace, size_t 
     const size_t FRAMES_COUNT = BACKTRACE_DEPTH + EXTRA_FRAMES;
     void* frames[FRAMES_COUNT] = {nullptr};
     Memset(backtrace, 0, sizeof(Backtrace));
-#if defined(__DAVAENGINE_WINDOWS__)
+#if defined(__DAVAENGINE_WIN32__)
     CaptureStackBackTrace(0, FRAMES_COUNT, frames, nullptr);
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
     ::backtrace(frames, FRAMES_COUNT);
 #elif defined(__DAVAENGINE_ANDROID__)
     BacktraceState state = {frames, frames + FRAMES_COUNT};
     _Unwind_Backtrace(&UnwindCallback, &state);
+#else
+#error "Unknown platform"
 #endif
     for (size_t idst = 0, isrc = nskip + 1;idst < BACKTRACE_DEPTH;++idst, ++isrc)
     {
@@ -763,7 +767,7 @@ void MemoryManager::ObtainBacktraceSymbols(const Backtrace* backtrace)
     const size_t NAME_BUFFER_SIZE = 4 * 1024;
     static Array<char8, NAME_BUFFER_SIZE> nameBuffer;
     
-#if defined(__DAVAENGINE_WINDOWS__)
+#if defined(__DAVAENGINE_WIN32__)
     HANDLE hprocess = GetCurrentProcess();
 
     static bool symInited = false;
@@ -807,6 +811,8 @@ void MemoryManager::ObtainBacktraceSymbols(const Backtrace* backtrace)
             }
         }
     }
+#else
+#error "Unknown platform"
 #endif
 }
 
