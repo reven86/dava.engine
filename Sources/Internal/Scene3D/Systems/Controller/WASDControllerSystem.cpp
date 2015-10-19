@@ -86,7 +86,7 @@ void WASDControllerSystem::Process(float32 timeElapsed)
     for(uint32 i = 0; i < size; ++i)
     {
         Camera *camera = GetCamera(entities[i]);
-        if(camera)
+        if ((camera != nullptr) && (camera == GetScene()->GetDrawCamera()))
         {
             if(keyboard.IsKeyPressed(DVKEY_W) || keyboard.IsKeyPressed(DVKEY_UP))
             {
