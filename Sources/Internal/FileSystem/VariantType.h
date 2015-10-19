@@ -242,14 +242,14 @@ public:
 	 \param[in] value	value to set
 	 \param[in] arraySizeInBytes	size of the array in bytes
 	 */
-    void SetByteArray(const uint8 *array, int32 arraySizeInBytes);
+    void SetByteArray(const uint8* array, int32 arraySizeInBytes);
 
-	/**
+    /**
 	 \brief Function to set KeyedArchive to variation type variable.
      Archive is copying into the variable.
 	 \param[in] archive	archive to set (Archive is retains inside variable type)
 	 */
-	void SetKeyedArchive(KeyedArchive *archive);
+    void SetKeyedArchive(KeyedArchive *archive);
     
     /**
      \brief Function to set int64 value to variant type variable
@@ -371,12 +371,12 @@ public:
 	 \brief Function to return array from variable
 	 \returns value of variable, or generate assert if variable type is different
 	 */
-    const uint8 *AsByteArray() const;
-	/**
+    const uint8* AsByteArray() const;
+    /**
 	 \brief Function to return array size from variable
 	 \returns array size in bytes variable, or generate assert if variable type is different
 	 */
-	int32 AsByteArraySize() const;
+    int32 AsByteArraySize() const;
 
     /**
 	 \brief Function to return keyed archive from variable. Returns pointer to the KeyedArchive inside.

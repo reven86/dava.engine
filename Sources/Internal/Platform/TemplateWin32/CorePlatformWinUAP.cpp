@@ -158,16 +158,6 @@ void CorePlatformWinUAP::RunOnMainThread(std::function<void()>&& fn, bool blocke
     }
 }
 
-// temporary decision, need change when signal will be enabled
-DeviceInfo::HIDCallBackFunc MainThreadRedirector(DeviceInfo::HIDCallBackFunc func)
-{
-    return [=](DeviceInfo::eHIDType type, bool b) {
-        CorePlatformWinUAP* core = static_cast<CorePlatformWinUAP*>(Core::Instance());
-        DVASSERT(nullptr != core && "In MainThreadRedirector() function CorePlatformWinUAP* = nullptr");
-        core->RunOnMainThread([=]() { func(type, b); });
-    };
-}
-
 }   // namespace DAVA
 
 #endif  // __DAVAENGINE_WIN_UAP__

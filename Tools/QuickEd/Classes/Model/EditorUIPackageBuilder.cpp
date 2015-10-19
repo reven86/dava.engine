@@ -223,7 +223,10 @@ void EditorUIPackageBuilder::EndControl(bool isRoot)
     if (addToParent)
     {
         if (controlsStack.empty() || isRoot)
+        {
+            lastControl->GetControl()->UpdateLayout();
             rootControls.push_back(SafeRetain(lastControl));
+        }
         else
             controlsStack.back().node->Add(lastControl);
     }

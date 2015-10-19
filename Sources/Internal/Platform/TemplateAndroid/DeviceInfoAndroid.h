@@ -30,19 +30,18 @@
 #ifndef __FRAMEWORK__DEVICEINFOANDROID__
 #define __FRAMEWORK__DEVICEINFOANDROID__
 
-#include "Base/BaseTypes.h"
+#include "Base/Platform.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 
 #include "JniExtensions.h"
 #include "Base/BaseTypes.h"
-#include "Platform/DeviceInfo.h"
+#include "Platform/DeviceInfoPrivateBase.h"
 #include "Platform/TemplateAndroid/JniHelpers.h"
 
 namespace DAVA
 {
-
-class DeviceInfoPrivate
+class DeviceInfoPrivate : public DeviceInfoPrivateBase
 {
 public:
     DeviceInfoPrivate();
@@ -64,10 +63,8 @@ public:
     eGPUFamily GetGPUFamily();
     DeviceInfo::NetworkInfo GetNetworkInfo();
     List<DeviceInfo::StorageInfo> GetStoragesList();
-    int32 GetCpuCount();
     void InitializeScreenInfo();
     bool IsHIDConnected(DeviceInfo::eHIDType type);
-    void SetHIDConnectionCallback(DeviceInfo::eHIDType type, DeviceInfo::HIDCallBackFunc&& callback);
 
 protected:
     DeviceInfo::StorageInfo StorageInfoFromJava(jobject object);
