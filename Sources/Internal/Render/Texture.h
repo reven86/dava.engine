@@ -64,11 +64,9 @@ class Texture;
     class Texture : public BaseObject
 {
     DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_TEXTURE)
-public:       
-        
 
-
-	enum TextureState
+public:
+    enum TextureState
 	{
 		STATE_INVALID	=	0,
 		STATE_DATA_LOADED,
