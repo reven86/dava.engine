@@ -46,7 +46,7 @@ struct SelectionContainer
     void MergeSelection(const SelectedNodes& selected, const SelectedNodes& deselected);
 
     template <typename ContainerOut>
-    static void MergeSelectionAndContainer(const SelectedNodes& selected, const SelectedNodes& deselected, ContainerOut& out);
+    static void MergeSelectionToContainer(const SelectedNodes& selected, const SelectedNodes& deselected, ContainerOut& out);
 
     SelectedNodes selectedNodes;
 };
@@ -74,7 +74,7 @@ inline void SelectionContainer::MergeSelection(const SelectedNodes& selected, co
 }
 
 template <typename ContainerOut>
-inline void SelectionContainer::MergeSelectionAndContainer(const SelectedNodes& selected, const SelectedNodes& deselected, ContainerOut& out)
+inline void SelectionContainer::MergeSelectionToContainer(const SelectedNodes& selected, const SelectedNodes& deselected, ContainerOut& out)
 {
     using T = typename std::remove_reference<ContainerOut>::type::value_type;
     for (const auto& node : deselected)

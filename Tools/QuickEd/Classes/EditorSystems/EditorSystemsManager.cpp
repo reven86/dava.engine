@@ -235,7 +235,7 @@ void EditorSystemsManager::CollectControlNodesByRect(SelectedControls& controlNo
 
 void EditorSystemsManager::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
-    SelectionContainer::MergeSelectionAndContainer(selected, deselected, selectedControlNodes);
+    SelectionContainer::MergeSelectionToContainer(selected, deselected, selectedControlNodes);
     if (!selectedControlNodes.empty())
     {
         SetPreviewMode(false);

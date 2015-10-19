@@ -69,7 +69,7 @@ struct TransformSystem::MoveInfo
 namespace
 {
 const DAVA::Vector2 minimumSize = DAVA::Vector2(16.0f, 16.0f);
-const DAVA::Vector2 magnetRange = DAVA::Vector2(10.0f, 10.0f);
+const DAVA::Vector2 magnetRange = DAVA::Vector2(7.0f, 7.0f);
 const DAVA::float32 moveStepByKeyboard = 1.0f;
 const DAVA::float32 expandedMoveStepByKeyboard = 10.0f;
 const DAVA::Vector2 borderInParentToMagnet = DAVA::Vector2(20.0f, 20.0f);
@@ -191,7 +191,7 @@ bool TransformSystem::OnInput(UIEvent* currentInput)
 
 void TransformSystem::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
-    SelectionContainer::MergeSelectionAndContainer(selected, deselected, selectedControlNodes);
+    SelectionContainer::MergeSelectionToContainer(selected, deselected, selectedControlNodes);
     nodesToMove.clear();
     for (ControlNode* selectedControl : selectedControlNodes)
     {
@@ -333,7 +333,9 @@ List<MagnetLine> CreateMagnetPairs(const Rect& box, const UIGeometricData* paren
     DVASSERT(box.dx > 0.0f && box.dy > 0.0f);
 
     magnets.emplace_back(0.0f, box, 0.0f, parentBox, axis);
+    magnets.emplace_back(0.0f, box, 0.5f, parentBox, axis);
     magnets.emplace_back(0.5f, box, 0.5f, parentBox, axis);
+    magnets.emplace_back(1.0f, box, 0.5f, parentBox, axis);
     magnets.emplace_back(1.0f, box, 1.0f, parentBox, axis);
 
     const float32 border = borderInParentToMagnet[axis];
@@ -350,7 +352,9 @@ List<MagnetLine> CreateMagnetPairs(const Rect& box, const UIGeometricData* paren
         Rect neighbourBox = neighbour->GetLocalGeometricData().GetAABBox();
 
         magnets.emplace_back(0.0f, box, 0.0f, neighbourBox, axis);
+        magnets.emplace_back(0.0f, box, 0.5f, neighbourBox, axis);
         magnets.emplace_back(0.5f, box, 0.5f, neighbourBox, axis);
+        magnets.emplace_back(1.0f, box, 0.5f, neighbourBox, axis);
         magnets.emplace_back(1.0f, box, 1.0f, neighbourBox, axis);
         magnets.emplace_back(0.0f, box, 1.0f, neighbourBox, axis);
         magnets.emplace_back(1.0f, box, 0.0f, neighbourBox, axis);
