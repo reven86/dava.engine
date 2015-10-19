@@ -304,7 +304,7 @@ void TransformSystem::MoveAllSelectedControls(Vector2 delta, bool canAdjust)
     for (auto& nodeToMove : nodesToMove)
     {
         ControlNode* node = nodeToMove->node;
-        if (node == activeControlNode)
+        if (canAdjust && node == activeControlNode)
         {
             continue; //we already move it in this function
         }
@@ -519,8 +519,8 @@ void TransformSystem::ResizeControl(Vector2 delta, bool withPivot, bool rateably
     extraDelta.SetZero();
 
     Vector2 adjustedSize = deltaSize;
-    adjustedSize = AdjustResizeToBorder(adjustedSize, transformPoint, directions);
     adjustedSize = AdjustResizeToMinimumSize(adjustedSize);
+    adjustedSize = AdjustResizeToBorder(adjustedSize, transformPoint, directions);
 
     //adjust delta position to new delta size
     for (int32 axisInt = Vector2::AXIS_X; axisInt < Vector2::AXIS_COUNT; ++axisInt)
