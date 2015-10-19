@@ -48,11 +48,11 @@ void FrameworkDidLaunched()
     appOptions->SetString(String("title"), String("TestBed"));
     
 #if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
-    appOptions->SetInt32("orientation", Core::SCREEN_ORIENTATION_LANDSCAPE_LEFT);
-    appOptions->SetInt32("renderer", Core::RENDERER_OPENGL_ES_3_0);
-
     screenWidth = Max(DeviceInfo::GetScreenInfo().width, DeviceInfo::GetScreenInfo().height);
     screenHeight = Min(DeviceInfo::GetScreenInfo().width, DeviceInfo::GetScreenInfo().height);
+
+    appOptions->SetInt32("orientation", Core::SCREEN_ORIENTATION_LANDSCAPE_LEFT);
+    appOptions->SetInt32("renderer", rhi::RHI_GLES2);
     appOptions->SetBool("iPhone_autodetectScreenScaleFactor", true);
 
     DAVA::VirtualCoordinatesSystem::Instance()->SetProportionsIsFixed(false);
