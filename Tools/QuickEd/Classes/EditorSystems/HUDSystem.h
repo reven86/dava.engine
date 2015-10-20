@@ -67,7 +67,6 @@ private:
     void SetNewArea(const HUDAreaInfo& HUDAreaInfo);
 
     void SetCanDrawRect(bool canDrawRect_);
-    void SetEditingEnabled(bool arg);
     void UpdateAreasVisibility();
     HUDAreaInfo activeAreaInfo;
 
@@ -81,8 +80,8 @@ private:
     DAVA::Vector<DAVA::RefPtr<DAVA::UIControl>> magnetControls;
     EditorSystemsManager::SortedPackageBaseNodeSet sortedControlList;
     bool dragRequested = false;
-    bool editingEnabled = false;
     SelectionContainer selectionContainer;
+    bool hudVisible;
 };
 
 #endif // __QUICKED_HUD_SYSTEM_H__

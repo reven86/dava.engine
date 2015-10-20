@@ -454,10 +454,6 @@ void HUDSystem::OnDeactivated()
 void HUDSystem::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
     selectionContainer.MergeSelection(selected, deselected);
-    if (!editingEnabled)
-    {
-        return;
-    }
     for (auto node : deselected)
     {
         ControlNode* controlNode = dynamic_cast<ControlNode*>(node);
@@ -488,10 +484,6 @@ void HUDSystem::OnSelectionChanged(const SelectedNodes& selected, const Selected
 
 bool HUDSystem::OnInput(UIEvent* currentInput)
 {
-    if (!editingEnabled)
-    {
-        return false;
-    }
     switch (currentInput->phase)
     {
     case UIEvent::PHASE_MOVE:
@@ -558,7 +550,8 @@ void HUDSystem::ControlPropertyWasChanged(ControlNode* node, AbstractProperty* p
 
 void HUDSystem::OnRootContolsChanged(const EditorSystemsManager::SortedPackageBaseNodeSet& rootControls)
 {
-    SetEditingEnabled(rootControls.size() == 1);
+    hudVisible = rootControls.size() == 1;
+    UpdateAreasVisibility();
 }
 
 void HUDSystem::OnEmulationModeChanged(bool emulationMode)
@@ -651,6 +644,7 @@ void HUDSystem::SetNewArea(const HUDAreaInfo& areaInfo)
 {
     if (activeAreaInfo.area != areaInfo.area || activeAreaInfo.owner != areaInfo.owner)
     {
+        DVASSERT(areaInfo.owner != nullptr && areaInfo.owner->GetParent() != nullptr);
         activeAreaInfo = areaInfo;
         systemManager->ActiveAreaChanged.Emit(activeAreaInfo);
     }
@@ -668,26 +662,13 @@ void HUDSystem::SetCanDrawRect(bool canDrawRect_)
     }
 }
 
-void HUDSystem::SetEditingEnabled(bool arg)
-{
-    if (editingEnabled != arg)
-    {
-        editingEnabled = arg;
-        if (!editingEnabled)
-        {
-            hudMap.clear();
-            sortedControlList.clear();
-            selectionRectControl->SetSize(Vector2());
-        }
-        else
-        {
-            OnSelectionChanged(selectionContainer.selectedNodes, SelectedNodes());
-        }
-    }
-}
-
 void HUDSystem::UpdateAreasVisibility()
 {
+    for (auto& pair : hudMap)
+    {
+        pair.second->container->SetVisible(hudVisible);
+    }
+
     bool showAreas = sortedControlList.size() == 1;
     for (const auto& iter : sortedControlList)
     {
