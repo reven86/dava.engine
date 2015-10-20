@@ -53,6 +53,8 @@ namespace DAVA
         // - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
         // core->ReleaseSingletons() is called from there
         
+        SetNativeView(mainWindowController->openGLView);
+
 		[globalPool release];
 		globalPool = 0;
 		return retVal;
@@ -108,11 +110,6 @@ namespace DAVA
 		mouseLocation.y = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy - p.y;
 		// mouseLocation.y = 
 		return mouseLocation;
-	}
-	
-	void* CoreMacOSPlatform::GetOpenGLView()
-	{
-		return mainWindowController->openGLView;
 	}
 }
 
