@@ -644,7 +644,6 @@ void HUDSystem::SetNewArea(const HUDAreaInfo& areaInfo)
 {
     if (activeAreaInfo.area != areaInfo.area || activeAreaInfo.owner != areaInfo.owner)
     {
-        DVASSERT(areaInfo.owner != nullptr && areaInfo.owner->GetParent() != nullptr);
         activeAreaInfo = areaInfo;
         systemManager->ActiveAreaChanged.Emit(activeAreaInfo);
     }

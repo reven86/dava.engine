@@ -81,7 +81,7 @@ private:
     EditorSystemsManager::SortedPackageBaseNodeSet sortedControlList;
     bool dragRequested = false;
     SelectionContainer selectionContainer;
-    bool hudVisible;
+    bool hudVisible = false;
 };
 
 #endif // __QUICKED_HUD_SYSTEM_H__
