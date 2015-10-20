@@ -708,6 +708,7 @@ CommandBufferGLES2_t::Execute()
     uint32      cur_vdecl       = VertexLayout::InvalidUID;
     uint32      cur_base_vert   = 0;
     Handle      last_ps         = InvalidHandle;
+    uint32      cur_gl_prog     = 0;
     Handle      vp_const[MAX_CONST_BUFFER_COUNT];
     const void* vp_const_data[MAX_CONST_BUFFER_COUNT];
     Handle      fp_const[MAX_CONST_BUFFER_COUNT];
@@ -920,8 +921,9 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
                     cur_ps          = ps;
                     cur_vdecl       = vdecl;
                     cur_base_vert   = 0;
-                    last_ps = InvalidHandle;
-                    vdecl_pending = true;
+                    last_ps         = InvalidHandle;
+                    cur_gl_prog     = PipelineStateGLES2::ProgramUid( ps );
+                    vdecl_pending   = true;
                 }
 
                 tex_unit_0 = PipelineStateGLES2::VertexSamplerCount( ps );
@@ -1025,15 +1027,8 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
                 unsigned    buf_i = (unsigned)(arg[0]);
                 const void* inst  = (const void*)arg[2];
 
-                if( inst != vp_const_data[buf_i] )
-                {
-                    vp_const[buf_i]      = (Handle)(arg[1]);
-                    vp_const_data[buf_i] = inst;
-                }
-                else
-                {
-                    vp_const[buf_i] = InvalidHandle;
-                }
+                vp_const[buf_i]      = (Handle)(arg[1]);
+                vp_const_data[buf_i] = inst;
                 
                 c += 3;
             }   break;
@@ -1043,15 +1038,8 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
                 unsigned    buf_i = (unsigned)(arg[0]);
                 const void* inst  = (const void*)arg[2];
 
-                if( inst != fp_const_data[buf_i] )
-                {
-                    fp_const[buf_i]      = (Handle)(arg[1]);
-                    fp_const_data[buf_i] = inst;
-                }
-                else
-                {
-                    fp_const[buf_i] = InvalidHandle;
-                }
+                fp_const[buf_i]      = (Handle)(arg[1]);
+                fp_const_data[buf_i] = inst;
                 
                 c += 3;
             }   break;
@@ -1086,12 +1074,12 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
                 for( unsigned i=0; i!=MAX_CONST_BUFFER_COUNT; ++i )
                 {
                     if( vp_const[i] != InvalidHandle )
-                        ConstBufferGLES2::SetToRHI( vp_const[i], vp_const_data[i] );
+                        ConstBufferGLES2::SetToRHI( vp_const[i], cur_gl_prog, vp_const_data[i] );
                 }
                 for( unsigned i=0; i!=MAX_CONST_BUFFER_COUNT; ++i )
                 {
                     if( fp_const[i] != InvalidHandle )
-                        ConstBufferGLES2::SetToRHI( fp_const[i], fp_const_data[i] );
+                        ConstBufferGLES2::SetToRHI( fp_const[i], cur_gl_prog, fp_const_data[i] );
                 }
 
                 if( cur_query_i != InvalidIndex )
@@ -1147,12 +1135,12 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
                 for( unsigned i=0; i!=MAX_CONST_BUFFER_COUNT; ++i )
                 {
                     if( vp_const[i] != InvalidHandle )
-                        ConstBufferGLES2::SetToRHI( vp_const[i], vp_const_data[i] );
+                        ConstBufferGLES2::SetToRHI( vp_const[i], cur_gl_prog, vp_const_data[i] );
                 }
                 for( unsigned i=0; i!=MAX_CONST_BUFFER_COUNT; ++i )
                 {
                     if( fp_const[i] != InvalidHandle )
-                        ConstBufferGLES2::SetToRHI( fp_const[i], fp_const_data[i] );
+                        ConstBufferGLES2::SetToRHI( fp_const[i], cur_gl_prog, fp_const_data[i] );
                 }
 
                 if( vdecl_pending  ||  firstVertex != cur_base_vert )

@@ -709,6 +709,14 @@ VertexSamplerCount( Handle ps )
     return ps2->prog.vprog->SamplerCount();
 }
 
+uint32
+ProgramUid( Handle ps )
+{
+    PipelineStateGLES2_t* ps2 = PipelineStateGLES2Pool::Get( ps );
+
+    return ps2->prog.glProg;
+}
+
 void
 InvalidateCache()
 {
