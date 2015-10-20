@@ -364,7 +364,7 @@ void ConvertNSEventToUIEvent(NSEvent* curEvent, UIEvent& event, UIEvent::Phase p
 	Vector<DAVA::UIEvent> touches;
 
     [self moveTouchsToVector:touchPhase curEvent:touch outTouches:&touches];
-    UIControlSystem::Instance()->OnInput(touches, allTouches);
+    UIControlSystem::Instance()->OnInput(&touches[0]);
     touches.clear();
 }
 
@@ -381,7 +381,7 @@ void ConvertNSEventToUIEvent(NSEvent* curEvent, UIEvent& event, UIEvent::Phase p
     ev.device = DAVA::UIEvent::Device::MOUSE;
     ev.physPoint.y = [theEvent scrollingDeltaY];
 
-    UIControlSystem::Instance()->OnInput({ev}, allTouches);
+    UIControlSystem::Instance()->OnInput(&ev);
 }
 
 - (void)mouseMoved:(NSEvent *)theEvent
@@ -400,7 +400,6 @@ void ConvertNSEventToUIEvent(NSEvent* curEvent, UIEvent& event, UIEvent::Phase p
 }
 - (void)mouseEntered:(NSEvent *)theEvent
 {
-	NSLog(@"mouse ENTERED");
     if(RenderManager::Instance()->GetCursor())
     {
         if(RenderManager::Instance()->GetCursor()->IsShow())
@@ -408,13 +407,10 @@ void ConvertNSEventToUIEvent(NSEvent* curEvent, UIEvent& event, UIEvent::Phase p
         else
             [NSCursor hide];
     }
-//	[self process:DAVA::UIEvent::PHASE_ENDED touch:theEvent];
 }
 - (void)mouseExited:(NSEvent *)theEvent
 {
-	NSLog(@"mouse EXITED");
     [NSCursor unhide];
-//	[self process:DAVA::UIEvent::PHASE_ENDED touch:theEvent];
 }
 - (void)rightMouseDown:(NSEvent *)theEvent
 {
@@ -469,7 +465,7 @@ static int32 oldModifersFlags = 0;
         ev.device = UIEvent::Device::KEYBOARD;
         ev.keyChar = static_cast<char16>(ch);
 
-        UIControlSystem::Instance()->OnInput({ev}, allTouches);
+        UIControlSystem::Instance()->OnInput(&ev);
     }
 
     {
@@ -485,7 +481,7 @@ static int32 oldModifersFlags = 0;
         ev.device = UIEvent::Device::KEYBOARD;
         ev.tid = keyboard.GetDavaKeyForSystemKey(keyCode);
 
-        UIControlSystem::Instance()->OnInput({ev}, allTouches);
+        UIControlSystem::Instance()->OnInput(&ev);
     }
 
     keyboard.OnSystemKeyPressed(keyCode);
@@ -503,7 +499,7 @@ static int32 oldModifersFlags = 0;
     ev.tid = keyboard.GetDavaKeyForSystemKey(keyCode);
     ev.device = UIEvent::Device::KEYBOARD;
 
-    UIControlSystem::Instance()->OnInput({ev}, allTouches);
+    UIControlSystem::Instance()->OnInput(&ev);
 
     keyboard.OnSystemKeyUnpressed(keyCode);
 }
@@ -526,7 +522,7 @@ static int32 oldModifersFlags = 0;
                 ev.tid = keyCodes[i];
                 ev.phase = UIEvent::Phase::KEY_DOWN;
 
-                UIControlSystem::Instance()->OnInput({ev}, allTouches);
+                UIControlSystem::Instance()->OnInput(&ev);
 
                 InputSystem::Instance()->GetKeyboard().OnSystemKeyPressed(keyCodes[i]);
             }
@@ -535,7 +531,7 @@ static int32 oldModifersFlags = 0;
                 ev.tid = keyCodes[i];
                 ev.phase = UIEvent::Phase::KEY_UP;
 
-                UIControlSystem::Instance()->OnInput({ev}, allTouches);
+                UIControlSystem::Instance()->OnInput(&ev);
 
                 InputSystem::Instance()->GetKeyboard().OnSystemKeyUnpressed(keyCodes[i]);
             }

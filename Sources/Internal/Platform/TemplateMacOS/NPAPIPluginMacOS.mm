@@ -322,7 +322,7 @@ extern void FrameworkWillTerminate();
 	DAVA::Vector<DAVA::UIEvent> touches;
 	[self moveTouchesToVector:touch touchPhase:touchPhase outTouches:&touches];
 
-    DAVA::UIControlSystem::Instance()->OnInput(touches, allTouches);
+    DAVA::UIControlSystem::Instance()->OnInput(&touches[0]);
     touches.clear();
 }
 
@@ -354,7 +354,7 @@ extern void FrameworkWillTerminate();
     DAVA::Vector<DAVA::UIEvent> touches;
     touches.push_back(ev);
 
-    DAVA::UIControlSystem::Instance()->OnInput(touches, allTouches);
+    DAVA::UIControlSystem::Instance()->OnInput(&touches[0]);
 
     keyboard.OnSystemKeyPressed(keyCode);
 }
@@ -387,7 +387,7 @@ extern void FrameworkWillTerminate();
     DAVA::Vector<DAVA::UIEvent> touches;
     touches.push_back(ev);
 
-    DAVA::UIControlSystem::Instance()->OnInput(touches, allTouches);
+    DAVA::UIControlSystem::Instance()->OnInput(&touches[0]); // , allTouches
 
     keyboard.OnSystemKeyUnpressed(keyCode);
 }
