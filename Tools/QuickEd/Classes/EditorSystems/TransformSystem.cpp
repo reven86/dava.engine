@@ -365,7 +365,6 @@ List<MagnetLine> CreateMagnetPairs(const Rect& box, const UIGeometricData* paren
         magnets.emplace_back(1.0f, box, -neighbourSpacingShare, neighbourBox, axis);
         magnets.emplace_back(0.0f, box, 1.0f + neighbourSpacingShare, neighbourBox, axis);
     }
-    DVASSERT(!magnets.empty());
 
     return magnets;
 }
