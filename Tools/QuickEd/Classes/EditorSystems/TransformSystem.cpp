@@ -780,8 +780,19 @@ void TransformSystem::Rotate(Vector2 pos)
     rotatePoint += controlGeometricData.pivotPoint * controlGeometricData.scale;
     Vector2 l1(prevPos - rotatePoint);
     Vector2 l2(pos - rotatePoint);
-    float32 angleRad = atan2(l2.y, l2.x) - atan2(l1.y, l1.x);
+
+    float32 atanl1 = atan2(l1.y, l1.x);
+    Vector2 rotatedl1 = RotateVector(l1, -atanl1);
+    Vector2 rotatedl2 = RotateVector(l2, -atanl1);
+
+    atanl1 = atan2(rotatedl1.y, rotatedl1.x);
+    float32 atanl2 = atan2(rotatedl2.y, rotatedl1.x);
+
+    float32 angleRad = atanl2 - atanl1;
     float32 deltaAngle = RadToDeg(angleRad);
+    //after modification deltaAngle is less than mouse delta positions
+    deltaAngle += 0.001f * (angleRad > 0 ? 1 : -1);
+
     deltaAngle += extraDelta.dx;
     extraDelta.SetZero();    
     float32 originalAngle = angleProperty->GetValue().AsFloat();
