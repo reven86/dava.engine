@@ -89,7 +89,7 @@ void UIScreenTransition::StartTransition(UIScreen * _prevScreen, UIScreen * _nex
     nextScreen = _nextScreen;
     prevScreen = _prevScreen;
 
-    UIControlSystem::Instance()->GetScreenshoter()->MakeScreenshot(prevScreen, renderTargetPrevScreen->GetTexture());
+    UIControlSystem::Instance()->GetScreenshoter()->MakeScreenshot(prevScreen, renderTargetPrevScreen->GetTexture(), MakeFunction(this, &UIScreenTransition::OnPrevScreenScreenshotComplete));
 
     nextScreen->LoadGroup();
     nextScreen->SystemWillAppear();
@@ -108,22 +108,14 @@ void UIScreenTransition::Update(float32 timeElapsed)
     {
         currentTime = duration;
         
-        if (prevScreen)
-        {
-            if (prevScreen->IsOnScreen())
-                prevScreen->SystemWillBecomeInvisible();
-            prevScreen->SystemWillDisappear();
-            if (prevScreen->GetGroupId() != nextScreen->GetGroupId())
-                prevScreen->UnloadGroup();
-            prevScreen->SystemDidDisappear();
-            SafeRelease(prevScreen);
-        }
-        
         UIControlSystem::Instance()->ReplaceScreen(nextScreen);
+        
         nextScreen->SystemDidAppear();
         if (nextScreen->IsOnScreen())
             nextScreen->SystemWillBecomeVisible();
+        
         ReleaseRenderTargets();
+        
         // go to next screen
         UIControlSystem::Instance()->UnlockInput();
         UIControlSystem::Instance()->UnlockSwitch();
@@ -185,6 +177,20 @@ UI3DView* UIScreenTransition::FindFirst3dView(UIControl* control)
         }
     }
     return nullptr;
+}
+    
+void UIScreenTransition::OnPrevScreenScreenshotComplete(Texture* texture)
+{
+    if (prevScreen)
+    {
+        if (prevScreen->IsOnScreen())
+            prevScreen->SystemWillBecomeInvisible();
+        prevScreen->SystemWillDisappear();
+        if (nextScreen == nullptr || prevScreen->GetGroupId() != nextScreen->GetGroupId())
+            prevScreen->UnloadGroup();
+        prevScreen->SystemDidDisappear();
+        SafeRelease(prevScreen);
+    }
 }
 
 };
