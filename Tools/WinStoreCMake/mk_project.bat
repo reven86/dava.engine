@@ -17,6 +17,9 @@ if "%1" == "" (echo "Add path which contains CMakeLists.txt") & (exit /B)
 
 if not exist "%SOURCE_DIR%CMakeLists.txt" (echo "Can't find CMakeLists.txt in %SOURCE_DIR%") & (exit /B)
 
-@echo on
+if "%2" == "Win64" set APPEND_A_PLATFORM=-A"x64"
+if "%2" == "ARM"   set APPEND_A_PLATFORM=-A"ARM"
+if "%2" == "Win32" set APPEND_A_PLATFORM=-A"Win32"
 
-%CMAKE_DIR%\cmake.exe -G "Visual Studio 14 2015" -DCMAKE_TOOLCHAIN_FILE=%SCRIPT_DIR%/../../Sources/CMake/Toolchains/win_uap.toolchain.cmake %SOURCE_DIR%
+@echo on
+%CMAKE_DIR%\cmake.exe -G "Visual Studio 14 2015" -DCMAKE_TOOLCHAIN_FILE=%SCRIPT_DIR%/../../Sources/CMake/Toolchains/win_uap.toolchain.cmake %APPEND_A_PLATFORM% %SOURCE_DIR%

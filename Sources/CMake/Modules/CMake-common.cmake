@@ -399,13 +399,13 @@ endmacro ()
 macro ( add_static_config_libs_win_uap CONFIG_TYPE LIBS_LOCATION OUTPUT_LIB_LIST )
 
     #take one platform
-    list ( GET CMAKE_VS_EFFECTIVE_PLATFORMS 0 REF_PLATFORM )
+    list ( GET WINDOWS_UAP_PLATFORMS 0 REF_PLATFORM )
     
     #find all libs for specified platform
     file ( GLOB REF_LIB_LIST "${LIBS_LOCATION}/${REF_PLATFORM}/${CONFIG_TYPE}/*.lib" )
     
     #find all libs for all platforms
-    FOREACH ( LIB_ARCH ${CMAKE_VS_EFFECTIVE_PLATFORMS} )
+    FOREACH ( LIB_ARCH ${WINDOWS_UAP_PLATFORMS} )
             file ( GLOB LIB_LIST "${LIBS_LOCATION}/${LIB_ARCH}/${CONFIG_TYPE}/*.lib" )
             
             #add to list only filenames
@@ -450,7 +450,7 @@ endmacro ()
 macro ( add_dynamic_config_lib_win_uap CONFIG_TYPE LIBS_LOCATION OUTPUT_LIB_LIST )
 
     #search dll's 
-    FOREACH ( LIB_ARCH ${CMAKE_VS_EFFECTIVE_PLATFORMS} )
+    FOREACH ( LIB_ARCH ${WINDOWS_UAP_PLATFORMS} )
         file ( GLOB LIB_LIST "${LIBS_LOCATION}/${LIB_ARCH}/${CONFIG_TYPE}/*.dll" )
         list ( APPEND "${OUTPUT_LIB_LIST}_${CONFIG_TYPE}" ${LIB_LIST} )
     ENDFOREACH ()
