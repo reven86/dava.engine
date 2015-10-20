@@ -31,6 +31,8 @@
 #include "UI/UIControl.h"
 
 #include "UI/Layouts/UILinearLayoutComponent.h"
+#include "UI/Layouts/UIFlowLayoutComponent.h"
+#include "UI/Layouts/UIFlowLayoutHintComponent.h"
 #include "UI/Layouts/UIIgnoreLayoutComponent.h"
 #include "UI/Layouts/UISizePolicyComponent.h"
 #include "UI/Layouts/UIAnchorComponent.h"
@@ -65,6 +67,12 @@ UIComponent * UIComponent::CreateByType(uint32 componentType)
         case LINEAR_LAYOUT_COMPONENT:
             return new UILinearLayoutComponent();
             
+        case FLOW_LAYOUT_COMPONENT:
+            return new UIFlowLayoutComponent();
+            
+        case FLOW_LAYOUT_HINT_COMPONENT:
+            return new UIFlowLayoutHintComponent();
+            
         case IGNORE_LAYOUT_COMPONENT:
             return new UIIgnoreLayoutComponent();
             
@@ -86,6 +94,12 @@ bool UIComponent::IsMultiple(uint32 componentType)
     switch (componentType)
     {
         case LINEAR_LAYOUT_COMPONENT:
+            return false;
+            
+        case FLOW_LAYOUT_COMPONENT:
+            return false;
+            
+        case FLOW_LAYOUT_HINT_COMPONENT:
             return false;
             
         case IGNORE_LAYOUT_COMPONENT:

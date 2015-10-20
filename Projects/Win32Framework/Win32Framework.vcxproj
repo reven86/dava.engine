@@ -426,6 +426,7 @@
     <ClInclude Include="..\..\Sources\Internal\Particles\ParticleRenderObject.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\DateTime.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\DeviceInfo.h" />
+    <ClInclude Include="..\..\Sources\Internal\Platform\DeviceInfoPrivateBase.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\DPIHelper.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\MovieViewControlStub.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\Process.h" />
@@ -661,7 +662,15 @@
     <ClInclude Include="..\..\Sources\Internal\UI\Components\UIComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\Components\UIControlFamily.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\DefaultUIPackageBuilder.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Layouts\AnchorLayoutAlgorithm.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Layouts\ControlLayoutData.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Layouts\FlowLayoutAlgorithm.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Layouts\LayoutHelpers.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Layouts\LinearLayoutAlgorithm.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Layouts\SizeMeasuringAlgorithm.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UIAnchorComponent.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UIFlowLayoutComponent.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UIFlowLayoutHintComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UIIgnoreLayoutComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UILayoutSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UILinearLayoutComponent.h" />
@@ -893,6 +902,7 @@
     <ClCompile Include="..\..\Sources\Internal\Particles\ParticleRenderObject.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\DateTime.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\DeviceInfo.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Platform\DeviceInfoPrivateBase.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\Process.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\SystemTimer.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\TemplateWin32\CorePlatformWin32.cpp">
@@ -1113,7 +1123,15 @@
     <ClCompile Include="..\..\Sources\Internal\UI\Components\UIComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\Components\UIControlFamily.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\DefaultUIPackageBuilder.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Layouts\AnchorLayoutAlgorithm.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Layouts\ControlLayoutData.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Layouts\FlowLayoutAlgorithm.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Layouts\LayoutHelpers.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Layouts\LinearLayoutAlgorithm.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Layouts\SizeMeasuringAlgorithm.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UIAnchorComponent.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UIFlowLayoutComponent.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UIFlowLayoutHintComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UIIgnoreLayoutComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UILayoutSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UILinearLayoutComponent.cpp" />

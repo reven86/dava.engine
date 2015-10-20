@@ -96,8 +96,15 @@ public:
     virtual float32 TotalAreaSize(UIScrollBar *forScrollBar);
     virtual float32 ViewPosition(UIScrollBar *forScrollBar);
     virtual void OnViewPositionChanged(UIScrollBar *byScrollBar, float32 newPosition);
+    void OnScrollViewContainerSizeChanged();
 
     virtual const String GetDelegateControlPath(const UIControl *rootControl) const;
+    
+    bool IsAutoUpdate() const;
+    void SetAutoUpdate(bool auto_);
+    
+    bool IsCenterContent() const;
+    void SetCenterContent(bool center_);
 
 protected:
 	virtual void LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader);
@@ -114,9 +121,18 @@ protected:
 	UIScrollViewContainer *scrollContainer;
 	ScrollHelper *scrollHorizontal;
 	ScrollHelper *scrollVertical;
+    
+    bool autoUpdate;
+    bool centerContent;
 
 private:
 	void FindRequiredControls();
+
+public:
+    INTROSPECTION_EXTEND(UIScrollView, UIControl,
+                         PROPERTY("autoUpdate", "Auto Update", IsAutoUpdate, SetAutoUpdate, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("centerContent", "Center Content", IsCenterContent, SetCenterContent, I_SAVE | I_VIEW | I_EDIT)
+                         );
 
 };
 };

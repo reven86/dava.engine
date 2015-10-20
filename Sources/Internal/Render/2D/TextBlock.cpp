@@ -232,8 +232,8 @@ void TextBlock::SetFont(Font* _font)
 void TextBlock::SetRectSize(const Vector2& size)
 {
     if (rectSize != size)
-	{
-		rectSize = size;
+    {
+        rectSize = size;
         NeedPrepare();
     }
 }
@@ -270,7 +270,7 @@ void TextBlock::SetMultiline(bool _isMultilineEnabled, bool bySymbol)
 void TextBlock::SetFittingOption(int32 _fittingType)
 {
     if (fittingType != _fittingType)
-	{
+    {
 		fittingType = _fittingType;
         NeedPrepare();
     }
@@ -519,7 +519,7 @@ void TextBlock::CalculateCacheParams()
         WideString pointsStr;
         if ((fittingType & FITTING_POINTS) && (drawSize.x < textMetrics.width))
         {
-            uint32 length = charSizes.size();
+            uint32 length = static_cast<uint32>(charSizes.size());
             Font::StringMetrics pointsMetric = font->GetStringMetrics(L"...");
             float32 fullWidth = static_cast<float32>(textMetrics.width + pointsMetric.width);
             for (uint32 i = length - 1; i > 0U; --i)
@@ -539,7 +539,7 @@ void TextBlock::CalculateCacheParams()
         }
         else if (!((fittingType & FITTING_REDUCE) || (fittingType & FITTING_ENLARGE)) && (drawSize.x < textMetrics.width) && (requestedSize.x >= 0))
         {
-            uint32 length = charSizes.size();
+            uint32 length = static_cast<uint32>(charSizes.size());
             float32 fullWidth = static_cast<float32>(textMetrics.width);
             if(ALIGN_RIGHT & align)
             {
@@ -929,8 +929,8 @@ void TextBlock::PreDraw()
 {
     CalculateCacheParamsIfNeed();
 
-    if(needPrepareInternal)
-	{
+    if (needPrepareInternal)
+    {
 		PrepareInternal();
 	}
     

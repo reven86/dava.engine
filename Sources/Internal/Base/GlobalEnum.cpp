@@ -41,6 +41,7 @@
 #include "UI/Components/UIComponent.h"
 #include "UI/Layouts/UISizePolicyComponent.h"
 #include "UI/Layouts/UILinearLayoutComponent.h"
+#include "UI/Layouts/UIFlowLayoutComponent.h"
 #include "FileSystem/Logger.h"
 #include "UI/UIWebView.h"
 
@@ -323,6 +324,8 @@ ENUM_DECLARE(UITextField::eReturnKeyType)
 ENUM_DECLARE(UIComponent::eType)
 {
     ENUM_ADD_DESCR(UIComponent::LINEAR_LAYOUT_COMPONENT, "LinearLayout");
+    ENUM_ADD_DESCR(UIComponent::FLOW_LAYOUT_COMPONENT, "FlowLayout");
+    ENUM_ADD_DESCR(UIComponent::FLOW_LAYOUT_HINT_COMPONENT, "FlowLayoutHint");
     ENUM_ADD_DESCR(UIComponent::IGNORE_LAYOUT_COMPONENT, "IgnoreLayout");
     ENUM_ADD_DESCR(UIComponent::SIZE_POLICY_COMPONENT, "SizePolicy");
     ENUM_ADD_DESCR(UIComponent::ANCHOR_COMPONENT, "Anchor");
@@ -344,6 +347,12 @@ ENUM_DECLARE(UILinearLayoutComponent::eOrientation)
 {
     ENUM_ADD_DESCR(UILinearLayoutComponent::HORIZONTAL, "Horizontal");
     ENUM_ADD_DESCR(UILinearLayoutComponent::VERTICAL, "Vertical");
+};
+
+ENUM_DECLARE(UIFlowLayoutComponent::eOrientation)
+{
+    ENUM_ADD_DESCR(UIFlowLayoutComponent::ORIENTATION_LEFT_TO_RIGHT, "LeftToRight");
+    ENUM_ADD_DESCR(UIFlowLayoutComponent::ORIENTATION_RIGHT_TO_LEFT, "RightToLeft");
 };
 
 ENUM_DECLARE(UIWebView::eDataDetectorType)

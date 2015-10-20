@@ -170,20 +170,14 @@ void DeviceInfoPrivate::InitializeScreenInfo()
 	screenInfo.scale = 1;
 }
 
-int32 DeviceInfoPrivate::GetCpuCount()
-{
-    return (int32)[[NSProcessInfo processInfo] processorCount];
-}
-
 bool DeviceInfoPrivate::IsHIDConnected(DeviceInfo::eHIDType type)
 {
-        DVASSERT(false && "Not Implement");
-        return false;
-}
-
-void DeviceInfoPrivate::SetHIDConnectionCallback(DeviceInfo::eHIDType type, DeviceInfo::HIDCallBackFunc&& callback)
-{
-        DVASSERT(false && "Not Implement");
+    //TODO: remove this empty realization and implement detection of HID connection
+    if (type == DeviceInfo::HID_POINTER_TYPE || type == DeviceInfo::HID_KEYBOARD_TYPE)
+    {
+        return true;
+    }
+    return false;
 }
 
 }
