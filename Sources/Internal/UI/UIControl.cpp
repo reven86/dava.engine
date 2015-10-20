@@ -1133,6 +1133,7 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
         styleSheetDirty = srcControl->styleSheetDirty;
         styleSheetInitialized = false;
         layoutDirty = srcControl->layoutDirty;
+        packageContext = srcControl->packageContext;
 
         SafeRelease(eventDispatcher);
         if (srcControl->eventDispatcher != nullptr && srcControl->eventDispatcher->GetEventsCount() != 0)

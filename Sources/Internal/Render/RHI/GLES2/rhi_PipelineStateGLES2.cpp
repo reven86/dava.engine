@@ -227,7 +227,7 @@ VertexDeclGLES2
                                     vattr[idx].enabled = true;
                                 }
 
-/*                                
+                                
                                 if(     !VAttrCacheValid
                                     ||  vattr[idx].size != elem[i].count
                                     ||  vattr[idx].type != elem[i].type
@@ -235,9 +235,8 @@ VertexDeclGLES2
                                     ||  cur_stride != stride
                                     ||  vattr[idx].pointer != (const GLvoid*)(base + (uint8_t*)(elem[i].offset))
                                   )
-*/                                
                                 {
-                                    //{SCOPED_NAMED_TIMING("gl-VertexAttribPointer")}
+//{SCOPED_NAMED_TIMING("gl-VertexAttribPointer")}
                                     GL_CALL(glVertexAttribPointer( idx, elem[i].count, elem[i].type, (GLboolean)(elem[i].normalized), stride, (const GLvoid*)(base + (uint8_t*)(elem[i].offset)) ));
 
                                     vattr[idx].size         = elem[i].count;
@@ -628,9 +627,8 @@ SetToRHI( Handle ps, uint32 layoutUID )
             ps2->prog.fprog->ProgGLES2::SetupTextureUnits(ps2->prog.vprog->SamplerCount());
         }
     }
-    VertexDeclGLES2::InvalidateVAttrCache();
+    //    VertexDeclGLES2::InvalidateVAttrCache();
 
-    
     if( ps2->blendEnabled )
     {
         if( cachedBlendEnabled != GL_TRUE )
@@ -718,6 +716,12 @@ InvalidateCache()
     cachedBlendDst      = (GLenum)0;
     cachedProgram       = 0;
 
+    VertexDeclGLES2::InvalidateVAttrCache();
+}
+
+void
+InvalidateVattrCache()
+{
     VertexDeclGLES2::InvalidateVAttrCache();
 }
 

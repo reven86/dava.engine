@@ -42,8 +42,8 @@ public:
     };
     
 public:
-    IMPLEMENT_COMPONENT_TYPE(LINEAR_LAYOUT_COMPONENT);
-    
+    IMPLEMENT_UI_COMPONENT_TYPE(LINEAR_LAYOUT_COMPONENT);
+
     UILinearLayoutComponent();
     UILinearLayoutComponent(const UILinearLayoutComponent &src);
     
