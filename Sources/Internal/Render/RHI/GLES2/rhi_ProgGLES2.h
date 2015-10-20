@@ -79,7 +79,7 @@ public:
                                 ConstBuf::Destroy();
                             }
 
-                            bool Construct(uint32 prog, void** lastBoundData, unsigned loc, unsigned count);
+        bool                Construct(uint32 prog, void** lastBoundData, unsigned loc, unsigned count);
         void                Destroy();
 
         unsigned            ConstCount() const;
@@ -87,9 +87,11 @@ public:
         bool                SetConst( unsigned const_i, unsigned const_sub_i, const float* cdata, unsigned data_count );
         
         const void*         Instance() const;
-        void SetToRHI(uint32 progUid, const void* instData) const;
+        void                SetToRHI(uint32 progUid, const void* instData) const;
         void                InvalidateInstance();
-    
+
+        static void         AdvanceFrame();    
+
     
     private:
         uint32 glProg;
@@ -101,7 +103,10 @@ public:
         uint16 count;
         float*              data;
         mutable float*      inst;
-        mutable void** lastInst;
+        mutable void**      lastInst;
+        mutable uint32      frame;
+
+        static uint32       CurFrame;
     };
 
 
