@@ -38,8 +38,31 @@
 #include "Render/2D/Systems/RenderSystem2D.h"
 
 namespace DAVA
-{            
-    
+{
+const Vector3 viewDirections[6] =
+{
+  Vector3(1.0f, 0.0f, 0.0f), //  x 0
+  Vector3(0.0f, 1.0f, 0.0f), //  y 1
+  Vector3(-1.0f, 0.0f, 0.0f), // -x 2
+  Vector3(0.0f, -1.0f, 0.0f), // -y 3
+  Vector3(0.0f, 0.0f, 1.0f), // +z 4
+  Vector3(0.0f, 0.0f, -1.0f), // -z 5
+};
+
+const uint32 effectiveSideCount[6] = { 3, 3, 3, 3, 1, 1 };
+
+const uint32 effectiveSides[6][3] =
+{
+  { 0, 1, 3 },
+  { 1, 0, 2 },
+  { 2, 1, 3 },
+  { 3, 0, 2 },
+  { 4, 4, 4 },
+  { 5, 5, 5 },
+};
+
+static uint64 blockProcessingTime = 0;
+
 StaticOcclusion::StaticOcclusion()    
 {
     staticOcclusionRenderPass = 0;        
@@ -109,25 +132,31 @@ bool StaticOcclusion::ProccessBlock()
     if (currentFrameZ >= zBlockCount)
         return true;
 
-    RenderCurrentBlock();
-    
-    currentFrameX++;
-    if (currentFrameX >= xBlockCount)
+    if (renderPassConfigs.empty())
     {
-        currentFrameX = 0;
-        currentFrameY++;
-        if (currentFrameY >= yBlockCount)
+        auto currentTime = SystemTimer::Instance()->GetAbsoluteNano();
+        auto dt = currentTime - blockProcessingTime;
+        blockProcessingTime = currentTime;
+
+        Logger::Info("Block processing time: %.4llf", (double)dt / 1e+9);
+
+        BuildRenderPassConfigsForBlock();
+    }
+
+    if (RenderCurrentBlock())
+    {
+        currentFrameX++;
+        if (currentFrameX >= xBlockCount)
         {
-            currentFrameY = 0;
-            currentFrameZ++;            
+            currentFrameX = 0;
+            currentFrameY++;
+            if (currentFrameY >= yBlockCount)
+            {
+                currentFrameY = 0;
+                currentFrameZ++;
+            }
         }
     }
-        
-    /*uint32 remain = xBlockCount * yBlockCount * zBlockCount;
-    remain -= currentFrameX;
-    remain -= (currentFrameY * xBlockCount);
-    remain -= (currentFrameZ * xBlockCount * yBlockCount);
-    return remain;*/
 
     return false;
 }
@@ -137,90 +166,62 @@ uint32 StaticOcclusion::GetCurrentStepsCount()
     return currentFrameX + (currentFrameY * xBlockCount) + (currentFrameZ * xBlockCount * yBlockCount);
     
 }
+
 uint32 StaticOcclusion::GetTotalStepsCount()
 {
     return xBlockCount * yBlockCount * zBlockCount;
 }
-    
-void StaticOcclusion::RenderCurrentBlock()
+
+void StaticOcclusion::BuildRenderPassConfigsForBlock()
 {
-    uint64 t1 = SystemTimer::Instance()->GetAbsoluteNano();
-    const uint32 stepCount = 10;        
-        
+    const uint32 stepCount = 10;
+
     AABBox3 cellBox = GetCellBox(currentFrameX, currentFrameY, currentFrameZ);
     Vector3 stepSize = cellBox.GetSize();
     stepSize /= float32(stepCount);
-        
-    Vector3 directions[6] =
-    {
-        Vector3(1.0f, 0.0f, 0.0f),  // x 0
-        Vector3(0.0f, 1.0f, 0.0f),  // y 1
-        Vector3(-1.0f, 0.0f, 0.0f), // -x 2
-        Vector3(0.0f, -1.0f, 0.0f), // -y 3
-        Vector3(0.0f, 0.0f, 1.0f),  // +z 4
-        Vector3(0.0f, 0.0f, -1.0f), // -z 5
-    };
 
-    uint32 blockIndex =
-    currentFrameX +
-    currentFrameY * xBlockCount +
-    currentFrameZ * xBlockCount * yBlockCount;
+    DVASSERT(occlusionFrameResults.size() == 0); // previous results are processed - at least for now
 
-    uint32 effectiveSideCount[6] = {3, 3, 3, 3, 1, 1};
-        
-    uint32 effectiveSides[6][3]=
-    {
-        {0, 1, 3},
-        {1, 0, 2},
-        {2, 1, 3},
-        {3, 0, 2},
-        {4, 4, 4},
-        {5, 5, 5},
-    };
-        
-        
-    DVASSERT(occlusionFrameResults.size() == 0); //previous results are processed - at least for now    
-    uint64 renderingStart = SystemTimer::Instance()->GetAbsoluteNano();
     for (uint32 side = 0; side < 6; ++side)
     {
-        Camera * camera = cameras[side];
-            
         Vector3 startPosition, directionX, directionY;
         if (side == 0) // +x
         {
             startPosition = Vector3(cellBox.max.x, cellBox.min.y, cellBox.min.z);
             directionX = Vector3(0.0f, 1.0f, 0.0f);
             directionY = Vector3(0.0f, 0.0f, 1.0f);
-        }else if (side == 2) // -x
+        }
+        else if (side == 2) // -x
         {
             startPosition = Vector3(cellBox.min.x, cellBox.min.y, cellBox.min.z);
             directionX = Vector3(0.0f, 1.0f, 0.0f);
             directionY = Vector3(0.0f, 0.0f, 1.0f);
-        }else if (side == 1) // +y
+        }
+        else if (side == 1) // +y
         {
             startPosition = Vector3(cellBox.min.x, cellBox.max.y, cellBox.min.z);
             directionX = Vector3(1.0f, 0.0f, 0.0f);
             directionY = Vector3(0.0f, 0.0f, 1.0f);
-        }else if (side == 3) // -y
+        }
+        else if (side == 3) // -y
         {
             startPosition = Vector3(cellBox.min.x, cellBox.min.y, cellBox.min.z);
             directionX = Vector3(1.0f, 0.0f, 0.0f);
             directionY = Vector3(0.0f, 0.0f, 1.0f);
-        }else if (side == 4) // +z
+        }
+        else if (side == 4) // +z
         {
             startPosition = Vector3(cellBox.min.x, cellBox.min.y, cellBox.max.z);
             directionX = Vector3(1.0f, 0.0f, 0.0f);
             directionY = Vector3(0.0f, 1.0f, 0.0f);
-        }else if (side == 5) // -z
+        }
+        else if (side == 5) // -z
         {
             startPosition = Vector3(cellBox.min.x, cellBox.min.y, cellBox.min.z);
             directionX = Vector3(1.0f, 0.0f, 0.0f);
             directionY = Vector3(0.0f, 1.0f, 0.0f);
         }
-                                            
-            
-        // Render 360 ??????? from each point
-        
+
         for (uint32 realSideIndex = 0; realSideIndex < effectiveSideCount[side]; ++realSideIndex)
         {
             for (uint32 stepX = 0; stepX <= stepCount; ++stepX)
@@ -236,40 +237,83 @@ void StaticOcclusion::RenderCurrentBlock()
                         {
                             if (renderPosition.z < pointOnLandscape.z)
                                 continue;
-                            
                         }
                     }
-                    
-                    camera->SetPosition(renderPosition);
-                    camera->SetDirection(directions[effectiveSides[side][realSideIndex]]);
+
+                    RenderPassCameraConfig config;
+                    config.side = side;
+                    config.position = renderPosition;
+                    config.direction = viewDirections[effectiveSides[side][realSideIndex]];
                     if (effectiveSides[side][realSideIndex] == 4 || effectiveSides[side][realSideIndex] == 5)
                     {
-                        camera->SetUp(Vector3(0.0f, 1.0f, 0.0f));
-                        camera->SetLeft(Vector3(1.0f, 0.0f, 0.0f));
+                        config.up = Vector3(0.0f, 1.0f, 0.0f);
+                        config.left = Vector3(1.0f, 0.0f, 0.0f);
                     }
                     else
                     {
-                        camera->SetUp(Vector3(0.0f, 0.0f, 1.0f));
-                        camera->SetLeft(Vector3(1.0f, 0.0f, 0.0f));
+                        config.up = Vector3(0.0f, 0.0f, 1.0f);
+                        config.left = Vector3(1.0f, 0.0f, 0.0f);
                     }
-
-                    occlusionFrameResults.emplace_back();
-
-                    StaticOcclusionFrameResult& res = occlusionFrameResults.back();
-                    res.blockIndex = blockIndex;
-                    staticOcclusionRenderPass->DrawOcclusionFrame(renderSystem, camera, res);
-
-                    if (res.queryBuffer == rhi::InvalidHandle)
-                    {
-                        occlusionFrameResults.pop_back();
-                    }
+                    renderPassConfigs.push_back(config);
                 }
             }
         }
     }
+}
 
-    uint64 timeTotalRendering = SystemTimer::Instance()->GetAbsoluteNano() - renderingStart;
-    Logger::FrameworkDebug(Format("Block: %d renderTime: %0.9llf", blockIndex, (double)timeTotalRendering / 1e+9).c_str());
+bool StaticOcclusion::PerformRender(const RenderPassCameraConfig& rpc, uint32 blockIndex)
+{
+    Camera* camera = cameras[rpc.side];
+    camera->SetLeft(rpc.left);
+    camera->SetUp(rpc.up);
+    camera->SetDirection(rpc.direction);
+    camera->SetPosition(rpc.position);
+
+    occlusionFrameResults.emplace_back();
+    StaticOcclusionFrameResult& res = occlusionFrameResults.back();
+    res.blockIndex = blockIndex;
+    staticOcclusionRenderPass->DrawOcclusionFrame(renderSystem, camera, res, *currentData);
+    if (res.queryBuffer == rhi::InvalidHandle)
+    {
+        occlusionFrameResults.pop_back();
+        return false;
+    }
+
+    return true;
+}
+
+bool StaticOcclusion::RenderCurrentBlock()
+{
+    uint32 blockIndex = currentFrameX + currentFrameY * xBlockCount + currentFrameZ * xBlockCount * yBlockCount;
+
+    // uint64 renderingStart = SystemTimer::Instance()->GetAbsoluteNano();
+
+    uint32 renders = 0;
+    uint32 actualRenders = 0;
+    uint32 maxRenders = 1 + renderPassConfigs.size() / 4;
+    while ((renders < maxRenders) && !renderPassConfigs.empty())
+    {
+        auto i = renderPassConfigs.begin();
+        std::advance(i, rand() % renderPassConfigs.size());
+        if (PerformRender(*i, blockIndex))
+        {
+            ++actualRenders;
+        }
+        renderPassConfigs.erase(i);
+        ++renders;
+    }
+    /*
+	uint64 timeTotalRendering = SystemTimer::Instance()->GetAbsoluteNano() - renderingStart;
+    Logger::FrameworkDebug(Format("Block: %d, dt: %0.3llf, rendered: %u/%u, remaining: %u", 
+		blockIndex, (double)timeTotalRendering / 1e+9, actualRenders, renders, (uint32_t)renderPassConfigs.size()).c_str());
+	*/
+
+    if (actualRenders == 0)
+    {
+        renderPassConfigs.clear();
+    }
+
+    return renderPassConfigs.empty();
 }
 
 bool StaticOcclusion::ProcessRecorderQueries()
@@ -359,12 +403,10 @@ StaticOcclusionData & StaticOcclusionData::operator= (const StaticOcclusionData 
         cellHeightOffset = new float32[sizeX*sizeY];
         memcpy(cellHeightOffset, other.cellHeightOffset, sizeof(float32)*sizeX*sizeY);
     }
-        
-        
+
     return *this;
 }
-    
-    
+
 void StaticOcclusionData::Init(uint32 _sizeX, uint32 _sizeY, uint32 _sizeZ, uint32 _objectCount, const AABBox3 & _bbox, const float32 *_cellHeightOffset)
 {
     //DVASSERT(data == 0);
@@ -388,10 +430,9 @@ void StaticOcclusionData::Init(uint32 _sizeX, uint32 _sizeY, uint32 _sizeZ, uint
         cellHeightOffset = new float32[sizeX*sizeY];
         memcpy(cellHeightOffset, _cellHeightOffset, sizeof(float32)*sizeX*sizeY);
     }
-        
 }
 
-bool StaticOcclusionData::IsObjectVisibleFromBlock(uint32 blockIndex, uint32 objectIndex)
+bool StaticOcclusionData::IsObjectVisibleFromBlock(uint32 blockIndex, uint32 objectIndex) const
 {
     auto objIndex = 1 << (objectIndex & 31);
     return (data[(blockIndex * objectCount / 32) + (objectIndex / 32)] & objIndex) != 0;

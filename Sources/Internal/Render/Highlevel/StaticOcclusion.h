@@ -59,7 +59,8 @@ public:
     void Init(uint32 sizeX, uint32 sizeY, uint32 sizeZ, uint32 objectCount, const AABBox3 & bbox, const float32 *_cellHeightOffset);
     void EnableVisibilityForObject(uint32 blockIndex, uint32 objectIndex);
     void DisableVisibilityForObject(uint32 blockIndex, uint32 objectIndex);
-    bool IsObjectVisibleFromBlock(uint32 blockIndex, uint32 objectIndex);
+
+    bool IsObjectVisibleFromBlock(uint32 blockIndex, uint32 objectIndex) const;
 
     uint32 * GetBlockVisibilityData(uint32 blockIndex);
     StaticOcclusionData & operator= (const StaticOcclusionData & other);
@@ -84,42 +85,49 @@ struct StaticOcclusionFrameResult
 class StaticOcclusion
 {
 public:    
-    
     StaticOcclusion();
     ~StaticOcclusion();
                 
-    void StartBuildOcclusion(StaticOcclusionData * currentData, RenderSystem * renderSystem, Landscape * landscape);                       
-    bool ProccessBlock();    //return true if finished building
-    
+    void StartBuildOcclusion(StaticOcclusionData * currentData, RenderSystem * renderSystem, Landscape * landscape);
+    bool ProccessBlock(); // returns true if finished building
+
     uint32 GetCurrentStepsCount();
     uint32 GetTotalStepsCount();
-    
 
 private:    
     AABBox3 GetCellBox(uint32 x, uint32 y, uint32 z);            
     
-    void RenderCurrentBlock();
     bool ProcessRecorderQueries();
 
-    AABBox3  occlusionAreaRect;
-    float32 *cellHeightOffset;
-    uint32 xBlockCount;
-    uint32 yBlockCount;
-    uint32 zBlockCount;
-    //uint32 objectCount;
-    uint32 currentFrameX;
-    uint32 currentFrameY;
-    uint32 currentFrameZ;
-    Camera * cameras[6];
-    StaticOcclusionRenderPass * staticOcclusionRenderPass;            
+    struct RenderPassCameraConfig
+    {
+        Vector3 position;
+        Vector3 left;
+        Vector3 up;
+        Vector3 direction;
+        uint32 side = 0;
+    };
 
-    StaticOcclusionData * currentData;
-    
+    void BuildRenderPassConfigsForBlock();
+    bool RenderCurrentBlock(); // returns true, if all passes for block completed
+    bool PerformRender(const RenderPassCameraConfig&, uint32 blockIndex);
+
+private:
+    Camera* cameras[6];
+    StaticOcclusionRenderPass* staticOcclusionRenderPass;
+    StaticOcclusionData* currentData = nullptr;
+    RenderSystem* renderSystem = nullptr;
+    Landscape* landscape = nullptr;
+    float32* cellHeightOffset = nullptr;
     Vector<StaticOcclusionFrameResult> occlusionFrameResults;
-    
-    RenderSystem * renderSystem;    
-    Landscape * landscape;        
-    
+    Vector<RenderPassCameraConfig> renderPassConfigs;
+    AABBox3 occlusionAreaRect;
+    uint32 xBlockCount = 0;
+    uint32 yBlockCount = 0;
+    uint32 zBlockCount = 0;
+    uint32 currentFrameX = 0;
+    uint32 currentFrameY = 0;
+    uint32 currentFrameZ = 0;
 };
 
 };

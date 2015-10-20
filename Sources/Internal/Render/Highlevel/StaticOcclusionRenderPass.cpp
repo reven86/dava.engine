@@ -80,9 +80,10 @@ StaticOcclusionRenderPass::~StaticOcclusionRenderPass()
 bool StaticOcclusionRenderPass::CompareFunction(const RenderBatch * a, const RenderBatch *  b)
 {
     return a->layerSortingKey < b->layerSortingKey;
-}    
-    
-void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem * renderSystem, Camera *occlusionCamera, StaticOcclusionFrameResult& target)
+}
+
+void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem* renderSystem, Camera* occlusionCamera,
+                                                   StaticOcclusionFrameResult& target, const StaticOcclusionData& data)
 {
     Camera *mainCamera = occlusionCamera;
     Camera *drawCamera = occlusionCamera;
@@ -92,10 +93,7 @@ void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem * renderSystem, 
     PrepareVisibilityArrays(mainCamera, renderSystem);    
 	
     Vector<RenderBatch*> terrainBatches;
-    Vector<RenderBatch*> batches;
-    
-    terrainBatches.clear();
-    batches.clear();
+    Vector<RenderBatch*> meshBatches;
 
     for (uint32 k = 0, size = (uint32)renderLayers.size(); k < size; ++k)
     {
@@ -112,7 +110,7 @@ void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem * renderSystem, 
             }
             else
             {
-                batches.push_back(batch);
+                meshBatches.push_back(batch);
             }
         }
     }
@@ -120,9 +118,8 @@ void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem * renderSystem, 
     // Sort
     Vector3 cameraPosition = mainCamera->GetPosition();
 
-    for (uint32 k = 0, size = (uint32)batches.size(); k < size; ++k)
+    for (auto batch : meshBatches)
     {
-        RenderBatch * batch = batches[k];
         RenderObject * renderObject = batch->GetRenderObject();
         Vector3 position = renderObject->GetWorldBoundingBox().GetCenter();
         float realDistance = (position - cameraPosition).Length();
@@ -131,54 +128,65 @@ void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem * renderSystem, 
         
         batch->layerSortingKey = distanceBits;
     }
-    std::sort(batches.begin(), batches.end(), CompareFunction);
+    std::sort(meshBatches.begin(), meshBatches.end(), CompareFunction);
 
-    auto objectBatches = (uint32)batches.size();
+    std::set<uint32> invisibleObjects;
 
-    if (objectBatches > 0)
+    for (auto batch : meshBatches)
     {
-        target.queryBuffer = rhi::CreateQueryBuffer(objectBatches);
-        target.frameRequests.resize(objectBatches, nullptr);
-
-        passConfig.queryBuffer = target.queryBuffer;
-        renderPass = rhi::AllocateRenderPass(passConfig, 1, &packetList);
-        rhi::BeginRenderPass(renderPass);
-        rhi::BeginPacketList(packetList);
-
-        for (uint32 k = 0; k < (uint32)terrainBatches.size(); ++k)
+        auto occlusionId = batch->GetRenderObject()->GetStaticOcclusionIndex();
+        bool isAlreadyVisible = data.IsObjectVisibleFromBlock(target.blockIndex, occlusionId);
+        if (!isAlreadyVisible)
         {
-            rhi::Packet packet;
-            RenderBatch* batch = terrainBatches[k];
-            RenderObject* renderObject = batch->GetRenderObject();
-            renderObject->BindDynamicParameters(mainCamera);
-            NMaterial* mat = batch->GetMaterial();
-            DVASSERT(mat);
-            batch->BindGeometryData(packet);
-            DVASSERT(packet.primitiveCount);
-            mat->BindParams(packet);
-            rhi::AddPacket(packetList, packet);
+            invisibleObjects.insert(occlusionId);
         }
-
-        for (uint32 k = 0; k < objectBatches; ++k)
-        {
-            RenderBatch* batch = batches[k];
-            RenderObject* renderObject = batch->GetRenderObject();
-            renderObject->BindDynamicParameters(mainCamera);
-            NMaterial* mat = batch->GetMaterial();
-            if (mat)
-            {
-                rhi::Packet packet;
-                batch->BindGeometryData(packet);
-                DVASSERT(packet.primitiveCount);
-                mat->BindParams(packet);
-                packet.queryIndex = k;
-                target.frameRequests[packet.queryIndex] = renderObject;
-                rhi::AddPacket(packetList, packet);
-            }
-        }
-        rhi::EndPacketList(packetList);
-        rhi::EndRenderPass(renderPass);
     }
+
+    if (invisibleObjects.empty())
+        return;
+
+    target.queryBuffer = rhi::CreateQueryBuffer(meshBatches.size());
+    target.frameRequests.resize(meshBatches.size(), nullptr);
+
+    passConfig.queryBuffer = target.queryBuffer;
+    renderPass = rhi::AllocateRenderPass(passConfig, 1, &packetList);
+    rhi::BeginRenderPass(renderPass);
+    rhi::BeginPacketList(packetList);
+
+    for (uint32 k = 0; k < (uint32)terrainBatches.size(); ++k)
+    {
+        rhi::Packet packet;
+        RenderBatch* batch = terrainBatches[k];
+        RenderObject* renderObject = batch->GetRenderObject();
+        renderObject->BindDynamicParameters(mainCamera);
+        NMaterial* mat = batch->GetMaterial();
+        DVASSERT(mat);
+        batch->BindGeometryData(packet);
+        DVASSERT(packet.primitiveCount);
+        mat->BindParams(packet);
+        rhi::AddPacket(packetList, packet);
+    }
+
+    uint16 k = 0;
+    for (auto batch : meshBatches)
+    {
+        RenderObject* renderObject = batch->GetRenderObject();
+        renderObject->BindDynamicParameters(mainCamera);
+        rhi::Packet packet;
+        batch->BindGeometryData(packet);
+        DVASSERT(packet.primitiveCount);
+        batch->GetMaterial()->BindParams(packet);
+        if (invisibleObjects.count(renderObject->GetStaticOcclusionIndex()) > 0)
+        {
+            packet.queryIndex = k;
+            target.frameRequests[packet.queryIndex] = renderObject;
+        }
+        rhi::AddPacket(packetList, packet);
+        ++k;
+    }
+
+    rhi::EndPacketList(packetList);
+    rhi::EndRenderPass(renderPass);
 }
 
 };
