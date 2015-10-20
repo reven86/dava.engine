@@ -219,7 +219,7 @@ void ConvertNSEventToUIEvent(NSEvent *curEvent, UIEvent & event, int32 phase)
         event.physPoint.x = [curEvent scrollingDeltaX];
         event.physPoint.y = [curEvent scrollingDeltaY];
     }
-    else if(InputSystem::Instance()->GetCursorCaptureMode() == DAVA::InputSystem::eMouseCaptureMode::PINING)
+    else if(InputSystem::Instance()->GetMouseCaptureMode() == DAVA::InputSystem::eMouseCaptureMode::PINING)
     {
         event.physPoint.x = [curEvent deltaX];
         event.physPoint.y = [curEvent deltaY];

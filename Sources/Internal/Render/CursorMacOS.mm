@@ -106,7 +106,7 @@ DAVA::Vector2 Cursor::GetPosition()
     
 static InputSystem::eMouseCaptureMode systemCursorCaptureMode = InputSystem::eMouseCaptureMode::OFF;
 
-bool Cursor::SetCursorCaptureMode(InputSystem::eMouseCaptureMode mode)
+bool Cursor::SetMouseCaptureMode(InputSystem::eMouseCaptureMode mode)
 {
     switch (mode) {
         case InputSystem::eMouseCaptureMode::OFF:
@@ -127,7 +127,7 @@ bool Cursor::SetCursorCaptureMode(InputSystem::eMouseCaptureMode mode)
     }
 }
     
-InputSystem::eMouseCaptureMode Cursor::GetCursorCaptureMode()
+InputSystem::eMouseCaptureMode Cursor::GetMouseCaptureMode()
 {
     return systemCursorCaptureMode;
 }
