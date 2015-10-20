@@ -32,11 +32,13 @@
 #include "quazip/quazipfile.h"
 #include <QDir>
 #include <QFile>
+#include <QPair>
 
 #define PERM_OTHER_EXEC 1 << 0
 #define PERM_OWNER_EXEC 1 << 3
 #define PERM_GROUP_EXEC 1 << 6
 #define PERM_DIRECTORY  1 << 8
+#define ATTRIBUTE_SYMLINK 0xA0000000 // on macos this value equal S_IFLNK from stat.st_mode
 
 ZipUnpacker::ZipUnpacker(QObject *parent) :
     QObject(parent)
@@ -82,9 +84,10 @@ bool ZipUnpacker::UnZipFile(const QString& archiveFilePath, const QString& extDi
     int allcount = zip.getEntriesCount();
     int unzipCount = 0;
 
+    QList<QPair<QString, QString>> symlinks;
+
     for (bool more = zip.goToFirstFile(); more; more = zip.goToNextFile())
     {
-
         if (!zip.getCurrentFileInfo(&info))
         {
             emit OnError(zip.getZipError());
@@ -108,10 +111,16 @@ bool ZipUnpacker::UnZipFile(const QString& archiveFilePath, const QString& extDi
         uint attr = info.externalAttr;
         attr = attr >> 16;  //leave only file permision info
 
+        bool isSymLink = (info.externalAttr & ATTRIBUTE_SYMLINK) == ATTRIBUTE_SYMLINK;
+
         if (name.at(name.size() - 1) == '/' || name.at(name.size() - 1) == '\\')
         {
             //create directory
             QDir().mkdir(name);
+        }
+        else if (isSymLink)
+        {
+            symlinks.push_back(qMakePair(name, QString(file.readAll())));
         }
         else
         {
@@ -161,6 +170,11 @@ bool ZipUnpacker::UnZipFile(const QString& archiveFilePath, const QString& extDi
         unzipCount++;
 
         emit OnProgress(unzipCount, allcount);
+    }
+
+    for (QPair<QString, QString> link : symlinks)
+    {
+        QFile::link(link.second, link.first);
     }
 
     emit OnComplete();
