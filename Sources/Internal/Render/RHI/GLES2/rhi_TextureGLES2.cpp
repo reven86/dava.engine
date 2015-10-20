@@ -511,7 +511,7 @@ gles2_Texture_Unmap( Handle tex )
         { GLCommand::RESTORE_TEXTURE0, {} }
     };
 
-    ExecGL( cmd, countof(cmd) );
+    ExecGL(cmd, countof(cmd));
 
     self->isMapped = false;
     ::free( self->mappedData );
@@ -759,7 +759,12 @@ SetToRHI( Handle tex, unsigned unit_i, uint32 base_i )
                                                         ? _CurSamplerState->fragmentSampler + unit_i
                                                         : _CurSamplerState->vertexSampler + unit_i;
 
-    GL_CALL(glActiveTexture( GL_TEXTURE0+sampler_i ));
+    if (_GLES2_LastActiveTexture != GL_TEXTURE0 + sampler_i)
+    {
+        GL_CALL(glActiveTexture(GL_TEXTURE0 + sampler_i));
+        _GLES2_LastActiveTexture = GL_TEXTURE0 + sampler_i;
+    }
+
     GL_CALL(glBindTexture( target, self->uid ));
     //{SCOPED_NAMED_TIMING("gl-BindTexture");}
 

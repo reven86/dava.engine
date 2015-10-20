@@ -78,6 +78,7 @@ void UIScreen::SystemScreenSizeDidChanged(const Rect &newFullScreenRect)
 {
     fullScreenRect = newFullScreenRect;
     UIControl::SystemScreenSizeDidChanged(newFullScreenRect);
+    SetSize(newFullScreenRect.GetSize());
 }
 
 	

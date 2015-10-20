@@ -39,6 +39,8 @@
 #include "Autotesting/AutotestingSystem.h"
 #include "Version.h"
 
+#include "UI/Layouts/UILayoutSystem.h"
+
 using namespace DAVA;
 
 GameCore::GameCore()
@@ -53,6 +55,7 @@ GameCore::GameCore()
 
 	//Initialize internal resources of application
 	ResourcesManageHelper::InitInternalResources();
+    UIControlSystem::Instance()->GetLayoutSystem()->SetAutoupdatesEnabled(false);
 }
 
 GameCore::~GameCore()
@@ -118,10 +121,10 @@ void GameCore::UnpackHelp()
 	FilePath docsPath = FilePath(ResourcesManageHelper::GetDocumentationPath().toStdString());
     if (editorVer != APPLICATION_BUILD_VERSION || !docsPath.Exists())
     {
-        ResourceArchive * helpRA = new ResourceArchive();
-		if(helpRA->Open("~res:/Help.docs"))
-		{
-			FileSystem::Instance()->DeleteDirectory(docsPath);
+        ResourceArchive* helpRA = new ResourceArchive();
+        if (helpRA->Open("~res:/Help.docs"))
+        {
+            FileSystem::Instance()->DeleteDirectory(docsPath);
 			FileSystem::Instance()->CreateDirectory(docsPath, true);
 		
 			helpRA->UnpackToFolder(docsPath);
@@ -129,5 +132,5 @@ void GameCore::UnpackHelp()
         }
 
         SafeRelease(helpRA);
-	}
+    }
 }

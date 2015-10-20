@@ -663,21 +663,27 @@ void Landscape::GenQuad(LandQuadTreeNode<LandscapeQuad> * currentNode, int8 lod)
 	ResizeIndicesBufferIfNeeded(queueIndexCount + indicesToAdd);
     
     queueRdoQuad = currentNode->data.rdoQuad;
-    
-	auto startY = currentNode->data.y & RENDER_QUAD_AND;
-	auto startX = currentNode->data.x & RENDER_QUAD_AND;
-    for (uint16 y = startY; y < startY + currentNode->data.size; y += step)
-	{
-        for (uint16 x = startX; x < startX + currentNode->data.size; x += step)
+
+    uint32_t* ptr = reinterpret_cast<uint32_t*>(indices.data() + queueIndexCount);
+
+    uint32 quadsProcessed = 0;
+    uint32 startX = currentNode->data.x & RENDER_QUAD_AND;
+    uint32 endX = startX + currentNode->data.size;
+    uint32 startY = currentNode->data.y & RENDER_QUAD_AND;
+    uint32 endY = startY + currentNode->data.size;
+    for (uint32 y = startY; y < endY; y += step)
+    {
+        auto currRow = y * RENDER_QUAD_WIDTH;
+        auto nextRow = (y + step) * RENDER_QUAD_WIDTH;
+        for (uint32 currCol = startX, nextCol = startX + step; currCol < endX; currCol += step, nextCol += step)
         {
-            indices[queueIndexCount++] = x + y * RENDER_QUAD_WIDTH;
-            indices[queueIndexCount++] = (x + step) + y * RENDER_QUAD_WIDTH;
-            indices[queueIndexCount++] = x + (y + step) * RENDER_QUAD_WIDTH;
-            indices[queueIndexCount++] = (x + step) + y * RENDER_QUAD_WIDTH;
-            indices[queueIndexCount++] = (x + step) + (y + step) * RENDER_QUAD_WIDTH;
-            indices[queueIndexCount++] = x + (y + step) * RENDER_QUAD_WIDTH;
+            *ptr++ = (currCol + currRow) | ((nextCol + currRow) << 16);
+            *ptr++ = (currCol + nextRow) | ((nextCol + currRow) << 16);
+            *ptr++ = (nextCol + nextRow) | ((currCol + nextRow) << 16);
+            ++quadsProcessed;
         }
 	}
+    queueIndexCount += 6 * quadsProcessed;
 }
     
 void Landscape::GenFans()

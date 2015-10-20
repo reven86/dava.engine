@@ -1762,6 +1762,33 @@
     <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNet\MMBigDataTransferService.h">
       <Filter>Internal\Network\Services\MMNet</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Layouts\AnchorLayoutAlgorithm.h">
+      <Filter>Internal\UI\Layouts</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Layouts\ControlLayoutData.h">
+      <Filter>Internal\UI\Layouts</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Layouts\FlowLayoutAlgorithm.h">
+      <Filter>Internal\UI\Layouts</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Layouts\LayoutHelpers.h">
+      <Filter>Internal\UI\Layouts</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Layouts\LinearLayoutAlgorithm.h">
+      <Filter>Internal\UI\Layouts</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Layouts\SizeMeasuringAlgorithm.h">
+      <Filter>Internal\UI\Layouts</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UIFlowLayoutComponent.h">
+      <Filter>Internal\UI\Layouts</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UIFlowLayoutHintComponent.h">
+      <Filter>Internal\UI\Layouts</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Platform\DeviceInfoPrivateBase.h">
+      <Filter>Internal\Platform</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\Internal\DAVAEngine.cpp">
@@ -3090,6 +3117,33 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Network\Services\MMNet\MMBigDataTransferService.cpp">
       <Filter>Internal\Network\Services\MMNet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Layouts\AnchorLayoutAlgorithm.cpp">
+      <Filter>Internal\UI\Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Layouts\ControlLayoutData.cpp">
+      <Filter>Internal\UI\Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Layouts\FlowLayoutAlgorithm.cpp">
+      <Filter>Internal\UI\Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Layouts\LayoutHelpers.cpp">
+      <Filter>Internal\UI\Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Layouts\LinearLayoutAlgorithm.cpp">
+      <Filter>Internal\UI\Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Layouts\SizeMeasuringAlgorithm.cpp">
+      <Filter>Internal\UI\Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UIFlowLayoutComponent.cpp">
+      <Filter>Internal\UI\Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UIFlowLayoutHintComponent.cpp">
+      <Filter>Internal\UI\Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Platform\DeviceInfoPrivateBase.cpp">
+      <Filter>Internal\Platform</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

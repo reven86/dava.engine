@@ -172,24 +172,49 @@ SetupDispatch( Dispatch* dispatch )
 void
 SetToRHI( Handle hstate )
 {
-    DepthStencilStateGLES2_t*   state  = DepthStencilStateGLES2Pool::Get( hstate );
-    
+    DepthStencilStateGLES2_t* state = DepthStencilStateGLES2Pool::Get(hstate);
+    static int depthTestEnabled = -1;
+    static int stencilEnabled = -1;
+    static int depthMask = -1;
+    static GLenum depthFunc = 0;
+
     if( state->depthTestEnabled )
     {
-        glEnable( GL_DEPTH_TEST );
-        glDepthFunc( state->depthFunc );
+        if (depthTestEnabled != GL_TRUE)
+        {
+            glEnable(GL_DEPTH_TEST);
+            depthTestEnabled = GL_TRUE;
+        }
+
+        if (depthFunc != state->depthFunc)
+        {
+            glDepthFunc(state->depthFunc);
+            depthFunc = state->depthFunc;
+        }
     }
     else
     {
-        glDisable( GL_DEPTH_TEST );
+        if (depthTestEnabled != GL_FALSE)
+        {
+            glDisable(GL_DEPTH_TEST);
+            depthTestEnabled = GL_FALSE;
+        }
     }
-    GL_CALL(glDepthMask( state->depthMask ));
 
-    
+    if (depthMask != state->depthMask)
+    {
+        GL_CALL(glDepthMask(state->depthMask));
+        depthMask = state->depthMask;
+    }
+
     if( state->stencilEnabled  )
     {
-        glEnable( GL_STENCIL_TEST );
-        
+        if (stencilEnabled != GL_TRUE)
+        {
+            glEnable(GL_STENCIL_TEST);
+            stencilEnabled = GL_TRUE;
+        }
+
         if( state->stencilSeparate )
         {
             glStencilOpSeparate( GL_FRONT, state->stencilFront.failOp, state->stencilFront.depthFailOp, state->stencilFront.depthStencilPassOp );
@@ -209,7 +234,11 @@ SetToRHI( Handle hstate )
     }
     else
     {
-        glDisable( GL_STENCIL_TEST );
+        if (stencilEnabled != GL_FALSE)
+        {
+            glDisable(GL_STENCIL_TEST);
+            stencilEnabled = GL_FALSE;
+        }
     }
 }
 

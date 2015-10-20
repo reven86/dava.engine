@@ -54,7 +54,7 @@ struct hash<DAVA::AssetCache::CacheItemKey>
 {
     size_t operator()(const DAVA::AssetCache::CacheItemKey& key) const DAVA_NOEXCEPT
     {
-        return DAVA::BufferHash(key.data(), key.size());
+        return DAVA::BufferHash(key.data(), static_cast<DAVA::uint32>(key.size()));
     }
 }; //end of struct hash
 
