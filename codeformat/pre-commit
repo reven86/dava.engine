@@ -9,14 +9,14 @@ exec_clang_format()
 	if [ $error_code -ne 0 ]; then
         exit $error_code
     else
-		git add ${files}
+		git add -f ${files}
     fi  
 }
 
 files=""
 
 # collect files that should be formated during this commit
-for file in `git diff-index --cached --name-only HEAD` ; do
+for file in `git diff-index --cached --name-only HEAD | grep Sources/Internal` ; do
 
 	# collect only existed files
 	if [ -f ${file} ]; then
