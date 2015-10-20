@@ -86,7 +86,7 @@ void UIWebView::OpenFile(const FilePath &path)
     }
     else
     {
-        Logger::Error("[UIWebView] Failed to read content from %s", path.GetStringValue());
+        Logger::Error("[UIWebView] Failed to read content from %s", path.GetStringValue().c_str());
     }
 }
 
