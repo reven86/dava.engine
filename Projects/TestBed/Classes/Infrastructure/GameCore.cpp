@@ -42,6 +42,7 @@
 #include "Tests/UIMovieTest.h"
 #include "Tests/WebViewTest.h"
 #include "Tests/FunctionSignalTest.h"
+#include "Tests/TextFieldTest.h"
 //$UNITTEST_INCLUDE
 
 void GameCore::RunOnlyThisTest()
@@ -56,6 +57,7 @@ void GameCore::OnError()
 
 void GameCore::RegisterTests()
 {
+    new TextFieldTest();
     new UIScrollViewTest();
     new NotificationScreen();
     new SpeedLoadImagesTest();

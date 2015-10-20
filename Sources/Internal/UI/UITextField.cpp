@@ -551,7 +551,7 @@ int32 UITextField::GetTextAlign() const
 void UITextField::Input(UIEvent *currentInput)
 {
 #if !defined(DAVA_TEXTFIELD_USE_NATIVE)
-    if (NULL == delegate)
+    if (nullptr == delegate)
     {
         return;
     }
