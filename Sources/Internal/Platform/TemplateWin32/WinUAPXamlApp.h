@@ -82,8 +82,8 @@ public:
 internal:   // Only internal methods of ref class can return pointers to non-ref objects
     DispatcherWinUAP* MainThreadDispatcher();
 
-bool SetCursorCaptureMode(InputSystem::eMouseCaptureMode mode);
-InputSystem::eMouseCaptureMode GetCursorCaptureMode();
+bool SetMouseCaptureMode(InputSystem::eMouseCaptureMode mode);
+InputSystem::eMouseCaptureMode GetMouseCaptureMode();
 
 public:
     void SetQuitFlag();
@@ -186,7 +186,7 @@ private:
     DisplayMode currentMode = windowedMode;
     DisplayMode fullscreenMode = windowedMode;
 
-    InputSystem::eMouseCaptureMode cursorCaptureMode = InputSystem::eMouseCaptureMode::OFF;
+    InputSystem::eMouseCaptureMode mouseCaptureMode = InputSystem::eMouseCaptureMode::OFF;
     bool isMouseCursorShown = true;
     bool isRightButtonPressed = false;
     bool isLeftButtonPressed = false;
@@ -228,9 +228,9 @@ inline bool WinUAPXamlApp::IsPhoneApiDetected()
     return isPhoneApiDetected;
 }
 
-inline InputSystem::eMouseCaptureMode WinUAPXamlApp::GetCursorCaptureMode()
+inline InputSystem::eMouseCaptureMode WinUAPXamlApp::GetMouseCaptureMode()
 {
-    return cursorCaptureMode;
+    return mouseCaptureMode;
 }
 
 inline bool WinUAPXamlApp::GetCursorVisible()

@@ -61,8 +61,8 @@ public:
     DisplayMode GetCurrentDisplayMode() override;
 
     bool GetCursorVisibility();
-    InputSystem::eMouseCaptureMode GetCursorCaptureMode();
-    bool SetCursorCaptureMode(InputSystem::eMouseCaptureMode mode);
+    InputSystem::eMouseCaptureMode GetMouseCaptureMode();
+    bool SetMouseCaptureMode(InputSystem::eMouseCaptureMode mode);
 
     // Win10 specific member functions
 

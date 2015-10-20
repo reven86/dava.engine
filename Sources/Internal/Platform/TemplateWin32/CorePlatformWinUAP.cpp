@@ -121,20 +121,20 @@ bool CorePlatformWinUAP::GetCursorVisibility()
     return xamlApp->GetCursorVisible();
 }
 
-InputSystem::eMouseCaptureMode CorePlatformWinUAP::GetCursorCaptureMode()
+InputSystem::eMouseCaptureMode CorePlatformWinUAP::GetMouseCaptureMode()
 {
-    return xamlApp->GetCursorCaptureMode();
+    return xamlApp->GetMouseCaptureMode();
 }
 
-bool CorePlatformWinUAP::SetCursorCaptureMode(InputSystem::eMouseCaptureMode mode)
+bool CorePlatformWinUAP::SetMouseCaptureMode(InputSystem::eMouseCaptureMode mode)
 {
     RunOnUIThreadBlocked([this, mode]() {
-        if (xamlApp->SetCursorCaptureMode(mode))
+        if (xamlApp->SetMouseCaptureMode(mode))
         {
             xamlApp->SetCursorVisible(mode != InputSystem::eMouseCaptureMode::PINING);
         }
     });
-    return GetCursorCaptureMode() == mode;
+    return GetMouseCaptureMode() == mode;
 }
 
 bool CorePlatformWinUAP::IsUIThread() const

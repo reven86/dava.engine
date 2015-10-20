@@ -90,8 +90,8 @@ public:
     inline KeyboardDevice & GetKeyboard();
     inline GamepadDevice  & GetGamepadDevice();
 
-    eMouseCaptureMode GetCursorCaptureMode();
-    bool SetCursorCaptureMode(eMouseCaptureMode mode);
+    eMouseCaptureMode GetMouseCaptureMode();
+    bool SetMouseCaptureMode(eMouseCaptureMode mode);
 
     inline void EnableMultitouch(bool enabled);
     inline bool GetMultitouchEnabled() const;

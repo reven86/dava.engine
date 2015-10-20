@@ -771,7 +771,7 @@ namespace DAVA
                 bool isMove = x || y;
                 bool isInside = false;
 
-                if (InputSystem::Instance()->GetCursorCaptureMode() == InputSystem::eMouseCaptureMode::PINING)
+                if (InputSystem::Instance()->GetMouseCaptureMode() == InputSystem::eMouseCaptureMode::PINING)
                 {
                     SetCursorPosCenterInternal(hWnd);
                     isInside = true;

@@ -37,16 +37,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace DAVA
 {
-InputSystem::eMouseCaptureMode Cursor::GetCursorCaptureMode()
+InputSystem::eMouseCaptureMode Cursor::GetMouseCaptureMode()
 {
     CorePlatformWinUAP* winCore = static_cast<CorePlatformWinUAP*>(Core::Instance());
-    return winCore->GetCursorCaptureMode();
+    return winCore->GetMouseCaptureMode();
 }
 
-bool Cursor::SetCursorCaptureMode(InputSystem::eMouseCaptureMode mode)
+bool Cursor::SetMouseCaptureMode(InputSystem::eMouseCaptureMode mode)
 {
     CorePlatformWinUAP* winCore = static_cast<CorePlatformWinUAP*>(Core::Instance());
-    return winCore->SetCursorCaptureMode(mode);
+    return winCore->SetMouseCaptureMode(mode);
 }
 
 bool Cursor::GetSystemCursorVisibility()

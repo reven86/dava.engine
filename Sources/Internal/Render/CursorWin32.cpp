@@ -38,12 +38,12 @@
 static DAVA::InputSystem::eMouseCaptureMode mouseMode = DAVA::InputSystem::eMouseCaptureMode::OFF;
 static bool lastSystemCursorShowState = true;
 
-DAVA::InputSystem::eMouseCaptureMode DAVA::Cursor::GetCursorCaptureMode()
+DAVA::InputSystem::eMouseCaptureMode DAVA::Cursor::GetMouseCaptureMode()
 {
     return mouseMode;
 }
 
-bool DAVA::Cursor::SetCursorCaptureMode(DAVA::InputSystem::eMouseCaptureMode mode)
+bool DAVA::Cursor::SetMouseCaptureMode(DAVA::InputSystem::eMouseCaptureMode mode)
 {
     static DAVA::Point2i lastCursorPosition;
 
