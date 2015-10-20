@@ -172,75 +172,32 @@ void UIStyleSheetSystem::ProcessControl(UIControl* control)
     
 void UIStyleSheetSystem::AddGlobalClass(const FastName &clazz)
 {
-    auto it = std::find_if(globalClasses.begin(), globalClasses.end(), [&clazz](UIStyleSheetClass& cl)
-                           {
-        return cl.clazz == clazz && !cl.tag.IsValid();
-                           });
-
-    if (it == globalClasses.end())
-    {
-        globalClasses.push_back(UIStyleSheetClass(FastName(), clazz));
-    }
+    globalClasses.AddClass(clazz);
 }
 
 void UIStyleSheetSystem::RemoveGlobalClass(const FastName &clazz)
 {
-    auto it = std::find_if(globalClasses.begin(), globalClasses.end(), [&clazz](UIStyleSheetClass& cl)
-                           {
-        return cl.clazz == clazz && !cl.tag.IsValid();
-                           });
-
-    if (it != globalClasses.end())
-    {
-        *it = globalClasses.back();
-        globalClasses.pop_back();
-    }
+    globalClasses.RemoveClass(clazz);
 }
     
 bool UIStyleSheetSystem::HasGlobalClass(const FastName &clazz) const
 {
-    auto it = std::find_if(globalClasses.begin(), globalClasses.end(), [&clazz](const UIStyleSheetClass& cl)
-                           {
-        return cl.clazz == clazz;
-                           });
-
-    return it != globalClasses.end();
+    return globalClasses.HasClass(clazz);
 }
 
 void UIStyleSheetSystem::SetGlobalTaggedClass(const FastName& tag, const FastName& clazz)
 {
-    auto it = std::find_if(globalClasses.begin(), globalClasses.end(), [&tag](UIStyleSheetClass& cl)
-                           {
-        return cl.tag == tag;
-                           });
-
-    if (it != globalClasses.end())
-    {
-        it->clazz = clazz;
-    }
-    else
-    {
-        globalClasses.push_back(UIStyleSheetClass(tag, clazz));
-    }
+    globalClasses.SetTaggedClass(tag, clazz);
 }
 
 void UIStyleSheetSystem::ResetGlobalTaggedClass(const FastName& tag)
 {
-    auto it = std::find_if(globalClasses.begin(), globalClasses.end(), [&tag](UIStyleSheetClass& cl)
-                           {
-        return cl.tag == tag;
-                           });
-
-    if (it != globalClasses.end())
-    {
-        *it = globalClasses.back();
-        globalClasses.pop_back();
-    }
+    globalClasses.ResetTaggedClass(tag);
 }
 
 void UIStyleSheetSystem::ClearGlobalClasses()
 {
-    globalClasses.clear();
+    globalClasses.RemoveAllClasses();
 }
     
 bool UIStyleSheetSystem::StyleSheetMatchesControl(const UIStyleSheet* styleSheet, UIControl* control)

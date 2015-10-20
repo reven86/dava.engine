@@ -63,7 +63,7 @@ private:
     template <typename CallbackType>
     void DoForAllPropertyInstances(UIControl* control, uint32 propertyIndex, const CallbackType& action);
 
-    Vector<UIStyleSheetClass> globalClasses;
+    UIStyleSheetClassSet globalClasses;
 };
 
 };

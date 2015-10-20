@@ -134,7 +134,28 @@ struct UIStyleSheetClass
     FastName tag;
     FastName clazz;
 };
+
+class UIStyleSheetClassSet
+{
+public:
+    UIStyleSheetClassSet();
+    
+    void AddClass(const FastName& clazz);
+    void RemoveClass(const FastName& clazz);
+    bool HasClass(const FastName& clazz) const;
+    void SetTaggedClass(const FastName& tag, const FastName& clazz);
+    void ResetTaggedClass(const FastName& tag);
+
+    void RemoveAllClasses();
+    
+    String GetClassesAsString() const;
+    void SetClassesFromString(const String &classes);
+
+private:
+    Vector<UIStyleSheetClass> classes;
+
 };
 
+};
 
 #endif

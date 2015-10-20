@@ -2698,119 +2698,41 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
 
     void UIControl::AddClass(const FastName& clazz)
     {
-        auto it = std::find_if(classes.begin(), classes.end(), [&clazz](UIStyleSheetClass& cl)
-                               {
-            return cl.clazz == clazz && !cl.tag.IsValid();
-                               });
-
-        if (it == classes.end())
-        {
-            classes.push_back(UIStyleSheetClass(FastName(), clazz));
-
-            SetStyleSheetDirty();
-        }
+        classes.AddClass(clazz);
+        SetStyleSheetDirty();
     }
 
     void UIControl::RemoveClass(const FastName& clazz)
     {
-        auto it = std::find_if(classes.begin(), classes.end(), [&clazz](UIStyleSheetClass& cl)
-                               {
-            return cl.clazz == clazz && !cl.tag.IsValid();
-                               });
-
-        if (it != classes.end())
-        {
-            *it = classes.back();
-            classes.pop_back();
-
-            SetStyleSheetDirty();
-        }
+        classes.RemoveClass(clazz);
+        SetStyleSheetDirty();
     }
 
-    bool UIControl::HasClass(const FastName& clazz)
+    bool UIControl::HasClass(const FastName& clazz) const
     {
-        auto it = std::find_if(classes.begin(), classes.end(), [&clazz](UIStyleSheetClass& cl)
-                               {
-            return cl.clazz == clazz;
-                               });
-
-        return it != classes.end();
+        return classes.HasClass(clazz);
     }
 
     void UIControl::SetTaggedClass(const FastName& tag, const FastName& clazz)
     {
-        auto it = std::find_if(classes.begin(), classes.end(), [&tag](UIStyleSheetClass& cl)
-                               {
-            return cl.tag == tag;
-                               });
-
-        if (it != classes.end())
-        {
-            it->clazz = clazz;
-        }
-        else
-        {
-            classes.push_back(UIStyleSheetClass(tag, clazz));
-        }
+        classes.SetTaggedClass(tag, clazz);
         SetStyleSheetDirty();
     }
 
     void UIControl::ResetTaggedClass(const FastName& tag)
     {
-        auto it = std::find_if(classes.begin(), classes.end(), [&tag](UIStyleSheetClass& cl)
-                               {
-            return cl.tag == tag;
-                               });
-
-        if (it != classes.end())
-        {
-            *it = classes.back();
-            classes.pop_back();
-
-            SetStyleSheetDirty();
-        }
+        classes.ResetTaggedClass(tag);
+        SetStyleSheetDirty();
     }
 
-    String UIControl::GetClassesAsString()
+    String UIControl::GetClassesAsString() const
     {
-        String result;
-        for (size_t i = 0; i < classes.size(); i++)
-        {
-            if (i != 0)
-            {
-                result += " ";
-            }
-            if (classes[i].tag.IsValid())
-            {
-                result += classes[i].tag.c_str();
-                result += "=";
-            }
-
-            result += classes[i].clazz.c_str();
-        }
-        return result;
+        return classes.GetClassesAsString();
     }
 
     void UIControl::SetClassesFromString(const String &classesStr)
     {
-        Vector<String> tokens;
-        Split(classesStr, " ", tokens);
-
-        classes.clear();
-        for (String &token : tokens)
-        {
-            Vector<String> pair;
-            Split(token, "=", pair);
-            if (pair.size() > 1)
-            {
-                classes.push_back(UIStyleSheetClass(FastName(pair[0]), FastName(pair[1])));
-            }
-            else if (pair.size() > 0)
-            {
-                classes.push_back(UIStyleSheetClass(FastName(), FastName(pair[0])));
-            }
-        }
-
+        classes.SetClassesFromString(classesStr);
         SetStyleSheetDirty();
     }
 

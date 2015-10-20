@@ -28,7 +28,118 @@
 
 #include "UI/Styles/UIStyleSheetStructs.h"
 
+#include "Utils/Utils.h"
+
 namespace DAVA
 {
 
+void UIStyleSheetClassSet::AddClass(const FastName& clazz)
+{
+    auto it = std::find_if(classes.begin(), classes.end(), [&clazz](UIStyleSheetClass& cl) {
+        return cl.clazz == clazz && !cl.tag.IsValid();
+    });
+    
+    if (it == classes.end())
+    {
+        classes.push_back(UIStyleSheetClass(FastName(), clazz));
+    }
+}
+
+void UIStyleSheetClassSet::RemoveClass(const FastName& clazz)
+{
+    auto it = std::find_if(classes.begin(), classes.end(), [&clazz](UIStyleSheetClass& cl) {
+        return cl.clazz == clazz && !cl.tag.IsValid();
+    });
+    
+    if (it != classes.end())
+    {
+        *it = classes.back();
+        classes.pop_back();
+    }
+}
+
+bool UIStyleSheetClassSet::HasClass(const FastName& clazz) const
+{
+    auto it = std::find_if(classes.begin(), classes.end(), [&clazz](UIStyleSheetClass& cl) {
+        return cl.clazz == clazz;
+    });
+    
+    return it != classes.end();
+}
+
+void UIStyleSheetClassSet::SetTaggedClass(const FastName& tag, const FastName& clazz)
+{
+    auto it = std::find_if(classes.begin(), classes.end(), [&tag](UIStyleSheetClass& cl) {
+        return cl.tag == tag;
+    });
+    
+    if (it != classes.end())
+    {
+        it->clazz = clazz;
+    }
+    else
+    {
+        classes.push_back(UIStyleSheetClass(tag, clazz));
+    }
+}
+
+void UIStyleSheetClassSet::ResetTaggedClass(const FastName& tag)
+{
+    auto it = std::find_if(classes.begin(), classes.end(), [&tag](UIStyleSheetClass& cl) {
+        return cl.tag == tag;
+    });
+    
+    if (it != classes.end())
+    {
+        *it = classes.back();
+        classes.pop_back();
+    }
+}
+
+void UIStyleSheetClassSet::RemoveAllClasses()
+{
+    classes.clear();
+}
+
+String UIStyleSheetClassSet::GetClassesAsString() const
+{
+    String result;
+    for (size_t i = 0; i < classes.size(); i++)
+    {
+        if (i != 0)
+        {
+            result += " ";
+        }
+        if (classes[i].tag.IsValid())
+        {
+            result += classes[i].tag.c_str();
+            result += "=";
+        }
+        
+        result += classes[i].clazz.c_str();
+    }
+    return result;
+}
+
+void UIStyleSheetClassSet::SetClassesFromString(const String &classesStr)
+{
+    Vector<String> tokens;
+    Split(classesStr, " ", tokens);
+    
+    classes.clear();
+    for (String &token : tokens)
+    {
+        Vector<String> pair;
+        Split(token, "=", pair);
+        if (pair.size() > 1)
+        {
+            classes.push_back(UIStyleSheetClass(FastName(pair[0]), FastName(pair[1])));
+        }
+        else if (pair.size() > 0)
+        {
+            classes.push_back(UIStyleSheetClass(FastName(), FastName(pair[0])));
+        }
+    }
+    
+}
 }
