@@ -708,13 +708,21 @@ uint8 GetImageParametersAt(const Vector<String>& gpuParams, uint8 gpuParamPositi
 
             if (gpuParamPosition < gpuParams.size())
             {
-                int res = -1;
-                bool parseOk = ParseFromString(gpuParams[gpuParamPosition], res);
-
-                if (parseOk && res >= 0 && res <= 100)
+                if (CompareCaseInsensitive(gpuParams[gpuParamPosition], "lossless") == 0)
                 {
-                    imageQuality = static_cast<ImageQuality>(res);
+                    imageQuality = ImageQuality::LOSSLESS_IMAGE_QUALITY;
                     ++paramsRead;
+                }
+                else
+                {
+                    int res = -1;
+                    bool parseOk = ParseFromString(gpuParams[gpuParamPosition], res);
+
+                    if (parseOk && res >= 0 && res <= 100)
+                    {
+                        imageQuality = static_cast<ImageQuality>(res);
+                        ++paramsRead;
+                    }
                 }
             }
         }
@@ -797,13 +805,20 @@ TexturePacker::ImageExportKeys TexturePacker::GetExportKeys(eGPUFamily forGPU)
                 {
                     if (wrapper->IsFormatSupported(keys.pixelFormat))
                     {
-                        if (ImageConvert::CanConvertFromTo(FORMAT_RGBA8888, keys.pixelFormat))
+                        // TO DO: link intermediate atlass pixelformat with code which genetates it.
+                        const PixelFormat intermediateAtlassFormat = FORMAT_RGBA8888;
+                        
+                        // Try to setup kays only if destination pixelformat is different
+                        if (intermediateAtlassFormat != keys.pixelFormat)
                         {
-                            keys.toConvertOrigin = true;
-                        }
-                        else
-                        {
-                            AddError(Format("Can't convert to '%s'", GlobalEnumMap<PixelFormat>::Instance()->ToString(keys.pixelFormat)));
+                            if (ImageConvert::CanConvertFromTo(intermediateAtlassFormat, keys.pixelFormat))
+                            {
+                                keys.toConvertOrigin = true;
+                            }
+                            else
+                            {
+                                AddError(Format("Can't convert to '%s'", GlobalEnumMap<PixelFormat>::Instance()->ToString(keys.pixelFormat)));
+                            }
                         }
                     }
                     else

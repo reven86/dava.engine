@@ -1,42 +1,50 @@
 #include "LogModel.h"
 
 #include <QPainter>
-#include <QModelIndex>
-#include <QAbstractItemModel>
-#include <QRegularExpression>
-#include "Utils/UTF8Utils.h"
+#include <QThread>
+#include <QApplication>
+#include <QMetaObject>
+
 #include "Base/GlobalEnum.h"
 #include "Debug/DVAssert.h"
 
+LoggerOutputObject::LoggerOutputObject(QObject* parent)
+    : QObject(parent)
+{
+    DAVA::Logger::AddCustomOutput(this);
+    qRegisterMetaType<DAVA::Logger::eLogLevel>("DAVA::Logger::eLogLevel");
+}
+
+void LoggerOutputObject::Output(DAVA::Logger::eLogLevel ll, const DAVA::char8* text)
+{
+    auto connectType = QThread::currentThread() == qApp->thread() ? Qt::DirectConnection : Qt::QueuedConnection;
+    QMetaObject::invokeMethod(parent(), "AddMessage", connectType, Q_ARG(DAVA::Logger::eLogLevel, ll), Q_ARG(const QString&, text));
+}
+
 LogModel::LogModel(QObject* parent)
     : QAbstractListModel(parent)
+    , loggerOutputObject(new LoggerOutputObject(this))
 {
+    DVASSERT_MSG(thread() == qApp->thread(), "don't create this model in the separate thread!");
     createIcons();
     func = [](const DAVA::String &str)
     {
         return str;
     };
-    qRegisterMetaType<DAVA::Logger::eLogLevel>("DAVA::Logger::eLogLevel");
-    DAVA::Logger::AddCustomOutput(this);
-    timer = new QTimer(this);
-    timer->setSingleShot(true);
-    timer->setInterval(0);
-    connect(timer, &QTimer::timeout, this, &LogModel::OnTimeout);
 }
 
 LogModel::~LogModel()
 {
-    DAVA::Logger::RemoveCustomOutput(this);
+    if (!loggerOutputObject.isNull())
+    {
+        DAVA::Logger::RemoveCustomOutput(loggerOutputObject);
+        delete loggerOutputObject;
+    }
 }
 
 void LogModel::SetConvertFunction(ConvertFunc func_)
 {
     func = func_;
-}
-
-void LogModel::Output(DAVA::Logger::eLogLevel ll, const DAVA::char8* text)
-{
-    AddMessage(ll, text);
 }
 
 QVariant LogModel::data(const QModelIndex &index, int role) const
@@ -45,7 +53,6 @@ QVariant LogModel::data(const QModelIndex &index, int role) const
     {
         return QVariant();
     }
-    QMutexLocker locker(&mutex);
     const auto &item = items.at(index.row());
     switch (role)
     {
@@ -66,41 +73,24 @@ QVariant LogModel::data(const QModelIndex &index, int role) const
 
 int LogModel::rowCount(const QModelIndex &parent) const
 {
-    return registerCount;
+    return items.size();
 }
 
 void LogModel::AddMessage(DAVA::Logger::eLogLevel ll, const QString& text)
 {
-    {
-        QMutexLocker locker(&mutex);
-        items.append(LogItem(ll,
-            QString::fromStdString(func(text.toStdString())),
-            text));
-    }
-    QMetaObject::invokeMethod(timer, "start", Qt::QueuedConnection);
+    DVASSERT(thread() == qApp->thread());
+    emit beginInsertRows(QModelIndex(), rowCount(), rowCount());
+    items.append(LogItem(ll,
+        QString::fromStdString(func(text.toStdString())),
+        text));
+    emit endInsertRows();
 }
 
 void LogModel::Clear()
 {
     beginRemoveRows(QModelIndex(), 0, rowCount() - 1);
-    registerCount = 0;
     items.clear();
     endRemoveRows();
-}
-
-void LogModel::OnTimeout()
-{
-    int newSize;
-    {
-        QMutexLocker locker(&mutex);
-        newSize = items.size();
-    }
-    if (newSize != registerCount)
-    {
-        emit beginInsertRows(QModelIndex(), registerCount, newSize - 1);
-        registerCount = newSize;
-        emit endInsertRows();
-    }
 }
 
 void LogModel::createIcons()

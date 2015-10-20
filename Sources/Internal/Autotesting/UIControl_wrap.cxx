@@ -3737,7 +3737,7 @@ fail:
 static int _wrap_UIControl_GetPivotPoint(lua_State* L) {
   int SWIG_arg = 0;
   DAVA::UIControl *arg1 = (DAVA::UIControl *) 0 ;
-  DAVA::Vector2 *result = 0 ;
+  DAVA::Vector2 result;
   
   SWIG_check_num_args("DAVA::UIControl::GetPivotPoint",1,1)
   if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::UIControl::GetPivotPoint",1,"DAVA::UIControl const *");
@@ -3746,8 +3746,11 @@ static int _wrap_UIControl_GetPivotPoint(lua_State* L) {
     SWIG_fail_ptr("UIControl_GetPivotPoint",1,SWIGTYPE_p_DAVA__UIControl);
   }
   
-  result = (DAVA::Vector2 *) &((DAVA::UIControl const *)arg1)->GetPivotPoint();
-  SWIG_NewPointerObj(L,result,SWIGTYPE_p_DAVA__Vector2,0); SWIG_arg++; 
+  result = ((DAVA::UIControl const *)arg1)->GetPivotPoint();
+  {
+    DAVA::Vector2 * resultptr = new DAVA::Vector2((const DAVA::Vector2 &) result);
+    SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_DAVA__Vector2,1); SWIG_arg++;
+  }
   return SWIG_arg;
   
   if(0) SWIG_fail;

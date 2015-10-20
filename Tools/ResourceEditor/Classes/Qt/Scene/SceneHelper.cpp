@@ -124,7 +124,9 @@ void SceneHelper::CollectTextures(const DAVA::NMaterial *material, DAVA::Texture
 
                     if(path != texturePath)
                     {
-                        DAVA::Logger::Error("texture path: \"%s\"\n material (%s) path: \"%s\"\n", path.GetAbsolutePathname().c_str(), material->GetMaterialName().c_str(), texturePath.GetAbsolutePathname().c_str());
+                        DAVA::Logger::Error("texture path: \"%s\"\n material (%s) path: \"%s\"\n", 
+							path.GetAbsolutePathname().c_str(), material->GetMaterialName().c_str(),
+							texturePath.GetAbsolutePathname().c_str());
                         DVASSERT(path == texturePath);
                     }
 

@@ -73,11 +73,12 @@ namespace DAVA
 #endif
     }
 
-    UIControl::UIControl(const Rect &rect, bool rectInAbsoluteCoordinates/* = false*/) :
-        styleSheetRebuildNeeded(true),
-        styleSheetInitialized(false),
-        family(nullptr),
-        parentWithContext(nullptr)
+    UIControl::UIControl(const Rect& rect, bool rectInAbsoluteCoordinates /* = false*/)
+        : styleSheetDirty(true)
+        , styleSheetInitialized(false)
+        , layoutDirty(true)
+        , family(nullptr)
+        , parentWithContext(nullptr)
     {
         StartControlTracking(this);
         UpdateFamily();
@@ -104,7 +105,7 @@ namespace DAVA
 
         drawPivotPointMode = DRAW_NEVER;
 
-        pivotPoint = Vector2(0, 0);
+        pivot = Vector2(0.0f, 0.0f);
         scale = Vector2(1.0f, 1.0f);
         angle = 0;
 
@@ -279,7 +280,9 @@ namespace DAVA
     {
         FastName newFastName(_name);
         if (fastName != newFastName)
-            styleSheetRebuildNeeded = true;
+        {
+            SetStyleSheetDirty();
+        }
 
         name = _name;
         fastName = newFastName;
@@ -339,10 +342,12 @@ namespace DAVA
     void UIControl::SetSprite(const FilePath &spriteName, int32 spriteFrame)
     {
         background->SetSprite(spriteName, spriteFrame);
+        SetLayoutDirty();
     }
     void UIControl::SetSprite(Sprite *newSprite, int32 spriteFrame)
     {
         background->SetSprite(newSprite, spriteFrame);
+        SetLayoutDirty();
     }
     void UIControl::SetSpriteFrame(int32 spriteFrame)
     {
@@ -355,6 +360,7 @@ namespace DAVA
     void UIControl::SetSpriteDrawType(UIControlBackground::eDrawType drawType)
     {
         background->SetDrawType(drawType);
+        SetLayoutDirty();
     }
     void UIControl::SetSpriteAlign(int32 align)
     {
@@ -509,11 +515,11 @@ namespace DAVA
     {
         tempGeometricData.position = relativePosition;
         tempGeometricData.size = size;
-        tempGeometricData.pivotPoint = pivotPoint;
+        tempGeometricData.pivotPoint = GetPivotPoint();
         tempGeometricData.scale = scale;
         tempGeometricData.angle = angle;
         tempGeometricData.unrotatedRect.x = relativePosition.x - relativePosition.x * scale.x;
-        tempGeometricData.unrotatedRect.y = relativePosition.y - pivotPoint.y * scale.y;
+        tempGeometricData.unrotatedRect.y = relativePosition.y - GetPivotPoint().y * scale.y;
         tempGeometricData.unrotatedRect.dx = size.x * scale.x;
         tempGeometricData.unrotatedRect.dy = size.y * scale.y;
 
@@ -531,7 +537,7 @@ namespace DAVA
         UIGeometricData drawData;
         drawData.position = relativePosition;
         drawData.size = size;
-        drawData.pivotPoint = pivotPoint;
+        drawData.pivotPoint = GetPivotPoint();
         drawData.scale = scale;
         drawData.angle = angle;
 
@@ -556,6 +562,7 @@ namespace DAVA
     void UIControl::SetPosition(const Vector2 &position)
     {
         relativePosition = position;
+        SetLayoutDirty();
     }
 
     void UIControl::SetPosition(const Vector2 &position, bool positionInAbsoluteCoordinates)
@@ -591,6 +598,23 @@ namespace DAVA
         Vector2 oldPivot = GetPivot();
         size = newSize;
         SetPivot(oldPivot);
+
+        SetLayoutDirty();
+    }
+
+    void UIControl::SetPivotPoint(const Vector2& newPivotPoint)
+    {
+        pivot.x = (size.x == 0.0f) ? 0.0f : (newPivotPoint.x / size.x);
+        pivot.y = (size.y == 0.0f) ? 0.0f : (newPivotPoint.y / size.y);
+
+        SetLayoutDirty();
+    }
+
+    void UIControl::SetPivot(const Vector2& newPivot)
+    {
+        pivot = newPivot;
+
+        SetLayoutDirty();
     }
 
     void UIControl::SetAngle(float32 angleInRad)
@@ -654,14 +678,14 @@ namespace DAVA
         {
             scale.x = rect.dx / size.x;
             scale.y = rect.dy / size.y;
-            SetPosition(Vector2(rect.x + pivotPoint.x * scale.x, rect.y + pivotPoint.y * scale.y), rectInAbsoluteCoordinates);
+            SetPosition(Vector2(rect.x + GetPivotPoint().x * scale.x, rect.y + GetPivotPoint().y * scale.y), rectInAbsoluteCoordinates);
         }
         else
         {
             const UIGeometricData &gd = parent->GetGeometricData();
             scale.x = rect.dx / (size.x * gd.scale.x);
             scale.y = rect.dy / (size.y * gd.scale.y);
-            SetPosition(Vector2(rect.x + pivotPoint.x * scale.x, rect.y + pivotPoint.y * scale.y), rectInAbsoluteCoordinates);
+            SetPosition(Vector2(rect.x + GetPivotPoint().x * scale.x, rect.y + GetPivotPoint().y * scale.y), rectInAbsoluteCoordinates);
         }
     }
 
@@ -669,14 +693,30 @@ namespace DAVA
     {
         if (background != nullptr && background->GetSprite() != nullptr)
         {
-            return background->GetSprite()->GetSize();
+            if (constraints.dx > 0)
+            {
+                Vector2 size;
+                size.dx = constraints.dx;
+                size.dy = background->GetSprite()->GetHeight() * size.dx / background->GetSprite()->GetWidth();
+                return size;
+            }
+            else
+            {
+                return background->GetSprite()->GetSize();
+            }
         }
         return Vector2(0.0f, 0.0f);
     }
     
     bool UIControl::IsHeightDependsOnWidth() const
     {
-        return false;
+        if (background == nullptr || background->GetSprite() == nullptr)
+        {
+            return false;
+        }
+
+        UIControlBackground::eDrawType dt = background->GetDrawType();
+        return dt == UIControlBackground::DRAW_SCALE_PROPORTIONAL || dt == UIControlBackground::DRAW_SCALE_PROPORTIONAL_ONE;
     }
 
     void UIControl::SetVisible(bool isVisible)
@@ -692,6 +732,8 @@ namespace DAVA
         {
             return;
         }
+
+        SetLayoutDirty();
 
         SystemNotifyVisibilityChanged();
     }
@@ -844,6 +886,7 @@ namespace DAVA
             control->SystemWillBecomeVisible();
 
         isIteratorCorrupted = true;
+        SetLayoutDirty();
     }
 
     void UIControl::RemoveControl(UIControl *control)
@@ -877,6 +920,7 @@ namespace DAVA
                 return;
             }
         }
+        SetLayoutDirty();
     }
 
     void UIControl::RemoveFromParent()
@@ -905,6 +949,7 @@ namespace DAVA
                 childs.erase(it);
                 childs.push_back(_control);
                 isIteratorCorrupted = true;
+                SetLayoutDirty();
                 return;
             }
         }
@@ -919,6 +964,7 @@ namespace DAVA
                 childs.erase(it);
                 childs.push_front(_control);
                 isIteratorCorrupted = true;
+                SetLayoutDirty();
                 return;
             }
         }
@@ -950,12 +996,14 @@ namespace DAVA
                     control->SystemWillBecomeVisible();
 
                 isIteratorCorrupted = true;
+                SetLayoutDirty();
                 return;
             }
         }
 
         AddControl(control);
     }
+
     void UIControl::InsertChildAbove(UIControl * control, UIControl * _aboveThisChild)
     {
         List<UIControl*>::iterator it = childs.begin();
@@ -982,6 +1030,7 @@ namespace DAVA
                     control->SystemWillBecomeVisible();
 
                 isIteratorCorrupted = true;
+                SetLayoutDirty();
                 return;
             }
         }
@@ -1012,6 +1061,7 @@ namespace DAVA
             {
                 childs.insert(it, _control);
                 isIteratorCorrupted = true;
+                SetLayoutDirty();
                 return;
             }
         }
@@ -1041,6 +1091,7 @@ namespace DAVA
             {
                 childs.insert(++it, _control);
                 isIteratorCorrupted = true;
+                SetLayoutDirty();
                 return;
             }
         }
@@ -1059,7 +1110,7 @@ namespace DAVA
     {
         relativePosition = srcControl->relativePosition;
         size = srcControl->size;
-        pivotPoint = srcControl->pivotPoint;
+        pivot = srcControl->pivot;
         scale = srcControl->scale;
         angle = srcControl->angle;
         SafeRelease(background);
@@ -1081,8 +1132,9 @@ namespace DAVA
 
         classes = srcControl->classes;
         localProperties = srcControl->localProperties;
-        styleSheetRebuildNeeded = srcControl->styleSheetRebuildNeeded;
+        styleSheetDirty = srcControl->styleSheetDirty;
         styleSheetInitialized = false;
+        layoutDirty = srcControl->layoutDirty;
 
         SafeRelease(eventDispatcher);
         if (srcControl->eventDispatcher != nullptr && srcControl->eventDispatcher->GetEventsCount() != 0)
@@ -1285,8 +1337,6 @@ namespace DAVA
 
     }
 
-
-
     void UIControl::SystemUpdate(float32 timeElapsed)
     {
         UIControlSystem::Instance()->updateCounter++;
@@ -1298,10 +1348,25 @@ namespace DAVA
             (*it)->isUpdated = false;
         }
 
-        if (styleSheetRebuildNeeded || prevControlState != controlState)
+        if (styleSheetDirty || prevControlState != controlState)
         {
             UIControlSystem::Instance()->GetStyleSheetSystem()->ProcessControl(this);
             prevControlState = controlState;
+        }
+
+        if (layoutDirty)
+        {
+            UILayoutSystem* layoutSystem = UIControlSystem::Instance()->GetLayoutSystem();
+            if (layoutSystem->IsAutoupdatesEnabled())
+            {
+                UIControl* dirtyControl = this;
+                if (parent != nullptr)
+                {
+                    dirtyControl = parent;
+                }
+
+                layoutSystem->ApplyLayout(dirtyControl, true);
+            }
         }
 
         it = childs.begin();
@@ -2243,9 +2308,7 @@ namespace DAVA
 
     Animation * UIControl::MoveAnimation(const Rect & rect, float time, Interpolation::FuncType interpolationFunc, int32 track)
     {
-        TwoVector2LinearAnimation *animation = new TwoVector2LinearAnimation(this
-                , &relativePosition, Vector2(rect.x + pivotPoint.x, rect.y + pivotPoint.y)
-                , &size, Vector2(rect.dx, rect.dy), time, interpolationFunc);
+        TwoVector2LinearAnimation* animation = new TwoVector2LinearAnimation(this, &relativePosition, Vector2(rect.x + GetPivotPoint().x, rect.y + GetPivotPoint().y), &size, Vector2(rect.dx, rect.dy), time, interpolationFunc);
         animation->Start(track);
         return animation;
     }
@@ -2254,9 +2317,7 @@ namespace DAVA
     {
         Vector2 finalScale(rect.dx / size.x, rect.dy / size.y);
 
-        TwoVector2LinearAnimation *animation = new TwoVector2LinearAnimation(this
-                , &relativePosition, Vector2(rect.x + pivotPoint.x * finalScale.x, rect.y + pivotPoint.y * finalScale.y)
-                , &scale, finalScale, time, interpolationFunc);
+        TwoVector2LinearAnimation* animation = new TwoVector2LinearAnimation(this, &relativePosition, Vector2(rect.x + GetPivotPoint().x * finalScale.x, rect.y + GetPivotPoint().y * finalScale.y), &scale, finalScale, time, interpolationFunc);
         animation->Start(track);
         return animation;
     }
@@ -2496,13 +2557,24 @@ namespace DAVA
         Logger::FrameworkDebug("============================================================");
         Logger::FrameworkDebug("--------------- Currently allocated controls ----------------");
 
+        uint32 allCount = static_cast<uint32>(controlsList.size());
+        uint32 orphansCount = 0;
         for (auto control : controlsList)
         {
+            if (control->GetParent() == nullptr)
+            {
+                ++orphansCount;
+            }
+
             if (onlyOrphans && control->GetParent() != nullptr)
+            {
                 continue;
+            }
+
             Logger::FrameworkDebug("class:\"%s\" name:\"%s\" count:%d", control->GetClassName().c_str(), control->GetName().c_str(), control->GetRetainCount());
         }
 
+        Logger::FrameworkDebug("Total controls count: %d, orphans count: %d", allCount, orphansCount);
         Logger::FrameworkDebug("============================================================");
     }
 
@@ -2589,6 +2661,8 @@ namespace DAVA
             return left->GetType() < right->GetType();
         });
         UpdateFamily();
+
+        SetLayoutDirty();
     }
 
     void UIControl::InsertComponentAt(UIComponent * component, uint32 index)
@@ -2607,6 +2681,8 @@ namespace DAVA
             components.insert(components.begin() + insertIndex, SafeRetain(component));
 
             UpdateFamily();
+
+            SetLayoutDirty();
         }
     }
 
@@ -2672,6 +2748,8 @@ namespace DAVA
             UpdateFamily();
             c->SetControl(nullptr);
             SafeRelease(c);
+
+            SetLayoutDirty();
         }
     }
 
@@ -2720,7 +2798,8 @@ namespace DAVA
         if (std::find(classes.begin(), classes.end(), clazz) == classes.end())
         {
             classes.push_back(clazz);
-            styleSheetRebuildNeeded = true;
+
+            SetStyleSheetDirty();
         }
     }
 
@@ -2733,7 +2812,7 @@ namespace DAVA
             *iter = classes.back();
             classes.pop_back();
 
-            styleSheetRebuildNeeded = true;
+            SetStyleSheetDirty();
         }
     }
 
@@ -2763,7 +2842,7 @@ namespace DAVA
         for (String &token : tokens)
             classes.push_back(FastName(token));
 
-        styleSheetRebuildNeeded = true;
+        SetStyleSheetDirty();
     }
 
     const UIStyleSheetPropertySet& UIControl::GetLocalPropertySet() const
@@ -2779,7 +2858,7 @@ namespace DAVA
     void UIControl::SetPropertyLocalFlag(uint32 propertyIndex, bool value)
     {
         localProperties.set(propertyIndex, value);
-        styleSheetRebuildNeeded = true;
+        SetStyleSheetDirty();
     }
 
     const UIStyleSheetPropertySet& UIControl::GetStyledPropertySet() const
@@ -2792,22 +2871,41 @@ namespace DAVA
         styledProperties = set;
     }
 
-    bool UIControl::GetStyleSheetInitialized() const
+    bool UIControl::IsStyleSheetInitialized() const
     {
         return styleSheetInitialized;
     }
 
-    void UIControl::MarkStyleSheetAsUpdated()
+    void UIControl::SetStyleSheetInitialized()
     {
-        styleSheetRebuildNeeded = false;
         styleSheetInitialized = true;
+    }
+
+    void UIControl::SetStyleSheetDirty()
+    {
+        styleSheetDirty = true;
+    }
+
+    void UIControl::ResetStyleSheetDirty()
+    {
+        styleSheetDirty = false;
+    }
+
+    void UIControl::SetLayoutDirty()
+    {
+        layoutDirty = true;
+    }
+
+    void UIControl::ResetLayoutDirty()
+    {
+        layoutDirty = false;
     }
 
     void UIControl::SetPackageContext(UIControlPackageContext* newPackageContext)
     {
         if (packageContext != newPackageContext)
         {
-            styleSheetRebuildNeeded = true;
+            SetStyleSheetDirty();
         }
 
         packageContext = newPackageContext;
@@ -2817,7 +2915,7 @@ namespace DAVA
 
     void UIControl::PropagateParentWithContext(UIControl* newParentWithContext)
     {
-        styleSheetRebuildNeeded = true;
+        SetStyleSheetDirty();
 
         parentWithContext = newParentWithContext;
         if (packageContext == nullptr)

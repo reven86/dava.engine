@@ -236,7 +236,7 @@ bool FileSystem::MoveFile(const FilePath & existingFile, const FilePath & newFil
     bool error = (0 != result);
     if (error)
     {
-        const char* errorReason = std::strerror(errno);
+        const char* errorReason = strerror(errno);
         Logger::Error("rename failed (\"%s\" -> \"%s\") with error: %s",
             fromFile.c_str(), toFile.c_str(), errorReason);
     }
@@ -852,7 +852,7 @@ bool FileSystem::CompareTextFiles(const FilePath& filePath1, const FilePath& fil
 
     if (nullptr == static_cast<File *>(f1) || nullptr == static_cast<File *>(f2))
     {
-        Logger::Error("Couldn't copmare file %s and file %s, can't open", filePath1.GetAbsolutePathname().c_str(), filePath2.GetAbsolutePathname().c_str());
+        Logger::Error("Couldn't compare file %s and file %s, can't open", filePath1.GetAbsolutePathname().c_str(), filePath2.GetAbsolutePathname().c_str());
         return false;
     }
 
@@ -915,7 +915,7 @@ bool FileSystem::CompareBinaryFiles(const FilePath &filePath1, const FilePath &f
 
     if (nullptr == static_cast<File *>(f1) || nullptr == static_cast<File *>(f2))
     {
-        Logger::Error("Couldn't copmare file %s and file %s, can't open", filePath1.GetAbsolutePathname().c_str(), filePath2.GetAbsolutePathname().c_str());
+        Logger::Error("Couldn't compare file %s and file %s, can't open", filePath1.GetAbsolutePathname().c_str(), filePath2.GetAbsolutePathname().c_str());
         return false;
     }
 
@@ -954,4 +954,15 @@ bool FileSystem::CompareBinaryFiles(const FilePath &filePath1, const FilePath &f
     return res;
 }
 
+bool FileSystem::GetFileSize(const FilePath& path, uint32& size)
+{
+    ScopedPtr<File> file(File::Create(path, File::OPEN | File::READ));
+    if (file)
+    {
+        size = file->GetSize();
+        return true;
+    }
+
+    return false;
+}
 }

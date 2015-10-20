@@ -117,9 +117,6 @@ void LandscapeRenderer::RebuildVertexes(const DAVA::Rect &rebuildForRect)
 Vector3 LandscapeRenderer::GetPoint(int16 x, int16 y, uint16 height)
 {
     Vector3 res;
-//    res.x = (boundingBox.min.x + (float32)x / (float32)(heightmap->Size() - 1) * (boundingBox.max.x - boundingBox.min.x));
-//    res.y = (boundingBox.min.y + (float32)y / (float32)(heightmap->Size() - 1) * (boundingBox.max.y - boundingBox.min.y));
-//    res.z = (boundingBox.min.z + ((float32)height / (float32)Heightmap::MAX_VALUE) * (boundingBox.max.z - boundingBox.min.z));
     res.x = boundingBox.min.x + (float32)x * pointCoefficients.x;
     res.y = boundingBox.min.y + (float32)y * pointCoefficients.y;
     res.z = boundingBox.min.z + (float32)height * pointCoefficients.z;
@@ -174,9 +171,7 @@ void LandscapeRenderer::BindMaterial(DAVA::UniqueHandle textureStateHandle)
 
 void LandscapeRenderer::UnbindMaterial()
 {
-   // RenderManager::Instance()->SetTexture(0, 0);
-    
-    RenderManager::Instance()->SetShader(NULL);
+    RenderManager::Instance()->SetShader(nullptr);
     RenderManager::Instance()->FlushState();
 }
 

@@ -79,28 +79,43 @@ namespace DAVA
 {
 
 /* Data structure for MD5 (Message Digest) computation */
+
 class MD5
 {
 public:
-    
-    static const int32 DIGEST_SIZE = 16;
-    
-	static void ForFile(const FilePath & pathName, uint8 * buffer);
-	static void ForDirectory(const FilePath & pathName, uint8 * buffer, bool isRecursive, bool includeHidden);
+    struct MD5Digest
+    {
+        bool operator==(const MD5Digest& right) const
+        {
+            return digest == right.digest;
+        }
 
-    static void HashToChar(const uint8 * hash, char8 *buffer, uint32 bufferSize);
-	static void CharToHash(const char8 *buffer, uint8 * hash);
+        static const int32 DIGEST_SIZE = 16;
+        Array<uint8, DIGEST_SIZE> digest;
+    };
 
-    
-    
-	void Init ();
-	void Update (const uint8 *inBuf, uint32 inLen);
-	void Final ();
+public:
+    static void ForData(const uint8* data, uint32 dataSize, MD5Digest& digest);
+    static void ForFile(const FilePath& pathName, MD5Digest& digest);
+    static void ForDirectory(const FilePath& pathName, MD5Digest& digest, bool isRecursive, bool includeHidden);
 
-	uint8 * GetDigest() { return digest; };
+    static void HashToChar(const MD5Digest& digest, char8* buffer, uint32 bufferSize);
+    static void HashToChar(const uint8* hash, uint32 hashSize, char8* buffer, uint32 bufferSize);
+
+    static void CharToHash(const char8* buffer, MD5Digest& digest);
+    static void CharToHash(const char8* buffer, uint32 bufferSize, uint8* hash, uint32 hashSize);
+
 private:
-	static void RecursiveDirectoryMD5(const FilePath & pathName, MD5 & md5, bool isRecursive, bool includeHidden);
-    
+    void Init();
+    void Update(const uint8* inBuf, uint32 inLen);
+    void Final();
+    const MD5Digest& GetDigest()
+    {
+        return digest;
+    };
+
+    static void RecursiveDirectoryMD5(const FilePath& pathName, MD5& md5, bool isRecursive, bool includeHidden);
+
     static uint8 GetNumberFromCharacter(char8 character);
     static char8 GetCharacterFromNumber(uint8 number);
 
@@ -108,7 +123,7 @@ private:
 	uint32 i[2];                   /* number of _bits_ handled mod 2^64 */
 	uint32 buf[4];                 /* scratch buffer */
 	uint8 in[64];                  /* input buffer */
-	uint8 digest[DIGEST_SIZE];     /* actual digest after MD5Final call */
+    MD5Digest digest; /* actual digest after MD5Final call */
 };
 
 

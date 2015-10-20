@@ -98,20 +98,27 @@ public:
 		\param[in] defaultValue this is value that is used if variable with this key do not exists in archive
 		\returns value of variable or defaultValue if key isn't available
 	 */
-    float32 GetFloat(const String & key, float32 defaultValue = 0.0f) const;
-	/**
+    float32 GetFloat(const String& key, float32 defaultValue = 0.0f) const;
+    /**
+         \brief Function to get variable from archive.
+         \param[in] key string key
+         \param[in] defaultValue this is value that is used if variable with this key do not exists in archive
+         \returns value of variable or defaultValue if key isn't available
+     */
+    float64 GetFloat64(const String& key, float64 defaultValue = 0.0) const;
+    /**
 		\brief Functions to get variable from archive.
 		\param[in] key string key
 		\param[in] defaultValue this is value that is used if variable with this key do not exists in archive
 		\returns value of variable or defaultValue if key isn't available
 	 */
     String GetString(const String & key, const String & defaultValue = "") const;
-	/**
+    /**
 		\brief Function to get variable from archive.
 		\param[in] key string key
 		\param[in] defaultValue this is value that is used if variable with this key do not exists in archive
 		\returns value of variable or defaultValue if key isn't available
-		*/
+    */
 
     WideString GetWideString(const String & key, const WideString & defaultValue = L"") const;
 	/**
@@ -267,13 +274,21 @@ public:
 		\param[in] value we want to set for this key
 	 */
 	void SetFloat(const String & key, float32 value);
-	/**
+
+    /**
+     \brief Function to set variable in archive.
+     \param[in] key string key
+     \param[in] value we want to set for this key
+     */
+    void SetFloat64(const String& key, float64 value);
+
+    /**
 		\brief function to set variable in archive
 		\param[in] key string key
 		\param[in] value we want to set for this key
 	 */
-	void SetString(const String & key, const String & value);
-	/**
+    void SetString(const String& key, const String& value);
+    /**
 		\brief Function to set variable in archive.
 		\param[in] key string key
 		\param[in] value we want to set for this key
@@ -409,12 +424,28 @@ public:
         \param[in] file to save
 	 */
     bool Save(File *file) const;
-    
+
+    /**
+         \brief Function to save archieve to byte array.
+         \param[in] data byte arrat for archieve data, if data is null function returns only requested size of data for serialization
+         \param[in] size size of byte array, if size is 0 function returns only requested size of data for serialization
+         \returns size of really serialized data
+     */
+    uint32 Save(uint8* data, uint32 size) const;
+
+    /**
+         \brief Function to load archieve from byte array.
+         \param[in] data byte arrat with archieve data
+         \param[in] size size of byte array
+         \returns result of loading
+     */
+    bool Load(const uint8* data, uint32 size);
+
     /**
      \brief Function loads data from given yaml file.
      \param[in] pathName relative pathname in application documents folder
 	 */
-	bool LoadFromYamlFile(const FilePath & pathName);
+    bool LoadFromYamlFile(const FilePath& pathName);
 
     /**
      \brief Function saves data to given yaml file.
@@ -461,7 +492,6 @@ public:
 // 	bool SaveToYaml(const String & pathName);
     
     static const char* GenKeyFromIndex(uint32 index);
-
 
 private:
 	Map<String, VariantType*> objectMap;
