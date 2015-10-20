@@ -149,7 +149,7 @@ bool SelectionSystem::ProcessMousePress(const DAVA::Vector2& point)
                 selected.insert(node);
             }
         }
-        else if (!keyBoardProxy->IsKeyPressed(KeyboardProxy::KEY_ALT))
+        else if (keyBoardProxy->IsKeyPressed(KeyboardProxy::KEY_ALT))
         {
             ControlNode* selectedNode = nullptr;
             systemManager->SelectionByMenuRequested.Emit(nodesUnderPoint, point, selectedNode);
