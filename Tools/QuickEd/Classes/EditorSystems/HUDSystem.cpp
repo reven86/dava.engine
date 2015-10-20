@@ -65,7 +65,9 @@ ControlContainer* CreateControlContainer(HUDAreaInfo::eArea area)
     case HUDAreaInfo::BOTTOM_RIGHT_AREA:
         return new FrameRectControl(area);
     case HUDAreaInfo::FRAME_AREA:
-        return FrameControl::Create();
+
+        return CreateContainerWithBorders<FrameControl>();
+
     default:
         DVASSERT("!unacceptable value of area");
         return nullptr;
@@ -117,7 +119,7 @@ HUDSystem::HUD::~HUD()
 HUDSystem::HUDSystem(EditorSystemsManager* parent)
     : BaseEditorSystem(parent)
     , hudControl(new UIControl())
-    , selectionRectControl(SelectionRect::Create())
+    , selectionRectControl(CreateContainerWithBorders<SelectionRect>())
     , sortedControlList(CompareByLCA)
 {
     hudControl->AddControl(selectionRectControl.Get());

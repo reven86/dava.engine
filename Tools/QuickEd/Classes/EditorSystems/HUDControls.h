@@ -61,8 +61,14 @@ private:
     bool visibleInSystems = true;
 };
 
+template <typename T>
+T* CreateContainerWithBorders();
+
 class FrameControl : public ControlContainer
 {
+    template <typename T>
+    friend T* CreateContainerWithBorders();
+
 public:
     enum
     {
@@ -72,15 +78,12 @@ public:
         BORDER_RIGHT,
         BORDERS_COUNT
     };
-    static FrameControl* Create();
+    void Init();
 
 protected:
-    void InitFromGD(const DAVA::UIGeometricData& geometricData) override;
-
-private:
     explicit FrameControl();
+    void InitFromGD(const DAVA::UIGeometricData& geometricData) override;
     DAVA::Rect CreateFrameBorderRect(DAVA::uint32 border, const DAVA::Rect& frameRect) const;
-    DAVA::Vector<DAVA::RefPtr<UIControl>> borders;
 };
 
 class FrameRectControl : public ControlContainer
@@ -113,7 +116,18 @@ private:
 
 class SelectionRect : public FrameControl
 {
+    template <typename T>
+    friend T* CreateContainerWithBorders();
     void Draw(const DAVA::UIGeometricData& geometricData) override;
 };
+
+template <typename T>
+T* CreateContainerWithBorders()
+{
+    static_assert(std::is_base_of<FrameControl, T>::value, "works only for classes, based on FrameControl");
+    T* t = new T;
+    t->Init();
+    return t;
+}
 
 #endif //_QUIECKED_EDITOR_SYSTEMS_HUD_CONTROLS_H_

@@ -98,10 +98,9 @@ void HUDContainer::SetVisibleInSystems(bool arg)
     SetVisible(valid && visibleInSystems);
 }
 
-FrameControl* FrameControl::Create()
+void FrameControl::Init()
 {
-    FrameControl* frameControl = new FrameControl();
-    frameControl->SetName("Frame Control");
+    SetName("Frame Control");
 
     for (uint32 i = 0; i < BORDERS_COUNT; ++i)
     {
@@ -110,9 +109,8 @@ FrameControl* FrameControl::Create()
         UIControlBackground* background = control->GetBackground();
         background->SetSprite("~res:/Gfx/HUDControls/BlackGrid", 0);
         background->SetDrawType(UIControlBackground::DRAW_TILED);
-        frameControl->AddControl(control);
+        AddControl(control);
     }
-    return frameControl;
 }
 
 void FrameControl::InitFromGD(const UIGeometricData& geometricData)
@@ -249,6 +247,14 @@ void RotateControl::InitFromGD(const UIGeometricData& geometricData)
 
 void SelectionRect::Draw(const UIGeometricData& geometricData)
 {
-    InitFromGD(geometricData);
+    const Rect& rect = geometricData.GetUnrotatedRect();
+    auto& children = GetChildren();
+    DVASSERT(children.size() == BORDERS_COUNT);
+    auto chilrenIt = children.begin();
+    for (uint32 i = 0; i < BORDERS_COUNT; ++i, ++chilrenIt)
+    {
+        Rect borderRect = CreateFrameBorderRect(i, rect);
+        (*chilrenIt)->SetAbsoluteRect(borderRect);
+    }
     UIControl::Draw(geometricData);
 }
