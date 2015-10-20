@@ -137,7 +137,6 @@ void TransformSystem::OnActiveAreaChanged(const HUDAreaInfo& areaInfo)
         controlGeometricData = control->GetGeometricData();
 
         DVASSERT(parentGeometricData.scale.x > 0.0f && parentGeometricData.scale.y > 0.0f);
-        DVASSERT(parentGeometricData.size.x > 0.0f && parentGeometricData.size.y > 0.0f);
         DVASSERT(controlGeometricData.scale.x > 0.0f && controlGeometricData.scale.y > 0.0f);
         DVASSERT(controlGeometricData.size.x > 0.0f && controlGeometricData.size.y > 0.0f);
 
@@ -330,21 +329,23 @@ List<MagnetLine> CreateMagnetPairs(const Rect& box, const UIGeometricData* paren
     List<MagnetLine> magnets;
 
     Rect parentBox(Vector2(), parentGD->size);
-    DVASSERT(box.dx > 0.0f && box.dy > 0.0f);
 
-    magnets.emplace_back(0.0f, box, 0.0f, parentBox, axis);
-    magnets.emplace_back(0.0f, box, 0.5f, parentBox, axis);
-    magnets.emplace_back(0.5f, box, 0.5f, parentBox, axis);
-    magnets.emplace_back(1.0f, box, 0.5f, parentBox, axis);
-    magnets.emplace_back(1.0f, box, 1.0f, parentBox, axis);
-
-    const float32 border = borderInParentToMagnet[axis];
-    float32 requiredSizeToMagnetToBorders = 5 * border;
-    if (parentGD->GetUnrotatedRect().GetSize()[axis] > requiredSizeToMagnetToBorders)
+    if (parentBox.GetSize()[axis] > 0.0f)
     {
-        const float32 borderShare = border / parentBox.GetSize()[axis];
-        magnets.emplace_back(0.0f, box, borderShare, parentBox, axis);
-        magnets.emplace_back(1.0f, box, 1.0f - borderShare, parentBox, axis);
+        magnets.emplace_back(0.0f, box, 0.0f, parentBox, axis);
+        magnets.emplace_back(0.0f, box, 0.5f, parentBox, axis);
+        magnets.emplace_back(0.5f, box, 0.5f, parentBox, axis);
+        magnets.emplace_back(1.0f, box, 0.5f, parentBox, axis);
+        magnets.emplace_back(1.0f, box, 1.0f, parentBox, axis);
+
+        const float32 border = borderInParentToMagnet[axis];
+        float32 requiredSizeToMagnetToBorders = 5 * border;
+        if (parentGD->GetUnrotatedRect().GetSize()[axis] > requiredSizeToMagnetToBorders)
+        {
+            const float32 borderShare = border / parentBox.GetSize()[axis];
+            magnets.emplace_back(0.0f, box, borderShare, parentBox, axis);
+            magnets.emplace_back(1.0f, box, 1.0f - borderShare, parentBox, axis);
+        }
     }
 
     for (UIControl* neighbour : neighbours)
