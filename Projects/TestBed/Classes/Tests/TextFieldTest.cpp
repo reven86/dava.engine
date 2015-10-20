@@ -29,57 +29,24 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Tests/TextFieldTest.h"
 
-using namespace DAVA;
-
-namespace
-{
-
-class InputDelegate : public UITextFieldDelegate
-{
-public:
-    void TextFieldOnTextChanged(UITextField * textField, const WideString& newText, const WideString& oldText) override
-    {
-    }
-    
-};
-
-}
-
 TextFieldTest::TextFieldTest()
-: BaseScreen("TextFieldTest")
+    : BaseScreen("TextFieldTest")
 {
 }
 
 void TextFieldTest::LoadResources()
 {
+    const uint32 CONTROL_LENGHT = 400;
+    const uint32 CONTROL_HEIGTH = 70;
+    
     BaseScreen::LoadResources();
 
     ScopedPtr<FTFont> font(FTFont::Create("~res:/Fonts/korinna.ttf"));
+    font->SetSize(25.f);
     ScopedPtr<FTFont> bigFont(FTFont::Create("~res:/Fonts/korinna.ttf"));
-    bigFont->SetSize(24.f);
+    bigFont->SetSize(50.f);
     
-    InputDelegate * d = new InputDelegate;
-    
-    UITextField * field = new UITextField(Rect(0, 70, 200, 50));
-    field->SetFont(font);
-    field->SetDebugDraw(true);
-    field->SetText(L"Test text inside UITextField used for test");
-    field->SetDelegate(d);
-    AddControl(field);
-    SafeRelease(field);
-    
-    field = new UITextField(Rect(0, 130, 200, 50));
-    field->SetFont(font);
-    field->SetFocused();
-    field->SetDebugDraw(true);
-    field->SetText(L"Test text inside UITextField used for test");
-    field->SetDelegate(d);
-    
-    AddControl(field);
-    SafeRelease(field);
-
-
-    UIButton * button = new UIButton(Rect(0,0, 200, 50));
+    UIButton * button = new UIButton(Rect(0,0, CONTROL_LENGHT, CONTROL_HEIGTH));
     button->SetStateFont(0xFF, font);
     button->SetStateFontColor(0xFF, Color::White);
     button->SetStateText(0xFF, L"Show/Hide");
@@ -87,9 +54,26 @@ void TextFieldTest::LoadResources()
     button->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &TextFieldTest::OnShowHideClick));
     AddControl(button);
     SafeRelease(button);
-    
 
-    topLayerControl = new UIControl(Rect(50, 0, 50, 200));
+    UITextField * field = new UITextField(Rect(0, CONTROL_HEIGTH+10, CONTROL_LENGHT, CONTROL_HEIGTH));
+    field->SetFont(font);
+    field->SetDebugDraw(true);
+    field->SetText(L"Test text inside UITextField used for test");
+    field->SetDelegate(this);
+    AddControl(field);
+    SafeRelease(field);
+    
+    field = new UITextField(Rect(0, 2*(CONTROL_HEIGTH+10), CONTROL_LENGHT, CONTROL_HEIGTH));
+    field->SetFont(font);
+    field->SetFocused();
+    field->SetDebugDraw(true);
+    field->SetText(L"Test text inside UITextField used for test");
+    field->SetDelegate(this);
+    
+    AddControl(field);
+    SafeRelease(field);
+
+    topLayerControl = new UIControl(Rect(CONTROL_LENGHT/3, 0, CONTROL_LENGHT/3, 3*(CONTROL_HEIGTH+10)));
     topLayerControl->GetBackground()->SetColor(Color(1.0f, 0.0f, 0.0f, 0.5f));
     topLayerControl->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
     topLayerControl->GetBackground()->SetColorInheritType(UIControlBackground::COLOR_IGNORE_PARENT);
@@ -103,8 +87,6 @@ void TextFieldTest::UnloadResources()
     
     SafeRelease(topLayerControl);
 }
-
-
 
 void TextFieldTest::OnShowHideClick(BaseObject* sender, void * data, void * callerData)
 {

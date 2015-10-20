@@ -32,18 +32,23 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Infrastructure/BaseScreen.h"
 
-class TextFieldTest : public BaseScreen
+using namespace DAVA;
+
+class TextFieldTest : public BaseScreen, public UITextFieldDelegate
 {
 public:
     TextFieldTest();
 
     void LoadResources() override;
     void UnloadResources() override;
+
+    // UITextFieldDelegate interface
+    void TextFieldOnTextChanged(UITextField * textField, const WideString& newText, const WideString& oldText) override {}
     
 private:
     void OnShowHideClick(BaseObject* sender, void * data, void * callerData);
-    
-    
+
+
     UIControl * topLayerControl = nullptr;
 };
 
