@@ -32,10 +32,8 @@
 #include "Math/Vector.h"
 #include "EditorSystems/BaseEditorSystem.h"
 #include "EditorSystems/EditorSystemsManager.h"
-#include "Model/PackageHierarchy/PackageListener.h"
-#include "Model/ControlProperties/RootProperty.h"
 
-class HUDSystem final : public BaseEditorSystem, private PackageListener
+class HUDSystem final : public BaseEditorSystem
 {
 public:
     HUDSystem(EditorSystemsManager* parent);
@@ -53,8 +51,6 @@ private:
         SEARCH_BACKWARD
     };
     struct HUD;
-
-    void ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property) override;
 
     void OnRootContolsChanged(const EditorSystemsManager::SortedPackageBaseNodeSet& rootControls);
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
