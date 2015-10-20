@@ -396,22 +396,54 @@ macro ( add_content_win_uap DEPLOYMENT_CONTENT_LIST )
 
 endmacro ()
 
-macro ( add_static_libs_win_uap LIBS_LOCATION OUTPUT_LIB_LIST )
+macro ( add_static_config_libs_win_uap CONFIG_TYPE LIBS_LOCATION OUTPUT_LIB_LIST )
 
-    #find all libs in specified path
-    file ( GLOB LIB_LIST "${LIBS_LOCATION}/*.lib" )
+    #take one platform
+    list ( GET CMAKE_VS_EFFECTIVE_PLATFORMS 0 REF_PLATFORM )
+    
+    #find all libs for specified platform
+    file ( GLOB REF_LIB_LIST "${LIBS_LOCATION}/${REF_PLATFORM}/${CONFIG_TYPE}/*.lib" )
+    
+    #find all libs for all platforms
+    FOREACH ( LIB_ARCH ${CMAKE_VS_EFFECTIVE_PLATFORMS} )
+            file ( GLOB LIB_LIST "${LIBS_LOCATION}/${LIB_ARCH}/${CONFIG_TYPE}/*.lib" )
+            
+            #add to list only filenames
+            FOREACH ( LIB ${LIB_LIST} )
+                get_filename_component ( LIB_FILE ${LIB} NAME )
+                list( APPEND LIB_FILE_LIST ${LIB_FILE} )
+            ENDFOREACH ()
+    ENDFOREACH ()
+    
+    #unique all platforms' lib list
+    list ( REMOVE_DUPLICATES LIB_FILE_LIST )
+    
+    #compare lists size
+    list ( LENGTH REF_LIB_LIST REF_LIB_LIST_SIZE )
+    list ( LENGTH LIB_FILE_LIST LIB_FILE_LIST_SIZE )
+    unset ( LIB_FILE_LIST )
+
+    #lib sets for all platform must be equal
+    if ( NOT REF_LIB_LIST_SIZE STREQUAL LIB_FILE_LIST_SIZE )
+        message ( FATAL_ERROR "Equality checking of static lib sets failed. "
+                              "Make sure that lib sets are equal for all architectures in ${CONFIG_TYPE} configuration" )
+    endif ()
     
     #append every lib to output lib list
-    FOREACH ( LIB ${LIB_LIST} )
-    
+    FOREACH ( LIB ${REF_LIB_LIST} )
         #replace platform specified part of path on VS Platform variable
-        FOREACH ( LIB_ARCH ${CMAKE_VS_EFFECTIVE_PLATFORMS} )
-            STRING( REGEX REPLACE "${LIB_ARCH}" "$(Platform)" LIB ${LIB} )
-        ENDFOREACH ()
-        
-        list ( APPEND ${OUTPUT_LIB_LIST} ${LIB} )
-        
+        STRING( REGEX REPLACE "${REF_PLATFORM}" "$(Platform)" LIB ${LIB} )
+        list ( APPEND "${OUTPUT_LIB_LIST}_${CONFIG_TYPE}" ${LIB} )
     ENDFOREACH ()
+
+endmacro ()
+
+#search static libs in specified location and add them in ${OUTPUT_LIB_LIST}_DEBUG and ${OUTPUT_LIB_LIST}_RELEASE
+#check equality of lib sets for all platforms
+macro ( add_static_libs_win_uap LIBS_LOCATION OUTPUT_LIB_LIST )
+
+    add_static_config_libs_win_uap ( "DEBUG"   ${LIBS_LOCATION} ${OUTPUT_LIB_LIST} )
+    add_static_config_libs_win_uap ( "RELEASE" ${LIBS_LOCATION} ${OUTPUT_LIB_LIST} )
 
 endmacro ()
 
