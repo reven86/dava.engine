@@ -35,7 +35,7 @@ namespace DAVA
 
 void UIStyleSheetClassSet::AddClass(const FastName& clazz)
 {
-    auto it = std::find_if(classes.begin(), classes.end(), [&clazz](UIStyleSheetClass& cl) {
+    auto it = std::find_if(classes.begin(), classes.end(), [&clazz](const UIStyleSheetClass& cl) {
         return cl.clazz == clazz && !cl.tag.IsValid();
     });
     
@@ -47,7 +47,7 @@ void UIStyleSheetClassSet::AddClass(const FastName& clazz)
 
 void UIStyleSheetClassSet::RemoveClass(const FastName& clazz)
 {
-    auto it = std::find_if(classes.begin(), classes.end(), [&clazz](UIStyleSheetClass& cl) {
+    auto it = std::find_if(classes.begin(), classes.end(), [&clazz](const UIStyleSheetClass& cl) {
         return cl.clazz == clazz && !cl.tag.IsValid();
     });
     
@@ -60,7 +60,7 @@ void UIStyleSheetClassSet::RemoveClass(const FastName& clazz)
 
 bool UIStyleSheetClassSet::HasClass(const FastName& clazz) const
 {
-    auto it = std::find_if(classes.begin(), classes.end(), [&clazz](UIStyleSheetClass& cl) {
+    auto it = std::find_if(classes.begin(), classes.end(), [&clazz](const UIStyleSheetClass& cl) {
         return cl.clazz == clazz;
     });
     
@@ -69,7 +69,7 @@ bool UIStyleSheetClassSet::HasClass(const FastName& clazz) const
 
 void UIStyleSheetClassSet::SetTaggedClass(const FastName& tag, const FastName& clazz)
 {
-    auto it = std::find_if(classes.begin(), classes.end(), [&tag](UIStyleSheetClass& cl) {
+    auto it = std::find_if(classes.begin(), classes.end(), [&tag](const UIStyleSheetClass& cl) {
         return cl.tag == tag;
     });
     
@@ -85,7 +85,7 @@ void UIStyleSheetClassSet::SetTaggedClass(const FastName& tag, const FastName& c
 
 void UIStyleSheetClassSet::ResetTaggedClass(const FastName& tag)
 {
-    auto it = std::find_if(classes.begin(), classes.end(), [&tag](UIStyleSheetClass& cl) {
+    auto it = std::find_if(classes.begin(), classes.end(), [&tag](const UIStyleSheetClass& cl) {
         return cl.tag == tag;
     });
     
