@@ -313,7 +313,7 @@ void WebViewControl::SetRect(const Rect& rect)
     NSBitmapImageRep* imageRep = (NSBitmapImageRep*)webImageCachePtr;
    [imageRep release];
     
-    NSView* openGLView = (NSView*)Core::Instance()->GetOpenGLView();
+    NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
     DVASSERT(openGLView);
     
     imageRep = [openGLView bitmapImageRepForCachingDisplayInRect:webViewRect];

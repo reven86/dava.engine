@@ -35,7 +35,6 @@
 extern void FrameworkDidLaunched();
 extern void FrameworkWillTerminate();
 
-
 namespace DAVA 
 {
 	int Core::Run(int argc, char *argv[], AppHandle handle)
@@ -47,13 +46,11 @@ namespace DAVA
 		core->CreateSingletons();
 
 		[[NSApplication sharedApplication] setDelegate:(id<NSApplicationDelegate>)[[[MainWindowController alloc] init] autorelease]];
-		
+        
 		int retVal = NSApplicationMain(argc,  (const char **) argv);
         // This method never returns, so release code transfered to termination message 
         // - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
         // core->ReleaseSingletons() is called from there
-        
-        SetNativeView(mainWindowController->openGLView);
 
 		[globalPool release];
 		globalPool = 0;
@@ -174,6 +171,7 @@ namespace DAVA
     [openGLView setFrame: rect];
     
 	core = Core::GetApplicationCore();
+    Core::Instance()->SetNativeView(openGLView);
     RenderManager::Instance()->DetectRenderingCapabilities();
     RenderSystem2D::Instance()->Init();
 
