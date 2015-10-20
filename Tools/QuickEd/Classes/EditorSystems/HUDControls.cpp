@@ -247,14 +247,15 @@ void RotateControl::InitFromGD(const UIGeometricData& geometricData)
 
 void SelectionRect::Draw(const UIGeometricData& geometricData)
 {
-    const Rect& rect = geometricData.GetUnrotatedRect();
+    Rect rect = geometricData.GetUnrotatedRect();
+    rect.SetPosition(Vector2());
     auto& children = GetChildren();
     DVASSERT(children.size() == BORDERS_COUNT);
     auto chilrenIt = children.begin();
     for (uint32 i = 0; i < BORDERS_COUNT; ++i, ++chilrenIt)
     {
         Rect borderRect = CreateFrameBorderRect(i, rect);
-        (*chilrenIt)->SetAbsoluteRect(borderRect);
+        (*chilrenIt)->SetRect(borderRect);
     }
     UIControl::Draw(geometricData);
 }
