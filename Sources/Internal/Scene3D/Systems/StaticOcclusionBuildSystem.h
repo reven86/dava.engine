@@ -85,7 +85,7 @@ private:
     void RestoreOcclusionMaterials();
     
     Camera * camera;
-    Vector<Entity*> entities;
+    Vector<Entity*> occlusionEntities;
     StaticOcclusion * staticOcclusion;
     StaticOcclusionDataComponent * componentInProgress;
     uint32 activeIndex;    

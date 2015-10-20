@@ -73,12 +73,12 @@ StaticOcclusionBuildSystem::~StaticOcclusionBuildSystem()
 
 void StaticOcclusionBuildSystem::AddEntity(Entity * entity)
 {
-    entities.push_back(entity);
+    occlusionEntities.push_back(entity);
 }
     
 void StaticOcclusionBuildSystem::RemoveEntity(Entity * entity)
 {
-    entities.erase( std::remove( entities.begin(), entities.end(), entity ), entities.end() );
+    occlusionEntities.erase(std::remove(occlusionEntities.begin(), occlusionEntities.end(), entity), occlusionEntities.end());
 }
 
 void StaticOcclusionBuildSystem::ImmediateEvent(Component * _component, uint32 event)
@@ -117,21 +117,28 @@ void StaticOcclusionBuildSystem::ImmediateEvent(Component * _component, uint32 e
     
 void StaticOcclusionBuildSystem::Build()
 {
-    if (entities.size() == 0)return;
-    activeIndex = 0;    
-    if (!staticOcclusion)
+    if (occlusionEntities.empty())
+        return;
+
+    activeIndex = 0;
+
+    if (nullptr == staticOcclusion)
         staticOcclusion = new StaticOcclusion();
+
     renewIndex = RENEW_OCCLUSION_INDICES;
-    
     StartBuildOcclusion();
 }
     
 void StaticOcclusionBuildSystem::RebuildCurrentCell()
 {
-    if (entities.size() == 0)return;
-    activeIndex = 0;    
-    if (!staticOcclusion)
+    if (occlusionEntities.empty())
+        return;
+
+    activeIndex = 0;
+
+    if (nullptr == staticOcclusion)
         staticOcclusion = new StaticOcclusion();
+
     renewIndex = LEAVE_OLD_INDICES;    
     StartBuildOcclusion();
 }
@@ -165,44 +172,47 @@ void StaticOcclusionBuildSystem::StartBuildOcclusion()
     //global preparations
     SetCamera(GetScene()->GetCurrentCamera());
     // Prepare render objects
-    Vector<Entity*> entities;
+    Vector<Entity*> sceneEntities;
     Vector<RenderObject*> renderObjectsArray;
     Landscape * landscape = 0;
-    CollectEntitiesForOcclusionRecursively(entities, GetScene());
+    CollectEntitiesForOcclusionRecursively(sceneEntities, GetScene());
 
-    uint32 size = (uint32)entities.size();
+    uint32 size = (uint32)sceneEntities.size();
     renderObjectsArray.reserve(size);
     DVASSERT(renderObjectsArray.size() == 0);
     for (uint32 k = 0; k < size; ++k)
     {
-        RenderObject * renderObject = GetRenderObject(entities[k]);
-        if ((RenderObject::TYPE_MESH == renderObject->GetType())
-            || (RenderObject::TYPE_SPEED_TREE == renderObject->GetType()))
+        RenderObject* renderObject = GetRenderObject(sceneEntities[k]);
+        auto renderObjectType = renderObject->GetType();
+        if ((RenderObject::TYPE_MESH == renderObjectType) || (RenderObject::TYPE_SPEED_TREE == renderObjectType))
         {
             renderObjectsArray.push_back(renderObject);
             renderObject->AddFlag(RenderObject::VISIBLE_STATIC_OCCLUSION);
         }
-        if (RenderObject::TYPE_LANDSCAPE == renderObject->GetType())
+        if (RenderObject::TYPE_LANDSCAPE == renderObjectType)
         {
             landscape = static_cast<Landscape*>(renderObject);
         }
     }
+
     if (renewIndex == RENEW_OCCLUSION_INDICES)
     {
         GetScene()->staticOcclusionSystem->ClearOcclusionObjects();
 
-        for (uint32 k = 0; k < renderObjectsArray.size(); ++k)
+        uint16_t index = 0;
+        for (auto& ro : renderObjectsArray)
         {
-            DVASSERT(renderObjectsArray[k]->GetStaticOcclusionIndex() == INVALID_STATIC_OCCLUSION_INDEX); //if we are going to renew indices they should be cleared prior to it
-            renderObjectsArray[k]->SetStaticOcclusionIndex((uint16)k);
+            // if we are going to renew indices they should be cleared prior to it
+            DVASSERT(ro->GetStaticOcclusionIndex() == INVALID_STATIC_OCCLUSION_INDEX);
+            ro->SetStaticOcclusionIndex(index++);
         }
     }
     SceneForceLod(0);
     UpdateMaterialsForOcclusionRecursively(GetScene());
 
     // Prepare occlusion per component
-    Entity * entity = entities[activeIndex];    
-    
+    Entity* entity = occlusionEntities[activeIndex];
+
     componentInProgress = (StaticOcclusionDataComponent*)entity->GetComponent(Component::STATIC_OCCLUSION_DATA_COMPONENT);
     if (componentInProgress)
     {        
@@ -229,8 +239,10 @@ void StaticOcclusionBuildSystem::StartBuildOcclusion()
                   worldBox,
                   occlusionComponent->GetCellHeightOffsets());        
     }
-            
-    
+
+    if (nullptr == staticOcclusion)
+        staticOcclusion = new StaticOcclusion();
+
     staticOcclusion->StartBuildOcclusion(&data, GetScene()->GetRenderSystem(), landscape);       
 }
 #if RHI_COMPLETE    
@@ -271,19 +283,20 @@ void StaticOcclusionBuildSystem::OcclusionBuildStep(BaseObject * bo, void * mess
     
 void StaticOcclusionBuildSystem::FinishBuildOcclusion()
 {
-    Component * prevComponent = entities[activeIndex]->GetComponent(Component::STATIC_OCCLUSION_DATA_COMPONENT);
+    Component* prevComponent = occlusionEntities[activeIndex]->GetComponent(Component::STATIC_OCCLUSION_DATA_COMPONENT);
 
     // We've detached component so we verify that here we still do not have this component.
     DVASSERT(prevComponent == 0);
 
-    entities[activeIndex]->AddComponent(componentInProgress);
+    occlusionEntities[activeIndex]->AddComponent(componentInProgress);
     componentInProgress = 0;
     
     activeIndex++;
-    if (activeIndex == entities.size())
+    if (activeIndex == occlusionEntities.size())
     {
         activeIndex = -1;
-    }else
+    }
+    else
     {
         // not final index add more occlusion build cycle
         StartBuildOcclusion();
@@ -294,6 +307,7 @@ void StaticOcclusionBuildSystem::FinishBuildOcclusion()
 
     Scene *scene = GetScene();
     scene->staticOcclusionSystem->CollectOcclusionObjectsRecursively(scene);
+    SafeDelete(staticOcclusion);
 }
     
 bool StaticOcclusionBuildSystem::IsInBuild() const
@@ -380,15 +394,15 @@ void StaticOcclusionBuildSystem::RestoreOcclusionMaterials()
 }
 
 void StaticOcclusionBuildSystem::Process(float32 timeElapsed)
-{   
-    if (!staticOcclusion)
-        return;
-        
-    bool finished = staticOcclusion->ProccessBlock();
-    if (finished)
-        FinishBuildOcclusion();
-    
-
+{
+    if (nullptr != staticOcclusion)
+    {
+        bool finished = staticOcclusion->ProccessBlock();
+        if (finished)
+        {
+            FinishBuildOcclusion();
+        }
+    }
 }   
 
     

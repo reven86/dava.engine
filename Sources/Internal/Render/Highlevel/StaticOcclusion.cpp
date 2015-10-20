@@ -103,11 +103,12 @@ AABBox3 StaticOcclusion::GetCellBox(uint32 x, uint32 y, uint32 z)
     
 bool StaticOcclusion::ProccessBlock()
 {
-    ProcessRecorderQueries();
+    if (!ProcessRecorderQueries())
+        return false;
+
     if (currentFrameZ >= zBlockCount)
-    {
         return true;
-    }
+
     RenderCurrentBlock();
     
     currentFrameX++;
@@ -150,7 +151,6 @@ void StaticOcclusion::RenderCurrentBlock()
     Vector3 stepSize = cellBox.GetSize();
     stepSize /= float32(stepCount);
         
-        
     Vector3 directions[6] =
     {
         Vector3(1.0f, 0.0f, 0.0f),  // x 0
@@ -159,10 +159,13 @@ void StaticOcclusion::RenderCurrentBlock()
         Vector3(0.0f, -1.0f, 0.0f), // -y 3
         Vector3(0.0f, 0.0f, 1.0f),  // +z 4
         Vector3(0.0f, 0.0f, -1.0f), // -z 5
-    };                
-        
-    uint32 blockIndex = currentFrameZ * (xBlockCount* yBlockCount) + currentFrameY * (xBlockCount)+currentFrameX;
-        
+    };
+
+    uint32 blockIndex =
+    currentFrameX +
+    currentFrameY * xBlockCount +
+    currentFrameZ * xBlockCount * yBlockCount;
+
     uint32 effectiveSideCount[6] = {3, 3, 3, 3, 1, 1};
         
     uint32 effectiveSides[6][3]=
@@ -219,7 +222,9 @@ void StaticOcclusion::RenderCurrentBlock()
         // Render 360 ??????? from each point
         
         for (uint32 realSideIndex = 0; realSideIndex < effectiveSideCount[side]; ++realSideIndex)
+        {
             for (uint32 stepX = 0; stepX <= stepCount; ++stepX)
+            {
                 for (uint32 stepY = 0; stepY <= stepCount; ++stepY)
                 {
                     Vector3 renderPosition = startPosition + directionX * (float32)stepX * stepSize + directionY * (float32)stepY * stepSize;
@@ -246,48 +251,77 @@ void StaticOcclusion::RenderCurrentBlock()
                     {
                         camera->SetUp(Vector3(0.0f, 0.0f, 1.0f));
                         camera->SetLeft(Vector3(1.0f, 0.0f, 0.0f));
-                    }                                        
-                    
+                    }
 
-                    StaticOcclusionFrameResult res;
+                    occlusionFrameResults.emplace_back();
+
+                    StaticOcclusionFrameResult& res = occlusionFrameResults.back();
                     res.blockIndex = blockIndex;
-                    occlusionFrameResults.push_back(res);
-                    staticOcclusionRenderPass->DrawOcclusionFrame(renderSystem, camera, occlusionFrameResults.back());
+                    staticOcclusionRenderPass->DrawOcclusionFrame(renderSystem, camera, res);
+
+                    if (res.queryBuffer == rhi::InvalidHandle)
+                    {
+                        occlusionFrameResults.pop_back();
+                    }
                 }
-
-
-
+            }
+        }
     }
-    
-    uint64 timeTotalRendering = SystemTimer::Instance()->GetAbsoluteNano() - renderingStart;            
-    Logger::FrameworkDebug(Format("Block:%d renderTime: %0.9llf", blockIndex, (double)timeTotalRendering / 1e+9).c_str());       
-}   
 
+    uint64 timeTotalRendering = SystemTimer::Instance()->GetAbsoluteNano() - renderingStart;
+    Logger::FrameworkDebug(Format("Block: %d renderTime: %0.9llf", blockIndex, (double)timeTotalRendering / 1e+9).c_str());
+}
 
-void StaticOcclusion::ProcessRecorderQueries()
+bool StaticOcclusion::ProcessRecorderQueries()
 {
-    for (auto& frameResult : occlusionFrameResults)
-    {
-        for (size_t i = 0, sz = frameResult.frameRequests.size(); i < sz; ++i)
-        {
-            if (frameResult.frameRequests[i] == nullptr)
-                continue;
+    auto fr = occlusionFrameResults.begin();
 
-            while (!rhi::QueryIsReady(frameResult.queryBuffer, i)) //wait query
+    while (fr != occlusionFrameResults.end())
+    {
+        uint32 processedRequests = 0;
+        uint32 index = 0;
+        for (auto& req : fr->frameRequests)
+        {
+            if (req == nullptr)
             {
+                ++processedRequests;
+                ++index;
+                continue;
             }
 
-            if (rhi::QueryValue(frameResult.queryBuffer, i) != 0)
-                currentData->EnableVisibilityForObject(frameResult.blockIndex, frameResult.frameRequests[i]->GetStaticOcclusionIndex());
+            if (rhi::QueryIsReady(fr->queryBuffer, index))
+            {
+                auto qv = rhi::QueryValue(fr->queryBuffer, index);
+                if (qv != 0)
+                {
+                    if (!currentData->IsObjectVisibleFromBlock(fr->blockIndex, req->GetStaticOcclusionIndex()))
+                    {
+                        Logger::Info("Object: %u is visible from block %u (query value: %d)",
+                                     uint32(req->GetStaticOcclusionIndex()), fr->blockIndex, qv);
+                    }
+                    currentData->EnableVisibilityForObject(fr->blockIndex, req->GetStaticOcclusionIndex());
+                }
+                ++processedRequests;
+                req = nullptr;
+            }
+
+            ++index;
         }
-        rhi::DeleteQueryBuffer(frameResult.queryBuffer);
-    }    
-    occlusionFrameResults.clear();
+
+        if (processedRequests == static_cast<uint32>(fr->frameRequests.size()))
+        {
+            rhi::DeleteQueryBuffer(fr->queryBuffer, true);
+            fr = occlusionFrameResults.erase(fr);
+        }
+        else
+        {
+            ++fr;
+        }
+    }
+
+    return occlusionFrameResults.empty();
 }
    
-    
-    
-
 StaticOcclusionData::StaticOcclusionData()
 : sizeX(5)
 , sizeY(5)
@@ -356,7 +390,13 @@ void StaticOcclusionData::Init(uint32 _sizeX, uint32 _sizeY, uint32 _sizeZ, uint
     }
         
 }
-    
+
+bool StaticOcclusionData::IsObjectVisibleFromBlock(uint32 blockIndex, uint32 objectIndex)
+{
+    auto objIndex = 1 << (objectIndex & 31);
+    return (data[(blockIndex * objectCount / 32) + (objectIndex / 32)] & objIndex) != 0;
+}
+
 void StaticOcclusionData::EnableVisibilityForObject(uint32 blockIndex, uint32 objectIndex)
 {
     data[(blockIndex * objectCount / 32) + (objectIndex / 32)] |= 1 << (objectIndex & 31);

@@ -250,7 +250,8 @@ void StaticOcclusionSystem::AddRenderObjectToOcclusion(RenderObject * renderObje
     if (renderObject->GetStaticOcclusionIndex() != INVALID_STATIC_OCCLUSION_INDEX)
     {
         indexedRenderObjects.resize(Max((uint32)indexedRenderObjects.size(), (uint32)(renderObject->GetStaticOcclusionIndex() + 1)));
-        DVASSERT(indexedRenderObjects[renderObject->GetStaticOcclusionIndex()] == 0);
+        DVASSERT(indexedRenderObjects[renderObject->GetStaticOcclusionIndex()] == nullptr);
+
         indexedRenderObjects[renderObject->GetStaticOcclusionIndex()] = renderObject;
     }
 }
@@ -443,7 +444,9 @@ void StaticOcclusionDebugDrawSystem::UpdateGeometry(StaticOcclusionDebugDrawComp
 
 void StaticOcclusionDebugDrawSystem::CreateStaticOcclusionDebugDrawVertices(StaticOcclusionDebugDrawComponent *target, StaticOcclusionComponent *source)
 {
-    rhi::DeleteVertexBuffer(target->vertices);
+    if (target->vertices != rhi::InvalidHandle)
+        rhi::DeleteVertexBuffer(target->vertices);
+
     uint32 xSubdivisions = source->GetSubdivisionsX();
     uint32 ySubdivisions = source->GetSubdivisionsY();
     uint32 zSubdivisions = source->GetSubdivisionsZ();
@@ -481,7 +484,9 @@ void StaticOcclusionDebugDrawSystem::CreateStaticOcclusionDebugDrawVertices(Stat
 
 void StaticOcclusionDebugDrawSystem::CreateStaticOcclusionDebugDrawGridIndice(StaticOcclusionDebugDrawComponent *target, StaticOcclusionComponent *source)
 {
-    rhi::DeleteIndexBuffer(target->gridIndices);
+    if (target->gridIndices != rhi::InvalidHandle)
+        rhi::DeleteIndexBuffer(target->gridIndices);
+
     uint32 xSubdivisions = source->GetSubdivisionsX();
     uint32 ySubdivisions = source->GetSubdivisionsY();
     uint32 zSubdivisions = source->GetSubdivisionsZ();
@@ -511,7 +516,8 @@ void StaticOcclusionDebugDrawSystem::CreateStaticOcclusionDebugDrawGridIndice(St
 
 void StaticOcclusionDebugDrawSystem::CreateStaticOcclusionDebugDrawCoverIndice(StaticOcclusionDebugDrawComponent *target, StaticOcclusionComponent *source)
 {
-    rhi::DeleteIndexBuffer(target->coverIndices);
+    if (target->coverIndices != rhi::InvalidHandle)
+        rhi::DeleteIndexBuffer(target->coverIndices);
 
     uint32 xSubdivisions = source->GetSubdivisionsX();
     uint32 ySubdivisions = source->GetSubdivisionsY();

@@ -38,7 +38,7 @@ static const uint32 OCCLUSION_RENDER_TARGET_SIZE = 1024;// / 4;
 
 StaticOcclusionRenderPass::StaticOcclusionRenderPass(const FastName & name) : RenderPass(name)    
 {
-    uint32 sortingFlags = RenderBatchArray::SORT_ENABLED | RenderBatchArray::SORT_BY_DISTANCE_BACK_TO_FRONT;
+    uint32 sortingFlags = RenderBatchArray::SORT_THIS_FRAME | RenderBatchArray::SORT_BY_DISTANCE_FRONT_TO_BACK;
     AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_OPAQUE_ID, sortingFlags));
     AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_AFTER_OPAQUE_ID, sortingFlags));
     AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_ALPHA_TEST_LAYER_ID, sortingFlags));
@@ -47,14 +47,16 @@ StaticOcclusionRenderPass::StaticOcclusionRenderPass(const FastName & name) : Re
     AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_AFTER_TRANSLUCENT_ID, sortingFlags));
 
     rhi::Texture::Descriptor descriptor;
-    
+
+    descriptor.isRenderTarget = 1;
     descriptor.width = OCCLUSION_RENDER_TARGET_SIZE;
     descriptor.height = OCCLUSION_RENDER_TARGET_SIZE;
     descriptor.autoGenMipmaps = false;
     descriptor.type = rhi::TEXTURE_TYPE_2D;
     descriptor.format = rhi::TEXTURE_FORMAT_R8G8B8A8;
     colorBuffer = rhi::CreateTexture(descriptor);
-        
+
+    descriptor.isRenderTarget = 0;
     descriptor.format = rhi::TEXTURE_FORMAT_D24S8;
     depthBuffer = rhi::CreateTexture(descriptor);
 
@@ -93,10 +95,9 @@ void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem * renderSystem, 
     Vector<RenderBatch*> batches;
     
     terrainBatches.clear();
-    batches.clear();    
-    
-    uint32 size = (uint32)renderLayers.size();
-    for (uint32 k = 0; k < size; ++k)
+    batches.clear();
+
+    for (uint32 k = 0, size = (uint32)renderLayers.size(); k < size; ++k)
     {
         RenderLayer * layer = renderLayers[k];
         const RenderBatchArray & renderBatchArray = layersBatchArrays[layer->GetRenderLayerID()];
@@ -118,9 +119,8 @@ void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem * renderSystem, 
         
     // Sort
     Vector3 cameraPosition = mainCamera->GetPosition();
-    
-    size = (uint32)batches.size();
-    for (uint32 k = 0; k < size; ++k)
+
+    for (uint32 k = 0, size = (uint32)batches.size(); k < size; ++k)
     {
         RenderBatch * batch = batches[k];
         RenderObject * renderObject = batch->GetRenderObject();
@@ -132,53 +132,53 @@ void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem * renderSystem, 
         batch->layerSortingKey = distanceBits;
     }
     std::sort(batches.begin(), batches.end(), CompareFunction);
-    
-    rhi::HQueryBuffer queryBuffer = rhi::CreateQueryBuffer(batches.size());
-    
-    target.queryBuffer = queryBuffer;
-    
-    passConfig.queryBuffer = queryBuffer;
-    renderPass = rhi::AllocateRenderPass(passConfig, 1, &packetList);
-    rhi::BeginRenderPass(renderPass);
-    rhi::BeginPacketList(packetList);
-    
 
-    rhi::Packet packet;
-    size = (uint32)terrainBatches.size();
-    for (uint32 k = 0; k < size; ++k)
-    {                
-        RenderBatch * batch = terrainBatches[k];
-        
-        RenderObject* renderObject = batch->GetRenderObject();
-        renderObject->BindDynamicParameters(mainCamera);
-        NMaterial *mat = batch->GetMaterial();
-        DVASSERT(mat); //bad idea to have landscape not staged for occlusion render pass
-        batch->BindGeometryData(packet);
-        DVASSERT(packet.primitiveCount);
-        mat->BindParams(packet);
-        rhi::AddPacket(packetList, packet);                                
-    }
-    
-    size = (uint32)batches.size();    
-    target.frameRequests.resize(size, nullptr);
-    for (uint32 k = 0; k < size; ++k)
-    {                
-        RenderBatch * batch = batches[k];
-        RenderObject* renderObject = batch->GetRenderObject();
-        renderObject->BindDynamicParameters(mainCamera);
-        NMaterial *mat = batch->GetMaterial();
-        if (mat)
+    auto objectBatches = (uint32)batches.size();
+
+    if (objectBatches > 0)
+    {
+        target.queryBuffer = rhi::CreateQueryBuffer(objectBatches);
+        target.frameRequests.resize(objectBatches, nullptr);
+
+        passConfig.queryBuffer = target.queryBuffer;
+        renderPass = rhi::AllocateRenderPass(passConfig, 1, &packetList);
+        rhi::BeginRenderPass(renderPass);
+        rhi::BeginPacketList(packetList);
+
+        for (uint32 k = 0; k < (uint32)terrainBatches.size(); ++k)
         {
+            rhi::Packet packet;
+            RenderBatch* batch = terrainBatches[k];
+            RenderObject* renderObject = batch->GetRenderObject();
+            renderObject->BindDynamicParameters(mainCamera);
+            NMaterial* mat = batch->GetMaterial();
+            DVASSERT(mat);
             batch->BindGeometryData(packet);
             DVASSERT(packet.primitiveCount);
-            mat->BindParams(packet);         
-            packet.queryIndex = k;
-            target.frameRequests[k] = renderObject;
+            mat->BindParams(packet);
             rhi::AddPacket(packetList, packet);
-        }      
-    }    
-    rhi::EndPacketList(packetList);
-    rhi::EndRenderPass(renderPass);
+        }
+
+        for (uint32 k = 0; k < objectBatches; ++k)
+        {
+            RenderBatch* batch = batches[k];
+            RenderObject* renderObject = batch->GetRenderObject();
+            renderObject->BindDynamicParameters(mainCamera);
+            NMaterial* mat = batch->GetMaterial();
+            if (mat)
+            {
+                rhi::Packet packet;
+                batch->BindGeometryData(packet);
+                DVASSERT(packet.primitiveCount);
+                mat->BindParams(packet);
+                packet.queryIndex = k;
+                target.frameRequests[packet.queryIndex] = renderObject;
+                rhi::AddPacket(packetList, packet);
+            }
+        }
+        rhi::EndPacketList(packetList);
+        rhi::EndRenderPass(renderPass);
+    }
 }
 
 };

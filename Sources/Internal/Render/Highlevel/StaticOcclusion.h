@@ -59,7 +59,8 @@ public:
     void Init(uint32 sizeX, uint32 sizeY, uint32 sizeZ, uint32 objectCount, const AABBox3 & bbox, const float32 *_cellHeightOffset);
     void EnableVisibilityForObject(uint32 blockIndex, uint32 objectIndex);
     void DisableVisibilityForObject(uint32 blockIndex, uint32 objectIndex);
-    
+    bool IsObjectVisibleFromBlock(uint32 blockIndex, uint32 objectIndex);
+
     uint32 * GetBlockVisibilityData(uint32 blockIndex);
     StaticOcclusionData & operator= (const StaticOcclusionData & other);
     
@@ -98,8 +99,8 @@ private:
     AABBox3 GetCellBox(uint32 x, uint32 y, uint32 z);            
     
     void RenderCurrentBlock();
-    void ProcessRecorderQueries();    
-    
+    bool ProcessRecorderQueries();
+
     AABBox3  occlusionAreaRect;
     float32 *cellHeightOffset;
     uint32 xBlockCount;
