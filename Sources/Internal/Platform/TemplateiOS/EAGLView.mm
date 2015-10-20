@@ -344,15 +344,24 @@ void MoveTouchsToVector(void *inTouches, DAVA::Vector<DAVA::UIEvent> *outTouches
 
 - (void)process:(NSArray*)active withEvent:(NSArray*)total
 {
-	MoveTouchsToVector(active, &activeTouches);
+    DAVA::Logger::Info("a: %d, t: %d", [active count], [total count]);
+
+    MoveTouchsToVector(active, &activeTouches);
     if(DAVA::InputSystem::Instance()->GetMultitouchEnabled())
     {
-        MoveTouchsToVector(total, &totalTouches);
-        DAVA::UIControlSystem::Instance()->OnInput(activeTouches, totalTouches);
+        //MoveTouchsToVector(total, &totalTouches);
+        for (auto& ev : activeTouches)
+        {
+            DAVA::Logger::Info("tid: %d, phase: %d", ev.tid, static_cast<int>(ev.phase));
+            DAVA::UIControlSystem::Instance()->OnInput(&ev); // , totalTouches
+        }
     }
     else
     {
-        DAVA::UIControlSystem::Instance()->OnInput(activeTouches, activeTouches);
+        for (auto& ev : activeTouches)
+        {
+            DAVA::UIControlSystem::Instance()->OnInput(&ev); // , activeTouches
+        }
     }
 	activeTouches.clear();
 	totalTouches.clear();

@@ -30,6 +30,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using namespace DAVA;
 
+struct Finger
+{
+    int32 index = 0;
+    DAVA::UIControl* img = nullptr;
+    bool isActive = false;
+};
+
+DAVA::Array<Finger, 10> touches;
+DAVA::Vector2 hiddenPos(-100, -100);
+
 class CustomText : public UIStaticText
 {
 public:
@@ -42,33 +52,90 @@ public:
     bool SystemInput(UIEvent* currentInput) override
     {
         if (currentInput->phase >= UIEvent::Phase::CHAR &&
-            currentInput->phase <= UIEvent::Phase::KEY_UP)
+            currentInput->phase <= UIEvent::Phase::KEY_UP &&
+            currentInput->device == UIEvent::Device::KEYBOARD)
         {
             ++numKeyboardEvents;
         }
-        else if (currentInput->phase >= UIEvent::Phase::BEGAN ||
-                 currentInput->phase <= UIEvent::Phase::CANCELLED)
+        else if ((currentInput->phase >= UIEvent::Phase::BEGAN ||
+                  currentInput->phase <= UIEvent::Phase::CANCELLED) &&
+                 currentInput->device == UIEvent::Device::MOUSE)
         {
             ++numMouseEvents;
         }
         switch (currentInput->phase)
         {
         case UIEvent::Phase::BEGAN: //!<Screen touch or mouse button press is began.
-            ++numMouseDown;
-            lastMouseX = static_cast<int32>(currentInput->point.x);
-            lastMouseY = static_cast<int32>(currentInput->point.y);
-            lastMouseKey = currentInput->tid;
+            if (currentInput->device == UIEvent::Device::MOUSE)
+            {
+                ++numMouseDown;
+                lastMouseX = static_cast<int32>(currentInput->point.x);
+                lastMouseY = static_cast<int32>(currentInput->point.y);
+                lastMouseKey = currentInput->tid;
+            }
+            if (currentInput->device == UIEvent::Device::TOUCH_SURFACE)
+            {
+                auto FindFirstEmptyImage = [](::Finger& t) {
+                    return !t.isActive;
+                };
+                auto it = std::find_if(begin(touches), end(touches), FindFirstEmptyImage);
+                if (it != touches.end())
+                {
+                    it->isActive = true;
+                    it->img->SetPosition(currentInput->point);
+                    it->index = currentInput->tid;
+                }
+            }
             break;
         case UIEvent::Phase::DRAG: //!<User moves mouse with presset button or finger over the screen.
-            ++numDrag;
-            lastMouseX = static_cast<int32>(currentInput->point.x);
-            lastMouseY = static_cast<int32>(currentInput->point.y);
+            if (currentInput->device == UIEvent::Device::MOUSE)
+            {
+                ++numDrag;
+                lastMouseX = static_cast<int32>(currentInput->point.x);
+                lastMouseY = static_cast<int32>(currentInput->point.y);
+            }
+            if (currentInput->device == UIEvent::Device::TOUCH_SURFACE)
+            {
+                int32 index = currentInput->tid;
+                auto FindTouchById = [index](::Finger& t) {
+                    return index == t.index;
+                };
+                auto it = std::find_if(begin(touches), end(touches), FindTouchById);
+                if (it != touches.end())
+                {
+                    it->img->SetPosition(currentInput->point);
+                }
+                else
+                {
+                    DVASSERT(false);
+                }
+            }
             break;
         case UIEvent::Phase::ENDED: //!<Screen touch or mouse button press is ended.
-            ++numMouseUp;
-            lastMouseX = static_cast<int32>(currentInput->point.x);
-            lastMouseY = static_cast<int32>(currentInput->point.y);
-            lastMouseKey = currentInput->tid;
+            if (currentInput->device == UIEvent::Device::MOUSE)
+            {
+                ++numMouseUp;
+                lastMouseX = static_cast<int32>(currentInput->point.x);
+                lastMouseY = static_cast<int32>(currentInput->point.y);
+                lastMouseKey = currentInput->tid;
+            }
+            if (currentInput->device == UIEvent::Device::TOUCH_SURFACE)
+            {
+                int32 index = currentInput->tid;
+                auto FindTouchById = [index](::Finger& t) {
+                    return index == t.index;
+                };
+                auto it = std::find_if(begin(touches), end(touches), FindTouchById);
+                if (it != touches.end())
+                {
+                    it->img->SetPosition(hiddenPos);
+                    it->isActive = false;
+                }
+                else
+                {
+                    DVASSERT(false);
+                }
+            }
             break;
         case UIEvent::Phase::MOVE: //!<Mouse move event. Mouse moves without pressing any buttons. Works only with mouse controller.
             ++numMouseMove;
@@ -82,6 +149,23 @@ public:
             break;
         case UIEvent::Phase::CANCELLED: //!<Event was cancelled by the platform or by the control system for the some reason.
             ++numMouseCancel;
+            if (currentInput->device == UIEvent::Device::TOUCH_SURFACE)
+            {
+                int32 index = currentInput->tid;
+                auto FindTouchById = [index](::Finger& t) {
+                    return index == t.index;
+                };
+                auto it = std::find_if(begin(touches), end(touches), FindTouchById);
+                if (it != touches.end())
+                {
+                    it->img->SetPosition(hiddenPos);
+                    it->isActive = false;
+                }
+                else
+                {
+                    DVASSERT(false);
+                }
+            }
             break;
         case UIEvent::Phase::CHAR:
             ++numChar;
@@ -101,6 +185,8 @@ public:
         case UIEvent::Phase::KEY_UP:
             ++numKeyUp;
             lastKey = currentInput->tid;
+            break;
+        default:
             break;
         };
 
@@ -218,6 +304,24 @@ void KeyboardTest::LoadResources()
     AddControl(resetButton);
 
     UIControlSystem::Instance()->SetFocusedControl(customText, true);
+
+    for (auto& touch : touches)
+    {
+        touch.img = new UIButton(Rect(0, 0, 50, 50));
+        touch.img->SetDebugDraw(true);
+        touch.img->SetInputEnabled(false);
+        touch.img->SetPosition(hiddenPos);
+        auto back = touch.img->GetBackground();
+        int red = std::rand() % 256;
+        int green = std::rand() % 256;
+        int blue = std::rand() % 256;
+        int color = (red << 16) | (green << 8) | (blue << 0) | 0xFF000000;
+        back->SetDrawColor(color);
+        back->SetColor(color);
+        back->SetDrawType(UIControlBackground::eDrawType::DRAW_FILL);
+
+        AddControl(touch.img);
+    }
 }
 
 void KeyboardTest::UnloadResources()
@@ -225,6 +329,11 @@ void KeyboardTest::UnloadResources()
     SafeRelease(customText);
     SafeRelease(previewText);
     SafeRelease(resetButton);
+
+    for (auto& touch : touches)
+    {
+        SafeRelease(touch.img);
+    }
 
     BaseScreen::UnloadResources();
 }
