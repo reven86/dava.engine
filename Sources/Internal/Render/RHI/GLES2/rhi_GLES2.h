@@ -93,6 +93,7 @@ void        SetupDispatch( Dispatch* dispatch );
 void        SetToRHI( Handle ps, uint32 vdeclUID );
 void        SetVertexDeclToRHI( Handle ps, uint32 vdeclUID, uint32 firstVertex=0 );
 uint32      VertexSamplerCount( Handle ps );
+uint32 ProgramUid(Handle ps);
 void        InvalidateCache();
 void        InvalidateVattrCache();
 }
@@ -108,8 +109,8 @@ void        Init( uint32 maxCount );
 void        SetupDispatch( Dispatch* dispatch );
 void        InitializeRingBuffer( uint32 size );
 
-void        SetToRHI( Handle ps, const void* instData );
-const void* Instance( Handle ps );
+void SetToRHI(Handle cb, uint32 progUid, const void* instData);
+const void* Instance(Handle cb);
 }
 
 namespace RenderPassGLES2
