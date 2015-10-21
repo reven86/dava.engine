@@ -223,6 +223,7 @@ gles2_RenderPass_Begin( Handle pass )
 Trace("\n\n-------------------------------\nframe %u started\n",_FrameNumber);
         _FrameStarted = true;
         ++_FrameNumber;
+        ProgGLES2::InvalidateAllConstBufferInstances();
     }
 
     _Frame.back().pass.push_back( pass );
@@ -1437,8 +1438,6 @@ Trace("\n\n-------------------------------\nframe %u generated\n",_Frame.back().
 
         _ExecuteQueuedCommands(); 
     }
-
-    ProgGLES2::InvalidateAllConstBufferInstances();
 }
 
 

@@ -90,6 +90,8 @@ public:
         void SetToRHI(uint32 progUid, const void* instData) const;
         void                InvalidateInstance();
 
+        static void AdvanceFrame();
+
     private:
         uint32 glProg;
         uint16 location;
@@ -101,6 +103,9 @@ public:
         float*              data;
         mutable float*      inst;
         mutable void** lastInst;
+        mutable uint32 frame;
+
+        static uint32 CurFrame;
     };
 
 

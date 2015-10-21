@@ -686,11 +686,12 @@ Descriptor
     uint32  depthStencilPassOperation:3;
     }       stencilFront,stencilBack;
 
-            Descriptor()
-              : depthTestEnabled(true),
-                depthWriteEnabled(true),
-                depthFunc(CMP_LESSEQUAL),
-                stencilTwoSided(false)
+    Descriptor()
+        : depthTestEnabled(true)
+        , depthWriteEnabled(true)
+        , depthFunc(CMP_LESSEQUAL)
+        , stencilEnabled(false)
+        , stencilTwoSided(false)
             {
                 stencilFront.readMask                   = 0xFF;
                 stencilFront.writeMask                  = 0xFF;
