@@ -236,7 +236,7 @@ extern void FrameworkWillTerminate();
 			it->physPoint.x = p.x;
 			it->physPoint.y = p.y;
 
-			if(DAVA::InputSystem::Instance()->IsCursorPining())
+            if(DAVA::InputSystem::Instance()->GetMouseCaptureMode() == DAVA::InputSystem::eMouseCaptureMode::PINING)
 			{
 				it->physPoint.x = curEvent->data.mouse.deltaX;
 				it->physPoint.y = curEvent->data.mouse.deltaY;
@@ -262,7 +262,7 @@ extern void FrameworkWillTerminate();
 			it->physPoint.x = p.x;
 			it->physPoint.y = p.y;
 			
-			if(DAVA::InputSystem::Instance()->IsCursorPining())
+			if(DAVA::InputSystem::Instance()->GetMouseCaptureMode() == DAVA::InputSystem::eMouseCaptureMode::PINING)
 			{
 				it->physPoint.x = curEvent->data.mouse.deltaX;
 				it->physPoint.y = curEvent->data.mouse.deltaY;
@@ -287,7 +287,7 @@ extern void FrameworkWillTerminate();
 		newTouch.physPoint.x = p.x;
 		newTouch.physPoint.y = p.y;
 
-		if(DAVA::InputSystem::Instance()->IsCursorPining())
+		if(DAVA::InputSystem::Instance()->GetMouseCaptureMode() == DAVA::InputSystem::eMouseCaptureMode::PINING)
 		{
 			newTouch.physPoint.x = curEvent->data.mouse.deltaX;
 			newTouch.physPoint.y = curEvent->data.mouse.deltaY;
