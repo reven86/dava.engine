@@ -161,7 +161,7 @@ bool ResourcePacker2D::ReadMD5FromFile(const FilePath& md5file, MD5::MD5Digest& 
     ScopedPtr<File> file(File::Create(md5file, File::OPEN | File::READ));
     if (file)
     {
-        auto bytesRead = file->Read(digest.digest.data(), static_cast<uint32>(digest.digest.size()));
+        auto bytesRead = file->Read(digest.digest.data(), digest.digest.size());
         DVASSERT(bytesRead == MD5::MD5Digest::DIGEST_SIZE && "We should always read 16 bytes from md5 file");
         return true;
     }
@@ -176,7 +176,7 @@ bool ResourcePacker2D::WriteMD5ToFile(const FilePath& md5file, const MD5::MD5Dig
     ScopedPtr<File> file(File::Create(md5file, File::CREATE | File::WRITE));
     DVASSERT(file && "Can't create md5 file");
 
-    auto bytesWritten = file->Write(digest.digest.data(), static_cast<uint32>(digest.digest.size()));
+    auto bytesWritten = file->Write(digest.digest.data(), digest.digest.size());
     DVASSERT(bytesWritten == MD5::MD5Digest::DIGEST_SIZE && "16 bytes should be always written for md5 file");
 
     return true;
@@ -240,7 +240,7 @@ bool ResourcePacker2D::RecalculateFileMD5(const FilePath& pathname, const FilePa
     return isChanged;
 }
 
-DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryPath, const FilePath & psdPathname, const String & psdName, bool twoSideMargin, uint32 texturesMargin)
+DefinitionFile* ResourcePacker2D::ProcessPSD(const FilePath& processDirectoryPath, const FilePath& psdPathname, const String& psdName)
 {
     DVASSERT(processDirectoryPath.IsDirectoryPathname());
     
@@ -337,12 +337,6 @@ DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryP
         {
             defFile->frameRects[k - 1] = Rect2i(cropped_data.layers_array[k].x, cropped_data.layers_array[k].y, width, height);
         }
-    	// add borders
-    	if (!twoSideMargin )
-    	{
-    		defFile->frameRects[k - 1].dx += texturesMargin;
-    		defFile->frameRects[k - 1].dy += texturesMargin;
-    	}
     }
     	
     return defFile;
@@ -452,18 +446,15 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
 
                 // read textures margins settings
                 bool useTwoSideMargin = CommandLineParser::Instance()->IsFlagSet("--add2sidepixel");
-                uint32 marginInPixels = TexturePacker::DEFAULT_MARGIN;
-                if (!useTwoSideMargin)
-                {
-                    if (CommandLineParser::Instance()->IsFlagSet("--add0pixel"))
-                        marginInPixels = 0;
-                    else if (CommandLineParser::Instance()->IsFlagSet("--add1pixel"))
-                        marginInPixels = 1;
-                    else if (CommandLineParser::Instance()->IsFlagSet("--add2pixel"))
-                        marginInPixels = 2;
-                    else if (CommandLineParser::Instance()->IsFlagSet("--add4pixel"))
-                        marginInPixels = 4;
-                }
+                uint32 marginInPixels = useTwoSideMargin ? 0 : 1;
+                if (CommandLineParser::Instance()->IsFlagSet("--add0pixel"))
+                    marginInPixels = 0;
+                else if (CommandLineParser::Instance()->IsFlagSet("--add1pixel"))
+                    marginInPixels = 1;
+                else if (CommandLineParser::Instance()->IsFlagSet("--add2pixel"))
+                    marginInPixels = 2;
+                else if (CommandLineParser::Instance()->IsFlagSet("--add4pixel"))
+                    marginInPixels = 4;
 
                 if (clearOutputDirectory)
                 {
@@ -478,7 +469,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
                         if (fullname.IsEqualToExtension(".psd"))
                         {
                             //TODO: check if we need filename or pathname
-                            DefinitionFile* defFile = ProcessPSD(processDir, fullname, fullname.GetFilename(), useTwoSideMargin, marginInPixels);
+                            DefinitionFile* defFile = ProcessPSD(processDir, fullname, fullname.GetFilename());
                             if (!defFile)
                             {
                                 // An error occured while converting this PSD file - cancel converting in this directory.
@@ -496,7 +487,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
                         else if (fullname.IsEqualToExtension(".pngdef"))
                         {
                             DefinitionFile* defFile = new DefinitionFile();
-                            if (defFile->LoadPNGDef(fullname, processDir, useTwoSideMargin, marginInPixels))
+                            if (defFile->LoadPNGDef(fullname, processDir))
                             {
                                 definitionFileList.push_back(defFile);
                             }

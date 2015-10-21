@@ -88,8 +88,6 @@ public:
 
     float TryToPackFromSortVectorWeight(const TextureAtlasPtr& atlas, Vector<SizeSortItem>& tempSortVector);
 
-    Rect2i GetOriginalSizeRect(const PackedInfo& _input);
-
 	void UseOnlySquareTextures();
 
 	void SetMaxTextureSize(uint32 maxTextureSize);
@@ -125,7 +123,7 @@ private:
     bool CheckFrameSize(const Size2i &spriteSize, const Size2i &frameSize);
     
 	void WriteDefinitionString(FILE *fp, const Rect2i & writeRect, const Rect2i &originRect, int textureIndex, const String& frameName);
-    void DrawToFinalImage(PngImageExt& finalImage, PngImageExt& drawedImage, const PackedInfo& drawRect, const Rect2i& frameRect);
+    void DrawToFinalImage(PngImageExt& finalImage, PngImageExt& drawedImage, const ImageCell& drawRect, const Rect2i& frameRect);
 
     Vector<SizeSortItem> sortVector;
     uint32 maxTextureSize;

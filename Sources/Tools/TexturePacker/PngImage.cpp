@@ -131,25 +131,22 @@ void PngImageExt::DrawImage(int32 sx, int32 sy, PngImageExt * image, const Rect2
             }
 
             destData32[(rx)+(ry)* GetWidth()] = srcData32[x + y * image->GetWidth()];
-			//printf("%04x ", srcData32[x + y * image->width]);
 			rx++;
 		}
 		ry++;
 	}
 }
 
-void PngImageExt::DrawImage(const PackedInfo &packedInfo, const Rect2i &alphaOffsetRect, PngImageExt *image)
+void PngImageExt::DrawImage(const ImageCell& packedCell, const Rect2i& alphaOffsetRect, PngImageExt* image)
 {
-    uint32 * destData32 = (uint32*)GetData();
-	uint32 * srcData32 = (uint32*)image->GetData();
+    uint32* destData32 = (uint32*)GetData();
+    uint32* srcData32 = (uint32*)image->GetData();
+    const Rect2i& img = packedCell.imageRect;
 
-	bool withAlpha = CommandLineParser::Instance()->IsFlagSet("--disableCropAlpha");
+    bool withAlpha = CommandLineParser::Instance()->IsFlagSet("--disableCropAlpha");
 
-    int32 sx = packedInfo.rect.x;
-	int32 sy = packedInfo.rect.y;
-
-    sx += packedInfo.leftMargin;
-    sy += packedInfo.topMargin;
+    int32 sx = img.x;
+    int32 sy = img.y;
 
     if (withAlpha)
 	{
@@ -158,84 +155,87 @@ void PngImageExt::DrawImage(const PackedInfo &packedInfo, const Rect2i &alphaOff
 	}
 
 	// add image
-	uint32 srcPos = 0;
-	uint32 destPos = sx + sy * GetWidth();
-	uint32 destPosInc = GetWidth() - image->GetWidth();
-	for (uint32 y = 0; y < image->GetHeight(); ++y, destPos += destPosInc)
-		for (uint32 x = 0; x < image->GetWidth(); ++x, ++srcPos, ++destPos)
-		{
-            if (int32(sx + x) < 0)
-                continue;
-            if ((sx + x) >= (int32)GetWidth())
-                continue;
-            if (int32(sy + y) < 0)
-                continue;
-            if ((sy + y) >= (int32)GetHeight())
-                continue;
-
-			destData32[destPos] = srcData32[srcPos];
-		}
-
-	// add 2side pixels
-    if (packedInfo.isTwoSideMargin)
-	{
-        sx = packedInfo.rect.x;
-        sy = packedInfo.rect.y;
-
-        if (packedInfo.leftMargin)
+    int32 srcPos = 0;
+    int32 destPos = sx + sy * GetWidth();
+    int32 destPosInc = GetWidth() - img.dx;
+    for (int32 y = 0; y < img.dy; ++y, destPos += destPosInc)
+    {
+        for (int32 x = 0; x < img.dx; ++x, ++srcPos, ++destPos)
         {
-            uint32 leftBorderPix = sx + (sy + packedInfo.topMargin) * GetWidth();
-            uint32 leftBorderLastPix = sx + (sy + packedInfo.rect.dy - 1) * GetWidth();
-            for (; leftBorderPix <= leftBorderLastPix; leftBorderPix += GetWidth())
-            {
-                destData32[leftBorderPix] = destData32[leftBorderPix + 1];
-            }
-        }
+            if ((sx + x) < 0)
+                continue;
+            if ((sx + x) >= static_cast<int32>(GetWidth()))
+                continue;
+            if ((sy + y) < 0)
+                continue;
+            if ((sy + y) >= static_cast<int32>(GetHeight()))
+                continue;
 
-        if (packedInfo.rightMargin)
+            destData32[destPos] = srcData32[srcPos];
+        }
+    }
+
+    uint32 x0 = img.x;
+    uint32 xn = x0 + img.dx - 1;
+    uint32 y0 = img.y;
+    uint32 yn = y0 + img.dy - 1;
+    uint32 yStride = GetWidth();
+
+    if (packedCell.leftEdgePixel)
+    {
+        DVASSERT(x0 > 0);
+        uint32 leftBorderPix = (x0 - 1) + (y0)*yStride;
+        uint32 leftBorderLastPix = (x0 - 1) + (yn)*yStride;
+        for (; leftBorderPix <= leftBorderLastPix; leftBorderPix += yStride)
         {
-            uint32 rightBorderPix = (sx + packedInfo.rect.dx - 1) + (sy + packedInfo.topMargin) * GetWidth();
-            uint32 rightBorderLastPix = (sx + packedInfo.rect.dx - 1) + (sy + packedInfo.rect.dy - 1) * GetWidth();
-            for (; rightBorderPix <= rightBorderLastPix; rightBorderPix += GetWidth())
-            {
-                destData32[rightBorderPix] = destData32[rightBorderPix - 1];
-            }
+            destData32[leftBorderPix] = destData32[leftBorderPix + 1];
         }
+    }
 
-        if (packedInfo.topMargin)
+    if (packedCell.rightEdgePixel)
+    {
+        uint32 rightBorderPix = (xn + 1) + (y0)*yStride;
+        uint32 rightBorderLastPix = (xn + 1) + (yn)*yStride;
+        for (; rightBorderPix <= rightBorderLastPix; rightBorderPix += yStride)
         {
-            uint32 topBorderPix = (sx + packedInfo.leftMargin) + (sy)* GetWidth();
-            uint32 topImagePix = (sx + packedInfo.leftMargin) + (sy + 1) * GetWidth();
-            uint32 topBorderLastPix = (sx + packedInfo.rect.dx - 1) + (sy)* GetWidth();
-            for (; topBorderPix <= topBorderLastPix; ++topBorderPix, ++topImagePix)
-            {
-                destData32[topBorderPix] = destData32[topImagePix];
-            }
+            destData32[rightBorderPix] = destData32[rightBorderPix - 1];
         }
+    }
 
-        if (packedInfo.bottomMargin)
+    if (packedCell.topEdgePixel)
+    {
+        DVASSERT(y0 > 0);
+        uint32 topBorderPix = (x0) + (y0 - 1) * yStride;
+        uint32 topImagePix = (x0) + (y0)*yStride;
+        uint32 topBorderLastPix = (xn) + (y0 - 1) * yStride;
+        for (; topBorderPix <= topBorderLastPix; ++topBorderPix, ++topImagePix)
         {
-            uint32 bottomBorderPix = (sx + packedInfo.leftMargin) + (sy + packedInfo.rect.dy - 1) * GetWidth();
-            uint32 bottomImagePix = (sx + packedInfo.leftMargin) + (sy + packedInfo.rect.dy - 2) * GetWidth();
-            uint32 bottomBorderLastPix = (sx + packedInfo.rect.dx - 1) + (sy + packedInfo.rect.dy - 1) * GetWidth();
-            for (; bottomBorderPix <= bottomBorderLastPix; ++bottomBorderPix, ++bottomImagePix)
-            {
-                destData32[bottomBorderPix] = destData32[bottomImagePix];
-            }
+            destData32[topBorderPix] = destData32[topImagePix];
         }
-		
-        if (packedInfo.leftMargin && packedInfo.topMargin)
-            destData32[sx + sy * GetWidth()] = destData32[(sx + 1) + (sy + 1) * GetWidth()];
+    }
 
-        if (packedInfo.leftMargin && packedInfo.bottomMargin)
-            destData32[sx + (sy + packedInfo.rect.dy - 1) * GetWidth()] = destData32[(sx + 1) + (sy + packedInfo.rect.dy - 2) * GetWidth()];
+    if (packedCell.bottomEdgePixel)
+    {
+        uint32 bottomBorderPix = (x0) + (yn + 1) * yStride;
+        uint32 bottomImagePix = (x0) + (yn)*yStride;
+        uint32 bottomBorderLastPix = (xn) + (yn + 1) * yStride;
+        for (; bottomBorderPix <= bottomBorderLastPix; ++bottomBorderPix, ++bottomImagePix)
+        {
+            destData32[bottomBorderPix] = destData32[bottomImagePix];
+        }
+    }
 
-        if (packedInfo.rightMargin && packedInfo.topMargin)
-            destData32[(sx + packedInfo.rect.dx - 1) + sy * GetWidth()] = destData32[(sx + packedInfo.rect.dx - 2) + (sy + 1) * GetWidth()];
+    if (packedCell.leftEdgePixel && packedCell.topEdgePixel)
+        destData32[(x0 - 1) + (y0 - 1) * yStride] = destData32[(x0) + (y0)*yStride];
 
-        if (packedInfo.rightMargin && packedInfo.bottomMargin)
-            destData32[(sx + packedInfo.rect.dx - 1) + (sy + packedInfo.rect.dy - 1)* GetWidth()] = destData32[(sx + packedInfo.rect.dx - 2) + (sy + packedInfo.rect.dy - 2) * GetWidth()];
-	}
+    if (packedCell.leftEdgePixel && packedCell.bottomEdgePixel)
+        destData32[(x0 - 1) + (yn + 1) * yStride] = destData32[(x0) + (yn)*yStride];
+
+    if (packedCell.rightEdgePixel && packedCell.topEdgePixel)
+        destData32[(xn + 1) + (y0 - 1) * yStride] = destData32[(xn) + (y0)*yStride];
+
+    if (packedCell.rightEdgePixel && packedCell.bottomEdgePixel)
+        destData32[(xn + 1) + (yn + 1) * yStride] = destData32[(xn) + (yn)*yStride];
 }
 
 bool PngImageExt::IsHorzLineOpaque(int32 y)
