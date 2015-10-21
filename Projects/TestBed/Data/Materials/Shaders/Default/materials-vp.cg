@@ -21,7 +21,7 @@ VPROG_IN_BEGIN
         #endif
     #endif
 
-    #if MATERIAL_DECAL || MATERIAL_LIGHTMAP || FRAME_BLEND || ALPHA_MASK
+    #if MATERIAL_DECAL || ( MATERIAL_LIGHTMAP  && VIEW_DIFFUSE ) || FRAME_BLEND || ALPHA_MASK
     VPROG_IN_TEXCOORD1(2)
     #endif
 
@@ -70,11 +70,11 @@ VPROG_OUT_BEGIN
 
     #if MATERIAL_SKYBOX
     VPROG_OUT_TEXCOORD0(varTexCoord0,3)
-    #elif MATERIAL_TEXTURE
+    #elif MATERIAL_TEXTURE || TILED_DECAL_MASK
     VPROG_OUT_TEXCOORD0(varTexCoord0,2)
     #endif
 
-    #if MATERIAL_DECAL || MATERIAL_LIGHTMAP || FRAME_BLEND || ALPHA_MASK
+    #if MATERIAL_DECAL || ( MATERIAL_LIGHTMAP  && VIEW_DIFFUSE ) || FRAME_BLEND || ALPHA_MASK
     VPROG_OUT_TEXCOORD1(varTexCoord1,2)
     #endif
 
@@ -109,27 +109,21 @@ VPROG_OUT_BEGIN
         VPROG_OUT_TEXCOORD6(varPerPixelAttenuation,1)
         #endif
         VPROG_OUT_TEXCOORD7(varToCameraVec,3) 
-    #endif
-
-    #if SETUP_LIGHTMAP
-kkk        
-        uniform float lightmapSize;
-        varying lowp float varLightmapSize;
-    #endif
+    #endif    
     
     #if VERTEX_COLOR || SPHERICAL_LIT
         VPROG_OUT_COLOR1(varVertexColor,4)
     #endif
     
+    #if VERTEX_FOG
+        VPROG_OUT_TEXCOORD5(varFog,4)
+    #endif
+
+
     #if FRAME_BLEND
         VPROG_OUT_TEXCOORD3(varTime,1)        
     #endif
 
-    #if VERTEX_FOG
-        VPROG_OUT_TEXCOORD5(varFog,4)
-//        varying lowp float varFogAmoung;
-//        varying lowp vec3 varFogColor;
-    #endif
 
 
 
@@ -163,18 +157,17 @@ property float4 lightPosition0 : dynamic,a : ;
 property float materialSpecularShininess : static,a : ;
 property float inSpecularity : static,a : ;
 property float inGlossiness : static,a : ;
-property float physicalFresnelReflectance : static,a : ;
 property float3 metalFresnelReflectance : static,a : ;
 #endif
 
 #if SKINNING
-property float4 jointPositions[MAX_JOINTS] : dynamic,skin : ; // (x, y, z, scale)
-property float4 jointQuaternions[MAX_JOINTS] : dynamic,skin : ;
+property float4 jointPositions[MAX_JOINTS] : dynamic,skin1 : bigarray ; // (x, y, z, scale)
+property float4 jointQuaternions[MAX_JOINTS] : dynamic,skin2 : bigarray ;
 #endif
 
 #include "vp-fog-props.cgh"
 
-#if MATERIAL_LIGHTMAP
+#if ( MATERIAL_LIGHTMAP  && VIEW_DIFFUSE ) && !SETUP_LIGHTMAP
 property float2 uvOffset : static,a : ;
 property float2 uvScale : static,a : ;
 #endif
@@ -184,10 +177,12 @@ property float2 trunkOscillationParams : dynamic,a : ;
 #endif
 
 #if SPEED_TREE_LEAF
-property float3 worldViewTranslate : static,a : ;
 property float3 worldScale : dynamic,a : ;
 property float4x4 projMatrix : dynamic,a : ;
-property float cutDistance : static,a : ;
+
+    #if CUT_LEAF
+        property float cutDistance : static,a : ;
+    #endif
 
     #if !SPHERICAL_LIT  //legacy for old tree lighting
         property float4 treeLeafColorMul : static,a : def_value=0.5,0.5,0.5,0.5 ;
@@ -210,11 +205,11 @@ property float4x4 invViewMatrix : dynamic,a : ;
 property float3 boundingBoxSize : dynamic,a : ;
 
     #if SPHERICAL_HARMONICS_9
-        property float3 sphericalHarmonics[9] : dynamic,a : ;
+        property float4 sphericalHarmonics[7] : dynamic,a : ;
     #elif SPHERICAL_HARMONICS_4
-        property float3 sphericalHarmonics[4] : dynamic,a : ;
+        property float4 sphericalHarmonics[3] : dynamic,a : ;
     #else
-        property float3 sphericalHarmonics[1] : dynamic,a : ;
+        property float4 sphericalHarmonics : dynamic,a : ;
     #endif
     
 #endif
@@ -234,13 +229,10 @@ property float2 texture0Shift : static,a : ;
 property float2 tex0ShiftPerSecond : static,a : ;
 #endif
 
-
+#if VERTEX_FOG 
 property float3 cameraPosition : dynamic,a : ;
 property float4x4 worldMatrix : dynamic,a : ;
-
-
-
-
+#endif
 
 #if WAVE_ANIMATION || TEXTURE0_ANIMATION_SHIFT
 property float globalTime : dynamic,a : ;
@@ -407,7 +399,8 @@ VPROG_BEGIN
     #else // WIND_ANIMATION
 
         #if WAVE_ANIMATION
-            VP_OUT_POSITION = mul( Wave(globalTime, VP_IN_POSITION, inTexCoord0), worldViewProjMatrix );
+			float4 waveValue = Wave(globalTime, float4(VP_IN_POSITION.xyz, 1.0), VP_IN_TEXCOORD0);
+            VP_OUT_POSITION = mul( waveValue, worldViewProjMatrix );
         #else
             #if SKINNING
 //weightedVertexPosition.w=3.0;
@@ -465,7 +458,7 @@ VPROG_BEGIN
         float3 toCameraDir = normalize(-eyeCoordsPosition);
         float3 H = normalize(toLightDir + toCameraDir);
         float nDotHV = max(0.0, dot(normal, H));
-        varSpecularColor = pow(nDotHV, materialSpecularShininess);
+        VP_OUT(varSpecularColor) = pow(nDotHV, materialSpecularShininess);
         
     #elif NORMALIZED_BLINN_PHONG
         
@@ -615,7 +608,11 @@ VPROG_BEGIN
     #define Y21(n)  (0.273136 * (n.z * n.x))                                // (1.0 / 2.0) * sqrt(15.0 / PI) * ((n.z * n.x)) * 0.785398 / PI
     #define Y22(n)  (0.136568 * (n.x * n.x - n.y * n.y))                    // (1.0 / 4.0) * sqrt(15.0 / PI) * ((n.x * n.x - n.y * n.y)) * 0.785398 / PI
 
-    float3 sphericalLightFactor = A0 * sphericalHarmonics[0];
+    #if SPHERICAL_HARMONICS_4 || SPHERICAL_HARMONICS_9
+        float3 sphericalLightFactor = A0 * sphericalHarmonics[0].xyz;
+    #else
+        float3 sphericalLightFactor = A0 * sphericalHarmonics.xyz;
+    #endif
     
     #if SPEED_TREE_LEAF
         float3 localSphericalLightFactor = sphericalLightFactor;
@@ -625,26 +622,28 @@ VPROG_BEGIN
 
         #if SPHERICAL_HARMONICS_4 || SPHERICAL_HARMONICS_9
 
-            float3x3 invViewMatrix3 = float3x3(float3(invViewMatrix[0]), float3(invViewMatrix[1]), float3(invViewMatrix[2]));
-            float3 normal = invViewMatrix3 * (eyeCoordsPosition - worldViewObjectCenter);
+            float3x3 invViewMatrix3 = float3x3(float3(invViewMatrix[0].xyz), float3(invViewMatrix[1].xyz), float3(invViewMatrix[2].xyz));
+            float3 normal = mul((eyeCoordsPosition - worldViewObjectCenter), invViewMatrix3);
             normal /= boundingBoxSize;
             float3 n = normalize(normal);
 
-            float3x3 shMatrix = float3x3(sphericalHarmonics[1], sphericalHarmonics[2], sphericalHarmonics[3]);
-            sphericalLightFactor += A1 * shMatrix * float3(n.y, n.z, n.x);
+            float3x3 shMatrix = float3x3(float3(sphericalHarmonics[0].w,  sphericalHarmonics[1].xy),
+                                         float3(sphericalHarmonics[1].zw, sphericalHarmonics[2].x),
+                                         float3(sphericalHarmonics[2].yzw));
+            sphericalLightFactor += A1 * mul(float3(n.y, n.z, n.x), shMatrix);
         
             #if SPEED_TREE_LEAF
-                float3 localNormal = mul( (eyeCoordsPosition - float3(eyeCoordsPivot)), invViewMatrix3 );
+                float3 localNormal = mul( (eyeCoordsPosition - float3(eyeCoordsPivot.xyz)), invViewMatrix3 );
                 float3 ln = normalize(localNormal);
-                localSphericalLightFactor += A1 * shMatrix * float3(ln.y, ln.z, ln.x);
+                localSphericalLightFactor += A1 * mul(float3(ln.y, ln.z, ln.x), shMatrix);
             #endif
 
             #if SPHERICAL_HARMONICS_9
-                sphericalLightFactor += Y2_2(n) * sphericalHarmonics[4];
-                sphericalLightFactor += Y2_1(n) * sphericalHarmonics[5];
-                sphericalLightFactor += Y20(n) * sphericalHarmonics[6];
-                sphericalLightFactor += Y21(n) * sphericalHarmonics[7];
-                sphericalLightFactor += Y22(n) * sphericalHarmonics[8];
+                sphericalLightFactor += Y2_2(n) * float3(sphericalHarmonics[3].xyz);
+                sphericalLightFactor += Y2_1(n) * float3(sphericalHarmonics[3].w,  sphericalHarmonics[4].xy);
+                sphericalLightFactor += Y20(n)  * float3(sphericalHarmonics[4].zw, sphericalHarmonics[5].x);
+                sphericalLightFactor += Y21(n)  * float3(sphericalHarmonics[5].yzw);
+                sphericalLightFactor += Y22(n)  * float3(sphericalHarmonics[6].xyz);
             #endif
 
             #if SPEED_TREE_LEAF
@@ -672,7 +671,7 @@ VPROG_BEGIN
 
 #endif
 
-#if MATERIAL_SKYBOX || MATERIAL_TEXTURE
+#if MATERIAL_SKYBOX || MATERIAL_TEXTURE || TILED_DECAL_MASK
     VP_OUT(varTexCoord0) = VP_IN_TEXCOORD0;
 #endif    
 
@@ -686,23 +685,22 @@ VPROG_BEGIN
         VP_OUT(varTexCoord0) += tex0ShiftPerSecond * globalTime;
     #endif
 
-        
-    #if TILED_DECAL_MASK
-        varDecalTileTexCoord = VP_OUT(varTexCoord0) * decalTileCoordScale;
-    #endif
+#endif
+
+#if TILED_DECAL_MASK
+    VP_OUT(varDecalTileTexCoord) = VP_OUT(varTexCoord0) * decalTileCoordScale;
 #endif
     
 #if MATERIAL_DETAIL
-    varDetailTexCoord = VP_OUT(varTexCoord0) * detailTileCoordScale;
+    VP_OUT(varDetailTexCoord) = VP_OUT(varTexCoord0) * detailTileCoordScale;
 #endif
 
 
-#if MATERIAL_DECAL || MATERIAL_LIGHTMAP || FRAME_BLEND || ALPHA_MASK
+#if MATERIAL_DECAL || ( MATERIAL_LIGHTMAP  && VIEW_DIFFUSE ) || FRAME_BLEND || ALPHA_MASK
     
-    #if SETUP_LIGHTMAP
-        varLightmapSize      = lightmapSize;
+    #if SETUP_LIGHTMAP        
         VP_OUT(varTexCoord1) = VP_IN_TEXCOORD1;
-    #elif MATERIAL_LIGHTMAP
+    #elif ( MATERIAL_LIGHTMAP  && VIEW_DIFFUSE )
         VP_OUT(varTexCoord1) = uvScale*VP_IN_TEXCOORD1 + uvOffset;
     #else
         VP_OUT(varTexCoord1) = VP_IN_TEXCOORD1;
