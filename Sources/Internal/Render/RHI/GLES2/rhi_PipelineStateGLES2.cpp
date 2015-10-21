@@ -618,6 +618,7 @@ SetToRHI( Handle ps, uint32 layoutUID )
         //Trace("  SetProg \"%s\"\n",ps2->prog.vprog->uid.c_str());
         GL_CALL(glUseProgram(ps2->prog.glProg));
         cachedProgram = ps2->prog.glProg;
+        VertexDeclGLES2::InvalidateVAttrCache();
 
         if (ps2->needPrepareTextureLoc)
         {
@@ -626,7 +627,6 @@ SetToRHI( Handle ps, uint32 layoutUID )
             ps2->prog.fprog->ProgGLES2::SetupTextureUnits(ps2->prog.vprog->SamplerCount());
         }
     }
-    //    VertexDeclGLES2::InvalidateVAttrCache();
 
     if( ps2->blendEnabled )
     {
