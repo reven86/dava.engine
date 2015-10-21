@@ -33,13 +33,14 @@
 #include "UI/UIControl.h"
 #include "EditorSystemsManager.h"
 
+extern void FixPositionForScroll(DAVA::UIControl* controlInHud);
+
 class ControlContainer : public DAVA::UIControl
 {
 public:
     explicit ControlContainer(const HUDAreaInfo::eArea area);
     HUDAreaInfo::eArea GetArea() const;
     virtual void InitFromGD(const DAVA::UIGeometricData& gd_) = 0;
-
 protected:
     const HUDAreaInfo::eArea area = HUDAreaInfo::NO_AREA;
 };
@@ -120,6 +121,12 @@ class SelectionRect : public FrameControl
     friend T* CreateContainerWithBorders();
     SelectionRect();
     void Draw(const DAVA::UIGeometricData& geometricData) override;
+};
+
+class MagnetLine : public DAVA::UIControl
+{
+public:
+    MagnetLine();
 };
 
 template <typename T>

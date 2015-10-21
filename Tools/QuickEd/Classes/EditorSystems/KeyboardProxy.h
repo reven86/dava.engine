@@ -29,14 +29,10 @@
 #ifndef __QUICKED_KEYBOARD_PROXY_H__
 #define __QUICKED_KEYBOARD_PROXY_H__
 
-#include "Functional/Signal.h"
 #include <Qt>
 
-//class designed to be extended with global shortcut manager
-
-class KeyboardProxy
+namespace KeyboardProxy
 {
-public:
     enum eKeys
     {
         KEY_SHIFT = Qt::ShiftModifier,
@@ -44,7 +40,7 @@ public:
         KEY_ALT = Qt::AltModifier
     };
 
-    bool IsKeyPressed(eKeys key) const;
+    bool IsKeyPressed(eKeys key);
 };
 
 #endif // __QUICKED_KEYBOARD_PROXY_H__

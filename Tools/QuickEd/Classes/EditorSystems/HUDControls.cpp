@@ -38,6 +38,17 @@ const Vector2 FRAME_RECT_SIZE(15.0f, 15.0f);
 const Vector2 ROTATE_CONTROL_SIZE(20.0f, 20.0f);
 }
 
+void FixPositionForScroll(UIControl* controlInHud)
+{
+    DVASSERT(controlInHud != nullptr && controlInHud->GetParent() != nullptr);
+    UIControl* topLevelControl = controlInHud->GetParent();
+    while (topLevelControl->GetParent()->GetParent() != nullptr) //first control is screen
+    {
+        topLevelControl = topLevelControl->GetParent();
+    }
+    controlInHud->SetPosition(controlInHud->GetPosition() - topLevelControl->GetPosition());
+}
+
 ControlContainer::ControlContainer(const HUDAreaInfo::eArea area_)
     : UIControl()
     , area(area_)
@@ -68,6 +79,7 @@ void HUDContainer::InitFromGD(const UIGeometricData& gd)
     SetPivot(control->GetPivot());
     SetRect(ur);
     SetAngle(gd.angle);
+    FixPositionForScroll(this);
     bool valid_ = control->GetSystemVisible() && gd.size.dx > 0.0f && gd.size.dy > 0.0f && gd.scale.dx > 0.0f && gd.scale.dy > 0.0f;
     SetValid(valid_);
     if (valid)
@@ -104,7 +116,7 @@ void FrameControl::Init()
         ScopedPtr<UIControl> control(new UIControl());
         control->SetName("border of " + GetName());
         UIControlBackground* background = control->GetBackground();
-        background->SetSprite("~res:/Gfx/HUDControls/BlackGrid", 0);
+        background->SetSprite("~res:/Gfx/HUDControls/BlackGrid/BlackGrid", 0);
         background->SetDrawType(UIControlBackground::DRAW_TILED);
         AddControl(control);
     }
@@ -260,5 +272,13 @@ void SelectionRect::Draw(const UIGeometricData& geometricData)
         Rect borderRect = CreateFrameBorderRect(i, rect);
         (*chilrenIt)->SetRect(borderRect);
     }
+    FixPositionForScroll(this);
     UIControl::Draw(geometricData);
+}
+
+MagnetLine::MagnetLine()
+{
+    SetName("Magnet Line");
+    background->SetSprite("~res:/Gfx/HUDControls/MagnetLine/MagnetLine", 0);
+    background->SetDrawType(UIControlBackground::DRAW_TILED);
 }

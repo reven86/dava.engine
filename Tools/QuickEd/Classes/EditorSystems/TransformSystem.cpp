@@ -205,8 +205,7 @@ bool TransformSystem::ProcessKey(const int32 key)
     if (!selectedControlNodes.empty())
     {
         float step = moveStepByKeyboard;
-        const KeyboardProxy* keyBoardProxy = systemManager->GetKeyboardProxy();
-        if (!keyBoardProxy->IsKeyPressed(KeyboardProxy::KEY_SHIFT))
+        if (!IsKeyPressed(KeyboardProxy::KEY_SHIFT))
         {
             step = expandedMoveStepByKeyboard;
         }
@@ -244,12 +243,10 @@ bool TransformSystem::ProcessDrag(Vector2 pos)
         return false;
     }
     Vector2 delta(pos - prevPos);
-    const KeyboardProxy* keyBoardProxy = systemManager->GetKeyboardProxy();
-
     switch (activeArea)
     {
     case HUDAreaInfo::FRAME_AREA:
-        MoveAllSelectedControls(delta, !keyBoardProxy->IsKeyPressed(KeyboardProxy::KEY_SHIFT));
+        MoveAllSelectedControls(delta, !IsKeyPressed(KeyboardProxy::KEY_SHIFT));
         return true;
     case HUDAreaInfo::TOP_LEFT_AREA:
     case HUDAreaInfo::TOP_CENTER_AREA:
@@ -260,8 +257,8 @@ bool TransformSystem::ProcessDrag(Vector2 pos)
     case HUDAreaInfo::BOTTOM_CENTER_AREA:
     case HUDAreaInfo::BOTTOM_RIGHT_AREA:
     {
-        bool withPivot = keyBoardProxy->IsKeyPressed(KeyboardProxy::KEY_ALT);
-        bool rateably = keyBoardProxy->IsKeyPressed(KeyboardProxy::KEY_SHIFT);
+        bool withPivot = IsKeyPressed(KeyboardProxy::KEY_ALT);
+        bool rateably = IsKeyPressed(KeyboardProxy::KEY_SHIFT);
         ResizeControl(delta, withPivot, rateably);
         return true;
     }
@@ -584,8 +581,7 @@ Vector2 TransformSystem::AdjustResizeToMinimumSize(Vector2 deltaSize)
 Vector2 TransformSystem::AdjustResizeToBorder(Vector2 deltaSize, Vector2 transformPoint, Directions directions)
 {
     Vector<MagnetLineInfo> magnets;
-    const KeyboardProxy* keyBoardProxy = systemManager->GetKeyboardProxy();
-    bool canAdjustResize = !keyBoardProxy->IsKeyPressed(KeyboardProxy::KEY_CTRL) && activeControlNode->GetControl()->GetAngle() == 0.0f && activeControlNode->GetParent()->GetControl() != nullptr;
+    bool canAdjustResize = !IsKeyPressed(KeyboardProxy::KEY_CTRL) && activeControlNode->GetControl()->GetAngle() == 0.0f && activeControlNode->GetParent()->GetControl() != nullptr;
 
     if (canAdjustResize)
     {
@@ -724,8 +720,7 @@ DAVA::Vector2 TransformSystem::AdjustPivotToNearestArea(Vector2& delta)
     Vector2 finalPivot(origPivot + deltaPivot + extraDelta);
 
     bool found = false;
-    const KeyboardProxy* keyBoardProxy = systemManager->GetKeyboardProxy();
-    if (!keyBoardProxy->IsKeyPressed(KeyboardProxy::KEY_SHIFT))
+    if (!IsKeyPressed(KeyboardProxy::KEY_SHIFT))
     {
         const float32 maxPivot = 1.0f;
 
@@ -806,8 +801,7 @@ void TransformSystem::Rotate(Vector2 pos)
 float32 TransformSystem::AdjustRotateToFixedAngle(float32 deltaAngle, float32 originalAngle)
 {
     float32 finalAngle = originalAngle + deltaAngle;
-    const KeyboardProxy* keyBoardProxy = systemManager->GetKeyboardProxy();
-    if (keyBoardProxy->IsKeyPressed(KeyboardProxy::KEY_SHIFT))
+    if (IsKeyPressed(KeyboardProxy::KEY_SHIFT))
     {
         static const int step = angleSegment; //fixed angle step
         int32 nearestTargetAngle = static_cast<int32>(finalAngle - static_cast<int32>(finalAngle) % step);

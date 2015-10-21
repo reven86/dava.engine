@@ -92,7 +92,6 @@ struct MagnetLineInfo
 class BaseEditorSystem;
 class AbstractProperty;
 class PackageNode;
-class KeyboardProxy;
 
 bool CompareByLCA(PackageBaseNode* left, PackageBaseNode* right);
 
@@ -104,7 +103,6 @@ public:
     explicit EditorSystemsManager(PackageNode* package);
     ~EditorSystemsManager();
 
-    const KeyboardProxy* GetKeyboardProxy() const;
     PackageNode* GetPackage();
 
     DAVA::UIControl* GetRootControl();
@@ -143,8 +141,6 @@ private:
     DAVA::RefPtr<DAVA::UIControl> scalableControl;
 
     DAVA::List<std::unique_ptr<BaseEditorSystem>> systems;
-
-    std::unique_ptr<KeyboardProxy> keyboardProxy;
 
     PackageNode* package = nullptr;
     SelectedControls selectedControlNodes;

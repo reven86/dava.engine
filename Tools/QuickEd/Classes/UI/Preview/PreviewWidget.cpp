@@ -107,9 +107,14 @@ void PreviewWidget::OnSelectControlByMenu(const Vector<ControlNode*>& nodesUnder
         ControlNode* controlNode = *it;
         QString className = QString::fromStdString(controlNode->GetControl()->GetClassName());
         QAction* action = new QAction(QString::fromStdString(controlNode->GetName()), &menu);
+        action->setCheckable(true);
         menu.addAction(action);
         void* ptr = static_cast<void*>(controlNode);
         action->setData(QVariant::fromValue(ptr));
+        if (selectionContainer.IsSelected(controlNode))
+        {
+            action->setChecked(true);
+        }
     }
     QAction* selectedAction = menu.exec(globalPos);
     if (nullptr != selectedAction)
@@ -137,6 +142,11 @@ void PreviewWidget::OnDocumentChanged(Document* arg)
     {
         scrollAreaController->SetNestedControl(nullptr);
     }
+}
+
+void PreviewWidget::SetSelectedNodes(const SelectedNodes& selected, const SelectedNodes& deselected)
+{
+    selectionContainer.MergeSelection(selected, deselected);
 }
 
 void PreviewWidget::OnMonitorChanged()

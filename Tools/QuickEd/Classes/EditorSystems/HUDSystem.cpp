@@ -31,14 +31,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "UI/UIControl.h"
 #include "UI/UIEvent.h"
 #include "Base/BaseTypes.h"
-#include "Input/InputSystem.h"
-#include "Input/KeyboardDevice.h"
 
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
 
 #include "EditorSystems/HUDControls.h"
+#include "EditorSystems/KeyboardProxy.h"
 
 using namespace DAVA;
 
@@ -192,7 +191,7 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
         systemManager->CollectControlNodesByPos(nodes, currentInput->point);
         const PackageControlsNode* packageNode = systemManager->GetPackage()->GetPackageControlsNode();
         bool noHudableControls = nodes.empty() || (nodes.size() == 1 && nodes.front()->GetParent() == packageNode);
-        bool hotKeyDetected = InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_CTRL);
+        bool hotKeyDetected = IsKeyPressed(KeyboardProxy::KEY_CTRL);
         SetCanDrawRect(hotKeyDetected || noHudableControls);
         pressedPoint = currentInput->point;
         return canDrawRect;
@@ -214,7 +213,7 @@ bool HUDSystem::OnInput(UIEvent* currentInput)
                 point.y += size.y;
                 size.y *= -1;
             }
-            selectionRectControl->SetAbsoluteRect(Rect(point, size));
+            selectionRectControl->SetRect(Rect(point, size));
             systemManager->SelectionRectChanged.Emit(selectionRectControl->GetAbsoluteRect());
         }
         return true;
@@ -258,22 +257,19 @@ void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLineInfo>& magnetLines)
 
     for (const MagnetLineInfo& line : magnetLines)
     {
-        UIControl* control = new UIControl();
-        control->SetDebugDraw(true);
+        MagnetLine* control = new MagnetLine();
+
         Rect lineRect = line.absoluteRect;
-        UIControl* topLevelControl = hudControl.Get();
-        while (topLevelControl->GetParent()->GetParent() != nullptr) //first control is screen
-        {
-            topLevelControl = topLevelControl->GetParent();
-        }
-        lineRect.SetPosition(line.absoluteRect.GetPosition() - topLevelControl->GetPosition());
-        control->SetAbsoluteRect(lineRect);
-        Vector2 extraSize(line.axis == Vector2::AXIS_X ? axtraSizeValue : 0.0f, line.axis == Vector2::AXIS_Y ? axtraSizeValue : 0.0f);
+
+        control->SetRect(lineRect);
+        Vector2 extraSize(line.axis == Vector2::AXIS_X ? axtraSizeValue : 1.0f, line.axis == Vector2::AXIS_Y ? axtraSizeValue : 1.0f);
         control->SetSize(control->GetSize() + extraSize);
-        control->SetAngle(line.gd->angle);
         control->SetPivotPoint(extraSize / 2.0f);
+        control->SetAngle(line.gd->angle);
         hudControl->AddControl(control);
         magnetControls.emplace_back(control);
+
+        FixPositionForScroll(control);
     }
 }
 
