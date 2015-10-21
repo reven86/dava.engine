@@ -71,7 +71,7 @@ private:
 
     void ResizeControl(DAVA::Vector2 delta, bool withPivot, bool rateably);
     DAVA::Vector2 AdjustResizeToMinimumSize(DAVA::Vector2 delta);
-    DAVA::Vector2 AdjustResizeToBorder(DAVA::Vector2 deltaSize, DAVA::Vector2 transformPoint, Directions directions);
+    DAVA::Vector2 AdjustResizeToBorderAndToMinimum(DAVA::Vector2 deltaSize, DAVA::Vector2 transformPoint, Directions directions);
     DAVA::Vector2 AdjustResizeToBorder(DAVA::Vector2 deltaSize, DAVA::Vector2 transformPoint, Directions directions, DAVA::Vector<MagnetLineInfo>& magnets);
 
     void MovePivot(DAVA::Vector2 delta);

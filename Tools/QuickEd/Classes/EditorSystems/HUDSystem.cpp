@@ -77,7 +77,6 @@ struct HUDSystem::HUD
 {
     HUD(ControlNode* node, UIControl* hudControl);
     ~HUD();
-    void UpdateHUDVisibility();
     ControlNode* node = nullptr;
     UIControl* control = nullptr;
     UIControl* hudControl = nullptr;
@@ -262,7 +261,7 @@ void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLineInfo>& magnetLines)
         Rect lineRect = line.absoluteRect;
 
         control->SetRect(lineRect);
-        Vector2 extraSize(line.axis == Vector2::AXIS_X ? axtraSizeValue : 1.0f, line.axis == Vector2::AXIS_Y ? axtraSizeValue : 1.0f);
+        Vector2 extraSize(line.axis == Vector2::AXIS_X ? axtraSizeValue : 0.0f, line.axis == Vector2::AXIS_Y ? axtraSizeValue : 0.0f);
         control->SetSize(control->GetSize() + extraSize);
         control->SetPivotPoint(extraSize / 2.0f);
         control->SetAngle(line.gd->angle);

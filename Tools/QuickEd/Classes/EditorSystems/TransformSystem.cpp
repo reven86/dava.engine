@@ -519,10 +519,7 @@ void TransformSystem::ResizeControl(Vector2 delta, bool withPivot, bool rateably
     deltaSize += extraDelta; //transform to virtual coordinates
     extraDelta.SetZero();
 
-    Vector2 adjustedSize = deltaSize;
-    adjustedSize = AdjustResizeToMinimumSize(adjustedSize);
-    adjustedSize = AdjustResizeToBorder(adjustedSize, transformPoint, directions);
-
+    Vector2 adjustedSize = AdjustResizeToBorderAndToMinimum(deltaSize, transformPoint, directions);
     //adjust delta position to new delta size
     for (int32 axisInt = Vector2::AXIS_X; axisInt < Vector2::AXIS_COUNT; ++axisInt)
     {
@@ -561,35 +558,47 @@ Vector2 TransformSystem::AdjustResizeToMinimumSize(Vector2 deltaSize)
     for (int32 axisInt = Vector2::AXIS_X; axisInt < Vector2::AXIS_COUNT; ++axisInt)
     {
         Vector2::eAxis axis = static_cast<Vector2::eAxis>(axisInt);
-        if (finalSize[axis] < scaledMinimum[axis])
+        if (deltaSize[axis] > 0.0f)
         {
+            continue;
+        }
+        if (origSize[axis] > scaledMinimum[axis])
+        {
+            if (finalSize[axis] > scaledMinimum[axis])
+            {
+                continue;
+            }
             extraDelta[axis] += finalSize[axis] - scaledMinimum[axis];
-            if (deltaSize[axis] < 0.0f && origSize[axis] < scaledMinimum[axis])
-            {
-                deltaSize[axis] = 0.0f;
-            }
-            else
-            {
-                deltaSize[axis] = scaledMinimum[axis] - origSize[axis]; //truncate delta
-            }
+            deltaSize[axis] = scaledMinimum[axis] - origSize[axis];
+        }
+        else
+        {
+            extraDelta[axis] += deltaSize[axis];
+            deltaSize[axis] = 0.0f;
         }
     }
 
     return deltaSize;
 }
 
-Vector2 TransformSystem::AdjustResizeToBorder(Vector2 deltaSize, Vector2 transformPoint, Directions directions)
+Vector2 TransformSystem::AdjustResizeToBorderAndToMinimum(Vector2 deltaSize, Vector2 transformPoint, Directions directions)
 {
     Vector<MagnetLineInfo> magnets;
-    bool canAdjustResize = !IsKeyPressed(KeyboardProxy::KEY_CTRL) && activeControlNode->GetControl()->GetAngle() == 0.0f && activeControlNode->GetParent()->GetControl() != nullptr;
 
+    bool canAdjustResize = !IsKeyPressed(KeyboardProxy::KEY_CTRL) && activeControlNode->GetControl()->GetAngle() == 0.0f && activeControlNode->GetParent()->GetControl() != nullptr;
+    Vector2 adjustedDeltaToBorder(deltaSize);
     if (canAdjustResize)
     {
-        deltaSize = AdjustResizeToBorder(deltaSize, transformPoint, directions, magnets);
+        adjustedDeltaToBorder = AdjustResizeToBorder(deltaSize, transformPoint, directions, magnets);
+    }
+    Vector2 adjustedSize = AdjustResizeToMinimumSize(adjustedDeltaToBorder);
+    if (adjustedDeltaToBorder != adjustedSize)
+    {
+        magnets.clear();
     }
     systemManager->MagnetLinesChanged.Emit(magnets);
 
-    return deltaSize;
+    return adjustedSize;
 }
 
 DAVA::Vector2 TransformSystem::AdjustResizeToBorder(Vector2 deltaSize, Vector2 transformPoint, Directions directions, Vector<MagnetLineInfo>& magnets)
@@ -626,40 +635,41 @@ DAVA::Vector2 TransformSystem::AdjustResizeToBorder(Vector2 deltaSize, Vector2 t
                 return needRemove;
             };
             magnetLines.remove_if(removePredicate);
-
-            std::function<bool(const MagnetLine&, const MagnetLine&)> predicate = [transformPoint, directions](const MagnetLine& left, const MagnetLine& right) -> bool
+            if (!magnetLines.empty())
             {
-                float32 shareLeft = left.controlSharePos - transformPoint[left.axis];
-                float32 shareRight = right.controlSharePos - transformPoint[right.axis];
-                float32 distanceLeft = shareLeft == 0.0f ? std::numeric_limits<float32>::max() : left.interval / shareLeft;
-                float32 distanceRight = shareRight == 0.0f ? std::numeric_limits<float32>::max() : right.interval / shareRight;
-                return fabs(distanceLeft) < fabs(distanceRight);
-            };
+                std::function<bool(const MagnetLine&, const MagnetLine&)> predicate = [transformPoint, directions](const MagnetLine& left, const MagnetLine& right) -> bool {
+                    float32 shareLeft = left.controlSharePos - transformPoint[left.axis];
+                    float32 shareRight = right.controlSharePos - transformPoint[right.axis];
+                    float32 distanceLeft = shareLeft == 0.0f ? std::numeric_limits<float32>::max() : left.interval / shareLeft;
+                    float32 distanceRight = shareRight == 0.0f ? std::numeric_limits<float32>::max() : right.interval / shareRight;
+                    return fabs(distanceLeft) < fabs(distanceRight);
+                };
 
-            MagnetLine nearestLine = *std::min_element(magnetLines.begin(), magnetLines.end(), predicate);
-            float32 share = fabs(nearestLine.controlSharePos - transformPoint[nearestLine.axis]);
-            float32 rangeForPosition = magnetRange[axis] * share;
-            float32 areaNearLineRight = nearestLine.targetPosition + rangeForPosition;
-            float32 areaNearLineLeft = nearestLine.targetPosition - rangeForPosition;
+                MagnetLine nearestLine = *std::min_element(magnetLines.begin(), magnetLines.end(), predicate);
+                float32 share = fabs(nearestLine.controlSharePos - transformPoint[nearestLine.axis]);
+                float32 rangeForPosition = magnetRange[axis] * share;
+                float32 areaNearLineRight = nearestLine.targetPosition + rangeForPosition;
+                float32 areaNearLineLeft = nearestLine.targetPosition - rangeForPosition;
 
-            Vector2 oldDeltaSize(deltaSize);
+                Vector2 oldDeltaSize(deltaSize);
 
-            if (nearestLine.controlPosition >= areaNearLineLeft && nearestLine.controlPosition <= areaNearLineRight)
-            {
-                float32 interval = nearestLine.interval * directions[axis] * -1;
-                DVASSERT(share > 0.0f);
-                interval /= share;
-                float32 scaledDistance = interval / controlGD.scale[axis];
-                deltaSize[axis] += scaledDistance;
-                extraDelta[axis] += oldDeltaSize[axis] - deltaSize[axis];
+                if (nearestLine.controlPosition >= areaNearLineLeft && nearestLine.controlPosition <= areaNearLineRight)
+                {
+                    float32 interval = nearestLine.interval * directions[axis] * -1;
+                    DVASSERT(share > 0.0f);
+                    interval /= share;
+                    float32 scaledDistance = interval / controlGD.scale[axis];
+                    deltaSize[axis] += scaledDistance;
+                    extraDelta[axis] += oldDeltaSize[axis] - deltaSize[axis];
+                }
+
+                for (MagnetLine& line : magnetLines)
+                {
+                    float32 lineShare = fabs(line.controlSharePos - transformPoint[line.axis]);
+                    line.interval -= extraDelta[line.axis] * controlGD.scale[line.axis] * lineShare / directions[line.axis];
+                }
+                ExtractMatchedLines(magnets, magnetLines, control, axis);
             }
-
-            for (MagnetLine& line : magnetLines)
-            {
-                float32 lineShare = fabs(line.controlSharePos - transformPoint[line.axis]);
-                line.interval -= extraDelta[line.axis] * controlGD.scale[line.axis] * lineShare / directions[line.axis];
-            }
-            ExtractMatchedLines(magnets, magnetLines, control, axis);
         }
     }
     return deltaSize;
