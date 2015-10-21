@@ -138,13 +138,13 @@ struct UIStyleSheetClass
 class UIStyleSheetClassSet
 {
 public:
-    void AddClass(const FastName& clazz);
-    void RemoveClass(const FastName& clazz);
+    bool AddClass(const FastName& clazz);
+    bool RemoveClass(const FastName& clazz);
     bool HasClass(const FastName& clazz) const;
-    void SetTaggedClass(const FastName& tag, const FastName& clazz);
-    void ResetTaggedClass(const FastName& tag);
+    bool SetTaggedClass(const FastName& tag, const FastName& clazz);
+    bool ResetTaggedClass(const FastName& tag);
 
-    void RemoveAllClasses();
+    bool RemoveAllClasses();
     
     String GetClassesAsString() const;
     void SetClassesFromString(const String &classes);

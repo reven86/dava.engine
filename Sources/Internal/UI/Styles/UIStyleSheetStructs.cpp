@@ -33,7 +33,7 @@
 namespace DAVA
 {
 
-void UIStyleSheetClassSet::AddClass(const FastName& clazz)
+bool UIStyleSheetClassSet::AddClass(const FastName& clazz)
 {
     auto it = std::find_if(classes.begin(), classes.end(), [&clazz](const UIStyleSheetClass& cl) {
         return cl.clazz == clazz && !cl.tag.IsValid();
@@ -42,10 +42,12 @@ void UIStyleSheetClassSet::AddClass(const FastName& clazz)
     if (it == classes.end())
     {
         classes.push_back(UIStyleSheetClass(FastName(), clazz));
+        return true;
     }
+    return false;
 }
 
-void UIStyleSheetClassSet::RemoveClass(const FastName& clazz)
+bool UIStyleSheetClassSet::RemoveClass(const FastName& clazz)
 {
     auto it = std::find_if(classes.begin(), classes.end(), [&clazz](const UIStyleSheetClass& cl) {
         return cl.clazz == clazz && !cl.tag.IsValid();
@@ -55,7 +57,9 @@ void UIStyleSheetClassSet::RemoveClass(const FastName& clazz)
     {
         *it = classes.back();
         classes.pop_back();
+        return true;
     }
+    return false;
 }
 
 bool UIStyleSheetClassSet::HasClass(const FastName& clazz) const
@@ -67,7 +71,7 @@ bool UIStyleSheetClassSet::HasClass(const FastName& clazz) const
     return it != classes.end();
 }
 
-void UIStyleSheetClassSet::SetTaggedClass(const FastName& tag, const FastName& clazz)
+bool UIStyleSheetClassSet::SetTaggedClass(const FastName& tag, const FastName& clazz)
 {
     auto it = std::find_if(classes.begin(), classes.end(), [&tag](const UIStyleSheetClass& cl) {
         return cl.tag == tag;
@@ -75,15 +79,24 @@ void UIStyleSheetClassSet::SetTaggedClass(const FastName& tag, const FastName& c
     
     if (it != classes.end())
     {
-        it->clazz = clazz;
+        if (it->clazz == clazz)
+        {
+            return false;
+        }
+        else
+        {
+            it->clazz = clazz;
+            return true;
+        }
     }
     else
     {
         classes.push_back(UIStyleSheetClass(tag, clazz));
+        return true;
     }
 }
 
-void UIStyleSheetClassSet::ResetTaggedClass(const FastName& tag)
+bool UIStyleSheetClassSet::ResetTaggedClass(const FastName& tag)
 {
     auto it = std::find_if(classes.begin(), classes.end(), [&tag](const UIStyleSheetClass& cl) {
         return cl.tag == tag;
@@ -93,12 +106,19 @@ void UIStyleSheetClassSet::ResetTaggedClass(const FastName& tag)
     {
         *it = classes.back();
         classes.pop_back();
+        return true;
     }
+    return false;
 }
 
-void UIStyleSheetClassSet::RemoveAllClasses()
+bool UIStyleSheetClassSet::RemoveAllClasses()
 {
-    classes.clear();
+    if (!classes.empty())
+    {
+        classes.clear();
+        return true;
+    }
+    return false;
 }
 
 String UIStyleSheetClassSet::GetClassesAsString() const

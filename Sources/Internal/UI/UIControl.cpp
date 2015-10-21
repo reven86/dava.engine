@@ -2698,14 +2698,18 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
 
     void UIControl::AddClass(const FastName& clazz)
     {
-        classes.AddClass(clazz);
-        SetStyleSheetDirty();
+        if (classes.AddClass(clazz))
+        {
+            SetStyleSheetDirty();
+        }
     }
 
     void UIControl::RemoveClass(const FastName& clazz)
     {
-        classes.RemoveClass(clazz);
-        SetStyleSheetDirty();
+        if (classes.RemoveClass(clazz))
+        {
+            SetStyleSheetDirty();
+        }
     }
 
     bool UIControl::HasClass(const FastName& clazz) const
@@ -2715,14 +2719,18 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
 
     void UIControl::SetTaggedClass(const FastName& tag, const FastName& clazz)
     {
-        classes.SetTaggedClass(tag, clazz);
-        SetStyleSheetDirty();
+        if (classes.SetTaggedClass(tag, clazz))
+        {
+            SetStyleSheetDirty();
+        }
     }
 
     void UIControl::ResetTaggedClass(const FastName& tag)
     {
-        classes.ResetTaggedClass(tag);
-        SetStyleSheetDirty();
+        if (classes.ResetTaggedClass(tag))
+        {
+            SetStyleSheetDirty();
+        }
     }
 
     String UIControl::GetClassesAsString() const
