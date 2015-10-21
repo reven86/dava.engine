@@ -33,6 +33,14 @@
 #include "Core/ApplicationCore.h"
 #include "Core/Core.h"
 
+#include "Network/NetCore.h"
+#include "Network/PeerDesription.h"
+#include "Network/Services/NetLogger.h"
+
+#if defined(DAVA_MEMORY_PROFILING_ENABLE)
+#include "Network/Services/MMNet/MMNetServer.h"
+#endif
+
 class TestData;
 class BaseScreen;
 class TestListScreen;
@@ -91,6 +99,28 @@ private:
     TestListScreen *testListScreen;
     
     DAVA::Vector<BaseScreen *> screens;
+
+    // Network support
+    void InitNetwork();
+
+    size_t AnnounceDataSupplier(size_t length, void* buffer);
+
+    DAVA::Net::NetCore::TrackId id_anno = DAVA::Net::NetCore::INVALID_TRACK_ID;
+    DAVA::Net::NetCore::TrackId id_net = DAVA::Net::NetCore::INVALID_TRACK_ID;
+
+    DAVA::Net::NetLogger netLogger;
+#if defined(DAVA_MEMORY_PROFILING_ENABLE)
+    DAVA::Net::MMNetServer memprofServer;
+#endif
+    DAVA::Net::PeerDescription peerDescr;
+
+    bool loggerInUse = false;
+    bool memprofInUse = false;
+
+    static const DAVA::uint16 ANNOUNCE_PORT = 9999;
+    static const DAVA::uint32 ANNOUNCE_TIME_PERIOD = 5;
+    static const DAVA::char8 announceMulticastGroup[];
+    static const DAVA::uint16 LOGGER_PORT = 9999;
 };
 
 
