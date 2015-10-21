@@ -107,11 +107,11 @@ public:
     Core();
     virtual ~Core();
 
-    enum eScreenMode
+    enum class eScreenMode
     {
-        MODE_UNSUPPORTED = 0,   // for all devices that do not support 
-        MODE_FULLSCREEN, 
-        MODE_WINDOWED,
+        FULLSCREEN = 0, //<! True full screen
+        WINDOWED_FULLSCREEN, //<! Windowed mode without border and full screen sized
+        WINDOWED, //<! Windowed mode
     };
 
     enum eDeviceFamily
@@ -151,19 +151,14 @@ public:
 		\brief This function should perform switching from one mode to another (fullscreen => windowed and back)
 		\param[in] screenMode mode of the screen we want to switch to
 	*/
-	virtual void SwitchScreenToMode(eScreenMode screenMode); 
-	
-	/**
+    virtual bool SetScreenMode(eScreenMode screenMode);
+
+    /**
 		\brief Get list of available display modes supported by hardware
 		\param[out] availableModes list of available modes that is supported by hw
 	*/
 	virtual void GetAvailableDisplayModes(List<DisplayMode> & availableModes);
 	
-	/**
-		
-	*/
-	virtual void ToggleFullscreen();
-
 	/**
 		\brief Find mode that matches best to the mode you've requested
 		\param[in] requestedMode mode you want to get
