@@ -308,9 +308,9 @@ void StaticOcclusionBuildSystem::FinishBuildOcclusion()
     SceneForceLod(LodComponent::INVALID_LOD_LAYER);
     RestoreOcclusionMaterials();
 
-    Scene *scene = GetScene();
+    Scene* scene = GetScene();
     scene->staticOcclusionSystem->CollectOcclusionObjectsRecursively(scene);
-    SafeDelete(staticOcclusion);
+    // SafeDelete(staticOcclusion);
 }
     
 bool StaticOcclusionBuildSystem::IsInBuild() const
@@ -398,13 +398,13 @@ void StaticOcclusionBuildSystem::RestoreOcclusionMaterials()
 
 void StaticOcclusionBuildSystem::Process(float32 timeElapsed)
 {
-    if (nullptr != staticOcclusion)
+    if (activeIndex == (uint32)(-1))
+        return;
+
+    bool finished = staticOcclusion->ProccessBlock();
+    if (finished)
     {
-        bool finished = staticOcclusion->ProccessBlock();
-        if (finished)
-        {
-            FinishBuildOcclusion();
-        }
+        FinishBuildOcclusion();
     }
 }   
 

@@ -393,7 +393,9 @@ void StaticOcclusionDebugDrawSystem::AddEntity(Entity * entity)
 
 void StaticOcclusionDebugDrawSystem::RemoveEntity(Entity * entity)
 {
-    StaticOcclusionDebugDrawComponent *debugDrawComponent = static_cast<StaticOcclusionDebugDrawComponent *>(entity->GetComponent(Component::STATIC_OCCLUSION_DEBUG_DRAW_COMPONENT));
+    StaticOcclusionDebugDrawComponent* debugDrawComponent =
+    static_cast<StaticOcclusionDebugDrawComponent*>(entity->GetComponent(Component::STATIC_OCCLUSION_DEBUG_DRAW_COMPONENT));
+
     DVASSERT(debugDrawComponent);    
     GetScene()->GetRenderSystem()->RemoveFromRender(debugDrawComponent->GetRenderObject());
     entity->RemoveComponent(Component::STATIC_OCCLUSION_DEBUG_DRAW_COMPONENT);    

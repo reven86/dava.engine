@@ -25,6 +25,8 @@
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+#include "Render/ShaderCache.h"
 #include "Render/OcclusionQuery.h"
 #include "Render/Highlevel/StaticOcclusionRenderPass.h"
 #include "Render/Highlevel/RenderBatchArray.h"
@@ -43,8 +45,8 @@ StaticOcclusionRenderPass::StaticOcclusionRenderPass(const FastName & name) : Re
     AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_AFTER_OPAQUE_ID, sortingFlags));
     AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_ALPHA_TEST_LAYER_ID, sortingFlags));
     AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_WATER_ID, sortingFlags));
-    AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_TRANSLUCENT_ID, sortingFlags));
-    AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_AFTER_TRANSLUCENT_ID, sortingFlags));
+    //    AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_TRANSLUCENT_ID, sortingFlags));
+    //    AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_AFTER_TRANSLUCENT_ID, sortingFlags));
 
     rhi::Texture::Descriptor descriptor;
 
@@ -86,13 +88,10 @@ void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem* renderSystem, C
                                                    StaticOcclusionFrameResult& target, const StaticOcclusionData& data,
                                                    uint32 blockIndex)
 {
-    Camera *mainCamera = occlusionCamera;
-    Camera *drawCamera = occlusionCamera;
+    ShaderDescriptorCache::ClearDynamicBindigs();
+    SetupCameraParams(occlusionCamera, occlusionCamera);
+    PrepareVisibilityArrays(occlusionCamera, renderSystem);
 
-    SetupCameraParams(mainCamera, drawCamera);
-
-    PrepareVisibilityArrays(mainCamera, renderSystem);    
-	
     Vector<RenderBatch*> terrainBatches;
     Vector<RenderBatch*> meshBatches;
 
@@ -105,19 +104,24 @@ void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem* renderSystem, C
         for (uint32 batchIndex = 0; batchIndex < batchCount; ++batchIndex)
         {
             RenderBatch * batch = renderBatchArray.Get(batchIndex);
-            if (batch->GetRenderObject()->GetType() == RenderObject::TYPE_LANDSCAPE)
+            auto objectType = batch->GetRenderObject()->GetType();
+            if (objectType == RenderObject::TYPE_LANDSCAPE)
             {
                 terrainBatches.push_back(batch);
             }
-            else
+            else if (objectType != RenderObject::TYPE_PARTICLE_EMTITTER)
             {
                 meshBatches.push_back(batch);
+            }
+            else if (objectType == RenderObject::TYPE_PARTICLE_EMTITTER)
+            {
+                Logger::Info("Emitter skipped");
             }
         }
     }
         
     // Sort
-    Vector3 cameraPosition = mainCamera->GetPosition();
+    Vector3 cameraPosition = occlusionCamera->GetPosition();
 
     for (auto batch : meshBatches)
     {
@@ -136,7 +140,10 @@ void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem* renderSystem, C
     for (auto batch : meshBatches)
     {
         auto occlusionId = batch->GetRenderObject()->GetStaticOcclusionIndex();
-        bool isAlreadyVisible = data.IsObjectVisibleFromBlock(blockIndex, occlusionId);
+
+        bool isAlreadyVisible = (occlusionId == INVALID_STATIC_OCCLUSION_INDEX) ||
+        data.IsObjectVisibleFromBlock(blockIndex, occlusionId);
+
         if (!isAlreadyVisible)
         {
             invisibleObjects.insert(occlusionId);
@@ -160,7 +167,7 @@ void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem* renderSystem, C
         rhi::Packet packet;
         RenderBatch* batch = terrainBatches[k];
         RenderObject* renderObject = batch->GetRenderObject();
-        renderObject->BindDynamicParameters(mainCamera);
+        renderObject->BindDynamicParameters(occlusionCamera);
         NMaterial* mat = batch->GetMaterial();
         DVASSERT(mat);
         batch->BindGeometryData(packet);
@@ -173,7 +180,7 @@ void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem* renderSystem, C
     for (auto batch : meshBatches)
     {
         RenderObject* renderObject = batch->GetRenderObject();
-        renderObject->BindDynamicParameters(mainCamera);
+        renderObject->BindDynamicParameters(occlusionCamera);
         rhi::Packet packet;
         batch->BindGeometryData(packet);
         DVASSERT(packet.primitiveCount);

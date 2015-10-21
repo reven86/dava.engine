@@ -62,24 +62,33 @@ public:
 
     bool IsObjectVisibleFromBlock(uint32 blockIndex, uint32 objectIndex) const;
 
-    uint32 * GetBlockVisibilityData(uint32 blockIndex);
+    uint32* GetBlockVisibilityData(uint32 blockIndex);
     StaticOcclusionData & operator= (const StaticOcclusionData & other);
-    
+
+    void SetData(const uint32* _data, uint32 dataSize);
+    const uint32* GetData() const
+    {
+        return dataHolder.data();
+    }
+
+public:
     AABBox3 bbox;
-    uint32 sizeX;
-    uint32 sizeY;
-    uint32 sizeZ;
-    uint32  blockCount;
-    uint32  objectCount;
-    uint32 * data;
-    float32* cellHeightOffset;
+    uint32 sizeX = 0;
+    uint32 sizeY = 0;
+    uint32 sizeZ = 0;
+    uint32 blockCount = 0;
+    uint32 objectCount = 0;
+    float32* cellHeightOffset = nullptr;
+
+private:
+    Vector<uint32> dataHolder;
 };
 
 struct StaticOcclusionFrameResult
 {
-    uint32 blockIndex;
-    rhi::HQueryBuffer queryBuffer;
-    Vector<RenderObject *> frameRequests;
+    uint32 blockIndex = 0;
+    rhi::HQueryBuffer queryBuffer = rhi::HQueryBuffer(rhi::InvalidHandle);
+    Vector<RenderObject*> frameRequests;
 };
 
 class StaticOcclusion
@@ -87,8 +96,8 @@ class StaticOcclusion
 public:    
     StaticOcclusion();
     ~StaticOcclusion();
-                
-    void StartBuildOcclusion(StaticOcclusionData * currentData, RenderSystem * renderSystem, Landscape * landscape);
+
+    void StartBuildOcclusion(StaticOcclusionData* currentData, RenderSystem* renderSystem, Landscape* landscape);
     bool ProccessBlock(); // returns true if finished building
     void AdvanceToNextBlock();
 
@@ -116,7 +125,7 @@ private:
 
 private:
     Camera* cameras[6];
-    StaticOcclusionRenderPass* staticOcclusionRenderPass;
+    StaticOcclusionRenderPass* staticOcclusionRenderPass = nullptr;
     StaticOcclusionData* currentData = nullptr;
     RenderSystem* renderSystem = nullptr;
     Landscape* landscape = nullptr;

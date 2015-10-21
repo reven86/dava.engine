@@ -53,17 +53,11 @@ public:
                             StaticOcclusionFrameResult& target, const StaticOcclusionData&, uint32 blockIndex);
 
     static bool CompareFunction(const RenderBatch * a, const RenderBatch *  b);
-    
-private:    
 
-    rhi::HTexture colorBuffer, depthBuffer;
-    
+public:
+    rhi::HTexture colorBuffer;
+    rhi::HTexture depthBuffer;
 };
-    
-
-
-
-
 
 };
 

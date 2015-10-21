@@ -59,9 +59,11 @@ public:
     
     inline uint32 GetDataSize() const;
     inline void SetDataSize(uint32 bytes);
-protected:
+
+private:
     StaticOcclusionData data;
-    uint32 sizeInKbytes;
+    uint32 sizeInKbytes = 0;
+
 public:
 	INTROSPECTION_EXTEND(StaticOcclusionDataComponent, Component,
                          PROPERTY("Size in kBytes", "Size of occlusion information in kBytes", GetDataSize, SetDataSize, I_VIEW | I_EDIT)
