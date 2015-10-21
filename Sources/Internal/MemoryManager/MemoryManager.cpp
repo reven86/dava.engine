@@ -146,7 +146,7 @@ MemoryManager::MemoryManager()
     RegisterAllocPoolName(ALLOC_POOL_BULLET, "bullet");
     RegisterAllocPoolName(ALLOC_POOL_BASEOBJECT, "base object");
     RegisterAllocPoolName(ALLOC_POOL_POLYGONGROUP, "polygon group");
-    RegisterAllocPoolName(ALLOC_POOL_RENDERDATAOBJECT, "render dataobj");
+    RegisterAllocPoolName(ALLOC_POOL_RHI_BUFFERS, "rhi buffers");
     RegisterAllocPoolName(ALLOC_POOL_COMPONENT, "component");
     RegisterAllocPoolName(ALLOC_POOL_ENTITY, "entity");
     RegisterAllocPoolName(ALLOC_POOL_LANDSCAPE, "landscape");

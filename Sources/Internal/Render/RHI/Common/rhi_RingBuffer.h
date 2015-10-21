@@ -31,7 +31,7 @@
 #define __RHI_RINGBUFFER_H__
 
     #include "../rhi_Type.h"
-
+    #include "MemoryManager/MemoryProfiler.h"
 
 namespace rhi
 {
@@ -81,6 +81,8 @@ RingBuffer::RingBuffer()
 inline void
 RingBuffer::Initialize( unsigned sz )
 {
+    DAVA_MEMORY_PROFILER_ALLOC_SCOPE(DAVA::ALLOC_POOL_RHI_BUFFERS);
+
     size        = sz;
     dataPtr     = (uint8*)::malloc( sz );
     ownData     = true;    
