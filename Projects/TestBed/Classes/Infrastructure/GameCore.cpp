@@ -43,6 +43,7 @@
 #include "Tests/FontTest.h"
 #include "Tests/WebViewTest.h"
 #include "Tests/FunctionSignalTest.h"
+#include "Tests/FullscreenTest.h"
 //$UNITTEST_INCLUDE
 
 void GameCore::RunOnlyThisTest()
@@ -67,6 +68,7 @@ void GameCore::RegisterTests()
     new FontTest();
     new WebViewTest();
 	new FunctionSignalTest();
+    new FullscreenTest();
 //$UNITTEST_CTOR
 }
 
