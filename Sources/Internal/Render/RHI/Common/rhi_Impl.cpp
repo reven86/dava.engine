@@ -200,6 +200,7 @@ Delete( Handle vb )
     {
         DAVA_MEMORY_PROFILER_GPU_DEALLOC(vb, DAVA::ALLOC_GPU_RDO_VERTEX);
     }
+    return (*_Impl.impl_VertexBuffer_Delete)(vb);
 #endif
 }
 
@@ -261,6 +262,7 @@ Delete( Handle vb )
     {
         DAVA_MEMORY_PROFILER_GPU_DEALLOC(vb, DAVA::ALLOC_GPU_RDO_INDEX);
     }
+    return (*_Impl.impl_IndexBuffer_Delete)(vb);
 #endif
 }
 
@@ -382,6 +384,7 @@ Delete( Handle tex )
     {
         DAVA_MEMORY_PROFILER_GPU_DEALLOC(tex, DAVA::ALLOC_GPU_TEXTURE);
     }
+    return (*_Impl.impl_Texture_Delete)(tex);
 #endif
 }
 
