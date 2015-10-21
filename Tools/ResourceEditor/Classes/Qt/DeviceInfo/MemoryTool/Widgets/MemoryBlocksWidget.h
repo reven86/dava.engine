@@ -66,6 +66,8 @@ private slots:
     void FilterBar_SortingOrderChanged(int order);
     void FilterBar_FilterChanged(DAVA::uint32 poolMask, DAVA::uint32 tagMask);
     void FilterBar_HideTheSameChanged(bool hide);
+    void FilterBar_HideDifferentChanged(bool hide);
+    void FilterBar_BlockOrderChanged(DAVA::uint32 minBlockOrder);
 
 private:
     void Init();
@@ -86,6 +88,8 @@ private:
     DAVA::uint32 filterPoolMask = 0;
     DAVA::uint32 filterTagMask = 0;
     bool hideTheSame = false;
+    bool hideDifferent = false;
+    DAVA::uint32 minBlockOrder = 0;
 };
 
 #endif  // __MEMORYTOOL_MEMORYBLOCKSWIDGET_H__

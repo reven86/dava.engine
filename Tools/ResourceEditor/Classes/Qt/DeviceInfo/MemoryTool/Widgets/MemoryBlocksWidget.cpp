@@ -173,6 +173,18 @@ void MemoryBlocksWidget::FilterBar_HideTheSameChanged(bool hide)
     memoryBlocksFilterModel->SetFilter([this](const BlockLink::Item& item) ->bool { return Filter(item); });
 }
 
+void MemoryBlocksWidget::FilterBar_HideDifferentChanged(bool hide)
+{
+    hideDifferent = hide;
+    memoryBlocksFilterModel->SetFilter([this](const BlockLink::Item& item) -> bool { return Filter(item); });
+}
+
+void MemoryBlocksWidget::FilterBar_BlockOrderChanged(uint32 minBlockOrder)
+{
+    this->minBlockOrder = minBlockOrder;
+    memoryBlocksFilterModel->SetFilter([this](const BlockLink::Item& item) -> bool { return Filter(item); });
+}
+
 void MemoryBlocksWidget::Init()
 {
     memoryBlocksModel.reset(new MemoryBlocksModel(session));
@@ -197,6 +209,8 @@ void MemoryBlocksWidget::Init()
     connect(filterBar, &FilterAndSortBar::SortingOrderChanged, this, &MemoryBlocksWidget::FilterBar_SortingOrderChanged);
     connect(filterBar, &FilterAndSortBar::FilterChanged, this, &MemoryBlocksWidget::FilterBar_FilterChanged);
     connect(filterBar, &FilterAndSortBar::HideTheSameChanged, this, &MemoryBlocksWidget::FilterBar_HideTheSameChanged);
+    connect(filterBar, &FilterAndSortBar::HideDifferentChanged, this, &MemoryBlocksWidget::FilterBar_HideDifferentChanged);
+    connect(filterBar, &FilterAndSortBar::BlockOrderChanged, this, &MemoryBlocksWidget::FilterBar_BlockOrderChanged);
 
     QVBoxLayout* layout1 = new QVBoxLayout;
     layout1->addWidget(filterBar);
@@ -240,12 +254,16 @@ bool MemoryBlocksWidget::Filter(const BlockLink::Item& item)
     {
         return false;
     }
+    if (hideDifferent && (item.first == nullptr || item.second == nullptr))
+    {
+        return false;
+    }
 
-    bool accept = true;
     const MMBlock* block = BlockLink::AnyBlock(item);
+    bool accept = block->orderNo >= minBlockOrder;
     if (filterPoolMask != 0)
     {
-        accept = (block->pool & filterPoolMask) != 0;
+        accept &= (block->pool & filterPoolMask) != 0;
     }
     if (filterTagMask != 0)
     {

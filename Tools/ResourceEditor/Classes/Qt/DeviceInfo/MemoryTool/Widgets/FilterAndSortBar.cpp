@@ -35,7 +35,10 @@
 
 #include <QComboBox>
 #include <QCheckBox>
+#include <QLineEdit>
+#include <QPushButton>
 #include <QHBoxLayout>
+#include <QVBoxLayout>
 #include <QStandardItemModel>
 #include <QStandardItem>
 
@@ -69,6 +72,14 @@ void FilterAndSortBar::Init(int32 flags)
     if (flags & FLAG_ENABLE_HIDE_SAME)
     {
         layout->addWidget(CreateHideTheSameCheck());
+    }
+    if (flags & FLAG_ENABLE_HIDE_DIFFERENT)
+    {
+        layout->addWidget(CreateHideDifferentCheck());
+    }
+    if (flags & FLAG_ENABLE_BLOCK_ORDER)
+    {
+        layout->addWidget(CreateBlockOrderWidgets());
     }
     setLayout(layout);
 }
@@ -149,8 +160,34 @@ QCheckBox* FilterAndSortBar::CreateHideTheSameCheck()
     QCheckBox* widget = new QCheckBox("Hide same blocks");
     widget->setTristate(false);
 
-    connect(widget, &QCheckBox::stateChanged, this, &FilterAndSortBar::HideTheSameCheck_StateChanges);
+    connect(widget, &QCheckBox::stateChanged, this, &FilterAndSortBar::HideTheSameCheck_StateChanged);
 
+    return widget;
+}
+
+QCheckBox* FilterAndSortBar::CreateHideDifferentCheck()
+{
+    QCheckBox* widget = new QCheckBox("Hide different blocks");
+    widget->setTristate(false);
+
+    connect(widget, &QCheckBox::stateChanged, this, &FilterAndSortBar::HideDifferentCheck_StateChanged);
+
+    return widget;
+}
+
+QWidget* FilterAndSortBar::CreateBlockOrderWidgets()
+{
+    QPushButton* apply = new QPushButton("Apply");
+    connect(apply, &QPushButton::clicked, this, &FilterAndSortBar::BlockOrderButton_Clicked);
+
+    minBlockOrderWidget = new QLineEdit;
+
+    QHBoxLayout* layout = new QHBoxLayout;
+    layout->addWidget(apply);
+    layout->addWidget(minBlockOrderWidget);
+
+    QWidget* widget = new QWidget;
+    widget->setLayout(layout);
     return widget;
 }
 
@@ -184,8 +221,28 @@ void FilterAndSortBar::FilterTagCombo_DataChanged(const QVariantList& data)
     emit FilterChanged(filterPoolMask, filterTagMask);
 }
 
-void FilterAndSortBar::HideTheSameCheck_StateChanges(int state)
+void FilterAndSortBar::HideTheSameCheck_StateChanged(int state)
 {
     hideTheSame = state == Qt::Checked;
     emit HideTheSameChanged(hideTheSame);
+}
+
+void FilterAndSortBar::HideDifferentCheck_StateChanged(int state)
+{
+    hideDifferent = state == Qt::Checked;
+    emit HideDifferentChanged(hideDifferent);
+}
+
+void FilterAndSortBar::BlockOrderButton_Clicked()
+{
+    uint32 value = 0;
+    QString text = minBlockOrderWidget->text();
+    if (!text.isEmpty())
+    {
+        bool valueIsValid = false;
+        value = text.toUInt(&valueIsValid, 10);
+        if (!valueIsValid)
+            value = 0;
+    }
+    emit BlockOrderChanged(value);
 }
