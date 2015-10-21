@@ -65,7 +65,7 @@ class TextFieldPlatformImpl
 public:
     friend class UITextField;
     TextFieldPlatformImpl(UITextField* control)
-        : staticText_(new UIStaticText(control->GetRect()))
+        : staticText_(new UIStaticText(Rect(Vector2(0, 0), control->GetSize())))
         , control_(control)
     {
         staticText_->SetSpriteAlign(ALIGN_LEFT | ALIGN_BOTTOM);
@@ -111,7 +111,7 @@ public:
     void UpdateRect(const Rect& rect)
     {
         // see comment for TextFieldPlatformImpl class above
-        staticText_->SetRect(rect);
+        // staticText_->SetRect(rect);
 
         if (control_ == UIControlSystem::Instance()->GetFocusedControl())
         {
@@ -252,14 +252,11 @@ public:
     }
     void SetRect(const Rect& rect)
     {
-        staticText_->SetRect(rect);
+        staticText_->SetSize(rect.GetSize());
     }
-    void SystemDraw(const UIGeometricData&)
+    void SystemDraw(const UIGeometricData& d)
     {
         // see comment for TextFieldPlatformImpl class above
-        // on Mac with retina we have to tweek scale
-        UIGeometricData d;
-        d.scale /= UIControlSystem::Instance()->GetBaseGeometricData().scale;
         staticText_->SystemDraw(d);
     }
 
@@ -279,9 +276,8 @@ private:
 
 namespace DAVA
 {
-
-UITextField::UITextField(const Rect &rect, bool rectInAbsoluteCoordinates/*= false*/)
-    : UIControl(rect, rectInAbsoluteCoordinates)
+UITextField::UITextField(const Rect& rect)
+    : UIControl(rect)
 {
     textFieldImpl = new TextFieldPlatformImpl(this);
     textFieldImpl->SetVisible(false);
@@ -843,15 +839,6 @@ YamlNode * UITextField::SaveToYamlNode(UIYamlLoader * loader)
     return node;
 }
 
-List<UIControl*>& UITextField::GetRealChildren()
-{
-    List<UIControl*>& realChildren = UIControl::GetRealChildren();
-#if !defined(DAVA_TEXTFIELD_USE_NATIVE)
-    realChildren.remove(textFieldImpl->staticText_);
-#endif
-    return realChildren;
-}
-
 UITextField* UITextField::Clone()
 {
     UITextField *t = new UITextField();
@@ -1067,7 +1054,10 @@ void UITextField::SetFontByPresetName(const String &presetName)
 void UITextField::SystemDraw(const UIGeometricData& geometricData)
 {
     UIControl::SystemDraw(geometricData);
-    textFieldImpl->SystemDraw(geometricData);
+
+    UIGeometricData localData = GetLocalGeometricData();
+    localData.AddGeometricData(geometricData);
+    textFieldImpl->SystemDraw(localData);
 }
 
 }   // namespace DAVA
