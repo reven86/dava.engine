@@ -108,10 +108,9 @@ public:
         }
         needRedraw = true;
     }
-    void UpdateRect(const Rect& rect)
+    void UpdateRect(const Rect&)
     {
         // see comment for TextFieldPlatformImpl class above
-        // staticText_->SetRect(rect);
 
         if (control_ == UIControlSystem::Instance()->GetFocusedControl())
         {
