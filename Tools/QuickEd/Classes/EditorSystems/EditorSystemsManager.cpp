@@ -117,7 +117,14 @@ bool CompareByLCA(PackageBaseNode* left, PackageBaseNode* right)
     {
         leftParent = left->GetParent();
         rightParent = right->GetParent();
-        DVASSERT(nullptr != leftParent && nullptr != rightParent)
+        if (nullptr == leftParent)
+        {
+            return false;
+        }
+        if (nullptr == rightParent)
+        {
+            return true;
+        }
         if (leftParent == rightParent)
         {
             return leftParent->GetIndex(left) < leftParent->GetIndex(right);
