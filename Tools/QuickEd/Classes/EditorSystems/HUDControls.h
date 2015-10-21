@@ -118,6 +118,7 @@ class SelectionRect : public FrameControl
 {
     template <typename T>
     friend T* CreateContainerWithBorders();
+    SelectionRect();
     void Draw(const DAVA::UIGeometricData& geometricData) override;
 };
 

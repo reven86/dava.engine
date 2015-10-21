@@ -65,7 +65,6 @@ void HUDContainer::AddChild(ControlContainer* container)
 void HUDContainer::InitFromGD(const UIGeometricData& gd)
 {
     const Rect& ur = gd.GetUnrotatedRect();
-    SetSize(ur.GetSize());
     SetPivot(control->GetPivot());
     SetRect(ur);
     SetAngle(gd.angle);
@@ -100,12 +99,10 @@ void HUDContainer::SetVisibleInSystems(bool arg)
 
 void FrameControl::Init()
 {
-    SetName("Frame Control");
-
     for (uint32 i = 0; i < BORDERS_COUNT; ++i)
     {
-        UIControl* control = new UIControl();
-        control->SetName("border of frame");
+        ScopedPtr<UIControl> control(new UIControl());
+        control->SetName("border of " + GetName());
         UIControlBackground* background = control->GetBackground();
         background->SetSprite("~res:/Gfx/HUDControls/BlackGrid", 0);
         background->SetDrawType(UIControlBackground::DRAW_TILED);
@@ -135,6 +132,7 @@ void FrameControl::InitFromGD(const UIGeometricData& geometricData)
 FrameControl::FrameControl()
     : ControlContainer(HUDAreaInfo::FRAME_AREA)
 {
+    SetName("Frame Control");
 }
 
 Rect FrameControl::CreateFrameBorderRect(uint32 border, const Rect& frameRect) const
@@ -243,6 +241,11 @@ void RotateControl::InitFromGD(const UIGeometricData& geometricData)
     Vector2 parentPivotPoint = parent->GetPivot() * parent->GetSize();
     rect.SetPosition(rect.GetPosition() - geometricData.position + parentPivotPoint);
     SetRect(rect);
+}
+
+SelectionRect::SelectionRect()
+{
+    SetName("Selection Rect");
 }
 
 void SelectionRect::Draw(const UIGeometricData& geometricData)
