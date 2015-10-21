@@ -42,10 +42,10 @@ class UIScrollViewContainer : public UIControl
 protected:
 	virtual ~UIScrollViewContainer();
 public:
-	UIScrollViewContainer(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
-	
-	virtual UIControl *Clone();
-	virtual void CopyDataFrom(UIControl *srcControl);
+    UIScrollViewContainer(const Rect& rect = Rect());
+
+    UIScrollViewContainer* Clone() override;
+    virtual void CopyDataFrom(UIControl *srcControl);
 	
 public:
 	virtual void Update(float32 timeElapsed);

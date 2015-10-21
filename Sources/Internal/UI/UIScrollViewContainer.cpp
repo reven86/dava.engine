@@ -37,19 +37,18 @@ namespace DAVA
 	
 const int32 DEFAULT_TOUCH_TRESHOLD = 15;  // Default value for finger touch tresshold
 
-
-UIScrollViewContainer::UIScrollViewContainer(const Rect &rect, bool rectInAbsoluteCoordinates/* = false*/)
-: UIControl(rect, rectInAbsoluteCoordinates)
-, state(STATE_NONE)
-, touchTreshold(DEFAULT_TOUCH_TRESHOLD)
-, mainTouch(-1)
-, oldPos(0.f, 0.f)
-, newPos(0.f, 0.f)
-, currentScroll(NULL)
-, lockTouch(false)
-, scrollStartMovement(false)
-, enableHorizontalScroll(true)
-, enableVerticalScroll(true)
+UIScrollViewContainer::UIScrollViewContainer(const Rect& rect)
+    : UIControl(rect)
+    , state(STATE_NONE)
+    , touchTreshold(DEFAULT_TOUCH_TRESHOLD)
+    , mainTouch(-1)
+    , oldPos(0.f, 0.f)
+    , newPos(0.f, 0.f)
+    , currentScroll(NULL)
+    , lockTouch(false)
+    , scrollStartMovement(false)
+    , enableHorizontalScroll(true)
+    , enableVerticalScroll(true)
 {
 	this->SetInputEnabled(true);
 	this->SetMultiInput(true);
@@ -60,7 +59,7 @@ UIScrollViewContainer::~UIScrollViewContainer()
 {
 }
 
-UIControl* UIScrollViewContainer::Clone()
+UIScrollViewContainer* UIScrollViewContainer::Clone()
 {
 	UIScrollViewContainer *t = new UIScrollViewContainer(GetRect());
 	t->CopyDataFrom(this);
