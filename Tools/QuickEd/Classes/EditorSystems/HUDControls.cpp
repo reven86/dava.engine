@@ -40,13 +40,17 @@ const Vector2 ROTATE_CONTROL_SIZE(20.0f, 20.0f);
 
 void FixPositionForScroll(UIControl* controlInHud)
 {
-    DVASSERT(controlInHud != nullptr && controlInHud->GetParent() != nullptr);
-    UIControl* topLevelControl = controlInHud->GetParent();
-    while (topLevelControl->GetParent()->GetParent() != nullptr) //first control is screen
+    DVASSERT(controlInHud != nullptr);
+    static UIControl *backgroundControl = nullptr; //background control stay unchanged all the time
+    if (backgroundControl == nullptr)
     {
-        topLevelControl = topLevelControl->GetParent();
+        backgroundControl = controlInHud;
+        while (backgroundControl->GetParent()->GetParent() != nullptr) //first control is screen
+        {
+            backgroundControl = backgroundControl->GetParent();
+        }
     }
-    controlInHud->SetPosition(controlInHud->GetPosition() - topLevelControl->GetPosition());
+    controlInHud->SetPosition(controlInHud->GetPosition() - backgroundControl->GetPosition());
 }
 
 ControlContainer::ControlContainer(const HUDAreaInfo::eArea area_)
