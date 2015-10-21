@@ -1354,6 +1354,8 @@ Trace("\n\n-------------------------------\nframe %u executed(submitted to GPU)\
     }    
     _FrameSync.Unlock();
 
+    ProgGLES2::InvalidateAllConstBufferInstances();
+
 
     if( _GLES2_Context )
     {
@@ -1437,8 +1439,6 @@ Trace("\n\n-------------------------------\nframe %u generated\n",_Frame.back().
 
         _ExecuteQueuedCommands(); 
     }
-
-    ProgGLES2::InvalidateAllConstBufferInstances();
 }
 
 

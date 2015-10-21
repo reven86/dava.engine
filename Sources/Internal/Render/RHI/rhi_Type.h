@@ -690,6 +690,7 @@ Descriptor
               : depthTestEnabled(true),
                 depthWriteEnabled(true),
                 depthFunc(CMP_LESSEQUAL),
+                stencilEnabled(false),
                 stencilTwoSided(false)
             {
                 stencilFront.readMask                   = 0xFF;
