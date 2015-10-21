@@ -63,16 +63,6 @@ public:
     };
 
     /**
-	 \enum Internal Control Sytem event activity state.
-	 */
-    enum eInputActivityState
-    {
-        ACTIVITY_STATE_INACTIVE = 0,
-        ACTIVITY_STATE_ACTIVE,
-        ACTIVITY_STATE_CHANGED
-    };
-
-    /**
 	 \enum Input state accordingly to control.
 	 */
     enum eControlInputState
@@ -140,13 +130,12 @@ public:
     eInputHandledType GetInputHandledType() { return inputHandledType; };
     void ResetInputHandledType() { inputHandledType = INPUT_NOT_HANDLED; };
 
-    int32 tid = 0; // event id, for the platforms with mouse this id means mouse button id, key codes for keys, axis id for joystick
+    uint32 tid = 0; // event id, for the platforms with mouse this id means mouse button id, key codes for keys, axis id for joystick
     Vector2 point; // point of pressure in virtual coordinates
     Vector2 physPoint; // point of pressure in physical coordinates
     float64 timestamp = 0.0; //(TODO not all platforms) time stemp of the event occurrence
     Phase phase = Phase::BEGAN; // began, ended, moved. See Phase
     UIControl* touchLocker = nullptr; // control that handles this input
-    int32 activeState = ACTIVITY_STATE_INACTIVE; // state of input in control system (active, inactive, changed)
     int32 controlState = CONTROL_STATE_RELEASED; // input state relative to control (outside, inside). Used for point inputs only(mouse, touch)
     int32 tapCount = 0; // (TODO not all platforms) count of the continuous inputs (clicks for mouse)
     char16 keyChar = 0; // (TODO make char32_t) unicode/translated character produced by key using current language, caps etc. Used only with CHAR.

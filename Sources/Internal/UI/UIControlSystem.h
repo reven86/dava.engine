@@ -75,10 +75,8 @@ class UIControlSystem : public Singleton<UIControlSystem>
 	int frameSkip;
 	int transitionType;
 
-	
-	Vector<UIEvent> totalInputs;
+    Vector<UIEvent> touchEvents;
 
-	
 protected:
 	~UIControlSystem();
 	/**

@@ -508,6 +508,7 @@ namespace DAVA
         outTouch.physPoint.y = static_cast<float32>(GET_Y_LPARAM(lParam));
         outTouch.phase = phase;
         outTouch.device = deviceId;
+        outTouch.tapCount = 1;
 
         return phase;
     }
@@ -619,11 +620,12 @@ namespace DAVA
     void CoreWin32Platform::OnTouchEvent(UIEvent::Phase phase, UIEvent::Device deviceId, uint32 fingerId, float32 x, float32 y, float presure)
     {
         UIEvent newTouch;
-        newTouch.tid = 0;
+        newTouch.tid = fingerId;
         newTouch.physPoint.x = x;
         newTouch.physPoint.y = y;
         newTouch.phase = phase;
         newTouch.device = deviceId;
+        newTouch.tapCount = 1;
 
         UIControlSystem::Instance()->OnInput(&newTouch);
     }
@@ -670,6 +672,8 @@ namespace DAVA
         {
         case WM_ERASEBKGND:
             return 1; // https://msdn.microsoft.com/en-us/library/windows/desktop/ms648055%28v=vs.85%29.aspx
+        case WM_SYSKEYUP:
+        // no break
         case WM_KEYUP:
         {
             int32 system_key_code = static_cast<int32>(wParam);
@@ -685,6 +689,8 @@ namespace DAVA
         }
         break;
 
+        case WM_SYSKEYDOWN:
+        // no break;
         case WM_KEYDOWN:
         {
             int32 system_key_code = static_cast<int32>(wParam);

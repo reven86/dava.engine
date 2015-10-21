@@ -40,7 +40,7 @@ namespace DAVA
 {
 const static int MAX_KEYS = 256;
 
-enum eDavaKeys : int32
+enum eDavaKeys : uint32
 {
     DVKEY_UNKNOWN = 0,
     DVKEY_ESCAPE,
@@ -164,7 +164,7 @@ enum eDavaKeys : int32
     DVKEY_COUNT
 
 };
-    
+
 class KeyboardDevice : public BaseObject
 {
     friend class InputSystem;
@@ -179,18 +179,18 @@ protected:
 public:
     bool IsKeyPressed(int32 keyCode) const;
 
-    int32 GetDavaKeyForSystemKey(int32 systemKeyCode) const;
+    uint32 GetDavaKeyForSystemKey(uint32 systemKeyCode) const;
 
-    void OnKeyPressed(int32 keyCode);
-    void OnKeyUnpressed(int32 keyCode);
+    void OnKeyPressed(uint32 keyCode);
+    void OnKeyUnpressed(uint32 keyCode);
 
     void OnBeforeUpdate();
     void OnAfterUpdate();
-    
-    void OnSystemKeyPressed(int32 systemKeyCode);
-    void OnSystemKeyUnpressed(int32 systemKeyCode);
 
-	void ClearAllKeys();
+    void OnSystemKeyPressed(uint32 systemKeyCode);
+    void OnSystemKeyUnpressed(uint32 systemKeyCode);
+
+    void ClearAllKeys();
 
 protected:
     
@@ -198,7 +198,7 @@ protected:
 
     Bitset<DVKEY_COUNT> keyStatus; //keys pressed for the current frame
     Bitset<DVKEY_COUNT> realKeyStatus;
-    Array<int32, MAX_KEYS> keyTranslator;
+    Array<uint32, MAX_KEYS> keyTranslator;
 };
 };
 

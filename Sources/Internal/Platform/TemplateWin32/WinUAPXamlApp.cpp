@@ -612,6 +612,7 @@ void WinUAPXamlApp::DAVATouchEvent(UIEvent::Phase phase, float32 x, float32 y, i
     newTouch.physPoint.y = y;
     newTouch.phase = phase;
     newTouch.device = device;
+    newTouch.tapCount = 1;
 
     UIControlSystem::Instance()->OnInput(&newTouch);
 }

@@ -366,15 +366,15 @@ void UIControlSystem::Draw()
 	
 void UIControlSystem::SwitchInputToControl(int32 eventID, UIControl *targetControl)
 {
-	for (Vector<UIEvent>::iterator it = totalInputs.begin(); it != totalInputs.end(); it++) 
-	{
-		if((*it).tid == eventID)
-		{
-			CancelInput(&(*it));
-			
-			if(targetControl->IsPointInside((*it).point))
-			{
-				(*it).controlState = UIEvent::CONTROL_STATE_INSIDE;
+    for (Vector<UIEvent>::iterator it = touchEvents.begin(); it != touchEvents.end(); it++)
+    {
+        if ((*it).tid == eventID)
+        {
+            CancelInput(&(*it));
+
+            if (targetControl->IsPointInside((*it).point))
+            {
+                (*it).controlState = UIEvent::CONTROL_STATE_INSIDE;
 				targetControl->touchesInside++;
 			}
 			else 
@@ -399,122 +399,51 @@ void UIControlSystem::SwitchInputToControl(int32 eventID, UIControl *targetContr
 
 namespace on_input_details
 {
-bool IsSameTouch(const UIEvent& l, const UIEvent& r)
+void CopyTouchData(const UIEvent& src, UIEvent& dst)
 {
-    return l.tid == r.tid &&
-    l.device == r.device &&
-    l.phase != UIEvent::Phase::WHEEL &&
-    l.phase != UIEvent::Phase::MOVE &&
-    l.phase < UIEvent::Phase::CHAR;
-};
-
-void CopyTouchData(UIEvent* dst, const UIEvent* src)
-{
-    dst->timestamp = src->timestamp;
-    dst->physPoint = src->physPoint;
-    dst->point = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(src->physPoint);
-    dst->tapCount = src->tapCount;
-    dst->inputHandledType = src->inputHandledType;
+    dst.timestamp = src.timestamp;
+    dst.physPoint = src.physPoint;
+    dst.point = src.physPoint;
+    dst.tapCount = src.tapCount;
+    dst.phase = src.phase;
+    dst.inputHandledType = src.inputHandledType;
 }
 
-void UpdateOldEvent(const Vector<UIEvent>& newEvents, UIEvent& oldEvent)
+void RecordEvent(const UIEvent& e)
+{
+    Replay::Instance()->RecordEvent(&e);
+}
+
+void RecordEvents(const Vector<UIEvent>& events)
+{
+    int32 count = static_cast<int32>(events.size());
+    Replay::Instance()->RecordEventsCount(count);
+
+    std::for_each(begin(events), end(events), RecordEvent);
+}
+
+bool IsCancelOrEnded(const UIEvent& ev)
+{
+    if (ev.phase == UIEvent::Phase::ENDED || ev.phase == UIEvent::Phase::CANCELLED)
     {
-        auto newEvIt = std::find_if(begin(newEvents), end(newEvents), [oldEvent](const UIEvent& newEv) {
-            return IsSameTouch(oldEvent, newEv);
-        });
-
-        if (newEvIt != newEvents.end())
-        {
-            if (oldEvent.phase == newEvIt->phase && oldEvent.physPoint == newEvIt->physPoint)
-            {
-                oldEvent.activeState = UIEvent::ACTIVITY_STATE_ACTIVE;
-            }
-            else
-            {
-                oldEvent.activeState = UIEvent::ACTIVITY_STATE_CHANGED;
-            }
-
-            oldEvent.phase = newEvIt->phase;
-            CopyTouchData(&oldEvent, &*newEvIt);
-        }
-    };
-
-    void AddNewEvents(const Vector<UIEvent>& newEvents, Vector<UIEvent>& totals)
-    {
-        auto FindNewTouchAndAddToTotals = [&totals](const UIEvent& newEv) {
-            auto it = std::find_if(begin(totals), end(totals), [newEv](const UIEvent& oldEv) {
-                return IsSameTouch(newEv, oldEv);
-            });
-
-            if (it == totals.end())
-            {
-                totals.push_back(newEv);
-
-                auto& ev = totals.back();
-                ev.activeState = UIEvent::ACTIVITY_STATE_CHANGED;
-                ev.point = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(ev.physPoint);
-            }
-        };
-
-        std::for_each(begin(newEvents), end(newEvents), FindNewTouchAndAddToTotals);
-    };
-
-    void ConvertToPointAndRecord(const UIEvent& e)
-    {
-        UIEvent ev = e;
-        ev.point = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(ev.physPoint);
-        Replay::Instance()->RecordEvent(&ev);
-    };
-
-    void RecordEvents(const Vector<UIEvent>& events)
-    {
-        int32 count = static_cast<int32>(events.size());
-        Replay::Instance()->RecordEventsCount(count);
-
-        std::for_each(begin(events), end(events), ConvertToPointAndRecord);
+        return true;
     }
+    return false;
+};
 
-    struct UpdatePreviousTouchEventsFrom
-    {
-        UpdatePreviousTouchEventsFrom(const Vector<UIEvent>& newEvents)
-            : events(newEvents)
-        {
-        }
+void CancelEvent(UIEvent& ev)
+{
+    UIControlSystem::Instance()->CancelInput(&ev);
+}
 
-        const Vector<UIEvent>& events;
+} // end namespace input_details
 
-        void operator()(UIEvent& oldTotalEvent)
-        {
-            if (oldTotalEvent.activeState == UIEvent::ACTIVITY_STATE_INACTIVE)
-            {
-                UpdateOldEvent(events, oldTotalEvent);
-            }
-        }
-    };
-
-    bool IsEventStillInactive(UIEvent& ev)
-    {
-        if (/*ev.activeState == UIEvent::ACTIVITY_STATE_INACTIVE ||*/ ev.phase == UIEvent::Phase::CANCELLED)
-        {
-            return true;
-        }
-        return false;
-    };
-
-    void CancelNotEndedEvent(UIEvent& ev)
-    {
-        if (ev.phase != UIEvent::Phase::ENDED)
-        {
-            UIControlSystem::Instance()->CancelInput(&ev);
-        }
-    }
-
-    } // end namespace input_details
-
-    void UIControlSystem::OnInput(UIEvent* newEvent)
+void UIControlSystem::OnInput(UIEvent* newEvent)
 {
     using namespace on_input_details;
     inputCounter = 0;
+
+    newEvent->point = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(newEvent->physPoint);
 
     if (Replay::IsPlayback())
     {
@@ -528,100 +457,52 @@ void UpdateOldEvent(const Vector<UIEvent>& newEvents, UIEvent& oldEvent)
 
     if (frameSkip <= 0)
     {
-        UIEvent newEv = *newEvent;
         if (Replay::IsRecord())
         {
             RecordEvents({*newEvent});
         }
 
-        if (newEv.device == UIEvent::Device::TOUCH_SURFACE)
+        UIEvent* eventToHandle = nullptr;
+
+        if (newEvent->phase >= UIEvent::Phase::BEGAN && newEvent->phase <= UIEvent::Phase::ENDED)
         {
-            std::for_each(begin(totalInputs), end(totalInputs), [](UIEvent& ev) {
-                ev.activeState = UIEvent::ACTIVITY_STATE_INACTIVE;
-            });
-
-            std::for_each(begin(totalInputs), end(totalInputs), UpdatePreviousTouchEventsFrom({newEv}));
-
-            AddNewEvents({newEv}, totalInputs);
-
-            auto startRemoveIt = std::remove_if(begin(totalInputs), end(totalInputs), IsEventStillInactive);
-
-            if (startRemoveIt != totalInputs.end())
+            auto FindSameTouch = [newEvent](const UIEvent& ev) {
+                return ev.tid == newEvent->tid;
+            };
+            auto it = std::find_if(begin(touchEvents), end(touchEvents), FindSameTouch);
+            if (it == end(touchEvents))
             {
-                std::for_each(startRemoveIt, totalInputs.end(), CancelNotEndedEvent);
-                totalInputs.erase(startRemoveIt, totalInputs.end());
+                touchEvents.push_back(*newEvent);
+                eventToHandle = &touchEvents.back();
             }
-
-            if (currentScreen)
+            else
             {
-                // use index "i" because inside loop "totalInputs" can be changed
-                // during DVASSERT_MSG
-                for (size_t i = 0; i < totalInputs.size(); ++i)
-                {
-                    UIEvent& event = totalInputs[i];
-                    if (event.activeState == UIEvent::ACTIVITY_STATE_CHANGED)
-                    {
-                        if (!popupContainer->SystemInput(&event))
-                        {
-                            //                        if (event.phase == DAVA::UIEvent::Phase::BEGAN)
-                            //                        {
-                            //                            DAVA::Logger::Info("beg tid: %d", event.tid);
-                            //                        } else if (event.phase == DAVA::UIEvent::Phase::DRAG)
-                            //                        {
-                            //                            DAVA::Logger::Info("drg tid: %d", event.tid);
-                            //                        } else if (event.phase == DAVA::UIEvent::Phase::ENDED)
-                            //                        {
-                            //                            DAVA::Logger::Info("end tid: %d", event.tid);
-                            //                        }
-                            bool result = currentScreen->SystemInput(&event);
-                            if (!result)
-                            {
-                                Logger::Info("not handled tid: %d", event.tid);
-                            }
-                        }
-                    }
-                    if (totalInputs.empty())
-                    {
-                        break;
-                    }
-                }
-            } // end if currrentScreen
+                CopyTouchData(*newEvent, *it);
+                eventToHandle = &(*it);
+            }
         }
         else
         {
-            if (!popupContainer->SystemInput(&newEv))
+            eventToHandle = newEvent;
+        }
+
+        if (currentScreen)
+        {
+            if (!popupContainer->SystemInput(eventToHandle))
             {
-                //                        if (event.phase == DAVA::UIEvent::Phase::BEGAN)
-                //                        {
-                //                            DAVA::Logger::Info("beg tid: %d", event.tid);
-                //                        } else if (event.phase == DAVA::UIEvent::Phase::DRAG)
-                //                        {
-                //                            DAVA::Logger::Info("drg tid: %d", event.tid);
-                //                        } else if (event.phase == DAVA::UIEvent::Phase::ENDED)
-                //                        {
-                //                            DAVA::Logger::Info("end tid: %d", event.tid);
-                //                        }
-                bool result = currentScreen->SystemInput(&newEv);
-                if (!result)
-                {
-                    Logger::Info("not handled tid: %d", newEv.tid);
-                }
+                currentScreen->SystemInput(eventToHandle);
             }
         }
 
+        auto startRemoveIt = std::remove_if(begin(touchEvents), end(touchEvents), IsCancelOrEnded);
+
+        if (startRemoveIt != end(touchEvents))
+        {
+            std::for_each(startRemoveIt, touchEvents.end(), CancelEvent);
+            touchEvents.erase(startRemoveIt, touchEvents.end());
+        }
     } // end if frameSkip <= 0
 }
-
-//void UIControlSystem::OnInput(UIEvent * event)
-//{
-//	if(currentScreen)
-//	{
-//		if(!popupContainer->SystemInput(event))
-//		{
-//			currentScreen->SystemInput(event);
-//		}
-//	}
-//}
 
 void UIControlSystem::CancelInput(UIEvent *touch)
 {
@@ -636,17 +517,17 @@ void UIControlSystem::CancelInput(UIEvent *touch)
 }
 void UIControlSystem::CancelAllInputs()
 {
-	for (Vector<UIEvent>::iterator it = totalInputs.begin(); it != totalInputs.end(); it++)
-	{
-		CancelInput(&(*it));
-	}
-	totalInputs.clear();
+    for (Vector<UIEvent>::iterator it = touchEvents.begin(); it != touchEvents.end(); it++)
+    {
+        CancelInput(&(*it));
+    }
+    touchEvents.clear();
 }
 
 void UIControlSystem::CancelInputs(UIControl *control, bool hierarchical)
 {
-	for (Vector<UIEvent>::iterator it = totalInputs.begin(); it != totalInputs.end(); it++) 
-	{
+    for (Vector<UIEvent>::iterator it = touchEvents.begin(); it != touchEvents.end(); it++)
+    {
         if (!hierarchical)
         {
             if (it->touchLocker == control)
@@ -699,7 +580,7 @@ int32 UIControlSystem::GetLockInputCounter() const
 
 const Vector<UIEvent> & UIControlSystem::GetAllInputs()
 {
-	return totalInputs;
+    return touchEvents;
 }
 	
 void UIControlSystem::SetExclusiveInputLocker(UIControl *locker, int32 lockEventId)
@@ -707,7 +588,7 @@ void UIControlSystem::SetExclusiveInputLocker(UIControl *locker, int32 lockEvent
 	SafeRelease(exclusiveInputLocker);
     if (locker != NULL)
     {
-        for (Vector<UIEvent>::iterator it = totalInputs.begin(); it != totalInputs.end(); it++)
+        for (Vector<UIEvent>::iterator it = touchEvents.begin(); it != touchEvents.end(); it++)
         {
             if (it->tid != lockEventId && it->touchLocker != locker)
             {//cancel all inputs excepts current input and inputs what allready handles by this locker.

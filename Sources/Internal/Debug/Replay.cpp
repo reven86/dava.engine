@@ -104,13 +104,11 @@ void Replay::RecordEventsCount(int32 eventsCount)
 
 void Replay::RecordEvent(const UIEvent * ev)
 {
-	//Logger::FrameworkDebug("[Replay::RecordEvent]");
 	Write(ev->tid);
 	Write(ev->point.x);
 	Write(ev->point.y);
 	Write(ev->timestamp);
 	Write(ev->phase);
-	Write(ev->activeState);
 	Write(ev->controlState);
 	Write(ev->tapCount);
 	Write<uint16>(ev->keyChar);
@@ -154,7 +152,6 @@ void Replay::StartPlayback(const FilePath & dirName)
 
 float32 Replay::PlayFrameTime()
 {
-	//Logger::FrameworkDebug("[Replay::PlayFrameTime]");
 	if(!skipType)
 	{
 		int8 type = Read<int8>();
@@ -178,7 +175,6 @@ float32 Replay::PlayFrameTime()
 
 int32 Replay::PlayEventsCount()
 {
-	//Logger::FrameworkDebug("[Replay::PlayEventsCount]");
 	if(!skipType)
 	{
 		Read<int8>();
@@ -196,7 +192,6 @@ int32 Replay::PlayEventsCount()
 
 UIEvent	Replay::PlayEvent()
 {
-	//Logger::FrameworkDebug("[Replay::PlayEvent]");
 	UIEvent ev;
 
 	ev.tid = Read<int32>(); if(!isPlayback) return ev;
@@ -206,11 +201,12 @@ UIEvent	Replay::PlayEvent()
     ev.phase = static_cast<UIEvent::Phase>(Read<int32>());
     if (!isPlayback)
         return ev;
-    ev.activeState = Read<int32>(); if(!isPlayback) return ev;
 	ev.controlState = Read<int32>(); if(!isPlayback) return ev;
 	ev.tapCount = Read<int32>(); if(!isPlayback) return ev;
-	ev.keyChar = (char16)Read<uint16>(); if(!isPlayback) return ev;
-    ev.device = static_cast<UIEvent::Device>(Read<uint32>());
+    ev.keyChar = Read<uint16>();
+    if (!isPlayback)
+        return ev;
+    ev.device = Read<UIEvent::Device>();
     if (!isPlayback)
         return ev;
 
