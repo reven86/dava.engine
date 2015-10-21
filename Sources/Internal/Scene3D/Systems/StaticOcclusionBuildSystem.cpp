@@ -167,8 +167,9 @@ void StaticOcclusionBuildSystem::CollectEntitiesForOcclusionRecursively(Vector<E
     
 void StaticOcclusionBuildSystem::StartBuildOcclusion()
 {
-    if (activeIndex == static_cast<uint32>(-1))return; // System inactive
-    
+    if (activeIndex == static_cast<uint32>(-1))
+        return; // System inactive
+
     //global preparations
     SetCamera(GetScene()->GetCurrentCamera());
     // Prepare render objects
@@ -245,6 +246,7 @@ void StaticOcclusionBuildSystem::StartBuildOcclusion()
 
     staticOcclusion->StartBuildOcclusion(&data, GetScene()->GetRenderSystem(), landscape);       
 }
+
 #if RHI_COMPLETE    
 void StaticOcclusionBuildSystem::OcclusionBuildStep(BaseObject * bo, void * messageData, void * callerData)
 {
@@ -300,6 +302,7 @@ void StaticOcclusionBuildSystem::FinishBuildOcclusion()
     {
         // not final index add more occlusion build cycle
         StartBuildOcclusion();
+        return;
     }
  
     SceneForceLod(LodComponent::INVALID_LOD_LAYER);

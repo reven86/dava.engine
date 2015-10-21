@@ -62,6 +62,8 @@ const uint32 effectiveSides[6][3] =
 };
 
 static uint64 blockProcessingTime = 0;
+static double occlusionBuildDuration = 0.0;
+static uint64 occlusionBuildStartTime = 0;
 
 StaticOcclusion::StaticOcclusion()    
 {
@@ -95,15 +97,17 @@ void StaticOcclusion::StartBuildOcclusion(StaticOcclusionData * _currentData, Re
     xBlockCount = currentData->sizeX;
     yBlockCount = currentData->sizeY;
     zBlockCount = currentData->sizeZ;
-        
-    currentFrameX = 0;
+
+    occlusionBuildStartTime = SystemTimer::Instance()->GetAbsoluteNano();
+    occlusionBuildDuration = 0.0;
+    blockProcessingTime = 0;
+    currentFrameX = -1; // we increasing this, before rendering, so we will start from zero
     currentFrameY = 0;
     currentFrameZ = 0;            
                 
     renderSystem = _renderSystem;
     landscape = _landscape;        
 }       
-            
     
 AABBox3 StaticOcclusion::GetCellBox(uint32 x, uint32 y, uint32 z)
 {
@@ -123,40 +127,59 @@ AABBox3 StaticOcclusion::GetCellBox(uint32 x, uint32 y, uint32 z)
     AABBox3 blockBBox(min, Vector3(min.x + size.x, min.y + size.y, min.z + size.z));
     return blockBBox;
 }
-    
+
+void StaticOcclusion::AdvanceToNextBlock()
+{
+    currentFrameX++;
+    if (currentFrameX >= xBlockCount)
+    {
+        currentFrameX = 0;
+        currentFrameY++;
+        if (currentFrameY >= yBlockCount)
+        {
+            currentFrameY = 0;
+            currentFrameZ++;
+        }
+    }
+}
+
 bool StaticOcclusion::ProccessBlock()
 {
     if (!ProcessRecorderQueries())
+    {
+        RenderCurrentBlock();
         return false;
+    }
+
+    auto currentTime = SystemTimer::Instance()->GetAbsoluteNano();
 
     if (currentFrameZ >= zBlockCount)
+    {
+        Logger::Info("Occlusion build time: %.4llfs",
+                     static_cast<double>(currentTime - occlusionBuildStartTime) / 1e+9);
         return true;
+    }
 
     if (renderPassConfigs.empty())
     {
-        auto currentTime = SystemTimer::Instance()->GetAbsoluteNano();
-        auto dt = currentTime - blockProcessingTime;
+        AdvanceToNextBlock();
+
+        auto blockIndex = currentFrameX + currentFrameY * xBlockCount + currentFrameZ * xBlockCount * yBlockCount;
+        auto totalBlocks = xBlockCount * yBlockCount * zBlockCount;
+
+        if (blockProcessingTime == 0)
+            blockProcessingTime = currentTime;
+
+        auto dt = static_cast<double>(currentTime - blockProcessingTime) / 1e+9;
+        occlusionBuildDuration += dt;
+        Logger::Info("Block %u/%u. Since last block: %.4llfs, total: %.4llf",
+                     blockIndex, totalBlocks, static_cast<double>(dt), occlusionBuildDuration);
         blockProcessingTime = currentTime;
 
-        Logger::Info("Block processing time: %.4llf", (double)dt / 1e+9);
-
-        BuildRenderPassConfigsForBlock();
+        BuildRenderPassConfigsForCurrentBlock();
     }
 
-    if (RenderCurrentBlock())
-    {
-        currentFrameX++;
-        if (currentFrameX >= xBlockCount)
-        {
-            currentFrameX = 0;
-            currentFrameY++;
-            if (currentFrameY >= yBlockCount)
-            {
-                currentFrameY = 0;
-                currentFrameZ++;
-            }
-        }
-    }
+    RenderCurrentBlock();
 
     return false;
 }
@@ -172,10 +195,11 @@ uint32 StaticOcclusion::GetTotalStepsCount()
     return xBlockCount * yBlockCount * zBlockCount;
 }
 
-void StaticOcclusion::BuildRenderPassConfigsForBlock()
+void StaticOcclusion::BuildRenderPassConfigsForCurrentBlock()
 {
     const uint32 stepCount = 10;
 
+    uint32 blockIndex = currentFrameX + currentFrameY * xBlockCount + currentFrameZ * xBlockCount * yBlockCount;
     AABBox3 cellBox = GetCellBox(currentFrameX, currentFrameY, currentFrameZ);
     Vector3 stepSize = cellBox.GetSize();
     stepSize /= float32(stepCount);
@@ -241,6 +265,7 @@ void StaticOcclusion::BuildRenderPassConfigsForBlock()
                     }
 
                     RenderPassCameraConfig config;
+                    config.blockIndex = blockIndex;
                     config.side = side;
                     config.position = renderPosition;
                     config.direction = viewDirections[effectiveSides[side][realSideIndex]];
@@ -261,18 +286,17 @@ void StaticOcclusion::BuildRenderPassConfigsForBlock()
     }
 }
 
-bool StaticOcclusion::PerformRender(const RenderPassCameraConfig& rpc, uint32 blockIndex)
+bool StaticOcclusion::PerformRender(const RenderPassCameraConfig& rpc)
 {
     Camera* camera = cameras[rpc.side];
+    camera->SetPosition(rpc.position);
     camera->SetLeft(rpc.left);
     camera->SetUp(rpc.up);
     camera->SetDirection(rpc.direction);
-    camera->SetPosition(rpc.position);
 
     occlusionFrameResults.emplace_back();
     StaticOcclusionFrameResult& res = occlusionFrameResults.back();
-    res.blockIndex = blockIndex;
-    staticOcclusionRenderPass->DrawOcclusionFrame(renderSystem, camera, res, *currentData);
+    staticOcclusionRenderPass->DrawOcclusionFrame(renderSystem, camera, res, *currentData, rpc.blockIndex);
     if (res.queryBuffer == rhi::InvalidHandle)
     {
         occlusionFrameResults.pop_back();
@@ -284,33 +308,19 @@ bool StaticOcclusion::PerformRender(const RenderPassCameraConfig& rpc, uint32 bl
 
 bool StaticOcclusion::RenderCurrentBlock()
 {
-    uint32 blockIndex = currentFrameX + currentFrameY * xBlockCount + currentFrameZ * xBlockCount * yBlockCount;
-
-    // uint64 renderingStart = SystemTimer::Instance()->GetAbsoluteNano();
-
     uint32 renders = 0;
     uint32 actualRenders = 0;
-    uint32 maxRenders = 1 + renderPassConfigs.size() / 4;
+    uint32 maxRenders = 128; // Max(16u, renderPassConfigs.size() / 4);
     while ((renders < maxRenders) && !renderPassConfigs.empty())
     {
         auto i = renderPassConfigs.begin();
         std::advance(i, rand() % renderPassConfigs.size());
-        if (PerformRender(*i, blockIndex))
+        if (PerformRender(*i))
         {
             ++actualRenders;
         }
         renderPassConfigs.erase(i);
         ++renders;
-    }
-    /*
-	uint64 timeTotalRendering = SystemTimer::Instance()->GetAbsoluteNano() - renderingStart;
-    Logger::FrameworkDebug(Format("Block: %d, dt: %0.3llf, rendered: %u/%u, remaining: %u", 
-		blockIndex, (double)timeTotalRendering / 1e+9, actualRenders, renders, (uint32_t)renderPassConfigs.size()).c_str());
-	*/
-
-    if (actualRenders == 0)
-    {
-        renderPassConfigs.clear();
     }
 
     return renderPassConfigs.empty();
@@ -335,14 +345,15 @@ bool StaticOcclusion::ProcessRecorderQueries()
 
             if (rhi::QueryIsReady(fr->queryBuffer, index))
             {
-                auto qv = rhi::QueryValue(fr->queryBuffer, index);
-                if (qv != 0)
+                if (rhi::QueryValue(fr->queryBuffer, index))
                 {
+                    /*
                     if (!currentData->IsObjectVisibleFromBlock(fr->blockIndex, req->GetStaticOcclusionIndex()))
                     {
                         Logger::Info("Object: %u is visible from block %u (query value: %d)",
                                      uint32(req->GetStaticOcclusionIndex()), fr->blockIndex, qv);
                     }
+					*/
                     currentData->EnableVisibilityForObject(fr->blockIndex, req->GetStaticOcclusionIndex());
                 }
                 ++processedRequests;

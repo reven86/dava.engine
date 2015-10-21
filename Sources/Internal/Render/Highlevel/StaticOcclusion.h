@@ -90,6 +90,7 @@ public:
                 
     void StartBuildOcclusion(StaticOcclusionData * currentData, RenderSystem * renderSystem, Landscape * landscape);
     bool ProccessBlock(); // returns true if finished building
+    void AdvanceToNextBlock();
 
     uint32 GetCurrentStepsCount();
     uint32 GetTotalStepsCount();
@@ -106,11 +107,12 @@ private:
         Vector3 up;
         Vector3 direction;
         uint32 side = 0;
+        uint32 blockIndex = 0;
     };
 
-    void BuildRenderPassConfigsForBlock();
+    void BuildRenderPassConfigsForCurrentBlock();
     bool RenderCurrentBlock(); // returns true, if all passes for block completed
-    bool PerformRender(const RenderPassCameraConfig&, uint32 blockIndex);
+    bool PerformRender(const RenderPassCameraConfig&);
 
 private:
     Camera* cameras[6];

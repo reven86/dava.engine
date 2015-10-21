@@ -83,7 +83,8 @@ bool StaticOcclusionRenderPass::CompareFunction(const RenderBatch * a, const Ren
 }
 
 void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem* renderSystem, Camera* occlusionCamera,
-                                                   StaticOcclusionFrameResult& target, const StaticOcclusionData& data)
+                                                   StaticOcclusionFrameResult& target, const StaticOcclusionData& data,
+                                                   uint32 blockIndex)
 {
     Camera *mainCamera = occlusionCamera;
     Camera *drawCamera = occlusionCamera;
@@ -135,7 +136,7 @@ void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem* renderSystem, C
     for (auto batch : meshBatches)
     {
         auto occlusionId = batch->GetRenderObject()->GetStaticOcclusionIndex();
-        bool isAlreadyVisible = data.IsObjectVisibleFromBlock(target.blockIndex, occlusionId);
+        bool isAlreadyVisible = data.IsObjectVisibleFromBlock(blockIndex, occlusionId);
         if (!isAlreadyVisible)
         {
             invisibleObjects.insert(occlusionId);
@@ -145,6 +146,7 @@ void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem* renderSystem, C
     if (invisibleObjects.empty())
         return;
 
+    target.blockIndex = blockIndex;
     target.queryBuffer = rhi::CreateQueryBuffer(meshBatches.size());
     target.frameRequests.resize(meshBatches.size(), nullptr);
 
