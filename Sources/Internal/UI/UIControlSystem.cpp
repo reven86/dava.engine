@@ -494,7 +494,7 @@ void UpdateOldEvent(const Vector<UIEvent>& newEvents, UIEvent& oldEvent)
 
     bool IsEventStillInactive(UIEvent& ev)
     {
-        if (ev.activeState == UIEvent::ACTIVITY_STATE_INACTIVE || ev.phase == UIEvent::Phase::CANCELLED)
+        if (/*ev.activeState == UIEvent::ACTIVITY_STATE_INACTIVE ||*/ ev.phase == UIEvent::Phase::CANCELLED)
         {
             return true;
         }
@@ -534,42 +534,81 @@ void UpdateOldEvent(const Vector<UIEvent>& newEvents, UIEvent& oldEvent)
             RecordEvents({*newEvent});
         }
 
-        std::for_each(begin(totalInputs), end(totalInputs), [](UIEvent& ev) {
-            ev.activeState = UIEvent::ACTIVITY_STATE_INACTIVE;
-        });
-
-        std::for_each(begin(totalInputs), end(totalInputs), UpdatePreviousTouchEventsFrom({newEv}));
-
-        AddNewEvents({newEv}, totalInputs);
-
-        auto startRemoveIt = std::remove_if(begin(totalInputs), end(totalInputs), IsEventStillInactive);
-
-        if (startRemoveIt != totalInputs.end())
+        if (newEv.device == UIEvent::Device::TOUCH_SURFACE)
         {
-            std::for_each(startRemoveIt, totalInputs.end(), CancelNotEndedEvent);
-            totalInputs.erase(startRemoveIt, totalInputs.end());
-        }
+            std::for_each(begin(totalInputs), end(totalInputs), [](UIEvent& ev) {
+                ev.activeState = UIEvent::ACTIVITY_STATE_INACTIVE;
+            });
 
-        if (currentScreen)
-        {
-            // use index "i" because inside loop "totalInputs" can be changed
-            // during DVASSERT_MSG
-            for(size_t i = 0; i < totalInputs.size(); ++i)
+            std::for_each(begin(totalInputs), end(totalInputs), UpdatePreviousTouchEventsFrom({newEv}));
+
+            AddNewEvents({newEv}, totalInputs);
+
+            auto startRemoveIt = std::remove_if(begin(totalInputs), end(totalInputs), IsEventStillInactive);
+
+            if (startRemoveIt != totalInputs.end())
             {
-                UIEvent& event = totalInputs[i];
-                if(event.activeState == UIEvent::ACTIVITY_STATE_CHANGED)
+                std::for_each(startRemoveIt, totalInputs.end(), CancelNotEndedEvent);
+                totalInputs.erase(startRemoveIt, totalInputs.end());
+            }
+
+            if (currentScreen)
+            {
+                // use index "i" because inside loop "totalInputs" can be changed
+                // during DVASSERT_MSG
+                for (size_t i = 0; i < totalInputs.size(); ++i)
                 {
-                    if(!popupContainer->SystemInput(&event))
+                    UIEvent& event = totalInputs[i];
+                    if (event.activeState == UIEvent::ACTIVITY_STATE_CHANGED)
                     {
-                        currentScreen->SystemInput(&event);
+                        if (!popupContainer->SystemInput(&event))
+                        {
+                            //                        if (event.phase == DAVA::UIEvent::Phase::BEGAN)
+                            //                        {
+                            //                            DAVA::Logger::Info("beg tid: %d", event.tid);
+                            //                        } else if (event.phase == DAVA::UIEvent::Phase::DRAG)
+                            //                        {
+                            //                            DAVA::Logger::Info("drg tid: %d", event.tid);
+                            //                        } else if (event.phase == DAVA::UIEvent::Phase::ENDED)
+                            //                        {
+                            //                            DAVA::Logger::Info("end tid: %d", event.tid);
+                            //                        }
+                            bool result = currentScreen->SystemInput(&event);
+                            if (!result)
+                            {
+                                Logger::Info("not handled tid: %d", event.tid);
+                            }
+                        }
+                    }
+                    if (totalInputs.empty())
+                    {
+                        break;
                     }
                 }
-                if(totalInputs.empty())
+            } // end if currrentScreen
+        }
+        else
+        {
+            if (!popupContainer->SystemInput(&newEv))
+            {
+                //                        if (event.phase == DAVA::UIEvent::Phase::BEGAN)
+                //                        {
+                //                            DAVA::Logger::Info("beg tid: %d", event.tid);
+                //                        } else if (event.phase == DAVA::UIEvent::Phase::DRAG)
+                //                        {
+                //                            DAVA::Logger::Info("drg tid: %d", event.tid);
+                //                        } else if (event.phase == DAVA::UIEvent::Phase::ENDED)
+                //                        {
+                //                            DAVA::Logger::Info("end tid: %d", event.tid);
+                //                        }
+                bool result = currentScreen->SystemInput(&newEv);
+                if (!result)
                 {
-                    break;
+                    Logger::Info("not handled tid: %d", newEv.tid);
                 }
             }
-        } // end if currrentScreen
+        }
+
     } // end if frameSkip <= 0
 }
 

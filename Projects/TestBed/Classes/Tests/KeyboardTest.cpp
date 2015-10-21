@@ -315,7 +315,7 @@ void KeyboardTest::LoadResources()
         int red = std::rand() % 256;
         int green = std::rand() % 256;
         int blue = std::rand() % 256;
-        int color = (blue << 16) | (green << 8) | (red << 0) | 0xFF000000;
+        int color = 0xFF000000 | (blue << 16) | (green << 8) | (red);
         back->SetDrawColor(color);
         back->SetColor(color);
         back->SetDrawType(UIControlBackground::eDrawType::DRAW_FILL);

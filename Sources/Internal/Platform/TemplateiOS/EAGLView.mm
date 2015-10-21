@@ -344,26 +344,26 @@ void MoveTouchsToVector(void *inTouches, DAVA::Vector<DAVA::UIEvent> *outTouches
 
 - (void)process:(NSArray*)active withEvent:(NSArray*)total
 {
-    DAVA::Logger::Info("a: %d, t: %d", [active count], [total count]);
+    //DAVA::Logger::Info("a: %d, t: %d", [active count], [total count]);
 
     MoveTouchsToVector(active, &activeTouches);
-    if(DAVA::InputSystem::Instance()->GetMultitouchEnabled())
+
+    for (auto& ev : activeTouches)
     {
-        //MoveTouchsToVector(total, &totalTouches);
-        for (auto& ev : activeTouches)
-        {
-            DAVA::Logger::Info("tid: %d, phase: %d", ev.tid, static_cast<int>(ev.phase));
-            DAVA::UIControlSystem::Instance()->OnInput(&ev); // , totalTouches
-        }
+        //        if (ev.phase == DAVA::UIEvent::Phase::BEGAN)
+        //        {
+        //            DAVA::Logger::Info("beg tid: %d", ev.tid);
+        //        } else if (ev.phase == DAVA::UIEvent::Phase::DRAG)
+        //        {
+        //            DAVA::Logger::Info("drg tid: %d", ev.tid);
+        //        } else if (ev.phase == DAVA::UIEvent::Phase::ENDED)
+        //        {
+        //            DAVA::Logger::Info("end tid: %d", ev.tid);
+        //        }
+        DAVA::UIControlSystem::Instance()->OnInput(&ev); // , activeTouches
     }
-    else
-    {
-        for (auto& ev : activeTouches)
-        {
-            DAVA::UIControlSystem::Instance()->OnInput(&ev); // , activeTouches
-        }
-    }
-	activeTouches.clear();
+
+    activeTouches.clear();
 	totalTouches.clear();
 }
 
