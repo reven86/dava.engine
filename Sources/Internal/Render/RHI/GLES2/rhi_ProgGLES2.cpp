@@ -51,6 +51,8 @@ typedef ResourcePool<ProgGLES2::ConstBuf,RESOURCE_CONST_BUFFER,ProgGLES2::ConstB
 RHI_IMPL_POOL_SIZE(ProgGLES2::ConstBuf, RESOURCE_CONST_BUFFER, ProgGLES2::ConstBuf::Desc, false, 12 * 1024);
 
 static RingBuffer   DefaultConstRingBuffer;
+uint32       ProgGLES2::ConstBuf::CurFrame = 0;
+
 
 //==============================================================================
 
@@ -379,8 +381,9 @@ bool ProgGLES2::ConstBuf::Construct(uint32 prog, void** lastBoundData, unsigned 
     count = (uint16)cnt;
     data        = (float*)(::malloc( cnt*4*sizeof(float) ));
     inst        = nullptr;
-    lastInst = lastBoundData;
-    *lastInst = nullptr;
+    lastInst    = lastBoundData;
+    *lastInst   = nullptr;
+    frame       = 0;
 
     return success;
 }
@@ -454,11 +457,18 @@ ProgGLES2::ConstBuf::SetConst( unsigned const_i, unsigned const_sub_i, const flo
 const void*
 ProgGLES2::ConstBuf::Instance() const
 {
+    if( frame != CurFrame )
+    {
+        inst = nullptr;
+        *lastInst = nullptr;
+    }
+
     if( !inst )
     {
         //SCOPED_NAMED_TIMING("gl.cb-inst");
         inst = DefaultConstRingBuffer.Alloc( count*4*sizeof(float) );
         memcpy( inst, data, 4*count*sizeof(float) );
+        frame = CurFrame;
     }
 
     return inst;
@@ -473,8 +483,8 @@ void ProgGLES2::ConstBuf::SetToRHI(uint32 progUid, const void* instData) const
     if (instData != *lastInst)
     {
 //SCOPED_NAMED_TIMING("gl-Uniform4fv");
-GL_CALL(glUniform4fv(location, count, (GLfloat*)instData));
-*lastInst = (void*)(instData);
+        GL_CALL(glUniform4fv(location, count, (GLfloat*)instData));
+        *lastInst = (void*)(instData);
     }
 
     StatSet::IncStat( stat_SET_CB, 1 );
@@ -493,6 +503,15 @@ ProgGLES2::ConstBuf::InvalidateInstance()
 
 //------------------------------------------------------------------------------
 
+void
+ProgGLES2::ConstBuf::AdvanceFrame()
+{
+    ++CurFrame;
+}
+
+
+//------------------------------------------------------------------------------
+
 unsigned
 ProgGLES2::ShaderUid() const
 {
@@ -505,10 +524,13 @@ ProgGLES2::ShaderUid() const
 void
 ProgGLES2::InvalidateAllConstBufferInstances()
 {
+    ConstBuf::AdvanceFrame();
+/*
     for( ConstBufGLES2Pool::Iterator b=ConstBufGLES2Pool::Begin(),b_end=ConstBufGLES2Pool::End(); b!=b_end; ++b )
     {
         b->InvalidateInstance();
     }
+*/
 }
 
 
