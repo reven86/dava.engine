@@ -223,6 +223,7 @@ gles2_RenderPass_Begin( Handle pass )
 Trace("\n\n-------------------------------\nframe %u started\n",_FrameNumber);
         _FrameStarted = true;
         ++_FrameNumber;
+        ProgGLES2::InvalidateAllConstBufferInstances();
     }
 
     _Frame.back().pass.push_back( pass );
@@ -1353,8 +1354,6 @@ Trace("\n\n-------------------------------\nframe %u executed(submitted to GPU)\
             RenderPassPool::Free( *p );
     }    
     _FrameSync.Unlock();
-
-    ProgGLES2::InvalidateAllConstBufferInstances();
 
 
     if( _GLES2_Context )
