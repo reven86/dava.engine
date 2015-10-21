@@ -318,59 +318,64 @@ namespace DAVA
 		return clientSize;
 	}
 
-	void CoreWin32Platform::ToggleFullscreen()
-	{
-		// Setup styles based on windowed / fullscreen mode
-		isFullscreen = !isFullscreen;
-
-		if ( isFullscreen )
-		{
-			currentMode = fullscreenMode;
-			GetWindowRect(hWindow, &windowPositionBeforeFullscreen);
-
-			SetMenu( hWindow, NULL );
-			SetWindowLong( hWindow, GWL_STYLE, FULLSCREEN_STYLE );
-			SetWindowPos( hWindow, NULL, 0, 0, currentMode.width, currentMode.height, SWP_NOZORDER );
-		} 
-		else
-		{
-			SetWindowLong( hWindow, GWL_STYLE, WINDOWED_STYLE );
-
-			currentMode = windowedMode;
-			RECT windowedRect = GetWindowedRectForDisplayMode(currentMode);
-	
-			SetWindowPos( hWindow, HWND_NOTOPMOST, windowPositionBeforeFullscreen.left, windowPositionBeforeFullscreen.top, windowedRect.right - windowedRect.left, windowedRect.bottom - windowedRect.top, SWP_NOACTIVATE | SWP_SHOWWINDOW );
-		}
-		
-		Logger::FrameworkDebug("[RenderManagerDX9] toggle mode: %d x %d isFullscreen: %d", currentMode.width, currentMode.height, isFullscreen);
-		
-        VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(currentMode.width, currentMode.height);
-        VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(currentMode.width, currentMode.height);
-	}
-
 	Core::eScreenMode CoreWin32Platform::GetScreenMode()
 	{
-		if (isFullscreen)return Core::MODE_FULLSCREEN;
-		else return Core::MODE_WINDOWED;
-	}
+        if (isFullscreen)
+        {
+            return Core::eScreenMode::FULLSCREEN;
+        }
+        else
+        {
+            return Core::eScreenMode::WINDOWED;
+        }
+    }
 
-	void CoreWin32Platform::SwitchScreenToMode(eScreenMode screenMode)
-	{
-		if (GetScreenMode() != screenMode) // check if we try to switch mode
+    bool CoreWin32Platform::SetScreenMode(eScreenMode screenMode)
+    {
+        if (GetScreenMode() != screenMode) // check if we try to switch mode
 		{
-			if (screenMode == Core::MODE_FULLSCREEN)
-			{
-				ToggleFullscreen();
-			}else if (screenMode == Core::MODE_WINDOWED)
-			{
-				ToggleFullscreen();
-			}
-		}else
-		{
-		}
-	}
+            switch (screenMode)
+            {
+            case DAVA::Core::eScreenMode::FULLSCREEN:
+            {
+                isFullscreen = true;
+                currentMode = fullscreenMode;
+                GetWindowRect(hWindow, &windowPositionBeforeFullscreen);
+                SetMenu(hWindow, NULL);
+                SetWindowLong(hWindow, GWL_STYLE, FULLSCREEN_STYLE);
+                SetWindowPos(hWindow, NULL, 0, 0, currentMode.width, currentMode.height, SWP_NOZORDER);
+                break;
+            }
+            case DAVA::Core::eScreenMode::WINDOWED_FULLSCREEN:
+            {
+                Logger::Error("Unsupported screen mode");
+                return false;
+            }
+            case DAVA::Core::eScreenMode::WINDOWED:
+            {
+                isFullscreen = false;
+                SetWindowLong(hWindow, GWL_STYLE, WINDOWED_STYLE);
+                currentMode = windowedMode;
+                RECT windowedRect = GetWindowedRectForDisplayMode(currentMode);
+                SetWindowPos(hWindow, HWND_NOTOPMOST, windowPositionBeforeFullscreen.left, windowPositionBeforeFullscreen.top, windowedRect.right - windowedRect.left, windowedRect.bottom - windowedRect.top, SWP_NOACTIVATE | SWP_SHOWWINDOW);
+                break;
+            }
+            default:
+            {
+                DVASSERT_MSG(false, "Incorrect screen mode");
+                Logger::Error("Incorrect screen mode");
+                return false;
+            }
+            }
 
-	void CoreWin32Platform::GetAvailableDisplayModes(List<DisplayMode> & availableDisplayModes)
+            Logger::FrameworkDebug("[RenderManagerDX9] toggle mode: %d x %d isFullscreen: %d", currentMode.width, currentMode.height, isFullscreen);
+            VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(currentMode.width, currentMode.height);
+            VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(currentMode.width, currentMode.height);
+        }
+        return true;
+    }
+
+    void CoreWin32Platform::GetAvailableDisplayModes(List<DisplayMode> & availableDisplayModes)
 	{
 		availableDisplayModes.clear();
 
@@ -764,10 +769,12 @@ namespace DAVA
                 LONG y = inp.data.mouse.lLastY;
 
                 bool isMove = x || y;
+                bool isInside = false;
 
-                if(InputSystem::Instance()->IsCursorPining())
+                if (InputSystem::Instance()->GetMouseCaptureMode() == InputSystem::eMouseCaptureMode::PINING)
                 {
                     SetCursorPosCenterInternal(hWnd);
+                    isInside = true;
                 }
                 else
                 {
@@ -776,12 +783,11 @@ namespace DAVA
                     ScreenToClient(hWnd, &p);
                     x += p.x;
                     y += p.y;
+
+                    RECT clientRect;
+                    GetClientRect(hWnd, &clientRect);
+                    isInside = (x > clientRect.left && x < clientRect.right && y > clientRect.top && y < clientRect.bottom);
                 }
-
-                RECT clientRect;
-                GetClientRect(hWnd, &clientRect);
-
-                bool isInside = (x > clientRect.left && x < clientRect.right && y > clientRect.top && y < clientRect.bottom) || InputSystem::Instance()->IsCursorPining();
 
                 core->OnMouseEvent(UIEvent::PointerDeviceID::MOUSE, inp.data.mouse.usButtonFlags, MAKEWPARAM(isMove, isInside), MAKELPARAM(x, y), inp.data.mouse.usButtonData); // only move, drag and wheel events
             }

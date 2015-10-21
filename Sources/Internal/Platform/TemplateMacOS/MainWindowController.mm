@@ -223,6 +223,7 @@ namespace DAVA
 - (void)windowDidExitFullScreen:(NSNotification *)notification
 {
     fullScreen = false;
+    Core::Instance()->GetApplicationCore()->OnExitFullscreen();
 }
 
 -(bool) isFullScreen
@@ -230,9 +231,9 @@ namespace DAVA
     return fullScreen;
 }
 
-- (void) setFullScreen:(bool)_fullScreen
+- (bool)setFullScreen:(bool)_fullScreen
 {
-if(fullScreen != _fullScreen)
+    if (fullScreen != _fullScreen)
     {
         double macOSVer = floor(NSAppKitVersionNumber);
         // fullscreen for new 10.7+ MacOS
@@ -241,6 +242,7 @@ if(fullScreen != _fullScreen)
             // just toggle current state
             // fullScreen variable will be set in windowDidEnterFullScreen/windowDidExitFullScreen callbacks
             [mainWindowController->mainWindow toggleFullScreen: nil];
+            return YES;
         }
         // fullsreen for 10.5+ MacOS
         // this code can be uncommented to have 10.5+ fullscreen support
@@ -262,8 +264,10 @@ if(fullScreen != _fullScreen)
         {
             // fullscreen for older macOS isn't supperted
             DVASSERT_MSG(false, "Fullscreen isn't supperted for this MacOS version");
+            return NO;
         }
     }
+    return YES;
 }
 
 - (void) keyDown:(NSEvent *)event
@@ -458,7 +462,6 @@ if(fullScreen != _fullScreen)
 	return NSTerminateNow;
 }
 
-
 - (void)OnSuspend
 {
     if(core)
@@ -483,9 +486,6 @@ if(fullScreen != _fullScreen)
     }
 }
 
-
-
-
 @end
 
 namespace DAVA 
@@ -493,30 +493,23 @@ namespace DAVA
 
 Core::eScreenMode CoreMacOSPlatform::GetScreenMode()
 {
-    return ([mainWindowController isFullScreen]) ? Core::MODE_FULLSCREEN : Core::MODE_WINDOWED;
+    return ([mainWindowController isFullScreen]) ? Core::eScreenMode::FULLSCREEN : Core::eScreenMode::WINDOWED;
 }
 
-void CoreMacOSPlatform::ToggleFullscreen()
+bool CoreMacOSPlatform::SetScreenMode(eScreenMode screenMode)
 {
-    if (GetScreenMode() == Core::MODE_FULLSCREEN) // check if we try to switch mode
+    if (screenMode == Core::eScreenMode::FULLSCREEN)
     {
-        [mainWindowController setFullScreen:false];
+        return [mainWindowController setFullScreen:true] == YES;
+    }
+    else if (screenMode == Core::eScreenMode::WINDOWED)
+    {
+        return [mainWindowController setFullScreen:false] == YES;
     }
     else
     {
-        [mainWindowController setFullScreen:true];
-    }
-}
-
-void CoreMacOSPlatform::SwitchScreenToMode(eScreenMode screenMode)
-{
-    if (screenMode == Core::MODE_FULLSCREEN)
-    {
-        [mainWindowController setFullScreen:true];
-    }
-    else if (screenMode == Core::MODE_WINDOWED)
-    {
-        [mainWindowController setFullScreen:false];
+        Logger::Error("Unsupported screen mode");
+        return false;
     }
 }
 

@@ -48,20 +48,34 @@ void FrameworkDidLaunched()
     appOptions->SetString(String("title"), String("TestBed"));
     
 #if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
-    appOptions->SetInt32("orientation", Core::SCREEN_ORIENTATION_LANDSCAPE_LEFT);
-    appOptions->SetInt32("renderer", Core::RENDERER_OPENGL_ES_3_0);
-
     screenWidth = Max(DeviceInfo::GetScreenInfo().width, DeviceInfo::GetScreenInfo().height);
     screenHeight = Min(DeviceInfo::GetScreenInfo().width, DeviceInfo::GetScreenInfo().height);
+
+    appOptions->SetInt32("orientation", Core::SCREEN_ORIENTATION_LANDSCAPE_LEFT);
+    appOptions->SetInt32("renderer", rhi::RHI_GLES2);
     appOptions->SetBool("iPhone_autodetectScreenScaleFactor", true);
 
     DAVA::VirtualCoordinatesSystem::Instance()->SetProportionsIsFixed(false);
+    
+#elif defined(__DAVAENGINE_MACOS__)
+    screenWidth = WIDTH;
+    screenHeight = HEIGHT;
+
+    appOptions->SetInt32("renderer", rhi::RHI_GLES2);
+    appOptions->SetInt32("fullscreen", 1);
+    appOptions->SetInt32("bpp", 32);
+
+    DAVA::VirtualCoordinatesSystem::Instance()->SetProportionsIsFixed(false);
+    
 #elif defined (__DAVAENGINE_WIN_UAP__)
     screenWidth = DeviceInfo::GetScreenInfo().width;
     screenHeight = DeviceInfo::GetScreenInfo().height;
 
+    appOptions->SetInt32("renderer", rhi::RHI_DX11);
     appOptions->SetInt32("fullscreen", 0);
     appOptions->SetInt32("bpp", 32);
+
+    DAVA::VirtualCoordinatesSystem::Instance()->SetProportionsIsFixed(false);
 #else
     screenWidth = WIDTH;
     screenHeight = HEIGHT;
@@ -69,6 +83,7 @@ void FrameworkDidLaunched()
     appOptions->SetInt32("renderer", rhi::RHI_DX9);
     appOptions->SetInt32("fullscreen", 0);
     appOptions->SetInt32("bpp", 32);
+    
 #endif 
     
     appOptions->SetInt32("width", screenWidth);
