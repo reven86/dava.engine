@@ -246,7 +246,7 @@ void PackageNode::AttachPrototypeComponent(ControlNode *node, ComponentPropertie
     node->GetRootProperty()->AttachPrototypeComponent(section, prototypeSection);
     
     RefreshProperty(node, section);
-    for (int32 i = 0; i < section->GetCount(); i++)
+    for (uint32 i = 0; i < section->GetCount(); i++)
         RefreshProperty(node, section->GetProperty(i));
 }
 
@@ -255,7 +255,7 @@ void PackageNode::DetachPrototypeComponent(ControlNode *node, ComponentPropertie
     node->GetRootProperty()->DetachPrototypeComponent(section, prototypeSection);
     
     RefreshProperty(node, section);
-    for (int32 i = 0; i < section->GetCount(); i++)
+    for (uint32 i = 0; i < section->GetCount(); i++)
         RefreshProperty(node, section->GetProperty(i));
 }
 
@@ -489,7 +489,7 @@ void PackageNode::RestoreProperties(ControlNode *node)
     for (int32 i = 0; i < rootProperty->GetControlPropertiesSectionsCount(); i++)
     {
         ControlPropertiesSection *controlSection = rootProperty->GetControlPropertiesSection(i);
-        for (int32 j = 0; j < controlSection->GetCount(); j++)
+        for (uint32 j = 0; j < controlSection->GetCount(); j++)
         {
             IntrospectionProperty *prop = controlSection->GetProperty(j);
             if (prop->GetFlags() & AbstractProperty::EF_DEPENDS_ON_LAYOUTS)
@@ -512,7 +512,7 @@ void PackageNode::NotifyPropertyChanged(ControlNode *control)
     for (int32 i = 0; i < rootProperty->GetControlPropertiesSectionsCount(); i++)
     {
         ControlPropertiesSection *controlSection = rootProperty->GetControlPropertiesSection(i);
-        for (int32 j = 0; j < controlSection->GetCount(); j++)
+        for (uint32 j = 0; j < controlSection->GetCount(); j++)
         {
             AbstractProperty *prop = controlSection->GetProperty(j);
             for (PackageListener* listener : listeners)

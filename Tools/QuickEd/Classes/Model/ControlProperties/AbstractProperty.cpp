@@ -50,12 +50,12 @@ void AbstractProperty::SetParent(AbstractProperty *parent)
     this->parent = parent;
 }
 
-int AbstractProperty::GetIndex(AbstractProperty *property) const
+int32 AbstractProperty::GetIndex(AbstractProperty *property) const
 {
-    for (int32 i = 0; i < GetCount(); i++)
+    for (uint32 i = 0; i < GetCount(); i++)
     {
         if (GetProperty(i) == property)
-            return i;
+            return (int32)i;
     }
     return -1;
 }
@@ -66,7 +66,7 @@ void AbstractProperty::Refresh(DAVA::int32 refreshFlags)
 
 AbstractProperty *AbstractProperty::FindPropertyByPrototype(AbstractProperty *prototype)
 {
-    for (int32 i = 0; i < GetCount(); i++)
+    for (uint32 i = 0; i < GetCount(); i++)
     {
         AbstractProperty *result = GetProperty(i)->FindPropertyByPrototype(prototype);
         if (result)
@@ -77,7 +77,7 @@ AbstractProperty *AbstractProperty::FindPropertyByPrototype(AbstractProperty *pr
 
 bool AbstractProperty::HasChanges() const
 {
-    for (int32 i = 0; i < GetCount(); i++)
+    for (uint32 i = 0; i < GetCount(); i++)
     {
         if (GetProperty(i)->HasChanges())
             return true;

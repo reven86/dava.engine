@@ -220,13 +220,12 @@ private:
 
 namespace DAVA
 {
-
-UITextField::UITextField(const Rect &rect, bool rectInAbsoluteCoordinates/*= false*/)
-    : UIControl(rect, rectInAbsoluteCoordinates)
+UITextField::UITextField(const Rect &rect)
+    : UIControl(rect)
 {
     textFieldImpl = new TextFieldPlatformImpl(this);
     textFieldImpl->SetVisible(false);
-
+    
     SetupDefaults();
 }
     
@@ -337,7 +336,7 @@ void UITextField::OnFocused()
     SetRenderToTexture(false);
     textFieldImpl->OpenKeyboard();
 }
-
+    
 void UITextField::SetFocused()
 {
     UIControlSystem::Instance()->SetFocusedControl(this, true);
@@ -445,7 +444,7 @@ void UITextField::SetFontSize(float32 size)
     if (textFont)
     {
         textFont->SetSize(size);
-    }
+}
 }
 
 void UITextField::SetDelegate(UITextFieldDelegate * _delegate)
@@ -692,16 +691,16 @@ void UITextField::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
 #if !defined(DAVA_TEXTFIELD_USE_NATIVE)
     textFieldImpl->SetRect(Rect(0, 0, GetRect().dx, GetRect().dy));
 
-    const YamlNode* shadowColorNode = node->Get("shadowcolor");
-    const YamlNode* shadowOffsetNode = node->Get("shadowoffset");
-    if (shadowColorNode)
-    {
-        SetShadowColor(shadowColorNode->AsColor());
-    }
-    if (shadowOffsetNode)
-    {
-        SetShadowOffset(shadowOffsetNode->AsVector2());
-    }
+        const YamlNode * shadowColorNode = node->Get("shadowcolor");
+        const YamlNode * shadowOffsetNode = node->Get("shadowoffset");
+        if(shadowColorNode)
+        {
+            SetShadowColor(shadowColorNode->AsColor());
+        }
+        if(shadowOffsetNode)
+        {
+            SetShadowOffset(shadowOffsetNode->AsVector2());
+        }
 #endif
 
     const YamlNode * textColorNode = node->Get("textcolor");
@@ -728,7 +727,7 @@ void UITextField::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
     {
         SetMaxLength(maxLengthNode->AsInt32());
     }
-}
+    }
 
 YamlNode * UITextField::SaveToYamlNode(UIYamlLoader * loader)
 {
@@ -832,15 +831,6 @@ YamlNode * UITextField::SaveToYamlNode(UIYamlLoader * loader)
     return node;
 }
 
-List<UIControl*>& UITextField::GetRealChildren()
-{
-    List<UIControl*>& realChildren = UIControl::GetRealChildren();
-#if !defined(DAVA_TEXTFIELD_USE_NATIVE)
-    realChildren.remove(textFieldImpl->staticText_);
-#endif
-    return realChildren;
-}
-
 UITextField* UITextField::Clone()
 {
     UITextField *t = new UITextField();
@@ -852,7 +842,7 @@ void UITextField::CopyDataFrom(UIControl *srcControl)
 {
     UIControl::CopyDataFrom(srcControl);
     UITextField* t = static_cast<UITextField*>(srcControl);
-
+        
     cursorTime = t->cursorTime;
     showCursor = t->showCursor;
     isPassword = t->isPassword;
@@ -883,7 +873,7 @@ void UITextField::SetIsPassword(bool isPassword_)
 {
     isPassword = isPassword_;
     needRedraw = true;
-
+    
     textFieldImpl->SetIsPassword(isPassword_);
 }
     
@@ -898,7 +888,7 @@ WideString UITextField::GetVisibleText() const
     {
         return text;
     }
-
+    
     return WideString(text.length(), L'*');
 }
     

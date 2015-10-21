@@ -40,11 +40,11 @@ namespace DAVA
 
 static const String UISCROLL_VIEW_CONTAINER_NAME = "scrollContainerControl";
 
-UIScrollView::UIScrollView(const Rect &rect, bool rectInAbsoluteCoordinates/* = false*/)
-    : UIControl(rect, rectInAbsoluteCoordinates)
-	, scrollContainer(new UIScrollViewContainer())
-	, scrollHorizontal(new ScrollHelper())
-	, scrollVertical(new ScrollHelper())
+UIScrollView::UIScrollView(const Rect &rect)
+    : UIControl(rect)
+    , scrollContainer(new UIScrollViewContainer())
+    , scrollHorizontal(new ScrollHelper())
+    , scrollVertical(new ScrollHelper())
     , autoUpdate(false)
     , centerContent(false)
 {
@@ -105,8 +105,8 @@ void UIScrollView::RemoveControl( UIControl *control )
 void UIScrollView::PushContentToBounds(UIControl *parentControl)
 {
 	// We have to shift each child of ScrollContent to fit its bounds
-	const List<UIControl*> &childslist = parentControl->GetRealChildren();
-	for(List<UIControl*>::const_iterator it = childslist.begin(); it != childslist.end(); ++it)
+    const List<UIControl*> &childslist = parentControl->GetChildren();
+    for(List<UIControl*>::const_iterator it = childslist.begin(); it != childslist.end(); ++it)
 	{
         UIControl *childControl = (*it);
         if (!(childControl && childControl->GetVisible()))
@@ -126,20 +126,20 @@ void UIScrollView::PushContentToBounds(UIControl *parentControl)
 			childRect.y += Abs(position.y);
 		}
 		
-        // Move each first child
+		// Move each first child
         if (childRect != childControl->GetRect())
         {
-            childControl->SetRect(childRect);
-        }
+		childControl->SetRect(childRect);
 	}
+}
 }
 
 Vector2 UIScrollView::GetControlOffset(UIControl *parentControl, Vector2 currentContentOffset)
 {
 	Vector2 currentOffset = currentContentOffset;
 	// Get control's farest position inside scrollContainer
-	const List<UIControl*> &childslist = parentControl->GetRealChildren();
-	for(List<UIControl*>::const_iterator it = childslist.begin(); it != childslist.end(); ++it)
+    const List<UIControl*> &childslist = parentControl->GetChildren();
+    for(List<UIControl*>::const_iterator it = childslist.begin(); it != childslist.end(); ++it)
 	{	
         UIControl *childControl = (*it);
         if (!(childControl && childControl->GetVisible()))
@@ -161,9 +161,9 @@ Vector2 UIScrollView::GetMaxSize(UIControl * parentControl, Vector2 currentMaxSi
 {
 	// Initial content max size is actual control sizes
 	Vector2 maxSize = currentMaxSize;
-	
-	const List<UIControl*> &childslist = parentControl->GetRealChildren();
-	for(List<UIControl*>::const_iterator it = childslist.begin(); it != childslist.end(); ++it)
+
+    const List<UIControl*> &childslist = parentControl->GetChildren();
+    for(List<UIControl*>::const_iterator it = childslist.begin(); it != childslist.end(); ++it)
 	{
         UIControl *childControl = (*it);
         if ( !(childControl && childControl->GetVisible()) )
@@ -195,16 +195,7 @@ Vector2 UIScrollView::GetMaxSize(UIControl * parentControl, Vector2 currentMaxSi
 	return maxSize;
 }
 
-List<UIControl* > UIScrollView::GetSubcontrols()
-{
-	List<UIControl* > subControls;
-	
-	AddControlToList(subControls, UISCROLL_VIEW_CONTAINER_NAME);
-	
-	return subControls;
-}
-
-UIControl* UIScrollView::Clone()
+UIScrollView *UIScrollView::Clone()
 {
 	UIScrollView *t = new UIScrollView(GetRect());
 	t->CopyDataFrom(this);
@@ -288,7 +279,7 @@ void UIScrollView::RecalculateContentSize()
 	{
 		return;
 	}
-    
+	
     if (autoUpdate)
     {
         DVASSERT(!autoUpdate);
@@ -306,7 +297,7 @@ void UIScrollView::RecalculateContentSize()
 									Vector2(0, 0));
 									
 	// Update scroll view content size
-    scrollContainer->SetRect(Rect(contentRect.x, contentRect.y, maxSize.x, maxSize.y));
+	scrollContainer->SetRect(Rect(contentRect.x, contentRect.y, maxSize.x, maxSize.y));
 	scrollHorizontal->SetElementSize(maxSize.x);
 	scrollVertical->SetElementSize(maxSize.y);
 }
@@ -523,7 +514,7 @@ const String UIScrollView::GetDelegateControlPath(const UIControl *rootControl) 
 {
     return UIControlHelpers::GetControlPath(this, rootControl);
 }
-    
+
 bool UIScrollView::IsAutoUpdate() const
 {
     return autoUpdate;

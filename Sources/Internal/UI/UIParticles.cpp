@@ -307,7 +307,10 @@ void UIParticles::SetEffectPath(const FilePath& path)
 {
     effectPath = path;
     UnloadEffect();
-    LoadEffect(effectPath);
+    if (!effectPath.IsEmpty())
+    {
+        LoadEffect(effectPath);
+    }
 }
 
 const FilePath& UIParticles::GetEffectPath() const

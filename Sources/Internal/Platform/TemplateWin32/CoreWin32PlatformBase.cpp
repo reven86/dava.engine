@@ -39,20 +39,8 @@
 namespace DAVA
 {
 
-CoreWin32PlatformBase::CoreWin32PlatformBase() :
-    hWindow(0),
-    hInstance(0)
+CoreWin32PlatformBase::CoreWin32PlatformBase()
 {
-}
-
-HINSTANCE CoreWin32PlatformBase::GetInstance() const
-{
-    return hInstance;
-}
-
-HWND CoreWin32PlatformBase::GetWindow() const
-{
-    return hWindow;
 }
 
 void CoreWin32PlatformBase::InitArgs()
@@ -92,7 +80,7 @@ void CoreWin32PlatformBase::SetCursorPosCenterInternal(HWND hWnd)
 
 void CoreWin32PlatformBase::SetCursorPositionCenter()
 {
-    SetCursorPosCenterInternal(hWindow);
+    SetCursorPosCenterInternal((HWND)GetNativeView());
 }
 
 void CoreWin32PlatformBase::SetCursorPosition(Point2i position)

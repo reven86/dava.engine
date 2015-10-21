@@ -43,6 +43,7 @@
 #include "UI/Layouts/UILinearLayoutComponent.h"
 #include "UI/Layouts/UIFlowLayoutComponent.h"
 #include "FileSystem/Logger.h"
+#include "UI/UIWebView.h"
 
 using namespace DAVA;
 
@@ -352,6 +353,14 @@ ENUM_DECLARE(UIFlowLayoutComponent::eOrientation)
 {
     ENUM_ADD_DESCR(UIFlowLayoutComponent::ORIENTATION_LEFT_TO_RIGHT, "LeftToRight");
     ENUM_ADD_DESCR(UIFlowLayoutComponent::ORIENTATION_RIGHT_TO_LEFT, "RightToLeft");
+};
+
+ENUM_DECLARE(UIWebView::eDataDetectorType)
+{
+    ENUM_ADD_DESCR(UIWebView::DATA_DETECTOR_PHONE_NUMBERS  , "PhoneNumbers");
+    ENUM_ADD_DESCR(UIWebView::DATA_DETECTOR_LINKS          , "Links");
+    ENUM_ADD_DESCR(UIWebView::DATA_DETECTOR_ADDRESSES      , "Addresses");
+    ENUM_ADD_DESCR(UIWebView::DATA_DETECTOR_CALENDAR_EVENTS, "CalendarEvents");
 };
 
 /*
