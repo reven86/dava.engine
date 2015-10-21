@@ -57,7 +57,7 @@ extern void CloseKeyboard();
 namespace DAVA
 {
 // This implementation simulate iOS/Android native contols,
-// so no ierarhy for internal UIStaticText, and call UpdateRect
+// so no hierarchy for internal UIStaticText, and call UpdateRect
 // every frame, and render directly in SyctemDraw. This helps
 // to find similar bugs in all implementations
 class TextFieldPlatformImpl
@@ -250,14 +250,16 @@ public:
     {
         return staticText_->GetTextAlign();
     }
-    void SetRect(Rect rect)
+    void SetRect(const Rect& rect)
     {
         staticText_->SetRect(rect);
     }
     void SystemDraw(const UIGeometricData&)
     {
         // see comment for TextFieldPlatformImpl class above
+        // on Mac with retina we have to tweek scale
         UIGeometricData d;
+        d.scale /= UIControlSystem::Instance()->GetBaseGeometricData().scale;
         staticText_->SystemDraw(d);
     }
 
