@@ -68,6 +68,7 @@ static double buildDuration = 0.0;
 static uint64 buildStartTime = 0;
 static uint64 totalRenderPasses = 0;
 static uint64 actualRenderPasses = 0;
+static uint64 visibleObjects = 0;
 }
 
 StaticOcclusion::StaticOcclusion()    
@@ -172,9 +173,9 @@ bool StaticOcclusion::ProccessBlock()
             {
                 auto dt = static_cast<double>(currentTime - stats::blockProcessingTime) / 1e+9;
                 stats::buildDuration += dt;
-                Logger::Info("Block %u/%u, dt: %.4llfs, duration: %.4llf, renders: %llu/%llu",
+                Logger::Info("Block %u/%u, dt: %.4llfs, duration: %.4llf, renders: %llu/%llu, visible objects: %llu",
                              blockIndex, totalBlocks, static_cast<double>(dt), stats::buildDuration,
-                             stats::actualRenderPasses, stats::totalRenderPasses);
+                             stats::actualRenderPasses, stats::totalRenderPasses, stats::visibleObjects);
             }
             stats::blockProcessingTime = currentTime;
 
@@ -208,6 +209,10 @@ uint32 StaticOcclusion::GetTotalStepsCount()
 void StaticOcclusion::BuildRenderPassConfigsForCurrentBlock()
 {
     const uint32 stepCount = 10;
+
+    stats::totalRenderPasses = 0;
+    stats::actualRenderPasses = 0;
+    stats::visibleObjects = 0;
 
     uint32 blockIndex = currentFrameX + currentFrameY * xBlockCount + currentFrameZ * xBlockCount * yBlockCount;
     AABBox3 cellBox = GetCellBox(currentFrameX, currentFrameY, currentFrameZ);
@@ -324,7 +329,7 @@ bool StaticOcclusion::RenderCurrentBlock()
 #if (SAVE_OCCLUSION_IMAGES)
     uint64 maxRenders = 1;
 #else
-    uint64 maxRenders = Core::Instance()->IsConsoleMode() ? 32 : 8;
+    uint64 maxRenders = Core::Instance()->IsConsoleMode() ? 1024 : 64;
 #endif
 
     while ((renders < maxRenders) && !renderPassConfigs.empty())
@@ -388,6 +393,7 @@ bool StaticOcclusion::ProcessRecorderQueries()
                     // Logger::Info("Object: %u is visible from block %u", uint32(req->GetStaticOcclusionIndex()), fr->blockIndex);
                     currentData->EnableVisibilityForObject(fr->blockIndex, req->GetStaticOcclusionIndex());
                     MarkQueriesAsCompletedForObjectInBlock(req->GetStaticOcclusionIndex(), fr->blockIndex);
+                    ++stats::visibleObjects;
                 }
                 ++processedRequests;
                 req = nullptr;

@@ -793,8 +793,9 @@ void Landscape::GenLods(LandQuadTreeNode<LandscapeQuad> * currentNode, uint8 cli
         return;
     }
     
-	// We can be here only if we have a geometry in the node. 
-    Vector3 corners[8];
+	// We can be here only if we have a geometry in the node.
+    char cornersData[8 * sizeof(Vector3)];
+    Vector3* corners = reinterpret_cast<Vector3*>(cornersData);
     currentNode->data.bbox.GetCorners(corners);
     
     float32 minDist =  100000000.0f;

@@ -82,6 +82,9 @@ void StaticOcclusionTool::DumpParams() const
 
 void StaticOcclusionTool::Process() 
 {
+    static const rhi::HTexture nullTexture;
+    static const rhi::Viewport nullViewport(0, 0, 1, 1);
+
     if (commandAction == ACTION_BUILD)
     {
         SceneEditor2* scene = new SceneEditor2();
@@ -93,8 +96,11 @@ void StaticOcclusionTool::Process()
 
             while (scene->staticOcclusionBuildSystem->IsInBuild())
             {
+                Renderer::BeginFrame();
+                RenderHelper::CreateClearPass(nullTexture, 0, DAVA::Color::Clear, nullViewport);
                 scene->Update(0.1f);
-                RenderObjectsFlusher::Flush();
+                Renderer::EndFrame();
+                // RenderObjectsFlusher::Flush();
             }
 
             scene->Save();
