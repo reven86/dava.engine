@@ -522,6 +522,7 @@ gles2_Initialize( const InitParam& param )
         ConstBufferGLES2::Init( param.maxConstBufferCount );
     if( param.maxTextureCount )
         TextureGLES2::Init( param.maxTextureCount );
+
     uint32 ringBufferSize = 4 * 1024 * 1024;
     if (param.shaderConstRingBufferSize)
         ringBufferSize = param.shaderConstRingBufferSize;
