@@ -399,7 +399,7 @@ dx9_Initialize( const InitParam& param )
     if( param.maxTextureCount )
         TextureDX9::Init( param.maxTextureCount );
 
-    ConstBufferDX9::InitializeRingBuffer( 4*1024*1024 ); // CRAP: hardcoded const ring-buf size
+    ConstBufferDX9::InitializeRingBuffer( param.ringBufferSize ); 
 
 
     stat_DIP        = StatSet::AddStat( "rhi'dip", "dip" );

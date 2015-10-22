@@ -202,7 +202,7 @@ metal_Initialize( const InitParam& param )
     _Metal_DefDepthState = [_Metal_Device newDepthStencilStateWithDescriptor:depth_desc];
 
 
-    ConstBufferMetal::InitializeRingBuffer( 8*1024*1024 );
+    ConstBufferMetal::InitializeRingBuffer( param.ringBufferSize );
 
     stat_DIP = StatSet::AddStat("rhi'dip", "dip");
     stat_DP = StatSet::AddStat("rhi'dp", "dp");

@@ -56,6 +56,7 @@ InitParam
     uint32          maxVertexBufferCount;
     uint32          maxConstBufferCount;
     uint32          maxTextureCount;
+    uint32          ringBufferSize;
 
     void            (*acquireContextFunc)();
     void            (*releaseContextFunc)();
@@ -74,6 +75,7 @@ InitParam
                         maxVertexBufferCount(0),
                         maxConstBufferCount(0),
                         maxTextureCount(0),
+                        ringBufferSize(4*1024*1024),
                         acquireContextFunc(nullptr),
                         releaseContextFunc(nullptr)
                     {}

@@ -186,7 +186,7 @@ _InitDX11()
     #endif
     DXGI_SWAP_CHAIN_DESC    swapchain_desc  = {0};
 
-    #if 1
+    #if 0
     flags |= D3D11_CREATE_DEVICE_DEBUG;
     flags |= D3D11_CREATE_DEVICE_PREVENT_INTERNAL_THREADING_OPTIMIZATIONS;
     #endif
@@ -291,7 +291,7 @@ dx11_Initialize( const InitParam& param )
         ConstBufferDX11::Init( param.maxConstBufferCount );
     if( param.maxTextureCount )
         TextureDX11::Init( param.maxTextureCount );
-    ConstBufferDX11::InitializeRingBuffer( 4*1024*1024 ); // CRAP: hardcoded const ring-buf size
+//    ConstBufferDX11::InitializeRingBuffer( param.ringBufferSize );
 
     stat_DIP = StatSet::AddStat("rhi'dip", "dip");
     stat_DP = StatSet::AddStat("rhi'dp", "dp");

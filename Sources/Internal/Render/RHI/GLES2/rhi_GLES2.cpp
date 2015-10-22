@@ -462,7 +462,7 @@ gles2_Initialize( const InitParam& param )
             ConstBufferGLES2::Init( param.maxConstBufferCount );
         if( param.maxTextureCount )
             TextureGLES2::Init( param.maxTextureCount );
-        ConstBufferGLES2::InitializeRingBuffer(4 * 1024 * 1024); // CRAP: hardcoded default const ring-buf size
+        ConstBufferGLES2::InitializeRingBuffer( param.ringBufferSize );
 
         Logger::Info("GL inited\n");
         Logger::Info("  GL version   : %s", glGetString(GL_VERSION));
@@ -518,7 +518,7 @@ gles2_Initialize( const InitParam& param )
         ConstBufferGLES2::Init( param.maxConstBufferCount );
     if( param.maxTextureCount )
         TextureGLES2::Init( param.maxTextureCount );
-    ConstBufferGLES2::InitializeRingBuffer(4 * 1024 * 1024); // CRAP: hardcoded default const ring-buf size
+    ConstBufferGLES2::InitializeRingBuffer(param.ringBufferSize);
 
     _Inited = true;
 
@@ -592,7 +592,7 @@ gles2_Initialize(const InitParam& param)
         ConstBufferGLES2::Init(param.maxConstBufferCount);
     if (param.maxTextureCount)
         TextureGLES2::Init(param.maxTextureCount);
-    ConstBufferGLES2::InitializeRingBuffer(4 * 1024 * 1024); // CRAP: hardcoded default const ring-buf size
+    ConstBufferGLES2::InitializeRingBuffer(param.ringBufferSize);
 
     _Inited = true;
 
@@ -669,7 +669,7 @@ gles2_Initialize( const InitParam& param )
         ConstBufferGLES2::Init( param.maxConstBufferCount );
     if( param.maxTextureCount )
         TextureGLES2::Init( param.maxTextureCount );
-    ConstBufferGLES2::InitializeRingBuffer(4 * 1024 * 1024); // CRAP: hardcoded default const ring-buf size
+    ConstBufferGLES2::InitializeRingBuffer(param.ringBufferSize);
 
     _Inited = true;
 

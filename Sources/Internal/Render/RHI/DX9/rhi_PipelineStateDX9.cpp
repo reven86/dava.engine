@@ -1046,7 +1046,9 @@ SetToRHI( Handle cb, const void* instData )
 
 void
 InvalidateAllConstBufferInstances()
-{
+{    
+    _DefConstRingBuf.Reset();
+
     for( ConstBufDX9Pool::Iterator b=ConstBufDX9Pool::Begin(),b_end=ConstBufDX9Pool::End(); b!=b_end; ++b )
     {
         b->InvalidateInst();
