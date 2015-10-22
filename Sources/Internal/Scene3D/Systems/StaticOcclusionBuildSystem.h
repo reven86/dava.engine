@@ -48,11 +48,6 @@ class NMaterial;
 // System that allow to build occlusion information. Required only in editor.
 class StaticOcclusionBuildSystem : public SceneSystem
 {
-    enum eIndexRenew
-    {
-        RENEW_OCCLUSION_INDICES,
-        LEAVE_OLD_INDICES,
-    };
 public:
     StaticOcclusionBuildSystem(Scene * scene);
     virtual ~StaticOcclusionBuildSystem();
@@ -65,7 +60,6 @@ public:
     inline void SetCamera(Camera * camera);
 
     void Build();
-    void RebuildCurrentCell();
     void Cancel();
 
     bool IsInBuild() const;
@@ -89,7 +83,6 @@ private:
     StaticOcclusion * staticOcclusion;
     StaticOcclusionDataComponent * componentInProgress;
     uint32 activeIndex;    
-    eIndexRenew renewIndex;
     
 #if RHI_COMPLETE
     Map<NMaterial* , RenderStateData> originalRenderStateData;

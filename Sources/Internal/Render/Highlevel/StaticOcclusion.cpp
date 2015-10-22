@@ -319,9 +319,9 @@ bool StaticOcclusion::RenderCurrentBlock()
     uint64 actualRenders = 0;
 
 #if (SAVE_OCCLUSION_IMAGES)
-    uint64 maxRenders = 1; // Max(256u, renderPassConfigs.size() / 4);
+    uint64 maxRenders = 1;
 #else
-    uint64 maxRenders = 16; // Max(256u, renderPassConfigs.size() / 4);
+    uint64 maxRenders = 16 + rand() % 16;
 #endif
 
     while ((renders < maxRenders) && !renderPassConfigs.empty())

@@ -426,7 +426,6 @@
     <addaction name="separator"/>
     <addaction name="separator"/>
     <addaction name="actionBuildStaticOcclusion"/>
-    <addaction name="actionRebuildCurrentOcclusionCell"/>
     <addaction name="actionInvalidateStaticOcclusion"/>
     <addaction name="actionBeastAndSave"/>
     <addaction name="separator"/>
@@ -1987,11 +1986,6 @@
    </property>
    <property name="toolTip">
     <string>Add Wave Component</string>
-   </property>
-  </action>
-  <action name="actionRebuildCurrentOcclusionCell">
-   <property name="text">
-    <string>Rebuild Current Occlusion Cell</string>
    </property>
   </action>
   <action name="actionUndefinedCollision">

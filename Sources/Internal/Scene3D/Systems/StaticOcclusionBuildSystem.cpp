@@ -125,24 +125,9 @@ void StaticOcclusionBuildSystem::Build()
     if (nullptr == staticOcclusion)
         staticOcclusion = new StaticOcclusion();
 
-    renewIndex = RENEW_OCCLUSION_INDICES;
     StartBuildOcclusion();
 }
     
-void StaticOcclusionBuildSystem::RebuildCurrentCell()
-{
-    if (occlusionEntities.empty())
-        return;
-
-    activeIndex = 0;
-
-    if (nullptr == staticOcclusion)
-        staticOcclusion = new StaticOcclusion();
-
-    renewIndex = LEAVE_OLD_INDICES;    
-    StartBuildOcclusion();
-}
-
 void StaticOcclusionBuildSystem::Cancel()
 {
     activeIndex = -1;
@@ -196,18 +181,16 @@ void StaticOcclusionBuildSystem::StartBuildOcclusion()
         }
     }
 
-    if (renewIndex == RENEW_OCCLUSION_INDICES)
-    {
-        GetScene()->staticOcclusionSystem->ClearOcclusionObjects();
+    GetScene()->staticOcclusionSystem->ClearOcclusionObjects();
 
-        uint16_t index = 0;
-        for (auto& ro : renderObjectsArray)
-        {
-            // if we are going to renew indices they should be cleared prior to it
-            DVASSERT(ro->GetStaticOcclusionIndex() == INVALID_STATIC_OCCLUSION_INDEX);
-            ro->SetStaticOcclusionIndex(index++);
-        }
+    uint16_t index = 0;
+    for (auto& ro : renderObjectsArray)
+    {
+        // if we are going to renew indices they should be cleared prior to it
+        DVASSERT(ro->GetStaticOcclusionIndex() == INVALID_STATIC_OCCLUSION_INDEX);
+        ro->SetStaticOcclusionIndex(index++);
     }
+
     SceneForceLod(0);
     UpdateMaterialsForOcclusionRecursively(GetScene());
 
@@ -224,64 +207,21 @@ void StaticOcclusionBuildSystem::StartBuildOcclusion()
         componentInProgress = new StaticOcclusionDataComponent();
     }
     StaticOcclusionData & data = componentInProgress->GetData();
-    
-    if (RENEW_OCCLUSION_INDICES == renewIndex)
-    {
-        StaticOcclusionComponent * occlusionComponent = (StaticOcclusionComponent*)entity->GetComponent(Component::STATIC_OCCLUSION_COMPONENT);
-        TransformComponent * transformComponent = (TransformComponent*)entity->GetComponent(Component::TRANSFORM_COMPONENT);
-        AABBox3 localBox = occlusionComponent->GetBoundingBox();
-        AABBox3 worldBox;
-        localBox.GetTransformedBox(transformComponent->GetWorldTransform(), worldBox);
 
-        data.Init(occlusionComponent->GetSubdivisionsX(),
-                  occlusionComponent->GetSubdivisionsY(),
-                  occlusionComponent->GetSubdivisionsZ(),
-                  size,
-                  worldBox,
-                  occlusionComponent->GetCellHeightOffsets());        
-    }
+    StaticOcclusionComponent* occlusionComponent = (StaticOcclusionComponent*)entity->GetComponent(Component::STATIC_OCCLUSION_COMPONENT);
+    TransformComponent* transformComponent = (TransformComponent*)entity->GetComponent(Component::TRANSFORM_COMPONENT);
+    AABBox3 localBox = occlusionComponent->GetBoundingBox();
+    AABBox3 worldBox;
+    localBox.GetTransformedBox(transformComponent->GetWorldTransform(), worldBox);
+
+    data.Init(occlusionComponent->GetSubdivisionsX(), occlusionComponent->GetSubdivisionsY(),
+              occlusionComponent->GetSubdivisionsZ(), size, worldBox, occlusionComponent->GetCellHeightOffsets());
 
     if (nullptr == staticOcclusion)
         staticOcclusion = new StaticOcclusion();
 
     staticOcclusion->StartBuildOcclusion(&data, GetScene()->GetRenderSystem(), landscape);       
 }
-
-#if RHI_COMPLETE    
-void StaticOcclusionBuildSystem::OcclusionBuildStep(BaseObject * bo, void * messageData, void * callerData)
-{
-    if (LEAVE_OLD_INDICES == renewIndex)
-    {
-        const Vector3 & position = camera->GetPosition();
-        
-        StaticOcclusionData & data = componentInProgress->GetData();
-
-        if ((position.x>=data.bbox.min.x)&&(position.x<=data.bbox.max.x)&&(position.y>=data.bbox.min.y)&&(position.y<=data.bbox.max.y))
-        {        
-            uint32 x = (uint32)((position.x - data.bbox.min.x) / (data.bbox.max.x - data.bbox.min.x) * (float32)data.sizeX);
-            uint32 y = (uint32)((position.y - data.bbox.min.y) / (data.bbox.max.y - data.bbox.min.y) * (float32)data.sizeY);
-            float32 dH = data.cellHeightOffset?data.cellHeightOffset[x+y*data.sizeX]:0;        
-            if ((position.z>=(data.bbox.min.z+dH))&&(position.z<=(data.bbox.max.z+dH)))
-            {        
-                uint32 z = (uint32)((position.z - (data.bbox.min.z+dH)) / (data.bbox.max.z - data.bbox.min.z) * (float32)data.sizeZ);                                    
-                
-                if ((x < data.sizeX) && (y < data.sizeY) && (z < data.sizeZ))
-                {                    
-                    staticOcclusion->RenderFrame(x, y, z);
-                }
-            }
-        }
-
-        entities[activeIndex]->AddComponent(componentInProgress);
-        componentInProgress = 0;
-        
-        activeIndex = -1;
-        
-        SceneForceLod(LodComponent::INVALID_LOD_LAYER);
-        RestoreOcclusionMaterials();
-    }    
-}
-#endif //RHI_COMPLETE
     
 void StaticOcclusionBuildSystem::FinishBuildOcclusion()
 {

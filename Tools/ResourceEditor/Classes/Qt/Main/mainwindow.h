@@ -176,7 +176,6 @@ public slots:
 	void OnBeastAndSave();
     
     void OnBuildStaticOcclusion();
-    void OnRebuildCurrentOcclusionCell();
     void OnInavalidateStaticOcclusion();
 
 	void OnLandscapeEditorToggled(SceneEditor2* scene);

@@ -843,7 +843,6 @@ void QtMainWindow::SetupActions()
 #endif //#if defined(__DAVAENGINE_BEAST__)
     
     QObject::connect(ui->actionBuildStaticOcclusion, SIGNAL(triggered()), this, SLOT(OnBuildStaticOcclusion()));
-    QObject::connect(ui->actionRebuildCurrentOcclusionCell, SIGNAL(triggered()), this, SLOT(OnRebuildCurrentOcclusionCell()));
     QObject::connect(ui->actionInvalidateStaticOcclusion, SIGNAL(triggered()), this, SLOT(OnInavalidateStaticOcclusion()));
     
     connect(ui->actionHeightmap_Delta_Tool, SIGNAL(triggered()), this, SLOT(OnGenerateHeightDelta()));
@@ -2596,14 +2595,6 @@ void QtMainWindow::OnInavalidateStaticOcclusion()
     SceneEditor2* scene = GetCurrentScene();
     if(!scene) return;
     scene->staticOcclusionSystem->InvalidateOcclusion();
-}
-
-void QtMainWindow::OnRebuildCurrentOcclusionCell()
-{
-    SceneEditor2* scene = GetCurrentScene();
-    if(!scene) return;
-
-    scene->staticOcclusionBuildSystem->RebuildCurrentCell();
 }
 
 bool QtMainWindow::IsSavingAllowed()
