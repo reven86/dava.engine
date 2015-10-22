@@ -344,23 +344,11 @@ void MoveTouchsToVector(void *inTouches, DAVA::Vector<DAVA::UIEvent> *outTouches
 
 - (void)process:(NSArray*)active withEvent:(NSArray*)total
 {
-    //DAVA::Logger::Info("a: %d, t: %d", [active count], [total count]);
-
     MoveTouchsToVector(active, &activeTouches);
 
     for (auto& ev : activeTouches)
     {
-        //        if (ev.phase == DAVA::UIEvent::Phase::BEGAN)
-        //        {
-        //            DAVA::Logger::Info("beg tid: %d", ev.tid);
-        //        } else if (ev.phase == DAVA::UIEvent::Phase::DRAG)
-        //        {
-        //            DAVA::Logger::Info("drg tid: %d", ev.tid);
-        //        } else if (ev.phase == DAVA::UIEvent::Phase::ENDED)
-        //        {
-        //            DAVA::Logger::Info("end tid: %d", ev.tid);
-        //        }
-        DAVA::UIControlSystem::Instance()->OnInput(&ev); // , activeTouches
+        DAVA::UIControlSystem::Instance()->OnInput(&ev);
     }
 
     activeTouches.clear();

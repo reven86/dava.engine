@@ -184,8 +184,6 @@ public:
 	 */
     void OnInput(UIEvent* newEvent);
 
-    //void OnInput(UIEvent* event);
-
     /**
 	 \brief Callse very frame by the system for update.
 	 */
