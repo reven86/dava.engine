@@ -46,11 +46,6 @@ public:
     bool SetScreenMode(eScreenMode screenMode) override;
 
     DisplayMode GetCurrentDisplayMode() override;
-
-    void* GetOpenGLView() override
-    {
-        return nullptr;
-    };
 };
 
 };
