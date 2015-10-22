@@ -107,9 +107,9 @@ private:
     String platformString;
     String version;
     String manufacturer;
-    String deviceName;
+    String modelName;
     String uDID;
-    WideString productName;
+    WideString deviceName;
     int32 zBufferSize = 24;
 };
 };
