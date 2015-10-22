@@ -426,6 +426,7 @@
     <ClInclude Include="..\..\Sources\Internal\Particles\ParticleRenderObject.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\DateTime.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\DeviceInfo.h" />
+    <ClInclude Include="..\..\Sources\Internal\Platform\DeviceInfoPrivateBase.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\DPIHelper.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\MovieViewControlStub.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\Process.h" />
@@ -692,9 +693,6 @@
     <ClInclude Include="..\..\Sources\Internal\UI\UIEvent.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIFadeTransition.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIFileSystemDialog.h" />
-    <ClInclude Include="..\..\Sources\Internal\UI\UIHierarchy.h" />
-    <ClInclude Include="..\..\Sources\Internal\UI\UIHierarchyCell.h" />
-    <ClInclude Include="..\..\Sources\Internal\UI\UIHierarchyNode.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIHoleTransition.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIJoypad.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIList.h" />
@@ -904,6 +902,7 @@
     <ClCompile Include="..\..\Sources\Internal\Particles\ParticleRenderObject.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\DateTime.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\DeviceInfo.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Platform\DeviceInfoPrivateBase.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\Process.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\SystemTimer.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\TemplateWin32\CorePlatformWin32.cpp">
@@ -1155,9 +1154,6 @@
     <ClCompile Include="..\..\Sources\Internal\UI\UIEvent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIFadeTransition.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIFileSystemDialog.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\UI\UIHierarchy.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\UI\UIHierarchyCell.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\UI\UIHierarchyNode.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIHoleTransition.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIJoypad.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIList.cpp" />

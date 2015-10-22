@@ -216,6 +216,13 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
     layout()->addWidget(container);
 
     focusTracker = new FocusTracker(this);
+
+//temporary workaround
+#if defined(Q_OS_MAC)
+    DAVA::Core::Instance()->SetNativeView((void*)openGlWindow->winId());
+#elif defined(Q_OS_WIN)
+    DAVA::Core::Instance()->SetNativeView((void*)container->winId());
+#endif //Q_OS_MAC / Q_OS_WIN
 }
 
 DavaGLWidget::~DavaGLWidget()

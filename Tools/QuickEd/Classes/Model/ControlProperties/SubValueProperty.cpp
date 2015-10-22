@@ -43,7 +43,7 @@ SubValueProperty::~SubValueProperty()
 {
 }
 
-int SubValueProperty::GetCount() const
+uint32 SubValueProperty::GetCount() const
 {
     return 0;
 }

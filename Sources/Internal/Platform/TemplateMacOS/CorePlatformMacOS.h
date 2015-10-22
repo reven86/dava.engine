@@ -45,8 +45,6 @@ public:
 	virtual void Quit();
 	
 	virtual Vector2 GetMousePosition();
-	
-	virtual void* GetOpenGLView();
 };	
 
 };

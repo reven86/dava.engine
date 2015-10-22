@@ -267,9 +267,10 @@ public:
     eDeviceFamily GetDeviceFamily();
 	
 	// Needs to be overriden for the platforms where it has sence (MacOS only for now).
-	virtual void* GetOpenGLView() { return NULL; };
-	
-	void EnableConsoleMode();
+    void* GetNativeView() const;
+    void SetNativeView(void* nativeView);
+
+    void EnableConsoleMode();
 
 protected:
 	int32 screenOrientation;
@@ -291,6 +292,7 @@ private:
 	bool isConsoleMode;
 
     float32 screenScaleFactor;
+    void* nativeView;
 };
     
 inline bool Core::IsActive()

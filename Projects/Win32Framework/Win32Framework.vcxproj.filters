@@ -567,15 +567,6 @@
     <ClInclude Include="..\..\Sources\Internal\UI\UIFadeTransition.h">
       <Filter>Internal\UI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\UI\UIHierarchy.h">
-      <Filter>Internal\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\UI\UIHierarchyCell.h">
-      <Filter>Internal\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\UI\UIHierarchyNode.h">
-      <Filter>Internal\UI</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\UIHoleTransition.h">
       <Filter>Internal\UI</Filter>
     </ClInclude>
@@ -1786,6 +1777,9 @@
     <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UIFlowLayoutHintComponent.h">
       <Filter>Internal\UI\Layouts</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Platform\DeviceInfoPrivateBase.h">
+      <Filter>Internal\Platform</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\Internal\DAVAEngine.cpp">
@@ -2071,15 +2065,6 @@
       <Filter>Internal\UI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\UIFadeTransition.cpp">
-      <Filter>Internal\UI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\UI\UIHierarchy.cpp">
-      <Filter>Internal\UI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\UI\UIHierarchyCell.cpp">
-      <Filter>Internal\UI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\UI\UIHierarchyNode.cpp">
       <Filter>Internal\UI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\UIHoleTransition.cpp">
@@ -3141,6 +3126,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UIFlowLayoutHintComponent.cpp">
       <Filter>Internal\UI\Layouts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Platform\DeviceInfoPrivateBase.cpp">
+      <Filter>Internal\Platform</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
