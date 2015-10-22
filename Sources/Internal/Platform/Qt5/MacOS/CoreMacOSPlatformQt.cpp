@@ -69,12 +69,13 @@ int Core::RunCmdTool(int argc, char *argv[], AppHandle handle)
 
 Core::eScreenMode CoreMacOSPlatformQt::GetScreenMode()
 {
-    return Core::MODE_WINDOWED;
+    return Core::eScreenMode::WINDOWED;
 }
 
-void CoreMacOSPlatformQt::SwitchScreenToMode(eScreenMode screenMode)
+bool CoreMacOSPlatformQt::SetScreenMode(eScreenMode screenMode)
 {
-    Logger::Error("[CoreMacOSPlatformQt::SwitchScreenToMode()] has no sence for Qt");
+    Logger::FrameworkDebug("[CoreMacOSPlatformQt::SwitchScreenToMode()] has no sence for Qt");
+    return screenMode == Core::eScreenMode::WINDOWED;
 }
 
 void CoreMacOSPlatformQt::Quit()

@@ -57,25 +57,28 @@ InitParam
     uint32          maxConstBufferCount;
     uint32          maxTextureCount;
 
+    uint32 shaderConstRingBufferSize;
+
     void            (*acquireContextFunc)();
     void            (*releaseContextFunc)();
-            
-                    InitParam()
-                      : width(0),
-                        height(0),
-                        scaleX(1.0f),
-                        scaleY(1.0f),
-                        window(nullptr),
-                        fullScreen(false),
-                        threadedRenderEnabled(false),
-                        threadedRenderFrameCount(2),
-                        FrameCommandExecutionSync(nullptr),
-                        maxIndexBufferCount(0),
-                        maxVertexBufferCount(0),
-                        maxConstBufferCount(0),
-                        maxTextureCount(0),
-                        acquireContextFunc(nullptr),
-                        releaseContextFunc(nullptr)
+
+    InitParam()
+        : width(0)
+        , height(0)
+        , scaleX(1.0f)
+        , scaleY(1.0f)
+        , window(nullptr)
+        , fullScreen(false)
+        , threadedRenderEnabled(false)
+        , threadedRenderFrameCount(2)
+        , FrameCommandExecutionSync(nullptr)
+        , maxIndexBufferCount(0)
+        , maxVertexBufferCount(0)
+        , maxConstBufferCount(0)
+        , maxTextureCount(0)
+        , shaderConstRingBufferSize(0)
+        , acquireContextFunc(nullptr)
+        , releaseContextFunc(nullptr)
                     {}
 };
 

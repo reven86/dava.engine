@@ -43,9 +43,14 @@ public:
     ~NPAPICoreMacOSPlatform() override;
 
     eScreenMode GetScreenMode() override;
-    void SwitchScreenToMode(eScreenMode screenMode) override;
+    bool SetScreenMode(eScreenMode screenMode) override;
 
     DisplayMode GetCurrentDisplayMode() override;
+
+    void* GetOpenGLView() override
+    {
+        return nullptr;
+    };
 };
 
 };

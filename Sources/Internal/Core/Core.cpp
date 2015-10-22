@@ -200,6 +200,7 @@ void Core::CreateRenderer()
     rendererParams.maxVertexBufferCount = options->GetInt32("max_vertex_buffer_count");
     rendererParams.maxConstBufferCount = options->GetInt32("max_const_buffer_count");
     rendererParams.maxTextureCount = options->GetInt32("max_texture_count");
+    rendererParams.shaderConstRingBufferSize = options->GetInt32("shader_const_buffer_size");
 
     Renderer::Initialize(renderer, rendererParams);
 }

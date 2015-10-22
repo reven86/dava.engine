@@ -41,12 +41,13 @@ NPAPICoreMacOSPlatform::~NPAPICoreMacOSPlatform()
 
 Core::eScreenMode NPAPICoreMacOSPlatform::GetScreenMode()
 {
-    return Core::MODE_WINDOWED;
+    return Core::eScreenMode::WINDOWED;
 }
 
-void NPAPICoreMacOSPlatform::SwitchScreenToMode(eScreenMode screenMode)
+bool NPAPICoreMacOSPlatform::SetScreenMode(eScreenMode screenMode)
 {
     Logger::Error("[NPAPICoreMacOSPlatform::SwitchScreenToMode] is not supported on NPAPI Plugin.");
+    return screenMode == Core::eScreenMode::WINDOWED;
 }
 
 void NPAPICoreMacOSPlatform::GetAvailableDisplayModes(List<DisplayMode> & availableModes)

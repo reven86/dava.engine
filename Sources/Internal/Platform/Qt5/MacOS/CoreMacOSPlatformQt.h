@@ -42,7 +42,7 @@ class CoreMacOSPlatformQt : public CoreMacOSPlatformBase
 {
 public:
     eScreenMode GetScreenMode() override;
-    void SwitchScreenToMode(eScreenMode screenMode) override;
+    bool SetScreenMode(eScreenMode screenMode) override;
     void Quit() override;
 };
 };
