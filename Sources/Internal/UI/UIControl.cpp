@@ -72,7 +72,7 @@ static void StopControlTracking(const UIControl* control)
 #endif
 }
 
-UIControl::UIControl(const Rect& rect, bool rectInAbsoluteCoordinates /* = false*/)
+UIControl::UIControl(const Rect& rect)
     : styleSheetDirty(true)
     , styleSheetInitialized(false)
     , layoutDirty(true)
@@ -116,7 +116,7 @@ UIControl::UIControl(const Rect& rect, bool rectInAbsoluteCoordinates /* = false
     touchesInside = 0;
     totalTouches = 0;
 
-    SetRect(rect, rectInAbsoluteCoordinates);
+    SetRect(rect);
 }
 
 UIControl::~UIControl()
@@ -228,37 +228,6 @@ const List<UIControl*>& UIControl::GetChildren() const
     return childs;
 }
 
-List<UIControl*>& UIControl::GetRealChildren()
-{
-    realChilds.clear();
-    realChilds = childs;
-
-    return realChilds;
-}
-
-List<UIControl*> UIControl::GetSubcontrols()
-{
-    // Default list of Subcontrols is empty. To be overriden in the derived
-    // controls.
-    return List<UIControl*>();
-}
-
-bool UIControl::IsSubcontrol()
-{
-    if (!this->GetParent())
-    {
-        return false;
-    }
-
-    const List<UIControl*>& parentSubcontrols = parent->GetSubcontrols();
-    if (parentSubcontrols.empty())
-    {
-        return false;
-    }
-
-    bool isSubcontrol = (std::find(parentSubcontrols.begin(), parentSubcontrols.end(), this) != parentSubcontrols.end());
-    return isSubcontrol;
-}
 
 bool UIControl::AddControlToList(List<UIControl*>& controlsList, const String& controlName, bool isRecursive)
 {
@@ -542,15 +511,6 @@ UIGeometricData UIControl::GetLocalGeometricData() const
     return drawData;
 }
 
-Vector2 UIControl::GetPosition(bool absoluteCoordinates)
-{
-    if (!absoluteCoordinates || !parent)
-    {
-        return GetPosition();
-    }
-
-    return GetAbsolutePosition();
-}
 
 Vector2 UIControl::GetAbsolutePosition()
 {
@@ -561,18 +521,6 @@ void UIControl::SetPosition(const Vector2& position)
 {
     relativePosition = position;
     SetLayoutDirty();
-}
-
-void UIControl::SetPosition(const Vector2& position, bool positionInAbsoluteCoordinates)
-{
-    if (!positionInAbsoluteCoordinates)
-    {
-        SetPosition(position);
-    }
-    else
-    {
-        SetAbsolutePosition(position);
-    }
 }
 
 void UIControl::SetAbsolutePosition(const Vector2& position)
@@ -625,13 +573,6 @@ void UIControl::SetAngleInDegrees(float32 angleInDeg)
     SetAngle(DegToRad(angleInDeg));
 }
 
-Rect UIControl::GetRect(bool absoluteCoordinates)
-{
-    if (!absoluteCoordinates)
-        return GetRect();
-
-    return GetAbsoluteRect();
-}
 
 Rect UIControl::GetAbsoluteRect()
 {
@@ -658,32 +599,20 @@ void UIControl::SetAbsoluteRect(const Rect& rect)
     SetRect(localRect);
 }
 
-void UIControl::SetRect(const Rect& rect, bool rectInAbsoluteCoordinates /* = false*/)
-{
-    if (!rectInAbsoluteCoordinates)
-    {
-        SetRect(rect);
-    }
-    else
-    {
-        SetAbsoluteRect(rect);
-    }
-}
-
 void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /* = false*/)
 {
     if (!rectInAbsoluteCoordinates || !parent)
     {
         scale.x = rect.dx / size.x;
         scale.y = rect.dy / size.y;
-        SetPosition(Vector2(rect.x + GetPivotPoint().x * scale.x, rect.y + GetPivotPoint().y * scale.y), rectInAbsoluteCoordinates);
+        SetPosition(Vector2(rect.x + GetPivotPoint().x * scale.x, rect.y + GetPivotPoint().y * scale.y));
     }
     else
     {
         const UIGeometricData& gd = parent->GetGeometricData();
         scale.x = rect.dx / (size.x * gd.scale.x);
         scale.y = rect.dy / (size.y * gd.scale.y);
-        SetPosition(Vector2(rect.x + GetPivotPoint().x * scale.x, rect.y + GetPivotPoint().y * scale.y), rectInAbsoluteCoordinates);
+        SetAbsolutePosition(Vector2(rect.x + GetPivotPoint().x * scale.x, rect.y + GetPivotPoint().y * scale.y));
     }
 }
 
@@ -1163,7 +1092,7 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
 
         // Yuri Coder, 2012/11/30. Use Real Children List to avoid copying
         // unnecessary children we have on the for example UIButton.
-        const List<UIControl*>& realChildren = srcControl->GetRealChildren();
+        const List<UIControl*>& realChildren = srcControl->GetChildren();
         List<UIControl*>::const_iterator it = realChildren.begin();
         for (; it != realChildren.end(); ++it)
         {

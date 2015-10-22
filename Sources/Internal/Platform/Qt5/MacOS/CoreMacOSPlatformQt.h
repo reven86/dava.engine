@@ -41,10 +41,9 @@ namespace DAVA {
 class CoreMacOSPlatformQt : public CoreMacOSPlatformBase
 {
 public:
-	virtual eScreenMode GetScreenMode();
-	virtual void SwitchScreenToMode(eScreenMode screenMode); 
-	virtual void ToggleFullscreen();
-	virtual void Quit();
+    eScreenMode GetScreenMode() override;
+    void SwitchScreenToMode(eScreenMode screenMode) override;
+    void Quit() override;
 };
 };
 

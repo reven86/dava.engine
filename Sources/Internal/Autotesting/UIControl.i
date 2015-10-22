@@ -55,7 +55,7 @@ class UIControl
 {
 public:
 
-	UIControl(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
+	UIControl(const Rect &rect = Rect());
 	
 	inline const Rect GetRect() const;
     

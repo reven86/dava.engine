@@ -44,20 +44,9 @@ Core::eScreenMode NPAPICoreMacOSPlatform::GetScreenMode()
     return Core::MODE_WINDOWED;
 }
 
-void NPAPICoreMacOSPlatform::ToggleFullscreen()
-{
-	Logger::Error("Toggle Full Screen is not supported on NPAPI Plugin");
-}
-
 void NPAPICoreMacOSPlatform::SwitchScreenToMode(eScreenMode screenMode)
 {
     Logger::Error("[NPAPICoreMacOSPlatform::SwitchScreenToMode] is not supported on NPAPI Plugin.");
-}
-
-void* NPAPICoreMacOSPlatform::GetOpenGLView()
-{
-	// No OpenGL View exists on the NPAPI Plugin - layer only.
-	return NULL;
 }
 
 void NPAPICoreMacOSPlatform::GetAvailableDisplayModes(List<DisplayMode> & availableModes)

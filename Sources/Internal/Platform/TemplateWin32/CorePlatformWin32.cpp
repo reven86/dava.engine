@@ -82,8 +82,6 @@ namespace DAVA
 
 	bool CoreWin32Platform::CreateWin32Window(HINSTANCE hInstance)
 	{	
-		this->hInstance = hInstance;
-
 		//single instance check
 		TCHAR fileName[MAX_PATH];
 		GetModuleFileName(NULL, fileName, MAX_PATH);
@@ -155,8 +153,10 @@ namespace DAVA
 		}
 
 		// create window
-		hWindow = CreateWindow( className, L"", style, windowLeft, windowTop, 
-			realWidth, realHeight,	NULL, NULL, hInstance, NULL);
+        HWND hWindow = CreateWindow(className, L"", style, windowLeft, windowTop,
+                                    realWidth, realHeight, NULL, NULL, hInstance, NULL);
+
+        SetNativeView(hWindow);
 
         rendererParams.window = hWindow;
 
@@ -312,13 +312,13 @@ namespace DAVA
 		clientSize.left = 0;
 		clientSize.right = dm.width;
 		clientSize.bottom = dm.height;
+        HWND hWindow = static_cast<HWND>(GetNativeView());
+        AdjustWindowRect(&clientSize, GetWindowLong(hWindow, GWL_STYLE), FALSE);
 
-		AdjustWindowRect(&clientSize, GetWindowLong(hWindow, GWL_STYLE), FALSE);
+        return clientSize;
+    }
 
-		return clientSize;
-	}
-
-	Core::eScreenMode CoreWin32Platform::GetScreenMode()
+    Core::eScreenMode CoreWin32Platform::GetScreenMode()
 	{
         if (isFullscreen)
         {
@@ -418,8 +418,9 @@ namespace DAVA
 
 	void CoreWin32Platform::SetIcon(int32 iconId)
 	{
-		HINSTANCE hInst= GetModuleHandle(0);
-		HICON smallIcon = static_cast<HICON>(LoadImage(hInst,
+        HWND hWindow = static_cast<HWND>(GetNativeView());
+        HINSTANCE hInst = GetModuleHandle(0);
+        HICON smallIcon = static_cast<HICON>(LoadImage(hInst,
 			MAKEINTRESOURCE(iconId),
 			IMAGE_ICON,
 			0,

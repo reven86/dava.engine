@@ -33,85 +33,80 @@
 #include "Base/BaseTypes.h"
 #include "UI/UIControl.h"
 
-namespace DAVA 
+namespace DAVA
 {
-	/**
-	 \ingroup controlsystem
-	 \brief Joypad realisation for the touch screen supported platforms.
-		Incomplete!!!.
-	 */
-	
-class UIJoypad : public UIControl 
+/**
+     \ingroup controlsystem
+     \brief Joypad realisation for the touch screen supported platforms.
+        Incomplete!!!.
+     */
+
+class UIJoypad : public UIControl
 {
     enum eTouchID
     {
         TOUCH_INVALID_ID = -1
     };
+
+public:
+    UIJoypad(const Rect& rect = Rect());
+
 protected:
     virtual ~UIJoypad();
 public:
-	UIJoypad(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
-	
-	const Vector2 & GetDigitalPosition();
-	const Vector2 & GetAnalogPosition();
-    
-    virtual Sprite* GetStickSprite() const;
-    virtual int32 GetStickSpriteFrame() const;
+    UIJoypad* Clone() override;
+    void CopyDataFrom(DAVA::UIControl* srcControl) override;
 
-    virtual void SetStickSprite(Sprite *stickSprite, int32 frame);
-    virtual void SetStickSprite(const FilePath &stickSpriteName, int32 frame);
-    virtual void SetStickSpriteFrame(int32 frame);
+    void AddControl(UIControl* control) override;
+    void RemoveControl(UIControl* control) override;
 
-	virtual void Input(UIEvent *currentInput); // Can be overrided for control additioanl functionality implementation
-	virtual void InputCancelled(UIEvent *currentInput); // Can be overrided for control additioanl functionality implementation
+    void LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader) override;
+    YamlNode* SaveToYamlNode(UIYamlLoader* loader) override;
 
-	float32 GetDeadAreaSize() const { return deadAreaSize; }
-	void SetDeadAreaSize(float newDeadAreaSize) { deadAreaSize = newDeadAreaSize; }//!< Size of the middle joypad area where the tuches do not come.
-	float32 GetDigitalSense() const { return digitalSense; }
-	void SetDigitalSense(float32 newDigitalSense) { digitalSense = newDigitalSense; }//!< Sense of the diagonal joypad ways. 0.5 by default.
+    void Input(UIEvent* currentInput) override; // Can be overrided for control additioanl functionality implementation
+    void InputCancelled(UIEvent* currentInput) override; // Can be overrided for control additioanl functionality implementation
+
+    const Vector2& GetDigitalPosition();
+    const Vector2& GetAnalogPosition();
+
+    Sprite* GetStickSprite() const;
+    int32 GetStickSpriteFrame() const;
+
+    void SetStickSprite(Sprite* stickSprite, int32 frame);
+    void SetStickSprite(const FilePath& stickSpriteName, int32 frame);
+    void SetStickSpriteFrame(int32 frame);
+
+    float32 GetDeadAreaSize() const;
+    void SetDeadAreaSize(float32 newDeadAreaSize); //!< Size of the middle joypad area where the tuches do not come.
+
+    float32 GetDigitalSense() const;
+    void SetDigitalSense(float32 newDigitalSense); //!< Sense of the diagonal joypad ways. 0.5 by default.
 
     float32 GetStickAngle() const;
 
-    // Load/save functionality.
-    virtual void LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader);
-    virtual YamlNode * SaveToYamlNode(UIYamlLoader * loader);
-
-    virtual List<UIControl* >& GetRealChildren();
-
-    FilePath GetStickSpritePath() const;
-    void SetStickSpritePath(const FilePath &path);
-    
-    void SetStickDebugDraw(bool debugDraw);
-    
 protected:
-	void RecalcDigitalPosition();
-	void RecalcAnalogPosition();
+    void RecalcDigitalPosition();
+    void RecalcAnalogPosition();
 
-    void CreateStickControl();
+    RefPtr<UIControl> stick;
 
-    UIControl *stick;
-    
 private:
-	int32 mainTouch;
-	float deadAreaSize;// dead area size in pixels (must be positive value)
-	float32 digitalSense;
-	bool needRecalcDigital;
-	bool needRecalcAnalog;
-	Vector2 currentPos;
-	
-	Vector2 digitalVector;
-	Vector2 analogVector;
+    int32 mainTouch;
+    float deadAreaSize; // dead area size in pixels (must be positive value)
+    float32 digitalSense;
+    bool needRecalcDigital;
+    bool needRecalcAnalog;
+    Vector2 currentPos;
+
+    Vector2 digitalVector;
+    Vector2 analogVector;
+
 public:
     INTROSPECTION_EXTEND(UIJoypad, UIControl,
-        PROPERTY("stickSprite", "Stick Sprite", GetStickSpritePath, SetStickSpritePath, I_SAVE | I_VIEW | I_EDIT)
-        PROPERTY("stickFrame", "Stick Frame", GetStickSpriteFrame, SetStickSpriteFrame, I_SAVE | I_VIEW | I_EDIT)
-
         PROPERTY("deadAreaSize", "Dead Area Size", GetDeadAreaSize, SetDeadAreaSize, I_SAVE | I_VIEW | I_EDIT)
         PROPERTY("digitalSense", "Digital Sense", GetDigitalSense, SetDigitalSense, I_SAVE | I_VIEW | I_EDIT)
         );
-
 };
-	
 };
 
 #endif

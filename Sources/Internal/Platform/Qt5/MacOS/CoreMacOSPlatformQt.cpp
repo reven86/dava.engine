@@ -72,14 +72,9 @@ Core::eScreenMode CoreMacOSPlatformQt::GetScreenMode()
     return Core::MODE_WINDOWED;
 }
 
-void CoreMacOSPlatformQt::ToggleFullscreen()
-{
-    Logger::FrameworkDebug("[CoreMacOSPlatformQt::ToggleFullscreen()] has no sence for Qt");
-}
-
 void CoreMacOSPlatformQt::SwitchScreenToMode(eScreenMode screenMode)
 {
-    Logger::FrameworkDebug("[CoreMacOSPlatformQt::SwitchScreenToMode()] has no sence for Qt");
+    Logger::Error("[CoreMacOSPlatformQt::SwitchScreenToMode()] has no sence for Qt");
 }
 
 void CoreMacOSPlatformQt::Quit()

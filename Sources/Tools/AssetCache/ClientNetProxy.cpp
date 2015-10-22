@@ -111,6 +111,7 @@ void ClientNetProxy::OnChannelOpen(DAVA::Net::IChannel* channel)
 {
     DVASSERT(openedChannel == nullptr);
     openedChannel = channel;
+    StateChanged();
 }
 
 void ClientNetProxy::OnChannelClosed(DAVA::Net::IChannel* channel, const char8*)

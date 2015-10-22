@@ -48,7 +48,7 @@ public:
     const Data *Get(const DAVA::String &fwPath)
     {
         auto it = map.find(fwPath);
-        return it == map.end() ? NULL : &(it->second);
+        return it == map.end() ? nullptr : &(it->second);
     }
     
     void Put(const DAVA::String &fwPath, const Data &data)
@@ -64,7 +64,7 @@ public:
 class LegacyEditorUIPackageLoader : public DAVA::AbstractUIPackageLoader
 {
 public:
-    LegacyEditorUIPackageLoader(LegacyControlData *data = NULL);
+    LegacyEditorUIPackageLoader(LegacyControlData* data = nullptr);
     virtual ~LegacyEditorUIPackageLoader();
     
 public:
@@ -94,9 +94,7 @@ private:
     DAVA::Map<DAVA::String, DAVA::String> legacyAlignsMap;
 
 private:
-    LegacyControlData *legacyData;
-    bool storeAggregatorName;
-    DAVA::String aggregatorName;
+    LegacyControlData* legacyData = nullptr;
 };
 
 

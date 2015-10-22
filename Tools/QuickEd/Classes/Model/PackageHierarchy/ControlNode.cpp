@@ -38,6 +38,8 @@
 
 using namespace DAVA;
 
+static const Set<String> ControlClassesWithoutChildren = { "UI3DView" };
+
 ControlNode::ControlNode(UIControl *control, bool recursively)
     : ControlsContainerNode(nullptr)
     , control(SafeRetain(control))
@@ -259,12 +261,12 @@ bool ControlNode::IsEditingSupported() const
 
 bool ControlNode::IsInsertingControlsSupported() const
 {
-    return !IsReadOnly();
+    return !IsReadOnly() && !ControlClassesWithoutChildren.count(control->GetClassName());
 }
 
 bool ControlNode::CanInsertControl(ControlNode *node, DAVA::int32 pos) const
 {
-    if (IsReadOnly())
+    if (!IsInsertingControlsSupported())
         return false;
     
     if (pos < static_cast<int32>(nodes.size()) && nodes[pos]->GetCreationType() == CREATED_FROM_PROTOTYPE_CHILD)
