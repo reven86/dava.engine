@@ -403,7 +403,7 @@ void CopyTouchData(const UIEvent& src, UIEvent& dst)
 {
     dst.timestamp = src.timestamp;
     dst.physPoint = src.physPoint;
-    dst.point = src.physPoint;
+    dst.point = src.point;
     dst.tapCount = src.tapCount;
     dst.phase = src.phase;
     dst.inputHandledType = src.inputHandledType;
