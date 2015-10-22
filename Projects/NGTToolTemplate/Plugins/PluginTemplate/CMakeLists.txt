@@ -5,6 +5,8 @@ set                   ( DAVA_USE_QT_WIDGETS true )
 
 include               ( CMake-common )
 
+list(APPEND EXCLUDE_LIBS "FColladaVS2010.lib" "libdxt.lib" "libdxtd.lib")
+
 find_package          ( QT5           REQUIRED )
 find_package          ( DavaFramework REQUIRED )
 find_package          ( DavaTools     REQUIRED )
