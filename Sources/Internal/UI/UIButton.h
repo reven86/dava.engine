@@ -60,7 +60,7 @@ public:
         Rect coordinates will be recalculated to the hierarchy coordinates.
         Warning, rectInAbsoluteCoordinates isn't properly works for now!
      */
-    UIButton(const Rect &rect = Rect());
+    UIButton(const Rect& rect = Rect());
 
     virtual void SetRect(const Rect &rect);
 

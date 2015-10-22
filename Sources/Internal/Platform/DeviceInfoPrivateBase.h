@@ -34,7 +34,6 @@
 
 namespace DAVA
 {
-
 //Common implementation of device info
 class DeviceInfoPrivateBase
 {
@@ -46,6 +45,6 @@ private:
     Map<DeviceInfo::eHIDType, DeviceInfo::HIDConnectionSignal> hidConnectionSignals;
 };
 
-}  // namespace DAVA
+} // namespace DAVA
 
-#endif  // __FRAMEWORK__DEVICEINFO_PRIVATE_BASE__
+#endif // __FRAMEWORK__DEVICEINFO_PRIVATE_BASE__

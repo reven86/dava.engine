@@ -37,18 +37,16 @@
 
 namespace DAVA
 {
-LinearLayoutAlgorithm::LinearLayoutAlgorithm(Vector<ControlLayoutData> &layoutData_, bool isRtl_)
+LinearLayoutAlgorithm::LinearLayoutAlgorithm(Vector<ControlLayoutData>& layoutData_, bool isRtl_)
     : layoutData(layoutData_)
     , isRtl(isRtl_)
 {
-    
 }
 
 LinearLayoutAlgorithm::~LinearLayoutAlgorithm()
 {
-    
 }
-    
+
 void LinearLayoutAlgorithm::SetInverse(bool inverse_)
 {
     inverse = inverse_;
@@ -78,8 +76,8 @@ void LinearLayoutAlgorithm::SetDynamicSpacing(bool dynamicSpacing_)
 {
     dynamicSpacing = dynamicSpacing_;
 }
-    
-void LinearLayoutAlgorithm::Apply(ControlLayoutData &data, Vector2::eAxis axis)
+
+void LinearLayoutAlgorithm::Apply(ControlLayoutData& data, Vector2::eAxis axis)
 {
     if (data.HasChildren())
     {
@@ -87,43 +85,43 @@ void LinearLayoutAlgorithm::Apply(ControlLayoutData &data, Vector2::eAxis axis)
     }
 }
 
-void LinearLayoutAlgorithm::Apply(ControlLayoutData &data, Vector2::eAxis axis, int32 firstIndex, int32 lastIndex)
+void LinearLayoutAlgorithm::Apply(ControlLayoutData& data, Vector2::eAxis axis, int32 firstIndex, int32 lastIndex)
 {
     DVASSERT(firstIndex <= lastIndex);
-    
+
     InitializeParams(data, axis, firstIndex, lastIndex);
-    
+
     if (childrenCount > 0)
     {
         CalculateDependentOnParentSizes(data, axis, firstIndex, lastIndex);
         CalculateDynamicPaddingAndSpaces(data, axis);
         PlaceChildren(data, axis, firstIndex, lastIndex);
     }
-    
+
     AnchorLayoutAlgorithm anchorAlg(layoutData, isRtl);
     anchorAlg.Apply(data, axis, true, firstIndex, lastIndex);
 }
 
-void LinearLayoutAlgorithm::InitializeParams(ControlLayoutData &data, Vector2::eAxis axis, int32 firstIndex, int32 lastIndex)
+void LinearLayoutAlgorithm::InitializeParams(ControlLayoutData& data, Vector2::eAxis axis, int32 firstIndex, int32 lastIndex)
 {
     padding = initialPadding;
     spacing = initialSpacing;
-    
+
     fixedSize = 0.0f;
     totalPercent = 0.0f;
 
     childrenCount = 0;
     for (int32 i = firstIndex; i <= lastIndex; i++)
     {
-        const ControlLayoutData &childData = layoutData[i];
+        const ControlLayoutData& childData = layoutData[i];
         if (childData.HaveToSkipControl(skipInvisible))
         {
             continue;
         }
-        
+
         childrenCount++;
-        
-        const UISizePolicyComponent *sizeHint = childData.GetControl()->GetComponent<UISizePolicyComponent>();
+
+        const UISizePolicyComponent* sizeHint = childData.GetControl()->GetComponent<UISizePolicyComponent>();
         if (sizeHint != nullptr && sizeHint->GetPolicyByAxis(axis) == UISizePolicyComponent::PERCENT_OF_PARENT)
         {
             totalPercent += sizeHint->GetValueByAxis(axis);
@@ -133,21 +131,21 @@ void LinearLayoutAlgorithm::InitializeParams(ControlLayoutData &data, Vector2::e
             fixedSize += childData.GetSize(axis);
         }
     }
-    
+
     spacesCount = childrenCount - 1;
     contentSize = data.GetSize(axis) - padding * 2.0f;
     restSize = contentSize - fixedSize - spacesCount * spacing;
 }
 
-void LinearLayoutAlgorithm::CalculateDependentOnParentSizes(ControlLayoutData &data, Vector2::eAxis axis, int32 firstIndex, int32 lastIndex)
+void LinearLayoutAlgorithm::CalculateDependentOnParentSizes(ControlLayoutData& data, Vector2::eAxis axis, int32 firstIndex, int32 lastIndex)
 {
     int32 index = firstIndex;
     while (index <= lastIndex)
     {
-        ControlLayoutData &childData = layoutData[index];
+        ControlLayoutData& childData = layoutData[index];
 
         bool haveToSkip = childData.HasFlag(ControlLayoutData::FLAG_SIZE_CALCULATED) || childData.HaveToSkipControl(skipInvisible);
-        
+
         bool needRestart = false;
         if (!haveToSkip)
         {
@@ -158,7 +156,7 @@ void LinearLayoutAlgorithm::CalculateDependentOnParentSizes(ControlLayoutData &d
                 childData.SetFlag(ControlLayoutData::FLAG_SIZE_CALCULATED);
             }
         }
-        
+
         if (needRestart)
         {
             index = firstIndex;
@@ -170,9 +168,9 @@ void LinearLayoutAlgorithm::CalculateDependentOnParentSizes(ControlLayoutData &d
     }
 }
 
-bool LinearLayoutAlgorithm::CalculateChildDependentOnParentSize(ControlLayoutData &childData, Vector2::eAxis axis)
+bool LinearLayoutAlgorithm::CalculateChildDependentOnParentSize(ControlLayoutData& childData, Vector2::eAxis axis)
 {
-    const UISizePolicyComponent *sizeHint = childData.GetControl()->GetComponent<UISizePolicyComponent>();
+    const UISizePolicyComponent* sizeHint = childData.GetControl()->GetComponent<UISizePolicyComponent>();
     if (sizeHint != nullptr && sizeHint->GetPolicyByAxis(axis) == UISizePolicyComponent::PERCENT_OF_PARENT)
     {
         float32 percents = sizeHint->GetValueByAxis(axis);
@@ -181,17 +179,17 @@ bool LinearLayoutAlgorithm::CalculateChildDependentOnParentSize(ControlLayoutDat
         {
             size = restSize * percents / Max(totalPercent, 100.0f);
         }
-        
+
         float32 minSize = sizeHint->GetMinValueByAxis(axis);
         float32 maxSize = sizeHint->GetMaxValueByAxis(axis);
         if (size < minSize || maxSize < size)
         {
             size = Clamp(size, minSize, maxSize);
             childData.SetSize(axis, size);
-            
+
             restSize -= size;
             totalPercent -= percents;
-            
+
             return true;
         }
         else
@@ -202,7 +200,7 @@ bool LinearLayoutAlgorithm::CalculateChildDependentOnParentSize(ControlLayoutDat
     return false;
 }
 
-void LinearLayoutAlgorithm::CalculateDynamicPaddingAndSpaces(ControlLayoutData &data, Vector2::eAxis axis)
+void LinearLayoutAlgorithm::CalculateDynamicPaddingAndSpaces(ControlLayoutData& data, Vector2::eAxis axis)
 {
     if (totalPercent < 100.0f - LayoutHelpers::EPSILON && restSize > LayoutHelpers::EPSILON)
     {
@@ -213,46 +211,45 @@ void LinearLayoutAlgorithm::CalculateDynamicPaddingAndSpaces(ControlLayoutData &
             {
                 cnt = 2;
             }
-            
+
             if (dynamicSpacing)
             {
                 cnt += spacesCount;
             }
-            
+
             float32 delta = restSize * (1.0f - totalPercent / 100.0f) / cnt;
             if (dynamicPadding)
             {
                 padding += delta;
             }
-            
+
             if (dynamicSpacing)
             {
                 spacing += delta;
             }
         }
     }
-    
 }
 
-void LinearLayoutAlgorithm::PlaceChildren(ControlLayoutData &data, Vector2::eAxis axis, int32 firstIndex, int32 lastIndex)
+void LinearLayoutAlgorithm::PlaceChildren(ControlLayoutData& data, Vector2::eAxis axis, int32 firstIndex, int32 lastIndex)
 {
     float32 position = padding;
     if (inverse)
     {
         position = data.GetSize(axis) - padding;
     }
-    
+
     for (int32 i = firstIndex; i <= lastIndex; i++)
     {
-        ControlLayoutData &childData = layoutData[i];
+        ControlLayoutData& childData = layoutData[i];
         if (childData.HaveToSkipControl(skipInvisible))
         {
             continue;
         }
-        
+
         float32 size = childData.GetSize(axis);
         childData.SetPosition(axis, inverse ? position - size : position);
-        
+
         if (inverse)
         {
             position -= size + spacing;
@@ -263,5 +260,4 @@ void LinearLayoutAlgorithm::PlaceChildren(ControlLayoutData &data, Vector2::eAxi
         }
     }
 }
-    
 }

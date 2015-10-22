@@ -44,7 +44,7 @@ protected:
     
 public:
     virtual DAVA::uint32 GetCount() const override;
-    virtual AbstractProperty *GetProperty(DAVA::int32 index) const override;
+    virtual AbstractProperty* GetProperty(DAVA::int32 index) const override;
 
     virtual void Refresh(DAVA::int32 refreshFlags) override;
 

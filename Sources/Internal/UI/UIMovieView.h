@@ -41,7 +41,8 @@ namespace DAVA
 class UIMovieView : public UIControl
 {
 public:
-    UIMovieView(const Rect &rect = Rect());
+    UIMovieView(const Rect& rect = Rect());
+
 protected:
     virtual ~UIMovieView();
 
@@ -58,7 +59,7 @@ public:
     void WillBecomeVisible() override;
     void WillBecomeInvisible() override;
 
-    UIMovieView *Clone() override;
+    UIMovieView* Clone() override;
 
     // Start/stop the video playback.
     void Play();
@@ -74,10 +75,10 @@ public:
 protected:
     // Platform-specific implementation of the Movie Control.
     IMovieViewControl* movieViewControl;
+
 public:
     INTROSPECTION_EXTEND(UIMovieView, UIControl,
-        nullptr
-        );
+                         nullptr);
 };
 
 }   // namespace DAVA

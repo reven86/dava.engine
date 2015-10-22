@@ -40,7 +40,7 @@ namespace DAVA
 
 static const String UISCROLL_VIEW_CONTAINER_NAME = "scrollContainerControl";
 
-UIScrollView::UIScrollView(const Rect &rect)
+UIScrollView::UIScrollView(const Rect& rect)
     : UIControl(rect)
     , scrollContainer(new UIScrollViewContainer())
     , scrollHorizontal(new ScrollHelper())
@@ -105,9 +105,9 @@ void UIScrollView::RemoveControl( UIControl *control )
 void UIScrollView::PushContentToBounds(UIControl *parentControl)
 {
 	// We have to shift each child of ScrollContent to fit its bounds
-    const List<UIControl*> &childslist = parentControl->GetChildren();
-    for(List<UIControl*>::const_iterator it = childslist.begin(); it != childslist.end(); ++it)
-	{
+    const List<UIControl*>& childslist = parentControl->GetChildren();
+    for (List<UIControl*>::const_iterator it = childslist.begin(); it != childslist.end(); ++it)
+    {
         UIControl *childControl = (*it);
         if (!(childControl && childControl->GetVisible()))
             continue;
@@ -125,12 +125,12 @@ void UIScrollView::PushContentToBounds(UIControl *parentControl)
 		{
 			childRect.y += Abs(position.y);
 		}
-		
-		// Move each first child
+
+        // Move each first child
         if (childRect != childControl->GetRect())
         {
-		childControl->SetRect(childRect);
-	}
+            childControl->SetRect(childRect);
+    }
 }
 }
 
@@ -138,9 +138,9 @@ Vector2 UIScrollView::GetControlOffset(UIControl *parentControl, Vector2 current
 {
 	Vector2 currentOffset = currentContentOffset;
 	// Get control's farest position inside scrollContainer
-    const List<UIControl*> &childslist = parentControl->GetChildren();
-    for(List<UIControl*>::const_iterator it = childslist.begin(); it != childslist.end(); ++it)
-	{	
+    const List<UIControl*>& childslist = parentControl->GetChildren();
+    for (List<UIControl*>::const_iterator it = childslist.begin(); it != childslist.end(); ++it)
+    {	
         UIControl *childControl = (*it);
         if (!(childControl && childControl->GetVisible()))
             continue;
@@ -162,9 +162,9 @@ Vector2 UIScrollView::GetMaxSize(UIControl * parentControl, Vector2 currentMaxSi
 	// Initial content max size is actual control sizes
 	Vector2 maxSize = currentMaxSize;
 
-    const List<UIControl*> &childslist = parentControl->GetChildren();
-    for(List<UIControl*>::const_iterator it = childslist.begin(); it != childslist.end(); ++it)
-	{
+    const List<UIControl*>& childslist = parentControl->GetChildren();
+    for (List<UIControl*>::const_iterator it = childslist.begin(); it != childslist.end(); ++it)
+    {
         UIControl *childControl = (*it);
         if ( !(childControl && childControl->GetVisible()) )
             continue;
@@ -195,7 +195,7 @@ Vector2 UIScrollView::GetMaxSize(UIControl * parentControl, Vector2 currentMaxSi
 	return maxSize;
 }
 
-UIScrollView *UIScrollView::Clone()
+UIScrollView* UIScrollView::Clone()
 {
 	UIScrollView *t = new UIScrollView(GetRect());
 	t->CopyDataFrom(this);
@@ -279,14 +279,14 @@ void UIScrollView::RecalculateContentSize()
 	{
 		return;
 	}
-	
+
     if (autoUpdate)
     {
         DVASSERT(!autoUpdate);
         return;
     }
-	
-	Rect contentRect = scrollContainer->GetRect();
+
+    Rect contentRect = scrollContainer->GetRect();
 	Rect parentRect = GetRect();
 	
 	// Move all scrollContainer content with negative positions iside its rect
@@ -297,8 +297,8 @@ void UIScrollView::RecalculateContentSize()
 									Vector2(0, 0));
 									
 	// Update scroll view content size
-	scrollContainer->SetRect(Rect(contentRect.x, contentRect.y, maxSize.x, maxSize.y));
-	scrollHorizontal->SetElementSize(maxSize.x);
+    scrollContainer->SetRect(Rect(contentRect.x, contentRect.y, maxSize.x, maxSize.y));
+    scrollHorizontal->SetElementSize(maxSize.x);
 	scrollVertical->SetElementSize(maxSize.y);
 }
 
@@ -462,7 +462,7 @@ void UIScrollView::SetHorizontalScrollPosition(float32 horzPos)
     }
 
     Vector2 pos = scrollContainer->GetPosition();
-	pos.x = horzPos;
+    pos.x = horzPos;
     if (scrollContainer->GetPosition() != pos)
     {
         scrollContainer->SetPosition(pos);
@@ -477,14 +477,14 @@ void UIScrollView::SetVerticalScrollPosition(float32 vertPos)
     {
         return;
     }
-    
+
     Vector2 pos = scrollContainer->GetPosition();
-	pos.y = vertPos;
+    pos.y = vertPos;
     if (scrollContainer->GetPosition() != pos)
     {
         scrollContainer->SetPosition(pos);
     }
-    
+
     scrollVertical->SetPosition(vertPos);
 }
 
@@ -534,5 +534,4 @@ void UIScrollView::SetCenterContent(bool center_)
 {
     centerContent = center_;
 }
-
 };

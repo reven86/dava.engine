@@ -64,7 +64,7 @@ public:
 class LegacyEditorUIPackageLoader : public DAVA::AbstractUIPackageLoader
 {
 public:
-    LegacyEditorUIPackageLoader(LegacyControlData *data = nullptr);
+    LegacyEditorUIPackageLoader(LegacyControlData* data = nullptr);
     virtual ~LegacyEditorUIPackageLoader();
     
 public:
@@ -94,7 +94,7 @@ private:
     DAVA::Map<DAVA::String, DAVA::String> legacyAlignsMap;
 
 private:
-    LegacyControlData *legacyData = nullptr;
+    LegacyControlData* legacyData = nullptr;
 };
 
 

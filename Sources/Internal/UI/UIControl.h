@@ -284,7 +284,7 @@ public:
         Rect coordinates will be recalculated to the hierarchy coordinates.
         Warning, rectInAbsoluteCoordinates isn't properly works for now!
      */
-    UIControl(const Rect &rect = Rect());
+    UIControl(const Rect& rect = Rect());
 
     /**
      \brief Returns Sprite used for draw in the current UIControlBackground object.

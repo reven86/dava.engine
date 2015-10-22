@@ -162,7 +162,7 @@ bool LegacyEditorUIPackageLoader::LoadControlByName(const DAVA::String &/*name*/
 
 void LegacyEditorUIPackageLoader::LoadControl(const DAVA::String &name, const YamlNode *node, DAVA::AbstractUIPackageBuilder *builder)
 {
-    UIControl *control = nullptr;
+    UIControl* control = nullptr;
     const YamlNode *type = node->Get("type");
     const YamlNode *baseType = node->Get("baseType");
     bool loadChildren = true;
@@ -173,13 +173,13 @@ void LegacyEditorUIPackageLoader::LoadControl(const DAVA::String &name, const Ya
         String aggregatorName = "";
         String packagPath(pathNode->AsString());
         bool result = builder->ProcessImportedPackage(packagPath, this);
-        
-        const LegacyControlData::Data *data = legacyData ? legacyData->Get(packagPath) : nullptr;
+
+        const LegacyControlData::Data* data = legacyData ? legacyData->Get(packagPath) : nullptr;
         if (nullptr != data)
         {
             aggregatorName = data->name;
         }
-        
+
         DVASSERT(result);
         DVASSERT(!aggregatorName.empty());
         control = builder->BeginControlWithPrototype(FilePath(pathNode->AsString()).GetBasename(), aggregatorName, nullptr, this);

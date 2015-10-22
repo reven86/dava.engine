@@ -206,9 +206,9 @@ WebViewControl::WebViewControl(DAVA::UIWebView& ptr) :
     [(WebViewPolicyDelegate*)webViewPolicyDelegatePtr setWebViewControl:this];
     [(WebViewPolicyDelegate*)webViewPolicyDelegatePtr setUiWebViewControl:
                                                             &uiWebViewControl];
-    
-	NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
-	[openGLView addSubview:localWebView];
+
+    NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
+    [openGLView addSubview:localWebView];
     
     // if switch to renderToTexture mode
     [localWebView setShouldUpdateWhileOffscreen:YES];
@@ -312,8 +312,8 @@ void WebViewControl::SetRect(const Rect& rect)
     // release previous image if any
     NSBitmapImageRep* imageRep = (NSBitmapImageRep*)webImageCachePtr;
    [imageRep release];
-    
-    NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
+
+   NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
     DVASSERT(openGLView);
     
     imageRep = [openGLView bitmapImageRepForCachingDisplayInRect:webViewRect];
@@ -372,7 +372,7 @@ void WebViewControl::SetRenderToTexture(bool value)
         {
             // remove sprite from UIControl and show native window
             uiWebViewControl.SetSprite(0, 0);
-            
+
             NSView* openGLView = (NSView*)Core::Instance()->GetNativeView();
             [openGLView addSubview:(WebView*)webViewPtr];
         }

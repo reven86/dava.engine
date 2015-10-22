@@ -357,9 +357,9 @@ ENUM_DECLARE(UIFlowLayoutComponent::eOrientation)
 
 ENUM_DECLARE(UIWebView::eDataDetectorType)
 {
-    ENUM_ADD_DESCR(UIWebView::DATA_DETECTOR_PHONE_NUMBERS  , "PhoneNumbers");
-    ENUM_ADD_DESCR(UIWebView::DATA_DETECTOR_LINKS          , "Links");
-    ENUM_ADD_DESCR(UIWebView::DATA_DETECTOR_ADDRESSES      , "Addresses");
+    ENUM_ADD_DESCR(UIWebView::DATA_DETECTOR_PHONE_NUMBERS, "PhoneNumbers");
+    ENUM_ADD_DESCR(UIWebView::DATA_DETECTOR_LINKS, "Links");
+    ENUM_ADD_DESCR(UIWebView::DATA_DETECTOR_ADDRESSES, "Addresses");
     ENUM_ADD_DESCR(UIWebView::DATA_DETECTOR_CALENDAR_EVENTS, "CalendarEvents");
 };
 

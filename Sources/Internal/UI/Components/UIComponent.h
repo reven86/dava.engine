@@ -47,10 +47,10 @@ public:
         IGNORE_LAYOUT_COMPONENT,
         SIZE_POLICY_COMPONENT,
         ANCHOR_COMPONENT,
-        
+
         COMPONENT_COUNT
     };
-    
+
 public:
     UIComponent();
     UIComponent(const UIComponent &src);

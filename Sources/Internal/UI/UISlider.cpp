@@ -49,12 +49,12 @@ static const String UISLIDER_THUMB_SPRITE_CONTROL_NAME = "thumbSpriteControl";
 static const String UISLIDER_MIN_SPRITE_CONTROL_NAME = "minSpriteControl";
 static const String UISLIDER_MAX_SPRITE_CONTROL_NAME = "maxSpriteControl";
 
-UISlider::UISlider(const Rect &rect)
-:	UIControl(rect)
-,	minBackground(NULL)
-,	maxBackground(NULL)
-,	thumbButton(NULL)
-,   spritesEmbedded(false)
+UISlider::UISlider(const Rect& rect)
+    : UIControl(rect)
+    , minBackground(NULL)
+    , maxBackground(NULL)
+    , thumbButton(NULL)
+    , spritesEmbedded(false)
 {
     SetInputEnabled(true, false);
 	isEventsContinuos = true;
@@ -378,8 +378,8 @@ YamlNode * UISlider::SaveToYamlNode(UIYamlLoader * loader)
 
     return node;
 }
-	
-UISlider *UISlider::Clone()
+
+UISlider* UISlider::Clone()
 {
 	UISlider *t = new UISlider(GetRect());
 	t->CopyDataFrom(this);

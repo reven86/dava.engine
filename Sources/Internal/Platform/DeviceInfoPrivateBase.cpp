@@ -32,7 +32,6 @@
 
 namespace DAVA
 {
-
 int32 DeviceInfoPrivateBase::GetCpuCount()
 {
     size_t processors = std::thread::hardware_concurrency();
@@ -40,9 +39,9 @@ int32 DeviceInfoPrivateBase::GetCpuCount()
 }
 
 DeviceInfo::HIDConnectionSignal& DeviceInfoPrivateBase::GetHIDConnectionSignal(
-    DeviceInfo::eHIDType type)
+DeviceInfo::eHIDType type)
 {
     return hidConnectionSignals[type];
 }
 
-}  // namespace DAVA
+} // namespace DAVA

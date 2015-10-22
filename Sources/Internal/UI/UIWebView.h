@@ -50,12 +50,13 @@ public:
         DATA_DETECTOR_ALL               = 0xFF
     };
 
-    UIWebView(const Rect &rect = Rect());
+    UIWebView(const Rect& rect = Rect());
+
 protected:
     virtual ~UIWebView();
 
 public:
-	// Open the URL.
+    // Open the URL.
     void OpenFile(const FilePath &path);
 	void OpenURL(const String& urlToOpen);
 	// Load html page
@@ -85,7 +86,7 @@ public:
     void LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader) override;
 	YamlNode * SaveToYamlNode(UIYamlLoader * loader) override;
 
-    UIWebView *Clone() override;
+    UIWebView* Clone() override;
     void CopyDataFrom(UIControl *srcControl) override;
     
     void SystemDraw(const UIGeometricData &geometricData) override;
@@ -128,8 +129,7 @@ private:
     int32 dataDetectorTypes;
 public:
     INTROSPECTION_EXTEND(UIWebView, UIControl,
-        PROPERTY("dataDetectorTypes", InspDesc("Data detector types", GlobalEnumMap<eDataDetectorType>::Instance(), InspDesc::T_FLAGS), GetDataDetectorTypes, SetDataDetectorTypes, I_SAVE | I_VIEW | I_EDIT)
-    );
+                         PROPERTY("dataDetectorTypes", InspDesc("Data detector types", GlobalEnumMap<eDataDetectorType>::Instance(), InspDesc::T_FLAGS), GetDataDetectorTypes, SetDataDetectorTypes, I_SAVE | I_VIEW | I_EDIT));
 };
 };
 

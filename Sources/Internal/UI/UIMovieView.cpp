@@ -48,8 +48,7 @@
 
 namespace DAVA
 {
-
-UIMovieView::UIMovieView(const Rect &rect)
+UIMovieView::UIMovieView(const Rect& rect)
     : UIControl(rect)
     , movieViewControl(new MovieViewControl())
 {
@@ -139,7 +138,7 @@ void UIMovieView::WillBecomeInvisible()
     movieViewControl->SetVisible(false);
 }
 
-UIMovieView *UIMovieView::Clone()
+UIMovieView* UIMovieView::Clone()
 {
     UIMovieView* uiMoviewView = new UIMovieView(GetRect());
     uiMoviewView->CopyDataFrom(this);

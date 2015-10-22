@@ -52,7 +52,7 @@ public:
     
 public:
     IMPLEMENT_UI_COMPONENT_TYPE(SIZE_POLICY_COMPONENT);
-    
+
     UISizePolicyComponent();
     UISizePolicyComponent(const UISizePolicyComponent &src);
     

@@ -46,13 +46,13 @@ namespace DAVA
 		core->CreateSingletons();
 
 		[[NSApplication sharedApplication] setDelegate:(id<NSApplicationDelegate>)[[[MainWindowController alloc] init] autorelease]];
-        
-		int retVal = NSApplicationMain(argc,  (const char **) argv);
+
+        int retVal = NSApplicationMain(argc,  (const char **) argv);
         // This method never returns, so release code transfered to termination message 
         // - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
         // core->ReleaseSingletons() is called from there
 
-		[globalPool release];
+        [globalPool release];
 		globalPool = 0;
 		return retVal;
 	}

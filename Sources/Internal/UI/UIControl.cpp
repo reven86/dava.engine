@@ -73,7 +73,7 @@ namespace DAVA
 #endif
     }
 
-    UIControl::UIControl(const Rect &rect)
+    UIControl::UIControl(const Rect& rect)
         : styleSheetDirty(true)
         , styleSheetInitialized(false)
         , layoutDirty(true)

@@ -268,9 +268,9 @@ public:
 	
 	// Needs to be overriden for the platforms where it has sence (MacOS only for now).
     void* GetNativeView() const;
-    void SetNativeView(void *nativeView);
-	
-	void EnableConsoleMode();
+    void SetNativeView(void* nativeView);
+
+    void EnableConsoleMode();
 
 protected:
 	int32 screenOrientation;
@@ -292,7 +292,7 @@ private:
 	bool isConsoleMode;
 
     float32 screenScaleFactor;
-    void *nativeView;
+    void* nativeView;
 };
     
 inline bool Core::IsActive()
